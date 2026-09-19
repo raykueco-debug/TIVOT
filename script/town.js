@@ -568,12 +568,34 @@ export const DRAGON_LINES = {
      **不要在這裡抄第二份**。
    ⚠ 「不能約會／不能睡覺」的那兩句是**旁白**（名字欄空）＝主角自己的念頭，
      同旅店 `noSleep` 那一句的作法（§6.5.5）。 */
-export const QUEST_LOCK = {
+/* ⚠⚠ ver -1511：**改成陣列** —— 同一輪會有好幾段「被任務押著」的時間，
+   而它們的台詞不一樣。判定照舊只有 `town.questLocked()` 一支（鐵律 7），
+   它由上往下取**第一扇成立的窗**。加一段任務只要加一筆。 */
+/* ① 追髮飾那一夜（ver -1416）：插旗＝那一夜演完，拔旗＝空中戰打完。
+   ⚠⚠ **它有名字是因為別處要指名它**：古城那三個節點的 `need`／`until` 直接讀
+     這一扇窗的旗（「任務探索開著的時候才演」）。-1511 把 `QUEST_LOCK` 改成陣列時，
+     那三處原本寫的是 `QUEST_LOCK.flag` —— 在陣列上那是 `undefined`，而
+     **`need:undefined` ＝沒有條件 ⇒ 那幾段會立刻演**，畫面上不會有任何錯誤訊息。
+     所以窗要有名字，指名的人讀名字，不要讀容器。 */
+const Q_HAIRPIN = {
   flag:  'ep_hairpin_hunt',
   until: 'bl_night_sky',
   sleep: '（不是睡覺的時候。得快點追上去。）',
   date:  '（現在不是約人出門的時候。）',
 };
+export const QUEST_LOCK = [
+  Q_HAIRPIN,
+  /* ② 同一夜稍晚（ver -1511，Ray 的 Stage10-B 稿）：髮飾拿回來、大家回旅店之後，
+     蕾娜說「真有什麼事的話，還有他在嘛」—— 主角決定守夜。
+     ⚠ 拔旗的是**兩條路各自那一支**（`ep_m1_route`／`ep_m2_route`）：走哪一條都算
+       那一夜結束了。`until` 只吃一支，所以這裡用 M1／M2 共同的收尾旗
+       `ep_night_mi_done` —— 兩條路的最後一拍都插它（鐵律 9：一個狀態一個擁有事件，
+       而「那一夜過完了」就是那一個狀態，路線是另一件事，另外兩支旗記）。 */
+  { flag:  'ep_hairpin_talk',
+    until: 'ep_night_mi_done',
+    sleep: '今晚好像不太安寧，先守著吧。',
+    date:  '（都這個時間了，別吵人家。）' },
+];
 
 export const OUTING = {
   /* ⚠ ver -1102 由 [8,18] 改成 [9,19]（Ray 的 Stage9 稿：「夥伴有可能的出門時間
@@ -4966,7 +4988,7 @@ export const TOWNS = {
       dock:       { bg:'East_SouthGate',
         name:'東方泊地　南門驛站',
         exits:{ back:'oldtown', up:'@plainsroad' },
-        lock:{ up:{ need:QUEST_LOCK.flag, until:QUEST_LOCK.until,
+        lock:{ up:{ need:Q_HAIRPIN.flag, until:Q_HAIRPIN.until,
                     lines:[ sor('confuse','喂！開船去比較快啦！') ] } },
         acts:[ { flag:'ep_dock_anya', withWho:'ANYA', lines:[
           any('curious','這就是……尤拉西亞湖？'),
@@ -5015,7 +5037,85 @@ export const TOWNS = {
 
       /* ── 三、上城區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
       uptown:     { bg:'East_Uptown',     name:'東方泊地　上城區',
-        exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
+        exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' },
+        /* ══⚠⚠⚠ **那一夜的岔路**（ver -1511，Ray 的 Stage10-B 稿）══════════════
+           安雅溜出房間之後，玩家要嘛**先敲蕾娜的門**（她會跟上 ⇒ `ep_night_renna`）、
+           要嘛**直接走出旅店**獨自跟上。走出旅店就是往下走到上城區，所以兩條路
+           都在這一格演 —— 差別只有「身邊有沒有蕾娜」。
+           ⚠⚠ 分岔靠 `actDue` 由上往下取第一個成立的：M1 排前面（`need` 更嚴），
+             M2 用 `until:'ep_night_renna'` 把自己讓開。**不要在一段裡用
+             `onlyIf`／`skipIf` 硬塞兩條**：那會讓兩條路的立繪與站位混在同一段裡。
+           ⚠⚠⚠ **俄語那幾句是刻意讓玩家看不懂的**（Ray -1511 確認）：
+             蕾娜下一句「太遠了，聽不清楚……」就是它的註腳，所以
+             **不要加中譯、也不要換成中文**。
+           ⚠ `tiny:true` ＝極小字（ver -1511 新做的拍屬性，實作在 `modules/story.js`，
+             樣式在 `style.css` 的 `#storyBubble.tiny`）—— 稿上「距離遠，所以用極小字體」。
+           ⚠⚠ **米夏還沒有立繪**（Ray：「先不放圖，gpt 爆了，後面補」）：`MISHA_X`
+             的 `art` 是 null，所以他**不會上台**，只出名字欄與台詞（story.js 既有的
+             行為，同 `SOLDIER`／`VOICE`）。稿上「立繪撤出」現在只剩腳步聲；
+             **圖到了要回來把這兩段的立繪補上**（見 `speakers.js` 的 `MISHA_X`）。
+           ⚠ 稿上「少年遠距離望了一眼主角」的插畫也還沒有檔案 —— 到了補 `cg:`。
+           ⚠⚠ 兩條路的最後一拍都插 `ep_night_mi_done`（＝那一夜過完了，`QUEST_LOCK`
+             第二扇窗的出口）＋各自的路線旗。`clockToday:8` 把時間推到早上八點，
+             隔日審訊那一段（旅店）才接得上。
+             ⚠⚠⚠ **是 `clockToday` 不是閘門的 `clockTo`** —— `clockTo` 只有 `gates`
+               吃得到（`clockGate`），寫在 `acts` 上**不會有作用而且不報錯**；
+               act 那一支讀的是 `clockToday`（`applyClockToday`）。
+             ⚠ `clockToday` ＝推到**今天**的那個時刻、過了就不動。這一段一定發生在
+               00:00~06:00（上面那一拍的 `hourOfDay` 卡著），所以「今天的 8 點」
+               必然還在前面 —— 語意剛好對。 */
+        acts:[
+          /* ── 分支 1：與蕾娜同行（M1） ── */
+          { flag:'ep_m1_route', need:'ep_night_renna', clockToday:8,
+            sides:{ RENNA:'L' }, lines:[
+            { speaker:'ANYA', text:'Мне кажется, я научилась владеть этой силой!',
+              portrait:{ char:'ANYA', expr:'argue', show:true }, tiny:true },
+            { speaker:'MISHA_X', tiny:true,
+              text:'А чем ты поручишься? И даже если так — разве тебе есть куда вернуться?' },
+            ren('armcross','太遠了，聽不清楚……'),
+            ren('whisper','是說安雅講話那麼快的嗎？'),
+            { speaker:'PLAYER', blank:true },
+            ren('watch','燈光不夠，但是……'),
+            ren('whisper','總覺得那個人……是不是跟安雅有點像？'),
+            ren('shockedCalm','！！'),
+            { speaker:'PLAYER', blank:true },
+            ren('intense','你說殺氣……？'),
+            any('scared',''),
+            ren('intense2','啊，被發現了。'),
+            { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+            ren('evalutating','安雅小姐，剛剛那位是……'),
+            any('talk','是我哥哥。他擔心我所以……'),
+            ren('evalutatingclosemouth','擔心的話不應該陪在妳身旁嗎？怎麼就走了呢？'),
+            any('silent','……'),
+            ren('evalutatingclosemouth','……又不說了嗎？'),
+            ren('holdfile','算了。明天有一整天的時間。'),
+            ren('commandsoft','就在這極東之境，用最殘酷的方式拷問妳吧。'),
+            Object.assign(any('desperate',''), { flags:['ep_night_mi_done'] }),
+          ] },
+          /* ── 分支 2：獨自跟上（M2） ── */
+          { flag:'ep_m2_route', need:'ep_night_anya_out', until:'ep_night_renna',
+            clockToday:8, lines:[
+            { speaker:'ANYA', text:'Мне кажется, я научилась владеть этой силой!',
+              portrait:{ char:'ANYA', expr:'argue', show:true }, tiny:true },
+            { speaker:'MISHA_X', tiny:true,
+              text:'А чем ты поручишься? И даже если так — разве тебе есть куда вернуться?' },
+            { speaker:'ANYA', tiny:true,
+              text:'Позволь мне… позволь попробовать ещё раз! Умоляю тебя, Мишенька!' },
+            { speaker:'MISHA_X', tiny:true, text:'И что я скажу душам погибших?..' },
+            { speaker:'MISHA_X', tiny:true, text:'！！' },
+            { speaker:'MISHA_X', tiny:true, text:'За тобой слежка.' },
+            any('scared',''),
+            { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+            any('scared','那、那是……'),
+            any('talk','是我哥哥。他擔心我所以……'),
+            any('worry','拜託，可以跟大家保密嗎？'),
+            { speaker:'PLAYER', blank:true },
+            any('talkshy','謝謝你……'),
+            { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+            Object.assign({ speaker:'PLAYER', text:'……' },
+                          { flags:['ep_night_mi_done'] }),
+          ] },
+        ] },
       /* ══⚠⚠ **餐飲街是樞紐，不是分店**（ver -1318，Ray：「東泊餐飲街接成樞紐也就
          那三個，隨便排就好」＝ `_eastport_spec.md` §八 的 **(甲) 樞紐＝酒吧**）══
          §6.5.4.2 的分店機制（同行女伴決定進哪一家）**在這座城取消**（-1263 Ray 定案）：
@@ -5117,6 +5217,17 @@ export const TOWNS = {
                排在前面先贏（同 `bgWhen`／`acts` 的取法）。
            ⚠ 這是**這座城的特例**，不要拿去別的城照抄。 */
         innDoors:[
+          /* ══⚠⚠ **安雅溜出去的那一夜**（ver -1511）══ 排在最前面（由上往下取第一個
+             `need` 成立的）。安雅 `out` ＝她真的不在房裡了（臉不畫）——
+             不是 `asleep`：她人已經走了，那正是玩家要追的東西。
+             ⚠ 諾薇兒／索菈娜的回話寫在 `say`；蕾娜的是一整段戲，走 `rennaAlt`。 */
+          /* ⚠⚠ `anytime:true` ＝這幾句**不受宵禁擋**（ver -1511）：這一段本來就
+             發生在深夜，而宵禁（21:00~07:00）正好蓋在同一段時間上 —— 不讓開的話
+             開啟這一夜的條件同時把它擋死。實作見 `modules/inn.js` 的 `knock`。 */
+          { need:'ep_night_anya_out', roster:['RENNA','NOUVELLE','ANYA','SORANA'],
+            out:['ANYA'], anytime:true,
+            say:{ NOUVELLE:'（好像睡熟了。）',
+                  SORANA:'可能只是夢遊吧。去抓回來啦。' } },
           { need:'ep_renna_night', roster:['RENNA','NOUVELLE','ANYA','SORANA'] },
           { roster:['RENNA','NOUVELLE','ANYA','SORANA'], out:['RENNA'] },
         ],
@@ -5133,6 +5244,23 @@ export const TOWNS = {
         innStage1:{ dateBusy:'（已經約好人了，等等再說吧。）',
                     dateDone:'今天已經聊夠多囉，明天再說吧。',
                     nightRest:'這麼晚了，早點睡吧。',
+                    /* ══⚠⚠⚠ **半夜敲蕾娜的門**（ver -1511，Ray 的 Stage10-B 稿）══
+                       這一扇門是**分支的岔口**：敲了＝跟她一起跟上去（M1 那一條），
+                       不敲直接走出旅店＝獨自跟上（M2）。
+                       ⚠⚠ 好感 +2 寫在**最後一拍**（演完才給，同城鎮所有段落的作法）
+                         —— 中途離開就沒有，那是對的。
+                       ⚠ `ep_night_renna` 是**這一條路的鑰匙**：上城區那兩段靠它分岔
+                         （鐵律 9：誰插＝這一拍，誰拔＝沒有人，它是一次性的路線標記）。
+                       ⚠ `unbraid` ＝她把辮子放下來了（半夜、剛起床）—— 稿上指定。 */
+                    rennaAlt:{ need:'ep_night_anya_out', until:'ep_night_renna',
+                               anytime:true, lines:[
+                      ren('wake','怎麼了嗎？大半夜的。'),
+                      { speaker:'PLAYER', blank:true },
+                      ren('unbraid','咦？安雅小姐她……'),
+                      ren('thinking','……'),
+                      Object.assign(ren('commandsoft','……悄悄跟上去吧。'),
+                                    { flags:['ep_night_renna'], aff:{ renna:2 } }),
+                    ] },
                     knock:{
           NOUVELLE:{ low:'要有人在這邊等蕾娜小姐才行。',
                      date:[ nou('surprise','咦？好啊！'),
@@ -5175,6 +5303,183 @@ export const TOWNS = {
            ⚠ 這幾段都在 `ep_renna_night` 那一段**之前**取到，所以先演約會收尾、
              下一次進旅店才輪到蕾娜 —— 稿上的順序就是這樣。 */
         acts:[
+        /* ══⚠⚠⚠ **那一夜之後・旅店**（ver -1511，Ray 的 Stage10-B 稿）══════════
+           髮飾拿回來、從古城回到東泊之後的那一段長談。
+           ⚠ 排在**最前面**：`actDue` 由上往下取第一個成立的，而它的 `need`
+             （`bl_night_done` ＝中庭那一段演完）比底下每一段都晚成立。
+           ⚠⚠ 收尾插 `ep_hairpin_talk` ＝ **`QUEST_LOCK` 的第二扇窗**（守夜）：
+             從這一刻起睡不著、約不了人（台詞在檔頭那一組，不在這裡寫第二份）。
+           ⚠ 稿上「（以下開始回復有髮飾蕾娜立繪）」—— **無髮飾那一組還沒畫**
+             （Ray -1511：「無髮飾先跳過，用原圖，之後再一次改」），所以這一段
+             與中庭那一段一樣，用的都是現有的立繪。 */
+        { flag:'ep_hairpin_talk', need:'bl_night_done', sides:{ RENNA:'L' }, lines:[
+          sor('tired','折騰一晚上，呼啊——'),
+          nou('sleepy',''),
+          any('sleepy',''),
+          ren('apologize','真的很對不起……'),
+          nou('bigsmileclose','別這麼說啦！那是很重要的東西吧？'),
+          ren('awkward','其實……好像也沒那麼重要……'),
+          sor('back','哈？'),
+          sor('confuse','為了撿那個妳當時差點被那隻龍吞了耶！'),
+          nou('surprise','我也以為是比命還重要的東西耶！'),
+          ren('blushed','我、我也不知道啊！'),
+          ren('blushed','就是……不想丟下他嘛。'),
+          sor('smirk','……戀人的禮物？'),
+          { speaker:'PLAYER', blank:true },
+          ren('blushed','……'),
+          ren('blushed','我可是修女，哪來的戀人？'),
+          nou('smug','那就是家人囉？'),
+          ren('apologize','也不是……'),
+          any('sleepy',''),
+          ren('meltdown','其實……我也想不太起來這個是怎麼來的了。'),
+          sor('tease','……'),
+          nou('bigsmileclose','……'),
+          ren('arguecute','真的啦！'),
+          ren('apologize','仔細想想根本沒有捨命撿回來的必要，可是……'),
+          ren('blushed','不知道為什麼，就是會難受。'),
+          sor('salute','反正就是……妳超喜歡那個髮飾的吧？'),
+          ren('blushed','……嗯。'),
+          sor('side','妳高興就好啦！反正我也狠狠教訓了那隻小偷龍，滿足滿足！'),
+          nou('awkward',''),
+          any('sleepy',''),
+          /* ⚠⚠⚠ **「米夏眼部 CI」還沒有檔案**（Ray -1511：「先不放圖，gpt 爆了，
+             後面補」）—— 這一拍現在只剩安雅的反應與主角的「！！」。
+             圖到了就把 `cg:'CI_Misha_eyes'` 補回這一拍（**不要另開一拍**：
+             那一瞬的驚嚇與她的表情是同一件事）。 */
+          any('terrifying',''),
+          { speaker:'PLAYER', text:'！！' },
+          sor('ready','小公主怎麼啦？'),
+          any('talk','沒……沒事……'),
+          { speaker:'PLAYER', text:'……' },
+          nou('sleepy',''),
+          ren('smile','明天我們就多留一天吧，養精蓄銳，再往下一個目標去。'),
+          nou('risehand','好棒，帶薪休假。'),
+          nou('happy','安雅，我們明天……'),
+          any('talk','我、我累了。先回房間……'),
+          nou('surprise','啊。'),
+          nou('gossip2','看起來真的很累了呢。'),
+          ren('coldstare','……'),
+          nou('bigsmileclose','？？'),
+          ren('ask','大家先休息吧。真有什麼事的話，'),
+          ren('bow','還有他在嘛。'),
+          { speaker:'PLAYER', blank:true },
+          ren('bow','別這麼說嘛。'),
+          /* ⚠⚠ 稿上「T3以上分支」＝**多講一句**，所以走 `tierMin`（ver -858 就是
+             為這種稿做的）不是 `needTier` —— 後者是 `actDue` 在判的，它擋的是
+             **整段**，寫在一拍上一點作用都沒有（而且不會報錯）。
+             ⚠ 門檻不是等於：寫 3 ＝「T3 以上」，日後有 T4 不必回頭改。
+             ⚠ 看的是說話者（蕾娜）自己的段位，所以不必寫 `tierWho`。 */
+          Object.assign(ren('smilesoft','我很相信你喔。'), { tierMin:3 }),
+        ] },
+        /* ══⚠⚠⚠ **兩小時後：安雅偷溜出房間**（ver -1511，Ray 的 Stage10-B 稿）══
+           ⚠⚠ 觸發靠**時刻**不是「坐過幾次」：`settle()`（坐坐的收尾）會再問一次
+             城鎮的 `actDue`（ver -1370 接的那條 `rerun`），所以坐完兩小時就演得到。
+             稿上的「兩小時後」正是坐坐那兩小時。
+           ⚠ `hourOfDay:[0,6]` ＝**跨過午夜之後**。那一段長談結束時是深夜（空中戰
+             打完 23 點左右再走回旅店），而這一窗 `QUEST_LOCK` 把睡覺擋著、
+             提示又指著「獨自坐坐」—— 正常玩法就是坐一次跨過午夜。
+             ⚠ 玩家若不坐、在城裡亂走到午夜也演得到：那不是漏洞，
+               「兩小時後」本來就是時間到了，不是非坐不可。
+           ⚠ 名字欄空＝旁白（主角自己看到的），同旅店 `noSleep` 那一句的作法。 */
+        { flag:'ep_night_anya_out', need:'ep_hairpin_talk', hourOfDay:[0,6], lines:[
+          { speaker:'NARRATION', text:'（房門輕輕開了。）', se:'se_walk', auto:1400 },
+          { speaker:'NARRATION', text:'（安雅悄悄地溜出了房間。）', auto:1600 },
+          { speaker:'PLAYER', text:'……' },
+          { speaker:'NARRATION', text:'（要自己跟上去嗎？還是要叫醒夥伴呢？）' },
+        ] },
+        /* ══⚠⚠⚠ **隔日：審訊**（ver -1511）══ 只有 M1（與蕾娜同行）那一條走得到：
+           蕾娜是在上城區親眼看到米夏才說破安雅身分的，沒跟去就沒有這一段。
+           ⚠ `hourOfDay:[8,18]` ＝隔天白天（那一夜的 `clockTo` 之後）。 */
+        { flag:'ep_interrogate', need:'ep_m1_route', hourOfDay:[8,18],
+          sides:{ RENNA:'L' }, lines:[
+          ren('holdfile','好的，安雅小姐。'),
+          ren('holdfile','雖然一路上受到您許多幫助，但您畢竟是敵國人士。'),
+          any('silent','……'),
+          ren('coldstare','雖然這樣對您很殘酷，但是請您諒解。'),
+          ren('commandsoft','諾薇兒修女。'),
+          nou('concern','……'),
+          /* ⚠ 紙袋音走既有的 `se_openletter`（Ray -1511：「拆電報用的那個音效」）——
+             §6.6：音效表只有一份，不要為了一個紙袋名字另外加一支檔案。 */
+          { speaker:'NARRATION', text:'', se:'se_openletter', auto:1200 },
+          any('shy','……！'),
+          ren('smile','這是宮廷果仁蜜餅。'),
+          any('nervous','！！'),
+          ren('smile','焦糖卡士達。'),
+          ren('smile','甜栗蒙布朗。'),
+          any('panic','？？？？？'),
+          ren('bow','只要您如實回答我的問題，就可以自由享用。'),
+          sor('scared','嗚哇——壞心眼——'),
+          ren('holdfile','咳哼。'),
+          ren('ask','那麼，安雅小姐。您的出身是紫月的哪一個國家呢？'),
+          any('silent','……'),
+          ren('holdfile','不說……是嗎？'),
+          ren('ask','諾薇兒修女。'),
+          nou('risehand','有！'),
+          ren('bow','請選一個妳喜歡的點心享用吧。'),
+          any('panic','！！！！'),
+          /* ⚠⚠⚠ **插圖還沒有檔案**（稿上：諾薇兒拿著點心心虛遮嘴、眼睛往旁邊閃躲，
+             安雅傷心地看著她）—— Ray -1511：「先不放圖，gpt 爆了，後面補」。
+             圖到了就把 `cg:'…'` 補在諾薇兒那兩拍上、並在下一拍 `cg:null` 收掉
+             （§6.5：插圖是持續狀態，收圖走黑幕）。 */
+          nou('covermouth','……'),
+          nou('bigsmileclose','好好吃。'),
+          sor('dying','從來沒看過這種酷刑……'),
+          ren('smile','那麼，安雅小姐，可以回答我的問題了嗎？'),
+          any('talkshy','……'),
+          ren('sigh',''),
+          ren('writing','好啦。審訊紀錄結束。未能取得……情……報。'),
+          any('nervous','？？'),
+          ren('smile','對不起喔，這是例行公事。'),
+          sor('amazed','原來只是做做樣子啊？'),
+          ren('bow','作為賠禮，請盡情享用這些點心吧。'),
+          any('shy',''),
+          ren('talkserious','安娜˙謝琳娜˙謝索洛夫殿下。'),
+          any('terrifying',''),
+          nou('shocked2','謝索洛夫……？'),
+          sor('surprised','殿下？'),
+          any('desperate',''),
+          ren('talkwork','看來我沒有猜錯呢。'),
+          ren('invite','謝索洛夫皇國的第二皇女。'),
+          sor('surprised','小公主竟然真的是公主？'),
+          any('desperate','……'),
+          nou('cringe','蕾娜小姐是怎麼……'),
+          ren('talkwork','從她第一次啟動遺蹟的時候就懷疑了。'),
+          ren('talkserious','原因……我不能說，但是昨天見到那個少年就確定了。'),
+          ren('ask','那是您的哥哥，米海爾˙約瑟˙謝索洛夫第一皇子吧？'),
+          any('silent','……'),
+          ren('holdfile','那可是在北方戰場給帝國製造不少麻煩的人物……沒想到如此年輕。'),
+          any('talk','我們是……雙胞胎。'),
+          nou('surprise','那不就只有十六歲而已嗎？'),
+          ren('holdfile','沒錯。而那個十六歲的少年早在兩年前就已經讓北方軍吃盡苦頭。'),
+          ren('holdfile','當時戰區指揮官莫雷昂伯爵的評價是——'),
+          ren('ask','『惡夢般的非人之力』。'),
+          sor('confuse','惡夢……'),
+          nou('risehand','我申請為安雅小姐的宗教法廷辯護人！'),
+          ren('awkward','沒有要審判她啦。'),
+          ren('dying','我相信安娜殿下沒有惡意，但是……'),
+          ren('evalutating','貴族這種東西，有時候就是身不由己，不是嗎？'),
+          any('silent','……'),
+          ren('front','這件事我暫時不會上報聖王廳。還請安娜殿下再隨我們探訪遺蹟吧。'),
+          any('shy','……'),
+          nou('surprise','欸？可以那樣嗎？'),
+          ren('smile','佈達給我們的任務本來就是那樣。安娜殿下的身份，也只是我「瞎猜」的而已。'),
+          ren('sigh','如果在審訊報告裡寫「嫌疑人因為想吃蒙布朗招供」，那才有問題。'),
+          any('silent','……'),
+          ren('stare','這麼處置，安娜殿下您意下如何呢？'),
+          any('talk','……'),
+          any('talkshy','安雅……'),
+          sor('amazed','什麼？'),
+          any('argue','請像以前一樣……叫我安雅……'),
+          any('argue','我……只想當安雅而已！'),
+          nou('covermouth','安雅……'),
+          ren('awkward','對不起啊，使了壞心眼呢。'),
+          /* ⚠⚠⚠ **插圖還沒有檔案**（稿上：諾薇兒抱安雅）—— 同上，圖到了補 `cg:`。 */
+          sor('lauaghbig','那我就像以前一樣，叫小公主啦！'),
+          ren('sigh',''),
+          { speaker:'PLAYER', blank:true },
+          ren('arguecute','還不都要怪你叫我起床……'),
+          ren('blushed','半夜敲淑女的門，可是很失禮的喔。'),
+        ] },
         /* ══⚠⚠⚠ **那一夜：奪回髮飾**（ver -1388，Ray 交稿）══════════════════════
            ⚠⚠⚠ **好感的門已經拿掉了**（ver -1489，Ray：「把髮飾事件的好感觸發鎖
              拿掉，讓髮飾劇情必跑」）：原本是 `needTier:{renna:3}`，照 -1387 那份稿的
@@ -6189,7 +6494,7 @@ export const TOWNS = {
           nou('shock',''),
           sor('ready','這裡太安靜了。'),
         ] },
-          { flag:'bl_night_foyer', need:QUEST_LOCK.flag, until:QUEST_LOCK.until,
+          { flag:'bl_night_foyer', need:Q_HAIRPIN.flag, until:Q_HAIRPIN.until,
                  sides:{ RENNA:'L' }, lines:[
           /* ⚠⚠ **先停一拍**（ver -1462，Ray：「二進古城前廳先停一拍再讓索拉娜說話」）
              —— 走進來先給一段安靜，她那句「牠在。」才是**打破安靜**的那一句；
@@ -6334,7 +6639,7 @@ export const TOWNS = {
           sor('confuse','……'),
         ] },
           /* ══⚠⚠⚠ **那一夜：降落古城中庭**（ver -1433，Ray 交稿）══════════════
-             `need` ＝任務探索開著（`QUEST_LOCK.flag`，那一夜演完插的）⇒ 這一段
+             `need` ＝任務探索開著（`Q_HAIRPIN.flag`，那一夜演完插的）⇒ 這一段
              只在**重返**那一趟演；白天那兩段的旗早就立了，不會互相插隊。
              ⚠ 旗名讀 `QUEST_LOCK`（鐵律 7）—— 不抄第二份字串。
              ⚠ **不寫 `goto`**：降下來之後玩家是自由的（那正是 -1416 把強制轉場
@@ -6346,7 +6651,7 @@ export const TOWNS = {
                -1433 我先用最接近的 `happy` 頂著，已換掉。
              ⚠ 安雅那一拍**只有立繪沒有台詞**（稿上就是「安：steady」）——
                台上有人 ⇒ 點擊推進（§6.5 的 -628）。 */
-          { flag:'bl_night_land', need:QUEST_LOCK.flag, until:QUEST_LOCK.until,
+          { flag:'bl_night_land', need:Q_HAIRPIN.flag, until:Q_HAIRPIN.until,
             sides:{ RENNA:'L' }, lines:[
           sor('tired','呼，還真的能降落！'),
           nou('cringe','不知道那隻龍還在不在……'),

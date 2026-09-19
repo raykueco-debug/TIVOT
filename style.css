@@ -3145,6 +3145,14 @@
   /* 對話框文字加大（ver -821，Ray：選單「對話文字：加大／預設」）——套在三種對話框的
      正文上：劇情/城鎮(#storyBubble)、戰鬥對白(#tutBubble)、評價/監察官(#inspectorBubble)。
      13→16px。開關走 settings.apply() 的 body.dlg-large（鐵律 8）。 */
+  /* ══⚠⚠ **`tiny` ＝遠處聽不清的那幾句**（ver -1511，Ray：「距離遠，所以用極小字體」）══
+     ⚠ 排在 `dlg-large` **之前**，所以玩家開了「對話文字：加大」時**那一條會蓋過這一條**
+       —— 那是對的：字級是**無障礙偏好**，演出不該把它壓掉（同 §6.5 染色那條給
+       對動態敏感的人留退路的理由）。要的效果是「比周圍小」，不是「小到某個 px」。
+     ⚠ 只縮**正文**，名字欄不動：那一行要讀得出是誰在說話。
+     ⚠ 一起壓低彩度與亮度 —— 「聽不清楚」不只是小，是**糊在夜色裡**。 */
+  #storyBubble.tiny .story-text{ font-size:9px;line-height:1.55;letter-spacing:0;
+    color:color-mix(in srgb, var(--ink) 62%, transparent); }
   body.dlg-large #storyBubble .story-text,
   body.dlg-large #tutBubble .tut-line,
   body.dlg-large #inspectorBubble .insp-line{font-size:16px;line-height:1.65;}

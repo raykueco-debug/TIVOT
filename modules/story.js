@@ -2074,7 +2074,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1510';
+const KERB_V='?v=1514';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3217,6 +3217,14 @@ function renderLine(){
   /* ⚠ `.blank`（小氣泡＋「...」，ver -1503）與 `.self` 同一個理由：它是**這一拍**
      的性質，留著的話下一個人的框會縮成一顆小氣泡。兩個一起拔。 */
   if(bub2) bub2.classList.remove('self','blank');
+  /* ══⚠⚠ **`tiny:true` ＝這一句用極小字**（ver -1511，Ray 的 Stage10-B 稿：
+     「距離遠，所以用極小字體」）══
+     上城區那一段玩家是**站在遠處偷看**：安雅與那個少年的對話要讀得出「聽不清楚」，
+     所以字小是**演出**，不是排版意外 —— 蕾娜下一句「太遠了，聽不清楚……」正是它的註腳。
+     ⚠ 與 `body.dlg-large`（選單的「對話文字：加大」）是**兩件事**：那是玩家的偏好、
+       套在所有對白上；這是**某一拍**的性質，所以做成 class 掛在框上、每一句都拔。
+     ⚠ 字級寫在 CSS（鐵律 1），不在這裡寫 px。 */
+  if(bub2) bub2.classList.remove('tiny');
   blankUntil=0;                       // 空白格的保護期也是這一拍的性質（ver -1503）
   clearTimeout(waitT); waitT=null;
   clearTimeout(autoT);  autoT=null;
@@ -3313,6 +3321,7 @@ function renderLine(){
     }
     return;
   }
+  if(line.tiny && bub2) bub2.classList.add('tiny');   // ver -1511：遠處聽不清的那幾句
   if(line.delay>0){
     if(bub2) bub2.style.visibility='hidden';
     waitT=setTimeout(()=>{ waitT=null;

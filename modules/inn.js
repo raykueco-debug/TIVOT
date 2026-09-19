@@ -121,11 +121,23 @@ const TIPS = {
            text:'敲敲伙伴的門，看看他們在做什麼。' },
   sleep: { flag:'inn_tip_sleep', sel:'[data-act="sleep"]',
            text:'推進時間至隔日早上七點，恢復體力並存檔。' },
+  /* ══⚠⚠ **守夜那一晚，再指一次「獨自坐坐」**（ver -1511，Ray 的 Stage10-B 稿：
+     「點擊睡覺提示『今晚好像不太安寧，先守著吧。』提示點擊獨自坐坐」）══
+     上面那三則是**一輩子只教一次**的操作說明；這一則不是說明，是**那一夜的指路**
+     —— 玩家早就學會怎麼坐了，缺的是「現在該坐」。所以它另有一支旗，
+     而且用 `need`／`until` 把自己關在那一段時間裡。
+     ⚠ 指的是同一顆鈕（`sel` 一樣）：那是同一個動作，不要另做一顆。 */
+  watch: { flag:'ep_tip_watch', need:'ep_hairpin_talk', until:'ep_night_anya_out',
+           sel:'[data-act="sit"]', text:'今晚先守著吧。　→　獨自坐坐' },
 };
 let guideKey=null;
 function showGuide(key){
   const t=TIPS[key]; if(!t || !layer || guideKey) return;
   if(prog.hasFlag(t.flag)) return;
+  /* ⚠ `need`／`until` ＝這一則只在某一段時間裡有效（ver -1511 的 `watch`）。
+     不寫的那幾則行為完全不變（`undefined` 兩個條件都不成立）。 */
+  if(t.need && !prog.hasFlag(t.need)) return;
+  if(t.until && prog.hasFlag(t.until)) return;
   const tgt=layer.querySelector(t.sel); if(!tgt) return;
   /* ⚠ **量不到就先不要演**（ver -401 修）：被說明的那顆若還沒被 `relayout()` 擺好
      （背景還沒載完 → `bgPoint` 回 null → 鈕是隱藏的），rect 會是 0×0，
@@ -369,10 +381,41 @@ function maybeGuide(){
        而 else-if 只看前一個條件成不成立，於是第一個候選一旦永遠成立
        （ver -408 起坐坐一直都在），後面兩個就再也輪不到了。 */
   const q=[];
+  /* ⚠ 守夜那一則排在最前面（ver -1511）：它有時效，其餘三則沒有 —— 錯過這一夜
+     就再也用不到了，而那三則哪一天教都可以。 */
+  if(wantSit)     q.push('watch');
   if(wantSit)     q.push('sit');
   if(wantSleep)   q.push('sleep');
   if(st==='wait') q.push('knock');
   for(const k of q){ showGuide(k); if(guideKey) return; }
+}
+
+/* ══⚠⚠ `rennaAlt`（ver -664）：某支旗立起來之後，敲蕾娜的門改演另一段（可多句）。
+     北方泊地第三天出發前是「先去吧，我等等去找你們」；Stage10-B 那一夜是
+     「……悄悄跟上去吧」（那一段還會插旗＋加好感，走腳本自己的 `flags`／`aff`）。
+   ⚠ 走 `host.play`（劇情播放器）不是 `say` —— 兩句以上就要能推進。
+   ⚠ Ray 標的是**無立繪**，所以那幾拍不寫 `portrait`。
+   ⚠⚠ `needAnytime` ＝這一次是**宵禁之前**那一道在問（見 `knock` 裡的說明）：
+     真的時候只有寫了 `anytime:true` 的那一段才准演。
+   回傳 true ＝**我接手演了**（呼叫端就不要再往下走）。 */
+function playRennaAlt(needAnytime){
+  const alt = st1 && st1.data && st1.data.rennaAlt;
+  if(!alt || !alt.lines || !alt.lines.length) return false;
+  if(needAnytime && !alt.anytime) return false;
+  if(alt.need && !prog.hasFlag(alt.need)) return false;
+  /* ⚠ `until` ＝那支旗立了就不再演（同 acts 的規約）—— 不寫就是沒有終點。 */
+  if(alt.until && prog.hasFlag(alt.until)) return false;
+  if(!host || !host.play || busy) return true;   // 正在演別的：吃掉這一下，不要疊
+  busy=true; if(host.lock) host.lock(true);
+  host.play(alt.lines, ()=>{ story.clearCast(); busy=false;
+    /* ⚠ 好感在**演完**才記（同 town 的 `applyAff`：中途離開就不算）。
+       走注入進來的那一支，不要在這裡自己加一份（鐵律 8）。
+       ⚠⚠ 它掛在 **`st1`** 上不是 `host` —— 這一整組旅店用的鉤子（`data`／
+         `questLocked`／`onInvite`）都在那裡。寫成 `host.applyAff` 會是 `undefined`，
+         而 `if(...)` 會把它靜靜跳過：**演了、旗也插了、好感就是不動**（實測踩到）。 */
+    if(st1 && st1.applyAff) st1.applyAff(alt.lines);
+    if(host.lock) host.lock(false); refresh(); });
+  return true;
 }
 
 /* ══ 敲門 ══ 單句、沒有立繪（Ray：「未開門無立繪」），可以一直敲。 */
@@ -408,6 +451,21 @@ function knock(i){
          不是某一個人的狀態 —— 好感再高也約不出來。
        ⚠ 時刻的判定在 `modules/town.js` 的 `isCurfew()`（唯一那一支，鐵律 8），
          這裡只問它；台詞在節點資料的 `innStage1.nightRest`（鐵律 1）。 */
+    /* ══⚠⚠⚠ **劇本指定的敲門回應排在「世界的門」之前**（ver -1511）══════════
+       宵禁／任務探索／今天約過了那三道擋的是**約不約得出來**（約會）。
+       但有一種敲門**不是約會**：劇本要你半夜去敲某扇門（Stage10-B 那一夜，
+       Ray：「敲蕾娜房門 → 與蕾娜一起跟上，好感＋2」）。那一段**只發生在深夜**，
+       而宵禁正好蓋在同一段時間上 —— 不讓開的話，**開啟那一段的條件同時把它擋死**
+       （§6.5.4.2 的 -581 就是這個形狀的坑）。
+       ⚠⚠ 但**不能無條件讓開**：北方泊地那幾扇門的 `say` 本來就該被宵禁蓋掉。
+         所以做成**明寫的例外** `anytime:true` —— 漏寫的下場是「照舊被宵禁擋」
+         （安全的那一側是預設，同 §鐵律 13 的白名單）。
+       ⚠ `rennaAlt` 只有一支實作（`playRennaAlt`，鐵律 8）：這裡與下面的正常路徑
+         叫的是同一支，差別只在要不要求 `anytime`。 */
+    if(dset.anytime && dset.say && dset.say[who]){
+      if(host && host.say) host.say(dset.say[who], nm); return;
+    }
+    if(who==='RENNA' && playRennaAlt(true)) return;
     if(st1.night && st1.night()){
       /* ⚠ 專屬台詞優先（ver -576）：蕾娜是「那麼晚了你還不睡嗎？」，
          沒寫專屬的人才回共用那一句。 */
@@ -483,6 +541,9 @@ function knock(i){
       busy=true; if(host.lock) host.lock(true);
       host.play(lines, ()=>{ story.clearCast(); busy=false;
         if(host.lock) host.lock(false);
+        /* ⚠ 同 `playRennaAlt`（ver -1511）：`date` 那幾拍若寫了 `aff` 也要記帳 ——
+           這個洞兩條路都有。⚠ 掛在 `st1` 上不是 `host`。 */
+        if(st1.applyAff) st1.applyAff(lines);
         /* ⚠ 門燈由 `st1.inRoom()` 現算：`onInvite` 一設同行，下一次 `refresh()`
            就是空房 —— 不必在這裡另外把旗放倒（鐵律 7）。 */
         if(st1.onInvite) st1.onInvite(who);
@@ -490,18 +551,7 @@ function knock(i){
       return;
     }
     if(who==='RENNA'){
-      /* ⚠ `rennaAlt`（ver -664）：某支旗立起來之後改講另一段（可以是好幾句）。
-         北方泊地第三天出發前，她會說「先去吧，我等等去找你們」。
-         ⚠ 走 `host.play`（劇情播放器）不是 `say` —— 兩句以上就要能推進。
-         ⚠ Ray 標的是**無立繪**，所以那幾拍不寫 `portrait`。 */
-      const alt=st1.data.rennaAlt;
-      if(alt && alt.lines && alt.lines.length && (!alt.need || prog.hasFlag(alt.need))){
-        if(!host || !host.play || busy) return;
-        busy=true; if(host.lock) host.lock(true);
-        host.play(alt.lines, ()=>{ story.clearCast(); busy=false;
-          if(host.lock) host.lock(false); refresh(); });
-        return;
-      }
+      if(playRennaAlt(false)) return;
       if(st1.data.renna && host && host.say) host.say(st1.data.renna, nm); return;
     }
     if(who==='NOUVELLE'){

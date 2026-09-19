@@ -110,11 +110,20 @@ function st1Active(){ return prog.hasFlag('stage1_open'); }
    插了 `flag`、而且 `until` 還沒立 ⇒ 鎖著。**判定只有這一支**（鐵律 7）：
    約會、睡覺、（飛行頁那一側的）降落限制問的是同一個答案。
    ⚠ 資料在 `script/town.js`，這裡一個旗名都不寫死（鐵律 1）。 */
-export function questLocked(){
-  const q=QUEST_LOCK; if(!q || !q.flag) return false;
-  return prog.hasFlag(q.flag) && !(q.until && prog.hasFlag(q.until));
+/* ⚠ ver -1511：資料改成**陣列**（一輪裡有好幾段任務窗，台詞各自不同）。
+   `questWindow()` 是唯一在答「現在被哪一扇窗押著」的那一支 —— 由上往下取第一扇
+   成立的；`questLocked`／`questSay` 都只是它的門面（鐵律 7）。
+   ⚠ 舊寫法（單一物件）也吃得下，日後若有人改回去不會壞。 */
+function questWindow(){
+  const L = Array.isArray(QUEST_LOCK) ? QUEST_LOCK : (QUEST_LOCK ? [QUEST_LOCK] : []);
+  for(const q of L){
+    if(!q || !q.flag) continue;
+    if(prog.hasFlag(q.flag) && !(q.until && prog.hasFlag(q.until))) return q;
+  }
+  return null;
 }
-export function questSay(kind){ return (QUEST_LOCK && QUEST_LOCK[kind]) || ''; }
+export function questLocked(){ return !!questWindow(); }
+export function questSay(kind){ const q=questWindow(); return (q && q[kind]) || ''; }
 function leftoverForNou(){
   const T=TOWNS[townId]; if(!T) return false;
   for(const id in T.nodes){
@@ -4155,6 +4164,16 @@ function afterArrive2(n, metDone){
                                         「確認它在」，這一次是「它剛剛該出現」。 */
                                    /* 任務探索中：約會與睡覺一律擋（ver -1416，見 questLocked）。 */
                                    questLocked, questSay,
+                                   /* ⚠⚠⚠ **對白裡的好感加減也要記帳**（ver -1511）：
+                                      `line.aff` 的記帳只有 `applyAff` 一支（鐵律 8），
+                                      而它住在這裡 —— 旅店那一層自己演的那幾段
+                                      （敲門的 `date`／`rennaAlt`）走的是 `host.play`，
+                                      **從來沒有人替它們記過帳**。
+                                      ⚠ 症狀是「演了、旗也插了、好感就是不動」，
+                                        而且不會有任何錯誤訊息（ver -1511 實測抓到：
+                                        敲蕾娜的門那一段 `aff:{renna:2}` 完全沒作用）。
+                                      ⚠ 交出去的是**同一支函式**，不要在 inn.js 另寫一份。 */
+                                   applyAff,
                                    onInvite(who){ escortId=who||'NOUVELLE'; escortLeftover=false; markDated(escortId); showEscortBadge(); },
                                  } : null,
                                  /* 「還沒六點呢」的那個六點＝傍晚提醒的時刻（ver -405）。
