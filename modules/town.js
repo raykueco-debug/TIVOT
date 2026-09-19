@@ -3263,17 +3263,33 @@ function stepSfx(){
    ⚠ 與 `acts`（抵達時演）是**兩個時機**，不要混用：這一段的語意就是「你要走了」。
    ⚠ 出航（`__sail`）也吃得到 —— 它一樣是「離開這一格」。
    ⚠ `sailOnly:true` ＝**只有出航那一個出口**才演（ver -1103）。 */
-function leaveDue(n, to){
-  if(mutedTalks()) return null;   // 舊章節封存（ver -753）
-  const l = n && n.onLeave; if(!l) return null;
+/* ══⚠⚠ **ver -1532：`onLeave` 可以是一張表**（同 `acts`／`innDoors`／`bgmWhen`：
+   **由上往下取第一個成立的**）══ 東泊走出旅店那一段有兩個分支（古墓探索完成前／後），
+   而它們是**兩段各自只演一次的戲** —— 一個 `flag` 記不了兩段。
+   ⚠ 單一物件照舊（舊資料一個字都不必改）。
+   ⚠ 條件收齊成與 `acts` **同一組**（鐵律 7：同一個語意不要有兩套判法）：
+     · `need` 走 `needOk` ⇒ **可以是陣列（全部都要立）**，以前這裡寫死單旗
+     · `until` ＝那支旗立了就不再演（`acts` 早就有，這裡漏了） */
+function leaveOne(l, to){
+  if(!l) return null;
   if(l.flag && prog.hasFlag(l.flag)) return null;
-  if(l.need && !prog.hasFlag(l.need)) return null;
+  if(!needOk(l.need)) return null;
+  if(l.until && prog.hasFlag(l.until)) return null;
   /* ⚠⚠ `sailOnly:true` ＝**只有出航才演**（ver -1103，Ray 的離村稿：「選擇離開
      夏爾村時，村子入口」）。那一段的語意是「離開這座城」，不是「離開這一格」——
      少了這道，走去北側也會把索菈娜的送別戲演掉。 */
   if(l.sailOnly && to!==SAIL_ID) return null;
   /* ver -839：onLeave 可以**沒有台詞只有整備**（村戰對白搬進戰鬥內之後就是這樣）。 */
   return ((l.lines && l.lines.length) || l.gear) ? l : null;
+}
+function leaveDue(n, to){
+  if(mutedTalks()) return null;   // 舊章節封存（ver -753）
+  const o = n && n.onLeave; if(!o) return null;
+  for(const l of (Array.isArray(o) ? o : [o])){
+    const hit = leaveOne(l, to);
+    if(hit) return hit;
+  }
+  return null;
 }
 function go(to, dir){
   if(!to) return;
@@ -4580,7 +4596,10 @@ export function storyFlagsOf(id){
   const eat=a=>{ if(a && a.flag) out.add(a.flag); };
   for(const k in (T.nodes||{})){
     const n=T.nodes[k];
-    (n.acts||[]).forEach(eat); eat(n.onLeave);
+    /* ⚠ `onLeave` ver -1532 起可以是一張表（見 `leaveDue`）—— 這裡要一起吃，
+       漏了的話那幾支旗不算在「這張圖演過了」裡面（巡場／封存會少收）。 */
+    (n.acts||[]).forEach(eat);
+    (Array.isArray(n.onLeave) ? n.onLeave : [n.onLeave]).forEach(eat);
     out.add('seen_'+id+'_'+k);
     if(n.inn) out.add('inn_seen_'+id+'_'+k);
   }
