@@ -318,6 +318,103 @@ def report(rows, unwired, missing, dropped):
             print('     %-12s %-16s %s' % (key, en, p))
 
 
+# ══⚠⚠ 差分表「一個角色一頁」的分法（ver -1503 Ray 指定，-1507 實作）══
+#   Ray：「差分表**依角色分頁**，**四女主在前，重要角色在後，城鎮店主 NPC 自己一頁**」
+#
+# ⚠⚠⚠ **歸頁的鑰匙是「檔名前綴」，不是 `speakers.js` 的 art 鍵。**
+#   理由：這張表存在的目的**正是讓人看到「美術交了、程式還沒接的有哪些」** ——
+#   用 art 鍵歸頁的話，那些未接線的會整批掉進「沒有角色」的坑裡，
+#   而那正是這張表最該顯眼的一群。（ver -1503 當下有 118 張，-1507 接掉 72 張還有 45 張。）
+#   ⚠ **頁籤的名字**才去問 art 鍵／`name_table()` 拿中文人名。
+#
+# ⚠⚠ **「重要角色」不寫成名單**（同「分法照資料夾，不要用角色名去猜」的理由）：
+#   判準是「**不在 NPC/ 資料夾、也不是四女主**」—— 日後多一個角色就自動多一頁。
+HEROINES = ('renna', 'nouvelle', 'sorana', 'anya')   # 四女主，順序是 Ray 指定的
+
+# 前綴 → 併到哪一個前綴。**只收「用前綴直接切會切錯」的那幾個**，不是角色名單。
+PREFIX_ALIAS = {
+    'nouvelle_nun': 'nouvelle',   # 修女裝差分（憲法 §5 就是這樣記的）
+    'xanya':        'anya',       # 對應 SPEAKERS.ANYA_X
+    'gen_renna':    'renna',      # 生成測試稿
+    'rennasorana':  'renna',      # 兩人同框 → 歸蕾娜（「另有版本」欄會註明）
+    # ⚠⚠ **`Luna_SI_*` 畫的是璐娜莉亞，不是搭檔璐娜**（ver -1507 查出來的）：
+    #   8 張 `Luna_SI_*` 裡有 6 張在 speakers.js 接的是 `ART.lunaria`，
+    #   而 `ART.luna`（搭檔）用的是 `resources/partner/Luna_CI_exc.webp`，
+    #   根本不在 `resources/SI/` 底下。不併的話這個人會被切成兩頁、
+    #   而且**兩頁都叫「璐娜莉亞」**（頁籤靠投票取名，見 `sheet_title`）。
+    'lunaria':      'luna',
+    # ⚠ 小寫的 `sorana_SI_Q` 不必列：`char_of_filename` 已經把首字母轉大寫了。
+}
+# 美術交了圖、Ray 也定了中文名，但**還沒開 ART 條目**的那幾位（等有戲再開，
+# 同 -1504 ARRHENIUS 的作法）。⚠ 這是**頁籤的退路**，不是角色名單 ——
+# 一旦他們進了 `speakers.js`，`sheet_title` 的投票就會蓋過這裡（鐵律 7：
+# 真相在 speakers.js，這裡只是它還沒有答案時的暫代）。
+PENDING_NAMES = {
+    'cecilie': '賽西莉',    # Ray ver -1502 命名
+    'nemo':    '尼莫',      # Ray ver -1503 定名
+    'laurie':  '蘿芮',      # Ray ver -1503 定名
+    'torsten': '托爾斯坦',  # Ray ver -1503 定案（`Thotsten` 是拼錯的）
+}
+# 檔案放在 `resources/SI/` 根目錄、但**名字就說了它是 NPC** 的那幾個。
+# ⚠ 這是**歸檔沒做好的補丁**，不是分類規則 —— 正解是把檔案搬進 `NPC/`，
+#   搬了之後這兩列就可以拿掉（`is_npc()` 自己會接住）。
+FORCE_NPC = {'guildcounterca', 'npc_np_priest'}
+NPC_SHEET = '城鎮店主 NPC'
+
+
+def sheet_of(rel):
+    """這一張歸到哪一頁（回傳分頁的**鑰匙**，不是頁籤的字）。"""
+    pre = char_of_filename(rel).lower()
+    if is_npc(rel) or pre in FORCE_NPC or pre.startswith('npc_'):
+        return '@npc'
+    return PREFIX_ALIAS.get(pre, pre)
+
+
+def sheet_title(key, grp, fallback):
+    """頁籤要印的中文人名。
+
+       ⚠⚠ **先問這一群裡已經接線的那幾列自己說自己是誰**（`row['who']` ＝
+         `name_table()[art 鍵]`），前綴只是退路 —— 這樣**檔案被改派給另一個角色時
+         頁籤自己會跟著走**。實例：`Priest_SI_front.webp` 在 ver -1504 由「司祭」
+         改派給**阿瑞尼斯**（司祭換成 `NPC_NP_Priest`），靠前綴查表會印成舊的「司祭」。
+       ⚠ 取**出現最多次**的那一個：一群裡混到別人的圖時不會被一張帶走。"""
+    from collections import Counter
+    votes = Counter(r['who'] for r in grp if r.get('key') and r.get('who'))
+    if votes:
+        return votes.most_common(1)[0][0]
+    return PENDING_NAMES.get(key) or fallback
+
+
+def plan_sheets(rows):
+    """回 [(頁籤, 這一頁的列, 是不是第一頁)]，順序＝四女主 → 其他角色（張數多到少）→ NPC。"""
+    from collections import OrderedDict
+    ART, SP = load_speakers()
+    NAMES = name_table(SP)
+    groups = OrderedDict()
+    for r in rows:
+        groups.setdefault(sheet_of(r['rel']), []).append(r)
+
+    npc = groups.pop('@npc', [])
+    order = [k for k in HEROINES if k in groups]
+    rest = sorted((k for k in groups if k not in order),
+                  key=lambda k: (-len(groups[k]), k))
+    out = []
+    for k in order + rest:
+        out.append((sheet_title(k, groups[k], NAMES.get(k, k)), groups[k]))
+    if npc:
+        out.append((NPC_SHEET, npc))
+    # Excel 的頁籤有長度與字元限制，而且不可以重名
+    seen, final = set(), []
+    for i, (t, sub) in enumerate(out):
+        t = re.sub(r'[\\/*?\[\]:]', '·', str(t))[:31] or '(無名)'
+        b, n = t, 2
+        while t in seen:
+            t = '%s%d' % (b[:29], n); n += 1
+        seen.add(t)
+        final.append((t, sub, i == 0))
+    return final
+
+
 def write_xlsx(rows, unwired, missing, dropped, path):
     from openpyxl import Workbook
     from openpyxl.drawing.image import Image as XLImage
@@ -344,13 +441,7 @@ def write_xlsx(rows, unwired, missing, dropped, path):
         return ws
 
     wb = Workbook()
-    # ⚠⚠ 主角與 NPC 分兩張分頁（ver -1327，Ray 指定）。
-    #   分法照**資料夾**（`resources/SI/NPC/` 底下的就是 NPC）—— 那是專案自己
-    #   早就有的分類，客觀、不必猜「誰算 NPC」，而且**日後交件丟進哪個資料夾就自動歸哪邊**。
-    #   ⚠ 用角色名去猜會踩到邊界（司祭、櫃台這種兩邊都有的），而那是素材歸檔的問題，
-    #     不是這支工具該替人決定的。
-    sheets = [('SI 差分', [r for r in rows if not is_npc(r['rel'])], True),
-              ('NPC',     [r for r in rows if is_npc(r['rel'])],     False)]
+    sheets = plan_sheets(rows)
 
     tmpdir = os.path.join(ROOT, '_recycle', '.si_thumbs')
     os.makedirs(tmpdir, exist_ok=True)
@@ -385,8 +476,11 @@ def alt_text(row):
          同一夾就印檔名（`NPC_Grocer_SI_v2.webp`）—— 印全路徑會把欄位撐爆，
          印張數又看不出是哪一批。"""
     alts = row.get('alts') or []
+    # ⚠ 兩人同框的那幾張歸在蕾娜頁（`PREFIX_ALIAS`）—— 不註明的話會被當成
+    #   「蕾娜的一張差分」。Ray 的交接特地點了這一件。
+    note = '與索拉娜同框' if char_of_filename(row['rel']).lower() == 'rennasorana' else None
     if not alts:
-        return None
+        return note
     here = os.path.dirname(row['rel'])
     seen, out = set(), []
     for a in alts:
@@ -395,7 +489,8 @@ def alt_text(row):
         if tag not in seen:
             seen.add(tag)
             out.append(tag)
-    return '%d 張：%s' % (len(alts), '、'.join(out[:3]) + ('…' if len(out) > 3 else ''))
+    txt = '%d 張：%s' % (len(alts), '、'.join(out[:3]) + ('…' if len(out) > 3 else ''))
+    return (note + '｜' + txt) if note else txt
 
 
 def _fill(ws, rows, tmpdir, keep, warn_fill, seq, XLImage, Alignment, head):
