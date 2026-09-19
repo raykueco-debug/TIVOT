@@ -255,3 +255,9 @@ when	from	to	reason
 20260918-222353	resources/background/lake/Lake_Causeway_day.webp	_recycle/resources/background/lake/Lake_Causeway_day.webp.20260918-222353	ver -1498：鏡湖 10 格改走 Gemini 平塗重繪（去顆粒・加動畫感），同名覆蓋前先回收舊版
 20260918-222637	resources/background/lake/Lake_Grove_glow_day.webp	_recycle/resources/background/lake/Lake_Grove_glow_day.webp.20260918-222637	ver -1498：石碑林發光差分跟著新版底圖重做
 20260918-232525	resources/background/lake/Lake_Grove_glow_night.webp	_recycle/resources/background/lake/Lake_Grove_glow_night.webp	ver -1500：石碑林 glow_night 走針（把刻痕重畫成一串不相連的漂浮符號），重跑
+20260919-162242	resources/SI/Arrhenius_SI_surprisejoy.webp	_recycle/resources/SI/Arrhenius_SI_surprisejoy.webp	阿瑞尼斯第一版：頭沿用底圖的低頭側傾角度（Ray：「他是落枕嗎？」），六張姿勢也全部一樣；已由 ver -1503 第二版取代
+20260919-162242	resources/SI/Arrhenius_SI_wrysmile.webp	_recycle/resources/SI/Arrhenius_SI_wrysmile.webp	阿瑞尼斯第一版：頭沿用底圖的低頭側傾角度（Ray：「他是落枕嗎？」），六張姿勢也全部一樣；已由 ver -1503 第二版取代
+20260919-162242	resources/SI/Arrhenius_SI_wrysmileopen.webp	_recycle/resources/SI/Arrhenius_SI_wrysmileopen.webp	阿瑞尼斯第一版：頭沿用底圖的低頭側傾角度（Ray：「他是落枕嗎？」），六張姿勢也全部一樣；已由 ver -1503 第二版取代
+20260919-162242	resources/SI/Arrhenius_SI_smileclose.webp	_recycle/resources/SI/Arrhenius_SI_smileclose.webp	阿瑞尼斯第一版：頭沿用底圖的低頭側傾角度（Ray：「他是落枕嗎？」），六張姿勢也全部一樣；已由 ver -1503 第二版取代
+20260919-162242	resources/SI/Arrhenius_SI_smileopen.webp	_recycle/resources/SI/Arrhenius_SI_smileopen.webp	阿瑞尼斯第一版：頭沿用底圖的低頭側傾角度（Ray：「他是落枕嗎？」），六張姿勢也全部一樣；已由 ver -1503 第二版取代
+20260919-162242	resources/SI/Arrhenius_SI_lookdown.webp	_recycle/resources/SI/Arrhenius_SI_lookdown.webp	阿瑞尼斯第一版：頭沿用底圖的低頭側傾角度（Ray：「他是落枕嗎？」），六張姿勢也全部一樣；已由 ver -1503 第二版取代
