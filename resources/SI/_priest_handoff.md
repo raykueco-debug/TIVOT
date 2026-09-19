@@ -1,6 +1,10 @@
 # 北方泊地　司祭立繪 — 產圖規格（ver -582）
 
 > **✅ 已交件並接上（ver -582）**：`resources/SI/Priest_SI_front.webp`
+> ⚠⚠ **這張圖 ver -1509 已改名成 `resources/SI/Arrhenius_SI_front.webp`** ——
+> 北泊的司祭在 -1504 換成 `NPC_NP_Priest`，這張由**阿瑞尼斯**認領（Ray：「原本的司祭
+> 等等會用上，名為 Arrhenius」）。**檔案沒有被回收，只是改名**；下面提到
+> `Priest_SI_front` 的地方一律讀成 `Arrhenius_SI_front`。
 > （檔名用 `角色_SI_變體` 的規約，不是規格裡原本假設的 `NPC_SI_Priest`）。
 > `ART.priest` 的取景值已用 `tools/measure_si.py` 量進去：`top:7 bot:1531 fx:0.536`
 > （縱向佔 99.2%＝全身圖，可以當身高用），`unmeasured` 旗標已拿掉。
