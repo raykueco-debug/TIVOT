@@ -124,6 +124,14 @@ export const SPEAKERS = {
   NATALIA_X:{ name:'禍魘娜塔莉', art:'natalia_x' },
   PRIEST_X: { name:'？？？',  art:'priest' },
   PRIEST:   { name:'司祭',   art:'priest' },
+  /* ══ 阿瑞尼斯（Arrhenius，ver -1504，Ray：「原本的司祭等等會用上，名為 Arrhenius」）══
+     北泊的司祭在 -1504 換成光頭老祭司（`NPC_NP_Priest`）之後，**上一版那張立繪
+     不是廢稿**，是這個人 —— 所以它**不回收**，由這一筆認領。
+     ⚠⚠⚠ **顯示名「阿瑞尼斯」是我音譯的，Ray 還沒定** —— 要改就改這一個字串
+       （`art` 與檔案都不必動）。
+     ⚠ 他還沒有戲：登場之後八成要跟司祭一樣拆成「報上身分之前／之後」兩個 id
+       （同 PRIEST_X／PRIEST、OFFICER／RENNA 的慣例）—— 到時候再加，不要現在先開。 */
+  ARRHENIUS:{ name:'阿瑞尼斯', art:'arrhenius' },
 };
 
 /* ══ 立繪素材 ＋ 取景實測值 ══
@@ -924,8 +932,8 @@ export const ART = {
        `fx` 差 0.076 ＝ 圖上 78px —— 沿用的話他的臉會橫向歪掉一大截。
        量法 `tools/measure_si.py`（縱向佔 99.1%＝全身圖，可以當身高用）。
      ⚠ 這是**換檔名**不是同名覆蓋，所以不必掛 `?v=`（§5：新增比覆蓋安全）。
-     ⚠ 舊圖 `Priest_SI_front.webp` **留在原地沒有回收**：現在沒有人指著它，
-       日後別的教區要用得再量一次取景值。
+     ⚠ 舊圖 `Priest_SI_front.webp` **不是廢稿**（ver -1504，Ray：「原本的司祭等等
+       會用上，名為 Arrhenius」）—— 已由下面的 `arrhenius` 認領，**不要回收**。
      ⚠ 身高 172 是**估的**（中老年男性神職），同 hunter／gunsmith 那幾筆的作法 ——
        ⚠ 沒有跟著換圖改：`cm` 是**這個角色多高**，不是這張畫多大（那是 top/bot 的事）。
        日後有設定改 cm 即可，取景值不必重量。
@@ -956,6 +964,18 @@ export const ART = {
              base:'resources/SI/NPC/NPC_shinier_cook_SI.webp', expr:{} },
   priest: { cm:172, eye:32, fx:0.460, top:5, bot:1527,
            side:'R', alt:null, base:'resources/SI/NPC_NP_Priest.webp', expr:{} },
+  /* 阿瑞尼斯（ver -1504）＝ ver -582~-1503 的北泊司祭那張立繪。
+     ⚠⚠ 取景值是**那張圖自己的**（`tools/measure_si.py` 重量過一次確認：
+       `top:7 bot:1531 fx:0.536`，與 -582 記載的一致）—— 不是從 `priest` 抄來的。
+       兩筆現在指著**兩張不同的圖**，數字本來就該不一樣（§6.5：差分之間不可互抄）。
+     ⚠ 檔名還是 `Priest_SI_front.webp`（-582 交件時的名字）。與角色名對不上，
+       日後要正名成 `Arrhenius_SI_front.webp` 是**美術端**的事（鐵律 11）——
+       改名那一次記得回來改這一行。
+     ⚠ `cm:172` 沿用舊的估值（中老年男性神職）；有設定就改，取景值不必重量。
+     ⚠ `side:'R'` 也是沿用 —— 他真的有戲之後再看對手是誰（§6.5「兩個人同台就一定
+       分站兩邊」）。 */
+  arrhenius: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
+           side:'R', alt:null, base:'resources/SI/Priest_SI_front.webp', expr:{} },
   /* ══ 科爾文（第五騎士團・作戰課副團長，ver -953，Ray 的 Stage8 稿）══
      ⚠ `cm:176` ＝ **Ray 指定「與索菈娜同高」**。不是隨手填的：`CAST_TALL` 取全體
        `cm` 的最大值來算每公分像素，填 180（他原本說的）會讓**全體立繪縮小約 1.1%**

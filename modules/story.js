@@ -1985,12 +1985,7 @@ function fireOneShot(line){
      ⚠ 保護期＝這一拍自己的 `auto`（沒寫就給 `BLANK_BEAT` 當底）—— **時間的真相
        只有 `line.auto` 一份**（鐵律 7），不要在這裡另外寫一個秒數。
      ⚠ 每一拍都重設（沒寫 `noSkip` 就歸零）：它是**這一拍**的性質，不是跨句狀態。 */
-  /* ⚠⚠ **空框那一拍自己就帶一段保護期**（ver -1503）：它要演「他在說話」，
-       連點兩下就整個看不到了。⚠ 長度一定要與下面排計時器的那一支同一個來源
-       （`blankHold`）—— 不同步就是卡死，理由見 `BLANK_HOLD` 那一段。 */
-  noSkipUntil = line.noSkip ? (Date.now() + (line.auto>0 ? line.auto : BLANK_BEAT))
-              : line.blank  ? (Date.now() + blankHold(line))
-              : 0;
+  noSkipUntil = line.noSkip ? (Date.now() + (line.auto>0 ? line.auto : BLANK_BEAT)) : 0;
   if(line.checkpoint) lineCheckpoint();   // 腳本上的存檔點（ver -653，見 lineCheckpoint）
   if(line.vibrate) hap.shake();
   /* ══⚠⚠ **持續震動**（ver -638，Ray：「蕾娜的！！之前的畫面震動要持續 10 秒，
@@ -2078,7 +2073,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1504';
+const KERB_V='?v=1505';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3221,6 +3216,7 @@ function renderLine(){
   /* ⚠ `.blank`（小氣泡＋「...」，ver -1503）與 `.self` 同一個理由：它是**這一拍**
      的性質，留著的話下一個人的框會縮成一顆小氣泡。兩個一起拔。 */
   if(bub2) bub2.classList.remove('self','blank');
+  blankUntil=0;                       // 空白格的保護期也是這一拍的性質（ver -1503）
   clearTimeout(waitT); waitT=null;
   clearTimeout(autoT);  autoT=null;
   /* ⚠ **空台詞不出對話框**（ver -327，Ray：「插圖002出來的時候不要先出空白的
@@ -3256,7 +3252,11 @@ function renderLine(){
          「**不要停下來等玩家點**」，而不是「零停留」—— 這一拍照樣自己走掉。
        ⚠ 只有兩個模式開著才排（同無台詞那一拍的作法）；手動照舊點一下推進，
          只是 0.7 秒之內點不動。 */
-    if(autoPlay || fastMode){
+    blankUntil = Date.now() + blankHold(line);          // 0 ＝加速模式，等於沒有保護期
+    if(fastMode){
+      /* 加速豁免（ver -1504）：交還給 `scheduleAuto` 的 120ms ＝ -427 原本的行為。 */
+      scheduleAuto();
+    }else if(autoPlay){
       clearTimeout(autoT);
       autoT=setTimeout(()=>{ autoT=null; if(autoPlay||fastMode) advance(); }, blankHold(line));
     }
@@ -3392,6 +3392,24 @@ function advance(){
       clearTimeout(autoT2);
       autoT2=setTimeout(()=>{ autoT2=null; if(active && (autoPlay||fastMode)) advance(); },
                         Math.max(30, noSkipUntil - Date.now()));
+    }
+    return;
+  }
+  /* ══⚠⚠ **主角空白格的最短停留**（ver -1503／-1504）══
+     那一拍要演「他正在說話」，連點兩下就整個看不到了。
+     ⚠ **加速豁免**：條件問 `blankHold()`（唯一算「停多久」的那一支）——
+       加速時它回 0，這一整條自然不成立，不必在這裡再判一次 `fastMode`。
+     ⚠ **不傳 `line`**：這裡只要問「現在還押不押著」，真正的期限已經編在
+       `blankUntil` 裡了。⚠⚠ 而且 `const line` 在下面才宣告 —— 傳它會撞 TDZ
+       （`ReferenceError`，而它落在每一次點擊上）。
+     ⚠⚠ 擋掉之後**自動播放那條線要重新接上**（同上面 `noSkipUntil` 那一條）：
+       玩家可能在這 0.7 秒之內才打開自動播放，而 `scheduleAuto` 排的間隔
+       可能比保護期短 —— 擋掉就再也沒有人排下一次 ＝ 卡死。 */
+  if(blankUntil && Date.now() < blankUntil && blankHold() > 0){
+    if(autoPlay){
+      clearTimeout(autoT2);
+      autoT2=setTimeout(()=>{ autoT2=null; if(active && (autoPlay||fastMode)) advance(); },
+                        Math.max(30, blankUntil - Date.now()));
     }
     return;
   }
@@ -4841,11 +4859,24 @@ const BLANK_BEAT = 420;
      兩邊不同步就會**卡死**：計時器先到 → `advance()` 被 `noSkipUntil` 擋掉 →
      再也沒有人排下一次。所以只准問 `blankHold()` 這一支。
    ⚠ 「至少」＝腳本自己寫了更長的 `auto` 就照它的（同 `noSkip` 的作法）。
-   ⚠ 飛行頁是另一個 document，那裡另有一份（`FBLANK_HOLD_MS`）—— 改一邊要改另一邊。 */
+   ⚠⚠⚠ **加速模式豁免**（ver -1504，Ray：「加速模式豁免」）：按住下拉／按住空白
+     是玩家**正握著一個控制**說「現在衝過去」（§6.5.7 的用語是「一路衝過去」）——
+     他不是在讀，那 0.7 秒對他只是卡頓。**自動播放不豁免**：那是「照我讀得完的
+     節奏跑」，該看的還是要看得到。
+   ⚠⚠ 豁免寫在**這一支**（唯一算「停多久」的地方），不是寫在 advance／排程各判一次
+     —— 那就是同一條規則兩個計算點（鐵律 7）。
+   ⚠ 飛行頁是另一個 document，那裡另有一份（`FBLANK_HOLD_MS`）—— 改一邊要改另一邊。
+     ⚠ 那一頁**沒有加速模式**，所以沒有這條豁免；戰鬥對白（tutorial.js）同理。 */
 export const BLANK_HOLD = 700;
 export function blankHold(line){
+  if(fastMode) return 0;                       // 加速：一路衝過去（ver -1504）
   return Math.max(BLANK_HOLD, (line && line.auto>0) ? line.auto : 0);
 }
+/* 空白格的保護期到什麼時候（ver -1503）。⚠ **不共用 `noSkipUntil`**：那一支是
+   「這一拍的演出跑完之前不准跳」（-1384），加速也擋；這一支要能被加速豁免，
+   兩者的規則不同 ⇒ 兩個狀態（鐵律 9：一個狀態一個擁有事件）。
+   ⚠ 每一拍都重設（renderLine 開頭歸零）：它是**這一拍**的性質，不是跨句狀態。 */
+let blankUntil=0;
 /* 自動推進的排程。fast＝按住下拉／按住空白（很快）、auto＝自動播放（讀得完的節奏）。
    `ms`（選填）＝這一拍改停多久，蓋掉自動播放的間隔（空框用）。加速模式不吃它。 */
 function scheduleAuto(ms){
