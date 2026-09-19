@@ -1985,7 +1985,12 @@ function fireOneShot(line){
      ⚠ 保護期＝這一拍自己的 `auto`（沒寫就給 `BLANK_BEAT` 當底）—— **時間的真相
        只有 `line.auto` 一份**（鐵律 7），不要在這裡另外寫一個秒數。
      ⚠ 每一拍都重設（沒寫 `noSkip` 就歸零）：它是**這一拍**的性質，不是跨句狀態。 */
-  noSkipUntil = line.noSkip ? (Date.now() + (line.auto>0 ? line.auto : BLANK_BEAT)) : 0;
+  /* ⚠⚠ **空框那一拍自己就帶一段保護期**（ver -1503）：它要演「他在說話」，
+       連點兩下就整個看不到了。⚠ 長度一定要與下面排計時器的那一支同一個來源
+       （`blankHold`）—— 不同步就是卡死，理由見 `BLANK_HOLD` 那一段。 */
+  noSkipUntil = line.noSkip ? (Date.now() + (line.auto>0 ? line.auto : BLANK_BEAT))
+              : line.blank  ? (Date.now() + blankHold(line))
+              : 0;
   if(line.checkpoint) lineCheckpoint();   // 腳本上的存檔點（ver -653，見 lineCheckpoint）
   if(line.vibrate) hap.shake();
   /* ══⚠⚠ **持續震動**（ver -638，Ray：「蕾娜的！！之前的畫面震動要持續 10 秒，
@@ -2073,7 +2078,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1502';
+const KERB_V='?v=1503';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3213,7 +3218,9 @@ function renderLine(){
   const bub2=$('storyBubble');
   /* ⚠ 每一句都先拔掉主角那個顏色（ver -1323）：只有下面 `line.blank` 那一拍會加回去。
      留著的話下一個人的框也會是藍的 —— 那正是「持續狀態忘了收」的老坑。 */
-  if(bub2) bub2.classList.remove('self');
+  /* ⚠ `.blank`（小氣泡＋「...」，ver -1503）與 `.self` 同一個理由：它是**這一拍**
+     的性質，留著的話下一個人的框會縮成一顆小氣泡。兩個一起拔。 */
+  if(bub2) bub2.classList.remove('self','blank');
   clearTimeout(waitT); waitT=null;
   clearTimeout(autoT);  autoT=null;
   /* ⚠ **空台詞不出對話框**（ver -327，Ray：「插圖002出來的時候不要先出空白的
@@ -3225,15 +3232,34 @@ function renderLine(){
      ⚠ 與「空台詞」是**兩回事**：空台詞是演出拍（咆哮／掃射），那一拍畫面上不該有框。
        兩者都沒有字，差別在**有沒有人在說話**。 */
   if(line.blank){
-    if(bub2){ bub2.style.visibility=''; bub2.classList.add('self'); }   // ver -1323：主角的空白格換色
+    if(bub2){
+      bub2.style.visibility='';
+      /* ⚠⚠ 先 reflow 再加 class（ver -1503）：上面才剛把 `.blank` 拔掉，同一幀加回去
+         會被瀏覽器合併成一次計算 → 連兩拍空框時彈出動畫**整個不播**
+         （同 `story.veil` 那條 `offsetWidth` 的理由）。 */
+      void bub2.offsetWidth;
+      bub2.classList.add('self','blank');   // -1323 主角的顏色 ＋ -1503 小氣泡與「...」
+    }
     stopTyping();                       // ver -1062：不然上一句會接著打進這個空框
     if(tx) tx.textContent='';
     /* ⚠⚠ **空框也是快進／自動播放的對象**（ver -427，Ray：「主角的空白對話框也是
        快進對象，不停，自動播放也不停」）。以前這裡直接 return，於是那兩個模式都
        **卡在他這一拍**等玩家點 —— 而框裡根本沒有字可讀。
-       ⚠ 停的長度另給（`BLANK_BEAT`）不照 `autoDelayMs`：那個間隔的語意是
-         「一句**唸完**之後停多久」，而空框一出現就等於唸完了。 */
-    scheduleAuto(BLANK_BEAT);
+       ⚠ 停的長度另給（`blankHold()`，ver -1503 由 `BLANK_BEAT` 改）不照 `autoDelayMs`：
+         那個間隔的語意是「一句**唸完**之後停多久」，而空框一出現就等於唸完了。 */
+    /* ══⚠⚠ **不走 `scheduleAuto`**（ver -1503）══
+       那一支在加速模式下一律排 120ms（「一路衝過去」是它的語意），而這一拍的
+       保護期是 0.7 秒 —— 計時器先到、`advance()` 被 `noSkipUntil` 擋掉，
+       就**再也沒有人排下一次**（卡死）。所以這裡自己排，長度問同一支
+       `blankHold()`，與保護期同進同退。
+       ⚠ 這不牴觸 -427 那條「空框是快進與自動播放的對象，不停」：它要的是
+         「**不要停下來等玩家點**」，而不是「零停留」—— 這一拍照樣自己走掉。
+       ⚠ 只有兩個模式開著才排（同無台詞那一拍的作法）；手動照舊點一下推進，
+         只是 0.7 秒之內點不動。 */
+    if(autoPlay || fastMode){
+      clearTimeout(autoT);
+      autoT=setTimeout(()=>{ autoT=null; if(autoPlay||fastMode) advance(); }, blankHold(line));
+    }
     return;
   }
   if(!lineText(line)){
@@ -3354,7 +3380,21 @@ function advance(){
        要出口是因為它是跨句狀態；這一條只活在這一拍）。
      ⚠ **自動播放／加速也擋**：那兩個模式走的是 `scheduleAuto`→`advance()`，
        從這裡一起擋掉才叫「不可加速」（Ray 的原話就是「不可點擊加速」）。 */
-  if(noSkipUntil && Date.now() < noSkipUntil) return;
+  if(noSkipUntil && Date.now() < noSkipUntil){
+    /* ══⚠⚠ **擋掉之後要把自動／加速那條線重新接上**（ver -1503）══
+       那兩個模式的計時器**可能比保護期先到** —— 加速一律排 120ms（`scheduleAuto`），
+       而保護期是這一拍自己的長度；擋掉就**再也沒有人排下一次** ＝ 卡死，
+       而且畫面上完全正常（框好好地掛在那裡），只是再也不動。
+       ⚠ 最容易踩到的路：玩家在空框那 0.7 秒之內按住下拉開加速。
+       ⚠ 一個地方同時保護 `noSkip`（-1384）與空框（-1503）—— 不要在各自那一支
+         再補一次（鐵律 8）。 */
+    if(autoPlay || fastMode){
+      clearTimeout(autoT2);
+      autoT2=setTimeout(()=>{ autoT2=null; if(active && (autoPlay||fastMode)) advance(); },
+                        Math.max(30, noSkipUntil - Date.now()));
+    }
+    return;
+  }
   /* 料理的「成品登場」在等點擊（ver -1000）：把它做完，**這一次點擊不推進對白**
      —— 同 `flushReveal` 的規矩（一拍還沒演完，點下去就是把那一拍演完）。 */
   if(cookWaitTap){ const f=cookWaitTap; cookWaitTap=null; try{ f(); }catch(_){} return; }
@@ -4787,8 +4827,25 @@ export function skipToNextGate(){
 }
 
 /* 空框（`blank:true`）那一拍在自動播放下停多久（ver -427）。⚠ 不用 `autoDelayMs`
-   —— 那個值的語意是「**唸完**之後停多久」，而空框一出現就等於唸完了。 */
+   —— 那個值的語意是「**唸完**之後停多久」，而空框一出現就等於唸完了。
+   ⚠⚠ 它現在只剩「**沒有寫 auto 的演出拍**」在用了 —— 空框那一拍改吃下面的
+     `BLANK_HOLD`（ver -1503）。兩個值分開是刻意的：那一拍是「他在說話」，
+     這一個是「這一格沒東西可看」，該停多久本來就不是同一件事。 */
 const BLANK_BEAT = 420;
+/* ══⚠⚠ **主角空白格的最短停留**（ver -1503，Ray：「讓每次主角空白時停至少 0.7 秒，
+   並加入一個小氣泡對話框動畫，框裡跑著『...』」）══════════════════════════
+   那一拍要演的是「他正在說話」，而一個 0.12~0.42 秒就被推走的框演不了這件事
+   —— 三顆點連一輪都跑不完。
+   ⚠⚠ 它**同時**是兩件事的來源，而且必須是同一個數字（鐵律 7）：
+     ① 自動／加速那一拍的計時器　② `noSkipUntil`（這段時間內點擊不推進）
+     兩邊不同步就會**卡死**：計時器先到 → `advance()` 被 `noSkipUntil` 擋掉 →
+     再也沒有人排下一次。所以只准問 `blankHold()` 這一支。
+   ⚠ 「至少」＝腳本自己寫了更長的 `auto` 就照它的（同 `noSkip` 的作法）。
+   ⚠ 飛行頁是另一個 document，那裡另有一份（`FBLANK_HOLD_MS`）—— 改一邊要改另一邊。 */
+export const BLANK_HOLD = 700;
+export function blankHold(line){
+  return Math.max(BLANK_HOLD, (line && line.auto>0) ? line.auto : 0);
+}
 /* 自動推進的排程。fast＝按住下拉／按住空白（很快）、auto＝自動播放（讀得完的節奏）。
    `ms`（選填）＝這一拍改停多久，蓋掉自動播放的間隔（空框用）。加速模式不吃它。 */
 function scheduleAuto(ms){

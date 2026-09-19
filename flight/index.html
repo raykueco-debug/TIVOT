@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1502"></script>
+<script src="../orientation.js?v=1503"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1502edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1503edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1502edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1502edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1503edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1503edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1502edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1502edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1503edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1503edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1502edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1503edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1502edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1502edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1502edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1502edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1502edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1502edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1502edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1502edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1502edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1502edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1503edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1503edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1503edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1503edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1503edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1503edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1503edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1503edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1503edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1503edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1502edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1503edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1502edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1503edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1502"></script>
+<script src="settlement.js?v=1503"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1502"></script>
+<script src="talks.js?v=1503"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1502';
+const FLIGHT_VER = 'ver -1503';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5158,6 +5158,20 @@ const CAST_IN_MS = 450;    // 滑入／滑出（同教學的 .45s）
 const CAST_DIM   = 0.38;   // 非說話者亮度（同教學）
 const CAST_SAT   = 0.75;
 let sayQueue=null, sayAt=0, sayIdx=0, sayEndAt=0;
+/* ══⚠⚠ **主角空白格：最短停留 ＋ 跑動的「...」**（ver -1503，Ray：「讓每次主角空白時
+   停至少 0.7 秒，並加入一個小氣泡對話框動畫，框裡跑著『...』讓玩家覺得主角此時在
+   說話」）══════════════════════════════════════════════════════════════
+   ⚠⚠ 這三個數字在 `modules/story.js`（`BLANK_HOLD`）與 `style.css`（`blankDot`
+     的 1.15s／0.16s）**各有一份** —— 這一頁是非 module 的獨立 document，
+     import 不到那一份。**改一邊要改另一邊**（鐵律 7 的但書，兩邊註解互指）。 */
+const FBLANK_HOLD_MS = 700;    // ＝ story.js 的 BLANK_HOLD
+const FBLANK_DOT_MS  = 1150;   // ＝ style.css 的 @keyframes blankDot 一輪
+const FBLANK_DOT_LAG = 160;    // ＝ style.css 的 .story-dots i:nth-child 延遲
+/* 這一拍是什麼時候變成「現在這一拍」的 —— 最短停留從它起算（ver -1503）。 */
+let sayBeatAt=0;
+/* 「這一拍是主角的空白格嗎」只有這一支在答（鐵律 7）：**沒有台詞、而且查不到立繪**
+   —— 後半正是 drawTalk 的 `isSelf` 已經在用的同一個條件（ver -1323）。 */
+function isBlankBeat(b){ return !!b && !talkText(b.text) && !(b.who && PORTRAIT[b.who]); }
 let sayDone=null;   // 這一段對白收完要做的事（ver -741：出航／羽蛇那幾段要串場）
 let hudTalking=false;   // 目前有沒有把「時間地點」收起來（見繪製迴圈裡的同步）
 /* ⚠⚠ **「現在正在演對白嗎」只有這一支在答**（ver -1183，鐵律 7/8）。
@@ -5516,7 +5530,7 @@ function say(beats, at, opts){
       saySides=sides;
     }
   }
-  sayQueue=beats; sayIdx=0; sayAt=at; sayEndAt=0;
+  sayQueue=beats; sayIdx=0; sayAt=at; sayEndAt=0; sayBeatAt=at;
   sayDone=(opts && opts.done)||null;   // 收完的回呼（ver -741）
   cast=[];
   for(const b of beats) portraitArt(b.who);   // 先把圖抓好，輪到誰才上場
@@ -5527,7 +5541,12 @@ function say(beats, at, opts){
 function sayAdvance(now){
   if(!sayQueue || sayEndAt) return false;
   if(now<sayAt) return true;                  // 還沒開始顯示，但點擊仍算吃掉
+  /* ⚠⚠ **主角空白格的最短停留**（ver -1503）：那一拍要演「他正在說話」，
+     連點兩下就整個看不到了。⚠ 點擊照樣**算被吃掉**（回 true）—— 不然這一下
+     會掉到下面被當成操舵／感應，玩家推對白推到一半會突然轉向。 */
+  if(isBlankBeat(sayQueue[sayIdx]) && now < sayBeatAt + FBLANK_HOLD_MS) return true;
   sayIdx++;
+  sayBeatAt=now;
   if(sayIdx>=sayQueue.length){
     sayIdx=sayQueue.length-1;                 // 停在最後一句，只是開始退場
     sayEndAt=now; castClear(now);
@@ -5880,8 +5899,7 @@ function drawTalk(now){
   let fs=15, lines=wrap(btxt,fs);
   while(lines.length>3 && fs>12){ fs--; lines=wrap(btxt,fs); }
   const lh=Math.round(fs*1.32);
-  const bh=Math.max(Math.round(clamp(VIEWH*0.115,48,70)), 26+lines.length*lh+8);
-  const by=Math.round(boxBottom-bh);
+  let bh=Math.max(Math.round(clamp(VIEWH*0.115,48,70)), 26+lines.length*lh+8);
   /* ══⚠⚠ **主角自己的框用另一個顏色**（ver -1323，Ray：「讓主角空白格的顏色跟
      其他人不一樣好了」）══ 其他人是金，主角是**冷鋼藍**。
      ⚠ 判準就是「查不查得到立繪」——`who:'player'` 不在 `PORTRAIT` 裡，
@@ -5889,25 +5907,55 @@ function drawTalk(now){
      ⚠⚠ 色票在 `style.css` 的 `--self`／`--self-dim` 也有一份（DOM 那兩套用）——
        這一頁是 canvas、讀不到那組變數，**改一邊要改另一邊**（鐵律 7 的但書）。 */
   const isSelf = !(speaker && PORTRAIT[speaker]);
-  ctx.fillStyle   = isSelf ? 'rgba(8,12,20,.84)'   : 'rgba(10,9,16,.84)';
-  ctx.fillRect(bx,by,bw,bh);
-  ctx.strokeStyle = isSelf ? 'rgba(92,127,166,.75)' : 'rgba(201,162,39,.55)'; ctx.lineWidth=1;
-  ctx.strokeRect(bx+0.5,by+0.5,bw-1,bh-1);
-  ctx.textAlign='left';
-  ctx.font='11px "Noto Serif TC",serif';
   /* ⚠ 說話的人**不一定有立繪**（ver -432）：主角的空白對話框（`who:'player'`）
      只有名字沒有台詞、也不動台上的人（§6.5「blank 那一拍不動立繪」）。
      查不到 PORTRAIT 就退回玩家自己的名字 —— 不要讓它在這裡爆掉。 */
   const spkName = (speaker && PORTRAIT[speaker]) ? PORTRAIT[speaker].name : playerName();
+  /* ══⚠⚠ **主角的空白格縮成小氣泡**（ver -1503，同 DOM 那兩套的 `.blank`）══
+     滿寬又滿高的空框讀起來是「框壞了」，不是「他在說話」。
+     ⚠ **左緣與底緣不動**（`bx`／`boxBottom`）：那兩條是方向計對齊，Ray 指定的
+       （見上面 compassRect 那一段）—— 縮的只有寬與高。 */
+  const blank = isBlankBeat(beat) && !sayEndAt;
+  let bw2=bw;
+  if(blank){
+    ctx.font='11px "Noto Serif TC",serif';
+    const dotsW = 5*3 + 6*2;                       // 三顆 5px、間距 6px
+    bw2 = Math.round(Math.min(bw, Math.max(ctx.measureText(spkName).width, dotsW) + padX + 30));
+    bh  = 46;                                      // 名字一行 ＋ 一排點
+  }
+  const by=Math.round(boxBottom-bh);
+  ctx.fillStyle   = isSelf ? 'rgba(8,12,20,.84)'   : 'rgba(10,9,16,.84)';
+  ctx.fillRect(bx,by,bw2,bh);
+  ctx.strokeStyle = isSelf ? 'rgba(92,127,166,.75)' : 'rgba(201,162,39,.55)'; ctx.lineWidth=1;
+  ctx.strokeRect(bx+0.5,by+0.5,bw2-1,bh-1);
+  ctx.textAlign='left';
+  ctx.font='11px "Noto Serif TC",serif';
   ctx.fillStyle= isSelf ? '#9cc3e8' : '#c9a227'; ctx.fillText(spkName, bx+padX, by+19);
-  ctx.font=fs+'px "Noto Serif TC",serif';
-  ctx.fillStyle='#ece6d8';
-  for(let i=0;i<lines.length;i++) ctx.fillText(lines[i], bx+padX, by+26+lh*(i+1)-4);
+  if(blank){
+    /* 三顆點依序彈（ver -1503）。⚠ 節奏與 `style.css` 的 `@keyframes blankDot`
+       對齊：一輪 1.15 秒、每顆差 0.16 秒 —— 兩邊的數字要一樣，不然同一個演出
+       在劇情層與飛行頁會是兩種手感。
+       ⚠ 波形照 CSS 那一條：0~62% 一個駝峰（峰在 ~28%），62~100% 停在低點。 */
+    const cy=by+bh-16;
+    for(let i=0;i<3;i++){
+      const ph=(((now - i*FBLANK_DOT_LAG) % FBLANK_DOT_MS) + FBLANK_DOT_MS) % FBLANK_DOT_MS / FBLANK_DOT_MS;
+      const k = ph<=0.62 ? Math.sin(Math.PI*(ph/0.62)) : 0;
+      ctx.globalAlpha = 0.28 + 0.72*k;
+      ctx.beginPath();
+      ctx.arc(bx+padX+2.5+i*11, cy-3*k, 2.5, 0, Math.PI*2);
+      ctx.fillStyle='#9cc3e8'; ctx.fill();
+    }
+    ctx.globalAlpha=1;
+  }else{
+    ctx.font=fs+'px "Noto Serif TC",serif';
+    ctx.fillStyle='#ece6d8';
+    for(let i=0;i<lines.length;i++) ctx.fillText(lines[i], bx+padX, by+26+lh*(i+1)-4);
+  }
   // 續行提示「▼」：同教學，告訴玩家要點一下
   const blink=0.45+0.55*Math.abs(Math.sin(now*0.004));
   ctx.fillStyle=(isSelf?'rgba(156,195,232,':'rgba(201,162,39,')+blink.toFixed(2)+')';
   ctx.textAlign='right';
-  ctx.fillText('▼', bx+bw-11, by+bh-15);
+  ctx.fillText('▼', bx+bw2-11, by+bh-15);
   ctx.restore();
 }
 

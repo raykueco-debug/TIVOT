@@ -28,7 +28,7 @@ import * as progress from '../script/progress.js';   // 旗標（戰鬥內短教
 import { ART } from '../script/speakers.js';   // 「這張畫能不能水平翻」的唯一真相（ver -625）
 /* ⚠ 只借**兩支演出原語**：音效名→檔案的表（`SE_FILES`）只有 story.js 一份（鐵律 7），
    抄過來必然走鐘。story.js 不 import 本檔，所以沒有循環相依。 */
-import { playSe, playSePair } from './story.js';
+import { playSe, playSePair, blankHold } from './story.js';   // blankHold＝主角空白格停多久（ver -1503），與劇情層同一個數字
 import * as hap from './haptics.js';        // 畫面震動＝手上也震（§6.5.6）
 
 const $ = id => document.getElementById(id);
@@ -51,6 +51,9 @@ let stepsLeft = [];            // 尚未觸發的步驟（依 trigger 消耗，�
 let queue = [];                // 對話中被觸發的步驟 → 當前段講完直接接續（立繪不退場）
 let cur = null, lineIdx = 0;   // 進行中的步驟與台詞游標
 let typeTimer = null;          // 打字機計時器
+/* 主角空白格（`blank:true`）的最短停留到什麼時候（ver -1503）。
+   ⚠ 每一拍都重設：showLine 的 blank 那一支寫它，closeDialog 歸零。 */
+let blankUntil=0;
 let fxTimer = null;            // 演出拍的自動接續計時器（ver -478；收段時要一起清）
 let lineGuideOn = false;       // 逐句雪鐵龍箭亮著（ver -478；下一句/收段時收掉）
 let startTimer = null;         // battleStart 延遲計時器
@@ -1062,6 +1065,7 @@ function shakeScreen(){
 
 function showLine(){
   const line = cur.lines[lineIdx] || {};
+  blankUntil=0;   // 空白格的保護期是**這一拍**的性質（ver -1503）：每一拍都先歸零
   /* 演出：音效與畫面震動（ver -429）。⚠ 一次性 —— 每次演到就放，不是狀態（同 story.js）。 */
   /* `seFollow`（ver -508）：與 `se` 同拍疊播、但長度**夾在 se 的長度**（se 停了
      它就停）—— 實作在 story.playSePair（音效表只有那一份，鐵律 7）。 */
@@ -1072,7 +1076,7 @@ function showLine(){
      停 `hold`（預設 900ms）自動接下一拍；提前點擊也可以跳過（advance 照常吃）。
      ⚠ 自動接的計時器要驗「還是同一拍」——玩家先點掉的話它不能再推一次。 */
   if(!line.who && !line.text && !line.blank){
-    const b0=$('tutBubble'); if(b0) b0.classList.remove('on','done','self');
+    const b0=$('tutBubble'); if(b0) b0.classList.remove('on','done','self','blank');
     clearInterval(typeTimer); typeTimer=null;
     clearTimeout(fxTimer);
     fxTimer=setTimeout(()=>{ fxTimer=null;
@@ -1082,7 +1086,9 @@ function showLine(){
   }
   /* 演出拍之後的第一句：把框請回來（演出拍把 `on` 收掉了）。 */
   /* ⚠ 每一句都先拔掉主角那個顏色（ver -1323）：只有 `line.blank` 那一拍加回去。 */
-  { const b0=$('tutBubble'); if(b0){ b0.classList.remove('self'); if(!b0.classList.contains('on')) b0.classList.add('on'); } }
+  /* ⚠ `.blank`（小氣泡＋「...」，ver -1503）與 `.self` 同一個理由：它是**這一拍**的
+     性質，留著的話下一個人的框會縮成一顆小氣泡。兩個一起拔。 */
+  { const b0=$('tutBubble'); if(b0){ b0.classList.remove('self','blank'); if(!b0.classList.contains('on')) b0.classList.add('on'); } }
   /* 逐拍進場（ver -478，§6.5：接話的人輪到他那一拍才上場）。
      ⚠ 第 0 拍不在這裡叫：openStep 的 30ms 延遲那一發才觸發得了滑入過場。 */
   if(lineIdx>0) syncCast(cur, lineIdx);
@@ -1098,9 +1104,18 @@ function showLine(){
   if(line.blank){
     const nm0=$('tutName'); if(nm0) nm0.textContent = progress.getPlayerNick();
     const lineEl0=$('tutLine'); if(lineEl0) lineEl0.textContent='';
-    /* ver -1323：主角的空白格換成冷鋼藍（同 story.js，色票在 style.css 的 `--self`）。 */
-    const b0=$('tutBubble'); if(b0){ b0.classList.add('done','self'); }
+    /* ver -1323：主角的空白格換成冷鋼藍（同 story.js，色票在 style.css 的 `--self`）。
+       ver -1503：再縮成小氣泡、裡面跑「...」（CSS 的 `.blank`，與劇情層共用同一份）。
+       ⚠⚠ 先 reflow 再加 class：上面才剛把它拔掉，同一幀加回去會被合併成一次計算
+         → 連兩拍空框時彈出動畫整個不播（同 story.js 的同一條）。 */
+    const b0=$('tutBubble'); if(b0){ void b0.offsetWidth; b0.classList.add('done','self','blank'); }
     clearInterval(typeTimer); typeTimer=null;
+    /* ══⚠⚠ **最短停留 0.7 秒**（ver -1503，Ray：「讓每次主角空白時停至少 0.7 秒」）══
+       這一拍沒有字、也不打字，所以 `advance()` 那條「還在打字就先補完」的保護
+       接不住它 —— 連點兩下就整個看不到。長度問 `blankHold()`（劇情層那一份，
+       鐵律 7：兩邊不准各寫一個 0.7）。
+       ⚠ 它只擋點擊，這一拍本來就沒有自動計時器 —— 所以不可能卡死。 */
+    blankUntil = Date.now() + blankHold(line);
     return;
   }
   const c = castOf(line.who);
@@ -1195,6 +1210,9 @@ function typeLine(line){
 function advance(){
   if(!state.tutorialDialog || !cur) return;
   if(gate && !gate.immediate) return;   // 非即時閘門中不推進台詞（即時閘門台詞照常可點）
+  /* 主角空白格的最短停留還沒跑完（ver -1503）：點擊無效。
+     ⚠ 與 `gate` 同一族（演出進行中，點擊無效），所以擋在同一個地方（鐵律 8）。 */
+  if(blankUntil && Date.now() < blankUntil) return;
   SFX.unlock();   // 對話推進不出按鈕音（只保音訊解鎖）
   if(typeTimer){
     clearInterval(typeTimer); typeTimer=null;
@@ -1224,7 +1242,7 @@ function closeDialog(resume, silent){
   const id = cur && (cur.key || cur.trigger);
   strikeAfter = (cur && (cur.strike || cur.strikeTo!=null)) ? cur : null;
   niAfter     = !!(cur && cur.nightmare);
-  cur=null; lineIdx=0;
+  cur=null; lineIdx=0; blankUntil=0;
   clearInterval(typeTimer); typeTimer=null;
   clearTimeout(fxTimer); fxTimer=null;
   lineGuideOn=false;
