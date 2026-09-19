@@ -1,4 +1,75 @@
-# HANDOFF — 截至 `ver 2026.09.17-1517`
+# HANDOFF — 截至 `ver 2026.09.17-1518`
+
+---
+
+# 本輪 — `-1518`（電腦版的固定比例框）
+
+> Ray：「視窗比例會隨視窗大小變動，給電腦版一個固定比例」
+
+**只動了 `style.css` 一支**（＋ `bust.py` 的版號）。
+
+## 一、做法：**一段 `@media (pointer:fine)`，收在 `style.css` 的最尾端**
+
+    --frame-w: min(100vw, calc(100vh * 390 / 844), var(--app-max-w))
+    --frame-h: calc(var(--frame-w) * 844 / 390)
+
+· **比例只有一個計算點**（鐵律 7）：`--frame-w` 由三個上限解出來，
+  `--frame-h` **只從 `--frame-w` 推** ⇒ 永遠同一個比例。
+· 比例 **390×844** ＝ 憲法 §6 驗收流程用的那個 viewport（不另立數字）。
+· `--app-max-w:520px` ＝ `#app` 本來那個 `max-width`，現在**框與 `#app` 讀同一個變數**
+  ⇒ 不會各自封頂在不同的寬度。
+· 露出來的黑邊是 `body` 的 `--bg`，沒有新顏色。
+
+## 二、⚠⚠⚠ 三個踩過／避開的坑
+
+### 1. **這一段一定要排在檔尾** —— 第一版寫在檔頭，靜靜地沒生效
+
+`#app`（`max-width`）、`#flightFrame`（`width/height:100%`）那幾條就在上面，
+**選擇器層級一模一樣（都是 id），比的是順序**。排到前面去＝完全不生效，
+而且畫面上沒有任何錯誤訊息（實測 `#app` 依舊是 520×800）。
+
+### 2. **`body` 不准加 `transform` / `contain`**
+
+那會讓**所有** `position:fixed` 改以 body 為準（＝框）。而戰鬥特效
+（`enemy.shellFrom` 的彈殼、`throwDagger`、`gear.js` 的教學光圈…）寫進 `style.left`
+的是 `getBoundingClientRect()` 的**視窗座標** ⇒ 整批會平移一整條黑邊的寬度，
+**而且不會報錯**。所以這一版**只把「畫面本身」收進框**，
+`position:fixed` 的相對對象一個字都沒有改。
+⚠ 框是**置中**的，所以任何「置中」的東西位置完全不變。
+
+### 3. **`#app` / `#storyStage` 也不准加 `contain`**
+
+那會讓它變成 stacking context ⇒ 裡面的 `#gearSheet`（z:8450）、
+`body.prep-over #prepSheet`（z:8400）就再也蓋不過 body 層的 `#storyStage`（z:8300）
+—— 而那幾個 z-index 是**刻意**排成這樣的。
+
+## 三、⚠ 這一版的已知代價
+
+· **「會整片蓋滿畫面的層」是一份清單**（那一條選擇器）：
+  `#assetLoader #storyStage #flightFrame #gearSheet #gameMenu #chapterSheet
+   #choiceSheet #nameSheet #storyLog #saveSheet #exitConfirm #tutSkipConfirm`。
+  新增一層這種頁面要加進去。⚠ **漏掉的下場是那一頁沒有黑邊（一眼看得見）**，
+  不是靜靜壞掉 —— 這是在「清單」與「上面第 2 點那個會平移特效的 containing block」
+  之間選的，理由寫在那一段的註解裡。
+  ⚠ 只列**無條件**就是 `position:fixed;inset:0` 的：`#prepSheet`／`#weaponSheet`／
+    `#partnerSheet` 是 `body.prep-over` 時才轉 fixed，給它固定寬高會在另一半情境下壞掉。
+· **`#muteBtn`／`#devStat` 仍在視窗的角落**（框外）—— 兩個都是 `body.testmode` 限定的
+  開發用浮標，留在框外反而好按。要收進框就加進那一條選擇器。
+· **`--appvh` 沒有跟著改**（它是 main.js 寫在 html 上的 inline style，蓋不過去）。
+  框幾乎總是「高度吃滿視窗」，只有視窗高過 `520 / (390/844)` ≈ **1125px** 時才差得出來
+  （首頁的垂直間距會略鬆）。看得出來再處理。
+
+## 四、驗過的（`pointer:fine` 的桌機視窗）
+
+| 視窗 | `#app` | 比例 |
+|---|---|---|
+| 1280×800 | 370×800，left 455（左右留邊） | 0.4621 ✔ |
+| 1600×600 | 277×600 | 0.4621 ✔ |
+| 1200×1400 | 520×1125，top 137（**上下**留邊，`--app-max-w` 封頂） | 0.4621 ✔ |
+| 寬 300（模擬器轉成觸控裝置） | 300×900 原樣 | 不套框 ✔（鐵律 12：手機不受影響） |
+
+畫面逐一看過：開機讀取頁／首頁／章節面板／東泊旅店的劇情，都乖乖落在框裡，
+console 零錯誤。
 
 ---
 

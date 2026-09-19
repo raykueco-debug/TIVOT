@@ -38,6 +38,14 @@
        那個變數，**改 `--gold` 要一起改這兩行**（鐵律 7 的但書）。 */
     --scroll-thumb:rgba(212,169,74,.28);
     --scroll-thumb-hi:rgba(212,169,74,.52);
+    /* ══⚠⚠⚠ 畫面的**比例與寬度上限**（ver -1518）══ 只有這一份（鐵律 7）。
+       · `--pc-ar-w / --pc-ar-h` ＝ **390×844** —— 憲法 §6 驗收流程用的就是這個
+         viewport，桌機的框照它切，不要再另立一個數字。
+       · `--app-max-w` ＝ `#app` 本來就有的那個 520px，現在**同時**是桌機框的寬度
+         上限 —— 兩個地方讀同一個變數，才不會各自封頂在不同的寬度。 */
+    --pc-ar-w:390;
+    --pc-ar-h:844;
+    --app-max-w:520px;
   }
   /* touch-action:manipulation＝取消「雙擊縮放」（快速連點盤面不再觸發放大；亦消 300ms 點擊延遲）。
      viewport 的 user-scalable=no 在 iOS Safari 被無障礙政策忽略，須靠此宣告。
@@ -216,7 +224,7 @@
   #exitConfirm .ec-btns .ec-yes, #tutSkipConfirm .ec-btns .ec-yes{border-color:var(--gold);color:var(--gold);}
   #exitConfirm .ec-btns button:active, #tutSkipConfirm .ec-btns button:active{transform:scale(.97);}
   #app{display:flex;flex-direction:column;height:100%;width:100%;
-    max-width:520px;margin:0 auto;position:relative;
+    max-width:var(--app-max-w);margin:0 auto;position:relative;
     /* 頂部保留安全區墊高：#top（底圖）與 #bottom 為 flex 子項，會被此 padding 整體下移到瀏海之下 */
     padding-top:var(--notch-bar-h);}
   /* 戰敗定格：HP 歸零瞬間全畫面黑白（快速壓入），維持約 1 秒後才切「驅逐失敗」過渡禎 */
@@ -4718,3 +4726,52 @@
   /* ⚠⚠ 地圖鈕**不住在 `#kerb` 裡**（它是舞台的兄弟元素、z-8），卻貼在槍棺上 ——
      提示開著時槍棺被抬到 10，它就整顆被門蓋掉。被指的那顆一定要在最上面（ver -928）。 */
   #townMapBtn.hint-spot{z-index:11;filter:drop-shadow(0 0 14px rgba(111,179,212,.95));}
+
+  /* ⚠⚠⚠ **這一段必須留在檔尾** （ver -1518）：它整段都是**覆寫**，
+     而 `#app`（`max-width`）、`#flightFrame`（`width/height:100%`）那幾條就在上面 ——
+     選擇器的層級一模一樣（都是 id），**比的是順序**：排到前面去就是靜静地
+     不生效（-1518 第一版寫在檔頭，實測 `#app` 依舊是 520×800）。 */
+  /* ══⚠⚠⚠ **電腦版的固定比例框**（ver -1518，Ray：「視窗比例會隨視窗大小變動，
+     給電腦版一個固定比例」）══════════════════════════════════════════════════
+     手機是直的、比例固定；桌機的視窗卻是任意長寬，而 `#app` 以前只有
+     `max-width:520px` ＋ 高度吃滿視窗 ⇒ **同一個畫面在不同視窗高度下是不同比例**。
+     鐵律 12 說載體優先序是手機 —— 那桌機就該長得跟手機一樣，而不是自己一種比例。
+
+     ⚠⚠⚠ **比例只有一個計算點**（鐵律 7）：`--frame-w` 由三個上限解出來，
+       `--frame-h` **只從 `--frame-w` 推** —— 不是兩處各算一次，所以永遠同一個比例。
+       視窗太寬就左右留邊、太窄就上下留邊，露出來的是 `body` 的 `--bg`。
+
+     ⚠⚠⚠ **只有「畫面本身」進框；`position:fixed` 的相對對象一個字都沒有改** ——
+       `body` **不准**加 `transform` / `contain`（那會讓所有 `position:fixed` 改以 body
+       為準）：戰鬥特效（彈殼 `enemy.shellFrom`、飛刀、`gear.js` 的教學光圈）寫進
+       `style.left` 的是 `getBoundingClientRect()` 的**視窗座標**，一旦 body 變成
+       containing block，那一整批會平移一整條黑邊的寬度 —— **而且不會報錯**。
+       ⚠ 框是**置中**的，所以「置中」的東西位置完全不變（面板、提示、彈殼的左右判定）。
+
+     ⚠⚠ 下面第二條選擇器 ＝ **會整片蓋滿畫面的層**。新增一層這種頁面時要加進去；
+       ⚠ 漏掉的下場是**那一頁沒有黑邊**（一眼看得見，不是靜靜壞掉）——
+         這一條之所以還是清單，是因為 CSS 選不出「所有 `position:fixed;inset:0` 的層」，
+         而把 containing block 收到 body 上的代價寫在上面那一段。
+       ⚠ 只列**無條件**就是 `position:fixed;inset:0` 的：`#prepSheet` 那一族是
+         `body.prep-over` 時才轉 fixed，給它固定寬高會在另一半情境下壞掉。
+
+     ⚠ 判準用 `pointer:fine`（滑鼠）—— 與 `orientation.js` 的橫向擋板同一個判準
+       （那裡是 `pointer:coarse`）。**觸控裝置一個字都不受影響**（鐵律 12）。
+     ⚠ `--appvh`（main.js 實測視窗高的 1%）**沒有跟著改**：它是 html 上的 inline
+       style，而框幾乎總是「高度吃滿視窗」（只有視窗高過 `--app-max-w / 比例`
+       ≈1125px 時才會差），首頁的垂直間距差得出來的話再處理。 */
+  @media (pointer:fine){
+    :root{
+      --frame-w:min(100vw, calc(100vh * var(--pc-ar-w) / var(--pc-ar-h)), var(--app-max-w));
+      --frame-h:calc(var(--frame-w) * var(--pc-ar-h) / var(--pc-ar-w));
+    }
+    /* `#app` 是 body 唯一的排版子項（其餘全是 fixed）⇒ 用 flex 置中，
+       不改它的 `position:relative`（它是內部一堆 absolute 的 containing block）。 */
+    body{display:flex;align-items:center;justify-content:center;}
+    #app{width:var(--frame-w);height:var(--frame-h);max-width:none;flex:0 0 auto;}
+    /* `inset:0` ＋ 固定寬高 ＋ `margin:auto` ＝ 四邊置中（不動 transform，
+       那條路上有 `#app.hitshake` 那一族的動畫）。 */
+    #assetLoader,#storyStage,#flightFrame,#gearSheet,#gameMenu,#chapterSheet,
+    #choiceSheet,#nameSheet,#storyLog,#saveSheet,#exitConfirm,#tutSkipConfirm{
+      width:var(--frame-w);height:var(--frame-h);margin:auto;}
+  }
