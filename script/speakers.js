@@ -414,7 +414,17 @@ export const ART = {
                   /* Stage8（ver -953）。逐張量（measure_si.py）。
                      ⚠ `awkwerd` 的鍵照檔名拼（Ray 的稿寫 Awkwerd）—— 鍵與檔名對得上才找得到圖，
                        同 sorana 的 `lauaghbig`，不要「修正」它。 */
-                  risehand: { src:'resources/SI/Nouvelle_SI_risehand.webp',  top:1,  bot:1529, fx:0.393 },
+                  /* ⚠⚠⚠ **舉起的手不算「人物最上緣」**（ver -1510，Ray：「這張立繪都放太低了，
+                     以臉部為高度判別修正」）—— 與 §6.5 的法環那一條（-635）是**同一個坑**：
+                     `measure_si` 量的是 alpha 的上下緣，而她把手舉過頭頂 ⇒ 量到的 `top:1`
+                     是**手指尖**，不是頭。後果有兩層，而且兩層都往同一個方向錯：
+                       ① `top` 太高 → 引擎把「圖的上緣」對到頭線 ⇒ 她整個被壓低 123px×縮放
+                       ② `bot−top` 被撐大 8.8% → 鎖身高時她又被縮小 8.8%
+                     `fx:0.393` 同樣是污染的：那個值取自「頭頂往下 8% 身高」那一條帶，
+                     而在這張圖裡**那一整條帶都是手臂與袖子**，量到的是袖子的重心。
+                     ⚠ 正解是量**人**：手完全落在 x<500，頭從 x=500 那一側進來 ⇒ 頭頂 row 124；
+                       臉（兩眼中點）放大加刻度尺目視 ⇒ 0.62。`bot:1529` 是她真的下緣，不動。 */
+                  risehand: { src:'resources/SI/Nouvelle_SI_risehand.webp',  top:124, bot:1529, fx:0.620 },
                   awkwerd:  { src:'resources/SI/Nouvelle_SI_Awkwerd.webp',   top:2,  bot:1533, fx:0.468 },
                   shocked:  { src:'resources/SI/Nouvelle_SI_Shocked.webp',   top:3,  bot:1534, fx:0.504 },
                   /* ⚠ 別名（同上，ver -1186）：Ray 的稿寫 `shock`。 */
