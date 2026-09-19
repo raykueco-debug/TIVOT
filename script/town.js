@@ -4410,27 +4410,36 @@ export const TOWNS = {
          凌晨照樣成立（ver -664 的教訓）。迄不含。
        ⚠ `enterAgain` ＝玩家可能**已經站在旅店裡**，那時 `goto===nodeId`，
          不重新 `enter()` 一次的話那一格的 `acts` 沒有人叫得動。
-       ⚠⚠ **M1／M2 的分歧寫成「M1 才演 A、其餘演 B」**（不是兩個 `onlyIf`）：
+       ⚠⚠ **M1／M2 的分歧寫成「M2 才演 B、其餘演 A」**（不是兩個 `onlyIf`）：
          A route 與 B route 是**非線性**的 —— 先跑古墓的人兩支旗都沒有，
          兩個 `onlyIf` 會讓這一段**什麼都不演就結束**。
-         鐵律 13：漏掉的那一側要落在安全的地方。 */
+         鐵律 13：漏掉的那一側要落在安全的地方。
+       ⚠⚠⚠ **判準是 `ep_m2_route`，不是 `ep_m1_route`**（ver -1530，Ray：
+         「先 A 不是應該落 M1 嗎？**氣氛和諧沒有秘密的那一條路線**」）：
+         · -1522 寫成「不是 M1 就演 M2」⇒ 兩支旗都沒有的人（先 A）落在 **M2**，
+           而 M2 是「只有主角知道米夏、瞞著大家」那一條 —— 先 A 的人根本還沒有
+           那個秘密，讀起來是憑空多出一層芥蒂。
+         · 雪都其他三處（瞭望台／甜點店／約安雅）判的**本來就是 `ep_m2_route`**
+           —— 只有這一段是反的。**一段用一個判準，全城要一致**（鐵律 7）。
+         · 兩支旗互斥是資料保證的（M2 的 `until` 就是 M1 的 `need`），所以
+           `skipIf:'ep_m2_route'` ＝「M1 或還沒發生」，正是 Ray 要的那一側。 */
     gates:[
       { flag:'vn_evening', need:'vn_arrive', hourOfDay:[18,24],
         goto:'inn', enterAgain:true, lines:[
         nou('cringe','蕾娜小姐還沒回來……有點擔心。'),
         sor('tired','沒事吧，這地方看起來挺安全的。'),
         nou('decoding','可是……'),
-        any('answer','那、我們去找她！',            { onlyIf:'ep_m1_route' }),
+        any('answer','那、我們去找她！',            { skipIf:'ep_m2_route' }),
         /* ⚠ 稿上寫 `smilebig`，索菈娜沒有那張 —— 用她的 `smile`。 */
-        sor('smile','噢，小公主很有幹勁呢。',        { onlyIf:'ep_m1_route' }),
-        nou('run','嗯，走吧。',                      { onlyIf:'ep_m1_route' }),
-        sor(null,'真那麼不放心的話，我們去圖書館找她吧？', { skipIf:'ep_m1_route' }),
-        nou('lookback','嗯，走吧。',                 { skipIf:'ep_m1_route' }),
-        any('silent','',                             { skipIf:'ep_m1_route' }),
-        sor('smirk','小公主，累了？',                { skipIf:'ep_m1_route' }),
-        sor('tease','要不要姐姐背妳？',              { skipIf:'ep_m1_route' }),
-        any('silent','', { se:'se_walk', skipIf:'ep_m1_route' }),
-        sor('amazed','她這是怎麼啦？',               { skipIf:'ep_m1_route' }),
+        sor('smile','噢，小公主很有幹勁呢。',        { skipIf:'ep_m2_route' }),
+        nou('run','嗯，走吧。',                      { skipIf:'ep_m2_route' }),
+        sor(null,'真那麼不放心的話，我們去圖書館找她吧？', { onlyIf:'ep_m2_route' }),
+        nou('lookback','嗯，走吧。',                 { onlyIf:'ep_m2_route' }),
+        any('silent','',                             { onlyIf:'ep_m2_route' }),
+        sor('smirk','小公主，累了？',                { onlyIf:'ep_m2_route' }),
+        sor('tease','要不要姐姐背妳？',              { onlyIf:'ep_m2_route' }),
+        any('silent','', { se:'se_walk', onlyIf:'ep_m2_route' }),
+        sor('amazed','她這是怎麼啦？',               { onlyIf:'ep_m2_route' }),
       ] },
       /* ══⚠⚠⚠ **隔日出發**（ver -1523，Ray 的 Stage10-A 稿：「回到旅店。睡覺。隔日。」）══
          ⚠ `need:'vn_night_done'`（圖書館那一整段演完，＝旅店的 `sleepFlag`）
@@ -4438,9 +4447,13 @@ export const TOWNS = {
            不在 [6,12] 裡（同 -664 那一課：寫成單一時刻會在當晚就演掉）。
          ⚠ `goto:'square'` ＝港口廣場（出航的那一格），稿上那兩個 `Se_walk`
            就是走出旅店的那一段路；後半在路上講完，收尾接著演上船的簡報。
-         ⚠⚠ 這一段**兩條都是 `onlyIf`**（與 -1522 那五處刻意不同）：稿上那兩句是
-           「安雅站在誰那一邊」的表態，**沒跑過東泊的人本來就不該有立場** ——
-           兩支旗都沒有時這一拍不演，讀起來只是她沒接話。 */
+         ⚠⚠⚠ **ver -1530：改成「M2 才演 B、其餘演 A」**（同上，Ray 定的那一側）。
+           -1523 原本兩條都是 `onlyIf`，理由是「沒跑過東泊的人本來就不該有立場，
+           這一拍不演，讀起來只是她沒接話」—— **那個理由在這裡不成立**：
+           底下那一句是索菈娜的「**連小公主都生我的氣……**」，
+           安雅什麼都沒說的話，那一句就**接在空氣上**（她沒反應，索菈娜卻說她生氣）。
+           ⚠ 這正是「兩條都 `onlyIf`」最常見的破法：**沒演的那一拍不是沒事，
+             是把下一拍的前提抽掉了。** 加分歧時要往下多讀一句。 */
       { flag:'vn_day2', need:'vn_night_done', hourOfDay:[6,12],
         goto:'square', enterAgain:true, sides:{ RENNA:'L' }, lines:[
         ren('lookawaytalk','好了，出發吧。'),
@@ -4452,7 +4465,7 @@ export const TOWNS = {
         { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
         sor('confuse','喂……'),
         sor('sad','唉……為什麼我要幹那種蠢事呢……'),
-        any('argue','對啊。', { onlyIf:'ep_m1_route' }),
+        any('argue','對啊。', { skipIf:'ep_m2_route' }),
         any('upset','',       { onlyIf:'ep_m2_route' }),
         sor('cringe',''),
         nou('decoding','也不能怪索拉娜啦……'),
@@ -4587,8 +4600,10 @@ export const TOWNS = {
           sor(null,'喂——'),
           { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
           sor('worry','都是我不好啦，要怪就怪我，好嗎？'),
-          /* M1／M2 的分歧（安雅站在誰那一邊）。⚠ 兩條都寫，靠旗互斥。 */
-          any('argue','對。',   { onlyIf:'ep_m1_route' }),
+          /* M1／M2 的分歧（安雅站在誰那一邊）。⚠ 判準是 `ep_m2_route`（ver -1530）——
+             兩支旗都沒有（先 A）時落在 M1 那一句，下一拍的「連小公主都生我的氣……」
+             才接得住。理由見上面那道閘門的說明。 */
+          any('argue','對。',   { skipIf:'ep_m2_route' }),
           any('upset','',       { onlyIf:'ep_m2_route' }),
           sor('cringe','連小公主都生我的氣……'),
           { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
