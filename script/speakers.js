@@ -620,6 +620,13 @@ export const ART = {
     blushed:   { src:'resources/SI/Sorana_SI_blushed.webp', top:6, bot:1513, fx:0.560 },
     crying:    { src:'resources/SI/Sorana_SI_crying.webp', top:6, bot:1511, fx:0.550 },
     determined:{ src:'resources/SI/Sorana_SI_determined.webp', top:6, bot:1507, fx:0.547 },
+    /* ⚠⚠ ver -1536：這兩張**圖早就在版控裡**，只是從來沒登記進這張表 ——
+       雪都酒吧那一段（`ravnsdal.bar`）從 -1522 起就寫著 `drink`／`shy`，
+       線上一直**靜靜退回本尊立繪**（`script_lint.py` 那八行
+       「SORANA 沒有 drink／shy 這張差分」講的就是它）。
+       ⚠ 取景值 `tools/measure_si.py` 實測，沒有抄別張。 */
+    drink:     { src:'resources/SI/Sorana_SI_drink.webp', top:2, bot:1526, fx:0.442 },
+    shy:       { src:'resources/SI/Sorana_SI_shy.webp',   top:3, bot:1533, fx:0.503 },
     eat:       { src:'resources/SI/Sorana_SI_eat.webp', top:2, bot:1518, fx:0.569 },
     lookaway:  { src:'resources/SI/Sorana_SI_lookaway.webp', top:5, bot:1513, fx:0.610 },   // fx 目視重量（量到 0.623）
     nod:       { src:'resources/SI/Sorana_SI_nod.webp', top:12, bot:1494, fx:0.529 },
@@ -1117,7 +1124,9 @@ export const ART = {
      ⚠ 三個人都 `side:'R'`：他們是**對面那一隊**，我方在左（同店主／公會那兩位的邏輯）。
      ⚠ `Cecilie_SI_refusertemp.png` **庫裡沒有**（Ray 稿上那張是暫代檔名）——
        「我不要。」那兩拍改用 `nolook`（手撫側髮、不看人），圖到了再加一個鍵。 */
-  nemo:      { cm:174, eye:32, fx:0.484, top:3, bot:1524,
+  /* ⚠ `cm` ver -1536 由我估的 174 改成 **165**（Ray：「他的身高跟諾差不多」）
+     —— 與諾薇兒同高。 */
+  nemo:      { cm:165, eye:32, fx:0.484, top:3, bot:1524,
            side:'R', alt:null, base:'resources/SI/Nemo_SI_front.webp', expr:{
     surprise: { src:'resources/SI/Nemo_SI_surprise.webp', top:8, bot:1524, fx:0.498 },
     happy:    { src:'resources/SI/Nemo_SI_happy.webp',    top:3, bot:1527, fx:0.510 },
@@ -1138,7 +1147,14 @@ export const ART = {
     nolook:   { src:'resources/SI/Cecilie_SI_nolook.webp',    top:1, bot:1531, fx:0.543 },
     think:    { src:'resources/SI/Cecilie_SI_think.webp',     top:5, bot:1529, fx:0.560 },
   } },
-  laurie:    { cm:158, eye:32, fx:0.505, top:6, bot:1514,
+  /* ⚠⚠ **縮 20%**（ver -1536，Ray：「蘿芮登場那張圖太大了 縮20%」）——
+     她的圖是**彎腰前傾**的構圖：像素高佔滿整框，但那是「彎著的 158cm」，
+     照 158 去算就等於把一個壓縮過的身體放大到 158cm 該有的高度 ⇒ 整個人偏大。
+     §6.5 的近景情形：**`cm` 管大小、`standCm` 管頭頂高度**，兩個旋鈕分開。
+     · `cm:126` ＝ 158×0.8（就是 Ray 要的 20%）
+     · `standCm:158` ＝ 頭頂仍照 158 擺 ⇒ **只變小，不下沉**
+     ⚠ 只調 `cm` 會連頭一起往下掉（§6.5 明寫「只調 `cm` 一定失敗」）。 */
+  laurie:    { cm:126, standCm:158, eye:32, fx:0.505, top:6, bot:1514,
            side:'R', alt:null, base:'resources/SI/Laurie_SI_front.webp', expr:{
     crying:   { src:'resources/SI/Laurie_SI_crying.webp',    top:4, bot:1524, fx:0.594 },
     dying:    { src:'resources/SI/Laurie_SI_dying.webp',     top:6, bot:1523, fx:0.593 },

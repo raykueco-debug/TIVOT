@@ -4673,10 +4673,14 @@ export const TOWNS = {
           Object.assign(sor(null,'喔！講到我了！『10月16日20時，與一般人連攜戰鬥無阻滯誤傷。註記：此記事應比照現第四席戰鬥紀錄，著重評估。』'),
                         { se:'se_ui_pageflip' }),
           sor(null,'看不懂。'),
-          /* ⚠ 稿上這一句標的立繪是 `Nouvelle_SI_expain2`，但講話的是**安雅**
-             （「是在說第四課的團長璐娜大人」）—— 判斷是抄稿時的欄位錯位，
-             照說話者改用她自己的差分。若原意真是諾薇兒，說一聲改回去。 */
-          any('talk','是在說第四課的團長璐娜大人……情緒上來基本就不分敵我了。'),
+          /* ⚠⚠ **ver -1536 改回諾薇兒**（Ray：「說璐娜敵我不分的是諾，不是安」）。
+             -1522 我判成「抄稿時的欄位錯位」，把它改給安雅 —— **判錯了**：
+             稿上標的立繪 `Nouvelle_SI_expain2` 才是對的那一半，說話者「安」是筆誤。
+             ⚠ 她認得璐娜本來就合理：諾薇兒是第四騎士團的修女，璐娜是她的團長
+               （序章那一幕就在她面前）；安雅是紫月來的外人。
+             ⚠ **教訓**：說話者與立繪對不上時，§6.5 的規矩是「**照立繪判**」——
+               我這一次反過來照說話者判，正好踩到那條規矩要避免的方向。 */
+          nou('expain2','是在說第四課的團長璐娜大人……情緒上來基本就不分敵我了。'),
           sor(null,'什麼啊，好可怕。'),
           Object.assign(sor(null,'後面大概都一個勁誇……'), { se:'se_ui_pageflip' }),
           Object.assign(sor('surprised','！！'), { se:'se_ui_pageflip' }),
@@ -4833,13 +4837,14 @@ export const TOWNS = {
         exits:{ back:'uptown', up:'bar', right:'cafe', down:'dessert' } },
       bar:      { bg:'Varn_Bistro',   name:'雪都瓦恩霍姆　餐酒館',   noTime:true,
         exits:{ back:'tavern' },
-        /* ══ 約會・索菈娜（ver -1522）══
-           ⚠⚠ 稿上的 `drink`／`shy` **索菈娜沒有這兩張差分** —— 照樣寫上去：
-             查不到會自動退回本尊立繪、台詞照播（§6.10 的 `missingExpr`，
-             同東泊 -1346 那一格的作法），而且**留在稿上就是交給美術的工單**。
-           ⚠ 微醺插圖 `021-soranadrunk` 還沒有 ⇒ **不寫 `cg:`**（寫了就是六個候選
-             全 404）。圖到了把 `cg:'021-soranadrunk'` 補在「……」那一拍、
-             並在「哪有那麼了不起啦！」那一拍 `cg:null` 收掉（§6.5：插圖是持續狀態）。
+        /* ══ 約會・索菈娜（ver -1522；**ver -1536 圖到齊，補上**）══
+           ⚠ `drink`／`shy` 兩張差分的**圖早就在版控裡**，只是 `speakers.js`
+             沒登記那兩個鍵 —— -1536 補上（取景值 `measure_si.py` 實測）。
+           ⚠ 微醺插圖 `021-soranadrunk` -1536 交件（PNG→WebP，原檔進 `_originals`）。
+             ⚠ **`cgNoTime:true`**：它沒有時段差分，不寫就是先吃四個 404 才退回原名。
+             ⚠ 收圖的位置照稿：稿上「插圖結束：」排在「（主角空白）」**之前**，
+               所以 `cg:null` 掛在那一拍（-1522 的註解寫「哪有那麼了不起啦！」那一拍，
+               差一拍 —— 以稿為準）。§6.5：插圖是持續狀態，要明寫收掉。
            ⚠ T3 以上多一句 ⇒ `tierMin:3`（一拍的屬性）。 */
         acts:[ { flag:'vn_bar_sor', withWho:'SORANA', lines:[
           sor('drink','噗哈——'),
@@ -4847,11 +4852,11 @@ export const TOWNS = {
           sor('shy','身體好像暖起來了。'),
           { speaker:'PLAYER', blank:true },
           sor('drink','不用啦，外套你自己穿著。'),
-          sor(null,'……'),
+          Object.assign(sor(null,'……'), { cg:'021-soranadrunk', cgNoTime:true }),
           sor(null,'其實我也知道穿這身走在城裡很奇怪啦。'),
           sor(null,'這是我奶奶留下來的衣服。'),
           sor(null,'是用傳統森住民服飾改的舞姬服喔。'),
-          { speaker:'PLAYER', blank:true },
+          { speaker:'PLAYER', blank:true, cg:null },
           sor('shy','哪有那麼了不起啦！貴族養的舞妓罷了。'),
           sor('shy','後來跟我爺爺逃到了夏爾村，就變成這樣囉。'),
           sor('drink','也沒什麼特別的原因啦，我就喜歡這一件。活動方便料子也舒服。'),
@@ -6560,10 +6565,23 @@ export const TOWNS = {
              那是對的：稿上勝敗的分歧在腳本裡。
            ⚠ `Cecilie_SI_refusertemp.png` 庫裡沒有 ⇒「我不要。」那兩拍改用 `nolook`。 */
         acts:[ { flag:'lk_nemo_done', need:'lk_steles', sides:{ RENNA:'L' }, lines:[
+          /* ══⚠⚠⚠ **人影走 `dark:true`，不是 `ci:`**（ver -1536，Ray：「尼莫初登場的
+             尺寸不對，**不用把全身立繪都放入**，他的身高跟諾差不多」）══
+             · `#storyCi` 是**半寬的側插**（`left:46%`＋`object-fit:cover`）——
+               直式全身圖丟進那個窄高框，cover 會**整張縮進去** ⇒ 頭到靴子全在畫面上，
+               人就比旁邊的諾薇兒小一大截。那一層本來是給半身／近景 CI 用的。
+             · 「謎之人影」**早就有專用機制**：`dark:true`（ver -954，科爾文 `CORVIN_Q`
+               那一套）—— 人正常上台、走**同一把尺**（所以 `cm` 就決定身高），
+               只是渲染成剪影；**他自己講一句沒有 `dark` 的話就揭曉**（＝稿上的「轉身」）。
+               ⚠ 剪影的人不會再吃非說話者的 `.dim`（那一段的註解就是為了這個寫的）。
+             ⇒ 這一版：第一拍讓他**帶著剪影上台**（空台詞 ⇒ 對話框自己藏起來，
+               `auto:1600` 維持原本那一拍的節奏），「！」那一句不帶 `dark` ＝轉身揭曉。
+             ⚠ 至此 `ci:` 全庫**一處都沒有了** —— 它仍是合法的演出手段（半身 CI），
+               只是這一段不該用它。 */
           /* 人影。 */
-          { speaker:'NARRATION', text:'', ci:'Nemo_SI_front', auto:1600 },
+          Object.assign(nmx(null,''), { dark:true, auto:1600 }),
           nou('surprise','那是……'),
-          nmx('surprise','！', { ci:null }),
+          nmx('surprise','！'),
           { battle:'lk_nemo', onLose:'nemo_lose' },
           /* ── 打贏 ── */
           nmx('happy','不愧是學長，能跟我打得有來有回的只有你了。'),
@@ -6580,10 +6598,18 @@ export const TOWNS = {
           nou('decoding','尼莫。'),
           ren('chase','那個百年一遇的天才？'),
           nmo('bye','哪有那麼誇張啦——'),
-          /* 賽西莉的人影。 */
-          { speaker:'CECILIE_X', text:'諾薇兒？是諾薇兒嗎？', ci:'Cecilie_SI_front' },
+          /* ⚠⚠ **ver -1536：賽西莉沒有人影**（Ray：「賽西莉登場時**多放了一個**
+             黑影全身立繪」）—— 回去對稿，她那一段是
+               賽：「諾薇兒？是諾薇兒嗎？」
+             **一個字都沒提人影**。人影是尼莫那一段才有的（稿上明寫「人影」）。
+             -1524 我照著尼莫那一拍的形狀把 `ci:` 也給了她 ⇒ 憑空多一層黑影。
+             ⚠ 她第一句仍是 `CECILIE_X`（畫面上「？？？」）：聲音先到、諾薇兒認出她
+               之後才報名 —— 那是**名字**不是立繪，與人影是兩件事。
+             ⚠ 這一拍**沒有 `portrait`** ⇒ 立繪是持續狀態，台上不會多一個人；
+               她真正上台是下一句 `cec('upset')`。 */
+          { speaker:'CECILIE_X', text:'諾薇兒？是諾薇兒嗎？' },
           nou('sadsmile','果然，賽西莉學姐也在啊......'),
-          cec('upset','什麼嘛，妳是不想看到我嗎？', { ci:null }),
+          cec('upset','什麼嘛，妳是不想看到我嗎？'),
           cec('lookaside','啊，不想看到我的人，是另一個吧？'),
           { speaker:'PLAYER', blank:true },
           cec('talk','好久不見啊。'),

@@ -1065,7 +1065,25 @@ function dateByeAct(n){
   const isInn = D.node ? (nodeId===D.node) : !!(n && n.inn);
   if(!isInn) return null;
   const e=(D.by && D.by[who]) || D;
-  if(!e.lines || !e.lines.length) return null;
+  /* ══⚠⚠⚠ **沒有台詞就「就地解除」，不要做成一段空戲**（ver -1536，
+     Ray：「約會狀態回旅店沒解除」）══
+     · 舊版是 `if(!e.lines || !e.lines.length) return null;` ——
+       而全域預設正是 **`OUTING.dateBye = { node:'inn', lines:[] }`**
+       （-1383 Ray 拿掉了那句暫代旁白：「回到旅店不用顯示她停下腳步」）
+       ⇒ **對每一座沒寫自己 `dateBye` 的城永遠回 null** ⇒ `endDate` 不跑
+       ⇒ **走進旅店解除不掉同行**（雪都四條約會線全中）。
+     ⚠⚠ -1383 的註解自己就寫著契約：「**機制留著、只是沒有台詞**…`endDate:true`
+       照樣會跑，**同行照樣解除得掉**。這一格不可以整個拿掉，拿掉就沒有人解除同行了。」
+       —— 台詞拿掉了，**擋它的那一行卻留著**。這是鐵律 7 但書的又一次：
+       **契約寫在註解裡，程式沒跟著改，而且不會有任何錯誤訊息。**
+     ⚠⚠⚠ **為什麼不是「回傳一個零句的 act」**（我第一版就是那樣，錯的）：
+       `enter()` 底下還有一道 **`if(lines.length){ … }`** —— 零句的段落**根本走不到**
+       `playAdhoc`，收尾（`act.endDate`）自然也跑不到。放寬那道門的話，
+       所有「條件過濾之後剛好零句」的段落都會跟著記旗，**波及面太大**。
+     ⇒ 這裡直接呼叫 `endDate()`（唯一那一支，鐵律 8 沒有被破）並回 null：
+       「沒有台詞的告別」＝**默默解除**，那正是 -1383 之前 -576 的行為。
+     ⚠ 它是冪等的，而且上面 `datingWho()` 那道門擋著 —— 解除之後就不再進來。 */
+  if(!e.lines || !e.lines.length){ endDate(); return null; }
   return { lines:e.lines, endDate:true, sides:e.sides||D.sides };
 }
 /* ══⚠⚠⚠ **一段戲是「抵達時演」還是「按睡覺才演」**（`sleepFirst`，ver -1396）══

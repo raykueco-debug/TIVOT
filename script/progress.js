@@ -1152,6 +1152,58 @@ export const CHAPTERS = [
               它的 `goto` 就是這一章的落點）→ 那一段最後插的 T4 解鎖 */
            'bl_night_sky','bl_night_done','renna_t4_ok'],
     enter:'town', town:'eastport', node:'inn' },
+
+  /* ══⚠⚠⚠ **Stage 13-BA**（ver -1538，Ray：「插一個 13BA，起點是**已跑完 B 的
+     初入古墓**」「stage 13 BA」「列入章節列表」）══════════════════════════════
+     ⚠⚠ **BA ＝ 先 B 後 A**：A route（伊甸古墓→雪都→鏡湖→石碑林→古墓內部）與
+       B route（貝利薩爾→東泊那一夜→審訊）是**非線性**的，兩種順序都成立
+       （Ray, -1530：「先 a 後 b 先 b 後 a 都可以」）。這一筆走的是**先 B**：
+       所以 `ep_m2_route` **不給**（M1 那一條），而雪都那幾段的 M1／M2 分歧
+       會照 `ep_m1_route` 走（判準是 `ep_m2_route`，見 `script/town.js`）。
+     ⚠ 落點 `tomb/gate`＋`tomb_opened` ⇒ 一進去就是「門開了呢。走吧。」那一段
+       （`tomb_enter`），往上走就是前庭的長談 —— **那就是「初入古墓」**。
+     ⚠⚠ **古墓裡面一支旗都不給**（`tomb_enter`／`tomb_talk`／`tomb_gk1_done`／
+       `tomb_chase_on`／`tomb_carry`）：那正是要測的。
+     ⚠ `free_explore_*` 兩支要給：它們是 `ep_interrogate`／`vn_arrive` 演完才插的
+       （`endStoryExplore`），跳關把那兩段的旗直接給了，這兩支就得跟著給 ——
+       不給的話東泊與雪都會停在「劇情探索」，敲門約不出人。
+     ⚠ `tomb_done` **不給**：古墓那一段的收尾還沒寫（見 HANDOFF 的 ⑨），
+       所以東泊走出旅店仍是分支 1。 */
+  { id:'stage13ba', name:'Stage 13-BA', sub:'先 B 後 A：審訊完 → 雪都／鏡湖跑完 → **初入古墓**',
+    stage:13, clockHour:10, named:true, aff:{ renna:40 },
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','flight_centipede_met',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
+           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart',
+           'sv_arrive','sv_evening','sv_night_done','shinier_siege',
+           'sv_clear_wild','safehouse_shinier','sv_forest_morning',
+           'sv_forest_go','sv_forest_intro','sv_deer_met','sv_deer_harm',
+           'sr_intro','sr_gate_brazier','sr_gate_bridge','sr_brazier','sr_bridge',
+           'sr_mural','ruins_gate_open','ruins_bell_done','ruins_thug_met','sr_altar',
+           'ruins_altar_on','sv_s8_noon',
+           'sv_s8_home','sv_s8_hungry','sv_s8_dine','sv_s8_corvin',
+           'sv_s9_order','belisar_noland_talk','ep_arrive',
+           'ep_renna_met','ep_renna_night','ep_evening','ep_day2',
+           'belisar_seen',
+           'ep_bel_gorge','ep_bel_sight','ep_bel_enter','bl_foyer_first',
+           'bel_hint2','bel_hint3','bel_water','ep_bel_altar','renna_hairpin_lost',
+           'ep_bel_court','ep_belisar_done','ep_bel_back',
+           'ep_night_raid','ep_hairpin_hunt','belisar_land_ok',
+           'bl_night_land','bl_night_foyer','bl_chase1','bl_chase2','bl_chase3',
+           'bl_chase4','bl_dragon_seen','bl_night_lionstair','bl_chase_talk3',
+           'bl_night_throne','bl_sky_hunt',
+           'bl_night_sky','bl_night_done','renna_t4_ok',
+           /* ── B route 的尾（旅店長談 → 守夜 → M1 → 隔日審訊 → 走出旅店）── */
+           'ep_hairpin_talk','ep_night_anya_out','ep_night_renna','ep_m1_route',
+           'ep_night_mi_done','ep_interrogate','free_explore_eastport','ep_leave_tomb',
+           /* ── A route（墓門初見 → 雪都 → 鏡湖 → 石碑林開古墓 → 尼莫那一段）── */
+           'tomb_gate','vn_arrive','free_explore_ravnsdal','vn_evening','vn_lib_done',
+           'vn_night_done','vn_day2','vn_brief',
+           'vn_depart','lakestele_found','lk_arrive','lk_steles','lk_nemo_done',
+           /* ⭐ 石碑林插的那一支：古墓的門從此打得開 */
+           'tomb_opened'],
+    enter:'town', town:'tomb', node:'gate' },
 ];
 
 /* ══⚠⚠⚠ **腳本測試鈕的落點**（ver -1381，Ray：「在首頁先放一個腳本測試鈕，
