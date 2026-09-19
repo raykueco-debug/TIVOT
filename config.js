@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1519';
+export const VERSION = 'ver 2026.09.17-1520';
 
 export const GAME_CONFIG = {
 
@@ -3616,6 +3616,14 @@ export const GAME_CONFIG = {
          ⚠ 校準點：同一支程式量 Prairie4 得 0.754，而表上記載 0.731（差 0.26 dB）
            —— 量法對得上，沒有走鐘（§5：量化要有校準點）。 */
       peritunematerial_prairie5_loop:0.794,
+      /* ══⚠⚠⚠ **東方泊地那一夜的兩首還沒量**（ver -1520）══
+           `peritune_glass_cradle_loop`（安雅與米夏）／`peritune_echoed_art`（守夜）
+         音檔還沒進這台機器，量不了 —— **刻意留空**：沒有那一列＝增益 1
+         ＝以母帶響度播出（§6.6），那是「還沒調校」不是「壞掉」。
+         ⚠⚠ **不要憑感覺填一個數字** —— 這張表上每一列都是量出來的，
+           填一個猜的進來，下一個人會把它當成量過的。
+         ⚠ 檔案到了（Mac）跑 `tools/audio_scan.html`：它現場列目錄、逐支印建議值，
+           把那兩列補在這裡就好。錨是 `bgm_battle`（平均 −9.90）。 */
       /* ⚠ 這兩首的「手機喇叭模型」比原始量測低 6.2／7.5 dB（一般曲子約 4~5）——
          它們的低頻本來就重。增益對的是**兩者的平均**（§6.6：只對其中一邊會讓
          低頻重的曲子在另一端突出 4~7 dB）。 */
@@ -4418,6 +4426,24 @@ export const ASSETS = {
      ⚠ **尼莫那一場的戰鬥卡還不存在** —— 這一筆先把曲子接進管線（預載、音量、Credit），
        卡寫好之後在卡上寫 `bgm:'nemo'` 就會吃到它（`bgmSrc` 會退回 `asset('bgm_'+名字)`）。 */
   bgm_nemo:         "resources/audio/bgm/PerituneMaterial_Prairie5_loop.m4a",                // 尼莫戰（ver -1508，Ray 指定）
+  /* ══⚠⚠⚠ **東方泊地那一夜的兩首**（ver -1520，Ray 交件並指定進 Credit）══════════
+     · `glasscradle` ＝ **安雅與米夏**那幾拍（旅店長談的米夏注視 CI、隔日審訊說破
+       「謝索洛夫殿下」那一句）—— Ray 的括號寫的就是使用場景：`(Anya & Misha)`
+     · `echoedart`   ＝ 守夜（獨自坐坐兩小時之後）
+     ⚠⚠⚠ **這兩支音檔在這台 Windows 上還沒有**（Ray：「這台電腦沒有
+       Peritune_Glass_Cradle_loop，**先寫，切回 mac 後就可以接上**」）——
+       鑰匙、`BGM_FILES`、`BGM_ALIAS`、Credit 四個地方都已經備好，
+       **檔案一放進 `resources/audio/bgm/` 就會響**，程式一個字都不必再動。
+       ⚠ 在那之前 `playBgm` 抓不到只會靜靜地不出聲（不會壞、不會報錯）——
+         所以**測不出來**，回到 Mac 要親耳聽一次。
+     ⚠⚠ **檔名是照 Ray 給的字面 ＋ `.m4a`**（§6.6 的規約）。Mac 上跑一次
+       `python3 tools/script_lint.py`：它會逐項對照資料夾，**名字拼錯就會報
+       「BGM_FILES 表指到不存在的檔案」** —— 那一行就是答案，照著改。
+     ⚠⚠ **`tuning.fileGain` 還沒量**（見那一節的空位）：沒有那一列＝增益 1
+       ＝以母帶響度播出（§6.6）。檔案到了要跑 `tools/audio_scan.html` 補上，
+       **不要憑感覺填一個數字**。 */
+  bgm_glasscradle:  "resources/audio/bgm/Peritune_Glass_Cradle_loop.m4a",                   // 安雅與米夏（ver -1520，Ray 指定）
+  bgm_echoedart:    "resources/audio/bgm/Peritune_Echoed_Art.m4a",                          // 守夜（ver -1520，Ray 指定）
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿）。 */
   bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",

@@ -4712,6 +4712,34 @@ export const TOWNS = {
     /* BGM（ver -1251 就先接好了，Ray：「Peritune_Portside_Cafe_loop / 東泊放這首」）。
        那一版的註解寫著「等 TOWNS.eastport 建起來只要加這一行」—— 就是這一行。 */
     bgm: 'portside',
+    /* ══⚠⚠⚠ **那一夜之後的三段換曲**（ver -1520，Ray 交辦）══════════════════
+       > 「在米夏注視那一拍 bgm 換成 Peritune_Glass_Cradle_loop(Anya & Misha)」
+       > 「休息兩小時後，音樂換成 Peritune_Echoed_Art」
+       > 「第二天開始用 bgm_result」
+
+       ⚠⚠⚠ **為什麼要寫在這裡，而不是只寫在那幾拍上**（ver -1420 的同一課）：
+         **每走一格 `enter()` 都會 `ensureBgm(townBgm())`** —— 只寫在腳本那一拍上，
+         下一步就被打回這座城的 `portside`。那正是「追擊戰期間不會換音樂」
+         那一次的病灶。**「這一段期間放哪一首」是狀態，要寫成狀態。**
+       ⚠⚠ 腳本那幾拍的 `bgm:` **照舊要寫**，兩者分工不同（不是抄兩份）：
+         · 拍上的 `bgm:` ＝**換曲的那一刻**（那一段戲演到那一句才換）
+         · 這張表　　　　＝**那一段期間**（走一格、進旅店、離開再回來都還是它）
+         旗是**演完**才插的，所以中間那一段只有拍上那一支撐得住。
+       ⚠⚠ **由上往下取第一個成立的**（同 `acts`／`innDoors`）：晚的排前面 ——
+         `ep_night_mi_done` 成立時底下兩條也都成立，排錯就永遠取不到它。
+       ⚠ `need`／`until` 都是旗：插了 `need`、而且 `until` 還沒插 ⇒ 用這一首。
+       ⚠⚠ **第一條沒有 `until`** ＝「第二天開始」之後就一直是它。Ray 只說了起點、
+         **沒說終點** —— 要收在哪一段等他定，定了補一個 `until` 就好。
+         ⚠ 不要自己猜一個終點：猜錯的下場是某一段戲的曲子憑空變回 portside，
+           而那不會有任何錯誤訊息。 */
+    bgmWhen: [
+      /* 第二天（M1／M2 的收尾都插 `ep_night_mi_done`）起：結算曲。 */
+      { need:'ep_night_mi_done',                            bgm:'result' },
+      /* 守夜：獨自坐坐兩小時之後（安雅溜出房間那一段）。 */
+      { need:'ep_night_anya_out', until:'ep_night_mi_done',  bgm:'echoedart' },
+      /* 旅店長談的米夏注視那一拍之後，到坐滿兩小時為止。 */
+      { need:'ep_hairpin_talk',   until:'ep_night_anya_out', bgm:'glasscradle' },
+    ],
     /* 大城市不上迷霧（ver -913）—— ⚠ **要明寫**：沒寫就是有霧。 */
     mist: 0,
     /* ══ 餐飲街一格三張圖（§6.5.4.2）══
@@ -5373,7 +5401,15 @@ export const TOWNS = {
              後面補」）—— 這一拍現在只剩安雅的反應與主角的「！！」。
              圖到了就把 `cg:'CI_Misha_eyes'` 補回這一拍（**不要另開一拍**：
              那一瞬的驚嚇與她的表情是同一件事）。 */
-          any('terrifying',''),
+          /* ══⚠⚠⚠ **米夏注視那一拍 → 換曲**（ver -1520，Ray：「在米夏注視那一拍
+             bgm 換成 Peritune_Glass_Cradle_loop(Anya & Misha)」）══
+             ⚠ 順序 Ray 已經確認過，而線上本來就是這樣：**諾薇兒立繪 → 安雅 →
+               米夏注視 CI** —— 這一拍就是第三拍，所以曲子掛在它身上。
+             ⚠⚠ 這一拍的 `bgm` 只管**換曲的那一刻**；那一段期間由城上的 `bgmWhen`
+               撐著（不然走一格就被打回 `portside`，見那一段的說明）。
+             ⚠ **圖仍然沒有**（`CI_Misha_eyes`）—— 見上一段註解：圖到了補 `cg:` 在
+               這一拍，不要另開一拍。曲子與圖是兩件事，曲子先接。 */
+          Object.assign(any('terrifying',''), { bgm:'glasscradle' }),
           { speaker:'PLAYER', text:'！！' },
           sor('ready','小公主怎麼啦？'),
           any('talk','沒……沒事……'),
@@ -5408,8 +5444,12 @@ export const TOWNS = {
              ⚠ 玩家若不坐、在城裡亂走到午夜也演得到：那不是漏洞，
                「兩小時後」本來就是時間到了，不是非坐不可。
            ⚠ 名字欄空＝旁白（主角自己看到的），同旅店 `noSleep` 那一句的作法。 */
+        /* ⚠⚠ **ver -1520：這一段的第一拍換曲**（Ray：「休息兩小時後，音樂換成
+           Peritune_Echoed_Art」）—— 「休息兩小時」就是旅店的「獨自坐坐」，
+           而坐完之後演到的正是這一段。那一段期間由城上的 `bgmWhen` 撐著。 */
         { flag:'ep_night_anya_out', need:'ep_hairpin_talk', hourOfDay:[0,6], lines:[
-          { speaker:'NARRATION', text:'（房門輕輕開了。）', se:'se_walk', auto:1400 },
+          { speaker:'NARRATION', text:'（房門輕輕開了。）', se:'se_walk', auto:1400,
+            bgm:'echoedart' },
           { speaker:'NARRATION', text:'（安雅悄悄地溜出了房間。）', auto:1600 },
           { speaker:'PLAYER', text:'……' },
           { speaker:'NARRATION', text:'（要自己跟上去嗎？還是要叫醒夥伴呢？）' },
@@ -5423,7 +5463,10 @@ export const TOWNS = {
              **這一段本身一個字都沒改** —— 接戲的門是「抵達那一格」，不是這裡。 */
         { flag:'ep_interrogate', need:'ep_m1_route', hourOfDay:[8,18],
           sides:{ RENNA:'L' }, lines:[
-          ren('holdfile','好的，安雅小姐。'),
+          /* ⚠⚠ **ver -1520：第二天開始用 `bgm_result`**（Ray 原話）——
+             掛在這一段的第一拍（＝第二天的第一段戲）；那一整天由城上的
+             `bgmWhen` 撐著（`need:'ep_night_mi_done'`，**沒有終點**，見那一段）。 */
+          Object.assign(ren('holdfile','好的，安雅小姐。'), { bgm:'result' }),
           ren('holdfile','雖然一路上受到您許多幫助，但您畢竟是敵國人士。'),
           any('silent','……'),
           ren('coldstare','雖然這樣對您很殘酷，但是請您諒解。'),
@@ -5453,7 +5496,10 @@ export const TOWNS = {
              圖到了就把 `cg:'…'` 補在諾薇兒那兩拍上、並在下一拍 `cg:null` 收掉
              （§6.5：插圖是持續狀態，收圖走黑幕）。 */
           nou('covermouth','……'),
-          nou('bigsmileclose','好好吃。'),
+          /* ⚠ ver -1520（Ray：「諾薇兒的好好吃立繪用 Lookaway」）——
+             原本是 `bigsmileclose`。⚠ 檔名是 `Nouvelle_SI_Lookaway.webp`（大寫 L），
+             但腳本寫的是 `speakers.js` 的**差分鍵** `lookaway`，不是檔名。 */
+          nou('lookaway','好好吃。'),
           sor('dying','從來沒看過這種酷刑……'),
           ren('smile','那麼，安雅小姐，可以回答我的問題了嗎？'),
           any('talkshy','……'),
@@ -5464,7 +5510,14 @@ export const TOWNS = {
           sor('amazed','原來只是做做樣子啊？'),
           ren('bow','作為賠禮，請盡情享用這些點心吧。'),
           any('shy',''),
-          ren('talkserious','安娜˙謝琳娜˙謝索洛夫殿下。'),
+          /* ⚠⚠ **ver -1520**（Ray：「蕾娜說出謝索洛夫殿下的時候 bgm 改
+             Peritune_Glass_Cradle_loop(Anya & Misha)」）—— 與米夏注視那一拍同一首：
+             那一首的使用場景 Ray 括號裡就寫著「Anya & Misha」，而這一句正是
+             把安雅與米夏綁在一起說破的那一刻。
+             ⚠ **這一段之後沒有人把它換回來** —— 城上的 `bgmWhen` 只到「第二天起
+               用 result」為止，所以走出旅店那一格就會回到 `result`。
+               要讓它撐到某一段為止，就在 `bgmWhen` 補一條排在 result 上面（等 Ray 定）。 */
+          Object.assign(ren('talkserious','安娜˙謝琳娜˙謝索洛夫殿下。'), { bgm:'glasscradle' }),
           any('terrifying',''),
           nou('shocked2','謝索洛夫……？'),
           sor('surprised','殿下？'),
@@ -5487,7 +5540,8 @@ export const TOWNS = {
           sor('confuse','惡夢……'),
           nou('risehand','我申請為安雅小姐的宗教法廷辯護人！'),
           ren('awkward','沒有要審判她啦。'),
-          ren('dying','我相信安娜殿下沒有惡意，但是……'),
+          /* ⚠ ver -1520（Ray 指定）：原本是 `dying`，改成 `evalutatingclosemouth`。 */
+          ren('evalutatingclosemouth','我相信安娜殿下沒有惡意，但是……'),
           ren('evalutating','貴族這種東西，有時候就是身不由己，不是嗎？'),
           any('silent','……'),
           ren('front','這件事我暫時不會上報聖王廳。還請安娜殿下再隨我們探訪遺蹟吧。'),

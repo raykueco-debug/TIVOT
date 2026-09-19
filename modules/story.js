@@ -637,6 +637,13 @@ const BGM_FILES=[
   'PerituneMaterial_Prairie4_loop.m4a',   // ver -1408：平原古道（bgm_prairie）
   'PerituneMaterial_Gothic_Dark_loop.m4a',   // ver -1421：追擊戰的**主體檔**（-1350 一直只有 7.8 秒的 intro）
   'PerituneMaterial_Prairie5_loop.m4a',   // ver -1508：尼莫戰（bgm_nemo）
+  /* ══⚠⚠⚠ 東方泊地那一夜的兩首（ver -1520，Ray 交件）══
+     ⚠⚠ **這兩支在這台 Windows 上還沒有** —— Ray：「先寫，切回 mac 後就可以接上」。
+       在那之前 `bgmSrc` 照樣回得出路徑、`playBgm` 抓不到就靜靜不出聲（不報錯）。
+     ⚠⚠⚠ **Mac 上跑 `tools/script_lint.py` 會逐項對照資料夾** ——
+       名字拼錯就報「BGM_FILES 表指到不存在的檔案」，照那一行改檔名。 */
+  'Peritune_Glass_Cradle_loop.m4a',   // ver -1520：安雅與米夏（bgm_glasscradle）
+  'Peritune_Echoed_Art.m4a',          // ver -1520：守夜（bgm_echoedart）
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
@@ -656,7 +663,15 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   moonlit:'peritune_moonlit_dancer_loop',   // ver -1294：聖索菲亞城
                   blackcrystal:'peritune_black_crystal_loop',   // ver -1294：伊甸古墓
                   taisho2:'peritunematerial_taishoroman_theme2_loop',   // ver -1294：拉芬斯達爾城
-                  portside:'peritune_portside_cafe_loop' };   // ver -1294：東方泊地
+                  portside:'peritune_portside_cafe_loop',   // ver -1294：東方泊地
+                  /* ⚠ 這兩個短名與檔名對不起來（`glasscradle` vs
+                     `peritune_glass_cradle_loop`）—— 那正是 `BGM_ALIAS` 留著的用途
+                     （見下面 -1398 那一段）。`ASSETS.bgm_*` 的退路也接得住它們，
+                     但 **`tools/script_lint.py` 只認這張表與 `BGM_FILES`** ——
+                     不寫在這裡，腳本上的 `bgm:'glasscradle'` 會被 lint 判成
+                     「沒有這首 BGM」（ver -1520）。 */
+                  glasscradle:'peritune_glass_cradle_loop',   // ver -1520：安雅與米夏
+                  echoedart:'peritune_echoed_art' };          // ver -1520：守夜
 const BGM_SRC=(()=>{ const m={};
   for(const f of BGM_FILES) m[f.replace(/\.[^.]+$/,'').toLowerCase()]='resources/audio/bgm/'+f;
   return m; })();
@@ -2074,7 +2089,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1519';
+const KERB_V='?v=1520';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
