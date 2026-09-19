@@ -38,6 +38,7 @@ import numpy as np
 from PIL import Image
 
 MODELS = {
+    'toonout': None,                                     # 動漫微調版 BiRefNet，見 load_model()
     'birefnet-matting': 'ZhengPeng7/BiRefNet-matting',   # ⭐ 預設：GT 上四項全過（斜坡 1.13 倍）
     'birefnet-hr': 'ZhengPeng7/BiRefNet_HR',             # 單張看起來較銳利，但 GT 上斜坡 1.16 倍，沒過
     'birefnet': 'ZhengPeng7/BiRefNet',                   # 通用版，當對照
@@ -54,10 +55,29 @@ MEAN = np.array([0.485, 0.456, 0.406], np.float32)
 STD = np.array([0.229, 0.224, 0.225], np.float32)
 
 
+# ToonOut：拿 1,228 張動漫圖微調過的 BiRefNet（arXiv 2509.06839，權重 MIT）。
+# 論文的出發點與本專案踩到的牆一致：通用去背模型在動漫風格上不行，難點正是頭髮與半透明。
+# ⚠ 它的 .pth 是 DDP ＋ torch.compile 存出來的，鍵名多一層 `module._orig_mod.`；
+#   剝掉之後與 ZhengPeng7/BiRefNet 的 754 個鍵**完全一致**，直接載得進去。
+TOONOUT_REPO, TOONOUT_FILE = 'joelseytre/toonout', 'birefnet_finetuned_toonout.pth'
+TOONOUT_PREFIX = 'module._orig_mod.'
+
+
 def load_model(name, device, fp16=True):
     import torch
     from transformers import AutoModelForImageSegmentation
-    m = AutoModelForImageSegmentation.from_pretrained(MODELS[name], trust_remote_code=True)
+    arch = 'birefnet' if name == 'toonout' else name
+    m = AutoModelForImageSegmentation.from_pretrained(MODELS[arch], trust_remote_code=True)
+    if name == 'toonout':
+        from huggingface_hub import hf_hub_download
+        sd = torch.load(hf_hub_download(TOONOUT_REPO, TOONOUT_FILE), map_location='cpu')
+        sd = sd.get('state_dict', sd)
+        sd = {k[len(TOONOUT_PREFIX):] if k.startswith(TOONOUT_PREFIX) else k: v
+              for k, v in sd.items()}
+        missing, unexpected = m.load_state_dict(sd, strict=False)
+        if missing or unexpected:
+            raise SystemExit('⛔ ToonOut 權重對不上：缺 %d 個、多 %d 個 —— 不要繼續，'
+                             '半套權重會安靜地給出爛 alpha' % (len(missing), len(unexpected)))
     m.eval().to(device)
     if fp16 and device == 'cuda':
         m.half()
@@ -102,10 +122,19 @@ def predict_alpha(model, rgb, size, device, fp16=True):
     return a
 
 
-ALPHA_GAMMA = 1.50   # 見 calibrate_alpha()
+# ⚠⚠ 校正係數是**逐模型**的，不可共用（ver -1516 實測）：
+#   它是拿「某個模型的 α」對「GT 的 α」擬合出來的，換模型就要重擬合。
+#   toonout 本來就已經比 GT 銳利（斜坡 0.53 倍），硬套 birefnet-matting 的 γ=1.50
+#   只會讓 IoU 從 0.9955 掉到 0.9884 —— 沒有變好，只是變瘦。
+ALPHA_GAMMA = {
+    'birefnet-matting': 1.50,   # 11 張擬合、11 張驗證，見 calibrate_alpha()
+    'birefnet-hr': 1.50,        # 同架構，沿用（沒有單獨擬合過）
+    'birefnet': 1.50,
+    'toonout': 1.00,            # ⭐ 不校正
+}
 
 
-def calibrate_alpha(alpha):
+def calibrate_alpha(alpha, backend='birefnet-matting'):
     """把 BiRefNet 的 α 校正到 GT 的尺度（ver -1516，Ray：「還是有點糊」）。
 
     拿 Ray 交的 22 張當正確答案，量「我的 α」對「GT 的 α」的關係，
@@ -121,7 +150,8 @@ def calibrate_alpha(alpha):
     ⚠ 這是**校正，不是銳化** —— 判準是「離 GT 更近」，不是「看起來更利」。
       擬合與驗證分開正是為了這件事；要動這個數字，重跑那個切半實驗，不要憑印象調。
     """
-    return np.clip(alpha, 0, 1) ** ALPHA_GAMMA
+    g = ALPHA_GAMMA.get(backend, 1.0)
+    return alpha if g == 1.0 else np.clip(alpha, 0, 1) ** g
 
 
 def solve_foreground(rgb, alpha):
@@ -196,7 +226,7 @@ def main():
         if a.refine == 'cf':
             alpha = refine_cf(rgb, alpha)
         if not a.raw_alpha:
-            alpha = calibrate_alpha(alpha)     # ⚠ 對齊 GT 的尺度，見 calibrate_alpha()
+            alpha = calibrate_alpha(alpha, a.backend)   # ⚠ 逐模型，見 ALPHA_GAMMA
         fg = solve_foreground(rgb, alpha)          # ⚠ 不可省
         rgba = np.concatenate([np.clip(fg * 255, 0, 255),
                                np.clip(alpha[:, :, None] * 255, 0, 255)], axis=2)
