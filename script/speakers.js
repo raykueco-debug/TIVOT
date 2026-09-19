@@ -1059,14 +1059,38 @@ export const ART = {
      ⚠⚠ 取景值是**那張圖自己的**（`tools/measure_si.py` 重量過一次確認：
        `top:7 bot:1531 fx:0.536`，與 -582 記載的一致）—— 不是從 `priest` 抄來的。
        兩筆現在指著**兩張不同的圖**，數字本來就該不一樣（§6.5：差分之間不可互抄）。
-     ⚠ 檔名還是 `Priest_SI_front.webp`（-582 交件時的名字）。與角色名對不上，
-       日後要正名成 `Arrhenius_SI_front.webp` 是**美術端**的事（鐵律 11）——
-       改名那一次記得回來改這一行。
+     ⚠ ver -1509 已正名為 `Arrhenius_SI_front.webp`（`git mv`，內容一個位元都沒動）。
+       之所以要改：差分叫 `Arrhenius_SI_*`、底圖叫 `Priest_SI_*`，前綴不一致會讓
+       `tools/si_xlsx.py` **把同一個人切成兩頁**（而且投票取名之後兩頁都叫「阿瑞尼斯」，
+       反而更難看出是同一個人）。
+       ⚠ **改名不必掛 `?v=`**：新名字＝新網址，天生沒有快取問題（§5：新增比覆蓋安全）。
      ⚠ `cm:172` 沿用舊的估值（中老年男性神職）；有設定就改，取景值不必重量。
      ⚠ `side:'R'` 也是沿用 —— 他真的有戲之後再看對手是誰（§6.5「兩個人同台就一定
        分站兩邊」）。 */
   arrhenius: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
-           side:'R', alt:null, base:'resources/SI/Priest_SI_front.webp', expr:{} },
+           side:'R', alt:null, base:'resources/SI/Arrhenius_SI_front.webp', expr:{
+    /* ══ 表情差分 6 張（ver -1503 美術交件，-1509 接線）══
+       Ray 的描述 → 命名：看到久違學生的驚訝帶點喜＝`surprisejoy`／略皺眉微笑
+       閉嘴・張嘴＝`wrysmile`・`wrysmileopen`／smiley eyes 微笑閉嘴・張嘴＝
+       `smileclose`・`smileopen`／低頭略落沒張嘴＝`lookdown`。
+       ⚠⚠ **六張的取景與底圖不同是對的**（底圖 fx:0.536／這六張 0.497）：
+         第二版把頭抬起來了，臉回到畫面中央。引擎是
+         `left = 錨點 − 縮放 × fx × 圖寬` —— **每張各自量對，臉就會落在同一個
+         螢幕位置**，不必也不可以互抄（§6.5 的 -645/-649）。
+       ⚠ 六張彼此是**同一個姿勢**，所以 `bot`／`fx` 完全一樣，`top` 的 0~2 是量測雜訊
+         （2/1536 ＝ 0.13%，換算到螢幕不到 1px）—— 照量到的寫，不另外對齊。
+       ⚠ 這六張是 **Gemini 畫的**（那天 ChatGPT 產圖額度用完）：臉比底圖年輕、
+         鬍子淡、疤幾乎看不見。Ray 看過並定案「先用這個，配角而已」。
+         日後他升格成有戲份的角色要用 ChatGPT 重跑，提示詞在
+         `resources/_HANDOFF_ART_20260919.md` 的四之三／四之四。
+       ⚠ `_recycle/resources/SI/` 底下有同名的**第一版**（六張全部繼承了底圖那個
+         低頭側傾的角度，Ray：「他是落枕嗎？」）—— 那是廢稿，不要拿。 */
+    surprisejoy:  { src:'resources/SI/Arrhenius_SI_surprisejoy.webp',  top:2, bot:1535, fx:0.497 },
+    wrysmile:     { src:'resources/SI/Arrhenius_SI_wrysmile.webp',     top:0, bot:1535, fx:0.497 },
+    wrysmileopen: { src:'resources/SI/Arrhenius_SI_wrysmileopen.webp', top:0, bot:1535, fx:0.497 },
+    smileclose:   { src:'resources/SI/Arrhenius_SI_smileclose.webp',   top:0, bot:1535, fx:0.497 },
+    smileopen:    { src:'resources/SI/Arrhenius_SI_smileopen.webp',    top:0, bot:1535, fx:0.497 },
+    lookdown:     { src:'resources/SI/Arrhenius_SI_lookdown.webp',     top:1, bot:1535, fx:0.497 } } },
   /* ══ 科爾文（第五騎士團・作戰課副團長，ver -953，Ray 的 Stage8 稿）══
      ⚠ `cm:176` ＝ **Ray 指定「與索菈娜同高」**。不是隨手填的：`CAST_TALL` 取全體
        `cm` 的最大值來算每公分像素，填 180（他原本說的）會讓**全體立繪縮小約 1.1%**
