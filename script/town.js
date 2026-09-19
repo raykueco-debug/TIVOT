@@ -4428,6 +4428,34 @@ export const TOWNS = {
         any('silent','', { se:'se_walk', skipIf:'ep_m1_route' }),
         sor('amazed','她這是怎麼啦？',               { skipIf:'ep_m1_route' }),
       ] },
+      /* ══⚠⚠⚠ **隔日出發**（ver -1523，Ray 的 Stage10-A 稿：「回到旅店。睡覺。隔日。」）══
+         ⚠ `need:'vn_night_done'`（圖書館那一整段演完，＝旅店的 `sleepFlag`）
+           ＋ `hourOfDay:[6,12]` ⇒ **睡一覺跨過午夜才成立**：插旗那一刻是傍晚 19 點，
+           不在 [6,12] 裡（同 -664 那一課：寫成單一時刻會在當晚就演掉）。
+         ⚠ `goto:'square'` ＝港口廣場（出航的那一格），稿上那兩個 `Se_walk`
+           就是走出旅店的那一段路；後半在路上講完，收尾接著演上船的簡報。
+         ⚠⚠ 這一段**兩條都是 `onlyIf`**（與 -1522 那五處刻意不同）：稿上那兩句是
+           「安雅站在誰那一邊」的表態，**沒跑過東泊的人本來就不該有立場** ——
+           兩支旗都沒有時這一拍不演，讀起來只是她沒接話。 */
+      { flag:'vn_day2', need:'vn_night_done', hourOfDay:[6,12],
+        goto:'square', enterAgain:true, sides:{ RENNA:'L' }, lines:[
+        ren('lookawaytalk','好了，出發吧。'),
+        sor('idea','墓門要怎麼辦？用艦砲轟掉？'),
+        nou('concern','那可是千年文物耶！'),
+        ren('lookawaytalk','上了船再說明會比較快，走吧。'),
+        { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+        sor('whisper','……還沒和好？'),
+        { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+        sor('confuse','喂……'),
+        sor('sad','唉……為什麼我要幹那種蠢事呢……'),
+        any('argue','對啊。', { onlyIf:'ep_m1_route' }),
+        any('upset','',       { onlyIf:'ep_m2_route' }),
+        sor('cringe',''),
+        nou('decoding','也不能怪索拉娜啦……'),
+        sor('surprised','諾薇兒……！'),
+        nou('sadsmilenoeye','只能怪我拖後腿，沒辦法像上一個搭檔那樣支援他。'),
+        sor('dying','……我寧可妳罵我。'),
+      ] },
     ],
     /* 大城市不上迷霧（ver -913）—— ⚠ **要明寫**：沒寫就是有霧。 */
     mist: 0,
@@ -4495,7 +4523,31 @@ export const TOWNS = {
            ⚠ `endStoryExplore:true` ＝演完開放自由活動（＝可以約會，§6.5.4.2）——
              稿上那一行「（自由探索）」就是它。
            ⚠ 四人同台 ⇒ `sides:{ RENNA:'L' }`（§6.5 的站位表：碰到安雅蕾娜放左）。 */
-        acts:[ { flag:'vn_arrive', need:'tomb_gate', endStoryExplore:true,
+        /* ══⚠⚠⚠ **上船的簡報**（ver -1523）══ 稿上的「上船：」那一段。
+           ⚠⚠ **排在抵達那一段前面**：`actDue` 由上往下取第一個成立的，
+             而它的 `need`（`vn_day2`）比抵達那一段晚成立。
+           ⚠⚠⚠ **收尾插 `vn_depart`** ＝ 解除 `sail.hold`（「不能丟下夥伴」）——
+             鐵律 9 那個「誰插」在這裡結案：**簡報講完才走得掉**。
+           ⚠ 稿上「索：『生前？』」標的立繪是 `Nouvelle_SI_Shocked` —— 判成抄稿時的
+             欄位錯位（下一句「好過份……」也是諾薇兒），照立繪改成她。錯了說一聲。
+           ⚠ 稿上寫 `think`，蕾娜的鍵是 `thinking`。 */
+        acts:[ { flag:'vn_brief', need:'vn_day2', sides:{ RENNA:'L' }, lines:[
+          ren('pointmap','古墓西南方的峰群，有一座石碑林。'),
+          ren('pointmap','據說是建造古墓的工匠們生前立的碑。'),
+          nou('shocked','生前？'),
+          ren('lookawaytalk','古墓建成的時候，他們也一併殉葬了。所以只立了碑。'),
+          nou('shocked2','好過份……'),
+          ren('lookawaytalk','傳說，他們用自己的生命守護著古墓。只有獲得認可者，才有進入的資格。'),
+          ren('thinking','雖然沒什麼把握，但值得一試。'),
+          sor(null,'不是因為怕鬼所以胡謅的吧？'),
+          ren('coldstare',''),
+          sor('sorry','對不起，我再也不敢了。'),
+          nou('concern',''),
+          ren('pointmap','位置是在群山中的一小片湖，應該不難找。'),
+          ren('invite','船開到附近，再麻煩安雅小姐感知看看。'),
+          any('answer','好、好！', { flags:['vn_depart'] }),
+        ] },
+        { flag:'vn_arrive', need:'tomb_gate', endStoryExplore:true,
                  sides:{ RENNA:'L' }, lines:[
           nou('surprise','哇，下雪了。'),
           sor('think','有點冷。'),
@@ -6344,7 +6396,22 @@ export const TOWNS = {
     nodes: {
       /* ── 入口：隘口，前方第一次看到湖 ── */
       inlet:      { bg:'Lake_Inlet',      name:'鏡湖　山口',
-        exits:{ up:'shingle' } },
+        exits:{ up:'shingle' },
+        /* ══⚠⚠⚠ **抵達鏡湖**（ver -1523，Ray 的 Stage10-A 稿：「開船。感應捕捉到
+           遺蹟。」那一段）══
+           ⚠ 稿上這幾句是在**船上**講的，而「感應捕捉到遺蹟」是**飛行頁**那一邊的事
+             （`lakestele_found` 由那裡插，見 `grove` 的 `bgWhen`）—— 這一版把它們
+             放在**降落之後的第一格**：不必為了四句話在另一個 document 再開一條路
+             （§6.10：跨頁的東西越少越好），而且降得下來就表示感應已經掃到了
+             （`nearestTown` 的 `P.flag` 那道門）。
+           ⚠ `need:'vn_brief'` ＝上船的簡報講完（不然玩家自己先飛來會演在錯的地方）。 */
+        acts:[ { flag:'lk_arrive', need:'vn_brief', sides:{ RENNA:'L' }, lines:[
+          sor('surprised','哇，還真有。'),
+          ren('coldstare','雖然是靜水，但可著水面積不大，請索菈娜小姐妥善操帆。'),
+          sor('cringe','是、遵命！'),
+          nou('concern','蕾娜小姐完全生氣了……'),
+          any('dying','好可怕……'),
+        ] } ] },
       /* ── 三向樞紐：正前方沿湖，左邊一條岔路往岩壁下 ── */
       shingle:    { bg:'Lake_Shingle',    name:'鏡湖　碎石灘',
         exits:{ back:'inlet', up:'eastshore', left:'fallbase' } },
@@ -6370,7 +6437,41 @@ export const TOWNS = {
            「還沒感應就先走進來」的路（陸路、劇情強制），它立刻就對。 */
       grove:      { bg:'Lake_Grove',      name:'鏡湖　石碑林',
         bgWhen:[ { need:'lakestele_found', bg:'Lake_Grove_glow' } ],
-        exits:{ back:'cave' } },
+        exits:{ back:'cave' },
+        /* ══⚠⚠⚠ **石碑林・啟動**（ver -1523，Ray 的 Stage10-A 稿）══════════════
+           ⚠⚠⚠ **`tomb_opened` 就是在這裡插的** —— 伊甸古墓的墓門從 ver -1142 起
+             就寫著「⚠⚠ 鐵律 9：`tomb_opened` 誰插的 —— Ray 已經定了條件，實作後補
+             （**要找到另一個遺蹟啟動才會開**）」。**這一段就是那個事件**，
+             那一條懸著的但書在這裡結案（誰拔：沒有人，同 `got_ship` 那一族）。
+           ⚠⚠⚠ **`...NIEM_TAIL` 一定要放在最後一拍** —— 它裡面有兩個 `end:true`
+             （第一次拿／已經教過那兩條分流），**後面再寫什麼都不會演**。
+             ⇒ 稿上「啟動 → 獲得 NIEM → 蕾娜『古墓應該開啟了』」的順序，這一版
+               **把蕾娜那四拍挪到 NIEM 之前**：拿到道具的提示會晚幾拍出來。
+               要照稿上的順序，就得把那一段拆成兩個 act（而第二個 act 需要
+               「再抵達一次」才演得到）—— 不划算。⚠ 要改說一聲。
+           ⚠ 「啟動動畫」走既有的 `fx:'sense'`（安雅啟動祭壇那一拍同一支，鐵律 8）
+             ＋ `shake` —— 沒有為這一段另做一個動畫。
+           ⚠ 稿上寫 `shockcalm`，蕾娜的鍵是 `shockedCalm`。 */
+        acts:[ { flag:'lk_steles', need:'lk_arrive', sides:{ RENNA:'L' }, lines:[
+          ren('watch','應該就是這裡了。那麼，'),
+          any('answer','是！', { shake:true }),
+          ren('shockedCalm',''),
+          ren('awkward','安雅小姐不用那麼緊張的。'),
+          any('answer','好……好！'),
+          ren('evalutatingclosemouth',''),
+          nou('whisper','安雅都嚇壞了……'),
+          sor('dying','都是我不好……'),
+          /* 石碑啟動。 */
+          { speaker:'NARRATION', text:'', fx:'sense', shake:true, auto:1600 },
+          ren('pointmap','如果文獻沒錯的話，古墓應該開啟了……', { flags:['tomb_opened'] }),
+          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+          ren('reach',''),
+          ren('meltdown',''),
+          nou('sad','……'),
+          /* ══ 獲得 NIEM ══ 每一座遺蹟共用的收尾，見檔頭的 `NIEM_TAIL`。
+             ⚠ **它必須是最後一拍**（見上面那一段的說明）。 */
+          ...NIEM_TAIL,
+        ] } ] },
       /* ── 三向樞紐：沿湖的路 ＋ 右側水邊一條岔路 ── */
       eastshore:  { bg:'Lake_Eastshore',  name:'鏡湖　東岸',
         exits:{ back:'shingle', up:'northshore', right:'deadfall' } },
