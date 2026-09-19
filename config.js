@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1524';
+export const VERSION = 'ver 2026.09.17-1526';
 
 export const GAME_CONFIG = {
 
@@ -2355,6 +2355,14 @@ export const GAME_CONFIG = {
          是「尼莫戰的預設曲」** —— 要用它就在這張卡上寫 `bgm:'nemo'`，
          我沒有自己接：Ray 這一份稿子沒提音樂。 */
     lk_nemo: { enemy:'nemo', allowLose:true },
+    /* ══ 守墓者（ver -1525）══ 三張追擊、一張決戰（規格 §九）。
+       ⚠ 都不寫 `sessionEnd`：追擊那三場是一場一結算（玩家被追上就打一場）；
+         決戰那一張是這一段的終點，等 ⑨ 追逐機制接上時再決定要不要收段。
+       ⚠ 不禁聖徒化／搭檔技（Ray 沒說要禁，憲法那條是「禁了要明寫」）。 */
+    tomb_gk1:  { enemy:'gk_seal'   },
+    tomb_gk2:  { enemy:'gk_offset' },
+    tomb_gk3:  { enemy:'gk_many'   },
+    tomb_gk_final: { enemy:'gk_crypt' },
     /* ══⚠⚠ 貝利薩爾・祭壇的那一場（ver -1353，Ray 的稿：「進入戰鬥，雖是 boss
        但只是**略弱的中 boss 水準**」）══
        ⚠ 敵人是 `bl_dragon_chase`（古城裡的龍，拘束態立繪）—— 它的數值是 Ray 指定
@@ -3934,6 +3942,15 @@ export const ASSETS = {
      ⚠⚠ **這張圖的用途是美術推斷的**（-1503 的交接寫著「接卡之前要 Ray 確認一句
        『它是不是尼莫的戰鬥立繪』」）—— 到現在還沒確認過。**不是的話換這一行就好。** */
   enemy_nemo:     "resources/enemy/man_nemo.webp",          // 尼莫（劇情戰）
+  /* ══ 守墓者・不死者之龍（ver -1525；美術 -1501 交件、規格
+     `resources/enemy/_tomb_mon_spec.md` §八～九）══
+     ⚠ **四張圖 ＝ 四張卡**（Ray：「四張是同一隻，程式上算四隻，
+       三隻追擊輪出，一隻留做決戰」）。
+     ⚠ 新檔名不是同名覆蓋 ⇒ `ASSET_VER` 不必動（§5：新增比覆蓋安全）。 */
+  enemy_gk_seal:   "resources/enemy/mon_gravekeeper_seal.webp",     // 聖印失效（追擊）
+  enemy_gk_offset: "resources/enemy/mon_gravekeeper_offset.webp",   // 錯格重影（追擊）
+  enemy_gk_many:   "resources/enemy/mon_gravekeeper_many.webp",     // 數不清（追擊）
+  enemy_gk_crypt:  "resources/enemy/mon_gravekeeper_crypt.webp",    // 墓室胸腔（決戰）
   enemy_facelessgiant: "resources/enemy/Saint_GT_CI.webp",   // 連戰第二隻：巨型聖徒（GT=giant）
   enemy_trainee:  "resources/enemy/Saint_TR_CI.webp",   // 教學專用敵：訓練用聖徒
   enemy_dart_target: "resources/enemy/Dart_timeattack.webp",   // 打靶場：固定立靶（ver -396）

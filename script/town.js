@@ -6744,9 +6744,59 @@ export const TOWNS = {
           nou(null,'咦——？我以為應該是更大的遺蹟呢！'),
           ren('watch','這只是入口而已。'),
           ren('smile','石壁關著也進不去。看夠了就走吧。'),
+        ] },
+        /* ══⚠⚠⚠ **門開了**（ver -1525，Ray 的 Stage10-A 稿：「古墓入口」）══
+           `need:'tomb_opened'` ＝石碑林那一段插的旗（見 `lake.grove`）。
+           ⚠⚠ **排在那兩段之後**：`actDue` 由上往下取第一個成立的 ——
+             排前面的話，「先跑鏡湖、沒來過古墓」的玩家第一次抵達就聽到
+             「門開了呢」，而那一整段初見的戲（`tomb_gate`）會被推到下一次抵達。
+             排後面則兩條路都對：初見一定先演 `tomb_gate`（它有自己的 flag）。 */
+        { flag:'tomb_enter', need:'tomb_opened', sides:{ RENNA:'L' }, lines:[
+          ren('commandsoft','門開了呢。走吧。'),
+          sor('amazed','修女小姐突然不怕鬼了……'),
+          nou('cringe','我覺得她氣到連幽靈都可以一拳打飛了……'),
+          any('scared2',''),
         ] } ] },
       vestibule:  { bg:'Tomb_Vestibule', name:'伊甸古墓　前庭', noTime:true,
-        exits:{ up:'nave', right:'lapidarium', back:'gate' } },
+        exits:{ up:'nave', right:'lapidarium', back:'gate' },
+        /* ══⚠⚠⚠ **墓門關上了**（ver -1525，Ray 的 Stage10-A 稿：「此時往古墓出口
+           移動會顯示『墓門關上了』」）══ 走既有的 `lock`（-786 的出口鎖，鐵律 8）。
+           ⚠⚠ **鑰匙寫的是目的地 `gate` 不是方向** —— 通往墓門的那一條是 `back`
+             （執行期算出來的），從不同方向走進前庭會落在不同的 `dir` 上。
+             `lock` 這一版起兩種鑰匙都吃（見 `modules/town.js` 的說明）。
+           ⚠ 箭頭照樣顯示（Ray 要的是「按了出訊息」不是「沒有箭頭」）。
+           ⚠⚠ **沒有寫 `until`** ＝ 從追逐開始就一直關著。Ray **沒說什麼時候開** ——
+             決戰那一段（⑨ 還沒做）收尾時要不要開由他定，定了補一個 `until` 就好。
+             ⚠ 鐵律 9：現在「誰拔」是**沒有人**，那是明寫的、不是忘了寫。
+           ⚠ 這一句是**旁白**（名字欄空），照 Ray 的字面。 */
+        lock:{ gate:{ need:'tomb_chase_on', text:'（墓門關上了。）' } },
+        /* ══⚠⚠⚠ **進古墓**（ver -1525，Ray 的 Stage10-A 稿）══ 索菈娜與蕾娜和解
+           （或者說，蕾娜終於說出她在氣誰）的那一段。
+           ⚠ 「深遠咆哮」走既有的 `se_enemy_roardeer`（四張龍卡都指它）——
+             稿上的 `Se_groawing`（`enemy_lowroar.mp3`）**還沒進 `ASSETS`／
+             `tuning.fileGain`**，用它是靜靜不播（§6.5.4 的那個坑）。 */
+        acts:[ { flag:'tomb_talk', need:'tomb_enter', sides:{ RENNA:'L' }, lines:[
+          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', auto:1600 },
+          sor('cringe','哇，那什麼？'),
+          ren('writing','禍魘吧，還能是什麼。'),
+          sor('confuse','……'),
+          sor('relief','那個啊……'),
+          sor('confuse','我知道是我不對，看妳要把我一腳踢走，還是要殺要剮我都認！'),
+          sor('determined','但妳要我哭哭啼啼地道歉，這我真的不會。'),
+          sor('angry','能不能給個痛快？'),
+          ren('curious','……'),
+          ren('lookdown','抱歉……讓妳誤會了。'),
+          ren('lookaside','我並沒有生妳的氣。'),
+          nou('whisper','騙人。'),
+          any('steady',''),
+          ren('ask','是真的。'),
+          sor('confuse','但是妳在生氣吧？'),
+          ren('lookaside','……是。'),
+          sor(null,'那是在生誰的氣？'),
+          ren('upset',''),
+          ren('lookawaytalk','沒有誰。'),
+          ren('writting','只是想早點結束這一切而已。'),
+        ] } ] },
       /* 死胡同 A 的第一格 —— 圖上**不可以畫得像盡頭**（見交接檔 §六）。 */
       lapidarium: { bg:'Tomb_Lapidarium', name:'伊甸古墓　碑廊', noTime:true,
         exits:{ left:'vestibule', right:'ossuaryA' } },
@@ -6784,8 +6834,13 @@ export const TOWNS = {
       cloister:   { bg:'Tomb_Cloister', name:'伊甸古墓　迴廊', noTime:true,
         exits:{ right:'apse', left:'stair1' } },
       /* ⚠ 樹上的**橋**：找不到就真的下不去，沒有第二條路 */
+      /* ⚠⚠ **安全點之一**（ver -1525，Ray：「整張地圖只有三處安全點，
+         分別在**兩個樓梯**及**最終房間前**」）—— 走既有的 `rest:true`
+         （§6.5.4.4 的休息處：走進去閉棺結算；沒打過架就不作動）。
+         ⚠ `noWild` 照舊由那一條規矩帶（安全點不刷怪）——
+           這張圖現在本來就沒有 `wildSpawn`，接上之後要記得。 */
       stair1:     { bg:'Tomb_Stair1', name:'伊甸古墓　第一道階梯', noTime:true,
-        exits:{ right:'cloister', up:'landing2' } },
+        exits:{ right:'cloister', up:'landing2' }, rest:true, noWild:true },
       landing2:   { bg:'Tomb_Landing2', name:'伊甸古墓　二層梯廳', noTime:true,
         exits:{ up:'hall2', back:'stair1' } },
       hall2:      { bg:'Tomb_Hall2', name:'伊甸古墓　柱廳', noTime:true,
@@ -6799,7 +6854,47 @@ export const TOWNS = {
       sump:       { bg:'Tomb_Sump', name:'伊甸古墓　積水坑', noTime:true,
         exits:{ back:'corr2' } },
       rotunda:    { bg:'Tomb_Rotunda', name:'伊甸古墓　圓廳', noTime:true,
-        exits:{ left:'corr2', up:'nichehall', right:'sarcE' } },
+        exits:{ left:'corr2', up:'nichehall', right:'sarcE' },
+        /* ══⚠⚠⚠ **守墓者・降臨**（ver -1525，Ray 的 Stage10-A 稿）══════════════
+           ⚠⚠⚠ **觸發條件是暫代的**：稿上是「**三場戰鬥後**」，而**這張圖現在
+             一隻雜怪都沒有**（`TOWNS.tomb` 沒有 `wildSpawn`，26 隻古墓怪的**數值卡
+             還在等 Ray**，見 `resources/enemy/_tomb_mon_spec.md`）。
+             ⇒ 這一版改成「**走到圓廳**（二層的樞紐）才演」，`need:'tomb_talk'`。
+             ⚠ 雜怪的卡到齊、`wildSpawn` 接上之後，**把這一段改成數戰鬥次數**
+               （現在沒有那個計數器；要做就照鐵律 9 先決定「誰加、誰歸零」）。
+           ⚠ 「震動」「爆裂音」走 `shake`／既有的龍吟（稿上的 `Se_groawing` 那支
+             音檔還沒登記，見前庭那一段的說明）。
+           ⚠⚠ **打完不清場、也不淨化**：`gk_*` 四張卡都是 `kind:'multi'`（規格 §九）
+             —— 那正是「沒有淨化反應」這句台詞成立的前提。
+           ⚠⚠ 收尾插 **`tomb_chase_on`** ＝追逐開始（⑨ 那一塊要吃它：墓門關上、
+             追兵推進、三處安全點）。**現在還沒有人讀它** —— 鐵律 9 的名字先留好。 */
+        acts:[ { flag:'tomb_gk1_done', need:'tomb_talk', sides:{ RENNA:'L' }, lines:[
+          nou('shock','這個地方好大……'),
+          sor('tired','還一堆死胡同，好像一直在走來走去而已。'),
+          ren('writting','先把地圖建立起來就輕鬆了。走過的每一步都不會白費。'),
+          sor('tired','話是這麼說……'),
+          { speaker:'NARRATION', text:'', shake:true, auto:1200 },
+          any('lookup',''),
+          nou('shocked2','什、什麼東西？'),
+          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
+          sor('battlecry','麻煩的東西來了！'),
+          { battle:'tomb_gk1' },
+          nou('relief','嚇、嚇死我了！'),
+          sor('guardtalk','棘手了點，但也不是不能應付。'),
+          sor('guard','只是……好像哪裡不太對勁。'),
+          ren('thinking','不對勁……'),
+          ren('shockedCalm','！！'),
+          ren('shout','趕快走！離開這裡！'),
+          any('scared',''),
+          ren('shout','沒有淨化反應，那東西沒有死！'),
+          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', auto:1400 },
+          nou('shock','！！'),
+          { speaker:'NARRATION', text:'', shake:true, auto:1200 },
+          ren('intense','那不是再生……'),
+          ren('intense2','這個東西把『死亡』本身覆寫了！'),
+          nou('decoding','覆寫……！'),
+          sor('battlecry','什麼跟什麼啊沒完沒了！', { flags:['tomb_chase_on'] }),
+        ] } ] },
       /* 死胡同 G 的第一格 —— 圖要畫得**比正路還氣派**（把玩家騙進來） */
       sarcE:      { bg:'Tomb_SarcE', name:'伊甸古墓　石棺室', noTime:true,
         exits:{ left:'rotunda', right:'ossuary2' } },
@@ -6809,17 +6904,33 @@ export const TOWNS = {
       kiln:       { bg:'Tomb_Kiln', name:'伊甸古墓　焚化窯', noTime:true,
         exits:{ back:'ossuary2' } },
       nichehall:  { bg:'Tomb_Nichehall', name:'伊甸古墓　壁龕廊', noTime:true,
-        exits:{ down:'rotunda', left:'ossuary' } },
+        exits:{ down:'rotunda', left:'ossuary' },
+        /* ══⚠⚠⚠ **下一個房間**（ver -1525，Ray 的 Stage10-A 稿）══
+           ⚠ 「索拉娜背著安雅插畫」**還沒有檔案** ⇒ **不寫 `cg:`**（寫了就是六個候選
+             全 404，§6.5.4 的 -433 那一課）。圖到了補在「上來！」那一拍、
+             下一拍 `cg:null` 收掉。 */
+        acts:[ { flag:'tomb_carry', need:'tomb_chase_on', sides:{ RENNA:'L' }, lines:[
+          { speaker:'NARRATION', text:'', se:'se_walk', auto:1200 },
+          any('talkshy',''),
+          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', auto:1400 },
+          any('terrifying',''),
+          sor('ready','上來！'),
+          any('nervous','！！'),
+          sor('ready','打不死的東西我們耗不起！快走！'),
+          nou('runserious',''),
+          ren('run',''),
+        ] } ] },
       /* 骨牆後面那一道窄門就是第二道階梯（很容易被當成裝飾） */
       ossuary:    { bg:'Tomb_Ossuary', name:'伊甸古墓　骨室', noTime:true,
         exits:{ right:'nichehall', up:'stair2' } },
       /* ⚠ 同上：樹上的橋 */
       stair2:     { bg:'Tomb_Stair2', name:'伊甸古墓　第二道階梯', noTime:true,
-        exits:{ down:'ossuary', up:'landing3' } },
+        exits:{ down:'ossuary', up:'landing3' }, rest:true, noWild:true },
       landing3:   { bg:'Tomb_Landing3', name:'伊甸古墓　三層梯廳', noTime:true,
         exits:{ up:'gallery3', back:'stair2' } },
+      /* ⚠ **安全點之三**＝「最終房間前」（`crypt` 是終點，這一格是它的前廊）。 */
       gallery3:   { bg:'Tomb_Gallery3', name:'伊甸古墓　玄室前廊', noTime:true,
-        exits:{ up:'crypt', left:'vaultW', down:'landing3' } },
+        exits:{ up:'crypt', left:'vaultW', down:'landing3' }, rest:true, noWild:true },
       vaultW:     { bg:'Tomb_VaultW', name:'伊甸古墓　側墓穴', noTime:true,
         exits:{ right:'gallery3', up:'bonepit' } },
       /* ← 死胡同 H（兩格深） */

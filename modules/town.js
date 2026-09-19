@@ -3284,9 +3284,15 @@ function go(to, dir){
      ⚠ 箭頭照樣顯示（Ray 要的是「按了出訊息」不是「沒有箭頭」——那是 siege 的作法）：
        擋在 go() 不在 exitsOf。
      ⚠ 只認**玩家按方向**（有 dir）：forceGo／內部轉場不帶 dir，不受鎖擋。 */
+  /* ══⚠⚠ **鑰匙可以是「方向」，也可以是「目的地那一格的 id」**（ver -1525）══
+     為什麼要第二種：`back`（退回來時方向的反向）是**執行期算出來的**，
+     同一扇門從不同方向走過來會落在不同的 `dir` 上 ——「不管從哪邊過去都走不了」
+     這種門（伊甸古墓的墓門）用方向當鑰匙必然漏掉其中一條路，而且**不會報錯**。
+     ⚠ 兩種鑰匙**同一支判定**（鐵律 8）：方向優先，沒有才問目的地。
+     ⚠ 照舊只認**玩家按方向**（有 `dir`）：`forceGo`／內部轉場不帶 `dir`，不受鎖擋。 */
   const nlk=node();
-  if(dir && nlk && nlk.lock && nlk.lock[dir]){
-    const L=nlk.lock[dir];
+  if(dir && nlk && nlk.lock && (nlk.lock[dir] || nlk.lock[to])){
+    const L=nlk.lock[dir] || nlk.lock[to];
     if((!L.need || prog.hasFlag(L.need)) && !(L.until && prog.hasFlag(L.until))){
       /* ⚠⚠ **擋下來的時候可以演一段**（ver -1433，Ray：「把南門驛站出口封起來：
          索：『喂！開船去比較快啦！』confused」）—— 帶 `lines` 就走**同一支**

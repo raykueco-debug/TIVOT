@@ -1133,6 +1133,133 @@ export const ENEMIES = {
               assault:'sakura' },
       loot:[ { id:'elf_antler', n:1 } ],
     },
+    /* ══⚠⚠⚠ 守墓者・不死者之龍（ver -1525）══════════════════════════════════
+       規格：`resources/enemy/_tomb_mon_spec.md` §八～九（美術 -1501 交件並交接）。
+       > Ray：「數值照鹿主，hp 減半」「走王座徘徊者模式，**不跑淨化**」
+       >     「四張是**同一隻**，程式上算四隻，**三隻追擊輪出，一隻留做決戰**」
+
+       **＝ `sf_deer_nightmare` 照抄**，只改規格 §九那張表點名的幾格：
+         `hp` 700→**350**／`image`／`bg`／`hitFx.assault` sakura→**bite**／`loot`→**[]**
+         ／`kind` harm→**multi**／`entrance`／`entranceBlast`
+
+       ⚠⚠⚠ **`kind:'multi'` 是這一段戲成立的關鍵**：腳本是「**沒有淨化反應**，
+         那東西沒有死」。`harm` 會播降臨／淨化特效、結算副標還會印「已淨化」——
+         **每打贏一次就與台詞矛盾一次**。`multi` 不在 `ENTRANCE_KINDS`／
+         `PURIFY_KINDS`／`winSubBy` 任何一張表上（§6.5.4.4），正好。
+       ⚠⚠⚠ **`multi` 不走降臨 ⇒ 那條路上沒有人吼、沒有人震** —— 所以
+         `entrance` 與 `entranceBlast` **要自己宣告**（同 `bl_dragon_chase`，ver -1414）。
+       ⚠⚠⚠ **鹿主卡上有一行 `entrance:null`** —— 照抄時若把它留在
+         `entrance:'se_enemy_roardeer'` 後面，同名鍵**後者勝** ⇒ 龍吟整個沒了，
+         而且卡上看起來兩行都在、沒有任何錯誤訊息（ver -1434 踩過）。
+         **下面四張卡裡 `entrance` 只出現一次，這一條已經避開了。**
+       ⚠ 四張**全部叫「守墓者」**（同王座徘徊者三張同名，-1118）：牠是同一隻，
+         玩家不該讀成四隻。
+       ⚠ `bg` 只是退路：城鎮插入戰會被 `state.battleBg`（你站的那一格）蓋過去（-592）。
+       ⚠ Ray 腳本裡的 `Se_groawing` ＝ `resources/audio/se/enemy_lowroar.mp3`，
+         **那支還沒進 `ASSETS`／`tuning.fileGain`** ⇒ 這一版沿用既有的
+         `se_enemy_roardeer`（四張龍卡都指它）。要換那一支得先登記，不然是靜靜不播。 */
+    gk_seal: {
+      name:'守墓者',
+      story:1, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:50, count:4, atk:25, gap:1, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0.35 },
+      kind:'multi',
+      image:'enemy_gk_seal',
+      bg:'Tomb_Rotunda',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:350,
+      attack:22,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      entrance:'se_enemy_roardeer',
+      entranceBlast:true,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:'blood', wrong:'slash', assault:'bite' },
+      loot:[],
+    },
+    /* ⚠ 以下三張與 `gk_seal` **只差 `image`**（與決戰那一張的 `bg`）——
+       刻意逐張寫完整，不用 `Object.assign` 展開：這一族的卡是**資料**，
+       攤開來才看得出「哪一格被改過」（同既有 26 張怪的寫法）。 */
+    gk_offset: {
+      name:'守墓者',
+      story:1, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:50, count:4, atk:25, gap:1, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0.35 },
+      kind:'multi',
+      image:'enemy_gk_offset',
+      bg:'Tomb_Rotunda',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:350,
+      attack:22,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      entrance:'se_enemy_roardeer',
+      entranceBlast:true,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:'blood', wrong:'slash', assault:'bite' },
+      loot:[],
+    },
+    gk_many: {
+      name:'守墓者',
+      story:1, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:50, count:4, atk:25, gap:1, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0.35 },
+      kind:'multi',
+      image:'enemy_gk_many',
+      bg:'Tomb_Rotunda',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:350,
+      attack:22,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      entrance:'se_enemy_roardeer',
+      entranceBlast:true,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:'blood', wrong:'slash', assault:'bite' },
+      loot:[],
+    },
+    /* ⚠⚠ **決戰那一張**（最下層的石棺主室）。
+       ⚠ 「哪一張當決戰」是**美術交接裡填的判斷，不是 Ray 指定的**
+         （`_tomb_mon_spec.md` §九寫著「要換一張跟 Ray 確認一句就好」）。 */
+    gk_crypt: {
+      name:'守墓者',
+      story:1, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:50, count:4, atk:25, gap:1, cd:4 },
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0.35 },
+      kind:'multi',
+      image:'enemy_gk_crypt',
+      bg:'Tomb_Crypt',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:350,
+      attack:22,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      entrance:'se_enemy_roardeer',
+      entranceBlast:true,
+      special:[],
+      boardGrids:[9,9,9,9,9],
+      hitFx:{ delay:'blood', wrong:'slash', assault:'bite' },
+      loot:[],
+    },
     /* ── 骸系（禍魘）：日夜差分是**兩張卡**，刷怪時由 wildSpawn 依 clock.band 選
        （日/晨＝這兩張、黃昏/夜＝nightmare 那兩張）。⚠ hp/attack 全部暫定（Ray 表寫 ?）。 */
     sf_bear_husk: {
