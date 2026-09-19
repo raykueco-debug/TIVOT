@@ -21,3 +21,6 @@ _recycle/*
 
 # 拓樸簡報的縮圖快取（tools/map_keynote.py 產的；刪掉會自己重建）
 resources/map/_thumbs/
+
+# 本機 matting 的 venv（tools/si_matting.py；系統 python 的 transformers 5.x 擋 torch<2.4）
+.venv-matting/
