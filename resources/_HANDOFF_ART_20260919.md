@@ -9,16 +9,29 @@
 
 ## 一、交件現況（`ls` 可複驗）
 
+⚠⚠ **`resources/SI/ext/` 這一層已經收掉了**（ver -1503 收尾，Ray：「全部進 SI」）——
+整批搬進 `resources/SI/` 根目錄（零檔名衝突），**工單第四節的路徑也已經跟著改**。
+
 | 資產 | 數量 | 狀態 |
 |---|---|---|
-| `resources/SI/ext/Renna_SI_*.webp` | **18** | ✔ |
-| `resources/SI/ext/Nouvelle_SI_*.webp` | **18** | ✔ |
-| `resources/SI/ext/Anya_SI_*.webp` | **18** | ✔ |
-| `resources/SI/ext/Sorana_SI_*.webp` | **18** | ✔ |
-| `resources/SI/Cecilie_SI_*.webp` | **9** | ✔ 新造型（Ray 當天交的 UUID 檔，已命名） |
+| `resources/SI/Renna_SI_*`（本輪新增） | **18** | ✔ |
+| `resources/SI/Nouvelle_SI_*`（本輪新增） | **18** | ✔ |
+| `resources/SI/Anya_SI_*`（本輪新增） | **18** | ✔ |
+| `resources/SI/Sorana_SI_*`（本輪新增） | **18** | ✔ |
+| `resources/SI/Cecilie_SI_*` | **9** | ✔ 新造型（Ray 當天交的 UUID 檔，已命名） |
+| `Laurie_SI_*`／`Nemo_SI_*`／`Sorana_SI_drink`／`Sorana_SI_shy` | **13** | ✔ 收尾時一併轉檔入庫（見下） |
 
-白底原稿與 alpha 中間檔在 `resources/_originals/SI_ext/`（gitignore，本機可回滾）。
+**`resources/SI/` 現在是 297 張 webp，一張 PNG 都沒有。**
+白底原稿與 alpha 中間檔在 `resources/_originals/SI_ext/`、`_originals/SI/`（gitignore，本機可回滾）。
 取景值 72 列已量好，在 `_ext_worklist.md` 第四節。
+
+### ⚠ 收尾那 13 張的兩個發現
+
+1. **`laurie_*`／`nemo_*` 是小寫角色名** → 正名成 `Laurie_SI_*`／`Nemo_SI_*`。
+   那正是 -1502 修過的坑（小寫 `_si_` 會讓同一個人在差分表上裂成好幾個角色）。
+2. ⚠⚠⚠ **`Nouvelle_SI_shy.png` 畫的其實是索拉娜**（銀白短髮、深色肌膚、舞者裝）——
+   檔名放錯了。我**照圖**命名成 `Sorana_SI_shy.webp`；舊的那張真·諾薇兒
+   `Nouvelle_SI_shy.webp` 沒有動。⚠ 這是我的判讀，錯了改檔名很便宜。
 
 ### ⚠ 賽西莉的命名是**我判讀的**，錯了很好改
 
