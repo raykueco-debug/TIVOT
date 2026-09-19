@@ -60,6 +60,10 @@ const gun = N('GUNSMITH');   // 槍店店主（ver -377）
 /* 阿瑞尼斯（ver -1522，Ray 的 Stage10-A 稿；立繪 -1504／-1509 已接）。
    ⚠ 稿上沒給他表情 ⇒ 一律 `null`（不動立繪，用底圖那一張）。 */
 const arh = N('ARRHENIUS');
+/* 鏡湖那一段的三個人（ver -1524）。⚠ **報上身分之前／之後是兩個 id**
+   （`NEMO_X`／`CECILIE_X` 畫面上是「？？？」）—— 同 `PRIEST_X`／`MISHA_X` 的慣例。 */
+const nmx = N('NEMO_X'), nmo = N('NEMO');
+const csx = N('CECILIE_X'), cec = N('CECILIE'), lau = N('LAURIE');
 /* Stage8（ver -953）：科爾文（第五騎士團作戰課副團長）與夏爾村餐廳的瑪麗亞。
    ⚠ 科爾文報上名字之前是 `CORVIN_Q`（顯示「？？？」）＋暗調剪影（稿上的「陰影立繪」）
      —— 同索菈娜／司祭的作法：顯示名不同就是兩個 id，art 同指（見 speakers.js）。 */
@@ -6414,7 +6418,81 @@ export const TOWNS = {
         ] } ] },
       /* ── 三向樞紐：正前方沿湖，左邊一條岔路往岩壁下 ── */
       shingle:    { bg:'Lake_Shingle',    name:'鏡湖　碎石灘',
-        exits:{ back:'inlet', up:'eastshore', left:'fallbase' } },
+        exits:{ back:'inlet', up:'eastshore', left:'fallbase' },
+        /* ══⚠⚠⚠ **尼莫戰與那一場合流**（ver -1524，Ray 的 Stage10-A 稿）══════════
+           稿上「往外走到出口前一格」—— 出口是山口（`inlet`，出航那一格），
+           所以是**這一格**。`need:'lk_steles'` ＝石碑林那一段演完（回程路上才撞到）。
+           ⚠⚠ **人影那兩拍走 `ci:`**（稿上「人影，暗階漸層由上到下」）——
+             那是既有的暗調 CI 插入（`resources/SI/*.webp`，§6.5 的演出層）。
+             ⚠ `ci` 是**持續狀態**：本人上台那一拍要 `ci:null` 收掉，
+               不收的話那片暗影會一路留到段落結束。
+           ⚠⚠ **勝敗分歧走 `onLose` ＋ `label`／`goto`**（§6.5.2 的既有機制）：
+             戰鬥卡寫 `allowLose:true`，輸了跳 `nemo_lose`，贏的那一支用
+             `{ goto:'nemo_join' }` 接回合流點。**不要用旗去分**：那一場輸了
+             不會記任何旗（`talkOnce` 是打贏才記的）。
+           ⚠ 蕾娜那句「那制服……是第四騎士團的人……？」**不在這裡** ——
+             它是**結算頁的評價**（`script/evaluation.js` 的 `BY_BATTLE.lk_nemo`，
+             六個等第同一句 ＝ Ray 的「不論 RANK」）。⚠ 戰敗看不到它（沒有結算頁），
+             那是對的：稿上勝敗的分歧在腳本裡。
+           ⚠ `Cecilie_SI_refusertemp.png` 庫裡沒有 ⇒「我不要。」那兩拍改用 `nolook`。 */
+        acts:[ { flag:'lk_nemo_done', need:'lk_steles', sides:{ RENNA:'L' }, lines:[
+          /* 人影。 */
+          { speaker:'NARRATION', text:'', ci:'Nemo_SI_front', auto:1600 },
+          nou('surprise','那是……'),
+          nmx('surprise','！', { ci:null }),
+          { battle:'lk_nemo', onLose:'nemo_lose' },
+          /* ── 打贏 ── */
+          nmx('happy','不愧是學長，能跟我打得有來有回的只有你了。'),
+          { goto:'nemo_join' },
+          /* ── 打輸 ── */
+          nmx('happy','學長——你是不是沒睡飽呀——', { label:'nemo_lose' }),
+          /* ── 合流 ── */
+          sor('guardtalk','這傢伙是誰啊！', { label:'nemo_join' }),
+          any('panic',''),
+          lau('crying','蕾姬娜學姐——'),
+          ren('chase','蘿芮？'),
+          ren('chase','妳在這裡，那這個人——'),
+          nou('decoding','是的......他就是現在HUND的第一候補——'),
+          nou('decoding','尼莫。'),
+          ren('chase','那個百年一遇的天才？'),
+          nmo('bye','哪有那麼誇張啦——'),
+          /* 賽西莉的人影。 */
+          { speaker:'CECILIE_X', text:'諾薇兒？是諾薇兒嗎？', ci:'Cecilie_SI_front' },
+          nou('sadsmile','果然，賽西莉學姐也在啊......'),
+          cec('upset','什麼嘛，妳是不想看到我嗎？', { ci:null }),
+          cec('lookaside','啊，不想看到我的人，是另一個吧？'),
+          { speaker:'PLAYER', blank:true },
+          cec('talk','好久不見啊。'),
+          cec('tease','『前』第一候補。'),
+          ren('coldstare','......'),
+          nou('cringe','為什麼……要用那種說法……'),
+          cec(null,'我沒說錯吧？'),
+          cec('smile','輸掉了排位，連搭檔都拱手讓人的『第二名』。'),
+          nou('furious','學姐！'),
+          lau('idea','好、好啦！難得大家在這裡合流了——'),
+          lau('idea','蕾娜學姐，妳們也是要去伊甸古墓吧？'),
+          ren('ask','是那樣沒錯......'),
+          lau('idea','那太好了！一起去的話——'),
+          cec('nolook','我不要。'),
+          lau('lookaside','咦？'),
+          cec('nolook','我說：我、不、要。'),
+          lau('idea','那個……我才是監察官……'),
+          cec('upset',''),
+          lau('dying','噫——'),
+          nmo('bored','啊——又來了。變成那樣以後就沒辦法了呢。'),
+          lau('lookaside','那、我們去另一個遺蹟……？'),
+          cec('talk','知道了還不快走？'),
+          lau('dying','是……'),
+          nmo('bye','學長拜拜——下次再一起玩吧——'),
+          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+          { speaker:'PLAYER', blank:true },
+          cec('sadback','……'),
+          cec('talk','你說呢？'),
+          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+          ren('determined','……'),
+          sor('tired','誰快來解釋一下啊……'),
+          nou('sadsmilenoeye',''),
+        ] } ] },
       /* ⚠ 瀑布底**不是死路**：水簾後面看得到黑色洞口，路往裡面繼續。 */
       fallbase:   { bg:'Lake_Fallbase',   name:'鏡湖　瀑布底',
         exits:{ back:'shingle', up:'cave' } },

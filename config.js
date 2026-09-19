@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1523';
+export const VERSION = 'ver 2026.09.17-1524';
 
 export const GAME_CONFIG = {
 
@@ -2344,6 +2344,17 @@ export const GAME_CONFIG = {
     /* ⚠ ver -1375：`enemy` 由借來的 `guild_hunter` 改成東泊自己的 `bounty_ep`
        （Ray 交了 man_bounty_EP）。-1346 那句「先用帝都的」到此為止。 */
     ep_guild_hunter: { enemy:'bounty_ep', noEval:true, noSaint:true, noPartner:true },
+    /* ══⚠⚠⚠ 鏡湖・出口前的那一場（ver -1524，Ray 的 Stage10-A 稿）══════════════
+       ⚠⚠ **`allowLose:true`** —— 稿上**勝敗都有台詞**（「不愧是學長」／「你是不是
+         沒睡飽呀」），所以這是「劇本要它可以被打輸」的場次（§6.5.2）：
+         輸了不走 Game Over，跳到腳本那一拍的 `onLose` 標籤接著演。
+       ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁，而憲法那條是「**禁了要明寫**」
+         —— 不要因為對手是人就自己補上（賞金獵人那兩張是 Ray 明寫的）。
+       ⚠ `bgm` 不寫 ＝沿用戰前那一首（鏡湖沒有自己的 `TOWNS[].bgm`，所以是
+         上一個畫面帶進來的）。⚠ **`bgm_nemo`（Prairie5，-1508 就備好了）
+         是「尼莫戰的預設曲」** —— 要用它就在這張卡上寫 `bgm:'nemo'`，
+         我沒有自己接：Ray 這一份稿子沒提音樂。 */
+    lk_nemo: { enemy:'nemo', allowLose:true },
     /* ══⚠⚠ 貝利薩爾・祭壇的那一場（ver -1353，Ray 的稿：「進入戰鬥，雖是 boss
        但只是**略弱的中 boss 水準**」）══
        ⚠ 敵人是 `bl_dragon_chase`（古城裡的龍，拘束態立繪）—— 它的數值是 Ray 指定
@@ -3919,6 +3930,10 @@ export const ASSETS = {
   inspector_luna_angry:    "resources/SI/Luna_SI_seat_angry.webp",
   inspector_luna_hand:     "resources/SI/Luna_SI_seat_hand.webp",
   enemy_witch:    "resources/enemy/GunWitch_Boss_CI.jpg",   // 槍之魔女（Boss）內嵌立繪
+  /* 尼莫（ver -1524，Ray 的 Stage10-A 稿：鏡湖出口前那一場）。
+     ⚠⚠ **這張圖的用途是美術推斷的**（-1503 的交接寫著「接卡之前要 Ray 確認一句
+       『它是不是尼莫的戰鬥立繪』」）—— 到現在還沒確認過。**不是的話換這一行就好。** */
+  enemy_nemo:     "resources/enemy/man_nemo.webp",          // 尼莫（劇情戰）
   enemy_facelessgiant: "resources/enemy/Saint_GT_CI.webp",   // 連戰第二隻：巨型聖徒（GT=giant）
   enemy_trainee:  "resources/enemy/Saint_TR_CI.webp",   // 教學專用敵：訓練用聖徒
   enemy_dart_target: "resources/enemy/Dart_timeattack.webp",   // 打靶場：固定立靶（ver -396）

@@ -132,6 +132,21 @@ export const SPEAKERS = {
      ⚠ 他還沒有戲：登場之後八成要跟司祭一樣拆成「報上身分之前／之後」兩個 id
        （同 PRIEST_X／PRIEST、OFFICER／RENNA 的慣例）—— 到時候再加，不要現在先開。 */
   ARRHENIUS:{ name:'阿瑞尼斯', art:'arrhenius' },
+  /* ══⚠⚠⚠ 鏡湖那一段的三個人（ver -1524，Ray 的 Stage10-A 稿）══════════════
+     -1503 的美術交接寫著「`Nemo`／`Laurie`／`Cecilie` 在 `speakers.js` 都還沒有
+     `ART` 條目 …… **要用到他們的戲時再開，不要現在先開空的**」——
+     **這一段就是那齣戲**，所以現在開。
+     ⚠ 報上身分之前／之後是**兩個 id**（同 `PRIEST_X`／`PRIEST`、`MISHA_X`）：
+       · `NEMO_X`／`CECILIE_X` ＝畫面上是「？？？」（人影那一拍）
+       · `NEMO`／`CECILIE`／`LAURIE` ＝名字說出來之後
+       ⚠ 蘿芮**沒有 `_X`**：她一開口就喊「蕾姬娜學姐」，蕾娜當場叫出她的名字。
+     ⚠ 中文名照 -1503 Ray 定案的：`Nemo`＝**尼莫**、`Laurie`＝**蘿芮**。
+       賽西莉（Cecilie）在諾薇兒的台詞裡早就出現過，沿用那個寫法。 */
+  NEMO:{      name:'尼莫',   art:'nemo' },
+  NEMO_X:{    name:'？？？', art:'nemo' },
+  CECILIE:{   name:'賽西莉', art:'cecilie' },
+  CECILIE_X:{ name:'？？？', art:'cecilie' },
+  LAURIE:{    name:'蘿芮',   art:'laurie' },
   /* ══ 米夏（米海爾・約瑟・謝索洛夫，謝索洛夫皇國第一皇子，安雅的雙胞胎哥哥）══
      ver -1511，Ray 的 Stage10-B 稿。**報上身分之前／之後是兩個 id**
      （同 `PRIEST_X`／`PRIEST`、`OFFICER`／`RENNA` 的慣例）：
@@ -1091,6 +1106,45 @@ export const ART = {
      ⚠ `cm:172` 沿用舊的估值（中老年男性神職）；有設定就改，取景值不必重量。
      ⚠ `side:'R'` 也是沿用 —— 他真的有戲之後再看對手是誰（§6.5「兩個人同台就一定
        分站兩邊」）。 */
+  /* ══⚠⚠⚠ 鏡湖那一段的三個人（ver -1524）══════════════════════════════════
+     取景值全部是 `tools/measure_si.py` **逐張量出來的**（§6.5：差分是不同姿勢，
+     不是換臉，**不可以互抄**）。
+     ⚠⚠⚠ **`cm`（身高）是我估的，Ray 還沒給** —— 尼莫 174／賽西莉 170／蘿芮 158。
+       · 這三個數字**只影響大小與頭頂高度**，改一個數字就好（不必重量 top/bot/fx）。
+       · ⚠ 都**低於現行最高的 178**，所以 `CAST_TALL` 不變、既有四位不會被連累縮小
+         （§6.5：每公分像素是拿最高那一位算的）。
+     ⚠ `eye` 沒量（`CAST_EYE_MIX=0`，不參與運算），照 `arrhenius` 那一筆填 32 佔位。
+     ⚠ 三個人都 `side:'R'`：他們是**對面那一隊**，我方在左（同店主／公會那兩位的邏輯）。
+     ⚠ `Cecilie_SI_refusertemp.png` **庫裡沒有**（Ray 稿上那張是暫代檔名）——
+       「我不要。」那兩拍改用 `nolook`（手撫側髮、不看人），圖到了再加一個鍵。 */
+  nemo:      { cm:174, eye:32, fx:0.484, top:3, bot:1524,
+           side:'R', alt:null, base:'resources/SI/Nemo_SI_front.webp', expr:{
+    surprise: { src:'resources/SI/Nemo_SI_surprise.webp', top:8, bot:1524, fx:0.498 },
+    happy:    { src:'resources/SI/Nemo_SI_happy.webp',    top:3, bot:1527, fx:0.510 },
+    bye:      { src:'resources/SI/Nemo_SI_bye.webp',      top:3, bot:1533, fx:0.499 },
+    bored:    { src:'resources/SI/Nemo_SI_bored.webp',    top:3, bot:1531, fx:0.516 },
+    /* ⚠ 雙槍那一張還沒有人用（戰鬥立繪走敵人卡的 `enemy_nemo`）—— 先接著。 */
+    dual:     { src:'resources/SI/Nemo_SI_dual.webp',     top:0, bot:1535, fx:0.408 },
+  } },
+  cecilie:   { cm:170, eye:32, fx:0.534, top:7, bot:1533,
+           side:'R', alt:null, base:'resources/SI/Cecilie_SI_front.webp', expr:{
+    talk:     { src:'resources/SI/Cecilie_SI_talk.webp',      top:7, bot:1527, fx:0.539 },
+    tease:    { src:'resources/SI/Cecilie_SI_tease.webp',     top:4, bot:1529, fx:0.574 },
+    upset:    { src:'resources/SI/Cecilie_SI_upset.webp',     top:2, bot:1526, fx:0.535 },
+    lookaside:{ src:'resources/SI/Cecilie_SI_lookaside.webp', top:8, bot:1531, fx:0.560 },
+    smile:    { src:'resources/SI/Cecilie_SI_smile.webp',     top:4, bot:1517, fx:0.557 },
+    /* ⚠ 背影：`fx` 量到 0.638（她背對鏡頭、重心偏右）—— 照量到的寫。 */
+    sadback:  { src:'resources/SI/Cecilie_SI_sadback.webp',   top:2, bot:1513, fx:0.638 },
+    nolook:   { src:'resources/SI/Cecilie_SI_nolook.webp',    top:1, bot:1531, fx:0.543 },
+    think:    { src:'resources/SI/Cecilie_SI_think.webp',     top:5, bot:1529, fx:0.560 },
+  } },
+  laurie:    { cm:158, eye:32, fx:0.505, top:6, bot:1514,
+           side:'R', alt:null, base:'resources/SI/Laurie_SI_front.webp', expr:{
+    crying:   { src:'resources/SI/Laurie_SI_crying.webp',    top:4, bot:1524, fx:0.594 },
+    dying:    { src:'resources/SI/Laurie_SI_dying.webp',     top:6, bot:1523, fx:0.593 },
+    idea:     { src:'resources/SI/Laurie_SI_idea.webp',      top:4, bot:1520, fx:0.543 },
+    lookaside:{ src:'resources/SI/Laurie_SI_lookaside.webp', top:4, bot:1525, fx:0.540 },
+  } },
   arrhenius: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
            side:'R', alt:null, base:'resources/SI/Arrhenius_SI_front.webp', expr:{
     /* ══ 表情差分 6 張（ver -1503 美術交件，-1509 接線）══

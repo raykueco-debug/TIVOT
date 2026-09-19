@@ -295,6 +295,41 @@ export const ENEMIES = {
         assault:'witch_revolver',   // 大絕 → 大彈痕＋左輪（專屬）
       },
     },
+    /* ══⚠⚠⚠ 尼莫（ver -1524，Ray 的 Stage10-A 稿）══════════════════════════
+       > Ray：「Man_nemo **模板照槍之魔女**，攻擊力到 50%」
+       ⚠ 所以這一張是**照 `witch` 抄的**，只改四件：名字／立繪／`kind`／`attack`。
+         其餘（hp、大絕、盤面、延時懲罰、受擊特效、副武器調整）一個數字都沒動 ——
+         「模板照槍之魔女」就是這個意思。
+       ⚠⚠ **`attack` 45 → 22**（50%，取整）。Ray 說的是「攻擊力」單數 ⇒
+         **只動這一格**；`ult.atk`（20）與 `delayPenalty` 照樣沿用模板。
+         ⚠ 要連大絕一起減半就改 `ult.atk`，說一聲。
+       ⚠ `kind:'human'` ⇒ 結算副標是「已擊敗」（同槍之魔女／賞金獵人，§6.5.2 那張表），
+         而且**不吃降臨／淨化那一套特效**（那是禍魘與聖徒系列的，§6.5.4.4）。
+       ⚠ `story:1` ＝劇情戰（戰敗回捲；這一場另外寫了 `allowLose`，見 `config.battles`）。 */
+    nemo: {
+      name:'尼莫',
+      story:1, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0,0.3], '萊福槍':[0,0.3] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:20, count:4, atk:20, gap:0.4, cd:4 },
+      kind:'human',
+      image:'enemy_nemo',
+      hp:500,
+      attack:22,                // ⚠ 槍之魔女 45 的 50%（Ray 指定）
+      atkInterval:null,
+      assaultEvery:[2,4],
+      assault:{ count:2, gap:1 },
+      entrance:null,
+      special:[],
+      boardGrids:[9,9,16,16,16],
+      delayPenalty:{ dmgScale:0.5, timeDelta:-1 },
+      hitFx:{
+        delay:'bullet',
+        wrong:'dagger',
+        assault:'witch_revolver',
+      },
+    },
     /* ══ 賞金獵人（ver -375）══ 舊街區・賞金獵人公會那一場（劇情插入戰）。
        ⚠ 這一筆是「**敵人資訊標準卡**」的第一個實例（Ray 交稿的格式，見
          `script/SCRIPT_FORMAT.md` 的「敵人卡」一節）。卡上有的欄位這裡都要有，
