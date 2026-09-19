@@ -39,6 +39,7 @@ GT_GLOBS = ['Cecilie_SI_*.webp', 'Laurie_SI_*.webp', 'Nemo_SI_*.webp',
 PASS_NEARWHITE = 1.0    # 近白比例 %（半透明像素中 min(RGB)>=235 的比例）
 PASS_MAE = 3.0          # alpha 平均絕對誤差（0~255 尺度）
 PASS_IOU = 0.97         # 髮絲區 IoU（alpha>16 的二值 IoU）
+PASS_RAMP = 1.15        # alpha 斜坡寬不得超過 GT 的幾倍（ver -1516 補，見 ramp()）
 
 SEMI_LO, SEMI_HI = 8, 200   # 「半透明」的定義
 NEAR_WHITE = 235            # min(RGB) 到這個值以上就算「近白」
@@ -96,6 +97,23 @@ def load_rgba(path):
     return np.asarray(Image.open(path).convert('RGBA'))
 
 
+def ramp(alpha):
+    """alpha 斜坡有多寬 ＝ 半透明像素數 ÷ 邊界長度。越小越銳利。
+
+    ⚠⚠⚠ ver -1516 加的第四個指標，因為**前三個抓不到「糊」**。
+      當時把 1024x1536 縮成 1024x1024 推論、再把 alpha 垂直放大 1.5 倍塞回去，
+      髮際每束外圍多一圈寬的淡色暈 —— Ray：「白邊 毛邊 模糊 尤其頭髮」。
+      而那一版的 αMAE 只差 0.14、IoU 幾乎不動，**三個指標全過**。
+      這個量會叫：GT 3.37／糊掉那版 4.53／修好之後 3.47。
+    """
+    from scipy import ndimage as ndi
+    a = alpha.astype(np.float64) / 255.0
+    semi = int(((a > 0.03) & (a < 0.97)).sum())
+    core = (a > 0.5).astype(np.uint8)
+    per = int((core - ndi.binary_erosion(core)).sum())
+    return semi / max(per, 1)
+
+
 def cmd_score(cand_dir):
     gt_dir = os.path.join(WORK, 'gt')
     rows, miss = [], []
@@ -121,8 +139,8 @@ def cmd_score(cand_dir):
         inter = float((gb & cb).sum())
         union = float((gb | cb).sum())
         iou = inter / union if union else 1.0
-        nw, nsemi = near_white_pct(C)
-        rows.append((name, nw, mae, iou, nsemi))
+        nw, _ = near_white_pct(C)
+        rows.append((name, nw, mae, iou, ramp(ca), ramp(ga)))
 
     if miss:
         print('⚠ 候選目錄少了 %d 張：%s%s' % (len(miss), ', '.join(miss[:6]),
@@ -131,17 +149,24 @@ def cmd_score(cand_dir):
         print('⛔ 沒有可比對的圖')
         return 1
 
-    print('\n%-28s%9s%9s%9s   判定' % ('檔名', '近白%', 'αMAE', 'IoU'))
-    print('-' * 68)
-    for name, nw, mae, iou, _ in rows:
-        ok = (nw <= PASS_NEARWHITE) and (mae <= PASS_MAE) and (iou >= PASS_IOU)
-        print('%-28s%9.2f%9.2f%9.4f   %s' % (name, nw, mae, iou, '✔' if ok else '⛔'))
-    print('-' * 68)
+    print('\n%-28s%9s%9s%9s%9s%9s   判定'
+          % ('檔名', '近白%', 'αMAE', 'IoU', '斜坡寬', 'GT斜坡'))
+    print('-' * 86)
+    for name, nw, mae, iou, rc, rg in rows:
+        ok = (nw <= PASS_NEARWHITE) and (mae <= PASS_MAE) and (iou >= PASS_IOU) \
+            and (rc <= rg * PASS_RAMP)
+        print('%-28s%9.2f%9.2f%9.4f%9.2f%9.2f   %s'
+              % (name, nw, mae, iou, rc, rg, '✔' if ok else '⛔'))
+    print('-' * 86)
     nws = np.array([r[1] for r in rows])
     maes = np.array([r[2] for r in rows])
     ious = np.array([r[3] for r in rows])
-    print('%-28s%9.2f%9.2f%9.4f' % ('平均', nws.mean(), maes.mean(), ious.mean()))
-    print('%-28s%9.2f%9.2f%9.4f' % ('最差', nws.max(), maes.max(), ious.min()))
+    rcs = np.array([r[4] for r in rows])
+    rgs = np.array([r[5] for r in rows])
+    print('%-28s%9.2f%9.2f%9.4f%9.2f%9.2f'
+          % ('平均', nws.mean(), maes.mean(), ious.mean(), rcs.mean(), rgs.mean()))
+    print('%-28s%9.2f%9.2f%9.4f%9.2f%9.2f'
+          % ('最差', nws.max(), maes.max(), ious.min(), rcs.max(), rgs.max()))
     print()
     checks = [
         ('近白比例 <= %.1f%%' % PASS_NEARWHITE, nws.max() <= PASS_NEARWHITE,
@@ -150,6 +175,9 @@ def cmd_score(cand_dir):
          '平均 %.2f' % maes.mean()),
         ('髮絲區 IoU >= %.2f' % PASS_IOU, ious.min() >= PASS_IOU,
          '最差 %.4f' % ious.min()),
+        ('alpha 斜坡寬 <= GT 的 %.2f 倍' % PASS_RAMP,
+         (rcs / rgs).max() <= PASS_RAMP,
+         '最差 %.2f 倍' % (rcs / rgs).max()),
     ]
     for label, ok, detail in checks:
         print('  %s %-26s（%s）' % ('✔' if ok else '⛔', label, detail))

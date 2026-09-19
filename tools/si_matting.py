@@ -38,9 +38,18 @@ import numpy as np
 from PIL import Image
 
 MODELS = {
-    'birefnet-matting': 'ZhengPeng7/BiRefNet-matting',   # 有 matting 權重，髮絲最強
+    'birefnet-matting': 'ZhengPeng7/BiRefNet-matting',   # ⭐ 預設：GT 上四項全過（斜坡 1.13 倍）
+    'birefnet-hr': 'ZhengPeng7/BiRefNet_HR',             # 單張看起來較銳利，但 GT 上斜坡 1.16 倍，沒過
     'birefnet': 'ZhengPeng7/BiRefNet',                   # 通用版，當對照
 }
+# ⚠ HR 那一筆是「憑一張圖的印象」與「拿 GT 量」給出相反答案的例子 —— 以量為準。
+# ⛔ 測過、輸掉的（不要再花時間，ver -1516）：
+#   · anime-segmentation (SkyTNT isnetis)  Apache-2.0
+#     ONNX 的輸入**寫死 1024x1024**，而立繪是 1024x1536 ⇒ 一定要先等比縮到 682x1024
+#     再貼進方形畫布，等於**縮小 1.5 倍再放大回來**。實測斜坡寬 6.3~7.0，
+#     GT 是 3.2~4.5 —— **比 GT 糊兩倍**，而且這是模型介面決定的，改不掉。
+#   · closed-form 精修（寬帶 6.39／窄 trimap 3.82 但透明區冒雜訊）、導引濾波（7.49）
+#     —— 三種精修都讓邊更糟，不要再試。銳利度是**推論解析度**決定的，不是後處理。
 MEAN = np.array([0.485, 0.456, 0.406], np.float32)
 STD = np.array([0.229, 0.224, 0.225], np.float32)
 
@@ -56,10 +65,29 @@ def load_model(name, device, fp16=True):
 
 
 def predict_alpha(model, rgb, size, device, fp16=True):
-    """rgb: HxWx3 uint8（白底）→ 與原圖同尺寸的 float alpha [0,1]。"""
+    """rgb: HxWx3 uint8（白底）→ 與原圖同尺寸的 float alpha [0,1]。
+
+    ⚠⚠⚠ **預設用原生解析度，不要縮成正方形**（ver -1516 踩過，Ray：「頭髮還是有白邊」）。
+      立繪是 1024×1536。第一版照 BiRefNet 的範例縮成 1024×1024 推論，算完再把 alpha
+      **垂直放大 1.5 倍**塞回去 —— 放大就是糊，於是每束頭髮外圍多一圈寬的淡色暈，
+      那就是「白邊」。實測 alpha 斜坡寬（半透明像素 ÷ 邊界長）：
+
+          GT（產圖端出的，好的） 3.37
+          縮 1024 正方形          4.53   ⛔ 糊了 35%
+          原生 1024×1536          3.47   ✔ 與 GT 幾乎一樣
+
+    ⚠⚠ **而且這個病三個指標都抓不到** —— αMAE 只從 1.11 變 0.97、IoU 幾乎不動，
+      因為 1~2px 的軟斜坡在整張圖裡佔比極小。**它只有把髮際放大到 6 倍才看得見。**
+      ⇒ 驗收要看斜坡寬這個量，別只看那三個（`matting_eval.py` 已補）。
+    """
     import torch
     H, W = rgb.shape[:2]
-    im = Image.fromarray(rgb).resize((size, size), Image.BILINEAR)
+    if size:
+        tw = th = size
+    else:
+        # 原生：只把邊長修到 32 的倍數（模型的 stride），不改長寬比
+        tw, th = (max(32, round(W / 32) * 32), max(32, round(H / 32) * 32))
+    im = rgb if (tw, th) == (W, H) else Image.fromarray(rgb).resize((tw, th), Image.BILINEAR)
     x = (np.asarray(im).astype(np.float32) / 255.0 - MEAN) / STD
     x = torch.from_numpy(x.transpose(2, 0, 1))[None].to(device)
     if fp16 and device == 'cuda':
@@ -67,9 +95,11 @@ def predict_alpha(model, rgb, size, device, fp16=True):
     with torch.no_grad():
         pred = model(x)[-1].sigmoid()          # BiRefNet 回一串，最後一個是主輸出
     a = pred[0, 0].float().cpu().numpy()
-    # 回到原尺寸：alpha 要用雙線性，不要用 nearest（髮絲邊緣會鋸齒）
-    return np.asarray(Image.fromarray((a * 255).astype(np.uint8)).resize((W, H), Image.BILINEAR),
-                      dtype=np.float32) / 255.0
+    if a.shape != (H, W):
+        # 回到原尺寸：alpha 要用雙線性，不要用 nearest（髮絲邊緣會鋸齒）
+        a = np.asarray(Image.fromarray((a * 255).astype(np.uint8)).resize((W, H), Image.BILINEAR),
+                       dtype=np.float32) / 255.0
+    return a
 
 
 def solve_foreground(rgb, alpha):
@@ -107,7 +137,8 @@ def main():
     ap.add_argument('inputs', nargs='+', help='白底圖（可用萬用字元）')
     ap.add_argument('--out', required=True, help='輸出目錄')
     ap.add_argument('--backend', default='birefnet-matting', choices=list(MODELS))
-    ap.add_argument('--size', type=int, default=1024, help='模型輸入邊長')
+    ap.add_argument('--size', type=int, default=0,
+                    help='模型輸入邊長；0＝原生解析度（預設，不要改，見 predict_alpha 的註解）')
     ap.add_argument('--refine', default='none', choices=['none', 'cf'])
     ap.add_argument('--fp32', action='store_true', help='關掉 fp16（對不上時拿來排除）')
     a = ap.parse_args()
