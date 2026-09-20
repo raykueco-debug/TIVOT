@@ -7304,6 +7304,8 @@ export const TOWNS = {
       landing2:   { bg:'tomb_landing2', name:'伊甸古墓　二層梯廳', noTime:true,
         exits:{ up:'hall2', back:'stair1' }, rest:true, noWild:true },
       hall2:      { bg:'tomb_hall2', name:'伊甸古墓　柱廳', noTime:true,
+        /* ⚠ 這一格**只演守墓者那幾場劇情戰**，不刷雜怪（ver -1612，Ray 指定）。 */
+        noWild:true,
         exits:{ up:'cistern', right:'corr2', down:'landing2' },
         /* ══⚠⚠⚠ **守墓者・降臨**（ver -1525，Ray 的 Stage10-A 稿）══════════════
            ⚠⚠⚠ **觸發條件是暫代的**：稿上是「**三場戰鬥後**」，而**這張圖現在
