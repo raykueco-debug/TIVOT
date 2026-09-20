@@ -5602,7 +5602,7 @@ export const TOWNS = {
                ⚠ 這一拍**沒有台詞也沒有人在台上**（`cg:` 那一刻就清了場，§6.5 ver -1422）
                  ⇒ 吃得到 `auto`（§6.5 的 -628：台上沒人的純演出拍照舊自己跑）。
                ⚠ `cgRush` 與 `cgPan`／`cgZoom` 互斥（三者都在寫 `transform`）。 */
-            { speaker:'NARRATION', text:'',
+            { speaker:'NARRATION', text:'', se:'se_preasure',
               cg:'021-mishalookback', cgNoTime:true, cgRush:true, auto:1600 },
             { speaker:'NARRATION', text:'', cg:null, auto:600 },
             ren('shockcalm','！！'),
@@ -5641,7 +5641,7 @@ export const TOWNS = {
                  所以插在**他察覺有人**的「！！」那一刻 —— 那張圖就是他回頭看過來。
                ⚠ 這一拍沒有台詞、台上也沒有人（`cg:` 那一刻就清了場，§6.5 ver -1422）
                  ⇒ 吃得到 `auto`（-628：台上沒人的純演出拍照舊自己跑）。 */
-            { speaker:'NARRATION', text:'',
+            { speaker:'NARRATION', text:'', se:'se_preasure',
               cg:'021-mishalookback', cgNoTime:true, cgRush:true, auto:1400 },
             /* ⚠⚠ **「直接在插圖上跑對話框不跑立繪」**＝不寫 `cg`（插圖是持續狀態，
                留著）＋ **明寫 `portrait:{show:false}`** —— 只是不寫 `portrait` 沒有用，

@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1560';
+export const VERSION = 'ver 2026.09.17-1561';
 
 export const GAME_CONFIG = {
 
@@ -3552,6 +3552,7 @@ export const GAME_CONFIG = {
          會讓它在手機上幾乎聽不見、對手機那一端又會在耳機上炸開。 */
       se_tablepunch:1.464,              // ver -1556（耳機 −9.43／手機 −24.80，平均 −17.12）
       se_snatch:2.500,                  // ver -1556（平均 −23.09 → 想要 2.911，被 peakCeilDb 夾住）CAP
+      se_preasure:1.221,                // ver -1561（耳機 −16.06／手機 −15.02，平均 −15.54；1.52 秒）
       /* 流水聲（ver -1414，Ray 交件；-1413 我合的暫代品已進回收區）：
          與 `se_brickcrush` **同一拍一起播**，所以直接錨它 —— 本機 BS.1770 實測
          brickcrush −15.7（增益 1.825 ⇒ 實效 −10.47）／waterfall −18.2 LUFS
