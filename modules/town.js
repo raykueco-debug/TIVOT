@@ -2176,8 +2176,7 @@ function forceGo(to){
   if(typeof to==='string' && to[0]==='@'){
     const seg=to.slice(1).split(':'), map=seg[0], nd=seg[1]||null;
     if(!TOWNS[map]){ console.info('[town] 跨圖強制轉場：沒有這張圖', map); busy=false; return; }
-    story.veil(true, STORY_CUT_MS);
-    setTimeout(()=>{ open(map, nd || undefined); }, STORY_CUT_MS);
+    gotoMap(map, nd);           // 鐵律 13 第 6 條：換一張探索地圖＝一道讀取頁
     return;
   }
   sceneCut(to, STORY_CUT_MS);   // 劇情轉場＝三秒（ver -739）
@@ -3680,10 +3679,7 @@ function go(to, dir){
     bumpGateMoves();   // 閘門的 afterMoves 計數（ver -953）：走一步就 +1
     /* 離開這張圖的收尾（ver -928，見 leaveMapRitual）：沒踩到結算怪就在這裡結算，
        沒帳也要先閉棺 —— 閉完才切到下一張圖。 */
-    leaveMapRitual(()=>{
-      story.veil(true, CUT_MS);
-      setTimeout(()=>{ open(map, nd || undefined); }, CUT_MS);
-    });
+    leaveMapRitual(()=>{ gotoMap(map, nd); });   // 鐵律 13 第 6 條（結算收完才換圖）
     return;
   }
   /* ══ 打烊的店**進不去**（ver -406，Ray 指定）══
@@ -3753,6 +3749,17 @@ function knockClosed(n, id){
      導覽開回來 —— 與城鎮其他每一段對白同一套收尾（鐵律 8）。 */
 /* 開飛行頁的實體由 main.js 注入（模組邊界：城鎮不認識啟動層）。 */
 let flightOpener=null;
+/* ══⚠⚠⚠ **探索地圖 → 探索地圖也要走那道讀取頁**（ver -1581，鐵律 13 第 6 條）══
+   由 `main.js` 注入 `enterTown`（進探索地圖**唯一**那道門，鐵律 8）——
+   town 不能直接 import main。⚠ 沒注入時退回舊行為（淡出 → `open()`），
+   獨立測試載 town.js 也跑得動。 */
+let mapEnter=null;
+export function setMapEnter(fn){ mapEnter=fn||null; }
+function gotoMap(map, nd){
+  if(mapEnter){ mapEnter(map, nd || undefined); return; }
+  story.veil(true, CUT_MS);
+  setTimeout(()=>{ open(map, nd || undefined); }, CUT_MS);
+}
 export function setFlightOpener(fn){ flightOpener=fn; }
 /* ══⚠⚠ **暫時不可離港**（`sail.hold`，ver -655，Ray：「自由探索，不可離港，
    離港會跳訊息：『不能丟下同伴。』」）══════════════════════════════════

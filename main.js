@@ -1727,6 +1727,9 @@ story.setHomeReturn(()=>{
 });
 /* 城鎮的「出航」→ 開飛行頁（注入，town 不 import main；同 setTownOpener 的作法）。 */
 town.setFlightOpener(from=>sailOut(from));   // 城鎮出航＝「進入」，讀取頁要跑（ver -389）；升段與出港位見 sailOut（-562/-565）
+/* 探索地圖 → 探索地圖（跨圖出口／強制轉場）＝一道讀取頁（鐵律 13 第 6 條，ver -1581）
+   —— 走**同一支** `enterTown`（鐵律 8）：放掉上一張圖的音訊、只載目標那一張的。 */
+town.setMapEnter((map, node)=> enterTown(map, node));
 combat.setStoryClose(story.playKerberosClose);
 combat.setStoryShut(story.playKerberosShut);   // 城鎮戰：原地閉棺 → 變回控制板（ver -587）
 /* 門開期間戰鬥不計時（ver -466）：story 的開門演出押住／放行戰鬥。
