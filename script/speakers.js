@@ -650,16 +650,53 @@ export const ART = {
        同名覆蓋一定要做兩件事，少一件就是**靜靜壞掉**：
        ① **跳 `?v=`**（§5 的 -650）：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份 ——
           症狀是「換了圖卻沒換」，而 `src`／位置／程式全部是對的，查不出原因。
-       ② **重量 `top`/`bot`/`fx`**：那三個是**那一張圖**的客觀事實。實測這一批差很多
-          （`nod` 的 `bot` 1494→1527、`wave` 的 `fx` 0.342→0.374）—— 沿用舊值人會歪。
-       ⚠⚠ **`lookaway`／`wave`／`salute` 三張沿用先前的「目視位移」**：
-         它們的 `fx` 本來就被手動修過（舊註解寫著「量到 0.342」卻填 0.530）——
-         自動量測會被舉起的手臂／垂下的頭髮騙，那個原因**換了新圖也還在**。
-         所以是「新的量測值 ＋ 舊的位移」，不是直接用量到的。
-         ⚠ 這三張請**進遊戲看一眼**：位移是承襲來的假設，不是這一張量出來的。
-       ⚠ 量法：`python3 tools/measure_si.py resources/si/sorana_si_*.webp`。 */
-    cry:    { src:'resources/si/sorana_si_cry.webp?v=2', top:4, bot:1515, fx:0.552 },
-    determine:{ src:'resources/si/sorana_si_determine.webp?v=2', top:10, bot:1523, fx:0.575 },
+       ② **重量 `top`/`bot`**：那兩個是**那一張圖**的客觀事實。實測這一批差很多
+          （`nod` 的 `bot` 1494→1527）—— 沿用舊值人會歪。
+          ⚠ 量法只有一支：`python3 tools/measure_si.py resources/si/sorana_si_*.webp`
+            （鐵律 7）。⚠⚠ 它是 **0 起算**的列號；美術工單那張表是 **1 起算**的，
+            所以整欄差 1 —— **那不是兩份數字打架，是同一個像素的兩種寫法**。
+            以工具為準（別人也照它量），不要照工單改。
+
+       ⚠⚠⚠ **ver -1578 修正：`fx` 不可以跟著重量 —— 那 12 張 -1573 動錯了**
+         （Ray／美術 -1556 的工單明寫「`fx` 一律不要動」，§5 的 -649 也是同一條）。
+         · **理由一（規矩）**：新圖是**照舊圖的姿勢重畫**的 ⇒ **同姿勢沿用**。
+           `fx` 是「臉在那一張圖裡的位置」，姿勢沒變它就該沒變；逐張重量只會讓
+           同一個人在換表情那一拍橫向跳一格（-649 娜塔莉那個坑）。
+         · **理由二（量不準）**：自動量測取的是「頭頂往下 8% 身高」那一帶的 alpha
+           重心 —— **舉起的手臂與垂下的頭髮都會落在那一帶**。`wave` 就是活例：
+           量到 0.374、真正對得準的是手調的 0.530。照量到的填會歪掉一個身寬。
+         ⇒ 這一版把 12 張的 `fx` **全部還原回 -1572 的值**。
+         ⚠ 真的覺得臉沒對準，動的是**角色層的 `fxShift`** 不是 `fx`（§5 的 -645）——
+           兩者不可以合成一個數字，合了下次重量 `top`/`bot` 就會把手調一起洗掉。
+
+       ⚠⚠⚠ **量過了：12 張裡有 3 張的頭「真的動了」—— 這三張等 Ray 決定**（ver -1578）
+         「同姿勢沿用」的前提是**頭沒有移位**。拿 git 裡的舊圖（`a7eb8dd~1`）與新圖
+         逐張比**頭髮的質心**（＝頭在哪的代理值；不是工具那個「頭頂往下 8%」的
+         alpha 重心 —— 那一帶會吃到舉起的手臂，正是 `wave` 量到 0.374 的原因）：
+
+             expr        舊圖髮心 → 新圖髮心    位移      現行(舊)fx   量出來應該是
+             determine     0.541 → 0.570      +0.029      0.547        0.576  ⚠
+             eat           0.567 → 0.595      +0.028      0.569        0.597  ⚠
+             wave          0.563 → 0.577      +0.014      0.530        0.544  ⚠
+             其餘 9 張                        ≤0.009      —            沿用就對 ✔
+
+         ⇒ **`determine`／`eat` 的頭真的往右挪了約 30px**（不是量測誤差，也不是
+           手臂造成的 —— 髮心量法避開了手臂）。沿用舊 `fx` ⇒ 切到這兩張時臉會
+           往左偏約 14 CSS px。`wave` 偏約 7px。
+         ⚠ **這一版照 Ray 的指示「`fx` 一律不要動」全部還原** —— 上面那三個數字是
+           **給他決定用的**，不是我自作主張套上去的。要改就是三個數字的事。
+         ⚠ 量法可重跑（三十行，用 PIL）：亮度>150、彩度<70、偏藍 ⇒ 頭髮；
+           取最上面那一團的橫向質心 ÷ 圖寬。 */
+    cry:    { src:'resources/si/sorana_si_cry.webp?v=2', top:4, bot:1515, fx:0.550 },
+    /* ══ `crybig` ＝**大哭**（ver -1578，Ray 自己產的圖；美術工單 -1556 §三）══
+       ⚠ 與 `cry`（一般哭）**並存**，不是取代 —— 兩個鍵指兩張不同的圖。
+       ⚠ 這是**新增**不是同名覆蓋 ⇒ **不掛 `?v=`**（§5：新增比覆蓋安全）。
+       ⚠⚠ `fx` 這一張**是量出來的**（不是沿用 `cry`）：兩張的姿勢**不一樣**
+         —— `cry` 是站直、單手抵著臉；這一張是仰頭、雙手收在胸前、膝蓋併攏。
+         §5 的「同姿勢沿用」講的是同一個姿勢的差分，這一張不是。
+       ⚠ 原 PNG 已依 §5 移進 `resources/_originals/si/`（不入版控、遊戲不載）。 */
+    crybig: { src:'resources/si/sorana_si_crybig.webp', top:7, bot:1524, fx:0.532 },
+    determine:{ src:'resources/si/sorana_si_determine.webp?v=2', top:10, bot:1523, fx:0.547 },
     /* ⚠⚠ ver -1536：這兩張**圖早就在版控裡**，只是從來沒登記進這張表 ——
        雪都酒吧那一段（`ravnsdal.bar`）從 -1522 起就寫著 `drink`／`shy`，
        線上一直**靜靜退回本尊立繪**（`script_lint.py` 那八行
@@ -667,9 +704,9 @@ export const ART = {
        ⚠ 取景值 `tools/measure_si.py` 實測，沒有抄別張。 */
     drink:     { src:'resources/si/sorana_si_drink.webp', top:2, bot:1526, fx:0.442 },
     shy:       { src:'resources/si/sorana_si_shy.webp',   top:3, bot:1533, fx:0.503 },
-    eat:       { src:'resources/si/sorana_si_eat.webp?v=2', top:1, bot:1529, fx:0.598 },
-    lookaway:  { src:'resources/si/sorana_si_lookaway.webp?v=2', top:4, bot:1522, fx:0.610 },   // fx 目視重量（量到 0.623）
-    nod:       { src:'resources/si/sorana_si_nod.webp?v=2', top:6, bot:1527, fx:0.533 },
+    eat:       { src:'resources/si/sorana_si_eat.webp?v=2', top:1, bot:1529, fx:0.569 },
+    lookaway:  { src:'resources/si/sorana_si_lookaway.webp?v=2', top:4, bot:1522, fx:0.610 },   // fx 目視手調，不隨新圖走（新圖量到 0.623，含垂下的頭髮）
+    nod:       { src:'resources/si/sorana_si_nod.webp?v=2', top:6, bot:1527, fx:0.529 },
     /* ══ 唸報告的那一張（ver -1550，Ray：「索拉娜唸報告時全用 `Sorana_SI_read`，
        判斷是**雙引號跟日期開頭**的台詞」「**只限那場戲**」）══
        用在雪都圖書館那一段（`ravnsdal.library`）：她把蕾娜的評鑑報告唸出來的那幾句。
@@ -689,16 +726,16 @@ export const ART = {
     readhappy:   { src:'resources/si/sorana_si_readhappy.webp',   top:0, bot:1531, fx:0.644 },
     readsad:     { src:'resources/si/sorana_si_readsad.webp',     top:5, bot:1530, fx:0.643 },
     readconfuse: { src:'resources/si/sorana_si_readconfuse.webp', top:9, bot:1528, fx:0.671 },
-    point:     { src:'resources/si/sorana_si_point.webp?v=2', top:9, bot:1523, fx:0.536 },
+    point:     { src:'resources/si/sorana_si_point.webp?v=2', top:9, bot:1523, fx:0.543 },
     relief:    { src:'resources/si/sorana_si_relief.webp', top:8, bot:1518, fx:0.556 },
-    sad:       { src:'resources/si/sorana_si_sad.webp?v=2', top:3, bot:1527, fx:0.520 },
-    salute:    { src:'resources/si/sorana_si_salute.webp?v=2', top:11, bot:1525, fx:0.565 },   // fx 目視重量（量到 0.596）
+    sad:       { src:'resources/si/sorana_si_sad.webp?v=2', top:3, bot:1527, fx:0.515 },
+    salute:    { src:'resources/si/sorana_si_salute.webp?v=2', top:11, bot:1525, fx:0.580 },   // fx 目視手調，不隨新圖走（新圖量到 0.581，含舉起的手臂）
     scare:    { src:'resources/si/sorana_si_scare.webp', top:16, bot:1518, fx:0.540 },   // fx 目視重量（量到 0.443）
-    serious:   { src:'resources/si/sorana_si_serious.webp?v=2', top:6, bot:1524, fx:0.571 },
+    serious:   { src:'resources/si/sorana_si_serious.webp?v=2', top:6, bot:1524, fx:0.576 },
     sleep:     { src:'resources/si/sorana_si_sleep.webp', top:304, bot:1231, fx:0.461, cm:147, standCm:140 },   // 座（非全身圖）
-    stare:     { src:'resources/si/sorana_si_stare.webp?v=2', top:7, bot:1528, fx:0.513 },
-    wave:      { src:'resources/si/sorana_si_wave.webp?v=2', top:8, bot:1527, fx:0.562 },   // fx 目視重量（量到 0.342）
-    worry:     { src:'resources/si/sorana_si_worry.webp?v=2', top:4, bot:1519, fx:0.550 },
+    stare:     { src:'resources/si/sorana_si_stare.webp?v=2', top:7, bot:1528, fx:0.514 },
+    wave:      { src:'resources/si/sorana_si_wave.webp?v=2', top:8, bot:1527, fx:0.530 },   // fx 目視手調，不隨新圖走（新圖量到 0.374，含舉起的手臂）
+    worry:     { src:'resources/si/sorana_si_worry.webp?v=2', top:4, bot:1519, fx:0.543 },
   } },
   /* ⚠ 取景值於 ver -624 **重量**：`Anya_SI_front` 換過圖（舊的留成
      `XAnya_SI_front.webp`）—— §5「換圖一定要重量取景值」。
