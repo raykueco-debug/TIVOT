@@ -1437,7 +1437,9 @@ bindBtn('flightBtn', ()=>startChapter(prog.FLIGHT_TEST));
        而那正是要驗一段演出時唯一有用的落點（這一次要驗的就是「走進圖書館那一刻」）。
    ⚠ 兩顆**共用同一筆落點資料**（`SCRIPT_TEST`，鐵律 7）：巡場拿它當旗標的底，
      這一顆整筆照跳。要改測別的地方就只改那一筆。 */
-bindBtn('scriptTestBtn', ()=>startChapter(prog.SCRIPT_TEST));
+/* RUSH（ver -1584）取代「腳本測試」那顆鈕 —— 見上面 startRush。
+   ⚠ 它照樣落在首頁那條白名單之外 ⇒ `body.testmode` 限定（§6.9）。 */
+bindBtn('rushBtn', ()=>{ hideHome('rush'); startRush(); });
 /* 巡場（ver -1396）：同一個落點、沒有怪、劇情不抓人 —— 說明在 `prog.tourSpec`。 */
 /* ══⚠⚠ 巡場（ver -1396；-1410 Ray：「巡場加入選擇探索地圖名單，選擇以後選
    是否播放劇情」）══ 兩步：選圖 → 選要不要演劇情。
@@ -1778,10 +1780,59 @@ function carriedToInn(opts){
    （suspend 不 close，§6.10）—— 那一場的敗北要回**飛行畫面**，不是旅店。 */
 combat.setLoseKind(()=> flightBack ? 'flight'
                       : (storyResume ? 'rollback' : 'home'));
+/* ══⚠⚠⚠ **RUSH**（ver -1584，Ray：「把首頁的腳本測試拿掉，換成 rush，進去就是
+   隨機刷 EDCBAS 的一輪怪，然後結算」）══════════════════════════════════════
+   六場一局（`battles.rush_*`，`session:'rush'`），由弱到強各抽一隻那個等級的怪；
+   最後那一場（S）帶 `sessionEnd` ⇒ 閉棺結算，六場的帳一起併（§6.5.4.3 既有的機制）。
+
+   ⚠⚠ **它是調數值用的試跑台**，不是遊戲內容：`body.testmode` 限定（首頁那條白名單
+     沒點名它 ⇒ 一般玩家看不到，§6.9）。**不碰存檔**（沒有 `newRun`／不落檢查點）。
+   ⚠ **中間那幾場不會結算**（`midSession`），所以回程會走到這一支 —— 接力就掛在這裡。
+   ⚠ 那一個等級一隻怪都沒有時直接跳過（Ray 還沒補等級之前 E 是空的）——
+     跳過比卡在那裡好，而且下一版他補了就自動有。 */
+const RUSH_TIERS = ['E','D','C','B','A','S'];
+let rushAt = -1;                      // −1＝沒在跑
+function rushLive(){ return rushAt >= 0; }
+function rushHasFoe(t){
+  const E = GAME_CONFIG.enemies || {};
+  return Object.keys(E).some(k => (E[k]||{}).tier === t);
+}
+function rushNext(){
+  /* 跳過沒有怪的等級；六個都跑完就收手（最後一場的 sessionEnd 會自己結算）。 */
+  while(++rushAt < RUSH_TIERS.length && !rushHasFoe(RUSH_TIERS[rushAt])){
+    console.info('[rush] 跳過 %s 級：一隻都沒有', RUSH_TIERS[rushAt]);
+  }
+  if(rushAt >= RUSH_TIERS.length){ rushAt = -1; return false; }
+  const last = !RUSH_TIERS.slice(rushAt+1).some(rushHasFoe);
+  /* ⚠⚠ **`sessionEnd` 要掛在「真的是最後一場」那一張上**：中間有等級是空的時候，
+     卡上寫死的 `rush_s.sessionEnd` 會落在一場永遠打不到的戰鬥上 ⇒ 這一局收不了、
+     結算不會來。所以現場覆寫（只動這六張佔位卡，不是通則）。 */
+  const B = GAME_CONFIG.battles || {};
+  RUSH_TIERS.forEach(t=>{ const b=B['rush_'+t.toLowerCase()]; if(b) b.sessionEnd=false; });
+  const id = 'rush_' + RUSH_TIERS[rushAt].toLowerCase();
+  if(last && B[id]) B[id].sessionEnd = true;
+  combat.startScriptBattle(id, { story:false });
+  return true;
+}
+function startRush(){
+  rushAt = -1;
+  if(!rushNext()) console.warn('[rush] 一隻有等級的怪都沒有 —— 先去 Excel 補 tier');
+}
+
 combat.setStoryReturn((res)=>{
   /* ══ 連敗歸零（ver -697（-893 前用詞））══ 任何一場打贏都算「沒卡住」，所以歸零收在**入口**
      這唯一的一處（鐵律 8）—— 掛在各條回程分支上必然漏掉其中一條。 */
   if(res && !res.lost) prog.setLossStreak(0);
+  /* ══ RUSH 的接力（ver -1584）══ 打贏就換下一個等級；輸了或棄權就整串收掉。
+     ⚠ 排在**最前面**：rush 不經過城鎮／飛行／劇情，下面那幾條分支對它都不適用。
+     ⚠ 最後一場（`sessionEnd`）打贏時**不接**——那一場會自己閉棺結算，
+       結算頁的「回首頁」就是這一局的收尾。 */
+  if(rushLive()){
+    const lost = !!(res && (res.lost || res.lose));
+    const b = (GAME_CONFIG.battles||{})['rush_' + RUSH_TIERS[rushAt].toLowerCase()];
+    if(lost || (b && b.sessionEnd)){ rushAt = -1; if(lost) story.leaveToHome(); return; }
+    rushNext(); return;
+  }
   /* 「放棄」：回主畫面。⚠ 走 `story.leaveToHome()` 而不是自己 `combat.goHome()` ——
      那一支還會**收掉城鎮**（`townCloser`），漏了的話下一次進城會接在舊節點上。
      `storyResume`／`flightBack` 由它呼叫的 `setHomeReturn` 一併清掉（見上面）。 */

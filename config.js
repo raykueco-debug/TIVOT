@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1583';
+export const VERSION = 'ver 2026.09.17-1584';
 
 export const GAME_CONFIG = {
 
@@ -2490,6 +2490,23 @@ export const GAME_CONFIG = {
     /* 教堂的 Boss（ver -586（-893 前用詞））：同一段連續戰鬥的**最後一場** ——
        `sessionEnd` ＝打贏它才閉棺、聖徒化／主動技／破防值回滿。 */
     np_boss: { enemy:'np_boss', session:'np_siege', sessionEnd:true },
+
+    /* ══⚠⚠⚠ **RUSH**（ver -1584，Ray：「把首頁的腳本測試拿掉，換成 rush，
+       進去就是隨機刷 EDCBAS 的一輪怪，然後結算」）══════════════════════════
+       六場一局（`session:'rush'`），由弱到強各抽一隻那個等級的怪，打完 S 才結算。
+       ⚠⚠ **`enemyTier` 不是 `enemy`**：抽的池子由 `combat.pickBattleEnemy` **算**
+         （掃 `enemies` 的 `tier`）—— 那一欄正是 Ray 要在 Excel 裡補的東西，
+         所以這裡列一份名單必然走鐘（鐵律 7）。
+       ⚠ 這是**調數值用的試跑台**：`story:0`（不是劇情戰 ⇒ 不播開場白、
+         `talkOnce` 不記旗）、六張卡除了等級以外一個字都不一樣。
+       ⚠ 沒有那個等級的怪時 `pickBattleEnemy` 回 null ⇒ 那一場會被 `main.rushNext`
+         跳過（Ray 還沒補等級之前 E 是空的，跳過比卡住好）。 */
+    rush_e: { enemyTier:'E', session:'rush', story:0 },
+    rush_d: { enemyTier:'D', session:'rush', story:0 },
+    rush_c: { enemyTier:'C', session:'rush', story:0 },
+    rush_b: { enemyTier:'B', session:'rush', story:0 },
+    rush_a: { enemyTier:'A', session:'rush', story:0 },
+    rush_s: { enemyTier:'S', session:'rush', story:0, sessionEnd:true },
     /* ══ 夏爾村村內戰（ver -802（-893 前用詞），Ray 交稿）══════════════════════════════════
        整張圍城算一場（`session:'shinier_siege'`）：格與格之間開棺原地開/關、
        hp／聖徒化／主動技／破防值不回滿。**收尾格＝野外那格**（`sv_wild`，

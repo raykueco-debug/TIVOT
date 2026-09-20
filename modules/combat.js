@@ -2575,8 +2575,15 @@ let pendingPick=null;   // { sb, key }
 let sessionUsedKeys = [];
 function pickBattleEnemy(sb){
   if(!sb) return null;
-  const e = sb.enemy;
+  /* ══ `enemyTier:'C'` ＝**這一場隨機抽一隻那個等級的怪**（ver -1584，rush 用）══
+     ⚠⚠ **名單是算出來的不是列出來的**（鐵律 7）：等級已經寫在每一張卡的 `tier` 上，
+       這裡再列一份「C 級有哪幾隻」的話，Ray 在 Excel 裡改完等級這一份不會跟著動。
+     ⚠ 抽到的一樣走下面 `pendingPick` 那一套（同一場的兩次呼叫要拿到同一隻）。 */
+  const e = sb.enemyTier
+    ? Object.keys(GAME_CONFIG.enemies||{}).filter(k=>(GAME_CONFIG.enemies[k]||{}).tier===sb.enemyTier)
+    : sb.enemy;
   if(!Array.isArray(e)) return e;
+  if(!e.length) return null;
   if(pendingPick && pendingPick.sb===sb) return pendingPick.key;
   /* 抽**還沒出過的**；全部出過了就重新洗（怪比格子少時不至於卡住）。 */
   let pool = e.filter(k => sessionUsedKeys.indexOf(k) < 0);
