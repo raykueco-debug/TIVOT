@@ -7535,8 +7535,17 @@ export const TOWNS = {
                **主角**（他不在好感表上）⇒ 整條永遠不成立（ver -1565 在教堂踩過的
                同一個坑，`script_lint.py` 現在會擋）。
              ⚠ 門檻不是等於：`tierMax:2`／`tierMin:3`，日後多一段 T4 不必回頭改。 */
-          nou('steady','我，一定會幫你把賽西莉學姐贏回來！', { tierMax:2, tierWho:'NOUVELLE' }),
-          { speaker:'PLAYER', blank:true, tierMin:3, tierWho:'NOUVELLE' },
+          /* ══⚠⚠ **索菈娜講完「一會見！」就下台**（ver -1619，Ray 指定）══
+             她要走了 —— 留在台上被壓暗，讀起來是「她還站在那裡沒動」。
+             ⚠⚠ **兩條分支都要寫**：下面那兩拍是 `tierMax:2`／`tierMin:3` 的
+               **互斥**分歧，只寫其中一條，另一半的玩家她就撤不掉
+               （同這一段收尾插旗那條的同一個坑，只是方向相反：
+                 旗不可以掛在分歧上，舞台指示則是**每一條分歧都要有**）。
+             ⚠ `hide` 在那一拍**開頭**就執行（不跟著 `reveal` 延後），
+               所以她是在諾薇兒開口的同時滑出去的，不會多佔一拍。 */
+          nou('steady','我，一定會幫你把賽西莉學姐贏回來！',
+              { tierMax:2, tierWho:'NOUVELLE', hide:['SORANA'] }),
+          { speaker:'PLAYER', blank:true, tierMin:3, tierWho:'NOUVELLE', hide:['SORANA'] },
           nou('steady','嗯！',            { tierMin:3, tierWho:'NOUVELLE' }),
           nou('steady','我們……才不會輸！', { tierMin:3, tierWho:'NOUVELLE' }),
           /* ══⚠⚠⚠ **二戰・第二輪**（ver -1616，Ray：「諾薇兒『我們才不會輸』之後
