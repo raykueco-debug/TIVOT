@@ -152,15 +152,21 @@ export const SPEAKERS = {
      （同 `PRIEST_X`／`PRIEST`、`OFFICER`／`RENNA` 的慣例）：
        · `MISHA_X` ＝畫面上是「？？？」—— 上城區那一夜玩家只看得到一個背影
        · `MISHA`   ＝蕾娜說破身分之後才用得上（**這一版還沒有他的戲**，先備著）
-     ⚠⚠ **`art:null` ＝他還沒有立繪**（Ray：「先不放圖，gpt 爆了，後面補」）。
-       這不是壞掉：`story.js` 看到查不到立繪就整段跳過（「不上場也不下場，
-       台上原本站著的人維持原樣」），只出名字欄與台詞 —— 同 `SOLDIER`／`VOICE`。
-     ⚠⚠⚠ **圖到了之後要回來補三件**，不然稿上的演出會少一半：
-       ① 這兩筆的 `art` 指到他的 `ART` 條目
-       ② 上城區那兩段的「立繪撤出」現在**只剩 `se_walk` 的腳步聲**（沒有人可以撤）
-       ③ 稿上「少年遠距離望了一眼主角」的插畫、與「米夏眼部 CI」都還沒有檔案 */
-  MISHA_X:  { name:'？？？',   art:null },
-  MISHA:    { name:'米夏',     art:null },
+     ⚠⚠⚠ **ver -1549：圖到了，①② 都接上了**（Ray：「misha 先接上所有他的對話」）。
+       -1511 那張清單的三件，現況：
+       ① `art` 指到 `ART.misha` ── ✔ 做了（下面兩筆）
+       ② 上城區那兩段的「立繪撤出」── ✔ 做了（`script/town.js` 那兩拍的 `hide`）
+       ③ 「少年遠距離望了一眼主角」的插畫與「米夏眼部 CI」── **還沒接**
+          （Ray -1549：「il 跟 ci 先不用管，之後我會編號命名」）
+     ⚠⚠ 他那幾拍走 **`dark:true`（剪影）**，不是原色：那一夜蕾娜的台詞就是
+       「燈光不夠，但是……」「總覺得那個人……是不是跟安雅有點像？」——
+       看得一清二楚的話那兩句就沒有著落了。剪影是**跟著人走的狀態**（ver -954），
+       他**每一句都要寫 `dark:true`**：漏一句 ＝ 那一句「他自己開口而沒有 dark」
+       ＝ 揭曉，人當場變原色。
+     ⚠ 名字欄照舊分兩個 id（`MISHA_X`＝？？？／`MISHA`＝報上名字之後），
+       立繪是同一份 —— 與 `NEMO_X`／`CECILIE_X` 一模一樣。 */
+  MISHA_X:  { name:'？？？',   art:'misha' },
+  MISHA:    { name:'米夏',     art:'misha' },
 };
 
 /* ══ 立繪素材 ＋ 取景實測值 ══
@@ -1183,6 +1189,19 @@ export const ART = {
     idea:     { src:'resources/SI/Laurie_SI_idea.webp',      top:4, bot:1520, fx:0.543, flip:true },
     lookaside:{ src:'resources/SI/Laurie_SI_lookaside.webp', top:4, bot:1525, fx:0.540, flip:true },
   } },
+  /* ══ 米夏（米海爾・約瑟・謝索洛夫）══ ver -1549 接線，Ray：「misha 先接上所有他的對話」
+     ⚠⚠⚠ **`cm:176` 是我估的，Ray 還沒給** —— 同尼莫／賽西莉／蘿芮那一批（-1524）。
+       依據只有「安雅（162）的**雙胞胎哥哥**」這一條。改一個數字就好
+       （不必重量 `top`/`bot`/`fx`，那三個是那張圖的客觀事實）。
+       ⚠ 低於現行最高的 178 ⇒ `CAST_TALL` 不變、既有角色不會被連累縮小。
+     ⚠⚠ **本位 `side:'L'`** ＝要與安雅（本位右）**分兩邊**（§6.5）：那一夜 M2 那一條
+       是他們兄妹來回對話四次，同側的話每一句都要抽牌輪轉 ＝ 閃爍。
+       ⚠ M1 那一條反過來把他覆寫成右（`sides:{ MISHA_X:'R' }`，見 `script/town.js`）
+         —— 那一段蕾娜（左）正在**看著他**講話，人要在畫面上才讀得通。
+     ⚠ `mirror` 不寫（＝不翻）：他的姿勢接近正面，翻了只是換一隻手拿刀。
+     ⚠ 取景值 `tools/measure_si.py` 量的，只有底圖一張（沒有差分）。 */
+  misha:     { cm:176, eye:32, fx:0.393, top:0, bot:1535,
+           side:'L', alt:null, base:'resources/SI/misha_SI_front.webp', expr:{} },
   arrhenius: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
            side:'R', alt:null, base:'resources/SI/Arrhenius_SI_front.webp', expr:{
     /* ══ 表情差分 6 張（ver -1503 美術交件，-1509 接線）══

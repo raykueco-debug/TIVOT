@@ -5520,11 +5520,19 @@ export const TOWNS = {
              **不要加中譯、也不要換成中文**。
            ⚠ `tiny:true` ＝極小字（ver -1511 新做的拍屬性，實作在 `modules/story.js`，
              樣式在 `style.css` 的 `#storyBubble.tiny`）—— 稿上「距離遠，所以用極小字體」。
-           ⚠⚠ **米夏還沒有立繪**（Ray：「先不放圖，gpt 爆了，後面補」）：`MISHA_X`
-             的 `art` 是 null，所以他**不會上台**，只出名字欄與台詞（story.js 既有的
-             行為，同 `SOLDIER`／`VOICE`）。稿上「立繪撤出」現在只剩腳步聲；
-             **圖到了要回來把這兩段的立繪補上**（見 `speakers.js` 的 `MISHA_X`）。
-           ⚠ 稿上「少年遠距離望了一眼主角」的插畫也還沒有檔案 —— 到了補 `cg:`。
+           ⚠⚠⚠ **ver -1549：米夏的立繪接上了**（Ray：「misha 先接上所有他的對話」）。
+             · 他走 **`dark:true`（剪影）**，而且**每一句都要寫**（ver -954：剪影是
+               跟著人走的狀態，他自己開口而沒有 dark ＝ 揭曉，人當場變原色）——
+               那一夜蕾娜的台詞就是「燈光不夠，但是……」，看得一清二楚就沒著落了。
+             · 稿上的「**立繪撤出**」＝那兩拍腳步聲加 `hide:['MISHA_X']`
+               （以前沒有人可以撤，所以只剩聲音）。
+             ⚠⚠ **M1 把他覆寫成右**（`sides` 那一格）：那一段蕾娜在**左邊看著他**
+               講「總覺得那個人……是不是跟安雅有點像？」—— 人要在畫面上才讀得通。
+               代價是他與安雅（本位右）**同側換人**＝抽牌輪轉，但那一段安雅只有頭尾
+               兩拍，正好是「妹妹講完 → 鏡頭給哥哥 → 被發現了 → 鏡頭回妹妹」。
+               ⚠ M2 那一條**不覆寫**：兄妹來回四次，本位（他左她右）天生分兩邊。
+           ⚠ 稿上「少年遠距離望了一眼主角」的插畫也還沒有檔案 —— 到了補 `cg:`
+             （Ray -1549：「il 跟 ci 先不用管，之後我會編號命名」）。
            ⚠⚠ 兩條路的最後一拍都插 `ep_night_mi_done`（＝那一夜過完了，`QUEST_LOCK`
              第二扇窗的出口）＋各自的路線旗。`clockToday:8` 把時間推到早上八點，
              隔日審訊那一段（旅店）才接得上。
@@ -5552,10 +5560,10 @@ export const TOWNS = {
                那一條本來就沒有隔日那一段（蕾娜沒跟去就沒看到米夏）。
                給它一個 `goto` 只會把玩家搬回旅店然後什麼都不演。 */
           { flag:'ep_m1_route', need:'ep_night_renna', clockToday:8, goto:'inn',
-            sides:{ RENNA:'L' }, lines:[
+            sides:{ RENNA:'L', MISHA_X:'R' }, lines:[
             { speaker:'ANYA', text:'Мне кажется, я научилась владеть этой силой!',
               portrait:{ char:'ANYA', expr:'argue', show:true }, tiny:true },
-            { speaker:'MISHA_X', tiny:true,
+            { speaker:'MISHA_X', tiny:true, dark:true,
               text:'А чем ты поручишься? И даже если так — разве тебе есть куда вернуться?' },
             ren('armcross','太遠了，聽不清楚……'),
             ren('whisper','是說安雅講話那麼快的嗎？'),
@@ -5567,7 +5575,8 @@ export const TOWNS = {
             ren('intense','你說殺氣……？'),
             any('scared',''),
             ren('intense2','啊，被發現了。'),
-            { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+            /* 稿上的「立繪撤出」：他轉身走掉（ver -1549 才真的撤得掉人）。 */
+            { speaker:'NARRATION', text:'', se:'se_walk', auto:1400, hide:['MISHA_X'] },
             ren('evalutating','安雅小姐，剛剛那位是……'),
             any('talk','是我哥哥。他擔心我所以……'),
             ren('evalutatingclosemouth','擔心的話不應該陪在妳身旁嗎？怎麼就走了呢？'),
@@ -5582,15 +5591,17 @@ export const TOWNS = {
             clockToday:8, lines:[
             { speaker:'ANYA', text:'Мне кажется, я научилась владеть этой силой!',
               portrait:{ char:'ANYA', expr:'argue', show:true }, tiny:true },
-            { speaker:'MISHA_X', tiny:true,
+            { speaker:'MISHA_X', tiny:true, dark:true,
               text:'А чем ты поручишься? И даже если так — разве тебе есть куда вернуться?' },
             { speaker:'ANYA', tiny:true,
               text:'Позволь мне… позволь попробовать ещё раз! Умоляю тебя, Мишенька!' },
-            { speaker:'MISHA_X', tiny:true, text:'И что я скажу душам погибших?..' },
-            { speaker:'MISHA_X', tiny:true, text:'！！' },
-            { speaker:'MISHA_X', tiny:true, text:'За тобой слежка.' },
+            /* ⚠ 他的**每一句**都要 `dark:true`（漏一句就是揭曉，見上面那一段）。 */
+            { speaker:'MISHA_X', tiny:true, dark:true, text:'И что я скажу душам погибших?..' },
+            { speaker:'MISHA_X', tiny:true, dark:true, text:'！！' },
+            { speaker:'MISHA_X', tiny:true, dark:true, text:'За тобой слежка.' },
             any('scared',''),
-            { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+            /* 稿上的「立繪撤出」：哥哥走掉，安雅留在台上（下一句是她講的）。 */
+            { speaker:'NARRATION', text:'', se:'se_walk', auto:1400, hide:['MISHA_X'] },
             any('scared','那、那是……'),
             any('talk','是我哥哥。他擔心我所以……'),
             any('worry','拜託，可以跟大家保密嗎？'),
