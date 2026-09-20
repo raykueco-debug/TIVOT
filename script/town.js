@@ -6974,6 +6974,10 @@ export const TOWNS = {
       startFights: 3,            // 打過 3 場 → 下一格出現（ver -1593）
       startStep: 0,              // ⚠ 停用（0＝不看步數）；-1576 的「第 4 格」已撤
       gap: 6, speed: 2, onEncounter: 1, stun: 4,
+      /* 牠的**登場戲**住在哪一格（ver -1599）：第一次現身就把那一段帶到當場演
+         —— 不論那時玩家走到哪裡。⚠ 與那一格自己的 `acts` 共用同一個 `flag`
+         （`tomb_gk1_done`），所以只會演一次。 */
+      intro: 'hall2',
       resetAt: 'hall2',           // 柱廳：必觸戰鬥，戰後牠在這裡
       idleAt: ['gate'],           // 墓門：不推進
       /* ⚠ `wildRate` 已移除（ver -1596）：遇敵率的唯一真相是城上的 `wildSpawn.rate`。 */
