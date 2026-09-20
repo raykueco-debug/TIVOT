@@ -1771,12 +1771,15 @@ function chaseWalk(from, goal, n){
   for(let i=0;i<n && cur!==goal;i++){ const nx=chaseToward(cur, goal); if(!nx) break; cur=nx; }
   return cur;
 }
-/* ══ 上線：牠出現在**玩家與入口之間**、落後 `gap` 格 ══
-   ⚠ 朝入口那一側放（`entryNodeId`）＝牠是從墓門那邊追上來的。玩家離入口不到
-     `gap` 格時就停在入口 —— 那時距離比設計值短，而那是玩家自己還在門口附近。 */
+/* ══ 上線：**直接站在玩家腳下那一格**（ver -1593，Ray：「三戰後下一格才出守護者
+   劇情」）══ 那一場就是守墓者的登場戲 —— 所以不是「落後 `gap` 格慢慢追上來」，
+   是**下一格就在那裡**。
+   ⚠⚠ -1576 的「落後 `gap` 格」拿掉了：那一版配上「踩到第 4 格」的觸發，
+     實際跑起來是**走四格就撞上守墓者**（雜兵在 -1591 之前刷不出來），
+     玩家第一場就見到牠 —— Ray 回報的正是這個。
+   ⚠ 擊退之後牠就留在原地、停 `stun` 回合，之後才照 `speed` 追 —— 那一段沒有變。 */
 function chaseSpawn(c, spec, at){
-  c.node = chaseWalk(at, entryNodeId, spec.gap|0);
-  if(c.node===at) c.node=null;      // 無處可放（只有一格）：下一步再說
+  c.node = at;
 }
 /* ══ 玩家動了一格：步數 +1 → 該上線就上線 → 牠推進 `speed` 格 ══
    `to` ＝玩家**剛走到**的那一格（不是原本站的那一格）。
@@ -1791,9 +1794,12 @@ function chaseStep(to){
   chaseAdvance(c, spec, to, spec.speed|0);
   chaseSet(c);
 }
-/* 上線的條件：踩到第 `startStep` 格**或**打過 `startFights` 場，先到者（Ray）。 */
+/* 上線的條件：**打過 `startFights` 場**（ver -1593，Ray：「三戰後下一格」）。
+   ⚠ `startStep`（-1576 的「踩到第 4 格」）**已停用** —— 0 代表不看步數。
+     留著讀它是為了「日後要改回來只動資料」，但預設不會成立。 */
 function chaseDue(c, spec){
-  return (c.steps|0) >= (spec.startStep|0) || (c.fights|0) >= (spec.startFights|0);
+  const byStep = (spec.startStep|0) > 0 && (c.steps|0) >= (spec.startStep|0);
+  return byStep || (c.fights|0) >= (spec.startFights|0);
 }
 /* 推進 n 格（停頓中就只扣一回合）。⚠ 只有它會動 `c.node`／`c.stun`（鐵律 7）。 */
 function chaseAdvance(c, spec, goal, n){

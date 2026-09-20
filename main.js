@@ -2071,9 +2071,21 @@ story.setBattleHandler((battleId, resume)=>{
   combat.holdEnemyRise();   // 走門的場次：降臨（含掛圖）押到門全開（ver -875）
   /* 劇情插入戰（ver -375（-893 前用詞））：腳本寫 `{battle:'guild_hunter'}`，查得到 `config.battles`
      就開那一場（單敵、卡上的數值、不能聖徒化／用搭檔技）。
-     ⚠ 查不到才退回教學那一場 —— 舊腳本（地宮那一段）寫的就是教學，不能被改掉。 */
-  if(GAME_CONFIG.battles && GAME_CONFIG.battles[battleId]){
-    { const k=battleBgmOf(battleId);
+     ⚠ 查不到才退回教學那一場 —— 舊腳本（地宮那一段）寫的就是教學，不能被改掉。
+
+     ══⚠⚠⚠ **也認「一張敵人卡的鑰匙」**（ver -1593，Ray：「出訓練用聖徒了」「還帶教學」）══
+     卡上的 `spawnAt`（Excel 的「出沒地」）刷出來的是**敵人卡**的 key（`arch_warden`），
+     而這裡只查 `config.battles` 的**場次** ⇒ 查不到 → **掉進下面那條「退回教學」**
+     ⇒ 走在古墓裡冒出**訓練用聖徒**，而且**還帶教學**（`requestReplay`）。
+     ⚠⚠ 這條退路本身是對的（舊腳本真的靠它），錯的是**它把「沒有這個場次」與
+       「這是一隻怪」當成同一件事**。⇒ 先問敵人卡，兩個都查不到才退回教學。
+     ⚠ -1592 我在 `combat.startGame` 裡補過同樣的退路 —— **但這條路根本走不到那裡**
+       （鐵律 8 的老毛病：同一個判斷散在兩個地方，只修了下游那一個）。 */
+  const asEnemy = !(GAME_CONFIG.battles && GAME_CONFIG.battles[battleId])
+                  && !!(GAME_CONFIG.enemies && GAME_CONFIG.enemies[battleId]);
+  if((GAME_CONFIG.battles && GAME_CONFIG.battles[battleId]) || asEnemy){
+    /* ⚠ 只有真的有場次卡才換曲子：裸敵人卡沒有 `bgm`，換了會把這張圖的曲子打斷。 */
+    if(!asEnemy){ const k=battleBgmOf(battleId);
       const s=story.bgmSrc(k); SFX.playBgm(s, { fadeOutMs:600, volume: bgmVol(s) }); }
     /* ⚠⚠ **城鎮插入戰留在原背景**（ver -592（-893 前用詞），Ray：「打完敵人應該會留在原背景，
        不要自動切背景」）：把城鎮現在畫面上那一張帶進戰鬥，蓋過敵人卡的 `bg` ——
