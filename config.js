@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1554';
+export const VERSION = 'ver 2026.09.17-1555';
 
 export const GAME_CONFIG = {
 
@@ -1917,16 +1917,16 @@ export const GAME_CONFIG = {
       put('tut_nouvelle_steady',    N, N.expr.steady);
       put('tut_nouvelle_run',       N, N.expr.run);
       put('tut_renna',              R);
-      put('tut_renna_shocked',      R, R.expr.shocked);
+      put('tut_renna_shock',      R, R.expr.shock);
       put('tut_renna_run',          R, R.expr.run);
       /* 北方泊地的聖徒化教學戰（ver -599，Ray 交稿）用到的差分。
          ⚠ 取景值一樣抄 `ART`（speakers.js 量的那一份，鐵律 7）。 */
-      put('tut_renna_thinking',     R, R.expr.thinking);
+      put('tut_renna_think',     R, R.expr.think);
       put('tut_renna_ask',          R, R.expr.ask);
       put('tut_renna_shout',        R, R.expr.shout);
       put('tut_nouvelle_saintinstall', N, N.expr.saintinstall);
       /* 禍魘娜塔莉戰（ver -671，Ray 交稿）用到的差分。 */
-      put('tut_anya_terrifying',    A, A.expr.terrifying);
+      put('tut_anya_terrify',    A, A.expr.terrify);
       put('tut_anya_ni',            A, A.expr.nightmareinstall);
       /* 夏爾村村戰的四位（ver -928）：索菈娜兩張差分＋三位村民的基本立繪。 */
       put('tut_sorana',             S);
@@ -1961,7 +1961,7 @@ export const GAME_CONFIG = {
       /* 安雅（ver -671（-893 前用詞），禍魘娜塔莉戰）。⚠ 站**右**（`speakers.js` 的本位）——
          她與蕾娜同台時蕾娜本來就在右…… 所以這一場**蕾娜讓到左**：
          §6.5 的表「蕾娜原則右，碰到安雅就放左」。 */
-      anya:      { name:'安雅',   image:'tut_anya_terrifying', side:'right', fit:{ zoom:0.92, drop:6 } },
+      anya:      { name:'安雅',   image:'tut_anya_terrify', side:'right', fit:{ zoom:0.92, drop:6 } },
     },
     // 罵人台詞（監察官）：教學中玩家「按錯 / 延時」即插入一句（隨機取、可重複觸發；
     //   defended 段講完後停用）。early＝太早防禦（Defense 格擋半傷）專用——不受 defended
@@ -2631,7 +2631,7 @@ export const GAME_CONFIG = {
              蕾娜講完就滑出去，左邊空出來給箭（諾薇兒在右邊，不擋）。 */
         { trigger:'downed', soloLine:true, lines:[
           { who:'nouvelle', img:'tut_nouvelle_desperate', text:'不行！' },
-          { who:'renna',    img:'tut_renna_thinking',     text:'到此為止了嗎？' },
+          { who:'renna',    img:'tut_renna_think',     text:'到此為止了嗎？' },
           /* ⚠ 這一句用 `steady`（Ray 指定）不是 SAINTINSTALL —— 那張是發動的瞬間，
              這一拍她還在「準備好了」。 */
           { who:'nouvelle', img:'tut_nouvelle_steady',    text:'我準備好了，現在聖徒化！' },
@@ -2643,7 +2643,7 @@ export const GAME_CONFIG = {
                她的驚呼上，發動的理由就從諾薇兒身上跑掉了。 */
         ], gate:{ type:'right', action:'saint', then:'saintOn' } },
         { trigger:'saintOn', lines:[
-          { who:'renna',    img:'tut_renna_shocked',      text:'那就是……聖徒化？' },
+          { who:'renna',    img:'tut_renna_shock',      text:'那就是……聖徒化？' },
           { who:'nouvelle', img:'tut_nouvelle_saintinstall',
             text:'在我熔斷之前你都會是不死之身！趁現在！' },
         ]},
@@ -2656,7 +2656,7 @@ export const GAME_CONFIG = {
           { who:'nouvelle', img:'tut_nouvelle_desperate', text:'我撐不住了！至少……' },
         ], gate:{ type:'up', immediate:true, action:'partner', then:'partnerOn' } },
         { trigger:'partnerOn', lines:[
-          { who:'renna',    img:'tut_renna_shocked',      text:'諾薇兒！' },
+          { who:'renna',    img:'tut_renna_shock',      text:'諾薇兒！' },
           { who:'renna',    img:'tut_renna_shout',        text:'解決祂！不要白費諾薇兒的覺悟！' },
         ]},
       ] },
@@ -2797,11 +2797,11 @@ export const GAME_CONFIG = {
            期間點掉那十幾格的傷（約一成），30% 打完正好落在 5% 那條下限上。
            50% 觸發的話爆完還剩兩成多，讀起來就不是「一擊把她打到只剩一口氣」。 */
         { trigger:'hp:30', lines:[
-          { who:'anya', img:'tut_anya_terrifying', text:'娜塔莉！' },
+          { who:'anya', img:'tut_anya_terrify', text:'娜塔莉！' },
         ], gate:{ type:'right', immediate:true, action:'nightmare', then:'niCall', tone:'red' } },
         { trigger:'niCall', lines:[
-          { who:'renna', img:'tut_renna_shocked', text:'那是……！' },
-          { who:'renna', img:'tut_renna_shocked', text:'聖徒化？' },
+          { who:'renna', img:'tut_renna_shock', text:'那是……！' },
+          { who:'renna', img:'tut_renna_shock', text:'聖徒化？' },
           { who:'anya',  img:'tut_anya_ni',       text:'對不起……！' },
           { who:'anya',  img:'tut_anya_ni',       text:'請讓娜塔莉安息吧！' },
         ] },
@@ -2876,7 +2876,7 @@ export const GAME_CONFIG = {
                                （蕾娜右／諾薇兒左），那是整場一致的安排。 */
                           { trigger:'battleStart', lines:[
                             { se:'se_enemy_centipi', shake:true, hold:900 },   // 演出拍：牠先出聲
-                            { who:'renna',    img:'tut_renna_shocked',
+                            { who:'renna',    img:'tut_renna_shock',
                               text:'竟然在內陸碰到這麼巨大的禍魘……' },
                             { who:'nouvelle', img:'tut_nouvelle_steady', text:'交給我們！' },
                             { who:'nouvelle', img:'tut_nouvelle_steady', text:'大型敵人就要靠重武器！' },
@@ -2885,7 +2885,7 @@ export const GAME_CONFIG = {
                                齒輪聲疊在底下、metalclip 停了齒輪就收（seFollow）——
                                他正在拆艦砲，下一句蕾娜才喊「單手就把艦砲……！」。 */
                             { blank:true, se:'se_metalclip', seFollow:'se_kerberos_gear' },
-                            { who:'renna',    img:'tut_renna_shocked',   text:'騙人的吧……單手就把艦砲……！' },
+                            { who:'renna',    img:'tut_renna_shock',   text:'騙人的吧……單手就把艦砲……！' },
                             { who:'nouvelle', img:'tut_nouvelle_run',    text:'蕾娜小姐！請穩住船身！' },
                             { who:'nouvelle', img:'tut_nouvelle_run',    text:'這樣的話，那種東西對他來說就只是靶子！' },
                             { who:'renna',    img:'tut_renna_run',       text:'知道了！拜託了！' },
@@ -4183,16 +4183,16 @@ export const ASSETS = {
      ⚠ 路徑一律**抄 `ART`**（`script/speakers.js` 那一份，鐵律 7）：
        換圖只改那裡，這邊自動跟上；寫死字串必然走鐘。 */
   tut_renna:                ART.renna.base,
-  tut_renna_shocked:        ART.renna.expr.shocked.src,
+  tut_renna_shock:        ART.renna.expr.shock.src,
   tut_renna_run:            ART.renna.expr.run.src,
-  tut_renna_thinking:       ART.renna.expr.thinking.src,
+  tut_renna_think:       ART.renna.expr.think.src,
   tut_renna_ask:            ART.renna.expr.ask.src,
   tut_renna_shout:          ART.renna.expr.shout.src,
   tut_nouvelle_steady:      ART.nouvelle.expr.steady.src,
   tut_nouvelle_run:         ART.nouvelle.expr.run.src,
   tut_nouvelle_saintinstall:ART.nouvelle.expr.saintinstall.src,
   /* 禍魘娜塔莉戰（ver -671）。 */
-  tut_anya_terrifying:      ART.anya.expr.terrifying.src,
+  tut_anya_terrify:      ART.anya.expr.terrify.src,
   tut_anya_ni:              ART.anya.expr.nightmareinstall.src,
   /* ⚠ 檔名 ver -454 由 Ray 改為 `CI_` 前綴（`Nouvelle_SAINTINSTALL` → 同名加前綴）。 */
   cutin_nouvelle_saint:  "resources/ci/ci_nouvelle_saintinstall.webp",   // 全畫面 cut-in
@@ -4550,7 +4550,7 @@ export const ASSETS = {
      預載多抓幾十張圖（`main.js` 是走 `Object.keys(ASSETS)` 的）。
    ⚠ 加一句新台詞要用新差分時，在這裡補一筆就好，取景值會自己跟著來。 */
 (function tutPortraits(){
-  const need = { nouvelle:['steady','run'], renna:['shocked','run'],
+  const need = { nouvelle:['steady','run'], renna:['shock','run'],
                  /* ver -839：夏爾村村戰的戰鬥內對白。 */
                  sorana:['guardtalk','ready'],
                  sh_villager:[], sh_villager2:[], sh_chief:[] };

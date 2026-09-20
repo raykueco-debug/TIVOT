@@ -71,10 +71,10 @@ export const LINES = {
     0: {
       S: { text:'竟然……一個人就發揮了一艘船的火力……', expr:'surprised' },
       A: { text:'好驚人……這就是HUND的實力？',           expr:'surprised' },
-      B: { text:'璐娜莉亞團長推薦你的理由，我總算明白了。', expr:'writing'   },
-      C: { text:'嗯……看來還有不少地方需要觀察呢。',       expr:'writing'   },
+      B: { text:'璐娜莉亞團長推薦你的理由，我總算明白了。', expr:'write'   },
+      C: { text:'嗯……看來還有不少地方需要觀察呢。',       expr:'write'   },
       D: { text:'好危險……差一點就沒命了。',               expr:'relief'    },
-      E: { text:'我還以為會死在這裡……',                   expr:'dying'     },
+      E: { text:'我還以為會死在這裡……',                   expr:'die'     },
     },
   },
 };
@@ -98,7 +98,7 @@ export const BY_BATTLE = {
        所以六格填同一句，那就是「不論 RANK」的落地。
      ⚠ `E` 也填：`np_claws` 那幾筆沒給 E 是因為稿上沒有；這一筆的稿說的是「不論」。
      ⚠ 戰敗**看不到這一句**（沒有結算頁）—— 那是對的，稿上勝敗的分歧在腳本裡。 */
-  lk_nemo: (()=>{ const L={ text:'那制服……是第四騎士團的人……？', expr:'shockedopen' };
+  lk_nemo: (()=>{ const L={ text:'那制服……是第四騎士團的人……？', expr:'shockopen' };
                   return { S:L, A:L, B:L, C:L, D:L, E:L }; })(),
   /* ══ 夏爾村・村戰收尾（sv_wild＝sessionEnd，整段圍城在這裡結算）（ver -838（-893 前用詞），Ray 交稿）══
      `byTier`：這一場的稿**分好感段**（T1／T2 以上）—— 門檻不是等於（pickByThreshold，
@@ -107,27 +107,27 @@ export const BY_BATTLE = {
      掛在句子上、once 旗防重複（見 inspector.pickEvaluator）。⚠ E 沒給就不寫（同 np_claws）。 */
   sv_wild: { byTier: {
     1: {
-      S: { text:'簡直是移動的軍火庫……！',         expr:'shockedCalm', aff:{ sorana:10 } },
-      A: { text:'這種程度的敵人我也很難評分呢。',   expr:'writting',    aff:{ sorana:10 } },
-      B: { text:'數量不少，辛苦了。',               expr:'writting',    aff:{ sorana:10 } },
+      S: { text:'簡直是移動的軍火庫……！',         expr:'shockcalm', aff:{ sorana:10 } },
+      A: { text:'這種程度的敵人我也很難評分呢。',   expr:'write',    aff:{ sorana:10 } },
+      B: { text:'數量不少，辛苦了。',               expr:'write',    aff:{ sorana:10 } },
       C: { text:'你是太暗了看不清楚嗎？',           expr:'upset',       aff:{ sorana:11 } },
-      D: { text:'基本全靠人家村民呢……',             expr:'dying',       aff:{ sorana:12 } },
+      D: { text:'基本全靠人家村民呢……',             expr:'die',       aff:{ sorana:12 } },
     },
     2: {
       S: { text:'把船弄壞那件事就原諒你吧！',       expr:'bow',         aff:{ sorana:10 } },
       A: { text:'明天把船修好就算原諒你囉。',       expr:'bow',         aff:{ sorana:10 } },
-      B: { text:'那些……原本只是普通的動物嗎？',     expr:'shockedCalm', aff:{ sorana:10 } },
+      B: { text:'那些……原本只是普通的動物嗎？',     expr:'shockcalm', aff:{ sorana:10 } },
       C: { text:'這麼暗，戰鬥也挺困難的吧？',       expr:'pause',       aff:{ sorana:11 } },
-      D: { text:'基本全靠人家村民呢……',             expr:'dying',       aff:{ sorana:12 } },
+      D: { text:'基本全靠人家村民呢……',             expr:'die',       aff:{ sorana:12 } },
     },
   } },
   /* 聖徒化教學戰（瓦礫中的紫黑之爪）。稿一字未改。 */
   np_claws: {
-    S: { text:'難以置信……聖徒加護的你恐怕有接近團長級的實力。', expr:'shockedCalm' },
-    A: { text:'聖徒化……那就是騎士團的王牌……？',               expr:'thinking'    },
-    B: { text:'竟能將低階的聖徒之力運用到如此境界……',           expr:'thinking'    },
-    C: { text:'低階的聖徒之力竟然也有這種威力……',               expr:'writting'    },
-    D: { text:'你得好好感謝諾薇兒呢。',                          expr:'writting'    },
+    S: { text:'難以置信……聖徒加護的你恐怕有接近團長級的實力。', expr:'shockcalm' },
+    A: { text:'聖徒化……那就是騎士團的王牌……？',               expr:'think'    },
+    B: { text:'竟能將低階的聖徒之力運用到如此境界……',           expr:'think'    },
+    C: { text:'低階的聖徒之力竟然也有這種威力……',               expr:'write'    },
+    D: { text:'你得好好感謝諾薇兒呢。',                          expr:'write'    },
   },
   /* 禍魘娜塔莉戰（ver -671（-893 前用詞），Ray 交稿）。稿一字未改。
      ⚠⚠ S 那一句帶**好感 +5**（`aff`）：這是評價這一層第一次給好感 ——
@@ -139,7 +139,7 @@ export const BY_BATTLE = {
     A: { text:'說好了，一步都不許離開我！',         expr:'scarecute' },
     B: { text:'對不起，我最怕這種的了……',           expr:'awkward'   },
     C: { text:'對、對喔！神父本來就會驅魔嘛！',      expr:'meltdown'  },
-    D: { text:'我要跟諾薇兒睡一間房……',             expr:'dying'     },
+    D: { text:'我要跟諾薇兒睡一間房……',             expr:'die'     },
   },
 };
 

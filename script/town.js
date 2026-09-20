@@ -117,24 +117,24 @@ const NIEM_TAIL = [
   { speaker:'PLAYER', blank:true },
   nou('shock','又是NIEM。'),
   sor('confuse','之前就想問了，那是什麼東西啊？'),
-  ren('writting','『神經介面擴張模組』。簡單來說，可以提升人的認知能力。'),
+  ren('write','『神經介面擴張模組』。簡單來說，可以提升人的認知能力。'),
   ren('talkwork','太古文明的遺產。'),
-  sor('amazed','認知能力？'),
+  sor('amaze','認知能力？'),
   nou('expain2','比方說，如果讓我使用的話，就能提升術式的強度。'),
   nou('think','安雅小姐的話，或許感應能力會增強吧。'),
   sor('talk','喔……那他呢？'),
   { speaker:'PLAYER', blank:true },
-  sor('amazed','用不了？為什麼？'),
+  sor('amaze','用不了？為什麼？'),
   ren('lookawaytalk','很多原因啦。'),
   nou('explain','不、不曉得索菈娜小姐用了會有什麼效果喔？'),
-  sor('amazed','欸？我也可以嗎？'),
+  sor('amaze','欸？我也可以嗎？'),
   ren('stare','妳想試試嗎？'),
   sor('lauaghbig','嗯，好啊。'),
   ren('scarejump','妳也太隨便了吧！'),
   sor('lauaghbig','反正妳們也不會害我吧。正好我也想看看自己到底擅長什麼。'),
   any('smilesneaky','……搗蛋。'),
   sor('smirk','……妳等著，真是那樣的話我回頭先捉弄妳。'),
-  any('dying',''),
+  any('die',''),
   Object.assign(nou('explain2','把它放在視線中心，然後讓雙眼散焦……'),
                 { flags:['niem_taught'] }),
   /* 教學：直接把玩家放到「道具 → 特殊」那一頁，NIEM 那一列亮著。 */
@@ -164,7 +164,7 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   sor('smile','瑪麗亞的料理可是很美味的喔。'),
   sor('remind','有時我都帶獵物來給她料理。'),
   mar(null,'『有時』而已嗎？'),
-  sor('embarassed',''),
+  sor('embarrass',''),
   mar(null,'這次的修行之旅學到了好多。我在莫塔鎮碰到了一個很厲害的料理人呢！'),
   nou('surprise','莫塔鎮？那個河港？'),
   mar(null,'對啊！港口就是好啊！什麼食材香料都拿得到。'),
@@ -188,8 +188,8 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   { speaker:'COOK_SV', kitchen:true },
   nou('surprise','這個！好好吃！'),
   mar(null,'對吧！綠月風格的奶油煎鹿肉。不用再調味就很好吃。'),
-  sor('surprised','！！'),
-  sor('surprised','這個人竟然已經吃完了！'),
+  sor('surprise','！！'),
+  sor('surprise','這個人竟然已經吃完了！'),
   /* HP 上限的大字（稿上排在這裡，不是接在料理完成那一刻 —— 見 story.showBoon）。 */
   { speaker:'COOK_SV', boon:'deersteak' },
   nou('bigsmile','很難得看到你露出那種表情呢。'),
@@ -222,7 +222,7 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   sor('laugh','啊？這個跟豆芽一樣森住民能作什麼戰？'),
   sor('remind','你有好好吃飯嗎？'),
   cor('smile','並不是只有打打殺殺才叫作戰，敬愛的女士。'),
-  sor('dying',''),
+  sor('die',''),
   nou('whisper','他們是戰略情報、政治作戰的專家。'),
   sor('think','……就是比較聰明的人？'),
   cor('smile','您能這麼理解，光榮之至。'),
@@ -237,7 +237,7 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   cor('smile','萬幸，趕上了呢。'),
   ren('ask','趕上？'),
   cor('stare',''),
-  any('surprised',''),
+  any('surprise',''),
   cor('talk','你在報告裡說，要把這位小姐帶回聖王廳吧？'),
   ren('talkwork','是的，我判斷她的狀況特殊，由騎士團加以保護較為穩妥。'),
   cor('talk','疑似聖徒之力的力量……跟呼喚禍魘的嫌疑，是嗎？'),
@@ -253,7 +253,7 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   cor('stare','像您這樣的千金之軀，想必吃了不少苦頭吧。'),
   cor(null,'不如這樣。'),
   cor('smile','由在下為您在帝都找個安身之地，再作打算？'),
-  ren('shockedCalm','！！'),
+  ren('shockcalm','！！'),
   any('silent','……'),
   { speaker:'PLAYER', blank:true },
   cor('talk','HUND，我並沒有給你指令。'),
@@ -266,7 +266,7 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   ren('talkserious','那還不如一開始就將她保護在聖王廳！'),
   ren('ask','我的意見，還是將安雅小姐先帶回聖域……'),
   cor('stare','既然知道她有可能呼喚禍魘，妳還打算把她帶回聖王廳？'),
-  ren('shockedCalm','……！！'),
+  ren('shockcalm','……！！'),
   cor('stare','聖王廳這個神聖的淨土，憑空出現了禍魘。妳想讓人們怎麼看？'),
   cor('talk','帝國又會怎麼看？'),
   nou('angry','帝都的人們難道就無所謂嗎！'),
@@ -442,7 +442,7 @@ export const DRAGON_LINES = {
       { battle:'bl_chase' },
       sor('furiousq','啊——！我受不了了！'),
       sor('furiousq','我要把那隻小偷龍烤來吃！'),
-      nou('shocked2','禍魘不能吃啦！'),
+      nou('shock2','禍魘不能吃啦！'),
       /* ⚠ ver -1421（Ray：「諾薇兒說禍魘不能吃的時候，下一個 hungry 要播肚子餓音效」）
          —— 這一拍**沒有台詞**（只有立繪），聲音就是那句沒說出口的話。 */
       Object.assign(nou('hungry',''), { se:'se_tummy' }),
@@ -453,7 +453,7 @@ export const DRAGON_LINES = {
     { flag:'bl_chase4', sides:{ RENNA:'L' }, lines:[
       { battle:'bl_chase' },
       ren('lookup','這樣下去沒完沒了！'),
-      ren('thinking','牠在消耗我們體力。'),
+      ren('think','牠在消耗我們體力。'),
       nou('cringe','那怎麼辦？'),
       ren('command','把他往死胡同逼！'),
       /* ══⚠⚠ **「交給我！」以後開小地圖，龍出現在當前格的隔壁任一位置**
@@ -481,7 +481,7 @@ export const DRAGON_LINES = {
       Object.assign(ren('command','把牠往王座之間趕就無處可逃了！'),
         { onlyIf:['seen_belisar_dragstair','seen_belisar_antecham','seen_belisar_throne'],
           flags:['bl_throne_known'] }),
-      Object.assign(ren('thinking','得找一個能困住牠的地方！'),
+      Object.assign(ren('think','得找一個能困住牠的地方！'),
         { skipIf:['seen_belisar_dragstair','seen_belisar_antecham','seen_belisar_throne'] }),
     ] },
   ],
@@ -537,7 +537,7 @@ export const DRAGON_LINES = {
     Object.assign(ren('intense','小心！要垮了！'),
       { se:['se_brickcrush','se_rockimpact'], shakeHold:'se' }),
     sor('furiousq','跑出去了！'),
-    nou('shocked2','讓牠襲擊城鎮就不好了！'),
+    nou('shock2','讓牠襲擊城鎮就不好了！'),
     /* ⚠⚠⚠ ver -1433（Ray：「上船追換 warhorn 是**進到飛行畫面以後**換」）——
        `bgm:'warhorn'` 從這一拍**拿掉**了：這一刻人還站在王座廳裡（-1398 的
        「登船前用 warhorn」被讀成了「說這句話的時候」）。曲子改由
@@ -695,7 +695,7 @@ export const OUTING = {
                 /* ⚠ 蕾娜本位左、村長本位右（speakers.js）→ 兩個人自然分兩邊，
                      不必給 `sides` 覆寫（§6.5）。 */
                 meetBy:{ shinier:{
-                  lines:[ ren('writting','原來如此……遺蹟從未有過那樣的反應？'),
+                  lines:[ ren('write','原來如此……遺蹟從未有過那樣的反應？'),
                           chf(null,'這個村子建立也不過幾十年，再往前的事我也不清楚。'),
                           chf(null,'不過魔獸的量明顯減少了，謝謝你們啊。'),
                           ren('smile','不會，這是聖王廳應盡的職責……') ],
@@ -706,7 +706,7 @@ export const OUTING = {
                                  ren('ask','啊，你也來啦。') ] },
                   date:{ lines:[ ren('arguecute','也不能怪我們啊！從來沒有收到過求救嘛！'),
                                  chf(null,'還不到需要求救的程度啦，魔獸的爪牙價格很好，源源不絕地自己送上門來也很不錯。'),
-                                 ren('shockedCalm','我這輩子沒想到能聽到這種話……', { aff:{ renna:2 } }) ] } } } },
+                                 ren('shockcalm','我這輩子沒想到能聽到這種話……', { aff:{ renna:2 } }) ] } } } },
     ANYA:     { from:5, dine:'dessert',    nodes:['grocery'],
                 nodesBy:{ shinier:['lakeside'] },
                 line:'……嗯。今天的份，還沒吃到。',
@@ -810,8 +810,7 @@ const BEL_WATER_FIRST = {
     ren('ask','不只是那樣……'),
     ren('talkwork','文獻裡的古城不是這樣子的。'),
     nou('surprise','不是這樣子的？'),
-    /* ⚠ Ray 的稿寫「think」，`speakers.js` 那張差分叫 **`thinking`**。 */
-    ren('thinking','這是大陸曆之前的建築了，但現在看起來卻像是剛剛才被破壞一樣……'),
+    ren('think','這是大陸曆之前的建築了，但現在看起來卻像是剛剛才被破壞一樣……'),
     any('silent','……'),
   ] };
 
@@ -1176,7 +1175,7 @@ export const TOWNS = {
           { speaker:'PLAYER', text:'', auto:900, se:'se_sailorshout', hide:['NOUVELLE'] },
           /* 無台詞的立繪拍：她被那一聲嚇到，停一秒（§6.5，從立繪站定才起算）。 */
           { speaker:'NOUVELLE', text:'', auto:1000,
-            portrait:{ char:'NOUVELLE', expr:'shocked2', show:true } },
+            portrait:{ char:'NOUVELLE', expr:'shock2', show:true } },
           nou('cringe','明天船上如果有很多人的話，我會緊張……'),
           { speaker:'PLAYER', blank:true },
           /* 稿上這一拍寫的是 `Nouvelle_SI_front`＝**基本立繪**（沒有表情差分）。 */
@@ -1213,7 +1212,7 @@ export const TOWNS = {
               ren(null,'瓦爾士戰爭留下來的輕砲艦，這還算小的呢。'),
               ren('watch','雖然是舊式船體，姑且還是裝載了甲板滑膛砲跟速射砲。'),
               ren('watch','航行途中碰到狀況，也不致於無法應對。'),
-              nou('shocked','可是…..這麼大的船要多少人才開得動啊？'),
+              nou('shock','可是…..這麼大的船要多少人才開得動啊？'),
               ren('watch','機械套索的，有個舵手就能動，至於帆手……這個季節沒有驟風，應該無所謂。'),
               ren('smile','船底有教廷紋章，不用擔心被防空砲打下來。'),
               ren('bow','操舵就交給你囉。'),
@@ -1266,7 +1265,7 @@ export const TOWNS = {
           { speaker:'PLAYER', text:'', auto:900, se:'se_weapon_pistol_03' },
           /* 無台詞的立繪拍：停一秒（§6.5，從立繪站定才起算）。 */
           { speaker:'HUNTER', text:'', auto:1000,
-            portrait:{ char:'HUNTER', expr:'shocked', show:true } },
+            portrait:{ char:'HUNTER', expr:'shock', show:true } },
           hun('attack','你、小、子！'),
           /* ══ 推槍棺，進入戰鬥 ══ 這一場不能聖徒化、不能用搭檔技（見 config.battles）。 */
           { battle:'guild_hunter' },
@@ -1279,7 +1278,7 @@ export const TOWNS = {
               { hide:['HUNTER'] }),
           nou('surprise','那怎麼行！'),
           { speaker:'PLAYER', blank:true },
-          nou('shocked','就算你這麼說……'),
+          nou('shock','就算你這麼說……'),
           { speaker:'PLAYER', blank:true },
           nou('concern','……也是，情報源多多益善。'),
           cnt(null,'常來啊，委託常常會更新。手腳得快點，盜賊都快被槍之魔女殺完了。'),
@@ -1306,7 +1305,7 @@ export const TOWNS = {
           nou('pray','感謝神，賜與我們平安與食糧。願主降福於世——'),
           nou('surprise','你怎麼已經開始吃了？禱詞還沒——'),
           { speaker:'NOUVELLE', text:'', auto:1000,   /* 無台詞立繪拍：停一秒（§6.5） */
-            portrait:{ char:'NOUVELLE', expr:'shocked', show:true } },
+            portrait:{ char:'NOUVELLE', expr:'shock', show:true } },
           nou('lookaway','好好吃。'),
         ],
         /* 點畫面隨機一句（Ray：「隨便生個幾串輪播」）。⚠ 這些是**背景人聲**，
@@ -1781,10 +1780,10 @@ export const TOWNS = {
                  nextFavor:{ to:'church', aff:{ anya:10 },   /* ver -724：×2（原 5）*/ flag:'np_anya_grave',
                              throughConnectors:true },
                  lines:[
-                 any('scared','那個……'),
-                 any('sobbing','我想去教堂那裡，看看娜塔莉……'),
+                 any('scare','那個……'),
+                 any('sob','我想去教堂那裡，看看娜塔莉……'),
                  { speaker:'PLAYER', blank:true },
-                 any('scared','謝謝……'),
+                 any('scare','謝謝……'),
                ] } ],
       },
       /* ── 三個街區樞紐 ── */
@@ -1847,7 +1846,7 @@ export const TOWNS = {
               pri(null,'但昨晚那個，不一樣！'),
               nou('surprise','不一樣？'),
               pri(null,'突然，就出現了！像惡夢一樣，就好像一開始就在那裡！'),
-              ren('thinking','惡夢……？'),
+              ren('think','惡夢……？'),
               pri(null,'聖王廳派來的支援，就只有妳們嗎？'),
               ren('talkwork','是的。'),
               pri(null,'太過份了！就算是瓦爾士，我們也是教區的子民啊！'),
@@ -1912,7 +1911,7 @@ export const TOWNS = {
           /* 第三天路過碼頭（ver -664，Ray 交稿）。 */
           { flag:'np_port_day3', need:'np_day3_done', lines:[
             pri(null,'真是多虧了你們，否則後果不堪設想。'),
-            any('sobbing','……'),
+            any('sob','……'),
           ] },
         ],
       },
@@ -2019,8 +2018,8 @@ export const TOWNS = {
                  ⚠ `bgm` 是**持續狀態**，寫第一拍就好，整幕沿用（含後面娜塔莉那一段
                    換成 `bgm_missionfailed`）。 */
               nou('relief','總算是消滅掉那些東西了……', { bgm:'suspense' }),
-              ren('thinking','……'),
-              ren('thinking','……適性果然很不錯呢。'),
+              ren('think','……'),
+              ren('think','……適性果然很不錯呢。'),
               { speaker:'PLAYER', blank:true },
               ren('talkwork','不，別在意。總之先確認生還者。'),
               ren('ask','諾薇兒，還有餘力嗎？'),
@@ -2035,8 +2034,8 @@ export const TOWNS = {
                    真正的收尾是下面那一拍 `{battle:'np_claws'}`（見 story 的 stopShake）。
                    10 秒是保險（音檔 12 秒），正常會先被戰鬥收掉。 */
               { speaker:'PLAYER', text:'', auto:1200, shakeHold:10000, se:'se_earthquake' },
-              ren('shockedCalm','！！'),
-              nou('shocked2','有什麼……要來了！'),
+              ren('shockcalm','！！'),
+              nou('shock2','有什麼……要來了！'),
               { battle:'np_claws' },
               /* ══ 戰勝（ver -624（-893 前用詞），Ray 交稿）══════════════════════════════════
                  ⚠ 接在 `{battle}` **後面**（同一段）：這樣打贏就直接接著演，
@@ -2048,7 +2047,7 @@ export const TOWNS = {
               ren('worry','諾薇兒？妳還好嗎？'),
               ren('worry','竟然能把妳逼到聖徒化，剛剛那個到底是……'),
               nou('desperate','下面……'),
-              ren('shockedCalm','什麼？'),
+              ren('shockcalm','什麼？'),
               nou('desperate','廢墟下面，有人！'),
               { speaker:'PLAYER', blank:true, se:'se_brickcrush' },
               /* ══ 插圖：昏迷的安雅 ══ 稿上「以下對話以插圖為背景，無立繪」——
@@ -2066,7 +2065,7 @@ export const TOWNS = {
               { speaker:'PLAYER', text:'', auto:1200, cg:'007-2_anya_awake', cgNoTime:true, cgSoft:true },
               /* 收插圖回教堂（`cg:null`），立繪從這一拍開始恢復。 */
               { speaker:'ANYA_X', text:'！！', cg:null,
-                portrait:{ char:'ANYA_X', expr:'scared', show:true } },
+                portrait:{ char:'ANYA_X', expr:'scare', show:true } },
               ren('talkwork','先別亂動！妳剛剛還被壓瓦礫在下面呢！'),
               /* 她轉身就跑：換表情＋跑步音的**演出拍**，沒有台詞所以給 auto。 */
               { speaker:'ANYA_X', text:'', auto:900, se:'se_steps',
@@ -2083,8 +2082,8 @@ export const TOWNS = {
                 textByTier:{ 1:'你好歹也是神職人員吧？那樣盯著人家小女生的腿合適嗎？',
                              2:'眼睛看哪裡呢？' } },
               { speaker:'PLAYER', blank:true },
-              ren('evaluating','……傷？'),
-              ren('evaluatingclosemouth','……有道理。被壓在這麼厚的石堆裡，怎麼連一道劃傷都沒有？'),
+              ren('evaluate','……傷？'),
+              ren('evaluateclosemouth','……有道理。被壓在這麼厚的石堆裡，怎麼連一道劃傷都沒有？'),
               /* 主角追出去（跑步音）。 */
               { speaker:'PLAYER', blank:true, se:'se_steps' },
               ren('chase','喂、喂！別丟下我們兩個啊！'),
@@ -2122,16 +2121,16 @@ export const TOWNS = {
               grl('desperate','……'),
               nou('sad','好可憐……那一定是很重要的人吧？'),
               ren('pause','妳，叫什麼名字？'),
-              anx('sobbing','……'),
-              anx('sobbing','安雅。'),
-              ren('writing','安雅小姐是紫月人吧？會說標準語嗎？'),
-              any('sobbing','……'),
+              anx('sob','……'),
+              anx('sob','安雅。'),
+              ren('write','安雅小姐是紫月人吧？會說標準語嗎？'),
+              any('sob','……'),
               /* 這兩句同一個立繪（稿上第一句沒標圖）—— 沿用上一拍的 `invite` 之前那一張。 */
-              ren('writing','我們不是帝國軍，是教廷的人。'),
+              ren('write','我們不是帝國軍，是教廷的人。'),
               ren('invite','如果可以的話，讓我們幫幫妳，好嗎？'),
               ren('worry','否則讓死者就這麼客死異鄉，也太令人難過了。'),
-              any('sobbing','……'),
-              any('sobbing','拜託妳……把娜塔莉……拜託……'),
+              any('sob','……'),
+              any('sob','拜託妳……把娜塔莉……拜託……'),
               /* ⚠ 插圖由**上往下**平移（Ray 指定）。ver -858（Ray：「不是無立繪，
                  是保持原立繪」）：-656 的 hide 拆掉 —— 台上的人留著，插圖疊在後面平移。 */
               { speaker:'RENNA', text:'交給我們吧。死者的歸途，是不分教派的。',
@@ -2146,8 +2145,8 @@ export const TOWNS = {
             { speaker:'PLAYER', blank:true },
             nou('sad','這樣啊……我知道了。在那之前我都會在這裡幫忙。'),
             nou('pray','死者遺骨的話，都已經移到墓地了。'),
-            any('sobbing','……'),
-            any('sobbing','謝謝……'),
+            any('sob','……'),
+            any('sob','謝謝……'),
           ] },
           /* 再訪（ver -664）。⚠⚠ **不寫 `flag` ＝每次抵達都演**（`actDue` 只跳過
              「旗立了」的段落）—— 那正是「再訪教堂」要的行為。
@@ -2188,29 +2187,29 @@ export const TOWNS = {
              ⚠ 三個純音效拍：台上有安雅 → 要點一下才過（ver -628），這是要的。 */
           { flag:'np_grave_done', need:'np_day3_done', storyBattle:true, lines:[
             any('cry','娜塔莉……'),
-            any('sobbing','（異國語言）'),
+            any('sob','（異國語言）'),
             { speaker:'PLAYER', blank:true },
-            any('sobbing','我知道，可是……可是……'),
+            any('sob','我知道，可是……可是……'),
             any('desperate','都是我的錯……'),
             /* 惡夢滲進來。⚠ 染色與心跳同一拍起。 */
             { speaker:'ANYA', text:'', auto:1200, tintHold:'nightmare',
               se:'se_flight_heartbeat', portrait:{ char:'ANYA', expr:'desperate', show:true } },
             { speaker:'ANYA', text:'', auto:1100, se:'se_paniccrowd',
               portrait:{ char:'ANYA', expr:'desperate', show:true } },
-            any('terrifying','！！'),
+            any('terrify','！！'),
             { speaker:'ANYA', text:'', auto:1100, se:'se_saintroar', shake:true,
-              portrait:{ char:'ANYA', expr:'terrifying', show:true } },
-            any('terrifying','不可以……'),
+              portrait:{ char:'ANYA', expr:'terrify', show:true } },
+            any('terrify','不可以……'),
             { speaker:'ANYA', text:'', auto:900, se:'se_steps',
-              portrait:{ char:'ANYA', expr:'terrifying', show:true } },
-            ren('shocked','禍魘！是從哪裡——'),
+              portrait:{ char:'ANYA', expr:'terrify', show:true } },
+            ren('shock','禍魘！是從哪裡——'),
             { battle:'np_cemetery' },
             /* ══ 第一場打完（ver -671（-893 前用詞），Ray 交稿）══
                ⚠ 染色**打完就沒了**（進戰鬥時 `stopTint` 收掉）—— 這裡不重新上，
                  因為下一段的緊張是靠聲音與立繪撐的；要再上就寫一次 `tintHold`。 */
-            ren('thinking','……憑空生出的禍魘，『永夜』以來第一次發生這種狀況。'),
-            ren('writting','其他地方是否也有這種異象……？'),
-            ren('writting','還是……'),
+            ren('think','……憑空生出的禍魘，『永夜』以來第一次發生這種狀況。'),
+            ren('write','其他地方是否也有這種異象……？'),
+            ren('write','還是……'),
             any('desperate','……'),
             /* 高音版的吼叫（`se_nightmare_hp`：原音升 5 個半音，Ray 指定另存）。 */
             { speaker:'ANYA', text:'', auto:1100, se:'se_nightmare_hp',
@@ -2226,8 +2225,8 @@ export const TOWNS = {
               /* `slowMs`（ver -740，Ray：「禍魘娜塔莉立繪彈出的速度要慢一點」）：
                  禍魘不是跑上台的，是**滲出來**的 —— 進場滑入由 450ms 放慢到 1400ms。 */
               portrait:{ char:'NATALIA_X', show:true, slowMs:1400 } },
-            any('terrifying','騙……騙人……'),
-            any('terrifying','娜塔莉……不要……'),
+            any('terrify','騙……騙人……'),
+            any('terrify','娜塔莉……不要……'),
             { speaker:'PLAYER', blank:true },
             /* ⚠ 這兩拍是**同一句「……」講兩次**（Ray 的稿），不是重複貼上：
                她說不出話來，所以連兩拍都是省略號、表情一樣。 */
@@ -2243,14 +2242,14 @@ export const TOWNS = {
             /* ⚠ ver -739：這一段照 Ray 的修正稿逐句對過 —— thinking 那一句改字、
                「如果是這樣的話」拆成獨立一拍（表情沿用 thinking）、
                「沒事了」回 base（front）、「刻不容緩」換 command。 */
-            ren('shocked','剛剛那是……禍魘？'),
+            ren('shock','剛剛那是……禍魘？'),
             { speaker:'PLAYER', blank:true },
             ren('surprised','不要嚇我啦！'),
             ren('upsetstare','真是……'),
-            ren('thinking','特定人物形象的禍魘、還有疑似『聖徒化』的力量……'),
+            ren('think','特定人物形象的禍魘、還有疑似『聖徒化』的力量……'),
             any('silent','……'),
-            ren('thinking','如果是這樣的話，那這一切……'),
-            ren('evaluating','一定和這女孩脫不了關係。'),
+            ren('think','如果是這樣的話，那這一切……'),
+            ren('evaluate','一定和這女孩脫不了關係。'),
             nou('run','對不起！'),
             nou('run','我來遲了嗎？'),
             /* `ren(null)` ＝回 base（Renna_SI_front）—— 稿上指定 front。 */
@@ -2258,17 +2257,17 @@ export const TOWNS = {
             ren('command','但是，我們得把這女孩帶回聖王廳。刻不容緩。'),
             nou('surprise','發生什麼事了？'),
             { speaker:'PLAYER', blank:true },
-            nou('shocked2','欸？'),
+            nou('shock2','欸？'),
             any('silent','……'),
             ren('talkserious','就是那樣了，在禍事發生前盡快動身。'),
             nou('run','好、好！我去準備一下！'),
             ren('chase2','等一下！妳要去哪？'),
             { speaker:'PLAYER', blank:true },
-            ren('tired','……真是善良的孩子呢。'),
+            ren('tire','……真是善良的孩子呢。'),
             ren('lookdown','…………！'),
-            ren('blushed','那個……'),
-            ren('blushed','能扶我一下嗎？'),
-            ren('dying','我站不起來了……'),
+            ren('blush','那個……'),
+            ren('blush','能扶我一下嗎？'),
+            ren('die','我站不起來了……'),
             /* ══ 翌朝（ver -739，Ray：「在這一幕結束轉景後，先上透黑遮罩顯示日期
                時間…時間是早上八點」「黑色淡入淡出時間長點，三秒」）══════════
                ① 三秒淡黑＋清場（台上沒人，auto 才走得動——§6.5 的空演出拍）
@@ -2342,7 +2341,7 @@ export const TOWNS = {
       /* 餐飲街：廢墟（ver -664）。 */
       tavern:   { bg:'northport_tavern_bf', name:'北方泊地　餐飲街',     exits:{ back:'east' },
         hours:[8,24], lateNight:true, closed:'椅子都翻上桌了。今晚的最後一輪早就結束。',   // ver -864，Ray：「酒吧都是24:00才關」
-        acts:[ { flag:'np_tavern_seen', need:'np_day3_done', lines:[ any('sobbing','……') ] } ] },
+        acts:[ { flag:'np_tavern_seen', need:'np_day3_done', lines:[ any('sob','……') ] } ] },
       /* ══ 旅店（ver -656，Ray 交稿）══════════════════════════════════════
          「六點前直接走進旅店，只有蕾娜會亮燈」＋「一過六點……強制轉移」那一夜。
          ⚠⚠ **兩顆行動鈕都要有**（ver -659，Ray：「旅店還是要有獨自坐坐，回房睡覺
@@ -2408,17 +2407,17 @@ export const TOWNS = {
             ren(null,'你也早點休息吧。'),
             { speaker:'PLAYER', blank:true },
             ren('ask','你是說……今天的敵人？'),
-            ren('thinking','確實有點不自然。'),
-            ren('thinking','當我們看到祂的瞬間，大腦就已經接受祂「存在」的事實了。'),
-            ren('thinking','連「為什麼」都沒去想。'),
-            ren('thinking','理所當然地就好像……在夢中一樣。'),
+            ren('think','確實有點不自然。'),
+            ren('think','當我們看到祂的瞬間，大腦就已經接受祂「存在」的事實了。'),
+            ren('think','連「為什麼」都沒去想。'),
+            ren('think','理所當然地就好像……在夢中一樣。'),
             { speaker:'PLAYER', blank:true },
             ren('ask','那就是司祭說的「惡夢」嗎……？'),
-            ren('thinking','來自『紫月』的少女，跟『惡夢』……如果只是巧合就好了。'),
+            ren('think','來自『紫月』的少女，跟『惡夢』……如果只是巧合就好了。'),
             { speaker:'PLAYER', blank:true },
             ren('talkwork','我不確定你的層級能否接觸這個情報，還是先打住吧。'),
             ren('stare','別擺出那種表情嘛，我們團長也是很嚴格的。'),
-            ren('writting','把那女孩帶回聖王廳，現在也只能這麼辦了。'),
+            ren('write','把那女孩帶回聖王廳，現在也只能這麼辦了。'),
             ren('stare','早點休息吧，辛苦你囉。'),
             /* ver -858（Ray：「三秒淡入黑」）：同教堂→娜塔莉的 slowFade 拍。 */
             { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000,
@@ -2447,19 +2446,19 @@ export const TOWNS = {
             ren('talkwork','薩梅爾的標準語，妳聽得懂的吧？'),
             any('silent','……'),
             /* 無台詞的立繪拍（換表情）：台上有人 → 要點一下才過（ver -628）。 */
-            { speaker:'RENNA', text:'', portrait:{ char:'RENNA', expr:'tired', show:true } },
+            { speaker:'RENNA', text:'', portrait:{ char:'RENNA', expr:'tire', show:true } },
             nou('happy','如果聽不懂的話也沒關係，先跟我們回聖王廳吧？'),
             any('talk','聖王……廳？'),
             nou('surprise','說話了！'),
             any('talk','那裡……靠近帝都嗎？'),
-            ren('evaluatingclosemouth','……'),
-            ren('evaluating','蠻近的。'),
-            ren('evaluating','妳有事要去帝都嗎？'),
+            ren('evaluateclosemouth','……'),
+            ren('evaluate','蠻近的。'),
+            ren('evaluate','妳有事要去帝都嗎？'),
             any('talk','沒有……'),
-            ren('evaluatingclosemouth','……'),
-            ren('evaluating','那就和我們走一趟吧。'),
+            ren('evaluateclosemouth','……'),
+            ren('evaluate','那就和我們走一趟吧。'),
             any('talk','……好。'),
-            nou('shocked2','竟然乾脆地答應了？'),
+            nou('shock2','竟然乾脆地答應了？'),
             nou('awkward','這孩子，戒心到底算高還是低呢？'),
             ren('talkserious','當事人願意就好說了。等船整備好了就出發吧。'),
             nou('runserious','等等，我先去戰地醫院幫忙！'),
@@ -2477,7 +2476,7 @@ export const TOWNS = {
           { speaker:'RENNA', text:'？', portrait:{ char:'RENNA', show:true } },
           ren('ask','看起來是想跟你一起去的樣子呢。'),
           { speaker:'PLAYER', blank:true },
-          ren('evaluatingclosemouth','嗯……'),
+          ren('evaluateclosemouth','嗯……'),
           ren('smile','沒關係。好好保護她喔。'),
         ] },
       },
@@ -2580,7 +2579,7 @@ export const TOWNS = {
       { flag:'sv_s8_hungry', need:'sv_s8_home', skipIf:'sv_s8_dine', afterMoves:6,
         goto:'restaurant', enterAgain:true,
         lines:[ Object.assign(nou('hungry',''), { se:'se_tummy' }),
-                sor('surprised','哇！別亂逛了，諾薇兒快餓扁啦！'),
+                sor('surprise','哇！別亂逛了，諾薇兒快餓扁啦！'),
                 nou('lookaway','') ] },
       /* ══ Stage 8：餐廳那一段演完 → 換場到索菈娜家（稿上的「索菈娜家。」）══
          ⚠ 沒有台詞 ＝ 直接淡入淡出搬過去（`forceGo`），第三段的 acts 接手。
@@ -2619,17 +2618,17 @@ export const TOWNS = {
           any('nervous','……'),
           sor('smirk','森住民那麼稀奇嗎？'),
           nou('explain','不是啦！她是紫月那邊的人，可能比較少見到吧？'),
-          sor('amazed','嚄——'),
+          sor('amaze','嚄——'),
           sor('lauaghbig','我想說這傢伙怎麼看得眼睛都快掉出來了！哈哈哈！'),
-          any('dying',''),
-          ren('dying','妳也不擅長這種的吧……我懂。'),
+          any('die',''),
+          ren('die','妳也不擅長這種的吧……我懂。'),
           sor('side','不論如何，先到我家去吧，應該睡得下所有人。'),
           { speaker:'PLAYER', blank:true },
           sor('side','不用那麼客氣啦，睡船上很危險的。'),
           sor('remind','這附近偶爾有魔獸出沒，待在村子裡安全點。'),
-          ren('shocked','魔獸？難道是……禍魘？'),
+          ren('shock','魔獸？難道是……禍魘？'),
           sor('think','好像也有人這麼叫，外地來的學者什麼的。'),
-          ren('thinking','……妳說這裡是夏爾村？'),
+          ren('think','……妳說這裡是夏爾村？'),
           sor('smile','嗯啊。'),
           /* ver -858（Ray：「若在 stage5 前曾進入過夏爾村」）：早訪過（sv_visited_early，
              town.open 在 S4 前踏進來就插）才演這兩拍。 */
@@ -2638,12 +2637,12 @@ export const TOWNS = {
                         { onlyIf:'sv_visited_early' }),
           ren('ask','聖王廳大概在哪個方向？多遠呢？'),
           sor('lauaghbig','那種事我哪知道啦。'),
-          ren('dying','是我不該問……'),
+          ren('die','是我不該問……'),
           sor('lauaghbig','反正，船一時半刻也修不好，先安頓下來比較重要吧。'),
           nou('awkward','也是，今天實在是太辛苦了。'),
           ren('askserious','但是……'),
           any('silent',''),
-          ren('thinking','希望我是錯的吧。'),
+          ren('think','希望我是錯的吧。'),
         ] },
         /* 廣場（樞紐）在圍城期間也是一場（ver -802（-893 前用詞））：`sv_arrive` 早就演過，這時輪到
            戰鬥拍。 */
@@ -2667,15 +2666,15 @@ export const TOWNS = {
           nou('surprise','索菈娜小姐？'),
           ren('bow','叨擾那麼久，怎麼還好意思勞您遠送……'),
           sor('side','遠送？我是要跟你們一起走啊！'),
-          ren('shockedopen','什……'),
-          any('surprised',''),                                   // 安：驚
+          ren('shockopen','什……'),
+          any('surprise',''),                                   // 安：驚
           sor('remind','一個舵手就想操作三桅陸浮船，你們也太小看航海了吧？'),
-          ren('shockedCalm','本來只是短期任務所以……'),
+          ren('shockcalm','本來只是短期任務所以……'),
           sor('smirk','所、以、說，'),
           sor('idea','帶上我吧？森住民可是天生的帆手喔！'),
           nou('surprise','哇——'),
-          ren('shockedCalm','……'),
-          ren('thinking','反正本來就要再招募……'),
+          ren('shockcalm','……'),
+          ren('think','反正本來就要再招募……'),
           ren('invite','那好吧。薪資照三等海員的價格給妳。'),
           sor('lauaghbig','不用啦，好玩就好了！哈哈哈！'),
           ren('sighsweat','……總覺得我一定會後悔。'),
@@ -2714,12 +2713,12 @@ export const TOWNS = {
             chf(null,'大家逃到這片森林邊上，靠山吃山，就這麼一代代過下來了。'),
             chf(null,'不過啊——你們可別輕易踏進森林。有魔獸出沒。'),
             ren('ask','魔獸……？'),
-            ren('thinking','看來之後有必要調查一下呢。'),
+            ren('think','看來之後有必要調查一下呢。'),
           ] },
           /* 正式初入：蕾娜借電報事件（ver -772 的電報機，-859 加 flag＋fromStage:4）。 */
           { flag:'sv_telegram_done', need:'sv_arrive', fromStage:4, until:'sv_evening', lines:[
             ren('talkwork','村長借我用電報機。得把這幾天的事回報聖王廳才行。'),
-            ren('writting','你先去忙吧，我把報告送完就回索菈娜家。'),
+            ren('write','你先去忙吧，我把報告送完就回索菈娜家。'),
           ] },
           /* 正式再入：村長談話（不提魔獸）。無 flag＝每次再訪都在，收在傍晚閘門。 */
           { need:'sv_telegram_done', fromStage:4, until:'sv_evening', lines:[
@@ -2753,41 +2752,41 @@ export const TOWNS = {
              ⚠ 稿上「確實，這次是從村子外面跑進來的」那一句標了 Sorana_SI_think，
                說話者卻是蕾 —— 視為筆誤，暫用 talkwork（Ray 要換再說）。
              ⚠ T1/T2 的拍走 textByTier／exprByTier（門檻不是等於，§6.5）。 */
-          Object.assign(ren('writting','別怨我，搭檔無法聖徒化的話我也給不了什麼評價啊。'), { bgm:'whistling' }),
+          Object.assign(ren('write','別怨我，搭檔無法聖徒化的話我也給不了什麼評價啊。'), { bgm:'whistling' }),
           ren('ask','不過……輕易就把那種數量的禍魘給擊敗，森住民的戰鬥力真的令人畏懼。'),
-          nou('shocked','既然那麼強，為什麼大家還那麼緊張呀？'),
+          nou('shock','既然那麼強，為什麼大家還那麼緊張呀？'),
           vil(null,'可惡......又是一堆屍體！'),
           vil3(null,'所以我才討厭獸骸型的嘛！'),
           chf(null,'別囉唆了，天亮前清掉！不然會發臭的！'),
           nou('awkward',''),
-          ren('dying','這裡的所有事我都搞不懂......'),
+          ren('die','這裡的所有事我都搞不懂......'),
           ren('talkwork','不過……總感覺不像毫無瓜葛呢。'),
           any('silent','……'),
           nou('talk','也不一定是那樣吧……跟上次的，好像不太一樣。'),
           ren('talkwork','確實，這次是從村子外面跑進來的，但是——'),
-          sor('tired','唉——又是南面那個遺蹟，沒完沒了！'),
-          sor('tired','這個月都第三次了。'),
+          sor('tire','唉——又是南面那個遺蹟，沒完沒了！'),
+          sor('tire','這個月都第三次了。'),
           nou('talk','這個月？'),
-          ren('evalutatingclosemouth','……'),
-          ren('evalutating','這個狀況很久了嗎？'),
+          ren('evaluateclosemouth','……'),
+          ren('evaluate','這個狀況很久了嗎？'),
           sor('think','一兩年有了吧？'),
           ren('pause','！！'),
           ren('talkserious','也就是說，『永夜』以來這個村子一直被禍魘襲擊？'),
           sor('talk','永夜是啥我不曉得，不過那些東西也算不上什麼威脅。'),
           sor('idea','只要不是睡覺時間來，大家都不介意陪牠們玩玩。'),
-          sor('embarassed','就是屍體很麻煩。'),
-          ren('shockedCalm','森住民……真是強得豈有此理。'),
+          sor('embarrass','就是屍體很麻煩。'),
+          ren('shockcalm','森住民……真是強得豈有此理。'),
           sor('think','所以當初才被你們從綠月抓來當奴隸嘛。'),
-          nou('shocked','！！'),
+          nou('shock','！！'),
           ren('lookaway','！！'),
-          sor('surprised',''),
-          sor('embarassed','開玩笑、開玩笑的啦！'),
+          sor('surprise',''),
+          sor('embarrass','開玩笑、開玩笑的啦！'),
           sor('tease','都我祖奶奶那一輩的事了，誰還記得呀！'),
-          ren('dying','……'),
+          ren('die','……'),
           ren('ask','不過，妳剛剛提到的遺蹟……知道名字嗎？'),
           sor('think','好像叫木雅克神殿吧？之前那個學者說的。'),
-          ren('shockedCalm','木雅克神殿！'),
-          ren('thinking','原來我們掉到這裡來了......那表示離聖王廳不遠。'),
+          ren('shockcalm','木雅克神殿！'),
+          ren('think','原來我們掉到這裡來了......那表示離聖王廳不遠。'),
           nou('surprise','蕾娜小姐知道這個地方？'),
           ren('lookaway','......'),
           ren('lookawaytalk','『永夜』發生不久，聖王廳就接獲禍魘在此地頻繁出沒的報告。'),
@@ -2796,8 +2795,8 @@ export const TOWNS = {
           ren('lookaway','......或許吧。'),
           { speaker:'PLAYER', blank:true },
           nou('surprise','咦？不要吧？'),
-          ren('thinking','不......倒也不是不能試試。'),
-          sor('tired','就你們幾個人想去探遺蹟？別鬧了，會出人命的。'),
+          ren('think','不......倒也不是不能試試。'),
+          sor('tire','就你們幾個人想去探遺蹟？別鬧了，會出人命的。'),
           /* ══ ver -843：這一拍原本是**好感分歧**（Ray：「兩句都跑出來了」）——
              ver -1033 Ray 交回定稿，**台詞兩個段位同一句**，分歧只剩表情
              （T1 front／T2 以上 talkwork）。所以不寫 `textByTier`：
@@ -2807,8 +2806,8 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true },
           { speaker:'RENNA', text:'所以請你這次務必寸步不離。',
             textByTier:{ 1:'所以請你這次務必寸步不離。', 2:'才、才不會好不好！那次是狀況特殊！' },
-            portrait:{ char:'RENNA', exprByTier:{ 1:'askserious', 2:'blushed' }, show:true } },
-          sor('amazed','嚄——'),
+            portrait:{ char:'RENNA', exprByTier:{ 1:'askserious', 2:'blush' }, show:true } },
+          sor('amaze','嚄——'),
           sor('laugh','那、我也一起去吧！'),
           nou('explain','索拉娜小姐也？'),
           sor('hug','總要有個帶路的吧？況且我的身手還算不錯吧？吶？'),
@@ -2935,7 +2934,7 @@ export const TOWNS = {
           ANYA:{     low:'我待在這裡就好……',
                      date:[ any('talk','我也想出去走走……'),
                             { speaker:'PLAYER', blank:true },
-                            any('scared','湖？'),
+                            any('scare','湖？'),
                             any('smileshy','好。') ] },
           /* ⚠⚠ 索菈娜的「T3 以下」稿上是**「（不在）」** —— 那不是一句台詞，是
              **門上沒有臉**（ver -1099，Ray：「索拉娜不在的話頭像直接拿掉就好，
@@ -2955,7 +2954,7 @@ export const TOWNS = {
                             sor('readysmile','謝尼要去森林裡打獵呢，一起來吧？') ] },
           RENNA:{    low:'抱歉，我還得規畫路線，你們去吧。',
                      date:[ ren('curious','出門？跟我？'),
-                            ren('thinking','......'),
+                            ren('think','......'),
                             ren('front','正好我也想去村長那裡呢。要陪我一起去嗎？'),
                             ren('smile','那就走吧。') ] },
                     } },
@@ -2984,7 +2983,7 @@ export const TOWNS = {
           ren('upsetstare','最後那兩個是怎麼回事……'),
           sor('lauaghbig','沒事啦，都不好吃。'),
           ren('upsetstare','根本不構成對話……'),
-          ren('thinking','算了，這也是安全起見。'),
+          ren('think','算了，這也是安全起見。'),
           nou('front','安雅在這邊等我們回來喔。'),
           ren('lookaway','……'),
           ren('talkserious','不，安雅小姐要和我們一起走。'),
@@ -3000,9 +2999,9 @@ export const TOWNS = {
           nou('awkward','很有騎士精神呢。'),
           ren('awkward','不不，他本來就是騎士……'),
           sor('lauaghbig','好啦，吃完早飯就出發吧。'),
-          ren('dying','……'),
+          ren('die','……'),
           nou('cringe','……'),
-          any('dying','……'),
+          any('die','……'),
           sor('smile','……是新鮮鹿肉啦，安心吧。'),
         ] },
         { flag:'sv_night_done', need:'sv_evening', sides:{ RENNA:'L' }, lines:[
@@ -3029,8 +3028,8 @@ export const TOWNS = {
              下一拍（索菈娜起身）帶 bgm 自動接上。 */
           { speaker:'RENNA', text:'', auto:2600, se:'se_villagealarm' },
           Object.assign(sor('back','是魔獸！魔獸攻進村子了！'), { bgm:'warhorn' }),
-          ren('shockedCalm','！！'),
-          nou('shocked2','！！'),   // ver -839：Ray 現場指定 Shocked2 差分（expr 鍵，不是檔名）
+          ren('shockcalm','！！'),
+          nou('shock2','！！'),   // ver -839：Ray 現場指定 Shocked2 差分（expr 鍵，不是檔名）
           any('sleepy',''),
           sor('ready','我去迎擊！你們在這裡躲好！'),
           nou('surprise','好帥氣……'),
@@ -3067,7 +3066,7 @@ export const TOWNS = {
                「回索菈娜家」是閘門的事，不是這一段的事。 */
           ren('talkwork','那麼，就照科爾文副團長所說的，由我們帶安雅小姐到剩下三個遺蹟探勘。'),
           nou('surprise','那樣真的可以嗎？我是十二課的倒還好……'),
-          nou('shocked2','隨意調動璐娜團長的人的話……'),
+          nou('shock2','隨意調動璐娜團長的人的話……'),
           { speaker:'PLAYER', blank:true },
           ren('covermouth','真意外......連你也有怕的人啊？'),
           ren('ask','不用擔心，那個人什麼都準備好了才來的。'),
@@ -3075,8 +3074,8 @@ export const TOWNS = {
              這裡遞的是諭令，同一種「紙」的聲音，不另外要一支新音檔（鐵律 8）。 */
           { speaker:'RENNA', text:'', se:'se_openletter', auto:1400 },
           nou('surprise','這是……聖皇大人的諭令！'),
-          ren('evalutating','恐怕，聖王廳早就已經知道神殿甦醒的事了……'),
-          ren('evalutatingclosemouth','現在竟然連作戰課都摻和進來。'),
+          ren('evaluate','恐怕，聖王廳早就已經知道神殿甦醒的事了……'),
+          ren('evaluateclosemouth','現在竟然連作戰課都摻和進來。'),
           any('talk','那，我……'),
           ren('smile','抱歉了，安雅小姐。還得委曲妳和我們同行一段時間，可以嗎？'),
           any('shy','好……好！'),
@@ -3086,21 +3085,21 @@ export const TOWNS = {
           /* ⚠ 只有立繪沒有台詞的一拍：**不給 `auto`** —— 台上有人的無台詞拍要
              點一下才推進（§6.5 -628），那一拍是演給人看的。 */
           any('smileshy',''),
-          ren('evalutatingclosemouth','……'),
-          ren('evalutating','那麼，在此地稍作休整，就出發吧。'),
+          ren('evaluateclosemouth','……'),
+          ren('evaluate','那麼，在此地稍作休整，就出發吧。'),
         ] },
         { flag:'sv_s8_home', fromStage:7, stage:8, checkpoint:true, lines:[
           nou('risehand','我申請為安雅小姐宗教法庭辯護人！'),
           ren('awkward','冷靜點，我又沒有要審訊她。'),
           ren('smile','只是……想跟她單獨聊聊而已。'),
           any('silent',''),
-          nou('shocked','可是……'),
+          nou('shock','可是……'),
           ren('talkwork','妳難道不覺得奇怪嗎？'),
           ren('askserious','遠從紫月來的異國人，竟然能像妳一樣輸出聖徒之力。'),
           ren('talkserious','更不用提剛剛發生的事。'),
           nou('sad','……'),
-          ren('writting','總而言之，昨天報告就已經發出去了。'),
-          ren('writting','最快明天就會有回覆了吧？'),
+          ren('write','總而言之，昨天報告就已經發出去了。'),
+          ren('write','最快明天就會有回覆了吧？'),
           sor('remind','那也用不著單獨談嘛。妳看她嚇得都不會說話了。'),
           nou('awkwerd','啊，她那是本來就不太會說標準語……'),
           { speaker:'PLAYER', blank:true },
@@ -3108,9 +3107,9 @@ export const TOWNS = {
              ⚠ T1 一句、T2 兩句 —— 句數不同，所以走 `tierMax`／`tierMin`
                （`textByTier` 只能換字，變不出「多一拍」）。
              ⚠ 兩者都是**門檻**不是等於：日後多一段 T3 不必回頭改。 */
-          Object.assign(ren('writting','……放心，我會斟酌。'), { tierMax:1 }),
-          Object.assign(ren('writting','沒錯。聖王廳目前只知道疑似聖徒之力的情報，遺蹟的事我還沒有回報。'), { tierMin:2 }),
-          Object.assign(ren('writting','不好好利用這段時間差搞清楚狀況，反而幫不了安雅小姐。'), { tierMin:2 }),
+          Object.assign(ren('write','……放心，我會斟酌。'), { tierMax:1 }),
+          Object.assign(ren('write','沒錯。聖王廳目前只知道疑似聖徒之力的情報，遺蹟的事我還沒有回報。'), { tierMin:2 }),
+          Object.assign(ren('write','不好好利用這段時間差搞清楚狀況，反而幫不了安雅小姐。'), { tierMin:2 }),
           nou('concern','……'),
           any('talk','諾薇兒……不要擔心。'),
           any('answer','我……沒問題。'),
@@ -3119,7 +3118,7 @@ export const TOWNS = {
           sor('smile','那就走吧。反正修女小姐也不像會欺負她的樣子。'),
           sor('readysmile','也差不多到吃飯時間了，帶你們去瑪麗亞那邊吃一頓吧。'),
           Object.assign(nou('hungry',''), { se:'se_tummy' }),
-          sor('amazed','沒錯沒錯，身體是不會騙人的喔。'),
+          sor('amaze','沒錯沒錯，身體是不會騙人的喔。'),
           ren('front','妳們去吧，應該花不了太長時間。'),
           ren('front','一會我就帶她過去。'),
         ] },
@@ -3141,8 +3140,8 @@ export const TOWNS = {
           cor('stare','…….不如這樣吧。'),
           cor(null,'海森伯格監察官，就由您帶隊，前往剩下三個遺蹟勘探。'),
           cor(null,'安雅小姐也隨行。'),
-          any('surprised',''),
-          ren('shockedCalm','什……！'),
+          any('surprise',''),
+          ren('shockcalm','什……！'),
           cor(null,'尤蒂雅團長那邊，我會妥善溝通。'),
           ren('askserious','……第四課的人只是借調人員，我無法替他決定。'),
           cor('smile','璐娜莉亞團長那邊，也交給我。'),
@@ -3155,20 +3154,20 @@ export const TOWNS = {
              ⚠ 寫成 `{D+60}`，**顯示的那一刻才代換**（同 `{P}`／`{N}`）——
                寫死一個日期的話，玩家幾號走到這一幕看到的都是同一天，而
                「兩個月內完成」這條期限日後真要用時，日期就只有一個計算點。 */
-          ren('writting','……{D+60}之前嗎？'),
+          ren('write','……{D+60}之前嗎？'),
           cor('read','航行、休整、探勘，這個時間算是相當寬裕了。'),
           ren('lookawaytalk','……'),
           ren('lookaway','我應該感到感激嗎？'),
           cor('smile','誰知道呢？這已經是我所能想到的最上策了。'),
           cor(null,'畢竟帝都的人們，也不是無所謂的。'),
-          nou('shocked','……'),
+          nou('shock','……'),
           sld(null,'傳令！'),
           cor('lookaside','喔，妳的電報回文了。'),
           cor('lookaside','接下來要怎麼做，就憑監察官您的判斷了。'),
           cor('talk','告辭。'),
           ren('upset','…….'),
           { speaker:'RENNA', text:'', se:'se_openletter', auto:1600 },   // 拆電報聲
-          ren('shockedCalm','！！'),
+          ren('shockcalm','！！'),
           ren('cringe','那個人……早就算好一切了……！'),
           sor('furiousq','我好討厭他！'),
         ] },
@@ -3371,7 +3370,7 @@ export const TOWNS = {
               cgBack:'resources/enemy/mon_shinierforest_deerlook.webp', auto:2000 },
             nou('cringe','牠好像不太歡迎我們……'),
             any('desperate','……！！'),
-            Object.assign(any('terrifying','有什麼……要來了！'),
+            Object.assign(any('terrify','有什麼……要來了！'),
               { tintHold:'nightmare', se:'se_flight_heartbeat', bgm:'lostplace' }),
             { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
               hide:['SORANA','RENNA','NOUVELLE','ANYA'],
@@ -3417,8 +3416,8 @@ export const TOWNS = {
           sor('remind','往懸崖方向走，馬上就到。'),
           ren('smile','姑且問一下——『馬上』是……？'),
           sor('smile','大概天黑前能到吧。'),
-          ren('dying',''),
-          any('dying',''),
+          ren('die',''),
+          any('die',''),
           nou('awkward',''),
           sor('readysmile','好啦，出發囉。'),
         ] } ] },
@@ -3486,8 +3485,8 @@ export const TOWNS = {
                幾禎**（初登場／轉頭／異化的獨場拍＝hide 清場）；那一禎結束後對話照常
                上立繪，而且從鹿主現身起一律吃「戰鬥中對話立繪尺寸」（稍小 ——
                config.castStage.battleTalkScale，story.castLayout 看 stageCgBack 自動套）。 */
-            sor('surprised','竟然是……樹靈鹿主！'),
-            ren('shockedCalm','那是什麼？很麻煩嗎？'),
+            sor('surprise','竟然是……樹靈鹿主！'),
+            ren('shockcalm','那是什麼？很麻煩嗎？'),
             sor('remind','那是傳說中的森林之神，'),
             sor('remind','所以我也不知道好不好吃。'),
             ren('scarejump','妳就沒有一點敬畏之心嗎！'),
@@ -3515,8 +3514,8 @@ export const TOWNS = {
               cgBack:'resources/enemy/mon_shinierforest_deer.webp', auto:2200 },
             /* ══ 立繪規則同分支1（ver -878）：只有鹿主獨場的那幾禎清場，
                對話照常上立繪、吃「戰鬥中對話立繪尺寸」。 */
-            sor('surprised','竟然是……樹靈鹿主！'),   // 劇情戰的回檔點：站在遺蹟入口、可自由行動
-            ren('shockedCalm','那是什麼？很麻煩嗎？'),
+            sor('surprise','竟然是……樹靈鹿主！'),   // 劇情戰的回檔點：站在遺蹟入口、可自由行動
+            ren('shockcalm','那是什麼？很麻煩嗎？'),
             sor('remind','那是傳說中的森林之神，'),
             sor('remind','所以我也不知道好不好吃。'),
             ren('scarejump','妳就沒有一點敬畏之心嗎！'),
@@ -3529,7 +3528,7 @@ export const TOWNS = {
             /* 紫紅負片＋心跳＋換曲（ver -877，Ray：「紫紅負片時播放心跳音，同時 BGM
                轉 Lost_place4，保持到進戰鬥」）——bgm 是持續狀態，battle 卡同一首
                ＝開打也不換；tint 的出口＝進戰鬥（story.stopTint 自動收）。 */
-            Object.assign(any('terrifying','有什麼……要來了！'),
+            Object.assign(any('terrify','有什麼……要來了！'),
               { tintHold:'nightmare', se:'se_flight_heartbeat', bgm:'lostplace' }),
             /* 異化＝鹿主獨場（ver -877/-878，Ray：「安雅說『有什麼要來了』之後就撤
                角色立繪」＋**一次性紫炎**蓋住換圖；負片持續到進戰鬥）。
@@ -3558,12 +3557,12 @@ export const TOWNS = {
             Object.assign(sor('guardtalk','可惡！連森林的守護神都被侵蝕了！'),
               { cgBack:null, flags:['sv_deer_harm'], stage:7 }),
             ren('upsetstare','妳剛剛不是還想吃人家……'),
-            sor('embarassed','好奇嘛！'),
+            sor('embarrass','好奇嘛！'),
             sor('smile','不過，天要黑了！不如先紮營吧？'),
-            ren('thinking','……'),
+            ren('think','……'),
             ren('talkwork','不。'),
             ren('ask','現在紮營，萬一有更多禍魘出沒，會被遺蹟跟森林夾擊。'),
-            nou('shocked','！！'),
+            nou('shock','！！'),
             { speaker:'PLAYER', blank:true },
             ren('commandsoft','沒錯。要嘛回頭，要嘛在這裡直接把佔據遺蹟的禍魘掃蕩掉。'),
             ren('askserious','安雅小姐，妳可以嗎？'),
@@ -3703,7 +3702,7 @@ export const TOWNS = {
         { not:'ruins_thug_met', rate:1,
           act:{ flag:'ruins_thug_met', storyBattle:true, lines:[
             { battle:'ruins_saint_thug' },
-            nou('shocked','剛剛那個是……聖徒？'),
+            nou('shock','剛剛那個是……聖徒？'),
             ren('pause','……'),
           ] } },
         /* ② **開門事件之後，巨像廳的鳴鐘者**（結算怪）。
@@ -3760,16 +3759,16 @@ export const TOWNS = {
              規則不是劇情。要改成索菈娜說（她小時候來過）只要把那兩拍換成 `sor(...)`。 */
         acts:[ { flag:'sr_intro', lines:[
           nou('surprise','好厲害的遺蹟……！'),
-          sor('amazed','會嗎？不就是些破石頭嘛。'),
+          sor('amaze','會嗎？不就是些破石頭嘛。'),
           sor('lauaghbig','小時候我們還常跑來這邊探險呢。'),
           ren('ask','誰家小孩會跑整整一天路程——'),
           sor('idea',''),
           ren('sighsweat','當我沒說。'),
-          any('scared',''),
+          any('scare',''),
           nou('worry','安雅小姐，妳還好嗎？'),
           any('nervous','這裡……很奇怪。'),
-          ren('thinking','確實。有火有光，好像有人在使用這個地方一樣。'),
-          sor('amazed','不可能吧？魔獸都從這邊冒出來耶？'),
+          ren('think','確實。有火有光，好像有人在使用這個地方一樣。'),
+          sor('amaze','不可能吧？魔獸都從這邊冒出來耶？'),
           ren('talkwork','而且木雅克遺蹟是聖王廳列入目錄的禁地。'),
           ren('talkserious','當年考古人員可是摸著黑進去臨摹壁畫的。'),
           /* 深處傳來的嘶吼（Ray 的稿）：獨立一拍，`auto` 讓它自己過去 ——
@@ -3814,13 +3813,13 @@ export const TOWNS = {
       brazier:    { bg:'ruins_shinier_brazier', name:'木雅克神殿　養息之間',
         acts:[
           { flag:'sr_brazier', lines:[
-            any('scared',''),
+            any('scare',''),
             nou('worry','安雅小姐，怎麼了嗎？'),
             any('point','那個方向……好像有什麼東西。'),
-            ren('thinking',''),
+            ren('think',''),
             ren('talkwork','是什麼樣的東西呢？'),
             any('silent','我不知道……'),
-            sor('amazed','嘿——'),
+            sor('amaze','嘿——'),
             sor('lauaghbig','好像小狗會說的話喔！'),
             /* 安雅的 Q 版驚嚇圖（Ray 的稿：安：CI_Anya_scared）。
                ⚠ ver -924 由**全螢幕插圖**改成**差分立繪**（Ray：「是 Q 版圖」「太大了」）
@@ -3831,15 +3830,15 @@ export const TOWNS = {
             any('point','那邊……'),
             /* A：開門前去過石橋（`onlyIf`）／B：沒去過（`skipIf`）—— 同一段裡兩條
                支線，靠條件拍分岔（ver -656 的既有機制），不複製兩個 act。 */
-            Object.assign(ren('thinking','……剛剛打開的，會是那扇門嗎？'),
+            Object.assign(ren('think','……剛剛打開的，會是那扇門嗎？'),
                           { onlyIf:'sr_bridge' }),
             Object.assign(sor('lauaghbig','妳還真喜歡那個方向呢。'),
                           { skipIf:'sr_bridge' }),
-            Object.assign(any('dying',''),
+            Object.assign(any('die',''),
                           { skipIf:'sr_bridge' }),
-            Object.assign(ren('evaluating',''),
+            Object.assign(ren('evaluate',''),
                           { skipIf:'sr_bridge' }),
-            Object.assign(ren('evaluatingclosemouth','就去看看吧。說不定跟剛才的機關有關聯呢。'),
+            Object.assign(ren('evaluateclosemouth','就去看看吧。說不定跟剛才的機關有關聯呢。'),
                           { skipIf:'sr_bridge' }),
           ] },
         ],
@@ -3857,7 +3856,7 @@ export const TOWNS = {
           sor('side','第一次看得這麼清楚耶！'),
           sor('tease','從來沒看懂在畫什麼就是了。'),
           ren('watch','伊甸的神王。'),
-          sor('amazed','什麼？'),
+          sor('amaze','什麼？'),
           nou('front','是我們人類起源的故事喔。'),
           any('watch',''),
         ] } ] },
@@ -3902,7 +3901,7 @@ export const TOWNS = {
           { flag:'sr_bridge', until:'ruins_gate_open', lines:[
             any('point','就在前面。'),
             nou('awkward','就算你這麼說……'),
-            ren('thinking','沒路了呢。'),
+            ren('think','沒路了呢。'),
             /* 安雅想做什麼（Ray 的稿只給了音效）：獨立一拍，auto 過去。 */
             { speaker:'ANYA', text:'', portrait:{ char:'ANYA', expr:'point', show:true },
               se:'se_ui_sortie', auto:1200 },
@@ -3914,9 +3913,9 @@ export const TOWNS = {
                ⚠ `sr_bridge` 只可能在開門前立起來（見上一段的 `until`），
                  所以這個條件問的就是「開門前去過石橋沒」—— 與養息之間那一段
                  讀的是**同一支旗**（ver -966，鐵律 7）。 */
-            Object.assign(any('scared','打開了……'), { onlyIf:'sr_bridge' }),
+            Object.assign(any('scare','打開了……'), { onlyIf:'sr_bridge' }),
             any('point','在……那邊的盡頭。'),
-            ren('evaluating','妳怎麼會知道呢？'),
+            ren('evaluate','妳怎麼會知道呢？'),
             any('talk','我……不知道。只是……'),
             nou('talk','大概是跟我類似的情形吧。'),
             sor('readysmile','反正都來了，就走吧。'),
@@ -3944,9 +3943,9 @@ export const TOWNS = {
            ⚠ 旗**演完才記**：打輸回頭再走進來，整段（含 BOSS）重演。 */
         acts:[ { flag:'sr_altar', storyBattle:true, lines:[
           ren('watch','看起來只是某種祭壇呢。'),
-          nou('decoding','是算力集線裝置。'),
-          ren('shockedCalm','！！'),
-          ren('shockedopen','妳為什麼會知道那種事？'),
+          nou('decode','是算力集線裝置。'),
+          ren('shockcalm','！！'),
+          ren('shockopen','妳為什麼會知道那種事？'),
           nou('front','知道什麼？'),
           ren('lookaway','……沒事。'),
           ren('ask','安雅小姐在意的，就是這個嗎？'),
@@ -3956,7 +3955,7 @@ export const TOWNS = {
           sor('guard','！！'),
           { battle:'ruins_saint_temperance' },
           /* ── 戰後 ── 週遭發光 → 安雅感應 → 祭壇啟動。 */
-          ren('shocked','安雅小姐……？'),
+          ren('shock','安雅小姐……？'),
           /* ══ 立繪撤出 → 感應演出（見 story 的 `senseFx`）══════════════════
              ⚠⚠ **ver -1185（Ray 再改）**：「ci 停留時間太短，應該是 CI 不縮放淡入，
                脈動三拍，第四拍白光從她手中圓型擴散到全畫面，用首頁讀取頁那個效果，
@@ -3984,26 +3983,26 @@ export const TOWNS = {
                「祭壇開著」（鐵律 9：一個狀態一個擁有事件）。 */
           { speaker:'NARRATION', text:'', flags:['ruins_altar_on'],
             bg:'ruins_shinier_deepaltaractive', auto:1500 },
-          nou('shocked2','發、發生什麼事了？'),
-          ren('shockedCalm','！！'),
-          ren('shocked','難道說、安雅小姐妳是……！'),
+          nou('shock2','發、發生什麼事了？'),
+          ren('shockcalm','！！'),
+          ren('shock','難道說、安雅小姐妳是……！'),
           { speaker:'PLAYER', blank:true },
           /* 插圖：圓盤（Ray 交件 012_thedisk）。 */
-          Object.assign(ren('thinking','那是……'), { cg:'012_thedisk', cgNoTime:true }),
+          Object.assign(ren('think','那是……'), { cg:'012_thedisk', cgNoTime:true }),
           ren('askserious','NIEM？'),
           /* 收圖回到原背景。 */
           Object.assign(sor('confuse','那是什麼東西？'), { cg:null }),
-          ren('thinking','跟剛才諾薇兒習得術式的方式一樣。'),
+          ren('think','跟剛才諾薇兒習得術式的方式一樣。'),
           /* ⚠ ver -1186：「通用輸入介面」正名為 **NIEM**（Ray 指定）——
              同一個東西只有一個名字（鐵律 7 的精神），道具卡上也是這個字。 */
-          ren('thinking','只是這種介面，非術師也能使用。'),
+          ren('think','只是這種介面，非術師也能使用。'),
           sor('confuse','非術……總覺得，妳們跟我想像中聖王廳的人不一樣耶。'),
           sor('tease','修女不都是只會『神啊～』之類的嗎？'),
           ren('front','我們是聖約騎士團。'),
           nou('bigsmile','聖王廳的最高執行機關喔。'),
           sor('confuse','……妳們是想這樣糊弄過去嗎？'),
-          ren('dying',''),
-          nou('dying',''),
+          ren('die',''),
+          nou('die',''),
           ren('ask','話說回來，『安娜』大人。'),
           any('desperate',''),
           ren('talkwork','稍晚，得跟妳好好聊聊呢。'),
@@ -4029,7 +4028,7 @@ export const TOWNS = {
            ⚠ 門檻不是等於：T1 那一條寫 `tierMax:1`、T2 以上寫 `tierMin:2`。
            ⚠ 旗**演完才記**（`flag`，同城鎮所有段落）——中途離開下次再演一次。 */
         acts:[ { flag:'ruins_gate_open', lines:[
-          ren('shockedopen','這個是……！'),
+          ren('shockopen','這個是……！'),
           nou('thinking','好像……在哪裡看過這個機械？'),
           nou('thinking','奇怪？想不起來……'),
           ren('lookaway',''),
@@ -4041,12 +4040,12 @@ export const TOWNS = {
           nou('surprise','封裝術式……'),
           sor('think','封裝什麼？'),
           nou('talk','跟我的治癒術式一樣。'),
-          nou('decoding','個體運算元的算力不足以自行覆寫以預寫的封裝路徑完成小範圍干涉無迴圈及邏輯錯誤並寫入完整結束旗標'),
+          nou('decode','個體運算元的算力不足以自行覆寫以預寫的封裝路徑完成小範圍干涉無迴圈及邏輯錯誤並寫入完整結束旗標'),
           ren('worry','諾、諾薇兒？'),
           nou('surprise','嗯？怎麼了？'),
           ren('lookawaytalk','……沒事。'),
-          sor('amazed','這些文字，妳看得懂？'),
-          nou('decoding','看不懂，但是可以讀。'),
+          sor('amaze','這些文字，妳看得懂？'),
+          nou('decode','看不懂，但是可以讀。'),
           sor('confuse','啥？'),
           { speaker:'PLAYER', blank:true },
           nou('talk','對。就像我可以把聖徒之力輸出給你那樣。'),
@@ -4077,7 +4076,7 @@ export const TOWNS = {
           { speaker:'NARRATION', text:'', se:'se_saint_install', auto:1400 },
           Object.assign({ speaker:'NARRATION', text:'', fx:'whiteflash', auto:900 },
                         { tierWho:'NOUVELLE', tierMin:2 }),
-          any('scared','！！'),
+          any('scare','！！'),
           Object.assign(ren('intense2','那是……！'), { se:'sturm' }),
           /* 喚風（Ray 交件的插圖）。 */
           { speaker:'SORANA', text:'', portrait:{ char:'SORANA', show:false },
@@ -4213,20 +4212,19 @@ export const TOWNS = {
            ⚠⚠ 四個人同台 ⇒ **要分兩邊**（§6.5）：諾薇兒本位左、索菈娜與安雅本位右，
              蕾娜的規矩是「原則右，碰到安雅就放左」—— 所以 `RENNA:'L'`，
              與夏爾村抵達那一幕（`sv_arrive`）同一個安排。
-           ⚠ 稿上的差分名對到 `speakers.js` 的鍵：`shockcalm`→`shockedCalm`、
-             蕾娜的 `think`→`thinking`（她沒有 `think`）、安雅的 `scare`→`scared`、
-             `emarassed`→`embarassed`（檔名本來就是這個拼法）。
+           ⚠ 稿上的差分名與 `speakers.js` 的鍵現在一致（ver -1555 去時態）——
+             `shockcalm`／`think`／`scare`／`embarrass` 稿上寫什麼就是什麼。
            ⚠ 「蕾：「……」」那一拍沒有台詞但台上有人 ⇒ 要點一下才推進（ver -628），
              引擎自己判，這裡不必寫 `auto`。 */
         acts:[ { flag:'fallen_entry', sides:{ RENNA:'L' }, lines:[
           ren('watch',       '這種地方竟然有這種規模的遺蹟……！'),
           sor('think',       '奇怪，之前有這些東西嗎？'),
-          ren('shockedCalm', '！！'),
+          ren('shockcalm', '！！'),
           nou('surprise',    '索菈娜小姐也不知道嗎？離夏爾村那麼近耶！'),
           sor('think',       '好像知道又好像不知道……不確定。'),
-          sor('embarassed',  '我很少離開村子啦！'),
-          ren('thinking',    '離驛道跟鐵路也不算遠……為什麼現在才……'),
-          any('scared',      '……？'),
+          sor('embarrass',  '我很少離開村子啦！'),
+          ren('think',    '離驛道跟鐵路也不算遠……為什麼現在才……'),
+          any('scare',      '……？'),
           ren('lookaway',    '……'),
           ren('lookawaytalk','恐怕這片大陸上，還有許多未知的秘境……'),
           sor('readysmile',  '那還等什麼？探險囉。'),
@@ -4275,9 +4273,9 @@ export const TOWNS = {
                一支說「祭壇開著」。 */
           { speaker:'NARRATION', text:'', flags:['fallen_altar_on'],
             bgBand:'fallen_altaractive', auto:1500 },
-          ren('shockedopen','果然，安雅小姐有感應並啟動遺蹟的能力。'),
+          ren('shockopen','果然，安雅小姐有感應並啟動遺蹟的能力。'),
           nou('talk','可是，這些遺蹟啟動以後會怎麼樣呢？'),
-          ren('thinking','……不曉得。'),
+          ren('think','……不曉得。'),
           ren('lookawaytalk','曾經聖王廳跟諸國都試著重啟，卻全無反應。'),
           ren('lookaway','啟動的條件究竟是『永夜』，還是安雅小姐……。'),
           ren('lookawaytalk','或者……兩邊都是呢？'),
@@ -4427,8 +4425,8 @@ export const TOWNS = {
       { flag:'vn_evening', need:'vn_arrive', hourOfDay:[18,24],
         goto:'inn', enterAgain:true, lines:[
         nou('cringe','蕾娜小姐還沒回來……有點擔心。'),
-        sor('tired','沒事吧，這地方看起來挺安全的。'),
-        nou('decoding','可是……'),
+        sor('tire','沒事吧，這地方看起來挺安全的。'),
+        nou('decode','可是……'),
         any('answer','那、我們去找她！',            { skipIf:'ep_m2_route' }),
         /* ⚠ 稿上寫 `smilebig`，索菈娜沒有那張 —— 用她的 `smile`。 */
         sor('smile','噢，小公主很有幹勁呢。',        { skipIf:'ep_m2_route' }),
@@ -4439,7 +4437,7 @@ export const TOWNS = {
         sor('smirk','小公主，累了？',                { onlyIf:'ep_m2_route' }),
         sor('tease','要不要姐姐背妳？',              { onlyIf:'ep_m2_route' }),
         any('silent','', { se:'se_walk', onlyIf:'ep_m2_route' }),
-        sor('amazed','她這是怎麼啦？',               { onlyIf:'ep_m2_route' }),
+        sor('amaze','她這是怎麼啦？',               { onlyIf:'ep_m2_route' }),
       ] },
       /* ══⚠⚠⚠ **隔日出發**（ver -1523，Ray 的 Stage10-A 稿：「回到旅店。睡覺。隔日。」）══
          ⚠ `need:'vn_night_done'`（圖書館那一整段演完，＝旅店的 `sleepFlag`）
@@ -4468,10 +4466,10 @@ export const TOWNS = {
         any('argue','對啊。', { skipIf:'ep_m2_route' }),
         any('upset','',       { onlyIf:'ep_m2_route' }),
         sor('cringe',''),
-        nou('decoding','也不能怪索拉娜啦……'),
-        sor('surprised','諾薇兒……！'),
+        nou('decode','也不能怪索拉娜啦……'),
+        sor('surprise','諾薇兒……！'),
         nou('sadsmile','只能怪我拖後腿，沒辦法像上一個搭檔那樣支援他。'),
-        sor('dying','……我寧可妳罵我。'),
+        sor('die','……我寧可妳罵我。'),
       ] },
     ],
     /* 大城市不上迷霧（ver -913）—— ⚠ **要明寫**：沒寫就是有霧。 */
@@ -4546,16 +4544,15 @@ export const TOWNS = {
            ⚠⚠⚠ **收尾插 `vn_depart`** ＝ 解除 `sail.hold`（「不能丟下夥伴」）——
              鐵律 9 那個「誰插」在這裡結案：**簡報講完才走得掉**。
            ⚠ 稿上「索：『生前？』」標的立繪是 `Nouvelle_SI_Shocked` —— 判成抄稿時的
-             欄位錯位（下一句「好過份……」也是諾薇兒），照立繪改成她。錯了說一聲。
-           ⚠ 稿上寫 `think`，蕾娜的鍵是 `thinking`。 */
+             欄位錯位（下一句「好過份……」也是諾薇兒），照立繪改成她。錯了說一聲。 */
         acts:[ { flag:'vn_brief', need:'vn_day2', sides:{ RENNA:'L' }, lines:[
           ren('pointmap','古墓西南方的峰群，有一座石碑林。'),
           ren('pointmap','據說是建造古墓的工匠們生前立的碑。'),
-          nou('shocked','生前？'),
+          nou('shock','生前？'),
           ren('lookawaytalk','古墓建成的時候，他們也一併殉葬了。所以只立了碑。'),
-          nou('shocked2','好過份……'),
+          nou('shock2','好過份……'),
           ren('lookawaytalk','傳說，他們用自己的生命守護著古墓。只有獲得認可者，才有進入的資格。'),
-          ren('thinking','雖然沒什麼把握，但值得一試。'),
+          ren('think','雖然沒什麼把握，但值得一試。'),
           sor(null,'不是因為怕鬼所以胡謅的吧？'),
           ren('coldstare',''),
           sor('sorry','對不起，我再也不敢了。'),
@@ -4586,15 +4583,15 @@ export const TOWNS = {
              諾薇兒那句擋回來（§6.5.5「還不能做不要靠藏起鈕擋」）。 */
         acts:[ { flag:'vn_night_done', need:'vn_lib_done', sides:{ RENNA:'L' }, lines:[
           nou('run','等一下！等等我！'),
-          nou('shocked','吶，這一定是有什麼誤會，聽聽蕾娜小姐怎麼說嘛！'),
+          nou('shock','吶，這一定是有什麼誤會，聽聽蕾娜小姐怎麼說嘛！'),
           { speaker:'PLAYER', blank:true },
           /* 好感分歧：稿上是「諾T2以下」與「諾T3以下（＝T3 以上）」兩條。
              ⚠ `tierMin`／`tierMax` 是**一拍**的屬性（§6.5.4 的 -1515 那一課：
                `needTier` 是 `actDue` 在判的，寫在一拍上完全沒作用而且不報錯）。
              ⚠ 看的是**說話者自己**的段位，所以不必寫 `tierWho`。 */
           nou('sadsmile','我知道啦……',                                { tierMax:2 }),
-          nou('decoding','對不起……我沒有賽西莉學姐那麼優秀……但是！',        { tierMax:2 }),
-          nou('shocked','咦？',                                              { tierMin:3 }),
+          nou('decode','對不起……我沒有賽西莉學姐那麼優秀……但是！',        { tierMax:2 }),
+          nou('shock','咦？',                                              { tierMin:3 }),
           nou('shy','我、我沒關係啦！',                                      { tierMin:3 }),
           nou('furious','一起努力吧！我一定會幫你把評價……',                  { tierMin:3 }),
           sor(null,'喂——'),
@@ -4644,14 +4641,14 @@ export const TOWNS = {
           sor('talk','哇，睡到不省人事了。'),   // ⚠ 明寫（原本是 null＝沿用上一句的 talk），見下面那一段
           nou(null,'她一定很累吧，我們在城裡閒逛的時候只有她一個人在忙……'),
           any('silent','……'),
-          sor('amazed','喔。這是什麼？'),
+          sor('amaze','喔。這是什麼？'),
           nou('reach','那是我們的評價紀錄。不要拿啦！'),
           Object.assign(sor('readshock','有什麼關係——喔？'), { se:'se_ui_pageflip' }),
           Object.assign(sor('readhappy','嗯——哈！真有意思！'), { se:'se_ui_pageflip' }),
-          nou('shocked','……'),
+          nou('shock','……'),
           { speaker:'PLAYER', blank:true },
           sor('tease','少來，你也很想知道她怎麼看你吧？'),
-          nou('shocked2','我們不能看啦！'),
+          nou('shock2','我們不能看啦！'),
           sor('read','不要看啊，我唸不就好了？'),
           nou('explain','哪有這種道理……'),
           sor('whisper','想知道嗎？'),
@@ -4698,13 +4695,13 @@ export const TOWNS = {
           sor('readsad','……'),
           nou('lookback','怎麼了？'),
           sor('readhappy','沒、沒事啦！看來修女小姐對你們的評價很高呢！'),
-          nou('shocked','……後面寫了什麼嗎？'),
+          nou('shock','……後面寫了什麼嗎？'),
           sor('sad','……'),
           nou('worry','索拉娜小姐！'),
           sor('readhappy','只是些評價而已，沒那麼重要啦！'),
           nou('furious','很重要！'),
           sor('cringe',''),
-          nou('decoding','對他……很重要……'),
+          nou('decode','對他……很重要……'),
           sor('sad','……'),
           Object.assign(sor('readconfuse','『適性無可挑剔，但有沉溺戰鬥傾向，且多次無視聖王廳法度，亦未表現對神之敬畏。考量其品性，應維持原判決……』'),
                         { se:'se_ui_pageflip' }),
@@ -4714,13 +4711,13 @@ export const TOWNS = {
           { speaker:'PLAYER', text:'……' },
           { speaker:'NARRATION', text:'（敲桌聲）', auto:1200 },
           ren('scream','啊！'),
-          ren('shockedCalm','咦？怎麼大家都來了？'),
+          ren('shockcalm','咦？怎麼大家都來了？'),
           nou('sad','……'),
-          any('scared',''),
+          any('scare',''),
           sor('worry',''),
           ren('shout','我的評鑑報告！'),
           { speaker:'NARRATION', text:'（搶奪音）', auto:1200 },
-          ren('shockedopen','你們……都看了？'),
+          ren('shockopen','你們……都看了？'),
           sor('sad','抱歉，是我……'),
           { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
           ren('reach','啊！'),
@@ -4827,7 +4824,7 @@ export const TOWNS = {
              掛一支對不上的比不掛更糟）。音效到了補 `se:` 在這一拍。 */
         acts:[ { flag:'vn_station_sor', withWho:'SORANA', lines:[
           { speaker:'NARRATION', text:'（汽笛。）', auto:1200 },
-          sor('surprised','嗚哇！'),
+          sor('surprise','嗚哇！'),
           sor('lauaghbig','好大聲，嚇得我酒都退了。', { onlyIf:'vn_bar_sor' }),
           sor('watch','那就是火車喔？',               { onlyIf:'vn_bar_sor' }),
           sor('lauaghbig','好大聲，那就是火車喔？',   { skipIf:'vn_bar_sor' }),
@@ -4908,7 +4905,7 @@ export const TOWNS = {
            ⚠ 稿上「安雅棉花糖插圖」還沒有檔案 ⇒ **不寫 `cg:`**（同酒吧那一格）。
              圖到了補在「真的……跟雲朵一樣。」那一拍、下一拍 `cg:null` 收掉。 */
         acts:[ { flag:'vn_shop_anya', withWho:'ANYA', lines:[
-          any('amazed','真的……跟雲朵一樣。'),
+          any('amaze','真的……跟雲朵一樣。'),
           any('smileshy','好甜。'),
         ] } ] },
       /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（同聖索菲亞）
@@ -4968,7 +4965,7 @@ export const TOWNS = {
                             any('smileshy','嗯！',                   { skipIf:'ep_m2_route', flags:['vn_date_anya'] }) ] },
           SORANA:{   low:'現在還不太熟呢，改天吧？',
                      date:[ sor('front','喔！正好我想去酒吧喝一杯！'),
-                            sor('tired','這裡實在是太冷啦！不過……'),
+                            sor('tire','這裡實在是太冷啦！不過……'),
                             sor('tease','你這個神職人員能喝嗎？'),
                             { speaker:'PLAYER', blank:true },
                             sor('readysmile','那就走吧！', { flags:['vn_date_sor'] }) ] },
@@ -5034,10 +5031,10 @@ export const TOWNS = {
          說的，程式不為她寫特例。 */
     dateCurfew:{ hour:18, notNode:'inn', by:{
       NOUVELLE:{ flag:'ep_nou_home', lines:[
-        nou('Shocked2','哇，這麼晚了。'),
+        nou('shock2','哇，這麼晚了。'),
         nou('runserious','蕾娜小姐回來的時候沒人可不行，我先回去囉。') ] },
       ANYA:{     flag:'ep_anya_home', lines:[
-        any('Silent','……我有點累了。'),
+        any('silent','……我有點累了。'),
         any('talk','先回旅店。') ] },
     } },
     /* ⚠ `nudge:true`（ver -1360，Ray：「時間到的時候如果人已經在旅店，就不用跑
@@ -5086,13 +5083,13 @@ export const TOWNS = {
          ⚠ 再開在貝利薩爾那一段的收尾（`ep_belisar_done`，還沒寫）—— 見城上的說明。 */
       { flag:'ep_day2', need:'ep_renna_night', hourOfDay:[6,12], storyExplore:true,
         goto:'inn', enterAgain:true, sides:{ RENNA:'L' }, lines:[
-        ren('writting','往南大約半天路程，穿過輝煌平原的古道，繞過溪谷就能到了。'),
+        ren('write','往南大約半天路程，穿過輝煌平原的古道，繞過溪谷就能到了。'),
         nou('surprise','感覺好遠喔。'),
         ren('front','畢竟是舊道，應該還是比上次的山路好走吧。'),
-        ren('tired','『永夜』之後沒有馬車願意載我們往那個方向去……馬匹也不好穿過溪谷呢。'),
+        ren('tire','『永夜』之後沒有馬車願意載我們往那個方向去……馬匹也不好穿過溪谷呢。'),
         sor('think','有水的話……沒地方停船嗎？'),
-        ren('thinking','地形不好，沒地方下錨。'),
-        ren('tired','只能辛苦點囉。'),
+        ren('think','地形不好，沒地方下錨。'),
+        ren('tire','只能辛苦點囉。'),
         sor('laugh','我是無所謂啦，但是小公主可以嗎？'),
         any('answer','我、我可以！'),
         sor('smirk','走累了撒個嬌，姐姐可以背妳喔？'),
@@ -5107,7 +5104,7 @@ export const TOWNS = {
         ren(null,'唉呀。'),
         Object.assign(nou('surprise','感情真好呢。'), { cg:null }),
         /* ── 分支 1：前一天約了安雅 ── */
-        Object.assign(sor('surprised','啊！奸詐！'), { onlyIf:'ep_date_anya' }),
+        Object.assign(sor('surprise','啊！奸詐！'), { onlyIf:'ep_date_anya' }),
         Object.assign(any('makeface',''),           { onlyIf:'ep_date_anya' }),
         /* ── 分支 2：前一天約了索菈娜 ── */
         Object.assign(sor('confuse','那我累了誰來背我？'),     { onlyIf:'ep_date_sor' }),
@@ -5121,9 +5118,8 @@ export const TOWNS = {
            ⚠⚠ **無立繪＝把台上清空**（`hide`）：插圖裡已經有她了，台上再站一個
              就是同一個人出現兩次（同 `020-rennadrop` 那一拍的作法）。
              連帶：`sighbreath` 那張差分本來就不存在（lint 一直在唸），現在不必了。 */
-        /* ⚠ 稿上寫 `think`，但蕾娜的差分表裡叫 **`thinking`**（沒有 `think`）——
-           用既有的那一張，不要留一個查不到、會靜靜回退基本立繪的名字（lint 會唸）。 */
-        Object.assign(ren('thinking','……'), { onlyIf:'ep_renna_met' }),
+        /* ⚠ 用既有的那一張，不要留一個查不到、會靜靜回退基本立繪的名字（lint 會唸）。 */
+        Object.assign(ren('think','……'), { onlyIf:'ep_renna_met' }),
         { speaker:'RENNA', text:'', cg:'018_rennafantasy',   cgNoTime:true,
           onlyIf:'ep_renna_met' },
         { speaker:'RENNA', text:'', cg:'018-1_rennafantasy', cgNoTime:true, cgSoft:true,
@@ -5132,7 +5128,7 @@ export const TOWNS = {
           { onlyIf:'ep_renna_met', hide:['SORANA','RENNA','NOUVELLE','ANYA'] }),
         /* ── 合流 ── ⚠ `cg:null` ＝收圖回背景（上面兩條路都會留著插圖）。 */
         Object.assign(ren('front','玩笑先放一邊，趁早出發吧。'), { cg:null }),
-        ren('thinking','聽說古城裡沒有禍魘，入夜前能到的話會輕鬆很多。'),
+        ren('think','聽說古城裡沒有禍魘，入夜前能到的話會輕鬆很多。'),
         /* ⚠ ver -1401（Ray）：最後補一句指路。**地理對得上** ——
            南門驛站是節點 `dock`（-1383 由「倉庫碼頭」改名），它的 `up` 就是
            `@plainsroad`（平原古道＝「舊道」），而古道的入口 `entry.down`
@@ -5473,7 +5469,7 @@ export const TOWNS = {
                     lines:[ sor('confuse','喂！開船去比較快啦！') ] } },
         acts:[ { flag:'ep_dock_anya', withWho:'ANYA', lines:[
           any('curious','這就是……尤拉西亞湖？'),
-          any('amazed','好壯觀……'),
+          any('amaze','好壯觀……'),
         ] } ] },
       /* ══ 賞金獵人公會（ver -1340，Ray 交件指派櫃台 `NPC_GuildCounter_SI_v5`）══
          ⚠ **不寫 `boardFlag`**（同北泊）：登記是在帝都做的（`guild_registered`），
@@ -5501,7 +5497,7 @@ export const TOWNS = {
           sor('confuse','……這些人幹嘛老盯著我看？'),
           { speaker:'HUNTER_EP', text:'唷喔！舞孃小姐，是不是走錯地方啦？',
             portrait:{ char:'HUNTER_EP', show:true } },
-          sor('tired',''),
+          sor('tire',''),
           sor('guard',''),
           { battle:'ep_guild_hunter' },
           { speaker:'COUNTER_EP', text:'你傻了啊？去挑釁森住民做什麼？',
@@ -5581,18 +5577,18 @@ export const TOWNS = {
             { speaker:'PLAYER', blank:true },
             ren('watch','燈光不夠，但是……'),
             ren('whisper','總覺得那個人……是不是跟安雅有點像？'),
-            ren('shockedCalm','！！'),
+            ren('shockcalm','！！'),
             { speaker:'PLAYER', blank:true },
             ren('intense','你說殺氣……？'),
-            any('scared',''),
+            any('scare',''),
             ren('intense2','啊，被發現了。'),
             /* 稿上的「立繪撤出」：他轉身走掉（ver -1549 才真的撤得掉人）。 */
             { speaker:'NARRATION', text:'', se:'se_walk', auto:1400, hide:['MISHA_X'] },
-            ren('evalutating','安雅小姐，剛剛那位是……'),
+            ren('evaluate','安雅小姐，剛剛那位是……'),
             any('talk','是我哥哥。他擔心我所以……'),
-            ren('evalutatingclosemouth','擔心的話不應該陪在妳身旁嗎？怎麼就走了呢？'),
+            ren('evaluateclosemouth','擔心的話不應該陪在妳身旁嗎？怎麼就走了呢？'),
             any('silent','……'),
-            ren('evalutatingclosemouth','……又不說了嗎？'),
+            ren('evaluateclosemouth','……又不說了嗎？'),
             ren('holdfile','算了。明天有一整天的時間。'),
             ren('commandsoft','就在這極東之境，用最殘酷的方式拷問妳吧。'),
             Object.assign(any('desperate',''), { flags:['ep_night_mi_done'] }),
@@ -5610,10 +5606,10 @@ export const TOWNS = {
             { speaker:'MISHA_X', tiny:true, dark:true, text:'И что я скажу душам погибших?..' },
             { speaker:'MISHA_X', tiny:true, dark:true, text:'！！' },
             { speaker:'MISHA_X', tiny:true, dark:true, text:'За тобой слежка.' },
-            any('scared',''),
+            any('scare',''),
             /* 稿上的「立繪撤出」：哥哥走掉，安雅留在台上（下一句是她講的）。 */
             { speaker:'NARRATION', text:'', se:'se_walk', auto:1400, hide:['MISHA_X'] },
-            any('scared','那、那是……'),
+            any('scare','那、那是……'),
             any('talk','是我哥哥。他擔心我所以……'),
             any('worry','拜託，可以跟大家保密嗎？'),
             { speaker:'PLAYER', blank:true },
@@ -5652,7 +5648,7 @@ export const TOWNS = {
         acts:[ { flag:'ep_dine_nou', withWho:'NOUVELLE', lines:[
           nou('happy','東海的料理……'),
           { speaker:'PLAYER', blank:true },
-          nou('shocked','沒有啦，我沒有很餓！'),
+          nou('shock','沒有啦，我沒有很餓！'),
           nou('hungry',''),
           { speaker:'PLAYER', blank:true },
           nou('concern','嗯……'),
@@ -5668,14 +5664,14 @@ export const TOWNS = {
          ⚠ `amazed`／`curious` 這兩張**還沒有圖**：查不到差分會自動退回本尊立繪
            （§6.10 的 `missingExpr`），台詞照播 —— 圖到了不必改這裡。
          ⚠⚠ 趴在櫥窗的插圖 `015-anyadessert`（ver -1379 交件）掛在**第一拍**：
-           那一拍本來就是她看到櫥窗、說不出話的那一刻（`any('amazed','')` 沒有台詞），
+           那一拍本來就是她看到櫥窗、說不出話的那一刻（`any('amaze','')` 沒有台詞），
            插圖就是那一拍在演的東西。 */
       dessert:    { bg:'east_dessert',    name:'東方泊地　甜品店',
         exits:{ back:'tavern' },
         acts:[ { flag:'ep_sweets_anya', withWho:'ANYA', lines:[
-          Object.assign(any('amazed',''),
+          Object.assign(any('amaze',''),
                         { cg:'015-anyadessert', cgNoTime:true, cgPan:'down' }),   // 由上而下（Ray）
-          any('amazed','好可愛……'),
+          any('amaze','好可愛……'),
           Object.assign(any('curious','這真的是可以吃的嗎？'), { aff:{ anya:3 } }),
         ] } ] },
       /* ══ 雜貨舖（ver -1340，Ray 交件指派店主 `NPC_Grocer_SI_v1`）══
@@ -5766,7 +5762,7 @@ export const TOWNS = {
                       ren('wake','怎麼了嗎？大半夜的。'),
                       { speaker:'PLAYER', blank:true },
                       ren('unbraid','咦？安雅小姐她……'),
-                      ren('thinking','……'),
+                      ren('think','……'),
                       Object.assign(ren('commandsoft','……悄悄跟上去吧。'),
                                     { flags:['ep_night_renna'], aff:{ renna:2 } }),
                     ] },
@@ -5799,7 +5795,7 @@ export const TOWNS = {
           SORANA:{   low:'現在還不太熟呢，改天吧？',
                      /* ⚠ `shy` 還沒有圖（同上，會退回本尊）。 */
                      date:[ sor('side','噢！當然要去逛逛呀！'),
-                            sor('embarassed','不過我也不知道要去哪就是了！'),
+                            sor('embarrass','不過我也不知道要去哪就是了！'),
                             Object.assign(sor('readysmile','隨便走走囉！'), { flags:['ep_date_sor'] }) ] },
                     } },
         /* ══⚠⚠⚠ 回旅店的收尾（ver -1346，Ray 交稿）══════════════════════════
@@ -5834,7 +5830,7 @@ export const TOWNS = {
              「諾：『嗚——小公主也要來啊！』」「諾：『哇啊——』」「諾：『說好了喔——』」
              三句配的都是 `Sorana_SI_crying` —— 而且內容就是索菈娜在哭著要大家去看她
              ⇒ 判成**索菈娜**。
-           ⚠ `shock2` 線上沒有這個鍵 ⇒ 取最接近的 `shocked2`（Ray -1532：
+           ⚠ 鍵就是 `shock2`（ver -1555 去時態前叫 `shocked2`；Ray -1532：
              「寫錯不報錯先找 typo 或接近的」）。其餘 expr 全部對得上，逐一比對過。
            ⚠ 沒標立繪的那幾拍 `expr` 給 null ＝**不動立繪**（立繪是持續狀態，§6.5）。 */
         onLeave:[
@@ -5842,29 +5838,29 @@ export const TOWNS = {
              `need` 是**陣列**＝兩支都要立（`needOk` 早就支援，-1532 起 onLeave 也吃）。 */
           { flag:'ep_leave_final', need:['ep_interrogate','tomb_done'],
             sides:{ RENNA:'L' }, lines:[
-            ren('writing','那麼，就只剩下西邊埃爾王國的廢城了。'),
-            ren('tired','漫長的旅途也快要結束了。'),
+            ren('write','那麼，就只剩下西邊埃爾王國的廢城了。'),
+            ren('tire','漫長的旅途也快要結束了。'),
             nou('awkward','總感覺有點捨不得呢。'),
-            sor('crying',''),
+            sor('cry',''),
             any('nervous',''),
-            nou('shocked2','索菈娜小姐……'),
+            nou('shock2','索菈娜小姐……'),
             ren('stare','真沒想到，妳也會因為這種事哭啊。'),
-            sor('crying','因為……因為……'),
-            sor('crying','妳們都會回聖王廳，就剩我一個了啊！'),
+            sor('cry','因為……因為……'),
+            sor('cry','妳們都會回聖王廳，就剩我一個了啊！'),
             nou('awkward','我會去看妳啦，夏爾村那麼近。'),
             ren('bow','是啊，坐火車半天就到囉。雖然還要走一段。'),
             sor('sad','我會去接妳們啦！'),
-            sor('crying','你也要來喔！'),
+            sor('cry','你也要來喔！'),
             { speaker:'PLAYER', blank:true },
             sor('furiousq','瑪麗亞的料理比我重要嗎！'),
             nou('smug','他害羞啦。'),
             any('shy',''),
             /* ⚠ 稿上寫「諾」，立繪是 `Sorana_SI_crying` ⇒ 索菈娜（見上）。 */
-            sor('crying','嗚——小公主也要來啊！'),
+            sor('cry','嗚——小公主也要來啊！'),
             any('silent','我……不知道……'),
-            sor('crying','哇啊——'),
+            sor('cry','哇啊——'),
             any('panic','我會去！會去！'),
-            sor('crying','說好了喔——'),
+            sor('cry','說好了喔——'),
             ren('stare',''),
             ren('smile','好啦，又不是現在就要分別。我們還有下一站呢。'),
             ren('pointmap','先到聖索菲亞城的領事館辦入境手續吧。'),
@@ -5879,12 +5875,12 @@ export const TOWNS = {
             /* ⚠ 稿上沒標立繪 ⇒ 不動（她這一段還沒上場就是底圖那一張）。 */
             sor(null,'感覺妳很不情願啊？'),
             ren('lookdown','因為……說是遺蹟……'),
-            ren('dying','不就是墳墓嘛……'),
+            ren('die','不就是墳墓嘛……'),
             nou('shock','？'),
             { speaker:'PLAYER', blank:true },
             ren('lookdown','你說得容易……'),
-            ren('blushed','絕對不可以離開我超過三步以上。不然我扣你分！'),
-            sor('dying','哇——濫用職權！'),
+            ren('blush','絕對不可以離開我超過三步以上。不然我扣你分！'),
+            sor('die','哇——濫用職權！'),
           ] },
         ],
         acts:[
@@ -5908,7 +5904,7 @@ export const TOWNS = {
              （Ray -1511：「無髮飾先跳過，用原圖，之後再一次改」），所以這一段
              與中庭那一段一樣，用的都是現有的立繪。 */
         { flag:'ep_hairpin_talk', need:'bl_night_done', sides:{ RENNA:'L' }, lines:[
-          sor('tired','折騰一晚上，呼啊——'),
+          sor('tire','折騰一晚上，呼啊——'),
           nou('sleepy',''),
           any('sleepy',''),
           ren('apologize','真的很對不起……'),
@@ -5917,12 +5913,12 @@ export const TOWNS = {
           sor('back','哈？'),
           sor('confuse','為了撿那個妳當時差點被那隻龍吞了耶！'),
           nou('surprise','我也以為是比命還重要的東西耶！'),
-          ren('blushed','我、我也不知道啊！'),
-          ren('blushed','就是……不想丟下他嘛。'),
+          ren('blush','我、我也不知道啊！'),
+          ren('blush','就是……不想丟下他嘛。'),
           sor('smirk','……戀人的禮物？'),
           { speaker:'PLAYER', blank:true },
-          ren('blushed','……'),
-          ren('blushed','我可是修女，哪來的戀人？'),
+          ren('blush','……'),
+          ren('blush','我可是修女，哪來的戀人？'),
           nou('smug','那就是家人囉？'),
           ren('apologize','也不是……'),
           any('sleepy',''),
@@ -5931,9 +5927,9 @@ export const TOWNS = {
           nou('bigsmileclose','……'),
           ren('arguecute','真的啦！'),
           ren('apologize','仔細想想根本沒有捨命撿回來的必要，可是……'),
-          ren('blushed','不知道為什麼，就是會難受。'),
+          ren('blush','不知道為什麼，就是會難受。'),
           sor('salute','反正就是……妳超喜歡那個髮飾的吧？'),
-          ren('blushed','……嗯。'),
+          ren('blush','……嗯。'),
           sor('side','妳高興就好啦！反正我也狠狠教訓了那隻小偷龍，滿足滿足！'),
           nou('awkward',''),
           any('sleepy',''),
@@ -5949,7 +5945,7 @@ export const TOWNS = {
                撐著（不然走一格就被打回 `portside`，見那一段的說明）。
              ⚠ **圖仍然沒有**（`CI_Misha_eyes`）—— 見上一段註解：圖到了補 `cg:` 在
                這一拍，不要另開一拍。曲子與圖是兩件事，曲子先接。 */
-          Object.assign(any('terrifying',''), { bgm:'glasscradle' }),
+          Object.assign(any('terrify',''), { bgm:'glasscradle' }),
           { speaker:'PLAYER', text:'！！' },
           sor('ready','小公主怎麼啦？'),
           any('talk','沒……沒事……'),
@@ -6037,7 +6033,7 @@ export const TOWNS = {
           ren('smile','甜栗蒙布朗。'),
           any('panic','？？？？？'),
           ren('bow','只要您如實回答我的問題，就可以自由享用。'),
-          sor('scared','嗚哇——壞心眼——'),
+          sor('scare','嗚哇——壞心眼——'),
           ren('holdfile','咳哼。'),
           ren('ask','那麼，安雅小姐。您的出身是紫月的哪一個國家呢？'),
           any('silent','……'),
@@ -6055,14 +6051,14 @@ export const TOWNS = {
              原本是 `bigsmileclose`。⚠ 檔名是 `Nouvelle_SI_Lookaway.webp`（大寫 L），
              但腳本寫的是 `speakers.js` 的**差分鍵** `lookaway`，不是檔名。 */
           nou('lookaway','好好吃。'),
-          sor('dying','從來沒看過這種酷刑……'),
+          sor('die','從來沒看過這種酷刑……'),
           ren('smile','那麼，安雅小姐，可以回答我的問題了嗎？'),
           any('talkshy','……'),
           ren('sigh',''),
-          ren('writing','好啦。審訊紀錄結束。未能取得……情……報。'),
+          ren('write','好啦。審訊紀錄結束。未能取得……情……報。'),
           any('nervous','？？'),
           ren('smile','對不起喔，這是例行公事。'),
-          sor('amazed','原來只是做做樣子啊？'),
+          sor('amaze','原來只是做做樣子啊？'),
           ren('bow','作為賠禮，請盡情享用這些點心吧。'),
           any('shy',''),
           /* ⚠⚠ **ver -1520**（Ray：「蕾娜說出謝索洛夫殿下的時候 bgm 改
@@ -6073,13 +6069,13 @@ export const TOWNS = {
                用 result」為止，所以走出旅店那一格就會回到 `result`。
                要讓它撐到某一段為止，就在 `bgmWhen` 補一條排在 result 上面（等 Ray 定）。 */
           Object.assign(ren('talkserious','安娜˙謝琳娜˙謝索洛夫殿下。'), { bgm:'glasscradle' }),
-          any('terrifying',''),
-          nou('shocked2','謝索洛夫……？'),
-          sor('surprised','殿下？'),
+          any('terrify',''),
+          nou('shock2','謝索洛夫……？'),
+          sor('surprise','殿下？'),
           any('desperate',''),
           ren('talkwork','看來我沒有猜錯呢。'),
           ren('invite','謝索洛夫皇國的第二皇女。'),
-          sor('surprised','小公主竟然真的是公主？'),
+          sor('surprise','小公主竟然真的是公主？'),
           any('desperate','……'),
           nou('cringe','蕾娜小姐是怎麼……'),
           ren('talkwork','從她第一次啟動遺蹟的時候就懷疑了。'),
@@ -6095,9 +6091,9 @@ export const TOWNS = {
           sor('confuse','惡夢……'),
           nou('risehand','我申請為安雅小姐的宗教法廷辯護人！'),
           ren('awkward','沒有要審判她啦。'),
-          /* ⚠ ver -1520（Ray 指定）：原本是 `dying`，改成 `evalutatingclosemouth`。 */
-          ren('evalutatingclosemouth','我相信安娜殿下沒有惡意，但是……'),
-          ren('evalutating','貴族這種東西，有時候就是身不由己，不是嗎？'),
+          /* ⚠ ver -1520（Ray 指定）：原本是 `die`，改成 `evaluateclosemouth`。 */
+          ren('evaluateclosemouth','我相信安娜殿下沒有惡意，但是……'),
+          ren('evaluate','貴族這種東西，有時候就是身不由己，不是嗎？'),
           any('silent','……'),
           ren('front','這件事我暫時不會上報聖王廳。還請安娜殿下再隨我們探訪遺蹟吧。'),
           any('shy','……'),
@@ -6108,7 +6104,7 @@ export const TOWNS = {
           ren('stare','這麼處置，安娜殿下您意下如何呢？'),
           any('talk','……'),
           any('talkshy','安雅……'),
-          sor('amazed','什麼？'),
+          sor('amaze','什麼？'),
           any('argue','請像以前一樣……叫我安雅……'),
           any('argue','我……只想當安雅而已！'),
           nou('covermouth','安雅……'),
@@ -6118,7 +6114,7 @@ export const TOWNS = {
           ren('sigh',''),
           { speaker:'PLAYER', blank:true },
           ren('arguecute','還不都要怪你叫我起床……'),
-          ren('blushed','半夜敲淑女的門，可是很失禮的喔。'),
+          ren('blush','半夜敲淑女的門，可是很失禮的喔。'),
         ] },
         /* ══⚠⚠⚠ **那一夜：奪回髮飾**（ver -1388，Ray 交稿）══════════════════════
            ⚠⚠⚠ **好感的門已經拿掉了**（ver -1489，Ray：「把髮飾事件的好感觸發鎖
@@ -6140,8 +6136,8 @@ export const TOWNS = {
              「諾：『諾薇兒，安靜下！』」配 `Sorana_*` ⇒ 索菈娜；「安：『快下降！』」
              配 `Nouvelle_*` ⇒ 諾薇兒。那兩處在下一段（追逐）裡。
            ⚠ 四個表情稿上有、線上還沒有圖 ⇒ **用最近的既有差分頂著**（Ray：「立繪先沿用」）：
-             蕾娜 `shock`→`shocked`／`think`→`thinking`、索菈娜 `laughbig`→`laugh`、
-             諾薇兒 `shock2`→`shocked2`。圖交了再換回來。
+             索菈娜 `laughbig`→`laugh`。圖交了再換回來。
+             （蕾娜的 `shock`／`think`、諾薇兒的 `shock2` 現在稿上寫什麼就是什麼，ver -1555。）
            ⚠ `goto:'@belisar:greathall'` ＝停船、進主廳（追逐那一段接在那裡）。 */
         /* ══⚠⚠⚠ **改由「回房睡覺」觸發**（ver -1396，Ray：「強制回到東泊時的睡覺
            要處於可點狀態，但點下不會睡到隔天，會在一小時後起來移動到旅店大廳，
@@ -6169,13 +6165,13 @@ export const TOWNS = {
                  sides:{ RENNA:'L' }, lines:[
           sor('tease','想去哪啊？'),
           { speaker:'PLAYER', blank:true },
-          sor('tired','少來了，大家想的都一樣啦？'),
+          sor('tire','少來了，大家想的都一樣啦？'),
           nou('steady','蕾娜小姐重要的髮飾，一定要奪回來！'),
           any('steady','嗯、嗯！'),
-          ren('tired','……不要鬧了。'),
+          ren('tire','……不要鬧了。'),
           nou('surprise','蕾娜小姐！'),
           ren('lookawaytalk','不要為了那種東西增加隊伍風險。'),
-          nou('shocked','可是……！'),
+          nou('shock','可是……！'),
           ren('smile','謝謝妳們，有這份心意我很感激。'),
           /* ⚠⚠ ver -1433（Ray：「`walk` 在『喂你倒是聽我說話啊』的時候就播」）——
              聲音要**壓在她那一句上**：他是在她還在講的時候就走掉的，那個時間差
@@ -6185,7 +6181,7 @@ export const TOWNS = {
           Object.assign(ren('argue','可是——喂你倒是聽我說話啊！'), { se:'se_walk' }),
           { speaker:'PLAYER', blank:true },
           /* 「臉紅。」＝**只有立繪沒有台詞**的演出拍（台上有人 ⇒ 點擊推進，§6.5 -628）。 */
-          ren('shockedCalm',''),
+          ren('shockcalm',''),
           ren('argue','不可以……你去的話，我扣你分喔！'),
           sor('tease','哈，我可沒有分給妳扣喔。'),
           ren('meltdown','……'),
@@ -6194,10 +6190,10 @@ export const TOWNS = {
           sor('remind','不敢麻煩別人，那也是架子啊。'),
           sor('idea','再說了，白天那傢伙那麼弱，沒什麼好怕的啦。'),
           nou('expain2','而且……現在整個中庭水都灌進來了，說不定……'),
-          sor('amazed','就可以停船了？諾薇兒，天才？'),
+          sor('amaze','就可以停船了？諾薇兒，天才？'),
           any('clap',''),                 // 面無表情鼓掌
           nou('awkward',''),
-          ren('crying','你們真是……'),
+          ren('cry','你們真是……'),
           /* ⚠ ver -1416（Ray：「配的音是 walk」）：這兩拍是主角**走開**，不是跑 —— `se_steps` 是跑步聲。 */
           { speaker:'PLAYER', blank:true, se:'se_walk' },
           sor('smirk','怎麼那傢伙好像比妳還急呢？'),
@@ -6433,8 +6429,8 @@ export const TOWNS = {
          ⚠ 最後兩拍（蕾娜的表情、安雅 nervous）**沒有台詞**：台上有人的無台詞拍
            要點擊才推進（§6.5 的 -628）—— 那兩個表情就是這一段的收尾。
          ⚠⚠ 蕾娜那一拍**依好感段位換表情**（Ray：「T2 以下 scarejump／T3 以上
-           shockedCalm」）⇒ 走 `portrait.exprByTier`（**門檻不是等於**，§6.5 的 -772）：
-           `{1:'scarejump', 3:'shockedCalm'}` ＝ T1/T2 嚇一跳、T3 以上只是無言。
+           shockcalm」）⇒ 走 `portrait.exprByTier`（**門檻不是等於**，§6.5 的 -772）：
+           `{1:'scarejump', 3:'shockcalm'}` ＝ T1/T2 嚇一跳、T3 以上只是無言。
            ⚠ 它掛在 `portrait` 上不是掛在 line 上，所以這一拍不用 `ren()` 那個縮寫。
          ⚠ 這一格是 `rest`（休息處），而 `actDue` 排在 `restActDue` 前面，
            所以這一段會先演；何況這一趟還沒打過架，休息處本來就不作動。 */
@@ -6451,7 +6447,7 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true },
           sor('tease','……不相信？給我鞭子我連你都能騎。'),
           { speaker:'RENNA', text:'',
-            portrait:{ char:'RENNA', exprByTier:{ 1:'scarejump', 3:'shockedCalm' }, show:true } },
+            portrait:{ char:'RENNA', exprByTier:{ 1:'scarejump', 3:'shockcalm' }, show:true } },
           nou('bigsmileclose','？？'),
           any('nervous',''),
         ] } ] },
@@ -6580,11 +6576,11 @@ export const TOWNS = {
              （`nearestTown` 的 `P.flag` 那道門）。
            ⚠ `need:'vn_brief'` ＝上船的簡報講完（不然玩家自己先飛來會演在錯的地方）。 */
         acts:[ { flag:'lk_arrive', need:'vn_brief', sides:{ RENNA:'L' }, lines:[
-          sor('surprised','哇，還真有。'),
+          sor('surprise','哇，還真有。'),
           ren('coldstare','雖然是靜水，但可著水面積不大，請索菈娜小姐妥善操帆。'),
           sor('cringe','是、遵命！'),
           nou('concern','蕾娜小姐完全生氣了……'),
-          any('dying','好可怕……'),
+          any('die','好可怕……'),
         ] } ] },
       /* ── 三向樞紐：正前方沿湖，左邊一條岔路往岩壁下 ── */
       shingle:    { bg:'lake_shingle',    name:'鏡湖　碎石灘',
@@ -6632,11 +6628,11 @@ export const TOWNS = {
           /* ── 合流 ── */
           sor('guardtalk','這傢伙是誰啊！', { label:'nemo_join' }),
           any('panic',''),
-          lau('crying','蕾姬娜學姐——'),
+          lau('cry','蕾姬娜學姐——'),
           ren('chase','蘿芮？'),
           ren('chase','妳在這裡，那這個人——'),
-          nou('decoding','是的......他就是現在HUND的第一候補——'),
-          nou('decoding','尼莫。'),
+          nou('decode','是的......他就是現在HUND的第一候補——'),
+          nou('decode','尼莫。'),
           ren('chase','那個百年一遇的天才？'),
           nmo('bye','哪有那麼誇張啦——'),
           /* ⚠⚠ **ver -1536：賽西莉沒有人影**（Ray：「賽西莉登場時**多放了一個**
@@ -6671,11 +6667,11 @@ export const TOWNS = {
           cec('spoild','我說：我、不、要。'),
           lau('idea','那個……我才是監察官……'),
           cec('upset',''),
-          lau('dying','噫——'),
-          nmo('bored','啊——又來了。變成那樣以後就沒辦法了呢。'),
+          lau('die','噫——'),
+          nmo('bore','啊——又來了。變成那樣以後就沒辦法了呢。'),
           lau('lookaside','那、我們去另一個遺蹟……？'),
           cec('talk','知道了還不快走？'),
-          lau('dying','是……'),
+          lau('die','是……'),
           nmo('bye','學長拜拜——下次再一起玩吧——'),
           /* ══⚠ 腳步聲那一拍**擺賽西莉的背影**（ver -1545，Ray：「學長拜拜之後的
              腳步聲那一拍放一張 cecilie 的 back，**然後才是主角說話**」）══
@@ -6693,8 +6689,8 @@ export const TOWNS = {
                這一次是她自己。⚠ 撤乾淨之後台上沒人 ⇒ `auto` 真的會跑（§6.5 的 -628
                只押「台上有人」的無台詞拍）。 */
           { speaker:'NARRATION', text:'', se:'se_walk', auto:1400, hide:'*' },
-          ren('determined','……'),
-          sor('tired','誰快來解釋一下啊……'),
+          ren('determine','……'),
+          sor('tire','誰快來解釋一下啊……'),
           nou('sadsmile',''),
         ] } ] },
       /* ⚠ 瀑布底**不是死路**：水簾後面看得到黑色洞口，路往裡面繼續。 */
@@ -6733,16 +6729,16 @@ export const TOWNS = {
                「再抵達一次」才演得到）—— 不划算。⚠ 要改說一聲。
            ⚠ 「啟動動畫」走既有的 `fx:'sense'`（安雅啟動祭壇那一拍同一支，鐵律 8）
              ＋ `shake` —— 沒有為這一段另做一個動畫。
-           ⚠ 稿上寫 `shockcalm`，蕾娜的鍵是 `shockedCalm`。 */
+*/
         acts:[ { flag:'lk_steles', need:'lk_arrive', sides:{ RENNA:'L' }, lines:[
           ren('watch','應該就是這裡了。那麼，'),
           any('answer','是！', { shake:true }),
-          ren('shockedCalm',''),
+          ren('shockcalm',''),
           ren('awkward','安雅小姐不用那麼緊張的。'),
           any('answer','好……好！'),
-          ren('evalutatingclosemouth',''),
+          ren('evaluateclosemouth',''),
           nou('whisper','安雅都嚇壞了……'),
-          sor('dying','都是我不好……'),
+          sor('die','都是我不好……'),
           /* ══⚠⚠ **石碑啟動**（`fx:'sense'`，ver -1540 修時序）════════════════
              ⚠ **清場不寫在這裡** —— `senseFx()` 自己會把台上清空（見 story.js 的
                `senseClearCast`）。舊版另外三段寫的 `hide:[…]` 是那一版的寫法，
@@ -6880,11 +6876,11 @@ export const TOWNS = {
         acts:[ { flag:'tomb_gate', fromStage:8, sides:{ RENNA:'L' }, lines:[
           /* 先來這裡（還沒去過貝利薩爾）才有的那一句。 */
           Object.assign(ren('intense2','為什麼偏偏先來這裡……'), { skipIf:'belisar_seen' }),
-          sor('amazed','好寒酸的遺蹟。'),
+          sor('amaze','好寒酸的遺蹟。'),
           nou('awkward','竟然說寒酸……'),
           ren('ask','畢竟是墓穴嘛。聽說裡面有一整座城呢。'),
           nou('surprise','聽說？'),
-          ren('writting','因為進去的探勘隊，都沒回來。'),
+          ren('write','因為進去的探勘隊，都沒回來。'),
           any('panic',''),
           ren('watch','正好，石壁關著我們也進不去。就這樣回報吧！'),
           { speaker:'PLAYER', blank:true },
@@ -6893,7 +6889,7 @@ export const TOWNS = {
           ren('smile','打死我都不想進去。'),
           sor('talk','怕？怕什麼？'),
           ren('meltdown','就是……幽靈之類的。'),
-          sor('surprised','船一樣大的魔獸妳都不怕，怕那個？'),
+          sor('surprise','船一樣大的魔獸妳都不怕，怕那個？'),
           ren('scarejump','有什麼辦法！人家就是怕嘛！'),
           nou('awkward',''),
           any('talk','幽靈……要是有就好了。'),
@@ -6902,7 +6898,7 @@ export const TOWNS = {
           nou(null,'某種意義上來說，那些死去的人……'),
           nou(null,'都曾經是對某人來說特別的存在吧？'),
           ren('sad','……'),
-          any('sobbing',''),
+          any('sob',''),
           ren(null,'好啦，反正打不開就是打不開。'),
           /* ⚠ 稿上那個 `Varnholm` 是**地名的西文**不是立繪（`resources/SI/` 沒有
              這張圖），這一拍照上一拍的表情演。
@@ -6973,9 +6969,9 @@ export const TOWNS = {
              排後面則兩條路都對：初見一定先演 `tomb_gate`（它有自己的 flag）。 */
         { flag:'tomb_enter', need:'tomb_opened', sides:{ RENNA:'L' }, lines:[
           ren('commandsoft','門開了呢。走吧。'),
-          sor('amazed','修女小姐突然不怕鬼了……'),
+          sor('amaze','修女小姐突然不怕鬼了……'),
           nou('cringe','我覺得她氣到連幽靈都可以一拳打飛了……'),
-          any('scared2',''),
+          any('scare2',''),
         ] } ] },
       vestibule:  { bg:'tomb_vestibule', name:'伊甸古墓　前庭', noTime:true,
         exits:{ up:'nave', right:'lapidarium', back:'gate' },
@@ -6998,11 +6994,11 @@ export const TOWNS = {
         acts:[ { flag:'tomb_talk', need:'tomb_enter', sides:{ RENNA:'L' }, lines:[
           { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', auto:1600 },
           sor('cringe','哇，那什麼？'),
-          ren('writing','禍魘吧，還能是什麼。'),
+          ren('write','禍魘吧，還能是什麼。'),
           sor('confuse','……'),
           sor('relief','那個啊……'),
           sor('confuse','我知道是我不對，看妳要把我一腳踢走，還是要殺要剮我都認！'),
-          sor('determined','但妳要我哭哭啼啼地道歉，這我真的不會。'),
+          sor('determine','但妳要我哭哭啼啼地道歉，這我真的不會。'),
           sor('angry','能不能給個痛快？'),
           ren('curious','……'),
           ren('lookdown','抱歉……讓妳誤會了。'),
@@ -7015,7 +7011,7 @@ export const TOWNS = {
           sor(null,'那是在生誰的氣？'),
           ren('upset',''),
           ren('lookawaytalk','沒有誰。'),
-          ren('writting','只是想早點結束這一切而已。'),
+          ren('write','只是想早點結束這一切而已。'),
         ] } ] },
       /* 死胡同 A 的第一格 —— 圖上**不可以畫得像盡頭**（見交接檔 §六）。 */
       lapidarium: { bg:'tomb_lapidarium', name:'伊甸古墓　碑廊', noTime:true,
@@ -7090,29 +7086,29 @@ export const TOWNS = {
              追兵推進、三處安全點）。**現在還沒有人讀它** —— 鐵律 9 的名字先留好。 */
         acts:[ { flag:'tomb_gk1_done', need:'tomb_talk', sides:{ RENNA:'L' }, lines:[
           nou('shock','這個地方好大……'),
-          sor('tired','還一堆死胡同，好像一直在走來走去而已。'),
-          ren('writting','先把地圖建立起來就輕鬆了。走過的每一步都不會白費。'),
-          sor('tired','話是這麼說……'),
+          sor('tire','還一堆死胡同，好像一直在走來走去而已。'),
+          ren('write','先把地圖建立起來就輕鬆了。走過的每一步都不會白費。'),
+          sor('tire','話是這麼說……'),
           { speaker:'NARRATION', text:'', shake:true, auto:1200 },
           any('lookup',''),
-          nou('shocked2','什、什麼東西？'),
+          nou('shock2','什、什麼東西？'),
           { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
           sor('battlecry','麻煩的東西來了！'),
           { battle:'tomb_gk1' },
           nou('relief','嚇、嚇死我了！'),
           sor('guardtalk','棘手了點，但也不是不能應付。'),
           sor('guard','只是……好像哪裡不太對勁。'),
-          ren('thinking','不對勁……'),
-          ren('shockedCalm','！！'),
+          ren('think','不對勁……'),
+          ren('shockcalm','！！'),
           ren('shout','趕快走！離開這裡！'),
-          any('scared',''),
+          any('scare',''),
           ren('shout','沒有淨化反應，那東西沒有死！'),
           { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', auto:1400 },
           nou('shock','！！'),
           { speaker:'NARRATION', text:'', shake:true, auto:1200 },
           ren('intense','那不是再生……'),
           ren('intense2','這個東西把『死亡』本身覆寫了！'),
-          nou('decoding','覆寫……！'),
+          nou('decode','覆寫……！'),
           sor('battlecry','什麼跟什麼啊沒完沒了！', { flags:['tomb_chase_on'] }),
         ] } ] },
       /* 死胡同 G 的第一格 —— 圖要畫得**比正路還氣派**（把玩家騙進來） */
@@ -7133,7 +7129,7 @@ export const TOWNS = {
           { speaker:'NARRATION', text:'', se:'se_walk', auto:1200 },
           any('talkshy',''),
           { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', auto:1400 },
-          any('terrifying',''),
+          any('terrify',''),
           sor('ready','上來！'),
           any('nervous','！！'),
           sor('ready','打不死的東西我們耗不起！快走！'),
@@ -7264,8 +7260,8 @@ export const TOWNS = {
         sides:{ RENNA:'L' }, lines:[
           nou('cringe','這麼空的城，感覺好奇怪。'),
           /* ⚠ 稿上寫 `think`，蕾娜那一族的鍵是 **`thinking`**（同一張圖）。 */
-          ren('thinking','確實……永夜之後這種地方最容易聚集禍魘，為什麼……'),
-          sor('tired','啊——真無聊。'),
+          ren('think','確實……永夜之後這種地方最容易聚集禍魘，為什麼……'),
+          sor('tire','啊——真無聊。'),
         ] },
       { flag:'bel_hint3', need:'ep_bel_enter', skipIf:'ep_bel_altar', afterMoves:10,
         sides:{ RENNA:'L' }, lines:[
@@ -7481,9 +7477,9 @@ export const TOWNS = {
              ⚠ `NARRATION` ＋ 空字串 ＝不出對話框的純演出拍；台上這時還沒有人，
                所以照吃 `auto`（§6.5 的 -628：台上有人的無台詞拍才要點擊）。 */
           { speaker:'NARRATION', text:'', auto:1200 },
-          sor('guardthinking','牠在。'),
+          sor('guardthink','牠在。'),
           nou('surprise','妳怎麼知道？'),
-          sor('guardthinking','氣味、聲音、溼度、痕跡……很多東西。'),
+          sor('guardthink','氣味、聲音、溼度、痕跡……很多東西。'),
           any('smilesneaky','小狗？'),
           sor('smile','妳呀……'),
         ] } ] },
@@ -7595,11 +7591,11 @@ export const TOWNS = {
             nou('awkward',''),
             any('smileshy','太好了'),
             sor('side','不過最辛苦的是這傢伙吧。'),
-            nou('shocked2','全身都濕透了！'),             // 稿上 shock2（還沒有圖）
+            nou('shock2','全身都濕透了！'),             // 稿上 shock2（還沒有圖）
             sor('tease','誰要那隻小偷龍偏偏掉水裡呢？'),
             { speaker:'PLAYER', blank:true },
-            ren('blushed','……'),
-            Object.assign(ren('blushed','嗯，謝謝。'), { flags:['renna_t4_ok'] }),
+            ren('blush','……'),
+            Object.assign(ren('blush','嗯，謝謝。'), { flags:['renna_t4_ok'] }),
           ] },
           /* ══⚠⚠⚠ **回到東泊的時刻**（ver -1396，Ray：「第一次古城首戰發生後強制
              回到東泊的時間固定在 18:00，若在觸發首戰之前玩家時間已經超過 15:00，
@@ -7642,15 +7638,15 @@ export const TOWNS = {
                台上有人 ⇒ 點擊推進（§6.5 的 -628）。 */
           { flag:'bl_night_land', need:Q_HAIRPIN.flag, until:Q_HAIRPIN.until,
             sides:{ RENNA:'L' }, lines:[
-          sor('tired','呼，還真的能降落！'),
+          sor('tire','呼，還真的能降落！'),
           nou('cringe','不知道那隻龍還在不在……'),
           ren('meltdown','……'),
-          ren('crying','我覺得還是……'),
+          ren('cry','我覺得還是……'),
           { speaker:'PLAYER', blank:true, se:'se_walk' },
           ren('reach','啊……'),
           nou('bigsmileclose','我們走吧。'),
           any('steady',''),
-          ren('blushed','好……'),
+          ren('blush','好……'),
         ] } ] },
       /* ══⚠⚠⚠ 大廳祭壇的那一場戲（ver -1353，Ray 交稿）══════════════════════
          ⚠⚠ **髮飾脫落那一拍插 `renna_hairpin_lost`** ＝ 從此蕾娜好感封頂 T3
@@ -7684,13 +7680,13 @@ export const TOWNS = {
                  storyBattle:true, sides:{ RENNA:'L' }, lines:[
           ren('curious','竟然這麼快就找到了。'),
           nou('cringe','好像……已經在半啟動的狀態了。'),
-          ren('thinking','會是感應到安雅小姐的關係嗎……？'),
+          ren('think','會是感應到安雅小姐的關係嗎……？'),
           sor('side','好啦小公主，到妳上場了。'),
           any('silent',''),
           { speaker:'PLAYER', blank:true },
-          any('amazed','！！'),
+          any('amaze','！！'),
           any('answer','說好了喔！'),
-          sor('dying','甜品就能搞定了喔！'),
+          sor('die','甜品就能搞定了喔！'),
           /* 安雅發動能力、裝置啟動 —— 走既有的感應演出（同石製遺蹟那一段，鐵律 8）。 */
           /* ⚠ `noSkip:true`（ver -1384，Ray：「安雅在對話中播感應動畫時不可點擊加速」）
              ＝那 4.4 秒的感應動畫跑完之前，點擊（與自動／加速）都不推進。
@@ -7795,8 +7791,8 @@ export const TOWNS = {
           Object.assign(ren('reachcry','不要！'), { cg:null }),
           /* ⚠ 表情沿用 `battlecry`（ver -1384，Ray 指定）—— 原本寫 null ＝沿用上一張。 */
           sor('battlecry','妳在想什麼啊！差一點被吞掉的就是妳不是那個髮飾了！'),
-          ren('shockedopen','！！'),
-          nou('scared','要來了！'),
+          ren('shockopen','！！'),
+          nou('scare','要來了！'),
           { battle:'ep_belisar_altar' },
           /* ⚠ 收掉中景層那隻龍（牠逃了）—— 不收的話牠會一路跟到回東泊。 */
           Object.assign(sor('side','哈，虛有其表！'), { cgBack:null }),

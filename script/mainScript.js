@@ -129,7 +129,7 @@ export const MAIN_SCRIPT = {
         portrait:{ char:'UNKNOWN', show:true } },
       /* ⚠ 璐娜莉亞這一拍**退場**（Ray 指定）：立繪是持續狀態，不明寫 hide 她會一直站著。 */
       { speaker:'NOUVELLE', text:'！！', hide:'UNKNOWN',
-        portrait:{ char:'NOUVELLE', expr:'scared' } },
+        portrait:{ char:'NOUVELLE', expr:'scare' } },
       /* 密集掃射：⚠ 打在**插圖上**（Ray 原稿：「002_SaintAssult 圖上出現大量密擊
          快速槍擊點」），所以這一拍把插圖叫回來。 */
       /* 密集槍擊：命中點灑在 002 上，畫面同時抖一下。
@@ -484,7 +484,7 @@ export const MAIN_SCRIPT = {
         bg:'deck_destroied', bgm:'misty',
         portrait:{ char:'RENNA', show:false } },
       { speaker:'RENNA', text:'還以為真的到此為止了……',
-        portrait:{ char:'RENNA', expr:'dying', show:true } },
+        portrait:{ char:'RENNA', expr:'die', show:true } },
       { speaker:'NOUVELLE', text:'安雅！沒事嗎？',
         portrait:{ char:'NOUVELLE', show:true } },
       { speaker:'ANYA', text:'……沒事。',
@@ -493,7 +493,7 @@ export const MAIN_SCRIPT = {
          se_woodbreak（-751），-744 暫代的 se_brickcrush 退場。 */
       { speaker:'RENNA', text:'', auto:1000, se:'se_woodbreak', shake:true },
       { speaker:'RENNA', text:'可怕的蠻力……竟然把整個舵都給斷了。',
-        portrait:{ char:'RENNA', expr:'shockedCalm' } },
+        portrait:{ char:'RENNA', expr:'shockcalm' } },
       { speaker:'ANYA', text:'很強。' },
       { speaker:'NOUVELLE', text:'現在不是誇他的時候啦！' },
       { speaker:'RENNA', text:'還好，附近似乎有村莊。',
@@ -509,9 +509,9 @@ export const MAIN_SCRIPT = {
          同曲判斷會直接放行，開打無縫接續）。 */
       { speaker:'NOUVELLE', text:'那是……', delay:2600,
         cg:'009_soranadebute', cgPan:'up', bgm:'whirlwind',
-        portrait:{ char:'NOUVELLE', expr:'scared' } },
+        portrait:{ char:'NOUVELLE', expr:'scare' } },
       { speaker:'NOUVELLE', text:'森住民？',
-        portrait:{ expr:'scared' } },
+        portrait:{ expr:'scare' } },
       { battle:'man_sorana' },
       /* ══ 戰後（ver -752，Ray 的續稿）══ BGM 由卡上的 bgmAfter 換成
          Whistling Winds（-747 曾改 misty，這一稿改回）；插圖收掉走黑幕。
@@ -546,9 +546,9 @@ export const MAIN_SCRIPT = {
       { speaker:'SORANA_Q', text:'……',
         portrait:{ char:'SORANA_Q', expr:'guard' } },
       { speaker:'SORANA_Q', text:'……',
-        portrait:{ expr:'guardthinking' } },
+        portrait:{ expr:'guardthink' } },
       { speaker:'SORANA_Q', text:'對不起！',
-        portrait:{ expr:'embarassed' } },
+        portrait:{ expr:'embarrass' } },
       { speaker:'SORANA_Q', text:'是我搞錯了！',
         portrait:{ expr:'sorry' } },
       { speaker:'RENNA', text:'呃？',
@@ -556,10 +556,10 @@ export const MAIN_SCRIPT = {
       { speaker:'ANYA', text:'？？？？',
         portrait:{ char:'ANYA', expr:'nervous', show:true } },
       { speaker:'SORANA_Q', text:'呀——前陣子村子才被空賊襲擊過，弄得我有點緊張！',
-        portrait:{ char:'SORANA_Q', expr:'embarassed' } },
+        portrait:{ char:'SORANA_Q', expr:'embarrass' } },
       { speaker:'SORANA_Q', text:'對不起喔！' },
       { speaker:'NOUVELLE', text:'好乾脆的人……',
-        portrait:{ char:'NOUVELLE', expr:'shocked' } },
+        portrait:{ char:'NOUVELLE', expr:'shock' } },
       /* 報名 —— 這一拍起改用 SORANA（顯示名「索菈娜」）。 */
       { speaker:'SORANA_Q', text:'我叫索菈娜！夏爾村的獵手。你們呢？',
         portrait:{ char:'SORANA_Q', expr:'side' } },
@@ -567,7 +567,7 @@ export const MAIN_SCRIPT = {
       { speaker:'SORANA', text:'請多指教囉！',
         portrait:{ char:'SORANA', show:true } },
       { speaker:'RENNA', text:'她變得好快，我有點跟不上……',
-        portrait:{ char:'RENNA', expr:'shockedCalm' } },
+        portrait:{ char:'RENNA', expr:'shockcalm' } },
       { speaker:'NOUVELLE', text:'可是看起來是個好人呢。',
         portrait:{ char:'NOUVELLE', expr:'bigsmile' } },
       { speaker:'NOUVELLE', text:'請問——',
@@ -584,11 +584,11 @@ export const MAIN_SCRIPT = {
       { speaker:'ANYA', text:'',
         portrait:{ char:'ANYA', expr:'wheelpoint' } },
       { speaker:'SORANA', text:'喔？很強嘛！',
-        portrait:{ char:'SORANA', expr:'amazed' } },
+        portrait:{ char:'SORANA', expr:'amaze' } },
       { speaker:'NOUVELLE', text:'跟安雅的評價一樣耶。',
         portrait:{ char:'NOUVELLE', expr:'whisper' } },
       { speaker:'ANYA', text:'',
-        portrait:{ char:'ANYA', expr:'dying' } },
+        portrait:{ char:'ANYA', expr:'die' } },
       { speaker:'SORANA', text:'這個……大概修得好吧！',
         portrait:{ char:'SORANA', expr:'think' } },
       { speaker:'SORANA', text:'村裡有個工匠，好像什麼都會修。',
@@ -604,7 +604,7 @@ export const MAIN_SCRIPT = {
         portrait:{ expr:'front' } },
       /* 走路腳步聲（稿上的演出指示）掛在下一句上。 */
       { speaker:'RENNA', text:'我真的跟不上……', se:'se_steps',
-        portrait:{ char:'RENNA', expr:'dying' } },
+        portrait:{ char:'RENNA', expr:'die' } },
       { speaker:'NOUVELLE', text:'',
         portrait:{ char:'NOUVELLE', expr:'awkward' } },
       { speaker:'ANYA', text:'……', checkpoint:true,

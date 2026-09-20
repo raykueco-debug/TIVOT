@@ -265,11 +265,38 @@ def check_lowercase_assets():
                 elif a not in real:
                     warn('%s：素材路徑對不到檔案 —— %s' % (rel, a))
 
+TENSE_OK = {('anya', 'crying'), ('nouvelle', 'thinking'), ('renna', 'surprised'),
+            ('anya', 'chibiscared')}
+
+def check_tense_exprs(art):
+    """⚠⚠⚠ **差分的鍵一律無時態**（ver -1555，Ray：「檔名時態全部拿掉，crying 改成 cry」
+       「confused 改成 confuse，統一用無時態」）。
+
+    為什麼要**會執行的檢查**：命名規約寫在註解裡，下一個人補一張差分時不會回頭看，
+    而「多了一個 `xxxing`」不會有任何錯誤訊息 —— 它就只是混在表裡，直到有人照舊名寫稿。
+
+    ⚠ `TENSE_OK` 是**明寫的例外**（§鐵律 9 的作法）：那幾個無時態的名字已經被
+      **另一張圖**佔住了，合併會靜靜換掉那幾拍的臉。等 Ray 給新名字再改。
+      `chibiscared` 是 CI（Ray -1555：「il 跟 ci 先不用管」）。"""
+    bad = []
+    for ch, a in (art or {}).items():
+        for k in (a.get('expr') or {}):
+            kl = k.lower()
+            if (ch, kl) in TENSE_OK:
+                continue
+            if re.search(r'(ing|ed)[0-9]*$', kl) and kl not in ('cringe',):
+                bad.append('%s.%s' % (ch, k))
+    for b in sorted(bad):
+        err('差分鍵還帶時態 —— %s（ver -1555：統一用無時態；真的要留就加進 '
+            'tools/script_lint.py 的 TENSE_OK 並寫明為什麼）' % b)
+
+
 def main():
     D = load_data()
     check_heavy_pairs()
     check_lowercase_assets()
     script, entry, speakers, art = D['script'], D['entry'], D['speakers'], D['art']
+    check_tense_exprs(art)
 
     # ⚠ ver -1015：先把 ASSETS 裡的音檔名收起來 —— 開機預載那一批是
     #   「ASSETS ∪ story 的 SE_FILES」（§6.6），兩邊任一有登記就載得到。
