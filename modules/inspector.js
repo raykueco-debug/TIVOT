@@ -27,7 +27,8 @@ import * as prog from '../script/progress.js';   // 拿到獎品記一個旗標�
 import { EVALUATOR, LINES as EVAL_LINES,
          BY_BATTLE as EVAL_BY_BATTLE,
          INTRUDE as EVAL_INTRUDE,
-         FROM_STAGE as EVAL_FROM } from '../script/evaluation.js';
+         FROM_STAGE as EVAL_FROM,
+         AWAY_WHEN as EVAL_AWAY } from '../script/evaluation.js';
 import { SPEAKERS, ART } from '../script/speakers.js';   // 評價者的顯示名與立繪＝與對白同一份
 import { state } from '../state.js';
 import { SFX } from '../audio.js';   // Boss BGM 於「再度執槍（S 解鎖）」瞬間起播
@@ -505,6 +506,15 @@ function pickEvaluator(rankKey, battleId){
        **現場的事實**（她在不在），兩者不衝突（同 `noEvalBeforeStage` 也是疊在它之後）。
      ⚠ 真相問 `town.dateParty()`（唯一那一支，鐵律 7）——`inspector` 不 import `town`，
        由 `main` 注入，查不到就照舊（沒有注入＝不在城裡＝本來就沒有約會）。 */
+  /* ══⚠⚠ **她人不在就沒有評價**（ver -1571，Ray：「夥伴只剩諾薇兒，無蕾娜評價畫面，
+     也無評價，但仍然計算」）══ 名單在 `script/evaluation.js` 的 `AWAY_WHEN`（鐵律 1）。
+     ⚠ 排在**最前面**：她不在場的時候，卡上寫什麼、第幾章、約會與否都不成立
+       —— 那不是「這一場要不要評」，是「沒有人可以評」。
+     ⚠ 只擋評價者：等第／EXP／金錢照算（沒有評價者時結算頁本來就走 `grade-noRank`）。 */
+  for(const w of (EVAL_AWAY||[])){
+    if(w && w.from && prog.hasFlag(w.from) && !(w.until && prog.hasFlag(w.until))){
+      evalWhyNot='評價者不在場（'+w.from+' 之後、'+(w.until||'—')+' 之前）'; return null; }
+  }
   if(bt.noEval && !dateWithEvaluator()){ evalWhyNot='卡上 noEval'; return null; }
   /* 第 N 章之前整段不評（ver -1130，資料在 `evaluation.js` 的 `FROM_STAGE`）。
      ⚠ 排在卡上的特例之後、通用表之前：它是「這一套評價什麼時候開始運作」。 */

@@ -7256,7 +7256,52 @@ export const TOWNS = {
           ren('intense','那不是再生……'),
           ren('intense2','這個東西把『死亡』本身覆寫了！'),
           nou('decode','覆寫……！'),
-          sor('battlecry','什麼跟什麼啊沒完沒了！', { flags:['tomb_chase_on'] }),
+          sor('battlecry','什麼跟什麼啊沒完沒了！'),
+          /* ══⚠⚠⚠ **小隊分組**（ver -1571，Ray 交稿）══════════════════════════════
+             這一段結束時**隊上只剩諾薇兒** —— 蕾娜帶安雅、索菈娜押後先撤。
+             ⚠⚠ 收尾插兩支旗，各管一件事（鐵律 9：一個狀態一個擁有事件）：
+               · `tomb_chase_on` ＝追逐開始（⑨ 那一塊要吃它）
+               · `tomb_split`    ＝**分組了**（搭檔只剩諾薇兒／蕾娜不在場 ⇒ 沒有評價）
+               ⚠ 不要合成一支：「追兵推進到哪裡」與「誰在你旁邊」是兩件事，
+                 日後會合了追逐也可能還沒結束。
+             ⚠ `tomb_chase_on` 由原本索菈娜那一句**移到這一段的最後一拍** ——
+               分組完才算真的開始跑。 */
+          { speaker:'PLAYER', blank:true },
+          ren('callangry','別鬧了！你一個人怎麼應付！'),
+          nou('steady','我跟他留下！蕾娜小姐帶安雅小姐先走！'),
+          any('desperate','不要！'),
+          ren('callangry','別這樣！大家一起走！'),
+          /* ⚠⚠ 稿上的「Execute 插圖」＝ `resources/ci/ci_torsten_execute.webp`
+             （`ASSETS.cutin_exc_torsten` 指的是同一張）。
+             ⚠ 寫**明確路徑**（含 `/`）：那條路不吃時段候選鏈、也不掛 `CG_DIR`
+               —— 這張圖住在 `resources/ci/`，不在 `illustration/`
+               （鐵律 7：一張圖一份，不複製過去）。 */
+          { speaker:'NARRATION', text:'', cg:'resources/ci/ci_torsten_execute.webp', auto:1600 },
+          { speaker:'PLAYER', blank:true },
+          /* ⚠ 稿上寫 `Renna_SI_shocked` —— 去時態之後她的鍵是 `shock`（ver -1554）。 */
+          ren('shock','！！'),
+          /* 回原背景。⚠ `cg:null` 也算轉場 ⇒ 會清一次場，而**這一拍自己的立繪**
+             在 `reveal()` 裡上台（跑在清場之後），所以蕾娜照樣站得出來。 */
+          Object.assign(ren('reach','不是……不是那樣！'), { cg:null }),
+          ren('reach','你不用證明什麼！你什麼都不用證明啊！'),
+          ren('reachcry','我……我是因為……！'),
+          nou('steady','索菈娜小姐，她們兩位就交給妳了。'),
+          sor('ready','……知道了。'),
+          /* ⚠⚠⚠ **兩支旗掛在這一拍，不掛在最後一拍** —— 最後那一拍是 `tierMin:3`，
+             **T2 以下的玩家永遠走不到**，旗就永遠不會插（同 -1565 教堂那個坑的另一面：
+             那次是條件判錯人，這次是把結果掛在只有一半玩家看得到的拍子上）。
+             ⚠ 這一拍是**無條件**的，而且語意正好：她們要走了。 */
+          Object.assign(sor('ready','一會見！'),
+                        { flags:['tomb_chase_on','tomb_split'] }),
+          /* ══ 好感分歧（諾薇兒）══
+             ⚠⚠ `tierWho` **一定要寫**：不寫＝看說話者自己，而 T3 那一條的第一拍是
+               **主角**（他不在好感表上）⇒ 整條永遠不成立（ver -1565 在教堂踩過的
+               同一個坑，`script_lint.py` 現在會擋）。
+             ⚠ 門檻不是等於：`tierMax:2`／`tierMin:3`，日後多一段 T4 不必回頭改。 */
+          nou('steady','我，一定會幫你把賽西莉學姐贏回來！', { tierMax:2, tierWho:'NOUVELLE' }),
+          { speaker:'PLAYER', blank:true, tierMin:3, tierWho:'NOUVELLE' },
+          nou('steady','嗯！',            { tierMin:3, tierWho:'NOUVELLE' }),
+          nou('steady','我們才不會輸！', { tierMin:3, tierWho:'NOUVELLE' }),
         ] } ] },
 
       /* ← 死胡同 E（一格） */

@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1570';
+export const VERSION = 'ver 2026.09.17-1571';
 
 export const GAME_CONFIG = {
 
@@ -931,9 +931,17 @@ export const GAME_CONFIG = {
            少了後者她會整個從池子裡消失。 */
     /* 圍城期間：強配索菈娜（排在安雅前面才贏得了）。 */
     { need:'sv_night_done', not:'safehouse_shinier', key:'sorana' },
-    { need:'np_anya_join', key:'anya' },
+    /* ══⚠⚠ **古墓分組之後只剩諾薇兒**（ver -1571，Ray：「夥伴只剩諾薇兒」）══
+       靠既有的 `not` 把另外兩位從池子裡拿掉 —— 池子空了就落到最底下的預設
+       （`storyPartner:'nouvelle'`），所以**不必**再加一條「強配諾薇兒」。
+       ⚠ 這是**池子**的事：`storyPartnerKey()` 會先看玩家在整備頁挑過誰，
+         但那一位若已經不在池子裡就不算（那一段的註解寫著）—— 所以分組之後
+         就算他之前選了安雅，戰鬥裡也會是諾薇兒。
+       ⚠⚠ `tomb_split` **沒有人拔** —— 她們會合的那一段還沒有稿（鐵律 9：
+         名字先留好，拔旗的事件由那一段自己認領）。 */
+    { need:'np_anya_join', not:'tomb_split', key:'anya' },
     /* 圍城打完：她照樣留在池子裡（自由選）。 */
-    { need:'sv_night_done', key:'sorana' },
+    { need:'sv_night_done', not:'tomb_split', key:'sorana' },
   ],
 
   /* ══════════════════════════════════════════════════════════════════════ *
