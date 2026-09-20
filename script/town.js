@@ -7465,9 +7465,10 @@ export const TOWNS = {
            ⚠ 這時隊上只剩諾薇兒（分組演完了）—— `need` 指的正是那一段的旗。 */
         { flag:'tomb_chase_offer', need:'tomb_gk1_split',
           chaseOnly:true, lines:[
+          /* ⚠ **戰後才講**（ver -1620，Ray 指定；同死纏濫打那一段）。 */
+          { battle:'tomb_gk1' },
           nou('desperate','我......我沒問題的！'),
           nou('desperate','請盡量使用我！'),
-          { battle:'tomb_gk1' },
         ] },
         /* ══⚠⚠⚠ **小隊分組 —— 這一段只在柱廳演**（ver -1607，Ray：「什麼跟什麼啊
            沒完沒了。**然後這一段劇情就結束了**…你又又又又又他媽的把踩到柱廳才觸發
