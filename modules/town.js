@@ -1819,6 +1819,33 @@ function chaseOnEncounter(){
      `n.noWild` 一個）—— 三個安全點與墓門都是 `noWild`，所以「安全點是安全的」
      不必另外列一張名單。牠照樣站得上去，只是踩到不開打。
    ⚠ 沒有台詞：Ray 只給了「追上就打」。要加台詞就在資料上長一格，不要寫進這裡。 */
+/* 照 `{at,flag}` 指名那一格的**那一段**（ver -1606；-1608 抽成共用）。
+   ⚠ 前置旗／章節門照舊要過；已經演過（flag 插了）就回 null。 */
+function namedAct(ref){
+  if(!ref || !ref.at || !ref.flag) return null;
+  const src=((TOWNS[townId]||{}).nodes||{})[ref.at];
+  const a=(src && (src.acts||[]).find(x=>x && x.flag===ref.flag)) || null;
+  if(!a || prog.hasFlag(a.flag)) return null;
+  if(a.need && !prog.hasFlag(a.need)) return null;
+  if(a.fromStage!=null && prog.getStage() < a.fromStage) return null;
+  return a;
+}
+/* ══⚠⚠⚠ **登場戲之後的「下一格」**（ver -1608，Ray：「一直以來都是下一格，
+   誰、什麼時候跟你說綁在那裡的？」）══════════════════════════════════════════
+   背安雅那一段（`tomb_carry`）稿上寫的是「**下一個房間**」，而 ver -1526 把它
+   讀成一個**節點 id**（`nichehall`）釘死在那一格上 —— 沒有人這樣要求過。
+   追兵現在可能在任何一格登場，釘死的那一格多半根本不順路 ⇒ 那一段看不到。
+   ⇒ `chase.next:{at,flag}` ＝「登場戲之後，**換一格就演**」。
+   ⚠ 判「換了一格」＝ `nodeId !== c.node`（牠被擊退後停在登場的那一格，
+     所以那一格就是「上一格」）。
+   ⚠ 那一段的台詞**留在原本那個節點的 `acts` 裡**（好找），這裡只是指名它 ——
+     所以走到那一格照樣演得到，兩條路共用同一個 `flag`，只會演一次。 */
+function chaseNextAct(n){
+  const spec=chaseSpec(); if(!spec || !spec.next || !n) return null;
+  const c=chaseGet(); if(!c || (c.hits|0)<1) return null;      // 還沒登場過
+  if(c.node && c.node===nodeId) return null;                   // 還在登場的那一格
+  return namedAct(spec.next);
+}
 function chaseActDue(n){
   const spec=chaseSpec(); if(!spec || !n) return null;
   if(n.noWild) return null;
@@ -1838,11 +1865,8 @@ function chaseActDue(n){
        下一段 ⇒ **話講一半就沒了、守墓者也沒出來**（Ray 回報）。
        ⇒ 現在照 `flag` 指名那一段，挑錯的可能性歸零。
        ⚠ 前置旗／章節門照舊要過（沿用 `actDue` 的規約，只是限定在那一段上）。 */
-    const io = spec.intro, src = ((TOWNS[townId]||{}).nodes||{})[io && io.at];
-    const want = (src && (src.acts||[]).find(x => x && x.flag === (io && io.flag))) || null;
-    if(want && !prog.hasFlag(want.flag)
-       && (!want.need || prog.hasFlag(want.need))
-       && (want.fromStage == null || prog.getStage() >= want.fromStage)) return want;
+    const w = namedAct(spec.intro);
+    if(w) return w;
   }
   const list=spec.battles||[];
   if(!list.length) return null;
@@ -4158,7 +4182,7 @@ export function enter(id){
        ⚠ 它**不吃 `immediate`**（與雜怪不同）：雜怪那一支第二趟不擲是怕「打完又冒
          一隻」，而追兵**沒有擲骰子** —— 牠站在那裡就是站在那裡。真的不想連打兩場
          的話，牠打完會停 `stun`（`chaseAfterAct`），下一趟自然沒事。 */
-    act = dragonActDue(n) || dragonTalkDue() || chaseActDue(n)
+    act = dragonActDue(n) || dragonTalkDue() || chaseActDue(n) || chaseNextAct(n)
         || (immediate ? null : wildRoll(n))
         || dateCurfewAct(n) || dateByeAct(n) || actDue(n) || restActDue(n);
     /* ══⚠⚠⚠ **安全點：先結算，再演劇情 —— 這是全域規則**（ver -1574，Ray：

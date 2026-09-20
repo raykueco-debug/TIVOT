@@ -6984,6 +6984,10 @@ export const TOWNS = {
          ⚠ 兩邊共用同一個 `flag` ⇒ 只演一次：先走到柱廳就在柱廳演、
            先被追上就在當場演。 */
       intro: { at:'hall2', flag:'tomb_gk1_done' },   // ⚠ 指名**那一段**（不是那一格）
+      /* 登場戲之後**換一格就演**（ver -1608）：索菈娜背安雅那一段。
+         ⚠ 稿上寫的是「下一個房間」—— ver -1526 把它讀成節點 id 釘在納骨龕廊上，
+           那是誤讀。台詞仍然住在那一格的 `acts` 裡（好找），這裡只是指名它。 */
+      next:  { at:'nichehall', flag:'tomb_carry' },
       resetAt: 'hall2',           // 柱廳：必觸戰鬥，戰後牠在這裡
       idleAt: ['gate'],           // 墓門：不推進
       /* ⚠ `wildRate` 已移除（ver -1596）：遇敵率的唯一真相是城上的 `wildSpawn.rate`。 */
