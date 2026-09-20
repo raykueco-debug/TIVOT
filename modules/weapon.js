@@ -5,7 +5,7 @@
  *    · 雙槍（普攻／主武器）＝ combat.tap 的正確點擊本身（基本盤面）。正確點擊累積「破防值」
  *      （state.energy / #energyClasp 計量表）。
  *    · 雙槍破防（獎勵射擊窗口）＝ 破防值滿後點計量表發動 → activateDual → 4 秒 dualWield
- *      快速清盤（hitDamage()×dmgDualMult，不吃暴擊／atkBuff）。
+ *      快速清盤（hitDamage()×dmgDualMult，不吃暴擊／atkBuff；-1595 起 ×1.0＝同普攻）。
  *      ⚠ dualWield 這段是「破防射擊窗口」，不是另一把武器；主武器目前只有此一形態。
  *    · 反擊武器（副武器：mg / shotgun / sniper）＝ 三段防禦 Counter/Perfect 的反擊演算
  *      （weaponCounter），與雙槍破防各自獨立。換裝面板選的「副武器」即此。
@@ -666,11 +666,15 @@ export function startDualWindow(){
      · 盤面**照舊玻璃化**（`.dualwield` 那整套裂紋底圖不動），但**點不動**
        —— 擋在 `combat.tap` 的分支（唯一那一處）＋ CSS 的 `pointer-events`。
      · 開火改成點**敵人立繪**：`main.js` 的手勢層 → `combat.dualShot()`。
-     · 可以點幾下 ＝ 發動當下**還沒點掉的格數 × `dualTapsPerCell`**（現行 2）。
+     · 可以點幾下 ＝ 發動當下**還沒點掉的格數 × `dualTapsPerCell`**
+       —— **ver -1595 起是 1**（Ray：「BR 的次數改成跟殘格一致」）⇒ 一格一發。
      ⚠ 在這裡算一次就存起來（鐵律 7）：窗口期間盤面不會變，逐發去數格子只會
        讓「還剩幾發」有兩個答案。 */
   const left = state.cells.filter(c=>!c.classList.contains('done')).length;
-  state.dualShotsLeft = Math.max(1, left * ((GAME_CONFIG.tuning||{}).dualTapsPerCell || 2));
+  /* ⚠ 退路跟著 config 的現值走（1）——寫 2 的話，哪天那一格被拿掉就會
+     悄悄變成「兩倍次數」，而畫面上看不出來（鐵律 7）。 */
+  { const per=(GAME_CONFIG.tuning||{}).dualTapsPerCell;
+    state.dualShotsLeft = Math.max(1, left * (per!=null ? per : 1)); }
   $('grid').classList.add('dualwield');
   clearAim(); fillAim();          // ver -1330：瞄準點一次放滿（最多 brAimMax 個）
   /* ⚠ **不要 `markNext()`**：那是「下一格點這裡」的游標，而這一段盤面根本不能點
