@@ -7387,6 +7387,15 @@ export const TOWNS = {
              · 先被追上（在別的格子看到登場戲）→ 之後走到柱廳才演這一段
              · 直接走到柱廳 → 氣氛戲 → 登場戲 → 這一段，三段接續一次演完 */
         { flag:'tomb_gk1_split', need:'tomb_gk1_done', sides:{ RENNA:'L' }, lines:[
+          /* ══⚠⚠ **柱廳這一段開演之前，先降臨第二階段的守墓者**（ver -1612，Ray 指定）══
+             ⚠ 第二階段＝`tomb_gk2`（`gk_offset`，hp 490／B 防禦型）——
+               牠與第一階段**同名**（守墓者），玩家讀到的是「同一隻又站起來了」。
+             ⚠ 兩拍前置照既有的寫法（震動＋龍吟＋再震一下），
+               `gk_*` 四張卡自己就帶 `entrance:'se_enemy_roardeer'`＋`entranceBlast`
+               （`kind:'multi'` 不走降臨演出，所以那兩格要卡上自己宣告）。 */
+          { speaker:'NARRATION', text:'', shake:true, auto:1000 },
+          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
+          { battle:'tomb_gk2' },
           /* ══⚠⚠⚠ **小隊分組**（ver -1571，Ray 交稿）══════════════════════════════
              這一段結束時**隊上只剩諾薇兒** —— 蕾娜帶安雅、索菈娜押後先撤。
              ⚠⚠ 收尾插兩支旗，各管一件事（鐵律 9：一個狀態一個擁有事件）：
