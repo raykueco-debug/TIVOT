@@ -1903,7 +1903,25 @@ function chaseAfterAct(act, fought){
 }
 /* 牠現在在哪一格（除錯／日後要畫小地圖紅點時問這一支，鐵律 7）。 */
 export function chaseAt(){ const c=chaseGet(); return (c && c.node) || null; }
-export function chaseDebug(){ return { spec:chaseSpec(), now:chaseGet() }; }
+export function chaseDebug(){
+  const spec=chaseSpec(), c=chaseGet();
+  const why = ref => { if(!ref) return '（沒設定）';
+    const src=((TOWNS[townId]||{}).nodes||{})[ref.at];
+    const a=(src && (src.acts||[]).find(x=>x && x.flag===ref.flag))||null;
+    if(!a) return '找不到那一段（'+ref.at+'/'+ref.flag+'）';
+    if(prog.hasFlag(a.flag)) return '★已經演過了（旗 '+a.flag+' 插著）⇒ 不會重演';
+    if(a.need && !prog.hasFlag(a.need)) return '等前置旗 '+a.need;
+    if(a.fromStage!=null && prog.getStage()<a.fromStage) return '等 stage '+a.fromStage;
+    return '還沒演，條件已到 ✔'; };
+  return {
+    現在: c || '（還沒上線）',
+    上線條件: spec ? ('打過 '+spec.startFights+' 場'+((spec.startStep|0)>0?('，或踩到第 '+spec.startStep+' 格'):'')) : '（這張圖沒有追逐）',
+    已打場數: c ? (c.fights|0) : 0,
+    登場戲: spec ? why(spec.intro) : '—',
+    下一格那一段: spec ? why(spec.next) : '—',
+    參數: spec || null,
+  };
+}
 /* 雜怪那一支的**外衣**（ver -1577）：取到東西＝玩家停下來打了一場 ⇒ 追兵再推進
    `onEncounter` 格。⚠ 包一層而不是散在 `wildActDue` 的每一個 `return`
    （那一支有六個出口，漏一個就是「有時候不推進」而且查不出來，鐵律 8）。 */
