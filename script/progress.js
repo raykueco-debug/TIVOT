@@ -84,6 +84,19 @@ const K = {
      ⚠⚠ **這是「一輪內」的東西**（§6.9）：`newRun()` 要清、`runSnapshot/runRestore`
        要帶 —— 同一張清單的兩面。Ray：「這些都要跟存檔」。 */
   stats:     'tivot_stats_v1',
+  /* ══⚠⚠⚠ **追兵的狀態**（ver -1577；規格 ver -1576，資料在 `TOWNS[].chase`）══
+     `{ town, node, stun, steps, fights, hits }` —— 追逐中那一隻站在哪、還停幾回合、
+     這一趟走了幾格／打了幾場／被追上過幾次。
+     ⚠⚠ **一輪內**（§6.9）：`newRun()` 要清、`runSnapshot/runRestore` 要帶 ——
+       同一張清單的兩面。**它非帶不可**：古墓的安全點就是存檔點（`rest:true` →
+       `autoSave`），不帶的話玩家在安全點存一次再讀回來，追兵就消失了 ——
+       「安全點不重置追兵位置」（Ray 明講）當場作廢，而且畫面上沒有任何錯誤訊息。
+     ⚠⚠ **`town` 那一格是身分證**：追兵屬於那一張圖，換圖就不算數
+       —— 少了它，古墓的追兵會跟著玩家飛到別的地圖上（而 `node` 在那張圖裡
+       多半查無此格 ⇒ 靜靜壞掉，不會報錯）。
+     ⚠ 這與貝利薩爾那條龍**不同類**：龍那一段從頭到尾沒有存檔點，所以它刻意
+       只活在記憶體裡（`modules/town.js` 的 `dragonNode`，`open()` 歸零）。 */
+  chase:     'tivot_chase_v1',
   /* 副武器的改裝等級（ver -714）：`{武器id: 階}`，0~卡上的 `maxMod`。一輪內。 */
   wmod:      'tivot_wmod_v1',
   /* ══ 吃過的料理（ver -953，Ray：「HP 上限＋40 是一輪內」）══ 陣列，元素＝
@@ -1467,7 +1480,8 @@ export function newRun(){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
                   K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime,
                   K.charms, K.gunLv, K.gunStars, K.wmod, K.jmod, K.dishes,
-                  K.girlExp, K.girlStars, K.girlNiem, K.stats]) {   // stats＝戰績統計（ver -1023，一輪內）   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造／吃過的料理／女主等級（-970）
+                  K.girlExp, K.girlStars, K.girlNiem, K.stats,
+                  K.chase]) {                                   // chase＝追兵狀態（ver -1577，一輪內）   // stats＝戰績統計（ver -1023，一輪內）   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造／吃過的料理／女主等級（-970）
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* ⚠⚠ 從頭開始＝**S0 要寫進鑰匙**（ver -563）。清掉 stage 之後不寫回的話，
@@ -1542,7 +1556,8 @@ export function snapshot(){
            girlExpRaw:rawJ(K.girlExp),      // 女主的九級（ver -970，一輪內）
            girlStarsRaw:rawJ(K.girlStars),  // 女主已點亮的星（ver -1132，一輪內）
            girlNiemRaw:rawJ(K.girlNiem),    // 女主的 NIEM 等級（ver -1186，一輪內）
-           statsRaw:rawJ(K.stats) };        // 戰績統計（ver -1023，一輪內）
+           statsRaw:rawJ(K.stats),          // 戰績統計（ver -1023，一輪內）
+           chaseRaw:rawJ(K.chase) };        // 追兵狀態（ver -1577，一輪內）
 }
 export function restore(s){
   if(!s) return;
@@ -1585,6 +1600,9 @@ export function restore(s){
   putRaw(K.girlNiem, ('girlNiemRaw' in s)?s.girlNiemRaw :null, true);
   /* 戰績統計（ver -1023）：同上，舊存檔沒有這一欄 → 原樣移除。 */
   putRaw(K.stats,    ('statsRaw'    in s)?s.statsRaw   :null, true);
+  /* 追兵狀態（ver -1577）：舊存檔沒有這一欄 → **原樣移除**（讀一個「還沒被追」的
+     檔不該帶著這一輪的追兵，§6.9 的兩面）。 */
+  putRaw(K.chase,    ('chaseRaw'    in s)?s.chaseRaw   :null, true);
 }
 
 /* ══⚠⚠⚠ **戰績統計**（ver -1023，Ray 交辦）══════════════════════════════════
@@ -1592,6 +1610,21 @@ export function restore(s){
    `addKillStat()` 記一場。呼叫端不要自己碰那把鑰匙。
    ⚠ 「局」與「場」的定義照 §0.5：局＝一次結算、場＝一隻怪。
    ⚠ 分數存**原始分**；索菈娜的「反著算」在顯示端做（見 `settings` 的統計表）。 */
+/* ══⚠⚠⚠ **追兵的狀態 —— 讀寫只有這兩支**（ver -1577，鐵律 7）══════════════
+   判定與推進全部在 `modules/town.js`（唯一的實作，鐵律 8）；這裡只負責
+   「讓它活過存讀檔」。呼叫端不要自己碰 `tivot_chase_v1`。
+   ⚠ `getChase(town)` 帶著圖的 id 問 —— **不是這張圖的就回 null**（那一格是身分證，
+     見 `K.chase` 的說明）。要整個清掉就 `setChase(null)`。 */
+export function getChase(town){
+  const o = rawJ(K.chase);
+  if(!o || typeof o!=='object') return null;
+  if(town && o.town !== town) return null;
+  return o;
+}
+export function setChase(o){
+  if(!o){ try{ localStorage.removeItem(K.chase); }catch(e){} return; }
+  wr(K.chase, JSON.stringify(o));
+}
 const STATS0 = () => ({ sessions:0, kills:0, byGirl:{} });
 export function getStats(){
   const o = rawJ(K.stats);

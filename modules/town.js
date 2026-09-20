@@ -1619,6 +1619,187 @@ function dragonActDue(n){
   /* 前四場是寫好的稿；之後（Ray 的「超過 5 場」）用沒有旗的那一段，可以重複。 */
   return (w<DRAGON_LINES.chase.length) ? DRAGON_LINES.chase[w] : DRAGON_LINES.chaseMore;
 }
+/* ══════════════════════════════════════════════════════════════════════════
+   追兵（ver -1577）—— 伊甸古墓那一套「你走一格，牠走兩格」
+   ──────────────────────────────────────────────────────────────────────────
+   **參數全部在資料上**（`TOWNS[].chase`，鐵律 1）：這裡一個數字都不寫。
+   規格（Ray 逐項定案，ver -1574~-1576）與逐項算出來的場數在 `HANDOFF.md`。
+
+   **狀態住在 `progress`**（`tivot_chase_v1`，一輪內）不是這支模組的變數 ——
+   古墓的安全點就是存檔點（`rest:true` → `autoSave`），存在記憶體裡的話，
+   在安全點存一次再讀回來追兵就不見了（§6.9 的兩面）。
+   ⚠⚠ **這一點正是它與貝利薩爾那條龍的分野**：龍那一段從頭到尾沒有存檔點，
+     所以它刻意只活在記憶體（`dragonNode`，`open()` 歸零）。**不要拿其中一套
+     去套另一套** —— 兩者的持久性需求相反。
+
+   **五個時刻，各有各的擁有者**（鐵律 9：一個狀態一個擁有事件）：
+     · 站上入口（`open()` 落在 `entry`）      → 整組清掉（＝「從墓門進入」重算）
+     · 玩家走一格（`go()`）                   → 步數 +1、牠推進 `speed` 格
+     · 遭遇雜怪（`wildActDue` 取到東西）      → 牠**再**推進 `onEncounter` 格
+     · 抵達時踩到牠（`chaseActDue`）          → 追擊戰
+     · 段落演完（`enter()` 的收尾）           → 場數 +1／`resetAt` 歸位／打贏後停 `stun`
+
+   ⚠⚠⚠ **牠與雜怪競合 ⇒ 牠優先**（Ray 明講）—— 落地就是 `runArrival` 那一串的
+     排序：`chaseActDue` 排在 `wildActDue` 前面。
+   ⚠⚠ **安全點不重置牠的位置**（Ray 明講）：這裡**沒有**任何一支在 `rest` 那一格
+     動它 —— 安全點只結算＋回血。回頭走的話牠可能已經很近了，那正是壓力來源。
+     **不要「順手補上」** 一個 `resetAtRest`。
+   ⚠⚠ **打輸就是既有的那一頁**（`聖光黯滅`，ver -1577 Ray：「不用，就是聖光黯滅
+     那一套」）—— **不新增 lose kind**。古墓沒有旅店、這幾場又是插入戰，
+     `setLoseKind` 現行的分流本來就會給 `rollback`（繼續＝回檔／放棄＝主畫面）。
+   ⚠ **雜兵那一半還沒接**（`chase.wildRate`／`firstWildAt` 還沒有人讀）：
+     古墓 28 隻的卡還沒到（`resources/enemy/_tomb_mon_spec.md`），而且那兩個數字
+     與 `wildSpawn.rate` 是同一件事的兩個真相 —— 卡到齊時要先決定留哪一份（鐵律 7）。
+   ══════════════════════════════════════════════════════════════════════════ */
+function chaseSpec(){ return (TOWNS[townId]||{}).chase || null; }
+/* 現在那一筆（`null`＝還沒上線／不是這張圖）。⚠ 每次現讀，不快取：
+   讀檔會把鑰匙整個換掉，快取一份就會拿著上一個檔的追兵（鐵律 7）。 */
+function chaseGet(){ return chaseSpec() ? prog.getChase(townId) : null; }
+function chaseSet(o){ prog.setChase(o); }
+function chaseNew(){ return { town:townId, node:null, stun:0, steps:0, fights:0, hits:0 }; }
+/* 這一格玩家站著時牠不推進（`idleAt`，墓門）。
+   ⚠ **是「玩家在哪」不是「牠在哪」**：Ray 的原話是「墓門不是安全區但是也不出怪
+     也不會追」—— 那一格是「還沒開始」的緩衝。 */
+function chaseIdle(id){ const c=chaseSpec(); return !!(c && (c.idleAt||[]).indexOf(id)>=0); }
+/* ══⚠⚠⚠ **追兵走的是「無向」的圖**（ver -1577）══════════════════════════════
+   ⚠⚠ 與 `nodeNeighbors` 是**兩個不同的問題**，所以刻意是兩支（不是同一件事寫兩遍）：
+     · `nodeNeighbors(id)` ＝「這一格**宣告**得出去的方向」（**有向**，不含 `back`）。
+       龍用它 —— 而且 `dragonCanStop` 的「三岔以上才停得住」是**綁在那個度數上**的，
+       改成無向等於把貝利薩爾那一整套調好的行為換掉。**不要合併。**
+     · `mapLinks(id)`      ＝「這一格**通到**哪幾格」。回頭路也是路。
+   ⚠⚠⚠ **不這樣做的下場（實測，ver -1577 當場踩到）**：古墓有兩條邊只寫了 `back:`
+     （墓門↔前庭、第一道階梯↔二層梯廳）—— 在有向圖裡那兩條**只能往前不能往後**，
+     於是整棵樹變成「從入口單向往外」，`stepToward(任何一格,'gate')` 一律回 null
+     ⇒ **追兵永遠放不出來**（`chaseSpawn` 每一步都失敗），而畫面上沒有任何錯誤訊息：
+     玩家從頭走到尾什麼事都不會發生。走模擬才看得出來。
+   ⚠ 拓樸是常數 ⇒ 逐圖算一次就快取；`open()` 換圖時清掉（`chaseGraph=null`）。 */
+let chaseGraph = null;
+function mapLinks(id){
+  if(!chaseGraph){
+    const T=TOWNS[townId]||{}, N=T.nodes||{}, g={};
+    const add=(a,b)=>{ if(!N[a]||!N[b]||a===b) return;
+                       (g[a]=g[a]||[]).indexOf(b)<0 && g[a].push(b); };
+    for(const a in N){
+      const ex=N[a].exits||{};
+      for(const d in ex){
+        const t=ex[d];
+        /* ⚠ `back` **也算**（與 `nodeNeighbors` 唯一的差別）：它是一條真的路，
+           玩家就是走它回去的。 */
+        if(typeof t!=='string' || t[0]==='@') continue;
+        add(a,t); add(t,a);                      // 無向：兩個方向都接
+      }
+    }
+    chaseGraph=g;
+  }
+  return chaseGraph[id]||[];
+}
+/* 朝 `goal` 的下一步（最短路，BFS）。⚠ 與 `stepToward` 是同一個演算法、**不同的圖**
+   —— 那一支是龍的（有向），這一支是追兵的（無向），見上面那一段。 */
+function chaseToward(from, goal){
+  if(from===goal) return null;
+  const seen={ [from]:true }, q=[[from,null]];
+  while(q.length){
+    const [cur, first]=q.shift();
+    for(const to of mapLinks(cur)){
+      if(seen[to]) continue;
+      seen[to]=true;
+      const f = first || to;
+      if(to===goal) return f;
+      q.push([to, f]);
+    }
+  }
+  return null;
+}
+/* 從 `from` 朝 `goal` 走 `n` 步停在哪（走不到就停在盡頭）。 */
+function chaseWalk(from, goal, n){
+  let cur=from;
+  for(let i=0;i<n && cur!==goal;i++){ const nx=chaseToward(cur, goal); if(!nx) break; cur=nx; }
+  return cur;
+}
+/* ══ 上線：牠出現在**玩家與入口之間**、落後 `gap` 格 ══
+   ⚠ 朝入口那一側放（`entryNodeId`）＝牠是從墓門那邊追上來的。玩家離入口不到
+     `gap` 格時就停在入口 —— 那時距離比設計值短，而那是玩家自己還在門口附近。 */
+function chaseSpawn(c, spec, at){
+  c.node = chaseWalk(at, entryNodeId, spec.gap|0);
+  if(c.node===at) c.node=null;      // 無處可放（只有一格）：下一步再說
+}
+/* ══ 玩家動了一格：步數 +1 → 該上線就上線 → 牠推進 `speed` 格 ══
+   `to` ＝玩家**剛走到**的那一格（不是原本站的那一格）。
+   ⚠⚠ 掛在 `go()`（移動的那一刻）**不是** `enter()`：抵達那一支還要判「有沒有踩到牠」，
+     而且 `enter()` 讀檔／強制轉場／戰鬥交棒回來都會跑 —— 那幾種不是「玩家走了一格」。 */
+function chaseStep(to){
+  const spec=chaseSpec(); if(!spec) return;
+  if(chaseIdle(to)) return;                       // 墓門：這一步整個不算
+  const c = chaseGet() || chaseNew();
+  c.steps=(c.steps|0)+1;
+  if(!c.node && chaseDue(c, spec)) chaseSpawn(c, spec, to);
+  chaseAdvance(c, spec, to, spec.speed|0);
+  chaseSet(c);
+}
+/* 上線的條件：踩到第 `startStep` 格**或**打過 `startFights` 場，先到者（Ray）。 */
+function chaseDue(c, spec){
+  return (c.steps|0) >= (spec.startStep|0) || (c.fights|0) >= (spec.startFights|0);
+}
+/* 推進 n 格（停頓中就只扣一回合）。⚠ 只有它會動 `c.node`／`c.stun`（鐵律 7）。 */
+function chaseAdvance(c, spec, goal, n){
+  if(!c.node) return;
+  if((c.stun|0) > 0){ c.stun=(c.stun|0)-1; return; }   // 停頓：這一回合不動
+  c.node = chaseWalk(c.node, goal, n);
+}
+/* ══ 遭遇雜怪：牠**再**推進 `onEncounter` 格（玩家停下來打了一場）══ */
+function chaseOnEncounter(){
+  const spec=chaseSpec(); if(!spec) return;
+  const c=chaseGet(); if(!c || !c.node) return;
+  chaseAdvance(c, spec, nodeId, spec.onEncounter|0);
+  chaseSet(c);
+}
+/* ══ 抵達：踩到牠了嗎 ══
+   ⚠⚠ **不出怪的格子也打不起追擊戰**（同 `dragonActDue` 的第一行，鐵律 7：判準只有
+     `n.noWild` 一個）—— 三個安全點與墓門都是 `noWild`，所以「安全點是安全的」
+     不必另外列一張名單。牠照樣站得上去，只是踩到不開打。
+   ⚠ 沒有台詞：Ray 只給了「追上就打」。要加台詞就在資料上長一格，不要寫進這裡。 */
+function chaseActDue(n){
+  const spec=chaseSpec(); if(!spec || !n) return null;
+  if(n.noWild) return null;
+  const c=chaseGet(); if(!c || !c.node || c.node!==nodeId) return null;
+  const list=spec.battles||[];
+  if(!list.length) return null;
+  const id=list[(c.hits|0) % list.length];
+  /* ⚠ 標記在物件上（`__chase`）：段落演完那一支要認得出「這是一場追擊戰」
+     才會停 `stun`。**白名單而不是排除法**（鐵律 13 與 -1446 龍那一課：
+     排除法漏寫會亂動，白名單漏寫只是少動一次）。 */
+  return { __chase:true, lines:[ { battle:id } ] };
+}
+/* ══ 段落演完（`enter()` 的收尾）══ 三件事，順序不可換：
+     ① 這一趟打過幾場（`startFights` 的門檻）
+     ② `resetAt` 那一格的必觸戰鬥 → 牠的位置設成那一格（Ray：「從柱廳戰後從柱廳開始停」）
+     ③ 追擊戰打贏 → 停 `stun` 回合
+   `act` ＝剛演完的那一段；`fought` ＝這一段裡真的有戰鬥拍。 */
+function chaseAfterAct(act, fought){
+  const spec=chaseSpec(); if(!spec) return;
+  if(!fought) return;                             // 純對白不算一場
+  const c = chaseGet() || chaseNew();
+  c.fights=(c.fights|0)+1;
+  if(nodeId === spec.resetAt && act && act.flag){
+    /* ══ `resetAt`（柱廳）：那一格的**必觸戰鬥**打完，牠的位置設成這一格再停 `stun`
+       （Ray：「從柱廳戰後從柱廳開始停 然後追」）══
+       ⚠⚠ 條件帶 `act.flag` ＝**只有主線那一段**算數（雜怪與追擊戰都沒有 `flag`）。
+         不帶的話，日後走回柱廳隨便打一場雜怪就能把牠叫回柱廳再停四回合 ——
+         那是一顆免費的重置鈕，而且看起來與正常行為一模一樣。
+       ⚠ 連「還沒上線」也算數：打過那一場就等於追逐真的開始了。 */
+    c.node = nodeId; c.stun = spec.stun|0;
+  }else if(act && act.__chase){
+    c.hits=(c.hits|0)+1; c.stun = spec.stun|0;    // 擊退：牠停在原地（＝玩家腳下）
+  }
+  chaseSet(c);
+}
+/* 牠現在在哪一格（除錯／日後要畫小地圖紅點時問這一支，鐵律 7）。 */
+export function chaseAt(){ const c=chaseGet(); return (c && c.node) || null; }
+export function chaseDebug(){ return { spec:chaseSpec(), now:chaseGet() }; }
+/* 雜怪那一支的**外衣**（ver -1577）：取到東西＝玩家停下來打了一場 ⇒ 追兵再推進
+   `onEncounter` 格。⚠ 包一層而不是散在 `wildActDue` 的每一個 `return`
+   （那一支有六個出口，漏一個就是「有時候不推進」而且查不出來，鐵律 8）。 */
+function wildRoll(n){ const a=wildActDue(n); if(a) chaseOnEncounter(); return a; }
 function wildActDue(n){
   const T0=TOWNS[townId]||{};
   const W=T0.wildSpawn; if(!W || !n) return null;
@@ -3483,6 +3664,15 @@ function go(to, dir){
          （Ray 指定）—— 見那個常數的說明。 */
     dragonRollHit = (Math.random() < exploreRate() * DRAGON_ROLL_K);
   }
+  /* ══ 追兵（ver -1577）：玩家走一格，牠推進 `speed` 格 ══
+     ⚠ 目標是 `to`（**剛走到**的那一格）不是原本站的那一格 —— 牠追的是你現在的位置。
+     ⚠⚠ 掛在這裡（移動的那一刻）與上面那條龍同一個理由：`enter()` 那一支還要判
+       「有沒有踩到牠」，先讓牠走掉的話玩家永遠追不上；而且讀檔／強制轉場／
+       戰鬥交棒回來都會跑 `enter()`，那幾種不是「玩家走了一格」。
+     ⚠⚠ 跨圖那一條（`@`）**刻意不叫**：那是離開這張圖，追兵不跟出去
+       （身分證是 `chase.town`，見 `progress.js` 的 `K.chase`）。
+     ⚠ 與龍是**兩套**（持久性需求相反，見 `chaseStep` 上面那一段）—— 不要合併。 */
+  chaseStep(to);
   bumpGateMoves();   // 閘門的 afterMoves 計數（ver -953）：走一步就 +1
   sceneCut(to);          // 換景走淡入淡出（ver -438，見 sceneCut）
 }
@@ -3812,7 +4002,12 @@ export function enter(id){
   let act;
   if(napPending){ napPending=false; act = actDue(n, true); }
   else{
-    act = dragonActDue(n) || dragonTalkDue() || (immediate ? null : wildActDue(n))
+    /* ⚠⚠ **追兵與雜怪競合 ⇒ 追兵優先**（ver -1577，Ray 明講）—— 落地就是這個排序。
+       ⚠ 它**不吃 `immediate`**（與雜怪不同）：雜怪那一支第二趟不擲是怕「打完又冒
+         一隻」，而追兵**沒有擲骰子** —— 牠站在那裡就是站在那裡。真的不想連打兩場
+         的話，牠打完會停 `stun`（`chaseAfterAct`），下一趟自然沒事。 */
+    act = dragonActDue(n) || dragonTalkDue() || chaseActDue(n)
+        || (immediate ? null : wildRoll(n))
         || dateCurfewAct(n) || dateByeAct(n) || actDue(n) || restActDue(n);
     /* ══⚠⚠⚠ **安全點：先結算，再演劇情 —— 這是全域規則**（ver -1574，Ray：
        「安全點處如果有劇情 先跑結算再跑劇情 **這是全域規則**」）══
@@ -3920,6 +4115,13 @@ export function enter(id){
             if(dragonJustPlaced) dragonJustPlaced=false;
             else dragonFleeStep(backDir ? OPPOSITE[backDir] : null);
           }
+          /* ══ 追兵（ver -1577）：這一段演完了 ══ 場數／`resetAt` 歸位／擊退後停頓，
+             三件都在 `chaseAfterAct` 一支裡（鐵律 8）。
+             ⚠ 「這一段算不算一場」問 `actHasBattle`（＝資料上真的有戰鬥拍）——
+               與 -1446 龍那一課同一個道理：用排除法的話，休息處的結算、
+               純對白的段落都會被算成一場，而那不會有任何錯誤訊息。
+             ⚠ 排在 `goto` **之前**：歸位看的是「打完的那一刻人在哪一格」。 */
+          chaseAfterAct(act, actHasBattle(act));
           /* 段落自己的章節（ver -742，Ray：「北泊出航插 stage5，插在眾人給諾薇兒
              送行那一段」）—— 與閘門的 `stage` 同一個語意（clockGate 也是直接 set）；
              重播由 `flag` 擋著，不會倒退（讀檔在更後面的章節時 flag 早就立了）。 */
@@ -4566,6 +4768,18 @@ export function open(town, node, opts){
   entryNodeId = (fe && fe.node && T.nodes[fe.node] && !(fe.until && prog.hasFlag(fe.until)))
               ? fe.node : T.entry;
   const start = (node && T.nodes[node]) ? node : entryNodeId;
+  /* ══⚠⚠⚠ **追兵只在「站上入口」那一刻歸零**（ver -1577）══ 與上面那條龍相反，
+     它**不是**「進圖就重置」：古墓的安全點就是存檔點（`rest:true` → `autoSave`），
+     而讀檔會走 `open()` —— 無條件歸零的話，玩家在安全點存一次再讀回來追兵就不見了，
+     安全點當場變成無限重置鈕（而且畫面上沒有任何錯誤訊息）。
+   ⚠ 判準是「這一趟落在**資料上的入口**」＝ Ray 的「**從墓門進入**」字面。
+     問 `entryNodeId`（唯一那一支，它吃得到 `firstEntry`／`until`，鐵律 7）——
+     不要自己讀 `T.entry`。落在中間任何一格（讀檔、跳關、戰鬥交棒回來）
+     一律**不動**，帶著原本那一筆。
+   ⚠ 走回墓門**不歸零**（那是 `idleAt`：只是不推進，牠還在）——「墓門不是安全區
+     但是也不出怪也不會追」（Ray），兩件事分得很清楚。 */
+  chaseGraph=null;            // 換圖＝換拓樸（追兵那張無向圖的快取，ver -1577）
+  if(T.chase && start===entryNodeId) prog.setChase(null);
   pickEnds(start);            // 這一趟的起點與終點（ver -1026，見 pickEnds）
   armMapCard();               // 這一趟要不要報圖名（ver -879）——在 enter 之前決定
   enter(start);
