@@ -2118,7 +2118,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1546';
+const KERB_V='?v=1547';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3151,8 +3151,16 @@ function renderLine(){
      仍有諾薇兒立繪殘留」）。走黑幕的那一拍 `reveal` 會等到畫面全亮才跑，於是她是
      **在觀眾眼前**滑出去的 —— 黑幕收起來時她還站著，然後才走。
      要撤的人在黑幕**蓋著的時候**就該撤乾淨。 */
+  /* ⚠⚠ `hide:'*'` ＝**把台上的人全撤**（ver -1547，Ray：「你說呢之後撤立繪，
+     再放一次 se walk」）。點名一個個寫也做得到，但那是一份**會過期的清單**
+     （鐵律 8）：那一拍台上站著誰是**演到那裡才知道**的，腳本寫死一定漏掉某個人，
+     而漏掉的下場是「那個人留在台上」——沒有任何錯誤訊息。
+     ⚠ 它走**同一支** `leaveSlot`（與具名的 hide、`clearCast` 同一個實作）；
+       不碰對話框與 `story-talking`，所以那一拍照樣可以有 `se`／`auto`。 */
   if(line.hide){
-    for(const id of [].concat(line.hide)){
+    const _ids = (line.hide==='*') ? ['L','R'].map(s3=>slot[s3]).filter(Boolean)
+                                   : [].concat(line.hide);
+    for(const id of _ids){
       const a3=artOf(id); if(!a3) continue;
       const s3=sideOf(id);
       if(slot[s3]===id) leaveSlot(s3);

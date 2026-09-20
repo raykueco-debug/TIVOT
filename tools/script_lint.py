@@ -380,9 +380,10 @@ def main():
                 elif p['expr'] not in (a.get('expr') or {}):
                     warn('%s：%s 沒有 %s 這張差分，會回退基本立繪' % (tag, who, p['expr']))
 
+            # ⚠ `hide:'*'` ＝把台上的人全撤（ver -1547）——它不是角色 id，跳過檢查。
             for h in ([] if ln.get('hide') is None else
                       (ln['hide'] if isinstance(ln['hide'], list) else [ln['hide']])):
-                if h not in speakers:
+                if h != '*' and h not in speakers:
                     err('%s：hide 指到不存在的角色 %s' % (tag, h))
 
             # `bgBand`（ver -1187）＝走時段候選鏈的換背景：驗的是**基底名**

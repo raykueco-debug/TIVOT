@@ -378,7 +378,17 @@ export const ART = {
                                   cm:139, standCm:165 },
                   thinking:     { src:'resources/SI/Nouvelle_SI_thinking.webp', top:3, bot:1535, fx:0.532 },
                   decoding:     { src:'resources/SI/Nouvelle_SI_decoding.webp', top:4, bot:1528, fx:0.579 },
-                  sadsmilenoeye:{ src:'resources/SI/Nouvelle_SI_sadsmilenoeye.webp', top:2, bot:1527, fx:0.556 },
+                  /* ══⚠⚠ ver -1547：美術**重交了 `sadsmilenoeye`（同名覆蓋）＋ 新增 `sadnoeye`**══
+                     兩張都是「低著頭、瀏海蓋住眼睛」，差別只在**嘴角**（笑／不笑）。
+                     ⚠⚠ 同名覆蓋一定要掛 **`?v=2`**（§5）：瀏覽器以 URL 為鍵，
+                       檔名沒變它照樣拿舊的那一份，而症狀只是「圖沒換」，查不出原因。
+                     ⚠ `top`/`bot`/`fx` **是新圖重量的**（`tools/measure_si.py`）——
+                       舊值 `2/1527/0.556`，新值 `3/1531/0.568`，沿用舊值臉會偏。
+                     ⚠⚠ **腳本現在一個都沒有在用 `sadsmilenoeye`**（ver -1547，Ray：
+                       「諾薇兒的 sadsmilenoeye 換成 sadsmile」—— 五處全換了）。
+                       接著留在這裡是因為**圖存在**：日後要「把臉藏起來」那一拍就用得上。 */
+                  sadsmilenoeye:{ src:'resources/SI/Nouvelle_SI_sadsmilenoeye.webp?v=2', top:3, bot:1531, fx:0.568 },
+                  sadnoeye: { src:'resources/SI/Nouvelle_SI_sadnoeye.webp',      top:2, bot:1528, fx:0.552 },
                   bigsmileclose:{ src:'resources/SI/Nouvelle_SI_bigsmileclose.webp', top:4, bot:1529, fx:0.568 },
                   dying:        { src:'resources/SI/Nouvelle_SI_dying.webp', top:4, bot:1524, fx:0.614 },
                   steady:   { src:'resources/SI/Nouvelle_SI_steady.webp',   top:8,  bot:1529, fx:0.534 },

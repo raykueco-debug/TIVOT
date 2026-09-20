@@ -4056,14 +4056,14 @@ export const TOWNS = {
           Object.assign(ren('talkwork','是嗎？但是也不能放著不管呢。'), { tierWho:'RENNA', tierMax:1 }),
           Object.assign(ren('ask','魔術革命以後這些技術就變得很珍貴了。'), { tierWho:'RENNA', tierMax:1 }),
           Object.assign(ren('talkserious','對聖王廳而言也是。妳懂的吧？'), { tierWho:'RENNA', tierMax:1 }),
-          Object.assign(nou('sadsmilenoeye','我知道。'), { tierWho:'RENNA', tierMax:1 }),
+          Object.assign(nou('sadsmile','我知道。'), { tierWho:'RENNA', tierMax:1 }),
           Object.assign(nou('steady','那，我開始了。'), { tierWho:'RENNA', tierMax:1 }),
           /* ── 分支②：蕾娜 T2 以上（她先護著人） ── */
           Object.assign(ren('sigh','是嗎？不過應該也不是什麼大不了的東西。'), { tierWho:'RENNA', tierMin:2 }),
           Object.assign(ren('smile','別管了吧。'), { tierWho:'RENNA', tierMin:2 }),
           Object.assign(nou('awkward','……謝謝。妳在擔心我吧？'), { tierWho:'RENNA', tierMin:2 }),
           Object.assign(ren('lookaway',''), { tierWho:'RENNA', tierMin:2 }),
-          Object.assign(nou('sadsmilenoeye','不要緊的。我知道這些東西對騎士團也很重要。'), { tierWho:'RENNA', tierMin:2 }),
+          Object.assign(nou('sadsmile','不要緊的。我知道這些東西對騎士團也很重要。'), { tierWho:'RENNA', tierMin:2 }),
           /* ── 分支③：諾薇兒 T1 ── */
           Object.assign({ speaker:'PLAYER', blank:true }, { tierWho:'NOUVELLE', tierMax:1 }),
           Object.assign(nou('awkward','沒關係，我可以的。'), { tierWho:'NOUVELLE', tierMax:1 }),
@@ -4470,7 +4470,7 @@ export const TOWNS = {
         sor('cringe',''),
         nou('decoding','也不能怪索拉娜啦……'),
         sor('surprised','諾薇兒……！'),
-        nou('sadsmilenoeye','只能怪我拖後腿，沒辦法像上一個搭檔那樣支援他。'),
+        nou('sadsmile','只能怪我拖後腿，沒辦法像上一個搭檔那樣支援他。'),
         sor('dying','……我寧可妳罵我。'),
       ] },
     ],
@@ -4592,7 +4592,7 @@ export const TOWNS = {
              ⚠ `tierMin`／`tierMax` 是**一拍**的屬性（§6.5.4 的 -1515 那一課：
                `needTier` 是 `actDue` 在判的，寫在一拍上完全沒作用而且不報錯）。
              ⚠ 看的是**說話者自己**的段位，所以不必寫 `tierWho`。 */
-          nou('sadsmilenoeye','我知道啦……',                                { tierMax:2 }),
+          nou('sadsmile','我知道啦……',                                { tierMax:2 }),
           nou('decoding','對不起……我沒有賽西莉學姐那麼優秀……但是！',        { tierMax:2 }),
           nou('shocked','咦？',                                              { tierMin:3 }),
           nou('shy','我、我沒關係啦！',                                      { tierMin:3 }),
@@ -6664,10 +6664,16 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true },
           cec('sadback','……'),
           cec('talk','你說呢？'),
-          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+          /* ══⚠ 她也走了（ver -1547，Ray：「你說呢之後**撤立繪**，**再放一次 se walk**」）══
+             `hide:'*'` ＝把台上的人全撤（不是點名 —— 那一拍站著誰是演到那裡才知道的，
+             寫死一定漏，見 story.js 那一段）。
+             ⚠ 這是**第二次** `se_walk`：第一次是尼莫那一群走掉（賽西莉背影那一拍），
+               這一次是她自己。⚠ 撤乾淨之後台上沒人 ⇒ `auto` 真的會跑（§6.5 的 -628
+               只押「台上有人」的無台詞拍）。 */
+          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400, hide:'*' },
           ren('determined','……'),
           sor('tired','誰快來解釋一下啊……'),
-          nou('sadsmilenoeye',''),
+          nou('sadsmile',''),
         ] } ] },
       /* ⚠ 瀑布底**不是死路**：水簾後面看得到黑色洞口，路往裡面繼續。 */
       fallbase:   { bg:'Lake_Fallbase',   name:'鏡湖　瀑布底',
