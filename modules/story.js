@@ -1919,8 +1919,37 @@ function senseBurst(){
   senseBurstT.push(setTimeout(()=>el.classList.add('fade'), SENSE_BURST_HOLD));
   senseBurstT.push(setTimeout(stopSenseBurst, SENSE_BURST_HOLD+1200));
 }
+/* ══⚠⚠⚠ **感應演出自己清場**（ver -1540，Ray：「鏡湖感應動畫後沒有清到立繪跟 CI」）══
+   這一段是**鋪滿場景區的 CI**（安雅那張半透明的搜索圖 ＋ 壓暗層 ＋ 第四拍的白光），
+   台上有人就是「立繪疊在 CI 上」，而且**那不只是難看**：
+
+   · §6.5 的 -628 規矩是「**台上有人的無台詞拍要點擊才推進**」——
+     於是那一拍的 `auto` **整個失效**，劇情停在那裡等玩家點；
+   · 而 `#storyFx` 是**下一句的 `stopFx()`** 才清的 ⇒ 沒人點就沒有下一句
+     ⇒ 半透明的安雅與壓暗層**一直留在畫面上**。
+   ⚠⚠ 兩個症狀（立繪沒清、CI 沒清）**是同一個原因**：沒有清場。
+
+   ⚠⚠⚠ 為什麼收在這裡而不是寫在腳本：清場本來就是這段演出的一部分，而它先前
+     **被寫成一份清單** —— 三個呼叫端各自寫 `hide:['SORANA','RENNA','NOUVELLE','ANYA']`
+     （石製遺蹟、木雅克、貝利薩爾），**第四個（鏡湖石碑林）忘了寫，而且不會報錯**。
+     那正是鐵律 8／10 講的「『每次 X 都要 Y』寫成清單＝沒有實作」。
+     ⇒ **規矩改成一道門：任何 `fx:'sense'` 的拍子，台上一律清空。**
+   ⚠ 三個呼叫端的 `hide:[…]` **留著不刪**：它是冪等的，而且讀起來就是那一拍的舞台指示
+     （同 `story.clearCast()` 留在呼叫端的理由）。
+   ⚠ 時序與 `line.hide` 那一段**完全一樣**：`fireOneShot` 就排在 `hide` 的前幾行，
+     兩者都在 `reveal()` 之前 —— 所以既有那三段的行為一個字都沒變。
+   ⚠ `shown[id].show=false` 要一起做（抄 `hide` 那一段）：只清槽的話，那個人下一次
+     說話時 `prev` 還停在「她站著」，狀態與畫面對不起來。 */
+function senseClearCast(){
+  for(const s of ['L','R']){
+    const id=slot[s]; if(!id) continue;
+    if(shown[id]) shown[id].show=false;
+    leaveSlot(s);
+  }
+}
 function senseFx(){
   const box=$('storyFx'); if(!box) return;
+  senseClearCast();
   playSe('se_flight_heartbeat');
   const w=box.clientWidth||360, h=box.clientHeight||420;
   const g0=senseGeom(0,w,h), g1=senseGeom(1,w,h);
@@ -2089,7 +2118,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1539';
+const KERB_V='?v=1540';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

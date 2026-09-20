@@ -6689,8 +6689,15 @@ export const TOWNS = {
           ren('evalutatingclosemouth',''),
           nou('whisper','安雅都嚇壞了……'),
           sor('dying','都是我不好……'),
-          /* 石碑啟動。 */
-          { speaker:'NARRATION', text:'', fx:'sense', shake:true, auto:1600 },
+          /* ══⚠⚠ **石碑啟動**（`fx:'sense'`，ver -1540 修時序）════════════════
+             ⚠ **清場不寫在這裡** —— `senseFx()` 自己會把台上清空（見 story.js 的
+               `senseClearCast`）。舊版另外三段寫的 `hide:[…]` 是那一版的寫法，
+               這一段當初漏了，症狀就是 Ray 回報的「立繪跟 CI 都沒清」。
+             ⚠⚠ `auto` 要 **4400**（同另外三段）：白光在 2780ms 才發、撐 2000ms，
+               1600 會讓下一句壓在光圈中間，而白光**不進 `fxTimers`**、
+               照樣會在玩家已經讀著下一句時閃出來。
+             ⚠ `noSkip`：ver -1384 Ray 指定「感應動畫時不可點擊加速」。 */
+          { speaker:'NARRATION', text:'', fx:'sense', shake:true, auto:4400, noSkip:true },
           ren('pointmap','如果文獻沒錯的話，古墓應該開啟了……', { flags:['tomb_opened'] }),
           { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
           ren('reach',''),
