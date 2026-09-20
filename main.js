@@ -1074,7 +1074,7 @@ window.addEventListener('pagehide', refreshBoot);
         /* 曲子照這一場的卡挑（ver -741（-893 前用詞））—— 以前寫死 bgm_battle，船戰的
            EpicBattle／piratebattle 在「開機直入戰鬥」這條路上會放錯首。 */
         const bk = battleBgmOf(req.battle);
-        { const s=story.bgmSrc(bk); SFX.playBgm(s, { fadeOutMs:600, volume: bgmVol(s) }); }
+        if(bk){ const s=story.bgmSrc(bk); SFX.playBgm(s, { fadeOutMs:600, volume: bgmVol(s) }); }
         setTimeout(()=>{ hideHome('bootDirectBattle/alFlash'); combat.setBattleBg(null);   // ver -1455：同上
                          combat.startScriptBattle(req.battle, { ship:true }); }, 2500);   // 同上：這條也是飛行交棒（-947）
       }
@@ -2009,6 +2009,13 @@ combat.setStoryReturn((res)=>{
    ⚠ 現在還沒有敵人卡在用②（龍那三場的曲子寫在**戰鬥卡**上，走①）——
      這一行是**先立規矩**：日後把曲子寫在怪身上就自動照這條走。 */
 function battleBgmOf(id){
+  /* ══⚠⚠⚠ **鎖曲期間戰鬥不換音樂**（ver -1618，Ray：「換 bgm 後就算進戰鬥也不會
+     換音樂，一路播這首到我指示換曲」）══ 真相在城上 `bgmWhen` 那一列的 `lock`
+     （`town.bgmLocked()`，鐵律 7）。
+     ⚠⚠ 回 `null` ＝「這一場**沒有**要放的曲子」，三個呼叫點都要讀成
+       **什麼都不做**，不是「播 null」—— 播 null 會把正在放的那一首停掉，
+       那與「不換曲」正好相反，而且畫面上不會有任何錯誤訊息。 */
+  try{ if(town.bgmLocked()) return null; }catch(_){}
   const b = id && GAME_CONFIG.battles && GAME_CONFIG.battles[id];
   if(b && b.bgm) return b.bgm;
   { const e = b && GAME_CONFIG.enemies && GAME_CONFIG.enemies[b.enemy];
@@ -2035,6 +2042,7 @@ function battleBgmOf(id){
 }
 story.setBattleCue((id)=>{
   const k = battleBgmOf(id);
+  if(!k) return;                      // 鎖曲期間：不動正在放的那一首（ver -1618）
   /* ⚠ ver -1565：走 `story.bgmSrc`（唯一那支「名字→檔案」）——
      卡上寫短別名（`nemo`／`warhorn`／`crisis`…）時 `asset(k)` 是查不到的。 */
   const s=story.bgmSrc(k); SFX.playBgm(s, { fadeOutMs:600, volume: bgmVol(s) });
@@ -2083,7 +2091,7 @@ story.setBattleHandler((battleId, resume)=>{
        兩次都只治好自己看到的那一處（九處在查同一張表）。那兩條已經拿掉。 */
   if(GAME_CONFIG.battles && GAME_CONFIG.battles[battleId]){
     { const k=battleBgmOf(battleId);
-      const s=story.bgmSrc(k); SFX.playBgm(s, { fadeOutMs:600, volume: bgmVol(s) }); }
+      if(k){ const s=story.bgmSrc(k); SFX.playBgm(s, { fadeOutMs:600, volume: bgmVol(s) }); } }
     /* ⚠⚠ **城鎮插入戰留在原背景**（ver -592（-893 前用詞），Ray：「打完敵人應該會留在原背景，
        不要自動切背景」）：把城鎮現在畫面上那一張帶進戰鬥，蓋過敵人卡的 `bg` ——
        不然打完一場上半會從卡上那張跳回節點原本那張，讀起來是換了個地方。

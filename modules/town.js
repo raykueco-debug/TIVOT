@@ -204,6 +204,26 @@ function diningNode(){ return ((TOWNS[townId]||{}).dining||{}).node || null; }
    （Ray 於 ver -614 指定「結束戰鬥，到 boss 登場前用 Suspense6」）；
    而**遇敵**要到黑爪打完才停（`siege.until`，Ray 於 -633 指定）。
    ⚠ 沒寫 `bgmUntil` ＝ 兩者同一個結束點（其他城照舊）。 */
+/* 現在成立的是 `bgmWhen` 的哪一列（由上往下取第一個成立的）。
+   ⚠ 抽出來是因為**鎖曲要問同一列**（`bgmLocked`）—— 各自再判一次條件就是兩份真相。 */
+function bgmWhenRow(T){
+  for(const w of ((T && T.bgmWhen) || [])){
+    if(!w || !w.bgm) continue;
+    if(w.need && !prog.hasFlag(w.need)) continue;
+    if(w.until && prog.hasFlag(w.until)) continue;
+    return w;
+  }
+  return null;
+}
+/* ══⚠⚠⚠ **`lock:true` ＝這一段期間**連戰鬥都不換曲**（ver -1618，Ray：「換 bgm 後
+   就算進戰鬥也不會換音樂，一路播這首到我指示換曲」）══
+   ⚠⚠ 旗與曲子共用 `bgmWhen` **同一列**（鐵律 7）：「放哪一首」與「別人不准換掉它」
+     是同一個決定，分成兩處寫必然走鐘（會出現「換了曲但沒鎖」或反過來）。
+   ⚠ 讀它的是 `main.js` 的 `battleBgmOf` —— 那是「這一場放哪一首」的唯一計算點，
+     鎖住就回 null，三個呼叫點看到 null 一律**什麼都不做**（不是播 null）。 */
+export function bgmLocked(){
+  return !!(bgmWhenRow(TOWNS[townId]) || {}).lock;
+}
 function townBgm(){
   const T=TOWNS[townId]; if(!T) return null;
   /* ══⚠⚠⚠ **某一段劇情期間換一首**（`bgmWhen`，ver -1420，Ray：「追擊戰期間
@@ -218,12 +238,7 @@ function townBgm(){
      ⚠ 一張表**由上往下取第一個成立的**（同 `acts`／`innDoors`）：
        所以「王座戰結束後的 crisis」要寫在「追擊戰的 gothic」**上面**。
      ⚠ `need`／`until` 都是旗：插了 `need`、而且 `until` 還沒插 ⇒ 用這一首。 */
-  if(T.bgmWhen) for(const w of T.bgmWhen){
-    if(!w || !w.bgm) continue;
-    if(w.need && !prog.hasFlag(w.need)) continue;
-    if(w.until && prog.hasFlag(w.until)) continue;
-    return w.bgm;
-  }
+  { const w=bgmWhenRow(T); if(w) return w.bgm; }
   const g=siegeOn();
   /* ══ 城重建之後換曲（ver -753，Ray：「stage5 以後的北泊 bgm 改成
      PeriTune_Harbor_Morning_loop」）══ 鑰匙寫在 `rebuild.bgm`（與 -627 的
@@ -1266,6 +1281,9 @@ let wildDone = new Set();
      `open()` 一起歸零。
    ⚠ 機率寫在 `config.tuning`（鐵律 1）不寫死在這裡。 */
 let wildCleared = new Set();
+/* 「這一趟踩過哪幾格」（ver -1618）：`noWildFirst` 要分得出「第一次踏進來」。
+   ⚠ 與 `wildCleared`（那一格**出過怪**了）是兩件事 —— 沒出怪也算踩過。 */
+let wildVisited = new Set();
 function wildSpecies(v){ return (typeof v==='string') ? v : (v && (v.day||v.night)) || ''; }
 function wildVariant(v){
   if(!v) return null;
@@ -1894,7 +1912,21 @@ function chaseActDue(n){
   const scenes = spec.scenes || (spec.intro ? [spec.intro] : []);
   for(const ref of scenes){
     const w = namedAct(ref);
-    if(w){ chaseScene = w; return w; }
+    if(!w) continue;
+    /* ══⚠⚠⚠ **`afterHits:N` ＝那一段的前置旗插上去之後，**第 N 次**被追上才演**
+       （ver -1618，Ray：「二戰之後被追到三次才出諾那段，改成字面的」）══
+       ⚠⚠ 不能用 `c.hits` 的絕對值：在那之前被追上幾次是玩家決定的
+         （登場 1 次＋死纏濫打 0 或 1 次＋任意場純追擊戰）。所以要**記一個起點**：
+         前置旗第一次被看到的那一刻，把當時的 `hits` 存進 `c.marks`。
+       ⚠ `marks` 住在追兵那一筆狀態裡 ⇒ 存讀檔／`newRun` 自動跟著走（§6.9）。
+       ⚠ 算式：這一次是起點之後的第 `c.hits-mark+1` 次被追上
+         （`chaseActDue` 跑在 `hits++` **之前**）。 */
+    if(ref.afterHits > 1){
+      c.marks = c.marks || {};
+      if(c.marks[w.flag] == null){ c.marks[w.flag] = (c.hits|0); chaseSet(c); }
+      if((c.hits|0) - c.marks[w.flag] + 1 < ref.afterHits) continue;
+    }
+    chaseScene = w; return w;
   }
   const list=spec.battles||[];
   if(!list.length) return null;
@@ -2035,6 +2067,14 @@ function wildActDue(n){
      中間任何一格，那時 `cameNodeId` 是入口，兩者重合；從另一頭走進來時才分家。 */
   if(cameNodeId && nodeId===cameNodeId) return wildSkip('這一趟的起點格');
   if(nodeId===entryNodeId) return wildSkip('入口（復活點）');
+  /* ══⚠⚠ **`noWildFirst:true` ＝這一趟第一次踏進這一格不出怪**（ver -1618，Ray：
+     「門廳第一次進去不出怪」）══ 走出去再走回來就照常擲。
+     ⚠ 與 `noWild`（永遠不出）、`mustWild`（這一趟第一次必出）是同一族的三個旋鈕，
+       三個都宣告在**節點上**（名單寫在城上會與節點走鐘，見 ruins 的 wildSpawn 註解）。 */
+  if(n.noWildFirst && !wildVisited.has(nodeId)){
+    wildVisited.add(nodeId); return wildSkip('門廳：這一趟第一次進來不出怪');
+  }
+  wildVisited.add(nodeId);
   /* ══⚠⚠ **指定遭遇**（ver -879，Ray：「鹿主未變異日後則會在黃昏夜晚時段在夏爾森林
      隨機遇到，劇情從諾『牠好像不太歡迎我們』開始跑，進入戰鬥」「打完就沒了，
      不會出第二次，隨機遇到的機率是 5%」）══
@@ -4975,6 +5015,7 @@ export function open(town, node, opts){
   dragonNode=null; dragonFights=0; dragonSeenFights=0; dragonJustPlaced=false; dragonRollHit=false;
   wildDone=new Set();         // 野生刷怪的「這一趟出過誰」也是（ver -862）
   wildCleared=new Set();      // 「這一趟哪幾格出過」（ver -924，重刷率用）
+  wildVisited=new Set();      // 「這一趟踩過哪幾格」（ver -1618，noWildFirst 用）
   pendingFavor=null;          // 「下一步去哪」也是（ver -440，見 armFavor）
   /* 夥伴的所在（ver -461）：進城算一次。⚠ 要在 townId 設好之後（leftoverForNou 要查表）。 */
   escortId=null;

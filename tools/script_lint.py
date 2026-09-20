@@ -427,9 +427,16 @@ def main():
     bgm_map = check_audio_table(table('BGM_FILES'), BGM_DIR, 'BGM_FILES')
     se_alias, bgm_alias = alias('SE_ALIAS'), alias('BGM_ALIAS')
 
-    def audio_ok(key, m, al):
+    # ⚠⚠⚠ 第三層：**`ASSETS` 的鍵也算數**（ver -1618，對齊 `story.bgmSrc`）。
+    #   `bgmSrc` 自 ver -1565 起有三層：BGM_FILES → BGM_ALIAS → `asset('bgm_'+k)`
+    #   →（再退一步）`asset(k)`。這一支以前只看前兩層 ⇒ 只登記在 `ASSETS` 的短別名
+    #   （`rituale`…）會被誤報成「沒有這首 BGM」，而它在遊戲裡是放得出來的。
+    #   ⚠ 鐵律 7：驗的規則要與**唯一那支解析器**同一套，少一層就是假警報。
+    _akeys = set((D.get('assets') or {}).keys())
+    def audio_ok(key, m, al, pre=''):
         k = str(key).lower()
-        return k in m or al.get(k, '') in m
+        if k in m or al.get(k, '') in m: return True
+        return bool(pre) and ((pre + k) in _akeys or k in _akeys)
 
     # ── scene 鏈 ──
     if entry not in script:
@@ -612,7 +619,7 @@ def main():
             if ln.get('ci') and not exists(SI_DIR + ln['ci'] + '.webp'):
                 err('%s：沒有這張 CI %s' % (tag, ln['ci']))
 
-            if ln.get('bgm') and not audio_ok(ln['bgm'], bgm_map, bgm_alias):
+            if ln.get('bgm') and not audio_ok(ln['bgm'], bgm_map, bgm_alias, 'bgm_'):
                 err('%s：沒有這首 BGM %s' % (tag, ln['bgm']))
             spec = ln.get('se')
             for one in ([] if spec is None else (spec if isinstance(spec, list) else [spec])):

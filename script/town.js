@@ -6941,7 +6941,10 @@ export const TOWNS = {
        ⚠⚠⚠ **刻意沒有 `until`**（＝Ray 的「直到我指定下一首」）：
          要換就在這張表**上面**補一條（由上往下取第一個成立的）。 */
     bgmWhen: [
-      { need:'tomb_split', bgm:'rituale' },
+      /* ⚠⚠⚠ `lock:true` ＝**這一段期間連戰鬥都不換曲**（ver -1618，Ray：「換 bgm 後
+         就算進戰鬥也不會換音樂，一路播這首到我指示換曲」）——
+         讀它的是 `main.js` 的 `battleBgmOf`（那是「這一場放哪一首」的唯一計算點）。 */
+      { need:'tomb_split', bgm:'rituale', lock:true },
     ],
     visitFlag: 'tomb_seen',            // 同上（ver -1188）
     storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
@@ -6994,7 +6997,8 @@ export const TOWNS = {
            ① `tomb_gk1_done`  登場（首戰兩輪）—— 需要 `tomb_talk`
            ② `tomb_chase_taunt` 索「真是死纏濫打！」—— 需要 `tomb_carry`（背安雅演完）、
               **`until:'tomb_gk1_split'`**（到柱廳那一段演完還沒出就作廢，Ray 明講）
-           ③ `tomb_chase_offer` 諾「我……我沒問題的！」—— 需要 `tomb_gk1_split`（二戰之後）
+           ③ `tomb_chase_offer` 諾「我……我沒問題的！」—— `tomb_gk1_split` 之後
+              **第 3 次**被追上（`afterHits:3`）
          ⚠ 三段都演完（或作廢）之後就只剩 `battles` 那一場純打的追擊戰。
          ⚠⚠ **`at` 指的是「那一段住在哪一格」，不是「在哪一格演」** —— 在哪演由
            追兵現在站在哪決定。擋住「走進柱廳就演掉」的是那三段自己的
@@ -7002,7 +7006,9 @@ export const TOWNS = {
       scenes: [
         { at:'hall2', flag:'tomb_gk1_done'    },
         { at:'hall2', flag:'tomb_chase_taunt' },
-        { at:'hall2', flag:'tomb_chase_offer' },
+        /* ⚠⚠ `afterHits:3` ＝`tomb_gk1_split` 插上去之後**第 3 次**被追上才演
+           （ver -1618，Ray：「改成字面的」）。前兩次照舊是純打的追擊戰。 */
+        { at:'hall2', flag:'tomb_chase_offer', afterHits:3 },
       ],
       /* 登場戲之後**換一格就演**（ver -1608）：索菈娜背安雅那一段。
          ⚠ 稿上寫的是「下一個房間」—— ver -1526 把它讀成節點 id 釘在納骨龕廊上，
@@ -7236,7 +7242,10 @@ export const TOWNS = {
           nou('cringe','我覺得她氣到連幽靈都可以一拳打飛了……'),
           any('scare2',''),
         ] } ] },
-      vestibule:  { bg:'tomb_vestibule', name:'伊甸古墓　前庭', noTime:true,
+      /* ⚠⚠ **這一趟第一次踏進來不出怪**（ver -1618，Ray：「門廳第一次進去不出怪」）——
+         走出去再走回來就照常擲。⚠ 判讀：古墓裡「門」那一側只有墓門（`noWild`）與
+         這一格，所以「門廳」＝前庭。 */
+      vestibule:  { bg:'tomb_vestibule', name:'伊甸古墓　前庭', noTime:true, noWildFirst:true,
         exits:{ up:'nave', right:'lapidarium', back:'gate' },
         /* ══⚠⚠⚠ **墓門關上了**（ver -1525，Ray 的 Stage10-A 稿：「此時往古墓出口
            移動會顯示『墓門關上了』」）══ 走既有的 `lock`（-786 的出口鎖，鐵律 8）。
@@ -7447,9 +7456,10 @@ export const TOWNS = {
              （`namedAct` 以前不判 `until`，-1616 補上，鐵律 7：與 `actDue` 同一個語意。） */
         { flag:'tomb_chase_taunt', need:'tomb_carry', until:'tomb_gk1_split',
           chaseOnly:true, sides:{ RENNA:'L' }, lines:[
+          /* ⚠ **戰後才講**（ver -1618，Ray：「死纏爛打是戰後才出，不是先出」）。 */
+          { battle:'tomb_gk1' },
           sor('battlecry','真是死纏濫打！'),
           ren('shout','這樣下去不是辦法！得盡快找到遺蹟中心！'),
-          { battle:'tomb_gk1' },
         ] },
         /* ③ **二戰之後被追上**（ver -1616，Ray 交稿）。
            ⚠ 這時隊上只剩諾薇兒（分組演完了）—— `need` 指的正是那一段的旗。 */
@@ -7483,17 +7493,18 @@ export const TOWNS = {
           ren('callangry','別鬧了！你一個人怎麼應付！'),
           nou('steady','我跟他留下！蕾娜小姐帶安雅小姐先走！'),
           any('desperate','不要！'),
-          ren('callangry','別這樣！大家一起走！'),
+          /* ⚠⚠ **換曲就從這一拍起**（ver -1615；**-1618 由 Execute 那一拍提前一拍到
+             這一句**，Ray 指定）：這一拍只管**那一刻**，「撐到下一首被指定為止」
+             是城上的 `bgmWhen`（`need:'tomb_split'` ＋ `lock`，沒有終點）。 */
+          Object.assign(ren('callangry','別這樣！大家一起走！'), { bgm:'rituale' }),
           /* ⚠⚠ 稿上的「Execute 插圖」＝ `resources/ci/ci_torsten_execute.webp`
              （`ASSETS.cutin_exc_torsten` 指的是同一張）。
              ⚠ 寫**明確路徑**（含 `/`）：那條路不吃時段候選鏈、也不掛 `CG_DIR`
                —— 這張圖住在 `resources/ci/`，不在 `illustration/`
                （鐵律 7：一張圖一份，不複製過去）。 */
           /* ⚠ 由下往上平移（ver -1603，Ray 指定）：`cgPan:'up'`。 */
-          /* ⚠⚠ **換曲就從這一拍起**（ver -1615，Ray 指定）：這一拍只管**那一刻**，
-             「撐到下一首被指定為止」是城上的 `bgmWhen`（`need:'tomb_split'`，沒有終點）。 */
           { speaker:'NARRATION', text:'', cg:'resources/ci/ci_torsten_execute.webp',
-            cgPan:'up', auto:1600, bgm:'rituale' },
+            cgPan:'up', auto:1600 },
           { speaker:'PLAYER', blank:true },
           /* ⚠ 稿上寫 `Renna_SI_shocked` —— 去時態之後她的鍵是 `shock`（ver -1554）。 */
           ren('shock','！！'),
