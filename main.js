@@ -225,6 +225,9 @@ function homeAudioSet(){
    ⚠ 鐵律 13 的自檢就靠它：切一個畫面就問一次「上一個畫面的放掉了嗎？」
    ⚠ 唯讀，沒有副作用 —— 所以不鎖 testmode（量不到東西就驗不了規矩）。 */
 try{ window.audioDebug = ()=>SFX.audioHeld(); }catch(_){}
+/* 遇敵率的除錯（ver -1603）：在探索地圖走幾格之後在 console 打 `wildDebug()`，
+   會告訴你走了幾格、真的擲了幾次、中了幾次、沒擲的原因各幾次。 */
+try{ window.wildDebug = ()=>town.wildDebug(); }catch(_){}
 /* ⚠⚠ **回首頁＝把畫面殺掉，音訊也要一起還**（鐵律 10 套用到資源）。
    `killAllPages` 已經把每一層畫面收掉了，但音訊的 buffer 照樣留著 ——
    實測一輪玩下來解碼後可以累積上百 MB（-1300 的 `audioHeld` 就是為了量它）。

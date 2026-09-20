@@ -1823,6 +1823,18 @@ function chaseActDue(n){
   const spec=chaseSpec(); if(!spec || !n) return null;
   if(n.noWild) return null;
   const c=chaseGet(); if(!c || !c.node || c.node!==nodeId) return null;
+  /* ══⚠⚠⚠ **第一次現身＝把牠的登場戲帶過來**（ver -1603）══
+     `chase.intro:'<節點>'` ＝那一段戲住在哪一格（古墓＝柱廳的 `tomb_gk1_done`）。
+     ⚠⚠ **只帶「牠的戲」，不帶那一格自己的氣氛戲** —— 柱廳那四句
+       （「這個地方好大……死胡同……」）已經在 -1603 拆成獨立的
+       `tomb_hall2_arrive`，永遠只在柱廳演。**-1599 把整段都拉過來才被退回。**
+     ⚠ 挑那一段走既有的 `actDue()`（前置旗、章節門、`until` 整套照舊，鐵律 8）。
+     ⚠ 兩邊共用同一個 `flag` ⇒ 只演一次。 */
+  if((c.hits|0)===0 && spec.intro){
+    const src=((TOWNS[townId]||{}).nodes||{})[spec.intro];
+    const a0=src && actDue(src);
+    if(a0) return a0;
+  }
   const list=spec.battles||[];
   if(!list.length) return null;
   const id=list[(c.hits|0) % list.length];
@@ -1849,7 +1861,9 @@ function chaseAfterAct(act, fought){
          那是一顆免費的重置鈕，而且看起來與正常行為一模一樣。
        ⚠ 連「還沒上線」也算數：打過那一場就等於追逐真的開始了。 */
     c.node = nodeId; c.stun = spec.stun|0;
-  }else if(act && act.__chase){
+  }else if(act && (act.__chase || (spec.intro && (c.hits|0)===0 && c.node===nodeId))){
+    /* ⚠ 登場戲那一段**不是** `__chase`（它是節點上的正規 act），但它就是「第一次
+       被追上」—— 演完一樣 `hits+1` ＋ 停 `stun`，不然牠會賴在原地連環開打。 */
     c.hits=(c.hits|0)+1; c.stun = spec.stun|0;    // 擊退：牠停在原地（＝玩家腳下）
   }
   chaseSet(c);
@@ -1860,6 +1874,18 @@ export function chaseDebug(){ return { spec:chaseSpec(), now:chaseGet() }; }
 /* 雜怪那一支的**外衣**（ver -1577）：取到東西＝玩家停下來打了一場 ⇒ 追兵再推進
    `onEncounter` 格。⚠ 包一層而不是散在 `wildActDue` 的每一個 `return`
    （那一支有六個出口，漏一個就是「有時候不推進」而且查不出來，鐵律 8）。 */
+/* ══ 遇敵率的除錯計數（ver -1603）══ Ray 回報「走好久才一隻」而我在測試機上
+   重現不出來 —— 與其互猜，讓他直接讀數字：走幾格／擲了幾次／中了幾次／為什麼沒擲。
+   ⚠ 唯讀、沒有副作用，所以不鎖 testmode（同 `audioDebug`／`outingDebug`）。 */
+const wildStat = { moves:0, asked:0, rolled:0, hit:0, skip:{} };
+function wildSkip(why){ wildStat.skip[why]=(wildStat.skip[why]||0)+1; return null; }
+export function wildDebug(){
+  const r=wildStat.rolled, h=wildStat.hit;
+  return { 走了幾格:wildStat.moves, 問了幾次:wildStat.asked, 真的擲了:r, 中了:h,
+           實際命中率: r ? +(h/r).toFixed(3) : null,
+           設定的機率: ((TOWNS[townId]||{}).wildSpawn||{}).rate,
+           沒擲的原因: wildStat.skip };
+}
 function wildRoll(n){ const a=wildActDue(n); if(a) chaseOnEncounter(); return a; }
 /* ══⚠⚠⚠ **卡上宣告的出沒地**（ver -1584b，Ray：「指定地點要分整個探索地圖跟房間。
    指定探索地圖的話就是圖中安全區以外的任一格都有機會刷出；指定房間的話就是只有
@@ -1896,16 +1922,17 @@ function cardSpawnPool(nodeIdNow){
 }
 function wildActDue(n){
   const T0=TOWNS[townId]||{};
+  wildStat.asked++;
   const cardPool = cardSpawnPool(nodeId);
-  const W=T0.wildSpawn; if((!W && !cardPool.length) || !n) return null;
-  if(prog.hasFlag(safehouseFlag())) return null;        // 安全區：遭遇戰整套不動
+  const W=T0.wildSpawn; if((!W && !cardPool.length) || !n) return wildSkip('這張圖沒有怪');
+  if(prog.hasFlag(safehouseFlag())) return wildSkip('安全區旗');
   /* ══⚠⚠ **`wildFrom:'<旗>'` ＝這支旗插上去之前，這張圖一隻野怪都沒有**
      （ver -1399，Ray：「貝利薩爾在王座徘徊者擊敗前沒有野怪」）══
      ⚠ 它與**安全區旗**是兩件事，不要拿其中一個去湊：
        · 安全區旗（`safehouse_<圖>`）＝**會開會關**的狀態，特殊戰還會把它拔掉再插回去
        · `wildFrom` ＝這張圖的**資料**：在那個事件之前它根本還不是一張會出怪的圖
      ⚠ 寫在城上（鐵律 1）；旗名由那一段劇情自己認領（鐵律 9：誰插得出來）。 */
-  if(T0.wildFrom && !prog.hasFlag(T0.wildFrom)) return null;
+  if(T0.wildFrom && !prog.hasFlag(T0.wildFrom)) return wildSkip('wildFrom 還沒開');
   /* ══⚠⚠⚠ **結算怪已取消**（ver -1024，Ray：「取消結算怪的放置，一律以踏入結算點
      為結算條件」）══ ver -895／-898 的那一套（把 `wildSpawn.endBattle` 擺在
      「這一趟沒走進來的那個出口」、那一格拒絕戰鬥就退一格）**整組撤掉**：
@@ -1917,8 +1944,8 @@ function wildActDue(n){
   /* **起點必不出怪**（ver -1026）：這一趟真的走進來的那一格 —— 它同時是遭遇戰的
      復活點。⚠ 與 `entryNodeId`（資料上的入口）**兩個都擋**：讀檔／跳關可以落在
      中間任何一格，那時 `cameNodeId` 是入口，兩者重合；從另一頭走進來時才分家。 */
-  if(cameNodeId && nodeId===cameNodeId) return null;
-  if(nodeId===entryNodeId) return null;                 // 入口＝復活點，不可有戰鬥
+  if(cameNodeId && nodeId===cameNodeId) return wildSkip('這一趟的起點格');
+  if(nodeId===entryNodeId) return wildSkip('入口（復活點）');
   /* ══⚠⚠ **指定遭遇**（ver -879，Ray：「鹿主未變異日後則會在黃昏夜晚時段在夏爾森林
      隨機遇到，劇情從諾『牠好像不太歡迎我們』開始跑，進入戰鬥」「打完就沒了，
      不會出第二次，隨機遇到的機率是 5%」）══
@@ -1945,7 +1972,7 @@ function wildActDue(n){
   }
   /* ⚠ 節點自己宣告「這裡不出野怪」（ver -879（-893 前用詞），Ray：「神殿入口除了鹿主戰之外是
      安全區，不出怪」）——擋在**指定遭遇之後**：那一場是劇本，不受這條管。 */
-  if(n.noWild) return null;
+  if(n.noWild) return wildSkip('這一格 noWild');
   let pick=null;
   const fx=W && W.fixed && W.fixed[nodeId];
   if(fx && !wildDone.has(wildSpecies(fx))) pick=fx;
@@ -1971,9 +1998,11 @@ function wildActDue(n){
     const rate = (repeat || wildCleared.has(nodeId))
       ? ((GAME_CONFIG.tuning||{}).wildRespawnRate!=null ? GAME_CONFIG.tuning.wildRespawnRate : 0.25)
       : ((W&&W.rate)||(cardPool.length?((GAME_CONFIG.tuning||{}).wildRespawnRate||0.25):0));
-    if(Math.random() >= rate) return null;
+    wildStat.rolled++;
+    if(Math.random() >= rate){ wildSkip('擲骰沒中（rate '+rate+'）'); return null; }
+    wildStat.hit++;
     const cands = repeat ? pool0.filter(okHere) : fresh;
-    if(!cands.length) return null;
+    if(!cands.length){ wildStat.hit--; return wildSkip('中了但池子是空的'); }
     pick=cands[Math.floor(Math.random()*cands.length)].battle;
   }
   /* 取走就記（同一趟不再出同種）：這一場**立刻開打**（沒有可被中途放掉的對白），
@@ -3766,6 +3795,7 @@ function go(to, dir){
      ⚠⚠ 跨圖那一條（`@`）**刻意不叫**：那是離開這張圖，追兵不跟出去
        （身分證是 `chase.town`，見 `progress.js` 的 `K.chase`）。
      ⚠ 與龍是**兩套**（持久性需求相反，見 `chaseStep` 上面那一段）—— 不要合併。 */
+  wildStat.moves++;
   chaseStep(to);
   bumpGateMoves();   // 閘門的 afterMoves 計數（ver -953）：走一步就 +1
   sceneCut(to);          // 換景走淡入淡出（ver -438，見 sceneCut）
@@ -4892,6 +4922,7 @@ export function open(town, node, opts){
    ⚠ 走回墓門**不歸零**（那是 `idleAt`：只是不推進，牠還在）——「墓門不是安全區
      但是也不出怪也不會追」（Ray），兩件事分得很清楚。 */
   chaseGraph=null;            // 換圖＝換拓樸（追兵那張無向圖的快取，ver -1577）
+  wildStat.moves=0; wildStat.asked=0; wildStat.rolled=0; wildStat.hit=0; wildStat.skip={};
   if(T.chase && start===entryNodeId) prog.setChase(null);
   pickEnds(start);            // 這一趟的起點與終點（ver -1026，見 pickEnds）
   armMapCard();               // 這一趟要不要報圖名（ver -879）——在 enter 之前決定

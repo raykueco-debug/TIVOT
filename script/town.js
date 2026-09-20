@@ -6974,6 +6974,14 @@ export const TOWNS = {
       startFights: 3,            // 打過 3 場 → 下一格出現（ver -1593）
       startStep: 0,              // ⚠ 停用（0＝不看步數）；-1576 的「第 4 格」已撤
       gap: 6, speed: 2, onEncounter: 1, stun: 4,
+      /* ══⚠⚠ **牠的登場戲住在哪一格**（ver -1603）══ 追兵**第一次現身**時把那一段
+         帶到當場演 —— 「打完第三隻直接出守墓者、沒跑劇情」就是少了這一條。
+         ⚠⚠ 指的是**守墓者的登場戲**（`tomb_gk1_done`：震動→「什麼東西？」→咆哮→
+           開打→兩階段揭露→分組），**不含**柱廳自己那四句氣氛戲
+           （那一段是 `tomb_hall2_arrive`，只在柱廳演）—— 見 `hall2` 那一格的說明。
+         ⚠ 兩邊共用同一個 `flag` ⇒ 只演一次：先走到柱廳就在柱廳演、
+           先被追上就在當場演。 */
+      intro: 'hall2',
       resetAt: 'hall2',           // 柱廳：必觸戰鬥，戰後牠在這裡
       idleAt: ['gate'],           // 墓門：不推進
       /* ⚠ `wildRate` 已移除（ver -1596）：遇敵率的唯一真相是城上的 `wildSpawn.rate`。 */
@@ -7310,11 +7318,23 @@ export const TOWNS = {
              —— 那正是「沒有淨化反應」這句台詞成立的前提。
            ⚠⚠ 收尾插 **`tomb_chase_on`** ＝追逐開始（⑨ 那一塊要吃它：墓門關上、
              追兵推進、三處安全點）。**現在還沒有人讀它** —— 鐵律 9 的名字先留好。 */
-        acts:[ { flag:'tomb_gk1_done', need:'tomb_talk', sides:{ RENNA:'L' }, lines:[
+        /* ══⚠⚠⚠ **這一格拆成兩段**（ver -1603）══════════════════════════════════
+           · **柱廳的氣氛戲**（「這個地方好大……」那四句）—— 講的是**柱廳這個地方**
+             （死胡同、先把地圖建立起來），**只在柱廳演**，不跟著追兵跑。
+           · **守墓者的登場戲**（震動 → 「什麼東西？」→ 咆哮 → 開打 → 兩階段揭露
+             → 小隊分組）—— 那是**牠**的戲，牠在哪裡現身就在哪裡演
+             （追兵第一次現身時由 `chase.intro` 帶過去，見城上的 `chase`）。
+           ⚠⚠ -1599 我把**整段**（含死胡同那四句）都拉去接，Ray 退回：
+             「在柱廳才觸發的劇情被拉到直接接上」。-1602 整個撤掉之後又變成
+             「打完第三隻直接出守墓者、沒跑劇情」。**兩個抱怨的交集就是這條分界線。**
+           ⚠ 兩段各有各的 `flag`：柱廳那一段走到柱廳才演；登場戲哪邊先到哪邊演。 */
+        acts:[ { flag:'tomb_hall2_arrive', need:'tomb_talk', sides:{ RENNA:'L' }, lines:[
           nou('shock','這個地方好大……'),
           sor('tire','還一堆死胡同，好像一直在走來走去而已。'),
           ren('write','先把地圖建立起來就輕鬆了。走過的每一步都不會白費。'),
           sor('tire','話是這麼說……'),
+        ] },
+        { flag:'tomb_gk1_done', need:'tomb_talk', sides:{ RENNA:'L' }, lines:[
           { speaker:'NARRATION', text:'', shake:true, auto:1200 },
           any('lookup',''),
           nou('shock2','什、什麼東西？'),
@@ -7363,7 +7383,9 @@ export const TOWNS = {
              ⚠ 寫**明確路徑**（含 `/`）：那條路不吃時段候選鏈、也不掛 `CG_DIR`
                —— 這張圖住在 `resources/ci/`，不在 `illustration/`
                （鐵律 7：一張圖一份，不複製過去）。 */
-          { speaker:'NARRATION', text:'', cg:'resources/ci/ci_torsten_execute.webp', auto:1600 },
+          /* ⚠ 由下往上平移（ver -1603，Ray 指定）：`cgPan:'up'`。 */
+          { speaker:'NARRATION', text:'', cg:'resources/ci/ci_torsten_execute.webp',
+            cgPan:'up', auto:1600 },
           { speaker:'PLAYER', blank:true },
           /* ⚠ 稿上寫 `Renna_SI_shocked` —— 去時態之後她的鍵是 `shock`（ver -1554）。 */
           ren('shock','！！'),
