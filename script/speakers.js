@@ -646,6 +646,12 @@ export const ART = {
     eat:       { src:'resources/SI/Sorana_SI_eat.webp', top:2, bot:1518, fx:0.569 },
     lookaway:  { src:'resources/SI/Sorana_SI_lookaway.webp', top:5, bot:1513, fx:0.610 },   // fx 目視重量（量到 0.623）
     nod:       { src:'resources/SI/Sorana_SI_nod.webp', top:12, bot:1494, fx:0.529 },
+    /* ══ 唸報告的那一張（ver -1550，Ray：「索拉娜唸報告時全用 `Sorana_SI_read`，
+       判斷是**雙引號跟日期開頭**的台詞」「**只限那場戲**」）══
+       用在雪都圖書館那一段（`ravnsdal.library`）：她把蕾娜的評鑑報告唸出來的那幾句。
+       ⚠ 「只限那場戲」＝**不要**拿雙引號去全庫掃：`sor('tease','修女不都是只會
+         『神啊～』之類的嗎？')` 也有雙引號，那是她在學人講話，不是唸報告。 */
+    read:      { src:'resources/SI/Sorana_SI_read.webp', top:4, bot:1533, fx:0.640 },
     point:     { src:'resources/SI/Sorana_SI_point.webp', top:5, bot:1513, fx:0.543 },
     relief:    { src:'resources/SI/Sorana_SI_relief.webp', top:8, bot:1518, fx:0.556 },
     sad:       { src:'resources/SI/Sorana_SI_sad.webp', top:3, bot:1521, fx:0.515 },
