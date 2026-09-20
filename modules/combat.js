@@ -1362,6 +1362,8 @@ function applyEnemyMods(dmg, src){
      場次是船戰（由飛行頁交棒過來的那一場）就一律吃 `tuning.shipDualBonus`。
      ⚠ 這樣日後新增任何一隻飛行遭遇的怪都自動吃到，不必記得在卡上補一格。 */
   if(state.dualWield && state.shipBattle) k += (T.shipDualBonus||0);
+  /* 防禦型（`atype:'D'`）的 BR 增傷（ver -1584）：與船戰那一條同一排，加法。 */
+  if(state.dualWield && state.enemyBrBonus) k += state.enemyBrBonus;
   return Math.max(1, Math.round(dmg * Math.max(0, k)));
 }
 function enemyDamage(dmg,isCrit,silent,src){
@@ -2579,8 +2581,16 @@ function pickBattleEnemy(sb){
      ⚠⚠ **名單是算出來的不是列出來的**（鐵律 7）：等級已經寫在每一張卡的 `tier` 上，
        這裡再列一份「C 級有哪幾隻」的話，Ray 在 Excel 裡改完等級這一份不會跟著動。
      ⚠ 抽到的一樣走下面 `pendingPick` 那一套（同一場的兩次呼叫要拿到同一隻）。 */
+  /* ⚠⚠ **打靶與計時賽要濾掉**（ver -1584b）：`dart_target`／`sv_dart` 也被標成 E 級，
+     但那是小遊戲的靶（`timeAttack`／`kind:'target'`）—— rush 抽到它會變成
+     「一場打不起來的戰鬥」，而且畫面上看不出為什麼。 */
   const e = sb.enemyTier
-    ? Object.keys(GAME_CONFIG.enemies||{}).filter(k=>(GAME_CONFIG.enemies[k]||{}).tier===sb.enemyTier)
+    ? Object.keys(GAME_CONFIG.enemies||{}).filter(k=>{
+        const c = GAME_CONFIG.enemies[k] || {};
+        /* ⚠ **也要有 `atype`**：類型留白＝Ray 手動設製的那幾張（數值不在等級系統上，
+           像教學的 `trainee` hp500/atk45）—— rush 是試跑台，抽到它量不出東西。 */
+        return c.tier === sb.enemyTier && !!c.atype && c.kind !== 'target' && !c.timeAttack;
+      })
     : sb.enemy;
   if(!Array.isArray(e)) return e;
   if(!e.length) return null;

@@ -14,6 +14,7 @@
  * ========================================================================== */
 
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
+import * as prog from '../script/progress.js';  // stage 加成要問現在第幾章（ver -1584b）
 import { GAME_CONFIG, HITFX, asset, sfxGain } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
@@ -929,8 +930,18 @@ export function setEnemy(key, opts){
      記在**現在出場的那一位**頭上。⚠ 掛在這裡是因為 `setEnemy` 就是「一場」的
      唯一邊界（§0.5）：連戰換第二隻也走這一支，那確實是新的一場。 */
   addPartnerFight(state.pickedPartner);
-  initEnemyHp(en.hp);                           // 3.2：敵血基準（載入時 setter）
-  state.ASSAULT_DAMAGE = en.attack;                 // 3.3：大絕單擊傷害
+  /* ══⚠⚠⚠ **stage 加成：唯一的計算點就在這裡**（ver -1584b，Ray：「stage 加成從
+     stage8 開始算，每升一個 stage ×1.025」）══ 卡上存的永遠是**基準值**（＝S8 的值），
+     加成在載入這一刻才乘上去 —— 烘進卡裡的話就再也分不出「這是基準還是加過的」
+     （鐵律 7；同「卡上寫絕對值就存絕對值」那一條的理由）。
+     ⚠ `stageScale` ＝這一隻吃多少（1＝標準、0＝完全不吃，給手動設製的那幾張）。
+     ⚠ **每次換敵都算**（連戰換第二隻也走這一支），不要快取成模組常數。 */
+  const SC = (GAME_CONFIG.tuning||{}).stageCurve || {};
+  const _steps = Math.max(0, prog.getStage() - (SC.from||8));
+  const _sScale = (en.stageScale != null) ? en.stageScale : 1;
+  const stageMul = 1 + (Math.pow(SC.k || 1, _steps) - 1) * _sScale;
+  initEnemyHp(Math.round((en.hp||0) * stageMul));   // 3.2：敵血基準（載入時 setter）
+  state.ASSAULT_DAMAGE = Math.round((en.attack||0) * stageMul);   // 3.3：大絕單擊傷害
   /* 蓄力秒數。⚠ 卡上可以給**區間**（`[3,5]`，ver -423 的巨型蜈蚣）——
      那時候每次排程各自擲一次（見 `defense.scheduleAssault`），所以這裡存的是整個欄位。 */
   state.CHARGE_SECONDS = (en.atkInterval!=null) ? en.atkInterval : GAME_CONFIG.tuning.chargeSeconds;
@@ -944,6 +955,9 @@ export function setEnemy(key, opts){
      ⚠ 舊的 `weak{counter:1}`（不分槍、反擊一律加倍）已折進那三張卡的 weaponMod
        三把各 +1（-949 遷移），行為等值。 */
   state.enemyGanymede  = (en.Ganymede != null) ? en.Ganymede : 0;
+  /* 防禦型的 BR 增傷（ver -1584，Ray：「防禦型 BR 統一增傷 50%」）——
+     卡上的 `brBonus` 由 `enemies_baseline.py` 依類型寫進去；沒寫＝0。 */
+  state.enemyBrBonus   = (en.brBonus != null) ? en.brBonus : 0;
   /* 副武器調整（ver -796，Ray：一欄搞定）：`weaponMod:{ 類別:[傷害, 迴避] }` ——
      [0]傷害＝反擊增傷率（正）/抗性減傷率（負），加法；[1]迴避＝額外 miss 率(0~1)，加法。 */
   state.enemyWeaponMod = en.weaponMod || null;

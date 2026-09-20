@@ -1794,8 +1794,11 @@ const RUSH_TIERS = ['E','D','C','B','A','S'];
 let rushAt = -1;                      // −1＝沒在跑
 function rushLive(){ return rushAt >= 0; }
 function rushHasFoe(t){
+  /* ⚠ 與 `combat.pickBattleEnemy` 的 `enemyTier` 那一支**同一把尺**（打靶／計時賽
+     不算）—— 兩邊不一致的話 rush 會「宣稱有這一級」然後抽出 null。 */
   const E = GAME_CONFIG.enemies || {};
-  return Object.keys(E).some(k => (E[k]||{}).tier === t);
+  return Object.keys(E).some(k => { const c = E[k] || {};
+    return c.tier === t && !!c.atype && c.kind !== 'target' && !c.timeAttack; });
 }
 function rushNext(){
   /* 跳過沒有怪的等級；六個都跑完就收手（最後一場的 sessionEnd 會自己結算）。 */

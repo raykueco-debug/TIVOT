@@ -35,6 +35,7 @@ export const state = {
   order: [],
   expect: 1,
   combo: 0,
+  enemyBrBonus: 0,      // 防禦型的 BR 增傷（ver -1584，擁有者 enemy）
   critCombo: 0,          // 暴擊用連擊（普攻）：正確點擊 +1；受擊或清盤歸零。驅動暴擊率/加傷成長。
   // 評價系統（rating）用的整場統計（combat 擁有；startGame/startIntruderFight 歸零）：
   maxCombo: 0,           // 整場最高連擊

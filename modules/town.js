@@ -1855,9 +1855,43 @@ export function chaseDebug(){ return { spec:chaseSpec(), now:chaseGet() }; }
    `onEncounter` 格。⚠ 包一層而不是散在 `wildActDue` 的每一個 `return`
    （那一支有六個出口，漏一個就是「有時候不推進」而且查不出來，鐵律 8）。 */
 function wildRoll(n){ const a=wildActDue(n); if(a) chaseOnEncounter(); return a; }
+/* ══⚠⚠⚠ **卡上宣告的出沒地**（ver -1584b，Ray：「指定地點要分整個探索地圖跟房間。
+   指定探索地圖的話就是圖中安全區以外的任一格都有機會刷出；指定房間的話就是只有
+   該房間才刷出」）══════════════════════════════════════════════════════════
+   敵人卡的 `spawnAt`（Excel 的「出沒地」那一欄），兩種寫法，多筆用「，」隔開：
+       `<圖id>`          ＝整張探索地圖 —— **安全區以外**的任一格都有機會
+       `<圖id>:<節點id>` ＝只有那一格才刷
+   ⚠⚠ **「安全區以外」是算出來的，不是列名單**（鐵律 7）：問那一格自己的 `noWild`
+     （＝`wildActDue` 底下那一行讀的同一個真相）與「入口／這一趟走進來的那一格」。
+   ⚠⚠ **與地圖上的 `wildSpawn.pool` 是兩條路，刻意分開**：
+     · `wildSpawn.fixed`／`encounters` ＝**那張地圖**安排的（必出格、劇本遭遇）
+     · 卡上的 `spawnAt`               ＝**那一隻怪**自己說牠住哪
+     兩邊都有東西時**聯集**（同一隻不會重覆，`wildDone` 管）。
+     ⚠ 這不是「兩份真相」：問的是兩個不同的問題（「這一格安排了誰」vs「這一隻住哪」）
+       —— 同 `nodeNeighbors`／`mapLinks` 那一對的分法。
+   ⚠ 空白＝這一隻不由這一欄決定（走地圖自己的 `wildSpawn`），所以**漏填不會變成
+     到處都刷**（鐵律 13：漏寫要落在安全的那一側）。 */
+function cardSpawnPool(nodeIdNow){
+  const E = GAME_CONFIG.enemies || {}, out = [];
+  for(const k in E){
+    const at = E[k] && E[k].spawnAt;
+    if(!at) continue;
+    for(const one of String(at).split(/[，,]/)){
+      const seg = one.trim(); if(!seg) continue;
+      const i = seg.indexOf(':');
+      const map = (i < 0 ? seg : seg.slice(0, i)).trim();
+      const nd  = (i < 0 ? ''  : seg.slice(i + 1)).trim();
+      if(map !== townId) continue;
+      if(nd){ if(nd === nodeIdNow) out.push(k); }     // 指定房間：只有那一格
+      else out.push(k);                               // 整張圖（安全區由呼叫端擋）
+    }
+  }
+  return out;
+}
 function wildActDue(n){
   const T0=TOWNS[townId]||{};
-  const W=T0.wildSpawn; if(!W || !n) return null;
+  const cardPool = cardSpawnPool(nodeId);
+  const W=T0.wildSpawn; if((!W && !cardPool.length) || !n) return null;
   if(prog.hasFlag(safehouseFlag())) return null;        // 安全區：遭遇戰整套不動
   /* ══⚠⚠ **`wildFrom:'<旗>'` ＝這支旗插上去之前，這張圖一隻野怪都沒有**
      （ver -1399，Ray：「貝利薩爾在王座徘徊者擊敗前沒有野怪」）══
@@ -1892,7 +1926,7 @@ function wildActDue(n){
                   由 `enter()` 那一套統一收尾（旗標**演完才記**，打輸回頭還遇得到）
      ⚠ 它**不進 `wildDone`**：那一組是「這一趟同種不重複」，而這一場一輩子只有一次，
        靠 `act.flag` 擋 —— 兩者不是同一件事，共用會讓「這一趟沒遇到」變成「永遠沒有」。 */
-  for(const e of (W.encounters||[])){
+  for(const e of ((W&&W.encounters)||[])){
     /* `at:'<節點>'` ＝這一筆只在那一格成立（ver -919，神殿的鳴鐘者只出現在巨像廳）。
        ⚠ 不寫＝不限場域（鹿主那一筆就是）—— 舊資料不受影響。 */
     if(e.at && e.at!==nodeId) continue;
@@ -1913,7 +1947,10 @@ function wildActDue(n){
     const conn=connectorIds().includes(nodeId);
     const okHere = p => !(p.where==='connector' && !conn);
     /* 這一趟**還沒打過的**那幾隻（「一趟同種不重複」的規約）。 */
-    const fresh=(W.pool||[]).filter(p=> okHere(p) && !wildDone.has(wildSpecies(p.battle)));
+    /* 卡上宣告的那幾隻（見 cardSpawnPool）與地圖自己的池子**聯集**。
+       ⚠ 卡上那一批沒有 `where` 限制（牠自己已經說了住哪），所以直接包成同樣的形狀。 */
+    const pool0 = (W.pool||[]).concat(cardPool.map(k=>({ battle:k })));
+    const fresh=pool0.filter(p=> okHere(p) && !wildDone.has(wildSpecies(p.battle)));
     /* ══⚠⚠ **池子清空之後要能重刷**（ver -958，Ray：「重複攻略神殿時路上要有 25%
        機率遇怪，好像打完中 boss 走到休息點就幾乎碰不到怪了」）══
        -924 就有「重刷率」了，但候選**照樣把 `wildDone` 濾掉** —— 於是池子裡那幾隻
@@ -1927,9 +1964,9 @@ function wildActDue(n){
     const repeat = !fresh.length;
     const rate = (repeat || wildCleared.has(nodeId))
       ? ((GAME_CONFIG.tuning||{}).wildRespawnRate!=null ? GAME_CONFIG.tuning.wildRespawnRate : 0.25)
-      : (W.rate||0);
+      : ((W&&W.rate)||(cardPool.length?((GAME_CONFIG.tuning||{}).wildRespawnRate||0.25):0));
     if(Math.random() >= rate) return null;
-    const cands = repeat ? (W.pool||[]).filter(okHere) : fresh;
+    const cands = repeat ? pool0.filter(okHere) : fresh;
     if(!cands.length) return null;
     pick=cands[Math.floor(Math.random()*cands.length)].battle;
   }

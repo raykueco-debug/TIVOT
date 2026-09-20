@@ -109,10 +109,17 @@ LAYOUT = [
     ('基本資料', [('key',            ''), ('圖', '圖'), ('圖檔', '圖檔'), ('name', '顯名')]),
     ('基本設定', [('story',          '劇情'), ('kind', '種類'),
                 # ver -1582，Ray：「在怪種類那列後面加上等級、類型、stage加成 3 列」
-                ('tier',           '等級'), ('atype', '類型'), ('stageScale', 'stage加成'),
+                ('tier',           '等級'), ('atype', '類型'), ('stageScale', 'stage加成'),   # 表頭的字會補上係數，見 head3()
                 ('hp', 'HP'), ('attack', '攻擊力'),
                 ('counterStagger', '反擊硬直'), ('boss', 'Boss'), ('stack', '疊圈'), ('entrance', '進場音效'),
-                ('bg',             '指定地點')]),
+                ('bg',             '戰鬥背景'),
+                # ══ 出沒地（ver -1584b，Ray：「指定地點要分整個探索地圖跟房間」）══
+                #   `<圖id>`          ＝整張探索地圖：安全區以外的任一格都有機會刷
+                #   `<圖id>:<節點id>` ＝只有那一格才刷
+                #   多筆用「，」隔開。空白＝不由這一欄決定（走地圖自己的 wildSpawn）。
+                # ⚠ 與左邊的「戰鬥背景」是**兩件事**：那一欄是打起來時背後那張圖
+                #   （而且多半會被玩家站的那一格蓋過去，§6.5.4.4），這一欄是**會在哪裡遇到牠**。
+                ('spawnAt',        '出沒地')]),
     ('武器增益', [('Ganymede',       '雙槍增傷'), ('brBonus', 'BR增傷'),
                 ('weaponMod.重機槍.傷害', '機槍增傷'), ('weaponMod.重機槍.迴避', '機槍迴避'),
                 ('weaponMod.霰彈槍.傷害', '霰彈增傷'), ('weaponMod.霰彈槍.迴避', '霰彈迴避'),
@@ -262,7 +269,16 @@ def do_export():
     # 三列表頭
     ws.append([c[2] or '' for c in cols])          # ① 群組
     ws.append([c[0] for c in cols])                # ② 欄名（機器讀的）
-    ws.append([c[1] for c in cols])                # ③ 中文顯名
+    # ── 中文顯名那一列 ──
+    # ⚠⚠ **`stage加成` 的表頭要把係數印出來**（ver -1584b，Ray：「把 1.025 這個
+    #   係數也做在該列表頭」）—— 數字讀 `tuning.stageCurve`（唯一真相，鐵律 7），
+    #   **不要在這裡手寫 1.025**：改了 config，表頭下一次 export 就跟著變。
+    SC = (load_named('GAME_CONFIG', 'GAME_CONFIG.tuning') or {}).get('stageCurve') or {}
+    def head3(c):
+        if c[0] == 'stageScale' and SC:
+            return '%s（×%s／階，自 S%s 起）' % (c[1], SC.get('k'), SC.get('from'))
+        return c[1]
+    ws.append([head3(c) for c in cols])            # ③ 中文顯名
     i = 1
     for g, fields in LAYOUT:                       # 群組橫向合併
         if len(fields) > 1: ws.merge_cells(start_row=1, start_column=i, end_row=1, end_column=i+len(fields)-1)

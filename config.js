@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1584';
+export const VERSION = 'ver 2026.09.17-1586';
 
 export const GAME_CONFIG = {
 
@@ -3950,18 +3950,26 @@ export const GAME_CONFIG = {
        這裡取 **±1**（所以速度型剛好是既有的 `[2,4]`，其餘往後推）。
        `hpMul` ＝那一型的血量係數（Ray：速度型較低／力量型中等／防禦型高）。
        `brBonus` ＝BR（雙槍破防）窗口期間多吃的傷害 —— 只有防禦型有（Ray：統一 50%）。 */
+    /* ⚠ 鑰匙是 Ray 在 Excel 裡填的**代號**（ver -1584b）：**P 力量型／S 速度型／
+       D 防禦型**。⚠⚠ `S` 是**速度型不是等級 S** —— 等級在 `tier` 那一欄，
+       兩欄各自獨立（一隻可以是「等級 S 的速度型」）。 */
     enemyType: {
-      '速度型': { every:3, hpMul:0.8, brBonus:0    },
-      '力量型': { every:4, hpMul:1.0, brBonus:0    },
-      '防禦型': { every:5, hpMul:1.3, brBonus:0.5  },
+      S: { name:'速度型', every:3, hpMul:0.8, brBonus:0    },
+      P: { name:'力量型', every:4, hpMul:1.0, brBonus:0    },
+      D: { name:'防禦型', every:5, hpMul:1.3, brBonus:0.5  },
     },
-    /* ══ 後天的 stage 加成（執行期，唯一計算點在 `enemy.setEnemy`）══
-       `hp／atk` 每超過 `from` 一個 stage 就各加這麼多（加法，不是連乘）。
-       ⚠ 卡上的 `stageScale` 是**這一隻吃多少**（1＝標準、0＝完全不吃）——
-         「無分類的由我手動設製」那幾張填 0，數值就永遠是卡上寫的。
-       ⚠⚠ **數字還沒調過**：Ray 說「先做入 xls，我再進去補怪等級，然後來做總調整」
-         —— 這一組是佔位，等那一輪。 */
-    stageCurve: { from:1, hpPerStage:0.06, atkPerStage:0.04 },
+    /* ══⚠⚠ 後天的 stage 加成（ver -1584b，Ray：「stage 加成從 stage8 開始算，
+       每升一個 stage ×1.025（因為目前有很多 stage 沒有戰鬥只有劇情）」）══
+       **`hp` 與 `atk` 各乘 `k^(現在的 stage − from)`**（連乘，不是加法）——
+       S8 ＝×1、S12 ＝×1.104、S20 ＝×1.345。
+       ⚠⚠ **唯一計算點在 `enemy.setEnemy`**（鐵律 7）：卡上存的永遠是**基準值**
+         （＝S8 的值），執行期才乘 —— 不要把加成烘進卡裡，那樣就分不出
+         「這是基準還是已經加過」。
+       ⚠ 卡上的 `stageScale` 是**這一隻吃多少**：1＝標準、0＝完全不吃
+         （「無分類的由我手動設製」那幾張填 0，數值就永遠是卡上寫的）。
+       ⚠ `k` 這個係數也印在 Excel 那一欄的表頭上（Ray 指定）——
+         **改這裡，表頭下次 export 就跟著變**（`enemies_xlsx.py` 讀它，鐵律 7）。 */
+    stageCurve: { from:8, k:1.025 },
 
     // 榴彈
     grenades:            1,     // 開局榴彈數

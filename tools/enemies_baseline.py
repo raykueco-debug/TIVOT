@@ -45,44 +45,23 @@ def load(name, files, expr):
 #    判準寫成**白名單以外全動**太危險，所以反過來：**只列出「不要動」的**。
 #    · 教學／打靶／測試用：數值是教學流程的一部分，動了教學就壞
 #    · 四張龍與四張守墓者：Ray 逐張指定過來源卡（`_dragon_spec.md`）
-MANUAL = {
-    # 教學／劇情殺／亂入：數值是那一段流程的一部分，動了流程就壞
-    'trainee', 'intruderEnemy', 'faceless', 'facelessgiant',
-    # ⚠⚠ **E 級的錨點本身**：Ray「E 是劇情敵，一概先套帝都賞金獵人數值」
-    #   —— 那就是這一張（`guild_hunter`），它是尺不是被量的東西。
-    'guild_hunter',
-    # 四張龍與四張守墓者：Ray 逐張指定過來源卡（`_dragon_spec.md`）
-    'bl_dragon_chase', 'bl_dragon_throne', 'bl_dragon_throne2', 'bl_dragon_front', 'bl_dragon_sky',
-    'gk_seal', 'gk_offset', 'gk_many', 'gk_crypt',
-}
+# ── ⚠⚠⚠ 什麼叫「手動設製」：**Ray 的表說了算**（ver -1584b）─────────────────
+#   判準只有一條：**`tier` 與 `atype` 兩欄都填了才套基準**。
+#   Ray 的原話是「**無分類的由我手動設製**」—— 類型留白就是他要自己調的那幾張。
+#   ⚠⚠ **-1582 那份寫死的名單已經刪掉**：它會**蓋過他在表上的決定**
+#     （實例：`faceless`／`facelessgiant` 他給了 B＋類型，名單卻把它們擋在外面，
+#      於是表上寫著 B、數值還是教學那一套 —— 而且不會有任何錯誤訊息）。
+#   ⚠ 只留一條機器判得出來的：打靶（`kind:'target'`）與計時賽（`timeAttack`）
+#     的數值是小遊戲的規則，不是戰鬥數值。⚠ 它們本來就沒有類型，這一條是保險。
 def is_manual(k, e):
-    """⚠⚠ **不是「普通會打的怪」就不要碰**（除了上面點名的那幾張）：
-       · `kind:'target'` ＝打靶（靶不會動，數值是小遊戲的規則）
-       · `timeAttack` ＝計時賽（`attack:1` 那種「不會真的扣血」的卡，
-         而且 `assaultEvery` 是 Ray 逐張指定的秒數）
-       ⚠ 判準讀**資料本身**不列名單（鐵律 7）—— 日後多一張打靶卡自動跳過。"""
-    return (k in MANUAL) or e.get('kind') == 'target' or bool(e.get('timeAttack'))
+    return e.get('kind') == 'target' or bool(e.get('timeAttack'))
 
-def guess_tier(k, e):
-    """⚠⚠ **暫定，用現在的血量分級**（Ray：「我再進去補怪等級」）——
-       規則按順序取第一個成立的，每一張都印得出理由，他要在 Excel 裡整批改很容易。
-       ⚠ **不自動給 E**：E 是「劇情敵」，那是**劇本的身分**不是數值特徵，
-         而這個庫裡 `story:1` 的卡佔了七成（那一格的意思是「劇情戰」）——
-         拿它當判準會把整個庫塞進 E。等 Ray 點名。"""
-    hp = e.get('hp') or 0
-    if e.get('boss'):            return 'A', 'boss:1'
-    if hp >= 800:                return 'S', 'hp≥800'
-    if hp >= 600:                return 'A', 'hp≥600'
-    if hp >= 380:                return 'B', 'hp≥380'
-    if hp >= 250:                return 'C', 'hp≥250'
-    return 'D', 'hp<250'
-
-def guess_type(k, e):
-    """⚠⚠ **暫定，一律給中庸的力量型**（除了現在就明顯慢的那幾張）。
-       ⚠ 不用「拿 `assaultEvery` 反推」：這個庫裡九成的卡都是 `[2,4]`，
-         反推出來會變成「全部都是速度型」—— 那不是分類，是把預設值當答案。"""
-    ev = e.get('assaultEvery') or [2, 4]
-    return '防禦型' if (ev[0] + ev[1]) / 2.0 >= 6 else '力量型' 
+def tier_type(k, e):
+    """⚠⚠ **ver -1584b 起讀卡上的 `tier`／`atype`（＝Ray 在 Excel 裡填的）**，
+       不再自己猜。兩欄只要缺一個就當「手動設製」不碰數值
+       （Ray：「無分類的由我手動設製」）。"""
+    t, a = e.get('tier'), e.get('atype')
+    return (t, a) if (t and a) else (None, None)
 
 def main():
     mode = (sys.argv[1] if len(sys.argv) > 1 else 'plan')
@@ -94,24 +73,26 @@ def main():
     rows, edits = [], 0
 
     for k, e in E.items():
-        if is_manual(k, e):
-            rows.append((k, '—', '—', '(手動設製，不動)')); continue
-        tier, why = guess_tier(k, e)
-        atype     = guess_type(k, e)
-        t, ty     = TIER[tier], TYPE[atype]
+        tier, atype = tier_type(k, e)
+        if is_manual(k, e) or not tier or tier not in TIER or atype not in TYPE:
+            rows.append((k, e.get('tier') or '—', e.get('atype') or '—',
+                         '(手動設製／等級或類型還沒填，不動數值)')); continue
+        t, ty = TIER[tier], TYPE[atype]
         hp   = int(round(t['hp'] * ty['hpMul'] / 10.0)) * 10      # 取到十位，表上好讀
         atk  = t['atk']
         every = [ty['every'] - 1, ty['every'] + 1]
         grids = t['grids']
         stack = t['stack']
         rows.append((k, tier, atype,
-                     'hp %d→%d  atk %d→%d  每 %s 秒  %s  疊圈%d   〔%s〕'
+                     'hp %d→%d  atk %d→%d  每 %s 秒  %s  疊圈%d'
                      % (e.get('hp') or 0, hp, e.get('attack') or 0, atk,
-                        '%d~%d' % tuple(every), '/'.join(map(str, grids)), stack, why)))
+                        '%d~%d' % tuple(every), '/'.join(map(str, grids)), stack)))
         if mode != 'apply':
             continue
         # ── 就地改值：只在這一張卡的區段裡替換 ──────────────────────────
-        m = re.search(r'^(    %s: \{)$' % re.escape(k), src, re.M)
+        # ⚠ 卡的開頭那一行**可能帶行末註解**（`sv_wolf_pack: {   // …`）——
+        #   用嚴格的 `$` 會靜靜漏掉 14 張（-1584b 踩過，表上有值、卡上沒改）。
+        m = re.search(r'^(    %s: \{.*)$' % re.escape(k), src, re.M)
         if not m:
             print('⚠ 找不到卡的開頭，跳過：', k); continue
         end = src.index('\n    },', m.start()) + len('\n    },')
@@ -130,14 +111,20 @@ def main():
         # ⚠⚠ **四個新欄位一起插在 `kind:` 後面**（Ray：「在怪種類那列後面加上」）：
         #   一次 `put` 一件事的話，後面那幾次會與前面搶同一個錨點而漏掉
         #   （實測 19 張 A／B 的 `stack` 就是這樣沒插進去，而且不會報錯）。
-        if not re.search(r'^      tier:', blk, re.M):
-            extra = ('      brBonus:%s,\n' % ty['brBonus']) if ty['brBonus'] else ''
-            put(r'^(      kind:.*\n)',
-                "\\g<1>      tier:'%s', atype:'%s', stageScale:1, stack:%d,\n%s"
-                % (tier, atype, stack, extra))
+        # ⚠⚠⚠ **一欄一行**（ver -1584b）：`enemies_xlsx.py import` 是照
+        #   `^      欄名: 值,$` 就地改值的 —— 把好幾欄擠在同一行，匯入器**改不到**
+        #   （實測「改不到 116 格」就是這樣來的，而且它不會報錯，只會靜靜跳過）。
+        if re.search(r'^      stack:', blk, re.M):
+            put(r'^      stack:.*$', '      stack:%d,' % stack)
         else:
-            put(r'^(      tier:).*$',
-                "\\g<1>'%s', atype:'%s', stageScale:1, stack:%d," % (tier, atype, stack))
+            put(r'^(      stageScale:.*\n)', '\\g<1>      stack:%d,\n' % stack)
+        if ty['brBonus']:
+            if re.search(r'^      brBonus:', blk, re.M):
+                put(r'^      brBonus:.*$', '      brBonus:%s,' % ty['brBonus'])
+            else:
+                put(r'^(      stack:.*\n)', '\\g<1>      brBonus:%s,\n' % ty['brBonus'])
+        elif re.search(r'^      brBonus:', blk, re.M):
+            blk = re.sub(r'^      brBonus:.*\n', '', blk, flags=re.M)
         if blk != blk0:
             src = src[:m.start()] + blk + src[end:]
             edits += 1
