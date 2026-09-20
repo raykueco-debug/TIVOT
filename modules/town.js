@@ -1831,9 +1831,18 @@ function chaseActDue(n){
      ⚠ 挑那一段走既有的 `actDue()`（前置旗、章節門、`until` 整套照舊，鐵律 8）。
      ⚠ 兩邊共用同一個 `flag` ⇒ 只演一次。 */
   if((c.hits|0)===0 && spec.intro){
-    const src=((TOWNS[townId]||{}).nodes||{})[spec.intro];
-    const a0=src && actDue(src);
-    if(a0) return a0;
+    /* ⚠⚠⚠ **指名的是「那一段」不是「那一格」**（ver -1606）：`intro:{at,flag}`。
+       -1603 我寫成只給節點、再用 `actDue(節點)` 去挑 —— 那會挑到**那一格的第一段
+       還沒演的**，而柱廳的第一段是**氣氛戲**（「這個地方好大……死胡同……」）。
+       於是追兵在別的格子現身時演的是那一段，演完之後 `actDue(當下這一格)` 沒有
+       下一段 ⇒ **話講一半就沒了、守墓者也沒出來**（Ray 回報）。
+       ⇒ 現在照 `flag` 指名那一段，挑錯的可能性歸零。
+       ⚠ 前置旗／章節門照舊要過（沿用 `actDue` 的規約，只是限定在那一段上）。 */
+    const io = spec.intro, src = ((TOWNS[townId]||{}).nodes||{})[io && io.at];
+    const want = (src && (src.acts||[]).find(x => x && x.flag === (io && io.flag))) || null;
+    if(want && !prog.hasFlag(want.flag)
+       && (!want.need || prog.hasFlag(want.need))
+       && (want.fromStage == null || prog.getStage() >= want.fromStage)) return want;
   }
   const list=spec.battles||[];
   if(!list.length) return null;
