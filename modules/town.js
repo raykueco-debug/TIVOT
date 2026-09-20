@@ -2767,6 +2767,51 @@ function infoText(n){
    ⚠ 背景還沒載完時 `bgPoint` 回 null ⇒ **先不要畫**（擺在錯的地方比晚一拍糟）。
    ⚠ 誰收它：`close()` 移除；換到沒有鐘的節點時 `refreshArrows` 自己把它藏起來。 */
 let clockEl=null;
+/* ══⚠⚠⚠ 面盤與指針的顏色 —— **量圖，不寫在資料裡**（ver -1541）══════════════
+   Ray：「瓦恩霍姆的火車站圖有改，時鐘的位置角度要修正」
+
+   ver -1249 那一版把顏色寫成資料上的兩個字串（`face`／`hand`，預設灰 142,141,146）。
+   **那是一份會過期的真相**，而且是**四份**：`Varn_Station` 有 dawn／day／dusk／night
+   四張差分，同一面錶盤在四個時段的顏色差很多（實測面盤：
+   day (187,178,175)／dawn (170,158,156)／**dusk (156,123,111)**／night (168,145,130)）——
+   一個字串一定有三個時段是錯的，而畫面上只會是「錶盤上糊了一塊顏色不對的補丁」。
+
+   ⇒ **改成量現在畫面上那一張**：`#storyBg` 是同源的，canvas 讀得到（同 `tone.js`
+     量平均亮度那一套）。只畫**錶盤那一小塊**（約 90×90）進 canvas，不是整張 1536×1024。
+   · 面盤 ＝ 亮度排序中段偏亮的那一段（55%~85%）—— 暗的是羅馬數字與指針，
+     最亮的可能是高光，兩頭都要避開。
+   · 指針 ＝ 最暗的 4%。
+   ⚠ 換一張圖（換時段／換城／同名覆蓋帶 `?v=`）就重量一次：快取的鑰匙是 `src`。
+   ⚠ 量不到（canvas 被污染、圖還沒載完）就退回資料上的 `face`／`hand`，不會整段掛掉。 */
+let clockPal={ src:null, face:null, hand:null };
+function clockPalette(C){
+  const bg=document.getElementById('storyBg');
+  const src=bg && bg.getAttribute && bg.getAttribute('src');
+  if(!src || !bgNat || !bg.complete) return null;
+  if(clockPal.src===src) return clockPal.face ? clockPal : null;
+  clockPal={ src, face:null, hand:null };
+  try{
+    const NW=bgNat[0], NH=bgNat[1], R=C.r*NW;
+    const S=Math.max(8, Math.round(R*2)+4);
+    const cv=document.createElement('canvas'); cv.width=cv.height=S;
+    const g=cv.getContext('2d',{ willReadFrequently:true });
+    g.drawImage(bg, Math.round(C.x*NW-S/2), Math.round(C.y*NH-S/2), S, S, 0, 0, S, S);
+    const d=g.getImageData(0,0,S,S).data, lim=(R*0.9)*(R*0.9), list=[];
+    for(let y=0;y<S;y++) for(let x=0;x<S;x++){
+      const dx=x-S/2, dy=y-S/2; if(dx*dx+dy*dy>lim) continue;
+      const i=(y*S+x)*4; list.push([d[i],d[i+1],d[i+2],d[i]+d[i+1]+d[i+2]]);
+    }
+    if(list.length<40) return null;
+    list.sort((a,b)=>a[3]-b[3]);
+    const band=(lo,hi)=>{ let r=0,gg=0,b=0,n=0;
+      for(let i=Math.floor(list.length*lo), e=Math.max(i+1, Math.floor(list.length*hi)); i<e && i<list.length; i++){
+        r+=list[i][0]; gg+=list[i][1]; b+=list[i][2]; n++; }
+      return n ? (r/n|0)+','+(gg/n|0)+','+(b/n|0) : null; };
+    clockPal.face=band(0.55,0.85);
+    clockPal.hand=band(0,0.04);
+  }catch(e){ return null; }          // 跨網域污染／還沒解碼 —— 退回資料上的顏色
+  return clockPal.face ? clockPal : null;
+}
 function syncBgClock(){
   const st=story.stageEl(); if(!st) return;
   if(clockEl && !clockEl.isConnected) clockEl=null;      // 舞台被整層收掉過
@@ -2781,8 +2826,12 @@ function syncBgClock(){
   const degM=(t%1)*360, degH=((t%12)/12)*360;            // 12 點起算、順時針
   const tip=(len,deg)=>{ const k=deg*Math.PI/180;
     return [c.x+len*Math.sin(k), c.y-len*Math.cos(k)]; };
-  const [hx,hy]=tip(R*0.78, degH), [mx,my]=tip(R*1.06, degM);
-  const face=C.face||'142,141,146', hand=C.hand||'62,63,70';
+  /* ⚠⚠ 指針長度是**那一張錶盤的性質**，不是全域常數（ver -1541）：新的火車站圖
+     畫上去的兩根都只到 0.80R，沿用舊的 1.06R 會讓分針戳出盤面、壓在外圈的石框上。
+     沒寫＝舊值（0.78／1.06），既有的節點行為不變。 */
+  const [hx,hy]=tip(R*(C.hLen||0.78), degH), [mx,my]=tip(R*(C.mLen||1.06), degM);
+  const pal=clockPalette(C);
+  const face=(pal&&pal.face)||C.face||'142,141,146', hand=(pal&&pal.hand)||C.hand||'62,63,70';
   /* ⚠ `wipe`＝**畫上去的指針伸出盤面圓之外的那一截**要另外抹掉
      （`Varn_Station` 的分針畫到 r≈56，而盤面補丁只到 50 —— 不抹的話
      三點鐘方向會留一小截黑，那正是「對不上」的另一種長相）。
@@ -2801,8 +2850,15 @@ function syncBgClock(){
     st.appendChild(clockEl);                             // 排在 #storyBg 之後＝疊在它上面
   }
   const f=v=>v.toFixed(2);
+  /* ⚠⚠⚠ **`faceR` ＝那一塊平面補丁的半徑**（占 `r` 的比例，不寫＝1＝整面蓋掉）。
+     ver -1249 的前提是「那面盤是平的」（舊圖只有刻度、而且在 r≈48 之外）——
+     **新的火車站圖不是**：盤面上有一圈羅馬數字（r≈29~45），整面蓋掉就等於
+     把美術剛畫好的數字全部擦掉，只剩一個空白的奶油色圓盤。
+     ⇒ 這一張改成「**只補錶心、畫上去的那兩根交給 `wipe`**」（`faceR:0.22`）。
+     ⚠ 新增有鐘的節點時先問一句：**那面盤上有沒有東西不能被蓋掉？** */
+  const fr=(C.faceR!=null?C.faceR:1);
   clockEl.innerHTML =
-      '<circle cx="'+f(c.x)+'" cy="'+f(c.y)+'" r="'+f(R)+'" fill="rgb('+face+')"/>'
+      (fr>0 ? '<circle cx="'+f(c.x)+'" cy="'+f(c.y)+'" r="'+f(R*fr)+'" fill="rgb('+face+')"/>' : '')
     + wipe
     + '<line x1="'+f(c.x)+'" y1="'+f(c.y)+'" x2="'+f(hx)+'" y2="'+f(hy)+'" '
       + 'stroke="rgb('+hand+')" stroke-width="'+f(Math.max(R*0.11,0.8))+'" stroke-linecap="round"/>'

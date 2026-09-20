@@ -969,8 +969,27 @@ window.addEventListener('pagehide', refreshBoot);
       // 外框要放大成 外圓直徑 ÷ RING_SVG_R —— 畫出來的那個圓才會與紋章外圓重合
       const d=Math.round(r.width*EM_RING.d/RING_SVG_R);
       ring.style.width=d+'px'; ring.style.height=d+'px';
-      ring.style.left=Math.round(r.left+r.width/2)+'px';
-      ring.style.top =Math.round(r.top +r.height/2 + r.height*EM_RING.cy)+'px';
+      /* ══⚠⚠⚠ **要換算回 `#alRing` 的 containing block，不可以直接餵視窗座標**
+           （ver -1541，Ray 連報兩次「首頁讀取圈還是歪的」）══════════════════════
+         `getBoundingClientRect()` 給的是**視窗**座標，而 `#alRing` 是
+         `position:absolute`、住在 `#assetLoader` 裡 —— 它的 `left/top` 量的是
+         **那一層的左上角**。兩者只有在「`#assetLoader` 剛好貼齊視窗左上角」時才相等。
+
+         ⚠⚠ ver -1518 的**電腦版固定比例框**把那個前提拿掉了：`@media (pointer:fine)`
+           給 `#assetLoader` 固定寬高 ＋ `margin:auto` ⇒ 它是**置中**的。
+           實測 614×1198 的視窗：loader 落在 (47, 36.3)、520×1125 ——
+           圈就整個平移了一條黑邊的寬度（47, 36）。
+         ⚠⚠⚠ **手機上量不出來**（`pointer:coarse` 不套那個框 ⇒ 位移是 0）——
+           -1527 那一版就是在 375×812 驗的，所以「量到的數字全對、畫面照樣歪」。
+           **驗這一條一定要在桌機寬度、而且是有黑邊的視窗比例下看。**
+         ⚠ 那一段 CSS 自己的警語只提到「`position:fixed` 的相對對象沒有改」——
+           對，但**住在框裡面的 `absolute` 子元素**是另一回事，這就是它。
+         ⚠ 聖光綻放（`#alFlash`）不受影響：它掛在 `body` 上、是 `position:fixed`，
+           而且讀的就是這個圈的**視窗**座標 —— 兩邊各自對，不要「順手」一起改。 */
+      const host=ring.offsetParent || ring.parentNode;
+      const hr=host.getBoundingClientRect();
+      ring.style.left=Math.round(r.left+r.width/2 - hr.left)+'px';
+      ring.style.top =Math.round(r.top +r.height/2 + r.height*EM_RING.cy - hr.top)+'px';
       fitCap();
     } else setTimeout(placeRing, 120);
   }
