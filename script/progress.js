@@ -1273,45 +1273,32 @@ export const CHAPTERS = [
    ⚠ 它與章節跳關一樣是**破壞性**的（`startChapter` 開頭就 `newRun()`），
      而且只有 `body.testmode` 看得到那顆鈕（§6.9 的白名單：**新鈕預設安全**）。
 
-   ── 現在設在：**貝利薩爾遺址・古城中庭**（ver -1396，Ray：「開在古城裡面」）──
+   ── 現在設在：**雪都瓦恩霍姆・中心區（進圖書館前）**（ver -1551，Ray：
+        「把場景移到進圖書館前，我自己跑一次確認差分」）──
 
-   ⚠⚠⚠ 落在這裡是為了測**首戰那一條鏈**：走進去 → `ep_bel_enter` →（強制）祭壇
-     → 王座徘徊者降臨 → **首戰 `ep_belisar_altar`** → 撤離 → **強制回東泊（18:00 規則）**
-     → 旅店按睡覺 → **小睡一小時 → 索菈娜** → 那一夜。
-   ⚠⚠ **`ep_bel_enter` 不給**（那正是要測的第一拍）；`ep_day2` **要給** ——
-     它是 `ep_bel_enter` 的 `need`（東泊翌日那道閘門演完的旗）。
-   ⚠⚠ **`ep_renna_night` 要給**：東泊旅店的 `sleepFlag` 就是它 —— 不給的話回到東泊
-     按睡覺只會看到「現在不是睡覺的時候。」，小睡那一段整條測不到。
-   ⚠⚠ **`aff:{renna:40}` ＝ 蕾娜 T3** —— **不再是必要條件**（ver -1489 拿掉了
-     那一夜的 `needTier:{renna:3}`，Ray：「髮飾劇情必跑」）：現在好感是 0 也照樣
-     小睡＋索菈娜＋那一夜。留著只是為了讓跳關進來的狀態合理。
-     ⚠ 「T2 那一條（睡一覺就是隔天）」**已經不存在了** —— 不要再拿 `renna:20` 去測它。
-   ⚠ `clockHour:9` ＝早上出發。**要測「超過 15:00 每小時 +1」那條規則**，
-     把它改成 16／17（回到東泊就會是 19:00／20:00）。
+   ⚠⚠⚠ 要測的是 **ver -1550 索菈娜唸報告那六句的 `Sorana_SI_read`**：
+     站在中心區，**往上走一格就是圖書館**，走進去那一整段（評鑑報告）就開演。
+   ⚠⚠ **`vn_lib_done` 不給**（那正是要測的那一段）；**`vn_evening` 要給** ——
+     它是圖書館那一段的 `need`，而且它自己是一道**六點的閘門**（`hourOfDay:[18,24]`
+     ＋ `goto:'inn'`）：不給的話一走動就被抓回旅店，永遠進不了圖書館。
+   ⚠ `clockHour:18` ＝六點那一段剛演完的時刻（旗已經給了，閘門不會再觸發）。
+   ⚠ `mapcard_ravnsdal` 給了 —— 他在城裡已經逛了一整天，不要再彈一次圖名卡。
+   ⚠ 圖書館**沒有 `hours`**（不會打烊），所以 18:00 走得進去。
+   ⚠⚠ 底是 **`CHAPTERS` 的 `stage13ba`**（先 B 後 A・M1）那一串，再補上
+     ①雪都抵達那三支 ②舊落點留下來的生活類旗（`ruin_a_found`／`got_Shotgun_Dragon`／
+     `inn_tip_*`／東泊那三支記帳）—— **巡場吃的是這一份**（見下面那一段），
+     少了它們巡場會退回「沒逛過」的狀態。
 
-   ── 上一筆（東方泊地・抵達）留著當範例 ──
-   `stage:8, clockHour:9, node 不寫（走 entry:'square'）`，旗照下面那一串
-   但**不給任何 `ep_*`**。
-
-   ⚠⚠⚠ **`belisar_noland_talk` 一定要給**：它是 `ep_arrive` 的 `need`
-     （飛行頁「貝利薩爾降不下去 → 蕾娜指路東泊」插的那一支，
-      `flight/index.html` 的 `BELISAR_NOLAND_FLAG`）。不給的話人進得去、
-     **抵達那一段整個不演**，而且畫面上不會有任何錯誤訊息。
-   ⚠⚠ **`ep_*` 一支都不給**（那正是要測的）；**`eastport_seen`／`mapcard_eastport`／
-     `seen_eastport_*`／`inn_seen_eastport_inn` 也不給** —— 那些是「踏進過這張圖」的
-     記帳，給了等於已經逛過一輪：圖名卡不出、旅店初見不演。
-   ⚠ `inn_tip_*` 要給：那三則一次性說明在帝都早就學過了。
-   ⚠ `stage:8` —— 東泊這一段線上跑的就是 stage 8，而 `FEATURE_FROM`／
-     `PLACE_STAGE_FROM` 那幾道門都對著它（鐵律 9：不要讓假的鑰匙參與遊戲邏輯）。
-   ⚠ `clockHour:9`；抵達那一拍自己有 `clockToNext:11`（Ray 的「入口固定 AM 11:00」）。
-   ⚠ `node` 不寫 ＝走城上的 `entry:'square'`（`ep_arrive` 就掛在那一格）。
+   ── 上一筆（貝利薩爾遺址・古城中庭）留著當範例 ──
+   `stage:8, clockHour:9, town:'belisar', node:'entrance'`，旗給到 `ep_day2` 為止、
+   **`ep_bel_enter` 以後一支都不給**（那是要測的內容）。
 
    **要改測別張圖**：換 `town`（＋需要的話 `node`／`clockHour`／`stage`），
    並把 `flags` 調成「那一段**之前**」的狀態 —— 要測的那幾支旗**不要給**。 */
 export const SCRIPT_TEST = {
   id:'scripttest', name:'腳本測試',
-  sub:'貝利薩爾遺址・古城中庭 → 首戰 → 回東泊 → 那一夜',
-  stage:8, clockHour:9, named:true, aff:{ renna:40 },
+  sub:'雪都・中心區 →（往上）圖書館：評鑑報告（測索菈娜唸報告的差分）',
+  stage:13, clockHour:18, named:true, aff:{ renna:40 },
   flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
            'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
@@ -1324,20 +1311,29 @@ export const SCRIPT_TEST = {
            'sr_mural','ruins_gate_open','ruins_bell_done','ruins_thug_met','sr_altar',
            'ruins_altar_on','sv_s8_noon',
            'sv_s8_home','sv_s8_hungry','sv_s8_dine','sv_s8_corvin',
-           /* 第 9 章演完：諭令 → 離村出航（索菈娜入隊） */
-           'sv_s9_order','sv_s9_leave',
-           /* 瓦努努已開啟（同 stage8／試飛）＋ 帝都打靶拿過龍息（他一路玩過來本來就有） */
-           'ruin_a_found','got_Shotgun_Dragon',
-           /* 旅店那三則一次性說明在帝都學過了，不要再教一次 */
+           'sv_s9_order','belisar_noland_talk','ep_arrive',
+           'ep_renna_met','ep_renna_night','ep_evening','ep_day2',
+           'belisar_seen',
+           'ep_bel_gorge','ep_bel_sight','ep_bel_enter','bl_foyer_first',
+           'bel_hint2','bel_hint3','bel_water','ep_bel_altar','renna_hairpin_lost',
+           'ep_bel_court','ep_belisar_done','ep_bel_back',
+           'ep_night_raid','ep_hairpin_hunt','belisar_land_ok',
+           'bl_night_land','bl_night_foyer','bl_chase1','bl_chase2','bl_chase3',
+           'bl_chase4','bl_dragon_seen','bl_night_lionstair','bl_chase_talk3',
+           'bl_night_throne','bl_sky_hunt',
+           'bl_night_sky','bl_night_done','renna_t4_ok',
+           /* ── B route 的尾（旅店長談 → 守夜 → M1 → 隔日審訊 → 走出旅店）── */
+           'ep_hairpin_talk','ep_night_anya_out','ep_night_renna','ep_m1_route',
+           'ep_night_mi_done','ep_interrogate','free_explore_eastport','ep_leave_tomb',
+       /* 舊落點留下來的生活類旗：瓦努努已開、帝都打靶拿過龍息、
+              旅店三則說明學過了、東泊那三支「踏進過」的記帳（巡場吃得到） */
+           'sv_s9_leave','ruin_a_found','got_Shotgun_Dragon',
            'inn_tip_knock','inn_tip_sit','inn_tip_sleep',
-           /* ⚠⚠⚠ 這一支就是 ep_arrive 的鑰匙，漏了整段抵達不演（見上面的說明） */
-           'belisar_noland_talk',
-           /* ══ 東泊第一天～翌日：**演過了** ══ 要測的是古城那一段，不是東泊那一天。
-              ⚠ `ep_renna_night` ＝東泊旅店的 `sleepFlag`（小睡那一段要靠它）。
-              ⚠ `ep_bel_enter` 以後的**一支都不給** —— 那是要測的內容。 */
            'eastport_seen','mapcard_eastport','inn_seen_eastport_inn',
-           'ep_arrive','ep_renna_met','ep_renna_night','ep_day2'],
-  enter:'town', town:'belisar', node:'entrance' };
+           /* ══ 雪都：抵達演過了、六點那一段也演過了 ══
+              ⚠ `vn_lib_done` **不給** —— 那就是要測的那一段。 */
+           'tomb_gate','vn_arrive','free_explore_ravnsdal','mapcard_ravnsdal','vn_evening'],
+  enter:'town', town:'ravnsdal', node:'midtown' };
 /* ⚠ ver -1410：`tourFlags`（-1396 手寫的貝利薩爾跳過清單）**已移除** ——
    巡場現在用 `town.storyFlagsOf(圖)` 從資料掃，涵蓋每一張圖，換圖不必手改。 */
 
