@@ -315,6 +315,11 @@ export const ENEMIES = {
       ult:{ on:1, hp:20, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human',
       image:'enemy_nemo',
+      /* ⚠ ver -1565（Ray：「尼莫戰讓他站稍遠一點，應該是圖稍縮 上移 全身入鏡
+         但不要太上面」）：`contain` ＝全身入鏡（預設的 `cover` 會把他裁掉）；
+         `scale` 縮到 86% ＝站遠一點；`shiftY` −0.05 ＝往上挪五分之一格。
+         ⚠ 三個都是**看畫面調的**，不是量出來的 —— 覺得還是太近／太高就動這三個數字。 */
+      fit:{ mode:'contain', pos:'center bottom', scale:0.86, shiftY:-0.05 },
       hp:500,
       attack:22,                // ⚠ 槍之魔女 45 的 50%（Ray 指定）
       atkInterval:null,

@@ -692,10 +692,21 @@ const BGM_SRC=(()=>{ const m={};
      `bgm_xxx`，短名 `xxx` 自動就能用，不必記得回來補 `BGM_ALIAS`。
    ⚠ `BGM_ALIAS` 留著：它處理的是**短名與檔名對不起來**的那幾首
      （`suspense`→`…Suspense6…`、`battle`→`bgm_battle`），那不是這一條取代得了的。 */
-function bgmSrc(n){ const k=String(n||'').toLowerCase();
+/* ⚠⚠⚠ **`export`（ver -1565）：這是「BGM 名字 → 檔案」的唯一真相**（鐵律 7）——
+   它同時吃三種寫法：檔名（`BGM_SRC`）、短別名（`BGM_ALIAS`，腳本慣用的
+   `warhorn`／`crisis`／`nemo`…）、以及 `ASSETS` 的 `bgm_<名字>`。
+   `main.js` 那邊的**戰鬥卡** `bgm:` 以前是直接 `asset(k)` ⇒ **短別名一律查不到**
+   （`asset('nemo')` 是空字串），那一場就是無聲的 —— 而且不會有任何錯誤訊息。
+   ⇒ 兩邊改成問同一支。 */
+export function bgmSrc(n){ const k=String(n||'').toLowerCase();
   if(BGM_SRC[k]) return BGM_SRC[k];
   if(BGM_ALIAS[k] && BGM_SRC[BGM_ALIAS[k]]) return BGM_SRC[BGM_ALIAS[k]];
   try{ const a=asset('bgm_'+k); if(a) return a; }catch(_){}
+  /* ⚠⚠ **也吃「直接寫 `ASSETS` 的鍵」**（ver -1565）：戰鬥卡上兩種寫法都有
+     （`bgm:'nemo'` 短別名／`bgm:'bgm_gothic'` 資產鍵）—— 少了這一行，
+     後者會查不到，而那是**靜靜壞掉**：曲子不響，畫面上什麼都沒有。
+     ⚠ 排最後：短別名優先，不然 `bgm_*` 這種鍵會搶在別名前面。 */
+  try{ const a2=asset(k); if(a2) return a2; }catch(_){}
   return null; }
 /* 離開劇情要**回到主畫面的曲子**（Ray 指定）。⚠ 走 config 的鍵不要寫死路徑：
    主選單換曲時只改 config，這裡自動跟著。音量也用 config 那一份。 */
@@ -2259,7 +2270,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1564';
+const KERB_V='?v=1567';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

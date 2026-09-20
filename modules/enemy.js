@@ -1020,6 +1020,22 @@ export function setEnemy(key, opts){
   const eImg = $('enemyImg');
   if(eImg){
     eImg.style.objectPosition = (en.fit && en.fit.pos) || '';
+    /* ══⚠⚠ **`fit.scale`／`fit.shiftY` ＝把他擺遠一點**（ver -1565，Ray：「尼莫戰
+       讓他站稍遠一點，應該是圖稍縮 上移 全身入鏡但不要太上面」）══
+       · `scale`  ＝畫面上佔多大（1 ＝滿框；0.86 ＝縮到 86%）
+       · `shiftY` ＝往上／下挪，單位是**框高的比例**（負數往上）
+       ⚠⚠⚠ **不可以用 `transform`**：`#enemyImg` 的 `transform` 已經被**受擊演出**
+         佔走了（`.hit` 那一串位移與縮放，ver -598）—— 一個元素只有一份 transform，
+         寫上去會在挨打那一瞬整個被蓋掉，而且不會報錯（同 §6.5.4.4 淨化那一條的坑）。
+       ⇒ 改成**縮元素框自己**（`inset`）：它是 `position:absolute;inset:0`，
+         而 `object-fit:contain` 會跟著框縮 —— 等於把人擺遠。
+       ⚠ 沒寫這兩格的怪**一個像素都不會動**（`inset` 歸零回預設）。 */
+    { const f=en.fit||{}, k=(+f.scale||1), dy=(+f.shiftY||0);
+      if(k!==1 || dy!==0){
+        const h=(1-k)/2*100, v=(1-k)/2*100;
+        eImg.style.left=h+'%'; eImg.style.right=h+'%';
+        eImg.style.top=(v+dy*100)+'%'; eImg.style.bottom=(v-dy*100)+'%';
+      }else{ eImg.style.left=eImg.style.right=eImg.style.top=eImg.style.bottom=''; } }
     /* ⚠ `fit.mode:'contain'`（ver -375）：**去背立繪**用的。滿版插圖走 cover（預設），
        但把對話立繪借來當戰鬥立繪時，cover 會把頭裁掉 —— 那種要 contain ＋ 背景。 */
     eImg.style.objectFit = (en.fit && en.fit.mode) || '';

@@ -1217,8 +1217,15 @@ export const ART = {
        ⚠ 蘿芮**沒有 `mirror`**，所以這裡的 XOR 就只剩 `flip` 一項，站哪一邊都翻。 */
     cry:   { src:'resources/si/laurie_si_cry.webp',    top:4, bot:1524, fx:0.594, flip:true },
     die:    { src:'resources/si/laurie_si_die.webp',     top:6, bot:1523, fx:0.593, flip:true },
-    idea:     { src:'resources/si/laurie_si_idea.webp',      top:4, bot:1520, fx:0.543, flip:true },
-    lookaside:{ src:'resources/si/laurie_si_lookaside.webp', top:4, bot:1525, fx:0.540, flip:true },
+    /* ⚠⚠ **這兩張加大 15%**（ver -1565，Ray：「羅芮的 idea 跟 lookaside 立繪太小，
+       加大 15%」）—— 大小的旋鈕是 `cm`（§6.5：`cm`＝這張畫該佔多少公分，管縮放的分子），
+       126 × 1.15 ＝ **145**。
+       ⚠ **只動 `cm`，不要去碰 `top`／`bot`／`fx`** —— 那三個是那張圖的客觀事實
+         （量出來的），改了下次重量會把手調一起洗掉。
+       ⚠ `standCm` 不動（158）：那管的是**頭頂擺多高**，不是大小。她還是站在
+         她該站的高度上，只是人畫得大一點。 */
+    idea:     { src:'resources/si/laurie_si_idea.webp',      top:4, bot:1520, fx:0.543, flip:true, cm:145 },
+    lookaside:{ src:'resources/si/laurie_si_lookaside.webp', top:4, bot:1525, fx:0.540, flip:true, cm:145 },
   } },
   /* ══ 米夏（米海爾・約瑟・謝索洛夫）══ ver -1549 接線，Ray：「misha 先接上所有他的對話」
      ⚠⚠⚠ **`cm:176` 是我估的，Ray 還沒給** —— 同尼莫／賽西莉／蘿芮那一批（-1524）。

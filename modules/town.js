@@ -3658,6 +3658,13 @@ export function enter(id){
   const T=TOWNS[townId]; if(!T){ bail('沒有這座城：'+townId); return; }
   const n=T.nodes[id];  if(!n){ bail('沒有這個節點：'+id); return; }
   nodeId=id;
+  /* ══⚠ **這一格自己的環境音**（ver -1565，Ray：「水拾洞跟瀑布底兩個場景都要播
+     se_waterfall」）══ 節點寫 `se:'<音效名>'`（或陣列），**每次走進來放一次**。
+     ⚠ 走 `story.playSe`（`SE_FILES` 那張表，會帶上 `fileGain`）——
+       不要在這裡自己 `SFX.play`，那會繞過逐支增益（§6.6 的 -441）。
+     ⚠ 它是**一次性的**，不是循環床：真要做「一直在響的瀑布」是另一件事
+       （那要有人負責關掉，§6.5.4 的「換畫面時誰收它？」）。 */
+  if(n.se){ try{ story.playSe(n.se); }catch(_){} }
   const carried = carriedIn; carriedIn = false;   // 只吃這一次抵達（ver -496）
   storyActNow = false;                           // 換一格就重算（ver -680）
   /* ⚠ 上一個地點開出來的「下一步去哪」在這裡結算（ver -440，見 `resolveFavor`）——

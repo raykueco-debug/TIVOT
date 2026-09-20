@@ -265,6 +265,9 @@ def check_lowercase_assets():
                 elif a not in real:
                     warn('%s：素材路徑對不到檔案 —— %s' % (rel, a))
 
+# 好感表上真的有的四個人（`script/progress.js` 的 AFFECTION 那一族）。
+AFF_KEYS = {'renna', 'nouvelle', 'sorana', 'anya'}
+
 TENSE_OK = {('anya', 'crying'), ('nouvelle', 'thinking'), ('renna', 'surprised'),
             ('anya', 'chibiscared')}
 
@@ -515,6 +518,18 @@ def main():
             if ln.get('fxCi') and ln['fxCi'] not in (D.get('assets') or {}) and not os.path.exists(
                     os.path.join(ROOT, str(ln['fxCi']).split('?')[0])):
                 err('%s：fxCi 指到不存在的圖 —— %r' % (tag, ln['fxCi']))
+            # ══⚠⚠⚠ ver -1565：`tierMin`／`tierMax` 看的是「誰的好感」══
+            #   不寫 `tierWho` ＝ 看**說話者自己** —— 而說話者常常是神父／主角／店主
+            #   那種**好感表上根本沒有的人**，那時段位一律算 0：
+            #   `tierMin` 永遠不成立、`tierMax` 永遠成立，**而且不會有任何錯誤訊息**，
+            #   畫面上就是「好感再高也只看得到低段那一句」（Ray 在教堂那一段抓到的）。
+            if ln.get('tierMin') is not None or ln.get('tierMax') is not None:
+                who = ln.get('tierWho') or ln.get('speaker')
+                _tart = (speakers.get(who) or {}).get('art')
+                if _tart not in AFF_KEYS:
+                    err('%s：tierMin／tierMax 看的是 %r 的好感，而他不在好感表上'
+                        '（%s）—— 要寫 `tierWho:\'<有好感的人>\'`'
+                        % (tag, who, '／'.join(sorted(AFF_KEYS))))
             # ver -1562：`cgRush` 可以是 True（框中心）或 {x,y}（消失點在圖上的位置）
             if ln.get('cgRush') is not None:
                 v = ln['cgRush']

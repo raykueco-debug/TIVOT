@@ -1142,7 +1142,7 @@ window.addEventListener('pagehide', refreshBoot);
         /* 曲子照這一場的卡挑（ver -741（-893 前用詞））—— 以前寫死 bgm_battle，船戰的
            EpicBattle／piratebattle 在「開機直入戰鬥」這條路上會放錯首。 */
         const bk = battleBgmOf(req.battle);
-        SFX.playBgm(asset(bk), { fadeOutMs:600, volume: bgmVol(bk) });
+        { const s=story.bgmSrc(bk); SFX.playBgm(s, { fadeOutMs:600, volume: bgmVol(s) }); }
         setTimeout(()=>{ hideHome('bootDirectBattle/alFlash'); combat.setBattleBg(null);   // ver -1455：同上
                          combat.startScriptBattle(req.battle, { ship:true }); }, 2500);   // 同上：這條也是飛行交棒（-947）
       }
@@ -2049,7 +2049,9 @@ function battleBgmOf(id){
 }
 story.setBattleCue((id)=>{
   const k = battleBgmOf(id);
-  SFX.playBgm(asset(k), { fadeOutMs:600, volume: bgmVol(k) });
+  /* ⚠ ver -1565：走 `story.bgmSrc`（唯一那支「名字→檔案」）——
+     卡上寫短別名（`nemo`／`warhorn`／`crisis`…）時 `asset(k)` 是查不到的。 */
+  const s=story.bgmSrc(k); SFX.playBgm(s, { fadeOutMs:600, volume: bgmVol(s) });
 });
 /* 這一場的曲子要不要在「門推上去」那一瞬就進（ver -1433）—— 卡上的 `bgmOnRise`。
    ⚠ 只有這一支在答（鐵律 7）：story 那邊只問「要不要早播」，不認得 config。 */
@@ -2090,7 +2092,7 @@ story.setBattleHandler((battleId, resume)=>{
      ⚠ 查不到才退回教學那一場 —— 舊腳本（地宮那一段）寫的就是教學，不能被改掉。 */
   if(GAME_CONFIG.battles && GAME_CONFIG.battles[battleId]){
     { const k=battleBgmOf(battleId);
-      SFX.playBgm(asset(k), { fadeOutMs:600, volume: bgmVol(k) }); }
+      const s=story.bgmSrc(k); SFX.playBgm(s, { fadeOutMs:600, volume: bgmVol(s) }); }
     /* ⚠⚠ **城鎮插入戰留在原背景**（ver -592（-893 前用詞），Ray：「打完敵人應該會留在原背景，
        不要自動切背景」）：把城鎮現在畫面上那一張帶進戰鬥，蓋過敵人卡的 `bg` ——
        不然打完一場上半會從卡上那張跳回節點原本那張，讀起來是換了個地方。

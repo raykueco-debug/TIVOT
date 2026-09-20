@@ -4743,11 +4743,14 @@ export const TOWNS = {
              ⚠⚠ 拍上的 `bgm:` 只管**換曲的那一刻**；「撐到隔天」是城上的 `bgmWhen`
                在管（`vn_lib_done` → `vn_day2`）—— 不然走一格就被打回 `taisho2`。
                兩者分工不同，不是抄兩份（同東方泊地那一組的說明）。 */
-          Object.assign(nou('worry','索拉娜小姐！'), { bgm:'hesitation' }),
+          nou('worry','索拉娜小姐！'),
           sor('readhappy','只是些評價而已，沒那麼重要啦！'),
           nou('furious','很重要！'),
           sor('cringe',''),
-          nou('decode','對他……很重要……'),
+          /* ⚠ ver -1565（Ray：「把圖書館切 bgm 那一拍改到諾：『對他......很重要......』
+             那一拍」）—— -1564 掛在「索菈娜小姐！」上，那時還只是在攔人；
+             這一句才是那一段真正轉向的地方。撐到隔天由城上的 `bgmWhen` 管。 */
+          Object.assign(nou('decode','對他……很重要……'), { bgm:'hesitation' }),
           sor('sad','……'),
           Object.assign(sor('readconfuse','『適性無可挑剔，但有沉溺戰鬥傾向，且多次無視聖王廳法度，亦未表現對神之敬畏。考量其品性，應維持原判決……』'),
                         { se:'se_ui_pageflip' }),
@@ -4755,7 +4758,9 @@ export const TOWNS = {
           nou('covermouth','怎麼會……！'),
           nou('cry','我們……這麼努力！'),
           { speaker:'PLAYER', text:'……' },
-          { speaker:'NARRATION', text:'', se:'se_tablepunch', auto:1200 },
+          /* ⚠ ver -1565（Ray：「敲桌時畫面全震」）：這一下是**世界在震**（桌子被捶），
+             不是誰的心情 —— 所以是 `shake:true` 的全畫面，不是 -1564 那個只抖框的。 */
+          { speaker:'NARRATION', text:'', se:'se_tablepunch', shake:true, auto:1200 },
           ren('scream','啊！'),
           ren('shockcalm','咦？怎麼大家都來了？'),
           nou('sad','……'),
@@ -4808,12 +4813,21 @@ export const TOWNS = {
              下面那一拍是 `tierMin:3` ——T2 以下的玩家看不到它，於是她那句「……」之後
              直接跳到神父的收尾，他等於沒有反應。這一拍讓兩條路都有他的反應。 */
           { speaker:'PLAYER', blank:true },
-          { speaker:'PLAYER', blank:true, tierMin:3 },
-          nou('surprise','！！',                    { tierMin:3 }),
-          arh(null,'是嗎？你已經向前走了啊？',      { tierMin:3 }),
-          arh(null,'真的長大了呢。',                { tierMin:3 }),
-          nou('bigsmileclose','',                   { tierMin:3 }),
-          arh(null,'坐下聊聊吧。說說這幾年都發生了什麼事。', { tierMax:2 }),
+          /* ══⚠⚠⚠ **好感差分看的是「諾薇兒」的段位，所以每一拍都要寫 `tierWho`**
+             （ver -1565，Ray：「教堂差分錯誤，諾好感夠高的時候神父應該會說
+               『是嗎你已經往前走了啊』那一句」）══
+             ⚠⚠ `tierWho` 不寫＝**看說話者自己** —— 而這幾拍的說話者是**神父與主角**，
+               他們兩個在好感表上根本沒有鍵（`SPEAKERS[who].art` 查不到 ⇒ 段位當 0）。
+               於是 `tierMin:3` **永遠不成立**、`tierMax:2` **永遠成立**：
+               不管諾薇兒的好感多高，看到的都是 T2 那一句收尾。
+             ⚠ 這不是資料打錯字，是「預設值是說話者」在這一段不適用 ——
+               `tools/script_lint.py` 現在會擋（`tierWho` 指到沒有好感的人就報錯）。 */
+          { speaker:'PLAYER', blank:true, tierMin:3, tierWho:'NOUVELLE' },
+          nou('surprise','！！',                    { tierMin:3, tierWho:'NOUVELLE' }),
+          arh(null,'是嗎？你已經向前走了啊？',      { tierMin:3, tierWho:'NOUVELLE' }),
+          arh(null,'真的長大了呢。',                { tierMin:3, tierWho:'NOUVELLE' }),
+          nou('bigsmileclose','',                   { tierMin:3, tierWho:'NOUVELLE' }),
+          arh(null,'坐下聊聊吧。說說這幾年都發生了什麼事。', { tierMax:2, tierWho:'NOUVELLE' }),
         ] } ] },
       lookout:  { bg:'varn_lookout',  name:'雪都瓦恩霍姆　瞭望台',  
         exits:{ back:'midtown' },
@@ -6758,7 +6772,8 @@ export const TOWNS = {
           cec('smile','輸掉了排位，連搭檔都拱手讓人的『第二名』。'),
           nou('furious','學姐！'),
           lau('idea','好、好啦！難得大家在這裡合流了——'),
-          lau('idea','蕾娜學姐，妳們也是要去伊甸古墓吧？'),
+          /* ⚠ ver -1565（Ray：「羅芮台詞錯誤，她不會喊蕾娜學姐，一概用蕾姬娜學姐」）。 */
+          lau('idea','蕾姬娜學姐，妳們也是要去伊甸古墓吧？'),
           ren('ask','是那樣沒錯......'),
           lau('idea','那太好了！一起去的話——'),
           /* ⚠ ver -1545：這兩拍由 `nolook` 換成 **`spoild`**（Ray 指定）——
@@ -6789,16 +6804,23 @@ export const TOWNS = {
              ⚠ 這是**第二次** `se_walk`：第一次是尼莫那一群走掉（賽西莉背影那一拍），
                這一次是她自己。⚠ 撤乾淨之後台上沒人 ⇒ `auto` 真的會跑（§6.5 的 -628
                只押「台上有人」的無台詞拍）。 */
-          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400, hide:'*' },
+          /* ⚠ ver -1565（Ray：「賽西莉的你說呢？之後，**左邊的立繪不用跟她一起離開**」）：
+             `hide:'*'` 改成點名 —— 走掉的是她一個人，左邊那位留著聽下一句。
+             ⚠ 所以台上還有人 ⇒ 這一拍的 `auto` **不會自己跑**（§6.5 的 -628：
+               台上有人的無台詞拍要點擊才推進）。那是對的：她轉身走掉這件事
+               值得玩家自己點一下。 */
+          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400, hide:['CECILIE'] },
           ren('determine','……'),
           sor('tire','誰快來解釋一下啊……'),
           nou('sadsmile',''),
         ] } ] },
       /* ⚠ 瀑布底**不是死路**：水簾後面看得到黑色洞口，路往裡面繼續。 */
-      fallbase:   { bg:'lake_fallbase',   name:'鏡湖　瀑布底',
+      /* ⚠ ver -1565（Ray：「水拾洞跟瀑布底兩個場景都要播 se_waterfall」）——
+         節點層的 `se`＝**每次走進這一格就放一次**（`modules/town.js` 的 `enter`）。 */
+      fallbase:   { bg:'lake_fallbase',   name:'鏡湖　瀑布底', se:'se_waterfall',
         exits:{ back:'shingle', up:'cave' } },
       /* ⚠ 水蝕洞＝**穿過瀑布的洞**（左側水簾是來路、深處透出天光是去路）。 */
-      cave:       { bg:'lake_cave',       name:'鏡湖　水蝕洞',
+      cave:       { bg:'lake_cave',       name:'鏡湖　水蝕洞', se:'se_waterfall',
         exits:{ back:'fallbase', up:'grove' } },
       /* ⚠⚠ 終點：山谷盡頭的高地台地，一片十幾公尺高的黑色石碑林（規格 §三）。
          這一格**沒有湖**是刻意的（Ray -1493：末端點不必有湖）。 */
@@ -6849,11 +6871,23 @@ export const TOWNS = {
                照樣會在玩家已經讀著下一句時閃出來。
              ⚠ `noSkip`：ver -1384 Ray 指定「感應動畫時不可點擊加速」。 */
           { speaker:'NARRATION', text:'', fx:'sense', shake:true, auto:4400, noSkip:true },
+          /* ══⚠⚠ **感應完，碑林的符文亮起來**（ver -1565，Ray：「安雅在石碑林感應完
+             石碑背景應該要換成發光版，**注意時間差分**」）══
+             ⚠ 走 `bgBand:` 不是 `bg:` —— 那條路才會吃時段候選鏈
+               （`lake_grove_glow_dawn/day/dusk/night` 四張都交齊了）。
+             ⚠⚠ 這一拍是**空的**（Ray：「背景更改後空一拍才輪到蕾娜『如果文獻沒錯』」）：
+               換背景與她開口是兩件事，壓在同一拍等於「她一邊說話畫面一邊變」。
+             ⚠ 台上沒人（`fx:'sense'` 自己清過場）⇒ `auto` 真的會跑（§6.5 的 -628）。
+             ⚠ **旗不在這裡插**：`lakestele_found` 是大地圖感應掃到那一刻插的
+               （鐵律 9：一個狀態一個擁有事件），`grove` 的 `bgWhen` 靠它管**下次走進來**。
+               這一拍管的是**這一次、當場**看到的那一下。 */
+          { speaker:'NARRATION', text:'', bgBand:'lake_grove_glow', auto:1600 },
           ren('pointmap','如果文獻沒錯的話，古墓應該開啟了……', { flags:['tomb_opened'] }),
           { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
-          ren('reach',''),
+          /* ⚠ ver -1565：這裡原本有一拍 `ren('reach','')`，Ray 指定拿掉。 */
           ren('meltdown',''),
-          nou('sad','……'),
+          /* ⚠ ver -1565（Ray：「該場景最後一拍的諾差分換成 sadnoeye」）。 */
+          nou('sadnoeye','……'),
           /* ══ 獲得 NIEM ══ 每一座遺蹟共用的收尾，見檔頭的 `NIEM_TAIL`。
              ⚠ **它必須是最後一拍**（見上面那一段的說明）。 */
           ...NIEM_TAIL,
