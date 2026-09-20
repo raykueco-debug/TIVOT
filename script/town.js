@@ -7554,8 +7554,11 @@ export const TOWNS = {
              ⚠⚠ 上面那三拍是 `tierMin:3` 的分歧 —— **這幾拍一定要無條件**，
                不然 T2 以下的玩家永遠打不到第二輪，而且畫面上不會有任何錯誤訊息
                （同這一段收尾插旗那條：不要把結果掛在只有一半玩家看得到的拍子上）。 */
-          { speaker:'NARRATION', text:'', shake:true, auto:1000 },
+          /* ⚠⚠ 順序照**首戰的第二輪**：**咆哮在前、震動在後**（ver -1620）——
+             那是「牠又站起來了」的讀法（先聽到，再感覺到牠落地）；
+             輪1 與首戰輪1 一樣是震動在前（先感覺到，才知道有東西來了）。 */
           { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
+          { speaker:'NARRATION', text:'', shake:true, auto:1200 },
           { battle:'tomb_gk2' },
           /* ══⚠⚠⚠ **從這一拍起追擊變密急**（ver -1616，Ray 給的數字 3／2／2）══
              參數在城上的 `chase.hard`，門就是**這一段自己的 `flag`**
