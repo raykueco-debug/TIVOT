@@ -58,7 +58,7 @@ export const MAIN_SCRIPT = {
          ⚠ 這一拍沒有台詞也沒有立繪 —— speaker 只是為了讓資料結構一致，
            有 card 的句子不顯示對話框。 */
       { speaker:'NOUVELLE', text:'',
-        bg:'HolyseeDungeonWhole', bgm:'crisis',
+        bg:'holyseedungeonwhole', bgm:'crisis',
         card:'1908年10月11日\n聖王廳地宮　G2 區',   /* ver -1324：跟著開局日期（clock.js 的 EPOCH）改 */
         /* ⚠ 一定要明寫 show:false —— 立繪的預設是 show:true，不寫的話她會先用
            base 立繪站在卡片後面，下一句才換成跑姿，看起來像閃了一下。 */
@@ -68,7 +68,7 @@ export const MAIN_SCRIPT = {
         portrait:{ char:'NOUVELLE', expr:'run', show:true } },
       /* ⚠ 這一拍要抖（Ray 指定）。抖的是場景各層，對話框不抖 —— 見 style.css
          的 `#storyStage.shake` 選擇器清單。 */
-      { speaker:'NOUVELLE', text:'啊！', shake:true, se:'se_Fall',
+      { speaker:'NOUVELLE', text:'啊！', shake:true, se:'se_fall',
         portrait:{ expr:'cringe' } },
       /* 跌倒：切全屏插圖。⚠ cg 一上來就蓋住立繪，所以這一句不必也不要再改 expr。 */
       /* ⚠ 對話框**等平移跑完再出**（Ray 指定）。2600 與 CSS 的平移時間同值 ——
@@ -76,7 +76,7 @@ export const MAIN_SCRIPT = {
       { speaker:'NOUVELLE', text:'別管我！你快走！', delay:2600,
         /* ⚠ 由下往上（Ray 指定）：這張是跌倒的構圖，由上往下平移會**停在裙底**，
            往上才會收在臉上。平移的終點就是這一格的重點，方向不能隨便給。 */
-        cg:'001_Nouvelle_Fell', cgPan:'up' },
+        cg:'001_nouvelle_fell', cgPan:'up' },
       /* 上膛：兩聲隔 0.5 秒交疊。 */
       { speaker:'NOUVELLE', text:'你……！',
         se:[{n:'se_weapon_reload'},{n:'se_weapon_reload',delay:500}] },
@@ -105,7 +105,7 @@ export const MAIN_SCRIPT = {
          下一句要看到立繪就得把它收掉 —— 那一收一放就是「閃動」。
          當背景的話它從這一拍開始**完全不動**，立繪直接疊上去。 */
       { speaker:'NOUVELLE', text:'', auto:3500,
-        bg:'002_SaintAssult', bgPan:'up', se:'se_saintroar', shake:true,
+        bg:'002_saintassult', bgPan:'up', se:'se_saintroar', shake:true,
         portrait:{ char:'NOUVELLE', show:false } },
       /* ⚠⚠ 這一句要**把插圖收掉**（cg:null）。插圖的層級在立繪之上，不收的話
          她整個被蓋住 —— Ray 回報「『對不起，我已經……！』的立繪一直沒出來」
@@ -149,7 +149,7 @@ export const MAIN_SCRIPT = {
       /* ⚠ `show:true` 不可省：上一拍（掃射）把兩位都 hide 了，而 show 是**沿用**的 ——
          不明寫的話她永遠不會回來（Ray：「那一句要彈 Nouvelle_SI_Surprise 立繪」）。 */
       { speaker:'NOUVELLE', text:'那就是......聖約第四騎士團的......',
-        cg:null, bg:'HolyseeDungeonWhole',
+        cg:null, bg:'holyseedungeonwhole',
         portrait:{ expr:'surprise', show:true } },
       /* 璐娜莉亞的插畫。
          ⚠ 演變：由下往上平移（-337）→ 以臉為中心緩慢推近（-339，cgZoom）→
@@ -159,7 +159,7 @@ export const MAIN_SCRIPT = {
          ⚠ 所以 `cgScale` 是「一上來就是這麼大」，會動的只有平移；不要再配 cgZoom。
          ⚠ 往上移的終點正好是她的臉（臉在圖上 y≈0.09，靠近頂）—— 方向不能反。 */
       { speaker:'NOUVELLE', text:'璐娜莉亞團長……！',
-        cg:'003_Lunaria_Armed', cgScale:1.18, cgPan:'up' },
+        cg:'003_lunaria_armed', cgScale:1.18, cgPan:'up' },
       /* ── 團長登場 ──
          先**情境卡報地點**（ver -351，Ray 指定「之後接場景介紹：聖王廳地宮 G2入口，
          然後再進對話」）—— 與開場那張卡同一套黑透罩。
@@ -171,7 +171,7 @@ export const MAIN_SCRIPT = {
          留在卡片後面，情境卡就變成「有人站在旁邊的地點介紹」。
          ⚠ `portrait` 一句只能指定一個人，要**同時**讓另一個人退場就用 `hide`。 */
       { speaker:'LUNARIA', text:'',
-        cg:null, bg:'HolyseeDungeonWhole', bgm:'lunaria',
+        cg:null, bg:'holyseedungeonwhole', bgm:'lunaria',
         card:'聖王廳地宮　G2入口', hide:['NOUVELLE'],
         portrait:{ char:'LUNARIA', show:false } },
       { speaker:'LUNARIA', text:'在G2就熔斷了嗎？真是派不上用場。',
@@ -215,7 +215,7 @@ export const MAIN_SCRIPT = {
          ⚠⚠ `show:false` 不可省：立繪預設 **show:true**，不寫的話監察官會先站在卡片後面，
            下一拍才滑進來，看起來像閃了一下（dungeon_chase 開場那一拍踩過同一個坑）。 */
       { speaker:'OFFICER', text:'',
-        bg:'LunariaOffice', bgm:'result',
+        bg:'lunariaoffice', bgm:'result',
         card:'第四騎士團駐地\n會客廳',
         portrait:{ char:'OFFICER', show:false } },
       /* ⚠⚠ 她走**正規立繪、從左側滑入**，不是全屏 CI（ver -350，Ray 指定
@@ -233,7 +233,7 @@ export const MAIN_SCRIPT = {
          停在她的臉。平移是 2.6 秒、這一拍只停 1 秒，**平移會延續到下一拍**
          （沒寫 `cgPan` 的句子不碰平移，見 renderLine 的說明），那正是要的：
          她報上名字的時候鏡頭還在走。 */
-      { speaker:'OFFICER', text:'', auto:1000, cg:'004_Renna_intro', cgPan:'up' },
+      { speaker:'OFFICER', text:'', auto:1000, cg:'004_renna_intro', cgPan:'up' },
       /* 報上名字：**對話框壓在插畫上**（Ray 指定）。插圖是持續狀態，這一拍不動它，
          框自然疊在上面（框 z-7 > 插圖 z-2）；點下去才由下一拍收掉插圖切回立繪。 */
       { speaker:'OFFICER', text:'蕾姬娜˙馮˙海森伯格。' },
@@ -358,7 +358,7 @@ export const MAIN_SCRIPT = {
     lines:[
       /* 情境卡報地點（§6.5：新場景開場先報地點，立繪之後才出來）。 */
       { speaker:'NOUVELLE', text:'',
-        bg:'Capital_Square_Day', bgm:'capital',
+        bg:'capital_square_day', bgm:'capital',
         card:'帝都　攝政王廣場',
         portrait:{ char:'NOUVELLE', show:false } },
       { speaker:'NOUVELLE', text:'哇，好久沒有來了。',
@@ -448,8 +448,8 @@ export const MAIN_SCRIPT = {
         portrait:{ char:'NOUVELLE', expr:'pain', show:true } },
       /* ⚠ `noue_fall` **是不存在的檔名**（ver -433 修）：那是檔頭範例裡的假名字，
          被抄進真的腳本了 —— 演到這一拍時六個候選全部 404，畫面上什麼插圖都沒有。
-         真正的檔案是 `resources/illustration/001_Nouvelle_Fell.webp`（她跌倒那張）。 */
-      { speaker:'NOUVELLE', text:'啊！', cg:'001_Nouvelle_Fell' },
+         真正的檔案是 `resources/illustration/001_nouvelle_fell.webp`（她跌倒那張）。 */
+      { speaker:'NOUVELLE', text:'啊！', cg:'001_nouvelle_fell' },
       { speaker:'NOUVELLE', text:'別管我！快走！' },
       { speaker:'OFFICER', text:'……{N}。這種時候，不要問我該怎麼辦。',
         portrait:{ char:'OFFICER', expr:'fluster', show:true } },
@@ -481,7 +481,7 @@ export const MAIN_SCRIPT = {
       /* 設定拍（背景／BGM／時鐘），台上沒人＝空演出拍要給 auto（§6.5）——
          不給的話畫面上是一個空的蕾娜框等人點。 */
       { speaker:'RENNA', text:'', auto:900, clockToNext:14,
-        bg:'Deck_destroied', bgm:'misty',
+        bg:'deck_destroied', bgm:'misty',
         portrait:{ char:'RENNA', show:false } },
       { speaker:'RENNA', text:'還以為真的到此為止了……',
         portrait:{ char:'RENNA', expr:'dying', show:true } },
@@ -508,7 +508,7 @@ export const MAIN_SCRIPT = {
          Peritune_Whirlwind，戰鬥時不再更換音樂」——戰鬥卡同一首，riseCue 的
          同曲判斷會直接放行，開打無縫接續）。 */
       { speaker:'NOUVELLE', text:'那是……', delay:2600,
-        cg:'009_Soranadebute', cgPan:'up', bgm:'whirlwind',
+        cg:'009_soranadebute', cgPan:'up', bgm:'whirlwind',
         portrait:{ char:'NOUVELLE', expr:'scared' } },
       { speaker:'NOUVELLE', text:'森住民？',
         portrait:{ expr:'scared' } },

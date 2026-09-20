@@ -168,9 +168,9 @@ export const INTRUDE = {
      在該局出戰，就算拿到 CD 評價她也不會出現」）—— 沒寫＝不限（舊行為）。
      判定只有 `inspector.pickEvaluator` 一處（問 `state.pickedPartner`）。 */
   default: {
-    D: { name:'索菈娜', partner:'sorana', portrait:'resources/SI/RennaSorana_SI_annoyedD.webp',
+    D: { name:'索菈娜', partner:'sorana', portrait:'resources/si/rennasorana_si_annoyedd.webp',
          text:'哈！這次算平手！' },
-    C: { name:'索菈娜', partner:'sorana', portrait:'resources/SI/RennaSorana_SI_annoyedC.webp',
+    C: { name:'索菈娜', partner:'sorana', portrait:'resources/si/rennasorana_si_annoyedc.webp',
          text:'嘿嘿！要是沒有我你就倒楣了吧！' },
   },
 };

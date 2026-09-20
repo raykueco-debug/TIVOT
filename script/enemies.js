@@ -76,7 +76,7 @@ export const ENEMIES = {
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
-      image:'enemy_trainee',    // → resources/enemy/Saint_TR_CI.webp
+      image:'enemy_trainee',    // → resources/enemy/saint_tr_ci.webp
       hp:500,
       attack:45,
       atkInterval:null,         // 沿用 tuning.chargeSeconds
@@ -107,7 +107,7 @@ export const ENEMIES = {
       /* 結算副標的用詞（ver -432，Ray：「『靶』為已擊破」）。⚠ 對照表在 `i18n` 的
          `result.winSubBy`，這裡只標這一隻是哪一類（鐵律 1）。 */
       kind:'target',
-      image:'enemy_dart_target',     // → resources/enemy/Dart_timeattack.webp
+      image:'enemy_dart_target',     // → resources/enemy/dart_timeattack.webp
       hp:300,                        // Ray 指定
       attack:0,
       atkInterval:null,
@@ -157,7 +157,7 @@ export const ENEMIES = {
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
-      image:'enemy_facelessgiant',   // 內嵌立繪鑰匙 → resources/enemy/Saint_GT_CI.webp
+      image:'enemy_facelessgiant',   // 內嵌立繪鑰匙 → resources/enemy/saint_gt_ci.webp
       // 取景：主體在圖面右下（撲擊構圖），cover 裁切錨點右移下移——爪/頭/軀幹全入鏡
       fit:{ pos:'62% 78%' },
       hp:300,                        // 血更厚
@@ -384,7 +384,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
       image:'enemy_np_candletower',
-      bg:'Northport_church_BF',
+      bg:'northport_church_bf',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,
       attack:15,
@@ -410,7 +410,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
       image:'enemy_np_candlepenitent',
-      bg:'Northport_church_BF',
+      bg:'northport_church_bf',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:250,
       attack:10,
@@ -436,7 +436,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
       image:'enemy_np_coralman',
-      bg:'Northport_church_BF',
+      bg:'northport_church_bf',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:250,
       attack:10,
@@ -462,7 +462,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
       image:'enemy_np_reassembled',
-      bg:'Northport_church_BF',
+      bg:'northport_church_bf',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:400,
       attack:15,
@@ -494,7 +494,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
       image:'enemy_np_boss',
-      bg:'Northport_church_BF',
+      bg:'northport_church_bf',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:500,
       attack:20,
@@ -531,7 +531,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
       image:'enemy_np_claws',
-      bg:'Northport_church_BF',
+      bg:'northport_church_bf',
       hp:500,
       attack:10,
       atkInterval:null,
@@ -565,7 +565,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_sv_wolf_pack',
-      bg:'Shinier_North',
+      bg:'shinier_north',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,                             // 心魘 400 −20%
       attack:12,                          // 心魘 15 −20%
@@ -591,7 +591,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_sv_beast_organ',
-      bg:'Shinier_North',
+      bg:'shinier_north',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:380,                             // 心魘 −5%
       attack:14,
@@ -617,7 +617,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_sv_stag',
-      bg:'Shinier_North',
+      bg:'shinier_north',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:400,                             // ＝心魘
       attack:15,
@@ -643,7 +643,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_sv_beast_shackle',
-      bg:'Shinier_North',
+      bg:'shinier_north',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:400,                             // 心魘 +10%
       attack:16,
@@ -673,7 +673,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_sv_bear',
-      bg:'Shinier_Wilds',
+      bg:'shinier_wilds',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:480,                             // 心魘 +20%（比連接格怪池強）
       /* ⚠ ver -943 補回來：-942 那一版這一格不見了（比對前後版本時抓到）——
@@ -705,7 +705,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_sv_reliquary',
-      bg:'Shinier_Altar',
+      bg:'shinier_altar',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:500,                             // ＝np_boss
       attack:20,
@@ -732,7 +732,7 @@ export const ENEMIES = {
       /* ⚠ `bg`＝**戰鬥背景**（ver -375 新欄位）。這一隻的立繪是**去背**的
          （對話用立繪借過來當戰鬥立繪），沒有背景的話身後是一片黑。
          ⚠ 有 `bg` 就一定要 `fit.mode:'contain'` —— 去背立繪用 cover 會被裁掉頭。 */
-      bg:'Captal_Guild_Day',
+      bg:'captal_guild_day',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:200,
       /* 蓄力攻擊（大絕）：10 傷、大彈孔。⚠ 一般怪是 45 —— 這是個街頭鬧事的獵人，
@@ -794,7 +794,7 @@ export const ENEMIES = {
          ⚠ 背景用**東泊公會**那一張：這一場打在東泊，不是帝都。
            （城鎮插入戰交棒時 `state.battleBg` 會拿玩家站的那一格蓋過去，ver -592 ——
             這一欄是那條路沒供圖時的底。） */
-      bg:'East_Guild',
+      bg:'east_guild',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:200,
       attack:10,
@@ -976,7 +976,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'beast',
       image:'enemy_sf_lynx',
-      bg:'Forest_Glade_Day',
+      bg:'forest_glade_day',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:200,
       attack:10,   // hp＝Ray 表；attack 暫定
@@ -1001,7 +1001,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'beast',
       image:'enemy_sf_snake',
-      bg:'Forest_Shoal_Day',
+      bg:'forest_shoal_day',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:200,
       attack:10,   // hp＝Ray 表；attack 暫定
@@ -1026,7 +1026,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'beast',
       image:'enemy_sf_hog',
-      bg:'Forest_Trail_Day',
+      bg:'forest_trail_day',
       fit:{ mode:'contain', pos:'center 70%' },   // 稍微移高（ver -875，Ray；幅度小於獨角虎的 55%）
       hp:350,
       attack:15,   // hp＝Ray 表；attack 暫定
@@ -1051,7 +1051,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'beast',
       image:'enemy_sf_tiger',
-      bg:'Forest_Cave_Day',
+      bg:'forest_cave_day',
       /* 位置放高、虎頭對畫面中心（ver -874，Ray 指定）：橫式撲擊構圖，頭在圖高
          約 45%——contain 縮完貼底會整隻沉在下緣，55% 讓頭落在敵區正中。 */
       fit:{ mode:'contain', pos:'center 55%' },
@@ -1078,7 +1078,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'beast',
       image:'enemy_sf_crows',
-      bg:'Forest_Glade_Day',
+      bg:'forest_glade_day',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:250,
       attack:12,   // hp＝Ray 表；attack 暫定
@@ -1169,7 +1169,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0.35 },
       kind:'multi',
       image:'enemy_gk_seal',
-      bg:'Tomb_Rotunda',
+      bg:'tomb_rotunda',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:350,
       attack:22,
@@ -1196,7 +1196,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0.35 },
       kind:'multi',
       image:'enemy_gk_offset',
-      bg:'Tomb_Rotunda',
+      bg:'tomb_rotunda',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:350,
       attack:22,
@@ -1220,7 +1220,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0.35 },
       kind:'multi',
       image:'enemy_gk_many',
-      bg:'Tomb_Rotunda',
+      bg:'tomb_rotunda',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:350,
       attack:22,
@@ -1247,7 +1247,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0.35 },
       kind:'multi',
       image:'enemy_gk_crypt',
-      bg:'Tomb_Crypt',
+      bg:'tomb_crypt',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:350,
       attack:22,
@@ -1273,7 +1273,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_sf_bear_husk',
-      bg:'Forest_Trail_Day',
+      bg:'forest_trail_day',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:400,
       attack:15,   // ⚠ 暫定（照 sv_stag 級）
@@ -1296,7 +1296,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_sv_bear',              // ⚠ 與 sv_bear 同一張圖（mon_bear_nightmare，鐵律 7：一張圖一個鍵）
-      bg:'Forest_Trail_Day',
+      bg:'forest_trail_day',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:500,
       attack:18,   // ⚠ 暫定（夜間版比日間強一階）
@@ -1321,7 +1321,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_sf_stag_rot',
-      bg:'Forest_Cliff_Day',
+      bg:'forest_cliff_day',
       /* 右貼邊（ver -869，Ray：「把鹿骸（半截的那隻）右移到貼邊」）——
          這張圖是前半身構圖、右緣本來就是裁切線，貼齊畫面右緣裁切線才藏得住。 */
       fit:{ mode:'contain', pos:'right bottom' },
@@ -1348,7 +1348,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_sv_stag',              // ⚠ 與 sv_stag 同一張圖（mon_stag_nightmare，鐵律 7）
-      bg:'Forest_Cliff_Day',
+      bg:'forest_cliff_day',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:400,
       attack:15,   // ⚠ 暫定
@@ -1385,7 +1385,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_ruins_bonemaw',
-      bg:'Ruins_shinier_Catacomb',
+      bg:'ruins_shinier_catacomb',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,
       attack:16,   // hp＝Ray 表；attack 暫定
@@ -1409,7 +1409,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_ruins_bellreacher',
-      bg:'Ruins_shinier_Colossus',
+      bg:'ruins_shinier_colossus',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:500,
       attack:18,   // hp＝Ray 表；attack 暫定
@@ -1433,7 +1433,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_ruins_halo_ring',
-      bg:'Ruins_shinier_Hollow',
+      bg:'ruins_shinier_hollow',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:200,
       attack:14,   // hp＝Ray 表；attack 暫定
@@ -1458,7 +1458,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_ruins_heartripper',
-      bg:'Ruins_shinier_Prison',
+      bg:'ruins_shinier_prison',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,
       attack:16,   // hp＝Ray 表；attack 暫定
@@ -1482,7 +1482,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_ruins_bellwalker',
-      bg:'Ruins_shinier_MossChamber',
+      bg:'ruins_shinier_mosschamber',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:400,
       attack:16,   // hp＝Ray 表（ver -920 補）；attack 暫定
@@ -1507,7 +1507,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'slay',
       image:'enemy_ruins_saint_prison',
-      bg:'Ruins_shinier_Prison',
+      bg:'ruins_shinier_prison',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:400,
       attack:16,   // hp＝Ray 表；attack 暫定
@@ -1531,7 +1531,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'slay',
       image:'enemy_ruins_saint_inspector',
-      bg:'Ruins_shinier_DarkBridge',
+      bg:'ruins_shinier_darkbridge',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:500,
       attack:16,   // hp＝Ray 表；attack 暫定
@@ -1555,7 +1555,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'slay',
       image:'enemy_ruins_saint_thug',
-      bg:'Ruins_shinier_CorridorA',
+      bg:'ruins_shinier_corridora',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:600,
       attack:18,   // hp＝Ray 表；attack 暫定
@@ -1581,7 +1581,7 @@ export const ENEMIES = {
       assault:{ count:2, gap:0.35 },
       kind:'slay',
       image:'enemy_ruins_saint_temperance',
-      bg:'Ruins_shinier_DeepAltar',
+      bg:'ruins_shinier_deepaltar',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:900,
       attack:20,   // hp＝Ray 表（ver -920 補）；attack 暫定
@@ -1640,7 +1640,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       image:'enemy_bl_dragon_chase',
-      bg:'Belisar_GreatHall',
+      bg:'belisar_greathall',
       fit:{ mode:'contain', pos:'center bottom' },
       /* ver -1420，Ray：「追擊戰的龍血量都改到 350」——**四場追擊共用這一張卡**，所以改一次四場都吃到。 */
       hp:350,
@@ -1676,7 +1676,7 @@ export const ENEMIES = {
       assault:{ count:2, gap:0.35 },
       kind:'multi',
       image:'enemy_bl_dragon_throne',
-      bg:'Belisar_ThroneHall',
+      bg:'belisar_thronehall',
       /* ══⚠⚠⚠ **`cover` 不是 `contain`**（ver -1433，Ray：「第二型態的左右好像被裁了，
          修好它」）══
          ⚠⚠ **根因是素材**：`mon_dragon_v1_unsealed` 那張**圖本身就裁掉了翅膀** ——
@@ -1742,7 +1742,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0.35 },
       kind:'multi',
       image:'enemy_bl_dragon_throne',
-      bg:'Belisar_ThroneHall',
+      bg:'belisar_thronehall',
       fit:{ mode:'cover', pos:'center top' },   // 同第一型態：那張圖的翅膀被裁掉了（見上）
       hp:500,
       attack:20,
@@ -1817,7 +1817,7 @@ export const ENEMIES = {
            就是**整片空背景，而且沒有任何錯誤訊息**（鐵律 13：漏寫要落在安全那一側）。
            12 張交齊再接，那時要一併處理「**一局之內不可以換**」（連戰換怪、morph
            換卡都算同一局）。 */
-      bg:'Sky_Towers',
+      bg:'sky_towers',
       /* ⚠ `pos` 由 `center bottom` 改成 **`center 18%`**（Ray：「第三階段的圖位置
          放高一點」）：牠是**正面展翅在飛**，貼著下緣會讀成「站在地上」。 */
       fit:{ mode:'contain', pos:'center 18%' },
@@ -1863,7 +1863,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0.35 },
       kind:'aerial',
       image:'enemy_bl_dragon_sky',
-      bg:'Sky_Towers',       // ver -1441：夜空交件（同第三型態，兩張必須一致）
+      bg:'sky_towers',       // ver -1441：夜空交件（同第三型態，兩張必須一致）
       fit:{ mode:'contain', pos:'center bottom' },
       /* ⚠ ver -1449：700 → **500**（Ray：「光退去後第四型態，hp500」）。 */
       hp:500,
@@ -1921,7 +1921,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_relic_mirrorchoir',
-      bg:'Ruins_shinier_MossChamber',
+      bg:'ruins_shinier_mosschamber',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,
       attack:10,
@@ -1947,7 +1947,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_relic_bellows',
-      bg:'Ruins_shinier_MossChamber',
+      bg:'ruins_shinier_mosschamber',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,
       attack:10,
@@ -1973,7 +1973,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_relic_confessional',
-      bg:'Ruins_shinier_MossChamber',
+      bg:'ruins_shinier_mosschamber',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,
       attack:10,
@@ -1999,7 +1999,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_relic_hourglass',
-      bg:'Ruins_shinier_MossChamber',
+      bg:'ruins_shinier_mosschamber',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,
       attack:10,
@@ -2025,7 +2025,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_relic_keyward',
-      bg:'Ruins_shinier_MossChamber',
+      bg:'ruins_shinier_mosschamber',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,
       attack:10,
@@ -2051,7 +2051,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_relic_lectern',
-      bg:'Ruins_shinier_MossChamber',
+      bg:'ruins_shinier_mosschamber',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,
       attack:10,
@@ -2077,7 +2077,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_relic_censerlung',
-      bg:'Ruins_shinier_MossChamber',
+      bg:'ruins_shinier_mosschamber',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,
       attack:10,
@@ -2103,7 +2103,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_relic_veilhands',
-      bg:'Ruins_shinier_MossChamber',
+      bg:'ruins_shinier_mosschamber',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,
       attack:10,
@@ -2129,7 +2129,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_relic_wheelpsalm',
-      bg:'Ruins_shinier_MossChamber',
+      bg:'ruins_shinier_mosschamber',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,
       attack:10,
@@ -2155,7 +2155,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       image:'enemy_relic_chalice',
-      bg:'Ruins_shinier_MossChamber',
+      bg:'ruins_shinier_mosschamber',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:300,
       attack:10,

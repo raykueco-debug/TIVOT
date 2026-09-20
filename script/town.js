@@ -5,7 +5,7 @@
    以及第一次進去時的對白。這裡只有資料，播放與互動在 `modules/town.js`。
 
    ── 節點格式 ──────────────────────────────────────────────────────
-     bg:'Capital_Square'      背景**基底名**（不含時段）。實際檔名由 clock.bgName() 加尾巴
+     bg:'capital_square'      背景**基底名**（不含時段）。實際檔名由 clock.bgName() 加尾巴
      name:'攝政王廣場'         情境卡上的地名
      exits:{ up/down/left/right:'節點id' }   箭頭。⚠ 方向就是畫面上的方向
      lines:[…]                進場對白（story 的 line 格式；`once:true` 的節點只播一次）
@@ -213,7 +213,7 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
      ⚠ 這一拍同時是**揭曉**：說話者由 `CORVIN_Q` 換成 `CORVIN` 且沒有 `dark`，
        剪影就在這裡收掉（見 story 的 darkWho）。 */
   Object.assign(cor(null,'我是第五騎士團的，'),
-                { cg:'013_Corvin_intro', cgNoTime:true, cgPan:'up' }),
+                { cg:'013_corvin_intro', cgNoTime:true, cgPan:'up' }),
   cor('smile','科爾文。請多指教。'),
   /* ⚠⚠ **報完名字就把插圖撤掉**（ver -956，Ray：「登場插畫以後就卡著了」）——
      插圖是**持續狀態**，那一張是「他登場」的畫，登場演完就該收，
@@ -445,7 +445,7 @@ export const DRAGON_LINES = {
       nou('shocked2','禍魘不能吃啦！'),
       /* ⚠ ver -1421（Ray：「諾薇兒說禍魘不能吃的時候，下一個 hungry 要播肚子餓音效」）
          —— 這一拍**沒有台詞**（只有立繪），聲音就是那句沒說出口的話。 */
-      Object.assign(nou('hungry',''), { se:'Se_Tummy' }),
+      Object.assign(nou('hungry',''), { se:'se_tummy' }),
       any('nervous','肚子，餓了？'),
       nou('lookaway','不是那樣啦——今天實在走太多路了！'),
     ] },
@@ -751,7 +751,7 @@ export const OUTING = {
      用一個共同的檔名後綴去拼一定會走鐘（-575 曾經是 `<節點bg>_cafe`，
      而 Ray 交件的檔名是 `Capital_Cafe`，根本不同源）。
        dining:{ node:'tavern', scenes:{
-         cafe:{ bg:'Capital_Cafe', noTime:true, chatter:[…] }, …
+         cafe:{ bg:'capital_cafe', noTime:true, chatter:[…] }, …
        }}
      · `bg` ＝**完整基底名**（不是後綴）。
      · `noTime:true` ＝這張圖沒有時段差分，候選鏈只試原名 —— 不寫的話會先吃
@@ -917,7 +917,7 @@ export const TOWNS = {
          這裡不寫，`chatterOf()` 查不到就回去問節點。
        ⚠ 稿在 `resources/background/_dining_chatter.md`（美術端交件）。 */
     dining:{ node:'tavern', scenes:{
-      cafe:{ bg:'Capital_Cafe', noTime:true, chatter:[
+      cafe:{ bg:'capital_cafe', noTime:true, chatter:[
         '今天的報紙寫著北方泊地的補給線又斷了。',
         '這裡的豆子是南境來的，戰前一磅只要三分之一的價。',
         '聽說教廷又在招募了，這次連文書職都要。',
@@ -925,7 +925,7 @@ export const TOWNS = {
         '加了牛奶就喝不出苦味了——現在的牛奶也不好買呢。',
         '永夜之後，能安靜坐著喝一杯就算奢侈了。',
       ]},
-      restaurant:{ bg:'Capital_Restaurant', noTime:true, chatter:[
+      restaurant:{ bg:'capital_restaurant', noTime:true, chatter:[
         '今日的湯是甜菜根，配給的關係，這禮拜第三次了。',
         '從前這裡的午市要排到街角，現在隨時都有位子。',
         '廚房那邊在吵什麼？大概又是肉送不到吧。',
@@ -933,7 +933,7 @@ export const TOWNS = {
         '孩子第一次進餐廳，別把叉子拿反了。',
         '吃完飯還是早點回家吧，天黑得越來越早了。',
       ]},
-      dessert:{ bg:'Capital_Sweets', noTime:true, chatter:[
+      dessert:{ bg:'capital_sweets', noTime:true, chatter:[
         '糖現在比銀還貴，這一份要價半天工錢呢。',
         '櫥窗裡那個栗子塔，我看了三天了。',
         '老闆娘說戰前的配方要用兩倍的奶油。',
@@ -942,7 +942,7 @@ export const TOWNS = {
         '排隊的人比麵包店還多，真的有那麼好吃嗎。',
       ]},
       /* 酒吧＝原本的餐酒館（Ray 指定不另畫）。⚠ 不寫 `noTime`：這一張有時段差分。 */
-      bar:{ bg:'Capital_Bistro' },
+      bar:{ bg:'capital_bistro' },
     }},
     /* ══ 同行的諾薇兒把殘留事件走完（ver -567，Ray 交稿）══════════════════
        「殘留的帝都諾薇兒劇情結束，諾薇兒會在下一次移動時提出他累了想要回去
@@ -956,7 +956,7 @@ export const TOWNS = {
 
       /* ══ 攝政王廣場 ══ 上＝中心區、左＝舊街區、右＝上街區（Ray 指定的三個方向） */
       square: {
-        bg:'Capital_Square', name:'帝都　攝政王廣場',
+        bg:'capital_square', name:'帝都　攝政王廣場',
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
         once:true,
         lines:[ nou('surprise','帝都的攝政王廣場，好壯觀。'),
@@ -980,13 +980,13 @@ export const TOWNS = {
 
       /* ══ 一、中心區 ══ 左＝行政廳、右＝教堂、下＝廣場 */
       midtown: {
-        bg:'Capital_Midtown', name:'帝都　中心區',
+        bg:'capital_midtown', name:'帝都　中心區',
         exits:{ left:'cityhall', right:'church', down:'square' },
       },
 
       /* (1) 教堂 */
       church: {
-        bg:'Capital_Church', name:'帝都　大教堂',
+        bg:'capital_church', name:'帝都　大教堂',
         exits:{ back:'midtown' },
         hours:[8,19], closed:'大門闔上了。晚禱之後不再受理訪客。',   // ver -864，Ray 確認教堂打烊
         once:true,
@@ -1015,7 +1015,7 @@ export const TOWNS = {
 
       /* (2) 行政廳 */
       cityhall: {
-        bg:'Capital_Cityhall', name:'帝都　行政廳',
+        bg:'capital_cityhall', name:'帝都　行政廳',
         exits:{ back:'midtown' },
         hours:[8,17], closed:'窗口都熄了燈。行政廳五點就下班了。',   // ver -864，Ray：「行政類都5點關門」
         /* ⚠ 蕾娜與諾薇兒**都是左側**（固定站位），這一段兩人同台 → 蕾娜暫時站右
@@ -1047,7 +1047,7 @@ export const TOWNS = {
          ⚠ 背景是 `Capital_Downtown`（Ray 指定）。`Capital_Uptown` 還給上街區 ——
            -371 那次是把兩張圖對調過，現在對回來了。 */
       oldtown: {
-        bg:'Capital_Downtown', name:'帝都　舊街區',
+        bg:'capital_downtown', name:'帝都　舊街區',
         /* ver -788：左進（square 左→oldtown）→右出（右回 square）。原本 down→square
            違反「左進右出」，把 square 挪到 right、被佔的 guild 移到空出的 down。 */
         exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' },
@@ -1068,7 +1068,7 @@ export const TOWNS = {
       gunstore: {
         /* 背景 `Capital_Firearm_Day`（Ray 於 ver -377 交件）。⚠ 基底名不含時段尾巴，
            其餘時段的差分還沒有 —— 會退回 `_Day`（`bgFor` 會在 console 記一筆）。 */
-        bg:'Capital_Firearm', name:'帝都　武器店', kind:'gunstore',
+        bg:'capital_firearm', name:'帝都　武器店', kind:'gunstore',
         exits:{ back:'oldtown' },
         shop:'gunstore', keeperWho:'GUNSMITH',
         /* ══⚠⚠ **店舖是 08:00–17:00**（ver -1432 接上 Ray 於 -1378 的交辦：「餐廳
@@ -1163,7 +1163,7 @@ export const TOWNS = {
       /* ══ 2. 船塢 ══（ver -379，背景 `Capital_Dock_Day` 由 Ray 交件）
          ⚠ 「明天要搭的船」是**下一段主線的伏筆** —— 這一段只有氣氛，沒有機能。 */
       dock: {
-        bg:'Capital_Dock', name:'帝都　船塢',
+        bg:'capital_dock', name:'帝都　船塢',
         exits:{ back:'oldtown' },
         /* ⚠ 進場對白綁著**第一天**（「不知道**明天**要搭的船長什麼樣」）——
            夜一過就作廢（ver -460，Ray：「碼頭也是」）。第二天的出航戲在下面的
@@ -1173,7 +1173,7 @@ export const TOWNS = {
           nou('happy','哇，好多船。'),
           nou('happy','不知道明天要搭的船長什麼樣子。'),
           /* 空畫面：遠處水手的吆喝。⚠ 沒有立繪、沒有框，只有聲音（§8.6 的空畫面拍）。 */
-          { speaker:'PLAYER', text:'', auto:900, se:'se_SailorShout', hide:['NOUVELLE'] },
+          { speaker:'PLAYER', text:'', auto:900, se:'se_sailorshout', hide:['NOUVELLE'] },
           /* 無台詞的立繪拍：她被那一聲嚇到，停一秒（§6.5，從立繪站定才起算）。 */
           { speaker:'NOUVELLE', text:'', auto:1000,
             portrait:{ char:'NOUVELLE', expr:'shocked2', show:true } },
@@ -1208,7 +1208,7 @@ export const TOWNS = {
                  ⚠ 順帶把時段差分那一輪 404 也省掉了 —— `bg` 走的是單一路徑，
                    不像 `cg` 要先試 `_Day`/`_day`/`.png` 四五個候選才輪到真的那一張。
                  ⚠ 無台詞的拍要 `auto`（沒有框就沒有 ▼，§6.5）。 */
-              { speaker:'RENNA', text:'', auto:1400, bg:'006_Ship', se:'se_flight_seagull' },
+              { speaker:'RENNA', text:'', auto:1400, bg:'006_ship', se:'se_flight_seagull' },
               nou('happy','哇，是木造船！好大喔！'),
               ren(null,'瓦爾士戰爭留下來的輕砲艦，這還算小的呢。'),
               ren('watch','雖然是舊式船體，姑且還是裝載了甲板滑膛砲跟速射砲。'),
@@ -1245,7 +1245,7 @@ export const TOWNS = {
            打完接著往下演（續播由 `story.resumeFrom` 負責，見那支的說明）。
          ⚠ 背景基底寫 `Captal_Guild`（Ray 的檔名就少一個 i，**照檔名**不要自作主張改）。 */
       guild: {
-        bg:'Captal_Guild', name:'帝都　賞金獵人公會', kind:'guild',
+        bg:'captal_guild', name:'帝都　賞金獵人公會', kind:'guild',
         exits:{ back:'oldtown' },
         /* 登記完才開得了懸賞榜（旗標由 `modules/town.js` 在這段對白播完時記）。 */
         board:'capital', boardFlag:'guild_registered',
@@ -1292,7 +1292,7 @@ export const TOWNS = {
         /* ⚠ 地名是**餐飲街**不是「餐酒館」（ver -580，Ray 指定）：這一格是一整條街，
            點進去落在哪一家由同行女伴／現在誰在那裡決定（見 dining）。節點 id 沿用
            `tavern`（旗標、腳本、`nextFavor` 都指著它，改 id 等於把那些全打斷）。 */
-        bg:'Capital_Bistro', name:'帝都　餐飲街',
+        bg:'capital_bistro', name:'帝都　餐飲街',
         exits:{ back:'uptown' },
         /* 開到午夜（Ray 指定）。⚠ `[8,24]` 的意思是 23:59 還開著、00:00 就關 —— 見
            modules/town.js 的 `isOpenNow`（上界是**不含**的）。 */
@@ -1327,7 +1327,7 @@ export const TOWNS = {
         /* ⚠ ver -400：Ray 交了時段差分（`_day` / `_dusk`），所以**拿掉 `noTime`** ——
            留著的話候選鏈只會找沒有時段尾巴的 `Capital_Grocerie`，而那張已經不存在了
            → 背景整個不見（Ray 回報「雜貨舖的背景圖不見了」）。 */
-        bg:'Capital_Grocerie', name:'帝都　雜貨舖', kind:'grocery',
+        bg:'capital_grocerie', name:'帝都　雜貨舖', kind:'grocery',
         exits:{ back:'uptown' },
         shop:'grocery', keeperWho:'SHOPKEEP',
         hours:[8,17], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',
@@ -1369,13 +1369,13 @@ export const TOWNS = {
            （「剛剛才經歷一場死鬥，最後一餐差點就是黑麥麵包配豆子」），
            留在舊街區的話後面那頓飯就沒頭沒尾。要改地方再說。 */
       uptown: {
-        bg:'Capital_Uptown', name:'帝都　上街區',
+        bg:'capital_uptown', name:'帝都　上街區',
         /* ver -788：右進（square 右→uptown）→左出（左回 square）。square 挪到 left、
            被佔的 grocery 移到空出的 down。 */
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' },
         lines:[
           /* 肚子叫：沒有台詞的一拍（立繪＋音效），停一秒自己走（§6.5）。 */
-          { speaker:'NOUVELLE', text:'', auto:1000, se:'Se_Tummy',
+          { speaker:'NOUVELLE', text:'', auto:1000, se:'se_tummy',
             portrait:{ char:'NOUVELLE', expr:'hungry', show:true } },
           nou('hungry','對不起，我肚子有點餓。'),
           { speaker:'PLAYER', blank:true },
@@ -1403,7 +1403,7 @@ export const TOWNS = {
          ⚠ `inn:true` ＝ 這個節點有**旅店大廳**（伙伴門／獨自坐坐／回房睡覺），
            實作在 `modules/inn.js`。 */
       inn: {
-        bg:'Capital_Hotel', name:'帝都　旅店', exits:{ back:'uptown' },
+        bg:'capital_hotel', name:'帝都　旅店', exits:{ back:'uptown' },
         inn:true,
         /* ⚠⚠ ver -1382：睡覺鈕改成 flag 制（預設不能睡）之後**這一格一定要給旗**，
            否則 stage 0 的結尾整個走不下去 —— 睡覺正是「推到隔天 07:00 → 船塢 → 出航」
@@ -1450,7 +1450,7 @@ export const TOWNS = {
             portrait:{ char:'CLERK', show:true } },
           { speaker:'CLERK', text:'', auto:900, shake:true, se:'se_kerberos_drop',
             hide:['CLERK'] },
-          { speaker:'CLERK', text:'棺材……？', cg:'005_Kerberos', cgPan:'up', delay:600 },
+          { speaker:'CLERK', text:'棺材……？', cg:'005_kerberos', cgPan:'up', delay:600 },
           { speaker:'CLERK', text:'那麼大件的行李，小店恐怕……', cg:null,
             portrait:{ char:'CLERK', show:true } },
           { speaker:'PLAYER', blank:true },
@@ -1738,11 +1738,11 @@ export const TOWNS = {
        日後 S4（重建後）的北泊稿在段落上標 `fromStage:4` 就能穿過封存）。 */
     muteTalksFrom: 4,   /* ver -857 重編號：原 5（北泊出航章）對位成 4 */
     rebuild: { fromStage:4, bgm:'harbor', bg:{
-      entrance:'Northport_Square',   west:'Northport_West',     north:'Northport_North',
-      east:'Northport_East',         port:'Northport_Port',     church:'Northport_Church',
-      cemetery:'Northport_Cemetery', cityhall:'Northport_Cityhall',
-      guild:'Northport_Guild',       gunstore:'Northport_Gunstore',
-      grocery:'Northport_Grocery',   tavern:'Northport_Tavern', inn:'Northport_Hotel',
+      entrance:'northport_square',   west:'northport_west',     north:'northport_north',
+      east:'northport_east',         port:'northport_port',     church:'northport_church',
+      cemetery:'northport_cemetery', cityhall:'northport_cityhall',
+      guild:'northport_guild',       gunstore:'northport_gunstore',
+      grocery:'northport_grocery',   tavern:'northport_tavern', inn:'northport_hotel',
     } },
     /* ══ 餐飲街（ver -575）══ 這座城的四家店**還沒有圖**，所以不給 `scenes`
        ＝不換分店，那一格只是「外出時碰得到人的地方」（見 OUTING）。
@@ -1757,7 +1757,7 @@ export const TOWNS = {
            「中央大道」是模板上的通名，之前是暫用的。
            ⚠ 節點 id 仍是 `entrance`（旗標、`firstEntry`、`sail` 都指著它，
              改 id 等於把那些一起打斷）—— 只改顯示名（`nameOf` 是唯一在算的那一支）。 */
-        bg:'Northport_Square_BF', name:'北方泊地　碼頭大道',
+        bg:'northport_square_bf', name:'北方泊地　碼頭大道',
         exits:{ up:'north', left:'west', right:'east' },
         /* 出航＝模板的「離開」，照 capital 的規矩掛在下；到得這裡船一定有了（同旗，只讀）。 */
         /* ⚠⚠ **不可離港**（ver -655，Ray：「自由探索，不可離港，離港會跳訊息：
@@ -1789,7 +1789,7 @@ export const TOWNS = {
       },
       /* ── 三個街區樞紐 ── */
       west: {
-        bg:'Northport_west_BF', name:'北方泊地　西側',
+        bg:'northport_west_bf', name:'北方泊地　西側',
         /* up＝Citymap 的空格 → ver -571 Ray 定案是**碼頭**（原入口圖 port_BF 的家）。 */
         /* ver -788：左進（entrance 左→west）→右出。entrance 挪到 right、guild 移到 down。 */
         exits:{ up:'port', left:'gunstore', right:'entrance', down:'guild' },
@@ -1801,7 +1801,7 @@ export const TOWNS = {
       /* 碼頭（ver -571，Ray：「西側北端加入碼頭 Northport_port_BF」）——
          擔架兵那張原「入口」圖歸位於此。 */
       port: {
-        bg:'Northport_port_BF', name:'北方泊地　碼頭',
+        bg:'northport_port_bf', name:'北方泊地　碼頭',
         exits:{ back:'west' },
         /* ══⚠⚠ 臨時攤（ver -732，Ray：「碼頭劇情登陸後（戰鬥探索）在左右各設
            臨時的雜貨店跟武器店，黑爪戰後恢復城鎮探索後移除」）══════════════
@@ -1917,7 +1917,7 @@ export const TOWNS = {
         ],
       },
       north: {
-        bg:'Northport_north_BF', name:'北方泊地　北側',
+        bg:'northport_north_bf', name:'北方泊地　北側',
         exits:{ left:'cityhall', right:'church', up:'cemetery', down:'entrance' },
         /* 城鎮戰的一場（ver -583（-893 前用詞））：走進來就打。⚠ `need` ＝城鎮戰開著、
            `flag` ＝這一格清掉了（打贏才記，同所有城鎮段落「演完才記」的規矩，
@@ -1925,7 +1925,7 @@ export const TOWNS = {
         acts:[ { flag:'np_clear_north', need:'np_port_arrive', lines:[ { battle:'np_harm' } ] } ],
       },
       east: {
-        bg:'Northport_east_BF', name:'北方泊地　東側',
+        bg:'northport_east_bf', name:'北方泊地　東側',
         /* ver -788：右進（entrance 右→east）→左出。entrance 挪到 left、grocery 移到 down。 */
         exits:{ left:'entrance', right:'tavern', up:'inn', down:'grocery' },
         /* 城鎮戰的一場（ver -583（-893 前用詞））：走進來就打。⚠ `need` ＝城鎮戰開著、
@@ -1937,7 +1937,7 @@ export const TOWNS = {
          ⚠ 全部還是空房間：等 Ray 的稿再補 shop/kind/keeperWho/hours/lines。 */
       /* ══ 武器店（ver -655，Ray 交稿）══ 功能與帝都相同（買／賣／改裝＋射擊挑戰），
          店主與貨單是這座城自己的（`config.shop` 的 `np_gunstore`）。 */
-      gunstore: { bg:'Northport_gunstore_BF', name:'北方泊地　武器店', kind:'gunstore',
+      gunstore: { bg:'northport_gunstore_bf', name:'北方泊地　武器店', kind:'gunstore',
         exits:{ back:'west' },
         shop:'np_gunstore', keeperWho:'GUNSMITH_NP',
         /* ver -859（Ray：「雜貨、公會、槍店三個都去過以後才會被拉回去」）：
@@ -1953,7 +1953,7 @@ export const TOWNS = {
       /* 賞金獵人公會（ver -664，Ray：「沒有人，只有張貼懸賞單，點擊查看」）。
          ⚠ 懸賞內容在 `config.bounties`（鐵律 1），這裡只指哪一座城。
          ⚠ 不寫 `keeperWho`＝沒有店主立繪，正合「沒有人」。 */
-      guild:    { bg:'Northport_guild_BF', name:'北方泊地　賞金獵人公會', exits:{ back:'west' },
+      guild:    { bg:'northport_guild_bf', name:'北方泊地　賞金獵人公會', exits:{ back:'west' },
         hours:[8,17], closed:'大門上了閂。委託要等明天早上八點。',   // ver -864，Ray 確認（同帝都公會）
         board:'northport',
         /* ⚠ ver -1062（Ray：「北泊的賞金獵人公會，原 npc 講完台詞以後就被換成帝都的
@@ -1969,11 +1969,11 @@ export const TOWNS = {
           { speaker:'COUNTER_NP', text:'殺禍魘沒賞金領，人都跑光了。你隨意看看吧。',
             portrait:{ char:'COUNTER_NP', show:true } },
         ] } ] },
-      cityhall: { bg:'Northport_cityhall_BF', name:'北方泊地　市鎮中心',   exits:{ back:'north' },
+      cityhall: { bg:'northport_cityhall_bf', name:'北方泊地　市鎮中心',   exits:{ back:'north' },
         hours:[8,17], closed:'窗口都熄了燈。市鎮中心五點就下班了。' },   // ver -864，Ray：「行政類都5點關門」
       /* ⚠ **城鎮戰期間唯一走得進去的末端**（Ray 指定，見城上的 `siege.keep`）——
          因為 Boss 在這裡（司祭：「守軍把禍魘吸引到城鎮中心去了」）。 */
-      church:   { bg:'Northport_church_BF', name:'北方泊地　教堂',       exits:{ back:'north' },
+      church:   { bg:'northport_church_bf', name:'北方泊地　教堂',       exits:{ back:'north' },
         hours:[8,19], closed:'大門闔上了。晚禱之後不再受理訪客。',   // ver -864，Ray 確認教堂打烊
         /* ⚠ 城鎮戰（siege）期間這一格是 Boss 房 —— 打烊擋的是 go()，而 siege 的
            路線管制走 exitsOf 的 keep 白名單，兩者不衝突；夜戰若被擋到要回報 Ray。 */
@@ -2055,7 +2055,7 @@ export const TOWNS = {
                  立繪是**持續狀態**，所以要明寫把兩個人請下台（§6.5）。
                  ⚠ 用 `hide` 不是 `show:false`：後者一句只能管一個角色。 */
               { speaker:'RENNA', text:'這孩子還有氣。有受傷嗎？',
-                cg:'007_Anya_passout', cgNoTime:true, cgPan:'up',
+                cg:'007_anya_passout', cgNoTime:true, cgPan:'up',
                 hide:['NOUVELLE','RENNA'] },
               /* 差分：醒來。⚠ `cgSoft`（ver -628，Ray 指定）＝**淡入不轉黑**：
                  這是同一張插圖的差分（昏迷→醒來），中間插一片黑會把那個變化切斷。
@@ -2063,7 +2063,7 @@ export const TOWNS = {
                    平移後的 passout 上」）：它疊在上一拍平移完的取景上，
                    引擎會把第二層擺到同一個 object-position（見 story 的 cgCross）。
                  ⚠ 台上沒有人（上一拍 `hide` 過），所以照舊吃 `auto` 自己走完。 */
-              { speaker:'PLAYER', text:'', auto:1200, cg:'007-2_Anya_awake', cgNoTime:true, cgSoft:true },
+              { speaker:'PLAYER', text:'', auto:1200, cg:'007-2_anya_awake', cgNoTime:true, cgSoft:true },
               /* 收插圖回教堂（`cg:null`），立繪從這一拍開始恢復。 */
               { speaker:'ANYA_X', text:'！！', cg:null,
                 portrait:{ char:'ANYA_X', expr:'scared', show:true } },
@@ -2104,7 +2104,7 @@ export const TOWNS = {
                  再三秒亮回、娜塔莉那一拍才上。 */
               { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000,
                 hide:['RENNA','NOUVELLE','ANYA_X'] },
-              nat(null,'……', { bg:'Northport_north_BF', bgm:'failed', fadeIn:3000 }),
+              nat(null,'……', { bg:'northport_north_bf', bgm:'failed', fadeIn:3000 }),
               grl('crying','娜塔莉……娜塔莉！'),
               nat(null,'……'),
               grl('desperate','……'),
@@ -2135,7 +2135,7 @@ export const TOWNS = {
               /* ⚠ 插圖由**上往下**平移（Ray 指定）。ver -858（Ray：「不是無立繪，
                  是保持原立繪」）：-656 的 hide 拆掉 —— 台上的人留著，插圖疊在後面平移。 */
               { speaker:'RENNA', text:'交給我們吧。死者的歸途，是不分教派的。',
-                cg:'008_RennaholdAnya', cgNoTime:true, cgPan:'down' },
+                cg:'008_rennaholdanya', cgNoTime:true, cgPan:'down' },
             ] },
           /* ══ 第三天：戰地醫院（ver -664，Ray 交稿）══
              ⚠ **不覆寫站位**：諾薇兒本位左、安雅本位右，本來就分開了。
@@ -2166,7 +2166,7 @@ export const TOWNS = {
            （見旅店那扇門的台詞），而「多虧有『你』」是單數。
          ⚠ Ray 的稿裡「辛苦你們了。多虧有你，才沒有更多人死去。」**重複了兩次**，
            這裡只演一次（同一個人連講兩遍同一句讀起來是 bug）。真要兩次再說。 */
-      cemetery: { bg:'Northport_cemetery_BF', name:'北方泊地　墓地', exits:{ back:'north' },
+      cemetery: { bg:'northport_cemetery_bf', name:'北方泊地　墓地', exits:{ back:'north' },
         acts:[
           { flag:'np_burial_done', need:'np_burial', lines:[
             pri(null,'這實在……不是人類應得的死法。'),
@@ -2304,7 +2304,7 @@ export const TOWNS = {
         ] },
       /* ══ 雜貨店（ver -655，Ray 交稿）══ 功能與帝都相同（買／賣）。
          ⚠ 那一句同時當**進場對白**與**「交談」鈕**的內容 —— 只寫一次（鐵律 7）。 */
-      grocery:  { bg:'Northport_grocery_BF', name:'北方泊地　雜貨街', kind:'grocery',
+      grocery:  { bg:'northport_grocery_bf', name:'北方泊地　雜貨街', kind:'grocery',
         exits:{ back:'east' },
         shop:'np_grocery', keeperWho:'SHOPKEEP_NP',
         hours:[8,17], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',
@@ -2340,7 +2340,7 @@ export const TOWNS = {
           ] },
         ] },
       /* 餐飲街：廢墟（ver -664）。 */
-      tavern:   { bg:'Northport_tavern_BF', name:'北方泊地　餐飲街',     exits:{ back:'east' },
+      tavern:   { bg:'northport_tavern_bf', name:'北方泊地　餐飲街',     exits:{ back:'east' },
         hours:[8,24], lateNight:true, closed:'椅子都翻上桌了。今晚的最後一輪早就結束。',   // ver -864，Ray：「酒吧都是24:00才關」
         acts:[ { flag:'np_tavern_seen', need:'np_day3_done', lines:[ any('sobbing','……') ] } ] },
       /* ══ 旅店（ver -656，Ray 交稿）══════════════════════════════════════
@@ -2357,7 +2357,7 @@ export const TOWNS = {
            不寫的話會照這一章入隊的所有人開四扇門，而那三扇都沒有戲。
          ⚠ 敲門那一句是 Ray 的稿，一字不要動。 */
       inn: {
-        bg:'Northport_hotel_BF', name:'北方泊地　旅店', exits:{ back:'east' },
+        bg:'northport_hotel_bf', name:'北方泊地　旅店', exits:{ back:'east' },
         inn:true,
         innSpots:{ sit:{ x:0.310, y:0.630 }, sleep:{ x:0.580, y:0.550 } },
         /* ⚠⚠ 睡覺**一律擋著**（ver -665，Ray：「那一夜演完之後不用睡，直接往下
@@ -2399,7 +2399,7 @@ export const TOWNS = {
         acts:[
           { flag:'np_night_done', need:'np_night', lines:[
             { speaker:'RENNA', text:'結束了嗎？', bgm:'entangle',
-              bg:'Northport_Hotel_room_Night',
+              bg:'northport_hotel_room_night',
               portrait:{ char:'RENNA', expr:'ask', show:true } },
             { speaker:'PLAYER', blank:true },
             ren(null,'別擔心，兩個人都沒事。睡著了。'),
@@ -2579,7 +2579,7 @@ export const TOWNS = {
          Stage9 又演了一次。飯都吃過了就該退休，這才是它真正的終點。 */
       { flag:'sv_s8_hungry', need:'sv_s8_home', skipIf:'sv_s8_dine', afterMoves:6,
         goto:'restaurant', enterAgain:true,
-        lines:[ Object.assign(nou('hungry',''), { se:'Se_Tummy' }),
+        lines:[ Object.assign(nou('hungry',''), { se:'se_tummy' }),
                 sor('surprised','哇！別亂逛了，諾薇兒快餓扁啦！'),
                 nou('lookaway','') ] },
       /* ══ Stage 8：餐廳那一段演完 → 換場到索菈娜家（稿上的「索菈娜家。」）══
@@ -2591,7 +2591,7 @@ export const TOWNS = {
     nodes: {
       /* ── 樞紐：剝製廣場 ──「離開」＝下方出口（sail 那一套；舵還沒修好，
          旗 `shinier_leave_ok` 由修舵那一段劇情立，日後接大地圖）。 */
-      plaza: { bg:'Shinier_Plaza', name:'夏爾村　剝製廣場',
+      plaza: { bg:'shinier_plaza', name:'夏爾村　剝製廣場',
         exits:{ up:'north', left:'west', right:'east' },
         /* ⚠ S5 出不了港：`shinier_leave_ok` 由「修舵」那一段劇情立（稿還沒到，所以
            現在誰都沒插＝一律擋，正是 Ray 要的「劇情船還沒修好」）。⚠ `blocked` 是
@@ -2685,20 +2685,20 @@ export const TOWNS = {
       /* ── 三個支點 ── */
       /* 三個連接格在圍城期間各一場（`sv_beast` 怪池，抽不重覆的一隻，ver -802（-893 前用詞））。
          ⚠ 旗**打贏才記**（同城鎮戰通則）—— 打輸回頭再走一次還會遇到。 */
-      north: { bg:'Shinier_North', name:'夏爾村　北側',
+      north: { bg:'shinier_north', name:'夏爾村　北側',
         exits:{ up:'lakeside', left:'chief', right:'altar', down:'plaza' },
         acts:[ { flag:'sv_clear_north', need:'shinier_siege', lines:[ { battle:'sv_beast' } ] } ] },
-      west:  { bg:'Shinier_West', name:'夏爾村　西側',
+      west:  { bg:'shinier_west', name:'夏爾村　西側',
         /* ver -788：左進（plaza 左→west）→右出。plaza 挪到 right、hunter 移到 down。 */
         exits:{ up:'wild', left:'workshop', right:'plaza', down:'hunter' },
         acts:[ { flag:'sv_clear_west', need:'shinier_siege', lines:[ { battle:'sv_beast' } ] } ] },
-      east:  { bg:'Shinier_East', name:'夏爾村　東側',
+      east:  { bg:'shinier_east', name:'夏爾村　東側',
         /* ver -788：右進（plaza 右→east）→左出。plaza 挪到 left、grocery 移到 down。 */
         exits:{ up:'sorahome', left:'plaza', right:'restaurant', down:'grocery' },
         acts:[ { flag:'sv_clear_east', need:'shinier_siege', lines:[ { battle:'sv_beast' } ] } ] },
       /* ── 末端（北） ── */
-      lakeside: { bg:'Shinier_Lakeside', name:'夏爾村　湖畔',   exits:{ back:'north' } },
-      chief:    { bg:'Shinier_chiefhouse', name:'夏爾村　村長的家', exits:{ back:'north' },
+      lakeside: { bg:'shinier_lakeside', name:'夏爾村　湖畔',   exits:{ back:'north' } },
+      chief:    { bg:'shinier_chiefhouse', name:'夏爾村　村長的家', exits:{ back:'north' },
         /* ══ S5 前的早訪（ver -858，Ray 交稿）══ 村長在家：森住民聚落的由來
            （逃亡奴隸）＋警告別進森林（魔獸）。蕾娜兩句照稿；村長台詞是我
            照 Ray 給的方向寫的。untilStage:5 ＝ 到了夏爾村章就讓位給主線段。 */
@@ -2732,12 +2732,12 @@ export const TOWNS = {
       /* 祭壇＝圍城期間唯一走得進去的末端之一（另一個是野外）。這一格是「最硬的
          一般格」（`sv_altar`＝聖骨獸，數值同 np_boss）—— **不是**收尾格，打不打隨
          玩家（走西側直接到野外可跳過；ver -802）。 */
-      altar:    { bg:'Shinier_Altar',   name:'夏爾村　祭壇',   exits:{ back:'north' },   // ver -786：祭壇圖已交（day/dd/night）
+      altar:    { bg:'shinier_altar',   name:'夏爾村　祭壇',   exits:{ back:'north' },   // ver -786：祭壇圖已交（day/dd/night）
         acts:[ { flag:'sv_clear_altar', need:'shinier_siege', lines:[ { battle:'sv_altar' } ] } ] },
       /* ── 末端（西） ── */
       /* 野外＝**夏爾森林的入口**（ver -758，Ray：「野外是森林地圖」）：
          往上走就換到 shinier_forest 那張圖（跨地圖出口，modules/town.js 的 @ 語法）。 */
-      wild:     { bg:'Shinier_Wilds',    name:'夏爾村　野外',
+      wild:     { bg:'shinier_wilds',    name:'夏爾村　野外',
         exits:{ back:'west', up:'@shinier_forest' },
         /* ══ 圍城的**收尾格**（ver -802，Ray：「打到野外為止，野外也開放進入」）══
            `sv_wild`＝熊骸（`sessionEnd`＝打贏它才閉棺、資源回滿、結算）。
@@ -2828,7 +2828,7 @@ export const TOWNS = {
            （走進來就打），打贏＝圍城結束，所以戰時借道逃進森林實際上走不到。
            第一次踏進森林＝town.open 插 sv_forest_found（大地圖名牌＋可降落）。 */
         },
-      workshop: { bg:'Shinier_Workshop', name:'夏爾村　工坊',   exits:{ back:'west' },
+      workshop: { bg:'shinier_workshop', name:'夏爾村　工坊',   exits:{ back:'west' },
         hours:[8,19], closed:'爐子熄了。杰羅大概收工回去了。',   // ver -864，Ray 確認工坊打烊
         /* ══ 杰羅的槍店（ver -866，Ray：「杰羅的工坊就是槍店」「只改不賣」）══
            店＝config.shop.shops.sv_workshop（只有「改槍」分頁＝賭博式改造）。
@@ -2871,7 +2871,7 @@ export const TOWNS = {
       /* ══ 獵人小屋・謝尼（ver -859 改：Ray「要像賞金獵人公會一樣有表可以看」）══
          走進去＝店主立繪＋「兌換」鈕 → 開兌換表（showExchange，今日配對）。
          初見先演一次說明（act flag）。⚠ keeperWho 給謝尼的臉。 */
-      hunter:   { bg:'Shinier_huntercabin',   name:'夏爾村　獵人小屋', exits:{ back:'west' },
+      hunter:   { bg:'shinier_huntercabin',   name:'夏爾村　獵人小屋', exits:{ back:'west' },
         exchange:'sv_hunt', keeperWho:'HUNTER_SV',
         hours:[6,20], closed:'小屋沒點燈。獵人大概進山了。',
         acts:[
@@ -2884,7 +2884,7 @@ export const TOWNS = {
           ] },
         ] },
       /* ── 末端（東） ── */
-      sorahome: { bg:'Shinier_soranahouse', name:'夏爾村　索菈娜的家', exits:{ back:'east' },
+      sorahome: { bg:'shinier_soranahouse', name:'夏爾村　索菈娜的家', exits:{ back:'east' },
         /* ver -858（Ray：「Stage5 之前無法進入索拉娜家，連箭頭都不會有」）——
            主線抵達（S4）前這一格不存在（exitsOf 的 hideBelowStage）。 */
         hideBelowStage:4,
@@ -2993,7 +2993,7 @@ export const TOWNS = {
           /* ⚠ `cgNoTime`（ver -875，Ray：「手機版010插畫沒出來」）：這張沒有時段差分
              —— adhoc 段落不經預載頁，顯示時逐個試候選，手機上先吃 4~5 個 404
              圖就來不及上（-433 那條的 adhoc 版）。平移同版改**下到上**（Ray 指定）。 */
-          { speaker:'ANYA', text:'', cg:'010_Anyaheadrubbing', cgNoTime:true, cgPan:'up' },
+          { speaker:'ANYA', text:'', cg:'010_anyaheadrubbing', cgNoTime:true, cgPan:'up' },
           any(null,'！！'),
           { speaker:'PLAYER', blank:true },   // ver -875，Ray：「好。」之前插主角空白格
           Object.assign(any('smileshy','好。'), { cg:null }),   // 回到原背景
@@ -3118,7 +3118,7 @@ export const TOWNS = {
           ren('front',''),
           sor('smile','那就走吧。反正修女小姐也不像會欺負她的樣子。'),
           sor('readysmile','也差不多到吃飯時間了，帶你們去瑪麗亞那邊吃一頓吧。'),
-          Object.assign(nou('hungry',''), { se:'Se_Tummy' }),
+          Object.assign(nou('hungry',''), { se:'se_tummy' }),
           sor('amazed','沒錯沒錯，身體是不會騙人的喔。'),
           ren('front','妳們去吧，應該花不了太長時間。'),
           ren('front','一會我就帶她過去。'),
@@ -3192,7 +3192,7 @@ export const TOWNS = {
          魔獸圍城（safehouse_shinier）之後對話熱絡、**商品打 9 折**
          （config.shop.shops.sv_grocery 的 sale，loot.js -858 新增）。
          ⚠ 台詞是我照 Ray 給的人設寫的。 */
-      grocery:  { bg:'Shinier_Grocery', name:'夏爾村　雜貨街', kind:'grocery',
+      grocery:  { bg:'shinier_grocery', name:'夏爾村　雜貨街', kind:'grocery',
         exits:{ back:'east' },
         shop:'sv_grocery', keeperWho:'GROCER_SV',
         hours:[8,17], closed:'門板上掛著小木牌：「明早見」。',
@@ -3206,7 +3206,7 @@ export const TOWNS = {
           Object.assign(grcS(null,'跟你們一起打過那一仗，就算半個自己人了。算你們便宜點！'), { onlyIf:'safehouse_shinier' }),
           Object.assign(grcS(null,'村裡人都在說你們的事呢。多虧有你們啊。'), { onlyIf:'safehouse_shinier' }),
         ] },
-      restaurant:{ bg:'Shinier_Restaurant', name:'夏爾村　餐廳', exits:{ back:'east' },
+      restaurant:{ bg:'shinier_restaurant', name:'夏爾村　餐廳', exits:{ back:'east' },
         /* 駐店（ver -875，Ray：「餐廳早上6點到晚上6點有人，圖用cook，名字瑪麗亞」）
            —— 開放空間**不掛 hours**（掛了會被打烊擋在門外；時段外只是沒人）。 */
         /* ⚠⚠⚠ **`from:8` ＝ stage8 之前她根本不在**（ver -975，Ray：「夏爾村在
@@ -3262,15 +3262,15 @@ export const TOWNS = {
     nodes: {
       /* 入口＝復活點，**不可以有戰鬥**（§6.5.2）。往下＝出航離開這張圖 ——
          玩家是從天上降落進來的，這裡沒有相鄰的城可以走回去。 */
-      entry:    { bg:'Canyon_entry',    name:'卡耶爾山谷　峽谷入口', rest:true,
+      entry:    { bg:'canyon_entry',    name:'卡耶爾山谷　峽谷入口', rest:true,
                   exits:{ up:'corridor' }, sail:{ dir:'down' } },
-      corridor: { bg:'Canyon_corridor', name:'卡耶爾山谷　風蝕迴廊',
+      corridor: { bg:'canyon_corridor', name:'卡耶爾山谷　風蝕迴廊',
                   exits:{ up:'bones', down:'entry' } },
-      bones:    { bg:'Canyon_bones',    name:'卡耶爾山谷　白骨之地',
+      bones:    { bg:'canyon_bones',    name:'卡耶爾山谷　白骨之地',
                   exits:{ up:'altar', right:'bridge', down:'corridor' } },
-      bridge:   { bg:'Canyon_bridge',   name:'卡耶爾山谷　斷橋',
+      bridge:   { bg:'canyon_bridge',   name:'卡耶爾山谷　斷橋',
                   exits:{ left:'bones' } },                    // 岔出去的死路
-      altar:    { bg:'Canyon_altar',    name:'卡耶爾山谷　谷底祭場', rest:true,
+      altar:    { bg:'canyon_altar',    name:'卡耶爾山谷　谷底祭場', rest:true,
                   exits:{ down:'bones' } },                    // 谷底盡頭（Boss 場）
     },
   },
@@ -3409,7 +3409,7 @@ export const TOWNS = {
          起點跟終點各設一個結算點」）—— 這張圖的兩端（`entry` 通夏爾村、`ruins`
          通神殿）都是結算點。哪一端是起點、哪一端是終點由**這一趟從哪邊進來**決定
          （判定在 modules/town.js 的 `pickEnds`）：起點不出怪、終點必出結算怪。 */
-      entry: { bg:'Forest_Entry', name:'夏爾森林　森林入口', rest:true,
+      entry: { bg:'forest_entry', name:'夏爾森林　森林入口', rest:true,
         exits:{ up:'glade', down:'@shinier:wild' },
         /* ══ 森林入口（ver -870，Ray 的森林行稿）══ 出發前的叮嚀＋地圖教學。 */
         acts:[ { flag:'sv_forest_intro', need:'sv_forest_go', lines:[
@@ -3423,22 +3423,22 @@ export const TOWNS = {
           sor('readysmile','好啦，出發囉。'),
         ] } ] },
       /* 戰①。⚠ **沒有 up**：北面是斷崖（設計的「不要一直線走到」）。 */
-      glade: { bg:'Forest_Glade', name:'夏爾森林　林間空地',
+      glade: { bg:'forest_glade', name:'夏爾森林　林間空地',
         exits:{ left:'shoal', right:'nest', down:'entry' } },
-      nest:  { bg:'Forest_Nest', name:'夏爾森林　獸巢',
+      nest:  { bg:'forest_nest', name:'夏爾森林　獸巢',
         exits:{ back:'glade' } },                       // 支線：選打，掉素材
       /* 戰②。 */
-      shoal: { bg:'Forest_Shoal', name:'夏爾森林　淺灘',
+      shoal: { bg:'forest_shoal', name:'夏爾森林　淺灘',
         exits:{ up:'trail', left:'valley', right:'glade' } },
-      valley:{ bg:'Forest_Valley', name:'夏爾森林　河谷',
+      valley:{ bg:'forest_valley', name:'夏爾森林　河谷',
         exits:{ back:'shoal' } },                       // 支線：採集
       /* 戰③。 */
-      trail: { bg:'Forest_Trail', name:'夏爾森林　舊獵道',
+      trail: { bg:'forest_trail', name:'夏爾森林　舊獵道',
         exits:{ up:'high', left:'cave', down:'shoal' } },
-      cave:  { bg:'Forest_Cave', name:'夏爾森林　岩窟',
+      cave:  { bg:'forest_cave', name:'夏爾森林　岩窟',
         exits:{ back:'trail' } },                       // 支線：寶箱
       /* 戰④。 */
-      high:  { bg:'Forest_Highland', name:'夏爾森林　高地',
+      high:  { bg:'forest_highland', name:'夏爾森林　高地',
         exits:{ right:'cliff', down:'trail' },
         /* ⚠⚠ **stage6 之前走不到斷崖邊**（ver -925，Ray：「Stage6 之前夏爾森林
            只能走到懸崖邊的前一個圖，懸崖邊不開放」）—— 高地是「懸崖邊的前一個圖」，
@@ -3446,7 +3446,7 @@ export const TOWNS = {
            ⚠ 斷崖邊是往遺蹟入口的唯一通路，所以這一條同時把神殿擋在 S6 之後。 */
         exitFrom:{ right:6 } },
       /* 終點前的喘息格（無戰）：日後 checkpoint／劇情拍放這裡。 */
-      cliff: { bg:'Forest_Cliff', name:'夏爾森林　斷崖邊',
+      cliff: { bg:'forest_cliff', name:'夏爾森林　斷崖邊',
         exits:{ up:'ruins', left:'high' } },
       /* 終點：遺蹟入口 —— 背景 ver -870 換 Ray 新交的 ruins_shinier_entrance
          （單張、無時段差分；舊 Ruins_Entrance_* 已被美術收走）。
@@ -3751,7 +3751,7 @@ export const TOWNS = {
          ⚠ 三格一律 `noWild`：Ray 點名的不出怪清單是「樓梯、裂隙」，但**安全點**
            三個字本身就是「這裡不會有東西撲上來」—— 而且它們是這一局的收尾點，
            在收尾點刷怪等於「先打一場再結算」。要改成會出怪，把 noWild 拿掉就好。 */
-      antechamber:{ bg:'Ruins_shinier_Antechamber', name:'木雅克神殿　前廳',
+      antechamber:{ bg:'ruins_shinier_antechamber', name:'木雅克神殿　前廳',
         rest:true, noWild:true,
         /* 圖上：長廊在左、拱門長廊在右、遺蹟入口在下。 */
         exits:{ left:'corridora', right:'corridorb', down:'@shinier_forest:ruins' },
@@ -3781,16 +3781,16 @@ export const TOWNS = {
           { speaker:'NARRATION', text:'踏破的區域會顯示在地圖上。' },
           { speaker:'NARRATION', text:'找到安全點可結算戰鬥，回復狀態。' },
         ] } ] },
-      corridora:  { bg:'Ruins_shinier_CorridorA', name:'木雅克神殿　長廊',
+      corridora:  { bg:'ruins_shinier_corridora', name:'木雅克神殿　長廊',
         exits:{ right:'antechamber', up:'crossway' } },
-      crossway:   { bg:'Ruins_shinier_Crossway', name:'木雅克神殿　岔道',
+      crossway:   { bg:'ruins_shinier_crossway', name:'木雅克神殿　岔道',
         /* -900 的三岔（地表版，四時段差分）：長廊在下、上行石階在左、圓井房在**上**
            （ver -908，Ray：「把圓井房搬到岔道的上方」）。右邊那道留著不用。 */
         exits:{ down:'corridora', left:'stairup', up:'well' } },
-      well:       { bg:'Ruins_shinier_Well', name:'木雅克神殿　圓井房',
+      well:       { bg:'ruins_shinier_well', name:'木雅克神殿　圓井房',
         exits:{ back:'crossway' } },                    // 末端：一口深井，沒有出口
       /* 樓梯不出怪（ver -913，Ray：「不出怪的地方：樓梯、裂隙」）。 */
-      stairup:    { bg:'Ruins_shinier_StairUp', name:'木雅克神殿　上行石階', noWild:true,
+      stairup:    { bg:'ruins_shinier_stairup', name:'木雅克神殿　上行石階', noWild:true,
         /* ⚠ 階梯在正前方往上 ⇒ 按 `up` 就是拾級而上（Ray -890：「明明樓梯往上，
            箭頭卻只能往下」）；岔道在它右邊。 */
         exits:{ right:'crossway', up:'brazier' } },
@@ -3811,7 +3811,7 @@ export const TOWNS = {
               `seen_*` 是「**現在**走過了沒」—— 開門之後才第一次走去石橋，
               它一樣會亮，回頭到這裡就跑出 A（「剛剛打開的，會是那扇門嗎？」），
               而那時他明明已經站在那扇開著的門前看過了。 */
-      brazier:    { bg:'Ruins_shinier_Brazier', name:'木雅克神殿　養息之間',
+      brazier:    { bg:'ruins_shinier_brazier', name:'木雅克神殿　養息之間',
         acts:[
           { flag:'sr_brazier', lines:[
             any('scared',''),
@@ -3849,9 +3849,9 @@ export const TOWNS = {
            -900 的三岔（中層版）＝這張圖的十字路口：上行石階在下、崩塌走道在左、
            石橋在上、巨像廳在右。四向全用。 */
         exits:{ down:'stairup', left:'collapsed', up:'bridge', right:'colossus' } },
-      collapsed:  { bg:'Ruins_shinier_Collapsed', name:'木雅克神殿　崩塌走道',
+      collapsed:  { bg:'ruins_shinier_collapsed', name:'木雅克神殿　崩塌走道',
         exits:{ right:'brazier', down:'mural' } },
-      mural:      { bg:'Ruins_shinier_Mural', name:'木雅克神殿　壁畫廳',
+      mural:      { bg:'ruins_shinier_mural', name:'木雅克神殿　壁畫廳',
         exits:{ back:'collapsed' },                     // 末端
         acts:[ { flag:'sr_mural', lines:[
           sor('side','第一次看得這麼清楚耶！'),
@@ -3872,10 +3872,10 @@ export const TOWNS = {
          ⚠⚠ **圖已經到了**（`Ruins_shinier_Bridgeopen`，美術 30206d2：走廊盡頭那道
            發光的門**開了**），但**還沒接** —— 「什麼事件會把門打開」是劇本的事，
            等 Ray 指定旗標（鐵律 9：旗要答得出誰插的）。接法是一行資料：
-             `bgWhen:[{ need:'<那支旗>', bg:'Ruins_shinier_Bridgeopen', noTime:true }]` */
-      bridge:     { bg:'Ruins_shinier_Bridge', name:'木雅克神殿　石橋', noTime:true,
+             `bgWhen:[{ need:'<那支旗>', bg:'ruins_shinier_bridgeopen', noTime:true }]` */
+      bridge:     { bg:'ruins_shinier_bridge', name:'木雅克神殿　石橋', noTime:true,
         /* 事件差分（ver -923）：開門之後換成「盡頭那道門開了」的那一張。 */
-        bgWhen:[ { need:'ruins_gate_open', bg:'Ruins_shinier_Bridgeopen', noTime:true } ],
+        bgWhen:[ { need:'ruins_gate_open', bg:'ruins_shinier_bridgeopen', noTime:true } ],
         /* ⚠ 窄橋跨在深淵上，兩側是空的 ⇒ 只有前後（ver -890，Ray 點名的那一格）。 */
         exits:{ down:'brazier', up:'deepaltar' },
         /* ⚠⚠ **門開了才走得過去**（Ray 的稿：蕾「沒路了呢。」）——
@@ -3931,10 +3931,10 @@ export const TOWNS = {
          ⚠ **BOSS 不受 `noWild` 管**：那一場是劇本（節點的 `acts` 那一拍），
            `noWild` 擋的只有 `wildSpawn` 的隨機刷怪 —— 兩件事各走各的路。
            所以「平時是休息處、劇情一到就在同一格開打」兩句話同時成立。 */
-      deepaltar:  { bg:'Ruins_shinier_DeepAltar', name:'木雅克神殿　深部祭壇', noTime:true,
+      deepaltar:  { bg:'ruins_shinier_deepaltar', name:'木雅克神殿　深部祭壇', noTime:true,
         rest:true, noWild:true,
         /* 事件差分（ver -923）：安雅把祭壇打開之後換成啟動版那一張。 */
-        bgWhen:[ { need:'ruins_altar_on', bg:'Ruins_shinier_DeepAltaractive', noTime:true } ],
+        bgWhen:[ { need:'ruins_altar_on', bg:'ruins_shinier_deepaltaractive', noTime:true } ],
         /* ══ stage7 收尾（ver -923，Ray 交稿）══ 對話 → BOSS「節制」→ 安雅的感應
            → 祭壇啟動 → 插圖 012_thedisk → 收尾對話。
            ⚠ **BOSS 就掛在這一段裡**（Ray：「平時不出怪，劇情才出 BOSS」）——
@@ -3983,7 +3983,7 @@ export const TOWNS = {
              ⚠ 旗與 act 的 `flag` 是兩支：一支說「那一段演完了」、一支說
                「祭壇開著」（鐵律 9：一個狀態一個擁有事件）。 */
           { speaker:'NARRATION', text:'', flags:['ruins_altar_on'],
-            bg:'Ruins_shinier_DeepAltaractive', auto:1500 },
+            bg:'ruins_shinier_deepaltaractive', auto:1500 },
           nou('shocked2','發、發生什麼事了？'),
           ren('shockedCalm','！！'),
           ren('shocked','難道說、安雅小姐妳是……！'),
@@ -4013,12 +4013,12 @@ export const TOWNS = {
         /* ⚠ ver -908（Ray：「把巨像廳跟深部祭壇的連結給斷了」）：它現在是**末端**
            —— 走到底就是祭壇，沒有繞回去的路。 */
         exits:{ back:'bridge' } },
-      colossus:   { bg:'Ruins_shinier_Colossus', name:'木雅克神殿　巨像廳',
+      colossus:   { bg:'ruins_shinier_colossus', name:'木雅克神殿　巨像廳',
         /* 巨像立在正後方（不是路），左右各一道有火光的拱門 ⇒ 圖上最多三向。
            ⚠ ver -908 斷掉往深部祭壇那一條之後只剩兩向 —— 少接只是「那邊沒路」，
              留一道拱門不用是可以的（多接才是說謊）。 */
         exits:{ left:'brazier', right:'machine' } },
-      machine:    { bg:'Ruins_shinier_Machine', name:'木雅克神殿　古代機械',
+      machine:    { bg:'ruins_shinier_machine', name:'木雅克神殿　古代機械',
         exits:{ back:'colossus' },                      // 末端：斷連桿，過不去
         /* ══ stage7・開門事件（ver -923，Ray 交稿）══════════════════════════
            諾薇兒把古代術式讀進腦袋 → 喚風 → 某處的門開了（`ruins_gate_open`）。
@@ -4078,13 +4078,13 @@ export const TOWNS = {
           Object.assign({ speaker:'NARRATION', text:'', fx:'whiteflash', auto:900 },
                         { tierWho:'NOUVELLE', tierMin:2 }),
           any('scared','！！'),
-          Object.assign(ren('intense2','那是……！'), { se:'Sturm' }),
+          Object.assign(ren('intense2','那是……！'), { se:'sturm' }),
           /* 喚風（Ray 交件的插圖）。 */
           { speaker:'SORANA', text:'', portrait:{ char:'SORANA', show:false },
             hide:['SORANA','RENNA','NOUVELLE','ANYA'],
             /* ⚠ 下→上平移（ver -928，Ray：「諾插圖 breath 下至上平移」）——
                風是由下往上捲的，鏡頭跟著走才讀得出「喚風」。 */
-            cg:'011_Nouvellebreath', cgNoTime:true, cgPan:'up', auto:2400 },
+            cg:'011_nouvellebreath', cgNoTime:true, cgPan:'up', auto:2400 },
           Object.assign(sor('ready','風？'), { cg:null }),
           nou('relief','呼——'),
           nou('bigsmile','似乎是喚風的術式呢。'),
@@ -4100,37 +4100,37 @@ export const TOWNS = {
         ] } ] },
 
       /* ── 拱門長廊往下深處 ── */
-      corridorb:  { bg:'Ruins_shinier_CorridorB', name:'木雅克神殿　拱門長廊',
+      corridorb:  { bg:'ruins_shinier_corridorb', name:'木雅克神殿　拱門長廊',
         /* ⚠ 名字不叫「三叉拱道」（ver -902 更正）：圖上只有正中一道拱門，
            兩側牆是實心的浮雕柱 —— 叫三叉會讓玩家一直在找不存在的岔路。 */
         exits:{ left:'antechamber', up:'stairdeep' } },
       /* ⚠ ver -908（Ray：「下行深階跟墓道位置對調」）：先下階梯，再走墓道。 */
-      stairdeep:  { bg:'Ruins_shinier_StairDeep', name:'木雅克神殿　下行深階', noWild:true,
+      stairdeep:  { bg:'ruins_shinier_stairdeep', name:'木雅克神殿　下行深階', noWild:true,
         /* ⚠ 階梯在正前方往下 ⇒ 按 `up` 一樣是「走進畫面裡」，只是這一次是走下去。 */
         exits:{ down:'corridorb', up:'catacomb' } },
-      catacomb:   { bg:'Ruins_shinier_Catacomb', name:'木雅克神殿　墓道',
+      catacomb:   { bg:'ruins_shinier_catacomb', name:'木雅克神殿　墓道',
         exits:{ down:'stairdeep', up:'hollow' } },      // 直廊：兩壁是骨龕，不是路
 
       /* ── 苔穴這一帶（環②） ── */
-      hollow:     { bg:'Ruins_shinier_Hollow', name:'木雅克神殿　苔穴岔道',
+      hollow:     { bg:'ruins_shinier_hollow', name:'木雅克神殿　苔穴岔道',
         /* -900 的三岔（深層版）：墓道在下、石牢區在左、青苔密室在右、命之泉在上。 */
         exits:{ down:'catacomb', left:'prison', right:'mosschamber', up:'deepspring' } },
-      prison:     { bg:'Ruins_shinier_Prison', name:'木雅克神殿　石牢區',
+      prison:     { bg:'ruins_shinier_prison', name:'木雅克神殿　石牢區',
         /* ⚠ ver -909（Ray 把黑暗斷橋改掛到地底裂隙上）：這一格變成**末端**。
            用 `back` 不寫死 `right` —— 讓「回去」自己掛在來時方向的反向。 */
         exits:{ back:'hollow' } },                      // 末端
-      mosschamber:{ bg:'Ruins_shinier_MossChamber', name:'木雅克神殿　青苔密室',
+      mosschamber:{ bg:'ruins_shinier_mosschamber', name:'木雅克神殿　青苔密室',
         exits:{ left:'hollow', up:'rift' } },
       /* ⚠ ver -908（Ray：「把地下泉水跟地底裂隙的連結給斷了」）：兩格都變末端。
          ⚠ 泉水由「地下泉水」改名「命之泉」（Ray）—— 同養息之間，**id 不動**。 */
-      deepspring: { bg:'Ruins_shinier_DeepSpring', name:'木雅克神殿　命之泉',
+      deepspring: { bg:'ruins_shinier_deepspring', name:'木雅克神殿　命之泉',
         rest:true, noWild:true,                        // 安全點（見前廳那一段）
         exits:{ back:'hollow' } },                      // 末端
-      rift:       { bg:'Ruins_shinier_Rift', name:'木雅克神殿　地底裂隙', noWild:true,   // 裂隙不出怪（ver -913，Ray）
+      rift:       { bg:'ruins_shinier_rift', name:'木雅克神殿　地底裂隙', noWild:true,   // 裂隙不出怪（ver -913，Ray）
         /* ⚠ ver -909（Ray：「把黑暗斷橋…接到地底裂隙上面」）：它不再是末端，
            往上通黑暗斷橋。 */
         exits:{ down:'mosschamber', up:'darkbridge' } },
-      darkbridge: { bg:'Ruins_shinier_DarkBridge', name:'木雅克神殿　黑暗斷橋',
+      darkbridge: { bg:'ruins_shinier_darkbridge', name:'木雅克神殿　黑暗斷橋',
         /* ⚠ 那張圖 ver -909 **水平翻轉過**（Ray 指定）—— 同名覆蓋，見 config 的
            `ASSET_VER`。 */
         exits:{ back:'rift' } },                        // 末端：橋斷了，過不去
@@ -4194,7 +4194,7 @@ export const TOWNS = {
          ⚠⚠ 這座遺蹟在大地圖上是**獨立的一點**，沒有鄰接的地面圖 —— 進出就是
            降落／起飛，所以下方掛 `sail` 不是 `@某圖:某格`（美術那份交接檔標明
            這是它的判讀）。日後真要從夏爾森林走過去，換成跨圖出口即可，拓樸不動。 */
-      entry:    { bg:'Fallen_Entry',    name:'石製遺蹟　崩塌門廊',
+      entry:    { bg:'fallen_entry',    name:'石製遺蹟　崩塌門廊',
         exits:{ up:'causeway' },
         /* ⚠⚠ **不掛 `flag`**（ver -1154）：這裡是**只飛得到的地方**（上面那一段：
            大地圖上是獨立的一點，沒有鄰接的地面圖）—— 人能站在這裡，就表示他是
@@ -4234,14 +4234,14 @@ export const TOWNS = {
              段落層 —— 中途被打斷就不算數，下次重演一次才改名（同「演完才記」）。 */
           Object.assign(ren('chase','等、等一下！'), { flags:['fallen_named'] }),
         ] } ] },
-      causeway: { bg:'Fallen_Causeway', name:'石製遺蹟　斷柱道',
+      causeway: { bg:'fallen_causeway', name:'石製遺蹟　斷柱道',
         exits:{ up:'fork', back:'entry' } },            // 直廊：兩側是倒下的圓柱排
       /* 唯一的岔口（三向）：三塊斜倚石板撐出的三角空地，三個方向都是真的走得進去的路。 */
-      fork:     { bg:'Fallen_Fork',     name:'石製遺蹟　傾石岔口',
+      fork:     { bg:'fallen_fork',     name:'石製遺蹟　傾石岔口',
         exits:{ up:'altar', left:'basin', back:'causeway' } },
-      basin:    { bg:'Fallen_Basin',    name:'石製遺蹟　沉水石坑',
+      basin:    { bg:'fallen_basin',    name:'石製遺蹟　沉水石坑',
         exits:{ back:'fork' } },                        // 末端：四面被石牆與土坡圍死
-      altar:    { bg:'Fallen_Altar',    name:'石製遺蹟　祭壇',
+      altar:    { bg:'fallen_altar',    name:'石製遺蹟　祭壇',
         exits:{ back:'fork' },                          // 末端：路的盡頭
         /* ══⚠⚠⚠ 瓦努努遺蹟・祭壇（ver -1186，Ray 交稿）══════════════════════
            > 「Boss 戰，戰後。」→ 對白 → 安雅發動探索 → 遺蹟啟動（走同樣的動畫）
@@ -4260,7 +4260,7 @@ export const TOWNS = {
            先例 `Ruins_shinier_DeepAltaractive` 只有單張，那一張才要 `noTime:true`
            —— 兩者不要互抄（抄了就是「天亮之後還拿夜景」或「四張全部 404」）。
            ⚠ 新增不是同名覆蓋 ⇒ **不必動 `ASSET_VER`**（§5）。 */
-        bgWhen:[ { need:'fallen_altar_on', bg:'Fallen_Altaractive' } ],
+        bgWhen:[ { need:'fallen_altar_on', bg:'fallen_altaractive' } ],
         acts:[ { flag:'fallen_altar', sides:{ RENNA:'L' }, lines:[
           ren('ask','跟木亞克遺蹟一樣的裝置……安雅小姐？'),
           any('talk','好。'),
@@ -4274,7 +4274,7 @@ export const TOWNS = {
              ⚠ 旗與 act 的 `flag` 是兩支（鐵律 9）：一支說「這一段演完了」、
                一支說「祭壇開著」。 */
           { speaker:'NARRATION', text:'', flags:['fallen_altar_on'],
-            bgBand:'Fallen_Altaractive', auto:1500 },
+            bgBand:'fallen_altaractive', auto:1500 },
           ren('shockedopen','果然，安雅小姐有感應並啟動遺蹟的能力。'),
           nou('talk','可是，這些遺蹟啟動以後會怎麼樣呢？'),
           ren('thinking','……不曉得。'),
@@ -4335,7 +4335,7 @@ export const TOWNS = {
     nodes: {
       /* ══ 主廣場 ══ 入口；上＝中心區、左＝舊街區、右＝上街區（照帝都）。
          ⚠ 入口那一格**不可以有戰鬥**（§6.5.2）。出航掛在下方。 */
-      square:   { bg:'Sofia_Square',   name:'聖索菲亞　主廣場', noTime:true,
+      square:   { bg:'sofia_square',   name:'聖索菲亞　主廣場', noTime:true,
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
         /* ⚠⚠ **不掛 `flag`**（ver -1341，同石製遺蹟 -1154 的理由）：這座城在大地圖上
            是**獨立的一點**，沒有任何跨圖陸路出口 —— 人能站在這裡，就表示他是飛來的。
@@ -4347,33 +4347,33 @@ export const TOWNS = {
         sail:{} },
 
       /* ── 一、中心區 ── 左＝市政廳、右＝大教堂、下＝廣場 */
-      midtown:  { bg:'Sofia_Midtown',  name:'聖索菲亞　中心區', noTime:true,
+      midtown:  { bg:'sofia_midtown',  name:'聖索菲亞　中心區', noTime:true,
         exits:{ left:'cityhall', right:'church', down:'square' } },
-      church:   { bg:'Sofia_Church',   name:'聖索菲亞　大教堂', noTime:true,
+      church:   { bg:'sofia_church',   name:'聖索菲亞　大教堂', noTime:true,
         exits:{ back:'midtown' } },
-      cityhall: { bg:'Sofia_Cityhall', name:'聖索菲亞　市政廳', noTime:true,
+      cityhall: { bg:'sofia_cityhall', name:'聖索菲亞　市政廳', noTime:true,
         exits:{ back:'midtown' } },
 
       /* ── 二、舊街區（四向樞紐） ── 左＝武器店、右＝廣場、上＝船塢、下＝公會 */
-      oldtown:  { bg:'Sofia_Downtown', name:'聖索菲亞　舊街區', noTime:true,
+      oldtown:  { bg:'sofia_downtown', name:'聖索菲亞　舊街區', noTime:true,
         exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' } },
-      gunstore: { bg:'Sofia_Firearm',  name:'聖索菲亞　武器店', noTime:true,
+      gunstore: { bg:'sofia_firearm',  name:'聖索菲亞　武器店', noTime:true,
         exits:{ back:'oldtown' } },
-      dock:     { bg:'Sofia_Dock',     name:'聖索菲亞　船塢',   noTime:true,
+      dock:     { bg:'sofia_dock',     name:'聖索菲亞　船塢',   noTime:true,
         exits:{ back:'oldtown' } },
-      guild:    { bg:'Sofia_Guild',    name:'聖索菲亞　賞金獵人公會', noTime:true,
+      guild:    { bg:'sofia_guild',    name:'聖索菲亞　賞金獵人公會', noTime:true,
         exits:{ back:'oldtown' } },
 
       /* ── 三、上街區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
-      uptown:   { bg:'Sofia_Uptown',   name:'聖索菲亞　上街區', noTime:true,
+      uptown:   { bg:'sofia_uptown',   name:'聖索菲亞　上街區', noTime:true,
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
-      tavern:   { bg:'Sofia_Bistro',   name:'聖索菲亞　餐飲街', noTime:true,
+      tavern:   { bg:'sofia_bistro',   name:'聖索菲亞　餐飲街', noTime:true,
         exits:{ back:'uptown' } },
-      grocery:  { bg:'Sofia_Grocerie', name:'聖索菲亞　雜貨舖', noTime:true,
+      grocery:  { bg:'sofia_grocerie', name:'聖索菲亞　雜貨舖', noTime:true,
         exits:{ back:'uptown' } },
       /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（立繪還沒交）。
          只寫 `inn:true` 而沒有人應門的話，玩家會敲到一排空門。 */
-      inn:      { bg:'Sofia_Hotel',    name:'聖索菲亞　旅店',   noTime:true,
+      inn:      { bg:'sofia_hotel',    name:'聖索菲亞　旅店',   noTime:true,
         exits:{ back:'uptown' } },
     },
   },
@@ -4513,7 +4513,7 @@ export const TOWNS = {
     },
     nodes: {
       /* ══ 港口廣場 ══ 入口；上＝中心區、左＝舊街區、右＝上街區（照帝都）。 */
-      square:   { bg:'Varn_Square',   name:'雪都瓦恩霍姆　港口廣場',
+      square:   { bg:'varn_square',   name:'雪都瓦恩霍姆　港口廣場',
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
         /* ⚠⚠ **不掛 `flag`**（ver -1341，同石製遺蹟 -1154 的理由）：這座城在大地圖上
            是**獨立的一點**，沒有任何跨圖陸路出口 —— 人能站在這裡，就表示他是飛來的。
@@ -4577,7 +4577,7 @@ export const TOWNS = {
         ] } ] },
 
       /* ── 一、中心區 ── 左＝瞭望台、右＝大教堂、下＝廣場 */
-      midtown:  { bg:'Varn_Midtown',  name:'雪都瓦恩霍姆　中心區',  
+      midtown:  { bg:'varn_midtown',  name:'雪都瓦恩霍姆　中心區',  
         exits:{ left:'lookout', right:'church', down:'square', up:'library' },
         /* ══⚠⚠⚠ **圖書館那一段的後半**（ver -1522）══ 稿上「轉景中央區：」——
            圖書館那一段收尾 `goto:'midtown'`，這一次抵達由這一段接手（鐵律 8：
@@ -4620,7 +4620,7 @@ export const TOWNS = {
         ] } ] },
       /* ══ 圖書館（ver -1487 交件 `Varn_Library`）══ 中心區的 `up` 本來就空著。
          ⚠ `noTime:true` ＝室內單張（§5：不寫就白吃四個 404）。 */
-      library:  { bg:'Varn_Library',  name:'雪都瓦恩霍姆　圖書館',  noTime:true,
+      library:  { bg:'varn_library',  name:'雪都瓦恩霍姆　圖書館',  noTime:true,
         exits:{ back:'midtown' },
         /* ══⚠⚠⚠ **評鑑報告**（ver -1522，Ray 的 Stage10-A 稿）══════════════════
            六點那一段演完（`vn_evening`）之後走進來才演；收尾 `goto:'midtown'`，
@@ -4738,7 +4738,7 @@ export const TOWNS = {
            借中心區也讀得通：那條側街本來就是從中心區往深處沒入海霧的那一條。
          ⚠ `bgPending` 寫成**還缺哪一張的檔名**（`script_lint.py` 會提醒）——
            圖交進來就只要把 `bg` 改成 `Varn_Church`、拔掉 `bgPending`，其餘不動。 */
-      church:   { bg:'Varn_Midtown',   name:'雪都瓦恩霍姆　大教堂',  
+      church:   { bg:'varn_midtown',   name:'雪都瓦恩霍姆　大教堂',  
         bgPending:'Varn_Church', exits:{ back:'midtown' },
         /* ══ 約會・諾薇兒（ver -1522）══ 阿瑞尼斯神父那一段。
            ⚠ 他的 speaker id 是 `ARRHENIUS`（`speakers.js` -1504 建、-1509 接了六張差分）
@@ -4768,7 +4768,7 @@ export const TOWNS = {
           nou('bigsmileclose','',                   { tierMin:3 }),
           arh(null,'坐下聊聊吧。說說這幾年都發生了什麼事。', { tierMax:2 }),
         ] } ] },
-      lookout:  { bg:'Varn_Lookout',  name:'雪都瓦恩霍姆　瞭望台',  
+      lookout:  { bg:'varn_lookout',  name:'雪都瓦恩霍姆　瞭望台',  
         exits:{ back:'midtown' },
         /* ══ 約會・安雅（ver -1522）══ `withWho` ＝正在跟她約會才演。
            ⚠⚠ 兩套：`[已發生米夏事件，蕾娜不知]` ＝ **M2**（`ep_m2_route`），其餘走另一套
@@ -4788,9 +4788,9 @@ export const TOWNS = {
         ] } ] },
 
       /* ── 二、舊街區（四向樞紐） ── 左＝武器店、右＝廣場、上＝火車站、下＝公會 */
-      oldtown:  { bg:'Varn_Oldtown',  name:'雪都瓦恩霍姆　舊街區',  
+      oldtown:  { bg:'varn_oldtown',  name:'雪都瓦恩霍姆　舊街區',  
         exits:{ left:'gunstore', right:'square', up:'station', down:'guild' } },
-      gunstore: { bg:'Varn_Firearm',  name:'雪都瓦恩霍姆　武器店',   noTime:true,
+      gunstore: { bg:'varn_firearm',  name:'雪都瓦恩霍姆　武器店',   noTime:true,
         exits:{ back:'oldtown' } },
       /* ⚠⚠ 站房上那面大鐘的指針**由遊戲時間擺**（ver -1249，Ray：「不然背景的時間
          跟遊戲時間永遠對不上，對我來說那算 bug」）。**不轉動、進場抓一次。**
@@ -4812,7 +4812,7 @@ export const TOWNS = {
            見 `modules/town.js` 的 `clockPalette`）。
          ⚠ `hLen`／`mLen` 跟著這張盤縮短：畫上去的兩根只到 0.80R，
            沿用預設的 1.06R 會讓分針戳出盤面壓到石框上。 */
-      station:  { bg:'Varn_Station',  name:'雪都瓦恩霍姆　火車站',  
+      station:  { bg:'varn_station',  name:'雪都瓦恩霍姆　火車站',  
         /* `wipe` 一項＝[角度°, r0, r1, 半寬]，後三個以盤面半徑為單位。
            r1 取 0.86（指針到 0.80，留一點餘裕）、半寬 0.08（指針實寬約 4px＝0.09R）
            —— 再寬就會啃到相鄰的羅馬數字（I／II 在 30°／60°，XI 在 330°）。 */
@@ -4835,11 +4835,11 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true },
           sor('relief','全身藏滿飛刀的森住民和軍火庫神父……多麼悲哀的組合啊……'),
         ] } ] },
-      guild:    { bg:'Varn_Guild',    name:'雪都瓦恩霍姆　賞金獵人公會', noTime:true,
+      guild:    { bg:'varn_guild',    name:'雪都瓦恩霍姆　賞金獵人公會', noTime:true,
         exits:{ back:'oldtown' } },
 
       /* ── 三、上街區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
-      uptown:   { bg:'Varn_Uptown',   name:'雪都瓦恩霍姆　上街區',  
+      uptown:   { bg:'varn_uptown',   name:'雪都瓦恩霍姆　上街區',  
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
       /* ══⚠⚠ **餐飲街是樞紐，不是分店**（ver -1487，Ray：「加入餐飲街三分支同東泊」）══
          照東方泊地 -1318 那一套：三家店是玩家自己走得進去的節點，那是拓樸不是差分。
@@ -4860,9 +4860,9 @@ export const TOWNS = {
          ⚠⚠ **`hours` 沒設**（同東泊那三格）：憲法 ver -1378 那張表（酒吧三差分
            `[8,24]`、餐廳只有 day）的前提是「那幾格的 `hours` 真的是表上那一組」，
            而這座城從來沒設過營業時間 —— 要設是 Ray 的決定，設了美術才知道要交幾張。 */
-      tavern:   { bg:'Varn_Dining',   name:'雪都瓦恩霍姆　餐飲街',
+      tavern:   { bg:'varn_dining',   name:'雪都瓦恩霍姆　餐飲街',
         exits:{ back:'uptown', up:'bar', right:'cafe', down:'dessert' } },
-      bar:      { bg:'Varn_Bistro',   name:'雪都瓦恩霍姆　餐酒館',   noTime:true,
+      bar:      { bg:'varn_bistro',   name:'雪都瓦恩霍姆　餐酒館',   noTime:true,
         exits:{ back:'tavern' },
         /* ══ 約會・索菈娜（ver -1522；**ver -1536 圖到齊，補上**）══
            ⚠ `drink`／`shy` 兩張差分的**圖早就在版控裡**，只是 `speakers.js`
@@ -4890,9 +4890,9 @@ export const TOWNS = {
           sor('tease','你也喜歡吧？獵手對視線很敏感的喔。', { tierMin:3 }),
           sor('drink','哈哈哈！不要囉唆了！再來一杯！'),
         ] } ] },
-      cafe:     { bg:'Varn_Cafe',     name:'雪都瓦恩霍姆　咖啡廳',   noTime:true,
+      cafe:     { bg:'varn_cafe',     name:'雪都瓦恩霍姆　咖啡廳',   noTime:true,
         exits:{ back:'tavern' } },
-      dessert:  { bg:'Varn_Dessert',  name:'雪都瓦恩霍姆　甜品店',   noTime:true,
+      dessert:  { bg:'varn_dessert',  name:'雪都瓦恩霍姆　甜品店',   noTime:true,
         exits:{ back:'tavern' },
         /* ══ 約會・諾薇兒（ver -1522）══ 收尾兩句依 M1／M2 分。
            ⚠ 寫成「M2 才演保密那一句、其餘演帶一份回去」——
@@ -4902,7 +4902,7 @@ export const TOWNS = {
           nou('lookaway','要對安雅保密喔。',            { onlyIf:'ep_m2_route' }),
           nou('eat','要不要帶一份回去給安雅呢？',        { skipIf:'ep_m2_route' }),
         ] } ] },
-      grocery:  { bg:'Varn_Grocerie', name:'雪都瓦恩霍姆　雜貨舖',   noTime:true,
+      grocery:  { bg:'varn_grocerie', name:'雪都瓦恩霍姆　雜貨舖',   noTime:true,
         exits:{ back:'uptown' },
         /* ══ 約會・安雅（ver -1522）══ 棉花糖。
            ⚠ 稿上「安雅棉花糖插圖」還沒有檔案 ⇒ **不寫 `cg:`**（同酒吧那一格）。
@@ -4927,7 +4927,7 @@ export const TOWNS = {
          ⚠⚠ `sleepFlag:'vn_night_done'` ＝**圖書館那一整段演完**才睡得著；
            在那之前按睡覺由 `noSleep` 那一句擋回來（§6.5.5：「還不能做」要開口擋，
            不要靠藏起鈕）。⚠ 那一句是**旁白**，而且是我暫代的（稿上沒給）。 */
-      inn:      { bg:'Varn_Hotel',    name:'雪都瓦恩霍姆　旅店',
+      inn:      { bg:'varn_hotel',    name:'雪都瓦恩霍姆　旅店',
         exits:{ back:'uptown' },
         inn:true, innNoGuide:true,
         innSpots:{ sit:{ x:0.22, y:0.68 }, sleep:{ x:0.86, y:0.55 } },
@@ -5251,7 +5251,7 @@ export const TOWNS = {
       /* ══ 港口廣場 ══ 入口；上＝中心區、左＝舊城區、右＝上城區（照帝都）。
          ⚠ 入口那一格**不可以有戰鬥**（§6.5.2：它是遭遇戰的復活點）。
          ⚠ 出航掛在**下方**（§6.5.4）—— 所以碼頭是不是走得進去，與出航無關。 */
-      square:     { bg:'East_Square',     name:'東方泊地　港口廣場',
+      square:     { bg:'east_square',     name:'東方泊地　港口廣場',
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
         /* ⚠⚠ **不掛 `flag`**（ver -1341，同石製遺蹟 -1154 的理由）：這座城在大地圖上
            是**獨立的一點**，沒有任何跨圖陸路出口 —— 人能站在這裡，就表示他是飛來的。
@@ -5298,12 +5298,12 @@ export const TOWNS = {
         ] } ] },
 
       /* ── 一、中心區（**四向**樞紐）── 左＝海關署、右＝主教座堂、上＝大學、下＝廣場 */
-      midtown:    { bg:'East_Midtown',    name:'東方泊地　中心區',
+      midtown:    { bg:'east_midtown',    name:'東方泊地　中心區',
         exits:{ left:'cityhall', right:'church', up:'university', down:'square' } },
-      church:     { bg:'East_Church',     name:'東方泊地　主教座堂',
+      church:     { bg:'east_church',     name:'東方泊地　主教座堂',
         exits:{ back:'midtown' } },
       /* ⚠ id 是 `cityhall`（官方的辦公建築），招牌是「海關署」—— 見檔頭。 */
-      cityhall:   { bg:'East_Customs',    name:'東方泊地　海關署',
+      cityhall:   { bg:'east_customs',    name:'東方泊地　海關署',
         exits:{ back:'midtown' } },
       /* ⚠⚠ 大學（ver -1255，Ray 指定）。**末端**：一格，與主教座堂／海關署同級。
          要擴成校門→講堂→圖書館那種一串的話再說 —— 那會讓中心區這一支變成一條
@@ -5318,7 +5318,7 @@ export const TOWNS = {
            …回到旅店時就會碰到蕾娜」）—— 下一批接。
          ⚠ 插圖「黃昏與蕾娜的側臉」**還沒有**（Ray：插圖先空著）：那一拍先不寫 `cg`，
            圖到了補一行就好。 */
-      university: { bg:'East_University', name:'東方泊地　大學',
+      university: { bg:'east_university', name:'東方泊地　大學',
         exits:{ back:'midtown' },
         /* ⚠⚠ **演完直接推回旅店**（ver -1360，Ray：「巧遇蕾娜以後直接推移動回旅店，
            從『有找到一些資料了』開始跑」）：`goto` ＝ act 收尾的強制轉場
@@ -5354,7 +5354,7 @@ export const TOWNS = {
         ] } ] },
 
       /* ── 二、舊城區（四向樞紐） ── 左＝武器店、右＝廣場、上＝倉庫碼頭、下＝公會 */
-      oldtown:    { bg:'East_Oldtown',    name:'東方泊地　舊城區',
+      oldtown:    { bg:'east_oldtown',    name:'東方泊地　舊城區',
         exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' } },
       /* ══ 武器店（ver -1340，Ray 交件指派店主 `NPC_Gunsmith_SI_v1`）══
          功能同帝都／北泊（買／賣／改裝），店主與貨單是這座城自己的
@@ -5364,7 +5364,7 @@ export const TOWNS = {
            換成跨城共用的 `town_kind_gunstore` —— 這一格還沒有 `lines`，先掛上去
            的話，日後真的寫了東泊自己的初見戲，會被「帝都那間已經看過了」吃掉。
            要走 -401 那條「同質店只演一次」時再補。 */
-      gunstore:   { bg:'East_Firearm',    name:'東方泊地　武器店',
+      gunstore:   { bg:'east_firearm',    name:'東方泊地　武器店',
         exits:{ back:'oldtown' },
         shop:'ep_gunstore', keeperWho:'GUNSMITH_EP',
         hours:[8,17], closed:'鐵捲門拉到底了。門邊的牌子寫著「八點開門」。',
@@ -5466,7 +5466,7 @@ export const TOWNS = {
            那一夜演完、拔旗的是空中戰打完 —— 抄一份旗名在這裡，哪天改名就走鐘。
          ⚠ 鎖的是 `up`（往古道），**不是這一格本身**：南門驛站進得去（安雅那一段
            約會戲在這裡），走不出城而已。開船比走路快，那正是她那句話的意思。 */
-      dock:       { bg:'East_SouthGate',
+      dock:       { bg:'east_southgate',
         name:'東方泊地　南門驛站',
         exits:{ back:'oldtown', up:'@plainsroad' },
         lock:{ up:{ need:Q_HAIRPIN.flag, until:Q_HAIRPIN.until,
@@ -5482,7 +5482,7 @@ export const TOWNS = {
            照樣開得起來，印「目前沒有委託。」（`showBounty` 的空清單分支）。
            那比「櫃台在但點不開」誠實；Ray 給了目標之後在 `config.bounties`
            加一筆、`city` 寫 `eastport` 就會自己出現，這裡一個字都不必改。 */
-      guild:      { bg:'East_Guild',      name:'東方泊地　賞金獵人公會',
+      guild:      { bg:'east_guild',      name:'東方泊地　賞金獵人公會',
         exits:{ back:'oldtown' },
         board:'eastport', keeperWho:'COUNTER_EP',
         hours:[8,17], closed:'大門上了閂。委託要等明天早上八點。',
@@ -5517,7 +5517,7 @@ export const TOWNS = {
         ] } ] },
 
       /* ── 三、上城區（四向樞紐） ── 左＝廣場、右＝餐飲街、上＝旅店、下＝雜貨舖 */
-      uptown:     { bg:'East_Uptown',     name:'東方泊地　上城區',
+      uptown:     { bg:'east_uptown',     name:'東方泊地　上城區',
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' },
         /* ══⚠⚠⚠ **那一夜的岔路**（ver -1511，Ray 的 Stage10-B 稿）══════════════
            安雅溜出房間之後，玩家要嘛**先敲蕾娜的門**（她會跟上 ⇒ `ep_night_renna`）、
@@ -5640,14 +5640,14 @@ export const TOWNS = {
            （§6.5.4「回去掛在來時方向的反向」）—— 佔掉 `left` 會把退路擠掉。
          ⚠ 三家都只寫 `back`（同武器店／公會那一族）：同一條邊的兩端自動相反，
            不會踩到「一直按同一個方向走不出去」那個坑（憲法 ver -902）。 */
-      tavern:     { bg:'East_Dining',     name:'東方泊地　餐飲街',
+      tavern:     { bg:'east_dining',     name:'東方泊地　餐飲街',
         exits:{ back:'uptown', up:'restaurant', right:'cafe', down:'dessert' } },
       /* ══ 約會・諾薇兒（ver -1346，Ray 交稿）══ `withWho` ＝正在跟她約會才演。
          ⚠ 「（肚子叫）」是**音效**，稿上沒指定是哪一支 —— 先不接，等 Ray 給鑰匙。
          ⚠⚠ 用餐插圖 `014-nouvelleeat`（ver -1379 交件）掛在**她說「好」之後**那一拍：
            那一句是「答應了」，吃是接著發生的事 —— 掛在同一拍等於「她一邊說好一邊在吃」。
          ⚠ 收圖不必寫 `cg:null`：`clearCast()` 會一起撤（ver -643 收在唯一的出口，鐵律 8）。 */
-      restaurant: { bg:'East_Restaurant', name:'東方泊地　餐廳',
+      restaurant: { bg:'east_restaurant', name:'東方泊地　餐廳',
         exits:{ back:'tavern' },
         acts:[ { flag:'ep_dine_nou', withWho:'NOUVELLE', lines:[
           nou('happy','東海的料理……'),
@@ -5662,7 +5662,7 @@ export const TOWNS = {
           Object.assign(nou('happy','東海的料理也別有一番風味呢！'),
                         { cg:'014-nouvelleeat', cgNoTime:true, cgPan:'down' }),
         ] } ] },
-      cafe:       { bg:'East_Cafe',       name:'東方泊地　咖啡廳',
+      cafe:       { bg:'east_cafe',       name:'東方泊地　咖啡廳',
         exits:{ back:'tavern' } },
       /* ══ 約會・安雅（ver -1346，Ray 交稿）══
          ⚠ `amazed`／`curious` 這兩張**還沒有圖**：查不到差分會自動退回本尊立繪
@@ -5670,7 +5670,7 @@ export const TOWNS = {
          ⚠⚠ 趴在櫥窗的插圖 `015-anyadessert`（ver -1379 交件）掛在**第一拍**：
            那一拍本來就是她看到櫥窗、說不出話的那一刻（`any('amazed','')` 沒有台詞），
            插圖就是那一拍在演的東西。 */
-      dessert:    { bg:'East_Dessert',    name:'東方泊地　甜品店',
+      dessert:    { bg:'east_dessert',    name:'東方泊地　甜品店',
         exits:{ back:'tavern' },
         acts:[ { flag:'ep_sweets_anya', withWho:'ANYA', lines:[
           Object.assign(any('amazed',''),
@@ -5680,7 +5680,7 @@ export const TOWNS = {
         ] } ] },
       /* ══ 雜貨舖（ver -1340，Ray 交件指派店主 `NPC_Grocer_SI_v1`）══
          ⚠ 不寫 `kind`，理由同武器店那一格。 */
-      grocery:    { bg:'East_Grocerie',   name:'東方泊地　雜貨舖',
+      grocery:    { bg:'east_grocerie',   name:'東方泊地　雜貨舖',
         exits:{ back:'uptown' },
         shop:'ep_grocery', keeperWho:'SHOPKEEP_EP',
         hours:[8,17], closed:'櫥窗的燈熄了，百葉窗放了下來。',
@@ -5703,7 +5703,7 @@ export const TOWNS = {
            正上方（§6.5.5 -408：睡覺鈕不要擺到伙伴門欄旁邊，會被讀成別的意思）。
            ⚠ 真正保證不撞的是 inn.js 那個夾（夾回畫面內／不進門欄／不壓對話框）——
              這兩個座標只負責「看起來對」。 */
-      inn:        { bg:'East_Hotel',      name:'東方泊地　旅店',
+      inn:        { bg:'east_hotel',      name:'東方泊地　旅店',
         exits:{ back:'uptown' },
         inn:true, innNoGuide:true,
         innSpots:{ sit:{ x:0.26, y:0.62 }, sleep:{ x:0.42, y:0.34 } },
@@ -6345,13 +6345,13 @@ export const TOWNS = {
     stepMin: 30,
     nodes: {
       /* 道口：古道自東泊的丘陵下來，遠處右緣看得到海灣。**只有兩條路**。 */
-      entry:  { bg:'Plains_Entry',  name:'平原古道　道口',   rest:true, noWild:true,
+      entry:  { bg:'plains_entry',  name:'平原古道　道口',   rest:true, noWild:true,
         exits:{ up:'stone',  down:'@eastport:dock' } },
       /* 里程碑：風化的古代里程碑立在岔口 —— 抉擇點①（正前一條、左邊一條＋身後）。 */
-      stone:  { bg:'Plains_Stone',  name:'平原古道　里程碑',
+      stone:  { bg:'plains_stone',  name:'平原古道　里程碑',
         exits:{ up:'sea',    left:'beacon', down:'entry' } },
       /* 烽燧臺：塌了半邊，站在白灰岩脊上。**盡頭**（只有 `back`，引擎現算成來時的反向）。 */
-      beacon: { bg:'Plains_Beacon', name:'平原古道　烽燧臺',
+      beacon: { bg:'plains_beacon', name:'平原古道　烽燧臺',
         exits:{ back:'stone' } },
       /* 草海：及腰的草幾乎吞掉路面 —— 抉擇點②（正前一條、右邊一條＋身後）。 */
       /* ⚠⚠ **抉擇點②：對的路 vs 整個死區**（ver -1461，Ray：「不用環　做岔路跟死路」）
@@ -6359,11 +6359,11 @@ export const TOWNS = {
          往右是古井驛，兩條都是死路）。有霧時兩邊看起來一樣，走錯要原路退回來。
          ⚠ 這張圖**沒有環**：整張是一棵樹（11 格・10 邊），所以「走錯」是真的會罰時間，
            不是繞一圈自己接回去。 */
-      sea:    { bg:'Plains_Sea',    name:'平原古道　草海',
+      sea:    { bg:'plains_sea',    name:'平原古道　草海',
         exits:{ up:'scree', right:'cairn', down:'stone' } },
       /* 古井驛：廢棄驛站與一口古井。**盡頭**。 */
       /* ⚠ 死路（ver -1461）。 */
-      well:   { bg:'Plains_Well',   name:'平原古道　古井驛',
+      well:   { bg:'plains_well',   name:'平原古道　古井驛',
         exits:{ back:'cairn' } },
       /* ══⚠⚠⚠ **ver -1447：6 格 → 10 格**（Ray：「平原古道太小了，擴成迷宮，
          大概 10 格，確保玩家踏入古城前就把時間磨到至少 17:00。倒數最後一格是
@@ -6386,19 +6386,19 @@ export const TOWNS = {
            · `noTime:true` ＝**只試不帶時段的那一個名字**（§6.5.4）—— 名字本身就是
              `Plains_Gorge_day`，所以**四個時段都命中同一張、而且一個 404 都不發**。
            ⚠⚠ **這是暫接，不是規格**：美術還欠 **15 張**（dawn／dusk／night × 5）。
-             圖一交齊，這五格就改回基底名（`bg:'Plains_Gorge'`）**並拿掉 `noTime`**
+             圖一交齊，這五格就改回基底名（`bg:'plains_gorge'`）**並拿掉 `noTime`**
              —— 忘了改的症狀是「走一整天天色都不會變」，不會壞但看得出來。 */
       /* 石塚群：一片矮石堆（古代路標堆），路在此分成左右兩條 —— 抉擇點③。
          ⚠ 荒蕪梯度的轉折點（工單 §荒蕪梯度）：它原本是全線最綠的一張，已重畫。 */
-      cairn:  { bg:'Plains_Cairn_day', noTime:true, name:'平原古道　石塚群',
+      cairn:  { bg:'plains_cairn_day', noTime:true, name:'平原古道　石塚群',
         exits:{ up:'deadwood', right:'well', left:'sea' } },
       /* 碎石坡：碎石鋪成的緩坡，路沿坡往上。 */
-      scree:  { bg:'Plains_Scree_day', noTime:true, name:'平原古道　碎石坡',
+      scree:  { bg:'plains_scree_day', noTime:true, name:'平原古道　碎石坡',
         exits:{ up:'windrock', down:'sea' } },
       /* 枯木林：一小片枯死的樹幹，路從中間穿過。 */
       /* ⚠ 死路（ver -1461）：它的圖是「路從中間穿過」—— 走進來看得到路往前延伸，
          但那一段已經斷了。**少接只是「那邊沒路」，可以接受；多接才是說謊**（憲法 §6.5.4.3）。 */
-      deadwood:{ bg:'Plains_Deadwood_day', noTime:true, name:'平原古道　枯木林',
+      deadwood:{ bg:'plains_deadwood_day', noTime:true, name:'平原古道　枯木林',
         exits:{ back:'cairn' } },
       /* 風蝕岩：被風蝕成蕈狀的孤岩，兩條路在此匯合。
          ⚠⚠ **`right:'deadwood'` 是 L 形的邊**（工單寫的是 `left`）：
@@ -6408,7 +6408,7 @@ export const TOWNS = {
            工單那一行假設的是另一種版面，**版面是這裡定的，所以以這裡為準**。
            ⚠ `script_lint.py` 會對 L 形邊發提醒 —— 那是預期中的，不要「修」掉。 */
       /* ⚠ 這一格的圖畫得出三條路，這一版只用了兩條（`up`／`down`）—— 同上，少接無妨。 */
-      windrock:{ bg:'Plains_Windrock_day', noTime:true, name:'平原古道　風蝕岩',
+      windrock:{ bg:'plains_windrock_day', noTime:true, name:'平原古道　風蝕岩',
         exits:{ up:'gorge', down:'scree' } },
       /* 狹窄溪谷：兩側岩壁夾著一條路，谷底一道細流 —— **倒數最後一格**（Ray 指定）。
          ⚠ ver -1447 由 `ravine`（借貝利薩爾外觀圖）換成這一格，見上面那一段的說明。
@@ -6438,7 +6438,7 @@ export const TOWNS = {
            ⚠ 它掛在 `portrait` 上不是掛在 line 上，所以這一拍不用 `ren()` 那個縮寫。
          ⚠ 這一格是 `rest`（休息處），而 `actDue` 排在 `restActDue` 前面，
            所以這一段會先演；何況這一趟還沒打過架，休息處本來就不作動。 */
-      gorge:  { bg:'Plains_Gorge_day', noTime:true, name:'平原古道　狹窄溪谷',
+      gorge:  { bg:'plains_gorge_day', noTime:true, name:'平原古道　狹窄溪谷',
         exits:{ up:'ravine', down:'windrock' },
         acts:[ { flag:'ep_bel_gorge', need:'ep_day2', sides:{ RENNA:'R' }, lines:[
           nou('surprise','好窄喔，難怪不能騎馬來！'),
@@ -6471,7 +6471,7 @@ export const TOWNS = {
            『回去』擠掉」。走路過去、搭船離開 —— 不會卡死。
          ⚠ 安雅那一拍**沒有台詞**：台上有人的無台詞拍要點擊才推進（§6.5 的 -628）
            —— 她抬頭看，那就是這一段的收尾。 */
-      ravine: { bg:'Belisar_Exterior', name:'平原古道　城外', rest:true, noWild:true,
+      ravine: { bg:'belisar_exterior', name:'平原古道　城外', rest:true, noWild:true,
         exits:{ up:'@belisar', down:'gorge' },
         acts:[ { flag:'ep_bel_sight', need:'ep_day2', sides:{ RENNA:'L' }, lines:[
           nou('surprise','裡面有燈光！'),
@@ -6557,7 +6557,7 @@ export const TOWNS = {
     stepMin: 10,          // 遺蹟／野外那一級（ver -917）
     nodes: {
       /* ── 入口：隘口，前方第一次看到湖 ── */
-      inlet:      { bg:'Lake_Inlet',      name:'鏡湖　山口',
+      inlet:      { bg:'lake_inlet',      name:'鏡湖　山口',
         exits:{ up:'shingle' },
         /* ══⚠⚠⚠ **出航**（ver -1532，Ray 回報「鏡湖怎麼沒有出航口？」）══════════
            建圖時漏了 —— 上面那一段 `shingle` 的註解自己還寫著「出口是山口
@@ -6587,7 +6587,7 @@ export const TOWNS = {
           any('dying','好可怕……'),
         ] } ] },
       /* ── 三向樞紐：正前方沿湖，左邊一條岔路往岩壁下 ── */
-      shingle:    { bg:'Lake_Shingle',    name:'鏡湖　碎石灘',
+      shingle:    { bg:'lake_shingle',    name:'鏡湖　碎石灘',
         exits:{ back:'inlet', up:'eastshore', left:'fallbase' },
         /* ══⚠⚠⚠ **尼莫戰與那一場合流**（ver -1524，Ray 的 Stage10-A 稿）══════════
            稿上「往外走到出口前一格」—— 出口是山口（`inlet`，出航那一格），
@@ -6698,10 +6698,10 @@ export const TOWNS = {
           nou('sadsmile',''),
         ] } ] },
       /* ⚠ 瀑布底**不是死路**：水簾後面看得到黑色洞口，路往裡面繼續。 */
-      fallbase:   { bg:'Lake_Fallbase',   name:'鏡湖　瀑布底',
+      fallbase:   { bg:'lake_fallbase',   name:'鏡湖　瀑布底',
         exits:{ back:'shingle', up:'cave' } },
       /* ⚠ 水蝕洞＝**穿過瀑布的洞**（左側水簾是來路、深處透出天光是去路）。 */
-      cave:       { bg:'Lake_Cave',       name:'鏡湖　水蝕洞',
+      cave:       { bg:'lake_cave',       name:'鏡湖　水蝕洞',
         exits:{ back:'fallbase', up:'grove' } },
       /* ⚠⚠ 終點：山谷盡頭的高地台地，一片十幾公尺高的黑色石碑林（規格 §三）。
          這一格**沒有湖**是刻意的（Ray -1493：末端點不必有湖）。 */
@@ -6717,8 +6717,8 @@ export const TOWNS = {
            熄滅版會被看到的只有兩種情形：章節跳關／`town.open('lake')` 這種
            開發入口。⛔ **不要因為「看不到」就回收那四張** —— 日後真的開出
            「還沒感應就先走進來」的路（陸路、劇情強制），它立刻就對。 */
-      grove:      { bg:'Lake_Grove',      name:'鏡湖　石碑林',
-        bgWhen:[ { need:'lakestele_found', bg:'Lake_Grove_glow' } ],
+      grove:      { bg:'lake_grove',      name:'鏡湖　石碑林',
+        bgWhen:[ { need:'lakestele_found', bg:'lake_grove_glow' } ],
         exits:{ back:'cave' },
         /* ══⚠⚠⚠ **石碑林・啟動**（ver -1523，Ray 的 Stage10-A 稿）══════════════
            ⚠⚠⚠ **`tomb_opened` 就是在這裡插的** —— 伊甸古墓的墓門從 ver -1142 起
@@ -6762,18 +6762,18 @@ export const TOWNS = {
           ...NIEM_TAIL,
         ] } ] },
       /* ── 三向樞紐：沿湖的路 ＋ 右側水邊一條岔路 ── */
-      eastshore:  { bg:'Lake_Eastshore',  name:'鏡湖　東岸',
+      eastshore:  { bg:'lake_eastshore',  name:'鏡湖　東岸',
         exits:{ back:'shingle', up:'northshore', right:'deadfall' } },
-      deadfall:   { bg:'Lake_Deadfall',   name:'鏡湖　倒木灣',
+      deadfall:   { bg:'lake_deadfall',   name:'鏡湖　倒木灣',
         exits:{ back:'eastshore' } },
       /* ── 三向樞紐：正前方石堤伸進湖心 ＋ 右側半沉的船屋 ── */
-      northshore: { bg:'Lake_Northshore', name:'鏡湖　北岸',
+      northshore: { bg:'lake_northshore', name:'鏡湖　北岸',
         exits:{ back:'eastshore', up:'causeway', right:'boathouse' } },
-      boathouse:  { bg:'Lake_Boathouse',  name:'鏡湖　廢船屋',
+      boathouse:  { bg:'lake_boathouse',  name:'鏡湖　廢船屋',
         exits:{ back:'northshore' } },
       /* ⚠⚠ **斷堤**（Ray -1495）：末端要有「為什麼到此為止」的交代 ——
          斷口前的淺水下看得到沉沒的堤石，更遠處浮著走不到的殘台。 */
-      causeway:   { bg:'Lake_Causeway',   name:'鏡湖　湖心石堤',
+      causeway:   { bg:'lake_causeway',   name:'鏡湖　湖心石堤',
         exits:{ back:'northshore' } },
     },
   },
@@ -6822,7 +6822,7 @@ export const TOWNS = {
     nodes: {
       /* 入口＝遭遇戰的復活點，**不可以有戰鬥**（§6.5.2）。下方＝起飛（獨立的一點，
          沒有鄰接的地面圖）。☀ 全圖唯一看得到天空的一格 → 有四時段差分。 */
-      gate:       { bg:'Tomb_Gate', name:'伊甸古墓　墓門',
+      gate:       { bg:'tomb_gate', name:'伊甸古墓　墓門',
         /* ══⚠⚠⚠ **門預設是關著的**（ver -1142，Ray：「做一張關閉的墓門」
            →「(A) 同一格的另一個狀態」）══
            · `not:'tomb_opened'` ＝那支旗**還沒立**的時候用「關著」那一張；
@@ -6844,7 +6844,7 @@ export const TOWNS = {
              見下面的 `exitIf`。
            ⚠ 這一格是 ☀（唯一看得到天空的一格），所以關著的那張**也要四時段差分**：
              `Tomb_Gate_Sealed_dawn/_day/_dusk/_night`（全小寫，同既有交件慣例）。 */
-        bgWhen:[ { not:'tomb_opened', bg:'Tomb_Gate_Sealed' } ],
+        bgWhen:[ { not:'tomb_opened', bg:'tomb_gate_sealed' } ],
         exits:{ up:'vestibule' },
         /* ══⚠⚠⚠ **門關著就進不去**（ver -1154，Ray：「閉門狀態不能入內」）══
            `tomb_opened` 沒立 ⇒ 往上的箭頭**整個不出現**（`exitsOf` 的 `exitIf`）。
@@ -6977,7 +6977,7 @@ export const TOWNS = {
           nou('cringe','我覺得她氣到連幽靈都可以一拳打飛了……'),
           any('scared2',''),
         ] } ] },
-      vestibule:  { bg:'Tomb_Vestibule', name:'伊甸古墓　前庭', noTime:true,
+      vestibule:  { bg:'tomb_vestibule', name:'伊甸古墓　前庭', noTime:true,
         exits:{ up:'nave', right:'lapidarium', back:'gate' },
         /* ══⚠⚠⚠ **墓門關上了**（ver -1525，Ray 的 Stage10-A 稿：「此時往古墓出口
            移動會顯示『墓門關上了』」）══ 走既有的 `lock`（-786 的出口鎖，鐵律 8）。
@@ -7018,40 +7018,40 @@ export const TOWNS = {
           ren('writting','只是想早點結束這一切而已。'),
         ] } ] },
       /* 死胡同 A 的第一格 —— 圖上**不可以畫得像盡頭**（見交接檔 §六）。 */
-      lapidarium: { bg:'Tomb_Lapidarium', name:'伊甸古墓　碑廊', noTime:true,
+      lapidarium: { bg:'tomb_lapidarium', name:'伊甸古墓　碑廊', noTime:true,
         exits:{ left:'vestibule', right:'ossuaryA' } },
-      ossuaryA:   { bg:'Tomb_OssuaryA', name:'伊甸古墓　骨甕廊', noTime:true,
+      ossuaryA:   { bg:'tomb_ossuarya', name:'伊甸古墓　骨甕廊', noTime:true,
         exits:{ left:'lapidarium', up:'cryptA' } },
       /* ← 死胡同 A（三格深） */
-      cryptA:     { bg:'Tomb_CryptA', name:'伊甸古墓　家族墓室', noTime:true,
+      cryptA:     { bg:'tomb_crypta', name:'伊甸古墓　家族墓室', noTime:true,
         exits:{ back:'ossuaryA' } },
       /* 全場最高的一格 */
-      nave:       { bg:'Tomb_Nave', name:'伊甸古墓　中殿', noTime:true,
+      nave:       { bg:'tomb_nave', name:'伊甸古墓　中殿', noTime:true,
         exits:{ up:'crossing', left:'aisleW', down:'vestibule' } },
-      aisleW:     { bg:'Tomb_AisleW', name:'伊甸古墓　側廊', noTime:true,
+      aisleW:     { bg:'tomb_aislew', name:'伊甸古墓　側廊', noTime:true,
         exits:{ right:'nave', left:'tombniche' } },
-      tombniche:  { bg:'Tomb_Tombniche', name:'伊甸古墓　墓龕', noTime:true,
+      tombniche:  { bg:'tomb_tombniche', name:'伊甸古墓　墓龕', noTime:true,
         exits:{ right:'aisleW', down:'charnel' } },
       /* ← 死胡同 B（三格深） */
-      charnel:    { bg:'Tomb_Charnel', name:'伊甸古墓　藏骨所', noTime:true,
+      charnel:    { bg:'tomb_charnel', name:'伊甸古墓　藏骨所', noTime:true,
         exits:{ back:'tombniche' } },
       /* 四條拱廊交會，但**只有三個方向通得過去**（第四個砌死了） */
-      crossing:   { bg:'Tomb_Crossing', name:'伊甸古墓　十字交會', noTime:true,
+      crossing:   { bg:'tomb_crossing', name:'伊甸古墓　十字交會', noTime:true,
         exits:{ right:'chapel', left:'chantry', down:'nave' } },
       /* ← 死胡同 C（一格） */
-      chantry:    { bg:'Tomb_Chantry', name:'伊甸古墓　誦經室', noTime:true,
+      chantry:    { bg:'tomb_chantry', name:'伊甸古墓　誦經室', noTime:true,
         exits:{ back:'crossing' } },
-      chapel:     { bg:'Tomb_Chapel', name:'伊甸古墓　禮拜堂', noTime:true,
+      chapel:     { bg:'tomb_chapel', name:'伊甸古墓　禮拜堂', noTime:true,
         exits:{ left:'crossing', up:'ambulatory' } },
-      ambulatory: { bg:'Tomb_Ambulatory', name:'伊甸古墓　繞行廊', noTime:true,
+      ambulatory: { bg:'tomb_ambulatory', name:'伊甸古墓　繞行廊', noTime:true,
         exits:{ down:'chapel', left:'apse' } },
       /* ☀ 拱頂塌了一個洞，光柱斜插下來 → **有四時段差分**（另一格是墓門） */
-      apse:       { bg:'Tomb_Apse', name:'伊甸古墓　後殿',
+      apse:       { bg:'tomb_apse', name:'伊甸古墓　後殿',
         exits:{ right:'ambulatory', up:'reliquary', left:'cloister' } },
       /* ← 死胡同 D（一格） */
-      reliquary:  { bg:'Tomb_Reliquary', name:'伊甸古墓　聖骨匣室', noTime:true,
+      reliquary:  { bg:'tomb_reliquary', name:'伊甸古墓　聖骨匣室', noTime:true,
         exits:{ back:'apse' } },
-      cloister:   { bg:'Tomb_Cloister', name:'伊甸古墓　迴廊', noTime:true,
+      cloister:   { bg:'tomb_cloister', name:'伊甸古墓　迴廊', noTime:true,
         exits:{ right:'apse', left:'stair1' } },
       /* ⚠ 樹上的**橋**：找不到就真的下不去，沒有第二條路 */
       /* ⚠⚠ **安全點之一**（ver -1525，Ray：「整張地圖只有三處安全點，
@@ -7059,21 +7059,21 @@ export const TOWNS = {
          （§6.5.4.4 的休息處：走進去閉棺結算；沒打過架就不作動）。
          ⚠ `noWild` 照舊由那一條規矩帶（安全點不刷怪）——
            這張圖現在本來就沒有 `wildSpawn`，接上之後要記得。 */
-      stair1:     { bg:'Tomb_Stair1', name:'伊甸古墓　第一道階梯', noTime:true,
+      stair1:     { bg:'tomb_stair1', name:'伊甸古墓　第一道階梯', noTime:true,
         exits:{ right:'cloister', up:'landing2' }, rest:true, noWild:true },
-      landing2:   { bg:'Tomb_Landing2', name:'伊甸古墓　二層梯廳', noTime:true,
+      landing2:   { bg:'tomb_landing2', name:'伊甸古墓　二層梯廳', noTime:true,
         exits:{ up:'hall2', back:'stair1' } },
-      hall2:      { bg:'Tomb_Hall2', name:'伊甸古墓　柱廳', noTime:true,
+      hall2:      { bg:'tomb_hall2', name:'伊甸古墓　柱廳', noTime:true,
         exits:{ up:'cistern', right:'corr2', down:'landing2' } },
       /* ← 死胡同 E（一格） */
-      cistern:    { bg:'Tomb_Cistern', name:'伊甸古墓　蓄水池', noTime:true,
+      cistern:    { bg:'tomb_cistern', name:'伊甸古墓　蓄水池', noTime:true,
         exits:{ back:'hall2' } },
-      corr2:      { bg:'Tomb_Corr2', name:'伊甸古墓　長廊', noTime:true,
+      corr2:      { bg:'tomb_corr2', name:'伊甸古墓　長廊', noTime:true,
         exits:{ left:'hall2', down:'sump', right:'rotunda' } },
       /* ← 死胡同 F（一格） */
-      sump:       { bg:'Tomb_Sump', name:'伊甸古墓　積水坑', noTime:true,
+      sump:       { bg:'tomb_sump', name:'伊甸古墓　積水坑', noTime:true,
         exits:{ back:'corr2' } },
-      rotunda:    { bg:'Tomb_Rotunda', name:'伊甸古墓　圓廳', noTime:true,
+      rotunda:    { bg:'tomb_rotunda', name:'伊甸古墓　圓廳', noTime:true,
         exits:{ left:'corr2', up:'nichehall', right:'sarcE' },
         /* ══⚠⚠⚠ **守墓者・降臨**（ver -1525，Ray 的 Stage10-A 稿）══════════════
            ⚠⚠⚠ **觸發條件是暫代的**：稿上是「**三場戰鬥後**」，而**這張圖現在
@@ -7116,14 +7116,14 @@ export const TOWNS = {
           sor('battlecry','什麼跟什麼啊沒完沒了！', { flags:['tomb_chase_on'] }),
         ] } ] },
       /* 死胡同 G 的第一格 —— 圖要畫得**比正路還氣派**（把玩家騙進來） */
-      sarcE:      { bg:'Tomb_SarcE', name:'伊甸古墓　石棺室', noTime:true,
+      sarcE:      { bg:'tomb_sarce', name:'伊甸古墓　石棺室', noTime:true,
         exits:{ left:'rotunda', right:'ossuary2' } },
-      ossuary2:   { bg:'Tomb_Ossuary2', name:'伊甸古墓　甕棺廊', noTime:true,
+      ossuary2:   { bg:'tomb_ossuary2', name:'伊甸古墓　甕棺廊', noTime:true,
         exits:{ left:'sarcE', up:'kiln' } },
       /* ← 死胡同 G（三格深） */
-      kiln:       { bg:'Tomb_Kiln', name:'伊甸古墓　焚化窯', noTime:true,
+      kiln:       { bg:'tomb_kiln', name:'伊甸古墓　焚化窯', noTime:true,
         exits:{ back:'ossuary2' } },
-      nichehall:  { bg:'Tomb_Nichehall', name:'伊甸古墓　壁龕廊', noTime:true,
+      nichehall:  { bg:'tomb_nichehall', name:'伊甸古墓　壁龕廊', noTime:true,
         exits:{ down:'rotunda', left:'ossuary' },
         /* ══⚠⚠⚠ **下一個房間**（ver -1525，Ray 的 Stage10-A 稿）══
            ⚠ 「索拉娜背著安雅插畫」**還沒有檔案** ⇒ **不寫 `cg:`**（寫了就是六個候選
@@ -7141,23 +7141,23 @@ export const TOWNS = {
           ren('run',''),
         ] } ] },
       /* 骨牆後面那一道窄門就是第二道階梯（很容易被當成裝飾） */
-      ossuary:    { bg:'Tomb_Ossuary', name:'伊甸古墓　骨室', noTime:true,
+      ossuary:    { bg:'tomb_ossuary', name:'伊甸古墓　骨室', noTime:true,
         exits:{ right:'nichehall', up:'stair2' } },
       /* ⚠ 同上：樹上的橋 */
-      stair2:     { bg:'Tomb_Stair2', name:'伊甸古墓　第二道階梯', noTime:true,
+      stair2:     { bg:'tomb_stair2', name:'伊甸古墓　第二道階梯', noTime:true,
         exits:{ down:'ossuary', up:'landing3' }, rest:true, noWild:true },
-      landing3:   { bg:'Tomb_Landing3', name:'伊甸古墓　三層梯廳', noTime:true,
+      landing3:   { bg:'tomb_landing3', name:'伊甸古墓　三層梯廳', noTime:true,
         exits:{ up:'gallery3', back:'stair2' } },
       /* ⚠ **安全點之三**＝「最終房間前」（`crypt` 是終點，這一格是它的前廊）。 */
-      gallery3:   { bg:'Tomb_Gallery3', name:'伊甸古墓　玄室前廊', noTime:true,
+      gallery3:   { bg:'tomb_gallery3', name:'伊甸古墓　玄室前廊', noTime:true,
         exits:{ up:'crypt', left:'vaultW', down:'landing3' }, rest:true, noWild:true },
-      vaultW:     { bg:'Tomb_VaultW', name:'伊甸古墓　側墓穴', noTime:true,
+      vaultW:     { bg:'tomb_vaultw', name:'伊甸古墓　側墓穴', noTime:true,
         exits:{ right:'gallery3', up:'bonepit' } },
       /* ← 死胡同 H（兩格深） */
-      bonepit:    { bg:'Tomb_Bonepit', name:'伊甸古墓　骨坑', noTime:true,
+      bonepit:    { bg:'tomb_bonepit', name:'伊甸古墓　骨坑', noTime:true,
         exits:{ back:'vaultW' } },
       /* ★ **終點**（最深處） */
-      crypt:      { bg:'Tomb_Crypt', name:'伊甸古墓　石棺主室', noTime:true,
+      crypt:      { bg:'tomb_crypt', name:'伊甸古墓　石棺主室', noTime:true,
         exits:{ back:'gallery3' } },
     },
   },
@@ -7365,10 +7365,10 @@ export const TOWNS = {
       },
     },
     nodes: {
-      throne:    { bg:'Belisar_ThroneHall', name:'貝利薩爾遺址　王座廳', noTime:true, exits:{ right:'offering', down:'antecham', left:'crown' } },
-      crown:     { bg:'Belisar_CrownRoom', name:'貝利薩爾遺址　寶冠室', noTime:true, exits:{ right:'throne' } },
-      antecham:  { bg:'Belisar_Antechamber', name:'貝利薩爾遺址　謁見前廳', noTime:true, exits:{ up:'throne', right:'wardtomb', down:'dragstair' } },
-      offering:  { bg:'Belisar_RelicRoom', name:'貝利薩爾遺址　聖物室', noTime:true, exits:{ down:'wardtomb', left:'throne' } },
+      throne:    { bg:'belisar_thronehall', name:'貝利薩爾遺址　王座廳', noTime:true, exits:{ right:'offering', down:'antecham', left:'crown' } },
+      crown:     { bg:'belisar_crownroom', name:'貝利薩爾遺址　寶冠室', noTime:true, exits:{ right:'throne' } },
+      antecham:  { bg:'belisar_antechamber', name:'貝利薩爾遺址　謁見前廳', noTime:true, exits:{ up:'throne', right:'wardtomb', down:'dragstair' } },
+      offering:  { bg:'belisar_relicroom', name:'貝利薩爾遺址　聖物室', noTime:true, exits:{ down:'wardtomb', left:'throne' } },
       /* ══⚠⚠⚠ **初踩獅階：把牠往這個方向逼**（ver -1433，Ray：「玩家只要初踩到
          獅階，就會觸發對話，**若觸發結算，結算完再跑對話**」）══
          獅階是**休息處**（`rest:true`）⇒ 帶著帳走進來會先閉棺結算。
@@ -7379,7 +7379,7 @@ export const TOWNS = {
          ⚠ `need:'bl_dragon_seen'` ＝**開圖之後**（索菈娜「交給我！」那一拍插的旗）。
            這是我的判讀：那兩句講的是「往這個方向逼」，而「往哪裡逼」要看得見牠
            才成立。白天那一趟踩過獅階不會用掉這一次（`need` 不成立＝不演也不記）。 */
-      dragstair: { bg:'Belisar_LionStair', name:'貝利薩爾遺址　獅階', noTime:true, noWild:true, rest:true, exits:{ up:'antecham', down:'guardhall' },
+      dragstair: { bg:'belisar_lionstair', name:'貝利薩爾遺址　獅階', noTime:true, noWild:true, rest:true, exits:{ up:'antecham', down:'guardhall' },
         /* ⚠ `until:'bl_throne_known'`（ver -1484）＝**開圖那一刻她就已經知道王座
            那一區在哪**（踩過獅階／謁見／王座任一格）⇒ 這一段「把牠往這個方向逼」
            的指路就不必再演了（Ray 指定）。旗是開圖那一拍插的，見 `chase` ④。
@@ -7390,12 +7390,12 @@ export const TOWNS = {
           ren('command','把牠往這個方向逼！'),
           sor('battlecry','瞭解！'),
         ] } ] },
-      starroom:  { bg:'Belisar_Orrery', name:'貝利薩爾遺址　星象室', noTime:true, exits:{ down:'incense', left:'forge' } },
-      guardhall: { bg:'Belisar_ArmourGallery', name:'貝利薩爾遺址　甲冑廊', noTime:true, exits:{ up:'dragstair', right:'bonerack', down:'greathall', left:'trihall' } },
-      greathall: { bg:'Belisar_GreatHall', name:'貝利薩爾遺址　中央大廳', noTime:true, exits:{ up:'guardhall', right:'oldtomb', left:'lamphall' } },
-      lamphall:  { bg:'Belisar_ChandelierHall', name:'貝利薩爾遺址　枝燈長廊', noTime:true, exits:{ up:'trihall', right:'greathall', down:'candlewalk' } },
-      ossuary:   { bg:'Belisar_Ossuary', name:'貝利薩爾遺址　納骨堂', noTime:true, exits:{ right:'culvert', left:'stelae' } },
-      mirrorpool:{ bg:'Belisar_StillPool', name:'貝利薩爾遺址　靜水池', noTime:true, exits:{ up:'waterjail', down:'floodway', left:'pillars' }, acts:[BEL_WATER_FIRST] },
+      starroom:  { bg:'belisar_orrery', name:'貝利薩爾遺址　星象室', noTime:true, exits:{ down:'incense', left:'forge' } },
+      guardhall: { bg:'belisar_armourgallery', name:'貝利薩爾遺址　甲冑廊', noTime:true, exits:{ up:'dragstair', right:'bonerack', down:'greathall', left:'trihall' } },
+      greathall: { bg:'belisar_greathall', name:'貝利薩爾遺址　中央大廳', noTime:true, exits:{ up:'guardhall', right:'oldtomb', left:'lamphall' } },
+      lamphall:  { bg:'belisar_chandelierhall', name:'貝利薩爾遺址　枝燈長廊', noTime:true, exits:{ up:'trihall', right:'greathall', down:'candlewalk' } },
+      ossuary:   { bg:'belisar_ossuary', name:'貝利薩爾遺址　納骨堂', noTime:true, exits:{ right:'culvert', left:'stelae' } },
+      mirrorpool:{ bg:'belisar_stillpool', name:'貝利薩爾遺址　靜水池', noTime:true, exits:{ up:'waterjail', down:'floodway', left:'pillars' }, acts:[BEL_WATER_FIRST] },
       /* ⚠ 枝燈長廊↔下沉中庭是 **`up`／`down`**（ver -1159，Ray：「枝燈長廊往下沉中庭
          應該往上吧」）—— 與佈局圖上的相對位置相反（圖上中庭畫在長廊**下面**）。
          ⚠⚠ **所以小地圖的版面要跟著改**：`tools/map_layout.py` 的 belisar 版面
@@ -7410,21 +7410,21 @@ export const TOWNS = {
          `rooffall.left` 兩個指向它的出口也拆掉（施工單第一節）。
          ⚠ `Belisar_SunkenCourt` 那組圖從此沒有人用（美術**先不回收**，等確定不放回來）。
          ⚠⚠ **這座城的休息處因此只剩 `foyer` 前廳一個** —— 那是施工單的設計，不是漏掉。 */
-      rooffall:  { bg:'Belisar_RoofFall', name:'貝利薩爾遺址　崩頂坡', noWild:true, exits:{ up:'drywell', right:'muralwalk' } },
-      muralwalk: { bg:'Belisar_MuralGallery', name:'貝利薩爾遺址　壁畫長廊', noTime:true, exits:{ up:'forge', down:'bellroom', left:'rooffall' } },
-      stairwell: { bg:'Belisar_SpiralWell', name:'貝利薩爾遺址　旋梯井', noTime:true, noWild:true, rest:true, exits:{ up:'oldtomb', right:'pillars', down:'stephall', left:'candlewalk' } },
-      pillars:   { bg:'Belisar_Cistern', name:'貝利薩爾遺址　千柱廳', noTime:true, exits:{ up:'capstan', right:'mirrorpool', down:'stephall', left:'stairwell' }, acts:[BEL_WATER_FIRST] },
-      dragonrace:{ bg:'Belisar_LionSpout', name:'貝利薩爾遺址　獅口水道', noTime:true, exits:{ up:'draincliff', down:'waterjail', left:'cages' }, acts:[BEL_WATER_FIRST] },
-      draincliff:{ bg:'Belisar_DrainCliff', name:'貝利薩爾遺址　排水崖口', exits:{ down:'dragonrace', left:'culvert' } },
-      incense:   { bg:'Belisar_ChrismRoom', name:'貝利薩爾遺址　聖油室', noTime:true, exits:{ up:'starroom', down:'trihall' } },
-      bellroom:  { bg:'Belisar_BellRoom', name:'貝利薩爾遺址　鐘室', noTime:true, exits:{ up:'muralwalk', right:'mirrorway' } },
-      drywell:   { bg:'Belisar_DryWell', name:'貝利薩爾遺址　枯井底', noTime:true, noWild:true, exits:{ right:'forge', down:'rooffall' } },
+      rooffall:  { bg:'belisar_rooffall', name:'貝利薩爾遺址　崩頂坡', noWild:true, exits:{ up:'drywell', right:'muralwalk' } },
+      muralwalk: { bg:'belisar_muralgallery', name:'貝利薩爾遺址　壁畫長廊', noTime:true, exits:{ up:'forge', down:'bellroom', left:'rooffall' } },
+      stairwell: { bg:'belisar_spiralwell', name:'貝利薩爾遺址　旋梯井', noTime:true, noWild:true, rest:true, exits:{ up:'oldtomb', right:'pillars', down:'stephall', left:'candlewalk' } },
+      pillars:   { bg:'belisar_cistern', name:'貝利薩爾遺址　千柱廳', noTime:true, exits:{ up:'capstan', right:'mirrorpool', down:'stephall', left:'stairwell' }, acts:[BEL_WATER_FIRST] },
+      dragonrace:{ bg:'belisar_lionspout', name:'貝利薩爾遺址　獅口水道', noTime:true, exits:{ up:'draincliff', down:'waterjail', left:'cages' }, acts:[BEL_WATER_FIRST] },
+      draincliff:{ bg:'belisar_draincliff', name:'貝利薩爾遺址　排水崖口', exits:{ down:'dragonrace', left:'culvert' } },
+      incense:   { bg:'belisar_chrismroom', name:'貝利薩爾遺址　聖油室', noTime:true, exits:{ up:'starroom', down:'trihall' } },
+      bellroom:  { bg:'belisar_bellroom', name:'貝利薩爾遺址　鐘室', noTime:true, exits:{ up:'muralwalk', right:'mirrorway' } },
+      drywell:   { bg:'belisar_drywell', name:'貝利薩爾遺址　枯井底', noTime:true, noWild:true, exits:{ right:'forge', down:'rooffall' } },
       /* ⚠ 安全點（ver -1397，Ray：「旋梯井　獅階　武器工坊為安全點　不出怪」）——
          另外兩格（`stairwell`／`dragstair`）本來就寫了 `noWild`。 */
-      forge:     { bg:'Belisar_Forge', name:'貝利薩爾遺址　兵器工坊', noTime:true, noWild:true, rest:true, exits:{ up:'starroom', right:'trihall', down:'muralwalk', left:'drywell' } },
-      trihall:   { bg:'Belisar_TriArch', name:'貝利薩爾遺址　三拱廳', noTime:true, exits:{ up:'incense', right:'guardhall', down:'lamphall', left:'forge' } },
-      waterjail: { bg:'Belisar_WaterJail', name:'貝利薩爾遺址　水牢', noTime:true, exits:{ up:'cages', right:'dragonrace', down:'mirrorpool', left:'capstan' }, acts:[BEL_WATER_FIRST] },
-      bonerack:  { bg:'Belisar_Sarcophagi', name:'貝利薩爾遺址　石棺廊', noTime:true, exits:{ up:'stelae', left:'guardhall' } },
+      forge:     { bg:'belisar_forge', name:'貝利薩爾遺址　兵器工坊', noTime:true, noWild:true, rest:true, exits:{ up:'starroom', right:'trihall', down:'muralwalk', left:'drywell' } },
+      trihall:   { bg:'belisar_triarch', name:'貝利薩爾遺址　三拱廳', noTime:true, exits:{ up:'incense', right:'guardhall', down:'lamphall', left:'forge' } },
+      waterjail: { bg:'belisar_waterjail', name:'貝利薩爾遺址　水牢', noTime:true, exits:{ up:'cages', right:'dragonrace', down:'mirrorpool', left:'capstan' }, acts:[BEL_WATER_FIRST] },
+      bonerack:  { bg:'belisar_sarcophagi', name:'貝利薩爾遺址　石棺廊', noTime:true, exits:{ up:'stelae', left:'guardhall' } },
       /* ⚠ ver -1437（Ray：「近衛墓室設為安全點」）：`rest:true` ＝走進去就閉棺結算
          （§6.5.4.3 的第四條結算路徑，小地圖上會多一個墨圈＋「（休息處）」）。
          ⚠ 安全點一律 `noWild`：它是這一局的收尾點，在收尾點刷怪等於「先打一場再結算」。 */
@@ -7444,23 +7444,23 @@ export const TOWNS = {
            ⚠ 折線（線在空白處轉彎）另外處理：它連的是**沿途碰到的第一個格子**，
              `dragonrace↔waterjail` 就是這樣（那條垂直線同時是排水崖口→獅口水道
              那一段，再往下轉左接到水牢）。 */
-      wardtomb:  { bg:'Belisar_GuardTomb', name:'貝利薩爾遺址　近衛墓室', noTime:true,
+      wardtomb:  { bg:'belisar_guardtomb', name:'貝利薩爾遺址　近衛墓室', noTime:true,
         rest:true, noWild:true, exits:{ up:'offering', down:'stelae', left:'antecham' } },
-      culvert:   { bg:'Belisar_Culvert', name:'貝利薩爾遺址　暗渠', noTime:true, exits:{ right:'draincliff', down:'cages', left:'ossuary' }, acts:[BEL_WATER_FIRST] },
-      mirrorway: { bg:'Belisar_MirrorWalk', name:'貝利薩爾遺址　鏡廊', noTime:true, exits:{ up:'candlewalk', left:'bellroom' } },
-      cages:     { bg:'Belisar_Cages', name:'貝利薩爾遺址　獸欄', noTime:true, exits:{ up:'culvert', right:'dragonrace', down:'waterjail' } },
-      oldtomb:   { bg:'Belisar_Catacomb', name:'貝利薩爾遺址　地下墓道', noTime:true, exits:{ right:'capstan', down:'stairwell', left:'greathall' } },
-      capstan:   { bg:'Belisar_Capstan', name:'貝利薩爾遺址　絞盤室', noTime:true, exits:{ right:'waterjail', down:'pillars', left:'oldtomb' } },
-      candlewalk:{ bg:'Belisar_CandleWalk', name:'貝利薩爾遺址　燭廊', noTime:true, exits:{ up:'lamphall', right:'stairwell', down:'mirrorway' } },
-      stelae:    { bg:'Belisar_SteleWalk', name:'貝利薩爾遺址　銘碑廊', noTime:true, exits:{ up:'wardtomb', right:'ossuary', down:'bonerack' } },
-      stephall:  { bg:'Belisar_StairHall', name:'貝利薩爾遺址　階梯大廳', noTime:true, exits:{ up:'pillars', right:'floodway', down:'foyer', left:'stairwell' } },
-      floodway:  { bg:'Belisar_Floodway', name:'貝利薩爾遺址　積水甬道', noTime:true, exits:{ up:'mirrorpool', down:'altar', left:'stephall' }, acts:[BEL_WATER_FIRST] },
+      culvert:   { bg:'belisar_culvert', name:'貝利薩爾遺址　暗渠', noTime:true, exits:{ right:'draincliff', down:'cages', left:'ossuary' }, acts:[BEL_WATER_FIRST] },
+      mirrorway: { bg:'belisar_mirrorwalk', name:'貝利薩爾遺址　鏡廊', noTime:true, exits:{ up:'candlewalk', left:'bellroom' } },
+      cages:     { bg:'belisar_cages', name:'貝利薩爾遺址　獸欄', noTime:true, exits:{ up:'culvert', right:'dragonrace', down:'waterjail' } },
+      oldtomb:   { bg:'belisar_catacomb', name:'貝利薩爾遺址　地下墓道', noTime:true, exits:{ right:'capstan', down:'stairwell', left:'greathall' } },
+      capstan:   { bg:'belisar_capstan', name:'貝利薩爾遺址　絞盤室', noTime:true, exits:{ right:'waterjail', down:'pillars', left:'oldtomb' } },
+      candlewalk:{ bg:'belisar_candlewalk', name:'貝利薩爾遺址　燭廊', noTime:true, exits:{ up:'lamphall', right:'stairwell', down:'mirrorway' } },
+      stelae:    { bg:'belisar_stelewalk', name:'貝利薩爾遺址　銘碑廊', noTime:true, exits:{ up:'wardtomb', right:'ossuary', down:'bonerack' } },
+      stephall:  { bg:'belisar_stairhall', name:'貝利薩爾遺址　階梯大廳', noTime:true, exits:{ up:'pillars', right:'floodway', down:'foyer', left:'stairwell' } },
+      floodway:  { bg:'belisar_floodway', name:'貝利薩爾遺址　積水甬道', noTime:true, exits:{ up:'mirrorpool', down:'altar', left:'stephall' }, acts:[BEL_WATER_FIRST] },
       /* ══⚠⚠ **那一夜：走進前廳**（ver -1433，Ray 交稿）══ 索菈娜聞出牠還在。
          ⚠ `need` ＝任務探索開著（同中庭那一段，旗名讀 `QUEST_LOCK`）——
            白天那一趟走進前廳不演這一段。
          ⚠ 這一格是**休息處**（`rest:true`）：帶著帳走進來會先結算 —— 那一段
            `afterSettle` 只有獅階要（Ray 指定），這裡照舊「先講話」。 */
-      foyer:     { bg:'Belisar_Foyer', name:'貝利薩爾遺址　前廳', noTime:true, noWild:true, rest:true, exits:{ up:'stephall', down:'entrance' },
+      foyer:     { bg:'belisar_foyer', name:'貝利薩爾遺址　前廳', noTime:true, noWild:true, rest:true, exits:{ up:'stephall', down:'entrance' },
         /* ══⚠⚠ **初入前廳**（ver -1434，Ray 交稿）══ `ep_bel_enter` 那一段的 `goto`
            就是這一格，所以白天走進古城的那一次抵達必定演到它。
            ⚠ 安雅與諾薇兒那兩拍**只有立繪沒有台詞**（稿上就是「安：lookup／諾：shock」）
@@ -7497,7 +7497,7 @@ export const TOWNS = {
            `Belisar_GreatCourt.webp` 也不存在。
          ⚠ 代價要講明：這一格**因此不再有日夜變化**（上一張 `Belisar_Exterior` 有四張）。
            另外三張（`_dawn`／`_dusk`／`_night`）交件之後，這裡改回
-           `bg:'Belisar_GreatCourt'` **並拿掉 `noTime`** 就好 —— 一行的事。
+           `bg:'belisar_greatcourt'` **並拿掉 `noTime`** 就好 —— 一行的事。
          ⚠ `Belisar_Exterior_*` 那四張**不要退役**：`script/enemies.js` 有一張敵卡的
            戰鬥背景還在指 `Belisar_Exterior`（-1377 查過）。
          ⚠ 同批還交了 `Belisar_GreatCourt_flood_day.webp`（淹水版）——**還沒有人用**，
@@ -7527,8 +7527,8 @@ export const TOWNS = {
             旗用 `ep_bel_altar` ＝**祭壇那一段演完**（水就是在那一段末尾湧出來的：
             安「水！淹出來了！」）。誰插的＝那一段的 `flag`，答得出來（鐵律 9）。
             ⚠ flood 四時段也齊了，所以這一筆**不寫 `noTime`**。 */
-      entrance:  { bg:'Belisar_GreatCourt', name:'貝利薩爾遺址　古城中庭', noWild:true,
-        bgWhen:[ { need:'ep_bel_altar', bg:'Belisar_GreatCourt_flood' } ],
+      entrance:  { bg:'belisar_greatcourt', name:'貝利薩爾遺址　古城中庭', noWild:true,
+        bgWhen:[ { need:'ep_bel_altar', bg:'belisar_greatcourt_flood' } ],
         exits:{ up:'foyer' }, sail:{},
         /* ══⚠⚠⚠ 抵達古城入口（ver -1353，Ray 交稿）══════════════════════════
            ⚠ `need:'ep_day2'` ＝東泊那個翌日的閘門演完（＝這一趟就是為了來這裡）。
@@ -7554,7 +7554,7 @@ export const TOWNS = {
           /* ⚠ `se_Kerberos_open` 不是 `se_kerb_open`（ver -1361，`script_lint` 抓到）——
              音效名查表查不到就**靜靜不播**（只印一行 console），畫面上沒有任何錯誤訊息。
              這台裝了 node 之後 lint 才跑得動，第一次跑就抓到它。 */
-          Object.assign(ren('ask','打擾囉。'), { se:'se_Kerberos_open' }),
+          Object.assign(ren('ask','打擾囉。'), { se:'se_kerberos_open' }),
         ] },
           /* ══⚠⚠⚠ **撤離**（ver -1385 由 `courtyard` 搬過來，Ray：「把 goto 與那一段
              搬到 entrance」）══════════════════════════════════════════════════
@@ -7667,11 +7667,11 @@ export const TOWNS = {
          ⚠⚠ 庫裡還有 `Belisar_EntryHallactive.webp`（點亮版）**還沒有人接** ——
            安雅感應完裝置啟動那一拍應該要換成它（走 `bgWhen` 或那一拍的 `bg`）。
            Ray 沒交代，先不接。 */
-      altar:     { bg:'Belisar_OldAltar', name:'貝利薩爾遺址　古代祭壇', noTime:true,
+      altar:     { bg:'belisar_oldaltar', name:'貝利薩爾遺址　古代祭壇', noTime:true,
         noWild:true, exits:{ up:'floodway' },
         /* ⚠ 啟動之後再走進來就是啟動版（ver -1420）——同木雅克／瓦努努的 `bgWhen`。
            `noTime:true` ＝這張只有單張，不走時段候選鏈（不寫的話每次進來先吃四個 404）。 */
-        bgWhen:[ { need:'bel_altar_on', bg:'Belisar_OldAltaractive', noTime:true } ],
+        bgWhen:[ { need:'bel_altar_on', bg:'belisar_oldaltaractive', noTime:true } ],
         /* ⚠ ver -1385：`goto` 由 `courtyard`（下沉中庭）改成 **`entrance`（古城中庭）**
            —— 撤離那一段演在**出口**、也是真的淹水的那一格（`GreatCourt_flood`）。 */
         /* ⚠⚠⚠ `storyBattle:true`（ver -1412 補）—— **這一段有戰鬥拍，沒宣告的話
@@ -7709,7 +7709,7 @@ export const TOWNS = {
                `bel_altar_on` 說「祭壇開著」—— 後者是節點 `bgWhen` 讀的那一支。
              ⚠ `keepCast` 不用寫：台上本來就被上一拍 `hide` 光了。 */
           { speaker:'NARRATION', text:'', flags:['bel_altar_on'],
-            bg:'Belisar_OldAltaractive', auto:1500 },
+            bg:'belisar_oldaltaractive', auto:1500 },
           ren('ask','好，這樣就——'),
           /* ══⚠⚠ **王座徘徊者降臨**（ver -1384，Ray：「感應完蕾娜說『好　這樣就』
              以後發生震動　背景特效王座徘徊者降臨」）══
@@ -7747,7 +7747,7 @@ export const TOWNS = {
             cgBackFit:'contain',
             cgBack:'resources/enemy/mon_dragon_v1_shackled.webp' },
           /* ⚠ ver -1420（Ray 指定）：被嚇到那一聲配跌倒音。 */
-          Object.assign(ren('scream','呀！'), { se:'se_Fall' }),
+          Object.assign(ren('scream','呀！'), { se:'se_fall' }),
           /* ══⚠⚠⚠ **蕾娜倒地・髮飾脫落**（ver -1397，Ray 交件 `020-rennadrop`）══
              稿：「龍出現後蕾娜『呀！』之後，接插圖 020 由下往上平移；在插圖背景
              蕾娜**無立繪**『啊……』；同背景索拉娜『危險！』畫面震動，龍咆音效

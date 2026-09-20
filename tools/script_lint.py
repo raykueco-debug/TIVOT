@@ -229,9 +229,46 @@ def check_heavy_pairs():
             err('%s：`%s()` 的唯一呼叫點不在 `%s()` 裡面（憲法鐵律 10 的自檢）。'
                 % (fn, heavy, owner))
 
+AEXT_RE = r'webp|png|jpe?g|m4a|mp3|wav|svg|ogg|woff2|woff|ttf|otf'
+
+def check_lowercase_assets():
+    """⚠⚠⚠ **素材檔名一律小寫，而且要分大小寫對得到檔**（ver -1554，Ray：
+       「把檔案全改成小寫吧」）。
+
+    為什麼要**會執行的檢查**、而不是一條規矩：
+      **macOS 不分大小寫、靜態空間分** —— 檔名大小寫寫錯在這台測不出任何問題，
+      上線就是 404，而且畫面上不會有任何錯誤訊息（背景變空、立繪退回底圖、
+      音效靜靜不播）。§6.5.4 的 ver -1293／-910 都是這個坑。
+    ⚠ `reference/` 不掃：那是唯讀的行為基準（鐵律 4），裡面的路徑是舊原型的。
+    ⚠ 只掃**字面路徑**；組出來的背景名由下面那一段（bg 基底名）負責。"""
+    real = set()
+    for r, ds, fs in os.walk(ROOT):
+        ds[:] = [d for d in ds if d not in ('.git', 'node_modules', '_recycle', '_originals', 'reference')]
+        for f in fs:
+            real.add(os.path.relpath(os.path.join(r, f), ROOT).replace(os.sep, '/'))
+    pat = re.compile(r'(?<![A-Za-z0-9_])((?:resources|flight)/[A-Za-z0-9_./\-]+\.(?:' + AEXT_RE + r'))', re.I)
+    for r, ds, fs in os.walk(ROOT):
+        ds[:] = [d for d in ds if d not in ('.git', 'node_modules', '_recycle', '_originals', 'reference')]
+        for f in fs:
+            if os.path.splitext(f)[1] not in ('.js', '.html', '.css'):
+                continue
+            fp = os.path.join(r, f)
+            rel = os.path.relpath(fp, ROOT).replace(os.sep, '/')
+            try:
+                txt = open(fp, encoding='utf-8').read()
+            except Exception:
+                continue
+            for m in pat.finditer(txt):
+                a = m.group(1)
+                if a != a.lower():
+                    err('%s：素材路徑有大寫 —— %s（檔名一律小寫，ver -1554）' % (rel, a))
+                elif a not in real:
+                    warn('%s：素材路徑對不到檔案 —— %s' % (rel, a))
+
 def main():
     D = load_data()
     check_heavy_pairs()
+    check_lowercase_assets()
     script, entry, speakers, art = D['script'], D['entry'], D['speakers'], D['art']
 
     # ⚠ ver -1015：先把 ASSETS 裡的音檔名收起來 —— 開機預載那一批是

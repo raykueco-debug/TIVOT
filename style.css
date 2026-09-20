@@ -1946,7 +1946,7 @@
   /* ── Boss 戰 S 級獎勵：銭湯インストール ── */
   /* 毛筆字型：Yuji Boku（OFL）子集，只含「銭湯インストール」8 字（3.6KB，自託管離線可用） */
   @font-face{ font-family:'YujiBokuSentou';
-    src:url('resources/misc/YujiBoku_sentou.woff2?v=3') format('woff2');
+    src:url('resources/misc/yujiboku_sentou.woff2?v=3') format('woff2');
     font-display:block; }
   #sentouReward{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
     background:#050308;z-index:80;}

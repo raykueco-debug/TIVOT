@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1553';
+export const VERSION = 'ver 2026.09.17-1554';
 
 export const GAME_CONFIG = {
 
@@ -344,7 +344,7 @@ export const GAME_CONFIG = {
     },
   },
 
-  defaultWeapon: 'MG_Squall',   // 開局預設武器（填上面的鑰匙名）
+  defaultWeapon: 'mg_squall',   // 開局預設武器（填上面的鑰匙名）
   /* 副武器類別 → 切換鈕的徽章（ver -549，Ray 交圖：連射=Switch_MG、
      散射=Switch_Split、高爆=Switch_Hyper）。值＝ASSETS 鑰匙，weapon.js 的
      renderSwitch 直接 asset() 取圖（-481 的手繪 SVG 圖示已退場）。
@@ -1383,7 +1383,7 @@ export const GAME_CONFIG = {
     /* 蕾娜（ver -425）：**讀取頁的說明者**，出航之後接手。
        ⚠ 結算畫面的監察官還是 `defaultInspector`（freya）—— 正名是另一件事（§8），
          這裡只換讀取頁那一張臉。
-       ⚠ 立繪先借對白用的正面圖（`resources/SI/Renna_SI_front.webp`）；
+       ⚠ 立繪先借對白用的正面圖（`resources/si/renna_si_front.webp`）；
          日後有專屬的讀取頁立繪就改 `image` 那一行。 */
     renna: {
       name:'蕾娜',
@@ -1763,35 +1763,35 @@ export const GAME_CONFIG = {
      而且**畫面上沒有任何錯誤訊息**（走進店裡只是右邊空著）。
      ⚠ 這正是 §5 那條「同名覆蓋／搬檔要連引用一起改」的反面案例：搬檔的人
        只改了檔案系統。**日後搬任何素材，`grep` 一次舊路徑再收工。** */
-      grocery:  { title:'雜貨舖', art:'resources/SI/NPC/NPC_Grocerie_SI.webp',
+      grocery:  { title:'雜貨舖', art:'resources/si/npc/npc_grocerie_si.webp',
                   tabs:['buy','sell'] },
       /* ⚠ `challenge` ＝ 這一家店的櫃台可以**再挑戰**哪一場（ver -398（-893 前用詞），Ray：「槍店的選單
          要增加一個射擊挑戰的選項」）。值是 `battles` 的鑰匙 —— 打靶那一場本來只有
          劇情裡打得到一次，而它有最佳紀錄，本來就該能再來（見 script/town.js 的
          `challengeLines`）。 */
-      gunstore: { title:'武器店', art:'resources/SI/NPC/NPC_Capital_Gunstore_SI.webp',
+      gunstore: { title:'武器店', art:'resources/si/npc/npc_capital_gunstore_si.webp',
                   tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
                   only:'weapon', compare:true,
                   challenge:'range_trainee', challengeLabel:'射擊挑戰' },
       /* ══ 北方泊地的兩家店（ver -655（-893 前用詞））══ 功能與帝都相同，差別只有**店主圖**與
          **貨單的鑰匙**（見上面 stock 的說明）。⚠ 射擊挑戰指的是這座城自己那一場
          （`np_range`，25 秒、要 200G）—— 最佳紀錄與帝都那一場也是分開的。 */
-      np_grocery:  { title:'雜貨舖', art:'resources/SI/NPC/NPC_Grocery_SI_Northport.webp',
+      np_grocery:  { title:'雜貨舖', art:'resources/si/npc/npc_grocery_si_northport.webp',
                      tabs:['buy','sell'] },
       /* ══ 夏爾村雜貨街（ver -858，Ray 交稿）══ 退休行商。`sale`＝一起經歷過
          魔獸圍城（safehouse_shinier）之後**商品打 9 折**（loot.js 只在買價乘，
          賣價不動）。 */
-      sv_grocery:  { title:'雜貨街', art:'resources/SI/NPC/NPC_shinier_grocery_SI.webp',
+      sv_grocery:  { title:'雜貨街', art:'resources/si/npc/npc_shinier_grocery_si.webp',
                      tabs:['buy','sell'],
                      sale:{ need:'safehouse_shinier', mul:0.9 } },
-      np_gunstore: { title:'武器店', art:'resources/SI/NPC/NPC_Gunsmith_SI_Northport.webp',
+      np_gunstore: { title:'武器店', art:'resources/si/npc/npc_gunsmith_si_northport.webp',
                      tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
                      only:'weapon', compare:true,
                      challenge:'np_range', challengeLabel:'射擊挑戰' },
       /* ══ 杰羅的工坊（ver -866，Ray：「杰羅不賣槍，只改槍」「杰羅的工坊就是槍店」）══
          只有一個「改槍」分頁（賭博式改造，規則在 tuning.jeroMod；UI 在 loot.js 的
          jero 分頁）。不賣不買 —— tabs 沒有 buy/sell，貨帳也就不存在。 */
-      sv_workshop: { title:'杰羅的工坊', art:'resources/SI/NPC/NPC_shinier_Gunsmith_SI.webp',
+      sv_workshop: { title:'杰羅的工坊', art:'resources/si/npc/npc_shinier_gunsmith_si.webp',
                      tabs:['jero'], tabName:{ jero:'改槍' } },
       /* ══ 東方泊地的兩家店（ver -1340，Ray 交件指派店主）══ 功能同帝都／北泊，
          差別只有**店主圖**與**貨單的鑰匙**。
@@ -1800,9 +1800,9 @@ export const GAME_CONFIG = {
          ⚠⚠ `art` 這一格**現在沒有人讀**（ver -387 起買賣視窗不放店主立繪，
            見 modules/loot.js 的說明）—— 真正畫出來的是節點上的 `keeperWho`。
            路徑照樣寫對：留一個假路徑等於給下一個人挖坑。 */
-      ep_grocery:  { title:'雜貨舖', art:'resources/SI/NPC/NPC_Grocer_SI_v1.webp',
+      ep_grocery:  { title:'雜貨舖', art:'resources/si/npc/npc_grocer_si_v1.webp',
                      tabs:['buy','sell'] },
-      ep_gunstore: { title:'武器店', art:'resources/SI/NPC/NPC_Gunsmith_SI_v1.webp?v=2',
+      ep_gunstore: { title:'武器店', art:'resources/si/npc/npc_gunsmith_si_v1.webp?v=2',
                      tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
                      only:'weapon', compare:true,
                      /* 射擊挑戰（ver -1350）：與帝都／北泊同一個機制，場次與最佳紀錄
@@ -3957,18 +3957,18 @@ export const ASSETS = {
      **每一次冷開機都要付的成本**（鐵律 13），而且與團徽同一個連線池。
      ⚠ `index.html` 的 `apple-touch-icon` **照舊指 `.png`** —— iOS 的觸控圖示
        吃不了 webp，所以那張 PNG 是**還在用的**，不要收進 `_originals`。 */
-  home_emblem:    "resources/background/TIVOT_Emblem.webp",   // 主畫面徽記（含 THE IV ORDER OF TESTAMENT 弧字）
-  enemy_faceless: "resources/enemy/Saint_UG_CI.jpg",   // 地下聖徒（UG=underground）
-  cutin_saint:    "resources/partner/Luna_CI_saint.jpg",   // 聖徒化 cut-in 暫代圖
-  inspector_freya: "resources/inspector/Freya_SI_01.webp",
+  home_emblem:    "resources/background/tivot_emblem.webp",   // 主畫面徽記（含 THE IV ORDER OF TESTAMENT 弧字）
+  enemy_faceless: "resources/enemy/saint_ug_ci.jpg",   // 地下聖徒（UG=underground）
+  cutin_saint:    "resources/partner/luna_ci_saint.jpg",   // 聖徒化 cut-in 暫代圖
+  inspector_freya: "resources/inspector/freya_si_01.webp",
   /* Boss 戰（挑戰的槍之魔女）勝利結算評價者：璐娜莉亞（ver -471，Ray 交稿）——
      坐姿立繪逐**等第**差分（S/A 共用 smirk）。lose 仍是芙蕾雅，這五張只有打贏用。 */
-  inspector_luna_smirk:    "resources/SI/Luna_SI_seat_smirk.webp",
-  inspector_luna_n:        "resources/SI/Luna_SI_seat_N.webp",
-  inspector_luna_lookdown: "resources/SI/Luna_SI_seat_lookdown.webp",
-  inspector_luna_angry:    "resources/SI/Luna_SI_seat_angry.webp",
-  inspector_luna_hand:     "resources/SI/Luna_SI_seat_hand.webp",
-  enemy_witch:    "resources/enemy/GunWitch_Boss_CI.jpg",   // 槍之魔女（Boss）內嵌立繪
+  inspector_luna_smirk:    "resources/si/luna_si_seat_smirk.webp",
+  inspector_luna_n:        "resources/si/luna_si_seat_n.webp",
+  inspector_luna_lookdown: "resources/si/luna_si_seat_lookdown.webp",
+  inspector_luna_angry:    "resources/si/luna_si_seat_angry.webp",
+  inspector_luna_hand:     "resources/si/luna_si_seat_hand.webp",
+  enemy_witch:    "resources/enemy/gunwitch_boss_ci.jpg",   // 槍之魔女（Boss）內嵌立繪
   /* 尼莫（ver -1524，Ray 的 Stage10-A 稿：鏡湖出口前那一場）。
      ⚠⚠ **這張圖的用途是美術推斷的**（-1503 的交接寫著「接卡之前要 Ray 確認一句
        『它是不是尼莫的戰鬥立繪』」）—— 到現在還沒確認過。**不是的話換這一行就好。** */
@@ -3982,30 +3982,30 @@ export const ASSETS = {
   enemy_gk_offset: "resources/enemy/mon_gravekeeper_offset.webp",   // 錯格重影（追擊）
   enemy_gk_many:   "resources/enemy/mon_gravekeeper_many.webp",     // 數不清（追擊）
   enemy_gk_crypt:  "resources/enemy/mon_gravekeeper_crypt.webp",    // 墓室胸腔（決戰）
-  enemy_facelessgiant: "resources/enemy/Saint_GT_CI.webp",   // 連戰第二隻：巨型聖徒（GT=giant）
-  enemy_trainee:  "resources/enemy/Saint_TR_CI.webp",   // 教學專用敵：訓練用聖徒
-  enemy_dart_target: "resources/enemy/Dart_timeattack.webp",   // 打靶場：固定立靶（ver -396）
-  enemy_dart_counter: "resources/enemy/Dart_counter.webp",   // 蕃茄人11號：杰羅的自動人型靶（ver -862，Ray 交件）
+  enemy_facelessgiant: "resources/enemy/saint_gt_ci.webp",   // 連戰第二隻：巨型聖徒（GT=giant）
+  enemy_trainee:  "resources/enemy/saint_tr_ci.webp",   // 教學專用敵：訓練用聖徒
+  enemy_dart_target: "resources/enemy/dart_timeattack.webp",   // 打靶場：固定立靶（ver -396）
+  enemy_dart_counter: "resources/enemy/dart_counter.webp",   // 蕃茄人11號：杰羅的自動人型靶（ver -862，Ray 交件）
   /* 禍魘娜塔莉（ver -671，Ray 交件）＋惡夢化 cut-in。
      ⚠ cut-in 住在 `resources/CI/`（Ray 指定；-672 曾誤指 `partner/`）。 */
   enemy_natalia:  "resources/enemy/mon_natalia.webp",
   /* ⚠⚠ `?v=2`：這兩張是**同名覆蓋**的（ver -689，Ray：「這兩個 CI 都有改」）——
      檔名沒變、內容變了，瀏覽器照樣拿舊的那一份（§5 的老坑，娜塔莉那一組踩過
      四版才查出來）。**一組要一起帶**，漏掉哪一張哪一張就被快取住。 */
-  ci_anya_ni:     "resources/CI/CI_Anya_NightmareInstall.webp?v=2",
+  ci_anya_ni:     "resources/ci/ci_anya_nightmareinstall.webp?v=2",
   /* 索菈娜的三張 CI（ver -803，Ray 交件於 resources/CI/）——共鬥／上滑 bullets rain／
      被動。⚠ 目前是 jpg/png（美術交件格式），轉 webp 後改副檔名（§5 轉檔三步）。
      ⚠ 伙伴立繪先用她的 SI 佔位（本篇強配不經選人，整備頁才顯示；Ray 交專用選人圖再換）。 */
-  partner_sorana:     "resources/SI/Sorana_SI_front.webp",
+  partner_sorana:     "resources/si/sorana_si_front.webp",
   /* ver -837：索菈娜 CI 整批轉 webp（2.0~2.5MB 的 1024×1536 PNG → 0.10~0.27MB）——
      戰鬥中 cut-in 解碼那一口就是手機卡頓的主嫌之一；原 PNG 留在原位給美術 session。 */
-  ci_sorana_predator: "resources/CI/CI_Sorana_predator.webp",
-  ci_sorana_supply:   "resources/CI/CI_Sorana_supply.webp",   // -820 過渡圖 → -837 webp
+  ci_sorana_predator: "resources/ci/ci_sorana_predator.webp",
+  ci_sorana_supply:   "resources/ci/ci_sorana_supply.webp",   // -820 過渡圖 → -837 webp
   /* 獵手的直覺（被動）發動的 CI：三張隨機輪播（ver -809，Ray 指定）——與三位女角的合擊圖。 */
-  ci_sorana_roar_renna:    "resources/CI/CI_Sorana_roar_Renna.webp",
-  ci_sorana_roar_anya:     "resources/CI/CI_Sorana_roar_Anya.webp",
-  ci_sorana_roar_nouvelle: "resources/CI/CI_Sorana_roar_Nouvelle.webp",
-  ci_sorana_obe:           "resources/CI/CI_Sorana_obe.webp",   // 飛刀耗盡（共鬥結束，ver -822）
+  ci_sorana_roar_renna:    "resources/ci/ci_sorana_roar_renna.webp",
+  ci_sorana_roar_anya:     "resources/ci/ci_sorana_roar_anya.webp",
+  ci_sorana_roar_nouvelle: "resources/ci/ci_sorana_roar_nouvelle.webp",
+  ci_sorana_obe:           "resources/ci/ci_sorana_obe.webp",   // 飛刀耗盡（共鬥結束，ver -822）
   /* 共鬥反擊的飛刀（ver -839，Ray 交件 weapon/dagger）：黑底光暈圖，畫面上走
      mix-blend-mode:screen（黑自然消失，同星芒那條的理由）。刀尖朝下＝畫的 +90°。 */
   vfx_dagger:         "resources/weapon/dagger.webp",
@@ -4013,13 +4013,13 @@ export const ASSETS = {
   se_soranacounterhit: "resources/audio/se/se_soranacounterhit.m4a",  // 飛刀命中
   se_glasscrack:       "resources/audio/se/se_glasscrack.m4a",        // 破防/ovk 裂紋輻射（ver -839）
   /* 夢境粉碎（ver -674，Ray 交件）：惡夢化期間上滑的那一發。 */
-  ci_anya_dreambreaker: "resources/CI/CI_Anya_Dreambreaker.webp?v=3",   // ver -702：Ray 又換了一版
+  ci_anya_dreambreaker: "resources/ci/ci_anya_dreambreaker.webp?v=3",   // ver -702：Ray 又換了一版
   /* 惡夢化熔斷（ver -692，Ray 交件 `CI_Anya_OBE`）：倒數槽抽乾的那一結局。 */
-  ci_anya_obe:    "resources/CI/CI_Anya_OBE.webp",
+  ci_anya_obe:    "resources/ci/ci_anya_obe.webp",
   /* stage7・養息之間那一拍（ver -922，Ray 的稿：安：CI_Anya_scared）。 */
-  ci_anya_scared: "resources/CI/CI_Anya_scared.webp",
+  ci_anya_scared: "resources/ci/ci_anya_scared.webp",
   /* 明晰之夢（ver -681 交件／-682 定中文名）：安雅的被動 —— HP≤30% 普攻加倍 5 秒。 */
-  ci_anya_lucid:  "resources/CI/CI_Anya_Luciddream.webp?v=2",   // ver -708：Ray 換了一版（同名覆蓋 → 必掛 ?v，§5）
+  ci_anya_lucid:  "resources/ci/ci_anya_luciddream.webp?v=2",   // ver -708：Ray 換了一版（同名覆蓋 → 必掛 ?v，§5）
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */
   /* ⚠⚠ **ver -975 修**（Ray 回報「賞金獵人戰中的敵人圖不見了」）：那 18 張 NPC 立繪
      ver -955 搬進 `resources/SI/NPC/` 時**這一條漏改**，於是這張圖一直是 404 ——
@@ -4028,11 +4028,11 @@ export const ASSETS = {
        敵人立繪），那邊 -955 已經改對了，只有 ASSETS 這一份留在舊路徑。
      ⚠ 自檢法：把 config 裡所有 `"resources/…"` 字串抓出來逐個 `test -f` ——
        這一次全檔只有這一條是壞的。 */
-  enemy_guild_hunter: "resources/SI/NPC/NPC_GuildHunter_SI_Attack.webp",
+  enemy_guild_hunter: "resources/si/npc/npc_guildhunter_si_attack.webp",
   /* 東方泊地的賞金獵人（ver -1375 交件）。⚠ 與帝都那一隻不同：那一張是把**對話立繪**
      借來當戰鬥圖，這一張是**專門畫的敵人圖**，所以它與 `NPC_ep_SI_bounty`（對話用）
      是兩張不同的圖 —— 不要互相借。 */
-  enemy_bounty_ep: "resources/enemy/man_bounty_EP.webp",
+  enemy_bounty_ep: "resources/enemy/man_bounty_ep.webp",
   /* ══⚠⚠ 北方泊地城鎮戰的雜怪（ver -596，Ray 指定四隻隨機出）＋教堂的 Boss（祭壇獸）══
      ⚠⚠ **一定要放在 `resources/enemy/` 底下，不可以留在 `_drafts`**（ver -595，
        Ray 回報「手機端讀不到怪的圖」）：靜態空間（GitHub Pages）跑的是 Jekyll，
@@ -4052,7 +4052,7 @@ export const ASSETS = {
      TheClaws」）。⚠ 這一張是**連背景一起畫的整張戰鬥圖**（規格見
      `resources/background/_boss_claw_spec.md`）—— 所以敵人卡**不給 `bg`、不給
      `fit.contain`**，走預設的 cover 滿版；那兩個是給去背立繪配背景用的。 */
-  enemy_np_claws: "resources/enemy/TheClaws.webp",
+  enemy_np_claws: "resources/enemy/theclaws.webp",
   /* 夏爾村村內戰（ver -802，Ray 交稿）—— 敵人卡見 script/enemies.js 的 sv_*。
      ⚠ bear／stag 目前仍是 **.png**（美術尚未去背轉 webp）：先指 .png 讓它載得出來，
        轉檔後把副檔名改成 .webp（同 §5 的轉檔三步）。其餘四張已是 webp。 */
@@ -4085,7 +4085,7 @@ export const ASSETS = {
   enemy_ruins_saint_prison:      "resources/enemy/mon_saint_prison.webp",
   enemy_ruins_saint_inspector:   "resources/enemy/mon_saint_inspector.webp",
   enemy_ruins_saint_thug:        "resources/enemy/mon_saint_thug.webp",
-  enemy_ruins_saint_temperance:  "resources/enemy/mon_saint_Temperance.webp",
+  enemy_ruins_saint_temperance:  "resources/enemy/mon_saint_temperance.webp",
 
   /* ══⚠⚠⚠ 王座徘徊者（ver -1343，Ray 交件指派）══════════════════════════════
      貝利薩爾那一段的龍。**三張是同一隻的三個階段**，不是三隻怪 ——
@@ -4148,32 +4148,32 @@ export const ASSETS = {
   */
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
-  cutin_saint_luna: "resources/partner/Luna_CI_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
+  cutin_saint_luna: "resources/partner/luna_ci_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
   voice_saint_luna: "resources/audio/vo/vo_luna_saintinstall.m4a",       // 聖徒化發動語音（Luna，1.7s；與 sfx_saint 疊播）
-  cutin_exc: "resources/partner/Luna_CI_exc.webp",   // 處決 EXSECUTIŌ cut-in（Luna）
-  cutin_obe: "resources/partner/Luna_CI_obe.jpg",   // O.B.E. cut-in（Luna）
-  cutin_mb: "resources/partner/Luna_CI_maxburst.jpg",   // Maximum Burst cut-in（Luna）
-  cutin_guard: "resources/partner/Renee_CI_pas.jpg",   // 即死防禦 cut-in（蕾妮/Renee·被動；檔名 _pas＝passive）
-  cutin_nouvelle_guard: "resources/CI/CI_Nouvelle_Deathguard.webp",   // 諾薇兒的即死防禦 cut-in（ver -499，Ray 交件）
-  cutin_return: "resources/partner/Renee_CI_act.jpg",   // 生命歸還 cut-in（蕾妮/Renee·主動；檔名 _act＝active）
-  cutin_malzeno_act: "resources/partner/Malzeno_CI_act.webp",   // 前線補給 cut-in（馬季諾·主動）
-  cutin_malzeno_pas: "resources/partner/Malzeno_CI_pas.webp",   // 高裝藥彈 cut-in（馬季諾·被動；正式圖）
+  cutin_exc: "resources/partner/luna_ci_exc.webp",   // 處決 EXSECUTIŌ cut-in（Luna）
+  cutin_obe: "resources/partner/luna_ci_obe.jpg",   // O.B.E. cut-in（Luna）
+  cutin_mb: "resources/partner/luna_ci_maxburst.jpg",   // Maximum Burst cut-in（Luna）
+  cutin_guard: "resources/partner/renee_ci_pas.jpg",   // 即死防禦 cut-in（蕾妮/Renee·被動；檔名 _pas＝passive）
+  cutin_nouvelle_guard: "resources/ci/ci_nouvelle_deathguard.webp",   // 諾薇兒的即死防禦 cut-in（ver -499，Ray 交件）
+  cutin_return: "resources/partner/renee_ci_act.jpg",   // 生命歸還 cut-in（蕾妮/Renee·主動；檔名 _act＝active）
+  cutin_malzeno_act: "resources/partner/malzeno_ci_act.webp",   // 前線補給 cut-in（馬季諾·主動）
+  cutin_malzeno_pas: "resources/partner/malzeno_ci_pas.webp",   // 高裝藥彈 cut-in（馬季諾·被動；正式圖）
 
   // ── 搭檔選人畫面大立繪 ──
-  partner_renee:   "resources/partner/Renee_SI_01.webp",     // 蕾妮 立繪
+  partner_renee:   "resources/partner/renee_si_01.webp",     // 蕾妮 立繪
   /* 諾薇兒的搭檔立繪（ver -422）：先借對白用的正面全身圖。
      ⚠ 換成專屬的選人立繪時，`partners.nouvelle.siFit` 要重量（那是**那一張圖**的數字）。 */
-  partner_nouvelle:"resources/SI/Nouvelle_SI_front.webp",     // 諾薇兒 立繪（暫用對白圖）
+  partner_nouvelle:"resources/si/nouvelle_si_front.webp",     // 諾薇兒 立繪（暫用對白圖）
   /* 安雅（ver -671）。⚠ 暫用她的對白立繪，同諾薇兒那一張的作法。 */
-  partner_anya:   "resources/SI/Anya_SI_front.webp",
+  partner_anya:   "resources/si/anya_si_front.webp",
   /* ── 教學（劇情版）的諾薇兒立繪與差分（ver -323（-893 前用詞））──────────────────────
      ⚠ 這一組**只給劇情帶起來的教學**用（tutorial.isStoryRun()）。首頁「教學」鈕
        那一場仍是芙蕾雅／蕾妮 —— Ray 指定兩者要分開。 */
-  tut_nouvelle:          "resources/SI/Nouvelle_SI_front.webp",
-  tut_nouvelle_cringe:   "resources/SI/Nouvelle_SI_Cringe.webp",
-  tut_nouvelle_surprise: "resources/SI/Nouvelle_SI_Surprise.webp",
-  tut_nouvelle_desperate:"resources/SI/Nouvelle_SI_Desperate.webp",
-  tut_nouvelle_saint:    "resources/SI/Nouvelle_SI_SAINTINSTALL.webp",
+  tut_nouvelle:          "resources/si/nouvelle_si_front.webp",
+  tut_nouvelle_cringe:   "resources/si/nouvelle_si_cringe.webp",
+  tut_nouvelle_surprise: "resources/si/nouvelle_si_surprise.webp",
+  tut_nouvelle_desperate:"resources/si/nouvelle_si_desperate.webp",
+  tut_nouvelle_saint:    "resources/si/nouvelle_si_saintinstall.webp",
   /* ══⚠⚠ **戰鬥內對白（`battles[].talk`）用到的立繪也要在這裡登記**
      （ver -607（-893 前用詞），Ray：「聖徒化教學的立繪一直沒讀到」）══
      `portraitFrames` 給的是**取景值**，圖的**路徑**要在 ASSETS 這一份 ——
@@ -4195,28 +4195,28 @@ export const ASSETS = {
   tut_anya_terrifying:      ART.anya.expr.terrifying.src,
   tut_anya_ni:              ART.anya.expr.nightmareinstall.src,
   /* ⚠ 檔名 ver -454 由 Ray 改為 `CI_` 前綴（`Nouvelle_SAINTINSTALL` → 同名加前綴）。 */
-  cutin_nouvelle_saint:  "resources/CI/CI_Nouvelle_SAINTINSTALL.webp",   // 全畫面 cut-in
+  cutin_nouvelle_saint:  "resources/ci/ci_nouvelle_saintinstall.webp",   // 全畫面 cut-in
   /* ══ 本篇（story）的 cut-in 差分（ver -454，Ray 指定三張）══════════════
      試玩版照舊用 Luna／Renee 那一組；分流都走 `storyMode()`（鐵律 8）：
        破防     → weapon.activateDual
        聖徒化   → saint.activateSaint（搭檔為諾薇兒時）
        生命歸還 → saint.playSaintCutin('return') */
-  cutin_dual_torsten:    "resources/CI/CI_Torsten_Dualcrush.webp",
+  cutin_dual_torsten:    "resources/ci/ci_torsten_dualcrush.webp",
   /* ══ 本篇的 MB／處決 cut-in（ver -702，Ray 交件）══ 試玩版照舊 Luna（見 cutin_mb／
      cutin_exc）；分流走 `storyMode()`，與破防／生命歸還那兩張同一套（鐵律 8）。
      ⚠ ver -703：檔名的拼字由 `Excute` 更正為 `Execute`（Ray 指定）。 */
-  cutin_mb_torsten:      "resources/CI/CI_Torsten_MB.webp",
-  cutin_exc_torsten:     "resources/CI/CI_Torsten_Execute.webp",
+  cutin_mb_torsten:      "resources/ci/ci_torsten_mb.webp",
+  cutin_exc_torsten:     "resources/ci/ci_torsten_execute.webp",
   /* ══ 本篇的生命歸還／OBE cut-in（ver -703，Ray 交件）══
      ⚠ 生命歸還原本**借** `Nouvelle_Sturm`（ver -454 的權宜）—— 正牌的來了就換掉。
        那張 Sturm 留著（她自己的招，日後用得到）。
      ⚠ OBE 在本篇也換成諾薇兒：那一拍是**搭檔**把靈魂拉回來，本篇的搭檔是她。
        試玩版照舊 Luna。 */
-  cutin_return_nouvelle: "resources/CI/CI_Nouvelle_Lifereturn.webp",
-  cutin_obe_nouvelle:    "resources/CI/CI_Nouvelle_OBE.webp",
-  partner_malzeno: "resources/partner/Malzeno_SI_01.webp",   // 馬季諾 立繪
-  cutin_boss: "resources/enemy/Belinda_CI_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
-  bg_sentou: "resources/background/SENTOUINSTALL.webp",
+  cutin_return_nouvelle: "resources/ci/ci_nouvelle_lifereturn.webp",
+  cutin_obe_nouvelle:    "resources/ci/ci_nouvelle_obe.webp",
+  partner_malzeno: "resources/partner/malzeno_si_01.webp",   // 馬季諾 立繪
+  cutin_boss: "resources/enemy/belinda_ci_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
+  bg_sentou: "resources/background/sentouinstall.webp",
   /* 瑪麗亞的料理插圖（ver -953）。⚠ **只有第一道有圖**，其餘九道等美術；
      `cooking.dishes[x].ci` 查不到就不出插圖，不會壞。 */
   dish_deersteak: "resources/dishes/di_deersteak.webp",
@@ -4227,36 +4227,36 @@ export const ASSETS = {
   // ── 副武器圖（換裝選單縮圖）：鑰匙對應 weapons.image；檔名＝類型_武器名 ──
   /* 巨型蜈蚣（ver -423）：**三張時段差分**（Ray 指定：上午下午 day、晚上 night、
      黃昏黎明 dd）。解析在 `modules/enemy.js` 的 `enemyImage()`，那裡是唯一一處。 */
-  enemy_centipi_day:   "resources/enemy/Centipi_day.webp",
-  enemy_serpent_day:   "resources/enemy/Serpent_day.webp",     // 羽蛇（ver -500，Ray 的卡）
-  enemy_pirate_day:    "resources/enemy/Pirateship_day.webp",   // 空賊船（ver -509，Ray 的卡）
-  enemy_pirate_dd:     "resources/enemy/Pirateship_DD.webp",
-  enemy_pirate_night:  "resources/enemy/Pirateship_night.webp",
-  enemy_serpent_dd:    "resources/enemy/Serpent_DD.webp",
-  enemy_serpent_night: "resources/enemy/Serpent_night.webp",
-  enemy_centipi_night: "resources/enemy/Centipi_night.webp",
-  enemy_centipi_dd:    "resources/enemy/Centipi_DD.webp",
+  enemy_centipi_day:   "resources/enemy/centipi_day.webp",
+  enemy_serpent_day:   "resources/enemy/serpent_day.webp",     // 羽蛇（ver -500，Ray 的卡）
+  enemy_pirate_day:    "resources/enemy/pirateship_day.webp",   // 空賊船（ver -509，Ray 的卡）
+  enemy_pirate_dd:     "resources/enemy/pirateship_dd.webp",
+  enemy_pirate_night:  "resources/enemy/pirateship_night.webp",
+  enemy_serpent_dd:    "resources/enemy/serpent_dd.webp",
+  enemy_serpent_night: "resources/enemy/serpent_night.webp",
+  enemy_centipi_night: "resources/enemy/centipi_night.webp",
+  enemy_centipi_dd:    "resources/enemy/centipi_dd.webp",
   /* ══ 新怪圖：卡是 `newcards` 建的「最普通的怪」，數值等 Ray 手動改 ══ */
   enemy_bug_mantis:               "resources/enemy/mon_bug_mantis.webp",
   enemy_relic_bellascetic:        "resources/enemy/mon_relic_bellascetic.webp",
   enemy_rictus_hooked:            "resources/enemy/mon_rictus_hooked.webp",
-  inspector_renna:     "resources/SI/Renna_SI_front.webp",         // 讀取頁的說明者（出航後）
+  inspector_renna:     "resources/si/renna_si_front.webp",         // 讀取頁的說明者（出航後）
   /* ⚠ ver -1037：破防計量表的月牙（`clasp_moon` / `clasp_moon_frame`）**已退場**
      —— Ray：「放棄原本的計量設計，改成以角色圓頭像為中心…」。兩張圖仍留在
      `resources/vfx/`（他的原圖，沒有回收），但**不再登記進 ASSETS**：留著只會讓
      開機那一批白抓兩張沒有人要用的圖。要回頭用把這兩行接回來就行。 */
   /* ── 副武器切換鈕的類別徽章（ver -549，Ray 交件：連射/散射/高爆）──
      原檔白底 → 轉檔時沿金環裁圓去背、縮 256（原 PNG 在 _originals/vfx）。 */
-  switch_mg:    "resources/vfx/Switch_MG.webp",
-  switch_split: "resources/vfx/Switch_Split.webp",
-  switch_hyper: "resources/vfx/Switch_Hyper.webp",
+  switch_mg:    "resources/vfx/switch_mg.webp",
+  switch_split: "resources/vfx/switch_split.webp",
+  switch_hyper: "resources/vfx/switch_hyper.webp",
   /* 主武器（ver -699）：交叉雙槍＝整備頁的卡；單槍留著給日後的改裝頁。 */
-  weapon_ganymede_ab:   "resources/weapon/GanymedeAB.webp",       // 迦尼米德 α（上）＋β（下）＝整備頁的卡
-  weapon_ganymede_twin: "resources/weapon/GanymedeTwin.webp",     // 交叉雙槍（備用）
-  weapon_ganymede:      "resources/weapon/Ganymede.webp",         // 迦尼米德 單支（黑底）
-  weapon_mg_squall:     "resources/weapon/MG_Squall.webp",       // 重機槍 Squall
-  weapon_shotgun_blast: "resources/weapon/Shotgun_Blast.webp",   // 散彈槍 Blast
-  weapon_sniper_falcon: "resources/weapon/Sniper_Falcon.webp",   // 狙擊槍 Falcon
+  weapon_ganymede_ab:   "resources/weapon/ganymedeab.webp",       // 迦尼米德 α（上）＋β（下）＝整備頁的卡
+  weapon_ganymede_twin: "resources/weapon/ganymedetwin.webp",     // 交叉雙槍（備用）
+  weapon_ganymede:      "resources/weapon/ganymede.webp",         // 迦尼米德 單支（黑底）
+  weapon_mg_squall:     "resources/weapon/mg_squall.webp",       // 重機槍 Squall
+  weapon_shotgun_blast: "resources/weapon/shotgun_blast.webp",   // 散彈槍 Blast
+  weapon_sniper_falcon: "resources/weapon/sniper_falcon.webp",   // 狙擊槍 Falcon
 
   /* ── 音效 / BGM / 語音（預留槽）───────────────────────────────────────────
    *  目前 audio.js 為 no-op 骨架（合成音尚未搬回），這裡先掛 null 佔位；
@@ -4284,8 +4284,8 @@ export const ASSETS = {
        Ray 確認「是要當艦砲用的」，轉檔時一併正名成 `se_weapon_cannon_120mm`。 */
   se_ship_cannon:    "resources/audio/se/se_weapon_cannon_120mm.m4a",   // 艦砲（步槍在船戰也用它）
   se_ship_heavygun:  "resources/audio/se/se_weapon_heavygun.m4a",       // 船戰的機槍
-  se_enemy_centipi:  "resources/audio/se/Se_enemy_centipi.m4a",         // 巨型蜈蚣（登場／攻擊）
-  se_enemy_serpent:  "resources/audio/se/Se_enemy_serpent.m4a",   // 羽蛇出場（ver -500）
+  se_enemy_centipi:  "resources/audio/se/se_enemy_centipi.m4a",         // 巨型蜈蚣（登場／攻擊）
+  se_enemy_serpent:  "resources/audio/se/se_enemy_serpent.m4a",   // 羽蛇出場（ver -500）
   /* ⚠⚠⚠ 王座徘徊者的龍吟（ver -1434，Ray：「龍的追擊戰每一場出場都要有龍吟，
      同攻擊音效 `se_enemy_roardeer`」）—— 四張龍卡的 `entrance` 都指它。
      ⚠⚠ **登場音走 `asset(key)` 查的是這張表，不是 `SE_FILES`**：那一支
@@ -4320,7 +4320,7 @@ export const ASSETS = {
      ⚠ 它還是 **mp3**（316 KB）；§6.6 規約是 AAC/m4a，但這台機器沒有轉檔工具。
        轉檔時**檔名別改**（改了 ASSETS 與這一行的註解都要跟著動），
        而且轉檔不改響度，所以下面那個增益不必重算。 */
-  se_sleep:          "resources/audio/se/Se_sleep.mp3",
+  se_sleep:          "resources/audio/se/se_sleep.mp3",
   // 聖徒化發動音效
   //  ⚠ 素材「內容」更新但檔名不變時,在路徑加/升 ?v=N 強制手機重抓(HTTP 快取以 URL 為鍵)。
 /* 咬痕特效圖（ver -761，Ray 交件）：CSS 背景用同一路徑 —— 這裡登記只為了
@@ -4369,8 +4369,8 @@ export const ASSETS = {
      ⚠ `?v=2`：諾薇兒那支是**同名覆蓋**（-893 那版已被新錄音取代），必掛 buster（§5）。 */
   vo_nou_saintreload:"resources/audio/vo/vo_nouvelle_saintreload.m4a?v=2",
   vo_anya_nireload:  "resources/audio/vo/vo_anya_nightmarereload.m4a",
-  cutin_saintreload: "resources/CI/CI_Nouvelle_saintreload.webp",
-  cutin_nireload:    "resources/CI/CI_Anya_Nightmarereload.webp",
+  cutin_saintreload: "resources/ci/ci_nouvelle_saintreload.webp",
+  cutin_nireload:    "resources/ci/ci_anya_nightmarereload.webp",
   /* 索菈娜語音（ver -818，Ray 交件）——共鬥發動 pack/pack2 輪播、共鬥結束 obe、
      供給技 supply；pack2 另作 man_sorana 敵登場音。 */
   vo_sorana_pack:    "resources/audio/vo/vo_sorana_pack.m4a?v=2",   // ?v=2：ver -837 新錄音同名覆蓋
@@ -4435,17 +4435,17 @@ export const ASSETS = {
      pistol_01/02 的 ASSETS 鍵已清（ver -567）——音檔本身仍在 SE_FILES（劇情層在用），別刪檔。 */
   se_pistol_03:      "resources/audio/se/se_weapon_pistol_03.m4a",  // 普攻槍聲（現行）
   /* 鹿主的櫻花狂亂（ver -899，Ray：「音效用 sturm」）—— 與飛行頁的加速音同一支檔案
-     （那邊是 `../resources/audio/se/Sturm.m4a`，非 module 頁面自己 new Audio）。
+     （那邊是 `../resources/audio/se/sturm.m4a`，非 module 頁面自己 new Audio）。
      ⚠ 它**不是**一次性受擊音：由 `enemy.spawnSakura` 用 `SFX.playCue` 播、兩秒淡出，
        所以 `HITFX.sakura` 那一列刻意沒有 `se`（見那裡的說明）。
      ⚠ 增益查表的鑰匙是**檔名**（`sturm`），`tuning.fileGain` 早就有那一列。 */
-  se_sturm:          "resources/audio/se/Sturm.m4a",
+  se_sturm:          "resources/audio/se/sturm.m4a",
 
   // BGM（loop、不可交疊，切歌時前一首淡出）。
   //  BGM 一律 .m4a（AAC-LC 96k，自 128k MP3 轉檔，體積 −24%）：全平台原生支援；
   //  .mp3 母帶在 resources/audio/bgm/_master/，需要重轉時用 ffmpeg -c:a aac -b:a 96k。
   bgm_home:      "resources/audio/bgm/bgm_mainmenu.m4a",       // 主選單（含次要選單）
-  bgm_crisis:     "resources/audio/bgm/PerituneMaterial_Crisis_loop.m4a",   // 劇情/教學的緊張曲；教學結算也用它（ver -361，Ray：結算不要 result BGM）
+  bgm_crisis:     "resources/audio/bgm/peritunematerial_crisis_loop.m4a",   // 劇情/教學的緊張曲；教學結算也用它（ver -361，Ray：結算不要 result BGM）
   /* ══ 北方泊地那一段的三首（ver -614，Ray 交辦）══
        抵達／城鎮戰打完到 BOSS 登場前 → `bgm_suspense`（Suspense6）
        城鎮戰進行中                   → `bgm_crisis`（既有那一首）
@@ -4453,42 +4453,42 @@ export const ASSETS = {
      ⚠ 兩首新的都要進 Credit（Ray 指定，見 index.html 的 BGM Source）。
      ⚠ 兩首都用 **m4a**（§6.6 的規約）：ogg 在 Safari 17 以前整個不支援，
        手機上會變成「那一段沒有音樂」。Crimson_Moon 的 m4a 版由 Ray 於 -615 補上。 */
-  bgm_suspense:   "resources/audio/bgm/PerituneMaterial_Suspense6_loop.m4a",
+  bgm_suspense:   "resources/audio/bgm/peritunematerial_suspense6_loop.m4a",
   /* 船戰兩首（ver -741，Ray：「船戰禍魘默認這一首」「船戰的空賊戰定成 bgm_piratebattle」）。
      禍魘船戰的「默認」規則在 battleBgm.shipHarm（main.battleBgmOf 讀）；
      空賊寫在 flight_pirate 卡上。 */
-  bgm_epicbattle:   "resources/audio/bgm/PerituneMaterial_EpicBattle_loop.m4a",
+  bgm_epicbattle:   "resources/audio/bgm/peritunematerial_epicbattle_loop.m4a",
   /* 安雅為夥伴時的戰鬥曲（ver -873，Ray 指定 BattleField4——混亂 session 遺失件補回）。 */
-  bgm_battlefield4: "resources/audio/bgm/PerituneMaterial_BattleField4.m4a",
-  bgm_frosylva:     "resources/audio/bgm/PeriTune_Frosylva.m4a",   // 木雅克神殿（ver -876）
-  bgm_lostplace:    "resources/audio/bgm/PerituneMaterial_Lost_place4_loop.m4a",   // 鹿主異化～戰鬥（ver -877）
-  bgm_moonlit:      "resources/audio/bgm/Peritune_Moonlit_Dancer_loop.m4a",        // 聖索菲亞城（ver -1247）
-  bgm_blackcrystal: "resources/audio/bgm/Peritune_Black_Crystal_loop.m4a",         // 伊甸古墓（ver -1247）
-  bgm_taisho2:      "resources/audio/bgm/PerituneMaterial_TaishoRoman_Theme2_loop.m4a",   // 拉芬斯達爾城（ver -1248）
+  bgm_battlefield4: "resources/audio/bgm/peritunematerial_battlefield4.m4a",
+  bgm_frosylva:     "resources/audio/bgm/peritune_frosylva.m4a",   // 木雅克神殿（ver -876）
+  bgm_lostplace:    "resources/audio/bgm/peritunematerial_lost_place4_loop.m4a",   // 鹿主異化～戰鬥（ver -877）
+  bgm_moonlit:      "resources/audio/bgm/peritune_moonlit_dancer_loop.m4a",        // 聖索菲亞城（ver -1247）
+  bgm_blackcrystal: "resources/audio/bgm/peritune_black_crystal_loop.m4a",         // 伊甸古墓（ver -1247）
+  bgm_taisho2:      "resources/audio/bgm/peritunematerial_taishoroman_theme2_loop.m4a",   // 拉芬斯達爾城（ver -1248）
   /* ⚠⚠ 東方泊地（ver -1251，Ray：「東泊放這首」）。**這座城還沒有地圖內容**
      （`script/town.js` 沒有 `eastport`，12 張 `East_*` 背景一張都還沒交），
      所以這一首**現在還沒有人叫它** —— 素材、鑰匙、增益、Credit 先備好，
      `TOWNS.eastport` 建起來的那一刻只要寫 `bgm:'portside'` 就接上。
      ⚠ 先進來是刻意的：等到要用才補，就是 §6.6 那條「加音檔忘了補 fileGain」的溫床。 */
-  bgm_portside:     "resources/audio/bgm/Peritune_Portside_Cafe_loop.m4a",                // 東方泊地（ver -1251，待 TOWNS.eastport）
+  bgm_portside:     "resources/audio/bgm/peritune_portside_cafe_loop.m4a",                // 東方泊地（ver -1251，待 TOWNS.eastport）
   /* ══ 貝利薩爾那一段的三首（ver -1350，Ray 交件）══════════════════════════
      · `numina`    古城（`TOWNS.belisar.bgm`）
      · `gothic`    追擊戰開始之後 —— ⚠⚠ **到飛行畫面也要繼續不停**（見下）
      · `irregular` 飛行戰（空中戰）換成這一首
      ⚠⚠⚠ **`gothic` 只有 7.7 秒**（檔名就寫著 `loop_intro`，而庫裡沒有對應的
        loop 本體）—— 整段追擊＋上船都循環這 7.7 秒會很明顯。已回報 Ray。 */
-  bgm_numina:       "resources/audio/bgm/PerituneMaterial_Numina_loop.m4a",                 // 貝利薩爾古城（ver -1350）
+  bgm_numina:       "resources/audio/bgm/peritunematerial_numina_loop.m4a",                 // 貝利薩爾古城（ver -1350）
   /* ⚠⚠ ver -1421（Ray：「追擊戰音樂改用這個 PerituneMaterial_Gothic_Dark_loop」）：
      原本指的是 `..._loop_intro` —— 那是 intro／loop 成對檔裡的 **intro 那一半**，
      只有 **7.78 秒**而且末秒仍滿音量沒收尾，所以聽起來是一段八秒的東西一直重播
      （-1420 Ray 回報「追擊戰的音樂是壞的」）。主體檔到了，改指它。 */
-  bgm_gothic:       "resources/audio/bgm/PerituneMaterial_Gothic_Dark_loop.m4a",            // 追擊戰（-1350；-1421 改指主體檔）
-  bgm_irregular:    "resources/audio/bgm/PerituneMaterial_Irregular_loop.m4a",
-  bgm_prairie:      "resources/audio/bgm/PerituneMaterial_Prairie4_loop.m4a",                // 平原古道（ver -1408，Ray 指定）
+  bgm_gothic:       "resources/audio/bgm/peritunematerial_gothic_dark_loop.m4a",            // 追擊戰（-1350；-1421 改指主體檔）
+  bgm_irregular:    "resources/audio/bgm/peritunematerial_irregular_loop.m4a",
+  bgm_prairie:      "resources/audio/bgm/peritunematerial_prairie4_loop.m4a",                // 平原古道（ver -1408，Ray 指定）
   /* 尼莫戰的預設曲（ver -1508，Ray：「PerituneMaterial_Prairie5_loop　Nemo 尼莫戰預設 bgm」）。
      ⚠ **尼莫那一場的戰鬥卡還不存在** —— 這一筆先把曲子接進管線（預載、音量、Credit），
        卡寫好之後在卡上寫 `bgm:'nemo'` 就會吃到它（`bgmSrc` 會退回 `asset('bgm_'+名字)`）。 */
-  bgm_nemo:         "resources/audio/bgm/PerituneMaterial_Prairie5_loop.m4a",                // 尼莫戰（ver -1508，Ray 指定）
+  bgm_nemo:         "resources/audio/bgm/peritunematerial_prairie5_loop.m4a",                // 尼莫戰（ver -1508，Ray 指定）
   /* ══⚠⚠⚠ **東方泊地那一夜的兩首**（ver -1520，Ray 交件並指定進 Credit）══════════
      · `glasscradle` ＝ **安雅與米夏**那幾拍（旅店長談的米夏注視 CI、隔日審訊說破
        「謝索洛夫殿下」那一句）—— Ray 的括號寫的就是使用場景：`(Anya & Misha)`
@@ -4505,23 +4505,23 @@ export const ASSETS = {
      ⚠⚠ **`tuning.fileGain` 還沒量**（見那一節的空位）：沒有那一列＝增益 1
        ＝以母帶響度播出（§6.6）。檔案到了要跑 `tools/audio_scan.html` 補上，
        **不要憑感覺填一個數字**。 */
-  bgm_glasscradle:  "resources/audio/bgm/Peritune_Glass_Cradle_loop.m4a",                   // 安雅與米夏（ver -1520，Ray 指定）
-  bgm_echoedart:    "resources/audio/bgm/Peritune_Echoed_Art.m4a",                          // 守夜（ver -1520，Ray 指定）
+  bgm_glasscradle:  "resources/audio/bgm/peritune_glass_cradle_loop.m4a",                   // 安雅與米夏（ver -1520，Ray 指定）
+  bgm_echoedart:    "resources/audio/bgm/peritune_echoed_art.m4a",                          // 守夜（ver -1520，Ray 指定）
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿）。 */
   /* 鏡湖的預設曲（ver -1542，Ray：「鏡湖預設 bgm 為 PeriTune_Sylblanc_loop」）。
      ⚠ 這是**這張圖自己的**那一首（`TOWNS.lake.bgm`）—— 尼莫戰的 `bgmAfter:'@town'`
        接回來的就是它（見那張卡）。 */
-  bgm_sylblanc:     "resources/audio/bgm/PeriTune_Sylblanc_loop.m4a",                     // 鏡湖（ver -1542，Ray 指定）
-  bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",
-  bgm_whirlwind:    "resources/audio/bgm/Peritune_Whirlwind.m4a",   // 索菈娜為夥伴的戰鬥曲（ver -837；ver -1105 刪掉下面那份重複的）
-  bgm_whistling:    "resources/audio/bgm/Peritune_Whistling_Winds_loop.m4a",
+  bgm_sylblanc:     "resources/audio/bgm/peritune_sylblanc_loop.m4a",                     // 鏡湖（ver -1542，Ray 指定）
+  bgm_misty:        "resources/audio/bgm/peritune_misty_hollow_loop.m4a",
+  bgm_whirlwind:    "resources/audio/bgm/peritune_whirlwind.m4a",   // 索菈娜為夥伴的戰鬥曲（ver -837；ver -1105 刪掉下面那份重複的）
+  bgm_whistling:    "resources/audio/bgm/peritune_whistling_winds_loop.m4a",
   /* ver -745：Ray 交專用戰鬥圖（man_sorana.jpg → webp，原檔入 _originals）。 */
   enemy_man_sorana: "resources/enemy/man_sorana.webp",
-  bgm_crimson:    "resources/audio/bgm/Peritune_Crimson_Moon_loop.m4a",
+  bgm_crimson:    "resources/audio/bgm/peritune_crimson_moon_loop.m4a",
   /* 打靶場（計時挑戰）專屬曲（ver -658（-893 前用詞），Ray：「所有打靶遊戲都用這個音樂」）。
      ⚠ 哪一場用它**不寫在卡上**而是規則：見下面的 `battleBgm.timeAttack`。 */
-  bgm_hopstep:    "resources/audio/bgm/Peritune_Hopstep_Battle_loop.m4a",
+  bgm_hopstep:    "resources/audio/bgm/peritune_hopstep_battle_loop.m4a",
   bgm_battle:    "resources/audio/bgm/bgm_battle.m4a",      // 戰鬥（驅逐開始插入瞬間起播）
   bgm_lose:      "resources/audio/bgm/bgm_missionfailed.m4a", // 任務失敗（驅逐失敗插入起播）
   bgm_result:    "resources/audio/bgm/bgm_result.m4a",      // 結算（驅逐完成頁被點掉後起播）

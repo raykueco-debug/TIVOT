@@ -569,8 +569,8 @@ function typeFinish(el, text){
 /* ══ 演出層（ver -315）══════════════════════════════════════════════
    line 上的**演出欄位**，全部「只寫變化」：省略＝沿用上一句的狀態。
 
-     bg:'HolyseeDungeonWhole'   背景（resources/background/*.webp）。bg:null 清掉
-     cg:'001_Nouvelle_Fell'     全屏插圖（resources/illustration/*.webp）。cg:null 清掉
+     bg:'holyseedungeonwhole'   背景（resources/background/*.webp）。bg:null 清掉
+     cg:'001_nouvelle_fell'     全屏插圖（resources/illustration/*.webp）。cg:null 清掉
      cgPan:'up' / 'down'        這一句的 CG 平移（up＝由下往上、down＝由上往下）
      cgScale:1.18               插圖**直接放大**這個倍率（不做放大動畫，一上來就這麼大）；
                                 要動的話配 cgPan 一起寫。與 cgZoom 互斥（那個是推近的過程）
@@ -608,42 +608,42 @@ const BG_DIR='resources/background/', CG_DIR='resources/illustration/', SI_DIR='
    ⚠ 這份清單由 `tools/script_lint.py` 對照 resources/audio/bgm/ 檢查；
      加了新檔案而忘了加進來，lint 會報「表裡沒有」。 */
 const BGM_FILES=[
-  'Bgm_Lunaria.m4a', 'PerituneMaterial_Crisis_loop.m4a', 'bgm_Capital_Day.m4a',
+  'bgm_lunaria.m4a', 'peritunematerial_crisis_loop.m4a', 'bgm_capital_day.m4a',
   'bgm_battle.m4a', 'bgm_boss.m4a', 'bgm_flight.m4a', 'bgm_mainmenu.m4a',
   'bgm_missionfailed.m4a', 'bgm_result.m4a',
   /* 北方泊地那一段（ver -614；-615 Ray 補上 m4a 版）。
      ⚠ 一律用 m4a（§6.6 的規約）：ogg 在 Safari 17 以前整個不支援，
        手機上會變成「那一段沒有音樂」。 */
-  'PerituneMaterial_Suspense6_loop.m4a', 'Peritune_Crimson_Moon_loop.m4a',
-  'PerituneMaterial_Entangle.m4a',   // 北方泊地那一夜（ver -656，Ray 指定；Credit 已加）
+  'peritunematerial_suspense6_loop.m4a', 'peritune_crimson_moon_loop.m4a',
+  'peritunematerial_entangle.m4a',   // 北方泊地那一夜（ver -656，Ray 指定；Credit 已加）
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿；Credit 已加）。
      Whirlwind（-747）：索菈娜插畫登場那一拍就起，戰鬥卡同一首＝開打不換曲。 */
-  'Peritune_Misty_Hollow_loop.m4a', 'Peritune_Whistling_Winds_loop.m4a',
-  'Peritune_Whirlwind.m4a',
-  'PeriTune_Harbor_Morning_loop.m4a',   // ver -753：stage5 起的北泊（rebuild.bgm；Credit 已加）
+  'peritune_misty_hollow_loop.m4a', 'peritune_whistling_winds_loop.m4a',
+  'peritune_whirlwind.m4a',
+  'peritune_harbor_morning_loop.m4a',   // ver -753：stage5 起的北泊（rebuild.bgm；Credit 已加）
   'bgm_warhorn.m4a',   // ver -772：夏爾村魔獸來襲（警鐘後緊接，loop）
-  'PeriTune_Frosylva.m4a',   // ver -876：木雅克神殿（Ray 指定；Credit 已加）
-  'PerituneMaterial_Lost_place4_loop.m4a',   // ver -877：鹿主異化～戰鬥（Ray 指定；Credit 已加）
+  'peritune_frosylva.m4a',   // ver -876：木雅克神殿（Ray 指定；Credit 已加）
+  'peritunematerial_lost_place4_loop.m4a',   // ver -877：鹿主異化～戰鬥（Ray 指定；Credit 已加）
   /* ══⚠⚠ 四座城的曲子（ver -1294）══ 音檔、`fileGain`、Credit 早就到齊了，
      漏的一直是**這張表** —— 於是 `bgmSrc()` 回 null，進城只印一行
      「沒有這首 BGM」然後**延用進城前那一首**（不報錯、不靜音，所以很難發現）。
      ⚠⚠ 成因是鐵律 7：「有哪些 BGM」存在**兩個地方** —— `config.js` 的
        `ASSETS.bgm_*`（預載用）與這裡（播放用）。交件時只補了 config 那一半。
        **日後加曲子兩邊都要補**，或把這兩張表收斂成一份。 */
-  'Peritune_Moonlit_Dancer_loop.m4a',   // ver -1294：聖索菲亞城（config 的 bgm_moonlit）
-  'Peritune_Black_Crystal_loop.m4a',   // ver -1294：伊甸古墓（bgm_blackcrystal）
-  'PerituneMaterial_TaishoRoman_Theme2_loop.m4a',   // ver -1294：拉芬斯達爾城（bgm_taisho2）
-  'Peritune_Portside_Cafe_loop.m4a',   // ver -1294：東方泊地（bgm_portside）
-  'PerituneMaterial_Prairie4_loop.m4a',   // ver -1408：平原古道（bgm_prairie）
-  'PerituneMaterial_Gothic_Dark_loop.m4a',   // ver -1421：追擊戰的**主體檔**（-1350 一直只有 7.8 秒的 intro）
-  'PerituneMaterial_Prairie5_loop.m4a',   // ver -1508：尼莫戰（bgm_nemo）
+  'peritune_moonlit_dancer_loop.m4a',   // ver -1294：聖索菲亞城（config 的 bgm_moonlit）
+  'peritune_black_crystal_loop.m4a',   // ver -1294：伊甸古墓（bgm_blackcrystal）
+  'peritunematerial_taishoroman_theme2_loop.m4a',   // ver -1294：拉芬斯達爾城（bgm_taisho2）
+  'peritune_portside_cafe_loop.m4a',   // ver -1294：東方泊地（bgm_portside）
+  'peritunematerial_prairie4_loop.m4a',   // ver -1408：平原古道（bgm_prairie）
+  'peritunematerial_gothic_dark_loop.m4a',   // ver -1421：追擊戰的**主體檔**（-1350 一直只有 7.8 秒的 intro）
+  'peritunematerial_prairie5_loop.m4a',   // ver -1508：尼莫戰（bgm_nemo）
   /* ══⚠⚠⚠ 東方泊地那一夜的兩首（ver -1520，Ray 交件）══
      ⚠⚠ **這兩支在這台 Windows 上還沒有** —— Ray：「先寫，切回 mac 後就可以接上」。
        在那之前 `bgmSrc` 照樣回得出路徑、`playBgm` 抓不到就靜靜不出聲（不報錯）。
      ⚠⚠⚠ **Mac 上跑 `tools/script_lint.py` 會逐項對照資料夾** ——
        名字拼錯就報「BGM_FILES 表指到不存在的檔案」，照那一行改檔名。 */
-  'Peritune_Glass_Cradle_loop.m4a',   // ver -1520：安雅與米夏（bgm_glasscradle）
-  'Peritune_Echoed_Art.m4a',          // ver -1520：守夜（bgm_echoedart）
+  'peritune_glass_cradle_loop.m4a',   // ver -1520：安雅與米夏（bgm_glasscradle）
+  'peritune_echoed_art.m4a',          // ver -1520：守夜（bgm_echoedart）
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
@@ -771,6 +771,11 @@ export function bandNames(base, noTime){
      它會去改**名字本身**（→`East_firearm`），那不是時段變體，是把檔名寫錯。
      無害（排在真檔之後，永遠試不到）但語意是錯的，而且真檔缺席時會多一個
      看不懂的 404。 */
+  /* ══⚠⚠⚠ **ver -1554：全庫檔名已改成小寫**（Ray：「把檔案全改成小寫吧」）══
+     所以時段尾綴**一律先試小寫**（`clock.band()` 出的是 `Dawn/Day/Dusk/night/midnight`，
+     大寫那一版現在一張都不存在）。
+     ⚠ `altCase` 那條**留著不刪**：它是「美術交件大小寫不一致」的**保險絲**，
+       而那正是這一輪的起因。留著的代價只有「真檔缺席時多一個 404」。 */
   const groups=[];
   const pushG=(n, band)=>{
     if(!n) return;
@@ -780,7 +785,7 @@ export function bandNames(base, noTime){
   if(noTime) pushG(base, false);
   else{
     const cur=clock.band();
-    for(const b of (BAND_FALL[cur] || [cur,'Day'])) pushG(base+'_'+b, true);
+    for(const b of (BAND_FALL[cur] || [cur,'Day'])) pushG(base+'_'+b.toLowerCase(), true);
     pushG(base, false);
   }
   const out=[], seen=new Set();
@@ -803,7 +808,7 @@ export function bandNames(base, noTime){
    顯示卻抓沒版本的舊快取（或反過來），而且**看起來只是「圖沒換」**。
    現在 town 改叫 `bgUrl()`（就是這一支），版本尾巴自然兩邊一致。 */
 /* ══⚠⚠ **背景依區域分資料夾**（ver -1376，Ray：「把背景按區域整理成資料夾」）══
-   資料上寫的 `bg` 是**基底名**（`bg:'Capital_Square'`），裡面沒有資料夾資訊 ——
+   資料上寫的 `bg` 是**基底名**（`bg:'capital_square'`），裡面沒有資料夾資訊 ——
    由 `script/bg_index.js` 的 `bgFolder()` 補上那一段。
    ⚠⚠⚠ 那張表是 `tools/bg_index.py` **掃出來的**（事實），不是靠前綴推的（規則）：
      前綴怪的那十幾張（`Captal_Guild_*` 打錯字的帝都、`LunariaOffice`、`_canyon_map`…）
@@ -1607,12 +1612,12 @@ function applyPersist(line){
    鍵 ＝ 檔名去副檔名、**轉小寫**（查表也轉小寫 → 腳本寫 `se_Fall` 或 `se_fall` 都行）。
    ⚠ 這份清單由 `tools/script_lint.py` 對照 resources/audio/se/ 檢查。 */
 const SE_FILES=[
-  'Se_enemy_Saintroar.m4a', 'Sturm.m4a', 'se_Fall.m4a', 'se_Kerberos_gear.m4a',
-  'se_Kerberos_open.m4a', 'se_Kerberos_pop.m4a', 'se_Kerberos_steam.m4a',
+  'se_enemy_saintroar.m4a', 'sturm.m4a', 'se_fall.m4a', 'se_kerberos_gear.m4a',
+  'se_kerberos_open.m4a', 'se_kerberos_pop.m4a', 'se_kerberos_steam.m4a',
   'se_kerberos_drop.m4a',                                    // 槍棺落地（旅店那一幕，ver -392）
   'se_enemy_dagger.m4a', 'se_dart_fail.m4a',                 // 固定立靶點錯（ver -397）
   /* 船艦戰（ver -423／-425）：蜈蚣的攻擊音、艦砲、船戰用的機槍。 */
-  'Se_enemy_centipi.m4a', 'se_weapon_cannon_120mm.m4a', 'se_weapon_heavygun.m4a',
+  'se_enemy_centipi.m4a', 'se_weapon_cannon_120mm.m4a', 'se_weapon_heavygun.m4a',
   'se_enemy_revolver.m4a', 'se_enemy_shot.m4a', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
   'se_land.m4a',   // 著岸（ver -744，湖上甲板）
   'se_woodbreak.m4a',   // 舵斷裂的木裂聲（ver -751，Ray 交件；取代暫代的 se_brickcrush）
@@ -1630,7 +1635,7 @@ const SE_FILES=[
   'se_enemy_roardeer.m4a',   // 樹靈鹿主的吼（ver -879，Ray 交件；配變異那一拍的紫炎）
   'se_enemy_sakura.m4a',     // 櫻花狂亂的受擊音（ver -899，鹿主的主動攻擊）
   'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
-  'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunaMG.m4a', 'se_punch.m4a',
+  'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunamg.m4a', 'se_punch.m4a',
   'se_brickcrush.m4a',                                       // 瓦礫崩落（北方泊地教堂，ver -624）
   /* ══ 王座徘徊者那一段（ver -1433，Ray 交辦；-1443 補 `se_dragonbite`）══
      · **`se_dragonbite`**      牠咬下去（蕾娜「啊……」＝吞掉髮飾那一拍，ver -1443 Ray 指定）
@@ -1652,7 +1657,7 @@ const SE_FILES=[
      —— 這張表是照 `vo_` 前綴推資料夾的，列進來會指到 `vo/` 而 404。
      它本來就在 `ASSETS.se_luna_mb`（開機那一批照樣預載得到），所以這裡直接不列。 */
   'se_saint_install.m4a', 'se_steps.m4a', 'se_ui_click.m4a',
-  'se_ginclick.m4a', 'Se_Tummy.m4a', 'se_metalclip.m4a', 'se_SailorShout.mp3',
+  'se_ginclick.m4a', 'se_tummy.m4a', 'se_metalclip.m4a', 'se_sailorshout.mp3',
   /* stage7・木雅克神殿（ver -922，Ray 交件）：古代機械開門的金屬聲、深處的禍魘咆哮。 */
   'se_metalopen.m4a', 'se_monsterroardeep.m4a',
   /* `se_waterfall`（ver -1413 接線、**-1414 Ray 交了真檔**）——
@@ -1878,7 +1883,7 @@ const SENSE_BEATS=[450, 1610, 2780, 3940];
 const SENSE_CLIMAX=2;
 /* ⚠ 同一張圖兩邊共用（飛行頁 canvas／這裡 DOM）—— 路徑帶 `?v=2`：Ray 換過圖，
    不掛 cache-buster 會拿到舊的那一份（§5）。 */
-const SENSE_CI_SRC='resources/partner/Anya_CI_Search.webp?v=2';
+const SENSE_CI_SRC='resources/partner/anya_ci_search.webp?v=2';
 const SENSE_BURST_AT=SENSE_BEATS[SENSE_CLIMAX];
 /* ⚠ `HOLD` 要**撐過換背景那一拍**：那一拍在 4400ms 起跑（`town.js` 的 `auto`），
    `swapImg` 再淡 220ms —— 所以白光最早只能在 2780+2000＝4780ms 才開始淡，
@@ -2118,7 +2123,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1553';
+const KERB_V='?v=1554';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
