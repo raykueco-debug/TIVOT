@@ -5633,8 +5633,25 @@ export const TOWNS = {
             /* ⚠ 他的**每一句**都要 `dark:true`（漏一句就是揭曉，見上面那一段）。 */
             { speaker:'MISHA_X', tiny:true, dark:true, text:'И что я скажу душам погибших?..' },
             { speaker:'MISHA_X', tiny:true, dark:true, text:'！！' },
-            { speaker:'MISHA_X', tiny:true, dark:true, text:'За тобой слежка.' },
-            any('scare',''),
+            /* ══⚠⚠⚠ **米夏回頭：獨自跟上那一條也要**（ver -1560，Ray：「如果沒有叫
+               蕾娜，獨自跟上安雅的路線，米夏回頭就插在？？？：『！！』後面一拍。
+               他的下一句直接在插圖上跑對話框不跑立繪。然後就回到原背景，接安雅 scare」）══
+               ⚠⚠ 與 M1 那一條**不同位置**：那邊插在蕾娜「是不是跟安雅有點像？」之後
+                 （她是旁觀者，那一張是**她看到的**）；這一條沒有蕾娜，主角是自己躲著看的，
+                 所以插在**他察覺有人**的「！！」那一刻 —— 那張圖就是他回頭看過來。
+               ⚠ 這一拍沒有台詞、台上也沒有人（`cg:` 那一刻就清了場，§6.5 ver -1422）
+                 ⇒ 吃得到 `auto`（-628：台上沒人的純演出拍照舊自己跑）。 */
+            { speaker:'NARRATION', text:'',
+              cg:'021-mishalookback', cgNoTime:true, cgRush:true, auto:1400 },
+            /* ⚠⚠ **「直接在插圖上跑對話框不跑立繪」**＝不寫 `cg`（插圖是持續狀態，
+               留著）＋ **明寫 `portrait:{show:false}`** —— 只是不寫 `portrait` 沒有用，
+               引擎查不到就退回 `line.speaker`，等於把他放上台（-1559 在圖書館踩過）。
+               ⚠ `dark:true` 照舊要寫：**他的每一句都要**（漏一句就是揭曉）。 */
+            { speaker:'MISHA_X', tiny:true, dark:true, text:'За тобой слежка.',
+              portrait:{ show:false } },
+            /* 回到原背景。⚠ `cg:null` 也算轉場 ⇒ 會清一次場，而**這一拍自己的立繪**
+               在 `reveal()` 裡上台（跑在清場之後）—— 所以安雅照樣站得出來。 */
+            Object.assign(any('scare',''), { cg:null }),
             /* 稿上的「立繪撤出」：哥哥走掉，安雅留在台上（下一句是她講的）。 */
             { speaker:'NARRATION', text:'', se:'se_walk', auto:1400, hide:['MISHA_X'] },
             any('scare','那、那是……'),
@@ -5971,7 +5988,7 @@ export const TOWNS = {
                會清場、而且要再一拍才收得掉 —— Ray 要的是**一瞬**，所以走
                `fx:'stare'`（`#storyFx` 那一層，下一拍的 `stopFx()` 自己收，
                §6.5「跳一拍就消失」）。 */
-          Object.assign(any('sleepy',''), { fx:'stare', fxCi:'ci_mishastare' }),
+          any('sleepy',''),
           /* ══⚠⚠⚠ **米夏注視那一拍 → 換曲**（ver -1520，Ray：「在米夏注視那一拍
              bgm 換成 Peritune_Glass_Cradle_loop(Anya & Misha)」）══
              ⚠ 順序 Ray 已經確認過，而線上本來就是這樣：**諾薇兒立繪 → 安雅 →
@@ -5980,7 +5997,15 @@ export const TOWNS = {
                撐著（不然走一格就被打回 `portside`，見那一段的說明）。
              ⚠ **圖仍然沒有**（`CI_Misha_eyes`）—— 見上一段註解：圖到了補 `cg:` 在
                這一拍，不要另開一拍。曲子與圖是兩件事，曲子先接。 */
-          Object.assign(any('terrify',''), { bgm:'glasscradle' }),
+          /* ⚠⚠⚠ **CI 出在「`sleepy` 被點掉的那一拍」，不是 `sleepy` 那一拍本身**
+             （ver -1560，Ray：「米夏 ci 太快出，要安雅 sleepy 被點掉的那一拍出」）——
+             -1559 掛在 `sleepy` 上，於是她一打瞌睡那雙眼睛就已經在閃，
+             玩家還沒讀完「她睏了」就先看到嚇人的東西。
+             ⇒ 掛在**這一拍**：玩家點掉睏意的那一下，眼睛與驚嚇同時來。
+             ⚠ 所以這一拍現在有三件事同時發生：閃過的 CI、她的 `terrify`、換曲。
+               那是對的 —— 它們本來就是同一個瞬間。 */
+          Object.assign(any('terrify',''),
+                        { bgm:'glasscradle', fx:'stare', fxCi:'ci_mishastare' }),
           { speaker:'PLAYER', text:'！！' },
           sor('ready','小公主怎麼啦？'),
           any('talk','沒……沒事……'),

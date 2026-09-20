@@ -1199,6 +1199,53 @@ export const CHAPTERS = [
            /* ⭐ 墓門初見 —— 雪都抵達那一段的前置（`need:'tomb_gate'`） */
            'tomb_gate'],
     enter:'town', town:'ravnsdal', node:'square' },
+  /* ══⚠⚠⚠ **Stage 13-BA-M2 ＝ 那一夜「沒有叫蕾娜、獨自跟上」的隔日**
+     （ver -1560，Ray：「在章節選擇加上 Stage13BAM2，起點是旅店隔日，
+       前晚沒有叫蕾娜獨自跟上安雅的路線」）══════════════════════════════════
+     ⚠⚠ **與 13-BA 是同一個岔路的另一邊**：13-BA 走 M1（敲了蕾娜的門、她跟上、
+       隔日有審訊、然後才去雪都）；這一條走 **M2**（自己跟上去）。
+     ⚠⚠⚠ **`ep_night_renna`／`ep_m1_route`／`ep_interrogate` 一支都不能給**：
+       · `ep_night_renna` 是**分岔的鑰匙**（上城區那兩段靠它分邊）——
+         給了就會走成 M1，那正是這一章要避開的那一條。
+       · `ep_interrogate` 的 `need` 是 `ep_m1_route`：**M2 本來就沒有隔日審訊**
+         （蕾娜沒跟去就沒看到米夏）。給它等於憑空多演一段不屬於這條路的戲。
+     ⚠ `ep_m2_route` ＋ `ep_night_mi_done` 要給：前者是「那一夜走的是哪一條」
+       （雪都那幾段的分歧判準，ver -1530），後者是「那一夜過完了」。
+     ⚠ 落點 `eastport/inn`、`clockHour:8` —— M2 那一段的 `clockToday:8` 本來就把
+       時鐘推到隔天早上八點，這一章直接從那一刻開始（＝Ray 說的「旅店隔日」）。
+     ⚠⚠ **雪都那一串一支都不給**（`ep_leave_tomb`／`tomb_gate`／`vn_*`）：
+       這一章要看的是東泊隔日長什麼樣，不是跳去雪都。
+     ⚠ 名字照 Ray 寫的 `Stage13BAM2`；**它的起點比 13-BA 早一站**
+       （13-BA 已經到雪都了），不是它的續篇。 */
+  { id:'stage13bam2', name:'Stage 13-BA-M2', sub:'先 B 後 A・M2：那一夜獨自跟上 → **東泊旅店・隔日**',
+    stage:13, clockHour:8, named:true, aff:{ renna:40 },
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','flight_centipede_met',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
+           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart',
+           'sv_arrive','sv_evening','sv_night_done','shinier_siege',
+           'sv_clear_wild','safehouse_shinier','sv_forest_morning',
+           'sv_forest_go','sv_forest_intro','sv_deer_met','sv_deer_harm',
+           'sr_intro','sr_gate_brazier','sr_gate_bridge','sr_brazier','sr_bridge',
+           'sr_mural','ruins_gate_open','ruins_bell_done','ruins_thug_met','sr_altar',
+           'ruins_altar_on','sv_s8_noon',
+           'sv_s8_home','sv_s8_hungry','sv_s8_dine','sv_s8_corvin',
+           'sv_s9_order','belisar_noland_talk','ep_arrive',
+           'ep_renna_met','ep_renna_night','ep_evening','ep_day2',
+           'belisar_seen',
+           'ep_bel_gorge','ep_bel_sight','ep_bel_enter','bl_foyer_first',
+           'bel_hint2','bel_hint3','bel_water','ep_bel_altar','renna_hairpin_lost',
+           'ep_bel_court','ep_belisar_done','ep_bel_back',
+           'ep_night_raid','ep_hairpin_hunt','belisar_land_ok',
+           'bl_night_land','bl_night_foyer','bl_chase1','bl_chase2','bl_chase3',
+           'bl_chase4','bl_dragon_seen','bl_night_lionstair','bl_chase_talk3',
+           'bl_night_throne','bl_sky_hunt',
+           'bl_night_sky','bl_night_done','renna_t4_ok',
+           /* ── B route 的尾（旅店長談 → 守夜 → **M2：獨自跟上**）──
+              ⚠ 到此為止：`ep_interrogate` 之後那一串是 M1 專屬的。 */
+           'ep_hairpin_talk','ep_night_anya_out','ep_m2_route','ep_night_mi_done'],
+    enter:'town', town:'eastport', node:'inn' },
   /* ══⚠⚠⚠ **Stage 14-BA**（ver -1538 建、**ver -1548 由 13-BA 改號**，Ray：
      「把 stage 13BA 改成 14BA，然後增加 M1 路線的 13BA 於初入雪都」）══════════
      ⚠ 改號的理由：**13 讓給「初入雪都」**（見下一筆）—— 先 B 後 A 的順序是
