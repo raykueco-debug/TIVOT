@@ -1211,7 +1211,7 @@ export function clearCg(){
   const cg=$('storyCg');
   /* ⚠⚠⚠ **`pan-v` 一定要一起拔**（ver -1449，Ray：「蕾娜跌倒插圖不知道為什麼
      連播了三次」）—— 見下面 `startMove` 那一段的完整說明。 */
-  if(cg){ cg.classList.remove('pan-up','pan-down','pan-v','zoom-in');
+  if(cg){ cg.classList.remove('pan-up','pan-down','pan-v','zoom-in','cg-rush');
           cg.style.objectPosition=''; cg.style.transform=''; cg.style.transformOrigin='';
           cg.style.removeProperty('--cg-pan-k'); cg.style.removeProperty('--cg-pan-a');
           cg.style.removeProperty('--cg-pan-b');
@@ -1526,7 +1526,7 @@ function applyPersist(line){
     }else if(cgChanged){ cg.style.transform=''; setCgScale(0); }   // 新圖不繼承舊圖的放大
     if(line.cgPan==='up' || line.cgPan==='down'){
       cg.style.objectPosition='';                // 上一次交棒留下的 inline 取景（見 cgCross）
-      cg.classList.remove('pan-up','pan-down','pan-v','zoom-in');
+      cg.classList.remove('pan-up','pan-down','pan-v','zoom-in','cg-rush');
       cg.style.transform=''; 
       /* ══⚠⚠⚠ **「跌倒插圖連播三次」的真因**（ver -1449，Ray 回報）══════════════
          `.pan-v` 的 animation 帶 `forwards`，而 **-1441 加它的時候只在這一支裡拔**
@@ -1562,11 +1562,22 @@ function applyPersist(line){
         }
       };
       if(cg.complete && cg.naturalWidth) go(); else cg.addEventListener('load', go, {once:true});
+    }else if(line.cgRush){
+      /* ══⚠ **速度模糊進入**（ver -1557，Ray：「效果用速度模糊進入」）══
+         配方在 CSS 的 `.cg-rush`（鐵律 1：形狀是內容，程式只負責掛上去）。
+         ⚠ 與 `cgPan`／`cgZoom` 互斥：三者都在寫 `transform`，同時掛兩個
+           後掛的會整條蓋掉前一個（同 §6.5.4.4 淨化那一條「一個元素只有一份
+           transform」的同一個坑）。所以是 `else if` 不是另開一段。
+         ⚠ 要等圖真的載到才起跑（同上面那兩支）：沒載到就播，前半段是在糊一張空圖。 */
+      cg.classList.remove('pan-up','pan-down','pan-v','zoom-in','cg-rush');
+      cg.style.objectPosition=''; cg.style.transform='';
+      const go=()=>{ void cg.offsetWidth; cg.classList.add('cg-rush'); };
+      if(cg.complete && cg.naturalWidth) go(); else cg.addEventListener('load', go, {once:true});
     }else if(line.cgZoom){
       /* 以臉為中心緩慢推近。cgZoom 給的是**臉在圖上**的位置（0~1）——
          要換成**元素座標**的 transform-origin，因為 object-fit:cover 會把圖裁掉一圈，
          圖上的 0.09 不等於框上的 0.09。 */
-      cg.classList.remove('pan-up','pan-down','pan-v','zoom-in');
+      cg.classList.remove('pan-up','pan-down','pan-v','zoom-in','cg-rush');
       const go=()=>{ cg.style.transformOrigin = coverOrigin(cg, line.cgZoom);
                      void cg.offsetWidth; cg.classList.add('zoom-in'); };
       if(cg.complete && cg.naturalWidth) go(); else cg.addEventListener('load', go, {once:true});
@@ -1576,7 +1587,7 @@ function applyPersist(line){
          停在那裡的取景，重置等於把畫面「啪」一聲拉回原位，那正是這條要避免的。
          ⚠ 所以 `cgCross` 也要把第二層擺到**同一個** object-position（見那裡）。 */
       cg.style.objectPosition='';                // 同上：回到預設取景
-      cg.classList.remove('pan-up','pan-down','pan-v','zoom-in');
+      cg.classList.remove('pan-up','pan-down','pan-v','zoom-in','cg-rush');
       cg.style.transform='';
     }
   };
@@ -2103,6 +2114,36 @@ function fireOneShot(line){
   if(line.fx==='sense') senseFx();
   /* 白光一閃（ver -923，stage7 諾薇兒讀術式那一拍）：與感應那一支共用同一片白
      （`.fx-sense-flash`）—— 差別只有「有沒有光圈」，不另做一份配方（鐵律 7）。 */
+  /* ══⚠⚠ **半透明 CI 一閃而過**（ver -1557，Ray：「加入半透明 ci_mishastare
+     一閃而過，用脈動效果（同探索動畫）跳一拍就消失，se 播 heart beat 但只響一聲，
+     與 ci 動畫同步」）══ 腳本寫 `fx:'stare'` ＋ `fxCi:'<ASSETS 鍵或路徑>'`。
+     ⚠⚠ **與 `fx:'sense'` 是兩件事**：那一支是安雅的感應（3.5 秒、壓暗、光圈、
+       白光、而且會清場），這一支是**一瞬的驚嚇**。共用的只有**脈動那一段的
+       CSS 配方**（`storySenseGhost`）與心跳那一支音檔 —— 不共用流程（鐵律 8：
+       共用的是那一個動作，不是整段演出）。
+     ⚠⚠⚠ **心跳只響一聲**：`se_flight_heartbeat` 是 5.064 秒**四下**
+       （0.45／1.61／2.78／3.94，`SENSE_BEATS`）—— 整支播完會在一拍之內敲四下。
+       所以走 `SFX.playCue` 的把手，在第二下之前（1.15 秒）淡掉。
+       ⚠ 不要為了「一聲」另外切一支音檔：同一個聲音兩份檔案必然走鐘（鐵律 7）。
+     ⚠ 那個停音的計時器**要進 `fxTimers`**：這一拍被點掉時它要跟著死，
+       不然下一拍還會聽到殘響。 */
+  if(line.fx==='stare'){
+    const b=$('storyFx');
+    const src = line.fxCi ? (asset(line.fxCi) || line.fxCi) : null;
+    if(b && src){
+      const gh=document.createElement('img'); gh.className='fx-stare-ghost';
+      gh.src=src; gh.alt=''; gh.style.setProperty('--g-a','.30');
+      gh.style.setProperty('--g-grow','1.22');
+      const ci=document.createElement('img'); ci.className='fx-stare';
+      ci.src=src; ci.alt='';
+      b.appendChild(gh); b.appendChild(ci);
+      const cue = SFX.playCue ? SFX.playCue(seSrc('se_flight_heartbeat'),
+                                            fileGain('se_flight_heartbeat')) : null;
+      if(cue && cue.stop) fxTimers.push(setTimeout(()=>cue.stop(120), 1150));
+      else playSe('se_flight_heartbeat');
+      fxTimers.push(setTimeout(()=>{ gh.remove(); ci.remove(); }, 1500));
+    }
+  }
   if(line.fx==='whiteflash'){ const b=$('storyFx');
     if(b){ const f=document.createElement('div'); f.className='fx-sense-flash';
            b.appendChild(f); fxTimers.push(setTimeout(()=>f.remove(), 2200)); } }
@@ -2126,7 +2167,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1556';
+const KERB_V='?v=1559';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

@@ -506,8 +506,15 @@ def main():
                 if ln.get(f) not in (None, *allowed) and f in ln:
                     err('%s：%s 只能是 up／down／null，收到 %r' % (tag, f, ln[f]))
             # ver -923：stage7 加了兩支（安雅的感應光圈／白光一閃，見 story 的 senseFx）
-            if ln.get('fx') and ln['fx'] not in ('gunfire', 'purpleflame', 'sense', 'whiteflash'):
-                err('%s：fx 只有 gunfire／purpleflame／sense／whiteflash，收到 %r' % (tag, ln['fx']))
+            # ver -1557：`stare`＝半透明 CI 一閃而過（脈動＋一聲心跳），要帶 `fxCi`
+            FX_OK = ('gunfire', 'purpleflame', 'sense', 'whiteflash', 'stare')
+            if ln.get('fx') and ln['fx'] not in FX_OK:
+                err('%s：fx 只有 %s，收到 %r' % (tag, '／'.join(FX_OK), ln['fx']))
+            if ln.get('fx') == 'stare' and not ln.get('fxCi'):
+                err("%s：fx:'stare' 一定要配 fxCi（沒有圖它什麼都不會演，而且不會報錯）" % tag)
+            if ln.get('fxCi') and ln['fxCi'] not in (D.get('assets') or {}) and not os.path.exists(
+                    os.path.join(ROOT, str(ln['fxCi']).split('?')[0])):
+                err('%s：fxCi 指到不存在的圖 —— %r' % (tag, ln['fxCi']))
             if ln.get('cgScale') is not None:
                 v = ln['cgScale']
                 if not (isinstance(v, (int, float)) and 0.5 <= v <= 3):

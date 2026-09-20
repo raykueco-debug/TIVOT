@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1556';
+export const VERSION = 'ver 2026.09.17-1559';
 
 export const GAME_CONFIG = {
 
@@ -4005,6 +4005,9 @@ export const ASSETS = {
   partner_sorana:     "resources/si/sorana_si_front.webp",
   /* ver -837：索菈娜 CI 整批轉 webp（2.0~2.5MB 的 1024×1536 PNG → 0.10~0.27MB）——
      戰鬥中 cut-in 解碼那一口就是手機卡頓的主嫌之一；原 PNG 留在原位給美術 session。 */
+  /* 東方泊地・那一夜（ver -1557，Ray 交件）：安雅打瞌睡那一拍閃過的米夏注視。
+     ⚠ 它**不是插圖**（`cg`）而是 `fx:'stare'` 那一支的素材 —— 一瞬的半透明脈動。 */
+  ci_mishastare:      "resources/ci/ci_mishastare.webp",
   ci_sorana_predator: "resources/ci/ci_sorana_predator.webp",
   ci_sorana_supply:   "resources/ci/ci_sorana_supply.webp",   // -820 過渡圖 → -837 webp
   /* 獵手的直覺（被動）發動的 CI：三張隨機輪播（ver -809，Ray 指定）——與三位女角的合擊圖。 */

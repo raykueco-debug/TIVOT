@@ -2814,6 +2814,19 @@
   @keyframes storyPanV{
     from{transform:scale(var(--cg-pan-k,1.55)) translateY(var(--cg-pan-a,12%));}
     to  {transform:scale(var(--cg-pan-k,1.55)) translateY(var(--cg-pan-b,-2%));}}
+  /* ══⚠⚠ **速度模糊進入**（`cgRush`，ver -1557，Ray：「效果用速度模糊進入」）══
+     「他回頭看了一眼」那種一瞬間的搶拍 —— 圖從**稍微放大＋橫向糊掉**收進定位。
+     ⚠⚠ 糊的方向是**橫的**（`blur` 沒有方向，所以用 `translateX` 的殘影感搭
+       `blur` 的收斂）：速度感來自「橫向位移 → 停住」，不是「整張由糊變清」。
+       只做 blur 會讀成「對焦」，不是「掃過去」。
+     ⚠ `filter` 與 `transform` 都在**同一條** animation 上：分成兩條的話，
+       兩者的 easing 一定走鐘（同 §6.5 的「兩個元素要一起動」那條的同一個道理）。
+     ⚠ 收在 220ms —— 再長就從「一瞬」變成「慢慢對焦」。 */
+  #storyCg.cg-rush{animation:storyCgRush .22s cubic-bezier(.17,.84,.29,1) forwards;}
+  @keyframes storyCgRush{
+    0%  {transform:scale(1.08) translateX(7%);  filter:blur(9px)}
+    55% {transform:scale(1.02) translateX(1.2%);filter:blur(2.4px)}
+    100%{transform:none;                        filter:none}}
   #storyCg.pan-up{animation:storyPanUp 2.6s ease-out forwards;}
   #storyCg.pan-down{animation:storyPanDown 2.6s ease-out forwards;}
   #storyBg.pan-up{animation:storyPanUp 2.6s ease-out forwards;}
@@ -3895,11 +3908,20 @@
      凍住的樣子是「安雅根本沒出現」（基底 opacity 是 0），而且沒有任何錯誤訊息。
      ⚠ 這是**一次性的過場演出**，不是待機裝飾 —— 明寫例外是對的；
        不要反過來把基底改成「看得見」（那會讓她在淡入前先閃一格）。 */
-  body.perf-idle #storyFx .fx-sense-dim,
-  body.perf-idle #storyFx .fx-sense-fit,
-  body.perf-idle #storyFx .fx-sense-ci,
-  body.perf-idle #storyFx .fx-sense-ghost,
-  body.perf-idle #storyFx .fx-sense-ring{ animation-play-state:running !important; }
+  /* ⚠⚠⚠ **ver -1557：這裡改成「整層 `#storyFx` 都不凍」** —— 原本是**逐個 class
+     點名**（`.fx-sense-dim`／`-fit`／`-ci`／`-ghost`／`-ring` 五條），而那是一份
+     **清單**：新增一支演出就要記得回來補一列，漏了的下場是**動畫卡在 0% 不動、
+     而且沒有任何錯誤訊息**（畫面上就是「那個效果沒有出現」）。
+     實測：-1557 加的 `fx:'stare'` 第一版就漏了，元素生出來了、`src` 也對，
+     opacity 停在 0、transform 停在第一個停格。
+     ⇒ 照鐵律 10 的結論：**清單該換成一道門**。`#storyFx` 這一層本來就只裝
+       「一拍就收的一次性演出」（`stopFx()` 每推一句就清空），沒有任何長駐動畫
+       —— 整層放行，**新東西預設安全**（鐵律 13）。
+     ⚠ `#storyCg` 的進場動畫同理：`pan-v`／`pan-up/down`／`zoom-in`／`cg-rush`
+       都是 `forwards` 的**一次性**過場，凍在中間會把畫面留在「糊掉／歪一半」的
+       狀態。跑完之後 `forwards` 本來就不再耗效能，凍它一點好處都沒有。 */
+  body.perf-idle #storyFx *,
+  body.perf-idle #storyCg{ animation-play-state:running !important; }
   #storyFx .fx-sense-dim{position:absolute;inset:0;z-index:1;pointer-events:none;
     background:rgba(3,3,7,.55);opacity:0;animation:storySenseDim .26s ease forwards;}
   @keyframes storySenseDim{from{opacity:0}to{opacity:1}}
@@ -3937,6 +3959,33 @@
     60% {opacity:calc(var(--g-a,.6) * .343)}
     80% {opacity:calc(var(--g-a,.6) * .189)}
     100%{opacity:0;                          transform:scale(var(--g-grow,1.45))}}
+  /* ══⚠⚠⚠ **半透明 CI 一閃而過**（`fx:'stare'`，ver -1557，Ray：「加入半透明
+     ci_mishastare 一閃而過，用脈動效果（同探索動畫）跳一拍就消失，
+     se 播 heart beat 但只響一聲，與 ci 動畫同步」）══
+     ⚠⚠ **脈動的配方沿用感應那一支**（`storySenseGhost` 的形狀：亮起 → 撐開 → 淡掉）
+       —— 不另寫一份（鐵律 7）。差別只有三件事，全部是參數：
+       **只有一下**（感應是四下）、**半透明**、**橫跨一拍就收**。
+     ⚠⚠ **與心跳同步**：`se_flight_heartbeat` 的第一下落在檔案的 **450ms**
+       （`modules/story.js` 的 `SENSE_BEATS[0]`，那一份是真相，改一邊要改另一邊）——
+       所以本體的峰值寫在 `450/1400 = 32%`。音效與動畫同一刻起跑，
+       **不要**用 `setTimeout` 各自對時（那一組會被 `stopFx` 清掉）。
+     ⚠ 底下那一層壓暗**刻意不放**：感應那一支要壓暗是因為她佔滿畫面、
+       又要撐 3.5 秒；這一支是一瞬，壓暗只會讓「閃了一下」變成「畫面暗了一下」。 */
+  #storyFx .fx-stare{position:absolute;inset:0;z-index:2;pointer-events:none;
+    width:100%;height:100%;object-fit:cover;opacity:0;
+    animation:storyStare 1.4s ease-out forwards;}
+  @keyframes storyStare{
+    0%  {opacity:0;    transform:scale(1.10)}
+    18% {opacity:.24;  transform:scale(1.045)}
+    32% {opacity:.62;  transform:scale(1)}      /* ＝心跳那一下 */
+    46% {opacity:.34;  transform:scale(1.015)}
+    70% {opacity:.15;  transform:scale(1.03)}
+    100%{opacity:0;    transform:scale(1.05)}}
+  /* 脈動的那一圈：與本體同一張圖、排在它**底下**，只有撐出去的那一圈看得到
+     —— 與 `.fx-sense-ghost` 是同一個道理（那邊的註解寫著「畫在上面會整個人糊掉」）。 */
+  #storyFx .fx-stare-ghost{position:absolute;inset:0;z-index:1;pointer-events:none;
+    width:100%;height:100%;object-fit:cover;opacity:0;
+    animation:storySenseGhost .7s cubic-bezier(.22,.62,.3,1) .32s forwards;}
   /* 感應的光圈：**與白光同一個圓心（她的手）**，當白光的前緣（ver -1185）。
      ⚠ `--hx`／`--hy` 由 `story.js` 的 `senseHandAt` 算（鐵律 7）。 */
   #storyFx .fx-sense-ring{position:absolute;left:var(--hx,50%);top:var(--hy,46%);

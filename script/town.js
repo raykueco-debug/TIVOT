@@ -4637,11 +4637,31 @@ export const TOWNS = {
              **庫裡沒有對得上的**，這一版先空著（少一個聲音，不會壞）。 */
         acts:[ { flag:'vn_lib_done', need:'vn_evening', goto:'midtown',
                  sides:{ RENNA:'L' }, lines:[
-          sor('talk','啊，有了。'),
-          sor('talk','哇，睡到不省人事了。'),   // ⚠ 明寫（原本是 null＝沿用上一句的 talk），見下面那一段
-          nou(null,'她一定很累吧，我們在城裡閒逛的時候只有她一個人在忙……'),
-          any('silent','……'),
-          sor('amaze','喔。這是什麼？'),
+          /* ══⚠⚠⚠ **趴睡的插圖：由上而下平移，四拍之後收掉**（ver -1557，Ray：
+             「啊有了之後進插畫 025-rennasleepdesk 由上而下平移，直到安雅…… 後回到
+               原背景。**插畫期間不放立繪**」）══
+             ⚠⚠⚠ **「不放立繪」要逐拍明寫 `portrait:{show:false}`** —— 只是不寫
+               `portrait` **沒有用**：引擎查不到 `line.portrait` 時會**退回 `line.speaker`**
+               （`castShow` 的 `who = (line.portrait&&line.portrait.char) || line.speaker`），
+               所以「沒寫」等於「把說話的人放上來」。
+               ⚠ 實測就是這樣：第一版四拍都不寫 `portrait`，索菈娜與諾薇兒照樣一個個
+                 站上來 —— 而且**不會有任何錯誤訊息**，只是插圖前面多了兩個人。
+             ⚠ `cg:` 那一拍本來就清了場（§6.5 ver -1422：蓋上或收掉都算轉場），
+               但清完之後**這一拍自己的立繪**還是會在 `reveal()` 裡上台 ——
+               清場擋的是「上一個地方的人」，不是「這一拍的人」。
+             ⚠ `cg:null` 那一拍（「喔。這是什麼？」）同樣算轉場 ⇒ 會再清一次場，
+               然後**那一拍自己的立繪**在 `reveal()` 裡上台（跑在清場之後）——
+               所以索菈娜照樣站得出來，不必特別寫什麼。
+             ⚠ 平移用 `cgPan:'down'`（＝由上往下）。這張圖是 1536×1024 的**橫圖**，
+               `cover` 之下垂直沒有餘裕 ⇒ 走 `pan-v` 那條（`scale` 撐高再 translate），
+               所以要給 `cgPanK`；起訖用預設（正 → 負＝看到上半 → 看到下半）。 */
+          { speaker:'SORANA', text:'啊，有了。', portrait:{ show:false },
+            cg:'025-rennasleepdesk', cgNoTime:true, cgPan:'down', cgPanK:1.45 },
+          { speaker:'SORANA', text:'哇，睡到不省人事了。', portrait:{ show:false } },
+          { speaker:'NOUVELLE', text:'她一定很累吧，我們在城裡閒逛的時候只有她一個人在忙……',
+            portrait:{ show:false } },
+          { speaker:'ANYA', text:'……', portrait:{ show:false } },
+          Object.assign(sor('amaze','喔。這是什麼？'), { cg:null }),
           nou('reach','那是我們的評價紀錄。不要拿啦！'),
           Object.assign(sor('readshock','有什麼關係——喔？'), { se:'se_ui_pageflip' }),
           Object.assign(sor('readhappy','嗯——哈！真有意思！'), { se:'se_ui_pageflip' }),
@@ -5577,6 +5597,14 @@ export const TOWNS = {
             { speaker:'PLAYER', blank:true },
             ren('watch','燈光不夠，但是……'),
             ren('whisper','總覺得那個人……是不是跟安雅有點像？'),
+            /* ══⚠⚠ **米夏回頭那一張：速度模糊進入，一拍就收**（ver -1557，Ray：
+               「播插畫 021-mishalookback，效果用速度模糊進入。一拍以後就回到原背景」）══
+               ⚠ 這一拍**沒有台詞也沒有人在台上**（`cg:` 那一刻就清了場，§6.5 ver -1422）
+                 ⇒ 吃得到 `auto`（§6.5 的 -628：台上沒人的純演出拍照舊自己跑）。
+               ⚠ `cgRush` 與 `cgPan`／`cgZoom` 互斥（三者都在寫 `transform`）。 */
+            { speaker:'NARRATION', text:'',
+              cg:'021-mishalookback', cgNoTime:true, cgRush:true, auto:1600 },
+            { speaker:'NARRATION', text:'', cg:null, auto:600 },
             ren('shockcalm','！！'),
             { speaker:'PLAYER', blank:true },
             ren('intense','你說殺氣……？'),
@@ -5932,11 +5960,18 @@ export const TOWNS = {
           ren('blush','……嗯。'),
           sor('side','妳高興就好啦！反正我也狠狠教訓了那隻小偷龍，滿足滿足！'),
           nou('awkward',''),
-          any('sleepy',''),
-          /* ⚠⚠⚠ **「米夏眼部 CI」還沒有檔案**（Ray -1511：「先不放圖，gpt 爆了，
-             後面補」）—— 這一拍現在只剩安雅的反應與主角的「！！」。
-             圖到了就把 `cg:'CI_Misha_eyes'` 補回這一拍（**不要另開一拍**：
-             那一瞬的驚嚇與她的表情是同一件事）。 */
+          /* ══⚠⚠⚠ **米夏注視：半透明、一閃而過**（ver -1557，Ray：「在索拉娜滿足滿足後，
+             有一拍安雅的 sleepy，在那一拍加入半透明 ci_mishastare 一閃而過，用脈動效果
+             （同探索動畫）跳一拍就消失，se 播 heart beat 但只響一聲，與 ci 動畫同步」）══
+             ⚠⚠ **它掛在 `sleepy` 這一拍，不是下一拍的 `terrify`** —— 順序是
+               「她打瞌睡 → 眼前閃過那雙眼睛 → 才驚醒」。掛到 terrify 上就變成
+               「先嚇到、才看到」，因果會反過來。
+             ⚠⚠ **不是 `cg:`**（-1511 的註解原本說圖到了補 `cg:'CI_Misha_eyes'`，
+               **那一版的作法已被這一條取代**）：插圖是「換一個畫面」、會走黑幕、
+               會清場、而且要再一拍才收得掉 —— Ray 要的是**一瞬**，所以走
+               `fx:'stare'`（`#storyFx` 那一層，下一拍的 `stopFx()` 自己收，
+               §6.5「跳一拍就消失」）。 */
+          Object.assign(any('sleepy',''), { fx:'stare', fxCi:'ci_mishastare' }),
           /* ══⚠⚠⚠ **米夏注視那一拍 → 換曲**（ver -1520，Ray：「在米夏注視那一拍
              bgm 換成 Peritune_Glass_Cradle_loop(Anya & Misha)」）══
              ⚠ 順序 Ray 已經確認過，而線上本來就是這樣：**諾薇兒立繪 → 安雅 →
@@ -5986,7 +6021,11 @@ export const TOWNS = {
         { flag:'ep_night_anya_out', need:'ep_hairpin_talk', hourOfDay:[0,6], lines:[
           { speaker:'NARRATION', text:'（房門輕輕開了。）', se:'se_walk', auto:1400,
             bgm:'echoedart' },
-          { speaker:'NARRATION', text:'（安雅悄悄地溜出了房間。）', auto:1600 },
+          /* ⚠ ver -1557（Ray：「安雅輕輕溜出房間那一拍放安雅的 scare」）——
+             名字欄仍是旁白（主角看到的），立繪是**畫面上的她**：
+             那一拍要讀得出她是「怕被發現」不是「偷偷摸摸去玩」。 */
+          { speaker:'NARRATION', text:'（安雅悄悄地溜出了房間。）', auto:1600,
+            portrait:{ char:'ANYA', expr:'scare', show:true } },
           { speaker:'PLAYER', text:'……' },
           { speaker:'NARRATION', text:'（要自己跟上去嗎？還是要叫醒夥伴呢？）' },
         ] },
