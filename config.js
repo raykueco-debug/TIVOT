@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1563';
+export const VERSION = 'ver 2026.09.17-1564';
 
 export const GAME_CONFIG = {
 
@@ -3553,6 +3553,8 @@ export const GAME_CONFIG = {
       se_tablepunch:1.464,              // ver -1556（耳機 −9.43／手機 −24.80，平均 −17.12）
       se_snatch:2.500,                  // ver -1556（平均 −23.09 → 想要 2.911，被 peakCeilDb 夾住）CAP
       se_preasure:1.221,                // ver -1561（耳機 −16.06／手機 −15.02，平均 −15.54；1.52 秒）
+      se_page3:2.458,                   // ver -1564（平均 −22.25 → 想要 2.644，被 peakCeilDb 夾住）CAP
+      peritunematerial_hesitation_loop:1.317,   // ver -1564（平均 −16.20）
       /* 流水聲（ver -1414，Ray 交件；-1413 我合的暫代品已進回收區）：
          與 `se_brickcrush` **同一拍一起播**，所以直接錨它 —— 本機 BS.1770 實測
          brickcrush −15.7（增益 1.825 ⇒ 實效 −10.47）／waterfall −18.2 LUFS
@@ -4533,7 +4535,10 @@ export const ASSETS = {
      ⚠ 哪一場用它**不寫在卡上**而是規則：見下面的 `battleBgm.timeAttack`。 */
   bgm_hopstep:    "resources/audio/bgm/peritune_hopstep_battle_loop.m4a",
   bgm_battle:    "resources/audio/bgm/bgm_battle.m4a",      // 戰鬥（驅逐開始插入瞬間起播）
-  bgm_lose:      "resources/audio/bgm/bgm_missionfailed.m4a", // 任務失敗（驅逐失敗插入起播）
+  /* ⚠ ver -1564（Ray：「並把 mission faild 換成這一首」）：任務失敗改用 Hesitation。
+     ⚠ `bgm_missionfailed.m4a` **留著不刪**（回收區是唯一的刪除出口，§5）——
+       它現在沒有人讀，要換回來只動這一行。 */
+  bgm_lose:      "resources/audio/bgm/peritunematerial_hesitation_loop.m4a", // 任務失敗（驅逐失敗插入起播）
   bgm_result:    "resources/audio/bgm/bgm_result.m4a",      // 結算（驅逐完成頁被點掉後起播）
   bgm_boss:      "resources/audio/bgm/bgm_boss.m4a",        // Boss 戰（點下迎擊起播）
   bgm_intruder:  null,   // （無獨立亂入曲；亂入＝Boss，走 bgm_boss）

@@ -3133,6 +3133,18 @@
        （鐵律 7 的但書，兩邊註解互指）。
      ⚠ class 要**每一句都拔**（只在 blank 那一拍加）：留著的話下一個人的框也會變藍。 */
   :root{ --self:#9cc3e8; --self-dim:#5c7fa6; }
+  /* ══⚠ **只抖對話框**（ver -1564，Ray：「想知道嗎？後面的抖動只抖對話框，
+     不要抖全畫面」）══ 全畫面那一支（`#storyStage.shake`）刻意**不抖框**
+     （§6.5：「畫面抖一下（對話框不抖）」），所以這一支是它的反面 —— 兩者不共用配方，
+     也不會同時掛（`shake:'bubble'` 與 `shake:true` 在 story.js 是 if/else）。
+     ⚠ 振幅比全畫面小：框本來就小，同樣的位移在它身上會讀成「框要飛走了」。 */
+  #storyBubble.shake{ animation:storyBubbleShake .46s cubic-bezier(.36,.07,.19,.97) both; }
+  @keyframes storyBubbleShake{
+    10%,90%{transform:translate3d(-2px,0,0)}
+    20%,80%{transform:translate3d(3px,0,0)}
+    30%,50%,70%{transform:translate3d(-4px,0,0)}
+    40%,60%{transform:translate3d(4px,0,0)}
+    100%{transform:none}}
   #storyBubble.self,#tutBubble.self{ background:rgba(6,10,18,.9); border-color:var(--self-dim); }
   #storyBubble.self .story-name,#tutBubble.self .tut-name{ color:var(--self); }
   #storyBubble.self .story-next,#tutBubble.self .tut-next{ color:var(--self); }

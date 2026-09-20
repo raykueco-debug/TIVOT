@@ -644,11 +644,16 @@ const BGM_FILES=[
        名字拼錯就報「BGM_FILES 表指到不存在的檔案」，照那一行改檔名。 */
   'peritune_glass_cradle_loop.m4a',   // ver -1520：安雅與米夏（bgm_glasscradle）
   'peritune_echoed_art.m4a',          // ver -1520：守夜（bgm_echoedart）
+  /* ver -1564：雪都圖書館「索拉娜小姐！」那一拍起（bgm_hesitation）；
+     **任務失敗也換成這一首**（`ASSETS.bgm_lose`，Ray 指定）。 */
+  'peritunematerial_hesitation_loop.m4a',
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   mainmenu:'bgm_mainmenu', battle:'bgm_battle', boss:'bgm_boss',
-                  result:'bgm_result', failed:'bgm_missionfailed', flight:'bgm_flight',
+                  result:'bgm_result',
+                  /* ver -1564：任務失敗由 `bgm_missionfailed` 改成 Hesitation（Ray 指定）。 */
+                  failed:'peritunematerial_hesitation_loop', flight:'bgm_flight',
                   capital:'bgm_capital_day',
                   suspense:'peritunematerial_suspense6_loop',   // ver -614
                   crimson:'peritune_crimson_moon_loop',
@@ -663,6 +668,7 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   moonlit:'peritune_moonlit_dancer_loop',   // ver -1294：聖索菲亞城
                   blackcrystal:'peritune_black_crystal_loop',   // ver -1294：伊甸古墓
                   taisho2:'peritunematerial_taishoroman_theme2_loop',   // ver -1294：拉芬斯達爾城
+                  hesitation:'peritunematerial_hesitation_loop',   // ver -1564：雪都圖書館之後～隔天
                   portside:'peritune_portside_cafe_loop',   // ver -1294：東方泊地
                   /* ⚠ 這兩個短名與檔名對不起來（`glasscradle` vs
                      `peritune_glass_cradle_loop`）—— 那正是 `BGM_ALIAS` 留著的用途
@@ -888,6 +894,25 @@ let cgRushTimer=0;
 function killCgRush(){
   clearTimeout(cgRushTimer); cgRushTimer=0;
   const b=document.getElementById('storyCgRush'); if(b) b.remove();
+}
+/* ══⚠⚠⚠ **「這一句是不是主角在說話」只有這一支在答**（ver -1564，Ray：
+     「主角的台詞如果是 `……` 或者是其他無文字的符號，對話框一樣要換藍色」）══
+   藍框（`.self`）本來只認 `blank:true` —— 但主角**也會說「……」「！！」**那種
+   只有符號的台詞（`{ speaker:'PLAYER', text:'……' }`），那幾拍的框是別人的顏色，
+   讀起來就不是他在講話。
+   ⚠⚠ 判準是**有沒有字**不是「是不是主角」：他日後真的講出一句有內容的話時，
+     那一句該走一般的框（有台詞就照常演）。所以這裡看的是
+     「除掉標點與空白之後還剩不剩東西」。
+   ⚠ 涵蓋的符號要連**全形**一起（`…‥・—－～！？、。「」`）—— 稿上寫的是中文標點，
+     只濾 ASCII 等於沒濾。
+   ⚠ 對話**回顧**（`sceneLog` 的 `me`）問的是同一支：那是同一個問題，
+     不要在兩邊各判一次（鐵律 7）。 */
+const WORDLESS = /^[\s.,!?'"~\-–—…‥・。、，．！？：；「」『』（）()《》〈〉〜～ー－]*$/;
+function isSelfLine(line){
+  if(!line || line.speaker!=='PLAYER') return false;
+  if(line.blank) return true;
+  const s = lineText(line);
+  return s!=null && WORDLESS.test(String(s));
 }
 function coverOrigin(el, p){
   const W=el.clientWidth, H=el.clientHeight;
@@ -1731,6 +1756,7 @@ const SE_FILES=[
   /* 米夏回頭那一拍的壓迫感（ver -1561，Ray 交件）。同上：交來的 mp3 轉 AAC 96k，
      原檔進 `resources/audio/se/_raw/`（底線開頭＝不會被遊戲載入）。 */
   'se_preasure.m4a',
+  'se_page3.m4a',   // ver -1564：圖書館「喔。這是什麼？」那一拍（Ray 指定）
   'se_ui_kagurabell.m4a', 'se_ui_pageflip.m4a', 'se_ui_sortie.m4a', 'se_walk.m4a',
   'se_weapon_guard.m4a', 'se_weapon_mg_squall.m4a', 'se_weapon_pistol_01.m4a',
   'se_weapon_pistol_02.m4a', 'se_weapon_pistol_03.m4a', 'se_weapon_reload.m4a',
@@ -2141,7 +2167,21 @@ function fireOneShot(line){
      ⚠ 它是**持續狀態**：攤開之後一直在，收在 `clearCast`（那一段講完了）——
        與 `shake` 那種一次性的演出不同族，所以不進 `fxTimers`。 */
   if(line.map) storyMap(true);
-  if(line.shake){
+  /* ══⚠ **`shake:'bubble'` ＝只抖對話框**（ver -1564，Ray：「想知道嗎？後面的抖動
+     只抖對話框，不要抖全畫面」）══ 全畫面那一種是「世界在震」，而這一拍震的是
+     **他的反應** —— 抖整個畫面會把那一下讀成外面出事了。
+     ⚠ 手上照舊震：那是「他心頭一跳」，與畫面抖不抖是兩件事。
+     ⚠ 一次性演出 ⇒ 計時器進 `fxTimers`（推下一句就收），同全畫面那一支。 */
+  if(line.shake==='bubble'){
+    hap.shake();
+    const bb=$('storyBubble');
+    if(bb){
+      bb.classList.remove('shake'); void bb.offsetWidth; bb.classList.add('shake');
+      clearTimeout(bb.__shakeT);
+      bb.__shakeT=setTimeout(()=>bb.classList.remove('shake'), 460);
+      fxTimers.push(bb.__shakeT);
+    }
+  }else if(line.shake){
     hap.shake();                 // 畫面震動＝手上也震（Ray 指定）
     const st=$('storyStage');
     if(st){
@@ -2219,7 +2259,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1563';
+const KERB_V='?v=1564';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3360,7 +3400,7 @@ function renderLine(){
      ⚠ 記的是**空字串**不是「……」：那一拍本來就沒有台詞，補字等於替他講話。
      ⚠ `me:true` 只是給版面用的標記（藍框，見 style.css 的 `.log-row.me`）——
        不要拿它去判「這一句是誰講的」，那是 `name` 的事。 */
-  const _me = (line.speaker==='PLAYER' && line.blank);
+  const _me = isSelfLine(line);
   if(lineText(line) || _me) sceneLog.push({ name:(line.speaker==='PLAYER' ? prog.getPlayerNick() : nameOf(line.speaker)),
                                 text:subst(lineText(line)), me:_me });
   const nm=$('storyName'), tx=$('storyText');
@@ -3398,6 +3438,9 @@ function renderLine(){
      要在畫面上有份量 —— 空框就是那個份量。
      ⚠ 與「空台詞」是**兩回事**：空台詞是演出拍（咆哮／掃射），那一拍畫面上不該有框。
        兩者都沒有字，差別在**有沒有人在說話**。 */
+  /* ⚠ 符號拍（「……」「！！」）也是他在說話 ⇒ 一樣給藍框，但**不給 `.blank`**
+     （那是「小氣泡＋…」的空框長相，這一拍是有字要印的）。ver -1564。 */
+  if(bub2 && !line.blank && isSelfLine(line)) bub2.classList.add('self');
   if(line.blank){
     if(bub2){
       bub2.style.visibility='';

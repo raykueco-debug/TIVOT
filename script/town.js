@@ -4401,6 +4401,15 @@ export const TOWNS = {
     /* BGM（ver -1248，Ray 交件 `PerituneMaterial_TaishoRoman_Theme2_loop`）。
        ⚠ 它原本**沒有 `bgm`** ＝ 進城沿用上一個畫面的曲子（同聖索菲亞／伊甸古墓）。 */
     bgm: 'taisho2',
+    /* ══⚠⚠ **圖書館那一段之後換曲，撐到隔天**（ver -1564，Ray：「諾：『索菈娜小姐！』
+       那一拍，換 bgm PerituneMaterial_Hesitation_loop **到隔天才換**」）══
+       拍上的 `bgm:` 只管換曲的那一刻；**這裡管「撐多久」** —— 少了它，
+       演完走一格就被城上的 `taisho2` 打回去（同東方泊地那一組的分工說明）。
+       ⚠ `need` 是**圖書館那一段演完**（`vn_lib_done`，演完才記），
+         `until` 是**隔天**（`vn_day2`）。 */
+    bgmWhen: [
+      { need:'vn_lib_done', until:'vn_day2', bgm:'hesitation' },
+    ],
     /* ══⚠⚠⚠ **六點回旅店**（ver -1522，Ray 的 Stage10-A 稿：「六點回到旅店」）══
        走城上的 `gates`（§6.5.4.1 的 `clockGate`，與帝都 stage 0 的結尾、北泊那兩道
        同一支，鐵律 8）。
@@ -4582,7 +4591,9 @@ export const TOWNS = {
            ⚠ 收尾插 `vn_night_done` ＝**旅店的 `sleepFlag`**：在這之前按睡覺會被
              諾薇兒那句擋回來（§6.5.5「還不能做不要靠藏起鈕擋」）。 */
         acts:[ { flag:'vn_night_done', need:'vn_lib_done', sides:{ RENNA:'L' }, lines:[
-          nou('run','等一下！等等我！'),
+          /* ⚠ ver -1564（Ray：「諾薇兒追出的『等一下等等我』那一拍 音效要用
+             se_steps，跑步音」）——`se_walk` 是走路，這一拍她是追出來的。 */
+          Object.assign(nou('run','等一下！等等我！'), { se:'se_steps' }),
           nou('shock','吶，這一定是有什麼誤會，聽聽蕾娜小姐怎麼說嘛！'),
           { speaker:'PLAYER', blank:true },
           /* 好感分歧：稿上是「諾T2以下」與「諾T3以下（＝T3 以上）」兩條。
@@ -4594,8 +4605,11 @@ export const TOWNS = {
           nou('shock','咦？',                                              { tierMin:3 }),
           nou('shy','我、我沒關係啦！',                                      { tierMin:3 }),
           nou('furious','一起努力吧！我一定會幫你把評價……',                  { tierMin:3 }),
-          sor(null,'喂——'),
-          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+          /* ⚠ ver -1564（Ray：「索菈娜的『喂——』不要放差分，後接『都是我不好啦』」）：
+             這一拍**不放她的立繪**（台上維持諾薇兒），她的臉留到下一拍才出來。
+             ⚠ 原本兩拍之間有一拍腳步聲（`se_walk`）—— 依「後接」拿掉了，
+               那個聲音**移到這一拍身上**，不然她就是憑空出現在畫面裡。 */
+          { speaker:'SORANA', text:'喂——', portrait:{ show:false }, se:'se_walk' },
           sor('worry','都是我不好啦，要怪就怪我，好嗎？'),
           /* M1／M2 的分歧（安雅站在誰那一邊）。⚠ 判準是 `ep_m2_route`（ver -1530）——
              兩支旗都沒有（先 A）時落在 M1 那一句，下一拍的「連小公主都生我的氣……」
@@ -4655,13 +4669,18 @@ export const TOWNS = {
              ⚠ 平移用 `cgPan:'down'`（＝由上往下）。這張圖是 1536×1024 的**橫圖**，
                `cover` 之下垂直沒有餘裕 ⇒ 走 `pan-v` 那條（`scale` 撐高再 translate），
                所以要給 `cgPanK`；起訖用預設（正 → 負＝看到上半 → 看到下半）。 */
-          { speaker:'SORANA', text:'啊，有了。', portrait:{ show:false },
+          /* ⚠ ver -1564（Ray：「索：『啊，有了』移出插圖，差分用 talk，講完才播插圖」）：
+             這一拍**還在原背景**、她照常站著 —— 插圖從下一拍才開始。
+             先有「她找到了」這件事，才有「我們看到蕾娜趴在那裡」那一眼。 */
+          sor('talk','啊，有了。'),
+          { speaker:'SORANA', text:'哇，睡到不省人事了。', portrait:{ show:false },
             cg:'025-rennasleepdesk', cgNoTime:true, cgPan:'down', cgPanK:1.45 },
-          { speaker:'SORANA', text:'哇，睡到不省人事了。', portrait:{ show:false } },
           { speaker:'NOUVELLE', text:'她一定很累吧，我們在城裡閒逛的時候只有她一個人在忙……',
             portrait:{ show:false } },
           { speaker:'ANYA', text:'……', portrait:{ show:false } },
-          Object.assign(sor('amaze','喔。這是什麼？'), { cg:null }),
+          /* ⚠ `se_page3`＝Ray 指定的翻頁音（ver -1564）。⚠ 這與檔頭那句「翻頁音走
+             既有的 `se_ui_pageflip`」不衝突：那是**沒有檔案時**的權宜，現在他交了。 */
+          Object.assign(sor('amaze','喔。這是什麼？'), { cg:null, se:'se_page3' }),
           nou('reach','那是我們的評價紀錄。不要拿啦！'),
           Object.assign(sor('readshock','有什麼關係——喔？'), { se:'se_ui_pageflip' }),
           Object.assign(sor('readhappy','嗯——哈！真有意思！'), { se:'se_ui_pageflip' }),
@@ -4672,7 +4691,9 @@ export const TOWNS = {
           sor('read','不要看啊，我唸不就好了？'),
           nou('explain','哪有這種道理……'),
           sor('whisper','想知道嗎？'),
-          { speaker:'PLAYER', blank:true, shake:true },
+          /* ⚠ ver -1564（Ray：「想知道嗎？後面的抖動只抖對話框，不要抖全畫面」）：
+             這一下是**他心頭一跳**，不是世界在震 —— 抖整個畫面會讀成外面出事了。 */
+          { speaker:'PLAYER', blank:true, shake:'bubble' },
           sor('readshock','喔——原來是這麼評價的呀？'),
           Object.assign(sor('readhappy','嘿——'), { se:'se_ui_pageflip' }),
           nou('shock','……'),
@@ -4717,7 +4738,12 @@ export const TOWNS = {
           sor('readhappy','沒、沒事啦！看來修女小姐對你們的評價很高呢！'),
           nou('shock','……後面寫了什麼嗎？'),
           sor('sad','……'),
-          nou('worry','索拉娜小姐！'),
+          /* ══⚠ ver -1564（Ray：「諾：『索菈娜小姐！』那一拍，換 bgm
+             PerituneMaterial_Hesitation_loop 到隔天才換」）══
+             ⚠⚠ 拍上的 `bgm:` 只管**換曲的那一刻**；「撐到隔天」是城上的 `bgmWhen`
+               在管（`vn_lib_done` → `vn_day2`）—— 不然走一格就被打回 `taisho2`。
+               兩者分工不同，不是抄兩份（同東方泊地那一組的說明）。 */
+          Object.assign(nou('worry','索拉娜小姐！'), { bgm:'hesitation' }),
           sor('readhappy','只是些評價而已，沒那麼重要啦！'),
           nou('furious','很重要！'),
           sor('cringe',''),
@@ -4778,6 +4804,10 @@ export const TOWNS = {
           nou('smug','神父又開始說教了。'),
           arh(null,'他要是好好聽進去的話，下次來就能帶著賽西莉一起了吧。'),
           nou('sad','……'),
+          /* ⚠ ver -1564（Ray：「出好感差分前補一個主角說話的拍」）：**無條件**的一拍。
+             下面那一拍是 `tierMin:3` ——T2 以下的玩家看不到它，於是她那句「……」之後
+             直接跳到神父的收尾，他等於沒有反應。這一拍讓兩條路都有他的反應。 */
+          { speaker:'PLAYER', blank:true },
           { speaker:'PLAYER', blank:true, tierMin:3 },
           nou('surprise','！！',                    { tierMin:3 }),
           arh(null,'是嗎？你已經向前走了啊？',      { tierMin:3 }),
