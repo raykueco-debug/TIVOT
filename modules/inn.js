@@ -316,6 +316,24 @@ function doorState(who){
    ⚠ 掛在 `refresh()` 裡：時鐘與旗每動一次它就重算，不必記得在別處呼叫。
    ⚠ **只有那一次**：`ep_night_raid` 演完就記旗，`actDue` 下一次跳過它 ⇒
      `napAct()` 回 null ⇒ 兩行字自己變回一般版。不必另外收。 */
+/* ══⚠⚠⚠ **睡覺鈕：只要出現，按下去就一定睡得著**（ver -1570，Ray：「只要出睡覺鈕
+     按了就一定有效果，平常是推到隔天，有特殊事件我另外寫。**從現在起睡覺鈕在跑劇情時
+     只在我說開放的時候開放**」）══
+   這**推翻了 §6.5.5 的 -659**（「還不能做不要靠藏起鈕擋，鈕要在、用一句話擋回來」）
+   —— 那一條對**其他**鈕仍然有效，只有睡覺這一顆改成「有就能用」。
+   ⚠ 為什麼這一顆可以例外：它的「不能按」不是狀態提示，是**劇本的節奏**
+     （這一夜還沒到）。一句「現在不是睡覺的時候」重複十次只是噪音，而且
+     玩家沒有任何辦法知道什麼時候才行。
+   ⚠⚠ **判定只有這一支**（鐵律 7/8）：`refresh()` 拿它決定鈕出不出來、
+     `sleepHere()` 拿它當保險絲 —— 兩邊各寫一份條件必然走鐘，
+     而走鐘的長相正是「鈕在、按了沒反應」，也就是這一條要消滅的東西。
+   ⚠ 三道門：任務鎖（`questLocked`）／這座旅店開放了沒（`sleepFlag`）／天黑了沒。 */
+function canSleep(){
+  if(st1 && st1.questLocked && st1.questLocked()) return false;
+  if(!(node && node.sleepFlag && prog.hasFlag(node.sleepFlag))) return false;
+  if(clock.hourF() < eveningHour) return false;
+  return true;
+}
 function refreshSleepLabel(){
   if(!layer) return;
   const btn = layer.querySelector('.inn-btn[data-act="sleep"]'); if(!btn) return;
@@ -328,6 +346,9 @@ function refreshSleepLabel(){
 function refresh(){
   if(!layer) return;
   refreshSleepLabel();
+  /* ⚠ ver -1570：鈕的存在＝一個承諾（見 `canSleep` 的說明）。 */
+  { const sb = layer.querySelector('.inn-btn[data-act="sleep"]');
+    if(sb) sb.style.display = canSleep() ? '' : 'none'; }
   const st = stage();
   layer.querySelectorAll('.inn-door').forEach(b=>{
     const who = DOORS[+b.dataset.i];
@@ -742,6 +763,11 @@ function sleepHere(){
      排在 `sleepFlag` **之前**：那一條是「這座旅店開放睡覺了沒」（東泊早就開了），
      這一條是「現在有更急的事」。兩者都是劇情狀態，但答的不是同一個問題。
      ⚠ 旁白（名字欄空）＝主角自己的念頭，同下面那一句的作法。 */
+  /* ⚠⚠ ver -1570：三道門現在由 `canSleep()` 一支回答，**而且鈕在關著的時候
+     根本不出來**（見 `refresh`）。這裡留著只是**保險絲** —— 真的走到這裡就代表
+     「鈕出來了卻按不動」，那正是 Ray 這一版要消滅的失敗模式，所以記一行 console。
+     ⚠ 底下那三段台詞不刪：鍵盤／程式化入口（測試、章節跳關）仍可能繞過鈕。 */
+  if(!canSleep()) console.info('[inn] 睡覺鈕出來了卻按不動 —— 上游有路徑沒問 canSleep()');
   if(st1 && st1.questLocked && st1.questLocked()){
     if(host && host.say) host.say(st1.questSay('sleep') || '現在不是睡覺的時候。', '');
     return;

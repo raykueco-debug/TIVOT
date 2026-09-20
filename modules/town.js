@@ -4568,7 +4568,7 @@ export function open(town, node, opts){
 }
 export function close(){
   /* ⚠ 環境音是**持續狀態**：離開這座城就沒有人收它了（ver -1568）。 */
-  try{ story.stopAmb(300); }catch(_){}
+  try{ story.stopAmb(60); }catch(_){}
   townLive=false;            // 回主選單（ver -1394）
   restoreTownPartner();      // 搭檔回到進城前那一位（見 restoreTownPartner）
   const st=story.stageEl(); if(st) st.classList.remove('town-on');
@@ -4613,7 +4613,7 @@ export function innNodeOf(town){
    ⚠ 收的四樣與換節點那張檢查表同源（§6.5 的新路徑檢查表）：導覽、店舖、旅店、立繪。 */
 export function suspend(){
   /* ⚠ 環境音是**持續狀態**：離開這座城就沒有人收它了（ver -1568）。 */
-  try{ story.stopAmb(300); }catch(_){}
+  try{ story.stopAmb(60); }catch(_){}
   clearTimeout(arriveT); arriveT=0;
   townLive=false;            // 人上船了：約會那條規則不再套用（ver -1394）
   restoreTownPartner();      // 搭檔回到進城前那一位（同上）

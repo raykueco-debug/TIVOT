@@ -1835,14 +1835,19 @@ function playSeFallback(src, gain){
    ⚠ 它是 SE 那一軌不是 BGM（§6.6：環境音與音樂是**堆疊**，不是輪播）——
      所以它不會把城鎮的曲子擠掉，兩者同時響是對的。 */
 let _amb=null, _ambName=null;
+/* ⚠⚠ **不做淡入淡出**（ver -1570，Ray：「waterfall loop 時直接無縫連播不要淡入淡出」）：
+   `stop(0)` ＝立刻切。循環本身走 BufferSource 的 `loop`（樣本級接回開頭，
+   中間一格都不會少）—— 真正會聽到接縫的是**音檔自己的頭尾**，那是素材的事，
+   不是這裡加淡出補得掉的（加了只會變成「每一圈都淡一次」，更明顯）。
+   ⚠ 留一個很短的預設（60ms）只為了避開 `stop()` 那一聲「喀」（audio.js 的註解）。 */
 export function stopAmb(ms){
-  if(_amb){ try{ _amb.stop(ms==null?300:ms); }catch(_){} }
+  if(_amb){ try{ _amb.stop(ms==null?60:ms); }catch(_){} }
   _amb=null; _ambName=null;
 }
 export function playAmb(name){
   const n = name || null;
   if(n === _ambName) return;            // 同一支還在響 ⇒ 什麼都不做
-  stopAmb(300);
+  stopAmb(60);
   if(!n) return;
   const src = seSrc(n);
   if(!src){ console.info('[story] 沒有這個環境音：', n); return; }
@@ -2293,7 +2298,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1569';
+const KERB_V='?v=1570';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

@@ -6876,7 +6876,9 @@ export const TOWNS = {
                1600 會讓下一句壓在光圈中間，而白光**不進 `fxTimers`**、
                照樣會在玩家已經讀著下一句時閃出來。
              ⚠ `noSkip`：ver -1384 Ray 指定「感應動畫時不可點擊加速」。 */
-          { speaker:'NARRATION', text:'', fx:'sense', shake:true, auto:4400, noSkip:true },
+          /* ⚠ ver -1570（Ray：「安雅感應時不要震動」）—— 感應是**她在讀**，
+             不是地在動；震動把它讀成爆炸。 */
+          { speaker:'NARRATION', text:'', fx:'sense', auto:4400, noSkip:true },
           /* ══⚠⚠ **感應完，碑林的符文亮起來**（ver -1565，Ray：「安雅在石碑林感應完
              石碑背景應該要換成發光版，**注意時間差分**」）══
              ⚠ 走 `bgBand:` 不是 `bg:` —— 那條路才會吃時段候選鏈
@@ -7149,7 +7151,7 @@ export const TOWNS = {
           ren('ask','是真的。'),
           sor('confuse','但是妳在生氣吧？'),
           ren('lookaside','……是。'),
-          sor(null,'那是在生誰的氣？'),
+          sor('confuse','那是在生誰的氣？'),   // ver -1570（Ray 指定）
           ren('upset',''),
           ren('lookawaytalk','沒有誰。'),
           ren('write','只是想早點結束這一切而已。'),
@@ -7201,22 +7203,18 @@ export const TOWNS = {
       landing2:   { bg:'tomb_landing2', name:'伊甸古墓　二層梯廳', noTime:true,
         exits:{ up:'hall2', back:'stair1' } },
       hall2:      { bg:'tomb_hall2', name:'伊甸古墓　柱廳', noTime:true,
-        exits:{ up:'cistern', right:'corr2', down:'landing2' } },
-      /* ← 死胡同 E（一格） */
-      cistern:    { bg:'tomb_cistern', name:'伊甸古墓　蓄水池', noTime:true,
-        exits:{ back:'hall2' } },
-      corr2:      { bg:'tomb_corr2', name:'伊甸古墓　長廊', noTime:true,
-        exits:{ left:'hall2', down:'sump', right:'rotunda' } },
-      /* ← 死胡同 F（一格） */
-      sump:       { bg:'tomb_sump', name:'伊甸古墓　積水坑', noTime:true,
-        exits:{ back:'corr2' } },
-      rotunda:    { bg:'tomb_rotunda', name:'伊甸古墓　圓廳', noTime:true,
-        exits:{ left:'corr2', up:'nichehall', right:'sarcE' },
+        exits:{ up:'cistern', right:'corr2', down:'landing2' },
         /* ══⚠⚠⚠ **守墓者・降臨**（ver -1525，Ray 的 Stage10-A 稿）══════════════
            ⚠⚠⚠ **觸發條件是暫代的**：稿上是「**三場戰鬥後**」，而**這張圖現在
              一隻雜怪都沒有**（`TOWNS.tomb` 沒有 `wildSpawn`，26 隻古墓怪的**數值卡
              還在等 Ray**，見 `resources/enemy/_tomb_mon_spec.md`）。
-             ⇒ 這一版改成「**走到圓廳**（二層的樞紐）才演」，`need:'tomb_talk'`。
+             ⇒ 這一版改成「**走到柱廳**才演」，`need:'tomb_talk'`。
+             ⚠⚠ **ver -1570 由圓廳移到這裡**（Ray：「古墓中進到柱廳必觸發守墓者戰鬥
+               與小隊分組事件」）—— 柱廳是二層的**第一個**大空間（從 `landing2` 上來
+               就是它），圓廳在更裡面。擺在圓廳等於「先逛完半層才出事」。
+             ⚠⚠⚠ **「小隊分組事件」Ray 還沒給稿** —— 這一段現在只有守墓者那一場。
+               分組要決定的是「誰跟誰一組、分開之後畫面怎麼走」，那是劇本的事，
+               不是我能填的。稿到了接在這一段的收尾（`tomb_chase_on` 之前）。
              ⚠ 雜怪的卡到齊、`wildSpawn` 接上之後，**把這一段改成數戰鬥次數**
                （現在沒有那個計數器；要做就照鐵律 9 先決定「誰加、誰歸零」）。
            ⚠ 「震動」「爆裂音」走 `shake`／既有的龍吟（稿上的 `Se_groawing` 那支
@@ -7244,14 +7242,34 @@ export const TOWNS = {
           ren('shout','趕快走！離開這裡！'),
           any('scare',''),
           ren('shout','沒有淨化反應，那東西沒有死！'),
-          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', auto:1400 },
+          /* ⚠ ver -1570（Ray：「那東西沒有死後面一拍的咆哮要有畫面震動」）。 */
+          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
           nou('shock','！！'),
           { speaker:'NARRATION', text:'', shake:true, auto:1200 },
+          /* ══⚠⚠⚠ **牠又降臨了一次**（ver -1570，Ray：「在『那不是再生』前一拍
+             再降臨一次守墓者」）══ 牠剛被打死、卻又整隻站回來 —— 蕾娜下一句
+             「那不是再生……這個東西把『死亡』本身覆寫了」正是**看到第二次**才說得出口。
+             ⚠⚠ 用**同一張卡**（`tomb_gk1`）是刻意的：Ray 說的是「**再**降臨一次」
+               ＝同一隻回來，不是換一隻。`tomb_gk2`／`gk3` 留給⑨的追逐那三場。
+               要換成別隻說一聲，改一個字的事。 */
+          { battle:'tomb_gk1' },
           ren('intense','那不是再生……'),
           ren('intense2','這個東西把『死亡』本身覆寫了！'),
           nou('decode','覆寫……！'),
           sor('battlecry','什麼跟什麼啊沒完沒了！', { flags:['tomb_chase_on'] }),
         ] } ] },
+
+      /* ← 死胡同 E（一格） */
+      cistern:    { bg:'tomb_cistern', name:'伊甸古墓　蓄水池', noTime:true,
+        exits:{ back:'hall2' } },
+      corr2:      { bg:'tomb_corr2', name:'伊甸古墓　長廊', noTime:true,
+        exits:{ left:'hall2', down:'sump', right:'rotunda' } },
+      /* ← 死胡同 F（一格） */
+      sump:       { bg:'tomb_sump', name:'伊甸古墓　積水坑', noTime:true,
+        exits:{ back:'corr2' } },
+      rotunda:    { bg:'tomb_rotunda', name:'伊甸古墓　圓廳', noTime:true,
+        exits:{ left:'corr2', up:'nichehall', right:'sarcE' } },
+
       /* 死胡同 G 的第一格 —— 圖要畫得**比正路還氣派**（把玩家騙進來） */
       sarcE:      { bg:'tomb_sarce', name:'伊甸古墓　石棺室', noTime:true,
         exits:{ left:'rotunda', right:'ossuary2' } },
