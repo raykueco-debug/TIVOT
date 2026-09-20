@@ -6527,6 +6527,9 @@ export const TOWNS = {
   lake: {
     name: '鏡湖',
     entry: 'inlet',
+    /* 這張圖的曲子（ver -1542，Ray：「鏡湖預設 bgm 為 PeriTune_Sylblanc_loop」）。
+       ⚠ 它同時是尼莫戰 `bgmAfter:'@town'` 問到的那一首（鐵律 7：真相只有這一處）。 */
+    bgm: 'sylblanc',
     storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
     wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩，ver -862）
     stepMin: 10,          // 遺蹟／野外那一級（ver -917）

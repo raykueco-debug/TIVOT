@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1541';
+export const VERSION = 'ver 2026.09.17-1542';
 
 export const GAME_CONFIG = {
 
@@ -2363,11 +2363,17 @@ export const GAME_CONFIG = {
          輸了不走 Game Over，跳到腳本那一拍的 `onLose` 標籤接著演。
        ⚠ **不禁聖徒化／搭檔技**：Ray 沒說要禁，而憲法那條是「**禁了要明寫**」
          —— 不要因為對手是人就自己補上（賞金獵人那兩張是 Ray 明寫的）。
-       ⚠ `bgm` 不寫 ＝沿用戰前那一首（鏡湖沒有自己的 `TOWNS[].bgm`，所以是
-         上一個畫面帶進來的）。⚠ **`bgm_nemo`（Prairie5，-1508 就備好了）
-         是「尼莫戰的預設曲」** —— 要用它就在這張卡上寫 `bgm:'nemo'`，
-         我沒有自己接：Ray 這一份稿子沒提音樂。 */
-    lk_nemo: { enemy:'nemo', allowLose:true },
+       ══⚠⚠ **音樂（ver -1542，Ray：「nemo 戰預設 bgm 為 PerituneMaterial_Prairie5_loop，
+         評價結束後結束」）**══
+         · `bgm:'nemo'`      ＝ Prairie5（-1508 就備好的那一支，`ASSETS.bgm_nemo`）
+         · `bgmAfter:'@town'` ＝ **打完接回「這張圖的曲子」**（鏡湖＝`sylblanc`）
+           —— 那就是「評價結束後結束」：`resumeFrom` 跑在**結算頁收掉、劇情接回來**
+           那一刻（§6.5.2），所以尼莫那一首正好放到評價演完。
+         ⚠ **不要寫成 `bgmAfter:'sylblanc'`**：曲名的真相只有 `TOWNS[].bgm` 一處
+           （鐵律 7），卡上抄一份日後一定有一邊沒跟上。
+         ⚠ `bgmAfter` **只有打贏才吃**（`res.lost` 就走回戰前那一首）—— 而這一場
+           `allowLose`，戰前那一首本來也是鏡湖的 `sylblanc`，兩條路殊途同歸。 */
+    lk_nemo: { enemy:'nemo', allowLose:true, bgm:'nemo', bgmAfter:'@town' },
     /* ══ 守墓者（ver -1525）══ 三張追擊、一張決戰（規格 §九）。
        ⚠ 都不寫 `sessionEnd`：追擊那三場是一場一結算（玩家被追上就打一場）；
          決戰那一張是這一段的終點，等 ⑨ 追逐機制接上時再決定要不要收段。
@@ -3648,14 +3654,22 @@ export const GAME_CONFIG = {
          ⚠ 校準點：同一支程式量 Prairie4 得 0.754，而表上記載 0.731（差 0.26 dB）
            —— 量法對得上，沒有走鐘（§5：量化要有校準點）。 */
       peritunematerial_prairie5_loop:0.794,
-      /* ══⚠⚠⚠ **東方泊地那一夜的兩首還沒量**（ver -1520）══
-           `peritune_glass_cradle_loop`（安雅與米夏）／`peritune_echoed_art`（守夜）
-         音檔還沒進這台機器，量不了 —— **刻意留空**：沒有那一列＝增益 1
-         ＝以母帶響度播出（§6.6），那是「還沒調校」不是「壞掉」。
-         ⚠⚠ **不要憑感覺填一個數字** —— 這張表上每一列都是量出來的，
-           填一個猜的進來，下一個人會把它當成量過的。
-         ⚠ 檔案到了（Mac）跑 `tools/audio_scan.html`：它現場列目錄、逐支印建議值，
-           把那兩列補在這裡就好。錨是 `bgm_battle`（平均 −9.90）。 */
+      /* 鏡湖（ver -1542，Ray 指定的那一首）：耳機 −15.98／手機模型 −13.86
+         ⇒ 平均 **−14.92**，建議 gain **1.137**。
+         峰值 0.03 dBFS ＋ 1.12 dB ＝ **+1.15 dBFS**，在 `peakCeilDb`(+2) 之內，不必夾。 */
+      peritune_sylblanc_loop:1.137,
+      /* ══ 東方泊地那一夜的兩首（ver -1520 交件、**ver -1542 補量**）══
+         -1520 當下音檔還沒進這台機器所以刻意留空；這一輪檔案在了，
+         跑 `tools/audio_scan.html` 量出來的：
+           `Glass Cradle`：−16.61／−15.82 ⇒ 平均 −16.21，建議 1.320
+           `Echoed Art`  ：−14.66／−20.01 ⇒ 平均 −17.33，建議 1.501
+         ⚠⚠ **兩支都被 `peakCeilDb`(+2 dBFS) 夾住（CAP）**：母帶峰值幾乎頂到 0，
+           推上去分別是 +2.67／+3.68 dBFS —— 再推也只是被匯流 limiter 壓扁。
+           夾完 = 10^((2 − 峰值)/20) ⇒ **1.222／1.237**。
+           所以這兩支會低於目標 −20 LUFS 約 1.2／2.2 dB，那是母帶的極限（§6.6）。
+         ⚠ 校準點：同一支程式量 Prairie5 得 **0.794**，與表上那一列一字不差 ⇒ 量法沒走鐘。 */
+      peritune_glass_cradle_loop:1.222,   // CAP（見上）
+      peritune_echoed_art:1.237,          // CAP（見上）
       /* ⚠ 這兩首的「手機喇叭模型」比原始量測低 6.2／7.5 dB（一般曲子約 4~5）——
          它們的低頻本來就重。增益對的是**兩者的平均**（§6.6：只對其中一邊會讓
          低頻重的曲子在另一端突出 4~7 dB）。 */
@@ -4491,6 +4505,10 @@ export const ASSETS = {
   bgm_echoedart:    "resources/audio/bgm/Peritune_Echoed_Art.m4a",                          // 守夜（ver -1520，Ray 指定）
   bgm_piratebattle: "resources/audio/bgm/bgm_piratebattle.m4a",
   /* 湖上甲板那一段（ver -744，Ray 的 stage5 稿）。 */
+  /* 鏡湖的預設曲（ver -1542，Ray：「鏡湖預設 bgm 為 PeriTune_Sylblanc_loop」）。
+     ⚠ 這是**這張圖自己的**那一首（`TOWNS.lake.bgm`）—— 尼莫戰的 `bgmAfter:'@town'`
+       接回來的就是它（見那張卡）。 */
+  bgm_sylblanc:     "resources/audio/bgm/PeriTune_Sylblanc_loop.m4a",                     // 鏡湖（ver -1542，Ray 指定）
   bgm_misty:        "resources/audio/bgm/Peritune_Misty_Hollow_loop.m4a",
   bgm_whirlwind:    "resources/audio/bgm/Peritune_Whirlwind.m4a",   // 索菈娜為夥伴的戰鬥曲（ver -837；ver -1105 刪掉下面那份重複的）
   bgm_whistling:    "resources/audio/bgm/Peritune_Whistling_Winds_loop.m4a",
