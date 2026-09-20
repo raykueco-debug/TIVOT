@@ -6893,7 +6893,15 @@ export const TOWNS = {
           ren('pointmap','如果文獻沒錯的話，古墓應該開啟了……', { flags:['tomb_opened'] }),
           { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
           /* ⚠ ver -1565：這裡原本有一拍 `ren('reach','')`，Ray 指定拿掉。 */
-          ren('meltdown',''),
+          /* ══⚠⚠ **兩條互補的 T 分支**（ver -1572，Ray 補的）══
+             T2 以下 ＝ `lookaside`（撇開眼）／T3 以上 ＝ `meltdown`（撐不住了）。
+             ⚠⚠ **稿上第二條寫的是「蕾 T3 以下」** —— 那與第一條（T2 以下）重疊，
+               所以判成筆誤，這一版接成 **T3 以上**（`tierMax:2` 的補集）。
+               如果他真的要「T3 以下」那就是 `tierMax:3`，與上面那條會**同時成立**
+               而變成連演兩拍 —— 要那樣說一聲，改一個字。
+             ⚠ 兩拍都是無台詞的立繪拍，台上有人 ⇒ 點一下才推進（§6.5 的 -628）。 */
+          ren('lookaside','', { tierMax:2, tierWho:'RENNA' }),
+          ren('meltdown','',  { tierMin:3, tierWho:'RENNA' }),
           /* ⚠ ver -1565（Ray：「該場景最後一拍的諾差分換成 sadnoeye」）。 */
           nou('sadnoeye','……'),
           /* ══ 獲得 NIEM ══ 每一座遺蹟共用的收尾，見檔頭的 `NIEM_TAIL`。
@@ -7152,7 +7160,10 @@ export const TOWNS = {
           sor('confuse','但是妳在生氣吧？'),
           ren('lookaside','……是。'),
           sor('confuse','那是在生誰的氣？'),   // ver -1570（Ray 指定）
-          ren('upset',''),
+          /* ⚠ ver -1572（Ray 補的分支）：這一拍**只有蕾娜 T3 以上才演**
+             —— 她把臉別開的那一下是「被戳中了」，關係還不夠近的時候她不會露出來。
+             ⚠ 無台詞拍：台上有人 ⇒ 要點一下才推進（§6.5 的 -628），那正是要的節奏。 */
+          ren('upset','', { tierMin:3, tierWho:'RENNA' }),
           ren('lookawaytalk','沒有誰。'),
           ren('write','只是想早點結束這一切而已。'),
         ] } ] },
@@ -7200,7 +7211,11 @@ export const TOWNS = {
            這張圖現在本來就沒有 `wildSpawn`，接上之後要記得。 */
       stair1:     { bg:'tomb_stair1', name:'伊甸古墓　第一道階梯', noTime:true,
         exits:{ right:'cloister', up:'landing2' }, rest:true, noWild:true },
-      landing2:   { bg:'tomb_landing2', name:'伊甸古墓　二層梯廳', noTime:true,
+      /* ⚠ ver -1572（Ray：「二階梯廳設為安全區」）：`noWild:true` ＝這一格不出野怪。
+         ⚠ 它與**安全區旗**（`safehouse_<圖>`）是兩件事：那個是整張圖會開會關的狀態，
+           這個是**這一格的性質**（同神殿入口那一條，§6.5.4.4 的 -879）。
+         ⚠ 下一格（`hall2` 柱廳）是守墓者那一場 —— 一階一格，上來喘口氣就開打。 */
+      landing2:   { bg:'tomb_landing2', noWild:true, name:'伊甸古墓　二層梯廳', noTime:true,
         exits:{ up:'hall2', back:'stair1' } },
       hall2:      { bg:'tomb_hall2', name:'伊甸古墓　柱廳', noTime:true,
         exits:{ up:'cistern', right:'corr2', down:'landing2' },
@@ -7283,8 +7298,12 @@ export const TOWNS = {
           /* 回原背景。⚠ `cg:null` 也算轉場 ⇒ 會清一次場，而**這一拍自己的立繪**
              在 `reveal()` 裡上台（跑在清場之後），所以蕾娜照樣站得出來。 */
           Object.assign(ren('reach','不是……不是那樣！'), { cg:null }),
-          ren('reach','你不用證明什麼！你什麼都不用證明啊！'),
-          ren('reachcry','我……我是因為……！'),
+          /* ══⚠ **蕾娜 T3 以上才多講這兩句**（ver -1572，Ray 補的分支）══
+             ⚠ 看的是**蕾娜自己**的段位（說話者就是她），`tierWho` 寫出來只是讓它
+               一眼讀得懂 —— 不寫也對，但這一段同時有「諾薇兒的 T 分支」在下面，
+               兩組並排時不寫死看的是誰，下一個人一定會讀錯。 */
+          ren('reach','你不用證明什麼！你什麼都不用證明啊！', { tierMin:3, tierWho:'RENNA' }),
+          ren('reachcry','我……我是因為……！',                { tierMin:3, tierWho:'RENNA' }),
           nou('steady','索菈娜小姐，她們兩位就交給妳了。'),
           sor('ready','……知道了。'),
           /* ⚠⚠⚠ **兩支旗掛在這一拍，不掛在最後一拍** —— 最後那一拍是 `tierMin:3`，
@@ -7301,7 +7320,7 @@ export const TOWNS = {
           nou('steady','我，一定會幫你把賽西莉學姐贏回來！', { tierMax:2, tierWho:'NOUVELLE' }),
           { speaker:'PLAYER', blank:true, tierMin:3, tierWho:'NOUVELLE' },
           nou('steady','嗯！',            { tierMin:3, tierWho:'NOUVELLE' }),
-          nou('steady','我們才不會輸！', { tierMin:3, tierWho:'NOUVELLE' }),
+          nou('steady','我們……才不會輸！', { tierMin:3, tierWho:'NOUVELLE' }),
         ] } ] },
 
       /* ← 死胡同 E（一格） */
