@@ -665,12 +665,23 @@ export function removeFlags(list){
    ⚠ tier 界線 10/20/30/40/50，**棘輪只升不降**（docs/TIVOT_IMPL_SPEC.md §2）。
      tier = floor((aff-1)/20)+1 → 1..5（ver -724 由 /10 改）。這裡只做值與查詢；
      tier_lock 的落地（affection 可跌但不跌破已達 tier 的底）尚未實作。 */
+/* ══⚠⚠ **管理人模式：所有女角好感直接吃滿**（ver -1598，Ray：「管理者模式所有
+   女角的好感度都預設最高」）══ 好感分段控制著一大堆分支（`textByTier`、
+   旅店敲門、約會、評價者的台詞…），測後段內容時一格一格養太慢。
+   ⚠⚠ **只覆蓋在「查詢」這一層，不寫進鑰匙**（鐵律 9：預設值永遠不准被物化進存檔）
+     —— 拔掉 `testmode` 就回到真實值，而存檔裡存的一直是真實值。
+   ⚠ 這是**唯一的**好感查詢點（鐵律 7），所以掛在這裡就全域都吃得到。 */
+function testmodeOn(){
+  try{ return !!(document.body && document.body.classList.contains('testmode')); }
+  catch(e){ return false; }
+}
 export function getAffection(){
   const out={}; for(const c of CHARS) out[c]=AFFECTION_DEFAULT;
   try{
     const j=JSON.parse(rd(K.affection)||'null');
     if(j) for(const c of CHARS) if(typeof j[c]==='number') out[c]=j[c];
   }catch(e){}
+  if(testmodeOn()) for(const c of CHARS) out[c]=AFF_MAX;
   return out;
 }
 export function setAffection(obj){ wr(K.affection, JSON.stringify(obj||{})); }

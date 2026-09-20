@@ -2073,19 +2073,12 @@ story.setBattleHandler((battleId, resume)=>{
      就開那一場（單敵、卡上的數值、不能聖徒化／用搭檔技）。
      ⚠ 查不到才退回教學那一場 —— 舊腳本（地宮那一段）寫的就是教學，不能被改掉。
 
-     ══⚠⚠⚠ **也認「一張敵人卡的鑰匙」**（ver -1593，Ray：「出訓練用聖徒了」「還帶教學」）══
-     卡上的 `spawnAt`（Excel 的「出沒地」）刷出來的是**敵人卡**的 key（`arch_warden`），
-     而這裡只查 `config.battles` 的**場次** ⇒ 查不到 → **掉進下面那條「退回教學」**
-     ⇒ 走在古墓裡冒出**訓練用聖徒**，而且**還帶教學**（`requestReplay`）。
-     ⚠⚠ 這條退路本身是對的（舊腳本真的靠它），錯的是**它把「沒有這個場次」與
-       「這是一隻怪」當成同一件事**。⇒ 先問敵人卡，兩個都查不到才退回教學。
-     ⚠ -1592 我在 `combat.startGame` 裡補過同樣的退路 —— **但這條路根本走不到那裡**
-       （鐵律 8 的老毛病：同一個判斷散在兩個地方，只修了下游那一個）。 */
-  const asEnemy = !(GAME_CONFIG.battles && GAME_CONFIG.battles[battleId])
-                  && !!(GAME_CONFIG.enemies && GAME_CONFIG.enemies[battleId]);
-  if((GAME_CONFIG.battles && GAME_CONFIG.battles[battleId]) || asEnemy){
-    /* ⚠ 只有真的有場次卡才換曲子：裸敵人卡沒有 `bgm`，換了會把這張圖的曲子打斷。 */
-    if(!asEnemy){ const k=battleBgmOf(battleId);
+     ⚠⚠ **卡上宣告了出沒地的怪，場次卡是自動生的**（ver -1598，見 config 的
+       `wildBattlesFromSpawnAt`）—— 所以這裡照舊只查 `config.battles` 就夠了。
+       -1593／-1597 我在這裡與 `combat.startGame` 各補過一次「就地合成」的退路，
+       兩次都只治好自己看到的那一處（九處在查同一張表）。那兩條已經拿掉。 */
+  if(GAME_CONFIG.battles && GAME_CONFIG.battles[battleId]){
+    { const k=battleBgmOf(battleId);
       const s=story.bgmSrc(k); SFX.playBgm(s, { fadeOutMs:600, volume: bgmVol(s) }); }
     /* ⚠⚠ **城鎮插入戰留在原背景**（ver -592（-893 前用詞），Ray：「打完敵人應該會留在原背景，
        不要自動切背景」）：把城鎮現在畫面上那一張帶進戰鬥，蓋過敵人卡的 `bg` ——
@@ -2095,10 +2088,7 @@ story.setBattleHandler((battleId, resume)=>{
        `suspend()`（出航）刻意不清 `townId`（ver -437），所以 `isOpen()` 在天上
        照樣是真（憲法 §0.5 的 ver -1394 就警告過這一點）。 */
     combat.setBattleBg((town.isOpen() && town.isLive()) ? town.currentBg() : null);
-    /* ⚠ 裸敵人卡要補上「這張圖的野怪局」（ver -1596）——不補就每打一場結算一次。
-       ⚠ 只有城鎮介面真的活著才有局可掛（同上面 `setBattleBg` 的判準）。 */
-    combat.startScriptBattle(battleId,
-      asEnemy && town.isOpen() && town.isLive() ? { session: town.wildSessionId() } : undefined);
+    combat.startScriptBattle(battleId);
     return;
   }
   /* ⚠ 標成 story 場次：與首頁「教學」鈕分開（Ray 指定）—— 這一場由諾薇兒帶

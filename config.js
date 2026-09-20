@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1597';
+export const VERSION = 'ver 2026.09.17-1598';
 
 export const GAME_CONFIG = {
 
@@ -4664,6 +4664,36 @@ export const ASSETS = {
    ⚠ **只列真的用得到的**：`ART` 每個角色有二十幾張差分，整批掛上去這張表就沒有
      「哪幾張是戰鬥對白要用的」這個資訊了（查起來也慢）。
    ⚠ 加一句新台詞要用新差分時，在這裡補一筆就好，取景值會自己跟著來。 */
+/* ══⚠⚠⚠ **卡上宣告了出沒地的怪 → 自動生一張場次卡**（ver -1598）══════════════
+   Excel 的「出沒地」（`spawnAt`）刷出來的是**敵人卡**的 key，而整個戰鬥層到處在問
+   **`GAME_CONFIG.battles[id]`**（實測 9 處：`midSession`／`battleBgmOf`／
+   `storyBattleEnd`／`saint`／`story` 的續播…）—— 表上沒有那一張的話，
+   每一處都拿到 undefined，而**沒有任何一處會報錯**：
+     · `midSession()` 回假 ⇒ **每打一場就結算一次**（Ray 連報兩次）
+     · 交棒回程、BGM、劇情戰判定…全部走預設值
+   ⚠⚠⚠ **-1594／-1597 我試過「就地合成一張 `{enemy,session}`」兩次，兩次都只治好
+     自己看到的那一處** —— 那正是鐵律 8 的病：同一個判斷散在九個地方，
+     合成的那一張**不在那張表上**，所以九處裡只有我改的那一處認得它。
+   ⇒ 正解是**讓那張卡真的存在**：在這裡一次生好，九處自動都對。
+
+   · `session:'<圖>_wild'` ＝整張探索地圖算**一局**（§6.5.4.3）：中間打幾場都不結算，
+     **走到安全點（`rest:true`）才閉棺** —— 命名跟著既有的走（`sf_wild`／`ruins_wild`）。
+   · 出沒地寫了好幾張圖時取**第一張**當局 id（同一隻在兩張圖都出，局跟著第一張）。
+   ⚠ **已經有同名場次卡的不覆蓋**：手寫的那一張永遠優先（要 bgm／talk／sessionEnd
+     就自己開一張）。 */
+(function wildBattlesFromSpawnAt(){
+  const B = GAME_CONFIG.battles, E = GAME_CONFIG.enemies;
+  if(!B || !E) return;
+  for(const k in E){
+    const at = E[k] && E[k].spawnAt;
+    if(!at || B[k]) continue;
+    const first = String(at).split(/[，,]/)[0].trim();
+    const map = (first.split(':')[0] || '').trim();
+    if(!map) continue;
+    B[k] = { enemy:k, session: map + '_wild' };
+  }
+})();
+
 (function tutPortraits(){
   const need = { nouvelle:['steady','run'], renna:['shock','run'],
                  /* ver -839：夏爾村村戰的戰鬥內對白。 */
