@@ -1302,6 +1302,10 @@ export function healPlayer(amount){
    ⚠ 夾在 1：抽到 0 是陣亡，而規格是「剩 hp1 熔斷」。 */
 export function drainPlayer(amount){
   const cut=Math.max(0, amount||0);
+  /* ⚠ 鎖血（管理人測試）**這一條也要吃**（ver -1611）：它是「玩家的血不會掉」，
+     不是「敵人打不到你」—— 惡夢化的倒數槽同樣是掉血。漏掉的話開著鎖血測夢魘
+     照樣會被抽到 hp1，而那正是最需要鎖血的那一段。 */
+  if(state.hpLock) return state.playerHp;
   state.playerHp=Math.max(1, state.playerHp-cut);
   updateBars();
   tutorial.onHpChange();
