@@ -12,7 +12,7 @@ resources/si/sorana_si_determine.webp  resources/si/sorana_si_salute.webp
 resources/si/sorana_si_eat.webp        resources/si/sorana_si_serious.webp
 resources/si/sorana_si_nod.webp        resources/si/sorana_si_stare.webp
 resources/si/sorana_si_point.webp      resources/si/sorana_si_wave.webp
-                                       resources/si/sorana_si_worry.webp
+resources/si/sorana_si_lookaway.webp   resources/si/sorana_si_worry.webp
 ```
 
 ⚠ 這 11 個目前都**還沒有** `?v=`，所以是加 `?v=2`（同 `renna_si_scream` 的寫法）。
@@ -34,6 +34,7 @@ resources/si/sorana_si_point.webp      resources/si/sorana_si_wave.webp
 | stare | 11 → **7** | 1515 → **1527** |
 | wave | 3 → **9** | 1516 → **1526** |
 | worry | 0 → **5** | 1514 → **1519** |
+| lookaway | 5 → 5（不變） | 1513 → **1521** |
 
 ⚠⚠ **`fx` 保持原值，不要照我量的改。** 理由兩個：
 1. 新圖是**照舊圖的姿勢**重畫的（同一個姿勢 ⇒ 沿用，§5 的 -649）。
@@ -54,4 +55,4 @@ resources/si/sorana_si_point.webp      resources/si/sorana_si_wave.webp
 
 - 其餘索拉娜立繪（含 `battlecry`／`front`／`side`／`back` 與 read 系列）**這一輪沒換**。
 - Ray 交辦「舊索拉娜圖全部重製」還有 **46 張**沒做（清單在 `_sorana_regen_spec.md` §十）。
-- 這一輪還欠 4 張：`lookaway`／`relief`／`sleep`／`scare`（額度用完，明天 13:00 後接）。
+- 這一輪還欠 3 張：`relief`／`sleep`／`scare`（額度用完，明天 13:00 後接）。

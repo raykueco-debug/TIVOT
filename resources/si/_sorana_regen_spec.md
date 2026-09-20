@@ -137,16 +137,16 @@
 
 # 九、進度（2026-09-20 收工）
 
-## ✅ 短提示詞版 11 張（**這批才是有效的**，檔名 `*_short.png`）
+## ✅ 短提示詞版 12 張（**這批才是有效的**，檔名 `*_short.png`）
 
-`cry` `determine` `eat` `nod` `point` `sad` `salute` `serious` `stare` `wave` `worry`
+`cry` `determine` `eat` `lookaway` `nod` `point` `sad` `salute` `serious` `stare` `wave` `worry`（12 張）
 
 四項驗收：色相 185.8~212.8° 全過／角落 α 全 0／近白 0.78~3.07%
 （白布多的那幾張偏高：`serious` 3.07%、`sad` 2.72%、`eat` 2.21% —— **未經 Ray 眼睛複核**）
 
-## ⚠ 還欠 4 張
+## ⚠ 還欠 3 張
 
-`lookaway`（送出了、沒收到圖）／`relief`／`sleep`／`scare`
+`relief`／`sleep`／`scare`
 
 **停工原因：ChatGPT 的圖片生成額度用完**，Ray 回報「請於明天下午 1:00 再試一次」。
 ⚠ 明天恢復後**直接接著跑這 4 張**，作法不用再試 —— 就是 §一之二 那三行。
