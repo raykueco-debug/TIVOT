@@ -1161,6 +1161,15 @@ function actDue(n, sleepOnly){
        夏爾村「S5 之前」那批早訪 NPC（村長）用。 */
     if(a.untilStage!=null && prog.getStage() >= a.untilStage) continue;
     if(muted && a.fromStage==null) continue;
+    /* ══⚠⚠⚠ **`chaseOnly:true` ＝這一段只有追兵帶得動，走進來不算**
+       （ver -1616，Ray：「柱廳怎麼可能會有登場？登場是在進古墓後兩戰以後移動
+       下一格觸發」）══
+       追兵帶著走的那幾段（`chase.scenes`）**台詞住在某一格的 `acts` 裡**（好找），
+       而 `actDue` 看不出那一段是誰的 —— 沒有這一道門的話，玩家自己走到那一格
+       就會把「被追上」的戲演掉，而畫面上完全正常，只是**追兵根本不在那裡**。
+       ⚠ 背安雅那一段（`chase.next`）**刻意不標**：它的規約從 -1608 起就是
+         「兩條路共用同一個 flag，走到那一格照樣演得到」。 */
+    if(a.chaseOnly) continue;
     if(a.flag && prog.hasFlag(a.flag)) continue;
     if(!needOk(a.need)) continue;
     /* ver -858：acts 也吃 `hourOfDay`（同 gates 的語意：單值＝今天過了這個時刻、
@@ -1706,7 +1715,23 @@ function dragonActDue(n){
      古墓 28 隻的卡還沒到（`resources/enemy/_tomb_mon_spec.md`），而且那兩個數字
      與 `wildSpawn.rate` 是同一件事的兩個真相 —— 卡到齊時要先決定留哪一份（鐵律 7）。
    ══════════════════════════════════════════════════════════════════════════ */
-function chaseSpec(){ return (TOWNS[townId]||{}).chase || null; }
+/* ══⚠⚠⚠ **`chase.hard` ＝某一支旗插上去之後，整組追擊參數換一套**
+   （ver -1616，Ray：「從這邊開始追擊變密急」，3／2／2）══
+   ⚠⚠ **覆寫收在這一支**（鐵律 7）：`speed`／`onEncounter`／`stun` 有五個讀取點
+     （`chaseStep`／`chaseOnEncounter`／`chaseAfterAct`…），在每一個讀取點各判一次
+     「現在是不是密急階段」＝同一個判斷五份，漏一處就是「牠有時候快有時候慢」，
+     而那不會有任何錯誤訊息。
+   ⚠ 只蓋 `hard` 上真的寫了的那幾格（`intro`／`scenes`／`resetAt` 照舊）。 */
+/* 這一次被追上時，`chaseActDue` 挑中的是哪一段（`chase.scenes` 的那幾段）。
+   ⚠ 只是 `chaseAfterAct` 用來認「剛演完的是不是追擊那一段」的把手 —— 不是狀態，
+     不必存檔（一次抵達之內用完就算）。 */
+let chaseScene=null;
+function chaseSpec(){
+  const c=(TOWNS[townId]||{}).chase || null;
+  if(!c || !c.hard || !c.hard.need || !prog.hasFlag(c.hard.need)) return c;
+  const h=Object.assign({}, c.hard); delete h.need;
+  return Object.assign({}, c, h);
+}
 /* 現在那一筆（`null`＝還沒上線／不是這張圖）。⚠ 每次現讀，不快取：
    讀檔會把鑰匙整個換掉，快取一份就會拿著上一個檔的追兵（鐵律 7）。 */
 function chaseGet(){ return chaseSpec() ? prog.getChase(townId) : null; }
@@ -1827,6 +1852,11 @@ function namedAct(ref){
   const a=(src && (src.acts||[]).find(x=>x && x.flag===ref.flag)) || null;
   if(!a || prog.hasFlag(a.flag)) return null;
   if(a.need && !prog.hasFlag(a.need)) return null;
+  /* ⚠⚠ `until` ＝**這支旗立了就作廢，不補演**（ver -1616，Ray：「如果到我們才不會輸
+     之前沒出死纏濫打的話，就不會再出死纏爛打」）。語意與 `actDue` 的 `until` 同一個
+     （鐵律 7：兩支各寫一份必然走鐘）—— 這一支以前沒判它，於是追兵帶著走的那幾段
+     **過了時機還是會補演**。 */
+  if(a.until && prog.hasFlag(a.until)) return null;
   if(a.fromStage!=null && prog.getStage() < a.fromStage) return null;
   return a;
 }
@@ -1850,23 +1880,21 @@ function chaseActDue(n){
   const spec=chaseSpec(); if(!spec || !n) return null;
   if(n.noWild) return null;
   const c=chaseGet(); if(!c || !c.node || c.node!==nodeId) return null;
-  /* ══⚠⚠⚠ **第一次現身＝把牠的登場戲帶過來**（ver -1603）══
-     `chase.intro:'<節點>'` ＝那一段戲住在哪一格（古墓＝柱廳的 `tomb_gk1_done`）。
-     ⚠⚠ **只帶「牠的戲」，不帶那一格自己的氣氛戲** —— 柱廳那四句
-       （「這個地方好大……死胡同……」）已經在 -1603 拆成獨立的
-       `tomb_hall2_arrive`，永遠只在柱廳演。**-1599 把整段都拉過來才被退回。**
-     ⚠ 挑那一段走既有的 `actDue()`（前置旗、章節門、`until` 整套照舊，鐵律 8）。
-     ⚠ 兩邊共用同一個 `flag` ⇒ 只演一次。 */
-  if((c.hits|0)===0 && spec.intro){
-    /* ⚠⚠⚠ **指名的是「那一段」不是「那一格」**（ver -1606）：`intro:{at,flag}`。
-       -1603 我寫成只給節點、再用 `actDue(節點)` 去挑 —— 那會挑到**那一格的第一段
-       還沒演的**，而柱廳的第一段是**氣氛戲**（「這個地方好大……死胡同……」）。
-       於是追兵在別的格子現身時演的是那一段，演完之後 `actDue(當下這一格)` 沒有
-       下一段 ⇒ **話講一半就沒了、守墓者也沒出來**（Ray 回報）。
-       ⇒ 現在照 `flag` 指名那一段，挑錯的可能性歸零。
-       ⚠ 前置旗／章節門照舊要過（沿用 `actDue` 的規約，只是限定在那一段上）。 */
-    const w = namedAct(spec.intro);
-    if(w) return w;
+  /* ══⚠⚠⚠ **被追上時要演哪一段：一張由上往下取第一個成立的表**
+     （`chase.scenes`，ver -1616）══════════════════════════════════════════════
+     -1603~-1608 只有**一段**（`chase.intro` ＝登場戲），而 Ray 的稿現在有三段：
+       ① 登場（首戰兩輪）② 二戰之前被追上（索「真是死纏濫打！」）
+       ③ 二戰之後被追上（諾「我……我沒問題的！」）
+     ⚠⚠⚠ **順序不靠 `hits` 數，靠那幾段自己的旗**（鐵律 9：一個狀態一個擁有事件）：
+       每一段演完插自己的 `flag`，下一段用 `need` 指著前一段的旗、用 `until` 指著
+       作廢的時機 —— 全部是 `namedAct` 既有的規約，這裡一個條件都不必新發明。
+       用 `hits===0/1/2` 去排的話，玩家多被追上一次整條就錯位，而且查不出來。
+     ⚠ 舊的 `chase.intro` 併進這張表的第一列（鐵律 7：不要留第二份）；
+       為了不讓舊資料靜靜壞掉，讀不到 `scenes` 時仍然吃 `intro`。 */
+  const scenes = spec.scenes || (spec.intro ? [spec.intro] : []);
+  for(const ref of scenes){
+    const w = namedAct(ref);
+    if(w){ chaseScene = w; return w; }
   }
   const list=spec.battles||[];
   if(!list.length) return null;
@@ -1894,9 +1922,13 @@ function chaseAfterAct(act, fought){
          那是一顆免費的重置鈕，而且看起來與正常行為一模一樣。
        ⚠ 連「還沒上線」也算數：打過那一場就等於追逐真的開始了。 */
     c.node = nodeId; c.stun = spec.stun|0;
-  }else if(act && (act.__chase || (spec.intro && (c.hits|0)===0 && c.node===nodeId))){
-    /* ⚠ 登場戲那一段**不是** `__chase`（它是節點上的正規 act），但它就是「第一次
-       被追上」—— 演完一樣 `hits+1` ＋ 停 `stun`，不然牠會賴在原地連環開打。 */
+  }else if(act && (act.__chase || act===chaseScene)){
+    /* ⚠⚠ 追兵帶著走的那幾段（`chase.scenes`）**不是** `__chase`（它們是節點上的
+       正規 act），但演完就是「被追上並打退了」—— 一樣 `hits+1` ＋ 停 `stun`，
+       不然牠會賴在原地連環開打。
+       ⚠⚠⚠ 認的是**物件本身**（`act===chaseScene`）不是 `hits===0`：-1616 之後
+         那張表有三段，用場次去認只認得出第一段，後兩段演完牠不會停 `stun`
+         —— 症狀是「講完話牠又立刻打一場」，而且沒有任何錯誤訊息。 */
     c.hits=(c.hits|0)+1; c.stun = spec.stun|0;    // 擊退：牠停在原地（＝玩家腳下）
   }
   chaseSet(c);
@@ -1911,13 +1943,19 @@ export function chaseDebug(){
     if(!a) return '找不到那一段（'+ref.at+'/'+ref.flag+'）';
     if(prog.hasFlag(a.flag)) return '★已經演過了（旗 '+a.flag+' 插著）⇒ 不會重演';
     if(a.need && !prog.hasFlag(a.need)) return '等前置旗 '+a.need;
+    if(a.until && prog.hasFlag(a.until)) return '★過期作廢（旗 '+a.until+' 插著）⇒ 不補演';
     if(a.fromStage!=null && prog.getStage()<a.fromStage) return '等 stage '+a.fromStage;
     return '還沒演，條件已到 ✔'; };
   return {
     現在: c || '（還沒上線）',
     上線條件: spec ? ('打過 '+spec.startFights+' 場'+((spec.startStep|0)>0?('，或踩到第 '+spec.startStep+' 格'):'')) : '（這張圖沒有追逐）',
     已打場數: c ? (c.fights|0) : 0,
-    登場戲: spec ? why(spec.intro) : '—',
+    被追上要演的那幾段: spec
+      ? (spec.scenes||(spec.intro?[spec.intro]:[])).map(r=>r.flag+'：'+why(r))
+      : '—',
+    密急階段: spec && spec.hard
+      ? (prog.hasFlag(spec.hard.need) ? '★已開（'+spec.hard.need+'）' : '還沒（等 '+spec.hard.need+'）')
+      : '（這張圖沒有）',
     下一格那一段: spec ? why(spec.next) : '—',
     參數: spec || null,
   };
@@ -2046,9 +2084,18 @@ function wildActDue(n){
        ⚠ `wildDone` 的語意沒有變：它管的是**第一輪**同種不重複，不是「永遠只遇一次」。
        ⚠ 必出格（`fixed`）與結算怪不受影響：那兩種本來就是一趟一次。 */
     const repeat = !fresh.length;
-    const rate = (repeat || wildCleared.has(nodeId))
+    let rate = (repeat || wildCleared.has(nodeId))
       ? ((GAME_CONFIG.tuning||{}).wildRespawnRate!=null ? GAME_CONFIG.tuning.wildRespawnRate : 0.25)
       : ((W&&W.rate)||(cardPool.length?((GAME_CONFIG.tuning||{}).wildRespawnRate||0.25):0));
+    /* ══⚠⚠⚠ **`mustWild:true` ＝這一格這一趟必出一次怪**（ver -1616，Ray：
+       「我在中殿跟後殿各加一次 100% 遇敵，這樣在走進柱廳之前必定觸發首戰兩輪」）══
+       ⚠⚠ 宣告在**節點上**不是在城上列一張名單 —— 與 `noWild` 同一個位置、同一個
+         道理（§ruins 的 `wildSpawn` 註解：「名單會與節點走鐘」）。
+       ⚠⚠ 與 `fixed` 是兩件事：`fixed` 指定**哪一隻**（那一格永遠是同一隻），
+         這一格只保證**有一隻**，抽誰照舊走池子。
+       ⚠ 只保證**第一次**（`wildCleared` 記著這一格出過了）——
+         之後回頭走它照舊吃重刷率，不然這兩格會變成無限刷怪點。 */
+    if(n.mustWild && !wildCleared.has(nodeId)) rate = 1;
     wildStat.rolled++;
     if(Math.random() >= rate){ wildSkip('擲骰沒中（rate '+rate+'）'); return null; }
     wildStat.hit++;

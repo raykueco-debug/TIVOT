@@ -6984,23 +6984,37 @@ export const TOWNS = {
        ⚠⚠ **數字是算出來的，不是猜的**：`gap 6 / stun 4` ⇒ **直線衝剛好 5 場**
          （Ray 要的下限），逛完全圖 13 場。`stun 5` 會掉到 4 場（下限破功）。 */
     chase: {
-      startFights: 3,            // 打過 3 場 → 下一格出現（ver -1593）
+      startFights: 2,            // 打過 2 場 → 下一格出現（ver -1616，Ray：「改成兩戰好了」）
       startStep: 0,              // ⚠ 停用（0＝不看步數）；-1576 的「第 4 格」已撤
       gap: 6, speed: 2, onEncounter: 1, stun: 4,
-      /* ══⚠⚠ **牠的登場戲住在哪一格**（ver -1603）══ 追兵**第一次現身**時把那一段
-         帶到當場演 —— 「打完第三隻直接出守墓者、沒跑劇情」就是少了這一條。
-         ⚠⚠⚠ **`{at,flag}` 兩個都要寫**：`at` 是那一段住在哪一格、`flag` 是**哪一段**。
-           -1603 只寫節點，結果挑到那一格的第一段（柱廳的氣氛戲「這個地方好大……」）
-           ⇒ 在別的格子演完就沒有下一段，**守墓者不會出來**（Ray 回報）。
-         ⚠ 指的是**守墓者的登場戲**（`tomb_gk1_done`：震動→「什麼東西？」→咆哮→
-           開打→兩階段揭露→分組），**不含**柱廳那四句氣氛戲（`tomb_hall2_arrive`）。
-         ⚠ 兩邊共用同一個 `flag` ⇒ 只演一次：先走到柱廳就在柱廳演、
-           先被追上就在當場演。 */
-      intro: { at:'hall2', flag:'tomb_gk1_done' },   // ⚠ 指名**那一段**（不是那一格）
+      /* ══⚠⚠⚠ **被追上時要演哪一段：一張由上往下取第一個成立的表**（ver -1616）══
+         台詞全部住在**中殿（`nave`）的 `acts`** 裡（見那一格），三段都標
+         `chaseOnly:true` ＝走進中殿不算，只有被追上帶得動。
+         ⚠⚠⚠ **順序不靠被追上幾次，靠那三段自己的旗**（鐵律 9）：
+           ① `tomb_gk1_done`  登場（首戰兩輪）—— 需要 `tomb_talk`
+           ② `tomb_chase_taunt` 索「真是死纏濫打！」—— 需要 `tomb_carry`（背安雅演完）、
+              **`until:'tomb_gk1_split'`**（到柱廳那一段演完還沒出就作廢，Ray 明講）
+           ③ `tomb_chase_offer` 諾「我……我沒問題的！」—— 需要 `tomb_gk1_split`（二戰之後）
+         ⚠ 三段都演完（或作廢）之後就只剩 `battles` 那一場純打的追擊戰。
+         ⚠⚠ **`at` 指的是「那一段住在哪一格」，不是「在哪一格演」** —— 在哪演由
+           追兵現在站在哪決定。-1603~-1615 它們住在柱廳，於是每一次都有人讀成
+           「登場是柱廳的戲」（Ray -1616：「柱廳怎麼可能會有登場？」）。 */
+      scenes: [
+        { at:'nave', flag:'tomb_gk1_done'   },
+        { at:'nave', flag:'tomb_chase_taunt' },
+        { at:'nave', flag:'tomb_chase_offer' },
+      ],
       /* 登場戲之後**換一格就演**（ver -1608）：索菈娜背安雅那一段。
          ⚠ 稿上寫的是「下一個房間」—— ver -1526 把它讀成節點 id 釘在納骨龕廊上，
            那是誤讀。台詞仍然住在那一格的 `acts` 裡（好找），這裡只是指名它。 */
       next:  { at:'nichehall', flag:'tomb_carry' },
+      /* ══⚠⚠⚠ **柱廳那一段演完 → 追擊變密急**（ver -1616，Ray 給的數字 3／2／2）══
+         覆寫收在 `modules/town.js` 的 `chaseSpec()` 一支（鐵律 7）——
+         `speed`／`onEncounter`／`stun` 有五個讀取點，在每一個讀取點各判一次
+         「現在是不是密急階段」＝同一個判斷五份。
+         ⚠ 門用**柱廳那一段自己的 flag**，不另立一支旗：「那一段演完了」與
+           「追擊變密急了」是同一個時刻（諾薇兒「得趕快追上大家才行！」那一拍）。 */
+      hard: { need:'tomb_gk1_split', speed:3, onEncounter:2, stun:2 },
       resetAt: 'hall2',           // 柱廳：必觸戰鬥，戰後牠在這裡
       idleAt: ['gate'],           // 墓門：不推進
       /* ⚠ `wildRate` 已移除（ver -1596）：遇敵率的唯一真相是城上的 `wildSpawn.rate`。 */
@@ -7274,8 +7288,82 @@ export const TOWNS = {
       cryptA:     { bg:'tomb_crypta', name:'伊甸古墓　家族墓室', noTime:true,
         exits:{ back:'ossuaryA' } },
       /* 全場最高的一格 */
-      nave:       { bg:'tomb_nave', name:'伊甸古墓　中殿', noTime:true,
-        exits:{ up:'crossing', left:'aisleW', down:'vestibule' } },
+      /* ══⚠⚠⚠ **中殿與後殿各必出一次怪**（ver -1616，Ray：「我在中殿跟後殿各加
+         一次 100% 遇敵，這樣在走進柱廳之前必定觸發首戰兩輪」）══════════════════
+         ⚠⚠ **這兩格是割點**：實測墓門→柱廳最短 10 格，而**拿掉其中任一格，
+           墓門就到不了柱廳** ⇒ 兩場是保證的，不是機率。
+           （最短路：墓門→前庭→**中殿**→十字交會→禮拜堂→繞行廊→**後殿**→
+             迴廊→第一道階梯→二層梯廳→柱廳）
+         ⚠ 其餘格子照舊吃 `wildSpawn.rate`（50%）—— Ray：「並不是只有 100% 那兩格
+           才出怪，中間還是有 50% 的踩怪有可能提前觸發登場」。所以這兩格是**下限**，
+           不是唯一來源。
+         ⚠ 抽哪一隻照舊走池子（`mustWild` 只保證「有一隻」，`fixed` 才是指定誰）。 */
+      nave:       { bg:'tomb_nave', name:'伊甸古墓　中殿', noTime:true, mustWild:true,
+        exits:{ up:'crossing', left:'aisleW', down:'vestibule' },
+        acts:[
+        /* ══⚠⚠⚠ **追兵帶著走的三段戲**（`chase.scenes`，ver -1616）══════════════
+           三段**都標 `chaseOnly:true`** ＝ 只有「被追上」帶得動，走進中殿不算。
+           ⚠⚠⚠ **它們住在這一格只是因為要有個地方住** —— 真正決定「在哪演」的是
+             追兵現在站在哪。擺在中殿是因為那是追逐的起點（第一場 100% 遇敵）。
+             ⚠ -1603~-1615 它們住在**柱廳**，於是每一次都有人（包含我）讀成
+               「登場是柱廳的戲」。Ray（-1616）：「柱廳怎麼可能會有登場？」
+           ⚠ 順序＝`chase.scenes` 那張表由上往下；條件全部寫在各段自己的
+             `flag`／`need`／`until` 上（鐵律 9），不靠被追上的次數去數。 */
+        { flag:'tomb_gk1_done', need:'tomb_talk', chaseOnly:true, sides:{ RENNA:'L' }, lines:[
+          { speaker:'NARRATION', text:'', shake:true, auto:1200 },
+          any('lookup',''),
+          nou('shock2','什、什麼東西？'),
+          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
+          sor('battlecry','麻煩的東西來了！'),
+          { battle:'tomb_gk1' },
+          nou('relief','嚇、嚇死我了！'),
+          sor('guardtalk','棘手了點，但也不是不能應付。'),
+          sor('guard','只是……好像哪裡不太對勁。'),
+          ren('think','不對勁……'),
+          ren('shockcalm','！！'),
+          ren('shout','趕快走！離開這裡！'),
+          any('scare',''),
+          ren('shout','沒有淨化反應，那東西沒有死！'),
+          /* ⚠ ver -1570（Ray：「那東西沒有死後面一拍的咆哮要有畫面震動」）。 */
+          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
+          nou('shock','！！'),
+          { speaker:'NARRATION', text:'', shake:true, auto:1200 },
+          /* ══⚠⚠⚠ **牠又降臨了一次 ＝ 首戰的第二輪**（ver -1570；-1616 定名）══
+             牠剛被打死、卻又整隻站回來 —— 蕾娜下一句「那不是再生……這個東西把
+             『死亡』本身覆寫了」正是**看到第二次**才說得出口。
+             ⚠⚠ **首戰兩輪都是 `gk_seal`（聖印失效）**，柱廳的二戰兩輪才換成
+               `gk_offset`（錯格重影）—— Ray（-1616）：「型態不要輪出」。
+               那幾個型態是**一次比一次更壞的揭露**，被隨機輪出來就沒有揭露可言。 */
+          { battle:'tomb_gk1' },
+          ren('intense','那不是再生……'),
+          ren('intense2','這個東西把『死亡』本身覆寫了！'),
+          nou('decode','覆寫……！'),
+          /* ⚠⚠⚠ **追逐正式開始的旗插在這一拍**（ver -1608）：牠登場了，門關上了。
+             ⚠ 原本掛在**分組**那一段的收尾 —— 而分組是柱廳專屬的（-1607），
+               先被追上的人走不到 ⇒ 後面吃這支旗的東西整串失效
+               （`tomb_carry` 背安雅、墓門的 `lock`）。**旗要跟著「牠登場」走。** */
+          Object.assign(sor('battlecry','什麼跟什麼啊沒完沒了！'),
+                        { flags:['tomb_chase_on'] }),
+        ] },
+        /* ② **二戰之前被追上**（ver -1616，Ray 交稿）。
+           ⚠⚠⚠ `until:'tomb_gk1_split'` ＝Ray 明講「**如果到我們才不會輸之前沒出
+             死纏濫打的話，就不會再出死纏爛打**」—— 過了時機就作廢，**不補演**。
+             （`namedAct` 以前不判 `until`，-1616 補上，鐵律 7：與 `actDue` 同一個語意。） */
+        { flag:'tomb_chase_taunt', need:'tomb_carry', until:'tomb_gk1_split',
+          chaseOnly:true, sides:{ RENNA:'L' }, lines:[
+          sor('battlecry','真是死纏濫打！'),
+          ren('shout','這樣下去不是辦法！得盡快找到遺蹟中心！'),
+          { battle:'tomb_gk1' },
+        ] },
+        /* ③ **二戰之後被追上**（ver -1616，Ray 交稿）。
+           ⚠ 這時隊上只剩諾薇兒（分組演完了）—— `need` 指的正是那一段的旗。 */
+        { flag:'tomb_chase_offer', need:'tomb_gk1_split',
+          chaseOnly:true, lines:[
+          nou('desperate','我......我沒問題的！'),
+          nou('desperate','請盡量使用我！'),
+          { battle:'tomb_gk1' },
+        ] },
+        ] },
       aisleW:     { bg:'tomb_aislew', name:'伊甸古墓　側廊', noTime:true,
         exits:{ right:'nave', left:'tombniche' } },
       tombniche:  { bg:'tomb_tombniche', name:'伊甸古墓　墓龕', noTime:true,
@@ -7294,7 +7382,7 @@ export const TOWNS = {
       ambulatory: { bg:'tomb_ambulatory', name:'伊甸古墓　繞行廊', noTime:true,
         exits:{ down:'chapel', left:'apse' } },
       /* ☀ 拱頂塌了一個洞，光柱斜插下來 → **有四時段差分**（另一格是墓門） */
-      apse:       { bg:'tomb_apse', name:'伊甸古墓　後殿',
+      apse:       { bg:'tomb_apse', name:'伊甸古墓　後殿', mustWild:true,
         exits:{ right:'ambulatory', up:'reliquary', left:'cloister' } },
       /* ← 死胡同 D（一格） */
       reliquary:  { bg:'tomb_reliquary', name:'伊甸古墓　聖骨匣室', noTime:true,
@@ -7365,42 +7453,17 @@ export const TOWNS = {
           sor('tire','還一堆死胡同，好像一直在走來走去而已。'),
           ren('write','先把地圖建立起來就輕鬆了。走過的每一步都不會白費。'),
           sor('tire','話是這麼說……'),
-        ] },
-        { flag:'tomb_gk1_done', need:'tomb_talk', sides:{ RENNA:'L' }, lines:[
-          { speaker:'NARRATION', text:'', shake:true, auto:1200 },
-          any('lookup',''),
-          nou('shock2','什、什麼東西？'),
+          /* ══⚠⚠⚠ **二戰・第一輪**（ver -1616，Ray：「移動到柱廳觸發畫地圖劇情，
+             進入強制戰鬥，一戰完後觸發我們才不會輸劇情」）══
+             ⚠⚠ **柱廳的戰鬥是這一格自己的劇情戰，不是追擊戰**：柱廳與二層梯廳
+               都是 `noWild`，追兵站得上去但踩到不開打（`chaseActDue` 第一行）。
+               所以「柱廳必為二戰兩輪」是**資料保證**的，不靠追兵剛好追到。
+             ⚠ 兩拍前置照既有的寫法（震動＋龍吟＋再震一下）—— `gk_*` 四張卡
+               自己帶 `entrance`＋`entranceBlast`，降臨演出由卡上的 `riseFx` 開
+               （ver -1615，Ray：「每一次守墓者戰都要有降臨特效」）。 */
+          { speaker:'NARRATION', text:'', shake:true, auto:1000 },
           { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
-          sor('battlecry','麻煩的東西來了！'),
-          { battle:'tomb_gk1' },
-          nou('relief','嚇、嚇死我了！'),
-          sor('guardtalk','棘手了點，但也不是不能應付。'),
-          sor('guard','只是……好像哪裡不太對勁。'),
-          ren('think','不對勁……'),
-          ren('shockcalm','！！'),
-          ren('shout','趕快走！離開這裡！'),
-          any('scare',''),
-          ren('shout','沒有淨化反應，那東西沒有死！'),
-          /* ⚠ ver -1570（Ray：「那東西沒有死後面一拍的咆哮要有畫面震動」）。 */
-          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
-          nou('shock','！！'),
-          { speaker:'NARRATION', text:'', shake:true, auto:1200 },
-          /* ══⚠⚠⚠ **牠又降臨了一次**（ver -1570，Ray：「在『那不是再生』前一拍
-             再降臨一次守墓者」）══ 牠剛被打死、卻又整隻站回來 —— 蕾娜下一句
-             「那不是再生……這個東西把『死亡』本身覆寫了」正是**看到第二次**才說得出口。
-             ⚠⚠ 用**同一張卡**（`tomb_gk1`）是刻意的：Ray 說的是「**再**降臨一次」
-               ＝同一隻回來，不是換一隻。`tomb_gk2`／`gk3` 留給⑨的追逐那三場。
-               要換成別隻說一聲，改一個字的事。 */
-          { battle:'tomb_gk1' },
-          ren('intense','那不是再生……'),
-          ren('intense2','這個東西把『死亡』本身覆寫了！'),
-          nou('decode','覆寫……！'),
-          /* ⚠⚠⚠ **追逐正式開始的旗插在這一拍**（ver -1608）：牠登場了，門關上了。
-             ⚠ 原本掛在**分組**那一段的收尾 —— 而分組是柱廳專屬的（-1607），
-               先被追上的人走不到 ⇒ 後面吃這支旗的東西整串失效
-               （`tomb_carry` 背安雅、墓門的 `lock`）。**旗要跟著「牠登場」走。** */
-          Object.assign(sor('battlecry','什麼跟什麼啊沒完沒了！'),
-                        { flags:['tomb_chase_on'] }),
+          { battle:'tomb_gk2' },
         ] },
         /* ══⚠⚠⚠ **小隊分組 —— 這一段只在柱廳演**（ver -1607，Ray：「什麼跟什麼啊
            沒完沒了。**然後這一段劇情就結束了**…你又又又又又他媽的把踩到柱廳才觸發
@@ -7412,16 +7475,7 @@ export const TOWNS = {
            ⚠ `need:'tomb_gk1_done'` ＝登場戲演過了才輪到它：
              · 先被追上（在別的格子看到登場戲）→ 之後走到柱廳才演這一段
              · 直接走到柱廳 → 氣氛戲 → 登場戲 → 這一段，三段接續一次演完 */
-        { flag:'tomb_gk1_split', need:'tomb_gk1_done', sides:{ RENNA:'L' }, lines:[
-          /* ══⚠⚠ **柱廳這一段開演之前，先降臨第二階段的守墓者**（ver -1612，Ray 指定）══
-             ⚠ 第二階段＝`tomb_gk2`（`gk_offset`，hp 490／B 防禦型）——
-               牠與第一階段**同名**（守墓者），玩家讀到的是「同一隻又站起來了」。
-             ⚠ 兩拍前置照既有的寫法（震動＋龍吟＋再震一下），
-               `gk_*` 四張卡自己就帶 `entrance:'se_enemy_roardeer'`＋`entranceBlast`
-               （`kind:'multi'` 不走降臨演出，所以那兩格要卡上自己宣告）。 */
-          { speaker:'NARRATION', text:'', shake:true, auto:1000 },
-          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
-          { battle:'tomb_gk2' },
+        { flag:'tomb_gk1_split', need:'tomb_hall2_arrive', sides:{ RENNA:'L' }, lines:[
           /* ══⚠⚠⚠ **小隊分組**（ver -1571，Ray 交稿）══════════════════════════════
              這一段結束時**隊上只剩諾薇兒** —— 蕾娜帶安雅、索菈娜押後先撤。
              ⚠⚠ 收尾插兩支旗，各管一件事（鐵律 9：一個狀態一個擁有事件）：
@@ -7480,6 +7534,19 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true, tierMin:3, tierWho:'NOUVELLE' },
           nou('steady','嗯！',            { tierMin:3, tierWho:'NOUVELLE' }),
           nou('steady','我們……才不會輸！', { tierMin:3, tierWho:'NOUVELLE' }),
+          /* ══⚠⚠⚠ **二戰・第二輪**（ver -1616，Ray：「諾薇兒『我們才不會輸』之後
+             馬上同一個地點再戰」）══
+             ⚠⚠ 上面那三拍是 `tierMin:3` 的分歧 —— **這幾拍一定要無條件**，
+               不然 T2 以下的玩家永遠打不到第二輪，而且畫面上不會有任何錯誤訊息
+               （同這一段收尾插旗那條：不要把結果掛在只有一半玩家看得到的拍子上）。 */
+          { speaker:'NARRATION', text:'', shake:true, auto:1000 },
+          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
+          { battle:'tomb_gk2' },
+          /* ══⚠⚠⚠ **從這一拍起追擊變密急**（ver -1616，Ray 給的數字 3／2／2）══
+             參數在城上的 `chase.hard`，門就是**這一段自己的 `flag`**
+             （`tomb_gk1_split`，段落演完才記）—— 不另立一支旗：
+             「柱廳那一段演完了」與「追擊變密急了」是同一個時刻（鐵律 7）。 */
+          nou('runserious','得趕快追上大家才行！'),
         ] } ] },
 
       /* ← 死胡同 E（一格） */
