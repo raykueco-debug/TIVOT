@@ -6642,9 +6642,11 @@ export const TOWNS = {
           lau('idea','蕾娜學姐，妳們也是要去伊甸古墓吧？'),
           ren('ask','是那樣沒錯......'),
           lau('idea','那太好了！一起去的話——'),
-          cec('nolook','我不要。'),
+          /* ⚠ ver -1545：這兩拍由 `nolook` 換成 **`spoild`**（Ray 指定）——
+             `Cecilie_SI_refusertemp.png` 那個暫代檔的正解就是它，-1524 的但書到此結案。 */
+          cec('spoild','我不要。'),
           lau('lookaside','咦？'),
-          cec('nolook','我說：我、不、要。'),
+          cec('spoild','我說：我、不、要。'),
           lau('idea','那個……我才是監察官……'),
           cec('upset',''),
           lau('dying','噫——'),
@@ -6653,7 +6655,12 @@ export const TOWNS = {
           cec('talk','知道了還不快走？'),
           lau('dying','是……'),
           nmo('bye','學長拜拜——下次再一起玩吧——'),
-          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+          /* ══⚠ 腳步聲那一拍**擺賽西莉的背影**（ver -1545，Ray：「學長拜拜之後的
+             腳步聲那一拍放一張 cecilie 的 back，**然後才是主角說話**」）══
+             ⚠ 原本是 `NARRATION` 空拍（只有腳步聲）—— 現在由她轉身走人**演**那個腳步聲。
+             ⚠ 台詞留空 ⇒ 對話框自己藏起來；`auto` 只有自動播放吃得到
+               （台上有人的無台詞拍要點擊才推進，§6.5 的 -628），節奏與原本那一拍一樣。 */
+          Object.assign(cec('back',''), { se:'se_walk', auto:1400 }),
           { speaker:'PLAYER', blank:true },
           cec('sadback','……'),
           cec('talk','你說呢？'),

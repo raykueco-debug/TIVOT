@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1544';
+export const VERSION = 'ver 2026.09.17-1546';
 
 export const GAME_CONFIG = {
 
@@ -2372,8 +2372,12 @@ export const GAME_CONFIG = {
          ⚠ **不要寫成 `bgmAfter:'sylblanc'`**：曲名的真相只有 `TOWNS[].bgm` 一處
            （鐵律 7），卡上抄一份日後一定有一邊沒跟上。
          ⚠ `bgmAfter` **只有打贏才吃**（`res.lost` 就走回戰前那一首）—— 而這一場
-           `allowLose`，戰前那一首本來也是鏡湖的 `sylblanc`，兩條路殊途同歸。 */
-    lk_nemo: { enemy:'nemo', allowLose:true, bgm:'nemo', bgmAfter:'@town' },
+           `allowLose`，戰前那一首本來也是鏡湖的 `sylblanc`，兩條路殊途同歸。
+         ⚠⚠ **`bgmOnRise:true`（ver -1545，Ray：「推棺的時候就要換尼莫戰 bgm 了」）**：
+           預設是**撞頂**才進曲（ver -356 定的：上推那一秒還是劇情的餘韻）——
+           這一場改成**門開始上推那一瞬**就換。走既有的那一格（-1433 追擊戰同一支），
+           `story` 那邊只問「要不要早播」，播放點仍然只有 `riseCue` 一個（鐵律 7）。 */
+    lk_nemo: { enemy:'nemo', allowLose:true, bgm:'nemo', bgmAfter:'@town', bgmOnRise:true },
     /* ══ 守墓者（ver -1525）══ 三張追擊、一張決戰（規格 §九）。
        ⚠ 都不寫 `sessionEnd`：追擊那三場是一場一結算（玩家被追上就打一場）；
          決戰那一張是這一段的終點，等 ⑨ 追逐機制接上時再決定要不要收段。

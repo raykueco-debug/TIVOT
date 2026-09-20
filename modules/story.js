@@ -2118,7 +2118,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1544';
+const KERB_V='?v=1546';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3243,8 +3243,17 @@ function renderLine(){
 
   /* 本場回顧：有台詞的才記（演出拍不是台詞）。⚠ 記的是**代換後**的字，
      玩家看到什麼、回顧就是什麼。 */
-  if(lineText(line)) sceneLog.push({ name:(line.speaker==='PLAYER' ? prog.getPlayerNick() : nameOf(line.speaker)),
-                                text:subst(lineText(line)) });
+  /* ══⚠⚠ **主角的空白框也要進回顧**（ver -1545，Ray：「主角說話也要載進對話記錄，
+       藍框，寫名字然後直接空白就好」）══
+     他「說話」的唯一長相就是那顆空白氣泡（`blank:true`，§6.5.7）——
+     以前 `if(lineText(line))` 把它擋在門外，於是回顧裡整段都是別人在講話，
+     讀起來像他從頭到尾不在場。
+     ⚠ 記的是**空字串**不是「……」：那一拍本來就沒有台詞，補字等於替他講話。
+     ⚠ `me:true` 只是給版面用的標記（藍框，見 style.css 的 `.log-row.me`）——
+       不要拿它去判「這一句是誰講的」，那是 `name` 的事。 */
+  const _me = (line.speaker==='PLAYER' && line.blank);
+  if(lineText(line) || _me) sceneLog.push({ name:(line.speaker==='PLAYER' ? prog.getPlayerNick() : nameOf(line.speaker)),
+                                text:subst(lineText(line)), me:_me });
   const nm=$('storyName'), tx=$('storyText');
   /* 主角沒有立繪、名字由玩家取（存檔裡），所以不走 speakers.js 的查表。
      ⚠ 代換要在**顯示的這一刻**做（同 `{P}` 的規矩）：玩家中途改名，
@@ -4961,7 +4970,7 @@ function showBacklog(){
   if(document.getElementById('storyLog')) return;
   const ov=document.createElement('div'); ov.id='storyLog';
   const rows = sceneLog.length
-    ? sceneLog.map(r=>'<div class="log-row"><span class="log-name">'+r.name+'</span>'
+    ? sceneLog.map(r=>'<div class="log-row'+(r.me?' me':'')+'"><span class="log-name">'+r.name+'</span>'
                      +'<span class="log-text">'+r.text+'</span></div>').join('')
     : '<div class="log-empty">（這一場還沒有台詞）</div>';
   ov.innerHTML='<div class="log-panel"><div class="log-title">已播腳本</div>'

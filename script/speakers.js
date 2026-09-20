@@ -1144,6 +1144,10 @@ export const ART = {
     smile:    { src:'resources/SI/Cecilie_SI_smile.webp',     top:4, bot:1517, fx:0.557 },
     /* ⚠ 背影：`fx` 量到 0.638（她背對鏡頭、重心偏右）—— 照量到的寫。 */
     sadback:  { src:'resources/SI/Cecilie_SI_sadback.webp',   top:2, bot:1513, fx:0.638 },
+    /* ══ ver -1545 美術交件兩張（Ray 指定用途）══ 取景值走 `tools/measure_si.py` 逐張量，
+       **沒有互抄**（`back` 與 `sadback` 都是背影，但 fx 差 0.018 —— 姿勢不同）。 */
+    back:     { src:'resources/SI/Cecilie_SI_back.webp',      top:13, bot:1505, fx:0.656 },
+    spoild:   { src:'resources/SI/Cecilie_SI_spoild.webp',    top:8, bot:1526, fx:0.551 },
     nolook:   { src:'resources/SI/Cecilie_SI_nolook.webp',    top:1, bot:1531, fx:0.543 },
     think:    { src:'resources/SI/Cecilie_SI_think.webp',     top:5, bot:1529, fx:0.560 },
   } },
@@ -1156,10 +1160,18 @@ export const ART = {
      ⚠ 只調 `cm` 會連頭一起往下掉（§6.5 明寫「只調 `cm` 一定失敗」）。 */
   laurie:    { cm:126, standCm:158, eye:32, fx:0.505, top:6, bot:1514,
            side:'R', alt:null, base:'resources/SI/Laurie_SI_front.webp', expr:{
-    crying:   { src:'resources/SI/Laurie_SI_crying.webp',    top:4, bot:1524, fx:0.594 },
-    dying:    { src:'resources/SI/Laurie_SI_dying.webp',     top:6, bot:1523, fx:0.593 },
-    idea:     { src:'resources/SI/Laurie_SI_idea.webp',      top:4, bot:1520, fx:0.543 },
-    lookaside:{ src:'resources/SI/Laurie_SI_lookaside.webp', top:4, bot:1525, fx:0.540 },
+    /* ══⚠⚠ **除了底圖（`front`）之外，四張差分全部水平翻轉**（ver -1545，Ray 指定）══
+       她的底圖朝一邊、四張差分朝另一邊 —— 換個表情人就轉過去了。
+       ⚠⚠ 走的是**逐張的 `flip`**（ver -953 瑪麗亞那一支，`frameOf` 會把 expr 蓋在
+         角色上，所以 `castLayout` 讀到的就是這一張的值）：`flip` ＝**這張圖本來就
+         畫反了，不管站哪一邊都翻**，與 `mirror`（可以翻 → 換邊才翻）是兩件事。
+       ⚠ **不要去翻檔案**：翻圖要同名覆蓋 ＋ 跳 `?v=`，而且 `fx` 得全部重量
+         （翻轉之後臉落在 `1-fx`）—— `castLayout` 本來就替你做這件事。
+       ⚠ 蘿芮**沒有 `mirror`**，所以這裡的 XOR 就只剩 `flip` 一項，站哪一邊都翻。 */
+    crying:   { src:'resources/SI/Laurie_SI_crying.webp',    top:4, bot:1524, fx:0.594, flip:true },
+    dying:    { src:'resources/SI/Laurie_SI_dying.webp',     top:6, bot:1523, fx:0.593, flip:true },
+    idea:     { src:'resources/SI/Laurie_SI_idea.webp',      top:4, bot:1520, fx:0.543, flip:true },
+    lookaside:{ src:'resources/SI/Laurie_SI_lookaside.webp', top:4, bot:1525, fx:0.540, flip:true },
   } },
   arrhenius: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
            side:'R', alt:null, base:'resources/SI/Arrhenius_SI_front.webp', expr:{

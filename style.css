@@ -3597,6 +3597,15 @@
     background:rgba(255,255,255,.03);border-radius:8px;}
   #storyLog .log-name{font-size:10px;letter-spacing:2px;color:var(--gold);}
   #storyLog .log-text{font-size:12px;line-height:1.7;color:var(--ink);}
+  /* ══⚠ 主角那一列：**藍框、有名字、內文空著**（ver -1545，Ray 指定）══
+     他「說話」的長相就是那顆空白氣泡，回顧裡也照樣留白。
+     ⚠ `min-height` 不可省：空的 `<span>` 會塌成 0 高，那一列就只剩一個名字，
+       讀起來像壞掉 —— 撐出一行才看得出「他在這裡，只是沒說話」。
+     ⚠ 藍走既有的 `--holy`（#6fb3d4，雪鐵龍與提示同一個藍），不另定一個。 */
+  #storyLog .log-row.me{ background:rgba(111,179,212,.07);
+    box-shadow:inset 0 0 0 1px rgba(111,179,212,.55); }
+  #storyLog .log-row.me .log-name{ color:var(--holy); }
+  #storyLog .log-row.me .log-text{ min-height:1.7em; }
   #storyLog .log-empty{font-size:12px;color:var(--gold-dim);text-align:center;padding:12px;}
   #storyLog .log-ok{margin-top:10px;padding:9px 0;font-family:inherit;font-size:12px;
     letter-spacing:3px;color:var(--gold);background:rgba(10,8,14,.7);
