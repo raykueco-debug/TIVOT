@@ -1308,6 +1308,13 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0.35 },
       kind:'multi',
+      /* ⚠⚠⚠ **每一次守墓者戰都要有降臨特效**（ver -1615，Ray 指定）。
+         `kind:'multi'` 本來兩張表都不進（不降臨也不淨化）—— 這一格只把**降臨**
+         打開，**淨化仍然不給**：「沒有淨化反應，那東西沒有死」那句台詞要繼續成立。
+         實作在 `modules/enemy.js` 的 `isRise()`（同 `purgeFx` 的反向，鐵律 7）。
+         ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
+           改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
+      riseFx:1,
       tier:'B',
       atype:'S',
       stageScale:1,
@@ -1339,6 +1346,13 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0.35 },
       kind:'multi',
+      /* ⚠⚠⚠ **每一次守墓者戰都要有降臨特效**（ver -1615，Ray 指定）。
+         `kind:'multi'` 本來兩張表都不進（不降臨也不淨化）—— 這一格只把**降臨**
+         打開，**淨化仍然不給**：「沒有淨化反應，那東西沒有死」那句台詞要繼續成立。
+         實作在 `modules/enemy.js` 的 `isRise()`（同 `purgeFx` 的反向，鐵律 7）。
+         ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
+           改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
+      riseFx:1,
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -1368,6 +1382,13 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0.35 },
       kind:'multi',
+      /* ⚠⚠⚠ **每一次守墓者戰都要有降臨特效**（ver -1615，Ray 指定）。
+         `kind:'multi'` 本來兩張表都不進（不降臨也不淨化）—— 這一格只把**降臨**
+         打開，**淨化仍然不給**：「沒有淨化反應，那東西沒有死」那句台詞要繼續成立。
+         實作在 `modules/enemy.js` 的 `isRise()`（同 `purgeFx` 的反向，鐵律 7）。
+         ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
+           改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
+      riseFx:1,
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -1399,6 +1420,13 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0.35 },
       kind:'multi',
+      /* ⚠⚠⚠ **每一次守墓者戰都要有降臨特效**（ver -1615，Ray 指定）。
+         `kind:'multi'` 本來兩張表都不進（不降臨也不淨化）—— 這一格只把**降臨**
+         打開，**淨化仍然不給**：「沒有淨化反應，那東西沒有死」那句台詞要繼續成立。
+         實作在 `modules/enemy.js` 的 `isRise()`（同 `purgeFx` 的反向，鐵律 7）。
+         ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
+           改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
+      riseFx:1,
       tier:'A',
       atype:'P',
       stageScale:1,

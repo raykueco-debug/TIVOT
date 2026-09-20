@@ -555,6 +555,16 @@ function playEntranceSe(key){
    ⚠ 判準因此變成一句話：**「牠是在劇情裡出場的嗎？」**——
      是的話降臨歸劇情，戰鬥只負責打。野怪沒有劇情出場，照舊在戰鬥裡降。 */
 const ENTRANCE_KINDS = { harm:1, slay:1, ship:1, aerial:1 };
+/* ⚠⚠⚠ **`riseFx:1` ＝卡上的明寫例外：這一隻要降臨，不管它是什麼 kind**
+   （ver -1615，Ray：「**每一次守墓者戰都要有降臨特效**」）。
+   與 `purgeFx` 是同一族的旋鈕，方向相反 —— 那一格是「分類不給淨化、但我要淨化」，
+   這一格是「分類不給降臨、但我要降臨」。
+   ⚠⚠ **為什麼守墓者不能改 `kind`**：牠是 `kind:'multi'`，而那一格同時擋著
+     **淨化**與結算副標的「已淨化」—— 而「沒有淨化反應，那東西沒有死」正是
+     那一段戲的台詞（§gk_* 四張卡的註解）。改 kind 會把台詞打臉，
+     所以降臨要另外一格開，不能共用 kind。
+   ⚠ 能不寫就不寫：kind 仍然是預設判定，這一格只給「分類與演出要分家」的個案用。 */
+function isRise(en){ return !!(en && (ENTRANCE_KINDS[en.kind] || en.riseFx)); }
 function isPurify(){
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
   /* `purgeFx:1`＝卡上的**明寫例外**（ver -874，Ray：「鹿主被消滅走禍魘拉長特效」）
@@ -671,7 +681,7 @@ export function loadEnemyPortrait(en){
     }); };
   /* ══⚠⚠ **登場音只有一格**（ver -948，Ray：「entranceVo 跟 landSe 應該是同一時間
      發生，併為一格」）══ 卡上寫 `entrance`，播的**時機由這隻怪自己決定**：
-       · 有降臨的（`ENTRANCE_KINDS`：禍魘／聖徒／船）→ **著地那一刻**（見上面 landT）
+       · 有降臨的（`isRise`＝`ENTRANCE_KINDS` 禍魘／聖徒／船，或卡上 `riseFx`）→ **著地那一刻**（見上面 landT）
        · 沒有降臨的（human…）      → **立繪出現那一刻**
      —— 兩者對玩家而言就是同一件事（「牠登場了」），所以資料上不該是兩格。
      ⚠ **走哪一軌是算出來的**（`playEntranceSe`）：路徑落在 `/vo/` 就走 `playVoice`
@@ -691,7 +701,7 @@ export function loadEnemyPortrait(en){
             所以掛上去的那一刻門還關著，時機天生就對。
          ② **圖要先暖好**：`combat.warmBattleImage`，由戰鬥那道門
             （`main.enterBattleAssets`）在**推棺之前**呼叫。 */
-  if(!ENTRANCE_KINDS[en && en.kind]){
+  if(!isRise(en)){
     /* ⚠⚠ **`entranceBlast:true` ＝牠一出現就來一記迎面衝擊**（ver -1433 立、
        **-1443 由震動改成動態模糊**，Ray：「龍吟的特效不應該是震動，應該是動態模糊，
        像被迎面衝擊那樣」）—— 龍是 `kind:'multi'`（不走降臨），而降臨那一條的

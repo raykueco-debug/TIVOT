@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1614';
+export const VERSION = 'ver 2026.09.17-1615';
 
 export const GAME_CONFIG = {
 
@@ -3746,6 +3746,13 @@ export const GAME_CONFIG = {
       peritune_crimson_moon_loop:0.879,
       /* ⚠ 母帶太小聲（−26 LUFS）：×master×層之後會撞上 HTMLAudio 的 1.0 上限，
          實際只到 −26 而不是目標的 −21.9。要救得重做母帶。 */
+      /* ver -1615 本機 BS.1770 實測（K 加權閘控積分，原始 −5.62／手機模型 −8.53
+         ⇒ 平均 **−7.07**）：10^((−20+7.07)/20) ÷ 0.49 ＝ **0.461**。
+         ⚠ 量法的校準點：同一支程式量 `bgm_battle` 得原始 −8.37，與表上那一列
+           （-8.37）一字不差；量 `peritune_harbor_morning_loop` 得平均 −11.39，
+           反推 0.758 ＝ 表上那一列 ⇒ 量法沒走鐘。
+         ⚠ 峰值 1.000 ⇒ 夾值 10^(2/20)＝1.259，0.461 沒有撞到 `peakCeilDb`。 */
+      peritune_rituale_machina_loop:0.461,
       bgm_flight:4.056,
     },
 
@@ -4603,6 +4610,13 @@ export const ASSETS = {
      只有 **7.78 秒**而且末秒仍滿音量沒收尾，所以聽起來是一段八秒的東西一直重播
      （-1420 Ray 回報「追擊戰的音樂是壞的」）。主體檔到了，改指它。 */
   bgm_gothic:       "resources/audio/bgm/peritunematerial_gothic_dark_loop.m4a",            // 追擊戰（-1350；-1421 改指主體檔）
+  /* ══⚠⚠ **古墓・小隊分組之後那一段**（ver -1615，Ray：「劇情裡 execute 插畫那一拍起
+     bgm 改成 PeriTune_Rituale Machina_loop，**直到我指定下一首**」）══
+     ⚠ 檔名交件時是 `PeriTune_Rituale Machina_loop.m4a`（大寫＋空格）——
+       已改成全小寫底線（ver -1554 的全庫規約，`check_lowercase_assets` 會擋）。
+     ⚠ 「直到指定下一首」＝城上的 `bgmWhen` 那一條**刻意沒有 `until`**
+       （`script/town.js` 的 `TOWNS.tomb.bgmWhen`）。要換就在那裡補一條排在它上面。 */
+  bgm_rituale:      "resources/audio/bgm/peritune_rituale_machina_loop.m4a",
   bgm_irregular:    "resources/audio/bgm/peritunematerial_irregular_loop.m4a",
   bgm_prairie:      "resources/audio/bgm/peritunematerial_prairie4_loop.m4a",                // 平原古道（ver -1408，Ray 指定）
   /* 尼莫戰的預設曲（ver -1508，Ray：「PerituneMaterial_Prairie5_loop　Nemo 尼莫戰預設 bgm」）。

@@ -6930,6 +6930,19 @@ export const TOWNS = {
     entry: 'gate',
     /* BGM（ver -1247，Ray 交件 `Peritune_Black_Crystal_loop`）。同上：原本沒有。 */
     bgm: 'blackcrystal',
+    /* ══⚠⚠⚠ **小隊分組之後換一首**（ver -1615，Ray：「劇情裡 execute 插畫那一拍起
+       bgm 改成 Rituale Machina，**直到我指定下一首**」）══════════════════════════
+       ⚠⚠ 拍上的 `bgm:'rituale'` 只管**換曲的那一刻**（Execute 插圖那一拍）；
+         **每走一格 `enter()` 都會 `ensureBgm(townBgm())`** ⇒ 沒有這一條的話
+         下一步就被打回 `blackcrystal`（ver -1420 在貝利薩爾踩過一模一樣的坑）。
+       ⚠⚠ 門用 `tomb_split`（分組那一段的收尾旗）而不是另立一支：
+         Execute 那一拍與插旗那一拍在**同一段 act 裡**（中間玩家離不開柱廳），
+         所以「這一段期間」的起點是同一個時刻 —— 多一支旗只會多一個要記得插的東西。
+       ⚠⚠⚠ **刻意沒有 `until`**（＝Ray 的「直到我指定下一首」）：
+         要換就在這張表**上面**補一條（由上往下取第一個成立的）。 */
+    bgmWhen: [
+      { need:'tomb_split', bgm:'rituale' },
+    ],
     visitFlag: 'tomb_seen',            // 同上（ver -1188）
     storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
     wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩，ver -862）
@@ -6992,7 +7005,13 @@ export const TOWNS = {
       idleAt: ['gate'],           // 墓門：不推進
       /* ⚠ `wildRate` 已移除（ver -1596）：遇敵率的唯一真相是城上的 `wildSpawn.rate`。 */
       firstWildAt: 4,             // 第一次雜怪遭遇必定發生在第幾格
-      battles: ['tomb_gk1','tomb_gk2','tomb_gk3'],   // 追上時輪播（守墓者同一隻）
+      /* ══⚠⚠ **型態不輪播**（ver -1615，Ray：「型態不要輪出，之後追擊改回 gk_seal」）══
+         追上時一律 `gk_seal`。`gk_offset` 留給柱廳那一場**指名**的再戰，
+         `gk_many`／`gk_crypt` 還沒有人叫（玄室決戰的稿還沒到）。
+         ⚠ 輪播那一版（`['tomb_gk1','tomb_gk2','tomb_gk3']`）會讓玩家在追擊裡就
+           把三種型態看完 —— 劇情上那幾種是**一次比一次更壞**的揭露，
+           被隨機輪出來就沒有揭露可言了。 */
+      battles: ['tomb_gk1'],
     },
     /* ══⚠⚠ **遇敵率 50%**（ver -1614，Ray：「改成 50% 吧，遇敵率實在太低，
          我亂逛都能在三戰前走到柱廳」；-1596 曾是 33%、更早是全域的 0.25）══
@@ -7423,8 +7442,10 @@ export const TOWNS = {
                —— 這張圖住在 `resources/ci/`，不在 `illustration/`
                （鐵律 7：一張圖一份，不複製過去）。 */
           /* ⚠ 由下往上平移（ver -1603，Ray 指定）：`cgPan:'up'`。 */
+          /* ⚠⚠ **換曲就從這一拍起**（ver -1615，Ray 指定）：這一拍只管**那一刻**，
+             「撐到下一首被指定為止」是城上的 `bgmWhen`（`need:'tomb_split'`，沒有終點）。 */
           { speaker:'NARRATION', text:'', cg:'resources/ci/ci_torsten_execute.webp',
-            cgPan:'up', auto:1600 },
+            cgPan:'up', auto:1600, bgm:'rituale' },
           { speaker:'PLAYER', blank:true },
           /* ⚠ 稿上寫 `Renna_SI_shocked` —— 去時態之後她的鍵是 `shock`（ver -1554）。 */
           ren('shock','！！'),
