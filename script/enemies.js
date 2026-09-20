@@ -197,7 +197,7 @@ export const ENEMIES = {
       image:'enemy_man_sorana',
       entrance:'vo_sorana_pack2',   // 敵立繪一出現就播（ver -818，Ray）——她是 human 不吃降臨，另掛登場音
       fit:{ pos:'50% 30%' },   // ver -745 換上專用戰鬥圖；構圖不對再調這格
-      hp:430,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:3.33,
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
@@ -209,7 +209,7 @@ export const ENEMIES = {
       noStack:true,
       delayPenalty:{ seconds:4 },    // 快一秒（巨型聖徒是 5）
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{
         delay:'dagger',     // 貝琳妲的 dagger（slash 視覺＋匕首音，見 config.HITFX）
         wrong:'slash',
@@ -232,7 +232,7 @@ export const ENEMIES = {
       tier:'A', atype:'力量型', stageScale:1, stack:1,
       image:'enemy_natalia',         // → resources/enemy/mon_natalia.webp
       fit:{ pos:'50% 30%' },
-      hp:700,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:560,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:20,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:3.33,              // 以下全部同巨型聖徒
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
@@ -240,7 +240,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       entrance:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{
         delay:'claw4',
         wrong:'slash',
@@ -282,14 +282,14 @@ export const ENEMIES = {
       kind:'human',                  // 槍之魔女是人類 → 已擊敗（ver -432，Ray 指定）
       tier:'B', atype:'力量型', stageScale:1, stack:1,
       image:'enemy_witch',      // 立繪鑰匙（附圖）
-      hp:430,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,         // 大絕蓄力窗口（紅圈縮放時間）；null＝沿用 tuning.chargeSeconds
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:2, gap:1 },   // 一般主動攻擊：一次先後出 2 顆、間隔 1 秒（Boss；ver -801 由舊 ult.shots/gapMs 轉）
       entrance:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       delayPenalty:{ dmgScale:0.5, timeDelta:-1 },           // 延時懲罰：攻擊力為一般怪一半、時限減 1 秒
       // v17.2：受擊特效 —— 大絕/延時走彈痕（玻璃碎裂），按錯改紅刀痕濺血
       hitFx:{
@@ -329,14 +329,14 @@ export const ENEMIES = {
          `scale` 縮到 86% ＝站遠一點；`shiftY` −0.05 ＝往上挪五分之一格。
          ⚠ 三個都是**看畫面調的**，不是量出來的 —— 覺得還是太近／太高就動這三個數字。 */
       fit:{ mode:'contain', pos:'center bottom', scale:0.86, shiftY:-0.05 },
-      hp:430,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:2, gap:1 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       delayPenalty:{ dmgScale:0.5, timeDelta:-1 },
       hitFx:{
         delay:'bullet',
@@ -397,17 +397,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_np_candletower',
       bg:'northport_church_bf',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:6 },
       entrance:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{
         delay:'blood',
         wrong:'slash',
@@ -424,17 +424,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_np_candlepenitent',
       bg:'northport_church_bf',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{
         delay:'blood',
         wrong:'slash',
@@ -451,17 +451,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_np_coralman',
       bg:'northport_church_bf',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{
         delay:'blood',
         wrong:'slash',
@@ -482,13 +482,13 @@ export const ENEMIES = {
       image:'enemy_np_reassembled',
       bg:'northport_church_bf',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:430,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{
         delay:'blood',
         wrong:'slash',
@@ -515,13 +515,13 @@ export const ENEMIES = {
       image:'enemy_np_boss',
       bg:'northport_church_bf',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:700,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:560,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:20,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:6 },
       entrance:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{
         delay:'blunt',
         wrong:'blood',
@@ -552,13 +552,13 @@ export const ENEMIES = {
       tier:'A', atype:'力量型', stageScale:1, stack:1,
       image:'enemy_np_claws',
       bg:'northport_church_bf',
-      hp:700,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:560,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:20,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{
         delay:'blood',
         wrong:'slash',
@@ -696,7 +696,7 @@ export const ENEMIES = {
       image:'enemy_sv_bear',
       bg:'shinier_wilds',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:430,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       /* ⚠ ver -943 補回來：-942 那一版這一格不見了（比對前後版本時抓到）——
          `enemy.setEnemy` 是 `state.ASSAULT_DAMAGE = en.attack`，沒有這一格
          就是 `undefined` → 傷害算出 NaN，而畫面上不會有錯誤訊息。
@@ -706,7 +706,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:6 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{
         delay:'blood',
         wrong:'slash',
@@ -729,13 +729,13 @@ export const ENEMIES = {
       image:'enemy_sv_reliquary',
       bg:'shinier_altar',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:430,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:6 },         // ＝np_boss
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{
         delay:'blunt',
         wrong:'blood',
@@ -853,7 +853,7 @@ export const ENEMIES = {
          （enemy.js 的 ENTRANCE_KINDS/PURIFY_KINDS 都含 aerial）。 */
       kind:'aerial',
       tier:'A', atype:'力量型', stageScale:1, stack:1,
-      hp:700,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:560,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       /* 蓄力攻擊（紅點那一發）：傷害 20、**3~5 秒發動一次**、不疊加。
          ⚠ `atkInterval` 給**區間**（陣列）＝每次隨機；給數字＝固定（舊卡不受影響）。 */
       attack:20,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
@@ -867,7 +867,7 @@ export const ENEMIES = {
       entrance:'se_enemy_centipi',    // 登場音（ver -790，船戰各自獨立；蜈蚣＝自己的叫聲）
       special:[],
       /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格，打完五盤沒死就從頭再來。 */
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       boardLoop:true,
       /* 延時懲罰：**5 秒**（ver -458 由 4 調成非魔女的統一預設）、傷害 10、單爪特效。 */
       delayPenalty:{ seconds:5, damage:10 },
@@ -910,7 +910,7 @@ export const ENEMIES = {
       kind:'aerial',               // 飛行敵人自成一類（ver -869，Ray）→ 副標照樣「已淨化」
       tier:'B', atype:'力量型', stageScale:1, stack:1,
       image:{ day:'enemy_serpent_day', dd:'enemy_serpent_dd', night:'enemy_serpent_night' },
-      hp:430,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:4,               // 蓄力窗口 4 秒（固定）
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
@@ -920,7 +920,7 @@ export const ENEMIES = {
          禍魘的著地預設是 sfx_saint，這張卡覆寫成牠自己的吼叫（enemy.js 讀）。 */
       entrance:'se_enemy_serpent',
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       boardLoop:true,
       delayPenalty:{ seconds:5, damage:10 },
       wrongPenalty:{ damage:5 },
@@ -956,7 +956,7 @@ export const ENEMIES = {
       kind:'ship',                 // 船隻 → 已擊沉
       tier:'B', atype:'力量型', stageScale:1, stack:1,
       image:{ day:'enemy_pirate_day', dd:'enemy_pirate_dd', night:'enemy_pirate_night' },
-      hp:430,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:4,               // 蓄力窗口 4 秒（固定）
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
@@ -964,7 +964,7 @@ export const ENEMIES = {
       noStack:true,                // 不疊加：場上同時只有一個紅點
       entrance:'se_weapon_cannon',   // 登場音（ver -790，船戰各自獨立；空賊船＝艦砲）
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       boardLoop:true,
       delayPenalty:{ seconds:5, damage:10 },
       wrongPenalty:{ damage:5 },
@@ -1053,17 +1053,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'beast',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_sf_hog',
       bg:'forest_trail_day',
       fit:{ mode:'contain', pos:'center 70%' },   // 稍微移高（ver -875，Ray；幅度小於獨角虎的 55%）
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'blunt',
               wrong:'slash',
               assault:'blunt' },
@@ -1085,13 +1085,13 @@ export const ENEMIES = {
       /* 位置放高、虎頭對畫面中心（ver -874，Ray 指定）：橫式撲擊構圖，頭在圖高
          約 45%——contain 縮完貼底會整隻沉在下緣，55% 讓頭落在敵區正中。 */
       fit:{ mode:'contain', pos:'center 55%' },
-      hp:430,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1',
               wrong:'bite',
               assault:'claw' },
@@ -1107,17 +1107,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'beast',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_sf_crows',
       bg:'forest_glade_day',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'slash',
               wrong:'slash',
               assault:'claw' },
@@ -1151,13 +1151,13 @@ export const ENEMIES = {
       image:'enemy_sf_deer_nightmare',
       bg:'ruins_shinier_entrance',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:700,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:560,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:20,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       /* 主動攻擊＝**櫻花狂亂飛舞**（ver -899，Ray 指定）：牠是樹靈，用爪痕不對。
          音效（Sturm，兩秒淡出）綁在那一支演出裡，不在 HITFX 的 `se` 上。 */
       hitFx:{ delay:'blood',
@@ -1301,21 +1301,21 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // ＝心魘（骸系照 sv）
       openAssault:[1,2],
       ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
-      assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
-      tier:'B', atype:'防禦型', stageScale:1, stack:1,
+      tier:'B', atype:'力量型', stageScale:1, stack:1,
       brBonus:0.5,
       image:'enemy_sf_bear_husk',
       bg:'forest_trail_day',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:560,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'bite', wrong:'slash', assault:'claw' },
       loot:[ { id:'paw_bear', n:1 } ],
     },
@@ -1333,13 +1333,13 @@ export const ENEMIES = {
       image:'enemy_sv_bear',              // ⚠ 與 sv_bear 同一張圖（mon_bear_nightmare，鐵律 7：一張圖一個鍵）
       bg:'forest_trail_day',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:430,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'blood',
               wrong:'slash',
               assault:'claw' },
@@ -1355,19 +1355,19 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_sf_stag_rot',
       bg:'forest_cliff_day',
       /* 右貼邊（ver -869，Ray：「把鹿骸（半截的那隻）右移到貼邊」）——
          這張圖是前半身構圖、右緣本來就是裁切線，貼齊畫面右緣裁切線才藏得住。 */
       fit:{ mode:'contain', pos:'right bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'blood',
               wrong:'slash',
               assault:'claw' },
@@ -1387,13 +1387,13 @@ export const ENEMIES = {
       image:'enemy_sv_stag',              // ⚠ 與 sv_stag 同一張圖（mon_stag_nightmare，鐵律 7）
       bg:'forest_cliff_day',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:430,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'blood',
               wrong:'slash',
               assault:'claw' },
@@ -1418,21 +1418,21 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0.2,0.3], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
-      assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
-      tier:'C', atype:'防禦型', stageScale:1, stack:0,
+      tier:'C', atype:'力量型', stageScale:1, stack:0,
       brBonus:0.5,
       image:'enemy_ruins_bonemaw',
       bg:'ruins_shinier_catacomb',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:260,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:270,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'bite', wrong:'slash',
               assault:'bite' },
       loot:[ { id:'harm_bone', n:1, p:0.10 } ],
@@ -1444,21 +1444,21 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[-0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
-      assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
-      tier:'B', atype:'防禦型', stageScale:1, stack:1,
+      tier:'B', atype:'力量型', stageScale:1, stack:1,
       brBonus:0.5,
       image:'enemy_ruins_bellreacher',
       bg:'ruins_shinier_colossus',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:560,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'blunt', wrong:'slash',
               assault:'blunt' },
       loot:[ { id:'bell_shard', n:1, p:0.10 } ],
@@ -1470,15 +1470,15 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       openAssault:[1,2],
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
-      assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
-      tier:'D', atype:'防禦型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       brBonus:0.5,
       image:'enemy_ruins_halo_ring',
       bg:'ruins_shinier_hollow',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:120,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
@@ -1500,17 +1500,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_ruins_heartripper',
       bg:'ruins_shinier_prison',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'slash',
               assault:'claw' },
       loot:[ { id:'harm_claw', n:1, p:0.10 } ],
@@ -1529,13 +1529,13 @@ export const ENEMIES = {
       image:'enemy_ruins_bellwalker',
       bg:'ruins_shinier_mosschamber',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:430,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'blunt', wrong:'slash',
               assault:'blunt' },
       loot:[ { id:'bell_shard', n:1, p:0.10 } ],
@@ -1555,13 +1555,13 @@ export const ENEMIES = {
       image:'enemy_ruins_saint_prison',
       bg:'ruins_shinier_prison',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:430,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'blunt', wrong:'slash',
               assault:'claw' },
       loot:[ { id:'saint_claw', n:1 } ],          // 100%
@@ -1580,13 +1580,13 @@ export const ENEMIES = {
       image:'enemy_ruins_saint_inspector',
       bg:'ruins_shinier_darkbridge',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:430,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'slash', wrong:'slash',
               assault:'slash' },
       loot:[ { id:'saint_fang', n:1 } ],          // 100%
@@ -1605,13 +1605,13 @@ export const ENEMIES = {
       image:'enemy_ruins_saint_thug',
       bg:'ruins_shinier_corridora',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:700,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:560,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:20,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'blunt', wrong:'slash',
               assault:'blunt' },
       loot:[ { id:'saint_bone_big', n:1 } ],      // 100%
@@ -1632,13 +1632,13 @@ export const ENEMIES = {
       image:'enemy_ruins_saint_temperance',
       bg:'ruins_shinier_deepaltar',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:1100,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:900,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:25,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:null,
       special:[],
-      boardGrids:[9,9,16,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'blunt', wrong:'slash',
               assault:'claw' },
       loot:[ { id:'saint_bone', n:1 } ],          // 100%
@@ -2344,17 +2344,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_arch_warden',
       bg:'tomb_nave',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2368,17 +2368,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_sarcoph_crawler',
       bg:'tomb_nave',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2392,17 +2392,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_slab_creeper',
       bg:'tomb_nave',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2416,17 +2416,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_kneeling_penitent',
       bg:'tomb_nave',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2440,17 +2440,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_chain_hanged',
       bg:'tomb_nave',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2464,17 +2464,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_iron_maiden',
       bg:'tomb_nave',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2490,17 +2490,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_ossuary_rats',
       bg:'tomb_ossuary',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2514,17 +2514,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_ossuary_wheel',
       bg:'tomb_ossuary',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2538,17 +2538,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_choir_organ',
       bg:'tomb_ossuary',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2562,17 +2562,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_choir_pale',
       bg:'tomb_ossuary',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2586,17 +2586,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_bellfounder',
       bg:'tomb_ossuary',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2610,17 +2610,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_grave_censer',
       bg:'tomb_ossuary',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2634,17 +2634,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_candelabra_fiend',
       bg:'tomb_ossuary',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2658,17 +2658,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_reliquary_hand',
       bg:'tomb_ossuary',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2682,17 +2682,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_spiral_veil',
       bg:'tomb_ossuary',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2706,17 +2706,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_shroud_widow',
       bg:'tomb_ossuary',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2732,17 +2732,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_crypt_centipede',
       bg:'tomb_crypt',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2756,17 +2756,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_crypt_hound',
       bg:'tomb_crypt',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2780,17 +2780,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_twin_skull_hound',
       bg:'tomb_crypt',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2804,17 +2804,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_vault_bat',
       bg:'tomb_crypt',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2828,17 +2828,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_skull_cairn',
       bg:'tomb_crypt',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2852,17 +2852,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_pall_bearers',
       bg:'tomb_crypt',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2876,17 +2876,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_tomb_bear',
       bg:'tomb_crypt',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2900,17 +2900,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_pallid_stag',
       bg:'tomb_crypt',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2924,17 +2924,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_gorge_toad',
       bg:'tomb_crypt',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2948,17 +2948,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_stone_adder',
       bg:'tomb_crypt',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2974,17 +2974,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_dragon_throne_awakened',
       bg:'belisar_thronehall',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
@@ -2998,17 +2998,17 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
-      tier:'C', atype:'力量型', stageScale:1, stack:0,
+      tier:'D', atype:'力量型', stageScale:1, stack:0,
       image:'enemy_dragon_throne_roar',
       bg:'belisar_thronehall',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:200,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:90,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
-      boardGrids:[9,9,16,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
