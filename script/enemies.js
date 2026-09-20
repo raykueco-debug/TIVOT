@@ -2545,8 +2545,8 @@ export const ENEMIES = {
          · `kind:'multi'` —— 那是**龍**那一段為了「沒有淨化反應」才選的
            （§6.5.4.4）。一般的古墓雜兵多半該是 `harm`（禍魘）＝有降臨／淨化
            ＋結算副標「已淨化」。
-         · `entrance:'se_enemy_roardeer'` ＋ `entranceBlast:true` —— **龍吟**。
-           納骨鼠群配龍吟顯然不對。
+         · ~~`entrance`／`entranceBlast`（龍吟）~~ —— **ver -1596 拿掉了**
+           （Ray：「出場的 roar 拿掉」）。要給哪一隻配登場音，逐張填 `entrance`。
          · `hp:350`／`attack:20`／`boardGrids` 全部一樣 ⇒ 26 隻現在沒有難度曲線。
          · `loot:[]` —— 一隻都還沒有掉落。
        ⚠⚠⚠ **現在一隻都遇不到，那是刻意的**（兩邊都還沒接，見 §四的但書）：
@@ -2590,7 +2590,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -2619,7 +2618,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -2648,7 +2646,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -2677,7 +2674,6 @@ export const ENEMIES = {
       attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -2705,7 +2701,6 @@ export const ENEMIES = {
       attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -2733,7 +2728,6 @@ export const ENEMIES = {
       attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -2763,7 +2757,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -2791,7 +2784,6 @@ export const ENEMIES = {
       attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -2820,7 +2812,6 @@ export const ENEMIES = {
       attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -2848,7 +2839,6 @@ export const ENEMIES = {
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -2876,7 +2866,6 @@ export const ENEMIES = {
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -2904,7 +2893,6 @@ export const ENEMIES = {
       attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -2932,7 +2920,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -2960,7 +2947,6 @@ export const ENEMIES = {
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -2988,7 +2974,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -3016,7 +3001,6 @@ export const ENEMIES = {
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -3047,7 +3031,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -3075,7 +3058,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -3103,7 +3085,6 @@ export const ENEMIES = {
       attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -3131,7 +3112,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -3159,7 +3139,6 @@ export const ENEMIES = {
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -3188,7 +3167,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -3216,7 +3194,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -3244,7 +3221,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -3272,7 +3248,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -3300,7 +3275,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -3329,7 +3303,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
@@ -3356,7 +3329,6 @@ export const ENEMIES = {
       attack:8,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer', entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },

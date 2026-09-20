@@ -3798,6 +3798,14 @@ let flightOpener=null;
    獨立測試載 town.js 也跑得動。 */
 let mapEnter=null;
 export function setMapEnter(fn){ mapEnter=fn||null; }
+/* ══⚠⚠⚠ **這張圖的「野怪局」id**（ver -1596）══ 整張探索地圖算**一局**
+   （§6.5.4.3）：中間打幾場都不結算，**走到安全點（`rest:true`）才閉棺結算**。
+   ⚠⚠ 既有的野怪場次卡本來就都帶著它（`sf_hog:{enemy,session:'sf_wild'}`、
+     `ruins_bellwalker:{…session:'ruins_wild'}`）—— 而卡上 `spawnAt` 刷出來的那些
+     **沒有場次卡**，合成的時候若不補這一格就會**每打一場結算一次**
+     （ver -1596 Ray 回報：「為什麼每戰一次就結算一次？」）。
+   ⚠ 命名跟著既有的走（`<圖>_wild`）。 */
+export function wildSessionId(){ return townId ? (townId + '_wild') : null; }
 function gotoMap(map, nd){
   if(mapEnter){ mapEnter(map, nd || undefined); return; }
   story.veil(true, CUT_MS);

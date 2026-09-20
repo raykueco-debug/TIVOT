@@ -6976,10 +6976,18 @@ export const TOWNS = {
       gap: 6, speed: 2, onEncounter: 1, stun: 4,
       resetAt: 'hall2',           // 柱廳：必觸戰鬥，戰後牠在這裡
       idleAt: ['gate'],           // 墓門：不推進
-      wildRate: 0.25,             // 每動一格遇雜怪的機率（⚠ 古墓雜兵的卡還沒有）
+      /* ⚠ `wildRate` 已移除（ver -1596）：遇敵率的唯一真相是城上的 `wildSpawn.rate`。 */
       firstWildAt: 4,             // 第一次雜怪遭遇必定發生在第幾格
       battles: ['tomb_gk1','tomb_gk2','tomb_gk3'],   // 追上時輪播（守墓者同一隻）
     },
+    /* ══⚠⚠ **遇敵率 33%**（ver -1596，Ray：「古墓遇敵率太低，改成 33%」）══
+       ⚠⚠ 寫在既有的 `wildSpawn.rate`（**這張圖的遇敵率只有這一個地方**，鐵律 7）——
+         不寫的話會掉到全域的 `tuning.wildRespawnRate`（0.25）。
+       ⚠ **`pool` 故意留空**：古墓那 26 隻是由**敵人卡自己**宣告住這裡的
+         （Excel 的「出沒地」＝`spawnAt:'tomb'`），`modules/town.js` 的
+         `cardSpawnPool` 會把它們聯集進來 —— 在這裡再列一份必然走鐘。
+       ⚠ `chase.wildRate` 那一格已經拿掉了：同一個量兩個地方寫就是鐵律 7 的病。 */
+    wildSpawn: { rate: 0.33 },
     /* ⚠ 迷霧是預設（ver -913）—— **不要寫 `mist:0`**：這張是迷宮，走過才亮
        正是它的玩法。 */
     /* ══ 槍棺地圖（ver -1145）══════════════════════════════════════════════

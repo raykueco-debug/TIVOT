@@ -2095,7 +2095,10 @@ story.setBattleHandler((battleId, resume)=>{
        `suspend()`（出航）刻意不清 `townId`（ver -437），所以 `isOpen()` 在天上
        照樣是真（憲法 §0.5 的 ver -1394 就警告過這一點）。 */
     combat.setBattleBg((town.isOpen() && town.isLive()) ? town.currentBg() : null);
-    combat.startScriptBattle(battleId);
+    /* ⚠ 裸敵人卡要補上「這張圖的野怪局」（ver -1596）——不補就每打一場結算一次。
+       ⚠ 只有城鎮介面真的活著才有局可掛（同上面 `setBattleBg` 的判準）。 */
+    combat.startScriptBattle(battleId,
+      asEnemy && town.isOpen() && town.isLive() ? { session: town.wildSessionId() } : undefined);
     return;
   }
   /* ⚠ 標成 story 場次：與首頁「教學」鈕分開（Ray 指定）—— 這一場由諾薇兒帶

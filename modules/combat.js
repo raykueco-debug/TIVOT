@@ -2906,8 +2906,13 @@ export function startGame(){
      ⚠ 這不是「兩種 id 混用」：場次仍然優先，這一條只在**沒有那一場**時成立 ——
        日後真的替某一隻開了場次卡（要指定 session／bgm／talk），它自動接管。 */
   let sb = state.scriptRun && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
-  if(state.scriptRun && !sb && GAME_CONFIG.enemies && GAME_CONFIG.enemies[state.scriptBattleId])
-    sb = { enemy: state.scriptBattleId };
+  if(state.scriptRun && !sb && GAME_CONFIG.enemies && GAME_CONFIG.enemies[state.scriptBattleId]){
+    /* ⚠⚠⚠ **`session` 一定要帶**（ver -1596）：沒有它 `midSession()` 是假
+       ⇒ **每打一場就結算一次**，而探索地圖的規矩是「整張圖一局、走到安全點才結算」
+       （§6.5.4.3）。既有的野怪場次卡本來就都寫著 `session:'<圖>_wild'`，
+       合成的這一張漏了就只有它不一樣 —— 而畫面上看起來只是「結算變很頻繁」。 */
+    sb = { enemy: state.scriptBattleId, session: pendingScriptSession || undefined };
+  }
   /* 是否為**劇情戰**（ver -493；-495 改成卡上統一有這一格）—— 唯一判定，
      之後一律讀 `state.storyBattle`：
        ① 發起端明確宣告的優先（飛行交棒的 `scripted`：隨機遭遇 false、劇本遭遇 true）
@@ -2929,6 +2934,7 @@ export function startGame(){
        而且同一隻怪在地上打就不是船戰 —— 分野在場次，不在怪。 */
   state.shipBattle = pendingScriptShip || !!(sb && sb.ship);
   pendingScriptShip = false;
+  pendingScriptSession = null;
   state.timeAttack = null; state.timeOver = false;   // 開場先歸零（同 noSaint：不要靠上一場收乾淨）
   state.weaponSound = null;                          // 武器音覆寫也是（ver -423）
   state.counterGapMs = null;                         // 連射間隔覆寫也是（ver -476）
@@ -3079,11 +3085,14 @@ let pendingScriptStory = null;
    ⚠ 為什麼不從敵人卡認：那三隻（蜈蚣／羽蛇／空賊船）不是靠 `kind` 分得出來的
      （harm／ship 混著），而「船戰」本來就是**場次**的性質不是怪的性質。 */
 let pendingScriptShip = false;
+let pendingScriptSession = null;   // ver -1596：裸敵人卡要掛的局 id
 export function startScriptBattle(id, opts){
   pendingScript = id;
   /* 只有**明確的布林**才算宣告（ver -495）—— undefined/null 一律交給敵人卡。 */
   pendingScriptStory = (opts && typeof opts.story==='boolean') ? opts.story : null;
   pendingScriptShip  = !!(opts && opts.ship);
+  /* 合成裸敵人卡時要掛的局 id（ver -1596，見 startGame 那一段）。 */
+  pendingScriptSession = (opts && opts.session) || null;
   startGame();
 }
 
