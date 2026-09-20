@@ -1153,8 +1153,58 @@ export const CHAPTERS = [
            'bl_night_sky','bl_night_done','renna_t4_ok'],
     enter:'town', town:'eastport', node:'inn' },
 
-  /* ══⚠⚠⚠ **Stage 13-BA**（ver -1538，Ray：「插一個 13BA，起點是**已跑完 B 的
-     初入古墓**」「stage 13 BA」「列入章節列表」）══════════════════════════════
+  /* ══⚠⚠⚠ **Stage 13-BA ＝ 先 B 後 A、M1 那一條，起點是「初入雪都」**
+     （ver -1548，Ray：「增加 M1 路線的 13BA 於初入雪都，列入目錄」）══════════
+     ⚠⚠ **與 14-BA 是同一條路線的前一站**：旗標整串一模一樣，只是**停在
+       「東泊走出旅店」那一刻** —— 雪都／鏡湖那一段一支旗都不給，那正是要測的。
+     ⚠ 落點 `ravnsdal/square`（港口廣場＝這座城的 `entry`）＋ **`tomb_gate` 要給**：
+       雪都的抵達那一段寫的是 `{ flag:'vn_arrive', need:'tomb_gate' }` ——
+       不給的話走進去什麼都不會演，那一章就沒有內容了。
+     ⚠⚠ **`vn_arrive` 不給**（連 `free_explore_ravnsdal` 也不給）：那兩支是
+       抵達那一段**演完才插**的（`endStoryExplore`）—— 先給了就等於把要測的那一段
+       跳過去，而且城裡會直接變成自由探索。
+     ⚠⚠⚠ **M1 ＝ `ep_m1_route`，而且 `ep_m2_route` 絕對不能給**：雪都那幾段的分歧
+       判準是 **`ep_m2_route`**（「有沒有那個秘密」，ver -1530）——
+       給錯就會走成 M2（索菈娜鬧安雅、安雅一路沉默那一條）。
+     ⚠ `clockHour:10`：上午到港，離「六點回旅店」那道閘門（`hourOfDay:[18,24]`）
+       還有一整個白天可以逛（三條約會線都在那段時間裡）。 */
+  { id:'stage13ba', name:'Stage 13-BA', sub:'先 B 後 A・M1：審訊完、走出旅店 → **初入雪都**',
+    stage:13, clockHour:10, named:true, aff:{ renna:40 },
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2','flight_centipede_met',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
+           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart',
+           'sv_arrive','sv_evening','sv_night_done','shinier_siege',
+           'sv_clear_wild','safehouse_shinier','sv_forest_morning',
+           'sv_forest_go','sv_forest_intro','sv_deer_met','sv_deer_harm',
+           'sr_intro','sr_gate_brazier','sr_gate_bridge','sr_brazier','sr_bridge',
+           'sr_mural','ruins_gate_open','ruins_bell_done','ruins_thug_met','sr_altar',
+           'ruins_altar_on','sv_s8_noon',
+           'sv_s8_home','sv_s8_hungry','sv_s8_dine','sv_s8_corvin',
+           'sv_s9_order','belisar_noland_talk','ep_arrive',
+           'ep_renna_met','ep_renna_night','ep_evening','ep_day2',
+           'belisar_seen',
+           'ep_bel_gorge','ep_bel_sight','ep_bel_enter','bl_foyer_first',
+           'bel_hint2','bel_hint3','bel_water','ep_bel_altar','renna_hairpin_lost',
+           'ep_bel_court','ep_belisar_done','ep_bel_back',
+           'ep_night_raid','ep_hairpin_hunt','belisar_land_ok',
+           'bl_night_land','bl_night_foyer','bl_chase1','bl_chase2','bl_chase3',
+           'bl_chase4','bl_dragon_seen','bl_night_lionstair','bl_chase_talk3',
+           'bl_night_throne','bl_sky_hunt',
+           'bl_night_sky','bl_night_done','renna_t4_ok',
+           /* ── B route 的尾（旅店長談 → 守夜 → M1 → 隔日審訊 → 走出旅店）── */
+           'ep_hairpin_talk','ep_night_anya_out','ep_night_renna','ep_m1_route',
+           'ep_night_mi_done','ep_interrogate','free_explore_eastport','ep_leave_tomb',
+           /* ⭐ 墓門初見 —— 雪都抵達那一段的前置（`need:'tomb_gate'`） */
+           'tomb_gate'],
+    enter:'town', town:'ravnsdal', node:'square' },
+  /* ══⚠⚠⚠ **Stage 14-BA**（ver -1538 建、**ver -1548 由 13-BA 改號**，Ray：
+     「把 stage 13BA 改成 14BA，然後增加 M1 路線的 13BA 於初入雪都」）══════════
+     ⚠ 改號的理由：**13 讓給「初入雪都」**（見下一筆）—— 先 B 後 A 的順序是
+       東泊走出旅店 → **雪都** → 鏡湖 → 石碑林 → **古墓**，所以古墓那一站排 14。
+     ⚠ `stage:13` 也跟著改成 **14**：目前沒有任何內容卡在 stage≥13 上
+       （`fromStage`／`untilStage` 全庫最大到 12），所以只是編號往後挪一格。
      ⚠⚠ **BA ＝ 先 B 後 A**：A route（伊甸古墓→雪都→鏡湖→石碑林→古墓內部）與
        B route（貝利薩爾→東泊那一夜→審訊）是**非線性**的，兩種順序都成立
        （Ray, -1530：「先 a 後 b 先 b 後 a 都可以」）。這一筆走的是**先 B**：
@@ -1169,8 +1219,8 @@ export const CHAPTERS = [
        不給的話東泊與雪都會停在「劇情探索」，敲門約不出人。
      ⚠ `tomb_done` **不給**：古墓那一段的收尾還沒寫（見 HANDOFF 的 ⑨），
        所以東泊走出旅店仍是分支 1。 */
-  { id:'stage13ba', name:'Stage 13-BA', sub:'先 B 後 A：審訊完 → 雪都／鏡湖跑完 → **初入古墓**',
-    stage:13, clockHour:10, named:true, aff:{ renna:40 },
+  { id:'stage14ba', name:'Stage 14-BA', sub:'先 B 後 A：審訊完 → 雪都／鏡湖跑完 → **初入古墓**',
+    stage:14, clockHour:10, named:true, aff:{ renna:40 },
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
            'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
@@ -1204,6 +1254,7 @@ export const CHAPTERS = [
            /* ⭐ 石碑林插的那一支：古墓的門從此打得開 */
            'tomb_opened'],
     enter:'town', town:'tomb', node:'gate' },
+
 ];
 
 /* ══⚠⚠⚠ **腳本測試鈕的落點**（ver -1381，Ray：「在首頁先放一個腳本測試鈕，
