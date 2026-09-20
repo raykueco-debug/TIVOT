@@ -651,7 +651,20 @@ export const ART = {
        用在雪都圖書館那一段（`ravnsdal.library`）：她把蕾娜的評鑑報告唸出來的那幾句。
        ⚠ 「只限那場戲」＝**不要**拿雙引號去全庫掃：`sor('tease','修女不都是只會
          『神啊～』之類的嗎？')` 也有雙引號，那是她在學人講話，不是唸報告。 */
-    read:      { src:'resources/SI/Sorana_SI_read.webp', top:4, bot:1533, fx:0.640 },
+    read:        { src:'resources/SI/Sorana_SI_read.webp',        top:4, bot:1533, fx:0.640 },
+    /* ══ 唸報告的四張情緒差分（ver -1553，Ray 逐句指定）══
+       ⚠⚠ **交件的檔名大小寫不一致**（`Sorana_SI_readshock.png`／`Sorana_SI_readsad.png`
+         但 `sorana_SI_readhappy.png`／`sorana_SI_readconfuse.png`）——
+         轉檔時**統一成 `Sorana_`**（她其餘每一張都是大寫 S）。
+         ⚠⚠⚠ 這不是潔癖：**macOS 不分大小寫、靜態空間分** ——
+           照小寫寫進來在這台測不出問題，**上線就是 404，而且畫面上不會報錯**
+           （同 §6.5.4 的時段尾綴那一課）。
+       ⚠ 取景值逐張量（`tools/measure_si.py`），沒有互抄 —— 四張的 `fx` 是
+         0.645／0.644／0.643／0.671，`readconfuse` 明顯偏右（她把本子推遠了）。 */
+    readshock:   { src:'resources/SI/Sorana_SI_readshock.webp',   top:4, bot:1522, fx:0.645 },
+    readhappy:   { src:'resources/SI/Sorana_SI_readhappy.webp',   top:0, bot:1531, fx:0.644 },
+    readsad:     { src:'resources/SI/Sorana_SI_readsad.webp',     top:5, bot:1530, fx:0.643 },
+    readconfuse: { src:'resources/SI/Sorana_SI_readconfuse.webp', top:9, bot:1528, fx:0.671 },
     point:     { src:'resources/SI/Sorana_SI_point.webp', top:5, bot:1513, fx:0.543 },
     relief:    { src:'resources/SI/Sorana_SI_relief.webp', top:8, bot:1518, fx:0.556 },
     sad:       { src:'resources/SI/Sorana_SI_sad.webp', top:3, bot:1521, fx:0.515 },

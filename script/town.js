@@ -4641,34 +4641,35 @@ export const TOWNS = {
         acts:[ { flag:'vn_lib_done', need:'vn_evening', goto:'midtown',
                  sides:{ RENNA:'L' }, lines:[
           sor('talk','啊，有了。'),
-          sor(null,'哇，睡到不省人事了。'),
+          sor('talk','哇，睡到不省人事了。'),   // ⚠ 明寫（原本是 null＝沿用上一句的 talk），見下面那一段
           nou(null,'她一定很累吧，我們在城裡閒逛的時候只有她一個人在忙……'),
           any('silent','……'),
           sor('amazed','喔。這是什麼？'),
           nou('reach','那是我們的評價紀錄。不要拿啦！'),
-          Object.assign(sor(null,'有什麼關係——喔？'), { se:'se_ui_pageflip' }),
-          Object.assign(sor(null,'嗯——哈！真有意思！'), { se:'se_ui_pageflip' }),
+          Object.assign(sor('readshock','有什麼關係——喔？'), { se:'se_ui_pageflip' }),
+          Object.assign(sor('readhappy','嗯——哈！真有意思！'), { se:'se_ui_pageflip' }),
           nou('shocked','……'),
           { speaker:'PLAYER', blank:true },
           sor('tease','少來，你也很想知道她怎麼看你吧？'),
           nou('shocked2','我們不能看啦！'),
-          sor('salute','不要看啊，我唸不就好了？'),
+          sor('read','不要看啊，我唸不就好了？'),
           nou('explain','哪有這種道理……'),
           sor('whisper','想知道嗎？'),
           { speaker:'PLAYER', blank:true, shake:true },
-          sor('smile','喔——原來是這麼評價的呀？'),
-          Object.assign(sor('talk','嘿——'), { se:'se_ui_pageflip' }),
+          sor('readshock','喔——原來是這麼評價的呀？'),
+          Object.assign(sor('readhappy','嘿——'), { se:'se_ui_pageflip' }),
           nou('shock','……'),
           nou('shy','好啦！妳就唸吧！'),
           nou('lookaway','搞得我都跟著緊張了！'),
-          sor('nod','咳哼。'),
-          /* ══⚠⚠ **唸報告的那幾句一律 `read`**（ver -1550，Ray：「索拉娜唸報告時全用
-             `Sorana_SI_read`，判斷是**雙引號跟日期開頭**的台詞」「**只限那場戲**」）══
-             ⚠⚠ 中間那幾句**沒有雙引號**的（「看不懂。」「什麼啊，好可怕。」
-               「後面大概都一個勁誇……」）是她**自己在講話**，不是唸報告 ——
-               它們原本寫 `sor(null,…)`（＝沿用上一張），而上一張現在變成 `read` 了，
-               所以要**明寫回 `nod`**，不然那幾句會被這條規則順手改掉。
-               （那正是 `null` 這個寫法的代價：它的值取決於前一句。）
+          sor('readsad','咳哼。'),
+          /* ══⚠⚠⚠ **這一段索菈娜的立繪由 Ray 逐句指定**（ver -1553）══
+             -1550 的那條通則（「雙引號＋日期開頭 ⇒ `read`」）**被這一份逐句表取代**：
+             現在是 `read`／`readshock`／`readhappy`／`readsad`／`readconfuse` 五張輪著用，
+             她翻報告的情緒是一條線（好奇 → 得意 → 看不懂 → 出事），不是一個狀態。
+             ⚠⚠ **整段之內她一拍都不寫 `sor(null,…)`** —— `null` ＝沿用上一張，
+               而這一段每一拍的表情都是指定的；留一個 `null` 就是「改上一句會順手改到它」
+               （-1550 就踩過這一下）。**要改哪一句就只改那一句。**
+             ⚠ 前三條記事（10月12／13／14日）Ray 沒點名 ⇒ 維持 `read`。
              ⚠ 「只限那場戲」：`sor('tease','修女不都是只會『神啊～』…')` 也有雙引號，
                但那是學人講話，**不改**。 */
           Object.assign(sor('read','『10月12日14時，評測對象展現高超戰鬥技術，適性初步判斷：良好。』'),
@@ -4680,9 +4681,9 @@ export const TOWNS = {
                         { se:'se_ui_pageflip' }),
           any(null,'是在說……我？'),
           /* ⚠ 前面那半句是她自己喊的，但整拍的主體是**唸出來的那一條**（雙引號＋日期開頭）⇒ `read`。 */
-          Object.assign(sor('read','喔！講到我了！『10月16日20時，與一般人連攜戰鬥無阻滯誤傷。註記：此記事應比照現第四席戰鬥紀錄，著重評估。』'),
+          Object.assign(sor('readhappy','喔！講到我了！『10月16日20時，與一般人連攜戰鬥無阻滯誤傷。註記：此記事應比照現第四席戰鬥紀錄，著重評估。』'),
                         { se:'se_ui_pageflip' }),
-          sor('nod','看不懂。'),          // ⚠ 沒有雙引號＝她自己在講話（明寫，見上面那一段）
+          sor('readconfuse','看不懂。'),
           /* ⚠⚠ **ver -1536 改回諾薇兒**（Ray：「說璐娜敵我不分的是諾，不是安」）。
              -1522 我判成「抄稿時的欄位錯位」，把它改給安雅 —— **判錯了**：
              稿上標的立繪 `Nouvelle_SI_expain2` 才是對的那一半，說話者「安」是筆誤。
@@ -4691,23 +4692,23 @@ export const TOWNS = {
              ⚠ **教訓**：說話者與立繪對不上時，§6.5 的規矩是「**照立繪判**」——
                我這一次反過來照說話者判，正好踩到那條規矩要避免的方向。 */
           nou('expain2','是在說第四課的團長璐娜大人……情緒上來基本就不分敵我了。'),
-          sor('nod','什麼啊，好可怕。'),  // ⚠ 同上
-          Object.assign(sor('nod','後面大概都一個勁誇……'), { se:'se_ui_pageflip' }),  // ⚠ 同上
-          Object.assign(sor('surprised','！！'), { se:'se_ui_pageflip' }),
-          sor(null,'……'),
+          sor('readhappy','什麼啊，好可怕。'),
+          Object.assign(sor('readconfuse','後面大概都一個勁誇……'), { se:'se_ui_pageflip' }),
+          Object.assign(sor('readshock','！！'), { se:'se_ui_pageflip' }),
+          sor('readsad','……'),
           nou('lookback','怎麼了？'),
-          sor('embarassed','沒、沒事啦！看來修女小姐對你們的評價很高呢！'),
+          sor('readhappy','沒、沒事啦！看來修女小姐對你們的評價很高呢！'),
           nou('shocked','……後面寫了什麼嗎？'),
           sor('sad','……'),
           nou('worry','索拉娜小姐！'),
-          sor('idea','只是些評價而已，沒那麼重要啦！'),
+          sor('readhappy','只是些評價而已，沒那麼重要啦！'),
           nou('furious','很重要！'),
           sor('cringe',''),
           nou('decoding','對他……很重要……'),
           sor('sad','……'),
-          Object.assign(sor('read','『適性無可挑剔，但有沉溺戰鬥傾向，且多次無視聖王廳法度，亦未表現對神之敬畏。考量其品性，應維持原判決……』'),
+          Object.assign(sor('readconfuse','『適性無可挑剔，但有沉溺戰鬥傾向，且多次無視聖王廳法度，亦未表現對神之敬畏。考量其品性，應維持原判決……』'),
                         { se:'se_ui_pageflip' }),
-          sor('read','『剔除候選資格……』'),
+          sor('readsad','『剔除候選資格……』'),
           nou('covermouth','怎麼會……！'),
           nou('cry','我們……這麼努力！'),
           { speaker:'PLAYER', text:'……' },
