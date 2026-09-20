@@ -947,7 +947,9 @@ export function setEnemy(key, opts){
   /* 副武器調整（ver -796，Ray：一欄搞定）：`weaponMod:{ 類別:[傷害, 迴避] }` ——
      [0]傷害＝反擊增傷率（正）/抗性減傷率（負），加法；[1]迴避＝額外 miss 率(0~1)，加法。 */
   state.enemyWeaponMod = en.weaponMod || null;
-  state.enemyNoStack   = !!en.noStack;
+  /* 疊圈（ver -1582，Ray：「改成疊圈，1 開 0 關，C 以下預設不疊圈」）——
+   ⚠ **沒寫＝可疊**（＝ -1582 之前的行為）：漏寫不會改變既有那幾張卡的手感。 */
+  state.enemyNoStack   = (en.stack != null) && !en.stack;
   /* ⚠ ver -947 移除 `counterBuff` / `counterStun` / `dualBonus`（Ray 定案）：
      · 反擊後的普攻增益改成**全域一套**（3 秒 ×2，`tuning.atkBuffSeconds`）——
        逐卡再寫一份就是同一個量兩個計算點（鐵律 7），而且卡上的 `mult` 從來沒被讀過。

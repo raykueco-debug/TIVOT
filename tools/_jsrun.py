@@ -104,8 +104,11 @@ def check_module(path):
             pass
 
 def file_url(path):
-    """把本機路徑變成 ESM 吃得下的 file:// 網址。
-       ⚠ Windows 一定要走這一步：`import X from 'C:/a/b.js'` 在 node 會被當成
-         套件名（bare specifier）而失敗 —— macOS 的 /a/b.js 剛好長得像相對路徑
-         所以以前沒露餡。"""
-    return pathlib.Path(path).resolve().as_uri()
+    """把本機路徑變成這個引擎的 ESM 吃得下的指定字串。
+       ⚠ Windows／node 一定要 `file://` 網址：`import X from 'C:/a/b.js'` 會被當成
+         套件名（bare specifier）而失敗。
+       ⚠⚠ **但 macOS 的 `jsc` 剛好相反**（ver -1582 實測）：它不吃 `file://`
+         （報「is not absolute and does not start with ./」），要給**純絕對路徑**。
+         兩邊都試過才寫下來的，不要「統一」成其中一種。"""
+    p = pathlib.Path(path).resolve()
+    return p.as_posix() if ENGINE == 'jsc' else p.as_uri()

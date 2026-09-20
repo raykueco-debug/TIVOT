@@ -107,10 +107,13 @@ def file_of(card, assets, files):
 LAYOUT = [
     ('編號',   [('__no__',          '')]),
     ('基本資料', [('key',            ''), ('圖', '圖'), ('圖檔', '圖檔'), ('name', '顯名')]),
-    ('基本設定', [('story',          '劇情'), ('kind', '種類'), ('hp', 'HP'), ('attack', '攻擊力'),
-                ('counterStagger', '反擊硬直'), ('boss', 'Boss'), ('noStack', '不疊圈'), ('entrance', '進場音效'),
+    ('基本設定', [('story',          '劇情'), ('kind', '種類'),
+                # ver -1582，Ray：「在怪種類那列後面加上等級、類型、stage加成 3 列」
+                ('tier',           '等級'), ('atype', '類型'), ('stageScale', 'stage加成'),
+                ('hp', 'HP'), ('attack', '攻擊力'),
+                ('counterStagger', '反擊硬直'), ('boss', 'Boss'), ('stack', '疊圈'), ('entrance', '進場音效'),
                 ('bg',             '指定地點')]),
-    ('武器增益', [('Ganymede',       '雙槍增傷'),
+    ('武器增益', [('Ganymede',       '雙槍增傷'), ('brBonus', 'BR增傷'),
                 ('weaponMod.重機槍.傷害', '機槍增傷'), ('weaponMod.重機槍.迴避', '機槍迴避'),
                 ('weaponMod.霰彈槍.傷害', '霰彈增傷'), ('weaponMod.霰彈槍.迴避', '霰彈迴避'),
                 ('weaponMod.萊福槍.傷害', '萊福槍增傷'), ('weaponMod.萊福槍.迴避', '萊福槍迴避')]),

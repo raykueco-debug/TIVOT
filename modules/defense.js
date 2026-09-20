@@ -109,7 +109,7 @@ export function scheduleAssault(firstDelayMs){
     // 教學：暫緩大絕的情境統一問 tutorial.assaultSuppressed（首回合純清盤／劇情殺盤／
     //   場上已有紅點＝一次只出一顆），經 combat 注入轉交
     if(api.assaultSuppressed && api.assaultSuppressed()){ scheduleAssault(250); return; }
-    /* ⚠ 「不疊加」（ver -423（-893 前用詞） 的敵人卡 `noStack`）：場上還有紅點就不再生一顆，
+    /* ⚠ 「不疊圈」（敵人卡的 `stack:0`，ver -1582 由 `noStack` 改名）：場上還有紅點就不再生一顆，
        等它被解掉。⚠ 用**重排**不是丟掉 —— 丟掉的話這一隻怪會在玩家慢一拍之後
        整場不再攻擊。 */
     if(state.enemyNoStack && state.threats && state.threats.length){ scheduleAssault(300); return; }
@@ -126,7 +126,7 @@ export function scheduleAssault(firstDelayMs){
       else spawnWave(ua.count, ua.gapMs, true);             // 依次波：count 顆、每顆隔 gapMs
     }else startCharge();
     /* 下一波的排程（ver -798）：門檻行為可自訂 CD（整波之間的冷卻，自這一波起算）；
-       沒寫＝照常規頻率（ASSAULT_MIN~MAX）。⚠ noStack 仍在排程層擋著：場上有圈就重排，
+       沒寫＝照常規頻率（ASSAULT_MIN~MAX）。⚠ 不疊圈仍在排程層擋著：場上有圈就重排，
        所以 CD 是「最快多久一波」，不是保證。 */
     if(belowHp && ua.cdMs!=null) scheduleAssault(ua.cdMs);
     else scheduleAssault();     // 立即排下一個 → 錯開生成、可累積多個
