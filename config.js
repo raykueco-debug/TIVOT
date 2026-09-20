@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1600';
+export const VERSION = 'ver 2026.09.17-1602';
 
 export const GAME_CONFIG = {
 
@@ -2390,10 +2390,18 @@ export const GAME_CONFIG = {
        ⚠ 都不寫 `sessionEnd`：追擊那三場是一場一結算（玩家被追上就打一場）；
          決戰那一張是這一段的終點，等 ⑨ 追逐機制接上時再決定要不要收段。
        ⚠ 不禁聖徒化／搭檔技（Ray 沒說要禁，憲法那條是「禁了要明寫」）。 */
-    tomb_gk1:  { enemy:'gk_seal'   },
-    tomb_gk2:  { enemy:'gk_offset' },
-    tomb_gk3:  { enemy:'gk_many'   },
-    tomb_gk_final: { enemy:'gk_crypt' },
+    /* ══⚠⚠⚠ **古墓的每一場都屬於同一局**（ver -1601，Ray：「打完守墓者不應該結算，
+       踩安全點才結算」）══ `session:'tomb_wild'` ＝與那張圖的雜兵**同一局**
+       （§6.5.4.3：整張探索地圖算一局，中間打幾場都不結算，
+       **走到安全點（`rest:true`）才閉棺**）。
+       ⚠⚠ 局 id 與 `wildBattlesFromSpawnAt` 自動生的那 26 張**必須一樣** ——
+         不一樣的話「守墓者那一場」自成一局，打完照樣結算一次。
+       ⚠ **不寫 `sessionEnd`**：這張圖的收局點是**安全點**（二層梯廳／三層梯廳／
+         底層祭壇），不是某一場戰鬥。離圖時 `leaveMapRitual` 會兜底。 */
+    tomb_gk1:  { enemy:'gk_seal',   session:'tomb_wild' },
+    tomb_gk2:  { enemy:'gk_offset', session:'tomb_wild' },
+    tomb_gk3:  { enemy:'gk_many',   session:'tomb_wild' },
+    tomb_gk_final: { enemy:'gk_crypt', session:'tomb_wild' },
     /* ══⚠⚠ 貝利薩爾・祭壇的那一場（ver -1353，Ray 的稿：「進入戰鬥，雖是 boss
        但只是**略弱的中 boss 水準**」）══
        ⚠ 敵人是 `bl_dragon_chase`（古城裡的龍，拘束態立繪）—— 它的數值是 Ray 指定

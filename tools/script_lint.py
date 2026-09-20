@@ -352,10 +352,66 @@ def check_boot_batch(D):
     return len(imgs), ib, len(sfx), sb
 
 
+# ══⚠⚠⚠ **有安全點的探索地圖：那張圖用到的每一場都必須有 `session`**（ver -1601）══
+#   Ray（連報三次，最後一次原話）：「打完守墓者不應該結算，踩安全點才結算，
+#   你到底是哪聽不懂？」
+#
+#   規矩本身很清楚（§6.5.4.3）：**整張探索地圖算一局** —— 中間打幾場都不結算，
+#   走到安全點（`rest:true`）才閉棺。落地方式是戰鬥卡上的 `session:'<圖>_wild'`，
+#   因為 `combat.midSession()` 是**問那張卡**有沒有 `session`。
+#   ⇒ **漏寫 `session` 的那一場就自成一局，打完立刻結算**，而且：
+#     · 沒有任何錯誤訊息
+#     · 其他場次都正常，所以看起來像「偶爾會結算」而不是「有一張卡漏了」
+#   實際踩到的三次都是同一個形狀：-1594 合成的卡沒有 session、-1597 補了但那張卡
+#   不在 `GAME_CONFIG.battles` 上、-1601 手寫的四張守墓者從頭到尾就沒有。
+#
+#   ⇒ 這一條把它變成**會執行的**（同 `check_heavy_pairs`／`check_boot_batch`）。
+#   ⚠ **只管野怪池／必出格／追擊那幾類**（一趟會打很多次的）——
+#     節點 `acts` 裡的是**劇情戰**，一輪只打一次，打完結算本來就對。
+def check_map_sessions(D):
+    towns = D.get('towns') or {}
+    cfg   = D.get('cfg') or {}
+    B     = cfg.get('battles') or {}
+    for tid, T in towns.items():
+        nodes = T.get('nodes') or {}
+        # 這張圖有沒有安全點（＝「踩安全點才結算」的那一種圖）
+        if not any((n or {}).get('rest') for n in nodes.values()):
+            continue
+        # ⚠⚠ **只管「一趟會打很多次」的那幾類**：野怪池／必出格／追擊。
+        #   節點 `acts` 裡的那些是**劇情戰**（鹿主、祭壇首戰…）—— 一輪只打一次，
+        #   打完結算本來就是對的，把它們算進來只會製造永久的假警告。
+        ids = set()
+        for b in ((T.get('chase') or {}).get('battles') or []):
+            if isinstance(b, str): ids.add(b)
+        W = T.get('wildSpawn') or {}
+        for p in (W.get('pool') or []):
+            b = (p or {}).get('battle')
+            if isinstance(b, str): ids.add(b)
+        for v in (W.get('fixed') or {}).values():
+            if isinstance(v, str): ids.add(v)
+            elif isinstance(v, dict):
+                for vv in v.values():
+                    if isinstance(vv, str): ids.add(vv)
+        bad = []
+        for b in sorted(ids):
+            card = B.get(b)
+            if card is None:           # 沒有場次卡的（`spawnAt` 自動生的那些）不在這張表上
+                continue
+            if not card.get('session'):
+                bad.append(b)
+        if bad:
+            err('%s 有安全點（踩安全點才結算），但這幾場**沒有 `session`** —— '
+                '每打完一場就會結算一次，而且不會報錯：%s。'
+                '補上與那張圖同一個局 id（慣例 `%s_wild`）；'
+                '真的要「打完就收局」才寫 `sessionEnd`（§6.5.4.3）。'
+                % (tid, '／'.join(bad), tid))
+
+
 def main():
     D = load_data()
     check_heavy_pairs()
     boot = check_boot_batch(D)
+    check_map_sessions(D)
     check_lowercase_assets()
     script, entry, speakers, art = D['script'], D['entry'], D['speakers'], D['art']
     check_tense_exprs(art)
