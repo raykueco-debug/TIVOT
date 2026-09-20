@@ -1665,6 +1665,9 @@ const SE_FILES=[
      原檔進 `resources/audio/se/_raw/`（底線開頭＝不會被載入）。
      ⚠ -1413 我程序合成的那支暫代品已走 `tools/recycle.sh` 進回收區。 */
   'se_waterfall.m4a',
+  /* 雪都圖書館（ver -1556，Ray 交件）：蕾娜拍桌／搶回報告。
+     交來的是 wav／mp3，照 §6.6 轉成 AAC 96k，原檔走 tools/recycle.sh。 */
+  'se_tablepunch.m4a', 'se_snatch.m4a',
   'se_ui_kagurabell.m4a', 'se_ui_pageflip.m4a', 'se_ui_sortie.m4a', 'se_walk.m4a',
   'se_weapon_guard.m4a', 'se_weapon_mg_squall.m4a', 'se_weapon_pistol_01.m4a',
   'se_weapon_pistol_02.m4a', 'se_weapon_pistol_03.m4a', 'se_weapon_reload.m4a',
@@ -2123,7 +2126,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1555';
+const KERB_V='?v=1556';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

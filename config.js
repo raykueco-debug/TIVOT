@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1555';
+export const VERSION = 'ver 2026.09.17-1556';
 
 export const GAME_CONFIG = {
 
@@ -3546,6 +3546,12 @@ export const GAME_CONFIG = {
       se_kerberos_open:1.558, se_kerberos_pop:1.479, se_kerberos_steam:1.301,
       se_kerberos_gear:6.179, se_kerberos_drop:1.550,
       se_brickcrush:1.825,              // ver -624（audio_scan 實測：−19.0 LUFS）
+      /* 雪都圖書館（ver -1556）。⚠ `se_tablepunch` 是拍桌的**低頻**衝擊：
+         耳機 −9.4 LUFS、過手機喇叭模型只剩 −24.8（差 15.4 dB，全專案最大的一支）——
+         所以增益取**兩者的平均**（§6.6「耳機對了不代表手機對了」），只對耳機那一端
+         會讓它在手機上幾乎聽不見、對手機那一端又會在耳機上炸開。 */
+      se_tablepunch:1.464,              // ver -1556（耳機 −9.43／手機 −24.80，平均 −17.12）
+      se_snatch:2.500,                  // ver -1556（平均 −23.09 → 想要 2.911，被 peakCeilDb 夾住）CAP
       /* 流水聲（ver -1414，Ray 交件；-1413 我合的暫代品已進回收區）：
          與 `se_brickcrush` **同一拍一起播**，所以直接錨它 —— 本機 BS.1770 實測
          brickcrush −15.7（增益 1.825 ⇒ 實效 −10.47）／waterfall −18.2 LUFS
