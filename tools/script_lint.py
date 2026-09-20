@@ -515,6 +515,20 @@ def main():
             if ln.get('fxCi') and ln['fxCi'] not in (D.get('assets') or {}) and not os.path.exists(
                     os.path.join(ROOT, str(ln['fxCi']).split('?')[0])):
                 err('%s：fxCi 指到不存在的圖 —— %r' % (tag, ln['fxCi']))
+            # ver -1562：`cgRush` 可以是 True（框中心）或 {x,y}（消失點在圖上的位置）
+            if ln.get('cgRush') is not None:
+                v = ln['cgRush']
+                if isinstance(v, dict):
+                    for k in ('x', 'y'):
+                        if not (isinstance(v.get(k), (int, float)) and 0 <= v[k] <= 1):
+                            err('%s：cgRush.%s 要是 0~1 的數（消失點在**圖上**的位置），收到 %r'
+                                % (tag, k, v.get(k)))
+                elif v is not True:
+                    err('%s：cgRush 只能是 true 或 {x,y}，收到 %r' % (tag, v))
+                for other in ('cgPan', 'cgZoom'):
+                    if ln.get(other) is not None:
+                        err('%s：cgRush 與 %s 互斥（兩者都在寫 transform，後掛的會蓋掉前一個）'
+                            % (tag, other))
             if ln.get('cgScale') is not None:
                 v = ln['cgScale']
                 if not (isinstance(v, (int, float)) and 0.5 <= v <= 3):

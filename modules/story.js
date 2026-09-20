@@ -879,6 +879,16 @@ function swapImg(el, src, done, opts){
 /* object-fit:cover 之下，把「圖上的一點」換算成「框上的百分比」。
    ⚠ cover 會把圖等比放大到蓋滿框，再從中央裁掉多出來的那一邊 ——
      所以圖上的 0.09 不等於框上的 0.09，直接拿來當 transform-origin 會偏。 */
+/* ══⚠⚠ **放射狀模糊的疊影：唯一那支收尾**（ver -1562）══
+   它蓋在插圖上，留著就是一層半透明殘影黏在畫面上 —— 所以**只有這一支**在收，
+   而且每一條會讓它過期的路都要叫它（換插圖／收插圖／換場／離場／清舞台殘留）。
+   ⚠ 同 §6.5.4 那張檢查表的第一句：「換畫面時誰收它？」——
+     答不出來的層就不要上線。 */
+let cgRushTimer=0;
+function killCgRush(){
+  clearTimeout(cgRushTimer); cgRushTimer=0;
+  const b=document.getElementById('storyCgRush'); if(b) b.remove();
+}
 function coverOrigin(el, p){
   const W=el.clientWidth, H=el.clientHeight;
   const nw=el.naturalWidth||1, nh=el.naturalHeight||1;
@@ -1009,6 +1019,7 @@ const missingCg=new Set();   // 退回過的插圖：只提示一次，不然每
    ⚠ 這一支**只收「上一個畫面的殘留」**，不碰立繪（那是 `clearCast` 的事）
      與背景（那是 `enter()` 自己要換的）。 */
 export function clearStageLeftovers(){
+  killCgRush();   // 放射狀疊影（ver -1562）：換畫面時的第二道保險
   /* ⚠ 龍吟的模糊（ver -1465）：`forwards` 的一次性動畫，換畫面時一起拔
      —— 同 -1449 `pan-v` 那條教訓（「凡是 forwards 的一次性動畫，每一條收尾的路
      都要把它拔掉」）。 */
@@ -1371,6 +1382,7 @@ function applyPersist(line){
   if(line.cg!==undefined && line.cg!==stageCg){
     cgChanged=true;
     stageCg=line.cg;
+    killCgRush();   // ⚠ 上一張的放射狀疊影要跟著走，不然會黏在新的圖上（ver -1562）
     /* ⚠ 插圖**也吃時段差分**（ver -427，Ray 指定）：`005_Kerberos` →
        `005_Kerberos_dusk` / `_day` 由 `clock.band()` 挑，走與背景**同一條**候選鏈。
        ⚠ `cgNoTime:true` ＝這張沒有差分（多數插圖都是），只試原名。 */
@@ -1563,15 +1575,52 @@ function applyPersist(line){
       };
       if(cg.complete && cg.naturalWidth) go(); else cg.addEventListener('load', go, {once:true});
     }else if(line.cgRush){
-      /* ══⚠ **速度模糊進入**（ver -1557，Ray：「效果用速度模糊進入」）══
-         配方在 CSS 的 `.cg-rush`（鐵律 1：形狀是內容，程式只負責掛上去）。
-         ⚠ 與 `cgPan`／`cgZoom` 互斥：三者都在寫 `transform`，同時掛兩個
-           後掛的會整條蓋掉前一個（同 §6.5.4.4 淨化那一條「一個元素只有一份
-           transform」的同一個坑）。所以是 `else if` 不是另開一段。
-         ⚠ 要等圖真的載到才起跑（同上面那兩支）：沒載到就播，前半段是在糊一張空圖。 */
+      /* ══⚠⚠ **放射狀動態模糊（zoom blur）**（ver -1557 建、**-1562 重做**，Ray：
+         「動態模糊不夠，應該以米夏眼睛為消失點進行動態模糊」）══
+         腳本寫 `cgRush:{x,y}`（消失點在**圖上**的位置，0~1）；`cgRush:true`
+         ＝退回圖框中心。
+         ⚠⚠ -1557 那一版是 `filter:blur()` ＋ 橫移 —— **`blur()` 是各向同性的**，
+           只會讓整張圖變糊（讀成「對焦中」），做不出從一點往外拉開的速度線。
+           正解是**疊影**：同一張圖疊幾份，各自以消失點為 `transform-origin`
+           放大不同倍率、透明度遞減。
+         ⚠⚠⚠ `transform-origin` 一律走 `coverOrigin()`（鐵律 7：與 `cgZoom`
+           「以臉為中心推近」同一支）—— 插圖是 `object-fit:cover`，**圖上的 0.48
+           不等於框上的 0.48**，直接拿去當百分比消失點會偏掉。
+         ⚠ 疊影裝在自己的容器 `#storyCgRush` 裡，**用完整個拿掉**：它蓋在插圖上，
+           留著就是一層半透明的殘影黏在畫面上（§6.5.4 那張表：「換畫面時誰收它？」）。
+         ⚠ 與 `cgPan`／`cgZoom` 互斥（三者都在寫 `transform`）。
+         ⚠ 要等圖真的載到才起跑：沒載到就播，疊的是幾張空圖。 */
       cg.classList.remove('pan-up','pan-down','pan-v','zoom-in','cg-rush');
       cg.style.objectPosition=''; cg.style.transform='';
-      const go=()=>{ void cg.offsetWidth; cg.classList.add('cg-rush'); };
+      const go=()=>{
+        const org = coverOrigin(cg, (line.cgRush && line.cgRush.x!=null)
+                                    ? line.cgRush : { x:0.5, y:0.5 });
+        cg.style.transformOrigin = org;
+        killCgRush();
+        const box=document.createElement('div'); box.id='storyCgRush';
+        /* 疊影由**外往內**收：層數越多拉得越順，但每一層都是一張滿版圖
+           —— 手機上 5 層已經夠（鐵律 12：先問「這在手機上成立嗎」）。 */
+        const N=5, K=0.052, A=0.44;
+        for(let i=N;i>=1;i--){
+          const g=document.createElement('img'); g.src=cg.getAttribute('src')||'';
+          g.alt=''; g.style.transformOrigin=org;
+          g.style.setProperty('--zb-k', (1+K*i).toFixed(3));
+          g.style.setProperty('--zb-a', (A/i).toFixed(3));
+          g.style.animationDelay = (i*8)+'ms';   // 一點點錯開＝拖尾，不是一起閃
+          box.appendChild(g);
+        }
+        cg.parentNode.insertBefore(box, cg.nextSibling);
+        /* ⚠⚠ **收尾聽 `animationend`，不要另外寫一個秒數**（鐵律 7）：
+           動畫多長是 **CSS** 的事（`.32s` ＋ 逐層 `animationDelay`），在這裡再寫
+           一個 520ms 就是同一個量的第二個計算點 —— CSS 改長了它會提早把疊影砍掉，
+           改短了又會多黏一段。`animationend` 會冒泡，最後一層跑完就收。
+           ⚠ 那個 `setTimeout` 留著當**保險絲**（分頁被節流／動畫被中斷時
+           `animationend` 不一定來），所以給得很寬，不是「時間到就收」。 */
+        let left=box.children.length;
+        box.addEventListener('animationend', ()=>{ if(--left<=0) killCgRush(); });
+        cgRushTimer = setTimeout(killCgRush, 4000);   // 保險絲，不是時長
+        void cg.offsetWidth; cg.classList.add('cg-rush');
+      };
       if(cg.complete && cg.naturalWidth) go(); else cg.addEventListener('load', go, {once:true});
     }else if(line.cgZoom){
       /* 以臉為中心緩慢推近。cgZoom 給的是**臉在圖上**的位置（0~1）——
@@ -2170,7 +2219,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1561';
+const KERB_V='?v=1563';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

@@ -5603,7 +5603,13 @@ export const TOWNS = {
                  ⇒ 吃得到 `auto`（§6.5 的 -628：台上沒人的純演出拍照舊自己跑）。
                ⚠ `cgRush` 與 `cgPan`／`cgZoom` 互斥（三者都在寫 `transform`）。 */
             { speaker:'NARRATION', text:'', se:'se_preasure',
-              cg:'021-mishalookback', cgNoTime:true, cgRush:true, auto:1600 },
+              cg:'021-mishalookback', cgNoTime:true, auto:1600,
+              /* ⚠ 消失點＝**米夏的眼睛**（ver -1562，Ray 指定）。那是**圖上**的
+                 位置（0~1），引擎會用 `coverOrigin` 換算成框上的百分比 ——
+                 插圖是 `object-fit:cover`，兩者不是同一個數字。
+                 量法：把 `021-mishalookback.webp`（1024×1536）的頭部裁出來放大，
+                 取兩眼虹膜中點 ⇒ (494.7, 362.3) px ⇒ (0.483, 0.236)。 */
+              cgRush:{ x:0.483, y:0.236 } },
             { speaker:'NARRATION', text:'', cg:null, auto:600 },
             ren('shockcalm','！！'),
             { speaker:'PLAYER', blank:true },
@@ -5642,7 +5648,8 @@ export const TOWNS = {
                ⚠ 這一拍沒有台詞、台上也沒有人（`cg:` 那一刻就清了場，§6.5 ver -1422）
                  ⇒ 吃得到 `auto`（-628：台上沒人的純演出拍照舊自己跑）。 */
             { speaker:'NARRATION', text:'', se:'se_preasure',
-              cg:'021-mishalookback', cgNoTime:true, cgRush:true, auto:1400 },
+              cg:'021-mishalookback', cgNoTime:true, auto:1400,
+              cgRush:{ x:0.483, y:0.236 } },   // 消失點＝米夏的眼睛（同 M1，見那邊的量法）
             /* ⚠⚠ **「直接在插圖上跑對話框不跑立繪」**＝不寫 `cg`（插圖是持續狀態，
                留著）＋ **明寫 `portrait:{show:false}`** —— 只是不寫 `portrait` 沒有用，
                引擎查不到就退回 `line.speaker`，等於把他放上台（-1559 在圖書館踩過）。

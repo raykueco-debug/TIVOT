@@ -2822,11 +2822,31 @@
      ⚠ `filter` 與 `transform` 都在**同一條** animation 上：分成兩條的話，
        兩者的 easing 一定走鐘（同 §6.5 的「兩個元素要一起動」那條的同一個道理）。
      ⚠ 收在 220ms —— 再長就從「一瞬」變成「慢慢對焦」。 */
-  #storyCg.cg-rush{animation:storyCgRush .22s cubic-bezier(.17,.84,.29,1) forwards;}
+  /* ══⚠⚠⚠ **放射狀動態模糊（zoom blur），消失點由腳本指定**
+     （ver -1562，Ray：「動態模糊不夠，應該以米夏眼睛為消失點進行動態模糊」）══
+     ⚠⚠ **CSS 的 `blur()` 是各向同性的** —— 它只會讓整張圖變糊（讀成「對焦中」），
+       做不出「從某一點往外拉開的速度線」。-1561 那一版就是這樣，所以不夠。
+     ⚠ 真正的放射狀模糊是**疊影**：同一張圖疊 N 份，各自以**消失點**為
+       `transform-origin` 放大不同倍率、透明度遞減 —— 疊起來就是從那一點往外
+       拉出的殘影。倍率差越大＝拉得越長。
+     ⚠⚠ `transform-origin` 一定要走 `coverOrigin()` 換算（鐵律 7：那支函式是
+       `cgZoom`「以臉為中心推近」在用的同一支）：插圖是 `object-fit:cover`，
+       **圖上的 0.48 不等於框上的 0.48**（cover 會裁掉一圈）。
+     ⚠ 疊影與本體**同一條時間軸**（同 220→320ms）：分開寫兩條 easing 必然走鐘。 */
+  #storyCgRush{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+    z-index:2;pointer-events:none;overflow:hidden;}
+  #storyCgRush img{position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;opacity:0;will-change:transform,opacity;
+    animation:storyCgZoomBlur .32s cubic-bezier(.16,.86,.28,1) forwards;}
+  @keyframes storyCgZoomBlur{
+    0%  {opacity:var(--zb-a,.5); transform:scale(var(--zb-k,1.2))}
+    70% {opacity:calc(var(--zb-a,.5) * .28)}
+    100%{opacity:0;              transform:scale(1)}}
+  /* 本體：只做很輕的推近收尾（速度線交給上面那一疊），**不再用 blur()**。 */
+  #storyCg.cg-rush{animation:storyCgRush .32s cubic-bezier(.16,.86,.28,1) forwards;}
   @keyframes storyCgRush{
-    0%  {transform:scale(1.08) translateX(7%);  filter:blur(9px)}
-    55% {transform:scale(1.02) translateX(1.2%);filter:blur(2.4px)}
-    100%{transform:none;                        filter:none}}
+    0%  {transform:scale(1.055)}
+    100%{transform:none}}
   #storyCg.pan-up{animation:storyPanUp 2.6s ease-out forwards;}
   #storyCg.pan-down{animation:storyPanDown 2.6s ease-out forwards;}
   #storyBg.pan-up{animation:storyPanUp 2.6s ease-out forwards;}
@@ -3921,6 +3941,7 @@
        都是 `forwards` 的**一次性**過場，凍在中間會把畫面留在「糊掉／歪一半」的
        狀態。跑完之後 `forwards` 本來就不再耗效能，凍它一點好處都沒有。 */
   body.perf-idle #storyFx *,
+  body.perf-idle #storyCgRush img,
   body.perf-idle #storyCg{ animation-play-state:running !important; }
   #storyFx .fx-sense-dim{position:absolute;inset:0;z-index:1;pointer-events:none;
     background:rgba(3,3,7,.55);opacity:0;animation:storySenseDim .26s ease forwards;}
