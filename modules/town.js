@@ -3814,14 +3814,23 @@ export function enter(id){
   else{
     act = dragonActDue(n) || dragonTalkDue() || (immediate ? null : wildActDue(n))
         || dateCurfewAct(n) || dateByeAct(n) || actDue(n) || restActDue(n);
-    /* ══⚠⚠ **`afterSettle:true` ＝這一格要結算的話，結算完再演我**（ver -1433，
-       Ray：「玩家只要初踩到獅階…若觸發結算，結算完再跑對話」）══
-       ⚠ **逐段宣告，不是全域換順序**：其餘六個「休息處＋acts」的格子照舊先講話
-         —— 那幾段是劇情，先被一頁戰績打斷讀起來是斷的。
+    /* ══⚠⚠⚠ **安全點：先結算，再演劇情 —— 這是全域規則**（ver -1574，Ray：
+       「安全點處如果有劇情 先跑結算再跑劇情 **這是全域規則**」）══
+       ⚠⚠ 這**推翻了 -1433 的逐段宣告**：那一版是「預設先講話，要倒過來就在那一段
+         寫 `afterSettle:true`」（只有獅階寫了）。現在**預設就是先結算**，
+         `afterSettle` 變成多餘 —— 資料上留著不會壞（同樣的結果），但不要再新增。
+       ⚠ 為什麼這樣才對：走進安全點的那一刻，玩家身上還揹著上一段的帳
+         （用時／失誤／EXP／錢）。先演劇情等於**讓那筆帳在劇情演完之後才結** ——
+         中間他可能又被追上、又打一場，帳就混進去了。**安全點的語意是「這一段到此為止」**，
+         那就該先落幕再開下一場。
        ⚠ 結算那一段沒有 `flag`，所以它演完之後段落收尾的接續
-         （`const nx=actDue(n)` → `runArrival(true)`）會**再回來演這一段**；
-         那一趟 `restActDue` 已經沒有帳可報，於是輪到它。 */
-    if(act && act.afterSettle){ const r=restActDue(n); if(r) act=r; }
+         （`const nx=actDue(n)` → `runArrival(true)`）會**再回來演原本那一段**；
+         那一趟 `restActDue` 已經沒有帳可報（`clearSessionGain` 清掉了），於是輪到它。
+         —— 這就是「先結算、再劇情」真正的落地方式，不是把兩段串起來。
+       ⚠ `restActDue` 自己會擋「這一趟還沒打過架」（回 null）⇒ 沒有帳的時候
+         這一條等於不存在，劇情照舊直接演。 */
+    { const r = (n && n.rest) ? restActDue(n) : null;
+      if(r && act !== r) act = r; }
   }
   let ev = act ? null : eveningDue(n);
   /* 這一次抵達**原本**要演的進場對白（打烊、演過了、或段落裡有**回房休息的夥伴**

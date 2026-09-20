@@ -7204,19 +7204,31 @@ export const TOWNS = {
       cloister:   { bg:'tomb_cloister', name:'伊甸古墓　迴廊', noTime:true,
         exits:{ right:'apse', left:'stair1' } },
       /* ⚠ 樹上的**橋**：找不到就真的下不去，沒有第二條路 */
-      /* ⚠⚠ **安全點之一**（ver -1525，Ray：「整張地圖只有三處安全點，
+      /* ══⚠⚠⚠ **安全點換了一組**（ver -1574，Ray：「安全點是二層梯廳、三層梯廳
+         跟底層祭壇」）══ -1525 那一版是「**兩個樓梯**及最終房間前」
+         （`stair1`／`stair2`／`gallery3`）—— **三格都已經拔掉**。
+         ⚠⚠ 連 `noWild` 一起拔：那一格不再是安全點，就沒有理由不出怪
+           （§6.5.4.3：安全點一律 `noWild`，反過來也一樣）。
+           ⚠ 這表示**最終房間前（`gallery3`）現在會出怪** —— 那是這一版的結果，
+             不是漏掉。要留一格喘息就說一聲。
+         ⚠ 新的三格見下面各自的註解：`landing2`／`landing3`／`lowaltar`。 */
+      /* ⚠⚠ ~~安全點之一~~（ver -1525，Ray：「整張地圖只有三處安全點，
          分別在**兩個樓梯**及**最終房間前**」）—— 走既有的 `rest:true`
          （§6.5.4.4 的休息處：走進去閉棺結算；沒打過架就不作動）。
          ⚠ `noWild` 照舊由那一條規矩帶（安全點不刷怪）——
            這張圖現在本來就沒有 `wildSpawn`，接上之後要記得。 */
       stair1:     { bg:'tomb_stair1', name:'伊甸古墓　第一道階梯', noTime:true,
-        exits:{ right:'cloister', up:'landing2' }, rest:true, noWild:true },
+        exits:{ right:'cloister', up:'landing2' } },
       /* ⚠ ver -1572（Ray：「二階梯廳設為安全區」）：`noWild:true` ＝這一格不出野怪。
          ⚠ 它與**安全區旗**（`safehouse_<圖>`）是兩件事：那個是整張圖會開會關的狀態，
            這個是**這一格的性質**（同神殿入口那一條，§6.5.4.4 的 -879）。
          ⚠ 下一格（`hall2` 柱廳）是守墓者那一場 —— 一階一格，上來喘口氣就開打。 */
-      landing2:   { bg:'tomb_landing2', noWild:true, name:'伊甸古墓　二層梯廳', noTime:true,
-        exits:{ up:'hall2', back:'stair1' } },
+      /* ⚠⚠ **安全點之一**（ver -1574，Ray 指定）：`rest:true` ＝走進去就閉棺結算
+         ＋資源回滿（§6.5.4.3）；`noWild` 是那一條規矩自己帶的（收尾點不刷怪）。
+         ⚠ 它同時是「二層的入口」—— 上一格（柱廳）就是守墓者那一場，
+           打完退回這裡喘一口氣，是這張圖唯一靠近前線的安全點。 */
+      landing2:   { bg:'tomb_landing2', name:'伊甸古墓　二層梯廳', noTime:true,
+        exits:{ up:'hall2', back:'stair1' }, rest:true, noWild:true },
       hall2:      { bg:'tomb_hall2', name:'伊甸古墓　柱廳', noTime:true,
         exits:{ up:'cistern', right:'corr2', down:'landing2' },
         /* ══⚠⚠⚠ **守墓者・降臨**（ver -1525，Ray 的 Stage10-A 稿）══════════════
@@ -7364,17 +7376,30 @@ export const TOWNS = {
         exits:{ right:'nichehall', up:'stair2' } },
       /* ⚠ 同上：樹上的橋 */
       stair2:     { bg:'tomb_stair2', name:'伊甸古墓　第二道階梯', noTime:true,
-        exits:{ down:'ossuary', up:'landing3' }, rest:true, noWild:true },
+        exits:{ down:'ossuary', up:'landing3' } },
+      /* ⚠⚠ **安全點之二**（ver -1574，Ray 指定）。 */
       landing3:   { bg:'tomb_landing3', name:'伊甸古墓　三層梯廳', noTime:true,
-        exits:{ up:'gallery3', back:'stair2' } },
-      /* ⚠ **安全點之三**＝「最終房間前」（`crypt` 是終點，這一格是它的前廊）。 */
+        exits:{ up:'gallery3', back:'stair2' }, rest:true, noWild:true },
+      /* ⚠ ~~安全點之三~~（ver -1574 拔掉，見上面那一段）。 */
       gallery3:   { bg:'tomb_gallery3', name:'伊甸古墓　玄室前廊', noTime:true,
-        exits:{ up:'crypt', left:'vaultW', down:'landing3' }, rest:true, noWild:true },
+        exits:{ up:'crypt', left:'vaultW', down:'landing3' } },
       vaultW:     { bg:'tomb_vaultw', name:'伊甸古墓　側墓穴', noTime:true,
         exits:{ right:'gallery3', up:'bonepit' } },
-      /* ← 死胡同 H（兩格深） */
+      /* ← 死胡同 H（**ver -1574 起三格深**：骨坑後面接上底層祭壇） */
       bonepit:    { bg:'tomb_bonepit', name:'伊甸古墓　骨坑', noTime:true,
-        exits:{ back:'vaultW' } },
+        exits:{ up:'lowaltar', back:'vaultW' } },
+      /* ══⚠⚠⚠ **安全點之三：底層祭壇**（ver -1574，Ray：「底層祭壇在骨坑後面，
+         還沒畫，明天補，**先重覆一次骨坑代替**」）══
+         ⚠⚠⚠ **`bg` 現在借用骨坑那一張** —— 圖來了就把 `tomb_bonepit` 換成新的基底名，
+           **只改這一行**（`rest`／`noWild`／`exits` 都不必動）。
+           ⚠ 借圖期間玩家會看到「走進去還是骨坑」—— 那是已知的，不是 bug。
+         ⚠⚠ 它是**整張圖最深處的安全點**（墓門走過來 20 步），而且藏在死胡同底 ——
+           那正是 Ray 的「安全點就是迷宮出口，找不到就一直被追」。
+         ⚠⚠⚠ **節點數變了（34→35）⇒ 手繪小地圖要重畫**（§6.5.4.4 的 -901）：
+           `resources/map/map_tomb.webp` 上的光點是照拓樸畫的，多一格就對不上。
+           `tools/map_layout.py` 的 `POS` 已經加了這一格（那是版面的唯一真相）。 */
+      lowaltar:   { bg:'tomb_bonepit', name:'伊甸古墓　底層祭壇', noTime:true,
+        exits:{ back:'bonepit' }, rest:true, noWild:true },
       /* ★ **終點**（最深處） */
       crypt:      { bg:'tomb_crypt', name:'伊甸古墓　石棺主室', noTime:true,
         exits:{ back:'gallery3' } },
@@ -7591,7 +7616,9 @@ export const TOWNS = {
       /* ══⚠⚠⚠ **初踩獅階：把牠往這個方向逼**（ver -1433，Ray：「玩家只要初踩到
          獅階，就會觸發對話，**若觸發結算，結算完再跑對話**」）══
          獅階是**休息處**（`rest:true`）⇒ 帶著帳走進來會先閉棺結算。
-         ⚠⚠ `afterSettle:true` ＝**這一格要結算的話，結算完再演我**
+         ⚠⚠ ~~`afterSettle:true`~~ **ver -1574 起是全域預設**（Ray：「安全點處如果有劇情
+           先跑結算再跑劇情 這是全域規則」）—— 這一格留著它不會壞（結果一樣），
+           但**不要再新增**。原本的意思是：這一格要結算的話，結算完再演我
            （見 `modules/town.js` 的 `runArrival`）。它是**逐段宣告**不是全域換順序：
            其餘六個「休息處＋acts」的格子（夏爾森林兩格、木雅克兩格、古道溪谷口）
            照舊是先講話 —— 那幾段是劇情，先被一頁戰績打斷讀起來是斷的。
@@ -7678,7 +7705,8 @@ export const TOWNS = {
          ⚠ `need` ＝任務探索開著（同中庭那一段，旗名讀 `QUEST_LOCK`）——
            白天那一趟走進前廳不演這一段。
          ⚠ 這一格是**休息處**（`rest:true`）：帶著帳走進來會先結算 —— 那一段
-           `afterSettle` 只有獅階要（Ray 指定），這裡照舊「先講話」。 */
+           ⚠⚠ **ver -1574 起這一句作廢**：先結算後劇情已經是全域規則，
+             這一格（與其餘每一個「休息處＋acts」的格子）都跟著改了。 */
       foyer:     { bg:'belisar_foyer', name:'貝利薩爾遺址　前廳', noTime:true, noWild:true, rest:true, exits:{ up:'stephall', down:'entrance' },
         /* ══⚠⚠ **初入前廳**（ver -1434，Ray 交稿）══ `ep_bel_enter` 那一段的 `goto`
            就是這一格，所以白天走進古城的那一次抵達必定演到它。
