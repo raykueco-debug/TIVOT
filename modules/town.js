@@ -10,7 +10,7 @@
    ⚠ 每次移動：`se_walk` ＋ 時鐘前進（時間是資源）。
    ══════════════════════════════════════════════════════════════════════ */
 
-import { GAME_CONFIG, fileGain } from '../config.js';
+import { GAME_CONFIG, fileGain, asset } from '../config.js';   // asset＝鍵→路徑（warmEnemies 用）
 import { TOWNS, OUTING, DINE, DRAGON_LINES, QUEST_LOCK} from '../script/town.js';
 import * as clock from '../script/clock.js';
 import * as prog from '../script/progress.js';
@@ -822,6 +822,63 @@ function warmRest(T, skipId){
   };
   for(let c = 0; c < 2; c++) nextNode();
 }
+/* ══⚠⚠⚠ **這張圖會出現的怪，進圖時就預熱**（ver -1578，Ray：「誰說開機第二段
+   預載要載怪圖的？**進探索地圖再載啊**」）══════════════════════════════════
+   鐵律 13 的「一個畫面只讀自己的資源」套用到**敵人立繪**：開機那一批不揹它們
+   （`ASSETS` 登記路徑本身不載任何位元組，見 config 那一段的更正），
+   戰鬥當下才抓又太晚 —— 那一刻門正在推、畫面上就是敵人立繪要出現的地方
+   （`enemy.loadEnemyPortrait` 等 `onload` 才播降臨）。所以由**這張圖自己**
+   在讀取頁收掉之後背景預熱。
+
+   ⚠⚠⚠ **名單是算出來的，不是列出來的**（鐵律 7）：資料上早就寫著「這張圖有哪些
+     戰鬥」——`wildSpawn`（必出／池子／指定遭遇）、每一格 `acts` 裡的 `{battle:…}`、
+     追兵的 `chase.battles`。列一張死名單的話，Ray 日後把那 26 隻接進 `wildSpawn`，
+     **名單那一份不會有人記得更新** —— 而漏掉的下場只是「那一隻晚一拍」，
+     沒有任何錯誤訊息，永遠不會有人發現。
+   ⚠ 走 `warm`（讀取頁**收掉之後**才跑）不走 `imgs`（會擋讀取頁）：這幾張不是
+     這一刻要畫的東西，§6.6 的「等」只留給「這個畫面現在就要的」。
+   ⚠ **只進 HTTP 快取、不解碼**（同 `warmRest` 那一句）：解碼是記憶體，而這一批
+     多半用不到 —— 真的要畫的那一刻 `loadEnemyPortrait` 自己會解。
+   ⚠ 一次兩條連線（同 `warmRest`）：手機並發只有 6 條，背景預熱不該把前景餓死。 */
+function battleIdsOf(T){
+  const out = new Set();
+  const add = b => { if(typeof b==='string' && b) out.add(b); };
+  const W = T.wildSpawn || {};
+  for(const k in (W.fixed||{})) add(wildVariant(W.fixed[k]));
+  for(const p of (W.pool||[])) add(wildVariant(p && p.battle));
+  add(wildVariant(W.endBattle));
+  for(const e of (W.encounters||[]))
+    for(const l of (actLines(e && e.act) || [])) add(l && l.battle);
+  for(const id in (T.nodes||{})){
+    const n=T.nodes[id];
+    for(const a of (n.acts||[])) for(const l of (actLines(a)||[])) add(l && l.battle);
+    for(const l of (actLines(n.onLeave)||[])) add(l && l.battle);
+  }
+  for(const b of ((T.chase||{}).battles||[])) add(b);
+  return [...out];
+}
+function enemyImgsOf(T){
+  const B=GAME_CONFIG.battles||{}, E=GAME_CONFIG.enemies||{}, out=[];
+  for(const id of battleIdsOf(T)){
+    const card = E[(B[id]||{}).enemy || ''];
+    const url  = card && card.image && asset(card.image);
+    /* ⚠ `asset()` 查不到會回空字串（那一張還沒登記進 `ASSETS`）—— 跳過就好，
+       這裡不是驗收的地方（`script_lint.py` 才是）。 */
+    if(url && out.indexOf(url)<0) out.push(url);
+  }
+  return out;
+}
+function warmEnemies(T){
+  const my=warmSeq, list=enemyImgsOf(T);
+  let at=0;
+  const next=()=>{
+    if(my!==warmSeq || at>=list.length) return;   // 已經換圖了 → 這一輪作廢
+    const im=new Image();
+    im.onload=im.onerror=()=>{ if(my===warmSeq) next(); };
+    im.src=list[at++];
+  };
+  for(let c=0;c<2;c++) next();
+}
 export function loadSpec(town, nodeId){
   const T = TOWNS[town || 'capital']; if(!T) return {};
   const id = nodeId || T.entry;
@@ -830,7 +887,10 @@ export function loadSpec(town, nodeId){
      之後才呼叫）。⚠⚠ 為什麼不由 loadScene 拿一串網址去暖：候選鏈要**依序試**才知道
      哪一張存在，而試出來的答案要記回 `bgResolved` —— 那張表住在這裡（鐵律 7）。
      順序試完再記，玩家走過去時 `bgFor` 直接命中，一個探測都不必發。 */
-  const warm = ()=> warmRest(T, id);
+  /* ⚠ 兩件事都在讀取頁**收掉之後**才跑：其餘格子的背景、以及這張圖會出現的怪
+     （ver -1578，見 `warmEnemies`）。⚠ 背景排前面 —— 玩家下一步就會走到，
+     而怪要等遭遇（同 §6.6「哪一張鋪滿畫面就哪一張先」的判準）。 */
+  const warm = ()=>{ warmRest(T, id); warmEnemies(T); };
   /* ⚠ 入口圖走 `pre`（一支回 Promise 的函式）不走 `imgs`：候選鏈要**由這裡**解，
      解完的答案才記得回 `bgResolved`（見 resolveBgOnce 的說明）。 */
   return {

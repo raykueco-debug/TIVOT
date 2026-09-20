@@ -69,7 +69,7 @@ def load_data():
         parts.append(strip_module(open(os.path.join(ROOT, f), encoding='utf-8').read()))
     parts.append('print(JSON.stringify({script:MAIN_SCRIPT, entry:MAIN_ENTRY,'
                  ' speakers:SPEAKERS, art:ART, towns:TOWNS, cfg:GAME_CONFIG,'
-                 ' assets:ASSETS}));')
+                 ' assets:ASSETS, homeImg:HOME_IMG, homeSfx:HOME_SFX}));')
     return _jsrun.dump(NL.join(parts), what='腳本資料')
 
 # ── story.js 的音效／BGM 表 ────────────────────────────────────────────────
@@ -294,9 +294,68 @@ def check_tense_exprs(art):
             'tools/script_lint.py 的 TENSE_OK 並寫明為什麼）' % b)
 
 
+# ══⚠⚠⚠ **開機那一批的守望**（ver -1578）══════════════════════════════════
+#   Ray：「老是犯同一個病，每次開新 session 就改壞，然後我就卡 loading，
+#         每次都要來這麼一下，講都講不聽。」
+#
+#   憲法鐵律 13 講的是「一個畫面只讀自己的資源」，而它的自檢寫成
+#   「開機之後跑一次 `performance.getEntriesByType('resource')`」—— **那要有人記得跑**。
+#   憲法自己也說過：真的要立規矩，就把它寫成**會執行的東西**，不要寫成註解。
+#   這一支就是那個自檢，而且是**靜態**的：不必開瀏覽器、commit 前就會叫。
+#
+#   量的是「**開機那一批真的會抓什麼**」—— 與 `main.js` 的 `startBatch` 同一套判準：
+#     圖   ＝ `ASSETS` 裡通過 `HOME_IMG`（prefixes／keys）的
+#     音效 ＝ `ASSETS` 裡通過 `HOME_SFX` 的
+#     音樂 ＝ 只有 `bgm_home`
+#   然後**加總磁碟上的真實位元組**，超過預算就是**錯誤**（不是提醒）。
+#
+#   ⚠⚠ 預算不是拍腦袋的：ver -1354 把開機那一批從 **117 支 5.67 MB** 收到
+#     **4 支 0.08 MB**，那一刀就是為了「卡在首頁讀取」。下面的數字留了餘裕，
+#     但**遠低於**再犯一次的量級 —— 有人想加東西進首頁那一批，這裡就會擋下來。
+#   ⚠ 要調高預算就是**改憲法**（鐵律 13）：先問「這一支首頁真的看得到嗎？」
+#     答不出來的就不該在那一批裡。
+BOOT_MAX_IMG_BYTES = 3 * 1024 * 1024    # 首頁的圖（團徽 555 KB ＋ 挑戰的武器卡與立繪）
+BOOT_MAX_SFX_FILES = 12                 # 首頁 UI 音（-1354 之後是 4 支）
+BOOT_MAX_SFX_BYTES = 1 * 1024 * 1024
+def check_boot_batch(D):
+    assets  = D.get('assets') or {}
+    him     = D.get('homeImg') or {}
+    hsf     = D.get('homeSfx') or {}
+    def hit(k, spec):
+        return (any(k.startswith(p) for p in (spec.get('prefixes') or []))
+                or k in (spec.get('keys') or []))
+    def size(v):
+        f = os.path.join(ROOT, str(v).split('?')[0])
+        return os.path.getsize(f) if os.path.exists(f) else 0
+    imgs, sfx = [], []
+    for k, v in assets.items():
+        if not v: continue
+        low = str(v).split('?')[0].lower()
+        if low.endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif')):
+            if hit(k, him): imgs.append((k, v, size(v)))
+        elif low.endswith(('.mp3', '.m4a', '.ogg', '.wav')):
+            if not k.startswith('bgm_') and hit(k, hsf): sfx.append((k, v, size(v)))
+    ib = sum(x[2] for x in imgs); sb = sum(x[2] for x in sfx)
+    def top(rows, n=5):
+        return '／'.join('%s %.0fKB' % (k, b / 1024)
+                         for k, _, b in sorted(rows, key=lambda r: -r[2])[:n])
+    if ib > BOOT_MAX_IMG_BYTES:
+        err('開機那一批的**圖**是 %d 張 %.2f MB，超過預算 %.2f MB（鐵律 13）——'
+            '最大的幾張：%s。先問「這一支首頁真的看得到嗎？」；'
+            '不是首頁要的就從 config 的 `HOME_IMG` 拿掉，由用到它的那個畫面自己載。'
+            % (len(imgs), ib / 1048576.0, BOOT_MAX_IMG_BYTES / 1048576.0, top(imgs)))
+    if len(sfx) > BOOT_MAX_SFX_FILES or sb > BOOT_MAX_SFX_BYTES:
+        err('開機那一批的**音效**是 %d 支 %.2f MB，超過預算（%d 支／%.2f MB，鐵律 13）——'
+            '最大的幾支：%s。音效那一段**不設時限**（-430），塞進去就是卡在首頁讀取。'
+            % (len(sfx), sb / 1048576.0, BOOT_MAX_SFX_FILES,
+               BOOT_MAX_SFX_BYTES / 1048576.0, top(sfx)))
+    return len(imgs), ib, len(sfx), sb
+
+
 def main():
     D = load_data()
     check_heavy_pairs()
+    boot = check_boot_batch(D)
     check_lowercase_assets()
     script, entry, speakers, art = D['script'], D['entry'], D['speakers'], D['art']
     check_tense_exprs(art)
@@ -841,6 +900,8 @@ def main():
     except Exception as e:
         warns.append('快取版本號檢查跑不起來：%s' % e)
 
+    print('開機那一批：圖 %d 張 %.2f MB ／ 音效 %d 支 %.2f MB（鐵律 13 的守望）'
+          % (boot[0], boot[1] / 1048576.0, boot[2], boot[3] / 1048576.0))
     for m in errs:  print('❌ ' + m)
     for m in warns: print('⚠  ' + m)
     print('\n%d 個錯誤、%d 個提醒。' % (len(errs), len(warns)))

@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1578';
+export const VERSION = 'ver 2026.09.17-1579';
 
 export const GAME_CONFIG = {
 
@@ -4153,16 +4153,13 @@ export const ASSETS = {
      ⚠⚠ **`tuning.fileGain` 還沒量**：沒有那一列＝增益 1 ＝以母帶響度播出（§6.6）。 */
   se_enemy_holyburst: "resources/audio/se/se_enemy_holyburst.mp3",
 
-  /* ══⚠⚠⚠ 聖遺物系 10 隻 —— **先註解著，開峽谷的時候再放**（ver -934，Ray 定案）══
-     卡已經備好（`script/enemies.js` 的 `relic_*`，十張數值一樣等逐張調），
-     圖也已經入庫（`resources/enemy/mon_relic_*.webp`）—— **只有這一段沒接上**。
-     ⚠⚠ **為什麼要註解**：登記進 `ASSETS` 就會進**開機第二段的背景預載**
-       （main.js 的 `_restImgs`，進主選單那一刻開載）—— 這 10 張合計 **3.87 MB**，
-       而現在遊戲裡一隻都遇不到。手機冷啟動白背 3.87 MB 換不到任何東西。
-     ⚠⚠ **要放回來時，這一段與戰鬥卡兩邊一起改**（漏一邊都是沉默的失敗）：
-       ① 把下面十行的註解拿掉 ② 在**戰鬥卡**那邊把它們接進 `enemy:[…]` 或刷怪池。
-       只放①＝多載 3.87 MB 但還是遇不到；只放②＝`asset()` 回空字串、怪沒有立繪
-       （而畫面上不會有任何錯誤訊息 —— 同 -929 那隻教堂 Boss 踩過的坑）。
+  /* ══ 聖遺物系 10 隻 —— **先註解著，開峽谷的時候再放**（ver -934，Ray 定案）══
+     卡已經備好（`script/enemies.js` 的 `relic_*`），圖也已經入庫。
+     ⚠ 這是**內容**的決定（那一段還沒開），不是效能的決定 —— `ASSETS` 登記路徑
+       本身不載任何位元組（見上面古墓那一段）。
+     ⚠⚠ 要放回來時**這一段與戰鬥卡兩邊一起改**：只放這裡＝`asset()` 查得到但沒人用；
+       只接戰鬥卡＝`asset()` 回空字串、怪沒有立繪，**而且畫面上不會有任何錯誤訊息**
+       （-929 那隻教堂 Boss 踩過）。
   enemy_relic_mirrorchoir:   "resources/enemy/mon_relic_mirrorchoir.webp",
   enemy_relic_bellows:       "resources/enemy/mon_relic_bellows.webp",
   enemy_relic_confessional:  "resources/enemy/mon_relic_confessional.webp",
@@ -4175,20 +4172,15 @@ export const ASSETS = {
   enemy_relic_chalice:       "resources/enemy/mon_relic_chalice.webp",
   */
 
-  /* ══⚠⚠⚠ 伊甸古墓 26 隻 ＋ 王座間 2 隻 —— **先註解著，要讓玩家遇到時再放**
-     （ver -1578；美術盤點 `resources/enemy/_enemy_card_intake.md`）══
-     卡已經備好（`script/enemies.js` 那一段，28 張佔位值），圖也已經入庫
-     （`resources/enemy/mon_*.webp`）—— **只有這一段沒接上，而且是刻意的**。
-     ⚠⚠ **為什麼要註解**：登記進 `ASSETS` 就會進**開機第二段的背景預載**
-       （main.js 的 `_restImgs`，進主選單那一刻開載）—— 這 28 張合計 **6.70 MB**，
-       比聖遺物系那十隻（3.87 MB）還多，而現在遊戲裡一隻都遇不到。
-       手機冷啟動白揹 6.70 MB 換不到任何東西（鐵律 12／13）。
-     ⚠⚠ **要放回來時，這一段與戰鬥卡／刷怪池兩邊一起改**（漏一邊都是沉默的失敗）：
-       ① 把下面 28 行的註解拿掉 ② 在**戰鬥卡**或古墓的 `wildSpawn` 把它們接進去。
-       只放①＝多載 6.70 MB 但還是遇不到；只放②＝`asset()` 回空字串、怪沒有立繪
-       （而畫面上不會有任何錯誤訊息 —— 同 -929 那隻教堂 Boss 踩過的坑）。
-     ⚠ 古墓那 26 隻正是**追逐機制 25% 那一條**（`TOWNS.tomb.chase.wildRate`）在等的怪
-       —— 那一半到現在還沒接，就是因為沒有東西可以生（ver -1577 的說明）。
+  /* ══ 伊甸古墓 26 隻 ＋ 王座間 2 隻（ver -1578）══ 卡在 `script/enemies.js`；
+     圖的清單來源 `resources/enemy/_enemy_card_intake.md`。
+     ⚠⚠⚠ **`ASSETS` 只是「這個鍵的檔在哪」，登記本身不載任何位元組**（鐵律 7）。
+       圖由**用到它的那個畫面**自己載：進探索地圖時由 `town` 那道門背景預熱
+       （`modules/town.js` 的 `warmEnemies` —— 名單是從 `wildSpawn`／`acts`／
+       `chase.battles` **算出來**的，不是列出來的），戰鬥當下由
+       `enemy.loadEnemyPortrait` 現抓。
+     ⚠ 這 28 隻**還沒有任何戰鬥卡或刷怪池指到**（`config.battles`／`wildSpawn`
+       一個字沒動）⇒ 現在遇不到，也因此一張都不會被預熱。接進去那一刻兩邊就通了。 */
   enemy_arch_warden:             "resources/enemy/mon_arch_warden.webp",
   enemy_sarcoph_crawler:         "resources/enemy/mon_sarcoph_crawler.webp",
   enemy_slab_creeper:            "resources/enemy/mon_slab_creeper.webp",
@@ -4217,7 +4209,6 @@ export const ASSETS = {
   enemy_stone_adder:             "resources/enemy/mon_stone_adder.webp",
   enemy_dragon_throne_awakened:  "resources/enemy/mon_dragon_throne_awakened.webp",
   enemy_dragon_throne_roar:      "resources/enemy/mon_dragon_throne_roar.webp",
-  */
 
   // ── 五張 cut-in 圖（v17.7 嵌入）──
   cutin_saint_luna: "resources/partner/luna_ci_advent.jpg",   // 聖徒化降臨 cut-in（Luna）
