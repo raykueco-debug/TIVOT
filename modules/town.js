@@ -1941,7 +1941,7 @@ function wildActDue(n){
      安全區，不出怪」）——擋在**指定遭遇之後**：那一場是劇本，不受這條管。 */
   if(n.noWild) return null;
   let pick=null;
-  const fx=W.fixed && W.fixed[nodeId];
+  const fx=W && W.fixed && W.fixed[nodeId];
   if(fx && !wildDone.has(wildSpecies(fx))) pick=fx;
   if(!pick){
     const conn=connectorIds().includes(nodeId);
@@ -1949,7 +1949,7 @@ function wildActDue(n){
     /* 這一趟**還沒打過的**那幾隻（「一趟同種不重複」的規約）。 */
     /* 卡上宣告的那幾隻（見 cardSpawnPool）與地圖自己的池子**聯集**。
        ⚠ 卡上那一批沒有 `where` 限制（牠自己已經說了住哪），所以直接包成同樣的形狀。 */
-    const pool0 = (W.pool||[]).concat(cardPool.map(k=>({ battle:k })));
+    const pool0 = ((W&&W.pool)||[]).concat(cardPool.map(k=>({ battle:k })));
     const fresh=pool0.filter(p=> okHere(p) && !wildDone.has(wildSpecies(p.battle)));
     /* ══⚠⚠ **池子清空之後要能重刷**（ver -958，Ray：「重複攻略神殿時路上要有 25%
        機率遇怪，好像打完中 boss 走到休息點就幾乎碰不到怪了」）══

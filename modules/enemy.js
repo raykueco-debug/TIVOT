@@ -1163,7 +1163,16 @@ export function triggerIntruder(){
 /* ---------- 開場：把 GAME_CONFIG 的圖/名稱套到畫面上 ---------- */
 export function applyConfigToDOM(){
   const pn = GAME_CONFIG.partners[GAME_CONFIG.defaultPartner];
-  setEnemy(GAME_CONFIG.currentEnemy, { noArt:true });   // ver -1321：開機不載挑戰那張立繪
+  /* ══⚠⚠⚠ **開機不要掛任何一隻怪**（ver -1587，Ray：「faceless 是開機就掛在 `#app`
+     上的挑戰用怪，別再掛了，把它拿掉」）══════════════════════════════════════
+     以前這裡是 `setEnemy(GAME_CONFIG.currentEnemy, {noArt:true})` —— -1321 已經把
+     **立繪**擋掉了，但**名字、血條、盤面格數**照樣被擺成「挑戰第一戰」那一隻。
+     ⇒ 任何一瞬間 `#app` 露出來（讀取頁淡入的那 300ms、換場、飛行收掉的空窗），
+       玩家看到的就是那隻怪 —— Ray 為這件事回報過三次（-576／-1321／-1587）。
+     ⚠ 拿掉不會壞：`boardGridFor` 查不到怪就退回 `GAME_CONFIG.boards`（背景盤面照擺），
+       而真的要打的時候 `startGame` → `enemy.startLineup()` 本來就會載。
+     ⚠ 這也是鐵律 13 的同一條：**開機那一刻擺上去的東西，就是首頁的成本**。 */
+  { const nm=$('enemyName'); if(nm) nm.textContent=''; }
   /* ⚠⚠⚠ **開機不預先掛 cut-in 的 src**（ver -1356，讀取分工）：`#cutinImg` 是
      `index.html` 裡本來就在的元素，這裡一設 `src`，**開機就會抓那張 cut-in**
      （實測 `Luna_CI_saint.jpg` 95 KB，initiator `img`）—— 而它要到**戰鬥裡**

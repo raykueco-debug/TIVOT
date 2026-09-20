@@ -2897,7 +2897,17 @@ export function startGame(){
   /* 劇情插入戰（ver -375（-893 前用詞））：**單敵一場**，換上卡上那隻，且這一場不能聖徒化／不能用搭檔技。
      ⚠ 要在 `stopAll()`/`loadBoard(0)` **之前**換敵 —— 盤面配置（boardGrids/boardLoop）
        是查「目前這隻怪」來的，換晚了第一盤會用到上一隻的格數。 */
-  const sb = state.scriptRun && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+  /* ══⚠⚠⚠ **場次 id 也可以直接寫一張敵人卡的鑰匙**（ver -1587）══
+     卡上的 `spawnAt`（Excel 的「出沒地」）給的是**敵人卡**的 key（`arch_warden`），
+     而這裡查的是 `config.battles` 的**場次**。查不到就會一路掉進
+     `startLineup(null)` → 挑戰的 `lineup[0]` ⇒ **走在古墓裡卻跑出訓練用聖徒**，
+     而且畫面上沒有任何錯誤訊息（-1587 實測踩到）。
+     ⇒ 查不到場次、但**查得到敵人卡**時，就地當成「只有這一隻的一場」。
+     ⚠ 這不是「兩種 id 混用」：場次仍然優先，這一條只在**沒有那一場**時成立 ——
+       日後真的替某一隻開了場次卡（要指定 session／bgm／talk），它自動接管。 */
+  let sb = state.scriptRun && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+  if(state.scriptRun && !sb && GAME_CONFIG.enemies && GAME_CONFIG.enemies[state.scriptBattleId])
+    sb = { enemy: state.scriptBattleId };
   /* 是否為**劇情戰**（ver -493；-495 改成卡上統一有這一格）—— 唯一判定，
      之後一律讀 `state.storyBattle`：
        ① 發起端明確宣告的優先（飛行交棒的 `scripted`：隨機遭遇 false、劇本遭遇 true）

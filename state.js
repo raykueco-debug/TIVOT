@@ -15,7 +15,13 @@
 import { GAME_CONFIG } from './config.js';
 
 const T = GAME_CONFIG.tuning;
-const _enemy = GAME_CONFIG.enemies[GAME_CONFIG.currentEnemy];
+/* ⚠⚠⚠ **開機不預設任何一隻怪**（ver -1587，Ray：「faceless 是開機就掛在 `#app` 上的
+   挑戰用怪，別再掛了，把它拿掉」）—— 以前這裡拿 `GAME_CONFIG.currentEnemy`（挑戰
+   第一戰的地下聖徒）去填 `enemyHp`／`enemyMax`／`ASSAULT_DAMAGE`／`currentEnemyKey`，
+   於是**還沒開打就已經有一隻怪在場上**：`#app` 一露出來（讀取頁淡入那 300ms、換場、
+   飛行收掉的空窗）看到的就是牠。
+   ⚠ 歸零不會壞：真的開打時 `enemy.setEnemy()` 會把四個值一起寫上去；
+     背景盤面查不到怪就退回 `GAME_CONFIG.boards`（`combat.boardGridFor`）。 */
 
 /* ---------------------------------------------------------------------------
  *  集中狀態物件。分組對應 CLAUDE.md 3.1 ~ 3.8，每組標註擁有者。
@@ -72,8 +78,8 @@ export const state = {
      重算（式子在 `progress.playerMaxHp()`，料理會把它墊高，ver -953）。
      ⚠ 不要把 `T.playerHp` 當成上限去用 —— 那是出廠值，不是現在的上限。 */
   playerMax: T.playerHp,
-  enemyHp: _enemy.hp,
-  enemyMax: _enemy.hp,
+  enemyHp: 0,
+  enemyMax: 0,
   overkill: 0,
   /* ══⚠⚠ **這一場的 overkill 有沒有「完全清空殘額」**（ver -1389，Ray 的追逐規則：
      「ovk 完全清空殘額算 clean」）══ 擁有者 combat，唯一的寫入點是
@@ -90,7 +96,7 @@ export const state = {
   threatTick: null,
   assaultTimer: null,
   CHARGE_SECONDS: T.chargeSeconds,
-  ASSAULT_DAMAGE: _enemy.attack,
+  ASSAULT_DAMAGE: 0,
   ASSAULT_SHOTS: 1,
   ASSAULT_GAP_MS: 0,
   ASSAULT_MIN: 4000,
@@ -234,7 +240,7 @@ export const state = {
   currentFavor: 0,
 
   /* ── 3.7 亂入/Boss + 連戰序列（擁有者：enemy） ──────────────── */
-  currentEnemyKey: GAME_CONFIG.currentEnemy,
+  currentEnemyKey: null,
   curEnemyHitFx: null,     // 當前怪受擊特效三件套（音效綁在 type 上，見 config.HITFX，ver -800）
   curEnemyEntranceSe: null, // 登場音（ver -948：landSe／entranceVo 併成一格；-949 欄名 entrance）
   intruderTriggered: false,
