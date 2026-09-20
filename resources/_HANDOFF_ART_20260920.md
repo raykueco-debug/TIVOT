@@ -200,6 +200,30 @@ battlecry 的臉是漂掉的（臉偏長、下顎偏方、多一根呆毛、眉�
 
 ---
 
+# 四之三、⚠⚠⚠ commit 要帶 pathspec —— `git add` ＋ `git commit` 會吞掉別人的 index
+
+**這一輪真的踩到了**（ver -1554／-1555 之間）：
+
+· 我 `git add resources/_HANDOFF_ART_20260920.md` 之後下 `git commit`。
+· 而程式 session 當時正把 **53 筆改名**（`renna_si_blushed` → `renna_si_blush` 去時態那批）
+  staged 起來還沒 commit ⇒ **整批被我那一筆吞進去**，
+  commit 訊息完全沒提到它們，**而且沒有任何錯誤訊息**。
+· 結果：內容沒壞（檔案全在、順序也對），但 `c9e3881` 的訊息與內容對不上，
+  `-1555` 說它做了改名、實際上改名在別人那一筆裡。**沒有修**（rebase 會拆掉
+  程式 session 正在疊的東西，風險大於收益）。
+
+⇒ **規矩：與平行 session 共用 repo 時，一律**
+
+```bash
+git commit -- <路徑>          # 帶 pathspec：只提交這個路徑，無視 index 裡別人的東西
+```
+
+⚠ `git add <路徑>` ＋ `git commit` **沒有這個保護** —— `git commit` 提交的是**整個 index**。
+⚠ HANDOFF 的「commit 一律點名路徑」本來就是這個意思，但那句話只寫了 `git add` 那一半。
+⚠ 下手前先看一眼 `git diff --cached --name-only`：**不是空的就代表 index 裡有別人的東西**。
+
+---
+
 # 五、⚠⚠ 程式端要接的一件（鐵律 11）
 
 **整批換 `resources/SI/*.webp` 會踩快取。**
