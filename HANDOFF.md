@@ -51,9 +51,27 @@
   **要新圖還是改指，等 Ray 一句話**）。
 - **⚠ 欠整個人**：**米夏**（`MISHA`／`MISHA_X` 仍是 `art:null`）。
   ⚠ `resources/SI/misha_SI_front.png` 在資料夾裡但**沒接**（而且是 PNG）。
-- ⚠ **程式端（不是欠圖）**：安雅 `Silent`→`silent`、諾薇兒 `Shocked2`→`shocked2`
-  兩處大小寫寫錯，直接改腳本就好。
-- ⚠ `Cecilie_SI_refusertemp.png` 是暫代 PNG，現在用 `nolook` 頂著。
+- **✔ 不欠（ver -1555 已修）**：安雅 `Silent`→`silent`、諾薇兒 `Shocked2`→`shock2`
+  兩處大小寫寫錯已改掉（原本查不到就靜靜退回底圖，畫面上沒有錯誤訊息）。
+- ⚠ `cecilie_si_refusertemp.png` 是暫代 PNG，現在用 `nolook` 頂著。
+
+### ⚠⚠⚠ 命名規約（ver -1554／-1555，Ray 定案）—— 交圖前先看這兩條
+
+1. **檔名一律小寫**（`sorana_si_read.webp`）。macOS 不分大小寫、靜態空間分 ——
+   寫錯在本機測不出來，上線就是 404 而且畫面上沒有任何錯誤訊息。
+2. **一律無時態**（`cry`／`die`／`scare`／`shock`／`think`／`surprise`／`write`）。
+
+兩條都由 `py tools/script_lint.py` 把關（`check_lowercase_assets()`／
+`check_tense_exprs()`），**commit 前跑一次**就會叫。
+
+- ⚠⚠ **三個還帶時態的鍵是明寫的例外，不要「順手統一」**：
+  `anya.crying`↔`cry`、`nouvelle.thinking`↔`think`、`renna.surprised`↔`surprise`
+  —— 每一對都是**兩張不同的圖**，合併會靜靜換掉那幾拍的臉。
+  **等 Ray 給這三張新名字**（例外登記在 `tools/script_lint.py` 的 `TENSE_OK`）。
+- ⚠ **在等 Ray 一句話**：`resources/si/rennasorana_si_annoyedd.webp` ／ `_annoyedc.webp`
+  （索菈娜 D／C 評價那兩張，`script/evaluation.js` 在用）—— 檔名是
+  `annoyed` ＋ 等第字母，去時態之後會變成 `annoyd`／`annoyc`（讀起來像沒改乾淨）。
+  **先原樣留著**，命名怎麼定由他說。
 
 ## 敵人
 
