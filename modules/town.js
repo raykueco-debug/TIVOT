@@ -1823,19 +1823,6 @@ function chaseActDue(n){
   const spec=chaseSpec(); if(!spec || !n) return null;
   if(n.noWild) return null;
   const c=chaseGet(); if(!c || !c.node || c.node!==nodeId) return null;
-  /* ══⚠⚠⚠ **第一次現身＝把牠的登場戲帶過來**（ver -1599，Ray：「三戰後遇守墓者的
-     劇情怎麼不見了？」）══ 那一段戲（`tomb_gk1_done`：「那是什麼東西？」→咆哮→開打
-     →兩階段揭露）本來綁在**柱廳**那一格上，而 -1593 把觸發改成「三戰後下一格」之後，
-     追兵會在**任何一格**現身 —— 現身的那一格只開了一場架，戲還留在柱廳等玩家走過去。
-     ⇒ `chase.intro:'<節點>'` ＝那一段戲住在哪一格；**第一次現身就在當場演它**。
-     ⚠ 兩邊共用**同一個 `flag`**（`tomb_gk1_done`），所以只會演一次：
-       先走到柱廳就在柱廳演，先被追上就在當場演 —— 不會重覆，也不會漏。
-     ⚠ 用 `actDue()` 挑（前置旗、章節門、`until` 那一整套照舊走它，鐵律 8）。 */
-  if((c.hits|0)===0 && spec.intro){
-    const src=((TOWNS[townId]||{}).nodes||{})[spec.intro];
-    const a0=src && actDue(src);
-    if(a0) return a0;
-  }
   const list=spec.battles||[];
   if(!list.length) return null;
   const id=list[(c.hits|0) % list.length];
@@ -1862,9 +1849,7 @@ function chaseAfterAct(act, fought){
          那是一顆免費的重置鈕，而且看起來與正常行為一模一樣。
        ⚠ 連「還沒上線」也算數：打過那一場就等於追逐真的開始了。 */
     c.node = nodeId; c.stun = spec.stun|0;
-  }else if(act && (act.__chase || (spec.intro && (c.hits|0)===0 && c.node===nodeId))){
-    /* ⚠ 登場戲那一段**不是** `__chase`（它是節點上的正規 act），但它就是「第一次被
-       追上」—— 演完一樣要 `hits+1` ＋ 停 `stun`，不然牠會賴在原地連環開打。 */
+  }else if(act && act.__chase){
     c.hits=(c.hits|0)+1; c.stun = spec.stun|0;    // 擊退：牠停在原地（＝玩家腳下）
   }
   chaseSet(c);
