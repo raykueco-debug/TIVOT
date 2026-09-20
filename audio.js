@@ -222,9 +222,13 @@ function playBuffer(c, buf, vol, voice, handle, src){
     }
     const g = c.createGain(); g.gain.value = (vol==null ? 1 : vol);
     s.connect(g); g.connect(busIn(c, layerOf(src, voice)));
+    if(handle && handle.loop) s.loop = true;   // ⚠ 一定要在 start() 之前（ver -1568）
     s.start();
     /* 可中止的把手（playCue 用）：演出結束時要把還在響的機械聲收掉。
        ⚠ 直接 stop() 會有「喀」一聲 —— 一定要先把增益斜降到 0 再 stop。 */
+    /* ⚠ `handle.loop` ＝這一支要**一直循環**（ver -1568，環境音）：
+       要在 `start()` **之前**設 —— BufferSource 開跑之後 `loop` 就改不動了。
+       （上面那一行已經 start 過，所以真正的設定在 playBuffer 進來之前，見下。） */
     if(handle){ handle.node=s; handle.gain=g; handle.ctx=c;
       if(handle.stopAt!=null) handle.fade(handle.stopAt); }
   }catch(e){}
@@ -498,6 +502,21 @@ export const SFX = {
      ⚠ 收的時候要**斜降增益再 stop**，直接 stop 會有一聲喀。
      ⚠ 把手在音檔還沒解碼完就可能被呼叫 stop（演出被跳過）→ 記下 stopAt，
        等真的播起來再補做，否則會漏收。 */
+  /* ══⚠⚠ **循環的環境音**（ver -1568，Ray：「waterfall 在場景內要一直 loop」）══
+     與 `playCue` 是**同一個把手**（`stop(fadeMs)` 收），差別只有 `loop`。
+     ⚠⚠ 它**永遠不會自己停** —— 所以呼叫端一定要答得出「誰收它」
+       （§6.5.4 那張檢查表）。現在唯一的擁有者是 `story.playAmb`／`stopAmb`。
+     ⚠ 走 SE 那一軌（`layerOf`）：環境音是「世界的聲音」，不是音樂（§6.6 的 -436）。 */
+  playLoop(src, vol){
+    const h = this.playCue(src, vol);
+    h.loop = true;
+    /* ⚠⚠ `playCue` 在**已經解碼**時是同步播的（`playBuffer` 當場跑完）——
+       那時 `h.node` 已經在，`loop` 要直接補在節點上；**還在解碼**時
+       `h.node` 還是 null，`playBuffer` 會讀 `h.loop`（它在 start 之前讀）。
+       兩條路都要蓋到，漏一條就是「有時候會 loop、有時候不會」—— 最難查的那一種。 */
+    if(h.node){ try{ h.node.loop = true; }catch(_){} }
+    return h;
+  },
   playCue(src, vol){
     const h = { node:null, gain:null, ctx:null, stopAt:null,
       fade(ms){

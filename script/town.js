@@ -4752,9 +4752,13 @@ export const TOWNS = {
              這一句才是那一段真正轉向的地方。撐到隔天由城上的 `bgmWhen` 管。 */
           Object.assign(nou('decode','對他……很重要……'), { bgm:'hesitation' }),
           sor('sad','……'),
-          Object.assign(sor('readconfuse','『適性無可挑剔，但有沉溺戰鬥傾向，且多次無視聖王廳法度，亦未表現對神之敬畏。考量其品性，應維持原判決……』'),
+          /* ⚠ ver -1568（Ray：「剔除候選資格的立繪跟前一張對調」）——
+             -1553 那張逐句表是 `readconfuse` → `readsad`，這一版兩張換手：
+             唸判詞時她已經笑不出來（`readsad`），唸到「剔除」才是**讀不懂**
+             （`readconfuse`）—— 那一句的重量是「怎麼會寫這種東西」。 */
+          Object.assign(sor('readsad','『適性無可挑剔，但有沉溺戰鬥傾向，且多次無視聖王廳法度，亦未表現對神之敬畏。考量其品性，應維持原判決……』'),
                         { se:'se_ui_pageflip' }),
-          sor('readsad','『剔除候選資格……』'),
+          sor('readconfuse','『剔除候選資格……』'),
           nou('covermouth','怎麼會……！'),
           nou('cry','我們……這麼努力！'),
           { speaker:'PLAYER', text:'……' },
@@ -6815,12 +6819,14 @@ export const TOWNS = {
           nou('sadsmile',''),
         ] } ] },
       /* ⚠ 瀑布底**不是死路**：水簾後面看得到黑色洞口，路往裡面繼續。 */
-      /* ⚠ ver -1565（Ray：「水拾洞跟瀑布底兩個場景都要播 se_waterfall」）——
-         節點層的 `se`＝**每次走進這一格就放一次**（`modules/town.js` 的 `enter`）。 */
-      fallbase:   { bg:'lake_fallbase',   name:'鏡湖　瀑布底', se:'se_waterfall',
+      /* ⚠ ver -1565 建、**-1568 改成循環**（Ray：「水拾洞跟瀑布底兩個場景都要播
+         se_waterfall」→「waterfall **在場景內要一直 loop**」）——
+         節點層的 `amb`＝**走進來開、走出去收**（`modules/town.js` 的 `enter`
+         每一格都叫一次，沒寫就是停）。 */
+      fallbase:   { bg:'lake_fallbase',   name:'鏡湖　瀑布底', amb:'se_waterfall',
         exits:{ back:'shingle', up:'cave' } },
       /* ⚠ 水蝕洞＝**穿過瀑布的洞**（左側水簾是來路、深處透出天光是去路）。 */
-      cave:       { bg:'lake_cave',       name:'鏡湖　水蝕洞', se:'se_waterfall',
+      cave:       { bg:'lake_cave',       name:'鏡湖　水蝕洞', amb:'se_waterfall',
         exits:{ back:'fallbase', up:'grove' } },
       /* ⚠⚠ 終點：山谷盡頭的高地台地，一片十幾公尺高的黑色石碑林（規格 §三）。
          這一格**沒有湖**是刻意的（Ray -1493：末端點不必有湖）。 */

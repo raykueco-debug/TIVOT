@@ -3658,13 +3658,16 @@ export function enter(id){
   const T=TOWNS[townId]; if(!T){ bail('沒有這座城：'+townId); return; }
   const n=T.nodes[id];  if(!n){ bail('沒有這個節點：'+id); return; }
   nodeId=id;
-  /* ══⚠ **這一格自己的環境音**（ver -1565，Ray：「水拾洞跟瀑布底兩個場景都要播
-     se_waterfall」）══ 節點寫 `se:'<音效名>'`（或陣列），**每次走進來放一次**。
-     ⚠ 走 `story.playSe`（`SE_FILES` 那張表，會帶上 `fileGain`）——
-       不要在這裡自己 `SFX.play`，那會繞過逐支增益（§6.6 的 -441）。
-     ⚠ 它是**一次性的**，不是循環床：真要做「一直在響的瀑布」是另一件事
-       （那要有人負責關掉，§6.5.4 的「換畫面時誰收它？」）。 */
-  if(n.se){ try{ story.playSe(n.se); }catch(_){} }
+  /* ══⚠⚠ **這一格自己的環境音**（ver -1565 建、**-1568 改成循環**，Ray：
+     「水拾洞跟瀑布底兩個場景都要播 se_waterfall」→「waterfall 在**場景內要一直 loop**」）══
+     節點寫 `amb:'<音效名>'`。
+     ⚠⚠ **每一格都要叫一次**（沒寫就是傳 null ＝停）—— 這一行同時是「開」與「收」：
+       走到沒有 `amb` 的那一格，上一格的瀑布聲就停了。
+       ⚠ 寫成「有 `amb` 才叫」的話，**離開那一格時沒有人收**，瀑布聲會跟著玩家
+         走遍全城（§6.5.4 那張檢查表的第一句：「換畫面時誰收它？」）。
+     ⚠ 同名不重播（`playAmb` 自己判）：走一步、推一句對白都會再經過這裡。
+     ⚠ 一次性的音效仍走拍上的 `se:`（`story.playSe`）—— 兩者是不同的東西。 */
+  try{ story.playAmb(n.amb || null); }catch(_){}
   const carried = carriedIn; carriedIn = false;   // 只吃這一次抵達（ver -496）
   storyActNow = false;                           // 換一格就重算（ver -680）
   /* ⚠ 上一個地點開出來的「下一步去哪」在這裡結算（ver -440，見 `resolveFavor`）——
@@ -4564,6 +4567,8 @@ export function open(town, node, opts){
   if(checkpoint && !state.battleSession) try{ checkpoint(); }catch(_){}
 }
 export function close(){
+  /* ⚠ 環境音是**持續狀態**：離開這座城就沒有人收它了（ver -1568）。 */
+  try{ story.stopAmb(300); }catch(_){}
   townLive=false;            // 回主選單（ver -1394）
   restoreTownPartner();      // 搭檔回到進城前那一位（見 restoreTownPartner）
   const st=story.stageEl(); if(st) st.classList.remove('town-on');
@@ -4607,6 +4612,8 @@ export function innNodeOf(town){
      「打完靶跟賞金獵人後返回鍵不見了」就是這個）。所以收的是**介面**不是狀態。
    ⚠ 收的四樣與換節點那張檢查表同源（§6.5 的新路徑檢查表）：導覽、店舖、旅店、立繪。 */
 export function suspend(){
+  /* ⚠ 環境音是**持續狀態**：離開這座城就沒有人收它了（ver -1568）。 */
+  try{ story.stopAmb(300); }catch(_){}
   clearTimeout(arriveT); arriveT=0;
   townLive=false;            // 人上船了：約會那條規則不再套用（ver -1394）
   restoreTownPartner();      // 搭檔回到進城前那一位（同上）

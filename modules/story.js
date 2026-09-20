@@ -1825,6 +1825,29 @@ function playSeFallback(src, gain){
 /* ⚠ `export`（ver -429）：戰鬥內的對白（`modules/tutorial.js`）也要放音效，而
    **音效名 → 檔案的那張表只有這裡一份**（`SE_FILES`／`SE_ALIAS`，鐵律 7）。
    抄一份到 tutorial 去必然走鐘（改了檔名只改得到一邊）。 */
+/* ══⚠⚠⚠ **場景環境音：一支在放、一支在收**（ver -1568，Ray：「waterfall 在場景內
+     要一直 loop」）══
+   `playAmb(name)` ＝**換成**這一支（傳 null／空 ＝停）。它是**持續狀態**，
+   所以整個專案只有這一對在動它（鐵律 8）——`stopAmb()` 是那個「誰收它」的答案。
+   ⚠⚠ 同名再叫一次**不重播**：走一步到隔壁格、對白推一句，都會再經過
+     `enter()` —— 每次都重播就是每走一步瀑布就重新「嘩」一聲。
+   ⚠ 走 `seSrc`＋`fileGain`（與 `playSe` 同一張表、同一份增益，鐵律 7）。
+   ⚠ 它是 SE 那一軌不是 BGM（§6.6：環境音與音樂是**堆疊**，不是輪播）——
+     所以它不會把城鎮的曲子擠掉，兩者同時響是對的。 */
+let _amb=null, _ambName=null;
+export function stopAmb(ms){
+  if(_amb){ try{ _amb.stop(ms==null?300:ms); }catch(_){} }
+  _amb=null; _ambName=null;
+}
+export function playAmb(name){
+  const n = name || null;
+  if(n === _ambName) return;            // 同一支還在響 ⇒ 什麼都不做
+  stopAmb(300);
+  if(!n) return;
+  const src = seSrc(n);
+  if(!src){ console.info('[story] 沒有這個環境音：', n); return; }
+  try{ _amb = SFX.playLoop(src, fileGain(src)); _ambName = n; }catch(_){ _amb=null; _ambName=null; }
+}
 export function playSe(spec){
   const one=(n,delay)=>{ const src=seSrc(n);
     if(!src){ const tag='se/'+n;
@@ -2270,7 +2293,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1567';
+const KERB_V='?v=1569';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
