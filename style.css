@@ -767,6 +767,22 @@
   @keyframes blink{from{opacity:.5}to{opacity:1}}
 
   /* 特效層（槍擊命中、彈殼、爪痕、飄字都畫在這） */
+  /* ══ 步槍的硝煙（ver -1654）══ 槍口那一團白煙，往上慢慢散開。
+     ⚠ 比拉煙**更白更濃**：那是剛出膛的硝煙，不是飄了一段的尾跡。 */
+  .muzzle-smoke{position:absolute;left:0;top:0;
+    width:var(--sz);height:var(--sz);margin:calc(var(--sz) / -2) 0 0 calc(var(--sz) / -2);
+    border-radius:50%;pointer-events:none;will-change:transform,opacity;opacity:0;
+    background:radial-gradient(circle at 50% 50%,
+      rgba(238,234,226,.62), rgba(206,200,190,.34) 50%, rgba(180,174,166,0) 74%);
+    filter:blur(2px);
+    transform:translate(var(--x),var(--y)) scale(.3);
+    animation:muzzleSmoke var(--t) cubic-bezier(.16,.7,.3,1) var(--d) forwards;}
+  @keyframes muzzleSmoke{
+    0%  {opacity:0;   transform:translate(var(--x),var(--y)) scale(.3);}
+    12% {opacity:.9;}
+    100%{opacity:0;
+         transform:translate(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy))) scale(2.2);}
+  }
   /* ══ 船戰副武器的拉煙（ver -1653）══ 沿著火線的軌跡冒出來，再往左上或右上飄散。
      ⚠ 一場之內方向固定（由 `enemy.rollSmokeDir` 在換敵那一刻擲一次）——
        逐發重擲會變成一團亂噴，讀不出「風從那一邊吹」。

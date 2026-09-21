@@ -523,8 +523,39 @@ function trailSmoke(host, sx, sy, tx, ty){
     setTimeout(()=>{ if(el.parentNode) el.remove(); }, TRACER_MS+1800);
   }
 }
+/* 最後一條火線的幾何（ver -1654）：硝煙要冒在**它竄出面板的那一點**，
+   而那一點只有射出來的那一支知道。⚠ 只是個把手，不是狀態 —— 用完就被下一發蓋掉。 */
+let lastShot = null;
+/* ══⚠⚠⚠ **步槍的硝煙**（ver -1654，Ray：「步槍開槍加上硝煙效果」）══
+   冒在火線**穿出控制面板上緣的那一點**（＝玩家看得到的第一格），往上慢慢散開。
+   ⚠⚠ 與船戰那條「拉煙」是兩件事，不要混：
+     · 拉煙（-1653）＝沿著**整條軌跡**撒、往固定的一邊飄、**只有船戰的副武器**
+     · 硝煙（這一支）＝只在**槍口那一點**一團、往上散、**只有步槍**（每一場都有）
+   ⚠ 步槍是一發一響的爆發型：一發就一團，量要夠大才看得出是硝煙而不是雜訊。 */
+export function muzzleSmoke(){
+  const host=$('fxTop'); if(!host || !lastShot) return;
+  const r=host.getBoundingClientRect();
+  const { sx, sy, tx, ty } = lastShot;
+  /* 線段與下緣（y=r.height）的交點；起點本來就在下緣之外，所以一定交得到。 */
+  const f = (sy===ty) ? 1 : Math.max(0, Math.min(1, (r.height-sy)/(ty-sy)));
+  const px = sx+(tx-sx)*f, py = r.height;
+  for(let i=0;i<5;i++){
+    const el=document.createElement('i');
+    el.className='muzzle-smoke';
+    el.style.setProperty('--x', (px+(Math.random()*26-13)).toFixed(1)+'px');
+    el.style.setProperty('--y', (py-Math.random()*10).toFixed(1)+'px');
+    el.style.setProperty('--sz', (30+Math.random()*34).toFixed(0)+'px');
+    el.style.setProperty('--dx', (Math.random()*44-22).toFixed(0)+'px');
+    el.style.setProperty('--dy', (-52-Math.random()*48).toFixed(0)+'px');
+    el.style.setProperty('--d', (Math.random()*90).toFixed(0)+'ms');
+    el.style.setProperty('--t', (1100+Math.random()*700).toFixed(0)+'ms');
+    host.appendChild(el);
+    setTimeout(()=>{ if(el.parentNode) el.remove(); }, 2100);
+  }
+}
 export function fireTracer(sx, sy, tx, ty){
   const host=$('fxTop'); if(!host) return;
+  lastShot = { sx, sy, tx, ty };
   const dx=tx-sx, dy=ty-sy;
   const dist=Math.hypot(dx,dy) || 1;
   const ang=Math.atan2(dy,dx)*180/Math.PI;

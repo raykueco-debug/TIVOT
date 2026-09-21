@@ -327,6 +327,10 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
     api.enemyDamage(h.dmg, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
     addCounter(h.dmg); onCounterFired(); counterEnergy(h.dmg, base);
     mzHit(1.45, 0.35);             // 爆發型：一發大的，收在圈心附近（精準射擊）
+    /* ⚠ **步槍的硝煙**（ver -1654，Ray 指定）：只有爆發型（`vfx:'single'`）有 ——
+       它是一發一響的大口徑，槍口那一團白煙才讀得出來；機槍逐發、散彈逐顆，
+       每一發都冒等於整個畫面都是煙。 */
+    if(api.muzzleSmoke) api.muzzleSmoke();
     api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, '46%','32%', h.crit, 'snipernum');
     flushPending();                            // 單發：一瞬間就結束，排隊中的切換立刻生效
     return;
