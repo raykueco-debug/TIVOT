@@ -356,8 +356,22 @@ export const SFX = {
        「暫停但 src 還掛著上一首」（例：戰鬥曲），舊寫法只看 `el.paused && el.src`，
        於是之後**任何**呼叫 unlock 的手勢（用道具、結帳…）都會把那首死曲子復活 ——
        Ray：「使用道具不知為何會播戰鬥音樂」就是這個。 */
+    /* ══⚠⚠⚠ **只補播「元素上掛著的正好就是要播的那一首」**（ver -1658，Ray：
+       「ios 版常常有點擊畫面才播音樂的問題…反而變成自播跟點播都發生，一次播兩個」）══
+       `el.src` 掛的是 `_bgmPlaying`（**真的裝上去**的那一首），`_bgmSrc` 是
+       **想要**的那一首。切歌的那 0.9~1.9 秒之間兩者不同（`_bgmSwitching`）——
+       舊寫法只問 `_bgmSrc` 有沒有值，於是這段期間的任何一次手勢都會把
+       **上一首**拉起來播，而新的那一首隨後才裝上去。玩家聽到的就是
+       「點一下冒出另一首」。
+       ⚠ 這與 ver -501 那次是同一個形狀（那次是 `stopBgm` 之後的死曲被復活），
+         只是這次差在「正在切歌」而不是「已經停掉」—— 所以判準收成一句：
+         **裝上去的 === 想要的，而且沒有在切歌**（鐵律 7：兩個變數各有各的語意，
+         不要只問其中一個）。
+       ⚠ 切歌中不補播不會漏掉：`switchTo` 自己會 `play()`，而那時元素已經解鎖過了。 */
     const el = _bgmEl;
-    if(el && el.paused && el.src && _bgmSrc){ el.volume=bgmTargetVol(); const p=el.play(); if(p&&p.catch) p.catch(()=>{}); }
+    if(el && el.paused && el.src && _bgmSrc && !_bgmSwitching && _bgmPlaying===_bgmSrc){
+      el.volume=bgmTargetVol(); const p=el.play(); if(p&&p.catch) p.catch(()=>{});
+    }
   },
 
   /* 切換 BGM：同一元素先淡出 →（可選 delayMs 空一拍）→ 換 blobURL 起播（預設不淡入）loop。
@@ -402,26 +416,40 @@ export const SFX = {
     clearTimeout(_bgmTimer); _bgmTimer=null;
     clearInterval(el.__fade); el.__fade=null;
     ensureBlob(src);   // 提早開始下載，切歌時多半已就緒
+    /* ══⚠⚠⚠ **已經下載好就同步裝上去，不要繞 `.then()`**（ver -1658，Ray：
+       「ios 版常常有點擊畫面才播音樂的問題」）══════════════════════════════
+       iOS 只讓「使用者手勢**這一個 task 之內**」的 `play()` 過關。而這一支原本
+       **一律**走 `ensureBlob(src).then(...)` —— 就算 blob 早就在快取裡，`play()`
+       也被推到下一個 microtask／task 才跑 ⇒ **手勢已經花掉了** ⇒ 被擋 ⇒ 要等
+       玩家再點一下（`unlock` 補播）才有聲音。那正是「點擊畫面才播音樂」。
+       ⚠ 快取命中就走同步那一條，手勢原封不動地帶到 `el.play()`。
+       ⚠ 沒命中（第一次抓那一首）照舊非同步 —— 那一趟本來就不可能留在手勢裡，
+         它靠的是 `unlock()` 的補播與開機那一首的 `armOnly`。
+       ⚠ 兩條路走**同一個 `apply`**（鐵律 8）：裝 src、記 `_bgmPlaying`、
+         armOnly、淡入，只有一份。 */
+    const apply = (url)=>{
+      if(_bgmSrc !== src) return;        // 已被後續切歌取代（那一支自己會管旗標）
+      _bgmSwitching = false;
+      /* ⚠ 抓不到 blob 就**退回直接串流**（`el.src = src`）：整首下載失敗（離線、
+         快取被清、CORS）不該讓整段變安靜 —— 串流播得動就播，播不動也只是同樣安靜。
+         舊寫法是 `if(!url) return`，那會讓舊的一首停在音量 0、新的永遠不播。 */
+      const u = url || src;
+      try{ el.src = u; el.currentTime = 0; }catch(e){}
+      _bgmPlaying = src;
+      el.volume = (fadeIn > 0 ? 0 : bgmTargetVol());
+      // 只上膛：src 已就位、留在 paused，等 unlock() 於手勢內同步開火。
+      // 若手勢**已經**發生過（玩家點得比 blob 快），就不必再憋 —— 直接開火。
+      if(opts.armOnly && !_unlocked){ el.volume = bgmTargetVol(); return; }
+      const p = el.play();
+      if(p && p.catch) p.catch(()=>{});   // 尚未解鎖 → 等 unlock 於手勢補播
+      if(fadeIn > 0) bgmFade(el, bgmTargetVol(), fadeIn);
+    };
     const switchTo = ()=>{
       _bgmTimer = null;
       if(_bgmSrc !== src) return;   // 已被後續切歌取代 → 放棄
-      ensureBlob(src).then(url=>{
-        if(_bgmSrc !== src) return;        // 已被後續切歌取代（那一支自己會管旗標）
-        _bgmSwitching = false;
-        /* ⚠ 抓不到 blob 就**退回直接串流**（`el.src = src`）：整首下載失敗（離線、
-           快取被清、CORS）不該讓整段變安靜 —— 串流播得動就播，播不動也只是同樣安靜。
-           舊寫法是 `if(!url) return`，那會讓舊的一首停在音量 0、新的永遠不播。 */
-        const u = url || src;
-        try{ el.src = u; el.currentTime = 0; }catch(e){}
-        _bgmPlaying = src;
-        el.volume = (fadeIn > 0 ? 0 : bgmTargetVol());
-        // 只上膛：src 已就位、留在 paused，等 unlock() 於手勢內同步開火。
-        // 若手勢**已經**發生過（玩家點得比 blob 快），就不必再憋 —— 直接開火。
-        if(opts.armOnly && !_unlocked){ el.volume = bgmTargetVol(); return; }
-        const p = el.play();
-        if(p && p.catch) p.catch(()=>{});   // 尚未解鎖 → 等 unlock 於手勢補播
-        if(fadeIn > 0) bgmFade(el, bgmTargetVol(), fadeIn);
-      });
+      const cached = _bgmBlob[src];
+      if(cached){ apply(cached); return; }        // 快取命中：同步，手勢還在（見 apply 上面）
+      ensureBlob(src).then(url=>apply(url));
     };
     const afterOut = ()=>{ if(delay>0) _bgmTimer=setTimeout(switchTo, delay); else switchTo(); };
     if(!el.paused && el.src && el.volume>0.001) bgmFade(el, 0, fadeOut, afterOut);

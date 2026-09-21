@@ -5651,7 +5651,10 @@ export const TOWNS = {
                ⚠ 這一拍**沒有台詞也沒有人在台上**（`cg:` 那一刻就清了場，§6.5 ver -1422）
                  ⇒ 吃得到 `auto`（§6.5 的 -628：台上沒人的純演出拍照舊自己跑）。
                ⚠ `cgRush` 與 `cgPan`／`cgZoom` 互斥（三者都在寫 `transform`）。 */
-            { speaker:'NARRATION', text:'', se:'se_preasure',
+            /* ⚠⚠ **點不掉**（`noSkip`，ver -1658，Ray：「米夏的劇情 CI 動畫不可點掉」）：
+               這一拍沒有字可讀，點一下就整段白做。保護期＝這一拍自己的 `auto`
+               （1600ms，鐵律 7：時間的真相只有一份）。 */
+            { speaker:'NARRATION', text:'', se:'se_preasure', noSkip:true,
               cg:'021-mishalookback', cgNoTime:true, auto:1600,
               /* ⚠ 消失點＝**米夏的眼睛**（ver -1562，Ray 指定）。那是**圖上**的
                  位置（0~1），引擎會用 `coverOrigin` 換算成框上的百分比 ——
@@ -5696,7 +5699,8 @@ export const TOWNS = {
                  所以插在**他察覺有人**的「！！」那一刻 —— 那張圖就是他回頭看過來。
                ⚠ 這一拍沒有台詞、台上也沒有人（`cg:` 那一刻就清了場，§6.5 ver -1422）
                  ⇒ 吃得到 `auto`（-628：台上沒人的純演出拍照舊自己跑）。 */
-            { speaker:'NARRATION', text:'', se:'se_preasure',
+            /* ⚠⚠ **點不掉**（同 M1 那一拍，ver -1658）：保護期＝`auto`（1400ms）。 */
+            { speaker:'NARRATION', text:'', se:'se_preasure', noSkip:true,
               cg:'021-mishalookback', cgNoTime:true, auto:1400,
               cgRush:{ x:0.483, y:0.236 } },   // 消失點＝米夏的眼睛（同 M1，見那邊的量法）
             /* ⚠⚠ **「直接在插圖上跑對話框不跑立繪」**＝不寫 `cg`（插圖是持續狀態，
@@ -6060,8 +6064,12 @@ export const TOWNS = {
              ⇒ 掛在**這一拍**：玩家點掉睏意的那一下，眼睛與驚嚇同時來。
              ⚠ 所以這一拍現在有三件事同時發生：閃過的 CI、她的 `terrify`、換曲。
                那是對的 —— 它們本來就是同一個瞬間。 */
+          /* ⚠⚠ **點不掉**（`noSkip`，ver -1658，Ray：「米夏的劇情 CI 動畫不可點掉」）：
+             這一拍台上有人（安雅），所以它本來就在等點擊 —— 擋的是「玩家連點兩下
+             把那一閃吃掉」。⚠ 保護期**不寫在這裡**：這一拍沒有 `auto`，長度是
+             `fx:'stare'` 自己的 `STARE_MS`，由那一支 `holdSkip` 報上來（鐵律 7）。 */
           Object.assign(any('terrify',''),
-                        { bgm:'glasscradle', fx:'stare', fxCi:'ci_mishastare' }),
+                        { bgm:'glasscradle', fx:'stare', fxCi:'ci_mishastare', noSkip:true }),
           { speaker:'PLAYER', text:'！！' },
           sor('ready','小公主怎麼啦？'),
           any('talk','沒……沒事……'),

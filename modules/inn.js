@@ -96,6 +96,11 @@ let where=null;                    // {town,node}：這是哪座城的哪個旅�
 /* 「還沒六點」的那個六點（ver -405）。⚠ 與**傍晚的提醒**是同一個時刻
    （`TOWNS[].evening.hour`）—— 由城鎮傳進來，不要在這裡另寫一個 18（鐵律 7）。 */
 let eveningHour = 18;
+/* 這一趟探索是「天黑之後才抵達這座城」嗎（ver -1658，見 `sleepOpened`）。
+   ⚠ 由城鎮在 `open()` 判一次再傳進來（鐵律 7：時刻的比對只有那一處）。
+   ⚠ 預設 **false** ＝安全的那一側：漏傳的下場是「照舊要等劇本開旗」，
+     不是「任何一間旅店都能一鍵睡過去」（鐵律 13）。 */
+let lateArrival = false;
 /* 傍晚那一句的旗標（ver -427）。⚠ 規則四／五：18:00 那一格若在旅店裡成立，走的是
    下面的**分支二**（諾：「今天有點累了，我先去休息囉。」）—— 那一支演完要把
    傍晚的旗標一起記掉，否則走出去再回來又會被城鎮抓一次。名字由城鎮傳進來（鐵律 7）。 */
@@ -328,9 +333,31 @@ function doorState(who){
      `sleepHere()` 拿它當保險絲 —— 兩邊各寫一份條件必然走鐘，
      而走鐘的長相正是「鈕在、按了沒反應」，也就是這一條要消滅的東西。
    ⚠ 三道門：任務鎖（`questLocked`）／這座旅店開放了沒（`sleepFlag`）／天黑了沒。 */
+/* ══⚠⚠⚠ **這座旅店現在開放睡覺了沒**（ver -1658）══════════════════════════
+   兩個來源，只有這一支在算（鐵律 7）——`canSleep()`（鈕出不出來）與
+   `sleepHere()`（保險絲那一串台詞）都問它，不要各寫一份：
+     ① 劇本插了那支旗（`sleepFlag`，ver -1382 的 flag 制）
+     ② **這一趟是天黑之後才抵達的**（`lateArrival`，見下）
+
+   Ray（ver -1658）：「如果船到城鎮時已經超過 1800 則旅店出睡覺鈕，按下直接到隔天，
+   不然要晃到劇情時間點很痛苦」。
+   -1382 把預設翻成「有旗才睡得著」，理由是「睡覺會跳掉一整段時間」—— 那個理由
+   在**天黑之後才降落**的那一趟不成立：被跳掉的那一段本來就已經沒有內容了，
+   而玩家唯一的推時鐘手段是一格一格走路（一步 10 分鐘）。
+   ⚠⚠ 它**只開這一道**。另外兩道照舊：
+     · `questLocked()` ＝劇本明講「現在有更急的事，不准睡」—— 那不是等時間，是劇情。
+     · 「天還沒黑」（`eveningHour`）—— 這條路本來就要求 ≥18:00 才成立。
+   ⚠ 「這一趟是不是天黑後抵達」由**城鎮那一側**在 `open()` 判一次（那是唯一
+     「從別的畫面進城」的入口，鐵律 8），這裡只讀。
+   ⚠⚠ **代價要知道**：玩家因此可以把當晚 20:00 那種 `hourOfDay` 的段落睡過去。
+     那正是 Ray 要的「直接到隔天」，但新增這類夜間段落時要記得它的存在。 */
+function sleepOpened(){
+  if(lateArrival) return true;
+  return !!(node && node.sleepFlag && prog.hasFlag(node.sleepFlag));
+}
 function canSleep(){
   if(st1 && st1.questLocked && st1.questLocked()) return false;
-  if(!(node && node.sleepFlag && prog.hasFlag(node.sleepFlag))) return false;
+  if(!sleepOpened()) return false;
   if(clock.hourF() < eveningHour) return false;
   return true;
 }
@@ -772,7 +799,7 @@ function sleepHere(){
     if(host && host.say) host.say(st1.questSay('sleep') || '現在不是睡覺的時候。', '');
     return;
   }
-  if(!(node && node.sleepFlag && prog.hasFlag(node.sleepFlag))){
+  if(!sleepOpened()){          // ver -1658：判準只有那一支（含「天黑後才抵達」那一條）
     if(host && host.say) host.say((node && node.noSleep) || '現在不是睡覺的時候。', '');
     return;
   }
@@ -892,6 +919,7 @@ export function arrive(n, ctx){
   introFlag = (ctx && ctx.introFlag) || null;
   where = (ctx && ctx.where) || null;   // 這是哪座城的哪個節點（ver -481，睡覺時記檔用）
   if(ctx && ctx.eveningHour!=null) eveningHour = ctx.eveningHour;
+  lateArrival = !!(ctx && ctx.lateArrival);   // ver -1658：天黑之後才抵達（見 sleepOpened）
   eveningFlag = (ctx && ctx.eveningFlag) || null;
   allSeenNow = !!(ctx && ctx.allSeen);
   st1 = (ctx && ctx.st1) || null;   // Stage 1 起的房門（ver -461，見 doorState/knock）

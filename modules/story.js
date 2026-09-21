@@ -81,6 +81,16 @@ let fastMode=false, autoPlay=false, autoT2=null;
    ⚠ 用**時刻**不用布林：那一拍自己的 `auto` 計時器負責往下走，這裡只要「還沒到」就擋，
      不必再記得把布林關掉（少一個「誰關它」的狀態，鐵律 9）。 */
 let noSkipUntil=0;
+/* ══⚠⚠ **演出自己報長度**（ver -1658，Ray：「米夏的劇情 CI 動畫不可點掉」）══
+   `noSkip:true` 的保護期預設是**這一拍自己的 `auto`**，但有些演出的長度不在腳本上
+   —— 它在**演出那一支**裡（`fx:'stare'` 的 CI 一閃是 `STARE_MS`）。那時腳本沒有
+   東西可以宣告，硬要寫就是把同一個毫秒數抄成兩份（鐵律 7）。
+   ⚠ **只延長、不縮短**，而且**只對已經宣告 `noSkip` 的那一拍生效** ——
+     沒宣告就是「這一拍本來就可以點掉」，演出不該替腳本做那個決定。
+   ⚠ 每一拍都在 `renderLine` 重設 `noSkipUntil`，所以它不需要「誰清掉」（鐵律 9）。 */
+function holdSkip(ms){
+  if(noSkipUntil) noSkipUntil = Math.max(noSkipUntil, Date.now() + (ms|0));
+}
 let sceneLog=[];               // 本場已播的台詞（回顧用）：{name, text}
 
 /* ══ 立繪素材解析 ══
@@ -2041,6 +2051,9 @@ function senseGeom(k,w,h){
      自己訂一組必然與聽到的心跳錯開 —— 那就是 Ray 說的「拍子不對」。
    前三下＝脈動（半透明殘影放大消失），**第四下＝白光從她手中擴散**（同一瞬）。 */
 const SENSE_BEATS=[450, 1610, 2780, 3940];
+/* 一閃而過的 CI（`fx:'stare'`，ver -1559）活多久 —— **這裡是唯一的那一個數字**
+   （ver -1658）：殘影的收尾與 `noSkip` 的保護期都讀它（鐵律 7）。 */
+const STARE_MS = 1500;
 /* ⚠⚠ 白光**第三拍就開始跑**（ver -1185，Ray：「光圈速快一點，第三拍脈動就可以
    開始跑了」）—— 原本排在第四拍（3.94s），整段拖到 8 秒才收。
    climax 的殘影（`amp 2.2`）也跟著移到第三拍：它與白光**必須同一瞬**。 */
@@ -2291,6 +2304,8 @@ function fireOneShot(line){
        ⚠ 不要為了「一聲」另外切一支音檔：同一個聲音兩份檔案必然走鐘（鐵律 7）。
      ⚠ 那個停音的計時器**要進 `fxTimers`**：這一拍被點掉時它要跟著死，
        不然下一拍還會聽到殘響。 */
+  /* CI 一閃活多久（ver -1559 起就是 1500，-1658 抽成常數）：
+     `fxTimers` 的收尾與 `holdSkip` 的保護期讀**同一個數字**（鐵律 7）。 */
   if(line.fx==='stare'){
     const b=$('storyFx');
     const src = line.fxCi ? (asset(line.fxCi) || line.fxCi) : null;
@@ -2305,7 +2320,10 @@ function fireOneShot(line){
                                             fileGain('se_flight_heartbeat')) : null;
       if(cue && cue.stop) fxTimers.push(setTimeout(()=>cue.stop(120), 1150));
       else playSe('se_flight_heartbeat');
-      fxTimers.push(setTimeout(()=>{ gh.remove(); ci.remove(); }, 1500));
+      fxTimers.push(setTimeout(()=>{ gh.remove(); ci.remove(); }, STARE_MS));
+      /* 這一拍寫了 `noSkip` 就撐滿整個一閃（ver -1658）：長度的真相在這裡，
+         不在腳本上（見 `holdSkip`）。沒寫 `noSkip` ＝照舊點得掉。 */
+      holdSkip(STARE_MS);
     }
   }
   if(line.fx==='whiteflash'){ const b=$('storyFx');
@@ -2331,7 +2349,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1657';
+const KERB_V='?v=1658';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4449,6 +4467,13 @@ export function veil(on, ms){
 }
 /* 黑幕現在蓋著嗎（收場時要確認有沒有人忘了亮回來）。 */
 export function veilOn(){ const v=$('storyVeil'); return !!(v && v.classList.contains('on')); }
+/* ══⚠ **場景區那半片黑幕蓋著嗎**（`#storyFade`，ver -1658）══
+   腳本用 `fadeOut:3000` 把一段戲黑著收掉時（翌日轉場就是），接手的人要知道
+   「畫面已經黑了」——不知道的話它會**再暗一次**，而玩家看到的是中間亮回來的那一眼。
+   ⚠ 它與 `veilOn()` 是**兩片不同的黑幕**：這一片只罩演出區（`z-4`），
+     那一片罩整個舞台（`z-20`）。要問「畫面是不是已經被蓋住了」就兩片都問
+     —— 不要把它們合成一個（擁有者不同，鐵律 7/9）。 */
+export function sceneFadeOn(){ const f=$('storyFade'); return !!(f && f.classList.contains('on')); }
 
 export function clearCast(){
   stopTyping();   // ver -1127：清場＝這一段結束，框裡不可以還有字在跑（同 renderLine）

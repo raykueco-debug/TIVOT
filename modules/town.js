@@ -56,6 +56,9 @@ let arriveT=0;            // 抵達停頓的計時器（換節點要取消，見
    ⚠ 主線段落（`acts`）本來就是這個行為（`ev` 在有 act 時是 null），
      這一版只是讓進場對白享有同樣的待遇。 */
 let eveningHeld=false;
+/* 這一趟是「天黑之後才抵達這座城」嗎（ver -1658）：`open()` 算一次、
+   `afterArrive` 交給旅店（`inn.sleepOpened` 讀它）。見 `open()` 裡的說明。 */
+let arrivedLate=false;
 
 /* ══ 「她開口了，你下一步去哪」（ver -440，Ray 交稿）══════════════════════
    「諾薇兒在上街區表示肚子餓時，不去其它地方而是**直接**往餐酒館走 → 好感 +1，
@@ -2396,7 +2399,20 @@ function forceGo(to){
   clearTimeout(arriveT); arriveT=0;
   busy=true; showNav(false);
   document.body.classList.remove('town-nav');
-  stepSfx();
+  /* ══⚠⚠⚠ **已經黑著進來就不要再暗一次，也不要播腳步聲**（ver -1658，Ray：
+     「開場就要是碼頭送行的背景跟音樂，為什麼每次翌日完都是從墓地自動走過去？」）══
+     翌日那一段是黑著收尾的（`fadeOut:3000` ＋ 翌日卡）。照原本的流程走，這裡會
+     **再演一次三秒的淡出**（玩家看著槍棺慢慢暗下去）、而且**播一聲腳步** ——
+     那一聲正是「自動走過去」的聽感，但這一段根本沒有人在走路，是換了一天。
+     ⚠ 兩片黑幕都要問（`veilOn` 罩整個舞台／`sceneFadeOn` 只罩演出區）——
+       腳本用的是後者，只問前者等於沒問。
+     ⚠⚠ **仍然要把 `#storyVeil` 立刻掛上**，不可以直接 `enter()`：
+       `enter()` 的第一件事是 `clearStageLeftovers()`，它會把 `#storyFade` 清掉
+       ⇒ 新背景還沒載到，舊的那一張會露出來一格（那就是 -442 修過的「多閃一下」）。
+       而 `enter()` 判「要不要等背景才亮」問的正是 `story.veilOn()`。
+     ⚠ 亮回來照舊是三秒（`cutMs`）—— 這是劇情轉場，節奏要與其他轉場一致（ver -739）。 */
+  const preDark = story.veilOn() || story.sceneFadeOn();
+  if(!preDark) stepSfx();
   pendingDir=null;
   /* ══ 跨圖的強制轉場（ver -956，Ray：「神殿攻略結束後自動跳轉回索拉娜家，
      三秒淡入規則」）══ `@<地圖>:<節點>`，與出口的語法同一套（見 go()）。
@@ -2412,6 +2428,11 @@ function forceGo(to){
     gotoMap(map, nd);           // 鐵律 13 第 6 條：換一張探索地圖＝一道讀取頁
     return;
   }
+  /* 已經黑著（見上面 `preDark`）：把整舞台的黑幕**瞬間**接上去，直接換景，
+     亮回來交給 `enter()`（§6.5.4「淡出與淡入的擁有者是分開的」）。 */
+  /* ⚠ 換景仍然**隔一拍**才跑（同 `sceneCut` 的形狀）：這一支是從上一段對白的
+     `done` 回呼裡被叫到的，同步再進一次 `enter()` 等於在別人的收尾中間插隊。 */
+  if(preDark){ story.veil(true, 0); cutMs = STORY_CUT_MS; setTimeout(()=>enter(to), 0); return; }
   sceneCut(to, STORY_CUT_MS);   // 劇情轉場＝三秒（ver -739）
 }
 
@@ -4619,15 +4640,30 @@ export function enter(id){
                那時她還沒說她餓。 */
           armFavor(n);
         }
-        busy=false; refreshArrows(); showNav(true);
         /* ⚠ 時鐘閘門要在**對白演完之後**才判（ver -427）：那一段可能就是把時間推過
            七點的那一段（例如旅店的分支二）。放在開演前判會把演出腰斬。 */
+        /* ══⚠⚠⚠ **閘門要判在「把畫面亮回來」之前**（ver -1658，Ray：「娜塔莉戰後
+           對話完的翌日轉場，開場就要是碼頭送行的背景跟音樂，為什麼每次翌日完
+           都是從墓地自動走過去？」）══════════════════════════════════════════
+           `showNav(true)` 會順手叫 `story.assertNoDarkOverlay()`（暗罩守望，ver -903）
+           —— 而墓地那一段是**刻意黑著收尾**的（`fadeOut:3000` ＋ 翌日卡；ver -1362
+           就是為了這件事把 `fadeIn:3000` 拿掉，讓碼頭那一格自己亮）。
+           守望把 `#storyFade` 清掉 ⇒ **墓地當場亮回來一眼** ⇒ 下一行才被
+           `np_depart` 帶去碼頭。那一眼就是 Ray 講的「從墓地走過去」。
+           ⚠⚠ **-1362 的修法沒有錯，是被這一行提前拆掉了** —— 守望是驗收
+             （「導覽出來了 ⇒ 畫面就該亮」），而這裡根本還不該讓導覽出來：
+             閘門下一拍就要接手轉場。
+           ⚠ 閘門接手時它自己會 `busy=true; showNav(false)`（見 `clockGate`），
+             所以「先亮再暗」本來就是多餘的一步，拿掉沒有別的副作用。
+           ⚠ 沒接手（回 false）才把導覽放回來 —— 那是原本的行為，一個字沒改。 */
         if(clockGate()) return;
+        busy=false; refreshArrows(); showNav(true);
         afterArrive(n); }, { sides:(act && act.sides) || n.sides });
     }, immediate ? 0 : ARRIVE_MS);
   }else{
-    busy=false; refreshArrows(); showNav(true);
+    /* 順序同上（ver -1658）：接手的閘門先問，沒人接手才把導覽放回來。 */
     if(clockGate()) return;
+    busy=false; refreshArrows(); showNav(true);
     afterArrive(n);
   }
   }   // ← runArrival
@@ -4849,6 +4885,10 @@ function afterArrive2(n, metDone){
                                  /* 「還沒六點呢」的那個六點＝傍晚提醒的時刻（ver -405）。
                                     ⚠ 同一個數字只有這一處（鐵律 7）。 */
                                  eveningHour: ((TOWNS[townId]||{}).evening||{}).hour,
+                                 /* 這一趟是天黑之後才抵達的（ver -1658）：旅店拿它
+                                    決定睡覺鈕開不開（`inn.sleepOpened`）。
+                                    ⚠ 判定在 `open()`，這裡只是把答案送過去（鐵律 7）。 */
+                                 lateArrival: arrivedLate,
                                  /* 規則四／五（ver -427）：傍晚那一格若在旅店裡成立，
                                     走的是旅店自己的分支二 —— 那一支演完要**把傍晚的旗標
                                     一起記掉**，否則走出去再回來又會被抓一次。 */
@@ -5081,6 +5121,16 @@ export function open(town, node, opts){
      `enter()` 消化 —— 初見還沒看過就演節點的 `wake` 那一拍（見 enter 的說明）。 */
   carriedIn = !!(opts && opts.carried);
   eveningHeld=false;          // 傍晚那一格的「讓過一次」是這一趟城鎮探索的狀態（ver -430）
+  /* ══⚠⚠⚠ **這一趟是天黑之後才抵達的嗎**（ver -1658，Ray：「如果船到城鎮時已經
+     超過 1800 則旅店出睡覺鈕，按下直接到隔天，不然要晃到劇情時間點很痛苦」）══
+     `open()` 是「從別的畫面進一座城」的**唯一**入口（降落、讀檔、章節跳關、
+     被抬回旅店、戰鬥打完回城都走它，鐵律 8）—— 所以「抵達時幾點」在這裡問一次就好。
+     ⚠ 用**這座城自己的** `evening.hour`（同「還沒六點呢」那條線，鐵律 7），
+       沒寫才退回 18。
+     ⚠ 這是**這一趟探索**的狀態（同 `eveningHeld`／`wildDone`）：出城再回來重算、
+       不進存檔 —— 它是「怎麼走進來的」，不是一輪遊戲的進度（鐵律 9）。
+     ⚠ 它只鬆開旅店的 `sleepFlag` 那一道門，判定在 `inn.sleepOpened()`（見那裡）。 */
+  arrivedLate = clock.hourF() >= (((T.evening||{}).hour!=null) ? T.evening.hour : 18);
   /* 追逐的三個狀態也是**這一趟**的（ver -1421，同 eveningHeld／wildDone）：
      離圖再回來牠重新擺位。⚠ 不進存檔 —— 最壞情況是多走幾步，而位置本來就是
      瞎找出來的（`bl_dragon_seen` 之前連紅點都沒有）。 */
