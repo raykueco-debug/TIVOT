@@ -873,32 +873,32 @@ function recordBoardTime(sec){
 /* ============================================================================
  *  打擊 / 傷害
  * ========================================================================== */
-// 槍擊命中敵人：格子在盤面的相對位置 → 映射到敵人圖對應位置
+// 槍擊命中敵人：從點到的那一格射一條火線過去，**火花就炸在火線的落點**（ver -1627）
 function gunHitOnEnemy(cell){
   const fxTop=$('fxTop');
-  const gr=$('grid').getBoundingClientRect();
   const cr=cell.getBoundingClientRect();
-  const relX=(cr.left+cr.width/2 - gr.left)/gr.width;
-  const relY=(cr.top+cr.height/2 - gr.top)/gr.height;
   const top=$('top').getBoundingClientRect();
-  const px=relX*top.width;
-  const py=(0.2+relY*0.6)*top.height;
-  muzzleBurst(fxTop, px, py);
-  /* ══ 子彈的火線（ver -1622，Ray 指定）══ 從**點到的那一格**射向敵人身上那一點。
+  /* ══⚠⚠⚠ **火線的落點與槍火是同一個點**（ver -1627，Ray：「火線落點要跟火花一致」）══
+     ⚠⚠ **算一次，兩邊都用**（鐵律 7）：-1622~-1626 它們是兩份 ——
+       槍火走「格子的相對位置**映射**到敵人身上」（relX/relY 那一套），
+       火線走 `enemy.enemyImpact()`（鏡射＋抖動）。兩份各自合理，疊在畫面上就是
+       「線打在這裡、火花在那裡」。
+     ⚠⚠⚠ **統一成火線那一份，不是統一成映射那一份**：映射與起點同相位
+       ⇒ 每一發都垂直向上（-1623 被退回的就是那個）。要「大角度又一致」，
+       只能讓火花跟著火線走。
+     ⚠ 原本的 relX/relY 映射到此退役 —— 它是 -1052 時代「槍火打在對應位置」的作法，
+       而 Ray 現在要的是「子彈射過去、打在哪就炸在哪」。 */
+  const sx0=cr.left+cr.width/2 - top.left;
+  const sy0=cr.top +cr.height/2 - top.top;
+  const imp=enemy.enemyImpact(sx0, top.width, top.height);
+  muzzleBurst(fxTop, imp.x, imp.y);
+  /* ══ 子彈的火線（ver -1622，Ray 指定）══ 從**點到的那一格**射向那個落點。
      ⚠ 座標換算成 `#top` 相對就交出去 —— 格子在 `#top` 之外（它在控制面板上），
        所以那一段會被 `#fxTop` 的 `overflow:hidden` 裁掉，看到的正好是
        「從面板底下竄出來」（實作與說明在 `enemy.fireTracer`）。
-     ⚠⚠ **終點是「怪身上的一個隨機點」不是槍火那一點**（ver -1622b／-1624，Ray：
-       「火線要有角度，**往怪的中心方向飛，落點在怪的立繪範圍內隨機**」）：
-       槍火那一點是格子位置**映射**過來的，與起點幾乎同相位 ⇒ 每一發都垂直向上；
-       而只射正中心又會變成每一發打在同一點（雷射筆）。
-       落點由 `enemy.enemyImpact(起點x)` 現擲：**鏡射到起點的另一側** ＋ 抖動
-       ⇒ 每一發都穿過中線，連著幾發就交叉成網（ver -1625，Ray：「盡量讓火線交叉
-       大角度」）。起點再由 `tracerOrigin` 往外推一截（它本來就在畫面外、被裁掉，
+     ⚠⚠ 起點再由 `tracerOrigin` 往外推一截（它本來就在畫面外、被裁掉，
        推它只會讓看得見的那一段更斜）。 */
-  { const sx0=cr.left+cr.width/2 - top.left, sy0=cr.top+cr.height/2 - top.top;
-    const c=enemy.enemyImpact(sx0, top.width, top.height);
-    enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, c.x, c.y); }
+  enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, imp.x, imp.y);
 }
 /* ══ 槍火（ver -1052，Ray：「射擊時敵人身上槍火炸裂的感覺不夠…現在是個圓點而已，
    帶點不規則的芒跟火星如何？」）══════════════════════════════════════════════
