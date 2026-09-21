@@ -7391,7 +7391,7 @@ export const TOWNS = {
          ⚠ `noWild` 照舊由那一條規矩帶（安全點不刷怪）——
            這張圖現在本來就沒有 `wildSpawn`，接上之後要記得。 */
       stair1:     { bg:'tomb_stair1', name:'伊甸古墓　第一道階梯', noTime:true,
-        exits:{ right:'cloister', up:'landing2' } },
+        exits:{ right:'cloister', down:'landing2' } },
       /* ⚠ ver -1572（Ray：「二階梯廳設為安全區」）：`noWild:true` ＝這一格不出野怪。
          ⚠ 它與**安全區旗**（`safehouse_<圖>`）是兩件事：那個是整張圖會開會關的狀態，
            這個是**這一格的性質**（同神殿入口那一條，§6.5.4.4 的 -879）。
@@ -7401,11 +7401,11 @@ export const TOWNS = {
          ⚠ 它同時是「二層的入口」—— 上一格（柱廳）就是守墓者那一場，
            打完退回這裡喘一口氣，是這張圖唯一靠近前線的安全點。 */
       landing2:   { bg:'tomb_landing2', name:'伊甸古墓　二層梯廳', noTime:true,
-        exits:{ up:'hall2', back:'stair1' }, rest:true, noWild:true },
+        exits:{ up:'stair1', down:'hall2' }, rest:true, noWild:true },
       hall2:      { bg:'tomb_hall2', name:'伊甸古墓　柱廳', noTime:true,
         /* ⚠ 這一格**只演守墓者那幾場劇情戰**，不刷雜怪（ver -1612，Ray 指定）。 */
         noWild:true,
-        exits:{ up:'cistern', right:'corr2', down:'landing2', left:'colonnade' },
+        exits:{ up:'landing2', down:'colonnade', left:'cistern' },
         /* ══⚠⚠⚠ **守墓者・降臨**（ver -1525，Ray 的 Stage10-A 稿）══════════════
            ⚠⚠⚠ **觸發條件是暫代的**：稿上是「**三場戰鬥後**」，而**這張圖現在
              一隻雜怪都沒有**（`TOWNS.tomb` 沒有 `wildSpawn`，26 隻古墓怪的**數值卡
@@ -7649,38 +7649,38 @@ export const TOWNS = {
       /* ══ 柱廳往西的側翼（ver -1634 擴張）：列柱廊 → 石工房（死胡同） ══ */
       colonnade:  { bg:'tomb_hall2', bgPending:'tomb_colonnade',
                     name:'伊甸古墓　列柱廊', noTime:true,
-        exits:{ right:'hall2', up:'mason' } },
+        exits:{ up:'hall2', down:'corr2', right:'mason' } },
       mason:      { bg:'tomb_kiln', bgPending:'tomb_mason',
                     name:'伊甸古墓　石工房', noTime:true,
-        exits:{ back:'colonnade' } },
+        exits:{ left:'colonnade' } },
       cistern:    { bg:'tomb_cistern', name:'伊甸古墓　蓄水池', noTime:true,
-        exits:{ back:'hall2', up:'waterstair' } },
+        exits:{ right:'hall2', down:'waterstair' } },
       /* ← 死胡同 A2（蓄水池再往裡一格，ver -1634 擴張） */
       waterstair: { bg:'tomb_cistern', bgPending:'tomb_waterstair',
                     name:'伊甸古墓　汲水階', noTime:true,
-        exits:{ back:'cistern' } },
+        exits:{ up:'cistern' } },
       corr2:      { bg:'tomb_corr2', name:'伊甸古墓　長廊', noTime:true,
-        exits:{ left:'hall2', down:'sump', right:'rotunda' } },
+        exits:{ up:'colonnade', down:'rotunda', left:'sump' } },
       /* ← 死胡同 F（一格） */
       sump:       { bg:'tomb_sump', name:'伊甸古墓　積水坑', noTime:true,
-        exits:{ back:'corr2' } },
+        exits:{ right:'corr2' } },
       rotunda:    { bg:'tomb_rotunda', name:'伊甸古墓　圓廳', noTime:true,
-        exits:{ left:'corr2', up:'nichehall', right:'sarcE', down:'censerroom' } },
+        exits:{ up:'corr2', down:'nichehall', right:'censerroom' } },
       /* ← 死胡同（ver -1634 擴張） */
       censerroom: { bg:'tomb_rotunda', bgPending:'tomb_censerroom',
                     name:'伊甸古墓　香爐室', noTime:true,
-        exits:{ back:'rotunda' } },
+        exits:{ left:'rotunda' } },
 
       /* 死胡同 G 的第一格 —— 圖要畫得**比正路還氣派**（把玩家騙進來） */
       sarcE:      { bg:'tomb_sarce', name:'伊甸古墓　石棺室', noTime:true,
-        exits:{ left:'rotunda', right:'ossuary2' } },
+        exits:{ up:'nichehall', down:'ossuary2', right:'shaft' } },
       ossuary2:   { bg:'tomb_ossuary2', name:'伊甸古墓　甕棺廊', noTime:true,
-        exits:{ left:'sarcE', up:'kiln' } },
+        exits:{ up:'sarcE', down:'ossuary', left:'urnvault' } },
       /* ← 死胡同 G（三格深） */
       kiln:       { bg:'tomb_kiln', name:'伊甸古墓　焚化窯', noTime:true,
-        exits:{ back:'ossuary2' } },
+        exits:{ right:'nichehall' } },
       nichehall:  { bg:'tomb_nichehall', name:'伊甸古墓　壁龕廊', noTime:true,
-        exits:{ down:'rotunda', left:'ossuary' },
+        exits:{ up:'rotunda', down:'sarcE', left:'kiln' },
         /* ══⚠⚠⚠ **下一個房間**（ver -1525，Ray 的 Stage10-A 稿）══
            ⚠ 「索拉娜背著安雅插畫」**還沒有檔案** ⇒ **不寫 `cg:`**（寫了就是六個候選
              全 404，§6.5.4 的 -433 那一課）。圖到了補在「上來！」那一拍、
@@ -7702,21 +7702,40 @@ export const TOWNS = {
         ] } ] },
       /* 骨牆後面那一道窄門就是第二道階梯（很容易被當成裝飾） */
       ossuary:    { bg:'tomb_ossuary', name:'伊甸古墓　骨室', noTime:true,
-        exits:{ right:'nichehall', up:'stair2' } },
+        exits:{ up:'ossuary2', down:'cryptwalk', right:'graveldrop' } },
       /* ⚠ 同上：樹上的橋 */
+      /* ══ ver -1638 擴張（Ray：「二層梯廳到三層梯廳的格數太少，至少 10 格，
+         而且方向性我希望是往下，比較反直覺，第二層再多一點房間」）══════════════
+         二層的主幹改成**一路往下**：梯廳→柱廳→列柱廊→長廊→圓廳→壁龕廊→石棺室
+         →甕棺廊→骨室→墓道→第二道階梯（**10 步**），每一格再掛一條死路。 */
+      shaft:      { bg:'tomb_sump', bgPending:'tomb_shaft',
+                    name:'伊甸古墓　豎井', noTime:true,
+        exits:{ left:'sarcE' } },
+      urnvault:   { bg:'tomb_ossuary2', bgPending:'tomb_urnvault',
+                    name:'伊甸古墓　甕窖', noTime:true,
+        exits:{ right:'ossuary2', down:'ashpit' } },
+      ashpit:     { bg:'tomb_kiln', bgPending:'tomb_ashpit',
+                    name:'伊甸古墓　灰坑', noTime:true,
+        exits:{ up:'urnvault' } },
+      graveldrop: { bg:'tomb_bonepit', bgPending:'tomb_graveldrop',
+                    name:'伊甸古墓　碎石陷落', noTime:true,
+        exits:{ left:'ossuary' } },
+      cryptwalk:  { bg:'tomb_corr2', bgPending:'tomb_cryptwalk',
+                    name:'伊甸古墓　墓道', noTime:true,
+        exits:{ up:'ossuary', down:'stair2' } },
       stair2:     { bg:'tomb_stair2', name:'伊甸古墓　第二道階梯', noTime:true,
-        exits:{ down:'ossuary', up:'landing3' } },
+        exits:{ up:'cryptwalk', down:'landing3' } },
       /* ⚠⚠ **安全點之二**（ver -1574，Ray 指定）。 */
       landing3:   { bg:'tomb_landing3', name:'伊甸古墓　三層梯廳', noTime:true,
-        exits:{ up:'gallery3', back:'stair2' }, rest:true, noWild:true },
+        exits:{ up:'stair2', down:'gallery3' }, rest:true, noWild:true },
       /* ⚠ ~~安全點之三~~（ver -1574 拔掉，見上面那一段）。 */
       gallery3:   { bg:'tomb_gallery3', name:'伊甸古墓　玄室前廊', noTime:true,
-        exits:{ up:'crypt', left:'vaultW', down:'landing3' } },
+        exits:{ up:'landing3', down:'crypt', right:'vaultW' } },
       vaultW:     { bg:'tomb_vaultw', name:'伊甸古墓　側墓穴', noTime:true,
-        exits:{ right:'gallery3', up:'bonepit' } },
+        exits:{ left:'gallery3', down:'bonepit' } },
       /* ← 死胡同 H（**ver -1574 起三格深**：骨坑後面接上底層祭壇） */
       bonepit:    { bg:'tomb_bonepit', name:'伊甸古墓　骨坑', noTime:true,
-        exits:{ up:'lowaltar', back:'vaultW' } },
+        exits:{ up:'vaultW', down:'lowaltar' } },
       /* ══⚠⚠⚠ **安全點之三：底層祭壇**（ver -1574，Ray：「底層祭壇在骨坑後面，
          還沒畫，明天補，**先重覆一次骨坑代替**」）══
          ⚠⚠⚠ **`bg` 現在借用骨坑那一張** —— 圖來了就把 `tomb_bonepit` 換成新的基底名，
@@ -7728,10 +7747,10 @@ export const TOWNS = {
            `resources/map/map_tomb.webp` 上的光點是照拓樸畫的，多一格就對不上。
            `tools/map_layout.py` 的 `POS` 已經加了這一格（那是版面的唯一真相）。 */
       lowaltar:   { bg:'tomb_bonepit', name:'伊甸古墓　底層祭壇', noTime:true,
-        exits:{ back:'bonepit' }, rest:true, noWild:true },
+        exits:{ up:'bonepit' }, rest:true, noWild:true },
       /* ★ **終點**（最深處） */
       crypt:      { bg:'tomb_crypt', name:'伊甸古墓　石棺主室', noTime:true,
-        exits:{ back:'gallery3' } },
+        exits:{ up:'gallery3' } },
     },
   },
 
