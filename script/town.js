@@ -7634,7 +7634,10 @@ export const TOWNS = {
         acts:[ { flag:'tomb_carry', need:'tomb_chase_on', sides:{ RENNA:'L' }, lines:[
           { speaker:'NARRATION', text:'', se:'se_walk', auto:1200 },
           any('talkshy',''),
-          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', auto:1400 },
+          /* ⚠ **遠吼**（ver -1629，Ray 指定）：牠被打退之後留在上一格，這一段是
+             「換一個房間」演的 ⇒ 照 -1622 那條規矩走 `se_monsterroardeep`
+             （同一個房間才是 `se_enemy_roardeer`）。 */
+          { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:1400 },
           any('terrify',''),
           sor('ready','上來！'),
           any('nervous','！！'),
