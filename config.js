@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1621';
+export const VERSION = 'ver 2026.09.17-1622';
 
 export const GAME_CONFIG = {
 
@@ -3592,6 +3592,11 @@ export const GAME_CONFIG = {
       se_kerberos_open:1.558, se_kerberos_pop:1.479, se_kerberos_steam:1.301,
       se_kerberos_gear:6.179, se_kerberos_drop:1.550,
       se_brickcrush:1.825,              // ver -624（audio_scan 實測：−19.0 LUFS）
+      /* 子彈火線 ×4（ver -1622 本機 BS.1770，錨在 se_brickcrush 的 1.825）：
+         四支都**撞到 `peakCeilDb`(+2 dBFS)**（母帶峰值幾乎頂到 0）⇒ 夾完就是下面這幾個數字，
+         所以會比目標 −20 LUFS 低一點，那是母帶的極限（同 glass_cradle／echoed_art 那兩支）。 */
+      se_bulletsfly1:1.259, se_bulletsfly2:1.268,   // CAP
+      se_bulletsfly3:1.259, se_bulletsfly4:1.358,   // CAP
       /* 雪都圖書館（ver -1556）。⚠ `se_tablepunch` 是拍桌的**低頻**衝擊：
          耳機 −9.4 LUFS、過手機喇叭模型只剩 −24.8（差 15.4 dB，全專案最大的一支）——
          所以增益取**兩者的平均**（§6.6「耳機對了不代表手機對了」），只對耳機那一端
@@ -4424,6 +4429,15 @@ export const ASSETS = {
   se_sniper_falcon:  "resources/audio/se/se_weapon_sniper_falcon.m4a",   // 狙擊槍 反擊（單發）
 
   // 清盤換彈音（盤面清空、顯示 RELOADING 時播）
+  /* ══⚠⚠ **子彈火線的飛行聲**（ver -1622，Ray：「音效 Se_Bulletsfly，做成略有變化的
+     四個音檔，隨機輪播」）══ 由交件的 `Se_Bulletsfly.mp3` 重取樣出四個版本
+     （速率 1.000／0.945／1.055／1.115 ＋ 微幅增益 —— 音高與長度一起動，
+     讀起來像不同支槍管／不同距離），原檔已回收。
+     ⚠ 隨機挑一支的實作只有 `modules/enemy.js` 的 `bulletsFlySe()`（鐵律 8）。 */
+  se_bulletsfly1:    "resources/audio/se/se_bulletsfly1.m4a",
+  se_bulletsfly2:    "resources/audio/se/se_bulletsfly2.m4a",
+  se_bulletsfly3:    "resources/audio/se/se_bulletsfly3.m4a",
+  se_bulletsfly4:    "resources/audio/se/se_bulletsfly4.m4a",
   sfx_reload:        "resources/audio/se/se_weapon_reload.m4a",
 
   // 開始遊戲 stinger（點下開始瞬間，蓋過 BGM 切歌的淡出/進入前段）

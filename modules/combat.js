@@ -543,6 +543,10 @@ export function dualShot(x, y){
   if(x!=null && y!=null){
     enemy.ejectShellAt(x, y);
     muzzleAtPoint(x, y);
+    /* ══ BR 的火線：**從演出畫面兩側隨機高度射出**（ver -1622，Ray 指定）══
+       破防沒有格子可點，所以起點不是「哪一格」而是畫面兩側（見 `fireTracerSide`）。 */
+    { const t=$('top').getBoundingClientRect();
+      enemy.fireTracerSide(x - t.left, y - t.top); }
   }else{
     const cell=state.cells[(Math.random()*state.cells.length)|0];
     if(cell){ enemy.ejectShell(cell); gunHitOnEnemy(cell); }
@@ -880,6 +884,11 @@ function gunHitOnEnemy(cell){
   const px=relX*top.width;
   const py=(0.2+relY*0.6)*top.height;
   muzzleBurst(fxTop, px, py);
+  /* ══ 子彈的火線（ver -1622，Ray 指定）══ 從**點到的那一格**射向敵人身上那一點。
+     ⚠ 座標換算成 `#top` 相對就交出去 —— 格子在 `#top` 之外（它在控制面板上），
+       所以那一段會被 `#fxTop` 的 `overflow:hidden` 裁掉，看到的正好是
+       「從面板底下竄出來」（實作與說明在 `enemy.fireTracer`）。 */
+  enemy.fireTracer(cr.left+cr.width/2 - top.left, cr.top+cr.height/2 - top.top, px, py);
 }
 /* ══ 槍火（ver -1052，Ray：「射擊時敵人身上槍火炸裂的感覺不夠…現在是個圓點而已，
    帶點不規則的芒跟火星如何？」）══════════════════════════════════════════════

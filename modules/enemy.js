@@ -423,6 +423,63 @@ export function throwDagger(x, y, onHit){
     if(onHit) onHit();
   }, DAGGER_MS);
 }
+/* ══⚠⚠⚠ **子彈的火線**（ver -1622，Ray：「點擊方格時有子彈的火線高速射向敵人，
+   從點擊方格的位置朝敵人射出，但**圖層在控制面板以下**，所以效果是從控制面板底下
+   射出，類似索拉娜飛刀」）══════════════════════════════════════════════════════
+   ⚠⚠⚠ **「在控制面板以下」不必動任何 z-index** —— 畫在既有的 `#fxTop` 就是了：
+     那一層是 `#top` 的子元素、`overflow:hidden`，而 `#top` 的下緣**就是控制面板的
+     上緣**。起點落在盤面（在 `#top` 之外）⇒ 那一段自動被裁掉，看到的正好是
+     「從面板底下竄出來」。自己另開一層再去調 z-index，反而會與 `#bottom`
+     沒有 `position` 這件事打架（非定位元素永遠畫在定位元素之下）。
+   ⚠ 座標一律是 **`#top` 相對**（呼叫端換算好再傳）：這一支不量任何 rect ——
+     它每一發都會跑，逐發量 rect 是每一發一次強制重排。
+   ⚠ 素材是零：一條帶漸層的細長 div，`mix-blend-mode:screen`（同飛刀與星芒那條）。 */
+const TRACER_MS = 90;        // 飛行時間：要「高速」，比飛刀（150）再快一截
+const TRACER_LEN = 150;      // streak 的長度（px）；距離不夠時縮短
+/* 四支略有變化的飛行聲隨機挑一支（ver -1622，Ray 指定）。
+   ⚠⚠ **節流 50ms**：BR（破防彈雨）是連發，不節流會疊成一片白噪音 ——
+     而普攻本來就點不到那麼快，所以只有 BR 感覺得到。 */
+let bfLast = 0;
+function bulletsFlySe(){
+  const now = (typeof performance!=='undefined' ? performance.now() : Date.now());
+  if(now - bfLast < 50) return;
+  bfLast = now;
+  const k = 'se_bulletsfly' + (1 + ((Math.random()*4)|0));
+  try{ SFX.play(asset(k), sfxGain(k)); }catch(_){}
+}
+export function fireTracer(sx, sy, tx, ty){
+  const host=$('fxTop'); if(!host) return;
+  const dx=tx-sx, dy=ty-sy;
+  const dist=Math.hypot(dx,dy) || 1;
+  const ang=Math.atan2(dy,dx)*180/Math.PI;
+  const len=Math.min(TRACER_LEN, dist);
+  const ux=dx/dist, uy=dy/dist;
+  const el=document.createElement('i');
+  el.className='tracer';
+  el.style.width=len+'px';
+  host.appendChild(el);
+  /* 尾端從起點出發、頭端在終點收尾 ⇒ 平移的終點要退掉一個 streak 的長度。 */
+  const a='translate('+sx+'px,'+sy+'px) rotate('+ang+'deg)';
+  const b='translate('+(tx-ux*len)+'px,'+(ty-uy*len)+'px) rotate('+ang+'deg)';
+  try{
+    el.animate([{ transform:a, opacity:0.35 },
+                { transform:b, opacity:1 }],
+               { duration:TRACER_MS, easing:'cubic-bezier(.2,.7,.4,1)', fill:'forwards' });
+  }catch(_){ el.style.transform=b; }
+  setTimeout(()=>{ if(el.parentNode) el.remove(); }, TRACER_MS+60);
+  bulletsFlySe();
+}
+/* ══ BR（破防彈雨）的火線：**從演出畫面兩側隨機高度射出**（ver -1622，Ray 指定）══
+   ⚠ 盤面那時沒有格子可點（BR 打的是敵人身上），所以起點不是「哪一格」，
+     是畫面兩側 —— 左右隨機、高度隨機，打向被點的那一點。 */
+export function fireTracerSide(tx, ty){
+  const host=$('fxTop'); if(!host) return;
+  const r=host.getBoundingClientRect();
+  const left=Math.random()<0.5;
+  const sx=left ? -40 : r.width+40;
+  const sy=Math.random()*r.height;
+  fireTracer(sx, sy, tx, ty);
+}
 export function ejectCounterShell(x, y, opts){
   opts = opts || {};
   const s=document.createElement('div'); s.className='shell'+(opts.shotgun?' shotgun':'');

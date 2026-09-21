@@ -2298,7 +2298,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1621';
+const KERB_V='?v=1622';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3309,7 +3309,14 @@ function renderLine(){
     battleCueId = id;
     /* 門全開才放行降臨（ver -875）：gateOpened＝main 注入的 combat.releaseEnemyRise。 */
     const opened=()=>{ close({ keepBgm:true }); if(gateOpened) try{ gateOpened(); }catch(_){} };
-    if(gateSkip && !gateSkip(id)){
+    /* ══⚠⚠⚠ **`kerbRise:true` ＝這一拍要推棺**（ver -1622，Ray：「墓主先跑降臨，
+       再推棺進入戰鬥，**只有這一拍推棺**」）══
+       `gateSkip` 只認得「這一場的 id」（＝同一段連續戰鬥的第二格起原地開棺，ver -587），
+       而「這一場是不是那一段戲的高潮」是**腳本**才知道的事 —— 同一張卡
+       （`tomb_gk1`）在登場戲要推棺、在追擊戰不要推。
+       ⚠ 只能往「要推」的方向覆寫：不寫就照舊問 `gateSkip`（漏寫的下場是原地開棺，
+         看得見、無害；反過來預設推棺的話每一格都會演一次完整儀式）。 */
+    if(!line.kerbRise && gateSkip && !gateSkip(id)){
       playKerberosInPlace(()=>battleHandler(id, resume), opened);
       return;
     }

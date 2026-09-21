@@ -4617,7 +4617,8 @@ export const TOWNS = {
           any('argue','對。',   { skipIf:'ep_m2_route' }),
           any('upset','',       { onlyIf:'ep_m2_route' }),
           sor('cringe','連小公主都生我的氣……'),
-          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+          /* ⚠ 蕾娜追上來的腳步＝**高跟鞋**（ver -1622，Ray 指定；同 -1002 科爾文那一段）。 */
+          { speaker:'NARRATION', text:'', se:'se_highheels', auto:1400 },
           ren('lookdown','時間也不早了，早點休息吧。'),
           ren('lookaway','關於古墓的大門我有點眉目了，明天一早動身。'),
           nou('awkwerd','蕾娜小姐，關於那個評價……'),
@@ -7264,7 +7265,11 @@ export const TOWNS = {
              稿上的 `Se_groawing`（`enemy_lowroar.mp3`）**還沒進 `ASSETS`／
              `tuning.fileGain`**，用它是靜靜不播（§6.5.4 的那個坑）。 */
         acts:[ { flag:'tomb_talk', need:'tomb_enter', sides:{ RENNA:'L' }, lines:[
-          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', auto:1600 },
+          /* ══⚠⚠⚠ **咆哮有兩支，看牠在不在同一個房間**（ver -1622，Ray 定案）══
+             · 同一個房間 → `se_enemy_roardeer`（近，聽得出是什麼東西）
+             · 不同房間　 → `se_monsterroardeep`（遠，悶在石頭裡）
+             這一拍牠還在墓的深處 ⇒ 遠吼。 */
+          { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:1600 },
           sor('cringe','哇，那什麼？'),
           ren('write','禍魘吧，還能是什麼。'),
           sor('confuse','……'),
@@ -7415,12 +7420,27 @@ export const TOWNS = {
            （Ray -1616：「柱廳怎麼可能會有登場？登場是在進古墓後兩戰以後移動
              下一格觸發」）。台詞照舊住在這一格，**在哪演由追兵站在哪決定**。 */
         { flag:'tomb_gk1_done', need:'tomb_talk', chaseOnly:true, sides:{ RENNA:'L' }, lines:[
-          { speaker:'NARRATION', text:'', shake:true, auto:1200 },
+          /* ⚠ **第一次登場的震動要兩聲疊在一起**（ver -1622，Ray 指定）：
+             `se_rockimpact`（落石砸下）＋`se_brickcrush`（瓦礫崩落）。
+             ⚠ `se:` 本來就吃陣列（story.js 的 -1002：同一拍要同時發的音不要拆兩拍，
+               拆了就把「同時發生」演成「先後發生」）。 */
+          { speaker:'NARRATION', text:'', shake:true,
+            se:['se_rockimpact','se_brickcrush'], auto:1200 },
           any('lookup',''),
           nou('shock2','什、什麼東西？'),
           { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
           sor('battlecry','麻煩的東西來了！'),
-          { battle:'tomb_gk1' },
+          /* ══⚠⚠⚠ **先在劇情層跑降臨，再推棺進戰鬥**（ver -1622，Ray 指定）══
+             走既有的**中景層**（`cgBack` ＋ `cgBackRise`，與龍在祭壇那一段同一支，
+             鐵律 8）—— 那是「有東西出現在這一景裡」，不是換插圖，所以不算轉場。
+             ⚠ **要有人收**：打完那一場的下一拍寫 `cgBack:null`（同祭壇那一段）。 */
+          { speaker:'NARRATION', text:'', cgBack:'resources/enemy/mon_gravekeeper_seal.webp',
+            cgBackRise:true, cgBackFit:'contain', cgBackScale:0.9,
+            se:'se_enemy_roardeer', auto:1800 },
+          /* ⚠⚠ **只有這一拍推棺**（ver -1622，Ray 指定）：`kerbRise:true`。
+             其餘每一場（含二戰兩輪與所有追擊戰）都是原地開棺 —— 完整的推棺儀式
+             是「一場戰鬥開始了」的宣告，一段之內演五次就不是宣告了（§6.5.4.3 的 -587）。 */
+          Object.assign({ battle:'tomb_gk1' }, { kerbRise:true }),
           nou('relief','嚇、嚇死我了！'),
           sor('guardtalk','棘手了點，但也不是不能應付。'),
           sor('guard','只是……好像哪裡不太對勁。'),
@@ -7428,11 +7448,18 @@ export const TOWNS = {
           ren('shockcalm','！！'),
           ren('shout','趕快走！離開這裡！'),
           any('scare',''),
-          ren('shout','沒有淨化反應，那東西沒有死！'),
-          /* ⚠ ver -1570（Ray：「那東西沒有死後面一拍的咆哮要有畫面震動」）。 */
-          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
+          /* ⚠ **這一句自己就是一記震動**（ver -1622，Ray：「那東西沒有死震動同時播
+             se_brickcrush」）—— 收掉 -1570 那一拍獨立的咆哮（咆哮移到下面的降臨拍上）。 */
+          Object.assign(ren('shout','沒有淨化反應，那東西沒有死！'),
+                        { shake:true, se:'se_brickcrush' }),
           nou('shock','！！'),
-          { speaker:'NARRATION', text:'', shake:true, auto:1200 },
+          /* ⚠ 再下一個震動＝落石（ver -1622，Ray 指定）。 */
+          { speaker:'NARRATION', text:'', shake:true, se:'se_rockimpact', auto:1200 },
+          /* ⚠⚠ **再降臨一次，這次不推棺**（ver -1622，Ray 指定）——
+             同一支中景層降臨，戰鬥那一拍不寫 `kerbRise` ＝原地開棺。 */
+          { speaker:'NARRATION', text:'', cgBack:'resources/enemy/mon_gravekeeper_seal.webp',
+            cgBackRise:true, cgBackFit:'contain', cgBackScale:0.9,
+            se:'se_enemy_roardeer', auto:1800 },
           /* ══⚠⚠⚠ **牠又降臨了一次 ＝ 首戰的第二輪**（ver -1570；-1616 定名）══
              牠剛被打死、卻又整隻站回來 —— 蕾娜下一句「那不是再生……這個東西把
              『死亡』本身覆寫了」正是**看到第二次**才說得出口。
@@ -7447,8 +7474,11 @@ export const TOWNS = {
              ⚠ 原本掛在**分組**那一段的收尾 —— 而分組是柱廳專屬的（-1607），
                先被追上的人走不到 ⇒ 後面吃這支旗的東西整串失效
                （`tomb_carry` 背安雅、墓門的 `lock`）。**旗要跟著「牠登場」走。** */
+          /* ⚠ **中景層要有人收**（ver -1622）：降臨那兩拍放上去的去背圖是**持續狀態**，
+             不寫 `cgBack:null` 它會一路留在後面的每一景前面（§6.5 的「立繪是持續狀態」
+             同一條）。收在這一段的最後一拍。 */
           Object.assign(sor('battlecry','什麼跟什麼啊沒完沒了！'),
-                        { flags:['tomb_chase_on'] }),
+                        { flags:['tomb_chase_on'], cgBack:null }),
         ] },
         /* ② **二戰之前被追上**（ver -1616，Ray 交稿）。
            ⚠⚠⚠ `until:'tomb_gk1_split'` ＝Ray 明講「**如果到我們才不會輸之前沒出

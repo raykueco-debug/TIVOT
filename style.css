@@ -768,6 +768,17 @@
 
   /* 特效層（槍擊命中、彈殼、爪痕、飄字都畫在這） */
   #fxTop{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden;}
+  /* ══ 子彈的火線（ver -1622）══ 一條帶漸層的細長條，尾端淡、頭端亮到爆白。
+     ⚠ `mix-blend-mode:screen`（同飛刀／星芒）：黑的地方自然消失，疊在敵人身上是加亮。
+     ⚠ `transform-origin:0 50%` —— 旋轉軸在尾端，平移的那一點就是「尾巴在哪」。
+     ⚠ 不用 `filter:blur`（這是每一發都會跑的特效，見槍火那一段的理由）；
+       發光交給漸層本身的亮度＋`box-shadow`（只有一層，便宜）。 */
+  .tracer{position:absolute;left:0;top:0;height:3px;margin-top:-1.5px;
+    transform-origin:0 50%;pointer-events:none;mix-blend-mode:screen;will-change:transform;
+    border-radius:2px;
+    background:linear-gradient(90deg,rgba(255,196,96,0) 0%,rgba(255,206,120,.35) 45%,
+      rgba(255,240,200,.95) 88%,#fff 100%);
+    box-shadow:0 0 6px rgba(255,190,90,.75);}
   /* ══ 槍火（ver -1052，Ray：「現在是個圓點而已，帶點不規則的芒跟火星如何？」）══
      形狀是**程式生成**的（`combat.starPolygon` 每一發重擲頂點），這裡只給顏色與動作。
      ⚠ 不用 `filter`（同 -1049 的碎玻璃）：這是每一發子彈都會跑的特效，
