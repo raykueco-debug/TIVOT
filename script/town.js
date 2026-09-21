@@ -7355,19 +7355,19 @@ export const TOWNS = {
       chantry:    { bg:'tomb_chantry', name:'伊甸古墓　誦經室', noTime:true,
         exits:{ back:'crossing', left:'scriptorium' } },
       /* ← 死胡同 C2（誦經室再往裡一格，ver -1634 擴張） */
-      scriptorium:{ bg:'tomb_chantry', bgPending:'tomb_scriptorium',
+      scriptorium:{ bg:'tomb_scriptorium',
                     name:'伊甸古墓　抄經房', noTime:true,
         exits:{ back:'chantry' } },
       chapel:     { bg:'tomb_chapel', name:'伊甸古墓　禮拜堂', noTime:true,
         exits:{ left:'crossing', up:'ambulatory', right:'confessio' } },
       /* ← 死胡同（ver -1634 擴張） */
-      confessio:  { bg:'tomb_chapel', bgPending:'tomb_confessio',
+      confessio:  { bg:'tomb_confessio',
                     name:'伊甸古墓　告解所', noTime:true,
         exits:{ back:'chapel' } },
       ambulatory: { bg:'tomb_ambulatory', name:'伊甸古墓　繞行廊', noTime:true,
         exits:{ down:'chapel', left:'apse', up:'sacristy' } },
       /* ← 死胡同（ver -1634 擴張） */
-      sacristy:   { bg:'tomb_reliquary', bgPending:'tomb_sacristy',
+      sacristy:   { bg:'tomb_sacristy',
                     name:'伊甸古墓　法衣室', noTime:true,
         exits:{ back:'ambulatory' } },
       /* ☀ 拱頂塌了一個洞，光柱斜插下來 → **有四時段差分**（另一格是墓門） */
@@ -7379,7 +7379,7 @@ export const TOWNS = {
       cloister:   { bg:'tomb_cloister', name:'伊甸古墓　迴廊', noTime:true,
         exits:{ right:'apse', left:'stair1', up:'wellyard' } },
       /* ← 死胡同（ver -1634 擴張） */
-      wellyard:   { bg:'tomb_cloister', bgPending:'tomb_wellyard',
+      wellyard:   { bg:'tomb_wellyard',
                     name:'伊甸古墓　井庭', noTime:true,
         exits:{ back:'cloister' } },
       /* ⚠ 樹上的**橋**：找不到就真的下不去，沒有第二條路 */
@@ -7653,16 +7653,16 @@ export const TOWNS = {
 
       /* ← 死胡同 E（一格） */
       /* ══ 柱廳往西的側翼（ver -1634 擴張）：列柱廊 → 石工房（死胡同） ══ */
-      colonnade:  { bg:'tomb_hall2', bgPending:'tomb_colonnade',
+      colonnade:  { bg:'tomb_colonnade',
                     name:'伊甸古墓　列柱廊', noTime:true,
         exits:{ right:'hall2', up:'mason' } },
-      mason:      { bg:'tomb_kiln', bgPending:'tomb_mason',
+      mason:      { bg:'tomb_mason',
                     name:'伊甸古墓　石工房', noTime:true,
         exits:{ back:'colonnade' } },
       cistern:    { bg:'tomb_cistern', name:'伊甸古墓　蓄水池', noTime:true,
         exits:{ back:'hall2', up:'waterstair' } },
       /* ← 死胡同 A2（蓄水池再往裡一格，ver -1634 擴張） */
-      waterstair: { bg:'tomb_cistern', bgPending:'tomb_waterstair',
+      waterstair: { bg:'tomb_waterstair',
                     name:'伊甸古墓　汲水階', noTime:true,
         exits:{ back:'cistern' } },
       corr2:      { bg:'tomb_corr2', name:'伊甸古墓　長廊', noTime:true,
@@ -7673,7 +7673,7 @@ export const TOWNS = {
       rotunda:    { bg:'tomb_rotunda', name:'伊甸古墓　圓廳', noTime:true,
         exits:{ left:'corr2', up:'nichehall', right:'sarcE', down:'censerroom' } },
       /* ← 死胡同（ver -1634 擴張） */
-      censerroom: { bg:'tomb_rotunda', bgPending:'tomb_censerroom',
+      censerroom: { bg:'tomb_censerroom',
                     name:'伊甸古墓　香爐室', noTime:true,
         exits:{ back:'rotunda' } },
 
@@ -7714,41 +7714,41 @@ export const TOWNS = {
          而且方向性我希望是往下，比較反直覺，第二層再多一點房間」）══════════════
          二層的主幹改成**一路往下**：梯廳→柱廳→列柱廊→長廊→圓廳→壁龕廊→石棺室
          →甕棺廊→骨室→墓道→第二道階梯（**10 步**），每一格再掛一條死路。 */
-      shaft:      { bg:'tomb_sump', bgPending:'tomb_shaft',
+      shaft:      { bg:'tomb_shaft',
                     name:'伊甸古墓　豎井', noTime:true,
         exits:{ up:'sarcE', right:'graveldrop' } },
-      urnvault:   { bg:'tomb_ossuary2', bgPending:'tomb_urnvault',
+      urnvault:   { bg:'tomb_urnvault',
                     name:'伊甸古墓　甕窖', noTime:true,
         exits:{ left:'ossuary2', up:'saltroom', right:'masonhall', down:'ashpit' } },
-      ashpit:     { bg:'tomb_kiln', bgPending:'tomb_ashpit',
+      ashpit:     { bg:'tomb_ashpit',
                     name:'伊甸古墓　灰坑', noTime:true,
         exits:{ up:'urnvault', down:'cryptwalk', left:'graveldrop' } },
-      graveldrop: { bg:'tomb_bonepit', bgPending:'tomb_graveldrop',
+      graveldrop: { bg:'tomb_graveldrop',
                     name:'伊甸古墓　碎石陷落', noTime:true,
         exits:{ right:'ashpit', down:'brokenhall', left:'shaft' } },
       /* ══ ver -1641：**甕窖做成四岔路**（Ray：「每個方向都加入路線與岔路，
          不然就算往下，只有一條路也算不上迷宮」）══════════════════════════════
          甕窖 ＝ 來路（左・甕棺廊）／往下（灰坑→墓道→階梯）／
                  往上（硝室：再岔兩條）／往右（石工長廳：再岔兩條）。 */
-      saltroom:   { bg:'tomb_ossuarya', bgPending:'tomb_saltroom',
+      saltroom:   { bg:'tomb_saltroom',
                     name:'伊甸古墓　硝室', noTime:true,
         exits:{ down:'urnvault', up:'chimney', right:'nitrepit' } },
-      chimney:    { bg:'tomb_sump', bgPending:'tomb_chimney',
+      chimney:    { bg:'tomb_chimney',
                     name:'伊甸古墓　排煙井', noTime:true,
         exits:{ down:'saltroom' } },
-      nitrepit:   { bg:'tomb_kiln', bgPending:'tomb_nitrepit',
+      nitrepit:   { bg:'tomb_nitrepit',
                     name:'伊甸古墓　硝坑', noTime:true,
         exits:{ left:'saltroom' } },
-      masonhall:  { bg:'tomb_hall2', bgPending:'tomb_masonhall',
+      masonhall:  { bg:'tomb_masonhall',
                     name:'伊甸古墓　石工長廳', noTime:true,
         exits:{ left:'urnvault', right:'toolniche', down:'rubble' } },
-      toolniche:  { bg:'tomb_tombniche', bgPending:'tomb_toolniche',
+      toolniche:  { bg:'tomb_toolniche',
                     name:'伊甸古墓　工具龕', noTime:true,
         exits:{ left:'masonhall' } },
-      rubble:     { bg:'tomb_bonepit', bgPending:'tomb_rubble',
+      rubble:     { bg:'tomb_rubble',
                     name:'伊甸古墓　落石堆', noTime:true,
         exits:{ up:'masonhall' } },
-      cryptwalk:  { bg:'tomb_corr2', bgPending:'tomb_cryptwalk',
+      cryptwalk:  { bg:'tomb_cryptwalk',
                     name:'伊甸古墓　墓道', noTime:true,
         exits:{ up:'ashpit', down:'deepwalk' } },
       /* ══ ver -1642：**墓道加深，而且要轉彎才到得了底層階梯**（Ray：「墓道再深
@@ -7756,25 +7756,25 @@ export const TOWNS = {
          一直線就走得到」）══════════════════════════════════════════════════
          灰坑→墓道→墓道深處→十字墓窖（岔口）→**右**轉才是第二道階梯；
          往左是塌陷的階梯 —— 看起來像階梯的死路（那正是「試錯成本」）。 */
-      deepwalk:   { bg:'tomb_corr2', bgPending:'tomb_deepwalk',
+      deepwalk:   { bg:'tomb_deepwalk',
                     name:'伊甸古墓　墓道深處', noTime:true,
         exits:{ up:'cryptwalk', down:'crossvault' } },
       /* ══ ver -1643：破碎廊道 —— 塌陷的階梯往上一格，接回碎石陷落（再接豎井）══
          ⚠ 這是全圖第一個**環**：走到塌陷的階梯不再是白走，它通回上一層那一串。 */
-      brokenhall: { bg:'tomb_corr2', bgPending:'tomb_brokenhall',
+      brokenhall: { bg:'tomb_brokenhall',
                     name:'伊甸古墓　破碎廊道', noTime:true,
         exits:{ down:'falsestair', up:'graveldrop' } },
       /* ══ ver -1643：十字墓窖往下那兩格（死路）══ 一直按「下」會走進這裡。 */
-      sunkhall:   { bg:'tomb_hall2', bgPending:'tomb_sunkhall',
+      sunkhall:   { bg:'tomb_sunkhall',
                     name:'伊甸古墓　沉陷廳', noTime:true,
         exits:{ up:'crossvault', down:'mudpit' } },
-      mudpit:     { bg:'tomb_sump', bgPending:'tomb_mudpit',
+      mudpit:     { bg:'tomb_mudpit',
                     name:'伊甸古墓　淤泥坑', noTime:true,
         exits:{ up:'sunkhall' } },
-      crossvault: { bg:'tomb_crossing', bgPending:'tomb_crossvault',
+      crossvault: { bg:'tomb_crossvault',
                     name:'伊甸古墓　十字墓窖', noTime:true,
         exits:{ up:'deepwalk', left:'falsestair', right:'stair2', down:'sunkhall' } },
-      falsestair: { bg:'tomb_stair2', bgPending:'tomb_falsestair',
+      falsestair: { bg:'tomb_falsestair',
                     name:'伊甸古墓　塌陷的階梯', noTime:true,
         exits:{ right:'crossvault', up:'brokenhall' } },
       stair2:     { bg:'tomb_stair2', name:'伊甸古墓　底層階梯', noTime:true,
@@ -7809,7 +7809,7 @@ export const TOWNS = {
            那一族）。那一段劇本還沒寫；**寫的人不要再發明第二支旗**。
          ⚠⚠ **往左的廢坑道要啟動才開**（Ray 指定）：走既有的 `exitIf`（-923 石橋那一支）
            —— 連箭頭都不出現，玩家讀得出「那邊還過不去」。 */
-      lowaltar:   { bg:'tomb_lowaltar', bgPending:'tomb_lowaltar',
+      lowaltar:   { bg:'tomb_lowaltar',
                     name:'伊甸古墓　底層祭壇', noTime:true,
         bgWhen:[ { not:'tomb_altar_on', bg:'tomb_lowaltar_off' } ],
         exits:{ up:'bonepit', left:'adit' },
@@ -7817,7 +7817,7 @@ export const TOWNS = {
         rest:true, noWild:true },
       /* ══ ver -1643：**廢坑道**（祭壇啟動後開啟）—— 從最深處一路接回墓門。
          ⚠ 兩端都要寫：墓門那一格也有 `right:'adit'` ＋ 同一支 `exitIf`。 */
-      adit:       { bg:'tomb_corr2', bgPending:'tomb_adit',
+      adit:       { bg:'tomb_adit',
                     name:'伊甸古墓　廢坑道', noTime:true,
         exits:{ right:'lowaltar', left:'gate' } },
       /* ★ **終點**（最深處） */
