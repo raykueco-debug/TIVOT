@@ -110,17 +110,26 @@ def main():
         
         grp = s.shapes.add_group_shape()      # ⚠ 一格＝一個 group（Ray：「一組」）
         shapes = grp.shapes
-        src = bg_path(n.get('bg'))
+        # ⚠⚠⚠ **借圖的一律畫綠方塊，不要放代圖**（ver -1637，Ray：「沒圖的不要用代圖，
+        #   這樣美術比較容易知道哪些要補，沒圖的就用綠方塊」）——
+        #   判準是節點上的 `bgPending`（＝資料自己宣告「這張還沒交件」），
+        #   不是「bg 欄位是不是空的」：借圖的那幾格 `bg` 是**有值**的（同族的現有圖），
+        #   照 `bg` 去畫的話美術看到的是一張看起來已經有的圖。
+        pend = n.get('bgPending')
+        src  = None if pend else bg_path(n.get('bg'))
         if src:
             shapes.add_picture(thumb(src), x, y, IW, IH)
         else:
             miss.append(k)
             ph = shapes.add_shape(MSO_SHAPE.RECTANGLE, x, y, IW, IH)
-            ph.fill.solid(); ph.fill.fore_color.rgb = RGBColor(0xe6,0xe4,0xdf)
-            ph.line.color.rgb = RGBColor(0xcf,0xcd,0xc8)
-            ph.text_frame.text = '（無背景）'
-            ph.text_frame.paragraphs[0].runs[0].font.size = Pt(9)
-            ph.text_frame.paragraphs[0].runs[0].font.color.rgb = RGBColor(0x8a,0x88,0x8e)
+            ph.fill.solid(); ph.fill.fore_color.rgb = RGBColor(0x3f,0xb9,0x50)   # 綠方塊＝要補圖
+            ph.line.color.rgb = RGBColor(0x2b,0x8a,0x3a)
+            want = pend if isinstance(pend,str) else ''
+            ph.text_frame.text = ('要補圖\n'+want) if want else '要補圖'
+            for para in ph.text_frame.paragraphs:
+                for run in para.runs:
+                    run.font.size = Pt(9); run.font.bold = True
+                    run.font.color.rgb = RGBColor(0xff,0xff,0xff)
 
         tb = shapes.add_textbox(x, y+IH, IW, TH)
         t2 = tb.text_frame; t2.word_wrap = True
