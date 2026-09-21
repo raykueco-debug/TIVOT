@@ -7112,6 +7112,25 @@ export const TOWNS = {
              `Tomb_Gate_Sealed_dawn/_day/_dusk/_night`（全小寫，同既有交件慣例）。 */
         bgWhen:[ { not:'tomb_opened', bg:'tomb_gate_sealed' } ],
         exits:{ up:'vestibule' },
+        /* ══⚠⚠⚠ **墓主遭遇之後回到門廳：門已經關上了**（ver -1635，Ray 交稿）══
+           ⚠ `need:'tomb_chase_on'` ＝與這一格 `lock.gate` 用**同一支旗**（鐵律 7）：
+             「門關上了」與「那一段對白」是同一件事的兩面，不要另立一支。
+           ⚠ 演完才記 `flag`（同城鎮所有段落）—— 中途離開會再演一次，那是對的。
+           ⚠ 關門音走 `se_kerberos_open`（Ray 指定的那一支；槍棺那一族的門音，
+             這裡借來當青銅門），索菈娜推不開那一下是 `se_kerberos_drop`。 */
+        acts:[ { flag:'tomb_sealed_in', need:'tomb_chase_on', sides:{ RENNA:'L' }, lines:[
+          { speaker:'NARRATION', text:'', se:'se_kerberos_open', shake:true, auto:1600 },
+          any('scare','！！'),
+          Object.assign(sor('battlecry','可惡！打不開了！'), { se:'se_kerberos_drop' }),
+          nou('cringe','可是......以前的探勘隊是怎麼進出的？'),
+          ren('talkwork','說是探勘，其實都是中世紀的盜墓者。大概是從其他地方挖進來的，如果能找到的話......'),
+          sor('lookaway','大概......已經沒有出入口了。'),
+          ren('shockcalm','！！'),
+          sor('lookaway','門關上以後風完全停下來了，連一丁點流動都沒有。'),
+          any('nervous',''),
+          ren('command','別停下！先找到遺蹟中心，或許安雅小姐能再啟動一次！'),
+          sor('ready','噢！'),
+        ] } ],
         /* ══⚠⚠⚠ **門關著就進不去**（ver -1154，Ray：「閉門狀態不能入內」）══
            `tomb_opened` 沒立 ⇒ 往上的箭頭**整個不出現**（`exitsOf` 的 `exitIf`）。
            ⚠ 擋在**出口表**不是擋在 `go()`：箭頭都不出現，玩家才讀得出「那邊過不去」，
