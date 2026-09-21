@@ -7463,7 +7463,9 @@ export const TOWNS = {
           { speaker:'NARRATION', text:'', shake:true, se:'se_rockimpact', auto:1200 },
           /* ⚠⚠ **再降臨一次，這次不推棺**（ver -1622，Ray 指定）——
              同一支中景層降臨，戰鬥那一拍不寫 `kerbRise` ＝原地開棺。 */
-          { speaker:'NARRATION', text:'', cgBack:'resources/enemy/mon_gravekeeper_seal.webp',
+          /* ⚠ **這一次也撤立繪**（ver -1631，Ray 指定）—— 與第一次降臨同一個作法。 */
+          { speaker:'NARRATION', text:'', hide:'*',
+            cgBack:'resources/enemy/mon_gravekeeper_seal.webp',
             cgBackRise:true, cgBackFit:'contain', cgBackScale:0.9,
             se:'se_enemy_roardeer', auto:1800 },
           /* ══⚠⚠⚠ **牠又降臨了一次 ＝ 首戰的第二輪**（ver -1570；-1616 定名）══
