@@ -1898,6 +1898,16 @@ function chaseActDue(n){
   const spec=chaseSpec(); if(!spec || !n) return null;
   if(n.noWild) return null;
   const c=chaseGet(); if(!c || !c.node || c.node!==nodeId) return null;
+  /* ══⚠⚠ **與 `mustWild` 那一格競合 ⇒ 走追兵**（ver -1648，Ray：「第二格如果跟
+     墓主競合，走墓主」）══ 優先序本來就對（`runArrival` 是
+     `chaseActDue → chaseNextAct → wildRoll`，鐵律 8 的那一串），這裡只補一件：
+     **真的交出一段之後，把那一格的保證一起消耗掉** —— 在那裡打了一場就是
+     「遇敵過了」，不然它會繼續欠一場，下一次走過去又硬塞一隻雜怪進來。
+     ⚠ 掛在**兩個 return 之前**不是函式開頭：開頭那裡還不知道會不會真的交出東西
+     （`battles` 是空的就 return null），先插旗等於把保證白白消耗掉。 */
+  const eatMustWild=()=>{
+    if(n.mustWild && !prog.hasFlag(mustWildFlag(nodeId))) prog.addFlags([mustWildFlag(nodeId)]);
+  };
   /* ══⚠⚠⚠ **被追上時要演哪一段：一張由上往下取第一個成立的表**
      （`chase.scenes`，ver -1616）══════════════════════════════════════════════
      -1603~-1608 只有**一段**（`chase.intro` ＝登場戲），而 Ray 的稿現在有三段：
@@ -1926,7 +1936,7 @@ function chaseActDue(n){
       if(c.marks[w.flag] == null){ c.marks[w.flag] = (c.hits|0); chaseSet(c); }
       if((c.hits|0) - c.marks[w.flag] + 1 < ref.afterHits) continue;
     }
-    chaseScene = w; return w;
+    chaseScene = w; eatMustWild(); return w;
   }
   const list=spec.battles||[];
   if(!list.length) return null;
@@ -1934,6 +1944,7 @@ function chaseActDue(n){
   /* ⚠ 標記在物件上（`__chase`）：段落演完那一支要認得出「這是一場追擊戰」
      才會停 `stun`。**白名單而不是排除法**（鐵律 13 與 -1446 龍那一課：
      排除法漏寫會亂動，白名單漏寫只是少動一次）。 */
+  eatMustWild();
   return { __chase:true, lines:[ { battle:id } ] };
 }
 /* ══ 段落演完（`enter()` 的收尾）══ 三件事，順序不可換：
@@ -2041,6 +2052,10 @@ function cardSpawnPool(nodeIdNow){
   }
   return out;
 }
+/* `mustWild` 那一格的「已經保證過了」旗（ver -1648）。
+   ⚠ **旗名由圖＋格推出來**，不要寫死在資料裡：插旗端與查旗端各寫一個字串的話，
+     打錯一個字就是「插了但查不到」，而且不會有任何錯誤訊息（同 `safehouseFlag`）。 */
+function mustWildFlag(id){ return 'mustwild_' + townId + '_' + id; }
 function wildActDue(n){
   const T0=TOWNS[townId]||{};
   wildStat.asked++;
@@ -2127,15 +2142,21 @@ function wildActDue(n){
     let rate = (repeat || wildCleared.has(nodeId))
       ? ((GAME_CONFIG.tuning||{}).wildRespawnRate!=null ? GAME_CONFIG.tuning.wildRespawnRate : 0.25)
       : ((W&&W.rate)||(cardPool.length?((GAME_CONFIG.tuning||{}).wildRespawnRate||0.25):0));
-    /* ══⚠⚠⚠ **`mustWild:true` ＝這一格這一趟必出一次怪**（ver -1616，Ray：
-       「我在中殿跟後殿各加一次 100% 遇敵，這樣在走進柱廳之前必定觸發首戰兩輪」）══
+    /* ══⚠⚠⚠ **`mustWild:true` ＝這一格**整輪只保證第一次**必出怪**
+       （ver -1616 立；**-1648 由「每一趟」改成「整輪一次」**，Ray：「100% 遇敵格
+       也只有剛進去那一次，兩格都遇敵後就解除」）══
        ⚠⚠ 宣告在**節點上**不是在城上列一張名單 —— 與 `noWild` 同一個位置、同一個
          道理（§ruins 的 `wildSpawn` 註解：「名單會與節點走鐘」）。
        ⚠⚠ 與 `fixed` 是兩件事：`fixed` 指定**哪一隻**（那一格永遠是同一隻），
          這一格只保證**有一隻**，抽誰照舊走池子。
-       ⚠ 只保證**第一次**（`wildCleared` 記著這一格出過了）——
-         之後回頭走它照舊吃重刷率，不然這兩格會變成無限刷怪點。 */
-    if(n.mustWild && !wildCleared.has(nodeId)) rate = 1;
+       ⚠⚠⚠ **用旗記，不是用這一趟的帳**：`wildCleared` 在 `open()` 歸零 ⇒
+         出城再進來又保證兩場。那個保證只是為了「首戰兩輪必在柱廳前」，
+         劇情跑完就不該再有（Ray 明講）。
+       ⚠ **逐格一支旗**（`mustwild_<圖>_<格>`）而不是「這張圖做完了」一支 ——
+         這樣「兩格都遇敵後就解除」是**自然的結果**，不必有人去數還剩幾格
+         （鐵律 9：一個狀態一個擁有事件；誰插＝那一格真的出過怪那一次）。
+       ⚠ 旗是**一輪內**的（`newRun()` 清、存讀檔帶，§6.9 那張清單）。 */
+    if(n.mustWild && !prog.hasFlag(mustWildFlag(nodeId))) rate = 1;
     wildStat.rolled++;
     if(Math.random() >= rate){ wildSkip('擲骰沒中（rate '+rate+'）'); return null; }
     wildStat.hit++;
@@ -2147,6 +2168,8 @@ function wildActDue(n){
      打輸的回程會把城收掉重開 → open() 歸零，所以不會把「輸了的那一隻」鎖死。 */
   wildDone.add(wildSpecies(pick));
   wildCleared.add(nodeId);          // 這一格出過怪了（ver -924，見上面那一段）
+  /* `mustWild` 那一格真的出過怪了 ⇒ 插旗，整輪不再保證（ver -1648，見上）。 */
+  if(n.mustWild) prog.addFlags([mustWildFlag(nodeId)]);
   const id=wildVariant(pick);
   return id ? { lines:[ { battle:id } ] } : null;
 }
