@@ -124,6 +124,13 @@ const HOME_COVERS = [
   ['#alFlash',                           '開機的聖光'],              // 光暈實心蓋滿才交棒（main 的 2500ms）
   ['#kerb.rise.full',                    '槍棺（推到頂）'],          // 交棒進戰鬥：門蓋滿畫面
   ['#transition.on',                     '結算過場'],
+  /* ⚠⚠ **讀取頁也是一層蓋滿的**（ver -1663）：`#assetLoader` 是
+     `position:fixed; inset:0; background:#0a0812`（不透明），而所有走
+     `story.loadScene()` 的路徑都在它的 `onCovered`（全黑那一刻）才收首頁
+     —— 那正是這張表要的「等新的那一層真的蓋上去」。
+     名單裡漏了它，於是那幾條**做對了的**路徑反而每次被警告一次（誤報）。
+     ⚠ `:not(.al-fade)` ＝正在淡出的那半秒不算：那時它已經在讓位了。 */
+  ['#assetLoader:not(.al-fade)',         '讀取頁'],
 ];
 export function homeCoveredBy(){
   /* 飛行 iframe 沒有自己的 class，看的是 body 那一支（它有不透明底色 #05060c）。 */

@@ -29,6 +29,7 @@ import { sakuraBurst } from './modules/sakura.js';   // 開始遊戲：全畫面
 import * as story from './modules/story.js';   // 主線 scene 播放器（首頁 story 鈕）
 import * as saveSys from './modules/save.js';   // 劇情層存讀檔（F4/F7 即時、F5/F8 選欄）
 import * as settings from './modules/settings.js';   // 選單：分軌音量／自動播放速度（玩家偏好）
+import { BG_INDEX } from './script/bg_index.js';   // 背景全名單（自動產生）：RUSH 的隨機背景從它抽（ver -1663）
 import * as prog from './script/progress.js';
 /* ⚠⚠ **靜態 import**（ver -1001）：章節跳關的補給包本來走 `import(...).then(...)`，
    那是**非同步**的 —— 而 `startChapter` 後面的 `openTownAt()` 同步接著跑，
@@ -1816,6 +1817,34 @@ function rushHasFoe(t){
   return Object.keys(E).some(k => { const c = E[k] || {};
     return c.tier === t && !!c.atype && c.kind !== 'target' && !c.timeAttack; });
 }
+/* ══⚠⚠ **RUSH 的背景：全庫隨機，但不要城鎮**（ver -1663，Ray）══════════════
+   ⚠ 「哪些是城鎮」問 `town.townBgDirs()`（由資料推，§0.5 有旅店的才算，鐵律 7）——
+     這裡一個城名都不寫死，新開一座城自動被排除。
+   ⚠ 名單本身是 `script/bg_index.js`（`py tools/bg_index.py` 掃出來的**事實**）——
+     所以「有哪些背景」也不是這裡維護的。
+   ⚠ 濾掉底線開頭的（`_canyon_map` 那一族是地圖／工具圖，不是場景）。
+   ⚠ 只算一次；抽不到東西就回 null（`setBattleBg(null)` ＝照舊用敵人卡上的 `bg`）。 */
+let rushBgPool=null;
+function rushBgList(){
+  if(rushBgPool) return rushBgPool;
+  let skip;
+  try{ skip = town.townBgDirs(); }catch(e){ console.warn('[rush] townBgDirs', e); skip = new Set(); }
+  rushBgPool = Object.keys(BG_INDEX).filter(n => n[0]!=='_' && !skip.has(BG_INDEX[n]));
+  console.info('[rush] 隨機背景池 %d 張（排除城鎮資料夾：%s）', rushBgPool.length, [...skip].join('／'));
+  return rushBgPool;
+}
+function rushPickBg(){
+  const L0=rushBgList();
+  return L0.length ? L0[(Math.random()*L0.length)|0] : null;
+}
+/* 第一場的背景：讀取頁要先把它載進來，所以在 `startRush` 就抽好、`rushNext` 讀它。 */
+let rushFirstBg=null;
+/* 第一個「有怪可抽」的等級是哪一場 —— 讀取頁要知道載哪一張卡的音訊（ver -1663）。
+   ⚠ 與 `rushNext` 的跳過規則問**同一支** `rushHasFoe`（鐵律 7）。 */
+function rushFirstId(){
+  for(const t of RUSH_TIERS) if(rushHasFoe(t)) return 'rush_' + t.toLowerCase();
+  return null;
+}
 function rushNext(){
   /* 跳過沒有怪的等級；六個都跑完就收手（最後一場的 sessionEnd 會自己結算）。 */
   while(++rushAt < RUSH_TIERS.length && !rushHasFoe(RUSH_TIERS[rushAt])){
@@ -1844,12 +1873,33 @@ function rushNext(){
      ⚠ 冪等：沒開著時 `close()` 等於什麼都不做，所以第一場也照叫（鐵律 8：
        收在唯一開打的那一處，不要只補在接力那一支）。 */
   story.close({ keepBgm:true });
+  /* 這一場的背景（ver -1663）：第一場用讀取頁已經載好的那一張，之後每一場重抽。
+     ⚠ `state.battleBg` 是**持續狀態**（main.js:654 那條的教訓）—— 每一場都明確設一次，
+       離開 rush 時再設回 null（見 setStoryReturn 的 rush 分支）。 */
+  { const bg = rushFirstBg || rushPickBg(); rushFirstBg = null;
+    combat.setBattleBg(bg); }
   combat.startScriptBattle(id, { story:false });
   return true;
 }
+/* ══⚠⚠ **按 RUSH 也跑一次讀取頁**（ver -1663，Ray 指定）══════════════════════
+   鐵律 13：RUSH 是一個新的畫面，它要**自己**載自己的資源 ——
+   走既有的那一道門 `story.loadScene()`（與進探索地圖同一支，鐵律 8），
+   它自己會先 `releaseAudio` 放掉首頁那一批，再只載這一批。
+   ⚠ 載三樣：這一場的音訊（`battleAudioSet`，與 `enterBattleAssets` 同一支）、
+     曲子（`battleBgmOf`）、**第一場的隨機背景**（先抽好，`rushNext` 讀它）。
+   ⚠ 收首頁掛在 `onCovered`（讀取頁全黑那一刻）——§6.10 -576：
+     在新的一層真的蓋上去之前不可以先收舊的。
+   ⚠ 背景傳**完整網址**（`story.bgUrl`）不是基底名：那一支會補 `?v=`（ASSET_VER），
+     與戰鬥上半真的要的那個網址一模一樣 —— 傳基底名會暖到另一個網址（白載）。 */
 function startRush(){
-  rushAt = -1;
-  if(!rushNext()) console.warn('[rush] 一隻有等級的怪都沒有 —— 先去 Excel 補 tier');
+  const id = rushFirstId();
+  if(!id){ console.warn('[rush] 一隻有等級的怪都沒有 —— 先去 Excel 補 tier'); return; }
+  rushFirstBg = rushPickBg();
+  const spec = { ses: battleAudioSet(id), bgms: [battleBgmOf(id)] };
+  if(rushFirstBg){ try{ spec.imgs = [story.bgUrl(rushFirstBg)]; }catch(_){} }
+  story.loadScene(spec,
+                  ()=>{ rushAt = -1; rushNext(); },
+                  ()=>{ hideHome('rush/loader'); });
 }
 
 combat.setStoryReturn((res)=>{
@@ -1863,7 +1913,19 @@ combat.setStoryReturn((res)=>{
   if(rushLive()){
     const lost = !!(res && (res.lost || res.lose));
     const b = (GAME_CONFIG.battles||{})['rush_' + RUSH_TIERS[rushAt].toLowerCase()];
-    if(lost || (b && b.sessionEnd)){ rushAt = -1; if(lost) story.leaveToHome(); return; }
+    if(lost || (b && b.sessionEnd)){
+      rushAt = -1;
+      /* ⚠ `state.battleBg` 是持續狀態：不清掉的話下一場正規戰鬥會沿用 rush 抽到的
+         那張背景（ver -1663）。 */
+      combat.setBattleBg(null);
+      /* ══⚠⚠ **打完結算按「繼續」就回首頁**（ver -1663，Ray 指定）══
+         舊寫法只有**打輸**才 `leaveToHome()`，打贏那一支直接 return ——
+         而結算頁那顆「繼續」走的正是這一條（`script-continue` → storyReturn）
+         ⇒ 按下去什麼都沒發生，玩家被留在結算頁後面。
+         rush 沒有劇情可以交還，唯一的去處就是首頁。 */
+      story.leaveToHome();
+      return;
+    }
     rushNext(); return;
   }
   /* 「放棄」：回主畫面。⚠ 走 `story.leaveToHome()` 而不是自己 `combat.goHome()` ——
