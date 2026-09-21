@@ -456,10 +456,22 @@ function bulletsFlySe(){
    ⚠ 槍火照舊打在映射那一點（那是**彈著點**，本來就該散開）——
      火線是「從哪裡射出來」，兩件事。 */
 const ENEMY_CX = 0.50, ENEMY_CY = 0.40;
+/* 立繪在 `#top` 裡大致佔的那一塊（半寬／半高，比例）。
+   ⚠ 不逐發去量 `#enemyImg` 的 rect：那是每一發一次強制重排，而立繪的 `fit`
+     逐張卡不同（`cover`／`contain`），量到的框也不等於**畫出來的怪**有多大。
+     這一組是「怪大概站在哪」的常數，改一個數字就能整體收放。 */
+const ENEMY_RX = 0.26, ENEMY_RY = 0.28;
+/* ══⚠⚠ **落點：往中心的方向飛，但落在立繪範圍內隨機**（ver -1624，Ray 指定）══
+   ⚠⚠ **只射正中心是不行的**（-1623 那一版）：每一發都打在同一個點，
+     讀起來是雷射筆不是子彈。隨機落點才有「一排子彈打上去」的感覺。
+   ⚠ 用**兩個亂數取平均**（三角分佈）而不是單一亂數：中心密、邊緣疏 ——
+     這樣「往中心的方向飛」還讀得出來，不會變成打得到處都是。 */
 export function enemyCenter(){
   const host=$('fxTop'); if(!host) return null;
   const r=host.getBoundingClientRect();
-  return { x:r.width*ENEMY_CX, y:r.height*ENEMY_CY };
+  const j=()=> (Math.random()+Math.random()-1);        // −1~1，中心密
+  return { x:r.width *(ENEMY_CX + ENEMY_RX*j()),
+           y:r.height*(ENEMY_CY + ENEMY_RY*j()) };
 }
 export function fireTracer(sx, sy, tx, ty){
   const host=$('fxTop'); if(!host) return;
