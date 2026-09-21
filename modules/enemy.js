@@ -440,12 +440,21 @@ const TRACER_LEN = 150;      // streak 的長度（px）；距離不夠時縮短
    ⚠⚠ **節流 50ms**：BR（破防彈雨）是連發，不節流會疊成一片白噪音 ——
      而普攻本來就點不到那麼快，所以只有 BR 感覺得到。 */
 let bfLast = 0;
+/* ══⚠⚠⚠ **飛行音要往後推 0.2 秒**（ver -1626，Ray：「音效前面的飛行音被槍聲吃掉，
+   只剩最後的擊中血肉音」）══
+   同一拍還有普攻的槍聲，而這一支的**前 0.2 秒正是飛行的咻聲** —— 兩個疊在一起，
+   咻聲整段被遮蔽掉，玩家只聽得到後面那一下。往後推就閃開了。
+   ⚠⚠ **推的是播放時刻，不是在檔案前面補靜音**：補靜音等於四支檔案都要重做才能改
+     這個數字，而且每一發都白解碼 0.2 秒的零。
+   ⚠ 節流（下面那 50ms）看的是**發射的時刻**不是播放的時刻 —— 要擋的是「連發疊成
+     白噪音」，而那是由發射頻率決定的。 */
+const BF_DELAY_MS = 200;
 function bulletsFlySe(){
   const now = (typeof performance!=='undefined' ? performance.now() : Date.now());
   if(now - bfLast < 50) return;
   bfLast = now;
   const k = 'se_bulletsfly' + (1 + ((Math.random()*4)|0));
-  try{ SFX.play(asset(k), sfxGain(k)); }catch(_){}
+  setTimeout(()=>{ try{ SFX.play(asset(k), sfxGain(k)); }catch(_){} }, BF_DELAY_MS);
 }
 /* ══⚠⚠ **怪的中心**（`#top` 相對；ver -1622b，Ray：「火線要有角度，往怪的中心飛」）══
    立繪是 `object-fit:cover` ＋ `object-position:center top` 鋪滿 `#top`，
