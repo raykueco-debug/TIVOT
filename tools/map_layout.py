@@ -122,8 +122,11 @@ POS = {
     'mason':(2,6), 'cistern':(4,6), 'ossuary':(6,6), 'nichehall':(8,6), 'kiln':(12,6),
     'colonnade':(2,7), 'hall2':(4,7), 'corr2':(6,7), 'rotunda':(8,7), 'sarcE':(10,7),
       'ossuary2':(12,7), 'urnvault':(14,7),
+    'chimney':(14,5),
+    'saltroom':(14,6), 'nitrepit':(16,6),
+    'masonhall':(16,7), 'toolniche':(18,7),
     'landing2':(4,8), 'sump':(6,8), 'censerroom':(8,8), 'shaft':(10,8),
-      'ashpit':(14,8), 'graveldrop':(16,8),
+      'graveldrop':(12,8), 'ashpit':(14,8), 'rubble':(16,8),
     'cryptwalk':(14,9),
     'stair2':(14,10),
     # ── 一層（前進＝up，照舊）───────────────────────────────────────────

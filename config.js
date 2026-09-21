@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1640';
+export const VERSION = 'ver 2026.09.17-1641';
 
 export const GAME_CONFIG = {
 
@@ -4071,7 +4071,7 @@ export const ASSETS = {
      ⚠ **四張圖 ＝ 四張卡**（Ray：「四張是同一隻，程式上算四隻，
        三隻追擊輪出，一隻留做決戰」）。
      ⚠ 新檔名不是同名覆蓋 ⇒ `ASSET_VER` 不必動（§5：新增比覆蓋安全）。 */
-  enemy_gk_seal:   "resources/enemy/mon_gravekeeper_seal.webp?v=2",     // 聖印失效（追擊）
+  enemy_gk_seal:   "resources/enemy/mon_gravekeeper_seal.webp?v=3",     // 聖印失效（追擊）
   enemy_gk_offset: "resources/enemy/mon_gravekeeper_offset.webp?v=2",   // 錯格重影（追擊）
   enemy_gk_many:   "resources/enemy/mon_gravekeeper_many.webp?v=2",     // 數不清（追擊）
   enemy_gk_crypt:  "resources/enemy/mon_gravekeeper_crypt.webp?v=2",    // 墓室胸腔（決戰）

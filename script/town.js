@@ -7477,7 +7477,7 @@ export const TOWNS = {
              鐵律 8）—— 那是「有東西出現在這一景裡」，不是換插圖，所以不算轉場。
              ⚠ **要有人收**：打完那一場的下一拍寫 `cgBack:null`（同祭壇那一段）。 */
           { speaker:'NARRATION', text:'', hide:'*',
-            cgBack:'resources/enemy/mon_gravekeeper_seal.webp?v=2',
+            cgBack:'resources/enemy/mon_gravekeeper_seal.webp?v=3',
             cgBackRise:true, cgBackFit:'contain', cgBackScale:0.9,
             se:'se_enemy_roardeer', auto:1800 },
           /* ⚠⚠ **只有這一拍推棺**（ver -1622，Ray 指定）：`kerbRise:true`。
@@ -7502,7 +7502,7 @@ export const TOWNS = {
              同一支中景層降臨，戰鬥那一拍不寫 `kerbRise` ＝原地開棺。 */
           /* ⚠ **這一次也撤立繪**（ver -1631，Ray 指定）—— 與第一次降臨同一個作法。 */
           { speaker:'NARRATION', text:'', hide:'*',
-            cgBack:'resources/enemy/mon_gravekeeper_seal.webp?v=2',
+            cgBack:'resources/enemy/mon_gravekeeper_seal.webp?v=3',
             cgBackRise:true, cgBackFit:'contain', cgBackScale:0.9,
             se:'se_enemy_roardeer', auto:1800 },
           /* ══⚠⚠⚠ **牠又降臨了一次 ＝ 首戰的第二輪**（ver -1570；-1616 定名）══
@@ -7713,13 +7713,35 @@ export const TOWNS = {
         exits:{ up:'sarcE' } },
       urnvault:   { bg:'tomb_ossuary2', bgPending:'tomb_urnvault',
                     name:'伊甸古墓　甕窖', noTime:true,
-        exits:{ left:'ossuary2', down:'ashpit' } },
+        exits:{ left:'ossuary2', up:'saltroom', right:'masonhall', down:'ashpit' } },
       ashpit:     { bg:'tomb_kiln', bgPending:'tomb_ashpit',
                     name:'伊甸古墓　灰坑', noTime:true,
-        exits:{ up:'urnvault', down:'cryptwalk', right:'graveldrop' } },
+        exits:{ up:'urnvault', down:'cryptwalk', left:'graveldrop' } },
       graveldrop: { bg:'tomb_bonepit', bgPending:'tomb_graveldrop',
                     name:'伊甸古墓　碎石陷落', noTime:true,
-        exits:{ left:'ashpit' } },
+        exits:{ right:'ashpit' } },
+      /* ══ ver -1641：**甕窖做成四岔路**（Ray：「每個方向都加入路線與岔路，
+         不然就算往下，只有一條路也算不上迷宮」）══════════════════════════════
+         甕窖 ＝ 來路（左・甕棺廊）／往下（灰坑→墓道→階梯）／
+                 往上（硝室：再岔兩條）／往右（石工長廳：再岔兩條）。 */
+      saltroom:   { bg:'tomb_ossuarya', bgPending:'tomb_saltroom',
+                    name:'伊甸古墓　硝室', noTime:true,
+        exits:{ down:'urnvault', up:'chimney', right:'nitrepit' } },
+      chimney:    { bg:'tomb_sump', bgPending:'tomb_chimney',
+                    name:'伊甸古墓　排煙井', noTime:true,
+        exits:{ down:'saltroom' } },
+      nitrepit:   { bg:'tomb_kiln', bgPending:'tomb_nitrepit',
+                    name:'伊甸古墓　硝坑', noTime:true,
+        exits:{ left:'saltroom' } },
+      masonhall:  { bg:'tomb_hall2', bgPending:'tomb_masonhall',
+                    name:'伊甸古墓　石工長廳', noTime:true,
+        exits:{ left:'urnvault', right:'toolniche', down:'rubble' } },
+      toolniche:  { bg:'tomb_tombniche', bgPending:'tomb_toolniche',
+                    name:'伊甸古墓　工具龕', noTime:true,
+        exits:{ left:'masonhall' } },
+      rubble:     { bg:'tomb_bonepit', bgPending:'tomb_rubble',
+                    name:'伊甸古墓　落石堆', noTime:true,
+        exits:{ up:'masonhall' } },
       cryptwalk:  { bg:'tomb_corr2', bgPending:'tomb_cryptwalk',
                     name:'伊甸古墓　墓道', noTime:true,
         exits:{ up:'ashpit', down:'stair2' } },
