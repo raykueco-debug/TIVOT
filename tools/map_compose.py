@@ -30,6 +30,15 @@ sys.path.insert(0, os.path.join(ROOT, 'tools'))
 from map_layout import POS, load            # 同一份版面、同一支讀取器（鐵律 7）
 
 W, H = 1536, 1024
+# ⚠ ver -1647（Ray：「最後一層根本不用那麼大」）：格距設上限，**紙跟著內容縮**。
+#   不設上限的話 7 格的第三層會被拉開撐滿整張紙（x 方向的格距 1137px）——
+#   小的一層本來就該是一張小圖，不是把幾個點攤到天涯海角。
+#   下限是為了不要縮到看不清圖示與草書名。
+STEP_MAX = (300, 200)          # 一格之間最多隔多遠（螢幕像素）
+# ⚠⚠ 邊界改成**固定像素**（由滿版 1536×1024 的比例換算而來）：
+#   比例邊界在小紙上會縮到放不下草書名 —— 實測 640 寬時右邊只剩 112px，
+#   `Lowaltar` 直接被裁掉一半。名字的長度不會因為紙小就變短，所以邊界要是絕對值。
+MARG_PX = dict(l=131, r=269, t=143, b=87)
 # ⚠ 四邊不對稱：草書名往**右**長，所以右邊要留最多；紙的撕邊也會吃掉一圈
 MARG = dict(l=0.085, r=0.175, t=0.140, b=0.085)
 ICON_PX = 52
@@ -37,7 +46,20 @@ NAME_PX = 26
 DOT_R   = 7                               # 紙的四周留白（比例）
 INK   = (62, 38, 22)
 
-def frac_positions(town, nodes=None):
+def sheet_size(town, nodes):
+    """依這一層的格網算出紙的大小：**內容 ＋ 固定像素的邊界**。
+
+    格距夾在 STEP_MAX 以下（小的一層不要被拉開撐滿），邊界是絕對值（名字放得下）。
+    滿版 1536×1024 是上限 —— 格多的那一層照舊擠滿整張紙。"""
+    pos = {k: v for k, v in POS[town].items() if k in nodes}
+    nc = len({c for c, _ in pos.values()}); nr = len({r for _, r in pos.values()})
+    cw = min((nc - 1) * STEP_MAX[0], 1536 - MARG_PX['l'] - MARG_PX['r'])
+    chh = min((nr - 1) * STEP_MAX[1], 1024 - MARG_PX['t'] - MARG_PX['b'])
+    return (int(cw + MARG_PX['l'] + MARG_PX['r']),
+            int(chh + MARG_PX['t'] + MARG_PX['b']))
+
+
+def frac_positions(town, nodes=None, size=None):
     """把 POS 的格網換算成圖上的比例座標。
 
     ⚠ **空的行與列會被壓掉**：POS 裡常有沒放格子的行（層與層之間的間隔），
@@ -47,9 +69,13 @@ def frac_positions(town, nodes=None):
     pos = {k: v for k, v in POS[town].items() if (nodes is None or k in nodes)}
     cs = sorted({c for c, _ in pos.values()}); rs = sorted({r for _, r in pos.values()})
     ci = {c: i for i, c in enumerate(cs)}; ri = {r: i for i, r in enumerate(rs)}
-    sx = (1 - MARG['l'] - MARG['r']) / max(1, len(cs)-1)
-    sy = (1 - MARG['t'] - MARG['b']) / max(1, len(rs)-1)
-    return {k: (MARG['l'] + ci[c]*sx, MARG['t'] + ri[r]*sy) for k, (c, r) in pos.items()}
+    # ⚠ 邊界用**這一張紙的**像素換算（-1647）：紙小的時候比例邊界放不下草書名
+    w_, h_ = size or (1536, 1024)
+    ml, mr = MARG_PX['l']/w_, MARG_PX['r']/w_
+    mt, mb = MARG_PX['t']/h_, MARG_PX['b']/h_
+    sx = (1 - ml - mr) / max(1, len(cs)-1)
+    sy = (1 - mt - mb) / max(1, len(rs)-1)
+    return {k: (ml + ci[c]*sx, mt + ri[r]*sy) for k, (c, r) in pos.items()}
 
 def edges_of(T):
     N = T['nodes']; e = set()
@@ -122,7 +148,9 @@ def main():
         bad = [k for k in only if k not in NALL]
         if bad: print('--only 裡有不存在的格：', bad); sys.exit(1)
     N = {k: NALL[k] for k in only} if only else NALL
-    F = frac_positions(args.town, set(N))        # ⚠ 只吃這一層（見 --only 的註解）
+    global W, H
+    W, H = sheet_size(args.town, set(N))         # ⚠ 紙跟著這一層的內容縮（-1647）
+    F = frac_positions(args.town, set(N), (W, H))   # ⚠ 只吃這一層（見 --only 的註解）
     miss = [k for k in N if k not in F]
     if miss: print('POS 少了：', miss); sys.exit(1)
     EDG = [e for e in edges_of(T) if e[0] in N and e[1] in N]   # 跨層的邊自動不畫
