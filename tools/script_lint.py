@@ -595,7 +595,10 @@ def main():
                         err('%s：沒有這張背景 %s（找 %s）' % (tag, ln['bg'], d))
             if ln.get('cgBack'):
                 # 中景層（ver -870）：一律明確路徑，存在性直接查
-                if not exists(ln['cgBack']):
+                # ⚠ ver -1632：**先去掉 `?v=`**（快取戳記，§5 的 -650）——
+                #   它是給瀏覽器看的，不是路徑的一部分。漏了這一步，任何一張
+                #   同名覆蓋過、跳過版號的中景圖都會被報成「沒有這張圖」。
+                if not exists(ln['cgBack'].split('?')[0]):
                     err('%s：沒有這張中景圖 %s' % (tag, ln['cgBack']))
             if ln.get('cg'):
                 # 插圖也吃時段差分（ver -427）：`005_Kerberos` 可能只有
