@@ -3733,6 +3733,17 @@ function bindInput(){
     const el=e.target.closest && e.target.closest('.kerb-arrow.avail');
     if(!el) return;
     if(!startHold(el)) return;
+    /* ══⚠⚠⚠ **按下去就把指標抓住**（ver -1650，Ray：「整備選單關掉、地圖關掉或某些
+       不明條件下會讓操作區方向鍵點擊無效，要點好幾次才有反應」）══
+       病灶：`pointerup`／`pointercancel` **只綁在 `#storyStage` 上**，而整備頁
+       （`#gearSheet`，z-8450）與買賣單子是掛在 `body` 上的**兄弟層** ——
+       手指在那幾層上放開時舞台**收不到 up** ⇒ `hold` 一直是非空 ⇒
+       `startHold` 開頭那句 `|| hold` 讓**之後每一次按箭頭都直接 return false**，
+       而且畫面上完全正常（沒有任何錯誤訊息）。「要點好幾次」＝點到某一次的 up
+       剛好落在舞台上、把它清掉為止。
+       ⇒ `setPointerCapture`：抓住之後不管手指飄到哪一層，up/cancel 一定回到這裡。
+       ⚠ 這與地圖那一層用同一招（`renderMap` 的 -1449）—— 那裡的理由一模一樣。 */
+    try{ st.setPointerCapture(e.pointerId); }catch(_){}
     e.preventDefault(); e.stopPropagation();
   }, true);
   /* 店舖的入口鈕（ver -430）：點下去開全畫面那張窗。
@@ -3792,6 +3803,13 @@ function bindInput(){
     chatter();
   });
   st.addEventListener('pointercancel', cancel);
+  /* ⚠⚠ **第二道保險**：指標抓取失敗（舊瀏覽器）、或那一層在按住期間被整個移除掉時，
+     up 還是可能回不到舞台。掛在 window 上的這一對是冪等的 —— 舞台那一支先跑
+     （它是子層，bubble 先到），跑完 `hold` 已經是 null，這裡就什麼都不做。
+     ⚠ 不要把舞台那一支搬到 window：它還管「點畫面＝路人單句／交還店鋪入口」，
+       那幾件事只在舞台上成立（同鐵律 8：一個動作一個實作，但**收尾**可以多一道）。 */
+  window.addEventListener('pointerup', cancel);
+  window.addEventListener('pointercancel', cancel);
 
   /* 目的地字格：與羅盤同一套「長按蓄能」，只是回饋畫在字格上（由左往右填）。
      ⚠ 蓄能的時間常數共用 `HOLD_MS` —— 兩個入口的手感要一樣（鐵律 7）。 */

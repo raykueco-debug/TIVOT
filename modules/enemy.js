@@ -666,7 +666,20 @@ const ENTRANCE_KINDS = { harm:1, slay:1, ship:1, aerial:1 };
      那一段戲的台詞（§gk_* 四張卡的註解）。改 kind 會把台詞打臉，
      所以降臨要另外一格開，不能共用 kind。
    ⚠ 能不寫就不寫：kind 仍然是預設判定，這一格只給「分類與演出要分家」的個案用。 */
-function isRise(en){ return !!(en && (ENTRANCE_KINDS[en.kind] || en.riseFx)); }
+/* ══⚠⚠⚠ **一次性的「這一場不降臨」**（ver -1650，Ray：「推棺以後那一隻墓主直接
+   在原地就好，不用再跑降臨」）══
+   走**完整推棺**的那一場，劇情層在門推上去之前已經演過一次降臨（`cgBackRise`），
+   而門一開又降一次就是同一件事演兩遍 —— 而且 -1414 的規格本來就是
+   「**槍棺開的時候就在那裡了**」。
+   ⚠⚠ 做成**一次性**（用完就清）不是卡上的欄位：同一張卡（`tomb_gk1`）在登場戲要
+     「已經站好」、在追擊戰要降臨 —— 那是**這一場**的性質，不是這一隻的性質。
+   ⚠ 由 `main` 在交棒那一刻依 `line.kerbRise` 設；沒設就照 `riseFx`／`kind` 走。 */
+let riseOff = false;
+export function suppressRiseOnce(){ riseOff = true; }
+function isRise(en){
+  if(riseOff){ riseOff=false; return false; }
+  return !!(en && (ENTRANCE_KINDS[en.kind] || en.riseFx));
+}
 function isPurify(){
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
   /* `purgeFx:1`＝卡上的**明寫例外**（ver -874，Ray：「鹿主被消滅走禍魘拉長特效」）

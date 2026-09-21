@@ -2077,10 +2077,15 @@ story.setTownBgm(()=> town.isOpen() ? town.bgmKey() : null);
 /* 腳本那一拍 `map:true` ＝攤開小地圖（ver -1397）——「怎麼攤」住在城鎮那邊。 */
 story.setMapView(on => { try{ return town.showMapForStory(on); }catch(_){ return false; } });
 story.setGateOpened(()=>combat.releaseEnemyRise());   // 降臨等門開（ver -875）
-story.setBattleHandler((battleId, resume)=>{
+story.setBattleHandler((battleId, resume, gateOpts)=>{
   storyResume = resume;
   flightBack = false;   // 劇情/城鎮的插入戰不是飛行頁交棒過來的（同 launchBattle 的理由）
   combat.holdEnemyRise();   // 走門的場次：降臨（含掛圖）押到門全開（ver -875）
+  /* ⚠⚠ **完整推棺的那一場：牠已經站在那裡了**（ver -1650，Ray：「推棺以後那一隻
+     墓主直接在原地就好，不用再跑降臨」）—— 劇情層在門推上去之前已經演過一次
+     `cgBackRise`，門一開再降一次就是同一件事演兩遍（也正是 -1414 的原始規格）。
+     ⚠ 一次性：只罩這一場，同一張卡在追擊戰照舊降臨。 */
+  if(gateOpts && gateOpts.kerbRise) combat.suppressEnemyRise();
   /* 劇情插入戰（ver -375（-893 前用詞））：腳本寫 `{battle:'guild_hunter'}`，查得到 `config.battles`
      就開那一場（單敵、卡上的數值、不能聖徒化／用搭檔技）。
      ⚠ 查不到才退回教學那一場 —— 舊腳本（地宮那一段）寫的就是教學，不能被改掉。

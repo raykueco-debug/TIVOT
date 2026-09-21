@@ -1321,7 +1321,12 @@ export const ENEMIES = {
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer',
+      /* ⚠⚠ **進戰鬥的登場音改成聖徒化那一聲**（ver -1650，Ray：「墓主現在進戰鬥會
+         roar 兩次，把其中一次改成 se_saintinstall」）——
+         劇情層那一拍已經有一聲深沉的獸吼（`cgBackRise` 那一拍的 `se`），
+         卡上這一支再吼一次就是同一件事演兩遍。這一聲改成**聖印的鐘聲**，
+         讀起來是「那東西又被聖印拉起來了」，與牠的名字（聖印失效）對得上。 */
+      entrance:'sfx_saint',
       entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
@@ -1360,7 +1365,12 @@ export const ENEMIES = {
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer',
+      /* ⚠⚠ **進戰鬥的登場音改成聖徒化那一聲**（ver -1650，Ray：「墓主現在進戰鬥會
+         roar 兩次，把其中一次改成 se_saintinstall」）——
+         劇情層那一拍已經有一聲深沉的獸吼（`cgBackRise` 那一拍的 `se`），
+         卡上這一支再吼一次就是同一件事演兩遍。這一聲改成**聖印的鐘聲**，
+         讀起來是「那東西又被聖印拉起來了」，與牠的名字（聖印失效）對得上。 */
+      entrance:'sfx_saint',
       entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
@@ -1395,7 +1405,12 @@ export const ENEMIES = {
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer',
+      /* ⚠⚠ **進戰鬥的登場音改成聖徒化那一聲**（ver -1650，Ray：「墓主現在進戰鬥會
+         roar 兩次，把其中一次改成 se_saintinstall」）——
+         劇情層那一拍已經有一聲深沉的獸吼（`cgBackRise` 那一拍的 `se`），
+         卡上這一支再吼一次就是同一件事演兩遍。這一聲改成**聖印的鐘聲**，
+         讀起來是「那東西又被聖印拉起來了」，與牠的名字（聖印失效）對得上。 */
+      entrance:'sfx_saint',
       entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
@@ -1433,7 +1448,12 @@ export const ENEMIES = {
       attack:20,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_roardeer',
+      /* ⚠⚠ **進戰鬥的登場音改成聖徒化那一聲**（ver -1650，Ray：「墓主現在進戰鬥會
+         roar 兩次，把其中一次改成 se_saintinstall」）——
+         劇情層那一拍已經有一聲深沉的獸吼（`cgBackRise` 那一拍的 `se`），
+         卡上這一支再吼一次就是同一件事演兩遍。這一聲改成**聖印的鐘聲**，
+         讀起來是「那東西又被聖印拉起來了」，與牠的名字（聖印失效）對得上。 */
+      entrance:'sfx_saint',
       entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）

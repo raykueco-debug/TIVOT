@@ -7478,8 +7478,15 @@ export const TOWNS = {
              ⚠ 兩拍前置照既有的寫法（震動＋龍吟＋再震一下）—— `gk_*` 四張卡
                自己帶 `entrance`＋`entranceBlast`，降臨演出由卡上的 `riseFx` 開
                （ver -1615，Ray：「每一次守墓者戰都要有降臨特效」）。 */
-          { speaker:'NARRATION', text:'', shake:true, auto:1000 },
-          { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
+          /* ⚠⚠ **遠吼先響一秒，落石再砸下來**（ver -1650，Ray：「話是這麼說後面播
+             rockimpact 跟 deeproar，deeproar 先播 1 秒」）——
+             `se` 吃 `{n,delay}`（story.js 的 -1413）：先聽到牠在遠處，
+             一秒之後天花板才開始掉。 */
+          { speaker:'NARRATION', text:'', shake:true, auto:1000,
+            se:[{ n:'se_monsterroardeep' }, { n:'se_rockimpact', delay:1000 }] },
+          /* ⚠ **第二次震動加播瓦礫崩落**（ver -1650，Ray 指定）。 */
+          { speaker:'NARRATION', text:'', shake:true, auto:1400,
+            se:['se_enemy_roardeer','se_brickcrush'] },
           { battle:'tomb_gk2' },
         ] },
         /* ══⚠⚠ **追兵帶著走的三段戲**（`chase.scenes`，ver -1616）══════════════════

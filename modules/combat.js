@@ -2596,6 +2596,8 @@ export function warmBattleImage(battleId){
 }
 export function holdEnemyRise(){ enemy.holdRise(); }
 export function releaseEnemyRise(){ enemy.releaseRise(); }
+/* 這一場不降臨（ver -1650）：走完整推棺的那一場，劇情層已經演過降臨了。 */
+export function suppressEnemyRise(){ enemy.suppressRiseOnce(); }
 /* 這一場是連續戰鬥的**中間一場**嗎（＝不是收段的那一場）。
    ⚠ 問的是**卡**不是 `state.battleSession`：Boss 打贏時段落已經被 `endSession()`
      收掉了，拿 state 判會把 Boss 也算成中間場（鐵律 9：判定要看得到擁有者的那個值）。 */
