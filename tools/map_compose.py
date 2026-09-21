@@ -99,6 +99,10 @@ def main():
     ap.add_argument('town'); ap.add_argument('--paper', required=True)
     ap.add_argument('--icons', required=True)
     ap.add_argument('--order', help='圖示表的順序（node id 以逗號分隔）；預設照 POS 的順序')
+    # ⚠ ver -1645：圖示表的格數可調 —— 古墓擴到 61 格之後 6×6(36) 裝不下。
+    #   交件的貼紙表是幾欄幾列就填幾，**順序照 `--order`（預設＝節點的宣告順序）**。
+    ap.add_argument('--cols', type=int, default=6)
+    ap.add_argument('--rows', type=int, default=6)
     ap.add_argument('--dashed', default='', help='要畫成虛線的邊，格式 a-b,c-d（換層用）')
     ap.add_argument('--seed', type=int, default=7)
     args = ap.parse_args()
@@ -111,7 +115,7 @@ def main():
     dashed = {tuple(sorted(p.split('-'))) for p in args.dashed.split(',') if p}
 
     order = args.order.split(',') if args.order else list(N)
-    icons = cut_icons(args.icons, want=len(order))
+    icons = cut_icons(args.icons, cols=args.cols, rows=args.rows, want=len(order))
     paper = Image.open(args.paper).convert('RGBA').resize((W, H), Image.LANCZOS)
 
     rnd = __import__('random').Random(args.seed)
