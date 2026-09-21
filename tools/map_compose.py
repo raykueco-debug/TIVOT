@@ -104,18 +104,37 @@ def main():
     ap.add_argument('--cols', type=int, default=6)
     ap.add_argument('--rows', type=int, default=6)
     ap.add_argument('--dashed', default='', help='要畫成虛線的邊，格式 a-b,c-d（換層用）')
+    # ⚠ ver -1646：**一層一張**（Ray：「一層一張，共三層」）。
+    #   `--only` ＝這一張只畫這幾格；`--suffix` ＝輸出檔名加尾碼（`map_tomb_l1.webp`）。
+    #   ⚠⚠ 版面**每一層各自重排**（`frac_positions` 只吃這一層）：玩家一次只看一層，
+    #     用全圖座標的話每張只佔紙的一小塊、第三層縮在角落（-1646 第一版就是這樣）。
+    #     `frac_positions` 壓掉空行只改「畫在哪」、不改相對順序，所以方向與拓樸不受影響。
+    #   ⚠ `spots` 是跟著同一次算出來寫進 `_spots_<id><suffix>.json` 的 —— 圖與座標
+    #     永遠是同一份（-1145 那條規約），程式端照抄那一份就對。
+    ap.add_argument('--only', default='', help='只畫這幾格（node id 逗號分隔）；預設全畫')
+    ap.add_argument('--suffix', default='', help='輸出檔名的尾碼，例如 _l1')
     ap.add_argument('--seed', type=int, default=7)
     args = ap.parse_args()
 
-    T = load(args.town); N = T['nodes']
-    F = frac_positions(args.town, set(N))
+    T = load(args.town); NALL = T['nodes']
+    only = [k for k in args.only.split(',') if k]
+    if only:
+        bad = [k for k in only if k not in NALL]
+        if bad: print('--only 裡有不存在的格：', bad); sys.exit(1)
+    N = {k: NALL[k] for k in only} if only else NALL
+    F = frac_positions(args.town, set(N))        # ⚠ 只吃這一層（見 --only 的註解）
     miss = [k for k in N if k not in F]
     if miss: print('POS 少了：', miss); sys.exit(1)
-    EDG = edges_of(T)
+    EDG = [e for e in edges_of(T) if e[0] in N and e[1] in N]   # 跨層的邊自動不畫
     dashed = {tuple(sorted(p.split('-'))) for p in args.dashed.split(',') if p}
 
     order = args.order.split(',') if args.order else list(N)
-    icons = cut_icons(args.icons, cols=args.cols, rows=args.rows, want=len(order))
+    order = [k for k in order if k in N] if only else order
+    # ⚠ 圖示表是**全集**那一張，切完之後才照 order 挑 —— 所以 want 用全集的長度
+    allorder = args.order.split(',') if args.order else list(NALL)
+    allicons = cut_icons(args.icons, cols=args.cols, rows=args.rows, want=len(allorder))
+    icmap = dict(zip(allorder, allicons))
+    icons = [icmap.get(k) for k in order]
     paper = Image.open(args.paper).convert('RGBA').resize((W, H), Image.LANCZOS)
 
     rnd = __import__('random').Random(args.seed)
@@ -154,13 +173,14 @@ def main():
         d.text((x+DOT_R+5, y-4), EN[k], font=fnt, fill=INK+(255,))
 
     out = paper.copy(); out.alpha_composite(layer)
-    out.save(os.path.join(ROOT, 'resources', 'map', 'map_%s.webp' % args.town),
+    tag = args.town + args.suffix
+    out.save(os.path.join(ROOT, 'resources', 'map', 'map_%s.webp' % tag),
              quality=92, method=6, lossless=False)
     json.dump({k: [round(F[k][0],4), round(F[k][1],4)] for k in N},
-              open(os.path.join(ROOT,'resources','map','_spots_%s.json'%args.town),'w',encoding='utf-8'),
+              open(os.path.join(ROOT,'resources','map','_spots_%s.json'%tag),'w',encoding='utf-8'),
               ensure_ascii=False, indent=2)
     print('✓ %s：%d 格・%d 邊 → map_%s.webp ＋ _spots_%s.json'
-          % (args.town, len(N), len(EDG), args.town, args.town))
+          % (tag, len(N), len(EDG), tag, tag))
 
 if __name__ == '__main__':
     main()

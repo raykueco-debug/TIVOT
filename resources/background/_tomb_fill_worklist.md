@@ -103,38 +103,58 @@
 
 ---
 
-## ✅ 四、小地圖：**已重出**（ver -1645）
+## ✅ 四、小地圖：**一層一張，共三張**（ver -1646，Ray 定案）
 
-`resources/map/map_tomb.webp` 已經是 **61 格版**，`resources/map/_spots_tomb.json` 同一次算出來（61 筆）。
+> Ray：「一層一張，共三層」
 
-產法（照 §四原本的規約，兩件美術交、其餘工具算）：
+| 檔 | 格數 | 內容 |
+|---|---|---|
+| `resources/map/map_tomb_l1.webp` ＋ `_spots_tomb_l1.json` | **21** | 一層（墓門～表層階梯） |
+| `resources/map/map_tomb_l2.webp` ＋ `_spots_tomb_l2.json` | **33** | 二層（二層梯廳～底層階梯） |
+| `resources/map/map_tomb_l3.webp` ＋ `_spots_tomb_l3.json` | **7** | 三層（三層梯廳／玄室前廊／側墓穴／石棺主室／骨坑／底層祭壇／廢坑道） |
+| `resources/map/map_tomb.webp` ＋ `_spots_tomb.json` | 61 | **全圖版，留著當退路**（程式端還沒切三層之前照舊能跑） |
+
+⚠⚠ **樓層是從拓樸算出來的，不是列名單**：把三條換層的邊
+（`landing2-stair1`／`landing3-stair2`／`adit-gate`）拿掉之後，剩下的連通分量就是三層
+（21／33／7 ＝ 61）。與工單第二節的「樓層」欄一致。
+⚠ `adit`（廢坑道）歸**三層** —— 它是三層通回墓門的捷徑，所以 `adit-gate` 也要當換層邊切掉。
+
+**產法**（美術只交兩樣，其餘工具算）：
 
 | 件 | 來源 |
 |---|---|
 | 空白羊皮紙 | **沿用既有的** `resources/_originals/map/map_tomb_paper.png`（沒有重生） |
-| 61 格圖示表 | 新畫兩張各 8 欄×4 列（32＋29），本機上下疊成 8×8 ＝ `map_tomb_icons61.png` |
+| 61 格圖示表 | 新畫兩張各 8欄×4列（32＋29），本機上下疊成 8×8 ＝ `map_tomb_icons61.png` |
 
-    python3 tools/map_compose.py tomb \
-      --paper resources/_originals/map/map_tomb_paper.png \
-      --icons resources/_originals/map/map_tomb_icons61.png \
-      --cols 8 --rows 8 --order "<第六節那 61 個 id，逗號分隔>" \
-      --dashed "landing2-stair1,landing3-stair2"
+    for n in 1 2 3; do
+      python3 tools/map_compose.py tomb \
+        --paper resources/_originals/map/map_tomb_paper.png \
+        --icons resources/_originals/map/map_tomb_icons61.png \
+        --cols 8 --rows 8 --order "<第六節那 61 個 id>" \
+        --only "<這一層的 id>" --suffix "_l$n"
+    done
 
-⚠ 圖示表**拆成兩張畫**：61 個擠一張會糊（已驗收的舊表是 34 個／6×6，密度差太多）。
-  兩張各約 30 個 ＝ 與已驗收的密度一樣，本機疊起來即可，**不必跟模型盧版面**。
-⚠ 換層那兩條邊畫成虛線（`--dashed`），沿用舊版 34 格那張的慣例。
+⚠ 圖示表**拆成兩張畫**：61 個擠一張會糊（已驗收的舊表是 34 個／6×6）。
+  兩張各約 30 個＝與已驗收的密度一樣，本機疊起來即可，**不必跟模型盧版面**。
+⚠⚠ **版面每一層各自重排**（`--only` 會讓 `frac_positions` 只吃這一層）：玩家一次只看
+  一層，用全圖座標的話每張只佔紙的一小塊、第三層縮在角落（-1646 第一版就是這樣）。
+  壓掉空行只改「畫在哪」、不改相對順序 ⇒ 方向與拓樸不受影響。
+⚠ 跨層的邊**自動不畫**（`--only` 會濾掉），所以三張各自乾淨，不會有斷在紙邊的線。
 
 ---
 
-## ⚠⚠⚠ 五、程式端要接：小地圖有**兩件**
+## ⚠⚠⚠ 五、程式端要接：小地圖改成**三層**
 
-1. **`script/town.js` 的 `map.spots` 整組換掉** —— 照抄 `resources/map/_spots_tomb.json`
-   （61 筆），**一個數字都不要用眼睛估**。舊的那 34 筆全部作廢。
-2. **`map.img` 要掛 `?v=2`** —— `map_tomb.webp` 這次是**同名覆蓋**（§5 的 -650）。
-   ⚠ town.js 那一段的註解自己就寫著這件事：「第一次上線不掛 `?v=`（新增不是同名覆蓋）。
-   日後**同名覆蓋**那張圖時，記得那是 §5『同名覆蓋要加 `?v=`』的情形。」—— 就是現在。
-   不掛的話玩家的小地圖永遠是 34 格版，**而且畫面上沒有任何錯誤訊息**，
-   只會表現成「墨點跟實際走的位置對不上」。
+1. **`script/town.js` 的 `map` 要能吃三張** —— 一層一張圖 ＋ 一組 spots，
+   依玩家**現在站在哪一格**決定顯示哪一層。三層的節點清單就是那三個
+   `_spots_tomb_l*.json` 的 key（21／33／7）。
+2. **spots 一律照抄那三個 JSON** —— 一個數字都不要用眼睛估（-1145：圖上那顆點與
+   那份數字是同一次算出來的）。舊的 34 筆全部作廢。
+3. ⚠ **還沒切三層之前照舊能跑**：`map_tomb.webp`（61 格全圖）與 `_spots_tomb.json` 留著。
+   但那張是**同名覆蓋** ⇒ 若要繼續用它，`map.img` 必須掛 `?v=2`（§5 的 -650）。
+   `map_tomb_l*.webp` 是新檔名，不必掛。
+4. ⚠ 迷霧（`fogOn`）照舊逐格判 —— 換成三層之後每一層只畫自己那幾格，
+   沒走到的照樣蓋霧，邏輯不變。
 
 ---
 
