@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1655';
+export const VERSION = 'ver 2026.09.17-1656';
 
 export const GAME_CONFIG = {
 
@@ -4249,32 +4249,32 @@ export const ASSETS = {
        `enemy.loadEnemyPortrait` 現抓。
      ⚠ 這 28 隻**還沒有任何戰鬥卡或刷怪池指到**（`config.battles`／`wildSpawn`
        一個字沒動）⇒ 現在遇不到，也因此一張都不會被預熱。接進去那一刻兩邊就通了。 */
-  enemy_arch_warden:             "resources/enemy/mon_arch_warden.webp",
-  enemy_sarcoph_crawler:         "resources/enemy/mon_sarcoph_crawler.webp",
-  enemy_slab_creeper:            "resources/enemy/mon_slab_creeper.webp",
-  enemy_kneeling_penitent:       "resources/enemy/mon_kneeling_penitent.webp",
-  enemy_chain_hanged:            "resources/enemy/mon_chain_hanged.webp",
-  enemy_iron_maiden:             "resources/enemy/mon_iron_maiden.webp",
-  enemy_ossuary_rats:            "resources/enemy/mon_ossuary_rats.webp",
-  enemy_ossuary_wheel:           "resources/enemy/mon_ossuary_wheel.webp",
-  enemy_choir_organ:             "resources/enemy/mon_choir_organ.webp",
-  enemy_choir_pale:              "resources/enemy/mon_choir_pale.webp",
-  enemy_bellfounder:             "resources/enemy/mon_bellfounder.webp",
-  enemy_grave_censer:            "resources/enemy/mon_grave_censer.webp",
-  enemy_candelabra_fiend:        "resources/enemy/mon_candelabra_fiend.webp",
-  enemy_reliquary_hand:          "resources/enemy/mon_reliquary_hand.webp",
-  enemy_spiral_veil:             "resources/enemy/mon_spiral_veil.webp",
-  enemy_shroud_widow:            "resources/enemy/mon_shroud_widow.webp",
-  enemy_crypt_centipede:         "resources/enemy/mon_crypt_centipede.webp",
-  enemy_crypt_hound:             "resources/enemy/mon_crypt_hound.webp",
-  enemy_twin_skull_hound:        "resources/enemy/mon_twin_skull_hound.webp",
-  enemy_vault_bat:               "resources/enemy/mon_vault_bat.webp",
-  enemy_skull_cairn:             "resources/enemy/mon_skull_cairn.webp",
+  enemy_arch_warden:             "resources/enemy/mon_arch_warden.webp?v=2",
+  enemy_sarcoph_crawler:         "resources/enemy/mon_sarcoph_crawler.webp?v=2",
+  enemy_slab_creeper:            "resources/enemy/mon_slab_creeper.webp?v=2",
+  enemy_kneeling_penitent:       "resources/enemy/mon_kneeling_penitent.webp?v=2",
+  enemy_chain_hanged:            "resources/enemy/mon_chain_hanged.webp?v=2",
+  enemy_iron_maiden:             "resources/enemy/mon_iron_maiden.webp?v=2",
+  enemy_ossuary_rats:            "resources/enemy/mon_ossuary_rats.webp?v=2",
+  enemy_ossuary_wheel:           "resources/enemy/mon_ossuary_wheel.webp?v=2",
+  enemy_choir_organ:             "resources/enemy/mon_choir_organ.webp?v=2",
+  enemy_choir_pale:              "resources/enemy/mon_choir_pale.webp?v=2",
+  enemy_bellfounder:             "resources/enemy/mon_bellfounder.webp?v=2",
+  enemy_grave_censer:            "resources/enemy/mon_grave_censer.webp?v=2",
+  enemy_candelabra_fiend:        "resources/enemy/mon_candelabra_fiend.webp?v=2",
+  enemy_reliquary_hand:          "resources/enemy/mon_reliquary_hand.webp?v=2",
+  enemy_spiral_veil:             "resources/enemy/mon_spiral_veil.webp?v=2",
+  enemy_shroud_widow:            "resources/enemy/mon_shroud_widow.webp?v=2",
+  enemy_crypt_centipede:         "resources/enemy/mon_crypt_centipede.webp?v=2",
+  enemy_crypt_hound:             "resources/enemy/mon_crypt_hound.webp?v=2",
+  enemy_twin_skull_hound:        "resources/enemy/mon_twin_skull_hound.webp?v=2",
+  enemy_vault_bat:               "resources/enemy/mon_vault_bat.webp?v=2",
+  enemy_skull_cairn:             "resources/enemy/mon_skull_cairn.webp?v=2",
   enemy_pall_bearers:            "resources/enemy/mon_pall_bearers.webp",
-  enemy_tomb_bear:               "resources/enemy/mon_tomb_bear.webp",
-  enemy_pallid_stag:             "resources/enemy/mon_pallid_stag.webp",
-  enemy_gorge_toad:              "resources/enemy/mon_gorge_toad.webp",
-  enemy_stone_adder:             "resources/enemy/mon_stone_adder.webp",
+  enemy_tomb_bear:               "resources/enemy/mon_tomb_bear.webp?v=2",
+  enemy_pallid_stag:             "resources/enemy/mon_pallid_stag.webp?v=2",
+  enemy_gorge_toad:              "resources/enemy/mon_gorge_toad.webp?v=2",
+  enemy_stone_adder:             "resources/enemy/mon_stone_adder.webp?v=2",
   enemy_dragon_throne_awakened:  "resources/enemy/mon_dragon_throne_awakened.webp",
   enemy_dragon_throne_roar:      "resources/enemy/mon_dragon_throne_roar.webp",
 
