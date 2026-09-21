@@ -476,13 +476,15 @@ export function resolveThreat(th){
            它不認識那個陣列，而且這一支正跑在 `resolveThreat` 裡面。
            ⚠ 安全性：這一拍的 `th` 在函式開頭就 `removeThreat` 掉了（見上面），
              所以現在清的是**其他**還掛在畫面上的圈。
-         ⚠⚠ **連還沒生出來的那一波也取消**（`clearWaveTimers`）：一波三顆的齊射
-           （`assault:{count,gap}`）打中第一顆就該整串被打斷 —— 只清畫面上的話，
-           剩下兩顆照樣會冒出來，那讀起來不是「清掉所有攻擊圈」。
+         ⚠⚠ **只清「畫面上那幾顆」**（ver -1660，Ray 定案）——**還沒生出來的那一波
+           不取消**（`clearWaveTimers` 不叫）：一波三顆的齊射打中第一顆之後，
+           剩下兩顆照舊會冒出來。
+           ⚠ -1659 我一度連那一波的計時器一起清掉（理由是「齊射被打斷才叫清掉
+             所有」）—— 那是**我把規則放大**，Ray 要的是清當下畫面上的。
+             留著這一行註解，不要再「順手」加回去。
          ⚠ 震動的實作只有 `enemy.slamEnemy()` 一支（份量在 CSS 的 `#enemyImg.slam`）。 */
       if(w && w.counterWipe){
         if(api.slamEnemy) api.slamEnemy();
-        clearWaveTimers();
         clearThreat();
       }
     }else boltFloat();
