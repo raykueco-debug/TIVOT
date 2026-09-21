@@ -2766,11 +2766,36 @@ function tmReset(){ tmZoom=1; tmPanX=0; tmPanY=0; tmApply(); }
      日後再多一個也問這一支 —— 不要在呼叫端自己再除一次。
    ⚠ 沒有地圖的城回 1（＝當成走完了）：那時「探索率」這個概念本來就不成立，
      而回 0 會讓遭遇骰永遠擲不中。 */
-function exploreRate(){
+/* ══⚠⚠⚠ **小地圖可以是好幾張紙**（`map.sheets`，ver -1649，Ray：「一層一張，共三層」）══
+   ⚠⚠ **挑哪一張只有這一支在算**（鐵律 7/8）：`renderMap`／`fogShroud`／探索率
+     都問它。散在呼叫端各判一次的話，日後多一張就會有人漏掉。
+   ⚠ 舊寫法（單張 `img`＋`spots`）**照舊吃得到** —— 其他 12 座城都還是單張，
+     這一支把它包成「只有一張的 sheets」，下游一視同仁。 */
+function mapSheets(){
   const T=TOWNS[townId], M=T && T.map;
-  const ids=(M && M.spots) ? Object.keys(M.spots).filter(id=>T.nodes[id]) : [];
-  if(!ids.length) return 1;
-  return ids.filter(seenNode).length / ids.length;
+  if(!M) return [];
+  if(Array.isArray(M.sheets)) return M.sheets.filter(x=>x && x.img);
+  return M.img ? [{ img:M.img, spots:M.spots||{} }] : [];
+}
+/* 現在該看哪一張：**裝得下你現在那一格**的那一張（由上往下取第一個）。
+   ⚠ 找不到（讀檔落在沒有畫進圖的格、或還沒進城）就回第一張 ——
+     回 null 的話地圖會變成「這一帶還沒有留下地圖」，那是另一件事的訊息。 */
+function mapSheet(){
+  const ss=mapSheets(); if(!ss.length) return null;
+  for(const sh of ss) if(sh.spots && sh.spots[nodeId]) return sh;
+  return ss[0];
+}
+function exploreRate(){
+  const T=TOWNS[townId]; if(!T) return 1;
+  /* ⚠⚠ 分母是**所有紙的聯集**不是當下那一張：探索率講的是「這張**圖**我走過幾格」
+     （小地圖上那一行、以及開圖前的遭遇骰都讀它）。
+     按當下那一張算的話，同一座圖在不同樓層會顯示不同的百分比，而那不是同一個問題。
+     ⚠ 霧是另一回事 —— 那**按當下那一張**算（見 renderMap）。 */
+  const ids=new Set();
+  for(const sh of mapSheets()) for(const id in (sh.spots||{})) if(T.nodes[id]) ids.add(id);
+  if(!ids.size) return 1;
+  let n=0; ids.forEach(id=>{ if(seenNode(id)) n++; });
+  return n / ids.size;
 }
 function mapFlip(){ try{ story.playSe('se_ui_pageflip'); }catch(_){} }
 function mapClose(){
@@ -2879,6 +2904,12 @@ function renderMap(){
      ⚠ 走路人單句那一套（`say`），不是另做一個面板 —— 它就是一句話。
      ⚠ 名字欄空著＝旁白（主角自己的念頭），同旅店「現在不是睡覺的時候。」。 */
   if(!M){ story.flashLine('這一帶還沒有留下地圖。', ''); chatterOn=true; return; }
+  /* ══⚠⚠ **這一次要攤開哪一張紙**（ver -1649）══ 一層一張的圖（古墓）由
+     `mapSheet()` 挑「裝得下你現在那一格」的那一張；單張的城它回那唯一一張。
+     ⚠ 下面**一律讀 `SH`**（`SH.img` / `SH.spots`），不要再讀 `M.img` / `M.spots`
+       —— 那兩個在多張的圖上根本不存在（鐵律 7：挑哪一張只有一個計算點）。 */
+  const SH=mapSheet();
+  if(!SH){ story.flashLine('這一帶還沒有留下地圖。', ''); chatterOn=true; return; }
   const st=story.stageEl(); if(!st) return;
   let v=document.getElementById('townMapView');
   if(!v){
@@ -2939,7 +2970,7 @@ function renderMap(){
        大城市在資料上明寫 `mist:0`。
      ⚠⚠ 沒走到的**不是不畫，是蓋一團霧**（-913 改）：整格不畫的話玩家讀到的是
        「那裡沒有東西」，蓋霧才讀得出「那裡有東西、我還沒去」。 */
-  const ids=Object.keys(M.spots||{}).filter(id=>T.nodes[id]);
+  const ids=Object.keys(SH.spots||{}).filter(id=>T.nodes[id]);
   /* ══⚠⚠ **全部踩過了就把霧整片撤掉**（ver -1393，Ray：「所有點都踩到以後就可以
        把圖霧撤了」）══
      一格一格化開之後，最後會剩下**節點之間那些沒有人蓋到的紙面**還黑著 ——
@@ -2959,10 +2990,10 @@ function renderMap(){
   const pct   = Math.round(exploreRate()*100);
   const fog = fogOn() && seenN < ids.length;
   v.innerHTML='<div class="tm-frame">'
-    + '<img class="tm-img" src="'+M.img+'" alt="">'
-    + (fog ? fogShroud(M, ids) : '')
+    + '<img class="tm-img" src="'+SH.img+'" alt="">'
+    + (fog ? fogShroud(SH, ids) : '')
     + ids.map(id=>{
-        const p=M.spots[id];
+        const p=SH.spots[id];
         const pos='left:'+(p[0]*100).toFixed(1)+'%;top:'+(p[1]*100).toFixed(1)+'%';
         /* ══⚠⚠⚠ **王座徘徊者的紅點**（ver -1390，Ray：「要有一個發光的紅點」）══
            只有**第四戰之後**才亮（Ray：「四戰前就是瞎找」）—— 那一刻牠已經被逼進
@@ -3060,7 +3091,7 @@ function renderMap(){
                     /* ⚠ 量字**要在比例定了之後**：框的寬高還沒定，`offsetLeft` 全是 0，
                        量出來的間距會是 0 ⇒ 需要的倍率變成無限大（名字永遠不出現）。 */
                     tmMeasureNames(); tmApply(); };
-    const gone=()=>{ console.info('[town] 小地圖載不到：', M.img);
+    const gone=()=>{ console.info('[town] 小地圖載不到：', SH.img);
                      mapClose(); story.flashLine('這一帶還沒有留下地圖。', ''); chatterOn=true; };
     if(im){ if(im.complete && im.naturalWidth) fit();
             else { im.addEventListener('load', fit, { once:true });
