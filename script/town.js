@@ -7744,9 +7744,23 @@ export const TOWNS = {
         exits:{ up:'masonhall' } },
       cryptwalk:  { bg:'tomb_corr2', bgPending:'tomb_cryptwalk',
                     name:'伊甸古墓　墓道', noTime:true,
-        exits:{ up:'ashpit', down:'stair2' } },
+        exits:{ up:'ashpit', down:'deepwalk' } },
+      /* ══ ver -1642：**墓道加深，而且要轉彎才到得了底層階梯**（Ray：「墓道再深
+         一點，並在踩到底層階梯前再給岔路，要轉彎才能到底層階梯，不要讓玩家
+         一直線就走得到」）══════════════════════════════════════════════════
+         灰坑→墓道→墓道深處→十字墓窖（岔口）→**右**轉才是第二道階梯；
+         往左是塌陷的階梯 —— 看起來像階梯的死路（那正是「試錯成本」）。 */
+      deepwalk:   { bg:'tomb_corr2', bgPending:'tomb_deepwalk',
+                    name:'伊甸古墓　墓道深處', noTime:true,
+        exits:{ up:'cryptwalk', down:'crossvault' } },
+      crossvault: { bg:'tomb_crossing', bgPending:'tomb_crossvault',
+                    name:'伊甸古墓　十字墓窖', noTime:true,
+        exits:{ up:'deepwalk', left:'falsestair', right:'stair2' } },
+      falsestair: { bg:'tomb_stair2', bgPending:'tomb_falsestair',
+                    name:'伊甸古墓　塌陷的階梯', noTime:true,
+        exits:{ right:'crossvault' } },
       stair2:     { bg:'tomb_stair2', name:'伊甸古墓　第二道階梯', noTime:true,
-        exits:{ up:'cryptwalk', down:'landing3' } },
+        exits:{ left:'crossvault', down:'landing3' } },
       /* ⚠⚠ **安全點之二**（ver -1574，Ray 指定）。 */
       landing3:   { bg:'tomb_landing3', name:'伊甸古墓　三層梯廳', noTime:true,
         exits:{ up:'stair2', down:'gallery3' }, rest:true, noWild:true },
