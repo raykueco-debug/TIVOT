@@ -1443,7 +1443,11 @@ bindBtn('flightBtn', ()=>startChapter(prog.FLIGHT_TEST));
      這一顆整筆照跳。要改測別的地方就只改那一筆。 */
 /* RUSH（ver -1584）取代「腳本測試」那顆鈕 —— 見上面 startRush。
    ⚠ 它照樣落在首頁那條白名單之外 ⇒ `body.testmode` 限定（§6.9）。 */
-bindBtn('rushBtn', ()=>{ hideHome('rush'); startRush(); });
+/* ⚠ **不要在這裡先 `hideHome`**（ver -1662）：`combat.startGame()` 自己會收
+   （`hideHome('startGame')`，而且是在戰鬥真的擺好之後）。先收的話那一格露出來的是
+   底下的 `#app` ＝ 上一場的殘盤 —— §6.10 -576 那條「在新的一頁真的蓋上去之前，
+   不可以先把舊的那一層收掉」，守望本來就每次都印一行 warn 在講這件事。 */
+bindBtn('rushBtn', ()=>{ startRush(); });
 /* 巡場（ver -1396）：同一個落點、沒有怪、劇情不抓人 —— 說明在 `prog.tourSpec`。 */
 /* ══⚠⚠ 巡場（ver -1396；-1410 Ray：「巡場加入選擇探索地圖名單，選擇以後選
    是否播放劇情」）══ 兩步：選圖 → 選要不要演劇情。
@@ -1826,6 +1830,20 @@ function rushNext(){
   RUSH_TIERS.forEach(t=>{ const b=B['rush_'+t.toLowerCase()]; if(b) b.sessionEnd=false; });
   const id = 'rush_' + RUSH_TIERS[rushAt].toLowerCase();
   if(last && B[id]) B[id].sessionEnd = true;
+  /* ══⚠⚠⚠ **進下一場之前一定要把劇情層收掉**（ver -1662，Ray：「rush 點下去就升棺」
+     「打完第一隻以後不出第二隻」）══════════════════════════════════════════
+     中間場打贏走的是 `combat.win` 的 `midSession` 分支 → `story.playKerberosShut()`
+     （原地閉棺），而那一支第一件事就是 **`#storyStage.classList.add('on')`** ——
+     它要把劇情層打開當「控制板」，因為城鎮那條路正是要回到那張控制板。
+     **rush 回不到任何地方**，於是那一層就一直開著；而 `#storyStage.on` 時
+     `#app` 整層 `visibility:hidden`（鐵律 10）⇒ **下一場其實有開打，
+     只是打在看不見的地方**，畫面上只剩那具槍棺。
+     ⚠⚠ 這是「借了別人的回程」漏掉收尾的典型：城鎮那一條由 `line.battle` 的
+       `opened()` 負責 `close({keepBgm:true})`（見 story.js），而 rush 不經過那一拍。
+     ⚠ `keepBgm` ＝別把曲子掐掉，下一場馬上要用。
+     ⚠ 冪等：沒開著時 `close()` 等於什麼都不做，所以第一場也照叫（鐵律 8：
+       收在唯一開打的那一處，不要只補在接力那一支）。 */
+  story.close({ keepBgm:true });
   combat.startScriptBattle(id, { story:false });
   return true;
 }
