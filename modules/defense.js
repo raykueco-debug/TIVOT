@@ -339,6 +339,38 @@ export function clearThreat(){
   $('grid').classList.remove('alert','hot');
   stopThreatTick();
 }
+/* ══⚠⚠⚠ **放光（光砲）那一段：清場、取消整波、光退了才從頭算下一次攻擊**
+   （ver -1666，Ray：「光砲應該發動以後清掉所有攻擊圈啊」「我覺得是判定時間問題，
+   光砲從命中到特效跑完多久？**應該從特效跑完開始重算攻擊**」）══════════════
+
+   ⚠⚠⚠ **-1449 只清了「當下畫面上那幾顆」，所以看起來像沒清**：
+     王座徘徊者（第四型態）的 `ult` 門檻是 `hp:100` ＝**永遠成立** ⇒ 牠每一次攻擊
+     走的都是 `spawnWave(4, 1000)`（四顆一波、每顆隔一秒）。而**一波裡後面那幾顆
+     是 `waveTimers` 事先排好的**，它們只問 `assaultSuppressed()`、**不看
+     `enemyAtkSuppressUntil`** ⇒ 光還蓋著（2.9 秒）它們照樣一顆一顆冒出來，
+     整個埋在全螢幕白光底下：玩家看不到，然後莫名其妙挨打。
+     實測：手動把窗口押住 6 秒，圈照樣每秒長一顆。
+
+   三件事一起做，缺一個都還是會漏：
+     ① `clearWaveTimers()` —— **這一波還沒出的那幾顆整個取消**（不是延後：
+        延後等於光一退全部一起爆出來，比照樣掉圈更糟，同 -1019 的判斷）
+     ② `clearThreat()`     —— 畫面上已經亮著的那幾顆
+     ③ 光退了**才重新開始算**下一次攻擊（Ray 的原話）—— 不是「窗口一到就打」
+
+   ⚠ 計時器借 `state.assaultTimer`（就是排程本來用的那一格）⇒ `stopAll()`／
+     `resetEnemyTimers()` 收得掉它，不會變成沒有人擁有的 setTimeout。
+   ⚠ **戰鬥中才重排**（`live`）：劇情裡放光（`story` 的 `playFx`）本來就沒有排程，
+     憑空 `scheduleAssault()` 會在沒有戰鬥的畫面上生出攻擊圈。
+   ⚠ 窗口只延不縮（`Math.max`）：別把別人（cut-in／清盤緩衝）押著的縮短了。 */
+export function holdAssaultFor(ms){
+  const live = !!state.assaultTimer;
+  clearWaveTimers();                                   // ①
+  clearThreat();                                       // ②
+  state.enemyAtkSuppressUntil = Math.max(state.enemyAtkSuppressUntil||0, Date.now()+(ms|0));
+  if(!live) return;
+  clearTimeout(state.assaultTimer);
+  state.assaultTimer = setTimeout(()=>scheduleAssault(), ms|0);   // ③
+}
 /* 反擊硬直（ver -495，Ray：「被反擊時延時歸零；預設為 1，0 的話就算被反擊
    延時計時也不會歸零」）。「被反擊」＝`weaponCounter` 真的開火的那兩個分支
    （Counter 帶、散彈的 Perfect 改傷帶）—— 免傷不開火的 Perfect 不算。

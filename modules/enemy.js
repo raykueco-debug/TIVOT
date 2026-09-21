@@ -95,7 +95,9 @@ function spawnFxNamed(key, fx){
        ⚠ 與 `bullet`（玻璃碎裂）刻意不同：那一隻獵人是拿槍托招呼你，不是開槍。 */
     case 'blunt': spawnBlunt(fx.scale); break;
     case 'sakura':spawnSakura(); break;
-    case 'holyburst':spawnHolyBurst(); break;   // 王座徘徊者的放光（ver -1351）
+    /* 王座徘徊者的放光（ver -1351）。⚠ **冷卻中就退回三爪**（ver -1666）：
+       那一發照樣打中、照樣扣血，只是不再放光 —— 打中卻什麼都不演比放光太多還糟。 */
+    case 'holyburst': if(!spawnHolyBurst(fx)) triggerClaw(); break;
     /* ⚠ 名字打錯時才走到這裡（`HITFX` 沒有它、也不是上面任何一個 base）。
        ⚠ 留一行 console：靜靜變成爪就是 -1455 那個查了很久的 bug。 */
     default:
@@ -212,8 +214,18 @@ export function stopSakura(){
 const HOLY_GROW_MS = 2500;    // 與 CSS 的 transform transition 同一個數字（＝首頁那一顆）
 const HOLY_LIFE_MS = 2900;    // 綻放 2500 ＋ 快速淡出 400
 let holyFx=null, holySe=null;
-export function spawnHolyBurst(){
-  if(holyFx) return;                       // 同一發不疊第二層（同櫻花那一支）
+/* ══⚠⚠ **放光的冷卻**（ver -1666，Ray：「怎麼沒 CD 啊」）══
+   秒數在資料上（`config.HITFX.holyburst.cdSec`，卡上可覆寫，鐵律 1）——
+   這裡只記「上一發是什麼時候」。
+   ⚠ **換敵就歸零**（`stopHolyBurst`）：冷卻是「這一隻剛放過」，不是全域節流。 */
+let holyAt=0;
+/* 回傳 **true＝真的放了**。呼叫端據此決定要不要退回三爪（冷卻中／已經有一發在演）。 */
+export function spawnHolyBurst(fx){
+  if(holyFx) return false;                 // 同一發不疊第二層（同櫻花那一支）
+  const cdMs = Math.max(0, (((fx && fx.cdSec!=null) ? fx.cdSec
+                            : ((HITFX.holyburst||{}).cdSec||0)) * 1000) | 0);
+  if(cdMs && (Date.now() - holyAt) < cdMs) return false;
+  holyAt = Date.now();
   const img=$('enemyImg');
   const card=(GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{};
   const bf=card.beamFrom||{ x:0.5, y:0.25 };
@@ -248,20 +260,25 @@ export function spawnHolyBurst(){
   { const app=$('app');
     if(app){ app.classList.remove('beamshake'); void app.offsetWidth; app.classList.add('beamshake');
       setTimeout(()=>app.classList.remove('beamshake'), 400); } }
-  /* ⚠⚠⚠ **發動就清空攻擊圈**（ver -1449，Ray：「戰鬥中一旦發動就清空攻擊圈」）——
-     那一圈光蓋滿整個畫面（連盤面一起），底下還亮著的紅點玩家根本看不見，
-     留著等於「看不到卻還在扣血」。
-     ⚠ 走 `api.clearThreat`（＝`defense.clearThreat`，由 combat 轉交，鐵律 8）——
-       enemy 不 import defense。
-     ⚠ 這一支**只在戰鬥中有東西可清**：劇情裡放光時 `state.threats` 本來就是空的。 */
-  if(api.clearThreat){ try{ api.clearThreat(); }catch(_){} }
+  /* ══⚠⚠⚠ **發動＝清場，而且光退了才重新開始算攻擊**（ver -1449 清圈；
+     -1666 補齊，Ray：「光砲應該發動以後清掉所有攻擊圈啊」「應該從特效跑完
+     開始重算攻擊」）══
+     那一圈光蓋滿整個畫面（連盤面一起），底下的紅點玩家根本看不見 ——
+     留著等於「看不到卻還在扣血」。三件事（清畫面上的／取消這一波還沒出的／
+     光退了才重排）**全部在 `defense.holdAssaultFor` 一支**（它才擁有 threats
+     與排程，鐵律 7/8），這裡只把「光要亮多久」告訴它。
+     ⚠ 長度就是這一發的壽命（`HOLY_LIFE_MS` ＝ 2500 綻放 ＋ 400 淡出）。
+     ⚠ 劇情裡放光（`playFx`）時那一支自己會判斷「沒有排程就不重排」。 */
+  if(api.holdAssault){ try{ api.holdAssault(HOLY_LIFE_MS); }catch(_){} }
   /* 音效（ver -1449，Ray 指定 `se_enemy_holyburst`；-1351~-1448 是 `em_firebeam`）。
      ⚠ 走 `playCue` 的把手：它有頭有尾，換型態／換敵時要收得掉（見 stopHolyBurst）。 */
   const src=asset('se_enemy_holyburst') || asset('em_firebeam');
   if(src){ try{ holySe = SFX.playCue(src, sfxGain(src)); }catch(_){ holySe=null; } }
+  return true;
 }
 /* 收乾淨：換敵／離場（§6.5.4 的檢查表：新增任何蓋在畫面上的層，先回答「誰收它」）。 */
 export function stopHolyBurst(){
+  holyAt=0;                                // 冷卻是「這一隻剛放過」：換敵／離場就歸零
   if(holyFx){ try{ holyFx.remove(); }catch(_){} holyFx=null; }
   if(holySe){ try{ holySe.stop(200); }catch(_){} holySe=null; }
   { const app=$('app'); if(app) app.classList.remove('beamshake'); }

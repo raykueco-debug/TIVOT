@@ -260,8 +260,11 @@ export function setup(){
   /* ⚠ `screenShake` 給「降臨」的著地那一拍用（ver -640）——
      震動的實作只有 combat 這一支（鐵律 8），enemy 不自己加 class。 */
   enemy.init({ startIntruderFight, updateBars, screenShake, roarBlast,
-    /* 放光發動就清空攻擊圈（ver -1449）：實作在 defense（鐵律 8），這裡只轉交。 */
-    clearThreat: defense.clearThreat,
+    /* ══ 放光（光砲）那一段的整套處理（ver -1449 清圈；-1666 補齊）══
+       清畫面上的圈 ＋ 取消這一波還沒出的 ＋ 光退了才從頭算下一次攻擊 ——
+       **三件事在 defense 那一支裡**（它才擁有 threats 與排程，鐵律 7/8），
+       這裡只轉交；enemy 不 import defense、也不直接寫共用狀態。 */
+    holdAssault: defense.holdAssaultFor,
     /* 換了一隻怪 → 明晰之夢重新上膛（ver -693，Ray：「不算場，每隻怪都可以觸發一次」）。
        ⚠ 掛在 `setEnemy` 是因為那是**「換了一隻怪」的唯一時刻**（開場、連戰換敵、
          Boss 亂入都經過它）—— 在別的地方各補一次一定會漏（鐵律 8）。 */

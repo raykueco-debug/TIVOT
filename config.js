@@ -37,7 +37,14 @@ export const HITFX = {
   /* 放光（ver -1351，王座徘徊者）。⚠ **刻意沒有 `se`**：那一支 6.7 秒、有頭有尾，
      由 `enemy.spawnHolyBurst` 用 `playCue` 的把手播（收得掉）—— 掛在這裡的話
      combat 會直接播到底，換敵／離場都停不下來（同 `HITFX.sakura` 的理由）。 */
-  holyburst:{ base:'holyburst' },
+  /* ⚠⚠⚠ **`cdSec` ＝放光的冷卻**（ver -1666，Ray：「怎麼沒 CD 啊」）——
+     它是這一隻的**主動攻擊特效**（`hitFx.assault`），而那隻龍每 3~5 秒攻擊一次
+     ⇒ 沒有冷卻的話 2.9 秒的全螢幕白光幾乎連成一片，玩家什麼都看不到。
+     ⚠ **冷卻中那一發照樣打中、照樣扣血**，只是改放三爪（見 `enemy.spawnHolyBurst`
+       的回傳值與 `spawnFxNamed` 的退路）—— 打中卻什麼都不演比放光太多還糟。
+     ⚠ 逐怪要不同就在卡上寫物件（`hitFx:{ assault:{ type:'holyburst', cdSec:20 } }`）：
+       卡上寫的優先、這張表當底（同 `claw` 的 `count`）。 */
+  holyburst:{ base:'holyburst', cdSec:12 },
   /* 櫻花狂亂（ver -899，鹿主）：⚠⚠ **刻意沒有 `se`** —— 它的聲音是「跟花瓣一起播
      兩秒再淡出」的**演出**，長度只有 `enemy.spawnSakura` 知道（走 `SFX.playCue`
      的把手）。寫在這裡會被 combat 當一次性受擊音直接放到底，變成兩份聲音（鐵律 7）。 */
@@ -69,7 +76,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1665';
+export const VERSION = 'ver 2026.09.22-1667';
 
 export const GAME_CONFIG = {
 
