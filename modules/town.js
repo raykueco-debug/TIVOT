@@ -21,7 +21,6 @@ import * as gear from './gear.js';               // 戰前強制整備（ver -83
 import { SPEAKERS, faceStyle } from '../script/speakers.js';
 import { SFX } from '../audio.js';
 import { state, setPickedPartner } from '../state.js';
-import { bgFolder } from '../script/bg_index.js';   // 背景的區域資料夾（純查表，無相依，同 story.js）：townBgDirs 用
 /* ⚠ `state` 只讀：`battleSession`／`overkillClean`（擁有者是 combat，見鐵律 3.1）。
    `setPickedPartner` 是 §3.6 指定的**唯一寫入管道** —— 出城要把約會前那一位放回去，
    見 `restoreTownPartner`。 */
@@ -5241,30 +5240,6 @@ export function innNodeOf(town){
   const T=TOWNS[town||townId]; if(!T) return null;
   for(const k of Object.keys(T.nodes)) if(T.nodes[k].inn) return k;
   return null;
-}
-/* ══⚠⚠ **哪些背景資料夾屬於「城鎮」**（ver -1663，RUSH 的隨機背景要排除它們）══
-   Ray：「RUSH 背景隨機但不要城鎮」。
-   ⚠⚠ **不列名單，由資料推**（鐵律 7）：「城鎮」的判定只有 `innNodeOf` 一支
-     （§0.5：有旅店的地方算城鎮，含索菈娜家）—— 逐張城鎮圖掃它每一格的 `bg`，
-     用 `bgFolder()` 換成資料夾。新開一座城**自動**被排除，不必回來改這裡。
-   ⚠ 重建版（`rebuild.bg`）與分店（`dining.scenes`）的基底名也一起掃：
-     它們與節點的 `bg` 落在同一個資料夾，漏掉不影響結果，但掃了才不必去想這件事。
-   ⚠ 只算一次（那張表是常數）。 */
-let _townDirs=null;
-export function townBgDirs(){
-  if(_townDirs) return _townDirs;
-  const dirs=new Set();
-  const put=b=>{ if(typeof b==='string' && b) dirs.add(bgFolder(b).replace(/\/$/,'')); };
-  for(const id in TOWNS){
-    if(!innNodeOf(id)) continue;                       // 沒有旅店＝不是城鎮（§0.5）
-    const T=TOWNS[id]||{};
-    for(const k in (T.nodes||{})) put((T.nodes[k]||{}).bg);
-    for(const k in ((T.rebuild||{}).bg||{})) put(T.rebuild.bg[k]);
-    for(const k in ((T.dining||{}).scenes||{})) put(((T.dining.scenes[k])||{}).bg);
-  }
-  dirs.delete('');                                     // 根目錄（查不到的那一族）不算城鎮
-  _townDirs=dirs;
-  return _townDirs;
 }
 /* ══ 出航：把城鎮的介面收起來，但**不關掉城鎮**（ver -437）══════════════
    Ray：「飛行畫面閉棺時下方出現城鎮的移動選項…飛行畫面城鎮的時間地點殘留。」

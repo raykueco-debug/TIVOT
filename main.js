@@ -1817,28 +1817,40 @@ function rushHasFoe(t){
   return Object.keys(E).some(k => { const c = E[k] || {};
     return c.tier === t && !!c.atype && c.kind !== 'target' && !c.timeAttack; });
 }
-/* ══⚠⚠ **RUSH 的背景：全庫隨機，但不要城鎮**（ver -1663，Ray）══════════════
-   ⚠ 「哪些是城鎮」問 `town.townBgDirs()`（由資料推，§0.5 有旅店的才算，鐵律 7）——
-     這裡一個城名都不寫死，新開一座城自動被排除。
-   ⚠ 名單本身是 `script/bg_index.js`（`py tools/bg_index.py` 掃出來的**事實**）——
-     所以「有哪些背景」也不是這裡維護的。
-   ⚠ 濾掉底線開頭的（`_canyon_map` 那一族是地圖／工具圖，不是場景）。
+/* ══⚠⚠ **RUSH 的背景：隨機，但城鎮一張都不准**（ver -1663；-1665 改成白名單）══
+   有哪些背景是 `script/bg_index.js`（`py tools/bg_index.py` 掃出來的**事實**）；
+   **哪幾個資料夾可以抽**寫在 `config.rush.bgDirs`（鐵律 1）—— 說明在那裡。
+   ⚠⚠ -1663 那一版是「算出哪些是城鎮再排除」，而那個推導壞了（節點的 `bg` 是
+     不帶時段的基底名，索引裡是帶時段的檔名 ⇒ 查不到 ⇒ 帝都／東泊／夏爾村整組
+     沒被排除，槍店背景就漏進來了）。**白名單沒有那個失敗模式。**
    ⚠ 只算一次；抽不到東西就回 null（`setBattleBg(null)` ＝照舊用敵人卡上的 `bg`）。 */
 let rushBgPool=null;
+const rushCfg = ()=> (GAME_CONFIG.rush||{});
 function rushBgList(){
   if(rushBgPool) return rushBgPool;
-  let skip;
-  try{ skip = town.townBgDirs(); }catch(e){ console.warn('[rush] townBgDirs', e); skip = new Set(); }
-  rushBgPool = Object.keys(BG_INDEX).filter(n => n[0]!=='_' && !skip.has(BG_INDEX[n]));
-  console.info('[rush] 隨機背景池 %d 張（排除城鎮資料夾：%s）', rushBgPool.length, [...skip].join('／'));
+  /* ⚠⚠ **白名單**（ver -1665，見 `config.rush.bgDirs` 的說明）：只從點名的那幾個
+     資料夾抽 —— 城鎮的一個都沒點名，所以新開一座城也漏不進來。
+     ⚠ 底線開頭的濾掉（`_canyon_map` 那一族是地圖／工具圖，不是場景）。 */
+  const ok = rushCfg().bgDirs || [];
+  rushBgPool = Object.keys(BG_INDEX).filter(n => n[0]!=='_' && ok.indexOf(BG_INDEX[n])>=0);
+  console.info('[rush] 隨機背景池 %d 張（只用這幾個資料夾：%s）', rushBgPool.length, ok.join('／'));
   return rushBgPool;
 }
-function rushPickBg(){
-  const L0=rushBgList();
-  return L0.length ? L0[(Math.random()*L0.length)|0] : null;
+const rushPick = L0 => (L0 && L0.length) ? L0[(Math.random()*L0.length)|0] : null;
+/* ══⚠⚠ **這一場長什麼樣：先抽怪，再依牠決定背景與模式**（ver -1665，Ray：
+   「標記為船戰的敵人只會有天空背景，且副武模式要走船戰」）══
+   ⚠ 「牠是不是在天上／海上打」問**敵人卡的 `kind`**（`config.rush.skyKinds`，鐵律 7）
+     —— 那一格本來就在回答「牠是什麼」，不要為 RUSH 另開一個欄位。
+   ⚠ 先抽怪走 `combat.peekBattleEnemy`（＝真正開打時的同一抽，見那一支）。 */
+function rushSetupFor(id){
+  const key = combat.peekBattleEnemy(id);
+  const en  = (GAME_CONFIG.enemies||{})[key] || {};
+  const C   = rushCfg();
+  const sky = (C.skyKinds||[]).indexOf(en.kind) >= 0;
+  return { key, sky, bg: sky ? rushPick(C.skyBgs||[]) : rushPick(rushBgList()) };
 }
-/* 第一場的背景：讀取頁要先把它載進來，所以在 `startRush` 就抽好、`rushNext` 讀它。 */
-let rushFirstBg=null;
+/* 第一場那一份：讀取頁要先把背景載進來，所以在 `startRush` 就算好、`rushNext` 讀它。 */
+let rushFirst=null;
 /* 第一個「有怪可抽」的等級是哪一場 —— 讀取頁要知道載哪一張卡的音訊（ver -1663）。
    ⚠ 與 `rushNext` 的跳過規則問**同一支** `rushHasFoe`（鐵律 7）。 */
 function rushFirstId(){
@@ -1873,12 +1885,15 @@ function rushNext(){
      ⚠ 冪等：沒開著時 `close()` 等於什麼都不做，所以第一場也照叫（鐵律 8：
        收在唯一開打的那一處，不要只補在接力那一支）。 */
   story.close({ keepBgm:true });
-  /* 這一場的背景（ver -1663）：第一場用讀取頁已經載好的那一張，之後每一場重抽。
+  /* 這一場的背景與模式（ver -1663／-1665）：第一場用讀取頁已經算好的那一份，
+     之後每一場重算（重抽怪 → 重抽背景）。
      ⚠ `state.battleBg` 是**持續狀態**（main.js:654 那條的教訓）—— 每一場都明確設一次，
-       離開 rush 時再設回 null（見 setStoryReturn 的 rush 分支）。 */
-  { const bg = rushFirstBg || rushPickBg(); rushFirstBg = null;
-    combat.setBattleBg(bg); }
-  combat.startScriptBattle(id, { story:false });
+       離開 rush 時再設回 null（見 setStoryReturn 的 rush 分支）。
+     ⚠ `ship` 要跟著這一隻走：它管的是**倍率與演出**（BR 加成、槍火 ×1.8、
+       彈殼斜下拋、艦載音）—— 空中／海上的怪走陸戰那一套會小到看不見（ver -1456）。 */
+  const setup = rushFirst || rushSetupFor(id); rushFirst = null;
+  combat.setBattleBg(setup.bg);
+  combat.startScriptBattle(id, { story:false, ship:setup.sky });
   return true;
 }
 /* ══⚠⚠ **按 RUSH 也跑一次讀取頁**（ver -1663，Ray 指定）══════════════════════
@@ -1894,9 +1909,9 @@ function rushNext(){
 function startRush(){
   const id = rushFirstId();
   if(!id){ console.warn('[rush] 一隻有等級的怪都沒有 —— 先去 Excel 補 tier'); return; }
-  rushFirstBg = rushPickBg();
+  rushFirst = rushSetupFor(id);
   const spec = { ses: battleAudioSet(id), bgms: [battleBgmOf(id)] };
-  if(rushFirstBg){ try{ spec.imgs = [story.bgUrl(rushFirstBg)]; }catch(_){} }
+  if(rushFirst.bg){ try{ spec.imgs = [story.bgUrl(rushFirst.bg)]; }catch(_){} }
   story.loadScene(spec,
                   ()=>{ rushAt = -1; rushNext(); },
                   ()=>{ hideHome('rush/loader'); });

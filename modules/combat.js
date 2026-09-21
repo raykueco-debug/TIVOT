@@ -2649,6 +2649,19 @@ function pickBattleEnemy(sb){
   pendingPick = { sb, key };
   return key;
 }
+/* ══⚠⚠ **開打之前先問「這一場會抽到誰」**（ver -1665，RUSH 用）══
+   RUSH 要在 `startScriptBattle` **之前**知道敵人是誰：背景要不要換成天空、
+   副武要不要走船戰，都看那一隻的 `kind`（見 `config.rush`）。
+   ⚠⚠ 走**同一支** `pickBattleEnemy`（鐵律 8）——它的 `pendingPick` 本來就是為了
+     「同一場的兩次呼叫要拿到同一隻」而存在，所以**先問一次不會讓牠換人**；
+     另寫一支「預抽」必然與真正開打那一次走鐘（而症狀是立繪／數值對不起來）。
+   ⚠ 這一抽會一直留到 `startGame` 用掉它為止（那裡 `pendingPick=null`）。 */
+export function peekBattleEnemy(id){
+  const sb = (GAME_CONFIG.battles||{})[id];
+  if(!sb) return null;
+  const k = pickBattleEnemy(sb);
+  return (typeof k==='string') ? k : null;
+}
 function midSession(){
   const b = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
   return !!(b && b.session && !b.sessionEnd);

@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.21-1664';
+export const VERSION = 'ver 2026.09.22-1665';
 
 export const GAME_CONFIG = {
 
@@ -3043,6 +3043,33 @@ export const GAME_CONFIG = {
          現在十道都是 `hpMax`，那是 Ray 的決定，不要「順手」調成各有各的。
      ⚠ 圖：`ci` 是插圖鑰匙。**目前只有第一道有圖**（`dish_deersteak`），
        其餘九道等美術 —— 沒有圖的那幾道演到時就不出插圖，不會壞。 */
+  /* ══⚠⚠⚠ **RUSH 的背景**（ver -1665，Ray：「RUSH 裡出現槍店背景，**所有城鎮背景
+     都不可參與**」「標記為船戰的敵人只會有天空背景」）══════════════════════
+     ⚠⚠ **寫成白名單不是黑名單**（鐵律 13：漏寫的下場要落在安全的那一側）：
+       -1664 那一版是「算出哪些是城鎮再排除」—— 而那個推導**壞了**：節點的 `bg`
+       是**不帶時段的基底名**（`capital_square`），而 `bg_index` 索引的是**帶時段的
+       檔名**（`capital_square_day`）⇒ 查不到資料夾 ⇒ 帝都／東泊／夏爾村整組沒被排除，
+       槍店背景就這樣漏進來了（而且畫面上看不出哪裡不對）。
+       白名單沒有這個失敗模式：**沒點名就不抽**，日後新增任何一座城都不會漏。
+     ⚠ 名字是 `resources/background/` 底下的**資料夾**（＝`script/bg_index.js` 的值）。
+       新交一批野外圖、想讓 RUSH 用得到，就把資料夾加進來。
+     ⚠ 城鎮的那幾個（capital／eastport／northport／ravnsdal／shinier／sofia）**刻意不列**。 */
+  rush: {
+    bgDirs: ['belisar','canyon','deck','fallen','forest','holysee','lake','plains','ruins','tomb'],
+    /* 船戰／空戰的怪只用天空背景（Ray）。⚠ 這幾張住在 `resources/background/` 的
+       **根目錄**，而 `bg_index` 只索引子資料夾 —— 所以這裡只能列檔名（去副檔名）。
+       ⚠ 列的是**真的存在的那幾張**（不是基底名）：`sky_cirrus` 本身沒有檔案，
+         只有帶時段的那四張 —— 列基底名會 404，而背景載不到是**靜靜壞掉**。
+       ⚠ 美術再交新的天空圖就加進來（同上，白名單）。 */
+    skyBgs: ['sky_cirrus_dawn','sky_cirrus_day','sky_cirrus_dusk','sky_cirrus_night',
+             'sky_cumulus_dawn','sky_cumulus_day','sky_cumulus_dusk','sky_cumulus_night',
+             'sky_towers','sky_towers_dawn','sky_towers_day','sky_towers_dusk','sky_towers_night'],
+    /* 哪幾種 `kind` 算「在天上／海上打」（＝走船戰那一套：天空背景 ＋ 副武重武裝）。
+       ⚠ 判準是**敵人卡的 `kind`**（那一格本來就在回答「牠是什麼」，鐵律 7）——
+         不要為 RUSH 另開一個「要不要船戰」的欄位。 */
+    skyKinds: ['ship','aerial'],
+  },
+
   cooking: {
     /* ── 演出的秒數（`story.playCooking`，鐵律 1：程式不寫死時間）──
        `panMs` 兩張鍋子交替的間隔（Ray 指定 0.75 秒）／`dotMs` COOKING 後面的點
