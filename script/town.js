@@ -7440,7 +7440,7 @@ export const TOWNS = {
              鐵律 8）—— 那是「有東西出現在這一景裡」，不是換插圖，所以不算轉場。
              ⚠ **要有人收**：打完那一場的下一拍寫 `cgBack:null`（同祭壇那一段）。 */
           { speaker:'NARRATION', text:'', hide:'*',
-            cgBack:'resources/enemy/mon_gravekeeper_seal.webp',
+            cgBack:'resources/enemy/mon_gravekeeper_seal.webp?v=2',
             cgBackRise:true, cgBackFit:'contain', cgBackScale:0.9,
             se:'se_enemy_roardeer', auto:1800 },
           /* ⚠⚠ **只有這一拍推棺**（ver -1622，Ray 指定）：`kerbRise:true`。
@@ -7465,7 +7465,7 @@ export const TOWNS = {
              同一支中景層降臨，戰鬥那一拍不寫 `kerbRise` ＝原地開棺。 */
           /* ⚠ **這一次也撤立繪**（ver -1631，Ray 指定）—— 與第一次降臨同一個作法。 */
           { speaker:'NARRATION', text:'', hide:'*',
-            cgBack:'resources/enemy/mon_gravekeeper_seal.webp',
+            cgBack:'resources/enemy/mon_gravekeeper_seal.webp?v=2',
             cgBackRise:true, cgBackFit:'contain', cgBackScale:0.9,
             se:'se_enemy_roardeer', auto:1800 },
           /* ══⚠⚠⚠ **牠又降臨了一次 ＝ 首戰的第二輪**（ver -1570；-1616 定名）══
@@ -8268,7 +8268,7 @@ export const TOWNS = {
             /* ⚠ ver -1420（Ray：「龍降臨上半怎麼被裁了？」）：這一層預設 `cover`
                （為鹿主訂的，主體在下半）—— 龍是滿框展翅，要 `contain` 才不會被切頭。 */
             cgBackFit:'contain',
-            cgBack:'resources/enemy/mon_dragon_v1_shackled.webp' },
+            cgBack:'resources/enemy/mon_dragon_v1_shackled.webp?v=2' },
           /* ⚠ ver -1420（Ray 指定）：被嚇到那一聲配跌倒音。 */
           Object.assign(ren('scream','呀！'), { se:'se_fall' }),
           /* ══⚠⚠⚠ **蕾娜倒地・髮飾脫落**（ver -1397，Ray 交件 `020-rennadrop`）══

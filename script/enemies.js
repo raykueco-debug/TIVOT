@@ -254,7 +254,7 @@ export const ENEMIES = {
       atype:'P',
       stageScale:1,
       stack:1,
-      image:'enemy_natalia',         // → resources/enemy/mon_natalia.webp
+      image:'enemy_natalia',         // → resources/enemy/mon_natalia.webp?v=3
       fit:{ pos:'50% 30%' },
       hp:560,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:20,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）

@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.17-1631';
+export const VERSION = 'ver 2026.09.17-1632';
 
 export const GAME_CONFIG = {
 
@@ -4071,17 +4071,17 @@ export const ASSETS = {
      ⚠ **四張圖 ＝ 四張卡**（Ray：「四張是同一隻，程式上算四隻，
        三隻追擊輪出，一隻留做決戰」）。
      ⚠ 新檔名不是同名覆蓋 ⇒ `ASSET_VER` 不必動（§5：新增比覆蓋安全）。 */
-  enemy_gk_seal:   "resources/enemy/mon_gravekeeper_seal.webp",     // 聖印失效（追擊）
-  enemy_gk_offset: "resources/enemy/mon_gravekeeper_offset.webp",   // 錯格重影（追擊）
-  enemy_gk_many:   "resources/enemy/mon_gravekeeper_many.webp",     // 數不清（追擊）
-  enemy_gk_crypt:  "resources/enemy/mon_gravekeeper_crypt.webp",    // 墓室胸腔（決戰）
+  enemy_gk_seal:   "resources/enemy/mon_gravekeeper_seal.webp?v=2",     // 聖印失效（追擊）
+  enemy_gk_offset: "resources/enemy/mon_gravekeeper_offset.webp?v=2",   // 錯格重影（追擊）
+  enemy_gk_many:   "resources/enemy/mon_gravekeeper_many.webp?v=2",     // 數不清（追擊）
+  enemy_gk_crypt:  "resources/enemy/mon_gravekeeper_crypt.webp?v=2",    // 墓室胸腔（決戰）
   enemy_facelessgiant: "resources/enemy/saint_gt_ci.webp",   // 連戰第二隻：巨型聖徒（GT=giant）
   enemy_trainee:  "resources/enemy/saint_tr_ci.webp",   // 教學專用敵：訓練用聖徒
   enemy_dart_target: "resources/enemy/dart_timeattack.webp",   // 打靶場：固定立靶（ver -396）
   enemy_dart_counter: "resources/enemy/dart_counter.webp",   // 蕃茄人11號：杰羅的自動人型靶（ver -862，Ray 交件）
   /* 禍魘娜塔莉（ver -671，Ray 交件）＋惡夢化 cut-in。
      ⚠ cut-in 住在 `resources/CI/`（Ray 指定；-672 曾誤指 `partner/`）。 */
-  enemy_natalia:  "resources/enemy/mon_natalia.webp",
+  enemy_natalia:  "resources/enemy/mon_natalia.webp?v=3",
   /* ⚠⚠ `?v=2`：這兩張是**同名覆蓋**的（ver -689，Ray：「這兩個 CI 都有改」）——
      檔名沒變、內容變了，瀏覽器照樣拿舊的那一份（§5 的老坑，娜塔莉那一組踩過
      四版才查出來）。**一組要一起帶**，漏掉哪一張哪一張就被快取住。 */
@@ -4136,14 +4136,14 @@ export const ASSETS = {
        —— 本機的 dev server 照給，線上一律 404，所以只有手機（吃線上版）看不到。
        ⚠ 順手補了根目錄的 `.nojekyll`（那才是根治：以後任何底線路徑都不會消失），
          但**草稿還是不要直接引用** —— `_drafts` 的意思就是「還沒選定」。 */
-  enemy_np_candletower:    "resources/enemy/mon_relic_candletower.webp",
-  enemy_np_candlepenitent: "resources/enemy/mon_relic_candlepenitent.webp",
-  enemy_np_coralman:       "resources/enemy/mon_sea_coralman.webp",
-  enemy_np_reassembled:    "resources/enemy/mon_relic_reassembled.webp",
+  enemy_np_candletower:    "resources/enemy/mon_relic_candletower.webp?v=3",
+  enemy_np_candlepenitent: "resources/enemy/mon_relic_candlepenitent.webp?v=3",
+  enemy_np_coralman:       "resources/enemy/mon_sea_coralman.webp?v=3",
+  enemy_np_reassembled:    "resources/enemy/mon_relic_reassembled.webp?v=3",
   /* ⚠ 美術把 `mon_beast_altar` 更名成 `mon_beast_reliquary`（ver -928 才發現）——
      舊檔名一直指著一個不存在的檔案＝北泊教堂 Boss 沒有立繪，而**畫面上不會有錯誤訊息**。
      自檢：把 config 裡所有 resources 路徑抓出來逐個 `test -f`（同 §5 的同名覆蓋自檢）。 */
-  enemy_np_boss: "resources/enemy/mon_beast_reliquary.webp",
+  enemy_np_boss: "resources/enemy/mon_beast_reliquary.webp?v=3",
   /* 教堂那一場之後的真 BOSS：**瓦礫中生出的紫黑之爪**（ver -595（-893 前用詞），Ray：「boss 圖為
      TheClaws」）。⚠ 這一張是**連背景一起畫的整張戰鬥圖**（規格見
      `resources/background/_boss_claw_spec.md`）—— 所以敵人卡**不給 `bg`、不給
@@ -4152,12 +4152,12 @@ export const ASSETS = {
   /* 夏爾村村內戰（ver -802，Ray 交稿）—— 敵人卡見 script/enemies.js 的 sv_*。
      ⚠ bear／stag 目前仍是 **.png**（美術尚未去背轉 webp）：先指 .png 讓它載得出來，
        轉檔後把副檔名改成 .webp（同 §5 的轉檔三步）。其餘四張已是 webp。 */
-  enemy_sv_wolf_pack:     "resources/enemy/mon_wolf_pack.webp?v=2",
-  enemy_sv_beast_organ:   "resources/enemy/mon_beast_organ.webp?v=2",
-  enemy_sv_stag:          "resources/enemy/mon_stag_nightmare.webp",   // ver -845：2.4MB PNG → webp（手機發燙/圖讀不出來的調查）
-  enemy_sv_beast_shackle: "resources/enemy/mon_beast_shackle.webp?v=2",
-  enemy_sv_bear:          "resources/enemy/mon_bear_nightmare.webp",   // 同上
-  enemy_sv_reliquary:     "resources/enemy/mon_beast_reliquary.webp?v=2",
+  enemy_sv_wolf_pack:     "resources/enemy/mon_wolf_pack.webp?v=3",
+  enemy_sv_beast_organ:   "resources/enemy/mon_beast_organ.webp?v=3",
+  enemy_sv_stag:          "resources/enemy/mon_stag_nightmare.webp?v=3",   // ver -845：2.4MB PNG → webp（手機發燙/圖讀不出來的調查）
+  enemy_sv_beast_shackle: "resources/enemy/mon_beast_shackle.webp?v=4",
+  enemy_sv_bear:          "resources/enemy/mon_bear_nightmare.webp?v=3",   // 同上
+  enemy_sv_reliquary:     "resources/enemy/mon_beast_reliquary.webp?v=3",
   /* ══ 夏爾森林野生怪（ver -862，卡在 script/enemies.js 的 sf_ 系列）══
      ⚠ 夜間的熊骸/鹿骸**沿用 enemy_sv_bear／enemy_sv_stag**（同一張圖一個鍵，鐵律 7）。 */
   enemy_sf_lynx:      "resources/enemy/mon_shinierforest_lynx.webp",
@@ -4166,16 +4166,16 @@ export const ASSETS = {
   enemy_sf_tiger:     "resources/enemy/mon_shinierforest_tiger.webp",
   enemy_sf_crows:     "resources/enemy/mon_shinierforest_crows.webp",
   enemy_sf_deer:      "resources/enemy/mon_shinierforest_deer.webp",
-  enemy_sf_bear_husk: "resources/enemy/mon_bear_husk.webp",
-  enemy_sf_stag_rot:  "resources/enemy/mon_stag_rot.webp",
+  enemy_sf_bear_husk: "resources/enemy/mon_bear_husk.webp?v=3",
+  enemy_sf_stag_rot:  "resources/enemy/mon_stag_rot.webp?v=3",
   enemy_sf_deer_nightmare: "resources/enemy/mon_shinierforest_deernightmare.webp",   // 鹿主變異（ver -870，G 稿）
 
   /* ══ 木雅克神殿的怪（ver -919，Ray 交表）══ 圖是 Ray 交的 PNG，這一版轉成 webp
      （原 PNG 進 `resources/_originals/enemy/`，§5 的三步）。
      ⚠ `mon_beast_bonemaw`（覆骨者）ver -920 補進庫（Ray），已放回刷怪池。 */
-  enemy_ruins_bonemaw:           "resources/enemy/mon_beast_bonemaw.webp",
+  enemy_ruins_bonemaw:           "resources/enemy/mon_beast_bonemaw.webp?v=3",
   enemy_ruins_bellreacher:       "resources/enemy/mon_relic_bellreacher.webp",
-  enemy_ruins_halo_ring:         "resources/enemy/mon_halo_ring.webp",
+  enemy_ruins_halo_ring:         "resources/enemy/mon_halo_ring.webp?v=3",
   enemy_ruins_heartripper:       "resources/enemy/mon_relic_heartripper.webp",
   enemy_ruins_bellwalker:        "resources/enemy/mon_relic_bellwalker.webp",
   enemy_ruins_saint_prison:      "resources/enemy/mon_saint_prison.webp",
@@ -4368,8 +4368,8 @@ export const ASSETS = {
   enemy_centipi_night: "resources/enemy/centipi_night.webp",
   enemy_centipi_dd:    "resources/enemy/centipi_dd.webp",
   /* ══ 新怪圖：卡是 `newcards` 建的「最普通的怪」，數值等 Ray 手動改 ══ */
-  enemy_bug_mantis:               "resources/enemy/mon_bug_mantis.webp",
-  enemy_relic_bellascetic:        "resources/enemy/mon_relic_bellascetic.webp",
+  enemy_bug_mantis:               "resources/enemy/mon_bug_mantis.webp?v=5",
+  enemy_relic_bellascetic:        "resources/enemy/mon_relic_bellascetic.webp?v=4",
   enemy_rictus_hooked:            "resources/enemy/mon_rictus_hooked.webp",
   inspector_renna:     "resources/si/renna_si_front.webp",         // 讀取頁的說明者（出航後）
   /* ⚠ ver -1037：破防計量表的月牙（`clasp_moon` / `clasp_moon_frame`）**已退場**
@@ -4672,7 +4672,7 @@ export const ASSETS = {
   bgm_whirlwind:    "resources/audio/bgm/peritune_whirlwind.m4a",   // 索菈娜為夥伴的戰鬥曲（ver -837；ver -1105 刪掉下面那份重複的）
   bgm_whistling:    "resources/audio/bgm/peritune_whistling_winds_loop.m4a",
   /* ver -745：Ray 交專用戰鬥圖（man_sorana.jpg → webp，原檔入 _originals）。 */
-  enemy_man_sorana: "resources/enemy/man_sorana.webp",
+  enemy_man_sorana: "resources/enemy/man_sorana.webp?v=3",
   bgm_crimson:    "resources/audio/bgm/peritune_crimson_moon_loop.m4a",
   /* 打靶場（計時挑戰）專屬曲（ver -658（-893 前用詞），Ray：「所有打靶遊戲都用這個音樂」）。
      ⚠ 哪一場用它**不寫在卡上**而是規則：見下面的 `battleBgm.timeAttack`。 */

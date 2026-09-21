@@ -727,12 +727,17 @@ export const ART = {
     readsad:     { src:'resources/si/sorana_si_readsad.webp',     top:5, bot:1530, fx:0.643 },
     readconfuse: { src:'resources/si/sorana_si_readconfuse.webp', top:9, bot:1528, fx:0.671 },
     point:     { src:'resources/si/sorana_si_point.webp?v=2', top:9, bot:1523, fx:0.543 },
-    relief:    { src:'resources/si/sorana_si_relief.webp', top:8, bot:1518, fx:0.556 },
+    relief:    { src:'resources/si/sorana_si_relief.webp?v=2', top:8, bot:1518, fx:0.556 },
     sad:       { src:'resources/si/sorana_si_sad.webp?v=2', top:3, bot:1527, fx:0.515 },
     salute:    { src:'resources/si/sorana_si_salute.webp?v=2', top:11, bot:1525, fx:0.580 },   // fx 目視手調，不隨新圖走（新圖量到 0.581，含舉起的手臂）
-    scare:    { src:'resources/si/sorana_si_scare.webp', top:16, bot:1518, fx:0.540 },   // fx 目視重量（量到 0.443）
+    scare:    { src:'resources/si/sorana_si_scare.webp?v=2', top:16, bot:1518, fx:0.540 },   // fx 目視重量（量到 0.443）
     serious:   { src:'resources/si/sorana_si_serious.webp?v=2', top:6, bot:1524, fx:0.576 },
-    sleep:     { src:'resources/si/sorana_si_sleep.webp', top:304, bot:1231, fx:0.461, cm:147, standCm:140 },   // 座（非全身圖）
+    /* ⚠⚠ **top/bot 於 ver -1632 重量**（新版同名覆蓋，§5：換圖一定要重量取景值）：
+       304/1231 → **230/1424**（人物在新圖裡佔的高度多了 29%）。
+       ⚠ `fx` 一律不動（Ray -1578 的指示）；`cm`/`standCm` 是**旋鈕**不是事實，
+         沒有 Ray 看畫面不動 —— 但人物變高 29% ⇒ 同一個 `cm` 會讓她**小 22%**，
+         要維持原本的大小得把 `cm` 往上帶（147→約 189，而那會超過 `CAST_TALL` 178）。 */
+    sleep:     { src:'resources/si/sorana_si_sleep.webp?v=2', top:230, bot:1424, fx:0.461, cm:147, standCm:140 },   // 座（非全身圖）
     stare:     { src:'resources/si/sorana_si_stare.webp?v=2', top:7, bot:1528, fx:0.514 },
     wave:      { src:'resources/si/sorana_si_wave.webp?v=2', top:8, bot:1527, fx:0.530 },   // fx 目視手調，不隨新圖走（新圖量到 0.374，含舉起的手臂）
     worry:     { src:'resources/si/sorana_si_worry.webp?v=2', top:4, bot:1519, fx:0.543 },
@@ -1096,7 +1101,7 @@ export const ART = {
      ⚠ 身高 165 是**估的**（同其他 NPC 的作法）。
      ⚠ 立繪就是敵人那一張：同一張圖兩種用途，戰鬥那邊是滿版取景、不吃這組數字。 */
   natalia_x:{ cm:165, eye:32, fx:0.542, top:0, bot:1534,
-           side:'R', alt:null, base:'resources/enemy/mon_natalia.webp', expr:{} },
+           side:'R', alt:null, base:'resources/enemy/mon_natalia.webp?v=3', expr:{} },
   /* ══ 北方泊地的兩位店主（ver -655，Ray 交件）══════════════════════════
      ⚠ 身高是**估的**（槍匠 176＝壯漢、雜貨舖 165＝中年婦人），同 hunter／gunsmith
        那幾筆的作法 —— 日後有設定改 cm 即可，取景值不必重量。
