@@ -7482,8 +7482,12 @@ export const TOWNS = {
              rockimpact 跟 deeproar，deeproar 先播 1 秒」）——
              `se` 吃 `{n,delay}`（story.js 的 -1413）：先聽到牠在遠處，
              一秒之後天花板才開始掉。 */
-          { speaker:'NARRATION', text:'', shake:true, auto:1000,
-            se:[{ n:'se_monsterroardeep' }, { n:'se_rockimpact', delay:1000 }] },
+          { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:1000 },
+          /* ⚠⚠ **震動要與落石同一拍**（ver -1652，Ray：「話是這麼說那一拍的震動沒加到
+             rockimpact」）—— -1650 寫成同一拍的 `{n,delay:1000}`，但那一拍的 `auto`
+             只有 1000ms ⇒ 落石正好落在**換拍的那一瞬**，震動早就演完了。
+             拆成兩拍：遠吼先響一秒（不震），落石與震動一起來。 */
+          { speaker:'NARRATION', text:'', shake:true, se:'se_rockimpact', auto:1400 },
           /* ⚠ **第二次震動加播瓦礫崩落**（ver -1650，Ray 指定）。 */
           { speaker:'NARRATION', text:'', shake:true, auto:1400,
             se:['se_enemy_roardeer','se_brickcrush'] },
@@ -7605,14 +7609,15 @@ export const TOWNS = {
                  日後會合了追逐也可能還沒結束。
              ⚠ `tomb_chase_on` 由原本索菈娜那一句**移到這一段的最後一拍** ——
                分組完才算真的開始跑。 */
-          { speaker:'PLAYER', blank:true },
+          /* ⚠⚠ **換曲從這一拍起**（ver -1615 立；-1618／**-1652 各往前挪一次**，
+             Ray：「BGM 從蕾娜的別鬧了的前一拍，主角的對白開始換」）：
+             這一拍只管**那一刻**，「撐到下一首被指定為止」是城上的 `bgmWhen`
+             （`need:'tomb_split'` ＋ `lock`，沒有終點）。 */
+          { speaker:'PLAYER', blank:true, bgm:'rituale' },
           ren('callangry','別鬧了！你一個人怎麼應付！'),
           nou('steady','我跟他留下！蕾娜小姐帶安雅小姐先走！'),
           any('desperate','不要！'),
-          /* ⚠⚠ **換曲就從這一拍起**（ver -1615；**-1618 由 Execute 那一拍提前一拍到
-             這一句**，Ray 指定）：這一拍只管**那一刻**，「撐到下一首被指定為止」
-             是城上的 `bgmWhen`（`need:'tomb_split'` ＋ `lock`，沒有終點）。 */
-          Object.assign(ren('callangry','別這樣！大家一起走！'), { bgm:'rituale' }),
+          ren('callangry','別這樣！大家一起走！'),
           /* ⚠⚠ 稿上的「Execute 插圖」＝ `resources/ci/ci_torsten_execute.webp`
              （`ASSETS.cutin_exc_torsten` 指的是同一張）。
              ⚠ 寫**明確路徑**（含 `/`）：那條路不吃時段候選鏈、也不掛 `CG_DIR`

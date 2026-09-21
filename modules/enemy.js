@@ -514,6 +514,22 @@ export function fireTracer(sx, sy, tx, ty){
   setTimeout(()=>{ if(el.parentNode) el.remove(); }, TRACER_MS+60);
   bulletsFlySe();
 }
+/* ══⚠⚠ **朝「視窗上的某一點」射一條火線**（ver -1652，Ray：「機槍反擊按發數射火線，
+   散彈槍也是按發數射，但散射一點，步槍就一發」）══
+   反擊沒有盤面格子可當起點 —— 起點取**面板底下、對中線鏡射的那一側**（同 -1625
+   的作法），所以左右會交叉、而且被 `#fxTop` 的 `overflow:hidden` 裁成「從面板下竄出」。
+   ⚠⚠ **「幾發」不在這裡決定**：呼叫端（`weapon.mzHit`）本來就是**一發一次**
+     —— 機槍逐發、散彈逐顆、狙擊一發，三種的發數與散佈全部沿用既有那一份
+     （鐵律 7：不要在這裡再判一次武器類別）。
+   ⚠ 吃**視窗座標**（與 `muzzleAtPoint` 同一組），換算成 `#fxTop` 相對在這裡做。 */
+export function fireTracerAt(clientX, clientY){
+  const host=$('fxTop'); if(!host) return;
+  const r=host.getBoundingClientRect();
+  const tx=clientX-r.left, ty=clientY-r.top;
+  const cx=r.width*ENEMY_CX;
+  const sx=tracerOrigin(cx + (cx-tx)*MIRROR, r.width);   // 鏡射到另一側
+  fireTracer(sx, r.height*1.55, tx, ty);                 // 起點在面板底下（會被裁掉）
+}
 /* ══ BR（破防彈雨）的火線：**從演出畫面兩側隨機高度射出**（ver -1622，Ray 指定）══
    ⚠ 盤面那時沒有格子可點（BR 打的是敵人身上），所以起點不是「哪一格」，
      是畫面兩側 —— 左右隨機、高度隨機，打向被點的那一點。 */

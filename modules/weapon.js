@@ -209,7 +209,13 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
     const cp = state.counterPoint;
     if(cp && cp.r && api.muzzleAtPoint){
       const a=Math.random()*Math.PI*2, d=Math.sqrt(Math.random())*cp.r*(spread==null?1:spread);
-      api.muzzleAtPoint(cp.x+Math.cos(a)*d, cp.y+Math.sin(a)*d, (k||1)*MZ_SHIP);
+      const px=cp.x+Math.cos(a)*d, py=cp.y+Math.sin(a)*d;
+      api.muzzleAtPoint(px, py, (k||1)*MZ_SHIP);
+      /* ⚠⚠ **火線與槍火落在同一點**（ver -1652；同 -1627 普攻那一條）：
+         這一支是**一發叫一次** —— 機槍逐發、散彈逐顆、狙擊一發 ⇒
+         「按發數射火線」是**既有結構的結果**，不必在這裡判武器類別（鐵律 7）。
+         散彈之所以「散一點」也是既有的：它的 `spread` 本來就比較大。 */
+      if(api.fireTracerAt) api.fireTracerAt(px, py);
       return;
     }
     mz(0.42+Math.random()*0.16, 0.30+Math.random()*0.12, k);

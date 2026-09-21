@@ -157,6 +157,7 @@ export function setup(){
   weapon.init({
     enemyDamage, floatDmg,
     muzzleAt, muzzleAtPoint,                      // 反擊的槍火（ver -1054/-1055）：與普攻同一份特效
+    fireTracerAt: enemy.fireTracerAt,             // 反擊的火線（ver -1652）：一發一條，發數由呼叫端決定
 
     playCutin: saint.playCutin,
     resetEnemyTimers: defense.resetEnemyTimers,
