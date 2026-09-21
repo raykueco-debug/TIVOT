@@ -7430,11 +7430,17 @@ export const TOWNS = {
           nou('shock2','什、什麼東西？'),
           { speaker:'NARRATION', text:'', se:'se_enemy_roardeer', shake:true, auto:1400 },
           sor('battlecry','麻煩的東西來了！'),
+          /* ⚠⚠ **撤立繪，再降臨**（ver -1628，Ray 指定）：`hide:'*'` ＝把台上的人全撤
+             （ver -1547 那一支，走同一個 `leaveSlot`）—— 舞台清空了，降臨才是這一拍
+             唯一的主角；人留在台上的話牠是從立繪後面冒出來的。
+             ⚠ 點名一個個寫也做得到，但那是**會過期的清單**：那一拍台上站著誰是
+               演到那裡才知道的（先被追上／直接走到柱廳，台上的人不一樣）。 */
           /* ══⚠⚠⚠ **先在劇情層跑降臨，再推棺進戰鬥**（ver -1622，Ray 指定）══
              走既有的**中景層**（`cgBack` ＋ `cgBackRise`，與龍在祭壇那一段同一支，
              鐵律 8）—— 那是「有東西出現在這一景裡」，不是換插圖，所以不算轉場。
              ⚠ **要有人收**：打完那一場的下一拍寫 `cgBack:null`（同祭壇那一段）。 */
-          { speaker:'NARRATION', text:'', cgBack:'resources/enemy/mon_gravekeeper_seal.webp',
+          { speaker:'NARRATION', text:'', hide:'*',
+            cgBack:'resources/enemy/mon_gravekeeper_seal.webp',
             cgBackRise:true, cgBackFit:'contain', cgBackScale:0.9,
             se:'se_enemy_roardeer', auto:1800 },
           /* ⚠⚠ **只有這一拍推棺**（ver -1622，Ray 指定）：`kerbRise:true`。
@@ -7479,6 +7485,9 @@ export const TOWNS = {
              同一條）。收在這一段的最後一拍。 */
           Object.assign(sor('battlecry','什麼跟什麼啊沒完沒了！'),
                         { flags:['tomb_chase_on'], cgBack:null }),
+          /* ⚠ ver -1628（Ray 交稿）：這一段的收尾 —— 牠被打退但沒死，所以是「快走」
+             不是「打贏了」。 */
+          ren('run','趁牠還沒完全恢復，快走！'),
         ] },
         /* ② **二戰之前被追上**（ver -1616，Ray 交稿）。
            ⚠⚠⚠ `until:'tomb_gk1_split'` ＝Ray 明講「**如果到我們才不會輸之前沒出
