@@ -13,6 +13,8 @@ resources/si/sorana_si_eat.webp        resources/si/sorana_si_serious.webp
 resources/si/sorana_si_nod.webp        resources/si/sorana_si_stare.webp
 resources/si/sorana_si_point.webp      resources/si/sorana_si_wave.webp
 resources/si/sorana_si_lookaway.webp   resources/si/sorana_si_worry.webp
+resources/si/sorana_si_relief.webp     resources/si/sorana_si_sleep.webp
+resources/si/sorana_si_scare.webp      ← scare 交件後一起
 ```
 
 ⚠ 這 11 個目前都**還沒有** `?v=`，所以是加 `?v=2`（同 `renna_si_scream` 的寫法）。
@@ -35,6 +37,18 @@ resources/si/sorana_si_lookaway.webp   resources/si/sorana_si_worry.webp
 | wave | 3 → **9** | 1516 → **1526** |
 | worry | 0 → **5** | 1514 → **1519** |
 | lookaway | 5 → 5（不變） | 1513 → **1521** |
+| relief | 8 → **11** | 1518 → **1517** |
+| sleep | 304 → **231** | 1231 → **1424** ⚠ 見下 |
+
+### ⚠⚠ `sleep` 另外要調 `cm`／`standCm`（**不要照抄，要看畫面調**）
+
+那是**坐姿**（現行 `cm:147, standCm:140`）。新圖的人物在框裡**比舊圖大 1.29 倍**
+（人物高 927px → 1193px）—— 只換 `top`/`bot` 的話她在畫面上會**縮小約兩成**。
+
+⚠ 憲法 §5 明寫：`cm`／`standCm` **沒有可靠的自動量法，要看渲染結果調**，
+而且**只動這兩個、不要去動 `top`/`bot`**（那兩個是那張圖的客觀事實）。
+⚠ 純算是 `147 × 1.29 ≈ 189`，但那會**超過 `CAST_TALL` 現行最高的 178**，
+把全體立繪一起縮小 —— **所以不要照算的填**，開遊戲看著調。
 
 ⚠⚠ **`fx` 保持原值，不要照我量的改。** 理由兩個：
 1. 新圖是**照舊圖的姿勢**重畫的（同一個姿勢 ⇒ 沿用，§5 的 -649）。
@@ -55,4 +69,4 @@ resources/si/sorana_si_lookaway.webp   resources/si/sorana_si_worry.webp
 
 - 其餘索拉娜立繪（含 `battlecry`／`front`／`side`／`back` 與 read 系列）**這一輪沒換**。
 - Ray 交辦「舊索拉娜圖全部重製」還有 **46 張**沒做（清單在 `_sorana_regen_spec.md` §十）。
-- 這一輪還欠 3 張：`relief`／`sleep`／`scare`（額度用完，明天 13:00 後接）。
+- 這一輪還欠 **1 張**：`scare`（那一串連續掛掉兩次，還在重送）。
