@@ -7326,11 +7326,23 @@ export const TOWNS = {
         exits:{ right:'chapel', left:'chantry', down:'nave' } },
       /* ← 死胡同 C（一格） */
       chantry:    { bg:'tomb_chantry', name:'伊甸古墓　誦經室', noTime:true,
-        exits:{ back:'crossing' } },
+        exits:{ back:'crossing', left:'scriptorium' } },
+      /* ← 死胡同 C2（誦經室再往裡一格，ver -1634 擴張） */
+      scriptorium:{ bg:'tomb_chantry', bgPending:'tomb_scriptorium',
+                    name:'伊甸古墓　抄經房', noTime:true,
+        exits:{ back:'chantry' } },
       chapel:     { bg:'tomb_chapel', name:'伊甸古墓　禮拜堂', noTime:true,
-        exits:{ left:'crossing', up:'ambulatory' } },
+        exits:{ left:'crossing', up:'ambulatory', right:'confessio' } },
+      /* ← 死胡同（ver -1634 擴張） */
+      confessio:  { bg:'tomb_chapel', bgPending:'tomb_confessio',
+                    name:'伊甸古墓　告解所', noTime:true,
+        exits:{ back:'chapel' } },
       ambulatory: { bg:'tomb_ambulatory', name:'伊甸古墓　繞行廊', noTime:true,
-        exits:{ down:'chapel', left:'apse' } },
+        exits:{ down:'chapel', left:'apse', up:'sacristy' } },
+      /* ← 死胡同（ver -1634 擴張） */
+      sacristy:   { bg:'tomb_reliquary', bgPending:'tomb_sacristy',
+                    name:'伊甸古墓　法衣室', noTime:true,
+        exits:{ back:'ambulatory' } },
       /* ☀ 拱頂塌了一個洞，光柱斜插下來 → **有四時段差分**（另一格是墓門） */
       apse:       { bg:'tomb_apse', name:'伊甸古墓　後殿', mustWild:true,
         exits:{ right:'ambulatory', up:'reliquary', left:'cloister' } },
@@ -7338,7 +7350,11 @@ export const TOWNS = {
       reliquary:  { bg:'tomb_reliquary', name:'伊甸古墓　聖骨匣室', noTime:true,
         exits:{ back:'apse' } },
       cloister:   { bg:'tomb_cloister', name:'伊甸古墓　迴廊', noTime:true,
-        exits:{ right:'apse', left:'stair1' } },
+        exits:{ right:'apse', left:'stair1', up:'wellyard' } },
+      /* ← 死胡同（ver -1634 擴張） */
+      wellyard:   { bg:'tomb_cloister', bgPending:'tomb_wellyard',
+                    name:'伊甸古墓　井庭', noTime:true,
+        exits:{ back:'cloister' } },
       /* ⚠ 樹上的**橋**：找不到就真的下不去，沒有第二條路 */
       /* ══⚠⚠⚠ **安全點換了一組**（ver -1574，Ray：「安全點是二層梯廳、三層梯廳
          跟底層祭壇」）══ -1525 那一版是「**兩個樓梯**及最終房間前」
@@ -7368,7 +7384,7 @@ export const TOWNS = {
       hall2:      { bg:'tomb_hall2', name:'伊甸古墓　柱廳', noTime:true,
         /* ⚠ 這一格**只演守墓者那幾場劇情戰**，不刷雜怪（ver -1612，Ray 指定）。 */
         noWild:true,
-        exits:{ up:'cistern', right:'corr2', down:'landing2' },
+        exits:{ up:'cistern', right:'corr2', down:'landing2', left:'colonnade' },
         /* ══⚠⚠⚠ **守墓者・降臨**（ver -1525，Ray 的 Stage10-A 稿）══════════════
            ⚠⚠⚠ **觸發條件是暫代的**：稿上是「**三場戰鬥後**」，而**這張圖現在
              一隻雜怪都沒有**（`TOWNS.tomb` 沒有 `wildSpawn`，26 隻古墓怪的**數值卡
@@ -7609,15 +7625,30 @@ export const TOWNS = {
         ] } ] },
 
       /* ← 死胡同 E（一格） */
+      /* ══ 柱廳往西的側翼（ver -1634 擴張）：列柱廊 → 石工房（死胡同） ══ */
+      colonnade:  { bg:'tomb_hall2', bgPending:'tomb_colonnade',
+                    name:'伊甸古墓　列柱廊', noTime:true,
+        exits:{ right:'hall2', up:'mason' } },
+      mason:      { bg:'tomb_kiln', bgPending:'tomb_mason',
+                    name:'伊甸古墓　石工房', noTime:true,
+        exits:{ back:'colonnade' } },
       cistern:    { bg:'tomb_cistern', name:'伊甸古墓　蓄水池', noTime:true,
-        exits:{ back:'hall2' } },
+        exits:{ back:'hall2', up:'waterstair' } },
+      /* ← 死胡同 A2（蓄水池再往裡一格，ver -1634 擴張） */
+      waterstair: { bg:'tomb_cistern', bgPending:'tomb_waterstair',
+                    name:'伊甸古墓　汲水階', noTime:true,
+        exits:{ back:'cistern' } },
       corr2:      { bg:'tomb_corr2', name:'伊甸古墓　長廊', noTime:true,
         exits:{ left:'hall2', down:'sump', right:'rotunda' } },
       /* ← 死胡同 F（一格） */
       sump:       { bg:'tomb_sump', name:'伊甸古墓　積水坑', noTime:true,
         exits:{ back:'corr2' } },
       rotunda:    { bg:'tomb_rotunda', name:'伊甸古墓　圓廳', noTime:true,
-        exits:{ left:'corr2', up:'nichehall', right:'sarcE' } },
+        exits:{ left:'corr2', up:'nichehall', right:'sarcE', down:'censerroom' } },
+      /* ← 死胡同（ver -1634 擴張） */
+      censerroom: { bg:'tomb_rotunda', bgPending:'tomb_censerroom',
+                    name:'伊甸古墓　香爐室', noTime:true,
+        exits:{ back:'rotunda' } },
 
       /* 死胡同 G 的第一格 —— 圖要畫得**比正路還氣派**（把玩家騙進來） */
       sarcE:      { bg:'tomb_sarce', name:'伊甸古墓　石棺室', noTime:true,
