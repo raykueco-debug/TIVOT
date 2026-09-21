@@ -12,7 +12,12 @@
 
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const imgs  = () => [...document.querySelectorAll('img')];
-  const keyOf = i => i.src.split('?')[0];
+  /* ⚠⚠⚠ 鑰匙要用**完整 src**，不可以砍掉 query（ver -1630 踩到）。
+     ChatGPT 現在的圖片網址是 `chatgpt.com/backend-api/estuary/content?id=…` ——
+     砍掉 `?` 之後**整串對話的每一張圖都變成同一把鑰匙**，於是新出的那一張
+     一律被判成「看過了」，`__grab` 永遠回 waiting，而畫面上圖明明就在。
+     （這正是 -1557 那個病的另一種長相：觀測方法本身壞了，答案卻很確定。） */
+  const keyOf = i => i.src;
   /* ⚠⚠ assistant 訊息**沒有** data-message-author-role（只有 user 有，實測 2026-09-21）。
      真正可靠的兩個：回合數，以及「這一回合有圖」的那顆讚鈕 —— 後者是**直接訊號**，
      圖片的 <img> 還沒解碼它就在了。 */
@@ -45,12 +50,15 @@
     return { generating: genOn(),
              newTurns:     turnsN()   - (window.__turn0 ?? 0),
              newImageTurns: imgTurns() - (window.__imgt0 ?? 0),   // ← 「出圖了沒」看這個
-             imgs: imgs().filter(i => i.naturalWidth >= 512).length };
+             imgs: imgs().length };
   };
 
   window.__grab = async (name) => {
     await settle();
-    const fresh = imgs().filter(i => i.naturalWidth >= 512 && !(window.__before?.has(keyOf(i))));
+    /* ⚠⚠ 不可以用 naturalWidth 過濾：**背景分頁不解碼圖片**，它一律是 0
+       —— 那會把真的存在的圖整批濾掉（同上，觀測方法壞了）。
+       大小由下面的 MIN_BYTES 把關就夠。 */
+    const fresh = imgs().filter(i => !(window.__before?.has(keyOf(i))));
     for (let k = fresh.length - 1; k >= 0; k--) {
       const i = fresh[k];
       const b = await (await fetch(i.src)).blob();

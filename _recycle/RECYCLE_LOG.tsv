@@ -593,3 +593,7 @@ when	from	to	reason
 20260920-202700	resources/_originals/SI_sorana_new/sorana_si_worry_v1.png	_recycle/resources/_originals/SI_sorana_new/sorana_si_worry_v1.png	ver -1556 長提示詞版，Ray 退件（臉崩、我自己發明的吊眼規格），由 *_short.png 取代
 20260920-202700	resources/_originals/SI_sorana_new/_superseded	_recycle/resources/_originals/SI_sorana_new/_superseded	ver -1556 長提示詞版，Ray 退件（臉崩、我自己發明的吊眼規格），由 *_short.png 取代
 20260921-135207	resources/audio/se/Se_Bulletsfly.mp3	_recycle/resources/audio/se/Se_Bulletsfly.mp3	已切成 se_bulletsfly1~4（四個略有變化的版本），原檔大寫命名不合 -1554 規約
+20260921-155604	resources/enemy/mon_gravekeeper_seal.webp	_recycle/resources/enemy/mon_gravekeeper_seal.webp	守墓者四張重繪（ver -1630）：拿掉爪下的底座、改成平塗硬邊乾淨線稿，舊的厚塗版回收
+20260921-155604	resources/enemy/mon_gravekeeper_offset.webp	_recycle/resources/enemy/mon_gravekeeper_offset.webp	守墓者四張重繪（ver -1630）：拿掉爪下的底座、改成平塗硬邊乾淨線稿，舊的厚塗版回收
+20260921-155604	resources/enemy/mon_gravekeeper_many.webp	_recycle/resources/enemy/mon_gravekeeper_many.webp	守墓者四張重繪（ver -1630）：拿掉爪下的底座、改成平塗硬邊乾淨線稿，舊的厚塗版回收
+20260921-155604	resources/enemy/mon_gravekeeper_crypt.webp	_recycle/resources/enemy/mon_gravekeeper_crypt.webp	守墓者四張重繪（ver -1630）：拿掉爪下的底座、改成平塗硬邊乾淨線稿，舊的厚塗版回收
