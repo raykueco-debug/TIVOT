@@ -7111,7 +7111,7 @@ export const TOWNS = {
            ⚠ 這一格是 ☀（唯一看得到天空的一格），所以關著的那張**也要四時段差分**：
              `Tomb_Gate_Sealed_dawn/_day/_dusk/_night`（全小寫，同既有交件慣例）。 */
         bgWhen:[ { not:'tomb_opened', bg:'tomb_gate_sealed' } ],
-        exits:{ up:'vestibule' },
+        exits:{ up:'vestibule', right:'adit' },
         /* ══⚠⚠⚠ **門關著就進不去**（ver -1154，Ray：「閉門狀態不能入內」）══
            `tomb_opened` 沒立 ⇒ 往上的箭頭**整個不出現**（`exitsOf` 的 `exitIf`）。
            ⚠ 擋在**出口表**不是擋在 `go()`：箭頭都不出現，玩家才讀得出「那邊過不去」，
@@ -7123,7 +7123,13 @@ export const TOWNS = {
              那正是「還打不開」該有的樣子。
            ⚠⚠ **所以現在整座墓是進不去的**（`tomb_opened` 還沒有人插，見上面鐵律 9
              那一段）。要測內容就先立那支旗。 */
-        exitIf:{ up:'tomb_opened' },
+        /* ⚠⚠⚠ **一個節點只有一份 `exitIf`**（ver -1643 踩過）：物件字面重複的鍵
+           **後者勝** —— 我一度在上面另外寫了一份 `{ right:'tomb_altar_on' }`，
+           結果被這一份整個蓋掉，而且**畫面上完全正常**（廢坑道的箭頭永遠出不來）。
+           兩條件寫在同一個物件裡。
+           · `up`    ＝墓門本身要 `tomb_opened` 才進得去
+           · `right` ＝廢坑道要 `tomb_altar_on`（祭壇啟動）才開 */
+        exitIf:{ up:'tomb_opened', right:'tomb_altar_on' },
         /* ⚠⚠ **不掛 `flag`**：同石製遺蹟 —— 只飛得到的地方，到得了就走得了
            （ver -1154，Ray 回報「進了遺蹟無法出航」）。 */
         sail:{},
@@ -7390,7 +7396,7 @@ export const TOWNS = {
          （§6.5.4.4 的休息處：走進去閉棺結算；沒打過架就不作動）。
          ⚠ `noWild` 照舊由那一條規矩帶（安全點不刷怪）——
            這張圖現在本來就沒有 `wildSpawn`，接上之後要記得。 */
-      stair1:     { bg:'tomb_stair1', name:'伊甸古墓　第一道階梯', noTime:true,
+      stair1:     { bg:'tomb_stair1', name:'伊甸古墓　表層階梯', noTime:true,
         exits:{ right:'cloister', up:'landing2' } },
       /* ⚠ ver -1572（Ray：「二階梯廳設為安全區」）：`noWild:true` ＝這一格不出野怪。
          ⚠ 它與**安全區旗**（`safehouse_<圖>`）是兩件事：那個是整張圖會開會關的狀態，
@@ -7710,7 +7716,7 @@ export const TOWNS = {
          →甕棺廊→骨室→墓道→第二道階梯（**10 步**），每一格再掛一條死路。 */
       shaft:      { bg:'tomb_sump', bgPending:'tomb_shaft',
                     name:'伊甸古墓　豎井', noTime:true,
-        exits:{ up:'sarcE' } },
+        exits:{ up:'sarcE', right:'graveldrop' } },
       urnvault:   { bg:'tomb_ossuary2', bgPending:'tomb_urnvault',
                     name:'伊甸古墓　甕窖', noTime:true,
         exits:{ left:'ossuary2', up:'saltroom', right:'masonhall', down:'ashpit' } },
@@ -7719,7 +7725,7 @@ export const TOWNS = {
         exits:{ up:'urnvault', down:'cryptwalk', left:'graveldrop' } },
       graveldrop: { bg:'tomb_bonepit', bgPending:'tomb_graveldrop',
                     name:'伊甸古墓　碎石陷落', noTime:true,
-        exits:{ right:'ashpit' } },
+        exits:{ right:'ashpit', down:'brokenhall', left:'shaft' } },
       /* ══ ver -1641：**甕窖做成四岔路**（Ray：「每個方向都加入路線與岔路，
          不然就算往下，只有一條路也算不上迷宮」）══════════════════════════════
          甕窖 ＝ 來路（左・甕棺廊）／往下（灰坑→墓道→階梯）／
@@ -7753,13 +7759,25 @@ export const TOWNS = {
       deepwalk:   { bg:'tomb_corr2', bgPending:'tomb_deepwalk',
                     name:'伊甸古墓　墓道深處', noTime:true,
         exits:{ up:'cryptwalk', down:'crossvault' } },
+      /* ══ ver -1643：破碎廊道 —— 塌陷的階梯往上一格，接回碎石陷落（再接豎井）══
+         ⚠ 這是全圖第一個**環**：走到塌陷的階梯不再是白走，它通回上一層那一串。 */
+      brokenhall: { bg:'tomb_corr2', bgPending:'tomb_brokenhall',
+                    name:'伊甸古墓　破碎廊道', noTime:true,
+        exits:{ down:'falsestair', up:'graveldrop' } },
+      /* ══ ver -1643：十字墓窖往下那兩格（死路）══ 一直按「下」會走進這裡。 */
+      sunkhall:   { bg:'tomb_hall2', bgPending:'tomb_sunkhall',
+                    name:'伊甸古墓　沉陷廳', noTime:true,
+        exits:{ up:'crossvault', down:'mudpit' } },
+      mudpit:     { bg:'tomb_sump', bgPending:'tomb_mudpit',
+                    name:'伊甸古墓　淤泥坑', noTime:true,
+        exits:{ up:'sunkhall' } },
       crossvault: { bg:'tomb_crossing', bgPending:'tomb_crossvault',
                     name:'伊甸古墓　十字墓窖', noTime:true,
-        exits:{ up:'deepwalk', left:'falsestair', right:'stair2' } },
+        exits:{ up:'deepwalk', left:'falsestair', right:'stair2', down:'sunkhall' } },
       falsestair: { bg:'tomb_stair2', bgPending:'tomb_falsestair',
                     name:'伊甸古墓　塌陷的階梯', noTime:true,
-        exits:{ right:'crossvault' } },
-      stair2:     { bg:'tomb_stair2', name:'伊甸古墓　第二道階梯', noTime:true,
+        exits:{ right:'crossvault', up:'brokenhall' } },
+      stair2:     { bg:'tomb_stair2', name:'伊甸古墓　底層階梯', noTime:true,
         exits:{ left:'crossvault', down:'landing3' } },
       /* ⚠⚠ **安全點之二**（ver -1574，Ray 指定）。 */
       landing3:   { bg:'tomb_landing3', name:'伊甸古墓　三層梯廳', noTime:true,
@@ -7782,8 +7800,26 @@ export const TOWNS = {
          ⚠⚠⚠ **節點數變了（34→35）⇒ 手繪小地圖要重畫**（§6.5.4.4 的 -901）：
            `resources/map/map_tomb.webp` 上的光點是照拓樸畫的，多一格就對不上。
            `tools/map_layout.py` 的 `POS` 已經加了這一格（那是版面的唯一真相）。 */
-      lowaltar:   { bg:'tomb_bonepit', name:'伊甸古墓　底層祭壇', noTime:true,
-        exits:{ up:'bonepit' }, rest:true, noWild:true },
+      /* ══⚠⚠⚠ **底層祭壇：啟動前後兩張**（ver -1643，Ray 指定）══
+         寫法照墓門那一格（`bgWhen` ＋ `not:`，-1142）：
+         · 旗還沒插 ⇒ 用「未啟動」那一張；插了就退回節點的 `bg`（＝啟動後）。
+         · **為什麼是 `not` 不是 `need`**：節點的 `bg` 同時是退路 ——
+           把「未啟動」寫成基底的話，那張圖還沒交件時這一格會變成空畫面。
+         ⚠⚠ **鐵律 9：`tomb_altar_on` 誰插的還沒定** —— 名字先留好（同 `tomb_opened`
+           那一族）。那一段劇本還沒寫；**寫的人不要再發明第二支旗**。
+         ⚠⚠ **往左的廢坑道要啟動才開**（Ray 指定）：走既有的 `exitIf`（-923 石橋那一支）
+           —— 連箭頭都不出現，玩家讀得出「那邊還過不去」。 */
+      lowaltar:   { bg:'tomb_lowaltar', bgPending:'tomb_lowaltar',
+                    name:'伊甸古墓　底層祭壇', noTime:true,
+        bgWhen:[ { not:'tomb_altar_on', bg:'tomb_lowaltar_off' } ],
+        exits:{ up:'bonepit', left:'adit' },
+        exitIf:{ left:'tomb_altar_on' },
+        rest:true, noWild:true },
+      /* ══ ver -1643：**廢坑道**（祭壇啟動後開啟）—— 從最深處一路接回墓門。
+         ⚠ 兩端都要寫：墓門那一格也有 `right:'adit'` ＋ 同一支 `exitIf`。 */
+      adit:       { bg:'tomb_corr2', bgPending:'tomb_adit',
+                    name:'伊甸古墓　廢坑道', noTime:true,
+        exits:{ right:'lowaltar', left:'gate' } },
       /* ★ **終點**（最深處） */
       crypt:      { bg:'tomb_crypt', name:'伊甸古墓　石棺主室', noTime:true,
         exits:{ up:'gallery3' } },

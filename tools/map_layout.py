@@ -116,7 +116,7 @@ POS = {
     'landing3':(16,12),
     'gallery3':(16,13), 'vaultW':(18,13),
     'crypt':(16,14),    'bonepit':(18,14),
-    'lowaltar':(18,15),
+    'lowaltar':(18,15), 'adit':(16,15),
     # ── 二層 ───────────────────────────────────────────────────────────
     'waterstair':(4,5),
     'mason':(2,6), 'cistern':(4,6), 'ossuary':(6,6), 'nichehall':(8,6), 'kiln':(12,6),
@@ -129,7 +129,9 @@ POS = {
       'graveldrop':(12,8), 'ashpit':(14,8), 'rubble':(16,8),
     'cryptwalk':(14,9),
     'deepwalk':(14,10),
+    'brokenhall':(12,10),
     'falsestair':(12,11), 'crossvault':(14,11), 'stair2':(16,11),
+    'sunkhall':(14,12), 'mudpit':(14,13),
     # ── 一層（前進＝up，照舊）───────────────────────────────────────────
     'sacristy':(10,10), 'wellyard':(6,10), 'reliquary':(8,10),
     'stair1':(4,11), 'cloister':(6,11), 'apse':(8,11), 'ambulatory':(10,11),
