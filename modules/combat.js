@@ -887,8 +887,12 @@ function gunHitOnEnemy(cell){
   /* ══ 子彈的火線（ver -1622，Ray 指定）══ 從**點到的那一格**射向敵人身上那一點。
      ⚠ 座標換算成 `#top` 相對就交出去 —— 格子在 `#top` 之外（它在控制面板上），
        所以那一段會被 `#fxTop` 的 `overflow:hidden` 裁掉，看到的正好是
-       「從面板底下竄出來」（實作與說明在 `enemy.fireTracer`）。 */
-  enemy.fireTracer(cr.left+cr.width/2 - top.left, cr.top+cr.height/2 - top.top, px, py);
+       「從面板底下竄出來」（實作與說明在 `enemy.fireTracer`）。
+     ⚠⚠ **終點是「怪的中心」不是槍火那一點**（ver -1622b，Ray：「火線要有角度」）：
+       槍火那一點是格子位置**映射**過來的，與起點幾乎同相位 ⇒ 每一發都垂直向上。
+       射向同一個中心，左邊的格子才會斜著往右上飛。 */
+  { const c=enemy.enemyCenter();
+    if(c) enemy.fireTracer(cr.left+cr.width/2 - top.left, cr.top+cr.height/2 - top.top, c.x, c.y); }
 }
 /* ══ 槍火（ver -1052，Ray：「射擊時敵人身上槍火炸裂的感覺不夠…現在是個圓點而已，
    帶點不規則的芒跟火星如何？」）══════════════════════════════════════════════

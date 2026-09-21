@@ -447,6 +447,20 @@ function bulletsFlySe(){
   const k = 'se_bulletsfly' + (1 + ((Math.random()*4)|0));
   try{ SFX.play(asset(k), sfxGain(k)); }catch(_){}
 }
+/* ══⚠⚠ **怪的中心**（`#top` 相對；ver -1622b，Ray：「火線要有角度，往怪的中心飛」）══
+   立繪是 `object-fit:cover` ＋ `object-position:center top` 鋪滿 `#top`，
+   身體的重心大約落在**水平正中、垂直四成**的位置。
+   ⚠⚠ 火線要射到**同一個點**才會有角度：原本射的是槍火那一點
+     （`gunHitOnEnemy` 把格子的相對位置**映射**到敵人身上），而那個映射與格子的
+     位置幾乎同相位 ⇒ 每一發都是「從正下方往正上方」，看起來就是沒有角度。
+   ⚠ 槍火照舊打在映射那一點（那是**彈著點**，本來就該散開）——
+     火線是「從哪裡射出來」，兩件事。 */
+const ENEMY_CX = 0.50, ENEMY_CY = 0.40;
+export function enemyCenter(){
+  const host=$('fxTop'); if(!host) return null;
+  const r=host.getBoundingClientRect();
+  return { x:r.width*ENEMY_CX, y:r.height*ENEMY_CY };
+}
 export function fireTracer(sx, sy, tx, ty){
   const host=$('fxTop'); if(!host) return;
   const dx=tx-sx, dy=ty-sy;
