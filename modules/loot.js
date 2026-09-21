@@ -775,14 +775,34 @@ export function dishMats(id){
   const d=((GAME_CONFIG.cooking||{}).dishes||{})[id];
   return (d && d.mats) ? d.mats.slice() : [];
 }
+/* ⚠⚠ 守門問的是「**有沒有這道菜**」，不是「配方長度大於 0」（ver -1659 改）：
+   舊寫法用 `m.length>0` 兼差當存在性檢查，而「跟平常一樣的」(`usual`) 就是
+   **沒有配方**的合法菜（沒帶食材時的那一餐）—— 沿用舊寫法會把它判成煮不出來。
+   ⚠ 打錯字的 id 照舊擋得住：`dishes[id]` 查不到就 false。 */
 export function canCook(id){
-  const m=dishMats(id);
-  return m.length>0 && m.every(x=> inv.count(x)>0);
+  const d=((GAME_CONFIG.cooking||{}).dishes||{})[id];
+  if(!d) return false;
+  return dishMats(id).every(x=> inv.count(x)>0);   // 沒有 mats ＝不需要食材
 }
+/* ══⚠⚠ **現在有沒有任何一道「真的菜」煮得出來**（ver -1659）══
+   `hidden` 的那幾道不算（`usual` 永遠煮得出來，算進去這一支就永遠回 true）。
+   ⚠ 判定只有這一支（鐵律 7）：選單的 `gate`、劇情那一拍要不要開選單，都問它。 */
+export function canCookAny(){
+  const D=(GAME_CONFIG.cooking||{}).dishes||{};
+  return Object.keys(D).some(id=> !D[id].hidden && canCook(id));
+}
+/* 回傳 `{ ok, first, gain }`。
+   ⚠⚠ `gain` ＝**這一次體力上限真的多了多少**，用「吃之前 vs 吃之後」的差算出來
+   （ver -1659）—— 不是去讀 `boon.hpMax`。因為金額現在不只一個來源
+   （那一道自己的 40 ＋「這一輪第一餐」的 40，見 config.cooking.firstMeal），
+   在這裡照著加一次就是**第二個計算式**，而它一定會與 `progress.bonus()` 走鐘
+   （鐵律 7）。差值天生與加總點一致，日後 boon 表怎麼改都不必回來動它。 */
 export function cookDish(id){
-  if(!canCook(id)) return { ok:false, first:false };
+  if(!canCook(id)) return { ok:false, first:false, gain:0 };
   for(const m of dishMats(id)) inv.remove(m,1);
-  return { ok:true, first: prog.addCooked(id) };
+  const before = prog.playerMaxHp();
+  const first  = prog.addCooked(id);
+  return { ok:true, first, gain: prog.playerMaxHp() - before };
 }
 /* ══ 廚房的單子（ver -953，Ray：「十道菜名跟材料都列出來」）══
    走 `showExchange` 那一套版面（同一份 CSS，鐵律 8）。逐道列出**三樣材料**，
@@ -810,7 +830,8 @@ export function showKitchen(opts){
          · 料理    材料不齊 → 灰階、按不動
        ⚠ 圖只有第一道有（其餘九道等美術）—— 沒有圖就算已習得也是「？？？」，
          那是**缺圖**不是缺解鎖，但兩者長一樣不會誤導（都還沒東西可看）。 */
-    const body=Object.keys(D).map(id=>{
+    /* ⚠ `hidden` 的不列（ver -1659）：`usual`（跟平常一樣的）不是一道可以點的菜。 */
+    const body=Object.keys(D).filter(id=>!D[id].hidden).map(id=>{
       const d=D[id], mats=dishMats(id);
       const done=prog.hasCooked(id), can=canCook(id);
       const pic=(done && d.ci) ? asset(d.ci) : null;
@@ -837,7 +858,9 @@ export function showKitchen(opts){
        ⚠⚠ **只有真的有得煮才收掉「關閉」**：一道都按不動時還把出口拿掉就是卡死
          —— 那比 §6.5.5「還不能做不要靠藏起鈕擋」更糟（這裡連鈕都沒有）。
          測試期間三樣食材是 `always:true`，所以正常情況一定有得煮。 */
-    const gate = !!o.mustCook && Object.keys(D).some(id=>canCook(id));
+    /* ⚠ ver -1659：問 `canCookAny()`（同一支，鐵律 7）—— 直接 `some(canCook)` 會把
+       `usual` 算進去（它不需要食材，永遠 true），於是「關閉」鈕永遠被收掉＝卡死。 */
+    const gate = !!o.mustCook && canCookAny();
     ov.innerHTML='<div class="loot-panel"><div class="loot-title">瑪麗亞的廚房'
                + (o.info ? '<span class="shop-info">'+o.info+'</span>' : '')+'</div>'
                + '<div class="shop-desc">'
@@ -855,7 +878,9 @@ export function showKitchen(opts){
         /* ⚠ **先收單子再演**：演出蓋滿場景區，單子留著會壓在上面。
            收尾交給呼叫端（town）—— 它才知道演完要不要把店門的鈕擺回來。 */
         close();
-        if(o.onCook) o.onCook(id, r.first);
+        /* ⚠ `gain` ＝這一次上限真的多了多少（ver -1659）：大字要報它，
+           不是報那一道的 `boon.hpMax`（第一餐會多一份，見 config.cooking.firstMeal）。 */
+        if(o.onCook) o.onCook(id, r.first, r.gain);
       });
     });
     const okBtn=ov.querySelector('.loot-ok');

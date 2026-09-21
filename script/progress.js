@@ -570,10 +570,21 @@ export function bonus(key){
     const n=owned[d.id]|0;
     if(n>0 && d[key]!=null) sum += d[key]*n;
   }
-  const dishes=(GAME_CONFIG.cooking||{}).dishes||{};
-  for(const id of cookedDishes()){
+  const C=GAME_CONFIG.cooking||{};
+  const dishes=C.dishes||{};
+  const cooked=cookedDishes();
+  for(const id of cooked){
     const b=(dishes[id]||{}).boon;
     if(b && b[key]!=null) sum += b[key];
+  }
+  /* ══⚠ **這一輪的第一餐，額外一份**（ver -1659，見 `config.cooking.firstMeal`）══
+     ⚠ 條件是「吃過任何一餐」——**不另立旗標**（鐵律 9）：那個狀態就是 `cookedDishes()`
+       非空，它本來就存檔、本來就 `newRun()` 清。
+     ⚠ 放在**這一支**而不是散到 `playerMaxHp()`：加總點只有一個（鐵律 7），
+       日後 `firstMeal` 要給別的欄位（`dmgMul`…）自動吃到。 */
+  if(cooked.length){
+    const f=C.firstMeal;
+    if(f && f[key]!=null) sum += f[key];
   }
   return sum;
 }
@@ -675,13 +686,24 @@ function testmodeOn(){
   try{ return !!(document.body && document.body.classList.contains('testmode')); }
   catch(e){ return false; }
 }
+/* ══⚠⚠⚠ **管理人的全滿是「預設值」，不是「覆蓋」**（ver -1659，Ray：「管理人模式
+   默認好感全滿，但如果是點故事開始進去就會從 0 開始算，讀取存檔、點擊繼續等
+   則會繼承進度」）══════════════════════════════════════════════════════════
+   -1598 那一版是**無條件**覆蓋 —— 於是「開始故事」從頭跑也是全滿、讀檔回來
+   也被蓋掉（存檔裡的真值根本讀不到）。那正是**鐵律 9** 明令禁止的形狀：
+   「不准讓『鑰匙不存在』以外的情境吃到預設值」。
+   ⇒ 現在只有**鑰匙真的不存在**時才套（＝沒跑主線：挑戰、試飛、還沒開局）。
+     主線一開始，`newRun()` 就把四個 0 真的寫進去（見那一支），
+     於是「開始故事」走 0、讀檔走存檔裡的值。
+   ⚠ 照舊**不寫進鑰匙**：這裡只是查詢層的假定值，拔掉 testmode 就回到真實值。 */
 export function getAffection(){
   const out={}; for(const c of CHARS) out[c]=AFFECTION_DEFAULT;
+  let keyed=false;
   try{
     const j=JSON.parse(rd(K.affection)||'null');
-    if(j) for(const c of CHARS) if(typeof j[c]==='number') out[c]=j[c];
+    if(j){ keyed=true; for(const c of CHARS) if(typeof j[c]==='number') out[c]=j[c]; }
   }catch(e){}
-  if(testmodeOn()) for(const c of CHARS) out[c]=AFF_MAX;
+  if(!keyed && testmodeOn()) for(const c of CHARS) out[c]=AFF_MAX;
   return out;
 }
 export function setAffection(obj){ wr(K.affection, JSON.stringify(obj||{})); }
@@ -1487,7 +1509,10 @@ export const FLIGHT_TEST = {
   enter:'flight',
 };
 
-export function newRun(){
+/* `opts.mainline:true` ＝**這是「開始故事」那一條**（ver -1659）：只有它會把好感的
+   四個 0 真的插進鑰匙。章節工具與巡場**不要傳** —— 它們是開發梯子，要的是
+   「鑰匙不存在＝管理人全滿」（見下面那一段）。 */
+export function newRun(opts){
   for(const k of [K.stage, K.flags, K.affection, K.affFloor, K.name, K.nick,
                   K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime,
                   K.charms, K.gunLv, K.gunStars, K.wmod, K.jmod, K.dishes,
@@ -1503,6 +1528,18 @@ export function newRun(){
      （章節工具）在之後自己 setStage 覆寫。 */
   wr(K.stage, 0);
   wr(K.playtime, 0);   // 實體遊玩時間也插著（鐵律 9）
+  /* ══⚠⚠⚠ **好感的四個 0 只有「開始故事」那一條路要插**（ver -1659，Ray：
+     「**只有點故事開始會從 0 開始**，還有讀取存檔會繼承該存檔的進度，
+     其他試飛、點章節、巡場進去都是預設全滿」）══
+     ⚠⚠ **不可以無條件插在這裡** —— `newRun()` 是三條路共用的
+     （開始故事／章節工具／巡場），插下去會把後兩條也打成 0，
+     而那兩條正是 -1598 要讓它全滿的開發梯子。
+     ⚠ 形狀同上面的 `stage 0`（鐵律 9：主線一開始，主線鑰匙就要真的插著）——
+       差別只在「誰算主線」：stage 三條路都要，好感只有開始故事要。
+     ⚠ 章節工具照舊用 `c.aff` 覆寫（`setAffectionDev`，連棘輪地板一起處理）；
+       沒寫的角色留在「鑰匙不存在＝管理人全滿」。
+     ⚠ 地板（`K.affFloor`）**不必插**：沒有地板就是沒有地板，那個查詢沒有預設值。 */
+  if(opts && opts.mainline){ const z={}; for(const c of CHARS) z[c]=0; setAffection(z); }
   /* 其他模組自己的存檔。⚠ 這裡列出來就是「它屬於一輪遊戲」的宣告 ——
      日後新增任何一輪內的存檔（例如城鎮的所在節點），**一定要加進這一行**。 */
   const tutKey = (GAME_CONFIG.tutorial||{}).storageKey;   // ⚠ 問 config，不要抄字串（鐵律 7）

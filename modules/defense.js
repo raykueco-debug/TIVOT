@@ -465,6 +465,26 @@ export function resolveThreat(th){
     if(canFire()){
       api.weaponCounter(undefined, undefined, undefined, 'counter');   // ver -970：帶名交給 weapon 查 bandMul
       staggerOnCounter();
+      /* ══⚠⚠⚠ **重擊：劇烈一震 ＋ 清掉所有攻擊圈**（ver -1659，Ray：「步槍跟高爆彈
+         在紅圈命中時敵人都要劇烈一震，像遭到重擊，且命中可以清掉所有攻擊圈」）══
+         ⚠ **只有紅圈**（這一整段就是紅圈那一帶）——黃橘圈自 -706 起也會開火，
+           但那不是完美反擊（§「完美反擊只有紅圈」）。
+         ⚠ **是不是那種槍寫在卡上**（`counterWipe`，鐵律 1）：陸戰萊福槍與船戰高爆砲
+           是同一張卡的兩個場合（`vfx:'single'`＝爆發型），所以兩把萊福槍各標一次
+           就涵蓋了「步槍」與「高爆彈」。別的槍日後要就加那一格。
+         ⚠⚠ **清場收在 defense**（`threats` 的擁有者，鐵律 7/9）——不要讓 weapon 去清：
+           它不認識那個陣列，而且這一支正跑在 `resolveThreat` 裡面。
+           ⚠ 安全性：這一拍的 `th` 在函式開頭就 `removeThreat` 掉了（見上面），
+             所以現在清的是**其他**還掛在畫面上的圈。
+         ⚠⚠ **連還沒生出來的那一波也取消**（`clearWaveTimers`）：一波三顆的齊射
+           （`assault:{count,gap}`）打中第一顆就該整串被打斷 —— 只清畫面上的話，
+           剩下兩顆照樣會冒出來，那讀起來不是「清掉所有攻擊圈」。
+         ⚠ 震動的實作只有 `enemy.slamEnemy()` 一支（份量在 CSS 的 `#enemyImg.slam`）。 */
+      if(w && w.counterWipe){
+        if(api.slamEnemy) api.slamEnemy();
+        clearWaveTimers();
+        clearThreat();
+      }
     }else boltFloat();
   }else if(ratio < DEF_DEFENSE_MIN){
     // === Perfect Defense ===（金色微閃）

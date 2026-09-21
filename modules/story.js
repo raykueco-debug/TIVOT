@@ -2349,7 +2349,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1658';
+const KERB_V='?v=1660';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3282,9 +3282,12 @@ function renderLine(){
      它與 `cook` 是**兩拍**，因為稿上中間夾著四句台詞。 */
   if(line.boon){
     /* ⚠ **沒有真的加到就不要報**：玩家可能在這一段之前就自己去廚房煮過同一道
-       （加成只算一次）。那時照報一次「＋40」是騙人的。 */
-    if(!lastCookFirst) return advance();
-    hideBubble(); showBoon(line.boon, ()=>advance()); return;
+       （加成只算一次）。那時照報一次「＋40」是騙人的。
+       ⚠⚠ ver -1659：判準由 `lastCookFirst` 換成 **`lastCookGain>0`** —— 金額現在
+         不只一個來源（那一道的 40 ＋ 這一輪第一餐的 40），「第一次煮」與
+         「真的加到了」已經不是同一件事。問「加了多少」才是問對問題。 */
+    if(!(lastCookGain>0)) return advance();
+    hideBubble(); showBoon(lastCookGain, ()=>advance()); return;
   }
 
   /* ══ `{ kitchen:true }` ＝**把菜單交給玩家**（ver -956，Ray：「料理情節是要開菜單
@@ -3292,22 +3295,45 @@ function renderLine(){
      ⚠ 它是**閘門**：挑一道煮了才往下演（`mustCook`）。演出與帳照舊走同一支
        （`playCooking`／`cookDish`）—— 這一拍只是把「煮哪一道」交還給玩家。
      ⚠ 沒註冊 handler 就跳過（開發時直接跑腳本的情形），不要卡住。 */
+  /* ══⚠⚠⚠ **一道都煮不出來 ⇒ 不開選單，跳到 `noMats` 那一段**（ver -1659，Ray：
+     「如果身上沒有相應的食材，就不觸發選擇畫面，索菈娜說『跟平常一樣的！』
+     瑪莉亞答『好喔』直接料理」）══
+     ⚠ 判定**不在這裡算**：story 不認識道具袋。`kitchenHandler` 回 `false`
+       ＝「沒得煮，我沒開」（`town.openKitchenForStory` 問 `loot.canCookAny()`，
+       鐵律 7）—— 不另開一個注入點。
+     ⚠ 台詞走**既有的 label 分歧**（同 `onLose`）：`noMats:'<label>'`。
+       那幾句是資料，不是程式（鐵律 1）。
+     ⚠ 沒寫 `noMats` 就照舊往下走（選單開不起來也不會卡死 —— 沒有 `mustCook` 的
+       閘門效果，`showKitchen` 自己留著「關閉」鈕）。 */
   if(line.kitchen){
     hideBubble();
     if(!kitchenHandler){ console.info('[story] 沒有註冊廚房開啟器，跳過'); return advance(); }
     kitchenOpen=true;
-    try{ kitchenHandler((id, first)=>{ kitchenOpen=false; lastCookFirst=!!first;
-           playCooking(id, {}, ()=>advance()); }); }
+    let opened=true;
+    try{ opened = kitchenHandler((id, first, gain)=>{ kitchenOpen=false;
+           lastCookGain=gain||0;
+           playCooking(id, {}, ()=>advance()); }) !== false; }
     catch(e){ kitchenOpen=false; console.info('[story] kitchenHandler 出錯', e); return advance(); }
+    if(!opened){
+      kitchenOpen=false;
+      if(line.noMats){
+        const at=indexOfLabel(cur.lines, line.noMats);
+        if(at>=0){ lineIdx=at; return renderLine(); }
+        console.info('[story] noMats 指到不存在的 label：', line.noMats);
+      }
+      return advance();
+    }
     return;
   }
 
+  /* `{ cook:'<菜id>' }`。`noAnim:true` ＝**只有聲音、不演料理**（ver -1659）——
+     「跟平常一樣的」那一條走它（Ray：「直接料理，但只有聲音沒有料理動畫」）。 */
   if(line.cook){
     hideBubble();
-    lastCookFirst=true;
-    if(cookHandler){ try{ const r=cookHandler(line.cook); lastCookFirst=!!(r && r.first); }
+    lastCookGain=0;
+    if(cookHandler){ try{ const r=cookHandler(line.cook); lastCookGain=(r && r.gain)||0; }
                      catch(e){ console.info('[story] cookHandler 出錯', e); } }
-    playCooking(line.cook, {}, ()=>advance());
+    playCooking(line.cook, { noAnim:!!line.noAnim }, ()=>advance());
     return;
   }
 
@@ -4660,8 +4686,11 @@ export function showTitleCard(spec, done){
    ⚠ 成品**不走 `#storyCi`**：那一格是半寬的側插（給角色立繪用的，left:46%），
      一張料理照片擠進去只看得到一半。做在自己這一層、全幅呈現。 */
 let cookT=[], cookCue=null, cookDone=null;
-/* 上一拍的 `cook` 是不是**第一次**煮成 —— `{ boon }` 那一拍靠它決定要不要報大字。 */
-let lastCookFirst=false;
+/* 剛剛那一餐**真的**把體力上限加了多少（ver -1659）——`{ boon }` 那一拍靠它決定
+   要不要報大字、以及報幾點。
+   ⚠ 金額由 `loot.cookDish` 用「吃之前 vs 吃之後」算出來（鐵律 7：只有一個算式），
+     這裡只是把它帶到那一拍。 */
+let lastCookGain=0;
 function cookClear(){
   cookWaitTap = null;                  // ver -1000：重來一次就不要留著上一次的等待
   cookT.forEach(clearTimeout); cookT=[];
@@ -4682,10 +4711,25 @@ let cookWaitTap = null;
 export function playCooking(dishId, opts, done){
   const st=$('storyStage'); const o=opts||{};
   const C=(GAME_CONFIG.cooking||{}), D=(C.dishes||{})[dishId];
-  if(!st || !D){ done && done(); return false; }
   cookClear();
   cookDone = done || null;
   const finish=()=>{ const f=cookDone; cookDone=null; stopCooking(); if(f) try{ f(); }catch(_){} };
+  /* ══⚠⚠ **`noAnim` ＝只有聲音，不演**（ver -1659，Ray：「直接料理，但只有聲音
+     沒有料理動畫，後面一樣接對話」）══「跟平常一樣的」那一餐走這條。
+     ⚠ 排在 `!D` 的守門**之前**：這一條不需要菜的資料（沒有成品圖、不印菜名）。
+     ⚠ **不設 `cookWaitTap`**：沒有成品可看就不要叫玩家點一下 —— 音效跑完自己接下去
+       （-1000 那條「菜做好要點一下」管的是那盤菜，這裡沒有那盤菜）。
+     ⚠ 長度照舊讀 `animMs`（＝`se_cooking` 的長度，鐵律 7），不要另寫一個秒數。 */
+  if(o.noAnim){
+    try{ SFX.unlock(); const src=seSrc('se_cooking');
+         if(src) cookCue=SFX.playCue(src, fileGain(src)); }catch(_){}
+    cookT.push(setTimeout(()=>{ playSe('vo_maria_dishdone'); }, C.animMs||3730));
+    cookT.push(setTimeout(finish, (C.animMs||3730)+600));
+    return true;
+  }
+  /* ⚠ 這一條在 `cookClear()` 之後，所以要把 `cookDone` 收掉再直接叫 —— 留著的話
+     下一次 `stopCooking()` 會以為還有人在等（它只清不叫）。 */
+  if(!st || !D){ cookDone=null; done && done(); return false; }
 
   let c=$('storyCook');
   if(!c){ c=document.createElement('div'); c.id='storyCook'; st.appendChild(c); }
@@ -4748,11 +4792,16 @@ export function playCooking(dishId, opts, done){
      腳本用 `{ boon:'<菜id>' }` 那一拍，介面在 `playCooking` 的回呼裡叫。
      （做成 `playCooking` 的參數也可以，但那個參數一定會有人忘記傳，
        而忘記的症狀是「加成默默生效、玩家不知道」。） */
-export function showBoon(dishId, done){
+/* ⚠⚠ ver -1659：參數由**菜 id** 改成**「真的加了多少」**。
+   金額現在不只一個來源（那一道自己的 `boon.hpMax` ＋ 這一輪第一餐的那一份，
+   見 `config.cooking.firstMeal`）—— 在這裡讀 `boon.hpMax` 就是**第二個計算式**，
+   而它一定會與 `progress.bonus()` 走鐘（鐵律 7）。呼叫端傳 `loot.cookDish` 回來的
+   `gain`（用「吃之前 vs 吃之後」算出來的差），這一支只負責印。
+   ⚠ 順帶修掉一個既有的小謊：腳本那一拍寫死 `boon:'deersteak'`，而玩家選的可能
+     是別道菜 —— 十道剛好都是 40 所以看不出來。 */
+export function showBoon(up, done){
   const st=$('storyStage');
-  const D=(((GAME_CONFIG.cooking||{}).dishes)||{})[dishId];
-  const up=D ? ((D.boon||{}).hpMax||0) : 0;
-  if(!st || !up){ done && done(); return false; }
+  if(!st || !(up>0)){ done && done(); return false; }
   const C=(GAME_CONFIG.cooking||{});
   let b=$('storyBoon');
   if(!b){ b=document.createElement('div'); b.id='storyBoon'; st.appendChild(b); }

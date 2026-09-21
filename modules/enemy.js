@@ -29,6 +29,22 @@ const $ = id => document.getElementById(id);
 let api = { startIntruderFight(){}, updateBars(){} };
 export function init(a){ api = { ...api, ...a }; }
 
+/* ══⚠⚠ **重擊：敵人劇烈一震**（ver -1659，Ray：「步槍跟高爆彈在紅圈命中時
+   敵人都要劇烈一震，像遭到重擊」）══
+   ⚠ **只有這一支在演**（鐵律 8）：誰在什麼時候該震是 `defense` 的判斷
+     （爆發型 ＋ 紅圈），份量與曲線是 CSS 的 `#enemyImg.slam`（鐵律 1／7）。
+   ⚠ `remove → reflow → add`：連續兩發之間不 reflow 的話瀏覽器會把它併成一次，
+     第二發就不播（同 `hit`／`enemy-rise` 那一族的作法）。
+   ⚠ 計時器掛在**模組**上不是閉包（同 -640 落地光那次的教訓：掛閉包的話
+     前一次取消不掉，兩次疊起來會互相把 class 拔掉）。 */
+let slamT=0;
+export function slamEnemy(){
+  const el=$('enemyImg'); if(!el) return;
+  clearTimeout(slamT);
+  el.classList.remove('slam'); void el.offsetWidth; el.classList.add('slam');
+  slamT=setTimeout(()=>el.classList.remove('slam'), 460);
+}
+
 /* ---------- 受擊特效派工 ----------
  *  依當前怪 curEnemyHitFx[kind] 播放對應特效。
  *  kind：'delay'（延時懲罰）/'wrong'（按錯懲罰）/'assault'（一般攻擊）/'ult'（門檻波的大絕，ver -932）。

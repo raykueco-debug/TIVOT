@@ -69,7 +69,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.21-1658';
+export const VERSION = 'ver 2026.09.21-1660';
 
 export const GAME_CONFIG = {
 
@@ -142,6 +142,15 @@ export const GAME_CONFIG = {
     Sniper_Falcon: { name:'85式萊福槍「嗜心者」', shortName:'嗜心者', cat:'萊福槍',
                      owned:true, critRate:0.20, maxMod:5, value:5000,
                      counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
+                     /* ══⚠⚠ **重擊**（`counterWipe`，ver -1659，Ray：「步槍跟高爆彈在紅圈
+                        命中時敵人都要劇烈一震，像遭到重擊，且命中可以清掉所有攻擊圈」）══
+                        **紅圈命中**（完美反擊）時：敵人劇烈一震 ＋ 當下所有攻擊圈清空、
+                        連同還沒生出來的那一波（齊射被打斷）。判定與清場在 `defense`
+                        的紅圈分支（鐵律 7/8），這裡只宣告「這把槍做得到」。
+                        ⚠ 「步槍」與「高爆彈」是**同一條分支的兩個場合**
+                        （`vfx:'single'`＝爆發型，陸戰是萊福槍、船戰是高爆砲）——
+                        所以兩張萊福槍卡各標一次就涵蓋了 Ray 講的兩個名字。 */
+                     counterWipe:true,
                      /* ══⚠⚠⚠ **ver -975（Ray）：黃橘圈也反擊，但攻擊力 −50%** ══
                         > 「萊福槍改成黃橘圈也反擊，但 nerf 50% 攻擊力」
                         ⚠ **`take` 照舊留著**：Ray 只說「也反擊」，沒說免傷 ——
@@ -193,6 +202,7 @@ export const GAME_CONFIG = {
     Rifle_Shahin:  { name:'Shahin栓動萊福槍「遊隼」', shortName:'遊隼', cat:'萊福槍',
                      critRate:0.20, maxMod:5, price:5000,
                      counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
+                     counterWipe:true,   // 重擊：同「嗜心者」（ver -1659，說明見那一張卡）
                      // ver -975：同「嗜心者」（黃橘圈也反擊、攻擊力 −50%），見那張卡的說明。
                      bands:{ block:{ counter:true, take:0.5,  dmgScale:0.5 },
                              perfect:{ counter:true, take:0.25, dmgScale:0.5 } }, counterSec:-3,
@@ -3042,7 +3052,31 @@ export const GAME_CONFIG = {
        所以煎多久就是那支音效多長。舊的 4800 是對著 39.7 秒那一版隨手取的段落。
        ⚠ 音檔再換就要回來對一次（`afinfo resources/audio/se/se_cooking.m4a`）。 */
     panMs:750, dotMs:420, animMs:3730, holdMs:1500, boonDelayMs:700, boonMs:1600,
+    /* ══⚠⚠⚠ **第一餐的額外加成**（ver -1659，Ray 交辦）════════════════════════
+       Ray：「主角吃了一樣永久 HP＋40。如果第一次來就有帶足食材，第一次料理就＋80。
+       如果第一次來沒有食材先加了 40，那第一次料理就改成＋40。」
+       ⇒ 那是一句「**第一餐總共 ＋80**」：每一道菜自己 ＋40（下面那十道，照舊），
+         再加上這一份「這一輪的第一餐」＋40，**只給一次、任何一餐都算**。
+           · 有食材：鹿排 40 ＋ 首餐 40 ＝ **80**
+           · 沒食材：`usual` 0 ＋ 首餐 40 ＝ **40**；之後第一次真的料理 40 ＋ 0 ＝ **40**
+           · 再吃一次 `usual`：那一道已經記過、首餐也用掉了 ⇒ **0**（刷不到）
+       ⚠⚠ 「吃過第一餐了沒」**不另立旗標**（鐵律 9）：`cookedDishes()` 非空就是吃過了
+         —— 那個狀態本來就存在，加總點 `progress.bonus()` 直接讀它。
+       ⚠ 欄位名沿用同一套（`hpMax`／日後的 `dmgMul`…），所以它與十道菜走**同一個**
+         加總點，不是第二個計算點。 */
+    firstMeal: { hpMax:40 },
     dishes: {
+      /* ══⚠⚠ **「跟平常一樣的」＝沒帶食材時的那一餐**（ver -1659，Ray：「如果身上
+         沒有相應的食材，就不觸發選擇畫面，索菈娜說『跟平常一樣的！』瑪莉亞答
+         『好喔』直接料理」）══
+         · `hidden:true` ＝**廚房選單不列它**（它不是一道可以點的菜，是沒得點時的退路）。
+         · **沒有 `mats`** ＝不需要食材（`loot.canCook` 因此永遠回 true）。
+         · **沒有 `boon`** ＝它自己不帶加成 —— 那 ＋40 是上面的「首餐」給的。
+           ⚠ 不要「順手」給它 `boon:{hpMax:40}`：那樣沒食材那一條會變成 80，
+             而且之後真的料理還會再拿 40（總共 120），與 Ray 的三句話對不上。
+         · 沒有 `ci`（成品圖）—— 它本來就不演成品，見 `playCooking` 的 `noAnim`。 */
+      usual:      { name:'跟平常一樣的', hidden:true,
+                    desc:'瑪麗亞看你們沒帶東西來，隨手做的家常菜。' },
       /* 第一道是劇本指定的（Stage8 瑪麗亞的第一頓）。⚠ Ray 口頭說「羊腿排」，
          但稿上的台詞是「奶油鹿腿一份」、交件的插圖也是 `di_deersteak`（鹿）
          —— 以稿與圖為準寫成鹿腿。要改成羊的話，圖與台詞要一起改。 */

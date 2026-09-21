@@ -76,6 +76,9 @@ export function setup(){
   //   assaultSuppressed/firstThreatPending：教學暫緩大絕（一次一顆/腳本盤）與首顆固定位
   //   （defense 不 import tutorial，經此轉交）
   defense.init({ enemyAttack, enemyDamage, floatDmg, triggerAtkBuff,
+                 /* 重擊那一震（ver -1659）：演出的擁有者是 enemy（`#enemyImg`），
+                    「什麼時候該震」的判斷在 defense —— 經此轉交（defense 不 import enemy）。 */
+                 slamEnemy: enemy.slamEnemy,
                  /* 拉栓冷卻（ver -1009）：這一發開不開得出來由 weapon 回答
                     （鑰匙是那一把槍卡上的 `counterCdSec`）—— defense 不 import weapon。 */
                  counterReady: weapon.counterReady,

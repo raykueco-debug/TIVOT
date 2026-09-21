@@ -352,6 +352,26 @@
   @keyframes camShake{0%,100%{transform:translate(0,0)}
     20%{transform:translate(-6px,4px)}40%{transform:translate(5px,-3px)}
     60%{transform:translate(-4px,-4px)}80%{transform:translate(4px,3px)}}
+  /* ══⚠⚠ **重擊**（ver -1659，Ray：「步槍跟高爆彈在紅圈命中時敵人都要劇烈一震，
+     像遭到重擊」）══ 爆發型（`vfx:'single'`）的完美反擊才播。
+     它與另外兩支是**三個不同的份量**，不要混用：
+       · `hit`（.15s／±5px）＝每一次普攻都會發生的事 —— 短到不會糊。
+       · `shake`（.3s／±6px）＝一般的晃。
+       · `slam`（.42s／±16px ＋ 縱向 ＋ 縮放 ＋ 打亮）＝**一發大口徑正面命中**。
+     ⚠ 只動 `#enemyImg`（背景不動，ver -592）：整個畫面震是玩家受擊那一記
+       （`#app.hitshake`，ver -593）—— 這一下是**敵人**被打到，不是鏡頭被撞歪。
+     ⚠ 起手就是最大振幅、之後逐拍收小：那是「被撞一下再晃回來」；
+       等幅的來回讀起來是在發抖，不是挨了一發。
+     ⚠ 用動畫不用 transition（同 `hit` 那一條的理由：連續命中要每一發都完整播）。 */
+  #enemyImg.slam{animation:enemySlam .42s cubic-bezier(.22,.9,.3,1);}
+  @keyframes enemySlam{
+    0%  {transform:translate(0,0)          scale(1);    filter:brightness(2.2) saturate(.5);}
+    12% {transform:translate(-16px,6px)    scale(1.05); filter:brightness(1.7) saturate(.7);}
+    26% {transform:translate(13px,-5px)    scale(.965); filter:brightness(1.3) saturate(.9);}
+    42% {transform:translate(-9px,4px)     scale(1.02); filter:none;}
+    58% {transform:translate(6px,-3px)     scale(.99);  filter:none;}
+    74% {transform:translate(-3px,2px)     scale(1.005);filter:none;}
+    100%{transform:translate(0,0)          scale(1);    filter:none;}}
   /* 連戰換敵：敵人區「前進遭遇」進場（僅敵人區、非 cut-in、盤面不動）。
      leave＝舊敵被掠過（放大＋淡出、變暗）；enter＝新敵自遠處逼近（縮入＋提亮淡入）。 */
   #enemyImg.enemy-leave{animation:enemyLeave .26s ease-in forwards;}

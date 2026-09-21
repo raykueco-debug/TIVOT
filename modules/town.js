@@ -16,7 +16,7 @@ import * as clock from '../script/clock.js';
 import * as prog from '../script/progress.js';
 import * as story from './story.js';
 import * as inn from './inn.js';                 // 旅店大廳（伙伴門／獨自坐坐／回房睡覺）
-import { showShop, showBounty, showExchange, showKitchen } from './loot.js';   // showKitchen＝瑪麗亞的廚房（ver -953）
+import { showShop, showBounty, showExchange, showKitchen, canCookAny } from './loot.js';   // showKitchen＝瑪麗亞的廚房（ver -953）；canCookAny＝現在有沒有菜煮得出來（ver -1659）
 import * as gear from './gear.js';               // 戰前強制整備（ver -838，onLeave 的 gear 掛鉤）
 import { SPEAKERS, faceStyle } from '../script/speakers.js';
 import { SFX } from '../audio.js';
@@ -3195,12 +3195,21 @@ function shopBtnName(n){
    所有地圖都一樣」）。⚠ **只傳鑰匙不傳座標**：城在地圖上的位置只有飛行頁的
    `SETTLEMENTS` 那一份（鐵律 7）—— -565 的逐城 `sailFrom` 已刪。 */
 export function sailFrom(){ return townId ? { town:townId } : null; }
+/* ══⚠⚠⚠ **一道都煮不出來就不要開選單**（ver -1659，Ray：「如果身上沒有相應的
+   食材，就不觸發選擇畫面…」）══ 回傳 **false** ＝「我沒開」，劇情那一拍據此
+   跳到 `noMats` 那一段（見 `story.js` 的 `line.kitchen`）。
+   ⚠ 判定問 `loot.canCookAny()`（唯一那一支，鐵律 7）—— `usual`（跟平常一樣的）
+     是 `hidden` 的，不算在內，不然這一支永遠回 true。
+   ⚠ 不開的時候**什麼都不要動**：導覽與店門鈕留給那一段對白自己收
+     （開了才 `showNav(false)`）。 */
 export function openKitchenForStory(onCook){
   const n=node();
+  if(!canCookAny()) return false;
   showNav(false); showShopBtn(false);
   sheetClose = showKitchen({ info:infoText(n), mustCook:true,
     onClose:()=>{ sheetClose=null; },
-    onCook:(id, first)=>{ sheetClose=null; if(onCook) onCook(id, first); } });
+    onCook:(id, first, gain)=>{ sheetClose=null; if(onCook) onCook(id, first, gain); } });
+  return true;
 }
 function showShopBtn(on){
   const b=layer && layer.querySelector('#townShopBtn'); if(!b) return;
@@ -3244,12 +3253,14 @@ function openSheet(){
   if(n.kitchen){
     sheetClose = showKitchen({ info:infoText(n),
                                onClose:()=>{ sheetClose=null; openMenu(); },
-                               onCook:(id, first)=>{
+                               onCook:(id, first, gain)=>{
                                  showNav(false);
                                  const back=()=>{ showNav(true); openMenu(); };
                                  /* 第一次煮成才報加成的大字（見 story.showBoon 的說明：
                                     大字永遠是另一次呼叫，不藏在演出裡）。 */
-                                 story.playCooking(id, {}, ()=> first ? story.showBoon(id, back) : back());
+                                 /* ⚠ 大字報**真的加了多少**（`gain`，ver -1659），不是那一道的
+                                    `boon.hpMax` —— 第一餐會多一份（config.cooking.firstMeal）。 */
+                                 story.playCooking(id, {}, ()=> (gain>0) ? story.showBoon(gain, back) : back());
                                } });
     return;
   }

@@ -174,7 +174,7 @@ def bg_exists(rel):
 
 # ⚠ 「這一拍自己就是畫面」的欄位（ver -1290）——空台詞也不算漏寫。
 #   改 modules/story.js 的 renderLine 時，新增同類的拍要補進這裡。
-SELF_SHOWN = ('cg', 'dayBreak', 'kitchen', 'boon')
+SELF_SHOWN = ('cg', 'dayBreak', 'kitchen', 'boon', 'cook')   # ver -1659：cook 那一拍自己就是畫面（料理演出）
 
 # `hint` 拍認得的目標代號。⚠ 與 `modules/story.js` 的 `HINT_TARGET` 是同一份 ——
 #   那邊加了新代號，這裡也要加（否則 lint 會誤報）。

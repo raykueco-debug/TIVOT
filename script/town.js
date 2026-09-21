@@ -175,8 +175,17 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
      （沒有怪掉、沒有店賣，等 Ray 指派掉落／店貨）。不發的話這一段的 `cook` 會
      扣不到料 → 加成默默不生效，而畫面上看不出任何異常。所以三樣一起發。
      ⚠ 玩家本來就有的話會多出一份 —— 那比「+40 沒生效」好得多。 */
+  /* ══⚠⚠ **只發迷迭香**（ver -1659）══ 稿上是「此時行囊有草原奶油、鹿腿肉，
+     **迷迭香現場劇情採**」—— 也就是肉與調味本來就該是**玩家自己帶來的**。
+     -953 為了「那時遊戲裡拿不到」把三樣一起發，於是 Ray 這一版要的
+     「沒帶食材」那一條**永遠走不到**（發完一定煮得出來）。
+     ⚠ 連帶修掉一個既有的走鐘：那一行發的是 `season_butter`，而 `deersteak` 的配方
+       ver -979 已經換成 `season_goatbutter` —— 發的那一份根本不是要用的那一份
+       （因為 `always:true` 在測試期間蓋住了，所以一直沒露餡）。
+     ⚠ 北峰山羊奶油的來源：北泊送行那一拍與北泊雜貨舖；跳關進來的走
+       `items.defs[].devKit`（main.js 的章節補給）。 */
   Object.assign(nou('front','（在路邊採了一把迷迭香）'),
-                { text:'', se:'se_walk', give:{ meat_deer:1, season_butter:1, herb_rosemary:1 } }),
+                { text:'', se:'se_walk', give:{ herb_rosemary:1 } }),
   mar(null,'那，想吃什麼呢？'),
   /* ══ 玩家自己挑（ver -956，Ray：「料理情節是要開菜單畫面讓玩家點選可料理的東西」）══
      `{ kitchen:true }` ＝開菜單、挑一道煮了才往下演；演出與帳照舊走同一支。
@@ -185,13 +194,29 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
        ⚠ 不要把它擺在 `kitchen` 之後：那一拍的回呼**直接接演出**，擺後面會變成
          「菜端上來了才說稍等一下」。
      ⚠ 設計上這時一定有鹿排的食材（Ray）；測試期間那三樣是 `always:true`。 */
-  { speaker:'COOK_SV', kitchen:true },
-  nou('surprise','這個！好好吃！'),
+  /* ⚠⚠ `noMats` ＝**一道都煮不出來時跳到哪一段**（ver -1659，Ray：「如果身上沒有
+     相應的食材，就不觸發選擇畫面，索菈娜說『跟平常一樣的！』瑪莉亞答『好喔』
+     直接料理，但只有聲音沒有料理動畫，後面一樣接對話」）。
+     判定在引擎（`story.line.kitchen` → `town.openKitchenForStory` → `loot.canCookAny`），
+     **台詞在這裡**（鐵律 1）。 */
+  { speaker:'COOK_SV', kitchen:true, noMats:'s8_usual' },
+  { goto:'s8_ate' },
+  /* ── 沒帶食材的那一條 ─────────────────────────────────────────────── */
+  Object.assign(sor('excite','跟平常一樣的！'), { label:'s8_usual' }),
+  mar(null,'好喔。'),
+  /* `noAnim` ＝只有炒菜聲，不演料理（Ray 指定）。那一餐是 `cooking.dishes.usual`
+     （`hidden`＋沒有配方＋自己沒有加成）—— ＋40 是「這一輪第一餐」給的，
+     見 `config.cooking.firstMeal`。 */
+  { speaker:'COOK_SV', cook:'usual', noAnim:true },
+  /* ── 合流 ──────────────────────────────────────────────────────── */
+  Object.assign(nou('surprise','這個！好好吃！'), { label:'s8_ate' }),
   mar(null,'對吧！綠月風格的奶油煎鹿肉。不用再調味就很好吃。'),
   sor('surprise','！！'),
   sor('surprise','這個人竟然已經吃完了！'),
-  /* HP 上限的大字（稿上排在這裡，不是接在料理完成那一刻 —— 見 story.showBoon）。 */
-  { speaker:'COOK_SV', boon:'deersteak' },
+  /* HP 上限的大字（稿上排在這裡，不是接在料理完成那一刻 —— 見 story.showBoon）。
+     ⚠ ver -1659：不再指名菜色 —— 它報的是**這一餐真的加了多少**
+       （80／40／0，`story.lastCookGain`）。沒加到就整拍跳過。 */
+  { speaker:'COOK_SV', boon:true },
   nou('bigsmile','很難得看到你露出那種表情呢。'),
   /* ══ 科爾文登場：報上名字之前是「？？？」＋**暗調剪影**（稿上的「陰影立繪」）══ */
   Object.assign(corx('smile','請問……'), { dark:true }),

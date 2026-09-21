@@ -1596,7 +1596,11 @@ town.setSessionCloser(()=>{ try{ combat.endSession(); }catch(_){} });
 function startStoryFresh(){
   try{ killAllPages(); }catch(_){}
   saveSys.clearRunSaves();
-  prog.newRun();          // -563 起 newRun 自己寫 stage 0（所有從頭開始的路都安全）
+  /* `{mainline:true}` ＝**這一條才把好感的四個 0 真的插進鑰匙**（ver -1659，Ray：
+     「只有點故事開始會從 0 開始，讀取存檔會繼承該存檔的進度，
+     其他試飛、點章節、巡場進去都是預設全滿」）。
+     ⚠ 章節工具與巡場**刻意不傳**：它們是開發梯子，要的是「鑰匙不存在＝管理人全滿」。 */
+  prog.newRun({ mainline:true });   // -563 起 newRun 自己寫 stage 0（所有從頭開始的路都安全）
   story.open(null);
 }
 bindBtn('storyStartBtn', startStoryFresh);
@@ -1667,7 +1671,11 @@ function startChapter(c){
   if(c.named){ prog.setPlayerName(''); prog.setPlayerNick(''); }   // 空字串＝套預設（托爾斯坦／托爾）
   if(c.flags && c.flags.length) prog.addFlags(c.flags);
   /* ══⚠⚠ `c.aff:{ who:值 }` ＝這一章／這一筆測試落點**開場的好感**（ver -1396）══
-     為什麼需要它：`newRun()` 把好感歸零（＝T1），而**有些段落的門是段位**
+     ⚠⚠ ver -1659：章節／巡場走的 `newRun()` **不帶 `mainline`**，所以好感鑰匙是
+       **不存在**的 ⇒ 管理人模式下讀出來是全滿（Ray：「其他試飛、點章節、巡場
+       進去都是預設全滿」）。這一格的用途因此變成「**這一章要把某人壓到哪一段**」
+       —— 寫了就是明講（例如 `renna:40` ＝測 T3 的門），沒寫就是全滿。
+     為什麼原本需要它：`newRun()` 把好感歸零（＝T1），而**有些段落的門是段位**
      （`needTier`，例如那一夜 `needTier:{renna:3}`）—— 跳關進去等於那一段永遠
      不成立，而且畫面上不會有任何錯誤訊息（只是「按了睡覺什麼都沒發生」）。
      ⚠ 走 `setAffectionDev`（唯一那支會連**棘輪地板與封頂**一起處理的，鐵律 8）
