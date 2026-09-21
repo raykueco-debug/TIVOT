@@ -222,8 +222,13 @@ let holyAt=0;
 /* 回傳 **true＝真的放了**。呼叫端據此決定要不要退回三爪（冷卻中／已經有一發在演）。 */
 export function spawnHolyBurst(fx){
   if(holyFx) return false;                 // 同一發不疊第二層（同櫻花那一支）
-  const cdMs = Math.max(0, (((fx && fx.cdSec!=null) ? fx.cdSec
-                            : ((HITFX.holyburst||{}).cdSec||0)) * 1000) | 0);
+  /* 冷卻幾秒：**卡上的那一欄優先**（`hitFxCd`／Excel「受擊特效／CD秒」，ver -1667
+     Ray：「CD 沒有在 enemie.xls 嗎?」）→ 這一拍自己寫的 → `config.HITFX` 的保底。
+     ⚠ 表上那一格是**沒填時的保底**，不是「真正在用的值」—— 逐怪要調就填 Excel
+       那一欄（鐵律 1：數字歸資料，而且要填得到）。 */
+  const cdSec = (state.curEnemyHitFxCd > 0) ? state.curEnemyHitFxCd
+              : ((fx && fx.cdSec!=null) ? fx.cdSec : ((HITFX.holyburst||{}).cdSec||0));
+  const cdMs = Math.max(0, (cdSec*1000)|0);
   if(cdMs && (Date.now() - holyAt) < cdMs) return false;
   holyAt = Date.now();
   const img=$('enemyImg');
@@ -1286,6 +1291,9 @@ export function setEnemy(key, opts){
   state.DELAY_DAMAGE  = dp.damage !=null ? dp.damage  : null;
   state.WRONG_DAMAGE  = wp.damage !=null ? wp.damage  : null;
   state.curEnemyHitFx = en.hitFx || null;        // 3.7：本怪受擊特效三件套（音效綁在 type 上，見 config.HITFX；卡上不再有 sound，ver -800）
+  /* 受擊特效的冷卻（秒，ver -1667）：卡上的 `hitFxCd`（Excel「受擊特效／CD秒」）。
+     ⚠ 沒寫要清成 0 —— 同 setEnemy 的其他欄位，連戰換敵不能留上一隻的。 */
+  state.curEnemyHitFxCd = (+en.hitFxCd || 0);
   state.curEnemyEntranceSe = en.entrance || null;     // 登場音（ver -948 併成一格；-949 欄名定為 entrance）
   // 名稱與立繪；取景（config fit.pos → object-position；未設＝回 CSS 預設 center top）
   const nameEl = $('enemyName');

@@ -242,6 +242,10 @@ export const state = {
   /* ── 3.7 亂入/Boss + 連戰序列（擁有者：enemy） ──────────────── */
   currentEnemyKey: null,
   curEnemyHitFx: null,     // 當前怪受擊特效三件套（音效綁在 type 上，見 config.HITFX，ver -800）
+  /* 這一隻的**受擊特效冷卻**（秒，ver -1667，Ray：「CD 沒有在 enemie.xls 嗎?」）——
+     卡上的 `hitFxCd`（Excel「受擊特效／CD秒」那一欄）。0／沒寫＝用 `config.HITFX`
+     表上的保底值。目前只有放光（`holyburst`）在看它。 */
+  curEnemyHitFxCd: 0,
   curEnemyEntranceSe: null, // 登場音（ver -948：landSe／entranceVo 併成一格；-949 欄名 entrance）
   intruderTriggered: false,
   inIntruderFight: false,

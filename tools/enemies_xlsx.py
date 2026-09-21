@@ -132,8 +132,11 @@ LAYOUT = [
     ('延時',   [('delayPenalty.seconds', '延時秒數'), ('delayPenalty.damage', '延時攻擊')]),
     ('錯誤',   [('wrongPenalty.damage',  '錯誤攻擊')]),
     # 受擊特效拆四格（ver -948 的「受擊四種狀況」）：延時／按錯／攻擊／大絕
+    # ⚠ `hitFxCd`（ver -1667，Ray：「CD 沒有在 enemie.xls 嗎?」）＝這一隻的**受擊特效
+    #   最快多久放一次**（秒）。目前只有放光（`holyburst`）在看它 —— 那一支是 2.9 秒的
+    #   全螢幕演出，每次攻擊都放會連成一片。留白＝用 `config.HITFX` 表上的保底值。
     ('受擊特效', [('hitFx.delay',  '延時'), ('hitFx.wrong', '按錯'),
-                ('hitFx.assault','攻擊'), ('hitFx.ult',   '大絕')]),
+                ('hitFx.assault','攻擊'), ('hitFx.ult',   '大絕'), ('hitFxCd', 'CD秒')]),
     ('圖幅',   [('fit.mode',        '取景模式'), ('fit.pos', '取景位置')]),
     ('掉落',   [('loot1.id','掉落1'), ('loot1.n','數量'), ('loot1.p','機率'),
                 ('loot2.id','掉落2'), ('loot2.n','數量'), ('loot2.p','機率'),

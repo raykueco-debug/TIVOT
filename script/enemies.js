@@ -2164,6 +2164,11 @@ export const ENEMIES = {
            `enemy.spawnHolyBurst` 自己算掉 —— 拿元素框去乘會偏）。 */
       beamFrom:{ x:0.53, y:0.055 },
       hitFx:{ delay:'blood', wrong:'slash', assault:'holyburst' },
+      /* ⚠⚠ 放光的冷卻（秒，ver -1667，Ray：「怎麼沒 CD 啊」「CD 沒有在 enemie.xls 嗎?」）
+         —— Excel 的「受擊特效／CD秒」那一欄。牠每 3~5 秒攻擊一次，而那一發光是
+         **2.9 秒的全螢幕演出**，不設冷卻會連成一片。
+         ⚠ 冷卻中那一發照樣打中、照樣扣血，只是改放三爪。 */
+      hitFxCd:12,
       loot:[],
     },
 
