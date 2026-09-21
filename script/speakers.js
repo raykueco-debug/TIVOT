@@ -621,6 +621,16 @@ export const ART = {
     die:        { src:'resources/si/sorana_si_die.webp',        top:7,  bot:1524, fx:0.452 },
     back:         { src:'resources/si/sorana_si_back.webp?v=2',       top:1,  bot:1516, fx:0.533 },  // ver -786 換新圖＋重量取景
     ready:        { src:'resources/si/sorana_si_ready.webp',         top:7,  bot:1521, fx:0.631 },
+    /* ══⚠⚠⚠ **背著安雅的合體立繪**（ver -1646，Ray 指定三處對白用它）══
+       ⚠⚠ 這是**兩個人**的一張圖（索菈娜在右、背著安雅），而說話的人是索菈娜
+         ⇒ `fx` 錨的是**索菈娜的臉**（0.82，偏右）。拿整張圖的中心去錨會讓
+         她的臉每次都偏掉半個身位（§6.5：橫向錨的是臉不是圖框）。
+       ⚠ `top/bot` 是實量（alpha>128、>1% 寬的列）：這張**上下左右都貼到邊**，
+         所以是 0 / 1534。
+       ⚠ `cm` 沿用索菈娜那一層（176）—— 這張是斜著抱的姿勢，真要「精準」得把
+         `cm` 帶到 200 以上，而那會超過 `CAST_TALL` 178 把全劇組一起縮小（§6.5）。
+         先照預設跑，要調就動 `cm`／`standCm` 這兩個旋鈕（不要動 top/bot）。 */
+    backcarry:    { src:'resources/si/soranaanya_si_backcarry.webp', top:0, bot:1534, fx:0.820 },
     readysmile:   { src:'resources/si/sorana_si_readysmile.webp?v=2', top:6,  bot:1534, fx:0.578 },  // ver -837 換新圖＋重量取景（?v=2：同名覆蓋）
     /* ver -837（Ray：「我的 tease 也被刪了，找回來」）：從 _originals 的透明版轉回，
        逐張量（measure_si.py）。腳本還沒有用到它 —— 先掛著備用。 */

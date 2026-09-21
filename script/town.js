@@ -7443,7 +7443,7 @@ export const TOWNS = {
            ⚠ 兩段各有各的 `flag`：柱廳那一段走到柱廳才演；登場戲哪邊先到哪邊演。 */
         acts:[ { flag:'tomb_hall2_arrive', need:'tomb_talk', sides:{ RENNA:'L' }, lines:[
           nou('shock','這個地方好大……'),
-          sor('tire','還一堆死胡同，好像一直在走來走去而已。'),
+          sor('backcarry','還一堆死胡同，好像一直在走來走去而已。'),
           ren('write','先把地圖建立起來就輕鬆了。走過的每一步都不會白費。'),
           sor('tire','話是這麼說……'),
           /* ══⚠⚠⚠ **二戰・第一輪**（ver -1616，Ray：「移動到柱廳觸發畫地圖劇情，
@@ -7542,7 +7542,7 @@ export const TOWNS = {
           chaseOnly:true, sides:{ RENNA:'L' }, lines:[
           /* ⚠ **戰後才講**（ver -1618，Ray：「死纏爛打是戰後才出，不是先出」）。 */
           { battle:'tomb_gk1' },
-          sor('battlecry','真是死纏濫打！'),
+          sor('backcarry','真是死纏濫打！'),
           ren('shout','這樣下去不是辦法！得盡快找到遺蹟中心！'),
         ] },
         /* ③ **二戰之後被追上**（ver -1616，Ray 交稿）。
@@ -7702,7 +7702,7 @@ export const TOWNS = {
           any('terrify',''),
           sor('ready','上來！'),
           any('nervous','！！'),
-          sor('ready','打不死的東西我們耗不起！快走！'),
+          sor('backcarry','打不死的東西我們耗不起！快走！'),
           nou('runserious',''),
           ren('run',''),
         ] } ] },
