@@ -14,7 +14,7 @@ resources/si/sorana_si_nod.webp        resources/si/sorana_si_stare.webp
 resources/si/sorana_si_point.webp      resources/si/sorana_si_wave.webp
 resources/si/sorana_si_lookaway.webp   resources/si/sorana_si_worry.webp
 resources/si/sorana_si_relief.webp     resources/si/sorana_si_sleep.webp
-resources/si/sorana_si_scare.webp      ← scare 交件後一起
+resources/si/sorana_si_scare.webp
 ```
 
 ⚠ 這 11 個目前都**還沒有** `?v=`，所以是加 `?v=2`（同 `renna_si_scream` 的寫法）。
@@ -39,6 +39,7 @@ resources/si/sorana_si_scare.webp      ← scare 交件後一起
 | lookaway | 5 → 5（不變） | 1513 → **1521** |
 | relief | 8 → **11** | 1518 → **1517** |
 | sleep | 304 → **231** | 1231 → **1424** ⚠ 見下 |
+| scare | 16 → **3** | 1518 → **1532** |
 
 ### ⚠⚠ `sleep` 另外要調 `cm`／`standCm`（**不要照抄，要看畫面調**）
 
@@ -69,4 +70,4 @@ resources/si/sorana_si_scare.webp      ← scare 交件後一起
 
 - 其餘索拉娜立繪（含 `battlecry`／`front`／`side`／`back` 與 read 系列）**這一輪沒換**。
 - Ray 交辦「舊索拉娜圖全部重製」還有 **46 張**沒做（清單在 `_sorana_regen_spec.md` §十）。
-- 這一輪還欠 **1 張**：`scare`（那一串連續掛掉兩次，還在重送）。
+- **15 張全部完成**（2026-09-21）。
