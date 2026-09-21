@@ -205,7 +205,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
      ⚠ 沒有圈的反擊（共鬥的自動飛刀、霸王條款的強制反擊）退回畫面中央 —— 
        那時本來就沒有「玩家點的圈」這回事。 */
   const mz = (rx, ry, k)=>{ if(api.muzzleAt) api.muzzleAt(rx, ry, (k||1)*MZ_SHIP); };
-  const mzHit = (k, spread)=>{
+  const mzHit = (k, spread, smoke)=>{
     const cp = state.counterPoint;
     if(cp && cp.r && api.muzzleAtPoint){
       const a=Math.random()*Math.PI*2, d=Math.sqrt(Math.random())*cp.r*(spread==null?1:spread);
@@ -216,6 +216,11 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
          「按發數射火線」是**既有結構的結果**，不必在這裡判武器類別（鐵律 7）。
          散彈之所以「散一點」也是既有的：它的 `spread` 本來就比較大。 */
       if(api.fireTracerAt) api.fireTracerAt(px, py);
+      /* ⚠ **硝煙也在這裡**（ver -1655，Ray：「一般副武也加」）：三種副武器全部有，
+         份量逐型不同（`smoke`）—— 爆發型一發大的、機槍與散彈逐發小的。
+         實際的團數與大小由 `enemy.muzzleSmoke(k)` 一支決定（鐵律 7），
+         而且那一支自己節流 50ms（散彈的六顆是同一個 tick 打出去的）。 */
+      if(api.muzzleSmoke && smoke) api.muzzleSmoke(smoke);
       return;
     }
     mz(0.42+Math.random()*0.16, 0.30+Math.random()*0.12, k);
@@ -326,11 +331,9 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
     const h=critHit(base);
     api.enemyDamage(h.dmg, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
     addCounter(h.dmg); onCounterFired(); counterEnergy(h.dmg, base);
-    mzHit(1.45, 0.35);             // 爆發型：一發大的，收在圈心附近（精準射擊）
-    /* ⚠ **步槍的硝煙**（ver -1654，Ray 指定）：只有爆發型（`vfx:'single'`）有 ——
-       它是一發一響的大口徑，槍口那一團白煙才讀得出來；機槍逐發、散彈逐顆，
-       每一發都冒等於整個畫面都是煙。 */
-    if(api.muzzleSmoke) api.muzzleSmoke();
+    /* ⚠ 爆發型（陸戰萊福槍／船戰高爆砲，**同一條分支**）：一發大的 ＋ **大煙**
+       （ver -1654 立、-1655 加大，Ray：「步槍跟高爆砲加大煙」）。 */
+    mzHit(1.45, 0.35, 1.6);        // 爆發型：一發大的，收在圈心附近（精準射擊）
     api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, '46%','32%', h.crit, 'snipernum');
     flushPending();                            // 單發：一瞬間就結束，排隊中的切換立刻生效
     return;
@@ -351,8 +354,8 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
              小一點反而**看得出是好幾顆**。
            · **打偏的也噴**，而且散得更開（`spread` 1.3 ＞ 命中的 0.95）——
              那正是「偏掉」的樣子。-1056 的「打空不噴」在此推翻。 */
-      if(!hits(k)){ mzHit(0.5, 1.3); api.floatDmg(MISS, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', false); continue; }
-      mzHit(0.55, 0.95);
+      if(!hits(k)){ mzHit(0.5, 1.3, 0.45); api.floatDmg(MISS, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', false); continue; }
+      mzHit(0.55, 0.95, 0.45);
       if(roll){
         const n=rollOne(); sum+=n;
         if(n>0) api.enemyDamage(n, true, true, 'counter');
@@ -401,9 +404,9 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
     playSe();                      // 機槍：每 hit 播一次 → 搭搭搭搭搭（miss 也有槍聲，是打空不是沒開槍）
     ejectShell();                  // 速射型：一發噴一個（ver -812）
     /* 打偏的也噴、而且更散（ver -1057，同散彈）—— 視覺拉滿。 */
-    if(!h) mzHit(0.68, 1.35);
+    if(!h) mzHit(0.68, 1.35, 0.35);
     if(h){
-      mzHit(0.8, 1);               // 速射型：逐發在圈內亂跳（圈越大越散）
+      mzHit(0.8, 1, 0.35);         // 速射型：逐發在圈內亂跳（圈越大越散）
       if(!h.zero) api.enemyDamage(h.dmg, true, true, 'counter'); // 靜默扣血 → 由自訂 float 控制「暴擊」字樣
       api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (30+Math.random()*40)+'%','35%', !h.zero);
     }else{

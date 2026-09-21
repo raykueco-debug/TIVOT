@@ -916,6 +916,8 @@ function gunHitOnEnemy(cell){
      ⚠⚠ 起點再由 `tracerOrigin` 往外推一截（它本來就在畫面外、被裁掉，
        推它只會讓看得見的那一段更斜）。 */
   enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, imp.x, imp.y);
+  /* 普攻的硝煙（ver -1655，Ray：「普攻也加煙」）—— 份量壓小：它每一下都會響。 */
+  enemy.muzzleSmoke(0.55);
 }
 /* ══ 槍火（ver -1052，Ray：「射擊時敵人身上槍火炸裂的感覺不夠…現在是個圓點而已，
    帶點不規則的芒跟火星如何？」）══════════════════════════════════════════════

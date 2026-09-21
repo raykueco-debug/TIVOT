@@ -532,21 +532,36 @@ let lastShot = null;
      · 拉煙（-1653）＝沿著**整條軌跡**撒、往固定的一邊飄、**只有船戰的副武器**
      · 硝煙（這一支）＝只在**槍口那一點**一團、往上散、**只有步槍**（每一場都有）
    ⚠ 步槍是一發一響的爆發型：一發就一團，量要夠大才看得出是硝煙而不是雜訊。 */
-export function muzzleSmoke(){
+let smokeLast = 0;
+export function muzzleSmoke(k){
   const host=$('fxTop'); if(!host || !lastShot) return;
+  /* ══⚠⚠ **節流 50ms**（ver -1655）══ 機槍逐發、散彈逐顆都會叫這一支 ——
+     散彈的六顆在**同一個 tick** 打出去，不節流就是六團疊在同一個地方（而且是
+     六倍的 DOM）。節流之後：散彈一團、機槍每五十毫秒一團，讀起來才是「一股煙」。
+     ⚠ 鐵律 12：這是每一發都會跑的特效，手機上的成本要壓在這裡，不是事後再調。 */
+  const now = (typeof performance!=='undefined' ? performance.now() : Date.now());
+  if(now - smokeLast < 50) return;
+  smokeLast = now;
   const r=host.getBoundingClientRect();
   const { sx, sy, tx, ty } = lastShot;
   /* 線段與下緣（y=r.height）的交點；起點本來就在下緣之外，所以一定交得到。 */
   const f = (sy===ty) ? 1 : Math.max(0, Math.min(1, (r.height-sy)/(ty-sy)));
   const px = sx+(tx-sx)*f, py = r.height;
-  for(let i=0;i<5;i++){
+  /* ⚠⚠ **`k` ＝這一槍的份量**（ver -1655，Ray：「普攻也加煙，步槍跟高爆砲加大煙」）：
+     團數與大小一起乘 —— 只放大不加團會變成「一顆大氣球」，只加團不放大看不出差別。
+     · 普攻（雙槍）k≈0.55 ⇒ 2 團小的：它**每一下都會響**，份量要壓得住。
+     · 爆發型（陸戰萊福槍／船戰高爆砲，同一支 `vfx:'single'`）k≈1.6 ⇒ 7 團大的。
+     ⚠ 機槍與散彈**刻意不冒**：逐發／逐顆都冒的話整個畫面都是煙（同 -1654 的理由）。 */
+  const kk = (k==null ? 1 : k);
+  const n  = Math.max(1, Math.round(5*kk));
+  for(let i=0;i<n;i++){
     const el=document.createElement('i');
     el.className='muzzle-smoke';
     el.style.setProperty('--x', (px+(Math.random()*26-13)).toFixed(1)+'px');
     el.style.setProperty('--y', (py-Math.random()*10).toFixed(1)+'px');
-    el.style.setProperty('--sz', (30+Math.random()*34).toFixed(0)+'px');
-    el.style.setProperty('--dx', (Math.random()*44-22).toFixed(0)+'px');
-    el.style.setProperty('--dy', (-52-Math.random()*48).toFixed(0)+'px');
+    el.style.setProperty('--sz', ((30+Math.random()*34)*kk).toFixed(0)+'px');
+    el.style.setProperty('--dx', ((Math.random()*44-22)*kk).toFixed(0)+'px');
+    el.style.setProperty('--dy', ((-52-Math.random()*48)*kk).toFixed(0)+'px');
     el.style.setProperty('--d', (Math.random()*90).toFixed(0)+'ms');
     el.style.setProperty('--t', (1100+Math.random()*700).toFixed(0)+'ms');
     host.appendChild(el);
