@@ -314,13 +314,28 @@ export function goNextBoard(){
   }, 900);   // 轉場緩衝：讓手停一下、看清新盤面
 }
 // 決定第 idx 盤（0-based）的格數：① 該怪 boardGrids[idx] 覆寫 → ② 第三盤(idx>=2)起 16 格。
-/* 這一盤要查 boardGrids 的第幾格。`boardLoop` 的怪打完一輪從頭再來（ver -375，
-   敵人卡的 `33344, loop`）—— 血厚的怪不會因為盤序用完就一路停在最後一盤的難度。
-   ⚠ 盤面時限（BOARDS）也跟著繞回去，兩者要用**同一個索引**，不然難度會錯開。 */
+/* ══⚠⚠⚠ **盤序打完一輪就從頭再來 —— 這是預設，不是選項**（ver -1630，Ray：
+   「盤數 9,9,9,9,16 應該在最後一個 16 結束後再跑一次 9 9 9 9 16 才對，
+   現在好像只要一進 16 就會卡著只出 16 了」）══════════════════════════════════
+   ⚠⚠⚠ **-375 起這件事綁在卡上的 `boardLoop` 上，而 98 張有 `boardGrids` 的卡
+     只有 5 張寫了它** ⇒ 其餘 93 張打完第 5 盤之後 `bg[idx]` 是 `undefined`，
+     落到下面那條「`idx>=2` 就 16 格」的退路 ⇒ **一路 16 格到死**。
+     更糟的是 `[9,9,9,9,9]` 那 38 張：它們從第 6 盤起會**憑空跳成 16 格**，
+     而卡上明明寫著全部 9 格 —— 畫面上沒有任何錯誤訊息。
+   ⚠⚠ 這正是鐵律 13 那條「**漏寫的下場必須落在安全的那一側**」：
+     `boardLoop` 是 opt-in，漏寫＝難度暴增；改成預設繞回去之後，漏寫＝照卡上寫的跑。
+   ⚠ `boardLoop:true` 那 5 張因此變成冗欄，已一併從資料上拿掉
+     （沒有人讀的欄位就是下一個謊）。
+   ⚠⚠ **一組 `boardGrids` ＝一個 round，長度不限 5**（ver -1630，Ray：「這個組數
+     代表一個 round，不一定是 5 組，但是就是這個 round loop」）—— 繞的是**卡上那一組**
+     的長度，不是 `config.boards` 的長度。
+   ⚠ 盤面時限（`config.boards`）用**同一個索引**，不然難度會錯開。
+     round 比 `boards` 長時（>5）超出的那幾盤沿用最後一格的時限（3.2 秒）——
+     那是「最難的那一檔不再變」，不是繞回第一格（繞回去等於 round 中途時限變鬆）。 */
 function boardSeqIdx(idx){
   const en=GAME_CONFIG.enemies[state.currentEnemyKey];
   const len=(en && en.boardGrids && en.boardGrids.length) || 0;
-  return (en && en.boardLoop && len) ? (idx % len) : idx;
+  return len ? (idx % len) : idx;
 }
 function boardGridFor(idx){
   const en=GAME_CONFIG.enemies[state.currentEnemyKey];
@@ -2918,7 +2933,7 @@ export function startGame(){
   state.scriptRun=!!pendingScript; state.scriptBattleId=pendingScript; pendingScript=null;
   state.tutorialRun=false; state.tutorialStoryRun=false;   // 教學場旗標歸零（tutorial 擁有；開場統一歸零、maybeStart 啟動時設回）
   /* 劇情插入戰（ver -375（-893 前用詞））：**單敵一場**，換上卡上那隻，且這一場不能聖徒化／不能用搭檔技。
-     ⚠ 要在 `stopAll()`/`loadBoard(0)` **之前**換敵 —— 盤面配置（boardGrids/boardLoop）
+     ⚠ 要在 `stopAll()`/`loadBoard(0)` **之前**換敵 —— 盤面配置（boardGrids）
        是查「目前這隻怪」來的，換晚了第一盤會用到上一隻的格數。 */
   const sb = state.scriptRun && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
   /* 是否為**劇情戰**（ver -493；-495 改成卡上統一有這一格）—— 唯一判定，

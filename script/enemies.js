@@ -846,7 +846,6 @@ export const ENEMIES = {
       /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格；**loop**＝打完五盤還沒死就從頭再來
          （這一隻血厚 200、傷害低，是「耐力戰」的設計）。 */
       boardGrids:[9,9,9,9,9],
-      boardLoop:true,
       /* 延時懲罰：**5 秒**、傷害 **5**、彈孔特效。
          ⚠ `seconds`/`damage` 是**絕對值**（ver -375 新欄位），與舊的 `dmgScale`/`timeDelta`
            縮放並存 —— 卡上寫的是絕對值，就照絕對值存（鐵律 1：不要在腦內換算成倍率）。 */
@@ -907,7 +906,6 @@ export const ENEMIES = {
       entrance:null,
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      boardLoop:true,
       delayPenalty:{ seconds:5, damage:5 },
       wrongPenalty:{ damage:5 },
       hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
@@ -952,7 +950,6 @@ export const ENEMIES = {
       special:[],
       /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格，打完五盤沒死就從頭再來。 */
       boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      boardLoop:true,
       /* 延時懲罰：**5 秒**（ver -458 由 4 調成非魔女的統一預設）、傷害 10、單爪特效。 */
       delayPenalty:{ seconds:5, damage:10 },
       wrongPenalty:{ damage:5 },
@@ -1008,7 +1005,6 @@ export const ENEMIES = {
       entrance:'se_enemy_serpent',
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      boardLoop:true,
       delayPenalty:{ seconds:5, damage:10 },
       wrongPenalty:{ damage:5 },
       /* 蓄力攻擊「毒牙特效」＝咬痕（bite）；延時單爪、點錯鈍器（同卡）。 */
@@ -1055,7 +1051,6 @@ export const ENEMIES = {
       entrance:'se_weapon_cannon',   // 登場音（ver -790，船戰各自獨立；空賊船＝艦砲）
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      boardLoop:true,
       delayPenalty:{ seconds:5, damage:10 },
       wrongPenalty:{ damage:5 },
       /* 延時／點錯都是彈孔（牠是用砲跟槍招呼你的）；大絕＝**特大彈孔＋畫面閃紅**
