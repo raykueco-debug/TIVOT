@@ -460,19 +460,29 @@ const ENEMY_CX = 0.50, ENEMY_CY = 0.40;
    ⚠ 不逐發去量 `#enemyImg` 的 rect：那是每一發一次強制重排，而立繪的 `fit`
      逐張卡不同（`cover`／`contain`），量到的框也不等於**畫出來的怪**有多大。
      這一組是「怪大概站在哪」的常數，改一個數字就能整體收放。 */
-const ENEMY_RX = 0.26, ENEMY_RY = 0.28;
-/* ══⚠⚠ **落點：往中心的方向飛，但落在立繪範圍內隨機**（ver -1624，Ray 指定）══
+/* ══⚠⚠ **落點：往中心的方向飛，落在立繪範圍內隨機，而且盡量交叉**
+   （ver -1624／**-1625 加「交叉」**，Ray：「往怪的中心方向飛，落點在怪的立繪範圍內
+   隨機」「**盡量讓火線交叉 大角度**」）══════════════════════════════════════════
    ⚠⚠ **只射正中心是不行的**（-1623 那一版）：每一發都打在同一個點，
-     讀起來是雷射筆不是子彈。隨機落點才有「一排子彈打上去」的感覺。
-   ⚠ 用**兩個亂數取平均**（三角分佈）而不是單一亂數：中心密、邊緣疏 ——
-     這樣「往中心的方向飛」還讀得出來，不會變成打得到處都是。 */
-export function enemyCenter(){
-  const host=$('fxTop'); if(!host) return null;
-  const r=host.getBoundingClientRect();
-  const j=()=> (Math.random()+Math.random()-1);        // −1~1，中心密
-  return { x:r.width *(ENEMY_CX + ENEMY_RX*j()),
-           y:r.height*(ENEMY_CY + ENEMY_RY*j()) };
+     讀起來是雷射筆不是子彈。
+   ⚠⚠⚠ **交叉靠「鏡射」不靠亂數**：落點取起點**對中心的另一側**
+     （左邊的格子打右半邊、右邊的格子打左半邊）—— 亂數只會讓角度忽大忽小，
+     鏡射才保證**每一發都穿過中線**，連著幾發就自然交叉成網。
+   ⚠ 再把起點**往外推**（`SPREAD`）：起點在 `#top` 之外、本來就被裁掉，
+     所以往外推只會讓**看得見的那一段**更斜，不會露出破綻。
+   ⚠ 亂數（三角分佈，中心密）留著當抖動，讓同一格連點不會是同一條線。 */
+const ENEMY_RX = 0.26, ENEMY_RY = 0.28;
+const MIRROR = 0.95;   // 鏡射的強度（1＝完全對稱）
+const SPREAD = 1.45;   // 起點往外推的倍率（只影響看得見那一段的斜度）
+export function enemyImpact(sx, w, h){
+  const j=()=> (Math.random()+Math.random()-1);              // −1~1，中心密
+  const off=(sx - w*ENEMY_CX)/w;                             // 起點離中線多遠（比例）
+  const bx=Math.max(-1, Math.min(1, -off*MIRROR/ENEMY_RX));  // 鏡射到另一側，夾在框內
+  return { x:w*(ENEMY_CX + ENEMY_RX*(bx*0.75 + j()*0.25)),
+           y:h*(ENEMY_CY + ENEMY_RY*j()) };
 }
+/* 起點往外推（見上）：回傳推過之後的 x。 */
+export function tracerOrigin(sx, w){ return w*ENEMY_CX + (sx - w*ENEMY_CX)*SPREAD; }
 export function fireTracer(sx, sy, tx, ty){
   const host=$('fxTop'); if(!host) return;
   const dx=tx-sx, dy=ty-sy;

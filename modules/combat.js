@@ -892,9 +892,13 @@ function gunHitOnEnemy(cell){
        「火線要有角度，**往怪的中心方向飛，落點在怪的立繪範圍內隨機**」）：
        槍火那一點是格子位置**映射**過來的，與起點幾乎同相位 ⇒ 每一發都垂直向上；
        而只射正中心又會變成每一發打在同一點（雷射筆）。
-       落點由 `enemy.enemyCenter()` 現擲（中心密、邊緣疏）。 */
-  { const c=enemy.enemyCenter();
-    if(c) enemy.fireTracer(cr.left+cr.width/2 - top.left, cr.top+cr.height/2 - top.top, c.x, c.y); }
+       落點由 `enemy.enemyImpact(起點x)` 現擲：**鏡射到起點的另一側** ＋ 抖動
+       ⇒ 每一發都穿過中線，連著幾發就交叉成網（ver -1625，Ray：「盡量讓火線交叉
+       大角度」）。起點再由 `tracerOrigin` 往外推一截（它本來就在畫面外、被裁掉，
+       推它只會讓看得見的那一段更斜）。 */
+  { const sx0=cr.left+cr.width/2 - top.left, sy0=cr.top+cr.height/2 - top.top;
+    const c=enemy.enemyImpact(sx0, top.width, top.height);
+    enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, c.x, c.y); }
 }
 /* ══ 槍火（ver -1052，Ray：「射擊時敵人身上槍火炸裂的感覺不夠…現在是個圓點而已，
    帶點不規則的芒跟火星如何？」）══════════════════════════════════════════════
