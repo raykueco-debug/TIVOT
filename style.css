@@ -767,6 +767,25 @@
   @keyframes blink{from{opacity:.5}to{opacity:1}}
 
   /* 特效層（槍擊命中、彈殼、爪痕、飄字都畫在這） */
+  /* ══ 揚煙（ver -1639）══ 崩塌音一響就在**演出區**揚起一叢土灰。
+     ⚠ 只罩上半（`--story-top`）＋ `overflow:hidden`：煙不該糊到槍棺那一半去。
+     ⚠ `z-index:21` ＝**最前景**（Ray 指定）—— 在楣(6)／對話框(7)／角落鈕(8)之上。
+     ⚠ `pointer-events:none`：整層不吃點擊，推對白照舊（§6.5「對話框是 none」同理）。 */
+  #storyDust{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+    pointer-events:none;z-index:21;overflow:hidden;}
+  .dustpuff{position:absolute;left:var(--x);bottom:-10%;
+    width:var(--sz);height:var(--sz);margin-left:calc(var(--sz) / -2);
+    border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle at 50% 55%,
+      rgba(214,199,172,.55), rgba(176,160,136,.34) 45%, rgba(150,136,116,0) 72%);
+    filter:blur(2px);
+    animation:dustRise var(--t) cubic-bezier(.22,.7,.35,1) var(--d) forwards;
+    opacity:0;}
+  @keyframes dustRise{
+    0%  {opacity:0;   transform:translate(0,0) scale(.35);}
+    18% {opacity:.95;}
+    100%{opacity:0;   transform:translate(var(--dx),var(--dy)) scale(1.55);}
+  }
   #fxTop{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden;}
   /* ══ 子彈的火線（ver -1622）══ 一條帶漸層的細長條，尾端淡、頭端亮到爆白。
      ⚠ `mix-blend-mode:screen`（同飛刀／星芒）：黑的地方自然消失，疊在敵人身上是加亮。

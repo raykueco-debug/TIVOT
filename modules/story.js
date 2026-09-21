@@ -1055,6 +1055,7 @@ const missingCg=new Set();   // 退回過的插圖：只提示一次，不然每
    ⚠ 這一支**只收「上一個畫面的殘留」**，不碰立繪（那是 `clearCast` 的事）
      與背景（那是 `enter()` 自己要換的）。 */
 export function clearStageLeftovers(){
+  stopDust();     // 揚煙（ver -1639）：換畫面就收，不要飄到下一景去
   killCgRush();   // 放射狀疊影（ver -1562）：換畫面時的第二道保險
   /* ⚠ 龍吟的模糊（ver -1465）：`forwards` 的一次性動畫，換畫面時一起拔
      —— 同 -1449 `pan-v` 那條教訓（「凡是 forwards 的一次性動畫，每一條收尾的路
@@ -1853,6 +1854,37 @@ export function playAmb(name){
   if(!src){ console.info('[story] 沒有這個環境音：', n); return; }
   try{ _amb = SFX.playLoop(src, fileGain(src)); _ambName = n; }catch(_){ _amb=null; _ambName=null; }
 }
+/* ══⚠⚠⚠ **崩塌音 ⇒ 演出區最前景揚煙**（ver -1639，Ray：「只要播 se_brickcrush 或
+   se_rockimpact 演出畫面就給揚煙特效在最前景」）══════════════════════════════
+   ⚠⚠⚠ **規矩掛在「音效播出去」那一點，不是掛在腳本上**（鐵律 8）：
+     那兩支音現在散在墓主登場戲、北方泊地教堂、貝利薩爾…逐拍去寫 `dust:true`
+     就是一份**會過期的清單** —— 日後誰再寫一拍崩塌音，煙就漏了，而且不會報錯。
+     掛在 `playSe` 的唯一入口，**播就有**。
+   ⚠ 只認這兩支（`DUST_SE`）：別的音不要順手掛進來 —— 那會變成「哪些音有煙」
+     的第二份真相。要多一支就加進這一組。
+   ⚠ 純程式繪製（一叢半透明的土灰圓斑往上飄），不用素材。 */
+const DUST_SE = { se_brickcrush:1, se_rockimpact:1 };
+const DUST_MS = 2200;
+export function dustPlume(){
+  const host=$('storyDust'); if(!host) return;
+  const n = 16;
+  for(let i=0;i<n;i++){
+    const el=document.createElement('i');
+    el.className='dustpuff';
+    /* 起點沿著演出區底緣散開（崩塌是從下面揚起來的）。 */
+    el.style.setProperty('--x',  (4 + Math.random()*92).toFixed(1)+'%');
+    el.style.setProperty('--sz', (54 + Math.random()*120).toFixed(0)+'px');
+    el.style.setProperty('--dx', (Math.random()*80-40).toFixed(0)+'px');
+    el.style.setProperty('--dy', (-90 - Math.random()*170).toFixed(0)+'px');
+    el.style.setProperty('--d',  (Math.random()*420).toFixed(0)+'ms');
+    el.style.setProperty('--t',  (1200 + Math.random()*900).toFixed(0)+'ms');
+    host.appendChild(el);
+  }
+  clearTimeout(dustPlume._t);
+  dustPlume._t=setTimeout(()=>{ if(host) host.innerHTML=''; }, DUST_MS);
+}
+export function stopDust(){ const h=$('storyDust'); if(h) h.innerHTML='';
+  clearTimeout(dustPlume._t); }
 export function playSe(spec){
   const one=(n,delay)=>{ const src=seSrc(n);
     if(!src){ const tag='se/'+n;
@@ -1865,7 +1897,8 @@ export function playSe(spec){
        （Ray：「跌倒音跟跑步音永遠不出來」，一直被當成預載沒趕上）。
        ⚠ `fileGain` 的鑰匙是檔名，所以路徑丟進去就有值（鐵律 7）。 */
     const g=fileGain(src);
-    const go=()=>{ try{ if(SFX.ready && !SFX.ready(src)) playSeFallback(src, g); else SFX.play(src, g); }catch(_){} };
+    const go=()=>{ try{ if(SFX.ready && !SFX.ready(src)) playSeFallback(src, g); else SFX.play(src, g); }catch(_){} 
+                   if(DUST_SE[n]) dustPlume(); };   // 崩塌音 ⇒ 揚煙（ver -1639，見上）
     if(delay>0) setTimeout(go, delay); else go(); };
   if(!spec) return;
   if(Array.isArray(spec)) spec.forEach(x=> typeof x==='string' ? one(x,0) : one(x.n, x.delay||0));
@@ -2298,7 +2331,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1638';
+const KERB_V='?v=1639';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
