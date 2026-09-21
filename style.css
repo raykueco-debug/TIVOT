@@ -767,6 +767,25 @@
   @keyframes blink{from{opacity:.5}to{opacity:1}}
 
   /* 特效層（槍擊命中、彈殼、爪痕、飄字都畫在這） */
+  /* ══ 船戰副武器的拉煙（ver -1653）══ 沿著火線的軌跡冒出來，再往左上或右上飄散。
+     ⚠ 一場之內方向固定（由 `enemy.rollSmokeDir` 在換敵那一刻擲一次）——
+       逐發重擲會變成一團亂噴，讀不出「風從那一邊吹」。
+     ⚠ 與火線同一層（`#fxTop`）：它一樣要被控制面板裁掉。
+     ⚠ **不用 `screen`**：煙是擋光的東西，加亮混合會變成發光的霧。 */
+  .tracer-smoke{position:absolute;left:0;top:0;
+    width:var(--sz);height:var(--sz);margin:calc(var(--sz) / -2) 0 0 calc(var(--sz) / -2);
+    border-radius:50%;pointer-events:none;will-change:transform,opacity;opacity:0;
+    background:radial-gradient(circle at 50% 50%,
+      rgba(206,198,188,.42), rgba(168,160,150,.26) 52%, rgba(140,134,126,0) 74%);
+    filter:blur(1.5px);
+    transform:translate(var(--x),var(--y)) scale(.4);
+    animation:tracerSmoke var(--t) cubic-bezier(.2,.6,.3,1) var(--d) forwards;}
+  @keyframes tracerSmoke{
+    0%  {opacity:0;   transform:translate(var(--x),var(--y)) scale(.35);}
+    16% {opacity:.85;}
+    100%{opacity:0;
+         transform:translate(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy))) scale(1.9);}
+  }
   /* ══ 揚煙（ver -1639）══ 崩塌音一響就在**演出區**揚起一叢土灰。
      ⚠ 只罩上半（`--story-top`）＋ `overflow:hidden`：煙不該糊到槍棺那一半去。
      ⚠ `z-index:21` ＝**最前景**（Ray 指定）—— 在楣(6)／對話框(7)／角落鈕(8)之上。

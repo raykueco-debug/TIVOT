@@ -492,6 +492,37 @@ export function enemyImpact(sx, w, h){
 }
 /* 起點往外推（見上）：回傳推過之後的 x。 */
 export function tracerOrigin(sx, w){ return w*ENEMY_CX + (sx - w*ENEMY_CX)*SPREAD; }
+/* ══⚠⚠⚠ **船戰的副武器會拉煙**（ver -1653，Ray：「船戰用的副武器除了火線，還要拉煙，
+   軌跡速度同火線然後往左上或右上飄散，**每一場只會有左上或右上其中一個方向**」）══
+   ⚠⚠ **方向是「這一場」的性質，不是每一發各擲一次**：一場之內所有的煙往同一邊飄，
+     讀起來才是「風從那一邊吹」；逐發重擲會變成一團亂噴（同鐵律 7 的精神：
+     那是一個量，只在一個時刻決定）。
+   ⚠ 擲的時刻＝`setEnemy`（「換了一隻怪」的唯一時刻，鐵律 9）——
+     船戰本來就是一隻一場，所以「每一場一個方向」是它天生的結果。
+   ⚠ 只有**船戰**才拉煙（`state.shipBattle`）：陸戰的副武器沒有這回事。 */
+let smokeDir = 1;                       // +1＝往右上　−1＝往左上
+export function rollSmokeDir(){ smokeDir = (Math.random()<0.5) ? -1 : 1; }
+const SMOKE_N = 7;                      // 一條軌跡上撒幾團
+function trailSmoke(host, sx, sy, tx, ty){
+  if(!state.shipBattle) return;
+  for(let i=0;i<SMOKE_N;i++){
+    const f=(i+0.5)/SMOKE_N;            // 沿著軌跡等距
+    const el=document.createElement('i');
+    el.className='tracer-smoke';
+    el.style.setProperty('--x', (sx+(tx-sx)*f).toFixed(1)+'px');
+    el.style.setProperty('--y', (sy+(ty-sy)*f).toFixed(1)+'px');
+    el.style.setProperty('--sz', (16+Math.random()*22).toFixed(0)+'px');
+    /* 飄散：往左上或右上（這一場固定），再各自加一點抖動。 */
+    el.style.setProperty('--dx', (smokeDir*(34+Math.random()*46)).toFixed(0)+'px');
+    el.style.setProperty('--dy', (-46-Math.random()*54).toFixed(0)+'px');
+    /* ⚠ 出現的時刻**跟著火線走**（Ray：「軌跡速度同火線」）：
+       第 i 團在火線飛到那裡的那一刻才冒出來。 */
+    el.style.setProperty('--d', (f*TRACER_MS).toFixed(0)+'ms');
+    el.style.setProperty('--t', (900+Math.random()*700).toFixed(0)+'ms');
+    host.appendChild(el);
+    setTimeout(()=>{ if(el.parentNode) el.remove(); }, TRACER_MS+1800);
+  }
+}
 export function fireTracer(sx, sy, tx, ty){
   const host=$('fxTop'); if(!host) return;
   const dx=tx-sx, dy=ty-sy;
@@ -528,7 +559,12 @@ export function fireTracerAt(clientX, clientY){
   const tx=clientX-r.left, ty=clientY-r.top;
   const cx=r.width*ENEMY_CX;
   const sx=tracerOrigin(cx + (cx-tx)*MIRROR, r.width);   // 鏡射到另一側
-  fireTracer(sx, r.height*1.55, tx, ty);                 // 起點在面板底下（會被裁掉）
+  const sy=r.height*1.55;                                // 起點在面板底下（會被裁掉）
+  /* ⚠⚠⚠ **拉煙只掛在這一支**（ver -1653，Ray：「**船戰用的副武器**除了火線，
+     還要拉煙」）—— `fireTracer` 是共用入口，普攻與 BR 也在用，而那兩者是
+     **主武器**（迦尼米德雙槍）。掛在那裡等於每一發普攻都在冒煙。 */
+  trailSmoke(host, sx, sy, tx, ty);
+  fireTracer(sx, sy, tx, ty);
 }
 /* ══ BR（破防彈雨）的火線：**從演出畫面兩側隨機高度射出**（ver -1622，Ray 指定）══
    ⚠ 盤面那時沒有格子可點（BR 打的是敵人身上），所以起點不是「哪一格」，
@@ -1065,6 +1101,7 @@ export function setEnemy(key, opts){
   if(!en) return;
   stopSakura();                                 // 換了一隻怪 → 上一隻的櫻花與 Sturm 一起收（ver -899）
   stopHolyBurst();                              // 同上：放光也是全螢幕的層＋一支還在響的音（ver -1351）
+  rollSmokeDir();                               // 船戰的煙往哪一邊飄：這一場擲一次（ver -1653）
   state.currentEnemyKey = key;                 // 3.7：記住目前怪 key，供 boardGridFor 查每盤格數
   state.enemyHitsTaken = 0;                     // 換了一隻怪 → 「這一隻」的受擊數歸零（九階「方舟」，ver -708）
   /* 這一局的出場帳（ver -921，Ray：「好感度給出場數最多的那一位全拿」）——
