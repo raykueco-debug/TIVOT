@@ -693,3 +693,5 @@ when	from	to	reason
 20260923-005959	resources/si/sorana_si_shy.webp	_recycle/resources/si/sorana_si_shy.webp	ver -1670 後 索拉娜第四輪：19 張（13 張換成 1600 畫布的新圖），Ray 走 SD 臉那條線
 20260923-011157	resources/enemy/mon_gravekeeper_seal.webp	_recycle/resources/enemy/mon_gravekeeper_seal.webp	ver -1670 後 守墓者 seal 被裁（頭頂與翼尖），Ray 交辦重製
 20260923-011403	resources/enemy/mon_gravekeeper_many.webp	_recycle/resources/enemy/mon_gravekeeper_many.webp	ver -1670 後 守墓者 many 左翼被裁（bbox 邊上 11.2% 直線切口），Ray 交辦重製
+20260923-013145	resources/background/tomb/tomb_lowaltar_off.webp	_recycle/resources/background/tomb/tomb_lowaltar_off.webp.20260923-013145	ver -1670 後 底層祭壇差分對再換：_off 改成實心牆、_on 才裂開（Ray 定案）
+20260923-013145	resources/background/tomb/tomb_lowaltar.webp	_recycle/resources/background/tomb/tomb_lowaltar.webp.20260923-013145	ver -1670 後 底層祭壇差分對再換：_off 改成實心牆、_on 才裂開（Ray 定案）
