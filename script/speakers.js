@@ -649,7 +649,27 @@ export const ART = {
        圖這一輪才交。⚠ `fx:0.668` 是舉劍開闊的姿勢量出來的（她平常那幾張 ≈0.5），
        這是**那一張圖**的事實，不可沿用（§6.5）。人物像素身高 1517，與基本立繪的
        1522 差 0.3%＝雜訊 ⇒ **不加 `rescale`**（同 `tired` 那一條的判準）。 */
-    battlecry:    { src:'resources/si/sorana_si_battlecry.webp',     top:6,  bot:1523, fx:0.668 },
+    battlecry:    { src:'resources/si/sorana_si_battlecry.webp?v=3',  top:6,  bot:1523, fx:0.668 },
+    /* ══ **同一具身體、六張不同的臉**（ver -1671 接線；圖是 -1670 後 Ray 的 SD 臉）══
+       ⚠⚠ **取景值照抄 `battlecry` 的三個數字，不要只寫 `src`** —— 實測六張的
+         alpha bbox 一模一樣（身體根本沒重畫，只換臉）⇒ 該沿用的是 `battlecry`
+         那一組（§5 的 -649：同一個姿勢的差分不要逐張量臉，量了反而會在換表情
+         那一拍橫向跳一格）。
+       ⚠⚠⚠ **但「不寫就是沿用」沿用的是**角色層**，不是 `battlecry`**：
+         `frameOf` 是 `Object.assign({}, 角色, 這一張)` —— 中間**沒有** `battlecry`
+         那一層。索菈娜角色層是 `top:4 bot:1526 fx:0.498`，而 `battlecry` 是
+         `0.668`（舉劍開闊的姿勢）⇒ 只寫 `src` 會讓臉橫向差 0.17×圖寬 ≈ 170px，
+         **而且畫面上不會有任何錯誤訊息**（-1671 當場踩到，驗的時候才發現）。
+       ⚠⚠⚠ `?v=` 一律用 `git log --diff-filter=M` 數「這個路徑真的被覆蓋過幾次 +1」
+         （HANDOFF §六 那支可重跑的方法）——**不要照交接檔的字面抄**：
+         美術交接寫「`battlecry` 加 `?v=2`」，但它在 -1670 之後**又被覆蓋一次**
+         （16 張那一批一次、SD 臉那一批一次）⇒ 實際是 **v3**。
+         這五個是**新增**不是覆蓋（覆蓋 0 次）⇒ **不掛 `?v=`**。 */
+    battlecrylook:        { src:'resources/si/sorana_si_battlecrylook.webp', top:6, bot:1523, fx:0.668 },
+    battlecrylookaside:   { src:'resources/si/sorana_si_battlecrylookaside.webp', top:6, bot:1523, fx:0.668 },
+    battlecrylookserious: { src:'resources/si/sorana_si_battlecrylookserious.webp', top:6, bot:1523, fx:0.668 },
+    battlecrylookup:      { src:'resources/si/sorana_si_battlecrylookup.webp', top:6, bot:1523, fx:0.668 },
+    battlecryserious:     { src:'resources/si/sorana_si_battlecryserious.webp', top:6, bot:1523, fx:0.668 },
     /* ══ 差分擴充 18 張（ver -1503 美術交件，-1507 接線）══
        ⚠ `lookaway`／`salute`／`scared`／`wave` 的 `fx` 目視重量（同上）。
        ⚠ `sleep` 不是全身圖 → `cm` ＋ `standCm`。 */

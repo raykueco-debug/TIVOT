@@ -4683,7 +4683,7 @@ export const TOWNS = {
         acts:[ { flag:'vn_lib_done', need:'vn_evening', goto:'midtown',
                  sides:{ RENNA:'L' }, lines:[
           /* ══⚠⚠⚠ **趴睡的插圖：由上而下平移，四拍之後收掉**（ver -1557，Ray：
-             「啊有了之後進插畫 025-rennasleepdesk 由上而下平移，直到安雅…… 後回到
+             「啊有了之後進插畫 025_rennasleepdesk 由上而下平移，直到安雅…… 後回到
                原背景。**插畫期間不放立繪**」）══
              ⚠⚠⚠ **「不放立繪」要逐拍明寫 `portrait:{show:false}`** —— 只是不寫
                `portrait` **沒有用**：引擎查不到 `line.portrait` 時會**退回 `line.speaker`**
@@ -4705,7 +4705,7 @@ export const TOWNS = {
              先有「她找到了」這件事，才有「我們看到蕾娜趴在那裡」那一眼。 */
           sor('talk','啊，有了。'),
           { speaker:'SORANA', text:'哇，睡到不省人事了。', portrait:{ show:false },
-            cg:'025-rennasleepdesk', cgNoTime:true, cgPan:'down', cgPanK:1.45 },
+            cg:'025_rennasleepdesk', cgNoTime:true, cgPan:'down', cgPanK:1.45 },
           { speaker:'NOUVELLE', text:'她一定很累吧，我們在城裡閒逛的時候只有她一個人在忙……',
             portrait:{ show:false } },
           { speaker:'ANYA', text:'……', portrait:{ show:false } },
@@ -4963,7 +4963,7 @@ export const TOWNS = {
         /* ══ 約會・索菈娜（ver -1522；**ver -1536 圖到齊，補上**）══
            ⚠ `drink`／`shy` 兩張差分的**圖早就在版控裡**，只是 `speakers.js`
              沒登記那兩個鍵 —— -1536 補上（取景值 `measure_si.py` 實測）。
-           ⚠ 微醺插圖 `021-soranadrunk` -1536 交件（PNG→WebP，原檔進 `_originals`）。
+           ⚠ 微醺插圖 `021_soranadrunk` -1536 交件（PNG→WebP，原檔進 `_originals`）。
              ⚠ **`cgNoTime:true`**：它沒有時段差分，不寫就是先吃四個 404 才退回原名。
              ⚠ 收圖的位置照稿：稿上「插圖結束：」排在「（主角空白）」**之前**，
                所以 `cg:null` 掛在那一拍（-1522 的註解寫「哪有那麼了不起啦！」那一拍，
@@ -4975,7 +4975,7 @@ export const TOWNS = {
           sor('shy','身體好像暖起來了。'),
           { speaker:'PLAYER', blank:true },
           sor('drink','不用啦，外套你自己穿著。'),
-          Object.assign(sor(null,'……'), { cg:'021-soranadrunk', cgNoTime:true }),
+          Object.assign(sor(null,'……'), { cg:'021_soranadrunk', cgNoTime:true }),
           sor(null,'其實我也知道穿這身走在城裡很奇怪啦。'),
           sor(null,'這是我奶奶留下來的衣服。'),
           sor(null,'是用傳統森住民服飾改的舞姬服喔。'),
@@ -5160,7 +5160,7 @@ export const TOWNS = {
            所以四拍各掛 `onlyIf` 就夠，不必再寫互斥判斷（鐵律 7）。
            ⚠ 四個都不成立也可以（既沒約會也沒去大學）—— 那就直接跳到合流，
              那是對的：沒有那一段互動就沒有那一句玩笑。
-         ⚠⚠ **安雅躲在主角身後** `019-anyahide`（ver -1379 交件；⚠ 美術 ver -1395
+         ⚠⚠ **安雅躲在主角身後** `019_anyahide`（ver -1379 交件；⚠ 美術 ver -1395
            把它由 `018-anyahide` **改號**成 019（018 讓給蕾娜的妄想那兩張），Ray：
            「在索拉娜說
            姐姐可以背你那一拍**後**」）：掛成「姐姐可以背妳喔？」**後面獨立的一拍**，
@@ -5195,7 +5195,7 @@ export const TOWNS = {
         /* 安雅躲到主角身後（無條件：那是對玩笑的反應，不分你前一天約了誰）。
            ⚠ `cgPan:'up'` ＝**由下而上**平移（ver -1384，Ray 指定；與那兩張約會插圖
              的 `'down'` 相反）。 */
-        { speaker:'ANYA', text:'', cg:'019-anyahide', cgNoTime:true, cgPan:'up' },
+        { speaker:'ANYA', text:'', cg:'019_anyahide', cgNoTime:true, cgPan:'up' },
         /* ⚠ ver -1401（Ray）：插圖上接一句，然後**回到原背景**再接諾薇兒那一句。
            ⚠ 這兩拍**不帶 `onlyIf`** —— 同上，那是對玩笑的反應，四條分支之前就發生。
            ⚠ `cg:null` ＝收圖（走黑幕，「這張插圖結束了」的語氣，§6.5 的 -628）；
@@ -5215,7 +5215,7 @@ export const TOWNS = {
            ⚠ 妄想仍是兩張：先放 18、再**淡入**到 18-1（`cgSoft`）—— 18-1 是 18 的差分，
              -1384 那條「先放 18 再淡入到 18-1」沒有被這一版推翻。
            ⚠⚠ **無立繪＝把台上清空**（`hide`）：插圖裡已經有她了，台上再站一個
-             就是同一個人出現兩次（同 `020-rennadrop` 那一拍的作法）。
+             就是同一個人出現兩次（同 `020_rennadrop` 那一拍的作法）。
              連帶：`sighbreath` 那張差分本來就不存在（lint 一直在唸），現在不必了。 */
         /* ⚠ 用既有的那一張，不要留一個查不到、會靜靜回退基本立繪的名字（lint 會唸）。 */
         Object.assign(ren('think','……'), { onlyIf:'ep_renna_met' }),
@@ -5677,7 +5677,7 @@ export const TOWNS = {
             ren('watch','燈光不夠，但是……'),
             ren('whisper','總覺得那個人……是不是跟安雅有點像？'),
             /* ══⚠⚠ **米夏回頭那一張：速度模糊進入，一拍就收**（ver -1557，Ray：
-               「播插畫 021-mishalookback，效果用速度模糊進入。一拍以後就回到原背景」）══
+               「播插畫 021_mishalookback，效果用速度模糊進入。一拍以後就回到原背景」）══
                ⚠ 這一拍**沒有台詞也沒有人在台上**（`cg:` 那一刻就清了場，§6.5 ver -1422）
                  ⇒ 吃得到 `auto`（§6.5 的 -628：台上沒人的純演出拍照舊自己跑）。
                ⚠ `cgRush` 與 `cgPan`／`cgZoom` 互斥（三者都在寫 `transform`）。 */
@@ -5685,11 +5685,11 @@ export const TOWNS = {
                這一拍沒有字可讀，點一下就整段白做。保護期＝這一拍自己的 `auto`
                （1600ms，鐵律 7：時間的真相只有一份）。 */
             { speaker:'NARRATION', text:'', se:'se_preasure', noSkip:true,
-              cg:'021-mishalookback', cgNoTime:true, auto:1600,
+              cg:'021_mishalookback', cgNoTime:true, auto:1600,
               /* ⚠ 消失點＝**米夏的眼睛**（ver -1562，Ray 指定）。那是**圖上**的
                  位置（0~1），引擎會用 `coverOrigin` 換算成框上的百分比 ——
                  插圖是 `object-fit:cover`，兩者不是同一個數字。
-                 量法：把 `021-mishalookback.webp`（1024×1536）的頭部裁出來放大，
+                 量法：把 `021_mishalookback.webp`（1024×1536）的頭部裁出來放大，
                  取兩眼虹膜中點 ⇒ (494.7, 362.3) px ⇒ (0.483, 0.236)。 */
               cgRush:{ x:0.483, y:0.236 } },
             { speaker:'NARRATION', text:'', cg:null, auto:600 },
@@ -5731,7 +5731,7 @@ export const TOWNS = {
                  ⇒ 吃得到 `auto`（-628：台上沒人的純演出拍照舊自己跑）。 */
             /* ⚠⚠ **點不掉**（同 M1 那一拍，ver -1658）：保護期＝`auto`（1400ms）。 */
             { speaker:'NARRATION', text:'', se:'se_preasure', noSkip:true,
-              cg:'021-mishalookback', cgNoTime:true, auto:1400,
+              cg:'021_mishalookback', cgNoTime:true, auto:1400,
               cgRush:{ x:0.483, y:0.236 } },   // 消失點＝米夏的眼睛（同 M1，見那邊的量法）
             /* ⚠⚠ **「直接在插圖上跑對話框不跑立繪」**＝不寫 `cg`（插圖是持續狀態，
                留著）＋ **明寫 `portrait:{show:false}`** —— 只是不寫 `portrait` 沒有用，
@@ -8489,7 +8489,7 @@ export const TOWNS = {
             cgBack:'resources/enemy/mon_dragon_v1_shackled.webp?v=2' },
           /* ⚠ ver -1420（Ray 指定）：被嚇到那一聲配跌倒音。 */
           Object.assign(ren('scream','呀！'), { se:'se_fall' }),
-          /* ══⚠⚠⚠ **蕾娜倒地・髮飾脫落**（ver -1397，Ray 交件 `020-rennadrop`）══
+          /* ══⚠⚠⚠ **蕾娜倒地・髮飾脫落**（ver -1397，Ray 交件 `020_rennadrop`）══
              稿：「龍出現後蕾娜『呀！』之後，接插圖 020 由下往上平移；在插圖背景
              蕾娜**無立繪**『啊……』；同背景索拉娜『危險！』畫面震動，龍咆音效
              緊接崩瓦聲；回到原背景；蕾娜『不要！』開始跑劇情」。
@@ -8524,7 +8524,7 @@ export const TOWNS = {
                  · 起點 `9.5%` ＝圖的上緣剛好貼齊框頂（再多一點就露黑邊），臉整個在框內。
                ⚠ 兩端都是**離線合成**出來比對過的，不是調出來的。 */
           Object.assign(ren(null,'啊……'),
-            { flags:['renna_hairpin_lost'], cg:'020-rennadrop', cgNoTime:true,
+            { flags:['renna_hairpin_lost'], cg:'020_rennadrop', cgNoTime:true,
               cgPan:'down', cgPanK:1.25, cgPanA:'9.5%', cgPanB:'-16%', delay:2750,
               se:'se_dragonbite',
               hide:['SORANA','RENNA','NOUVELLE','ANYA'] }),

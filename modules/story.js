@@ -1754,6 +1754,16 @@ const SE_FILES=[
      ⚠⚠ **`fileGain` 還沒量**：沒有那一列＝增益 1 ＝以母帶的響度播出，
        正是 -441 抓到「跌倒音永遠不出來」的成因。要 Ray 用 `tools/audio_scan.html` 量。 */
   'se_dragonbite.mp3', 'se_enemy_throneattack.mp3', 'se_rockimpact.mp3',
+  /* ══ 伊甸古墓・底層（ver -1671，Ray 交件＋交稿）══
+     `se_heavycursh` ＝ 牠在入口外面撞擊的悶響（稿上一律「`se_heavycursh` 0.2 秒後
+     `se_bricks`」成一組，＝先是撞擊、再是被震落的碎磚）。
+     ⚠ 檔案 -1670 那一輪就進庫了，但**沒有人登記進這張表** ⇒ 遊戲根本載不到
+       （`script_lint.py` 每一次都在叫）。同 §6.6 的 -433：清單裡沒有的東西，
+       排第幾都一樣。
+     ⚠⚠ 是 **.mp3**（規約是 m4a，§6.6）—— 轉檔時檔名別改。
+     ⚠⚠ **`fileGain` 還沒量** ＝ 增益 1 ＝ 以母帶的響度播出（-441 那個「跌倒音
+       永遠不出來」的反面：也可能大得刺耳）。要 Ray 用 `tools/audio_scan.html` 量。 */
+  'se_heavycursh.mp3',
   'se_earthquake.m4a',                                       // 地鳴（教堂那一拍的震動，ver -636）
   'se_paniccrowd.mp3',                                       // 人群尖叫（墓地那一幕，ver -664）
   /* 高音版的怪物吼叫（ver -671，Ray：「pitch 高 5 個半音，另存為 se_nightmare_hp」）。
@@ -2349,7 +2359,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1670';
+const KERB_V='?v=1671';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
