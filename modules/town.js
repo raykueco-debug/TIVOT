@@ -1749,6 +1749,14 @@ function dragonActDue(n){
 let chaseScene=null;
 function chaseSpec(){
   const c=(TOWNS[townId]||{}).chase || null;
+  /* ══⚠⚠ **追逐的終點**（`chase.until`，ver -1683，Ray：「啟動遺蹟後就不會再有
+     墓主攻擊」）══ 那支旗插了就**整個收掉**：回 null ⇒ `chaseGet`／`chaseStep`／
+     `chaseActDue`／`chaseOnEncounter` 全部跟著不動（鐵律 8：一道門，不要在四個
+     呼叫點各判一次）。
+     ⚠ 存著的那一筆（`tivot_chase_v1`）不必清：`chaseGet` 問的就是這一支，
+       回 null 之後沒有人讀得到它。
+     ⚠ 它與 `hard.need`（追擊變密急）是兩件事 —— 一個是**更兇**、一個是**結束**。 */
+  if(c && c.until && prog.hasFlag(c.until)) return null;
   if(!c || !c.hard || !c.hard.need || !prog.hasFlag(c.hard.need)) return c;
   const h=Object.assign({}, c.hard); delete h.need;
   return Object.assign({}, c, h);

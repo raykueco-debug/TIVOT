@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1682';
+export const VERSION = 'ver 2026.09.22-1683';
 
 export const GAME_CONFIG = {
 
@@ -2466,7 +2466,13 @@ export const GAME_CONFIG = {
        ⚠⚠ `noPartner` ＋ `noSaint` 兩格都要寫：ver -681 Ray 定的「沒有夥伴＝
          什麼技都沒有，也沒有聖徒化」是**規則**，但引擎不會自己推 ——
          少寫 `noSaint` 就變成「身邊沒有人，卻還聖徒化得出來」。 */
-    tomb_low_solo: { enemy:'gk_many', session:'tomb_wild', noSaint:true, noPartner:true },
+    /* ⚠⚠⚠ **`solo:true` ＝這一場身邊真的沒有人**（ver -1683，Ray：「無伙伴的那場
+       戰鬥不能裝備任何夥伴，剛剛我跑給的是安雅」）——
+       `combat.startGame` 看到它就 `setPickedPartner(null)`（`state` 的唯一真相）。
+       ⚠⚠ `noPartner` **擋的是主動技**（「有人，但這一場不准用」），擋不掉
+         「誰站在破防計量表上」—— 兩格語意不同，**要無夥伴就得寫 `solo`**。
+         -1672 我只寫了 `noSaint`＋`noPartner`，所以安雅照樣跟著上場。 */
+    tomb_low_solo: { enemy:'gk_many', session:'tomb_wild', solo:true, noSaint:true, noPartner:true },
     /* ② 安雅介入 —— **一開打就是惡夢化**（稿：「主角一開戰就是夢魘化的強化狀態」）。
        ⚠ `niStart` 的實作在 `combat.startGame` 尾端（走 `saint.activateNightmare`
          那個唯一入口，鐵律 8）；CI（`ci_anya_ni`）與 vo 由它播，**腳本那一拍不要再播一次**。

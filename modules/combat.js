@@ -2062,7 +2062,18 @@ function startIntervalTimer(){
        （聖徒化中點格會被下一 tick 再清回 0，無妨）。
        ⚠ overkill 不能只擋扣血——期限走到頭那一下還會把 combo 歸零，
        追擊的連段會被憑空打斷。 */
-    if(state.saintMode||state.enemyHp<=0){state.intervalDeadline=0;return;}
+    /* ⚠⚠⚠ **惡夢化也要在這裡**（ver -1683，Ray：「NI 狀態下好像一直被延時懲罰」）——
+       -671 加惡夢化時只在 **tap 那一支**照聖徒化分流（`if(state.niMode) nightmareTap(); return;`），
+       **漏了這裡**。後果：`resetIntervalDeadline()` 在 tap 的那個 early-return **之後**
+       （662／689／757 三處都是）⇒ 惡夢化期間**點得再快也不會重置期限**
+       ⇒ 每過一個 `effIntervalLimit` 就必定「逾時」一次，而它在 niMode 走
+       `enemyAttack(...,'delay')` ⇒ 震動＋紅閃＋抽倒數槽。**跟玩得好不好完全無關。**
+       ⚠ 這與「受擊會抽槽」（-691）不衝突：那是**敵人打到你**，這是**間隔壓力**，
+         而間隔壓力在聖徒化本來就是關掉的 —— 惡夢化是它的鏡像，那條槽自己就是計時器，
+         上面再壓一層等於一罪兩罰。
+       ⚠ ver -703「聖徒/夢魘化期間不算時間」那一條（碼表）**早就把 niMode 算進去了**，
+         這裡漏掉純粹是抄漏了一格。 */
+    if(state.saintMode||state.niMode||state.enemyHp<=0){state.intervalDeadline=0;return;}
     /* 對話真暫停（pauseForDialog）＝凍結在當下，補時在 resumeFromDialog（ver -464）；
        其他演出（雙槍/搭檔 cut-in）維持每 tick 回滿、撤下重走（發動瞬間不被連段）。 */
     if(state.cutinPlaying){ if(!_intPausedAt) resetIntervalDeadline(); return; }

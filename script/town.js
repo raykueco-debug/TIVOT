@@ -6989,6 +6989,14 @@ export const TOWNS = {
       /* ⚠⚠⚠ `lock:true` ＝**這一段期間連戰鬥都不換曲**（ver -1618，Ray：「換 bgm 後
          就算進戰鬥也不會換音樂，一路播這首到我指示換曲」）——
          讀它的是 `main.js` 的 `battleBgmOf`（那是「這一場放哪一首」的唯一計算點）。 */
+      /* ══⚠⚠ **祭壇一亮就回預設**（ver -1683，Ray：「安雅的啟動動畫跑完
+         bgm 回復預設」）══
+         ⚠ **排在 `tomb_split` 那一條上面**：這張表由上往下取第一個成立的，
+           排下面會被那一條（`lock:true`、而且刻意沒有終點）永遠吃掉。
+         ⚠ 這一條管「之後每走一格都還是它」；**那一刻**的換曲由祭壇那一拍
+           自己寫 `bgm:'blackcrystal'` —— `bgmWhen` 只在 `enter()` 重算，
+           而啟動動畫是在同一格裡演的。兩件事，缺一不可。 */
+      { need:'tomb_altar_on', bgm:'blackcrystal' },
       { need:'tomb_split', bgm:'rituale', lock:true },
     ],
     visitFlag: 'tomb_seen',            // 同上（ver -1188）
@@ -7077,6 +7085,11 @@ export const TOWNS = {
            把三種型態看完 —— 劇情上那幾種是**一次比一次更壞**的揭露，
            被隨機輪出來就沒有揭露可言了。 */
       battles: ['tomb_gk1'],
+      /* ⚠⚠ **啟動遺蹟就不再追**（ver -1683，Ray：「啟動遺蹟後就不會再有
+         墓主攻擊」）—— 牠就是古墓本身，祭壇一亮就維持不住投影了
+         （那正是蕾娜推理的那一段）。
+         判定在 `modules/town.js` 的 `chaseSpec()` 一支（回 null ＝整個收掉）。 */
+      until: 'tomb_altar_on',
     },
     /* ══⚠⚠ **遇敵率 50%**（ver -1614，Ray：「改成 50% 吧，遇敵率實在太低，
          我亂逛都能在三戰前走到柱廳」；-1596 曾是 33%、更早是全域的 0.25）══
@@ -7178,7 +7191,13 @@ export const TOWNS = {
              見下面的 `exitIf`。
            ⚠ 這一格是 ☀（唯一看得到天空的一格），所以關著的那張**也要四時段差分**：
              `Tomb_Gate_Sealed_dawn/_day/_dusk/_night`（全小寫，同既有交件慣例）。 */
-        bgWhen:[ { not:'tomb_opened', bg:'tomb_gate_sealed' } ],
+        /* ⚠⚠ 第二條（ver -1683，Ray：「墓門的圖在**第一次遭遇墓主後**
+           就換成關閉的圖，**永不再開**」）：`tomb_gk1_done` ＝登場戲演過了。
+           ⚠ 上面那一條是「**還沒開門**」，這一條是「**又關上了**」——
+             兩件事，只是剛好用同一張圖；兩條並存，中間那一段才是開著的。
+           ⚠ **刻意沒有 `until`**：那就是「永不再開」。 */
+        bgWhen:[ { not:'tomb_opened', bg:'tomb_gate_sealed' },
+                 { need:'tomb_gk1_done', bg:'tomb_gate_sealed' } ],
         exits:{ up:'vestibule', right:'adit' },
         /* ══⚠⚠⚠ **門關著就進不去**（ver -1154，Ray：「閉門狀態不能入內」）══
            `tomb_opened` 沒立 ⇒ 往上的箭頭**整個不出現**（`exitsOf` 的 `exitIf`）。
@@ -8034,12 +8053,12 @@ export const TOWNS = {
         ] } ] },
       /* ⚠ ~~安全點之三~~（ver -1574 拔掉，見上面那一段）。 */
       gallery3:   { bg:'tomb_gallery3', name:'伊甸古墓　玄室前廊', noTime:true,
-        exits:{ up:'landing3', down:'crypt', right:'vaultW' } },
+        exits:{ up:'landing3', down:'crypt', right:'vaultW' } , noWild:true },
       vaultW:     { bg:'tomb_vaultw', name:'伊甸古墓　側墓穴', noTime:true,
-        exits:{ left:'gallery3', down:'bonepit' } },
+        exits:{ left:'gallery3', down:'bonepit' } , noWild:true },
       /* ← 死胡同 H（**ver -1574 起三格深**：骨坑後面接上底層祭壇） */
       bonepit:    { bg:'tomb_bonepit', name:'伊甸古墓　骨坑', noTime:true,
-        exits:{ up:'vaultW', down:'lowaltar' } },
+        exits:{ up:'vaultW', down:'lowaltar' } , noWild:true },
       /* ══⚠⚠⚠ **安全點之三：底層祭壇**（ver -1574，Ray：「底層祭壇在骨坑後面，
          還沒畫，明天補，**先重覆一次骨坑代替**」）══
          ⚠⚠⚠ **`bg` 現在借用骨坑那一張** —— 圖來了就把 `tomb_bonepit` 換成新的基底名，
@@ -8094,8 +8113,12 @@ export const TOWNS = {
                  · ⇒ 正好接上索菈娜那句「原來風是從這座牆後面出來的」
              ⚠ act 的 `flag` 與這支旗是**兩支**（鐵律 9）：一支說「那一段演完了」、
                一支說「祭壇開著」。 */
+          /* ⚠ `bgm` ＝**這一刻**換回預設（Ray：「安雅的啟動動畫跑完 bgm 回復預設」）。
+             之後每走一格還是它，靠城上的 `bgmWhen`（`need:'tomb_altar_on'`）——
+             那一條只在 `enter()` 重算，而這一整段是在同一格裡演的，所以兩邊都要寫。
+             ⚠ 曲名只寫**鑰匙**不抄路徑；`blackcrystal` ＝城上的 `bgm`（古墓的預設）。 */
           { speaker:'NARRATION', text:'', flags:['tomb_altar_on'],
-            bg:'tomb_lowaltar', auto:1500 },
+            bg:'tomb_lowaltar', bgm:'blackcrystal', auto:1500 },
           { speaker:'NARRATION', text:'', se:'se_monsterroardeep', shakeHold:1400, auto:1400 },
           nou('faint','淨化反應……'),
           sor('battlecrylookup','成功了！'),
@@ -8198,10 +8221,10 @@ export const TOWNS = {
          ⚠ 兩端都要寫：墓門那一格也有 `right:'adit'` ＋ 同一支 `exitIf`。 */
       adit:       { bg:'tomb_adit',
                     name:'伊甸古墓　廢坑道', noTime:true,
-        exits:{ right:'lowaltar', left:'gate' } },
+        exits:{ right:'lowaltar', left:'gate' } , noWild:true },
       /* ★ **終點**（最深處） */
       crypt:      { bg:'tomb_crypt', name:'伊甸古墓　石棺主室', noTime:true,
-        exits:{ up:'gallery3' } },
+        exits:{ up:'gallery3' } , noWild:true },
     },
   },
 
