@@ -136,3 +136,74 @@
 3. **換新對話之後 `ref` 會失效，而且同一個編號會被重新指派給別的元素** ⇒ 每串重新 `find`。
 4. ⚠⚠ **判「被擋了沒」看 `newImageTurns`（那一回合的讚鈕），不要看頁面文字** ——
    拒絕訊息會留在頁尾不消失。`_grab.js` 的 `__state()` 是唯一計算點。
+
+
+---
+
+# 七、⭐ battlecry 那一批 —— **六張表情差分**（ver -1670 後，Ray 丟 `resources/si/alpha/`）
+
+Ray 用 SD 在 battlecry 那具身體上重畫了**六張臉**，一句「把這裡的圖都做同樣處理」。
+
+## ⚠⚠⚠ 但「同樣處理」不等於同樣的作法 —— **先量他碰到輪廓沒有**
+
+| | laugh | battlecry 這六張 |
+|---|---|---|
+| 他重畫的是 | **頭髮**（輪廓變了） | **臉**（純內部像素） |
+| 改動落在半透明區的像素 | 有 | **0 個**（α<200 的 0、α<16 的 0，六張都是） |
+| ⇒ alpha | **要重解**（ToonOut matting） | **一個位元都不要動** |
+
+**實測輸出的 alpha 與現行 `sorana_si_battlecry.webp` 逐像素相同（max 差 0）。**
+⇒ 輪廓、髮絲、近白全部是那份已上線、已被接受的 alpha，**不可能退步**。
+
+⚠⚠ **所以這一批沒有跑 matting** —— 跑了反而更糟：我先照 laugh 那條做過一次，
+ToonOut 解出來的髮緣 alpha 與現行那份在接縫帶差到 **平均 6.7／最大 228**，
+等於為了一張沒動過的輪廓去冒險。**不要因為「上一次這樣做」就照抄。**
+
+混合不靠框、靠 alpha 本身：`w = clip((α−200)/55)` —— 不透明處用 Ray 的 PNG、
+半透明處用現行那份解好的前景色 F（白底 PNG 在那裡是白的，用了就是白邊）。
+⇒ **沒有任何空間上的接縫。**
+
+## ⚠ 這一批用 **q92** 不是慣例的 q85
+
+因為它是**第二代編碼**（身體那一片是把現行 webp 解碼再壓一次）：
+
+    q85  261 KB  未改動區 PSNR 35.0 dB      ← 看得出劣化
+    q92  317 KB  未改動區 PSNR 38.6 dB  ✔   ← 與現行檔 313 KB 幾乎同大小
+    q96  359 KB  未改動區 PSNR 40.8 dB      ← 不值得
+
+⚠ 這是**這一批的特例**，不是改慣例：從 PNG 母版第一次壓的照舊 q85。
+
+## ⚠⚠ 程式端要接：`speakers.js` 加 **5 個新鍵** ＋ `battlecry` 跳版號
+
+取景值**直接沿用 `battlecry`**（六張的 alpha bbox 全部是 `(7,1503,0,1023)`，
+與現行那張一模一樣 —— 身體根本沒動，憲法 -649「同一個姿勢直接沿用」）：
+
+    battlecrylook:        { src:'resources/si/sorana_si_battlecrylook.webp',        top:6, bot:1523, fx:0.668 },
+    battlecrylookaside:   { src:'resources/si/sorana_si_battlecrylookaside.webp',   top:6, bot:1523, fx:0.668 },
+    battlecrylookserious: { src:'resources/si/sorana_si_battlecrylookserious.webp', top:6, bot:1523, fx:0.668 },
+    battlecrylookup:      { src:'resources/si/sorana_si_battlecrylookup.webp',      top:6, bot:1523, fx:0.668 },
+    battlecryserious:     { src:'resources/si/sorana_si_battlecryserious.webp',     top:6, bot:1523, fx:0.668 },
+
+⚠⚠ **`battlecry` 本身又被覆蓋了一次**（這是第二次）——
+它**本來就在 §一 那張「要加 `?v=2`」的表上**，而那一條**還沒被接**，
+所以**仍然只要加 `?v=2` 就好**，不必跳到 3。
+⚠ 但如果 §一 那一批**已經上線了**才讀到這一段，那就要跳 **`?v=3`**。
+**判準：看線上那一份 `speakers.js` 現在寫的是什麼，不要照這份文件的字面抄。**
+
+## 六張臉各是什麼（給接腳本的人）
+
+| 鍵 | 表情 |
+|---|---|
+| `battlecry` | 張口大喊，視線朝前（**取代**現行那張） |
+| `battlecrylook` | 開口笑，看向鏡頭 |
+| `battlecrylookup` | 開口，往上看 |
+| `battlecrylookaside` | 閉口，別開視線 |
+| `battlecrylookserious` | 閉口，嚴肅，視線偏下 |
+| `battlecryserious` | 閉口，嚴肅，視線朝前 |
+
+驗收（`_sorana_check.py`，六張全過）：色相 191.7~194.0／角α 0／近白 0.34~0.35%／與A差 11.1。
+⚠ 「與A差 11.1」比別張低是**正常的**：battlecry 是側身構圖，與正面基底 A 的差本來就小
+（現行那張是 11.2）。門檻是 >3。
+
+母版：`resources/_originals/si/sorana_si_<鍵>_src.png`；投放夾 `resources/si/alpha/` 已回收
+（raw 不可留在會被載入的目錄，憲法 §5）。
