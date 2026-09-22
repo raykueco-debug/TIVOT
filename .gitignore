@@ -24,3 +24,7 @@ resources/map/_thumbs/
 
 # 本機 matting 的 venv（tools/si_matting.py；系統 python 的 transformers 5.x 擋 torch<2.4）
 .venv-matting/
+
+# SI 投放夾：Ray 丟白底稿的地方，內容不入版控（收完移進 _originals/si/），只留 README
+resources/si/alpha/*
+!resources/si/alpha/README.md
