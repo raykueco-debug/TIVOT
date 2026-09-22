@@ -8196,10 +8196,14 @@ export const TOWNS = {
           ren(null,'評價，我不會修正的喔。', { tierMax:2, tierWho:'RENNA' }),
           ren(null,'絕對不會。',           { tierMax:2, tierWho:'RENNA' }),
           { speaker:'NARRATION', text:'', cg:null, auto:200, tierMax:2, tierWho:'RENNA' },
-          /* ── T3 以上：插圖 29-2（由下往上平移）── */
+          /* ══ ── T3 以上：插圖 29-2（由下往上平移）── ══
+             ⚠⚠ ver -1692（Ray 改稿）：**插圖只留到「等……等一下！」那一句**，
+               之後整段改回立繪演 —— 公主抱那一串打鬧要看得到三個人的表情，
+               壓在一張插圖底下就只剩字。 */
           { speaker:'NARRATION', text:'', cg:'29-2_rennaprincesshold', cgNoTime:true,
             cgPan:'up', auto:1600, tierMin:3, tierWho:'RENNA' },
           ren(null,'等……等一下！', { tierMin:3, tierWho:'RENNA' }),
+          { speaker:'NARRATION', text:'', cg:null, auto:200, tierMin:3, tierWho:'RENNA' },
           any('panic','公主抱……！', { tierMin:3, tierWho:'RENNA' }),
           sor('carrynouvelleshock','哇喔。', { tierMin:3, tierWho:'RENNA' }),
           /* ⚠⚠⚠ **這一拍同時吃兩個人的段位**，而 `tierMin`/`tierWho` 一拍只能問一個人
@@ -8213,12 +8217,14 @@ export const TOWNS = {
           { speaker:'NOUVELLE', textByTier:{ 1:'好好喔。', 3:'' },
             portrait:{ char:'SORANA', expr:'carrynouvellesmirk', show:true },
             tierMin:3, tierWho:'RENNA' },
-          ren(null,'放、放我下來啦！太難為情了。',     { tierMin:3, tierWho:'RENNA' }),
-          ren(null,'……',                             { tierMin:3, tierWho:'RENNA' }),
-          ren(null,'就算這樣，評價，我也不會修正的喔。', { tierMin:3, tierWho:'RENNA' }),
-          ren(null,'絕對不會。',                       { tierMin:3, tierWho:'RENNA' }),
-          ren(null,'不要笑！',                         { tierMin:3, tierWho:'RENNA' }),
-          { speaker:'NARRATION', text:'', cg:null, auto:200, tierMin:3, tierWho:'RENNA' },
+          /* ⚠⚠ 蕾娜這五句走**公主抱的立繪**（ver -1692，Ray 交件三張）——
+             `hug`（睜眼講話）與 `hugclose`（閉眼）交錯，正是稿上標的那一組。
+             ⚠ 取景值見 `speakers.js`：她是**被橫抱**的那一個，`fx` 錨的是她的臉。 */
+          ren('hug',     '放、放我下來啦！太難為情了。',     { tierMin:3, tierWho:'RENNA' }),
+          ren('hugclose','……',                             { tierMin:3, tierWho:'RENNA' }),
+          ren('hug',     '就算這樣，評價，我也不會修正的喔。', { tierMin:3, tierWho:'RENNA' }),
+          ren('hugclose','絕對不會。',                       { tierMin:3, tierWho:'RENNA' }),
+          ren('hug',     '不要笑！',                         { tierMin:3, tierWho:'RENNA' }),
           /* ══⚠⚠⚠ **這四拍是 T2 以下那一條的收場，T3 沒有**（ver -1684，Ray 更正：
              「『不要笑』劇情就待續了，不用接『謝謝你相信我』，**那是不同路線（T2 以下）**」）══
              ⚠⚠ -1672 我把它們讀成「兩條分支共同的結尾」，理由是「T3 停在『不要笑！』

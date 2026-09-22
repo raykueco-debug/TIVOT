@@ -298,6 +298,28 @@ export const ART = {
                      —— 古墓底層那一段（「因為我的報告……」）第一次用到它。
                      全身站姿 ⇒ 照既有量法（alpha>16、中央段）逐張量，不必 `cm`/`standCm`。 */
                   snivel:      { src:'resources/si/renna_si_snivel.webp',      top:9,  bot:1525, fx:0.534 },
+                  /* ══⚠⚠⚠ **公主抱：托爾斯坦抱著她**（ver -1692，Ray 交件＋交稿）══
+                     畫面上是**兩個人**，而且**站著的那一個是主角**（她被橫抱著）——
+                     所以三個數字都不能沿用她自己的站姿那一組：
+                       · `fx:0.274` ＝**她的臉**在圖上的位置（兩眼中點 281 ÷ 1024）——
+                         錨的永遠是說話的那個人的臉，不是圖框、也不是主角。
+                       · `cm:193` ＝ 由**眼距**反推（§5：頭髮會吃掉頭部的自動量測，
+                         眼距才是可靠的尺）：這張圖她的兩眼相距 **58px**，
+                         而站姿（`front`）是 **66px** ⇒ 她在這張圖裡被畫得**比較小**
+                         ⇒ 整張要**放大**才會與別張一樣大：
+                           `scale = 0.4639 × 66/58 = 0.528` ⇒ `cm = 0.528×1525/4.175 ≈ 193`。
+                         ⚠⚠ **不要用頭高去估**：我第一版拿「頭看起來比較大」反推出 135
+                           （方向正好相反），實際渲染出來整張縮成 377×566，她的臉很小。
+                           頭髮的輪廓會騙人，眼距不會。
+                       · `standCm:176` ＝ 讓**她的臉**落在平常那個高度
+                         （對齊 `front`：臉在頂線下 92px）。圖的上緣是主角的頭，不是她的。
+                     ⚠⚠ 三張是**同一具身體換臉**（alpha bbox 三張都是 3/1528）⇒ 取景值一致，
+                       但**要明寫**：只寫 `src` 沿用的是角色層，不是這一族（-1671 踩過）。
+                     ⚠ `huglookaway` 稿上還沒用到，一起接著 —— 它與另外兩張是同一組，
+                       日後要用不必再回來量一次。 */
+                  hug:         { src:'resources/si/renna_si_hug.webp',         top:3,  bot:1528, fx:0.274, cm:193, standCm:176 },
+                  hugclose:    { src:'resources/si/renna_si_hugclose.webp',    top:3,  bot:1528, fx:0.274, cm:193, standCm:176 },
+                  huglookaway: { src:'resources/si/renna_si_huglookaway.webp', top:3,  bot:1528, fx:0.274, cm:193, standCm:176 },
                   scarejump:   { src:'resources/si/renna_si_scarejump.webp',   top:0,  bot:1533, fx:0.632 },
                   scarecute:   { src:'resources/si/renna_si_scarecute.webp',   top:0,  bot:1530, fx:0.537 },
                   blush:     { src:'resources/si/renna_si_blush.webp',     top:8,  bot:1522, fx:0.551 },
