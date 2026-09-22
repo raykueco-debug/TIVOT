@@ -50,14 +50,17 @@
 
 | 狀況 | 鍵 |
 |---|---|
-| ✔ 今天交 **16 張** | `battlecry` `shy` `side` `smile` `sorry` `surprise` `talk` `think` `tire` `upset` `watch` `whisper` `remind` `smirk` `tease` `amaze` |
+| ✔ 今天交 **16 張** | `battlecry` `shy` `side` `smile` `sorry` `surprise` `talk` `think` `tire` `upset` `watch` `whisper` `remind` `smirk` ~~`tease`~~ `amaze` |
+| ⛔ **退件並還原** | **`tease`** —— Ray：「tease 修壞了 改回原本的」（臉被手擋掉、表情沒了）。檔案已還原回 `82919b0f^`，**不要再交這一張** |
 | ✔ ver -1670 後 再交 **1 張** | **`laugh`** —— Ray 出 SD 頭，美術 alpha＋合成（**61/62**）|
 | ⚠ **還剩 1 張** | **`panic`**（不是被擋，是不給透明背景 ⇒ **重跑拿圖再走 matting 就好，不必 Ray 出臉**）|
 
-## ⚠⚠ 程式端要接：`speakers.js` **17 條路徑跳 `?v=`**
+## ⚠⚠ 程式端要接：`speakers.js` **16 條路徑跳 `?v=`**
 
-- **加 `?v=2`（15 張）**：`battlecry` `shy` `sorry` `surprise` `talk` `think` `tire`
-  `upset` `watch` `whisper` `remind` `smirk` `tease` `amaze` **`laugh`**
+- **加 `?v=2`（14 張）**：`battlecry` `shy` `sorry` `surprise` `talk` `think` `tire`
+  `upset` `watch` `whisper` `remind` `smirk` `amaze` **`laugh`**
+  ⚠⚠⚠ **`tease` 拿掉了** —— 重製版被退、檔案已還原回覆蓋前那一份，
+  線上與玩家快取裡本來就是同一個 ⇒ **加 `?v=` 是白掛的**。
 - **改成 `?v=3`（2 張）**：`side` `smile`
   ⚠ 那兩個的 `?v=2` 是上一輪**白掛的**（`git log --diff-filter=M` 查過，這兩個檔
   在今天之前從來沒被覆蓋過）—— **不要看到 `?v=2` 就以為它重製過了。**
@@ -288,3 +291,25 @@ ver -1670 後我把整個資料夾回收掉了，隔一句話就被要求還原�
 ⇒ **量完再決定，不要照抄上一次。**
 
 作法、指令、編碼（q85／第二代 q92）全部寫在 `resources/si/alpha/README.md`。
+
+
+---
+
+# 十二、⛔ `tease` 退件（ver -1670 後）
+
+> Ray：「tease 修壞了 改回原本的」
+
+`82919b0f` 那張重製版**臉被手擋掉、笑的表情整個沒了**，手的位置也變了 ——
+四項量化指標當時是全過的（色相 192.1／角α 0／近白 0.21／與A差 33.7），
+**又一次「指標全過、人眼退件」**（同 §五 合成備案那一條）。
+
+⇒ 已 `tools/recycle.sh` 收掉，還原成 `82919b0f^` 那一份（sha1 逐位元對過）。
+還原後四項照樣過：色相 197.6／角α 0／近白 0.47%／與A差 33.0 ✔
+
+⚠⚠ **連帶：`tease` 要從「加 `?v=2`」那張表上拿掉** —— 檔案回到覆蓋前的那一份，
+與玩家快取裡的本來就是同一個，掛版號是白掛的（同 `side`／`smile` 那個坑）。
+
+⚠⚠⚠ **教訓（第三次了）**：`_sorana_check.py` 那四項**量不到「臉對不對」** ——
+它們量的是髮色、角落 alpha、近白、與基底的整體差異。
+**臉的 100% 裁切一定要真的看，而且要看得出五官** ——
+`tease` 那張的臉有一半被手蓋著，縮圖上看起來「很像」，放大才知道表情沒了。

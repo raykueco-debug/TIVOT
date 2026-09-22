@@ -3,11 +3,17 @@
 > Ray：「推上去，然後跑索」。作法照 `_sorana_r2_worklist.md` §五（A 先傳、三行提示詞、
 > 被擋就重送一次、再擋就跳過）。
 
-## 一、⚠⚠⚠ 唯一要做的：`speakers.js` 這 **17** 條路徑跳 `?v=`
+## 一、⚠⚠⚠ 唯一要做的：`speakers.js` 這 **16** 條路徑跳 `?v=`
 
 同名覆蓋，不跳就是玩家繼續吃舊的那一份，**而且畫面上不會有任何錯誤訊息**（§5 的 -650）。
 
-| 要加 `?v=2`（現在沒有版號，15 張） | `battlecry` `shy` `sorry` `surprise` `talk` `think` `tire` `upset` `watch` `whisper` `remind` `smirk` `tease` `amaze` **`laugh`** |
+| 要加 `?v=2`（現在沒有版號，**14 張**） | `battlecry` `shy` `sorry` `surprise` `talk` `think` `tire` `upset` `watch` `whisper` `remind` `smirk` `amaze` **`laugh`** |
+
+⚠⚠⚠ **`tease` 已從這張表上拿掉**（ver -1670 後）：它的重製版被 Ray 退了
+（「tease 修壞了 改回原本的」—— 臉被手擋掉、表情整個沒了），**檔案已還原回覆蓋前那一份**
+（sha1 對過，與 `82919b0f^` 逐位元相同）。
+⇒ 線上那一份與玩家快取裡的**本來就是同一個**，**加 `?v=` 等於白掛**，
+  而且會害下一個人以為它重製過了（同下面 `side`／`smile` 那個坑）。
 |---|---|
 | **要改成 `?v=3`（現在是 `?v=2`，2 張）** | `side` `smile` |
 
