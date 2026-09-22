@@ -985,6 +985,43 @@ function stopShake(){
   const st=$('storyStage');
   if(st){ clearTimeout(st.__shakeT); st.classList.remove('shake','hold'); }
 }
+/* ══⚠⚠⚠ **跨句的持續崩塌**（`quakeHold`，ver -1671，Ray 的古墓底層稿：
+   「`se_heavycursh` 0.2 秒後 `se_bricks`，特效上方煙塵，0.3～0.7 秒後再播一組，
+     畫面震動，**持續播到拔旗**」）══════════════════════════════════════════════
+   牠在外面一下一下撞入口 —— 那不是「這一拍抖一下」，是**一段時間裡的環境**。
+   ⚠⚠ 所以它與 `shakeHold`／`tintHold` **同族**（§6.5 的 -638）：跨句的狀態要另開
+     一個欄位，**沿用一次性的那個（`shake`／`se`）一定會在下一句被 `stopFx` 收掉**，
+     而且不會有任何錯誤訊息。
+   ⚠⚠⚠ 出口**與那兩個完全一樣、而且走同一批呼叫點**（鐵律 8）：
+     進戰鬥（`line.battle`）／結算（`line.settle`）／換場（`playScene`）／離場（`close`）。
+     —— 不要為它另外想一個「拔旗」的條件：這一段的下一件事就是墓主降臨那一場架，
+     「進戰鬥就停」本來就是 Ray 要的那個時刻。
+   ⚠ 間隔是**亂的**（0.3~0.7 秒）不是固定的：等間隔讀起來是機器，不是有東西在撞。
+   ⚠ 一組 ＝ 撞擊音 ＋ 0.2 秒後的落磚音 ＋ **上方**落塵（`dust:'top'`，見 `dustPlume`）。 */
+let quakeT = null;
+function stopQuake(){
+  if(quakeT){ clearTimeout(quakeT); quakeT=null; }
+}
+function startQuake(){
+  stopQuake();
+  const tick = ()=>{
+    playSe([{ n:'se_heavycursh', dust:'top' },
+            { n:'se_brickcrush', delay:200, dust:'top' }]);
+    hap.shake();
+    const st=$('storyStage');
+    if(st){
+      clearTimeout(st.__shakeT);
+      st.classList.remove('shake','hold'); void st.offsetWidth;
+      st.classList.add('shake','hold');
+      sustainShake = true;
+      /* ⚠ 每一組自己收（900ms）：不收的話 `sustainShake` 會一直是真，
+         而**真正把它關掉的是 `stopQuake` 之後的那一次逾時** —— 下一組會再開一次。 */
+      st.__shakeT = setTimeout(stopShake, 900);
+    }
+    quakeT = setTimeout(tick, 500 + Math.random()*400);   // 一組跑 0.2 秒，再隔 0.3~0.7 秒
+  };
+  tick();
+}
 /* ══⚠⚠ **跨句的畫面染色**（`tintHold`，ver -664，Ray：「畫面變色，紫紅負片」）══
    與 `shakeHold` 同族：那一拍寫 `tintHold:'<名字>'` ＝整個舞台換上那組濾鏡，
    **推對話不會收掉**，一路撐到出口為止。
@@ -1883,19 +1920,28 @@ export function playAmb(name){
    ⚠ 只認這兩支（`DUST_SE`）：別的音不要順手掛進來 —— 那會變成「哪些音有煙」
      的第二份真相。要多一支就加進這一組。
    ⚠ 純程式繪製（一叢半透明的土灰圓斑往上飄），不用素材。 */
-const DUST_SE = { se_brickcrush:1, se_rockimpact:1 };
+const DUST_SE = { se_brickcrush:1, se_rockimpact:1, se_heavycursh:1 };
 const DUST_MS = 2200;
-export function dustPlume(){
+/* ══⚠⚠ **`dir:'top'` ＝從上面掉下來**（ver -1671，Ray 的古墓底層稿：「特效**上方**煙塵」）══
+   ⚠⚠⚠ **方向是「那一拍」的性質，不是那一支音的性質** —— 同一支 `se_rockimpact`
+     在這一段裡**兩種都出現**（牠在外面撞 ⇒ 上方落塵；最後打穿外壁 ⇒ 下方揚塵），
+     所以不可以做成 `DUST_SE` 的一格（那會變成「一支音只有一個方向」）。
+   ⚠⚠ 但「播就有煙」那一條**沒有被推翻**（-1639）：方向是**可選的覆寫**，
+     腳本寫 `se:[{n:'…', dust:'top'}]`；**不寫就是原本那一版（往上揚）**
+     —— 漏寫的下場是「方向不對」而不是「沒有煙」（鐵律 13：安全的那一側是預設）。 */
+export function dustPlume(dir){
   const host=$('storyDust'); if(!host) return;
+  const top = (dir === 'top');
   const n = 16;
   for(let i=0;i<n;i++){
     const el=document.createElement('i');
-    el.className='dustpuff';
-    /* 起點沿著演出區底緣散開（崩塌是從下面揚起來的）。 */
+    el.className = top ? 'dustpuff top' : 'dustpuff';
+    /* 起點沿著演出區底緣散開（崩塌是從下面揚起來的）；`top` 則沿上緣。 */
     el.style.setProperty('--x',  (4 + Math.random()*92).toFixed(1)+'%');
     el.style.setProperty('--sz', (54 + Math.random()*120).toFixed(0)+'px');
     el.style.setProperty('--dx', (Math.random()*80-40).toFixed(0)+'px');
-    el.style.setProperty('--dy', (-90 - Math.random()*170).toFixed(0)+'px');
+    el.style.setProperty('--dy', top ? (104 + Math.random()*196).toFixed(0)+'px'
+                                     : (-90 - Math.random()*170).toFixed(0)+'px');
     el.style.setProperty('--d',  (Math.random()*420).toFixed(0)+'ms');
     el.style.setProperty('--t',  (1200 + Math.random()*900).toFixed(0)+'ms');
     host.appendChild(el);
@@ -1905,8 +1951,15 @@ export function dustPlume(){
 }
 export function stopDust(){ const h=$('storyDust'); if(h) h.innerHTML='';
   clearTimeout(dustPlume._t); }
+/* ══⚠⚠ **一支音可以帶 `vol` 與 `dust`**（ver -1671）══
+   · `vol` ＝**乘在那一支的 `fileGain` 上**（Ray 的古墓稿：「用 sturm 小聲播」＝原響度 40%）。
+     ⚠⚠ 乘的是拉平後的增益，不是取代它 —— `fileGain` 是「這一支拉到目標響度要多少」
+       （§6.6 的逐支拉平），拿一個絕對值蓋掉它就等於把那一支排除在響度系統外。
+     ⚠ 它是**這一拍**的演出，不是那一支音的性質 ⇒ 寫在腳本、不寫進 `tuning.fileGain`。
+   · `dust` ＝ 揚煙的方向（見 `dustPlume`）。
+   腳本寫法：`se:[{ n:'sturm', vol:0.4 }, { n:'se_rockimpact', dust:'top', delay:200 }]` */
 export function playSe(spec){
-  const one=(n,delay)=>{ const src=seSrc(n);
+  const one=(n,delay,opt)=>{ const src=seSrc(n);
     if(!src){ const tag='se/'+n;
       if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 沒有這個音效：', n); }
       return; }
@@ -1916,13 +1969,15 @@ export function playSe(spec){
        比拉平後的目標低了 12~14 dB ＝ **在手機上根本聽不見**
        （Ray：「跌倒音跟跑步音永遠不出來」，一直被當成預載沒趕上）。
        ⚠ `fileGain` 的鑰匙是檔名，所以路徑丟進去就有值（鐵律 7）。 */
-    const g=fileGain(src);
+    const v = (opt && opt.vol!=null) ? +opt.vol : 1;
+    const g=fileGain(src) * (isFinite(v) ? v : 1);
     const go=()=>{ try{ if(SFX.ready && !SFX.ready(src)) playSeFallback(src, g); else SFX.play(src, g); }catch(_){} 
-                   if(DUST_SE[n]) dustPlume(); };   // 崩塌音 ⇒ 揚煙（ver -1639，見上）
+                   if(DUST_SE[n]) dustPlume(opt && opt.dust); };   // 崩塌音 ⇒ 揚煙（ver -1639，見上）
     if(delay>0) setTimeout(go, delay); else go(); };
   if(!spec) return;
-  if(Array.isArray(spec)) spec.forEach(x=> typeof x==='string' ? one(x,0) : one(x.n, x.delay||0));
-  else one(spec, 0);
+  if(Array.isArray(spec)) spec.forEach(x=> typeof x==='string' ? one(x,0,null) : one(x.n, x.delay||0, x));
+  else if(typeof spec === 'object') one(spec.n, spec.delay||0, spec);
+  else one(spec, 0, null);
 }
 /* ══ 同拍疊播、跟著主音收（ver -508，Ray：「se_metalclip 應該播這個才對，跟 gear
    一起，但是 se_metalclip 停了 gear 就要停」）══
@@ -2258,6 +2313,10 @@ function fireOneShot(line){
       st.__shakeT = setTimeout(stopShake, holdMs);
     }
   }
+  /* 跨句的持續崩塌（ver -1671）：`quakeHold:true` 開始、`quakeHold:false` 收掉。
+     ⚠ 只有**寫了**才動（`!==undefined`）—— 同 `tintHold`：沒寫的拍不該把它關掉，
+       不然玩家每推一句就停一次，讀起來是「撞一下停一下」。 */
+  if(line.quakeHold!==undefined){ if(line.quakeHold) startQuake(); else stopQuake(); }
   /* `map:true` ＝這一拍把小地圖攤開（ver -1397，安雅指路那一段）。
      ⚠ 它是**持續狀態**：攤開之後一直在，收在 `clearCast`（那一段講完了）——
        與 `shake` 那種一次性的演出不同族，所以不進 `fxTimers`。 */
@@ -2359,7 +2418,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1671';
+const KERB_V='?v=1672';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3348,7 +3407,7 @@ function renderLine(){
   }
 
   if(line.settle){
-    stopShake(); stopTint(); stopSenseBurst();
+    stopShake(); stopQuake(); stopTint(); stopSenseBurst();
     if(!settleHandler){
       console.info('[story] 沒有註冊結算發動器，跳過 settle');
       return advance();
@@ -3365,7 +3424,7 @@ function renderLine(){
   }
 
   if(line.battle){
-    stopShake(); stopTint(); stopSenseBurst();   // 進戰鬥就停（-638／-664／-1185）
+    stopShake(); stopQuake(); stopTint(); stopSenseBurst();   // 進戰鬥就停（-638／-664／-1185）
     /* ⚠⚠ **戰鬥要停自動播放**（ver -940，Ray 指定的另一個例外）：畫面要交給玩家打，
        打完回來還開著的話，他剛從戰鬥抬起頭就有台詞自己跑掉了。 */
     stopModes();
@@ -3847,7 +3906,7 @@ function endScene(){
 }
 
 function playScene(id){
-  stopShake(); stopTint(); stopSenseBurst();   // 換場一定停（跨句演出的出口，-638／-664／-1185）
+  stopShake(); stopQuake(); stopTint(); stopSenseBurst();   // 換場一定停（跨句演出的出口，-638／-664／-1185）
   const sc = MAIN_SCRIPT[id];
   if(!sc){ console.warn('[story] 找不到 scene：', id); close(); return; }
   cur = sc; lineIdx = 0;
@@ -4364,7 +4423,7 @@ let townOpener = null;
 export function setTownOpener(fn){ townOpener = fn || null; }
 
 export function close(opts){
-  stopShake(); stopTint(); stopSenseBurst();   // 離場一定停（跨句演出的出口，-638／-664／-1185）
+  stopShake(); stopQuake(); stopTint(); stopSenseBurst();   // 離場一定停（跨句演出的出口，-638／-664／-1185）
   clearInterval(typing); typing=null;
   pendingReveal=null;                // ⚠ 離場：還沒演的那一拍**丟掉**（同 playScene，ver -430）
   clearTimeout(waitT); waitT=null;

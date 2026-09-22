@@ -841,6 +841,20 @@
     18% {opacity:.95;}
     100%{opacity:0;   transform:translate(var(--dx),var(--dy)) scale(1.55);}
   }
+  /* ══⚠⚠ **上方揚煙**（ver -1671，Ray 的古墓底層稿：「特效**上方**煙塵」）══
+     牠在**外面**撞擊 ⇒ 塵是從天花板被震下來的，起點在演出區上緣、往下飄。
+     ⚠ 與上面那一版共用同一顆 `.dustpuff`（同一份漸層、同一組亂數），
+       換的只有**錨在哪一邊**與**飄的方向** —— 不要複製第二份配方（鐵律 7）。
+     ⚠ 落下比揚起慢而重：曲線改成先快後慢的 ease-out 之外還多 15% 的行程
+       （`--dy` 由 JS 給正值）。 */
+  .dustpuff.top{top:-6%;bottom:auto;
+    animation-name:dustFall;
+    animation-timing-function:cubic-bezier(.16,.62,.42,1);}
+  @keyframes dustFall{
+    0%  {opacity:0;   transform:translate(0,0) scale(.3);}
+    16% {opacity:.9;}
+    100%{opacity:0;   transform:translate(var(--dx),var(--dy)) scale(1.5);}
+  }
   #fxTop{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden;}
   /* ══ 子彈的火線（ver -1622）══ 一條帶漸層的細長條，尾端淡、頭端亮到爆白。
      ⚠ `mix-blend-mode:screen`（同飛刀／星芒）：黑的地方自然消失，疊在敵人身上是加亮。

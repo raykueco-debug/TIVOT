@@ -294,6 +294,10 @@ export const ART = {
                   /* 墓地那一幕（ver -671，Ray 交稿）。逐張量（tools/measure_si.py）。 */
                   meltdown:    { src:'resources/si/renna_si_meltdown.webp',    top:0,  bot:1535, fx:0.528 },
                   meltdowncry: { src:'resources/si/renna_si_meltdowncry.webp', top:4,  bot:1532, fx:0.607 },
+                  /* ⚠ `snivel`（ver -1671 接線）：圖 -1554 那一批就在庫裡，**從來沒接過**
+                     —— 古墓底層那一段（「因為我的報告……」）第一次用到它。
+                     全身站姿 ⇒ 照既有量法（alpha>16、中央段）逐張量，不必 `cm`/`standCm`。 */
+                  snivel:      { src:'resources/si/renna_si_snivel.webp',      top:9,  bot:1525, fx:0.534 },
                   scarejump:   { src:'resources/si/renna_si_scarejump.webp',   top:0,  bot:1533, fx:0.632 },
                   scarecute:   { src:'resources/si/renna_si_scarecute.webp',   top:0,  bot:1530, fx:0.537 },
                   blush:     { src:'resources/si/renna_si_blush.webp',     top:8,  bot:1522, fx:0.551 },
@@ -535,6 +539,19 @@ export const ART = {
     salute:    { src:'resources/si/nouvelle_si_salute.webp', top:5, bot:1517, fx:0.565 },
     sigh:      { src:'resources/si/nouvelle_si_sigh.webp', top:5, bot:1535, fx:0.579 },
     sleep:     { src:'resources/si/nouvelle_si_sleep.webp', top:233, bot:1301, fx:0.435, cm:104, standCm:135 },   // 座（非全身圖）
+    /* ══⚠⚠ **`faint` ＝癱坐（ver -1671，Ray 交件＋交稿：古墓底層「不要緊，有我在——」）**══
+       ⚠⚠ **不是全身站姿 ⇒ 一定要 `cm` ＋ `standCm`**（§5）：
+         · `cm:150` 是**量出來的**，不是估的 —— 把它與 `steady` 並排縮到同尺寸比
+           **頭的大小**（65 vs 67 px，差 3%）⇒ 兩張是同一個畫尺 ⇒
+           站姿 1521px＝165cm ⇒ 9.22 px/cm ⇒ 這張 1381px ＝ **149.8cm**。
+         · `standCm:150` ＝ 她跪坐時頭頂就在 150cm ⇒ 比站著低 15cm，
+           **看得見、又明顯比別人低**（§5 娜塔莉那一條要的正是這個）。
+       ⚠ 是 **.png**（規約是 WebP）—— 轉檔時檔名別改，這一行要跟著動。
+       ⚠ 近白 21.4%（門檻 ≤1%）：邊緣有白霧，疊在暗背景上看得出來。要不要重出由 Ray 決定。 */
+    /* ⚠ `scare2`（ver -1671 接線）：圖早就在庫裡、**從來沒接過** —— 古墓底層
+       「但是這樣撐不久……」第一次用到它。全身站姿 ⇒ 照既有量法逐張量。 */
+    scare2:    { src:'resources/si/nouvelle_si_scare2.webp', top:9, bot:1530, fx:0.379 },
+    faint:     { src:'resources/si/nouvelle_si_faint.png', top:67, bot:1448, fx:0.570, cm:150, standCm:150 },
     smug:      { src:'resources/si/nouvelle_si_smug.webp', top:3, bot:1525, fx:0.562 },
     stare:     { src:'resources/si/nouvelle_si_stare.webp', top:2, bot:1523, fx:0.586 },
     wet:       { src:'resources/si/nouvelle_si_wet.webp', top:3, bot:1524, fx:0.582 },
@@ -768,6 +785,25 @@ export const ART = {
          沒有 Ray 看畫面不動 —— 但人物變高 29% ⇒ 同一個 `cm` 會讓她**小 22%**，
          要維持原本的大小得把 `cm` 往上帶（147→約 189，而那會超過 `CAST_TALL` 178）。 */
     sleep:     { src:'resources/si/sorana_si_sleep.webp?v=2', top:230, bot:1424, fx:0.461, cm:147, standCm:140 },   // 座（非全身圖）
+    /* ══⚠⚠⚠ **`carrynouvelle` 一族 ＝ 索菈娜背著諾薇兒**（ver -1671，Ray 交件＋交稿）══
+       畫面上是**兩個人**，所以這一族的取景與別張不同 —— 三個數字都是量出來的：
+         · 索菈娜自己：頭頂 161 → 腳底 1519 ＝ 1358px ＝ 176cm ⇒ **7.72 px/cm**
+         · 整張的縱向範圍 5 → 1520 ＝ 1515px ⇒ **196cm**
+       ⇒ `cm:196`（這張畫該佔 196 公分 ⇒ 索菈娜本人與她其餘立繪**一樣大**）、
+         `standCm:196`（圖的上緣就是諾薇兒的頭，她的頭本來就在 196cm 高）。
+       ⚠⚠ `cm` 超過 178 **在這裡是安全的**：`CAST_TALL` 取的是**角色層**的 `cm`
+         （`speakers.js` 尾端那一行），expr 層不列入 ⇒ 不會把全劇組一起縮小。
+         §5 那條「不要填超過 178」管的是**角色層**。
+       ⚠ `fx:0.667` 錨的是**索菈娜的臉**（她是說話的人），不是圖框中心、也不是諾薇兒。
+       ⚠⚠ 四張是**同一具身體換臉**（bbox 兩兩相同）⇒ 取景值四張一致，不要逐張量
+         （§5 的 -649）。⚠ 但要**明寫**，不能只寫 `src` —— 只寫 src 沿用的是角色層
+         （0.498），不是這一族（同這一版 battlecry 那一族踩到的坑）。
+       ⚠ 庫裡還有第五張 `carrynouvellejealous`，Ray -1671 指示**先留著**、稿上沒用到，
+         所以**不接線**（接了就是一個沒有人叫得到的鍵）。 */
+    carrynouvelle:       { src:'resources/si/sorana_si_carrynouvelle.webp?v=2', top:5, bot:1520, fx:0.667, cm:196, standCm:196 },
+    carrynouvellescream: { src:'resources/si/sorana_si_carrynouvellescream.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:196 },
+    carrynouvellesmirk:  { src:'resources/si/sorana_si_carrynouvellesmirk.webp',  top:5, bot:1520, fx:0.667, cm:196, standCm:196 },
+    carrynouvelleshock:  { src:'resources/si/sorana_si_carrynouvelleshock.webp',  top:5, bot:1520, fx:0.667, cm:196, standCm:196 },
     stare:     { src:'resources/si/sorana_si_stare.webp?v=2', top:7, bot:1528, fx:0.514 },
     wave:      { src:'resources/si/sorana_si_wave.webp?v=2', top:8, bot:1527, fx:0.530 },   // fx 目視手調，不隨新圖走（新圖量到 0.374，含舉起的手臂）
     worry:     { src:'resources/si/sorana_si_worry.webp?v=2', top:4, bot:1519, fx:0.543 },

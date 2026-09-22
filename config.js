@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1671';
+export const VERSION = 'ver 2026.09.22-1672';
 
 export const GAME_CONFIG = {
 
@@ -2426,6 +2426,33 @@ export const GAME_CONFIG = {
     tomb_gk2:  { enemy:'gk_offset', session:'tomb_wild' },
     tomb_gk3:  { enemy:'gk_many',   session:'tomb_wild' },
     tomb_gk_final: { enemy:'gk_crypt', session:'tomb_wild' },
+    /* ══⚠⚠⚠ **底層那一段的三場**（ver -1671，Ray 交稿＋指定用哪張卡：
+       「獨戰場用 many／夢魘用 offset／終戰用 crypt」）══════════════════════════
+       三場都**沿用既有的守墓者卡**，一隻新怪都沒開（鐵律 7：同一隻怪的數值只有一份）。
+       ⚠ 三場都 `session:'tomb_wild'` ＝與整張圖同一局 —— 這一段的收局點是
+         **底層梯廳那個 `rest:true`**（走進去就閉棺結算），不是某一場戰鬥，
+         所以三張都**不寫 `sessionEnd`**。 */
+    /* ① 墓主降臨（蕾娜「啊！」之後）—— **獨戰、沒有夥伴**。
+       ⚠⚠ `noPartner` ＋ `noSaint` 兩格都要寫：ver -681 Ray 定的「沒有夥伴＝
+         什麼技都沒有，也沒有聖徒化」是**規則**，但引擎不會自己推 ——
+         少寫 `noSaint` 就變成「身邊沒有人，卻還聖徒化得出來」。 */
+    tomb_low_solo: { enemy:'gk_many', session:'tomb_wild', noSaint:true, noPartner:true },
+    /* ② 安雅介入 —— **一開打就是惡夢化**（稿：「主角一開戰就是夢魘化的強化狀態」）。
+       ⚠ `niStart` 的實作在 `combat.startGame` 尾端（走 `saint.activateNightmare`
+         那個唯一入口，鐵律 8）；CI（`ci_anya_ni`）與 vo 由它播，**腳本那一拍不要再播一次**。
+       ⚠⚠ `partner:'anya'` ＝這一場強制換安雅（同 `np_nightmare` 那一場的理由）：
+         惡夢化是**她的**技，破防計量表上的臉與被動都要對得起來。
+       ⚠ `noPartner` 照留：主動技仍然只由這張卡的 `niStart` 帶出來，玩家自己發動不了。 */
+    tomb_low_ni: { enemy:'gk_offset', session:'tomb_wild',
+      partner:'anya', niStart:true, noSaint:true, noPartner:true },
+    /* ③ 祭壇終戰 —— **最終型態**（稿：「怪名從守墓者換成『伊甸古墓』」「夥伴限安雅」）。
+       ⚠⚠ `enemyName` 是**戰鬥卡**的覆寫（實作在 `enemy.setEnemy`）：那一場用的就是
+         `gk_crypt`，而「牠其實是古墓本身」是**這一場的揭露**、不是那隻怪的屬性 ——
+         改敵人卡會連追擊時遇到的同一張卡一起改名。
+       ⚠ 「夥伴限安雅」＝ `partner:'anya'`（強配），**不寫 `noPartner`** ——
+         她的主動技在這一場是可以用的（稿上沒有禁，而§6.5.2 那條是「禁了要明寫」）。 */
+    tomb_low_final: { enemy:'gk_crypt', session:'tomb_wild',
+      partner:'anya', enemyName:'伊甸古墓', noSaint:true },
     /* ══⚠⚠ 貝利薩爾・祭壇的那一場（ver -1353，Ray 的稿：「進入戰鬥，雖是 boss
        但只是**略弱的中 boss 水準**」）══
        ⚠ 敵人是 `bl_dragon_chase`（古城裡的龍，拘束態立繪）—— 它的數值是 Ray 指定

@@ -1297,7 +1297,16 @@ export function setEnemy(key, opts){
   state.curEnemyEntranceSe = en.entrance || null;     // 登場音（ver -948 併成一格；-949 欄名定為 entrance）
   // 名稱與立繪；取景（config fit.pos → object-position；未設＝回 CSS 預設 center top）
   const nameEl = $('enemyName');
-  if(nameEl) nameEl.textContent = displayEnemyName(en.name);
+  /* ══⚠⚠ **這一場要顯示別的名字**（ver -1671，Ray 的古墓稿：「祭壇終戰，最終型態。
+     **怪名從守墓者換成「伊甸古墓」**」）══ 戰鬥卡上的 `enemyName`。
+     ⚠⚠ 寫在**戰鬥卡**不寫在敵人卡：那一場用的就是 `gk_crypt`（Ray 指定），
+       而「牠其實是古墓本身」是**那一場的揭露**，不是那隻怪的屬性 ——
+       改敵人卡會讓追擊時遇到的同一張卡也跟著改名（鐵律 7：一個量一個計算點，
+       而這裡本來就是兩個量）。
+     ⚠ 沒寫就照舊讀敵人卡，所以既有 95 張卡一個字都不必動。 */
+  { const bc = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+    const nm = (bc && bc.enemyName) || en.name;
+    if(nameEl) nameEl.textContent = displayEnemyName(nm); }
   const eImg = $('enemyImg');
   if(eImg){
     eImg.style.objectPosition = (en.fit && en.fit.pos) || '';

@@ -3101,6 +3101,18 @@ export function startGame(){
      手機上就是演出開頭卡一拍（playCutin 的 300ms 保底蓋不住大圖）。
      idle 時段做、失敗靜默（純優化，同 primeArt 的理由）。 */
   warmPartnerCutins();
+  /* ══⚠⚠ **`niStart:true` ＝這一場一開打就是惡夢化**（ver -1671，Ray 的古墓底層稿：
+     「CI_nightmareinstall 播 vo／推棺，進入戰鬥，**主角一開戰就是夢魘化的強化狀態**」）══
+     ⚠⚠ 走**閘門那一支同一個入口**（`saint.activateNightmare`，鐵律 8）——
+       不要在這裡自己開一套：CI、vo、把血灌滿、換 16 格盤、起倒數槽、收尾時把原本
+       那一副盤換回去，那一整套只有它知道。
+     ⚠ 掛在 `loadBoard(0)` **之後**：它會記下原本那一副盤（`saintPrevBoard`），
+       盤還沒載就沒有東西可以記。
+     ⚠⚠⚠ **CI 因此播在「推棺之後」而不是稿上寫的「推棺之前」** —— 這是刻意的：
+       劇情層目前**沒有**播 CI 的拍子（`line.cutin` 不存在），為了早 0.8 秒而在
+       story 那邊長出第二套 cut-in，就是鐵律 8 要擋的那件事。真的要照稿上的順序，
+       要做的是**給劇情層一個 CI 拍**，不是在這裡複製一份。 */
+  if(sb && sb.niStart) saint.activateNightmare();
   if(state.scriptRun){ updateBars(); return; }   // 劇情插入戰不進教學
   tutorial.maybeStart();   // 首次出陣 → 進教學（穿插式；看過/跳過後恆 no-op）
   if(state.tutorialActive && GAME_CONFIG.tutorial){

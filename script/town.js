@@ -7706,7 +7706,7 @@ export const TOWNS = {
               { tierMax:2, tierWho:'NOUVELLE', hide:['SORANA'] }),
           { speaker:'PLAYER', blank:true, tierMin:3, tierWho:'NOUVELLE', hide:['SORANA'] },
           nou('steady','嗯！',            { tierMin:3, tierWho:'NOUVELLE' }),
-          nou('steady','我們……才不會輸！', { tierMin:3, tierWho:'NOUVELLE' }),
+          nou('steady','我們……才不會輸給任何人！', { tierMin:3, tierWho:'NOUVELLE' }),
           /* ══⚠⚠⚠ **二戰・第二輪**（ver -1616，Ray：「諾薇兒『我們才不會輸』之後
              馬上同一個地點再戰」）══
              ⚠⚠ 上面那三拍是 `tierMin:3` 的分歧 —— **這幾拍一定要無條件**，
@@ -7854,8 +7854,149 @@ export const TOWNS = {
       stair2:     { bg:'tomb_stair2', name:'伊甸古墓　底層階梯', noTime:true,
         exits:{ left:'crossvault', down:'landing3' } },
       /* ⚠⚠ **安全點之二**（ver -1574，Ray 指定）。 */
-      landing3:   { bg:'tomb_landing3', name:'伊甸古墓　三層梯廳', noTime:true,
-        exits:{ up:'stair2', down:'gallery3' }, rest:true, noWild:true },
+      /* ⚠ 名字由「三層梯廳」改成**底層梯廳**（ver -1671，Ray 指定）。
+         ⚠⚠ 小地圖第三張（`map_tomb_l3.webp`）上的草書地名是**畫上去的** ——
+           那張圖還寫著舊名，要改得回美術（鐵律 11）。這裡只改資料。 */
+      landing3:   { bg:'tomb_landing3', name:'伊甸古墓　底層梯廳', noTime:true,
+        exits:{ up:'stair2', down:'gallery3' }, rest:true, noWild:true,
+        /* ══════════════════════════════════════════════════════════════════
+           **底層梯廳（ver -1671，Ray 交稿）** —— 稿上第一句是「底層梯廳，**結算後**」
+           ⚠⚠⚠ 「結算後」**不必寫任何東西**：這一格是 `rest:true`，而 §6.5.4.3 的
+             全域規則（ver -1574，Ray：「安全點處如果有劇情**先跑結算再跑劇情**，
+             這是全域規則」）已經保證了順序 —— `enter()` 會先讓 `restActDue` 收帳、
+             收完才回頭演這一段。**不要在開頭補 `settle:true`**，那會結算兩次。
+           ⚠ `need:'tomb_gk1_split'` ＝柱廳分組那一段演完（＝追逐已經開始）。
+           ⚠ 站位沿用古墓其餘幾段的 `sides:{RENNA:'L'}`：安雅本位右且**不讓**
+             （§6.5 的表），所以蕾娜一定要讓到左。四個人同台 ⇒ 同側換人走抽牌輪轉。
+           ══════════════════════════════════════════════════════════════════ */
+        acts:[ { flag:'tomb_low_arrive', need:'tomb_gk1_split', storyBattle:true, sides:{ RENNA:'L' }, lines:[
+          /* ── 牠在外面撞入口 ── 一組 ＝ 撞擊 ＋0.2 秒的落磚 ＋**上方**落塵。
+             ⚠⚠ `dust:'top'` 是**這一拍**的覆寫（ver -1671）：塵是從天花板被震下來的。
+               不寫就是原本那一版（由下往上揚）—— 漏寫的下場是方向不對，不是沒有煙。 */
+          { speaker:'NARRATION', text:'',
+            se:[{ n:'se_heavycursh', dust:'top' }, { n:'se_brickcrush', delay:200, dust:'top' }],
+            shakeHold:900, auto:1200 },
+          nou('cringe','入口太小了，牠進不來……'),
+          { speaker:'NARRATION', text:'',
+            se:[{ n:'se_heavycursh', dust:'top' }, { n:'se_brickcrush', delay:200, dust:'top' }],
+            shakeHold:900, auto:1200 },
+          nou('scare2','但是這樣撐不久……'),
+          /* ⚠ 稿：「0.3 秒後再播一組，**四次**」⇒ 每組間隔 0.5 秒（組內 0.2 ＋ 隔 0.3）。
+             ⚠ 四次寫成**明確的八個 delay**，不另做「重複 N 次」的機制 ——
+               這是一次性的四下，不是狀態（狀態的那一版是下面的 `quakeHold`）。 */
+          { speaker:'NARRATION', text:'', se:[
+              { n:'se_heavycursh', dust:'top' },              { n:'se_brickcrush', delay: 200, dust:'top' },
+              { n:'se_heavycursh', delay: 500, dust:'top' },  { n:'se_brickcrush', delay: 700, dust:'top' },
+              { n:'se_heavycursh', delay:1000, dust:'top' },  { n:'se_brickcrush', delay:1200, dust:'top' },
+              { n:'se_heavycursh', delay:1500, dust:'top' },  { n:'se_brickcrush', delay:1700, dust:'top' },
+            ], shakeHold:2400, auto:2400 },
+          /* ⚠ 稿上沒給表情的一律 `null`（不動立繪，用台上那一張）—— 同 `ARRHENIUS` 那一條。 */
+          sor(null,'喂——'),
+          nou('surprise','大家……！'),
+          ren('shockcalm','！！'),
+          ren('sad','這不是遍體鱗傷了嗎……'),
+          /* ⚠⚠ **同一句話、兩張表情**（稿上那兩行的字一模一樣）：她說到一半就倒下去了
+             ⇒ 第二拍**照抄同一句**、只換立繪。
+             ⚠ 不要寫成「一拍換兩次立繪」：換圖是延後執行的（§6.5 的 -647），
+               同一拍換兩次的話第二張根本來不及畫上去。 */
+          nou('desperate','不要緊，有我在——'),
+          nou('faint','不要緊，有我在——'),
+          { speaker:'NARRATION', text:'', se:'se_fall', auto:900 },
+          /* ══ 插圖 26（諾薇兒暈倒）—— **只有諾薇兒 T3 以上看得到**（Ray 的稿）══
+             ⚠⚠ `tierWho:'NOUVELLE'` **一定要寫**：不寫＝看說話者自己，而這一拍的
+               說話者是旁白（不在好感表上）⇒ 整條永遠不成立（-1565 那個坑，lint 會擋）。
+             ⚠ 是 **.png**（規約 WebP）—— 候選鏈吃得到，但轉檔時這一行要跟著動。
+             ⚠ 由下而上平移 ＝ `cgPan:'up'`。 */
+          { speaker:'NARRATION', text:'', cg:'26_nouvellefaint', cgNoTime:true,
+            cgPan:'up', auto:2200, tierMin:3, tierWho:'NOUVELLE' },
+          { speaker:'NARRATION', text:'', cg:null, auto:200, tierMin:3, tierWho:'NOUVELLE' },
+          any('crying','諾薇兒！'),
+          ren('worry','暈過去了……先給她退燒藥。'),
+          /* ══⚠⚠ **從這一拍起持續撞到進戰鬥為止**（稿：「0.3～0.7 秒後再播一組…
+             **持續播到拔旗**」）══ 跨句的狀態 ⇒ `quakeHold`（§6.5 的 -638 那一族）。
+             ⚠⚠⚠ **不可以沿用 `se`／`shake`**：那兩個是一次性的，`stopFx` 每推一句
+               就收掉 —— 而且不會有任何錯誤訊息，只是「撞一下就沒了」。
+             ⚠ 出口是既有的那四個（進戰鬥／結算／換場／離場），下面墓主那一場就是它。 */
+          { speaker:'NARRATION', text:'', quakeHold:true, auto:600 },
+          sor('battlecry','可惡！那東西不知道什麼叫放棄嗎？'),
+          sor('battlecrylookserious','！！'),
+          sor('battlecrylookserious','有風……是外面的氣味！'),
+          ren('chase','也就是說……'),
+          sor('battlecrylookup','拜那傢伙大鬧之賜，外壁可能有什麼地方裂開了！'),
+          /* ⚠ 稿：「`se_rockimpact`，`se_bricks` **同時**播…然後播 deeproar」
+             ⇒ 前兩支 delay 都是 0（同時），吼聲排在後面。
+             ⚠ `deeproar` ＝ `se_monsterroardeep`（「遠吼」那一條用的同一支）。 */
+          { speaker:'NARRATION', text:'', se:[
+              { n:'se_rockimpact', dust:'top' }, { n:'se_brickcrush', dust:'top' },
+              { n:'se_monsterroardeep', delay:700 },
+            ], shakeHold:1200, auto:1800 },
+          any('panic','過來了！'),
+          /* 上膛音 —— 主武器那一支（`se_weapon_reload`）。 */
+          { speaker:'NARRATION', text:'', se:'se_weapon_reload', auto:900 },
+          { speaker:'PLAYER', blank:true },
+          ren('shockopen','！！'),
+          /* ══ 好感分歧（**蕾娜**）══ 兩條互斥，都要寫完整（含收圖）。
+             ⚠ 門檻不是等於：`tierMax:2`／`tierMin:3`，日後多一段 T4 不必回頭改。 */
+          /* ── T3 以上：插圖 27（上往下平移）── */
+          { speaker:'NARRATION', text:'', cg:'27_rennapull', cgNoTime:true, cgPan:'down',
+            auto:1400, tierMin:3, tierWho:'RENNA' },
+          ren(null,'我們一起走，好嗎？',                     { tierMin:3, tierWho:'RENNA' }),
+          ren(null,'我不想丟下你，所以請你也不要丟下我——', { tierMin:3, tierWho:'RENNA' }),
+          { speaker:'NARRATION', text:'', cg:null, auto:200, tierMin:3, tierWho:'RENNA' },
+          /* ── T2 以下 ── */
+          ren('callangry','別逞強，一起走！',             { tierMax:2, tierWho:'RENNA' }),
+          ren('callangry','死在這裡的話，評價有什麼用！', { tierMax:2, tierWho:'RENNA' }),
+          /* ══ 墓主降臨 ══ ⚠ 這幾拍**一定要無條件**：掛在分歧上的話有一半的玩家
+             永遠打不到那一場（-1616 那個坑的同一面）。 */
+          { speaker:'NARRATION', text:'', se:'se_monsterroardeep', shakeHold:1400, auto:1400 },
+          { speaker:'NARRATION', text:'', se:'se_fall', auto:700 },
+          ren('scream','啊！'),
+          /* ⚠ 獨戰、沒有夥伴（卡上 `noSaint` ＋ `noPartner`，見 config）。 */
+          { battle:'tomb_low_solo' },
+          sor('back','沒路了......但是確實是這個方向......'),
+          nou('desperate','……'),
+          any('point','祭壇，在那邊！'),
+          sor('ready','好！照小狗的話走！'),
+          ren('callangry','慢點、諾薇兒她......'),
+          /* ⚠⚠ 稿上寫「吼，**受擊音**，**斷骨音**」—— 受擊音用 `se_punch`，
+             **斷骨音庫裡沒有**（se/ 全找過：只有 `se_glasscrack`／`se_punch`／
+             `se_rockimpact`）⇒ 這一版先不放，等 Ray 交件再補一支 delay。
+             ⚠ 不要拿 `se_glasscrack` 湊：那是玻璃，讀起來完全是另一件事。 */
+          { speaker:'NARRATION', text:'', se:[
+              { n:'se_monsterroardeep' }, { n:'se_punch', delay:600 },
+            ], shakeHold:1400, auto:1600 },
+          sor('panic','糟糕！'),
+          /* 插圖 28（由下而上平移）＋畫面震動。 */
+          { speaker:'NARRATION', text:'', cg:'28_rennanouvelle', cgNoTime:true, cgPan:'up',
+            shakeHold:1200, auto:2200 },
+          Object.assign(sor('guardtalk','蕾娜！'), { cg:null }),
+          nou('sadnoeye','蕾娜小姐......妳自己快走......'),
+          ren('intense','那種事，怎麼可能做得到！'),
+          { speaker:'NARRATION', text:'', se:'se_monsterroardeep', shakeHold:1400, auto:1400 },
+          any('terrify','！！'),
+          /* ══⚠⚠ **一開打就是惡夢化**（戰鬥卡 `tomb_low_ni` 的 `niStart`）══
+             CI（`ci_anya_nightmareinstall`）與 vo 由**它**播，這一拍不要再播一次
+             —— 兩邊都播就是同一個演出兩份（鐵律 7）。 */
+          { battle:'tomb_low_ni' },
+          /* 稿：「戰鬥結束。**結算**。」⇒ 明寫一拍（這一格雖然是 `rest`，但那一支
+             只在**抵達**時收帳，打完架站在原地不會再收一次）。 */
+          { speaker:'NARRATION', text:'', settle:true },
+          ren('shockopen','牠好像......真的受創了！'),
+          any('desperate',''),
+          ren('shockcalm','拒絕死亡的覆寫，怎麼能一再發動......？就算是禍魘也不可能連續承載那樣的熵增......'),
+          { speaker:'NARRATION', text:'', se:'se_monsterroardeep', shakeHold:1200, auto:1400 },
+          ren('shock','！！'),
+          ren('shockopen','我們......想錯了！牠不是守墓者！'),
+          ren('shout','牠就是古墓本身！'),
+          sor('guardtalk','啥？那是什麼意思？'),
+          ren('callangry','我們可能，一直在牠的體內！守墓者不過是整座墓的算力投影出來的實體！'),
+          ren('argue','而安雅小姐的力量干擾了牠……說得通！'),
+          sor('battlecry','講人話！'),
+          ren('command','去祭壇！如果我猜得沒錯……'),
+          ren('command','算力集線裝置一旦啟動，古墓就無法維持投影了！'),
+          { speaker:'NARRATION', text:'', se:'se_monsterroardeep', shakeHold:1400, auto:1400 },
+          sor('ready','反正就是讓小公主點亮祭壇吧？走了！'),
+        ] } ] },
       /* ⚠ ~~安全點之三~~（ver -1574 拔掉，見上面那一段）。 */
       gallery3:   { bg:'tomb_gallery3', name:'伊甸古墓　玄室前廊', noTime:true,
         exits:{ up:'landing3', down:'crypt', right:'vaultW' } },
@@ -7888,7 +8029,136 @@ export const TOWNS = {
         bgWhen:[ { not:'tomb_altar_on', bg:'tomb_lowaltar_off' } ],
         exits:{ up:'bonepit', left:'adit' },
         exitIf:{ left:'tomb_altar_on' },
-        rest:true, noWild:true },
+        /* ⚠⚠⚠ **`rest` 拔掉了**（ver -1671，Ray：「結算點只有二層梯廳跟底層梯廳」）——
+           -1574 把這一格也當成安全點，但**終戰就打在這裡**：走進來先結算一次，
+           等於把「這一局」在決戰之前就收掉了。`noWild` 照留（這裡不刷雜兵）。 */
+        noWild:true,
+        /* ══════════════════════════════════════════════════════════════════
+           **祭壇終戰與收場（ver -1671，Ray 交稿）**
+           ⚠ 這一段接在底層梯廳那一段的尾巴（索「走了！」）—— 中間玩家要**自己走過來**
+             （底層梯廳 → 玄室前廊 → 骨坑 → 底層祭壇），所以它是另一格的 `acts`。
+           ⚠⚠ 開場就是那一場架（稿上「祭壇終戰」之前沒有台詞）。
+           ══════════════════════════════════════════════════════════════════ */
+        acts:[ { flag:'tomb_altar_done', need:'tomb_low_arrive', storyBattle:true, sides:{ RENNA:'L' }, lines:[
+          /* 最終型態：怪名顯示成「伊甸古墓」、夥伴限安雅（都在戰鬥卡上，見 config）。 */
+          { battle:'tomb_low_final' },
+          ren('command','趁現在！'),
+          any('steady','好！'),
+          /* ══ 感應動畫 ══ 走既有的 `fx:'sense'`（安雅啟動木雅克祭壇那一拍同一支，鐵律 8）。
+             ⚠ `auto:4400` 是**讀**心跳音的拍子表算出來的（`story.js` 的 `SENSE_BEATS`）——
+               不要在這裡另外湊一組整數；第四拍白光蓋滿畫面正好落在 4.4 秒。
+             ⚠ 清場**不寫在這裡**：`senseFx()` 自己會把台上清空（`senseClearCast`）。 */
+          { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
+            fx:'sense', auto:4400 },
+          /* ══ 遺蹟啟動 ══ 在**全白之下**換圖（同木雅克那一段：換圖要落在白的中間，
+             不然玩家會看到背景先跳一格再變白）。
+             ⚠⚠⚠ **`tomb_altar_on` 這支旗終於有人插了** —— HANDOFF 從 -1643 就記著
+               「名字先留好，寫那一段的人**不要再發明第二支旗**」。插了它三件事一起發生：
+                 · 背景由 `tomb_lowaltar_off` 換成 `tomb_lowaltar`（節點的 `bgWhen`）
+                 · 廢坑道（`adit`）的出口開啟（節點的 `exitIf`）
+                 · ⇒ 正好接上索菈娜那句「原來風是從這座牆後面出來的」
+             ⚠ act 的 `flag` 與這支旗是**兩支**（鐵律 9）：一支說「那一段演完了」、
+               一支說「祭壇開著」。 */
+          { speaker:'NARRATION', text:'', flags:['tomb_altar_on'],
+            bg:'tomb_lowaltar', auto:1500 },
+          { speaker:'NARRATION', text:'', se:'se_monsterroardeep', shakeHold:1400, auto:1400 },
+          nou('faint','淨化反應……'),
+          sor('battlecrylookup','成功了！'),
+          /* ⚠⚠ 稿：「`Se_Rockimpact`，**下方**煙塵，細微風聲，用 sturm **小聲**播」
+             · 下方煙塵 ＝ **不寫 `dust`**（原本那一版就是由下往上揚，鐵律 13：預設是安全的那一側）
+             · 「小聲」＝ `vol:0.4`（Ray 定：原響度 40%）——
+               ⚠ 它**乘在拉平後的 `fileGain` 上**，不是取代它（§6.6 的逐支拉平）。 */
+          { speaker:'NARRATION', text:'', se:[
+              { n:'se_rockimpact' }, { n:'sturm', vol:0.4, delay:300 },
+            ], shakeHold:900, auto:1800 },
+          sor('stare','原來風是從這座牆後面出來的。'),
+          sor('stare','看來可以出去了。'),
+          ren('meltdown','……'),
+          { speaker:'NARRATION', text:'', se:'se_fall', auto:800 },
+          sor(null,'喂、蕾娜！'),
+          any('scare',''),
+          nou('decode','蕾娜小姐！'),
+          nou('faint','受傷了嗎？我來……'),
+          { speaker:'NARRATION', text:'', se:'se_fall', auto:800 },
+          sor('tire','妳就別亂動了吧。'),
+          any(null,'蕾……娜？'),
+          ren('meltdown','……'),
+          ren('meltdown','我沒事……'),
+          ren('cry','我沒事啦……'),
+          ren('meltdowncry','所以我最討厭這種地方了嘛！'),
+          any('scare',''),
+          sor('tire','啊——啊——脫力以後就大哭嗎？'),
+          ren('meltdowncry','因為……因為……我怕嘛！'),
+          ren('snivel','而且大家都討厭我……'),
+          sor('talk','為什麼？'),
+          ren('snivel','因為我的報告……'),
+          sor('tire',''),
+          sor('think','我是不知道妳們的規矩啦，反正我看到的是——'),
+          sor('side','妳這個怕得要死的傢伙，扶著諾薇兒到最後都沒鬆手。'),
+          sor('readysmile','誰還管什麼『報告』啊。'),
+          ren('shockcalm','……'),
+          nou('sadsmile','對啊，要是沒有蕾娜小姐，我剛剛早就死了……'),
+          ren('worry','……'),
+          { speaker:'PLAYER', blank:true },
+          ren('blush','不客氣啦……'),
+          ren('lookdown','！！'),
+          ren('blush','那個……'),
+          ren('scarecute','我又站不起來了……'),
+          /* ══⚠⚠⚠ **索菈娜背起諾薇兒 —— 兩個人在同一張立繪上**（ver -1671）══
+             稿上下一句是「諾：『索菈娜！』**（與上一句話同側）**」——
+             那一句的立繪指定的是 `sorana_si_carrynouvellescream`，也就是**同一張圖換臉**。
+             ⚠⚠ 作法是 `portrait.char` 覆寫立繪槽（`story.js`：
+               `const who = (line.portrait && line.portrait.char) || line.speaker`）：
+               **說話的人是諾薇兒**（名字欄印她），**立繪走索菈娜那個槽** ⇒
+               「同側」是**結果**，不必去動 `sides`。
+             ⚠ 不要改成「讓諾薇兒也站右邊」：那會把她自己那張立繪叫出來，
+               變成畫面上有兩個諾薇兒。 */
+          sor('carrynouvelle','別看我，諾薇兒背著比看起來重。'),
+          { speaker:'NOUVELLE', text:'索菈娜！',
+            portrait:{ char:'SORANA', expr:'carrynouvellescream', show:true } },
+          /* ══ 好感分歧（**蕾娜**）══ 兩張插圖、兩個收場。 */
+          /* ── T2 以下：插圖 29-1 ── */
+          { speaker:'NARRATION', text:'', cg:'29-1_rennaholdhand', cgNoTime:true,
+            cgPan:'up', auto:1600, tierMax:2, tierWho:'RENNA' },
+          ren(null,'……',                 { tierMax:2, tierWho:'RENNA' }),
+          ren(null,'評價，我不會修正的喔。', { tierMax:2, tierWho:'RENNA' }),
+          ren(null,'絕對不會。',           { tierMax:2, tierWho:'RENNA' }),
+          { speaker:'NARRATION', text:'', cg:null, auto:200, tierMax:2, tierWho:'RENNA' },
+          /* ── T3 以上：插圖 29-2（由下往上平移）── */
+          { speaker:'NARRATION', text:'', cg:'29-2_rennaprincesshold', cgNoTime:true,
+            cgPan:'up', auto:1600, tierMin:3, tierWho:'RENNA' },
+          ren(null,'等……等一下！', { tierMin:3, tierWho:'RENNA' }),
+          any('panic','公主抱……！', { tierMin:3, tierWho:'RENNA' }),
+          sor('carrynouvelleshock','哇喔。', { tierMin:3, tierWho:'RENNA' }),
+          /* ⚠⚠⚠ **這一拍同時吃兩個人的段位**，而 `tierMin`/`tierWho` 一拍只能問一個人
+             ⇒ 拆成**兩個機制**：
+               · 這一拍在不在（蕾娜 T3 以上）→ `tierMin:3, tierWho:'RENNA'`
+               · 這一拍印什麼字（諾薇兒 T2 以下講「好好喔。」、T3 以上不講話）
+                 → `textByTier`（它看的正是**說話者自己**的段位，而說話者就是諾薇兒）
+             ⚠ `textByTier` 的鑰匙是**門檻**不是等於：`1` 涵蓋 T1~T2、`3` 涵蓋 T3 以上。
+             ⚠ 立繪兩條分支都是 `carrynouvellesmirk`（稿上 T3 那一條只寫了圖、沒有台詞）
+               ⇒ 空字串那一拍是**有立繪的無台詞拍**，照 §6.5 的 -628 要點一下才推進。 */
+          { speaker:'NOUVELLE', textByTier:{ 1:'好好喔。', 3:'' },
+            portrait:{ char:'SORANA', expr:'carrynouvellesmirk', show:true },
+            tierMin:3, tierWho:'RENNA' },
+          ren(null,'放、放我下來啦！太難為情了。',     { tierMin:3, tierWho:'RENNA' }),
+          ren(null,'……',                             { tierMin:3, tierWho:'RENNA' }),
+          ren(null,'就算這樣，評價，我也不會修正的喔。', { tierMin:3, tierWho:'RENNA' }),
+          ren(null,'絕對不會。',                       { tierMin:3, tierWho:'RENNA' }),
+          ren(null,'不要笑！',                         { tierMin:3, tierWho:'RENNA' }),
+          { speaker:'NARRATION', text:'', cg:null, auto:200, tierMin:3, tierWho:'RENNA' },
+          /* ══⚠⚠⚠ **共同的收場**（我的讀法，請 Ray 過目）══
+             稿上這四拍寫在 T2 那一段的後面、T3 那一段的前面 —— 字面上會讀成
+             「只有 T2 看得到」。我把它們當成**兩條分支共同的結尾**，理由：
+               · 「外面，有光。」「往那邊走看看吧。」是**離場**的台詞，
+                 少了它 T3 的玩家會停在「不要笑！」，這一段沒有出口。
+               · 兩條分支接上去讀起來都通順（T3 是 插圖收掉 → 道謝 → 走）。
+             ⚠ 要改成「T3 沒有這四拍」的話，把這四行各加 `tierMax:2, tierWho:'RENNA'` 就好。 */
+          { speaker:'PLAYER', blank:true },
+          ren('smile','謝謝你相信我囉。'),
+          any('point','外面，有光。'),
+          sor('carrynouvelle','往那邊走看看吧。'),
+        ] } ] },
       /* ══ ver -1643：**廢坑道**（祭壇啟動後開啟）—— 從最深處一路接回墓門。
          ⚠ 兩端都要寫：墓門那一格也有 `right:'adit'` ＋ 同一支 `exitIf`。 */
       adit:       { bg:'tomb_adit',

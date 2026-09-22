@@ -507,6 +507,13 @@ def main():
             # 出航（ver -424）：閘門拍，交給啟動層開飛行頁。
             if ln.get('goFlight'):
                 continue
+            # 結算（ver -913 立、-1671 補進這張表）：`{ settle:true }` ＝把畫面交給
+            #   結算頁。它在 `renderLine` 很前面就 `return` 了（早於 speaker 高亮、
+            #   也早於 `line.auto` 的排程）⇒ **沒有 speaker、沒有 auto 都是正常的**。
+            #   ⚠ 以前沒列進來，所以底層梯廳那一拍被報成「沒有 speaker」的錯誤 ——
+            #     那是檢查本身漏了一種閘門拍，不是資料寫錯。
+            if ln.get('settle'):
+                continue
             if ln.get('load'):
                 if ln['load'] not in script:
                     err('%s：load 指到不存在的場景 %s' % (tag, ln['load']))
