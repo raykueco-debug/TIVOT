@@ -1350,6 +1350,37 @@ export const CHAPTERS = [
 
 ];
 
+/* ══⚠⚠⚠ **Stage 15 —— 古墓底層梯廳**（ver -1681，Ray：「把三層梯廳設為 stage 15」）══
+   底層梯廳（`landing3`，-1671 由「三層梯廳」改名）是這一章的起點：
+   追逐演完、四個人在那裡會合，接著是熔斷那一段與祭壇終戰。
+
+   ⚠⚠ **真的升段的地方在資料上**（`script/town.js` 那一段的第一拍 `stage:15`）——
+     這一筆只是**跳關用的落點**，不是升段的來源（鐵律 7）。
+   ⚠⚠ **旗是「接」上去的不是抄一份**：`stage14ba`（初入古墓）＋追逐那一段全部演完。
+     抄一份六十行的清單在這裡，下次有人改 14-BA 就會走鐘。
+   ⚠⚠⚠ **要測的那幾支一支都不給**：
+     `tomb_rejoin`／`tomb_low_arrive`／`nou_melted`／`tomb_altar_on`／`tomb_altar_done`。
+   ⚠ 追逐的狀態**不進旗標**（存在 `tivot_chase_v1`，一輪內），
+     所以跳關進去時追兵是乾淨的。
+   ⚠⚠ **這顆鈕是「章節」**，不是「腳本測試」—— 後者那顆鈕已經在
+     ver -1584 被 **RUSH** 取代了，`SCRIPT_TEST` 現在只剩「巡場的旗標底」
+     這個用途—— 改指它等於偷偷改掉巡場，所以**沒有動它**。 */
+const TOMB_CHASE_DONE = [
+  'tomb_enter','tomb_talk','tomb_sealed_in',
+  'tomb_hall2_arrive','tomb_gk1_done','tomb_chase_on','tomb_carry',
+  'tomb_split','tomb_chase_taunt','tomb_gk1_split','tomb_chase_offer',
+];
+CHAPTERS.push({
+  id:'stage15', name:'Stage 15', sub:'古墓・底層梯廳：會合 → 熔斷 → 祭壇終戰',
+  stage:15, clockHour:10, named:true,
+  /* ⚠ 四個人都給 T3（45）：`26_nouvellefaint`（諾 T3）與 `27_rennapull`／
+     `29-2_rennaprincesshold`（蕾 T3）那幾拍才演得到。
+     要看 T2 那一條就把好感調到 30 以下（管理人模式的後臺改得了）。 */
+  aff:{ renna:45, nouvelle:45, sorana:45, anya:45 },
+  flags:[ ...((CHAPTERS.find(c=>c.id==='stage14ba')||{}).flags || []), ...TOMB_CHASE_DONE ],
+  enter:'town', town:'tomb', node:'landing3',
+});
+
 /* ══⚠⚠⚠ **腳本測試鈕的落點**（ver -1381，Ray：「在首頁先放一個腳本測試鈕，
    現在先設在東珀，以後每個探索地圖要測試就設在那」）══════════════════════
    首頁那顆「腳本測試」按下去就跳到**這裡設定的地方**。要測別張圖就**只改這一筆**

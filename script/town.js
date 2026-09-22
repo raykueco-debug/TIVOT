@@ -7879,7 +7879,11 @@ export const TOWNS = {
           /* ── 牠在外面撞入口 ── 一組 ＝ 撞擊 ＋0.2 秒的落磚 ＋**上方**落塵。
              ⚠⚠ `dust:'top'` 是**這一拍**的覆寫（ver -1671）：塵是從天花板被震下來的。
                不寫就是原本那一版（由下往上揚）—— 漏寫的下場是方向不對，不是沒有煙。 */
-          { speaker:'NARRATION', text:'',
+          /* ⚠⚠ **踏進底層梯廳 ＝ Stage 15**（ver -1681，Ray：「把三層梯廳設為 stage 15」）。
+             ⚠ `prog.setStage` 是**只升不降**的（鐵律 9），所以寫在這一拍是安全的
+               —— 回頭再走進來一次不會把進度弄壞。
+             ⚠ 掛在**這一段的第一拍**：那就是「他到了」的那一刻。 */
+          { speaker:'NARRATION', text:'', stage:15,
             se:[{ n:'se_heavycursh', dust:'top' }, { n:'se_brickcrush', delay:200, dust:'top' }],
             shakeHold:900, auto:1200 },
           nou('cringe','入口太小了，牠進不來……'),
