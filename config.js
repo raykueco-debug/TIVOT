@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1672';
+export const VERSION = 'ver 2026.09.22-1678';
 
 export const GAME_CONFIG = {
 
@@ -2443,8 +2443,13 @@ export const GAME_CONFIG = {
        ⚠⚠ `partner:'anya'` ＝這一場強制換安雅（同 `np_nightmare` 那一場的理由）：
          惡夢化是**她的**技，破防計量表上的臉與被動都要對得起來。
        ⚠ `noPartner` 照留：主動技仍然只由這張卡的 `niStart` 帶出來，玩家自己發動不了。 */
+    /* ⚠⚠ `fullHp` ＋ `niBonusSec` 都是 ver -1672 Ray 追加的，**只限這一場**：
+       「強制夢魘化的那一場要從滿血開始，並且加 5 秒」。
+       前一場（`tomb_low_solo`）通常會把血打得很低，而惡夢化的長度是由發動時的
+       血量算的（-974）⇒ 不滿血開場的話這一段只有一兩秒。 */
     tomb_low_ni: { enemy:'gk_offset', session:'tomb_wild',
-      partner:'anya', niStart:true, noSaint:true, noPartner:true },
+      partner:'anya', niStart:true, noSaint:true, noPartner:true,
+      fullHp:true, niBonusSec:5 },
     /* ③ 祭壇終戰 —— **最終型態**（稿：「怪名從守墓者換成『伊甸古墓』」「夥伴限安雅」）。
        ⚠⚠ `enemyName` 是**戰鬥卡**的覆寫（實作在 `enemy.setEnemy`）：那一場用的就是
          `gk_crypt`，而「牠其實是古墓本身」是**這一場的揭露**、不是那隻怪的屬性 ——

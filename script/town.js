@@ -7890,10 +7890,24 @@ export const TOWNS = {
               { n:'se_heavycursh', delay:1000, dust:'top' },  { n:'se_brickcrush', delay:1200, dust:'top' },
               { n:'se_heavycursh', delay:1500, dust:'top' },  { n:'se_brickcrush', delay:1700, dust:'top' },
             ], shakeHold:2400, auto:2400 },
-          /* ⚠ 稿上沒給表情的一律 `null`（不動立繪，用台上那一張）—— 同 `ARRHENIUS` 那一條。 */
-          sor(null,'喂——'),
+          /* ⚠⚠ **她這一句沒有立繪**（ver -1672，Ray：「索的『喂』本來就沒有立繪」）——
+             `show:false` ＝**不要把她放上台**，台上維持諾薇兒。
+             ⚠ 不可以只寫 `sor(null,…)`：`N(who)` 產生的 `portrait` 是 `show:true`，
+               沒給表情只是「不換表情」，她照樣會帶著基本立繪滑進來。
+               「沒有表情」與「不上台」是兩件事。
+             ⚠ 這一拍讀起來正好是**畫外的那一聲喊**（她們三個剛趕到）。 */
+          { speaker:'SORANA', text:'喂——', portrait:{ char:'SORANA', show:false } },
           nou('surprise','大家……！'),
-          ren('shockcalm','！！'),
+          /* ⚠⚠⚠ **`tomb_rejoin` 在這一拍插**（ver -1672）—— 蕾娜回到隊上的那一刻。
+             `script/evaluation.js` 的 `AWAY_WHEN` 從 -1571 就寫著
+             `{ from:'tomb_split', until:'tomb_rejoin' }`，而那一行的註解說得很清楚：
+             「`until` 還沒有人插是刻意的…**名字先留好，插旗的事件由那一段自己認領**」
+             —— **這一段就是那個事件**（同 `tomb_altar_on` 的情形）。
+             ⚠⚠ 不插的話**結算頁永遠寫「評價者不在場」**（實測 -1672 那一趟就是），
+               而畫面上不會有任何錯誤訊息：等第照算、只是蕾娜那一格永遠不出來。
+             ⚠ 掛在**蕾娜自己第一次開口**那一拍，不掛在「喂——」（那是索菈娜）：
+               這支旗問的是「評價者在不在場」。 */
+          Object.assign(ren('shockcalm','！！'), { flags:['tomb_rejoin'] }),
           ren('sad','這不是遍體鱗傷了嗎……'),
           /* ⚠⚠ **同一句話、兩張表情**（稿上那兩行的字一模一樣）：她說到一半就倒下去了
              ⇒ 第二拍**照抄同一句**、只換立繪。
@@ -7958,13 +7972,16 @@ export const TOWNS = {
           any('point','祭壇，在那邊！'),
           sor('ready','好！照小狗的話走！'),
           ren('callangry','慢點、諾薇兒她......'),
-          /* ⚠⚠ 稿上寫「吼，**受擊音**，**斷骨音**」—— 受擊音用 `se_punch`，
-             **斷骨音庫裡沒有**（se/ 全找過：只有 `se_glasscrack`／`se_punch`／
-             `se_rockimpact`）⇒ 這一版先不放，等 Ray 交件再補一支 delay。
-             ⚠ 不要拿 `se_glasscrack` 湊：那是玻璃，讀起來完全是另一件事。 */
+          /* ⚠ 稿上寫「吼，**受擊音**，**斷骨音**」—— 受擊音 `se_punch`、
+             **斷骨音 `se_rockimpact`**（ver -1672，Ray 指定；庫裡沒有真的斷骨音，
+             他挑了這一支）。
+             ⚠⚠ `se_rockimpact` 在 `DUST_SE` 裡 ⇒ **它自己會揚煙**（-1639「播就有」）。
+               這一拍**刻意不寫 `dust`** ＝走預設的由下往上揚：那是被砸中時腳邊
+               濺起來的碎屑，不是天花板落塵（上面那幾拍才是）。 */
           { speaker:'NARRATION', text:'', se:[
               { n:'se_monsterroardeep' }, { n:'se_punch', delay:600 },
-            ], shakeHold:1400, auto:1600 },
+              { n:'se_rockimpact', delay:900 },
+            ], shakeHold:1400, auto:1800 },
           sor('panic','糟糕！'),
           /* 插圖 28（由下而上平移）＋畫面震動。 */
           { speaker:'NARRATION', text:'', cg:'28_rennanouvelle', cgNoTime:true, cgPan:'up',

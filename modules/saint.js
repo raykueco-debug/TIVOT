@@ -534,7 +534,14 @@ function startNightmareMode(){
      ⚠ 下限夾 1 格（100ms）：血本來就是 1 的時候發動＝沒有東西可以燒，第一拍就熔斷
        （那是「扣到 1 時 OBE」的直接結果，不是 bug）。 */
   { const room = Math.max(0, state.niFrom - 1), full = Math.max(1, state.playerMax - 1);
-    state.niTotalMs = Math.max(100, Math.round(NI_MAX_SEC * 1000 * room / full)); }
+    state.niTotalMs = Math.max(100, Math.round(NI_MAX_SEC * 1000 * room / full));
+    /* ══⚠⚠ **卡上的加時**（`niBonusSec`，ver -1672，Ray：「並且**加 5 秒**，
+       **只限這一場**」）══ 加在算完之後 ＝ 純粹多給那幾秒，不動上面那條比例。
+       ⚠ 它是**那一場的性質**寫在戰鬥卡上（鐵律 1），不是安雅的能力 ——
+         與「前引星」（`niFullStart`，那是角色的星）分得開：
+         一個是劇本給的例外、一個是玩家練出來的。 */
+    const bc = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+    if(bc && bc.niBonusSec > 0) state.niTotalMs += Math.round(bc.niBonusSec * 1000); }
   state.combo    = 0;
   /* 破防值不清（ver -749，同聖徒化那一條）。 */
   $('grid').classList.add('saint','ni');

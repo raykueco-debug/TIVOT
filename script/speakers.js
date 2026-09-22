@@ -789,21 +789,31 @@ export const ART = {
        畫面上是**兩個人**，所以這一族的取景與別張不同 —— 三個數字都是量出來的：
          · 索菈娜自己：頭頂 161 → 腳底 1519 ＝ 1358px ＝ 176cm ⇒ **7.72 px/cm**
          · 整張的縱向範圍 5 → 1520 ＝ 1515px ⇒ **196cm**
-       ⇒ `cm:196`（這張畫該佔 196 公分 ⇒ 索菈娜本人與她其餘立繪**一樣大**）、
-         `standCm:196`（圖的上緣就是諾薇兒的頭，她的頭本來就在 196cm 高）。
+       ⇒ `cm:196`（這張畫該佔 196 公分 ⇒ 索菈娜本人與她其餘立繪**一樣大**）。
        ⚠⚠ `cm` 超過 178 **在這裡是安全的**：`CAST_TALL` 取的是**角色層**的 `cm`
          （`speakers.js` 尾端那一行），expr 層不列入 ⇒ 不會把全劇組一起縮小。
          §5 那條「不要填超過 178」管的是**角色層**。
+       ⚠⚠⚠ **但 `standCm` 不可以照抄 196** —— 這是 ver -1672 實測出來的：
+         頭頂的公式是 `top + (CAST_TALL − standCm) × pxCm`，填 196 ⇒
+         `(178−196)×4.15 ≈ −75px` ⇒ **圖的上緣（＝諾薇兒的頭）被推到畫面外 68px**，
+         畫面上就是一個**沒有頭的諾薇兒**（實測 `y=-68`，而且不會有任何錯誤訊息）。
+         「她真的被背到 196cm 高」在物理上沒錯，但**舞台的頂線是照 178 校準的**，
+         比 178 高的東西一定會被裁掉。
+       ⇒ `standCm:178`（＝`CAST_TALL`）＝ **圖的上緣正好貼在頂線上**：
+         諾薇兒的頭完整入框，而索菈娜的臉自然落得比平常低約 78px ——
+         那正是「彎著腰背人」該有的樣子，不是 bug。
+       ⚠ 不要改成「把 `cm` 降到 178」來解：那會讓索菈娜整個人**縮小 9%**，
+         正是 §5 那條「同一張立繪＝同一個結果」要避免的（Ray 回報過「立繪縮小了」）。
        ⚠ `fx:0.667` 錨的是**索菈娜的臉**（她是說話的人），不是圖框中心、也不是諾薇兒。
        ⚠⚠ 四張是**同一具身體換臉**（bbox 兩兩相同）⇒ 取景值四張一致，不要逐張量
          （§5 的 -649）。⚠ 但要**明寫**，不能只寫 `src` —— 只寫 src 沿用的是角色層
          （0.498），不是這一族（同這一版 battlecry 那一族踩到的坑）。
        ⚠ 庫裡還有第五張 `carrynouvellejealous`，Ray -1671 指示**先留著**、稿上沒用到，
          所以**不接線**（接了就是一個沒有人叫得到的鍵）。 */
-    carrynouvelle:       { src:'resources/si/sorana_si_carrynouvelle.webp?v=2', top:5, bot:1520, fx:0.667, cm:196, standCm:196 },
-    carrynouvellescream: { src:'resources/si/sorana_si_carrynouvellescream.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:196 },
-    carrynouvellesmirk:  { src:'resources/si/sorana_si_carrynouvellesmirk.webp',  top:5, bot:1520, fx:0.667, cm:196, standCm:196 },
-    carrynouvelleshock:  { src:'resources/si/sorana_si_carrynouvelleshock.webp',  top:5, bot:1520, fx:0.667, cm:196, standCm:196 },
+    carrynouvelle:       { src:'resources/si/sorana_si_carrynouvelle.webp?v=2', top:5, bot:1520, fx:0.667, cm:196, standCm:178 },
+    carrynouvellescream: { src:'resources/si/sorana_si_carrynouvellescream.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178 },
+    carrynouvellesmirk:  { src:'resources/si/sorana_si_carrynouvellesmirk.webp',  top:5, bot:1520, fx:0.667, cm:196, standCm:178 },
+    carrynouvelleshock:  { src:'resources/si/sorana_si_carrynouvelleshock.webp',  top:5, bot:1520, fx:0.667, cm:196, standCm:178 },
     stare:     { src:'resources/si/sorana_si_stare.webp?v=2', top:7, bot:1528, fx:0.514 },
     wave:      { src:'resources/si/sorana_si_wave.webp?v=2', top:8, bot:1527, fx:0.530 },   // fx 目視手調，不隨新圖走（新圖量到 0.374，含舉起的手臂）
     worry:     { src:'resources/si/sorana_si_worry.webp?v=2', top:4, bot:1519, fx:0.543 },

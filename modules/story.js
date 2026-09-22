@@ -1018,7 +1018,17 @@ function startQuake(){
          而**真正把它關掉的是 `stopQuake` 之後的那一次逾時** —— 下一組會再開一次。 */
       st.__shakeT = setTimeout(stopShake, 900);
     }
-    quakeT = setTimeout(tick, 500 + Math.random()*400);   // 一組跑 0.2 秒，再隔 0.3~0.7 秒
+    /* ══⚠⚠ **間隔 ×3，而且要等落磚音播完**（ver -1672，Ray：「撞擊太密集了，
+       把區間改成 3 倍，**brick 播完前不播下一次 brick**」）══
+       · 稿上的 0.3~0.7 秒 ×3 ⇒ **0.9~2.1 秒**（組內那 0.2 秒照舊）
+       · 下界再夾一次「這一支音真的多長」—— ⚠ 長度**問音檔**不要寫秒數
+         （§6.5.5 的 -433：真相在音檔身上，換一支音檔程式不必改）。
+       ⚠ 拿不到（還沒解碼）就只用上面那個區間 —— 依 §6.6「音效不載完不放行」
+         正常情況下走不到那條退路。 */
+    let brick = 0;
+    try{ brick = (SFX.duration && SFX.duration(seSrc('se_brickcrush')) || 0) * 1000; }catch(_){}
+    const gap = Math.max(900 + Math.random()*1200, brick + 200);
+    quakeT = setTimeout(tick, gap);
   };
   tick();
 }
@@ -1922,6 +1932,7 @@ export function playAmb(name){
    ⚠ 純程式繪製（一叢半透明的土灰圓斑往上飄），不用素材。 */
 const DUST_SE = { se_brickcrush:1, se_rockimpact:1, se_heavycursh:1 };
 const DUST_MS = 2200;
+const DUST_CAP = 120;        // 同時在場的落塵上限（見 dustPlume 尾端）
 /* ══⚠⚠ **`dir:'top'` ＝從上面掉下來**（ver -1671，Ray 的古墓底層稿：「特效**上方**煙塵」）══
    ⚠⚠⚠ **方向是「那一拍」的性質，不是那一支音的性質** —— 同一支 `se_rockimpact`
      在這一段裡**兩種都出現**（牠在外面撞 ⇒ 上方落塵；最後打穿外壁 ⇒ 下方揚塵），
@@ -1931,6 +1942,12 @@ const DUST_MS = 2200;
      —— 漏寫的下場是「方向不對」而不是「沒有煙」（鐵律 13：安全的那一側是預設）。 */
 export function dustPlume(dir){
   const host=$('storyDust'); if(!host) return;
+  /* ⚠⚠⚠ **插圖播放中不揚煙**（ver -1672，Ray：「插圖時不要有煙霧特效」）——
+     插圖是**另一個鏡頭**：煙是演出區那個場景的東西，蓋上插圖之後它就不在畫面裡了，
+     飄在插圖前面讀起來是「畫面髒了」不是「那邊在崩」。
+     ⚠ 判定收在**這一支**（鐵律 8）：`quakeHold` 跨句、而插圖是逐拍蓋上來的 ——
+       寫在腳本上等於每一個插圖拍都要記得關一次、回來再開一次，漏一拍就露餡。 */
+  { const cg=$('storyCg'); if(cg && cg.classList.contains('on')) return; }
   const top = (dir === 'top');
   const n = 16;
   for(let i=0;i<n;i++){
@@ -1944,13 +1961,24 @@ export function dustPlume(dir){
                                      : (-90 - Math.random()*170).toFixed(0)+'px');
     el.style.setProperty('--d',  (Math.random()*420).toFixed(0)+'ms');
     el.style.setProperty('--t',  (1200 + Math.random()*900).toFixed(0)+'ms');
+    /* ⚠⚠⚠ **每一顆自己收**（ver -1672 修）—— 以前是「整個 host 在最後一次呼叫的
+       2.2 秒後清空」，那個共用計時器**每呼叫一次就被往後推**：
+       `quakeHold` 每 0.5~0.9 秒放一組（兩支音都在 `DUST_SE` ⇒ 32 顆），
+       於是它**永遠不會到期** ⇒ 節點無限長。實測那一段跑到一半就 **2624 個**，
+       佔全頁節點的 83%，而且每秒還在 +45 —— 手機上這就是發燙與掉幀（鐵律 12），
+       **畫面上完全看不出來**。
+       ⚠ 動畫跑完就 remove；另外掛一個**保底**的 timeout：分頁在背景、或使用者開了
+         `prefers-reduced-motion` 時 `animationend` 不一定會來。 */
+    el.addEventListener('animationend', ()=>el.remove(), { once:true });
+    setTimeout(()=>el.remove(), DUST_MS);
     host.appendChild(el);
   }
-  clearTimeout(dustPlume._t);
-  dustPlume._t=setTimeout(()=>{ if(host) host.innerHTML=''; }, DUST_MS);
+  /* ⚠ 上限（保險）：真的同時堆超過這個數就先砍最舊的 ——
+     `quakeHold` 的穩態約 32×(2.2/0.7) ≈ 100，所以正常不會碰到它；
+     它擋的是「日後有人把間隔調更密」那一種。 */
+  while(host.childElementCount > DUST_CAP) host.removeChild(host.firstElementChild);
 }
-export function stopDust(){ const h=$('storyDust'); if(h) h.innerHTML='';
-  clearTimeout(dustPlume._t); }
+export function stopDust(){ const h=$('storyDust'); if(h) h.innerHTML=''; }   // ⚠ 逐顆自己收之後，這裡不再需要清共用計時器（-1672）
 /* ══⚠⚠ **一支音可以帶 `vol` 與 `dust`**（ver -1671）══
    · `vol` ＝**乘在那一支的 `fileGain` 上**（Ray 的古墓稿：「用 sturm 小聲播」＝原響度 40%）。
      ⚠⚠ 乘的是拉平後的增益，不是取代它 —— `fileGain` 是「這一支拉到目標響度要多少」
@@ -2418,7 +2446,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1672';
+const KERB_V='?v=1678';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
