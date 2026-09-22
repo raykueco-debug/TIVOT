@@ -673,3 +673,4 @@ when	from	to	reason
 20260922-234151	resources/background/tomb/tomb_lowaltar.webp	_recycle/resources/background/tomb/tomb_lowaltar.webp	ver -1670 後 底層祭壇改畫成寬廣場地（Ray 交辦），差分對一起換
 20260922-234249	resources/background/tomb/tomb_crypt.webp	_recycle/resources/background/tomb/tomb_crypt.webp	ver -1670 後 石棺主室改畫成寬廣場地（Ray 交辦）
 20260922-235141	resources/si/sorana_si_amaze.webp	_recycle/resources/si/sorana_si_amaze.webp	ver -1670 後 amaze 重製版也修壞了，Ray 指示還原回 82919b0f^
+20260923-003942	resources/si/sorana_si_die.webp	_recycle/resources/si/sorana_si_die.webp	ver -1670 後 die 重製版修壞了（膚色被洗白），Ray 指示還原回 95d52262^
