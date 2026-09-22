@@ -1,8 +1,125 @@
-# HANDOFF — 截至 `ver 2026.09.17-1657`
+# HANDOFF — 截至 `ver 2026.09.22-1670`
 
 ---
 
-# ⭐⭐⭐ 這一輪（`ver -1614` → `-1656`，43 版・57 個 commit，**已推**）
+# ⭐⭐⭐ 這一輪（`ver -1669` → `-1670`，2 個 commit，**已推**）
+
+> 這一輪很短（Ray 只交辦三件小的），但**開工那一段踩到的坑比做的事重要**，
+> 而且 §0.1 那條規矩這一次是被**我**違反的 —— 先讀第一節。
+
+## 一、⚠⚠⚠ 開工：`git pull` 說完成了，其實落後 322 個 commit
+
+Ray 開場說「git pull complete to latest」，我就照著本機的 `HANDOFF.md`（-1408）
+讀完、還報了一整頁「接下來可以做什麼」。他一句「handoff too old check again,
+check ver no.」才發現：**本機 `fbbdf72`／-1408，遠端 `65d03c0`／-1668 —— 差 260 版。**
+
+三個教訓，都值得下一個人照做：
+
+1. **⚠⚠⚠ 開工第一件事是 `git ls-remote` 對一次 SHA，不是讀交接檔。**
+   `git status` 只會拿**本機記的** `origin/main` 去比 —— 沒 fetch 成功時它會很有自信地
+   說「乾淨、與 origin 同步」。分辨法（三秒）：
+
+       git ls-remote origin refs/heads/main     # 回來的 SHA 與 git rev-parse HEAD 比
+       ls -l .git/FETCH_HEAD                    # 0 bytes ＝ 上一次 fetch 根本沒完成
+
+2. **⚠⚠ `git pull` 的 exit code 0 不代表拉下來了。**
+   我先開了一支背景 `git fetch`，接著又下 `git pull` —— 兩者撞在一起：
+
+       error: cannot lock ref 'refs/remotes/origin/main':
+              is at 65d03c0 but expected fbbdf72
+       ! fbbdf72..65d03c0  main -> origin/main  (unable to update local ref)
+
+   **它照樣 exit 0**，工作區一個檔都沒動。⇒ **拉完一定要 `git log --oneline -1` 看一眼**。
+   （收拾法：`origin/main` 其實已經更新了，`git merge --ff-only origin/main` 就落地。）
+   ⚠ 這台的 repo 在 OneDrive 同步資料夾裡，`git fetch` 常常要跑好幾分鐘 ——
+     要背景跑就**只跑一支**，不要再疊第二支。
+
+3. **⚠⚠⚠ 交接檔自己也會落後於碼。** 拉下來之後 `HANDOFF.md` 寫「截至 -1657」，
+   而 `config.js` 是 **-1668** —— 中間 11 版（`-1658`～`-1668`）沒有人寫進來。
+   ⇒ **讀交接檔之前先比一次它的標頭與 `VERSION`**；對不上就去補讀那幾個 commit。
+
+## 二、⚠ `-1658` ～ `-1668` 那 11 版：我只讀了 commit 訊息，**沒有逐項複驗**
+
+主線是 **RUSH 模式**、**王座徘徊者的光砲**、**敵人卡搬上 Excel**：
+
+| 版 | 做了什麼 |
+|---|---|
+| -1668 | 受擊特效 CD 上 Excel（`hitFxCd` 欄；`config.HITFX.*.cdSec` 退成「沒填時的保底」） |
+| -1667 | 光砲：發動＝真的清場（`defense.holdAssaultFor`）／光退了才重算下一次攻擊／12 秒 CD |
+| -1665 | RUSH：城鎮背景改**白名單**（`config.rush.bgDirs`）／船戰・空戰走天空背景＋`ship:true` |
+| -1664 | RUSH：隨機背景、結算按繼續回首頁、按 RUSH 跑一次讀取頁 |
+| -1662 | RUSH：打完第一隻不出第二隻（閉棺把劇情層打開了沒人收） |
+| -1661／-1660 | 重擊只清畫面上的圈／餐廳那句不指名菜色／沒食材的「跟平常一樣的」／第一餐 +80 |
+| -1658 | 米夏 CI 不可點掉／天黑抵達開睡覺鈕／iOS 補播與飛行雙曲／翌日直接到碼頭 |
+
+## 三、做掉的兩件（都附驗收）
+
+### ① `-1669`：古墓 26 隻全部給降臨（Ray：「古墓都用降臨」）
+
+用 **`riseFx:1`，沒有動 `kind`**。理由寫在 commit 裡，重點是：
+`kind:'multi'` **同時**擋著降臨、淨化、結算副標的「已淨化」——
+改成 `harm` 會一次打開三件，而**那 26 隻不是同一類東西**（墓熊／蒼白牝鹿／谷蟾／
+地窖蜈蚣是**獸**，副標該是「已獵殺」）。`riseFx` 的語意正好是「分類與演出分家」。
+⚠ 守墓者 `gk_*` 四張 -1615 就有了，沒有重複加。
+
+### ② `-1670`：降臨上 Excel ＋ 差分表修好大小寫
+
+（Ray：「全部填 riseFx:0 加欄重新匯出」／「更新差分表」）
+
+**降臨欄**：`enemies.xlsx` 現在 **96 張卡・64 欄**，「降臨」在「種類」右邊（H 欄）。
+`script/enemies.js` 補到 **96/96 都有 `riseFx`**（古墓 30＝1、其餘 66＝0），
+檔頭「統一欄位」由三格改成**四格**。
+⚠⚠ **為什麼非得每張卡都有那一行**：匯入是**就地改值**（`set_scalar` 拿 `^\s*欄名:` 去比），
+  卡上沒有那一行它改不到、只會默默列進 `skipped` ⇒ 光加一欄等於「改了沒用」。同 boss 的 -1024。
+⚠ `intruderEnemy` 連 `kind` 都沒有（挑戰亂入的佔位卡，`triggerIntruder` 會整組覆寫），
+  它錨在統一欄位那一行。
+
+**⚠⚠⚠ 差分表從 ver -1554 起一直是錯的**（`tools/si_xlsx.py`）：
+`SI_DIR`／`NPC_DIR` 寫死大寫 `resources/SI/`，而 git 索引與磁碟都是**小寫**
+（-1554 全庫改小寫那一輪換掉的）。Windows 不分大小寫 ⇒ `os.walk` **讀得到檔**，
+卻照著給進去的大小寫吐回路徑 ⇒ 永遠對不上 `speakers.js` 的 `resources/si/...`。
+症狀（**表照樣出得來，沒有任何錯誤訊息**）：
+· 352 個差分**全部**被判成「未接線」（實際只有 29 個沒接）
+· 縮圖整批走 alpha 估的退路，不是 `speakers.faceStyle()` 那顆真頭像
+· 「城鎮店主 NPC」那一頁是空的
+修法：兩個常數改小寫 ＋ **比對兩側各 `.lower()` 一次**當第二道保險
+（磁碟的大小寫是**作業系統**給的，speakers.js 那份是**人寫的字串**）。
+⚠ 真正會讓靜態空間 404 的大小寫錯誤仍歸 `script_lint.py`／`bg_index` 那一族管。
+
+**驗收（都真的跑過）**
+· Excel 來回三趟：原封不動匯入 → **改了 0 格**；把 `witch` 改成 1 再匯入 →
+  **改了 1 格 `witch.riseFx: 0 → 1`**（這正是先前會 skipped 的那一步）；改回 0 重匯 → 與 js 一致
+· 差分表修後：**352 個差分（主要角色 319・NPC 33）、已接線 323、未接線 29**；
+  18 個分頁（蕾娜 85／諾薇兒 69／索菈娜 63／安雅 58／…／城鎮店主 NPC 36／待接線・缺檔 88 列）
+· `node --input-type=module --check script/enemies.js` 過
+· `py tools/script_lint.py` **0 個錯誤、35 個提醒**（＝ -1668 的基準，沒有新增）
+· `py tools/bust.py` → v=1670
+
+## 四、⚠ 還開著的（這一輪新增的，舊帳看下面幾輪）
+
+| 件 | 狀況 |
+|---|---|
+| **差分表四個垃圾分頁** | `image - 2026-09-20t*` ＝ `resources/si/soranagpt/` 底下**四張沒改名的 GPT 原始輸出**，工具猜不到角色就各開一頁。要併進「底線開頭母版」那條排除規則、還是改名接線？**問 Ray** |
+| **古墓 26 隻的 `kind`／`loot`／`bgm`** | 仍是預設。`kind` 現在只影響**淨化與結算副標**（降臨已由 `riseFx` 解決）—— 要不要逐隻分成禍魘／獸，等 Ray |
+| **`purgeFx` 還沒上 Excel** | 它是 `riseFx` 的反向（分類不給淨化、但我要淨化）。要上表的話**同樣得先讓每張卡都有那一行** |
+| **Ray 已結案的三件** | 遇敵率（**結案，不要再查**）／`sorana_si_q.webp`（**不管它**，表上照舊列在未接線）／古墓降臨（做完了） |
+
+## 五、⚠ 這一台機器（-1670 當場踩到的）
+
+1. **node 不在 PATH** —— 跑 lint／`si_xlsx`／`map_layout` 之前先
+   `export PATH="$PATH:/c/Program Files/nodejs"`，不然回報「找不到可用的 JS 引擎」。
+2. ⚠⚠ **`openpyxl` 存 `enemies.xlsx` 卡死過一次（三個多小時，沒有錯誤訊息）**。
+   重跑就正常。懷疑是 Excel 開著那個檔或 OneDrive 在同步 —— **動那兩個 xlsx 之前
+   先問 Ray 有沒有開著**；跑之前先丟背景（`run_in_background`），不要用前景等。
+3. 主控台是 cp950：python 一律 `export PYTHONIOENCODING=utf-8`（或 `import _utf8`），
+   不然印中文會 `UnicodeEncodeError` **中斷整支腳本**。
+4. 這台只有 `Kaede` 這個使用者 —— 美術交接 §十九 寫的
+   `C:/Users/Ray Ku/Desktop/TIVOT` **不存在於這台**。repo 在 OneDrive 同步資料夾裡，
+   **兩台不要同時對它動手**。
+
+---
+
+# 上一輪（`ver -1614` → `-1656`，43 版・57 個 commit，**已推**）
 
 > ⚠ **開工先讀這一段。** 這一輪幾乎整輪都在**伊甸古墓**（拓樸從 35 格長到 61 格）
 >   與**開火的視覺**（火線／硝煙／拉煙）。第三節那四個教訓比程式碼重要。
