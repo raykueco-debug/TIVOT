@@ -21,6 +21,7 @@
 | `8db9c577` | `laugh` 的 12 次實驗表 |
 | `b31d8b58` → `9e0a2a26` | `laugh` 合成備案 → **被退，已還原**（像素差 0.000） |
 | `47832392` | 本交接檔 |
+| **ver -1670 後** | **`laugh` 交件** —— Ray 自己出 SD 頭，美術做 alpha ＋ 合成（見 §五）|
 
 ---
 
@@ -49,12 +50,13 @@
 | 狀況 | 鍵 |
 |---|---|
 | ✔ 今天交 **16 張** | `battlecry` `shy` `side` `smile` `sorry` `surprise` `talk` `think` `tire` `upset` `watch` `whisper` `remind` `smirk` `tease` `amaze` |
-| ⚠ **Ray 自己出臉** | **`laugh`**（全身重繪連擋 12 次；合成備案的產出被退）、**`panic`**（不是被擋，是不給透明背景） |
+| ✔ ver -1670 後 再交 **1 張** | **`laugh`** —— Ray 出 SD 頭，美術 alpha＋合成（**61/62**）|
+| ⚠ **還剩 1 張** | **`panic`**（不是被擋，是不給透明背景 ⇒ **重跑拿圖再走 matting 就好，不必 Ray 出臉**）|
 
-## ⚠⚠ 程式端要接：`speakers.js` **16 條路徑跳 `?v=`**
+## ⚠⚠ 程式端要接：`speakers.js` **17 條路徑跳 `?v=`**
 
-- **加 `?v=2`（14 張）**：`battlecry` `shy` `sorry` `surprise` `talk` `think` `tire`
-  `upset` `watch` `whisper` `remind` `smirk` `tease` `amaze`
+- **加 `?v=2`（15 張）**：`battlecry` `shy` `sorry` `surprise` `talk` `think` `tire`
+  `upset` `watch` `whisper` `remind` `smirk` `tease` `amaze` **`laugh`**
 - **改成 `?v=3`（2 張）**：`side` `smile`
   ⚠ 那兩個的 `?v=2` 是上一輪**白掛的**（`git log --diff-filter=M` 查過，這兩個檔
   在今天之前從來沒被覆蓋過）—— **不要看到 `?v=2` 就以為它重製過了。**
@@ -112,6 +114,22 @@
 ⇒ **合成備案的瓶頸不是技術，是「臉由誰畫」。**
 **日後遇到被判定擋死的張數，先問 Ray 要不要自己出臉，不要自己硬跑。**
 
+## ⭐ ver -1670 後 後記：**他真的出了，而且整條路比預想的短**
+
+Ray 把 SD 稿丟進 `reference/`（1024x1536 白底），一句「alpha 她」。
+
+⚠⚠⚠ **第一件事不是去背，是逐像素比「他改了哪裡」** —— 實測他**只重畫了頭**
+（`rows 0..247, cols 449..724`，**2.47%** 的像素），其餘與現行 webp **完全相同**。
+⇒ 於是**不必整張重去背**：身體沿用現行那份已上線的 alpha，只有頭換成新解的，
+**風險只落在頭上，身體不可能退步**。作法與數字全部寫進 `_sorana_r3_worklist.md` §四。
+
+⚠⚠ backend 要 **`toonout`** 不是工具預設的 `birefnet-matting`：白髮這題頭部框內近白
+**0.84%（20px）vs 5.29%（272px）**，斜坡寬 1.79 vs 2.93。
+而憲法 -1516 警告的「ToonOut 會吃掉極細飄髮」**沒有發生**（3x 棋盤上那根細碎髮完整留著）。
+
+⚠ 順手抓到：**舊的那張 laugh 髮色本來就不及格**（色相 225.9，門檻 <220）——
+全庫最後一個離群值，新的 189.5。**這張不只是補上，是把離群值一起修掉。**
+
 ⚠ 中間產物留在庫裡（Ray 的 SD 臉出來要合回去可以直接用）：
 `resources/si/soranagpt/_head_ref.png`（A 的頭部特寫 400×320）／
 `resources/si/soranagpt/_laugh_headcrop.png`（laugh 的頭＋手，BOX `(430,0,760,350)` → 990×1050）
@@ -141,6 +159,9 @@
 那個孤兒場景的差分，見下面盤點）。**要不要接、叫什麼名字，等 Ray 一句話** ——
 美術不自己命名接線（鐵律 11：接進 `speakers.js`／腳本是程式端的活）。
 
+⚠ **更新（ver -1670 後）**：那三個檔**已經被程式 session 在 `db5b640d` 一起 commit 了**
+（連同 `se_heavycursh.mp3`）。它們仍然**未命名、未接線** —— 只是不再是「工作區的浮檔」。
+
 ---
 
 # 七、資產盤點（⚠ `✔ 不欠` 的也列，附理由）
@@ -156,9 +177,10 @@
   圖到了要一起接（其餘 12 座照抄它們的寫法）。
 
 ## 立繪
+- **⚠ 索拉娜只剩 `panic` 1 張**（ver -1670 後 起，`laugh` 已交）。
 - **✔ 米夏不欠**（ver -1549 就接上了）：`ART.misha` → `si/misha_si_front.webp`、
   插圖 `021-mishalookback`、CI `ci_mishastare` 三樣都在線上。
-- **⚠ 索拉娜 2 張由 Ray 出臉**（`laugh`／`panic`），其餘 60 張已重製。
+- ~~索拉娜 2 張由 Ray 出臉~~ → **61/62 已重製**，只剩 `panic`（那張是 alpha 問題不是臉）。
 - **⚠ 欠**：諾薇兒 `gentle`／`pain`、蕾娜（`OFFICER`）`stunned`／`fluster`
   —— 都在 `prologue_audience`／`prologue_fall`（**目前是走不到的孤兒場景**，
   會退回底圖，不會壞）。⚠⚠ **今天丟進來的 `nouvelle_si_faint` 可能就是 `pain`，等 Ray 確認。**
@@ -208,3 +230,25 @@
 程式 session 在我做事的期間 commit 了 `add4f82e`（ver -1670）。**沒有撞到** ——
 我全程只 `git add` 自己的檔案（鐵律 11：美術不碰程式）。
 ⚠ 下一個美術 session 照做：**`git add` 逐檔點名，不要 `git add -A`**。
+
+
+---
+
+# 十、⚠ 這一台機器（Desktop/TIVOT 那一台，ver -1670 後 建好的）
+
+**`.venv-matting` 照憲法 -1516 建起來了**，下一個美術 session 不必再建：
+
+    python -m venv --system-site-packages .venv-matting     # 繼承系統 torch 2.6.0+cu124（有 CUDA）
+    .venv-matting/Scripts/python.exe -m pip install "transformers==4.44.2" pymatting timm einops
+    export HF_HUB_DISABLE_SYMLINKS=1 PYTHONIOENCODING=utf-8
+    .venv-matting/Scripts/python.exe tools/si_matting.py <白底圖> --out <目錄> --backend toonout
+
+⚠ **系統 python 的 `transformers` 是壞的**（`huggingface_hub` 版本對不上，
+  `cannot import name 'is_offline_mode'`）—— 所以一定要走那個 venv，不要去修系統那一份
+  （SD／ComfyUI 共用它）。
+⚠ 權重已經下載完（`~/.cache/huggingface/hub`）：`BiRefNet-matting`／`BiRefNet`／`joelseytre/toonout`，
+  合計約 2.6 GB。**換機器要重抓，一支約 5~10 分鐘。**
+⚠ **這台沒有 `cwebp`** —— 交件用 Pillow：`im.save(dst,'WEBP',quality=85,alpha_quality=100,method=6)`
+  （等價於慣例的 `cwebp -q 85 -alpha_q 100`）。
+⚠ `_sorana_check.py` 的 `BASE` 指向 `resources/_originals/SI_sorana_base/soranagpt_1.png`
+  —— 已從版控裡的 `resources/si/soranagpt/`（四張 UUID 檔，依檔名時間排序）複製回去了。
