@@ -2625,6 +2625,7 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'D',
       atype:'D',
       stageScale:1,
@@ -2653,6 +2654,7 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'D',
       atype:'D',
       stageScale:1,
@@ -2681,6 +2683,7 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'D',
       atype:'D',
       stageScale:1,
@@ -2709,6 +2712,7 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'C',
       atype:'D',
       stageScale:1,
@@ -2737,6 +2741,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'C',
       atype:'S',
       stageScale:1,
@@ -2764,6 +2769,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2793,6 +2799,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -2820,6 +2827,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'C',
       atype:'S',
       stageScale:1,
@@ -2847,6 +2855,7 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'C',
       atype:'D',
       stageScale:1,
@@ -2875,6 +2884,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -2902,6 +2912,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -2929,6 +2940,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2956,6 +2968,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -2983,6 +2996,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -3010,6 +3024,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -3037,6 +3052,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -3066,6 +3082,7 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'D',
       atype:'D',
       stageScale:1,
@@ -3094,6 +3111,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -3121,6 +3139,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'C',
       atype:'S',
       stageScale:1,
@@ -3148,6 +3167,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -3175,6 +3195,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -3202,6 +3223,7 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'D',
       atype:'D',
       stageScale:1,
@@ -3230,6 +3252,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -3257,6 +3280,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -3284,6 +3308,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -3311,6 +3336,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
       tier:'D',
       atype:'P',
       stageScale:1,
