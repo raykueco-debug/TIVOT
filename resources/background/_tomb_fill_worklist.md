@@ -217,8 +217,8 @@
 | `tomb_lowaltar_off` | ⏳ 圖好了，**壓著不交**（等點亮版） | **現行的 `tomb_lowaltar_off`**（祭壇造型不能變） |
 | `tomb_lowaltar` | ⏳ 同串衍生中 | 同上 |
 | `tomb_gallery3` | ✔ 已交（寬廣列柱大廳，**兩條通道**） | `tomb_crossing` |
-| `tomb_landing3` | ⏳ 生成中 | `tomb_colonnade` |
-| `tomb_crypt` | ⏳ 還沒開始 | `tomb_crypta` |
+| `tomb_landing3` | ✔ 已交（寬廣列柱大廳＋左側大石階，**只有那一條路**） | `tomb_colonnade` |
+| `tomb_crypt` | ⏳ 生成中 | `tomb_crypta` |
 
 > Ray（追加）：「玄室前廊 底層梯廳 石棺主室通通要畫大」
 
@@ -267,4 +267,4 @@
 讀起來是畫出來的石面，不是雜訊。依憲法 -930「寧可漏判也不要為了保險整批過 Gemini」
 先**照交**，要不要補一趟去顆粒由 Ray 看畫面決定。
 
-⚠ `tomb_gallery3` 也要加 `ASSET_VER` 一列（`'tomb_gallery3': 2`）。
+⚠ `ASSET_VER` 目前累積要加的：`tomb_vaultw`／`tomb_bonepit`／`tomb_gallery3`／`tomb_landing3`（都是 2）。
