@@ -664,3 +664,5 @@ when	from	to	reason
 20260922-220444	resources/si/sorana_si_carrynouvelle.webp	_recycle/resources/si/sorana_si_carrynouvelle.webp	ver -1670 後 carrynouvelle 改用 Ray 自己去背的那一版（B 世代，諾的髮緣乾淨），我的 ToonOut 版退場
 20260922-220627	resources/si/sorana_si_carrynouvelle.png	_recycle/resources/si/sorana_si_carrynouvelle.png	ver -1670 後 已轉 webp 入庫，母版進 _originals/si/；PNG 不可留在會被載入的目錄
 20260922-220627	resources/si/renna_si_snivel.png	_recycle/resources/si/renna_si_snivel.png	ver -1670 後 已轉 webp 入庫，母版進 _originals/si/；PNG 不可留在會被載入的目錄
+20260922-225507	resources/background/tomb/tomb_vaultw.webp	_recycle/resources/background/tomb/tomb_vaultw.webp	ver -1670 後 側墓穴改畫成寬廣場地（Ray 交辦），舊的窄版退場
+20260922-225732	resources/background/tomb/tomb_bonepit.webp	_recycle/resources/background/tomb/tomb_bonepit.webp	ver -1670 後 骨坑改畫成寬廣場地（Ray 交辦），舊的窄版退場
