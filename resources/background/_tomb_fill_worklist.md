@@ -214,11 +214,25 @@
 |---|---|---|
 | `tomb_vaultw` | ✔ 已交（寬廣石棺大廳） | `tomb_crypta` |
 | `tomb_bonepit` | ✔ 已交（寬廣骨室） | `tomb_charnel` |
-| `tomb_lowaltar_off` | ⏳ 生成中 | **現行的 `tomb_lowaltar_off`**（祭壇造型不能變） |
-| `tomb_lowaltar` | ⏳ 等 `_off` 出來再衍生 | 同上 |
+| `tomb_lowaltar_off` | ⏳ 圖好了，**壓著不交**（等點亮版） | **現行的 `tomb_lowaltar_off`**（祭壇造型不能變） |
+| `tomb_lowaltar` | ⏳ 同串衍生中 | 同上 |
+| `tomb_gallery3` | ✔ 已交（寬廣列柱大廳，**兩條通道**） | `tomb_crossing` |
+| `tomb_landing3` | ⏳ 生成中 | `tomb_colonnade` |
+| `tomb_crypt` | ⏳ 還沒開始 | `tomb_crypta` |
 
-⚠ **通道數照工單規格**：三格的 `exits` 都是 2 條 ⇒ 畫面上**各只有一條**看得見的通道
-（另一條在鏡頭身後）。三張都照這個畫了。
+> Ray（追加）：「玄室前廊 底層梯廳 石棺主室通通要畫大」
+
+⚠⚠⚠ **通道數逐格算，不是一律一條**（`exits` 數 − 1）：
+
+    tomb_vaultw    2 出口 → 畫 1 條   ✔
+    tomb_bonepit   2 出口 → 畫 1 條   ✔
+    tomb_lowaltar  2 出口 → 畫 1 條
+    tomb_gallery3  3 出口 → **畫 2 條** ✔（深處一條＋右牆一條）
+    tomb_landing3  2 出口 → 畫 1 條（那一條是**石階**：`up:'stair2'`）
+    tomb_crypt     1 出口 → **一條都不畫** ⚠ 死胡同，四面實心／塌方
+
+⚠ `landing3` 還是 `rest:true, noWild:true` 的**安全點**（結算點之一）——
+氣氛要開闊乾淨、沒有威脅感（不要屍骨棺材蛛網），那是它在玩法上的功能。
 
 ## ⚠⚠⚠ 程式端要接：`config.js` 的 `ASSET_VER` 要加兩列
 
@@ -252,3 +266,5 @@
 100% 裁切複核：**拱頂與牆面很乾淨，多出來的在大片地板的筆觸紋理上** ——
 讀起來是畫出來的石面，不是雜訊。依憲法 -930「寧可漏判也不要為了保險整批過 Gemini」
 先**照交**，要不要補一趟去顆粒由 Ray 看畫面決定。
+
+⚠ `tomb_gallery3` 也要加 `ASSET_VER` 一列（`'tomb_gallery3': 2`）。
