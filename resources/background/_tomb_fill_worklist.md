@@ -214,11 +214,11 @@
 |---|---|---|
 | `tomb_vaultw` | ✔ 已交（寬廣石棺大廳） | `tomb_crypta` |
 | `tomb_bonepit` | ✔ 已交（寬廣骨室） | `tomb_charnel` |
-| `tomb_lowaltar_off` | ⏳ 圖好了，**壓著不交**（等點亮版） | **現行的 `tomb_lowaltar_off`**（祭壇造型不能變） |
-| `tomb_lowaltar` | ⏳ 同串衍生中 | 同上 |
+| `tomb_lowaltar_off` | ✔ 已交 | **現行的 `tomb_lowaltar_off`**（祭壇造型不能變） |
+| `tomb_lowaltar` | ✔ 已交（**從新的 `_off` 衍生**，構圖不變只加冷光） | 新的 `_off` |
 | `tomb_gallery3` | ✔ 已交（寬廣列柱大廳，**兩條通道**） | `tomb_crossing` |
 | `tomb_landing3` | ✔ 已交（寬廣列柱大廳＋左側大石階，**只有那一條路**） | `tomb_colonnade` |
-| `tomb_crypt` | ⏳ 生成中 | `tomb_crypta` |
+| `tomb_crypt` | ✔ 已交（主棺在中央高台，**零通道**） | `tomb_crypta` |
 
 > Ray（追加）：「玄室前廊 底層梯廳 石棺主室通通要畫大」
 
@@ -256,15 +256,34 @@
 白幕收掉那一刻玩家就會看到畫面跳一格。
 ⇒ 所以 `_on` **從新的 `_off` 衍生**，不是各生一張。
 
-## ⚠ 顆粒：這一批比舊那批高，還沒過 Gemini
+## ✔ 顆粒：交件檔與既有那批一致，**不必過 Gemini**
 
-平坦區高頻（憲法 §5 的量法，**有校準點**）：
+⚠⚠⚠ **我中途報錯過一次，留著當紀錄**：先前說「2.51／2.59，比舊那批高」——
+那是拿**PNG 母版**去比**既有的 webp**，**兩邊的基準不一樣**。
+交件檔（webp q88）實測：
 
-    新 vaultw   2.51      新 bonepit  2.59
-    校準 crypta 0.78      校準 charnel 1.32      舊 vaultw 0.99
+    vaultw 0.75   bonepit 0.89   gallery3 0.74   landing3 1.15
+    lowaltar_off 1.04   lowaltar 0.89   crypt 0.72
+    校準（既有已驗收）：crypta 0.78   charnel 1.32
 
-100% 裁切複核：**拱頂與牆面很乾淨，多出來的在大片地板的筆觸紋理上** ——
-讀起來是畫出來的石面，不是雜訊。依憲法 -930「寧可漏判也不要為了保險整批過 Gemini」
-先**照交**，要不要補一趟去顆粒由 Ray 看畫面決定。
+全部落在既有那批的範圍內 ⇒ **不必補 Gemini 去顆粒**。
 
-⚠ `ASSET_VER` 目前累積要加的：`tomb_vaultw`／`tomb_bonepit`／`tomb_gallery3`／`tomb_landing3`（都是 2）。
+⚠ **教訓**：量顆粒要量**交件的那個檔**，不要量母版 —— webp 編碼本身就會把細雜訊壓掉，
+而既有的校準點全部是 webp。基準不同的比較會得出相反的結論。
+
+
+
+
+## ⚠⚠⚠ 程式端要接：`config.js` 的 `ASSET_VER` 一共要加 **7 列**
+
+七張全部是**同名覆蓋**，不跳版號玩家的快取裡還是舊的窄圖，**畫面上不會有任何錯誤訊息**：
+
+    'tomb_vaultw':        2,
+    'tomb_bonepit':       2,
+    'tomb_gallery3':      2,
+    'tomb_landing3':      2,
+    'tomb_lowaltar':      2,
+    'tomb_lowaltar_off':  2,
+    'tomb_crypt':         2,
+
+⚠ 節點資料**一個字都不用動**（七張的基底名全部沒變，`bgWhen` 也照舊）。
