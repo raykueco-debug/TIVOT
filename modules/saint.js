@@ -1165,14 +1165,23 @@ function playSaintCutin(kind, done, reload){
      CI_Torsten_Excute）：那兩招是**主角自己**的收尾，本篇演出裡出現露娜是錯的人
      —— 同 -454 的破防與生命歸還，分流一律走 `storyMode()`（鐵律 8）。
      試玩版（挑戰／出陣）照舊 Luna。 */
+  /* ══⚠⚠⚠ **`niburst` 的畫面就是 `burst` 那一套**（ver -1684，Ray：「NI 的 MB 畫面同 SI」）══
+     底下三張表（圖的鑰匙／圖的元素／專屬 SE）**本來都沒有 `niburst` 這一格**，
+     而 class 也只 remove `'burst','obe','execute','return'`：
+     ⇒ NI 的 MB 只印得出標題與副標，**沒有圖、沒有音、class 還留在元素上不被清**。
+     -719 補的是「要播 cut-in」那一步（呼叫 `playSaintCutin('niburst')`），
+     但那一趟沒有往這三張表裡加 —— 所以它一直是一張空的卡。
+     ⚠ 差別**只有標題與副標**（上面已經分開：`mbSub` ／ `nmbSub`，-1506），
+       演出一律借 `burst` ⇒ 這裡把 kind 折成 `vis`，下面全部讀它。 */
+  const vis = (kind==='niburst') ? 'burst' : kind;
   const scImgKey = { execute: storyMode() ? 'cutin_exc_torsten' : 'cutin_exc',
                      obe:     storyMode() ? 'cutin_obe_nouvelle' : 'cutin_obe',
                      burst:   storyMode() ? 'cutin_mb_torsten'  : 'cutin_mb',
                      return:  storyMode() ? 'cutin_return_nouvelle' : 'cutin_return' };
   const scImgEl  = { execute:'saintCutinImg', obe:'saintCutinImgObe', burst:'saintCutinImgBurst', return:'saintCutinImgReturn' };
-  if(scImgEl[kind]){ const el=$(scImgEl[kind]); if(el){ const src=asset(scImgKey[kind]); if(src) el.src=src; } }
+  if(scImgEl[vis]){ const el=$(scImgEl[vis]); if(el){ const src=asset(scImgKey[vis]); if(src) el.src=src; } }
   c.classList.remove('burst','obe','execute','return','on');
-  c.classList.add(kind);
+  c.classList.add(vis);
   void c.offsetWidth;                      // reflow → 重播動畫
   c.classList.add('on');
   // 結局 cut-in 專屬 SE（Luna；return＝生命歸還為 Renee，其 SE 由 partner.lifeReturn 播 vo_life_return——saint 不知觸發者）。
@@ -1185,15 +1194,15 @@ function playSaintCutin(kind, done, reload){
   const scSeKey = storyMode()
     ? { execute:'vo_torsten_exc', obe:'vo_nou_obe', burst:'vo_torsten_mb' }
     : { execute:'se_luna_exc',    obe:'se_luna_obe', burst:'se_luna_mb' };
-  if(scSeKey[kind]){
-    const k=scSeKey[kind];
+  if(scSeKey[vis]){
+    const k=scSeKey[vis];
     /* ⚠ exc/obe 是語音（走語音鏈），burst 的 se_luna_mb 是音效（不走）——
        判斷依據是 config 的 `voiceKeys`（ver -441 起；以前是「在不在
        partnerSeGain 那張表裡」，增益一搬家那個判斷就會憑空消失）。 */
     if(isVoiceKey(k)) SFX.playVoice(asset(k), sfxGain(k));
     else              SFX.play(asset(k), sfxGain(k));
   }
-  const holdMs = kind==='execute' ? 3000 : 1600;   // EXSECUTIŌ 停留 3 秒
+  const holdMs = vis==='execute' ? 3000 : 1600;   // EXSECUTIŌ 停留 3 秒
   setTimeout(()=>{
     c.classList.remove('on');
     state.cutinPlaying=false;

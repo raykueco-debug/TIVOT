@@ -7942,8 +7942,12 @@ export const TOWNS = {
              ⇒ 第二拍**照抄同一句**、只換立繪。
              ⚠ 不要寫成「一拍換兩次立繪」：換圖是延後執行的（§6.5 的 -647），
                同一拍換兩次的話第二張根本來不及畫上去。 */
-          nou('desperate','不要緊，有我在——'),
-          nou('faint','不要緊，有我在——'),
+          /* ⚠⚠ **一句話、兩張臉**（ver -1684，Ray：「諾薇兒的第二句『不要緊有我在』
+             其實是第一句，**同句換 si 而已**」）—— 她是說到一半倒下去的。
+             -1671 寫成兩拍同樣的字，玩家讀到的是「這句話講了兩次」。
+             ⚠ `exprThen` 的實作在 `story.js`（`reveal()` 裡那一段）：狀態立刻改成
+               `faint`（她已經昏了），只有畫面上那一下是延後的。 */
+          nou('desperate','不要緊，有我在——', { exprThen:'faint', exprAt:900 }),
           { speaker:'NARRATION', text:'', se:'se_fall', auto:900 },
           /* ══ 插圖 26（諾薇兒暈倒）—— **只有諾薇兒 T3 以上看得到**（Ray 的稿）══
              ⚠⚠ `tierWho:'NOUVELLE'` **一定要寫**：不寫＝看說話者自己，而這一拍的
@@ -7993,8 +7997,15 @@ export const TOWNS = {
           /* ══ 墓主降臨 ══ ⚠ 這幾拍**一定要無條件**：掛在分歧上的話有一半的玩家
              永遠打不到那一場（-1616 那個坑的同一面）。 */
           { speaker:'NARRATION', text:'', se:'se_monsterroardeep', shakeHold:1400, auto:1400 },
-          { speaker:'NARRATION', text:'', se:'se_fall', auto:700 },
+          /* ══⚠⚠ **順序：她先在台上 → 被推開 → 才落地**（ver -1684，Ray：「插圖後
+             蕾娜的『啊』立繪**一開始就在畫面上**，然後撤走 **像被推開**，
+             **然後才**放 se_fall」）══
+             -1671 是「se_fall → 她才喊」，等於先聽到落地才看到人 —— 反了。
+             ⚠ 「被推開」＝ `hide:['RENNA']` 的滑出（那本來就是往自己那一側退出去），
+               配一記短震；落地音排在滑出跑完之後。 */
           ren('scream','啊！'),
+          { speaker:'NARRATION', text:'', hide:['RENNA'], shakeHold:420, auto:520 },
+          { speaker:'NARRATION', text:'', se:'se_fall', auto:700 },
           /* ⚠ 獨戰、沒有夥伴（卡上 `noSaint` ＋ `noPartner`，見 config）。 */
           { battle:'tomb_low_solo' },
           sor('back','沒路了......但是確實是這個方向......'),
@@ -8012,7 +8023,10 @@ export const TOWNS = {
               { n:'se_monsterroardeep' }, { n:'se_punch', delay:600 },
               { n:'se_rockimpact', delay:900 },
             ], shakeHold:1400, auto:1800 },
-          sor('panic','糟糕！'),
+          /* ⚠ ver -1684 Ray 改稿：「糟糕！」換成這兩句。
+             ⚠ 第二句稿上沒給表情 ⇒ `null`（不動立繪，維持上一張）。 */
+          sor('panic','可惡......整個人都被打飛了!'),
+          sor(null,'還活著吧......?'),
           /* 插圖 28（由下而上平移）＋畫面震動。 */
           { speaker:'NARRATION', text:'', cg:'28_rennanouvelle', cgNoTime:true, cgPan:'up',
             shakeHold:1200, auto:2200 },
@@ -8205,17 +8219,17 @@ export const TOWNS = {
           ren(null,'絕對不會。',                       { tierMin:3, tierWho:'RENNA' }),
           ren(null,'不要笑！',                         { tierMin:3, tierWho:'RENNA' }),
           { speaker:'NARRATION', text:'', cg:null, auto:200, tierMin:3, tierWho:'RENNA' },
-          /* ══⚠⚠⚠ **共同的收場**（我的讀法，請 Ray 過目）══
-             稿上這四拍寫在 T2 那一段的後面、T3 那一段的前面 —— 字面上會讀成
-             「只有 T2 看得到」。我把它們當成**兩條分支共同的結尾**，理由：
-               · 「外面，有光。」「往那邊走看看吧。」是**離場**的台詞，
-                 少了它 T3 的玩家會停在「不要笑！」，這一段沒有出口。
-               · 兩條分支接上去讀起來都通順（T3 是 插圖收掉 → 道謝 → 走）。
-             ⚠ 要改成「T3 沒有這四拍」的話，把這四行各加 `tierMax:2, tierWho:'RENNA'` 就好。 */
-          { speaker:'PLAYER', blank:true },
-          ren('smile','謝謝你相信我囉。'),
-          any('point','外面，有光。'),
-          sor('carrynouvelle','往那邊走看看吧。'),
+          /* ══⚠⚠⚠ **這四拍是 T2 以下那一條的收場，T3 沒有**（ver -1684，Ray 更正：
+             「『不要笑』劇情就待續了，不用接『謝謝你相信我』，**那是不同路線（T2 以下）**」）══
+             ⚠⚠ -1672 我把它們讀成「兩條分支共同的結尾」，理由是「T3 停在『不要笑！』
+               那一段沒有出口」—— **那個理由是錯的**：T3 那一條就是停在那裡，
+               後面接的是下一段劇情（待續），不是這一段的出口。
+             ⚠ 兩條路線的收場本來就不一樣：T2 是「道謝、走吧」，T3 是公主抱那一串
+               打鬧收尾。把 T2 的結尾接到 T3 後面，等於讓同一個人講兩種收場。 */
+          { speaker:'PLAYER', blank:true,              tierMax:2, tierWho:'RENNA' },
+          ren('smile','謝謝你相信我囉。',             { tierMax:2, tierWho:'RENNA' }),
+          any('point','外面，有光。',                 { tierMax:2, tierWho:'RENNA' }),
+          sor('carrynouvelle','往那邊走看看吧。',     { tierMax:2, tierWho:'RENNA' }),
         ] } ] },
       /* ══ ver -1643：**廢坑道**（祭壇啟動後開啟）—— 從最深處一路接回墓門。
          ⚠ 兩端都要寫：墓門那一格也有 `right:'adit'` ＋ 同一支 `exitIf`。 */

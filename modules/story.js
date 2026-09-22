@@ -1986,6 +1986,17 @@ export function stopDust(){ const h=$('storyDust'); if(h) h.innerHTML=''; }   //
      ⚠ 它是**這一拍**的演出，不是那一支音的性質 ⇒ 寫在腳本、不寫進 `tuning.fileGain`。
    · `dust` ＝ 揚煙的方向（見 `dustPlume`）。
    腳本寫法：`se:[{ n:'sturm', vol:0.4 }, { n:'se_rockimpact', dust:'top', delay:200 }]` */
+/* ══⚠⚠ **不准疊自己**（ver -1684，Ray：「brickcrush 播完之前不可再播 brickcrush」）══
+   一支還在響的時候再播一次，兩份同一個波形疊起來只會變成一團糊掉的噪音
+   （崩塌音尤其明顯：它本來就是寬頻的）。
+   ⚠⚠ 收在 `playSe` **這唯一的入口**（鐵律 8）：`quakeHold` 的間隔、那一拍四連的
+     `delay`、日後任何一處寫到它，全部自動吃到 —— 不要在各個呼叫端各自算間隔，
+     那就是一份會過期的清單。
+   ⚠ 長度**問音檔**（`SFX.duration`），不要寫死秒數（§6.5.5 的 -433：真相在音檔身上）。
+     拿不到（還沒解碼）就退回 800ms 的保守值。
+   ⚠ 這張表只放「疊起來會糊」的那幾支；槍聲那一族本來就該疊。 */
+const NO_OVERLAP = { se_brickcrush:1 };
+const _seBusyUntil = Object.create(null);
 export function playSe(spec){
   const one=(n,delay,opt)=>{ const src=seSrc(n);
     if(!src){ const tag='se/'+n;
@@ -1999,7 +2010,16 @@ export function playSe(spec){
        ⚠ `fileGain` 的鑰匙是檔名，所以路徑丟進去就有值（鐵律 7）。 */
     const v = (opt && opt.vol!=null) ? +opt.vol : 1;
     const g=fileGain(src) * (isFinite(v) ? v : 1);
-    const go=()=>{ try{ if(SFX.ready && !SFX.ready(src)) playSeFallback(src, g); else SFX.play(src, g); }catch(_){} 
+    const go=()=>{
+      /* 不准疊自己（見 NO_OVERLAP）：上一發還沒播完就整個跳過這一次 ——
+         **連揚煙也跳過**，那一下本來就沒有發生。 */
+      if(NO_OVERLAP[n]){
+        const now=Date.now();
+        if((_seBusyUntil[n]||0) > now) return;
+        let d=0; try{ d=(SFX.duration && SFX.duration(src))||0; }catch(_){}
+        _seBusyUntil[n] = now + (d>0 ? d*1000 : 800);
+      }
+      try{ if(SFX.ready && !SFX.ready(src)) playSeFallback(src, g); else SFX.play(src, g); }catch(_){} 
                    if(DUST_SE[n]) dustPlume(opt && opt.dust); };   // 崩塌音 ⇒ 揚煙（ver -1639，見上）
     if(delay>0) setTimeout(go, delay); else go(); };
   if(!spec) return;
@@ -2446,7 +2466,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1683';
+const KERB_V='?v=1685';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3576,6 +3596,28 @@ function renderLine(){
     }
     if(st.show) side = ensureOn(who, st.expr);
     else { const s2=sideOf(who); if(slot[s2]===who) leaveSlot(s2); }
+    /* ══⚠⚠ **同一句話裡換立繪**（`exprThen`，ver -1684，Ray：「諾薇兒的第二句
+       『不要緊有我在』其實是第一句，**同句換 si 而已**」）══
+       她是**說到一半倒下去**的 —— 寫成兩拍同樣的字，玩家讀到的是「這句話講了兩次」。
+       ⚠⚠ 狀態（`shown[who].expr`）**立刻**就改成新的那一張：那才是事實
+         （她已經昏過去了），所以後面任何一拍再碰到她都會拿到 `faint`。
+         **只有畫面上那一下**是延後的 —— 玩家點太快就直接跳到結果，不會卡住。
+       ⚠ 計時器進 `fxTimers`（推一句就清）：這是**這一拍**的演出，不是跨句狀態
+         （§6.5 的 -638：跨句的要另開欄位）。
+       ⚠ 與 §6.5「取景要跟著畫面上真的是哪一張走」（-647）不衝突：
+         `ensureOn` 本來就是在圖真的換好之後才更新取景的那一支。
+       ⚠⚠⚠ **位置一定要在上面那個 `if/else` 的後面**（ver -1684 當場踩到）：
+         第一版插在 `if(st.show) …;` 與它的 `else` **中間** —— JS 沒有語法錯誤，
+         那個 `else` 直接改綁到這個 `if` 上 ⇒ **每一句沒寫 `exprThen` 的話都會
+         去 `leaveSlot()` 把說話者請下台** ⇒ Ray 回報「立繪都沒出來」。
+         `node --check` 抓不到（它是合法的語法），畫面上也不報錯。
+         ⇒ **在既有的 `if` 後面插東西之前，先確認它下一行不是 `else`。** */
+    if(st.show && line.exprThen && artOf(who)){
+      const _w=who, _e=line.exprThen;
+      if(shown[_w]) shown[_w].expr=_e;
+      fxTimers.push(setTimeout(()=>{ try{ ensureOn(_w, _e); }catch(_){} },
+                               (line.exprAt!=null ? +line.exprAt : 1100)));
+    }
   }
 
   /* 高亮跟著 speaker 走（speaker 與畫面上的人可以不同）。 */

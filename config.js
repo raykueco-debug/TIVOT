@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1683';
+export const VERSION = 'ver 2026.09.22-1685';
 
 export const GAME_CONFIG = {
 
@@ -4993,6 +4993,13 @@ export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : 
    ⚠ 加在**組 URL 的那一支**（`story.bgUrl`，鐵律 7 的唯一計算點）—— 不要在
      呼叫端各自拼一次。 */
 export const ASSET_VER = {
+  /* ⚠ `tomb_landing3`（ver -1684，Ray 換了底層梯廳的背景）：**同名覆蓋**
+     ⇒ 一定要跳版本，否則玩家的快取會抱著舊的那一張不放，而畫面上看起來
+     就只是「圖沒換」，查不到原因（§5 的 -650／-905）。
+     ⚠ 背景的檔名是**組出來的**（基底名＋時段），呼叫端手上沒有那個字串 ——
+       所以走這張表，由唯一那支組 URL 的函式（`story.bgUrl`）掛上去。
+     ⚠ 這一格**沒有時段差分**（節點寫 `noTime`），所以只要一列。 */
+  'tomb_landing3':           2,
   /* ver -1403：貝利薩爾拓樸施工單（`resources/map/_belisar_worklist.md` §六）——
      這幾張**已交件、同名覆蓋**，而那份施工單（ver -1378 開的）一直沒有人套用，
      所以版號也一直沒跳 ⇒ 玩家的快取裡可能還是覆蓋前那一版（§5 的老坑：
