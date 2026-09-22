@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """tools/si_xlsx.py —— SI 立繪差分總表（ver -1327）
 
-    py tools/si_xlsx.py                  # 出表到 resources/SI/_SI_差分總表.xlsx
+    py tools/si_xlsx.py                  # 出表到 resources/si/_SI_差分總表.xlsx
     py tools/si_xlsx.py --check          # 只印統計與待辦清單，不出表
 
 做什麼：把 `resources/SI/` 底下的立繪列成表 —— 分角色、帶檔名、**帶一張
@@ -43,12 +43,19 @@ import _jsrun  # JS 資料的唯一引擎（jsc／node），見 tools/_jsrun.py
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SI_DIR = os.path.join(ROOT, 'resources', 'SI')
+# ⚠⚠⚠ **路徑一律小寫**（ver -1670 修）：git 索引與磁碟上都是 `resources/si/`
+#   （ver -1554 全庫改小寫那一輪換掉的）。這裡以前寫死大寫 `SI` ——
+#   Windows 不分大小寫，所以 `os.walk` **讀得到檔**，卻照著給進去的大小寫吐回路徑
+#   ⇒ `resources/SI/x.webp` 永遠對不上 `speakers.js` 的 `resources/si/x.webp`
+#   ⇒ **352 個差分全部被判成「沒接線」**、縮圖整批走估的、NPC 那一頁空的，
+#     而且沒有任何錯誤訊息（表照樣出得來，只是內容全錯）。
+#   ⚠ 底下的比對另外再 `.lower()` 一次當第二道保險（見 `build()`）。
+SI_DIR = os.path.join(ROOT, 'resources', 'si')
 # ⚠ **固定放在 SI 資料夾**（ver -1327，Ray 指定）：這張表是給看差分用的，
 #   就該躺在差分旁邊。底線開頭 ＝ 同 `_eastport_spec.md` 那一族，不是素材。
 OUT = os.path.join(SI_DIR, '_SI_差分總表.xlsx')
 # NPC 的立繪住在這個子資料夾 —— 分頁就照它切（見 write_xlsx 的說明）。
-NPC_DIR = 'resources/SI/NPC/'
+NPC_DIR = 'resources/si/npc/'   # ⚠ 小寫，理由同 SI_DIR（-1670）
 IMG_EXT = ('.webp', '.png', '.jpg', '.jpeg')
 
 # 縮圖：邊長（夠看清楚眼睛與嘴角就好，檔案不要肥）
@@ -234,9 +241,14 @@ def char_of_filename(fn):
 def build():
     ART, SP = load_speakers()
     NAMES = name_table(SP)
+    # ⚠⚠ 鑰匙一律轉小寫（-1670）：磁碟給的大小寫是**作業系統**決定的，
+    #   而 speakers.js 那一份是**人寫的字串** —— 拿兩者直接比對，只要有一天
+    #   哪個資料夾的大小寫又對不上，整張表會再一次「看起來正常、內容全錯」。
+    #   ⚠ 這不是在放寬規約：真正的大小寫錯誤（靜態空間會 404 的那種）由
+    #     `script_lint.py` 與 `bg_index` 那一族去抓，這張表只負責「誰接了線」。
     by_path = {}
     for key, en, f in frames(ART):
-        by_path.setdefault(strip_v(f.get('src', '')), (key, en, f))
+        by_path.setdefault(strip_v(f.get('src', '')).lower(), (key, en, f))
 
     def who_of_file(rel):
         """未接線的檔案：由檔名前綴猜角色，猜不到就照原樣印。
@@ -249,7 +261,7 @@ def build():
 
     rows, unwired, missing = [], [], []
     for rel in scan_files():
-        hit = by_path.get(rel)
+        hit = by_path.get(rel.lower())
         if hit:
             key, en, f = hit
             measured = not f.get('unmeasured')

@@ -29,8 +29,20 @@ export const ENEMIES = {
                            那是試玩版那條線的旗，這是**卡上的性質**。
                          ⚠⚠ **ver -1024 先把 57 張全部填 0** —— 哪幾隻是 Boss
                            由 Ray 指定（改這一格，或在 enemies.xlsx 的「Boss」欄改）。
-       三格**每張卡都要寫**（統一），程式端沒寫時的預設：story 走發起端／true、
-       counterStagger＝1、boss＝0。 */
+       `riseFx`       ＝ **降臨特效**（1/0，ver -1615 開的旋鈕；-1670 統一到每張卡）。
+                         1 ＝這一隻一定演降臨，**不管它是什麼 `kind`**；
+                         0 ＝照 `kind` 判定（`ENTRANCE_KINDS`＝禍魘／聖徒／船／空）。
+                         判定只有一處：`modules/enemy.js` 的 `isRise()`。
+                         ⚠⚠ 它與 `kind` **刻意分家**：`kind` 同時管降臨、淨化與結算
+                           副標，而「要降臨但不要淨化」是真實需求（守墓者 `gk_*`：
+                           「沒有淨化反應，那東西沒有死」那句台詞要繼續成立）。
+                           反向的那一格是 `purgeFx`（分類不給淨化、但我要淨化）。
+                         ⚠⚠ **ver -1670 把沒有那一行的 66 張補成 0** —— 不是為了整齊：
+                           `tools/enemies_xlsx.py` 的匯入是**就地改值**，卡上沒有那一行
+                           它就改不到（只會列進 skipped）⇒ 表上那一欄會是「改了沒用」。
+                           每張卡都有，「降臨」欄才真的編輯得動（同 boss 的 ver -1024）。
+       四格**每張卡都要寫**（統一），程式端沒寫時的預設：story 走發起端／true、
+       counterStagger＝1、boss＝0、riseFx＝0。 */
     faceless: {
       name:'地下聖徒_A',        // UI 只顯示底線前的「地下聖徒」；底線後（_A）僅供作者辨識、不顯示
       story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
@@ -41,6 +53,7 @@ export const ENEMIES = {
       /* 聖徒系列的結算副標是「已擊殺」（ver -432，Ray 指定）。⚠ 對照表在 i18n 的
          `result.winSubBy`，這裡只標這一隻是哪一類（鐵律 1）。三種聖徒同一類。 */
       kind:'slay',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -81,6 +94,7 @@ export const ENEMIES = {
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'E',
       atype:null,
       stageScale:1,
@@ -115,6 +129,7 @@ export const ENEMIES = {
       /* 結算副標的用詞（ver -432，Ray：「『靶』為已擊破」）。⚠ 對照表在 `i18n` 的
          `result.winSubBy`，這裡只標這一隻是哪一類（鐵律 1）。 */
       kind:'target',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'E',
       atype:null,
       stageScale:1,
@@ -147,6 +162,7 @@ export const ENEMIES = {
       openAssault:[2,3],
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'target',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'E',
       atype:null,
       stageScale:1,
@@ -171,6 +187,7 @@ export const ENEMIES = {
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -211,6 +228,7 @@ export const ENEMIES = {
       /* ⚠ `atk:22` ＝她原本的一般攻擊力（ver -939 之前大絕的圈就是吃 `attack`）——
          寫出來只是把原行為明文化，不是調數值。要讓大絕更痛就改這一格。 */
       kind:'human',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'S',
       stageScale:1,
@@ -250,6 +268,7 @@ export const ENEMIES = {
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ult:{ on:1, hp:40, count:2, atk:12, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -275,6 +294,7 @@ export const ENEMIES = {
     intruderEnemy: {
       name:'亂入者 · ???',
       story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -307,6 +327,7 @@ export const ENEMIES = {
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ult:{ on:1, hp:20, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'human',                  // 槍之魔女是人類 → 已擊敗（ver -432，Ray 指定）
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'S',
       stageScale:1,
@@ -352,6 +373,7 @@ export const ENEMIES = {
       openAssault:[1,2],
       ult:{ on:1, hp:20, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'S',
       stageScale:1,
@@ -430,6 +452,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -460,6 +483,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -490,6 +514,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -520,6 +545,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -556,6 +582,7 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -598,6 +625,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -636,6 +664,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -666,6 +695,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -696,6 +726,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -726,6 +757,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -760,6 +792,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -796,6 +829,7 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -825,6 +859,7 @@ export const ENEMIES = {
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'human',                      // 結算副標「已擊敗」（ver -432）
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'E',
       atype:null,
       stageScale:1,
@@ -887,6 +922,7 @@ export const ENEMIES = {
       openAssault:[1,2],
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human',                      // 結算副標「已擊敗」（ver -432）
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'E',
       atype:null,
       stageScale:1,
@@ -930,6 +966,7 @@ export const ENEMIES = {
          結算副標照樣「已淨化」（i18n winSubBy.aerial）、降臨/淨化特效照樣吃
          （enemy.js 的 ENTRANCE_KINDS/PURIFY_KINDS 都含 aerial）。 */
       kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -989,6 +1026,7 @@ export const ENEMIES = {
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'aerial',               // 飛行敵人自成一類（ver -869，Ray）→ 副標照樣「已淨化」
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'S',
       stageScale:1,
@@ -1037,6 +1075,7 @@ export const ENEMIES = {
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'ship',                 // 船隻 → 已擊沉
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -1086,6 +1125,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'beast',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -1115,6 +1155,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'beast',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -1144,6 +1185,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'beast',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -1173,6 +1215,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'beast',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -1204,6 +1247,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'beast',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -1247,6 +1291,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0.35 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -1472,6 +1517,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -1499,6 +1545,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -1528,6 +1575,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -1559,6 +1607,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -1600,6 +1649,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -1628,6 +1678,7 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -1657,6 +1708,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -1686,6 +1738,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -1714,6 +1767,7 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'D',
       stageScale:1,
@@ -1744,6 +1798,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'slay',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -1772,6 +1827,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'slay',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'S',
       stageScale:1,
@@ -1800,6 +1856,7 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'slay',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -1831,6 +1888,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:2, gap:0.35 },
       kind:'slay',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -1894,6 +1952,7 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'A',
       atype:'D',
       stageScale:1,
@@ -1935,6 +1994,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:2, gap:0.35 },
       kind:'multi',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -2005,6 +2065,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0.35 },
       kind:'multi',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -2068,6 +2129,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0.35 },
       kind:'multi',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'A',
       atype:'S',
       stageScale:1,
@@ -2134,6 +2196,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0.35 },
       kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -2201,6 +2264,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2231,6 +2295,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2261,6 +2326,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2291,6 +2357,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2321,6 +2388,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2351,6 +2419,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:null,
       atype:'P',
       stageScale:1,
@@ -2380,6 +2449,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2410,6 +2480,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2440,6 +2511,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2470,6 +2542,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2501,6 +2574,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'beast',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -2530,6 +2604,7 @@ export const ENEMIES = {
       assaultEvery:[2,4],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'beast',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'C',
       atype:'S',
       stageScale:1,
@@ -2559,6 +2634,7 @@ export const ENEMIES = {
       assaultEvery:[4,6],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'beast',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'D',
       stageScale:1,
@@ -3366,6 +3442,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -3392,6 +3469,7 @@ export const ENEMIES = {
       assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       assault:{ count:1, gap:0 },
       kind:'multi',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'D',
       atype:'P',
       stageScale:1,
