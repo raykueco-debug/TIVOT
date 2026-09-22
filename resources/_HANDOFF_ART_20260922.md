@@ -55,10 +55,12 @@
 | ✔ ver -1670 後 再交 **1 張** | **`laugh`** —— Ray 出 SD 頭，美術 alpha＋合成（**61/62**）|
 | ⚠ **還剩 1 張** | **`panic`**（不是被擋，是不給透明背景 ⇒ **重跑拿圖再走 matting 就好，不必 Ray 出臉**）|
 
-## ⚠⚠ 程式端要接：`speakers.js` **16 條路徑跳 `?v=`**
+## ⚠⚠ 程式端要接：`speakers.js` **15 條路徑跳 `?v=`**
 
-- **加 `?v=2`（14 張）**：`battlecry` `shy` `sorry` `surprise` `talk` `think` `tire`
-  `upset` `watch` `whisper` `remind` `smirk` `amaze` **`laugh`**
+- **加 `?v=2`（13 張）**：`battlecry` `shy` `sorry` `surprise` `talk` `think` `tire`
+  `upset` `watch` `whisper` `remind` `smirk` **`laugh`**
+  ⚠⚠⚠ **`tease` 與 `amaze` 都拿掉了** —— 那兩張（`82919b0f` 同一個 commit）Ray 都退了，
+  檔案已還原回覆蓋前那一份 ⇒ 掛版號是白掛的。
   ⚠⚠⚠ **`tease` 拿掉了** —— 重製版被退、檔案已還原回覆蓋前那一份，
   線上與玩家快取裡本來就是同一個 ⇒ **加 `?v=` 是白掛的**。
 - **改成 `?v=3`（2 張）**：`side` `smile`
