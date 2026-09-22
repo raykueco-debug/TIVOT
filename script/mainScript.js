@@ -73,13 +73,37 @@ export const MAIN_SCRIPT = {
       /* 跌倒：切全屏插圖。⚠ cg 一上來就蓋住立繪，所以這一句不必也不要再改 expr。 */
       /* ⚠ 對話框**等平移跑完再出**（Ray 指定）。2600 與 CSS 的平移時間同值 ——
          改一邊要改另一邊（style.css 的 storyPanUp/Down）。 */
+      /* ⚠ ver -1686（Ray 改稿）：這一句給了 `Nouvelle_SI_Scared`。
+         ⚠⚠ **但這一拍插圖蓋著她**（`001_nouvelle_fell` 是全屏的，層級在立繪之上）——
+           所以那張立繪要等下面 `cg:null` 那一拍才看得見。
+           **要讓她在這一句就出來的話，跌倒插圖得往前挪到「啊！」那一拍** ——
+           那是改分鏡，我沒有自作主張動它（等 Ray 一句話）。 */
       { speaker:'NOUVELLE', text:'別管我！你快走！', delay:2600,
         /* ⚠ 由下往上（Ray 指定）：這張是跌倒的構圖，由上往下平移會**停在裙底**，
            往上才會收在臉上。平移的終點就是這一格的重點，方向不能隨便給。 */
-        cg:'001_nouvelle_fell', cgPan:'up' },
-      /* 上膛：兩聲隔 0.5 秒交疊。 */
-      { speaker:'NOUVELLE', text:'你……！',
-        se:[{n:'se_weapon_reload'},{n:'se_weapon_reload',delay:500}] },
+        cg:'001_nouvelle_fell', cgPan:'up',
+        portrait:{ expr:'scare' } },
+      /* ══ 上膛：兩聲交疊 ══
+         ⚠ ver -1686（Ray 改稿）：間隔由 0.5 秒改成 **0.3 秒**，而且這一拍
+           **沒有台詞**了（原本掛在「你……！」上，那一句 Ray 的新稿裡沒有 ⇒ 拿掉）。
+         ⚠ 沒有台詞就要給 `auto`：畫面上沒有框也沒有 ▼，不自己走會看起來像卡住
+           （§6.5 的既有規矩）。插圖蓋著、台上沒有人，所以不吃「無台詞拍要點擊」那一條。 */
+      /* ⚠⚠⚠ **一定要明寫 `show:false`**（ver -1686 實測）：§6.5 的 -628 規定
+         「**有立繪在台上**的無台詞拍要點擊才推進」，而諾薇兒這時在資料上是
+         「在台上」的（立繪是持續狀態，只是被全屏插圖蓋住看不見）
+         ⇒ `auto` 會被忽略、畫面停在那裡等點擊，而這一拍**沒有對話框也沒有 ▼**，
+         看起來就是卡住。把她從台上請下去（反正插圖蓋著，看不出差別）才吃得到 `auto`。
+         ⚠ 下一拍（「對不起，我已經……」）本來就明寫 `show:true`，她會回來。 */
+      { speaker:'NOUVELLE', text:'', auto:1200,
+        portrait:{ char:'NOUVELLE', show:false },
+        se:[{n:'se_weapon_reload'},{n:'se_weapon_reload',delay:300}] },
+      /* ⚠⚠ ver -1686（Ray 改稿）：「對不起，我已經……」**移到戰鬥之前** ——
+         原本它在 `dungeon_lunaria`（戰勝之後）那一段，現在那個位置換成
+         「如果……是賽西莉學姐的話一定可以……」。
+         ⚠ 這一拍要**把插圖收掉**（`cg:null`）：插圖的層級在立繪之上，不收的話
+           她整個被蓋住（同 -327 那一次 Ray 回報「立繪一直沒出來」的原因）。 */
+      { speaker:'NOUVELLE', text:'對不起，我已經……', cg:null,
+        portrait:{ expr:'desperate', show:true } },
       /* ⚠ 這裡**不插讀取頁**：開場那一頁已經把整條 scene 鏈都預載了
          （preloadStory 跟著 next 走）。要在別處插的話寫 `{ load:'sceneId' }`。 */
       /* 戰鬥教學。⚠ 戰鬥系統尚未接線，story.js 目前會跳過並在 console 記一筆。 */
@@ -115,7 +139,9 @@ export const MAIN_SCRIPT = {
          story.js 的 bg 會依「NNN_ 開頭」自動去 illustration/ 找（見 imgSrc）。 */
       /* ⚠ 這一句**什麼背景都不要寫**：上一拍已經是 002 了，再寫一次會觸發換圖
          （即使同一張，也會走一次淡出淡入）—— Ray：「背景不要動」。 */
-      { speaker:'NOUVELLE', text:'對不起，我已經……！',
+      /* ⚠ ver -1686（Ray 改稿）：這一句由「對不起，我已經……！」換成下面這一句
+         —— 前者已移到戰鬥**之前**（見 `dungeon_chase` 的收尾）。 */
+      { speaker:'NOUVELLE', text:'如果……是賽西莉學姐的話一定可以……',
         portrait:{ expr:'desperate', show:true } },
       /* 暗調 CI 插入。⚠ 說話的是「？？？」不是 LUNARIA —— 這一刻她還沒表明身分，
          顯示名要真的是「？？？」（見 speakers.js 的說明）。 */
