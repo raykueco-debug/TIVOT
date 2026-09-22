@@ -371,15 +371,26 @@ function render(){
             ? '<div class="gs-ptabs">'+SP.map(k=>{
                 const pp=GAME_CONFIG.partners[k]||{};
                 const lk=(lockedTo && k!==lockedTo);
-                return '<button class="gs-ptab'+(k===pk?' on':'')+(lk?' gs-plock':'')+'" data-pk="'+k+'"'
+                /* 出局中（ver -1679）：**照樣列出來、照樣按得下去預覽** ——
+                   擋的是「確認」那一步（見下面的確認鈕）。 */
+                const bn=partner.benchLabel(k);
+                return '<button class="gs-ptab'+(k===pk?' on':'')+(lk?' gs-plock':'')
+                     + (bn?' gs-pbench':'')+'" data-pk="'+k+'"'
                      + ' type="button">'+(pp.name||k)+'</button>';
               }).join('')+'</div>'
               /* 確認鈕（ver -743；-747 Ray：「當前伙伴也要顯示確認鈕，寫『已配對』」）
                  —— 現任那一頁換成不可按的「已配對」：鈕一直在，玩家才讀得出
                  「這一格是拿來按的」，只是現在沒有要換（§6.5.5：不要靠藏起鈕擋）。 */
-            + (pk!==cur
-                ? '<button class="gs-pconfirm" type="button">確　認</button>'
-                : '<button class="gs-pconfirm gs-paired" type="button" disabled>已配對</button>')
+            /* ══⚠⚠ **出局中的那一位：確認鈕換成原因**（ver -1679，Ray：「選她時
+               確定鈕會顯示熔斷」）══ 順序在「已配對」之前 —— 她若剛好是現任，
+               玩家更需要知道「她現在不能上」，而不是「已配對」。
+               ⚠ 字在**資料**上（`config.partnerBench[].label`，鐵律 1）：
+                 日後換個原因（重傷／離隊）只改那一行。 */
+            + ((()=>{ const bn=partner.benchLabel(pk);
+                if(bn) return '<button class="gs-pconfirm gs-paired" type="button" disabled>'+bn+'</button>';
+                return pk!==cur
+                  ? '<button class="gs-pconfirm" type="button">確　認</button>'
+                  : '<button class="gs-pconfirm gs-paired" type="button" disabled>已配對</button>'; })())
             : '')
     +     '<div class="gs-pcard">'
     +       (p.image ? '<img class="gs-pimg" src="'+(asset(p.image)||'')+'" alt=""'
@@ -529,6 +540,9 @@ function bind(){
     if(cf) cf.addEventListener('click', e=>{ e.stopPropagation();
       const k=pendingPartner;
       if(!k || !GAME_CONFIG.partners[k]) return;
+      /* ⚠ 第二道門（ver -1679）：鈕已經 `disabled` 了，但**擋在真的寫進去那一步**
+         才是安全的 —— 版面重繪與旗標變動之間有空窗（同 §6.5 那條「不要從畫面反推」）。 */
+      { const bn=partner.benchLabel(k); if(bn){ gsNote((GAME_CONFIG.partners[k].name||'')+'現在無法出擊'); return; } }
       pendingPartner=null;
       load.setPartner(k);
       setPickedPartner(k);

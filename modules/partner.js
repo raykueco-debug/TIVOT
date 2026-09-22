@@ -63,13 +63,38 @@ export function storyPartnerPool(){
   if(GAME_CONFIG.partners[d] && out.indexOf(d)<0) out.push(d);
   return out;
 }
+/* ══⚠⚠⚠ **出局中的搭檔**（`partnerBench`，ver -1679，Ray：「強制 NI 那一場以後
+   諾薇兒到走出古墓為止都不能選做夥伴，選她時確定鈕會顯示熔斷」）══════════════
+   **唯一的判定點**（鐵律 7）：回傳確認鈕上要印的字，沒出局就回 null。
+   ⚠⚠ 她**還在池子裡**（頁籤看得到、按得下去預覽）—— 出局只擋「配對」那一步，
+     §6.5.5：不要靠藏起鈕擋。
+   ⚠ 「人現在在哪張圖」由啟動層注入（`setMapGetter`）：`partner` 不可以 import
+     `town`（§2 的依賴方向 —— town 本來就在 import partner）。
+     ⚠⚠ 注不進來時 `map` 那一條**不成立**（＝不出局）：漏接的下場是
+       「她照樣選得到」而不是「所有人都選不到」（鐵律 13：安全的那一側是預設）。 */
+let mapGetter = null;
+export function setMapGetter(fn){ mapGetter = (typeof fn==='function') ? fn : null; }
+export function benchLabel(key){
+  for(const r of (GAME_CONFIG.partnerBench||[])){
+    if(!r || r.key!==key) continue;
+    if(r.need && !prog.hasFlag(r.need)) continue;
+    if(r.until && prog.hasFlag(r.until)) continue;
+    if(r.map){ let here=null; try{ here = mapGetter && mapGetter(); }catch(_){}
+               if(here !== r.map) continue; }
+    return r.label || '出　局';
+  }
+  return null;
+}
 export function storyPartnerKey(){
   const pool = storyPartnerPool();
   /* 玩家在整備頁挑過人（ver -741）：選擇存 loadout（跨輪偏好，§6.9），
-     **還在池子裡才算** —— 讀檔回到安雅還沒入隊的章節時，「安雅」不能成立。 */
+     **還在池子裡才算** —— 讀檔回到安雅還沒入隊的章節時，「安雅」不能成立。
+     ⚠⚠ **出局中的也不算**（ver -1679）：「不能選做夥伴」不只是 UI 的事 ——
+       他上一次選的若是現在出局的那一位，戰鬥裡還是會派她上場。 */
   const chosen = load.partner();
-  if(chosen && pool.indexOf(chosen)>=0) return chosen;
-  return pool[0];
+  if(chosen && pool.indexOf(chosen)>=0 && !benchLabel(chosen)) return chosen;
+  for(const k of pool) if(!benchLabel(k)) return k;
+  return pool[0];   // 全部出局（不該發生）⇒ 退回原行為，不要回 null（那是「無夥伴」）
 }
 /* ⚠⚠ `state.pickedPartner===null` ＝**無夥伴**（ver -1127，見 `state.setPickedPartner`）
    → 回 null，**不准退回預設那一位**。本檔每一處都是 `const p=currentPartner()` 之後

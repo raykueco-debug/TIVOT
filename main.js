@@ -1724,6 +1724,10 @@ let storyResume = null;
 /* 關門演出（進場那一套的倒放）：由劇情層提供、combat 在教學打完時呼叫（ver -366）。
    ⚠ 注入而不是 import —— combat 不認識劇情層（CLAUDE.md §2 的依賴方向）。 */
 story.setTownOpener(town.open);   // scene 的 `thenTown` 由 story 呼叫（注入，story 不 import town）
+/* 「人現在在哪一張圖」—— 給 `partner.benchLabel` 的 `map` 條件用（ver -1679）。
+   ⚠ 注入而不是讓 partner import town：依賴方向（§2）—— town 本來就在 import partner。
+   ⚠ 不在城鎮裡就回 null（＝那一條不成立＝不出局）。 */
+partner.setMapGetter(()=>{ try{ return town.isOpen() ? (town.getPosition()||{}).town : null; }catch(_){ return null; } });
 story.setTownCloser(town.close);  // 「選單」離開劇情層時，城鎮也要一起收（ver -394）
 combat.setPageKiller(killAllPages);   // 返回首頁＝殺光所有頁面（ver -494，見 killAllPages）
 /* ══⚠⚠⚠ **自由活動期間：約會對象＝搭檔；沒約人＝無夥伴；約到評價者＝照樣給評價**

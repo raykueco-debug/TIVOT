@@ -576,7 +576,19 @@ export const ART = {
        所以只量了頭像要的 `faceFx`（頭那一塊的水平重心）。
        **要拿去演對白之前，`top`／`bot`／`fx` 必須先量過**（§6.5「新增立繪要量什麼」）
        —— 現在不寫，`frameOf` 會沿用 side 那一張的取景，姿勢不同一定會歪。 */
-    panic:        { src:'resources/si/sorana_si_panic.webp', faceFx:0.632, faceZoomK:0.51 },
+    /* ══⚠⚠⚠ **`panic` 換成全身站姿**（ver -1679，Ray 交新圖）══
+       舊圖是**臉部近景**，所以走 `faceFx` ＋ `faceZoomK` 那一套（沒有 top/bot）；
+       新圖是**全身站姿** ⇒ 回到一般寫法，那兩格要**拿掉**。
+       ⚠⚠ 留著 `faceZoomK` 會把一張全身圖再放大 0.51 倍去對臉 ——
+         畫面上就是「她忽然變成一張大特寫」，而且不會有任何錯誤訊息。
+       ⚠ 三個數字都是逐張量的：`top`/`bot` 走既有量法（alpha>16、中央段），
+         `fx` 量兩眼中心的中點（637 與 693 ⇒ 665 ÷ 1024）。
+       ⚠⚠ **同名覆蓋 ⇒ 一定要跳 `?v=`**（§5）：這個路徑在 git 上覆蓋 0 次 → 1 次
+         ⇒ `?v=2`。不跳的話玩家的快取會抱著舊的那張特寫不放。
+       ⚠ 原 PNG 已進 `resources/_originals/SI/sorana_si_panic_src.png`。
+       ⚠ 古墓底層那一拍（索「糟糕！」）稿上標了「注意大小，錨臉」——
+         換成全身站姿之後那個顧慮本來就不存在了。 */
+    panic:     { src:'resources/si/sorana_si_panic.webp?v=2', top:8, bot:1522, fx:0.649 },
     guard:        { src:'resources/si/sorana_si_guard.webp?v=2',         top:9,  bot:1527, fx:0.651, cm:168 },
     guardtalk:    { src:'resources/si/sorana_si_guardtalk.webp?v=2',     top:5,  bot:1529, fx:0.653, cm:168 },
     guardthink:{ src:'resources/si/sorana_si_guardthink.webp?v=2', top:8,  bot:1529, fx:0.672, cm:168 },

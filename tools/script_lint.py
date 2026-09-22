@@ -260,6 +260,13 @@ def check_lowercase_assets():
                 continue
             for m in pat.finditer(txt):
                 a = m.group(1)
+                # ⚠ 底線開頭的資料夾（`_originals`／`_master`／`_unused`／`_raw`）
+                #   **不會被遊戲載入**（§5），所以那裡的大小寫不可能 404 ——
+                #   這條檢查是在防「靜態空間分大小寫」，對它們不成立。
+                #   ver -1679：`speakers.js` 的註解提到母版路徑
+                #   `resources/_originals/SI/...` 被報成錯誤，那是誤報。
+                if '/_' in ('/' + a):
+                    continue
                 if a != a.lower():
                     err('%s：素材路徑有大寫 —— %s（檔名一律小寫，ver -1554）' % (rel, a))
                 elif a not in real:

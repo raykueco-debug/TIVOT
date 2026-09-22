@@ -4821,8 +4821,14 @@ export const TOWNS = {
            借中心區也讀得通：那條側街本來就是從中心區往深處沒入海霧的那一條。
          ⚠ `bgPending` 寫成**還缺哪一張的檔名**（`script_lint.py` 會提醒）——
            圖交進來就只要把 `bg` 改成 `Varn_Church`、拔掉 `bgPending`，其餘不動。 */
-      church:   { bg:'varn_midtown',   name:'雪都瓦恩霍姆　大教堂',  
-        bgPending:'Varn_Church', exits:{ back:'midtown' },
+      /* ⚠ ver -1679：圖交了（`varn_church_{dawn,day,dusk,night}`，美術 -1670 那一輪），
+         `bg` 換成它、`bgPending` 拔掉 —— 上面那一段借中心區的說明到此結束。
+         ⚠⚠ 換圖之後**一定要重跑 `py tools/bg_index.py`**（已跑：731 張／16 個區域）：
+           不跑就是查不到區域資料夾 → 404 → `bgFor` 載不到就不換 ⇒
+           **畫面留著上一格的背景，而且沒有任何錯誤訊息**（ver -1647 踩過）。
+         ⚠ 四張時段差分都齊 ⇒ **不寫 `noTime`**；是**新增**不是覆蓋 ⇒ **不掛 `?v=`**。 */
+      church:   { bg:'Varn_Church',    name:'雪都瓦恩霍姆　大教堂',  
+        exits:{ back:'midtown' },
         /* ══ 約會・諾薇兒（ver -1522）══ 阿瑞尼斯神父那一段。
            ⚠ 他的 speaker id 是 `ARRHENIUS`（`speakers.js` -1504 建、-1509 接了六張差分）
              —— 稿上沒給表情，所以一律用底圖那一張。
@@ -7951,7 +7957,8 @@ export const TOWNS = {
           ren('shockopen','！！'),
           /* ══ 好感分歧（**蕾娜**）══ 兩條互斥，都要寫完整（含收圖）。
              ⚠ 門檻不是等於：`tierMax:2`／`tierMin:3`，日後多一段 T4 不必回頭改。 */
-          /* ── T3 以上：插圖 27（上往下平移）── */
+          /* ── T3 以上：先一句，再上插圖 27（上往下平移）── */
+          ren('meltdown','別這樣……', { tierMin:3, tierWho:'RENNA' }),
           { speaker:'NARRATION', text:'', cg:'27_rennapull', cgNoTime:true, cgPan:'down',
             auto:1400, tierMin:3, tierWho:'RENNA' },
           ren(null,'我們一起走，好嗎？',                     { tierMin:3, tierWho:'RENNA' }),
@@ -7995,6 +8002,13 @@ export const TOWNS = {
              CI（`ci_anya_nightmareinstall`）與 vo 由**它**播，這一拍不要再播一次
              —— 兩邊都播就是同一個演出兩份（鐵律 7）。 */
           { battle:'tomb_low_ni' },
+          /* ══⚠⚠⚠ **諾薇兒從這裡起出局**（ver -1679，Ray：「強制 NI 那一場以後
+             諾薇兒到走出古墓為止都不能選做夥伴，選她時確定鈕會顯示熔斷」）══
+             旗插在**戰鬥之後**（打輸要再打一次，那時她還沒倒下）。
+             ⚠ 解除**不靠第二支旗**：`config.partnerBench` 那一條寫 `map:'tomb'`
+               ⇒ 走出這張圖自動解除（鐵律 9：不要再發明一支沒有人拔的旗）。
+             ⚠ 她仍然在池子裡、頁籤上看得到 —— 擋的是「配對」那一步。 */
+          { speaker:'NARRATION', text:'', flags:['nou_melted'], auto:1 },
           /* 稿：「戰鬥結束。**結算**。」⇒ 明寫一拍（這一格雖然是 `rest`，但那一支
              只在**抵達**時收帳，打完架站在原地不會再收一次）。 */
           { speaker:'NARRATION', text:'', settle:true },
