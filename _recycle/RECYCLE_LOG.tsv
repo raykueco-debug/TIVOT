@@ -661,3 +661,6 @@ when	from	to	reason
 20260922-195946	resources/map/_topology.pptx	_recycle/resources/map/_topology.pptx	ver -1671：拓樸 ppt 全部重出（舊的停在 ver -1449，古墓還是 34 格）
 20260922-195946	resources/map/_layout_tomb.pptx	_recycle/resources/map/_layout_tomb.pptx	ver -1671：拓樸 ppt 全部重出（舊的停在 ver -1449，古墓還是 34 格）
 20260922-204803	resources/si/sorana_si_tease.webp	_recycle/resources/si/sorana_si_tease.webp	ver -1670 後 tease 重製版修壞了（臉被手擋掉、表情沒了），Ray 指示改回 82919b0f^ 的原本那張
+20260922-220444	resources/si/sorana_si_carrynouvelle.webp	_recycle/resources/si/sorana_si_carrynouvelle.webp	ver -1670 後 carrynouvelle 改用 Ray 自己去背的那一版（B 世代，諾的髮緣乾淨），我的 ToonOut 版退場
+20260922-220627	resources/si/sorana_si_carrynouvelle.png	_recycle/resources/si/sorana_si_carrynouvelle.png	ver -1670 後 已轉 webp 入庫，母版進 _originals/si/；PNG 不可留在會被載入的目錄
+20260922-220627	resources/si/renna_si_snivel.png	_recycle/resources/si/renna_si_snivel.png	ver -1670 後 已轉 webp 入庫，母版進 _originals/si/；PNG 不可留在會被載入的目錄

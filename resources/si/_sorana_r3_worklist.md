@@ -285,3 +285,89 @@ Ray 走他自己那條路拿到的：**挑一張露肉最少的 SI 當參考 ＋
 
 母版：`resources/_originals/si/sorana_si_carrynouvelle{,scream}_src.png`。
 投放夾內容已清、資料夾留著（README 還在）。
+
+
+---
+
+# 九、⚠⚠⚠ 背諾薇兒那一組：**有兩個世代，不要混用**（ver -1670 後，第二批）
+
+Ray 丟了三張新差分（`shock`／`jealous`／`smirk`），並指定 `carrynouvelle`
+**改用他自己去好背的那一版**。逐像素比對之後發現：**那不是同一次生成。**
+
+| 世代 | 誰 | 索拉娜長什麼樣 | 成員 |
+|---|---|---|---|
+| **B** | Ray 自己出的 alpha（`sorana_si_carrynouvelle.png`） | 髮色偏銀白、髮束較碎 | `carrynouvelle`／`shock` |
+| **A** | 我 ToonOut 去背的那一版 | 髮色偏藍、髮束較整 | `scream`／`jealous`／`smirk` |
+
+兩個世代的身體差 **5.35%**（不是位移，最佳位移 0/0 之後還是 5.35%）——
+差異集中在**索拉娜的頭髮與臉**，其餘是整圈的細邊。
+
+⚠⚠⚠ **所以「同一份 alpha」要按世代分**，不能全部共用一份：
+每一張差分只與**自己世代的底**共用 alpha（實測各自的改動像素落在 α<200 的：
+`jealous` 0、`smirk` 0、`shock` 300）。
+
+⚠⚠ **`shock` 那 300 px 是刻意吃下去的**：它在索拉娜**右側髮尖**
+（rows 170..332, cols 729..778，α 中位數 130），代表那一版她的髮尖動了 1~2 px。
+拿 B 的 alpha 去套會在那裡差一線 —— **但那遠比換成我的 alpha 好**（見下）。
+
+## ⚠⚠⚠ ToonOut 在**諾薇兒的褐髮**上會留白邊，而近白指標抓不到
+
+Ray：「注意諾的頭髮白邊」—— 查證屬實，而且**四項驗收全部是 0.00%**。
+
+原因：近白的判準是 `min(RGB) ≥ 235`，而那圈殘留是**淡粉灰（約 200）**，
+壓根到不了 235。⇒ **那個門檻對彩色頭髮無效**，它只抓得到白髮／白衣的白霧。
+
+**新指標（邊緣亮度超出）**：半透明邊緣像素的 V 減掉**鄰近不透明像素**的 V。
+越負代表髮絲越自然地收細；接近 0 或偏高就是邊緣被白污染。
+
+    你的 PNG（B 世代）        -56.6   ✔
+    我的 ToonOut（A 世代）    -36.3   ⛔ 差 20/255，5x 棋盤上看得見一圈淡白
+    對照 laugh（索，白髮）     -44.6
+
+⚠⚠ **試過修，修不掉**（留著當紀錄，不要再試一遍）：
+
+    ml 40/6（現行）      -35.9
+    ml 120/12           -35.8   ← 加迭代完全沒用（同憲法 -1516 的結論）
+    unpremultiply       -74.5   ← 過頭，而且 α→0 會炸
+    混合 w=(α-0.30)/.35 -42.5
+    混合 w=(α-0.15)/.35 -48.6
+    混合 w=(α-0.05)/.30 -59.0   ← 數字對了，**5x 目視仍看得到淡白**
+
+⇒ **殘留不只在前景色 F，也在 alpha 的軟斜坡本身。**
+**結論：深色／彩色頭髮的圖，Ray 自己出的 alpha 比本機 ToonOut 好，優先用他的。**
+本機那條仍然適用**白髮／淺色**（索拉娜自己那 61 張都沒問題）。
+
+## ⚠ 還沒解決的：`scream`／`jealous`／`smirk` 是 A 世代
+
+它們的諾薇兒髮緣**帶著那圈淡白**，而且索拉娜與 `carrynouvelle`（B）**長得不一樣** ——
+在劇情裡切換表情時，她的頭髮會跟著變。**兩條路，等 Ray 決定**：
+
+1. 他把那三張也**出成 alpha** 給我（最乾淨，與 B 一致）
+2. 或者**重生成**在 B 的底上
+
+## 程式端要接：`speakers.js`
+
+    carrynouvelle:        { src:'resources/si/sorana_si_carrynouvelle.webp',        top:5, bot:1520, fx:0.648 },
+    carrynouvelleshock:   { src:'resources/si/sorana_si_carrynouvelleshock.webp',   top:5, bot:1520, fx:0.648 },
+    carrynouvellescream:  { src:'resources/si/sorana_si_carrynouvellescream.webp',  top:7, bot:1519, fx:0.648 },
+    carrynouvellejealous: { src:'resources/si/sorana_si_carrynouvellejealous.webp', top:7, bot:1519, fx:0.648 },
+    carrynouvellesmirk:   { src:'resources/si/sorana_si_carrynouvellesmirk.webp',   top:7, bot:1519, fx:0.648 },
+
+⚠ `top`／`bot` **兩個世代不同**（B 是 5/1520、A 是 7/1519）—— 照抄，不要統一。
+⚠ `fx 0.648` 兩個世代都一樣（B 的睫毛實測 629.8／697.4，A 是 625.2／701.7，中點都是 663.x）。
+⚠ `cm` **不要填**（理由見 §八）。全部是新檔，**不必 `?v=`**。
+
+---
+
+# 十、蕾娜 `snivel`（ver -1670 後，Ray 直接丟在 `resources/si/`）
+
+他自己去好背的（近白 **0.00%**、角α 0、半透明 21,275 px）—— **我沒有重去背**，只轉 webp
+（`q85 / alpha_q100 / method6`，134 KB，**轉檔後 alpha 與原 PNG max 差 0**）。
+
+    snivel: { src:'resources/si/renna_si_snivel.webp', top:9, bot:1526, fx:0.548 },
+
+⚠ `top:9` 確認是她的**髮頂**不是髮飾（row 9 的內容在 x 539..551，正在頭頂中央；
+銀葉髮飾在側邊，沒有超出頭頂）。
+⚠ `fx 0.548` ＝ 兩眼中點 560.9/1024（睫毛實測 524.7／597.2，已目視確認在鼻梁上）。
+她在擦眼淚、頭是低的 —— **`top`／`bot` 照量的填，要調大小就動 `cm`／`standCm`**。
+新檔，不必 `?v=`。母版進 `resources/_originals/si/`。
