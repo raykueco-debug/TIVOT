@@ -658,3 +658,5 @@ when	from	to	reason
 20260922-185238	reference/image - 2026-09-22T183843.775.png	_recycle/reference/image - 2026-09-22T183843.775.png	ver -1670 後 Ray 丟進 reference/ 的 SD 原稿，已取進 resources/_originals/si/sorana_si_laugh_SD_raw.png
 20260922-192500	resources/si/sorana_si_battlecry.webp	_recycle/resources/si/sorana_si_battlecry.webp	ver -1670 後 battlecry 換成 Ray 的 SD 臉（六張表情差分的基底），alpha 沿用不變
 20260922-192508	resources/si/alpha	_recycle/resources/si/alpha	ver -1670 後 Ray 的 SD 臉投放夾（六張已交件），原 PNG 已進 resources/_originals/si/；raw 不可留在會被載入的目錄
+20260922-195946	resources/map/_topology.pptx	_recycle/resources/map/_topology.pptx	ver -1671：拓樸 ppt 全部重出（舊的停在 ver -1449，古墓還是 34 格）
+20260922-195946	resources/map/_layout_tomb.pptx	_recycle/resources/map/_layout_tomb.pptx	ver -1671：拓樸 ppt 全部重出（舊的停在 ver -1449，古墓還是 34 格）
