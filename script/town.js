@@ -8273,6 +8273,10 @@ export const TOWNS = {
           sor('carrynouvelle','別看我，諾薇兒背著比看起來重。'),
           { speaker:'NOUVELLE', text:'索菈娜！',
             portrait:{ char:'SORANA', expr:'carrynouvellescream', show:true } },
+          /* ⚠ 先聽到一把抓住的聲音，插圖才上（ver -1705，Ray：「在諾薇兒大喊索菈娜的下一拍
+             先播 se_snatch 再放插畫」）—— 獨立一拍，`auto` 讓音效起了頭再進插圖，
+             兩條好感分歧共用（那一抓是分歧之前就發生的）。 */
+          { speaker:'NARRATION', text:'', se:'se_snatch', auto:700 },
           /* ══ 好感分歧（**蕾娜**）══ 兩張插圖、兩個收場。 */
           /* ── T2 以下：插圖 29-1 ── */
           { speaker:'NARRATION', text:'', cg:'31-1_rennaholdhand', cgNoTime:true,
