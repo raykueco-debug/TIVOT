@@ -592,3 +592,20 @@ Ray 一併放進來的 `4d82534b-….png`（1024×1536，**他自己去好背的
 
 原檔：SD 稿 → `_originals/si/sorana_si_<鍵>_sdface_src.png`；合成母版 → `_originals/_realpha_work/`；
 舊 webp 與 GPT alpha 抽出檔 → `_recycle/`。
+
+---
+
+# 十四、`sorana_si_carrynouvelleshock2.webp`（2026-09-23 晚，Ray 交辦）
+
+> Ray：「把 carrynouvelleshock 中諾薇兒的臉換成 carrynouvellejealous 諾薇兒的臉，保留 alpha 通道」
+
+＝**索拉娜驚訝（shock）＋ 諾薇兒閉眼（jealous）**。兩張同一代、同畫布、alpha 逐位元相同，
+差異只在兩張臉 ⇒ 用「差異 ∩ 諾薇兒頭部區 − 索拉娜的藍白髮／深膚」做遮罩，2 px 羽化換 RGB。
+**alpha 與 shock 逐位元相同**（maxdiff 0）；索拉娜的臉與頭髮沒動。
+⚠ 諾薇兒左耳多出一個**十字耳墜**—— 那是 jealous 版本來就有的（臉連耳朵一起換過來），不是雜物。
+第二代編碼 q92。母版 `_originals/_realpha_work/carryshock2.png`。
+
+## 程式端要接：新鍵（不必版號）
+    carrynouvelleshock2: { src:'resources/si/sorana_si_carrynouvelleshock2.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178 },
+取景**全部照抄 `carrynouvelleshock`**（同一張畫布、同一個姿勢；fx 0.667 是線上那一族的值 ——
+工具量到的 0.600 是被頭頂的諾薇兒拉偏，-1670 那條）。
