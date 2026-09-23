@@ -341,7 +341,8 @@
   #enemyShadow{z-index:0;}
   #top:has(#enemyImg.enemy-purge) #enemyShadow,
   #top:has(#enemyImg.enemy-leave) #enemyShadow{opacity:0;}
-  #top:has(#enemyImg.enemy-rise) #enemyShadow{animation:shadowRise .9s ease-out both;}
+  #top:has(#enemyImg.enemy-rise) #enemyShadow,
+  #top:has(#enemyImg.enemy-unpurge) #enemyShadow{animation:shadowRise .9s ease-out both;}
   @keyframes shadowRise{0%,62%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1)}}
   #storyCgBackShadow{z-index:0;}
   #storyStage:has(#storyCgBack.fading) #storyCgBackShadow{opacity:0;}
@@ -436,6 +437,12 @@
   #storyCgBack.enemy-rise{animation:enemyRise .9s cubic-bezier(.18,.7,.24,1) both;}
   /* ⚠ 中景層的錨點在**腳底**（同 `cgBackScale`）：錨中心的話「落地」會變成往下沉。 */
   #storyCgBack.enemy-rise{transform-origin:center bottom;}
+  /* ══ 降臨＝淨化倒放（ver -1704，卡上 `riseStyle:'unpurge'`；Ray：「降臨效果用淨化的倒放，
+     並保留降臨時的圓圈」）══ 同一組 `enemyPurge` keyframes 反著跑：從拉長透明的殘影
+     抖回原形。0.9s ＝與 `enemyRise` 同長 ⇒ 著地光環（`.702s`／`LAND_AT`）的時間點不必改。
+     ⚠ `both` ＋ reverse：開始前停在 100% 那一格（拉長、透明），不會先閃一下原形。 */
+  #enemyImg.enemy-unpurge,
+  #storyCgBack.enemy-unpurge{animation:enemyPurge .9s ease-in reverse both;transform-origin:50% 100%;}
   /* 劇情這一側的淨化（`cgBackPurge`，ver -1703）—— 與戰鬥那一側同一組 keyframes。 */
   #storyCgBack.enemy-purge{animation:enemyPurge .6s ease-in both;transform-origin:50% 100%;}
   @keyframes enemyRise{

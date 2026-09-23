@@ -811,6 +811,9 @@ const ENTRANCE_KINDS = { harm:1, slay:1, ship:1, aerial:1 };
    ⚠⚠ 做成**一次性**（用完就清）不是卡上的欄位：同一張卡（`tomb_gk1`）在登場戲要
      「已經站好」、在追擊戰要降臨 —— 那是**這一場**的性質，不是這一隻的性質。
    ⚠ 由 `main` 在交棒那一刻依 `line.kerbRise` 設；沒設就照 `riseFx`／`kind` 走。 */
+/* 降臨用哪一組動畫（ver -1704）：卡上 `riseStyle:'unpurge'` ＝淨化倒放，其餘照舊。
+   ⚠ 劇情層的中景降臨（`story` 的 `cgBackRise`＋`cgBackAs`）也問這一支，兩邊同一個答案。 */
+export function riseClass(en){ return (en && en.riseStyle==='unpurge') ? 'enemy-unpurge' : 'enemy-rise'; }
 let riseOff = false;
 export function suppressRiseOnce(){ riseOff = true; }
 function isRise(en){
@@ -857,7 +860,7 @@ export function holdRise(){
      「開門瞬間不存在」是這一整套的目的，殘影等於沒押。 */
   const eImg=$('enemyImg');
   if(eImg){ eImg.onload=null; eImg.removeAttribute('src');
-            eImg.classList.remove('enemy-rise','enemy-purge','enemy-quake'); }
+            eImg.classList.remove('enemy-rise','enemy-unpurge','enemy-purge','enemy-quake'); }
   clearTimeout(riseHoldT);
   riseHoldT=setTimeout(()=>{ if(riseHeld) releaseRise(); }, 10000);
 }
@@ -895,7 +898,7 @@ export function loadEnemyPortrait(en){
   clearTimeout(landT); landT=0;
   risePending=null;
   eImg.onload = null;
-  eImg.classList.remove('enemy-rise','enemy-purge','enemy-quake');
+  eImg.classList.remove('enemy-rise','enemy-unpurge','enemy-purge','enemy-quake');
   /* ⚠⚠⚠ **換怪的第一件事是把上一張拔掉**（ver -1467）：`<img>` 在**新圖解碼完成
      之前不會重繪** —— 只設 `src` 的話，慢網下整段空窗畫面上站著的是**上一隻怪**，
      而且沒有任何錯誤訊息（Ray 在空戰看到地下聖徒的那一半就是這個）。
@@ -912,7 +915,11 @@ export function loadEnemyPortrait(en){
      （`#enemyImg.hit`）specificity 相同、宣告在後面 —— **後面的贏**，
      於是「打中敵人」那一記從頭到尾播不出來（Ray 回報看不到命中效果）。
      ⚠ 用 `animationend` 而不是計時器：時長只寫在 CSS 一處（鐵律 7）。 */
-  const rise=()=>{ void eImg.offsetWidth; eImg.classList.add('enemy-rise');
+  /* ⚠ 卡上 `riseStyle:'unpurge'` ＝降臨改成**淨化倒著放**（ver -1704，Ray：「降臨效果用淨化的
+     倒放，並保留降臨時的圓圈」）—— 被打散的東西重新聚回原形。著地光環（landT）照舊。
+     class 名由 `riseClass` 一支決定，收尾的 animationend 兩種名字都認。 */
+  const riseCls = riseClass(en);
+  const rise=()=>{ void eImg.offsetWidth; eImg.classList.add(riseCls);
     /* ══ 著地（ver -640，見 CSS 的 `enemyRise` 78% 那一格）══
        落到定位的那一刻補兩件事：**一圈擴散的聖光**與**鏡頭一震**。
        ⚠ 鏡頭震動走 `api.screenShake`（combat 擁有的那一支，鐵律 8）——
@@ -951,9 +958,9 @@ export function loadEnemyPortrait(en){
       }
     }, LAND_AT);
     eImg.addEventListener('animationend', function off(e){
-      if(e.animationName!=='enemyRise') return;
+      if(e.animationName!=='enemyRise' && e.animationName!=='enemyPurge') return;
       eImg.removeEventListener('animationend', off);
-      eImg.classList.remove('enemy-rise');
+      eImg.classList.remove(riseCls);
     }); };
   /* ══⚠⚠ **登場音只有一格**（ver -948，Ray：「entranceVo 跟 landSe 應該是同一時間
      發生，併為一格」）══ 卡上寫 `entrance`，播的**時機由這隻怪自己決定**：

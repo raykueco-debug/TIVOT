@@ -7725,7 +7725,7 @@ export const TOWNS = {
           ren('shockcalm','！！'),
           ren('callangry','別鬧了！你一個人怎麼應付！'),
           nou('steady','我跟他留下！蕾娜小姐帶安雅小姐先走！'),
-          any('cry','不要！'),
+          any('crying','不要！'),   // ver -1704 Ray：二戰後這一句用 crying
           ren('callangry','別這樣！大家一起走！'),
           /* ⚠⚠ 稿上的「Execute 插圖」＝ `resources/ci/ci_torsten_execute.png`
              （`ASSETS.cutin_exc_torsten` 指的是同一張）。
@@ -8192,7 +8192,8 @@ export const TOWNS = {
         acts:[ { flag:'tomb_altar_done', need:'tomb_low_arrive', storyBattle:true, sides:{ RENNA:'L' }, lines:[
           /* 最終型態：怪名顯示成「伊甸古墓」、夥伴限安雅（都在戰鬥卡上，見 config）。 */
           { battle:'tomb_low_final' },
-          ren('command','趁現在！'),
+          /* 打完了、牠倒在祭壇前 ⇒ 中景掛倒地差分（ver -1704，Ray：「蕾娜趁現在！那一拍背景加入墓主 down」）。 */
+          Object.assign(ren('command','趁現在！'), { cgBackDown:'gk_seal' }),
           any('steady','好！'),
           /* ══ 感應動畫 ══ 走既有的 `fx:'sense'`（安雅啟動木雅克祭壇那一拍同一支，鐵律 8）。
              ⚠ `auto:4400` 是**讀**心跳音的拍子表算出來的（`story.js` 的 `SENSE_BEATS`）——
@@ -8216,7 +8217,9 @@ export const TOWNS = {
           { speaker:'NARRATION', text:'', flags:['tomb_altar_on'],
             bg:'tomb_lowaltar', bgm:'blackcrystal', auto:1500 },
           { speaker:'NARRATION', text:'', se:'se_monsterroardeep', shakeHold:1400, auto:1400 },
-          nou('faint','淨化反應……'),
+          /* 祭壇一亮，投影維持不住 ⇒ 倒地的牠跑淨化收掉（ver -1704，Ray：「諾薇兒淨化反應……
+             那一拍跑淨化特效把墓主收掉」）—— 與首戰第二輪那一拍同一支 `cgBackPurge`。 */
+          Object.assign(nou('faint','淨化反應……'), { cgBackPurge:true }),
           sor('battlecrylookup','成功了！'),
           /* ⚠⚠ 稿：「`Se_Rockimpact`，**下方**煙塵，細微風聲，用 sturm **小聲**播」
              · 下方煙塵 ＝ **不寫 `dust`**（原本那一版就是由下往上揚，鐵律 13：預設是安全的那一側）

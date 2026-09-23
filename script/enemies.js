@@ -1355,6 +1355,7 @@ export const ENEMIES = {
          ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
            改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
       riseFx:1,
+      riseStyle:'unpurge',   // 降臨＝淨化倒放（ver -1704，Ray；見 enemy.riseClass）
       /* ⚠⚠ **倒地差分**（ver -1701／-1703）：圖、放大倍數、下移、著地線（圖內比例）。
          劇本的 `cgBackDown:'gk_seal'` 與古墓追兵擊退後殘留的那一張都讀這一格（鐵律 7）。
          `shiftY` 是「**胸骨觸地**」算出來的（Ray：「墓主 down 再往下移，以胸骨觸地為準」）：
@@ -1408,6 +1409,7 @@ export const ENEMIES = {
          ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
            改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
       riseFx:1,
+      riseStyle:'unpurge',   // 降臨＝淨化倒放（ver -1704，Ray；見 enemy.riseClass）
       deathFx:'quake',   // 沒死：不淨化，劇烈一震＋brickcrush（ver -1700，見 enemy.purgeEnemy）
       tier:'B',
       atype:'D',
@@ -1450,6 +1452,7 @@ export const ENEMIES = {
          ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
            改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
       riseFx:1,
+      riseStyle:'unpurge',   // 降臨＝淨化倒放（ver -1704，Ray；見 enemy.riseClass）
       deathFx:'quake',   // 沒死：不淨化，劇烈一震＋brickcrush（ver -1700，見 enemy.purgeEnemy）
       tier:'B',
       atype:'P',
@@ -1494,6 +1497,7 @@ export const ENEMIES = {
          ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
            改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
       riseFx:1,
+      riseStyle:'unpurge',   // 降臨＝淨化倒放（ver -1704，Ray；見 enemy.riseClass）
       deathFx:'quake',   // 沒死：不淨化，劇烈一震＋brickcrush（ver -1700，見 enemy.purgeEnemy）
       tier:'A',
       atype:'P',

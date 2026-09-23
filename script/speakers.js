@@ -320,16 +320,20 @@ export const ART = {
                        但**要明寫**：只寫 `src` 沿用的是角色層，不是這一族（-1671 踩過）。
                      ⚠ `huglookaway` 稿上還沒用到，一起接著 —— 它與另外兩張是同一組，
                        日後要用不必再回來量一次。 */
-                  hug:         { src:'resources/si/renna_si_hug.webp',         top:3,  bot:1528, fx:0.274, cm:193, standCm:176 },
-                  hugclose:    { src:'resources/si/renna_si_hugclose.webp',    top:3,  bot:1528, fx:0.274, cm:193, standCm:176 },
-                  huglookaway: { src:'resources/si/renna_si_huglookaway.webp', top:3,  bot:1528, fx:0.274, cm:193, standCm:176 },
+                  /* ⚠ `withChar:['PLAYER']`（ver -1704，Ray：「托爾在公主抱時說話時，蕾娜被抱著的
+                     si 是亮著的」）—— 這一組是**兩個人一張圖**（抱著她的就是主角），
+                     所以主角開口的那一拍這張圖要亮，不是被當成「別人在講話」壓暗。
+                     判定在 `story.js` 的高亮那一段（讀這一格，鐵律 7）。 */
+                  hug:         { src:'resources/si/renna_si_hug.webp',         top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
+                  hugclose:    { src:'resources/si/renna_si_hugclose.webp',    top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
+                  huglookaway: { src:'resources/si/renna_si_huglookaway.webp', top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
                   /* ⚠ ver -1696：同一組公主抱**換一張臉**（Ray 交件）⇒ 取景值照抄上面三張
                      （§5 的 -649：同姿勢的差分不要逐張量 —— 量出來的 0.504 是**兩顆頭**
                      的重心，不是她的臉）。⚠ 還是 `.png`，美術那一邊還沒轉 webp。 */
-                  hugangry:    { src:'resources/si/renna_si_hugangry.png',     top:3,  bot:1528, fx:0.274, cm:193, standCm:176 },
+                  hugangry:    { src:'resources/si/renna_si_hugangry.png',     top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
                   /* ⚠ ver -1698：稿上叫 `renna_si_shy`，交件的檔名是 `hugshy` —— 同一張。
                      五張的 alpha bbox 兩兩差 ≤2px ⇒ 同姿勢換臉，取景值照抄（§5 的 -649）。 */
-                  hugshy:      { src:'resources/si/renna_si_hugshy.png',       top:3,  bot:1528, fx:0.274, cm:193, standCm:176 },
+                  hugshy:      { src:'resources/si/renna_si_hugshy.png',       top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
                   /* ══⚠⚠ **蕾娜扶著諾薇兒**（ver -1696，Ray 交件 ＋ 交稿）══
                      畫面上是**兩個人**（蕾娜在左、諾薇兒靠在她右邊），腳本裡
                      **諾薇兒與蕾娜的台詞都用這一張**（同 `carrynouvelle` 一族的作法）。

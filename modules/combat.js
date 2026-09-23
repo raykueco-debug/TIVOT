@@ -3265,7 +3265,7 @@ export function killBattleFrame(){
   const g=$('grid'); if(g){ g.innerHTML=''; g.className=''; }
   state.cells=[];
   const ei=$('enemyImg');
-  if(ei){ ei.classList.remove('enemy-rise','enemy-purge','enemy-quake','enemy-enter','enemy-leave','hit','shake');
+  if(ei){ ei.classList.remove('enemy-rise','enemy-unpurge','enemy-purge','enemy-quake','enemy-enter','enemy-leave','hit','shake');
           ei.removeAttribute('src'); ei.style.objectPosition=''; ei.style.objectFit=''; }
   const top=$('top'); if(top) top.style.backgroundImage='';
   for(const id of ['hitFxLayer','fxTop','redDots','slashFx']){ const el=$(id); if(el) el.innerHTML=''; }

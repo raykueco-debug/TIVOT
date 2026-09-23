@@ -1545,12 +1545,16 @@ function applyPersist(line){
          `transform`／`filter`，同 ver -598 在戰鬥那邊踩過的坑），光環自己移除。 */
     if(line.cgBackRise && line.cgBack){
       const el=$('storyCgBack'), st=$('storyStage');
-      if(el){ el.classList.remove('enemy-rise'); void el.offsetWidth;
-              el.classList.add('enemy-rise');
+      /* ⚠ `cgBackAs` 那張卡寫了 `riseStyle:'unpurge'` 就跑淨化倒放（ver -1704）——
+         與戰鬥那一側同一個判斷（`riseClass`，story 不 import enemy，所以照抄那一行：
+         **改一邊要改另一邊**，`enemy.riseClass` 的註解互指）。 */
+      const rc = ((cardOf(line.cgBackAs)||{}).riseStyle==='unpurge') ? 'enemy-unpurge' : 'enemy-rise';
+      if(el){ el.classList.remove('enemy-rise','enemy-unpurge'); void el.offsetWidth;
+              el.classList.add(rc);
               el.addEventListener('animationend', function off(e){
-                if(e.animationName!=='enemyRise') return;
+                if(e.animationName!=='enemyRise' && e.animationName!=='enemyPurge') return;
                 el.removeEventListener('animationend', off);
-                el.classList.remove('enemy-rise'); }); }
+                el.classList.remove(rc); }); }
       if(st){ const ring=document.createElement('div');
               ring.className='enemy-land'; st.appendChild(ring);
               setTimeout(()=>ring.remove(), 1500); }
@@ -2493,7 +2497,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1703';
+const KERB_V='?v=1704';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3400,7 +3404,7 @@ function renderLine(){
     { const el=$('storyCgBack');                                   // 連縮放與降臨一起收（-1413／-1414）
       if(el){ el.style.transform=''; el.style.removeProperty('--rise-k');
               el.style.removeProperty('object-fit');          // 連 fit 一起收（ver -1420）
-              el.classList.remove('enemy-rise'); } }
+              el.classList.remove('enemy-rise','enemy-unpurge'); } }
     clearCast(); hideBubble();
     if(flightOpener){ endScene(); try{ flightOpener(line.goFlight); }catch(_){} return; }
     console.info('[story] 沒有註冊飛行頁開啟器，跳過 goFlight');
@@ -3653,7 +3657,12 @@ function renderLine(){
   /* ⚠ 說話者沒有立繪時**誰都不亮**（傳 null）—— 台上的人不是在講話，
      照原本的邏輯會誤把左邊那位當成說話者點亮。 */
   const spA=artOf(line.speaker);
-  if(!spA) highlight(null);
+  /* ⚠ 一張圖兩個人（`expr.withChar`，ver -1704：公主抱那一組抱著她的就是主角）——
+     說話的人**畫在台上某一張圖裡**就點亮那一張，不論他自己有沒有立繪。 */
+  const withSide = ['L','R'].find(s=>{ const w=slot[s]; if(!w) return false;
+    const f=frameOf(w, shown[w] && shown[w].expr); return !!(f && f.withChar && f.withChar.indexOf(line.speaker)>=0); });
+  if(withSide) highlight(withSide);
+  else if(!spA) highlight(null);
   else { const spSide=sideOf(line.speaker); highlight(slot[spSide]===line.speaker ? spSide : side); }
 
   /* CG／背景／CI 由 applyPersist 處理（上面），這裡不再重複。 */
@@ -5268,7 +5277,7 @@ export function setSceneCgBack(src, opts){
   const first = !stageCgBack;
   stageCgBack = src;
   groundShadow.hide(sh);
-  el.classList.remove('enemy-rise','enemy-purge');
+  el.classList.remove('enemy-rise','enemy-unpurge','enemy-purge');
   el.style.transform=''; el.style.removeProperty('--rise-k');
   cgBackBox(el, src ? (o.box||null) : null);
   if(src) el.style.objectFit=o.fit || 'contain';

@@ -2102,6 +2102,10 @@ function wildActDue(n){
        · `wildFrom` ＝這張圖的**資料**：在那個事件之前它根本還不是一張會出怪的圖
      ⚠ 寫在城上（鐵律 1）；旗名由那一段劇情自己認領（鐵律 9：誰插得出來）。 */
   if(T0.wildFrom && !prog.hasFlag(T0.wildFrom)) return wildSkip('wildFrom 還沒開');
+  /* 墓主倒在這一格 ⇒ 這一格不刷野怪（ver -1704，Ray：「墓主倒地的那一格不刷野怪」）——
+     判「倒地」只問追兵那一筆的 `down`（同 `chaseActDue`／`refreshChaseDown`，鐵律 7）。 */
+  { const c=chaseSpec() ? chaseGet() : null;
+    if(c && c.down && c.node===nodeId) return wildSkip('追兵倒在這一格'); }
   /* ══⚠⚠⚠ **結算怪已取消**（ver -1024，Ray：「取消結算怪的放置，一律以踏入結算點
      為結算條件」）══ ver -895／-898 的那一套（把 `wildSpawn.endBattle` 擺在
      「這一趟沒走進來的那個出口」、那一格拒絕戰鬥就退一格）**整組撤掉**：
