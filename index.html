@@ -16,7 +16,7 @@
 <link rel="apple-touch-icon" href="resources/background/tivot_emblem.png">
 <title>TIVOT</title>
 <!-- 全域鎖直向（真鎖 + 橫向擋板）；classic script，需在版面就緒前掛上 -->
-<script src="orientation.js?v=1701"></script>
+<script src="orientation.js?v=1702"></script>
 <!-- ══ 效能探針・計數層（ver -850，Ray：「沒有辦法寫一個偵測程式進去看是什麼
      東西在吃資源嗎？」）══ 要在**所有程式之前**掛（晚掛就數不到早開的計時器），
      所以住在這裡。只做登記（Set/計數，開銷趨近零）；讀取與呈現在 main.js 的
@@ -63,55 +63,56 @@
 <script type="importmap">
 {
   "imports": {
-    "./audio.js": "./audio.js?v=1701",
-    "./config.js": "./config.js?v=1701",
-    "./i18n.js": "./i18n.js?v=1701",
-    "./main.js": "./main.js?v=1701",
-    "./orientation.js": "./orientation.js?v=1701",
-    "./state.js": "./state.js?v=1701",
-    "./telemetry.js": "./telemetry.js?v=1701",
-    "./modules/combat.js": "./modules/combat.js?v=1701",
-    "./modules/defense.js": "./modules/defense.js?v=1701",
-    "./modules/enemy.js": "./modules/enemy.js?v=1701",
-    "./modules/gear.js": "./modules/gear.js?v=1701",
-    "./modules/haptics.js": "./modules/haptics.js?v=1701",
-    "./modules/inn.js": "./modules/inn.js?v=1701",
-    "./modules/inspector.js": "./modules/inspector.js?v=1701",
-    "./modules/loot.js": "./modules/loot.js?v=1701",
-    "./modules/partner.js": "./modules/partner.js?v=1701",
-    "./modules/saint.js": "./modules/saint.js?v=1701",
-    "./modules/sakura.js": "./modules/sakura.js?v=1701",
-    "./modules/save.js": "./modules/save.js?v=1701",
-    "./modules/settings.js": "./modules/settings.js?v=1701",
-    "./modules/story.js": "./modules/story.js?v=1701",
-    "./modules/tone.js": "./modules/tone.js?v=1701",
-    "./modules/town.js": "./modules/town.js?v=1701",
-    "./modules/transition.js": "./modules/transition.js?v=1701",
-    "./modules/tutorial.js": "./modules/tutorial.js?v=1701",
-    "./modules/weapon.js": "./modules/weapon.js?v=1701",
-    "./script/bg_index.js": "./script/bg_index.js?v=1701",
-    "./script/clock.js": "./script/clock.js?v=1701",
-    "./script/enemies.js": "./script/enemies.js?v=1701",
-    "./script/evaluation.js": "./script/evaluation.js?v=1701",
-    "./script/inventory.js": "./script/inventory.js?v=1701",
-    "./script/loadout.js": "./script/loadout.js?v=1701",
-    "./script/mainScript.js": "./script/mainScript.js?v=1701",
-    "./script/progress.js": "./script/progress.js?v=1701",
-    "./script/shopstock.js": "./script/shopstock.js?v=1701",
-    "./script/speakers.js": "./script/speakers.js?v=1701",
-    "./script/town.js": "./script/town.js?v=1701",
-    "./i18n/en.js": "./i18n/en.js?v=1701",
-    "./i18n/ja.js": "./i18n/ja.js?v=1701",
-    "./i18n/zh.js": "./i18n/zh.js?v=1701"
+    "./audio.js": "./audio.js?v=1702",
+    "./config.js": "./config.js?v=1702",
+    "./i18n.js": "./i18n.js?v=1702",
+    "./main.js": "./main.js?v=1702",
+    "./orientation.js": "./orientation.js?v=1702",
+    "./state.js": "./state.js?v=1702",
+    "./telemetry.js": "./telemetry.js?v=1702",
+    "./modules/combat.js": "./modules/combat.js?v=1702",
+    "./modules/defense.js": "./modules/defense.js?v=1702",
+    "./modules/enemy.js": "./modules/enemy.js?v=1702",
+    "./modules/gear.js": "./modules/gear.js?v=1702",
+    "./modules/groundShadow.js": "./modules/groundShadow.js?v=1702",
+    "./modules/haptics.js": "./modules/haptics.js?v=1702",
+    "./modules/inn.js": "./modules/inn.js?v=1702",
+    "./modules/inspector.js": "./modules/inspector.js?v=1702",
+    "./modules/loot.js": "./modules/loot.js?v=1702",
+    "./modules/partner.js": "./modules/partner.js?v=1702",
+    "./modules/saint.js": "./modules/saint.js?v=1702",
+    "./modules/sakura.js": "./modules/sakura.js?v=1702",
+    "./modules/save.js": "./modules/save.js?v=1702",
+    "./modules/settings.js": "./modules/settings.js?v=1702",
+    "./modules/story.js": "./modules/story.js?v=1702",
+    "./modules/tone.js": "./modules/tone.js?v=1702",
+    "./modules/town.js": "./modules/town.js?v=1702",
+    "./modules/transition.js": "./modules/transition.js?v=1702",
+    "./modules/tutorial.js": "./modules/tutorial.js?v=1702",
+    "./modules/weapon.js": "./modules/weapon.js?v=1702",
+    "./script/bg_index.js": "./script/bg_index.js?v=1702",
+    "./script/clock.js": "./script/clock.js?v=1702",
+    "./script/enemies.js": "./script/enemies.js?v=1702",
+    "./script/evaluation.js": "./script/evaluation.js?v=1702",
+    "./script/inventory.js": "./script/inventory.js?v=1702",
+    "./script/loadout.js": "./script/loadout.js?v=1702",
+    "./script/mainScript.js": "./script/mainScript.js?v=1702",
+    "./script/progress.js": "./script/progress.js?v=1702",
+    "./script/shopstock.js": "./script/shopstock.js?v=1702",
+    "./script/speakers.js": "./script/speakers.js?v=1702",
+    "./script/town.js": "./script/town.js?v=1702",
+    "./i18n/en.js": "./i18n/en.js?v=1702",
+    "./i18n/ja.js": "./i18n/ja.js?v=1702",
+    "./i18n/zh.js": "./i18n/zh.js?v=1702"
   }
 }
 </script>
 <!-- BUST:END -->
-<link rel="stylesheet" href="style.css?v=1701">
+<link rel="stylesheet" href="style.css?v=1702">
   <!-- 拾得道具／道具欄／商店／懸賞榜（ver -380 抽出，飛行頁共用同一份）。
        ⚠ `data-lootsheet` 是給 `modules/loot.js` 認的：它看到已經掛過就不再掛一次。
          飛行頁沒有這一行，由那支模組自己掛上去。 -->
-  <link rel="stylesheet" href="css/lootsheet.css?v=1701" data-lootsheet="1">
+  <link rel="stylesheet" href="css/lootsheet.css?v=1702" data-lootsheet="1">
 <!-- 主畫面 App（standalone）偵測：首繪前在 <html> 蓋 .standalone，
      供 CSS 修 iOS 26 版面視窗少算頂部安全區高度（底部露黑帶）的問題 -->
 <script>
@@ -169,6 +170,7 @@
          （-1467：不拔的話慢網下畫面上站著的是上一隻怪）—— 而**沒有 src 的
          `<img>` 會把 alt 當破圖文字畫出來**，於是那個空窗變成左上角一個
          「敵人」破圖圖示。空 alt ＝ 那一格什麼都不畫（名字本來就另有 `#enemyName`）。 -->
+    <div id="enemyShadow" class="ground-shadow"></div>   <!-- 接地陰影（ver -1702，modules/groundShadow.js）—— 在立繪之前＝在它底下 -->
     <img id="enemyImg" alt="">
     <div id="topVignette"></div>
     <div id="redFlash"></div>
@@ -602,6 +604,7 @@
   <img id="storyBg" alt="">
   <!-- 中景層（ver -870，Ray：「角色圖層應該在樹靈鹿主之上」）：疊在背景上、
        立繪之下的去背圖（樹靈鹿主三張）。line 的 `cgBack:'<路徑>'`，null 收掉。 -->
+  <div id="storyCgBackShadow" class="ground-shadow"></div>   <!-- 中景層的接地陰影（ver -1702） -->
   <img id="storyCgBack" alt="">
   <img id="storyCg" alt="">
   <!-- 插圖的第二層（ver -628）：`cgSoft` 的差分切換把新圖疊在這裡淡入，
@@ -722,6 +725,6 @@
      ⚠ src 是**按下去才給**的（lazy）：不然每次開機都要多載一整個飛行頁。 -->
 <iframe id="flightFrame" title="飛行"></iframe>
 
-<script type="module" src="main.js?v=1701"></script>
+<script type="module" src="main.js?v=1702"></script>
 </body>
 </html>

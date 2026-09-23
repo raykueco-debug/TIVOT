@@ -19,6 +19,7 @@ import { GAME_CONFIG, HITFX, asset, sfxGain } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
+import * as groundShadow from './groundShadow.js';   // 接地陰影（ver -1702，葉節點）
 import { sakuraBurst } from './sakura.js';   // 鹿主的櫻花狂亂（ver -899）——同一支花瓣引擎，見 spawnSakura
 
 const $ = id => document.getElementById(id);
@@ -864,9 +865,32 @@ export function releaseRise(){
   riseHeld=false; clearTimeout(riseHoldT); riseHoldT=0;
   if(risePending){ const f=risePending; risePending=null; f(); }
 }
+/* ══ 接地陰影（ver -1702，Ray：「怪跟背景間加入適當陰影，所有怪都要」）══
+   量腳、換算、擺位全在 `groundShadow.place`；這裡只決定**這一隻要不要**：
+   · 飛在天上的（`aerial`）與船（`ship`）沒有地面可以投影 ⇒ 不畫
+   · 卡上 `noShadow:1` ＝個案關掉（鐵律 1）
+   · 沒有 alpha 的整張插畫 → `place` 自己量不出腳，不畫
+   觸發：立繪每一次 `load`（換圖）、`setEnemy` 收尾（同一張圖不會再 load，但框可能變了）、
+   視窗尺寸變了。 */
+const NO_SHADOW_KINDS = { aerial:1, ship:1 };
+let shadowCard = null;
+export function placeEnemyShadow(){
+  const sh=$('enemyShadow'), eImg=$('enemyImg');
+  if(!sh || !eImg) return;
+  const en=shadowCard;
+  if(!en || en.noShadow || NO_SHADOW_KINDS[en.kind] || !eImg.getAttribute('src')){ groundShadow.hide(sh); return; }
+  groundShadow.place(eImg, sh);
+}
+try{
+  const eImg0=document.getElementById('enemyImg');
+  if(eImg0) eImg0.addEventListener('load', ()=>placeEnemyShadow());
+  window.addEventListener('resize', ()=>placeEnemyShadow());
+}catch(_){}
 export function loadEnemyPortrait(en){
   const eImg = $('enemyImg');
   if(!eImg) return;
+  shadowCard = en || null;
+  groundShadow.hide($('enemyShadow'));     // 換怪：新的腳量好之前不留上一隻的影子
   clearTimeout(riseT); riseT=0;
   clearTimeout(landT); landT=0;
   risePending=null;
@@ -1341,7 +1365,13 @@ export function setEnemy(key, opts){
         const h=(1-k)/2*100, v=(1-k)/2*100;
         eImg.style.left=h+'%'; eImg.style.right=h+'%';
         eImg.style.top=(v+dy*100)+'%'; eImg.style.bottom=(v-dy*100)+'%';
-      }else{ eImg.style.left=eImg.style.right=eImg.style.top=eImg.style.bottom=''; } }
+        /* ⚠⚠⚠ **寬高也要一起給**（ver -1702 修）：CSS 的 `#enemyImg` 寫死了
+           `width:100%;height:100%` —— 有明寫寬高時 `right`／`bottom` 是**被忽略的**，
+           於是 -1565 起這一條從來沒有縮放過，只是把整張圖往左上（或右下）平移。
+           （尼莫的 0.86 其實只往右下挪了 7%；墓主的 1.4 只往左上挪、根本沒變大。） */
+        eImg.style.width=(k*100)+'%'; eImg.style.height=(k*100)+'%';
+      }else{ eImg.style.left=eImg.style.right=eImg.style.top=eImg.style.bottom='';
+             eImg.style.width=eImg.style.height=''; } }
     /* ⚠ `fit.mode:'contain'`（ver -375）：**去背立繪**用的。滿版插圖走 cover（預設），
        但把對話立繪借來當戰鬥立繪時，cover 會把頭裁掉 —— 那種要 contain ＋ 背景。 */
     eImg.style.objectFit = (en.fit && en.fit.mode) || '';
@@ -1365,7 +1395,8 @@ export function setEnemy(key, opts){
   /* ⚠ `noArt`：開機那一次不載圖，而且**把 src 整個拔掉** —— 只是不載的話
      上一次留下的那張還掛在 `#enemyImg` 上，空窗一樣會露出來。 */
   if(opts && opts.noArt){ const ei=$('enemyImg'); if(ei) ei.removeAttribute('src'); }
-  else loadEnemyPortrait(en);
+  else{ loadEnemyPortrait(en);
+        placeEnemyShadow(); }      // 同一張圖不會再 load，但框可能變了（fit／scale）⇒ 影子重擺（ver -1702）
   /* 換了一隻怪（ver -693）：讓搭檔的「每隻怪一次」那一類被動重新上膛。
      ⚠ 這裡是那件事的唯一時刻 —— 開場、連戰換敵、Boss 亂入全部經過 setEnemy。 */
   if(api.onEnemySet) api.onEnemySet();

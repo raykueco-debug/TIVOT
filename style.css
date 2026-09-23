@@ -330,6 +330,21 @@
   #top{height:50%;flex:none;position:relative;overflow:hidden;
     border-bottom:2px solid var(--gold-dim);background:#000 center/cover no-repeat;
     touch-action:none;}
+  /* ══ 接地陰影（ver -1702，Ray：「怪跟背景間加入適當陰影，所有怪都要…自然、省效能」）══
+     一顆**靜態**的放射漸層橢圓，位置由 `modules/groundShadow.js` 量腳底算出來。
+     ⚠ 不用 drop-shadow：每一格重算，而且會被受擊動畫的 `filter` 整條蓋掉。
+     ⚠ 怪消失的那幾個演出（淨化／連戰掠過）影子跟著淡掉；降臨時等牠落地才浮出來。 */
+  .ground-shadow{position:absolute;pointer-events:none;opacity:0;display:none;
+    background:radial-gradient(ellipse at 50% 50%, rgba(0,0,0,.72) 0%, rgba(0,0,0,.45) 38%, rgba(0,0,0,0) 70%);
+    transition:opacity .35s ease;}
+  .ground-shadow.on{display:block;opacity:1;}
+  #enemyShadow{z-index:0;}
+  #top:has(#enemyImg.enemy-purge) #enemyShadow,
+  #top:has(#enemyImg.enemy-leave) #enemyShadow{opacity:0;}
+  #top:has(#enemyImg.enemy-rise) #enemyShadow{animation:shadowRise .9s ease-out both;}
+  @keyframes shadowRise{0%,62%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1)}}
+  #storyCgBackShadow{z-index:0;}
+  #storyStage:has(#storyCgBack.fading) #storyCgBackShadow{opacity:0;}
   #enemyImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
     object-position:center top;transition:transform .06s;}
   /* ══⚠⚠ 我方命中敵人 → **敵人被打得一縮**（ver -598，Ray：「我方攻擊命中敵人，
@@ -2827,7 +2842,7 @@
      那張舊的鹿主**，戰鬥層的降臨（harm）等於被蓋在後面。
      這一層是這條規則寫完之後才加的，正是鐵律 8 那類漏接：**新增任何舞台層時，
      先問「開門那一刻我要不要讓開？」** */
-  #storyStage.kerb-open #storyCgBack,
+  #storyStage.kerb-open #storyCgBack,#storyStage.kerb-open #storyCgBackShadow,   /* 影子跟著中景層讓開（ver -1702） */
   #storyStage.kerb-open #storyCg,#storyStage.kerb-open #storyCi,
   #storyStage.kerb-open #storyFx,#storyStage.kerb-open #storyCard,
   #storyStage.kerb-open #storyBoard,#storyStage.kerb-open #storyBubble,

@@ -31,6 +31,7 @@ import * as prog from '../script/progress.js';
 import { decorateLine } from '../i18n.js';
 import { SFX } from '../audio.js';
 import { matchPortraits } from './tone.js';
+import * as groundShadow from './groundShadow.js';   // 中景層的接地陰影（ver -1702，葉節點）
 /* 立繪的色調要跟著**玩家現在看到的那一層**走（ver -631）：有插圖時插圖就是場景，
    沒有才是背景。⚠ 只有這一支在決定「背後是什麼」（鐵律 8）—— 三個呼叫點都問它。 */
 import * as settings from './settings.js';   // 選單（音量／自動播放速度）；葉節點，只依賴 audio
@@ -2466,7 +2467,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1701';
+const KERB_V='?v=1702';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -5188,18 +5189,27 @@ export function isPlaying(){ return active && !!cur; }
    （`town.refreshChaseDown`）。與腳本的 `cgBack:` 是**同一層、同一支 swapImg**（鐵律 8），
    差別只是呼叫端不是一拍台詞。`src` 空＝收掉。
    ⚠ `fit` 預設 contain：這一層原本的 cover 是給橫式的鹿主訂的，直式怪立繪會被裁。 */
+/* `opts.scale`／`opts.shiftY`（ver -1702，Ray：「墓主不論死活都要有巨大感，超出畫面
+   也沒關係」）＝以**底邊中點**為原點放大、再往下挪（單位＝這一層的高）。
+   `opts.shadow` ＝腳下畫接地陰影（`groundShadow`，與戰鬥那一側同一支）。 */
 export function setSceneCgBack(src, opts){
   const el=$('storyCgBack'); if(!el) return;
+  const sh=$('storyCgBackShadow');
   src = src || null;
-  if(src===stageCgBack) return;
+  const o = opts || {};
+  const k = +o.scale || 1, ty = +o.shiftY || 0;
+  const xf = { k, ty };
+  if(src===stageCgBack){ if(src && o.shadow) groundShadow.place(el, sh, xf); return; }
   const first = !stageCgBack;
   stageCgBack = src;
-  swapImg(el, src||'', null, { fadeInFirst:first });
+  groundShadow.hide(sh);
+  swapImg(el, src||'', ()=>{ if(src && o.shadow && stageCgBack===src) groundShadow.place(el, sh, xf); },
+          { fadeInFirst:first });
   el.style.transformOrigin='center bottom';
-  el.style.transform='';
+  el.style.transform = (src && (k!==1 || ty)) ? ('translateY('+(ty*100)+'%) scale('+k+')') : '';
   el.style.removeProperty('--rise-k');
   el.classList.remove('enemy-rise');
-  if(src) el.style.objectFit=(opts && opts.fit) || 'contain';
+  if(src) el.style.objectFit=o.fit || 'contain';
   else    el.style.removeProperty('object-fit');
 }
 export function setSceneBg(name, done){

@@ -1362,7 +1362,7 @@ export const ENEMIES = {
       stack:1,
       image:'enemy_gk_seal',
       bg:'tomb_rotunda',
-      fit:{ mode:'contain', pos:'center bottom', scale:1.4, shiftY:0.14 },   // 放大、超出畫面也無妨：要有壓迫感（ver -1700）
+      fit:{ mode:'contain', pos:'center bottom', scale:1.65, shiftY:0.22 },   // 巨大感：放大、超出畫面也無妨，頭留在畫面內（ver -1700／-1702）
       hp:300,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
@@ -1407,7 +1407,7 @@ export const ENEMIES = {
       brBonus:0.5,
       image:'enemy_gk_offset',
       bg:'tomb_rotunda',
-      fit:{ mode:'contain', pos:'center bottom', scale:1.4, shiftY:0.14 },   // 放大、超出畫面也無妨：要有壓迫感（ver -1700）
+      fit:{ mode:'contain', pos:'center bottom', scale:1.65, shiftY:0.22 },   // 巨大感：放大、超出畫面也無妨，頭留在畫面內（ver -1700／-1702）
       hp:490,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
@@ -1448,7 +1448,7 @@ export const ENEMIES = {
       stack:1,
       image:'enemy_gk_many',
       bg:'tomb_rotunda',
-      fit:{ mode:'contain', pos:'center bottom', scale:1.4, shiftY:0.14 },   // 放大、超出畫面也無妨：要有壓迫感（ver -1700）
+      fit:{ mode:'contain', pos:'center bottom', scale:1.65, shiftY:0.22 },   // 巨大感：放大、超出畫面也無妨，頭留在畫面內（ver -1700／-1702）
       hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
@@ -1492,7 +1492,7 @@ export const ENEMIES = {
       stack:1,
       image:'enemy_gk_crypt',
       bg:'tomb_crypt',
-      fit:{ mode:'contain', pos:'center bottom', scale:1.4, shiftY:0.14 },   // 放大、超出畫面也無妨：要有壓迫感（ver -1700）
+      fit:{ mode:'contain', pos:'center bottom', scale:1.65, shiftY:0.22 },   // 巨大感：放大、超出畫面也無妨，頭留在畫面內（ver -1700／-1702）
       hp:560,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:20,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,

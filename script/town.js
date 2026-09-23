@@ -7068,6 +7068,10 @@ export const TOWNS = {
          站在同一格看得到這張圖，**踩上去不開打**；停頓數完、牠真的再走起來才會追上開打。
          判定在 `modules/town.js` 的 `c.down`（`chaseActDue`／`chaseAdvance`／`refreshChaseDown`）。 */
       downArt: 'enemy_gk_seal_down',
+      /* 倒地也要巨大（ver -1702，Ray：「墓主不論死活都要有巨大感，超出畫面也沒關係」）：
+         以底邊中點放大 2.3 倍、下移 24%（這張圖的內容只佔下半、底下留白 12%）
+         ⇒ 翅膀撐出畫面兩側、身體壓在畫面下緣。 */
+      downScale: 2.3, downShiftY: 0.24,
       /* ══⚠⚠⚠ **被追上時要演哪一段：一張由上往下取第一個成立的表**（ver -1616）══
          台詞住在**柱廳（`hall2`）的 `acts`** 裡（見那一格），三段都標
          `chaseOnly:true` ＝走進柱廳不算，只有被追上帶得動。
