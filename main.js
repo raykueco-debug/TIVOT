@@ -31,6 +31,7 @@ import * as saveSys from './modules/save.js';   // 劇情層存讀檔（F4/F7 �
 import * as settings from './modules/settings.js';   // 選單：分軌音量／自動播放速度（玩家偏好）
 import { BG_INDEX } from './script/bg_index.js';   // 背景全名單（自動產生）：RUSH 的隨機背景從它抽（ver -1663）
 import * as prog from './script/progress.js';
+import { scanBranches } from './script/branches.js';   // 分歧檢查（ver -1708，管理人限定）
 /* ⚠⚠ **靜態 import**（ver -1001）：章節跳關的補給包本來走 `import(...).then(...)`，
    那是**非同步**的 —— 而 `startChapter` 後面的 `openTownAt()` 同步接著跑，
    進城會落一筆自動存檔點，**那一筆快照裡還沒有補給** → 之後任何一次回檔就把它抹掉
@@ -1656,7 +1657,52 @@ bindBtn('chapterBtn', ()=>{
     (i, close)=>{ startChapter(prog.CHAPTERS[i]); close(); });
 });
 
-function startChapter(c){
+/* ══ 分歧檢查（ver -1708，Ray：「在首頁做一個分歧檢查，把所有劇情分支點列表，
+   選擇分支點就從該分支存在的『幕』進場」）══════════════════════════════════
+   清單是算出來的（`script/branches.js`，鐵律 7）。兩層面板：先選「幕」，再選分支的哪一邊。
+   進場的作法：
+     ① 底 ＝ **還沒演過這一幕**的最後一個章節（同一座城優先）—— `startChapter` 那一套
+        （newRun、補給、旗、好感、章節號），只是不照章節自己的入口開門
+     ② 補這一幕的前置：`need` 插上、自己的 `flag` 與 `until` 拔掉、`fromStage`／`needTier` 墊上
+     ③ 這一邊的條件：旗插／拔、好感設到那一段
+     ④ `town.debugArm` 武裝 → `enterTown` 走進那一格，**不問 `actDue` 直接演那一幕**
+   ⚠ 閘門／敲門／店主那幾種**沒辦法直接演**：條件擺好、人放到那一格，觸發交給玩家。 */
+bindBtn('branchBtn', ()=>{
+  const list=scanBranches();
+  pickSheet('分　歧', list.map(b=>({
+      name:(b.atStart?'★ ':'')+b.nodeName+(b.kind==='act'?'':'　〔'+({arrive:'進場對白',gate:'閘門',knock:'敲門',talk:'對話'}[b.kind]||b.kind)+'〕'),
+      sub:(b.title||'')+'　｜　'+b.points.map(p=>p.label).join('、') })),
+    (i, close)=>close(()=>{
+      const b=list[i];
+      const rows=[{ name:'不改條件，直接進場', sub:'條件照章節的底' , v:null }];
+      for(const p of b.points) for(const v of (p.variants||[])) rows.push({ name:v.label, sub:p.label, v });
+      pickSheet(b.nodeName+'　'+(b.actFlag||''), rows,
+        (j, close2)=>close2(()=>startBranch(b, rows[j].v)));
+    }));
+});
+function startBranch(b, v){
+  const asArr=x=>x==null?[]:(Array.isArray(x)?x:[x]);
+  const own=b.actFlag;
+  const chs=prog.CHAPTERS.filter(c=>c.enter==='town' && !(own && (c.flags||[]).indexOf(own)>=0));
+  const same=chs.filter(c=>c.town===b.town);
+  const base=(same.length?same:chs).slice(-1)[0] || prog.CHAPTERS[0];
+  startChapter(base, { noEnter:true });
+  const a=b.act || b.gate || {};
+  if(a.need) prog.addFlags(asArr(a.need));
+  const drop=[own, a.until].filter(Boolean);
+  if(drop.length) prog.removeFlags(drop);
+  if(a.fromStage!=null && prog.getStage()<a.fromStage) prog.setStage(a.fromStage);
+  if(a.needTier) for(const who in a.needTier) prog.setAffectionDev(who, (a.needTier[who]-1)*20+5);
+  if(v){
+    if(v.add) prog.addFlags(v.add);
+    if(v.remove) prog.removeFlags(v.remove);
+    if(v.tier) prog.setAffectionDev(v.tier.who, v.tier.t<=1 ? 5 : (v.tier.t-1)*20+5);
+  }
+  if(b.kind==='act') town.debugArm({ node:b.node, act:b.act });
+  else if(b.kind==='arrive') town.debugArm({ node:b.node, arrive:true });
+  openTownAt(b.town, b.node);
+}
+function startChapter(c, opts){
   if(!c) return;
   prog.newRun();                                   // ⚠ 唯一的「從頭開始」（§6.9）
   /* 測試補給（ver -499，Ray：「測試階段點章節進去也要給主角1000元與回復道具
@@ -1696,6 +1742,7 @@ function startChapter(c){
   /* ⚠ 時刻問 `clock.firstHourAt`，不要寫死分鐘數（鐵律 7）——
      開局時刻改了，章節的起點要跟著改。 */
   if(c.clockHour!=null) clock.setElapsed(clock.firstHourAt(c.clockHour));
+  if(opts && opts.noEnter) return;   // 分歧檢查：只要這一章的底，入口由 startBranch 自己開
   if(c.enter==='town'){
     openTownAt(c.town, c.node);   // ⚠ 與讀檔走同一支（ver -430，鐵律 8）
   }else if(c.enter==='flight'){

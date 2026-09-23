@@ -4245,7 +4245,18 @@ function setSail(){
 }
 
 /* ══ 進節點 ══ */
+/* ══ 管理人限定：分歧檢查的進場（ver -1708，首頁「分歧檢查」→ `main.startBranch`）══
+   `debugArm({ node, act })` ＝下一次走進那一格時**不問 `actDue`，直接演這一段**；
+   `debugArm({ node, arrive:true })` ＝那一格的進場對白當作沒看過（拔掉 `flagOf` 那支旗）。
+   ⚠ 明寫的開發梯子（同章節跳關，鐵律 9 的例外）：只武裝一次，走進那一格就消耗掉。 */
+let debugArmed = null, forcedAct = null;
+export function debugArm(spec){ debugArmed = spec || null; }
 export function enter(id){
+  if(debugArmed && debugArmed.node===id){
+    const d=debugArmed; debugArmed=null;
+    if(d.act) forcedAct = d.act;
+    if(d.arrive){ try{ prog.removeFlags([flagOf((TOWNS[townId]||{}).nodes && TOWNS[townId].nodes[id], id)]); }catch(_){} }
+  }
   /* ⚠ 上一個畫面的**場景黑幕**要收（ver -881，見 story.clearSceneFade）——
      城鎮不經過 story 的 resetStage，帶著 `fadeOut` 的那一拍離場之後那片黑幕會
      一直蓋在場景區上，而且點不掉。這是 §6.5.4 檢查表該有而漏掉的一項。 */
@@ -4420,7 +4431,8 @@ export function enter(id){
      常駐句）在那一刻都不該插隊 —— 玩家是「躺下去睡不著爬起來」，不是走進門。
      ⚠ 閂取走即清（見 `napPending`）：只作用一次。 */
   let act;
-  if(napPending){ napPending=false; act = actDue(n, true); }
+  if(forcedAct){ act = forcedAct; forcedAct = null; }   // 分歧檢查的進場（debugArm）
+  else if(napPending){ napPending=false; act = actDue(n, true); }
   else{
     /* ⚠⚠ **追兵與雜怪競合 ⇒ 追兵優先**（ver -1577，Ray 明講）—— 落地就是這個排序。
        ⚠ 它**不吃 `immediate`**（與雜怪不同）：雜怪那一支第二趟不擲是怕「打完又冒
