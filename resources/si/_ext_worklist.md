@@ -385,3 +385,13 @@ bgc   = 四角各 6px 的平均 RGB          # 這一張圖自己的背景色（
 
 臉鎖死、服裝零漂移、圖更小（頭部 390×290 → 放大 3×）⇒ **四個人都走這一套**，
 只有「要動手」的那幾張走全身。
+---
+
+## 追加（2026-09-23 深夜）：安雅 `happy` —— 笑瞇眼、幸福微笑、嘴閉（Ray 交辦）
+
+`resources/si/anya_si_happy.webp`：底圖＝本尊 `anya_si_front`，**只換臉（眼、嘴、頰紅）**，
+alpha 與本尊逐位元相同；第二代 q92。GPT 原檔 `_originals/si/anya_si_happy_gptface_src.png`。
+
+程式端：`ART.anya.expr` 補一鍵，取景**照抄本尊**（新檔，不必版號）：
+
+    happy: { src:'resources/si/anya_si_happy.webp', top:0, bot:1531, fx:0.505 },
