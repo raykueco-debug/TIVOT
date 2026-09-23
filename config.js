@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1699';
+export const VERSION = 'ver 2026.09.22-1700';
 
 export const GAME_CONFIG = {
 
@@ -391,6 +391,11 @@ export const GAME_CONFIG = {
        yellowMax   不論圈縮到多小，觸碰永遠是黃圈最大範圍（散射）
      實作只有 defense.js 的 hitDia() 一處（鐵律 8）。 */
   weaponCatHitZone: { '重機槍':'orangeOnRed', '霰彈槍':'yellowMax', '萊福槍':'visual' },
+  /* 副武器類別 → **散射範圍**（ver -1700，Ray：「霰彈類武器範圍內的攻擊圈可以同時反擊」）：
+     點掉一顆圈時，中心距在「黃圈最大直徑 × 這個倍數」之內的其他圈**一起判定**
+     （各自照自己縮到哪一帶分色、各自開火）。沒寫＝只打點到的那一顆。
+     實作只有 defense.js 的 resolveThreat 一處（鐵律 8）。 */
+  weaponCatSpread: { '霰彈槍':1.5 },
 
   /* ------------------------------------------------------------------ *
    *  二、搭檔（修女 Partner）— 改變戰鬥規則的角色
@@ -686,6 +691,11 @@ export const GAME_CONFIG = {
         /* ⚠⚠ **ver -994：基礎回到 5 秒**（Ray 定稿）—— -974 是 10 秒。
            現在的階梯是 **5 →（赤足星）10 →（蹄鐵星）15**，兩顆星各 +5。 */
         buffSeconds:5,
+        /* ⚠⚠ **發動期間普攻 +25% 基本攻擊**（ver -1700，Ray：「lucid dream 加入效果普攻
+           +25% 基本攻擊，這 25% 不疊 combo」）—— 只加在 `DMG_BASE` 那一項上，
+           連擊那一段（`combo × DMG_PER_COMBO`）不跟著放大。
+           判定與加總只有 `combat.hitDamage` 一處（問 `partner.lucidBaseAtk`，鐵律 7）。 */
+        baseAtk:0.25,
         cutin:'ci_anya_lucid',
         /* ══ 連續三次完美反擊 → reload 惡夢化（ver -887，Ray）══
            那一發的 CI 與浮字換成「夢魘再臨 / Nightmare Returns」（只換字，圖沿用）。
@@ -2503,8 +2513,12 @@ export const GAME_CONFIG = {
          改敵人卡會連追擊時遇到的同一張卡一起改名。
        ⚠ 「夥伴限安雅」＝ `partner:'anya'`（強配），**不寫 `noPartner`** ——
          她的主動技在這一場是可以用的（稿上沒有禁，而§6.5.2 那條是「禁了要明寫」）。 */
+    /* ⚠⚠⚠ **`noSaint` 拿掉了**（ver -1700，Ray：「墓主終戰不知為何安雅無法 NI」）——
+       這一場強配安雅，而右滑的唯一入口 `saint.activateSaint` **第一行**就擋 `noSaint`，
+       擋在「搭檔是安雅 → 惡夢化」那個分流之前 ⇒ 寫了 `noSaint` 就等於**連 NI 一起禁**。
+       ⚠ 諾薇兒已熔斷出局、夥伴強配安雅，這一場本來就不可能聖徒化，這一格是多寫的。 */
     tomb_low_final: { enemy:'gk_crypt', session:'tomb_wild',
-      partner:'anya', enemyName:'伊甸古墓', noSaint:true },
+      partner:'anya', enemyName:'伊甸古墓' },
     /* ══⚠⚠ 貝利薩爾・祭壇的那一場（ver -1353，Ray 的稿：「進入戰鬥，雖是 boss
        但只是**略弱的中 boss 水準**」）══
        ⚠ 敵人是 `bl_dragon_chase`（古城裡的龍，拘束態立繪）—— 它的數值是 Ray 指定

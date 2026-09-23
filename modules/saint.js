@@ -625,6 +625,19 @@ function niMeltdown(){
   if(NI_MELT_CUTIN) playCutin(done, NI_MELT_NAME, NI_MELT_CUTIN);
   else done();
 }
+/* ══⚠⚠ **NI 期間敵 HP 歸零 ＝ 一定出 EXECUTE**（ver -1700，Ray：「ni 期間將敵 hp 歸零
+   不論有沒有把 ovk 清完都出 execute」）══
+   殺敵之後會進 overkill，而 overkill 的**閒置逾時**（combat 的 `autoClearOverkill`）
+   原本直接 `finishEnemyOrAdvance` —— 惡夢化沒被收、處決也沒記，於是「沒把殘格點完」
+   的那一半玩家看不到 EXECUTE。這一支是給那條路叫的：走 `triggerNiBurst` 的敵死分支
+   （markExecution ＋ EXSECUTIŌ cut-in ＋ 回滿 ＋ reload，鐵律 8：處決只有那一套）。
+   ⚠ 清完殘格（清盤）與 overkill 中被抽乾（`niMeltdown` 的敵死分支）本來就走它。
+   ⚠ 夢境粉碎打死的那一條**不經過這裡**（`niBurstResolve` 自己收，效果同處決）。 */
+export function niExecuteOnKill(){
+  if(!state.niMode || state.enemyHp>0) return false;
+  triggerNiBurst();
+  return true;
+}
 /* 清空殘格 → 回滿 ＋ 最後一擊追加**期間總傷** 20%（同 SI 的 MaxBurst）。
    ⚠ ver -1695 起「期間總傷」＝**盤面點格 ＋ 反擊**（Ray 指定，兩邊一起改）——
      底數只有 `state.addInstallDamage` 一個入口，這裡只讀。 */

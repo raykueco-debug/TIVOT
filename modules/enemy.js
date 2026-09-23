@@ -856,7 +856,7 @@ export function holdRise(){
      「開門瞬間不存在」是這一整套的目的，殘影等於沒押。 */
   const eImg=$('enemyImg');
   if(eImg){ eImg.onload=null; eImg.removeAttribute('src');
-            eImg.classList.remove('enemy-rise','enemy-purge'); }
+            eImg.classList.remove('enemy-rise','enemy-purge','enemy-quake'); }
   clearTimeout(riseHoldT);
   riseHoldT=setTimeout(()=>{ if(riseHeld) releaseRise(); }, 10000);
 }
@@ -871,7 +871,7 @@ export function loadEnemyPortrait(en){
   clearTimeout(landT); landT=0;
   risePending=null;
   eImg.onload = null;
-  eImg.classList.remove('enemy-rise','enemy-purge');
+  eImg.classList.remove('enemy-rise','enemy-purge','enemy-quake');
   /* ⚠⚠⚠ **換怪的第一件事是把上一張拔掉**（ver -1467）：`<img>` 在**新圖解碼完成
      之前不會重繪** —— 只設 `src` 的話，慢網下整段空窗畫面上站著的是**上一隻怪**，
      而且沒有任何錯誤訊息（Ray 在空戰看到地下聖徒的那一半就是這個）。
@@ -1052,7 +1052,23 @@ function spawnPurgeStars(){
    ⚠⚠ **不要改成「等淨化演完再關門」**（-1007 試過，Ray 退回）：怪一散開，
      卡上自帶背景的那幾隻就會露出一張空背景。淨化 600ms、兩扇合上 900ms，
      **同時演**本來就演得完。 */
+/* ══⚠⚠ **`deathFx:'quake'` ＝血歸零了但「那東西沒死」**（ver -1700，Ray：「沒有淨化
+   反應 那東西沒死的震動配 brickcrush」）══ 守墓者那一族（`gk_*`）用：牠只是古墓的
+   算力投影，打散了還會再來 —— 所以**不淨化**（台詞「沒有淨化反應」要成立），
+   改成整隻劇烈一震 ＋ 瓦礫崩落聲，讀起來是「牠被打回牆裡了」。
+   ⚠ 掛在同一支（`purgeEnemy` 就是「一隻怪倒下的死法」的唯一入口，鐵律 8），
+     優先於淨化判定 —— 卡上寫了它就不會同時淨化。
+   ⚠ 聲音走 `story.playSe`（音效表只有那一份，鐵律 7；它自己擋 brickcrush 疊播）。
+   ⚠ 冪等：同 `enemy-purge`，overkill 期間重複叫到不會重播。 */
 export function purgeEnemy(){
+  const en = GAME_CONFIG.enemies[state.currentEnemyKey];
+  if(en && en.deathFx==='quake'){
+    const eImg = $('enemyImg');
+    if(!eImg || eImg.classList.contains('enemy-quake')) return;
+    eImg.classList.add('enemy-quake');
+    try{ story.playSe('se_brickcrush'); }catch(_){}
+    return;
+  }
   if(!isPurify()) return;
   const eImg = $('enemyImg');
   if(eImg) eImg.classList.add('enemy-purge');

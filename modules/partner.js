@@ -664,6 +664,13 @@ export function lucidActive(){
   const pas = p && p.passive;
   return !!(pas && pas.key==='firstCounter');
 }
+/* 明晰之夢期間普攻的**基本攻擊**加成（ver -1700，卡上的 `passive.baseAtk`）——
+   沒發動＝0。只由 `combat.hitDamage` 讀（那是普攻的唯一計算點）。 */
+export function lucidBaseAtk(){
+  if(!lucidActive()) return 0;
+  const p = currentPartner();
+  return +(p && p.passive && p.passive.baseAtk) || 0;
+}
 /* ══ 獵手的直覺（`perfectStreak`，索菈娜的被動，ver -803）══
    連續 `streak`（3）輪完美清盤 → 開一段 `energyBoostUntil`（破防值累積 ×`energyMul`）。
    ⚠ combat.clearBoard 每清一盤呼叫（帶那一盤的 `boardClean`）——完美就累加、破功歸零。

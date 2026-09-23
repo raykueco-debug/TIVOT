@@ -8087,7 +8087,7 @@ export const TOWNS = {
             se:'se_brickcrush', shakeHold:1200, auto:2200 },
           sor(null,'退回來！別再打了！'),
           { speaker:'NARRATION', text:'', cg:null, auto:200 },
-          any('terrify','不要！'),
+          any('crying','不要！'),   // ver -1700 Ray：這一拍的立繪是 crying
           /* ══⚠⚠ **一開打就是惡夢化**（戰鬥卡 `tomb_low_ni` 的 `niStart`）══
              CI（`ci_anya_nightmareinstall`）與 vo 由**它**播，這一拍不要再播一次
              —— 兩邊都播就是同一個演出兩份（鐵律 7）。 */
@@ -8131,8 +8131,11 @@ export const TOWNS = {
       vaultW:     { bg:'tomb_vaultw', name:'伊甸古墓　側墓穴', noTime:true,
         exits:{ left:'gallery3', down:'bonepit' } , noWild:true },
       /* ← 死胡同 H（**ver -1574 起三格深**：骨坑後面接上底層祭壇） */
+      /* ⚠⚠ **安全點**（ver -1700，Ray：「把祭壇前一個房間設成安全點讓她回填」）——
+         祭壇終戰之前最後一格。走進來有帳就閉棺結算、收局（HP 回滿、Install 槽歸還），
+         所以終戰一定是**新的一局**開打。沒打過架就不作動（`restActDue` 的規矩）。 */
       bonepit:    { bg:'tomb_bonepit', name:'伊甸古墓　骨坑', noTime:true,
-        exits:{ up:'vaultW', down:'lowaltar' } , noWild:true },
+        exits:{ up:'vaultW', down:'lowaltar' } , rest:true, noWild:true },
       /* ══⚠⚠⚠ **安全點之三：底層祭壇**（ver -1574，Ray：「底層祭壇在骨坑後面，
          還沒畫，明天補，**先重覆一次骨坑代替**」）══
          ⚠⚠⚠ **`bg` 現在借用骨坑那一張** —— 圖來了就把 `tomb_bonepit` 換成新的基底名，

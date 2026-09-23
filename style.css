@@ -456,6 +456,23 @@
     0%  {transform:scale(1)  scaleY(.35); opacity:0;}
     18% {opacity:.95;}
     100%{transform:scale(46) scaleY(.35); opacity:0;}}
+  /* ══ 「那東西沒死」的震動（ver -1700，`deathFx:'quake'`，說明在 enemy.purgeEnemy）══
+     與淨化相反：**不消失、不拉長**，整隻劇烈一震再壓暗 —— 牠被打散回牆裡，不是被淨化。
+     ⚠ 振幅由大到小（第一下最重，配 brickcrush 的起音），5% 一格讀得出是顫抖。
+     ⚠ `both` 讓它停在最後一格（壓暗），門合上之前不會跳回原亮度。 */
+  #enemyImg.enemy-quake{animation:enemyQuake .9s ease-out both;}
+  @keyframes enemyQuake{
+    0%  {transform:translate(0,0);        filter:none;}
+    5%  {transform:translate(-14px,6px);  filter:brightness(1.5);}
+    10% {transform:translate(12px,-5px);}
+    15% {transform:translate(-11px,-6px);}
+    20% {transform:translate(10px,5px);}
+    30% {transform:translate(-8px,3px);}
+    40% {transform:translate(6px,-4px);}
+    50% {transform:translate(-5px,2px);   filter:brightness(.8);}
+    65% {transform:translate(3px,-2px);}
+    80% {transform:translate(-2px,1px);}
+    100%{transform:translate(0,0);        filter:brightness(.55) saturate(.7);}}
   #enemyImg.enemy-purge{animation:enemyPurge .6s ease-in both;
     transform-origin:50% 100%;}
   /* ⚠ 抖動用 5% 一格：格子太疏（10%）在 60fps 下會被內插成「左右搖擺」，

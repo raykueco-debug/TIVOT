@@ -1066,7 +1066,8 @@ function hitDamage(){
   const c=Math.min(state.combo,DMG_COMBO_CAP);
   /* ⚠ 強化是**乘在整個普攻傷害上**（ver -656，Ray：「主槍普攻攻擊力強化5%」）——
      連擊加成也一起放大，那才是「攻擊力 +5%」。 */
-  return (DMG_BASE + c*DMG_PER_COMBO) * mainGunDmgMul();
+  /* 明晰之夢：基本攻擊 +25%（ver -1700）—— **只乘在 DMG_BASE 上，不疊 combo**。 */
+  return (DMG_BASE*(1+partner.lucidBaseAtk()) + c*DMG_PER_COMBO) * mainGunDmgMul();
 }
 function floatDmg(txt,left,top,crit,extraClass){
   const d=document.createElement('div');
@@ -2284,6 +2285,14 @@ function autoClearOverkill(){
      ⚠ 它是**這一場**的量（`startGame` 歸零），由 `modules/town.js` 的追逐讀 ——
        那邊只讀不算（鐵律 7）。 */
   state.overkillClean = state.cells.every(c=>c.classList.contains('done'));
+  /* ⚠⚠ 惡夢化中殺的：不管殘格點完沒有，一律交給 NI 的處決收尾（ver -1700，見
+     `saint.niExecuteOnKill`）—— 它會碎格、演 EXSECUTIŌ、再 `onEnemyDefeated`。 */
+  if(state.niMode){
+    state.cells.forEach(c=>{ if(!c.classList.contains('done')){ c.classList.add('done'); c.classList.remove('next'); enemy.shatterCell(c); } });
+    clearAtkBuff();
+    if(state.dualWield) weapon.endDual();
+    if(saint.niExecuteOnKill()) return;
+  }
   // 全數字磚破碎：殘留格逐一 done+碎裂，40ms 錯開成連環爆
   let k=0;
   state.cells.forEach(c=>{
@@ -3256,7 +3265,7 @@ export function killBattleFrame(){
   const g=$('grid'); if(g){ g.innerHTML=''; g.className=''; }
   state.cells=[];
   const ei=$('enemyImg');
-  if(ei){ ei.classList.remove('enemy-rise','enemy-purge','enemy-enter','enemy-leave','hit','shake');
+  if(ei){ ei.classList.remove('enemy-rise','enemy-purge','enemy-quake','enemy-enter','enemy-leave','hit','shake');
           ei.removeAttribute('src'); ei.style.objectPosition=''; ei.style.objectFit=''; }
   const top=$('top'); if(top) top.style.backgroundImage='';
   for(const id of ['hitFxLayer','fxTop','redDots','slashFx']){ const el=$(id); if(el) el.innerHTML=''; }

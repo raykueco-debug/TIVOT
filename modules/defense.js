@@ -381,11 +381,32 @@ function staggerOnCounter(){
   if(api.resetIntervalDeadline) api.resetIntervalDeadline();
 }
 // 點掉單一攻擊點 → 依剩餘時間判定 Counter / Perfect / Defense
-export function resolveThreat(th){
+export function resolveThreat(th, chained){
   if(!th || state.threats.indexOf(th)<0) return;
   const left=Math.max(0,state.CHARGE_SECONDS-(Date.now()-th.t0)/1000);
   const ratio=left/state.CHARGE_SECONDS;
   const w=weaponOf(state.equippedWeapon, storyMode());   // 本篇／試玩版兩套數值（ver -378）
+  /* ══⚠⚠ **散射：範圍內的圈一起反擊**（ver -1700，`config.weaponCatSpread`）══
+     先在這顆還掛著的時候量出鄰居（中心距 ≤ 黃圈最大直徑 × 倍數），這一顆判完
+     再逐顆走**同一支**（鐵律 8）—— 每一顆照自己縮到哪一帶分色、各自開火、各自扣傷。
+     ⚠ `chained` 擋連鎖：只從**玩家點的那一顆**往外找一圈，不會一路傳下去。 */
+  let spreadHits = null;
+  if(!chained && th.el && w){
+    const k = (GAME_CONFIG.weaponCatSpread||{})[w.cat];
+    if(k>0){
+      const R = visDia(1)*k, a = th.el.getBoundingClientRect();
+      const ax=a.left+a.width/2, ay=a.top+a.height/2;
+      spreadHits = state.threats.filter(o=>{
+        if(o===th || !o.el) return false;
+        const b=o.el.getBoundingClientRect(), dx=b.left+b.width/2-ax, dy=b.top+b.height/2-ay;
+        return dx*dx+dy*dy <= R*R;
+      });
+    }
+  }
+  resolveOne(th, ratio, w);
+  if(spreadHits) spreadHits.forEach(o=>resolveThreat(o, true));
+}
+function resolveOne(th, ratio, w){
   /* 反擊點（ver -812）：趁威脅還在，記下它的視窗座標中心 → weapon 從這裡噴彈殼。
      ⚠⚠ ver -1055 多記一個**半徑**（Ray：「機槍的命中點要在一定範圍內亂跳，範圍就在
        玩家點的圈內，圈越大跳越散，散彈也是」）—— 槍火的落點散佈由它決定。

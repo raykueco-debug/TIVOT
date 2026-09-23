@@ -1355,13 +1355,14 @@ export const ENEMIES = {
          ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
            改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
       riseFx:1,
+      deathFx:'quake',   // 沒死：不淨化，劇烈一震＋brickcrush（ver -1700，見 enemy.purgeEnemy）
       tier:'B',
       atype:'S',
       stageScale:1,
       stack:1,
       image:'enemy_gk_seal',
       bg:'tomb_rotunda',
-      fit:{ mode:'contain', pos:'center bottom' },
+      fit:{ mode:'contain', pos:'center bottom', scale:1.4, shiftY:0.14 },   // 放大、超出畫面也無妨：要有壓迫感（ver -1700）
       hp:300,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
@@ -1398,6 +1399,7 @@ export const ENEMIES = {
          ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
            改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
       riseFx:1,
+      deathFx:'quake',   // 沒死：不淨化，劇烈一震＋brickcrush（ver -1700，見 enemy.purgeEnemy）
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -1405,7 +1407,7 @@ export const ENEMIES = {
       brBonus:0.5,
       image:'enemy_gk_offset',
       bg:'tomb_rotunda',
-      fit:{ mode:'contain', pos:'center bottom' },
+      fit:{ mode:'contain', pos:'center bottom', scale:1.4, shiftY:0.14 },   // 放大、超出畫面也無妨：要有壓迫感（ver -1700）
       hp:490,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
@@ -1439,13 +1441,14 @@ export const ENEMIES = {
          ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
            改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
       riseFx:1,
+      deathFx:'quake',   // 沒死：不淨化，劇烈一震＋brickcrush（ver -1700，見 enemy.purgeEnemy）
       tier:'B',
       atype:'P',
       stageScale:1,
       stack:1,
       image:'enemy_gk_many',
       bg:'tomb_rotunda',
-      fit:{ mode:'contain', pos:'center bottom' },
+      fit:{ mode:'contain', pos:'center bottom', scale:1.4, shiftY:0.14 },   // 放大、超出畫面也無妨：要有壓迫感（ver -1700）
       hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
@@ -1482,13 +1485,14 @@ export const ENEMIES = {
          ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
            改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
       riseFx:1,
+      deathFx:'quake',   // 沒死：不淨化，劇烈一震＋brickcrush（ver -1700，見 enemy.purgeEnemy）
       tier:'A',
       atype:'P',
       stageScale:1,
       stack:1,
       image:'enemy_gk_crypt',
       bg:'tomb_crypt',
-      fit:{ mode:'contain', pos:'center bottom' },
+      fit:{ mode:'contain', pos:'center bottom', scale:1.4, shiftY:0.14 },   // 放大、超出畫面也無妨：要有壓迫感（ver -1700）
       hp:560,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       attack:20,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
       atkInterval:null,
