@@ -1444,8 +1444,37 @@ export const ART = {
          —— 那一段蕾娜（左）正在**看著他**講話，人要在畫面上才讀得通。
      ⚠ `mirror` 不寫（＝不翻）：他的姿勢接近正面，翻了只是換一隻手拿刀。
      ⚠ 取景值 `tools/measure_si.py` 量的，只有底圖一張（沒有差分）。 */
+  /* ══ 米夏的差分（ver -1706 接線，Ray：「接上米夏十張差分」）══ 工單 `resources/si/_misha_program_worklist.md`。
+     · 11 個姿勢鍵：`top`/`bot` 照工單（swordfix 那五張用修正後那一組）、`fx` 照工單 ——
+       `guard` 0.344／`side` 0.370／`back` 0.458 三個離群值**看過畫面複核**，頭真的在那裡。
+     · 同名覆蓋過的六張（draw／wound／close／frown／talk／order）掛 `?v=2`（§5 快取）。
+     · `…open`／`frontgrit`／`frontshock` 是只換臉的表情差分 ⇒ 取景照抄底圖。 */
   misha:     { cm:176, eye:32, fx:0.393, top:0, bot:1535,
-           side:'L', alt:null, base:'resources/si/misha_si_front.webp', expr:{} },
+           side:'L', alt:null, base:'resources/si/misha_si_front.webp', expr:{
+    stare:      { src:'resources/si/misha_si_stare.webp', top:13, bot:1526, fx:0.449 },
+    frown:      { src:'resources/si/misha_si_frown.webp?v=2', top:11, bot:1526, fx:0.469 },
+    talk:       { src:'resources/si/misha_si_talk.webp?v=2', top:6, bot:1525, fx:0.471 },
+    order:      { src:'resources/si/misha_si_order.webp?v=2', top:8, bot:1527, fx:0.432 },
+    guard:      { src:'resources/si/misha_si_guard.webp', top:49, bot:1501, fx:0.344 },
+    draw:       { src:'resources/si/misha_si_draw.webp?v=2', top:22, bot:1516, fx:0.46 },
+    salute:     { src:'resources/si/misha_si_salute.webp', top:9, bot:1520, fx:0.447 },
+    side:       { src:'resources/si/misha_si_side.webp', top:16, bot:1512, fx:0.37 },
+    wound:      { src:'resources/si/misha_si_wound.webp?v=2', top:34, bot:1499, fx:0.403 },
+    close:      { src:'resources/si/misha_si_close.webp?v=2', top:14, bot:1509, fx:0.469 },
+    back:       { src:'resources/si/misha_si_back.webp', top:12, bot:1496, fx:0.458 },
+    /* 表情差分（只換臉、alpha 與底圖逐位元相同）⇒ 取景照抄底圖那一列（§6.5 的 -649）。
+       本尊那三張只寫 `src` ＝沿用角色層。 */
+    frontopen:  'resources/si/misha_si_frontopen.webp',
+    frontgrit:  'resources/si/misha_si_frontgrit.webp',
+    frontshock: 'resources/si/misha_si_frontshock.webp',
+    closeopen:  { src:'resources/si/misha_si_closeopen.webp', top:14, bot:1509, fx:0.469 },   // 照 close
+    drawopen:   { src:'resources/si/misha_si_drawopen.webp', top:22, bot:1516, fx:0.46 },   // 照 draw
+    frownopen:  { src:'resources/si/misha_si_frownopen.webp', top:11, bot:1526, fx:0.469 },   // 照 frown
+    guardopen:  { src:'resources/si/misha_si_guardopen.webp', top:49, bot:1501, fx:0.344 },   // 照 guard
+    saluteopen: { src:'resources/si/misha_si_saluteopen.webp', top:9, bot:1520, fx:0.447 },   // 照 salute
+    stareopen:  { src:'resources/si/misha_si_stareopen.webp', top:13, bot:1526, fx:0.449 },   // 照 stare
+    sideopen:   { src:'resources/si/misha_si_sideopen.webp', top:16, bot:1512, fx:0.37 },   // 照 side
+  } },
   arrhenius: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
            side:'R', alt:null, base:'resources/si/arrhenius_si_front.webp', expr:{
     /* ══ 表情差分 6 張（ver -1503 美術交件，-1509 接線）══

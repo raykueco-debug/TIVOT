@@ -126,6 +126,8 @@ def frames(ART):
             f['_zoomk'] = 1.0
             out.append((key, '(base)', f))
         for en, e in (a.get('expr') or {}).items():
+            # expr 可以只寫一個字串（＝只有圖、沿用角色的取景），同 speakers.exprSrc（ver -1706）
+            if isinstance(e, str): e = {'src': e}
             f = dict(base, **e)
             f['_facefx'] = (e['faceFx'] if e.get('faceFx') is not None else
                             e['fx'] if e.get('fx') is not None else
