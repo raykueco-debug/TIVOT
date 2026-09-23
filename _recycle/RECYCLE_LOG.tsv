@@ -695,3 +695,21 @@ when	from	to	reason
 20260923-011403	resources/enemy/mon_gravekeeper_many.webp	_recycle/resources/enemy/mon_gravekeeper_many.webp	ver -1670 後 守墓者 many 左翼被裁（bbox 邊上 11.2% 直線切口），Ray 交辦重製
 20260923-013145	resources/background/tomb/tomb_lowaltar_off.webp	_recycle/resources/background/tomb/tomb_lowaltar_off.webp.20260923-013145	ver -1670 後 底層祭壇差分對再換：_off 改成實心牆、_on 才裂開（Ray 定案）
 20260923-013145	resources/background/tomb/tomb_lowaltar.webp	_recycle/resources/background/tomb/tomb_lowaltar.webp.20260923-013145	ver -1670 後 底層祭壇差分對再換：_off 改成實心牆、_on 才裂開（Ray 定案）
+20260923-210744	resources/si/sorana_si_amaze.webp	_recycle/resources/si/sorana_si_amaze.webp.20260923-210744	索拉娜 realpha：Ray 的 SD 臉＋GPT 原 alpha 取代第四輪 1024x1600 ToonOut 版
+20260923-210744	resources/si/sorana_si_angry.webp	_recycle/resources/si/sorana_si_angry.webp.20260923-210744	索拉娜 realpha：Ray 的 SD 臉＋GPT 原 alpha 取代第四輪 1024x1600 ToonOut 版
+20260923-210744	resources/si/sorana_si_armcross.webp	_recycle/resources/si/sorana_si_armcross.webp.20260923-210744	索拉娜 realpha：Ray 的 SD 臉＋GPT 原 alpha 取代第四輪 1024x1600 ToonOut 版
+20260923-210744	resources/si/sorana_si_cry.webp	_recycle/resources/si/sorana_si_cry.webp.20260923-210744	索拉娜 realpha：Ray 的 SD 臉＋GPT 原 alpha 取代第四輪 1024x1600 ToonOut 版
+20260923-210744	resources/si/sorana_si_crybig.webp	_recycle/resources/si/sorana_si_crybig.webp.20260923-210744	索拉娜 realpha：Ray 的 SD 臉＋GPT 原 alpha 取代第四輪 1024x1600 ToonOut 版
+20260923-210744	resources/si/sorana_si_determine.webp	_recycle/resources/si/sorana_si_determine.webp.20260923-210744	索拉娜 realpha：Ray 的 SD 臉＋GPT 原 alpha 取代第四輪 1024x1600 ToonOut 版
+20260923-210744	resources/si/sorana_si_eat.webp	_recycle/resources/si/sorana_si_eat.webp.20260923-210744	索拉娜 realpha：Ray 的 SD 臉＋GPT 原 alpha 取代第四輪 1024x1600 ToonOut 版
+20260923-210744	resources/si/sorana_si_embarrass.webp	_recycle/resources/si/sorana_si_embarrass.webp.20260923-210744	索拉娜 realpha：Ray 的 SD 臉＋GPT 原 alpha 取代第四輪 1024x1600 ToonOut 版
+20260923-210744	resources/si/sorana_si_front.webp	_recycle/resources/si/sorana_si_front.webp.20260923-210744	索拉娜 realpha：Ray 的 SD 臉＋GPT 原 alpha 取代第四輪 1024x1600 ToonOut 版
+20260923-210847	resources/si/realpha/sorana_si_amaze.png	_recycle/resources/si/realpha/sorana_si_amaze.png	realpha 收件完：GPT alpha 抽出檔（可由 git 73ca64df^ 重取）
+20260923-210847	resources/si/realpha/sorana_si_angry.png	_recycle/resources/si/realpha/sorana_si_angry.png	realpha 收件完：GPT alpha 抽出檔（可由 git 73ca64df^ 重取）
+20260923-210847	resources/si/realpha/sorana_si_armcross.png	_recycle/resources/si/realpha/sorana_si_armcross.png	realpha 收件完：GPT alpha 抽出檔（可由 git 73ca64df^ 重取）
+20260923-210847	resources/si/realpha/sorana_si_cry.png	_recycle/resources/si/realpha/sorana_si_cry.png	realpha 收件完：GPT alpha 抽出檔（可由 git 73ca64df^ 重取）
+20260923-210847	resources/si/realpha/sorana_si_crybig.png	_recycle/resources/si/realpha/sorana_si_crybig.png	realpha 收件完：GPT alpha 抽出檔（可由 git 73ca64df^ 重取）
+20260923-210847	resources/si/realpha/sorana_si_determine.png	_recycle/resources/si/realpha/sorana_si_determine.png	realpha 收件完：GPT alpha 抽出檔（可由 git 73ca64df^ 重取）
+20260923-210847	resources/si/realpha/sorana_si_eat.png	_recycle/resources/si/realpha/sorana_si_eat.png	realpha 收件完：GPT alpha 抽出檔（可由 git 73ca64df^ 重取）
+20260923-210847	resources/si/realpha/sorana_si_embarrass.png	_recycle/resources/si/realpha/sorana_si_embarrass.png	realpha 收件完：GPT alpha 抽出檔（可由 git 73ca64df^ 重取）
+20260923-210847	resources/si/realpha/sorana_si_front.png	_recycle/resources/si/realpha/sorana_si_front.png	realpha 收件完：GPT alpha 抽出檔（可由 git 73ca64df^ 重取）

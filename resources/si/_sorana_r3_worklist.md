@@ -549,3 +549,40 @@ Ray 一併放進來的 `4d82534b-….png`（1024×1536，**他自己去好背的
 同 §九 背諾薇兒那一族的坑：**多人構圖時那支工具的 `fx` 一律要手動覆寫。**
 
 ⚠ `cm` 不要填（同前）。母版與他那張 alpha 原稿都在 `resources/_originals/si/`。
+
+---
+
+# 十三、⭐ 索拉娜 realpha 九張（2026-09-23 晚）—— Ray 的 SD 臉 ＋ GPT 原 alpha
+
+> Ray：「索拉娜昨天我手動 sd 的那幾張因為尺寸有變 alpha 通道跑掉了要重做」
+> → `resources/si/realpha/` 放 `73ca64df^` 的 GPT alpha 版 → Ray 重跑 SD 臉丟回來 →「全辦了，尺寸不同的先跳過」
+
+**作法**：逐像素比「新 RGB」vs「GPT alpha 疊白底」—— 九張改動**全部在頭部**
+（半透明區只有 `cry` 25 px／`front` 2 px，髮緣色差 ~45）⇒ 照 `alpha/README.md`
+**alpha 一個位元都不動、只換 RGB**（`w=clip((α−200)/55)`）。q85。
+驗收：`_sorana_check.py` 九張全 ✔（近白 ≤0.07%）；頭部 2× 深色底目視無白邊無接縫。
+
+⚠⚠ **畫布回到 1024×1536**（取代第四輪那 13 張裡的 9 張 1024×1600）⇒ `top`／`bot` 一定要改。
+`fx` **照線上不動**（-1578 的規矩；實測新值與線上差 ≤0.03，只有 `determine` 0.575 vs 0.547 ——
+那是自動量測被手臂拉偏，不是頭移位）。
+
+## 程式端要接：`script/speakers.js`（＋ `flight/index.html` 有 `amaze` 那一份）
+
+| 鍵 | 畫布 | top | bot | 版號 |
+|---|---|---|---|---|
+| `amaze` | 1536 | 3 | 1527 | ?v=2 → **?v=3**（flight 那一份一起） |
+| `angry` | 1536 | 12 | 1530 | ?v=3 → **?v=4** |
+| `armcross` | 1536 | 3 | 1529 | ?v=3 → **?v=4** |
+| `cry` | 1536 | 4 | 1515 | ?v=3 → **?v=4** |
+| `crybig` | 1536 | 7 | 1524 | ?v=2 → **?v=3** |
+| `determine` | 1536 | 10 | 1523 | ?v=3 → **?v=4** |
+| `eat` | 1536 | 1 | 1529 | ?v=3 → **?v=4** |
+| `embarrass` | 1536 | 5 | 1529 | ?v=3 → **?v=4** |
+| `front` | 1536 | 5 | 1529 | ?v=3 → **?v=4** |
+
+## ⏸ 跳過的三張（Ray 的 SD 稿與 GPT alpha 尺寸不同）
+`cringe`（SD 1024×1528 vs alpha 1024×1535）／`drink`（同）／`excite2`（1024×1528 vs 1026×1532）
+—— 仍留在 `realpha/` 等 Ray；線上照舊是第四輪的 1024×1600 版。
+
+原檔：SD 稿 → `_originals/si/sorana_si_<鍵>_sdface_src.png`；合成母版 → `_originals/_realpha_work/`；
+舊 webp 與 GPT alpha 抽出檔 → `_recycle/`。
