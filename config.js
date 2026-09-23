@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1694';
+export const VERSION = 'ver 2026.09.22-1695';
 
 export const GAME_CONFIG = {
 
@@ -368,7 +368,18 @@ export const GAME_CONFIG = {
     },
   },
 
-  defaultWeapon: 'mg_squall',   // 開局預設武器（填上面的鑰匙名）
+  /* ⚠⚠⚠ **大小寫要與上面 `weapons` 的鑰匙一字不差**（ver -1695 修）：
+     `d556b53d`（-1554「檔名全面小寫化」）把這一格也小寫成 `mg_squall` ——
+     **但它不是檔名，是 `config.weapons` 的鑰匙**，而那張表的鑰匙還是 `MG_Squall`。
+     ⇒ `weaponOf()` 查不到 → `weapon.weaponCounter()` **第一行就 return** ⇒
+       **反擊整個不開火**：沒有傷害、沒有音、沒有彈殼、沒有槍火、連帳都不記
+       （`counterFired` 停在 0）—— **而且畫面上沒有任何錯誤訊息**，
+       看起來只是「這一發沒打中」。實測：挑戰場預設裝備打一次反擊，敵血 0 變化。
+     ⚠ 只有「玩家自己挑過武器」的人不受影響（`weapon.js` 選槍那兩處寫的是真鑰匙）；
+       沒挑過的、教學（`tutLoadout` 直接讀這一格）一律中招。
+     ⚠ 自檢：這一格、`defaultPartner`、`defaultInspector` 都是**鑰匙不是檔名**，
+       改大小寫之前先 `grep` 它指向的那張表。（另外兩格對得上，只有這一格壞掉。） */
+  defaultWeapon: 'MG_Squall',   // 開局預設武器（填上面的鑰匙名）
   /* 副武器類別 → 切換鈕的徽章（ver -549，Ray 交圖：連射=Switch_MG、
      散射=Switch_Split、高爆=Switch_Hyper）。值＝ASSETS 鑰匙，weapon.js 的
      renderSwitch 直接 asset() 取圖（-481 的手繪 SVG 圖示已退場）。

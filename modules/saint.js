@@ -24,7 +24,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, asset, sfxGain, isVoiceKey } from '../config.js';
-import { state, enterSaint, exitSaint, enterNightmare, exitNightmare, enterCoop, exitCoop, markExecution, markMaxBurst, storyMode } from '../state.js';
+import { state, enterSaint, exitSaint, enterNightmare, exitNightmare, enterCoop, exitCoop, markExecution, markMaxBurst, addInstallDamage, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, fmt } from '../i18n.js';   // 多語言（cut-in 副標/浮動字）
 import * as prog from '../script/progress.js';   // 九階強化的加成（ver -707；葉節點，無循環）
@@ -625,7 +625,9 @@ function niMeltdown(){
   if(NI_MELT_CUTIN) playCutin(done, NI_MELT_NAME, NI_MELT_CUTIN);
   else done();
 }
-/* 清空殘格 → 回滿 ＋ 最後一擊追加期間總傷 20%（同 SI 的 MaxBurst）。 */
+/* 清空殘格 → 回滿 ＋ 最後一擊追加**期間總傷** 20%（同 SI 的 MaxBurst）。
+   ⚠ ver -1695 起「期間總傷」＝**盤面點格 ＋ 反擊**（Ray 指定，兩邊一起改）——
+     底數只有 `state.addInstallDamage` 一個入口，這裡只讀。 */
 function triggerNiBurst(){
   if(!state.niMode) return;
   exitNightmare();
@@ -784,7 +786,7 @@ export function nightmareTap(num, cell){
        安雅的定位是反擊，普攻加成是白給的。 */
     const d=Math.round(api.hitDamage() + state.combo*saintComboStep());
     api.enemyDamage(d, true, false, 'saint');
-    state.niDamage += d;
+    addInstallDamage(d);             // 期間總傷（唯一的記帳點，見 state.js；ver -1695）
     state.niCells++;                 // 夢境粉碎的份量由「清了幾格」換算（ver -688）
   };
   /* ══⚠⚠⚠ **ver -974（Ray 改定）：16 格點完＝MB／處決，夢粉歸夢粉** ══
@@ -861,7 +863,7 @@ export function saintTap(num, cell){
     state.combo++;
     const okDmg=Math.round(api.hitDamage() + state.combo*saintComboStep());
     api.enemyDamage(okDmg, true, false, 'saint');
-    state.saintDamageDealt += okDmg;
+    addInstallDamage(okDmg);                     // 期間總傷（唯一的記帳點，見 state.js）
     saintDrainTick();                            // 「負行星」：第 2 hit 起每發延長倒數（ver -971）
     if(state.cells.every(c=>c.classList.contains('done'))){ triggerMaxBurst(); }
     else startSaintReactTimer();
@@ -874,7 +876,7 @@ export function saintTap(num, cell){
     const dmg=api.hitDamage() + state.combo*saintComboStep();   // 疊傷無上限（斜率見 saintComboStep）
     const d=Math.round(dmg);
     api.enemyDamage(d, true, false, 'saint');
-    state.saintDamageDealt += d;                 // 累計期間傷害（供最後一擊追加）
+    addInstallDamage(d);                         // 期間總傷（供最後一擊追加，唯一的記帳點）
     saintDrainTick();                            // 「負行星」：第 2 hit 起每發延長倒數（ver -971）
     state.expect++;
     if(state.expect>state.N){ triggerMaxBurst(); }              // 推滿前點完全盤 → Maximum Burst
@@ -919,7 +921,9 @@ function restoreAssaultRate(){
   if(state.saintPrevAssault){ api.setAssaultRate(state.saintPrevAssault.min, state.saintPrevAssault.max); state.saintPrevAssault=null; }
 }
 
-// Maximum Burst（EXSECUTIŌ）：推滿前把 16 格點完 → 追加期間總傷 20%；未擊殺則**回滿**（ver -1506）。
+// Maximum Burst（EXSECUTIŌ）：推滿前把 16 格點完 → 追加**期間總傷** 20%；未擊殺則**回滿**（ver -1506）。
+// ⚠ ver -1695 起「期間總傷」＝**盤面點格 ＋ 反擊**（Ray 指定）——底數的唯一入口是
+//   `state.addInstallDamage`，兩支收尾都只讀，不自己加。
 function triggerMaxBurst(){
   if(!state.saintMode) return;
   exitSaint();

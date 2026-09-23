@@ -410,11 +410,29 @@ export function markMaxBurst(){
   state.sawMaxBurst = true;
 }
 
+/* ══ 聖徒化／惡夢化期間的「期間總傷」—— MB 追打 20% 的底數（ver -1695）══
+   ⚠⚠⚠ **一個量一個計算點（鐵律 7）**：盤面點格與反擊都走這一支，
+     由**它**決定該記進哪一條槽 —— 呼叫端不必知道玩家現在在 SI 還是 NI，
+     日後多一種「期間也會打出傷害」的來源，只要叫這一支就自動兩邊都對。
+   ⚠ 兩條槽是分開的（`saintDamageDealt` / `niDamage`），因為兩種模式不會同時開著；
+     合成一條的話收尾那兩支要各自判「這一輪是誰的帳」，那才是兩份真相。
+   ⚠ 0 不記：反擊 MISS 也會呼叫 `addCounter(0)`（那是為了記「開火了」）。 */
+export function addInstallDamage(dmg){
+  if(!(dmg>0)) return;
+  if(state.saintMode)   state.saintDamageDealt += dmg;
+  else if(state.niMode) state.niDamage += dmg;
+}
 /* weapon.js 專用：反擊成功時累加反擊計數/傷害（3.6 的跨擁有者計數例外）。
- * inspector 結算時只讀這兩個值。一次反擊事件呼叫一次（+1 次、+dmg 傷害）。 */
+ * inspector 結算時只讀這兩個值。一次反擊事件呼叫一次（+1 次、+dmg 傷害）。
+ * ⚠⚠ ver -1695（Ray：「把反擊也算進去，兩邊一起改」）：反擊打出去的傷害
+ *   **也計入聖徒化／惡夢化的期間總傷**（MB 追打的底數）。收在這裡而不是三個
+ *   vfx 分支各寫一次 —— 這一支本來就是「一次反擊事件記一次帳」的唯一入口
+ *   （鐵律 8），三種武器、共鬥飛刀、艦載覆寫全部自動吃到。
+ * ⚠ 共鬥（`coopMode`）不在那兩條槽裡，所以飛刀照樣只記反擊帳，不會誤加。 */
 export function addCounter(dmg){
   state.counterFired += 1;
   state.counterDamage += dmg;
+  addInstallDamage(dmg);
 }
 /* ══ 完美反擊（紅圈）專用的計數與折秒（ver -721（-893 前用詞））══════════════════════════
    ⚠ 與上面那一支是**兩件事**：`counterFired`／`counterDamage` 算的是「反擊開火了」
