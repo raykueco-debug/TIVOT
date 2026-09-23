@@ -7063,6 +7063,11 @@ export const TOWNS = {
       startFights: 2,            // 打過 2 場 → 下一格出現（ver -1616，Ray：「改成兩戰好了」）
       startStep: 0,              // ⚠ 停用（0＝不看步數）；-1576 的「第 4 格」已撤
       gap: 6, speed: 2, onEncounter: 1, stun: 4,
+      /* ⚠⚠ **倒地差分**（ver -1701，Ray：「墓主被擊敗的畫背景殘留 seal_down」「停留期間
+         保持 down 不動作，重新追擊才會觸發戰鬥」）—— 擊退後停頓的那幾回合，牠倒在那一格：
+         站在同一格看得到這張圖，**踩上去不開打**；停頓數完、牠真的再走起來才會追上開打。
+         判定在 `modules/town.js` 的 `c.down`（`chaseActDue`／`chaseAdvance`／`refreshChaseDown`）。 */
+      downArt: 'enemy_gk_seal_down',
       /* ══⚠⚠⚠ **被追上時要演哪一段：一張由上往下取第一個成立的表**（ver -1616）══
          台詞住在**柱廳（`hall2`）的 `acts`** 裡（見那一格），三段都標
          `chaseOnly:true` ＝走進柱廳不算，只有被追上帶得動。

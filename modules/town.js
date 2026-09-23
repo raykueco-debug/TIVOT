@@ -1859,6 +1859,7 @@ function chaseDue(c, spec){
 function chaseAdvance(c, spec, goal, n){
   if(!c.node) return;
   if((c.stun|0) > 0){ c.stun=(c.stun|0)-1; return; }   // 停頓：這一回合不動
+  c.down = false;                                       // 停頓結束、重新追擊（ver -1701）
   c.node = chaseWalk(c.node, goal, n);
 }
 /* ══ 遭遇雜怪：牠**再**推進 `onEncounter` 格（玩家停下來打了一場）══ */
@@ -1909,6 +1910,11 @@ function chaseActDue(n){
   const spec=chaseSpec(); if(!spec || !n) return null;
   if(n.noWild) return null;
   const c=chaseGet(); if(!c || !c.node || c.node!==nodeId) return null;
+  /* ══⚠⚠ **倒地期間踩到牠不開打**（ver -1701，Ray：「停留期間保持 down 不動作，
+     重新追擊才會觸發戰鬥」）══ `c.down` 由擊退那一刻插（`chaseAfterAct`）、
+     由**牠真的再動起來**那一刻拔（`chaseAdvance` 的非停頓分支）—— 不看 `stun`：
+     停頓剛數到 0 的那一步牠還沒動，那時踩上去也不該打。 */
+  if(c.down) return null;
   /* ══⚠⚠ **與 `mustWild` 那一格競合 ⇒ 走追兵**（ver -1648，Ray：「第二格如果跟
      墓主競合，走墓主」）══ 優先序本來就對（`runArrival` 是
      `chaseActDue → chaseNextAct → wildRoll`，鐵律 8 的那一串），這裡只補一件：
@@ -1975,7 +1981,7 @@ function chaseAfterAct(act, fought){
          不帶的話，日後走回柱廳隨便打一場雜怪就能把牠叫回柱廳再停四回合 ——
          那是一顆免費的重置鈕，而且看起來與正常行為一模一樣。
        ⚠ 連「還沒上線」也算數：打過那一場就等於追逐真的開始了。 */
-    c.node = nodeId; c.stun = spec.stun|0;
+    c.node = nodeId; c.stun = spec.stun|0; c.down = true;
   }else if(act && (act.__chase || act===chaseScene)){
     /* ⚠⚠ 追兵帶著走的那幾段（`chase.scenes`）**不是** `__chase`（它們是節點上的
        正規 act），但演完就是「被追上並打退了」—— 一樣 `hits+1` ＋ 停 `stun`，
@@ -1984,8 +1990,23 @@ function chaseAfterAct(act, fought){
          那張表有三段，用場次去認只認得出第一段，後兩段演完牠不會停 `stun`
          —— 症狀是「講完話牠又立刻打一場」，而且沒有任何錯誤訊息。 */
     c.hits=(c.hits|0)+1; c.stun = spec.stun|0;    // 擊退：牠停在原地（＝玩家腳下）
+    c.down = true;                                 // 倒地：停頓期間踩到不開打（ver -1701）
   }
   chaseSet(c);
+  refreshChaseDown();
+}
+/* ══ 倒地的牠**留在那一格的畫面上**（ver -1701，Ray：「墓主被擊敗的畫背景殘留
+   mon_gravekeeper_seal_down.webp」）══ 牠倒在哪一格、玩家站在同一格 ⇒ 中景層掛
+   `chase.downArt`；其餘一律收掉。
+   ⚠ **只收自己掛的**（`chaseDownShown`）：中景層也是腳本 `cgBack:` 的那一層，
+     不能每進一格就把劇情擺上去的東西清掉。
+   ⚠ 呼叫點：`enter()` 換好背景之後、擊退那一刻（`chaseAfterAct`）、`close()`。 */
+let chaseDownShown = false;
+function refreshChaseDown(){
+  const spec=chaseSpec(), c=chaseGet();
+  const show = !!(spec && spec.downArt && c && c.down && c.node && c.node===nodeId);
+  if(show){ story.setSceneCgBack(asset(spec.downArt)); chaseDownShown=true; }
+  else if(chaseDownShown){ story.setSceneCgBack(null); chaseDownShown=false; }
 }
 /* 牠現在在哪一格（除錯／日後要畫小地圖紅點時問這一支，鐵律 7）。 */
 export function chaseAt(){ const c=chaseGet(); return (c && c.node) || null; }
@@ -4321,6 +4342,7 @@ export function enter(id){
   story.ensureBgm(townBgm());
   story.setBgFlip(!!n.bgFlip);   // 背景鏡像（ver -877：崩塌走道×2 同圖翻轉）
   bgFor(bgCandsOf(n, id), needReveal ? reveal : null);
+  refreshChaseDown();       // 倒地的追兵留在這一格的畫面上（ver -1701）
   ensureLayer(); bindInput(); refreshArrows(); showNav(false);
   /* ⚠⚠ 進場對白**一律只播一次**（ver -373，Ray：「對話只觸發一次，不重複觸發」）——
      不再看節點的 `once` 欄位：漏寫就會變成每次進去都重播，那是「預設值站錯邊」。
@@ -5217,6 +5239,7 @@ export function close(){
   /* ⚠ 環境音是**持續狀態**：離開這座城就沒有人收它了（ver -1568）。 */
   try{ story.stopAmb(60); }catch(_){}
   townLive=false;            // 回主選單（ver -1394）
+  if(chaseDownShown){ story.setSceneCgBack(null); chaseDownShown=false; }   // 倒地差分（ver -1701）
   restoreTownPartner();      // 搭檔回到進城前那一位（見 restoreTownPartner）
   const st=story.stageEl(); if(st) st.classList.remove('town-on');
   showNav(false);

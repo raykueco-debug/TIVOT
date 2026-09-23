@@ -2466,7 +2466,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1700';
+const KERB_V='?v=1701';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -5183,6 +5183,25 @@ export function showPanel(){ layoutKerberos(); }
 export function isPlaying(){ return active && !!cur; }
 /* `done`＝新圖真的上去了（ver -442，見 `swapImg`）。⚠ 同一張圖時要**立刻**回報：
    那就是「已經擺好了」，等它等不到第二次（城鎮的黑幕會一直蓋著）。 */
+/* ══ 城鎮用：中景層（`#storyCgBack`）直接掛一張圖（ver -1701）══
+   給「有東西**留在**這一格」用 —— 現在只有古墓追兵被擊退後的倒地差分
+   （`town.refreshChaseDown`）。與腳本的 `cgBack:` 是**同一層、同一支 swapImg**（鐵律 8），
+   差別只是呼叫端不是一拍台詞。`src` 空＝收掉。
+   ⚠ `fit` 預設 contain：這一層原本的 cover 是給橫式的鹿主訂的，直式怪立繪會被裁。 */
+export function setSceneCgBack(src, opts){
+  const el=$('storyCgBack'); if(!el) return;
+  src = src || null;
+  if(src===stageCgBack) return;
+  const first = !stageCgBack;
+  stageCgBack = src;
+  swapImg(el, src||'', null, { fadeInFirst:first });
+  el.style.transformOrigin='center bottom';
+  el.style.transform='';
+  el.style.removeProperty('--rise-k');
+  el.classList.remove('enemy-rise');
+  if(src) el.style.objectFit=(opts && opts.fit) || 'contain';
+  else    el.style.removeProperty('object-fit');
+}
 export function setSceneBg(name, done){
   const el=$('storyBg'); if(!el){ done&&done(); return; }
   if(name===stageBg){ done&&done(); return; }

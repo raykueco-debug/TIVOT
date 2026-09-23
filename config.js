@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1700';
+export const VERSION = 'ver 2026.09.22-1701';
 
 export const GAME_CONFIG = {
 
@@ -4259,6 +4259,7 @@ export const ASSETS = {
   enemy_gk_offset: "resources/enemy/mon_gravekeeper_offset.webp?v=2",   // 錯格重影（追擊）
   enemy_gk_many:   "resources/enemy/mon_gravekeeper_many.webp?v=2",     // 數不清（追擊）
   enemy_gk_crypt:  "resources/enemy/mon_gravekeeper_crypt.webp?v=2",    // 墓室胸腔（決戰）
+  enemy_gk_seal_down: "resources/enemy/mon_gravekeeper_seal_down.webp",  // 倒地差分：被擊退、停頓期間殘留在那一格（ver -1701，chase.downArt）
   enemy_facelessgiant: "resources/enemy/saint_gt_ci.webp",   // 連戰第二隻：巨型聖徒（GT=giant）
   enemy_trainee:  "resources/enemy/saint_tr_ci.webp",   // 教學專用敵：訓練用聖徒
   enemy_dart_target: "resources/enemy/dart_timeattack.webp",   // 打靶場：固定立靶（ver -396）
