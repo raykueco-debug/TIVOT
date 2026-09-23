@@ -81,3 +81,37 @@ GPT 修正、alpha 直出；原 PNG `_originals/si/misha_si_<鍵>_swordfix_src.p
 
 ⚠ 米夏的差分**還沒接進 `speakers.js`**（`expr:{}`），所以不必跳版號；
 但若已經在某台瀏覽器載過舊檔，接的時候直接給 `?v=2` 最保險。
+
+---
+
+## ⭐ 2026-09-23 深夜：再 12 張（10 個新鍵 ＋ `order` 重畫 ＋ 背面）
+
+### A. 表情差分 10 鍵 —— **只換臉、alpha 與底圖逐位元相同** ⇒ 取景**照抄底圖那一列**
+
+GPT 每次都會把整張重畫（頭髮、衣褶、alpha 全部微變），所以不採整張：
+**只把 GPT 版的臉（嘴；咬牙／微驚那兩張含眼眉）貼回原圖**，羽化 2.5 px，alpha 沿用原圖。
+「微張嘴」那一族**刻意只取下半臉** —— `frownopen` 的 GPT 版把眼睛畫成金色，眼睛一律留原圖。
+第二代編碼 q92。GPT 原檔 `_originals/si/misha_si_<鍵>_gptface_src.png`。
+
+| 新鍵 | 底圖 | 演什麼 | 取景 |
+|---|---|---|---|
+| `frontopen` | 本尊 | 嘴微張 | 照本尊（角色層）|
+| `frontgrit` | 本尊 | **憤怒咬牙、仍冷靜**（眉壓低、牙咬合） | 照本尊 |
+| `frontshock` | 本尊 | **嘴閉、微震驚**（眼略睜大） | 照本尊 |
+| `closeopen` | `close` | 閉眼、嘴微張 | 照 `close` |
+| `drawopen` | `draw` | 嘴微張 | 照 `draw` |
+| `frownopen` | `frown` | 嘴微張 | 照 `frown` |
+| `guardopen` | `guard` | 嘴微張 | 照 `guard` |
+| `saluteopen` | `salute` | 嘴微張 | 照 `salute` |
+| `stareopen` | `stare` | 嘴微張 | 照 `stare` |
+| `sideopen` | `side` | 嘴微張 | 照 `side` |
+
+（`order`／`talk`／`wound` 本來就開著嘴，不做。）
+
+### B. `order` 重畫 —— 強透視（Ray：「order 的透視不自然」）
+指人的那隻手朝鏡頭伸來、手放大、前臂透視縮短；臉與刀（一致性基準那一套）照原圖。
+**整張新圖**，舊檔進 `_recycle/`。`top:8, bot:1527`；`fx` 照上表 0.432 不動（頭沒移）。
+
+### C. 新鍵 `back` —— 背影回頭、嘴微張（Ray 交辦）
+背部正對、越肩回頭；刀在左腰（從背後看在畫面左側，方向是對的）。
+`top:12, bot:1496, fx:0.458`（工具量的；⚠ 回頭的臉偏左，**看畫面複核 fx**）。
