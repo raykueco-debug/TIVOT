@@ -819,6 +819,17 @@ export function affCap(who){
   }
   return null;
 }
+/* ══ 好感降到**這一級的最低值**（ver -1707，Ray 的古墓稿：「蕾娜好感度降到該 T 最低值」）══
+   ＝ `tierFloor(tierOf(現值))`。**不跌級**（地板就是那條線，棘輪照舊成立），
+   也不動地板本身。劇本拍上寫 `affToFloor:'RENNA'`（story.applyPersist 讀）。 */
+export function affToTierFloor(who){
+  if(CHARS.indexOf(who)<0) return null;
+  const aff=getAffection();
+  const cur = typeof aff[who]==='number' ? aff[who] : AFFECTION_DEFAULT;
+  const v = Math.max(0, tierFloor(tierOf(cur)));
+  if(v < cur){ aff[who]=v; setAffection(aff); }
+  return aff[who];
+}
 export function addAffection(who, delta){
   if(CHARS.indexOf(who)<0) return null;
   const aff=getAffection(), floors=getFloors();

@@ -56,6 +56,7 @@ export const SPEAKERS = {
   /* 士兵（ver -953，Stage8）：只有一兩句傳令，**沒有立繪** —— 同 VOICE 的作法，
      名字框標明是誰在講話就夠了（§6.5.4：路人單句要標名字）。 */
   SOLDIER:  { name:'士兵',   art:null },
+  RETAINER: { name:'隨從',   art:null },   // 米夏的隨從（ver -1707，古墓墓門那一段）
   VOICE:    { name:'路人',   art:null },
   /* 旁白（ver -656）：**沒有立繪、名字欄空著** —— 「跳一個對話框」那種畫面訊息
      （「該回去看看了。」）。⚠ 與 `VOICE` 的差別只有名字：那是「某個路人在講話」，
@@ -334,6 +335,12 @@ export const ART = {
                   /* ⚠ ver -1698：稿上叫 `renna_si_shy`，交件的檔名是 `hugshy` —— 同一張。
                      五張的 alpha bbox 兩兩差 ≤2px ⇒ 同姿勢換臉，取景值照抄（§5 的 -649）。 */
                   hugshy:      { src:'resources/si/renna_si_hugshy.png',       top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
+                  /* ver -1707（走出墓門那一段）：美術交件「SD 臉、alpha 逐位元沿用 hug」⇒ 取景照抄 hug。 */
+                  hugserious:  { src:'resources/si/renna_si_hugserious.webp',  top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
+                  hugshock:    { src:'resources/si/renna_si_hugshock.webp',    top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
+                  hugtalk:     { src:'resources/si/renna_si_hugtalk.webp',     top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
+                  hugtalk2:    { src:'resources/si/renna_si_hugtalk2.webp',    top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
+                  hugangry2:   { src:'resources/si/renna_si_hugangry2.png',    top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
                   /* ══⚠⚠ **蕾娜扶著諾薇兒**（ver -1696，Ray 交件 ＋ 交稿）══
                      畫面上是**兩個人**（蕾娜在左、諾薇兒靠在她右邊），腳本裡
                      **諾薇兒與蕾娜的台詞都用這一張**（同 `carrynouvelle` 一族的作法）。
@@ -890,6 +897,14 @@ export const ART = {
        ⚠ 工單的 `fx:0.648` 與這一族的 0.667 差 0.019（≈8 CSS px），兩邊都說是索菈娜的
          兩眼中點。**沒有動線上那四張** —— 要改就五張一起改，那是 Ray 看畫面的事。 */
     carrynouvellejealous:{ src:'resources/si/sorana_si_carrynouvellejealous.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178 },
+    /* ver -1707：shock 的索拉娜 ＋ jealous 的諾薇兒臉，alpha 逐位元沿用 ⇒ 取景照抄這一族。 */
+    carrynouvelleshock2: { src:'resources/si/sorana_si_carrynouvelleshock2.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178 },
+    /* ══ 蕾娜＋索菈娜一張圖（ver -1707，Ray 確認：登記成索菈娜的表情）══
+       這一拍蕾娜先下台（`hide`），這一張同時代表兩個人；`withChar:['RENNA']` ＝蕾娜開口也亮。
+       ⚠ `fx` 是**估的**（兩人中間偏索菈娜，0.62）：錨在索菈娜的臉（0.51）的話，
+         右半邊的蕾娜會被推出畫面。`top`/`bot` 是 alpha 上下緣。 */
+    rennaannoy:    { src:'resources/si/rennasorana_si_annoyedd.webp', top:4, bot:1534, fx:0.62, withChar:['RENNA'] },
+    rennaannoyc:   { src:'resources/si/rennasorana_si_annoyedc.webp', top:4, bot:1535, fx:0.62, withChar:['RENNA'] },
     stare:     { src:'resources/si/sorana_si_stare.webp?v=2', top:7, bot:1528, fx:0.514 },
     wave:      { src:'resources/si/sorana_si_wave.webp?v=2', top:8, bot:1527, fx:0.530 },   // fx 目視手調，不隨新圖走（新圖量到 0.374，含舉起的手臂）
     worry:     { src:'resources/si/sorana_si_worry.webp?v=2', top:4, bot:1519, fx:0.543 },

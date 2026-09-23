@@ -1390,6 +1390,9 @@ function applyPersist(line){
      scene 有 `setFlags`（收尾才寫），但城鎮的 `acts` 不是 scene —— 這一條是逐拍的。
      ⚠ 演到就記（不是演完），所以只放「這一刻確實發生了」的事（出航、拿到東西…）。 */
   if(line.flags && line.flags.length) prog.addFlags(line.flags);
+  /* `affToFloor:'RENNA'` ＝這一拍把那個人的好感降到**這一級的最低值**（ver -1707，
+     實作只有 `prog.affToTierFloor` 一支）。演到就記，同 `flags`。 */
+  if(line.affToFloor) prog.affToTierFloor(String(line.affToFloor).toLowerCase());
   /* ⚠⚠ **這一拍起算的章節**（ver -884，Ray：「把擊敗鹿主後的對話劃作 stage7」）：
      拍上寫 `stage:7`。與 `act.stage`（演完才記）／閘門的 `stage`（演台詞前先設）
      是同一族的第三個時機 —— 「**從這一句起就是新的一章**」。
@@ -2497,7 +2500,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1706';
+const KERB_V='?v=1707';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
