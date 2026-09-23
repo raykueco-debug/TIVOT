@@ -1132,7 +1132,8 @@ export function clearStageLeftovers(){
      `resetStage`，於是鹿主就留在畫面上跟著玩家走（Ray：「走到哪都有他」）。 */
   stageCgBack=null;
   { const el=$('storyCgBack');
-    if(el){ el.classList.remove('on','fading'); el.removeAttribute('src'); } }
+    if(el){ el.classList.remove('on','fading','enemy-purge'); el.removeAttribute('src'); cgBackBox(el, null); } }
+  groundShadow.hide($('storyCgBackShadow'));
   /* 報一件事的卡（圖名／翌日，ver -899）：它也是「蓋在畫面上、沒人收就一直在」的層。
      ⚠⚠ **丟掉那個回呼、不要補跑它**（同 `closeHint` 不叫 `done` 的理由）：
        這一支跑在換畫面的時候，補跑等於把上一個地點的抵達演出請到新畫面上來。 */
@@ -1521,9 +1522,16 @@ function applyPersist(line){
        —— 那是為**鹿主**訂的（橫式 1536×1024，主體在下半，`contain` 會縮成一小條）。
        龍是**滿框的正面展翅**：`cover` 以高補滿，等於把翅膀與頭整個切掉。
        ⚠ 不改預設（改了鹿主那一段會壞）：**逐拍指定**，寫了才換。 */
+    /* ══⚠⚠ `cgBackAs:'<敵人鍵>'` ＝**與開打之後同一個大小**（ver -1703，Ray：「墓主劇情中
+       降臨時還是小尺寸的，調成跟戰鬥畫面一樣大」）—— 框照 `battleBox`（卡上的 fit）算，
+       fit 也照卡。沒寫就回預設的框（`cgBackBox(null)`）。 */
+    { const el=$('storyCgBack');
+      if(el){ el.classList.remove('enemy-purge'); groundShadow.hide($('storyCgBackShadow'));
+              cgBackBox(el, line.cgBackAs ? battleBox(cardOf(line.cgBackAs)) : null); } }
     { const el=$('storyCgBack'), k=+line.cgBackScale||1;
       if(el){ el.style.transformOrigin='center bottom';
-              if(line.cgBackFit) el.style.objectFit=line.cgBackFit;
+              const asFit = line.cgBackAs && ((cardOf(line.cgBackAs)||{}).fit||{}).mode;
+              if(line.cgBackFit || asFit) el.style.objectFit=line.cgBackFit || asFit;
               else               el.style.removeProperty('object-fit');
               el.style.setProperty('--rise-k', k);   // 降臨那組 keyframes 的收尾尺寸（ver -1414）
               el.style.transform = k===1 ? '' : 'scale('+k+')'; } }
@@ -1556,6 +1564,22 @@ function applyPersist(line){
            光環的延遲寫在 CSS，這一支只好在這裡等同一個數字（兩邊註解互指）。 */
       setTimeout(()=>{ try{ playSe('se_saint_install'); }catch(_){} }, 702);
     }
+  }
+  /* ══ `cgBackDown:'<敵人鍵>'` ＝中景層換成那隻怪的**倒地差分**（ver -1703，Ray：「嚇死我了
+     的劇情時背景的墓主應該用 down」「首戰第二輪打贏一樣」）══ 圖與框在敵人卡的 `down`，
+     與城鎮追兵擊退後殘留的那一張**同一支**（`setSceneCgBack`＋`downSpec`，鐵律 8）。 */
+  if(line.cgBackDown){
+    const d=downSpec(line.cgBackDown);
+    if(d) setSceneCgBack(d.src, { box:d.box, shadow:true, groundV:d.groundV });
+  }
+  /* ══ `cgBackPurge:true` ＝中景層那一張跑**淨化**再收掉（ver -1703，Ray：「首戰第二輪
+     讓背景墓主的 down 屍體跑淨化，然後馬上進戰鬥再降臨」）══ 動畫與戰鬥那一側同一組
+     keyframes（CSS 的 `enemyPurge`）；跑完才真的收掉那一層（持續狀態要有人收）。 */
+  if(line.cgBackPurge && stageCgBack){
+    const el=$('storyCgBack'), mine=stageCgBack;
+    groundShadow.hide($('storyCgBackShadow'));
+    if(el){ el.classList.remove('enemy-purge'); void el.offsetWidth; el.classList.add('enemy-purge');
+            setTimeout(()=>{ if(stageCgBack===mine){ setSceneCgBack(null); } el.classList.remove('enemy-purge'); }, 640); }
   }
   if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
   /* 推時鐘（ver -739，Ray：「這一幕結束轉景後…時間是早上八點」）：拍上寫
@@ -2016,7 +2040,9 @@ export function playSe(spec){
          **連揚煙也跳過**，那一下本來就沒有發生。 */
       if(NO_OVERLAP[n]){
         const now=Date.now();
-        if((_seBusyUntil[n]||0) > now) return;
+        /* `force:true` ＝這一拍**一定要響**（ver -1703，Ray：「沒有淨化反應那一拍要播
+           se_brickcrush」）—— 前一發（戰鬥收尾的倒地震動）常常還沒播完，被這條擋掉。 */
+        if(!(opt && opt.force) && (_seBusyUntil[n]||0) > now) return;
         let d=0; try{ d=(SFX.duration && SFX.duration(src))||0; }catch(_){}
         _seBusyUntil[n] = now + (d>0 ? d*1000 : 800);
       }
@@ -2467,7 +2493,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1702';
+const KERB_V='?v=1703';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3369,6 +3395,8 @@ function renderLine(){
          直接拿掉最乾淨（Ray：「用加載頁洗掉」）。 */
     flushCgFade(); stageCg=null; setImg($('storyCg'), '');
     stageCgBack=null; setImg($('storyCgBack'), '');   // 中景也是持續狀態（ver -870）
+    { const el=$('storyCgBack'); if(el){ cgBackBox(el, null); el.classList.remove('enemy-purge'); } }
+    groundShadow.hide($('storyCgBackShadow'));
     { const el=$('storyCgBack');                                   // 連縮放與降臨一起收（-1413／-1414）
       if(el){ el.style.transform=''; el.style.removeProperty('--rise-k');
               el.style.removeProperty('object-fit');          // 連 fit 一起收（ver -1420）
@@ -4015,6 +4043,8 @@ export function getPosition(){ return active && cur ? { scene:cur.sceneId, line:
      每次 playScene 都清的話換場就會閃一下黑。 */
 function resetStage(){
   stageBg=stageCg=stageCi=null; stageBgm=null; stageCgBack=null;
+  { const el=$('storyCgBack'); if(el) cgBackBox(el, null); }
+  groundShadow.hide($('storyCgBackShadow'));
   for(const id of ['storyBg','storyCg','storyCgBack','storyCi']){
     const el=$(id); if(el){ el.classList.remove('on','fading','pan-up'); el.removeAttribute('src'); }
   }
@@ -5189,28 +5219,61 @@ export function isPlaying(){ return active && !!cur; }
    （`town.refreshChaseDown`）。與腳本的 `cgBack:` 是**同一層、同一支 swapImg**（鐵律 8），
    差別只是呼叫端不是一拍台詞。`src` 空＝收掉。
    ⚠ `fit` 預設 contain：這一層原本的 cover 是給橫式的鹿主訂的，直式怪立繪會被裁。 */
-/* `opts.scale`／`opts.shiftY`（ver -1702，Ray：「墓主不論死活都要有巨大感，超出畫面
-   也沒關係」）＝以**底邊中點**為原點放大、再往下挪（單位＝這一層的高）。
-   `opts.shadow` ＝腳下畫接地陰影（`groundShadow`，與戰鬥那一側同一支）。 */
+/* ══ 中景層的框（ver -1703）══ 中景層預設是 `top:0; height:--story-top` 滿寬的一條。
+   要放大就**改框**（left/top/width/height），不動 `transform` —— transform 是降臨
+   （`enemy-rise`）與淨化（`enemy-purge`）兩組動畫在用的，寫上去會在動畫那一刻被蓋掉。
+   · `downBox(k, ty)` ＝以底邊中點放大 k 倍、再下移 ty（單位＝層高）—— 倒地差分用
+   · `battleBox(card)` ＝**與戰鬥畫面同一個框**（`#top` ＋ 卡上的 fit.scale／shiftY）——
+     劇情降臨要和開打之後一樣大（ver -1703，Ray）。⚠ 框的算法照抄 `enemy.setEnemy`
+     的 inset＋寬高那一段，**改一邊要改另一邊**（兩邊註解互指）。 */
+function cgBackBox(el, box){
+  for(const p of ['left','right','top','width','height']) el.style.removeProperty(p);
+  if(!box) return;
+  el.style.left=box.l; el.style.top=box.t; el.style.width=box.w; el.style.height=box.h;
+  el.style.right='auto';
+}
+function downBox(k, ty){
+  return { l:((1-k)/2*100)+'%', w:(k*100)+'%',
+           t:'calc(var(--story-top) * '+(1+ty-k)+')', h:'calc(var(--story-top) * '+k+')' };
+}
+function battleBox(card){
+  const top=document.getElementById('top'), st=$('storyStage');
+  if(!top || !st || !card) return null;
+  const a=top.getBoundingClientRect(), b=st.getBoundingClientRect();
+  if(!a.height) return null;
+  const f=card.fit||{}, k=+f.scale||1, dy=+f.shiftY||0;
+  return { l:(a.left-b.left+(1-k)/2*a.width)+'px', t:(a.top-b.top+((1-k)/2+dy)*a.height)+'px',
+           w:(k*a.width)+'px', h:(k*a.height)+'px' };
+}
+function cardOf(key){ return (GAME_CONFIG.enemies||{})[key] || null; }
+/* 倒地差分（敵人卡的 `down:{image, scale, shiftY, groundV}`）的圖與框 —— 劇本的
+   `cgBackDown:'<敵人鍵>'` 與城鎮追兵（`town.refreshChaseDown`）都走這一支（鐵律 8）。 */
+export function downSpec(key){
+  const c=cardOf(key), d=c && c.down;
+  if(!d || !d.image) return null;
+  return { src:asset(d.image), box:downBox(+d.scale||1, +d.shiftY||0), groundV:d.groundV };
+}
+/* 城鎮用：中景層直接掛一張圖（給「有東西**留在**這一格」用）。
+   與腳本的 `cgBack:` 是**同一層、同一支 swapImg**（鐵律 8）。`src` 空＝收掉。
+   `opts.box` ＝框（見上）；`opts.shadow` ＝腳下畫接地陰影（`groundShadow`，
+   `opts.groundV` ＝指定哪一條橫線算「著地」，圖內比例）。
+   ⚠ `fit` 預設 contain：這一層原本的 cover 是給橫式的鹿主訂的，直式怪立繪會被裁。 */
 export function setSceneCgBack(src, opts){
   const el=$('storyCgBack'); if(!el) return;
   const sh=$('storyCgBackShadow');
   src = src || null;
   const o = opts || {};
-  const k = +o.scale || 1, ty = +o.shiftY || 0;
-  const xf = { k, ty };
-  if(src===stageCgBack){ if(src && o.shadow) groundShadow.place(el, sh, xf); return; }
+  const shade = ()=>{ if(src && o.shadow && stageCgBack===src) groundShadow.place(el, sh, null, { groundV:o.groundV }); };
+  if(src===stageCgBack){ cgBackBox(el, o.box||null); shade(); return; }
   const first = !stageCgBack;
   stageCgBack = src;
   groundShadow.hide(sh);
-  swapImg(el, src||'', ()=>{ if(src && o.shadow && stageCgBack===src) groundShadow.place(el, sh, xf); },
-          { fadeInFirst:first });
-  el.style.transformOrigin='center bottom';
-  el.style.transform = (src && (k!==1 || ty)) ? ('translateY('+(ty*100)+'%) scale('+k+')') : '';
-  el.style.removeProperty('--rise-k');
-  el.classList.remove('enemy-rise');
+  el.classList.remove('enemy-rise','enemy-purge');
+  el.style.transform=''; el.style.removeProperty('--rise-k');
+  cgBackBox(el, src ? (o.box||null) : null);
   if(src) el.style.objectFit=o.fit || 'contain';
   else    el.style.removeProperty('object-fit');
+  swapImg(el, src||'', shade, { fadeInFirst:first });
 }
 export function setSceneBg(name, done){
   const el=$('storyBg'); if(!el){ done&&done(); return; }

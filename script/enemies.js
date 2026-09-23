@@ -1355,6 +1355,11 @@ export const ENEMIES = {
          ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
            改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
       riseFx:1,
+      /* ⚠⚠ **倒地差分**（ver -1701／-1703）：圖、放大倍數、下移、著地線（圖內比例）。
+         劇本的 `cgBackDown:'gk_seal'` 與古墓追兵擊退後殘留的那一張都讀這一格（鐵律 7）。
+         `shiftY` 是「**胸骨觸地**」算出來的（Ray：「墓主 down 再往下移，以胸骨觸地為準」）：
+         胸骨在圖的 0.71 ⇒ 放大 2.3 倍後，下移 0.6 讓那一條落在演出區下緣附近（楣的上方）。 */
+      down:{ image:'enemy_gk_seal_down', scale:2.3, shiftY:0.6, groundV:0.71 },
       deathFx:'quake',   // 沒死：不淨化，劇烈一震＋brickcrush（ver -1700，見 enemy.purgeEnemy）
       tier:'B',
       atype:'S',
@@ -1373,6 +1378,10 @@ export const ENEMIES = {
          卡上這一支再吼一次就是同一件事演兩遍。這一聲改成**聖印的鐘聲**，
          讀起來是「那東西又被聖印拉起來了」，與牠的名字（聖印失效）對得上。 */
       entrance:'sfx_saint',
+      /* ⚠⚠ **戰鬥中降臨＝龍吟＋降臨音兩聲同時**（ver -1703，Ray：「戰鬥中再降臨是 deerroar
+         ＋降臨音兩個音效同時，不要再有其他 se」）—— 只在**戰鬥裡跑降臨**的那幾場響
+         （著地那一刻，`enemy.js` 的 landT）；推棺那一場不在戰鬥裡降臨，所以不會疊到劇情那一聲。 */
+      entranceAlso:'se_enemy_roardeer',
       entranceBlast:true,
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）

@@ -938,7 +938,8 @@ export function loadEnemyPortrait(en){
              被那隻怪打到的**受擊音**，套到陸戰的登臨就變成受擊音（Ray 回報）。所以
              **拿掉那個 fallback**：船戰各自的登場音一律寫成卡上的 `entrance`（資料驅動，
              鐵律 1），陸戰一律鐘聲。 */
-        playEntranceSe(state.curEnemyEntranceSe || 'sfx_saint'); }
+        playEntranceSe(state.curEnemyEntranceSe || 'sfx_saint');
+        if(en && en.entranceAlso) playEntranceSe(en.entranceAlso); }   // 同時第二聲（ver -1703，卡上的 entranceAlso）
       if(en && en.entranceBlast && api.roarBlast) api.roarBlast();
       else if(api.screenShake) api.screenShake();
       const top=$('top');

@@ -2005,8 +2005,8 @@ let chaseDownShown = false;
 function refreshChaseDown(){
   const spec=chaseSpec(), c=chaseGet();
   const show = !!(spec && spec.downArt && c && c.down && c.node && c.node===nodeId);
-  if(show){ story.setSceneCgBack(asset(spec.downArt),
-              { scale:spec.downScale, shiftY:spec.downShiftY, shadow:true }); chaseDownShown=true; }
+  const d = show ? story.downSpec(spec.downArt) : null;
+  if(d){ story.setSceneCgBack(d.src, { box:d.box, shadow:true, groundV:d.groundV }); chaseDownShown=true; }
   else if(chaseDownShown){ story.setSceneCgBack(null); chaseDownShown=false; }
 }
 /* 牠現在在哪一格（除錯／日後要畫小地圖紅點時問這一支，鐵律 7）。 */

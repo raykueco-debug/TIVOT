@@ -28,11 +28,11 @@ function measure(img){
     g.drawImage(img, 0, 0, W, H);
     const d = g.getImageData(0, 0, W, H).data;
     const A = (x,y)=>d[(y*W+x)*4+3];
-    let clear = 0, bot = -1;
+    let clear = 0, bot = -1, L = W, R = -1;
     for(let y=0; y<H; y++) for(let x=0; x<W; x++){
       const a = A(x,y);
       if(a < 40) clear++;
-      else if(a > 120 && y > bot) bot = y;
+      else if(a > 120){ if(y > bot) bot = y; if(x<L) L=x; if(x>R) R=x; }
     }
     if(clear > W*H*0.08 && bot >= 0){
       /* 腳的寬度：最下面那一段（內容下緣往上 12%）的左右界 */
@@ -41,7 +41,7 @@ function measure(img){
       for(let y=y0; y<=bot; y++) for(let x=0; x<W; x++){
         if(A(x,y) > 120){ if(x<l) l=x; if(x>r) r=x; }
       }
-      if(r >= l) out = { bot:(bot+1)/H, l:l/W, r:(r+1)/W };
+      if(r >= l) out = { bot:(bot+1)/H, l:l/W, r:(r+1)/W, L:L/W, R:(R+1)/W };
     }
   }catch(_){ out = null; }       // 跨網域污染 → 放棄
   cache.set(src, out);
@@ -66,11 +66,15 @@ function mapFit(img, box){
 
 /* 擺影子。`xf` ＝這個元素身上的**靜態** transform（`{k, ty}`：以底邊中點為原點的
    縮放、以元素高為單位的下移）—— 量的是未變形的版面（offset*），變形自己套。
+   `opt.groundV` ＝**指定著地的那一條橫線**（圖內比例）：趴著的圖最下緣是爪子或尾巴，
+   真正貼地的是身體（墓主倒地＝胸骨，ver -1703）。給了就用它當腳底、寬度取整隻的八成。
    回 true＝擺好了。 */
-export function place(img, shadow, xf){
+export function place(img, shadow, xf, opt){
   if(!img || !shadow) return false;
-  const m = measure(img);
-  if(m === undefined){ img.addEventListener('load', ()=>place(img, shadow, xf), { once:true }); return false; }
+  const m0 = measure(img);
+  if(m0 === undefined){ img.addEventListener('load', ()=>place(img, shadow, xf, opt), { once:true }); return false; }
+  const gv = opt && +opt.groundV;
+  const m = (m0 && gv>0) ? { bot:gv, l:m0.L+(m0.R-m0.L)*0.1, r:m0.R-(m0.R-m0.L)*0.1 } : m0;
   if(!m){ shadow.classList.remove('on'); return false; }
   const box = { x:img.offsetLeft, y:img.offsetTop, w:img.offsetWidth, h:img.offsetHeight };
   if(!box.w || !box.h){ shadow.classList.remove('on'); return false; }

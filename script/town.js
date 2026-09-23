@@ -7067,11 +7067,9 @@ export const TOWNS = {
          保持 down 不動作，重新追擊才會觸發戰鬥」）—— 擊退後停頓的那幾回合，牠倒在那一格：
          站在同一格看得到這張圖，**踩上去不開打**；停頓數完、牠真的再走起來才會追上開打。
          判定在 `modules/town.js` 的 `c.down`（`chaseActDue`／`chaseAdvance`／`refreshChaseDown`）。 */
-      downArt: 'enemy_gk_seal_down',
-      /* 倒地也要巨大（ver -1702，Ray：「墓主不論死活都要有巨大感，超出畫面也沒關係」）：
-         以底邊中點放大 2.3 倍、下移 24%（這張圖的內容只佔下半、底下留白 12%）
-         ⇒ 翅膀撐出畫面兩側、身體壓在畫面下緣。 */
-      downScale: 2.3, downShiftY: 0.24,
+      /* ⚠ 寫的是**敵人鍵**：圖、倍數、下移、著地線全在那張卡的 `down`（ver -1703，
+         與劇本的 `cgBackDown` 共用同一格，鐵律 7）。 */
+      downArt: 'gk_seal',
       /* ══⚠⚠⚠ **被追上時要演哪一段：一張由上往下取第一個成立的表**（ver -1616）══
          台詞住在**柱廳（`hall2`）的 `acts`** 裡（見那一格），三段都標
          `chaseOnly:true` ＝走進柱廳不算，只有被追上帶得動。
@@ -7609,15 +7607,19 @@ export const TOWNS = {
              走既有的**中景層**（`cgBack` ＋ `cgBackRise`，與龍在祭壇那一段同一支，
              鐵律 8）—— 那是「有東西出現在這一景裡」，不是換插圖，所以不算轉場。
              ⚠ **要有人收**：打完那一場的下一拍寫 `cgBack:null`（同祭壇那一段）。 */
+          /* ⚠⚠ `cgBackAs:'gk_seal'` ＝**與開打之後同一個大小**（ver -1703，Ray：「墓主劇情中
+             降臨時還是小尺寸的，調成跟戰鬥畫面一樣大」）—— 取代 `cgBackFit`／`cgBackScale:0.9`。 */
           { speaker:'NARRATION', text:'', hide:'*',
             cgBack:'resources/enemy/mon_gravekeeper_seal.webp?v=3',
-            cgBackRise:true, cgBackFit:'contain', cgBackScale:0.9,
+            cgBackRise:true, cgBackAs:'gk_seal',
             se:'se_enemy_roardeer', auto:1800 },
           /* ⚠⚠ **只有這一拍推棺**（ver -1622，Ray 指定）：`kerbRise:true`。
              其餘每一場（含二戰兩輪與所有追擊戰）都是原地開棺 —— 完整的推棺儀式
              是「一場戰鬥開始了」的宣告，一段之內演五次就不是宣告了（§6.5.4.3 的 -587）。 */
           Object.assign({ battle:'tomb_gk1' }, { kerbRise:true }),
-          nou('relief','嚇、嚇死我了！'),
+          /* ⚠ 打完了、牠倒在那裡 ⇒ 中景換成**倒地差分**（ver -1703，Ray：「嚇死我了的劇情時
+             背景的墓主應該用 down」）。 */
+          Object.assign(nou('relief','嚇、嚇死我了！'), { cgBackDown:'gk_seal' }),
           sor('guardtalk','棘手了點，但也不是不能應付。'),
           sor('guard','只是……好像哪裡不太對勁。'),
           ren('think','不對勁……'),
@@ -7626,8 +7628,10 @@ export const TOWNS = {
           any('scare',''),
           /* ⚠ **這一句自己就是一記震動**（ver -1622，Ray：「那東西沒有死震動同時播
              se_brickcrush」）—— 收掉 -1570 那一拍獨立的咆哮（咆哮移到下面的降臨拍上）。 */
+          /* ⚠⚠ `force:true`（ver -1703，Ray：「沒有淨化反應那一拍要播 se_brickcrush」）——
+             戰鬥收尾的倒地震動也是 brickcrush，常常還沒播完，被「不准疊自己」那條擋掉。 */
           Object.assign(ren('shout','沒有淨化反應，那東西沒有死！'),
-                        { shake:true, se:'se_brickcrush' }),
+                        { shake:true, se:{ n:'se_brickcrush', force:true } }),
           /* ⚠ 稿上寫的是 `Se_groawing` —— **庫裡沒有那一支**（整個 se/ 沒有任何
              growl／groan）。先用最接近的 `se_monsterroardeep`（低沉的獸吼）。
              真的要另一支音就補檔案，這裡改一個字。 */
@@ -7638,10 +7642,12 @@ export const TOWNS = {
           /* ⚠⚠ **再降臨一次，這次不推棺**（ver -1622，Ray 指定）——
              同一支中景層降臨，戰鬥那一拍不寫 `kerbRise` ＝原地開棺。 */
           /* ⚠ **這一次也撤立繪**（ver -1631，Ray 指定）—— 與第一次降臨同一個作法。 */
-          { speaker:'NARRATION', text:'', hide:'*',
-            cgBack:'resources/enemy/mon_gravekeeper_seal.webp?v=3',
-            cgBackRise:true, cgBackFit:'contain', cgBackScale:0.9,
-            se:'se_enemy_roardeer', auto:1800 },
+          /* ══⚠⚠⚠ **第二輪：倒地的屍體跑淨化 → 馬上進戰鬥 → 在戰鬥裡降臨**（ver -1703，Ray：
+             「首戰第二輪讓背景墓主的 down 屍體跑淨化，然後馬上進戰鬥再降臨」
+             「戰鬥中再降臨是 deerroar＋降臨音兩個音效同時，不要再有其他 se」）══
+             ⚠ 這一拍**不寫 se**：兩聲都在戰鬥的著地那一刻（卡上 `entrance`＋`entranceAlso`）。
+             ⚠ 戰鬥那一拍沒寫 `kerbRise` ⇒ 原地開棺、**照卡上 `riseFx` 在戰鬥裡降臨**。 */
+          { speaker:'NARRATION', text:'', hide:'*', cgBackPurge:true, auto:700 },
           /* ══⚠⚠⚠ **牠又降臨了一次 ＝ 首戰的第二輪**（ver -1570；-1616 定名）══
              牠剛被打死、卻又整隻站回來 —— 蕾娜下一句「那不是再生……這個東西把
              『死亡』本身覆寫了」正是**看到第二次**才說得出口。
@@ -7649,9 +7655,10 @@ export const TOWNS = {
                `gk_offset`（錯格重影）—— Ray（-1616）：「型態不要輪出」。
                那幾個型態是**一次比一次更壞的揭露**，被隨機輪出來就沒有揭露可言。 */
           { battle:'tomb_gk1' },
-          ren('intense','那不是再生……'),
+          /* ⚠ 第二輪打贏：一樣換成倒地差分（ver -1703，Ray：「首戰第二輪打贏一樣」）。 */
+          Object.assign(ren('intense','那不是再生……'), { cgBackDown:'gk_seal' }),
           ren('intense2','牠把『死亡』本身覆寫了！'),
-          nou('decode','那不就……跟聖徒化一樣……！'),
+          nou('shock2','那不就……跟聖徒化一樣……！'),   // ver -1703 Ray：用 si_shock2
           /* ⚠⚠⚠ **追逐正式開始的旗插在這一拍**（ver -1608）：牠登場了，門關上了。
              ⚠ 原本掛在**分組**那一段的收尾 —— 而分組是柱廳專屬的（-1607），
                先被追上的人走不到 ⇒ 後面吃這支旗的東西整串失效
@@ -7659,8 +7666,11 @@ export const TOWNS = {
           /* ⚠ **中景層要有人收**（ver -1622）：降臨那兩拍放上去的去背圖是**持續狀態**，
              不寫 `cgBack:null` 它會一路留在後面的每一景前面（§6.5 的「立繪是持續狀態」
              同一條）。收在這一段的最後一拍。 */
+          /* ⚠⚠ 倒地差分**不在這裡收**（ver -1703）：這一段演完追兵就進入倒地停頓，
+             由 `town.refreshChaseDown` 接手（同一張圖、同一個框 ⇒ 不閃）；
+             離開這一格那一支自己會收（-1622 的 `cgBack:null` 已撤）。 */
           Object.assign(sor('battlecry','什麼跟什麼啊沒完沒了！'),
-                        { flags:['tomb_chase_on'], cgBack:null }),
+                        { flags:['tomb_chase_on'] }),
           /* ⚠ ver -1628（Ray 交稿）：這一段的收尾 —— 牠被打退但沒死，所以是「快走」
              不是「打贏了」。 */
           ren('command','趁他還沒完成覆寫快走！'),

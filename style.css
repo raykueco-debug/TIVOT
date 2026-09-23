@@ -436,6 +436,8 @@
   #storyCgBack.enemy-rise{animation:enemyRise .9s cubic-bezier(.18,.7,.24,1) both;}
   /* ⚠ 中景層的錨點在**腳底**（同 `cgBackScale`）：錨中心的話「落地」會變成往下沉。 */
   #storyCgBack.enemy-rise{transform-origin:center bottom;}
+  /* 劇情這一側的淨化（`cgBackPurge`，ver -1703）—— 與戰鬥那一側同一組 keyframes。 */
+  #storyCgBack.enemy-purge{animation:enemyPurge .6s ease-in both;transform-origin:50% 100%;}
   @keyframes enemyRise{
     0%  {opacity:0;   transform:translateY(-7%) scale(calc(1.16 * var(--rise-k,1)));
          filter:blur(22px) saturate(.15) brightness(.55);}
