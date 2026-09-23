@@ -7708,13 +7708,13 @@ export const TOWNS = {
           nou('steady','我跟他留下！蕾娜小姐帶安雅小姐先走！'),
           any('cry','不要！'),
           ren('callangry','別這樣！大家一起走！'),
-          /* ⚠⚠ 稿上的「Execute 插圖」＝ `resources/ci/ci_torsten_execute.webp`
+          /* ⚠⚠ 稿上的「Execute 插圖」＝ `resources/ci/ci_torsten_execute.png`
              （`ASSETS.cutin_exc_torsten` 指的是同一張）。
              ⚠ 寫**明確路徑**（含 `/`）：那條路不吃時段候選鏈、也不掛 `CG_DIR`
                —— 這張圖住在 `resources/ci/`，不在 `illustration/`
                （鐵律 7：一張圖一份，不複製過去）。 */
           /* ⚠ 由下往上平移（ver -1603，Ray 指定）：`cgPan:'up'`。 */
-          { speaker:'NARRATION', text:'', cg:'resources/ci/ci_torsten_execute.webp',
+          { speaker:'NARRATION', text:'', cg:'resources/ci/ci_torsten_execute.png',
             cgPan:'up', auto:1600 },
           { speaker:'PLAYER', blank:true },
           /* ⚠ 稿上寫 `Renna_SI_shocked` —— 去時態之後她的鍵是 `shock`（ver -1554）。 */
@@ -8284,10 +8284,9 @@ export const TOWNS = {
           ren('hugangry','絕對不會。',                       { tierMin:3, tierWho:'RENNA' }),
           { speaker:'PLAYER', blank:true,                    tierMin:3, tierWho:'RENNA' },
           ren('hugclose','！！',                             { tierMin:3, tierWho:'RENNA' }),
-          /* ⚠⚠⚠ 稿上標的是 `renna_si_shy` —— **那張圖不存在**（`resources/si/` 裡
-             沒有，蕾娜的差分表也沒有 `shy` 這個鍵）。先用 `blush`（她害羞那一族裡
-             最接近的一張）。圖交了就把這一個字換掉。 */
-          ren('blush',   '……嗯。謝謝你。',                  { tierMin:3, tierWho:'RENNA' }),
+          /* ⚠ 稿上寫的是 `renna_si_shy`，Ray 交件的檔名是 **`renna_si_hugshy`**
+             （公主抱那一組的害羞臉）—— 是同一張，接的是檔名那個。 */
+          ren('hugshy',  '……嗯。謝謝你。',                  { tierMin:3, tierWho:'RENNA' }),
           /* ══⚠⚠⚠ **這四拍是 T2 以下那一條的收場，T3 沒有**（ver -1684，Ray 更正：
              「『不要笑』劇情就待續了，不用接『謝謝你相信我』，**那是不同路線（T2 以下）**」）══
              ⚠⚠ -1672 我把它們讀成「兩條分支共同的結尾」，理由是「T3 停在『不要笑！』

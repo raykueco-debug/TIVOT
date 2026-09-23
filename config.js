@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1697';
+export const VERSION = 'ver 2026.09.22-1698';
 
 export const GAME_CONFIG = {
 
@@ -4507,7 +4507,10 @@ export const ASSETS = {
      cutin_exc）；分流走 `storyMode()`，與破防／生命歸還那兩張同一套（鐵律 8）。
      ⚠ ver -703：檔名的拼字由 `Excute` 更正為 `Execute`（Ray 指定）。 */
   cutin_mb_torsten:      "resources/ci/ci_torsten_mb.webp",
-  cutin_exc_torsten:     "resources/ci/ci_torsten_execute.webp",
+  /* ⚠ ver -1698：Ray 把這一張換成 `.png`（原本的 `.webp` 他自己刪了）。
+     這條路徑是**寫死的完整字串**、沒有候選鏈 —— 副檔名對不上就是整張不出現，
+     而畫面上不會有任何錯誤訊息。轉回 webp 的時候記得把這兩處一起改。 */
+  cutin_exc_torsten:     "resources/ci/ci_torsten_execute.png",
   /* ══ 本篇的生命歸還／OBE cut-in（ver -703，Ray 交件）══
      ⚠ 生命歸還原本**借** `Nouvelle_Sturm`（ver -454 的權宜）—— 正牌的來了就換掉。
        那張 Sturm 留著（她自己的招，日後用得到）。

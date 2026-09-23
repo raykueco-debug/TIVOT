@@ -327,6 +327,9 @@ export const ART = {
                      （§5 的 -649：同姿勢的差分不要逐張量 —— 量出來的 0.504 是**兩顆頭**
                      的重心，不是她的臉）。⚠ 還是 `.png`，美術那一邊還沒轉 webp。 */
                   hugangry:    { src:'resources/si/renna_si_hugangry.png',     top:3,  bot:1528, fx:0.274, cm:193, standCm:176 },
+                  /* ⚠ ver -1698：稿上叫 `renna_si_shy`，交件的檔名是 `hugshy` —— 同一張。
+                     五張的 alpha bbox 兩兩差 ≤2px ⇒ 同姿勢換臉，取景值照抄（§5 的 -649）。 */
+                  hugshy:      { src:'resources/si/renna_si_hugshy.png',       top:3,  bot:1528, fx:0.274, cm:193, standCm:176 },
                   /* ══⚠⚠ **蕾娜扶著諾薇兒**（ver -1696，Ray 交件 ＋ 交稿）══
                      畫面上是**兩個人**（蕾娜在左、諾薇兒靠在她右邊），腳本裡
                      **諾薇兒與蕾娜的台詞都用這一張**（同 `carrynouvelle` 一族的作法）。
