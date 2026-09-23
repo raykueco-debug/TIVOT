@@ -87,6 +87,10 @@ const gunE = N('GUNSMITH_EP'), groE = N('SHOPKEEP_EP'), cntE = N('COUNTER_EP');
 /* 北方泊地的送行群眾（ver -741，stage2 碼頭道別）。 */
 const crd = N('CROWD_NP');
 const sor = N('SORANA');   // 夏爾村（ver -772）
+/* 主角**要上台**的那幾拍（ver -1696，Ray 的修正稿：「主角：torsten_si_back.png」）。
+   ⚠⚠ 不是 `PLAYER` —— 那一族是「主角的空白對話框」，§6.5 寫明那一拍**不動立繪**。
+     兩者是**兩個 speaker id**，見 speakers.js 的 `TORSTEN`。 */
+const tor = N('TORSTEN');
 const vil = N('VILLAGER'), vil2 = N('VILLAGER2'), vil3 = N('VILLAGER3'), chf = N('CHIEF');   // 夏爾村村民×3/村長（-838/-842）
 const jer = N('JERO'), shen = N('HUNTER_SV'), grcS = N('GROCER_SV');   // 杰羅／謝尼／村雜貨店主（ver -858）
 
@@ -4590,9 +4594,11 @@ export const TOWNS = {
           nou('shock','生前？'),
           ren('lookawaytalk','古墓建成的時候，他們也一併殉葬了。所以只立了碑。'),
           nou('shock2','好過份……'),
-          ren('lookawaytalk','傳說，他們用自己的生命守護著古墓。只有獲得認可者，才有進入的資格。'),
-          ren('think','雖然沒什麼把握，但值得一試。'),
-          sor(null,'不是因為怕鬼所以胡謅的吧？'),
+          ren('lookawaytalk','根據文獻，他們用自己的生命守護著古墓。或許在這裡能有進一步線索。'),
+          /* ⚠⚠ **這一句是後面的伏筆**（ver -1696 改稿）：「身雖已朽，墓即其身」
+             正是蕾娜在祭壇前想通「牠就是古墓本身」的那一句 —— 兩處要一字對得上。 */
+          ren('think','『魂寄鏡湖，魄鎮幽宮；身雖已朽，墓即其身。』。'),
+          sor(null,'……不是因為怕鬼所以胡謅的吧？'),
           ren('coldstare',''),
           sor('sorry','對不起，我再也不敢了。'),
           nou('concern',''),
@@ -6905,7 +6911,9 @@ export const TOWNS = {
              ＋ `shake` —— 沒有為這一段另做一個動畫。
 */
         acts:[ { flag:'lk_steles', need:'lk_arrive', sides:{ RENNA:'L' }, lines:[
-          ren('watch','應該就是這裡了。那麼，'),
+          ren('watch','應該就是這裡了。'),
+          nou('surprise','跟遺蹟的祭壇好像……'),
+          ren('watch','對。或許安雅小姐可以……'),
           any('answer','是！', { shake:true }),
           ren('shockcalm',''),
           ren('awkward','安雅小姐不用那麼緊張的。'),
@@ -6935,8 +6943,20 @@ export const TOWNS = {
                （鐵律 9：一個狀態一個擁有事件），`grove` 的 `bgWhen` 靠它管**下次走進來**。
                這一拍管的是**這一次、當場**看到的那一下。 */
           { speaker:'NARRATION', text:'', bgBand:'lake_grove_glow', auto:1600 },
-          ren('pointmap','如果文獻沒錯的話，古墓應該開啟了……', { flags:['tomb_opened'] }),
-          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
+          /* ══⚠⚠⚠ **收尾改稿**（ver -1696，Ray）══ 原本是蕾娜一句「古墓應該開啟了」
+             就帶過；現在是**遠方地鳴 → 她判斷方向 → 立刻出發**。
+             ⚠⚠⚠ **`tomb_opened` 跟著搬到「馬上出發」那一拍** —— 那支旗是墓門開不開
+               的唯一擁有者（鐵律 9，見 `tomb.gate` 的 `need`）。原本掛在被刪掉的
+               那一句上，**不搬就是整座古墓永遠進不去**，而畫面上不會有任何錯誤訊息。
+             ⚠ 「震動 ＋ se_earthquake，然後 deeproar」拆成兩拍：同一拍發兩支音
+               會把「地鳴之後才是咆哮」演成同時發生。 */
+          { speaker:'NARRATION', text:'', shake:true, se:'se_earthquake', auto:1200 },
+          { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:1400 },
+          ren('intense','那是……古墓的方向！'),
+          ren('command','如果裡面的東西跑出來就不好了，馬上出發。', { flags:['tomb_opened'] }),
+          /* ⚠ 主角轉身先走（稿上「主角：torsten_si_back.png」）——
+             台上有人的無台詞拍，點一下才推進（§6.5 的 -628）。 */
+          tor('back',''),
           /* ⚠ ver -1565：這裡原本有一拍 `ren('reach','')`，Ray 指定拿掉。 */
           /* ══⚠⚠ **兩條互補的 T 分支**（ver -1572，Ray 補的）══
              T2 以下 ＝ `lookaside`（撇開眼）／T3 以上 ＝ `meltdown`（撐不住了）。
@@ -6948,7 +6968,7 @@ export const TOWNS = {
           ren('lookaside','', { tierMax:2, tierWho:'RENNA' }),
           ren('meltdown','',  { tierMin:3, tierWho:'RENNA' }),
           /* ⚠ ver -1565（Ray：「該場景最後一拍的諾差分換成 sadnoeye」）。 */
-          nou('sadnoeye','……'),
+          nou('sad','……'),
           /* ══ 獲得 NIEM ══ 每一座遺蹟共用的收尾，見檔頭的 `NIEM_TAIL`。
              ⚠ **它必須是最後一拍**（見上面那一段的說明）。 */
           ...NIEM_TAIL,
@@ -7331,10 +7351,10 @@ export const TOWNS = {
              「門開了呢」，而那一整段初見的戲（`tomb_gate`）會被推到下一次抵達。
              排後面則兩條路都對：初見一定先演 `tomb_gate`（它有自己的 flag）。 */
         { flag:'tomb_enter', need:'tomb_opened', sides:{ RENNA:'L' }, lines:[
-          ren('commandsoft','門開了呢。走吧。'),
+          ren('commandsoft','門果然開了呢。走吧。'),
           sor('amaze','修女小姐突然不怕鬼了……'),
           nou('cringe','我覺得她氣到連幽靈都可以一拳打飛了……'),
-          any('scare2',''),
+          any('panic',''),
         ] } ] },
       /* ⚠⚠ **這一趟第一次踏進來不出怪**（ver -1618，Ray：「門廳第一次進去不出怪」）——
          走出去再走回來就照常擲。⚠ 判讀：古墓裡「門」那一側只有墓門（`noWild`）與
@@ -7599,6 +7619,10 @@ export const TOWNS = {
              se_brickcrush」）—— 收掉 -1570 那一拍獨立的咆哮（咆哮移到下面的降臨拍上）。 */
           Object.assign(ren('shout','沒有淨化反應，那東西沒有死！'),
                         { shake:true, se:'se_brickcrush' }),
+          /* ⚠ 稿上寫的是 `Se_groawing` —— **庫裡沒有那一支**（整個 se/ 沒有任何
+             growl／groan）。先用最接近的 `se_monsterroardeep`（低沉的獸吼）。
+             真的要另一支音就補檔案，這裡改一個字。 */
+          { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:1000 },
           nou('shock','！！'),
           /* ⚠ 再下一個震動＝落石（ver -1622，Ray 指定）。 */
           { speaker:'NARRATION', text:'', shake:true, se:'se_rockimpact', auto:1200 },
@@ -7617,8 +7641,8 @@ export const TOWNS = {
                那幾個型態是**一次比一次更壞的揭露**，被隨機輪出來就沒有揭露可言。 */
           { battle:'tomb_gk1' },
           ren('intense','那不是再生……'),
-          ren('intense2','這個東西把『死亡』本身覆寫了！'),
-          nou('decode','覆寫……！'),
+          ren('intense2','牠把『死亡』本身覆寫了！'),
+          nou('decode','那不就……跟聖徒化一樣……！'),
           /* ⚠⚠⚠ **追逐正式開始的旗插在這一拍**（ver -1608）：牠登場了，門關上了。
              ⚠ 原本掛在**分組**那一段的收尾 —— 而分組是柱廳專屬的（-1607），
                先被追上的人走不到 ⇒ 後面吃這支旗的東西整串失效
@@ -7630,7 +7654,7 @@ export const TOWNS = {
                         { flags:['tomb_chase_on'], cgBack:null }),
           /* ⚠ ver -1628（Ray 交稿）：這一段的收尾 —— 牠被打退但沒死，所以是「快走」
              不是「打贏了」。 */
-          ren('run','趁牠還沒完全恢復，快走！'),
+          ren('command','趁他還沒完成覆寫快走！'),
         ] },
         /* ② **二戰之前被追上**（ver -1616，Ray 交稿）。
            ⚠⚠⚠ `until:'tomb_gk1_split'` ＝Ray 明講「**如果到我們才不會輸之前沒出
@@ -7676,10 +7700,13 @@ export const TOWNS = {
              Ray：「BGM 從蕾娜的別鬧了的前一拍，主角的對白開始換」）：
              這一拍只管**那一刻**，「撐到下一首被指定為止」是城上的 `bgmWhen`
              （`need:'tomb_split'` ＋ `lock`，沒有終點）。 */
-          { speaker:'PLAYER', blank:true, bgm:'rituale' },
+          /* ⚠ 兩拍新增（ver -1696 改稿）：她先抱怨一句，主角的上膛音才有東西可以打斷。 */
+          ren('intense2','一直被追著跑，根本沒辦法好好找路！'),
+          { speaker:'PLAYER', blank:true, bgm:'rituale', se:'se_weapon_reload' },
+          ren('shockcalm','！！'),
           ren('callangry','別鬧了！你一個人怎麼應付！'),
           nou('steady','我跟他留下！蕾娜小姐帶安雅小姐先走！'),
-          any('desperate','不要！'),
+          any('cry','不要！'),
           ren('callangry','別這樣！大家一起走！'),
           /* ⚠⚠ 稿上的「Execute 插圖」＝ `resources/ci/ci_torsten_execute.webp`
              （`ASSETS.cutin_exc_torsten` 指的是同一張）。
@@ -8025,16 +8052,38 @@ export const TOWNS = {
             ], shakeHold:1400, auto:1800 },
           /* ⚠ ver -1684 Ray 改稿：「糟糕！」換成這兩句。
              ⚠ 第二句稿上沒給表情 ⇒ `null`（不動立繪，維持上一張）。 */
-          sor('panic','可惡......整個人都被打飛了!'),
-          sor(null,'還活著吧......?'),
-          /* 插圖 28（由下而上平移）＋畫面震動。 */
-          { speaker:'NARRATION', text:'', cg:'28_rennanouvelle', cgNoTime:true, cgPan:'up',
+          /* ⚠⚠⚠ **插圖改名**（ver -1696）：稿上是 `28_tordefeat`，而磁碟上
+             `28_rennanouvelle` 這個名字**已經不存在** —— 美術把那一張改號成
+             `29_rennanouvelle`，`28_tordefeat` 是新交的另一張。
+             ⇒ 這一行在改名之後一直是 **404、插圖整張不出現**（§5 的老坑：
+               候選鏈全 404 只會安靜地不畫，畫面上沒有任何錯誤訊息）。
+             ⚠ 兩句台詞也照改稿換掉（「糟糕！」那一句本來就在上一拍）。 */
+          { speaker:'NARRATION', text:'', cg:'28_tordefeat', cgNoTime:true, cgPan:'up',
             shakeHold:1200, auto:2200 },
+          sor(null,'喂！你沒事吧！'),
           Object.assign(sor('guardtalk','蕾娜！'), { cg:null }),
-          nou('sadnoeye','蕾娜小姐......妳自己快走......'),
-          ren('intense','那種事，怎麼可能做得到！'),
+          /* ══⚠⚠ **這兩句共用一張「蕾娜扶著諾薇兒」的立繪**（ver -1696，Ray：
+             「renna_si_holdnouvelle 左側」）══ 一張圖兩個人，所以**說話的人換了、
+             台上那張圖不換**（同 `carrynouvelle` 一族的作法，§6.5 的 -649）。
+             ⚠ `portrait.char` 指的是**那張圖是誰的**，`speaker` 才是**誰在講** ——
+               諾薇兒那一句的名字欄照樣是她。
+             ⚠ `side:'L'` ＝稿上的「左側」；那一幕 `sides:{RENNA:'L'}` 本來就把蕾娜
+               放左，這裡明寫是為了諾薇兒那一句也落在同一邊（不寫就跑回她自己的本位）。 */
+          { speaker:'NOUVELLE', text:'蕾娜小姐......妳自己快走......',
+            portrait:{ char:'RENNA', expr:'holdnouvelle', show:true, side:'L' } },
+          { speaker:'RENNA',    text:'那種事，怎麼可能做得到！',
+            portrait:{ char:'RENNA', expr:'holdnouvelle', show:true, side:'L' } },
           { speaker:'NARRATION', text:'', se:'se_monsterroardeep', shakeHold:1400, auto:1400 },
-          any('terrify','！！'),
+          /* ══ 主角撐起來（ver -1696 新增）══ 上膛音 → 插圖 30（由下而上平移）＋
+             瓦礫崩落 → 索菈娜喊他回來 → 收圖。
+             ⚠ `30_torstandup` 交的是 **.jpeg**（不是規約的 webp）—— 候選鏈吃得到
+               （§5 的 -910），但它是中間狀態，轉檔之後這一行不必動。 */
+          { speaker:'NARRATION', text:'', se:'se_weapon_reload', auto:900 },
+          { speaker:'NARRATION', text:'', cg:'30_torstandup', cgNoTime:true, cgPan:'up',
+            se:'se_brickcrush', shakeHold:1200, auto:2200 },
+          sor(null,'退回來！別再打了！'),
+          { speaker:'NARRATION', text:'', cg:null, auto:200 },
+          any('terrify','不要！'),
           /* ══⚠⚠ **一開打就是惡夢化**（戰鬥卡 `tomb_low_ni` 的 `niStart`）══
              CI（`ci_anya_nightmareinstall`）與 vo 由**它**播，這一拍不要再播一次
              —— 兩邊都播就是同一個演出兩份（鐵律 7）。 */
@@ -8049,19 +8098,26 @@ export const TOWNS = {
           /* 稿：「戰鬥結束。**結算**。」⇒ 明寫一拍（這一格雖然是 `rest`，但那一支
              只在**抵達**時收帳，打完架站在原地不會再收一次）。 */
           { speaker:'NARRATION', text:'', settle:true },
-          ren('shockopen','牠好像......真的受創了！'),
+          ren('shockopen','牠好像......真的受到傷害了！'),
           any('desperate',''),
-          ren('shockcalm','拒絕死亡的覆寫，怎麼能一再發動......？就算是禍魘也不可能連續承載那樣的熵增......'),
+          /* ⚠ ver -1696 改稿：多了「是安雅小姐的力量？」與索菈娜那一句，
+             蕾娜那段長台詞也換了說法（下面第二句）。 */
+          ren('shockcalm','是……安雅小姐的力量？'),
+          sor('guardtalk','……好像安份一點了？'),
+          ren('shockcalm','不間斷的自我覆寫……就算是禍魘也不可能連續承載那樣的熵增......'),
+          ren('shockcalm','如果跟聖徒化一樣……那就是有其它的參考系在觀測牠！'),
+          /* ⚠ ver -1696：咆哮之後是**第四型態降臨**，蕾娜先唸出那句碑文才想通。 */
           { speaker:'NARRATION', text:'', se:'se_monsterroardeep', shakeHold:1200, auto:1400 },
+          ren('shockcalm','『身雖已朽，墓即其身』……'),
           ren('shock','！！'),
           ren('shockopen','我們......想錯了！牠不是守墓者！'),
           ren('shout','牠就是古墓本身！'),
           sor('guardtalk','啥？那是什麼意思？'),
-          ren('callangry','我們可能，一直在牠的體內！守墓者不過是整座墓的算力投影出來的實體！'),
-          ren('argue','而安雅小姐的力量干擾了牠……說得通！'),
+          ren('callangry','我們可能，一直在牠的體內！守墓者只是整座墓的算力投影出來的實體！'),
+          ren('argue','而安雅小姐的力量干擾了牠……那就表示！'),
           sor('battlecry','講人話！'),
           ren('command','去祭壇！如果我猜得沒錯……'),
-          ren('command','算力集線裝置一旦啟動，古墓就無法維持投影了！'),
+          ren('command','算力集線裝置一旦啟動，古墓就沒有足夠的算力投影自己了！'),
           { speaker:'NARRATION', text:'', se:'se_monsterroardeep', shakeHold:1400, auto:1400 },
           sor('ready','反正就是讓小公主點亮祭壇吧？走了！'),
         ] } ] },
@@ -8147,19 +8203,19 @@ export const TOWNS = {
           sor('stare','看來可以出去了。'),
           ren('meltdown','……'),
           { speaker:'NARRATION', text:'', se:'se_fall', auto:800 },
-          sor(null,'喂、蕾娜！'),
+          sor('back','喂、蕾娜！'),
           any('scare',''),
           nou('decode','蕾娜小姐！'),
           nou('faint','受傷了嗎？我來……'),
           { speaker:'NARRATION', text:'', se:'se_fall', auto:800 },
           sor('tire','妳就別亂動了吧。'),
-          any(null,'蕾……娜？'),
+          any('nervous','蕾……娜？'),
           ren('meltdown','……'),
           ren('meltdown','我沒事……'),
           ren('cry','我沒事啦……'),
           ren('meltdowncry','所以我最討厭這種地方了嘛！'),
           any('scare',''),
-          sor('tire','啊——啊——脫力以後就大哭嗎？'),
+          sor('tire','啊——脫力以後就大哭嗎？'),
           ren('meltdowncry','因為……因為……我怕嘛！'),
           ren('snivel','而且大家都討厭我……'),
           sor('talk','為什麼？'),
@@ -8168,8 +8224,8 @@ export const TOWNS = {
           sor('think','我是不知道妳們的規矩啦，反正我看到的是——'),
           sor('side','妳這個怕得要死的傢伙，扶著諾薇兒到最後都沒鬆手。'),
           sor('readysmile','誰還管什麼『報告』啊。'),
-          ren('shockcalm','……'),
-          nou('sadsmile','對啊，要是沒有蕾娜小姐，我剛剛早就死了……'),
+          ren('snivel','……'),
+          nou('sadsmile','對啊，要是沒有蕾娜小姐，我剛剛早就……'),
           ren('worry','……'),
           { speaker:'PLAYER', blank:true },
           ren('blush','不客氣啦……'),
@@ -8190,7 +8246,7 @@ export const TOWNS = {
             portrait:{ char:'SORANA', expr:'carrynouvellescream', show:true } },
           /* ══ 好感分歧（**蕾娜**）══ 兩張插圖、兩個收場。 */
           /* ── T2 以下：插圖 29-1 ── */
-          { speaker:'NARRATION', text:'', cg:'29-1_rennaholdhand', cgNoTime:true,
+          { speaker:'NARRATION', text:'', cg:'31-1_rennaholdhand', cgNoTime:true,
             cgPan:'up', auto:1600, tierMax:2, tierWho:'RENNA' },
           ren(null,'……',                 { tierMax:2, tierWho:'RENNA' }),
           ren(null,'評價，我不會修正的喔。', { tierMax:2, tierWho:'RENNA' }),
@@ -8200,7 +8256,7 @@ export const TOWNS = {
              ⚠⚠ ver -1692（Ray 改稿）：**插圖只留到「等……等一下！」那一句**，
                之後整段改回立繪演 —— 公主抱那一串打鬧要看得到三個人的表情，
                壓在一張插圖底下就只剩字。 */
-          { speaker:'NARRATION', text:'', cg:'29-2_rennaprincesshold', cgNoTime:true,
+          { speaker:'NARRATION', text:'', cg:'31-2_rennaprincesshold', cgNoTime:true,
             cgPan:'up', auto:1600, tierMin:3, tierWho:'RENNA' },
           ren(null,'等……等一下！', { tierMin:3, tierWho:'RENNA' }),
           { speaker:'NARRATION', text:'', cg:null, auto:200, tierMin:3, tierWho:'RENNA' },
@@ -8222,9 +8278,16 @@ export const TOWNS = {
              ⚠ 取景值見 `speakers.js`：她是**被橫抱**的那一個，`fx` 錨的是她的臉。 */
           ren('hug',     '放、放我下來啦！太難為情了。',     { tierMin:3, tierWho:'RENNA' }),
           ren('hugclose','……',                             { tierMin:3, tierWho:'RENNA' }),
-          ren('hug',     '就算這樣，評價，我也不會修正的喔。', { tierMin:3, tierWho:'RENNA' }),
-          ren('hugclose','絕對不會。',                       { tierMin:3, tierWho:'RENNA' }),
-          ren('hug',     '不要笑！',                         { tierMin:3, tierWho:'RENNA' }),
+          /* ⚠ ver -1696：這兩句換成 `hugangry`（Ray 交件的新表情），
+             收場也從「不要笑！」改成下面那三拍。 */
+          ren('hugangry','就算這樣，評價，我也不會修正的喔。', { tierMin:3, tierWho:'RENNA' }),
+          ren('hugangry','絕對不會。',                       { tierMin:3, tierWho:'RENNA' }),
+          { speaker:'PLAYER', blank:true,                    tierMin:3, tierWho:'RENNA' },
+          ren('hugclose','！！',                             { tierMin:3, tierWho:'RENNA' }),
+          /* ⚠⚠⚠ 稿上標的是 `renna_si_shy` —— **那張圖不存在**（`resources/si/` 裡
+             沒有，蕾娜的差分表也沒有 `shy` 這個鍵）。先用 `blush`（她害羞那一族裡
+             最接近的一張）。圖交了就把這一個字換掉。 */
+          ren('blush',   '……嗯。謝謝你。',                  { tierMin:3, tierWho:'RENNA' }),
           /* ══⚠⚠⚠ **這四拍是 T2 以下那一條的收場，T3 沒有**（ver -1684，Ray 更正：
              「『不要笑』劇情就待續了，不用接『謝謝你相信我』，**那是不同路線（T2 以下）**」）══
              ⚠⚠ -1672 我把它們讀成「兩條分支共同的結尾」，理由是「T3 停在『不要笑！』

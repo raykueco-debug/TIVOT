@@ -41,6 +41,9 @@ export const SPEAKERS = {
      這一筆存在只是為了讓 `speaker:'PLAYER'` 在資料上有著落（驗稿工具會檢查）。
      ⚠ `art:null` ＝ 沒有立繪：他從不站台，只有對話框（含 `blank:true` 的空框）。 */
   PLAYER:   { name:'{N}',     art:null },
+  /* 主角**要上台**的那幾拍專用（ver -1696）—— 見 ART.torsten 那一段為什麼不掛在
+     `PLAYER` 上。名字欄與 `PLAYER` 相同（暱稱），畫面上是同一個人。 */
+  TORSTEN:  { name:'{N}',     art:'torsten' },
   /* 城鎮 NPC（ver -369）。⚠ 站**右**：城鎮裡玩家的同伴（諾薇兒/蕾娜）在左，
      對面的人在右 —— 與主線的固定站位同一個邏輯。 */
   SHOPKEEP: { name:'店主',   art:'shopkeep' },
@@ -320,6 +323,19 @@ export const ART = {
                   hug:         { src:'resources/si/renna_si_hug.webp',         top:3,  bot:1528, fx:0.274, cm:193, standCm:176 },
                   hugclose:    { src:'resources/si/renna_si_hugclose.webp',    top:3,  bot:1528, fx:0.274, cm:193, standCm:176 },
                   huglookaway: { src:'resources/si/renna_si_huglookaway.webp', top:3,  bot:1528, fx:0.274, cm:193, standCm:176 },
+                  /* ⚠ ver -1696：同一組公主抱**換一張臉**（Ray 交件）⇒ 取景值照抄上面三張
+                     （§5 的 -649：同姿勢的差分不要逐張量 —— 量出來的 0.504 是**兩顆頭**
+                     的重心，不是她的臉）。⚠ 還是 `.png`，美術那一邊還沒轉 webp。 */
+                  hugangry:    { src:'resources/si/renna_si_hugangry.png',     top:3,  bot:1528, fx:0.274, cm:193, standCm:176 },
+                  /* ══⚠⚠ **蕾娜扶著諾薇兒**（ver -1696，Ray 交件 ＋ 交稿）══
+                     畫面上是**兩個人**（蕾娜在左、諾薇兒靠在她右邊），腳本裡
+                     **諾薇兒與蕾娜的台詞都用這一張**（同 `carrynouvelle` 一族的作法）。
+                     ⚠⚠ `fx` 錨的是**蕾娜的臉**：量出來的 0.434 是兩顆頭的重心 ——
+                       改量「左半上方的深色像素（眉眼）」＝ **0.394**（範圍 0.330~0.448）。
+                     ⚠ 兩人都站著、幾乎佔滿畫布（3~1530）⇒ **不覆寫 `cm`**，
+                       照角色層走（不像公主抱那一組，她在那裡被畫小了）。
+                     ⚠ 還是 `.png`，美術那一邊還沒轉 webp。 */
+                  holdnouvelle:{ src:'resources/si/renna_si_holdnouvelle.png',  top:3,  bot:1530, fx:0.394 },
                   scarejump:   { src:'resources/si/renna_si_scarejump.webp',   top:0,  bot:1533, fx:0.632 },
                   scarecute:   { src:'resources/si/renna_si_scarecute.webp',   top:0,  bot:1530, fx:0.537 },
                   blush:     { src:'resources/si/renna_si_blush.webp',     top:8,  bot:1522, fx:0.551 },
@@ -1488,6 +1504,22 @@ export const ART = {
      ⚠ `cm` 只是名目值（fitStage 不用它），留著給 CAST_TALL 之類的彙整讀。 */
   crowd_np: { cm:172, fitStage:true, eye:32, fx:0.370, top:7, bot:1527,
            side:'R', alt:null, base:'resources/si/npc/npc_northport_crowd.webp', expr:{} },
+  /* ══⚠⚠⚠ **主角（托爾斯坦）的背影**（ver -1696，Ray 交件 `torsten_si_back.png`）══
+     ⚠⚠⚠ **不可以把這個 art 掛到 `PLAYER` 上** —— 全遊戲的「主角空白對話框」
+       （`{speaker:'PLAYER', blank:true}`）有幾十拍，§6.5 寫明那一拍**不動立繪**
+       （「他不在台上，他說話不代表別人要換位」）。`PLAYER` 一旦有了 art，
+       那幾十拍會統統把他推上台，而且**畫面上不會有任何錯誤訊息**。
+     ⇒ 另開一個 speaker id `TORSTEN`（同 §6.5.6「正名前後是兩個 id」的先例），
+       只有**明寫要他上台**的那幾拍才用它。名字欄一樣是暱稱 `{N}`。
+     ⚠ `cm:178` ＝ `CAST_TALL` 的現值：他是男性、比在場所有人高，但**填超過 178
+       會把全劇組一起縮小**（§5 那條）—— 頂到上限就好。
+     ⚠ 這是**背影**，沒有臉 ⇒ `fx` 取的是身體的橫向重心（0.518，實量）。
+     ⚠ 不給 `mirror`：背影翻了就是換一隻手在前，不是同一個鏡頭。
+     ⚠ 還是 `.png`，美術那一邊還沒轉 webp。 */
+  torsten:  { cm:178, eye:30, fx:0.518, top:20, bot:1516,
+           side:'R', alt:null, base:'resources/si/torsten_si_back.png', expr:{
+    back: { src:'resources/si/torsten_si_back.png', top:20, bot:1516, fx:0.518 },
+  } },
 };
 
 /* 最高的人：她定義相機（頭頂貼在舞台頂線，其餘人依身高往下排）。 */

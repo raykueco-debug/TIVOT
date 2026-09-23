@@ -627,8 +627,13 @@ def main():
                     continue
                 bands = ('', '_Dawn', '_Day', '_Dusk', '_night', '_midnight',
                          '_dawn', '_day', '_dusk', '_Night', '_Midnight')
+                # ⚠⚠ 副檔名要與**引擎**那一支對齊（`modules/story.js` 的 `bandNames`
+                #    自 ver -910 起也吃 `.jpeg`／`.jpg`，排最後）—— 這裡只列 webp/png
+                #    的話，交件先丟 jpeg 的那一張會被誤報成「沒有這張插圖」（ver -1697
+                #    的 `30_torstandup.jpeg` 就是）。兩份清單走鐘就是鐵律 7 的病。
+                CG_EXTS = ('.webp', '.png', '.jpeg', '.jpg')
                 got = [b for b in bands
-                       if exists(CG_DIR + cg + b + '.webp') or exists(CG_DIR + cg + b + '.png')]
+                       if any(exists(CG_DIR + cg + b + e) for e in CG_EXTS)]
                 if not got:
                     err('%s：沒有這張插圖 %s' % (tag, cg))
                 elif all(not exists(CG_DIR + cg + b + '.webp') for b in got):
