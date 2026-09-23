@@ -609,3 +609,18 @@ Ray 一併放進來的 `4d82534b-….png`（1024×1536，**他自己去好背的
     carrynouvelleshock2: { src:'resources/si/sorana_si_carrynouvelleshock2.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178 },
 取景**全部照抄 `carrynouvelleshock`**（同一張畫布、同一個姿勢；fx 0.667 是線上那一族的值 ——
 工具量到的 0.600 是被頭頂的諾薇兒拉偏，-1670 那條）。
+
+---
+
+# 十五、蕾娜・公主抱 4 個新差分（2026-09-23 晚，Ray 丟 realpha）
+
+`renna_si_hugserious`／`hugshock`／`hugtalk`／`hugtalk2`.webp —— Ray 的 SD 臉，底圖＝`renna_si_hug.webp`
+（對位 0.3）。改動全在蕾娜臉上（x 325~438、y 128~235），半透明區 0 px ⇒
+**alpha 與 `renna_si_hug` 逐位元相同**、只換 RGB；近白 0.00%；第二代 q92。
+原 SD 稿 `_originals/si/renna_si_<鍵>_sdface_src.png`。
+
+## 程式端要接：`speakers.js` 蕾娜 `expr`（新鍵，不必版號；取景照抄 `hug`）
+    hugserious: { src:'resources/si/renna_si_hugserious.webp', top:3, bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
+    hugshock:   { src:'resources/si/renna_si_hugshock.webp',   top:3, bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
+    hugtalk:    { src:'resources/si/renna_si_hugtalk.webp',    top:3, bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
+    hugtalk2:   { src:'resources/si/renna_si_hugtalk2.webp',   top:3, bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
