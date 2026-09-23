@@ -8011,12 +8011,16 @@ export const TOWNS = {
           ren('shockopen','！！'),
           /* ══ 好感分歧（**蕾娜**）══ 兩條互斥，都要寫完整（含收圖）。
              ⚠ 門檻不是等於：`tierMax:2`／`tierMin:3`，日後多一段 T4 不必回頭改。 */
-          /* ── T3 以上：先一句，再上插圖 27（上往下平移）── */
-          ren('meltdown','別這樣……', { tierMin:3, tierWho:'RENNA' }),
-          { speaker:'NARRATION', text:'', cg:'27_rennapull', cgNoTime:true, cgPan:'down',
+          /* ── T3 以上：直接上插圖 27（**由下而上**平移）──
+             ⚠⚠ ver -1699 照 Ray 重貼的分支全文改三件：
+               ① **拿掉插圖前那一句** `ren('meltdown','別這樣……')` —— 他重貼的
+                  `[分支開始]…[分支結束]` 裡沒有它，這一段是整條分支的全文。
+               ② `cgPan` **`down` → `up`**（稿上「下向上平移」）—— 原本是反的。
+               ③ 兩句台詞換字。 */
+          { speaker:'NARRATION', text:'', cg:'27_rennapull', cgNoTime:true, cgPan:'up',
             auto:1400, tierMin:3, tierWho:'RENNA' },
-          ren(null,'我們一起走，好嗎？',                     { tierMin:3, tierWho:'RENNA' }),
-          ren(null,'我不想丟下你，所以請你也不要丟下我——', { tierMin:3, tierWho:'RENNA' }),
+          ren(null,'……一起走，好不好？',                         { tierMin:3, tierWho:'RENNA' }),
+          ren(null,'諾薇兒熔斷了，已經沒有人可以幫你——',         { tierMin:3, tierWho:'RENNA' }),
           { speaker:'NARRATION', text:'', cg:null, auto:200, tierMin:3, tierWho:'RENNA' },
           /* ── T2 以下 ── */
           ren('callangry','別逞強，一起走！',             { tierMax:2, tierWho:'RENNA' }),
