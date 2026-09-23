@@ -702,29 +702,27 @@ function niBurstResolve(){
     if(c.classList.contains('done')) continue;
     c.classList.add('done'); c.classList.remove('next'); api.shatterCell(c);
   }
-  /* ══⚠⚠ 傷害 ＝ 敵人最大 HP × `burstPct`(25%) × （**清掉的格數 ÷ 16**）══
-     （ver -897，Ray：「夢境粉碎應該要帶走敵最大 hp 的 25%，如果 16 格點完是 25%，
-       沒點完依點掉的格子比例計算傷害，也就是最大 23.4%（15 格），點掉的格子越多
-       炸的傷害越高」）
-     ⚠ ver -789 曾經**拿掉**這個縮放（改成固定 25%），這一版**照 Ray 的規格加回來** ——
-       兩者的取捨不同：固定值讓「早爆」與「打好再爆」等值，縮放才讓「點掉的格子
-       越多炸得越重」。回血（`burstHealPct`）用的是同一個比例，兩邊一致。
+  /* ══⚠⚠⚠ 傷害 ＝ 敵人最大 HP × `burstPct`(**20%**)，**強制、不看清了幾格**══
+     （ver -1696，Ray：「把 dreambreaker 改成強制消去敵最大 hp 的 20%
+       （不是現有 hp，是 hp 上限的 20%）」）
+     ⚠ **推翻 ver -897 的比例算法**（`× 清掉的格數 ÷ 16`）—— 那一版要玩家先算自己
+       清了幾格才知道這一招值多少；固定兩成是**可以規劃的份量**。
      ⚠ 綁在**敵人最大 HP** 上（不是當前 HP、不是累積傷害）：大場小場同一份量。
-     ⚠ 分母是**滿盤 16**（`NI_BURST_FULL`，與回血共用同一個數字，鐵律 7）。 */
-  const ratio = Math.max(0, Math.min(1, (state.niCells||0) / (NI_BURST_FULL||16)));
-  /* 「界心星」（Lv8）：剩最後一格才成立，取代比例算法（比例算到 15/16 也只有 23.4%）。
-     ⚠ 「打不死」的下限（`NI_BURST_FLOOR`）照舊夾在下面 —— 那是另一條規則。 */
+     ⚠ 回血那一條（`NI_BURST_HEAL`，現在是 0）**照舊吃比例** —— 它的規格本來就是
+       「視你在 NI 打掉的格數而定」，與傷害是兩件事，不要一起改。 */
+  /* 「界心星」（Lv8）：剩最後一格才成立，取代上面那一式（30% ＞ 20%）。 */
   const lastPct = (cellsLeft===1) ? prog.girlBonus(state.pickedPartner,'burstLastCell') : 0;
-  const dmg = (lastPct>0) ? Math.round((state.enemyMax||0) * lastPct)
-                          : Math.round((state.enemyMax||0) * NI_BURST_PCT * ratio);
+  const dmg = Math.round((state.enemyMax||0) * (lastPct>0 ? lastPct : NI_BURST_PCT));
   exitNightmare();
   clearInterval(state.niTimer); state.niTimer=null;
   setReturnSwipe(false); restoreAssaultRate();
   if(dmg>0){
     SFX.gunshot(true);
-    /* ⚠⚠ **自爆打不死**（ver -673，Ray：「炸不死也沒關係，最後留個 10%」）：
-       敵血最低留 `burstFloor`。所以這一擊的傷害要先夾住 —— 不是打完再把血加回來
-       （那樣會先觸發「敵人死了」的那一整套演出，再憑空復活）。 */
+    /* ⚠⚠⚠ **ver -1696 起 `burstFloor` 是 0 ＝ 它打得死**（Ray：「敵若遭此技 hp 歸零
+       等同 execute」）—— 推翻 ver -673／-689 的「炸不死也沒關係，最後留個 10%／5%」。
+       下面這段夾值留著：欄位填回非 0 就恢復「打不死」（鐵律 1）。
+       ⚠ 要夾就**先夾傷害**，不是打完再把血加回來（那樣會先觸發「敵人死了」的
+         那一整套演出，再憑空復活）。 */
     const floorHp = Math.ceil((state.enemyMax||0) * NI_BURST_FLOOR);
     const room = Math.max(0, state.enemyHp - floorHp);
     const real = NI_BURST_FLOOR>0 ? Math.min(dmg, room) : dmg;
@@ -733,11 +731,22 @@ function niBurstResolve(){
   }
   $('grid').classList.remove('saint','ni'); setSaintBarFx(false);
   if(state.enemyHp<=0){
-    /* ⚠ 夢境粉碎把敵血打到零：**不演 EXSECUTIŌ 畫面，計分照算處決**
-       （ver -746，Ray：「夢境破碎讓敵hp歸零的話不出處決畫面，但是計分時算處決」）
-       —— 粉碎自己的 cut-in 剛演完，再疊一張處決是兩段演出打架。 */
+    /* ══⚠⚠⚠ **歸零＝等同 execute**（ver -1696，Ray）══
+       在這之前這一條幾乎走不到（`burstFloor` 5% 把它擋死了），所以它一直只做了
+       「記一筆處決」。現在粉碎打得死了，就要拿到**處決該有的整套**，
+       與 `triggerMaxBurst`／`triggerNiBurst` 的擊殺分支一致：
+         · `markExecution()`  —— 評價算處決（EXSECUTIŌ）
+         · `resetInstallSlot()` —— 處決＝**賺回一次 Install 發動**（ver -892）
+         · **回滿血**（`setPlayerHpRatio(1)`）—— 連戰下秒殺一隻可以帶滿血接下一隻
+       ⚠⚠ **只有「HP 剩 1」那一條被推翻**：那是**沒打死**時粉碎的代價，
+         打死了就是處決，不該比 SI 的 MB 處決差一截。
+       ⚠ **演出照舊不疊第二張 cut-in**（ver -746，Ray：「夢境破碎讓敵 hp 歸零的話
+         不出處決畫面，但是計分時算處決」）—— 粉碎自己的 cut-in 剛演完。
+         那一條講的是**畫面**，-1696 講的是**結果**，兩者不衝突。 */
     markExecution();
-    api.setPlayerHpRatio(0); api.onEnemyDefeated();
+    const rlB = state.saintUsedThisBattle ? 'NIGHTMARE RELOAD' : null;   // 空槍才 reload（ver -896）
+    if(rlB) resetInstallSlot();
+    api.setPlayerHpRatio(1); api.onEnemyDefeated();
     return true;
   }
   /* ══⚠⚠ **粉碎的回血**（ver -888，Ray：「惡夢粉碎發動時可以回復最高 25% hp，
