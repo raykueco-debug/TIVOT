@@ -2500,7 +2500,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1708';
+const KERB_V='?v=1709';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3586,6 +3586,20 @@ function renderLine(){
       if(shown[id]) shown[id].show=false;
     }
   }
+  /* ══⚠⚠ **雙人立繪話講完就撤**（ver -1709，Ray：「雙人立繪話講完就要撤，不然畫面很亂」）══
+     「雙人」＝那一張差分寫了 `withChar`（圖裡還有誰，例：索菈娜背著諾薇兒、主角抱著蕾娜）。
+     這一拍**與那張圖無關**就請它下台：說話的人不是它、立繪不是指它、也不是圖裡的另一個人。
+     ⚠ 沒有台詞也沒有立繪的純演出拍（音效／震動／黑幕，`NARRATION`）不算「別人開口」——
+       不撤，否則背景音一響人就先走了。 */
+  { const neutral = line.speaker==='NARRATION' && !line.portrait && !(line.text||'').trim();
+    if(!neutral) for(const s4 of ['L','R']){
+      const w4=slot[s4]; if(!w4) continue;
+      const f4=frameOf(w4, shown[w4] && shown[w4].expr);
+      if(!f4 || !f4.withChar || !f4.withChar.length) continue;
+      const mine = line.speaker===w4 || (line.portrait && line.portrait.char===w4)
+                || f4.withChar.indexOf(line.speaker)>=0;
+      if(!mine){ leaveSlot(s4); if(shown[w4]) shown[w4].show=false; }
+    } }
 
   const reveal = ()=>{
   slidIn = false;

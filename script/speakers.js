@@ -349,7 +349,7 @@ export const ART = {
                      ⚠ 兩人都站著、幾乎佔滿畫布（3~1530）⇒ **不覆寫 `cm`**，
                        照角色層走（不像公主抱那一組，她在那裡被畫小了）。
                      ⚠ 還是 `.png`，美術那一邊還沒轉 webp。 */
-                  holdnouvelle:{ src:'resources/si/renna_si_holdnouvelle.png',  top:3,  bot:1530, fx:0.394 },
+                  holdnouvelle:{ src:'resources/si/renna_si_holdnouvelle.png',  top:3,  bot:1530, fx:0.394, withChar:['NOUVELLE'] },
                   scarejump:   { src:'resources/si/renna_si_scarejump.webp',   top:0,  bot:1533, fx:0.632 },
                   scarecute:   { src:'resources/si/renna_si_scarecute.webp',   top:0,  bot:1530, fx:0.537 },
                   blush:     { src:'resources/si/renna_si_blush.webp',     top:8,  bot:1522, fx:0.551 },
@@ -715,7 +715,7 @@ export const ART = {
        ⚠ `cm` 沿用索菈娜那一層（176）—— 這張是斜著抱的姿勢，真要「精準」得把
          `cm` 帶到 200 以上，而那會超過 `CAST_TALL` 178 把全劇組一起縮小（§6.5）。
          先照預設跑，要調就動 `cm`／`standCm` 這兩個旋鈕（不要動 top/bot）。 */
-    backcarry:    { src:'resources/si/soranaanya_si_backcarry.webp', top:0, bot:1534, fx:0.820 },
+    backcarry:    { src:'resources/si/soranaanya_si_backcarry.webp', top:0, bot:1534, fx:0.820, withChar:['ANYA'] },
     readysmile:   { src:'resources/si/sorana_si_readysmile.webp?v=2', top:6,  bot:1534, fx:0.578 },  // ver -837 換新圖＋重量取景（?v=2：同名覆蓋）
     /* ver -837（Ray：「我的 tease 也被刪了，找回來」）：從 _originals 的透明版轉回，
        逐張量（measure_si.py）。腳本還沒有用到它 —— 先掛著備用。 */
@@ -882,10 +882,10 @@ export const ART = {
          （0.498），不是這一族（同這一版 battlecry 那一族踩到的坑）。
        ⚠ 庫裡還有第五張 `carrynouvellejealous`，Ray -1671 指示**先留著**、稿上沒用到，
          所以**不接線**（接了就是一個沒有人叫得到的鍵）。 */
-    carrynouvelle:       { src:'resources/si/sorana_si_carrynouvelle.webp?v=2', top:5, bot:1520, fx:0.667, cm:196, standCm:178 },
-    carrynouvellescream: { src:'resources/si/sorana_si_carrynouvellescream.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178 },
-    carrynouvellesmirk:  { src:'resources/si/sorana_si_carrynouvellesmirk.webp',  top:5, bot:1520, fx:0.667, cm:196, standCm:178 },
-    carrynouvelleshock:  { src:'resources/si/sorana_si_carrynouvelleshock.webp?v=2',  top:5, bot:1520, fx:0.667, cm:196, standCm:178 },
+    carrynouvelle:       { src:'resources/si/sorana_si_carrynouvelle.webp?v=2', top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },
+    carrynouvellescream: { src:'resources/si/sorana_si_carrynouvellescream.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },
+    carrynouvellesmirk:  { src:'resources/si/sorana_si_carrynouvellesmirk.webp',  top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },
+    carrynouvelleshock:  { src:'resources/si/sorana_si_carrynouvelleshock.webp?v=2',  top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },
     /* ⚠ ver -1694 接線（圖 -1671 就在庫裡，Ray 當時說「先留著」；第四輪他又重出了一張）。
        ⚠⚠ 取景值**照抄這一族的四張**，不用美術工單的 `fx:0.648`／不填 `cm`：
          · 五張的 alpha bbox 實測兩兩相同（6~7 / 1519，差 1px＝雜訊）⇒ 同一具身體換臉
@@ -896,9 +896,9 @@ export const ART = {
            在 expr 層不成立（`CAST_TALL` 只取角色層的 `cm`）。
        ⚠ 工單的 `fx:0.648` 與這一族的 0.667 差 0.019（≈8 CSS px），兩邊都說是索菈娜的
          兩眼中點。**沒有動線上那四張** —— 要改就五張一起改，那是 Ray 看畫面的事。 */
-    carrynouvellejealous:{ src:'resources/si/sorana_si_carrynouvellejealous.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178 },
+    carrynouvellejealous:{ src:'resources/si/sorana_si_carrynouvellejealous.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },
     /* ver -1707：shock 的索拉娜 ＋ jealous 的諾薇兒臉，alpha 逐位元沿用 ⇒ 取景照抄這一族。 */
-    carrynouvelleshock2: { src:'resources/si/sorana_si_carrynouvelleshock2.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178 },
+    carrynouvelleshock2: { src:'resources/si/sorana_si_carrynouvelleshock2.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },
     /* ══ 蕾娜＋索菈娜一張圖（ver -1707，Ray 確認：登記成索菈娜的表情）══
        這一拍蕾娜先下台（`hide`），這一張同時代表兩個人；`withChar:['RENNA']` ＝蕾娜開口也亮。
        ⚠ `fx` 是**估的**（兩人中間偏索菈娜，0.62）：錨在索菈娜的臉（0.51）的話，
