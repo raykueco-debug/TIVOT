@@ -2878,6 +2878,17 @@
   #storyCastL.mirrored{transform:translateX(-140%) scaleX(-1);}
   #storyCastR.mirrored{transform:translateX(140%) scaleX(-1);}
   #storyCast .story-portrait.mirrored.on{transform:scaleX(-1);}
+  /* ══ 雙人立繪（ver -1710）══ 一張圖兩個人、畫面寬 —— 從畫面外整片滑進來太忙
+     （Ray：「圖的出入幅度太大了」）。只滑一小段、配淡入淡出。
+     ⚠ 四個狀態各寫一份（同上面 mirrored 的理由：transform 會整條蓋掉）。 */
+  #storyCastL.duo{transform:translateX(-10%);opacity:0;}
+  #storyCastR.duo{transform:translateX(10%);opacity:0;}
+  #storyCastL.duo.mirrored{transform:translateX(-10%) scaleX(-1);}
+  #storyCastR.duo.mirrored{transform:translateX(10%) scaleX(-1);}
+  #storyCast .story-portrait.duo.on{transform:translateX(0);opacity:1;}
+  #storyCast .story-portrait.duo.mirrored.on{transform:scaleX(-1);opacity:1;}
+  #storyCast .story-portrait.duo.on.fading{opacity:0;}
+  .story-portrait.duo{transition:transform .45s cubic-bezier(.16,1,.3,1),filter .25s ease,opacity .35s ease;}
   /* 壓暗：說話者原色，其餘 brightness(.38) saturate(.75)。
      ⚠ CSS filter 天生不透明 —— 那條「不可用透明度代替」的警告是給 canvas 版的。 */
   .story-portrait.dim{filter:brightness(.38) saturate(.75);}

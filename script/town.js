@@ -7668,7 +7668,7 @@ export const TOWNS = {
           ren('determine','如果妳還是什麼都不能說……也沒關係。'),
           ren('determine','但是如果妳需要幫助……'),
           /* 蕾娜＋索菈娜一張圖（Ray 確認 4）：蕾娜先下台，這一張同時代表兩人。 */
-          Object.assign(sor('rennaannoy','我們都在喔！'), { hide:['RENNA'] }),
+          Object.assign(sor('rennaannoy','我們都在喔！'), { hide:['RENNA'] }),   // 從左邊出（ver -1710，差分自己帶 side:'L'）
           nou('faint','在喔……'),
           any('amaze',''),
           any('nod','嗯！'),

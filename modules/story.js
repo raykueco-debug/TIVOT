@@ -300,6 +300,9 @@ function layout(){
        站在右邊時就永遠翻不到。兩者相加是 XOR：可翻的人被翻到另一側時再翻回來。 */
     const mir = (!!a.flip) !== !!(a.mirror && a.side && o.side && o.side !== a.side);
     el.classList.toggle('mirrored', mir);
+    /* 雙人立繪（`withChar`）進出場的幅度收小、改淡入淡出（ver -1710，Ray：「看起來好忙，
+       圖的出入幅度太大了」）—— 位移與透明度寫在 CSS 的 `.duo`。 */
+    el.classList.toggle('duo', !!(a.withChar && a.withChar.length));
     /* ⚠⚠ `fxShift` ＝**這個角色整個往左右挪一點**（ver -645）：加在角色層，
        所以他的每一張差分一起移，而 `fx` 永遠保持**實測值**（見 speakers.js）。
        ⚠ **正數往左、負數往右**（`fx` 越大＝臉在圖上越右＝圖被推得越左）。
@@ -375,7 +378,12 @@ function ensureOn(id, expr){
      原本沒擋，`artOf` 回 null 之後 side 退回 'L'，於是她們去佔了左邊那個槽，
      把站在那裡的諾薇兒**整個清掉**（Ray 回報「讓開。」那一拍她不見了）。 */
   if(!artOf(id)) return null;
-  const side = sideOf(id);                              // 固定站位（可由 scene 覆寫），見 sideOf
+  /* ⚠ 差分自己可以指定擺哪一邊（`expr.side`，ver -1710）：雙人立繪的構圖是固定的
+     （例：蕾娜＋索菈娜那張，Ray：「從左邊出」）—— 這是那一張圖的性質，不是站位覆寫。
+     同一個人若正站在另一邊，先請她從那一邊下台，不然台上會有兩個她。 */
+  const ex = expr && ((artOf(id)||{}).expr||{})[expr];
+  const side = (ex && typeof ex==='object' && ex.side) || sideOf(id);   // 固定站位（可由 scene 覆寫），見 sideOf
+  { const other = side==='L' ? 'R' : 'L'; if(slot[other]===id){ leaveSlot(other); } }
   const el = slotEl(side); if(!el) return null;
   const src = srcFor(sp.art, expr);
   const swapping = (slot[side] && slot[side]!==id);
@@ -2500,7 +2508,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1709';
+const KERB_V='?v=1710';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

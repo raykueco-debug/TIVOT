@@ -903,8 +903,10 @@ export const ART = {
        這一拍蕾娜先下台（`hide`），這一張同時代表兩個人；`withChar:['RENNA']` ＝蕾娜開口也亮。
        ⚠ `fx` 是**估的**（兩人中間偏索菈娜，0.62）：錨在索菈娜的臉（0.51）的話，
          右半邊的蕾娜會被推出畫面。`top`/`bot` 是 alpha 上下緣。 */
-    rennaannoy:    { src:'resources/si/rennasorana_si_annoyedd.webp', top:4, bot:1534, fx:0.62, withChar:['RENNA'] },
-    rennaannoyc:   { src:'resources/si/rennasorana_si_annoyedc.webp', top:4, bot:1535, fx:0.62, withChar:['RENNA'] },
+    /* ⚠ ver -1710（Ray：「我們都在喔那一張從左邊出」）：這一拍擺左邊，`mirror:false` ＝擺到左邊也**不翻**
+       （索菈娜本人可翻，但這張兩個人，翻了蕾娜會換到另一邊）。 */
+    rennaannoy:    { src:'resources/si/rennasorana_si_annoyedd.webp', top:4, bot:1534, fx:0.30, withChar:['RENNA'], mirror:false, side:'L' },
+    rennaannoyc:   { src:'resources/si/rennasorana_si_annoyedc.webp', top:4, bot:1535, fx:0.33, withChar:['RENNA'], mirror:false, side:'L' },
     stare:     { src:'resources/si/sorana_si_stare.webp?v=2', top:7, bot:1528, fx:0.514 },
     wave:      { src:'resources/si/sorana_si_wave.webp?v=2', top:8, bot:1527, fx:0.530 },   // fx 目視手調，不隨新圖走（新圖量到 0.374，含舉起的手臂）
     worry:     { src:'resources/si/sorana_si_worry.webp?v=2', top:4, bot:1519, fx:0.543 },
