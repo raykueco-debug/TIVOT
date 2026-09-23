@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1693';
+export const VERSION = 'ver 2026.09.22-1694';
 
 export const GAME_CONFIG = {
 
@@ -5000,6 +5000,19 @@ export const ASSET_VER = {
        所以走這張表，由唯一那支組 URL 的函式（`story.bgUrl`）掛上去。
      ⚠ 這一格**沒有時段差分**（節點寫 `noTime`），所以只要一列。 */
   'tomb_landing3':           2,
+  /* ⚠ ver -1694（美術 `7bc8a36f`／`7e18b60d`／`faa927f1`／`b8c4e14f` 那四個 commit）：
+     Ray 交辦「改畫成寬廣場地」，**六張全是同名覆蓋**，而版號一直沒有人跳
+     —— 交接單 `_TO_CODE_20260922.md` §一 就列著，落了 23 版沒接。同 landing3 的理由。
+     ⚠ `tomb_lowaltar`／`_off` 這一對**被覆蓋了兩次**（第二次是 Ray 定案的
+       「`_off` 實心牆、`_on` 才裂開」）—— 兩次都沒跳，所以現在一起補成 2 就好
+       （版號只要「與玩家快取裡那一份不同」，不必數覆蓋了幾次）。
+     ⚠ 這六格都是 `noTime`，所以各只要一列。 */
+  'tomb_vaultw':             2,
+  'tomb_bonepit':            2,
+  'tomb_gallery3':           2,
+  'tomb_crypt':              2,
+  'tomb_lowaltar':           2,
+  'tomb_lowaltar_off':       2,
   /* ver -1403：貝利薩爾拓樸施工單（`resources/map/_belisar_worklist.md` §六）——
      這幾張**已交件、同名覆蓋**，而那份施工單（ver -1378 開的）一直沒有人套用，
      所以版號也一直沒跳 ⇒ 玩家的快取裡可能還是覆蓋前那一版（§5 的老坑：

@@ -1940,12 +1940,18 @@
   /* 主畫面徽記：金色透明 PNG（含 THE IV ORDER OF TESTAMENT 弧字），置中。
      微微發光呼吸：drop-shadow 光暈 + 亮度，節奏同「開始遊戲」按鈕（1.2s alternate）。
      尺寸固定比例（64vw 上限 300px）不隨視窗高縮——矮視窗靠間距收縮與教學鈕移入底排騰空間。 */
-  /* ⚠⚠ ver -1688：多一道**高度**的夾（`max-height`）—— 團徽是整頁最高的一塊
-     （375 寬時 240px），矮機器上它一個人就吃掉三分之一。
-     ⚠ 舊註解說「尺寸固定比例不隨視窗高縮」，那在**只有一排底鈕**時成立；
-       管理人模式兩排＋版權就不成立了。`height:auto` ＋ `max-height` 會自己等比縮。 */
+  /* ══⚠⚠⚠ **團徽的大小與位置不准動 —— 要騰空間就去縮那三顆鈕**（ver -1694，
+     Ray：「首頁的 logo 大小跟位置不能改，為了放按鈕都被變型了，
+           優先應該要先縮開始故事／挑戰／繼續三鈕，太大了」）══
+     -1688/-1691 那一版是反過來做的（團徽加 `max-height` 30/27/24vh ＋ `padding-top`
+     9→6→5vh），理由是「不要把主角縮小」——**判斷錯了**：團徽才是這一頁的主角，
+     而那三顆鈕本來就偏大。⇒ 那一版對團徽動的每一格都已還原。
+     ⚠⚠ **不要再加 `max-height`／`max-width`／`transform:scale` 到這個元素上**：
+       `width:min(64vw,300px)` ＋ `height:auto` 就是它的規格，等比且與視窗高無關。
+       多一道高度的夾 ＝ 窄高機器上它會被壓成另一個寬高比（Ray 說的「變型」）。
+     ⚠ `#home` 的 `padding-top` 也一起還原回 9vh —— 那決定團徽在畫面上的位置。
+     ⚠ 空間不夠時該收的順位：三顆主鈕 → SAINT INSTALL 那行的下距 → 底排小鈕。 */
   #home #homeEmblem{width:min(64vw,300px);max-width:78%;height:auto;
-    max-height:calc(var(--appvh,1vh)*30);
     margin:0 0 14px;flex:none;
     user-select:none;-webkit-user-drag:none;pointer-events:none;
     animation:emblemGlow 1.2s ease-in-out infinite alternate;
@@ -1979,7 +1985,6 @@
     box-shadow:0 0 22px var(--gold-dim),0 2px 10px rgba(0,0,0,.5);
     animation:pulse 1.2s infinite alternate;}
   #storyStartBtn:active{transform:scale(.94);}
-  @media (max-height:620px){ #storyStartBtn{padding:14px 44px;margin-bottom:10px;} }
   #startBtn{padding:16px 46px;background:transparent;border:1px solid var(--gold);
     color:var(--gold);border-radius:10px;font-family:inherit;font-size:17px;letter-spacing:5px;
     box-shadow:0 0 18px var(--gold-dim);animation:pulse 1.2s infinite alternate;}
@@ -1992,7 +1997,6 @@
     font-family:inherit;font-size:14px;letter-spacing:4px;}
   #continueBtn.on{display:block;}
   #continueBtn:active{transform:scale(.94);}
-  @media (max-height:620px){ #continueBtn{margin-top:7px;padding:9px 30px;} }
   /* 副武器/搭檔選單已移出首頁 → 出擊整備頁（#prepSheet，見下方區塊） */
   /* 語言切換鈕（首頁右上）：鈕面＝下一個語言的自稱（En/日本語/中文），點按循環切換 */
   #langBtn{position:absolute;top:calc(var(--notch-bar-h, 0px) + 12px);right:12px;z-index:5;
@@ -2001,35 +2005,49 @@
     letter-spacing:1px;}
   #langBtn:active{transform:scale(.92);}
   /* 教學鈕：縮為小圓角鈕、移入底部 Credit/原作 同排（見 #homeLinks 區的共同樣式） */
-  /* ══⚠⚠⚠ **矮視窗：空間從「團徽與留白」拿，不要從那兩顆主鈕拿**（ver -1688）══
-     Ray：「手機版首頁按鈕亂成一團…**先改故事跟挑戰鈕**」——
-     所以「開始故事」與「挑戰」的尺寸**刻意不動**：它們是這一頁的主角，
-     把它們縮小等於用「看起來更擠」去換「不重疊」。
-     ⚠ 實測（375×667・管理人模式・底下兩排鈕）：整欄 711px、超出 44px。
-       這一條收回來的是 **68px**（padding-top 20／團徽 20＋6／SAINT INSTALL 那行 22），
-       兩顆主鈕一個像素都沒動 ⇒ 643px，還剩 24px 餘裕。
-     ⚠ 門檻用 **760**（不是舊的 620）：667 與 640 這兩種常見機器都落在裡面，
-       而舊的 620 它們都摸不到 —— 那正是為什麼這個 bug 一直沒被這條規則接住。 */
+  /* ══⚠⚠⚠ **矮視窗：空間從那三顆主鈕拿，團徽一格都不准動**（ver -1694 改寫）══
+     Ray：「logo 大小跟位置不能改…優先應該要先縮開始故事／挑戰／繼續三鈕，太大了」
+     —— -1688 那一版寫的「兩顆主鈕刻意不動」**已作廢**，方向是反的。
+     ⚠ 門檻沿用 **760／700**（-1688 實測訂的，那一半是對的）：667 與 640 這兩種
+       常見機器都落在裡面，而更早的 620 它們都摸不到 —— 那才是這個 bug 當初
+       一直沒被接住的原因。 */
   @media (max-height:760px){
-    #home{padding-top:calc(var(--appvh,1vh)*6);}
-    #home #homeEmblem{max-height:calc(var(--appvh,1vh)*27);margin-bottom:8px;}
+    #storyStartBtn{padding:12px 40px;font-size:17px;letter-spacing:5px;margin-bottom:10px;}
+    #startBtn{padding:11px 36px;font-size:15px;letter-spacing:4px;}
+    #continueBtn{margin-top:7px;padding:8px 28px;font-size:13px;}
     #home .saint-install{margin-bottom:18px;}
   }
-  /* 更矮（SE1 級／Android 640／瀏覽器工具列全開）：再收一次；到這裡才准動主鈕的內距。
-     ⚠⚠ 門檻由舊的 **620 提到 700**（ver -1688 實測）：360×640 在管理人模式下
-       **還是超出 27px**，而 620 那一條摸不到它 —— 600~700 這一整段以前沒有人接。
-       ⚠ 667 也一起落進來是刻意的：它原本剛好塞滿（餘裕 0），多一顆開發鈕或
-         字體寬一點就會再爆一次。**剛好塞下不算塞下。** */
+  /* 更矮（SE1 級／Android 640／瀏覽器工具列全開）：三顆鈕再收一次。
+     ⚠ 667 也落進上一層是刻意的：它原本剛好塞滿（餘裕 0），多一顆開發鈕或
+       字體寬一點就會再爆一次。**剛好塞下不算塞下。** */
   @media (max-height:700px){
-    #home{padding-top:calc(var(--appvh,1vh)*5);}
-    #home #homeEmblem{max-height:calc(var(--appvh,1vh)*24);}
-    #home .saint-install{margin-bottom:12px;}
-    #startBtn{padding:12px 40px;}
+    #storyStartBtn{padding:9px 32px;font-size:16px;letter-spacing:4px;margin-bottom:6px;}
+    #startBtn{padding:8px 30px;font-size:14px;letter-spacing:3px;}
+    #continueBtn{margin-top:4px;padding:6px 24px;font-size:12px;letter-spacing:3px;}
+    #home .saint-install{margin-bottom:8px;margin-top:6px;}
+    /* 中文主標也讓一階 —— 它是字不是團徽（§團徽那條只保護 `#homeEmblem`）。 */
+    #home .title{font-size:clamp(22px,6.8vw,30px);}
   }
   /* 極矮＋極窄（320×568 的 SE1）：**底排那些小鈕**自己收，主鈕照樣不動。
      ⚠ 這一段實際只有**管理人模式**會用到：一般玩家那一排只有四顆
        （挑戰／教學／Credit／原作，§6.9 的白名單），320×568 本來就塞得下（實測）。
        管理人模式有九顆，在 320 寬會排成三行 —— 那是開發梯子，不是出貨的樣子。 */
+  /* ══ 最後一層：**只給管理人模式**（`body.testmode`），門檻 660 ══
+     ⚠⚠ 一般玩家那一排只有四顆（挑戰／教學／Credit／原作，§6.9 的白名單），
+       360×640 與 320×568 用上一層的尺寸就綽綽有餘（實測 slack 169／125）——
+       **不要讓出貨的那一頁跟著把鈕縮成這麼小**。管理人有九顆、在 320 寬排成三行，
+       那是開發梯子，它自己付這個代價。
+     ⚠ 門檻 **660**（不是 620）：360×640 在管理人模式下用上一層只剩 3px 餘裕 ——
+       **剛好塞下不算塞下**（字體寬一點或多一顆開發鈕就會再爆）。667 刻意留在
+       上一層（它那裡還有餘裕，而且是常見的真機尺寸）。 */
+  @media (max-height:660px){
+    body.testmode #storyStartBtn{padding:4px 24px;font-size:14px;margin-bottom:5px;}
+    body.testmode #startBtn{padding:4px 22px;font-size:13px;}
+    body.testmode #continueBtn{margin-top:3px;padding:3px 18px;font-size:11px;}
+    body.testmode #home .saint-install{margin:2px 0 6px;}
+    body.testmode #home .title{font-size:clamp(20px,6.6vw,28px);}
+  }
+  /* 底排那些小鈕自己收（極矮，玩家與管理人都適用）。 */
   @media (max-height:620px){
     #home #homeLinks{gap:6px;}
     #home #homeLinks button{padding:4px 12px;font-size:10px;letter-spacing:1px;}
