@@ -12,7 +12,9 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換機器（2026-09-24 晚，Mac → 另一台）—— 開工前先讀這一塊**
-> · `origin/main` ＝ `-1724`（8a83f08）之後又推了 `tools/routesim.mjs`（路線模擬器，見下）。**工作樹與遠端同步，沒有欠 commit。**
+> · `origin/main` ＝ **`-1727`**（這一台最後一個 commit 是 -1727 漏掉的 `story.js` `KERB_V` 版號同步，一併補上）。**工作樹與遠端同步，沒有欠 commit。**
+>   -1725～-1727 的內容見下面各段：A 路線四章／墓門 A 版尾巴／東泊守夜兩顆鈕／M2 第二天直接播。
+> · ⚠ **等 Ray 確認的**：-1727 那次「時鐘 23:00 自己跳 01:00」沒再現（見 -1727 那段）；-1726 對「第二天 M2 劇情」的判讀。
 > · **這台 Mac 上有一批 Ray 自己放的 untracked 檔，沒有推上去**（不是我該替他 `git add` 的東西，換機器要自己帶）：
 >   `reference/script.docx`／`reference/lake_topology.pdf`／`reference/maze.png`／`地理筆記.docx`／`索菈娜技能.docx`／
 >   `flight/reference/ship_topdown.png`／`ART_HANDOVER.md`（美術給美術的）／音檔 `bgm/peritune_sylblanc_loop.m4a`、
