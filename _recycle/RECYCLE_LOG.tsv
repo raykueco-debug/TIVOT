@@ -731,3 +731,5 @@ when	from	to	reason
 20260924-225719	resources/si/misha_si_drawopen.webp	_recycle/resources/si/misha_si_drawopen.webp	draw 護手弓沒接到鍔（Ray 09-24）；改用 GPT 修正版刀柄拼回原圖
 20260924-230407	resources/si/misha_si_draw.webp	_recycle/resources/si/misha_si_draw.webp.20260924-230407	第一版拼接錯：只接了弓的下端，鍔仍在拳頭上方（Ray 退）
 20260924-230407	resources/si/misha_si_drawopen.webp	_recycle/resources/si/misha_si_drawopen.webp.20260924-230407	第一版拼接錯：只接了弓的下端，鍔仍在拳頭上方（Ray 退）
+20260924-231121	resources/si/misha_si_draw.webp	_recycle/resources/si/misha_si_draw.webp.20260924-231121	第二版仍錯：S 形鍔尖在拳頭上方、鍔穿過拳頭（Ray：手不可能握在護弓之上）
+20260924-231121	resources/si/misha_si_drawopen.webp	_recycle/resources/si/misha_si_drawopen.webp.20260924-231121	第二版仍錯：S 形鍔尖在拳頭上方、鍔穿過拳頭（Ray：手不可能握在護弓之上）
