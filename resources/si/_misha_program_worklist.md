@@ -283,3 +283,22 @@ Ray 交 `4d31a783-….png`（GPT 直出 alpha，1024×1535）：「這張最接�
 
 **本機修圖的教訓**：Ray 說「刀身彎了」就是刀身自己彎，**先把刀身轉水平看它自己直不直**，不要先去算它跟別的零件的夾角；
 「稍微」＝位移個位數像素，超過 5 px 就要回頭想是不是做反了。
+
+### 附三之四、2026-09-25 凌晨：`drawopen` 以新 `draw` 為底重做（只換嘴）—— ✔ 交件；閉嘴版另存
+
+Ray：「drawopen 用新 draw 為底重做 只換嘴 張閉嘴版各一 表情嚴肅」
+
+**作法**（新串 `https://chatgpt.com/c/6ab54b89-2c30-83e8-b09c-3bf1668b34f3`，第一則附新 `draw` 白底）：
+1. GPT 出「微張嘴說話、不露牙、不笑」與「閉嘴平直嚴肅」各一張（alpha 直出）。**兩張都整張微重畫**（不透明區 13.8%、髮絲全變）⇒ 照 §四第 1 條**只取嘴**。
+2. 對位：以鼻～下巴（排除嘴）做整數位移搜尋，兩張都是 (0,0)，不必平移。
+3. 遮罩：嘴區橢圓（中心 (440,178)、半徑 38×26）、高斯羽化 3 px；RGB 混合，**alpha 一個位元不動**（沿用 `draw`）。
+   張嘴版改動 695 px（bbox 399–471 × 159–201）、閉嘴版 516 px。
+
+| 檔 | 內容 | top | bot | fx | 交件 |
+|---|---|---|---|---|---|
+| `misha_si_drawopen.webp` | 新 draw ＋ GPT 微張嘴 | 6 | 1534 | 0.434（與 `draw` 同） | q85 第一代、alpha 零誤差、近白 0.25% |
+| （未入庫）`_originals/si/misha_si_drawclose_src.png` | 新 draw ＋ GPT 閉嘴平直線 | 同上 | | 與現行 `draw` 的嘴只差「嘴線更平」；要不要拿它換掉 `draw` 的嘴，Ray 定 |
+
+原檔：`_originals/si/misha_si_drawopen_gpt.png`／`misha_si_drawclose_gpt.png`（GPT 整張）、`misha_si_drawopen_src.png`／`misha_si_drawclose_src.png`（拼接母版）。舊 `drawopen` 進 `_recycle/`。
+
+⚠⚠ **程式端要接（鐵律 11）**：`speakers.js:1498` `drawopen` 現在沒版號 ⇒ 加 `?v=2`，取景值改 **top:6 bot:1534 fx:0.434**（與 `draw` 同一組，切換不會跳）。

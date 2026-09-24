@@ -742,3 +742,4 @@ when	from	to	reason
 20260925-000456	resources/si/misha_si_draw.webp	_recycle/resources/si/misha_si_draw.webp.20260925-000456	Ray 改用自己出的拔刀新圖（護手已定案），本機只修刀身彎度
 20260925-000612	resources/si/4d31a783-fa06-476b-a9b7-749b608e704d.png	_recycle/resources/si/4d31a783-fa06-476b-a9b7-749b608e704d.png	Ray 丟進 si/ 的拔刀原稿 PNG；已存成 _originals/si/misha_si_draw_ray_src.png，raw PNG 不可留在載入目錄
 20260925-000925	resources/si/misha_si_draw.webp	_recycle/resources/si/misha_si_draw.webp.20260925-000925	刀身修成弧是反方向的錯（Ray：更慘了，應稍微修直並保持寬度）
+20260925-001510	resources/si/misha_si_drawopen.webp	_recycle/resources/si/misha_si_drawopen.webp.20260925-001510	drawopen 以新 draw 為底重做（只換嘴）

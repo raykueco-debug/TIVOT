@@ -140,7 +140,8 @@
   七版病因、有效作法（第 0 條：先定刀刃朝哪邊）、產線兩個坑（附圖與文字同一則送／抓圖用 blob 大小排除舊版）、驗收六件，都在 `si/_misha_program_worklist.md` **附三**。
 - `draw`／`drawopen` 線上是 v7（本機只拼刀柄＋拳頭區回原圖，臉 0 px 改動）。v7 之後 Ray 再退兩次（弧度太貼柄；換 front 餵的新串三張刀都不合格），
   Ray：「停吧 我自己做」→ 他自己出了一張（護手定案），本機把刀身拉直（保持寬度、最大位移 1.8 px）後入庫（工單**附三之三**，含量法、形變作法、與第一次修成弧線做反的教訓）。
-  **程式端要接**：`draw` `?v=3` ＋ 取景值 top:6 bot:1534 fx:0.434；**`drawopen` 姿勢對不上要重做**（以新 draw 為底只換嘴）。
+  `drawopen` 也以新 draw 為底重做了（只換嘴；閉嘴版另存 `_originals/si/misha_si_drawclose_src.png` 等 Ray 定），工單**附三之四**。
+  **程式端要接**：`draw` `?v=3`、`drawopen` 加 `?v=2`，兩張取景值都是 top:6 bot:1534 fx:0.434。
 - **程式端要接**：`speakers.js` `draw` `?v=2→3`、`drawopen` 加 `?v=2`；取景值不變。
 - ⚠ **問 Ray**：`front` 與 09-23 那五張的護手仍是亮金圓管大圓弧，只有 `draw` 是畜生道規格 —— 要不要全套換。
 - ⚠ 這台**沒有** `_originals/si/misha_si_close_natural_src.png`（§七寫「那台有」是錯的），`close` 自然站姿要重新向 GPT 要。
