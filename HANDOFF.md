@@ -7,7 +7,17 @@
 > 清單在 **`_TO_CODE_20260922.md`**（`ASSET_VER` 七列／`speakers.js` 16 條版號 ＋ 8 個新鍵
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
-# HANDOFF — 截至 `ver 2026.09.22-1711`
+# HANDOFF — 截至 `ver 2026.09.22-1712`
+
+> ⚠ **Ray 在 -1712 之後換機器**。下一台開工：`git pull` → 讀這一段 →
+>   確認 `config.js` 的 `VERSION` 是 **-1712**（不是就是沒拉到）。
+>   Windows 機器：`python3` 是空殼，一律 `py`；預覽用 `.claude/launch.json` 的 `tivot-win`（8124）。
+>   `tools/branch_tree.mjs` 要 `pptxgenjs`（沒裝就 `npm i pptxgenjs` 或設 `NODE_PATH`）。
+
+**`-1712`：安雅 `smile` 接上**。圖從 -1554 就在庫裡，東泊約安雅那一拍 `any('smile','好！')`
+一直在用、卻沒登記 ⇒ 靜靜退回基本立繪。全身站姿、另一張構圖 ⇒ `tools/measure_si.py` 逐張量：
+`top:0 bot:1526 fx:0.494`（同工具量本尊得 0/1531/0.505 ＝線上值，工具可信）。
+瀏覽器確認鍵解析得到、圖載得到（1024×1536）。
 
 ---
 
@@ -62,7 +72,6 @@
 | 東泊腳本讀 `tomb_misha_met` | -1707 掛的提醒，**Ray 要回修**，現在沒人讀這支旗 |
 | 米夏 `close` 自然站姿、`closeopen` 重做、刀長不合格 7 張 | 等 Ray（美術交接 §三） |
 | 米夏 `order` 的 `top/bot`、`back` 的 `fx` | 要看畫面複核 |
-| 安雅 `anya_si_smile.webp` | 庫裡有、程式沒接、誰交的待查（美術交接 §五） |
 | 11 份美術交接檔從磁碟消失 | 仍在 git，等 Ray 回覆（**不要 `git add -A`**） |
 | `script_lint` 42 條提醒 | 古墓 6 張插圖仍是 png、3 場劇情戰前沒有 `checkpoint`、貝利薩爾 6 條 L 形邊 |
 | -1694 那張表 | `carrynouvelle` 的 `fx`、`determine／eat／wave` 的 `fx`、`embarrass` 右緣 —— 仍等 Ray |
@@ -74,7 +83,7 @@
 | 索拉娜 realpha 12 張 | ✔ 不欠 —— 圖已交、`-1711` 取景與版號已接 |
 | 安雅 `happy` | ✔ 不欠 —— `-1711` 已接 |
 | 蕾娜 `hugserious／hugshock／hugtalk／hugtalk2`、索拉娜 `carrynouvelleshock2` | ✔ 不欠 —— 已在 `speakers.js`（-1711 查過） |
-| 安雅 `smile` | ⚠ 欠程式端接線（圖在庫裡） |
+| 安雅 `smile` | ✔ 不欠 —— `-1712` 已接（誰交的仍不明，但不影響） |
 
 ---
 

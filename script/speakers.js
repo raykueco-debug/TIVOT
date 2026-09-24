@@ -1022,6 +1022,10 @@ export const ART = {
     /* ══ ver -1711：笑瞇眼幸福微笑（美術 2026-09-23 深夜交件）══ 底圖＝本尊、只換臉、
        alpha 與本尊逐位元相同 ⇒ 取景照抄本尊。 */
     happy:    { src:'resources/si/anya_si_happy.webp',     top:0, bot:1531, fx:0.505 },
+    /* ══ ver -1712：`smile` —— 圖早就在庫裡（-1554 小寫化時已存在），東泊約安雅那一拍
+       `any('smile','好！')` 一直在用、卻沒登記 ⇒ 靜靜退回基本立繪（同 -1407 的 makeface）。
+       全身站姿、另一張構圖 ⇒ 逐張量（`tools/measure_si.py`；同工具量本尊得 0/1531/0.505 ＝線上值）。 */
+    smile:    { src:'resources/si/anya_si_smile.webp',     top:0, bot:1526, fx:0.494 },
     /* ══ 貝利薩爾之後那一夜（ver -1386，Ray 交稿）══ 逐張量。 */
     clap:      { src:'resources/si/anya_si_clap.webp',       top:0, bot:1517, fx:0.484 },
     /* ⚠⚠ ver -1407：圖早就交了（`Anya_SI_makeface.png`），只是**沒有登記進這張表** ——
