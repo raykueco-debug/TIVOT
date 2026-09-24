@@ -142,3 +142,28 @@
 
 ⚠⚠⚠ **那個症狀不是「空白」是「上一格的圖」**，畫面上沒有任何錯誤訊息，
 從截圖上看起來就像「美術還沒交」。**交了新背景就重跑那一支**，一行指令的事。
+
+> ## ✔ **2026-09-24：鏡湖與卡耶爾山谷交件了**（美術，ver -1712 之後）
+> ```
+> resources/map/map_lake.webp     (1000×1024) ＋ _spots_lake.json    ＋ _icons_lake.png   （10 格・4×3）
+> resources/map/map_canyon.webp   ( 700× 830) ＋ _spots_canyon.json  ＋ _icons_canyon.png （ 5 格・3×2）
+> ```
+> · 兩張都是 `tools/map_compose.py` 合成（紙沿用 `_originals/map/map_tomb_paper.png`，同野外那幾張）：
+>   `map_compose.py lake   --cols 4 --rows 3 --order inlet,shingle,fallbase,cave,grove,eastshore,deadfall,northshore,boathouse,causeway`
+>   `map_compose.py canyon --cols 3 --rows 2 --order entry,corridor,bones,bridge,altar`
+> · 圖示表由 ChatGPT 出（逐格寫明幾筆），**本機以「亮度<200」二值化**成黑白貼紙表再餵合成器
+>   —— 這一趟的圖是從另一台 Chrome 經頁面文字（逐列轉場點 RLE）搬回來的，原始 RLE 存
+>   `_originals/map/map_{lake,canyon}_icons_rle.txt`（沒有彩色原檔，合成器本來就只吃墨線）。
+> · ⚠⚠ **程式端要接（兩座都是新增，沒有舊座標、不必 `?v=`）**：`script/town.js` 的
+>   `lake` 與 `canyon` 各補一個 `map:{ img, spots }`，`spots` 照抄 `_spots_<id>.json`：
+>
+>       lake:   map:{ img:'resources/map/map_lake.webp',
+>                     spots:{ inlet:[0.431,0.915], shingle:[0.431,0.7212], fallbase:[0.131,0.7212],
+>                             cave:[0.131,0.5273], grove:[0.131,0.3335], eastshore:[0.431,0.5273],
+>                             deadfall:[0.731,0.5273], northshore:[0.431,0.3335],
+>                             boathouse:[0.731,0.3335], causeway:[0.431,0.1396] } }
+>       canyon: map:{ img:'resources/map/map_canyon.webp',
+>                     spots:{ entry:[0.1871,0.8952], corridor:[0.1871,0.6542], bones:[0.1871,0.4133],
+>                             bridge:[0.6157,0.4133], altar:[0.1871,0.1723] } }
+>
+>   兩張圖都**沒寫 `mist:0`** ⇒ 照預設有霧（荒野走過才亮），與夏爾森林同。

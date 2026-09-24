@@ -76,3 +76,25 @@
 | 小地圖 | ⚠ 欠 `canyon`／`lake` 2 張（同 09-23） |
 | 敵人 | ✔ `mon_gravekeeper_seal_down` 交了；⚠ 欠 `mon_dragon_front`、三張髒 alpha、古墓怪重繪（同 09-23） |
 | 插圖 | ⚠ 6 張古墓插圖仍是 png（同 09-23；轉檔要與改路徑同時做） |
+
+---
+
+## 六、同日下午（Mac 那一台，ver -1712 之後）
+
+| 件 | 狀態 |
+|---|---|
+| **索拉娜 `whisper` 回復**（Ray：「修壞了，回復」） | ✔ 檔案回到 `d556b53` 那一份（耳語姿勢）；9/22 重製版（持刀撲身）進回收區。**程式端要接**：`speakers.js:675` `?v=2→?v=3`、`top:4 bot:1524`（`_sorana_r3_worklist.md` §十六） |
+| **小地圖 `map_lake` ＋ `map_canyon`** | ✔ 交了（`_minimap_worklist.md` 末段）。**程式端要接**：兩座城的 `map:{img,spots}`（新增） |
+| 米夏 | 進行中（見下一段） |
+
+⚠ 這一台沒有上一台的 `_originals/si/misha_si_close_natural_src.png`（`_originals` 不入版控）——
+  米夏 `close` 自然站姿要重新向 GPT 要。
+
+⚠ 產線備註：Claude in Chrome 連的是 **Windows 那台的 Chrome**（這台 Mac 沒連），
+  下載會落在那台。這一趟圖是在頁面內把圖二值化成「逐列轉場點」文字、用 `get_page_text`
+  （上限 5 萬字）搬回來的 —— 只適合墨線圖（小地圖圖示表）；立繪那種要真 alpha 的走不了。
+
+### 資產盤點（補 §五）
+| 項 | 狀態 |
+|---|---|
+| 小地圖 | ✔ 不欠 —— `canyon`／`lake` 今天交了（程式端未接） |
