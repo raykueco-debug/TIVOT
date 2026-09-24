@@ -209,6 +209,21 @@ function voiceChain(c, vol){
    被下面那個 `catch(e){}` **靜靜吞掉** → **所有音效整個不見**（Ray 回報，ver -399 修）。
    ⚠ 那個空的 catch 是刻意的（音效壞掉不該讓遊戲停），但它也會把這種低級錯誤藏起來
      —— 動這一支之後**一定要真的聽一次**，不要只看 console。 */
+/* 這支 buffer 裡「有聲音」的區間（秒）：任一聲道 |x| 超過 `LOOP_SIL` 的第一個與
+   最後一個樣本。整支都低於門檻就回 null（照原樣循環）。 */
+const LOOP_SIL = 0.004;
+function loopRange(buf){
+  const n=buf.length, ch=buf.numberOfChannels, sr=buf.sampleRate;
+  let a=-1, b=-1;
+  for(let c=0;c<ch;c++){
+    const d=buf.getChannelData(c);
+    let i=0; while(i<n && Math.abs(d[i])<LOOP_SIL) i++;
+    let j=n-1; while(j>i && Math.abs(d[j])<LOOP_SIL) j--;
+    if(i<n){ a = (a<0) ? i : Math.min(a,i); b = Math.max(b,j); }
+  }
+  if(a<0 || b<=a) return null;
+  return [a/sr, (b+1)/sr];
+}
 function playBuffer(c, buf, vol, voice, handle, src){
   try{
     const s = c.createBufferSource(); s.buffer = buf;
@@ -222,7 +237,17 @@ function playBuffer(c, buf, vol, voice, handle, src){
     }
     const g = c.createGain(); g.gain.value = (vol==null ? 1 : vol);
     s.connect(g); g.connect(busIn(c, layerOf(src, voice)));
-    if(handle && handle.loop) s.loop = true;   // ⚠ 一定要在 start() 之前（ver -1568）
+    if(handle && handle.loop){
+      s.loop = true;   // ⚠ 一定要在 start() 之前（ver -1568）
+      /* ══⚠⚠ **循環點夾在有聲音的那一段**（ver -1715，Ray：「瀑布底的 se_waterfall 應該要
+         連續 loop 不要淡入淡出」）══ 聽起來像「每一圈淡一次」的其實是**編碼器留下的靜音**：
+         AAC 每一支頭尾都帶 priming／padding（實測舊的 se_waterfall.m4a 頭 4.6ms、
+         尾 25ms 全靜），BufferSource 的 `loop` 是樣本級接回 0，那兩段靜音就成了每一圈
+         一次的空洞。這裡量出第一個／最後一個有聲的樣本，把 `loopStart`／`loopEnd`
+         夾在那之間 —— 素材本身要不要無縫仍是素材的事，這裡只保證不多出一段靜音。
+         ⚠ 只在 `loop` 那一條做：一次性音效的頭尾靜音是它自己的節奏。 */
+      try{ const r=loopRange(buf); if(r){ s.loopStart=r[0]; s.loopEnd=r[1]; } }catch(_){}
+    }
     s.start();
     /* 可中止的把手（playCue 用）：演出結束時要把還在響的機械聲收掉。
        ⚠ 直接 stop() 會有「喀」一聲 —— 一定要先把增益斜降到 0 再 stop。 */

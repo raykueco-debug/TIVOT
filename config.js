@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1714';
+export const VERSION = 'ver 2026.09.22-1715';
 
 export const GAME_CONFIG = {
 
@@ -2493,7 +2493,12 @@ export const GAME_CONFIG = {
        ⚠⚠ `noPartner` **擋的是主動技**（「有人，但這一場不准用」），擋不掉
          「誰站在破防計量表上」—— 兩格語意不同，**要無夥伴就得寫 `solo`**。
          -1672 我只寫了 `noSaint`＋`noPartner`，所以安雅照樣跟著上場。 */
-    tomb_low_solo: { enemy:'gk_many', session:'tomb_wild', solo:true, noSaint:true, noPartner:true },
+    /* ⚠⚠⚠ **ver -1715 改成有夥伴**（Ray：「原本無伙伴那場改成可用安雅與索，預設索」）——
+       `solo`／`noSaint`／`noPartner` 三格一起拿掉（那三格是「身邊沒有人」的落地，
+       人回來了就沒有理由留）。`partners` ＝這一場**准帶**的名單、`partner` ＝**預設**：
+       玩家先前在整備頁選的是名單裡的人就照他的（安雅），否則落回預設（索菈娜）。
+       判定只在 `combat.startGame` 一處（鐵律 8）。諾薇兒此時已熔斷出局，名單本來就不含她。 */
+    tomb_low_solo: { enemy:'gk_many', session:'tomb_wild', partner:'sorana', partners:['sorana','anya'] },
     /* ② 安雅介入 —— **一開打就是惡夢化**（稿：「主角一開戰就是夢魘化的強化狀態」）。
        ⚠ `niStart` 的實作在 `combat.startGame` 尾端（走 `saint.activateNightmare`
          那個唯一入口，鐵律 8）；CI（`ci_anya_ni`）與 vo 由它播，**腳本那一拍不要再播一次**。
@@ -3781,6 +3786,13 @@ export const GAME_CONFIG = {
          峰值 −6.2 dBFS × 2.43 ＝ **+1.5 dBFS**，在 `peakCeilDb`(+2) 之內，**不必夾**。
          ⚠ 換檔就要重量（§6.6：一支音檔只有一個響度）—— 這一列是 -1414 重量過的。 */
       se_waterfall:2.43,
+      /* ver -1715（Ray 交件，`tools/audio_scan.html` 實量，耳機／手機平均）：
+         · 瀑布循環版 −17.0 LUFS ⇒ 1.44（峰值 −1.9 dBFS ⇒ +1.3，`peakCeilDb` 之內）
+         · 拔刀 −18.6 ⇒ 想要 1.73，峰值 −0.9 dBFS ⇒ 夾到 **1.396**（+2 dBFS）CAP
+         · 收刀 −19.1 ⇒ 想要 1.85，峰值 −1.4 dBFS ⇒ 夾到 **1.479**（+2 dBFS）CAP */
+      se_waterfall_loop:1.44,
+      se_sworddraw:1.396,               // CAP
+      se_swordcease:1.479,              // CAP
       /* ⚠ **還沒量**（ver -664 新加的音效）：跑一次 tools/audio_scan.html 貼回來（§6.6）。 */
       se_paniccrowd:1.0,
       /* ⚠ 由 `Se_enemy_Saintroar` 升 5 個半音另存（ver -671，Ray 指定）——

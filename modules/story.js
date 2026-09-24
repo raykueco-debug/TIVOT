@@ -55,6 +55,12 @@ const TYPE_MS   = 22;           // 打字機每字間隔
 
 let cur = null;                 // 目前 scene 物件
 let lineIdx = 0;
+/* 最近一次 `cgBackRise`（劇情層的降臨）發生在哪一段的第幾拍（ver -1715）。
+   只給 `storyRoseBefore()` 讀：戰鬥拍問「前一拍是不是剛降臨過」。不進存檔、換段自然失效。 */
+let storyRoseAt = null;
+function storyRoseBefore(){
+  return !!(storyRoseAt && storyRoseAt.cur===cur && lineIdx - storyRoseAt.idx <= 2 && lineIdx > storyRoseAt.idx);
+}
 let slot = { L:null, R:null };  // 兩個位置目前站誰（角色 id）
 /* 每個槽目前用的是哪張差分。⚠ 排版要用**那一張**的取景（top/bot/fx），
    不是角色的基本值 —— 差分是不同姿勢，見 speakers.js 的 frameOf。 */
@@ -1555,6 +1561,7 @@ function applyPersist(line){
        ⚠ 收尾：動畫跑完拔掉 class（`enemy-rise` 帶 `both` 填充，留著會壓住之後的
          `transform`／`filter`，同 ver -598 在戰鬥那邊踩過的坑），光環自己移除。 */
     if(line.cgBackRise && line.cgBack){
+      storyRoseAt = { cur, idx: lineIdx };   // 這一拍在劇情層降臨過了（見 storyRoseBefore）
       const el=$('storyCgBack'), st=$('storyStage');
       /* ⚠ `cgBackAs` 那張卡寫了 `riseStyle:'unpurge'` 就跑淨化倒放（ver -1704）——
          與戰鬥那一側同一個判斷（`riseClass`，story 不 import enemy，所以照抄那一行：
@@ -1880,6 +1887,10 @@ const SE_FILES=[
   'se_weapon_guard.m4a', 'se_weapon_mg_squall.m4a', 'se_weapon_pistol_01.m4a',
   'se_weapon_pistol_02.m4a', 'se_weapon_pistol_03.m4a', 'se_weapon_reload.m4a',
   'se_weapon_shotgun_blast.m4a', 'se_weapon_sniper_falcon.m4a',
+  /* ver -1715（Ray 交件 + 交辦）：瀑布的**循環版**（11.8 秒、頭尾無靜音，給節點的 `amb` 用；
+     舊的 `se_waterfall` 4.9 秒那一支留給一次性的 `se:` 用）、拔刀／收刀（墓門米夏那一段）。
+     原 mp3 在 `se/_raw/`。 */
+  'se_waterfall_loop.m4a', 'se_sworddraw.m4a', 'se_swordcease.m4a',
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。 */
 const SE_ALIAS={ se_saintroar:'se_enemy_saintroar', se_mg_squall:'se_weapon_mg_squall',
@@ -2368,6 +2379,12 @@ function fireOneShot(line){
        只有 `line.auto` 一份**（鐵律 7），不要在這裡另外寫一個秒數。
      ⚠ 每一拍都重設（沒寫 `noSkip` 就歸零）：它是**這一拍**的性質，不是跨句狀態。 */
   noSkipUntil = line.noSkip ? (Date.now() + (line.auto>0 ? line.auto : BLANK_BEAT)) : 0;
+  /* ══⚠⚠ **安雅的感應動畫一律不可點擊跳過**（ver -1715，Ray 定案）══
+     規矩寫在**引擎**不寫在腳本（鐵律 8）：`fx:'sense'` 的拍子有五處，-1540 只有兩處記得寫
+     `noSkip`，其餘三處點一下就把光圈與白光整段跳掉。保護期＝這一拍的 `auto` 與感應
+     演出本身的長度（白光起點＋長成）取大者 —— 長度的真相在那組常數上，不抄秒數。 */
+  if(line.fx==='sense')
+    noSkipUntil = Math.max(noSkipUntil, Date.now() + Math.max(line.auto|0, SENSE_BURST_AT + SENSE_BURST_GROW));
   if(line.checkpoint) lineCheckpoint();   // 腳本上的存檔點（ver -653，見 lineCheckpoint）
   if(line.vibrate) hap.shake();
   /* ══⚠⚠ **持續震動**（ver -638，Ray：「蕾娜的！！之前的畫面震動要持續 10 秒，
@@ -2508,7 +2525,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1714';
+const KERB_V='?v=1715';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3554,14 +3571,21 @@ function renderLine(){
        （`tomb_gk1`）在登場戲要推棺、在追擊戰不要推。
        ⚠ 只能往「要推」的方向覆寫：不寫就照舊問 `gateSkip`（漏寫的下場是原地開棺，
          看得見、無害；反過來預設推棺的話每一格都會演一次完整儀式）。 */
+    /* ══⚠⚠ **前一拍劇情已經降臨過，戰鬥裡就不要再降一次**（ver -1715，Ray：「墓主一次戰鬥
+       只跑一次降臨音跟咆哮，如果前一拍劇情已跑降臨音進入戰鬥就不要再跑」）══
+       -1650 只認「完整推棺」那一條（`kerbRise`）；柱廳第二輪是**原地開棺**（`cgBackRise`
+       之後直接 `{battle}`），於是牠在劇情層降完、門一開又在戰鬥裡降一次 —— 鐘聲＋咆哮
+       各兩遍。story 不認得 enemy／combat，所以只把事實傳過去（`storyRose`），
+       要不要壓由 main／enemy 決定。「前一拍」＝同一段、兩拍之內（中間准有一拍純演出）。 */
+    const storyRose = storyRoseBefore();
     if(!line.kerbRise && gateSkip && !gateSkip(id)){
-      playKerberosInPlace(()=>battleHandler(id, resume, { kerbRise:false }), opened);
+      playKerberosInPlace(()=>battleHandler(id, resume, { kerbRise:false, storyRose }), opened);
       return;
     }
     battleCueId = id;          // 這一場的曲子（ver -614）：撞頂那一拍的 riseCue 要用
     /* ⚠ 第三個參數 ＝**這一拍走的是完整推棺**（ver -1650）：呼叫端用它決定
        「牠要不要在戰鬥裡再降臨一次」。story 不認得 enemy／combat，所以只傳事實。 */
-    playKerberos(()=>battleHandler(id, resume, { kerbRise:true }), opened);
+    playKerberos(()=>battleHandler(id, resume, { kerbRise:true, storyRose }), opened);
     return;
   }
 

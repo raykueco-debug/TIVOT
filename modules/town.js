@@ -1757,9 +1757,17 @@ function chaseSpec(){
        回 null 之後沒有人讀得到它。
      ⚠ 它與 `hard.need`（追擊變密急）是兩件事 —— 一個是**更兇**、一個是**結束**。 */
   if(c && c.until && prog.hasFlag(c.until)) return null;
-  if(!c || !c.hard || !c.hard.need || !prog.hasFlag(c.hard.need)) return c;
-  const h=Object.assign({}, c.hard); delete h.need;
-  return Object.assign({}, c, h);
+  if(!c) return null;
+  let out=c;
+  if(c.hard && c.hard.need && prog.hasFlag(c.hard.need)){
+    const h=Object.assign({}, c.hard); delete h.need; out=Object.assign({}, out, h);
+  }
+  /* ══ 第三層那一套（`chase.l3`，ver -1715）══ `afterFlag` 插了就整組蓋上去（速度／停頓／
+     `catchAll`／`mustAt`）。它疊在 `hard` 之上 —— 兩者都成立時以 l3 為準（更後面的那一層）。 */
+  if(c.l3 && c.l3.afterFlag && prog.hasFlag(c.l3.afterFlag)){
+    const l=Object.assign({}, c.l3); delete l.afterFlag; delete l.behind; out=Object.assign({}, out, l);
+  }
+  return out;
 }
 /* 現在那一筆（`null`＝還沒上線／不是這張圖）。⚠ 每次現讀，不快取：
    讀檔會把鑰匙整個換掉，快取一份就會拿著上一個檔的追兵（鐵律 7）。 */
@@ -1908,7 +1916,18 @@ function chaseNextAct(n){
 }
 function chaseActDue(n){
   const spec=chaseSpec(); if(!spec || !n) return null;
-  if(n.noWild) return null;
+  const c0=chaseGet();
+  /* ══⚠⚠ **`mustAt`：這一層一次都沒被追上，就在這一格必遭遇**（ver -1715，Ray：「如果一路都
+     沒被追上，在骨坑必遭遇」）══ 判「沒被追上」看 `c.hits` 有沒有超過進這一層時記下的
+     `l3mark`（`chaseAfterAct` 記的）。成立就把牠**擺到腳下**再往下走一般的判定 ——
+     這一格是 `rest`（安全點），所以要排在下面那道 `noWild`／`rest` 的門之前。
+     打完 `chaseAfterAct` 照舊 `hits+1`，第二次走進來就不會再逼一場；結算由 `restActDue` 接手。 */
+  if(spec.mustAt && spec.mustAt===nodeId && c0 && c0.l3mark!=null && (c0.hits|0)<=(c0.l3mark|0) && !c0.mustDone){
+    c0.node=nodeId; c0.stun=0; c0.down=false; c0.mustDone=true; chaseSet(c0);
+  }else if(n.noWild){
+    /* `catchAll`（第三層）：不出怪的格子也追得上，**安全點（`rest`）除外**（ver -1715）。 */
+    if(!(spec.catchAll && !n.rest)) return null;
+  }
   const c=chaseGet(); if(!c || !c.node || c.node!==nodeId) return null;
   /* ══⚠⚠ **倒地期間踩到牠不開打**（ver -1701，Ray：「停留期間保持 down 不動作，
      重新追擊才會觸發戰鬥」）══ `c.down` 由擊退那一刻插（`chaseAfterAct`）、
@@ -1974,6 +1993,15 @@ function chaseAfterAct(act, fought){
   if(!fought) return;                             // 純對白不算一場
   const c = chaseGet() || chaseNew();
   c.fights=(c.fights|0)+1;
+  /* ══ 第三層的起點（`chase.l3.afterFlag`，ver -1715）══ 底層梯廳那一段演完：牠被擺到玩家
+     **背後一格**（`behind`）、停頓歸零、記下此刻的 `hits` 當這一層的基準（`mustAt` 用）。
+     ⚠ 讀的是原始資料上的 `l3`（`chaseSpec` 已把 `behind` 拿掉）。 */
+  { const raw=(TOWNS[townId]||{}).chase||{}, l3=raw.l3;
+    if(l3 && act && act.flag && act.flag===l3.afterFlag){
+      c.node = l3.behind || nodeId; c.stun = 0; c.down = false;
+      c.l3mark = (c.hits|0); c.mustDone = false;
+      chaseSet(c); refreshChaseDown(); return;
+    } }
   if(nodeId === spec.resetAt && act && act.flag){
     /* ══ `resetAt`（柱廳）：那一格的**必觸戰鬥**打完，牠的位置設成這一格再停 `stun`
        （Ray：「從柱廳戰後從柱廳開始停 然後追」）══
@@ -3596,8 +3624,13 @@ function exitsOf(){
      ⚠ 擋在 `exitsOf()` 不是 `go()`（同城鎮戰那條，§6.5.4.3）：**箭頭都不出現**，
        玩家才讀得出「那邊過不去」，而不是「按了沒反應」。
      ⚠ 只擋**還沒立旗**的那一格：旗一立整條路就常開，不必再演一次。 */
+  /* ⚠ ver -1715：一格可以寫**好幾個條件**（陣列＝全部要成立），`'!旗'` ＝**那支旗插了就沒有
+     這個出口**（墓門遭遇墓主後永久封閉）。`back` 也吃這一條（它在上面被抽出來另外擺，
+     所以要另判一次）—— 判定只有 `exitOk` 一支。 */
+  const exitOk = cond => asArrE(cond).every(f => (String(f)[0]==='!') ? !prog.hasFlag(String(f).slice(1)) : prog.hasFlag(f));
+  let back2 = back;
   if(n && n.exitIf){
-    for(const d in n.exitIf){ if(!prog.hasFlag(n.exitIf[d])) delete ex[d]; }
+    for(const d in n.exitIf){ if(d==='back'){ if(!exitOk(n.exitIf[d])) back2=null; continue; } if(!exitOk(n.exitIf[d])) delete ex[d]; }
   }
   /* ══⚠ **方向的章節門檻**（`exitFrom:{ 方向:<第幾章> }`，ver -925，Ray：「stage6 之前
      夏爾森林只能走到懸崖邊的前一個圖，懸崖邊不開放」）══
@@ -3612,14 +3645,15 @@ function exitsOf(){
      `sail.dir`（木雅克神殿的遺蹟入口：下方是回斷崖邊的路，所以出航掛在**左**）。
      ⚠ 寫在資料上不寫死在程式裡 —— 哪一格的哪一邊是出口，那是那張圖的事。 */
   if(n && n.sail){ const sd=n.sail.dir||'down'; if(!ex[sd]) ex[sd]=SAIL_ID; }
-  if(back){
+  if(back2){
     /* 首選＝來時方向的反向；那一格已經有別的出口就退回「下」，再不行就找一格空的。 */
     const want = (backDir && !ex[backDir]) ? backDir
                : (!ex.down ? 'down' : ['up','left','right','down'].find(d=>!ex[d]));
-    if(want) ex[want]=back;
+    if(want) ex[want]=back2;
   }
   return ex;
 }
+const asArrE = v => v==null ? [] : (Array.isArray(v) ? v : [v]);
 const SAIL_ID='__sail';
 /* 出航被擋、而那一格又沒寫自己的台詞時的預設旁白（見 setSail）。 */
 const SAIL_NO_SHIP='沒有船，離不開這裡。';

@@ -2251,7 +2251,9 @@ story.setBattleHandler((battleId, resume, gateOpts)=>{
      墓主直接在原地就好，不用再跑降臨」）—— 劇情層在門推上去之前已經演過一次
      `cgBackRise`，門一開再降一次就是同一件事演兩遍（也正是 -1414 的原始規格）。
      ⚠ 一次性：只罩這一場，同一張卡在追擊戰照舊降臨。 */
-  if(gateOpts && gateOpts.kerbRise) combat.suppressEnemyRise();
+  /* ⚠ ver -1715：**原地開棺**的那一場也一樣 —— 只要前一拍劇情層已經降臨過（`storyRose`），
+     戰鬥裡就不再降、鐘聲與咆哮也不再響（Ray：「一次戰鬥只跑一次降臨音跟咆哮」）。 */
+  if(gateOpts && (gateOpts.kerbRise || gateOpts.storyRose)) combat.suppressEnemyRise();
   /* 劇情插入戰（ver -375（-893 前用詞））：腳本寫 `{battle:'guild_hunter'}`，查得到 `config.battles`
      就開那一場（單敵、卡上的數值、不能聖徒化／用搭檔技）。
      ⚠ 查不到才退回教學那一場 —— 舊腳本（地宮那一段）寫的就是教學，不能被改掉。

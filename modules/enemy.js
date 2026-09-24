@@ -816,8 +816,14 @@ const ENTRANCE_KINDS = { harm:1, slay:1, ship:1, aerial:1 };
 export function riseClass(en){ return (en && en.riseStyle==='unpurge') ? 'enemy-unpurge' : 'enemy-rise'; }
 let riseOff = false;
 export function suppressRiseOnce(){ riseOff = true; }
+/* ⚠⚠ 「這一次被壓掉了」要讓 `loadEnemyPortrait` 知道（ver -1715）：`isRise` 回 false 之後
+   走的是**不降臨那一條**，而那一條會在圖出現時發登場音＋衝擊（`arrive`）——
+   於是「不再降臨」變成「畫面不降，鐘聲與咆哮照樣再響一遍」（Ray 回報的正是這個）。
+   壓掉降臨＝連它的聲音與衝擊一起壓（那些是同一件事的三個面），所以留一個旗給下面讀。 */
+let riseSuppressedNow = false;
 function isRise(en){
-  if(riseOff){ riseOff=false; return false; }
+  riseSuppressedNow = false;
+  if(riseOff){ riseOff=false; riseSuppressedNow=true; return false; }
   return !!(en && (ENTRANCE_KINDS[en.kind] || en.riseFx));
 }
 function isPurify(){
@@ -1009,7 +1015,8 @@ export function loadEnemyPortrait(en){
          **圖照舊立刻掛**（-1414 的「槍棺開的時候就在那裡了」不變），
          只有音與震延到門開的那一刻。
        ⚠ 已經放行了（`riseHeld` 是 false，例如不走門的路徑）就當場發，行為不變。 */
-    const fire=()=>{ if(riseHeld) risePending=arrive; else arrive(); };
+    /* ⚠ 被 `suppressRiseOnce` 壓掉的那一場：登場音與衝擊也不發（見 riseSuppressedNow）。 */
+    const fire=()=>{ if(riseSuppressedNow) return; if(riseHeld) risePending=arrive; else arrive(); };
     eImg.onload = ()=>{ eImg.onload=null; fire(); };
     eImg.src = enemyImage(en);
     if(eImg.complete && eImg.naturalWidth){ eImg.onload=null; fire(); }

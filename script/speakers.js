@@ -56,7 +56,7 @@ export const SPEAKERS = {
   /* 士兵（ver -953，Stage8）：只有一兩句傳令，**沒有立繪** —— 同 VOICE 的作法，
      名字框標明是誰在講話就夠了（§6.5.4：路人單句要標名字）。 */
   SOLDIER:  { name:'士兵',   art:null },
-  RETAINER: { name:'隨從',   art:null },   // 米夏的隨從（ver -1707，古墓墓門那一段）
+  RETAINER: { name:'隨從',   art:'retainer' },   // 米夏的隨從（ver -1707 立；-1715 接上立繪，見 ART.retainer）
   VOICE:    { name:'路人',   art:null },
   /* 旁白（ver -656）：**沒有立繪、名字欄空著** —— 「跳一個對話框」那種畫面訊息
      （「該回去看看了。」）。⚠ 與 `VOICE` 的差別只有名字：那是「某個路人在講話」，
@@ -1575,10 +1575,22 @@ export const ART = {
        會把全劇組一起縮小**（§5 那條）—— 頂到上限就好。
      ⚠ 這是**背影**，沒有臉 ⇒ `fx` 取的是身體的橫向重心（0.518，實量）。
      ⚠ 不給 `mirror`：背影翻了就是換一隻手在前，不是同一個鏡頭。
+     ⚠⚠ `flip:true`（ver -1715，Ray：「鏡湖的主角背影差分水平翻轉」）＝**這張圖本來就要翻**
+       （同瑪麗亞／謝尼那一格的語意）：不管站哪一邊都翻。它與上面那句不衝突 ——
+       `mirror` 是「換邊才翻」，`flip` 是「這張畫的方向本來就反了」。
      ⚠ 還是 `.png`，美術那一邊還沒轉 webp。 */
   torsten:  { cm:178, eye:30, fx:0.518, top:20, bot:1516,
-           side:'R', alt:null, base:'resources/si/torsten_si_back.png', expr:{
+           side:'R', alt:null, flip:true, base:'resources/si/torsten_si_back.png', expr:{
     back: { src:'resources/si/torsten_si_back.png', top:20, bot:1516, fx:0.518 },
+  } },
+  /* ══ 米夏的隨從（士兵）（ver -1715，Ray：「『殿下......』的那一拍放士兵立繪」；
+     美術 -1710 交件 `retainer_si_front.webp`）══
+     取景用 `tools/measure_si.py` 實量：top 4／bot 1534／fx 0.451（全身，1024×1536）。
+     `cm:176`＝成年男性的估身高，不頂到 `CAST_TALL`。站**右**（與米夏同一邊：他的人）——
+     他只講一句，同側換人走抽牌輪轉（§6.5），米夏下一句自己回來。 */
+  retainer: { cm:176, eye:30, fx:0.451, top:4, bot:1534,
+           side:'R', alt:null, base:'resources/si/retainer_si_front.webp', expr:{
+    front: { src:'resources/si/retainer_si_front.webp', top:4, bot:1534, fx:0.451 },
   } },
 };
 

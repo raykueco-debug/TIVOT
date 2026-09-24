@@ -6990,10 +6990,12 @@ export const TOWNS = {
          se_waterfall」→「waterfall **在場景內要一直 loop**」）——
          節點層的 `amb`＝**走進來開、走出去收**（`modules/town.js` 的 `enter`
          每一格都叫一次，沒寫就是停）。 */
-      fallbase:   { bg:'lake_fallbase',   name:'鏡湖　瀑布底', amb:'se_waterfall',
+      /* ⚠ ver -1715：換成**循環版** `se_waterfall_loop`（Ray：「瀑布底的 se_waterfall 應該要連續
+         loop 不要淡入淡出」）—— 舊的那一支 4.9 秒、頭尾各帶一段編碼靜音，每一圈都空一下。 */
+      fallbase:   { bg:'lake_fallbase',   name:'鏡湖　瀑布底', amb:'se_waterfall_loop',
         exits:{ back:'shingle', up:'cave' } },
       /* ⚠ 水蝕洞＝**穿過瀑布的洞**（左側水簾是來路、深處透出天光是去路）。 */
-      cave:       { bg:'lake_cave',       name:'鏡湖　水蝕洞', amb:'se_waterfall',
+      cave:       { bg:'lake_cave',       name:'鏡湖　水蝕洞', amb:'se_waterfall_loop',
         exits:{ back:'fallbase', up:'grove' } },
       /* ⚠⚠ 終點：山谷盡頭的高地台地，一片十幾公尺高的黑色石碑林（規格 §三）。
          這一格**沒有湖**是刻意的（Ray -1493：末端點不必有湖）。 */
@@ -7072,7 +7074,8 @@ export const TOWNS = {
           ren('command','如果裡面的東西跑出來就不好了，馬上出發。', { flags:['tomb_opened'] }),
           /* ⚠ 主角轉身先走（稿上「主角：torsten_si_back.png」）——
              台上有人的無台詞拍，點一下才推進（§6.5 的 -628）。 */
-          tor('back',''),
+          /* ⚠ ver -1715：同一拍加 `se_walk`（Ray）；立繪的水平翻轉寫在 `ART.torsten.flip`（那是這張畫的性質）。 */
+          tor('back','', { se:'se_walk' }),
           /* ⚠ ver -1565：這裡原本有一拍 `ren('reach','')`，Ray 指定拿掉。 */
           /* ══⚠⚠ **兩條互補的 T 分支**（ver -1572，Ray 補的）══
              T2 以下 ＝ `lookaside`（撇開眼）／T3 以上 ＝ `meltdown`（撐不住了）。
@@ -7233,6 +7236,20 @@ export const TOWNS = {
          （那正是蕾娜推理的那一段）。
          判定在 `modules/town.js` 的 `chaseSpec()` 一支（回 null ＝整個收掉）。 */
       until: 'tomb_altar_on',
+      /* ══⚠⚠⚠ **第三層（底層）的追擊：緊貼在後**（ver -1715，Ray：「第三層追擊再密一點，
+         只要走錯一次回頭就會被追上」「如果一路都沒被追上，在骨坑必遭遇，骨坑設為安全點」）══
+         底層那七格全部是 `noWild`（-1683「三層不出怪」），所以在 -1715 之前牠在這一層
+         **根本追不上任何人**。這一段改成一個確定性的模型，不靠機率：
+         · `afterFlag` ＝底層梯廳那一段（墓主降臨／夢魘化那三場）演完 ⇒ 進入這一層的追擊；
+           那一刻牠被擺到 `behind`（底層階梯，玩家背後一格）、停頓歸零。
+         · `speed:1` ＝你走一格牠走一格：**直直走**牠永遠差你一格追不上；
+           **走錯一次再折回**（例：玄室前廊→石棺主室→回玄室前廊）你原地踏步兩格、牠前進兩格
+           ⇒ 正好撞上。這就是「走錯一次回頭就會被追上」的字面。
+         · `catchAll:true` ＝這一層 `noWild` 的格子也追得上（**`rest` 的安全點仍然安全**）。
+         · `mustAt:'bonepit'` ＝這一層**一次都沒被追上**就在骨坑必遭遇（打完照舊走骨坑的 `rest` 結算）。
+         判定全在 `modules/town.js`（`chaseSpec`／`chaseActDue`／`chaseAfterAct`），這裡只有數字。 */
+      l3: { afterFlag:'tomb_low_arrive', behind:'stair2', speed:1, onEncounter:0, stun:1,
+            catchAll:true, mustAt:'bonepit' },
     },
     /* ══⚠⚠ **遇敵率 50%**（ver -1614，Ray：「改成 50% 吧，遇敵率實在太低，
          我亂逛都能在三戰前走到柱廳」；-1596 曾是 33%、更早是全域的 0.25）══
@@ -7359,7 +7376,11 @@ export const TOWNS = {
            兩條件寫在同一個物件裡。
            · `up`    ＝墓門本身要 `tomb_opened` 才進得去
            · `right` ＝廢坑道要 `tomb_altar_on`（祭壇啟動）才開 */
-        exitIf:{ up:'tomb_opened', right:'tomb_altar_on' },
+        /* ⚠⚠⚠ ver -1715（Ray：「墓門自遭遇墓主後就永久關閉不再開啟，無法從墓門進出」）：
+           `!tomb_gk1_done` ＝**那支旗插了就沒有這個出口**（`exitIf` 的否定寫法，-1715 加的）。
+           前庭那一邊的 `back` 同樣寫著（兩端都要關，不然變成單向門）。
+           ⚠ 之後出墓只剩廢坑道 → 墓門那一格 → `tomb_exit_done` 的 `goto`／出航。 */
+        exitIf:{ up:['tomb_opened','!tomb_gk1_done'], right:'tomb_altar_on' },
         /* ⚠⚠ **不掛 `flag`**：同石製遺蹟 —— 只飛得到的地方，到得了就走得了
            （ver -1154，Ray 回報「進了遺蹟無法出航」）。 */
         sail:{},
@@ -7510,7 +7531,7 @@ export const TOWNS = {
           ren('hugangry2', '好了啦！放我下來啦！', { onlyIf:'tomb_h_route' }),
           any('silent',''),
           mis('frontopen','Я тебя уже предупреждал. Похоже, ты напрочь забыла о своём долге.'),
-          any('answer','米夏！'),
+          any(null,'米夏！'),   // ver -1715：差分沿用上一張（Ray）
           mis('sideopen','Ты уже забыла, ради чего погибла Натали?'),
           any('terrify','Нет… всё не так……'),
           nou('faint','跟安雅長得好像……是她的兄弟？'),
@@ -7535,20 +7556,22 @@ export const TOWNS = {
           ren('command','不，她從未表明過自己的身份。證明我猜想的是此時此刻的您本人。'),
           mis('frontshock','！！'),
           /* 四個上膛音不規則此起彼落、可重疊（稿） */
-          Object.assign(mis('drawopen','聖王廳的女狐……！'), { se:[{ n:'se_weapon_reload' }, { n:'se_weapon_reload', delay:180 }, { n:'se_weapon_reload', delay:420 }, { n:'se_weapon_reload', delay:530 }] }),
+          /* ⚠ ver -1715：同一拍再加拔刀音 `se_sworddraw`（Ray 交件＋交辦）。 */
+          Object.assign(mis('drawopen','聖王廳的女狐……！'), { se:[{ n:'se_sworddraw' }, { n:'se_weapon_reload' }, { n:'se_weapon_reload', delay:180 }, { n:'se_weapon_reload', delay:420 }, { n:'se_weapon_reload', delay:530 }] }),
           ren('askserious','遺蹟已探明完成，聖約騎士團馬上就會前來調查了。'),
           ren('commandsoft','容我提醒您仍是薩梅爾帝國的甲級戰犯，可不要在這教區盟邦出了什麼差池才好。'),
           mis('draw','……'),
           mis('drawopen','自詡神的代行者，卻自甘墮落為帝國走狗的聖王廳，豈會是我們對手？'),
-          { speaker:'RETAINER', text:'殿下……' },
+          /* ⚠ ver -1715：這一拍放士兵立繪（Ray；`ART.retainer`，站米夏那一側，抽牌輪轉）。 */
+          { speaker:'RETAINER', text:'殿下……', portrait:{ char:'RETAINER', expr:'front', show:true } },
           mis('draw','……'),
-          mis('sideopen','安娜。'),
+          mis('sideopen','安娜。', { se:'se_swordcease' }),   // ver -1715：收刀音（Ray）
           any('silent','……'),
           mis('closeopen','不要忘記，妳早就已經是死過一次的人。'),
           any('terrify','！！'),
           mis('sideopen','別讓娜塔莉白白死了。'),
           mis('back','撤收。'),
-          Object.assign(any('desperate','……'), { hide:['MISHA'] }),
+          Object.assign(any('desperate','……'), { hide:['MISHA'], se:'se_steps' }),   // ver -1715：撤收的下一拍腳步聲（Ray）
           ren('coldstare','……'),
           any('talk','對不起，是我拜託他……'),
           ren('coldstare','我理解的，安娜殿下。'),
@@ -7584,7 +7607,7 @@ export const TOWNS = {
           ren('hugserious','……', { onlyIf:'tomb_h_route' }),
           ren('coldstare', '……', { skipIf:'tomb_h_route' }),
           mis('talk','Хватит валять дурака, когда ты наконец займёшься делом？'),
-          any('answer','米夏！'),
+          any(null,'米夏！'),   // ver -1715：差分沿用上一張（Ray）
           any(null,'Миш, послушай меня! Я уже давно не вызывала кошмары……'),
           mis(null,'И что? По-твоему, это повод бросить наш долг?'),
           ren('shockcalm', '！！', { skipIf:'tomb_h_route' }),
@@ -7604,20 +7627,22 @@ export const TOWNS = {
           ren('invite','她從未表明過自己的身份。證明我猜想的是此時此刻的您本人喔。'),
           mis('frontshock','！！'),
           /* 四個上膛音不規則此起彼落、可重疊（稿） */
-          Object.assign(mis('drawopen','聖王廳的女狐……！'), { se:[{ n:'se_weapon_reload' }, { n:'se_weapon_reload', delay:180 }, { n:'se_weapon_reload', delay:420 }, { n:'se_weapon_reload', delay:530 }] }),
+          /* ⚠ ver -1715：同一拍再加拔刀音 `se_sworddraw`（Ray 交件＋交辦）。 */
+          Object.assign(mis('drawopen','聖王廳的女狐……！'), { se:[{ n:'se_sworddraw' }, { n:'se_weapon_reload' }, { n:'se_weapon_reload', delay:180 }, { n:'se_weapon_reload', delay:420 }, { n:'se_weapon_reload', delay:530 }] }),
           ren('invite','遺蹟已探明完成，聖約騎士團馬上就會前來調查了。'),
           ren('pause','容我提醒您仍是薩梅爾帝國的甲級戰犯，可不要在這教區盟邦出了什麼差池才好。'),
           mis('draw','……'),
           mis('drawopen','自詡神的代行者，卻自甘墮落為帝國走狗的聖王廳，豈是我們對手？'),
-          { speaker:'RETAINER', text:'殿下……' },
+          /* ⚠ ver -1715：這一拍放士兵立繪（Ray；`ART.retainer`，站米夏那一側，抽牌輪轉）。 */
+          { speaker:'RETAINER', text:'殿下……', portrait:{ char:'RETAINER', expr:'front', show:true } },
           mis('draw','……'),
-          mis('close','安娜。'),
+          mis('close','安娜。', { se:'se_swordcease' }),   // ver -1715：收刀音（Ray；M1 版同一拍）
           any('silent','……'),
           mis('closeopen','不要忘記，妳早就已經是死過一次的人。'),
           any('terrify','！！'),
           mis('frownopen','別讓娜塔莉白白死了。'),
           mis('back','撤收。'),
-          Object.assign(any('desperate',''), { hide:['MISHA'] }),
+          Object.assign(any('desperate',''), { hide:['MISHA'], se:'se_steps' }),   // ver -1715：撤收的下一拍腳步聲（Ray）
           ren('determine','……'),
           sor('guardtalk','什麼啊那傢伙……？'),
           nou('faint',''),
@@ -7644,6 +7669,9 @@ export const TOWNS = {
          這一格，所以「門廳」＝前庭。 */
       vestibule:  { bg:'tomb_vestibule', name:'伊甸古墓　前庭', noTime:true, noWildFirst:true,
         exits:{ up:'nave', right:'lapidarium', back:'gate' },
+        /* ⚠ ver -1715：遭遇墓主之後（`tomb_gk1_done`）通往墓門的那一條**整個不出現**
+           （與墓門那一格的 `up` 成對）。下面那個 `lock` 管的是更早的「追逐開始～遭遇之間」。 */
+        exitIf:{ back:'!tomb_gk1_done' },
         /* ══⚠⚠⚠ **墓門關上了**（ver -1525，Ray 的 Stage10-A 稿：「此時往古墓出口
            移動會顯示『墓門關上了』」）══ 走既有的 `lock`（-786 的出口鎖，鐵律 8）。
            ⚠⚠ **鑰匙寫的是目的地 `gate` 不是方向** —— 通往墓門的那一條是 `back`
@@ -8332,7 +8360,7 @@ export const TOWNS = {
           ren('scream','啊！'),
           { speaker:'NARRATION', text:'', hide:['RENNA'], shakeHold:420, auto:520 },
           { speaker:'NARRATION', text:'', se:'se_fall', auto:700 },
-          /* ⚠ 獨戰、沒有夥伴（卡上 `noSaint` ＋ `noPartner`，見 config）。 */
+          /* ⚠ ver -1715：不再是獨戰 —— 可帶安雅或索菈娜、預設索菈娜（卡上 `partners`／`partner`，見 config）。 */
           { battle:'tomb_low_solo' },
           sor('back','沒路了......但是確實是這個方向......'),
           nou('desperate','……'),

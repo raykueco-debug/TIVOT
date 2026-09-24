@@ -3020,6 +3020,14 @@ export function startGame(){
         不是玩家的選擇（鐵律 9：誰拔的誰放回去）。放在①②之前，它們才蓋得掉。 */
   if(state.pickedPartner===null) setPickedPartner(partner.storyPartnerKey());
   if(sb && sb.solo) setPickedPartner(null);   // ⚠ 這一場身邊沒有人（見 state.setPickedPartner）
+  /* ⚠ `partners:[…]` ＝這一場**准帶**的名單（ver -1715，古墓獨戰改成「安雅或索菈娜、預設索」）：
+     現在這一位在名單裡（而且沒出局）就照他的，否則落回卡上的 `partner`。
+     沒有 `partners` 的卡照舊：`partner` 就是強配。 */
+  else if(sb && sb.partners && sb.partners.length){
+    const cur = state.pickedPartner;
+    const ok = cur && sb.partners.indexOf(cur)>=0 && !partner.benchLabel(cur);
+    setPickedPartner(ok ? cur : (sb.partner || sb.partners[0]));
+  }
   else if(sb && sb.partner) setPickedPartner(sb.partner);
   else if(state.scriptRun) setPickedPartner(partner.storyPartnerKey());
   /* ④ ⚠⚠⚠ **自由活動期間：約會對象就是搭檔，沒約人就是無夥伴**（ver -1380，Ray：

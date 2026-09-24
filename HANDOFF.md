@@ -13,7 +13,28 @@
 > 清單在 **`_TO_CODE_20260922.md`**（`ASSET_VER` 七列／`speakers.js` 16 條版號 ＋ 8 個新鍵
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
-# HANDOFF — 截至 `ver 2026.09.22-1714`
+# HANDOFF — 截至 `ver 2026.09.22-1715`
+
+## `-1715`：Ray 一次交的 14 件（古墓／鏡湖／墓門那一段）
+
+| 件 | 做法 | 在哪 |
+|---|---|---|
+| 瀑布底 `se_waterfall` 要連續 loop | Ray 交的 11.8 秒新檔轉成 **`se_waterfall_loop.m4a`**（`_loop` 命名規約）接到瀑布底／水蝕洞的 `amb`；`audio.js` 的 `playBuffer` 在 `loop` 那一條把 `loopStart/loopEnd` **夾在有聲的區間**（AAC 的 priming／padding 靜音就是「每一圈空一下」的元兇：舊檔頭 4.6ms、尾 25ms 全靜）。舊的 `se_waterfall` 留給一次性的 `se:` | `audio.js`／`story.js` SE_FILES／`town.js` lake／`config.js` fileGain |
+| 安雅感應動畫不可點擊跳過 | 引擎規則：`renderLine` 看到 `fx:'sense'` 就把 `noSkipUntil` 拉到 `max(auto, SENSE_BURST_AT+SENSE_BURST_GROW)`（五處 sense 拍以前只有兩處寫了 `noSkip`） | `modules/story.js` |
+| 鏡湖主角背影水平翻轉＋同拍 `se_walk` | `ART.torsten.flip:true`（這張畫的性質）；`tor('back','',{se:'se_walk'})` | `speakers.js`／`town.js` |
+| 墓主一場只跑一次降臨音跟咆哮 | story 記下最近一次 `cgBackRise` 的拍（`storyRoseAt`），戰鬥拍在兩拍之內就傳 `storyRose`；main 對 `kerbRise` **或** `storyRose` 都 `suppressEnemyRise`；enemy 被壓掉那一場**連登場音與衝擊一起不發**（以前只壓畫面，`arrive()` 照樣響鐘＋吼） | `story.js`／`main.js`／`enemy.js` |
+| 無夥伴那場改成安雅或索、預設索 | `tomb_low_solo` 卡：拿掉 `solo/noSaint/noPartner`，改 `partner:'sorana', partners:['sorana','anya']`；`combat.startGame` 新分支：現任在名單裡（且沒出局）就照他的，否則落回預設 | `config.js`／`combat.js` |
+| 第三層追擊再密、走錯一次回頭就被追上；沒被追上就在骨坑必遭遇 | `chase.l3`（資料）：底層梯廳那一段（`tomb_low_arrive`）演完 ⇒ 牠擺到 `stair2`（背後一格）、`speed:1`／`stun:1`、`catchAll`（noWild 的格子也追得上，`rest` 除外）、`mustAt:'bonepit'`（這一層 `hits` 沒增加就在骨坑逼一場；打完照舊走骨坑的 rest 結算）。骨坑本來就 `rest:true` | `town.js` chase／`modules/town.js` `chaseSpec`／`chaseActDue`／`chaseAfterAct` |
+| 墓門遭遇墓主後永久關閉 | `exitIf` 新增**否定**與**陣列**寫法（`'!旗'`、全部要成立），而且 `back` 也吃：墓門 `up:['tomb_opened','!tomb_gk1_done']`、前庭 `back:'!tomb_gk1_done'` | `town.js`／`modules/town.js` `exitsOf` |
+| 「米夏！」差分沿用上一張 | 兩個版本都改 `any(null,…)` | `town.js` |
+| 女狐拍 `se_sworddraw`／「殿下……」士兵立繪／「安娜。」`se_swordcease`／「撤收。」後一拍 `se_steps` | 兩個版本都改。刀音兩支是 Ray 今天丟的 mp3 → 轉 m4a、原檔進 `se/_raw/`；士兵＝`ART.retainer`（`measure_si.py` 實量 4/1534/0.451，站右） | `town.js`／`speakers.js`／`story.js`／`config.js` |
+| **`hugangry2` 的檔** | ⚠⚠ **這台上沒有**：全碟搜過、git 全歷史沒有、Downloads 那幾張 `an_hug*`／`s_hug` 都不是她。美術 09-24 交接寫它是 **Windows 機工作區的未追蹤 png**（`renna_si_hugangry2.png`）—— 要從那台 commit 或丟過來；`speakers.js:343` 的鍵先留著（現在指向不存在的檔＝那兩拍會空） | — |
+
+驗收：`script_lint` 0 錯誤、42 提醒（基準不變）；8123 首頁開機無 console 錯誤；資料 dump 確認 `l3`／`exitIf`／`amb`／五拍的 se 與立繪都落地。
+⚠ 追擊 l3 與墓門封閉**沒有實走**（要進到底層梯廳那一段才驗得到）—— Ray 測。
+⚠ `check_module` 對 DOM 模組（audio／story／town…）一律回 `document` 未定義：那是**執行**不是語法，用瀏覽器載入代替。
+
+# （上一段）截至 `ver 2026.09.22-1714`
 
 **`-1714`：`vn_after_tomb` 那個 AB・M2 的死版本拿掉了**（Ray：「把 town.js 那個 ABM2 死版本拿掉」）。
 `script/town.js` 雪都旅店的 `vn_after_tomb` 由四個 act 變**三個**（BA・M2／BA・M1／AB・M1），
