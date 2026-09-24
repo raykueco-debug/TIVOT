@@ -11,7 +11,27 @@
 > 清單在 **`_TO_CODE_20260922.md`**（`ASSET_VER` 七列／`speakers.js` 16 條版號 ＋ 8 個新鍵
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
-# HANDOFF — 截至 `ver 2026.09.22-1722`
+# HANDOFF — 截至 `ver 2026.09.22-1723`
+
+**`-1723`：選單多一列「免　戰」（管理人限定）＋ 三大分支全版本走過一次**
+（Ray：「加入一個免戰選項在設定內，迴避所有戰鬥把三大分支跑一次」→「免戰是**移除一切戰鬥行為，棺都不推**，直接跳過」）。
+· **免戰**：`modules/settings.js` 的 `peaceOn()`（鑰匙 `tivot_flight_peace_v1`，與飛行頁的 `PEACE_KEY` **同一把** ——
+  開了飛行地圖也不遭遇）；`body.testmode` 才看得到那一列（`#gmPeace`）。
+  `story.js` 在 `line.battle` 那一拍**進 `playKerberos` 之前**就 `advance()`（當成打贏：`bgmAfter`／`@town` 照接，
+  震動／染色／感應一併收掉），`line.settle`（休息處結算）同樣跳過。**戰鬥卡的 `talk`／閘門／教學一律不會執行**，
+  所以免戰只是「看劇情順不順」的梯子，不是測戰鬥用的。
+  實測（8123、Stage 15 一路自動點）：console 三行 `[免戰] 跳過戰鬥（當成打贏）： tomb_low_solo`／`tomb_low_ni`／`跳過結算`，
+  `#kerb.rise` 全程 false、`#app` 維持 hidden。
+· **三大分支走一次**（資料層模擬器 `routesim.mjs`，jsc；BA・M1／BA・M2／AB 各在 T3 與 T2 跑）：
+  三條路的墓門版本、雪都旅店敲門、東泊離開段全部選到正確版本；AB 東泊收在 `ep_leave_final`；A×H／BA・M1×H 的派生拍與 -1720/-1722 稿一致。
+  **沒有找到硬洞**。軟的三件照舊：① BA・M2 出墓隔天早上蕾娜沒有交代（Ray：「不一定要補，她這個角色就是這樣默默扣分然後進工作模式」）
+  ② `032_rennablush`（T4 派生的臉紅插圖）**素材還沒有** ③ `hugangry2` 這台 Mac 上沒有那張圖（Windows 那邊找）。
+· ⚠ 順手量到的：`resources/illustration/` 的 **26_nouvellefaint／27_rennapull／28_tordefeat／30_torstandup 還是 PNG**，
+  候選鏈先吃一次 `.webp` 404 才退回 —— 美術端轉 WebP 就好（§5 規約），不是壞。
+· `resources/audio/se/se_rockimpact.mp3` 這一輪開工時就已經是 modified（不是我改的）—— **沒有一起 commit**，等 Ray 決定。
+· `劇情分歧樹.pptx` 仍沒重出（這台沒 node）。
+
+# （上一段）截至 `ver 2026.09.22-1722`
 
 **`-1722`**：墓門 BA・M1 版接 Ray 的 BA・M1 稿 —— 「……哼」「看來有人聽得懂我們的語言呢」拿掉；
 蕾娜兩句改字（「……海森伯格**！**」「您**方才**所謂安娜殿下的使命是**指**……？」，第二句稿上沒給表情、沿用 hugtalk／talkwork）；

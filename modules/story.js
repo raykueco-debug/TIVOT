@@ -58,6 +58,8 @@ let lineIdx = 0;
 /* 最近一次 `cgBackRise`（劇情層的降臨）發生在哪一段的第幾拍（ver -1715）。
    只給 `storyRoseBefore()` 讀：戰鬥拍問「前一拍是不是剛降臨過」。不進存檔、換段自然失效。 */
 let storyRoseAt = null;
+/* 免戰開著？（鑰匙在 settings.PEACE_KEY，現讀不快取；ver -1723） */
+const peaceOn = () => { try{ return settings.peaceOn(); }catch(_){ return false; } };
 function storyRoseBefore(){
   return !!(storyRoseAt && storyRoseAt.cur===cur && lineIdx - storyRoseAt.idx <= 2 && lineIdx > storyRoseAt.idx);
 }
@@ -2525,7 +2527,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1722';
+const KERB_V='?v=1723';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3524,6 +3526,9 @@ function renderLine(){
 
   if(line.settle){
     stopShake(); stopQuake(); stopTint(); stopSenseBurst();
+    /* 免戰（ver -1723，Ray：「免戰是移除一切戰鬥行為，棺都不推，直接跳過」）：結算是戰鬥的收尾，
+       沒打過架就沒有帳好結 —— 連關棺都不演，直接下一拍。 */
+    if(peaceOn()){ console.info('[免戰] 跳過結算'); return advance(); }
     if(!settleHandler){
       console.info('[story] 沒有註冊結算發動器，跳過 settle');
       return advance();
@@ -3539,6 +3544,19 @@ function renderLine(){
     return;
   }
 
+  /* ══ 免戰（ver -1723，Ray：「加入一個免戰選項在設定內，迴避所有戰鬥把三大分支跑一次」）══
+     鑰匙＝飛行頁那顆免戰鈕的 `tivot_flight_peace_v1`（`settings.PEACE_KEY`，一份真相），**現讀不快取**。
+     開著時這一拍當成**打贏**：跨句演出照進戰鬥的出口收掉、`bgmAfter` 照接（那是「打完之後是什麼氣氛」）、
+     直接推進下一拍。⚠ 不經過 combat：`talkOnce`／戰績的帳／檢查點都不會落 —— 它是測試梯子，不是玩法。 */
+  if(line.battle && peaceOn()){
+    stopShake(); stopQuake(); stopTint(); stopSenseBurst();
+    const _bc = GAME_CONFIG.battles && GAME_CONFIG.battles[line.battle];
+    let _after = (_bc && _bc.bgmAfter) || null;
+    if(_after==='@town') _after = (townBgmFn ? townBgmFn() : null) || null;
+    if(_after) ensureBgm(_after);
+    console.info('[免戰] 跳過戰鬥（當成打贏）：', line.battle);
+    return advance();
+  }
   if(line.battle){
     stopShake(); stopQuake(); stopTint(); stopSenseBurst();   // 進戰鬥就停（-638／-664／-1185）
     /* ⚠⚠ **戰鬥要停自動播放**（ver -940，Ray 指定的另一個例外）：畫面要交給玩家打，

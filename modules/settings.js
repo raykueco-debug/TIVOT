@@ -42,6 +42,10 @@ export const AUTO_MIN = 400, AUTO_MAX = 2000, AUTO_DEFAULT = 1100;
 
 const rd = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
 const wr = (k,v) => { try{ localStorage.setItem(k, String(v)); }catch(e){} };
+/* 免戰的鑰匙（ver -1723）＝ `flight/index.html` 的 `PEACE_KEY`（同一支，改一邊要改另一邊）。
+   讀的地方：這裡（開關）與 `modules/story.js` 的 `peaceOn()`（跳過戰鬥拍）。 */
+export const PEACE_KEY = 'tivot_flight_peace_v1';
+export function peaceOn(){ return rd(PEACE_KEY)==='1'; }
 const num = (v, d) => { const n=parseFloat(v); return isFinite(n) ? n : d; };
 
 /* ── 全域靜音（ver -856，Ray：「把靜音鈕拿掉，放到系統選單裡」）──
@@ -177,6 +181,12 @@ export function open(opts){
           + '<label class="gm-row gm-toggle"><span>狀態 HUD</span>'
           +   '<button class="gm-sw" id="gmHud" type="button"><i></i></button>'
           +   '<b>開關</b></label>'
+          /* 免戰（ver -1723，Ray：「加入一個免戰選項在設定內，迴避所有戰鬥把三大分支跑一次」）——
+             鑰匙就是飛行頁那顆免戰鈕的 `tivot_flight_peace_v1`（一份真相）：開著時劇情／城鎮的
+             `{battle}` 拍當成打贏直接跳過（`story.renderLine`），飛行地圖照舊不進戰鬥。管理人限定。 */
+          + '<label class="gm-row gm-toggle"><span>免　戰</span>'
+          +   '<button class="gm-sw'+(peaceOn()?' on':'')+'" id="gmPeace" type="button"><i></i></button>'
+          +   '<b>'+(peaceOn()?'跳過所有戰鬥':'關')+'</b></label>'
           + '<div class="gm-note">凍結＝停掉這一刻所有動畫／音訊／戰鬥計時（再按解凍）。'
           + 'HUD＝版本與幀率那一片。兩者都只有管理人模式看得到。</div>'
           /* ══ 管理人的存檔與統計（ver -1023，Ray 交辦）══
@@ -246,6 +256,13 @@ export function open(opts){
       const hd=panel.querySelector('#gmHud');
       if(hd && devTools && devTools.hud) hd.addEventListener('click', e=>{ e.stopPropagation();
         devTools.hud(); try{ SFX.menuClick(); }catch(_){}
+      });
+      const pc=panel.querySelector('#gmPeace');
+      if(pc) pc.addEventListener('click', e=>{ e.stopPropagation();
+        const on=!peaceOn(); wr(PEACE_KEY, on?'1':'0');
+        pc.classList.toggle('on', on);
+        const lab=pc.parentNode.querySelector('b'); if(lab) lab.textContent = on ? '跳過所有戰鬥' : '關';
+        try{ SFX.menuClick(); }catch(_){}
       }); }
     const sw=panel.querySelector('#gmHap');
     if(sw) sw.addEventListener('click', e=>{ e.stopPropagation();
