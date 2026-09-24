@@ -7634,7 +7634,7 @@ export const TOWNS = {
             hide:['RENNA','NOUVELLE','ANYA','SORANA','MISHA'] },
           { speaker:'PLAYER', text:'', dayBreak:true, clockToNext:8 },
         ] },
-        { flag:'tomb_exit_done', need:'tomb_altar_done', goto:'@ravnsdal:inn',
+        { flag:'tomb_exit_done', need:['tomb_altar_done','ep_belisar_done'], goto:'@ravnsdal:inn',
           sides:{ RENNA:'L', MISHA:'R' }, lines:[
           sor('carrynouvellejealous','什麼啊！早知道剛剛就從這裡進來就沒那麼多事了！'),
           ren('hugangry','那種事怎麼可能事先知道嘛！',   { onlyIf:'tomb_h_route' }),
@@ -7656,45 +7656,119 @@ export const TOWNS = {
           any(null,'米夏！'),   // ver -1715：差分沿用上一張（Ray）
           any(null,'Миш, послушай меня! Я уже давно не вызывала кошмары……'),
           mis(null,'И что? По-твоему, это повод бросить наш долг?'),
-          /* ══⚠⚠ **BA／A 分歧**（ver -1716，Ray 的修正稿）══ 三個點各分兩邊：
-             · **BA**（先去過古城）＝ `ep_belisar_done` 插著 —— BA 順序到古墓時它一定在
-               （古城沒做完出不了東泊，`sail.hold until ep_belisar_done`）。
-             · **A**（未去古城）＝ 沒插。
-             判準只用這一支旗（鐵律 7：與雪都旅店 `vn_after_tomb` 的「古城完成前／後」同一把鑰匙）。
-             蕾娜的差分：H 路線一律公主抱系（`hugserious`／`hugtalk`），一般路線照稿
-             `lookaway`／`lookawaytalk`／`talkwork`（稿上的 `worktalk` ＝庫裡的 `talkwork`，Ray 確認）。
-             每一句都是四選一（BA×H／BA×一般／A×H／A×一般）：
-               BA×H `onlyIfAll:[BA,H]`（且）／BA×一般 `onlyIf:BA, skipIf:H`／
-               A×H `skipIf:BA, onlyIf:H`／A×一般 `skipIf:[BA,H]`（`skipIf` 的陣列是「或」＝兩支都沒插）。
-             ⚠ `onlyIf` 的陣列是**或**（-1484），所以「且」要用 `onlyIfAll`（-1716 加的）。 */
-          /* ── 蕾娜的反應 ── */
-          ren('hugserious','！！',                    { onlyIfAll:['ep_belisar_done','tomb_h_route'] }),
-          ren('lookaway',  '！！',                    { onlyIf:'ep_belisar_done', skipIf:'tomb_h_route' }),
-          ren('hugserious','安娜跟……米夏……',          { skipIf:'ep_belisar_done', onlyIf:'tomb_h_route' }),
-          ren('lookaway',  '安娜跟……米夏……',          { skipIf:['ep_belisar_done','tomb_h_route'] }),
-          ren('hugserious','米海爾……謝索洛夫？',       { skipIf:'ep_belisar_done', onlyIf:'tomb_h_route' }),
-          ren('lookawaytalk','米海爾……謝索洛夫？',     { skipIf:['ep_belisar_done','tomb_h_route'] }),
+          /* ══ **BA・M1 版**（先去過古城、那一夜敲了蕾娜的門）══ ver -1716 的 BA 分支，-1720 拆成獨立版本
+             （Ray：「當初把 A 路線共用 M1 把我自己搞混了，分一下」）。M2 版在上面、A 版在下面 —— 三個版本
+             共用 `flag:'tomb_exit_done'`，由 `need`／`until` 分：M2＝`ep_m2_route`、BA・M1＝`ep_belisar_done`
+             （沒 M2）、A＝`until:'ep_belisar_done'`。H 派生仍是四拍 `onlyIf:'tomb_h_route'`。 */
+          ren('hugserious','！！', { onlyIf:'tomb_h_route' }),
+          ren('lookaway',  '！！', { skipIf:'tomb_h_route' }),
           mis('close','……哼。'),
-          mis('frown','看來有人聽得懂我們的語言呢。',   { onlyIf:'ep_belisar_done' }),
-          mis('frown','聖王廳的狗，鼻子挺靈的。',       { skipIf:'ep_belisar_done' }),
-          /* ── 蕾娜質問 ── */
-          ren('hugtalk', '米海爾殿下，我是聖王廳第十三騎士團一等監察官，蕾姬娜˙海森伯格。', { onlyIfAll:['ep_belisar_done','tomb_h_route'] }),
-          ren('talkwork','米海爾殿下，我是聖王廳第十三騎士團一等監察官，蕾姬娜˙海森伯格。', { onlyIf:'ep_belisar_done', skipIf:'tomb_h_route' }),
-          ren('hugtalk', '基於永夜協議，我要求說明，您所謂安娜殿下的使命是……？',           { onlyIfAll:['ep_belisar_done','tomb_h_route'] }),
-          ren('talkwork','基於永夜協議，我要求說明，您所謂安娜殿下的使命是……？',           { onlyIf:'ep_belisar_done', skipIf:'tomb_h_route' }),
-          ren('hugtalk', '您是謝索洛夫皇國的第一皇子，米海爾殿下沒錯吧?',                  { skipIf:'ep_belisar_done', onlyIf:'tomb_h_route' }),
-          ren('talkwork','您是謝索洛夫皇國的第一皇子，米海爾殿下沒錯吧?',                  { skipIf:['ep_belisar_done','tomb_h_route'] }),
-          /* ── H 路線派生（M1）── */
+          mis('frown','看來有人聽得懂我們的語言呢。'),
+          ren('hugtalk', '米海爾殿下，我是聖王廳第十三騎士團一等監察官，蕾姬娜˙海森伯格。', { onlyIf:'tomb_h_route' }),
+          ren('talkwork','米海爾殿下，我是聖王廳第十三騎士團一等監察官，蕾姬娜˙海森伯格。', { skipIf:'tomb_h_route' }),
+          ren('hugtalk', '基於永夜協議，我要求說明，您所謂安娜殿下的使命是……？',           { onlyIf:'tomb_h_route' }),
+          ren('talkwork','基於永夜協議，我要求說明，您所謂安娜殿下的使命是……？',           { skipIf:'tomb_h_route' }),
+          /* ── H 路線派生 ── */
           mis('close','……',                                   { onlyIf:'tomb_h_route' }),
           mis('sideopen','……原來聖王廳的聖職者那麼不檢點的嗎？', { onlyIf:'tomb_h_route' }),
           ren('hugshock','！！',                               { onlyIf:'tomb_h_route' }),
           ren('hugangry2','好了啦！可以放我下來了啦！',         { onlyIf:'tomb_h_route' }),
           mis('close','……安娜，'),
-          mis('talk','妳竟然連身份都告訴他們了？'),   // ver -1716 改稿
+          mis('talk','妳竟然連身份都告訴他們了？'),
           any('silent','……'),
           ren('invite','她從未表明過自己的身份。證明我猜想的是此時此刻的您本人喔。'),
           mis('frontshock','！！'),   // 稿上的「shock」＝米夏現有的 frontshock（Ray 確認）
-          /* 四個上膛音不規則此起彼落、可重疊（稿） */
+          /* ⚠ ver -1715：同一拍再加拔刀音 `se_sworddraw`（Ray 交件＋交辦）。 */
+          Object.assign(mis('drawopen','聖王廳的女狐……！'), { se:[{ n:'se_sworddraw' }, { n:'se_weapon_reload' }, { n:'se_weapon_reload', delay:180 }, { n:'se_weapon_reload', delay:420 }, { n:'se_weapon_reload', delay:530 }] }),
+          ren('invite','遺蹟已探明完成，聖約騎士團馬上就會前來調查了。'),
+          ren('pause','容我提醒您仍是薩梅爾帝國的甲級戰犯，可不要在這教區盟邦出了什麼差池才好。'),
+          mis('draw','……'),
+          mis('drawopen','自詡神的代行者，卻自甘墮落為帝國走狗的聖王廳，豈是我們對手？'),
+          /* ⚠ ver -1715：這一拍放士兵立繪（Ray；`ART.retainer`，站米夏那一側，抽牌輪轉）。 */
+          { speaker:'RETAINER', text:'殿下……', portrait:{ char:'RETAINER', expr:'front', show:true } },
+          mis('draw','……'),
+          mis('close','安娜。', { se:'se_swordcease' }),   // ver -1715：收刀音（Ray；M1 版同一拍）
+          any('silent','……'),
+          mis('closeopen','不要忘記，妳早就已經是死過一次的人。'),
+          any('terrify','！！'),
+          mis('frownopen','別讓娜塔莉白白死了。'),
+          mis('back','撤收。'),
+          Object.assign(any('desperate',''), { hide:['MISHA'], se:'se_steps' }),   // ver -1715：撤收的下一拍腳步聲（Ray）
+          ren('determine','……'),
+          sor('guardtalk','什麼啊那傢伙……？'),
+          nou('faint',''),
+          { speaker:'PLAYER', blank:true },
+          ren('determine','……沒錯。'),
+          ren('determine','安雅小姐……'),
+          any('silent','……'),
+          ren('determine','如果妳還是什麼都不能說……也沒關係。'),
+          ren('determine','但是如果妳需要幫助……'),
+          /* 蕾娜＋索菈娜一張圖（Ray 確認 4）：蕾娜先下台，這一張同時代表兩人。 */
+          Object.assign(sor('rennaannoy','我們都在喔！'), { hide:['RENNA'] }),   // 從左邊出（ver -1710，差分自己帶 side:'L'）
+          nou('faint','在喔……'),
+          any('amaze',''),
+          any('nod','嗯！'),
+          /* 劇情合流：雪都旅店、隔日早上 08:00（同北方泊地送行那一套：三秒淡黑 → 翌日卡 → goto）。
+             ⚠ `tomb_misha_met` ＝在古墓見過米夏（ver -1707，Ray：「要，得回修東泊腳本分支，
+               先掛著提醒我」）—— **東泊那邊還沒有人讀它**，見 HANDOFF。 */
+          { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000, flags:['tomb_misha_met','tomb_done'],   // tomb_done：ver -1717 起由這裡插（東泊走出旅店／分歧面板讀它）
+            hide:['RENNA','NOUVELLE','ANYA','SORANA','MISHA'] },
+          { speaker:'PLAYER', text:'', dayBreak:true, clockToNext:8 },
+        ] },
+        { flag:'tomb_exit_done', need:'tomb_altar_done', until:'ep_belisar_done', goto:'@ravnsdal:inn',
+          sides:{ RENNA:'L', MISHA:'R' }, lines:[
+          sor('carrynouvellejealous','什麼啊！早知道剛剛就從這裡進來就沒那麼多事了！'),
+          ren('hugangry','那種事怎麼可能事先知道嘛！',   { onlyIf:'tomb_h_route' }),
+          ren('blush',   '那種事怎麼可能事先知道嘛！',   { skipIf:'tomb_h_route' }),
+          ren('hugangry','大概是工匠當初偷偷留的暗道吧。', { onlyIf:'tomb_h_route' }),
+          ren('blush',   '大概是工匠當初偷偷留的暗道吧。', { skipIf:'tomb_h_route' }),
+          sor('carrynouvellejealous','喔——真奸詐呢。'),
+          /* 軍隊圍上：腳步聲兩下（稿：「Se_steps 0.3 秒後再播一個 Se_steps」）。 */
+          { speaker:'NARRATION', text:'', se:[{ n:'se_steps' }, { n:'se_steps', delay:300 }], auto:1200 },
+          any('terrify',''),
+          { speaker:'MISHA', text:'', portrait:{ char:'MISHA', expr:null, show:true } },
+          sor('carrynouvelleshock2','這些傢伙是……？軍隊？'),
+          /* ⚠ **米夏帶兵出現，索菈娜放下諾薇兒備戰**（ver -1707，Ray 確認 3b）——
+             從下一拍起兩人各用自己的立繪（索菈娜的下一句換成單人表情，諾薇兒以 `faint` 站著）。 */
+          any('desperate',''),
+          ren('hugserious','……', { onlyIf:'tomb_h_route' }),
+          ren('coldstare', '……', { skipIf:'tomb_h_route' }),
+          mis('talk','Хватит валять дурака, когда ты наконец займёшься делом？'),
+          any(null,'米夏！'),   // ver -1715：差分沿用上一張（Ray）
+          any(null,'Миш, послушай меня! Я уже давно не вызывала кошмары……'),
+          mis(null,'И что? По-твоему, это повод бросить наш долг?'),
+          /* ══ **A 路線版**（先跑古墓，還沒去古城 —— 蕾娜第一次見到米夏）══ ver -1720，Ray 交的 A 路線稿。
+             開頭到俄語那三句與 BA・M1 版相同（上面），從蕾娜的反應起是 A 自己的：她當場推出
+             「米海爾・謝索洛夫」、諾薇兒接話、蕾娜自報身分 —— 沒有「……哼」與「聽得懂我們的語言」。
+             H 派生的最後多一拍 `se_snatch`（稿上獨立一行 ⇒ 放在她那句之後的一拍）；
+             索菈娜「所以小公主……是真的公主？」在 H 派生之外（兩條路都演）。
+             ⚠ 從「聖王廳的女狐……！」起與 BA・M1 版相同（稿到「米：！！ shock」為止，其餘沿用）。 */
+          ren('hugserious','安娜跟……米夏……',        { onlyIf:'tomb_h_route' }),
+          ren('lookaway',  '安娜跟……米夏……',        { skipIf:'tomb_h_route' }),
+          ren('hugserious','米海爾……謝索洛夫？',     { onlyIf:'tomb_h_route' }),
+          ren('lookawaytalk','米海爾……謝索洛夫？',   { skipIf:'tomb_h_route' }),
+          nou('faint','米海爾˙謝索洛夫？那不是……'),
+          ren('hugtalk', '米海爾殿下！',              { onlyIf:'tomb_h_route' }),
+          ren('talkwork','米海爾殿下！',              { skipIf:'tomb_h_route' }),
+          mis('front',''),   // 稿：「米：misha_si_front.webp」—— 轉回正面的無台詞拍
+          ren('hugtalk', '我是聖王廳第十三騎士團一等監察官，蕾姬娜˙海森伯格。', { onlyIf:'tomb_h_route' }),
+          ren('talkwork','我是聖王廳第十三騎士團一等監察官，蕾姬娜˙海森伯格。', { skipIf:'tomb_h_route' }),
+          ren('hugtalk', '基於永夜協議，我要求說明，為何您會身在此處？',       { onlyIf:'tomb_h_route' }),
+          ren('talkwork','基於永夜協議，我要求說明，為何您會身在此處？',       { skipIf:'tomb_h_route' }),
+          ren('hugtalk', '謝索洛夫皇國的第一皇子！',                            { onlyIf:'tomb_h_route' }),
+          ren('command', '謝索洛夫皇國的第一皇子！',                            { skipIf:'tomb_h_route' }),
+          /* ── H 路線派生 ── */
+          mis('close','……',                                   { onlyIf:'tomb_h_route' }),
+          mis('sideopen','……原來聖王廳的聖職者那麼不檢點的嗎？', { onlyIf:'tomb_h_route' }),
+          ren('hugshock','！！',                               { onlyIf:'tomb_h_route' }),
+          ren('hugangry2','好了啦！可以放我下來了啦！',         { onlyIf:'tomb_h_route' }),
+          { speaker:'NARRATION', text:'', se:'se_snatch', auto:600, onlyIf:'tomb_h_route' },   // 稿：se_snatch（她被放下來）
+          sor('surprise','所以小公主……是真的公主？'),
+          mis('close','……安娜，'),
+          mis('talk','妳竟然連身份都告訴他們了？'),
+          any('silent','……'),
+          ren('invite','她從未表明過自己的身份。證明我猜想的是此時此刻的您本人喔。'),
+          mis('frontshock','！！'),   // 稿上的「shock」＝米夏現有的 frontshock
           /* ⚠ ver -1715：同一拍再加拔刀音 `se_sworddraw`（Ray 交件＋交辦）。 */
           Object.assign(mis('drawopen','聖王廳的女狐……！'), { se:[{ n:'se_sworddraw' }, { n:'se_weapon_reload' }, { n:'se_weapon_reload', delay:180 }, { n:'se_weapon_reload', delay:420 }, { n:'se_weapon_reload', delay:530 }] }),
           ren('invite','遺蹟已探明完成，聖約騎士團馬上就會前來調查了。'),

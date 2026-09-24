@@ -50,21 +50,24 @@ const PAIR = { ep_m1_route:['ep_m2_route'], ep_m2_route:['ep_m1_route'],
                belisar_seen:['ep_belisar_done'], ep_belisar_done:['belisar_seen'] };
 const withPair = flags => { const all=new Set(); for(const f of flags){ all.add(f); for(const g of (PAIR[f]||[])) all.add(g); } return [...all]; };
 /* 三條有編號的路線。⚠ 加一條路線只加這裡（鐵律 1）。 */
+/* ⚠ ver -1720：AB **沒有 M**（Ray：「當初把 A 路線共用 M1 把我自己搞混了，分一下」）——
+   先跑古墓的人到墓門時兩支 M 旗都還沒有；`M:null` ＝選這一條時把兩支 M 旗都拔掉。 */
 const ROUTES = [
-  { id:'AB・M1', ORD:'AB', M:'M1' },
+  { id:'AB',    ORD:'AB', M:null },
   { id:'BA・M1', ORD:'BA', M:'M1' },
   { id:'BA・M2', ORD:'BA', M:'M2' },
 ];
 /* 分支點的「code」：M 與 ORD 兩軸併成一個點 `RT`（選的是路線，不是軸）；H 自己一個點。 */
 const codeOfAxis = axis => axis==='H' ? 'H' : 'RT';
-const CODE = { RT:{ label:'路線（AB・M1／BA・M1／BA・M2）' }, H:{ label:'H 路線' } };
+const CODE = { RT:{ label:'路線（AB／BA・M1／BA・M2）' }, H:{ label:'H 路線' } };
 const isRoute = f => !!AXIS[f];
 const other = (axis, side) => AXIS_SIDES[axis].find(s=>s!==side);
 
 /* 指定每一軸要哪一邊（`sides`＝{axis:side}）→ `flags`（已含同伴）各要插或拔。 */
 function flagOps(flags, sides){
   const add=[], remove=[];
-  for(const f of flags){ const a=AXIS[f]; if(!(a.axis in sides)) continue; (a.side===sides[a.axis] ? add : remove).push(f); }
+  for(const f of flags){ const a=AXIS[f]; if(!(a.axis in sides)) continue;
+    (sides[a.axis]!==null && a.side===sides[a.axis] ? add : remove).push(f); }   // null ＝這一軸整組拔掉（AB 的 M）
   return { add, remove };
 }
 /* 一組路線旗 → 這個分支點各邊各插什麼、拔什麼。

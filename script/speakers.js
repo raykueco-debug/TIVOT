@@ -1475,6 +1475,9 @@ export const ART = {
      · `…open`／`frontgrit`／`frontshock` 是只換臉的表情差分 ⇒ 取景照抄底圖。 */
   misha:     { cm:176, eye:32, fx:0.393, top:0, bot:1535,
            side:'L', alt:null, base:'resources/si/misha_si_front.webp', expr:{
+    /* `front` ＝ 本尊那一張（ver -1720，Ray 的 A 路線稿：「米：misha_si_front.webp」）——
+       腳本要「明講回到正面」時用它；`null` 是「不動」，換不回來。取景同角色層。 */
+    front:      { src:'resources/si/misha_si_front.webp', top:0, bot:1535, fx:0.393 },
     stare:      { src:'resources/si/misha_si_stare.webp', top:13, bot:1526, fx:0.449 },
     frown:      { src:'resources/si/misha_si_frown.webp?v=2', top:11, bot:1526, fx:0.469 },
     talk:       { src:'resources/si/misha_si_talk.webp?v=2', top:6, bot:1525, fx:0.471 },
