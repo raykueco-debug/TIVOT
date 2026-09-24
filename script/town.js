@@ -4895,7 +4895,9 @@ export const TOWNS = {
           any('lookup','一望無際。',                      { skipIf:'ep_m2_route' }),
           any('talk','因為米夏對帝國來說，是戰犯。',      { onlyIf:'ep_m2_route' }),
           any('talk','他、只是想保護我……',               { onlyIf:'ep_m2_route' }),
-          any('talk','對不起，要你瞞著大家……',           { onlyIf:'ep_m2_route' }),
+          /* ⚠ ver -1718（Ray）：出墓揭露之後（`tomb_misha_met`）大家都知道了，「要你瞞著」過期 ⇒ 改成「害你瞞著」。 */
+          any('talk','對不起，要你瞞著大家……',           { onlyIf:'ep_m2_route', skipIf:'tomb_misha_met' }),
+          any('talk','對不起，害你瞞著大家……',           { onlyIfAll:['ep_m2_route','tomb_misha_met'] }),
           { speaker:'PLAYER', blank:true, onlyIf:'ep_m2_route' },
           any('talkshy','好……', { onlyIf:'ep_m2_route', aff:{ anya:5 } }),
         ] } ] },
