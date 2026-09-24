@@ -5042,10 +5042,14 @@ export const TOWNS = {
         innSpots:{ sit:{ x:0.22, y:0.68 }, sleep:{ x:0.86, y:0.55 } },
         /* ══⚠⚠⚠ **劇情合流：古墓之後、隔日早上 08:00**（ver -1707，Ray 交稿「[非線性Stage 10 A route結束]」）══
            由墓門那一段的 `goto:'@ravnsdal:inn'` 帶過來（翌日卡之後），抵達就演。
-           稿上兩個分支 × M1／M2 ＝ **四個 act、共用一支 `flag`**（`vn_after_tomb`），由上往下取第一個成立的：
+           稿上兩個分支 × M1／M2，但**只有三個 act、共用一支 `flag`**（`vn_after_tomb`），由上往下取第一個成立的：
            · 分支 1＝還沒完成**古城**（`ep_belisar_done` 沒插，`until`）；分支 2＝已完成（Ray 確認：稿上的
              「古墓」是「古城」的筆誤）
            · M2＝`ep_m2_route` 插著；其餘（M1／還沒發生米夏事件）走 M1（Ray 確認 7）
+           ⚠⚠ **沒有「分支 1 × M2」（AB・M2）**（ver -1714，Ray：「應該沒有 ABM2」「把那個死版本拿掉」）：
+             M2 只在東泊那一夜選得到，而古城沒做完出不了東泊（`sail.hold until ep_belisar_done`）——
+             「選了 M2、古城還沒完成、卻已經走出古墓」到不了。路線只有三條：AB・M1／BA・M1／BA・M2
+             （`script/branches.js` 的 `ROUTES`）。分支 1 那個 act 因此不帶 M 的條件。
            ⚠ 分支 2 那幾句「嗚——小公主也要來啊」「哇啊——」「說好了喔——」**是索菈娜說的**
              （Ray 確認 5：稿上標成諾薇兒是筆誤；`crybig` 本來就是她的差分）。
            ⚠ 「貝薩利爾古城」統一寫成遊戲裡的地名**貝利薩爾**（ver -1157 定名）；
@@ -5129,50 +5133,6 @@ export const TOWNS = {
           ren('front',''),
           ren('smile','好啦，又不是現在就要分別。我們還有下一站呢。'),
           ren('smile','先到聖索菲亞城的領事館辦入境手續吧。'),
-        ] },
-        { flag:'vn_after_tomb', need:['tomb_exit_done','ep_m2_route'], until:'ep_belisar_done', sides:{ RENNA:'L' }, lines:[
-          ren('write','那麼……'),
-          ren('smile','下一個要調查的遺蹟就是東方的貝利薩爾古城了。'),
-          sor('amaze','那是什麼地方？'),
-          ren('pointmap','大陸曆前四世紀的古城。中世紀時舊貝薩利亞王國曾當成國都改建。'),
-          ren('pointmap','不過在那之後王國馬上就因為儲位之爭衰亡了。'),
-          nou('risehand','這我知道！極東的詛咒之城！'),
-          ren('talkwork','沒錯。所以那座城一直被當成不祥之地無人敢近。'),
-          ren('write','但是，聖王廳卻把它編入四大遺蹟……'),
-          sor('tire','總覺得不會比前兩個輕鬆啊？'),
-          ren('front','沒問題的，我們不也一路過來了嗎？'),
-          any('talk','我……我就留在這裡就好了……'),
-          nou('surprise','安雅……'),
-          sor('surprise','為什麼！'),
-          any('silent','……'),
-          ren('stare','……那可不行。'),
-          ren('talkwork','安娜殿下身為敵國王女，基於永夜協定我們應該將她交給帝國軍。'),
-          nou('furious','那怎麼可以！'),
-          any('silent','……'),
-          ren('talkwork','但是，安娜殿下身上仍有不明的力量。'),
-          ren('talkserious','我的判斷是……'),
-          nou('shock',''),
-          ren('smile','請安娜殿下再陪同我們探查遺蹟。畢竟這是聖王廳的指示呢。'),
-          any('shy','……'),
-          sor('confuse','……暫緩的意思嗎？'),
-          ren('front','沒錯。'),
-          ren('front','旅途還很長，如果在這期間安娜殿下有什麼想法……'),
-          ren('smile','也不是不能商量。'),
-          any('shy','……'),
-          ren('front','一路上受到安娜殿下的幫助，就這麼恩將仇報也有違神的教誨呢。'),
-          nou('bigsmile','太好了呢！安娜殿下！'),
-          any('talk','……'),
-          any('talkshy','安雅……'),
-          sor('amaze','什麼？'),
-          any('argue','請像以前一樣……叫我安雅……'),
-          any('argue','我……只想當安雅而已！'),
-          nou('covermouth','安雅……'),
-          ren('awkward','對不起啊，使了壞心眼呢。'),
-          sor('lauaghbig','那我就像以前一樣，叫小公主啦！'),
-          { speaker:'PLAYER', blank:true },
-          any('amaze','……！'),
-          any('nod','嗯！'),
-          ren('sigh',''),
         ] },
         { flag:'vn_after_tomb', need:'tomb_exit_done', until:'ep_belisar_done', sides:{ RENNA:'L' }, lines:[
           ren('write','那麼……'),
