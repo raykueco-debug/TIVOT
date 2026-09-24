@@ -7,7 +7,22 @@
 > 清單在 **`_TO_CODE_20260922.md`**（`ASSET_VER` 七列／`speakers.js` 16 條版號 ＋ 8 個新鍵
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
-# HANDOFF — 截至 `ver 2026.09.22-1712`
+# HANDOFF — 截至 `ver 2026.09.22-1713`
+
+**`-1713`：「分歧」面板的路線改成**列舉**的三條**（Ray：「分岐目前有 ABM1,H、BAM1,H、BAM2,H
+這些是帶編號跟順序的路線」「應該沒有 ABM2」）。-1711 把先後順序（AB／BA）與那一夜（M1／M2）
+當成兩個獨立的分支點在**乘**，於是面板長出 AB・M2。現在 `script/branches.js` 只有一張
+`ROUTES`（AB・M1／BA・M1／BA・M2），選的是整條路線；H 是古墓之後的派生，另立一軸。
+每一幕仍**只動它真的讀到的旗**（＋`belisar_seen`／`ep_belisar_done`、M1／M2 這兩對同伴）——
+墓門選 AB 不會順手插 `tomb_done`（人正要走進去）。
+⚠ **資料上有一個 AB・M2 的死版本**：`script/town.js:5133` 的 `vn_after_tomb`
+（`need ep_m2_route, until ep_belisar_done`）—— M2 只在東泊那一夜選得到，而古城沒做完出不了東泊，
+所以到不了。面板**不藏它**，標成「⚠ 資料有這個版本、路線表沒有（AB・M2）」；**拿不拿掉是 Ray 的腳本決定**。
+⚠ `劇情分歧樹.pptx` **沒有重出**：這台 Mac 沒有 node／pptxgenjs（`tools/branch_tree.mjs` 要它們）。
+  下一台有 node 的機器跑一次 `node tools/branch_tree.mjs` 就好，樹讀的是同一份 `scanBranches()`。
+驗收（8123）：首頁「分歧」→ 伊甸古墓 墓門 `tomb_gate` 只列三條路線；console 無錯。
+
+# （上一段）截至 `ver 2026.09.22-1712`
 
 > ⚠ **Ray 在 -1712 之後換機器**。下一台開工：`git pull` → 讀這一段 →
 >   確認 `config.js` 的 `VERSION` 是 **-1712**（不是就是沒拉到）。

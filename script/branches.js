@@ -22,40 +22,57 @@ import { TOWNS } from './town.js';
 const asArr = v => v==null ? [] : (Array.isArray(v) ? v : [v]);
 const WHO_ZH = { RENNA:'蕾娜', NOUVELLE:'諾薇兒', SORANA:'索菈娜', ANYA:'安雅' };
 
-/* ══ 路線表 ══ 旗 → 它代表哪一條路線的哪一邊。
-   `code` 一樣的旗併成同一個分支點；選一邊＝插上「那一邊」的旗、拔掉「另一邊」的旗。
-   ⚠ M：兩支旗互斥（M2 的 `until` 就是 M1 的 `need`，town.js 的註解）⇒ 兩支一起擺。
-   ⚠ AB／BA：A ＝伊甸古墓那一條、B ＝貝利薩爾→東泊那一條（progress.js 的 14-BA 註解）。
-     `belisar_seen`／`ep_belisar_done` ＝ B 已經走過 ⇒ 在 A 的場景裡就是 BA；
-     `tomb_done` ＝ A 已經走完 ⇒ 在 B 的場景裡就是 AB。
-     一幕裡只動**那一幕真的讀到的**那幾支（加上 `PAIR` 的同伴），不去碰另一條的旗。 */
-const ROUTE = {
-  ep_m1_route:     { code:'M',   side:'M1' },
-  ep_m2_route:     { code:'M',   side:'M2' },
-  tomb_h_route:    { code:'H',   side:'H'  },
-  belisar_seen:    { code:'ORD', side:'BA' },
-  ep_belisar_done: { code:'ORD', side:'BA' },
-  tomb_done:       { code:'ORD', side:'AB' },
+/* ══ 路線表（ver -1713，Ray：「分岐目前有 ABM1,H、BAM1,H、BAM2,H 這些是帶編號跟順序的路線」
+   「應該沒有 ABM2」）══════════════════════════════════════════════════════════════
+   ⚠⚠⚠ **路線是列舉出來的，不是兩個軸相乘。** -1711 把「先後順序」（A＝伊甸古墓那一條、
+   B＝貝利薩爾→東泊）與「那一夜」（M1＝敲了蕾娜的門、M2＝獨自跟上）當成兩個獨立的分支點，
+   於是面板長出了 AB・M2 —— 那條路不存在：M2 只在東泊那一夜選得到，而古城沒做完出不了東泊
+   （`sail.hold until ep_belisar_done`），所以「選了 M2、卻先走出古墓」到不了。
+   合法的只有三條：**AB・M1／BA・M1／BA・M2**（順序照 Ray 列的）。
+   H（古墓 T3 那一條的收場插的 `tomb_h_route`）是古墓**之後**的派生，三條路線都可以帶 ⇒ 另立一軸。
+   ⚠ 一幕只動**那一幕真的讀到的**那一軸的旗（軸內整組一起擺，兩邊互斥是資料保證的：
+     M2 的 `until` 就是 M1 的 `need`；`belisar_seen`／`ep_belisar_done` 是同一件事的兩支）。 */
+const AXIS = {                                  // 旗 → 哪一軸、哪一邊
+  ep_m1_route:     { axis:'M',   side:'M1' },
+  ep_m2_route:     { axis:'M',   side:'M2' },
+  belisar_seen:    { axis:'ORD', side:'BA' },
+  ep_belisar_done: { axis:'ORD', side:'BA' },
+  tomb_done:       { axis:'ORD', side:'AB' },
+  tomb_h_route:    { axis:'H',   side:'H'  },
 };
-const CODE = {
-  M:   { label:'M 路線',     sides:['M1','M2'] },
-  H:   { label:'H 路線',     sides:['H','非 H'] },
-  ORD: { label:'AB／BA 路線', sides:['AB','BA'] },
-};
+const AXIS_SIDES = { M:['M1','M2'], ORD:['AB','BA'], H:['H','非 H'] };
+/* 同伴旗：選一邊時一起擺的那幾支（兩邊互斥是資料保證的 —— M2 的 `until` 就是 M1 的 `need`；
+   `belisar_seen`／`ep_belisar_done` 是同一件事的兩支）。
+   ⚠⚠ **只動那一幕真的讀到的旗（＋同伴）**，不要把一軸整組都擺：`tomb_done` 與
+   `belisar_seen` 同屬 ORD 軸，但墓門那一幕選 AB 時人正要**走進**古墓 —— 把 `tomb_done`
+   一起插上就是「還沒進去就走完了」。 */
 const PAIR = { ep_m1_route:['ep_m2_route'], ep_m2_route:['ep_m1_route'],
                belisar_seen:['ep_belisar_done'], ep_belisar_done:['belisar_seen'] };
-const isRoute = f => !!ROUTE[f];
-const other = (code, side) => CODE[code].sides.find(s=>s!==side);
+const withPair = flags => { const all=new Set(); for(const f of flags){ all.add(f); for(const g of (PAIR[f]||[])) all.add(g); } return [...all]; };
+/* 三條有編號的路線。⚠ 加一條路線只加這裡（鐵律 1）。 */
+const ROUTES = [
+  { id:'AB・M1', ORD:'AB', M:'M1' },
+  { id:'BA・M1', ORD:'BA', M:'M1' },
+  { id:'BA・M2', ORD:'BA', M:'M2' },
+];
+/* 分支點的「code」：M 與 ORD 兩軸併成一個點 `RT`（選的是路線，不是軸）；H 自己一個點。 */
+const codeOfAxis = axis => axis==='H' ? 'H' : 'RT';
+const CODE = { RT:{ label:'路線（AB・M1／BA・M1／BA・M2）' }, H:{ label:'H 路線' } };
+const isRoute = f => !!AXIS[f];
+const other = (axis, side) => AXIS_SIDES[axis].find(s=>s!==side);
 
-/* 一組路線旗 → 那一條路線兩邊各插什麼、拔什麼。 */
+/* 指定每一軸要哪一邊（`sides`＝{axis:side}）→ `flags`（已含同伴）各要插或拔。 */
+function flagOps(flags, sides){
+  const add=[], remove=[];
+  for(const f of flags){ const a=AXIS[f]; if(!(a.axis in sides)) continue; (a.side===sides[a.axis] ? add : remove).push(f); }
+  return { add, remove };
+}
+/* 一組路線旗 → 這個分支點各邊各插什麼、拔什麼。
+   RT：三條路線各一邊；H：H／非 H。都只動 `flags`（＋同伴）。 */
 function sidesOf(code, flags){
-  const all=new Set();
-  for(const f of flags){ all.add(f); for(const g of (PAIR[f]||[])) all.add(g); }
-  return CODE[code].sides.map(side=>{
-    const add=[], remove=[];
-    for(const f of all) (ROUTE[f].side===side ? add : remove).push(f);
-    return { label:side, add, remove };
-  });
+  const all=withPair(flags);
+  if(code==='H') return AXIS_SIDES.H.map(side=>Object.assign({ label:side }, flagOps(all, { H:side })));
+  return ROUTES.map(r=>Object.assign({ label:r.id }, flagOps(all, r)));
 }
 
 function lineText(ln){
@@ -71,14 +88,14 @@ function actTitle(act){
   return (t||'').slice(0,18);
 }
 
-/* 一串拍裡的路線分支點（同一條路線併成一點）。 */
+/* 一串拍裡的路線分支點（同一個 code 併成一點）。 */
 function pointsOf(lines){
   const pts=new Map();
   (lines||[]).forEach((ln, li)=>{
     if(!ln || typeof ln!=='object') return;
     for(const f of asArr(ln.onlyIf).concat(asArr(ln.skipIf))){
       if(!isRoute(f)) continue;
-      const code=ROUTE[f].code;
+      const code=codeOfAxis(AXIS[f].axis);
       let p=pts.get(code);
       if(!p){ p={ kind:'route', code, label:CODE[code].label, flags:new Set(), lines:[] }; pts.set(code,p); }
       p.flags.add(f); p.lines.push(li);
@@ -87,37 +104,48 @@ function pointsOf(lines){
   return [...pts.values()].map(p=>{ p.variants=sidesOf(p.code,[...p.flags]); p.flags=[...p.flags]; return p; });
 }
 
-/* 一個版本（act／onLeave 的一項）落在哪條路線的哪一邊：`need` 裡的路線旗 ＝ 那一邊，
-   `until` 裡的 ＝ 另一邊。回 { code:side }。 */
+/* 一個版本（act／onLeave 的一項）落在各軸的哪一邊：`need` 裡的路線旗 ＝ 那一邊，
+   `until` 裡的 ＝ 另一邊。回 { axis:side }。 */
 function routeOfVersion(a){
   const r={};
-  for(const f of asArr(a.need)) if(isRoute(f)) r[ROUTE[f].code]=ROUTE[f].side;
-  for(const f of asArr(a.until)) if(isRoute(f)) r[ROUTE[f].code]=other(ROUTE[f].code, ROUTE[f].side);
+  for(const f of asArr(a.need)) if(isRoute(f)) r[AXIS[f].axis]=AXIS[f].side;
+  for(const f of asArr(a.until)) if(isRoute(f)) r[AXIS[f].axis]=other(AXIS[f].axis, AXIS[f].side);
   return r;
 }
-/* 幾個版本併看：只要有一個版本帶了某條路線，沒帶的版本就是另一邊（例：M2 的版本
-   `need:'ep_m2_route'`、M1 的版本什麼都沒寫 ⇒ 它是 M1）。 */
+/* 幾個版本併看：只要有一個版本帶了某一軸，沒帶的版本就是另一邊（例：M2 的版本
+   `need:'ep_m2_route'`、M1 的版本什麼都沒寫 ⇒ 它是 M1）。
+   回每個版本的 { sides:{axis:side}, add, remove, axes, routes:[匹配到的路線 id…] }。 */
 function versionRoutes(versions){
   const rs=versions.map(routeOfVersion);
-  const codes=new Set(); rs.forEach(r=>Object.keys(r).forEach(c=>codes.add(c)));
-  const flagsOf={}; for(const c of codes) flagsOf[c]=new Set();
-  versions.forEach(a=>asArr(a.need).concat(asArr(a.until)).forEach(f=>{ if(isRoute(f)) flagsOf[ROUTE[f].code].add(f); }));
+  const axes=new Set(); rs.forEach(r=>Object.keys(r).forEach(c=>axes.add(c)));
+  const flags=withPair(versions.flatMap(a=>asArr(a.need).concat(asArr(a.until)).filter(isRoute)));   // 這幾個版本真的讀到的旗
   return rs.map(r=>{
-    const out={}; const add=[], remove=[];
-    for(const c of codes){
-      const side = r[c] || (() => {           // 沒寫的那一邊 ＝ 其他版本的反面
-        const seen=new Set(rs.map(x=>x[c]).filter(Boolean));
-        return seen.size===1 ? other(c,[...seen][0]) : null;
+    const sides={};
+    for(const ax of axes){
+      const side = r[ax] || (() => {           // 沒寫的那一邊 ＝ 其他版本的反面
+        const seen=new Set(rs.map(x=>x[ax]).filter(Boolean));
+        return seen.size===1 ? other(ax,[...seen][0]) : null;
       })();
-      if(!side) continue;
-      out[c]=side;
-      const s=sidesOf(c,[...flagsOf[c]]).find(x=>x.label===side);
-      add.push(...s.add); remove.push(...s.remove);
+      if(side) sides[ax]=side;
     }
-    return { routes:out, add, remove, codes:[...codes] };
+    const { add, remove } = flagOps(flags, sides);
+    const rtAxes=Object.keys(sides).filter(ax=>ax!=='H');
+    const routes = rtAxes.length ? ROUTES.filter(x=>rtAxes.every(ax=>x[ax]===sides[ax])).map(x=>x.id) : [];
+    return { sides, add, remove, axes:[...axes], routes, rtAxes };
   });
 }
-const routeLabel = routes => Object.keys(routes).map(c=>routes[c]).join('・');
+/* 版本的名字：匹配到的路線（一條或幾條）＋ H。
+   ⚠⚠ **資料上有、路線表上沒有的組合**（例：`vn_after_tomb` 那個 AB・M2 的 act）不藏起來，
+   標成 ⚠ —— 那是腳本裡的死版本，該由 Ray 決定拿不拿掉；面板靜靜跳過它，下一個人就看不到了。 */
+function routeLabel(v){
+  const parts=[];
+  if(v.rtAxes.length){
+    if(v.routes.length) parts.push(v.routes.join('／'));
+    else parts.push('⚠ 資料有這個版本、路線表沒有（'+v.rtAxes.map(ax=>v.sides[ax]).join('・')+'）');
+  }
+  if(v.sides.H) parts.push(v.sides.H);
+  return parts.join('・');
+}
 
 /* 約會事件：要某人同行才演（`withWho`）、或條件掛在約會旗上（`ep_date_*`）的段落。 */
 const isDateFlag = f => /^ep_date_/.test(f);
@@ -158,13 +186,13 @@ export function scanBranches(){
         if(isDateAct(a) || sib.some(i=>isDateAct(acts[i]))){ dateAdd(pointsOf(a.lines), a.withWho); return; }
         const points=pointsOf(a.lines);
         const v=vr[ai];
-        if(v && v.codes.length)
+        if(v && v.axes.length)
           points.unshift({ kind:'variant', lines:[0],
             label:'整幕分支（'+a.flag+' 共 '+sib.length+' 個版本）',
-            variants:[ { label:(routeLabel(v.routes)||'這個版本')+' 版', add:v.add, remove:v.remove } ] });
+            variants:[ { label:(routeLabel(v)||'這個版本')+' 版', add:v.add, remove:v.remove } ] });
         push(base(nid, { id:tid+'.'+nid+'.act'+ai, kind:'act', act:a, actIndex:ai, actFlag:a.flag||null,
           title:actTitle(a), enterable:true, points,
-          atStart: !!(v && v.codes.length) || points.some(p=>p.lines[0]===0) }));
+          atStart: !!(v && v.axes.length) || points.some(p=>p.lines[0]===0) }));
       });
       if(n.lines) push(base(nid, { id:tid+'.'+nid+'.arrive', kind:'arrive', actFlag:null,
         title:'進場對白　'+actTitle({lines:n.lines}), enterable:true, points:pointsOf(n.lines),
@@ -179,9 +207,9 @@ export function scanBranches(){
         const points=[];
         leaves.forEach(l=>{ for(const p of pointsOf(l.lines)) if(!points.some(q=>q.code===p.code)) points.push(p); });
         const v=versionRoutes(leaves);
-        if(v[0] && v[0].codes.length)
+        if(v[0] && v[0].axes.length)
           points.unshift({ kind:'variant', lines:[0], label:'離開時的版本（'+leaves.length+' 個）',
-            variants:v.map((x,i)=>({ label:(routeLabel(x.routes)||'版本'+(i+1))+' 版', add:x.add, remove:x.remove })) });
+            variants:v.map((x,i)=>({ label:(routeLabel(x)||'版本'+(i+1))+' 版', add:x.add, remove:x.remove })) });
         push(base(nid, { id:tid+'.'+nid+'.leave', kind:'leave', actFlag:null,
           title:'離開時　'+actTitle(leaves[0]), enterable:false,
           note:'放到這一格，自己走出去', points, atStart:false }));
