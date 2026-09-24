@@ -1,8 +1,8 @@
 > ⚠⚠⚠ **美術 session（2026-09-24 下午，Mac）交了三件，程式端要接** —— 都是一行到一段的事：
-> 1. `speakers.js:675` 索拉娜 `whisper`：`?v=2`→`?v=3`、`top:4 bot:1524`（圖已回復成重製前那張；`_sorana_r3_worklist.md` §十六）
+> 1. ✅ **-1728 已接** 索拉娜 `whisper` `?v=3`／`top:4 bot:1524`
 > 2. `script/town.js` 的 `lake` 與 `canyon` 各補 `map:{img,spots}`（新增，整段可抄：`resources/map/_minimap_worklist.md` 末段）
 > 3. 米夏的隨從 `retainer_si_front` 仍未接（`cm`／`side` 要 Ray 給，`_misha_program_worklist.md` 附）
-> 4. **（09-25 凌晨，Windows）米夏 `draw` 換成 Ray 新出的拔刀圖，同名覆蓋**：`speakers.js:1486` `draw` `?v=2`→`?v=3`，**取景值改 top:6 bot:1534 fx:0.434**（姿勢換了）；`speakers.js:1498` `drawopen` 也重做了（以新 draw 為底只換嘴）⇒ 加 `?v=2`、取景值同 draw（`_misha_program_worklist.md` 附三之三／之四）
+> 4. ✅ **-1728 已接** 米夏 `draw` `?v=3` top:6 bot:1534 fx:0.434；`drawopen` `?v=2` 同取景
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
@@ -30,7 +30,20 @@
 >   `node routesim.mjs BAM1 60`（⚠ 參數讀的是 `arguments`，node 下要改讀 `process.argv.slice(2)` —— 還沒改，第一次跑會退回預設 BAM1／40）。
 >   路線名 `BAM1`／`BAM2`／`AB`。它**不是引擎**：時鐘、追兵、飛行是手動注入的步驟，看的是「哪一段選了哪個版本」。
 
-# HANDOFF — 截至 `ver 2026.09.22-1727`
+# HANDOFF — 截至 `ver 2026.09.22-1728`
+
+**`-1728`：接美術交件 ＋ 重出 SI 差分總表**（Ray：「拉下並更新差分總表」）
+· `script/speakers.js` 三行：索拉娜 `whisper` `?v=3`／top 4 bot 1524（回復重製前那張）；米夏 `draw` `?v=3`／top 6 bot 1534 fx 0.434
+  （Ray 新出的拔刀圖，姿勢換了）；`drawopen` `?v=2`、取景同 draw（以新 draw 為底重做）。
+· `py tools/si_xlsx.py` 重出 `resources/SI/_SI_差分總表.xlsx`：**401 個差分**（主要角色 368・NPC 33）、已接 375、未接 26、
+  50 個差分另有 58 張版本（列在「待接線・缺檔」頁）。缺檔仍只有 `renna_si_hugangry2.png`（Windows 找）。
+· ⚠ 表上多出的怪分頁 `image - 2026-09-20t…`×4／`索菈娜2`／`{N}`／`隨從`：前四張是 `resources/si/soranagpt/` 底下 Ray 9/20 丟的
+  GPT 原圖（沒接線，工具照檔名猜角色）；`{N}`＝主角、`隨從`＝米夏隨從（已接）。要不要把 `soranagpt/` 那四張回收或改名等 Ray。
+· 美術交接頂端那一塊還剩兩件沒接：`lake`／`canyon` 的小地圖 `map:{img,spots}`（`_minimap_worklist.md` 末段可抄）、
+  米夏隨從的 `cm`／`side` 要 Ray 給。`_TO_CODE_20260922.md` 那一批是否已接仍待對。
+· lint 0 錯誤、42 提醒。
+
+# （上一段）截至 `ver 2026.09.22-1727`
 
 **`-1727`：東泊守夜那一夜的兩顆鈕 ＋ M2 第二天直接播**（Ray 交辦）
 · **睡覺鈕留著、按了回一句**：`modules/inn.js` 的 `refresh` 在**任務鎖**那一道不藏鈕（-1570 的「關著就藏」只剩另外兩道：

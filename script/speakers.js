@@ -672,7 +672,7 @@ export const ART = {
     laugh:        { src:'resources/si/sorana_si_laugh.webp?v=2',         top:3,  bot:1529, fx:0.579, cm:170, standCm:176 },
     amaze:       { src:'resources/si/sorana_si_amaze.webp?v=3',        top:3,  bot:1527, fx:0.562 },
     /* 伊甸古墓・墓門那一段（ver -1188，同上，逐張量）。 */
-    whisper:      { src:'resources/si/sorana_si_whisper.webp?v=2',       top:24,  bot:1492, fx:0.524 },
+    whisper:      { src:'resources/si/sorana_si_whisper.webp?v=3',       top:4,   bot:1524, fx:0.524 },   // ver -1728：回復重製前那張（美術 09-24，`_sorana_r3_worklist.md` §十六）
     /* ══ Stage8 後段（ver -1092，Ray 交稿）══ 逐張量。
        ⚠ `excite`／`excite2` 的畫布不是規約的 1024×1536（1028×1530／1026×1532）——
          那是裁切的誤差，**不是另一個尺**，所以**不加 `rescale`**：讓它照基本立繪的
@@ -1483,7 +1483,7 @@ export const ART = {
     talk:       { src:'resources/si/misha_si_talk.webp?v=2', top:6, bot:1525, fx:0.471 },
     order:      { src:'resources/si/misha_si_order.webp?v=2', top:8, bot:1527, fx:0.432 },
     guard:      { src:'resources/si/misha_si_guard.webp', top:49, bot:1501, fx:0.344 },
-    draw:       { src:'resources/si/misha_si_draw.webp?v=2', top:22, bot:1516, fx:0.46 },
+    draw:       { src:'resources/si/misha_si_draw.webp?v=3', top:6, bot:1534, fx:0.434 },   // ver -1728：Ray 新出的拔刀圖（姿勢換了，取景重量；美術 09-25）
     salute:     { src:'resources/si/misha_si_salute.webp', top:9, bot:1520, fx:0.447 },
     side:       { src:'resources/si/misha_si_side.webp', top:16, bot:1512, fx:0.37 },
     wound:      { src:'resources/si/misha_si_wound.webp?v=2', top:34, bot:1499, fx:0.403 },
@@ -1495,7 +1495,7 @@ export const ART = {
     frontgrit:  'resources/si/misha_si_frontgrit.webp',
     frontshock: 'resources/si/misha_si_frontshock.webp',
     closeopen:  { src:'resources/si/misha_si_closeopen.webp', top:14, bot:1509, fx:0.469 },   // 照 close
-    drawopen:   { src:'resources/si/misha_si_drawopen.webp', top:22, bot:1516, fx:0.46 },   // 照 draw
+    drawopen:   { src:'resources/si/misha_si_drawopen.webp?v=2', top:6, bot:1534, fx:0.434 },   // 照 draw（-1728 隨 draw 重做）
     frownopen:  { src:'resources/si/misha_si_frownopen.webp', top:11, bot:1526, fx:0.469 },   // 照 frown
     guardopen:  { src:'resources/si/misha_si_guardopen.webp', top:49, bot:1501, fx:0.344 },   // 照 guard
     saluteopen: { src:'resources/si/misha_si_saluteopen.webp', top:9, bot:1520, fx:0.447 },   // 照 salute
