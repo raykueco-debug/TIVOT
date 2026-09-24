@@ -121,6 +121,9 @@ function questWindow(){
   const L = Array.isArray(QUEST_LOCK) ? QUEST_LOCK : (QUEST_LOCK ? [QUEST_LOCK] : []);
   for(const q of L){
     if(!q || !q.flag) continue;
+    /* `unless`（ver -1717）＝這支旗插著這扇窗就**不成立**：守夜那一扇的出口是那一夜的收尾旗，
+       而 AB 順序（先跑古墓）**沒有那一夜**（`tomb_misha_met`），沒有它窗會關到天荒地老。 */
+    if(q.unless && prog.hasFlag(q.unless)) continue;
     if(prog.hasFlag(q.flag) && !(q.until && prog.hasFlag(q.until))) return q;
   }
   return null;
@@ -214,6 +217,7 @@ function bgmWhenRow(T){
     if(!w || !w.bgm) continue;
     if(w.need && !prog.hasFlag(w.need)) continue;
     if(w.until && prog.hasFlag(w.until)) continue;
+    if(w.not && prog.hasFlag(w.not)) continue;   // `not`（ver -1717）：這支旗插著這一列不算（同 bgWhen 的 not）
     return w;
   }
   return null;

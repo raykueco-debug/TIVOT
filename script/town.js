@@ -633,8 +633,12 @@ export const QUEST_LOCK = [
        那一夜結束了。`until` 只吃一支，所以這裡用 M1／M2 共同的收尾旗
        `ep_night_mi_done` —— 兩條路的最後一拍都插它（鐵律 9：一個狀態一個擁有事件，
        而「那一夜過完了」就是那一個狀態，路線是另一件事，另外兩支旗記）。 */
+  /* ⚠ ver -1717：AB 順序（先跑古墓，`tomb_misha_met`）**沒有那一夜** —— 長談在索菈娜
+     「滿足滿足！」收掉、直接可以睡，隔天走出旅店就是「只剩西邊廢城」。這扇窗在那支旗下不成立
+     （`unless`，`modules/town.js` 的 `questWindow`），不然睡覺與約會會被鎖到天荒地老。 */
   { flag:  'ep_hairpin_talk',
     until: 'ep_night_mi_done',
+    unless:'tomb_misha_met',
     sleep: '今晚好像不太安寧，先守著吧。',
     date:  '（都這個時間了，別吵人家。）' },
 ];
@@ -5414,7 +5418,7 @@ export const TOWNS = {
       /* 守夜：獨自坐坐兩小時之後（安雅溜出房間那一段）。 */
       { need:'ep_night_anya_out', until:'ep_night_mi_done',  bgm:'echoedart' },
       /* 旅店長談的米夏注視那一拍之後，到坐滿兩小時為止。 */
-      { need:'ep_hairpin_talk',   until:'ep_night_anya_out', bgm:'glasscradle' },
+      { need:'ep_hairpin_talk',   until:'ep_night_anya_out', not:'tomb_misha_met', bgm:'glasscradle' },   // AB 沒有那一夜，這一列不算（ver -1717）
     ],
     /* 大城市不上迷霧（ver -913）—— ⚠ **要明寫**：沒寫就是有霧。 */
     mist: 0,
@@ -5510,7 +5514,7 @@ export const TOWNS = {
            （`ep_bel_court` 的 `goto:'@eastport:square'`），那一次抵達就演這兩句。
            ⚠ 它是**T2／T3 兩條路的共同起點** —— 分歧在旅店那一格（見 `inn.acts`）。 */
         acts:[ { flag:'ep_bel_back', need:'ep_belisar_done', sides:{ RENNA:'L' }, lines:[
-          ren('lookawaytalk','那麼下一站，就是北方的伊甸古墓了。'),
+          ren('lookawaytalk','那麼下一站，就是北方的伊甸古墓了。', { skipIf:'tomb_done' }),   // AB 古墓已經打完（ver -1717）
           ren('meltdown','休整一下，明天就出發吧。'),
         ] },
         { flag:'ep_arrive', need:'belisar_noland_talk', endStoryExplore:true,
@@ -6082,7 +6086,7 @@ export const TOWNS = {
            ⚠⚠ **兩個分支是兩段各自只演一次的戲**，一個 `flag` 記不了兩段
              ⇒ `onLeave` ver -1532 起可以是一張表（由上往下取第一個成立的，
              同 `acts`；引擎改在 `modules/town.js` 的 `leaveDue`）。
-           ⚠⚠⚠ **鐵律 9：`tomb_done` 現在還沒有人插** —— 古墓那一段的收尾
+           ⚠ `tomb_done` **ver -1717 起由出墓那一段（`tomb_exit_done`）收尾插** —— 古墓那一段的收尾
              （決戰／分離）還沒寫（見 HANDOFF 的 ⑨）。名字先留好，那一段寫完
              由它插。**在那之前永遠走分支 1**，而那正是安全的那一側（鐵律 13）。
            ⚠ 分支 1 的 `until:'tomb_done'`：先跑完古墓再回東泊的人（先 A 後 B）
@@ -6099,7 +6103,9 @@ export const TOWNS = {
         onLeave:[
           /* ── 分支 2：古墓探索已完成 ── ⚠ 排前面（由上往下取第一個成立的）。
              `need` 是**陣列**＝兩支都要立（`needOk` 早就支援，-1532 起 onLeave 也吃）。 */
-          { flag:'ep_leave_final', need:['ep_interrogate','tomb_done'],
+          /* ⚠ ver -1717：`need` 由「審訊演完」改成「長談演完」—— AB 沒有審訊；BA 出墓後不回東泊，
+             所以這一段實際上只有 AB 演得到。`tomb_done` 由出墓那一段收尾插（ver -1717 起真的有人插了）。 */
+          { flag:'ep_leave_final', need:['ep_hairpin_talk','tomb_done'],
             sides:{ RENNA:'L' }, lines:[
             ren('write','那麼，就只剩下西邊埃爾王國的廢城了。'),
             ren('tire','漫長的旅途也快要結束了。'),
@@ -6166,7 +6172,10 @@ export const TOWNS = {
            ⚠ 稿上「（以下開始回復有髮飾蕾娜立繪）」—— **無髮飾那一組還沒畫**
              （Ray -1511：「無髮飾先跳過，用原圖，之後再一次改」），所以這一段
              與中庭那一段一樣，用的都是現有的立繪。 */
-        { flag:'ep_hairpin_talk', need:'bl_night_done', sides:{ RENNA:'L' }, lines:[
+        /* ⚠ ver -1717：`endStoryExplore:true` 移到這一段 —— 以前只掛在審訊（M1）上，AB（沒有審訊）
+           與 BA・M2（沒有審訊）第二天永遠是劇情探索、沒有人出門。守夜那一扇窗照樣擋約會，
+           外出行程是 9~19 點，深夜開回來沒有副作用。 */
+        { flag:'ep_hairpin_talk', need:'bl_night_done', endStoryExplore:true, sides:{ RENNA:'L' }, lines:[
           sor('tire','折騰一晚上，呼啊——'),
           nou('sleepy',''),
           any('sleepy',''),
@@ -6195,6 +6204,11 @@ export const TOWNS = {
           ren('blush','……嗯。'),
           sor('side','妳高興就好啦！反正我也狠狠教訓了那隻小偷龍，滿足滿足！'),
           nou('awkward',''),
+          /* ══⚠⚠⚠ **AB 順序在這裡收場**（ver -1717，Ray：「AB 順序時……結束劇情，可點睡眠，
+             隔天直接開始旅店分支。米夏在這邊就不用出場，也沒有審訊」）══
+             先跑古墓的人（`tomb_misha_met`）在墓門已經與米夏正面對峙過，下面那一段
+             （安雅打瞌睡→米夏注視→守夜）與那一夜、審訊都是**初見**的戲，全部跳過。
+             跳的是拍不是段：這一段的 `flag`／`endStoryExplore` 照舊在收尾插。 */
           /* ══⚠⚠⚠ **米夏注視：半透明、一閃而過**（ver -1557，Ray：「在索拉娜滿足滿足後，
              有一拍安雅的 sleepy，在那一拍加入半透明 ci_mishastare 一閃而過，用脈動效果
              （同探索動畫）跳一拍就消失，se 播 heart beat 但只響一聲，與 ci 動畫同步」）══
@@ -6206,7 +6220,7 @@ export const TOWNS = {
                會清場、而且要再一拍才收得掉 —— Ray 要的是**一瞬**，所以走
                `fx:'stare'`（`#storyFx` 那一層，下一拍的 `stopFx()` 自己收，
                §6.5「跳一拍就消失」）。 */
-          any('sleepy',''),
+          any('sleepy','', { skipIf:'tomb_misha_met' }),
           /* ══⚠⚠⚠ **米夏注視那一拍 → 換曲**（ver -1520，Ray：「在米夏注視那一拍
              bgm 換成 Peritune_Glass_Cradle_loop(Anya & Misha)」）══
              ⚠ 順序 Ray 已經確認過，而線上本來就是這樣：**諾薇兒立繪 → 安雅 →
@@ -6227,30 +6241,30 @@ export const TOWNS = {
              把那一閃吃掉」。⚠ 保護期**不寫在這裡**：這一拍沒有 `auto`，長度是
              `fx:'stare'` 自己的 `STARE_MS`，由那一支 `holdSkip` 報上來（鐵律 7）。 */
           Object.assign(any('terrify',''),
-                        { bgm:'glasscradle', fx:'stare', fxCi:'ci_mishastare', noSkip:true }),
-          { speaker:'PLAYER', text:'！！' },
-          sor('ready','小公主怎麼啦？'),
-          any('talk','沒……沒事……'),
-          { speaker:'PLAYER', text:'……' },
-          nou('sleepy',''),
-          ren('smile','明天我們就多留一天吧，養精蓄銳，再往下一個目標去。'),
-          nou('risehand','好棒，帶薪休假。'),
-          nou('happy','安雅，我們明天……'),
-          any('talk','我、我累了。先回房間……'),
-          nou('surprise','啊。'),
-          nou('gossip2','看起來真的很累了呢。'),
-          ren('coldstare','……'),
-          nou('bigsmileclose','？？'),
-          ren('ask','大家先休息吧。真有什麼事的話，'),
-          ren('bow','還有他在嘛。'),
-          { speaker:'PLAYER', blank:true },
-          ren('bow','別這麼說嘛。'),
+                        { skipIf:'tomb_misha_met', bgm:'glasscradle', fx:'stare', fxCi:'ci_mishastare', noSkip:true }),
+          { skipIf:'tomb_misha_met', speaker:'PLAYER', text:'！！' },
+          sor('ready','小公主怎麼啦？', { skipIf:'tomb_misha_met' }),
+          any('talk','沒……沒事……', { skipIf:'tomb_misha_met' }),
+          { skipIf:'tomb_misha_met', speaker:'PLAYER', text:'……' },
+          nou('sleepy','', { skipIf:'tomb_misha_met' }),
+          ren('smile','明天我們就多留一天吧，養精蓄銳，再往下一個目標去。', { skipIf:'tomb_misha_met' }),
+          nou('risehand','好棒，帶薪休假。', { skipIf:'tomb_misha_met' }),
+          nou('happy','安雅，我們明天……', { skipIf:'tomb_misha_met' }),
+          any('talk','我、我累了。先回房間……', { skipIf:'tomb_misha_met' }),
+          nou('surprise','啊。', { skipIf:'tomb_misha_met' }),
+          nou('gossip2','看起來真的很累了呢。', { skipIf:'tomb_misha_met' }),
+          ren('coldstare','……', { skipIf:'tomb_misha_met' }),
+          nou('bigsmileclose','？？', { skipIf:'tomb_misha_met' }),
+          ren('ask','大家先休息吧。真有什麼事的話，', { skipIf:'tomb_misha_met' }),
+          ren('bow','還有他在嘛。', { skipIf:'tomb_misha_met' }),
+          { skipIf:'tomb_misha_met', speaker:'PLAYER', blank:true },
+          ren('bow','別這麼說嘛。', { skipIf:'tomb_misha_met' }),
           /* ⚠⚠ 稿上「T3以上分支」＝**多講一句**，所以走 `tierMin`（ver -858 就是
              為這種稿做的）不是 `needTier` —— 後者是 `actDue` 在判的，它擋的是
              **整段**，寫在一拍上一點作用都沒有（而且不會報錯）。
              ⚠ 門檻不是等於：寫 3 ＝「T3 以上」，日後有 T4 不必回頭改。
              ⚠ 看的是說話者（蕾娜）自己的段位，所以不必寫 `tierWho`。 */
-          Object.assign(ren('smilesoft','我很相信你喔。'), { tierMin:3 }),
+          Object.assign(ren('smilesoft','我很相信你喔。'), { skipIf:'tomb_misha_met', tierMin:3 }),
         ] },
         /* ══⚠⚠⚠ **兩小時後：安雅偷溜出房間**（ver -1511，Ray 的 Stage10-B 稿）══
            ⚠⚠ 觸發靠**時刻**不是「坐過幾次」：`settle()`（坐坐的收尾）會再問一次
@@ -6265,7 +6279,8 @@ export const TOWNS = {
         /* ⚠⚠ **ver -1520：這一段的第一拍換曲**（Ray：「休息兩小時後，音樂換成
            Peritune_Echoed_Art」）—— 「休息兩小時」就是旅店的「獨自坐坐」，
            而坐完之後演到的正是這一段。那一段期間由城上的 `bgmWhen` 撐著。 */
-        { flag:'ep_night_anya_out', need:'ep_hairpin_talk', hourOfDay:[0,6], lines:[
+        /* ⚠ ver -1717：`until:'tomb_misha_met'` ＝ AB 順序沒有這一夜（米夏那一段古墓已經演過）。 */
+        { flag:'ep_night_anya_out', need:'ep_hairpin_talk', until:'tomb_misha_met', hourOfDay:[0,6], lines:[
           { speaker:'NARRATION', text:'（房門輕輕開了。）', se:'se_walk', auto:1400,
             bgm:'echoedart' },
           /* ⚠ ver -1557（Ray：「安雅輕輕溜出房間那一拍放安雅的 scare」）——
@@ -7584,7 +7599,7 @@ export const TOWNS = {
           /* 劇情合流：雪都旅店、隔日早上 08:00（同北方泊地送行那一套：三秒淡黑 → 翌日卡 → goto）。
              ⚠ `tomb_misha_met` ＝在古墓見過米夏（ver -1707，Ray：「要，得回修東泊腳本分支，
                先掛著提醒我」）—— **東泊那邊還沒有人讀它**，見 HANDOFF。 */
-          { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000, flags:['tomb_misha_met'],
+          { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000, flags:['tomb_misha_met','tomb_done'],   // tomb_done：ver -1717 起由這裡插（東泊走出旅店／分歧面板讀它）
             hide:['RENNA','NOUVELLE','ANYA','SORANA','MISHA'] },
           { speaker:'PLAYER', text:'', dayBreak:true, clockToNext:8 },
         ] },
@@ -7682,7 +7697,7 @@ export const TOWNS = {
           /* 劇情合流：雪都旅店、隔日早上 08:00（同北方泊地送行那一套：三秒淡黑 → 翌日卡 → goto）。
              ⚠ `tomb_misha_met` ＝在古墓見過米夏（ver -1707，Ray：「要，得回修東泊腳本分支，
                先掛著提醒我」）—— **東泊那邊還沒有人讀它**，見 HANDOFF。 */
-          { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000, flags:['tomb_misha_met'],
+          { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000, flags:['tomb_misha_met','tomb_done'],   // tomb_done：ver -1717 起由這裡插（東泊走出旅店／分歧面板讀它）
             hide:['RENNA','NOUVELLE','ANYA','SORANA','MISHA'] },
           { speaker:'PLAYER', text:'', dayBreak:true, clockToNext:8 },
         ] } ] },
