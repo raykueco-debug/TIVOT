@@ -3419,6 +3419,18 @@
   @keyframes blankDot{
     0%,62%,100%{ opacity:.28;translate:0 0; }
     28%        { opacity:1;  translate:0 -3px; } }
+  /* ══ **`awk` ＝ 空白格上的「尷尬線」**（ver -1724，Ray 的 BA・M2 合流稿：「主角空白，對話框有尷尬線」）══
+     漫畫裡壓在額頭上的那幾條縱線：小氣泡右上角、四條由長到短、往右淡掉。
+     ⚠ 用 `repeating-linear-gradient` 畫在 `::after` 上（這顆氣泡的兩個 pseudo 都沒人用），
+       不另加 DOM —— 它與 `.blank` 同一拍生同一拍拔（story.js 的 renderLine 開頭）。
+     ⚠ 顏色跟主角的藍（`--self`），不另定一個色。 */
+  #storyBubble.blank.awk::after,#tutBubble.blank.awk::after{
+    content:'';position:absolute;top:5px;right:26px;width:16px;height:14px;pointer-events:none;
+    background:repeating-linear-gradient(90deg,var(--self) 0 1.5px,transparent 1.5px 4.5px);
+    -webkit-mask:linear-gradient(180deg,#000 30%,transparent),linear-gradient(90deg,#000,transparent 92%);
+            mask:linear-gradient(180deg,#000 30%,transparent),linear-gradient(90deg,#000,transparent 92%);
+    -webkit-mask-composite:source-in;mask-composite:intersect;
+    opacity:.8; }
   /* 會動的東西一律給一條退路（同 §6.5 染色那條 260ms 過渡的理由：對動態敏感的人）。
      ⚠ 關掉動畫之後**點要留在看得見的亮度**（.75）—— 不是關掉就消失。 */
   @media (prefers-reduced-motion: reduce){

@@ -2527,7 +2527,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1723';
+const KERB_V='?v=1724';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3794,7 +3794,7 @@ function renderLine(){
      留著的話下一個人的框也會是藍的 —— 那正是「持續狀態忘了收」的老坑。 */
   /* ⚠ `.blank`（小氣泡＋「...」，ver -1503）與 `.self` 同一個理由：它是**這一拍**
      的性質，留著的話下一個人的框會縮成一顆小氣泡。兩個一起拔。 */
-  if(bub2) bub2.classList.remove('self','blank');
+  if(bub2) bub2.classList.remove('self','blank','awk');   // awk：尷尬線（ver -1724），同 blank 是這一拍的性質
   /* ══⚠⚠ **`tiny:true` ＝這一句用極小字**（ver -1511，Ray 的 Stage10-B 稿：
      「距離遠，所以用極小字體」）══
      上城區那一段玩家是**站在遠處偷看**：安雅與那個少年的對話要讀得出「聽不清楚」，
@@ -3825,6 +3825,9 @@ function renderLine(){
          （同 `story.veil` 那條 `offsetWidth` 的理由）。 */
       void bub2.offsetWidth;
       bub2.classList.add('self','blank');   // -1323 主角的顏色 ＋ -1503 小氣泡與「...」
+      /* `awk:true` ＝ 稿上的「對話框有尷尬線」（ver -1724，Ray 的 BA・M2 合流稿）：
+         小氣泡右上角畫幾條漫畫式的縱線。長相在 CSS（鐵律 1），這裡只掛 class。 */
+      if(line.awk) bub2.classList.add('awk');
     }
     stopTyping();                       // ver -1062：不然上一句會接著打進這個空框
     if(tx) tx.textContent='';

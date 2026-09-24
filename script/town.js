@@ -5058,8 +5058,12 @@ export const TOWNS = {
              （`script/branches.js` 的 `ROUTES`）。分支 1 那個 act 因此不帶 M 的條件。
            ⚠ 分支 2 那幾句「嗚——小公主也要來啊」「哇啊——」「說好了喔——」**是索菈娜說的**
              （Ray 確認 5：稿上標成諾薇兒是筆誤；`crybig` 本來就是她的差分）。
-           ⚠ 「貝薩利爾古城」統一寫成遊戲裡的地名**貝利薩爾**（ver -1157 定名）；
-             「舊貝薩利亞王國」是王國名，照稿不動。 */
+           ⚠ 「貝薩利爾古城」統一寫成遊戲裡的地名**貝利薩爾**（ver -1157 定名）；王國名 Ray 的 -1707 稿寫
+             「貝薩利亞」、-1724 稿寫「貝薩利爾」—— 兩次不同，統一跟著地名寫**貝利薩爾**（他要改再說）。
+           ⚠⚠ **ver -1724 Ray 重交三個版本的稿**：BA・M1 與 -1707 一字不差（沒動）；A 版尾巴由「不是墳墓就不怕了」
+             換成「留在這裡」那一段（與 M2 同文）；BA・M2 尾巴多了「至於你嘛……扣分……扯平」六拍。
+             ⚠ 連帶：蕾娜敲門的 M2 約會（下面 `knock.RENNA`）那句「就當作扯平了吧」現在與合流**重複** —— Ray 沒說
+               要動，先照舊，見 HANDOFF。 */
         acts:[
         { flag:'vn_after_tomb', need:['tomb_exit_done','ep_belisar_done','ep_m2_route'], sides:{ RENNA:'L' }, lines:[
           ren('write','那麼，就只剩下西邊埃爾王國的廢城了。'),
@@ -5112,6 +5116,15 @@ export const TOWNS = {
           any('amaze','……！'),
           any('nod','嗯！'),
           ren('sigh',''),
+          /* ── ver -1724 Ray 的 BA・M2 稿：「扯平」搬進合流必經（-1719 他自己預告過「辦不到的話回頭把扯平
+             放到過場必經」）。⚠ 蕾娜沒有 `happy` 差分，「扣分。」取最接近的 `laugh`。
+             ⚠ 「主角空白，對話框有尷尬線」＝ `blank:true, awk:true`（§SCRIPT_FORMAT 8.6）。 */
+          ren('upsetstare','至於你嘛……'),
+          ren('laugh','扣分。'),
+          { speaker:'PLAYER', blank:true, awk:true },
+          nou('concern','不要看我……這次確實是你不好。'),
+          ren('smile','瞞著我的事，就這樣扯平吧。'),
+          ren('stare','畢竟剩下的旅程，還得靠你呢。'),
         ] },
         { flag:'vn_after_tomb', need:['tomb_exit_done','ep_belisar_done'], sides:{ RENNA:'L' }, lines:[
           ren('write','那麼，就只剩下西邊埃爾王國的廢城了。'),
@@ -5144,22 +5157,47 @@ export const TOWNS = {
           ren('write','那麼……'),
           ren('smile','下一個要調查的遺蹟就是東方的貝利薩爾古城了。'),
           sor('amaze','那是什麼地方？'),
-          ren('pointmap','大陸曆前四世紀的古城。中世紀時舊貝薩利亞王國曾當成國都改建。'),
+          ren('pointmap','大陸曆前四世紀的古城。中世紀時舊貝利薩爾王國曾當成國都改建。'),
           ren('pointmap','不過在那之後王國馬上就因為儲位之爭衰亡了。'),
           nou('risehand','這我知道！極東的詛咒之城！'),
-          ren('talkwork','沒錯。所以那座城一直被當成不祥之地無人敢近。'),
+          ren('talkwork','沒錯。所以那座城一直被當成不祥之地無人靠近。'),
           ren('write','但是，聖王廳卻把它編入四大遺蹟……'),
           sor('tire','總覺得不會比前兩個輕鬆啊？'),
           ren('front','沒問題的，我們不也一路過來了嗎？'),
-          any('curious','……不是墳墓，就不怕了？'),
-          ren('smile','嗯。'),
-          nou('awkward',''),
-          sor('tease','但是人家不是說古城裡面常常有——'),
-          ren('smile','沒有喔。'),
-          any('scare',''),
-          sor('think','欸——可是——'),
-          ren('smile','我說沒有就是沒有。'),
-          sor('cringe','好、好……'),
+          /* ── 以下 ver -1724 Ray 的 A 路線稿：「留在這裡」那一段（與 BA・M2 版同文，蕾娜在古墓已經
+             知道她是誰）。-1707 那段「不是墳墓，就不怕了？」已由這一版取代。 */
+          any('talk','我……我就留在這裡就好了……'),
+          nou('surprise','安雅……'),
+          sor('surprise','為什麼！'),
+          any('silent','……'),
+          ren('stare','……那可不行。'),
+          ren('talkwork','安娜殿下身為敵國王女，基於永夜協定我們應該將她交給帝國軍。'),
+          nou('furious','那怎麼可以！'),
+          any('silent','……'),
+          ren('talkwork','但是，安娜殿下身上仍有不明的力量。'),
+          ren('talkserious','我的判斷是……'),
+          nou('shock',''),
+          ren('smile','請安娜殿下再陪同我們探查遺蹟。畢竟這是聖王廳的指示呢。'),
+          any('shy','……'),
+          sor('confuse','……暫緩的意思嗎？'),
+          ren('front','沒錯。'),
+          ren('front','旅途還很長，如果在這期間安娜殿下有什麼想法……'),
+          ren('smile','也不是不能商量。'),
+          any('shy','……'),
+          ren('front','一路上受到安娜殿下的幫助，就這麼恩將仇報也有違神的教誨呢。'),
+          nou('bigsmile','太好了呢！安娜殿下！'),
+          any('talk','……'),
+          any('talkshy','安雅……'),
+          sor('amaze','什麼？'),
+          any('argue','請像以前一樣……叫我安雅……'),
+          any('argue','我……只想當安雅而已！'),
+          nou('covermouth','安雅……'),
+          ren('awkward','對不起啊，使了壞心眼呢。'),
+          sor('lauaghbig','那我就像以前一樣，叫小公主啦！'),
+          { speaker:'PLAYER', blank:true },
+          any('amaze','……！'),
+          any('nod','嗯！'),
+          ren('sigh',''),
         ] } ],
         sleepFlag:'vn_night_done',
         noSleep:'……蕾娜還沒回來。',
