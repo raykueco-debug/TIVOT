@@ -132,16 +132,14 @@
 
 ---
 
-## 八、2026-09-24 晚（Windows 那台）：米夏 `draw` 護手 —— ✔ 交件（第四版）
+## 八、2026-09-24 晚（Windows 那台）：米夏 `draw` 護手 —— ✔ 交件（第六版）
 
-- 退三次才過：v1 只黏弓末端；v2 鍔尖仍在拳頭上方；v3 弓在拳頭旁邊就斷了。
-  **最後是 Ray 在裁圖上畫了一條線、我把那張圖丟給 GPT 才一次過** —— 文字描述三則都沒把「弓要經過指節前方」講到位。
-  四版的病因、有效作法、上傳＋文字要同一則送的坑、驗收三件，都在 `si/_misha_program_worklist.md` **附三**。
+- 退四次才過：v1 只黏弓末端；v2 鍔尖仍在拳頭上方；v3 弓在拳頭旁邊就斷；v4 弓的弧度與材質不對（亮金圓管大圓弧）。
+  v5/v6 每則都附畜生道整把＋護手局部，逐項鎖「扁平舊黃銅條、窄 D 貼柄、末端小鉤、深近黑纏繩」才過。
+  六版病因、有效作法、產線兩個坑（附圖與文字同一則送／抓圖用 blob 大小排除舊版）、驗收五件，都在 `si/_misha_program_worklist.md` **附三**。
 - `draw`／`drawopen` 都交了（本機只拼刀柄＋拳頭區回原圖，臉 0 px 改動）。
 - **程式端要接**：`speakers.js` `draw` `?v=2→3`、`drawopen` 加 `?v=2`；取景值不變。
-- ⚠ 這台**沒有** `_originals/si/misha_si_close_natural_src.png`（§七寫「那台有」是錯的 —— `_originals/` 只有
-  `SI_ext` 與 `_matting_eval`，下載夾也沒有），`close` 自然站姿要重新向 GPT 要。
-- 米夏待修剩下：`close` 自然站姿 → `closeopen` 重做；刀長不合格 7 張等 Ray。
-  ⚠ 那 7 張若重畫，**護手照附三寫，並附 Ray 畫線那張圖**，不然會再犯同一個錯。
-- ChatGPT 那串：`https://chatgpt.com/c/6ab538d4-7dc4-83e8-a53d-8b8f0f3f3450`（原稿、刀圖、Ray 畫線圖都在串裡，
-  接下去做 `close` 可以直接沿用）。
+- ⚠ **問 Ray**：`front` 與 09-23 那五張的護手仍是亮金圓管大圓弧，只有 `draw` 是畜生道規格 —— 要不要全套換。
+- ⚠ 這台**沒有** `_originals/si/misha_si_close_natural_src.png`（§七寫「那台有」是錯的），`close` 自然站姿要重新向 GPT 要。
+- 米夏待修剩下：`close` 自然站姿 → `closeopen` 重做；刀長不合格 7 張等 Ray。重畫時護手照附三第 3 點，附畜生道圖與 `draw` v6。
+- ChatGPT 那串：`https://chatgpt.com/c/6ab538d4-7dc4-83e8-a53d-8b8f0f3f3450`（原稿、刀圖、Ray 畫線圖都在串裡）。
