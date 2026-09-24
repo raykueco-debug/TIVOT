@@ -53,3 +53,33 @@
 - `javascript_tool` 單次 45 秒上限，輪詢分段。
 - python 3.11、cv2 4.9／skimage／scipy 都在；主控台要 `PYTHONIOENCODING=utf-8`。`.venv-matting/` 在（ToonOut 備案）。
 - 交件編碼：PNG 母版 q85、既有 webp 二代 q92，`alpha_quality=100, method=6`（Pillow，這台沒 cwebp）。
+
+---
+
+## 七、2026-09-25 凌晨～（**Mac 這一台**，接在 Windows 收工之後）：米夏九張重做 —— ✔ 全部入庫
+
+Ray 這一輪的指令（見 `si/_misha_program_worklist.md` **附四**，逐鍵取景與程式端要改的九行都在那裡）：
+`draw`／`drawopen` 臉改 front 畫風（嚴肅閉嘴／微張嘴）、`stare`／`stareopen` 護弓照 draw、
+`frown`／`frownopen` 以 front 重畫（刀先短了一次，同串加長到 0.67）、`close`／`closeopen` 以 front 重畫自然站姿、
+`frontshock` 以 front 重畫冷靜震驚、直視觀者。
+
+- **九張全部 GPT 整張採用、alpha 直出、本機零拼接**（§一規則 1）。近白 ≤0.06%。
+- 五條線五個串並行，全部一次或兩次就過；唯一的坑：`frownopen` 第二次回來是**畫上去的棋盤格假透明**，
+  明寫「不要畫灰白相間的棋盤格」重出才對（憲法 §5 早就記過這一條）。
+- ⚠⚠ **程式端要接九行**（都是同名覆蓋、版號全跳；`frontshock` 要從字串縮寫改成物件，頭轉正了 fx 0.444）—— 附四那張表。
+- ⚠ **這一台現在 Claude in Chrome 連得到 Mac 自己的 Chrome**（09-24 §六那條「Mac 搬不回圖」的前提已變：
+  那天連的是 Windows 的 Chrome；今天 `list_connected_browsers` 回的是 macOS・isLocal）。下載直接落 `~/Downloads`。
+- ⚠ **程式 session 同時在這棵工作樹上活著**（-1728 在我做圖的中途 commit 進來，`_SI_差分總表.xlsx` 是它動的）——
+  我只 `git add` 自己的檔，沒碰它的。
+
+### 等 Ray 看畫面決定
+- `stare`／`stareopen` 刀長 0.77（規格上限 0.74；舊版 0.78，這次只改護弓沒動長度）。
+- §三那五件照舊（閉嘴攻擊版用途 / 其餘五張護手要不要全換 / 刀長 7 張…）——
+  ⚠ 其中 `close`／`frown`／`stare`／`frontshock` 這次已重畫，**刀長不合格名單剩 `side`／`talk`／`guard`／`back`**。
+
+### 資產盤點（米夏，2026-09-25）
+| 鍵 | 狀態 |
+|---|---|
+| draw／drawopen／stare／stareopen／frown／frownopen／close／closeopen／frontshock | ✔ 不欠 —— 今天重做，程式端待接 |
+| front／order／salute／wound／side／talk／guard／back／frontgrit／frontopen／saluteopen／sideopen／guardopen／stareopen(舊) | ✔ 不欠（線上照舊）；⚠ side／talk／guard／back 刀長不合格等 Ray |
+| retainer | ✔ 不欠（-1715 已接） |
