@@ -2,7 +2,8 @@
 > 1. `speakers.js:675` 索拉娜 `whisper`：`?v=2`→`?v=3`、`top:4 bot:1524`（圖已回復成重製前那張；`_sorana_r3_worklist.md` §十六）
 > 2. `script/town.js` 的 `lake` 與 `canyon` 各補 `map:{img,spots}`（新增，整段可抄：`resources/map/_minimap_worklist.md` 末段）
 > 3. 米夏的隨從 `retainer_si_front` 仍未接（`cm`／`side` 要 Ray 給，`_misha_program_worklist.md` 附）
-> 美術現況與換機器交接：`resources/_HANDOFF_ART_20260924.md` §六～§七。做完把這一塊刪掉或標成已接。
+> 4. **（09-24 晚，Windows）米夏 `draw` 護手弓修好了，同名覆蓋**：`speakers.js:1486` `draw` `?v=2`→`?v=3`、`speakers.js:1498` `drawopen` 加 `?v=2`；取景值不動（`_misha_program_worklist.md` 附三）
+> 美術現況與換機器交接：`resources/_HANDOFF_ART_20260924.md` §六～§八。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
 > 可睡、沒有那一夜也沒有審訊、隔天直接走出旅店）—— 見 -1717 那一段。

@@ -170,7 +170,7 @@ Ray 這一輪追加的一件 ＋ 早上留下的三件：
 
 | 件 | Ray 原話 | 規格 |
 |---|---|---|
-| **`draw` 護指沒接到護手** | 「draw那一張的軍刀護指不對，應該要連到護手」 | 畜生道的**黃銅 D 形弓**要**從柄頭一路掃到鍔**（§三第 2 條）。現行 `misha_si_draw.webp` 的弓在柄頭處捲了一圈就停在半空，**下端沒有接回護手**。重畫時只改刀柄，其餘 100% 保留；`drawopen` 是換臉差分，底圖改了要一起重做 |
+| ✔ **`draw` 護指沒接到護手**（**09-24 晚 Windows 已修**，見附三） | 「draw那一張的軍刀護指不對，應該要連到護手」 | 畜生道的**黃銅 D 形弓**要**從柄頭一路掃到鍔**（§三第 2 條）。現行 `misha_si_draw.webp` 的弓在柄頭處捲了一圈就停在半空，**下端沒有接回護手**。重畫時只改刀柄，其餘 100% 保留；`drawopen` 是換臉差分，底圖改了要一起重做 |
 | `close` 自然站姿 | 「close 跟 closeopen 不要立正站好」 | 重心單腳、手搭刀柄；上一台選好的 `_originals/si/misha_si_close_natural_src.png` **這台沒有**（`_originals` 不入版控）—— 要重新向 GPT 要 |
 | `closeopen` 重做 | 同上 | 以新的 `close` 為底、只換嘴 |
 | 刀長不合格 7 張 | 「好幾張都跑掉」 | `_misha_sword_lock.md` §四那張表（`side`／`stare` 太長、`close`／`talk`／`frown`／`guard`／`back` 太短）；等 Ray 說要不要重畫 |
@@ -182,3 +182,25 @@ Ray 這一輪追加的一件 ＋ 早上留下的三件：
 —— 發佈被自動模式擋下（判成可遠端寫入的介面），沒有繞過。
 ⇒ 三條路由 Ray 決定：① 放行那個中繼 Artifact ② 米夏那批在 **Windows 那台的 session** 做
 ③ 我在這台先把提示詞送出、圖下載到 Windows 的 `~/Downloads`，Ray 手動搬進 repo 再由這邊量刀長／交件。
+
+
+## 附三、2026-09-24 晚（Windows 那台）：`draw` 護手弓接回鍔 —— ✔ 已交件
+
+Ray：「先做 draw 那張，護指接到護手」
+
+**作法**：白底原稿＋`chikushoudou.webp` 上傳 ChatGPT，提示詞框成「100% 保留原圖，只修黃銅 D 形護手弓：
+上端從柄頭出發、下端**接回鍔**，封閉的 D 形；現在的錯法是下端停在半空」，要求 alpha 直出。
+GPT 一次就過（沒被擋）。⚠ 但它照樣**整張微重畫**（不透明區 12% 像素變動、臉區 10.9%）——
+照 9/24 交接 §四第 1 條，**只把刀柄區拼回原圖**：遮罩＝刀柄框（x 0~320、y 110~360）內的改動像素，
+膨脹 13 px、羽化 2.5 px；RGB 與 alpha 都在遮罩內取 GPT 版。臉區改動 **0 px**。
+
+| 檔 | 作法 | top | bot | fx（量測） | 交件 |
+|---|---|---|---|---|---|
+| `misha_si_draw.webp` | 舊圖 ＋ GPT 刀柄 | 22 | 1516 | 0.505（被刀柄拉偏，**沿用表上的 0.46**） | q92 第二代，alpha 零誤差、近白 0% |
+| `misha_si_drawopen.webp` | 同上（drawopen 的刀柄區與 draw 只差 5 px，同一張遮罩） | 22 | 1516 | 同上 | 同上 |
+
+原檔：`_originals/si/misha_si_draw_guardfix_gpt.png`（GPT 整張）、`misha_si_draw_guardfix_src.png`／
+`misha_si_drawopen_guardfix_src.png`（拼接後的母版）。舊 webp 走 `tools/recycle.sh`。
+
+⚠⚠ **程式端要接（鐵律 11）**：同名覆蓋 ⇒ `speakers.js:1486` `draw` 的 `?v=2`→`?v=3`；
+`speakers.js:1498` `drawopen` 現在**沒有版號**，要加 `?v=2`。`top/bot/fx` 都不用動。

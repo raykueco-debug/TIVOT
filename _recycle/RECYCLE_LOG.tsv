@@ -727,3 +727,5 @@ when	from	to	reason
 20260923-234029	resources/si/misha_si_order.webp	_recycle/resources/si/misha_si_order.webp	米夏 order：強透視修正版取代
 20260923-235128	resources/si/misha_si_frontshock.webp	_recycle/resources/si/misha_si_frontshock.webp	米夏 frontshock：Ray「太清澈」→ 強烈版取代
 20260924-172639	resources/SI/sorana_si_whisper.webp	_recycle/resources/SI/sorana_si_whisper.webp	索拉娜 whisper 9/22 重製版被 Ray 退回（持刀撲身，不是耳語）——回復到 d556b53 那一版
+20260924-225719	resources/si/misha_si_draw.webp	_recycle/resources/si/misha_si_draw.webp	draw 護手弓沒接到鍔（Ray 09-24）；改用 GPT 修正版刀柄拼回原圖
+20260924-225719	resources/si/misha_si_drawopen.webp	_recycle/resources/si/misha_si_drawopen.webp	draw 護手弓沒接到鍔（Ray 09-24）；改用 GPT 修正版刀柄拼回原圖

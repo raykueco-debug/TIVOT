@@ -128,3 +128,17 @@
 - Claude in Chrome 只連得到 Windows 那台的 Chrome；Mac 內建瀏覽器的 ChatGPT 沒登入。
   ⇒ 在 Mac 上只能做「不需要把 GPT 的圖搬回來」的事（小地圖圖示表那種墨線圖可以走頁面文字）。
 - `_originals/` 不同步：兩台各一份，選好的底圖要交件就得 commit 進 `resources/`。
+
+
+---
+
+## 八、2026-09-24 晚（Windows 那台）：米夏 `draw` 護手弓 —— ✔ 交件
+
+- `draw`／`drawopen` 的黃銅 D 形弓下端已接回鍔（GPT 修刀柄、本機只拼刀柄區回原圖，臉與其餘 0 px 改動）。
+  細節與數字在 `si/_misha_program_worklist.md` **附三**。
+- **程式端要接**：`speakers.js` `draw` `?v=2→3`、`drawopen` 加 `?v=2`；取景值不變。
+- ⚠ 這台**沒有** `_originals/si/misha_si_close_natural_src.png`（§七寫「那台有」是錯的 —— `_originals/` 只有
+  `SI_ext` 與 `_matting_eval`，下載夾也沒有），`close` 自然站姿要重新向 GPT 要。
+- 米夏待修剩下：`close` 自然站姿 → `closeopen` 重做；刀長不合格 7 張等 Ray。
+- ChatGPT 那串：`https://chatgpt.com/c/6ab538d4-7dc4-83e8-a53d-8b8f0f3f3450`（原稿與刀圖都掛在最上面，
+  接下去做 `close` 可以直接沿用，不必重傳）。
