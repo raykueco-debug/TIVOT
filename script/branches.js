@@ -131,6 +131,10 @@ function versionRoutes(versions){
       })();
       if(side) sides[ax]=side;
     }
+    /* ⚠ ver -1721：**AB 沒有 M**（`ROUTES`）—— 上面那條「沒寫的那一邊＝其他版本的反面」會把
+       A 版（只寫 `until:'ep_belisar_done'`）推成 M1，於是對不上路線表。ORD 是 AB 而 M 不是
+       這個版本自己寫的 ⇒ `M:null`（＝兩支 M 旗都拔，同 ROUTES 的 AB）。 */
+    if(sides.ORD==='AB' && !r.M && axes.has('M')) sides.M=null;
     const { add, remove } = flagOps(flags, sides);
     const rtAxes=Object.keys(sides).filter(ax=>ax!=='H');
     const routes = rtAxes.length ? ROUTES.filter(x=>rtAxes.every(ax=>x[ax]===sides[ax])).map(x=>x.id) : [];
