@@ -302,3 +302,26 @@ Ray：「drawopen 用新 draw 為底重做 只換嘴 張閉嘴版各一 表情�
 原檔：`_originals/si/misha_si_drawopen_gpt.png`／`misha_si_drawclose_gpt.png`（GPT 整張）、`misha_si_drawopen_src.png`／`misha_si_drawclose_src.png`（拼接母版）。舊 `drawopen` 進 `_recycle/`。
 
 ⚠⚠ **程式端要接（鐵律 11）**：`speakers.js:1498` `drawopen` 現在沒版號 ⇒ 加 `?v=2`，取景值改 **top:6 bot:1534 fx:0.434**（與 `draw` 同一組，切換不會跳）。
+
+### 附三之五、2026-09-25 凌晨：`drawopen` 表情改成**攻擊性備戰** —— ✔ 交件（覆蓋附三之四那版）
+
+Ray：「表情要更有攻擊性的備戰狀態」
+
+同一串再出兩張（眉壓低擠向眉心、眼瞼壓低瞪視、鼻樑微皺）：張嘴＝**咬牙露齒低吼**、閉嘴＝**咬緊牙關嘴線繃緊**。
+表情整個換 ⇒ 取眉眼嘴（§四第 1 條「往上擴」那條），**但瀏海不能跟著換**（GPT 兩張的瀏海都重畫了）：
+
+**遮罩作法（比附三之四的橢圓進一步）**：
+· 只在「底圖是皮膚（R−B>18）或線條（V<130）」的像素上換，**底圖或 GPT 任一邊是頭髮（B>R 且 V>165）的一律排除**；
+· 改動門檻 d>60，closing 7 ＋ dilate 5，羽化 σ=2；
+· 外圍再乘一個**羽化 σ=8 的橢圓窗**（中心 (445,152)、半徑 72×58）取代方框 —— 方框直角邊會在下顎皮膚留接縫（第一次就踩到）。
+· alpha 一個位元不動。結果：張嘴版改動 1808 px、閉嘴版 1948 px，底圖頭髮區被動到的 <60 px。
+
+| 檔 | 內容 | top/bot/fx | 交件 |
+|---|---|---|---|
+| `misha_si_drawopen.webp` | 新 draw ＋ 咬牙露齒瞪視 | 6/1534/0.434（同 draw） | q85 第一代、alpha 零誤差、近白 0.25% |
+| （未入庫）`_originals/si/misha_si_drawclose_src.png` | 新 draw ＋ 咬緊牙關瞪視（閉嘴） | 同上 | **用途等 Ray 定**：換掉 `draw` 的臉、或另開一個鍵 |
+
+原檔：`_originals/si/misha_si_drawopen_gpt.png`／`misha_si_drawclose_gpt.png`（GPT 整張）、`misha_si_drawopen_src.png`／`misha_si_drawclose_src.png`（拼接母版）。
+附三之四那版嚴肅張嘴 webp 進 `_recycle/`（母版已被覆蓋，要回去從 `_recycle/` 的 webp 拿）。
+
+⚠ 程式端要接的與附三之四相同：`drawopen` 加 `?v=2`、取景值同 `draw`。
