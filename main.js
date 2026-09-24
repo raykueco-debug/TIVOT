@@ -1664,13 +1664,14 @@ bindBtn('chapterBtn', ()=>{
      ① 底 ＝ **還沒演過這一幕**的最後一個章節（同一座城優先）—— `startChapter` 那一套
         （newRun、補給、旗、好感、章節號），只是不照章節自己的入口開門
      ② 補這一幕的前置：`need` 插上、自己的 `flag` 與 `until` 拔掉、`fromStage`／`needTier` 墊上
-     ③ 這一邊的條件：旗插／拔、好感設到那一段
+     ③ 這一邊的條件：路線旗插／拔（ver -1711 起只列 M／H／AB‧BA 路線，好感在遊戲內調）
      ④ `town.debugArm` 武裝 → `enterTown` 走進那一格，**不問 `actDue` 直接演那一幕**
-   ⚠ 閘門／敲門／店主那幾種**沒辦法直接演**：條件擺好、人放到那一格，觸發交給玩家。 */
+   ⚠ 閘門／離開時／店主／約會那幾種**沒辦法直接演**：條件擺好、人放到那一格，觸發交給玩家
+     （約會一座城一筆，放到旅店 —— ver -1711，Ray：「我測試可以自己走」）。 */
 bindBtn('branchBtn', ()=>{
   const list=scanBranches();
   pickSheet('分　歧', list.map(b=>({
-      name:(b.atStart?'★ ':'')+b.nodeName+(b.kind==='act'?'':'　〔'+({arrive:'進場對白',gate:'閘門',knock:'敲門',talk:'對話'}[b.kind]||b.kind)+'〕'),
+      name:(b.atStart?'★ ':'')+b.nodeName+(b.kind==='act'?'':'　〔'+({arrive:'進場對白',gate:'閘門',leave:'離開時',talk:'對話',date:'約會'}[b.kind]||b.kind)+'〕'),
       sub:(b.title||'')+'　｜　'+b.points.map(p=>p.label).join('、') })),
     (i, close)=>close(()=>{
       const b=list[i];
@@ -1693,10 +1694,16 @@ function startBranch(b, v){
   if(drop.length) prog.removeFlags(drop);
   if(a.fromStage!=null && prog.getStage()<a.fromStage) prog.setStage(a.fromStage);
   if(a.needTier) for(const who in a.needTier) prog.setAffectionDev(who, (a.needTier[who]-1)*20+5);
+  /* ver -1711：整幕版本只有一邊（這一個 act 就是那個版本）⇒ 不選也把它的路線旗擺好，
+     不然「直接進場」會演 M2 的版本、旗卻停在 M1。 */
+  for(const p of b.points) if(p.kind==='variant' && (p.variants||[]).length===1){
+    const pv=p.variants[0];
+    if(pv.add && pv.add.length) prog.addFlags(pv.add);
+    if(pv.remove && pv.remove.length) prog.removeFlags(pv.remove);
+  }
   if(v){
     if(v.add) prog.addFlags(v.add);
     if(v.remove) prog.removeFlags(v.remove);
-    if(v.tier) prog.setAffectionDev(v.tier.who, v.tier.t<=1 ? 5 : (v.tier.t-1)*20+5);
   }
   if(b.kind==='act') town.debugArm({ node:b.node, act:b.act });
   else if(b.kind==='arrive') town.debugArm({ node:b.node, arrive:true });

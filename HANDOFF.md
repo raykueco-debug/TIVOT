@@ -7,7 +7,78 @@
 > 清單在 **`_TO_CODE_20260922.md`**（`ASSET_VER` 七列／`speakers.js` 16 條版號 ＋ 8 個新鍵
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
-# HANDOFF — 截至 `ver 2026.09.22-1694`
+# HANDOFF — 截至 `ver 2026.09.22-1711`
+
+---
+
+# ⭐⭐⭐ `-1695` ～ `-1711`
+
+> ⚠⚠⚠ **交接檔又落了 16 版**（標頭停在 -1694，程式已到 -1710）—— 第三次了。
+>   `-1695`～`-1710` 只依 commit 訊息摘要，**沒有逐項複驗**；`-1711` 是這一輪自己做的。
+
+## 一、`-1695` ～ `-1710`（別人做的）
+
+| 版 | 內容 |
+|---|---|
+| -1695 | SI／NI 期間的反擊計入 MB 期間總傷 ＋ 修好「反擊整個不開火」 |
+| -1696 | 夢境粉碎＝強制消去敵最大 HP 的 20%，打得死＝處決（憲法已記） |
+| -1697～-1699 | Ray 的古墓／鏡湖腳本修正稿、Execute CI 改 .png、T3 分支改三件 |
+| -1700～-1704 | 古墓終戰：墓主真的變巨大、所有怪的接地陰影、追兵擊退後倒地（`seal_down`）、降臨改淨化倒放 |
+| -1705～-1706 | 「索菈娜！」之後先播 `se_snatch` 再上插圖；米夏 21 個差分接上 `speakers.js` |
+| -1707 | 走出墓門（M1／M2 × H 路線）＋ 雪都旅店合流（古城前／後 × M1／M2） |
+| -1708 | 首頁「分歧」檢查（管理人）＋ 根目錄 `劇情分歧樹.pptx` |
+| -1709～-1710 | 雙人立繪話講完就撤、改小幅滑入＋淡入淡出 |
+
+美術端（見 `resources/_HANDOFF_ART_20260924.md`）：索拉娜 realpha 12 張、米夏 12 張＋刀鞘修正、
+蕾娜公主抱四差分、索拉娜 `carrynouvelleshock2`、安雅 `happy`、米夏隨從 `retainer_si_front`。
+
+## 二、`-1711`（這一輪）
+
+**① 索拉娜 realpha 12 張接上**（`_sorana_r3_worklist.md` §十三）：
+`amaze angry armcross cry crybig determine eat embarrass front cringe drink excite2`
+的 `top`/`bot` 換成新畫布的值、`?v=` 各跳一號；`flight/index.html` 的 `amaze`／`cringe`／`excite2` 同步；
+`config.js` 的 `partner_sorana`（也指 `sorana_si_front`）由 `?v=2` 跳到 `?v=4`（它本來就落後）。
+⚠ 實量 alpha 上下緣與工單差 1~3 px（門檻不同），用工單的值。`fx` 照規矩不動。
+
+**② 安雅 `happy`** 新鍵（取景照抄本尊）。
+
+**③ 「分歧」面板收窄**（Ray：「分歧選擇以有編號的為準 如 M H 路線 AB 路線或 BA 路線
+不用分好感 好感在遊戲內可調」「約會事件只要放旅店就好 我測試可以自己走」）：
+- `script/branches.js` 只認路線旗（`ROUTE` 表：`ep_m1/m2_route`＝M、`tomb_h_route`＝H、
+  `belisar_seen`／`ep_belisar_done`＝BA、`tomb_done`＝AB）。**好感段位、選項、其他旗一律不列。**
+- 整幕版本（同 `flag` 的幾個 act）標成路線名（例：雪都旅店 `vn_after_tomb` 四版＝`BA・M2`／`BA・M1`／`AB・M2`／`AB・M1`）；
+  進場時**不選也會把那個版本的路線旗擺好**（`main.startBranch`）。
+- **約會事件一座城一筆**（`withWho` 的段落、`need:ep_date_*`、敲門邀約）→ 放到旅店，自己去約。
+- 新掃 `onLeave`：東泊走出旅店（AB／BA 兩版）。
+- 現況 **4 座城、14 幕**（原 49 幕）。`劇情分歧樹.pptx` 已重出。
+- ⚠ `tools/branch_tree.mjs` 要 `pptxgenjs`；這台沒全域裝，用 `NODE_PATH=<有它的 node_modules>` 跑。
+- 驗收（8124）：墓門 M1 版＋H → 旗 `ep_m1_route`／`tomb_h_route` 插上、`ep_m2_route` 拔掉、落在墓門；
+  東泊〔約會〕→ 落在東方泊地旅店；console 無錯。
+
+## 三、⚠ 還開著
+
+| 件 | 狀況 |
+|---|---|
+| 東泊腳本讀 `tomb_misha_met` | -1707 掛的提醒，**Ray 要回修**，現在沒人讀這支旗 |
+| 米夏 `close` 自然站姿、`closeopen` 重做、刀長不合格 7 張 | 等 Ray（美術交接 §三） |
+| 米夏 `order` 的 `top/bot`、`back` 的 `fx` | 要看畫面複核 |
+| 安雅 `anya_si_smile.webp` | 庫裡有、程式沒接、誰交的待查（美術交接 §五） |
+| 11 份美術交接檔從磁碟消失 | 仍在 git，等 Ray 回覆（**不要 `git add -A`**） |
+| `script_lint` 42 條提醒 | 古墓 6 張插圖仍是 png、3 場劇情戰前沒有 `checkpoint`、貝利薩爾 6 條 L 形邊 |
+| -1694 那張表 | `carrynouvelle` 的 `fx`、`determine／eat／wave` 的 `fx`、`embarrass` 右緣 —— 仍等 Ray |
+
+## 四、資產盤點（這一輪動到的）
+
+| 項 | 狀態 |
+|---|---|
+| 索拉娜 realpha 12 張 | ✔ 不欠 —— 圖已交、`-1711` 取景與版號已接 |
+| 安雅 `happy` | ✔ 不欠 —— `-1711` 已接 |
+| 蕾娜 `hugserious／hugshock／hugtalk／hugtalk2`、索拉娜 `carrynouvelleshock2` | ✔ 不欠 —— 已在 `speakers.js`（-1711 查過） |
+| 安雅 `smile` | ⚠ 欠程式端接線（圖在庫裡） |
+
+---
+
+# HANDOFF — 截至 `ver 2026.09.22-1694`（以下為舊文）
 
 ---
 

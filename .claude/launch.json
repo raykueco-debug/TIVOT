@@ -27,6 +27,15 @@
       ],
       "port": 8123,
       "autoPort": true
+    },
+    {
+      "name": "tivot-win",
+      "runtimeExecutable": "py",
+      "runtimeArgs": [
+        "tools/devserver.py"
+      ],
+      "port": 8124,
+      "autoPort": true
     }
   ]
 }

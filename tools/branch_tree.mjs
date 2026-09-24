@@ -9,7 +9,7 @@
  *  ⚠ 需要 `pptxgenjs`（npm）。沒裝就 `npm i pptxgenjs`（或把 NODE_PATH 指到有它的地方）。
  *  樹的長相：一座城一張（太長自動續頁）——
  *      城 ─┬─ 幕（格名＋那一段的旗＋第一句台詞）   ★＝幕一開頭就分支
- *          │    └─ 分支點（旗／好感段位／選項／整幕版本） → 各邊的晶片
+ *          │    └─ 分支點（路線 M／H／AB‧BA、整幕版本；ver -1711 起不列好感與選項） → 各邊的晶片
  * ========================================================================== */
 import { createRequire } from 'module';
 import { fileURLToPath, pathToFileURL } from 'url';
@@ -23,7 +23,7 @@ const list = scanBranches();
 const C = { bg:'15111D', panel:'261D37', panel2:'1E1729', gold:'C9A45C', text:'EDE6D6',
             muted:'9A8FB0', star:'C2475A', line:'5A4C74', chip:'332848' };
 const F = 'Microsoft JhengHei';
-const KIND = { act:'', arrive:'進場對白', gate:'閘門', knock:'敲門', talk:'對話' };
+const KIND = { act:'', arrive:'進場對白', gate:'閘門', leave:'離開時', talk:'對話', date:'約會' };
 
 const pres = new pptxgen();
 pres.layout = 'LAYOUT_WIDE';                       // 13.33 × 7.5 in
