@@ -27,7 +27,26 @@
 >   `node routesim.mjs BAM1 60`（⚠ 參數讀的是 `arguments`，node 下要改讀 `process.argv.slice(2)` —— 還沒改，第一次跑會退回預設 BAM1／40）。
 >   路線名 `BAM1`／`BAM2`／`AB`。它**不是引擎**：時鐘、追兵、飛行是手動注入的步驟，看的是「哪一段選了哪個版本」。
 
-# HANDOFF — 截至 `ver 2026.09.22-1724`
+# HANDOFF — 截至 `ver 2026.09.22-1725`
+
+**`-1725`：章節表改成 A 路線編號 —— 新增 10-A／11-A／12-A／13-A，刪 13-BA／14-BA／15**
+（Ray：「把 A 路線做成 stage 10-A，始於初入雪都；11-A 始於鏡湖結束古墓開門的門口；12-A 始於古墓第三層；
+13-A 始於走出古墓回到墓門；並把 13-BA 14BA 15 都刪掉，更新章節表」）
+· `script/progress.js`：四筆 A 章的旗是**接上去的**（S9 的底 ＋ `sv_s9_order` ＋ `tomb_gate` → 雪都／鏡湖那串
+  ＋ `tomb_opened` → `TOMB_CHASE_DONE` → 祭壇那五支），插在 Stage 9 之後。**B 路線的旗一支都不給**，所以墓門
+  走 A 版、雪都合流走 A 版。好感四人 45（T3，同舊 15 的理由）。**13-BA-M2 留著**（他點名的是 13-BA／14-BA／15）。
+· 落點：10-A `ravnsdal/square`；11-A `tomb/gate`＋`tomb_opened`；12-A `tomb/landing3`（底層梯廳＝他說的「第三層」）；
+  13-A `tomb/gate`＋`tomb_altar_done`。瀏覽器實測 13-A：一落地就是出墓那一幕（米夏上台、`tivot_stage_v1=13`、0 錯誤）。
+· ⚠⚠ **底層梯廳那一拍 `stage:15` → `stage:12`**（`script/town.js`），跟著改號。
+· ⚠⚠⚠ **順手抓到一個真的洞**：`town.js` 與 `story.js` 兩處註解都寫「`prog.setStage` 只升不降」——**它從來不是**
+  （原樣寫入，而且得是：讀舊檔與跳關要能往回寫）。線性時代沒事，非線性之後 BA 順序的人（13）走進 A 編號 12 的
+  底層梯廳就會被拉回 12。現在 `story.js` 讀 `line.stage` 時夾 `> getStage()` 才寫；兩處註解改掉。
+  ⚠ `clockGate` 的 `stage` 欄位與 `startBranch` 的 `fromStage` 沒動（前者是閘門、後者本來就有 `<` 守門）。
+· `tools/routesim.mjs` 的 AB 底改讀 `stage11a`（14-BA 沒了）；AB 跑過一遍，合流版本照舊、`章 12` 在底層梯廳升起。
+· 分歧面板（`startBranch`）挑底的規則沒動 —— 古墓的分支現在會自己挑到 13-A／12-A 當底。
+· lint 0 錯誤、42 提醒。
+
+# （上一段）截至 `ver 2026.09.22-1724`
 
 **`-1724`：雪都旅店隔日 08:00 合流 —— Ray 重交 A／BA・M1／BA・M2 三版稿**（`script/town.js` 的 `ravnsdal.inn.acts`）
 · **BA・M1**：與 -1707 一字不差，沒動。

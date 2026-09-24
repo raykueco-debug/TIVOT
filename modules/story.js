@@ -1413,11 +1413,13 @@ function applyPersist(line){
      拍上寫 `stage:7`。與 `act.stage`（演完才記）／閘門的 `stage`（演台詞前先設）
      是同一族的第三個時機 —— 「**從這一句起就是新的一章**」。
      ⚠ 與 `flags` 同一個時機（演到就記），所以它也只該放「這一刻確實發生了」的事。
-     ⚠ 只升不降由 `prog.setStage` 那一支負責（鐵律 9：一個狀態一個擁有事件）；
-       重播由段落自己的 `flag` 擋著，讀檔到更後面的章節時那支旗早就立了。
+     ⚠⚠ **只升不降在這裡夾**（ver -1725）：`prog.setStage` 本身是**原樣寫入**的 ——
+       它得是，讀舊檔（`runRestore`）與章節跳關都要能把段數往回寫。舊註解說「由 setStage
+       負責」是錯的，實際上沒有任何人守；非線性之後（BA 順序的人 13 走進 A 編號 12 的底層梯廳）
+       這一條才真的會被踩到。重播由段落自己的 `flag` 擋著，讀檔到更後面的章節時那支旗早就立了。
      ⚠ **戰鬥拍寫了沒有用**：`line.battle` 的分支先 return、不跑 applyPersist
        （同 `cg:null` 那個坑，ver -870 踩過）—— 要寫在戰後的第一拍。 */
-  if(line.stage!=null) prog.setStage(line.stage);
+  if(line.stage!=null && (line.stage|0) > prog.getStage()) prog.setStage(line.stage);
   /* 主武器的強化（ver -707）：那一拍寫 `gunStar:'<星id>'` ＝**點亮那一顆星**
      （可多次的星就 +1 次）。Ray：「部分關鍵素材由劇情控制產出」——
      劇情直接給強化是**特殊事件**，一般的路是拿素材去槍店換（見 config.gunStars）。
@@ -2527,7 +2529,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1724';
+const KERB_V='?v=1725';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

@@ -145,7 +145,7 @@ function force(tid,nid,flag){ const a=TOWNS[tid].nodes[nid].acts.find(x=>x.flag=
 function ch(id){ return CHAPTERS.find(c=>c.id===id); }
 /* ── 起始狀態 ── */
 if(ROUTE==='AB'){
-  const base=ch('stage14ba'); for(const f of base.flags) if(!/^(ep_|bl_|bel_|belisar_|renna_hairpin_lost|renna_t4_ok|free_explore_eastport|tomb_gate|vn_|lk_|lakestele_found|tomb_opened)/.test(f)) F.add(f);
+  const base=ch('stage11a'); for(const f of base.flags) if(!/^(tomb_gate|vn_|lk_|lakestele_found|tomb_opened|free_explore_ravnsdal)$/.test(f) && !/^(vn_|lk_)/.test(f)) F.add(f);   // -1725：底改成 11-A（A 路線的旗），再退回「還沒到墓門」
   stage=9; hour=10; day=1;
 }else{ const base=ch('stage12b'); for(const f of base.flags) F.add(f); stage=12; hour=23; day=1; }
 P('═══ 路線 '+ROUTE+'　好感 '+AFF+'（T'+tierOf(AFF)+'）　起始旗 '+F.size+' 支');
