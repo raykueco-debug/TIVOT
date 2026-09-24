@@ -5341,7 +5341,10 @@ export const TOWNS = {
        『該回去看看了』」）：這一句只是**催你回去** —— 人已經在那裡就不必講。
        旗照記、時鐘照推（`clockGate` 在它之前就做完了）。
        ⚠ 翌日那一道**不能**寫它：那一段的台詞就是那一幕，人在旅店照樣要演。 */
-    gates:[ { flag:'ep_evening', need:'ep_arrive', hourOfDay:[20,24],
+    /* ⚠⚠ ver -1726（Ray：「『該回去看看了』應該只在初入東泊自由活動時出現，10-B 以後永不觸發」）：
+       `skipIf:'ep_day2'` ＝翌日那一道演過就退休（同 `sv_s8_hungry` 那條的作法）—— 第二天從古城回來、
+       那一夜之後、BA・M2 的隔日，全部不再催。第一天沒催到（人一直在旅店）的旗照 `nudge` 記。 */
+    gates:[ { flag:'ep_evening', need:'ep_arrive', hourOfDay:[20,24], skipIf:'ep_day2',
               goto:'inn', enterAgain:true, nudge:true,
               lines:[ { speaker:'NARRATION', text:'該回去看看了。' } ] },
       /* ══⚠⚠⚠ 翌日・出發前（ver -1352，Ray 交稿）══════════════════════════════
@@ -5911,8 +5914,13 @@ export const TOWNS = {
             Object.assign(any('desperate',''), { flags:['ep_night_mi_done'] }),
           ] },
           /* ── 分支 2：獨自跟上（M2） ── */
+          /* ⚠⚠ ver -1726（Ray：「獨自偷偷跟上安雅事件結束以後自動接第二天 M2 劇情」）：
+             與 M1 同樣 `goto:'inn'`（時鐘已是 08:00）。M2 沒有審訊，「第二天」＝走出旅店那段
+             「下一個是伊甸古墓」的簡報（`onLeave` 的 `ep_leave_tomb`，-1726 起改認 `ep_night_mi_done`）
+             ＋自由探索 —— 所以 `endStoryExplore` 也在這裡插（M1 是審訊那一段插的）。
+             -1519 那句「M2 不加 goto」作廢。 */
           { flag:'ep_m2_route', need:'ep_night_anya_out', until:'ep_night_renna',
-            clockToday:8, lines:[
+            clockToday:8, goto:'inn', endStoryExplore:true, lines:[
             { speaker:'ANYA', text:'Мне кажется, я научилась владеть этой силой!',
               portrait:{ char:'ANYA', expr:'argue', show:true }, tiny:true },
             { speaker:'MISHA_X', tiny:true, dark:true,
@@ -6204,7 +6212,9 @@ export const TOWNS = {
             ren('pointmap','先到聖索菲亞城的領事館辦入境手續吧。'),
           ] },
           /* ── 分支 1：古墓探索還沒完成 ── */
-          { flag:'ep_leave_tomb', need:'ep_interrogate', until:'tomb_done',
+          /* ⚠ ver -1726：`need` 由 `ep_interrogate`（只有 M1 有）改成 `ep_night_mi_done`（兩條路的最後一拍都插）——
+             M1 的審訊是抵達旅店那一刻演的，先於任何一次離店，順序不變；M2 從此也接得上這段簡報。 */
+          { flag:'ep_leave_tomb', need:'ep_night_mi_done', until:'tomb_done',
             sides:{ RENNA:'L' }, lines:[
             ren('ask','那麼……'),
             ren('meltdown','唉——'),
@@ -7825,18 +7835,9 @@ export const TOWNS = {
           Object.assign(any('desperate',''), { hide:['MISHA'], se:'se_steps' }),   // ver -1715：撤收的下一拍腳步聲（Ray）
           ren('determine','……'),
           sor('guardtalk','什麼啊那傢伙……？'),
-          nou('faint',''),
-          { speaker:'PLAYER', blank:true },
-          ren('determine','……沒錯。'),
-          ren('determine','安雅小姐……'),
-          any('silent','……'),
-          ren('determine','如果妳還是什麼都不能說……也沒關係。'),
-          ren('determine','但是如果妳需要幫助……'),
-          /* 蕾娜＋索菈娜一張圖（Ray 確認 4）：蕾娜先下台，這一張同時代表兩人。 */
-          Object.assign(sor('rennaannoy','我們都在喔！'), { hide:['RENNA'] }),   // 從左邊出（ver -1710，差分自己帶 side:'L'）
-          nou('faint','在喔……'),
-          any('amaze',''),
-          any('nod','嗯！'),
+          /* ⚠ ver -1726 Ray 的 A 路線修正：到蕾娜第二個「……」為止就收 —— 「……沒錯／安雅小姐／我們都在喔」
+             那一段是 BA・M1 的（蕾娜那一夜跟去過、已經知道要她說什麼），A 路線她第一次見到米夏，只有沉默。 */
+          ren('determine','……'),
           /* 劇情合流：雪都旅店、隔日早上 08:00（同北方泊地送行那一套：三秒淡黑 → 翌日卡 → goto）。
              ⚠ `tomb_misha_met` ＝在古墓見過米夏（ver -1707，Ray：「要，得回修東泊腳本分支，
                先掛著提醒我」）—— **東泊那邊還沒有人讀它**，見 HANDOFF。 */
@@ -9093,7 +9094,7 @@ export const TOWNS = {
       drywell:   { bg:'belisar_drywell', name:'貝利薩爾遺址　枯井底', noTime:true, noWild:true, exits:{ right:'forge', down:'rooffall' } },
       /* ⚠ 安全點（ver -1397，Ray：「旋梯井　獅階　武器工坊為安全點　不出怪」）——
          另外兩格（`stairwell`／`dragstair`）本來就寫了 `noWild`。 */
-      forge:     { bg:'belisar_forge', name:'貝利薩爾遺址　兵器工坊', noTime:true, noWild:true, rest:true, exits:{ up:'starroom', right:'trihall', down:'muralwalk', left:'drywell' } },
+      forge:     { bg:'belisar_forge', name:'貝利薩爾遺址　兵器工坊', noTime:true, noWild:true, exits:{ up:'starroom', right:'trihall', down:'muralwalk', left:'drywell' } },
       trihall:   { bg:'belisar_triarch', name:'貝利薩爾遺址　三拱廳', noTime:true, exits:{ up:'incense', right:'guardhall', down:'lamphall', left:'forge' } },
       waterjail: { bg:'belisar_waterjail', name:'貝利薩爾遺址　水牢', noTime:true, exits:{ up:'cages', right:'dragonrace', down:'mirrorpool', left:'capstan' }, acts:[BEL_WATER_FIRST] },
       bonerack:  { bg:'belisar_sarcophagi', name:'貝利薩爾遺址　石棺廊', noTime:true, exits:{ up:'stelae', left:'guardhall' } },
