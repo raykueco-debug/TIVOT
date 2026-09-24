@@ -1,3 +1,9 @@
+> ⚠⚠⚠ **美術 session（2026-09-24 下午，Mac）交了三件，程式端要接** —— 都是一行到一段的事：
+> 1. `speakers.js:675` 索拉娜 `whisper`：`?v=2`→`?v=3`、`top:4 bot:1524`（圖已回復成重製前那張；`_sorana_r3_worklist.md` §十六）
+> 2. `script/town.js` 的 `lake` 與 `canyon` 各補 `map:{img,spots}`（新增，整段可抄：`resources/map/_minimap_worklist.md` 末段）
+> 3. 米夏的隨從 `retainer_si_front` 仍未接（`cm`／`side` 要 Ray 給，`_misha_program_worklist.md` 附）
+> 美術現況與換機器交接：`resources/_HANDOFF_ART_20260924.md` §六～§七。做完把這一塊刪掉或標成已接。
+
 > ⚠⚠⚠ **等 Ray 回修（ver -1707 掛的提醒）：東泊腳本要吃 `tomb_misha_met`** ——
 > 先跑古墓（Stage 10-A）的人會在墓門那一段**先見到米夏**（`tomb_misha_met` 由那一段收尾插）。
 > 之後才去東泊觸發米夏事件時，M1／M2 的台詞要分「已經在古墓見過」這一支 ——

@@ -98,3 +98,33 @@
 | 項 | 狀態 |
 |---|---|
 | 小地圖 | ✔ 不欠 —— `canyon`／`lake` 今天交了（程式端未接） |
+
+---
+
+## 七、⚠⚠⚠ 換機器：**米夏那批在 Windows 那台做**（Ray 定案，2026-09-24 傍晚）
+
+> Ray：「米夏那批我去 Windows 那台做，交接換機器」
+
+**Windows 那台開工的順序：**
+
+1. `git pull`（這一台最後推的是 `fccbb18`；之後若程式端又推了版，照舊以 `HANDOFF.md` 標頭為準）。
+2. 讀本檔 §六（今天下午做了什麼）＋ `resources/si/_misha_program_worklist.md` **附二**（待修四件的規格）
+   ＋ `_misha_sword_lock.md`（刀長規格、每則提示詞要附的比例尺圖）。
+3. 米夏待修，照這個順序（先小後大）：
+   - **`draw`：護指要接到護手** —— 只改刀柄（黃銅 D 形弓從柄頭掃到鍔），其餘 100% 保留；
+     `drawopen` 是換臉差分，底圖改了要一起重做（只取下半臉貼回，§四第 1 條）。
+   - **`close` 自然站姿**（重心單腳、手搭刀柄）→ 以它為底重做 `closeopen`。
+     那台的 `_originals/si/misha_si_close_natural_src.png` 就是上一輪選好的底圖，
+     **但刀長還沒照 `_misha_sword_lock.md` 量**，量過不合格就重要。
+   - **刀長不合格 7 張** —— 等 Ray 說要不要重畫，沒說就不動。
+4. 每一張收件後：量刀長（格線讀柄頭與鞘尾兩點 ÷ 身高）、`tools/measure_si.py` 量 `top/bot/fx`、
+   同名覆蓋要在交件單寫「`?v=` 要跳」（程式端改 `speakers.js`，鐵律 11）。
+
+**這一台（Mac）留下的東西，那台不必重做：**
+- 索拉娜 `whisper` 已回復並推上；小地圖 `lake`／`canyon` 已交並推上（§六）。
+- 兩者的「程式端要接」都寫在各自工單，且已掛在 `HANDOFF.md` 標頭。
+
+**這一台的環境備註（下次在 Mac 開美術 session 時用）：**
+- Claude in Chrome 只連得到 Windows 那台的 Chrome；Mac 內建瀏覽器的 ChatGPT 沒登入。
+  ⇒ 在 Mac 上只能做「不需要把 GPT 的圖搬回來」的事（小地圖圖示表那種墨線圖可以走頁面文字）。
+- `_originals/` 不同步：兩台各一份，選好的底圖要交件就得 commit 進 `resources/`。
