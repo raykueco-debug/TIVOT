@@ -624,3 +624,18 @@ Ray 一併放進來的 `4d82534b-….png`（1024×1536，**他自己去好背的
     hugshock:   { src:'resources/si/renna_si_hugshock.webp',   top:3, bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
     hugtalk:    { src:'resources/si/renna_si_hugtalk.webp',    top:3, bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
     hugtalk2:   { src:'resources/si/renna_si_hugtalk2.webp',   top:3, bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
+
+## 十六、ver -1712 後（2026-09-24）：`whisper` 回復到重製前的那一張（Ray：「索拉娜 whisper 修壞了，回復」）
+
+9/22 那一版重製（`3f5a10b`）畫成**持刀撲身**，不是耳語 —— 退回。
+檔案已回復成 `d556b53` 那一份（1024×1535，sha1 `3dc71317d9`），重製版走回收區
+（`_recycle/resources/SI/sorana_si_whisper.webp`）。
+
+### ⚠ 程式端要接（`script/speakers.js:675`，一行）
+
+    whisper: { src:'resources/si/sorana_si_whisper.webp?v=3', top:4, bot:1524, fx:0.524 },
+
+- **`?v=2` → `?v=3`**：`?v=2` 已經上線、指的是重製版，玩家快取裡就是那張壞的 ——
+  不跳版號他們會繼續看到持刀那一張（同 §「`die` 要跳 `?v=3`」那一條的判準：看線上寫什麼）。
+- **`top:24 bot:1492` → `top:4 bot:1524`**：那是重製版的畫布值；舊圖用 `measure_si.py`
+  實量 4／1524，與 -1694 之前線上那一行**一字不差**。`fx` 0.524 不動。
