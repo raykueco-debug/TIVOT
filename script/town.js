@@ -7660,19 +7660,19 @@ export const TOWNS = {
              （Ray：「當初把 A 路線共用 M1 把我自己搞混了，分一下」）。M2 版在上面、A 版在下面 —— 三個版本
              共用 `flag:'tomb_exit_done'`，由 `need`／`until` 分：M2＝`ep_m2_route`、BA・M1＝`ep_belisar_done`
              （沒 M2）、A＝`until:'ep_belisar_done'`。H 派生仍是四拍 `onlyIf:'tomb_h_route'`。 */
+          /* ver -1722：照 Ray 交的 BA・M1 稿 —— 「……哼」與「聽得懂我們的語言」拿掉、兩句改字、H 派生後補 `se_snatch` 一拍（同 A 版）。 */
           ren('hugserious','！！', { onlyIf:'tomb_h_route' }),
           ren('lookaway',  '！！', { skipIf:'tomb_h_route' }),
-          mis('close','……哼。'),
-          mis('frown','看來有人聽得懂我們的語言呢。'),
-          ren('hugtalk', '米海爾殿下，我是聖王廳第十三騎士團一等監察官，蕾姬娜˙海森伯格。', { onlyIf:'tomb_h_route' }),
-          ren('talkwork','米海爾殿下，我是聖王廳第十三騎士團一等監察官，蕾姬娜˙海森伯格。', { skipIf:'tomb_h_route' }),
-          ren('hugtalk', '基於永夜協議，我要求說明，您所謂安娜殿下的使命是……？',           { onlyIf:'tomb_h_route' }),
-          ren('talkwork','基於永夜協議，我要求說明，您所謂安娜殿下的使命是……？',           { skipIf:'tomb_h_route' }),
+          ren('hugtalk', '米海爾殿下，我是聖王廳第十三騎士團一等監察官，蕾姬娜˙海森伯格！', { onlyIf:'tomb_h_route' }),
+          ren('talkwork','米海爾殿下，我是聖王廳第十三騎士團一等監察官，蕾姬娜˙海森伯格！', { skipIf:'tomb_h_route' }),
+          ren('hugtalk', '基於永夜協議，我要求說明，您方才所謂安娜殿下的使命是指……？',     { onlyIf:'tomb_h_route' }),   // 稿上這句沒給表情，沿用上一句
+          ren('talkwork','基於永夜協議，我要求說明，您方才所謂安娜殿下的使命是指……？',     { skipIf:'tomb_h_route' }),
           /* ── H 路線派生 ── */
           mis('close','……',                                   { onlyIf:'tomb_h_route' }),
           mis('sideopen','……原來聖王廳的聖職者那麼不檢點的嗎？', { onlyIf:'tomb_h_route' }),
           ren('hugshock','！！',                               { onlyIf:'tomb_h_route' }),
           ren('hugangry2','好了啦！可以放我下來了啦！',         { onlyIf:'tomb_h_route' }),
+          { speaker:'NARRATION', text:'', se:'se_snatch', auto:600, onlyIf:'tomb_h_route' },   // 稿：snatch
           mis('close','……安娜，'),
           mis('talk','妳竟然連身份都告訴他們了？'),
           any('silent','……'),
