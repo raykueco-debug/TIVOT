@@ -3,7 +3,7 @@
 > 2. `script/town.js` 的 `lake` 與 `canyon` 各補 `map:{img,spots}`（新增，整段可抄：`resources/map/_minimap_worklist.md` 末段）
 > 3. 米夏的隨從 `retainer_si_front` 仍未接（`cm`／`side` 要 Ray 給，`_misha_program_worklist.md` 附）
 > 4. ✅ **-1728 已接** 米夏 `draw` `?v=3` top:6 bot:1534 fx:0.434；`drawopen` `?v=2` 同取景
-> 5. **（09-25 凌晨，Mac）米夏九張重做、同名覆蓋，版號全跳**：`draw` `?v=3`→`?v=4`、`drawopen` `?v=2`→`?v=3`、`frown` `?v=2`→`?v=3`、`close` `?v=2`→`?v=3`；`stare`／`stareopen`／`frownopen`／`closeopen` 加 `?v=2`；`frontshock` 由字串縮寫改成物件（頭轉正，`fx:0.444`）。**逐行的取景值在 `resources/si/_misha_program_worklist.md` 附四那張表**（frown／close／frontshock 是重畫，top/bot/fx 都變了）。
+> 5. **（09-25 凌晨，Mac）米夏九張重做、同名覆蓋，版號全跳 —— 九行可直接抄：根目錄 `_TO_CODE_20260925.md`**：`draw` `?v=3`→`?v=4`、`drawopen` `?v=2`→`?v=3`、`frown` `?v=2`→`?v=3`、`close` `?v=2`→`?v=3`；`stare`／`stareopen`／`frownopen`／`closeopen` 加 `?v=2`；`frontshock` 由字串縮寫改成物件（頭轉正，`fx:0.444`）。**逐行的取景值在 `resources/si/_misha_program_worklist.md` 附四那張表**（frown／close／frontshock 是重畫，top/bot/fx 都變了）。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝Mac 這一台今天做的）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
