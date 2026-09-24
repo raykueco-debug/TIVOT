@@ -374,8 +374,12 @@ function refresh(){
   if(!layer) return;
   refreshSleepLabel();
   /* ⚠ ver -1570：鈕的存在＝一個承諾（見 `canSleep` 的說明）。 */
+  /* ⚠⚠ ver -1727（Ray：「安雅感應到米夏後的回房睡覺鈕要留著，但是點了會顯示『似乎不太平靜，今晚還是守著吧。』」）：
+     **任務鎖那一道不藏鈕** —— 那一句話就是這一夜的演出（主角自己決定守著）。另外兩道（旅店還沒開放睡覺／天還沒黑）
+     照 -1570 藏著。`sleepHere()` 的第一道門本來就會回 `questSay('sleep')`，鈕出來它就接得住。 */
   { const sb = layer.querySelector('.inn-btn[data-act="sleep"]');
-    if(sb) sb.style.display = canSleep() ? '' : 'none'; }
+    const qlk = !!(st1 && st1.questLocked && st1.questLocked());
+    if(sb) sb.style.display = (canSleep() || qlk) ? '' : 'none'; }
   const st = stage();
   layer.querySelectorAll('.inn-door').forEach(b=>{
     const who = DOORS[+b.dataset.i];
@@ -800,7 +804,7 @@ function sleepHere(){
      根本不出來**（見 `refresh`）。這裡留著只是**保險絲** —— 真的走到這裡就代表
      「鈕出來了卻按不動」，那正是 Ray 這一版要消滅的失敗模式，所以記一行 console。
      ⚠ 底下那三段台詞不刪：鍵盤／程式化入口（測試、章節跳關）仍可能繞過鈕。 */
-  if(!canSleep()) console.info('[inn] 睡覺鈕出來了卻按不動 —— 上游有路徑沒問 canSleep()');
+  if(!canSleep() && !(st1 && st1.questLocked && st1.questLocked())) console.info('[inn] 睡覺鈕出來了卻按不動 —— 上游有路徑沒問 canSleep()');   // 任務鎖那一道是刻意讓鈕出來的（ver -1727）
   if(st1 && st1.questLocked && st1.questLocked()){
     if(host && host.say) host.say(st1.questSay('sleep') || '現在不是睡覺的時候。', '');
     return;

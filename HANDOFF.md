@@ -27,7 +27,23 @@
 >   `node routesim.mjs BAM1 60`（⚠ 參數讀的是 `arguments`，node 下要改讀 `process.argv.slice(2)` —— 還沒改，第一次跑會退回預設 BAM1／40）。
 >   路線名 `BAM1`／`BAM2`／`AB`。它**不是引擎**：時鐘、追兵、飛行是手動注入的步驟，看的是「哪一段選了哪個版本」。
 
-# HANDOFF — 截至 `ver 2026.09.22-1726`
+# HANDOFF — 截至 `ver 2026.09.22-1727`
+
+**`-1727`：東泊守夜那一夜的兩顆鈕 ＋ M2 第二天直接播**（Ray 交辦）
+· **睡覺鈕留著、按了回一句**：`modules/inn.js` 的 `refresh` 在**任務鎖**那一道不藏鈕（-1570 的「關著就藏」只剩另外兩道：
+  旅店還沒開放睡覺／天還沒黑）；`sleepHere` 第一道門本來就回 `questSay('sleep')`。句子改成 Ray 的字面
+  `EP_VIGIL_SAY`＝「似乎不太平靜，今晚還是守著吧。」（`script/town.js`，一個常數兩處讀）。
+· **出旅店鎖到安雅溜出門**：東泊旅店 `lock:{ uptown:{ need:'ep_hairpin_talk', until:'ep_night_anya_out', skipIf:'tomb_misha_met', text:EP_VIGIL_SAY } }`。
+  `lock` 新支援 `skipIf`（`modules/town.js`）—— AB 順序沒有那一夜，不寫就鎖到天荒地老。
+· **M2 那一夜收尾不用走出旅店**：`goto:'inn'` 抵達那一刻直接演簡報 —— 旅店多一個 act
+  `{ flag:'ep_leave_tomb', need:['ep_m2_route','ep_night_mi_done'], until:'tomb_done' }`，台詞抽成 `EP_LEAVE_TOMB_LINES`
+  與 `onLeave` 那一份共用（同一支旗，演過一次另一條路不再演）。
+· 實測（8123，12-B 一路點到長談結束）：睡覺鈕在、按住 1 秒 → 那一句、時鐘不動；按 S 出旅店 → 同一句、人還在旅店。
+  模擬器 BA・M2：08:10 抵達旅店 `■ act ep_leave_tomb` ✔。lint 0 錯誤、42 提醒。
+· ⚠ 測試中有一次時鐘從 23:00 跳到 01:00 而我沒按坐坐 —— 那一刻分頁在背景、我的合成長按與 1 秒門檻撞在一起，
+  之後乾淨重做**沒有再現**（時鐘不動）。Ray 若在 8200 看到「沒坐坐時間自己走兩小時」再回報。
+
+# （上一段）截至 `ver 2026.09.22-1726`
 
 **`-1726`：Ray 的四件修正**
 · **墓門 A 版尾巴**：「撤收。」→ 安 `desperate` → 蕾「……」`determine` → 索「什麼啊那傢伙……？」`guardtalk` → 蕾「……」`determine`

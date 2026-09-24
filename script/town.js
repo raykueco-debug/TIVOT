@@ -619,6 +619,11 @@ export const DRAGON_LINES = {
      那三處原本寫的是 `QUEST_LOCK.flag` —— 在陣列上那是 `undefined`，而
      **`need:undefined` ＝沒有條件 ⇒ 那幾段會立刻演**，畫面上不會有任何錯誤訊息。
      所以窗要有名字，指名的人讀名字，不要讀容器。 */
+/* ⚠⚠ 守夜那一夜（安雅感應到米夏之後～她溜出房門）：**睡覺鈕與出旅店都留著、按了回這一句**
+   （ver -1727，Ray：「回房睡覺鈕要留著，但是點了會顯示『似乎不太平靜，今晚還是守著吧。』出旅店鈕點下去
+   也一樣。出旅店鈕到安雅偷偷走出門才解鎖」）。一句話一個常數：`QUEST_LOCK` 第二扇窗的 `sleep`
+   與東泊旅店的 `lock` 都讀它（鐵律 7）。 */
+const EP_VIGIL_SAY = '似乎不太平靜，今晚還是守著吧。';
 const Q_HAIRPIN = {
   flag:  'ep_hairpin_hunt',
   until: 'bl_night_sky',
@@ -639,8 +644,26 @@ export const QUEST_LOCK = [
   { flag:  'ep_hairpin_talk',
     until: 'ep_night_mi_done',
     unless:'tomb_misha_met',
-    sleep: '今晚好像不太安寧，先守著吧。',
+    sleep: EP_VIGIL_SAY,
     date:  '（都這個時間了，別吵人家。）' },
+];
+/* ══⚠⚠ **M2 的「第二天」＝走出旅店那段簡報，抵達旅店就直接播**（ver -1727，Ray：「M2 那一夜收尾
+   不用走出旅店，直接播」）══ 台詞只有這一份：東泊旅店的 `onLeave`（M1：審訊完、離店時演）與
+   M2 的抵達 act（`goto:'inn'` 那一刻）都讀它，旗同一支 `ep_leave_tomb` ⇒ 演過一次另一條路就不會再演。 */
+const EP_LEAVE_TOMB_LINES = [
+  ren('ask','那麼……'),
+  ren('meltdown','唉——'),
+  any('curious','？'),
+  ren('lookdown','下一個要調查的遺蹟就是北方的伊甸古墓了。'),
+  /* ⚠ 稿上沒標立繪 ⇒ 不動（她這一段還沒上場就是底圖那一張）。 */
+  sor(null,'感覺妳很不情願啊？'),
+  ren('lookdown','因為……說是遺蹟……'),
+  ren('die','不就是墳墓嘛……'),
+  nou('shock','？'),
+  { speaker:'PLAYER', blank:true },
+  ren('lookdown','你說得容易……'),
+  ren('blush','絕對不可以離開我超過三步以上。不然我扣你分！'),
+  sor('die','哇——濫用職權！'),
 ];
 
 export const OUTING = {
@@ -6045,6 +6068,10 @@ export const TOWNS = {
              這兩個座標只負責「看起來對」。 */
       inn:        { bg:'east_hotel',      name:'東方泊地　旅店',
         exits:{ back:'uptown' },
+        /* ⚠⚠ 守夜那一夜出不了旅店（ver -1727，Ray：「出旅店鈕到安雅偷偷走出門才解鎖」）：鑰匙寫**目的地**
+           `uptown`（`back` 是執行期算的，-1525 起兩種都吃）；`skipIf:'tomb_misha_met'` ＝ AB 順序沒有那一夜
+           （`ep_night_anya_out` 永遠不會插，不寫就是鎖到天荒地老 —— 同 `QUEST_LOCK` 那扇窗的 `unless`）。 */
+        lock:{ uptown:{ need:'ep_hairpin_talk', until:'ep_night_anya_out', skipIf:'tomb_misha_met', text:EP_VIGIL_SAY } },
         inn:true, innNoGuide:true,
         innSpots:{ sit:{ x:0.26, y:0.62 }, sleep:{ x:0.42, y:0.34 } },
         sleepFlag:'ep_renna_night',   // ver -1382：`noSleepUntil` 改名 `sleepFlag`（語意相同）
@@ -6215,21 +6242,7 @@ export const TOWNS = {
           /* ⚠ ver -1726：`need` 由 `ep_interrogate`（只有 M1 有）改成 `ep_night_mi_done`（兩條路的最後一拍都插）——
              M1 的審訊是抵達旅店那一刻演的，先於任何一次離店，順序不變；M2 從此也接得上這段簡報。 */
           { flag:'ep_leave_tomb', need:'ep_night_mi_done', until:'tomb_done',
-            sides:{ RENNA:'L' }, lines:[
-            ren('ask','那麼……'),
-            ren('meltdown','唉——'),
-            any('curious','？'),
-            ren('lookdown','下一個要調查的遺蹟就是北方的伊甸古墓了。'),
-            /* ⚠ 稿上沒標立繪 ⇒ 不動（她這一段還沒上場就是底圖那一張）。 */
-            sor(null,'感覺妳很不情願啊？'),
-            ren('lookdown','因為……說是遺蹟……'),
-            ren('die','不就是墳墓嘛……'),
-            nou('shock','？'),
-            { speaker:'PLAYER', blank:true },
-            ren('lookdown','你說得容易……'),
-            ren('blush','絕對不可以離開我超過三步以上。不然我扣你分！'),
-            sor('die','哇——濫用職權！'),
-          ] },
+            sides:{ RENNA:'L' }, lines:EP_LEAVE_TOMB_LINES },
         ],
         acts:[
         /* ══⚠⚠⚠ **那一夜之後・旅店**（ver -1511，Ray 的 Stage10-B 稿）══════════
@@ -6391,6 +6404,10 @@ export const TOWNS = {
              `[非線性Stage 10 A route開始]` 就掛在伊甸古墓的墓門那一段上）——
              所以這裡**不掛 `goto`**，也不該有人在這裡指路。實測：審訊演完
              → 出航 → 降落伊甸古墓 ⇒ `tomb_gate` 那一整段正常演出。 */
+        /* ── M2 的第二天（ver -1727）：那一夜收尾 `goto:'inn'` 到這裡就直接播簡報，不必走出旅店。
+           `ep_night_mi_done` 一起要（那一夜過完），`until:'tomb_done'` 同 onLeave 那一份。 */
+        { flag:'ep_leave_tomb', need:['ep_m2_route','ep_night_mi_done'], until:'tomb_done',
+          sides:{ RENNA:'L' }, lines:EP_LEAVE_TOMB_LINES },
         { flag:'ep_interrogate', need:'ep_m1_route', hourOfDay:[8,18],
           endStoryExplore:true,
           sides:{ RENNA:'L' }, lines:[

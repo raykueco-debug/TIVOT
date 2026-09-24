@@ -4004,7 +4004,9 @@ function go(to, dir){
   const nlk=node();
   if(dir && nlk && nlk.lock && (nlk.lock[dir] || nlk.lock[to])){
     const L=nlk.lock[dir] || nlk.lock[to];
-    if((!L.need || prog.hasFlag(L.need)) && !(L.until && prog.hasFlag(L.until))){
+    /* `skipIf`（ver -1727）＝這支旗立了這道鎖就**不存在**（同 `stageGate` 的 `skipIf`／`QUEST_LOCK` 的 `unless`）：
+       鎖的前提被別條路作廢時用它 —— 東泊守夜那道鎖在 AB 順序（`tomb_misha_met`）沒有那一夜。 */
+    if((!L.need || prog.hasFlag(L.need)) && !(L.until && prog.hasFlag(L.until)) && !(L.skipIf && prog.hasFlag(L.skipIf))){
       /* ⚠⚠ **擋下來的時候可以演一段**（ver -1433，Ray：「把南門驛站出口封起來：
          索：『喂！開船去比較快啦！』confused」）—— 帶 `lines` 就走**同一支**
          `playAdhoc`（立繪取景、明暗、打字機全部沿用，鐵律 8）；沒帶就照舊
