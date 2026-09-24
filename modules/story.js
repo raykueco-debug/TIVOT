@@ -2525,7 +2525,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1715';
+const KERB_V='?v=1716';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3324,7 +3324,14 @@ function renderLine(){
      ⚠ 為什麼是「或」不是「且」：`need` 那一族（`needOk`）已經是**且**了 ——
        兩種語意各有一個入口，不要在同一個欄位裡混（鐵律 7）。 */
   const _anyFlag = v => Array.isArray(v) ? v.some(f=>prog.hasFlag(f)) : prog.hasFlag(v);
+  /* ⚠⚠ **`onlyIfAll:[…]` ＝「全部成立」才演**（ver -1716，墓門 M1 版的 BA×H 那幾拍：
+     要「去過古城」**而且**「走了 H 路線」）。`onlyIf` 的陣列是「或」（上面 -1484 那一條，
+     不動它），「且」另開一個欄位 —— 同一個欄位不混兩種語意（鐵律 7）。
+     ⚠ 四選一的寫法：BA×H `onlyIfAll:[BA,H]`／BA×一般 `onlyIf:BA, skipIf:H`／
+       A×H `skipIf:BA, onlyIf:H`／A×一般 `skipIf:[BA,H]`（skipIf 的「或」正好＝兩支都沒插）。 */
+  const _allFlag = v => Array.isArray(v) ? v.every(f=>prog.hasFlag(f)) : prog.hasFlag(v);
   if((line.onlyIf && !_anyFlag(line.onlyIf)) ||
+     (line.onlyIfAll && !_allFlag(line.onlyIfAll)) ||
      (line.skipIf &&  _anyFlag(line.skipIf))) return advance();
   /* `tierMin`（ver -858）：**說話者自己的**好感段位達標才演這一拍 ——
      「T2 才多講一句」這種稿（textByTier 換字做不到「多一拍」）。

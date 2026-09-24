@@ -7610,22 +7610,44 @@ export const TOWNS = {
           any(null,'米夏！'),   // ver -1715：差分沿用上一張（Ray）
           any(null,'Миш, послушай меня! Я уже давно не вызывала кошмары……'),
           mis(null,'И что? По-твоему, это повод бросить наш долг?'),
-          ren('shockcalm', '！！', { skipIf:'tomb_h_route' }),
-          ren('hugserious','！！', { onlyIf:'tomb_h_route' }),
+          /* ══⚠⚠ **BA／A 分歧**（ver -1716，Ray 的修正稿）══ 三個點各分兩邊：
+             · **BA**（先去過古城）＝ `ep_belisar_done` 插著 —— BA 順序到古墓時它一定在
+               （古城沒做完出不了東泊，`sail.hold until ep_belisar_done`）。
+             · **A**（未去古城）＝ 沒插。
+             判準只用這一支旗（鐵律 7：與雪都旅店 `vn_after_tomb` 的「古城完成前／後」同一把鑰匙）。
+             蕾娜的差分：H 路線一律公主抱系（`hugserious`／`hugtalk`），一般路線照稿
+             `lookaway`／`lookawaytalk`／`talkwork`（稿上的 `worktalk` ＝庫裡的 `talkwork`，Ray 確認）。
+             每一句都是四選一（BA×H／BA×一般／A×H／A×一般）：
+               BA×H `onlyIfAll:[BA,H]`（且）／BA×一般 `onlyIf:BA, skipIf:H`／
+               A×H `skipIf:BA, onlyIf:H`／A×一般 `skipIf:[BA,H]`（`skipIf` 的陣列是「或」＝兩支都沒插）。
+             ⚠ `onlyIf` 的陣列是**或**（-1484），所以「且」要用 `onlyIfAll`（-1716 加的）。 */
+          /* ── 蕾娜的反應 ── */
+          ren('hugserious','！！',                    { onlyIfAll:['ep_belisar_done','tomb_h_route'] }),
+          ren('lookaway',  '！！',                    { onlyIf:'ep_belisar_done', skipIf:'tomb_h_route' }),
+          ren('hugserious','安娜跟……米夏……',          { skipIf:'ep_belisar_done', onlyIf:'tomb_h_route' }),
+          ren('lookaway',  '安娜跟……米夏……',          { skipIf:['ep_belisar_done','tomb_h_route'] }),
+          ren('hugserious','米海爾……謝索洛夫？',       { skipIf:'ep_belisar_done', onlyIf:'tomb_h_route' }),
+          ren('lookawaytalk','米海爾……謝索洛夫？',     { skipIf:['ep_belisar_done','tomb_h_route'] }),
           mis('close','……哼。'),
-          mis('frown','看來有人聽得懂我們的語言呢。'),
-          ren('hugtalk',   '米海爾殿下，還請您說明一下，安娜殿下的使命是……？', { onlyIf:'tomb_h_route' }),
-          ren('askserious','米海爾殿下，還請您說明一下，安娜殿下的使命是……？', { skipIf:'tomb_h_route' }),
+          mis('frown','看來有人聽得懂我們的語言呢。',   { onlyIf:'ep_belisar_done' }),
+          mis('frown','聖王廳的狗，鼻子挺靈的。',       { skipIf:'ep_belisar_done' }),
+          /* ── 蕾娜質問 ── */
+          ren('hugtalk', '米海爾殿下，我是聖王廳第十三騎士團一等監察官，蕾姬娜˙海森伯格。', { onlyIfAll:['ep_belisar_done','tomb_h_route'] }),
+          ren('talkwork','米海爾殿下，我是聖王廳第十三騎士團一等監察官，蕾姬娜˙海森伯格。', { onlyIf:'ep_belisar_done', skipIf:'tomb_h_route' }),
+          ren('hugtalk', '基於永夜協議，我要求說明，您所謂安娜殿下的使命是……？',           { onlyIfAll:['ep_belisar_done','tomb_h_route'] }),
+          ren('talkwork','基於永夜協議，我要求說明，您所謂安娜殿下的使命是……？',           { onlyIf:'ep_belisar_done', skipIf:'tomb_h_route' }),
+          ren('hugtalk', '您是謝索洛夫皇國的第一皇子，米海爾殿下沒錯吧?',                  { skipIf:'ep_belisar_done', onlyIf:'tomb_h_route' }),
+          ren('talkwork','您是謝索洛夫皇國的第一皇子，米海爾殿下沒錯吧?',                  { skipIf:['ep_belisar_done','tomb_h_route'] }),
           /* ── H 路線派生（M1）── */
           mis('close','……',                                   { onlyIf:'tomb_h_route' }),
           mis('sideopen','……原來聖王廳的聖職者那麼不檢點的嗎？', { onlyIf:'tomb_h_route' }),
           ren('hugshock','！！',                               { onlyIf:'tomb_h_route' }),
           ren('hugangry2','好了啦！可以放我下來了啦！',         { onlyIf:'tomb_h_route' }),
           mis('close','……安娜，'),
-          mis('talk','妳連身份都告訴他們了嗎？'),
+          mis('talk','妳竟然連身份都告訴他們了？'),   // ver -1716 改稿
           any('silent','……'),
           ren('invite','她從未表明過自己的身份。證明我猜想的是此時此刻的您本人喔。'),
-          mis('frontshock','！！'),
+          mis('frontshock','！！'),   // 稿上的「shock」＝米夏現有的 frontshock（Ray 確認）
           /* 四個上膛音不規則此起彼落、可重疊（稿） */
           /* ⚠ ver -1715：同一拍再加拔刀音 `se_sworddraw`（Ray 交件＋交辦）。 */
           Object.assign(mis('drawopen','聖王廳的女狐……！'), { se:[{ n:'se_sworddraw' }, { n:'se_weapon_reload' }, { n:'se_weapon_reload', delay:180 }, { n:'se_weapon_reload', delay:420 }, { n:'se_weapon_reload', delay:530 }] }),

@@ -93,7 +93,7 @@ function pointsOf(lines){
   const pts=new Map();
   (lines||[]).forEach((ln, li)=>{
     if(!ln || typeof ln!=='object') return;
-    for(const f of asArr(ln.onlyIf).concat(asArr(ln.skipIf))){
+    for(const f of asArr(ln.onlyIf).concat(asArr(ln.onlyIfAll), asArr(ln.skipIf))){   // onlyIfAll：ver -1716 的「且」
       if(!isRoute(f)) continue;
       const code=codeOfAxis(AXIS[f].axis);
       let p=pts.get(code);
