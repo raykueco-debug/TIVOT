@@ -5202,6 +5202,35 @@ export const TOWNS = {
                             sor('tease','你這個神職人員能喝嗎？'),
                             { speaker:'PLAYER', blank:true },
                             sor('readysmile','那就走吧！', { flags:['vn_date_sor'] }) ] },
+          /* ══⚠⚠ **蕾娜・出墓合流之後才開**（ver -1719，Ray 交稿：「自由探索，可出航。約會路線：蕾娜
+             [M1分支]…[M2分支]…」）══ `need:'vn_after_tomb'`（那一段合流演完）—— 在那之前敲她的門
+             回 `needSay`（旁白，暫代）。M1／M2 判準照全專案慣例 **`ep_m2_route` 插著才是 M2**
+             （其餘＝M1，含先跑古墓的人）。
+             ⚠ 表情 Ray 沒給，是我配的（write／whisper／smile／apologize／blush；M2 tire／lookaway／smile／bow）。
+             ⚠ T4 派生的插圖 **`032_rennablush` 還沒有圖**（美術要交：蕾娜臉紅的插圖，見 HANDOFF）——
+               圖沒到之前那兩拍照演，只是沒有插圖。
+             ⚠ Ray 自己點出的缺點：**沒約蕾娜就不會有「扯平」這個最低限度的結束**。他說先這樣，
+               推進度之後辦不到再把「扯平」搬到過場必經。 */
+          RENNA:{    need:'vn_after_tomb', needSay:'（蕾娜好像還在忙。）',
+                     low:'我在整理報告呢，你們去吧。',
+                     date:[ /* ── M1（含先跑古墓）── */
+                            ren('write',    '我在整理報告呢。',                   { skipIf:'ep_m2_route' }),
+                            ren('whisper',  '……想看嗎？',                         { skipIf:'ep_m2_route' }),   // 蕾娜沒有 tease，取最接近的 whisper
+                            ren('smile',    '開玩笑的啦。',                       { skipIf:'ep_m2_route' }),
+                            ren('apologize','寫了那些東西進去……對不起啊。',       { skipIf:'ep_m2_route' }),
+                            /* T4 以上派生（M1 專屬）：主角空白 → 臉紅插圖 → 兩句 → 收圖 */
+                            { speaker:'PLAYER', blank:true,                        skipIf:'ep_m2_route', tierMin:4, tierWho:'RENNA' },
+                            ren('blush',    '你明明知道我不能說。',                { skipIf:'ep_m2_route', tierMin:4, tierWho:'RENNA', cg:'032_rennablush', cgNoTime:true }),
+                            ren('blush',    '但是……我只是希望你……你們大家都能平安。', { skipIf:'ep_m2_route', tierMin:4, tierWho:'RENNA' }),
+                            { speaker:'NARRATION', text:'', cg:null, auto:200,      skipIf:'ep_m2_route', tierMin:4, tierWho:'RENNA' },
+                            /* ── M2 ── */
+                            ren('tire',     '我想休息一下。',                      { onlyIf:'ep_m2_route' }),
+                            { speaker:'PLAYER', blank:true,                        onlyIf:'ep_m2_route' },
+                            ren('lookaway', '……',                                  { onlyIf:'ep_m2_route' }),
+                            ren('smile',    '就當作扯平了吧。',                    { onlyIf:'ep_m2_route' }),
+                            ren('bow',      '最後一段旅途，也請多指教囉。',        { onlyIf:'ep_m2_route', flags:['vn_date_renna'] }),
+                            /* M1 的收尾旗（最後一拍演完才記；T4 那幾拍演不演都會經過這裡） */
+                            { speaker:'NARRATION', text:'', auto:1, skipIf:'ep_m2_route', flags:['vn_date_renna'] } ] },
                     } } },
     },
   },

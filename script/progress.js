@@ -809,6 +809,9 @@ export function applyRankAffection(grade, partnerKey){
      那就讓她留在 T4 —— 夾的是新值，不是既有的值（見下面的 `Math.min` 位置）。 */
 const AFF_CAPS = [
   { who:'renna', need:'renna_hairpin_lost', until:'renna_t4_ok', maxTier:3 },
+  /* ver -1719（Ray：「蕾娜走 M2 的話 T 值上限就是 4，到不了 5」）—— 那一夜獨自跟上，她被瞞在鼓裡。
+     沒有 `until`：這一輪就是這樣（`ep_m2_route` 只有 `newRun` 會清）。 */
+  { who:'renna', need:'ep_m2_route', maxTier:4 },
 ];
 export function affCap(who){
   for(const c of AFF_CAPS){

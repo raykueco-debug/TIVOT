@@ -586,6 +586,12 @@ function knock(i){
         if(bl && host && host.say) host.say(bl, '');
         return;
       }
+      /* ⚠ `need`／`needSay`（ver -1719）：這一段約會**某支旗立了才開**（雪都的蕾娜＝出墓合流之後）。
+         還沒到就回 `needSay`（旁白＝主角自己的判斷，同 `low` 的退路），**不要靜靜 return**（§6.5.5）。 */
+      if(KT.need && !prog.hasFlag(KT.need)){
+        if(host && host.say) host.say(KT.needSay || KT.low || '（她好像沒什麼興趣。）', '');
+        return;
+      }
       /* 好感的鑰匙是小寫的角色 id（`progress` 的 CHARS）—— speaker id 轉一下。 */
       const aff=(prog.getAffection()||{})[String(who).toLowerCase()]||0;
       if(aff < (st1.dateAff!=null ? st1.dateAff : 20)){
