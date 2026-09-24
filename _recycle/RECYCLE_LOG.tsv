@@ -729,3 +729,5 @@ when	from	to	reason
 20260924-172639	resources/SI/sorana_si_whisper.webp	_recycle/resources/SI/sorana_si_whisper.webp	索拉娜 whisper 9/22 重製版被 Ray 退回（持刀撲身，不是耳語）——回復到 d556b53 那一版
 20260924-225719	resources/si/misha_si_draw.webp	_recycle/resources/si/misha_si_draw.webp	draw 護手弓沒接到鍔（Ray 09-24）；改用 GPT 修正版刀柄拼回原圖
 20260924-225719	resources/si/misha_si_drawopen.webp	_recycle/resources/si/misha_si_drawopen.webp	draw 護手弓沒接到鍔（Ray 09-24）；改用 GPT 修正版刀柄拼回原圖
+20260924-230407	resources/si/misha_si_draw.webp	_recycle/resources/si/misha_si_draw.webp.20260924-230407	第一版拼接錯：只接了弓的下端，鍔仍在拳頭上方（Ray 退）
+20260924-230407	resources/si/misha_si_drawopen.webp	_recycle/resources/si/misha_si_drawopen.webp.20260924-230407	第一版拼接錯：只接了弓的下端，鍔仍在拳頭上方（Ray 退）

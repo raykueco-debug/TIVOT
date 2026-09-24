@@ -132,10 +132,11 @@
 
 ---
 
-## 八、2026-09-24 晚（Windows 那台）：米夏 `draw` 護手弓 —— ✔ 交件
+## 八、2026-09-24 晚（Windows 那台）：米夏 `draw` 護手 —— ✔ 交件（第二版）
 
-- `draw`／`drawopen` 的黃銅 D 形弓下端已接回鍔（GPT 修刀柄、本機只拼刀柄區回原圖，臉與其餘 0 px 改動）。
-  細節與數字在 `si/_misha_program_worklist.md` **附三**。
+- 第一版被 Ray 退（「問題根本沒解決」）：我只把弓的末端接上，**鍔還在拳頭上方**。真正的病是護手整個位置錯，
+  第二版把「柄頭→柄（拳頭握這裡）→鍔→刀身」的順序寫死才過。細節、提示詞寫法、數字在 `si/_misha_program_worklist.md` **附三**。
+- `draw`／`drawopen` 都交了（本機只拼刀柄＋拳頭區回原圖，臉 0 px 改動）。
 - **程式端要接**：`speakers.js` `draw` `?v=2→3`、`drawopen` 加 `?v=2`；取景值不變。
 - ⚠ 這台**沒有** `_originals/si/misha_si_close_natural_src.png`（§七寫「那台有」是錯的 —— `_originals/` 只有
   `SI_ext` 與 `_matting_eval`，下載夾也沒有），`close` 自然站姿要重新向 GPT 要。
