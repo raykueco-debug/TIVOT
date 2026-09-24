@@ -733,3 +733,5 @@ when	from	to	reason
 20260924-230407	resources/si/misha_si_drawopen.webp	_recycle/resources/si/misha_si_drawopen.webp.20260924-230407	第一版拼接錯：只接了弓的下端，鍔仍在拳頭上方（Ray 退）
 20260924-231121	resources/si/misha_si_draw.webp	_recycle/resources/si/misha_si_draw.webp.20260924-231121	第二版仍錯：S 形鍔尖在拳頭上方、鍔穿過拳頭（Ray：手不可能握在護弓之上）
 20260924-231121	resources/si/misha_si_drawopen.webp	_recycle/resources/si/misha_si_drawopen.webp.20260924-231121	第二版仍錯：S 形鍔尖在拳頭上方、鍔穿過拳頭（Ray：手不可能握在護弓之上）
+20260924-231947	resources/si/misha_si_draw.webp	_recycle/resources/si/misha_si_draw.webp.20260924-231947	第三版仍錯：弓在拳頭左側就斷了，沒經過指節前方接到鍔（Ray 畫線指示）
+20260924-231947	resources/si/misha_si_drawopen.webp	_recycle/resources/si/misha_si_drawopen.webp.20260924-231947	第三版仍錯：弓在拳頭左側就斷了，沒經過指節前方接到鍔（Ray 畫線指示）
