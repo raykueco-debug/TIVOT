@@ -84,10 +84,18 @@ Ray 這一輪的指令（見 `si/_misha_program_worklist.md` **附四**，逐鍵
 | front／order／salute／wound／side／talk／guard／back／frontgrit／frontopen／saluteopen／sideopen／guardopen／stareopen(舊) | ✔ 不欠（線上照舊）；⚠ side／talk／guard／back 刀長不合格等 Ray |
 | retainer | ✔ 不欠（-1715 已接） |
 
-## 八、2026-09-25：無人廢城（暫名 `dunmor`）拓樸提案 —— ⏸ **等 Ray 審**
+## 八、2026-09-25：無人廢城（暫名 `dunmor`）拓樸 —— ✅ **Ray 定案 v2，開畫**（換 session）
 
 Ray：「先交一份無人廢城拓樸方案，50～60 格，含一個祭壇終點，古凱爾特風格，迷宮與岔路」
 - 提案：`resources/map/_dunmor_spec.md`（數據、三帶、逐格特徵、背景預算、要 Ray 定的五件）
 - 佈局圖：`resources/map/_layout_dunmor.png`（產生器 `tools/map_dunmor_draft.py`，自檢：同欄同列／不交叉／不穿格／≤4 向／連通／一直按↑不直達）
 - **v2**（Ray 追加「同一方向不要有三次以上的直線」→ 整張重排成之字形，產生器多一條「同向 ≤2 段」自檢）：56 格・60 邊・5 環；四向口 1、三向口 19、端末 12、休息處 3；一直按↑只走到南壘門（門道塌了，要走兩側壕溝坡道）
 - ⚠ **沒有搬進 `town.js`、沒有開背景工單** —— 先排拓樸再畫場景，Ray 點頭之後：程式端搬資料、`map_layout.py` 補 `POS`、這支產生器回收；美術再開 212 張的背景單（52 格四差分＋地下 4 格單張）
+
+### ⚠⚠⚠ 下一個 session 的第一件事：畫廢城背景（Ray：「先照這樣畫圖吧」）
+- **工單**：`resources/background/_dunmor_spec.md` —— Ray 定死的四件（古凱爾特／**剛被破壞、不要太破**／**不久前還有人**／**紫紅天空**）＋ **不做四差分、一格一張**。
+- 逐格出口照 `resources/map/_dunmor_spec.md` §二；佈局圖 `_layout_dunmor.png` 第一則附給 GPT。
+- **先畫 15 張**（主軸＋三個休息處）給 Ray 看色調與破敗程度，過了再鋪其餘 40 張。
+- 交件 `resources/background/dunmor/dunmor_<id>.webp`（小寫、不帶時段），交完跑 `tools/bg_index.py`。
+- 開工先 `list_connected_browsers` 確認連的是**本機** Chrome（不是本機就搬不回圖，見 09-24 §六／今天 §七）。
+- 程式端要接的寫在工單 §五（拓樸搬 `town.js`、全部 `noTime`、三個 `rest`）。

@@ -4,7 +4,8 @@
 > 3. 米夏的隨從 `retainer_si_front` 仍未接（`cm`／`side` 要 Ray 給，`_misha_program_worklist.md` 附）
 > 4. ✅ **-1728 已接** 米夏 `draw` `?v=3` top:6 bot:1534 fx:0.434；`drawopen` `?v=2` 同取景
 > 5. **（09-25 凌晨，Mac）米夏九張重做、同名覆蓋，版號全跳 —— 九行可直接抄：根目錄 `_TO_CODE_20260925.md`**：`draw` `?v=3`→`?v=4`、`drawopen` `?v=2`→`?v=3`、`frown` `?v=2`→`?v=3`、`close` `?v=2`→`?v=3`；`stare`／`stareopen`／`frownopen`／`closeopen` 加 `?v=2`；`frontshock` 由字串縮寫改成物件（頭轉正，`fx:0.444`）。**逐行的取景值在 `resources/si/_misha_program_worklist.md` 附四那張表**（frown／close／frontshock 是重畫，top/bot/fx 都變了）。
-> 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝Mac 這一台今天做的）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
+> 6. **（09-25，Mac）無人廢城 `dunmor` 拓樸 v2 Ray 定案** —— 56 格・5 環，`tools/map_dunmor_draft.py` 的 `NODES`／`EDGES` 就是資料來源；要搬進 `town.js`（全部 `noTime:true`、三個 `rest`、迷霧預設），細節在 `resources/background/_dunmor_spec.md` §五。⚠ id／中文名／祭壇那一場還沒定，搬之前問 Ray。
+> 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝Mac 這一台今天做的；§八＝廢城，下一個美術 session 從那裡開畫）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
 > 可睡、沒有那一夜也沒有審訊、隔天直接走出旅店）—— 見 -1717 那一段。
