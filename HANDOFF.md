@@ -16,7 +16,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1736`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1737`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -29,7 +29,18 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1736`
+# HANDOFF — 截至 `ver 2026.09.22-1737`
+
+**`-1737`：飛行地圖隨機刷怪加章節上限 —— 蜈蚣只在 Stage 1、羽蛇只在 Stage 4**（Ray：「stage4 的羽蛇跟 stage1 的蜈蚣
+不會出現在該章節以外的地方，過期就沒了」）
+· `flight/index.html` 的 `ENEMY_KINDS`：新欄位 **`untilStage`**（最後一個還會刷的 stage，含；與 `fromStage` 成對，
+  守門在 `enemyKindEligible`）。蜈蚣 `fromStage:1, untilStage:1`；羽蛇 `fromStage:2` → `fromStage:4, untilStage:4`；空賊照舊（1 起、不進薩梅爾）。
+· 劇本遭遇（`SCRIPTED_ENCOUNTERS` 指定 kind）不經過抽選，不受影響。
+· ⚠ 後果：**Stage 5 之後隨機池只剩空賊，而空賊不進薩梅爾 ⇒ 薩梅爾上空沒有隨機怪**（`spawnEnemy` 的 `!kind` return 現在會真的走到）。
+  Ray 定的「過期就沒了」，照做；要補後期的隨機怪就加新的 kind。
+· 沒在瀏覽器跑（純守門邏輯；inline script 用 jsc `checkSyntax` 過）。lint 0 錯誤、41 提醒。
+
+# （上一段）截至 `ver 2026.09.22-1736`
 
 **`-1736`：雪都敲蕾娜門的 M2 約會照 Ray 重交的稿**（`town.js` ravnsdal `knock.RENNA`）
 · M2 五拍換成：lookawaytalk「我想休息一下。」→ 主角空白 → coldstare「……」→ upset「評價我是不會改的喔。」
