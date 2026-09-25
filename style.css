@@ -619,11 +619,16 @@
      鐵律 7：同一個「升級／滿了」的綠只有一個值）。
      ⚠ 呼吸在**顏色**上（綠 ⇄ 白）而不是只有亮度：白到白只是閃，綠白交替才讀得出
        「它滿了、而且是好事」。光暈跟著同一條 keyframes 換色，不然會出現白光配綠身。 */
-  #energyClasp.full #claspArcFill{animation:arcFullGW 1.15s ease-in-out infinite;}
-  @keyframes arcFullGW{
-    0%  {fill:#ffffff; filter:drop-shadow(0 0 8px rgba(255,255,255,.95));}
-    50% {fill:#5cff6a; filter:drop-shadow(0 0 10px rgba(92,255,106,.95)) drop-shadow(0 0 20px rgba(92,255,106,.55));}
-    100%{fill:#ffffff; filter:drop-shadow(0 0 8px rgba(255,255,255,.95));}}
+  /* ⚠⚠⚠ ver -1729：綠白呼吸**不再逐幀動 filter**（-1070 那一版在 keyframes 裡動
+     `fill`＋`drop-shadow`，正是 -851 上面幾行寫著「不要逐幀動 filter」的那一型 ——
+     破防值滿著時整場每幀重算模糊）。改成**兩層各自靜態**：白的那一層（`#claspArcFill`）
+     不動，綠的複本（`#claspArcFillG`，同 `d`、同遮罩，combat 的 layoutClasp／updateBars 一起餵）
+     疊在上面只動 **opacity**（合成器）。看起來一樣是綠 ⇄ 白，濾鏡一次都不重算。 */
+  #energyClasp.full #claspArcFill{fill:#ffffff;filter:drop-shadow(0 0 8px rgba(255,255,255,.95));}
+  #claspArcFillG{fill:#5cff6a;opacity:0;pointer-events:none;
+    filter:drop-shadow(0 0 10px rgba(92,255,106,.95)) drop-shadow(0 0 20px rgba(92,255,106,.55));}
+  #energyClasp.full #claspArcFillG{animation:arcFullGW 1.15s ease-in-out infinite;}
+  @keyframes arcFullGW{ 0%,100%{opacity:0;} 50%{opacity:1;} }
   /* 滿檔時高光停下來（那一段已經是呼吸光了，再跑一道亮帶只是雜訊）。 */
   #energyClasp.full #claspArcShine{display:none;}
   /* ══ 高光順時針流動（ver -1070）══ 沿中心線跑的一小段亮筆畫。
@@ -1186,14 +1191,21 @@
      （pathLength 的正規化整個失效），dasharray:100 變成「100px 虛線」繞著周長
      （~1400px）重複——畫出來是散在四邊的好幾段短線，不是一條從左上角長出來的線
      （ver -461 實測）。線寬因此用 viewBox 單位（.8 ≈ 手機上 3px）。 */
-  #delayRing{position:absolute;inset:-9px;width:calc(100% + 18px);height:calc(100% + 18px);
-    pointer-events:none;overflow:visible;z-index:5;}
+  /* ⚠⚠⚠ ver -1729：**它住在 `#gridWrap`，不在 `#grid` 裡**（位置由 combat 的 `placeDelayRing`
+     照 `#grid` 的 offset 擺，外擴 9px 與以前的 `inset:-9px` 一樣）。理由：`#grid.saint` 是一條
+     **靜態** `filter:drop-shadow`（1390），而這條線**每幀**在改 `stroke-dashoffset` —— 濾鏡層裡的
+     東西每幀在變＝半個畫面的模糊每幀重算，SI／NI 全程如此（-851 抓到的那一型發熱）。
+     搬出去之後盤面的濾鏡層只在點格時重算。
+     ⚠ 自己那條 `drop-shadow` 也拿掉（同一個病，只是小）：光暈改成底下一條**寬而淡的第二筆**
+       （`.dr-glow`，同一個 dashoffset），零濾鏡。 */
+  #delayRing{position:absolute;pointer-events:none;overflow:visible;z-index:5;}
   #delayRing .dr-rail{fill:none;stroke:rgba(217,198,138,.14);stroke-width:.8;}
+  #delayRing .dr-glow{fill:none;stroke:rgba(240,196,105,.32);stroke-width:2.6;stroke-linecap:round;
+    stroke-dasharray:100;stroke-dashoffset:100;transition:stroke .3s ease;}
   #delayRing .dr-prog{fill:none;stroke:var(--gold);stroke-width:.8;stroke-linecap:round;
-    stroke-dasharray:100;stroke-dashoffset:100;
-    filter:drop-shadow(0 0 5px rgba(240,196,105,.75));transition:stroke .3s ease;}
-  #delayRing.danger .dr-prog{stroke:#e0523c;
-    filter:drop-shadow(0 0 6px rgba(224,82,60,.85));}
+    stroke-dasharray:100;stroke-dashoffset:100;transition:stroke .3s ease;}
+  #delayRing.danger .dr-glow{stroke:rgba(224,82,60,.38);}
+  #delayRing.danger .dr-prog{stroke:#e0523c;}
   .cell{position:relative;background:var(--grid);border:1px solid #000;
     border-radius:8px;display:flex;align-items:center;justify-content:center;
     font-weight:bold;color:var(--ink);transition:transform .06s,background .1s;
@@ -1958,6 +1970,11 @@
      戰鬥層自己回來，不影響開棺演出。 */
   body.flight-on #top, body.flight-on #bottom{ visibility:hidden; }
   body.flight-on #top *, body.flight-on #bottom *{ animation-play-state:paused !important; }
+  /* ⚠⚠ ver -1729：**劇情層也要**。出航時 `openFlight` 只 `town.suspend()`＋把 `#storyStage`
+     `visibility:hidden`（幾何要留給交棒開棺量，不能 display:none，見 2803 那一條），
+     而它上面的無限動畫（槍棺 `kerbCompass` 擺動、齒輪 `kgShine`、面盤呼吸…）沒有任何一條
+     被停 —— 與 -848 首頁團徽同一型：藏著的層在底下算到天荒地老（Ray：「手機過熱很快」）。 */
+  body.flight-on #storyStage *{ animation-play-state:paused !important; }
   /* ══ 閒置熄滅（ver -857）：10 秒無輸入＝裝飾動畫全停 → 畫面靜止 → GPU 睡覺。
      掛法見 main.js 的 idleDim（戰鬥中不掛 perf-idle，警戒脈動不受影響）。
      範圍是**舞台與首頁全部動畫**：熄的當下玩家本來就沒在動，凍在原地無感；

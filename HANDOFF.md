@@ -31,7 +31,32 @@
 >   `node routesim.mjs BAM1 60`（⚠ 參數讀的是 `arguments`，node 下要改讀 `process.argv.slice(2)` —— 還沒改，第一次跑會退回預設 BAM1／40）。
 >   路線名 `BAM1`／`BAM2`／`AB`。它**不是引擎**：時鐘、追兵、飛行是手動注入的步驟，看的是「哪一段選了哪個版本」。
 
-# HANDOFF — 截至 `ver 2026.09.22-1728`
+# HANDOFF — 截至 `ver 2026.09.22-1729`
+
+**`-1729`：手機發熱 —— 三處違反鐵律 10／-851 的地方 ＋ 飛行面板天空的大小寫**（Ray：「手機過熱很快，
+檢查現在的預載頁如何運作？飛行轉探索 探索轉飛行有沒有確實清除前頁？戰鬥畫面是否過載？」→「三處都改」）
+· **查的結論**：預載門（`loadScene` 先 `releaseAudio` 再載）與飛行→探索（`enterTown` 全黑那一刻 `closeFlightFrame`
+  → 必殺）都對；漏的是下面三處。
+· **① 探索→飛行只藏沒停**：`openFlight` 只 `town.suspend()`＋`#storyStage{visibility:hidden}`，劇情層的無限動畫
+  （槍棺 `kerbCompass`、齒輪 `kgShine`…）沒有一條被停（`#top/#bottom` 有、`perf-idle` 有、劇情層沒有）——
+  -848 團徽那一型。補 `body.flight-on #storyStage *{animation-play-state:paused}`（style.css）；
+  `story.js` 那個一秒轉齒輪的 interval 在 `flight-on` 時跳過。實測試飛：`#kerb`／`#storyExit` 全 paused。
+  ⚠ 不能 `display:none`：交棒開棺要量它的幾何（2803 那一條的理由不變）。
+· **② 延時光圈住在濾鏡層裡**：`#delayRing` 每幀改 dashoffset，而它掛在 `#grid` 內、`#grid.saint` 是靜態
+  `drop-shadow` ⇒ SI／NI 期間半個畫面的模糊每幀重算。搬到 `#gridWrap`（`combat.placeDelayRing` 照 `#grid`
+  offset 擺、外擴 9px 同舊 `inset`），它自己的 drop-shadow 換成第二條寬淡筆畫 `.dr-glow`。
+  ⚠ `buildGrid` 不再會掃掉它，`stopDelayRing` 是唯一收場。實測：parent `gridWrap`、rect＝grid±9、兩筆同步。
+· **③ 破防計滿檔呼吸光逐幀動 filter**（-1070 的 `arcFullGW`，正是 -851 上面幾行寫著不准的那一型）：改成兩層
+  各自靜態 —— 白的 `#claspArcFill` 不動，新加綠色複本 `#claspArcFillG`（index.html；`layoutClasp` 餵 `d`、
+  `updateBars` 同步 visibility）只動 opacity。看起來一樣綠⇄白。
+· **④ 飛行面板天空**：不是大小（3072×1024、0.3~0.4 MB、一趟只抓一對），是**大小寫** —— `deckPair` 寫
+  `'Deck_'`／`'Sky_'`，磁碟是 `deck_`／`sky_`（-1554 全庫小寫化）。Mac 不分所以桌機看得到，手機的靜態空間 404。
+  改小寫；實測請求 `flight/sky_day.webp`／`deck_day.webp` 200。
+  ⚠ 美術那兩份 spec（`flight/_deck_spec.md`／`HANDOFF_deck_layers.md`）還寫大寫檔名，**美術端自己改**（鐵律 11）。
+· ⚠ 三處都是照憲法能指出來的違例；發熱真正的份量還沒在手機上量過。Ray 手機再跑一次看有沒有差。
+· lint 0 錯誤、42 提醒。
+
+# （上一段）截至 `ver 2026.09.22-1728`
 
 **`-1728`：接美術交件 ＋ 重出 SI 差分總表**（Ray：「拉下並更新差分總表」）
 · `script/speakers.js` 三行：索拉娜 `whisper` `?v=3`／top 4 bot 1524（回復重製前那張）；米夏 `draw` `?v=3`／top 6 bot 1534 fx 0.434

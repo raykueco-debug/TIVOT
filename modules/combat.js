@@ -1723,6 +1723,7 @@ function layoutClasp(){
      ⚠ `d` 仍在這裡設：整組的大小是量出來的，形狀跟著一起重掛最省事（而且冪等）。 */
   const dShape=arcPath();
   track.setAttribute('d', dShape); fillEl.setAttribute('d', dShape);
+  { const g=$('claspArcFillG'); if(g) g.setAttribute('d', dShape); }   // 綠色複本（ver -1729，見 style.css arcFullGW）
   const midD=arcMidPath();
   const sh=$('claspArcShine');
   /* ⚠ 高光**不要太粗**（ver -1071，Ray）：0.8 → **0.42** 倍的 `w0` ——
@@ -1916,6 +1917,7 @@ function updateEnergyClasp(){
   if(fillEl && claspGeo){
     const p=Math.max(0,Math.min(1,state.energy/100));
     fillEl.style.visibility = p<=0 ? 'hidden' : '';
+    { const g=$('claspArcFillG'); if(g) g.style.visibility = fillEl.style.visibility; }   // ver -1729
     if(progEl) progEl.setAttribute('stroke-dasharray', (p*100).toFixed(2)+' 100');
   }
   $('energyClasp').classList.toggle('full', state.energy>=100);
@@ -2008,16 +2010,35 @@ function ensureDelayRing(){
   let sv=document.getElementById('delayRing');
   if(sv) return sv;
   const grid=$('grid'); if(!grid) return null;
+  /* ⚠⚠⚠ ver -1729：**掛在 `#grid` 的父層（`#gridWrap`），不掛在 `#grid` 裡** ——
+     `#grid.saint` 是一條靜態 drop-shadow 濾鏡，這條線每幀改 dashoffset，住在裡面等於
+     半個畫面的模糊每幀重算（-851 那一型的發熱源；Ray -1729：「手機過熱很快」）。
+     位置由 `placeDelayRing` 照 `#grid` 的 offset 擺（含以前 `inset:-9px` 的外擴）。
+     ⚠ 也因此 `buildGrid` 不再會把它掃掉 —— `stopDelayRing` 是唯一的收場。 */
+  const host=grid.parentElement || grid;
   sv=document.createElementNS('http://www.w3.org/2000/svg','svg');
   sv.id='delayRing';
   sv.setAttribute('viewBox','0 0 100 100');
   sv.setAttribute('preserveAspectRatio','none');
   /* ver -529（Ray：「延時懲罰計時器在盤面上邊跑就好了，左到右跑滿觸發，
-     不要跑整圈了」）：路徑改成**上緣一條線**，dash 仍用 0~100 講話。 */
+     不要跑整圈了」）：路徑改成**上緣一條線**，dash 仍用 0~100 講話。
+     `.dr-glow` ＝光暈（寬而淡的第二筆，取代 -1729 前的 drop-shadow）。 */
   sv.innerHTML='<path class="dr-rail" d="M0,0 H100" pathLength="100"/>'
+             + '<path class="dr-glow" d="M0,0 H100" pathLength="100"/>'
              + '<path class="dr-prog" d="M0,0 H100" pathLength="100"/>';
-  grid.appendChild(sv);
+  host.appendChild(sv);
+  ringPos='';
   return sv;
+}
+/* 把光圈擺到 `#grid` 上（外擴 9px，同以前的 `inset:-9px`）。四個 offset 讀取只在
+   數字變了才寫 style；盤面尺寸只在 fitGridSquare 時變，所以幾乎每幀都是純比對。 */
+let ringPos='';
+function placeDelayRing(sv, grid){
+  const k=grid.offsetLeft+','+grid.offsetTop+','+grid.offsetWidth+','+grid.offsetHeight;
+  if(k===ringPos) return;
+  ringPos=k;
+  sv.style.left=(grid.offsetLeft-9)+'px';  sv.style.top=(grid.offsetTop-9)+'px';
+  sv.style.width=(grid.offsetWidth+18)+'px'; sv.style.height=(grid.offsetHeight+18)+'px';
 }
 function ringTick(){
   /* 戰鬥結束＝迴圈自滅（ver -853（-893 前用詞），新探針抓到：bootIdle 建背景盤面時把這條 rAF
@@ -2033,8 +2054,10 @@ function ringTick(){
   const now=_intPausedAt||Date.now();
   let t=state.intervalDeadline ? 1-((state.intervalDeadline-now)/lim) : 0;
   t=Math.max(0, Math.min(1, t));
-  const p=sv.querySelector('.dr-prog');
-  p.style.strokeDashoffset=String(100*(1-t));
+  { const grid=$('grid'); if(grid) placeDelayRing(sv, grid); }
+  const off=String(100*(1-t));
+  const p=sv.querySelector('.dr-prog'); if(p) p.style.strokeDashoffset=off;
+  const g=sv.querySelector('.dr-glow'); if(g) g.style.strokeDashoffset=off;
   sv.classList.toggle('danger', t>0.72);     // 快走滿 → 轉紅示警
 }
 function stopDelayRing(){
