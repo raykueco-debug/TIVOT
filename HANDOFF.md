@@ -15,23 +15,19 @@
 > 清單在 **`_TO_CODE_20260922.md`**（`ASSET_VER` 七列／`speakers.js` 16 條版號 ＋ 8 個新鍵
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
-> ⚠⚠⚠ **換機器（2026-09-24 晚，Mac → 另一台）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1727`**（這一台最後一個 commit 是 -1727 漏掉的 `story.js` `KERB_V` 版號同步，一併補上）。**工作樹與遠端同步，沒有欠 commit。**
->   -1725～-1727 的內容見下面各段：A 路線四章／墓門 A 版尾巴／東泊守夜兩顆鈕／M2 第二天直接播。
-> · ⚠ **等 Ray 確認的**：-1727 那次「時鐘 23:00 自己跳 01:00」沒再現（見 -1727 那段）；-1726 對「第二天 M2 劇情」的判讀。
-> · **這台 Mac 上有一批 Ray 自己放的 untracked 檔，沒有推上去**（不是我該替他 `git add` 的東西，換機器要自己帶）：
->   `reference/script.docx`／`reference/lake_topology.pdf`／`reference/maze.png`／`地理筆記.docx`／`索菈娜技能.docx`／
->   `flight/reference/ship_topdown.png`／`ART_HANDOVER.md`（美術給美術的）／音檔 `bgm/peritune_sylblanc_loop.m4a`、
->   `se/se_page1~2.mp3`、`se/se_pickup.mp3`、`se/enemy_lowroar.mp3`、`se/_raw/se_page3.mp3`、`se/_raw/se_preasure.mp3`、
->   `vo/vo_sorana_miss4.wav`、`vo/未命名 1.wav/.pkf`／`resources/ci/nemo_ci_dual.webp`／根目錄與 `ci/` 各一張 uuid 命名的 png。
->   ⚠ 這些**沒有一支接進程式**（`SE_FILES`／`ASSETS`／`fileGain` 都沒有）—— 要接是另一件事，先問 Ray 哪幾支要。
-> · **等 Ray 決定的**：① BA・M2 敲門約蕾娜那句「就當作扯平了吧」與 -1724 合流的「扯平」重複，改不改字
->   ② `032_rennablush`（T4 派生臉紅插圖）要美術交 ③ `hugangry2` 的圖在 Windows 那邊找 ④ `劇情分歧樹.pptx` 要在有 node 的機器重出
->   （`tools/branch_tree.mjs`）⑤ 插圖 26／27／28／30 還是 PNG，美術端轉 WebP。
-> · **路線模擬器** `tools/routesim.mjs`（-1723 拿它跑三大分支的那一支）：資料層照 `actDue`／`stageGate`／`onLeave` 走一趟、
->   印逐拍文字。Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`（第二個參數＝四人好感）；Windows 有 node 的話
->   `node routesim.mjs BAM1 60`（⚠ 參數讀的是 `arguments`，node 下要改讀 `process.argv.slice(2)` —— 還沒改，第一次跑會退回預設 BAM1／40）。
->   路線名 `BAM1`／`BAM2`／`AB`。它**不是引擎**：時鐘、追兵、飛行是手動注入的步驟，看的是「哪一段選了哪個版本」。
+> ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
+> · `origin/main` ＝ **`-1733`**（df709be），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
+>   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
+>   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
+>   ④ -1729 那三處發熱修正在手機上有沒有差 ⑤ 王座徘徊者的拍翅感（-1731 的四組數字）
+> · **等 Ray 決定的**：BA・M2 敲門約蕾娜「就當作扯平了吧」與合流重複；蕾娜 M2 的 −10 是我訂的；`sodier_.webp`（隨從）
+>   這個 WIP 檔名；`023_anyacottoncandy`／`024_nouvellesmile` 兩張 PNG 沒有腳本引用；`032_rennablush` 插圖還沒交；
+>   `hugangry2` 在 Windows 找；pptx 要 node 重出；美術 spec 裡 `Deck_`／`Sky_` 大寫檔名要改。
+> · **已做完、不要再做**：美術 9/24～9/25 交接的四件全接了（whisper／米夏 draw／drawopen／隨從）；差分總表 -1728 重出；
+>   `_TO_CODE_20260922.md` 那批**是否已接仍待對**（沒人確認過）。
+> · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
+> · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
 # HANDOFF — 截至 `ver 2026.09.22-1733`
 
