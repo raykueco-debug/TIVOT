@@ -1230,35 +1230,7 @@ export const CHAPTERS = [
        這一章要看的是東泊隔日長什麼樣，不是跳去雪都。
      ⚠ 名字照 Ray 寫的 `Stage13BAM2`；**它的起點比 13-BA 早一站**
        （13-BA 已經到雪都了），不是它的續篇。 */
-  { id:'stage13bam2', name:'Stage 12-B・M2 隔日', sub:'先 B 後 A・M2：那一夜獨自跟上 → **東泊旅店・隔日**（-1732 由「13-BA-M2」改名，13 讓給古墓出口）',
-    stage:13, clockHour:8, named:true, aff:{ renna:40 },
-    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
-           'set_sail','got_ship','dock_day2','flight_centipede_met',
-           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
-           'np_burial','np_burial_done','np_night','np_night_done','np_day3',
-           'np_day3_done','np_anya_join','np_dock_ask','np_grave_done','np_depart','np_leave_ok',
-           'sv_arrive','sv_evening','sv_night_done','shinier_siege',
-           'sv_clear_wild','safehouse_shinier','sv_forest_morning',
-           'sv_forest_go','sv_forest_intro','sv_deer_met','sv_deer_harm',
-           'sr_intro','sr_gate_brazier','sr_gate_bridge','sr_brazier','sr_bridge',
-           'sr_mural','ruins_gate_open','ruins_bell_done','ruins_thug_met','sr_altar',
-           'ruins_altar_on','sv_s8_noon',
-           'sv_s8_home','sv_s8_hungry','sv_s8_dine','sv_s8_corvin',
-           'sv_s9_order','belisar_noland_talk','ep_arrive',
-           'ep_renna_met','ep_renna_night','ep_evening','ep_day2',
-           'belisar_seen',
-           'ep_bel_gorge','ep_bel_sight','ep_bel_enter','bl_foyer_first',
-           'bel_hint2','bel_hint3','bel_water','ep_bel_altar','renna_hairpin_lost',
-           'ep_bel_court','ep_belisar_done','ep_bel_back',
-           'ep_night_raid','ep_hairpin_hunt','belisar_land_ok',
-           'bl_night_land','bl_night_foyer','bl_chase1','bl_chase2','bl_chase3',
-           'bl_chase4','bl_dragon_seen','bl_night_lionstair','bl_chase_talk3',
-           'bl_night_throne','bl_sky_hunt',
-           'bl_night_sky','bl_night_done','renna_t4_ok',
-           /* ── B route 的尾（旅店長談 → 守夜 → **M2：獨自跟上**）──
-              ⚠ 到此為止：`ep_interrogate` 之後那一串是 M1 專屬的。 */
-           'ep_hairpin_talk','ep_night_anya_out','ep_m2_route','ep_night_mi_done'],
-    enter:'town', town:'eastport', node:'inn' },
+  /* ver -1741：「12-B・M2 隔日」獨立那一列拿掉 —— 它是 **Stage 13** 的 B・M2 起點，收進 Stage 13 的第二層（見 BA_CHAPTERS）。 */
 
 ];
 
@@ -1308,11 +1280,7 @@ const A_TO_EXIT = [ ...A_TO_LANDING3,
   /* 底層梯廳會合 → 熔斷 → 祭壇終戰打完（`tomb_altar_done` 是祭壇那一段的 flag） */
   'tomb_low_arrive','tomb_rejoin','nou_melted','tomb_altar_on','tomb_altar_done' ];
 const A_AFF = { renna:45, nouvelle:45, sorana:45, anya:45 };
-/* 章節鈕的第二層（ver -1732）：H ＝ 插 `tomb_h_route`。宣告在用到它的三筆之前（const 的 TDZ）。 */
-const H_VARIANTS = [
-  { label:'H 路線（蕾娜抱著走）', sub:'插 tomb_h_route', flags:['tomb_h_route'] },
-  { label:'非 H', sub:'不插', flags:[] },
-];
+/* ver -1741：`H_VARIANTS` 拿掉 —— H／非 H 併進 Stage 13 的第二層（見 BA_CHAPTERS 的 `stage13`）。 */
 const A_CHAPTERS = [
   { id:'stage10a', name:'Stage 10-A', sub:'先 A：諭令 → 墓門初見 → **初入雪都**（→ 鏡湖）',
     stage:10, clockHour:10, named:true, aff:A_AFF, flags:A_TO_RAVNSDAL,
@@ -1330,15 +1298,14 @@ const A_CHAPTERS = [
      H ＝ 第三層那一拍蕾娜「……嗯。謝謝你。」插的 `tomb_h_route`（抱著走的那一條），非 H 不插。
      ⚠ B 路線的底接「12-B・M2 隔日」那一筆（B_COMMON），M1／M2 的尾各自列；A 路線的尾
        （雪都→鏡湖→古墓）是 `A_TAIL`。三筆都是接上去的，不抄清單（鐵律 7）。 */
-  { id:'stage13a', name:'Stage 13-A', sub:'先 A：**古墓出口** → 米夏（A 版）→ 雪都旅店合流',
-    stage:13, clockHour:10, named:true, aff:A_AFF, flags:A_TO_EXIT, variants:H_VARIANTS,
-    enter:'town', town:'tomb', node:'gate' },
 ];
 /* B 路線的底 ＝ 東泊隔日那一筆去掉 M2 的尾（那四支各路線自己列） */
-const B_COMMON = ((CHAPTERS.find(c=>c.id==='stage13bam2')||{}).flags||[])
-  .filter(f=>!['ep_hairpin_talk','ep_night_anya_out','ep_m2_route','ep_night_mi_done'].includes(f));
+const B_COMMON = ((CHAPTERS.find(c=>c.id==='stage12b')||{}).flags||[]).slice();   // ver -1741：＝12-B 那一筆（長談之前）
 const B_M1_TAIL = ['ep_hairpin_talk','ep_night_anya_out','ep_night_renna','ep_m1_route',
                    'ep_night_mi_done','ep_interrogate','free_explore_eastport','ep_leave_tomb'];
+/* 那一夜演完、隔日還沒開始（ver -1741，Stage 13 的 B・M1／M2 起點用） */
+const B_M1_NIGHT = ['ep_hairpin_talk','ep_night_anya_out','ep_night_renna','ep_m1_route','ep_night_mi_done'];
+const B_M2_NIGHT = ['ep_hairpin_talk','ep_night_anya_out','ep_m2_route','ep_night_mi_done'];
 const B_M2_TAIL = ['ep_hairpin_talk','ep_night_anya_out','ep_m2_route','ep_night_mi_done',
                    'free_explore_eastport','ep_leave_tomb'];   // -1726 起 M2 也有自由探索與離店簡報
 /* A 路線在 S9 之後的那一串（墓門初見 → 雪都 → 鏡湖 → 古墓內部 → 祭壇打完） */
@@ -1346,12 +1313,26 @@ const A_TAIL = A_TO_EXIT.filter(f=>!A_S9.includes(f) && f!=='sv_s9_order');
 const BA_M1_EXIT = [ ...B_COMMON, ...B_M1_TAIL, ...A_TAIL ];
 const BA_M2_EXIT = [ ...B_COMMON, ...B_M2_TAIL, ...A_TAIL ];
 const BA_CHAPTERS = [
-  { id:'stage13bam1', name:'Stage 13-BA-M1', sub:'先 B 後 A・M1：**古墓出口** → 米夏（BA・M1 版）→ 雪都旅店合流',
-    stage:13, clockHour:10, named:true, aff:A_AFF, flags:BA_M1_EXIT, variants:H_VARIANTS,
-    enter:'town', town:'tomb', node:'gate' },
-  { id:'stage13bam2x', name:'Stage 13-BA-M2', sub:'先 B 後 A・M2：**古墓出口** → 米夏（BA・M2 版）→ 雪都旅店合流',
-    stage:13, clockHour:10, named:true, aff:A_AFF, flags:BA_M2_EXIT, variants:H_VARIANTS,
-    enter:'town', town:'tomb', node:'gate' },
+  /* ══⚠⚠ **Stage 13 一列，分支全在第二層**（ver -1741，Ray：「stage 12BM2 應該作 13，S13 分支做入選單」
+     「因為還有 H 可能並存，所以 M1H M2H 都要列」）══
+     第二層每一項用 `over`（整份覆寫：旗／落點／時刻／好感）—— 各分支的起點不在同一張圖上，只加旗不夠。
+     ⚠ B・M1／B・M2 隔日＝東泊旅店早上八點（M1 接審訊、M2 接離店簡報，那兩段的第一拍就是升 13 的拍）。
+     ⚠ 古墓出口那幾項照舊（A／BA・M1／BA・M2 × H／非 H）。 */
+  { id:'stage13', name:'Stage 13', sub:'東泊隔日（B・M1／M2）或 古墓出口（A／BA × M × H）',
+    stage:13, clockHour:10, named:true, aff:A_AFF, flags:A_TO_EXIT,
+    enter:'town', town:'tomb', node:'gate',
+    variants:[
+      { label:'B・M1：東泊旅店隔日', sub:'審訊',
+        over:{ flags:[ ...B_COMMON, ...B_M1_NIGHT ], town:'eastport', node:'inn', clockHour:8, aff:{ renna:40 } } },
+      { label:'B・M2：東泊旅店隔日', sub:'離店簡報（原「12-B・M2 隔日」）',
+        over:{ flags:[ ...B_COMMON, ...B_M2_NIGHT ], town:'eastport', node:'inn', clockHour:8, aff:{ renna:40 } } },
+      { label:'A：古墓出口',      sub:'非 H', over:{ flags:[ ...A_TO_EXIT ] } },
+      { label:'A：古墓出口・H',    sub:'插 tomb_h_route', over:{ flags:[ ...A_TO_EXIT, 'tomb_h_route' ] } },
+      { label:'BA・M1：古墓出口',  sub:'非 H', over:{ flags:[ ...BA_M1_EXIT ] } },
+      { label:'BA・M1H：古墓出口', sub:'插 tomb_h_route', over:{ flags:[ ...BA_M1_EXIT, 'tomb_h_route' ] } },
+      { label:'BA・M2：古墓出口',  sub:'非 H', over:{ flags:[ ...BA_M2_EXIT ] } },
+      { label:'BA・M2H：古墓出口', sub:'插 tomb_h_route', over:{ flags:[ ...BA_M2_EXIT, 'tomb_h_route' ] } },
+    ] },
   /* Stage 14：13 章結束（雪都旅店合流演完、自由探索、出航）之後的飛行地圖。
      底用 BA・M1（三條路合流後只差 `ep_m2_route` 那一支影響蕾娜的路線）；
      `flight:{town:'ravnsdal'}` ＝從雪都的出港位起飛（同讀檔接回飛行那把鑰匙）。 */
@@ -1360,7 +1341,7 @@ const BA_CHAPTERS = [
     flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb' ],
     enter:'flight', flight:{ town:'ravnsdal' } },
 ];
-/* 插在 Stage 9 之後，選單才是 9 → 10-A…13-A → 10-B…12-B → 13-BA-M1／M2 → 14 的順序。 */
+/* 插在 Stage 9 之後，選單才是 9 → 10-A…12-A → 10-B…12-B → 13 → 14 的順序。 */
 CHAPTERS.splice(CHAPTERS.findIndex(c=>c.id==='stage9')+1, 0, ...A_CHAPTERS);
 CHAPTERS.push(...BA_CHAPTERS);
 

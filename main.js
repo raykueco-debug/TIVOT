@@ -1637,7 +1637,10 @@ bindBtn('chapterBtn', ()=>{
       if(!rows.length){ startChapter(c); close(); return; }
       close(()=> pickSheet(c.name, rows, (j, close2)=>{
         const r=rows[j];
+        /* `over`（ver -1741）＝這一項整份覆寫（旗／落點／時刻／好感）—— Stage 13 的分支不在同一張圖上；
+           沒寫 `over` 的舊寫法＝只把 `flags` 加上去。 */
         const spec = r.noStory ? prog.noStorySpec(c, town.storyFlagsOf(c.town))
+                   : (r.v && r.v.over) ? Object.assign({}, c, r.v.over)
                    : r.v       ? Object.assign({}, c, { flags:[ ...(c.flags||[]), ...(r.v.flags||[]) ] })
                    : c;
         startChapter(spec); close2();

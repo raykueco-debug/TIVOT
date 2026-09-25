@@ -16,7 +16,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1740`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1741`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -29,7 +29,23 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1740`
+# HANDOFF — 截至 `ver 2026.09.22-1741`
+
+**`-1741`：S10 以後照數字升章 ＋ Stage 13 收成一列、分支進第二層**（Ray：「按數字升章就好」「12BM2 應該作 13，S13 分支做入選單」「M1H M2H 都要列」）
+· **為什麼以前不升**：章節表只是跳關落點，正常遊玩升章只有「那一拍寫 `stage:N`」一條路，而 10／11／13／14 從來沒人掛（只有 12-A 的底層梯廳有）。**不是 AB 造成的。**
+· **起點那一拍掛升章**（`script/town.js` 新 helper `atStage(n, lines)`：第一拍帶 `stage`，`story.js` 只升不降 ⇒ AB／BA 共用號碼不會倒退）：
+  10-A 初入雪都 `vn_arrive`／11-A 初入古墓 `tomb_enter`／10-B 二次進古城 `bl_night_land`／11-B「上船追！」那一拍／
+  12-B 東泊長談 `ep_hairpin_talk`／13 東泊隔日（M1 `ep_interrogate`、M2 `ep_leave_tomb`）與走出古墓 `tomb_exit_done` ×3／
+  14 出墓合流 `vn_after_tomb` ×3（段落層 `stage:14`，演完才寫）。12-A 照舊。
+· **章節表**（`script/progress.js`）：「12-B・M2 隔日」那一列拿掉（半套改名的殘留）；13-A／13-BA-M1／13-BA-M2 併成 **`stage13` 一列**，
+  第二層八項：B・M1 隔日／B・M2 隔日／A 出口／A 出口・H／BA・M1／BA・M1H／BA・M2／BA・M2H（＋無劇情）。
+  第二層新欄位 **`over`**＝整份覆寫（旗／落點／時刻／好感），`main.js` 的 chapterBtn 認它。`H_VARIANTS` 拿掉。
+  B・M1 隔日是新的落點（旗＝12-B ＋ `B_M1_NIGHT`，不含審訊）。
+· ⚠ **路線城的「過期」上限仍未做**：AB／BA 共用 10～13，上限得用路線旗判（例如 B 線整段走完鎖東泊），不能用章節號。等 Ray 說哪一支旗算「走完」。
+· 實測（8123）：選單與第二層正確；B・M2 落東泊旅店 08:00、stage 13。升章那幾拍沒逐一實走（資料層驗過：每個起點第一拍的 `stage` 都對）。
+· lint 0 錯誤、41 提醒。
+
+# （上一段）截至 `ver 2026.09.22-1740`
 
 **`-1739`／`-1740`：帝都教堂改稿 ＋ 劇情戰打贏戰鬥曲淡出 ＋ 隊伍名單嚴格以章節篩 ＋ 每座城的章節窗**（Ray 一次交四件）
 · **帝都教堂**（stage0）三拍照稿：surprise「雖說不及聖王廳…」→ sadsmile「上一次來，還是跟學姐一起……」→ surprise「啊！對不起……」。

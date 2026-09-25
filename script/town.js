@@ -578,7 +578,7 @@ export const DRAGON_LINES = {
        「登船前用 warhorn」被讀成了「說這句話的時候」）。曲子改由
        `config.flightBgmWhen` 在**進飛行畫面那一刻**決定（鐵律 7：只有一個地方在答）。
        ⚠ `bl_sky_hunt` 照舊掛在這裡 —— 那正是「上船」這個事件本身（鐵律 9）。 */
-    Object.assign(ren('command','上船追！'), { flags:['bl_sky_hunt'] }),
+    Object.assign(ren('command','上船追！'), { flags:['bl_sky_hunt'], stage:11 }),   // ver -1741：Stage 11-B 起點（只升不降）
     /* ══⚠⚠⚠ **這一段到此為止，接下來在飛行頁演**（ver -1416，Ray：「蕾娜『上船追！』
        之後轉景，從古城升空…索『諾薇兒，安靜下』之後，提示長按…發動獵手之眼索敵。
        索敵後必出王座徘徊者…然後進入空戰」）══
@@ -875,6 +875,14 @@ const BEL_WATER_FIRST = {
     ren('think','這是大陸曆之前的建築了，但現在看起來卻像是剛剛才被破壞一樣……'),
     any('silent','……'),
   ] };
+
+/* ══⚠⚠ **章節起點：第一拍帶 `stage:N`**（ver -1741，Ray：「按數字升章就好」）══
+   `story.js` 讀 `line.stage` 時**只升不降**（-1725），所以 AB／BA 兩條路共用 10～13 的號碼也不會倒退：
+   先走的那條把號碼推上去，後走的那條那幾拍是 no-op。
+   ⚠ 包在段落上而不是改第一拍：有的段落的台詞是共用常數（`EP_LEAVE_TOMB_LINES`），不可以動到另一個用處。
+   ⚠ 各章起點（章節表 `script/progress.js` 的落點）：10-A 初入雪都／11-A 初入古墓／12-A 底層梯廳（那一拍自己寫）／
+     10-B 二次進古城／11-B 上船追／12-B 東泊旅店長談／13 東泊隔日（M1 審訊・M2 離店簡報）與走出古墓／14 出墓合流演完。 */
+const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
 
 export const TOWNS = {
   capital: {
@@ -4639,7 +4647,7 @@ export const TOWNS = {
           any('answer','好、好！', { flags:['vn_depart'] }),
         ] },
         { flag:'vn_arrive', need:'tomb_gate', endStoryExplore:true,
-                 sides:{ RENNA:'L' }, lines:[
+                 sides:{ RENNA:'L' }, lines:atStage(10, [
           nou('surprise','哇，下雪了。'),
           sor('think','有點冷。'),
           ren('upsetstare','妳穿那樣當然會冷。'),
@@ -4648,7 +4656,7 @@ export const TOWNS = {
           any('curious','蠻暖和的。'),
           ren('front','不愧是紫月出身的人，這點雪不算什麼呢。'),
           ren('smile','那麼，我去圖書館找些資料，大家先回旅店休息一會吧。'),
-        ] } ] },
+        ]) } ] },
 
       /* ── 一、中心區 ── 左＝瞭望台、右＝大教堂、下＝廣場 */
       midtown:  { bg:'varn_midtown',  name:'雪都瓦恩霍姆　中心區',  
@@ -5091,7 +5099,7 @@ export const TOWNS = {
              換成「留在這裡」那一段（與 M2 同文）；BA・M2 尾巴多了「至於你嘛……扣分……扯平」六拍。
              ⚠ 蕾娜敲門的 M2 約會（下面 `knock.RENNA`）-1735 起不再講「扯平」（Ray 重交稿），不重複了。 */
         acts:[
-        { flag:'vn_after_tomb', need:['tomb_exit_done','ep_belisar_done','ep_m2_route'], sides:{ RENNA:'L' }, lines:[
+        { flag:'vn_after_tomb', stage:14, need:['tomb_exit_done','ep_belisar_done','ep_m2_route'], sides:{ RENNA:'L' }, lines:[
           ren('write','那麼，就只剩下西邊埃爾王國的廢城了。'),
           ren('tire','漫長的旅途也快要結束了。'),
           nou('awkward','總感覺有點捨不得呢。'),
@@ -5152,7 +5160,7 @@ export const TOWNS = {
           ren('smile','瞞著我的事，就這樣扯平吧。'),
           ren('stare','畢竟剩下的旅程，還得靠你呢。'),
         ] },
-        { flag:'vn_after_tomb', need:['tomb_exit_done','ep_belisar_done'], sides:{ RENNA:'L' }, lines:[
+        { flag:'vn_after_tomb', stage:14, need:['tomb_exit_done','ep_belisar_done'], sides:{ RENNA:'L' }, lines:[
           ren('write','那麼，就只剩下西邊埃爾王國的廢城了。'),
           ren('tire','漫長的旅途也快要結束了。'),
           nou('awkward','總感覺有點捨不得呢。'),
@@ -5179,7 +5187,7 @@ export const TOWNS = {
           ren('smile','好啦，又不是現在就要分別。我們還有下一站呢。'),
           ren('smile','先到聖索菲亞城的領事館辦入境手續吧。'),
         ] },
-        { flag:'vn_after_tomb', need:'tomb_exit_done', until:'ep_belisar_done', sides:{ RENNA:'L' }, lines:[
+        { flag:'vn_after_tomb', stage:14, need:'tomb_exit_done', until:'ep_belisar_done', sides:{ RENNA:'L' }, lines:[
           ren('write','那麼……'),
           ren('smile','下一個要調查的遺蹟就是東方的貝利薩爾古城了。'),
           sor('amaze','那是什麼地方？'),
@@ -6272,7 +6280,7 @@ export const TOWNS = {
         /* ⚠ ver -1717：`endStoryExplore:true` 移到這一段 —— 以前只掛在審訊（M1）上，AB（沒有審訊）
            與 BA・M2（沒有審訊）第二天永遠是劇情探索、沒有人出門。守夜那一扇窗照樣擋約會，
            外出行程是 9~19 點，深夜開回來沒有副作用。 */
-        { flag:'ep_hairpin_talk', need:'bl_night_done', endStoryExplore:true, sides:{ RENNA:'L' }, lines:[
+        { flag:'ep_hairpin_talk', need:'bl_night_done', endStoryExplore:true, sides:{ RENNA:'L' }, lines:atStage(12, [
           sor('tire','折騰一晚上，呼啊——'),
           nou('sleepy',''),
           any('sleepy',''),
@@ -6362,7 +6370,7 @@ export const TOWNS = {
              ⚠ 門檻不是等於：寫 3 ＝「T3 以上」，日後有 T4 不必回頭改。
              ⚠ 看的是說話者（蕾娜）自己的段位，所以不必寫 `tierWho`。 */
           Object.assign(ren('smilesoft','我很相信你喔。'), { skipIf:'tomb_misha_met', tierMin:3 }),
-        ] },
+        ]) },
         /* ══⚠⚠⚠ **兩小時後：安雅偷溜出房間**（ver -1511，Ray 的 Stage10-B 稿）══
            ⚠⚠ 觸發靠**時刻**不是「坐過幾次」：`settle()`（坐坐的收尾）會再問一次
              城鎮的 `actDue`（ver -1370 接的那條 `rerun`），所以坐完兩小時就演得到。
@@ -6412,10 +6420,10 @@ export const TOWNS = {
         /* ── M2 的第二天（ver -1727）：那一夜收尾 `goto:'inn'` 到這裡就直接播簡報，不必走出旅店。
            `ep_night_mi_done` 一起要（那一夜過完），`until:'tomb_done'` 同 onLeave 那一份。 */
         { flag:'ep_leave_tomb', need:['ep_m2_route','ep_night_mi_done'], until:'tomb_done',
-          sides:{ RENNA:'L' }, lines:EP_LEAVE_TOMB_LINES },
+          sides:{ RENNA:'L' }, lines:atStage(13, EP_LEAVE_TOMB_LINES) },
         { flag:'ep_interrogate', need:'ep_m1_route', hourOfDay:[8,18],
           endStoryExplore:true,
-          sides:{ RENNA:'L' }, lines:[
+          sides:{ RENNA:'L' }, lines:atStage(13, [
           /* ⚠⚠ **ver -1520：第二天開始用 `bgm_result`**（Ray 原話）——
              掛在這一段的第一拍（＝第二天的第一段戲）；那一整天由城上的
              `bgmWhen` 撐著（`need:'ep_night_mi_done'`，**沒有終點**，見那一段）。 */
@@ -6517,7 +6525,7 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true },
           ren('arguecute','還不都要怪你叫我起床……'),
           ren('blush','半夜敲淑女的門，可是很失禮的喔。'),
-        ] },
+        ]) },
         /* ══⚠⚠⚠ **那一夜：奪回髮飾**（ver -1388，Ray 交稿）══════════════════════
            ⚠⚠⚠ **好感的門已經拿掉了**（ver -1489，Ray：「把髮飾事件的好感觸發鎖
              拿掉，讓髮飾劇情必跑」）：原本是 `needTier:{renna:3}`，照 -1387 那份稿的
@@ -7613,12 +7621,12 @@ export const TOWNS = {
              排前面的話，「先跑鏡湖、沒來過古墓」的玩家第一次抵達就聽到
              「門開了呢」，而那一整段初見的戲（`tomb_gate`）會被推到下一次抵達。
              排後面則兩條路都對：初見一定先演 `tomb_gate`（它有自己的 flag）。 */
-        { flag:'tomb_enter', need:'tomb_opened', sides:{ RENNA:'L' }, lines:[
+        { flag:'tomb_enter', need:'tomb_opened', sides:{ RENNA:'L' }, lines:atStage(11, [
           ren('commandsoft','門果然開了呢。走吧。'),
           sor('amaze','修女小姐突然不怕鬼了……'),
           nou('cringe','我覺得她氣到連幽靈都可以一拳打飛了……'),
           any('panic',''),
-        ] },
+        ]) },
         /* ══⚠⚠⚠ **走出古墓回到墓門**（ver -1707，Ray 交稿）══════════════════════════
            稿上 `[尚未發生米夏事件，或M1路線]` ／ `[發生米夏事件，M2路線]` 兩段 ⇒ **兩個 act、共用一支
            `flag`**（`tomb_exit_done`）：M2 那一段排前面（多一個 `need`），其餘落到 M1。
@@ -7627,7 +7635,7 @@ export const TOWNS = {
            ⚠ H 路線（`tomb_h_route`）的派生與換圖寫成成對的 `onlyIf`／`skipIf`。
            ⚠ 收尾 `goto:'@ravnsdal:inn'`：劇情合流在雪都旅店（見那一格的 `acts`）。 */
         { flag:'tomb_exit_done', need:['tomb_altar_done','ep_m2_route'], goto:'@ravnsdal:inn',
-          sides:{ RENNA:'L', MISHA:'R' }, lines:[
+          sides:{ RENNA:'L', MISHA:'R' }, lines:atStage(13, [
           sor('carrynouvellejealous','什麼啊！早知道剛剛就從這裡進來就沒那麼多事了！'),
           ren('hugangry','那種事怎麼可能事先知道嘛！',   { onlyIf:'tomb_h_route' }),
           ren('blush',   '那種事怎麼可能事先知道嘛！',   { skipIf:'tomb_h_route' }),
@@ -7716,9 +7724,9 @@ export const TOWNS = {
           { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000, flags:['tomb_misha_met','tomb_done'],   // tomb_done：ver -1717 起由這裡插（東泊走出旅店／分歧面板讀它）
             hide:['RENNA','NOUVELLE','ANYA','SORANA','MISHA'] },
           { speaker:'PLAYER', text:'', dayBreak:true, clockToNext:8 },
-        ] },
+        ]) },
         { flag:'tomb_exit_done', need:['tomb_altar_done','ep_belisar_done'], goto:'@ravnsdal:inn',
-          sides:{ RENNA:'L', MISHA:'R' }, lines:[
+          sides:{ RENNA:'L', MISHA:'R' }, lines:atStage(13, [
           sor('carrynouvellejealous','什麼啊！早知道剛剛就從這裡進來就沒那麼多事了！'),
           ren('hugangry','那種事怎麼可能事先知道嘛！',   { onlyIf:'tomb_h_route' }),
           ren('blush',   '那種事怎麼可能事先知道嘛！',   { skipIf:'tomb_h_route' }),
@@ -7807,9 +7815,9 @@ export const TOWNS = {
           { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000, flags:['tomb_misha_met','tomb_done'],   // tomb_done：ver -1717 起由這裡插（東泊走出旅店／分歧面板讀它）
             hide:['RENNA','NOUVELLE','ANYA','SORANA','MISHA'] },
           { speaker:'PLAYER', text:'', dayBreak:true, clockToNext:8 },
-        ] },
+        ]) },
         { flag:'tomb_exit_done', need:'tomb_altar_done', until:'ep_belisar_done', goto:'@ravnsdal:inn',
-          sides:{ RENNA:'L', MISHA:'R' }, lines:[
+          sides:{ RENNA:'L', MISHA:'R' }, lines:atStage(13, [
           sor('carrynouvellejealous','什麼啊！早知道剛剛就從這裡進來就沒那麼多事了！'),
           ren('hugangry','那種事怎麼可能事先知道嘛！',   { onlyIf:'tomb_h_route' }),
           ren('blush',   '那種事怎麼可能事先知道嘛！',   { skipIf:'tomb_h_route' }),
@@ -7899,7 +7907,7 @@ export const TOWNS = {
           { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000, flags:['tomb_misha_met','tomb_done'],   // tomb_done：ver -1717 起由這裡插（東泊走出旅店／分歧面板讀它）
             hide:['RENNA','NOUVELLE','ANYA','SORANA','MISHA'] },
           { speaker:'PLAYER', text:'', dayBreak:true, clockToNext:8 },
-        ] } ] },
+        ]) } ] },
       /* ⚠⚠ **這一趟第一次踏進來不出怪**（ver -1618，Ray：「門廳第一次進去不出怪」）——
          走出去再走回來就照常擲。⚠ 判讀：古墓裡「門」那一側只有墓門（`noWild`）與
          這一格，所以「門廳」＝前庭。 */
@@ -9371,7 +9379,7 @@ export const TOWNS = {
              ⚠ 安雅那一拍**只有立繪沒有台詞**（稿上就是「安：steady」）——
                台上有人 ⇒ 點擊推進（§6.5 的 -628）。 */
           { flag:'bl_night_land', need:Q_HAIRPIN.flag, until:Q_HAIRPIN.until,
-            sides:{ RENNA:'L' }, lines:[
+            sides:{ RENNA:'L' }, lines:atStage(10, [
           sor('tire','呼，還真的能降落！'),
           nou('cringe','不知道那隻龍還在不在……'),
           ren('meltdown','……'),
@@ -9381,7 +9389,7 @@ export const TOWNS = {
           nou('bigsmileclose','我們走吧。'),
           any('steady',''),
           ren('blush','好……'),
-        ] } ] },
+        ]) } ] },
       /* ══⚠⚠⚠ 大廳祭壇的那一場戲（ver -1353，Ray 交稿）══════════════════════
          ⚠⚠ **髮飾脫落那一拍插 `renna_hairpin_lost`** ＝ 從此蕾娜好感封頂 T3
            （`progress.affCap`；解除的是 T3 夜襲那一段的 `renna_t4_ok`，鐵律 9）。
