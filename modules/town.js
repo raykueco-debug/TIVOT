@@ -270,10 +270,31 @@ function needOk(need){
   if(Array.isArray(need)) return need.every(f=>prog.hasFlag(f));
   return prog.hasFlag(need);
 }
-function mutedTalks(){
-  const T=TOWNS[townId]; if(!T || T.muteTalksFrom==null) return false;
-  return prog.getStage() >= T.muteTalksFrom;
+/* ══⚠⚠⚠ **章節窗**（ver -1739，Ray：「劇情鎖也要鎖好，所有劇情都是過期無效的，提早到也不會觸發」）══
+   城上寫 `storyStages:[起,迄]`（含；迄＝null 不設上限）：stage 在窗外時，這座城的
+   進場對白／主線段落（acts）／強制轉場（gates）／onLeave／街上偶遇（meetBy）／旅店約會**一律不觸發**。
+   ⚠ 它是 -753 `muteTalksFrom`（只有「過期」那一端）的推廣：舊欄位照舊吃得下（＝迄 muteTalksFrom−1）。
+   ⚠⚠ **段落自己明寫 `fromStage`／`untilStage` 的，照它自己的**（`storyOff(item)`）——
+     那是 Ray 設計過的例外（夏爾村／古墓的「早訪」、北泊重建後的新稿），不是漏洞。
+   ⚠ 路人單句（chatter）照舊不在此列：那是市井的氣氛，不是劇情。
+   ⚠ 每一層自己問（鐵律 8）。 */
+function storyWindow(){
+  const T=TOWNS[townId]; if(!T) return null;
+  if(Array.isArray(T.storyStages)) return T.storyStages;
+  if(T.muteTalksFrom!=null) return [0, T.muteTalksFrom-1];
+  return null;
 }
+function outOfStoryWindow(){
+  const w=storyWindow(); if(!w) return false;
+  const st=prog.getStage();
+  return st < (w[0]||0) || (w[1]!=null && st > w[1]);
+}
+function storyOff(item){
+  if(item && (item.fromStage!=null || item.untilStage!=null)) return false;
+  return outOfStoryWindow();
+}
+/* 舊名留著（別處註解還在引用）：＝這座城整體在窗外。 */
+function mutedTalks(){ return outOfStoryWindow(); }
 /* ══⚠⚠ **安全區旗：一插，這張地圖就不再有遭遇戰**（ver -634，Ray：「只要插
    safehouse flag 就不會有遭遇戰，黑爪戰後就插一個，拔 flag 才會遭遇」
    ＋「flag 跟地圖，一插就是整個北泊」）══
@@ -641,6 +662,7 @@ function maybeMeetOut(){
    ⚠ 約會中走到**別的**格子什麼都不演：她就在你旁邊，不需要「碰到」。
    ⚠ 好感與「演過了」都是**演完才記**（`applyAff` ＋ `markMet`，見呼叫端）。 */
 function meetScene(){
+  if(outOfStoryWindow()) return null;   // 章節窗（ver -1739）
   const dw=datingWho(), who = dw || whoOutAt(nodeId);
   if(!who) return null;
   const M=(((OUTING.who||{})[who]||{}).meetBy||{})[townId];
@@ -1173,7 +1195,6 @@ function dateByeAct(n){
    ⚠⚠ 兩邊是**互斥**的（`!!a.sleepFirst !== !!sleepOnly`）：漏掉這一行的話，
      那一段會在走進旅店的那一刻就演掉，玩家根本按不到睡覺鈕。 */
 function actDue(n, sleepOnly){
-  const muted = mutedTalks();
   for(const a of (n && n.acts) || []){
     if(!!a.sleepFirst !== !!sleepOnly) continue;
     /* 舊章節封存（ver -753）：沒標 fromStage 的段落＝舊稿，封存後不再演；
@@ -1182,7 +1203,7 @@ function actDue(n, sleepOnly){
     /* `untilStage`（ver -858）：**到了這一章就不再演**（fromStage 的反向）——
        夏爾村「S5 之前」那批早訪 NPC（村長）用。 */
     if(a.untilStage!=null && prog.getStage() >= a.untilStage) continue;
-    if(muted && a.fromStage==null) continue;
+    if(storyOff(a)) continue;   // 章節窗（ver -1739）：窗外不演，明寫 fromStage／untilStage 的照它自己的
     /* ══⚠⚠⚠ **`chaseOnly:true` ＝這一段只有追兵帶得動，走進來不算**
        （ver -1616，Ray：「柱廳怎麼可能會有登場？登場是在進古墓後兩戰以後移動
        下一格觸發」）══
@@ -2298,9 +2319,9 @@ function gateList(){
   return T.gates ? T.gates : (T.stage1 ? [T.stage1] : []);
 }
 function stageGate(){
-  if(mutedTalks()) return null;   // 舊章節封存（ver -753）：安葬／那一夜那些閘門不再抓人
   for(const g of gateList()){
     if(!g) continue;
+    if(storyOff(g)) continue;   // 章節窗（ver -1739；-753 的封存推廣）
     if(g.flag && prog.hasFlag(g.flag)) continue;
     /* ⚠⚠ `skipIf`（ver -1095）＝**這支旗立了就把這一道退休**。
        與 `flag`（自己演完才記）是兩件事：那一支答「我演過了沒」，這一支答
@@ -3978,9 +3999,9 @@ function leaveOne(l, to){
   return ((l.lines && l.lines.length) || l.gear) ? l : null;
 }
 function leaveDue(n, to){
-  if(mutedTalks()) return null;   // 舊章節封存（ver -753）
   const o = n && n.onLeave; if(!o) return null;
   for(const l of (Array.isArray(o) ? o : [o])){
+    if(storyOff(l)) continue;   // 章節窗（ver -1739）
     const hit = leaveOne(l, to);
     if(hit) return hit;
   }
@@ -4900,7 +4921,10 @@ function afterArrive2(n, metDone){
                                       北方泊地：那一夜是「蕾娜亮／諾薇兒與安雅熄燈、都由蕾娜應門」，
                                       隔天早上變成「蕾娜亮／諾薇兒出門去教堂／安雅亮但只說『……』」。
                                       ⚠ 不寫 `innDoors` ＝照這一章入隊的所有人（`girlsHere`）。 */
-                                   roster: (innDoorSet(n).roster) || girlsHere(),
+                                   /* ⚠⚠⚠ ver -1739（Ray：「團中伙伴有哪些人要嚴格以 stage 篩」）：資料上寫死的
+                                      `roster` **也要再過一次章節** —— 瓦恩霍姆的四扇門寫死了 ANYA／SORANA，
+                                      Stage 1 走進去就看到她們。篩選只有 `girlsHere()` 一支（鐵律 7）。 */
+                                   roster: ((innDoorSet(n).roster) || girlsHere()).filter(w => girlsHere().indexOf(w)>=0),
                                    inRoom: inRoom,
                                    /* ══ 約會（ver -1096）══ 四個人共用一張表的那一套：
                                       `escort()` ＝現在誰被約出去了（別人的門就敲不動）、
@@ -4953,7 +4977,7 @@ function afterArrive2(n, metDone){
                                       ⚠ 判定只有 `storyExploreOn()` 一支，這裡只問它。
                                       ⚠ 它排在**人的分支之前**（同宵禁／今天約過了）：
                                         那是世界的狀態，不是某個人的心情。 */
-                                   dateOpen: ()=> !storyExploreOn(),
+                                   dateOpen: ()=> !storyExploreOn() && !outOfStoryWindow(),   // ver -1739：窗外約不出來
                                    /* 宵禁（ver -576）：敲門一律回 `nightRest`，約不出來。 */
                                    night: isCurfew,
                                    /* 今天已經約過她了（ver -576）：回 `dateDone`，不再出門。

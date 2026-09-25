@@ -769,7 +769,7 @@ export const OUTING = {
                   date:{ lines:[ ren('arguecute','也不能怪我們啊！從來沒有收到過求救嘛！'),
                                  chf(null,'還不到需要求救的程度啦，魔獸的爪牙價格很好，源源不絕地自己送上門來也很不錯。'),
                                  ren('shockcalm','我這輩子沒想到能聽到這種話……', { aff:{ renna:2 } }) ] } } } },
-    ANYA:     { from:5, dine:'dessert',    nodes:['grocery'],
+    ANYA:     { from:3, dine:'dessert',    nodes:['grocery'],
                 nodesBy:{ shinier:['lakeside'] },
                 line:'……嗯。今天的份，還沒吃到。',
                 meetBy:{ shinier:{
@@ -780,13 +780,13 @@ export const OUTING = {
                                  { speaker:'PLAYER', blank:true },
                                  any('shy',''),
                                  any('talkshy','好。', { aff:{ anya:3 } }) ] } } } },
-    /* ⚠⚠⚠ **索菈娜 S8 才入隊**（ver -1360，Ray：「s8 之前她不論如何不會在，
-       因為還沒入隊」）—— 原本是暫填 5（入隊章節未定時的佔位）。
+    /* ⚠⚠⚠ **索菈娜 S9 才入隊**（ver -1739，Ray：「索則是 stage9 才加入」；-1360 是 S8，
+       再之前暫填 5）。安雅同版改 S3（Ray：「安雅在 stage3 才會加入」）。
        `girlsHere()` 依它濾旅店的四扇門 ⇒ S8 之前那一格根本不存在，
        不必再用「好感不夠就當她不在」去近似（見下面夏爾村那一段拔掉的 `absent`）。
        ⚠ `flight/talks.js` 的 `PARTY.sorana` 是**同一件事的另一份**（船上對話），
          兩邊註解互指 —— 改一邊要改另一邊（鐵律 7 的但書）。 */
-    SORANA:   { from:8, dine:'bar',        nodes:['grocery','gunstore','guild'],
+    SORANA:   { from:9, dine:'bar',        nodes:['grocery','gunstore','guild'],
                 nodesBy:{ shinier:['hunter'] },
                 line:'喲。難得看你走這條路啊。',
                 meetBy:{ shinier:{
@@ -884,6 +884,7 @@ export const TOWNS = {
          那幾段 act 寫 `pullSafehouse:true`：開演前拔旗、演完插回去。 */
     safehouse: true,
     name: '帝都',
+    storyStages:[0,1],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     entry: 'square',
     /* 大城市不上迷霧（ver -913，Ray：「大城市 mist 都是 0」）——
        ⚠ **要明寫**：-913 起沒寫就是有霧（走過才亮、字格印「？？？」）。 */
@@ -1052,13 +1053,10 @@ export const TOWNS = {
         hours:[8,19], closed:'大門闔上了。晚禱之後不再受理訪客。',   // ver -864，Ray 確認教堂打烊
         once:true,
         lines:[
+          /* ver -1739 Ray 改稿（stage0）：三拍，表情照稿。 */
           nou('surprise','雖說不及聖王廳，不過帝都的大教堂真是氣派呢。'),
-          /* ⚠ `sadsmile`：她想起蕾妮（搭檔，**不是**蕾娜）。這兩個名字全專案最容易寫錯。 */
-          nou('sadsmile','上一次來，還是跟蕾妮團長一起。'),
-          { speaker:'PLAYER', blank:true },
-          /* ⚠ 稿上這一句標的是 `Renna_SI_awkwerd`，但講話的是**諾薇兒**（「我沒事啦」）——
-             判斷是抄稿時的欄位錯位，改用她的 `awkward`。若原意真是蕾娜，說一聲改回去。 */
-          nou('awkward','我沒事啦。只是有時候會想起她……'),
+          nou('sadsmile','上一次來，還是跟學姐一起……'),
+          nou('surprise','啊！對不起……'),
 
         ],
         /* 路人單句：**教廷**線（ver -387）。 */
@@ -1625,6 +1623,7 @@ export const TOWNS = {
      · 沒有 `evening`／`acts`：傍晚強制回旅店那一套是帝都 stage0 的流程。 */
   northport: {
     name: '北方泊地',
+    storyStages:[2,3],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     entry: 'entrance',
     /* 大城市不上迷霧（ver -913，Ray：「大城市 mist 都是 0」）—— 見帝都那一列。 */
     mist: 0,
@@ -1797,7 +1796,7 @@ export const TOWNS = {
        進 credit）；且 **stage4 之前的對話都不會再觸發**（`muteTalksFrom`，
        modules/town.js 的 mutedTalks —— 進場對白／acts／gates／onLeave 整批封存，
        日後 S4（重建後）的北泊稿在段落上標 `fromStage:4` 就能穿過封存）。 */
-    muteTalksFrom: 4,   /* ver -857 重編號：原 5（北泊出航章）對位成 4 */
+    /* muteTalksFrom:4 → ver -1739 併進 storyStages:[2,3] */
     rebuild: { fromStage:4, bgm:'harbor', bg:{
       entrance:'northport_square',   west:'northport_west',     north:'northport_north',
       east:'northport_east',         port:'northport_port',     church:'northport_church',
@@ -2555,6 +2554,7 @@ export const TOWNS = {
      ══════════════════════════════════════════════════════════════════════ */
   shinier: {
     name: '夏爾村',
+    storyStages:[4,9],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     entry: 'plaza',
     /* ⚠ 夏爾村也給 0（ver -913）：Ray 的原話是「大城市 mist 都是 0」，村子他沒點名 ——
        這裡照「有人帶路的落腳處」比照辦理（同森林 mist:0 的理由：索菈娜是本地人）。
@@ -3337,6 +3337,7 @@ export const TOWNS = {
   },
   shinier_forest: {
     name: '夏爾森林',
+    storyStages:[6,7],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     entry: 'entry',
     /* BGM 暫代 misty（同村；Ray 指定森林曲後換）。 */
     bgm: 'misty',
@@ -3663,6 +3664,7 @@ export const TOWNS = {
      · ⚠ 還沒有怪與劇情（Ray 的稿未到）；槍棺地圖的手繪圖未交（`map:` 空著）。 */
   shinier_ruins: {
     name: '木雅克神殿',
+    storyStages:[6,7],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     entry: 'antechamber',        // ＝這座圖的第一格（入口在森林那邊，見上）
     /* ══ Stage 8 的入口（ver -956，Ray：「神殿攻略結束後自動跳轉回索拉娜家，
        三秒淡入規則」＋「Stage8 起始時間是 stage7 結束後的下一個中午 12 點」）══
@@ -4215,6 +4217,7 @@ export const TOWNS = {
        所以節點只寫基底名、**不寫 `noTime`**，時段由 `bandNames()` 的候選鏈挑。 */
   fallen: {
     name: '石製遺蹟',
+    storyStages:[8,null],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     visitFlag: 'fallen_seen',         // 同上（ver -1188）
     /* ══⚠⚠ 進去過就改叫「瓦努努石陣」（ver -1184，Ray 交稿：
          「石製遺蹟：（進入後改名為瓦努努石陣）」）══
@@ -4459,6 +4462,7 @@ export const TOWNS = {
      ══════════════════════════════════════════════════════════════════════ */
   ravnsdal: {
     name: '雪都瓦恩霍姆',
+    storyStages:[9,null],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     entry: 'square',
     /* BGM（ver -1248，Ray 交件 `PerituneMaterial_TaishoRoman_Theme2_loop`）。
        ⚠ 它原本**沒有 `bgm`** ＝ 進城沿用上一個畫面的曲子（同聖索菲亞／伊甸古墓）。 */
@@ -5331,6 +5335,7 @@ export const TOWNS = {
      ══════════════════════════════════════════════════════════════════════ */
   eastport: {
     name: '東方泊地',
+    storyStages:[9,null],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     entry: 'square',
     /* ══⚠⚠ 「之前去過這座港沒有」（ver -1342）══ 飛行頁那一段（貝利薩爾降不下去 →
        蕾娜指路）要依它換一句台詞。誰插＝踏進這張圖、誰拔＝沒有人（同 `belisar_seen`
@@ -6696,6 +6701,7 @@ export const TOWNS = {
        結算怪擺到「你沒走進來的那個出口」（§6.5.4.3 的 ver -895/-898）。 */
   plainsroad: {
     name: '平原古道',
+    storyStages:[9,null],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     entry: 'entry',
     /* ⚠ 短名（`bgmSrc` 查不到就回頭問 `ASSETS.bgm_prairie`，ver -1398）。 */
     bgm: 'prairie',   // ver -1408，Ray：「PerituneMaterial_Prairie4_loop 平原古道用這一首」
@@ -6941,6 +6947,7 @@ export const TOWNS = {
      ══════════════════════════════════════════════════════════════════════ */
   lake: {
     name: '鏡湖',
+    storyStages:[9,null],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     entry: 'inlet',
     /* 這張圖的曲子（ver -1542，Ray：「鏡湖預設 bgm 為 PeriTune_Sylblanc_loop」）。
        ⚠ 它同時是尼莫戰 `bgmAfter:'@town'` 問到的那一首（鐵律 7：真相只有這一處）。 */
@@ -7222,6 +7229,7 @@ export const TOWNS = {
 
   tomb: {
     name: '伊甸古墓',
+    storyStages:[8,null],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     entry: 'gate',
     /* BGM（ver -1247，Ray 交件 `Peritune_Black_Crystal_loop`）。同上：原本沒有。 */
     bgm: 'blackcrystal',
@@ -8924,6 +8932,7 @@ export const TOWNS = {
      ══════════════════════════════════════════════════════════════════════ */
   belisar: {
     name: '貝利薩爾遺址',
+    storyStages:[9,null],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     entry: 'entrance',
     /* 古城的曲子（ver -1350，Ray 交件 `PerituneMaterial_Numina_loop`）。
        ⚠ 它原本**沒有 `bgm`** ＝ 進去沿用上一個畫面的曲子（同伊甸古墓）。

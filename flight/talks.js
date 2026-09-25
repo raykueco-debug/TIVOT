@@ -75,9 +75,9 @@
      四人同台的那 23 組照舊聽得到，只有真的在第 1、2 章時才會被擋下。
      真正的入隊章節定了就改這兩個數字，其餘什麼都不必動。 */
 const PARTY = {
-  sorana:   { from: 8 },   // ver -1360 Ray 定案：**S8 入隊**（原本 -742 暫填 7）。⚠ 與 script/town.js 的 OUTING.who.SORANA.from 是同一件事，改一邊要改另一邊（鐵律 7）
+  sorana:   { from: 9 },   // ver -1739 Ray：「索則是 stage9 才加入」（-1360 是 8）。⚠ 與 script/town.js 的 OUTING.who.SORANA.from 是同一件事，改一邊要改另一邊（鐵律 7）
   nouvelle: { from: 1 },
-  anya:     { from: 5 },   // ver -742：**留 5**——北泊出航（S5）起她真的在船上，船上對話該有她
+  anya:     { from: 3 },   // ver -1739 Ray：「安雅在 stage3 才會加入」（-742 是 5）。⚠ 與 OUTING.who.ANYA.from 同一件事，改一邊要改另一邊
   renna:    { from: 1 },
 };
 function inParty(who, stage){
