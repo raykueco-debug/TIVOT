@@ -16,7 +16,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1741`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1742`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -29,7 +29,20 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1741`
+# HANDOFF — 截至 `ver 2026.09.22-1742`
+
+**`-1742`：幻影系八張怪卡**（Ray：「把 enemy/phamtoms 裡的怪卡建一下，都先用標準數值，除了貪欲者以外都是 B，貪是 C」）
+· 圖：`resources/enemy/phamtoms/ph_<id>.webp`（cwebp q85、真 alpha），原 PNG 在 `resources/_originals/enemy/phamtoms/`（本機，gitignore）。
+  ⚠ 資料夾名照 Ray 的拼法 `phamtoms`，沒改。
+· 卡（`script/enemies.js` 末段，`ASSETS` 的 `enemy_ph_*`）：
+  執劍天使 `ph_sword_angel`／慈愛殘像 `ph_mercy_remnant`／才能祝福之人 `ph_gifted`／殺戮魔女 `ph_slaughter_witch`／
+  纏髮之人 `ph_hairbound`／負棺者 `ph_coffin_bearer`／靜默等待者 `ph_silent_waiter` —— **B**（HP 380／攻 16／9-9-9-16-16／疊圈）；
+  貪欲者 `ph_greed` —— **C**（HP 270／攻 12／9-9-9-9-16／不疊）。數值由 `enemies_baseline.py apply` 套的。
+· ⚠ **我填的暫定值，等 Ray 在 Excel 改**：`atype:'P'`（Ray 沒給類型，基準要兩欄都有才套）／`kind:'harm'`（禍魘）／`story:0`。
+  **沒有 `bg`、沒有 `spawnAt`**：出沒在哪張圖還沒定 —— 目前只會出現在 RUSH 的 B／C 池（那個池子照 `tier` 算）。
+· `enemies.xlsx` 已重新匯出（104 張）。
+
+# （上一段）截至 `ver 2026.09.22-1741`
 
 **`-1741`：S10 以後照數字升章 ＋ Stage 13 收成一列、分支進第二層**（Ray：「按數字升章就好」「12BM2 應該作 13，S13 分支做入選單」「M1H M2H 都要列」）
 · **為什麼以前不升**：章節表只是跳關落點，正常遊玩升章只有「那一拍寫 `stage:N`」一條路，而 10／11／13／14 從來沒人掛（只有 12-A 的底層梯廳有）。**不是 AB 造成的。**

@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1741';
+export const VERSION = 'ver 2026.09.22-1742';
 
 export const GAME_CONFIG = {
 
@@ -4471,6 +4471,15 @@ export const ASSETS = {
   enemy_pall_bearers:            "resources/enemy/mon_pall_bearers.webp",
   enemy_tomb_bear:               "resources/enemy/mon_tomb_bear.webp?v=2",
   enemy_pallid_stag:             "resources/enemy/mon_pallid_stag.webp?v=2",
+  /* 幻影系（ver -1742，Ray 交件 resources/enemy/phamtoms/，原 PNG 在 _originals/enemy/phamtoms/） */
+  enemy_ph_sword_angel:          "resources/enemy/phamtoms/ph_sword_angel.webp",   // 執劍天使
+  enemy_ph_mercy_remnant:        "resources/enemy/phamtoms/ph_mercy_remnant.webp",   // 慈愛殘像
+  enemy_ph_gifted:               "resources/enemy/phamtoms/ph_gifted.webp",   // 才能祝福之人
+  enemy_ph_slaughter_witch:      "resources/enemy/phamtoms/ph_slaughter_witch.webp",   // 殺戮魔女
+  enemy_ph_hairbound:            "resources/enemy/phamtoms/ph_hairbound.webp",   // 纏髮之人
+  enemy_ph_coffin_bearer:        "resources/enemy/phamtoms/ph_coffin_bearer.webp",   // 負棺者
+  enemy_ph_greed:                "resources/enemy/phamtoms/ph_greed.webp",   // 貪欲者
+  enemy_ph_silent_waiter:        "resources/enemy/phamtoms/ph_silent_waiter.webp",   // 靜默等待者
   enemy_gorge_toad:              "resources/enemy/mon_gorge_toad.webp?v=2",
   enemy_stone_adder:             "resources/enemy/mon_stone_adder.webp?v=2",
   enemy_dragon_throne_awakened:  "resources/enemy/mon_dragon_throne_awakened.webp",

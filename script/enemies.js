@@ -3504,6 +3504,221 @@ export const ENEMIES = {
       loot:[],
     },
 
+    /* ══ 幻影系八張（ver -1742，Ray：「把 enemy/phamtoms 裡的怪卡建一下，都先用標準數值，
+       除了貪欲者以外都是 B，貪是 C」）══
+       ⚠ Ray 只給了**等級**。以下是我填的暫定值，Excel 裡改就好：
+         · `atype:'P'`（力量型）—— 基準要等級＋類型兩欄都有才套（`enemies_baseline.py`）
+         · `kind:'harm'`（禍魘：降臨＋淨化演出、結算「已淨化」）
+         · 沒給 `bg`／`spawnAt`：還沒指定出沒在哪張圖 */
+    ph_sword_angel: {
+      name:'執劍天使',
+      story:0, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
+      assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      assault:{ count:1, gap:0 },
+      kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      tier:'B',
+      atype:'P',
+      stageScale:1,
+      stack:1,
+      image:'enemy_ph_sword_angel',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
+      loot:[],
+    },
+    ph_mercy_remnant: {
+      name:'慈愛殘像',
+      story:0, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
+      assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      assault:{ count:1, gap:0 },
+      kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      tier:'B',
+      atype:'P',
+      stageScale:1,
+      stack:1,
+      image:'enemy_ph_mercy_remnant',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
+      loot:[],
+    },
+    ph_gifted: {
+      name:'才能祝福之人',
+      story:0, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
+      assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      assault:{ count:1, gap:0 },
+      kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      tier:'B',
+      atype:'P',
+      stageScale:1,
+      stack:1,
+      image:'enemy_ph_gifted',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
+      loot:[],
+    },
+    ph_slaughter_witch: {
+      name:'殺戮魔女',
+      story:0, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
+      assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      assault:{ count:1, gap:0 },
+      kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      tier:'B',
+      atype:'P',
+      stageScale:1,
+      stack:1,
+      image:'enemy_ph_slaughter_witch',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
+      loot:[],
+    },
+    ph_hairbound: {
+      name:'纏髮之人',
+      story:0, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
+      assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      assault:{ count:1, gap:0 },
+      kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      tier:'B',
+      atype:'P',
+      stageScale:1,
+      stack:1,
+      image:'enemy_ph_hairbound',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
+      loot:[],
+    },
+    ph_coffin_bearer: {
+      name:'負棺者',
+      story:0, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
+      assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      assault:{ count:1, gap:0 },
+      kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      tier:'B',
+      atype:'P',
+      stageScale:1,
+      stack:1,
+      image:'enemy_ph_coffin_bearer',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
+      loot:[],
+    },
+    ph_greed: {
+      name:'貪欲者',
+      story:0, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
+      assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      assault:{ count:1, gap:0 },
+      kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      tier:'C',
+      atype:'P',
+      stageScale:1,
+      stack:0,
+      image:'enemy_ph_greed',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:270,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,9,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
+      loot:[],
+    },
+    ph_silent_waiter: {
+      name:'靜默等待者',
+      story:0, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
+      assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      assault:{ count:1, gap:0 },
+      kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      tier:'B',
+      atype:'P',
+      stageScale:1,
+      stack:1,
+      image:'enemy_ph_silent_waiter',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:380,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:16,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
+      loot:[],
+    },
+
     // 例：新怪
     // giant: { name:'巨人', image:'enemy_giant', imageBase:'giant', hp:150, attack:30, atkInterval:5, sound:{}, special:[] },
 };
