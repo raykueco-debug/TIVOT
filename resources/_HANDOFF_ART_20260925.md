@@ -115,3 +115,35 @@ Ray：「先交一份無人廢城拓樸方案，50～60 格，含一個祭壇終
 - 交件 `resources/background/dunmor/dunmor_<id>.webp`（小寫、不帶時段），交完跑 `tools/bg_index.py`。
 - 開工先 `list_connected_browsers` 確認連的是**本機** Chrome（不是本機就搬不回圖，見 09-24 §六／今天 §七）。
 - 程式端要接的寫在工單 §五（拓樸搬 `town.js`、全部 `noTime`、三個 `rest`）。
+
+
+## 九、2026-09-25 傍晚～晚上（Mac）：聖索菲亞補圖 9 張 ✔ 交件；廢城改成「石製遺蹟感古代都市」第四版跑 14 格
+
+### 聖索菲亞 9 張 —— ✔ 全部入庫（commit `ce3cc0d`）
+`resources/background/sofia/sofia_inn_{dawn,day,dusk,night}`／`sofia_bar_{day,dusk,night}`／`sofia_restaurant`／`sofia_slum`。
+逐張驗收與**程式端要接的四件**在 `resources/background/_sofia_add_spec.md` §四／§五。`bg_index.js` 已重跑。
+
+### 廢城（dunmor）—— 兩次退稿、第四版進行中
+1. §七 那一版（天空四軸／鏡頭三軸）出到第 7 張，Ray：「**太像普通村落而不是古代廢城**」→ 停。七張留 scratch，總覽 `_dunmor_batch2_stopped_sheet.jpg`。
+2. Ray：「**以石製遺蹟感 古代都市為主**」「顆粒感也太重，強調 clean lineart 無顆粒，**先跑一張我定風格**」→ 石板主街定風格那張 **過**：
+   「可以，**天太紅了偏點紫，不要冒煙**」→「**就用這個風格跑完**」。
+3. 第四版共通段＋14 格石造版提示詞全文：`_dunmor_prompts.md` 第四版；規則與紀錄：`_dunmor_spec.md` §八。
+4. **交件位置 `resources/background/dunmor/_v3/`**（底線＝不上線），原稿 `_originals/background/dunmor/_v3/`；第一版 14 張原位不動，Ray 看完再搬。
+
+### 資產盤點（廢城第四版，這一輪結束時更新在 §八 的表）
+見 `_dunmor_spec.md` §八 末尾的逐格表。
+
+### ⚠ 產線的坑（這一輪新踩的，別再踩）
+- **排隊器不能用「幾秒沒圖就送下一則」**：慢隊列（5～10 分鐘一張）下晚到的圖會貼到下一格的名字上。要**等到圖真的出現才送下一則**（`run2`），
+  已送出還沒回的按送出順序對號，收件時**用排隊器記錄的 blob 大小對號，不看檔名**（Chrome 會把同名檔改成 `(1)`、還會把 `.png` 弄掉）。
+- **第一則附「畫風圖」＋一段很長的規格，模型有時會直接照抄附圖**（A 串第一張就是主街＋煙的翻版）→ 那一串之後的圖全部往前錯一格，收尾要對號。
+  下次第一則寫短一點、把「這一格是堤道，不是主街」放最前面。
+- 定風格那一串第二則之後**兩則都沒有回應**（連生成框都沒有）→ 換串（憲法：生圖卡住換 session）。
+- `[data-message-author-role]` 會被虛擬清單卸載，**不能拿 user 訊息數當「送出了沒」**；用「輸入框清空」＋「圖多了一張」。
+- 不動的 Chrome 分頁截圖會拿到空白（渲染被暫停），`innerText` 照樣讀得到。
+
+### 這台的其他未追蹤檔（Ray 自己丟的，我沒動）
+`resources/si/renna_si_hugangry2.png`（RGBA）／`resources/si/ssophia_si_thug.png`（RGBA）／`resources/ci/nemo_ci_dual.webp`／
+`resources/ci/045ac642-….png`（RGB 白底）／`resources/illustration/023_anyacottoncandy.png`、`024_nouvellesmile.png`（RGB）／
+根目錄兩張 png、`地理筆記.docx`、`索菈娜技能.docx`；另 `resources/si/gen_renna_si_blush.webp` 在工作樹裡是**已刪除**狀態（不是我刪的）。
+用途未知 → 等 Ray 說；要入庫的話走 §5 的 webp 流程＋取景值重量。
