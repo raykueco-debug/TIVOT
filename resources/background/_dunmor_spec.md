@@ -69,13 +69,54 @@
 
 - 拓樸搬進 `script/town.js`：節點／出口照 `tools/map_dunmor_draft.py` 的 `NODES`／`EDGES`（方向＝相對位置：左邊的鄰居掛 `left`…，`back` 不寫、由 `exitsOf` 現算）。
   搬完 `map_layout.py` 的 `POS` 補一格、**產生器回收**（同一個拓樸不留兩份）。
+- **每一格的 `bg` 就是 `dunmor_<id 小寫>`**（`bg_index.js` 的 `dunmor` 那一列，`ditchW`→`dunmor_ditchw`）。
 - **每一格 `noTime:true`**（Ray：不做四差分）；`wilderness:true`；迷霧預設（不要寫 `mist:0`）；
   `rest:true`＋`noWild:true`：`wellsq`／`oakgrove`／`nemeton`；入口 `entry:'gate'`。
 - 還沒定：地圖 id／中文正名、祭壇那一場是誰（`sessionEnd`）、`wildSpawn`（怪卡到了再接）、祭壇前庭要不要 `exitIf` 開路。
 - 小地圖：拓樸定案後走 `tools/map_compose.py`（圖示表 55 格，8×7），另開一單。
 
+## 六、第一批交件紀錄（2026-09-25 下午，Mac；ChatGPT 一串 14 則、零重送、零被擋）
+
+**交了 14 張** → `resources/background/dunmor/dunmor_<id>.webp`（cwebp q85、1536×1024）；
+GPT 原稿 `resources/_originals/background/dunmor/`；總覽圖 `resources/background/_dunmor_batch1_sheet.jpg`
+（**給 Ray 看色調與破敗程度的就是這一張**）。`tools/bg_index.py` 已重跑（`bg_index.js` 多 `dunmor` 一列）。
+
+| # | id | 檔名（**全小寫**） | 出口對了嗎 | 備註 |
+|---|---|---|---|---|
+| 01 | causeway | `dunmor_causeway` | ✔ 正前 | **色票**（之後每一則都附它）；遠景門道楣石沒塌（那是南壘門那格演的，遠景不計較） |
+| 02 | southgate | `dunmor_southgate` | ✔ 左右、正前楣石堵死 | |
+| 03 | ditchW | `dunmor_ditchw` ⚠ id 是 `ditchW`，檔名照規約小寫 | ✔ 正前上坡；⚠ **右側出口不夠明確**（坡地與柵欄之間的開口） | 色調過關後可考慮重出 |
+| 04 | oghamrow | `dunmor_oghamrow` | ✔ 右側缺口（看得到石臼）、正前牆堵 | |
+| 05 | gatecourt | `dunmor_gatecourt` | ✔ 三向（左立石、右穀倉石柱） | |
+| 06 | mainstreet | `dunmor_mainstreet` | ✔ 正前＋右巷（鍛爐紅光） | |
+| 07 | marketcross | `dunmor_marketcross` | ✔ 左路、正前圓屋殘骸封死 | |
+| 08 | boarstone | `dunmor_boarstone` | ✔ 三岔（正前看得到內壘門頭像楣） | |
+| 09 | innergate | `dunmor_innergate` | ✔ 正前門洞＋左下坡 | |
+| 10 | druidhouse | `dunmor_druidhouse` | ✔ 左路往橡樹林；屋內油燈／槲寄生／獸骨 | |
+| 11 | oakgrove | `dunmor_oakgrove` | ✔ 三向 | 休息處 |
+| 12 | nemeton | `dunmor_nemeton` | ✔ 正前石階通祭壇；右側缺口偏弱 | 休息處 |
+| 13 | altar | `dunmor_altar` | ✔ 盡頭（三立石＋懸崖＋霧） | 終點 |
+| 14 | wellsq | `dunmor_wellsq` | ✔ 死角；來路畫在左緣缺口 | 休息處 |
+
+**顆粒**（`flat30` 同一支腳本量三張校準：被退的舊 `Crossway_day` 7.80／現行過關版 5.27）：
+14 張落在 3.4~5.6，`druidhouse` 7.6／`nemeton` 7.4／`wellsq` 7.2／`oakgrove` 14.5 —— 100% 裁切看過，
+高的那幾張全是**畫出來的鵝卵石與樹葉**，天空平坦區乾淨。**這一批不過 Gemini**（過一趟會削細節，§5）。
+
+**產線紀錄（照這樣跑第二批；第一批的 ChatGPT 串 `https://chatgpt.com/c/6ab5f75b-4808-83ee-97b3-88aaae6ac5ed`，第二批開新串即可，色票靠附圖帶）**：`resources/si/_grab.js` 注入分頁 → 第一則只送文字、不附佈局圖
+（拓樸圖會被畫進去）→ 之後每則 `file_upload` 第一張當色票 ＋ 共通段 ＋ 那一格的段落 → 70 秒 `__grab`
+→ 本機比像素指紋（防抓到自己上傳的那張）。共通段與 14 格的提示詞全文在
+`resources/background/_dunmor_prompts.md`。
+
+### ⚠ 第二批之前要 Ray 定的一件：**端末口的鏡頭朝向**
+這一批的慣例是「每格鏡頭朝北、↓（來路）在鏡頭後面不畫」，14 格全部成立。
+但其餘 41 格裡有幾個端末口的**唯一出口不是 ↓**：`crannog`（湖上木屋）與 `tannery`（鞣皮坊）唯一出口是 **↑**、
+`watchW`／`headshrine`／`kingsbarrow` 是 **→**、`watchE`／`brochtop`／`cairn` 是 **←**。
+照聖井廣場的作法（**來路畫在那一側的畫面邊緣，其餘三面封死**）就可以畫，
+唯獨 `crannog`／`tannery`「來路在正前方」＝鏡頭要朝南（背對祭壇）—— 這兩格**要不要改成朝北、把來路留在畫面下緣**，等 Ray 一句話；沒回就照聖井的作法（正前方畫湖岸／陶窯場，當作走回去的路）。
+⚠ 望樓兩格朝西／朝東：`watchW` 朝西**要掛銀色滿月**（§5 銀月規矩），`watchE` 朝東只畫月光。
+
 ## 進度
 
-- [ ] 第一批 15 張（主軸＋休息處）→ Ray 看色調與破敗程度
-- [ ] 其餘 40 張
+- [x] 第一批 14 張（主軸＋三個休息處）→ **等 Ray 看色調與破敗程度**（`_dunmor_batch1_sheet.jpg`）
+- [ ] 其餘 41 張（Ray 點頭後；第一批的問題先修：`ditchW` 右口、`nemeton` 右口）
 - [ ] 小地圖

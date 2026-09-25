@@ -92,6 +92,13 @@ Ray：「先交一份無人廢城拓樸方案，50～60 格，含一個祭壇終
 - **v2**（Ray 追加「同一方向不要有三次以上的直線」→ 整張重排成之字形，產生器多一條「同向 ≤2 段」自檢）：56 格・60 邊・5 環；四向口 1、三向口 19、端末 12、休息處 3；一直按↑只走到南壘門（門道塌了，要走兩側壕溝坡道）
 - ⚠ **沒有搬進 `town.js`、沒有開背景工單** —— 先排拓樸再畫場景，Ray 點頭之後：程式端搬資料、`map_layout.py` 補 `POS`、這支產生器回收；美術再開 212 張的背景單（52 格四差分＋地下 4 格單張）
 
+### ✔ 2026-09-25 下午（Mac）：第一批 14 張交了 —— 等 Ray 看色調與破敗程度
+- 檔：`resources/background/dunmor/dunmor_<id>.webp` ×14（主軸 11＋休息處 3）、總覽 `resources/background/_dunmor_batch1_sheet.jpg`。
+- 逐格對照表、顆粒量測、產線步驟、**第二批前要 Ray 定的「端末口朝向」**全在 `resources/background/_dunmor_spec.md` §六。
+- 提示詞全文 `resources/background/_dunmor_prompts.md`（第二批照抄共通段）。
+- 程式端要接的沒變（工單 §五）：拓樸搬 `town.js`、`bg:'dunmor_<id 小寫>'`、全部 `noTime`、三個 `rest`。
+- ⚠ 第一批可能要修的兩格：`ditchW` 右側出口不明確、`nemeton` 右側缺口偏弱 —— 等 Ray 看完一起講。
+
 ### ⚠⚠⚠ 下一個 session 的第一件事：畫廢城背景（Ray：「先照這樣畫圖吧」）
 - **工單**：`resources/background/_dunmor_spec.md` —— Ray 定死的四件（古凱爾特／**剛被破壞、不要太破**／**不久前還有人**／**紫紅天空**）＋ **不做四差分、一格一張**。
 - 逐格出口照 `resources/map/_dunmor_spec.md` §二；佈局圖 `_layout_dunmor.png` 第一則附給 GPT。
