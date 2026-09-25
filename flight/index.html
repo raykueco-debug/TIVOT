@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1737"></script>
+<script src="../orientation.js?v=1738"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1737edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1738edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1737edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1737edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1738edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1738edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1737edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1737edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1738edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1738edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1737edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1738edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1737edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1737edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1737edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1737edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1737edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1737edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1737edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1737edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1737edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1737edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1738edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1738edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1738edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1738edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1738edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1738edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1738edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1738edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1738edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1738edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1737edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1738edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1737edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1738edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1737"></script>
+<script src="settlement.js?v=1738"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1737"></script>
+<script src="talks.js?v=1738"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1737';
+const FLIGHT_VER = 'ver -1738';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -14858,9 +14858,6 @@ const ENEMY_KINDS = {
     waveAmp:7.0, wavePhase:0.92, waveHz:0.0042, wingHz:0.055,
     turnRate:0.0016, speedK:0.60,
     rarity:'E',   // ⚠ 暫定（Ray 的蜈蚣卡沒寫稀有度）——卡到了改這一格
-    /* ver -1737（Ray：「stage1 的蜈蚣不會出現在該章節以外的地方，過期就沒了」）：
-       隨機刷怪只在 **Stage 1**（第二日出航～北泊）。劇本遭遇（`SCRIPTED_ENCOUNTERS` 指定 kind）不經過這裡。 */
-    fromStage:1, untilStage:1,
   },
   /* ══⚠⚠⚠ 王座徘徊者（ver -1416，Ray：「先用羽蛇的飛行地圖模型，之後美術會補上」）══
      ⚠⚠ **這是暫代**：`sprite` 整組指著羽蛇的圖。美術交了自己的六視圖之後，
@@ -14948,9 +14945,7 @@ const ENEMY_KINDS = {
     /* ── 出場條件（ver -500，Ray 的卡：[場景：飛行][區域：全陸域][稀有等級：E]
        「stage2 的劇情之後才會加入隨機敵人」）──
        這三格與 config.enemies.serpent 的卡互指（那邊是戰鬥數值、這邊是刷新規則）。 */
-    /* ver -1737（Ray：「stage4 的羽蛇不會出現在該章節以外的地方，過期就沒了」）：
-       -500 的 `fromStage:2` 改成 **只在 Stage 4**（北泊出航那一章）。 */
-    rarity:'E', fromStage:4, untilStage:4, landOnly:true,
+    rarity:'E', fromStage:2, landOnly:true,
     sprite:{ dir:'enemy/FLM_Serpent/', dorsal:'view_3.webp',
              head:[0.00,0.165], wings:[0.165,0.380], body:[0.380,1.00] },
     /* wingHz 0.019 → 0.008：鳥翼本來就比蟲翅慢得多。
@@ -15004,9 +14999,6 @@ const RARITY_ROLL=['E','D','C','B','A'];               // 抽選的順序（只�
 function enemyKindEligible(k, x, y){
   const K=ENEMY_KINDS[k];
   if(K.fromStage && gameStage() < K.fromStage) return false;
-  /* `untilStage`（ver -1737）＝**最後一個**還會刷的 stage（含）—— 過了就沒了（Ray：「過期就沒了」）。
-     與 `fromStage` 成對；沒寫＝沒有上限。 */
-  if(K.untilStage!=null && gameStage() > K.untilStage) return false;
   if(K.landOnly){
     const mx=(x/MAP_SCALE)|0, my=(y/MAP_SCALE)|0;
     if(mx<0||my<0||mx>=MAPW||my>=MAPH) return false;
@@ -15127,7 +15119,12 @@ function armEnemySpawn(clearFoe){
 const SCRIPTED_ENCOUNTERS = [
   /* 第二日出航：出了薩梅爾上空立刻被巨型蜈蚣攔下。 */
   /* `dist`＝生成距離覆寫（ver -455）：要在視野的清楚段正面現身，不泡在霧裡。 */
-  { flag:'set_sail', done:'flight_centipede_met', outOf:1,
+  /* ══⚠⚠ `stages:[起,迄]`（含）＝這一場強制戰鬥**只在這幾個 stage 裡會發生，過期就沒了**
+     （ver -1738，Ray：「stage4 的羽蛇跟 stage1 的蜈蚣…是指強制戰鬥的劇情不出」）══
+     守門在 `syncScriptPending`（唯一算 `scriptPending` 的地方）。沒寫＝不看章節。
+     ⚠ 蜈蚣寫 [1,2]：它是「Stage 1」那一章的戲，但 `main.sailOut` 在**第一次出航那一刻**就把 1 升成 2，
+       遭遇發生時 `gameStage()` 已經是 2 —— 只寫 1 會讓正常玩到的人也遇不到。 */
+  { flag:'set_sail', done:'flight_centipede_met', outOf:1, stages:[1,2],
     kind:'centipede', speedMul:1.5, dist:1800 },
   /* ══ stage2 回程的羽蛇（ver -741；-743 依 Ray 更正：「進薩梅爾才遇見羽蛇會
      太晚，只要一出瓦爾士就生羽蛇，兩倍速正面殺來」）══
@@ -15137,7 +15134,8 @@ const SCRIPTED_ENCOUNTERS = [
   /* ver -745（Ray：「範圍太遠，玩家還沒看到有東西飛來就進劇情了。讓牠刷出時
      常速，接近玩家時兩倍速，撞上時才進劇情『好快』」）：
      `nearMul/nearDist`＝接近加速；`intro` 改在**接觸那一刻**才啟動（見 updateEnemy）。 */
-  { flag:'np_leave_ok', done:'flight_serpent_met', outOf:2,
+  /* `stages:[4,4]`（ver -1738）：北泊送行那一段自己插 S4，羽蛇是 Stage 4 的戲；S5（夏爾村）起就沒了。 */
+  { flag:'np_leave_ok', done:'flight_serpent_met', outOf:2, stages:[4,4],
     kind:'serpent', speedMul:1, nearMul:2, nearDist:1100, dist:2000, intro:'serpent' },
   /* ══⚠⚠⚠ 王座徘徊者・空中戰（ver -1416，Ray：「索敵後必出王座徘徊者…然後進入空戰」）══
      `flag` ＝上船追那一拍插的（`script/town.js` 的 throne 段，兩邊註解互指）；
@@ -15172,8 +15170,13 @@ let scriptPending = null;
 /* ⚠⚠⚠ **重算，不要只在檔頭算一次**（ver -1077）：旗標會在**這一頁的開機途中**被改
    —— 戰鬥回程的 `done` 就是重載之後才補記的。算一次的話，補記之前那幾十幀
    `scriptPending` 還指著剛剛打完的那一場（見 `settleScriptResult` 的說明）。 */
+function scriptedInStage(S){
+  if(!S.stages) return true;
+  const st=gameStage();
+  return st>=S.stages[0] && st<=S.stages[1];
+}
 function syncScriptPending(){
-  scriptPending = SCRIPTED_ENCOUNTERS.find(S=>flagOn(S.flag) && !flagOn(S.done)) || null;
+  scriptPending = SCRIPTED_ENCOUNTERS.find(S=>flagOn(S.flag) && !flagOn(S.done) && scriptedInStage(S)) || null;
 }
 syncScriptPending();
 function scriptedDue(){
@@ -15516,15 +15519,15 @@ function spawnEnemy(opt){
   /* ── 隨機刷怪的抽選（ver -500，Ray 的敵人卡）────────────────────────
      [稀有等級] → 權重：E30／D25／C20／B15／A10／S5，按**合格者**正規化。
      合格條件寫在 kind 上：
-       fromStage — stage 幾之後才登場（stage 由主線 setStage 推進）
-       untilStage — 最後一個還會刷的 stage（含），過了就沒了（ver -1737，Ray：
-                   「stage4 的羽蛇跟 stage1 的蜈蚣不會出現在該章節以外的地方」——
-                   蜈蚣 1~1、羽蛇 4~4；空賊照舊 1 起無上限）
+       fromStage — stage 幾之後才登場（羽蛇＝2，Ray：「stage2 的劇情之後才會
+                   加入隨機敵人」；stage 由主線 setStage 推進）
+       ⚠ -1737 一度給怪種加了 `untilStage`（蜈蚣／羽蛇過章就不刷）—— **誤讀，-1738 還原**：
+         Ray 說的「過期就沒了」是**劇本遭遇**（`SCRIPTED_ENCOUNTERS` 的 `stages`），不是隨機刷怪。
        landOnly  — [區域：全陸域]：生成點的地形要在雲海之上（雲海＝這個世界的海，
                    同 seaProbe 的判法：HGT ≤ CLOUD_H ＝海）。
      劇本遭遇（opt.kind 指定）不經過抽選，照舊。 */
   const kind=(opt.kind && ENEMY_KINDS[opt.kind]) ? opt.kind : pickEnemyKind(x,y);
-  if(!kind) return;                       // 這一格沒有合格的怪（ver -1737 起會發生：Stage 5 之後薩梅爾上空只剩空賊、而空賊不進薩梅爾 ⇒ 沒有隨機怪）
+  if(!kind) return;                       // 這一格沒有合格的怪（理論上不會：蜈蚣/空賊無條件）
   const K=ENEMY_KINDS[kind];
   /* cruiseHx/cruiseHy、alt0＝「原本的動作」。放棄追擊時要能回到這裡，
      而且是轉回去不是跳回去（同追擊的限角速度）。 */
@@ -15596,7 +15599,9 @@ function updateEnemy(dt,now){
        ⚠ 開發時要怪就按「生怪」鈕（它走 spawnEnemy 直達，不經這裡）。
        ⚠ 日後加了更後期的劇本遭遇，這一條會把雜怪一路封到那一場打完 ——
          到時把判準改成「旗標已立而未打完」（加回 flagOn(S.flag)）。 */
-    if(SCRIPTED_ENCOUNTERS.some(S=>!flagOn(S.done))) return;
+    /* ⚠ 過期的劇本遭遇不擋（ver -1738）：`stages` 窗已經過了的那一場永遠不會再打，
+       留在這條判定裡等於把雜怪封到天荒地老。 */
+    if(SCRIPTED_ENCOUNTERS.some(S=>!flagOn(S.done) && scriptedInStage(S))) return;
     if(scriptPending) return;
     /* ══ 船不動就不生怪（ver -756，Ray：「飛行地圖若不動就不生怪」）══
        停著＝看地圖／掛機／整理，不該被怪撞。計時器**凍著**（不扣 dt），

@@ -16,7 +16,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1737`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1738`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -29,7 +29,16 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1737`
+# HANDOFF — 截至 `ver 2026.09.22-1738`
+
+**`-1738`：-1737 誤讀更正 —— 「過期就沒了」是劇本遭遇，不是隨機刷怪**（Ray：「不是指這兩隻怪以後不出，是指強制戰鬥的劇情不出」）
+· `ENEMY_KINDS` 的 `untilStage` 整個還原（蜈蚣回到無條件、羽蛇回到 `fromStage:2`），守門那一行也拿掉。
+· `SCRIPTED_ENCOUNTERS` 新欄位 **`stages:[起,迄]`**（含）：蜈蚣 `[1,2]`（Stage 1 的戲，但 `sailOut` 出航那一刻就升成 2，遭遇發生時已是 2）、
+  羽蛇 `[4,4]`。守門在 `syncScriptPending`（`scriptedInStage`）；王座徘徊者沒寫＝不看章節。
+· 連帶：`updateEnemy` 那條「劇本遭遇沒打完就不刷雜怪」改成只看**還在窗內**的 —— 過期的那一場不再把雜怪封死。
+· 沒在瀏覽器跑（jsc `checkSyntax` 過）。lint 0 錯誤、41 提醒。
+
+# （上一段）截至 `ver 2026.09.22-1737`
 
 **`-1737`：飛行地圖隨機刷怪加章節上限 —— 蜈蚣只在 Stage 1、羽蛇只在 Stage 4**（Ray：「stage4 的羽蛇跟 stage1 的蜈蚣
 不會出現在該章節以外的地方，過期就沒了」）
