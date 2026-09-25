@@ -7630,14 +7630,16 @@ export const TOWNS = {
              （時段差分：day＝稿的 -1、night＝-2、dusk／dawn＝-3，檔名照候選鏈 `_day/_night/_dusk/_dawn`），
              索菈娜那一句在插圖上講（不出立繪），「插圖結束」落在安雅 desperate 那一拍。
              ⚠ 米夏不再另掛一拍上台：他第一句俄語（`mis('talk',…)`）自己會把他放上來。 */
-          /* ver -1733（Ray）：troop 用 `amb`（循環，到索菈娜那一句為止、下一拍 `amb:null` 停）；
-             terrify 的前一拍插**東泊同樣的米夏 CI**（`021_mishalookback` 速度模糊，同 -1562 那一拍、同消失點）
-             並換成東泊那一夜的曲 `echoedart`；terrify 那一拍收掉 CI（`cg:null`）再接行軍插圖。 */
-          { speaker:'NARRATION', text:'', amb:'se_troops', auto:1200 },
-          { speaker:'NARRATION', text:'', se:'se_preasure', noSkip:true, bgm:'echoedart',
-            cg:'021_mishalookback', cgNoTime:true, auto:1600, cgRush:{ x:0.483, y:0.236 } },
-          Object.assign(any('terrify',''), { cg:null }),
-          { speaker:'NARRATION', text:'', cg:'32_mishamarch', cgPan:'up', auto:2600 },
+          /* ver -1734（Ray：「米夏 CI 放錯了，你放的是插圖，我要的是東泊這一拍的動畫」）：
+             照東泊 `sleepy` 那一拍 —— 安 sleepy → 下一拍 `fx:'stare'`＋`fxCi:'ci_mishastare'`（半透明一閃、
+             脈動、`noSkip`）與她的 terrify、換曲 `glasscradle` 同一瞬（同一拍的音樂，Ray 指定）→ 主角「！！」。
+             ⚠ -1733 那一版（`021_mishalookback` 插圖＋`echoedart`）已撤。
+             troop（`amb`）改掛在行軍插圖那一拍起（`fireOneShot` 立刻播、不等黑幕），到索菈娜那一句為止、
+             下一拍 `amb:null` 停。 */
+          any('sleepy',''),
+          Object.assign(any('terrify',''), { bgm:'glasscradle', fx:'stare', fxCi:'ci_mishastare', noSkip:true }),
+          { speaker:'PLAYER', text:'！！' },
+          { speaker:'NARRATION', text:'', cg:'32_mishamarch', cgPan:'up', auto:2600, amb:'se_troops' },
           sor(null,'這些傢伙是……？軍隊？', { portrait:{ show:false } }),
           /* ⚠ **米夏帶兵出現，索菈娜放下諾薇兒備戰**（ver -1707，Ray 確認 3b）——
              從下一拍起兩人各用自己的立繪（索菈娜的下一句換成單人表情，諾薇兒以 `faint` 站著）。 */
@@ -7690,7 +7692,7 @@ export const TOWNS = {
           any('terrify','！！'),
           mis('sideopen','別讓娜塔莉白白死了。'),
           mis('back','撤收。'),
-          Object.assign(any('desperate','……'), { hide:['MISHA'], se:'se_steps' }),   // ver -1715：撤收的下一拍腳步聲（Ray）
+          Object.assign(any('desperate','……'), { hide:['MISHA'], amb:'se_troops', ambStop:3000 }),   // ver -1734：撤收的音效也是 troop，三秒淡出（Ray；取代 -1715 的 se_steps）
           ren('coldstare','……'),
           any('talk','對不起，是我拜託他……'),
           ren('coldstare','我理解的，安娜殿下。'),
@@ -7719,14 +7721,16 @@ export const TOWNS = {
              （時段差分：day＝稿的 -1、night＝-2、dusk／dawn＝-3，檔名照候選鏈 `_day/_night/_dusk/_dawn`），
              索菈娜那一句在插圖上講（不出立繪），「插圖結束」落在安雅 desperate 那一拍。
              ⚠ 米夏不再另掛一拍上台：他第一句俄語（`mis('talk',…)`）自己會把他放上來。 */
-          /* ver -1733（Ray）：troop 用 `amb`（循環，到索菈娜那一句為止、下一拍 `amb:null` 停）；
-             terrify 的前一拍插**東泊同樣的米夏 CI**（`021_mishalookback` 速度模糊，同 -1562 那一拍、同消失點）
-             並換成東泊那一夜的曲 `echoedart`；terrify 那一拍收掉 CI（`cg:null`）再接行軍插圖。 */
-          { speaker:'NARRATION', text:'', amb:'se_troops', auto:1200 },
-          { speaker:'NARRATION', text:'', se:'se_preasure', noSkip:true, bgm:'echoedart',
-            cg:'021_mishalookback', cgNoTime:true, auto:1600, cgRush:{ x:0.483, y:0.236 } },
-          Object.assign(any('terrify',''), { cg:null }),
-          { speaker:'NARRATION', text:'', cg:'32_mishamarch', cgPan:'up', auto:2600 },
+          /* ver -1734（Ray：「米夏 CI 放錯了，你放的是插圖，我要的是東泊這一拍的動畫」）：
+             照東泊 `sleepy` 那一拍 —— 安 sleepy → 下一拍 `fx:'stare'`＋`fxCi:'ci_mishastare'`（半透明一閃、
+             脈動、`noSkip`）與她的 terrify、換曲 `glasscradle` 同一瞬（同一拍的音樂，Ray 指定）→ 主角「！！」。
+             ⚠ -1733 那一版（`021_mishalookback` 插圖＋`echoedart`）已撤。
+             troop（`amb`）改掛在行軍插圖那一拍起（`fireOneShot` 立刻播、不等黑幕），到索菈娜那一句為止、
+             下一拍 `amb:null` 停。 */
+          any('sleepy',''),
+          Object.assign(any('terrify',''), { bgm:'glasscradle', fx:'stare', fxCi:'ci_mishastare', noSkip:true }),
+          { speaker:'PLAYER', text:'！！' },
+          { speaker:'NARRATION', text:'', cg:'32_mishamarch', cgPan:'up', auto:2600, amb:'se_troops' },
           sor(null,'這些傢伙是……？軍隊？', { portrait:{ show:false } }),
           /* ⚠ **米夏帶兵出現，索菈娜放下諾薇兒備戰**（ver -1707，Ray 確認 3b）——
              從下一拍起兩人各用自己的立繪（索菈娜的下一句換成單人表情，諾薇兒以 `faint` 站著）。 */
@@ -7774,7 +7778,7 @@ export const TOWNS = {
           any('terrify','！！'),
           mis('frownopen','別讓娜塔莉白白死了。'),
           mis('back','撤收。'),
-          Object.assign(any('desperate',''), { hide:['MISHA'], se:'se_steps' }),   // ver -1715：撤收的下一拍腳步聲（Ray）
+          Object.assign(any('desperate',''), { hide:['MISHA'], amb:'se_troops', ambStop:3000 }),   // ver -1734：撤收的音效也是 troop，三秒淡出（Ray；取代 -1715 的 se_steps）
           ren('determine','……'),
           sor('guardtalk','什麼啊那傢伙……？'),
           nou('faint',''),
@@ -7808,14 +7812,16 @@ export const TOWNS = {
              （時段差分：day＝稿的 -1、night＝-2、dusk／dawn＝-3，檔名照候選鏈 `_day/_night/_dusk/_dawn`），
              索菈娜那一句在插圖上講（不出立繪），「插圖結束」落在安雅 desperate 那一拍。
              ⚠ 米夏不再另掛一拍上台：他第一句俄語（`mis('talk',…)`）自己會把他放上來。 */
-          /* ver -1733（Ray）：troop 用 `amb`（循環，到索菈娜那一句為止、下一拍 `amb:null` 停）；
-             terrify 的前一拍插**東泊同樣的米夏 CI**（`021_mishalookback` 速度模糊，同 -1562 那一拍、同消失點）
-             並換成東泊那一夜的曲 `echoedart`；terrify 那一拍收掉 CI（`cg:null`）再接行軍插圖。 */
-          { speaker:'NARRATION', text:'', amb:'se_troops', auto:1200 },
-          { speaker:'NARRATION', text:'', se:'se_preasure', noSkip:true, bgm:'echoedart',
-            cg:'021_mishalookback', cgNoTime:true, auto:1600, cgRush:{ x:0.483, y:0.236 } },
-          Object.assign(any('terrify',''), { cg:null }),
-          { speaker:'NARRATION', text:'', cg:'32_mishamarch', cgPan:'up', auto:2600 },
+          /* ver -1734（Ray：「米夏 CI 放錯了，你放的是插圖，我要的是東泊這一拍的動畫」）：
+             照東泊 `sleepy` 那一拍 —— 安 sleepy → 下一拍 `fx:'stare'`＋`fxCi:'ci_mishastare'`（半透明一閃、
+             脈動、`noSkip`）與她的 terrify、換曲 `glasscradle` 同一瞬（同一拍的音樂，Ray 指定）→ 主角「！！」。
+             ⚠ -1733 那一版（`021_mishalookback` 插圖＋`echoedart`）已撤。
+             troop（`amb`）改掛在行軍插圖那一拍起（`fireOneShot` 立刻播、不等黑幕），到索菈娜那一句為止、
+             下一拍 `amb:null` 停。 */
+          any('sleepy',''),
+          Object.assign(any('terrify',''), { bgm:'glasscradle', fx:'stare', fxCi:'ci_mishastare', noSkip:true }),
+          { speaker:'PLAYER', text:'！！' },
+          { speaker:'NARRATION', text:'', cg:'32_mishamarch', cgPan:'up', auto:2600, amb:'se_troops' },
           sor(null,'這些傢伙是……？軍隊？', { portrait:{ show:false } }),
           /* ⚠ **米夏帶兵出現，索菈娜放下諾薇兒備戰**（ver -1707，Ray 確認 3b）——
              從下一拍起兩人各用自己的立繪（索菈娜的下一句換成單人表情，諾薇兒以 `faint` 站著）。 */
@@ -7873,7 +7879,7 @@ export const TOWNS = {
           any('terrify','！！'),
           mis('frownopen','別讓娜塔莉白白死了。'),
           mis('back','撤收。'),
-          Object.assign(any('desperate',''), { hide:['MISHA'], se:'se_steps' }),   // ver -1715：撤收的下一拍腳步聲（Ray）
+          Object.assign(any('desperate',''), { hide:['MISHA'], amb:'se_troops', ambStop:3000 }),   // ver -1734：撤收的音效也是 troop，三秒淡出（Ray；取代 -1715 的 se_steps）
           ren('determine','……'),
           sor('guardtalk','什麼啊那傢伙……？'),
           /* ⚠ ver -1726 Ray 的 A 路線修正：到蕾娜第二個「……」為止就收 —— 「……沒錯／安雅小姐／我們都在喔」

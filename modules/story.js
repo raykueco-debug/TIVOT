@@ -1960,12 +1960,24 @@ function playSeFallback(src, gain){
    ⚠ 它是 SE 那一軌不是 BGM（§6.6：環境音與音樂是**堆疊**，不是輪播）——
      所以它不會把城鎮的曲子擠掉，兩者同時響是對的。 */
 let _amb=null, _ambName=null;
+/* ══⚠⚠ **`ambStop:<ms>` ＝這一拍起的環境音只放 N 毫秒就淡出**（ver -1734，Ray：「米夏的『撤收』
+   音效走的也是 troop，三秒就淡出」）══ 計時器是**跨句的狀態**（§6.5 的 -638：不進 `fxTimers`，
+   推一句不會被清掉），擁有者與 `_amb` 同一對：換成別支／明寫 `amb:null`／`stopAmb()` 都把它取消。
+   淡出走 `_amb.stop(AMB_STOP_FADE)`（playLoop 的把手），不是硬切。 */
+let _ambTimer=null;
+const AMB_STOP_FADE = 800;
+function ambStopAfter(ms){
+  if(_ambTimer){ clearTimeout(_ambTimer); _ambTimer=null; }
+  if(!_amb || !(ms>0)) return;
+  _ambTimer = setTimeout(()=>{ _ambTimer=null; stopAmb(AMB_STOP_FADE); }, ms);
+}
 /* ⚠⚠ **不做淡入淡出**（ver -1570，Ray：「waterfall loop 時直接無縫連播不要淡入淡出」）：
    `stop(0)` ＝立刻切。循環本身走 BufferSource 的 `loop`（樣本級接回開頭，
    中間一格都不會少）—— 真正會聽到接縫的是**音檔自己的頭尾**，那是素材的事，
    不是這裡加淡出補得掉的（加了只會變成「每一圈都淡一次」，更明顯）。
    ⚠ 留一個很短的預設（60ms）只為了避開 `stop()` 那一聲「喀」（audio.js 的註解）。 */
 export function stopAmb(ms){
+  if(_ambTimer){ clearTimeout(_ambTimer); _ambTimer=null; }
   if(_amb){ try{ _amb.stop(ms==null?60:ms); }catch(_){} }
   _amb=null; _ambName=null;
 }
@@ -2367,6 +2379,9 @@ function fireOneShot(line){
      在動；換節點時 `enter()` 照舊會把它換成那一格的 `amb`，所以停不掉的風險不存在）。
      ⚠ 用 `hasOwnProperty`：`amb:null` 是「停」，不寫是「不動」。 */
   if(Object.prototype.hasOwnProperty.call(line,'amb')) playAmb(line.amb);
+  /* `ambStop:<ms>`：這一拍起的環境音放 N 毫秒就淡出（ver -1734，見 `ambStopAfter`）。
+     ⚠ 只對「這一拍真的有 amb 在響」有效；寫在沒有 `amb` 的拍上也接得到（對現在在響的那一支計時）。 */
+  if(line.ambStop) ambStopAfter(line.ambStop);
   /* ══⚠⚠ **`roarBlast:true` ＝這一拍來一記迎面衝擊的模糊**（ver -1465）══
      龍吟的特效（Ray -1443：「不應該是震動，應該是動態模糊，像被迎面衝擊那樣」）。
      ⚠ 與 `shake` 是**兩件事**，不要一起寫：兩個都動 `transform`，後掛上去的那一個
@@ -2536,7 +2551,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1733';
+const KERB_V='?v=1734';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

@@ -16,7 +16,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1733`**（df709be），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1734`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -29,7 +29,20 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1733`
+# HANDOFF — 截至 `ver 2026.09.22-1734`
+
+**`-1734`：墓門的米夏 CI 改成東泊那一拍的動畫 ＋ 「撤收」音效走 troop 三秒淡出**（Ray 兩句交辦）
+· **墓門三版**（`town.js` 的 `tomb_exit_done` ×3，M2／belisar／M1）：-1733 放的是插圖 `021_mishalookback`＋`echoedart`，**放錯了**。
+  改成東泊 `sleepy` 那一拍同一套：`any('sleepy','')` → `any('terrify','')` 帶 `{ bgm:'glasscradle', fx:'stare', fxCi:'ci_mishastare', noSkip:true }`
+  → `{ speaker:'PLAYER', text:'！！' }` → 行軍插圖 `32_mishamarch`（`amb:'se_troops'` 改掛在這一拍起，`fireOneShot` 立刻播不等黑幕）
+  → 索那句 → desperate 拍 `amb:null` 停。⚠ 我沒在瀏覽器跑（Ray 在 8200 看 13-BA-M1 / M2 / belisar 三條）。
+· **`ambStop:<ms>`**（`story.js` 新欄位，SCRIPT_FORMAT §8.6 補了寫法）：這一拍起的環境音放 N 毫秒就 `stop(800)` 淡出。
+  計時器是跨句狀態（不進 `fxTimers`），換成別支／`amb:null`／`stopAmb()` 都取消。
+  用在三版的「撤收。」下一拍：`{ hide:['MISHA'], amb:'se_troops', ambStop:3000 }`（取代 -1715 的 `se:'se_steps'`）。
+· 拉煙三項：Ray 重述的規格與 -1733 已做的相同（機槍 3 團頭中尾／霰彈 1 團 44~74px／去 blur），**沒動**；霰彈要更大再說。
+· lint 0 錯誤、41 提醒（jsc `checkModuleSyntax` 過）。
+
+# （上一段）截至 `ver 2026.09.22-1733`
 
 **`-1733`：墓門開場補三件（troop 停點／米夏 CI／換曲）＋ 拉煙減量去 blur ＋ 北泊回城不能出航**
 · **拍上的環境音** `amb:'<名>'`／`amb:null`（`story.js` 的 `fireOneShot`，走城鎮節點同一支 `playAmb`；SCRIPT_FORMAT §8.6 補了寫法）。
