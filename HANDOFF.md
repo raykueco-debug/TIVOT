@@ -33,7 +33,22 @@
 >   `node routesim.mjs BAM1 60`（⚠ 參數讀的是 `arguments`，node 下要改讀 `process.argv.slice(2)` —— 還沒改，第一次跑會退回預設 BAM1／40）。
 >   路線名 `BAM1`／`BAM2`／`AB`。它**不是引擎**：時鐘、追兵、飛行是手動注入的步驟，看的是「哪一段選了哪個版本」。
 
-# HANDOFF — 截至 `ver 2026.09.22-1732`
+# HANDOFF — 截至 `ver 2026.09.22-1733`
+
+**`-1733`：墓門開場補三件（troop 停點／米夏 CI／換曲）＋ 拉煙減量去 blur ＋ 北泊回城不能出航**
+· **拍上的環境音** `amb:'<名>'`／`amb:null`（`story.js` 的 `fireOneShot`，走城鎮節點同一支 `playAmb`；SCRIPT_FORMAT §8.6 補了寫法）。
+  墓門三版：`amb:'se_troops'` 起 → 索菈娜「這些傢伙是……？軍隊？」→ 下一拍（安 desperate）`amb:null` 停。
+· **terrify 前一拍插東泊同樣的米夏 CI**（`021_mishalookback` 速度模糊、`se_preasure`、同消失點）並 **`bgm:'echoedart'`**（東泊那一夜的曲）；
+  terrify 那一拍 `cg:null` 收 CI 再接 `32_mishamarch` 平移。⚠ **我沒在瀏覽器跑到這一段**（省用量），Ray 在 8200 走 13-BA-M1 看：
+  順序應是 真奸詐 → 兵聲起 → CI 一閃 → 安 terrify → 行軍插圖上移 → 索那句 → 插圖收、兵聲停 → 蕾「……」。
+· **拉煙**（`enemy.trailSmoke`，船戰副武器）：機槍／步槍每條 **3 團（頭中尾）**，霰彈 **一團大的**＋50ms 節流（六顆彈丸同 tick）；
+  `.tracer-smoke`／`.muzzle-smoke` 的 `filter:blur` 拿掉。`weapon.mzHit` 把 `w.vfx` 傳給 `fireTracerAt`。**視覺效果 Ray 看**。
+· **北泊回城不能出航**（Ray 回報）：`entrance.sail.hold` 到 `np_leave_ok` 才解，那支旗只有碼頭道別最後一拍插 ——
+  **章節表 12 份旗清單全部沒有它**（S5 起每一章都列了 `np_depart` 卻漏 `np_leave_ok`），跳關進來的人回北泊永遠「不能丟下同伴」。
+  已全部補上。⚠ 正常一路玩到的人本來就有那支旗；Ray 若是正常玩到也遇到，那就是另一個洞，要再查。
+· lint 0 錯誤、42 提醒。
+
+# （上一段）截至 `ver 2026.09.22-1732`
 
 **`-1732`：章節表（13 章三路線起於古墓出口、可選 H／非 H、加 Stage 14）＋ 蕾娜 M2 改扣分 ＋ 墓門開場接 Ray 的稿**
 · **章節**（`script/progress.js`）：`stage13a`／`stage13bam1`／`stage13bam2x` 三筆都落 `tomb/gate`、`tomb_altar_done` 已插、

@@ -840,7 +840,7 @@
     border-radius:50%;pointer-events:none;will-change:transform,opacity;opacity:0;
     background:radial-gradient(circle at 50% 50%,
       rgba(238,234,226,.62), rgba(206,200,190,.34) 50%, rgba(180,174,166,0) 74%);
-    filter:blur(2px);
+    /* blur 拿掉（ver -1733，Ray：「blur 拿掉看看效果如何」）：每一團一個模糊濾鏡層是 -1732 量到的發熱源，漸層本來就軟。 */
     transform:translate(var(--x),var(--y)) scale(.3);
     animation:muzzleSmoke var(--t) cubic-bezier(.16,.7,.3,1) var(--d) forwards;}
   @keyframes muzzleSmoke{
@@ -859,7 +859,7 @@
     border-radius:50%;pointer-events:none;will-change:transform,opacity;opacity:0;
     background:radial-gradient(circle at 50% 50%,
       rgba(206,198,188,.42), rgba(168,160,150,.26) 52%, rgba(140,134,126,0) 74%);
-    filter:blur(1.5px);
+    /* blur 拿掉（ver -1733，同上）。 */
     transform:translate(var(--x),var(--y)) scale(.4);
     animation:tracerSmoke var(--t) cubic-bezier(.2,.6,.3,1) var(--d) forwards;}
   @keyframes tracerSmoke{

@@ -215,7 +215,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
          這一支是**一發叫一次** —— 機槍逐發、散彈逐顆、狙擊一發 ⇒
          「按發數射火線」是**既有結構的結果**，不必在這裡判武器類別（鐵律 7）。
          散彈之所以「散一點」也是既有的：它的 `spread` 本來就比較大。 */
-      if(api.fireTracerAt) api.fireTracerAt(px, py);
+      if(api.fireTracerAt) api.fireTracerAt(px, py, w.vfx);   // vfx 帶過去決定拉煙的團數（ver -1733）
       /* ⚠ **硝煙也在這裡**（ver -1655，Ray：「一般副武也加」）：三種副武器全部有，
          份量逐型不同（`smoke`）—— 爆發型一發大的、機槍與散彈逐發小的。
          實際的團數與大小由 `enemy.muzzleSmoke(k)` 一支決定（鐵律 7），

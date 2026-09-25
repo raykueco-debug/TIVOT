@@ -541,16 +541,29 @@ export function tracerOrigin(sx, w){ return w*ENEMY_CX + (sx - w*ENEMY_CX)*SPREA
    ⚠ 只有**船戰**才拉煙（`state.shipBattle`）：陸戰的副武器沒有這回事。 */
 let smokeDir = 1;                       // +1＝往右上　−1＝往左上
 export function rollSmokeDir(){ smokeDir = (Math.random()<0.5) ? -1 : 1; }
-const SMOKE_N = 7;                      // 一條軌跡上撒幾團
-function trailSmoke(host, sx, sy, tx, ty){
+/* ⚠⚠ ver -1733（Ray：「煙機槍降成三條頭中尾出，霰彈就一條大的就好，blur 拿掉看看效果」）——
+   -1732 量到一次機槍反擊半秒內 56 團帶 blur 的煙（8 發 × 7 團），是火線那一組最貴的東西。
+   · 機槍／步槍：**三團**，頭、中、尾（f＝0.12／0.5／0.88）
+   · 霰彈（`vfx:'burst'`）：**一團大的**在軌跡中段，而且 50ms 節流 —— 六顆彈丸同一個 tick 打出去，
+     不節流就是六團疊在同一處
+   · blur 在 CSS 拿掉（`.tracer-smoke`／`.muzzle-smoke`），漸層本來就是軟邊。 */
+let trailLast = 0;
+function trailSmoke(host, sx, sy, tx, ty, vfx){
   if(!state.shipBattle) return;
-  for(let i=0;i<SMOKE_N;i++){
-    const f=(i+0.5)/SMOKE_N;            // 沿著軌跡等距
+  const burst = (vfx==='burst');
+  if(burst){
+    const now = (typeof performance!=='undefined' ? performance.now() : Date.now());
+    if(now - trailLast < 50) return;
+    trailLast = now;
+  }
+  const FS = burst ? [0.5] : [0.12, 0.5, 0.88];
+  for(let i=0;i<FS.length;i++){
+    const f=FS[i];
     const el=document.createElement('i');
     el.className='tracer-smoke';
     el.style.setProperty('--x', (sx+(tx-sx)*f).toFixed(1)+'px');
     el.style.setProperty('--y', (sy+(ty-sy)*f).toFixed(1)+'px');
-    el.style.setProperty('--sz', (16+Math.random()*22).toFixed(0)+'px');
+    el.style.setProperty('--sz', (burst ? (44+Math.random()*30) : (16+Math.random()*22)).toFixed(0)+'px');
     /* 飄散：往左上或右上（這一場固定），再各自加一點抖動。 */
     el.style.setProperty('--dx', (smokeDir*(34+Math.random()*46)).toFixed(0)+'px');
     el.style.setProperty('--dy', (-46-Math.random()*54).toFixed(0)+'px');
@@ -638,7 +651,7 @@ export function fireTracer(sx, sy, tx, ty){
      —— 機槍逐發、散彈逐顆、狙擊一發，三種的發數與散佈全部沿用既有那一份
      （鐵律 7：不要在這裡再判一次武器類別）。
    ⚠ 吃**視窗座標**（與 `muzzleAtPoint` 同一組），換算成 `#fxTop` 相對在這裡做。 */
-export function fireTracerAt(clientX, clientY){
+export function fireTracerAt(clientX, clientY, vfx){
   const host=$('fxTop'); if(!host) return;
   const r=host.getBoundingClientRect();
   const tx=clientX-r.left, ty=clientY-r.top;
@@ -648,7 +661,7 @@ export function fireTracerAt(clientX, clientY){
   /* ⚠⚠⚠ **拉煙只掛在這一支**（ver -1653，Ray：「**船戰用的副武器**除了火線，
      還要拉煙」）—— `fireTracer` 是共用入口，普攻與 BR 也在用，而那兩者是
      **主武器**（迦尼米德雙槍）。掛在那裡等於每一發普攻都在冒煙。 */
-  trailSmoke(host, sx, sy, tx, ty);
+  trailSmoke(host, sx, sy, tx, ty, vfx);   // vfx：哪一種副武器（決定幾團煙，ver -1733）
   fireTracer(sx, sy, tx, ty);
 }
 /* ══ BR（破防彈雨）的火線：**從演出畫面兩側隨機高度射出**（ver -1622，Ray 指定）══

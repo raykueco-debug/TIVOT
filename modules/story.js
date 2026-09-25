@@ -2362,6 +2362,11 @@ function fireOneShot(line){
      而那會把「同時發生」演成「先後發生」。收在這一支（鐵律 8）：所有讀 `line.se`
      的路徑都吃到，腳本那邊寫 `se:['a','b']` 就好。 */
   if(line.se) (Array.isArray(line.se) ? line.se : [line.se]).forEach(playSe);
+  /* ══ `amb:'<名>'`／`amb:null` ＝這一拍**開／停一支循環的環境音**（ver -1733，Ray：「troop 只播到
+     『這些傢伙是……？軍隊？』那一拍就停」）══ 走城鎮節點同一支 `playAmb`（鐵律 8：環境音只有那一對
+     在動；換節點時 `enter()` 照舊會把它換成那一格的 `amb`，所以停不掉的風險不存在）。
+     ⚠ 用 `hasOwnProperty`：`amb:null` 是「停」，不寫是「不動」。 */
+  if(Object.prototype.hasOwnProperty.call(line,'amb')) playAmb(line.amb);
   /* ══⚠⚠ **`roarBlast:true` ＝這一拍來一記迎面衝擊的模糊**（ver -1465）══
      龍吟的特效（Ray -1443：「不應該是震動，應該是動態模糊，像被迎面衝擊那樣」）。
      ⚠ 與 `shake` 是**兩件事**，不要一起寫：兩個都動 `transform`，後掛上去的那一個
@@ -2531,7 +2536,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1732';
+const KERB_V='?v=1733';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
