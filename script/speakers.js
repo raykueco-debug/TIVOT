@@ -1377,7 +1377,7 @@ export const ART = {
   sv_cook: { cm:163, eye:32, fx:0.463, top:8, bot:1522, side:'R', alt:null, flip:true,
              base:'resources/si/npc/npc_shinier_cook_si.webp', expr:{} },
   priest: { cm:172, eye:32, fx:0.460, top:5, bot:1527,
-           side:'R', alt:null, base:'resources/si/npc_np_priest.webp', expr:{} },
+           side:'R', alt:null, base:'resources/si/npc/npc_np_priest.webp', expr:{} },
   /* 阿瑞尼斯（ver -1504）＝ ver -582~-1503 的北泊司祭那張立繪。
      ⚠⚠ 取景值是**那張圖自己的**（`tools/measure_si.py` 重量過一次確認：
        `top:7 bot:1531 fx:0.536`，與 -582 記載的一致）—— 不是從 `priest` 抄來的。
@@ -1587,13 +1587,13 @@ export const ART = {
     back: { src:'resources/si/torsten_si_back.png', top:20, bot:1516, fx:0.518 },
   } },
   /* ══ 米夏的隨從（士兵）（ver -1715，Ray：「『殿下......』的那一拍放士兵立繪」；
-     美術 -1710 交件 `retainer_si_front.webp`）══
+     美術 -1710 交件 `retainer_si_front.webp`；**-1732 美術搬進 `npc/` 並改名 `sodier_.webp`**（位元組相同，只是搬家），路徑跟著改）══
      取景用 `tools/measure_si.py` 實量：top 4／bot 1534／fx 0.451（全身，1024×1536）。
      `cm:176`＝成年男性的估身高，不頂到 `CAST_TALL`。站**右**（與米夏同一邊：他的人）——
      他只講一句，同側換人走抽牌輪轉（§6.5），米夏下一句自己回來。 */
   retainer: { cm:176, eye:30, fx:0.451, top:4, bot:1534,
-           side:'R', alt:null, base:'resources/si/retainer_si_front.webp', expr:{
-    front: { src:'resources/si/retainer_si_front.webp', top:4, bot:1534, fx:0.451 },
+           side:'R', alt:null, base:'resources/si/npc/sodier_.webp', expr:{
+    front: { src:'resources/si/npc/sodier_.webp', top:4, bot:1534, fx:0.451 },
   } },
 };
 

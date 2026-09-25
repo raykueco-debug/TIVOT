@@ -1887,6 +1887,7 @@ const SE_FILES=[
   /* 米夏回頭那一拍的壓迫感（ver -1561，Ray 交件）。同上：交來的 mp3 轉 AAC 96k，
      原檔進 `resources/audio/se/_raw/`（底線開頭＝不會被遊戲載入）。 */
   'se_preasure.m4a',
+  'se_troops.m4a',   // ver -1732：墓門軍隊圍上（Ray 交 mp3，轉 AAC 96k，原檔進 _originals/audio/se）
   'se_page3.m4a',   // ver -1564：圖書館「喔。這是什麼？」那一拍（Ray 指定）
   'se_ui_kagurabell.m4a', 'se_ui_pageflip.m4a', 'se_ui_sortie.m4a', 'se_walk.m4a',
   'se_weapon_guard.m4a', 'se_weapon_mg_squall.m4a', 'se_weapon_pistol_01.m4a',
@@ -2530,7 +2531,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1731';
+const KERB_V='?v=1732';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1731';
+export const VERSION = 'ver 2026.09.22-1732';
 
 export const GAME_CONFIG = {
 
@@ -3776,6 +3776,7 @@ export const GAME_CONFIG = {
          會讓它在手機上幾乎聽不見、對手機那一端又會在耳機上炸開。 */
       se_tablepunch:1.464,              // ver -1556（耳機 −9.43／手機 −24.80，平均 −17.12）
       se_snatch:2.500,                  // ver -1556（平均 −23.09 → 想要 2.911，被 peakCeilDb 夾住）CAP
+      se_troops:1.300,                  // ver -1732（平均 −22.0 → 想要 2.57，峰值 −0.3 dBFS 被 peakCeilDb +2 夾住）CAP
       se_preasure:1.221,                // ver -1561（耳機 −16.06／手機 −15.02，平均 −15.54；1.52 秒）
       se_page3:2.458,                   // ver -1564（平均 −22.25 → 想要 2.644，被 peakCeilDb 夾住）CAP
       peritunematerial_hesitation_loop:1.317,   // ver -1564（平均 −16.20）

@@ -1654,7 +1654,19 @@ function pickSheet(title, rows, onPick){
    ⚠ 入口寫成代號（`story`／`town`）不是函式：資料層不該認識啟動層。 */
 bindBtn('chapterBtn', ()=>{
   pickSheet('章　節', prog.CHAPTERS.map(c=>({ name:c.name, sub:c.sub })),
-    (i, close)=>{ startChapter(prog.CHAPTERS[i]); close(); });
+    (i, close)=>{
+      const c=prog.CHAPTERS[i];
+      /* `variants`（ver -1732，Ray：「可選 H 或非 H」）＝第二層：選一個把它的旗併進這一章再開。
+         資料在章節上（鐵律 1），這裡只負責多問一次。 */
+      if(c.variants && c.variants.length){
+        close(()=> pickSheet(c.name, c.variants.map(v=>({ name:v.label, sub:v.sub||'' })),
+          (j, close2)=>{ const v=c.variants[j];
+            startChapter(Object.assign({}, c, { flags:[ ...(c.flags||[]), ...(v.flags||[]) ] }));
+            close2(); }));
+        return;
+      }
+      startChapter(c); close();
+    });
 });
 
 /* ══ 分歧檢查（ver -1708，Ray：「在首頁做一個分歧檢查，把所有劇情分支點列表，

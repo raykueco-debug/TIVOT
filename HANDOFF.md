@@ -33,7 +33,39 @@
 >   `node routesim.mjs BAM1 60`（⚠ 參數讀的是 `arguments`，node 下要改讀 `process.argv.slice(2)` —— 還沒改，第一次跑會退回預設 BAM1／40）。
 >   路線名 `BAM1`／`BAM2`／`AB`。它**不是引擎**：時鐘、追兵、飛行是手動注入的步驟，看的是「哪一段選了哪個版本」。
 
-# HANDOFF — 截至 `ver 2026.09.22-1731`
+# HANDOFF — 截至 `ver 2026.09.22-1732`
+
+**`-1732`：章節表（13 章三路線起於古墓出口、可選 H／非 H、加 Stage 14）＋ 蕾娜 M2 改扣分 ＋ 墓門開場接 Ray 的稿**
+· **章節**（`script/progress.js`）：`stage13a`／`stage13bam1`／`stage13bam2x` 三筆都落 `tomb/gate`、`tomb_altar_done` 已插、
+  `tomb_exit_done` 沒插 ⇒ 一落地就演出墓那一幕（版本由路線旗選）。旗是**接上去的**：B 底＝原「13-BA-M2（東泊隔日）」
+  那一筆去掉 M 尾（`B_COMMON`）＋ `B_M1_TAIL`／`B_M2_TAIL` ＋ A 路線的尾 `A_TAIL`。
+  **`variants`**＝章節鈕的第二層（`main.js` chapterBtn：選章 → 再選「H 路線（插 `tomb_h_route`）／非 H」）。
+  **Stage 14**：`enter:'flight'`、`flight:{town:'ravnsdal'}`（雪都出港位），旗＝BA・M1 出墓 ＋ `tomb_exit_done`／`tomb_misha_met`／
+  `tomb_done`／`vn_after_tomb`。原「13-BA-M2（東泊隔日）」改名 **「Stage 12-B・M2 隔日」**（id 不動）。
+  實測：選 13-BA-M1 → H → 落墓門、`tomb_h_route`／`ep_m1_route`／`ep_belisar_done` 都在、stage 13。
+· **蕾娜 M2**：`AFF_CAPS` 的「M2 封頂 T4」拿掉；改在雪都合流 BA・M2 版「扣分。」那一拍 `aff:{renna:-10}`（−10 是我訂的，半個段位）。
+· **墓門開場（三版共用）照 Ray 稿**：`se_troops`（Ray 交 mp3 → AAC 96k，`fileGain` 1.30 CAP：平均 −22.0、峰值 −0.3）→ 安 terrify →
+  插圖 `32_mishamarch` 由下而上平移（時段差分：稿的 -1＝`_day`、-2＝`_night`、-3＝`_dusk`＋`_dawn`，PNG→WebP、原檔進 `_originals`）→
+  索「這些傢伙是……？軍隊？」在插圖上講 → 插圖結束落在安 desperate。米夏不再另掛上台拍（他第一句自己上）。
+  實測 13-BA-M1・H：`32_mishamarch_day.webp pan-up` → 索那句 → cg 收 → 蕾「……」→ 米夏俄語 ✔。
+· **接美術這一輪的搬家**（工作樹裡的移動，一併進這個 commit）：`retainer_si_front.webp` → `resources/si/npc/sodier_.webp`
+  （位元組相同）、`npc_np_priest.webp` → `npc/npc_np_priest.webp`，`speakers.js` 三處路徑跟著改；`021_soranadrunk` → `022_soranadrunk`
+  （`town.js` 的 `cg` 跟著改）。⚠ `sodier_.webp` 這個名字（尾底線）像是 WIP，美術要改名再說一聲。
+  ⚠ 還沒接的：`023_anyacottoncandy.png`／`024_nouvellesmile.png`（untracked，沒有腳本引用）；`gen_renna_si_blush.webp` 被刪（沒人引用，沒動）。
+· **火線特效的疊加（Ray 問「過熱跟火線有關？」，只查沒改）**：見下一段。
+· lint 0 錯誤、42 提醒。
+
+### 火線特效：疊加在哪、能省哪（-1732 查的，等 Ray 說要不要改）
+一次**反擊**每一發都走 `weapon.mzHit` → `muzzleBurst`（1 槍火 ＋ 1 光環 ＋ **14×k 顆火星**）＋ 1 條 `.tracer` ＋
+（船戰）`trailSmoke` **7 團** `.tracer-smoke` ＋（步槍）`muzzleSmoke`。機槍 `hits:8` ⇒ 半秒內約 **8 槍火＋8 環＋60 火星＋8 火線＋56 團煙**。
+· ⚠ **最貴的是煙**：`.muzzle-smoke`／`.tracer-smoke` 每一團都 `filter:blur(1.5~2px)`＋`will-change`＋動 scale ⇒ 每團是一個帶模糊濾鏡的合成層，
+  56 團同時在動。而它的底本來就是 `radial-gradient` 軟邊，blur 是疊上去的第二層軟。`trailSmoke` **沒有節流**（`muzzleSmoke` 有 50ms）。
+· `.tracer` 用 `mix-blend-mode:screen`：只要有一條在，`#top` 整個 stacking context 要走離屏合成（只活 150ms，代價短）。
+· 槍火那一組已經有池（`MZ_MAX 130`）與火星上限，火星是純 transform/opacity，便宜。
+· **建議**（都不改視覺語彙）：① 煙拿掉 `filter:blur`（漸層自己就軟）② `trailSmoke` 每條 7 團 → 4 團、加 50ms 節流 ③ 火線的 `screen` 換成
+  不透明的亮色線（或保留、只在船戰用）。做完在手機量一次。
+
+# （上一段）截至 `ver 2026.09.22-1731`
 
 **`-1731`：王座徘徊者拍翅檢討**（Ray：「振翅感不足，翅膀應該要壓扁一點，動態、頻率應該要更自然，要有威壓感」）
 -1730 的三節鉸鏈是對的骨架，但三節同相位、對稱正弦、幅度小、素材的翅本來就是往上揚的 V 字 ⇒ 讀成「圖在點頭」。

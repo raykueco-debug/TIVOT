@@ -5005,7 +5005,7 @@ export const TOWNS = {
         /* ══ 約會・索菈娜（ver -1522；**ver -1536 圖到齊，補上**）══
            ⚠ `drink`／`shy` 兩張差分的**圖早就在版控裡**，只是 `speakers.js`
              沒登記那兩個鍵 —— -1536 補上（取景值 `measure_si.py` 實測）。
-           ⚠ 微醺插圖 `021_soranadrunk` -1536 交件（PNG→WebP，原檔進 `_originals`）。
+           ⚠ 微醺插圖 `021_soranadrunk` -1536 交件（-1732 美術改號成 `022_soranadrunk`，021 讓給 mishalookback）（PNG→WebP，原檔進 `_originals`）。
              ⚠ **`cgNoTime:true`**：它沒有時段差分，不寫就是先吃四個 404 才退回原名。
              ⚠ 收圖的位置照稿：稿上「插圖結束：」排在「（主角空白）」**之前**，
                所以 `cg:null` 掛在那一拍（-1522 的註解寫「哪有那麼了不起啦！」那一拍，
@@ -5017,7 +5017,7 @@ export const TOWNS = {
           sor('shy','身體好像暖起來了。'),
           { speaker:'PLAYER', blank:true },
           sor('drink','不用啦，外套你自己穿著。'),
-          Object.assign(sor(null,'……'), { cg:'021_soranadrunk', cgNoTime:true }),
+          Object.assign(sor(null,'……'), { cg:'022_soranadrunk', cgNoTime:true }),
           sor(null,'其實我也知道穿這身走在城裡很奇怪啦。'),
           sor(null,'這是我奶奶留下來的衣服。'),
           sor(null,'是用傳統森住民服飾改的舞姬服喔。'),
@@ -5143,7 +5143,7 @@ export const TOWNS = {
              放到過場必經」）。⚠ 蕾娜沒有 `happy` 差分，「扣分。」取最接近的 `laugh`。
              ⚠ 「主角空白，對話框有尷尬線」＝ `blank:true, awk:true`（§SCRIPT_FORMAT 8.6）。 */
           ren('upsetstare','至於你嘛……'),
-          ren('laugh','扣分。'),
+          ren('laugh','扣分。', { aff:{ renna:-10 } }),   // ver -1732：M2 的代價改成這裡直接扣（取代 -1719 的 T4 封頂）；−10＝半個段位，我訂的
           { speaker:'PLAYER', blank:true, awk:true },
           nou('concern','不要看我……這次確實是你不好。'),
           ren('smile','瞞著我的事，就這樣扯平吧。'),
@@ -7626,14 +7626,17 @@ export const TOWNS = {
           ren('hugangry','大概是工匠當初偷偷留的暗道吧。', { onlyIf:'tomb_h_route' }),
           ren('blush',   '大概是工匠當初偷偷留的暗道吧。', { skipIf:'tomb_h_route' }),
           sor('carrynouvellejealous','喔——真奸詐呢。'),
-          /* 軍隊圍上：腳步聲兩下（稿：「Se_steps 0.3 秒後再播一個 Se_steps」）。 */
-          { speaker:'NARRATION', text:'', se:[{ n:'se_steps' }, { n:'se_steps', delay:300 }], auto:1200 },
+          /* ver -1732 Ray 稿：軍隊圍上改成 `se_troops`（Ray 交件），插圖 32_mishamarch 由下而上平移
+             （時段差分：day＝稿的 -1、night＝-2、dusk／dawn＝-3，檔名照候選鏈 `_day/_night/_dusk/_dawn`），
+             索菈娜那一句在插圖上講（不出立繪），「插圖結束」落在安雅 desperate 那一拍。
+             ⚠ 米夏不再另掛一拍上台：他第一句俄語（`mis('talk',…)`）自己會把他放上來。 */
+          { speaker:'NARRATION', text:'', se:'se_troops', auto:1200 },
           any('terrify',''),
-          { speaker:'MISHA', text:'', portrait:{ char:'MISHA', expr:null, show:true } },
-          sor('carrynouvelleshock2','這些傢伙是……？軍隊？'),
+          { speaker:'NARRATION', text:'', cg:'32_mishamarch', cgPan:'up', auto:2600 },
+          sor(null,'這些傢伙是……？軍隊？', { portrait:{ show:false } }),
           /* ⚠ **米夏帶兵出現，索菈娜放下諾薇兒備戰**（ver -1707，Ray 確認 3b）——
              從下一拍起兩人各用自己的立繪（索菈娜的下一句換成單人表情，諾薇兒以 `faint` 站著）。 */
-          any('desperate',''),
+          Object.assign(any('desperate',''), { cg:null }),   // 插圖結束（ver -1732）
           ren('hugserious','……', { onlyIf:'tomb_h_route' }),
           ren('coldstare', '……', { skipIf:'tomb_h_route' }),
           /* ── H 路線派生（M2）── */
@@ -7707,14 +7710,17 @@ export const TOWNS = {
           ren('hugangry','大概是工匠當初偷偷留的暗道吧。', { onlyIf:'tomb_h_route' }),
           ren('blush',   '大概是工匠當初偷偷留的暗道吧。', { skipIf:'tomb_h_route' }),
           sor('carrynouvellejealous','喔——真奸詐呢。'),
-          /* 軍隊圍上：腳步聲兩下（稿：「Se_steps 0.3 秒後再播一個 Se_steps」）。 */
-          { speaker:'NARRATION', text:'', se:[{ n:'se_steps' }, { n:'se_steps', delay:300 }], auto:1200 },
+          /* ver -1732 Ray 稿：軍隊圍上改成 `se_troops`（Ray 交件），插圖 32_mishamarch 由下而上平移
+             （時段差分：day＝稿的 -1、night＝-2、dusk／dawn＝-3，檔名照候選鏈 `_day/_night/_dusk/_dawn`），
+             索菈娜那一句在插圖上講（不出立繪），「插圖結束」落在安雅 desperate 那一拍。
+             ⚠ 米夏不再另掛一拍上台：他第一句俄語（`mis('talk',…)`）自己會把他放上來。 */
+          { speaker:'NARRATION', text:'', se:'se_troops', auto:1200 },
           any('terrify',''),
-          { speaker:'MISHA', text:'', portrait:{ char:'MISHA', expr:null, show:true } },
-          sor('carrynouvelleshock2','這些傢伙是……？軍隊？'),
+          { speaker:'NARRATION', text:'', cg:'32_mishamarch', cgPan:'up', auto:2600 },
+          sor(null,'這些傢伙是……？軍隊？', { portrait:{ show:false } }),
           /* ⚠ **米夏帶兵出現，索菈娜放下諾薇兒備戰**（ver -1707，Ray 確認 3b）——
              從下一拍起兩人各用自己的立繪（索菈娜的下一句換成單人表情，諾薇兒以 `faint` 站著）。 */
-          any('desperate',''),
+          Object.assign(any('desperate',''), { cg:null }),   // 插圖結束（ver -1732）
           ren('hugserious','……', { onlyIf:'tomb_h_route' }),
           ren('coldstare', '……', { skipIf:'tomb_h_route' }),
           mis('talk','Хватит валять дурака, когда ты наконец займёшься делом？'),
@@ -7788,14 +7794,17 @@ export const TOWNS = {
           ren('hugangry','大概是工匠當初偷偷留的暗道吧。', { onlyIf:'tomb_h_route' }),
           ren('blush',   '大概是工匠當初偷偷留的暗道吧。', { skipIf:'tomb_h_route' }),
           sor('carrynouvellejealous','喔——真奸詐呢。'),
-          /* 軍隊圍上：腳步聲兩下（稿：「Se_steps 0.3 秒後再播一個 Se_steps」）。 */
-          { speaker:'NARRATION', text:'', se:[{ n:'se_steps' }, { n:'se_steps', delay:300 }], auto:1200 },
+          /* ver -1732 Ray 稿：軍隊圍上改成 `se_troops`（Ray 交件），插圖 32_mishamarch 由下而上平移
+             （時段差分：day＝稿的 -1、night＝-2、dusk／dawn＝-3，檔名照候選鏈 `_day/_night/_dusk/_dawn`），
+             索菈娜那一句在插圖上講（不出立繪），「插圖結束」落在安雅 desperate 那一拍。
+             ⚠ 米夏不再另掛一拍上台：他第一句俄語（`mis('talk',…)`）自己會把他放上來。 */
+          { speaker:'NARRATION', text:'', se:'se_troops', auto:1200 },
           any('terrify',''),
-          { speaker:'MISHA', text:'', portrait:{ char:'MISHA', expr:null, show:true } },
-          sor('carrynouvelleshock2','這些傢伙是……？軍隊？'),
+          { speaker:'NARRATION', text:'', cg:'32_mishamarch', cgPan:'up', auto:2600 },
+          sor(null,'這些傢伙是……？軍隊？', { portrait:{ show:false } }),
           /* ⚠ **米夏帶兵出現，索菈娜放下諾薇兒備戰**（ver -1707，Ray 確認 3b）——
              從下一拍起兩人各用自己的立繪（索菈娜的下一句換成單人表情，諾薇兒以 `faint` 站著）。 */
-          any('desperate',''),
+          Object.assign(any('desperate',''), { cg:null }),   // 插圖結束（ver -1732）
           ren('hugserious','……', { onlyIf:'tomb_h_route' }),
           ren('coldstare', '……', { skipIf:'tomb_h_route' }),
           mis('talk','Хватит валять дурака, когда ты наконец займёшься делом？'),
