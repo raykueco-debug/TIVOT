@@ -31,7 +31,6 @@ import * as saveSys from './modules/save.js';   // 劇情層存讀檔（F4/F7 �
 import * as settings from './modules/settings.js';   // 選單：分軌音量／自動播放速度（玩家偏好）
 import { BG_INDEX } from './script/bg_index.js';   // 背景全名單（自動產生）：RUSH 的隨機背景從它抽（ver -1663）
 import * as prog from './script/progress.js';
-import { scanBranches } from './script/branches.js';   // 分歧檢查（ver -1708，管理人限定）
 /* ⚠⚠ **靜態 import**（ver -1001）：章節跳關的補給包本來走 `import(...).then(...)`，
    那是**非同步**的 —— 而 `startChapter` 後面的 `openTownAt()` 同步接著跑，
    進城會落一筆自動存檔點，**那一筆快照裡還沒有補給** → 之後任何一次回檔就把它抹掉
@@ -1434,48 +1433,15 @@ function buildStatRows(){
    ⚠⚠ 它與章節跳關一樣**會 `newRun()`** —— 那是既有 dev 梯子的語意，
      而這顆鈕本來就只有 `body.testmode` 看得到（§6.9）。 */
 bindBtn('flightBtn', ()=>startChapter(prog.FLIGHT_TEST));
-/* ══⚠⚠ **「腳本測試」ver -1551 放回來**（Ray：「把場景移到進圖書館前，我自己跑一次
-     確認差分」）══ 它跳到 `prog.SCRIPT_TEST`，走**同一支** `startChapter`（鐵律 8）。
-   ⚠⚠ ver -1435 拿掉它的理由是「巡場做的是同一件事」—— **那個前提不成立**：
-     · 巡場**只落得到那座城的 `entry`**（`tourSpec` 的 `node` 在選過圖之後一律是 null）
-     · 它只會把那張圖的劇情旗**整組**加上（不演）或扣掉（演）
-     ⇒ 「站在某一格、而且某幾支旗剛好差一支」這種**段落中間**的落點它做不到，
-       而那正是要驗一段演出時唯一有用的落點（這一次要驗的就是「走進圖書館那一刻」）。
-   ⚠ 兩顆**共用同一筆落點資料**（`SCRIPT_TEST`，鐵律 7）：巡場拿它當旗標的底，
-     這一顆整筆照跳。要改測別的地方就只改那一筆。 */
-/* RUSH（ver -1584）取代「腳本測試」那顆鈕 —— 見上面 startRush。
-   ⚠ 它照樣落在首頁那條白名單之外 ⇒ `body.testmode` 限定（§6.9）。
-   ⚠⚠⚠ **所以上面那一整段「腳本測試 ver -1551 放回來」是過期的**（ver -1681 查清楚）：
-     那顆鈕已經不存在，**沒有任何入口會跳到 `prog.SCRIPT_TEST`** ——
-     它現在只剩「巡場拿它當旗標的底」這個用途。
-     ⇒ 要落在段落中間的某一格，現在加一筆 `CHAPTERS`（Stage 15 就是這樣加的），
-       **不要去改 `SCRIPT_TEST`**：改了只會偷偷把巡場的起點也換掉。 */
+/* ⚠ 「腳本測試」（-1551）→ RUSH（-1584）占了它的位子；「巡場」（-1396）與「分歧」（-1708）
+   於 ver -1734 拿掉（Ray）—— 巡場的「不演劇情」搬進「章節」第二層的「無劇情」（見 chapterBtn）。
+   ⇒ `prog.SCRIPT_TEST` 現在**沒有任何入口用它**，只是落點資料的紀錄；
+     要落在段落中間的某一格，加一筆 `CHAPTERS`（Stage 15 就是這樣加的）。 */
 /* ⚠ **不要在這裡先 `hideHome`**（ver -1662）：`combat.startGame()` 自己會收
    （`hideHome('startGame')`，而且是在戰鬥真的擺好之後）。先收的話那一格露出來的是
    底下的 `#app` ＝ 上一場的殘盤 —— §6.10 -576 那條「在新的一頁真的蓋上去之前，
    不可以先把舊的那一層收掉」，守望本來就每次都印一行 warn 在講這件事。 */
 bindBtn('rushBtn', ()=>{ startRush(); });
-/* 巡場（ver -1396）：同一個落點、沒有怪、劇情不抓人 —— 說明在 `prog.tourSpec`。 */
-/* ══⚠⚠ 巡場（ver -1396；-1410 Ray：「巡場加入選擇探索地圖名單，選擇以後選
-   是否播放劇情」）══ 兩步：選圖 → 選要不要演劇情。
-   ⚠⚠ **名單是算出來的**（`town.explorableMaps()`，鐵律 7）—— 這裡一個圖名都不寫，
-     日後加一張圖自己會多一列。
-   ⚠ 「演不演」交給 `prog.tourSpec`：它拿 `town.storyFlagsOf(圖)` 去**加或扣**
-     那一整組旗（說明在那一支上面）。 */
-bindBtn('tourBtn', ()=>{
-  const maps=town.explorableMaps();
-  pickSheet('巡　場　·　選圖', maps.map(m=>({ name:m.name, sub:m.nodes+' 格　'+m.id })),
-    (i, close)=>{
-      const m=maps[i];
-      close(()=>pickSheet('巡　場　·　'+m.name,
-        [{ name:'不演劇情', sub:'這張圖的段落全部當成演過了 —— 走到哪都不會被抓走' },
-         { name:'演　劇　情', sub:'把這張圖的劇情旗扣掉，從還沒演過的狀態開始' }],
-        (j, close2)=>{
-          startChapter(prog.tourSpec(m, { story:j===1, storyFlags:town.storyFlagsOf(m.id) }));
-          close2();
-        }));
-    });
-});
 /* 主線劇情（管理人模式限定）：從 mainScript 的 MAIN_ENTRY 開始跑 scene 鏈。
    ⚠ 不換頁 —— 劇情舞台是蓋在首頁上的一層（#storyStage z-8300），離開就回首頁。
      換頁的話存讀檔要跨頁還原，複雜度沒必要。
@@ -1652,75 +1618,33 @@ function pickSheet(title, rows, onPick){
    ⚠ 章節**內容是資料**（`script/progress.js` 的 `CHAPTERS`）—— 這裡只負責演，
      加一章不必動這一段（鐵律 1）。
    ⚠ 入口寫成代號（`story`／`town`）不是函式：資料層不該認識啟動層。 */
+/* ══⚠⚠ 第二層（ver -1734，Ray：「分歧跟巡場鈕可以拿掉，在章節選擇裡多一個無劇情選項」）══
+   進城的章節一律再問一次：`variants`（-1732 的 H／非 H）或「演劇情」＋ **「無劇情」**。
+   「無劇情」＝以前那顆「巡場」的「不演劇情」搬進來：`prog.noStorySpec(章, town.storyFlagsOf(城))`
+   把這座城的劇情旗整組當成演過了、再插 `safehouse_<城>`（無怪）—— 落點照這一章的 `town`／`node`。
+   ⚠ 「巡場」鈕與「分歧」鈕（-1396／-1708）都拿掉了：巡場的「演劇情」＝章節本身，
+     分歧的路線選擇＝章節的 `variants`（-1732）。`script/branches.js` 已回收。
+   ⚠ 不進城的章節（`enter:'flight'`／`story`）沒有「無劇情」可言，直接開。 */
 bindBtn('chapterBtn', ()=>{
   pickSheet('章　節', prog.CHAPTERS.map(c=>({ name:c.name, sub:c.sub })),
     (i, close)=>{
       const c=prog.CHAPTERS[i];
-      /* `variants`（ver -1732，Ray：「可選 H 或非 H」）＝第二層：選一個把它的旗併進這一章再開。
-         資料在章節上（鐵律 1），這裡只負責多問一次。 */
-      if(c.variants && c.variants.length){
-        close(()=> pickSheet(c.name, c.variants.map(v=>({ name:v.label, sub:v.sub||'' })),
-          (j, close2)=>{ const v=c.variants[j];
-            startChapter(Object.assign({}, c, { flags:[ ...(c.flags||[]), ...(v.flags||[]) ] }));
-            close2(); }));
-        return;
+      const rows=(c.variants||[]).map(v=>({ name:v.label, sub:v.sub||'', v }));
+      if(c.enter==='town'){
+        if(!rows.length) rows.push({ name:'演　劇　情', sub:'照這一章的旗進場' });
+        rows.push({ name:'無　劇　情', sub:'無怪・這座城的段落全部當成演過了（原「巡場」）', noStory:true });
       }
-      startChapter(c); close();
+      if(!rows.length){ startChapter(c); close(); return; }
+      close(()=> pickSheet(c.name, rows, (j, close2)=>{
+        const r=rows[j];
+        const spec = r.noStory ? prog.noStorySpec(c, town.storyFlagsOf(c.town))
+                   : r.v       ? Object.assign({}, c, { flags:[ ...(c.flags||[]), ...(r.v.flags||[]) ] })
+                   : c;
+        startChapter(spec); close2();
+      }));
     });
 });
 
-/* ══ 分歧檢查（ver -1708，Ray：「在首頁做一個分歧檢查，把所有劇情分支點列表，
-   選擇分支點就從該分支存在的『幕』進場」）══════════════════════════════════
-   清單是算出來的（`script/branches.js`，鐵律 7）。兩層面板：先選「幕」，再選分支的哪一邊。
-   進場的作法：
-     ① 底 ＝ **還沒演過這一幕**的最後一個章節（同一座城優先）—— `startChapter` 那一套
-        （newRun、補給、旗、好感、章節號），只是不照章節自己的入口開門
-     ② 補這一幕的前置：`need` 插上、自己的 `flag` 與 `until` 拔掉、`fromStage`／`needTier` 墊上
-     ③ 這一邊的條件：路線旗插／拔（ver -1711 起只列 M／H／AB‧BA 路線，好感在遊戲內調）
-     ④ `town.debugArm` 武裝 → `enterTown` 走進那一格，**不問 `actDue` 直接演那一幕**
-   ⚠ 閘門／離開時／店主／約會那幾種**沒辦法直接演**：條件擺好、人放到那一格，觸發交給玩家
-     （約會一座城一筆，放到旅店 —— ver -1711，Ray：「我測試可以自己走」）。 */
-bindBtn('branchBtn', ()=>{
-  const list=scanBranches();
-  pickSheet('分　歧', list.map(b=>({
-      name:(b.atStart?'★ ':'')+b.nodeName+(b.kind==='act'?'':'　〔'+({arrive:'進場對白',gate:'閘門',leave:'離開時',talk:'對話',date:'約會'}[b.kind]||b.kind)+'〕'),
-      sub:(b.title||'')+'　｜　'+b.points.map(p=>p.label).join('、') })),
-    (i, close)=>close(()=>{
-      const b=list[i];
-      const rows=[{ name:'不改條件，直接進場', sub:'條件照章節的底' , v:null }];
-      for(const p of b.points) for(const v of (p.variants||[])) rows.push({ name:v.label, sub:p.label, v });
-      pickSheet(b.nodeName+'　'+(b.actFlag||''), rows,
-        (j, close2)=>close2(()=>startBranch(b, rows[j].v)));
-    }));
-});
-function startBranch(b, v){
-  const asArr=x=>x==null?[]:(Array.isArray(x)?x:[x]);
-  const own=b.actFlag;
-  const chs=prog.CHAPTERS.filter(c=>c.enter==='town' && !(own && (c.flags||[]).indexOf(own)>=0));
-  const same=chs.filter(c=>c.town===b.town);
-  const base=(same.length?same:chs).slice(-1)[0] || prog.CHAPTERS[0];
-  startChapter(base, { noEnter:true });
-  const a=b.act || b.gate || {};
-  if(a.need) prog.addFlags(asArr(a.need));
-  const drop=[own, a.until].filter(Boolean);
-  if(drop.length) prog.removeFlags(drop);
-  if(a.fromStage!=null && prog.getStage()<a.fromStage) prog.setStage(a.fromStage);
-  if(a.needTier) for(const who in a.needTier) prog.setAffectionDev(who, (a.needTier[who]-1)*20+5);
-  /* ver -1711：整幕版本只有一邊（這一個 act 就是那個版本）⇒ 不選也把它的路線旗擺好，
-     不然「直接進場」會演 M2 的版本、旗卻停在 M1。 */
-  for(const p of b.points) if(p.kind==='variant' && (p.variants||[]).length===1){
-    const pv=p.variants[0];
-    if(pv.add && pv.add.length) prog.addFlags(pv.add);
-    if(pv.remove && pv.remove.length) prog.removeFlags(pv.remove);
-  }
-  if(v){
-    if(v.add) prog.addFlags(v.add);
-    if(v.remove) prog.removeFlags(v.remove);
-  }
-  if(b.kind==='act') town.debugArm({ node:b.node, act:b.act });
-  else if(b.kind==='arrive') town.debugArm({ node:b.node, arrive:true });
-  openTownAt(b.town, b.node);
-}
 function startChapter(c, opts){
   if(!c) return;
   prog.newRun();                                   // ⚠ 唯一的「從頭開始」（§6.9）

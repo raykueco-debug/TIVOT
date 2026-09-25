@@ -753,3 +753,4 @@ when	from	to	reason
 20260925-012421	resources/SI/misha_si_frontshock.webp	_recycle/resources/SI/misha_si_frontshock.webp	米夏 frontshock：Ray 2026-09-25 交辦重做（frontshock 用 front 生、GPT 整張採用）
 20260925-012426	resources/SI/misha_si_frown.webp	_recycle/resources/SI/misha_si_frown.webp	米夏 frown：Ray 2026-09-25 交辦重做（frown 用 front 生、GPT 整張採用）
 20260925-013105	resources/SI/misha_si_frownopen.webp	_recycle/resources/SI/misha_si_frownopen.webp	米夏 frownopen：Ray 2026-09-25 交辦重做（以加長刀的新 frown 為底只改嘴，GPT 整張採用）
+20260925-164302	script/branches.js	_recycle/script/branches.js	ver -1734：分歧鈕拿掉（Ray），掃描器沒有呼叫者了

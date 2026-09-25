@@ -16,7 +16,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1734`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1735`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -29,7 +29,19 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1734`
+# HANDOFF — 截至 `ver 2026.09.22-1735`
+
+**`-1735`：首頁「分歧」「巡場」兩顆鈕拿掉，章節第二層多「無劇情」**（Ray：「分歧跟巡場鈕可以拿掉，在章節選擇裡多一個無劇情選項」）
+· `index.html` 兩顆鈕移除；`main.js` 的 `tourBtn`／`branchBtn`／`startBranch` 與 `scanBranches` import 拿掉；
+  `script/branches.js` 回收（`tools/recycle.sh`，沒有呼叫者了）。
+· **章節第二層**（`chapterBtn`）：進城的章節一律再問一次 —— 有 `variants` 就列 variants，沒有就列「演劇情」；
+  兩種都再加一列 **「無劇情」**＝`prog.noStorySpec(章, town.storyFlagsOf(城))`：這一章的旗 ＋ `safehouse_<城>` ＋
+  那座城的劇情旗整組（＝當成演過了），落點照章節的 `town`／`node`。不進城的章節（試飛型／story）直接開。
+· `progress.tourSpec` 換成 `noStorySpec`（底改成那一章自己的旗，不再拿 `SCRIPT_TEST`）；`SCRIPT_TEST` 留著當紀錄，沒有入口用它。
+· `script/bg_index.js` 由 lint 重掃（聖索菲亞新交的 `sofia_bar_*`／`sofia_inn_*`／`sofia_restaurant`／`sofia_slum`）。
+· lint 0 錯誤、41 提醒。
+
+# （上一段）截至 `ver 2026.09.22-1734`
 
 **`-1734`：墓門的米夏 CI 改成東泊那一拍的動畫 ＋ 「撤收」音效走 troop 三秒淡出**（Ray 兩句交辦）
 · **墓門三版**（`town.js` 的 `tomb_exit_done` ×3，M2／belisar／M1）：-1733 放的是插圖 `021_mishalookback`＋`echoedart`，**放錯了**。

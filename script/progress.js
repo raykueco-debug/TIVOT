@@ -1444,37 +1444,20 @@ export const SCRIPT_TEST = {
 /* ⚠ ver -1410：`tourFlags`（-1396 手寫的貝利薩爾跳過清單）**已移除** ——
    巡場現在用 `town.storyFlagsOf(圖)` 從資料掃，涵蓋每一張圖，換圖不必手改。 */
 
-/* ══⚠⚠⚠ **巡場**（ver -1396；-1410 由 Ray 改成「選圖 ＋ 選要不要演劇情」）══════
-   Ray：「巡場加入選擇探索地圖名單，選擇以後選是否播放劇情」
-
-   **三件事，各由一個機制負責（不要混在一起）：**
-
+/* ══⚠⚠ **章節的「無劇情」**（ver -1734，Ray：「分歧跟巡場鈕可以拿掉，在章節選擇裡多一個
+   無劇情選項」）—— 取代 -1396／-1410 的「巡場」（`tourSpec`）══
+   底＝**那一章自己的旗**（不再拿 `SCRIPT_TEST` 當底），再加兩件：
    | 要什麼 | 誰做的 |
    |---|---|
-   | 進度推到後期（有錢、有槍、主線旗到位） | `SCRIPT_TEST.flags` 當**底**（照抄，鐵律 7：落點只有一份） |
-   | **沒有怪** | `safehouse_<圖>`（由 `townId` 推，見 `town.safehouseFlag`） |
-   | **劇情要不要演** | `town.storyFlagsOf(圖)` —— **加上去＝當成演過了**（不演）、**扣掉＝回到還沒演**（演） |
-
-   ⚠⚠ **「演」是把旗扣掉，不是另外加什麼**：底那一份含著一大票別張圖的劇情旗
-     （`np_*`／`sv_*`／`sr_*`…），要看北泊那一段就得把北泊那幾支**拿掉**，
-     否則走進去只會一片安靜 —— 而那看起來與「劇情壞了」一模一樣。
-   ⚠ `tourFlags` 那一列（-1396 手寫的貝利薩爾跳過清單）**已經不需要了**：
-     `storyFlagsOf` 從資料掃得出來，而且涵蓋每一張圖。
-   ⚠ 這仍是**破壞性**的（`startChapter` 開頭就 `newRun()`），而且只有
-     `body.testmode` 看得到那顆鈕（§6.9 的白名單）。 */
-export function tourSpec(map, opts){
-  const t = SCRIPT_TEST, o = opts||{};
-  const id   = (map && map.id)   || t.town;
-  const node = (map && map.node) || (map && map.id ? null : t.node);
-  const skip = o.storyFlags || [];
-  const base = (t.flags||[]).concat(['safehouse_'+id]);
-  /* 演劇情＝把這張圖的旗從底那一份**扣掉**；不演＝**加上去**。 */
-  const flags = o.story ? base.filter(f=>skip.indexOf(f)<0) : base.concat(skip);
-  return Object.assign({}, t, {
-    id:'tour', name:'巡場',
-    sub:((map&&map.name)||id) + '（無怪・' + (o.story?'演劇情':'不演劇情') + '）',
-    town:id, node, flags,
-  });
+   | **沒有怪** | `safehouse_<城>`（由 `townId` 推，見 `town.safehouseFlag`） |
+   | **劇情不演** | `town.storyFlagsOf(城)` **整組加上去＝當成演過了** |
+   ⚠ 落點照章節的 `town`／`node`。⚠ 這仍是**破壞性**的（`startChapter` 開頭就 `newRun()`），
+     而且只有 `body.testmode` 看得到「章節」鈕（§6.9 的白名單）。
+   ⚠ `SCRIPT_TEST` 現在**沒有任何入口用它**（巡場拿掉之後）—— 留著當落點資料的紀錄。 */
+export function noStorySpec(ch, storyFlags){
+  const id = ch.town;
+  const flags = (ch.flags||[]).concat(['safehouse_'+id], storyFlags||[]);
+  return Object.assign({}, ch, { sub:(ch.sub||'')+'（無劇情・無怪）', flags });
 }
 
 /* ══⚠⚠⚠ **試飛的預設進度**（ver -1359，Ray：「試飛默認為 s8 瓦努努開啟後的

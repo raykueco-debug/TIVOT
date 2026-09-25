@@ -16,7 +16,7 @@
 <link rel="apple-touch-icon" href="resources/background/tivot_emblem.png">
 <title>TIVOT</title>
 <!-- 全域鎖直向（真鎖 + 橫向擋板）；classic script，需在版面就緒前掛上 -->
-<script src="orientation.js?v=1734"></script>
+<script src="orientation.js?v=1735"></script>
 <!-- ══ 效能探針・計數層（ver -850，Ray：「沒有辦法寫一個偵測程式進去看是什麼
      東西在吃資源嗎？」）══ 要在**所有程式之前**掛（晚掛就數不到早開的計時器），
      所以住在這裡。只做登記（Set/計數，開銷趨近零）；讀取與呈現在 main.js 的
@@ -63,57 +63,56 @@
 <script type="importmap">
 {
   "imports": {
-    "./audio.js": "./audio.js?v=1734",
-    "./config.js": "./config.js?v=1734",
-    "./i18n.js": "./i18n.js?v=1734",
-    "./main.js": "./main.js?v=1734",
-    "./orientation.js": "./orientation.js?v=1734",
-    "./state.js": "./state.js?v=1734",
-    "./telemetry.js": "./telemetry.js?v=1734",
-    "./modules/combat.js": "./modules/combat.js?v=1734",
-    "./modules/defense.js": "./modules/defense.js?v=1734",
-    "./modules/enemy.js": "./modules/enemy.js?v=1734",
-    "./modules/gear.js": "./modules/gear.js?v=1734",
-    "./modules/groundShadow.js": "./modules/groundShadow.js?v=1734",
-    "./modules/haptics.js": "./modules/haptics.js?v=1734",
-    "./modules/inn.js": "./modules/inn.js?v=1734",
-    "./modules/inspector.js": "./modules/inspector.js?v=1734",
-    "./modules/loot.js": "./modules/loot.js?v=1734",
-    "./modules/partner.js": "./modules/partner.js?v=1734",
-    "./modules/saint.js": "./modules/saint.js?v=1734",
-    "./modules/sakura.js": "./modules/sakura.js?v=1734",
-    "./modules/save.js": "./modules/save.js?v=1734",
-    "./modules/settings.js": "./modules/settings.js?v=1734",
-    "./modules/story.js": "./modules/story.js?v=1734",
-    "./modules/tone.js": "./modules/tone.js?v=1734",
-    "./modules/town.js": "./modules/town.js?v=1734",
-    "./modules/transition.js": "./modules/transition.js?v=1734",
-    "./modules/tutorial.js": "./modules/tutorial.js?v=1734",
-    "./modules/weapon.js": "./modules/weapon.js?v=1734",
-    "./script/bg_index.js": "./script/bg_index.js?v=1734",
-    "./script/branches.js": "./script/branches.js?v=1734",
-    "./script/clock.js": "./script/clock.js?v=1734",
-    "./script/enemies.js": "./script/enemies.js?v=1734",
-    "./script/evaluation.js": "./script/evaluation.js?v=1734",
-    "./script/inventory.js": "./script/inventory.js?v=1734",
-    "./script/loadout.js": "./script/loadout.js?v=1734",
-    "./script/mainScript.js": "./script/mainScript.js?v=1734",
-    "./script/progress.js": "./script/progress.js?v=1734",
-    "./script/shopstock.js": "./script/shopstock.js?v=1734",
-    "./script/speakers.js": "./script/speakers.js?v=1734",
-    "./script/town.js": "./script/town.js?v=1734",
-    "./i18n/en.js": "./i18n/en.js?v=1734",
-    "./i18n/ja.js": "./i18n/ja.js?v=1734",
-    "./i18n/zh.js": "./i18n/zh.js?v=1734"
+    "./audio.js": "./audio.js?v=1735",
+    "./config.js": "./config.js?v=1735",
+    "./i18n.js": "./i18n.js?v=1735",
+    "./main.js": "./main.js?v=1735",
+    "./orientation.js": "./orientation.js?v=1735",
+    "./state.js": "./state.js?v=1735",
+    "./telemetry.js": "./telemetry.js?v=1735",
+    "./modules/combat.js": "./modules/combat.js?v=1735",
+    "./modules/defense.js": "./modules/defense.js?v=1735",
+    "./modules/enemy.js": "./modules/enemy.js?v=1735",
+    "./modules/gear.js": "./modules/gear.js?v=1735",
+    "./modules/groundShadow.js": "./modules/groundShadow.js?v=1735",
+    "./modules/haptics.js": "./modules/haptics.js?v=1735",
+    "./modules/inn.js": "./modules/inn.js?v=1735",
+    "./modules/inspector.js": "./modules/inspector.js?v=1735",
+    "./modules/loot.js": "./modules/loot.js?v=1735",
+    "./modules/partner.js": "./modules/partner.js?v=1735",
+    "./modules/saint.js": "./modules/saint.js?v=1735",
+    "./modules/sakura.js": "./modules/sakura.js?v=1735",
+    "./modules/save.js": "./modules/save.js?v=1735",
+    "./modules/settings.js": "./modules/settings.js?v=1735",
+    "./modules/story.js": "./modules/story.js?v=1735",
+    "./modules/tone.js": "./modules/tone.js?v=1735",
+    "./modules/town.js": "./modules/town.js?v=1735",
+    "./modules/transition.js": "./modules/transition.js?v=1735",
+    "./modules/tutorial.js": "./modules/tutorial.js?v=1735",
+    "./modules/weapon.js": "./modules/weapon.js?v=1735",
+    "./script/bg_index.js": "./script/bg_index.js?v=1735",
+    "./script/clock.js": "./script/clock.js?v=1735",
+    "./script/enemies.js": "./script/enemies.js?v=1735",
+    "./script/evaluation.js": "./script/evaluation.js?v=1735",
+    "./script/inventory.js": "./script/inventory.js?v=1735",
+    "./script/loadout.js": "./script/loadout.js?v=1735",
+    "./script/mainScript.js": "./script/mainScript.js?v=1735",
+    "./script/progress.js": "./script/progress.js?v=1735",
+    "./script/shopstock.js": "./script/shopstock.js?v=1735",
+    "./script/speakers.js": "./script/speakers.js?v=1735",
+    "./script/town.js": "./script/town.js?v=1735",
+    "./i18n/en.js": "./i18n/en.js?v=1735",
+    "./i18n/ja.js": "./i18n/ja.js?v=1735",
+    "./i18n/zh.js": "./i18n/zh.js?v=1735"
   }
 }
 </script>
 <!-- BUST:END -->
-<link rel="stylesheet" href="style.css?v=1734">
+<link rel="stylesheet" href="style.css?v=1735">
   <!-- 拾得道具／道具欄／商店／懸賞榜（ver -380 抽出，飛行頁共用同一份）。
        ⚠ `data-lootsheet` 是給 `modules/loot.js` 認的：它看到已經掛過就不再掛一次。
          飛行頁沒有這一行，由那支模組自己掛上去。 -->
-  <link rel="stylesheet" href="css/lootsheet.css?v=1734" data-lootsheet="1">
+  <link rel="stylesheet" href="css/lootsheet.css?v=1735" data-lootsheet="1">
 <!-- 主畫面 App（standalone）偵測：首繪前在 <html> 蓋 .standalone，
      供 CSS 修 iOS 26 版面視窗少算頂部安全區高度（底部露黑帶）的問題 -->
 <script>
@@ -380,18 +379,8 @@
       <!-- 章節（ver -429，Ray 指定）：管理人模式限定，直接跳到某一章的開頭。
            內容在 `script/progress.js` 的 CHAPTERS。 -->
       <button id="chapterBtn">章節</button>
-      <!-- 分歧檢查（ver -1708，Ray 指定）：管理人模式限定。列出所有劇情分支點，
-           選一個就把條件擺好、從那一幕進場。掃描在 `script/branches.js`。 -->
-      <button id="branchBtn">分歧</button>
-      <!-- ⚠ 「腳本測試」那一顆已於 ver -1435 移除（Ray 指定）——「巡場」涵蓋了它
-           （同一個落點，而且多了選圖與「要不要演劇情」兩步）。
-           ⚠ 落點資料 `script/progress.js` 的 `SCRIPT_TEST` **留著**：巡場的
-             `tourSpec` 拿它當底（鐵律 7：落點只有一份）。 -->
-      <!-- 巡場（ver -1396，Ray：「開一個沒怪的古城給我，我自己跑個圖」）：
-           與「腳本測試」**同一個落點**（`SCRIPT_TEST`），只是多插安全區旗與
-           那張圖的跳過清單 ⇒ 走進去不會被劇情抓走、也不會遇到怪。
-           ⚠ 管理人模式限定（§6.9 的白名單：沒被點名的鈕預設不出現）。 -->
-      <button id="tourBtn">巡場</button>
+      <!-- ⚠ 「分歧」（-1708）與「巡場」（-1396）兩顆已於 ver -1734 拿掉（Ray 指定）：
+           巡場的「不演劇情」搬進「章節」的第二層當「無劇情」選項；分歧的路線選擇＝章節的 variants。 -->
       <!-- ══⚠⚠⚠ **RUSH（ver -1584）** ══ 隨機刷 E→S 一輪怪再結算。
            ⚠⚠⚠ **它占的是「腳本測試」那顆鈕的位子**（-1551 放回來、-1584 被換掉）——
              所以現在**沒有任何鈕會跳到 `SCRIPT_TEST`**，那一筆只剩下「巡場拿它當
@@ -731,6 +720,6 @@
      ⚠ src 是**按下去才給**的（lazy）：不然每次開機都要多載一整個飛行頁。 -->
 <iframe id="flightFrame" title="飛行"></iframe>
 
-<script type="module" src="main.js?v=1734"></script>
+<script type="module" src="main.js?v=1735"></script>
 </body>
 </html>
