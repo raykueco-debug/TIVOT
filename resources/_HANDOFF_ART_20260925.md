@@ -130,6 +130,11 @@ Ray：「先交一份無人廢城拓樸方案，50～60 格，含一個祭壇終
 3. 第四版共通段＋14 格石造版提示詞全文：`_dunmor_prompts.md` 第四版；規則與紀錄：`_dunmor_spec.md` §八。
 4. **交件位置 `resources/background/dunmor/_v3/`**（底線＝不上線），原稿 `_originals/background/dunmor/_v3/`；第一版 14 張原位不動，Ray 看完再搬。
 
+### 廢城 55 格 —— **55／55 ✔ 不欠**（2026-09-26 00:40；第一版 14 格已被第四版覆蓋、其餘 41 格全數入庫；盤點表在 `_dunmor_spec.md` §八／§九；總覽 `_dunmor_all55_sheet.jpg`）
+- 程式端要接：拓樸搬 `town.js`（§五）、`bg:'dunmor_<id 小寫>'`、全部 `noTime`、三個 `rest`、**`ASSET_VER` 跳那 14 個被覆蓋的鍵**。
+- ⚠ 產線結論：分頁在背景時 ChatGPT 頁面不更新，圖其實都在 —— 每 6～7 分鐘把分頁切前景再抓（Ray 教的）。「額度限了」是誤判。
+- 待 Ray 決定：`hallcourt` 正門只擋一半要不要重出；小地圖（`tools/map_compose.py`）另開一單。
+
 ### 資產盤點（廢城第四版）—— **14／14 ✔ 不欠**，全部在 `resources/background/dunmor/_v3/`（commit `9553771`、`4af0375`）
 逐格的出口／§七 分配／雜點在 `_dunmor_spec.md` §八 的表；總覽 `_dunmor_batch3_sheet.jpg`。
 **等 Ray 決定**：①`_v3` 要不要整批搬上去覆蓋第一版（程式端要跳 `ASSET_VER`）②其餘 41 格要不要現在開（先改寫成石造、填 §七 兩張表）③端末口朝向。

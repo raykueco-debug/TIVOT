@@ -244,8 +244,23 @@ GPT 原稿 `resources/_originals/background/dunmor/`；總覽圖 `resources/back
   生成框一直停著不完成、也沒有任何錯誤或額度訊息。這一天已出 45 張（聖索菲亞 9＋廢城 v2 7＋v3 1＋v4 14＋41 格 10＋作廢數張），
   **判斷是 ChatGPT Go 這個帳號的生圖額度／隊列被限**。剩 31 格（`_dunmor_spec.md` §九「未出」清單）等隊列恢復再跑，作法不變。
 
+### 資產盤點（其餘 41 格，2026-09-26 00:40 —— **41／41 ✔ 不欠**，全部在 `resources/background/dunmor/`，`bg_index` 已重跑；55 格總覽 `_dunmor_all55_sheet.jpg`）
+
+| 帶 | id → 檔（全小寫 `dunmor_<id>`） | 狀態 |
+|---|---|---|
+| 外壘 | ditchE ditchW-（第四版）rampartW rampartE watchW★ watchE granary | ✔ 不欠（望樓兩格：西掛月／東只月光） |
+| 居住區 | smithy kilnyard tannery kingshall chariotshed treasury lawstone hallcourt innerditch potters roundring weaverhut souterrain fogou cistgrave ossuary | ✔ 不欠（地下四格無天、洞口紫光＋油燈）；⚠ `hallcourt` 正門本該堵死、圖裡石堆只擋一半、門後看得到通道 —— 要重出說一聲 |
+| 聖域 | stonerow dolmen headshrine★ barrowfield kingsbarrow★ triskele springpool altarcourt skullniche sacredway henge brochbase bardsstep brochtop boglane lakeshore crannog bogoffer cairn | ✔ 不欠（★＝朝西掛銀色滿月；brochtop／cairn 朝東只月光；crannog／tannery 來路畫在正前方） |
+
+雜點（平坦區高頻）41 張落在 1.88～4.01，全部低於第一版同類格；100% 裁切石面是平塗色塊。
+**第一版 14 格與這 41 格＝全圖 55 格齊，一格一張、全部 `noTime`、同一片紫天**（§九第一條，Ray 定案）。
+
+⚠⚠ **產線結論（下次照這個跑，不要再猜額度）**：ChatGPT 的圖**都有生成**，只是分頁在背景時頁面不更新、排隊器抓不到 ——
+Ray：「圖都跑出來，你要偶爾切視窗就會出」。作法：每 6～7 分鐘把每個分頁**切到前景**（截圖即可）停幾秒 → 抓新圖 → 送下一則；
+五串並行沒問題。上面「疑額度」那幾段是誤判，留著當紀錄。
+
 ## 進度
 
 - [x] 第一批 14 張 → Ray 退（§七）→ [x] 第二版 7 張 → Ray 退（太像村落，§八）→ [x] **第三版定風格 ✔ → 第四版 14 張全數交到 `_v3/`，等 Ray 挑**
-- [ ] 其餘 41 張（Ray 點頭後；第一批的問題先修：`ditchW` 右口、`nemeton` 右口）
+- [x] 其餘 41 張 —— 2026-09-26 00:40 全數入庫（§九盤點表）
 - [ ] 小地圖
