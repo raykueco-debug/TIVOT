@@ -4397,9 +4397,12 @@ export const TOWNS = {
 
     /* 大城市不上迷霧（ver -913）—— ⚠ **要明寫**：沒寫就是有霧。 */
     mist: 0,
-    /* 餐飲街：這一格現在只是「碰得到人的地方」。⚠ **不給 `scenes`** —— 四家分店的
-       圖還沒有，城裡沒有那一家就不換、照節點原本那一張（§6.5.4.2）。 */
-    dining: { node:'tavern' },
+    /* 餐飲街（ver -1743 接美術 `_sofia_add_spec.md` §四②）：只交了**酒吧**（三差分，不寫 `noTime`）與**餐廳**
+       （一張，`noTime`）。咖啡廳／甜品店沒有 ⇒ 城裡沒有那一家就不換、照節點原本那一張 `sofia_bistro`（§6.5.4.2）。 */
+    dining: { node:'tavern', scenes:{
+      bar:        { bg:'sofia_bar' },
+      restaurant: { bg:'sofia_restaurant', noTime:true },
+    } },
     /* ⚠⚠ **每一格都要 `noTime:true`**：這 12 張目前 0 張時段差分，不寫的話候選鏈
        會先去試 `_dawn/_day/_dusk/_night` 四個名字，**每一格白吃四個 404**。
        差分交件之後把這一批 `noTime` 一起拿掉。 */
@@ -4430,7 +4433,9 @@ export const TOWNS = {
         exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' } },
       gunstore: { bg:'sofia_firearm',  name:'聖索菲亞　武器店', noTime:true,
         exits:{ back:'oldtown' } },
-      dock:     { bg:'sofia_dock',     name:'聖索菲亞　船塢',   noTime:true,
+      /* ver -1743（美術 §四③）：這一格改成**貧民窟**。id 不改（小地圖 spots 與出口都指著它）；
+         ⚠ 中文名是美術的暫定，**等 Ray 正名**。舊的 `sofia_dock.webp` 留著沒刪。 */
+      dock:     { bg:'sofia_slum',     name:'聖索菲亞　舊碼頭貧民窟', noTime:true,
         exits:{ back:'oldtown' } },
       guild:    { bg:'sofia_guild',    name:'聖索菲亞　賞金獵人公會', noTime:true,
         exits:{ back:'oldtown' } },
@@ -4444,7 +4449,8 @@ export const TOWNS = {
         exits:{ back:'uptown' } },
       /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（立繪還沒交）。
          只寫 `inn:true` 而沒有人應門的話，玩家會敲到一排空門。 */
-      inn:      { bg:'sofia_hotel',    name:'聖索菲亞　旅店',   noTime:true,
+      /* ver -1743（美術 §四①）：旅店換成 `sofia_inn`，**四差分齊**（dawn/day/dusk/night）⇒ 拿掉 `noTime`。 */
+      inn:      { bg:'sofia_inn',      name:'聖索菲亞　旅店',
         exits:{ back:'uptown' } },
     },
   },

@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1742';
+export const VERSION = 'ver 2026.09.22-1743';
 
 export const GAME_CONFIG = {
 
@@ -5186,6 +5186,21 @@ export const ASSET_VER = {
   'east_square_dawn':      2,
   'east_square_dusk':      2,
   'east_square_night':     2,
+  /* 廢城 dunmor（ver -1743，美術 §九④）：第四版**同名覆蓋**了第一版那 14 格，其餘 41 張是新增、不必跳。 */
+  'dunmor_causeway': 2,
+  'dunmor_southgate': 2,
+  'dunmor_ditchw': 2,
+  'dunmor_oghamrow': 2,
+  'dunmor_gatecourt': 2,
+  'dunmor_mainstreet': 2,
+  'dunmor_marketcross': 2,
+  'dunmor_boarstone': 2,
+  'dunmor_innergate': 2,
+  'dunmor_druidhouse': 2,
+  'dunmor_oakgrove': 2,
+  'dunmor_nemeton': 2,
+  'dunmor_altar': 2,
+  'dunmor_wellsq': 2,
 };
 export function assetVer(nameOrPath){
   const n = String(nameOrPath||'').split('/').pop().split('?')[0]
