@@ -5085,8 +5085,7 @@ export const TOWNS = {
              「貝薩利亞」、-1724 稿寫「貝薩利爾」—— 兩次不同，統一跟著地名寫**貝利薩爾**（他要改再說）。
            ⚠⚠ **ver -1724 Ray 重交三個版本的稿**：BA・M1 與 -1707 一字不差（沒動）；A 版尾巴由「不是墳墓就不怕了」
              換成「留在這裡」那一段（與 M2 同文）；BA・M2 尾巴多了「至於你嘛……扣分……扯平」六拍。
-             ⚠ 連帶：蕾娜敲門的 M2 約會（下面 `knock.RENNA`）那句「就當作扯平了吧」現在與合流**重複** —— Ray 沒說
-               要動，先照舊，見 HANDOFF。 */
+             ⚠ 蕾娜敲門的 M2 約會（下面 `knock.RENNA`）-1735 起不再講「扯平」（Ray 重交稿），不重複了。 */
         acts:[
         { flag:'vn_after_tomb', need:['tomb_exit_done','ep_belisar_done','ep_m2_route'], sides:{ RENNA:'L' }, lines:[
           ren('write','那麼，就只剩下西邊埃爾王國的廢城了。'),
@@ -5267,11 +5266,10 @@ export const TOWNS = {
              [M1分支]…[M2分支]…」）══ `need:'vn_after_tomb'`（那一段合流演完）—— 在那之前敲她的門
              回 `needSay`（旁白，暫代）。M1／M2 判準照全專案慣例 **`ep_m2_route` 插著才是 M2**
              （其餘＝M1，含先跑古墓的人）。
-             ⚠ 表情 Ray 沒給，是我配的（write／whisper／smile／apologize／blush；M2 tire／lookaway／smile／bow）。
+             ⚠ M1 的表情是我配的（write／whisper／smile／apologize／blush）；M2 的五張是 Ray -1735 稿上給的。
              ⚠ T4 派生的插圖 **`032_rennablush` 還沒有圖**（美術要交：蕾娜臉紅的插圖，見 HANDOFF）——
                圖沒到之前那兩拍照演，只是沒有插圖。
-             ⚠ Ray 自己點出的缺點：**沒約蕾娜就不會有「扯平」這個最低限度的結束**。他說先這樣，
-               推進度之後辦不到再把「扯平」搬到過場必經。 */
+             ⚠ 「扯平」-1724 已搬進合流必經（`vn_after_tomb` 那一段），-1735 起這裡的 M2 不再講它。 */
           RENNA:{    need:'vn_after_tomb', needSay:'（蕾娜好像還在忙。）',
                      low:'我在整理報告呢，你們去吧。',
                      date:[ /* ── M1（含先跑古墓）── */
@@ -5284,12 +5282,14 @@ export const TOWNS = {
                             ren('blush',    '你明明知道我不能說。',                { skipIf:'ep_m2_route', tierMin:4, tierWho:'RENNA', cg:'032_rennablush', cgNoTime:true }),
                             ren('blush',    '但是……我只是希望你……你們大家都能平安。', { skipIf:'ep_m2_route', tierMin:4, tierWho:'RENNA' }),
                             { speaker:'NARRATION', text:'', cg:null, auto:200,      skipIf:'ep_m2_route', tierMin:4, tierWho:'RENNA' },
-                            /* ── M2 ── */
-                            ren('tire',     '我想休息一下。',                      { onlyIf:'ep_m2_route' }),
+                            /* ── M2（ver -1735 Ray 重交稿，表情是他給的）── 「扯平」那一句拿掉了（-1724 已搬進合流必經，
+                               這裡不再重複），換成「評價不改、但可以考慮原諒你、好好努力吧」。 */
+                            ren('lookawaytalk','我想休息一下。',                   { onlyIf:'ep_m2_route' }),
                             { speaker:'PLAYER', blank:true,                        onlyIf:'ep_m2_route' },
-                            ren('lookaway', '……',                                  { onlyIf:'ep_m2_route' }),
-                            ren('smile',    '就當作扯平了吧。',                    { onlyIf:'ep_m2_route' }),
-                            ren('bow',      '最後一段旅途，也請多指教囉。',        { onlyIf:'ep_m2_route', flags:['vn_date_renna'] }),
+                            ren('coldstare','……',                                  { onlyIf:'ep_m2_route' }),
+                            ren('upset',    '評價我是不會改的喔。',                { onlyIf:'ep_m2_route' }),
+                            ren('upsetstare','但是可以考慮原諒你。',               { onlyIf:'ep_m2_route' }),
+                            ren('smile',    '好好努力吧。',                        { onlyIf:'ep_m2_route', flags:['vn_date_renna'] }),
                             /* M1 的收尾旗（最後一拍演完才記；T4 那幾拍演不演都會經過這裡） */
                             { speaker:'NARRATION', text:'', auto:1, skipIf:'ep_m2_route', flags:['vn_date_renna'] } ] },
                     } } },

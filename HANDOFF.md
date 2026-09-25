@@ -16,12 +16,12 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1735`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1736`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
 >   ④ -1729 那三處發熱修正在手機上有沒有差 ⑤ 王座徘徊者的拍翅感（-1731 的四組數字）
-> · **等 Ray 決定的**：BA・M2 敲門約蕾娜「就當作扯平了吧」與合流重複；蕾娜 M2 的 −10 是我訂的；`sodier_.webp`（隨從）
+> · **等 Ray 決定的**：~~BA・M2 敲門約蕾娜「扯平」與合流重複~~（-1736 結案）；蕾娜 M2 的 −10 是我訂的；`sodier_.webp`（隨從）
 >   這個 WIP 檔名；`023_anyacottoncandy`／`024_nouvellesmile` 兩張 PNG 沒有腳本引用；`032_rennablush` 插圖還沒交；
 >   `hugangry2` 在 Windows 找；pptx 要 node 重出；美術 spec 裡 `Deck_`／`Sky_` 大寫檔名要改。
 > · **已做完、不要再做**：美術 9/24～9/25 交接的四件全接了（whisper／米夏 draw／drawopen／隨從）；差分總表 -1728 重出；
@@ -29,7 +29,16 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1735`
+# HANDOFF — 截至 `ver 2026.09.22-1736`
+
+**`-1736`：雪都敲蕾娜門的 M2 約會照 Ray 重交的稿**（`town.js` ravnsdal `knock.RENNA`）
+· M2 五拍換成：lookawaytalk「我想休息一下。」→ 主角空白 → coldstare「……」→ upset「評價我是不會改的喔。」
+  → upsetstare「但是可以考慮原諒你。」→ smile「好好努力吧。」（記 `vn_date_renna`）。表情是 Ray 給的。
+· **「就當作扯平了吧」從這裡拿掉** —— -1724 已搬進合流必經，交接檔那條「與合流重複」的待決事項**結案**。
+· M1（含 T4 派生的臉紅插圖）稿與線上一致，沒動；`032_rennablush` 插圖仍未交。
+· lint 0 錯誤、41 提醒。
+
+# （上一段）截至 `ver 2026.09.22-1735`
 
 **`-1735`：首頁「分歧」「巡場」兩顆鈕拿掉，章節第二層多「無劇情」**（Ray：「分歧跟巡場鈕可以拿掉，在章節選擇裡多一個無劇情選項」）
 · `index.html` 兩顆鈕移除；`main.js` 的 `tourBtn`／`branchBtn`／`startBranch` 與 `scanBranches` import 拿掉；
