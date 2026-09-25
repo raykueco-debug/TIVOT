@@ -74,6 +74,11 @@
   `rest:true`＋`noWild:true`：`wellsq`／`oakgrove`／`nemeton`；入口 `entry:'gate'`。
 - 還沒定：地圖 id／中文正名、祭壇那一場是誰（`sessionEnd`）、`wildSpawn`（怪卡到了再接）、祭壇前庭要不要 `exitIf` 開路。
 - 小地圖：拓樸定案後走 `tools/map_compose.py`（圖示表 55 格，8×7），另開一單。
+- ⚠⚠ **同名覆蓋（2026-09-25 晚，Ray：「1 要」）**：第四版 14 張已搬到正位覆蓋第一版（第一版進 `_recycle/`）。
+  **`config.js` 的 `ASSET_VER` 要跳這 14 個鍵**（沒跳的話快取還是村落版）：
+  `dunmor_causeway` `dunmor_southgate` `dunmor_ditchw` `dunmor_oghamrow` `dunmor_gatecourt` `dunmor_mainstreet` `dunmor_marketcross`
+  `dunmor_boarstone` `dunmor_innergate` `dunmor_druidhouse` `dunmor_oakgrove` `dunmor_nemeton` `dunmor_altar` `dunmor_wellsq`
+  （鑰匙規約同 `fileGain`：檔名去副檔名轉小寫；這批還沒接進 `town.js`，接的時候一起寫就好）。
 
 ## 六、第一批交件紀錄（2026-09-25 下午，Mac；ChatGPT 一串 14 則、零重送、零被擋）
 
@@ -222,10 +227,8 @@ GPT 原稿 `resources/_originals/background/dunmor/`；總覽圖 `resources/back
 （雜點＝平坦區高頻 `flat30`，同一支腳本量第一版當校準；14 張全部低於第一版同格，肉眼 100% 裁切石面是平塗色塊。）
 總覽：`resources/background/_dunmor_batch3_sheet.jpg`（14 張）。第一版 14 張原位不動、第二版 7 張只在 scratch。
 
-**⚠ 等 Ray 決定的：**
-1. `_v3` 要不要整批搬上去覆蓋第一版（同名覆蓋 ⇒ `config.js` 的 `ASSET_VER` 要跳 14 個鍵，鐵律 11 交程式端）。
-2. 其餘 41 格照第四版共通段鋪（逐格描述要先從村落改寫成石造，§七的兩張表先填完）—— 要不要現在就開。
-3. 端末口朝向那一件（§六末）照舊未定。
+**Ray 決定（2026-09-25 晚）：** ①「要」→ 已搬上正位覆蓋（第一版進 `_recycle/`，原稿進 `_originals/.../dunmor/_v1/`；程式端跳 `ASSET_VER`，§五）
+②「開」→ 其餘 41 格照第四版共通段開畫（§九）③ 端末口朝向：再報告一次（見 §九 開頭）。
 
 ## 進度
 
