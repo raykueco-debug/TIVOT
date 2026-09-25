@@ -16,6 +16,8 @@ tools/map_dunmor_draft.py —— 無人廢城（暫名 `dunmor`，古凱爾特�
   休息處／終點全部等他改。
 
 **規矩（全部由 main() 自檢，錯了不出圖）**：
+  · ⚠⚠ **同一方向連續不超過兩段**（Ray 2026-09-25：「同一方向不要有三次以上的直線」）
+    ⇒ 整張圖是之字形：走兩格一定要轉彎。長直線的格網版（第一版，13 環）已作廢。
   · 只連同一欄或同一列、而且中間沒有別的格子的兩點（畫直線，讀起來才是通道）
   · 邊與邊不交叉（交叉在小地圖上讀不出誰接誰）
   · 每格最多 4 向（背景圖畫得出的上限）
@@ -35,123 +37,49 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #   類別  pass=通道／岔口  end=末端  rest=休息處（走進去閉棺結算）
 #         goal=祭壇（終點）  gate=跨圖出口
 #   欄用偶數（同 map_undercity_draft.py 的座標系），列 0 在最上（最深處）。
+#   ⚠ 南壘門的門道是塌的（gate→堤道→壘門已是兩段↑，第三段不准）：進城要走兩側壕溝的坡道。
 #   三帶：列 9~12＝**外壘與入口**（壕溝、壘牆、望樓）／列 5~8＝**廢城居住區**
 #   （圓屋、市集、工坊、王廳）／列 0~4＝**聖域**（石環、聖林、塚原、祭壇）。
 NODES = {
-    # ── 聖域（列 0~4）
-    'altar'      : (6, 0, '祭壇',       'goal'),
-    'kingsbarrow': (2, 1, '王塚',       'end'),
-    'barrowfield': (4, 1, '塚原',       'pass'),
-    'nemeton'    : (6, 1, '聖林祭場',   'rest'),
-    'altarcourt' : (8, 1, '祭壇前庭',   'pass'),
-    'dolmen'     : (4, 2, '石棚墓',     'pass'),
-    'triskele'   : (6, 2, '三曲紋廊',   'pass'),
-    'sacredway'  : (8, 2, '聖道',       'pass'),
-    'skullniche' : (10, 2, '顱骨壁龕',  'end'),
-    'cairn'      : (2, 3, '積石塚',     'end'),
-    'stonerow'   : (4, 3, '立石列',     'pass'),
-    'springpool' : (6, 3, '泉池',       'pass'),
-    'henge'      : (8, 3, '石環',       'pass'),
-    'brochbase'  : (10, 3, '圓塔基座',  'pass'),
-    'brochtop'   : (12, 3, '圓塔頂',    'end'),
-    'headshrine' : (4, 4, '石首龕',     'pass'),
-    'oakgrove'   : (6, 4, '橡樹林',     'rest'),
-    'processway' : (8, 4, '儀式道',     'pass'),
-    'bardsstep'  : (10, 4, '吟遊石階',  'pass'),
-    'boglane'    : (12, 4, '泥沼小徑',  'pass'),
-    'bogoffer'   : (14, 4, '沼澤獻祭處','end'),
-    # ── 居住區（列 5~8）
-    'cistgrave'  : (2, 5, '石棺墓',     'end'),
-    'druidhouse' : (6, 5, '德魯伊居所', 'pass'),
-    'boarstone'  : (8, 5, '野豬石',     'pass'),
-    'hallcourt'  : (10, 5, '王廳中庭',  'pass'),
-    'lakeshore'  : (12, 5, '湖岸',      'pass'),
-    'crannog'    : (14, 5, '湖上木屋',  'end'),
-    'fogou'      : (2, 6, '石砌暗道',   'pass'),
-    'innerditch' : (4, 6, '內壕',       'pass'),
-    'innergate'  : (6, 6, '內壘門',     'pass'),
-    'lawstone'   : (8, 6, '律法石',     'pass'),
-    'kingshall'  : (10, 6, '王廳廢墟',  'pass'),
-    'treasury'   : (12, 6, '頸環寶庫',  'pass'),
-    'souterrain' : (2, 7, '地下甬道口', 'pass'),
-    'potters'    : (4, 7, '陶匠巷',     'pass'),
-    'marketcross': (8, 7, '市集十字',   'pass'),
-    'chariotshed': (12, 7, '戰車棚',    'pass'),
-    'weaverhut'  : (2, 8, '織工圓屋',   'end'),
-    'roundring'  : (4, 8, '圓屋環',     'pass'),
-    'wellsq'     : (6, 8, '聖井廣場',   'rest'),
-    'mainstreet' : (8, 8, '石板主街',   'pass'),
-    'smithy'     : (10, 8, '鐵匠爐',    'pass'),
-    'kilnyard'   : (12, 8, '陶窯場',    'pass'),
-    'tannery'    : (14, 8, '鞣皮坊',    'end'),
-    # ── 外壘與入口（列 9~12）
-    'oghamrow'   : (4, 9, '歐甘石列',   'pass'),
-    'gatecourt'  : (8, 9, '門內廣場',   'pass'),
-    'granary'    : (12, 9, '穀倉遺址',  'pass'),
-    'watchW'     : (2, 10, '西望樓',    'end'),
-    'rampartW'   : (4, 10, '西壘牆',    'pass'),
-    'ditchW'     : (6, 10, '西壕',      'pass'),
-    'southgate'  : (8, 10, '南壘門',    'pass'),
-    'ditchE'     : (10, 10, '東壕',     'pass'),
-    'rampartE'   : (12, 10, '東壘牆',   'pass'),
-    'watchE'     : (14, 10, '東望樓',   'end'),
-    'causeway'   : (8, 11, '堤道',      'pass'),
-    'gate'       : (8, 12, '跨圖出口',  'gate'),
+ 'gate':(8,14,'跨圖出口','gate'),'causeway':(8,13,'堤道','pass'),'southgate':(8,12,'南壘門','pass'),
+ 'ditchW':(6,12,'西壕','pass'),'rampartW':(6,13,'西壘牆','pass'),'watchW':(4,13,'西望樓','end'),
+ 'ditchE':(10,12,'東壕','pass'),'rampartE':(10,13,'東壘牆','pass'),'watchE':(12,13,'東望樓','end'),
+ 'oghamrow':(6,11,'歐甘石列','pass'),'gatecourt':(8,11,'門內廣場','pass'),'granary':(10,11,'穀倉遺址','pass'),
+ 'mainstreet':(8,10,'石板主街','pass'),'wellsq':(6,10,'聖井廣場','rest'),'smithy':(10,10,'鐵匠爐','pass'),
+ 'roundring':(4,10,'圓屋環','pass'),'weaverhut':(2,10,'織工圓屋','pass'),'potters':(4,9,'陶匠巷','pass'),
+ 'souterrain':(2,9,'地下甬道口','pass'),'fogou':(2,8,'石砌暗道','pass'),'cistgrave':(0,9,'石棺墓','pass'),
+ 'innerditch':(4,8,'內壕','pass'),'innergate':(6,8,'內壘門','pass'),'boarstone':(6,9,'野豬石','pass'),
+ 'marketcross':(8,9,'市集十字','pass'),'kingshall':(10,9,'王廳廢墟','pass'),'chariotshed':(12,9,'戰車棚','pass'),
+ 'kilnyard':(12,10,'陶窯場','pass'),'tannery':(12,11,'鞣皮坊','end'),'treasury':(12,8,'頸環寶庫','pass'),
+ 'lawstone':(8,8,'律法石','pass'),'hallcourt':(10,8,'王廳中庭','pass'),
+ 'henge':(8,7,'石環','pass'),'brochbase':(10,7,'圓塔基座','pass'),'boglane':(12,7,'泥沼小徑','pass'),
+ 'lakeshore':(14,7,'湖岸','pass'),'crannog':(14,8,'湖上木屋','end'),'bogoffer':(14,6,'沼澤獻祭處','end'),
+ 'brochtop':(12,6,'圓塔頂','end'),'cairn':(16,7,'積石塚','end'),
+ 'druidhouse':(6,7,'德魯伊居所','pass'),'oakgrove':(4,7,'橡樹林','rest'),'stonerow':(2,7,'立石列','pass'),
+ 'dolmen':(2,6,'石棚墓','pass'),'headshrine':(0,6,'石首龕','end'),'barrowfield':(2,5,'塚原','pass'),'kingsbarrow':(0,5,'王塚','end'),
+ 'nemeton':(4,6,'聖林祭場','rest'),'altar':(4,5,'祭壇','goal'),'triskele':(6,6,'三曲紋廊','pass'),
+ 'sacredway':(8,6,'聖道','pass'),'springpool':(6,5,'泉池','pass'),'altarcourt':(8,5,'祭壇前庭','pass'),'skullniche':(10,5,'顱骨壁龕','pass'),'bardsstep':(10,6,'吟遊石階','pass'),'ossuary':(0,8,'骨龕','end'),
 }
 
 # ── 邊（無向）───────────────────────────────────────────────────────────
 EDGES = [
-    # 主幹（入口 → 石環 → 祭壇前庭；⚠ 到前庭就停，祭壇在旁邊的聖林那一側）
-    ('gate','causeway'), ('causeway','southgate'), ('southgate','gatecourt'),
-    ('gatecourt','mainstreet'), ('mainstreet','marketcross'), ('marketcross','lawstone'),
-    ('lawstone','boarstone'), ('processway','henge'),
-    #   ⚠⚠ 野豬石 ↔ 儀式道**不通**：主幹在野豬石斷開，一直按↑會停在那裡 ——
-    #     要上石環得繞德魯伊居所→橡樹林→儀式道，或王廳中庭→吟遊石階→圓塔基座。
-    ('henge','sacredway'), ('sacredway','altarcourt'),
-    # 外壘（列 10 一整排）＋ 兩側望樓
-    ('watchW','rampartW'), ('rampartW','ditchW'), ('ditchW','southgate'),
-    ('southgate','ditchE'), ('ditchE','rampartE'), ('rampartE','watchE'),
-    # 西側上城之路：壘牆 → 歐甘石列 → 圓屋環 → 陶匠巷 → 內壕 →（跳過列 5）石首龕
-    ('rampartW','oghamrow'), ('oghamrow','roundring'), ('roundring','potters'),
-    ('potters','innerditch'), ('innerditch','headshrine'),
-    # 東側上城之路：壘牆 → 穀倉 → 陶窯場 → 戰車棚 → 寶庫 → 湖岸 → 泥沼
-    ('rampartE','granary'), ('granary','kilnyard'), ('kilnyard','chariotshed'),
-    ('chariotshed','treasury'), ('treasury','lakeshore'), ('lakeshore','boglane'),
-    # ⚠ 門內廣場 ↔ 穀倉**不通**：進城只有南壘門→門內廣場→主街一條，東西兩翼要繞壘牆
-    # 列 8 居住區橫街
-    ('weaverhut','roundring'), ('roundring','wellsq'), ('wellsq','mainstreet'),
-    ('mainstreet','smithy'), ('kilnyard','tannery'),
-    #   ⚠ 鐵匠爐 ↔ 陶窯場**不通**：東翼（穀倉→陶窯→戰車棚）要從東壘牆進
-    # 列 7
-    ('souterrain','potters'),   # ⚠ 陶匠巷 ↔ 市集十字**不通**
-    # 西端地下線：甬道口 → 石砌暗道 → 石棺墓（死路）
-    ('souterrain','fogou'), ('fogou','cistgrave'),
-    # 列 6 內壘橫線
-    ('fogou','innerditch'), ('innerditch','innergate'), ('innergate','lawstone'),
-    ('lawstone','kingshall'),   # ⚠ 王廳 ↔ 寶庫**不通**：寶庫只從戰車棚那一側進
-    # 中軸西（欄 6）：內壘門 → 德魯伊 → 橡樹林 → 泉池 → 三曲紋廊 → 聖林 → 祭壇
-    #   ⚠ 聖井廣場**不直通**內壘門（那條會與陶匠巷—市集十字交叉）：進內壘只有內壕與律法石兩條路
-    ('innergate','druidhouse'), ('druidhouse','oakgrove'),
-    ('oakgrove','springpool'), ('springpool','triskele'), ('triskele','nemeton'),
-    ('nemeton','altar'),
-    # 中軸東（欄 10）：鐵匠爐 →（跳過列 7）王廳 → 中庭 → 吟遊石階 → 圓塔基座
-    ('smithy','kingshall'), ('kingshall','hallcourt'), ('hallcourt','bardsstep'),
-    ('bardsstep','brochbase'),
-    # 列 5
-    ('druidhouse','boarstone'), ('boarstone','hallcourt'),
-    ('lakeshore','crannog'),   # ⚠ 中庭 ↔ 湖岸**不通**
-    # 列 4（⚠ 儀式道與吟遊石階之間**不通**：中軸東西兩半在這一列斷開）
-    ('headshrine','oakgrove'), ('oakgrove','processway'),
-    ('bardsstep','boglane'), ('boglane','bogoffer'),
-    # 列 3 石環那一排
-    ('cairn','stonerow'), ('springpool','henge'),   # ⚠ 立石列 ↔ 泉池**不通**
-    ('henge','brochbase'), ('brochbase','brochtop'),
-    # 欄 4 聖域西線：石首龕 → 立石列 → 石棚墓 → 塚原
-    ('headshrine','stonerow'), ('stonerow','dolmen'), ('dolmen','barrowfield'),
-    # 列 2（⚠ 三曲紋廊與聖道之間**不通**）
-    ('dolmen','triskele'), ('sacredway','skullniche'),
-    # 列 1
-    ('kingsbarrow','barrowfield'), ('barrowfield','nemeton'), ('nemeton','altarcourt'),
+ ('gate','causeway'),('causeway','southgate'),('southgate','ditchW'),('southgate','ditchE'),
+ ('ditchW','rampartW'),('rampartW','watchW'),('ditchW','oghamrow'),
+ ('ditchE','rampartE'),('rampartE','watchE'),('ditchE','granary'),
+ ('oghamrow','gatecourt'),('gatecourt','granary'),('gatecourt','mainstreet'),
+ ('mainstreet','smithy'),('mainstreet','marketcross'),
+ ('wellsq','roundring'),('roundring','weaverhut'),('roundring','potters'),
+ ('potters','innerditch'),('souterrain','cistgrave'),('souterrain','fogou'),('fogou','innerditch'),
+ ('innerditch','innergate'),('innergate','boarstone'),('boarstone','marketcross'),('innergate','druidhouse'),
+ ('smithy','kingshall'),('kingshall','chariotshed'),
+ ('smithy','kilnyard'),('kilnyard','tannery'),('chariotshed','treasury'),
+ ('lawstone','hallcourt'),('henge','brochbase'),('kingshall','hallcourt'),('treasury','boglane'),('lakeshore','cairn'),('potters','boarstone'),('souterrain','weaverhut'),('lawstone','henge'),
+ ('henge','sacredway'),('brochbase','bardsstep'),('bardsstep','brochtop'),('bardsstep','skullniche'),('cistgrave','ossuary'),
+ ('boglane','lakeshore'),('lakeshore','crannog'),('lakeshore','bogoffer'),
+ ('druidhouse','oakgrove'),('oakgrove','stonerow'),('oakgrove','nemeton'),
+ ('stonerow','dolmen'),('dolmen','headshrine'),('dolmen','barrowfield'),('barrowfield','kingsbarrow'),
+ ('nemeton','altar'),('nemeton','triskele'),('triskele','sacredway'),('triskele','springpool'),
+ ('springpool','altarcourt'),('altarcourt','skullniche'),
 ]
 
 REST_NOTE = '休息處'
@@ -192,6 +120,14 @@ def main():
     V = [(NODES[a][0], *sorted((NODES[a][1], NODES[b][1]))) for a, b in EDGES if NODES[a][0] == NODES[b][0]]
     for (r, c0, c1), (c, r0, r1) in itertools.product(H, V):
         if c0 < c < c1 and r0 < r < r1: raise SystemExit('✗ 列 %d 的橫線與欄 %d 的直線交叉' % (r, c))
+    # ⚠⚠ 同向直線 ≤ 2 段（Ray：「同一方向不要有三次以上的直線」）
+    MAXRUN = 2
+    for k in NODES:
+        for dd in OPP:
+            if nb.get(k, {}).get(OPP[dd]): continue          # 只從一段的起點量
+            n, cur, path = 0, k, [k]
+            while nb.get(cur, {}).get(dd): cur = nb[cur][dd]; n += 1; path.append(cur)
+            if n > MAXRUN: raise SystemExit('✗ 同向直線 %d 段：%s' % (n, '→'.join(NODES[q][2] for q in path)))
     over = [k for k in NODES if deg.get(k, 0) > 4]
     if over: raise SystemExit('✗ 超過四向：%s' % over)
     lone = [k for k in NODES if deg.get(k, 0) == 0]
