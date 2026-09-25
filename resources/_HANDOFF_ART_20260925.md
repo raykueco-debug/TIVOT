@@ -83,3 +83,11 @@ Ray 這一輪的指令（見 `si/_misha_program_worklist.md` **附四**，逐鍵
 | draw／drawopen／stare／stareopen／frown／frownopen／close／closeopen／frontshock | ✔ 不欠 —— 今天重做，程式端待接 |
 | front／order／salute／wound／side／talk／guard／back／frontgrit／frontopen／saluteopen／sideopen／guardopen／stareopen(舊) | ✔ 不欠（線上照舊）；⚠ side／talk／guard／back 刀長不合格等 Ray |
 | retainer | ✔ 不欠（-1715 已接） |
+
+## 八、2026-09-25：無人廢城（暫名 `dunmor`）拓樸提案 —— ⏸ **等 Ray 審**
+
+Ray：「先交一份無人廢城拓樸方案，50～60 格，含一個祭壇終點，古凱爾特風格，迷宮與岔路」
+- 提案：`resources/map/_dunmor_spec.md`（數據、三帶、逐格特徵、背景預算、要 Ray 定的五件）
+- 佈局圖：`resources/map/_layout_dunmor.png`（產生器 `tools/map_dunmor_draft.py`，自檢：同欄同列／不交叉／不穿格／≤4 向／連通／一直按↑不直達）
+- 56 格・68 邊・13 環；四向口 8、三向口 21、端末 12、休息處 3；入口→祭壇最短 13 步；主幹在野豬石斷開
+- ⚠ **沒有搬進 `town.js`、沒有開背景工單** —— 先排拓樸再畫場景，Ray 點頭之後：程式端搬資料、`map_layout.py` 補 `POS`、這支產生器回收；美術再開 212 張的背景單（52 格四差分＋地下 4 格單張）
