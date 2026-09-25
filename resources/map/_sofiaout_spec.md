@@ -57,4 +57,6 @@
 `lodge`／`forecourt`／`hall`／`salon`（＋`cellar`）→ `resources/background/sofia/sofiaout_<id>.webp`（先不入 town.js）。
 
 ## 進度
-- [ ] lodge 　- [ ] forecourt 　- [ ] hall 　- [ ] salon 　→ Ray 看方向 → 其餘 6 格
+- [x] lodge 　- [x] forecourt（第二版：左側圍牆，Ray：「選有圍牆那個」；第一版有溫室門的留 scratch） 　- [x] hall 　- [x] salon 　→ 2026-09-26 01:20 四張入 `resources/background/sofia/sofiaout_<id>.webp`（先不入 town.js，等 Ray 看方向）
+- [ ] 其餘 7 格：road／avenue／carriage／backhall／cellar／terrace（＋跨圖 gate 不畫）— Ray 點頭後開
+- ⚠ 第一版「白騾子酒館」那張留 scratch 沒交（作廢）
