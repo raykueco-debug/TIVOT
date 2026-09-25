@@ -7,6 +7,7 @@ tools/map_sofiaout_draft.py —— 聖索菲亞郊外・里朋家族據點（暫
 
 > Ray（2026-09-26）：「現在生成一條前往郊外的拓樸 不用太複雜，還有馬努的據點」→「我原本以為應該是毒梟豪宅之類的，酒吧開在郊外會不會挺怪的；要做豪宅的話注意年代 1900 年」
 > ⇒ 據點＝1900 年前後的豪宅（palacete），路邊酒館那一版作廢。
+> Ray 再改：「地下囚室是終點，囚室連到宅內；兩個終點——先囚室決戰，敵人挾人質逃到露台，進劇情」⇒ 囚室由後廊往下、露台由沙龍往上。
 
 ⚠⚠⚠ **提案階段的東西**（同 `map_dunmor_draft.py`）：`script/town.js` 裡還沒有這張圖，這一刻的唯一真相就是下面的
   `NODES`／`EDGES`。Ray 點頭之後 → 搬進 `script/town.js`、`map_layout.py` 的 `POS` 補一格、**把這支回收掉**。
@@ -26,16 +27,16 @@ NODES = {
  'lodge':(4,7,'莊園門房','pass'),
  'avenue':(6,7,'棕櫚車道','pass'),
  'forecourt':(6,6,'噴泉前庭','pass'),
- 'garden':(4,6,'花園溫室','end'),
- 'carriage':(8,6,'馬車房','pass'),
- 'cellar':(8,7,'地下囚室','end'),
+ 'carriage':(8,6,'馬車房','end'),
  'hall':(6,5,'大廳','pass'),
- 'salon':(8,5,'沙龍','goal'),
- 'terrace':(8,4,'露台','end'),
+ 'backhall':(4,5,'後廊','pass'),
+ 'cellar':(4,6,'地下囚室','goal'),
+ 'salon':(8,5,'沙龍','pass'),
+ 'terrace':(8,4,'露台','rest'),
 }
 EDGES = [
- ('gate','road'),('road','lodge'),('lodge','avenue'),('avenue','forecourt'),('forecourt','garden'),
- ('forecourt','carriage'),('carriage','cellar'),('forecourt','hall'),('hall','salon'),('salon','terrace'),
+ ('gate','road'),('road','lodge'),('lodge','avenue'),('avenue','forecourt'),('forecourt','carriage'),
+ ('forecourt','hall'),('hall','backhall'),('backhall','cellar'),('hall','salon'),('salon','terrace'),
 ]
 REST_NOTE = '休息處'
 CW, CH, BW, BH = 190, 134, 152, 116
@@ -117,7 +118,7 @@ def main():
         lb = label(nid); bb = d.textbbox((0, 0), lb, font=FS)
         d.text((cx(c)-(bb[2]-bb[0])/2, cy(r)+20-(bb[3]-bb[1])/2), lb, font=FS, fill=sub)
     ly, lx = Hh - 84, PAD
-    for kind, txt in (('pass','通道／岔口'), ('end','端末口'), ('rest','休息處（閉棺結算）'), ('goal','沙龍（頭目）'), ('gate','跨圖出口')):
+    for kind, txt in (('pass','通道／岔口'), ('end','端末口'), ('rest','露台（劇情終點）'), ('goal','地下囚室（決戰）'), ('gate','跨圖出口')):
         bg = COL[kind][0]
         d.rectangle([lx, ly, lx+40, ly+30], fill=bg, outline=LINE, width=(3 if kind == 'gate' else 0))
         d.text((lx+52, ly+3), txt, font=FL, fill=(20,20,20))
@@ -148,8 +149,8 @@ def main():
     print('  端末口 %d：%s' % (len(ends), nm(ends)))
     print('  休息處：%s' % nm([k for k in NODES if NODES[k][3] == 'rest']))
     print('  一直按↑（從入口）：' + '→'.join(walk('gate', 'up')))
-    print('  一直按↓（從沙龍）：' + '→'.join(walk('salon', 'down')))
-    print('  入口→沙龍最短 %d 步；最遠的一格：%s（%d 步）' % (dist['salon'], NODES[max(dist, key=dist.get)][2], max(dist.values())))
+    print('  一直按↓（從囚室）：' + '→'.join(walk('cellar', 'down')))
+    print('  入口→囚室最短 %d 步；最遠的一格：%s（%d 步）' % (dist['cellar'], NODES[max(dist, key=dist.get)][2], max(dist.values())))
     print('  →', os.path.relpath(dst, ROOT), '%dx%d' % (W, Hh))
     # 逐格度數（給 spec 抄）
     for k, (c, r, name, kind) in NODES.items():
