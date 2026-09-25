@@ -5,8 +5,21 @@
 > 4. ✅ **-1728 已接** 米夏 `draw` `?v=3` top:6 bot:1534 fx:0.434；`drawopen` `?v=2` 同取景
 > 5. **（09-25 凌晨，Mac）米夏九張重做、同名覆蓋，版號全跳 —— 九行可直接抄：根目錄 `_TO_CODE_20260925.md`**：`draw` `?v=3`→`?v=4`、`drawopen` `?v=2`→`?v=3`、`frown` `?v=2`→`?v=3`、`close` `?v=2`→`?v=3`；`stare`／`stareopen`／`frownopen`／`closeopen` 加 `?v=2`；`frontshock` 由字串縮寫改成物件（頭轉正，`fx:0.444`）。**逐行的取景值在 `resources/si/_misha_program_worklist.md` 附四那張表**（frown／close／frontshock 是重畫，top/bot/fx 都變了）。
 > 6. **（09-25，Mac）無人廢城 `dunmor` 拓樸 v2 Ray 定案** —— 56 格・5 環，`tools/map_dunmor_draft.py` 的 `NODES`／`EDGES` 就是資料來源；要搬進 `town.js`（全部 `noTime:true`、三個 `rest`、迷霧預設），細節在 `resources/background/_dunmor_spec.md` §五。⚠ id／中文名／祭壇那一場還沒定，搬之前問 Ray。
-> 7. **（09-25 下午，Mac）廢城第一批 14 張背景畫了、Ray 退（太一致／天空要變化／朝西掛月）→ 重做規則在 `_dunmor_spec.md` §七**；聖索菲亞補圖 9 張的工單 `resources/background/_sofia_add_spec.md`（未開畫）；程式端要接的是工單 §五（`bg:'dunmor_<id 小寫>'`＋`noTime`＋三個 `rest`），對照表在 `_dunmor_spec.md` §六。
-> 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝Mac 這一台今天做的；§八＝廢城，下一個美術 session 從那裡開畫）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
+> 7. ✅ **（09-25 晚～26 凌晨，Mac）廢城 `dunmor` 背景 55／55 全交、聖索菲亞補圖 9／9 全交** —— 程式端要接的都在工單，**逐條列在下面 8／9**。
+> 8. **聖索菲亞補圖（`resources/background/_sofia_add_spec.md` §四，四件）**：
+>    ① `TOWNS.santasofia.nodes.inn.bg` → `'sofia_inn'` 並**拿掉 `noTime`**（四差分齊：`sofia_inn_{dawn,day,dusk,night}`）
+>    ② 餐飲街 `dining.scenes` 補 `bar:{bg:'sofia_bar'}`（三差分 `_day/_dusk/_night`，**不寫 `noTime`**）、`restaurant:{bg:'sofia_restaurant', noTime:true}`；`tavern` 節點自己的 `bg` 仍是室外街景 `sofia_bistro`
+>    ③ `dock` 那一格改成貧民窟：`bg:'sofia_dock'` → `'sofia_slum'`、`name` 改（中文正名等 Ray，暫「聖索菲亞　舊碼頭貧民窟」）；節點 id 不改；`sofia_dock.webp` 留著
+>    ④ 小地圖 `map_santasofia` 的 `dock` 圖示（船錨）要換貧民窟簡筆 —— 另開一單（美術）
+>    全部是**新增檔**，不用跳 `ASSET_VER`；`bg_index.js` 已重跑。
+> 9. **廢城 `dunmor`（`resources/background/_dunmor_spec.md` §五／§九）**：
+>    ① 拓樸搬進 `script/town.js`：`tools/map_dunmor_draft.py` 的 `NODES`／`EDGES`（方向＝相對位置：左邊的鄰居掛 `left`…，`up`＝小 row；`back` 不寫）。搬完 `map_layout.py` 的 `POS` 補一格、產生器回收。⚠ 地圖 id／中文名／祭壇那一場（`sessionEnd`）／`wildSpawn` 還沒定，搬之前問 Ray
+>    ② 每一格 `bg:'dunmor_<id 小寫>'`（`ditchW`→`dunmor_ditchw`，55 個檔全在 `resources/background/dunmor/`，`bg_index.js` 的 `dunmor` 列）
+>    ③ 每一格 **`noTime:true`**（Ray：「這張圖沒有四差分，都是同一天色」）、`wilderness:true`、迷霧預設（不要寫 `mist:0`）；`rest:true`＋`noWild:true`：`wellsq`／`oakgrove`／`nemeton`；入口 `entry:'gate'`
+>    ④ ⚠⚠ **`config.js` 的 `ASSET_VER` 要跳這 14 個鍵**（第四版同名覆蓋了第一版）：`dunmor_causeway` `dunmor_southgate` `dunmor_ditchw` `dunmor_oghamrow` `dunmor_gatecourt` `dunmor_mainstreet` `dunmor_marketcross` `dunmor_boarstone` `dunmor_innergate` `dunmor_druidhouse` `dunmor_oakgrove` `dunmor_nemeton` `dunmor_altar` `dunmor_wellsq`（其餘 41 張是新增，不必跳）
+>    ⑤ 等 Ray：`hallcourt` 正門本該堵死、圖裡只擋一半要不要重出；小地圖走 `tools/map_compose.py` 另開一單
+>    總覽 `resources/background/_dunmor_all55_sheet.jpg`；逐格出口／鏡頭／月亮朝向在工單 §八／§九 的表。
+> 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；**§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
 > 可睡、沒有那一夜也沒有審訊、隔天直接走出旅店）—— 見 -1717 那一段。
