@@ -43,7 +43,7 @@
 > 15. **（09-26 晚，Mac）惡棍系敵人 6 張 `man_thug_*`**（Ray：「`ssophia_si_thug` 這個系列風格的惡棍，大多用手槍、步槍，1900 年」「被突擊的感覺、不要女的、表情動作多變化」）——
 >    `resources/enemy/man_thug_{pistol,shotgun,rifle,dual,lookout,boss}.webp`（1024×1536、真 alpha）；規格與每人的反應在 `resources/enemy/_thug_spec.md`、總覽 `_thug_all6_sheet.jpg`。
 >    程式端要做的（等 Ray 給卡）：`config.enemies` 各一張敵人卡，`kind:'human'`（結算「已擊敗」、**不吃**降臨／淨化演出）；圖路徑直接指 `resources/enemy/man_thug_*.webp`。全是新檔，不用跳 `ASSET_VER`。
-> 16. **（09-26 晚，Mac）索拉娜 `remind` 回上一版**（Ray：「索的 remind 修壞，回上一版」）—— `resources/si/sorana_si_remind.webp` 換回 d556b53（09-20 軟遮罩版），09-22 的重製版（3f5a10b）進 `_recycle/`。
+> 16. ✅ **-1767 已跳 `?v=3`** **（09-26 晚，Mac）索拉娜 `remind` 回上一版**（Ray：「索的 remind 修壞，回上一版」）—— `resources/si/sorana_si_remind.webp` 換回 d556b53（09-20 軟遮罩版），09-22 的重製版（3f5a10b）進 `_recycle/`。
 >    程式端：**`script/speakers.js` 的 `remind` 路徑 `?v=2` → `?v=3`**（同名覆蓋，不跳版號玩家永遠拿到修壞的那版）；取景值 `measure_si.py` 重量＝`top:1 bot:1525 fx:0.523`（現行寫 `top:4`，差 3px 可改可不改）。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；**§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
@@ -55,7 +55,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1764`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1767`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -68,7 +68,13 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1766`
+# HANDOFF — 截至 `ver 2026.09.22-1767`
+
+**`-1767`：索拉娜 `remind` 跳 `?v=3`**（交接第 16 項；Ray：「索的 remind 修壞，回上一版」）—— 美術已把圖換回 d556b53 那版（68576aa），
+`speakers.js` 的 src 跳 `?v=3`、取景改用重量值 `top:1 bot:1525 fx:0.523`（原 top:4）。飛行頁沒有登記這張，不必改。
+⚠ commit `34fd3b9` 的訊息寫成「ver -1765」是**撞號**（同時間另一個程式 session 推了 -1765／-1766）；實際 `VERSION` 是 **1767**。
+
+# （上一段）截至 `ver 2026.09.22-1766`
 
 **`-1766`：補上「程式在用、檔案卻沒進版控」的兩支**（Ray：「推上，巡一下有哪些該 commit 沒上的」）
 · `resources/audio/bgm/peritune_sylblanc_loop.m4a`（鏡湖 BGM，-1542 起就被引用）入版控。
