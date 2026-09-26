@@ -241,6 +241,7 @@ export function setup(){
     /* 獵手的戰吼連 5 盤那一發＝重置共鬥（ver -837）：saintUsedThisBattle 的擁有者
        是 saint，partner 經這一支具名 setter 寫（§3.5 的契約）。 */
     resetInstallSlot: saint.resetInstallSlot,
+    deferInstallReload: saint.deferInstallReload,   // ver -1775：回填下一場才生效
   });
   // 監察官（評價/結算）：combat 擁有計時 → 算好 totalTime/avg 呼叫 inspector.settle。
   //   inspector 只 import state/config；goHome（combat）與 triggerIntruder（enemy）經此注入。
@@ -2366,6 +2367,7 @@ function finishEnemyOrAdvance(){
      四條路都經過它，同上面那幾件事的理由，鐵律 8）——**包含連戰的中間場**。
      ⚠ 教學戰不記：那一場的怪是打不死的道具，記進去統計就會騙人。 */
   if(!state.tutorialRun){ try{ prog.addKillStat(1); }catch(_){} }
+  saint.applyInstallReload();   // ver -1775：這一場欠著的回填（MB／處決／烙印星）換怪才兌現
   partner.onEnemyCleared();   // 九階「方舟」：無傷擊殺 → 已用掉的一次性被動重新上膛（ver -707）
   /* 血歸零 → **淨化**（ver -588，Ray：「怪 hp 歸零後淡出」）。
      ⚠ 掛在這個**匯流點**（鐵律 8）：自然清盤／按錯／逾時／聖徒化擊殺四條路都經過它。
@@ -2967,7 +2969,7 @@ export function startGame(){
      會被 sessionCarry 搬回來**（ver -891/-892，Ray：「可跨場（怪）累積」）——
      同 saintUsed／energy 的作法：在開頭乾淨歸零，接得上同一局的那一場再放回去
      （鐵律 7：不要在歸零那排挖特例）。**（ver -893 用詞：局＝結算、場＝一隻怪）** */
-  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0;
+  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0; state.installReloadPending=false;
   saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標；共鬥 coopMode/coopTimer 一併）
   weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
   weapon.resetWeaponSwitch();   // 副武器切換鈕（ver -410）：排隊中的切換不可以跨場留著
@@ -3230,7 +3232,7 @@ export function startIntruderFight(){
   state.atkBuff=false; state.lowHpBuff=false;
   state.partnerActiveUsed=false;   // 新場：搭檔主動技每場次數重置
   /* 亂入是**新的一局**（不接上一段），三個連段一律歸零（ver -891/-892；ver -893 用詞）。 */
-  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0;
+  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0; state.installReloadPending=false;
   saint.reset();
   weapon.reset();
   partner.reset();

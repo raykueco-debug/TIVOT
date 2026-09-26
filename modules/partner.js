@@ -638,7 +638,7 @@ export function onCounter(){
   const reload = (state.lucidStreak >= need) && canReload;
   if(state.lucidStreak >= need){
     state.lucidStreak = 0;
-    if(canReload && api.resetInstallSlot) api.resetInstallSlot();   // 惡夢化可以再發一次
+    if(canReload && api.deferInstallReload) api.deferInstallReload();   // 惡夢化再一次 —— ver -1775 起**下一場**才生效（Ray）
   }
   /* 無限制發動（ver -886）：不再問「這隻怪用過了沒」。
      ⚠ 只擋「這一段還在跑」——理由見 onThreatResolved 上面那一段；

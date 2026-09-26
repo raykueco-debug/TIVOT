@@ -57,7 +57,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1774`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1775`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -70,7 +70,17 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1774`（-1774：女主星不再用等級鎖）
+# HANDOFF — 截至 `ver 2026.09.22-1775`（-1775：Install 回填一律下一場生效）
+
+**`-1775`**（Ray：「安雅的夢魘回填應該也要限制同一場不可發動，是下一場才能用，SI 跟 NI 一樣一場都只限一次」）
+· `saint.deferInstallReload()`／`applyInstallReload()` 一對：賺到的回填先記在 `state.installReloadPending`，
+  **換怪那一刻**（`combat.finishEnemyOrAdvance`，與諾薇兒無傷擊殺回填同一個匯流點）才解槽；換局作廢。
+· 改走 defer 的路：安雅烙印星（3 次完美反擊）、**聖徒化／夢魘化的 MB 沒打死**（以前當場回填＝同一隻怪可再開一次）、
+  處決（打死的那幾支，結果不變）。CI 上的 SAINT／NIGHTMARE RELOAD 照演。
+· 沒動：索菈娜聚落星（主動技回填共鬥）—— 星上寫明「同一場可連續使用」，Ray 這次只點名 SI／NI。
+  型態切換（morph）不算換怪：欠著的回填等真的倒下才兌現。
+
+# （上一段）截至 `ver 2026.09.22-1774`（-1774：女主星不再用等級鎖）
 
 **`-1774`：女主九星改價、拿掉等級鎖**（Ray：「女主的技能不要用等級來鎖，前兩個各 1 份，三四各 2，五六各 3，七八各 4，9 是滿足特定條件」）
 · `config.girls.starCost` ＝ `[1,1,2,2,3,3,4,4,0]`、新增 `starCond:{9:'girlstar9'}`。

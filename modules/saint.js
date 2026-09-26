@@ -251,6 +251,19 @@ export function coopActive(){ return !!state.coopMode; }
 /* 重置 Install 槽（ver -837，Ray：「連五場會再發動一次並重置獵手的共鬥」）——
    `saintUsedThisBattle` 的擁有者是 saint（§3.5），跨模組的寫一律走具名 setter：
    partner 的獵手的戰吼經 combat 注入呼叫這一支，不直接改 state。 */
+/* ══⚠⚠⚠ **回填一律「下一場」才生效**（ver -1775，Ray：「安雅的夢魘回填應該也要限制同一場不可發動，
+   是下一場才能用，SI 跟 NI 一樣一場都只限一次」）══
+   `deferInstallReload()` ＝記一筆「欠著」，`applyInstallReload()` ＝換怪那一刻（`combat.finishEnemyOrAdvance`，
+   與諾薇兒無傷擊殺回填同一個匯流點）才真的解槽。⚠ 所有「打一半就回填」的路徑（MB 沒打死、安雅烙印星）都走這一對，
+   **不要**再直接叫 `resetInstallSlot()` —— 那一支會讓同一隻怪再開一次。
+   ⚠ 打死敵人的處決也走 defer：換怪就兌現，結果與以前一樣。
+   ⚠ 欠著的那一筆在**換局**時作廢（combat 的兩處歸零）—— 新的一局本來就是滿槽。 */
+export function deferInstallReload(){ state.installReloadPending = true; }
+export function applyInstallReload(){
+  if(!state.installReloadPending) return;
+  state.installReloadPending = false;
+  if(state.saintUsedThisBattle) resetInstallSlot();
+}
 export function resetInstallSlot(){
   state.saintUsedThisBattle = false;
   /* ⚠⚠ 解槽之後**要推一次重畫**（ver -1048，Ray：「就算已經 reload，這場不能再用
@@ -658,7 +671,7 @@ function triggerNiBurst(){
     /* 「若在 NI 發動期間把敵 hp 清零一樣有 excute」（Ray 指定）。 */
     markExecution();
     const rlN = state.saintUsedThisBattle ? 'NIGHTMARE RELOAD' : null;   // 空槍才 reload（ver -896）
-    if(rlN) resetInstallSlot();
+    if(rlN) deferInstallReload();   // ver -1775：下一場才生效
     playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); }, rlN);
     return;
   }
@@ -667,7 +680,7 @@ function triggerNiBurst(){
      -896 把兩支的變數名與標籤**交叉寫錯了** —— 這裡宣告 `rlMB`／印 `SAINT RELOAD`，
      下面卻傳 `rlNMB`（未宣告）。見 triggerMaxBurst 那一支的同一段。 */
   const rlNMB = state.saintUsedThisBattle ? 'NIGHTMARE RELOAD' : null;   // 空槍才 reload（ver -896）
-  if(rlNMB) resetInstallSlot();
+  if(rlNMB) deferInstallReload();   // ver -1775：下一場才生效
   /* ⚠⚠ **要播 MB 的全畫面 cut-in**（ver -719，Ray：「NI 的 MB 跟 execute 沒接上」）——
      -675 只做了「算 MB 的傷害＋記旗標」，演出那一步漏了：擊殺那一支有
      `playSaintCutin('execute')`，未擊殺這一支卻直接跳收尾，畫面上只有一行浮字。
@@ -758,7 +771,7 @@ function niBurstResolve(){
          那一條講的是**畫面**，-1696 講的是**結果**，兩者不衝突。 */
     markExecution();
     const rlB = state.saintUsedThisBattle ? 'NIGHTMARE RELOAD' : null;   // 空槍才 reload（ver -896）
-    if(rlB) resetInstallSlot();
+    if(rlB) deferInstallReload();   // ver -1775：下一場才生效
     api.setPlayerHpRatio(1); api.onEnemyDefeated();
     return true;
   }
@@ -966,7 +979,7 @@ function triggerMaxBurst(){
     /* ⚠ 空槍才 reload（ver -896，Ray：「要空槍才有 reload」）—— 還沒發動過
        聖徒化的話那一槍本來就在膛裡，印 SAINT RELOAD 是報一件沒發生的事。 */
     const rl = state.saintUsedThisBattle ? 'SAINT RELOAD' : null;
-    if(rl) resetInstallSlot();                       // 處決＝賺回一次發動（ver -892）
+    if(rl) deferInstallReload();                       // 處決＝賺回一次發動（ver -892）（ver -1775 起下一場生效）
     playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); }, rl);
     return;
   }
@@ -981,7 +994,7 @@ function triggerMaxBurst(){
      ⚠ 自檢：這種錯 `jsc -m` 抓不到（未宣告的變數要**執行到那一行**才炸），
        而它就藏在一個只有特定收尾方式才走得到的分支裡。 */
   const rlMB = state.saintUsedThisBattle ? 'SAINT RELOAD' : null;   // 空槍才 reload（ver -896）
-  if(rlMB) resetInstallSlot();
+  if(rlMB) deferInstallReload();   // ver -1775：下一場才生效
   /* 敵人未死 → Maximum Burst 演出後回盤面。
      ══⚠⚠ **回血改成回滿**（ver -1506，Ray：「MB 的回血效果改成回滿」）══
      推翻 2026-08-13 的「擊殺回滿／未擊殺回 50%」—— 兩條路現在一樣是回滿。
