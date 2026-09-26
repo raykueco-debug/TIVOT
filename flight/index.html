@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1749"></script>
+<script src="../orientation.js?v=1751"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1749edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1751edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1749edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1749edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1751edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1751edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1749edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1749edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1751edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1751edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1749edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1751edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1749edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1749edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1749edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1749edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1749edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1749edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1749edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1749edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1749edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1749edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1751edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1751edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1751edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1751edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1751edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1751edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1751edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1751edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1751edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1751edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1749edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1751edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1749edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1751edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1749"></script>
+<script src="settlement.js?v=1751"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1749"></script>
+<script src="talks.js?v=1751"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1749';
+const FLIGHT_VER = 'ver -1751';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -4383,8 +4383,10 @@ function screenSample(x0,y0,x1,y1,inside){
           rr+=glSmpBuf[i*4]; gg+=glSmpBuf[i*4+1]; bb+=glSmpBuf[i*4+2]; nn++; }
         if(nn) smpRGB=[rr/nn, gg/nn, bb/nn];
       }
-      /* ② 發出這一次的讀取要求（非同步，立刻回來） */
-      if(!glSmpFence){
+      /* ② 發出這一次的讀取要求（非同步，立刻回來）。
+         ⚠ ver -1750：只在 GL **剛畫過**（這一禎或上一禎）時發 —— 靜止不重畫的那幾禎，繪圖緩衝可能已經交出並清掉，
+           讀到的會是一片黑，環境光就會把遺蹟壓成黑的。 */
+      if(!glSmpFence && performance.now()-glDrewAt < 40){
         const q=pts[0];
         const bx=Math.min(BW-8, Math.max(0, Math.round(q[0]/W*BW)-4));
         const byTop=Math.min(BH-1, Math.max(0, Math.round(
@@ -7775,14 +7777,16 @@ let SKYROW=null;     // 每列的天空色，輪廓混色要拿它當背景
    ⚠ 不花錢：實測 q3 由 24 改到 10（5×5 → 11×12、畫出 15 → 76 格），
      每幀 12.36ms → 11.78ms，在噪訊內。真正的上限是 nmax，本來就擋著。 */
 const QUALITY = [
-  { dpr:2,   bwf:0.60, cell:11, nmax:32, blk:0.7 },   // 0 高（現行）
-  { dpr:1.5, bwf:0.54, cell:10, nmax:26, blk:1.1 },   // 1
-  { dpr:1,   bwf:0.48, cell: 9, nmax:20, blk:1.7 },   // 2
-  { dpr:1,   bwf:0.40, cell: 7, nmax:14, blk:2.6 },   // 3 低
+  /* `step`／`view`（ver -1750，Ray 選的發熱對策「3」）：GL 地形的步長倍率與視距比例 —— 低檔（手機常待）
+     步子放大、霧提早濃起來＝視野變短，每條射線走的步數少一截。高檔兩欄都是 1（畫面一個像素不變）。 */
+  { dpr:2,   bwf:0.60, cell:11, nmax:32, blk:0.7, step:1.0, view:1.00 },   // 0 高（現行）
+  { dpr:1.5, bwf:0.54, cell:10, nmax:26, blk:1.1, step:1.0, view:1.00 },   // 1
+  { dpr:1,   bwf:0.48, cell: 9, nmax:20, blk:1.7, step:1.2, view:0.92 },   // 2
+  { dpr:1,   bwf:0.40, cell: 7, nmax:14, blk:2.6, step:1.4, view:0.85 },   // 3 低
   /* q4（ver -755，Ray：「手機端飛行地圖掉幀嚴重」）：自適應原本到 q3 就沒路退，
      低配手機在 q3 還是撐不住就只能掉幀。再給一檔：緩衝再縮 17%、格網更粗、
      量體塊更早不畫 —— 城市取樣是逐像素的，緩衝縮多少成本就降多少。 */
-  { dpr:1,   bwf:0.33, cell: 6, nmax:10, blk:3.6 },   // 4 極低（手機保底）
+  { dpr:1,   bwf:0.33, cell: 6, nmax:10, blk:3.6, step:1.7, view:0.78 },   // 4 極低（手機保底）
 ];
 /* ── 量體層的門檻：**固定值，不隨自適應畫質變**（ver -285）───────────
    ⚠⚠ 這裡原本是 QUALITY 的一欄（27/45/75/128）。那才是「聖王廳靠近會 2D 跳
@@ -10942,6 +10946,9 @@ const GLON = !/[?&]gl=0/.test(location.search);
 let glTexBiome=null, glTexMask=null, glTexRail=null, glTexGeo=null, glTexMot=null,
     glTexSnow=null, glGeoUp=false;
 let glSmpPbo=null, glSmpFence=null;
+/* 靜止不重畫（ver -1750，見 render 裡 `glKey` 那一段）。`glDrawCount` 只給除錯量「一秒畫了幾次」。 */
+const GL_IDLE_MS = 200;
+let glLastKey='', glDrewAt=-1e9, glDrawCount=0;
 const glSmpBuf=new Uint8Array(8*8*4);   // 環境光取樣的非同步回讀落點（見 screenSample）
 let TERR_MAXH=9999;   // 地形最高點（glUploadWorld 量出來，shader 的提早結束用）
 /* 這台的 WebGL 是不是軟體算圖（ver -1314）。判定只有 `glInit` 一處，其餘只讀。 */
@@ -11011,6 +11018,8 @@ uniform vec2 uLi;              // ambI, sunI
 uniform vec3 uFog;             // 霧色（地平線色）
 uniform float uCloudLit;
 uniform float uTime;      // 毫秒，瀑布的水流動畫用
+uniform float uStepK;     // 步長倍率（ver -1750，QUALITY[].step）
+uniform float uZfar;      // 這一檔的視距（ver -1750，ZFAR×QUALITY[].view；深度換算仍用 ZFAR）
 out vec4 o;
 
 const float BAY[16]=float[16](${[...BAYER].map(v=>v.toFixed(5)).join(',')});
@@ -11080,9 +11089,9 @@ void main(){
   float curv=(1.0+sv*sv)/(2.0*${PLANET_R}.0);
   float k2=(py-horizon)/scaleH;         // (camAlt-h)/z + z*curv
   float k=k2;                           // （k 在下面的區塊裡會被 vec3 遮蔽，所以留一份 k2）
-  float z=1.0, dz=0.75;
+  float z=1.0, dz=0.75*uStepK;
   for(int i=0;i<900;i++){
-    if(z>=${ZFAR}.0) break;
+    if(z>=uZfar) break;
     float hNeed=uCam.z-(k-z*curv)*z;
     vec2 wp=uCam.xy+dir*z;
     vec2 mf=wp*${INV_SCALE};
@@ -11095,7 +11104,7 @@ void main(){
        兩者同時成立就可以直接跳出，最後輸出的天空色與 gl_FragDepth=1.0
        **與跑完 900 步一模一樣**（位元等價，不是近似）。
 
-       ⚠⚠ **為什麼非修不可**：ZFAR 3600，而步進序列（z=1、dz=0.75、每步 +0.0062）
+       ⚠⚠ **為什麼非修不可**：ZFAR 3600，而步進序列（z=1、dz=0.75、每步 +(0.0062*uStepK)）
          跑滿 **900 步只走到 z 約 3184** —— 迴圈是被**迭代上限**擋掉的，不是被 ZFAR。
          於是**每一個天空像素都把 900 步跑好跑滿**，每一步取樣一次高度貼圖。
          實測地形最高 520、巡航高度 700：**任何往上打的射線從第一步就注定
@@ -11111,9 +11120,9 @@ void main(){
        由粗到細問 max-mipmap：這一塊的最高點都在射線之下 ⇒ 整塊跳過。
 
        ⚠⚠ **跳的距離是「整數個原本的步」**，不是任意距離 —— 這是位元等價的關鍵。
-         原序列是 z+=dz、dz+=0.0062；跳 kk 步之後
-           z  += dz*kk + 0.0031*kk*(kk-1)
-           dz += 0.0062*kk
+         原序列是 z+=dz、dz+=(0.0062*uStepK)；跳 kk 步之後
+           z  += dz*kk + (0.0031*uStepK)*kk*(kk-1)
+           dz += (0.0062*uStepK)*kk
          射線因此**永遠落在原本會取樣的那些 z 上**，第一個命中的點一模一樣。
          跳任意距離的話取樣點會偏移，命中的 z 就變了，畫面不會等價。
        ⚠⚠ **安全距離用 DDA 算，不要用「一格的寬度」去猜**：dir 沒有正規化
@@ -11137,26 +11146,26 @@ void main(){
         vec2 tv = (mix(lo, lo+cs, step(0.0, dm)) - mf) / sd;
         float adv = min(tv.x, tv.y);
         if(!(adv>0.0)) continue;
-        /* 換算成「幾個原步」：0.0031*kk^2 + (dz-0.0031)*kk = adv */
-        float bq = dz - 0.0031;
-        float kk = floor((-bq + sqrt(max(bq*bq + 4.0*0.0031*adv, 0.0))) / (2.0*0.0031));
+        /* 換算成「幾個原步」：(0.0031*uStepK)*kk^2 + (dz-(0.0031*uStepK))*kk = adv */
+        float bq = dz - (0.0031*uStepK);
+        float kk = floor((-bq + sqrt(max(bq*bq + 4.0*(0.0031*uStepK)*adv, 0.0))) / (2.0*(0.0031*uStepK)));
         if(kk < 1.0) continue;
-        float zAdv = dz*kk + 0.0031*kk*(kk-1.0);
+        float zAdv = dz*kk + (0.0031*uStepK)*kk*(kk-1.0);
         float z2 = z + zAdv;
         /* 區間內 hNeed 的最小值（頂點落在區間內就取頂點）。 */
         float zv = clamp(k/(2.0*curv), z, z2);
         float hMin = min(min(uCam.z-(k-z*curv)*z, uCam.z-(k-z2*curv)*z2),
                          uCam.z-(k-zv*curv)*zv);
         float blk = texelFetch(uHmax, ivec2(mf)>>L, L).r;
-        if(blk < hMin){ z=z2; dz+=0.0062*kk; jumped=true; break; }
+        if(blk < hMin){ z=z2; dz+=(0.0062*uStepK)*kk; jumped=true; break; }
       }
       if(jumped) continue;
     }
     bool cloud; float hs=hSurf(mf, ti, outside, cloud);
     if(hs>=hNeed){
       /* 霧提前算 —— 崖面那一段要用它當閘門（同 CPU 的 fog<0.86）。 */
-      float fogS=${ZFAR}.0*${FOG_START};
-      float fog=clamp((z-fogS)/(${ZFAR}.0-fogS),0.0,1.0)*${FOG_MAX};
+      float fogS=uZfar*${FOG_START};
+      float fog=clamp((z-fogS)/(uZfar-fogS),0.0,1.0)*${FOG_MAX};
       vec3 c;
       /* ⚠ below 兩支都要有（雲海的天際線一樣要抗鋸齒）—— 所以提到外面宣告。 */
       float below=hs-hNeed;
@@ -11409,11 +11418,11 @@ void main(){
       gl_FragDepth=clamp(z/${ZFAR}.0,0.0,1.0);
       return;
     }
-    /* ⚠ 成長率 ver -1241 由 0.011 收到 0.0062（Ray：「大陸邊緣還是刺的」）：
+    /* ⚠ 成長率 ver -1241 由 0.011 收到 (0.0062*uStepK)（Ray：「大陸邊緣還是刺的」）：
        在 z≈1000 時一步由 4.8 個世界單位降到 3.0 —— 崖腳被步長切出的鋸齒
        （相鄰兩欄的最大落差）由 11 降到 7 個緩衝像素，實測 fps 不變（60）。
        ⚠ CPU 那一支**刻意不跟**，理由見那邊的註解。 */
-    z+=dz; dz+=0.0062;
+    z+=dz; dz+=(0.0062*uStepK);
   }
   o=vec4(texelFetch(uSky, ivec2(0, int(py)), 0).rgb, 1.0);
   gl_FragDepth=1.0;
@@ -11484,7 +11493,7 @@ function glInit(){
   g.bufferData(g.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),g.STATIC_DRAW);
   const lp=g.getAttribLocation(glProg,'p');
   g.enableVertexAttribArray(lp); g.vertexAttribPointer(lp,2,g.FLOAT,false,0,0);
-  for(const n of ['uH','uHs','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit','uTime',
+  for(const n of ['uH','uHs','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit','uTime','uStepK','uZfar',
                   'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uCityT','uInvS',
                   'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn','uMot','uSnow','uMaxH','uHmax','uMaxLod'])
     glU[n]=g.getUniformLocation(glProg,n);
@@ -11809,6 +11818,7 @@ function glDrawTerrain(S, sinp, cosp, lx, ly, ambI, sunI, lightR, lightG, lightB
   g.uniform3f(glU.uFog,fr/255,fg/255,fb/255);
   g.uniform1f(glU.uCloudLit,cloudLit);
   g.uniform1f(glU.uTime, performance.now());
+  { const q=Q(); g.uniform1f(glU.uStepK, q.step||1); g.uniform1f(glU.uZfar, ZFAR*(q.view||1)); }   // ver -1750
   g.uniform2f(glU.uRD, RD_W||1, RD_H||1);
   g.uniform1f(glU.uGeoOn, glGeoUp?1:0);
   /* 城的手繪地面（最多兩座）。kv＝反分級的亮度係數，逐城（`tone` 是逐城的）。 */
@@ -12802,11 +12812,26 @@ function render(now){
      ⚠ （ver -1749 更正過期註解）CPU 那一大圈在 GLON 下**已經不跑了**（ver -1201 起只留一條粗算地平線給
        `clipByTerrainDepth` 遮擋用，實測約 0.3ms，見 render 裡 `if(GLON && glReady)` 那一段）。 */
   if(GLON && glReady){
-    glDrawTerrain(S, sinp, cosp, lx, ly, ambI, sunI, lightR, lightG, lightB,
-                  fr, fg, fb, cloudLit);
-    /* 遺蹟：與地形**同一顆深度緩衝** ⇒ 遮擋是免費的深度測試，
-       不必 `clipByTerrainDepth`，也與數量脫鉤（ver -1199 驗過 841 個物件量不到）。 */
-    glDrawRuins(sinp, cosp, lx, ly, S.day);
+    /* ══⚠⚠ **畫面沒動就不重算地形**（ver -1750，Ray 選的發熱對策「1」）══
+       GL 畫布上只有兩樣：地形（光線步進，GPU 最重的那一件）與遺蹟網格。兩者的輸入全在下面這把鑰匙裡 ——
+       相機、光向與光色、霧色、雲的亮度、日夜、緩衝尺寸、地貌貼圖與遺蹟有沒有上傳好。鑰匙沒變 ⇒ 這一禎不碰 GL，
+       瀏覽器會繼續顯示上一次畫好的那一張（沒有 draw call 的禎不會重新交出繪圖緩衝）。
+       ⚠ 仍然每 `GL_IDLE_MS` 補畫一次：瀑布的水流（`uTime`）還要動、城的貼圖是非同步載入的 —— 沒進鑰匙的東西最多晚這麼久。
+       ⚠ `glDrewAt` 給 `screenSample` 用：GL 的回讀只在「剛畫過」時發出，不然可能讀到交出後清掉的緩衝（見那一支）。
+       ⚠ 2D 那一層（面板、立繪、船、雲、名牌）照舊每禎畫 —— 省的是光線步進，不是整頁。 */
+    const glKey = cam.x.toFixed(2)+','+cam.y.toFixed(2)+','+cam.alt.toFixed(2)+','+sinp.toFixed(5)+','+cosp.toFixed(5)
+      +','+lx.toFixed(4)+','+ly.toFixed(4)+','+lightR.toFixed(3)+','+lightG.toFixed(3)+','+lightB.toFixed(3)
+      +','+ambI.toFixed(3)+','+sunI.toFixed(3)+','+Math.round(fr)+','+Math.round(fg)+','+Math.round(fb)
+      +','+cloudLit.toFixed(3)+','+S.day.toFixed(3)+','+BW+','+BH+','+(glGeoUp?1:0)+','+(glRuinReady?glRuins.length:0)+','+qLevel;
+    const glNow = performance.now();
+    if(glKey!==glLastKey || glNow-glDrewAt>=GL_IDLE_MS){
+      glDrawTerrain(S, sinp, cosp, lx, ly, ambI, sunI, lightR, lightG, lightB,
+                    fr, fg, fb, cloudLit);
+      /* 遺蹟：與地形**同一顆深度緩衝** ⇒ 遮擋是免費的深度測試，
+         不必 `clipByTerrainDepth`，也與數量脫鉤（ver -1199 驗過 841 個物件量不到）。 */
+      glDrawRuins(sinp, cosp, lx, ly, S.day);
+      glLastKey=glKey; glDrewAt=glNow; glDrawCount++;
+    }
     ctx.clearRect(0,0,W,VIEWH);
   }else{
     bctx.putImageData(buf,0,0);
