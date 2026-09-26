@@ -173,3 +173,10 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 | road／avenue／carriage／backhall／cellar／terrace | ✔ 2026-09-26 12:10 入庫（下午單張、`noTime`）；⚠ `backhall` 往下石階不明顯，重出與否等 Ray |
 | gate | ✔ 不欠（跨圖出口，不畫） |
 | 小地圖 | ⚠ 欠 —— 拓樸 Ray 點頭後另開（`tools/map_compose.py`） |
+
+
+## 十一、2026-09-26（Mac）：羅賽爾廢城（舊稱無人廢城，程式端 ver -1753 已正名並搬進 `TOWNS.dunmor`）小地圖 ✔ 交件
+- `resources/map/map_dunmor.webp`＋`_spots_dunmor.json`＋`_icons_dunmor.png`；做法與程式端要補的那一行在 `resources/background/_dunmor_spec.md` §十。
+- 美術工單三份的標題已改成「羅賽爾廢城」；地圖 id 維持 `dunmor`。
+- 聖索菲亞郊外那 6 格已由別的美術 session 補完（`a6c0cc4`），§十那一句「6 格沒跑」作廢。
+- ⚠ 產線：GPT 的圖示表格子不均勻 —— 別直接餵 `map_compose.py`，先切符號重排（作法見 §十）。

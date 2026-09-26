@@ -1,4 +1,4 @@
-# 無人廢城（暫名 `dunmor`）— 背景工單（2026-09-25 開單，拓樸已由 Ray 定案）
+# 羅賽爾廢城（`dunmor`；舊稱「無人廢城」，2026-09-26 Ray 正名）— 背景工單（2026-09-25 開單，拓樸已由 Ray 定案）
 
 > Ray：「先照這樣畫圖吧，**破敗的古凱爾特古城風格，但是不要太破，看起來好像剛被破壞，
 >   似乎不久前還有人的樣子，天空紫紅，不做四差分**」
@@ -259,8 +259,24 @@ GPT 原稿 `resources/_originals/background/dunmor/`；總覽圖 `resources/back
 Ray：「圖都跑出來，你要偶爾切視窗就會出」。作法：每 6～7 分鐘把每個分頁**切到前景**（截圖即可）停幾秒 → 抓新圖 → 送下一則；
 五串並行沒問題。上面「疑額度」那幾段是誤判，留著當紀錄。
 
+## 十、小地圖（2026-09-26，Ray：「廢城改名為羅賽爾廢城，出小地圖」）—— ✔ 交件
+
+- `resources/map/map_dunmor.webp`（1536×1024）＋ `resources/map/_spots_dunmor.json`（55 格）＋ 圖示表 `resources/map/_icons_dunmor.png`（7 欄×8 列，55 個）。
+- 做法：`tools/map_compose.py dunmor --paper resources/_originals/map/map_tomb_paper.png --icons resources/map/_icons_dunmor.png --cols 7 --rows 8`
+  —— 墨點／連線／草書名全照 `TOWNS.dunmor` 與 `map_layout.py` 的 `POS.dunmor` 算（55 格・59 邊），紙沿用古墓那張羊皮紙。
+- 圖示表：ChatGPT 出兩張 7×4（逐格寫明筆數，附雪都圖示表當畫法參考），原稿 `resources/_originals/map/map_dunmor_icons{A,B}_gpt.png`；
+  ⚠ GPT 的格子不均勻、照固定格切會切到鄰格 → 本機先用投影法把每個符號切出來、重新置中排成整齊的 7×8 再餵合成器
+  （第二張最後一列用「筆畫中心歸格」分，因為堤道的兩條線比西壘牆離得還開）。
+- ⚠ 小瑕疵：`Kingsbarrow`、`RampartW`、`RampartE` 三個英文名稍微壓到鄰格的線（字長），不影響讀；要改就縮 `NAME_PX` 或改短名。
+
+### ⚠ 程式端要接（新增，不必 `?v=`）：`script/town.js` 的 `TOWNS.dunmor` 補一個 `map`，`spots` 照抄 `_spots_dunmor.json`：
+
+    map:{ img:'resources/map/map_dunmor.webp', spots:{ kingsbarrow:[0.0853,0.1396], barrowfield:[0.1777,0.1396], altar:[0.2702,0.1396], springpool:[0.3626,0.1396], altarcourt:[0.4551,0.1396], skullniche:[0.5475,0.1396], headshrine:[0.0853,0.2366], dolmen:[0.1777,0.2366], nemeton:[0.2702,0.2366], triskele:[0.3626,0.2366], sacredway:[0.4551,0.2366], bardsstep:[0.5475,0.2366], brochtop:[0.64,0.2366], bogoffer:[0.7324,0.2366], stonerow:[0.1777,0.3335], oakgrove:[0.2702,0.3335], druidhouse:[0.3626,0.3335], henge:[0.4551,0.3335], brochbase:[0.5475,0.3335], boglane:[0.64,0.3335], lakeshore:[0.7324,0.3335], cairn:[0.8249,0.3335], ossuary:[0.0853,0.4304], fogou:[0.1777,0.4304], innerditch:[0.2702,0.4304], innergate:[0.3626,0.4304], lawstone:[0.4551,0.4304], hallcourt:[0.5475,0.4304], treasury:[0.64,0.4304], crannog:[0.7324,0.4304], cistgrave:[0.0853,0.5273], souterrain:[0.1777,0.5273], potters:[0.2702,0.5273], boarstone:[0.3626,0.5273], marketcross:[0.4551,0.5273], kingshall:[0.5475,0.5273], chariotshed:[0.64,0.5273], weaverhut:[0.1777,0.6243], roundring:[0.2702,0.6243], wellsq:[0.3626,0.6243], mainstreet:[0.4551,0.6243], smithy:[0.5475,0.6243], kilnyard:[0.64,0.6243], oghamrow:[0.3626,0.7212], gatecourt:[0.4551,0.7212], granary:[0.5475,0.7212], tannery:[0.64,0.7212], ditchW:[0.3626,0.8181], southgate:[0.4551,0.8181], ditchE:[0.5475,0.8181], watchW:[0.2702,0.915], rampartW:[0.3626,0.915], causeway:[0.4551,0.915], rampartE:[0.5475,0.915], watchE:[0.64,0.915] } }
+
+迷霧照預設（沒寫 `mist:0`）＝荒野走過才亮；三個休息處（`wellsq`／`oakgrove`／`nemeton`）的墨圈是 CSS 畫的，不用美術。
+
 ## 進度
 
 - [x] 第一批 14 張 → Ray 退（§七）→ [x] 第二版 7 張 → Ray 退（太像村落，§八）→ [x] **第三版定風格 ✔ → 第四版 14 張全數交到 `_v3/`，等 Ray 挑**
 - [x] 其餘 41 張 —— 2026-09-26 00:40 全數入庫（§九盤點表）
-- [ ] 小地圖
+- [x] 小地圖 —— 2026-09-26 交件（§十；程式端要補 `TOWNS.dunmor.map`）
