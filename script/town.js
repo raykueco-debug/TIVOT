@@ -705,7 +705,9 @@ export const OUTING = {
   dateAff: 20,
   /* ══⚠⚠ **約會場景事件演完 +3 好感**（ver -1771，Ray：「四女主每次約會完成該場景事件後都 +3 好感」）══
      實作在 `modules/town.js` 段落收尾那一支（`withWho` 的段落演完就給那個人，鐵律 8）——
-     不要再在各段落裡逐一寫 `aff`。一個事件拆成兩段（聖索菲亞索菈娜那一條）時，前半寫 `dateAff:0`。 */
+     不要再在各段落裡逐一寫 `aff`。一個事件拆成兩段（聖索菲亞索菈娜那一條）時，前半寫 `dateAff:0`。
+     ⚠ 依路線給不同值寫成 `dateAff:{ <旗>:<值> }`（第一支插著的旗說了算，都沒插＝這裡的預設）——
+       雪都瞭望台：`{ ep_m2_route:5 }`（Ray -1772：M2 +5、其他 +3）。 */
   dateDoneAff: 3,
   /* ══⚠⚠ **出了門就不回來，直到 19:00**（ver -1100，Ray：「角色如果出門，
      在 19:00 之前不會回來」）══
@@ -5204,8 +5206,8 @@ export const TOWNS = {
         /* ══ 約會・安雅（ver -1522）══ `withWho` ＝正在跟她約會才演。
            ⚠⚠ 兩套：`[已發生米夏事件，蕾娜不知]` ＝ **M2**（`ep_m2_route`），其餘走另一套
              —— 寫成「M2 才演 A、其餘演 B」（A route 先跑的人兩支旗都沒有）。
-           ⚠ M2 那一條收尾**好感 +5**（稿上指定）：掛在**最後一拍**，演完才給。 */
-        acts:[ { flag:'vn_lookout_anya', withWho:'ANYA', lines:[
+           ⚠ 好感：M2 +5、其他 +3（ver -1772，Ray）—— 走段落的 `dateAff`（約會統一 +3 那一支），不再掛在拍上。 */
+        acts:[ { flag:'vn_lookout_anya', withWho:'ANYA', dateAff:{ ep_m2_route:5 },   /* ver -1772 Ray：M2 +5、其他路線 +3（約會統一那一筆，不再另外加） */ lines:[
           any('watch','……'),
           { speaker:'PLAYER', blank:true },
           any('silent','一點點。',                        { skipIf:'ep_m2_route' }),
@@ -5217,7 +5219,7 @@ export const TOWNS = {
           any('talk','對不起，要你瞞著大家……',           { onlyIf:'ep_m2_route', skipIf:'tomb_misha_met' }),
           any('talk','對不起，害你瞞著大家……',           { onlyIfAll:['ep_m2_route','tomb_misha_met'] }),
           { speaker:'PLAYER', blank:true, onlyIf:'ep_m2_route' },
-          any('talkshy','好……', { onlyIf:'ep_m2_route', aff:{ anya:5 } }),
+          any('talkshy','好……', { onlyIf:'ep_m2_route' }),
         ] } ] },
 
       /* ── 二、舊街區（四向樞紐） ── 左＝武器店、右＝廣場、上＝火車站、下＝公會 */

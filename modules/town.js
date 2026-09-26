@@ -4582,8 +4582,13 @@ export function enter(id){
           applyAff(play);
           /* ══ 約會場景事件演完 +3（ver -1771，Ray）══ `withWho` ＝這一段是約會事件；給的是**正在約的那個人**。
              ⚠ 只在第一次演完給（旗還沒插）；`dateAff:0` ＝這一段只是前半，後半才給。數值在 `OUTING.dateDoneAff`（鐵律 1）。 */
-          if(act.withWho && act.dateAff!==0 && !(act.flag && prog.hasFlag(act.flag)))
-            prog.addAffection(String(act.withWho).toLowerCase(), act.dateAff || OUTING.dateDoneAff || 3);
+          if(act.withWho && act.dateAff!==0 && !(act.flag && prog.hasFlag(act.flag))){
+            let v = OUTING.dateDoneAff || 3;
+            if(typeof act.dateAff==='number') v = act.dateAff;
+            else if(act.dateAff && typeof act.dateAff==='object'){   // { 旗:值 }：第一支插著的旗說了算（ver -1772）
+              for(const f in act.dateAff) if(prog.hasFlag(f)){ v = act.dateAff[f]; break; } }
+            prog.addAffection(String(act.withWho).toLowerCase(), v);
+          }
           if(act.flag) prog.addFlags([act.flag]);                 // 主線段落：只演一次
           /* ══ 追逐：打完一場，牠往**玩家進入房間的反方向**跑一格（ver -1421）══
              ⚠ `backDir` 是「回頭路」，**牠要跑的是它的反向**（＝玩家原本前進的方向）。
