@@ -434,6 +434,7 @@ export function useNiem(who){
 export function girlStarCost(i){
   const t=girlCfg().starCost||[];
   if(!t.length) return 0;
+  if((girlCfg().starCond||{})[i]) return 0;   // ver -1774：條件星不花紀錄
   return Math.max(0, (t[Math.min(i, t.length)-1]|0));
 }
 /* 「現在點得動這一顆嗎」——**唯一的判定**（鐵律 7/8）：UI 畫暗、按下去、
@@ -442,7 +443,9 @@ export function canLightStar(who, i){
   const cost=girlStarCost(i), have=girlRecords(who);
   if(!isGirl(who))            return { ok:false, why:'notgirl', cost, have };
   if(girlStarOn(who,i))       return { ok:false, why:'on',      cost, have };
-  if(girlLevel(who) < i)      return { ok:false, why:'level',   cost, have };
+  /* ⚠ ver -1774：**不看等級**（Ray）。第 9 顆走條件旗（`girls.starCond`），不花紀錄。 */
+  const cond=(girlCfg().starCond||{})[i];
+  if(cond && !hasFlag(cond+'_'+who)) return { ok:false, why:'cond', cost, have };
   if(have < cost)             return { ok:false, why:'record',  cost, have };
   return { ok:true, why:'', cost, have };
 }

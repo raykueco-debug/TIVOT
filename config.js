@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1773';
+export const VERSION = 'ver 2026.09.22-1774';
 
 export const GAME_CONFIG = {
 
@@ -1111,7 +1111,14 @@ export const GAME_CONFIG = {
          要「打完能全點亮」就把 `recordPerLevel` 調到 3（27≥23），
          要更嚴就調 `starCost`。**兩個旋鈕都在這裡，程式不必動。** */
     recordPerLevel: 1,
-    starCost: [1, 1, 2, 2, 3, 3, 4, 4, 5],
+    /* ══⚠⚠⚠ **ver -1774：星不再用等級鎖**（Ray：「女主的技能不要用等級來鎖，前兩個技能各消耗一份戰鬥紀錄
+       就可以點亮，三四個各消耗兩個，五六各消耗三個，七八各消耗四個，9 是滿足特定條件」）══
+       · 1~8 顆：只看手上的《戰鬥紀錄》夠不夠（`progress.canLightStar`，唯一的判定）。等級只負責**產出**紀錄。
+       · 第 9 顆：**不花紀錄**，要旗 `starCondFlag + '_' + 她的鍵`（例 `girlstar9_nouvelle`）插著才點得動。
+         ⚠ 鐵律 9：**那支旗現在還沒有人插** —— 「特定條件」是什麼 Ray 還沒定，定了由那個事件插。
+       · 經濟的試算表：`docs/girl_star_economy.xlsx`（收入 vs 成本，三種情境）。 */
+    starCost: [1, 1, 2, 2, 3, 3, 4, 4, 0],
+    starCond: { 9: 'girlstar9' },
 
     /* ══⚠⚠⚠ NIEM ＝ 她們**飛行能力**的等級（ver -1186，Ray 交稿）══════════════
        > 「跳出訊息『獵手之眼』等級提升為 LV.2」

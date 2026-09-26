@@ -138,8 +138,8 @@ function girlStarListHtml(key){
       : '<b class="gs-light'+(can.ok?' go':'')+'" data-glight="'+key+':'+(i+1)+'">'
         /* 三種字面：等級不夠＝報還要幾級；份數不夠＝只報成本（不寫「點亮」，
            那個詞是動作，按不動的東西不該假裝自己是鈕）；點得動＝「點亮 ◆N」。 */
-        + (can.why==='level' ? ('LV.'+(i+1))
-         : can.ok            ? ('點亮 ◆'+cost)
+        + (can.why==='cond'  ? '條件未達'                 // ver -1774：第 9 顆（特定條件，不花紀錄）
+         : can.ok            ? (cost ? ('點亮 ◆'+cost) : '點亮')
          :                     ('◆'+cost)) + '</b>';
     /* ══ 顏色與凹槽（ver -990，Ray：「在技能表裡也要標色」「讓每個星前面有一個凹槽，
        等級到了就點亮相對應的顏色」）══
@@ -161,7 +161,7 @@ function girlStarListHtml(key){
               舊版把西文名獨佔一行，九列就變成 27 行的字牆。 */
          +   '<div class="gs-shead">'
          +     '<u class="gs-gem"></u>'
-         +     '<em class="gs-slv">LV.'+(i+1)+'</em>'
+         +     '<em class="gs-slv">★'+(i+1)+'</em>'   /* ver -1774：星不再用等級鎖，標序號不標 LV */
          +     '<i class="gs-starname">'+(st.star||'')+'</i>'
          +     '<b>'+(st.name||('Lv'+(i+1)))+'</b>'
          +     btn
