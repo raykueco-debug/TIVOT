@@ -778,3 +778,4 @@ when	from	to	reason
 20260926-190219	tools/map_sofiaout_draft.py	_recycle/tools/map_sofiaout_draft.py	ver -1762：拓樸已搬進 script/town.js 的 TOWNS.sofiaout、版面進 map_layout.py 的 POS（同一個拓樸不留兩份）
 20260926-195215	resources/enemy/man_thug_shotgun.webp	_recycle/resources/enemy/man_thug_shotgun.webp	Ray：表情動作要多變化 —— 驚吼版與 pistol 太像，換成暴怒反撲版
 20260926-220915	tools/map_verafond_draft.py	_recycle/tools/map_verafond_draft.py	ver -1764：拓樸已搬進 script/town.js 的 TOWNS.verafond、版面進 map_layout.py 的 POS（同一個拓樸不留兩份）
+20260926-222723	resources/si/sorana_si_remind.webp	_recycle/resources/si/sorana_si_remind.webp.20260926-222723	Ray：索的 remind 修壞，回上一版（3f5a10b 的 09-22 重製版退回收區）
