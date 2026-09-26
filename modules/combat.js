@@ -111,7 +111,8 @@ export function setup(){
                  /* ⚠ `g==='counter'` 才算「完美反擊」（ver -719，Ray 指定）——
                     黃圈與橘圈自 -706 起也會開火，但那不是**完美**反擊。
                     判定放在這裡是因為只有 defense 分得出帶（鐵律 7）。 */
-                 onThreatResolved: (g, real)=>{ weapon.onThreatResolved(); tutorial.onThreatResolved(g);
+                 onThreatResolved: (g, real, fired)=>{ weapon.onThreatResolved(); tutorial.onThreatResolved(g);
+                                          partner.onCounterResult(!!fired);   // 赤爪星（ver -1778）
                                           /* ⚠ partner 收的是**真實**判定（ver -887，Ray：
                                              「真實點到紅圈就發動，靠技能強制算成紅圈的不算」）。
                                              ⚠ ver -974 起判定不再被技能覆蓋（「判定還是分色」），
@@ -1215,7 +1216,7 @@ function enemyAttack(dmg, kind, saintAmt){
      ⚠ 放在聖徒化分支**之前**：聖徒化期間挨打不掉血，但那一擊照樣把倒數槽推短，
        仍是失誤。 */
   if(!_scriptedAtk){
-    if(kind==='assault') state.penAssault++;
+    if(kind==='assault'){ state.penAssault++; state.counterStreak=0; }   // 赤爪星：整發挨打＝連續反擊中斷（ver -1778）
     else if(kind==='block') state.penBlock++;
     else if(kind==='delay') state.penDelay++;
     // 'wrong' 由 state.wrongTaps 記（點錯那一支自己的計數），不重複記
@@ -2740,6 +2741,7 @@ function sessionSave(){
                     同一局之內換一隻怪不歸零，換局才歸零。（ver -893 用詞） */
                  svStreak:state.svPerfectStreak||0,
                  lucidStreak:state.lucidStreak||0,
+                 counterStreak:state.counterStreak||0,   // 赤爪星（ver -1778）
                  flawlessKills:state.flawlessKills||0 };
 }
 function storyBattleEnd(lost){
@@ -2969,7 +2971,7 @@ export function startGame(){
      會被 sessionCarry 搬回來**（ver -891/-892，Ray：「可跨場（怪）累積」）——
      同 saintUsed／energy 的作法：在開頭乾淨歸零，接得上同一局的那一場再放回去
      （鐵律 7：不要在歸零那排挖特例）。**（ver -893 用詞：局＝結算、場＝一隻怪）** */
-  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0; state.installReloadPending=false;
+  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0; state.installReloadPending=false; state.counterStreak=0;
   saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標；共鬥 coopMode/coopTimer 一併）
   weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
   weapon.resetWeaponSwitch();   // 副武器切換鈕（ver -410）：排隊中的切換不可以跨場留著
@@ -3153,6 +3155,7 @@ export function startGame(){
       state.energy              = sessionCarry.energy;
       state.svPerfectStreak     = sessionCarry.svStreak||0;      // 獵手的戰吼（ver -891）
       state.lucidStreak         = sessionCarry.lucidStreak||0;   // 明晰之夢（ver -891）
+      state.counterStreak       = sessionCarry.counterStreak||0; // 赤爪星（ver -1778）
       state.flawlessKills       = sessionCarry.flawlessKills||0; // 連續無傷擊殺（ver -892）
       updateEnergyClasp();          // 破防值搬回來了，扣環要跟著畫（同一支，鐵律 8）
     }else if(sess){
@@ -3232,7 +3235,7 @@ export function startIntruderFight(){
   state.atkBuff=false; state.lowHpBuff=false;
   state.partnerActiveUsed=false;   // 新場：搭檔主動技每場次數重置
   /* 亂入是**新的一局**（不接上一段），三個連段一律歸零（ver -891/-892；ver -893 用詞）。 */
-  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0; state.installReloadPending=false;
+  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0; state.installReloadPending=false; state.counterStreak=0;
   saint.reset();
   weapon.reset();
   partner.reset();

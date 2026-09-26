@@ -51,8 +51,8 @@ function critRate(){
   const w = weaponOf(state.equippedWeapon, storyMode());
   return (w && w.critRate!=null) ? w.critRate : COUNTER_CRIT_RATE;
 }
-function critHit(base){
-  const crit = Math.random() < critRate();
+function critHit(base, force){
+  const crit = !!force || Math.random() < critRate();   // force：安雅的威力升階「全暴擊」（ver -1778）
   const dmg = crit ? Math.max(1, Math.round(base*(1+COUNTER_CRIT_DMG))) : base;
   return { dmg, crit };
 }
@@ -162,7 +162,9 @@ export function counterCdTotalMs(key){ return cdSecOf(key)*1000; }
 /* 開場歸零：拉栓是**這一場**的節奏，不跨場（同 `resetWeaponSwitch` 的其他欄位）。 */
 export function resetCounterCd(){ cdAt = Object.create(null); cdRingStop(); }
 
-export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
+export function weaponCounter(dmgScale, hitRate, dmgRoll, grade, opt){
+  /* `opt`（ver -1778）：`{crit:true}` ＝這一發全暴擊、`{mul:2}` ＝兩倍傷害 —— 安雅的反擊威力升階（defense 換算）。 */
+  const forceCrit = !!(opt && opt.crit), extraMul = (opt && opt.mul) || 1;
   /* ⚠ 本篇與試玩版是**兩套數值**（ver -378）——一律走 `weaponOf`，不要直接查 WEAPONS。 */
   const w = weaponOf(state.equippedWeapon, storyMode());
   if(!w) return;
@@ -238,7 +240,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
      ⚠ **算的那一支在 saint**（`niAtkMul`，鐵律 7：普攻與反擊問同一支），
        這裡只讀 —— weapon 不 import saint，由 combat 注入。 */
   const niMul = api.niAtkMul ? api.niAtkMul() : 1;
-  const scale = ((dmgScale==null) ? 1 : dmgScale) * modMul * niMul;
+  const scale = ((dmgScale==null) ? 1 : dmgScale) * modMul * niMul * extraMul;
   /* ══ 副武器迴避（ver -760；ver -796 併進 `weaponMod`）══ 卡上
      `weaponMod:{ 類別:[傷害, 迴避] }` 的 **[1]＝額外迴避率**（％數，即使全 miss 也會
      清掉延時跟主動攻擊）。每一發的命中 ×(1−r)。
@@ -278,7 +280,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
      ⚠ 0 不呼叫 `enemyDamage`：那一支會帶受擊特效與擊殺判定，打 0 不該驚動它。 */
   const roll = Array.isArray(dmgRoll) && dmgRoll.length ? dmgRoll : null;
   /* ⚠ `dmgRoll` 走 `scale` 之外的路（它是絕對值清單），所以改裝要在這裡自己乘。 */
-  const rollOne = ()=> Math.round(roll[(Math.random()*roll.length)|0] * modMul * niMul);
+  const rollOne = ()=> Math.round(roll[(Math.random()*roll.length)|0] * modMul * niMul * extraMul);
   // 反擊武器 SE：反擊（Counter）與完美防禦（散彈 Perfect 反擊）都會出聲——散彈 blast 兩路徑皆觸發。
   //   機槍＝逐發播（搭搭搭搭搭連續感）、散彈＝一發、狙擊＝一發。散彈完防由此 SE 出聲，defense 端不再疊合成重擊。
   /* ⚠ 「這一場」可以覆寫武器音（ver -423（-893 前用詞），Ray：船艦戰的機槍／霰彈／步槍各換一支）——
@@ -328,7 +330,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
       flushPending();
       return;
     }
-    const h=critHit(base);
+    const h=critHit(base, forceCrit);
     api.enemyDamage(h.dmg, true, true, 'counter');   // 靜默扣血（含 overkill/擊殺判定）
     addCounter(h.dmg); onCounterFired(); counterEnergy(h.dmg, base);
     /* ⚠ 爆發型（陸戰萊福槍／船戰高爆砲，**同一條分支**）：一發大的 ＋ **大煙**
@@ -362,7 +364,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
         api.floatDmg(String(n), (bx-6+k*3)+'%', (34+(k%2)*6)+'%', n>0);
         continue;
       }
-      const h=critHit(base); sum+=h.dmg;
+      const h=critHit(base, forceCrit); sum+=h.dmg;
       api.enemyDamage(h.dmg, true, true, 'counter');
       api.floatDmg((h.crit?L.battle.crit:'')+h.dmg, (bx-6+k*3)+'%', (34+(k%2)*6)+'%', true);
     }
@@ -381,7 +383,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade){
   for(let k=0;k<w.hits;k++){
     if(!hits(k)){ rolls.push(null); continue; }
     if(roll){ const n=rollOne(); rolls.push({dmg:n, crit:false, zero:n<=0}); sum+=n; continue; }
-    const h=critHit(base); rolls.push(h); sum+=h.dmg;
+    const h=critHit(base, forceCrit); rolls.push(h); sum+=h.dmg;
   }
   addCounter(sum); onCounterFired();
   counterEnergy(sum, roll ? w.hits*Math.max.apply(null, roll) : w.hits*base);

@@ -2468,6 +2468,9 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     }else if(dir==='up'){
       // 與上滑手勢同：能否發、屬於誰一律由 partner 判定（無對應技＝no-op）
       if(state.saintMode){ partner.tryActive('saint'); return; }
+      /* 夢魘化期間的上滑＝粉碎本體（同觸控那一支）—— ver -1778 起安雅在 board 情境也有主動技，
+         不先分流的話鍵盤的上滑會在夢魘化期間發出「非夢魘化那一半」。 */
+      if(state.niMode){ if(!tutorial.niBurstPending()) saint.nightmareActive(); return; }
       if(state.transitioning) return;                       // board 手勢的額外 guard（轉場中不受理）
       partner.tryActive('board');
     }else{

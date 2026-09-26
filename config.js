@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1777';
+export const VERSION = 'ver 2026.09.22-1778';
 
 export const GAME_CONFIG = {
 
@@ -730,10 +730,13 @@ export const GAME_CONFIG = {
          ⚠ 加這一格**只為了整備頁印得出來**：九星有三顆（Lv2／Lv5／Lv8）在強化它，
            玩家卻在卡上找不到那一招的說明。
          ⚠ 名字與英文照定稿；`key` 不與任何 handler 同名。 */
-      active:{ key:'dreamBreakInfo', name:'夢境破碎', en:'Dream Breaker', context:'none',
-               desc:'發動方式：夢魘化期間戰鬥畫面上滑。<br>'
-                   +'夢魘化期間發動，強制中止爆發時間，保留已削減之 HP，'
-                   +'並一次性給予敵最大 HP 最高 25% 的傷害，視夢魘化期間清除格數而定。' },
+      /* ⚠ ver -1778（Ray）：**非夢魘化期間也能發動** ＝ 主動進入明晰之夢那一套增益（反擊必中＋星的威力升階），
+         場上的攻擊圈不重置（不演 cut-in、不重排敵人計時）。一局一次（`partnerActiveUsed`）。
+         夢魘化期間的上滑照舊是粉碎本體（`saint.nightmareActive`，不經這裡）。 */
+      active:{ key:'dreamBreakInfo', name:'夢境破碎', en:'Dream Breaker', context:'board',
+               desc:'發動方式：戰鬥畫面上滑。<br>'
+                   +'夢魘化期間發動：強制中止爆發時間，保留已削減之 HP，並一次性給予敵最大 HP 20% 的傷害。<br>'
+                   +'非夢魘化期間發動：立即進入明晰之夢的增益狀態，場上攻擊圈不重置。' },
     },
     /* ══ 索菈娜（ver -803，Ray 交稿）══ 夏爾村村內戰一進場就強配（見 config.battles
        的 sv_* 的 `partner:'sorana'`，combat.startGame 讀它覆寫）。
@@ -1335,13 +1338,16 @@ export const GAME_CONFIG = {
                （ver -887 就定了）。判定分色之後這件事更單純：兩個等級現在一樣。 */
           niReload:1 },
         { star:'Tejat', skill:'passive',           name:'赤足星',
-          desc:'明晰之夢延長為 10 秒，期間所有反擊攻擊力提升。',
+          desc:'明晰之夢延長為 10 秒。明晰之夢與夢魘化期間的反擊威力升一階：黃圈打橘圈傷害、橘圈打紅圈傷害、紅圈全暴擊。',
           /* `lucidSec` 是**增量**：卡上的 10 ＋ 5 ＝ 15 秒。 */
           lucidSec:5, counterAtk:1 },
         { star:'Mebsuta', skill:'active',         name:'赤爪星',
-          desc:'夢境破碎後的反擊增益期間，所有反擊攻擊力提升。',
-          /* 與築壩者星累計＝2（紅圈）。秒數不再加（卡上兩顆都寫「追加 10 秒」）。 */
-          burstAtk:1 },
+          desc:'連續十次反擊成功（不限圈色）即回填夢境破碎。',
+          /* ══ ver -1778 改（Ray：「赤爪星改成連續十次反擊成功（不限圈色）回填主動技」）══
+             舊效果（夢境破碎後的反擊增益再升一階，`burstAtk:1`）退場 —— 升階改由赤足／鐵蹄統一管。
+             「成功」＝那一次**真的開火**（任何一圈；拉栓中、該圈不反擊、整顆挨打都算中斷）。
+             計數在 `partner.onCounterResult`（state.counterStreak，跨場累積、換局歸零）。 */
+          counterReloadActive:10 },
         { star:'Propus', skill:'install',          name:'前引星',
           desc:'夢魘化發動時體力先回滿，發動時間最大化。',
           /* 夢魘化的長度＝從**發動當下的血**以固定速率抽到 1（滿血＝`maxSec`），
@@ -1350,7 +1356,7 @@ export const GAME_CONFIG = {
                不灌血而用滿血的斜率去抽，會提早見底，比原本還短。 */
           niFullStart:1 },
         { star:'Alzirr', skill:'passive',          name:'鐵蹄星',
-          desc:'明晰之夢延長為 15 秒，期間所有反擊攻擊力提升。',
+          desc:'明晰之夢延長為 15 秒。反擊威力再升一階：黃圈打紅圈傷害、橘圈全暴擊、紅圈兩倍傷害。',
           /* 攻擊力與赤足星累計＝2（紅圈）。**秒數也再 +5**（ver -994）：
              5 →（赤足星）10 →（這一顆）15 —— 定稿的兩句都寫了「延長為」。
              ⚠ 中文名「鐵蹄星」由 Ray 定（ver -995）—— 他的卡上這一顆原本只有西文
@@ -1408,11 +1414,11 @@ export const GAME_CONFIG = {
           /* 「破防攻擊力」＝雙槍破防（Bullets Rain）那一段的每一發。
              唯一的計算點在 `combat.tap` 的 `dualWield` 分支。 */
           brDmgMul:0.20 },
-        { star:'Nunki', skill:'passive',           name:'海宣星',
-          desc:'獵手的戰吼發動時，可再次使用獵手的智慧。',
-          /* ⚠ 「5 盤」是**戰吼的門檻**不是另一個數字 —— 點了箭頭星之後就是 3 盤
-             （鐵律 7：門檻只有 `passive.streak` 減去 `roarStreakCut` 一處在算）。 */
-          roarReloadActive:1 },
+        { star:'Alnasl', skill:'passive',          name:'箭頭星',
+          desc:'獵手的戰吼發動條件由連續5盤完美清盤降低為3盤。',
+          /* 減量寫在星上（5 − 2 ＝ 3）：門檻的真相仍是卡上的 `passive.streak`。 */
+          roarStreakCut:2 },
+        /* ⚠ ver -1778：② 與 ⑤ 對調（Ray：「海宣太便宜了，海宣＋箭頭基本就永動了」）—— 海宣（回填主動技）改 3 份、箭頭（戰吼 3 盤）改 1 份。 */
         { star:'Ascella', skill:'active',         name:'曳弦星',
           desc:'獵手的智慧發動後追加 10 秒破防值累積量 200%。',
           /* 與戰吼**同一個執行體**（`partner.fireEnergyBuff`，鐵律 8）：
@@ -1424,10 +1430,11 @@ export const GAME_CONFIG = {
              刻意不對玩家講橘圈／紅圈）。加成走 `prog.girlBonus` 累加：滿星 ×2.5。 */
           desc:'獵手的共鬥期間，自動反擊威力提升 50%。',
           coopCounterMul:0.5 },
-        { star:'Alnasl', skill:'passive',          name:'箭頭星',
-          desc:'獵手的戰吼發動條件由連續5盤完美清盤降低為3盤。',
-          /* 減量寫在星上（5 − 2 ＝ 3）：門檻的真相仍是卡上的 `passive.streak`。 */
-          roarStreakCut:2 },
+        { star:'Nunki', skill:'passive',           name:'海宣星',
+          desc:'獵手的戰吼發動時，可再次使用獵手的智慧。',
+          /* ⚠ 「5 盤」是**戰吼的門檻**不是另一個數字 —— 點了箭頭星之後就是 3 盤
+             （鐵律 7：門檻只有 `passive.streak` 減去 `roarStreakCut` 一處在算）。 */
+          roarReloadActive:1 },
         { star:'Kaus Borealis', skill:'install',   name:'天弓星',
           desc:'獵手的共鬥期間，自動反擊威力再提升 100%。',
           coopCounterMul:1.0 },

@@ -202,6 +202,8 @@ export const state = {
      （ver -892）。⚠ 與兩個連段一樣要**跨怪累積**，所以住在 state（combat 的
      sessionCarry 只搬得動 state 上的東西）。 */
   flawlessKills: 0,
+  /* 連續反擊開火數（安雅「赤爪星」：滿 10 回填主動技，ver -1778）。挨一整發就歸零；跨場累積（同 lucidStreak）。 */
+  counterStreak: 0,
   /* 欠著的 Install 回填（ver -1775）：這一場賺到的回填**下一場**才生效。擁有者 saint（defer／apply 兩支）。 */
   installReloadPending: false,
   energyBoostUntil: 0,   // 破防值累積加速（×N）的結束時刻（ms）；addEnergy 讀它

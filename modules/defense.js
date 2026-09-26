@@ -452,10 +452,19 @@ function resolveOne(th, ratio, w){
        萊福槍的黃橘圈卡上沒有 `counter`，抬攻擊力也不會讓它開火（那是那一把槍的
        性質：只有紅圈才反擊）。
      ⚠ 階 2（紅圈）＝三個參數都不給 —— `weaponCounter` 的預設就是全額傷害、命中 1。 */
-  const fireArgs = (nat, natHit)=>{
-    if(atkStep>=2) return { scale:undefined, hit:undefined, roll:undefined };
-    const band = (atkStep===1) ? weaponBand(w,'perfect') : nat;
-    return { scale:band.scale, hit: hitForce ? 1 : natHit, roll:band.roll };
+  /* ══⚠⚠⚠ ver -1778：`atkStep` 是**往上升幾階**（Ray 定案）══
+     階梯：0 黃圈 → 1 橘圈 → 2 紅圈 → 3 紅圈全暴擊 → 4 紅圈兩倍傷害。
+     這一發的實際階 ＝ 玩家點到的那一帶（黃 0／橘 1／紅 2）＋ `atkStep`（赤足 +1、鐵蹄 +2）。
+     ⚠ 回傳多一格 `opt`（`{crit}`／`{mul}`），交給 `weaponCounter` 的第 5 個參數。 */
+  const fireArgs = (nat, natHit, base)=>{
+    const lv = Math.min(4, (base|0) + atkStep);
+    const hit = hitForce ? 1 : natHit;
+    if(lv>=2){
+      const opt = lv===3 ? { crit:true } : (lv===4 ? { mul:2 } : undefined);
+      return { scale:undefined, hit:undefined, roll:undefined, opt };   // 階 2 以上＝紅圈的整組參數（命中 1，同 -974 的階 2）
+    }
+    const band = (lv===1) ? weaponBand(w,'perfect') : nat;
+    return { scale:band.scale, hit, roll:band.roll, opt:undefined };
   };
   /* ══⚠⚠⚠ **命中被壓成 100% 那一帶就不扣血**（ver -1005，Ray：「安雅反擊命中率
      100% 時，步槍不應該扣血，只要反擊發生就不扣」）══
@@ -486,6 +495,7 @@ function resolveOne(th, ratio, w){
     api.onForcedCounter(Math.max(0, (state.counterDamage||0) - (d0||0)));
   };
   const boltFloat = ()=> api.floatDmg((L.battle && L.battle.boltCd) || 'BOLT','50%','34%',false);
+  let firedAny=false;   // 這一次有沒有真的開火（赤爪星的連續計數，ver -1778）
   let grade='block';   // 判定等級：'counter' | 'perfect' | 'block'（傳給教學層分流，見文末通知）
   /* ⚠⚠ **「真的點到紅圈」與「被技能算成紅圈」要分開報**（ver -887，Ray：
      「我偏向真實點到紅圈就發動，而靠技能強制算成紅圈發動的就不算」）。
@@ -516,7 +526,9 @@ function resolveOne(th, ratio, w){
     /* ⚠ 紅圈也吃拉栓（栓動就是栓動）—— 但**免傷照給**（`bands.counter.take` 恆為 0），
        完美反擊仍然值得點；沒開出來的只是那一發傷害。 */
     if(canFire()){
-      api.weaponCounter(undefined, undefined, undefined, 'counter');   // ver -970：帶名交給 weapon 查 bandMul
+      firedAny=true;
+      { const fa = fireArgs(null, 1, 2);   // ver -1778：紅圈也吃升階（全暴擊／兩倍）
+        api.weaponCounter(undefined, undefined, undefined, 'counter', fa.opt); }   // ver -970：帶名交給 weapon 查 bandMul
       staggerOnCounter();
       /* ══⚠⚠⚠ **重擊：劇烈一震 ＋ 清掉所有攻擊圈**（ver -1659，Ray：「步槍跟高爆彈
          在紅圈命中時敵人都要劇烈一震，像遭到重擊，且命中可以清掉所有攻擊圈」）══
@@ -553,12 +565,12 @@ function resolveOne(th, ratio, w){
     api.floatDmg(L.battle.perfect,'50%','40%',true);
     let bpFired = false;
     if(bp.counter && canFire()){
-      const fa = fireArgs(bp, bp.hit);          // ver -974：攻擊力帶／命中可被技能覆蓋
+      const fa = fireArgs(bp, bp.hit, 1);       // ver -974／-1778：橘圈（階 1）＋升階
       const _d0 = state.counterDamage||0;
-      api.weaponCounter(fa.scale, fa.hit, fa.roll, 'perfect');
+      api.weaponCounter(fa.scale, fa.hit, fa.roll, 'perfect', fa.opt);
       staggerOnCounter();
       billForced(_d0);                          // ver -1012／-1024：橘圈靠霸王條款命中 → 依傷害收費
-      bpFired = true;
+      bpFired = true; firedAny=true;
     }else if(bp.counter){
       boltFloat();                              // ver -1009：拉栓中，這一發開不出來
     }else if(bp.take<=0){
@@ -611,12 +623,12 @@ function resolveOne(th, ratio, w){
            技能壓過」）—— -974 之前那件事是靠「把整帶升成紅圈」順便達成的，
            現在改由 `hitForce` **只壓命中**，免傷與評價照舊不送。 */
         if(canFire()){
-          const fa = fireArgs(bb, hit);
+          const fa = fireArgs(bb, hit, 0);      // ver -1778：黃圈（階 0）＋升階
           const _d0 = state.counterDamage||0;
-          api.weaponCounter(fa.scale, fa.hit, fa.roll, 'block');
+          api.weaponCounter(fa.scale, fa.hit, fa.roll, 'block', fa.opt);
           staggerOnCounter();
           billForced(_d0);                      // ver -1012／-1024：黃圈靠霸王條款命中 → 依傷害收費
-          bbFired = true;
+          bbFired = true; firedAny=true;
         }else boltFloat();                // ver -1009：拉栓中，這一發開不出來
       }
       const bbTake = takeOf(bb, bbFired);  // ver -1005：命中壓成 1 的反擊 → 不扣血
@@ -639,7 +651,7 @@ function resolveOne(th, ratio, w){
   /* 第二個參數＝**真實**判定等級（ver -887，見上面 realCounter 的說明）。
      ⚠ 加成後與加成前一樣時兩者相同 —— 呼叫端不必分辨有沒有開技能。 */
   const realGrade = realCounter ? 'counter' : (grade==='counter' ? 'block' : grade);
-  if(api.onThreatResolved) api.onThreatResolved(grade, realGrade);   // 教學「首次防禦成功」節點通知（帶判定等級；教學外為 no-op）
+  if(api.onThreatResolved) api.onThreatResolved(grade, realGrade, firedAny);   // 教學「首次防禦成功」節點通知（帶判定等級；教學外為 no-op）
 }
 // 防禦統一閃光：color 'block'（白）或 'gold'（金）。整張敵圖微微一閃。
 export function flashDefense(color){

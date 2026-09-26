@@ -167,6 +167,14 @@ export function tryDeathGuard(){
  *  分派骨架 tryActive 不動。
  * ========================================================================== */
 const ACTIVE_HANDLERS = {
+  /* 安雅・夢境破碎的非夢魘化那一半（ver -1778）。夢魘化期間上滑不會走到這裡（main 先交給 saint）。 */
+  dreamBreakInfo(a, act){
+    if(state.niMode || state.saintMode || state.over) return false;
+    const p = currentPartner(), pas = p && p.passive;
+    if(!(pas && pas.key==='firstCounter')) return false;
+    startLucidDirect(pas, act);
+    return true;
+  },
   /* ══ 生命歸還（ver -740，Ray 定案：「生命歸還只有聖徒化期間可發動，只是原本
      回血是看當前血量，現在發動一律直接全滿」）══
      一度改成「隨時可發＋免傷窗」，Ray 同日撤回 —— 聖徒化限定照舊，唯一的
@@ -482,9 +490,13 @@ export function guideActive(){
      · 夢境破碎之後那扇窗＝ `burstAtk`  （築壩者星 1 → 赤爪星累計 2）
    ⚠ 這幾扇窗可以同時開著，所以取最大不是相加（階數不是增益）。 */
 export function counterAtkStep(){
+  /* ══⚠⚠⚠ ver -1778（Ray 定案）：**階數是「往上升幾階」，不是絕對的圈色**。
+     明晰之夢與夢魘化吃**同一套**：基本＝反擊必中、威力照玩家點到的那一圈（0 階）；
+     赤足星 +1（黃→橘、橘→紅、紅→全暴擊）、鐵蹄星再 +1（黃→紅、橘→全暴擊、紅→兩倍）。
+     ⚠ 推翻 -974 的「夢魘化期間一律紅圈攻擊力（=2）」。換算成傷害參數在 `defense.resolveThreat`。 */
   const who = state.pickedPartner;
-  let step = state.niMode ? 2 : 0;
-  if(lucidActive())     step = Math.max(step, prog.girlBonus(who,'counterAtk'));
+  let step = 0;
+  if(state.niMode || lucidActive()) step = Math.max(step, prog.girlBonus(who,'counterAtk'));
   if(burstBuffActive()) step = Math.max(step, prog.girlBonus(who,'burstAtk'));
   /* ⚠ ver -1012：共鬥那一項（`coopAtk`）已移除 —— 飛刀改成「三刀合計＝一次普攻」，
      不再問帶位（見 `weapon.coopCounter`）。共鬥期間玩家**自己**點到的圈仍走這裡的
@@ -614,6 +626,22 @@ export function onEnemyCleared(){
      `realGrade`（見那一支的 `realCounter`）。
    ⚠ 第三次那一發**即使效果還在跑也照演**：那一拍的重點是「夢魘再臨」這張 CI，
      擋掉玩家就看不到自己把惡夢化賺回來了。 */
+/* ══ 安雅「赤爪星」：連續十次反擊成功（不限圈色）→ 回填主動技（ver -1778，Ray）══
+   `fired` 由 defense 回報（那一次有沒有真的開火）。沒開火＝中斷；整發挨打由 combat.enemyAttack 歸零。
+   ⚠ 回填的是**主動技**（`partnerActiveUsed`，一局一次那一格），立即生效（同索菈娜海宣星），不是 Install。 */
+export function onCounterResult(fired){
+  const who = state.pickedPartner;
+  const need = prog.girlBonus(who,'counterReloadActive');
+  if(!(need>0)) return;
+  if(!fired){ state.counterStreak = 0; return; }
+  state.counterStreak = (state.counterStreak||0) + 1;
+  if(state.counterStreak < need) return;
+  state.counterStreak = 0;
+  if(!state.partnerActiveUsed) return;          // 空槍才回填（同 -896 的規矩）
+  state.partnerActiveUsed = false;
+  const act = (currentPartner()||{}).active || {};
+  api.floatDmg((act.name||'')+' RELOAD','50%','30%',true);
+}
 export function onThreatResolved(g){
   if(g === 'counter'){ onCounter(); return; }
   state.lucidStreak = 0;           // 連續中斷（非紅圈）
@@ -743,6 +771,24 @@ export function onBoardCleared(clean){
      ⚠ 單段的戰吼沒有「reload 那一發」，所以 `.reload` 那個 class 整個不要。 */
   }, `${nm}<span class="cutin-en">${en||''}</span>`, cut, { full:true });   // 被動技全屏（ver -874，Ray）
 }
+/* 明晰之夢的秒數 ＝ 卡上 `buffSeconds` ＋ 星的 `lucidSec`（赤足／鐵蹄各 +5）。
+   ⚠ ver -1778 修：星的 `lucidSec` 從 -974 起**從來沒有人加**（fireBuff 只讀卡上的 5 秒）。 */
+function lucidSeconds(pas){
+  const add = (pas && pas.key==='firstCounter') ? prog.girlBonus(state.pickedPartner,'lucidSec') : 0;
+  return (pas.buffSeconds || 10) + (add||0);
+}
+/* ══ 夢境破碎・非夢魘化期間（ver -1778，Ray）══ 主動進入明晰之夢那一套增益。
+   ⚠ **不演 cut-in、不重排敵人計時** —— Ray：「不重置場上攻擊圈」（fireBuff 的 cut-in 收尾會 resetEnemyTimers）。 */
+function startLucidDirect(pas, act){
+  const sec = lucidSeconds(pas);
+  api.setLowHpBuff(true);
+  clearTimeout(lowHpTimer);
+  lowHpTimer = setTimeout(()=>{ api.setLowHpBuff(false); lowHpTimer=null; }, sec*1000);
+  if(api.hintCurrentCell) api.hintCurrentCell();
+  if(api.lucidFlood) api.lucidFlood(sec);
+  const vk = SFX.pickRot(pas.voice); const vo = asset(vk); if(vo) SFX.playVoice(vo, sfxGain(vk));
+  api.floatDmg((act && act.name) || pas.name,'50%','34%',true);
+}
 /* 「5 秒普攻加倍」的執行體（`lowHpBuff` 與 `firstCounter` 共用，鐵律 8）。 */
 function fireBuff(pas, reload){
   /* `reload`＝這一發是「連續三次」那一發（ver -887）：CI、浮字、語音都換成夢魘再臨。
@@ -750,7 +796,7 @@ function fireBuff(pas, reload){
        不再沿用明晰之夢那張。卡上沒寫就退回原本那一套（鐵律 1）。 */
   const nm = (reload && pas.reloadName) ? pas.reloadName : pas.name;
   const en = (reload && pas.reloadEn)   ? pas.reloadEn   : pas.en;
-  const sec = pas.buffSeconds || 10;
+  const sec = lucidSeconds(pas);
   const fire = ()=>{
     if(state.over) return;
     api.setLowHpBuff(true);
