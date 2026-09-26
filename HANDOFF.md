@@ -34,7 +34,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1757`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1758`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -47,7 +47,14 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1757`
+# HANDOFF — 截至 `ver 2026.09.22-1758`
+
+**`-1758`：里朋莊園改走城鎮模式**（Ray：「里朋不要走 3D 物件好了，反正不是降落點，走城鎮模式」）
+· 拿掉 `RUIN_ART.ripon`（38 件）與 `RUIN_PAL.villa`；`PLACES` 那一筆**只剩名牌**（不寫 `town`、不是降落點）。
+· 城鎮模式要一張**正俯視插畫** ⇒ 美術單 `flight/city/_ripon_plan.md`（交件 `flight/city/Ripon_topdown.png`，1024² RGBA、大門畫在上緣、
+  縮到 1/8 讀得出、附來源 V／S）。收到後的程式端五步寫在那張單的 §六（build_city JOB → 色調反解 → SETTLEMENTS 一列 → 刪 PLACES 那一筆 → 三距離驗）。
+
+# （上一段）截至 `ver 2026.09.22-1757`
 
 **`-1757`：從禁航區裡起飛會被空氣牆釘死**（Ray 回報「廢城出航會黑畫面出不去」時查到的，**但不是他那一次的原因** —— 他是在試飛裡，試飛沒有禁航區）
 · `noflyCheck`：起點就在禁區內、這一趟還沒在禁區外待過（`noflySafe` 空）⇒ 放行到飛出去為止（`noflyFromInside`）。
