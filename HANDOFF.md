@@ -28,6 +28,9 @@
 >    `resources/background/sofia/` 的 `sofia_slum`（重畫：窄巷貧民窟，**沒有碼頭與水面**）／`sofia_guild`／`sofia_firearm`／`sofia_grocerie`（三張改**室內**：櫃台中央偏左、右三分之一留白牆給店主立繪、無人）。舊版進 `_recycle/`。
 >    程式端要做的：① **`config.js` 的 `ASSET_VER` 補四鍵** `sofia_slum`／`sofia_guild`／`sofia_firearm`／`sofia_grocerie`（同名覆蓋，不跳版號玩家永遠拿舊圖、而且驗不出來，§5）
 >    ② `dock` 節點的 `name` 目前「聖索菲亞　舊碼頭貧民窟」—— 已經沒有碼頭了，建議改「聖索菲亞　貧民窟」（**正名仍等 Ray**）；節點 id 不改。三家店節點照舊 `noTime`（室內營業時間 [8,17] ＝只有 day）。
+> 13. **（09-26 下午，Mac）薇拉馮德港 `verafond` 拓樸 v2 Ray 定案**（「整個城式義大利風，當世最發達的富庶港都」「1900 年」）——
+>    程式端要做的：搬進 `script/town.js`（節點 id／出口照 `tools/map_verafond_draft.py` 的 NODES/EDGES，22 格、入城＝`harbor` 兼 `sail`）、`tools/map_layout.py` 補 `POS`、產生器回收。
+>    背景鑰匙與 `noTime` 規則寫在 `resources/background/_verafond_spec.md` §五（美術正在跑，室外 `vela_<格>` 四差分）；全是新檔，不用跳 `ASSET_VER`。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；**§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
