@@ -701,7 +701,7 @@ export const ART = {
     /* ver -953：美術把 webp 換成新畫的 png，webp 版一度從磁碟消失（speakers 指得到、
        檔案卻不在）。轉回 webp 並**重量取景**（fx 0.547→0.528，差 0.019＝橫向約 19px，
        沿用舊值她會偏一格）；`?v=2` 是同名覆蓋的快取破除（§5）。 */
-    smile:        { src:'resources/si/sorana_si_smile.webp?v=3',    top:9,  bot:1530, fx:0.528 },
+    smile:        { src:'resources/si/sorana_si_smile.webp?v=4',    top:9,  bot:1530, fx:0.528 },
     /* ver -953：Ray 為 Stage8「索：dying」補的圖（他原話：「dying 進去了」）。 */
     die:        { src:'resources/si/sorana_si_die.webp?v=3',        top:7,  bot:1524, fx:0.452 },
     back:         { src:'resources/si/sorana_si_back.webp?v=3',       top:1,  bot:1516, fx:0.533 },  // ver -786 換新圖＋重量取景

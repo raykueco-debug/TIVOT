@@ -45,7 +45,7 @@
 >    程式端要做的（等 Ray 給卡）：`config.enemies` 各一張敵人卡，`kind:'human'`（結算「已擊敗」、**不吃**降臨／淨化演出）；圖路徑直接指 `resources/enemy/man_thug_*.webp`。全是新檔，不用跳 `ASSET_VER`。
 > 16. ✅ **-1767 已跳 `?v=3`** **（09-26 晚，Mac）索拉娜 `remind` 回上一版**（Ray：「索的 remind 修壞，回上一版」）—— `resources/si/sorana_si_remind.webp` 換回 d556b53（09-20 軟遮罩版），09-22 的重製版（3f5a10b）進 `_recycle/`。
 >    程式端：**`script/speakers.js` 的 `remind` 路徑 `?v=2` → `?v=3`**（同名覆蓋，不跳版號玩家永遠拿到修壞的那版）；取景值 `measure_si.py` 重量＝`top:1 bot:1525 fx:0.523`（現行寫 `top:4`，差 3px 可改可不改）。
-> 17. **（09-26 晚，Mac）索拉娜 `smile` 也回上一版**（Ray：「smile 也修壞了，回復」）—— `resources/si/sorana_si_smile.webp` 換回 d556b53，09-22 第三輪重製版（82caf63）進 `_recycle/`。
+> 17. ✅ **-1768 已跳 `?v=4`**（取景不變 top:9 bot:1530 fx:0.528） **（09-26 晚，Mac）索拉娜 `smile` 也回上一版**（Ray：「smile 也修壞了，回復」）—— `resources/si/sorana_si_smile.webp` 換回 d556b53，09-22 第三輪重製版（82caf63）進 `_recycle/`。
 >    程式端：**`script/speakers.js` 的 `smile` 路徑 `?v=3` → `?v=4`**；取景 `measure_si.py` 重量＝`top:9 bot:1530 fx:0.528`，與現行完全相同、不用改。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；**§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
@@ -70,7 +70,7 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1767`
+# HANDOFF — 截至 `ver 2026.09.22-1768`（-1768：索拉娜 smile `?v=4`）
 
 **`-1767`：索拉娜 `remind` 跳 `?v=3`**（交接第 16 項；Ray：「索的 remind 修壞，回上一版」）—— 美術已把圖換回 d556b53 那版（68576aa），
 `speakers.js` 的 src 跳 `?v=3`、取景改用重量值 `top:1 bot:1525 fx:0.523`（原 top:4）。飛行頁沒有登記這張，不必改。
