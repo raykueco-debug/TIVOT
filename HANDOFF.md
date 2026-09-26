@@ -50,7 +50,7 @@
 **`-1753`：無人廢城正名「羅賽爾廢城」＋ 拓樸接進 `TOWNS.dunmor`**（Ray 指定）
 · `script/town.js`：`dunmor`（55 格，照 `map_dunmor_draft.py` 的 NODES／EDGES 原樣搬，方向由座標算、兩端自動相反）。
   入口 `causeway`（草稿上的 `gate` 是跨圖出口、沒有背景圖 ⇒ 不是一格；堤道往下＝`sail` 回船）。
-  每格 `noTime`、`wilderness`、迷霧預設；休息處 `wellsq`／`oakgrove`／`nemeton`＝`rest`＋`noWild`。`bgm:'lostplace'` **暫代**。
+  每格 `noTime`、`wilderness`、迷霧預設；休息處 `wellsq`／`oakgrove`／`nemeton`＝`rest`＋`noWild`。`bgm:'lostplace'`（我挑的，Ray 認可）。
   ⚠ **還沒有**：祭壇那一場、`wildSpawn`（遭遇的怪）、小地圖 `map:`、劇情、章節窗 —— 等 Ray。
 · `tools/map_layout.py` 補 `POS.dunmor`，跑出 55 格・59 邊・5 環（＝草稿；少的那一條是通往 gate 的跨圖出口）；草稿 `tools/map_dunmor_draft.py` 回收。
 · 飛行地圖 `PLACES` 那一筆改名並補 `town:'dunmor'`（降落鈕）；`export_mapref.py` 同步。

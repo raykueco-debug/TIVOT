@@ -8956,7 +8956,7 @@ export const TOWNS = {
      · 休息處三格（`wellsq`／`oakgrove`／`nemeton`）＝`rest:true`＋`noWild:true`；入口 `noWild`。
      ⚠ **還沒有的**：祭壇那一場（`sessionEnd`）、`wildSpawn`（遭遇的怪）、小地圖 `map:`、劇情、章節窗 —— 等 Ray。
        沒有 `wildSpawn` ＝現在走進去不會遇到任何怪；沒有 `map:` ＝地圖鈕回「這一帶還沒有留下地圖。」
-     ⚠ `bgm:'lostplace'` 是**暫代**（卡耶爾山谷那一首），Ray 指定後改這一格。
+     · `bgm:'lostplace'`（卡耶爾山谷那一首）：程式端自己挑的，**Ray -1753 認可**（「接得不錯」）。
      ⚠ 飛行地圖上的地標在 `flight/index.html` 的 `PLACES`（183,762，`town:'dunmor'`），位於羅賽爾王國＝禁航區。 */
   dunmor: {
     name: '羅賽爾廢城',
