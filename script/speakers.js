@@ -340,7 +340,7 @@ export const ART = {
                   hugshock:    { src:'resources/si/renna_si_hugshock.webp',    top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
                   hugtalk:     { src:'resources/si/renna_si_hugtalk.webp',     top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
                   hugtalk2:    { src:'resources/si/renna_si_hugtalk2.webp',    top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
-                  hugangry2:   { src:'resources/si/renna_si_hugangry2.png',    top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
+                  hugangry2:   { src:'resources/si/renna_si_hugangry2.webp',    top:3,  bot:1528, fx:0.274, cm:193, standCm:176, withChar:['PLAYER'] },
                   /* ══⚠⚠ **蕾娜扶著諾薇兒**（ver -1696，Ray 交件 ＋ 交稿）══
                      畫面上是**兩個人**（蕾娜在左、諾薇兒靠在她右邊），腳本裡
                      **諾薇兒與蕾娜的台詞都用這一張**（同 `carrynouvelle` 一族的作法）。

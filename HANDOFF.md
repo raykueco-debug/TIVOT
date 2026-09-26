@@ -66,13 +66,25 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1765`
+# HANDOFF — 截至 `ver 2026.09.22-1766`
+
+**`-1766`：補上「程式在用、檔案卻沒進版控」的兩支**（Ray：「推上，巡一下有哪些該 commit 沒上的」）
+· `resources/audio/bgm/peritune_sylblanc_loop.m4a`（鏡湖 BGM，-1542 起就被引用）入版控。
+· `renna_si_hugangry2`（H 路線抱著那三拍）：PNG → WebP q85（1.1 MB → 181 KB），`speakers.js` 改指 `.webp`，原 PNG 進 `_originals/SI/`。
+  ＝交接「`hugangry2` 在 Windows 找」那一條結案（檔案在這台 Mac 上）。
+· ⚠⚠ **工作樹裡 `corvin_si_ecstasy.webp` 被刪，而腳本在用它**（`town.js` 315／3199／3201 的 `cor('ecstasy',…)`）——
+  **不要 commit 那個刪除**（origin 上還在，線上沒事）。原檔在 `_originals/SI/NPC/Corvin_SI_ecstasy.png`。等 Ray 說是要換圖還是誤刪。
+· 巡查結果（untracked 47 個，逐一對過程式引用）：其餘都是**還沒接進程式的新素材**（NPC `npc_ss_*`／`ssophia_si_manu_*`、
+  插圖 023／024／33／34、`anya_si_cryrun`、`nemo_ci_dual`、`se_coins/drawknife/page1/page2/pickup`、`enemy_lowroar`），
+  或 `_raw`／wav 原檔、UUID 檔名的暫存圖、參考文件 —— 接的時候再一起進版控（PNG 要先轉 WebP）。
+
+# （上一段）截至 `ver 2026.09.22-1765`
 
 **`-1765`：薇拉馮德港 BGM ＝ PeriTune Emerald Hill**（Ray 指定）
 · 檔案由 Ray 放的 `PeriTune_Emerald_Hill_loop.m4a` 改成小寫 `peritune_emerald_hill_loop.m4a`（靜態空間分大小寫），入版控。
 · `ASSETS.bgm_emeraldhill`、`TOWNS.verafond.bgm:'emeraldhill'`、`fileGain` **0.682**（audio_scan：−11.38／−9.59 ⇒ 平均 −10.49；同輪 sylblanc 1.137、Prairie4 0.754 校準點對得上）。
 · 實測（8123）：`town.open('verafond')` → 碼頭、抓 `peritune_emerald_hill_loop.m4a` 200。
-· ⚠ **鏡湖那首 `peritune_sylblanc_loop.m4a` 從來沒進版控**（-1542 就被 `config` 引用，檔案一直是 untracked）⇒ 線上鏡湖是無聲的。沒幫它 commit，等 Ray 點頭。
+· ⚠ 鏡湖那首 `peritune_sylblanc_loop.m4a` 從來沒進版控 —— -1766 已補。
 
 # （上一段）截至 `ver 2026.09.22-1764`
 
