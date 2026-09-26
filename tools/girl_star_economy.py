@@ -58,8 +58,8 @@ ws = wb.active; ws.title = '說明'
 lines = [
     ('女主九星・戰鬥紀錄經濟試算（ver -1774 草稿）', True),
     ('', False),
-    ('規則（Ray 定案）：星不再用等級鎖。①② 各 1 份、③④ 各 2 份、⑤⑥ 各 3 份、⑦⑧ 各 4 份；⑨＝滿足特定條件（不花紀錄）。', False),
-    ('⇒ ①～⑧ 全亮總共要 20 份。等級只負責「產出」紀錄。', False),
+    ('規則（Ray 定案）：星不再用等級鎖、等級上限 20。①出場就亮、② 1 份、③④ 各 2 份、⑤⑥ 各 3 份、⑦⑧ 各 4 份；⑨＝滿足特定條件（不花紀錄）。', False),
+    ('⇒ ②～⑧ 總共 19 份＝Lv1→Lv20 升 19 級的 19 份，滿級剛好全亮。等級只負責「產出」紀錄。', False),
     ('', False),
     ('黃底格子＝可以改的旋鈕，其餘都是公式，改了會自己重算。', False),
     ('「參數」：收入的來源（每升一級幾份、Boss 局額外幾份、劇情固定給幾份）與一局的平均分數。', False),
@@ -133,7 +133,8 @@ CUM = "星價!$C$2:$C$9"   # ①～⑧ 的累計成本（依序便宜到貴，�
 wl = wb.create_sheet('升級與收入')
 head(wl, 1, ['等級', '累計 EXP 門檻', '局數（諾／安）', '局數（索菈娜）', '升級給的份數（累計）',
              'Boss 局額外（諾／安）', '手上合計（諾／安）', '能點幾顆（諾／安）', '手上合計（索）', '能點幾顆（索）'])
-for lv in range(1, 10):
+NLV = len(C['expTo'])
+for lv in range(1, NLV+1):
     rr = lv + 1
     wl.cell(rr, 1, lv).alignment = CEN
     wl.cell(rr, 2, C['expTo'][lv-1])
@@ -145,45 +146,43 @@ for lv in range(1, 10):
     wl.cell(rr, 8, "=SUMPRODUCT(--(%s<=G%d))" % (CUM, rr))
     wl.cell(rr, 9, "=E%d+FLOOR(D%d*%s,1)*%s" % (rr, rr, NAMED['pboss'], NAMED['boss']))
     wl.cell(rr, 10, "=SUMPRODUCT(--(%s<=I%d))" % (CUM, rr))
-wl.cell(12, 1, '⚠ 「劇情固定給」沒有攤進逐級（不知道哪一章在哪一級），看「方案比較」那一頁的合計。').font = Font(italic=True)
+wl.cell(NLV+3, 1, '⚠ 「劇情固定給」沒有攤進逐級（不知道哪一章在哪一級），看「方案比較」那一頁的合計。').font = Font(italic=True)
 for i, w in enumerate((8, 14, 14, 14, 18, 18, 16, 16, 14, 14), 1): wl.column_dimensions[L(i)].width = w
 
 # ── 方案比較 ───────────────────────────────────────────────────────────
 wm = wb.create_sheet('方案比較')
-head(wm, 1, ['方案', '每升一級', 'Boss 局額外', '劇情合計',
-              'Lv3 份數', 'Lv3 顆', 'Lv5 份數', 'Lv5 顆', 'Lv7 份數', 'Lv7 顆', 'Lv9 份數', 'Lv9 顆', '評語'])
+SHOW = (5, 10, 15, 20)
+head(wm, 1, ['方案', '每升一級', 'Boss 局額外', '出廠／固定給'] + sum([['Lv%d 份數' % v, 'Lv%d 顆' % v] for v in SHOW], []) + ['評語'])
 plans = [
-    ('A 現值', 1, 0, 0, '中階（Lv5）3 顆、滿級 4 顆：⑤ 以後幾乎摸不到，「選」變成「只能點前面」。'),
-    ('B 每級 2 份', 2, 0, 0, '中階 4 顆、滿級 7 顆：⑧ 要靠劇情或條件補。'),
-    ('C 每級 2 份＋Boss 1 份', 2, 1, 0, 'Lv5 就 6 顆、Lv7 全亮：Boss 越多的路線越快（變成鼓勵刷 Boss）。'),
-    ('D 每級 2 份＋劇情 4 份', 2, 0, 4, '【建議】中階 4 顆可選、主線打完剛好 ①～⑧ 全亮（20 份）；進度由劇情控，不靠刷。'),
-    ('E 每級 3 份', 3, 0, 0, 'Lv5 就 6 顆、Lv9 全亮：太快，⑦⑧ 的強力循環會在中段就出現。'),
+    ('A 現值（每級 1、①出場就亮）', 1, 0, 0, '【定案】Lv20 升 19 級＝19 份＝②～⑧ 剛好全亮。Lv5 手上 4 份＝諾薇兒 ②引路＋④堅殼（①已亮）還剩 1。'),
+    ('B 每級 1＋Boss 局 1 份', 1, 1, 0, '滿級前就全亮；Boss 越多的路線越快（變成鼓勵刷 Boss）。'),
+    ('C 每級 2', 2, 0, 0, 'Lv10 前後就全亮：Lv20 那一大段等於沒有獎勵。'),
 ]
-LVROW = {3: 4, 5: 6, 7: 8, 9: 10}   # 「升級與收入」那一頁的列號
+LVROW = {v: v+1 for v in SHOW}   # 「升級與收入」那一頁的列號
 for i, (nm, rpl, bd, st, note) in enumerate(plans, 2):
     wm.cell(i, 1, nm).font = B
     for col, v in ((2, rpl), (3, bd), (4, st)):
         c = wm.cell(i, col, v); c.fill = Y
-    for k, lv in enumerate((3, 5, 7, 9)):
+    for k, lv in enumerate(SHOW):
         rr = LVROW[lv]
-        story_part = "0" if lv < 9 else "D%d" % i
+        story_part = "D%d" % i
         rec = "=(%d-1)*B%d+FLOOR('升級與收入'!C%d*%s,1)*C%d+%s" % (lv, i, rr, NAMED['pboss'], i, story_part)
         wm.cell(i, 5+k*2, rec)
         wm.cell(i, 6+k*2, "=SUMPRODUCT(--(%s<=%s%d))" % (CUM, L(5+k*2), i))
     c = wm.cell(i, 13, note); c.alignment = WRAP
-    if nm.startswith('D'):
+    if nm.startswith('A'):
         for col in range(1, 14): wm.cell(i, col).fill = G if col not in (2, 3, 4) else Y
     wm.row_dimensions[i].height = 34
-wm.cell(9, 1, '⚠ 劇情合計只算進 Lv9 那一欄（假設劇情份數大多在後段給）；要看中段就把一部分改成 Boss 或每級。').font = Font(italic=True)
+wm.cell(9, 1, '⚠ ver -1776：等級上限 20（Ray）。「出廠／固定給」＝一開始就在手上的份數（每一欄都算進去）。').font = Font(italic=True)
 wm.cell(10, 1, '⚠ 「顆」是依序由便宜到貴能點的顆數；實際玩家會跳著挑（下一頁）。').font = Font(italic=True)
-for i, w in enumerate((22, 10, 12, 10, 9, 7, 9, 7, 9, 7, 9, 7, 60), 1): wm.column_dimensions[L(i)].width = w
+for i, w in enumerate((24, 10, 12, 12, 9, 7, 9, 7, 9, 7, 9, 7, 60), 1): wm.column_dimensions[L(i)].width = w
 
 # ── 失衡分析 ───────────────────────────────────────────────────────────
 wa = wb.create_sheet('失衡分析')
 head(wa, 1, ['角色', '9 份的最強買法（跳著挑）', '花費', '為什麼強', '風險', '可調的方向（等 Ray 定）'])
 rows = [
     ('諾薇兒', '免死組：①先鋒 ＋ ②引路 ＋ ④堅殼 ＋ ⑦蟹生', '1+1+2+4＝8',
-     '天鎖每隻怪一次（⑦）＋天鎖十秒內射擊回血（④）＋失誤一次不受擊（②）。方案 D 約 Lv5 就湊得齊（不必改排列）。'
+     '天鎖每隻怪一次（⑦）＋天鎖十秒內射擊回血（④）＋失誤一次不受擊（②）。Lv20 制約 Lv9 湊得齊 8 份（不必改排列）。'
      '聖徒化那一路（⑥斷鉗＋⑧負行，7 份）是後期上限：一場一次、幾乎穩出 MB。',
      '低。⚠ 單體 Boss 只有一場 ⇒ ⑦蟹生在 Boss 戰沒有作用，手殘玩家在 Boss 前只有「一次免死＋回血」。',
      '【Ray 方向：早期穩定不死】要在 Boss 戰也「穩定」，④堅殼的回血是關鍵（已在 2 份的位置）；'
@@ -206,7 +205,7 @@ for i, row in enumerate(rows, 2):
 wa.cell(6, 1, '結論').font = B
 wa.cell(7, 1, '前提（ver -1775）：聖徒化／夢魘化一場限一次，回填一律下一場才生效；星不用等級鎖，價格 1/1/2/2/3/3/4/4＋⑨條件。'
               '⇒ 單體 Boss 戰三人都只有「一次變身」，差距回到技能本身；安雅的便宜強星（③烙印）只剩連戰價值。'
-              '索菈娜 ⑦聚落雖然同一場能再開共鬥，但被破防值總量與評價係數 650 綁住（連開＝必定低評），Ray 定為刻意的取捨，不改。諾薇兒的免死組在方案 D 約 Lv5 可成形，但 Boss 戰只有一次免死。').alignment = WRAP
+              '索菈娜 ⑦聚落雖然同一場能再開共鬥，但被破防值總量與評價係數 650 綁住（連開＝必定低評），Ray 定為刻意的取捨，不改。諾薇兒的免死三顆（4 份）約 Lv5 可成形，但 Boss 戰只有一次免死。').alignment = WRAP
 wa.merge_cells('A7:F7'); wa.row_dimensions[7].height = 60
 for i, w in enumerate((10, 34, 12, 46, 30, 46), 1): wa.column_dimensions[L(i)].width = w
 

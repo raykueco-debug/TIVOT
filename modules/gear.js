@@ -64,8 +64,9 @@ let niemPick=false;
 function girlLvHtml(key){
   if(!prog.isGirl(key)) return '';
   const g = prog.girlProgress(key);
-  let lit=0; for(let i=1;i<=prog.girlMaxLv();i++) if(prog.girlStarOn(key,i)) lit++;
-  const star = '★'+lit+'/'+prog.girlMaxLv()+'　◆'+prog.girlRecords(key);
+  const nStar=prog.girlStarCount(key);   // ver -1776：等級上限 20，星還是九顆
+  let lit=0; for(let i=1;i<=nStar;i++) if(prog.girlStarOn(key,i)) lit++;
+  const star = '★'+lit+'/'+nStar+'　◆'+prog.girlRecords(key);
   const max = (g.to==null);
   /* ⚠⚠ **管理人模式可以直接點等級**（同九星那條梯子的作法，ver -714）：
      點一下 +1、滿級再點歸 Lv1。**那是明寫的開發梯子**（鐵律 9 的例外）——
@@ -184,7 +185,7 @@ function skillBtnHtml(key){
   let lit=0; for(let i=1;i<=arr.length;i++) if(prog.girlStarOn(key,i)) lit++;
   const rec=prog.girlRecords(key);
   return '<div class="gs-skillbtn" data-skills="'+key+'">技　能　表　'
-       +   lit+' / '+prog.girlMaxLv()
+       +   lit+' / '+arr.length   // ver -1776：星數（9），不是等級上限（20）
        +   '<em class="gs-recn">◆'+rec+'</em></div>';
 }
 function skillWinHtml(key){

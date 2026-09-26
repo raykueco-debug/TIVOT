@@ -315,6 +315,8 @@ export function girlLevel(who){
   return 1;
 }
 export function girlMaxLv(){ return (girlCfg().expTo || [0]).length; }
+/* 她有幾顆星（九顆）。⚠ ver -1776 起等級上限（20）≠ 星數（9），畫面上「★幾/幾」要問這一支。 */
+export function girlStarCount(who){ return (((girlCfg().levels||{})[who])||[]).length; }
 /* ══ 距離下一級還差多少／這一級的區間 ══ 滿級 `to` 回 null。
    ⚠⚠ ver -1022：拆成**吃「累計 EXP」的純函式**（`girlProgressOf`）＋ 讀現況的
    包裝（`girlProgress`）—— 結算頁的 EXP 進度條要畫「這一局之前」與「之後」兩個
@@ -349,11 +351,13 @@ export function addGirlExp(who, n){
      ⚠ 一次升好幾級（跳關／大量點數）就給好幾份 —— 乘的是**級數差**。
      ⚠ 份數在資料上（`girls.recordPerLevel`，鐵律 1）。
      ⚠ 回傳多一格 `records`：結算頁要印「入手 ×N」（畫面端不要自己再算一次）。 */
-  let records = 0;
-  if(after > before){
-    records = Math.max(0, (after-before) * ((girlCfg().recordPerLevel|0) || 0));
-    if(records) inv.add(recordIdOf(who), records);
-  }
+  /* ⚠⚠ ver -1776：改成「**補到應得的份數**」—— 應得＝(等級−1)×每級份數；已有＝手上＋已經點亮的星花掉的。
+     正常情況與舊寫法（級數差×份數）一模一樣；差別在**門檻表改過之後**（-1776 由九級改二十級）：
+     舊存檔的等級一下子跳上去，舊寫法一份都不補，這裡會在下一次結算把差的補齊。 */
+  const owed = (after-1) * ((girlCfg().recordPerLevel|0) || 0);
+  let spent = 0; { const lit=girlStarsAll()[who]||{}, fr=girlCfg().freeStars||[]; for(const k in lit) if(lit[k] && !fr.includes(+k)) spent += girlStarCost(+k); }
+  let records = Math.max(0, owed - girlRecords(who) - spent);
+  if(records) inv.add(recordIdOf(who), records);
   return { who, gain, exp:all[who], from:before, to:after, records };
 }
 /* 《她的戰鬥紀錄》的道具 id ——**只有這一支在拼**（鐵律 7）：`items.defs` 那三筆
@@ -377,13 +381,16 @@ export function girlStarsAll(){
     const lv=girlLevel(w), set={};
     /* ⚠ 只有真的練過的人要遷移（Lv1 且 EXP 0 ＝ 還沒開始，給她一顆 Lv1 星
        反而是憑空多給）。 */
-    if(girlExp(w) > 0) for(let i=1;i<=lv;i++) set[i]=1;
+    if(girlExp(w) > 0) for(let i=1;i<=Math.min(lv, girlStarCount(w));i++) set[i]=1;   // ver -1776：等級上限 20 ≠ 九顆星
     if(Object.keys(set).length) out[w]=set;
   }
   wr(K.girlStars, JSON.stringify(out));
   return out;
 }
-export function girlStarOn(who, i){ return !!((girlStarsAll()[who]||{})[i]); }
+export function girlStarOn(who, i){
+  if(isGirl(who) && (girlCfg().freeStars||[]).includes(+i)) return true;   // ver -1776：出場就亮（不花紀錄）
+  return !!((girlStarsAll()[who]||{})[i]);
+}
 
 /* ══⚠⚠⚠ NIEM ＝ 她們飛行能力的等級（ver -1186）══════════════════════════════
    ⚠ **只存「用掉幾份」，不存等級**（同 EXP 那一條，鐵律 7）：
@@ -512,10 +519,9 @@ export function girlBonus(who, key){
      等級現在只是「能不能點」的門檻，真的要生效還得花《戰鬥紀錄》點亮。
      ⚠ 這是**唯一**一處在決定「她現在有哪些能力」（鐵律 7）：呼叫端照舊只問
        `girlBonus`／`girlHas`，一行都不必改。 */
-  const lit = girlStarsAll()[who] || {};
   let sum = 0;
   for(let i=0; i<arr.length; i++){
-    if(!lit[i+1]) continue;
+    if(!girlStarOn(who, i+1)) continue;   // ver -1776：走唯一那支（含「出場就亮」）
     const v = arr[i] && arr[i][key];
     if(v!=null) sum += v;
   }
