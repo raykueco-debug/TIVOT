@@ -28,7 +28,7 @@
 >    `resources/background/sofia/` 的 `sofia_slum`（重畫：窄巷貧民窟，**沒有碼頭與水面**）／`sofia_guild`／`sofia_firearm`／`sofia_grocerie`（三張改**室內**：櫃台中央偏左、右三分之一留白牆給店主立繪、無人）。舊版進 `_recycle/`。
 >    程式端要做的：① **`config.js` 的 `ASSET_VER` 補四鍵** `sofia_slum`／`sofia_guild`／`sofia_firearm`／`sofia_grocerie`（同名覆蓋，不跳版號玩家永遠拿舊圖、而且驗不出來，§5）
 >    ② `dock` 節點的 `name` 目前「聖索菲亞　舊碼頭貧民窟」—— 已經沒有碼頭了，建議改「聖索菲亞　貧民窟」（**正名仍等 Ray**）；節點 id 不改。三家店節點照舊 `noTime`（室內營業時間 [8,17] ＝只有 day）。
-> 13. ✅ **-1764 已接（bgm／小地圖／酒吧掛點仍等）** **（09-26 下午，Mac）薇拉馮德港 `verafond` 拓樸 v2 Ray 定案**（「整個城式義大利風，當世最發達的富庶港都」「1900 年」）——
+> 13. ✅ **-1764 已接（bgm／小地圖／酒吧掛點仍等；⚠ 旅店暫不寫 `inn:true`＝敲門對白表還沒有、店還沒有買賣介面＝`config.shop.shops` 沒有薇拉馮德的店）** **（09-26 下午，Mac）薇拉馮德港 `verafond` 拓樸 v2 Ray 定案**（「整個城式義大利風，當世最發達的富庶港都」「1900 年」）——
 >    程式端要做的：**`TOWNS.verafond` 整段已寫好可直接抄 → `resources/background/_verafond_spec.md` §六**（機器產生、22 格 `bg` 鑰匙全部對過；出航 `sail:{dir:'right'}` 因為碼頭的 `down` 是燈塔）＋ `map_layout.py` 的 `POS` 也在那裡；產生器搬完回收。
 >    背景 **73／73 全交**（`resources/background/verafond/`；室外 `vela_<格>` 四差分、店內單張 `noTime`、旅店四差分、酒吧三差分）；鑰匙與 `noTime` 規則在 `resources/background/_verafond_spec.md` §五；全是新檔，不用跳 `ASSET_VER`。
 >    ⚠ **不要用 `dining.scenes`**（同第 14 項）；酒吧 `vela_bar` 的掛點等 Ray（建議 `harbor.right` 當港邊酒館）。

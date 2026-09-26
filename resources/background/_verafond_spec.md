@@ -239,3 +239,9 @@
 square:(4,6), station:(4,7), midtown:(4,3), cityhall:(2,3), cathedral:(6,3), avenue:(4,1), university:(2,1), opera:(6,1), manor:(4,0), portmarket:(2,6), gunstore:(0,6), guild:(2,5), harbor:(2,7), shipyard:(0,7), lighthouse:(2,8), uptown:(6,6), inn:(6,5), grocery:(6,7), tavern:(8,6), cafe:(8,5), dessert:(8,7), restaurant:(10,6)
 ```
 產生器 `tools/map_verafond_draft.py` 搬完可以回收。
+
+### 程式端接法（ver -1764，8af09df）—— 與上面那段不同的兩處
+- **旅店沒寫 `inn:true`**：還沒有敲門對白表，寫了會敲到一排空門（東泊／聖索菲亞的先例）⇒ 對白表有了再開。
+- **店沒有買賣介面**：`config.shop.shops` 沒有薇拉馮德的店，武器店／雜貨舖現在只是場景。
+- 其餘照 §六；營業時間照帝都（`[8,17]`，大教堂 `[8,19]`）；飛行地圖補了 `town:'verafond'`（降落落在碼頭）；草稿已回收、`POS` 已補。
+- 還等：bgm（Ray）、小地圖（美術）、`vela_bar` 掛點（Ray）。
