@@ -59,6 +59,7 @@ print('來源 V %.3f  S %.3f' % (h[:,:,2].mean()/255, h[:,:,1].mean()/255))
 1. `flight/build_city.py` 補一個 JOB（`ripon`；`mx 544 / my 595`；`planW` 約 **220**；`planRot` 照大門朝北北東反推）。
    來源 1024 的正俯視 ⇒ **`maxdim:1024`**，`blkMin`／`blkSplit`／`blkCell` 照 §6.7.5 第 5.5 條一起放大。
 2. 色調照「成品目標」反解（地中海郊外，暖一點，靠帝都那一組：成品 V ≈0.42／S ≈0.23），建完再量一次。
-3. `SETTLEMENTS` 補一列（`t:'village'`、**不寫 `town`**、牆／瓦貼材沿用 geo 的 `flight_villagewall`／`flight_rooftile`，同夏爾村）。
-4. **刪掉 `PLACES` 裡那一筆里朋莊園**（名牌改由 SETTLEMENTS 的 `n` 出，同一個地點不留兩份名牌）。
+3. `SETTLEMENTS` 的「里朋莊園」那一列（ver -1759 已建；⚠ 沒有插畫時**地表上什麼都不畫** —— 程序房子早已不渲染）補上 `plan`／`planH`／`planW`／`planRot`／`planTall`，
+   牆／瓦貼材沿用 geo 的 `flight_villagewall`／`flight_rooftile`（同夏爾村的 `wallTex`）。
+4. `PLACES` 那一筆名牌留著（同帝都／聖王廳：名牌與城本體各一份，座標一起動）。
 5. 試飛看遠／中／近三距離，確認沒有拉伸、城緣融進地貌。
