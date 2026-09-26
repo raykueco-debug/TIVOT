@@ -2718,15 +2718,21 @@
      ⚠ `animation-delay` 要寫成兩份：晃動照舊錯開（`--sway-d`），呼吸一律從 0 起算
        —— 四支箭的**呼吸要同步**（那是「這裡可以走」的同一個訊號），
        **晃動才要錯開**（那是四根各自受磁力牽引的針）。 */
+  /* ⚠⚠⚠ **呼吸改動 `opacity`，不動 `filter`**（ver -1770，Ray：「手機嚴重快速過熱」；HUD 實錄城鎮裡唯一在跑的
+     無限動畫就是這一條）：-1441 的呼吸是逐禎改兩層 `drop-shadow`（模糊 16／22px）—— `filter` 不是合成器屬性，
+     **每一禎都要重新光柵化模糊陰影**，四支箭一起、走在城裡就一直燒（與 -848 首頁團徽同一個病）。
+     改成：光暈**固定**（取原本兩端的中間值），呼吸交給 `opacity`；`will-change` 讓整支箭（連光暈）升成
+     獨立圖層 —— 晃動的 `rotate` 與呼吸的 `opacity` 都在合成器上做，光暈只畫一次。 */
   body.town-nav #kerb .kerb-arrow.avail{
     pointer-events:auto;cursor:pointer;
-    filter:drop-shadow(0 0 7px rgba(111,179,212,.95)) drop-shadow(0 3px 14px rgba(111,179,212,.7));
+    filter:drop-shadow(0 0 11px rgba(160,215,245,.95)) drop-shadow(0 3px 17px rgba(111,179,212,.8));
+    will-change:transform,opacity;
     animation:kerbCompass var(--sway-t,2.6s) ease-in-out infinite,
               kerbBreathe 1.8s ease-in-out infinite;
     animation-delay:var(--sway-d,0s), 0s;}
   @keyframes kerbBreathe{
-    0%,100%{ filter:drop-shadow(0 0 5px rgba(111,179,212,.70)) drop-shadow(0 3px 10px rgba(111,179,212,.45)); }
-    50%    { filter:drop-shadow(0 0 16px rgba(190,235,255,1))  drop-shadow(0 3px 22px rgba(111,179,212,.95)); }}
+    0%,100%{ opacity:.62; }
+    50%    { opacity:1; }}
   /* ⚠ **四支不要同步**（ver -374，Ray：「箭頭擺幅錯開，不要太整齊」）：
      四支一起左右擺會讀成「一個機械裝置在動」，錯開才像四根各自受磁力牽引的針。
      每一支給不同的週期與相位（質數般的錯開，避免幾秒後又對齊）。 */

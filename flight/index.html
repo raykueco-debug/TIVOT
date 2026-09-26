@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1769"></script>
+<script src="../orientation.js?v=1770"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1769edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1770edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1769edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1769edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1770edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1770edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1769edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1769edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1770edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1770edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1769edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1770edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1769edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1769edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1769edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1769edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1769edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1769edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1769edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1769edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1769edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1769edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1770edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1770edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1770edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1770edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1770edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1770edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1770edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1770edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1770edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1770edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1769edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1770edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1769edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1770edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1769"></script>
+<script src="settlement.js?v=1770"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1769"></script>
+<script src="talks.js?v=1770"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1769';
+const FLIGHT_VER = 'ver -1770';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5714,6 +5714,7 @@ function say(beats, at, opts){
   sayQueue=beats; sayIdx=0; sayAt=at; sayEndAt=0; sayBeatAt=at;
   sayDone=(opts && opts.done)||null;   // 收完的回呼（ver -741）
   cast=[];
+  resize();   // ver -1770：對白期間 2D 撐 DPR 2（見 applyResize）
   for(const b of beats) portraitArt(b.who);   // 先把圖抓好，輪到誰才上場
   castEnter(beats[0].who, at);
 }
@@ -6007,7 +6008,7 @@ function drawTalk(now){
   if(senseOn || senseFireAt) return;
   if(now<sayAt) return;
   // 退場跑完才真的收掉
-  if(sayEndAt && now-sayEndAt>=CAST_IN_MS){ sayQueue=null; cast=[]; saySides=null;
+  if(sayEndAt && now-sayEndAt>=CAST_IN_MS){ sayQueue=null; cast=[]; saySides=null; resize();   // ver -1770：放回自適應 DPR
     if(sayDone){ const cb=sayDone; sayDone=null; try{ cb(); }catch(_){}} return; }
   // 退場跑完的人從名單移除，免得一路長下去
   cast=cast.filter(c=>!c.out || now-c.out<CAST_IN_MS);
@@ -7985,7 +7986,14 @@ function applyResize(){
      ⚠ `glReady` 要等世界資料上傳完才成立 —— 那一刻會再叫一次 `resize()`（見 glUploadWorld 的收尾）。 */
   /* ⚠ `GLON`／`glReady` 宣告在檔案後段，而這一支在開機的頂層就會跑 —— 直接讀是 TDZ 錯誤、整頁死透。包 try。 */
   let glOn=false; try{ glOn = GLON && glReady; }catch(_){}
-  const ndpr = glOn ? Math.min(2, devicePixelRatio||1) : Math.min(Q().dpr, devicePixelRatio||1);
+  /* ⚠⚠⚠ **ver -1770 收窄：只在「有人在講話」時鎖 DPR 2**（Ray：「手機嚴重快速過熱」）——
+     -1749 是整趟飛行都鎖 2，等於把自適應降畫質對 2D 這一層**整個關掉**：手機一熱、調節器降檔，
+     這張 1.3M 像素的畫布照樣每禎全填（DPR 1 的四倍）。糊的抱怨只有**立繪與對話字**，
+     所以只在對白期間（`sayQueue`）撐 2，其餘時間照舊跟 `Q().dpr` 走。
+     ⚠ 對白開始／收掉那一刻各叫一次 `resize()`（`say()` 與 `drawTalk` 的收尾），下一禎重建、同一禎畫滿，不會空一格。
+     ⚠ `sayQueue` 宣告在後段（TDZ），包 try。 */
+  let talking=false; try{ talking = !!sayQueue; }catch(_){}
+  const ndpr = (glOn && talking) ? Math.min(2, devicePixelRatio||1) : Math.min(Q().dpr, devicePixelRatio||1);
   /* 尺寸、DPR、緩衝寬都沒變就什麼都別做。iOS 的網址列一動就發 resize，
      其中不少是同尺寸的重複事件；照做一遍等於白白重建 1.2M 像素的畫布與整批緩衝。
      ⚠ 一定要**連 BW 一起比**：QUALITY 的第 2、3 級 dpr 同樣是 1，只有 bwf

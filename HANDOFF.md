@@ -57,7 +57,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1769`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1770`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -70,7 +70,20 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1769`（-1769：Stage 14 全支線合流 → 聖索菲亞）
+# HANDOFF — 截至 `ver 2026.09.22-1770`（-1770：手機過熱兩處）
+
+**`-1770`：手機嚴重快速過熱**（Ray 附兩張 HUD：城鎮 stage 13／飛行 stage 14，17 分鐘掉 12% 電）
+· **城鎮**：HUD 上唯一在跑的無限動畫是槍棺箭頭的 `kerbBreathe` —— 逐禎改兩層 `drop-shadow`（模糊 16／22px），
+  `filter` 不是合成器屬性，每禎重新光柵化（同 -848 首頁團徽）。改成光暈固定、呼吸走 `opacity`，箭頭 `will-change:transform,opacity`
+  升層 ⇒ 晃動與呼吸都在合成器上做。⚠ 視覺：原本是「光暈大小在呼吸」，現在是「整支發光的箭在呼吸」（亮度 .62↔1），要調跟我說。
+· **飛行**：-1749 為了立繪與對白字不糊，把 2D 畫布**整趟**鎖在 DPR 2 —— 等於把自適應降畫質對這一層關掉（手機降檔時照樣每禎填 4 倍像素）。
+  收窄成**只在對白期間**（`sayQueue`）撐 2，`say()` 開始與 `drawTalk` 收尾各叫一次 `resize()`；其餘跟 `Q().dpr`。
+  實測（`?q=3`）：平時 DPR 1、對白中 2、講完回 1。
+· HUD 上的 `home●`＋`stage●` 不是熱源：`body:has(#storyStage.on) #home` 已經 `visibility:hidden` ＋ 動畫暫停。
+· ⚠ 還沒動的疑點（等手機數字）：飛行頁的 `fkgShine`／`fkpShine`（齒輪／吊墜的反光，`background-position` 無限動畫）；
+  -1752 的 `preserveDrawingBuffer:true`（GL 畫布只有 BW×BH，理論上很小）。改完請 Ray 看一下同一段路的掉電速度。
+
+# （上一段）截至 `ver 2026.09.22-1769`（-1769：Stage 14 全支線合流 → 聖索菲亞）
 
 **`-1769`：Stage 14 劇本接上**（Ray 交稿「全支線合流 Stage14」，台詞一字未改）
 · **合流旗 `s14_route`**：三條路的最後一句各插一次 —— 雪都旅店 BA・M2（`vn_after_tomb` 第一個 act）、BA・M1（第二個）、
