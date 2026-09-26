@@ -29,7 +29,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1744`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1745`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -42,7 +42,13 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1744`
+# HANDOFF — 截至 `ver 2026.09.22-1745`
+
+**`-1745`：劇情戰結算頁續播戰鬥曲，結算頁結束才切回**（Ray 指定）—— 撤回 -1740 的「進結算就淡出」（`combat.js` 的 `toResult`）。
+切回照舊由回程接：飛行 `openFlight` 收、城鎮 `ensureBgm`、劇情 `resume.bgm`／`bgmAfter`（-1740 實測過飛行那一條回到天上時父頁曲子有停）。
+挑戰（非劇情戰）仍是結算放 `bgm_result`、教學接 crisis，沒動。
+
+# （上一段）截至 `ver 2026.09.22-1744`
 
 **`-1744`：試飛＝完全無劇情、無限航區**（Ray：「讓試飛完全無劇情 無限航區」）
 · 旗 **`free_flight`**：`FLIGHT_TEST` 插、`newRun()` 清（鐵律 9）。飛行頁 `freeFlight()`、城鎮 `storyOff`／`outOfStoryWindow` 問它。

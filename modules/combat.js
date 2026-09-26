@@ -2857,14 +2857,10 @@ function win(){
     if(!state.scriptRun){
       const key = state.tutorialRun ? 'bgm_crisis' : 'bgm_result';
       SFX.playBgm(asset(key), { volume: bgmVol(key) });
-    }else if(!state.tutorialRun){
-      /* ══⚠⚠ 劇情插入戰打贏：**戰鬥曲在進結算時淡出**（ver -1739，Ray：「劇情蜈蚣戰結束後戰鬥音樂沒有退」）══
-         「不換曲」（上面那條）的意思是不放 result 那首畫句點，**不是讓戰鬥曲一路放到按繼續**
-         —— 實測蜈蚣戰：結算頁整頁都還是戰鬥曲，回到飛行畫面那一刻才停。
-         回程各自接曲子：飛行頁放它自己的航行曲、城鎮 `ensureBgm` 接回那一格、劇情接 `resume.bgm`
-         （卡上的 `bgmAfter` 也在那裡），所以這裡只負責「退」。 */
-      SFX.stopBgm(1200);
     }
+    /* ⚠⚠ 劇情插入戰打贏：**結算頁上戰鬥曲續播，結算頁結束才切回**（ver -1745，Ray：「結算時續播戰鬥音樂
+       結算畫面結束才切回」）—— 撤回 -1740 那一版「進結算就淡出」。切回由各條回程自己接：
+       飛行 `openFlight` 收掉（飛行頁放自己的航行曲）、城鎮 `ensureBgm`、劇情 `resume.bgm`／卡上的 `bgmAfter`。 */
     inspector.settle(totalTime, stats, { isLose:false });
     /* ⚠ 這一場是段落的最後一場（Boss）→ 收段：下一次進戰鬥重新演開棺、資源回滿。
        ⚠ **一定要在 `settle` 之後**：它清帳，而 settle 開頭才把那筆帳領走（ver -621（-893 前用詞））。 */
