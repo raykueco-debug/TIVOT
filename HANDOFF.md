@@ -20,7 +20,7 @@
 >    ⑤ 等 Ray：`hallcourt` 正門本該堵死、圖裡只擋一半要不要重出；小地圖走 `tools/map_compose.py` 另開一單
 >    總覽 `resources/background/_dunmor_all55_sheet.jpg`；逐格出口／鏡頭／月亮朝向在工單 §八／§九 的表。
 > 10. **（09-26 凌晨，Mac）聖索菲亞郊外・里朋家族豪宅 `sofiaout`（Stage 14 合流：救小女孩的姐姐）** —— 拓樸 v3 提案在 `resources/map/_sofiaout_spec.md` §一（產生器 `tools/map_sofiaout_draft.py`、佈局圖 `_layout_sofiaout.png`）：
->    11 格、**兩個終點**（`cellar` 地下囚室＝馬努決戰、`terrace` 露台＝挾人質劇情）；背景已交 4 張 `sofiaout_{lodge,forecourt,hall,salon}`，其餘 6 格美術還在跑。
+>    11 格、**兩個終點**（`cellar` 地下囚室＝馬努決戰、`terrace` 露台＝挾人質劇情）；背景 **10／10 已交** `resources/background/sofia/sofiaout_<id>.webp`（09-26 中午補齊 road／avenue／carriage／backhall／cellar／terrace，`bg_index.js` 已重跑；`backhall` 往下石階不明顯，重出與否等 Ray）；小地圖另開。
 >    程式端要做的（Ray 點頭後）：搬進 `script/town.js`（全部 `noTime:true`、`bg:'sofiaout_<id>'`）、`gate` 接聖索菲亞哪一格（建議 `uptown`）、結算點在囚室還是露台、`map_layout.py` 補 `POS`、產生器回收。全部新增檔，不用跳 `ASSET_VER`。
 > 11. ✅ **-1755 已接** **（09-26，Mac）羅賽爾廢城小地圖交件** —— `resources/map/map_dunmor.webp`＋`_spots_dunmor.json`（55 格）。`TOWNS.dunmor` 補一行（新增、不必 `?v=`），整行可抄在 `resources/background/_dunmor_spec.md` §十：
 >    `map:{ img:'resources/map/map_dunmor.webp', spots:{ kingsbarrow:[0.0853,0.1396], barrowfield:[0.1777,0.1396], altar:[0.27…`
