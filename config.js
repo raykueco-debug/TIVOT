@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1779';
+export const VERSION = 'ver 2026.09.22-1780';
 
 export const GAME_CONFIG = {
 
@@ -733,10 +733,12 @@ export const GAME_CONFIG = {
       /* ⚠ ver -1778（Ray）：**非夢魘化期間也能發動** ＝ 主動進入明晰之夢那一套增益（反擊必中＋星的威力升階），
          場上的攻擊圈不重置（不演 cut-in、不重排敵人計時）。一局一次（`partnerActiveUsed`）。
          夢魘化期間的上滑照舊是粉碎本體（`saint.nightmareActive`，不經這裡）。 */
-      active:{ key:'dreamBreakInfo', name:'夢境破碎', en:'Dream Breaker', context:'board',
+      /* ⚠ ver -1779b（Ray）：非夢魘化那一半**固定 5 秒**（`buffSec`），不吃赤足／鐵蹄的延長 ——
+         「用來跟 Boss 丟的密集圈對沖，不用太長駐，免得又變永動機」。 */
+      active:{ key:'dreamBreakInfo', name:'夢境破碎', en:'Dream Breaker', context:'board', buffSec:5,
                desc:'發動方式：戰鬥畫面上滑。<br>'
                    +'夢魘化期間發動：強制中止爆發時間，保留已削減之 HP，並一次性給予敵最大 HP 20% 的傷害。<br>'
-                   +'非夢魘化期間發動：立即進入明晰之夢的增益狀態，場上攻擊圈不重置。' },
+                   +'非夢魘化期間發動：進入明晰之夢的增益狀態 5 秒，場上攻擊圈不重置。' },
     },
     /* ══ 索菈娜（ver -803，Ray 交稿）══ 夏爾村村內戰一進場就強配（見 config.battles
        的 sv_* 的 `partner:'sorana'`，combat.startGame 讀它覆寫）。

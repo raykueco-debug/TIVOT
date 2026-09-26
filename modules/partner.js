@@ -782,7 +782,9 @@ function lucidSeconds(pas){
      撤下之後**不重排敵人計時**（fireBuff 那一支會 resetEnemyTimers）—— 「不重置場上攻擊圈」。
      增益在 cut-in 撤下才起算（同 fireBuff：演出期間盤面鎖著，從發動那一刻起算等於白送）。 */
 function startLucidDirect(pas, act){
-  const sec = lucidSeconds(pas);
+  /* ⚠ 秒數讀**主動技卡**的 `buffSec`（5，Ray：與 Boss 的密集圈對沖用、不長駐）——
+     不走 `lucidSeconds`（那一支會加赤足／鐵蹄的延長）。增益內容（必中＋升階）照舊是同一套。 */
+  const sec = (act && act.buffSec) || 5;
   const go = ()=>{
     if(state.over) return;
     api.setLowHpBuff(true);
