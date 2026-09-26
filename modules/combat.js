@@ -191,6 +191,7 @@ export function setup(){
   // 聖徒化：combat 為協調者，把 combat/defense/partner 的原語打包注入 saint，
   //   saint 不直接 import 其他業務模組（維持 §2 依賴方向）。改血一律走本檔 HP API（Part A）。
   saint.init({
+    cutinFreeze, cutinThaw,   // ver -1779：cut-in 一律凍結（見 cutinFreeze）
     // 統一改血 API（Part A）
     healPlayer, setPlayerHpRatio, drainPlayer,
     // 教學掛鉤：倒數槽臨界攔截（引導生命歸還）＋結局通知（MB/生命歸還後的收尾台詞）
@@ -2221,6 +2222,20 @@ function resetClock(){ state.runElapsedMs=0; state.clockRunSince=0; }
  *  ⚠ 只凍對話（走這兩支的路徑）；cut-in（雙槍/搭檔）不走這裡，維持原本
  *    「演出中每 tick 歸零、撤下重走」的設計（發動瞬間不被連段）。 */
 let _intPausedAt = 0;
+/* ══⚠⚠⚠ **cut-in 一律凍結**（ver -1779，Ray：「cut-in 期間遊戲要凍結，不可在 cut-in 期間還在縮圈」
+   「cut-in 規則應該通用，只要 cut-in 就 freeze」）══ 縮圈、延時（間隔）倒數停在當下，撤下原樣接回。
+   ⚠ 收在 `saint.playCutin`／`playSaintCutin` 這兩個 CI 的唯一入口（經 api 注入，鐵律 8）。
+   ⚠ 疊層安全：只收**自己**凍的那一份（對話層已經凍著時 `pauseThreats` 回 false、_intPausedAt 已有值 → 這裡不解）。 */
+export function cutinFreeze(){
+  const tk = { th: defense.pauseThreats(), iv:false };
+  if(!_intPausedAt){ _intPausedAt = Date.now(); tk.iv = true; }
+  return tk;
+}
+export function cutinThaw(tk){
+  if(!tk) return;
+  if(tk.th) defense.resumeThreats();
+  if(tk.iv && _intPausedAt){ state.intervalDeadline += Date.now()-_intPausedAt; _intPausedAt = 0; }
+}
 export function pauseForDialog(){
   state.cutinPlaying = true;
   clockPause();

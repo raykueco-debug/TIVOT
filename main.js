@@ -2329,10 +2329,10 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     /* 聚光只給**真的在滑**（ver -755，Ray：「聖徒/夢魘期間點畫面不要有聚光
        效果」）：TAP_SLOP（14px）在手機上點一下就會超過，改成過了需求量的四成
        才亮 —— 點擊永遠碰不到，下滑的回饋照舊。 */
-    if(moved >= need()*0.4) showAura(x,y);
-    if(aura && aura.classList.contains('on')){ aura.style.left=x+'px'; aura.style.top=y+'px'; }
+    /* ⚠⚠⚠ ver -1779（Ray：「NI 狀況下上滑不要再有聚光效果，SI 也一樣，滑就是滑，不然我常常滑不出夢碎」）——
+       聚光整個拿掉（`showAura` 不再叫）；門檻也放寬一點：距離 ×0.8、斜一點也算上滑（|dx| 的 0.8 倍）。 */
     const up = startY - y;
-    if(up > need() && up > Math.abs(x-startX)*1.0){
+    if(up > need()*0.8 && up > Math.abs(x-startX)*0.8){
       fired=true; tracking=false; hideAura();
       /* ⚠ 惡夢化期間的上滑是**它自己的主動技**（ver -671，Ray：「主動技是在 NI 期間
          往上劃可以一次性清除現有盤面造成相應傷害」）—— 那不是搭檔技，

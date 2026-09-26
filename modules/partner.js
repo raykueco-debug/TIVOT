@@ -778,16 +778,22 @@ function lucidSeconds(pas){
   return (pas.buffSeconds || 10) + (add||0);
 }
 /* ══ 夢境破碎・非夢魘化期間（ver -1778，Ray）══ 主動進入明晰之夢那一套增益。
-   ⚠ **不演 cut-in、不重排敵人計時** —— Ray：「不重置場上攻擊圈」（fireBuff 的 cut-in 收尾會 resetEnemyTimers）。 */
+   ⚠ ver -1779（Ray）：**要演 cut-in**，cut-in 期間整場凍結（`playCutin` 通用規則）；
+     撤下之後**不重排敵人計時**（fireBuff 那一支會 resetEnemyTimers）—— 「不重置場上攻擊圈」。
+     增益在 cut-in 撤下才起算（同 fireBuff：演出期間盤面鎖著，從發動那一刻起算等於白送）。 */
 function startLucidDirect(pas, act){
   const sec = lucidSeconds(pas);
-  api.setLowHpBuff(true);
-  clearTimeout(lowHpTimer);
-  lowHpTimer = setTimeout(()=>{ api.setLowHpBuff(false); lowHpTimer=null; }, sec*1000);
-  if(api.hintCurrentCell) api.hintCurrentCell();
-  if(api.lucidFlood) api.lucidFlood(sec);
+  const go = ()=>{
+    if(state.over) return;
+    api.setLowHpBuff(true);
+    clearTimeout(lowHpTimer);
+    lowHpTimer = setTimeout(()=>{ api.setLowHpBuff(false); lowHpTimer=null; }, sec*1000);
+    if(api.lucidFlood) api.lucidFlood(sec);
+  };
   const vk = SFX.pickRot(pas.voice); const vo = asset(vk); if(vo) SFX.playVoice(vo, sfxGain(vk));
-  api.floatDmg((act && act.name) || pas.name,'50%','34%',true);
+  const nm = (act && act.name) || pas.name, en = (act && act.en) || pas.en || '';
+  if(state.cutinPlaying || !api.playCutin){ api.floatDmg(nm,'50%','34%',true); go(); return; }
+  api.playCutin(go, `${nm}<span class="cutin-en">${en}</span>`, (act && act.cutin) || pas.cutin);
 }
 /* 「5 秒普攻加倍」的執行體（`lowHpBuff` 與 `firstCounter` 共用，鐵律 8）。 */
 function fireBuff(pas, reload){

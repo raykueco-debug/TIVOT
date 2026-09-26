@@ -1101,6 +1101,7 @@ function finishSaintMode(finalHpThunk){
 export function playCutin(done, label, imgKey, opts){
   opts = opts || {};
   state.cutinPlaying=true;
+  const frz = api.cutinFreeze ? api.cutinFreeze() : null;   // ver -1779：cut-in 一律凍結（縮圈／延時倒數停住）
   if(api.clockPause) api.clockPause();     // 演出期間碼表暫停（非可點不計時；聖徒化降臨/雙槍破防共用）
   const c=$('cutin');
   /* `opts.full`（ver -874，Ray：「索拉娜的被動技要放全屏」）：整張圖滿版 cover
@@ -1123,6 +1124,7 @@ export function playCutin(done, label, imgKey, opts){
       //   這裡清掉會讓盤面在對話中恢復可點（懲罰/插話亂入，曾致陣亡重開流程被劫持）。
       //   對話層收段時自會 resumeFromDialog。
       state.cutinPlaying = !!state.tutorialDialog;
+      if(api.cutinThaw) api.cutinThaw(frz);   // ver -1779：原樣接回（在 done 之前：done 可能重排敵人計時）
       if(done) done();
       /* ══⚠⚠⚠ **每一張 CI 撤下都指一次「現在該點哪一格」**（ver -1020，Ray：
          「所有 CI 除了 BR 之外都要顯示下一個正確格」）══
@@ -1167,6 +1169,7 @@ export function playCutin(done, label, imgKey, opts){
      聖徒化／惡夢化／共鬥共用 `saintUsedThisBattle` 那一個槽。 */
 function playSaintCutin(kind, done, reload){
   state.cutinPlaying=true;                 // 演出期間鎖定點擊
+  const frz = api.cutinFreeze ? api.cutinFreeze() : null;   // ver -1779：cut-in 一律凍結
   if(api.clockPause) api.clockPause();     // 結局全畫面 cut-in 期間碼表暫停（非可點不計時）
   const c=$('saintCutin');
   let title, sub;
@@ -1245,6 +1248,7 @@ function playSaintCutin(kind, done, reload){
   setTimeout(()=>{
     c.classList.remove('on');
     state.cutinPlaying=false;
+    if(api.cutinThaw) api.cutinThaw(frz);   // ver -1779
     if(done) done();
   }, holdMs);
 }
