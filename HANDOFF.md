@@ -19,7 +19,7 @@
 >    ④ ✅ **-1743 已跳** ⚠⚠ **`config.js` 的 `ASSET_VER` 要跳這 14 個鍵**（第四版同名覆蓋了第一版）：`dunmor_causeway` `dunmor_southgate` `dunmor_ditchw` `dunmor_oghamrow` `dunmor_gatecourt` `dunmor_mainstreet` `dunmor_marketcross` `dunmor_boarstone` `dunmor_innergate` `dunmor_druidhouse` `dunmor_oakgrove` `dunmor_nemeton` `dunmor_altar` `dunmor_wellsq`（其餘 41 張是新增，不必跳）
 >    ⑤ 等 Ray：`hallcourt` 正門本該堵死、圖裡只擋一半要不要重出；小地圖走 `tools/map_compose.py` 另開一單
 >    總覽 `resources/background/_dunmor_all55_sheet.jpg`；逐格出口／鏡頭／月亮朝向在工單 §八／§九 的表。
-> 10. **（09-26 凌晨，Mac）聖索菲亞郊外・里朋家族豪宅 `sofiaout`（Stage 14 合流：救小女孩的姐姐）** —— 拓樸 v3 提案在 `resources/map/_sofiaout_spec.md` §一（產生器 `tools/map_sofiaout_draft.py`、佈局圖 `_layout_sofiaout.png`）：
+> 10. ✅ **-1762 已接（戰鬥／結算點仍等 Ray）** **（09-26 凌晨，Mac）聖索菲亞郊外・里朋家族豪宅 `sofiaout`（Stage 14 合流：救小女孩的姐姐）** —— 拓樸 v3 提案在 `resources/map/_sofiaout_spec.md` §一（產生器 `tools/map_sofiaout_draft.py`、佈局圖 `_layout_sofiaout.png`）：
 >    11 格、**兩個終點**（`cellar` 地下囚室＝馬努決戰、`terrace` 露台＝挾人質劇情）；背景 **10／10 已交** `resources/background/sofia/sofiaout_<id>.webp`（09-26 中午補齊 road／avenue／carriage／backhall／cellar／terrace，`bg_index.js` 已重跑；`backhall` 往下石階不明顯，重出與否等 Ray）；小地圖另開。
 >    程式端要做的（Ray 點頭後）：搬進 `script/town.js`（全部 `noTime:true`、`bg:'sofiaout_<id>'`）、`gate` 接聖索菲亞哪一格（建議 `uptown`）、結算點在囚室還是露台、`map_layout.py` 補 `POS`、產生器回收。全部新增檔，不用跳 `ASSET_VER`。
 > 11. ✅ **-1755 已接** **（09-26，Mac）羅賽爾廢城小地圖交件** —— `resources/map/map_dunmor.webp`＋`_spots_dunmor.json`（55 格）。`TOWNS.dunmor` 補一行（新增、不必 `?v=`），整行可抄在 `resources/background/_dunmor_spec.md` §十：
@@ -41,7 +41,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1761`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1762`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -54,7 +54,19 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1761`
+# HANDOFF — 截至 `ver 2026.09.22-1762`
+
+**`-1762`：里朋莊園（`sofiaout`）接進城鎮資料，從聖索菲亞餐飲街往右走進去**（Ray：「索菲亞連往莊園中間的路應該已經好了，接在餐飲街右邊」）
+· `TOWNS.sofiaout`（名「里朋莊園」）：10 格，照 `map_sofiaout_draft.py` v3 原樣搬（草稿回收，版面進 `map_layout.py` 的 `POS`／`OUT_POS`）。
+  入口 `road`（橄欖園道）；露台 `terrace`＝`rest`＋`noWild`；地下囚室 `cellar`＝終點（戰鬥未定）。每格 `noTime`、迷霧、`wilderness`。
+  `bgm:'suspense'` 是程式端挑的。
+· 聖索菲亞 `tavern` 加 `right:'@sofiaout'`；園道 `back:'@santasofia:tavern'`。
+  ⚠ 跨圖進來沒有帶入方向 ⇒ 園道的回頭路掛在「下」（＝這張圖的身後、草稿上 gate 的位置）。不會彈：從餐飲街一直按右停在園道，一直按下回餐飲街再到上街區。
+· 實測（8123）：餐飲街多一支「右：里朋莊園」→ 園道（往前「？？？」、往下「聖索菲亞　餐飲街」）→ 往下回到餐飲街。
+· ⚠ `map_layout.py` 對這張印「8 邊・環數 −1」是顯示誤差（它不數 `back` 上的跨圖出口卻照樣扣掉）；資料實測 9 邊、10 格全連通、0 環。
+· ⚠ **還沒有**：戰鬥（結算點在囚室還是露台）、`wildSpawn`、劇情、小地圖。
+
+# （上一段）截至 `ver 2026.09.22-1761`
 
 **`-1761`：里朋莊園從飛行地圖拿掉**（Ray：「把莊園從飛行地圖拿掉吧，反正不是降落點，從城鎮進去就好」）
 · 刪掉 `SETTLEMENTS` 那一列、`PLACES` 那一筆名牌、`export_mapref.py` 那一行；俯視插畫的美術單 `flight/city/_ripon_plan.md` 回收（不需要了）。

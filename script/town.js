@@ -4444,7 +4444,8 @@ export const TOWNS = {
       uptown:   { bg:'sofia_uptown',   name:'聖索菲亞　上街區', noTime:true,
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
       tavern:   { bg:'sofia_bistro',   name:'聖索菲亞　餐飲街', noTime:true,
-        exits:{ back:'uptown' } },
+        /* `right:'@sofiaout'`（ver -1762，Ray：「接在餐飲街右邊」）＝往里朋莊園（入口：橄欖園道）。 */
+        exits:{ back:'uptown', right:'@sofiaout' } },
       grocery:  { bg:'sofia_grocerie', name:'聖索菲亞　雜貨舖', noTime:true,
         exits:{ back:'uptown' } },
       /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（立繪還沒交）。
@@ -8944,6 +8945,37 @@ export const TOWNS = {
        真的落進這裡再請美術畫 —— 現在落好了，可以發需求了。
      ⚠ 迷霧是預設（不寫 `mist:0`）：這是迷宮，走過才亮正是它的玩法。
      ══════════════════════════════════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════════════════════════
+     里朋莊園（`sofiaout`，ver -1762，Ray：「索菲亞連往莊園中間的路應該已經好了，接在餐飲街右邊」）
+     ──────────────────────────────────────────────────────────────────────
+     聖索菲亞郊外・里朋家族的豪宅（Stage 14 合流：救小女孩的姐姐）。拓樸＝`tools/map_sofiaout_draft.py` 的 v3
+     原樣搬來（11 格含跨圖的 gate ⇒ 10 格），那支草稿已回收；版面在 `tools/map_layout.py` 的 `POS.sofiaout`。
+     · **不在飛行地圖上**（-1761 Ray：「從城鎮進去就好」）⇒ 只從聖索菲亞的餐飲街走進來：
+       餐飲街 `right:'@sofiaout'` → 入口 `road`（橄欖園道＝「中間的路」）；園道的回頭路 `back:'@santasofia:tavern'`，
+       `back` 會掛在「來時方向的反向」＝左，兩端相反（§6.5.4）。
+     · 每格 `noTime:true`（這一批 10 張都是下午硬光，沒有時段差分）、迷霧預設、`wilderness`（私人莊園沒有營業時間）。
+     · 草稿標的：露台 `terrace`＝休息處（`rest`＋`noWild`）、地下囚室 `cellar`＝終點（馬努決戰）。
+     ⚠ **還沒有的**：戰鬥（結算點在囚室還是露台 Ray 未定）、`wildSpawn`、劇情、小地圖 —— 現在走進去是空的。
+     ⚠ `bgm:'suspense'`（北方泊地那一首）是程式端自己挑的，Ray 要換就改這一格。 */
+  sofiaout: {
+    name: '里朋莊園',
+    entry: 'road',
+    bgm: 'suspense',
+    wilderness: true,
+    nodes: {
+      terrace:    { bg:'sofiaout_terrace', name:'里朋莊園　露台', noTime:true, rest:true, noWild:true, exits:{ down:'salon' } },
+      backhall:   { bg:'sofiaout_backhall', name:'里朋莊園　後廊', noTime:true, exits:{ right:'hall', down:'cellar' } },
+      hall:       { bg:'sofiaout_hall', name:'里朋莊園　大廳', noTime:true, exits:{ left:'backhall', right:'salon', down:'forecourt' } },
+      salon:      { bg:'sofiaout_salon', name:'里朋莊園　沙龍', noTime:true, exits:{ up:'terrace', left:'hall' } },
+      cellar:     { bg:'sofiaout_cellar', name:'里朋莊園　地下囚室', noTime:true, exits:{ up:'backhall' } },
+      forecourt:  { bg:'sofiaout_forecourt', name:'里朋莊園　噴泉前庭', noTime:true, exits:{ up:'hall', right:'carriage', down:'avenue' } },
+      carriage:   { bg:'sofiaout_carriage', name:'里朋莊園　馬車房', noTime:true, exits:{ left:'forecourt' } },
+      lodge:      { bg:'sofiaout_lodge', name:'里朋莊園　莊園門房', noTime:true, exits:{ right:'avenue', down:'road' } },
+      avenue:     { bg:'sofiaout_avenue', name:'里朋莊園　棕櫚車道', noTime:true, exits:{ up:'forecourt', left:'lodge' } },
+      road:       { bg:'sofiaout_road', name:'里朋莊園　橄欖園道', noTime:true, noWild:true, exits:{ up:'lodge', back:'@santasofia:tavern' } },
+    },
+  },
+
   /* ══════════════════════════════════════════════════════════════════════
      羅賽爾廢城（`dunmor`，ver -1753，Ray：「把無人廢城改成羅賽爾廢城，接上拓樸」）
      ──────────────────────────────────────────────────────────────────────

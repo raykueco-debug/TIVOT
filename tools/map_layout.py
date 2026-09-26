@@ -54,6 +54,14 @@ POS = {
   # ── 貝利薩爾遺址（ver -1396）：38 格・41 邊・4 環 ────────────────────
   #   ⚠ 這一張**排不進標準的直角格**（見 BEND）：欄列之間刻意留空，
   #     版面只保證「方向的正負號」對（left 的鄰居欄號比較小），不保證剛好差 1。
+  # ── 里朋莊園（ver -1762）：10 格，座標照搬 `tools/map_sofiaout_draft.py`（那支已回收）；跨圖出口見 OUT_POS ──
+  'sofiaout': {
+    'terrace':(8,4),
+    'backhall':(4,5), 'hall':(6,5), 'salon':(8,5),
+    'cellar':(4,6), 'forecourt':(6,6), 'carriage':(8,6),
+    'lodge':(4,7), 'avenue':(6,7),
+    'road':(4,8),
+  },
   # ── 羅賽爾廢城（ver -1753）：55 格・5 環，座標照搬 `tools/map_dunmor_draft.py`（那支已回收）──
   'dunmor': {
     'kingsbarrow':(0,5), 'barrowfield':(2,5), 'altar':(4,5), 'springpool':(6,5), 'altarcourt':(8,5), 'skullniche':(10,5),
@@ -224,6 +232,7 @@ OUT_POS = {
                     '@eastport:dock':        (2, 7, '東方泊地\n碼頭')},
   'shinier_ruins': {'@shinier_forest:ruins': (5,9, '遺蹟\n入口')},
   'shinier':       {'@shinier_forest':      (2,2, '夏爾\n森林')},
+  'sofiaout':      {'@santasofia:tavern':   (4,9, '聖索菲亞\n餐飲街')},
 }
 
 def load(town):
