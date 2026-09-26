@@ -4397,12 +4397,9 @@ export const TOWNS = {
 
     /* 大城市不上迷霧（ver -913）—— ⚠ **要明寫**：沒寫就是有霧。 */
     mist: 0,
-    /* 餐飲街（ver -1743 接美術 `_sofia_add_spec.md` §四②）：只交了**酒吧**（三差分，不寫 `noTime`）與**餐廳**
-       （一張，`noTime`）。咖啡廳／甜品店沒有 ⇒ 城裡沒有那一家就不換、照節點原本那一張 `sofia_bistro`（§6.5.4.2）。 */
-    dining: { node:'tavern', scenes:{
-      bar:        { bg:'sofia_bar' },
-      restaurant: { bg:'sofia_restaurant', noTime:true },
-    } },
+    /* ⚠ `dining`（分店機制）**已拆**（ver -1763，Ray：「聖索菲亞還留著舊的分店機制…現在已經沒有這個了，直接放拓樸就好」）——
+       沒有同行女伴時 `DINE.fallback='bar'` 會把整格換成酒吧室內，站在街上卻看到店裡。
+       同雪都 -1487／東泊 -1263：酒吧、餐廳各自是**走得進去的一格**（見 nodes 的 `bar`／`restaurant`）。 */
     /* ⚠⚠ **每一格都要 `noTime:true`**：這 12 張目前 0 張時段差分，不寫的話候選鏈
        會先去試 `_dawn/_day/_dusk/_night` 四個名字，**每一格白吃四個 404**。
        差分交件之後把這一批 `noTime` 一起拿掉。 */
@@ -4444,8 +4441,14 @@ export const TOWNS = {
       uptown:   { bg:'sofia_uptown',   name:'聖索菲亞　上街區', noTime:true,
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
       tavern:   { bg:'sofia_bistro',   name:'聖索菲亞　餐飲街', noTime:true,
-        /* `right:'@sofiaout'`（ver -1762，Ray：「接在餐飲街右邊」）＝往里朋莊園（入口：橄欖園道）。 */
-        exits:{ back:'uptown', right:'@sofiaout' } },
+        /* `right:'@sofiaout'`（ver -1762，Ray：「接在餐飲街右邊」）＝往里朋莊園（入口：橄欖園道）。
+           ver -1763：酒吧 `up`、餐廳 `down`（拆掉 `dining` 之後的兩個分支）；回上街區改明寫 `left`
+           （上街區是 `right` 進來的，兩端相反）—— 用 `back` 的話沒有來向時會預設掛「下」，跟餐廳撞在一起。 */
+        exits:{ up:'bar', left:'uptown', right:'@sofiaout', down:'restaurant' } },
+      /* 酒吧／餐廳（ver -1763，接美術 `_sofia_add_spec.md` §七）：室內圖。酒吧三差分（day/dusk/night，八點才開，
+         **不寫 `noTime`**）、餐廳只有 day（`noTime`，營業 `[8,17]` 見 §5）。 */
+      bar:        { bg:'sofia_bar',        name:'聖索菲亞　酒吧', exits:{ back:'tavern' } },
+      restaurant: { bg:'sofia_restaurant', name:'聖索菲亞　餐廳', noTime:true, exits:{ back:'tavern' } },
       grocery:  { bg:'sofia_grocerie', name:'聖索菲亞　雜貨舖', noTime:true,
         exits:{ back:'uptown' } },
       /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（立繪還沒交）。

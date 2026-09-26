@@ -203,9 +203,9 @@ POS = {
   # ── 聖索菲亞城（ver -1123）：拓樸＝帝都，所以版面直接沿用 capital 那一組 ──
   'santasofia': {
     'midtown':(5,3), 'cityhall':(3,3), 'church':(7,3),
-    'dock':(2,4),    'inn':(8,4),
+    'dock':(2,4),    'inn':(8,4),     'bar':(10,4),          # ver -1763：拆 dining，酒吧／餐廳成為格子
     'gunstore':(0,6),'oldtown':(2,6), 'square':(5,6), 'uptown':(8,6), 'tavern':(10,6),
-    'guild':(2,8),   'grocery':(8,8),
+    'guild':(2,8),   'grocery':(8,8), 'restaurant':(10,8),
   },
   # ── 卡耶爾山谷（ver -1671）：5 格・一條主線 ＋ 斷橋那一條死路，環 0 ────
   #   入口 → 風蝕迴廊 → 白骨之地，白骨往上到谷底祭場、往右到斷橋（死路）。
@@ -233,6 +233,7 @@ OUT_POS = {
   'shinier_ruins': {'@shinier_forest:ruins': (5,9, '遺蹟\n入口')},
   'shinier':       {'@shinier_forest':      (2,2, '夏爾\n森林')},
   'sofiaout':      {'@santasofia:tavern':   (4,9, '聖索菲亞\n餐飲街')},
+  'santasofia':    {'@sofiaout':            (12,6, '里朋\n莊園')},
 }
 
 def load(town):

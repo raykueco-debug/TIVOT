@@ -31,7 +31,7 @@
 > 13. **（09-26 下午，Mac）薇拉馮德港 `verafond` 拓樸 v2 Ray 定案**（「整個城式義大利風，當世最發達的富庶港都」「1900 年」）——
 >    程式端要做的：搬進 `script/town.js`（節點 id／出口照 `tools/map_verafond_draft.py` 的 NODES/EDGES，22 格、入城＝`harbor` 兼 `sail`）、`tools/map_layout.py` 補 `POS`、產生器回收。
 >    背景鑰匙與 `noTime` 規則寫在 `resources/background/_verafond_spec.md` §五（美術正在跑，室外 `vela_<格>` 四差分）；全是新檔，不用跳 `ASSET_VER`。
-> 14. **（09-26 晚，Mac）聖索菲亞餐飲街進去看到的是酒吧室內 —— 不是圖錯，是 `dining` 沒拆**（Ray：「索菲亞的餐飲街應該是街道而不是室內」）
+> 14. ✅ **-1763 已拆（小地圖補點仍待美術）** **（09-26 晚，Mac）聖索菲亞餐飲街進去看到的是酒吧室內 —— 不是圖錯，是 `dining` 沒拆**（Ray：「索菲亞的餐飲街應該是街道而不是室內」）
 >    `tavern` 的 `bg:'sofia_bistro'` 本來就是**街道圖**；但 `TOWNS.santasofia.dining.scenes` 還在，沒有同行女伴時 `DINE.fallback='bar'` ⇒ 整格換成 `sofia_bar`（室內）＝「站在街上卻看到店裡」。
 >    ⇒ **同雪都 -1487／東泊 -1263：拆掉 `dining`，改成三分支**（店走得進去、街道就是街道）。建議：
 >    `tavern.exits` 加 `up:'bar'`、`down:'restaurant'`（`right` 已經給 `@sofiaout`、`left` 是回頭路）；
@@ -49,7 +49,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1762`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1763`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -62,7 +62,18 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1762`
+# HANDOFF — 截至 `ver 2026.09.22-1763`
+
+**`-1763`：聖索菲亞拆掉 `dining`（分店機制），酒吧／餐廳直接放進拓樸**（Ray：「現在已經沒有這個了，直接放拓樸就好」；＝交接第 14 項）
+· 沒有女伴同行時 `DINE.fallback='bar'` 把整格換成酒吧室內 ⇒ 站在餐飲街卻看到店裡。拆掉之後：
+  `tavern`（街景 `sofia_bistro`）出口＝上 `bar`／左 `uptown`／右 `@sofiaout`／下 `restaurant`；
+  `bar`（`sofia_bar` 三差分，不寫 `noTime`）、`restaurant`（`noTime`），兩格都 `back:'tavern'`。
+  ⚠ 回上街區由 `back` 改成明寫 `left`：`back` 在沒有來向時預設掛「下」，會跟餐廳撞在一起（上街區是 `right` 進來的，兩端相反）。
+· `map_layout.py`：補 `bar`／`restaurant` 兩格與通往莊園的跨圖框 ⇒ 14 格・13 邊・0 環。
+· 實測（8123）：餐飲街是街景、四個方向對；進酒吧是 `sofia_bar_day` 室內、往下回餐飲街。
+· ⚠ 小地圖 `map_santasofia` 要補酒吧／餐廳兩個點（美術另開一單，第 14 項原文就有寫）。
+
+# （上一段）截至 `ver 2026.09.22-1762`
 
 **`-1762`：里朋莊園（`sofiaout`）接進城鎮資料，從聖索菲亞餐飲街往右走進去**（Ray：「索菲亞連往莊園中間的路應該已經好了，接在餐飲街右邊」）
 · `TOWNS.sofiaout`（名「里朋莊園」）：10 格，照 `map_sofiaout_draft.py` v3 原樣搬（草稿回收，版面進 `map_layout.py` 的 `POS`／`OUT_POS`）。
