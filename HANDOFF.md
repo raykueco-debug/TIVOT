@@ -19,6 +19,9 @@
 >    ④ ✅ **-1743 已跳** ⚠⚠ **`config.js` 的 `ASSET_VER` 要跳這 14 個鍵**（第四版同名覆蓋了第一版）：`dunmor_causeway` `dunmor_southgate` `dunmor_ditchw` `dunmor_oghamrow` `dunmor_gatecourt` `dunmor_mainstreet` `dunmor_marketcross` `dunmor_boarstone` `dunmor_innergate` `dunmor_druidhouse` `dunmor_oakgrove` `dunmor_nemeton` `dunmor_altar` `dunmor_wellsq`（其餘 41 張是新增，不必跳）
 >    ⑤ 等 Ray：`hallcourt` 正門本該堵死、圖裡只擋一半要不要重出；小地圖走 `tools/map_compose.py` 另開一單
 >    總覽 `resources/background/_dunmor_all55_sheet.jpg`；逐格出口／鏡頭／月亮朝向在工單 §八／§九 的表。
+> 10. **（09-26 凌晨，Mac）聖索菲亞郊外・里朋家族豪宅 `sofiaout`（Stage 14 合流：救小女孩的姐姐）** —— 拓樸 v3 提案在 `resources/map/_sofiaout_spec.md` §一（產生器 `tools/map_sofiaout_draft.py`、佈局圖 `_layout_sofiaout.png`）：
+>    11 格、**兩個終點**（`cellar` 地下囚室＝馬努決戰、`terrace` 露台＝挾人質劇情）；背景已交 4 張 `sofiaout_{lodge,forecourt,hall,salon}`，其餘 6 格美術還在跑。
+>    程式端要做的（Ray 點頭後）：搬進 `script/town.js`（全部 `noTime:true`、`bg:'sofiaout_<id>'`）、`gate` 接聖索菲亞哪一格（建議 `uptown`）、結算點在囚室還是露台、`map_layout.py` 補 `POS`、產生器回收。全部新增檔，不用跳 `ASSET_VER`。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；**§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、

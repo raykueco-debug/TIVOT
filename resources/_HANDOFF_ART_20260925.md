@@ -154,3 +154,22 @@ Ray：「先交一份無人廢城拓樸方案，50～60 格，含一個祭壇終
 `resources/ci/045ac642-….png`（RGB 白底）／`resources/illustration/023_anyacottoncandy.png`、`024_nouvellesmile.png`（RGB）／
 根目錄兩張 png、`地理筆記.docx`、`索菈娜技能.docx`；另 `resources/si/gen_renna_si_blush.webp` 在工作樹裡是**已刪除**狀態（不是我刪的）。
 用途未知 → 等 Ray 說；要入庫的話走 §5 的 webp 流程＋取景值重量。
+
+
+## 十、2026-09-26 凌晨（Mac）：聖索菲亞郊外・里朋家族據點（Stage 14 合流）—— ⚠ 換 session 時 6 格沒跑
+
+Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的據點」→「應該是毒梟豪宅，注意年代 1900」→「地下囚室是終點、連到宅內；兩個終點：囚室決戰、挾人質逃到露台進劇情」→「選有圍牆那個」→「跑完」→「交接吧」。
+
+- **拓樸 v3（提案，等程式端搬）**：`resources/map/_sofiaout_spec.md` §一＋佈局圖 `resources/map/_layout_sofiaout.png`（產生器 `tools/map_sofiaout_draft.py`）。
+  11 格：城門→橄欖園道→莊園門房→棕櫚車道→噴泉前庭（→馬車房）→大廳→後廊→**地下囚室（決戰）**；大廳→沙龍→**露台（劇情）**。
+- **已交 4 張** ✔（`resources/background/sofia/sofiaout_{lodge,forecourt,hall,salon}.webp`，commit `711dccc`）：前庭是**圍牆版**（第一版左側有溫室門，作廢留 scratch）。
+- ⚠⚠ **下一個美術 session 的第一件事：跑剩下 6 格**（road／avenue／carriage／backhall／cellar／terrace）—— Ray 已說「跑完」，
+  **提示詞全文在 `_sofiaout_spec.md` §四**，產線照那一節（附 `sofiaout_forecourt` 當色票、兩串並行、每 6～7 分鐘切前景收圖）。
+
+### 資產盤點（sofiaout）
+| id | 狀態 |
+|---|---|
+| lodge／forecourt／hall／salon | ✔ 不欠（下午單張、`noTime`） |
+| road／avenue／carriage／backhall／cellar／terrace | ⚠ 欠 —— 提示詞已寫好（§四），未送 |
+| gate | ✔ 不欠（跨圖出口，不畫） |
+| 小地圖 | ⚠ 欠 —— 拓樸 Ray 點頭後另開（`tools/map_compose.py`） |
