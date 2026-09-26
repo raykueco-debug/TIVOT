@@ -33,4 +33,10 @@
 ```
 
 ## 進度
-- [ ] pistol　- [ ] rifle　- [ ] dual　- [ ] shotgun　- [ ] moll　- [ ] boss
+- [x] pistol　- [ ] rifle　- [ ] dual　- [x] shotgun　- [ ] moll　- [ ] boss
+
+## 交件紀錄
+- 09-26 19:30：`man_thug_pistol`／`man_thug_shotgun` ✔（第二版＝被突襲的慌亂版；真 alpha，半透明像素近白 0.0%）。
+  ⚠ 第一版要求「透明 alpha」回來是**畫上去的棋盤格**（RGB），表情也太從容 —— 在原串追一則「改成被突襲、四周留白一成」就好了（第二版反而回了真 alpha）。
+  ⚠ 四周空白仍偏窄（上緣約 2%），沒有被裁到；程式端的取景若要更多餘裕可再縮排。
+  原稿 `resources/_originals/enemy/man_thug_*.png`。
