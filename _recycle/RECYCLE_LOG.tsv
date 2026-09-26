@@ -769,3 +769,4 @@ when	from	to	reason
 20260925-175831	resources/background/dunmor/dunmor_southgate.webp	_recycle/resources/background/dunmor/dunmor_southgate.webp	廢城第一版 14 張（村落版）被第四版石造版取代，Ray 決定整批覆蓋（2026-09-25）
 20260925-175831	resources/background/dunmor/dunmor_wellsq.webp	_recycle/resources/background/dunmor/dunmor_wellsq.webp	廢城第一版 14 張（村落版）被第四版石造版取代，Ray 決定整批覆蓋（2026-09-25）
 20260926-143732	tools/map_dunmor_draft.py	_recycle/tools/map_dunmor_draft.py	ver -1753：拓樸已搬進 script/town.js 的 TOWNS.dunmor、版面進 map_layout.py 的 POS（同一個拓樸不留兩份）
+20260926-154303	flight/city/_ripon_plan.md	_recycle/flight/city/_ripon_plan.md	ver -1761：Ray「把莊園從飛行地圖拿掉，從城鎮進去就好」—— 俯視插畫不需要了

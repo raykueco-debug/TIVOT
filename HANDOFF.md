@@ -34,7 +34,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1760`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1761`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -47,7 +47,14 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1760`
+# HANDOFF — 截至 `ver 2026.09.22-1761`
+
+**`-1761`：里朋莊園從飛行地圖拿掉**（Ray：「把莊園從飛行地圖拿掉吧，反正不是降落點，從城鎮進去就好」）
+· 刪掉 `SETTLEMENTS` 那一列、`PLACES` 那一筆名牌、`export_mapref.py` 那一行；俯視插畫的美術單 `flight/city/_ripon_plan.md` 回收（不需要了）。
+· 莊園本身（`sofiaout`，11 格）照舊**從聖索菲亞城走進去**，拓樸等 Ray 定案（`resources/map/_sofiaout_spec.md`）。
+· ⚠ 上面 -1755～-1760 那幾段（3D 量體 → 城鎮模式 → 美術單）**全部作廢**，留著當紀錄。
+
+# （上一段）截至 `ver 2026.09.22-1760`
 
 **`-1759`／`-1760`：里朋莊園進 `SETTLEMENTS`（城鎮模式）** —— Ray：「里朋莊園還是要有建築，只是走城鎮模式」。
 · 加了一列 `{ n:'里朋莊園', x:544, y:595, t:'village', f:'free' }`（不寫 `town`）。
