@@ -1468,9 +1468,10 @@ export function noStorySpec(ch, storyFlags){
    ⚠ 加速（Sturm）與感應的解鎖是 `FEATURE_FROM`（暫填 5）—— stage 8 ≥ 5，
      兩個都開著，這正是找隱藏點要用的。 */
 export const FLIGHT_TEST = {
-  id:'flighttest', name:'試飛', sub:'S8・瓦努努開啟後的自由活動期間',
+  id:'flighttest', name:'試飛', sub:'S8・瓦努努開啟後的自由活動期間（無劇情・無限航區，ver -1744）',
   stage:8, clockHour:12, named:true,
-  flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+  flags:['free_flight',   // ver -1744：試飛＝完全無劇情、無限航區（誰問它見 flight/index.html 的 freeFlight）
+         'dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
            'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
            'np_burial','np_burial_done','np_night','np_night_done','np_day3',

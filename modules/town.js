@@ -285,11 +285,13 @@ function storyWindow(){
   return null;
 }
 function outOfStoryWindow(){
+  if(prog.hasFlag('free_flight')) return true;   // 試飛降落：這座城的劇情一律不演（ver -1744，旗的說明在 flight/index.html 的 freeFlight）
   const w=storyWindow(); if(!w) return false;
   const st=prog.getStage();
   return st < (w[0]||0) || (w[1]!=null && st > w[1]);
 }
 function storyOff(item){
+  if(prog.hasFlag('free_flight')) return true;   // 試飛：連明寫章節的早訪也不演（ver -1744）
   if(item && (item.fromStage!=null || item.untilStage!=null)) return false;
   return outOfStoryWindow();
 }

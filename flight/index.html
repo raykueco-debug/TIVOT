@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1743"></script>
+<script src="../orientation.js?v=1744"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1743edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1744edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1743edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1743edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1744edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1744edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1743edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1743edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1744edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1744edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1743edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1744edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1743edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1743edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1743edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1743edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1743edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1743edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1743edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1743edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1743edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1743edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1744edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1744edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1744edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1744edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1744edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1744edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1744edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1744edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1744edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1744edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1743edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1744edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1743edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1744edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1743"></script>
+<script src="settlement.js?v=1744"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1743"></script>
+<script src="talks.js?v=1744"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1743';
+const FLIGHT_VER = 'ver -1744';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -4901,6 +4901,13 @@ function flagList(){
   catch(e){ return []; }
 }
 function flagOn(f){ return flagList().indexOf(f)>=0; }
+/* ══⚠⚠ **試飛＝完全無劇情、無限航區**（ver -1744，Ray：「讓試飛完全無劇情 無限航區」）══
+   旗 `free_flight` 由首頁「試飛」那一筆（`script/progress.js` 的 `FLIGHT_TEST`）插；
+   拔它的是 `newRun()`（下一次開始故事／跳章節整輪清掉）—— 鐵律 9 的誰插誰拔。
+   問它的門（每一道自己問，鐵律 8）：`say()`（不講、但照叫 `done`）／`noflyAt` 與紅罩／
+   `syncScriptPending` 與「劇本遭遇沒打完不刷雜怪」／`placeLockedNag`／`placeStageLocked`／
+   `stage1Blocked`／`belisarLandGate`／`huntLandGate`。城鎮那一側在 `modules/town.js` 的 `storyOff`。 */
+function freeFlight(){ return flagOn('free_flight'); }
 /* ══⚠⚠⚠ 女主的 **NIEM 等級**（ver -1186，Ray 交稿）══════════════════════════
    `tivot_girlniem_v1` ＝ `{搭檔key: 用掉幾份}`，等級是 1＋份數（出廠 LV.1）。
    ⚠⚠ **這一頁是另一個 document**，import 不到 `script/progress.js` —— 照 §6.10
@@ -5507,6 +5514,7 @@ function portraitLOD(who, im, w, h, dim){
   return c.dim || (c.dim=buildDim(c.cv));
 }
 function say(beats, at, opts){
+  if(freeFlight()){ const cb=opts&&opts.done; if(cb) setTimeout(()=>{ try{ cb(); }catch(_){} },0); return; }   // 試飛：不講（ver -1744）
   /* ⚠ 差分鍵在**這一支**展開（唯一的入口，鐵律 8）：之後每一支都只看得到
      一個查得到 PORTRAIT 的字串，castEnter／drawTalk／LOD 一行都不必改。 */
   beats = beats.map(b => (b.who && b.who!==pkey(b.who)) ? Object.assign({}, b, { who:pkey(b.who) }) : b);
@@ -8273,7 +8281,8 @@ function noflyMask(){
      太濃會把地貌蓋掉，那張圖玩家還要拿來認路。 */
   const RED = (56<<24) | (48<<16) | (48<<8) | 210;
   const inNofly = new Uint8Array(REGION_W*REGION_H);
-  for(let i=0;i<inNofly.length;i++) inNofly[i] = NOFLY_IDS.indexOf(REGION[i])>=0 ? 1 : 0;
+  const _ff=freeFlight();   // 試飛不鋪紅罩（ver -1744）
+  for(let i=0;i<inNofly.length;i++) inNofly[i] = (!_ff && NOFLY_IDS.indexOf(REGION[i])>=0) ? 1 : 0;
   const kx=REGION_W/MAPW, ky=REGION_H/MAPH;
   for(let y=0;y<R.h;y++){
     for(let x=0;x<R.w;x++){
@@ -15176,7 +15185,8 @@ function scriptedInStage(S){
   return st>=S.stages[0] && st<=S.stages[1];
 }
 function syncScriptPending(){
-  scriptPending = SCRIPTED_ENCOUNTERS.find(S=>flagOn(S.flag) && !flagOn(S.done) && scriptedInStage(S)) || null;
+  scriptPending = freeFlight() ? null   // 試飛：沒有劇本遭遇（ver -1744）
+    : (SCRIPTED_ENCOUNTERS.find(S=>flagOn(S.flag) && !flagOn(S.done) && scriptedInStage(S)) || null);
 }
 syncScriptPending();
 function scriptedDue(){
@@ -15601,7 +15611,7 @@ function updateEnemy(dt,now){
          到時把判準改成「旗標已立而未打完」（加回 flagOn(S.flag)）。 */
     /* ⚠ 過期的劇本遭遇不擋（ver -1738）：`stages` 窗已經過了的那一場永遠不會再打，
        留在這條判定裡等於把雜怪封到天荒地老。 */
-    if(SCRIPTED_ENCOUNTERS.some(S=>!flagOn(S.done) && scriptedInStage(S))) return;
+    if(!freeFlight() && SCRIPTED_ENCOUNTERS.some(S=>!flagOn(S.done) && scriptedInStage(S))) return;
     if(scriptPending) return;
     /* ══ 船不動就不生怪（ver -756，Ray：「飛行地圖若不動就不生怪」）══
        停著＝看地圖／掛機／整理，不該被怪撞。計時器**凍著**（不扣 dt），
@@ -16982,7 +16992,7 @@ function regionAt(mx,my){
    ⚠⚠ 日後某一國開放（Ray -736 的原話：「隨 stage 禁航區會變」），把 id 從這裡
      拿掉即可；要依章節開放就在這一支加條件 —— 判定只有 `noflyAt()` 一處。 */
 const NOFLY_IDS = [3, 9, 12, 13];   // 伊斯維亞／羅賽爾／埃蘭／阿斯佩里亞（region_map.json）
-function noflyAt(mx,my){ return NOFLY_IDS.indexOf(regionAt(mx,my))>=0; }
+function noflyAt(mx,my){ return !freeFlight() && NOFLY_IDS.indexOf(regionAt(mx,my))>=0; }   // 試飛：無禁航（ver -1744）
 /* 蕾娜的三句（Ray 的稿，一字未改）＋播完之後的那一句。
    ⚠ 「播完了沒」記成**旗**（`nofly_told`）：誰插的＝第三句播出去那一刻；
      沒有人拔（鐵律 9）。不記旗的話每次出航都會再聽一輪。 */
@@ -19051,7 +19061,7 @@ let landTarget=null, landOn=false;
    ⚠ 四大遺蹟＝木雅克神殿／無名遺蹟（瓦努努石陣）／伊甸古墓／貝利薩爾遺址，
      全部 `stageFrom:8`（資料，鐵律 1）—— 加第五座只要在那一列寫一格。 */
 function placeStageLocked(P){
-  return !!(P && P.stageFrom!=null && gameStage() < (P.stageFrom|0));
+  return !freeFlight() && !!(P && P.stageFrom!=null && gameStage() < (P.stageFrom|0));
 }
 function nearestTown(){
   let best=null, bd=Infinity;
@@ -19190,6 +19200,7 @@ const PLACE_LOCK_NAG = [
   { who:'renna', text:'不然我扣分喔。' },
 ];
 function placeLockedNag(key){
+  if(freeFlight()) return false;   // 試飛：無限航區（ver -1744）
   const from = PLACE_STAGE_FROM[key];
   if(from==null || gameStage()>=from) return false;
   if(!sayQueue) say(PLACE_LOCK_NAG, performance.now());
@@ -19245,6 +19256,7 @@ function belisarNolandMap(){
 const BELISAR_NOLAND_NAG = [{ who:'renna/talkwork', text:'先去東方泊地吧。' }];
 /* 回 true ＝這一次降落被擋下來了（呼叫端直接 return，不收時間、不清追兵）。 */
 function belisarLandGate(S){
+  if(freeFlight()) return false;   // 試飛（ver -1744）
   if(!S || S.town!=='belisar') return false;
   if(flagOn(BELISAR_LAND_OK)) return false;          // 劇情開放之後照常降落
   /* 已經在演別的對白／地圖開著就不插隊（同 enterPlace 的規矩），但這一次仍然不降。 */
@@ -19283,6 +19295,7 @@ const HUNT_NAG = [
 ];
 let huntNagAt = 0;
 function huntLandGate(S){
+  if(freeFlight()) return false;   // 試飛（ver -1744）
   if(!flagOn(HUNT_FLAG) || flagOn(HUNT_UNTIL)) return false;
   if(S && S.town==='belisar') return false;          // 古城照常降
   if(!sayQueue && !mapOpen){          // 同 belisarLandGate：正在演別的就不插隊
@@ -19294,7 +19307,7 @@ function huntLandGate(S){
 
 function stage1Blocked(P){
   /* ver -562 編號重排（進帝都=1、出航=2）：「前往北方泊地」的地圖鎖跟著搬到 S2。 */
-  return gameStage()===2 && P && STAGE1_DEST.indexOf(P.name) < 0;
+  return !freeFlight() && gameStage()===2 && P && STAGE1_DEST.indexOf(P.name) < 0;
 }
 
 /* ══ 第一場艦戰打完的那一段（ver -432（-893 前用詞），Ray 交稿，一字未改）══════════════
