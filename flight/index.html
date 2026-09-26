@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1748"></script>
+<script src="../orientation.js?v=1749"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1748edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1749edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1748edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1748edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1749edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1749edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1748edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1748edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1749edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1749edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1748edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1749edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1748edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1748edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1748edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1748edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1748edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1748edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1748edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1748edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1748edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1748edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1749edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1749edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1749edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1749edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1749edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1749edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1749edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1749edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1749edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1749edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1748edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1749edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1748edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1749edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1748"></script>
+<script src="settlement.js?v=1749"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1748"></script>
+<script src="talks.js?v=1749"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1748';
+const FLIGHT_VER = 'ver -1749';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -3986,7 +3986,9 @@ const RUIN_ART = {
     base: { w:380, l:330, n:52, jit:0.04, ox:-20 },
     floor:'slab', floorCell:40, floorJoint:3.6,
     lift: 6,
-    tex:true,
+    /* 牆面石材（ver -1749，Ray 交件：巨石乾砌、冷藍灰帶紫，平均 (118,116,129)；1254² → LANCZOS 256²，
+       原檔 `resources/_originals/flight/geo/dunmor_wall_gpt.png`）。屋頂那張選用的沒交 ⇒ 王廳山牆沿用這張。 */
+    tex:'dunmor_wall',
     pal:'slate',
     parts: [
       /* ── ① 外城牆（巨石砌、殘缺不齊）：東北正面在 x=-200、西南崖側在 x=160，兩側 y=±160 ── */
@@ -7953,7 +7955,15 @@ function applyResize(){
      炸了整頁就死透（後面的 cam/輸入/loop 全沒建，resize 也救不回）。
      退回 390×844 先把畫布建起來；真的顯示時 resize 事件會用真尺寸重建。 */
   const nw=innerWidth||390, nh=innerHeight||844;
-  const ndpr=Math.min(Q().dpr, devicePixelRatio||1);
+  /* ══⚠⚠⚠ **走 GL 時，2D 這一層的 DPR 不跟著降畫質**（ver -1749，Ray：「飛行畫面時在手機上連立繪跟對話文字
+     都會降解析」）══ 手機一掉幀，自適應就降到 q2～q4，那幾檔的 `dpr:1` 會把**整張 2D 畫布**壓成 CSS 像素 ——
+     而立繪、對話框、所有 canvas 文字都畫在這一張上，於是在 DPR 3 的手機上被放大三倍就糊了。
+     GL 路徑的地形在**另一張** `glcv`（BW×BH），降畫質真正省到的是它（`bwf`），2D 這一張壓 DPR 幾乎省不到東西。
+     ⇒ GL 開著：2D 固定 min(2, 裝置 DPR)；CPU 路徑（`?gl=0`／沒有 WebGL2）的地形是 blit 在這一張上的，照舊跟著 `Q().dpr`。
+     ⚠ `glReady` 要等世界資料上傳完才成立 —— 那一刻會再叫一次 `resize()`（見 glUploadWorld 的收尾）。 */
+  /* ⚠ `GLON`／`glReady` 宣告在檔案後段，而這一支在開機的頂層就會跑 —— 直接讀是 TDZ 錯誤、整頁死透。包 try。 */
+  let glOn=false; try{ glOn = GLON && glReady; }catch(_){}
+  const ndpr = glOn ? Math.min(2, devicePixelRatio||1) : Math.min(Q().dpr, devicePixelRatio||1);
   /* 尺寸、DPR、緩衝寬都沒變就什麼都別做。iOS 的網址列一動就發 resize，
      其中不少是同尺寸的重複事件；照做一遍等於白白重建 1.2M 像素的畫布與整批緩衝。
      ⚠ 一定要**連 BW 一起比**：QUALITY 的第 2、3 級 dpr 同樣是 1，只有 bwf
@@ -11634,6 +11644,7 @@ function glUploadWorld(){
   if(RAILDIR){ glTexRail=mk(10);
     g.texImage2D(g.TEXTURE_2D,0,g.R8,RD_W,RD_H,0,g.RED,g.UNSIGNED_BYTE,RAILDIR); }
   glReady=true;
+  resize();   // ver -1749：GL 就緒 ⇒ 2D 畫布回到裝置 DPR（見 applyResize 的 ndpr）
   console.log('[gl] 世界資料已上傳：'+MAPW+'×'+MAPH+
     '（高度 '+(HGT.byteLength/1048576).toFixed(1)+'MB、色 '+(COL.byteLength/1048576).toFixed(1)+
     'MB、坡度 '+(sl.byteLength/1048576).toFixed(1)+'MB）');
@@ -12788,8 +12799,8 @@ function render(now){
 
   /* ⚠⚠ GLON：地形由底下那張 GL 畫布畫，這裡**不貼回**，改成把 3D 視窗那一段
      清成透明讓它透上來。面板與所有 overlay 照舊畫在這張 2D 畫布上。
-     ⚠ Stage 1a 仍然**照跑** CPU 那一圈（ybuf／ZTOP／PICK3D／城的取樣還靠它），
-       所以這一版是**畫面對照用，還不會變快** —— 拿掉 CPU 那一圈是 Stage 1b。 */
+     ⚠ （ver -1749 更正過期註解）CPU 那一大圈在 GLON 下**已經不跑了**（ver -1201 起只留一條粗算地平線給
+       `clipByTerrainDepth` 遮擋用，實測約 0.3ms，見 render 裡 `if(GLON && glReady)` 那一段）。 */
   if(GLON && glReady){
     glDrawTerrain(S, sinp, cosp, lx, ly, ambI, sunI, lightR, lightG, lightB,
                   fr, fg, fb, cloudLit);

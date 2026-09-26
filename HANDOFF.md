@@ -32,7 +32,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1748`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1749`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -45,7 +45,19 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1748`
+# HANDOFF — 截至 `ver 2026.09.22-1749`
+
+**`-1749`：廢城貼材接上 ＋ 飛行畫面手機上立繪／對話字變糊**
+· `flight/geo/dunmor_wall.webp`（Ray 交件 1254² → LANCZOS 256²、q90、10 KB；原檔 `resources/_originals/flight/geo/dunmor_wall_gpt.png`）；
+  `RUIN_ART.dunmor.tex:'dunmor_wall'`。屋頂那張選用的沒交，王廳山牆沿用這張。
+· **糊的原因**：自適應畫質 q2～q4 的 `dpr:1` 把**整張 2D 畫布**壓成 CSS 像素，立繪／對話框／canvas 文字都在那一張上。
+  **修法**：GL 路徑（`GLON && glReady`）下 2D 畫布固定 `min(2, 裝置 DPR)`，降畫質只降地形（`glcv` 的 BW）；CPU 路徑照舊。
+  GL 就緒那一刻叫 `resize()`。⚠ `applyResize` 開機就跑、`GLON`／`glReady` 宣告在後面 ⇒ 包 try（TDZ）。
+  實測（8123）：開機正常、強制 q4 時 DPR 仍是 2。
+  ⚠⚠ **代價**：手機掉幀時 2D 這一層不再降解析（以前 q2 起降成 1 倍）。發熱要 Ray 手機上看一次 —— 若變燙，退路是「只有對白進行中才升 DPR」。
+· 12802 行那句「Stage 1a 仍然照跑 CPU 那一圈」是過期註解（-1201 起 GL 下只剩粗算地平線），已改正。
+
+# （上一段）截至 `ver 2026.09.22-1748`
 
 **`-1746`～`-1748`：無人廢城放上飛行地圖 (183,762)，照背景圖畫風做了手寫量體**（Ray 指定）
 · `flight/index.html`：`PLACES` 一筆（名「無人廢城」暫定、`ruin:'dunmor'`、**沒有 `town`** —— 拓樸還沒搬進 `town.js`，接上時補 `town:` 就有降落鈕）；
