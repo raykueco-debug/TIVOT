@@ -164,3 +164,78 @@
 - 17:22～17:50：四串重送清晨 → 黃昏 → 夜晚，第一批 16 張齊。⚠ **圓環廣場 day 改用 A 版**：在頁面上點了「圖像 2 較好」（B），但 ChatGPT 的時段差分仍接 A 構圖 —— 差分必須與 day 同構圖，所以 day 換成 A、B 退到 `_originals/_vela_square_day_B.png`。
   ⇒ 教訓：A/B 二選一時，**看下一則差分接的是哪一張再定案**，不要先轉檔。
 - 09-26 晚：店內與旅店、酒吧、咖啡廳、甜品店全交 ⇒ **73／73**。⚠ 酒吧 `vela_bar` 的掛點仍等 Ray（§五）。
+
+## 六、⚠ 交程式端：`TOWNS.verafond` 可以整段抄（2026-09-26 晚，Ray：「薇拉馮德拓樸跟圖給 code」）
+
+**由 `tools/map_verafond_draft.py` 的 NODES／EDGES 機器產生**（不是手打），22 格的 `bg` 鑰匙已逐一對過 `resources/background/verafond/`，全部存在。
+
+```js
+  verafond: {
+    name: '薇拉馮德港',
+    entry: 'harbor',
+    mist: 0,                 // 大城不上霧（§6.5.4 ver -913）
+    // bgm: 還沒指定 —— 等 Ray
+    // map: 小地圖還沒畫（美術另開一單，拓樸已定可以開）
+    nodes: {
+      harbor:    { bg:'vela_harbor', name:'薇拉馮德　碼頭',
+        exits:{ up:'portmarket', left:'shipyard', down:'lighthouse' },
+        sail:{ dir:'right' } },
+      portmarket:{ bg:'vela_portmarket', name:'薇拉馮德　碼頭市集',
+        exits:{ right:'square', left:'gunstore', up:'guild', down:'harbor' } },
+      gunstore:  { bg:'vela_firearm', name:'薇拉馮德　武器店', noTime:true,
+        exits:{ back:'portmarket' } },
+      guild:     { bg:'vela_guild', name:'薇拉馮德　賞金獵人公會', noTime:true,
+        exits:{ back:'portmarket' } },
+      shipyard:  { bg:'vela_shipyard', name:'薇拉馮德　造船廠',
+        exits:{ back:'harbor' } },
+      lighthouse:{ bg:'vela_lighthouse', name:'薇拉馮德　燈塔',
+        exits:{ back:'harbor' } },
+      square:    { bg:'vela_square', name:'薇拉馮德　圓環廣場',
+        exits:{ up:'midtown', left:'portmarket', right:'uptown', down:'station' } },
+      station:   { bg:'vela_station', name:'薇拉馮德　中央火車站',
+        exits:{ back:'square' } },
+      midtown:   { bg:'vela_midtown', name:'薇拉馮德　中心區',
+        exits:{ down:'square', left:'cityhall', right:'cathedral', up:'avenue' } },
+      cityhall:  { bg:'vela_cityhall', name:'薇拉馮德　市政廳',
+        exits:{ back:'midtown' } },
+      cathedral: { bg:'vela_cathedral', name:'薇拉馮德　大教堂',
+        exits:{ back:'midtown' } },
+      avenue:    { bg:'vela_avenue', name:'薇拉馮德　林蔭大道',
+        exits:{ down:'midtown', left:'university', right:'opera', up:'manor' } },
+      university:{ bg:'vela_university', name:'薇拉馮德　大學',
+        exits:{ back:'avenue' } },
+      opera:     { bg:'vela_opera', name:'薇拉馮德　歌劇院',
+        exits:{ back:'avenue' } },
+      manor:     { bg:'vela_manor', name:'薇拉馮德　薇拉馮德莊園',
+        exits:{ back:'avenue' } },
+      uptown:    { bg:'vela_uptown', name:'薇拉馮德　上街區',
+        exits:{ left:'square', up:'inn', down:'grocery', right:'tavern' } },
+      inn:       { bg:'vela_inn', name:'薇拉馮德　旅店', inn:true,
+        exits:{ back:'uptown' } },
+      grocery:   { bg:'vela_grocerie', name:'薇拉馮德　雜貨舖', noTime:true,
+        exits:{ back:'uptown' } },
+      tavern:    { bg:'vela_tavern', name:'薇拉馮德　餐飲街',
+        exits:{ left:'uptown', up:'cafe', down:'dessert', right:'restaurant' } },
+      cafe:      { bg:'vela_cafe', name:'薇拉馮德　咖啡廳', noTime:true,
+        exits:{ back:'tavern' } },
+      dessert:   { bg:'vela_dessert', name:'薇拉馮德　甜品店', noTime:true,
+        exits:{ back:'tavern' } },
+      restaurant:{ bg:'vela_restaurant', name:'薇拉馮德　餐廳', noTime:true,
+        exits:{ back:'tavern' } },
+    },
+  },
+```
+
+**要注意的四件（美術的判斷，程式端照需要改）：**
+1. **出航 `sail:{ dir:'right' }`**：v2 的碼頭 `down` 是燈塔，而 `sail` 預設佔 `down`（`modules/town.js` 的 `sail.dir`，同木雅克神殿）。
+   碼頭那張圖的**右側正好是泊著的船與海水**，出航掛右邊對得上畫面；燈塔在鏡頭身後（`down`），圖上不必畫路。
+2. **不要加 `dining`**（第 14 項同一個坑）：`tavern` 是街道 `vela_tavern`（四差分），咖啡廳／甜品店／餐廳是走得進去的三格。
+3. **酒吧 `vela_bar`（三差分，已交）還沒有掛點**：`tavern` 四個方向滿了、碼頭的右邊給了出航。**等 Ray 定**要掛哪裡（或換掉哪一家）。
+   圖先放著；掛上時 `bar:{ bg:'vela_bar', name:'薇拉馮德　酒吧', exits:{ back:'<掛點>' } }`（**不寫 `noTime`**，三差分）。
+4. **營業時間**：照帝都各店的 `hours`（武器店／公會／雜貨舖／餐廳／咖啡廳／甜品店＝只有 day 的那一類，Ray：「營業時間一樣」）；旅店全天、四差分。
+
+**`tools/map_layout.py` 的 `POS`**（同產生器的格座標，出口方向就是相對位置，會自動驗）：
+```
+square:(4,6), station:(4,7), midtown:(4,3), cityhall:(2,3), cathedral:(6,3), avenue:(4,1), university:(2,1), opera:(6,1), manor:(4,0), portmarket:(2,6), gunstore:(0,6), guild:(2,5), harbor:(2,7), shipyard:(0,7), lighthouse:(2,8), uptown:(6,6), inn:(6,5), grocery:(6,7), tavern:(8,6), cafe:(8,5), dessert:(8,7), restaurant:(10,6)
+```
+產生器 `tools/map_verafond_draft.py` 搬完可以回收。
