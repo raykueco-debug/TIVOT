@@ -13,7 +13,8 @@ tools/map_verafond_draft.py —— 薇拉馮德港（`verafond`）城鎮的**拓
 ⚠ 憲法 ver -907：拓樸是 Ray 的設計，這是提案。
 ⚠ 方位照飛行地圖上 Ray 的手繪平面圖（`flight/city/velafonte_plan.webp`）：西北山丘上的城堡＝莊園、正中大教堂、
   東南港灣、下半圓環廣場。`up`＝北＝列數變小。
-⚠ 城鎮不是迷宮：同向直線上限放寬到 4（主大道本來就是直的；dunmor 那條 ≤2 是給迷宮的）。
+⚠ Ray（同日再改）：「薇拉馮德就是帝都加強版，不要做成迷宮」⇒ 骨架照帝都：中央廣場＋區塊樞紐、每個樞紐掛店，樹狀、無環；
+  帝都是 1 廣場＋3 樞紐，這裡是 1 廣場＋4 樞紐（中心區／碼頭市集／上街區／餐飲街）＋一條往莊園的林蔭大道。同向直線不設限（帝都主街本來就是一條橫貫的直線）。
 輸出：`resources/map/_layout_verafond.png`
 """
 import os, itertools
@@ -23,42 +24,37 @@ from PIL import Image, ImageDraw
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 NODES = {
- 'harbor':(6,8,'碼頭','gate'),
- 'lighthouse':(8,8,'燈塔防波堤','end'),
- 'portmarket':(6,7,'碼頭市集','pass'),
- 'customs':(8,7,'海關','pass'),
- 'shipyard':(8,6,'造船廠','end'),
- 'canalbridge':(6,6,'運河橋','pass'),
  'square':(4,6,'圓環廣場','pass'),
- 'gunstore':(4,7,'武器店','end'),
- 'craftrow':(2,6,'工匠街','pass'),
- 'grocery':(0,6,'雜貨舖','end'),
- 'guild':(2,7,'獵人公會','end'),
- 'station':(2,5,'火車站','pass'),
- 'inn':(0,5,'旅店','rest'),
- 'midtown':(4,5,'中心區','pass'),
- 'tavern':(6,5,'餐飲街','pass'),
- 'restaurant':(8,5,'餐廳','end'),
- 'cafe':(6,4,'咖啡廳','pass'),
- 'bar':(8,4,'酒吧','pass'),
- 'dessert':(8,3,'甜品店','end'),
- 'cathedral':(4,4,'大教堂','pass'),
- 'cityhall':(2,4,'市政廳','pass'),
- 'avenue':(2,3,'林蔭大道','pass'),
- 'university':(0,3,'大學','end'),
- 'uptown':(2,2,'上城區','pass'),
- 'opera':(4,2,'歌劇院','end'),
- 'manorroad':(2,1,'莊園坡道','pass'),
- 'manor':(0,1,'莊園','goal'),
+ 'station':(4,7,'火車站','end'),
+ 'midtown':(4,3,'中心區','pass'),
+ 'cityhall':(2,3,'市政廳','end'),
+ 'cathedral':(6,3,'大教堂','end'),
+ 'avenue':(4,1,'林蔭大道','pass'),
+ 'university':(2,1,'大學','end'),
+ 'opera':(6,1,'歌劇院','end'),
+ 'manor':(4,0,'莊園','goal'),
+ 'portmarket':(2,6,'碼頭市集','pass'),
+ 'gunstore':(0,6,'武器店','end'),
+ 'guild':(2,5,'獵人公會','end'),
+ 'harbor':(2,7,'碼頭','gate'),
+ 'shipyard':(0,7,'造船廠','end'),
+ 'lighthouse':(2,8,'燈塔','end'),
+ 'uptown':(6,6,'上街區','pass'),
+ 'inn':(6,5,'旅店','rest'),
+ 'grocery':(6,7,'雜貨舖','end'),
+ 'tavern':(8,6,'餐飲街','pass'),
+ 'cafe':(8,5,'咖啡廳','end'),
+ 'dessert':(8,7,'甜品店','end'),
+ 'restaurant':(10,6,'餐廳','end'),
 }
 EDGES = [
- ('harbor','lighthouse'),('harbor','portmarket'),('portmarket','customs'),('customs','shipyard'),
- ('portmarket','canalbridge'),('canalbridge','square'),('canalbridge','tavern'),
- ('square','gunstore'),('square','midtown'),('square','craftrow'),
- ('craftrow','grocery'),('craftrow','guild'),('craftrow','station'),('station','inn'),('station','midtown'),
- ('midtown','tavern'),('midtown','cathedral'),('tavern','restaurant'),('tavern','cafe'),('cafe','bar'),('bar','dessert'),
- ('cathedral','cityhall'),('cityhall','avenue'),('avenue','university'),('avenue','uptown'),
- ('uptown','opera'),('uptown','manorroad'),('manorroad','manor'),
+ ('square','midtown'),('square','portmarket'),('square','uptown'),('square','station'),
+ ('midtown','cityhall'),('midtown','cathedral'),('midtown','avenue'),
+ ('avenue','university'),('avenue','opera'),('avenue','manor'),
+ ('portmarket','gunstore'),('portmarket','guild'),('portmarket','harbor'),
+ ('harbor','shipyard'),('harbor','lighthouse'),
+ ('uptown','inn'),('uptown','grocery'),('uptown','tavern'),
+ ('tavern','cafe'),('tavern','dessert'),('tavern','restaurant'),
 ]
 REST_NOTE = '旅店'
 CW, CH, BW, BH = 190, 134, 152, 116
@@ -99,7 +95,7 @@ def main():
     for (r, c0, c1), (c, r0, r1) in itertools.product(H, V):
         if c0 < c < c1 and r0 < r < r1: raise SystemExit('✗ 列 %d 的橫線與欄 %d 的直線交叉' % (r, c))
     # ⚠⚠ 同向直線 ≤ 2 段（Ray：「同一方向不要有三次以上的直線」）
-    MAXRUN = 4
+    MAXRUN = 6
     for k in NODES:
         for dd in OPP:
             if nb.get(k, {}).get(OPP[dd]): continue          # 只從一段的起點量
