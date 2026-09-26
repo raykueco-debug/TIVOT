@@ -11,9 +11,9 @@
 | 旅店室內 | inn | 4（§5 只有旅店四差分） | 4 |
 | 酒吧室內（餐飲街預設那一家） | bar | 3（`_day/_dusk/_night`） | 3 |
 | 店內 `[8,17]` | gunstore（`vela_firearm`） guild grocery（`vela_grocerie`） restaurant | 1（只有 day，`noTime`） | 4 |
-| **待定** | cafe dessert | 看營業時間（東泊是四差分） | ？ |
+| 店內（同上） | cafe dessert | 1（只有 day，`noTime`；Ray：營業時間一樣） | 2 |
 
-合計 71 張 ＋ 咖啡廳／甜品店。⚠ 室外檔名：`vela_<格>_<時段>`；店內只有一張的不帶時段（`vela_guild.webp`）。
+合計 73 張。⚠ 室外檔名：`vela_<格>_<時段>`；店內只有一張的不帶時段（`vela_guild.webp`）。
 
 ## 二、世界觀與畫法（共通段的出處）
 
@@ -149,12 +149,14 @@
 ## 五、⚠ 程式端要接的（美術不碰，鐵律 11）
 
 - 拓樸 v2 定案 ⇒ 搬進 `script/town.js`（`TOWNS.verafond`；節點 id 與出口照 `tools/map_verafond_draft.py` 的 NODES/EDGES）、`tools/map_layout.py` 補 `POS`、產生器回收。
-- 背景：室外 `bg:'vela_<格>'`（四差分）；店內 `bg:'vela_firearm'`／`'vela_guild'`／`'vela_grocerie'`／`'vela_restaurant'` 配 `noTime:true`；旅店 `bg:'vela_inn'`（四差分）；餐飲街 `dining.scenes.bar:{bg:'vela_bar'}`（三差分）。
+- 背景：室外 `bg:'vela_<格>'`（四差分）；店內 `bg:'vela_firearm'`／`'vela_guild'`／`'vela_grocerie'`／`'vela_restaurant'` 配 `noTime:true`；旅店 `bg:'vela_inn'`（四差分）；咖啡廳／甜品店 `bg:'vela_cafe'`／`'vela_dessert'` 配 `noTime:true`（Ray：營業時間與其他店一樣 ⇒ 只有 day）。
+- ⚠⚠ **不要用 `dining.scenes`**（聖索菲亞踩到：`DINE.fallback='bar'` 會把 `tavern` 那一格的街道換成酒吧室內，Ray：「餐飲街應該是街道而不是室內」）⇒ 餐飲街 `tavern` 就是街道 `vela_tavern`，店一律走得進去（三分支，同雪都／東泊）。
+- ⚠⚠ **酒吧 `vela_bar`（三差分）目前沒有格子可掛**：v2 的 `tavern` 四個方向已經滿了（左回上街區、上咖啡廳、下甜品店、右餐廳）。**等 Ray 定**：建議掛在 `harbor` 的右邊當「港邊酒館」（碼頭現在只用了上／左／下），或拿掉其中一家店。
 - 全部是新檔 ⇒ 不用跳 `ASSET_VER`。
 - 入城＝`harbor`（同時是 `sail` 出航口）；`inn:true` 那一套照其他旅店。
 
 ## 進度
-- [x] 室外 60／60（15 格四差分全齊）　- [ ] 旅店 0／4　- [ ] 酒吧 0／3　- [ ] 店內 2／4（✔ firearm／guild）　- [ ] 咖啡廳／甜品店（等營業時間）
+- [x] 室外 60／60（15 格四差分全齊）　- [ ] 旅店 0／4　- [ ] 酒吧 0／3　- [ ] 店內 2／4（✔ firearm／guild）　- [ ] 咖啡廳／甜品店 0／2（Ray：營業時間同其他店 ⇒ 只有 day 各一張）
 
 ## 交件紀錄
 - 09-26 16:12：第一批 day 4 張（harbor／portmarket／square／midtown）✔ 驗收：出口數對、中央留空、義大利風＋1900 年電車到位。

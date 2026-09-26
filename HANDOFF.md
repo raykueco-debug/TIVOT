@@ -31,6 +31,14 @@
 > 13. **（09-26 下午，Mac）薇拉馮德港 `verafond` 拓樸 v2 Ray 定案**（「整個城式義大利風，當世最發達的富庶港都」「1900 年」）——
 >    程式端要做的：搬進 `script/town.js`（節點 id／出口照 `tools/map_verafond_draft.py` 的 NODES/EDGES，22 格、入城＝`harbor` 兼 `sail`）、`tools/map_layout.py` 補 `POS`、產生器回收。
 >    背景鑰匙與 `noTime` 規則寫在 `resources/background/_verafond_spec.md` §五（美術正在跑，室外 `vela_<格>` 四差分）；全是新檔，不用跳 `ASSET_VER`。
+> 14. **（09-26 晚，Mac）聖索菲亞餐飲街進去看到的是酒吧室內 —— 不是圖錯，是 `dining` 沒拆**（Ray：「索菲亞的餐飲街應該是街道而不是室內」）
+>    `tavern` 的 `bg:'sofia_bistro'` 本來就是**街道圖**；但 `TOWNS.santasofia.dining.scenes` 還在，沒有同行女伴時 `DINE.fallback='bar'` ⇒ 整格換成 `sofia_bar`（室內）＝「站在街上卻看到店裡」。
+>    ⇒ **同雪都 -1487／東泊 -1263：拆掉 `dining`，改成三分支**（店走得進去、街道就是街道）。建議：
+>    `tavern.exits` 加 `up:'bar'`、`down:'restaurant'`（`right` 已經給 `@sofiaout`、`left` 是回頭路）；
+>    `bar:{ bg:'sofia_bar', name:'聖索菲亞　酒吧', exits:{back:'tavern'} }`（三差分，**不寫 `noTime`**）、
+>    `restaurant:{ bg:'sofia_restaurant', name:'聖索菲亞　餐廳', noTime:true, exits:{back:'tavern'} }`。
+>    ⚠ 新增兩格 ⇒ 小地圖 `map_santasofia` 要補兩個點（美術另開一單）；`map_layout.py` 補 `POS`。圖都已在庫，不用跳 `ASSET_VER`。
+>    ⚠⚠ 薇拉馮德工單 §五原本寫 `dining.scenes.bar` —— **同一個坑，已改掉**，見第 13 項／`_verafond_spec.md` §五。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；**§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
