@@ -24,6 +24,10 @@
 >    程式端要做的（Ray 點頭後）：搬進 `script/town.js`（全部 `noTime:true`、`bg:'sofiaout_<id>'`）、`gate` 接聖索菲亞哪一格（建議 `uptown`）、結算點在囚室還是露台、`map_layout.py` 補 `POS`、產生器回收。全部新增檔，不用跳 `ASSET_VER`。
 > 11. ✅ **-1755 已接** **（09-26，Mac）羅賽爾廢城小地圖交件** —— `resources/map/map_dunmor.webp`＋`_spots_dunmor.json`（55 格）。`TOWNS.dunmor` 補一行（新增、不必 `?v=`），整行可抄在 `resources/background/_dunmor_spec.md` §十：
 >    `map:{ img:'resources/map/map_dunmor.webp', spots:{ kingsbarrow:[0.0853,0.1396], barrowfield:[0.1777,0.1396], altar:[0.27…`
+> 12. **（09-26 下午，Mac）聖索菲亞四張同名覆蓋** —— Ray：「貧民窟不要有碼頭」「索菲亞的公會要室內圖」「**只要是個店的都要室內**」。
+>    `resources/background/sofia/` 的 `sofia_slum`（重畫：窄巷貧民窟，**沒有碼頭與水面**）／`sofia_guild`／`sofia_firearm`／`sofia_grocerie`（三張改**室內**：櫃台中央偏左、右三分之一留白牆給店主立繪、無人）。舊版進 `_recycle/`。
+>    程式端要做的：① **`config.js` 的 `ASSET_VER` 補四鍵** `sofia_slum`／`sofia_guild`／`sofia_firearm`／`sofia_grocerie`（同名覆蓋，不跳版號玩家永遠拿舊圖、而且驗不出來，§5）
+>    ② `dock` 節點的 `name` 目前「聖索菲亞　舊碼頭貧民窟」—— 已經沒有碼頭了，建議改「聖索菲亞　貧民窟」（**正名仍等 Ray**）；節點 id 不改。三家店節點照舊 `noTime`（室內營業時間 [8,17] ＝只有 day）。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；**§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、

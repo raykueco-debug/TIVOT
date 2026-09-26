@@ -180,3 +180,10 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 - 美術工單三份的標題已改成「羅賽爾廢城」；地圖 id 維持 `dunmor`。
 - 聖索菲亞郊外那 6 格已由別的美術 session 補完（`a6c0cc4`），§十那一句「6 格沒跑」作廢。
 - ⚠ 產線：GPT 的圖示表格子不均勻 —— 別直接餵 `map_compose.py`，先切符號重排（作法見 §十）。
+
+## 十二、2026-09-26 下午（Mac）：聖索菲亞四張同名覆蓋 ✔ 交件
+- `sofia_slum`（拿掉碼頭）／`sofia_guild`／`sofia_firearm`／`sofia_grocerie`（改室內）；驗收表在 `resources/background/_sofia_add_spec.md` §六。
+- ⚠⚠ Ray 定的全域規矩：**只要是個店的都要室內**（日後任何城的店都照這條，不要再交店門口街景）。
+- 程式端：`ASSET_VER` 四鍵、`dock` 中文名 —— HANDOFF 第 12 項。
+- 還欠：`map_santasofia` 的 `dock` 圖示換貧民窟簡筆（美術單，未開）。
+- 薇拉馮德拓樸 v2（帝都加強版）等 Ray 點頭：`resources/map/_verafond_spec.md` §三 有四個待定問題。
