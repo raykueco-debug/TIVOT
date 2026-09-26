@@ -45,7 +45,7 @@
 ```
 
 ## 進度
-- [x] pistol　- [x] rifle　- [x] dual　- [ ] shotgun（重出中）　- [ ] lookout（去背中）　- [x] boss
+- [x] pistol　- [x] rifle　- [x] dual　- [x] shotgun（v2 暴怒反撲）　- [x] lookout　- [x] boss　⇒ **6／6 全交**（總覽 `_thug_all6_sheet.jpg`）
 
 ## 交件紀錄
 - 09-26 19:30：`man_thug_pistol`／`man_thug_shotgun` ✔（第二版＝被突襲的慌亂版；真 alpha，半透明像素近白 0.0%）。
@@ -55,3 +55,5 @@
 - 19:45：`man_thug_dual`（邊退邊盲射）／`man_thug_rifle`（跪地裝彈）／`man_thug_boss`（咬雪茄下令）✔ 真 alpha、近白 0.0%。
   ⚠ 第一輪三張全部是同一種「張大嘴驚叫」—— 光寫「慌亂、大吼」模型只會出這一種；**要逐張指定一種反應，並明寫「不要張大嘴驚叫（別人用過了）」**才拉得開。
   ⚠ 雙槍的槍口硝煙貼右緣（0.5%），人物本體沒被裁。
+- 19:55：`man_thug_lookout`（扭頭叫人；棋盤格 → 原串「100% 保留，只把背景變真透明」一次成功）／`man_thug_shotgun` **v2 暴怒反撲**（同名覆蓋，舊驚吼版進 `_recycle/`，原稿留 `_originals/enemy/_man_thug_shotgun_v1_shout.png`）✔。
+  ⚠ 程式端還沒引用 `man_thug_*` ⇒ 這次同名覆蓋**不用**跳 `ASSET_VER`。

@@ -776,3 +776,4 @@ when	from	to	reason
 20260926-155742	resources/background/sofia/sofia_grocerie.webp	_recycle/resources/background/sofia/sofia_grocerie.webp	Ray：店一律室內／貧民窟不要碼頭（同名覆蓋舊版）
 20260926-172945	resources/background/verafond/vela_square_day.webp	_recycle/resources/background/verafond/vela_square_day.webp	改用 A 版：ChatGPT 的時段差分接的是 A 構圖
 20260926-190219	tools/map_sofiaout_draft.py	_recycle/tools/map_sofiaout_draft.py	ver -1762：拓樸已搬進 script/town.js 的 TOWNS.sofiaout、版面進 map_layout.py 的 POS（同一個拓樸不留兩份）
+20260926-195215	resources/enemy/man_thug_shotgun.webp	_recycle/resources/enemy/man_thug_shotgun.webp	Ray：表情動作要多變化 —— 驚吼版與 pistol 太像，換成暴怒反撲版
