@@ -4440,14 +4440,17 @@ export const TOWNS = {
       square:   { bg:'sofia_square',   name:'聖索菲亞　主廣場', noTime:true,
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
         /* ══⚠⚠⚠ **Stage 14：進入聖索菲亞城**（ver -1769，Ray 交稿「全支線合流 Stage14」，台詞一字未改）══
-           `need:'s14_route'` ＝三條路的合流點（雪都旅店 BA・M1／BA・M2、東泊走出旅店 AB）插的那一支，
-           飛行頁的 `S14_TALK` 也吃同一支。演完 ＝ 自由行動、可約會（旅店敲門）。
+           `need` ＝三條路已經合流（ver -1773 改成**由既有的旗推出來**，不再另插一支 `s14_route`：
+             那支旗插在合流段的最後一句，**已經演過那一段的存檔永遠拿不到**，新劇情整段接不上 —— 鐵律 9）：
+             · AB：`ep_leave_final`（走出東泊旅店那一段）
+             · BA：`vn_after_tomb`（雪都合流）＋`ep_leave_tomb`（B 先跑的人第一次離開東泊一定演過；AB 永遠演不到）
+           飛行頁的 `S14_TALK` 用同一組條件（`s14Route()`，兩邊註解互指）。演完 ＝ 自由行動、可約會（旅店敲門）。
            ⚠ 稿上對不上的差分，取最接近的（Ray -1532：「寫錯不報錯先找 typo 或接近的」）：
              安 `sacre`→`scare`／`dying`→`die`；蕾 `softcommand`→`commandsoft`；
              諾 `back` 本來沒登記 —— -1769 在 speakers.js 補上（`nouvelle_si_back.webp`，measure_si 實量）。
            ⚠ 馬努一路都是「？？？」（`MANU_X`）；他走掉那一拍（`Se_walk`）順手請他下台。 */
         acts:[
-        { flag:'ss_arrive', need:'s14_route', sides:{ RENNA:'L' }, lines:[
+        { flag:'ss_arrive', need:{ any:[ 'ep_leave_final', ['vn_after_tomb','ep_leave_tomb'] ] }, sides:{ RENNA:'L' }, lines:[
           sor('watch','喔——總覺得……'),
           sor('watch','好像跟夏爾村的感覺有點像……說不上來。'),
           ren('write','因為最早引進森住民到銀月本土的就是瓦勒里亞王國啊。'),
@@ -5443,7 +5446,7 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true, awk:true },
           nou('concern','不要看我……這次確實是你不好。'),
           ren('smile','瞞著我的事，就這樣扯平吧。'),
-          ren('stare','畢竟剩下的旅程，還得靠你呢。', { flags:['s14_route'] }),   // ver -1769：BA・M2 → 聖索菲亞（見 flight 的 S14_TALK）
+          ren('stare','畢竟剩下的旅程，還得靠你呢。'),
         ] },
         { flag:'vn_after_tomb', stage:14, need:['tomb_exit_done','ep_belisar_done'], sides:{ RENNA:'L' }, lines:[
           ren('write','那麼，就只剩下西邊埃爾王國的廢城了。'),
@@ -5470,7 +5473,7 @@ export const TOWNS = {
           sor('cry','說好了喔——'),
           ren('front',''),
           ren('smile','好啦，又不是現在就要分別。我們還有下一站呢。'),
-          ren('smile','先到聖索菲亞城的領事館辦入境手續吧。', { flags:['s14_route'] }),   // ver -1769：BA・M1
+          ren('smile','先到聖索菲亞城的領事館辦入境手續吧。'),
         ] },
         { flag:'vn_after_tomb', stage:14, need:'tomb_exit_done', until:'ep_belisar_done', sides:{ RENNA:'L' }, lines:[
           ren('write','那麼……'),
@@ -6534,7 +6537,7 @@ export const TOWNS = {
             sor('cry','說好了喔——'),
             ren('stare',''),
             ren('smile','好啦，又不是現在就要分別。我們還有下一站呢。'),
-            ren('pointmap','先到聖索菲亞城的領事館辦入境手續吧。', { flags:['s14_route'] }),   // ver -1769：AB（走出東泊旅店）
+            ren('pointmap','先到聖索菲亞城的領事館辦入境手續吧。'),
           ] },
           /* ── 分支 1：古墓探索還沒完成 ── */
           /* ⚠ ver -1726：`need` 由 `ep_interrogate`（只有 M1 有）改成 `ep_night_mi_done`（兩條路的最後一拍都插）——

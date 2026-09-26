@@ -1338,7 +1338,7 @@ const BA_CHAPTERS = [
      `flight:{town:'ravnsdal'}` ＝從雪都的出港位起飛（同讀檔接回飛行那把鑰匙）。 */
   { id:'stage14', name:'Stage 14', sub:'合流 → 往聖索菲亞（從雪都出航，起飛就演出航對白）',
     stage:14, clockHour:10, named:true, aff:A_AFF,
-    flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb','s14_route' ],   // s14_route：ver -1769 往聖索菲亞的合流旗
+    flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb' ],
     enter:'flight', flight:{ town:'ravnsdal' } },
 ];
 /* 插在 Stage 9 之後，選單才是 9 → 10-A…12-A → 10-B…12-B → 13 → 14 的順序。 */

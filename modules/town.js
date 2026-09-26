@@ -267,6 +267,8 @@ function townBgm(){
    雜貨店與公會兩支旗都齊（need:['np_med','np_guild_seen']）。單值照舊。 */
 function needOk(need){
   if(!need) return true;
+  /* `{ any:[旗, [旗,旗]…] }` ＝其中一項成立就行（陣列那一項＝全部都要）（ver -1773：聖索菲亞抵達的三條合流路線）。 */
+  if(need.any) return need.any.some(n=>needOk(n));
   if(Array.isArray(need)) return need.every(f=>prog.hasFlag(f));
   return prog.hasFlag(need);
 }
