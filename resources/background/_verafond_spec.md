@@ -154,7 +154,7 @@
 - 入城＝`harbor`（同時是 `sail` 出航口）；`inn:true` 那一套照其他旅店。
 
 ## 進度
-- [ ] 室外 16／60（✔ harbor／portmarket／square／midtown 四差分齊）　- [ ] 旅店 0／4　- [ ] 酒吧 0／3　- [ ] 店內 0／4　- [ ] 咖啡廳／甜品店（等營業時間）
+- [ ] 室外 32／60（✔ harbor／portmarket／square／midtown／avenue／uptown／tavern／station 四差分齊）　- [ ] 旅店 0／4　- [ ] 酒吧 0／3　- [ ] 店內 0／4　- [ ] 咖啡廳／甜品店（等營業時間）
 
 ## 交件紀錄
 - 09-26 16:12：第一批 day 4 張（harbor／portmarket／square／midtown）✔ 驗收：出口數對、中央留空、義大利風＋1900 年電車到位。
