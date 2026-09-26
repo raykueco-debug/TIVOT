@@ -81,7 +81,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1768';
+export const VERSION = 'ver 2026.09.22-1769';
 
 export const GAME_CONFIG = {
 
@@ -3793,6 +3793,8 @@ export const GAME_CONFIG = {
          · 收刀 −19.1 ⇒ 想要 1.85，峰值 −1.4 dBFS ⇒ 夾到 **1.479**（+2 dBFS）CAP */
       se_waterfall_loop:1.44,
       se_sworddraw:1.396,               // CAP
+      se_coins:1.549,                   // ver -1769（平均 −22.3 → 想要 2.65，峰值 −1.8 dBFS 被 peakCeilDb +2 夾住）CAP
+      se_drawknife:1.928,               // ver -1769（平均 −19.7 → 想要 1.97，峰值 −3.7 dBFS）CAP
       se_swordcease:1.479,              // CAP
       /* ⚠ **還沒量**（ver -664 新加的音效）：跑一次 tools/audio_scan.html 貼回來（§6.6）。 */
       se_paniccrowd:1.0,

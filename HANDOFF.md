@@ -57,7 +57,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1767`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1769`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -70,7 +70,39 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1768`（-1768：索拉娜 smile `?v=4`）
+# HANDOFF — 截至 `ver 2026.09.22-1769`（-1769：Stage 14 全支線合流 → 聖索菲亞）
+
+**`-1769`：Stage 14 劇本接上**（Ray 交稿「全支線合流 Stage14」，台詞一字未改）
+· **合流旗 `s14_route`**：三條路的最後一句各插一次 —— 雪都旅店 BA・M2（`vn_after_tomb` 第一個 act）、BA・M1（第二個）、
+  AB 走出東泊旅店（`ep_leave_final`）。飛行段與聖索菲亞抵達都只問這一支。Stage 14 章節的旗也補了它。
+· **飛行段**（`flight/index.html` 的 `S14_TALK`／`s14FlightMaybe`，起飛演完才開口）：立繪對白 → 開大地圖標聖索菲亞城
+  （蕾娜無立繪一句「瓦勒里亞王國是中立國…」）→ 關地圖 → 立繪對白。**T3 派生看各人自己的段位**：索 T3＝smirk 一句＋主角空白框狂抖
+  （飛行頁新增 `shake:'bubble'`，同 DOM 那一套）；諾 T3＝angry、安 T3＝argue（兩拍無台詞，各自獨立）。旗 `s14_flight_talk` 演完才記。
+  ⚠ 舊的 DEPART_TALKS ③（`sofia_depart_talk`，東泊→聖索菲亞方向說明）**拆了**：同一段路不講兩次。
+  飛行頁補登 6 張差分（蕾 evaluate／evaluateclosemouth／tire、索 upset／nod、諾 angry），取景抄 speakers.js。
+· **聖索菲亞**（`TOWNS.santasofia`，`storyStages:[14,null]`）：
+  - 主廣場 `ss_arrive`（進城那一大段，含插圖 `33_worldofsorana`、馬努／小女孩／路人）。
+  - **支線一**市政廳 `ss_cityhall`（`noDate`）：蕾娜 T3 以上走插圖 `34_rennacityhall`（`cgPan:'up'`），T2 以下一般對話。
+  - **支線二／三／四**貧民窟（`dock` 那一格）`ss_slum_anya`／`ss_slum_nou`／`ss_slum_sor`（`withWho`）。
+    支線四後半在**舊街區**（貧民窟唯一的下一格）`ss_sor_resolve`，演完 `goto:'inn'`。
+  - **下午四點** `gates` 的 `ss_4pm`（`hourOfDay:[16,24]`，`goto:'inn'`）：沒約人／約安雅＝諾薇兒跑來、約諾薇兒＝安雅跑來；
+    **約索菈娜不走這一道**（台詞是「蕾娜跟索菈娜吵起來了」，她就在旁邊）。
+  - 旅店開了 `inn:true`：蕾娜 `out`（辦手續）、`noSleep`（睡覺會跳過四點那一道）。
+· 新素材：NPC 立繪 15 張（`npc_ss_*`／`ssophia_si_manu_*`，PNG→WebP，原檔進 `_originals/SI/NPC/`）、插圖 33／34、
+  音效 `se_coins`／`se_drawknife`（AAC，`fileGain` 1.549／1.928 CAP，audio_scan 實量）。
+  新 speaker：`MANU_X`（？？？）／`LOKI`（小女孩）／`LOFA`（少女）／`WORKER_SS`（路人）／`COUNTER_SS`（櫃台）；
+  身高是估的（176／128／158／174／175），取景 `measure_si` 實量。諾薇兒 `back` 補登（圖早就在，沒登記）。
+  舊的 `npc_ss_cityhall_front.webp`（09-09，與新 PNG 不同張）進回收區。
+· 稿上對不上的差分取最接近的：安 `sacre`→scare、`dying`→die、`shock`→surprise；蕾 `softcommand`→commandsoft；諾 `expain`→explain。
+· 實測（51374，自己的分頁）：抵達整段／支線一（T4 走插圖、收圖）／四點帶回旅店／敲索菈娜的門→貧民窟→舊街區→強制回旅店／
+  飛行段（開圖、T3 分支、旗記上）全部走通，新素材全 200、無錯誤。**支線二、三沒實跑**（與支線四同一套，只換 `withWho`）。
+· ⚠⚠ **等 Ray**：
+  ① **旅店合流**那一段的稿（「蕾娜跟索菈娜吵起來了」）還沒到 —— 現在四點那一道／支線四只把人帶回旅店，旅店裡沒有戲。
+  ② 三個人的**約會邀約台詞是我暫代的**（稿上只寫「自由行動，可約會」）；換稿保留 `ss_date_*` 那支旗（四點那一道靠它分台詞）。
+  ③ 約索菈娜但沒去貧民窟 ⇒ 沒有東西把人帶回旅店（要等合流稿決定怎麼收）。
+  ④ `ssophia_si_thug.png`（美術的惡棍畫風參考）沒動；要轉 WebP 跟美術說一聲（`_thug_spec.md` 寫的是 .png 路徑）。
+
+# （上一段）截至 `ver 2026.09.22-1768`（-1768：索拉娜 smile `?v=4`）
 
 **`-1767`：索拉娜 `remind` 跳 `?v=3`**（交接第 16 項；Ray：「索的 remind 修壞，回上一版」）—— 美術已把圖換回 d556b53 那版（68576aa），
 `speakers.js` 的 src 跳 `?v=3`、取景改用重量值 `top:1 bot:1525 fx:0.523`（原 top:4）。飛行頁沒有登記這張，不必改。

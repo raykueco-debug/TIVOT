@@ -171,6 +171,15 @@ export const SPEAKERS = {
        立繪是同一份 —— 與 `NEMO_X`／`CECILIE_X` 一模一樣。 */
   MISHA_X:  { name:'？？？',   art:'misha' },
   MISHA:    { name:'米夏',     art:'misha' },
+  /* ══ 聖索菲亞（Stage 14，ver -1769，Ray 的稿）══════════════════════════════
+     ⚠ 馬努在稿上**從頭到尾都是「？？？」**（路人才說出他的名字），所以只開 `MANU_X`；
+       日後他報上名字再開 `MANU`（同 `MISHA_X`／`MISHA` 的慣例）。
+     ⚠ 小女孩（Loki）與少女（Lofa）在稿上一直以「小女孩」「少女」稱呼 —— 顯示名照稿。 */
+  MANU_X:     { name:'？？？', art:'manu' },
+  LOKI:       { name:'小女孩', art:'loki' },
+  LOFA:       { name:'少女',   art:'lofa' },
+  WORKER_SS:  { name:'路人',   art:'worker_ss' },
+  COUNTER_SS: { name:'櫃台',   art:'counter_ss' },
 };
 
 /* ══ 立繪素材 ＋ 取景實測值 ══
@@ -521,6 +530,7 @@ export const ART = {
                      與 `gossip1`（0.710）同一類構圖。沿用別張會把她推出畫面。 */
                   whisper:  { src:'resources/si/nouvelle_si_whisper.webp',   top:8,  bot:1530, fx:0.697 },
                   talk:     { src:'resources/si/nouvelle_si_talk.webp',      top:3,  bot:1535, fx:0.582 },   // ver -752
+                  back:     { src:'resources/si/nouvelle_si_back.webp',      top:4,  bot:1526, fx:0.490 },   // ver -1769：Stage 14 聖索菲亞（measure_si 實量）
                   explain:  { src:'resources/si/nouvelle_si_expain.webp',    top:2,  bot:1526, fx:0.582 },   // ver -772（檔名 expain 照交件）
                   /* 城鎮探索那一段新增（ver -369）。 */
                   sadsmile: { src:'resources/si/nouvelle_si_sadsmile.webp',  top:5,  bot:1532, fx:0.587 },
@@ -1594,6 +1604,42 @@ export const ART = {
   retainer: { cm:176, eye:30, fx:0.451, top:4, bot:1534,
            side:'R', alt:null, base:'resources/si/npc/sodier_.webp', expr:{
     front: { src:'resources/si/npc/sodier_.webp', top:4, bot:1534, fx:0.451 },
+  } },
+  /* ══ 聖索菲亞的五位（Stage 14，ver -1769）══
+     取景一律 `tools/measure_si.py` 實量（全身、1024×1536）。身高是**估的**：
+     馬努 176（成年男性，不頂 `CAST_TALL`）／小女孩 128／少女 158／路人 174／櫃台 175。
+     ⚠ 小女孩那幾張是**滿版全身**（頭頂到腳），`cm:128` 讓她在台上真的比別人矮一截。
+     ⚠ 全部站**右**（玩家的同伴在左、對面的人在右，同店主的邏輯）。 */
+  manu: { cm:176, eye:30, fx:0.464, top:4, bot:1531,
+           side:'R', alt:null, base:'resources/si/npc/ssophia_si_manu_front.webp', expr:{
+    front:    { src:'resources/si/npc/ssophia_si_manu_front.webp',    top:4, bot:1531, fx:0.464 },
+    scream:   { src:'resources/si/npc/ssophia_si_manu_scream.webp',   top:6, bot:1531, fx:0.463 },
+    cringe:   { src:'resources/si/npc/ssophia_si_manu_cringe.webp',   top:7, bot:1525, fx:0.408 },
+    complain: { src:'resources/si/npc/ssophia_si_manu_complain.webp', top:4, bot:1532, fx:0.410 },
+  } },
+  loki: { cm:128, eye:30, fx:0.482, top:4, bot:1526,
+           side:'R', alt:null, base:'resources/si/npc/npc_ss_loki_ask.webp', expr:{
+    ask:   { src:'resources/si/npc/npc_ss_loki_ask.webp',   top:4,  bot:1526, fx:0.482 },
+    sad:   { src:'resources/si/npc/npc_ss_loki_sad.webp',   top:5,  bot:1517, fx:0.483 },
+    happy: { src:'resources/si/npc/npc_ss_loki_happy.webp', top:12, bot:1525, fx:0.537 },
+    shock: { src:'resources/si/npc/npc_ss_loki_shock.webp', top:5,  bot:1527, fx:0.513 },
+    give:  { src:'resources/si/npc/npc_ss_loki_give.webp',  top:10, bot:1518, fx:0.478 },
+    guard: { src:'resources/si/npc/npc_ss_loki_guard.webp', top:3,  bot:1532, fx:0.508 },
+  } },
+  lofa: { cm:158, eye:30, fx:0.431, top:5, bot:1529,
+           side:'R', alt:null, base:'resources/si/npc/npc_ss_lofa_front.webp', expr:{
+    front:    { src:'resources/si/npc/npc_ss_lofa_front.webp',    top:5, bot:1529, fx:0.431 },
+    talk:     { src:'resources/si/npc/npc_ss_lofa_talk.webp',     top:4, bot:1530, fx:0.464 },
+    complain: { src:'resources/si/npc/npc_ss_lofa_complain.webp', top:5, bot:1528, fx:0.488 },
+    lookaway: { src:'resources/si/npc/npc_ss_lofa_lookaway.webp', top:3, bot:1523, fx:0.454 },
+  } },
+  worker_ss: { cm:174, eye:30, fx:0.430, top:11, bot:1532,
+           side:'R', alt:null, base:'resources/si/npc/npc_ss_worker_talk.webp', expr:{
+    talk: { src:'resources/si/npc/npc_ss_worker_talk.webp', top:11, bot:1532, fx:0.430 },
+  } },
+  counter_ss: { cm:175, eye:30, fx:0.494, top:10, bot:1520,
+           side:'R', alt:null, base:'resources/si/npc/npc_ss_cityhall_front.webp', expr:{
+    front: { src:'resources/si/npc/npc_ss_cityhall_front.webp', top:10, bot:1520, fx:0.494 },
   } },
 };
 

@@ -882,6 +882,8 @@ const BEL_WATER_FIRST = {
    ⚠ 包在段落上而不是改第一拍：有的段落的台詞是共用常數（`EP_LEAVE_TOMB_LINES`），不可以動到另一個用處。
    ⚠ 各章起點（章節表 `script/progress.js` 的落點）：10-A 初入雪都／11-A 初入古墓／12-A 底層梯廳（那一拍自己寫）／
      10-B 二次進古城／11-B 上船追／12-B 東泊旅店長談／13 東泊隔日（M1 審訊・M2 離店簡報）與走出古墓／14 出墓合流演完。 */
+/* 聖索菲亞的五位（Stage 14，ver -1769）：馬努（稿上一直是「？？？」）／小女孩 Loki／少女 Lofa／路人／市政廳櫃台。 */
+const mnx = N('MANU_X'), lok = N('LOKI'), lof = N('LOFA'), wkr = N('WORKER_SS'), cnS = N('COUNTER_SS');
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
 
 export const TOWNS = {
@@ -4374,7 +4376,30 @@ export const TOWNS = {
        `Sofia_Guild`，不要照抄那個錯字。 */
   santasofia: {
     name: '聖索菲亞城',
+    storyStages:[14,null],   // ver -1769：Stage 14 起這座城才有劇情（modules/town.js 的 storyWindow）
     entry: 'square',
+    /* ══⚠⚠ **Stage 14：下午四點回旅店**（ver -1769，Ray 的稿「下午四點觸發劇情，或回旅店直接觸發旅店合流」）══
+       三條支線各有一段「有人跑來找你」—— 依**約了誰**分（旗由旅店敲門的約會那一拍插：`ss_date_*`）：
+         · 沒約人（支線一：去市政廳）→ 諾薇兒跑來
+         · 約安雅（支線二）       → 諾薇兒跑來、安雅在旁邊
+         · 約諾薇兒（支線三）     → 安雅跑來
+         · ⚠ 約索菈娜（支線四）**不走這一道**：她那一條自己在貧民窟的下一格強制回旅店；
+           而這一道的台詞是「蕾娜小姐跟索菈娜吵起來了」—— 她就站在你旁邊，講不通。
+       ⚠ `hourOfDay` 寫成時段 `[16,24]`（同 -664 的教訓：單值在隔天凌晨也成立）。
+       ⚠⚠ 「旅店合流」那一段稿還沒到 —— 這一道只把人帶回旅店（`goto:'inn'`）。 */
+    gates:[
+      { flag:'ss_4pm', need:'ss_arrive', skipIf:'ss_date_sor', hourOfDay:[16,24],
+        goto:'inn', enterAgain:true, sides:{ RENNA:'L' }, lines:[
+        nou('run','啊！在這裡！',                                { skipIf:'ss_date_nou' }),
+        any('scare','',                                          { onlyIf:'ss_date_anya' }),
+        nou('cringe','快回旅店！蕾娜小姐跟索菈娜吵起來了！',     { skipIf:'ss_date_nou' }),
+        any('surprise','',                                       { onlyIf:'ss_date_anya' }),   // 稿：shock（安雅沒有這張，用 surprise）
+        any(null,'諾薇兒！',                                     { onlyIf:'ss_date_nou' }),
+        nou('lookback','',                                       { onlyIf:'ss_date_nou' }),
+        any('runworry','索菈娜……索菈娜跟蕾娜……！',              { onlyIf:'ss_date_nou' }),
+        nou('shock','',                                          { onlyIf:'ss_date_nou' }),
+      ] },
+    ],
     /* BGM（ver -1247，Ray 交件 `Peritune_Moonlit_Dancer_loop.m4a`）。
        ⚠ 它原本**沒有 `bgm`** ＝ 進城沿用上一個畫面的曲子（走進來像沒換地方）。 */
     bgm: 'moonlit',
@@ -4408,6 +4433,93 @@ export const TOWNS = {
          ⚠ 入口那一格**不可以有戰鬥**（§6.5.2）。出航掛在下方。 */
       square:   { bg:'sofia_square',   name:'聖索菲亞　主廣場', noTime:true,
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
+        /* ══⚠⚠⚠ **Stage 14：進入聖索菲亞城**（ver -1769，Ray 交稿「全支線合流 Stage14」，台詞一字未改）══
+           `need:'s14_route'` ＝三條路的合流點（雪都旅店 BA・M1／BA・M2、東泊走出旅店 AB）插的那一支，
+           飛行頁的 `S14_TALK` 也吃同一支。演完 ＝ 自由行動、可約會（旅店敲門）。
+           ⚠ 稿上對不上的差分，取最接近的（Ray -1532：「寫錯不報錯先找 typo 或接近的」）：
+             安 `sacre`→`scare`／`dying`→`die`；蕾 `softcommand`→`commandsoft`；
+             諾 `back` 本來沒登記 —— -1769 在 speakers.js 補上（`nouvelle_si_back.webp`，measure_si 實量）。
+           ⚠ 馬努一路都是「？？？」（`MANU_X`）；他走掉那一拍（`Se_walk`）順手請他下台。 */
+        acts:[
+        { flag:'ss_arrive', need:'s14_route', sides:{ RENNA:'L' }, lines:[
+          sor('watch','喔——總覺得……'),
+          sor('watch','好像跟夏爾村的感覺有點像……說不上來。'),
+          ren('write','因為最早引進森住民到銀月本土的就是瓦勒里亞王國啊。'),
+          nou('shock2','蕾娜小姐！'),
+          sor('idea','這我知道耶！小時候聽的故事裡壞人都是『瓦勒里亞奴隸主』！'),
+          nou('shock',''),
+          nou('concern','總覺得我的擔心是多餘的，像傻瓜一樣。'),
+          ren('smile','這一段旅途下來，我徹底瞭解了索菈娜小姐的強大。'),
+          sor('embarrass','也沒有啦……只是覺得那些事情跟我和蕾娜都無關吧？'),
+          sor('remind','為了一件跟自己沒關係的事情生氣難過，反而很奇怪吧？'),
+          ren('front','要是所有人都像索菈娜小姐一樣，或許就不會有戰爭了吧？'),
+          any('panic','所有人……都變成索菈娜……'),
+          { speaker:'ANYA', text:'……', cg:'33_worldofsorana', cgNoTime:true },
+          any('die','', { cg:null }),
+          sor('confuse','總覺得妳在想什麼很讓人火大的事啊。'),
+          mnx('scream','喂！'),
+          nou('back','？'),
+          mnx('scream','不好好工作，跑來這裡幹什麼？'),
+          any('scare','？？？'),
+          mnx('front','難不成是想找神父告解嗎？啊？'),
+          ren('upset','……'),
+          sor('confuse','欸？'),
+          sor('confuse','你是在跟我講話嗎？'),
+          mnx('scream','不然我是在跟修女講話嗎？快回去幹活！'),
+          sor('confuse','這傢伙是不是撞到頭啦？'),
+          mnx('scream','區區舞妓還敢頂嘴——'),
+          sor('guard','', { se:'se_drawknife' }),
+          mnx('cringe','喂、喂！'),
+          ren('upset','我們都是薩梅爾帝國的人，你認錯人了。'),
+          mnx('cringe','是、是這樣嗎！'),
+          nou('angry',''),
+          any('angry',''),
+          mnx('complain','也不能怪我啊！誰要你們和森住民走在一起……'),
+          sor('guardtalk','森住民又怎麼了？'),
+          mnx('front','呿……自以為高尚的偽善者……'),
+          { speaker:'NARRATION', text:'', se:'se_walk', auto:1400, hide:['MANU_X'] },
+          sor('confuse','這什麼跟什麼啊？'),
+          ren('lookawaytalk','跟帝國不同，這裡的人對森住民還是以奴隸主自居呢。'),
+          nou('furious','以前只有聽說過，沒想到這麼討厭！'),
+          any('argue','我……很生氣！'),
+          ren('lookawaytalk','他們是後殖民時代的失敗者，能握在手上的紅利也只有森住民的階級化了。'),
+          ren('sigh','明明也是廢奴協約國呢。'),
+          lok('ask','那個……'),
+          nou('lookback','？'),
+          lok('ask','祭司大人！'),
+          nou('shock2','是！'),
+          lok('ask','你們是神派來懲戒壞人的嗎？'),
+          nou('shock',''),
+          ren('bow','對不起啊，我們是……'),
+          lok('sad',''),
+          ren('worry',''),
+          sor('nod','就是那樣喔。'),
+          lok('happy','！！'),
+          sor('back','剛剛那個，是壞人？'),
+          wkr('talk','那是馬努，里朋家族的人。'),
+          nou('shock2','里朋家族……'),
+          wkr('talk','這裡的森住民，大多被他們控制著。'),
+          ren('pause','……帝國境內也有他們的勢力呢。'),
+          ren('think','只要有錢什麼都幹。賭場、走私、保護費，甚至是……'),
+          ren('think','人口買賣。'),
+          any('scare',''),
+          lok('sad','我的姐姐……可能馬上就要被他們帶走了……'),
+          lok('shock','祭司大人，能不能幫幫她……'),
+          sor('angry','好！'),
+          ren('command','索菈娜！'),
+          ren('bow','對不起喔，這次我們是來消滅怪物的。'),
+          ren('bow','壞人的話，要找治安廳喔。'),
+          wkr('talk','沒有用的。馬努這種生死不問的通緝犯都能大搖大擺走在路上，'),
+          wkr('talk','治安廳根本不會為了森住民採取行動。'),
+          ren('think','……'),
+          sor('angry','蕾娜！'),
+          ren('lookawaytalk','現在先……回旅店等著。'),
+          ren('commandsoft','等我把手續辦完再說。'),
+          sor('confuse','……'),
+          sor('ready','妳說的喔。'),
+          any('scare',''),
+          nou('shock',''),
+        ] } ],
         /* ⚠⚠ **不掛 `flag`**（ver -1341，同石製遺蹟 -1154 的理由）：這座城在大地圖上
            是**獨立的一點**，沒有任何跨圖陸路出口 —— 人能站在這裡，就表示他是飛來的。
            再要求 `got_ship` 在正常流程裡是多餘的，在其他路徑（試飛、跳關、讀舊檔）
@@ -4423,17 +4535,151 @@ export const TOWNS = {
       church:   { bg:'sofia_church',   name:'聖索菲亞　大教堂', noTime:true,
         exits:{ back:'midtown' } },
       cityhall: { bg:'sofia_cityhall', name:'聖索菲亞　市政廳', noTime:true,
-        exits:{ back:'midtown' } },
+        exits:{ back:'midtown' },
+        /* ══ Stage 14・支線一：不約會，去市政廳（ver -1769，Ray 的稿）══
+           `noDate` ＝沒有在約會才演（同東泊大學巧遇蕾娜那一段）。
+           ⚠ 「[T3以上分支]」看的是**蕾娜**的段位（`tierWho:'RENNA'`）：T3 以上走插圖
+             `34_rennacityhall`（由下往上平移），T2 以下是一般對話；插圖那一支最後補一拍收圖。 */
+        acts:[
+        { flag:'ss_cityhall', need:'ss_arrive', noDate:true, sides:{ RENNA:'L' }, lines:[
+          ren('surprise','欸——真的假的！我還以為是很龐大的組織呢！'),
+          cnS('front','哪有啊！就一群舊奴隸主養的地痞。現在奴隸主沒了，自己變著花樣壓搾森住民而已。'),
+          ren('think','所以才只敢找森住民麻煩……'),
+          cnS('front','是啊。不過有廉價勞力可用，上面的人怎麼可能不要呢？就這麼默許著囉。'),
+          ren('unbraid','可是他們不是有被賞金獵人公會通緝嗎？'),
+          cnS('front','本地人誰想去惹那麻煩呀！'),
+          cnS('front','不過嘛，聽說最近有個很厲害的賞金獵人。要是她來把那些傢伙全都幹掉就好了。'),
+          ren('think','也就是說，如果不是本地人的話……'),
+          cnS('front','說起本地人，修女小姐如果不嫌棄的話，下了班之後我帶妳到城裡逛逛？'),
+          ren('laugh','不用了。'),
+          cnS('front','別這麼說嘛！聖索菲亞的夜晚可是……'),
+          /* [T3 以上] */
+          { speaker:'NARRATION', text:'', cg:'34_rennacityhall', cgNoTime:true, cgPan:'up', auto:2600,
+            tierWho:'RENNA', tierMin:3 },
+          { speaker:'COUNTER_SS', text:'噫！', tierWho:'RENNA', tierMin:3 },
+          { speaker:'RENNA', text:'唉呀，在的話就出個聲啊。', tierWho:'RENNA', tierMin:3 },
+          { speaker:'NARRATION', text:'', cg:null, auto:1, tierWho:'RENNA', tierMin:3 },
+          /* [T2 以下] */
+          cnS('front','噫！',                    { tierWho:'RENNA', tierMax:2 }),
+          ren('ask','唉呀，在的話就出個聲啊。', { tierWho:'RENNA', tierMax:2 }),
+          ren('think','我有一些想法……得再做些準備。'),
+          ren('commandsoft','這邊還要一陣子，你先回旅店吧。'),
+          ren('evaluate','好好養精蓄銳喔。'),
+        ] } ] },
 
       /* ── 二、舊街區（四向樞紐） ── 左＝武器店、右＝廣場、上＝船塢、下＝公會 */
       oldtown:  { bg:'sofia_downtown', name:'聖索菲亞　舊街區', noTime:true,
-        exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' } },
+        exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' },
+        /* ══ Stage 14・支線四的後半：走出貧民窟的下一格（ver -1769）══
+           貧民窟只通舊街區，所以「走到下一格」＝這裡。演完強制回旅店（`goto`）。 */
+        acts:[
+        { flag:'ss_sor_resolve', need:'ss_slum_sor', withWho:'SORANA', goto:'inn', sides:{ SORANA:'L' }, lines:[
+          sor('sad','……'),
+          sor('embarrass','說了那麼多漂亮話，其實我……一點辦法也沒有啊……'),
+          sor('sad','……'),
+          sor('tire','抱歉。'),
+          sor('confuse','我沒辦法丟下她們不管。'),
+          sor('lookaway','幫我跟大家說一下，我——'),
+          { speaker:'NARRATION', text:'', se:'se_reload', auto:900 },
+          sor('blush','！！'),
+          sor('surprise','你……願意跟我一起……'),
+          { speaker:'PLAYER', blank:true },
+          sor('shy','我知道啦！'),
+          sor('shy','好……我相信蕾娜。'),
+          sor('readysmile','回旅店去吧。'),
+        ] } ] },
       gunstore: { bg:'sofia_firearm',  name:'聖索菲亞　武器店', noTime:true,
         exits:{ back:'oldtown' } },
       /* ver -1743（美術 §四③）：這一格改成**貧民窟**。id 不改（小地圖 spots 與出口都指著它）；
          ⚠ 中文名是美術的暫定，**等 Ray 正名**。舊的 `sofia_dock.webp` 留著沒刪。 */
       dock:     { bg:'sofia_slum',     name:'聖索菲亞　舊碼頭貧民窟', noTime:true,
-        exits:{ back:'oldtown' } },
+        exits:{ back:'oldtown' },
+        /* ══ Stage 14・支線二／三／四：約會中走到貧民窟（ver -1769，Ray 的稿）══
+           `withWho` ＝正在跟她約會才演（東泊 -1344 那一套）。三段各自一支旗。
+           ⚠ 站位：小女孩與少女都站右 —— 安雅（本位右、不可翻）這一段改站左；
+             索菈娜那一段也站左（她可翻）；諾薇兒本來就在左。
+           ⚠ 稿上「小女孩：「？」guard」＝`npc_ss_loki_guard`；少女只寫 talk／lookaway 的那幾拍照對。 */
+        acts:[
+        { flag:'ss_slum_anya', need:'ss_arrive', withWho:'ANYA', sides:{ ANYA:'L' }, lines:[
+          lok('happy','神父大人！'),
+          any('scare',''),
+          lok('give','對不起，媽媽生病了，沒有什麼能貢獻的……'),
+          { speaker:'PLAYER', blank:true },
+          lof('complain','你們是走錯地方了吧？要討貢獻的話，到上街區去啊！'),
+          any('answer','我、我們不是……'),
+          lof('talk','穿得光鮮亮麗來看我們的慘狀，真是低級的趣味啊。'),
+          any('silent','……'),
+          lof('complain','還是說怎麼樣？我們像關在籠子裡的動物嗎？'),
+          any('determine',''),
+          any('argue','被關著的、不是、只有妳！'),
+          lof('front','！！'),
+          any('desperate','但是、我……'),
+          lof('lookaway','什麼嘛！要說教還是要哭妳選一個好不好？'),
+          { speaker:'PLAYER', blank:true },
+          lof('talk','笑死人了。生在強國的帝國民，有什麼資格對我們指手劃腳？'),
+          lof('talk','隨口說說，誰都會。'),
+          lok('sad','姐姐……'),
+          lof('lookaway','不要擔心。媽媽的藥錢，我會想辦法。'),
+          any('talk','……'),
+        ] },
+        { flag:'ss_slum_nou', need:'ss_arrive', withWho:'NOUVELLE', lines:[
+          nou('surprise','！！'),
+          lok('happy','祭司大人！'),
+          nou('scare2','這個地方……'),
+          lok('happy','是我家喔。'),
+          lok('give','對不起，媽媽生病了，沒有什麼能貢獻的……'),
+          nou('explain','不、不用啦！'),        // 稿：expain（檔名的拼法；鍵是 explain）
+          nou('front','來，這給妳。'),
+          { speaker:'NARRATION', text:'', se:'se_coins', auto:1000 },
+          lof('talk','那點錢給她也沒用喔。馬上就會被里朋家族吸乾了。'),
+          nou('surprise','怎麼會……'),
+          lok('happy','姐姐！她們是……'),
+          lof('lookaway','聖王廳的祭司吧。不過，我早就不信神了。'),
+          lof('talk','綠月的阿卡西克也好，銀月的神也好，到頭來沒人救得了我們。'),
+          nou('sad','……'),
+          lof('talk','還是說，妳有辦法施展奇蹟之力，讓媽媽的病好起來？'),
+          nou('sad','新傷的話可以……生病的話就……'),
+          lof('lookaway','看吧。'),
+          nou('sad',''),
+          { speaker:'PLAYER', blank:true },
+          lof('complain','笑死人了。生在強國的帝國民，有什麼資格對我們指手劃腳？'),
+          nou('sadsmile','我們兩個都是孤兒。而且……'),
+          nou('sadnoeye','大概打出生起，就沒有被當成『人』看過。'),
+          lof('lookaway','哼……隨口說說，誰都會。'),
+          lok('sad','姐姐……'),
+          lof('lookaway','不要擔心。媽媽的病，我會想辦法。'),
+          nou('lookdown','……'),
+        ] },
+        { flag:'ss_slum_sor', need:'ss_arrive', withWho:'SORANA', sides:{ SORANA:'L' }, lines:[
+          sor('angry','！！'),
+          sor('determine','竟然把森住民都趕到這種地方……！'),
+          lok('happy','姐姐！'),
+          sor('confuse','妳住在這種地方嗎！'),
+          lok('guard','？'),
+          lok('happy','對啊。'),
+          sor('remind','……要不要，跟姐姐一起走？'),
+          lof('talk','那可不行。'),
+          lok('shock','姐姐！'),
+          lof('talk','妳走了，誰來照顧媽媽？'),
+          lof('lookaway','再說，里朋家族的那些傢伙是不會允許的。'),
+          sor('confuse','……為什麼要他們允許？'),
+          lof('talk','我們……欠了很多錢。這裡的大家幾乎都是。'),
+          lof('lookaway','男人都被拉去做工了。女人……'),
+          sor('angry','……'),
+          sor('angry','我現在就去教訓那個腦滿腸肥的豬！'),
+          lof('complain','那又能怎麼樣！少了一個馬努，還會有下一個！'),
+          sor('sad','……'),
+          lof('lookaway','真令人羨慕啊。同為森住民，出生在帝國領的妳生來就是自由的……'),
+          sor('talk','……或許吧。'),
+          sor('talk','但我的祖輩，也是拼上性命活了下來，才有了我。'),
+          sor('talksmile','如果是我的話，也會這麼做。'),
+          sor('talksmile','妳們呢？'),
+          lof('lookaway','哼……嘴上說說，這誰都會。'),
+          sor('talksmile','我們是天生的獵手，'),
+          sor('talksmile','但你想活成獵物的話，我也管不著。'),
+          lof('lookaway','……滾。'),
+          sor('ready','不用妳趕。'),
+        ] } ] },
       guild:    { bg:'sofia_guild',    name:'聖索菲亞　賞金獵人公會', noTime:true,
         exits:{ back:'oldtown' } },
 
@@ -4455,7 +4701,30 @@ export const TOWNS = {
          只寫 `inn:true` 而沒有人應門的話，玩家會敲到一排空門。 */
       /* ver -1743（美術 §四①）：旅店換成 `sofia_inn`，**四差分齊**（dawn/day/dusk/night）⇒ 拿掉 `noTime`。 */
       inn:      { bg:'sofia_inn',      name:'聖索菲亞　旅店',
-        exits:{ back:'uptown' } },
+        exits:{ back:'uptown' },
+        /* ══ Stage 14：自由行動、可約會（ver -1769）══
+           ⚠ 上面那兩段「不寫 `inn:true`」的舊註解作廢：Stage 14 要敲門約人，所以開了。
+           ⚠ 蕾娜去辦手續（`out`）—— 她的門敲不到。
+           ⚠⚠ 三個人的**邀約台詞全是我暫代的**（稿上只寫「自由行動，可約會」）——
+             每一句都插 `ss_date_*`（下午四點那一道要靠它分台詞），換稿時保留那支旗。
+           ⚠ 不能睡：睡一覺會跳過下午四點那一道（旅店合流的稿還沒到）。 */
+        inn:true, innNoGuide:true,
+        innSpots:{ sit:{ x:0.22, y:0.68 }, sleep:{ x:0.86, y:0.55 } },
+        noSleep:'……現在不是睡覺的時候。',
+        innDoors:[
+          { roster:['RENNA','NOUVELLE','ANYA','SORANA'], out:['RENNA'] },
+        ],
+        innStage1:{ dateBusy:'（已經約好人了，等等再說吧。）',
+                    dateDone:'今天已經聊夠多囉，明天再說吧。',
+                    nightRest:'這麼晚了，早點睡吧。',
+                    knock:{
+          NOUVELLE:{ low:'我想在房裡整理一下行李呢。',
+                     date:[ nou('front','出去走走？好啊，一起去吧。', { flags:['ss_date_nou'] }) ] },
+          ANYA:{     low:'我想一個人待著。',
+                     date:[ any('smileshy','……嗯，一起去。', { flags:['ss_date_anya'] }) ] },
+          SORANA:{   low:'現在沒那個心情。',
+                     date:[ sor('ready','正好，我也坐不住了。走吧！', { flags:['ss_date_sor'] }) ] },
+        } } },
     },
   },
 
@@ -5168,7 +5437,7 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true, awk:true },
           nou('concern','不要看我……這次確實是你不好。'),
           ren('smile','瞞著我的事，就這樣扯平吧。'),
-          ren('stare','畢竟剩下的旅程，還得靠你呢。'),
+          ren('stare','畢竟剩下的旅程，還得靠你呢。', { flags:['s14_route'] }),   // ver -1769：BA・M2 → 聖索菲亞（見 flight 的 S14_TALK）
         ] },
         { flag:'vn_after_tomb', stage:14, need:['tomb_exit_done','ep_belisar_done'], sides:{ RENNA:'L' }, lines:[
           ren('write','那麼，就只剩下西邊埃爾王國的廢城了。'),
@@ -5195,7 +5464,7 @@ export const TOWNS = {
           sor('cry','說好了喔——'),
           ren('front',''),
           ren('smile','好啦，又不是現在就要分別。我們還有下一站呢。'),
-          ren('smile','先到聖索菲亞城的領事館辦入境手續吧。'),
+          ren('smile','先到聖索菲亞城的領事館辦入境手續吧。', { flags:['s14_route'] }),   // ver -1769：BA・M1
         ] },
         { flag:'vn_after_tomb', stage:14, need:'tomb_exit_done', until:'ep_belisar_done', sides:{ RENNA:'L' }, lines:[
           ren('write','那麼……'),
@@ -6259,7 +6528,7 @@ export const TOWNS = {
             sor('cry','說好了喔——'),
             ren('stare',''),
             ren('smile','好啦，又不是現在就要分別。我們還有下一站呢。'),
-            ren('pointmap','先到聖索菲亞城的領事館辦入境手續吧。'),
+            ren('pointmap','先到聖索菲亞城的領事館辦入境手續吧。', { flags:['s14_route'] }),   // ver -1769：AB（走出東泊旅店）
           ] },
           /* ── 分支 1：古墓探索還沒完成 ── */
           /* ⚠ ver -1726：`need` 由 `ep_interrogate`（只有 M1 有）改成 `ep_night_mi_done`（兩條路的最後一拍都插）——

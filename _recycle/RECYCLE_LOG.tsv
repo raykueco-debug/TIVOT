@@ -780,3 +780,4 @@ when	from	to	reason
 20260926-220915	tools/map_verafond_draft.py	_recycle/tools/map_verafond_draft.py	ver -1764：拓樸已搬進 script/town.js 的 TOWNS.verafond、版面進 map_layout.py 的 POS（同一個拓樸不留兩份）
 20260926-222723	resources/si/sorana_si_remind.webp	_recycle/resources/si/sorana_si_remind.webp.20260926-222723	Ray：索的 remind 修壞，回上一版（3f5a10b 的 09-22 重製版退回收區）
 20260926-222922	resources/si/sorana_si_smile.webp	_recycle/resources/si/sorana_si_smile.webp.20260926-222922	Ray：索的 smile 修壞，回上一版（82caf63 的 09-22 第三輪重製版退回收區）
+20260926-224811	resources/si/npc/npc_ss_cityhall_front.webp	_recycle/resources/si/npc/npc_ss_cityhall_front.webp	ver -1769：舊版（09-09），被 09-26 的 npc_ss_cityhall_front.png 取代

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1768"></script>
+<script src="../orientation.js?v=1769"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1768edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1769edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1768edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1768edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1769edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1769edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1768edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1768edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1769edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1769edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1768edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1769edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1768edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1768edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1768edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1768edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1768edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1768edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1768edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1768edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1768edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1768edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1769edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1769edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1769edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1769edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1769edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1769edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1769edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1769edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1769edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1769edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1768edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1769edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1768edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1769edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1768"></script>
+<script src="settlement.js?v=1769"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1768"></script>
+<script src="talks.js?v=1769"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1768';
+const FLIGHT_VER = 'ver -1769';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5524,6 +5524,21 @@ Object.assign(PORTRAIT_EXPR.sorana, {
   watch:      { src:'../resources/si/sorana_si_watch.webp?v=2',     fx:0.680, top:6,  bot:1521,
                 cm:132, standCm:168 },
 });
+/* ══ Stage 14 出航（ver -1769，Ray 的稿）══ 那一段用到、而飛行頁還沒登記的六張。
+   取景值一律抄 `script/speakers.js` 的 `ART[角色].expr`（同一張圖、同一次量測）——
+   **改一邊要改兩邊**（§5／§6.10）。沒有一個數字是我新量的。 */
+Object.assign(PORTRAIT_EXPR.renna, {
+  evaluate:          { src:'../resources/si/renna_si_evaluate.webp',           fx:0.491, top:1, bot:1524 },
+  evaluateclosemouth:{ src:'../resources/si/renna_si_evaluateclosemouth.webp', fx:0.491, top:3, bot:1524 },
+  tire:              { src:'../resources/si/renna_si_tire.webp',               fx:0.495, top:7, bot:1522 },
+});
+Object.assign(PORTRAIT_EXPR.sorana, {
+  upset:      { src:'../resources/si/sorana_si_upset.webp?v=2', fx:0.514, top:5, bot:1526 },
+  nod:        { src:'../resources/si/sorana_si_nod.webp?v=2',   fx:0.529, top:6, bot:1527 },
+});
+Object.assign(PORTRAIT_EXPR.nouvelle, {
+  angry:      { src:'../resources/si/nouvelle_si_angry.webp?v=3', fx:0.583, top:3, bot:1535 },
+});
 /* `renna/relief` → 本尊 id。⚠ **入隊判定（`inParty`）一定要走這一支**：
    直接拿 `renna/relief` 去問 PARTY 查不到，而 `inParty` 對查不到的人一律放行
    —— 那等於整組對話悄悄繞過「這個人在不在船上」的硬條件。 */
@@ -6089,6 +6104,10 @@ function drawTalk(now){
     bw2 = Math.round(Math.min(bw, Math.max(ctx.measureText(spkName).width, dotsW) + padX + 30));
     bh  = 46;                                      // 名字一行 ＋ 一排點
   }
+  /* ══ `shake:'bubble'` ＝只抖對話框（ver -1769，Stage 14「（主角空白，對話框狂抖）」）══
+     同 DOM 那兩套的 `shake:'bubble'`（story.js）。立繪已經畫完了，這裡只位移框。 */
+  if(beat.shake==='bubble' && !sayEndAt)
+    ctx.translate(Math.round((Math.random()*2-1)*5), Math.round((Math.random()*2-1)*4));
   const by=Math.round(boxBottom-bh);
   ctx.fillStyle   = isSelf ? 'rgba(8,12,20,.84)'   : 'rgba(10,9,16,.84)';
   ctx.fillRect(bx,by,bw2,bh);
@@ -16383,28 +16402,9 @@ const DEPART_TALKS=[
       { name:'蕾娜', text:'往西南方一路飛回去。' },
       { name:'蕾娜', text:'看到帝都就表示到了。' },
     ] },
-  /* ══⚠⚠⚠ ③ 東泊 → 聖索菲亞城（ver -1534，Ray 的「走出旅店」稿收尾）══════════
-     > Ray：「自由探索／進到飛行地圖／**開小地圖然後標聖索菲亞城位置**，
-     >   蕾娜的方向指示是**在小地圖，無立繪**」
-
-     ⇒ 這一整套**早就在這張表上**（-743／-756 那一段）：開地圖 → 落目的地標記 →
-       移鏡過去 → 蕾娜的**無立繪**話框疊在地圖下緣。加一列就好。
-     ⚠⚠ ver -1534 我第一版自己另寫了一支 `sofiaHint`（關掉地圖之後用**立繪**講）
-       —— 那是鐵律 8 的反例：**同一件事做了第二套實作**，而且時機與位置都錯了
-       （Ray 當場退回）。那一支已整個拆掉。
-     ⚠ `need:'ep_leave_final'` ＝東泊走出旅店的**分支 2** 演完
-       （`script/town.js` 的 `TOWNS.eastport.inn.onLeave`，兩邊註解互指）——
-       那一段最後一句正是「先到聖索菲亞城的領事館辦入境手續吧。」，這是它的接續。
-     ⚠ 用 **`markName`** 不寫死座標：座標由 `PLACES`／`SETTLEMENTS` 現查
-       （鐵律 7，見 `markOf` 那一段的但書；上面兩列的字面座標是舊寫法）。
-       聖索菲亞城在 `SETTLEMENTS` 的 (559,562)。
-     ⚠ 方向核對：雪都 (577,243) → 聖索菲亞 (559,562) ＝ Δy 南 319、Δx 幾乎同經度
-       ⇒ 「雪都的南邊」對得上。 */
-  { flag:'sofia_depart_talk', need:'ep_leave_final',
-    markName:'聖索菲亞城',
-    lines:[
-      { name:'蕾娜', text:'先到聖索菲亞城在中西部，雪都的南邊。' },
-    ] },
+  /* ③ 東泊 → 聖索菲亞城（ver -1534 的 `sofia_depart_talk`）**已拆**（ver -1769）：
+     Stage 14 三條路合流之後，往聖索菲亞的那一段改由 `S14_TALK`（`s14FlightMaybe`）統一演，
+     它自己也開大地圖標聖索菲亞城 —— 留著這一列等於同一段路講兩次方向。 */
 ];
 function departureTalkMaybe(){
   if(freeFlight()) return;   // 試飛：不自動開圖說明航線（ver -1747，走的是 mapDlgStart 不是 say()）
@@ -16643,6 +16643,58 @@ function s9GateHit(k){
 }
 
 /* 這一趟要不要演。回傳 true＝接手了（開機那一支就不要再叫出航對白）。 */
+/* ══════════════════════════════════════════════════════════════════════
+   Stage 14：往聖索菲亞城（ver -1769，Ray 交稿「全支線合流 Stage14・進入飛行畫面」，台詞一字未改）
+   ──────────────────────────────────────────────────────────────────────
+   三條路（BA・M1／BA・M2 的雪都旅店合流、AB 的走出東泊旅店）最後一句都插 `s14_route`
+   （`script/town.js`，兩邊註解互指）—— 這一段只問那一支，不去猜是從哪條路來的。
+   順序：立繪對白 → 開大地圖標聖索菲亞城（蕾娜無立繪一句）→ 關掉地圖 → 立繪對白（含 T3 分歧）。
+   ⚠ 旗 `s14_flight_talk` **演完才記**（同城鎮通則）；已經進過聖索菲亞（`ss_arrive`）就不演。
+   ⚠ 「T3 以上派生」看的是**那個人自己**的段位（稿上是「索T3／諾T3／安T3」三段各自獨立）。
+     ⚠ 諾與安那兩拍稿上**沒有台詞**，只換表情；它們不依賴索菈娜那一段有沒有演。
+   ⚠ 「（主角空白，對話框狂抖）」＝ `shake:'bubble'`（drawTalk 那一支）。 */
+const S14_FLAG = 's14_flight_talk';
+const S14_SIDES = { renna:'L', nouvelle:'L', sorana:'R', anya:'R' };
+const S14_A=[
+  { who:'renna/write',   text:'埃爾王國不是聖王廳教區，直接飛過去的話最壞可能會被防空砲打下來。' },
+  { who:'sorana/amaze',  text:'啊？那怎麼辦？' },
+  { who:'renna/write',   text:'先到聖索菲亞申請入境許可。' },
+];
+const S14_MAP=[
+  { name:'蕾娜', text:'瓦勒里亞王國是中立國，應該比較容易通過。', markName:'聖索菲亞城' },
+];
+function s14B(){
+  const T=w=>progTier(affection(w));
+  const L=[
+    { who:'renna/evaluateclosemouth', text:'不過……' },
+    { who:'sorana/upset',             text:'？' },
+    { who:'renna/evaluate',           text:'索菈娜小姐要不要考慮換身衣服？' },
+    { who:'sorana/surprise',          text:'欸？為什麼？我也沒其他衣服啊！' },
+  ];
+  if(T('sorana')>=3) L.push({ who:'sorana/smirk', text:'而且有人很喜歡這一件呢。' },
+                            { who:'player', text:'', shake:'bubble' });
+  if(T('nouvelle')>=3) L.push({ who:'nouvelle/angry', text:'' });
+  if(T('anya')>=3)     L.push({ who:'anya/argue',     text:'' });
+  L.push({ who:'renna/tire', text:'……那就這樣吧。但願不要惹出事來。' },
+         { who:'sorana/nod', text:'我會乖乖的啦！' });
+  return L;
+}
+function s14FlightMaybe(){
+  if(freeFlight()) return false;
+  if(sayQueue || mapOpen) return false;
+  if(!flagOn('s14_route') || flagOn(S14_FLAG) || flagOn('ss_arrive')) return false;
+  say(S14_A, performance.now(), { sides:S14_SIDES, done:()=>{
+    const M=markOf('聖索菲亞城');
+    openMapView();
+    setMapMark(M[0], M[1], M[2]||'');
+    setTimeout(()=>mapPanTo(M[0], M[1], 1100), 350);
+    mapDlgStart(S14_MAP.slice());
+    mapClosedCb=()=>{
+      say(s14B(), performance.now(), { sides:S14_SIDES, done:()=>addFlag(S14_FLAG) });
+    };
+  }});
+  return true;
+}
 function s9FlightMaybe(){
   if(freeFlight()) return;   // 試飛：Stage9 飛行段演出不跑（ver -1747）
   if(sayQueue || mapOpen) return false;
@@ -20970,7 +21022,7 @@ function preloadSfx(){
        動一下（讀取慢一點、`playTakeoff` 晚一點才開始）就會疊在一起
        （鐵律 7：同一個時刻不要用兩個式子各算一次）。改成**問狀態**。 */
     setTimeout(()=>afterTakeoff(()=>{
-      if(!s9FlightMaybe()) departureTalkMaybe();
+      if(!s9FlightMaybe() && !s14FlightMaybe()) departureTalkMaybe();
     }), 700);
     requestAnimationFrame(loop);
   }catch(e){
