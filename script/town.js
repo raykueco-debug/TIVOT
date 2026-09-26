@@ -8954,13 +8954,15 @@ export const TOWNS = {
        往下（草稿上 gate 的方向）＝`sail`（回船上），同貝利薩爾入口的寫法。
      · 每格 `noTime:true`（Ray：「這張圖沒有四差分，都是同一天色」）、`wilderness:true`、**迷霧預設**（不寫 `mist:0`）。
      · 休息處三格（`wellsq`／`oakgrove`／`nemeton`）＝`rest:true`＋`noWild:true`；入口 `noWild`。
-     ⚠ **還沒有的**：祭壇那一場（`sessionEnd`）、`wildSpawn`（遭遇的怪）、小地圖 `map:`、劇情、章節窗 —— 等 Ray。
-       沒有 `wildSpawn` ＝現在走進去不會遇到任何怪；沒有 `map:` ＝地圖鈕回「這一帶還沒有留下地圖。」
+     ⚠ **還沒有的**：祭壇那一場（`sessionEnd`）、`wildSpawn`（遭遇的怪）、劇情、章節窗 —— 等 Ray。
+       沒有 `wildSpawn` ＝現在走進去不會遇到任何怪。小地圖 -1755 接上了。
      · `bgm:'lostplace'`（卡耶爾山谷那一首）：程式端自己挑的，**Ray -1753 認可**（「接得不錯」）。
      ⚠ 飛行地圖上的地標在 `flight/index.html` 的 `PLACES`（183,762，`town:'dunmor'`），位於羅賽爾王國＝禁航區。 */
   dunmor: {
     name: '羅賽爾廢城',
     entry: 'causeway',
+    /* 小地圖（ver -1755，美術交件 `resources/map/map_dunmor.webp`＋`_spots_dunmor.json`，map_compose 合成）。新增檔、不必 `?v=`。 */
+    map:{ img:'resources/map/map_dunmor.webp', spots:{ kingsbarrow:[0.0853,0.1396], barrowfield:[0.1777,0.1396], altar:[0.2702,0.1396], springpool:[0.3626,0.1396], altarcourt:[0.4551,0.1396], skullniche:[0.5475,0.1396], headshrine:[0.0853,0.2366], dolmen:[0.1777,0.2366], nemeton:[0.2702,0.2366], triskele:[0.3626,0.2366], sacredway:[0.4551,0.2366], bardsstep:[0.5475,0.2366], brochtop:[0.64,0.2366], bogoffer:[0.7324,0.2366], stonerow:[0.1777,0.3335], oakgrove:[0.2702,0.3335], druidhouse:[0.3626,0.3335], henge:[0.4551,0.3335], brochbase:[0.5475,0.3335], boglane:[0.64,0.3335], lakeshore:[0.7324,0.3335], cairn:[0.8249,0.3335], ossuary:[0.0853,0.4304], fogou:[0.1777,0.4304], innerditch:[0.2702,0.4304], innergate:[0.3626,0.4304], lawstone:[0.4551,0.4304], hallcourt:[0.5475,0.4304], treasury:[0.64,0.4304], crannog:[0.7324,0.4304], cistgrave:[0.0853,0.5273], souterrain:[0.1777,0.5273], potters:[0.2702,0.5273], boarstone:[0.3626,0.5273], marketcross:[0.4551,0.5273], kingshall:[0.5475,0.5273], chariotshed:[0.64,0.5273], weaverhut:[0.1777,0.6243], roundring:[0.2702,0.6243], wellsq:[0.3626,0.6243], mainstreet:[0.4551,0.6243], smithy:[0.5475,0.6243], kilnyard:[0.64,0.6243], oghamrow:[0.3626,0.7212], gatecourt:[0.4551,0.7212], granary:[0.5475,0.7212], tannery:[0.64,0.7212], ditchW:[0.3626,0.8181], southgate:[0.4551,0.8181], ditchE:[0.5475,0.8181], watchW:[0.2702,0.915], rampartW:[0.3626,0.915], causeway:[0.4551,0.915], rampartE:[0.5475,0.915], watchE:[0.64,0.915] } },
     bgm: 'lostplace',
     wilderness: true,
     nodes: {

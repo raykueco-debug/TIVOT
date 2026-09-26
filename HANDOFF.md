@@ -22,7 +22,7 @@
 > 10. **（09-26 凌晨，Mac）聖索菲亞郊外・里朋家族豪宅 `sofiaout`（Stage 14 合流：救小女孩的姐姐）** —— 拓樸 v3 提案在 `resources/map/_sofiaout_spec.md` §一（產生器 `tools/map_sofiaout_draft.py`、佈局圖 `_layout_sofiaout.png`）：
 >    11 格、**兩個終點**（`cellar` 地下囚室＝馬努決戰、`terrace` 露台＝挾人質劇情）；背景已交 4 張 `sofiaout_{lodge,forecourt,hall,salon}`，其餘 6 格美術還在跑。
 >    程式端要做的（Ray 點頭後）：搬進 `script/town.js`（全部 `noTime:true`、`bg:'sofiaout_<id>'`）、`gate` 接聖索菲亞哪一格（建議 `uptown`）、結算點在囚室還是露台、`map_layout.py` 補 `POS`、產生器回收。全部新增檔，不用跳 `ASSET_VER`。
-> 11. **（09-26，Mac）羅賽爾廢城小地圖交件** —— `resources/map/map_dunmor.webp`＋`_spots_dunmor.json`（55 格）。`TOWNS.dunmor` 補一行（新增、不必 `?v=`），整行可抄在 `resources/background/_dunmor_spec.md` §十：
+> 11. ✅ **-1755 已接** **（09-26，Mac）羅賽爾廢城小地圖交件** —— `resources/map/map_dunmor.webp`＋`_spots_dunmor.json`（55 格）。`TOWNS.dunmor` 補一行（新增、不必 `?v=`），整行可抄在 `resources/background/_dunmor_spec.md` §十：
 >    `map:{ img:'resources/map/map_dunmor.webp', spots:{ kingsbarrow:[0.0853,0.1396], barrowfield:[0.1777,0.1396], altar:[0.27…`
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；**§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
@@ -34,7 +34,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1753`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1756`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -47,7 +47,19 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1753`
+# HANDOFF — 截至 `ver 2026.09.22-1756`
+
+**`-1754`～`-1756`：羅賽爾廢城小地圖接上 ＋ 里朋莊園放上飛行地圖 (544,595)**
+· `TOWNS.dunmor.map`：`resources/map/map_dunmor.webp`＋55 格 spots（美術 `_spots_dunmor.json`）。實測：降落鈕落地 → 地圖鈕翻開旅誌、只露出堤道那一格、探索 1／55。
+  （`lostplace` BGM 由暫代改為 Ray 認可。）
+· 里朋莊園：`PLACES` 一筆（`type:'莊園'`、`ruin:'ripon'`、**沒有 `town`** —— `sofiaout` 拓樸還在提案，接上時補 `town:`）；
+  `RUIN_ART.ripon`（38 件、最高 47）：兩層黃赭灰泥主樓＋赤陶四坡瓦、四柱柱廊＋鐵欄陽台＋大台階、右翼拱門馬車道、前庭噴泉、米白石圍牆、棕櫚與柏樹。
+  `rot:-1.145`＝正面朝北北東 36 格外的聖索菲亞城；地形整片 171 平地、非禁航。新色票 `RUIN_PAL.villa`。
+  貼材用 geo 現成的（Ray：「geo 裡應該夠用了」）：牆 `flight_villagewall`、瓦 `flight_rooftile`。`export_mapref.py` 同步。
+  實測（8123 試飛）：城南一座白牆紅瓦的宅院，讀得出來。
+· ⚠ 測試小抄：跳版號**之後**才開分頁；已開的分頁要用 `?nc=<版號>` 之類的網址重載，不然吃到快取裡的舊模組（這一輪踩了兩次）。
+
+# （上一段）截至 `ver 2026.09.22-1753`
 
 **`-1753`：無人廢城正名「羅賽爾廢城」＋ 拓樸接進 `TOWNS.dunmor`**（Ray 指定）
 · `script/town.js`：`dunmor`（55 格，照 `map_dunmor_draft.py` 的 NODES／EDGES 原樣搬，方向由座標算、兩端自動相反）。
