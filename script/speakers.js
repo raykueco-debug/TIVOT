@@ -697,7 +697,7 @@ export const ART = {
          對得上才找得到圖。 */
     smirk:        { src:'resources/si/sorana_si_smirk.webp?v=2',         top:8,  bot:1528, fx:0.582 },
     lauaghbig:    { src:'resources/si/sorana_si_lauaghbig.webp?v=2',     top:4,  bot:1529, fx:0.492 },
-    remind:       { src:'resources/si/sorana_si_remind.webp?v=2',        top:4,  bot:1525, fx:0.523 },
+    remind:       { src:'resources/si/sorana_si_remind.webp?v=3',        top:1,  bot:1525, fx:0.523 },   // ver -1765：Ray「索的 remind 修壞，回上一版」—— 美術換回 d556b53 那版（同名覆蓋），取景 measure_si 重量
     /* ver -953：美術把 webp 換成新畫的 png，webp 版一度從磁碟消失（speakers 指得到、
        檔案卻不在）。轉回 webp 並**重量取景**（fx 0.547→0.528，差 0.019＝橫向約 19px，
        沿用舊值她會偏一格）；`?v=2` 是同名覆蓋的快取破除（§5）。 */
