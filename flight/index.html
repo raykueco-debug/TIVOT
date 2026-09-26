@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1745"></script>
+<script src="../orientation.js?v=1748"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1745edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1748edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1745edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1745edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1748edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1748edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1745edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1745edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1748edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1748edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1745edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1748edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1745edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1745edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1745edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1745edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1745edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1745edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1745edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1745edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1745edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1745edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1748edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1748edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1748edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1748edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1748edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1748edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1748edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1748edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1748edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1748edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1745edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1748edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1745edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1748edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1745"></script>
+<script src="settlement.js?v=1748"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1745"></script>
+<script src="talks.js?v=1748"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════
    TIVOT — 銀月大陸航行（吃真實地圖版）
@@ -715,7 +715,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1745';
+const FLIGHT_VER = 'ver -1748';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -3421,6 +3421,13 @@ const PLACES=[
      ⚠ 只有這一座需要（其餘遺蹟最高 88，撞不到）；日後再有很高的量體照這個辦法挪。 */
   {x:1972, y:656, name:'貝利薩爾遺址', n:'貝利薩爾遺址', type:'遺蹟',
    town:'belisar', ruin:'belisar', land:{x:1951, y:651}, stageFrom:8},
+  /* ══ 無人廢城（ver -1746，Ray 指定座標 183,762）══ 地表的手寫量體 `RUIN_ART.dunmor`。
+     ⚠⚠ **還沒有 `town`**：拓樸（`tools/map_dunmor_draft.py`，55 格）還沒搬進 `script/town.js` ——
+       id／中文名／祭壇那一場／遭遇的怪都在等 Ray。接上時補 `town:'<id>'` 就有降落鈕（`nearestTown` 兼掃帶 town 的 PLACES）。
+     ⚠ 名稱「無人廢城」是工單標題的暫定名，Ray 正名後改 `name`／`n`。
+     ⚠ 這一點在**第 9 國（羅賽爾）＝禁航區**裡：正常遊玩飛不進去（試飛放行）。
+     ⚠ 不進 SETTLEMENTS（同貝利薩爾：那張表會被當成城去長道路與程序建築）。 */
+  {x:183, y:762, name:'無人廢城', n:'無人廢城', type:'遺蹟', ruin:'dunmor'},
 ];
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -3964,6 +3971,140 @@ const RUIN_ART = {
       { k:'stump', x:-62, y: 92, w:26, l:22, rot: 0.7,  h:13 },
     ],
   },
+  /* ══⚠⚠ 無人廢城（dunmor，ver -1746，Ray：「把廢城放在 183 762 並依背景圖畫風製作飛行地圖的 3d 物件放上」）══
+     照 `resources/background/dunmor/` 那 55 張的畫風排（§6.8.1）：**失落的石城** —— 巨石砌的多層石屋、過梁方門、
+     圓石塔（broch）、石環與立石、石塚、石桌墓、崖邊的三立石祭壇；剛被毀（牆頂參差、崩口、散落碎石）、無人。
+     ⚠ 地形（ver -1746 實測）：(183,762) 是大陸邊緣那一圈**平頂台地**（整片 145），最近的崖在**西南**
+       （約 124°、12 格＝240 單位），其他方向 27 格以上 ⇒ `rot:2.16`：局部 +x 朝西南崖（祭壇背崖）、
+       −x 朝東北（城門與堤道）。**不整地**：腳下本來就全平。
+     ⚠ 零件由腳本排出來再貼成字面（城牆分段、石環十根是算的）；自檢：100 件、最高 78、無懸空。
+       最高 78 ＜ 降落下降線的顧慮（貝利薩爾那條是 302）⇒ 不必挪降落點。
+     ⚠ 色票 `slate`：背景裡的石頭被紫天染過（亮面 (112,81,93)、暗面 (45,41,57)），這裡取**石頭本身**的
+       冷藍灰帶一點紫 —— 日夜的光照交給 `screenSample` 往旁邊地形靠（§6.8.1 第六節）。 */
+  dunmor: {
+    rot: 2.16,
+    base: { w:380, l:330, n:52, jit:0.04, ox:-20 },
+    floor:'slab', floorCell:40, floorJoint:3.6,
+    lift: 6,
+    tex:true,
+    pal:'slate',
+    parts: [
+      /* ── ① 外城牆（巨石砌、殘缺不齊）：東北正面在 x=-200、西南崖側在 x=160，兩側 y=±160 ── */
+      { k:'stump', x:-166, y:-160, w:65, l:16, h:30, shrink:0.96 },
+      { k:'stump', x:-98, y:-160, w:65, l:16, h:26, shrink:0.96 },
+      { k:'stump', x:22, y:-160, w:49, l:16, h:26, shrink:0.96 },
+      { k:'stump', x:134, y:-160, w:49, l:16, h:26, shrink:0.96 },
+      { k:'stump', x:-178, y:160, w:41, l:16, h:38, shrink:0.96 },
+      { k:'stump', x:-130, y:160, w:49, l:16, h:30, shrink:0.96 },
+      { k:'stump', x:-70, y:160, w:65, l:16, h:26, shrink:0.96 },
+      { k:'stump', x:-14, y:160, w:41, l:16, h:34, shrink:0.96 },
+      { k:'stump', x:106, y:160, w:57, l:16, h:30, shrink:0.96 },
+      { k:'stump', x:148, y:160, w:21, l:16, h:34, shrink:0.96 },
+      { k:'stump', x:-200, y:-130, w:16, l:57, h:30, shrink:0.96 },
+      { k:'stump', x:-200, y:-78, w:16, l:41, h:30, shrink:0.96 },
+      { k:'stump', x:-200, y:90, w:16, l:49, h:34, shrink:0.96 },
+      { k:'stump', x:-200, y:138, w:16, l:41, h:30, shrink:0.96 },
+      { k:'stump', x:160, y:-138, w:16, l:41, h:22, shrink:0.96 },
+      { k:'stump', x:160, y:-86, w:16, l:57, h:38, shrink:0.96 },
+      { k:'stump', x:160, y:34, w:16, l:41, h:38, shrink:0.96 },
+      { k:'stump', x:160, y:78, w:16, l:41, h:38, shrink:0.96 },
+      { k:'stump', x:160, y:130, w:16, l:57, h:22, shrink:0.96 },
+      /* ── ② 南壘門：兩座巨石門樓＋一根塌下來的過梁（southgate） ── */
+      { k:'stump', x:-200, y:-44, w:38, l:34, h:58, shrink:0.95 },
+      { k:'stump', x:-200, y:44, w:38, l:34, h:46, shrink:0.95 },
+      { k:'stump', x:-206, y:6, w:16, l:74, h:9, rot:0.22 },
+      /* ── ③ 石堤道與歐甘立石（causeway／oghamrow）：城外往東北延伸 ── */
+      { k:'stump', x:-248, y:0, w:80, l:44, h:3 },
+      { k:'stump', x:-280, y:-30, w:7, l:6, h:18, shrink:0.85 },
+      { k:'stump', x:-280, y:30, w:7, l:6, h:16, shrink:0.85 },
+      { k:'stump', x:-252, y:-30, w:7, l:6, h:18, shrink:0.85 },
+      { k:'stump', x:-252, y:30, w:7, l:6, h:16, shrink:0.85 },
+      { k:'stump', x:-226, y:-30, w:7, l:6, h:18, shrink:0.85 },
+      { k:'stump', x:-226, y:30, w:7, l:6, h:16, shrink:0.85 },
+      /* ── ④ 石板主街兩側的多層石屋（mainstreet）：y=±56～±96 ── */
+      { k:'stump', x:-164, y:-74, w:30, l:34, h:36, shrink:0.97 },
+      { k:'stump', x:-164, y:74, w:30, l:34, h:48, shrink:0.97 },
+      { k:'stump', x:-162, y:78, w:20, l:22, h:14, z0:48, shrink:0.94 },
+      { k:'stump', x:-126, y:-74, w:34, l:38, h:36, shrink:0.97 },
+      { k:'stump', x:-126, y:74, w:30, l:38, h:36, shrink:0.97 },
+      { k:'stump', x:-88, y:-74, w:34, l:34, h:30, shrink:0.97 },
+      { k:'stump', x:-88, y:74, w:34, l:34, h:42, shrink:0.97 },
+      /* ── ⑤ 內壘門：兩根巨石柱＋完整的過梁（innergate），兩側內牆 ── */
+      { k:'stump', x:-44, y:-24, w:16, l:16, h:46, shrink:0.96 },
+      { k:'stump', x:-44, y:24, w:16, l:16, h:46, shrink:0.96 },
+      { k:'stump', x:-44, y:0, w:18, l:66, h:10, z0:46 },
+      { k:'stump', x:-44, y:-114, w:16, l:49, h:26, shrink:0.96 },
+      { k:'stump', x:-44, y:-61, w:16, l:51, h:34, shrink:0.96 },
+      { k:'stump', x:-44, y:60, w:16, l:49, h:22, shrink:0.96 },
+      { k:'stump', x:-44, y:112, w:16, l:49, h:26, shrink:0.96 },
+      { k:'stump', x:-44, y:139, w:16, l:-1, h:26, shrink:0.96 },
+      /* ── ⑥ 圓塔（broch）：乾砌的圓石塔，頂端崩掉一截 ── */
+      { k:'tower', x:24, y:-88, r:26, rTop:23, n:14, h:72 },
+      { k:'stump', x:24, y:-62, w:10, l:8, h:6, z0:72 },
+      /* ── ⑦ 王廳（kingshall）：巨石牆＋崩掉一半的山牆屋頂＋正面石柱廊 ── */
+      { k:'stump', x:36, y:66, w:64, l:58, h:40, shrink:0.98 },
+      { k:'gable', x:26, y:66, w:44, l:58, h:18, z0:40 },
+      { k:'tower', x:-6, y:42, r:5, rTop:4, n:8, h:34 },
+      { k:'tower', x:-6, y:58, r:5, rTop:4, n:8, h:34 },
+      { k:'tower', x:-6, y:74, r:5, rTop:4, n:8, h:34 },
+      { k:'tower', x:-6, y:90, r:5, rTop:4, n:8, h:34 },
+      { k:'stump', x:-6, y:66, w:8, l:58, h:6, z0:34 },
+      /* ── ⑧ 石環（henge）：十根立石圍一圈，三組帶過梁（trilithon）── */
+      { k:'stump', x:142, y:-60, w:8, l:6, h:22, rot:0.0, shrink:0.9 },
+      { k:'stump', x:135, y:-38, w:8, l:6, h:20, rot:0.63, shrink:0.9 },
+      { k:'stump', x:116, y:-24, w:8, l:6, h:22, rot:1.26, shrink:0.9 },
+      { k:'stump', x:92, y:-24, w:8, l:6, h:24, rot:1.88, shrink:0.9 },
+      { k:'stump', x:73, y:-38, w:8, l:6, h:20, rot:2.51, shrink:0.9 },
+      { k:'stump', x:66, y:-60, w:8, l:6, h:24, rot:3.14, shrink:0.9 },
+      { k:'stump', x:73, y:-82, w:8, l:6, h:24, rot:3.77, shrink:0.9 },
+      { k:'stump', x:92, y:-96, w:8, l:6, h:20, rot:4.4, shrink:0.9 },
+      { k:'stump', x:116, y:-96, w:8, l:6, h:22, rot:5.03, shrink:0.9 },
+      { k:'stump', x:135, y:-82, w:8, l:6, h:22, rot:5.65, shrink:0.9 },
+      { k:'stump', x:140, y:-48, w:7, l:24, h:5, z0:24, rot:1.88 },
+      { k:'stump', x:82, y:-29, w:7, l:24, h:5, z0:24, rot:3.77 },
+      { k:'stump', x:82, y:-91, w:7, l:24, h:5, z0:24, rot:5.65 },
+      { k:'stump', x:104, y:-60, w:14, l:20, h:4 },
+      /* ── ⑨ 石塚（cairn）：四階收攏的石堆 ── */
+      { k:'stump', x:-104, y:118, w:50, l:50, h:10 },
+      { k:'stump', x:-104, y:118, w:38, l:38, h:10, z0:10 },
+      { k:'stump', x:-104, y:118, w:26, l:26, h:10, z0:20 },
+      { k:'stump', x:-104, y:118, w:14, l:14, h:8, z0:30 },
+      /* ── ⑩ 石桌墓（dolmen）：兩根立石＋歪掉的蓋石 ── */
+      { k:'stump', x:100, y:84, w:10, l:8, h:22 },
+      { k:'stump', x:100, y:108, w:10, l:8, h:22 },
+      { k:'stump', x:100, y:96, w:30, l:40, h:7, z0:22, rot:0.18 },
+      /* ── ⑪ 聖道（sacredway）：出西南城牆口、兩排立石通往崖邊 ── */
+      { k:'stump', x:172, y:-24, w:7, l:6, h:18, shrink:0.85 },
+      { k:'stump', x:172, y:24, w:7, l:6, h:18, shrink:0.85 },
+      { k:'stump', x:188, y:-24, w:7, l:6, h:18, shrink:0.85 },
+      { k:'stump', x:188, y:24, w:7, l:6, h:18, shrink:0.85 },
+      /* ── ⑫ 祭壇（altar）：崖邊三根高立石＋石台 ── */
+      { k:'stump', x:206, y:-30, w:12, l:16, h:54, shrink:0.86 },
+      { k:'stump', x:212, y:0, w:12, l:18, h:64, shrink:0.86 },
+      { k:'stump', x:206, y:30, w:12, l:16, h:54, shrink:0.86 },
+      { k:'stump', x:194, y:0, w:20, l:30, h:8 },
+      /* ── ⑬ 內城的石屋（倉、鍛冶場、織工屋…都是石造的方盒） ── */
+      { k:'stump', x:-4, y:-130, w:36, l:30, h:32, shrink:0.97 },
+      { k:'stump', x:60, y:-130, w:28, l:34, h:20, shrink:0.97 },
+      { k:'stump', x:-6, y:128, w:36, l:34, h:32, shrink:0.97 },
+      { k:'stump', x:40, y:130, w:36, l:34, h:26, shrink:0.97 },
+      { k:'stump', x:128, y:34, w:32, l:30, h:32, shrink:0.97 },
+      { k:'stump', x:-150, y:128, w:32, l:30, h:26, shrink:0.97 },
+      { k:'stump', x:-150, y:-128, w:36, l:34, h:20, shrink:0.97 },
+      { k:'stump', x:-110, y:-128, w:28, l:26, h:26, shrink:0.97 },
+      /* ── ⑭ 散落的碎石（剛被毀：牆腳與街上都有） ── */
+      { k:'stump', x:-120, y:24, w:20, l:16, h:7, rot:-0.46 },
+      { k:'stump', x:-70, y:-40, w:16, l:10, h:7, rot:-0.29 },
+      { k:'stump', x:-180, y:-110, w:16, l:14, h:5, rot:-0.8 },
+      { k:'stump', x:-20, y:40, w:20, l:10, h:5, rot:-0.79 },
+      { k:'stump', x:70, y:-10, w:12, l:10, h:5, rot:0.83 },
+      { k:'stump', x:140, y:110, w:20, l:16, h:5, rot:0.22 },
+      { k:'stump', x:-150, y:40, w:12, l:16, h:9, rot:-0.66 },
+      { k:'stump', x:10, y:-30, w:12, l:10, h:9, rot:-0.83 },
+      { k:'stump', x:120, y:-120, w:20, l:14, h:7, rot:-0.83 },
+      { k:'stump', x:-60, y:100, w:12, l:16, h:5, rot:-0.37 },
+    ],
+  },
 };
 /* 石材的三個色階（頂／側／暗側）＋地基。像素風＝**平塗硬邊**，不做漸層。
    ⚠ 色要**壓得住**：第一版偏白，在深綠的地形上讀起來像一張紙。
@@ -3994,6 +4135,20 @@ const RUIN_COL = { top:'#b0a488', side:'#645d4e', dark:'#443e35',
      暗面 130（比 0.68），舊色票的 0.39 在淺石上會讀成「髒」而不是「背光」。
    ⚠ 立面的貼材是壓 0.42 疊在平塗上的，所以暗面要比目標再暗一階（合成後才對）。 */
 const RUIN_PAL = {
+  /* 石板灰（無人廢城，ver -1746）：量 `dunmor_*` 十張的石面 —— 亮面被紫天染成 (112,81,93)、
+     暗面 (45,41,57)；石頭本身是**冷藍灰、帶一點紫**（B 比 R／G 高一點）。
+     ⚠ 頂面比朝光立面暗一階、地板再暗一階（俯瞰的理由見 `pale`）。
+     ⚠ 開口用偏冷的深灰不用近黑（同 `pale`）。 */
+  slate: Object.assign({}, RUIN_COL, {
+    /* ⚠ -1746 第二版：第一版（sideLit 143）正午霧裡讀起來跟貝利薩爾的白石一樣淡 ——
+       背景圖的石頭明顯更暗，壓一成二、亮暗兩面的差拉開。 */
+    top:'#716d7b', sideLit:'#85808f', side:'#5f5b6a', dark:'#3c3947',
+    floor:'#5a5664', floorDark:'#4b4855', floorLite:'#676371',
+    texTint:'rgba(112,106,124,.40)',
+    shade:'rgba(40,36,52,.38)',
+    roofTop:'#6f6b79', roofLit:'#7b7786', roofSide:'#615d6b', roofDark:'#47444f',
+    door:'#2f2c38',
+  }),
   /* 白石（哥德古堡）：牆冷灰白、瓦冷灰藍 */
   pale: Object.assign({}, RUIN_COL, {
     /* ⚠⚠ **頂面比朝光立面暗一階**（與預設那一組相反，ver -1164）：飛行地圖是
@@ -4906,7 +5061,8 @@ function flagOn(f){ return flagList().indexOf(f)>=0; }
    拔它的是 `newRun()`（下一次開始故事／跳章節整輪清掉）—— 鐵律 9 的誰插誰拔。
    問它的門（每一道自己問，鐵律 8）：`say()`（不講、但照叫 `done`）／`noflyAt` 與紅罩／
    `syncScriptPending` 與「劇本遭遇沒打完不刷雜怪」／`placeLockedNag`／`placeStageLocked`／
-   `stage1Blocked`／`belisarLandGate`／`huntLandGate`。城鎮那一側在 `modules/town.js` 的 `storyOff`。 */
+   `stage1Blocked`／`belisarLandGate`／`huntLandGate`／`departureTalkMaybe`／`s9FlightMaybe`
+   （後兩道 ver -1747 補：大地圖上的說明對白走 `mapDlgStart`，不經過 `say()`）。城鎮那一側在 `modules/town.js` 的 `storyOff`。 */
 function freeFlight(){ return flagOn('free_flight'); }
 /* ══⚠⚠⚠ 女主的 **NIEM 等級**（ver -1186，Ray 交稿）══════════════════════════
    `tivot_girlniem_v1` ＝ `{搭檔key: 用掉幾份}`，等級是 1＋份數（出廠 LV.1）。
@@ -16213,6 +16369,7 @@ const DEPART_TALKS=[
     ] },
 ];
 function departureTalkMaybe(){
+  if(freeFlight()) return;   // 試飛：不自動開圖說明航線（ver -1747，走的是 mapDlgStart 不是 say()）
   if(sayQueue || mapOpen) return;
   const D=DEPART_TALKS.find(d=>
         !flagOn(d.flag)
@@ -16449,6 +16606,7 @@ function s9GateHit(k){
 
 /* 這一趟要不要演。回傳 true＝接手了（開機那一支就不要再叫出航對白）。 */
 function s9FlightMaybe(){
+  if(freeFlight()) return;   // 試飛：Stage9 飛行段演出不跑（ver -1747）
   if(sayQueue || mapOpen) return false;
   if(!flagOn(S9_NEED) || flagOn(S9_FLAG)) return false;
   /* ══⚠⚠⚠ **只綁「從夏爾村出來」那一次起飛**（ver -1430，Ray 連報兩次：
