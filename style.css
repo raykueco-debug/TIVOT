@@ -5002,6 +5002,9 @@
   #gearSheet .gs-skillwin .gs-swclose{flex:0 0 auto;margin-top:10px;padding:7px;
     border-radius:6px;border:1px solid var(--gold-dim);color:var(--gold);
     font-size:12px;letter-spacing:4px;text-align:center;cursor:pointer;}
+  /* 重新配點（ver -1777）：與關閉同一款式、偏暗紅以示有代價；亮出代價那一拍（.armed）變亮。 */
+  #gearSheet .gs-skillwin .gs-respec{color:#e6a39a;border-color:rgba(200,90,80,.55);font-size:12px;}
+  #gearSheet .gs-skillwin .gs-respec.armed{background:rgba(160,40,40,.35);color:#fff;letter-spacing:1px;}
   /* ── 一次性教學（雪鐵龍箭，同旅店那一套）── */
   #gearSheet .gs-tip{position:fixed;inset:0;z-index:3;background:rgba(4,3,7,.62);}
   #gearSheet .gt-arrow{position:absolute;transform:translate(-50%,-100%);font-style:normal;

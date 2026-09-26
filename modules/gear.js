@@ -188,6 +188,18 @@ function skillBtnHtml(key){
        +   lit+' / '+arr.length   // ver -1776：星數（9），不是等級上限（20）
        +   '<em class="gs-recn">◆'+rec+'</em></div>';
 }
+/* ══ 收回重新配點（ver -1777，Ray）══ 按一下＝亮出代價、3 秒內再按一下＝執行（不另開確認視窗）。
+   判定與算法全在 `prog.respecCost／respecGirl`（鐵律 7），這裡只畫與接按鍵。 */
+let respecArm=null, respecT=0;
+function respecBtnHtml(key){
+  const c=prog.respecCost(key);
+  if(!c || !c.stars) return '';
+  const armed = respecArm===key;
+  const txt = armed
+    ? ('再按一次確認：退回 ◆'+c.refund+'　'+(c.lostExp ? ('本級經驗 '+c.lostExp+' 歸零') : '本級經驗為零（免費）'))
+    : ('重　新　配　點　（退回 ◆'+c.refund+'）');
+  return '<div class="gs-swclose gs-respec'+(armed?' armed':'')+'" data-respec="'+key+'">'+txt+'</div>';
+}
 function skillWinHtml(key){
   if(!skillOpen || !prog.isGirl(key)) return '';
   const p=(GAME_CONFIG.partners||{})[key]||{};
@@ -199,6 +211,7 @@ function skillWinHtml(key){
        +     '<div class="gs-swtitle">'+(p.name||'')+'　技　能　表'
        +       '<em class="gs-recn">戰鬥紀錄 ◆'+prog.girlRecords(key)+'</em></div>'
        +     girlStarListHtml(key)
+       +     respecBtnHtml(key)
        +     '<div class="gs-swclose" data-skillclose="1">關　閉</div>'
        +   '</div>'
        + '</div>';
@@ -648,6 +661,21 @@ function bind(){
   /* ══ 點亮一顆星（ver -1132）══ 正式路徑：花掉《她的戰鬥紀錄》。
      ⚠ 判定不在這裡（`prog.lightGirlStar` 自己會問 `canLightStar`，鐵律 8）——
        這裡只負責「按下去」與回饋。 */
+  el.querySelectorAll('.gs-respec[data-respec]').forEach(d=>d.addEventListener('click', e=>{
+    e.stopPropagation();
+    const who=d.dataset.respec;
+    if(respecArm!==who){
+      respecArm=who; clearTimeout(respecT);
+      respecT=setTimeout(()=>{ respecArm=null; render(); }, 3000);
+      try{ SFX.menuClick(); }catch(_){}
+      render(); return;
+    }
+    respecArm=null; clearTimeout(respecT);
+    const r=prog.respecGirl(who);
+    try{ SFX.confirm ? SFX.confirm() : SFX.menuClick(); }catch(_){}
+    render();
+    if(r) gsNote('已收回 '+r.stars+' 顆星，退回 ◆'+r.refund);
+  }));
   el.querySelectorAll('.gs-light[data-glight]').forEach(d=>d.addEventListener('click', e=>{
     e.stopPropagation();
     const [who, idx] = String(d.dataset.glight||'').split(':');

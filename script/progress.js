@@ -469,6 +469,33 @@ export function lightGirlStar(who, i, free){
   set[i]=1; wr(K.girlStars, JSON.stringify(all));
   return true;
 }
+/* ══⚠⚠⚠ **收回重新配點**（ver -1777，Ray：「不限地點，怕玩家等級不夠卡在迷宮裡出不來，至少重新配點還有機會」
+   「重配會把當前該女主角的 exp 清零，如果 exp 是零的話就等於免費，這點優待可以給」）══
+   · 收回：點亮過的星全部熄掉、花掉的《戰鬥紀錄》**全額退回**。出場就亮（`freeStars`）與條件星（`starCond`，
+     不花紀錄）不動。
+   · 代價：**這一級累積的經驗歸零**（夾回這一級的門檻）—— 等級是棘輪不會掉（同死亡代價那一條）。
+     剛升級、經驗條是空的時候就等於免費（Ray 給的優待）。
+   · 不限地點：戰鬥外的整備頁都能按（`gear.js` 技能表那一顆鈕）。
+   `respecCost` 只回報「會失去多少經驗／退回幾份」，`respecGirl` 真的做 —— 兩支共用同一段算法（鐵律 7）。 */
+function respecPlan(who){
+  if(!isGirl(who)) return null;
+  const lit=girlStarsAll()[who]||{}, fr=girlCfg().freeStars||[], cond=girlCfg().starCond||{};
+  const drop=[]; let refund=0;
+  for(const k in lit){ const i=+k; if(!lit[k] || fr.includes(i) || cond[i]) continue; drop.push(i); refund+=girlStarCost(i); }
+  const tab=girlCfg().expTo||[0], lv=girlLevel(who), floor=tab[lv-1]|0;
+  return { drop, refund, lostExp:Math.max(0, girlExp(who)-floor), floor };
+}
+export function respecCost(who){ const p=respecPlan(who); return p ? { refund:p.refund, lostExp:p.lostExp, stars:p.drop.length } : null; }
+export function respecGirl(who){
+  const p=respecPlan(who); if(!p || !p.drop.length) return null;
+  const all=girlStarsAll(), set=all[who]||{};
+  for(const i of p.drop) delete set[i];
+  all[who]=set; wr(K.girlStars, JSON.stringify(all));
+  if(p.refund) inv.add(recordIdOf(who), p.refund);
+  const ex=girlExpAll(); ex[who]=p.floor; wr(K.girlExp, JSON.stringify(ex));
+  return { refund:p.refund, lostExp:p.lostExp, stars:p.drop.length };
+}
+
 /* ══⚠⚠⚠ **死亡代價：掉一半現有戰鬥紀錄，但等級是棘輪**（ver -1135，Ray：
    「死亡代價是掉一半現有 exp，但是已經升的級不會往下掉，等級是棘輪」
    「掉**該場夥伴**的一半現有 exp」）══════════════════════════════════════════
@@ -1516,6 +1543,10 @@ export function newRun(opts){
      （章節工具）在之後自己 setStage 覆寫。 */
   wr(K.stage, 0);
   wr(K.playtime, 0);   // 實體遊玩時間也插著（鐵律 9）
+  /* ⚠⚠ **女主的「已點亮的星」也要插著**（ver -1777，鐵律 9）：這把鑰匙**不存在**＝`girlStarsAll` 認定是
+     -1132 之前的舊存檔、照等級把星**免費點亮**（一次性遷移）。新的一局清掉它之後，第一次拿到經驗那一刻就會誤判
+     （實測：新局打一場升到 Lv5，②～⑤ 憑空亮起、紀錄一份都沒拿到）。寫空物件＝「這一局一顆都還沒點」。 */
+  wr(K.girlStars, '{}');
   /* ══⚠⚠⚠ **好感的四個 0 只有「開始故事」那一條路要插**（ver -1659，Ray：
      「**只有點故事開始會從 0 開始**，還有讀取存檔會繼承該存檔的進度，
      其他試飛、點章節、巡場進去都是預設全滿」）══
