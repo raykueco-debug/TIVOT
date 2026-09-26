@@ -4580,6 +4580,10 @@ export function enter(id){
              ⚠ applyAff 是**整段盲加**：有分歧的段落把 aff 放在無分歧的拍上
                （分歧內的入帳走 story.js 的逐拍 take/give/money 那一族）。 */
           applyAff(play);
+          /* ══ 約會場景事件演完 +3（ver -1771，Ray）══ `withWho` ＝這一段是約會事件；給的是**正在約的那個人**。
+             ⚠ 只在第一次演完給（旗還沒插）；`dateAff:0` ＝這一段只是前半，後半才給。數值在 `OUTING.dateDoneAff`（鐵律 1）。 */
+          if(act.withWho && act.dateAff!==0 && !(act.flag && prog.hasFlag(act.flag)))
+            prog.addAffection(String(act.withWho).toLowerCase(), act.dateAff || OUTING.dateDoneAff || 3);
           if(act.flag) prog.addFlags([act.flag]);                 // 主線段落：只演一次
           /* ══ 追逐：打完一場，牠往**玩家進入房間的反方向**跑一格（ver -1421）══
              ⚠ `backDir` 是「回頭路」，**牠要跑的是它的反向**（＝玩家原本前進的方向）。
@@ -5035,8 +5039,13 @@ function flagOf(n, id){ return (n && n.kind) ? ('town_kind_'+n.kind) : ('town_'+
 /* 對白裡的好感度加減（`line.aff`）。⚠ 在**播完**時一次記帳：
    中途離開就不算，也不會因為重看而重複（`once` 的段落只播一次）。 */
 function applyAff(lines){
+  /* ⚠⚠ ver -1771：**有條件的拍照條件記帳**（`onlyIf`／`onlyIfAll`／`skipIf`，與 story.js 跳拍同一套判法）——
+     以前是整段盲加，於是雪都瞭望台「M2 才演」的那一拍安雅 +5，非 M2 的人演完也拿到。 */
+  const any=v=>Array.isArray(v)? v.some(f=>prog.hasFlag(f)) : prog.hasFlag(v);
+  const all=v=>Array.isArray(v)? v.every(f=>prog.hasFlag(f)) : prog.hasFlag(v);
   for(const l of lines){
     if(!l || !l.aff) continue;
+    if((l.onlyIf && !any(l.onlyIf)) || (l.onlyIfAll && !all(l.onlyIfAll)) || (l.skipIf && any(l.skipIf))) continue;
     for(const who in l.aff) prog.addAffection(who, l.aff[who]);
   }
 }

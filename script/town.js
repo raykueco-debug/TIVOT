@@ -703,6 +703,10 @@ export const OUTING = {
      ⚠ 值＝**好感點數**不是段位號：段寬 20（`progress.tierOf`），T2 的地板就是 20。
        寫段位號的話這裡就得再算一次 `tierFloor`，那是第二個計算點。 */
   dateAff: 20,
+  /* ══⚠⚠ **約會場景事件演完 +3 好感**（ver -1771，Ray：「四女主每次約會完成該場景事件後都 +3 好感」）══
+     實作在 `modules/town.js` 段落收尾那一支（`withWho` 的段落演完就給那個人，鐵律 8）——
+     不要再在各段落裡逐一寫 `aff`。一個事件拆成兩段（聖索菲亞索菈娜那一條）時，前半寫 `dateAff:0`。 */
+  dateDoneAff: 3,
   /* ══⚠⚠ **出了門就不回來，直到 19:00**（ver -1100，Ray：「角色如果出門，
      在 19:00 之前不會回來」）══
      原本是「一天最多兩次、每次待 `stay` 分鐘」（-575）—— 那會讓玩家走到那一格時
@@ -4564,7 +4568,7 @@ export const TOWNS = {
           ren('ask','唉呀，在的話就出個聲啊。', { tierWho:'RENNA', tierMax:2 }),
           ren('think','我有一些想法……得再做些準備。'),
           ren('commandsoft','這邊還要一陣子，你先回旅店吧。'),
-          ren('evaluate','好好養精蓄銳喔。'),
+          ren('evaluate','好好養精蓄銳喔。', { aff:{ renna:3 } }),   // ver -1771：去市政廳找她 +3（Ray）
         ] } ] },
 
       /* ── 二、舊街區（四向樞紐） ── 左＝武器店、右＝廣場、上＝船塢、下＝公會 */
@@ -4650,7 +4654,7 @@ export const TOWNS = {
           lof('lookaway','不要擔心。媽媽的病，我會想辦法。'),
           nou('lookdown','……'),
         ] },
-        { flag:'ss_slum_sor', need:'ss_arrive', withWho:'SORANA', sides:{ SORANA:'L' }, lines:[
+        { flag:'ss_slum_sor', need:'ss_arrive', withWho:'SORANA', dateAff:0,   /* 後半（舊街區）演完才給 */ sides:{ SORANA:'L' }, lines:[
           sor('angry','！！'),
           sor('determine','竟然把森住民都趕到這種地方……！'),
           lok('happy','姐姐！'),
@@ -5960,11 +5964,11 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true },
           ren('stare','少來——你就是閒得慌吧？'),
           ren('bow','不過，還是謝謝啦。'),
-          /* 好感 +1（Ray 指定）。⚠ 走 `aff` 欄位，由 modules/town.js 在演到這一拍時記帳。 */
+          /* 好感 +3（ver -1771，Ray：「蕾娜有時不能約，但東泊去大學接她…可以 +3」；原 +1）。 */
           /* ⚠⚠ 微笑的插圖 `017_rennasmile`（ver -1379 交件）掛在**這一句**：
              整段的情緒落點就在這裡（也正是給好感的那一拍）。 */
           Object.assign(ren(null,'雖然是苦差事，但是很開心呢。'),
-                        { aff:{ renna:1 }, cg:'017_rennasmile', cgNoTime:true }),
+                        { aff:{ renna:3 }, cg:'017_rennasmile', cgNoTime:true }),
         ] } ] },
 
       /* ── 二、舊城區（四向樞紐） ── 左＝武器店、右＝廣場、上＝倉庫碼頭、下＝公會 */
@@ -6311,7 +6315,7 @@ export const TOWNS = {
           nou('hungry',''),
           { speaker:'PLAYER', blank:true },
           nou('concern','嗯……'),
-          Object.assign(nou('bigsmile','好。'), { aff:{ nouvelle:2 } }),
+          nou('bigsmile','好。'),   // ver -1771：原 +2 併進約會統一的 +3（OUTING.dateDoneAff）
           /* ⚠ `cgPan:'down'` ＝**由上而下**平移（Ray 指定；`'up'` 是由下往上，
              見 story.js 的演出層說明）。台詞也是 Ray 這一版給的。 */
           Object.assign(nou('happy','東海的料理也別有一番風味呢！'),
@@ -6331,7 +6335,7 @@ export const TOWNS = {
           Object.assign(any('amaze',''),
                         { cg:'015-anyadessert', cgNoTime:true, cgPan:'down' }),   // 由上而下（Ray）
           any('amaze','好可愛……'),
-          Object.assign(any('curious','這真的是可以吃的嗎？'), { aff:{ anya:3 } }),
+          any('curious','這真的是可以吃的嗎？'),   // ver -1771：原 +3 併進約會統一的 +3
         ] } ] },
       /* ══ 雜貨舖（ver -1340，Ray 交件指派店主 `NPC_Grocer_SI_v1`）══
          ⚠ 不寫 `kind`，理由同武器店那一格。 */
@@ -6427,7 +6431,7 @@ export const TOWNS = {
                       ren('unbraid','咦？安雅小姐她……'),
                       ren('think','……'),
                       Object.assign(ren('commandsoft','……悄悄跟上去吧。'),
-                                    { flags:['ep_night_renna'], aff:{ renna:2 } }),
+                                    { flags:['ep_night_renna'], aff:{ renna:3 } }),   // ver -1771：+2→+3（Ray）
                     ] },
                     knock:{
           NOUVELLE:{ low:'要有人在這邊等蕾娜小姐才行。',

@@ -1617,7 +1617,7 @@ export const ART = {
     cringe:   { src:'resources/si/npc/ssophia_si_manu_cringe.webp',   top:7, bot:1525, fx:0.408 },
     complain: { src:'resources/si/npc/ssophia_si_manu_complain.webp', top:4, bot:1532, fx:0.410 },
   } },
-  loki: { cm:128, eye:30, fx:0.482, top:4, bot:1526,
+  loki: { cm:128, standCm:151, eye:30,   /* standCm：ver -1771 Ray「小女孩太低了，往上拉一個頭」（+23cm≈她一個頭高；只動頭頂位置、不動大小） */ fx:0.482, top:4, bot:1526,
            side:'R', alt:null, base:'resources/si/npc/npc_ss_loki_ask.webp', expr:{
     ask:   { src:'resources/si/npc/npc_ss_loki_ask.webp',   top:4,  bot:1526, fx:0.482 },
     sad:   { src:'resources/si/npc/npc_ss_loki_sad.webp',   top:5,  bot:1517, fx:0.483 },
