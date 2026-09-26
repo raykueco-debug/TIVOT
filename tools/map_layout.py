@@ -54,6 +54,18 @@ POS = {
   # ── 貝利薩爾遺址（ver -1396）：38 格・41 邊・4 環 ────────────────────
   #   ⚠ 這一張**排不進標準的直角格**（見 BEND）：欄列之間刻意留空，
   #     版面只保證「方向的正負號」對（left 的鄰居欄號比較小），不保證剛好差 1。
+  # ── 羅賽爾廢城（ver -1753）：55 格・5 環，座標照搬 `tools/map_dunmor_draft.py`（那支已回收）──
+  'dunmor': {
+    'kingsbarrow':(0,5), 'barrowfield':(2,5), 'altar':(4,5), 'springpool':(6,5), 'altarcourt':(8,5), 'skullniche':(10,5),
+    'headshrine':(0,6), 'dolmen':(2,6), 'nemeton':(4,6), 'triskele':(6,6), 'sacredway':(8,6), 'bardsstep':(10,6), 'brochtop':(12,6), 'bogoffer':(14,6),
+    'stonerow':(2,7), 'oakgrove':(4,7), 'druidhouse':(6,7), 'henge':(8,7), 'brochbase':(10,7), 'boglane':(12,7), 'lakeshore':(14,7), 'cairn':(16,7),
+    'ossuary':(0,8), 'fogou':(2,8), 'innerditch':(4,8), 'innergate':(6,8), 'lawstone':(8,8), 'hallcourt':(10,8), 'treasury':(12,8), 'crannog':(14,8),
+    'cistgrave':(0,9), 'souterrain':(2,9), 'potters':(4,9), 'boarstone':(6,9), 'marketcross':(8,9), 'kingshall':(10,9), 'chariotshed':(12,9),
+    'weaverhut':(2,10), 'roundring':(4,10), 'wellsq':(6,10), 'mainstreet':(8,10), 'smithy':(10,10), 'kilnyard':(12,10),
+    'oghamrow':(6,11), 'gatecourt':(8,11), 'granary':(10,11), 'tannery':(12,11),
+    'ditchW':(6,12), 'southgate':(8,12), 'ditchE':(10,12),
+    'watchW':(4,13), 'rampartW':(6,13), 'causeway':(8,13), 'rampartE':(10,13), 'watchE':(12,13),
+  },
   'belisar': {
     'crown':(0,0), 'throne':(1,0), 'offering':(2,0),
     'antecham':(1,1),

@@ -4,7 +4,7 @@
 > 3. 米夏的隨從 `retainer_si_front` 仍未接（`cm`／`side` 要 Ray 給，`_misha_program_worklist.md` 附）
 > 4. ✅ **-1728 已接** 米夏 `draw` `?v=3` top:6 bot:1534 fx:0.434；`drawopen` `?v=2` 同取景
 > 5. **（09-25 凌晨，Mac）米夏九張重做、同名覆蓋，版號全跳 —— 九行可直接抄：根目錄 `_TO_CODE_20260925.md`**：`draw` `?v=3`→`?v=4`、`drawopen` `?v=2`→`?v=3`、`frown` `?v=2`→`?v=3`、`close` `?v=2`→`?v=3`；`stare`／`stareopen`／`frownopen`／`closeopen` 加 `?v=2`；`frontshock` 由字串縮寫改成物件（頭轉正，`fx:0.444`）。**逐行的取景值在 `resources/si/_misha_program_worklist.md` 附四那張表**（frown／close／frontshock 是重畫，top/bot/fx 都變了）。
-> 6. **（09-25，Mac）無人廢城 `dunmor` 拓樸 v2 Ray 定案** —— 56 格・5 環，`tools/map_dunmor_draft.py` 的 `NODES`／`EDGES` 就是資料來源；要搬進 `town.js`（全部 `noTime:true`、三個 `rest`、迷霧預設），細節在 `resources/background/_dunmor_spec.md` §五。⚠ id／中文名／祭壇那一場還沒定，搬之前問 Ray。
+> 6. ✅ **-1753 已搬進 `TOWNS.dunmor`（名「羅賽爾廢城」）** **（09-25，Mac）無人廢城 `dunmor` 拓樸 v2 Ray 定案** —— 56 格・5 環，`tools/map_dunmor_draft.py` 的 `NODES`／`EDGES` 就是資料來源；要搬進 `town.js`（全部 `noTime:true`、三個 `rest`、迷霧預設），細節在 `resources/background/_dunmor_spec.md` §五。⚠ id／中文名／祭壇那一場還沒定，搬之前問 Ray。
 > 7. ✅ **（09-25 晚～26 凌晨，Mac）廢城 `dunmor` 背景 55／55 全交、聖索菲亞補圖 9／9 全交** —— 程式端要接的都在工單，**逐條列在下面 8／9**。
 > 8. ✅ **-1743 已接 ①②③**（④ 小地圖是美術單；③ 的中文名仍是暫定、等 Ray 正名）**聖索菲亞補圖（`resources/background/_sofia_add_spec.md` §四，四件）**：
 >    ① `TOWNS.santasofia.nodes.inn.bg` → `'sofia_inn'` 並**拿掉 `noTime`**（四差分齊：`sofia_inn_{dawn,day,dusk,night}`）
@@ -13,7 +13,7 @@
 >    ④ 小地圖 `map_santasofia` 的 `dock` 圖示（船錨）要換貧民窟簡筆 —— 另開一單（美術）
 >    全部是**新增檔**，不用跳 `ASSET_VER`；`bg_index.js` 已重跑。
 > 9. **廢城 `dunmor`（`resources/background/_dunmor_spec.md` §五／§九）**：
->    ① 拓樸搬進 `script/town.js`：`tools/map_dunmor_draft.py` 的 `NODES`／`EDGES`（方向＝相對位置：左邊的鄰居掛 `left`…，`up`＝小 row；`back` 不寫）。搬完 `map_layout.py` 的 `POS` 補一格、產生器回收。⚠ 地圖 id／中文名／祭壇那一場（`sessionEnd`）／`wildSpawn` 還沒定，搬之前問 Ray
+>    ① ✅ -1753 已接 ② ③ 同（祭壇那一場／wildSpawn／小地圖仍等 Ray） 拓樸搬進 `script/town.js`：`tools/map_dunmor_draft.py` 的 `NODES`／`EDGES`（方向＝相對位置：左邊的鄰居掛 `left`…，`up`＝小 row；`back` 不寫）。搬完 `map_layout.py` 的 `POS` 補一格、產生器回收。⚠ 地圖 id／中文名／祭壇那一場（`sessionEnd`）／`wildSpawn` 還沒定，搬之前問 Ray
 >    ② 每一格 `bg:'dunmor_<id 小寫>'`（`ditchW`→`dunmor_ditchw`，55 個檔全在 `resources/background/dunmor/`，`bg_index.js` 的 `dunmor` 列）
 >    ③ 每一格 **`noTime:true`**（Ray：「這張圖沒有四差分，都是同一天色」）、`wilderness:true`、迷霧預設（不要寫 `mist:0`）；`rest:true`＋`noWild:true`：`wellsq`／`oakgrove`／`nemeton`；入口 `entry:'gate'`
 >    ④ ✅ **-1743 已跳** ⚠⚠ **`config.js` 的 `ASSET_VER` 要跳這 14 個鍵**（第四版同名覆蓋了第一版）：`dunmor_causeway` `dunmor_southgate` `dunmor_ditchw` `dunmor_oghamrow` `dunmor_gatecourt` `dunmor_mainstreet` `dunmor_marketcross` `dunmor_boarstone` `dunmor_innergate` `dunmor_druidhouse` `dunmor_oakgrove` `dunmor_nemeton` `dunmor_altar` `dunmor_wellsq`（其餘 41 張是新增，不必跳）
@@ -32,7 +32,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1752`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1753`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -45,7 +45,19 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1752`
+# HANDOFF — 截至 `ver 2026.09.22-1753`
+
+**`-1753`：無人廢城正名「羅賽爾廢城」＋ 拓樸接進 `TOWNS.dunmor`**（Ray 指定）
+· `script/town.js`：`dunmor`（55 格，照 `map_dunmor_draft.py` 的 NODES／EDGES 原樣搬，方向由座標算、兩端自動相反）。
+  入口 `causeway`（草稿上的 `gate` 是跨圖出口、沒有背景圖 ⇒ 不是一格；堤道往下＝`sail` 回船）。
+  每格 `noTime`、`wilderness`、迷霧預設；休息處 `wellsq`／`oakgrove`／`nemeton`＝`rest`＋`noWild`。`bgm:'lostplace'` **暫代**。
+  ⚠ **還沒有**：祭壇那一場、`wildSpawn`（遭遇的怪）、小地圖 `map:`、劇情、章節窗 —— 等 Ray。
+· `tools/map_layout.py` 補 `POS.dunmor`，跑出 55 格・59 邊・5 環（＝草稿；少的那一條是通往 gate 的跨圖出口）；草稿 `tools/map_dunmor_draft.py` 回收。
+· 飛行地圖 `PLACES` 那一筆改名並補 `town:'dunmor'`（降落鈕）；`export_mapref.py` 同步。
+· 實測（8123 試飛）：`land('dunmor')` → 讀取頁只抓這張圖的 55 張背景（覆蓋過的 14 張帶 `?v=2`）→ 名卡「羅賽爾廢城」→ 堤道 → 南壘門（左右「？？？」、下回堤道）。
+  ⚠ 測試時第一次看起來「落地卡在戰鬥盤面」—— 是**我的分頁開在跳版號之前**、吃到快取裡的舊 `town.js`，不是資料問題。
+
+# （上一段）截至 `ver 2026.09.22-1752`
 
 **`-1752`：船靜止時畫面閃黑（-1750 的副作用）**—— GL 建 context 加 `preserveDrawingBuffer:true`。
 預設時繪圖緩衝交出後就清空，桌機 Chrome 沿用上一張、手機可能交出清掉的黑畫面。桌機重現不出來；

@@ -8944,6 +8944,84 @@ export const TOWNS = {
        真的落進這裡再請美術畫 —— 現在落好了，可以發需求了。
      ⚠ 迷霧是預設（不寫 `mist:0`）：這是迷宮，走過才亮正是它的玩法。
      ══════════════════════════════════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════════════════════════
+     羅賽爾廢城（`dunmor`，ver -1753，Ray：「把無人廢城改成羅賽爾廢城，接上拓樸」）
+     ──────────────────────────────────────────────────────────────────────
+     拓樸＝`tools/map_dunmor_draft.py` 的 `NODES`／`EDGES`（Ray 2026-09-25 定案的 v2：55 格・5 環）原樣搬來；
+     那支草稿已回收（鐵律 7：同一個拓樸不留兩份），版面在 `tools/map_layout.py` 的 `POS.dunmor`。
+     · 方向＝草稿的相對位置（左邊的鄰居掛 `left`、列數小的掛 `up`），每條邊兩端自動相反。
+     · 草稿上的 `gate`（跨圖出口）**不是一格**（55 張背景裡沒有它）⇒ 入口是堤道 `causeway`，
+       往下（草稿上 gate 的方向）＝`sail`（回船上），同貝利薩爾入口的寫法。
+     · 每格 `noTime:true`（Ray：「這張圖沒有四差分，都是同一天色」）、`wilderness:true`、**迷霧預設**（不寫 `mist:0`）。
+     · 休息處三格（`wellsq`／`oakgrove`／`nemeton`）＝`rest:true`＋`noWild:true`；入口 `noWild`。
+     ⚠ **還沒有的**：祭壇那一場（`sessionEnd`）、`wildSpawn`（遭遇的怪）、小地圖 `map:`、劇情、章節窗 —— 等 Ray。
+       沒有 `wildSpawn` ＝現在走進去不會遇到任何怪；沒有 `map:` ＝地圖鈕回「這一帶還沒有留下地圖。」
+     ⚠ `bgm:'lostplace'` 是**暫代**（卡耶爾山谷那一首），Ray 指定後改這一格。
+     ⚠ 飛行地圖上的地標在 `flight/index.html` 的 `PLACES`（183,762，`town:'dunmor'`），位於羅賽爾王國＝禁航區。 */
+  dunmor: {
+    name: '羅賽爾廢城',
+    entry: 'causeway',
+    bgm: 'lostplace',
+    wilderness: true,
+    nodes: {
+      kingsbarrow:  { bg:'dunmor_kingsbarrow', name:'羅賽爾廢城　王塚', noTime:true, exits:{ right:'barrowfield' } },
+      barrowfield:  { bg:'dunmor_barrowfield', name:'羅賽爾廢城　塚原', noTime:true, exits:{ left:'kingsbarrow', down:'dolmen' } },
+      altar:        { bg:'dunmor_altar', name:'羅賽爾廢城　祭壇', noTime:true, exits:{ down:'nemeton' } },
+      springpool:   { bg:'dunmor_springpool', name:'羅賽爾廢城　泉池', noTime:true, exits:{ right:'altarcourt', down:'triskele' } },
+      altarcourt:   { bg:'dunmor_altarcourt', name:'羅賽爾廢城　祭壇前庭', noTime:true, exits:{ left:'springpool', right:'skullniche' } },
+      skullniche:   { bg:'dunmor_skullniche', name:'羅賽爾廢城　顱骨壁龕', noTime:true, exits:{ left:'altarcourt', down:'bardsstep' } },
+      headshrine:   { bg:'dunmor_headshrine', name:'羅賽爾廢城　石首龕', noTime:true, exits:{ right:'dolmen' } },
+      dolmen:       { bg:'dunmor_dolmen', name:'羅賽爾廢城　石棚墓', noTime:true, exits:{ up:'barrowfield', left:'headshrine', down:'stonerow' } },
+      nemeton:      { bg:'dunmor_nemeton', name:'羅賽爾廢城　聖林祭場', noTime:true, rest:true, noWild:true, exits:{ up:'altar', right:'triskele', down:'oakgrove' } },
+      triskele:     { bg:'dunmor_triskele', name:'羅賽爾廢城　三曲紋廊', noTime:true, exits:{ up:'springpool', left:'nemeton', right:'sacredway' } },
+      sacredway:    { bg:'dunmor_sacredway', name:'羅賽爾廢城　聖道', noTime:true, exits:{ left:'triskele', down:'henge' } },
+      bardsstep:    { bg:'dunmor_bardsstep', name:'羅賽爾廢城　吟遊石階', noTime:true, exits:{ up:'skullniche', right:'brochtop', down:'brochbase' } },
+      brochtop:     { bg:'dunmor_brochtop', name:'羅賽爾廢城　圓塔頂', noTime:true, exits:{ left:'bardsstep' } },
+      bogoffer:     { bg:'dunmor_bogoffer', name:'羅賽爾廢城　沼澤獻祭處', noTime:true, exits:{ down:'lakeshore' } },
+      stonerow:     { bg:'dunmor_stonerow', name:'羅賽爾廢城　立石列', noTime:true, exits:{ up:'dolmen', right:'oakgrove' } },
+      oakgrove:     { bg:'dunmor_oakgrove', name:'羅賽爾廢城　橡樹林', noTime:true, rest:true, noWild:true, exits:{ up:'nemeton', left:'stonerow', right:'druidhouse' } },
+      druidhouse:   { bg:'dunmor_druidhouse', name:'羅賽爾廢城　德魯伊居所', noTime:true, exits:{ left:'oakgrove', down:'innergate' } },
+      henge:        { bg:'dunmor_henge', name:'羅賽爾廢城　石環', noTime:true, exits:{ up:'sacredway', right:'brochbase', down:'lawstone' } },
+      brochbase:    { bg:'dunmor_brochbase', name:'羅賽爾廢城　圓塔基座', noTime:true, exits:{ up:'bardsstep', left:'henge' } },
+      boglane:      { bg:'dunmor_boglane', name:'羅賽爾廢城　泥沼小徑', noTime:true, exits:{ right:'lakeshore', down:'treasury' } },
+      lakeshore:    { bg:'dunmor_lakeshore', name:'羅賽爾廢城　湖岸', noTime:true, exits:{ up:'bogoffer', left:'boglane', right:'cairn', down:'crannog' } },
+      cairn:        { bg:'dunmor_cairn', name:'羅賽爾廢城　積石塚', noTime:true, exits:{ left:'lakeshore' } },
+      ossuary:      { bg:'dunmor_ossuary', name:'羅賽爾廢城　骨龕', noTime:true, exits:{ down:'cistgrave' } },
+      fogou:        { bg:'dunmor_fogou', name:'羅賽爾廢城　石砌暗道', noTime:true, exits:{ right:'innerditch', down:'souterrain' } },
+      innerditch:   { bg:'dunmor_innerditch', name:'羅賽爾廢城　內壕', noTime:true, exits:{ left:'fogou', right:'innergate', down:'potters' } },
+      innergate:    { bg:'dunmor_innergate', name:'羅賽爾廢城　內壘門', noTime:true, exits:{ up:'druidhouse', left:'innerditch', down:'boarstone' } },
+      lawstone:     { bg:'dunmor_lawstone', name:'羅賽爾廢城　律法石', noTime:true, exits:{ up:'henge', right:'hallcourt' } },
+      hallcourt:    { bg:'dunmor_hallcourt', name:'羅賽爾廢城　王廳中庭', noTime:true, exits:{ left:'lawstone', down:'kingshall' } },
+      treasury:     { bg:'dunmor_treasury', name:'羅賽爾廢城　頸環寶庫', noTime:true, exits:{ up:'boglane', down:'chariotshed' } },
+      crannog:      { bg:'dunmor_crannog', name:'羅賽爾廢城　湖上木屋', noTime:true, exits:{ up:'lakeshore' } },
+      cistgrave:    { bg:'dunmor_cistgrave', name:'羅賽爾廢城　石棺墓', noTime:true, exits:{ up:'ossuary', right:'souterrain' } },
+      souterrain:   { bg:'dunmor_souterrain', name:'羅賽爾廢城　地下甬道口', noTime:true, exits:{ up:'fogou', left:'cistgrave', down:'weaverhut' } },
+      potters:      { bg:'dunmor_potters', name:'羅賽爾廢城　陶匠巷', noTime:true, exits:{ up:'innerditch', right:'boarstone', down:'roundring' } },
+      boarstone:    { bg:'dunmor_boarstone', name:'羅賽爾廢城　野豬石', noTime:true, exits:{ up:'innergate', left:'potters', right:'marketcross' } },
+      marketcross:  { bg:'dunmor_marketcross', name:'羅賽爾廢城　市集十字', noTime:true, exits:{ left:'boarstone', down:'mainstreet' } },
+      kingshall:    { bg:'dunmor_kingshall', name:'羅賽爾廢城　王廳廢墟', noTime:true, exits:{ up:'hallcourt', right:'chariotshed', down:'smithy' } },
+      chariotshed:  { bg:'dunmor_chariotshed', name:'羅賽爾廢城　戰車棚', noTime:true, exits:{ up:'treasury', left:'kingshall' } },
+      weaverhut:    { bg:'dunmor_weaverhut', name:'羅賽爾廢城　織工圓屋', noTime:true, exits:{ up:'souterrain', right:'roundring' } },
+      roundring:    { bg:'dunmor_roundring', name:'羅賽爾廢城　圓屋環', noTime:true, exits:{ up:'potters', left:'weaverhut', right:'wellsq' } },
+      wellsq:       { bg:'dunmor_wellsq', name:'羅賽爾廢城　聖井廣場', noTime:true, rest:true, noWild:true, exits:{ left:'roundring' } },
+      mainstreet:   { bg:'dunmor_mainstreet', name:'羅賽爾廢城　石板主街', noTime:true, exits:{ up:'marketcross', right:'smithy', down:'gatecourt' } },
+      smithy:       { bg:'dunmor_smithy', name:'羅賽爾廢城　鐵匠爐', noTime:true, exits:{ up:'kingshall', left:'mainstreet', right:'kilnyard' } },
+      kilnyard:     { bg:'dunmor_kilnyard', name:'羅賽爾廢城　陶窯場', noTime:true, exits:{ left:'smithy', down:'tannery' } },
+      oghamrow:     { bg:'dunmor_oghamrow', name:'羅賽爾廢城　歐甘石列', noTime:true, exits:{ right:'gatecourt', down:'ditchW' } },
+      gatecourt:    { bg:'dunmor_gatecourt', name:'羅賽爾廢城　門內廣場', noTime:true, exits:{ up:'mainstreet', left:'oghamrow', right:'granary' } },
+      granary:      { bg:'dunmor_granary', name:'羅賽爾廢城　穀倉遺址', noTime:true, exits:{ left:'gatecourt', down:'ditchE' } },
+      tannery:      { bg:'dunmor_tannery', name:'羅賽爾廢城　鞣皮坊', noTime:true, exits:{ up:'kilnyard' } },
+      ditchW:       { bg:'dunmor_ditchw', name:'羅賽爾廢城　西壕', noTime:true, exits:{ up:'oghamrow', right:'southgate', down:'rampartW' } },
+      southgate:    { bg:'dunmor_southgate', name:'羅賽爾廢城　南壘門', noTime:true, exits:{ left:'ditchW', right:'ditchE', down:'causeway' } },
+      ditchE:       { bg:'dunmor_ditche', name:'羅賽爾廢城　東壕', noTime:true, exits:{ up:'granary', left:'southgate', down:'rampartE' } },
+      watchW:       { bg:'dunmor_watchw', name:'羅賽爾廢城　西望樓', noTime:true, exits:{ right:'rampartW' } },
+      rampartW:     { bg:'dunmor_rampartw', name:'羅賽爾廢城　西壘牆', noTime:true, exits:{ up:'ditchW', left:'watchW' } },
+      causeway:     { bg:'dunmor_causeway', name:'羅賽爾廢城　堤道', noTime:true, noWild:true, sail:{}, exits:{ up:'southgate' } },
+      rampartE:     { bg:'dunmor_ramparte', name:'羅賽爾廢城　東壘牆', noTime:true, exits:{ up:'ditchE', right:'watchE' } },
+      watchE:       { bg:'dunmor_watche', name:'羅賽爾廢城　東望樓', noTime:true, exits:{ left:'rampartE' } },
+    },
+  },
+
   belisar: {
     name: '貝利薩爾遺址',
     storyStages:[9,null],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
