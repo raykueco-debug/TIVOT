@@ -8963,6 +8963,7 @@ export const TOWNS = {
   verafond: {
     name: '薇拉馮德港',
     entry: 'harbor',
+    bgm: 'emeraldhill',      // ver -1765，Ray：「薇拉馮德用 PeriTune_Emerald_Hill_loop」
     mist: 0,                 // 大城不上霧（§6.5.4 ver -913）
     nodes: {
       harbor:    { bg:'vela_harbor', name:'薇拉馮德　碼頭',

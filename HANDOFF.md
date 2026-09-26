@@ -66,7 +66,15 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1764`
+# HANDOFF — 截至 `ver 2026.09.22-1765`
+
+**`-1765`：薇拉馮德港 BGM ＝ PeriTune Emerald Hill**（Ray 指定）
+· 檔案由 Ray 放的 `PeriTune_Emerald_Hill_loop.m4a` 改成小寫 `peritune_emerald_hill_loop.m4a`（靜態空間分大小寫），入版控。
+· `ASSETS.bgm_emeraldhill`、`TOWNS.verafond.bgm:'emeraldhill'`、`fileGain` **0.682**（audio_scan：−11.38／−9.59 ⇒ 平均 −10.49；同輪 sylblanc 1.137、Prairie4 0.754 校準點對得上）。
+· 實測（8123）：`town.open('verafond')` → 碼頭、抓 `peritune_emerald_hill_loop.m4a` 200。
+· ⚠ **鏡湖那首 `peritune_sylblanc_loop.m4a` 從來沒進版控**（-1542 就被 `config` 引用，檔案一直是 untracked）⇒ 線上鏡湖是無聲的。沒幫它 commit，等 Ray 點頭。
+
+# （上一段）截至 `ver 2026.09.22-1764`
 
 **`-1764`：薇拉馮德港 `verafond` 接上**（美術交件 `_verafond_spec.md` §六，Ray：「薇拉馮德拓樸跟圖給 code」）
 · `TOWNS.verafond` 22 格照工單原樣抄（草稿 `map_verafond_draft.py` 回收，版面進 `map_layout.py` 的 `POS`）：入口碼頭、出航掛右、`mist:0`、不加 `dining`。
