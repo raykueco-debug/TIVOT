@@ -8949,6 +8949,71 @@ export const TOWNS = {
      ⚠ 迷霧是預設（不寫 `mist:0`）：這是迷宮，走過才亮正是它的玩法。
      ══════════════════════════════════════════════════════════════════════ */
   /* ══════════════════════════════════════════════════════════════════════
+     薇拉馮德港（`verafond`，ver -1764，美術交件 `resources/background/_verafond_spec.md` §六，Ray：「薇拉馮德拓樸跟圖給 code」）
+     ──────────────────────────────────────────────────────────────────────
+     22 格照 `tools/map_verafond_draft.py` 的 NODES／EDGES（美術機器產生、bg 鑰匙逐一對過）原樣搬；那支草稿已回收，
+     版面在 `tools/map_layout.py` 的 `POS.verafond`。背景全是新檔，不用跳 `ASSET_VER`。
+     · 出航掛碼頭**右邊**（`sail:{dir:'right'}`）：碼頭的 `down` 是燈塔，圖的右側正好是泊船與海水（工單第 1 點）。
+     · **不加 `dining`**（聖索菲亞 -1763 同一個坑）：`tavern` 是街道，咖啡廳／甜品店／餐廳是走得進去的三格。
+     · 營業時間照帝都各店（Ray：「營業時間一樣」）：武器店／公會／雜貨舖／市政廳／咖啡廳／甜品店／餐廳 `[8,17]`、大教堂 `[8,19]`。
+     ⚠ 跟工單不一樣的兩處（程式端的判斷）：
+       · **旅店不寫 `inn:true`**：還沒有敲門的對白表 —— 只寫 `inn:true` 而沒有人應門，玩家會敲到一排空門（東泊／聖索菲亞的先例）。
+       · **店沒有買賣介面**：`config.shop.shops` 裡沒有薇拉馮德的店 ⇒ 武器店／雜貨舖現在只是場景。
+     ⚠ 還沒有的：`bgm`（等 Ray）、小地圖（美術另開一單）、酒吧 `vela_bar` 的掛點（工單第 3 點，等 Ray）。 */
+  verafond: {
+    name: '薇拉馮德港',
+    entry: 'harbor',
+    mist: 0,                 // 大城不上霧（§6.5.4 ver -913）
+    nodes: {
+      harbor:    { bg:'vela_harbor', name:'薇拉馮德　碼頭',
+        exits:{ up:'portmarket', left:'shipyard', down:'lighthouse' },
+        sail:{ dir:'right' } },
+      portmarket:{ bg:'vela_portmarket', name:'薇拉馮德　碼頭市集',
+        exits:{ right:'square', left:'gunstore', up:'guild', down:'harbor' } },
+      gunstore:  { bg:'vela_firearm', name:'薇拉馮德　武器店', noTime:true, hours:[8,17], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',
+        exits:{ back:'portmarket' } },
+      guild:     { bg:'vela_guild', name:'薇拉馮德　賞金獵人公會', noTime:true, hours:[8,17], closed:'大門上了閂。委託要等明天早上八點。',
+        exits:{ back:'portmarket' } },
+      shipyard:  { bg:'vela_shipyard', name:'薇拉馮德　造船廠',
+        exits:{ back:'harbor' } },
+      lighthouse:{ bg:'vela_lighthouse', name:'薇拉馮德　燈塔',
+        exits:{ back:'harbor' } },
+      square:    { bg:'vela_square', name:'薇拉馮德　圓環廣場',
+        exits:{ up:'midtown', left:'portmarket', right:'uptown', down:'station' } },
+      station:   { bg:'vela_station', name:'薇拉馮德　中央火車站',
+        exits:{ back:'square' } },
+      midtown:   { bg:'vela_midtown', name:'薇拉馮德　中心區',
+        exits:{ down:'square', left:'cityhall', right:'cathedral', up:'avenue' } },
+      cityhall:  { bg:'vela_cityhall', name:'薇拉馮德　市政廳', hours:[8,17], closed:'窗口都熄了燈。市政廳五點就下班了。',
+        exits:{ back:'midtown' } },
+      cathedral: { bg:'vela_cathedral', name:'薇拉馮德　大教堂', hours:[8,19], closed:'大門闔上了。晚禱之後不再受理訪客。',
+        exits:{ back:'midtown' } },
+      avenue:    { bg:'vela_avenue', name:'薇拉馮德　林蔭大道',
+        exits:{ down:'midtown', left:'university', right:'opera', up:'manor' } },
+      university:{ bg:'vela_university', name:'薇拉馮德　大學',
+        exits:{ back:'avenue' } },
+      opera:     { bg:'vela_opera', name:'薇拉馮德　歌劇院',
+        exits:{ back:'avenue' } },
+      manor:     { bg:'vela_manor', name:'薇拉馮德　薇拉馮德莊園',
+        exits:{ back:'avenue' } },
+      uptown:    { bg:'vela_uptown', name:'薇拉馮德　上街區',
+        exits:{ left:'square', up:'inn', down:'grocery', right:'tavern' } },
+      inn:       { bg:'vela_inn', name:'薇拉馮德　旅店',
+        exits:{ back:'uptown' } },
+      grocery:   { bg:'vela_grocerie', name:'薇拉馮德　雜貨舖', noTime:true, hours:[8,17], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',
+        exits:{ back:'uptown' } },
+      tavern:    { bg:'vela_tavern', name:'薇拉馮德　餐飲街',
+        exits:{ left:'uptown', up:'cafe', down:'dessert', right:'restaurant' } },
+      cafe:      { bg:'vela_cafe', name:'薇拉馮德　咖啡廳', noTime:true, hours:[8,17], closed:'椅子都收進店裡了。咖啡廳五點打烊。',
+        exits:{ back:'tavern' } },
+      dessert:   { bg:'vela_dessert', name:'薇拉馮德　甜品店', noTime:true, hours:[8,17], closed:'玻璃櫃空了，門上掛著「明日請早」。',
+        exits:{ back:'tavern' } },
+      restaurant:{ bg:'vela_restaurant', name:'薇拉馮德　餐廳', noTime:true, hours:[8,17], closed:'廚房的火熄了。餐廳五點就收了。',
+        exits:{ back:'tavern' } },
+    },
+  },
+
+  /* ══════════════════════════════════════════════════════════════════════
      里朋莊園（`sofiaout`，ver -1762，Ray：「索菲亞連往莊園中間的路應該已經好了，接在餐飲街右邊」）
      ──────────────────────────────────────────────────────────────────────
      聖索菲亞郊外・里朋家族的豪宅（Stage 14 合流：救小女孩的姐姐）。拓樸＝`tools/map_sofiaout_draft.py` 的 v3

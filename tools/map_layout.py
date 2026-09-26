@@ -54,6 +54,16 @@ POS = {
   # ── 貝利薩爾遺址（ver -1396）：38 格・41 邊・4 環 ────────────────────
   #   ⚠ 這一張**排不進標準的直角格**（見 BEND）：欄列之間刻意留空，
   #     版面只保證「方向的正負號」對（left 的鄰居欄號比較小），不保證剛好差 1。
+  # ── 薇拉馮德港（ver -1764）：22 格，座標照搬 `tools/map_verafond_draft.py`（那支已回收）──
+  'verafond': {
+    'manor':(4,0),
+    'university':(2,1), 'avenue':(4,1), 'opera':(6,1),
+    'cityhall':(2,3), 'midtown':(4,3), 'cathedral':(6,3),
+    'guild':(2,5), 'inn':(6,5), 'cafe':(8,5),
+    'gunstore':(0,6), 'portmarket':(2,6), 'square':(4,6), 'uptown':(6,6), 'tavern':(8,6), 'restaurant':(10,6),
+    'shipyard':(0,7), 'harbor':(2,7), 'station':(4,7), 'grocery':(6,7), 'dessert':(8,7),
+    'lighthouse':(2,8),
+  },
   # ── 里朋莊園（ver -1762）：10 格，座標照搬 `tools/map_sofiaout_draft.py`（那支已回收）；跨圖出口見 OUT_POS ──
   'sofiaout': {
     'terrace':(8,4),
