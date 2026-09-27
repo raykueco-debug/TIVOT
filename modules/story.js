@@ -293,7 +293,9 @@ function layout(){
        先前這裡是 0.38／0.62（單人）與 0.34／0.66（兩人），比飛行畫面靠中間
        0.10~0.14 個畫面寬 —— Ray 反覆回報「還是往中間放」就是這個。
        ⚠ **單人也用同一組**：站位是角色的屬性，不該因為台上有幾個人而改變。 */
-    const faceX = (o.side==='R' ? W*0.76 : W*0.24);
+    /* ⚠ `anchorX`（ver -1802，Ray：挾持雙人圖「幾乎置中」）＝這一張的錨點改在畫面寬的幾成，
+       取代左右位的預設（0.24／0.76）。明寫才生效的例外，沒寫的一律照舊。 */
+    const faceX = W*(a.anchorX!=null ? a.anchorX : (o.side==='R' ? 0.76 : 0.24));
     /* ══⚠⚠ **換到非預設那一側 → 水平翻轉**（ver -625，Ray：「諾薇兒跟索菈娜
        左右是對稱的，可以水平翻轉；蕾娜原則右，碰到安雅就放左，因為蕾娜整體框細，
        受左右影響小」）══
@@ -2567,7 +2569,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1801';
+const KERB_V='?v=1802';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3693,6 +3695,9 @@ function renderLine(){
       const w4=slot[s4]; if(!w4) continue;
       const f4=frameOf(w4, shown[w4] && shown[w4].expr);
       if(!f4 || !f4.withChar || !f4.withChar.length) continue;
+      /* ⚠ `duoStay`（ver -1802，Ray：「對話中不退出，直到出 shoot 後立繪才撤出」）＝這一張雙人圖
+         對話中留在台上 —— 由下一張差分把它換掉（或換場清場），不因別人開口而撤。明寫才生效的例外。 */
+      if(f4.duoStay) continue;
       const mine = line.speaker===w4 || (line.portrait && line.portrait.char===w4)
                 || f4.withChar.indexOf(line.speaker)>=0;
       if(!mine){ leaveSlot(s4); if(shown[w4]) shown[w4].show=false; }

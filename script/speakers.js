@@ -1636,10 +1636,12 @@ export const ART = {
     /* 挾持蘿法（ver -1793）：一張圖兩個人 ⇒ `withChar:['LOFA_N']`，蘿法開口時點亮這一張（§雙人立繪）。 */
     /* ver -1796（Ray：「lofa 被抓的雙人圖縮小，兩人都要入畫面，可以小一點，表示距離感」）：
        `cm:150`（小一點、頭頂跟著低 ⇒ 站得遠）；`fx` 錨在**兩人之間**不是馬努的臉，蘿法才進得了畫面。 */
-    capture:  { src:'resources/si/npc/npc_ss_lofa_capture.webp', top:13, bot:1501, fx:0.46, cm:150, withChar:['LOFA_N','LOFA'] },
+    /* ver -1802（Ray：「capture 的站位太低了，讓他頭幾乎頂到上方，幾乎置中，對話中不退出，直到出 shoot 後才撤出」）：
+       `standCm:177`（頭頂貼近頂線）、`anchorX:0.55`（錨在畫面中間偏右一點）、`duoStay`（別人開口不撤）。 */
+    capture:  { src:'resources/si/npc/npc_ss_lofa_capture.webp', top:13, bot:1501, fx:0.46, cm:150, standCm:177, anchorX:0.55, duoStay:true, withChar:['LOFA_N','LOFA'] },
     /* 被狙擊那一瞬（稿：`npc_ss_lofa_shoot`）。⚠ 交件的 `shoot.png` 是**畫上去的棋盤格**（假透明），
        同一個畫面的正確去背版是 `cryshoot` —— 用它。 */
-    shot:     { src:'resources/si/npc/npc_ss_lofa_cryshoot.webp', top:4, bot:1514, fx:0.42, cm:150, withChar:['LOFA_N','LOFA'] },   // 同 capture 的取景（同一個場面的下一瞬）
+    shot:     { src:'resources/si/npc/npc_ss_lofa_cryshoot.webp', top:4, bot:1514, fx:0.42, cm:150, standCm:177, anchorX:0.55, withChar:['LOFA_N','LOFA'] },   // 同 capture 的取景（同一個場面的下一瞬）
   } },
   loti: { cm:128, standCm:151, eye:30,   /* standCm：ver -1771 Ray「小女孩太低了，往上拉一個頭」（+23cm≈她一個頭高；只動頭頂位置、不動大小） */ fx:0.477, top:19, bot:1527,   /* ver -1795：六張重畫（拿掉頭巾與腰巾，美術 9850ff0）⇒ 取景重量；角色層跟著新的 ask。ver -1801 檔名改成 loti（新網址，不必 ?v=） */
            side:'R', alt:null, base:'resources/si/npc/npc_ss_loti_ask.webp', expr:{

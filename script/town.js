@@ -9481,7 +9481,7 @@ export const TOWNS = {
       salon:      { bg:'sofiaout_salon', name:'里朋莊園　沙龍', noTime:true, exits:{ up:'terrace', down:'hall' },
         acts:[
         { flag:'ss_raid_done', need:['ss_raid_go','ss_hall_done'], storyBattle:true, goto:'@santasofia:inn',
-          sides:{ RENNA:'L', NOUVELLE:'L', SORANA:'L', ANYA:'L', RIPON:'R', MANU:'R', LOFA:'R', LOFA_N:'R' }, lines:[
+          sides:{ RENNA:'L', NOUVELLE:'L', SORANA:'L', ANYA:'R', RIPON:'R', MANU:'R', LOFA:'R', LOFA_N:'R' }, lines:[   // ver -1802 Ray：安雅不要站左位
           lof('cry',''),
           sor('furiouscute',''),
           rip('clap','敢在我的地界鬧事，你們是外地的賞金獵人吧？'),
