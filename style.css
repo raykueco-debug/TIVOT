@@ -605,14 +605,15 @@
        `ARC` 的值，那套邏輯（0＝全藏、滿＝拿掉遮罩避免接縫、邊界羽化）一個字沒動。 */
   /* ⚠ ver -1069：座標交還 `combat.layoutClasp`（Ray：「破防計的改動錯了，
      破防計先回到上一版」）—— -1068 那一版的 CSS 定位整組撤掉。 */
-  #claspArc{position:absolute;overflow:visible;pointer-events:none;}
+  #claspArc,.clasp-layer{position:absolute;overflow:visible;pointer-events:none;}
   #claspArcTrack{fill:rgba(255,255,255,.085);}
   #claspArcFill{fill:var(--gold);
     filter:drop-shadow(0 0 4px rgba(255,214,110,.8)) drop-shadow(0 0 2px rgba(8,8,12,.9));}
   /* 累積中（0<energy<100）：金光慢呼吸。⚠ 同 -851 的教訓 —— 動 opacity（合成器），
      不要逐幀動 filter（那是整場戰鬥每幀重繪的發熱源）。 */
-  #energyClasp.charging #claspArcFill{animation:arcCharge 1.8s ease-in-out infinite alternate;}
-  @keyframes arcCharge{from{opacity:.86;}to{opacity:1;}}
+  /* ⚠⚠ ver -1804：這一條（opacity .86↔1）**拿掉了** —— 它動的是 SVG 內部的路徑，而 SVG 內部
+     不能被升成合成層，於是整張計量表（連同兩層 drop-shadow）每幀重畫，整場戰鬥不停。
+     上面那句「動 opacity（合成器）」只對 HTML 元素成立。幅度本來就小到看不出來。 */
   /* 滿檔＝**白光**（沿用 ver -544 Ray 定的讀感：抽掉飽和、大幅提亮）。 */
   /* ══ 滿檔＝**綠白相間的呼吸光**（ver -1070，Ray：「滿的時後變成綠白相間呼吸光，
      綠色用等級提升的那個綠」）══ 綠是 `#5cff6a`（-1033 結算頁那支升級箭頭的綠，
@@ -625,9 +626,12 @@
      不動，綠的複本（`#claspArcFillG`，同 `d`、同遮罩，combat 的 layoutClasp／updateBars 一起餵）
      疊在上面只動 **opacity**（合成器）。看起來一樣是綠 ⇄ 白，濾鏡一次都不重算。 */
   #energyClasp.full #claspArcFill{fill:#ffffff;filter:drop-shadow(0 0 8px rgba(255,255,255,.95));}
-  #claspArcFillG{fill:#5cff6a;opacity:0;pointer-events:none;
+  #claspArcFillG{fill:#5cff6a;pointer-events:none;
     filter:drop-shadow(0 0 10px rgba(92,255,106,.95)) drop-shadow(0 0 20px rgba(92,255,106,.55));}
-  #energyClasp.full #claspArcFillG{animation:arcFullGW 1.15s ease-in-out infinite;}
+  /* ⚠⚠ ver -1804：呼吸改動**外層那張 <svg>（#claspArcG）的 opacity** —— 它是 HTML 層級的元素，
+     合成器直接淡入淡出，裡面的濾鏡一次都不重算（-1729 動的是裡面的 path，那一樣每幀重畫）。 */
+  #claspArcG{opacity:0;}
+  #energyClasp.full #claspArcG{animation:arcFullGW 1.15s ease-in-out infinite;will-change:opacity;}
   @keyframes arcFullGW{ 0%,100%{opacity:0;} 50%{opacity:1;} }
   /* 滿檔時高光停下來（那一段已經是呼吸光了，再跑一道亮帶只是雜訊）。 */
   #energyClasp.full #claspArcShine{display:none;}
@@ -637,8 +641,9 @@
        `stroke-dashoffset` 由 0 跑到 −109 剛好繞完一圈再接上（9＋100）。
      ⚠ 方向：dashoffset 變**負**＝亮帶往路徑的**前進方向**走 ＝ 尾巴 → 6 點 →
        順時針，與計量增加的方向一致。 */
-  #claspArcShine{display:none;pointer-events:none;
-    filter:drop-shadow(0 0 4px rgba(255,255,255,.9));}
+  /* ⚠ ver -1804：拿掉 `drop-shadow` —— 高光每幀都在動（stroke-dashoffset 不能交給合成器），
+     帶著模糊濾鏡就是每幀重算模糊。現在它住在自己那張 SVG 裡（#claspArcSh），每幀只重畫這一條線。 */
+  #claspArcShine{display:none;pointer-events:none;}
   /* ⚠ ver -1071（Ray：「流光效果不好，要快速像在充能」）：1.6s → **0.55s** ——
      慢的讀起來是「一道光在散步」，快的才像**電流在灌**。 */
   #energyClasp.charging #claspArcShine{display:block;animation:arcShine .55s linear infinite;}

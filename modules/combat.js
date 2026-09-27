@@ -1719,6 +1719,9 @@ function layoutClasp(){
   const CY=(br.y+br.height-2)-RAD-hr.y;                 // 底緣＝藍條底往上 2px
   svgEl.style.left=(CX-RAD)+'px'; svgEl.style.top=(CY-RAD)+'px';
   svgEl.style.width=BOX+'px';     svgEl.style.height=BOX+'px';
+  /* ver -1804：會動的兩層各自一張 SVG（見 index.html 的說明）—— 擺位與本體同一組數字。 */
+  for(const id of ['claspArcG','claspArcSh']){ const e=$(id); if(!e) continue;
+    e.style.left=svgEl.style.left; e.style.top=svgEl.style.top; e.style.width=svgEl.style.width; e.style.height=svgEl.style.height; }
   /* ⚠ ver -1074：形狀**完全由 `ARC` 決定**（橫槓與上緣切齊、下緣帶弧度），
      不再吃版面量出來的長度 —— 所以 viewBox 回到固定的 100×100，
      -1072 那段動態加寬也退休了。

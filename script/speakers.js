@@ -1651,7 +1651,7 @@ export const ART = {
     shock: { src:'resources/si/npc/npc_ss_loti_shock.webp', top:11,  bot:1530, fx:0.461 },
     give:  { src:'resources/si/npc/npc_ss_loti_give.webp',  top:7, bot:1529, fx:0.463 },
     guard: { src:'resources/si/npc/npc_ss_loti_guard.webp', top:15,  bot:1529, fx:0.510 },
-    cry:   { src:'resources/si/npc/npc_ss_loti_cry.webp?v=2', top:4,  bot:1518, fx:0.460 },   // ver -1793 Ray 交件；-1803 手指修正（同名覆蓋 ⇒ ?v=2，重量）
+    cry:   { src:'resources/si/npc/npc_ss_loti_cry.webp?v=3', top:5,  bot:1520, fx:0.460 },   // ver -1793 Ray 交件；-1804 手指真正修好（美術 4f89ae2，同名覆蓋 ⇒ ?v=3，重量）
   } },
   lofa: { cm:158, eye:30, fx:0.431, top:5, bot:1529,
            side:'R', alt:null, base:'resources/si/npc/npc_ss_lofa_front.webp', expr:{
