@@ -55,7 +55,9 @@
 >    · `readysmile` 路徑 `?v=2` → `?v=3`，取景重量＝`top:6 bot:1534 fx:0.578`，與現行相同、不用改；⚠ `flight/index.html` 那一份（約 5465 行）也要跳 `?v=3`
 > 20. **（09-27，Windows）索拉娜 alpha 夾 24 張換臉交件** —— 全部只換臉、alpha 與現行逐像素相同。**逐條要改的在 `resources/si/_sorana_alpha0927_worklist.md`**：
 >    20 條同名覆蓋跳版號（取景不動；`flight/index.html` 的 side／surprise／sorry／watch／nod 也要跳）＋ `stare` 換成 serious 的身體（取景抄 serious）＋ `furiouscute` 改指 `sorana_si_furious.webp` ＋ 新鍵 `ideasmile`／`lookawayupset`／`taunt`。
->    ⚠ 工作樹裡 `sorana_si_excite.webp`／`sorana_si_carrynouvelle.webp` 被刪（`speakers.js` 還指著），**不是美術做的**，等 Ray 說明。
+>    ⚠⚠ **Ray 確認（09-27）：`furiouscute`／`excite`／`carrynouvelle` 三個刪除都是他刪的**（檔案還在 git 裡，工作樹是刪除狀態、**沒有 commit**）。
+>    · **`furiouscute`：先改路徑再刪**（Ray：「furious 路徑改指後刪」）—— `script/speakers.js` 的 `furiouscute` 那一行 `src` 改成 `'resources/si/sorana_si_furious.webp'`（取景照舊 `top:9 bot:1527 fx:0.474`），**改完同一個 commit 再 `git rm resources/si/sorana_si_furiouscute.webp`**。`furious.webp` 已在 6b60c17 推上去。
+>    · `excite`／`carrynouvelle`：`speakers.js` 還指著（`excite` 699 行、`carrynouvelle` 896 行），刪除 commit 上去就缺圖 —— 要換成什麼圖、還是拿掉那兩個鍵，**等 Ray 說**，定了再一起 commit 刪除。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑；**§十三＝09-27 收工換機器：薇拉馮德 73 張、惡棍 6 張、索拉娜三張回版、還開著的事、三個不明刪除**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
