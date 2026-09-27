@@ -9492,7 +9492,7 @@ export const TOWNS = {
           man('draw','可、可惡！'),
           { speaker:'NARRATION', text:'', se:'se_reload', auto:900 },
           man('capture','都別動！'),
-          { speaker:'LOFA_N', text:'啊！' },
+          { speaker:'LOFA_N', text:'啊！', portrait:{ char:'MANU', expr:'capture', show:true } },   // ver -1796 Ray：「啊！」也用 capture 那張
           man('capture','該死的，聖王廳的狗拿什麼耗子！'),
           sor('guardtalk','卑鄙的傢伙！'),
           ren('command','放開她，留你一條生路。'),

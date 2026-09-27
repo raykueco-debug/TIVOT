@@ -951,6 +951,9 @@ export const ENEMIES = {
        ⚠⚠⚠ **數值整組照抄 `guild_hunter`**（同 bounty_ep 那條：兩張碰巧一樣強，不是同一個公式）。
          要動任何一張之前 `grep -n "賞金獵人" script/enemies.js` 並排看完再改。
        差別只有 `name`／`image`／`bg`。圖規格見 `resources/enemy/_thug_spec.md`（真 alpha、去背）。
+       ⚠ ver -1796（Ray：「thug 系列的敵人都小一點，往上一點，但不要造成透視錯誤」）：`fit.scale:0.8`＋`shiftY:-0.04`
+         ＝擺遠一點（同尼莫 -1565 那一組的作法：縮框自己，腳仍踩在地面上）。
+       ⚠ `thug_squad`（一群）另外是**橫向滿版**（Ray）：`cover` 錨在 `center 25%` —— 多出來的高度從腳裁，頭留著。
        ⚠ `bg:'sofia_slum'` 是**沒供圖時的底**（城鎮插入戰會由 `state.battleBg` 蓋過去）。
        ⚠ 還沒有任何 `config.battles` 引用它們 —— 等里朋莊園那一段的稿。 */
     thug_pistol: {
@@ -958,7 +961,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
-      image:'enemy_thug_pistol', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom' },
+      image:'enemy_thug_pistol', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
@@ -970,7 +973,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
-      image:'enemy_thug_rifle', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom' },
+      image:'enemy_thug_rifle', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
@@ -982,7 +985,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
-      image:'enemy_thug_dual', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom' },
+      image:'enemy_thug_dual', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
@@ -994,7 +997,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
-      image:'enemy_thug_shotgun', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom' },
+      image:'enemy_thug_shotgun', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
@@ -1006,7 +1009,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
-      image:'enemy_thug_lookout', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom' },
+      image:'enemy_thug_lookout', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
@@ -1018,7 +1021,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
-      image:'enemy_thug_boss', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom' },
+      image:'enemy_thug_boss', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
@@ -1032,7 +1035,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
-      image:'enemy_thug_squad', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom' },
+      image:'enemy_thug_squad', bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },

@@ -1634,10 +1634,12 @@ export const ART = {
     complain: { src:'resources/si/npc/ssophia_si_manu_complain.webp?v=2', top:7, bot:1525, fx:0.440 },   // ver -1793：Ray 換圖（同名覆蓋 ⇒ ?v=2），重量
     draw:     { src:'resources/si/npc/ssophia_si_manu_draw.webp',     top:9, bot:1522, fx:0.416 },
     /* 挾持蘿法（ver -1793）：一張圖兩個人 ⇒ `withChar:['LOFA_N']`，蘿法開口時點亮這一張（§雙人立繪）。 */
-    capture:  { src:'resources/si/npc/npc_ss_lofa_capture.webp', top:13, bot:1501, fx:0.402, withChar:['LOFA_N','LOFA'] },
+    /* ver -1796（Ray：「lofa 被抓的雙人圖縮小，兩人都要入畫面，可以小一點，表示距離感」）：
+       `cm:150`（小一點、頭頂跟著低 ⇒ 站得遠）；`fx` 錨在**兩人之間**不是馬努的臉，蘿法才進得了畫面。 */
+    capture:  { src:'resources/si/npc/npc_ss_lofa_capture.webp', top:13, bot:1501, fx:0.46, cm:150, withChar:['LOFA_N','LOFA'] },
     /* 被狙擊那一瞬（稿：`npc_ss_lofa_shoot`）。⚠ 交件的 `shoot.png` 是**畫上去的棋盤格**（假透明），
        同一個畫面的正確去背版是 `cryshoot` —— 用它。 */
-    shot:     { src:'resources/si/npc/npc_ss_lofa_cryshoot.webp', top:4, bot:1514, fx:0.353, withChar:['LOFA_N','LOFA'] },
+    shot:     { src:'resources/si/npc/npc_ss_lofa_cryshoot.webp', top:4, bot:1514, fx:0.42, cm:150, withChar:['LOFA_N','LOFA'] },   // 同 capture 的取景（同一個場面的下一瞬）
   } },
   loki: { cm:128, standCm:151, eye:30,   /* standCm：ver -1771 Ray「小女孩太低了，往上拉一個頭」（+23cm≈她一個頭高；只動頭頂位置、不動大小） */ fx:0.477, top:19, bot:1527,   /* ver -1795：六張重畫（拿掉頭巾與腰巾，美術 9850ff0）⇒ ?v=2＋取景重量；角色層跟著新的 ask */
            side:'R', alt:null, base:'resources/si/npc/npc_ss_loki_ask.webp?v=2', expr:{
@@ -1658,9 +1660,10 @@ export const ART = {
     cry:      { src:'resources/si/npc/npc_ss_lofa_cry.webp',      top:11, bot:1525, fx:0.464 },   // ver -1793 Ray 交件
     cryhug:   { src:'resources/si/npc/npc_ss_lofa_cryhug.webp',   top:6,  bot:1530, fx:0.594 },
   } },
-  /* ══ 里朋家族的老大（ver -1793，Ray 交件）══ 身高是估的（成年男性 175）；measure_si 實量。 */
+  /* ══ 里朋家族的老大（ver -1793，Ray 交件）══ 身高是估的（成年男性 175）；measure_si 實量。
+     ⚠ ver -1796 Ray：「里朋水平翻轉」⇒ `flip:true`（這張一律翻，同謝尼）。 */
   ripon: { cm:175, eye:30, fx:0.409, top:9, bot:1518,
-           side:'R', alt:null, base:'resources/si/npc/npc_ss_boss_clap.webp', expr:{
+           side:'R', alt:null, flip:true, base:'resources/si/npc/npc_ss_boss_clap.webp', expr:{
     clap: { src:'resources/si/npc/npc_ss_boss_clap.webp', top:9, bot:1518, fx:0.409 },
     hurt: { src:'resources/si/npc/npc_ss_boss_hurt.webp', top:9, bot:1529, fx:0.261 },
   } },
