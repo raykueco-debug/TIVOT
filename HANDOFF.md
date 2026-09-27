@@ -47,6 +47,8 @@
 >    程式端：**`script/speakers.js` 的 `remind` 路徑 `?v=2` → `?v=3`**（同名覆蓋，不跳版號玩家永遠拿到修壞的那版）；取景值 `measure_si.py` 重量＝`top:1 bot:1525 fx:0.523`（現行寫 `top:4`，差 3px 可改可不改）。
 > 17. ✅ **-1768 已跳 `?v=4`**（取景不變 top:9 bot:1530 fx:0.528） **（09-26 晚，Mac）索拉娜 `smile` 也回上一版**（Ray：「smile 也修壞了，回復」）—— `resources/si/sorana_si_smile.webp` 換回 d556b53，09-22 第三輪重製版（82caf63）進 `_recycle/`。
 >    程式端：**`script/speakers.js` 的 `smile` 路徑 `?v=3` → `?v=4`**；取景 `measure_si.py` 重量＝`top:9 bot:1530 fx:0.528`，與現行完全相同、不用改。
+> 18. **（09-27，Mac）索拉娜 `relief` 也回上一版**（Ray：「索的 relief 也改壞了，改回來」）—— `resources/si/sorana_si_relief.webp` 換回 d556b53，09-21 的短提示詞版（eb06fcb）進 `_recycle/`。
+>    程式端：**`script/speakers.js` 的 `relief` 路徑 `?v=2` → `?v=3`**；取景 `measure_si.py` 重量＝`top:9 bot:1517 fx:0.555`（現行 `top:8 bot:1518 fx:0.556`，差 1px，可改可不改）。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；**§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
