@@ -1994,6 +1994,12 @@
      範圍是**舞台與首頁全部動畫**：熄的當下玩家本來就沒在動，凍在原地無感；
      一碰螢幕 class 同步拿掉、原地續播。 */
   body.perf-idle #storyStage *, body.perf-idle #home *{ animation-play-state:paused !important; }
+  /* ══ 發熱排除法（ver -1805，管理人選單的開關，說明見 modules/settings.js 的 HEAT_KEY）══ */
+  body.heat-nofx #fxTop{ display:none !important; }
+  body.heat-noring #delayRing{ display:none !important; }
+  body.heat-noalert #grid::after{ display:none !important; animation:none !important; }
+  body.heat-nohit #enemyImg, body.heat-nohit #app.hitshake{ animation:none !important; }
+  body.heat-nohit #hitFxLayer, body.heat-nohit #redFlash{ display:none !important; }
   #home{position:absolute;inset:0;display:none;flex-direction:column;
     align-items:center;justify-content:flex-start;z-index:50;text-align:center;
     background:radial-gradient(120% 90% at 50% 30%,#1a1330,#07050c 90%);

@@ -2052,6 +2052,7 @@ function ringTick(){
      over=true 只在勝敗定案／bootIdle（overkill 窗口 over 仍是 false，不受影響）；
      下一場 startIntervalTimer 會重新拉起來。 */
   if(state.over){ stopDelayRing(); return; }
+  if(document.body.classList.contains('heat-noring')){ stopDelayRing(); return; }   // 發熱排除（ver -1805）：連迴圈一起停
   ringRaf=requestAnimationFrame(ringTick);
   const sv=ensureDelayRing(); if(!sv) return;
   const lim=effIntervalLimit()*1000;

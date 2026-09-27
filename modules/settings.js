@@ -46,6 +46,17 @@ const wr = (k,v) => { try{ localStorage.setItem(k, String(v)); }catch(e){} };
    讀的地方：這裡（開關）與 `modules/story.js` 的 `peaceOn()`（跳過戰鬥拍）。 */
 export const PEACE_KEY = 'tivot_flight_peace_v1';
 export function peaceOn(){ return rd(PEACE_KEY)==='1'; }
+/* ══ 發熱排除法（ver -1805，Ray：「再不行就要用排除法了」→「這個可以現在就做」）══
+   管理人限定的五個開關，**關掉**某一類戰鬥演出，在手機上逐項比 HUD（鐵律 12：桌機不算數）。
+   存成一份清單（重整之後照樣有效，才比得了），由 `apply()` 掛 `body.heat-no<鍵>`：
+     fx＝普攻特效整組（#fxTop：槍火／火星／火線／槍煙）　ring＝延時光圈（連同每幀的 ringTick）
+     alert＝盤面警戒脈動（#grid::after）　hit＝敵人受擊演出（立繪動畫／受擊特效層／紅閃／震畫面）
+     audio＝音效與 BGM（整個音訊引擎暫停，不只是靜音）
+   ⚠ 這是**診斷工具**不是設定：找到兇手之後就該去修那一樣，然後把這一組拆掉。 */
+export const HEAT_KEY = 'tivot_heatoff_v1';
+export const HEAT_ITEMS = [ ['fx','普攻特效'], ['ring','延時光圈'], ['alert','警戒脈動'], ['hit','受擊演出'], ['audio','音　效'] ];
+export function heatOff(){ try{ const a=JSON.parse(rd(HEAT_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function setHeatOff(k, off){ const a=heatOff().filter(x=>x!==k); if(off) a.push(k); wr(HEAT_KEY, JSON.stringify(a)); }
 const num = (v, d) => { const n=parseFloat(v); return isFinite(n) ? n : d; };
 
 /* ── 全域靜音（ver -856，Ray：「把靜音鈕拿掉，放到系統選單裡」）──
@@ -107,6 +118,10 @@ export function setFx(kind, on){ wr(K[FXK[kind]], on ? '1' : '0'); }
 export function apply(){
   for(const l of ['bgm','se','vo']) SFX.setLayerVolume(l, volOf(l));
   try{ document.body.classList.toggle('dlg-large', bigText()); }catch(_){}   // 對話框文字加大（ver -821）
+  /* 發熱排除（ver -1805）：只在管理人模式生效 —— 關掉 testmode 就全部回來，玩家不會卡在一個被關掉的畫面裡。 */
+  { const off = document.body.classList.contains('testmode') ? heatOff() : [];
+    for(const [k] of HEAT_ITEMS) document.body.classList.toggle('heat-no'+k, off.indexOf(k)>=0);
+    try{ SFX.setAudioOff && SFX.setAudioOff(off.indexOf('audio')>=0); }catch(_){} }
 }
 
 /* ══ 面板 ══
@@ -187,6 +202,13 @@ export function open(opts){
           + '<label class="gm-row gm-toggle"><span>免　戰</span>'
           +   '<button class="gm-sw'+(peaceOn()?' on':'')+'" id="gmPeace" type="button"><i></i></button>'
           +   '<b>'+(peaceOn()?'跳過所有戰鬥':'關')+'</b></label>'
+          /* 發熱排除法（ver -1805）：五個開關，開＝照常、關＝那一類整組不跑。 */
+          + '<div class="gm-sec">發熱排除</div>'
+          + HEAT_ITEMS.map(([k,nm])=>{ const off=heatOff().indexOf(k)>=0;
+              return '<label class="gm-row gm-toggle"><span>'+nm+'</span>'
+                +   '<button class="gm-sw'+(off?'':' on')+'" data-heat="'+k+'" type="button"><i></i></button>'
+                +   '<b>'+(off?'關閉中':'開')+'</b></label>'; }).join('')
+          + '<div class="gm-note">關掉一項就在手機上看 HUD（幀率／節流／rAF）比一次。只在管理人模式生效。</div>'
           + '<div class="gm-note">凍結＝停掉這一刻所有動畫／音訊／戰鬥計時（再按解凍）。'
           + 'HUD＝版本與幀率那一片。兩者都只有管理人模式看得到。</div>'
           /* ══ 管理人的存檔與統計（ver -1023，Ray 交辦）══
@@ -257,6 +279,13 @@ export function open(opts){
       if(hd && devTools && devTools.hud) hd.addEventListener('click', e=>{ e.stopPropagation();
         devTools.hud(); try{ SFX.menuClick(); }catch(_){}
       });
+      panel.querySelectorAll('[data-heat]').forEach(b=> b.addEventListener('click', e=>{ e.stopPropagation();
+        const k=b.dataset.heat, off=heatOff().indexOf(k)<0;   // 按下去＝翻面
+        setHeatOff(k, off); apply();
+        b.classList.toggle('on', !off);
+        const lab=b.parentNode.querySelector('b'); if(lab) lab.textContent = off ? '關閉中' : '開';
+        try{ SFX.menuClick(); }catch(_){}
+      }));
       const pc=panel.querySelector('#gmPeace');
       if(pc) pc.addEventListener('click', e=>{ e.stopPropagation();
         const on=!peaceOn(); wr(PEACE_KEY, on?'1':'0');
