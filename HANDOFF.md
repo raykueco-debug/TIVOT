@@ -62,11 +62,11 @@
 >    程式端：**`script/speakers.js` 的 `smile` 路徑 `?v=3` → `?v=4`**；取景 `measure_si.py` 重量＝`top:9 bot:1530 fx:0.528`，與現行完全相同、不用改。
 > 18. ✅ **-1783 已跳 `?v=3`**（取景 top:9 bot:1517 fx:0.555） **（09-27，Mac）索拉娜 `relief` 也回上一版**（Ray：「索的 relief 也改壞了，改回來」）—— `resources/si/sorana_si_relief.webp` 換回 d556b53，09-21 的短提示詞版（eb06fcb）進 `_recycle/`。
 >    程式端：**`script/speakers.js` 的 `relief` 路徑 `?v=2` → `?v=3`**；取景 `measure_si.py` 重量＝`top:9 bot:1517 fx:0.555`（現行 `top:8 bot:1518 fx:0.556`，差 1px，可改可不改）。
-> 19. **（09-27，Windows）索拉娜 `ready`／`readysmile` 也回上一版**（Ray：「ready 跟 readysmile 改回來」）—— 兩張換回 d556b53（09-20，逐位元組核對過），09-21 第二輪重製版（95d5226）進 `_recycle/`。
+> 19. ✅ **-1788 已接**（ready `?v=3` 取景重量、readysmile 兩邊 `?v=3`） **（09-27，Windows）索拉娜 `ready`／`readysmile` 也回上一版**（Ray：「ready 跟 readysmile 改回來」）—— 兩張換回 d556b53（09-20，逐位元組核對過），09-21 第二輪重製版（95d5226）進 `_recycle/`。
 >    程式端（`script/speakers.js`，同名覆蓋，不跳版號玩家永遠拿舊圖）：
 >    · `ready` 路徑 `?v=2` → `?v=3`，**取景要改**：`measure_si.py` 重量＝`top:6 bot:1467 fx:0.567`（現行 `top:7 bot:1521 fx:0.631` 是重製版的值，差很多）
 >    · `readysmile` 路徑 `?v=2` → `?v=3`，取景重量＝`top:6 bot:1534 fx:0.578`，與現行相同、不用改；⚠ `flight/index.html` 那一份（約 5465 行）也要跳 `?v=3`
-> 20. **（09-27，Windows）索拉娜 alpha 夾 24 張換臉交件** —— 全部只換臉、alpha 與現行逐像素相同。**逐條要改的在 `resources/si/_sorana_alpha0927_worklist.md`**：
+> 20. ✅ **-1788 全部接完**（20 條版號含 flight 那六處、`stare` 取景抄 serious、新鍵 `ideasmile`／`lookawayupset`／`taunt`；鍵名 `furiouscute` 未改名，等 Ray） **（09-27，Windows）索拉娜 alpha 夾 24 張換臉交件** —— 全部只換臉、alpha 與現行逐像素相同。**逐條要改的在 `resources/si/_sorana_alpha0927_worklist.md`**：
 >    20 條同名覆蓋跳版號（取景不動；`flight/index.html` 的 side／surprise／sorry／watch／nod 也要跳）＋ `stare` 換成 serious 的身體（取景抄 serious）＋ `furiouscute` 改指 `sorana_si_furious.webp` ＋ 新鍵 `ideasmile`／`lookawayupset`／`taunt`。
 >    ⚠⚠ **Ray 確認（09-27）：`furiouscute`／`excite`／`carrynouvelle` 三個刪除都是他刪的**（檔案還在 git 裡，工作樹是刪除狀態、**沒有 commit**）。
 >    · **`furiouscute`：先改路徑再刪**（Ray：「furious 路徑改指後刪」）—— `script/speakers.js` 的 `furiouscute` 那一行 `src` 改成 `'resources/si/sorana_si_furious.webp'`（取景照舊 `top:9 bot:1527 fx:0.474`），**改完同一個 commit 再 `git rm resources/si/sorana_si_furiouscute.webp`**。`furious.webp` 已在 6b60c17 推上去。
@@ -111,7 +111,11 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1786`（-1786：聖索菲亞抵達「妳說的喔」同拍 se_walk）
+# HANDOFF — 截至 `ver 2026.09.22-1788`（-1788：索拉娜 24 張換臉＋ready／readysmile 回版接上）
+
+**`-1788`**（Mac，程式 session）：交接第 19、20 項照 `_sorana_alpha0927_worklist.md` 接完 —— `speakers.js` 20 條同名覆蓋跳版號（`flight/index.html` 的 side×2／surprise／sorry／watch／nod 同跳）、`stare` `?v=3` 取景改抄 serious（6/1524/0.576）、新鍵 `ideasmile`（照 idea）／`lookawayupset`（照 lookaway）／`taunt`（照舊 stare）、`ready` `?v=3` 取景 6/1467/0.567、`readysmile` 兩邊 `?v=3`。lint 0 錯誤。⚠ 新鍵還沒有腳本在用；`furiouscute` 鍵名要不要改成 `furious` 等 Ray。
+
+# （上一段）截至 `ver 2026.09.22-1786`（-1786：聖索菲亞抵達「妳說的喔」同拍 se_walk）
 
 ⚠⚠ **主線後半大綱**（Ray 口述）存在 `docs/STORY_ROADMAP.md`：森住民線 → 安雅主線（第四遺蹟 → 米夏戰打不贏）→ 與聖王廳翻臉、尼莫追兵 → 米夏終戰 → 安雅戰（好感 <T4 ⇒ BE）→ 諾薇兒第九星＋每次使用機率 BE → 諾薇兒線、聖王廳成戰場。**排稿與改系統前先讀**。
 
