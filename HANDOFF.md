@@ -114,7 +114,22 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1788`（-1788：索拉娜 24 張換臉＋ready／readysmile 回版接上）
+# HANDOFF — 截至 `ver 2026.09.22-1790`（-1790：戰鬥／城鎮發熱三處）
+
+**`-1790`**（Mac，程式 session；Ray：「完全沒走飛行畫面，只有戰鬥跟城鎮仍然大發熱，檢查火線跟槍煙」）
+· **查的結論：沒有「開了沒關」的東西**。火線 0.15s／槍煙 ≤2.1s／槍火火星 0.9s 全部有計時器移除、動畫全是有限長度；
+  所有收場路徑都 `state.over=true`＋收光圈 rAF。北泊城鎮（未開戰）實量：無限動畫 0、interval 4 支（皆 1 秒級）、BGM 1。
+  ⚠ 我的預覽面板是隱藏的（rAF 不跑、城鎮走不動）⇒ **戰鬥中的 fps／特效數沒量到**，要 Ray 手機 HUD 驗。
+· **改的三件**：
+  ① 齒輪 `kgShine`／吊墜 `kpShine` 由 CSS 無限循環（89% 時間畫面不變卻逐幀重畫 `background-position`＋遮罩＋screen）
+    改成**一次性 `.sweep`**，由 `story.js` 那支每秒轉齒輪的 interval 倒數觸發（約 11s／9s ＋0~2s 亂數；
+    `perf-idle` 與 `document.hidden` 時不掃）。掃過速度同舊版。實測兩者各自定時掃、跑完自動拿掉 class。
+    ⚠ 飛行頁的 `fkpShine` 沒動（只在遭遇推棺那幾秒出現）。
+  ② 火線 `.tracer` 拿掉 `mix-blend-mode:screen`（-1732 建議 ③）。⚠ 視覺：疊在亮處不再「加亮」，Ray 看一眼。
+  ③ 普攻槍煙一下 3 團 → **1 團**（`enemy.muzzleSmoke` 的 `k<1`）；爆發型不變。兩種煙拿掉 `will-change`。
+· **要 Ray 在手機上看的**：HUD（團徽連點 5 下）戰鬥中一張、打完回城不碰螢幕 15 秒一張 —— 看「∞ 動畫」「rAF /s」「dom（開機+N）」。
+
+# （上一段）截至 `ver 2026.09.22-1788`（-1788：索拉娜 24 張換臉＋ready／readysmile 回版接上）
 
 **`-1788`**（Mac，程式 session）：交接第 19、20 項照 `_sorana_alpha0927_worklist.md` 接完 —— `speakers.js` 20 條同名覆蓋跳版號（`flight/index.html` 的 side×2／surprise／sorry／watch／nod 同跳）、`stare` `?v=3` 取景改抄 serious（6/1524/0.576）、新鍵 `ideasmile`（照 idea）／`lookawayupset`（照 lookaway）／`taunt`（照舊 stare）、`ready` `?v=3` 取景 6/1467/0.567、`readysmile` 兩邊 `?v=3`。lint 0 錯誤。⚠ 新鍵還沒有腳本在用；`furiouscute` 鍵名要不要改成 `furious` 等 Ray。
 

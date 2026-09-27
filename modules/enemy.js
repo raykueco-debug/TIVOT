@@ -601,11 +601,14 @@ export function muzzleSmoke(k){
   const px = sx+(tx-sx)*f, py = r.height;
   /* ⚠⚠ **`k` ＝這一槍的份量**（ver -1655，Ray：「普攻也加煙，步槍跟高爆砲加大煙」）：
      團數與大小一起乘 —— 只放大不加團會變成「一顆大氣球」，只加團不放大看不出差別。
-     · 普攻（雙槍）k≈0.55 ⇒ 2 團小的：它**每一下都會響**，份量要壓得住。
+     · 普攻（雙槍）k≈0.55 ⇒ **1 團**小的（ver -1790 由 3 團減下來）：它**每一下都會響**，份量要壓得住。
      · 爆發型（陸戰萊福槍／船戰高爆砲，同一支 `vfx:'single'`）k≈1.6 ⇒ 7 團大的。
      ⚠ 機槍與散彈**刻意不冒**：逐發／逐顆都冒的話整個畫面都是煙（同 -1654 的理由）。 */
   const kk = (k==null ? 1 : k);
-  const n  = Math.max(1, Math.round(5*kk));
+  /* ⚠⚠ ver -1790（Ray：「戰鬥仍然大發熱」）：**普攻（k<1）一下只冒一團** ——
+     舊式 round(5×0.55)＝3 團，每點一下三團、每團活 1.1~1.8 秒，整場戰鬥畫面上
+     一直維持十幾團在動。爆發型（k≈1.6 ⇒ 8 團）不變：它一發一響，份量要夠。 */
+  const n  = kk<1 ? 1 : Math.round(5*kk);
   for(let i=0;i<n;i++){
     const el=document.createElement('i');
     el.className='muzzle-smoke';

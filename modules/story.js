@@ -979,9 +979,24 @@ let slowFadeSeq = 0;      // 慢黑幕（ver -739）的 inline duration 歸還�
      疊上去會互相蓋掉 —— 與舊 CSS 那一條同一個理由。
    ⚠ 劇情層沒開就跳過（一秒一次的 no-op，成本可忽略）。 */
 let gearDeg=0;
+/* ══ 齒輪／吊墜的反光（ver -1790，Ray：「城鎮仍然大發熱」）══
+   以前是兩條 CSS 無限動畫（11s／9s，只有前一成在掃），整個週期逐幀重畫。
+   改成**一次性**：這裡倒數，到了就掛 `.sweep`（CSS 那一條只跑一次），跑完拿掉 ——
+   中間沒有任何動畫在跑，畫面靜止時合成器才睡得著。
+   ⚠ 兩者各自倒數（齒輪約 11 秒、吊墜約 9 秒，各加 0~2 秒亂數），才不會永遠同時閃。
+   ⚠ 閒置熄滅中（`perf-idle`）與分頁在背景時不掃 —— 同那一條省電機制的語意。 */
+let shineGear=11, shinePend=9;
+function sweepShine(sel){
+  const el=document.querySelector(sel); if(!el) return;
+  el.classList.remove('sweep'); void el.offsetWidth; el.classList.add('sweep');
+  el.addEventListener('animationend', ()=>el.classList.remove('sweep'), { once:true });
+}
 setInterval(()=>{
   if(!document.body.classList.contains('story-on')) return;
   if(document.body.classList.contains('flight-on')) return;   // ver -1729：飛行畫面蓋著時劇情層是藏的，不要在底下轉
+  { const quiet=document.hidden || document.body.classList.contains('perf-idle');
+    if(--shineGear<=0){ shineGear=11+((Math.random()*3)|0); if(!quiet) sweepShine('#storyExit .ke-shine'); }
+    if(--shinePend<=0){ shinePend=9+((Math.random()*3)|0);  if(!quiet) sweepShine('#kerbPend .kp-shine'); } }
   gearDeg=(gearDeg+6)%360;
   const a=$('storyExit'), b=$('kerbGearSm');
   const ai=a && a.querySelector('img'), bi=b && b.querySelector('img');
@@ -2552,7 +2567,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1789';
+const KERB_V='?v=1790';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

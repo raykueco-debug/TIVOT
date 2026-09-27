@@ -842,7 +842,7 @@
      ⚠ 比拉煙**更白更濃**：那是剛出膛的硝煙，不是飄了一段的尾跡。 */
   .muzzle-smoke{position:absolute;left:0;top:0;
     width:var(--sz);height:var(--sz);margin:calc(var(--sz) / -2) 0 0 calc(var(--sz) / -2);
-    border-radius:50%;pointer-events:none;will-change:transform,opacity;opacity:0;
+    border-radius:50%;pointer-events:none;opacity:0;
     background:radial-gradient(circle at 50% 50%,
       rgba(238,234,226,.62), rgba(206,200,190,.34) 50%, rgba(180,174,166,0) 74%);
     /* blur 拿掉（ver -1733，Ray：「blur 拿掉看看效果如何」）：每一團一個模糊濾鏡層是 -1732 量到的發熱源，漸層本來就軟。 */
@@ -861,7 +861,7 @@
      ⚠ **不用 `screen`**：煙是擋光的東西，加亮混合會變成發光的霧。 */
   .tracer-smoke{position:absolute;left:0;top:0;
     width:var(--sz);height:var(--sz);margin:calc(var(--sz) / -2) 0 0 calc(var(--sz) / -2);
-    border-radius:50%;pointer-events:none;will-change:transform,opacity;opacity:0;
+    border-radius:50%;pointer-events:none;opacity:0;
     background:radial-gradient(circle at 50% 50%,
       rgba(206,198,188,.42), rgba(168,160,150,.26) 52%, rgba(140,134,126,0) 74%);
     /* blur 拿掉（ver -1733，同上）。 */
@@ -912,8 +912,12 @@
      ⚠ `transform-origin:0 50%` —— 旋轉軸在尾端，平移的那一點就是「尾巴在哪」。
      ⚠ 不用 `filter:blur`（這是每一發都會跑的特效，見槍火那一段的理由）；
        發光交給漸層本身的亮度＋`box-shadow`（只有一層，便宜）。 */
+  /* ⚠⚠ ver -1790（Ray：「戰鬥仍然大發熱」）：**拿掉 `mix-blend-mode:screen`** ——
+     每一條活著的火線都讓 `#top` 整個 stacking context 走離屏混色，而普攻每點一下就一條，
+     整場戰鬥幾乎沒有空檔（-1732 查過的第 ③ 項）。漸層兩端本來就是透明的，一般的
+     alpha 疊色就讀得出是一道亮線。 */
   .tracer{position:absolute;left:0;top:0;height:3px;margin-top:-1.5px;
-    transform-origin:0 50%;pointer-events:none;mix-blend-mode:screen;will-change:transform;
+    transform-origin:0 50%;pointer-events:none;will-change:transform;
     border-radius:2px;
     background:linear-gradient(90deg,rgba(255,196,96,0) 0%,rgba(255,206,120,.35) 45%,
       rgba(255,240,200,.95) 88%,#fff 100%);
@@ -3347,10 +3351,14 @@
     background:linear-gradient(114deg,
       rgba(255,255,255,0) 40%, rgba(255,246,214,.28) 47%, rgba(255,255,255,.8) 50%,
       rgba(255,246,214,.28) 53%, rgba(255,255,255,0) 60%);
-    background-size:260% 260%;background-position:130% 50%;
-    animation:kgShine 11s linear infinite;}
-  @keyframes kgShine{0%{background-position:130% 50%;}11%{background-position:-40% 50%;}
-    100%{background-position:-40% 50%;}}
+    background-size:260% 260%;background-position:130% 50%;}
+  /* ⚠⚠ ver -1790（Ray：「城鎮仍然大發熱」）：由無限循環改成**一次性**，由 story.js 的
+     `sweepShine` 每 10 秒左右掛一次 `.sweep`。舊版是 11s infinite，但一個週期裡只有
+     前 11% 在動 —— 其餘 89% 畫面沒變，`background-position` 卻照樣逐幀重算重畫
+     （遮罩＋screen 混色的一層），而閒置熄滅要 10 秒不碰螢幕才停得了它。
+     ⚠ 掃過的速度與舊版相同（1.21s ＝ 11s × 11%）。 */
+  #storyExit .ke-shine.sweep{animation:kgShine 1.21s linear 1;}
+  @keyframes kgShine{0%{background-position:130% 50%;}100%{background-position:-40% 50%;}}
 
   /* 跳段鈕（開發者限定）：**放在控制面盤左下**（ver -367，Ray 指定）。
      ⚠ 不再與退出鈕同排 —— 上排留給「離開」，面盤那一排是操作區。 */
@@ -4639,13 +4647,10 @@
     background:linear-gradient(114deg,
       rgba(255,255,255,0) 40%, rgba(255,246,214,.30) 47%, rgba(255,255,255,.85) 50%,
       rgba(255,246,214,.30) 53%, rgba(255,255,255,0) 60%);
-    background-size:260% 260%;background-position:120% 50%;
-    animation:kpShine 9s linear infinite;}
-  @keyframes kpShine{
-    0%  {background-position:130% 50%;}
-    12% {background-position:-40% 50%;}
-    100%{background-position:-40% 50%;}
-  }
+    background-size:260% 260%;background-position:130% 50%;}
+  /* ⚠⚠ ver -1790：同齒輪那一條，改成一次性（`.sweep` 由 story.js 掛）；1.08s ＝ 舊版 9s × 12%。 */
+  #kerbPend .kp-shine.sweep{animation:kpShine 1.08s linear 1;}
+  @keyframes kpShine{0%{background-position:130% 50%;}100%{background-position:-40% 50%;}}
   /* 微微晃動：⚠ **±3.5°**（ver -412 由 1.5° 加大，Ray：「顏色太像了，所以要動一動
      比較看得到」）—— 這是它平常唯一的辨識線索，太小等於沒有。 */
   @keyframes kpIdle{ from{transform:rotate(-3.5deg);} to{transform:rotate(3.5deg);} }
