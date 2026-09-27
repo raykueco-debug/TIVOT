@@ -1025,6 +1025,32 @@ export const ENEMIES = {
       hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
       loot:[ { id:'brass_casing', n:6 } ],
     },
+    /* ══ 里朋莊園那兩場（ver -1793）══ 數值同上（Ray：「六人全部走賞金獵人」）。
+       `thug_squad`＝大廳那一群（一張圖一群，整群當一隻）；`manu`＝沙龍的馬努（圖借他的 `draw` 立繪）。 */
+    thug_squad: {
+      name:'里朋家的打手', story:1, counterStagger:1, boss:0, Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      image:'enemy_thug_squad', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom' },
+      hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      entrance:null, special:[], boardGrids:[9,9,9,9,9],
+      delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
+      hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
+      loot:[ { id:'brass_casing', n:6 } ],
+    },
+    manu: {
+      name:'馬努', story:1, counterStagger:1, boss:0, Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      image:'enemy_manu', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom' },
+      hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      entrance:null, special:[], boardGrids:[9,9,9,9,9],
+      delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
+      hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
+      loot:[ { id:'brass_casing', n:6 } ],
+    },
     /* ══ 巨型蜈蚣（ver -423（-893 前用詞），Ray 的敵人卡）══════════════════════════════
        第一場**船艦戰**的怪。卡上的每一欄都照抄成絕對值（鐵律 1／§6.5.2）。 */
     centipi: {

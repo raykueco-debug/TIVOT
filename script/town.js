@@ -891,6 +891,7 @@ const BEL_WATER_FIRST = {
 /* 聖索菲亞的五位（Stage 14，ver -1769）：馬努（稿上一直是「？？？」）／小女孩 Loki／少女 Lofa／路人／市政廳櫃台。 */
 const mnx = N('MANU_X'), lok = N('LOKI'), lof = N('LOFA'), wkr = N('WORKER_SS'), cnS = N('COUNTER_SS');
 const lokN = N('LOKI_N');
+const lofN = N('LOFA_N'), man = N('MANU'), rip = N('RIPON'), grd = N('GUARD_SS');   // ver -1793：里朋莊園
 const door = (text, extra) => Object.assign({ speaker:'DOORMAN_SS', text }, extra||{});   // 門房：沒有立繪
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
 
@@ -4396,6 +4397,10 @@ export const TOWNS = {
        ⚠ `hourOfDay` 寫成時段 `[16,24]`（同 -664 的教訓：單值在隔天凌晨也成立）。
        ⚠⚠ 「旅店合流」那一段稿還沒到 —— 這一道只把人帶回旅店（`goto:'inn'`）。 */
     gates:[
+      /* ══ 航行許可下來了（ver -1793）══ 稿：「明天航行許可就會下來了」「也可直接睡覺，隔日七點接劇情」。
+         ⚠ 只立旗、不演（稿上沒給台詞）—— `ss_depart` 一立，碼頭的出航鎖（`sail.hold.until`）就解開。
+         ⚠ 時段 `[7,10]`：睡一覺醒來一定是 07:00；當天回到旅店通常已經過中午，不會提早成立。 */
+      { flag:'ss_depart', need:'ss_raid_home', hourOfDay:[7,10] },
       { flag:'ss_4pm', need:'ss_arrive', skipIf:'ss_date_sor', hourOfDay:[16,24],
         goto:'inn', enterAgain:true, sides:{ RENNA:'L' }, lines:[
         nou('run','啊！在這裡！',                                { skipIf:'ss_date_nou' }),
@@ -4726,12 +4731,13 @@ export const TOWNS = {
         inn:true, innNoGuide:true,
         innSpots:{ sit:{ x:0.22, y:0.68 }, sleep:{ x:0.86, y:0.55 } },
         noSleep:'……現在不是睡覺的時候。',
+        sleepFlag:'ss_raid_home',   // ver -1793：救完人回到旅店之後才能睡（稿：「也可直接睡覺，隔日七點接劇情」）
         /* ══⚠⚠⚠ **Stage 14・旅店合流**（ver -1784，Ray 交稿「約會分支旅店合流」）══
            觸發：四條支線任一條演完之後走進旅店（或下午四點那一道把人帶回來）——
            `need` 用 `{any}`：市政廳 `ss_cityhall`／貧民窟 `ss_slum_anya`・`ss_slum_nou`／索菈娜的後半 `ss_sor_resolve`／四點 `ss_4pm`。
            ⚠ 小女孩那一句依**約了誰**分（`ss_date_*`，旅店敲門那一拍插的）：諾薇兒或沒約＝祭司大人、安雅＝神父大人、索菈娜＝姐姐。
-           ⚠ 稿上對不上的差分取最接近的：諾 `smilebig`→`bigsmile`、`dying`→`die`、`coverface`→`covermouth`
-             （換裝的圖 Ray：「先用舊的，等全差分完成再一次畫全版本補上」）；小女孩 `cry`→`sad`。
+           ⚠ 稿上對不上的差分取最接近的：諾 `smilebig`→`bigsmile`、`dying`→`die`。
+             ver -1793：Ray 補交 `shycover`／`shycoverpeek`（稿上的 coverface）、小女孩 `cry`、蕾娜 `remind`，都已換上。
            ⚠ 「淪不到」照稿改成「輪不到」（錯字）；「開門聲」音效庫裡沒有，先空一拍（要補的音效見 HANDOFF）。
            ⚠ 「更衣後」＝同一個地方的時間跳躍，走 `fadeOut`／`fadeIn`（1.5 秒）。
            ⚠ 門房沒有立繪（`DOORMAN_SS`，只出聲）；稿上最後那段改叫「洛姬」（`LOKI_N`，同一張立繪）。 */
@@ -4749,17 +4755,17 @@ export const TOWNS = {
           nou(null,'索菈娜小姐……'),
           door('喂、喂！誰讓妳進來的！'),
           { speaker:'NARRATION', text:'', se:'se_steps', auto:1200 },
-          lok('sad','祭司大人！', { skipIf:['ss_date_anya','ss_date_sor'] }),
-          lok('sad','神父大人！', { onlyIf:'ss_date_anya' }),
-          lok('sad','姐姐！',     { onlyIf:'ss_date_sor' }),
+          lok('cry','祭司大人！', { skipIf:['ss_date_anya','ss_date_sor'] }),
+          lok('cry','神父大人！', { onlyIf:'ss_date_anya' }),
+          lok('cry','姐姐！',     { onlyIf:'ss_date_sor' }),
           nou(null,'啊……'),
           { speaker:'NARRATION', text:'', se:'se_fall', auto:1000 },
-          lok('sad','姐姐……他們把我姐姐……！'),
+          lok('cry','姐姐……他們把我姐姐……！'),
           sor('angry',''),
           sor('determine','對不起啊，蕾娜。'),
           sor('determine','要請妳們找個新的帆手了。'),
           { speaker:'NARRATION', text:'', se:'se_reload', auto:900 },
-          sor('readysmile',''),
+          sor('readysmile','走。', { aff:{ sorana:3 } }),   // ver -1793：稿補「走。」＋索好感 +3
           ren('callangry','都給我站住。'),
           sor('cringe',''),
           nou('scare',''),
@@ -4808,25 +4814,58 @@ export const TOWNS = {
           ren('think','有點太大件了嗎……'),
           sor('back','諾薇兒好慢啊！'),
           ren('write','別急，他們跑不了……'),
-          { speaker:'NARRATION', text:'', auto:600 },   // 開門聲（音效待補）
+          { speaker:'NARRATION', text:'', se:'se_dooropen', auto:800 },   // 開門聲（ver -1793 補上）
           sor('surprise','喔！'),
-          nou('covermouth',''),
+          nou('shycover',''),
           sor('smirk','這也是……另外一種意義的不錯呢！'),
-          nou('covermouth','我不能再這樣吃下去了……'),
+          nou('shycover','我不能再這樣吃下去了……'),
           /* [諾 T3 以上] */
           { speaker:'PLAYER', blank:true, tierWho:'NOUVELLE', tierMin:3 },
-          nou('covermouth','',                              { tierWho:'NOUVELLE', tierMin:3 }),
-          nou('shy','神父怎麼能講那種不檢點的話……',          { tierWho:'NOUVELLE', tierMin:3 }),
+          nou('shycover','',                                { tierWho:'NOUVELLE', tierMin:3 }),
+          nou('shycoverpeek','神父怎麼能講那種話……',        { tierWho:'NOUVELLE', tierMin:3 }),
+        ] },
+        /* ══ 救完人、被強制帶回旅店（ver -1793，Ray 的稿）══
+           由里朋莊園沙龍那一段收尾的 `goto:'@santasofia:inn'` 帶過來，抵達就演。
+           ⚠ 稿上寫「蘿姬」＝同一個孩子，照 Ray -1793 的定名寫「蘿奇」。
+           ⚠ 插圖 `36_loki&lofa` 稿上沒寫「插圖結束」—— 我讓它停在姐妹相擁那兩拍，索菈娜開口時收掉。
+           ⚠ 演完才能睡（`sleepFlag:'ss_raid_home'`）；航行許可隔天早上才下來（`gates` 的 `ss_depart`）。 */
+        { flag:'ss_raid_home', need:'ss_raid_done', sides:{ RENNA:'L', NOUVELLE:'L' }, lines:[
+          lokN('happy','姐姐！'),
+          lofN('cryhug','蘿奇！'),
+          { speaker:'NARRATION', text:'', cg:'36_loki&lofa', cgNoTime:true, cgPan:'down', auto:2400 },
+          sor('lauaghbig','算是告一段落了吧。', { cg:null }),
+          nou('bigsmile','太好了呢。'),
+          any('happy',''),
+          ren('think','……'),
+          ren('think','真是這樣就好了。'),
+          sor('amaze','什麼意思？'),
+          ren('lookawaytalk','少了一個里朋家族，不久之後還會有另一個的吧。'),
+          ren('lookawaytalk','畢竟他們也只是替權貴幹髒活的工具而已。'),
+          nou('sad','……'),
+          nou('pray','我們……救不了所有人嗎？'),
+          ren('write','誰知道呢？要拯救所有人，'),
+          ren('write','那不應該是『神』該做的事嗎？'),
+          nou('sad','……'),
+          ren('determine','有能力幫助眼前的人，已經是最大的幸運了。'),
+          sor('ideasmile','怎麼妳這個修女好像不信神啊？'),
+          any('scare',''),
+          ren('evaluate','……我只是比一般人更瞭解『神』是什麼罷了。'),
+          nou('cringe','蕾娜小姐，那種話……'),
+          ren('front','我知道。'),
+          ren('handout','明天航行許可就會下來了，今天先好好休息吧。'),
+          ren('handout','羅賽爾的廢城很大喔，養足體力再出發吧。'),
         ] } ],
         /* ── 走出旅店（合流之後第一次離開這一格）── `onLeave`（同東泊 -1532）。
-           ⚠ 稿上「蕾：remind」→ 蕾娜沒有 remind 這張，用 `commandsoft`。
+           ⚠ 蕾娜 `remind` ver -1793 交件，已換上。
            ⚠ `ss_raid_go` ＝往里朋家族據點出發；出航鎖（`ss_depart`）照舊鎖著 —— 據點那一段的稿到了再由它插。 */
         onLeave:[
           { flag:'ss_raid_go', need:'ss_inn_merge', sides:{ RENNA:'L' }, lines:[
-            ren('watch','他們的據點在市郊，穿過市集走一段就到了。'),
+            /* ⚠ `checkpoint`：里朋莊園那幾場是劇情戰（打輸回檔）—— 回檔點要落在**還能自由行動**的地方，
+               就是出發前這一刻（人在旅店、這一段還沒記旗 ⇒ 讀回來會再演一次出發）。 */
+            ren('watch','他們的據點在市郊，穿過市集走一段就到了。', { checkpoint:true }),
             lokN('sad','修女大人……'),
             ren('bow','別擔心，這個人很強的。'),
-            ren('commandsoft','還有，不可以叫我修女大人。'),
+            ren('remind','還有，不可以叫我修女大人。'),
             ren('bow','這是我們的秘密喔。'),
             lokN('happy','嗯！'),
             sor('ready','出發！'),
@@ -9413,7 +9452,8 @@ export const TOWNS = {
        `back` 會掛在「來時方向的反向」＝左，兩端相反（§6.5.4）。
      · 每格 `noTime:true`（這一批 10 張都是下午硬光，沒有時段差分）、迷霧預設、`wilderness`（私人莊園沒有營業時間）。
      · 草稿標的：露台 `terrace`＝休息處（`rest`＋`noWild`）、地下囚室 `cellar`＝終點（馬努決戰）。
-     ⚠ **還沒有的**：戰鬥（結算點在囚室還是露台 Ray 未定）、`wildSpawn`、劇情、小地圖 —— 現在走進去是空的。
+     ⚠ ver -1793：Ray 的稿到了 —— 門房／車道／前庭／馬車房／大廳各一場、沙龍是劇情＋馬努收段（同一局 `ss_raid`）。
+       後廊、地下囚室、露台稿上沒用到，照舊是空的；`wildSpawn`、小地圖仍沒有。
      ⚠ `bgm:'folkroma2'`（ver -1785 Ray 指定；原本是程式端暫挑的 suspense）。 */
   sofiaout: {
     name: '里朋莊園',
@@ -9423,13 +9463,76 @@ export const TOWNS = {
     nodes: {
       terrace:    { bg:'sofiaout_terrace', name:'里朋莊園　露台', noTime:true, rest:true, noWild:true, exits:{ down:'salon' } },
       backhall:   { bg:'sofiaout_backhall', name:'里朋莊園　後廊', noTime:true, exits:{ right:'hall', down:'cellar' } },
-      hall:       { bg:'sofiaout_hall', name:'里朋莊園　大廳', noTime:true, exits:{ left:'backhall', right:'salon', down:'forecourt' } },
-      salon:      { bg:'sofiaout_salon', name:'里朋莊園　沙龍', noTime:true, exits:{ up:'terrace', left:'hall' } },
+      hall:       { bg:'sofiaout_hall', name:'里朋莊園　大廳', noTime:true, exits:{ left:'backhall', right:'salon', down:'forecourt' },
+        acts:[ { flag:'ss_hall_done', need:'ss_raid_go', storyBattle:true, lines:[ { battle:'ss_hall' } ] } ] },
+      /* ══ 沙龍：里朋 → 馬努戰 → 挾持 → 狙擊（ver -1793，Ray 的稿）══
+         ⚠ 站位整幕固定：我方四人站左、對面的人（里朋／馬努／蘿法）站右 —— 對白在兩邊來回，
+           不固定的話同一側會一直抽牌換人（§6.5）。
+         ⚠ 挾持與狙擊那兩張是**雙人圖**（馬努＋蘿法，`withChar`）：蘿法那兩句寫成不帶立繪的台詞，
+           由雙人圖點亮；「呀！」那一拍換成 `shot`（稿：`npc_ss_lofa_shoot`，交件那張是畫上去的棋盤格，
+           用同一畫面的去背版 `cryshoot`）。
+         ⚠ 馬努那一場是這一局的收段（`sessionEnd`，結算在他打完）；劇情戰，打輸回檔到出發前。
+         ⚠ 「（槍聲）」＝里朋被自己人打中 → `se_enemy_revolver`（稿上沒指定哪一支，挑最接近的）。
+         ⚠ 插圖 `35_bellinda` 由下往上平移，「插圖結束」＝蕾娜那一句收掉。
+         ⚠ 演完 `goto:'@santasofia:inn'`（稿：「強制回到旅店」）—— 回旅店那一幕掛在旅店的 `acts`（`ss_raid_home`）。 */
+      salon:      { bg:'sofiaout_salon', name:'里朋莊園　沙龍', noTime:true, exits:{ up:'terrace', left:'hall' },
+        acts:[
+        { flag:'ss_raid_done', need:['ss_raid_go','ss_hall_done'], storyBattle:true, goto:'@santasofia:inn',
+          sides:{ RENNA:'L', NOUVELLE:'L', SORANA:'L', ANYA:'L', RIPON:'R', MANU:'R', LOFA:'R', LOFA_N:'R' }, lines:[
+          lof('cry',''),
+          sor('furiouscute',''),
+          rip('clap','敢在我的地界鬧事，你們是外地的賞金獵人吧？'),
+          rip('clap','身手不錯，出個價……'),
+          { speaker:'NARRATION', text:'', se:'se_enemy_revolver', auto:700 },
+          rip('hurt','啊……'),
+          { speaker:'NARRATION', text:'', se:'se_dooropen', auto:800 },
+          man('draw','你、是你們！'),
+          { battle:'ss_manu' },
+          man('draw','可、可惡！'),
+          { speaker:'NARRATION', text:'', se:'se_reload', auto:900 },
+          man('capture','都別動！'),
+          { speaker:'LOFA_N', text:'啊！' },
+          man('capture','該死的，聖王廳的狗拿什麼耗子！'),
+          sor('guardtalk','卑鄙的傢伙！'),
+          ren('command','放開她，留你一條生路。'),
+          man('capture','狗屁生路！進了治安廳他們一樣會吊死我！'),
+          man('capture','既然如此，'),
+          man('capture','我就帶這女的一起上路——'),
+          { speaker:'LOFA_N', text:'呀！', se:'se_weapon_sniper', portrait:{ char:'MANU', expr:'shot', show:true } },
+          sor('battlecry','狙擊？從哪邊來的？'),
+          any('point',''),
+          { speaker:'NARRATION', text:'', cg:'35_bellinda', cgNoTime:true, cgPan:'up', auto:2400 },
+          sor('battlecrylookaside','那是……賞金獵人？'),
+          ren('commandsoft','正好，這個功勞就讓給他們了。', { cg:null }),
+          ren('commandsoft','趁還沒驚動治安廳快走吧。'),
+          nou('help','來，站得起來嗎？'),
+          lofN('cry','我……我還以為……'),
+          lofN('cry',''),
+          sor('tire',''),
+        ] } ] },
       cellar:     { bg:'sofiaout_cellar', name:'里朋莊園　地下囚室', noTime:true, exits:{ up:'backhall' } },
-      forecourt:  { bg:'sofiaout_forecourt', name:'里朋莊園　噴泉前庭', noTime:true, exits:{ up:'hall', right:'carriage', down:'avenue' } },
-      carriage:   { bg:'sofiaout_carriage', name:'里朋莊園　馬車房', noTime:true, exits:{ left:'forecourt' } },
-      lodge:      { bg:'sofiaout_lodge', name:'里朋莊園　莊園門房', noTime:true, exits:{ right:'avenue', down:'road' } },
-      avenue:     { bg:'sofiaout_avenue', name:'里朋莊園　棕櫚車道', noTime:true, exits:{ up:'forecourt', left:'lodge' } },
+      forecourt:  { bg:'sofiaout_forecourt', name:'里朋莊園　噴泉前庭', noTime:true, exits:{ up:'hall', right:'carriage', down:'avenue' },
+        acts:[ { flag:'ss_forecourt_done', need:'ss_raid_go', storyBattle:true, lines:[ { battle:'ss_forecourt' } ] } ] },
+      carriage:   { bg:'sofiaout_carriage', name:'里朋莊園　馬車房', noTime:true, exits:{ left:'forecourt' },
+        acts:[ { flag:'ss_carriage_done', need:'ss_raid_go', storyBattle:true, lines:[ { battle:'ss_carriage' } ] } ] },
+      /* ══ 莊園門房（ver -1793，Ray 的稿）══
+         · 出發之前走到這裡（餐飲街右邊一直通著）：門衛喝斥、把人趕回園道 —— 每次都演（`until`），
+           並記下「來過」（`ss_lodge_seen`）。⚠ 趕人那兩句是稿上門衛的前兩句，趕回去是我加的（不然走得進莊園）。
+         · 出發之後：「若之前有來過」換成「不是跟你講了閒人勿近嗎！」，然後開打。 */
+      lodge:      { bg:'sofiaout_lodge', name:'里朋莊園　莊園門房', noTime:true, exits:{ right:'avenue', down:'road' },
+        acts:[
+        { until:'ss_raid_go', goto:'road', lines:[
+          grd(null,'！！', { flags:['ss_lodge_seen'] }),
+          grd(null,'你們是幹什麼的！'),
+        ] },
+        { flag:'ss_lodge_done', need:'ss_raid_go', storyBattle:true, lines:[
+          grd(null,'！！'),
+          grd(null,'你們是幹什麼的！',        { skipIf:'ss_lodge_seen' }),
+          grd(null,'不是跟你講了閒人勿近嗎！', { onlyIf:'ss_lodge_seen' }),
+          { battle:'ss_lodge' },
+        ] } ] },
+      avenue:     { bg:'sofiaout_avenue', name:'里朋莊園　棕櫚車道', noTime:true, exits:{ up:'forecourt', left:'lodge' },
+        acts:[ { flag:'ss_avenue_done', need:'ss_raid_go', storyBattle:true, lines:[ { battle:'ss_avenue' } ] } ] },
       road:       { bg:'sofiaout_road', name:'里朋莊園　橄欖園道', noTime:true, noWild:true, exits:{ up:'lodge', back:'@santasofia:tavern' } },
     },
   },

@@ -82,7 +82,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1792';
+export const VERSION = 'ver 2026.09.22-1793';
 
 export const GAME_CONFIG = {
 
@@ -2372,6 +2372,15 @@ export const GAME_CONFIG = {
     /* ⚠ ver -1375：`enemy` 由借來的 `guild_hunter` 改成東泊自己的 `bounty_ep`
        （Ray 交了 man_bounty_EP）。-1346 那句「先用帝都的」到此為止。 */
     ep_guild_hunter: { enemy:'bounty_ep', noEval:true, noSaint:true, noPartner:true },
+    /* ══ 里朋莊園（ver -1793，Ray 交稿）══ 一路打進去算**同一局**（`session:'ss_raid'`），
+       沙龍的馬努收段（`sessionEnd`）—— 中間幾格不結算、不閉棺（§6.5.4.3）。
+       門房→棕櫚車道→噴泉前庭→馬車房→大廳→沙龍，敵人照稿。 */
+    ss_lodge:     { enemy:'thug_pistol',  session:'ss_raid' },
+    ss_avenue:    { enemy:'thug_rifle',   session:'ss_raid' },
+    ss_forecourt: { enemy:'thug_lookout', session:'ss_raid' },
+    ss_carriage:  { enemy:'thug_shotgun', session:'ss_raid' },
+    ss_hall:      { enemy:'thug_squad',   session:'ss_raid' },
+    ss_manu:      { enemy:'manu',         session:'ss_raid', sessionEnd:true },
     /* ══⚠⚠⚠ 鏡湖・出口前的那一場（ver -1524，Ray 的 Stage10-A 稿）══════════════
        ⚠⚠ **`allowLose:true`** —— 稿上**勝敗都有台詞**（「不愧是學長」／「你是不是
          沒睡飽呀」），所以這是「劇本要它可以被打輸」的場次（§6.5.2）：
@@ -3652,7 +3661,7 @@ export const GAME_CONFIG = {
          ⚠ 實測那張表本身是混的：33 支語音的「現值÷掃描建議」從 0.69 到 2.62、
            中位數 1.00 —— 多數本來就直接用掃描值，只有 -711 那一批過鏈另量。
            所以這裡不套任何「修正係數」（套了就是憑空發明一個數字）。 */
-      se_cooking:1.59, se_openletter:3.70, vo_maria_dishdone:0.91,   // ⚠ se_cooking ver -954 換新檔（39.7→3.73 秒）重量
+      se_cooking:1.59, se_openletter:3.70, se_dooropen:2.55,   /* ver -1793 audio_scan：平均 −21.9 */ vo_maria_dishdone:0.91,   // ⚠ se_cooking ver -954 換新檔（39.7→3.73 秒）重量
 
       /* ── 武器 ── */
       se_weapon_pistol_01:0.607, se_weapon_pistol_02:1.165, se_weapon_pistol_03:1.751,
@@ -4273,6 +4282,8 @@ export const ASSETS = {
   enemy_thug_shotgun: "resources/enemy/man_thug_shotgun.webp",
   enemy_thug_lookout: "resources/enemy/man_thug_lookout.webp",
   enemy_thug_boss:    "resources/enemy/man_thug_boss.webp",
+  enemy_thug_squad:   "resources/enemy/man_thug_squad.webp",   // ver -1793：里朋莊園大廳
+  enemy_manu:         "resources/si/npc/ssophia_si_manu_draw.webp",   // ver -1793：沙龍的馬努（借立繪）
   /* ══⚠⚠ 北方泊地城鎮戰的雜怪（ver -596，Ray 指定四隻隨機出）＋教堂的 Boss（祭壇獸）══
      ⚠⚠ **一定要放在 `resources/enemy/` 底下，不可以留在 `_drafts`**（ver -595，
        Ray 回報「手機端讀不到怪的圖」）：靜態空間（GitHub Pages）跑的是 Jekyll，

@@ -1851,7 +1851,7 @@ const SE_FILES=[
   /* ══ Stage8（ver -953）══ 瑪麗亞的廚房與科爾文那一幕。
      ⚠ `se_cooking` 有 **39.7 秒**（一整段煎煮）—— 演出只用前面幾秒，
        所以它走 `SFX.playCue` 的把手收掉，不是 `playSe`（那一支會放到底）。 */
-  'se_cooking.m4a', 'se_openletter.m4a', 'vo_maria_dishdone.m4a',
+  'se_cooking.m4a', 'se_openletter.m4a', 'se_dooropen.m4a', 'vo_maria_dishdone.m4a',
   'se_villagealarm.m4a',   // 夏爾村警鐘（ver -772，Ray 交件）
   'se_enemy_roardeer.m4a',   // 樹靈鹿主的吼（ver -879，Ray 交件；配變異那一拍的紫炎）
   'se_enemy_sakura.m4a',     // 櫻花狂亂的受擊音（ver -899，鹿主的主動攻擊）
@@ -2567,7 +2567,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1792';
+const KERB_V='?v=1793';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

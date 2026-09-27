@@ -177,7 +177,11 @@ export const SPEAKERS = {
      ⚠ 小女孩（Loki）與少女（Lofa）在稿上一直以「小女孩」「少女」稱呼 —— 顯示名照稿。 */
   MANU_X:     { name:'？？？', art:'manu' },
   LOKI:       { name:'小女孩', art:'loki' },
-  LOKI_N:     { name:'洛姬',   art:'loki' },   // ver -1784：旅店合流之後稿上改叫「洛姬」（同一張立繪）
+  LOKI_N:     { name:'蘿奇',   art:'loki' },   // ver -1784：旅店合流之後稿上改叫名字（同一張立繪）；ver -1793 Ray：「洛姬改成蘿奇」
+  LOFA_N:     { name:'蘿法',   art:'lofa' },   // ver -1793：救出之後稿上叫她名字（同一張立繪）
+  MANU:       { name:'馬努',   art:'manu' },   // ver -1793：沙龍那一段稿上直接叫「馬努」
+  RIPON:      { name:'里朋',   art:'ripon' },  // ver -1793：里朋家族的老大
+  GUARD_SS:   { name:'門衛',   art:'thug_guard' },   // ver -1793：莊園門衛（借敵人圖）
   DOORMAN_SS: { name:'門房',   art:null },     // ver -1784：聖索菲亞旅店的門房（沒有立繪，只出聲）
   LOFA:       { name:'少女',   art:'lofa' },
   WORKER_SS:  { name:'路人',   art:'worker_ss' },
@@ -411,6 +415,9 @@ export const ART = {
     lookaside: { src:'resources/si/renna_si_lookaside.webp?v=2', top:4, bot:1519, fx:0.513 },
     nod:       { src:'resources/si/renna_si_nod.webp?v=2', top:7, bot:1520, fx:0.508 },
     pointmap:  { src:'resources/si/renna_si_pointmap.webp?v=2', top:4, bot:1511, fx:0.507 },
+    /* ver -1793：Ray 交件（里朋莊園那一段的「不可以叫我修女大人」）；measure_si 實量。 */
+    remind:      { src:'resources/si/renna_si_remind.webp',      top:6, bot:1529, fx:0.552 },
+    remindsmile: { src:'resources/si/renna_si_remindsmile.webp', top:8, bot:1521, fx:0.575 },
     salute:    { src:'resources/si/renna_si_salute.webp?v=2', top:1, bot:1495, fx:0.486 },
     side:      { src:'resources/si/renna_si_side.webp?v=2', top:5, bot:1502, fx:0.503 },
     sipdrink:  { src:'resources/si/renna_si_sipdrink.webp?v=2', top:4, bot:1513, fx:0.492 },
@@ -592,6 +599,10 @@ export const ART = {
     blush:   { src:'resources/si/nouvelle_si_blush.webp', top:4, bot:1512, fx:0.572 },
     coldstare: { src:'resources/si/nouvelle_si_coldstare.webp', top:4, bot:1512, fx:0.560 },
     covermouth:{ src:'resources/si/nouvelle_si_covermouth.webp', top:3, bot:1529, fx:0.567 },
+    /* ver -1793：Ray 交件（聖索菲亞更衣後／救人那一段）；measure_si 實量。 */
+    shycover:    { src:'resources/si/nouvelle_si_shycover.webp',     top:12, bot:1530, fx:0.578 },
+    shycoverpeek:{ src:'resources/si/nouvelle_si_shycoverpeek.webp', top:4,  bot:1531, fx:0.608 },
+    help:        { src:'resources/si/nouvelle_si_help.webp',         top:5,  bot:1528, fx:0.580 },
     cry:       { src:'resources/si/nouvelle_si_cry.webp', top:4, bot:1526, fx:0.581 },
     eat:       { src:'resources/si/nouvelle_si_eat.webp', top:3, bot:1529, fx:0.578 },
     handout:   { src:'resources/si/nouvelle_si_handout.webp', top:4, bot:1526, fx:0.579 },
@@ -1620,7 +1631,13 @@ export const ART = {
     front:    { src:'resources/si/npc/ssophia_si_manu_front.webp',    top:4, bot:1531, fx:0.464 },
     scream:   { src:'resources/si/npc/ssophia_si_manu_scream.webp',   top:6, bot:1531, fx:0.463 },
     cringe:   { src:'resources/si/npc/ssophia_si_manu_cringe.webp',   top:7, bot:1525, fx:0.408 },
-    complain: { src:'resources/si/npc/ssophia_si_manu_complain.webp', top:4, bot:1532, fx:0.410 },
+    complain: { src:'resources/si/npc/ssophia_si_manu_complain.webp?v=2', top:7, bot:1525, fx:0.440 },   // ver -1793：Ray 換圖（同名覆蓋 ⇒ ?v=2），重量
+    draw:     { src:'resources/si/npc/ssophia_si_manu_draw.webp',     top:9, bot:1522, fx:0.416 },
+    /* 挾持蘿法（ver -1793）：一張圖兩個人 ⇒ `withChar:['LOFA_N']`，蘿法開口時點亮這一張（§雙人立繪）。 */
+    capture:  { src:'resources/si/npc/npc_ss_lofa_capture.webp', top:13, bot:1501, fx:0.402, withChar:['LOFA_N','LOFA'] },
+    /* 被狙擊那一瞬（稿：`npc_ss_lofa_shoot`）。⚠ 交件的 `shoot.png` 是**畫上去的棋盤格**（假透明），
+       同一個畫面的正確去背版是 `cryshoot` —— 用它。 */
+    shot:     { src:'resources/si/npc/npc_ss_lofa_cryshoot.webp', top:4, bot:1514, fx:0.353, withChar:['LOFA_N','LOFA'] },
   } },
   loki: { cm:128, standCm:151, eye:30,   /* standCm：ver -1771 Ray「小女孩太低了，往上拉一個頭」（+23cm≈她一個頭高；只動頭頂位置、不動大小） */ fx:0.482, top:4, bot:1526,
            side:'R', alt:null, base:'resources/si/npc/npc_ss_loki_ask.webp', expr:{
@@ -1630,6 +1647,7 @@ export const ART = {
     shock: { src:'resources/si/npc/npc_ss_loki_shock.webp', top:5,  bot:1527, fx:0.513 },
     give:  { src:'resources/si/npc/npc_ss_loki_give.webp',  top:10, bot:1518, fx:0.478 },
     guard: { src:'resources/si/npc/npc_ss_loki_guard.webp', top:3,  bot:1532, fx:0.508 },
+    cry:   { src:'resources/si/npc/npc_ss_loki_cry.webp',   top:5,  bot:1518, fx:0.457 },   // ver -1793 Ray 交件
   } },
   lofa: { cm:158, eye:30, fx:0.431, top:5, bot:1529,
            side:'R', alt:null, base:'resources/si/npc/npc_ss_lofa_front.webp', expr:{
@@ -1637,7 +1655,19 @@ export const ART = {
     talk:     { src:'resources/si/npc/npc_ss_lofa_talk.webp',     top:4, bot:1530, fx:0.464 },
     complain: { src:'resources/si/npc/npc_ss_lofa_complain.webp', top:5, bot:1528, fx:0.488 },
     lookaway: { src:'resources/si/npc/npc_ss_lofa_lookaway.webp', top:3, bot:1523, fx:0.454 },
+    cry:      { src:'resources/si/npc/npc_ss_lofa_cry.webp',      top:11, bot:1525, fx:0.464 },   // ver -1793 Ray 交件
+    cryhug:   { src:'resources/si/npc/npc_ss_lofa_cryhug.webp',   top:6,  bot:1530, fx:0.594 },
   } },
+  /* ══ 里朋家族的老大（ver -1793，Ray 交件）══ 身高是估的（成年男性 175）；measure_si 實量。 */
+  ripon: { cm:175, eye:30, fx:0.409, top:9, bot:1518,
+           side:'R', alt:null, base:'resources/si/npc/npc_ss_boss_clap.webp', expr:{
+    clap: { src:'resources/si/npc/npc_ss_boss_clap.webp', top:9, bot:1518, fx:0.409 },
+    hurt: { src:'resources/si/npc/npc_ss_boss_hurt.webp', top:9, bot:1529, fx:0.261 },
+  } },
+  /* ══ 莊園門衛（ver -1793）══ 稿上直接點名敵人圖 `man_thug_pistol` —— 沒有另外的立繪，借敵人那一張。
+     ⚠ 那張人物只畫到 34~1476（上下都留白），measure_si 實量。 */
+  thug_guard: { cm:176, eye:30, fx:0.415, top:34, bot:1476,
+           side:'R', alt:null, base:'resources/enemy/man_thug_pistol.webp', expr:{} },
   /* ⚠ `flip:true`（ver -1791，Ray：「路人水平翻轉」）＝這張一律翻（同謝尼 `sh_villager`，與 `mirror` 是兩件事）。 */
   worker_ss: { cm:174, eye:30, fx:0.430, top:11, bot:1532,
            side:'R', alt:null, flip:true, base:'resources/si/npc/npc_ss_worker_talk.webp', expr:{
