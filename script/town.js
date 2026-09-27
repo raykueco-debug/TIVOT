@@ -4755,7 +4755,7 @@ export const TOWNS = {
           sor('angry',''),
           ren('coldstare','想清楚！贏了妳就一輩子在這裡蹲苦窯！輸了妳就……！'),
           ren('lookaway',''),
-          nou(null,'索菈娜小姐……'),
+          nou('cringe','索菈娜小姐……'),   // ver -1800 Ray：門房那一拍的前一拍用 cringe
           door('喂、喂！誰讓妳進來的！'),
           { speaker:'NARRATION', text:'', se:'se_steps', auto:1200 },
           lok('cry','祭司大人！', { skipIf:['ss_date_anya','ss_date_sor'] }),
