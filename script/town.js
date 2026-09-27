@@ -4594,7 +4594,7 @@ export const TOWNS = {
         /* ══ Stage 14・支線四的後半：走出貧民窟的下一格（ver -1769）══
            貧民窟只通舊街區，所以「走到下一格」＝這裡。演完強制回旅店（`goto`）。 */
         acts:[
-        { flag:'ss_sor_resolve', need:'ss_slum_sor', withWho:'SORANA', goto:'inn', sides:{ SORANA:'L' }, lines:[
+        { flag:'ss_sor_resolve', need:'ss_slum_sor' until:'ss_inn_merge', withWho:'SORANA', goto:'inn', sides:{ SORANA:'L' }, lines:[
           sor('sad','……'),
           sor('embarrass','說了那麼多漂亮話，其實我……一點辦法也沒有啊……'),
           sor('sad','……'),
@@ -4613,6 +4613,8 @@ export const TOWNS = {
         exits:{ back:'oldtown' } },
       /* ver -1743（美術 §四③）：這一格改成**貧民窟**。id 不改（小地圖 spots 與出口都指著它）；
          ⚠ 中文名是美術的暫定，**等 Ray 正名**。舊的 `sofia_dock.webp` 留著沒刪。 */
+      /* ⚠ ver -1797（Ray：「觸發旅店爭執『所以我說…』的時候，貧民窟所有的約會事件都要過期」）：
+         三條約會事件＋索菈娜舊街區的後半（`ss_sor_resolve`，接在貧民窟那一段後面）都寫 `until:'ss_inn_merge'`。 */
       dock:     { bg:'sofia_slum',     name:'聖索菲亞　貧民窟', noTime:true,
         exits:{ back:'oldtown' },
         /* ══ Stage 14・支線二／三／四：約會中走到貧民窟（ver -1769，Ray 的稿）══
@@ -4621,7 +4623,7 @@ export const TOWNS = {
              索菈娜那一段也站左（她可翻）；諾薇兒本來就在左。
            ⚠ 稿上「小女孩：「？」guard」＝`npc_ss_loki_guard`；少女只寫 talk／lookaway 的那幾拍照對。 */
         acts:[
-        { flag:'ss_slum_anya', need:'ss_arrive', withWho:'ANYA', sides:{ ANYA:'L' }, lines:[
+        { flag:'ss_slum_anya', need:'ss_arrive' until:'ss_inn_merge', withWho:'ANYA', sides:{ ANYA:'L' }, lines:[
           lok('happy','神父大人！'),
           any('scare',''),
           lok('give','對不起，媽媽生病了，沒有什麼能貢獻的……'),
@@ -4643,7 +4645,7 @@ export const TOWNS = {
           lof('lookaway','不要擔心。媽媽的藥錢，我會想辦法。'),
           any('talk','……'),
         ] },
-        { flag:'ss_slum_nou', need:'ss_arrive', withWho:'NOUVELLE', lines:[
+        { flag:'ss_slum_nou', need:'ss_arrive' until:'ss_inn_merge', withWho:'NOUVELLE', lines:[
           nou('surprise','！！'),
           lok('happy','祭司大人！'),
           nou('scare2','這個地方……'),
@@ -4671,7 +4673,7 @@ export const TOWNS = {
           lof('lookaway','不要擔心。媽媽的病，我會想辦法。'),
           nou('lookdown','……'),
         ] },
-        { flag:'ss_slum_sor', need:'ss_arrive', withWho:'SORANA', dateAff:0,   /* 後半（舊街區）演完才給 */ sides:{ SORANA:'L' }, lines:[
+        { flag:'ss_slum_sor', need:'ss_arrive' until:'ss_inn_merge', withWho:'SORANA', dateAff:0,   /* 後半（舊街區）演完才給 */ sides:{ SORANA:'L' }, lines:[
           sor('angry','！！'),
           sor('determine','竟然把森住民都趕到這種地方……！'),
           lok('happy','姐姐！'),
