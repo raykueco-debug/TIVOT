@@ -82,7 +82,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1784';
+export const VERSION = 'ver 2026.09.22-1785';
 
 export const GAME_CONFIG = {
 
@@ -3839,6 +3839,9 @@ export const GAME_CONFIG = {
          建議 gain **0.682**（同一輪量 sylblanc 1.137、Prairie4 0.754，校準點對得上）。
          峰值 +0.32 dBFS，降增益不會碰到 `peakCeilDb`。 */
       peritune_emerald_hill_loop:0.682,
+      /* 里朋莊園（ver -1785，Ray 指定）：耳機 −12.9／手機模型 −13.0 ⇒ 平均 **−13.0**，建議 **0.91**
+         （同一輪 emerald_hill 仍量 0.68、sylblanc 1.14，校準點對得上）。峰值 +0.8 dBFS，降增益不碰 `peakCeilDb`。 */
+      peritunematerial_folk_roma2_loop:0.91,
       /* ══ 東方泊地那一夜的兩首（ver -1520 交件、**ver -1542 補量**）══
          -1520 當下音檔還沒進這台機器所以刻意留空；這一輪檔案在了，
          跑 `tools/audio_scan.html` 量出來的：
@@ -4815,6 +4818,7 @@ export const ASSETS = {
        接回來的就是它（見那張卡）。 */
   bgm_sylblanc:     "resources/audio/bgm/peritune_sylblanc_loop.m4a",                     // 鏡湖（ver -1542，Ray 指定）
   bgm_emeraldhill:  "resources/audio/bgm/peritune_emerald_hill_loop.m4a",                 // 薇拉馮德港（ver -1765，Ray 指定）
+  bgm_folkroma2:    "resources/audio/bgm/peritunematerial_folk_roma2_loop.m4a",           // 里朋莊園（ver -1785，Ray 指定；檔名改小寫）
   bgm_misty:        "resources/audio/bgm/peritune_misty_hollow_loop.m4a",
   bgm_whirlwind:    "resources/audio/bgm/peritune_whirlwind.m4a",   // 索菈娜為夥伴的戰鬥曲（ver -837；ver -1105 刪掉下面那份重複的）
   bgm_whistling:    "resources/audio/bgm/peritune_whistling_winds_loop.m4a",

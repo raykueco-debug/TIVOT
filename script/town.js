@@ -9414,11 +9414,11 @@ export const TOWNS = {
      · 每格 `noTime:true`（這一批 10 張都是下午硬光，沒有時段差分）、迷霧預設、`wilderness`（私人莊園沒有營業時間）。
      · 草稿標的：露台 `terrace`＝休息處（`rest`＋`noWild`）、地下囚室 `cellar`＝終點（馬努決戰）。
      ⚠ **還沒有的**：戰鬥（結算點在囚室還是露台 Ray 未定）、`wildSpawn`、劇情、小地圖 —— 現在走進去是空的。
-     ⚠ `bgm:'suspense'`（北方泊地那一首）是程式端自己挑的，Ray 要換就改這一格。 */
+     ⚠ `bgm:'folkroma2'`（ver -1785 Ray 指定；原本是程式端暫挑的 suspense）。 */
   sofiaout: {
     name: '里朋莊園',
     entry: 'road',
-    bgm: 'suspense',
+    bgm: 'folkroma2',   // ver -1785：Ray 指定 PerituneMaterial_Folk_Roma2（原本是程式端暫挑的 suspense）
     wilderness: true,
     nodes: {
       terrace:    { bg:'sofiaout_terrace', name:'里朋莊園　露台', noTime:true, rest:true, noWild:true, exits:{ down:'salon' } },
