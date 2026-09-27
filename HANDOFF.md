@@ -6,7 +6,7 @@
 > · ✔ 薇拉馮德 BGM：`emeraldhill` 早在 -1765 就接了；酒吧 `vela_bar` 掛點**待定**。
 > · ✔ 米夏隨從：維持 `cm:176`（Ray：「180 不重要，隨便就好」）；`side:'R'` 早已接。
 > · ⏸ 廢城（hallcourt／backhall／祭壇／wildSpawn）**待定**；里朋莊園**等 Ray 的腳本**（`ss_depart` 仍沒人插）。
-> · 🎨 **美術單**：市政廳室內 `sofia_cityhall_in`（營業 [8,17] ⇒ 只要 `_Day`），**參考那一段的插畫**（Ray）。交件後程式端把市政廳櫃台那段的 `bg` 改指它。
+> · 🎨✔ **美術已交（09-27）**：市政廳室內 **`resources/background/sofia/sofia_cityhall_in.webp`**（單張、無時段尾綴 ⇒ `bg:'sofia_cityhall_in', noTime:true`；新檔不用跳 `ASSET_VER`），內容照插畫 `34_rennacityhall`（尖拱窗、石柱、金紋章掛旗、深色木櫃台），右三分之一留牆給公務員立繪。**程式端：把市政廳櫃台那段的 `bg` 改指它。**
 > · ✔ 這台 Windows 已裝 **Node 24.19.0**（winget）；-1787 lint **0 錯誤**、40 提醒（皆既有）。Git Bash 若找不到 node，先 `export PATH="/c/Program Files/nodejs:$PATH"`。
 > · ⚠ **還沒查的**：近兩週 git 刪除裡約 25 張「無替代檔、無本機備份」（東泊／拉文舊背景、蕾娜舊立繪、`FLM_DragonThrone`、`gen_renna_si_blush`…），多半是改名，但沒逐張確認 —— 要不要還原等 Ray。
 > · 🔁 **換機器**（09-27 收工，Windows → 下一台）：`origin/main` ＝ -1787，工作樹乾淨、沒有欠 commit。

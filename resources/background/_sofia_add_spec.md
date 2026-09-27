@@ -131,3 +131,7 @@ night：以**剛剛那一張**為底，再畫一張同一個地點的時段差�
 ## 七、2026-09-26 晚：餐飲街「進去是室內」—— 程式端的 `dining` 要拆（不是重畫）
 Ray：「索菲亞的餐飲街應該是街道而不是室內」。`sofia_bistro`（`tavern` 節點的圖）本來就是街道；
 看到室內是因為 `dining.scenes` 的 fallback＝酒吧。交程式端改三分支（HANDOFF 第 14 項），美術不必重畫。
+
+## 八、2026-09-27：市政廳室內 `sofia_cityhall_in` ✔（程式端開單，Ray：參考那一段的插畫）
+- 單張 day（營業 [8,17]）、檔名無時段尾綴 ⇒ 程式端 `noTime:true`。畫風參考 `sofia_guild`、內容參考 `34_rennacityhall`。
+- 櫃台中央偏左、右三分之一只有牆＋掛旗＋尖拱窗（公務員立繪站那裡）、無人。原稿 `_originals/background/sofia/sofia_cityhall_in.png`。
