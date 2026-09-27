@@ -230,3 +230,25 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
   2. α 乾淨的話，前景色**不要用「B＝白」那一段**，改用 pymatting 的 `estimate_foreground_ml(image, alpha)`（不需要已知背景色）；
   3. 驗收照 §5：`matting_eval.py crops` 出 100% 裁切、深色棋盤上用眼睛看，**不准看縮圖**；近白比例這張不準（白髮），看像素數。
 - 交件：轉 webp（`cwebp -q 85 -alpha_q 100 -exact`）放 `resources/si/npc/`，**檔名還沒定**（這張是 UUID 檔名，要問 Ray 叫什麼、給哪一段劇情用），原 PNG 進 `resources/_originals/SI/NPC/`。
+
+## 十五、2026-09-27～28（Mac）收工 —— 蘿媞六張・cry 手指・市政廳室內・惡棍群體
+
+### ✔ 做完、程式端也接了
+| 件 | 交件 | 程式端 |
+|---|---|---|
+| **`npc_ss_loki` 六張重畫：拿掉頭巾與腰巾**（Ray：「保留原風格重畫」）→ 程式端隨後整批改名 **`loti`／蘿媞**（ver -1801） | `resources/si/npc/npc_ss_loti_{ask,give,guard,happy,sad,shock}.webp`；先畫 `ask` 當新基底，其餘五張「新基底髮型服裝＋原圖姿勢表情」各自重畫（每串上傳兩張圖）；舊原稿 `_originals/SI/NPC/_npc_ss_loti_*_v1_headscarf.png` | ✅ -1795 |
+| **蘿媞 `cry` 手指**（Ray：「手指數量不對」） | ⚠ 第一次（520de78）我數成五指、其實**六指**，被 Ray 退。改走 Ray 的流程：GPT 重出（失敗）→ **Gemini 修指兩輪**（第一輪只修好右手；第二輪在多的那根**畫紅圈**才修好左手）→ GPT 重繪清晰版＋真 alpha。原稿 `_originals/SI/NPC/_npc_ss_loti_cry_v1_fingers.png`／`_v2_sixfingers.png` | ✅ -1804（`?v=3`） |
+| **聖索菲亞市政廳室內 `sofia_cityhall_in`**（程式端開的美術單，參考插畫 `34_rennacityhall`） | `resources/background/sofia/sofia_cityhall_in.webp`（單張 day、無時段尾綴 ⇒ `noTime:true`） | 等程式端把櫃台那段 `bg` 改指它（HANDOFF 頂部那條已標「美術已交」） |
+| **惡棍群體 `man_thug_squad`**（Ray：「四五個人，躲翻倒的沙發，向主角射擊」） | v3 定稿：5 個**全新**角色（老水手／油頭刀疤臉／草帽胖子／眼罩捲髮青年／黑帽大鬍子）、系列低彩度土色、**五把槍口全對 viewer**、沙發超寬超出畫面。v1（與現有 thug 撞造型）、v2（配色太雜、槍口亂）都進 `_recycle/`，原稿 `_originals/enemy/_man_thug_squad_v{1,2}_*.png` | 還沒引用（等腳本／敵人卡） |
+
+### ⚠ 還開著
+- **§十四 那張 GPT 拒畫的 alpha**（`resources/si/npc/64ea1d7a-…cd04 (1).png`，棋盤格底）—— Ray 說去 **PC 走本機 `si_matting.py`**，作法寫在 §十四（前景色別用「B＝白」）。檔名還沒定。
+- **原本的惡棍畫風參考 `resources/si/npc/ssophia_si_thug.png` 已經不見**（原位、回收區都沒有，也從沒入版控）—— 不是美術刪的；之後惡棍系的畫風參考改用 `_originals/enemy/man_thug_dual.png`／`man_thug_pistol.png`（乾淨原稿，不要用深底總覽 jpg）。
+- 其餘等 Ray 的（酒吧 `vela_bar` 掛點、廢城／郊外重出、小地圖兩張）照 §十三。
+
+### 這一輪學到的（產線）
+1. **驗手指：每隻手單獨原尺寸放大、逐根列指尖再數**，兩隻都要重數（模型常只修好一隻）。要刪哪根就**在圖上畫紅圈**上傳 —— 文字「每隻手 5 根」沒用。（已寫進 memory `count-fingers-at-full-zoom`）
+2. **Gemini 的上傳選單／Cmd+V 要 Chrome 視窗在前景**才吃得到；不在前景時選單打不開、貼上也送不進去（合成 paste／drop 事件都無效）。卡住就請 Ray 把 Chrome 拉到前景。
+3. **Gemini 生成圖的下載**：「下載原尺寸」按了不落地；在頁面內把 `<img>` 畫到 canvas 再 `toBlob` 下載可行，但只有預覽尺寸（682×1024）——所以一定要**回 GPT 重繪成 1024×1536**（本來就要回 GPT 去背）。
+4. **群體敵人**：①參考圖用乾淨原稿、②色調限定系列色、③**逐把點名檢查槍口方向**（第一次常有兩把朝旁邊）、④要「不同角色」就**點名禁掉現有系列的招牌造型**。
+5. `file_upload` 只能讀專案與 scratchpad：`~/Downloads` 的檔要先複製到 scratchpad 再上傳。
