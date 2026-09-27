@@ -9466,7 +9466,7 @@ export const TOWNS = {
     nodes: {
       terrace:    { bg:'sofiaout_terrace', name:'里朋莊園　露台', noTime:true, rest:true, noWild:true, exits:{ down:'salon' } },
       backhall:   { bg:'sofiaout_backhall', name:'里朋莊園　後廊', noTime:true, exits:{ right:'hall', down:'cellar' } },
-      hall:       { bg:'sofiaout_hall', name:'里朋莊園　大廳', noTime:true, exits:{ left:'backhall', right:'salon', down:'forecourt' },
+      hall:       { bg:'sofiaout_hall', name:'里朋莊園　大廳', noTime:true, exits:{ left:'backhall', up:'salon', down:'forecourt' },   // ver -1799 Ray：「大廳往沙龍應該是往上」
         acts:[ { flag:'ss_hall_done', need:'ss_raid_go', storyBattle:true, lines:[ { battle:'ss_hall' } ] } ] },
       /* ══ 沙龍：里朋 → 馬努戰 → 挾持 → 狙擊（ver -1793，Ray 的稿）══
          ⚠ 站位整幕固定：我方四人站左、對面的人（里朋／馬努／蘿法）站右 —— 對白在兩邊來回，
@@ -9478,7 +9478,7 @@ export const TOWNS = {
          ⚠ 「（槍聲）」＝里朋被自己人打中 → `se_enemy_revolver`（稿上沒指定哪一支，挑最接近的）。
          ⚠ 插圖 `35_bellinda` 由下往上平移，「插圖結束」＝蕾娜那一句收掉。
          ⚠ 演完 `goto:'@santasofia:inn'`（稿：「強制回到旅店」）—— 回旅店那一幕掛在旅店的 `acts`（`ss_raid_home`）。 */
-      salon:      { bg:'sofiaout_salon', name:'里朋莊園　沙龍', noTime:true, exits:{ up:'terrace', left:'hall' },
+      salon:      { bg:'sofiaout_salon', name:'里朋莊園　沙龍', noTime:true, exits:{ up:'terrace', down:'hall' },
         acts:[
         { flag:'ss_raid_done', need:['ss_raid_go','ss_hall_done'], storyBattle:true, goto:'@santasofia:inn',
           sides:{ RENNA:'L', NOUVELLE:'L', SORANA:'L', ANYA:'L', RIPON:'R', MANU:'R', LOFA:'R', LOFA_N:'R' }, lines:[

@@ -66,8 +66,9 @@ POS = {
   },
   # ── 里朋莊園（ver -1762）：10 格，座標照搬 `tools/map_sofiaout_draft.py`（那支已回收）；跨圖出口見 OUT_POS ──
   'sofiaout': {
-    'terrace':(8,4),
-    'backhall':(4,5), 'hall':(6,5), 'salon':(8,5),
+    'terrace':(6,3),   # ver -1799：沙龍改在大廳正上方（Ray），露台跟著往上
+    'salon':(6,4),
+    'backhall':(4,5), 'hall':(6,5),
     'cellar':(4,6), 'forecourt':(6,6), 'carriage':(8,6),
     'lodge':(4,7), 'avenue':(6,7),
     'road':(4,8),
