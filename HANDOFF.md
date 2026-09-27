@@ -114,7 +114,29 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1790`（-1790：戰鬥／城鎮發熱三處）
+# HANDOFF — 截至 `ver 2026.09.22-1793`（-1793：里朋莊園劇本接上）
+
+**`-1791`～`-1793`**（Mac，程式 session）
+· **-1791 索拉娜量臉縮圖**：Ray「watch 太大」「彎腰的也太大，要量臉」。成因＝縮放鎖 bbox 身高，而 GPT 把前傾的姿勢**畫大**填滿畫布（bbox 高度幾乎一樣、臉在圖上比較大）。
+  量法：`serious` 的臉當樣板、多尺度＋旋轉比對（OpenCV），失敗的 7 張用並排縮放圖目測；驗收＝把每顆頭除以倍率縮回去並排，大小一致。
+  只改**臉偏大 ≥15%** 的 19 張：`cm＝176×(h/1518)÷倍率`＋`standCm:176`（頭頂不動）。watch 141、hug 111、remind/die 140…（`read` 一族 154）。⚠ 沒進遊戲看過，Ray 看。
+  ⚠ 量測腳本在 scratchpad（沒入庫）；要做成工具再說。
+· **-1791 路人翻轉**：`worker_ss` 加 `flip:true`。
+· **-1792 艦砲音**：Ray 把 `se_weapon_cannon_120mm.m4a` 改名成 `se_weapon_sniper.m4a`（逐位元組相同）→ 三處引用改指新檔名（`ASSETS.se_ship_cannon`／`fileGain`／`SE_FILES`）。
+· **-1793 里朋莊園（Ray 的稿「約會分支旅店合流」到出航）**：
+  ① 旅店合流改稿：小女孩 `cry`、「走。」＋索好感 +3、開門聲 `se_dooropen`、諾 `shycover`／`shycoverpeek`、走出旅店蕾娜 `remind`；出發那一拍 `checkpoint`。
+  ② `sofiaout`：門房（出發前＝喝斥＋趕回園道並記 `ss_lodge_seen`；出發後依來過沒換句）→ 車道／前庭／馬車房／大廳各一場 → 沙龍（里朋被自己人打、馬努戰收段、挾持雙人圖 `capture`、狙擊 `shot`、插圖 `35_bellinda`）→ `goto:'@santasofia:inn'`。
+     戰鬥 `config.battles.ss_*`（同一局 `ss_raid`、`ss_manu` 收段）；敵卡新增 `thug_squad`／`manu`（數值同賞金獵人）。
+  ③ 回旅店那一幕（`ss_raid_home`，插圖 `36_loki&lofa` 由上往下）→ 開放睡覺（`sleepFlag`）→ 隔天 7~10 點 `ss_depart`（出航鎖解開，只立旗不演）。
+  ④ 飛行：`DEPART_TALKS` ④（開圖標羅賽爾廢城）＋新欄位 `outro`／`flags`；`nofly_lifted` ＝解除所有禁航區（`noflyOff()`，紅罩重烘）。
+  · 新角色：`RIPON`（里朋）、`GUARD_SS`（門衛，借 `man_thug_pistol`）、`MANU`、`LOFA_N`；`LOKI_N` 正名**蘿奇**（Ray）。
+  · ⚠ 我判斷的：稿上「（槍聲）」用 `se_enemy_revolver`；`36_loki&lofa` 在索菈娜開口時收；出發前門房「趕回園道」是我加的；
+    蘿法 `shoot.png` 是**畫上去的棋盤格** → 用同畫面的 `cryshoot`（那張 PNG 還在資料夾，要不要回收 Ray 決定）。
+  · ⚠ 還缺：安雅 `shock`（用 `surprise`）。蕾娜合流後仍是「出門」（門敲不到，沒有她的敲門稿）。
+  · ⚠ 戰鬥與整段沒實跑過（預覽面板隱藏、城鎮走不動），Ray 測。
+· 差分總表重出：434 個差分（已接 407、未接 27）。
+
+# （上一段）截至 `ver 2026.09.22-1790`（-1790：戰鬥／城鎮發熱三處）
 
 **`-1790`**（Mac，程式 session；Ray：「完全沒走飛行畫面，只有戰鬥跟城鎮仍然大發熱，檢查火線跟槍煙」）
 · **查的結論：沒有「開了沒關」的東西**。火線 0.15s／槍煙 ≤2.1s／槍火火星 0.9s 全部有計時器移除、動畫全是有限長度；
