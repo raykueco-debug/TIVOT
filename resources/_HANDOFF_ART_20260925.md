@@ -218,3 +218,15 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 7. **程式端支援 `sail.dir`**：入口的 `down` 被佔用時出航可以掛別的方向（薇拉馮德掛右、木雅克神殿掛左）。
 8. **不要用 `dining.scenes`**：新城一律「餐飲街＝街道，店走得進去」。
 9. **有程式 session 在線時**：`ListAgents` → `SendMessage` 直接通知它接交接項目（這一輪 remind／smile／relief／薇拉馮德都是這樣接的，比等 Ray 轉交快）。
+
+## 十四、2026-09-27（Mac → 交 PC）：一張 GPT 拒畫的 alpha，**走本機**（Ray：「gpt 拒畫，這張走本機，進交接我去 pc 做」）
+
+- **檔案**：`resources/si/npc/64ea1d7a-d141-499d-b8ae-2b2ed7a7cd04 (1).png`（未入版控；`~/Downloads/64ea1d7a-…cd04.png` 是同一張，已逐位元組比對）
+  內容：聖索菲亞的惡棍（繡花背心、紅腰巾、長靴，被打得後仰、手槍脫手）架著白髮深膚的女孩（破白洋裝、哭喊）。1024×1536。
+- **現況**：RGB，**背景是畫上去的灰白棋盤格**（不是白底，也不是 alpha）。GPT「100% 保留，只把棋盤格變真透明」那句被拒。
+- **Ray 核准走本機**＝憲法 §5 ver -1516 那一條：`tools/si_matting.py`（ToonOut ＋ pymatting），只有 PC 那台有 `.venv-matting`。
+- ⚠⚠ **它的前提是白底**：前景色 F 是用 `I = αF + (1−α)B`、**B＝白** 解出來的。這張的 B 是棋盤格 ⇒ 半透明的髮絲／布邊會混進格子的灰，疊上深色背景就是一圈雜點。建議順序：
+  1. 先只跑 alpha（`--raw-alpha`，看 α 本身有沒有把棋盤格判成前景 —— 格子是規則的高對比紋理，最容易被誤判）；
+  2. α 乾淨的話，前景色**不要用「B＝白」那一段**，改用 pymatting 的 `estimate_foreground_ml(image, alpha)`（不需要已知背景色）；
+  3. 驗收照 §5：`matting_eval.py crops` 出 100% 裁切、深色棋盤上用眼睛看，**不准看縮圖**；近白比例這張不準（白髮），看像素數。
+- 交件：轉 webp（`cwebp -q 85 -alpha_q 100 -exact`）放 `resources/si/npc/`，**檔名還沒定**（這張是 UUID 檔名，要問 Ray 叫什麼、給哪一段劇情用），原 PNG 進 `resources/_originals/SI/NPC/`。
