@@ -91,7 +91,7 @@
 > 23. ✅ **-1795 已接**（六條 `?v=2`＋取景重量、角色層 base 跟著 ask） **（09-27，Mac）聖索菲亞 NPC `npc_ss_loki` 六張重畫：拿掉頭巾與腰巾**（Ray：「npc_ss_loki 系列保留原風格重畫，不要有頭巾跟腰巾」）—— `resources/si/npc/npc_ss_loki_{ask,give,guard,happy,sad,shock}.webp` 同名覆蓋（9850ff0；先畫 `ask` 當新基底，其餘五張照原圖姿勢表情＋新基底的髮型服裝），舊版進 `_recycle/`，舊原稿改名 `_originals/SI/NPC/_npc_ss_loki_*_v1_headscarf.png`。
 >    程式端：`script/speakers.js` 那六條 src **加 `?v=2`**（同名覆蓋），**取景要換**（頭巾拿掉頭頂變低；`base` 是 ask，縮放跟著它）——`measure_si.py` 重量：
 >    `ask top:19 bot:1527 fx:0.477`／`give top:7 bot:1529 fx:0.463`／`guard top:15 bot:1529 fx:0.510`／`happy top:29 bot:1523 fx:0.559`／`sad top:11 bot:1523 fx:0.475`／`shock top:11 bot:1530 fx:0.461`。
-> 24. **（09-28，Mac）蘿媞 `cry` 手指修正**（Ray：「loti cry 那張手指數量不對，讓 gpt 重出」）—— `resources/si/npc/npc_ss_loti_cry.webp` 同名覆蓋（GPT 一次就修好，兩手各 5 指；其餘與原圖一致），舊版進 `_recycle/`，舊原稿改名 `_originals/SI/NPC/_npc_ss_loti_cry_v1_fingers.png`。
+> 24. ✅ **-1803 已接**（`?v=2`＋取景重量） **（09-28，Mac）蘿媞 `cry` 手指修正**（Ray：「loti cry 那張手指數量不對，讓 gpt 重出」）—— `resources/si/npc/npc_ss_loti_cry.webp` 同名覆蓋（GPT 一次就修好，兩手各 5 指；其餘與原圖一致），舊版進 `_recycle/`，舊原稿改名 `_originals/SI/NPC/_npc_ss_loti_cry_v1_fingers.png`。
 >    程式端：`script/speakers.js` 的 `cry` src **加 `?v=2`**；取景 `measure_si.py` 重量＝`top:4 bot:1518 fx:0.460`（現行 `top:5 bot:1518 fx:0.457`，差 1px，可改可不改）。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑；**§十三＝09-27 收工換機器：薇拉馮德 73 張、惡棍 6 張、索拉娜三張回版、還開著的事、三個不明刪除**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
