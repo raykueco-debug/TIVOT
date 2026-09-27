@@ -187,3 +187,31 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 - 程式端：`ASSET_VER` 四鍵、`dock` 中文名 —— HANDOFF 第 12 項。
 - 還欠：`map_santasofia` 的 `dock` 圖示換貧民窟簡筆（美術單，未開）。
 - 薇拉馮德拓樸 v2（帝都加強版）等 Ray 點頭：`resources/map/_verafond_spec.md` §三 有四個待定問題。
+
+## 十三、2026-09-26 晚～09-27（Mac）收工換機器 —— 薇拉馮德 73 張・惡棍 6 張・索拉娜三張回版
+
+### ✔ 做完、程式端也接了
+| 件 | 交件 | 程式端 |
+|---|---|---|
+| **薇拉馮德港 `verafond`**（拓樸 v2 Ray 定案；「整座城義大利風、當世最富庶的港都」「1900 年」） | 背景 **73／73**（`resources/background/verafond/`；室外 15 格四差分、店內單張、旅店四差分、酒吧三差分、咖啡廳／甜品店單張）；工單 `resources/background/_verafond_spec.md`（§六＝`TOWNS.verafond` 整段，機器產生） | ✅ ver -1764（8af09df）接上 22 格；出航 `sail:{dir:'right'}`；⚠ 旅店暫不寫 `inn:true`（沒有敲門對白表）、店沒有買賣介面 |
+| 聖索菲亞四張同名覆蓋（§十二） | `sofia_slum`／`guild`／`firearm`／`grocerie` | 見 HANDOFF 12 |
+| 聖索菲亞餐飲街「進去是室內」 | 不是圖錯，是 `dining.scenes` fallback＝酒吧 | ✅ 已改三分支（`bar`／`restaurant` 走得進去） |
+| **惡棍系 6 張 `man_thug_*`**（Ray：「`ssophia_si_thug` 此系列風格，大多手槍步槍，1900 年」「被突擊的感覺」「不要女的、表情動作多變化」） | `resources/enemy/man_thug_{pistol,shotgun,rifle,dual,lookout,boss}.webp`，真 alpha；工單 `resources/enemy/_thug_spec.md`，總覽 `_thug_all6_sheet.jpg` | 等 Ray 給數值卡（HANDOFF 15） |
+| **索拉娜 `remind`／`smile`／`relief` 回上一版**（Ray：「修壞了，回上一版」） | 三張都換回 d556b53（09-20）那版，09-21／22 的重製版進 `_recycle/` | ✅ `?v=` 已跳（-1767／-1768／-1783），取景用重量值 |
+
+### ⚠ 還開著（下一台接手）
+- **等 Ray**：薇拉馮德的 **bgm**；**酒吧 `vela_bar` 掛哪一格**（餐飲街四向滿、碼頭右邊給了出航）；惡棍 6 人的**數值卡**；廢城 `hallcourt` 正門、郊外 `backhall` 石階要不要重出；郊外結算點（囚室／露台）。
+- **美術待開**：① **薇拉馮德小地圖**（`tools/map_compose.py verafond`，POS 已在 `map_layout.py`；GPT 圖示表格子不均勻要先切符號重排，見 §十一）② **聖索菲亞小地圖**：`dock` 船錨圖示換貧民窟、補 `bar`／`restaurant` 兩個點。
+- ⚠⚠ **工作樹裡有三個刪除不是美術做的、也沒走回收區**（都沒 commit，檔案在 git 裡救得回來）：
+  `resources/enemy/man_thug_boss.webp`（惡棍幹部，原稿在 `_originals/enemy/man_thug_boss.png`）／`resources/si/npc/corvin_si_ecstasy.webp`（`speakers.js` 還指著它）／`resources/si/gen_renna_si_blush.webp`。另外 `docs/girl_star_economy.xlsx` 有改動。**問 Ray 是不是他刪的再動。**
+
+### 產線的坑（這一輪學到的）
+1. **ChatGPT Go 方案真的有圖像上限**：頁面明寫「你已達 Go 方案的圖像生成要求上限，1 小時後重置」—— 有這段字才是額度；沒有這段字的「不出圖」照舊先切前景（memory 那條）。這一輪一小時約十幾張。
+2. **A/B 二選一**：點了「圖像 2 較好」，後面的時段差分**仍接 A 的構圖**（圓環廣場踩到）⇒ 看下一則差分接哪張再定案，不要先轉檔。
+3. **「Unusual activity has been detected」**：一次送太密。先讓其他串跑完，再按那串的「重試」（會把提示詞放回輸入框，再送一次；參考圖可能沒跟上）。
+4. **SPA 內點「新聊天」連結不重載頁面** ⇒ 注入的 helper（`__ins`／`__send`／`__grab2`／共通段）留著，換格不必重貼共通段。`navigate` 會洗掉它們。
+5. **要「真 alpha」**：第一則要求透明常回**畫上去的棋盤格**（RGB）；在原串追「100% 保留剛剛這張，只把棋盤格背景變成真正透明的 Alpha PNG」一次就過。收件一律先看 `mode` 與角落 alpha。
+6. **「慌亂、大吼」只會出同一張驚叫臉** ⇒ 逐張指定一種反應，並明寫「不要張大嘴驚叫（別人用過了）」。
+7. **程式端支援 `sail.dir`**：入口的 `down` 被佔用時出航可以掛別的方向（薇拉馮德掛右、木雅克神殿掛左）。
+8. **不要用 `dining.scenes`**：新城一律「餐飲街＝街道，店走得進去」。
+9. **有程式 session 在線時**：`ListAgents` → `SendMessage` 直接通知它接交接項目（這一輪 remind／smile／relief／薇拉馮德都是這樣接的，比等 Ray 轉交快）。
