@@ -79,6 +79,11 @@
 >    · ⚠ **各算各的**（直接用 `env(safe-area-inset-top)`，**不含 `--notch-extra`**，鐵律 7 的兩個計算點）：3529／3974／4088／4120／4690（`#gearSheet .gs-close`）、1153、2231／2269、4113、4684、`css/lootsheet.css` 263／270。
 >      ⇒ 建議一律改讀 `var(--notch-bar-h)`（27 行那一份），不要再各自寫 `env()`。
 >    · ⚠ **沒查到有閃**：`#tutSkipBtn`（2518，`top:12px`，要看它的定位容器有沒有被推下去）、劇情舞台 `#storyStage` 上的鈕（選單齒輪、地圖鈕、跳段鈕、店舖大鈕）、`#townInfo`、`flight/index.html` 的上緣元件（全檔只有 9 處 `safe-area-inset-top`）。
+>    · ⚠⚠⚠ **Ray 實機回報（09-27 晚）：道具欄、商店都有點不到的情形 —— 不只動態島，最上面那一整條（電量、時間那一排狀態列）底下的東西都點不到。**
+>      ⇒ 要閃的是**整條狀態列的高度**，不是動態島那一小塊的寬度。規則改寫成：**任何可點的東西，上緣都要落在狀態列（整條 `safe-area-inset-top`）之下，再留呼吸空間**。
+>      美術只讀不改看到的（`style.css` 09-27 版）：整備頁 `#gearSheet` 是 `padding-top:env(safe-area-inset-top)+12px`、關閉鈕 `top:env()+10px`；商店 `#lootSheet.dock-left .loot-panel` 是 `margin-top:env()+100px`。
+>      **照字面這幾個都在狀態列之下，實機卻點不到** ⇒ 讀程式判斷不了，要在實機量：開那兩頁，跑下面那一行看 `env(safe-area-inset-top)` 實際是幾、頁首分頁列／關閉鈕的 `getBoundingClientRect().top` 是幾。
+>      可能的方向（沒驗證）：`env()` 在那個情境是 0（例如是從別的層開出來的、或 WebView／PWA 模式不同）；頁首那一列被別的透明層蓋住；或 iOS 在狀態列下方額外吃掉一段觸控。**先量再修，不要猜。**
 >    · **驗法**：桌機的 safe-area 是 0，**讀程式讀不出來** —— 用 iPhone 15 Pro 實機或 Safari 模擬（`safe-area-inset-top` ≈ 59px），逐畫面（首頁／讀取頁／劇情／城鎮／旅店／店舖／戰鬥／結算／整備頁／選單／飛行）跑一次
 >      `(h=>[...document.querySelectorAll('button,[role=button],.corner-btn')].filter(e=>e.offsetParent&&e.getBoundingClientRect().top<h).map(e=>e.id||e.className))(document.getElementById('notchBar').getBoundingClientRect().height)`，**回傳要是空陣列**（用 `#notchBar` 的實際高度當線 —— `--notch-bar-h` 是 `calc(env())`，`getPropertyValue` 拿到的是字串算不出數字）。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑；**§十三＝09-27 收工換機器：薇拉馮德 73 張、惡棍 6 張、索拉娜三張回版、還開著的事、三個不明刪除**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
