@@ -1,3 +1,14 @@
+> ⚠⚠⚠ **`-1787`（09-27，Windows，程式 session）—— Ray 的決定與已接**
+> · ✅ 第 20 項的刪除：`excite`／`carrynouvelle`（基本那張）**鍵直接拿掉**（Ray）；引用改 `sor('talksmile',…)`（「跟平常一樣的！」）與 `carrynouvellesmirk`（古墓背人那兩句）。`furiouscute` 改指 `sorana_si_furious.webp`。三張圖的刪除與這一版同 commit。第 20 項**其餘**（20 條版號、`stare`、三個新鍵）**還沒做**。
+> · ✅ 第 21 項：`holdnouvelle` → `.webp`，舊 PNG 已回收。
+> · ✅ 第 12 項②：`dock` 正名「聖索菲亞　貧民窟」（Ray）。
+> · ✅ 第 15 項：惡棍六人的敵卡 `thug_pistol/rifle/dual/shotgun/lookout/boss`（`script/enemies.js`，**數值整組照抄 `guild_hunter`**，Ray：「六人全部走賞金獵人」）＋ `ASSETS.enemy_thug_*`。⚠ 還沒有 `config.battles` 引用（等里朋腳本）。⚠⚠ **六張 `man_thug_*.webp` 已在 `ed8d78e2` 被刪**——要不要從 `70e50e52` 還原，等 Ray。
+> · ✔ 薇拉馮德 BGM：`emeraldhill` 早在 -1765 就接了；酒吧 `vela_bar` 掛點**待定**。
+> · ✔ 米夏隨從：維持 `cm:176`（Ray：「180 不重要，隨便就好」）；`side:'R'` 早已接。
+> · ⏸ 廢城（hallcourt／backhall／祭壇／wildSpawn）**待定**；里朋莊園**等 Ray 的腳本**（`ss_depart` 仍沒人插）。
+> · 🎨 **美術單**：市政廳室內 `sofia_cityhall_in`（營業 [8,17] ⇒ 只要 `_Day`），**參考那一段的插畫**（Ray）。交件後程式端把市政廳櫃台那段的 `bg` 改指它。
+> · ⚠ 這台 Windows **沒有 node** ⇒ `script_lint.py` 跑不了；-1787 只用 grep ＋括號平衡驗過。
+
 > ⚠⚠⚠ **美術 session（2026-09-24 下午，Mac）交了三件，程式端要接** —— 都是一行到一段的事：
 > 1. ✅ **-1728 已接** 索拉娜 `whisper` `?v=3`／`top:4 bot:1524`
 > 2. `script/town.js` 的 `lake` 與 `canyon` 各補 `map:{img,spots}`（新增，整段可抄：`resources/map/_minimap_worklist.md` 末段）
@@ -58,6 +69,18 @@
 >    ⚠⚠ **Ray 確認（09-27）：`furiouscute`／`excite`／`carrynouvelle` 三個刪除都是他刪的**（檔案還在 git 裡，工作樹是刪除狀態、**沒有 commit**）。
 >    · **`furiouscute`：先改路徑再刪**（Ray：「furious 路徑改指後刪」）—— `script/speakers.js` 的 `furiouscute` 那一行 `src` 改成 `'resources/si/sorana_si_furious.webp'`（取景照舊 `top:9 bot:1527 fx:0.474`），**改完同一個 commit 再 `git rm resources/si/sorana_si_furiouscute.webp`**。`furious.webp` 已在 6b60c17 推上去。
 >    · `excite`／`carrynouvelle`：`speakers.js` 還指著（`excite` 699 行、`carrynouvelle` 896 行），刪除 commit 上去就缺圖 —— 要換成什麼圖、還是拿掉那兩個鍵，**等 Ray 說**，定了再一起 commit 刪除。
+> 21. **（09-27，Windows）蕾娜 `holdnouvelle` 換臉**（alpha 夾，Ray 重畫了蕾娜的臉；諾薇兒與身體不動）—— 交件 **`resources/si/renna_si_holdnouvelle.webp`**（新檔；alpha 與現行 PNG 逐像素相同）。
+>    程式端：`script/speakers.js` 363 行 `holdnouvelle` 的 `src` 由 `renna_si_holdnouvelle.png` 改成 **`.webp`**（新路徑、不必 `?v=`），**取景不動**（`top:3 bot:1530 fx:0.394`）。
+>    改完之後舊的 `resources/si/renna_si_holdnouvelle.png` 走 `tools/recycle.sh` 回收（它是會被載入的目錄裡唯一的 PNG 立繪；先留著是為了改路徑之前遊戲不缺圖）。
+>    ⚠ 那張 PNG 的 alpha 最高只到 254（人物內部 251~254，整個人約 1~2% 透明）—— 原本就是這樣，這次沒動；要修得另外處理。
+> 22. ⚠⚠ **（09-27，Ray 在美術 session 下的程式指令，已依鐵律 11 轉交）「注意所有按鈕不要被動態島擋住」** —— 全域規則：**任何可點的東西都不准落在動態島／瀏海帶裡**。
+>    美術這邊只讀不改，盤點如下（`style.css` 行號，09-27 版）：
+>    · ✔ **安全**：戰鬥角落鈕 `#exitBtn`／`#giveUpBtn`／`#testClearBtn`／`#hpLockBtn`（`top:10px` 相對 `#top`，而 `#app` 有 `padding-top:var(--notch-bar-h)`，229 行）；`#muteBtn`（105）、`#langBtn`（2065）、`#alLangBtn`（200）、`#prepBack`（2140）都吃 `--notch-bar-h`。
+>    · ⚠ **各算各的**（直接用 `env(safe-area-inset-top)`，**不含 `--notch-extra`**，鐵律 7 的兩個計算點）：3529／3974／4088／4120／4690（`#gearSheet .gs-close`）、1153、2231／2269、4113、4684、`css/lootsheet.css` 263／270。
+>      ⇒ 建議一律改讀 `var(--notch-bar-h)`（27 行那一份），不要再各自寫 `env()`。
+>    · ⚠ **沒查到有閃**：`#tutSkipBtn`（2518，`top:12px`，要看它的定位容器有沒有被推下去）、劇情舞台 `#storyStage` 上的鈕（選單齒輪、地圖鈕、跳段鈕、店舖大鈕）、`#townInfo`、`flight/index.html` 的上緣元件（全檔只有 9 處 `safe-area-inset-top`）。
+>    · **驗法**：桌機的 safe-area 是 0，**讀程式讀不出來** —— 用 iPhone 15 Pro 實機或 Safari 模擬（`safe-area-inset-top` ≈ 59px），逐畫面（首頁／讀取頁／劇情／城鎮／旅店／店舖／戰鬥／結算／整備頁／選單／飛行）跑一次
+>      `(h=>[...document.querySelectorAll('button,[role=button],.corner-btn')].filter(e=>e.offsetParent&&e.getBoundingClientRect().top<h).map(e=>e.id||e.className))(document.getElementById('notchBar').getBoundingClientRect().height)`，**回傳要是空陣列**（用 `#notchBar` 的實際高度當線 —— `--notch-bar-h` 是 `calc(env())`，`getPropertyValue` 拿到的是字串算不出數字）。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑；**§十三＝09-27 收工換機器：薇拉馮德 73 張、惡棍 6 張、索拉娜三張回版、還開著的事、三個不明刪除**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、

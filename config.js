@@ -82,7 +82,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1786';
+export const VERSION = 'ver 2026.09.22-1787';
 
 export const GAME_CONFIG = {
 
@@ -4266,6 +4266,13 @@ export const ASSETS = {
      借來當戰鬥圖，這一張是**專門畫的敵人圖**，所以它與 `NPC_ep_SI_bounty`（對話用）
      是兩張不同的圖 —— 不要互相借。 */
   enemy_bounty_ep: "resources/enemy/man_bounty_ep.webp",
+  /* 聖索菲亞的惡棍六人（ver -1787，數值走賞金獵人，見 enemies.js 的 thug_*）。 */
+  enemy_thug_pistol:  "resources/enemy/man_thug_pistol.webp",
+  enemy_thug_rifle:   "resources/enemy/man_thug_rifle.webp",
+  enemy_thug_dual:    "resources/enemy/man_thug_dual.webp",
+  enemy_thug_shotgun: "resources/enemy/man_thug_shotgun.webp",
+  enemy_thug_lookout: "resources/enemy/man_thug_lookout.webp",
+  enemy_thug_boss:    "resources/enemy/man_thug_boss.webp",
   /* ══⚠⚠ 北方泊地城鎮戰的雜怪（ver -596，Ray 指定四隻隨機出）＋教堂的 Boss（祭壇獸）══
      ⚠⚠ **一定要放在 `resources/enemy/` 底下，不可以留在 `_drafts`**（ver -595，
        Ray 回報「手機端讀不到怪的圖」）：靜態空間（GitHub Pages）跑的是 Jekyll，

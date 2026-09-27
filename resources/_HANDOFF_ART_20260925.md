@@ -200,6 +200,7 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 | **索拉娜 `remind`／`smile`／`relief` 回上一版**（Ray：「修壞了，回上一版」） | 三張都換回 d556b53（09-20）那版，09-21／22 的重製版進 `_recycle/` | ✅ `?v=` 已跳（-1767／-1768／-1783），取景用重量值 |
 | **索拉娜 `ready`／`readysmile` 回上一版**（09-27 Windows；Ray：「改回來」） | 兩張換回 d556b53（09-20），09-21 重製版（95d5226）進 `_recycle/` | ⚠ 待接：HANDOFF 第 19 項（兩張都跳 `?v=3`；`ready` 取景改 `top:6 bot:1467 fx:0.567`） |
 | **索拉娜 alpha 夾 24 張換臉**（09-27 Windows；Ray：「給辦了」） | 全部只換臉、alpha 不動；原 PNG 進 `_originals/si/*_src.png`；新鍵 `ideasmile`／`lookawayupset`／`taunt` | ⚠ 待接：HANDOFF 第 20 項、`resources/si/_sorana_alpha0927_worklist.md` |
+| **蕾娜 `holdnouvelle` 換臉**（09-27 Windows，alpha 夾） | `renna_si_holdnouvelle.webp`（新檔，alpha 不動）；原 PNG 進 `_originals/si/` | ⚠ 待接：HANDOFF 第 21 項（`.png`→`.webp`，之後回收舊 PNG） |
 
 ### ⚠ 還開著（下一台接手）
 - **等 Ray**：薇拉馮德的 **bgm**；**酒吧 `vela_bar` 掛哪一格**（餐飲街四向滿、碼頭右邊給了出航）；惡棍 6 人的**數值卡**；廢城 `hallcourt` 正門、郊外 `backhall` 石階要不要重出；郊外結算點（囚室／露台）。

@@ -359,8 +359,8 @@ export const ART = {
                        改量「左半上方的深色像素（眉眼）」＝ **0.394**（範圍 0.330~0.448）。
                      ⚠ 兩人都站著、幾乎佔滿畫布（3~1530）⇒ **不覆寫 `cm`**，
                        照角色層走（不像公主抱那一組，她在那裡被畫小了）。
-                     ⚠ 還是 `.png`，美術那一邊還沒轉 webp。 */
-                  holdnouvelle:{ src:'resources/si/renna_si_holdnouvelle.png',  top:3,  bot:1530, fx:0.394, withChar:['NOUVELLE'] },
+                     ⚠ ver -1787：美術 09-27 換臉交件 `.webp`（新檔名、不必 `?v=`），取景不動；舊 PNG 已回收。 */
+                  holdnouvelle:{ src:'resources/si/renna_si_holdnouvelle.webp',  top:3,  bot:1530, fx:0.394, withChar:['NOUVELLE'] },
                   scarejump:   { src:'resources/si/renna_si_scarejump.webp',   top:0,  bot:1533, fx:0.632 },
                   scarecute:   { src:'resources/si/renna_si_scarecute.webp',   top:0,  bot:1530, fx:0.537 },
                   blush:     { src:'resources/si/renna_si_blush.webp',     top:8,  bot:1522, fx:0.551 },
@@ -696,9 +696,10 @@ export const ART = {
        （top 0→6／bot 1535→1526／fx 0.500→0.454，沿用舊值會歪一截）。
        ⚠ `flight/index.html` 的 `PORTRAIT_EXPR.sorana.cringe` 是同一組數字，兩邊都改了。 */
     cringe:       { src:'resources/si/sorana_si_cringe.webp?v=4',   top:3,  bot:1527, fx:0.454 },
-    excite:       { src:'resources/si/sorana_si_excite.webp?v=2',        top:9,  bot:1521, fx:0.674 },
+    /* ⚠ ver -1787：`excite` 鍵拿掉（Ray：圖刪了、鍵直接拿掉）；唯一的引用改用 `talksmile`。 */
     excite2:      { src:'resources/si/sorana_si_excite2.webp?v=4',       top:9,  bot:1510, fx:0.688 },
-    furiouscute:  { src:'resources/si/sorana_si_furiouscute.webp?v=2',   top:9,  bot:1527, fx:0.474 },
+    /* ⚠ ver -1787：`furiouscute` 改指 `sorana_si_furious.webp`（Ray：「furious 路徑改指後刪」），取景照舊。 */
+    furiouscute:  { src:'resources/si/sorana_si_furious.webp',   top:9,  bot:1527, fx:0.474 },
     think:        { src:'resources/si/sorana_si_think.webp?v=2',         top:10,  bot:1527, fx:0.529, cm:168, standCm:176 },
     idea:         { src:'resources/si/sorana_si_idea.webp?v=2',          top:3,  bot:1525, fx:0.523 },
     /* 夏爾村抵達稿（ver -772，Ray 交稿）。逐張量（measure_si.py）。
@@ -893,7 +894,7 @@ export const ART = {
          （0.498），不是這一族（同這一版 battlecry 那一族踩到的坑）。
        ⚠ 庫裡還有第五張 `carrynouvellejealous`，Ray -1671 指示**先留著**、稿上沒用到，
          所以**不接線**（接了就是一個沒有人叫得到的鍵）。 */
-    carrynouvelle:       { src:'resources/si/sorana_si_carrynouvelle.webp?v=2', top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },
+    /* ⚠ ver -1787：基本那張 `carrynouvelle` 鍵拿掉（Ray：圖刪了、鍵直接拿掉）；兩處引用改用 `carrynouvellesmirk`。 */
     carrynouvellescream: { src:'resources/si/sorana_si_carrynouvellescream.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },
     carrynouvellesmirk:  { src:'resources/si/sorana_si_carrynouvellesmirk.webp',  top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },
     carrynouvelleshock:  { src:'resources/si/sorana_si_carrynouvelleshock.webp?v=2',  top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },

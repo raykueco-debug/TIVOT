@@ -207,7 +207,7 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   { speaker:'COOK_SV', kitchen:true, noMats:'s8_usual' },
   { goto:'s8_ate' },
   /* ── 沒帶食材的那一條 ─────────────────────────────────────────────── */
-  Object.assign(sor('excite','跟平常一樣的！'), { label:'s8_usual' }),
+  Object.assign(sor('talksmile','跟平常一樣的！'), { label:'s8_usual' }),
   mar(null,'好喔。'),
   /* `noAnim` ＝只有炒菜聲，不演料理（Ray 指定）。那一餐是 `cooking.dishes.usual`
      （`hidden`＋沒有配方＋自己沒有加成）—— ＋40 是「這一輪第一餐」給的，
@@ -4607,7 +4607,7 @@ export const TOWNS = {
         exits:{ back:'oldtown' } },
       /* ver -1743（美術 §四③）：這一格改成**貧民窟**。id 不改（小地圖 spots 與出口都指著它）；
          ⚠ 中文名是美術的暫定，**等 Ray 正名**。舊的 `sofia_dock.webp` 留著沒刪。 */
-      dock:     { bg:'sofia_slum',     name:'聖索菲亞　舊碼頭貧民窟', noTime:true,
+      dock:     { bg:'sofia_slum',     name:'聖索菲亞　貧民窟', noTime:true,
         exits:{ back:'oldtown' },
         /* ══ Stage 14・支線二／三／四：約會中走到貧民窟（ver -1769，Ray 的稿）══
            `withWho` ＝正在跟她約會才演（東泊 -1344 那一套）。三段各自一支旗。
@@ -9219,7 +9219,7 @@ export const TOWNS = {
                「同側」是**結果**，不必去動 `sides`。
              ⚠ 不要改成「讓諾薇兒也站右邊」：那會把她自己那張立繪叫出來，
                變成畫面上有兩個諾薇兒。 */
-          sor('carrynouvelle','別看我，諾薇兒背著比看起來重。'),
+          sor('carrynouvellesmirk','別看我，諾薇兒背著比看起來重。'),
           { speaker:'NOUVELLE', text:'索菈娜！',
             portrait:{ char:'SORANA', expr:'carrynouvellescream', show:true } },
           /* ⚠ 先聽到一把抓住的聲音，插圖才上（ver -1705，Ray：「在諾薇兒大喊索菈娜的下一拍
@@ -9282,7 +9282,7 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true,              tierMax:2, tierWho:'RENNA' },
           ren('smile','謝謝你相信我囉。',             { tierMax:2, tierWho:'RENNA' }),
           any('point','外面，有光。',                 { tierMax:2, tierWho:'RENNA' }),
-          sor('carrynouvelle','往那邊走看看吧。',     { tierMax:2, tierWho:'RENNA' }),
+          sor('carrynouvellesmirk','往那邊走看看吧。',     { tierMax:2, tierWho:'RENNA' }),
         ] } ] },
       /* ══ ver -1643：**廢坑道**（祭壇啟動後開啟）—— 從最深處一路接回墓門。
          ⚠ 兩端都要寫：墓門那一格也有 `right:'adit'` ＋ 同一支 `exitIf`。 */
