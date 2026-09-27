@@ -54,7 +54,7 @@
 >    ⚠ 新增兩格 ⇒ 小地圖 `map_santasofia` 要補兩個點（美術另開一單）；`map_layout.py` 補 `POS`。圖都已在庫，不用跳 `ASSET_VER`。
 >    ⚠⚠ 薇拉馮德工單 §五原本寫 `dining.scenes.bar` —— **同一個坑，已改掉**，見第 13 項／`_verafond_spec.md` §五。
 > 15. **（09-26 晚，Mac）惡棍系敵人 6 張 `man_thug_*`**（Ray：「`ssophia_si_thug` 這個系列風格的惡棍，大多用手槍、步槍，1900 年」「被突擊的感覺、不要女的、表情動作多變化」）——
->    `resources/enemy/man_thug_{pistol,shotgun,rifle,dual,lookout,boss}.webp`（1024×1536、真 alpha）；規格與每人的反應在 `resources/enemy/_thug_spec.md`、總覽 `_thug_all6_sheet.jpg`。
+>    `resources/enemy/man_thug_{pistol,shotgun,rifle,dual,lookout,boss}.webp` ＋ **群體 `man_thug_squad.webp`**（09-27，5 人躲在翻倒的沙發後射擊，整群當一個敵人）（1024×1536、真 alpha）；規格與每人的反應在 `resources/enemy/_thug_spec.md`、總覽 `_thug_all6_sheet.jpg`。
 >    程式端要做的（等 Ray 給卡）：`config.enemies` 各一張敵人卡，`kind:'human'`（結算「已擊敗」、**不吃**降臨／淨化演出）；圖路徑直接指 `resources/enemy/man_thug_*.webp`。全是新檔，不用跳 `ASSET_VER`。
 > 16. ✅ **-1767 已跳 `?v=3`** **（09-26 晚，Mac）索拉娜 `remind` 回上一版**（Ray：「索的 remind 修壞，回上一版」）—— `resources/si/sorana_si_remind.webp` 換回 d556b53（09-20 軟遮罩版），09-22 的重製版（3f5a10b）進 `_recycle/`。
 >    程式端：**`script/speakers.js` 的 `remind` 路徑 `?v=2` → `?v=3`**（同名覆蓋，不跳版號玩家永遠拿到修壞的那版）；取景值 `measure_si.py` 重量＝`top:1 bot:1525 fx:0.523`（現行寫 `top:4`，差 3px 可改可不改）。

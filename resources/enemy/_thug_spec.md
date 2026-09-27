@@ -57,3 +57,6 @@
   ⚠ 雙槍的槍口硝煙貼右緣（0.5%），人物本體沒被裁。
 - 19:55：`man_thug_lookout`（扭頭叫人；棋盤格 → 原串「100% 保留，只把背景變真透明」一次成功）／`man_thug_shotgun` **v2 暴怒反撲**（同名覆蓋，舊驚吼版進 `_recycle/`，原稿留 `_originals/enemy/_man_thug_shotgun_v1_shout.png`）✔。
   ⚠ 程式端還沒引用 `man_thug_*` ⇒ 這次同名覆蓋**不用**跳 `ASSET_VER`。
+- 09-27：**`man_thug_squad`**（Ray：「惡棍系列，四五個人，有的躲掩體翻過來的沙發，向主角射擊」）✔ 5 人躲在打滿彈孔的絲絨沙發後：中間雙手握槍開火／左邊探身亂射／後排步槍瞄準／紅頭巾裝彈／右邊鴨舌帽大喊。真 alpha、近白 0.0%。
+  ⚠ 左緣的槍口火光貼邊（0%），人物本體沒被裁。整群當一個敵人（§5 複數敵人）。
+  ⚠ 畫風參考改用 `_originals/enemy/man_thug_dual.png`＋`man_thug_rifle.png` —— 原本的 `resources/si/npc/ssophia_si_thug.png` **已經不見**（原位、回收區都沒有，也從沒入版控），不是美術刪的。
