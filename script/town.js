@@ -888,9 +888,9 @@ const BEL_WATER_FIRST = {
    ⚠ 包在段落上而不是改第一拍：有的段落的台詞是共用常數（`EP_LEAVE_TOMB_LINES`），不可以動到另一個用處。
    ⚠ 各章起點（章節表 `script/progress.js` 的落點）：10-A 初入雪都／11-A 初入古墓／12-A 底層梯廳（那一拍自己寫）／
      10-B 二次進古城／11-B 上船追／12-B 東泊旅店長談／13 東泊隔日（M1 審訊・M2 離店簡報）與走出古墓／14 出墓合流演完。 */
-/* 聖索菲亞的五位（Stage 14，ver -1769）：馬努（稿上一直是「？？？」）／小女孩 Loki／少女 Lofa／路人／市政廳櫃台。 */
-const mnx = N('MANU_X'), lok = N('LOKI'), lof = N('LOFA'), wkr = N('WORKER_SS'), cnS = N('COUNTER_SS');
-const lokN = N('LOKI_N');
+/* 聖索菲亞的五位（Stage 14，ver -1769）：馬努（稿上一直是「？？？」）／小女孩 Loti／少女 Lofa／路人／市政廳櫃台。 */
+const mnx = N('MANU_X'), lot = N('LOTI'), lof = N('LOFA'), wkr = N('WORKER_SS'), cnS = N('COUNTER_SS');
+const lotN = N('LOTI_N');
 const lofN = N('LOFA_N'), man = N('MANU'), rip = N('RIPON'), grd = N('GUARD_SS');   // ver -1793：里朋莊園
 const door = (text, extra) => Object.assign({ speaker:'DOORMAN_SS', text }, extra||{});   // 門房：沒有立繪
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
@@ -4500,17 +4500,17 @@ export const TOWNS = {
           any('argue','我……很生氣！'),
           ren('lookawaytalk','他們是後殖民時代的失敗者，能握在手上的紅利也只有森住民的階級化了。'),
           ren('sigh','明明也是廢奴協約國呢。'),
-          lok('ask','那個……'),
+          lot('ask','那個……'),
           nou('lookback','？'),
-          lok('ask','祭司大人！'),
+          lot('ask','祭司大人！'),
           nou('shock2','是！'),
-          lok('ask','你們是神派來懲戒壞人的嗎？'),
+          lot('ask','你們是神派來懲戒壞人的嗎？'),
           nou('shock',''),
           ren('bow','對不起啊，我們是……'),
-          lok('sad',''),
+          lot('sad',''),
           ren('worry',''),
           sor('nod','就是那樣喔。'),
-          lok('happy','！！'),
+          lot('happy','！！'),
           sor('back','剛剛那個，是壞人？'),
           wkr('talk','那是馬努，里朋家族的人。'),
           nou('shock2','里朋家族……'),
@@ -4519,8 +4519,8 @@ export const TOWNS = {
           ren('think','只要有錢什麼都幹。賭場、走私、保護費，甚至是……'),
           ren('think','人口買賣。'),
           any('scare',''),
-          lok('sad','我的姐姐……可能馬上就要被他們帶走了……'),
-          lok('shock','祭司大人，能不能幫幫她……'),
+          lot('sad','我的姐姐……可能馬上就要被他們帶走了……'),
+          lot('shock','祭司大人，能不能幫幫她……'),
           sor('angry','好！'),
           ren('command','索菈娜！'),
           ren('bow','對不起喔，這次我們是來消滅怪物的。'),
@@ -4621,12 +4621,12 @@ export const TOWNS = {
            `withWho` ＝正在跟她約會才演（東泊 -1344 那一套）。三段各自一支旗。
            ⚠ 站位：小女孩與少女都站右 —— 安雅（本位右、不可翻）這一段改站左；
              索菈娜那一段也站左（她可翻）；諾薇兒本來就在左。
-           ⚠ 稿上「小女孩：「？」guard」＝`npc_ss_loki_guard`；少女只寫 talk／lookaway 的那幾拍照對。 */
+           ⚠ 稿上「小女孩：「？」guard」＝`npc_ss_loti_guard`；少女只寫 talk／lookaway 的那幾拍照對。 */
         acts:[
         { flag:'ss_slum_anya', need:'ss_arrive', until:'ss_inn_merge', withWho:'ANYA', sides:{ ANYA:'L' }, lines:[
-          lok('happy','神父大人！'),
+          lot('happy','神父大人！'),
           any('scare',''),
-          lok('give','對不起，媽媽生病了，沒有什麼能貢獻的……'),
+          lot('give','對不起，媽媽生病了，沒有什麼能貢獻的……'),
           { speaker:'PLAYER', blank:true },
           lof('complain','你們是走錯地方了吧？要討貢獻的話，到上街區去啊！'),
           any('answer','我、我們不是……'),
@@ -4641,22 +4641,22 @@ export const TOWNS = {
           { speaker:'PLAYER', blank:true },
           lof('talk','笑死人了。生在強國的帝國民，有什麼資格對我們指手劃腳？'),
           lof('talk','隨口說說，誰都會。'),
-          lok('sad','姐姐……'),
+          lot('sad','姐姐……'),
           lof('lookaway','不要擔心。媽媽的藥錢，我會想辦法。'),
           any('talk','……'),
         ] },
         { flag:'ss_slum_nou', need:'ss_arrive', until:'ss_inn_merge', withWho:'NOUVELLE', lines:[
           nou('surprise','！！'),
-          lok('happy','祭司大人！'),
+          lot('happy','祭司大人！'),
           nou('scare2','這個地方……'),
-          lok('happy','是我家喔。'),
-          lok('give','對不起，媽媽生病了，沒有什麼能貢獻的……'),
+          lot('happy','是我家喔。'),
+          lot('give','對不起，媽媽生病了，沒有什麼能貢獻的……'),
           nou('explain','不、不用啦！'),        // 稿：expain（檔名的拼法；鍵是 explain）
           nou('front','來，這給妳。'),
           { speaker:'NARRATION', text:'', se:'se_coins', auto:1000 },
           lof('talk','那點錢給她也沒用喔。馬上就會被里朋家族吸乾了。'),
           nou('surprise','怎麼會……'),
-          lok('happy','姐姐！她們是……'),
+          lot('happy','姐姐！她們是……'),
           lof('lookaway','聖王廳的祭司吧。不過，我早就不信神了。'),
           lof('talk','綠月的阿卡西克也好，銀月的神也好，到頭來沒人救得了我們。'),
           nou('sad','……'),
@@ -4669,20 +4669,20 @@ export const TOWNS = {
           nou('sadsmile','我們兩個都是孤兒。而且……'),
           nou('sadnoeye','大概打出生起，就沒有被當成『人』看過。'),
           lof('lookaway','哼……隨口說說，誰都會。'),
-          lok('sad','姐姐……'),
+          lot('sad','姐姐……'),
           lof('lookaway','不要擔心。媽媽的病，我會想辦法。'),
           nou('lookdown','……'),
         ] },
         { flag:'ss_slum_sor', need:'ss_arrive', until:'ss_inn_merge', withWho:'SORANA', dateAff:0,   /* 後半（舊街區）演完才給 */ sides:{ SORANA:'L' }, lines:[
           sor('angry','！！'),
           sor('determine','竟然把森住民都趕到這種地方……！'),
-          lok('happy','姐姐！'),
+          lot('happy','姐姐！'),
           sor('confuse','妳住在這種地方嗎！'),
-          lok('guard','？'),
-          lok('happy','對啊。'),
+          lot('guard','？'),
+          lot('happy','對啊。'),
           sor('remind','……要不要，跟姐姐一起走？'),
           lof('talk','那可不行。'),
-          lok('shock','姐姐！'),
+          lot('shock','姐姐！'),
           lof('talk','妳走了，誰來照顧媽媽？'),
           lof('lookaway','再說，里朋家族的那些傢伙是不會允許的。'),
           sor('confuse','……為什麼要他們允許？'),
@@ -4743,7 +4743,7 @@ export const TOWNS = {
              ver -1793：Ray 補交 `shycover`／`shycoverpeek`（稿上的 coverface）、小女孩 `cry`、蕾娜 `remind`，都已換上。
            ⚠ 「淪不到」照稿改成「輪不到」（錯字）；「開門聲」音效庫裡沒有，先空一拍（要補的音效見 HANDOFF）。
            ⚠ 「更衣後」＝同一個地方的時間跳躍，走 `fadeOut`／`fadeIn`（1.5 秒）。
-           ⚠ 門房沒有立繪（`DOORMAN_SS`，只出聲）；稿上最後那段改叫「洛姬」（`LOKI_N`，同一張立繪）。 */
+           ⚠ 門房沒有立繪（`DOORMAN_SS`，只出聲）；稿上最後那段改叫名字（`LOTI_N`「蘿媞」，同一張立繪）。 */
         acts:[
         { flag:'ss_inn_merge', need:{ any:[ 'ss_cityhall','ss_slum_anya','ss_slum_nou','ss_sor_resolve','ss_4pm' ] },
           sides:{ RENNA:'L' }, lines:[
@@ -4758,12 +4758,12 @@ export const TOWNS = {
           nou('cringe','索菈娜小姐……'),   // ver -1800 Ray：門房那一拍的前一拍用 cringe
           door('喂、喂！誰讓妳進來的！'),
           { speaker:'NARRATION', text:'', se:'se_steps', auto:1200 },
-          lok('cry','祭司大人！', { skipIf:['ss_date_anya','ss_date_sor'] }),
-          lok('cry','神父大人！', { onlyIf:'ss_date_anya' }),
-          lok('cry','姐姐！',     { onlyIf:'ss_date_sor' }),
+          lot('cry','祭司大人！', { skipIf:['ss_date_anya','ss_date_sor'] }),
+          lot('cry','神父大人！', { onlyIf:'ss_date_anya' }),
+          lot('cry','姐姐！',     { onlyIf:'ss_date_sor' }),
           nou(null,'啊……'),
           { speaker:'NARRATION', text:'', se:'se_fall', auto:1000 },
-          lok('cry','姐姐……他們把我姐姐……！'),
+          lot('cry','姐姐……他們把我姐姐……！'),
           sor('angry',''),
           sor('determine','對不起啊，蕾娜。'),
           sor('determine','要請妳們找個新的帆手了。'),
@@ -4829,13 +4829,13 @@ export const TOWNS = {
         ] },
         /* ══ 救完人、被強制帶回旅店（ver -1793，Ray 的稿）══
            由里朋莊園沙龍那一段收尾的 `goto:'@santasofia:inn'` 帶過來，抵達就演。
-           ⚠ 稿上寫「蘿姬」＝同一個孩子，照 Ray -1793 的定名寫「蘿奇」。
-           ⚠ 插圖 `36_loki&lofa` 稿上沒寫「插圖結束」—— 我讓它停在姐妹相擁那兩拍，索菈娜開口時收掉。
+           ⚠ 稿上寫「蘿姬」＝同一個孩子，照 Ray 的定名寫「蘿媞」（-1793 蘿奇 → -1801 蘿媞）。
+           ⚠ 插圖 `36_loti&lofa` 稿上沒寫「插圖結束」—— 我讓它停在姐妹相擁那兩拍，索菈娜開口時收掉。
            ⚠ 演完才能睡（`sleepFlag:'ss_raid_home'`）；航行許可隔天早上才下來（`gates` 的 `ss_depart`）。 */
         { flag:'ss_raid_home', need:'ss_raid_done', sides:{ RENNA:'L', NOUVELLE:'L' }, lines:[
-          lokN('happy','姐姐！'),
-          lofN('cryhug','蘿奇！'),
-          { speaker:'NARRATION', text:'', cg:'36_loki&lofa', cgNoTime:true, cgPan:'down', auto:2400 },
+          lotN('happy','姐姐！'),
+          lofN('cryhug','蘿媞！'),
+          { speaker:'NARRATION', text:'', cg:'36_loti&lofa', cgNoTime:true, cgPan:'down', auto:2400 },
           sor('lauaghbig','算是告一段落了吧。', { cg:null }),
           nou('bigsmile','太好了呢。'),
           any('happy',''),
@@ -4866,11 +4866,11 @@ export const TOWNS = {
             /* ⚠ `checkpoint`：里朋莊園那幾場是劇情戰（打輸回檔）—— 回檔點要落在**還能自由行動**的地方，
                就是出發前這一刻（人在旅店、這一段還沒記旗 ⇒ 讀回來會再演一次出發）。 */
             ren('watch','他們的據點在市郊，穿過市集走一段就到了。', { checkpoint:true }),
-            lokN('sad','修女大人……'),
+            lotN('sad','修女大人……'),
             ren('bow','別擔心，這個人很強的。'),
             ren('remind','還有，不可以叫我修女大人。'),
             ren('bow','這是我們的秘密喔。'),
-            lokN('happy','嗯！'),
+            lotN('happy','嗯！'),
             sor('ready','出發！'),
           ] } ],
         innDoors:[
