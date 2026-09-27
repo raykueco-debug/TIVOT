@@ -1669,7 +1669,9 @@ export const ART = {
   thug_guard: { cm:176, eye:30, fx:0.415, top:34, bot:1476,
            side:'R', alt:null, base:'resources/enemy/man_thug_pistol.webp', expr:{} },
   /* ⚠ `flip:true`（ver -1791，Ray：「路人水平翻轉」）＝這張一律翻（同謝尼 `sh_villager`，與 `mirror` 是兩件事）。 */
-  worker_ss: { cm:174, eye:30, fx:0.430, top:11, bot:1532,
+  /* ver -1794（Ray：「路人可以不用那麼中間，臉有出來，不要貼牆就好」「高一點」）：
+     `fxShift:-0.08` 往右（外側）挪；`standCm:182` 只把頭頂提高、不動大小（§6.5 的兩個旋鈕）。 */
+  worker_ss: { cm:174, standCm:182, eye:30, fx:0.430, fxShift:-0.08, top:11, bot:1532,
            side:'R', alt:null, flip:true, base:'resources/si/npc/npc_ss_worker_talk.webp', expr:{
     talk: { src:'resources/si/npc/npc_ss_worker_talk.webp', top:11, bot:1532, fx:0.430 },
   } },
