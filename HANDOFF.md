@@ -88,6 +88,9 @@
 >      可能的方向（沒驗證）：`env()` 在那個情境是 0（例如是從別的層開出來的、或 WebView／PWA 模式不同）；頁首那一列被別的透明層蓋住；或 iOS 在狀態列下方額外吃掉一段觸控。**先量再修，不要猜。**
 >    · **驗法**：桌機的 safe-area 是 0，**讀程式讀不出來** —— 用 iPhone 15 Pro 實機或 Safari 模擬（`safe-area-inset-top` ≈ 59px），逐畫面（首頁／讀取頁／劇情／城鎮／旅店／店舖／戰鬥／結算／整備頁／選單／飛行）跑一次
 >      `(h=>[...document.querySelectorAll('button,[role=button],.corner-btn')].filter(e=>e.offsetParent&&e.getBoundingClientRect().top<h).map(e=>e.id||e.className))(document.getElementById('notchBar').getBoundingClientRect().height)`，**回傳要是空陣列**（用 `#notchBar` 的實際高度當線 —— `--notch-bar-h` 是 `calc(env())`，`getPropertyValue` 拿到的是字串算不出數字）。
+> 23. **（09-27，Mac）聖索菲亞 NPC `npc_ss_loki` 六張重畫：拿掉頭巾與腰巾**（Ray：「npc_ss_loki 系列保留原風格重畫，不要有頭巾跟腰巾」）—— `resources/si/npc/npc_ss_loki_{ask,give,guard,happy,sad,shock}.webp` 同名覆蓋（9850ff0；先畫 `ask` 當新基底，其餘五張照原圖姿勢表情＋新基底的髮型服裝），舊版進 `_recycle/`，舊原稿改名 `_originals/SI/NPC/_npc_ss_loki_*_v1_headscarf.png`。
+>    程式端：`script/speakers.js` 那六條 src **加 `?v=2`**（同名覆蓋），**取景要換**（頭巾拿掉頭頂變低；`base` 是 ask，縮放跟著它）——`measure_si.py` 重量：
+>    `ask top:19 bot:1527 fx:0.477`／`give top:7 bot:1529 fx:0.463`／`guard top:15 bot:1529 fx:0.510`／`happy top:29 bot:1523 fx:0.559`／`sad top:11 bot:1523 fx:0.475`／`shock top:11 bot:1530 fx:0.461`。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑；**§十三＝09-27 收工換機器：薇拉馮德 73 張、惡棍 6 張、索拉娜三張回版、還開著的事、三個不明刪除**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
