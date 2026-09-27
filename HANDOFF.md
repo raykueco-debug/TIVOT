@@ -2,12 +2,14 @@
 > · ✅ 第 20 項的刪除：`excite`／`carrynouvelle`（基本那張）**鍵直接拿掉**（Ray）；引用改 `sor('talksmile',…)`（「跟平常一樣的！」）與 `carrynouvellesmirk`（古墓背人那兩句）。`furiouscute` 改指 `sorana_si_furious.webp`。三張圖的刪除與這一版同 commit。第 20 項**其餘**（20 條版號、`stare`、三個新鍵）**還沒做**。
 > · ✅ 第 21 項：`holdnouvelle` → `.webp`，舊 PNG 已回收。
 > · ✅ 第 12 項②：`dock` 正名「聖索菲亞　貧民窟」（Ray）。
-> · ✅ 第 15 項：惡棍六人的敵卡 `thug_pistol/rifle/dual/shotgun/lookout/boss`（`script/enemies.js`，**數值整組照抄 `guild_hunter`**，Ray：「六人全部走賞金獵人」）＋ `ASSETS.enemy_thug_*`。⚠ 還沒有 `config.battles` 引用（等里朋腳本）。⚠⚠ **六張 `man_thug_*.webp` 已在 `ed8d78e2` 被刪**——要不要從 `70e50e52` 還原，等 Ray。
+> · ✅ 第 15 項：惡棍六人的敵卡 `thug_pistol/rifle/dual/shotgun/lookout/boss`（`script/enemies.js`，**數值整組照抄 `guild_hunter`**，Ray：「六人全部走賞金獵人」）＋ `ASSETS.enemy_thug_*`。⚠ 還沒有 `config.battles` 引用（等里朋腳本）。✅ 六張 `man_thug_*.webp` 在 `ed8d78e2` 被誤刪（理由寫「程式無引用」、沒走 recycle.sh）——**已從 `70e50e52` 還原**（89bb9974）。⚠⚠ **「程式沒引用」不是刪除的理由**；任何刪除都要 Ray 逐檔點頭。
 > · ✔ 薇拉馮德 BGM：`emeraldhill` 早在 -1765 就接了；酒吧 `vela_bar` 掛點**待定**。
 > · ✔ 米夏隨從：維持 `cm:176`（Ray：「180 不重要，隨便就好」）；`side:'R'` 早已接。
 > · ⏸ 廢城（hallcourt／backhall／祭壇／wildSpawn）**待定**；里朋莊園**等 Ray 的腳本**（`ss_depart` 仍沒人插）。
 > · 🎨 **美術單**：市政廳室內 `sofia_cityhall_in`（營業 [8,17] ⇒ 只要 `_Day`），**參考那一段的插畫**（Ray）。交件後程式端把市政廳櫃台那段的 `bg` 改指它。
-> · ⚠ 這台 Windows **沒有 node** ⇒ `script_lint.py` 跑不了；-1787 只用 grep ＋括號平衡驗過。
+> · ✔ 這台 Windows 已裝 **Node 24.19.0**（winget）；-1787 lint **0 錯誤**、40 提醒（皆既有）。Git Bash 若找不到 node，先 `export PATH="/c/Program Files/nodejs:$PATH"`。
+> · ⚠ **還沒查的**：近兩週 git 刪除裡約 25 張「無替代檔、無本機備份」（東泊／拉文舊背景、蕾娜舊立繪、`FLM_DragonThrone`、`gen_renna_si_blush`…），多半是改名，但沒逐張確認 —— 要不要還原等 Ray。
+> · 🔁 **換機器**（09-27 收工，Windows → 下一台）：`origin/main` ＝ -1787，工作樹乾淨、沒有欠 commit。
 
 > ⚠⚠⚠ **美術 session（2026-09-24 下午，Mac）交了三件，程式端要接** —— 都是一行到一段的事：
 > 1. ✅ **-1728 已接** 索拉娜 `whisper` `?v=3`／`top:4 bot:1524`
