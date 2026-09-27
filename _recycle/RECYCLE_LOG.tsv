@@ -782,3 +782,26 @@ when	from	to	reason
 20260926-222922	resources/si/sorana_si_smile.webp	_recycle/resources/si/sorana_si_smile.webp.20260926-222922	Ray：索的 smile 修壞，回上一版（82caf63 的 09-22 第三輪重製版退回收區）
 20260926-224811	resources/si/npc/npc_ss_cityhall_front.webp	_recycle/resources/si/npc/npc_ss_cityhall_front.webp	ver -1769：舊版（09-09），被 09-26 的 npc_ss_cityhall_front.png 取代
 20260927-135033	resources/si/sorana_si_relief.webp	_recycle/resources/si/sorana_si_relief.webp	Ray：索的 relief 也改壞了，回上一版（eb06fcb 的 09-21 短提示詞版退回收區）
+20260927-170501	resources/si/sorana_si_ready.webp	_recycle/resources/si/sorana_si_ready.webp	索拉娜 ready 回上一版（Ray：改回來）；此為 09-21 重製版 95d5226
+20260927-170502	resources/si/sorana_si_readysmile.webp	_recycle/resources/si/sorana_si_readysmile.webp	索拉娜 readysmile 回上一版（Ray：改回來）；此為 09-21 重製版 95d5226
+20260927-180305	resources/si/sorana_si_blush.webp	_recycle/resources/si/sorana_si_blush.webp	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180305	resources/si/sorana_si_furious.webp	_recycle/resources/si/sorana_si_furious.webp	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180305	resources/si/sorana_si_idea.webp	_recycle/resources/si/sorana_si_idea.webp	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180306	resources/si/sorana_si_lauaghbig.webp	_recycle/resources/si/sorana_si_lauaghbig.webp	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180306	resources/si/sorana_si_lookaway.webp	_recycle/resources/si/sorana_si_lookaway.webp.20260927-180306	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180306	resources/si/sorana_si_nod.webp	_recycle/resources/si/sorana_si_nod.webp.20260927-180306	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180306	resources/si/sorana_si_point.webp	_recycle/resources/si/sorana_si_point.webp.20260927-180306	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180306	resources/si/sorana_si_relief.webp	_recycle/resources/si/sorana_si_relief.webp.20260927-180306	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180307	resources/si/sorana_si_sad.webp	_recycle/resources/si/sorana_si_sad.webp.20260927-180307	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180307	resources/si/sorana_si_salute.webp	_recycle/resources/si/sorana_si_salute.webp.20260927-180307	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180307	resources/si/sorana_si_scare.webp	_recycle/resources/si/sorana_si_scare.webp	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180307	resources/si/sorana_si_serious.webp	_recycle/resources/si/sorana_si_serious.webp.20260927-180307	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180307	resources/si/sorana_si_side.webp	_recycle/resources/si/sorana_si_side.webp	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180308	resources/si/sorana_si_sorry.webp	_recycle/resources/si/sorana_si_sorry.webp	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180308	resources/si/sorana_si_stare.webp	_recycle/resources/si/sorana_si_stare.webp.20260927-180308	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180308	resources/si/sorana_si_surprise.webp	_recycle/resources/si/sorana_si_surprise.webp	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180308	resources/si/sorana_si_talk.webp	_recycle/resources/si/sorana_si_talk.webp	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180308	resources/si/sorana_si_watch.webp	_recycle/resources/si/sorana_si_watch.webp	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180309	resources/si/sorana_si_wave.webp	_recycle/resources/si/sorana_si_wave.webp.20260927-180309	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180309	resources/si/sorana_si_whisper.webp	_recycle/resources/si/sorana_si_whisper.webp	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前
+20260927-180309	resources/si/sorana_si_worry.webp	_recycle/resources/si/sorana_si_worry.webp.20260927-180309	索拉娜 alpha 夾 09-27 換臉（Ray SD/GPT 臉），此為換臉前

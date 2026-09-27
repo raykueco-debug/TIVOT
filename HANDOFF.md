@@ -49,6 +49,13 @@
 >    程式端：**`script/speakers.js` 的 `smile` 路徑 `?v=3` → `?v=4`**；取景 `measure_si.py` 重量＝`top:9 bot:1530 fx:0.528`，與現行完全相同、不用改。
 > 18. ✅ **-1783 已跳 `?v=3`**（取景 top:9 bot:1517 fx:0.555） **（09-27，Mac）索拉娜 `relief` 也回上一版**（Ray：「索的 relief 也改壞了，改回來」）—— `resources/si/sorana_si_relief.webp` 換回 d556b53，09-21 的短提示詞版（eb06fcb）進 `_recycle/`。
 >    程式端：**`script/speakers.js` 的 `relief` 路徑 `?v=2` → `?v=3`**；取景 `measure_si.py` 重量＝`top:9 bot:1517 fx:0.555`（現行 `top:8 bot:1518 fx:0.556`，差 1px，可改可不改）。
+> 19. **（09-27，Windows）索拉娜 `ready`／`readysmile` 也回上一版**（Ray：「ready 跟 readysmile 改回來」）—— 兩張換回 d556b53（09-20，逐位元組核對過），09-21 第二輪重製版（95d5226）進 `_recycle/`。
+>    程式端（`script/speakers.js`，同名覆蓋，不跳版號玩家永遠拿舊圖）：
+>    · `ready` 路徑 `?v=2` → `?v=3`，**取景要改**：`measure_si.py` 重量＝`top:6 bot:1467 fx:0.567`（現行 `top:7 bot:1521 fx:0.631` 是重製版的值，差很多）
+>    · `readysmile` 路徑 `?v=2` → `?v=3`，取景重量＝`top:6 bot:1534 fx:0.578`，與現行相同、不用改；⚠ `flight/index.html` 那一份（約 5465 行）也要跳 `?v=3`
+> 20. **（09-27，Windows）索拉娜 alpha 夾 24 張換臉交件** —— 全部只換臉、alpha 與現行逐像素相同。**逐條要改的在 `resources/si/_sorana_alpha0927_worklist.md`**：
+>    20 條同名覆蓋跳版號（取景不動；`flight/index.html` 的 side／surprise／sorry／watch／nod 也要跳）＋ `stare` 換成 serious 的身體（取景抄 serious）＋ `furiouscute` 改指 `sorana_si_furious.webp` ＋ 新鍵 `ideasmile`／`lookawayupset`／`taunt`。
+>    ⚠ 工作樹裡 `sorana_si_excite.webp`／`sorana_si_carrynouvelle.webp` 被刪（`speakers.js` 還指著），**不是美術做的**，等 Ray 說明。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑；**§十三＝09-27 收工換機器：薇拉馮德 73 張、惡棍 6 張、索拉娜三張回版、還開著的事、三個不明刪除**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
