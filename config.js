@@ -82,7 +82,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1791';
+export const VERSION = 'ver 2026.09.22-1792';
 
 export const GAME_CONFIG = {
 
@@ -3659,7 +3659,7 @@ export const GAME_CONFIG = {
       se_weapon_mg_squall:0.854, se_weapon_shotgun_blast:0.530,
       se_weapon_sniper_falcon:1.023, se_weapon_guard:1.254, se_weapon_reload:1.143,
       /* se_weapon_heavygun ver -476 換新檔重量：平均（耳機/手機模型）−13.2 LUFS → 0.738 */
-      se_weapon_cannon_120mm:0.839, se_weapon_heavygun:0.738,
+      se_weapon_sniper:0.839, se_weapon_heavygun:0.738,
       /* ── 敵人 ── */
       se_enemy_slash:0.602, se_enemy_smack:1.173, se_enemy_shot:0.854,
       se_enemy_revolver:0.732, se_enemy_dagger:2.192, se_enemy_centipi:1.272,
@@ -4569,7 +4569,7 @@ export const ASSETS = {
   /* 船艦戰用的武器音（ver -423／-425 補齊，Ray 指定）。
      ⚠ 艦砲的素材原檔叫 `se_weapon_spitCannon`（本來放在 `_unused/`）——
        Ray 確認「是要當艦砲用的」，轉檔時一併正名成 `se_weapon_cannon_120mm`。 */
-  se_ship_cannon:    "resources/audio/se/se_weapon_cannon_120mm.m4a",   // 艦砲（步槍在船戰也用它）
+  se_ship_cannon:    "resources/audio/se/se_weapon_sniper.m4a",   // 艦砲（步槍在船戰也用它）
   se_ship_heavygun:  "resources/audio/se/se_weapon_heavygun.m4a",       // 船戰的機槍
   se_enemy_centipi:  "resources/audio/se/se_enemy_centipi.m4a",         // 巨型蜈蚣（登場／攻擊）
   se_enemy_serpent:  "resources/audio/se/se_enemy_serpent.m4a",   // 羽蛇出場（ver -500）
