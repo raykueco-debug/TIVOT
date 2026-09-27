@@ -785,6 +785,11 @@
     -webkit-mask:radial-gradient(closest-side,transparent 80%,#000 82%);
             mask:radial-gradient(closest-side,transparent 80%,#000 82%);}
   #wpSwitch.cd::after{opacity:1;}
+  /* 彈匣剩幾發（ver -1781）：鈕右下角的小數字；裝填中顯示「…」（圈在跑）。 */
+  #wpSwitch[data-ammo]::before{content:attr(data-ammo);position:absolute;right:-4px;bottom:-4px;
+    min-width:16px;height:16px;padding:0 3px;border-radius:8px;box-sizing:border-box;
+    background:rgba(10,9,16,.85);border:1px solid var(--gold-dim);color:var(--gold);
+    font:600 10px/14px system-ui,sans-serif;text-align:center;pointer-events:none;z-index:2;}
   /* 冷卻中卡面壓暗一點：圈是「還要多久」，這是「現在不能用」——兩件事一起讀才清楚。 */
   #wpSwitch.cd .ws-card{filter:brightness(.55) saturate(.7);}
   #wpSwitch.pending .ws-card{border-color:var(--holy);

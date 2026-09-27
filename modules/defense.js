@@ -478,7 +478,7 @@ function resolveOne(th, ratio, w){
        硬直照舊只看 `ratio`（ver -974 的三分法）。 */
   const takeOf = (band, fired)=> (fired && hitForce) ? 0 : (band.take||0);
   /* ══ 拉栓冷卻（ver -1009）══ 這一發開不開得出來由 weapon 回答（`counterReady`，
-     鑰匙是那一把槍自己的 `counterCdSec`，鐵律 7）—— defense 只負責問。
+     鑰匙是那一把槍自己的 `mag`／`reloadSec`（ver -1781 起彈數＋裝填），鐵律 7）—— defense 只負責問。
      ⚠ 開不出來就是**沒反擊**：那一帶的 `take` 照樣挨（上面 `takeOf` 的 `fired`）、
        硬直也不給。玩家要看得懂為什麼，所以浮一個 BOLT。 */
   const canFire = ()=> !api.counterReady || api.counterReady();
@@ -494,7 +494,7 @@ function resolveOne(th, ratio, w){
     if(!hitForce || !api.onForcedCounter) return;
     api.onForcedCounter(Math.max(0, (state.counterDamage||0) - (d0||0)));
   };
-  const boltFloat = ()=> api.floatDmg((L.battle && L.battle.boltCd) || 'BOLT','50%','34%',false);
+  const boltFloat = ()=> api.floatDmg((L.battle && L.battle.boltCd) || 'RELOAD','50%','34%',false);   // ver -1781：裝填中（含步槍拉栓）
   let firedAny=false;   // 這一次有沒有真的開火（赤爪星的連續計數，ver -1778）
   let grade='block';   // 判定等級：'counter' | 'perfect' | 'block'（傳給教學層分流，見文末通知）
   /* ⚠⚠ **「真的點到紅圈」與「被技能算成紅圈」要分開報**（ver -887，Ray：

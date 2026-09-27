@@ -21,7 +21,7 @@ import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），�
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 XLSX = os.path.join(ROOT, 'girlstars.xlsx')
 # ⚠ speakers.js 要一起載：config.js 的 `tutPortraits` 那一段會讀 `ART`。
-SRC  = ('script/speakers.js', 'script/enemies.js', 'config.js')
+SRC  = ('script/speakers.js', 'script/enemies.js', 'script/weapons.js', 'config.js')
 
 WHO_CN  = {'nouvelle': '諾薇兒', 'anya': '安雅', 'sorana': '索菈娜'}
 SKILL_CN = {'install': '覺醒技', 'active': '主動技', 'passive': '被動技'}

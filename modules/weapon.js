@@ -145,22 +145,52 @@ function partnerHitMul(cat, grade){
    · **三帶一律吃**（紅圈也不能連射）；但紅圈的免傷照給（`bands.counter.take` 恆為 0）。
    · 記帳點只有 `weaponCounter` 一處（＝副武器真的開火的唯一地方，鐵律 7/8）——
      共鬥的飛刀不經過它，也不該吃拉栓（那是索菈娜在擲刀，不是玩家在拉栓）。 */
-let cdAt = Object.create(null);      // 武器 id → 上一次開火的時刻（ms）
-function cdSecOf(key){
+/* ══⚠⚠⚠ **ver -1781：拉栓併進「彈數＋裝填」**（Ray：「讓每個武器加入彈數與裝填時間，
+   預設機槍四發 2 秒裝填，霰彈兩發 1 秒裝填」）══
+   卡上 `mag`（一個彈匣幾發）／`reloadSec`（打空之後幾秒裝填完），寫在 `story`（試玩版不限彈數）。
+   **一次反擊算一發**；打空就開始裝填，裝填中＝這把槍開不了火（defense 問 `counterReady`，浮 RELOAD）。
+   步槍 `mag:1, reloadSec:5` ＝原本的拉栓 5 秒，行為一模一樣。
+   ⚠ 逐把槍記帳（鑰匙＝武器 id）—— 「先開一槍、切槍、再換回來」照舊是操作空間。
+   ⚠ 裝填中切走再切回來：時間照樣在走（記的是開始裝填的時刻），不會重來。 */
+let ammoLeft = Object.create(null);   // 武器 id → 彈匣剩幾發（沒有記錄＝滿）
+let reloadAt = Object.create(null);   // 武器 id → 開始裝填的時刻（ms；0／沒有＝沒在裝填）
+function magOf(key){
   const w = weaponOf(key || state.equippedWeapon, storyMode());
-  return (w && w.counterCdSec>0) ? w.counterCdSec : 0;
+  return (w && w.mag>0) ? (w.mag|0) : 0;          // 0 ＝不限彈數（試玩版）
 }
-/* 這把槍還要幾毫秒才能再開一發（0＝現在就能開）。UI 與判定都問這一支。 */
+function reloadSecOf(key){
+  const w = weaponOf(key || state.equippedWeapon, storyMode());
+  return (w && w.reloadSec>0) ? w.reloadSec : 0;
+}
+/* 這把槍還要幾毫秒才能再開一發（0＝現在就能開）。UI 與判定都問這一支。
+   ⚠ 裝填跑完的那一刻在這裡**補滿彈匣**（冪等：誰先問到誰補）。 */
 export function counterCdLeft(key){
   const k = key || state.equippedWeapon;
-  const sec = cdSecOf(k); if(!sec) return 0;
-  const t = cdAt[k] || 0; if(!t) return 0;
-  return Math.max(0, sec*1000 - (Date.now()-t));
+  const t = reloadAt[k] || 0; if(!t) return 0;
+  const left = reloadSecOf(k)*1000 - (Date.now()-t);
+  if(left > 0) return left;
+  delete reloadAt[k]; delete ammoLeft[k];          // 裝填完成＝彈匣滿
+  return 0;
 }
 export function counterReady(key){ return counterCdLeft(key) <= 0; }
-export function counterCdTotalMs(key){ return cdSecOf(key)*1000; }
-/* 開場歸零：拉栓是**這一場**的節奏，不跨場（同 `resetWeaponSwitch` 的其他欄位）。 */
-export function resetCounterCd(){ cdAt = Object.create(null); cdRingStop(); }
+export function counterCdTotalMs(key){ return reloadSecOf(key)*1000; }
+/* 彈匣：`{left, mag}`（mag 0＝不限）。畫面上那個小數字問這一支。 */
+export function ammoOf(key){
+  const k = key || state.equippedWeapon, mag = magOf(k);
+  if(!mag) return { left:0, mag:0 };
+  counterCdLeft(k);                                // 順手結算已經裝填完的
+  return { left: (ammoLeft[k]==null ? mag : ammoLeft[k]), mag };
+}
+/* 開火扣一發；打空就開始裝填。記帳點只有 `weaponCounter` 的入口（鐵律 7）。 */
+function spendRound(k){
+  const mag = magOf(k); if(!mag) return;
+  const left = (ammoLeft[k]==null ? mag : ammoLeft[k]) - 1;
+  ammoLeft[k] = Math.max(0, left);
+  if(left <= 0 && reloadSecOf(k) > 0){ reloadAt[k] = Date.now(); cdRingStart(); }
+  ammoBadge();
+}
+/* 開場歸零：彈匣與裝填是**這一場**的節奏，不跨場（同 `resetWeaponSwitch` 的其他欄位）。 */
+export function resetCounterCd(){ ammoLeft = Object.create(null); reloadAt = Object.create(null); cdRingStop(); ammoBadge(); }
 
 export function weaponCounter(dmgScale, hitRate, dmgRoll, grade, opt){
   /* `opt`（ver -1778）：`{crit:true}` ＝這一發全暴擊、`{mul:2}` ＝兩倍傷害 —— 安雅的反擊威力升階（defense 換算）。 */
@@ -170,7 +200,7 @@ export function weaponCounter(dmgScale, hitRate, dmgRoll, grade, opt){
   if(!w) return;
   /* 拉栓冷卻的記帳點（ver -1009）：走到這裡就是**真的開火了**（能不能開由
      `defense` 先問 `counterReady()`）。⚠ 三種 vfx 分支在下面才分開，記在入口一次就好。 */
-  if(w.counterCdSec>0){ cdAt[state.equippedWeapon]=Date.now(); cdRingStart(); }
+  spendRound(state.equippedWeapon);   // ver -1781：一次反擊扣一發，打空就開始裝填
   /* ══ 反擊彈殼（ver -812，Ray）══ 從反擊點噴、往下落，逐型別不同大小／顏色。
      船戰＝卡上有艦載武器音（`state.weaponSound`，即 config §158 對「船戰」的定義）。
        · 速射型（機槍 vfx:null）＝一般彈殼(shell.webp)，一發噴一個；船戰 2×。
@@ -864,6 +894,8 @@ function renderSwitch(){
   const ic=(GAME_CONFIG.weaponCatIcons||{})[w.cat] || 'switch_mg';
   if(card && card.dataset.icon!==ic){ card.dataset.icon=ic;
     card.innerHTML='<img src="'+asset(ic)+'" alt="" draggable="false">'; }
+  ammoBadge();
+  if(counterCdLeft()>0) cdRingStart();   // 切回一把還在裝填的槍：圈接著跑
 }
 
 function flip(){
@@ -910,6 +942,14 @@ let cdRaf = 0;
 function cdRingStop(){
   if(cdRaf) cancelAnimationFrame(cdRaf); cdRaf=0;
   const b=$('wpSwitch'); if(b){ b.classList.remove('cd'); b.style.removeProperty('--cd'); }
+  ammoBadge();   // 裝填完成 → 數字回滿
+}
+/* 彈匣剩幾發（ver -1781）：鈕右下角的小數字（CSS `#wpSwitch[data-ammo]::before`）。不限彈數的槍不顯示。 */
+function ammoBadge(){
+  const b=$('wpSwitch'); if(!b) return;
+  const a=ammoOf();
+  if(a.mag>0) b.dataset.ammo = counterCdLeft()>0 ? '…' : String(a.left);
+  else delete b.dataset.ammo;
 }
 function cdRingStart(){
   const b=$('wpSwitch'); if(!b) return;

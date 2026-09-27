@@ -57,7 +57,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1780`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1781`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -70,7 +70,18 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1780`（-1780：非夢魘粉碎固定 5 秒；三女主平衡定案）
+# HANDOFF — 截至 `ver 2026.09.22-1781`（-1781：副武器卡、彈數與裝填、改造滿級特效欄）
+
+**`-1781`**（Ray：「把副武器做成武器卡，並讓每個武器加入彈數與裝填時間，預設機槍四發 2 秒裝填，霰彈兩發 1 秒裝填，並且留一欄改造滿級特殊效果」）
+· **武器卡**：`config.weapons` 抽成 `script/weapons.js`（`WEAPONS`，同 enemies.js 的作法；config 照舊 `weapons: WEAPONS`，讀取端不變）。
+  填寫範本 `script/WEAPON_CARD_TEMPLATE.txt`。lint／enemies_baseline／girlstars_xlsx 的依賴清單都補了這一檔。
+· **彈數＋裝填**（寫在 `story`，試玩版不限彈數）：重機槍 4 發／2 秒、霰彈槍 2 發／1 秒、萊福槍 1 發／5 秒（＝原本的拉栓，`counterCdSec` 整個併進來）。
+  一次反擊算一發；打空開始裝填，裝填中開不了火（浮 RELOAD，原 BOLT）。逐把槍記帳、切槍不補彈。
+  實作只有 `weapon.js` 的 `counterCdLeft／counterReady／ammoOf／spendRound`；切換鈕右下角有剩餘彈數的小數字，裝填中顯示「…」＋外圈跑。
+· **改造滿級特效**：每張卡一格 `perk`（`null`＝未定），取代 `tuning.weaponPerks`；規格表多一列「改造滿級：（未定）」。
+· 實測（8123）：開機正常、規格表多「彈數／裝填時間／改造滿級」三列；霰彈連開兩發→打空、約 1 秒補滿。**戰鬥手感沒實打**（交給 Ray）。
+
+# （上一段）截至 `ver 2026.09.22-1780`（-1780：非夢魘粉碎固定 5 秒；三女主平衡定案）
 
 **`-1780`**（Ray）
 · 安雅的非夢魘化夢境破碎＝**固定 5 秒**（主動技卡上的 `buffSec:5`，不吃赤足／鐵蹄的延長）——

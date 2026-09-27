@@ -47,7 +47,7 @@ def strip_module(src):
 # ⚠ **先逐檔驗語法，再合起來跑**（ver -403）。合起來跑也會抓到語法錯，但行號是
 #   「串起來那個暫存檔」的行號，對不回原檔 —— Ray 手改稿子時最需要的正是
 #   「哪一個檔、第幾行」。逐檔 `--module-file` 一次就給得出來。
-SRC_FILES = ('script/speakers.js', 'script/mainScript.js', 'script/town.js', 'script/enemies.js', 'config.js')
+SRC_FILES = ('script/speakers.js', 'script/mainScript.js', 'script/town.js', 'script/enemies.js', 'script/weapons.js', 'config.js')
 
 def check_syntax():
     bad = 0
@@ -121,7 +121,7 @@ def se_resolve(f):
 #   假警告會把真的那幾條蓋掉 —— 這一條的代價比漏報大（同 ver -1015 的理由）。
 SCAN_FILES = ('config.js', 'main.js', 'modules/story.js', 'modules/enemy.js',
               'modules/combat.js', 'modules/inn.js', 'modules/town.js',
-              'script/enemies.js', 'script/town.js', 'script/mainScript.js',
+              'script/enemies.js', 'script/weapons.js', 'script/town.js', 'script/mainScript.js',
               'flight/index.html', 'flight/talks.js')
 
 def _scan_src():

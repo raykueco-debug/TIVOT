@@ -80,7 +80,7 @@ export function setup(){
                     「什麼時候該震」的判斷在 defense —— 經此轉交（defense 不 import enemy）。 */
                  slamEnemy: enemy.slamEnemy,
                  /* 拉栓冷卻（ver -1009）：這一發開不開得出來由 weapon 回答
-                    （鑰匙是那一把槍卡上的 `counterCdSec`）—— defense 不 import weapon。 */
+                    （鑰匙是那一把槍卡上的 `mag`／`reloadSec`，ver -1781）—— defense 不 import weapon。 */
                  counterReady: weapon.counterReady,
                  /* ══ 「堅殼星」（諾薇兒 Lv4，ver -971）：**反擊一次也算一發** ══
                     回血窗（即死防禦的免傷窗／生命歸還的吸血窗）本來只有三種射擊算

@@ -65,7 +65,7 @@ def tier_type(k, e):
 
 def main():
     mode = (sys.argv[1] if len(sys.argv) > 1 else 'plan')
-    DEPS = ['script/speakers.js', 'script/enemies.js', 'config.js']
+    DEPS = ['script/speakers.js', 'script/enemies.js', 'script/weapons.js', 'config.js']
     E = load('敵人卡', DEPS, 'ENEMIES')
     T = load('tuning', DEPS, 'GAME_CONFIG.tuning')
     TIER, TYPE = T['enemyTier'], T['enemyType']
