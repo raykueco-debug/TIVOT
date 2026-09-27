@@ -5,8 +5,8 @@
 > · ✅ 第 15 項：惡棍六人的敵卡 `thug_pistol/rifle/dual/shotgun/lookout/boss`（`script/enemies.js`，**數值整組照抄 `guild_hunter`**，Ray：「六人全部走賞金獵人」）＋ `ASSETS.enemy_thug_*`。⚠ 還沒有 `config.battles` 引用（等里朋腳本）。✅ 六張 `man_thug_*.webp` 在 `ed8d78e2` 被誤刪（理由寫「程式無引用」、沒走 recycle.sh）——**已從 `70e50e52` 還原**（89bb9974）。⚠⚠ **「程式沒引用」不是刪除的理由**；任何刪除都要 Ray 逐檔點頭。
 > · ✔ 薇拉馮德 BGM：`emeraldhill` 早在 -1765 就接了；酒吧 `vela_bar` 掛點**待定**。
 > · ✔ 米夏隨從：維持 `cm:176`（Ray：「180 不重要，隨便就好」）；`side:'R'` 早已接。
-> · ⏸ 廢城（hallcourt／backhall／祭壇／wildSpawn）**待定**；里朋莊園**等 Ray 的腳本**（`ss_depart` 仍沒人插）。
-> · 🎨✔ **美術已交（09-27）**：市政廳室內 **`resources/background/sofia/sofia_cityhall_in.webp`**（單張、無時段尾綴 ⇒ `bg:'sofia_cityhall_in', noTime:true`；新檔不用跳 `ASSET_VER`），內容照插畫 `34_rennacityhall`（尖拱窗、石柱、金紋章掛旗、深色木櫃台），右三分之一留牆給公務員立繪。**程式端：把市政廳櫃台那段的 `bg` 改指它。**
+> · ⏸ 廢城（hallcourt／backhall／祭壇／wildSpawn）**待定**；里朋莊園 ✅ **-1793 已接**（`ss_depart` 由隔日早上的閘門插）。
+> · 🎨✔ **美術已交（09-27）**：市政廳室內 **`resources/background/sofia/sofia_cityhall_in.webp`**（單張、無時段尾綴 ⇒ `bg:'sofia_cityhall_in', noTime:true`；新檔不用跳 `ASSET_VER`），內容照插畫 `34_rennacityhall`（尖拱窗、石柱、金紋章掛旗、深色木櫃台），右三分之一留牆給公務員立繪。✅ **-1795 已接**（聖索菲亞 `cityhall` 整格 `bg` 換成它）。
 > · ✔ 這台 Windows 已裝 **Node 24.19.0**（winget）；-1787 lint **0 錯誤**、40 提醒（皆既有）。Git Bash 若找不到 node，先 `export PATH="/c/Program Files/nodejs:$PATH"`。
 > · ⚠ **還沒查的**：近兩週 git 刪除裡約 25 張「無替代檔、無本機備份」（東泊／拉文舊背景、蕾娜舊立繪、`FLM_DragonThrone`、`gen_renna_si_blush`…），多半是改名，但沒逐張確認 —— 要不要還原等 Ray。
 > · 🔁 **換機器**（09-27 收工，Windows → 下一台）：`origin/main` ＝ -1787，工作樹乾淨、沒有欠 commit。
@@ -88,7 +88,7 @@
 >      可能的方向（沒驗證）：`env()` 在那個情境是 0（例如是從別的層開出來的、或 WebView／PWA 模式不同）；頁首那一列被別的透明層蓋住；或 iOS 在狀態列下方額外吃掉一段觸控。**先量再修，不要猜。**
 >    · **驗法**：桌機的 safe-area 是 0，**讀程式讀不出來** —— 用 iPhone 15 Pro 實機或 Safari 模擬（`safe-area-inset-top` ≈ 59px），逐畫面（首頁／讀取頁／劇情／城鎮／旅店／店舖／戰鬥／結算／整備頁／選單／飛行）跑一次
 >      `(h=>[...document.querySelectorAll('button,[role=button],.corner-btn')].filter(e=>e.offsetParent&&e.getBoundingClientRect().top<h).map(e=>e.id||e.className))(document.getElementById('notchBar').getBoundingClientRect().height)`，**回傳要是空陣列**（用 `#notchBar` 的實際高度當線 —— `--notch-bar-h` 是 `calc(env())`，`getPropertyValue` 拿到的是字串算不出數字）。
-> 23. **（09-27，Mac）聖索菲亞 NPC `npc_ss_loki` 六張重畫：拿掉頭巾與腰巾**（Ray：「npc_ss_loki 系列保留原風格重畫，不要有頭巾跟腰巾」）—— `resources/si/npc/npc_ss_loki_{ask,give,guard,happy,sad,shock}.webp` 同名覆蓋（9850ff0；先畫 `ask` 當新基底，其餘五張照原圖姿勢表情＋新基底的髮型服裝），舊版進 `_recycle/`，舊原稿改名 `_originals/SI/NPC/_npc_ss_loki_*_v1_headscarf.png`。
+> 23. ✅ **-1795 已接**（六條 `?v=2`＋取景重量、角色層 base 跟著 ask） **（09-27，Mac）聖索菲亞 NPC `npc_ss_loki` 六張重畫：拿掉頭巾與腰巾**（Ray：「npc_ss_loki 系列保留原風格重畫，不要有頭巾跟腰巾」）—— `resources/si/npc/npc_ss_loki_{ask,give,guard,happy,sad,shock}.webp` 同名覆蓋（9850ff0；先畫 `ask` 當新基底，其餘五張照原圖姿勢表情＋新基底的髮型服裝），舊版進 `_recycle/`，舊原稿改名 `_originals/SI/NPC/_npc_ss_loki_*_v1_headscarf.png`。
 >    程式端：`script/speakers.js` 那六條 src **加 `?v=2`**（同名覆蓋），**取景要換**（頭巾拿掉頭頂變低；`base` 是 ask，縮放跟著它）——`measure_si.py` 重量：
 >    `ask top:19 bot:1527 fx:0.477`／`give top:7 bot:1529 fx:0.463`／`guard top:15 bot:1529 fx:0.510`／`happy top:29 bot:1523 fx:0.559`／`sad top:11 bot:1523 fx:0.475`／`shock top:11 bot:1530 fx:0.461`。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑；**§十三＝09-27 收工換機器：薇拉馮德 73 張、惡棍 6 張、索拉娜三張回版、還開著的事、三個不明刪除**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。

@@ -1639,14 +1639,14 @@ export const ART = {
        同一個畫面的正確去背版是 `cryshoot` —— 用它。 */
     shot:     { src:'resources/si/npc/npc_ss_lofa_cryshoot.webp', top:4, bot:1514, fx:0.353, withChar:['LOFA_N','LOFA'] },
   } },
-  loki: { cm:128, standCm:151, eye:30,   /* standCm：ver -1771 Ray「小女孩太低了，往上拉一個頭」（+23cm≈她一個頭高；只動頭頂位置、不動大小） */ fx:0.482, top:4, bot:1526,
-           side:'R', alt:null, base:'resources/si/npc/npc_ss_loki_ask.webp', expr:{
-    ask:   { src:'resources/si/npc/npc_ss_loki_ask.webp',   top:4,  bot:1526, fx:0.482 },
-    sad:   { src:'resources/si/npc/npc_ss_loki_sad.webp',   top:5,  bot:1517, fx:0.483 },
-    happy: { src:'resources/si/npc/npc_ss_loki_happy.webp', top:12, bot:1525, fx:0.537 },
-    shock: { src:'resources/si/npc/npc_ss_loki_shock.webp', top:5,  bot:1527, fx:0.513 },
-    give:  { src:'resources/si/npc/npc_ss_loki_give.webp',  top:10, bot:1518, fx:0.478 },
-    guard: { src:'resources/si/npc/npc_ss_loki_guard.webp', top:3,  bot:1532, fx:0.508 },
+  loki: { cm:128, standCm:151, eye:30,   /* standCm：ver -1771 Ray「小女孩太低了，往上拉一個頭」（+23cm≈她一個頭高；只動頭頂位置、不動大小） */ fx:0.477, top:19, bot:1527,   /* ver -1795：六張重畫（拿掉頭巾與腰巾，美術 9850ff0）⇒ ?v=2＋取景重量；角色層跟著新的 ask */
+           side:'R', alt:null, base:'resources/si/npc/npc_ss_loki_ask.webp?v=2', expr:{
+    ask:   { src:'resources/si/npc/npc_ss_loki_ask.webp?v=2',   top:19,  bot:1527, fx:0.477 },
+    sad:   { src:'resources/si/npc/npc_ss_loki_sad.webp?v=2',   top:11,  bot:1523, fx:0.475 },
+    happy: { src:'resources/si/npc/npc_ss_loki_happy.webp?v=2', top:29, bot:1523, fx:0.559 },
+    shock: { src:'resources/si/npc/npc_ss_loki_shock.webp?v=2', top:11,  bot:1530, fx:0.461 },
+    give:  { src:'resources/si/npc/npc_ss_loki_give.webp?v=2',  top:7, bot:1529, fx:0.463 },
+    guard: { src:'resources/si/npc/npc_ss_loki_guard.webp?v=2', top:15,  bot:1529, fx:0.510 },
     cry:   { src:'resources/si/npc/npc_ss_loki_cry.webp',   top:5,  bot:1518, fx:0.457 },   // ver -1793 Ray 交件
   } },
   lofa: { cm:158, eye:30, fx:0.431, top:5, bot:1529,

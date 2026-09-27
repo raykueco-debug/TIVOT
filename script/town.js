@@ -4553,7 +4553,8 @@ export const TOWNS = {
         exits:{ left:'cityhall', right:'church', down:'square' } },
       church:   { bg:'sofia_church',   name:'聖索菲亞　大教堂', noTime:true,
         exits:{ back:'midtown' } },
-      cityhall: { bg:'sofia_cityhall', name:'聖索菲亞　市政廳', noTime:true,
+      /* ver -1795：換成室內 `sofia_cityhall_in`（美術 3ddd9a6，營業時間內的單張）——整格就是與櫃台的對話，走進去就是室內。 */
+      cityhall: { bg:'sofia_cityhall_in', name:'聖索菲亞　市政廳', noTime:true,
         exits:{ back:'midtown' },
         /* ══ Stage 14・支線一：不約會，去市政廳（ver -1769，Ray 的稿）══
            `noDate` ＝沒有在約會才演（同東泊大學巧遇蕾娜那一段）。
