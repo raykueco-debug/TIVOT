@@ -4527,7 +4527,7 @@ export const TOWNS = {
           ren('lookawaytalk','現在先……回旅店等著。'),
           ren('commandsoft','等我把手續辦完再說。'),
           sor('confuse','……'),
-          sor('ready','妳說的喔。'),
+          sor('ready','妳說的喔。', { se:'se_walk' }),   // ver -1786：同一拍播 se_walk（Ray）
           any('scare',''),
           nou('shock',''),
         ] } ],
