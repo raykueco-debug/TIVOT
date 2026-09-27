@@ -890,6 +890,8 @@ const BEL_WATER_FIRST = {
      10-B 二次進古城／11-B 上船追／12-B 東泊旅店長談／13 東泊隔日（M1 審訊・M2 離店簡報）與走出古墓／14 出墓合流演完。 */
 /* 聖索菲亞的五位（Stage 14，ver -1769）：馬努（稿上一直是「？？？」）／小女孩 Loki／少女 Lofa／路人／市政廳櫃台。 */
 const mnx = N('MANU_X'), lok = N('LOKI'), lof = N('LOFA'), wkr = N('WORKER_SS'), cnS = N('COUNTER_SS');
+const lokN = N('LOKI_N');
+const door = (text, extra) => Object.assign({ speaker:'DOORMAN_SS', text }, extra||{});   // 門房：沒有立繪
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
 
 export const TOWNS = {
@@ -4724,6 +4726,111 @@ export const TOWNS = {
         inn:true, innNoGuide:true,
         innSpots:{ sit:{ x:0.22, y:0.68 }, sleep:{ x:0.86, y:0.55 } },
         noSleep:'……現在不是睡覺的時候。',
+        /* ══⚠⚠⚠ **Stage 14・旅店合流**（ver -1784，Ray 交稿「約會分支旅店合流」）══
+           觸發：四條支線任一條演完之後走進旅店（或下午四點那一道把人帶回來）——
+           `need` 用 `{any}`：市政廳 `ss_cityhall`／貧民窟 `ss_slum_anya`・`ss_slum_nou`／索菈娜的後半 `ss_sor_resolve`／四點 `ss_4pm`。
+           ⚠ 小女孩那一句依**約了誰**分（`ss_date_*`，旅店敲門那一拍插的）：諾薇兒或沒約＝祭司大人、安雅＝神父大人、索菈娜＝姐姐。
+           ⚠ 稿上對不上的差分取最接近的：諾 `smilebig`→`bigsmile`、`dying`→`die`、`coverface`→`covermouth`
+             （換裝的圖 Ray：「先用舊的，等全差分完成再一次畫全版本補上」）；小女孩 `cry`→`sad`。
+           ⚠ 「淪不到」照稿改成「輪不到」（錯字）；「開門聲」音效庫裡沒有，先空一拍（要補的音效見 HANDOFF）。
+           ⚠ 「更衣後」＝同一個地方的時間跳躍，走 `fadeOut`／`fadeIn`（1.5 秒）。
+           ⚠ 門房沒有立繪（`DOORMAN_SS`，只出聲）；稿上最後那段改叫「洛姬」（`LOKI_N`，同一張立繪）。 */
+        acts:[
+        { flag:'ss_inn_merge', need:{ any:[ 'ss_cityhall','ss_slum_anya','ss_slum_nou','ss_sor_resolve','ss_4pm' ] },
+          sides:{ RENNA:'L' }, lines:[
+          ren('callangry','所以我說！聖王廳沒有治安權！更何況這裡還是外國！'),
+          sor('angry','不是有那個什麼協定的嗎？'),
+          ren('command','永夜協定只是聖王廳和帝國的軍事合作準則，他國內政根本輪不到我們插手！'),
+          sor('ready','虧我還相信妳……那我自己去！'),
+          ren('callangry','不可以！'),
+          sor('angry',''),
+          ren('coldstare','想清楚！贏了妳就一輩子在這裡蹲苦窯！輸了妳就……！'),
+          ren('lookaway',''),
+          nou(null,'索菈娜小姐……'),
+          door('喂、喂！誰讓妳進來的！'),
+          { speaker:'NARRATION', text:'', se:'se_steps', auto:1200 },
+          lok('sad','祭司大人！', { skipIf:['ss_date_anya','ss_date_sor'] }),
+          lok('sad','神父大人！', { onlyIf:'ss_date_anya' }),
+          lok('sad','姐姐！',     { onlyIf:'ss_date_sor' }),
+          nou(null,'啊……'),
+          { speaker:'NARRATION', text:'', se:'se_fall', auto:1000 },
+          lok('sad','姐姐……他們把我姐姐……！'),
+          sor('angry',''),
+          sor('determine','對不起啊，蕾娜。'),
+          sor('determine','要請妳們找個新的帆手了。'),
+          { speaker:'NARRATION', text:'', se:'se_reload', auto:900 },
+          sor('readysmile',''),
+          ren('callangry','都給我站住。'),
+          sor('cringe',''),
+          nou('scare',''),
+          any('surprise',''),   // 稿：shock（安雅沒有這張）
+          ren('holdfile','真是……一個個都不讓我把話說完。'),
+          ren('holdfile','聖王廳沒立場插手，但是……'),
+          ren('invite','賞金獵人執照，你有的吧？'),
+          { speaker:'PLAYER', blank:true },
+          nou('shock2','對耶！'),
+          ren('pointmap','剛剛在市政廳我大概打聽了一下對方的底細……據點、人員構成、懸賞狀況……'),
+          ren('pointmap','雖說小有規模，但把他們的老巢抹掉的火力……'),
+          { speaker:'NARRATION', text:'', se:'se_reload', auto:900 },
+          ren('determine','我們還是有的。'),
+          any('steady',''),
+          nou('bigsmile',''),
+          sor('excite2','大家……'),
+          ren('tire','不過，'),
+          ren('lookaside','不能就穿這身衣服去。至少我跟諾薇兒不行。'),
+          nou('shock',''),
+          ren('invite','想像一下，帝都報紙的頭條：『聖王廳修女大鬧聖索菲亞』。'),
+          nou('die',''),
+          sor('think','那……'),
+          door('海森伯格小姐？海森伯格小姐在嗎？'),
+          ren('ask','是我。'),
+          door('有您的包裹。'),
+          ren('ask','來得正好。'),
+          { speaker:'NARRATION', text:'', se:'se_openletter', auto:1000 },
+          nou('happy','這些是……！'),
+          ren('commandsoft','回來前我先去買了幾套衣服，尺寸將就一下吧。'),
+          any('shy','也有……我的？'),
+          ren('bow','嗯。有套好行動的衣服也比較好吧？'),
+          ren('command','索菈娜小姐，這次請妳一定要把衣服換上囉。'),
+          sor('sad','……'),
+          sor('shy','唉呀……'),
+          sor('shy','我真是……太喜歡你們啦。'),
+          ren('stare','明明剛剛還說我冷血呢。'),
+          /* ── 更衣後 ── */
+          { speaker:'NARRATION', text:'', fadeOut:1500, auto:1700, hide:['RENNA','NOUVELLE','ANYA','SORANA'] },
+          { speaker:'NARRATION', text:'', fadeIn:1500, auto:1700 },
+          sor('amaze','意外地還不錯。'),
+          ren('lookaway','冒險者的裝束，即使是索菈娜小姐也能活動自如。'),
+          sor('tease','我是說妳啦。'),
+          ren('smile','謝謝。'),
+          sor('amaze','哇，遊刃有餘。'),
+          any('scare',''),
+          ren('think','有點太大件了嗎……'),
+          sor('back','諾薇兒好慢啊！'),
+          ren('write','別急，他們跑不了……'),
+          { speaker:'NARRATION', text:'', auto:600 },   // 開門聲（音效待補）
+          sor('surprise','喔！'),
+          nou('covermouth',''),
+          sor('smirk','這也是……另外一種意義的不錯呢！'),
+          nou('covermouth','我不能再這樣吃下去了……'),
+          /* [諾 T3 以上] */
+          { speaker:'PLAYER', blank:true, tierWho:'NOUVELLE', tierMin:3 },
+          nou('covermouth','',                              { tierWho:'NOUVELLE', tierMin:3 }),
+          nou('shy','神父怎麼能講那種不檢點的話……',          { tierWho:'NOUVELLE', tierMin:3 }),
+        ] } ],
+        /* ── 走出旅店（合流之後第一次離開這一格）── `onLeave`（同東泊 -1532）。
+           ⚠ 稿上「蕾：remind」→ 蕾娜沒有 remind 這張，用 `commandsoft`。
+           ⚠ `ss_raid_go` ＝往里朋家族據點出發；出航鎖（`ss_depart`）照舊鎖著 —— 據點那一段的稿到了再由它插。 */
+        onLeave:[
+          { flag:'ss_raid_go', need:'ss_inn_merge', sides:{ RENNA:'L' }, lines:[
+            ren('watch','他們的據點在市郊，穿過市集走一段就到了。'),
+            lokN('sad','修女大人……'),
+            ren('bow','別擔心，這個人很強的。'),
+            ren('commandsoft','還有，不可以叫我修女大人。'),
+            ren('bow','這是我們的秘密喔。'),
+            lokN('happy','嗯！'),
+            sor('ready','出發！'),
+          ] } ],
         innDoors:[
           { roster:['RENNA','NOUVELLE','ANYA','SORANA'], out:['RENNA'] },
         ],

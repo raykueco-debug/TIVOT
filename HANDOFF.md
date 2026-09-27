@@ -59,7 +59,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1783`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1784`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -72,7 +72,20 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1783`（-1783：索拉娜 relief `?v=3`）
+# HANDOFF — 截至 `ver 2026.09.22-1784`（-1784：聖索菲亞旅店合流）
+
+**`-1784`：聖索菲亞・旅店合流＋走出旅店**（Ray 交稿「約會分支旅店合流」）
+· 旅店 `acts` 的 `ss_inn_merge`：四條支線任一條演完（`ss_cityhall`／`ss_slum_anya`／`ss_slum_nou`／`ss_sor_resolve`）或四點那一道（`ss_4pm`）之後走進旅店就演。
+  小女孩那一句依約了誰分（沒約／諾＝祭司大人、安＝神父大人、索＝姐姐）。「更衣後」走 `fadeOut／fadeIn` 1.5 秒；諾 T3 以上多三拍。
+· 旅店 `onLeave` 的 `ss_raid_go`：合流之後第一次走出旅店（「他們的據點在市郊…」「出發！」）。
+· 新 speaker：`DOORMAN_SS`（門房，無立繪）、`LOKI_N`（洛姬＝小女孩同一張立繪，稿上合流之後改叫名字）。
+· 取最接近的差分：蕾 `remind`→`commandsoft`；諾 `smilebig`→`bigsmile`、`dying`→`die`、`coverface`→`covermouth`；安 `shock`→`surprise`；小女孩 `cry`→`sad`。
+  「淪不到」改「輪不到」（錯字）。
+· ⚠ **要補的**：① 換裝後的差分（Ray：「先用舊的，等全差分完成再一次畫全版本補上」）② 開門聲音效（庫裡沒有，現在空一拍）
+  ③ 里朋家族據點那一段的稿（出航鎖 `ss_depart` 還沒人插，聖索菲亞照舊出不了港）。
+· 實測（8123，走市政廳那條）：合流整段演完、旗記上；「走出旅店」那一段沒實跑（同東泊 onLeave 的機制）。
+
+# （上一段）截至 `ver 2026.09.22-1783`（-1783：索拉娜 relief `?v=3`）
 
 **`-1783`**：索拉娜 `relief` 回上一版（交接第 18 項，美術已換回 d556b53）—— `speakers.js` 跳 `?v=3`、取景重量 top:9 bot:1517 fx:0.555。飛行頁沒有登記這張。
 

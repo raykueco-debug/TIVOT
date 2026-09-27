@@ -177,6 +177,8 @@ export const SPEAKERS = {
      ⚠ 小女孩（Loki）與少女（Lofa）在稿上一直以「小女孩」「少女」稱呼 —— 顯示名照稿。 */
   MANU_X:     { name:'？？？', art:'manu' },
   LOKI:       { name:'小女孩', art:'loki' },
+  LOKI_N:     { name:'洛姬',   art:'loki' },   // ver -1784：旅店合流之後稿上改叫「洛姬」（同一張立繪）
+  DOORMAN_SS: { name:'門房',   art:null },     // ver -1784：聖索菲亞旅店的門房（沒有立繪，只出聲）
   LOFA:       { name:'少女',   art:'lofa' },
   WORKER_SS:  { name:'路人',   art:'worker_ss' },
   COUNTER_SS: { name:'櫃台',   art:'counter_ss' },
