@@ -57,7 +57,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1781`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1782`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -70,7 +70,18 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1781`（-1781：副武器卡、彈數與裝填、改造滿級特效欄）
+# HANDOFF — 截至 `ver 2026.09.22-1782`（-1782：聖索菲亞修正＋出航鎖）
+
+**`-1782`**（Ray）
+· 抵達那段諾薇兒的 `back` → `lookback`；-1769 另外登記的 `nouvelle.back` 拿掉。
+· 市政廳公務員：美術把我之前當 front 的那張改名成 `npc_ss_cityhall_cringe`，重交一張 front（PNG→WebP，同名覆蓋 ⇒ `?v=2`，取景重量 top3 bot1511 fx0.582）。
+  一般台詞用 front，**只有「噫！」用 cringe**（T3 插圖那一拍也掛 cringe）；「噫」的前一拍播 `se_walk`（T3 掛在插圖那一拍、T2 另起一拍）。
+  原檔：新 front 進 `_originals/SI/NPC/npc_ss_cityhall_front.png`，舊的（其實是 cringe）改名 `_originals/SI/NPC/npc_ss_cityhall_cringe.png`。
+· **初入聖索菲亞上出航鎖**（主廣場 `sail.hold`）：`need:'ss_arrive'`、`until:'ss_depart'`、旁白「（大家都還在城裡。不能丟下夥伴。）」。
+  ⚠ 鐵律 9：`ss_depart` **還沒有人插** —— 旅店合流那一段（稿還沒到）演完由它插。在那之前聖索菲亞出不了港。
+· ⚠ **市政廳沒有室內圖**：`sofia_cityhall` 是外觀（台階＋正門），櫃台那段現在站在門口演。要請美術出 `sofia_cityhall_in`（營業 [8,17]，只要 day）。
+
+# （上一段）截至 `ver 2026.09.22-1781`（-1781：副武器卡、彈數與裝填、改造滿級特效欄）
 
 **`-1781`**（Ray：「把副武器做成武器卡，並讓每個武器加入彈數與裝填時間，預設機槍四發 2 秒裝填，霰彈兩發 1 秒裝填，並且留一欄改造滿級特殊效果」）
 · **武器卡**：`config.weapons` 抽成 `script/weapons.js`（`WEAPONS`，同 enemies.js 的作法；config 照舊 `weapons: WEAPONS`，讀取端不變）。

@@ -4447,7 +4447,7 @@ export const TOWNS = {
            飛行頁的 `S14_TALK` 用同一組條件（`s14Route()`，兩邊註解互指）。演完 ＝ 自由行動、可約會（旅店敲門）。
            ⚠ 稿上對不上的差分，取最接近的（Ray -1532：「寫錯不報錯先找 typo 或接近的」）：
              安 `sacre`→`scare`／`dying`→`die`；蕾 `softcommand`→`commandsoft`；
-             諾 `back` 本來沒登記 —— -1769 在 speakers.js 補上（`nouvelle_si_back.webp`，measure_si 實量）。
+             諾 `back` → `lookback`（ver -1782，Ray 更正；-1769 曾另外登記 `back`，已拿掉）。
            ⚠ 馬努一路都是「？？？」（`MANU_X`）；他走掉那一拍（`Se_walk`）順手請他下台。 */
         acts:[
         { flag:'ss_arrive', need:{ any:[ 'ep_leave_final', ['vn_after_tomb','ep_leave_tomb'] ] }, sides:{ RENNA:'L' }, lines:[
@@ -4467,7 +4467,7 @@ export const TOWNS = {
           any('die','', { cg:null }),
           sor('confuse','總覺得妳在想什麼很讓人火大的事啊。'),
           mnx('scream','喂！'),
-          nou('back','？'),
+          nou('lookback','？'),   // ver -1782：稿上 back → lookback（Ray）
           mnx('scream','不好好工作，跑來這裡幹什麼？'),
           any('scare','？？？'),
           mnx('front','難不成是想找神父告解嗎？啊？'),
@@ -4536,7 +4536,10 @@ export const TOWNS = {
            出不了港）。
            ⚠ 有陸路可以走到的地方（帝都／夏爾村那一族）照舊要旗：那裡「還沒有船」
              是真的成立。 */
-        sail:{} },
+        /* ══ 出航鎖（ver -1782，Ray：「初入聖索菲亞要上出航鎖『不能丟下夥伴』」）══ 同雪都那一條（`vn_arrive`／`vn_depart`）。
+           ⚠ 鐵律 9：`until:'ss_depart'` **現在還沒有人插** —— 旅店合流那一段（稿還沒到）演完由它插。 */
+        sail:{ hold:{ need:'ss_arrive', until:'ss_depart',
+                      lines:[ { speaker:'NARRATION', text:'（大家都還在城裡。不能丟下夥伴。）' } ] } } },
 
       /* ── 一、中心區 ── 左＝市政廳、右＝大教堂、下＝廣場 */
       midtown:  { bg:'sofia_midtown',  name:'聖索菲亞　中心區', noTime:true,
@@ -4564,12 +4567,13 @@ export const TOWNS = {
           cnS('front','別這麼說嘛！聖索菲亞的夜晚可是……'),
           /* [T3 以上] */
           { speaker:'NARRATION', text:'', cg:'34_rennacityhall', cgNoTime:true, cgPan:'up', auto:2600,
-            tierWho:'RENNA', tierMin:3 },
-          { speaker:'COUNTER_SS', text:'噫！', tierWho:'RENNA', tierMin:3 },
+            se:'se_walk', tierWho:'RENNA', tierMin:3 },   // ver -1782：「噫」的前一拍播 se_walk（Ray）
+          { speaker:'COUNTER_SS', text:'噫！', portrait:{ char:'COUNTER_SS', expr:'cringe', show:true }, tierWho:'RENNA', tierMin:3 },
           { speaker:'RENNA', text:'唉呀，在的話就出個聲啊。', tierWho:'RENNA', tierMin:3 },
           { speaker:'NARRATION', text:'', cg:null, auto:1, tierWho:'RENNA', tierMin:3 },
           /* [T2 以下] */
-          cnS('front','噫！',                    { tierWho:'RENNA', tierMax:2 }),
+          { speaker:'NARRATION', text:'', se:'se_walk', auto:1200, tierWho:'RENNA', tierMax:2 },   // ver -1782：「噫」的前一拍播 se_walk
+          cnS('cringe','噫！',                   { tierWho:'RENNA', tierMax:2 }),   // ver -1782：只有「噫」用 cringe（Ray）
           ren('ask','唉呀，在的話就出個聲啊。', { tierWho:'RENNA', tierMax:2 }),
           ren('think','我有一些想法……得再做些準備。'),
           ren('commandsoft','這邊還要一陣子，你先回旅店吧。'),

@@ -530,7 +530,6 @@ export const ART = {
                      與 `gossip1`（0.710）同一類構圖。沿用別張會把她推出畫面。 */
                   whisper:  { src:'resources/si/nouvelle_si_whisper.webp',   top:8,  bot:1530, fx:0.697 },
                   talk:     { src:'resources/si/nouvelle_si_talk.webp',      top:3,  bot:1535, fx:0.582 },   // ver -752
-                  back:     { src:'resources/si/nouvelle_si_back.webp',      top:4,  bot:1526, fx:0.490 },   // ver -1769：Stage 14 聖索菲亞（measure_si 實量）
                   explain:  { src:'resources/si/nouvelle_si_expain.webp',    top:2,  bot:1526, fx:0.582 },   // ver -772（檔名 expain 照交件）
                   /* 城鎮探索那一段新增（ver -369）。 */
                   sadsmile: { src:'resources/si/nouvelle_si_sadsmile.webp',  top:5,  bot:1532, fx:0.587 },
@@ -1637,9 +1636,12 @@ export const ART = {
            side:'R', alt:null, base:'resources/si/npc/npc_ss_worker_talk.webp', expr:{
     talk: { src:'resources/si/npc/npc_ss_worker_talk.webp', top:11, bot:1532, fx:0.430 },
   } },
-  counter_ss: { cm:175, eye:30, fx:0.494, top:10, bot:1520,
-           side:'R', alt:null, base:'resources/si/npc/npc_ss_cityhall_front.webp', expr:{
-    front: { src:'resources/si/npc/npc_ss_cityhall_front.webp', top:10, bot:1520, fx:0.494 },
+  /* ⚠ ver -1782：front 換成美術重交的那一張（同名覆蓋 ⇒ `?v=2`）；舊的 front 其實是 cringe（美術已改名）。
+     取景兩張都 measure_si 實量。 */
+  counter_ss: { cm:175, eye:30, fx:0.582, top:3, bot:1511,
+           side:'R', alt:null, base:'resources/si/npc/npc_ss_cityhall_front.webp?v=2', expr:{
+    front:  { src:'resources/si/npc/npc_ss_cityhall_front.webp?v=2', top:3,  bot:1511, fx:0.582 },
+    cringe: { src:'resources/si/npc/npc_ss_cityhall_cringe.webp',    top:10, bot:1520, fx:0.494 },
   } },
 };
 
