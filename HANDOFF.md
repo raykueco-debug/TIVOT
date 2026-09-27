@@ -47,7 +47,7 @@
 >    程式端：**`script/speakers.js` 的 `remind` 路徑 `?v=2` → `?v=3`**（同名覆蓋，不跳版號玩家永遠拿到修壞的那版）；取景值 `measure_si.py` 重量＝`top:1 bot:1525 fx:0.523`（現行寫 `top:4`，差 3px 可改可不改）。
 > 17. ✅ **-1768 已跳 `?v=4`**（取景不變 top:9 bot:1530 fx:0.528） **（09-26 晚，Mac）索拉娜 `smile` 也回上一版**（Ray：「smile 也修壞了，回復」）—— `resources/si/sorana_si_smile.webp` 換回 d556b53，09-22 第三輪重製版（82caf63）進 `_recycle/`。
 >    程式端：**`script/speakers.js` 的 `smile` 路徑 `?v=3` → `?v=4`**；取景 `measure_si.py` 重量＝`top:9 bot:1530 fx:0.528`，與現行完全相同、不用改。
-> 18. **（09-27，Mac）索拉娜 `relief` 也回上一版**（Ray：「索的 relief 也改壞了，改回來」）—— `resources/si/sorana_si_relief.webp` 換回 d556b53，09-21 的短提示詞版（eb06fcb）進 `_recycle/`。
+> 18. ✅ **-1783 已跳 `?v=3`**（取景 top:9 bot:1517 fx:0.555） **（09-27，Mac）索拉娜 `relief` 也回上一版**（Ray：「索的 relief 也改壞了，改回來」）—— `resources/si/sorana_si_relief.webp` 換回 d556b53，09-21 的短提示詞版（eb06fcb）進 `_recycle/`。
 >    程式端：**`script/speakers.js` 的 `relief` 路徑 `?v=2` → `?v=3`**；取景 `measure_si.py` 重量＝`top:9 bot:1517 fx:0.555`（現行 `top:8 bot:1518 fx:0.556`，差 1px，可改可不改）。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；**§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
@@ -59,7 +59,7 @@
 > ／三件等 Ray 決定的）。⚠ 那一份是 2026-09-22 晚寫的，做完請把它刪掉或標成已接。
 
 > ⚠⚠⚠ **換 session（2026-09-25，Mac，程式 session 收工）—— 開工前先讀這一塊**
-> · `origin/main` ＝ **`-1782`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
+> · `origin/main` ＝ **`-1783`**（見下一段），工作樹只剩 Ray 自己的 untracked 檔，沒有欠 commit。
 > · **這一輪 -1728～-1733 沒在瀏覽器驗到的（省用量，Ray 在 8200 看）**：
 >   ① 墓門開場的新順序（兵聲起→米夏 CI→terrify→行軍插圖→索那句→插圖收兵聲停），三版都改了
 >   ② 拉煙減量（機槍 3 團／霰彈 1 團）與去 blur 的視覺 ③ Stage 14（`enter:'flight'`＋`flight:{town:'ravnsdal'}`）落點
@@ -72,7 +72,11 @@
 > · 這台 Mac 上 Ray 的 untracked 檔清單見 -1724 那一段（沒推、換機器要自己帶）。
 > · 路線模擬器 `tools/routesim.mjs`（Mac：`cd tools && jsc -m routesim.mjs -- BAM2 40`）。
 
-# HANDOFF — 截至 `ver 2026.09.22-1782`（-1782：聖索菲亞修正＋出航鎖）
+# HANDOFF — 截至 `ver 2026.09.22-1783`（-1783：索拉娜 relief `?v=3`）
+
+**`-1783`**：索拉娜 `relief` 回上一版（交接第 18 項，美術已換回 d556b53）—— `speakers.js` 跳 `?v=3`、取景重量 top:9 bot:1517 fx:0.555。飛行頁沒有登記這張。
+
+# （上一段）截至 `ver 2026.09.22-1782`（-1782：聖索菲亞修正＋出航鎖）
 
 **`-1782`**（Ray）
 · 抵達那段諾薇兒的 `back` → `lookback`；-1769 另外登記的 `nouvelle.back` 拿掉。

@@ -855,7 +855,7 @@ export const ART = {
     readsad:     { src:'resources/si/sorana_si_readsad.webp?v=2',     top:5, bot:1530, fx:0.643 },
     readconfuse: { src:'resources/si/sorana_si_readconfuse.webp?v=2', top:9, bot:1528, fx:0.671 },
     point:     { src:'resources/si/sorana_si_point.webp?v=2', top:9, bot:1523, fx:0.543 },
-    relief:    { src:'resources/si/sorana_si_relief.webp?v=2', top:8, bot:1518, fx:0.556 },
+    relief:    { src:'resources/si/sorana_si_relief.webp?v=3', top:9, bot:1517, fx:0.555 },   // ver -1783：回上一版（d556b53），同名覆蓋跳 ?v=3、取景重量
     sad:       { src:'resources/si/sorana_si_sad.webp?v=2', top:3, bot:1527, fx:0.515 },
     salute:    { src:'resources/si/sorana_si_salute.webp?v=2', top:11, bot:1525, fx:0.580 },   // fx 目視手調，不隨新圖走（新圖量到 0.581，含舉起的手臂）
     scare:    { src:'resources/si/sorana_si_scare.webp?v=2', top:16, bot:1518, fx:0.540 },   // fx 目視重量（量到 0.443）
