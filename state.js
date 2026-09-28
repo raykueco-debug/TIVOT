@@ -254,6 +254,12 @@ export const state = {
   intruderTriggered: false,
   inIntruderFight: false,
   deathGuardUsed: false,
+  /* ⚠⚠ ver -1844（Ray：「主動技跟變身技是否熔斷是無關的」）：主動技的「用過了」**逐位搭檔各記一格**。
+     `partnerActiveUsed` 永遠是**現在這一位**的那一格；換人（combat.cyclePartner）時把它存進
+     `activeUsedBy[舊的]`、換上 `activeUsedBy[新的]`。以前全隊共用一格 —— 索菈娜用過主動技，
+     換成諾薇兒／安雅也跟著發不出來（讀起來就像「熔斷連主動技一起鎖了」）。
+     ⚠ 變身（聖徒化／夢魘化／共鬥）的槽**照舊全隊共用**（`saintUsedThisBattle`），不受影響。 */
+  activeUsedBy: {},
   partnerActiveUsed: false,   // 搭檔主動技「每場一次」旗標（oncePerBattle 技用；擁有者 partner，combat 於開場歸零）
   /* ══⚠⚠ 連續戰鬥的「同一場」（ver -585（-893 前用詞），Ray：「戰鬥地圖中移動期間算同一場，
      hp／聖徒化次數／主動技發動次數／破防值算同一場」）══

@@ -1900,6 +1900,10 @@ export function cyclePartner(step){
   const i=keys.indexOf(state.pickedPartner);
   const nx=keys[((i<0?0:i) + (step||1) + keys.length) % keys.length];
   if(!nx || nx===state.pickedPartner) return false;
+  /* 主動技的「用過了」逐位搭檔各記一格（ver -1844，見 state.activeUsedBy）。 */
+  state.activeUsedBy = state.activeUsedBy || {};
+  state.activeUsedBy[state.pickedPartner] = !!state.partnerActiveUsed;
+  state.partnerActiveUsed = !!state.activeUsedBy[nx];
   setPickedPartner(nx);
   updateEnergyClasp();                       // 頭像立刻換（那就是「換了誰」的回饋）
   /* 順便播她自己的選人確認音（卡上的 `selectVoice`）—— 沒寫就安靜換。 */
@@ -2762,6 +2766,7 @@ function sessionSave(){
   if(!state.battleSession) return;
   sessionCarry={ saintUsed:!!state.saintUsedThisBattle,
                  partnerUsed:!!state.partnerActiveUsed,
+                 activeUsedBy:Object.assign({}, state.activeUsedBy||{}, { [state.pickedPartner]:!!state.partnerActiveUsed }),
                  energy:state.energy||0,
                  /* 三個連段**跨場（怪）累積**（ver -891/-892，Ray）——
                     同一局之內換一隻怪不歸零，換局才歸零。（ver -893 用詞） */
@@ -2992,7 +2997,7 @@ export function startGame(){
   warmBattleFx();
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
   state.atkBuff=false; state.lowHpBuff=false;
-  state.partnerActiveUsed=false;   // 搭檔主動技每場次數重置
+  state.partnerActiveUsed=false; state.activeUsedBy={};   // 搭檔主動技每場次數重置（逐位，ver -1844）
   /* ⚠ 三個連段（獵手的戰吼／明晰之夢／連續無傷擊殺）在這裡歸零，但**同一局的下一場
      會被 sessionCarry 搬回來**（ver -891/-892，Ray：「可跨場（怪）累積」）——
      同 saintUsed／energy 的作法：在開頭乾淨歸零，接得上同一局的那一場再放回去
@@ -3177,7 +3182,10 @@ export function startGame(){
   { const sess = sb && sb.session || null;
     if(sess && state.battleSession===sess && sessionCarry){
       state.saintUsedThisBattle = sessionCarry.saintUsed;
-      state.partnerActiveUsed   = sessionCarry.partnerUsed;
+      state.activeUsedBy        = Object.assign({}, sessionCarry.activeUsedBy||{});   // 逐位（ver -1844）
+      state.partnerActiveUsed   = sessionCarry.activeUsedBy
+                                  ? !!state.activeUsedBy[state.pickedPartner]   // 沒記過＝這一位還沒用過
+                                  : sessionCarry.partnerUsed;                    // 舊版的 carry（沒有逐位表）
       state.energy              = sessionCarry.energy;
       state.svPerfectStreak     = sessionCarry.svStreak||0;      // 獵手的戰吼（ver -891）
       state.lucidStreak         = sessionCarry.lucidStreak||0;   // 明晰之夢（ver -891）
@@ -3259,7 +3267,7 @@ export function startScriptBattle(id, opts){
 export function startIntruderFight(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
   state.atkBuff=false; state.lowHpBuff=false;
-  state.partnerActiveUsed=false;   // 新場：搭檔主動技每場次數重置
+  state.partnerActiveUsed=false; state.activeUsedBy={};   // 新場：搭檔主動技每場次數重置（逐位，ver -1844）
   /* 亂入是**新的一局**（不接上一段），三個連段一律歸零（ver -891/-892；ver -893 用詞）。 */
   state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0; state.installReloadPending=false; state.counterStreak=0;
   saint.reset();
