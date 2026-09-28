@@ -42,30 +42,30 @@
 | scare | ✔ 入庫（09-28 第一批） |
 | scare2 | ✔ 入庫（09-28 第一批） |
 | shy | ✔ 入庫（09-28 第一批） |
-| side | ⏳ |
-| silent | ⏳ |
-| sleep | ⏳ |
-| sleepy | ⏳ |
-| smile | ⏳ |
-| smileshy | ⏳ |
-| smilesneaky | ⏳ |
-| sob | ⏳ |
-| stare | ⏳ |
-| steady | ⏳ |
-| surprise | ⏳ |
-| talk | ⏳ |
-| talkshy | ⏳ |
-| terrify | ⏳ |
-| think | ⏳ |
-| upset | ⏳ |
-| watch | ⏳ |
-| wave | ⏳ |
-| wheel | ⏳ |
-| wheelback | ⏳ |
-| wheelpoint | ⏳ |
-| wheeltalk | ⏳ |
-| whisper | ⏳ |
-| worry | ⏳ |
+| side | ✔ 入庫（09-28 第二批） |
+| silent | ✔ 入庫（09-28 第二批） |
+| sleep | ✔ 入庫（09-28 第二批） |
+| sleepy | ✔ 入庫（09-28 第二批） |
+| smile | ✔ 入庫（09-28 第二批） |
+| smileshy | ✔ 入庫（09-28 第二批） |
+| smilesneaky | ✔ 入庫（09-28 第二批） |
+| sob | ✔ 入庫（09-28 第二批） |
+| stare | ✔ 入庫（09-28 第二批） |
+| steady | ✔ 入庫（09-28 第二批） |
+| surprise | ✔ 入庫（09-28 第二批） |
+| talk | ✔ 入庫（09-28 第二批） |
+| talkshy | ✔ 入庫（09-28 第二批） |
+| terrify | ✔ 入庫（09-28 第二批） |
+| think | ✔ 入庫（09-28 第二批） |
+| upset | ✔ 入庫（09-28 第二批） |
+| watch | ✔ 入庫（09-28 第二批） |
+| wave | ✔ 入庫（09-28 第二批） |
+| wheel | ✔ 入庫（09-28 第二批） |
+| wheelback | ✔ 入庫（09-28 第二批） |
+| wheelpoint | ✔ 入庫（09-28 第二批） |
+| wheeltalk | ✔ 入庫（09-28 第二批） |
+| whisper | ✔ 入庫（09-28 第二批） |
+| worry | ✔ 入庫（09-28 第二批） |
 
 
 ## 第一批取景值（`tools/measure_si.py`，09-28）
@@ -109,4 +109,35 @@ anya_si_shy              top:8 bot:1527 fx:0.443
 
 - ⚠ `nightmareinstall`：`top:0` 是**法環頂**不是頭頂，人也比舊版大一號 —— 要照憲法 §5（-635）用顏色挑人物重量，並確認 `rescale` 還要不要。
 - ⚠ `cryrun`：原本是 Ray 丟進來、沒入庫的 `anya_si_cryrun.png`（已進 `_recycle/`），現在是新檔 `anya_si_cryrun.webp`。
-- 剩 24 張等 GPT 額度重置（sleep／side／silent 已送出未出圖）。
+
+## 第二批取景值（`tools/measure_si.py`，09-28）—— ✔ 58／58 全部入庫
+
+```
+anya_si_side             top:4 bot:1521 fx:0.424
+anya_si_silent           top:4 bot:1521 fx:0.423
+anya_si_sleep            top:209 bot:1269 fx:0.544 ⚠ 縱向只佔 69%，可能不是全身圖 → top/bot 不可當身高用
+anya_si_sleepy           top:0 bot:1515 fx:0.464
+anya_si_smile            top:0 bot:1521 fx:0.464
+anya_si_smileshy         top:5 bot:1524 fx:0.452
+anya_si_smilesneaky      top:3 bot:1529 fx:0.446
+anya_si_sob              top:8 bot:1535 fx:0.377
+anya_si_stare            top:0 bot:1521 fx:0.506
+anya_si_steady           top:0 bot:1526 fx:0.499
+anya_si_surprise         top:9 bot:1526 fx:0.459
+anya_si_talk             top:8 bot:1526 fx:0.483
+anya_si_talkshy          top:2 bot:1523 fx:0.479
+anya_si_terrify          top:8 bot:1527 fx:0.458
+anya_si_think            top:11 bot:1521 fx:0.483
+anya_si_upset            top:0 bot:1522 fx:0.469
+anya_si_watch            top:8 bot:1535 fx:0.478
+anya_si_wave             top:0 bot:1525 fx:0.404
+anya_si_wheel            top:0 bot:1526 fx:0.477
+anya_si_wheelback        top:4 bot:1522 fx:0.504
+anya_si_wheelpoint       top:5 bot:1514 fx:0.482
+anya_si_wheeltalk        top:9 bot:1511 fx:0.458
+anya_si_whisper          top:6 bot:1515 fx:0.416
+anya_si_worry            top:7 bot:1524 fx:0.492
+```
+
+- ⚠ `sleep`：人比舊版大一號、位置也不同（坐姿），取景值要用新的，`cm`／`standCm` 可能要重調。
+- `side`／`back` 舊版髮色偏米白，新版照基準改回淡紫。

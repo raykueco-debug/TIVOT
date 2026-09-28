@@ -113,6 +113,10 @@
 >    同名覆蓋 34 張 `resources/si/anya_si_<鍵>.webp`：front amaze angry answer argue armcross back clap cry crying curious desperate determine die eat happy hug laugh lookback lookup makeface nervous nightmareinstall nod panic peace point read relief runworry scare scare2 shy ＋ **新檔** `cryrun`。
 >    程式端：① `script/speakers.js` 這 34 條 src **`?v=` 全跳**（同名覆蓋）② **取景值全部換** —— 逐張數字在 `resources/si/_anya_restyle_worklist.md` 末段（`tools/measure_si.py`），⚠ `nightmareinstall` 的 top 量到法環，要照 §5（-635）用顏色挑人重量 ③ `cryrun` 要不要接等 Ray（現在沒有引用）。
 >    ⚠⚠ **現在遊戲裡安雅是新舊畫風混著的**（剩 24 張等 GPT 額度重置再跑，第二批到了再同樣跳一次）—— Ray 要求先交這一批。
+> 30. **（09-28，Mac）安雅重畫第二批 24 張 —— ✔ 58／58 全部完成**（接第 29 項）
+>    同名覆蓋：side silent sleep sleepy smile smileshy smilesneaky sob stare steady surprise talk talkshy terrify think upset watch wave wheel wheelback wheelpoint wheeltalk whisper worry。
+>    程式端：`script/speakers.js` 這 24 條 src **`?v=` 全跳**、取景值全換（`resources/si/_anya_restyle_worklist.md`「第二批取景值」）。⚠ `sleep` 是坐姿、人比舊版大，`measure_si` 提醒縱向只佔 69% ⇒ top/bot 不能當身高，`cm`／`standCm` 要看渲染調。
+>    ⇒ 第 29＋30 項接完之後，遊戲裡安雅就全部是新畫風了。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑；**§十三＝09-27 收工換機器：薇拉馮德 73 張、惡棍 6 張、索拉娜三張回版、還開著的事、三個不明刪除**；§十四＝GPT 拒畫的 alpha 交 PC 走本機；**§十五＝09-28 收工：蘿媞六張、cry 手指、市政廳室內、惡棍群體、產線教訓**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
