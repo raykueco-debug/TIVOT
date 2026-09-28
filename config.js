@@ -83,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1848';
+export const VERSION = 'ver 2026.09.22-1849';
 
 export const GAME_CONFIG = {
 
@@ -4248,7 +4248,11 @@ export const ASSETS = {
   /* ⚠ 美術把 `mon_beast_altar` 更名成 `mon_beast_reliquary`（ver -928 才發現）——
      舊檔名一直指著一個不存在的檔案＝北泊教堂 Boss 沒有立繪，而**畫面上不會有錯誤訊息**。
      自檢：把 config 裡所有 resources 路徑抓出來逐個 `test -f`（同 §5 的同名覆蓋自檢）。 */
-  enemy_np_boss: "resources/enemy/mon_beast_reliquary.webp?v=3",
+  /* ⚠⚠ ver -1849 更正上面那段（Ray：「背負祭壇者的圖也錯很久了，不知為何用了熊的圖」）：
+     **不是改名，是兩隻不同的怪** —— `mon_beast_altar`（背上扛著教堂的祭壇獸＝背負祭壇者）在
+     ver -919（58533b9d）被刪掉，-928 把它誤判成「更名為 reliquary」，於是背負祭壇者一直借聖匣熊的圖。
+     已從 git（fc0ba3a2）原樣放回 `mon_beast_altar.webp`。聖匣熊照舊給 `enemy_sv_reliquary`。 */
+  enemy_np_boss: "resources/enemy/mon_beast_altar.webp?v=4",
   /* 教堂那一場之後的真 BOSS：**瓦礫中生出的紫黑之爪**（ver -595（-893 前用詞），Ray：「boss 圖為
      TheClaws」）。⚠ 這一張是**連背景一起畫的整張戰鬥圖**（規格見
      `resources/background/_boss_claw_spec.md`）—— 所以敵人卡**不給 `bg`、不給
@@ -4333,6 +4337,8 @@ export const ASSETS = {
      ⚠⚠ 要放回來時**這一段與戰鬥卡兩邊一起改**：只放這裡＝`asset()` 查得到但沒人用；
        只接戰鬥卡＝`asset()` 回空字串、怪沒有立繪，**而且畫面上不會有任何錯誤訊息**
        （-929 那隻教堂 Boss 踩過）。
+     ⚠⚠ ver -1849：**已放回來** —— 羅賽爾廢城的野怪池（-1839 `dm_relic_*`）用的就是這十隻，
+       而這一段一直註解著 ⇒ 廢城的野怪全部沒有立繪（Ray：「廢城的野怪圖都沒接好」）。 */
   enemy_relic_mirrorchoir:   "resources/enemy/mon_relic_mirrorchoir.webp",
   enemy_relic_bellows:       "resources/enemy/mon_relic_bellows.webp",
   enemy_relic_confessional:  "resources/enemy/mon_relic_confessional.webp",
@@ -4343,7 +4349,6 @@ export const ASSETS = {
   enemy_relic_veilhands:     "resources/enemy/mon_relic_veilhands.webp",
   enemy_relic_wheelpsalm:    "resources/enemy/mon_relic_wheelpsalm.webp",
   enemy_relic_chalice:       "resources/enemy/mon_relic_chalice.webp",
-  */
 
   /* ══ 伊甸古墓 26 隻 ＋ 王座間 2 隻（ver -1578）══ 卡在 `script/enemies.js`；
      圖的清單來源 `resources/enemy/_enemy_card_intake.md`。

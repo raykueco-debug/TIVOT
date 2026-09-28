@@ -414,8 +414,50 @@ def check_map_sessions(D):
                 % (tid, '／'.join(bad), tid))
 
 
+# ══ 城鎮／地圖會刷出來的怪，立繪一定要查得到（ver -1849）══
+#   Ray：「廢城的野怪圖都沒接好」—— `dm_relic_*` 十張卡的 `image` 鍵在 `ASSETS` 裡
+#   **整段被註解掉**（-934「開峽谷再放」），怪照樣出場、只是沒有立繪，**沒有任何錯誤訊息**。
+#   ⇒ 會執行的檢查：野怪池／必出格／追擊用到的每一場 → 敵人卡 → `image` → `ASSETS` 有這個鍵、
+#     而且那個檔真的在磁碟上。只管這幾類（它們是玩家走進地圖就會碰到的）。
+def check_map_enemy_images(D):
+    towns = D.get('towns') or {}
+    cfg   = D.get('cfg') or {}
+    B     = cfg.get('battles') or {}
+    E     = cfg.get('enemies') or {}
+    A     = D.get('assets') or {}
+    for tid, T in towns.items():
+        ids = set()
+        for b in ((T.get('chase') or {}).get('battles') or []):
+            if isinstance(b, str): ids.add(b)
+        W = T.get('wildSpawn') or {}
+        for p in (W.get('pool') or []):
+            b = (p or {}).get('battle')
+            if isinstance(b, str): ids.add(b)
+        for v in list((W.get('fixed') or {}).values()) + [W.get('endBattle')]:
+            if isinstance(v, str): ids.add(v)
+            elif isinstance(v, dict):
+                for vv in v.values():
+                    if isinstance(vv, str): ids.add(vv)
+        for b in sorted(ids):
+            card = B.get(b)
+            if not card: continue
+            ek = card.get('enemy'); e = E.get(ek) if ek else None
+            if not e:
+                err('%s：場次 %s 的敵人卡 %s 不存在' % (tid, b, ek)); continue
+            img = e.get('image')
+            if not img: continue
+            path = A.get(img)
+            if not path:
+                err('%s：場次 %s（%s）的立繪鍵 %s 在 ASSETS 裡查不到 —— 出場會沒有立繪，而且不報錯'
+                    % (tid, b, ek, img)); continue
+            f = os.path.join(ROOT, str(path).split('?')[0])
+            if not os.path.isfile(f):
+                err('%s：場次 %s（%s）的立繪檔不存在：%s' % (tid, b, ek, path))
+
+
 def main():
     D = load_data()
+    check_map_enemy_images(D)
     check_heavy_pairs()
     boot = check_boot_batch(D)
     check_map_sessions(D)
