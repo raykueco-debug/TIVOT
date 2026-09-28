@@ -129,6 +129,16 @@
 > · **沒實跑過**：里朋莊園整段（六場戰鬥、沙龍演出、回旅店、隔天出航說明、禁航解除）、索拉娜 19 張縮圖、挾持雙人圖的站位 —— 都要 Ray 在遊戲裡看。
 > · ⚠ 這一輪自己犯的兩次（留著提醒）：-1797 lint 報錯仍 commit 推上（之後改成 lint 通過才 commit）；-1801 `git add -A` 把 Ray 三張 untracked 夾帶進去（已移出版控）。
 
+# HANDOFF — 截至 `ver 2026.09.22-1806`（-1806：東泊鎖／副武器裝填／米夏 CI）
+
+**`-1806`**（Mac，程式 session；都沒實跑，Ray 看）
+· 東泊出航鎖改成 `ep_arrive` → `ep_hairpin_hunt`（`sail.hold` 可以寫成陣列：貝利薩爾回來後改說「休整一下，明天就出發吧。」）。⚠ 第一天蕾娜在大學，點出航還是她講那句 —— Ray 要換成別人講再說。
+· 守夜出不了旅店：-1727 就有了（`inn.lock.uptown`，解鎖 `ep_night_anya_out`），這一版沒動。
+· 王座徘徊者戰後回旅店：`ep_hairpin_talk` 第一拍 `clockToNext:22`。
+· 米夏注視 CI（`fx:'stare'`）1.4s → 4.2s、`STARE_MS` 4500；峰值仍在 450ms 對齊心跳。
+· 副武器：裝填中點圈＝沒作用（圈留著，浮 RELOAD，`defense.resolveThreat` 入口）；每一場（換怪）滿彈（`combat.onEnemySet`）；換槍＝換下來那把當場滿彈（`weapon.applyWeapon`）。
+· 首頁發熱：HUD 上首頁沒有動畫、沒有 rAF（HUD 開著時的 60/s 是 HUD 自己的幀率計），五個 timer 都是 1~5 秒的輕量檢查。讀程式找不到兇手，要實測（見回覆）。
+
 # HANDOFF — 截至 `ver 2026.09.22-1804`（-1804：破防計量表的發熱）
 
 **`-1804`**（Ray：「手機變得更燙」→「應該是戰鬥最燙」）
