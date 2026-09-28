@@ -712,11 +712,13 @@ function fireEnergyBuff(sec){
   state.energyBoostUntil = Date.now()+sec*1000;
   if(api.lucidFlood) api.lucidFlood(sec);
 }
-export function onBoardCleared(clean){
+export function onBoardCleared(clean, br){
   /* ══ 盤面窗的**唯一**拔旗點（ver -1014，鐵律 9）══ 放在最前面：底下那幾道
      守門（不是索菈娜就 return、變身期間就 return）不該影響「清盤了」這件事。 */
   guardHealBoard = false;
   vampBoard = false;
+  /* BR 清的盤不算進戰吼的連續計數（ver -1829，Ray）—— 不加一、也不歸零，當作這一盤不存在。 */
+  if(br) return;
   const p = currentPartner();
   const pas = p && p.passive;
   if(!(pas && pas.key==='perfectStreak')) return;

@@ -620,7 +620,7 @@ function brSweepBoard(){
   });
   /* 等碎片落完再收盤 —— `clearBoard` 會接著 `goNextBoard` 重建整盤，
      同一拍做完的話玻璃碎片會被新盤面直接蓋掉，等於沒演。 */
-  setTimeout(()=>{ if(!state.over && state.enemyHp>0) clearBoard(); }, BR_SWEEP_MS);
+  setTimeout(()=>{ if(!state.over && state.enemyHp>0) clearBoard({ br:true }); }, BR_SWEEP_MS);   // br：這一盤是 BR 清的（ver -1829）
 }
 const BR_SWEEP_MS=260;
 
@@ -842,7 +842,10 @@ function clearLucidFlood(burst){
   } else { try{ el.remove(); }catch(_){} }
 }
 
-function clearBoard(){
+/* `opts.br`（ver -1829，Ray：「BR 清盤也不給 BR 計量獎勵，BR 清盤不能算在索的被動技計數中」）：
+   這一盤是 BR 收窗掃掉的（`brSweepBoard`）—— 那一刻 `dualWield` 已經關了，只有呼叫端知道。 */
+function clearBoard(opts){
+  const brClear = !!(opts && opts.br);
   SFX.clear();                      // 清盤：神聖鈴響
   clearAtkBuff();                   // 攻擊加倍 buff 不跨盤
   const elapsed=(Date.now()-state.boardStartTime)/1000;
@@ -860,7 +863,7 @@ function clearBoard(){
          —— 兩個獎勵條件同一個（`boardClean`），但份量各自決定。
        ⚠ 擋在這裡不是擋在 `addEnergy`：那一支管的是「回充打幾折」（`energyBackMul`），
          這一條是「這一筆根本不給」，兩件事分開才看得懂。 */
-    if(!state.coopMode){
+    if(!state.coopMode && !brClear){   // BR 清的盤不給破防值獎勵（ver -1829）
       const ideal=state.N*0.45;
       const speed=Math.max(0.4, Math.min(1.6, ideal/Math.max(elapsed,0.1)));
       const gain=Math.round(state.N*1.8*speed);
@@ -870,7 +873,7 @@ function clearBoard(){
   }
   /* 索菈娜「獵手的直覺」被動（ver -803）：連續 N 輪完美清盤 → 破防值加速窗。
      ⚠ 帶這一盤的 `boardClean`（完美與否）：完美累加、破功歸零（partner 判是不是她）。 */
-  partner.onBoardCleared(state.boardClean);
+  partner.onBoardCleared(state.boardClean, brClear);
   /* ══⚠⚠ **反擊教學那一盤清完 → 下一盤「打一發就滿 BR」**（ver -938，Ray）══
      ⚠ 時機問 `tutorial.brPrimeDue()`（它知道反擊教學是在第幾盤做完的），
        **不要**寫死盤號 —— 舊版是 `boardIndex===1`，等於假設反擊教學一定發生在
@@ -1501,6 +1504,9 @@ function addEnergy(v){
      ⇒ 破防計因此是**進場前存好的彈藥**，不是場內的自動循環。
      ⚠ 守門收在這一處（鐵律 8）：點擊、反擊、清盤獎勵所有加值都經過這裡。 */
   if(state.saintMode || state.niMode) return;
+  /* BR 期間不累積破防值（ver -1829，Ray：「BR 期間不要累積 BR 計量」）—— 同變身期間那一條的理由：
+     破防計是進場前存好的彈藥，燒它的那一段不能一邊燒一邊補。 */
+  if(state.dualWield) return;
   if(state.coopMode){
     if(!prog.girlHas(state.pickedPartner,'coopEnergyTime')) return;
     /* 索菈娜「獵手星」（Lv9）：這裡**不必再換算成秒**（ver -1005）——

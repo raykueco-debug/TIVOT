@@ -244,7 +244,7 @@ export function expForWho(who, score, stats, cfg = GAME_CONFIG.rating.exp){
   const inv = (cfg.invertFor||[]).indexOf(who)>=0;
   /* Boss 的 EXP ×2（ver -1024）。⚠ 乘在**這一支**：它是「這一位拿多少」的唯一
      計算點（鐵律 7），所以索菈娜的鏡射與 Boss 加成自然疊在一起、不會漏。 */
-  return Math.round(scoreToExp(inv ? (100 - score) : score, stats, cfg) * bossMul('exp'));
+  return Math.round(scoreToExp(inv ? (100 - score) : score, stats, cfg) * bossMul('exp') * (cfg.girlMul!=null ? cfg.girlMul : 1));
 }
 
 /* ══⚠⚠ **發 EXP：唯一的入口**（ver -970，鐵律 8）══ 三條結算路徑都叫它。

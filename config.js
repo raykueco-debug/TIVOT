@@ -82,7 +82,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1828';
+export const VERSION = 'ver 2026.09.22-1829';
 
 export const GAME_CONFIG = {
 
@@ -2271,6 +2271,9 @@ export const GAME_CONFIG = {
            計算只有 `inspector.expForWho()` 一支（鐵律 7）。
          ⚠ 用名單不用布林：日後再有一位反向的角色就加進來（同 `except` 的寫法）。 */
       invertFor: ['sorana'],
+      /* 女主拿到的 EXP 整體倍率（ver -1829，Ray：「女主們的經驗值取得量減半」）。
+         乘在 `inspector.expForWho` 那一個計算點（鐵律 7），結算頁顯示的也是乘完的數字。 */
+      girlMul: 0.5,
       /* ══ 升級的聲音（ver -1033，Ray：「升級播放 se_lvup…同時各角色語音」）══
          SE 是**全域**的一聲（誰升級都一樣），角色語音在各自的搭檔卡上
          （`partners[who].levelUpVoice`）—— 兩層同時播，播放只有
