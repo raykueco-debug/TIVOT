@@ -816,3 +816,7 @@ when	from	to	reason
 20260927-231031	resources/enemy/man_thug_squad.webp	_recycle/resources/enemy/man_thug_squad.webp.20260927-231031	Ray：風格太亂、槍口沒統一對著 viewer（v2 退回收區）
 20260927-235957	resources/si/npc/npc_ss_loti_cry.webp	_recycle/resources/si/npc/npc_ss_loti_cry.webp	Ray：loti cry 手指數量不對，GPT 重出（舊版退回收區）
 20260928-002916	resources/si/npc/npc_ss_loti_cry.webp	_recycle/resources/si/npc/npc_ss_loti_cry.webp.20260928-002916	Ray：cry 仍是六指（520de78 美術數錯），換成 Gemini 修指→GPT 重繪去背版
+20260928-164032	resources/background/dunmor/dunmor_ossuary.webp	_recycle/resources/background/dunmor/dunmor_ossuary.webp	09-28 加祭壇（Ray：骨龕／積石塚／王塚／圓塔頂保持原設計加入祭壇＋點亮差分；圓塔頂整張重畫）—— 被同名覆蓋的舊版
+20260928-164032	resources/background/dunmor/dunmor_cairn.webp	_recycle/resources/background/dunmor/dunmor_cairn.webp	09-28 加祭壇（Ray：骨龕／積石塚／王塚／圓塔頂保持原設計加入祭壇＋點亮差分；圓塔頂整張重畫）—— 被同名覆蓋的舊版
+20260928-164032	resources/background/dunmor/dunmor_kingsbarrow.webp	_recycle/resources/background/dunmor/dunmor_kingsbarrow.webp	09-28 加祭壇（Ray：骨龕／積石塚／王塚／圓塔頂保持原設計加入祭壇＋點亮差分；圓塔頂整張重畫）—— 被同名覆蓋的舊版
+20260928-164032	resources/background/dunmor/dunmor_brochtop.webp	_recycle/resources/background/dunmor/dunmor_brochtop.webp	09-28 加祭壇（Ray：骨龕／積石塚／王塚／圓塔頂保持原設計加入祭壇＋點亮差分；圓塔頂整張重畫）—— 被同名覆蓋的舊版
