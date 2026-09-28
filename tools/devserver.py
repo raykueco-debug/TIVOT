@@ -153,6 +153,74 @@ def _patch_at(text, at, needle, sets):
     return text
 
 
+# ══⚠⚠ 改某一拍的立繪（ver -1826，Ray：「管理者功能，對話、戰鬥中點立繪可以更改該拍的立繪」）══
+# `POST /__beat`，body＝`{"text":台詞, "old":舊差分(null＝沒寫), "new":新差分, "field":"expr"|"img",
+#                        "prev":上一拍台詞?, "next":下一拍台詞?}`
+# 在腳本檔裡找**同一行**同時有 `'台詞'` 與舊差分的那一行；不只一行就用前後一拍的台詞（上下 6 行內）篩；
+# 還是不只一行（或一行都沒有）⇒ 409，不猜。只改那一行的差分字面：
+#   field=expr：`expr:'舊'` → `expr:'新'`，或輔助函式的第一個參數 `ren('舊',` → `ren('新',`（舊＝null 也吃）
+#   field=img ：`img:'舊'` → `img:'新'`（戰鬥內對白）
+BEAT_FILES = ['script/town.js', 'script/mainScript.js', 'config.js', 'script/evaluation.js']
+
+
+def _js_str(s):
+    return "'" + str(s).replace('\\', '\\\\').replace("'", "\\'") + "'"
+
+
+def _beat_line_ok(line, text, old, field):
+    if _js_str(text) not in line:
+        return False
+    if field == 'img':
+        return ("img:" + _js_str(old)) in line.replace(' ', '')
+    if old is None:
+        return bool(re.search(r"\b[a-zA-Z_]\w*\(\s*null\s*,", line) or re.search(r"expr\s*:\s*null", line))
+    return bool(re.search(r"expr\s*:\s*" + re.escape(_js_str(old)), line) or
+                re.search(r"\b[a-zA-Z_]\w*\(\s*" + re.escape(_js_str(old)) + r"\s*,", line))
+
+
+def _beat_replace(line, old, new, field):
+    if field == 'img':
+        return re.sub(r"img\s*:\s*" + re.escape(_js_str(old)), "img:" + _js_str(new), line, count=1)
+    olit = 'null' if old is None else re.escape(_js_str(old))
+    out, n = re.subn(r"expr(\s*):(\s*)" + olit, lambda m: 'expr' + m.group(1) + ':' + m.group(2) + _js_str(new), line, count=1)
+    if n:
+        return out
+    return re.sub(r"(\b[a-zA-Z_]\w*\(\s*)" + olit + r"(\s*,)", lambda m: m.group(1) + _js_str(new) + m.group(2), line, count=1)
+
+
+def beat_patch(req):
+    text, old, new = req.get('text') or '', req.get('old'), req.get('new')
+    field = req.get('field') or 'expr'
+    hits = []
+    for rel in BEAT_FILES:
+        path = os.path.join(ROOT, rel)
+        with open(path, 'r', encoding='utf-8') as f:
+            lines = f.read().split('\n')
+        for i, ln in enumerate(lines):
+            if _beat_line_ok(ln, text, old, field):
+                hits.append((rel, i, lines))
+    def near(h, t, lo, hi):
+        if t is None:
+            return True
+        lit = _js_str(t)
+        return any(lit in h[2][j] for j in range(max(0, h[1] + lo), min(len(h[2]), h[1] + hi + 1)) if j != h[1])
+    if len(hits) > 1:
+        hits = [h for h in hits if near(h, req.get('prev'), -6, -1) and near(h, req.get('next'), 1, 6)]
+    if len(hits) != 1:
+        raise ValueError('找到 %d 行符合（要剛好一行）：台詞 %s／舊差分 %s' % (len(hits), _js_str(text), old))
+    rel, i, lines = hits[0]
+    newline = _beat_replace(lines[i], old, new, field)
+    if newline == lines[i]:
+        raise ValueError('那一行改不動：' + lines[i].strip()[:80])
+    lines[i] = newline
+    dst = os.path.join(ROOT, rel)
+    tmp = dst + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(lines))
+    os.replace(tmp, dst)
+    return '%s:%d' % (rel, i + 1)
+
+
 class Handler(http.server.SimpleHTTPRequestHandler):
     def _fail(self, code, msg):
         body = msg.encode('utf-8')
@@ -163,6 +231,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self):
+        if self.path.split('?')[0] == '/__beat':
+            try:
+                n = int(self.headers.get('Content-Length') or 0)
+                req = json.loads(self.rfile.read(n).decode('utf-8'))
+                sys.stderr.write('[devserver] beat %s\n' % json.dumps(req, ensure_ascii=False))
+                where = beat_patch(req)
+            except ValueError as e:
+                return self._fail(409, str(e))
+            except Exception as e:                        # noqa: BLE001
+                return self._fail(500, '寫檔失敗：%s' % e)
+            return self._fail(200, 'ok ' + where)
         if self.path.split('?')[0] == '/__tune':
             try:
                 n = int(self.headers.get('Content-Length') or 0)

@@ -29,6 +29,7 @@ import { ART } from '../script/speakers.js';   // 「這張畫能不能水平翻
 /* ⚠ 只借**兩支演出原語**：音效名→檔案的表（`SE_FILES`）只有 story.js 一份（鐵律 7），
    抄過來必然走鐘。story.js 不 import 本檔，所以沒有循環相依。 */
 import { playSe, playSePair, blankHold } from './story.js';   // blankHold＝主角空白格停多久（ver -1503），與劇情層同一個數字
+import * as beatPick from './beatpick.js';   // 管理人：右鍵改這一拍的立繪（ver -1826，葉模組）
 import * as hap from './haptics.js';        // 畫面震動＝手上也震（§6.5.6）
 
 const $ = id => document.getElementById(id);
@@ -632,6 +633,38 @@ function afterCutin(fn){
  *  對話段：開啟（真暫停+立繪移入）→ 逐句 → 閘門或關閉（立繪退場+續戰）
  * ========================================================================== */
 function castOf(who){ return (CFG().cast||{})[who] || {}; }
+/* ══ 改這一拍的立繪（ver -1826，管理人：右鍵點戰鬥對白的立繪）══
+   可選的只有**登記過的**戰鬥對白立繪（`config.tutorial.portraitFrames` 裡 `tut_<角色>` 開頭的鍵）——
+   這一套的取景表只認它們；要用新的差分得先在 config 登記（同 `tutPortraits` 的規矩）。 */
+export function beatEditAt(x, y){
+  if(!document.body.classList.contains('testmode')) return false;
+  let el=null, z=-1;
+  for(const id of ['tutCastL','tutCastR']){
+    const e=$(id); if(!e || !e.classList.contains('in') || !e.dataset.castKey) continue;
+    const r=e.getBoundingClientRect();
+    if(x>=r.left && x<=r.right && y>=r.top && y<=r.bottom){ const zz=+(e.style.zIndex||0); if(zz>z){ z=zz; el=e; } }
+  }
+  if(!el) return false;
+  const who=el.dataset.castKey, b=el._beat;
+  const keys=Object.keys(CFG().portraitFrames||{}).filter(k=>k.indexOf('tut_'+who)===0);
+  const img0=castOf(who).image; if(img0 && keys.indexOf(img0)<0) keys.unshift(img0);
+  beatPick.openPicker({
+    title:(castOf(who).name||who)+'　目前：'+(el.dataset.imgKey||''),
+    note: b ? '改寫的是這一拍：「'+(b.line.text||'（無台詞）')+'」（只列已登記的戰鬥對白立繪）'
+            : '⚠ 這一拍沒有明寫 img（用的是角色預設圖）—— 只換畫面，不寫檔',
+    items: keys.map(k=>({ key:k, label:k.replace('tut_',''), src:asset(k) })).filter(it=>it.src),
+    cur: el.dataset.imgKey,
+    onPick:(k)=>{
+      el.dataset.imgKey=k; el.src=asset(k);
+      const sd=sideOf(who); placePortraitX(el, sd); el.onload=()=>{ el.onload=null; placePortraitX(el, sd); };
+      if(!b) return { ok:false, text:'只換了畫面（這一拍沒有 img 可改）' };
+      const body={ text:b.line.text||'', old:b.line.img, new:k, field:'img',
+                   prev: b.lines[b.idx-1] ? (b.lines[b.idx-1].text||'') : undefined,
+                   next: b.lines[b.idx+1] ? (b.lines[b.idx+1].text||'') : undefined };
+      return beatPick.postBeat(body).then(r=>{ if(r.ok) b.line.img=k; return r; });
+    } });
+  return true;
+}
 /* ── 劇情版教學的台詞（ver -323（-893 前用詞））──────────────────────────────────────
    ⚠ 兩份台詞是**分開的**（Ray 指定）：劇情帶起來的那一場由諾薇兒帶
    （`config.tutorial.story`），首頁「教學」鈕仍是芙蕾雅／蕾妮。
@@ -1132,6 +1165,8 @@ function showLine(){
   if(other) other.style.zIndex='1';
   // 逐句表情差分（line.img＝ASSETS 鍵）：沒寫就回該角色的預設立繪。
   // ⚠ 直接換 src，不做淡入淡出——同一角色同一槽的表情切換，淡出會讓她整個人消失一拍。
+  /* 改拍工具（ver -1826）：這一拍明寫了 `img` ⇒ 記在那個槽上（右鍵點到時知道要改哪一拍）。 */
+  if(el && line.img) el._beat = { line, lines:cur.lines, idx:lineIdx };
   if(el){
     const key = line.img || c.image;
     /* ══⚠⚠ 同槽**換人**＝抽牌輪轉（ver -839，Ray：「村民換人講話時也要比照

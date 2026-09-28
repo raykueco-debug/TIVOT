@@ -34,7 +34,8 @@ import { matchPortraits } from './tone.js';
 import * as groundShadow from './groundShadow.js';   // 中景層的接地陰影（ver -1702，葉節點）
 /* 立繪的色調要跟著**玩家現在看到的那一層**走（ver -631）：有插圖時插圖就是場景，
    沒有才是背景。⚠ 只有這一支在決定「背後是什麼」（鐵律 8）—— 三個呼叫點都問它。 */
-import * as settings from './settings.js';   // 選單（音量／自動播放速度）；葉節點，只依賴 audio
+import * as settings from './settings.js';
+import * as beatPick from './beatpick.js';   // 管理人：右鍵改這一拍的立繪（ver -1826，葉模組）   // 選單（音量／自動播放速度）；葉節點，只依賴 audio
 import * as hap from './haptics.js';        // 震動（ver -398）
 import * as clock from '../script/clock.js';   // 時段（插圖／背景的差分候選鏈，ver -427）
 import * as inv from '../script/inventory.js';  // 選項的挑戰費（ver -655）：葉節點，只依賴 config
@@ -177,6 +178,40 @@ function camGeom(H, W){
      ＝ 沒有自己值的差分都會跟著變（面板上會標）。
    ⚠ 只在 `body.testmode`；存檔要 devserver（`python3 -m http.server` 沒有那個端點，會報錯）。 */
 let tuneLive = {}, tuneOn = false, tuneSide = null, tuneBig = false;
+/* ══ 改這一拍的立繪（ver -1826，管理人：右鍵點台上的立繪）══ 角色 → 設定他現在這張的那一拍。
+   （`renderLine` 寫；換場由 `clearCast` 那一路不清也無妨 —— 只在右鍵時讀，而且會核對角色還在台上。） */
+const beatOf = {};
+export function beatEditAt(x, y){
+  if(!document.body.classList.contains('testmode') || studioOn) return false;
+  const st=$('storyStage'); if(!st || !st.classList.contains('on')) return false;
+  let hit=null, z=-1;
+  for(const sd of ['L','R']){
+    const el=slotEl(sd); if(!el || !slot[sd] || !el.classList.contains('on')) continue;
+    const r=el.getBoundingClientRect();
+    if(x>=r.left && x<=r.right && y>=r.top && y<=r.bottom){ const zz=+(el.style.zIndex||0); if(zz>z){ z=zz; hit=sd; } }
+  }
+  if(!hit) return false;
+  const who=slot[hit], art=artOf(who); if(!art) return false;
+  const b=beatOf[who];
+  const items=Object.keys(art.expr||{}).map(k=>({ key:k, label:k, src:exprSrc(art,k)||art.base })).filter(it=>it.src);
+  beatPick.openPicker({
+    title:(nameOf(who)||who)+'　目前：'+(slotExpr[hit]||'（基本）'),
+    note: b ? '改寫的是這一拍：「'+(b.line.text||'（無台詞）')+'」' : '⚠ 找不到設定這張的那一拍（可能是沿用上一段的立繪）—— 只換畫面，不寫檔',
+    items, cur:slotExpr[hit],
+    onPick:(k)=>{
+      const old = b ? (b.line.portrait && b.line.portrait.expr!==undefined ? b.line.portrait.expr : null) : null;
+      ensureOn(who, k); if(shown[who]) shown[who].expr=k; layout();
+      if(!b) return { ok:false, text:'只換了畫面（沒有可寫的那一拍）' };
+      const body={ text:b.line.text||'', old, new:k, field:'expr',
+                   prev: b.lines[b.idx-1] ? (b.lines[b.idx-1].text||'') : undefined,
+                   next: b.lines[b.idx+1] ? (b.lines[b.idx+1].text||'') : undefined };
+      return beatPick.postBeat(body).then(r=>{
+        if(r.ok && b.line.portrait) b.line.portrait.expr=k;   // 這一輪重播也是新的
+        return r;
+      });
+    } });
+  return true;
+}
 /* 存檔結果寫在面板上（ver -1824）：`alert` 在內建預覽視窗裡可能根本不出現 —— 那就是 Ray 存了三次都不知道失敗的原因。 */
 let tuneMsg = '', tuneArm = null;   // tuneArm：按了一次儲存、等第二下確認的那一張
 function tuneKey(id, expr){
@@ -2791,7 +2826,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1825';
+const KERB_V='?v=1826';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3970,6 +4005,8 @@ function renderLine(){
     }
     if(st.show) side = ensureOn(who, st.expr);
     else { const s2=sideOf(who); if(slot[s2]===who) leaveSlot(s2); }
+    /* 改拍工具（ver -1826）：這一拍**明寫了**差分 ⇒ 記下「他現在這張是這一拍設的」。 */
+    if(st.show && p.expr!==undefined && !p.exprByTier) beatOf[who]={ line, lines:cur.lines, idx:lineIdx };
     /* ══⚠⚠ **同一句話裡換立繪**（`exprThen`，ver -1684，Ray：「諾薇兒的第二句
        『不要緊有我在』其實是第一句，**同句換 si 而已**」）══
        她是**說到一半倒下去**的 —— 寫成兩拍同樣的字，玩家讀到的是「這句話講了兩次」。

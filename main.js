@@ -1466,6 +1466,16 @@ function tuneHub(){
   ov.querySelector('[data-go="close"]').onclick=close;
 }
 bindBtn('tuneBtn', ()=>tuneHub());
+/* ══ 管理人：右鍵點台上的立繪 → 改這一拍的差分（ver -1826，Ray：「對話、戰鬥中點立繪可以更改該拍的立繪」）══
+   桌機操作（Ray：立繪調整都在電腦上做）。劇情層先答、戰鬥對白再答；兩邊都沒點到立繪就照瀏覽器預設。
+   ⚠ 掛在 window 的 capture：舞台的推進層（`#storyTouch`）蓋在立繪上面，等它處理就來不及了。 */
+window.addEventListener('contextmenu', e=>{
+  if(!document.body.classList.contains('testmode')) return;
+  let hit=false;
+  try{ hit = story.beatEditAt(e.clientX, e.clientY); }catch(err){ console.warn('[beat]', err); }
+  if(!hit){ try{ hit = tutorial.beatEditAt(e.clientX, e.clientY); }catch(err){ console.warn('[beat]', err); } }
+  if(hit){ e.preventDefault(); e.stopPropagation(); }
+}, true);
 /* 主線劇情（管理人模式限定）：從 mainScript 的 MAIN_ENTRY 開始跑 scene 鏈。
    ⚠ 不換頁 —— 劇情舞台是蓋在首頁上的一層（#storyStage z-8300），離開就回首頁。
      換頁的話存讀檔要跨頁還原，複雜度沒必要。
