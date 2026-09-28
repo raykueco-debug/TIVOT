@@ -957,7 +957,7 @@ export const ENEMIES = {
        ⚠ `bg:'sofia_slum'` 是**沒供圖時的底**（城鎮插入戰會由 `state.battleBg` 蓋過去）。
        ⚠ 還沒有任何 `config.battles` 引用它們 —— 等里朋莊園那一段的稿。 */
     thug_pistol: {
-      name:'混混', story:1, counterStagger:1, boss:0, Ganymede:0,
+      name:'里朋一家', story:1, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
@@ -969,7 +969,7 @@ export const ENEMIES = {
       loot:[ { id:'brass_casing', n:6 } ],
     },
     thug_rifle: {
-      name:'步槍手', story:1, counterStagger:1, boss:0, Ganymede:0,
+      name:'里朋一家', story:1, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
@@ -981,7 +981,7 @@ export const ENEMIES = {
       loot:[ { id:'brass_casing', n:6 } ],
     },
     thug_dual: {
-      name:'雙槍惡棍', story:1, counterStagger:1, boss:0, Ganymede:0,
+      name:'里朋一家', story:1, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
@@ -993,7 +993,7 @@ export const ENEMIES = {
       loot:[ { id:'brass_casing', n:6 } ],
     },
     thug_shotgun: {
-      name:'打手', story:1, counterStagger:1, boss:0, Ganymede:0,
+      name:'里朋一家', story:1, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
@@ -1005,7 +1005,7 @@ export const ENEMIES = {
       loot:[ { id:'brass_casing', n:6 } ],
     },
     thug_lookout: {
-      name:'把風小弟', story:1, counterStagger:1, boss:0, Ganymede:0,
+      name:'里朋一家', story:1, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
@@ -1017,7 +1017,7 @@ export const ENEMIES = {
       loot:[ { id:'brass_casing', n:6 } ],
     },
     thug_boss: {
-      name:'幫派幹部', story:1, counterStagger:1, boss:0, Ganymede:0,
+      name:'里朋一家', story:1, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
@@ -1031,7 +1031,7 @@ export const ENEMIES = {
     /* ══ 里朋莊園那兩場（ver -1793）══ 數值同上（Ray：「六人全部走賞金獵人」）。
        `thug_squad`＝大廳那一群（一張圖一群，整群當一隻）；`manu`＝沙龍的馬努（圖借他的 `draw` 立繪）。 */
     thug_squad: {
-      name:'里朋家的打手', story:1, counterStagger:1, boss:0, Ganymede:0,
+      name:'里朋一家', story:1, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
@@ -1044,10 +1044,10 @@ export const ENEMIES = {
     },
     /* ══ 惡棍四場改群戰（ver -1835，Ray：「thug 系列全部改成群戰…只有馬努戰是單人」；美術 9f030e84）══
        數值與構圖照 `thug_squad`（整群當一隻、橫向滿版 cover／center 25%），只換圖。
-       名字先沿用那一場原本那張單人卡（混混／步槍手／把風小弟／打手）—— 要不要改成「○○一夥」等 Ray。
+       名字（ver -1836，Ray：「中文全部改成里朋一家，只有馬努不變」）：thug 系列全部叫「里朋一家」。
        ⚠ 原本的單人卡與單人圖留著：門衛立繪借 `man_thug_pistol`（speakers.js）。 */
     thug_squad_gate: {
-      name:'混混', story:1, counterStagger:1, boss:0, Ganymede:0,
+      name:'里朋一家', story:1, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
@@ -1059,7 +1059,7 @@ export const ENEMIES = {
       loot:[ { id:'brass_casing', n:6 } ],
     },
     thug_squad_avenue: {
-      name:'步槍手', story:1, counterStagger:1, boss:0, Ganymede:0,
+      name:'里朋一家', story:1, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
@@ -1071,7 +1071,7 @@ export const ENEMIES = {
       loot:[ { id:'brass_casing', n:6 } ],
     },
     thug_squad_forecourt: {
-      name:'把風小弟', story:1, counterStagger:1, boss:0, Ganymede:0,
+      name:'里朋一家', story:1, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
@@ -1083,7 +1083,7 @@ export const ENEMIES = {
       loot:[ { id:'brass_casing', n:6 } ],
     },
     thug_squad_carriage: {
-      name:'打手', story:1, counterStagger:1, boss:0, Ganymede:0,
+      name:'里朋一家', story:1, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
