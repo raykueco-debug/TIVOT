@@ -479,7 +479,9 @@ function layout(){
     /* ⚠⚠ `flip` ＝**這張圖本來就畫反了**（ver -953，瑪麗亞）：不管站哪一邊都翻。
        與 `mirror`（可以翻 → 換邊才翻）是兩件事 —— 混成一個旗的話，本位在右的人
        站在右邊時就永遠翻不到。兩者相加是 XOR：可翻的人被翻到另一側時再翻回來。 */
-    const mir = (!!a.flip) !== !!(a.mirror && a.side && o.side && o.side !== a.side);
+    /* 立繪調整工作室不做「換邊就翻」（ver -1822，Ray：「不要水平翻轉」）—— 調的是這張圖本身；
+       `flip`（圖本來就畫反了）照舊，那是遊戲裡永遠的樣子。 */
+    const mir = (!!a.flip) !== !!(!studioOn && a.mirror && a.side && o.side && o.side !== a.side);
     el.classList.toggle('mirrored', mir);
     /* 雙人立繪（`withChar`）進出場的幅度收小、改淡入淡出（ver -1710，Ray：「看起來好忙，
        圖的出入幅度太大了」）—— 位移與透明度寫在 CSS 的 `.duo`。 */
@@ -2745,7 +2747,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1821';
+const KERB_V='?v=1822';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
