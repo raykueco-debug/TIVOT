@@ -100,7 +100,42 @@ function ctx(){
   if(!_ctx){
     try{ _ctx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ _ctx = null; }
   }
+  if(_ctx) idleWake();
   return _ctx;
+}
+
+/* ══⚠⚠⚠ **沒聲音就讓引擎睡**（ver -1817，Ray：「首頁靜置就算放音樂已經不熱了，但進遊戲還是熱」）══
+   首頁只有 BGM（HTMLAudio），Web Audio 引擎還沒醒（HUD `ctx:suspended`）；進遊戲第一次點擊之後
+   它就**一直 running**（連 limiter、分軌、語音鏈一起每秒算四萬多次），只有切背景才停 ——
+   而「靜音就不熱」與「首頁不熱」兩個觀察都指向它。
+   ⇒ 最後一個聲音結束後安靜 `IDLE_MS` 就 `suspend()`；任何要出聲的路徑都經過 `ctx()`，
+     那裡叫醒（`resume()`）—— `playWhenRunning` 本來就會等到 running 才播。
+   ⚠ 循環音（`playLoop`，瀑布那種）響著時不睡（`_idleLoops`）。
+   ⚠⚠ **保險**：iOS 若拒絕在沒有手勢時 `resume()`，這一輪就**不再休眠**（`_idleOff`）——
+     退回舊行為（一直醒著），寧可熱也不要沒聲音。 */
+const IDLE_MS = 3000;
+let _idleBusyUntil = 0, _idleT = 0, _idleLoops = 0, _idleSusp = false, _idleOff = false;
+function idleWake(){
+  if(_idleSusp && _ctx.state!=='running' && !_sfxOff && !document.hidden){
+    _idleSusp = false;
+    try{
+      const p=_ctx.resume();
+      if(p && p.then) p.then(()=>{}, ()=>{ _idleOff = true; });
+      setTimeout(()=>{ if(_ctx && _ctx.state!=='running' && !document.hidden && !_sfxOff){
+        _idleOff = true; console.warn('[audio] 休眠後叫不醒 —— 這一輪停用閒置休眠'); } }, 400);
+    }catch(_){ _idleOff = true; }
+  }
+  idleBusy(1500);
+}
+function idleBusy(ms){
+  _idleBusyUntil = Math.max(_idleBusyUntil, Date.now() + ms);
+  clearTimeout(_idleT);
+  _idleT = setTimeout(idleTry, Math.max(0, _idleBusyUntil - Date.now()) + IDLE_MS);
+}
+function idleTry(){
+  if(_idleOff || _idleLoops>0 || !_ctx) return;
+  if(Date.now() < _idleBusyUntil){ idleBusy(0); return; }
+  if(_ctx.state==='running'){ try{ _ctx.suspend(); _idleSusp = true; }catch(_){} }
 }
 
 /* ⚠⚠⚠ **逐支逾時：一支請求停住不可以把整批鎖死**（ver -1354，Ray：
@@ -250,6 +285,9 @@ function playBuffer(c, buf, vol, voice, handle, src){
       try{ const r=loopRange(buf); if(r){ s.loopStart=r[0]; s.loopEnd=r[1]; } }catch(_){}
     }
     s.start();
+    /* 閒置休眠的記帳（ver -1817）：這一支響多久就忙多久；循環的另外計數，停了才放。 */
+    if(s.loop){ _idleLoops++; s.addEventListener('ended', ()=>{ _idleLoops=Math.max(0,_idleLoops-1); idleBusy(0); }); }
+    else idleBusy((buf.duration||0)*1000);
     /* 可中止的把手（playCue 用）：演出結束時要把還在響的機械聲收掉。
        ⚠ 直接 stop() 會有「喀」一聲 —— 一定要先把增益斜降到 0 再 stop。 */
     /* ⚠ `handle.loop` ＝這一支要**一直循環**（ver -1568，環境音）：
@@ -584,7 +622,10 @@ export const SFX = {
        那時 `h.node` 已經在，`loop` 要直接補在節點上；**還在解碼**時
        `h.node` 還是 null，`playBuffer` 會讀 `h.loop`（它在 start 之前讀）。
        兩條路都要蓋到，漏一條就是「有時候會 loop、有時候不會」—— 最難查的那一種。 */
-    if(h.node){ try{ h.node.loop = true; }catch(_){} }
+    if(h.node){ try{ h.node.loop = true;
+      /* 閒置休眠（ver -1817）：這條路 `playBuffer` 開播時還不知道要循環，計數補在這裡。 */
+      _idleLoops++; h.node.addEventListener('ended', ()=>{ _idleLoops=Math.max(0,_idleLoops-1); idleBusy(0); });
+    }catch(_){} }
     return h;
   },
   playCue(src, vol){
