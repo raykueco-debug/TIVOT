@@ -93,6 +93,12 @@
 >    `ask top:19 bot:1527 fx:0.477`／`give top:7 bot:1529 fx:0.463`／`guard top:15 bot:1529 fx:0.510`／`happy top:29 bot:1523 fx:0.559`／`sad top:11 bot:1523 fx:0.475`／`shock top:11 bot:1530 fx:0.461`。
 > 24. ✅ **-1804 已接**（`?v=3`＋取景重量） **（09-28，Mac）蘿媞 `cry` 手指修正 —— 這次是對的（兩手各 1 拇指＋4 指，逐根數過、Ray 看過）**：520de78 那張仍是六指（美術數錯）；改走 GPT 重出 → Gemini 修指（兩輪，先右手後左手）→ GPT 重繪清晰版＋真 alpha。`resources/si/npc/npc_ss_loti_cry.webp` 再同名覆蓋一次，六指版進 `_recycle/`，原稿 `_originals/SI/NPC/_npc_ss_loti_cry_v2_sixfingers.png`。
 >    程式端：**`script/speakers.js` 的 `cry` src 跳 `?v=3`**（現在是 `?v=2`＝六指那張）；取景 `measure_si.py` 重量＝`top:5 bot:1520 fx:0.460`（現行 `top:4 bot:1518 fx:0.460`，差 1～2px）。
+> 25. **（09-28，Mac）惡棍系改成群戰：四場各一張群體圖**（Ray：「thug 系列全部改成群戰，大門口以馬車做掩體，其他木桶木箱，人可以散在多個掩體後面，注意透視，**只有馬努戰是單人**」）
+>    新檔（**新增、不用跳 `?v=`／`ASSET_VER`**；1024×1536 真 alpha，整群當一個敵人）：`resources/enemy/man_thug_squad_{gate,avenue,forecourt,carriage}.webp`，總覽 `resources/enemy/_thug_squad4_sheet.jpg`。
+>    程式端要做的：① `config.js` 的 ASSETS 補四鍵（建議 `enemy_thug_squad_gate`…）② 四場改指群戰圖 —— `ss_lodge`→`gate`（馬車＋門柱＋哨亭，帶頭＝鴨舌帽混混）／`ss_avenue`→`avenue`（木箱木桶，帶頭＝步槍手）／`ss_forecourt`→`forecourt`（木桶木箱，帶頭＝把風小弟）／`ss_carriage`→`carriage`（木箱木桶稻草捆，帶頭＝散彈槍光頭）；
+>       最省的作法是在 `script/enemies.js` 各開一張群戰卡（數值照抄該場原本那張 thug 卡），`image` 指新鍵、`fit` 照 `thug_squad` 那一套（橫向滿版 `cover`、`center 25%`）；卡名要不要改成「混混一夥」之類等 Ray。
+>       ③ `ss_hall` 維持 `thug_squad`（沙發那張，本來就是群戰）、**`ss_manu` 不動（單人）**。
+>    ⚠ **原本的單人圖不要刪**：門衛的立繪借用 `man_thug_pistol`（`speakers.js`）；`thug_dual`／`thug_boss` 目前沒有場次在用，留著。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑；**§十三＝09-27 收工換機器：薇拉馮德 73 張、惡棍 6 張、索拉娜三張回版、還開著的事、三個不明刪除**；§十四＝GPT 拒畫的 alpha 交 PC 走本機；**§十五＝09-28 收工：蘿媞六張、cry 手指、市政廳室內、惡棍群體、產線教訓**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
