@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1822"></script>
+<script src="../orientation.js?v=1824"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1822edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1824edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1822edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1822edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1824edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1824edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1822edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1822edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1824edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1824edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1822edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1824edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1822edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1822edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1822edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1822edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1822edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1822edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1822edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1822edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1822edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1822edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1824edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1824edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1824edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1824edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1824edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1824edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1824edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1824edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1824edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1824edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1822edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1824edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1822edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1824edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1822"></script>
+<script src="settlement.js?v=1824"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1822"></script>
+<script src="talks.js?v=1824"></script>
 <script>
 /* ══⚠⚠⚠ **靜音在 iPhone 上要走 `muted`，不是音量**（ver -1808，Ray：「靜音鈕在手機無效」）══
    iOS 的 HTMLAudio `volume` 是**唯讀的**（永遠 1）—— 這一頁所有聲音都是 HTMLAudio，
@@ -733,7 +733,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1822';
+const FLIGHT_VER = 'ver -1824';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5593,7 +5593,7 @@ function pkey(who){
    「儲存」→ `POST /__tune`（`tools/devserver.py`）寫進 **這一頁** ＋ 同步 `script/speakers.js`
    （§5：兩份要一起改；那邊沒有這張就略過）。
    ⚠ 只在 `ADMIN`、而且對白播放中（`sayQueue`）才出現；面板吃掉點擊，不會推進對白。 */
-let tuneFlOn=false, tuneFlWho=null, tuneFlBig=false, tuneFlSig='';
+let tuneFlOn=false, tuneFlWho=null, tuneFlBig=false, tuneFlSig='', tuneFlMsg='', tuneFlArm=null;   // tuneFlMsg：存檔結果寫在面板上（ver -1824，alert 在預覽視窗可能不出現）
 const tuneFlOrig={};
 function tuneFlCast(){ return (cast||[]).filter(c=>!c.out && PORTRAIT[c.who] && PORTRAIT[c.who].src).map(c=>c.who); }
 /* ══ 立繪調整區（ver -1819）：首頁「立繪」→ 飛行 → 父頁插 `tivot_tune_v1` 再開這一頁。
@@ -5703,7 +5703,8 @@ function tuneFlRender(){
    +row('左右 '+n(P.fxShift||0), btn('data-k="fxShift" data-d="0.005"','←'), btn('data-k="fxShift" data-d="-0.005"','→'))
    +'<div style="display:flex;gap:6px">'+btn('data-act="big"','步進×5', tuneFlBig?'background:#d4a94a;color:#120f1a;':'')
    +btn('data-act="undo"'+(O?'':' disabled'),'還原', O?'':'opacity:.35;')
-   +btn('data-act="save"'+(O?'':' disabled'),'儲存','flex:1;color:#d4a94a;'+(O?'':'opacity:.35;'))+'</div>';
+   +btn('data-act="save"'+(O?'':' disabled'),(tuneFlArm===tuneFlWho?'確認寫入？':'儲存'),'flex:1;color:#d4a94a;'+(O?'':'opacity:.35;'))+'</div>'
+   +(tuneFlMsg ? '<div style="font-size:11px;color:'+(/失敗/.test(tuneFlMsg)?'#e57373':'#8fd18f')+'">'+tuneFlMsg+'</div>' : '');
   flStudioBind(p);
   p.querySelectorAll('button').forEach(bn=>bn.addEventListener('click', e=>{
     e.stopPropagation();
@@ -5718,6 +5719,7 @@ function tuneFlRender(){
          不同步的話大小變了、頭卻釘在原處。 */
       if(k==='cm' && (P.standCm==null || P.standCm===P.cm)) P.standCm=Math.round((P.cm+d)*1000)/1000;
       P[k]=Math.round(((P[k]||0)+d)*1000)/1000;
+      tuneFlArm=null; tuneFlMsg='';
       return tuneFlRender();
     }
     if(act==='big'){ tuneFlBig=!tuneFlBig; return tuneFlRender(); }
@@ -5730,17 +5732,20 @@ function tuneFlSave(who){
   const set={}; for(const k of ['cm','yShift','fxShift']) if(P[k]!==O[k]) set[k]=P[k];
   if(!Object.keys(set).length) return;
   const lines=Object.keys(set).map(k=>'  '+k+'：'+(O[k]==null?'（無）':O[k])+' → '+set[k]);
-  if(!window.confirm('寫入 flight/index.html（並同步 script/speakers.js）？\n'+(P.name||who)+' / '+String(P.src).split('/').pop()+'\n'+lines.join('\n'))) return;
+  /* ⚠ 不用 `window.confirm`（ver -1824）：預覽視窗會吞掉、當成取消。面板上按兩下：第一下顯示要寫什麼，第二下才寫。 */
+  if(tuneFlArm!==who){ tuneFlArm=who; tuneFlMsg='再按一次「儲存」寫入：'+lines.join('，'); tuneFlRender(); return; }
+  tuneFlArm=null;
   const url=new URL('../__tune', location.href).pathname;
   const post=(file,key)=>fetch(url,{ method:'POST', body:JSON.stringify({ file, kind:'src', key, set }) })
                           .then(r=>r.text().then(t=>({ ok:r.ok, st:r.status, t })));
   post('flight/index.html', P.src).then(({ok,st,t})=>{
-    if(!ok){ window.alert('寫入失敗（HTTP '+st+'）：'+t+(st===404||st===501?'\n要用 tools/devserver.py 起伺服器':'')); return; }
+    if(!ok){ tuneFlMsg='寫入失敗（HTTP '+st+'）：'+t+(st===404||st===501?'（這個伺服器沒有存檔功能，要重開 devserver）':''); tuneFlRender(); return; }
+    tuneFlMsg='已寫入 flight/index.html：'+String(P.src).split('/').pop();
     delete tuneFlOrig[who]; tuneFlRender();
     console.log('[立繪調整] 已寫入 flight/index.html', P.src, set);
     post('script/speakers.js', String(P.src).replace(/^\.\.\//,''))
       .then(r=>{ if(r.ok) console.log('[立繪調整] speakers.js 同步寫入'); else console.log('[立繪調整] speakers.js 沒有這張（略過）：'+r.t); });
-  }).catch(e=>window.alert('寫入失敗：'+e));
+  }).catch(e=>{ tuneFlMsg='寫入失敗：'+e; tuneFlRender(); });
 }
 function portraitArt(who){
   if(portraitImg[who] || !PORTRAIT[who] || !PORTRAIT[who].src) return;

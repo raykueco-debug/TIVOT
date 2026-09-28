@@ -177,6 +177,8 @@ function camGeom(H, W){
      ＝ 沒有自己值的差分都會跟著變（面板上會標）。
    ⚠ 只在 `body.testmode`；存檔要 devserver（`python3 -m http.server` 沒有那個端點，會報錯）。 */
 let tuneLive = {}, tuneOn = false, tuneSide = null, tuneBig = false;
+/* 存檔結果寫在面板上（ver -1824）：`alert` 在內建預覽視窗裡可能根本不出現 —— 那就是 Ray 存了三次都不知道失敗的原因。 */
+let tuneMsg = '', tuneArm = null;   // tuneArm：按了一次儲存、等第二下確認的那一張
 function tuneKey(id, expr){
   const art = artOf(id); if(!art) return null;
   const e = art.expr && art.expr[expr];
@@ -230,7 +232,8 @@ function tuneRender(){
    +'<div class="tn-row"><span>左右 '+n(c.f.fxShift||0)+'</span><button data-k="fxShift" data-d="0.005">←</button><button data-k="fxShift" data-d="-0.005">→</button></div>'
    +'<div class="tn-row"><button data-act="big" class="'+(tuneBig?'on':'')+'">步進×5</button>'
    +'<button data-act="undo"'+(live?'':' disabled')+'>還原</button>'
-   +'<button data-act="save" class="tn-save"'+(live?'':' disabled')+'>儲存</button></div>' : '');
+   +'<button data-act="save" class="tn-save"'+(live?'':' disabled')+'>'+(c && tuneArm===c.tk.key ? '確認寫入？' : '儲存')+'</button></div>' : '')
+   +(tuneMsg ? '<div class="tn-path" style="color:'+(/失敗/.test(tuneMsg)?'#e57373':'#8fd18f')+'">'+tuneMsg+'</div>' : '');
   tuneBindStudio(p);
   p.querySelectorAll('button').forEach(btn=>btn.addEventListener('click', e=>{
     e.stopPropagation();
@@ -243,7 +246,7 @@ function tuneRender(){
       const L=Object.assign({}, tuneLive[cur.tk.key] || {});
       const v=(k==='cm') ? (cur.f.cm||0) : (cur.f[k]||0);
       L[k]=Math.round((v+d)*1000)/1000;
-      tuneLive[cur.tk.key]=L; layout(); return tuneRender();
+      tuneLive[cur.tk.key]=L; tuneArm=null; tuneMsg=''; layout(); return tuneRender();
     }
     if(act==='big'){ tuneBig=!tuneBig; return tuneRender(); }
     if(act==='undo'){ delete tuneLive[cur.tk.key]; layout(); return tuneRender(); }
@@ -262,12 +265,16 @@ function tuneSave(cur){
   const L=tuneLive[cur.tk.key]; if(!L) return;
   const base=frameOf(cur.id, slotExpr[tuneSide]) || {};
   const lines=Object.keys(L).map(k=>'  '+k+'：'+(base[k]==null?'（無）':base[k])+' → '+L[k]);
-  if(!window.confirm('寫入 script/speakers.js？\n'+(nameOf(cur.id)||cur.id)+' / '+cur.tk.expr+'\n'+lines.join('\n'))) return;
+  /* ⚠ 不用 `window.confirm`（ver -1824）：內建預覽視窗會把它吞掉、當成「取消」，連請求都不送 ——
+     Ray 存了好幾次伺服器一筆都沒收到。改成面板上按兩下：第一下顯示要寫什麼，第二下才寫。 */
+  if(tuneArm!==cur.tk.key){ tuneArm=cur.tk.key; tuneMsg='再按一次「儲存」寫入：'+lines.join('，'); tuneRender(); return; }
+  tuneArm=null;
   const url=new URL('__tune', new URL('../', import.meta.url)).pathname;
   fetch(url, { method:'POST', body:JSON.stringify({ kind:cur.tk.kind, key:cur.tk.key, set:L }) })
     .then(r=>r.text().then(t=>({ ok:r.ok, st:r.status, t })))
     .then(({ok, st, t})=>{
-      if(!ok){ window.alert('寫入失敗（HTTP '+st+'）：'+t+(st===404||st===501?'\n要用 tools/devserver.py 起伺服器（重開 preview）':'')); return; }
+      if(!ok){ tuneMsg='寫入失敗（HTTP '+st+'）：'+t+(st===404||st===501?'（這個伺服器沒有存檔功能，要重開 devserver）':''); tuneRender(); return; }
+      tuneMsg='已寫入 speakers.js：'+cur.tk.key.split('/').pop();
       Object.assign(cur.tk.obj, L);          // 這一輪不必重載就生效（檔案已經是同一組值）
       delete tuneLive[cur.tk.key]; layout(); tuneRender();
       console.log('[立繪調整] 已寫入 speakers.js', cur.tk.key, L);
@@ -277,7 +284,7 @@ function tuneSave(cur){
         .then(r=>{ if(r.ok) console.log('[立繪調整] 飛行頁同步寫入', cur.tk.key); })
         .catch(()=>{});
     })
-    .catch(e=>window.alert('寫入失敗：'+e));
+    .catch(e=>{ tuneMsg='寫入失敗：'+e; tuneRender(); });
 }
 /* ══ 立繪調整區（ver -1819，Ray：「出個立繪調整區，進去先選飛行或一般，然後選左右角色」）══
    首頁「立繪」鈕 → 一般 → 這兩支：`tuneCatalog()` 給名單、`tuneStudio()` 開工作室（見下）。
@@ -2747,7 +2754,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1822';
+const KERB_V='?v=1824';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
