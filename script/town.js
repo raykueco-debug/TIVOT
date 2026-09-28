@@ -4599,6 +4599,11 @@ export const TOWNS = {
           any('talk','為什麼……這裡明明沒有戰爭……'),
           any('sad','……'),
         ] },
+        /* ver -1811（Ray 的稿）：諾薇兒那一支走出貧民窟的下一格。同上 `dateAff:0`。 */
+        { flag:'ss_nou_after', need:'ss_slum_nou', until:'ss_inn_merge', withWho:'NOUVELLE', dateAff:0, lines:[
+          nou('sad','就算在神的名下……就算身負奇蹟之力……'),
+          nou('sadnoeye','我們還是……救不了所有人……'),
+        ] },
         { flag:'ss_sor_resolve', need:'ss_slum_sor', until:'ss_inn_merge', withWho:'SORANA', goto:'inn', sides:{ SORANA:'L' }, lines:[
           sor('sad','……'),
           sor('embarrass','說了那麼多漂亮話，其實我……一點辦法也沒有啊……'),
@@ -4675,8 +4680,8 @@ export const TOWNS = {
           nou('sadnoeye','大概打出生起，就沒有被當成『人』看過。'),
           lof('lookaway','哼……隨口說說，誰都會。'),
           lot('sad','姐姐……'),
-          lof('lookaway','不要擔心。媽媽的病，我會想辦法。'),
-          nou('lookdown','……'),
+          lof('lookaway','不要擔心。媽媽的藥錢，我會想辦法。'),   // ver -1811 Ray 改稿（原「媽媽的病」）
+          nou('sad','……'),
         ] },
         { flag:'ss_slum_sor', need:'ss_arrive', until:'ss_inn_merge', withWho:'SORANA', dateAff:0,   /* 後半（舊街區）演完才給 */ sides:{ SORANA:'L' }, lines:[
           sor('angry','！！'),
