@@ -165,7 +165,7 @@ BEAT_FILES = ['script/town.js', 'script/mainScript.js', 'config.js', 'script/eva
 
 
 def _js_str(s):
-    return "'" + str(s).replace('\\', '\\\\').replace("'", "\\'") + "'"
+    return "'" + str(s).replace('\\', '\\\\').replace("'", "\\'").replace('\n', '\\n') + "'"
 
 
 def _beat_line_ok(line, text, old, field):
@@ -226,6 +226,47 @@ def beat_patch(req):
     return '%s:%d' % (rel, i + 1)
 
 
+# ══ 改某一拍的台詞（ver -1828，Ray：「對話框也插個編輯鈕改台詞」）══
+# `POST /__text`，body＝`{"text":原台詞, "new":新台詞, "prev":上一拍?, "next":下一拍?}`
+# 同 `/__beat` 的定位法（同一行有 `'原台詞'`；不只一行就用前後一拍篩），只把那一行的那個字串換掉。
+def text_patch(req):
+    text, new = req.get('text'), req.get('new')
+    if text is None or new is None:
+        raise ValueError('缺 text／new')
+    lit = _js_str(text)
+    hits = []
+    for rel in BEAT_FILES:
+        path = os.path.join(ROOT, rel)
+        with open(path, 'r', encoding='utf-8') as f:
+            lines = f.read().split('\n')
+        for i, ln in enumerate(lines):
+            if lit in ln:
+                hits.append((rel, i, lines))
+    def near(h, t, lo, hi):
+        if t is None:
+            return True
+        l2 = _js_str(t)
+        return any(l2 in h[2][j] for j in range(max(0, h[1] + lo), min(len(h[2]), h[1] + hi + 1)) if j != h[1])
+    # `mark`＝這一拍同一行一定有的字面（差分名／img 鍵／who）—— 兩條支線同一句台詞時靠它分開。
+    if len(hits) > 1 and req.get('mark'):
+        mk = _js_str(req['mark'])
+        hits = [h for h in hits if mk in h[2][h[1]]] or hits
+    if len(hits) > 1:
+        hits = [h for h in hits if near(h, req.get('prev'), -6, -1) and near(h, req.get('next'), 1, 6)]
+    if len(hits) != 1:
+        raise ValueError('找到 %d 行有這句（要剛好一行）：%s' % (len(hits), lit))
+    rel, i, lines = hits[0]
+    if lines[i].count(lit) != 1:
+        raise ValueError('那一行有 %d 處同樣的字串，不猜：%s' % (lines[i].count(lit), lines[i].strip()[:80]))
+    lines[i] = lines[i].replace(lit, _js_str(new), 1)
+    dst = os.path.join(ROOT, rel)
+    tmp = dst + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(lines))
+    os.replace(tmp, dst)
+    return '%s:%d' % (rel, i + 1)
+
+
 class Handler(http.server.SimpleHTTPRequestHandler):
     def _fail(self, code, msg):
         body = msg.encode('utf-8')
@@ -236,6 +277,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self):
+        if self.path.split('?')[0] == '/__text':
+            try:
+                n = int(self.headers.get('Content-Length') or 0)
+                req = json.loads(self.rfile.read(n).decode('utf-8'))
+                sys.stderr.write('[devserver] text %s\n' % json.dumps(req, ensure_ascii=False))
+                where = text_patch(req)
+            except ValueError as e:
+                return self._fail(409, str(e))
+            except Exception as e:                        # noqa: BLE001
+                return self._fail(500, '寫檔失敗：%s' % e)
+            return self._fail(200, 'ok ' + where)
         if self.path.split('?')[0] == '/__beat':
             try:
                 n = int(self.headers.get('Content-Length') or 0)

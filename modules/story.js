@@ -230,8 +230,25 @@ function tuneCur(side){
   const f=Object.assign({}, frameOf(id, slotExpr[side]) || {}, tuneLive[tk.key] || {});
   return { id, tk, f };
 }
+/* 改這一句台詞（ver -1828，管理人：對話框右上角的 ✎）。改的是**原始台詞**（`{N}`／`{P}` 照原樣），
+   用「原台詞＋這一拍的差分＋前後一拍」在腳本檔裡定位那一行（`/__text`）。 */
+function storyEditLine(){
+  const line = cur && cur.lines && cur.lines[lineIdx]; if(!line) return;
+  const lines=cur.lines, i=lineIdx;
+  if(line.textByTier || typeof line.text!=='string'){
+    beatPick.openTextEditor({ title:'改台詞', text:'', note:'⚠ 這一句是依好感分段的台詞（textByTier），請直接改腳本檔' }); return; }
+  beatPick.openTextEditor({
+    title:'改台詞：'+(nameOf(line.speaker)||line.speaker||''),
+    note:'原始台詞（{N}／{P} 等代換照原樣保留）',
+    text: line.text,
+    onSave:(v)=>beatPick.postText({ text:line.text, new:v,
+        mark:(line.portrait && typeof line.portrait.expr==='string') ? line.portrait.expr : undefined,
+        prev: lines[i-1] ? (lines[i-1].text||'') : undefined, next: lines[i+1] ? (lines[i+1].text||'') : undefined })
+      .then(r=>{ if(r.ok){ line.text=v; const t=$('storyText'); if(t && lineIdx===i) t.textContent=lineText(line); } return r; }) });
+}
 function tuneEnsure(){
   if(!document.body.classList.contains('testmode')) return;
+  beatPick.ensureEditBtn($('storyBubble'), storyEditLine);
   const st=$('storyStage'); if(!st || $('storyTuneBtn')) return;
   const b=document.createElement('button'); b.id='storyTuneBtn'; b.type='button'; b.textContent='立繪';
   const stop=e=>e.stopPropagation();
@@ -2850,7 +2867,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1827';
+const KERB_V='?v=1828';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3604,6 +3621,7 @@ export function playKerberosClose(onDone){
 function renderLine(){
   const line = cur.lines[lineIdx];
   if(!line) return;
+  tuneEnsure();   // 管理人的 ✎／立繪鈕（ver -1828：沒有立繪的拍也要掛得上）
   /* ══⚠⚠ **換一拍就先停上一拍的打字機**（ver -1127）══
      -1062 把它補在空框與演出拍那兩個分支裡，但那是「哪幾種拍會出事」的清單 ——
      清單就是會漏（黑幕底下延後的 `reveal`、`goto`／`label` 跳轉、閘門自己 advance

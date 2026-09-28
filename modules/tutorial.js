@@ -633,6 +633,17 @@ function afterCutin(fn){
  *  對話段：開啟（真暫停+立繪移入）→ 逐句 → 閘門或關閉（立繪退場+續戰）
  * ========================================================================== */
 function castOf(who){ return (CFG().cast||{})[who] || {}; }
+/* 改這一句台詞（ver -1828，管理人：戰鬥對白框的 ✎）。同劇情那一支：原台詞＋`img`＋前後一拍定位（`/__text`）。 */
+function tutEditLine(){
+  const line = cur && cur.lines && cur.lines[lineIdx]; if(!line || typeof line.text!=='string') return;
+  const lines=cur.lines, i=lineIdx;
+  beatPick.openTextEditor({
+    title:'改台詞：'+(castOf(line.who).name||line.who||''),
+    text: line.text,
+    onSave:(v)=>beatPick.postText({ text:line.text, new:v, mark: line.img || undefined,
+        prev: lines[i-1] ? (lines[i-1].text||'') : undefined, next: lines[i+1] ? (lines[i+1].text||'') : undefined })
+      .then(r=>{ if(r.ok){ line.text=v; const t=$('tutLine'); if(t && lineIdx===i) t.textContent=v; } return r; }) });
+}
 /* ══ 改這一拍的立繪（ver -1826，管理人：右鍵點戰鬥對白的立繪）══
    可選的只有**登記過的**戰鬥對白立繪（`config.tutorial.portraitFrames` 裡 `tut_<角色>` 開頭的鍵）——
    這一套的取景表只認它們；要用新的差分得先在 config 登記（同 `tutPortraits` 的規矩）。 */
@@ -1165,6 +1176,7 @@ function showLine(){
   if(other) other.style.zIndex='1';
   // 逐句表情差分（line.img＝ASSETS 鍵）：沒寫就回該角色的預設立繪。
   // ⚠ 直接換 src，不做淡入淡出——同一角色同一槽的表情切換，淡出會讓她整個人消失一拍。
+  if(document.body.classList.contains('testmode')) beatPick.ensureEditBtn($('tutBubble'), tutEditLine);   // ✎（ver -1828）
   /* 改拍工具（ver -1826）：這一拍明寫了 `img` ⇒ 記在那個槽上（右鍵點到時知道要改哪一拍）。 */
   if(el && line.img) el._beat = { line, lines:cur.lines, idx:lineIdx };
   if(el){

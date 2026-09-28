@@ -5220,3 +5220,8 @@ body:not(.testmode) #storyTuneBtn, body:not(.testmode) #storyTune{display:none !
 #tuneSheet select{flex:1;min-width:0;min-height:40px;font:inherit;color:var(--ink);background:#1a1426;
   border:1px solid var(--gold-dim);border-radius:6px;}
 
+
+/* ══ 對話框的 ✎（管理人：改這一句台詞，ver -1828，邏輯在 modules/beatpick.js）══ */
+.beat-edit{display:none;position:absolute;right:6px;top:-14px;z-index:3;pointer-events:auto;cursor:pointer;
+  width:28px;height:28px;border-radius:50%;font:14px/1 serif;color:#d4a94a;background:rgba(12,9,18,.92);border:1px solid #8a6d2e;}
+body.testmode .beat-edit{display:block;}
