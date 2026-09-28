@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1853"></script>
+<script src="../orientation.js?v=1854"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1853edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1854edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1853edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1853edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1854edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1854edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1853edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1853edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1854edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1854edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1853edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1854edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1853edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1853edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1853edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1853edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1853edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1853edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1853edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1853edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1853edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1853edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1854edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1854edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1854edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1854edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1854edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1854edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1854edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1854edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1854edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1854edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1853edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1854edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1853edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1854edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1853"></script>
+<script src="settlement.js?v=1854"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1853"></script>
+<script src="talks.js?v=1854"></script>
 <script>
 /* ══⚠⚠⚠ **靜音在 iPhone 上要走 `muted`，不是音量**（ver -1808，Ray：「靜音鈕在手機無效」）══
    iOS 的 HTMLAudio `volume` 是**唯讀的**（永遠 1）—— 這一頁所有聲音都是 HTMLAudio，
@@ -733,7 +733,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1853';
+const FLIGHT_VER = 'ver -1854';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5801,8 +5801,26 @@ function portraitLOD(who, im, w, h, dim){
   if(!dim) return c.cv;
   return c.dim || (c.dim=buildDim(c.cv));
 }
+/* ══⚠⚠ **船還在升空／降落就不開口**（ver -1854，Ray：「王座徘徊者進入空中戰的那個 stage，要等船
+   完全升空定位才開始跑對話，飛行畫面的對話都必需這樣處理」）══
+   門收在 `say()` 這個唯一的入口（鐵律 8）：過場期間先排隊，`takeoffDone()` 一收尾就依序補播。
+   ⚠ 同一段台詞只排一份（有些觸發是每一幀都會問一次，陣列是常數，比參照就夠）。
+   ⚠ `force`（立繪調整區）不受這一條管。
+   ⚠ 用 try 讀 `takeoffPlaying`：它宣告在檔案很後面，開機早期被叫到時還在 TDZ。 */
+let takeoffWait=[];
+function takeoffBusy(){ try{ return !!takeoffPlaying; }catch(_){ return false; } }
+function takeoffDone(){
+  const q=takeoffWait; takeoffWait=[];
+  q.forEach((f,i)=>setTimeout(f, 250*i));   // 升空定位後稍停一拍再開口；多段就依序
+}
 function say(beats, at, opts){
   if(!artReady){ artWait.push(()=>say(beats, performance.now(), opts)); return; }   // 立繪表還在載（ver -1833）
+  if(takeoffBusy() && !(opts && opts.force)){
+    if(!takeoffWait.some(f=>f.__beats===beats)){
+      const f=()=>say(beats, performance.now(), opts); f.__beats=beats; takeoffWait.push(f);
+    }
+    return;
+  }
   if(freeFlight() && !(opts && opts.force)){ const cb=opts&&opts.done; if(cb) setTimeout(()=>{ try{ cb(); }catch(_){} },0); return; }   // 試飛：不講（ver -1744）；`force`＝立繪調整區（ver -1819）
   /* ⚠ 差分鍵在**這一支**展開（唯一的入口，鐵律 8）：之後每一支都只看得到
      一個查得到 PORTRAIT 的字串，castEnter／drawTalk／LOD 一行都不必改。 */
@@ -21173,7 +21191,7 @@ function playTakeoff(){
     fog.style.transition='opacity 1.2s ease-out'; fog.style.opacity='0';  // 雲霧散
   }, HOLD);
   setTimeout(()=>{ altTween=null; cam.alt=CRUISE_ALT; try{ ov.remove(); }catch(_){}
-                   takeoffPlaying=false; }, HOLD+2060);
+                   takeoffPlaying=false; takeoffDone(); }, HOLD+2060);   // 升空定位 → 排隊的對白開口（ver -1854）
 }
 /* 進城（降落）：高度 700→100 快速降＋雲霧撲面＋1 秒淡全黑，觸底前黑幕淡完 → done()。 */
 function playLanding(done){
@@ -21191,6 +21209,7 @@ function playLanding(done){
   /* 黑幕淡完（~1.3s，早於觸底 1.5s）→ 交棒。⚠ 交棒後這一頁被父頁收掉，
      overlay 不必自己移除；altTween 歸零、高度復位給下一趟。 */
   setTimeout(()=>{ altTween=null; cam.alt=CRUISE_ALT; takeoffPlaying=false;
+                   takeoffWait=[];   // 降落＝這一頁要被收掉了，排隊的不演（ver -1854）
                    done&&done(); }, 1470);
 }
 
@@ -21243,7 +21262,9 @@ function preloadSfx(){
     /* ══ 戰鬥回程（ver -845，殺掉重載那條）══ 上下文在回程鑰匙（restoreFlightPos
        收進 retCtx），勝負由父頁在重開前補進 `won` 欄。等畫面真的還給玩家再演。 */
     if(retCtx){ const c=retCtx; retCtx=null;
-      setTimeout(()=>{ try{ afterBattleReturn(!!c.won, !!c.scripted, c.doneKey||null, null); }catch(e){} }, 900); }
+      /* ⚠⚠ ver -1854：也要**等升空演完**（同下面出航那一段的 -1172）—— 以前固定 900ms，
+         而升空要 2580ms，空中戰打贏回來那幾句（SKY_WIN_TALK 等）一定搶在升空中間開口。 */
+      setTimeout(()=>afterTakeoff(()=>{ try{ afterBattleReturn(!!c.won, !!c.scripted, c.doneKey||null, null); }catch(e){} }), 700); }
     /* 出航之後的劇情：讀取頁收乾淨之後才演。
        ⚠ Stage9 的飛行段優先（ver -1104）：它接手了就不要再疊一段出航對白上去。 */
     /* ⚠⚠⚠ **等升空真的演完才開口**（ver -1172，Ray：「索拉娜的『這破船』等到船
