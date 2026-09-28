@@ -174,6 +174,23 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 dst = os.path.join(ROOT, rel)
                 with open(dst, 'r', encoding='utf-8') as f:
                     text = f.read()
+                # 批次（ver -1825，「標準化」＝一個角色的所有立繪套同一組值）：`items:[{kind,key}]`，
+                # 同一個檔只讀寫一次；找不到的那幾張跳過、回報數字（整批都找不到才算失敗）。
+                if req.get('items'):
+                    out, hit, miss = text, 0, []
+                    for it in req['items']:
+                        try:
+                            out = tune_patch(out, it.get('kind'), it.get('key'), req.get('set') or {})
+                            hit += 1
+                        except ValueError:
+                            miss.append(it.get('key'))
+                    if not hit:
+                        return self._fail(409, '一張都找不到（%d 張）' % len(miss))
+                    tmp = dst + '.tmp'
+                    with open(tmp, 'w', encoding='utf-8') as f:
+                        f.write(out)
+                    os.replace(tmp, dst)
+                    return self._fail(200, 'ok %d/%d' % (hit, hit + len(miss)))
                 out = tune_patch(text, req.get('kind'), req.get('key'), req.get('set') or {})
                 tmp = dst + '.tmp'
                 with open(tmp, 'w', encoding='utf-8') as f:

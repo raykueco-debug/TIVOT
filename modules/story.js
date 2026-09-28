@@ -227,14 +227,23 @@ function tuneRender(){
     '<div class="tn-row tn-who">'+sides.map(sd=>'<button data-side="'+sd+'" class="'+(sd===tuneSide?'on':'')+'">'
       +(sd==='L'?'左 ':'右 ')+(nameOf(slot[sd])||slot[sd])+'</button>').join('')+'</div>'
    +(c ? '<div class="tn-path">'+c.tk.expr+(c.tk.kind==='base'?'（寫在角色層：沒有自己值的差分會一起變）':'')+'</div>'
-   +'<div class="tn-row"><span>大小 cm '+n(c.f.cm)+'</span><button data-k="cm" data-d="-1">－</button><button data-k="cm" data-d="1">＋</button></div>'
-   +'<div class="tn-row"><span>上下 '+n(c.f.yShift||0)+'</span><button data-k="yShift" data-d="1">↑</button><button data-k="yShift" data-d="-1">↓</button></div>'
-   +'<div class="tn-row"><span>左右 '+n(c.f.fxShift||0)+'</span><button data-k="fxShift" data-d="0.005">←</button><button data-k="fxShift" data-d="-0.005">→</button></div>'
+   /* 數字可以直接打（ver -1825）：Enter 或離開那一格就套用。 */
+   +'<div class="tn-row"><span>大小 cm</span><input data-in="cm" type="number" step="1" value="'+n(c.f.cm)+'"><button data-k="cm" data-d="-1">－</button><button data-k="cm" data-d="1">＋</button></div>'
+   +'<div class="tn-row"><span>上下</span><input data-in="yShift" type="number" step="1" value="'+n(c.f.yShift||0)+'"><button data-k="yShift" data-d="1">↑</button><button data-k="yShift" data-d="-1">↓</button></div>'
+   +'<div class="tn-row"><span>左右</span><input data-in="fxShift" type="number" step="0.005" value="'+n(c.f.fxShift||0)+'"><button data-k="fxShift" data-d="0.005">←</button><button data-k="fxShift" data-d="-0.005">→</button></div>'
    +'<div class="tn-row"><button data-act="big" class="'+(tuneBig?'on':'')+'">步進×5</button>'
    +'<button data-act="undo"'+(live?'':' disabled')+'>還原</button>'
-   +'<button data-act="save" class="tn-save"'+(live?'':' disabled')+'>'+(c && tuneArm===c.tk.key ? '確認寫入？' : '儲存')+'</button></div>' : '')
+   +'<button data-act="save" class="tn-save"'+(live?'':' disabled')+'>'+(c && tuneArm===c.tk.key ? '確認寫入？' : '儲存')+'</button>'
+   +'<button data-act="std">'+(c && tuneArm==='std:'+c.id ? '確認標準化？' : '標準化')+'</button></div>' : '')
    +(tuneMsg ? '<div class="tn-path" style="color:'+(/失敗/.test(tuneMsg)?'#e57373':'#8fd18f')+'">'+tuneMsg+'</div>' : '');
   tuneBindStudio(p);
+  p.querySelectorAll('input[data-in]').forEach(inp=>inp.addEventListener('change', ()=>{
+    const cur=tuneCur(tuneSide); if(!cur) return;
+    const v=parseFloat(inp.value); if(!isFinite(v)) return tuneRender();
+    const L=Object.assign({}, tuneLive[cur.tk.key] || {}); L[inp.dataset.in]=v;
+    tuneLive[cur.tk.key]=L; tuneArm=null; tuneMsg=''; layout(); tuneRender();
+  }));
+  p.querySelectorAll('input[data-in]').forEach(inp=>['pointerdown','click','keydown'].forEach(ev=>inp.addEventListener(ev, e=>e.stopPropagation())));
   p.querySelectorAll('button').forEach(btn=>btn.addEventListener('click', e=>{
     e.stopPropagation();
     if(btn.dataset.act==='exit') return;   // 工作室的離開由 tuneBindStudio 處理
@@ -251,7 +260,35 @@ function tuneRender(){
     if(act==='big'){ tuneBig=!tuneBig; return tuneRender(); }
     if(act==='undo'){ delete tuneLive[cur.tk.key]; layout(); return tuneRender(); }
     if(act==='save') tuneSave(cur);
+    if(act==='std') tuneStd(cur);
   }));
+}
+/* ══ 標準化（ver -1825，Ray：「按下去會以當前的數值套用該角色所有立繪」）══
+   目前面板上的 cm／yShift／fxShift 寫進這個角色的**基本立繪（角色層）＋每一張差分**，
+   speakers.js 與飛行頁一起寫（`/__tune` 的批次）。同樣按兩下確認。
+   ⚠ 差分自己寫過的 `standCm`（坐姿／近景）不動 —— 只改這三個數字。 */
+function tuneStd(cur){
+  const art=artOf(cur.id); if(!art) return;
+  const f=cur.f, set={ cm:f.cm, yShift:f.yShift||0, fxShift:f.fxShift||0 };
+  const items=[];
+  if(art.base) items.push({ kind:'base', key:art.base });
+  for(const k of Object.keys(art.expr||{})){ const e=art.expr[k]; if(e && typeof e==='object' && e.src) items.push({ kind:'src', key:e.src }); }
+  const armKey='std:'+cur.id;
+  if(tuneArm!==armKey){ tuneArm=armKey; tuneMsg='再按一次「標準化」：'+(nameOf(cur.id)||cur.id)+' 全部 '+items.length+' 張 → cm '+set.cm+'，上下 '+set.yShift+'，左右 '+set.fxShift; tuneRender(); return; }
+  tuneArm=null;
+  const url=new URL('__tune', new URL('../', import.meta.url)).pathname;
+  fetch(url, { method:'POST', body:JSON.stringify({ items, set }) })
+    .then(r=>r.text().then(t=>({ ok:r.ok, st:r.status, t })))
+    .then(({ok, st, t})=>{
+      if(!ok){ tuneMsg='標準化失敗（HTTP '+st+'）：'+t; tuneRender(); return; }
+      Object.assign(art, set);
+      for(const k of Object.keys(art.expr||{})){ const e=art.expr[k]; if(e && typeof e==='object' && e.src) Object.assign(e, set); }
+      for(const it of items) delete tuneLive[it.key];
+      tuneMsg='已標準化 speakers.js（'+t+'）'; layout(); tuneRender();
+      fetch(url, { method:'POST', body:JSON.stringify({ file:'flight/index.html', set,
+        items:items.map(it=>({ kind:'src', key:'../'+it.key })) }) }).catch(()=>{});
+    })
+    .catch(e=>{ tuneMsg='標準化失敗：'+e; tuneRender(); });
 }
 function tuneBindStudio(p){
   if(!studioOn) return;
@@ -2754,7 +2791,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1824';
+const KERB_V='?v=1825';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
