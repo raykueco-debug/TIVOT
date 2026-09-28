@@ -3784,18 +3784,18 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
-      tier:'C',
+      tier:'B',   // ver -1834 Ray：幻影系全部 Rank B、數值用獨角虎（原 C）
       atype:'P',
       stageScale:1,
       stack:0,
       image:'enemy_ph_greed',
       fit:{ mode:'contain', pos:'center bottom' },
-      hp:270,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
-      attack:12,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hp:380,   // ver -1834：照獨角虎（sf_tiger）
+      attack:16,   // ver -1834：照獨角虎
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       special:[],
-      boardGrids:[9,9,9,9,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      boardGrids:[9,9,9,16,16],   // ver -1834：照獨角虎
       hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
       loot:[],
     },
