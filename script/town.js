@@ -9596,7 +9596,11 @@ export const TOWNS = {
     bgm: 'lostplace',
     wilderness: true,
     nodes: {
-      kingsbarrow:  { bg:'dunmor_kingsbarrow', name:'羅賽爾廢城　王塚', noTime:true, exits:{ right:'barrowfield' } },
+      /* ══ 四座祭壇的點亮差分（ver -1837，美術 5ca80357；Ray：「加入祭壇元素並增繪祭壇點亮差分」）══
+         `bgWhen`：旗 `dunmor_lit_<格>` 插著就換成 `_lit` 那一張（`_lit` 不是時段尾綴，四格都 `noTime`）。
+         ⚠ 鐵律 9：**這四支旗現在還沒有人插** —— 點燃祭壇的劇情條件等 Ray；誰插就在那一段寫 `flags:['dunmor_lit_<格>']`。
+         ⚠ 圓塔頂已重畫成寬闊石台（可以放戰鬥，spec §十一）。 */
+      kingsbarrow:  { bg:'dunmor_kingsbarrow', name:'羅賽爾廢城　王塚', noTime:true, bgWhen:[{ need:'dunmor_lit_kingsbarrow', bg:'dunmor_kingsbarrow_lit', noTime:true }], exits:{ right:'barrowfield' } },
       barrowfield:  { bg:'dunmor_barrowfield', name:'羅賽爾廢城　塚原', noTime:true, exits:{ left:'kingsbarrow', down:'dolmen' } },
       altar:        { bg:'dunmor_altar', name:'羅賽爾廢城　祭壇', noTime:true, exits:{ down:'nemeton' } },
       springpool:   { bg:'dunmor_springpool', name:'羅賽爾廢城　泉池', noTime:true, exits:{ right:'altarcourt', down:'triskele' } },
@@ -9608,7 +9612,7 @@ export const TOWNS = {
       triskele:     { bg:'dunmor_triskele', name:'羅賽爾廢城　三曲紋廊', noTime:true, exits:{ up:'springpool', left:'nemeton', right:'sacredway' } },
       sacredway:    { bg:'dunmor_sacredway', name:'羅賽爾廢城　聖道', noTime:true, exits:{ left:'triskele', down:'henge' } },
       bardsstep:    { bg:'dunmor_bardsstep', name:'羅賽爾廢城　吟遊石階', noTime:true, exits:{ up:'skullniche', right:'brochtop', down:'brochbase' } },
-      brochtop:     { bg:'dunmor_brochtop', name:'羅賽爾廢城　圓塔頂', noTime:true, exits:{ left:'bardsstep' } },
+      brochtop:     { bg:'dunmor_brochtop', name:'羅賽爾廢城　圓塔頂', noTime:true, bgWhen:[{ need:'dunmor_lit_brochtop', bg:'dunmor_brochtop_lit', noTime:true }], exits:{ left:'bardsstep' } },
       bogoffer:     { bg:'dunmor_bogoffer', name:'羅賽爾廢城　沼澤獻祭處', noTime:true, exits:{ down:'lakeshore' } },
       stonerow:     { bg:'dunmor_stonerow', name:'羅賽爾廢城　立石列', noTime:true, exits:{ up:'dolmen', right:'oakgrove' } },
       oakgrove:     { bg:'dunmor_oakgrove', name:'羅賽爾廢城　橡樹林', noTime:true, rest:true, noWild:true, exits:{ up:'nemeton', left:'stonerow', right:'druidhouse' } },
@@ -9617,8 +9621,8 @@ export const TOWNS = {
       brochbase:    { bg:'dunmor_brochbase', name:'羅賽爾廢城　圓塔基座', noTime:true, exits:{ up:'bardsstep', left:'henge' } },
       boglane:      { bg:'dunmor_boglane', name:'羅賽爾廢城　泥沼小徑', noTime:true, exits:{ right:'lakeshore', down:'treasury' } },
       lakeshore:    { bg:'dunmor_lakeshore', name:'羅賽爾廢城　湖岸', noTime:true, exits:{ up:'bogoffer', left:'boglane', right:'cairn', down:'crannog' } },
-      cairn:        { bg:'dunmor_cairn', name:'羅賽爾廢城　積石塚', noTime:true, exits:{ left:'lakeshore' } },
-      ossuary:      { bg:'dunmor_ossuary', name:'羅賽爾廢城　骨龕', noTime:true, exits:{ down:'cistgrave' } },
+      cairn:        { bg:'dunmor_cairn', name:'羅賽爾廢城　積石塚', noTime:true, bgWhen:[{ need:'dunmor_lit_cairn', bg:'dunmor_cairn_lit', noTime:true }], exits:{ left:'lakeshore' } },
+      ossuary:      { bg:'dunmor_ossuary', name:'羅賽爾廢城　骨龕', noTime:true, bgWhen:[{ need:'dunmor_lit_ossuary', bg:'dunmor_ossuary_lit', noTime:true }], exits:{ down:'cistgrave' } },
       fogou:        { bg:'dunmor_fogou', name:'羅賽爾廢城　石砌暗道', noTime:true, exits:{ right:'innerditch', down:'souterrain' } },
       innerditch:   { bg:'dunmor_innerditch', name:'羅賽爾廢城　內壕', noTime:true, exits:{ left:'fogou', right:'innergate', down:'potters' } },
       innergate:    { bg:'dunmor_innergate', name:'羅賽爾廢城　內壘門', noTime:true, exits:{ up:'druidhouse', left:'innerditch', down:'boarstone' } },

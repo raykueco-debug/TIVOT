@@ -83,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1836';
+export const VERSION = 'ver 2026.09.22-1837';
 
 export const GAME_CONFIG = {
 
@@ -5089,6 +5089,12 @@ export const ASSET_VER = {
   'dunmor_nemeton': 2,
   'dunmor_altar': 2,
   'dunmor_wellsq': 2,
+  /* 羅賽爾廢城四座祭壇（ver -1837，美術 5ca80357）：骨龕／積石塚／王塚／圓塔頂**同名覆蓋**加了祭壇。
+     點亮版 `_lit` 是新檔，不必跳。 */
+  'dunmor_ossuary': 2,
+  'dunmor_cairn': 2,
+  'dunmor_kingsbarrow': 2,
+  'dunmor_brochtop': 2,
 };
 export function assetVer(nameOrPath){
   const n = String(nameOrPath||'').split('/').pop().split('?')[0]

@@ -99,7 +99,7 @@
 >       最省的作法是在 `script/enemies.js` 各開一張群戰卡（數值照抄該場原本那張 thug 卡），`image` 指新鍵、`fit` 照 `thug_squad` 那一套（橫向滿版 `cover`、`center 25%`）；卡名要不要改成「混混一夥」之類等 Ray。
 >       ③ `ss_hall` 維持 `thug_squad`（沙發那張，本來就是群戰）、**`ss_manu` 不動（單人）**。
 >    ⚠ **原本的單人圖不要刪**：門衛的立繪借用 `man_thug_pistol`（`speakers.js`）；`thug_dual`／`thug_boss` 目前沒有場次在用，留著。
-> 26. **（09-28，Mac）羅賽爾廢城四個端末格加祭壇＋點亮差分**（Ray：「骨龕 積石塚 王塚 圓塔頂保持原設計，加入祭壇元素並增繪祭壇點亮差分」「圓塔頂整個重繪才有足夠的面積戰鬥」）
+> 26. ✅ **-1837 已接**（ASSET_VER 四鍵；四格 `bgWhen` 旗 `dunmor_lit_<格>`，**誰插等 Ray 的劇情**） **（09-28，Mac）羅賽爾廢城四個端末格加祭壇＋點亮差分**（Ray：「骨龕 積石塚 王塚 圓塔頂保持原設計，加入祭壇元素並增繪祭壇點亮差分」「圓塔頂整個重繪才有足夠的面積戰鬥」）
 >    ① ⚠⚠ **`config.js` 的 `ASSET_VER` 跳四鍵**：`dunmor_ossuary`／`dunmor_cairn`／`dunmor_kingsbarrow`／`dunmor_brochtop`（同名覆蓋；不跳玩家永遠拿舊的、沒祭壇的那張）。
 >    ② 新檔四張 `resources/background/dunmor/dunmor_{ossuary,cairn,kingsbarrow,brochtop}_lit.webp`（祭壇點亮版，`bg_index.js` 已重跑）—— 什麼時候切成 `_lit`（點燃祭壇的旗標／事件）由程式端接，劇情條件等 Ray。
 >       ⚠ `_lit` 不是時段尾綴，四格都是 `noTime:true`；建議做成節點上依旗標換 `bg`（例：`bgIf:{flag:'dunmor_altar_<id>', bg:'dunmor_<id>_lit'}` 之類，機制程式端定）。
