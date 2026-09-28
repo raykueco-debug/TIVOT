@@ -83,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1834';
+export const VERSION = 'ver 2026.09.22-1835';
 
 export const GAME_CONFIG = {
 
@@ -2292,10 +2292,10 @@ export const GAME_CONFIG = {
     /* ══ 里朋莊園（ver -1793，Ray 交稿）══ 一路打進去算**同一局**（`session:'ss_raid'`），
        沙龍的馬努收段（`sessionEnd`）—— 中間幾格不結算、不閉棺（§6.5.4.3）。
        門房→棕櫚車道→噴泉前庭→馬車房→大廳→沙龍，敵人照稿。 */
-    ss_lodge:     { enemy:'thug_pistol',  session:'ss_raid' },
-    ss_avenue:    { enemy:'thug_rifle',   session:'ss_raid' },
-    ss_forecourt: { enemy:'thug_lookout', session:'ss_raid' },
-    ss_carriage:  { enemy:'thug_shotgun', session:'ss_raid' },
+    ss_lodge:     { enemy:'thug_squad_gate',  session:'ss_raid' },
+    ss_avenue:    { enemy:'thug_squad_avenue',   session:'ss_raid' },
+    ss_forecourt: { enemy:'thug_squad_forecourt', session:'ss_raid' },
+    ss_carriage:  { enemy:'thug_squad_carriage', session:'ss_raid' },
     ss_hall:      { enemy:'thug_squad',   session:'ss_raid' },
     ss_manu:      { enemy:'manu',         session:'ss_raid', sessionEnd:true },
     /* ══⚠⚠⚠ 鏡湖・出口前的那一場（ver -1524，Ray 的 Stage10-A 稿）══════════════
@@ -4203,6 +4203,11 @@ export const ASSETS = {
   enemy_thug_lookout: "resources/enemy/man_thug_lookout.webp",
   enemy_thug_boss:    "resources/enemy/man_thug_boss.webp",
   enemy_thug_squad:   "resources/enemy/man_thug_squad.webp",   // ver -1793：里朋莊園大廳
+  /* 惡棍四場的群戰圖（ver -1835，美術 9f030e84）：大門口＝馬車掩體、其餘＝木桶木箱。 */
+  enemy_thug_squad_gate:      "resources/enemy/man_thug_squad_gate.webp",
+  enemy_thug_squad_avenue:    "resources/enemy/man_thug_squad_avenue.webp",
+  enemy_thug_squad_forecourt: "resources/enemy/man_thug_squad_forecourt.webp",
+  enemy_thug_squad_carriage:  "resources/enemy/man_thug_squad_carriage.webp",
   enemy_manu:         "resources/si/npc/ssophia_si_manu_draw.webp",   // ver -1793：沙龍的馬努（借立繪）
   /* ══⚠⚠ 北方泊地城鎮戰的雜怪（ver -596，Ray 指定四隻隨機出）＋教堂的 Boss（祭壇獸）══
      ⚠⚠ **一定要放在 `resources/enemy/` 底下，不可以留在 `_drafts`**（ver -595，
