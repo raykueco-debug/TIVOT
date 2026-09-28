@@ -4576,8 +4576,10 @@ export const TOWNS = {
            ⚠ 有陸路可以走到的地方（帝都／夏爾村那一族）照舊要旗：那裡「還沒有船」
              是真的成立。 */
         /* ══ 出航鎖（ver -1782，Ray：「初入聖索菲亞要上出航鎖『不能丟下夥伴』」）══ 同雪都那一條（`vn_arrive`／`vn_depart`）。
-           ⚠ 鐵律 9：`until:'ss_depart'` **現在還沒有人插** —— 旅店合流那一段（稿還沒到）演完由它插。 */
-        sail:{ hold:{ need:'ss_arrive', until:'ss_depart',
+           ⚠ ver -1861（Ray：「14 結束後無法出航」）：`until` 由 `ss_depart` 改成 **`ss_raid_home`**（救回蘿法那一幕演完）——
+             -1814 起兩支在同一幕插、意思一樣；但 -1814 之前演過那一幕的存檔只有後者（`ss_depart` 要等隔天早上的閘門），
+             出航就一直被鎖著（同飛行頁出發對話 ④ 在 -1832 的同一個修法）。 */
+        sail:{ hold:{ need:'ss_arrive', until:'ss_raid_home',
                       lines:[ { speaker:'NARRATION', text:'（大家都還在城裡。不能丟下夥伴。）' } ] } } },
 
       /* ── 一、中心區 ── 左＝市政廳、右＝大教堂、下＝廣場 */
