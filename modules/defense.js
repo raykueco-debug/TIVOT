@@ -20,6 +20,7 @@
 import { GAME_CONFIG, asset, sfxGain, weaponOf, weaponBand } from '../config.js';
 import { state, addPerfect, addPerfectCounter, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
+import { seSrc } from './story.js';   // 空槍音的路徑（ver -1807）
 import { L, fmt } from '../i18n.js';   // 多語言（防禦浮動字）
 import * as settings from './settings.js';  // 敵攻警告開關（fxOn('alert')，ver -748）
 
@@ -389,6 +390,9 @@ export function resolveThreat(th, chained){
      ⚠ 擋在這一支的入口（玩家點圈的唯一去處，鐵律 8）；散射連鎖的鄰圈也走這裡 ——
        最後一發打空之後，剩下的鄰圈同樣留著。 */
   if(api.counterReady && !api.counterReady()){
+    /* 空槍的「喀」（ver -1807，Ray：「空槍點攻擊圈播 se_ginclick」）。路徑問 story 的 `SE_FILES`
+       （那張表是唯一登記處），戰鬥那一批預載在 `main.battleAudioSet`。 */
+    { const src = seSrc('se_ginclick'); if(src) SFX.play(src, sfxGain('se_ginclick')); }
     api.floatDmg((L.battle && L.battle.boltCd) || 'RELOAD','50%','34%',false);
     return;
   }

@@ -295,7 +295,8 @@ function battleAudioSet(battleId){
   for(const k of Object.keys(C.weapons||{})) scanAudioNames(C.weapons[k], names, 0);
   for(const k of Object.keys(C.partners||{})) scanAudioNames(C.partners[k], names, 0);
   /* 戰鬥共用的那幾支（UI／升級／回復／碎裂）＋ 這一場的曲子。 */
-  names.push('se_general_click','se_lvup','se_healing','se_bulletpiece','se_glasscrack','sfx_saint');
+  names.push('se_general_click','se_lvup','se_healing','se_bulletpiece','se_glasscrack','sfx_saint',
+             'se_ginclick');   // 空槍點圈（ver -1807）
   names.push(B.bgm || 'bgm_battle'); if(B.bgmAfter) names.push(B.bgmAfter);
   names.push('bgm_result','bgm_missionfailed');   // 結算／失敗：打完馬上要用
   const out=[], seen={};
