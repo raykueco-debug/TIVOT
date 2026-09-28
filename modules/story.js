@@ -206,12 +206,22 @@ function tuneRender(){
   p.classList.toggle('on', tuneOn);
   if(!tuneOn) return;
   const sides=['L','R'].filter(sd=>slot[sd]);
-  if(!sides.length){ p.innerHTML='<div class="tn-empty">台上沒有立繪</div>'; return; }
+  /* 工作室的選角兩列（ver -1820）：角色一欄、差分一欄；選了就上台。 */
+  let studio='';
+  if(studioOn){
+    const cat=tuneCatalog();
+    const row=sd=>{ const cur=studioSel[sd]||{}; const c=cat.find(x=>x.id===cur.id);
+      return '<div class="tn-row tn-pick"><span>'+(sd==='L'?'左':'右')+'</span>'
+        +'<select data-sc="'+sd+'"><option value="">（無）</option>'+cat.map(x=>'<option value="'+x.id+'"'+(x.id===cur.id?' selected':'')+'>'+x.name+'</option>').join('')+'</select>'
+        +'<select data-se="'+sd+'"'+(c?'':' disabled')+'><option value="">（基本）</option>'+(c?c.exprs:[]).map(e=>'<option'+(e===cur.expr?' selected':'')+'>'+e+'</option>').join('')+'</select></div>'; };
+    studio=row('L')+row('R')+'<div class="tn-row"><button data-act="exit">離開</button></div>';
+  }
+  if(!sides.length){ p.innerHTML=studio+'<div class="tn-empty">台上沒有立繪</div>'; tuneBindStudio(p); return; }
   if(sides.indexOf(tuneSide)<0) tuneSide = sides[sides.length-1];
   const c=tuneCur(tuneSide);
   const live=c && tuneLive[c.tk.key];
   const n=v=>(v==null?'—':(+v).toFixed(3).replace(/\.?0+$/,''));
-  p.innerHTML =
+  p.innerHTML = studio +
     '<div class="tn-row tn-who">'+sides.map(sd=>'<button data-side="'+sd+'" class="'+(sd===tuneSide?'on':'')+'">'
       +(sd==='L'?'左 ':'右 ')+(nameOf(slot[sd])||slot[sd])+'</button>').join('')+'</div>'
    +(c ? '<div class="tn-path">'+c.tk.expr+(c.tk.kind==='base'?'（寫在角色層：沒有自己值的差分會一起變）':'')+'</div>'
@@ -221,8 +231,10 @@ function tuneRender(){
    +'<div class="tn-row"><button data-act="big" class="'+(tuneBig?'on':'')+'">步進×5</button>'
    +'<button data-act="undo"'+(live?'':' disabled')+'>還原</button>'
    +'<button data-act="save" class="tn-save"'+(live?'':' disabled')+'>儲存</button></div>' : '');
+  tuneBindStudio(p);
   p.querySelectorAll('button').forEach(btn=>btn.addEventListener('click', e=>{
     e.stopPropagation();
+    if(btn.dataset.act==='exit') return;   // 工作室的離開由 tuneBindStudio 處理
     if(btn.dataset.side){ tuneSide=btn.dataset.side; return tuneRender(); }
     const cur=tuneCur(tuneSide); if(!cur) return;
     const k=btn.dataset.k, act=btn.dataset.act;
@@ -237,6 +249,14 @@ function tuneRender(){
     if(act==='undo'){ delete tuneLive[cur.tk.key]; layout(); return tuneRender(); }
     if(act==='save') tuneSave(cur);
   }));
+}
+function tuneBindStudio(p){
+  if(!studioOn) return;
+  p.querySelectorAll('select[data-sc]').forEach(sel=>sel.addEventListener('change', ()=>studioPut(sel.dataset.sc, sel.value||null, null)));
+  p.querySelectorAll('select[data-se]').forEach(sel=>sel.addEventListener('change', ()=>{
+    const sd=sel.dataset.se, cur=studioSel[sd]; if(cur) studioPut(sd, cur.id, sel.value||null); }));
+  const ex=p.querySelector('[data-act="exit"]');
+  if(ex) ex.addEventListener('click', e=>{ e.stopPropagation(); studioExit(); });
 }
 function tuneSave(cur){
   const L=tuneLive[cur.tk.key]; if(!L) return;
@@ -260,28 +280,60 @@ function tuneSave(cur){
     .catch(e=>window.alert('寫入失敗：'+e));
 }
 /* ══ 立繪調整區（ver -1819，Ray：「出個立繪調整區，進去先選飛行或一般，然後選左右角色」）══
-   首頁「立繪」鈕 → 一般 → 這兩支：`tuneCatalog()` 給名單、`tuneStage()` 把左右兩人直接擺上台並打開面板。
+   首頁「立繪」鈕 → 一般 → 這兩支：`tuneCatalog()` 給名單、`tuneStudio()` 開工作室（見下）。
    ⚠ 名單以**立繪**為單位（同一張 ART 只列一次，取第一個指到它的 speaker id）—— 正名前後兩個 id
      指同一張圖（OFFICER／RENNA），列兩次只會讓人以為是兩組取景。 */
 export function tuneCatalog(){
   const seen={}, out=[];
-  for(const id of Object.keys(SPEAKERS)){
-    const k=SPEAKERS[id] && SPEAKERS[id].art, a=k && ART[k];
+  for(const id0 of Object.keys(SPEAKERS)){
+    const k=SPEAKERS[id0] && SPEAKERS[id0].art, a=k && ART[k];
     if(!a || !a.base || seen[k]) continue; seen[k]=1;
+    /* 優先用與立繪同名的那個 id（`renna` → RENNA，不是正名前的 OFFICER「監察官」）。 */
+    const up=String(k).toUpperCase(), id=(SPEAKERS[up] && SPEAKERS[up].art===k) ? up : id0;
     out.push({ id, name:(nameOf(id)||id)+'（'+k+'）', exprs:Object.keys(a.expr||{}) });
   }
   return out;
 }
-export function tuneStage(L, R, done){
-  const lines=[], sides={};
-  const tag='（左）'+(L?(L.expr||'基本'):'—')+'　（右）'+(R?(R.expr||'基本'):'—')+'　—— 點畫面回選單';
-  /* 兩人都有時，左邊那一拍無台詞、`noHold` 自己跑過去 ⇒ 一上台就是兩個人，不必先點一下。 */
-  if(L){ sides[L.id]='L'; lines.push(R ? { speaker:L.id, text:'', auto:1, noHold:true, portrait:{ char:L.id, expr:L.expr||null, show:true } }
-                                       : { speaker:L.id, text:tag, portrait:{ char:L.id, expr:L.expr||null, show:true } }); }
-  if(R){ sides[R.id]='R'; lines.push({ speaker:R.id, text:tag, portrait:{ char:R.id, expr:R.expr||null, show:true } }); }
-  if(!lines.length){ done && done(); return; }
-  tuneOn=true;
-  playAdhoc(lines, ()=>{ tuneOn=false; tuneRender(); clearCast(); close(); done && done(); }, { sides });
+/* ══ 調整工作室（ver -1820，Ray：「立繪調整是用電腦進行…隨選隨上」「選擇角色，然後下一欄就可以下拉選擇差分」）══
+   舞台開著但**不播任何劇本**：面板上兩列「左／右：角色 → 差分」下拉，選了就上台（`studioPut`），
+   點畫面不推進任何東西（`advance` 開頭擋），要離開按面板的「離開」。
+   ⚠ 站哪邊用 `sideOverride`（整幕站位覆寫那一份），不另外記一份。 */
+let studioOn=false, studioDone=null;
+const studioSel={ L:null, R:null };
+export function tuneStudio(done){
+  const st=$('storyStage'); if(!st) return;
+  studioDone=done||null; studioOn=true; tuneOn=true;
+  st.classList.add('on'); tuneEnsure(); hideBubble();   // 沒有台詞，收掉對話框
+  for(const sd of ['L','R']) if(studioSel[sd]) studioPut(sd, studioSel[sd].id, studioSel[sd].expr);
+  tuneRender();
+}
+/* 左右可以選同一人（ver -1821，Ray）：槽位以 speaker id 記，同一個 id 站不了兩邊 ——
+   右邊那一位改用暫時的別名 id（`<id>__R`，指到同一張 ART），取景與存檔照立繪算，兩邊是同一組值。 */
+function studioId(side, id){
+  if(!id || side!=='R') return id;
+  const al=id+'__R';
+  if(!SPEAKERS[al]) SPEAKERS[al]=Object.assign({}, SPEAKERS[id]);
+  return al;
+}
+function studioPut(side, id, expr){
+  const pid=studioId(side, id);
+  if(slot[side] && slot[side]!==pid) leaveSlot(side);
+  studioSel[side] = id ? { id, expr:expr||null } : null;
+  if(id){
+    sideOverride[pid]=side;
+    ensureOn(pid, expr||null);
+  }
+  for(const sd of ['L','R']){ const el=slotEl(sd); if(el){ el.classList.remove('dim'); } }   // 兩個都亮：調的是取景不是誰在講話
+  const other = side==='L' ? 'R' : 'L';
+  tuneSide = id ? side : (slot[other] ? other : side);
+  layout(); tuneRender();
+}
+function studioExit(){
+  studioOn=false; tuneOn=false;
+  for(const sd of ['L','R']) if(slot[sd]) leaveSlot(sd);
+  sideOverride={};
+  tuneRender(); close();
+  const cb=studioDone; studioDone=null; if(cb) cb();
 }
 function layout(){
   tuneEnsure();
@@ -2693,7 +2745,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1819';
+const KERB_V='?v=1821';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4127,6 +4179,7 @@ function flushReveal(){
 
 /* ══ 推進 ══ */
 function advance(){
+  if(studioOn) return;               // 立繪調整工作室：點畫面不推進（ver -1820）
   if(kerbPlaying) return;            // Kerberos 之門演出中：點擊無效（不然會跳過整段演出）
   /* 廚房菜單開著：那一拍是**閘門**（挑一道煮了才過）—— 點畫面不該把它跳過去。
      ⚠ 實測時就是這樣跳過去的（單子在 z-9600、真的玩點不到底下，但程式化的點擊

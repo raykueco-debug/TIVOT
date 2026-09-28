@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1819"></script>
+<script src="../orientation.js?v=1821"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1819edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1821edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1819edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1819edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1821edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1821edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1819edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1819edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1821edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1821edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1819edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1821edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1819edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1819edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1819edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1819edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1819edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1819edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1819edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1819edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1819edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1819edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1821edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1821edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1821edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1821edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1821edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1821edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1821edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1821edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1821edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1821edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1819edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1821edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1819edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1821edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1819"></script>
+<script src="settlement.js?v=1821"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1819"></script>
+<script src="talks.js?v=1821"></script>
 <script>
 /* ══⚠⚠⚠ **靜音在 iPhone 上要走 `muted`，不是音量**（ver -1808，Ray：「靜音鈕在手機無效」）══
    iOS 的 HTMLAudio `volume` 是**唯讀的**（永遠 1）—— 這一頁所有聲音都是 HTMLAudio，
@@ -733,7 +733,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1819';
+const FLIGHT_VER = 'ver -1821';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -5603,54 +5603,56 @@ function tuneFlCast(){ return (cast||[]).filter(c=>!c.out && PORTRAIT[c.who] && 
      差分來自 `PORTRAIT_EXPR` —— 這一頁的取景表只有它自己認得。 */
 const TUNE_HUB=(()=>{ try{ const v=sessionStorage.getItem('tivot_tune_v1')==='1';
   if(v) sessionStorage.removeItem('tivot_tune_v1'); return v; }catch(_){ return false; } })();
-let tuneHubShown=false;
+let tuneHubShown=false, flStudio=false;
 const tuneHubSel={ L:null, R:null };
-function tuneFlHub(){
-  let ov=document.getElementById('flTuneHub'); if(ov) ov.remove();
-  ov=document.createElement('div'); ov.id='flTuneHub';
-  ov.style.cssText='position:fixed;inset:0;z-index:9100;display:flex;align-items:center;justify-content:center;'
-    +'padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 12px);box-sizing:border-box;'
-    +'background:rgba(4,3,7,.72);font:14px/1.4 serif;color:#ece6d8;';
-  ['pointerdown','pointerup','click','touchstart','wheel'].forEach(ev=>ov.addEventListener(ev, e=>e.stopPropagation()));
-  document.body.appendChild(ov);
-  const chars=Object.keys(PORTRAIT).filter(k=>k.indexOf('/')<0 && PORTRAIT[k].src);
-  const bs='min-height:44px;font:inherit;color:#ece6d8;background:rgba(40,32,56,.9);border:1px solid #8a6d2e;border-radius:8px;letter-spacing:2px;';
-  const ss='flex:1;min-width:0;min-height:40px;font:inherit;color:#ece6d8;background:#1a1426;border:1px solid #8a6d2e;border-radius:6px;';
-  const pick=side=>{
-    const cur=tuneHubSel[side]||{};
-    const co='<option value="">（無）</option>'+chars.map(k=>'<option value="'+k+'"'+(k===cur.who?' selected':'')+'>'+(PORTRAIT[k].name||k)+'（'+k+'）</option>').join('');
-    const ex='<option value="">（基本）</option>'+Object.keys((cur.who && PORTRAIT_EXPR[cur.who])||{}).map(e=>'<option'+(e===cur.expr?' selected':'')+'>'+e+'</option>').join('');
-    return '<div style="display:flex;align-items:center;gap:6px"><span style="width:1.5em;color:#d4a94a">'+(side==='L'?'左':'右')+'</span>'
-      +'<select data-c="'+side+'" style="'+ss+'">'+co+'</select><select data-e="'+side+'" style="'+ss+'">'+ex+'</select></div>';
-  };
-  ov.innerHTML='<div style="width:100%;max-width:360px;max-height:100%;overflow-y:auto;display:flex;flex-direction:column;gap:10px;'
-    +'padding:16px;border-radius:12px;background:#120f1a;border:1px solid #8a6d2e">'
-    +'<div style="text-align:center;letter-spacing:4px;color:#d4a94a">飛行：選左右角色</div>'+pick('L')+pick('R')
-    +'<button data-go="start" style="'+bs+'">上台</button><button data-go="exit" style="'+bs+'opacity:.7">離開</button></div>';
-  ov.querySelectorAll('select[data-c]').forEach(sel=>sel.onchange=()=>{
-    tuneHubSel[sel.dataset.c]= sel.value ? { who:sel.value, expr:null } : null; tuneFlHub(); });
-  ov.querySelectorAll('select[data-e]').forEach(sel=>sel.onchange=()=>{
-    const t=tuneHubSel[sel.dataset.e]; if(t) t.expr = sel.value || null; });
-  ov.querySelector('[data-go="start"]').onclick=()=>{
-    const L=tuneHubSel.L, R=tuneHubSel.R; if(!L && !R) return;
-    const key=t=>t.expr ? t.who+'/'+t.expr : t.who;
-    const sides={};
-    if(L) sides[L.who]='L';
-    if(R) sides[R.who]='R';
-    const tag='（左）'+(L?(L.expr||'基本'):'—')+'　（右）'+(R?(R.expr||'基本'):'—')+'　—— 點畫面回選單';
-    ov.remove(); tuneFlOn=true;
-    const t=performance.now();
-    say([{ who:key(R||L), text:tag }], t, { sides, force:true, done:()=>{ tuneFlOn=false; tuneFlRender(); tuneFlHub(); } });
-    /* 一拍只會叫**說話的那一個**上台 —— 兩個人要同時在台上，就直接走上台的唯一入口（`castEnter`）
-       把兩人都叫上來；那一拍輪到的人已經在台上，`castEnter` 自己會跳過。 */
-    if(L) castEnter(pkey(key(L)), t);
-    if(R) castEnter(pkey(key(R)), t);
-  };
-  ov.querySelector('[data-go="exit"]').onclick=()=>{
-    ov.remove();
-    try{ if(embedded()){ window.parent.__tivotFlight.home(); return; } }catch(_){}
-  };
+/* ══ 調整工作室（ver -1820，Ray：「隨選隨上」「選擇角色，然後下一欄就可以下拉選擇差分」）══
+   面板上兩列「左／右：角色 → 差分」，選了就重新擺台（`flStudioStage`）；點畫面講完那一拍會自己再擺回來，
+   不會退出 —— 要走按「離開」。 */
+function flStudioKey(t){ return t.expr ? t.who+'/'+t.expr : t.who; }
+function flStudioStage(){
+  const L=tuneHubSel.L, R=tuneHubSel.R;
+  if(!L && !R){ if(sayQueue){ sayQueue=null; cast=[]; saySides=null; } tuneFlRender(); return; }
+  /* 左右可以選同一人（ver -1821）：cast 以鍵記、同鍵只能上台一次 —— 右邊那一位改用別名鍵
+     `<鍵去掉/>#R`，**指到同一個 PORTRAIT 物件**（調整與存檔都是同一組值）。
+     ⚠ 別名不帶 `/`：站位覆寫（saySides）以 `baseWho` 查，帶 `/` 會被切回本尊、兩人擠同一邊。 */
+  const kL = L ? pkey(flStudioKey(L)) : null;
+  let kR = R ? pkey(flStudioKey(R)) : null;
+  if(kR){ const al=kR.replace('/','~')+'#R'; PORTRAIT[al]=PORTRAIT[kR]; kR=al; }
+  const sides={}; if(kL) sides[baseWho(kL)]='L'; if(kR) sides[kR]='R';
+  const tag='（左）'+(L?(L.expr||'基本'):'—')+'　（右）'+(R?(R.expr||'基本'):'—');
+  const t=performance.now();
+  say([{ who:(kR||kL), text:tag }], t, { sides, force:true, done:()=>{ if(flStudio) flStudioStage(); } });
+  /* 一拍只會叫說話的那一個上台 —— 兩個人要同時在台上，直接走上台的唯一入口（`castEnter`）。 */
+  if(kL) castEnter(kL, t);
+  if(kR) castEnter(kR, t);
+  tuneFlWho = kR||kL;
+  tuneFlRender();
 }
+function flStudioRows(){
+  const chars=Object.keys(PORTRAIT).filter(k=>k.indexOf('/')<0 && PORTRAIT[k].src);
+  const ss='flex:1;min-width:0;min-height:30px;font:inherit;color:#ece6d8;background:#1a1426;border:1px solid #8a6d2e;border-radius:6px;';
+  const row=sd=>{ const cur=tuneHubSel[sd]||{};
+    const co='<option value="">（無）</option>'+chars.map(k=>'<option value="'+k+'"'+(k===cur.who?' selected':'')+'>'+(PORTRAIT[k].name||k)+'（'+k+'）</option>').join('');
+    const exs=Object.keys((cur.who && PORTRAIT_EXPR[cur.who])||{});
+    const ex='<option value="">（基本）</option>'+exs.map(e=>'<option'+(e===cur.expr?' selected':'')+'>'+e+'</option>').join('');
+    return '<div style="display:flex;align-items:center;gap:6px"><span style="width:1.5em;color:#d4a94a">'+(sd==='L'?'左':'右')+'</span>'
+      +'<select data-sc="'+sd+'" style="'+ss+'">'+co+'</select><select data-se="'+sd+'" style="'+ss+'"'+(cur.who?'':' disabled')+'>'+ex+'</select></div>'; };
+  return row('L')+row('R');
+}
+function flStudioBind(p){
+  if(!flStudio) return;
+  p.querySelectorAll('select[data-sc]').forEach(sel=>sel.addEventListener('change', ()=>{
+    const sd=sel.dataset.sc;
+    tuneHubSel[sd]= sel.value ? { who:sel.value, expr:null } : null;
+    flStudioStage(); }));
+  p.querySelectorAll('select[data-se]').forEach(sel=>sel.addEventListener('change', ()=>{
+    const t=tuneHubSel[sel.dataset.se]; if(t){ t.expr = sel.value || null; flStudioStage(); } }));
+  const ex=p.querySelector('[data-act="exit"]');
+  if(ex) ex.addEventListener('click', e=>{ e.stopPropagation(); flStudio=false; tuneFlOn=false;
+    sayQueue=null; cast=[]; saySides=null; tuneFlRender();
+    try{ if(embedded()){ window.parent.__tivotFlight.home(); } }catch(_){} });
+}
+function tuneFlHub(){ flStudio=true; tuneFlOn=true; tuneFlTick(); tuneFlRender(); }
 function tuneFlTick(){
   if(!ADMIN) return;
   if(TUNE_HUB && !tuneHubShown){
@@ -5658,7 +5660,7 @@ function tuneFlTick(){
     if(!bt || getComputedStyle(bt).display==='none'){ tuneHubShown=true; tuneFlHub(); }
   }
   let b=document.getElementById('flTuneBtn');
-  const want=!!sayQueue;
+  const want=!!sayQueue || flStudio;
   if(!b){
     if(!want) return;
     b=document.createElement('button'); b.id='flTuneBtn'; b.type='button'; b.textContent='立繪';
@@ -5684,14 +5686,15 @@ function tuneFlRender(){
   p.style.display = tuneFlOn ? 'flex' : 'none';
   if(!tuneFlOn) return;
   const who=tuneFlCast();
-  if(!who.length){ p.innerHTML='<div>台上沒有立繪</div>'; return; }
+  const studio = flStudio ? flStudioRows()+'<div style="display:flex;gap:6px"><button data-act="exit" style="min-height:30px;font:inherit;color:#ece6d8;background:rgba(40,32,56,.9);border:1px solid #8a6d2e;border-radius:7px;padding:0 12px">離開</button></div>' : '';
+  if(!who.length){ p.innerHTML=studio+'<div>台上沒有立繪</div>'; flStudioBind(p); return; }
   if(who.indexOf(tuneFlWho)<0) tuneFlWho=who[who.length-1];
   const P=PORTRAIT[tuneFlWho], O=tuneFlOrig[tuneFlWho];
   const n=v=>(v==null?'—':(+v).toFixed(3).replace(/\.?0+$/,''));
   const btn=(attr,txt,extra)=>'<button '+attr+' style="min-width:44px;min-height:36px;font:inherit;color:#ece6d8;'
       +'background:rgba(40,32,56,.9);border:1px solid #8a6d2e;border-radius:7px;'+(extra||'')+'">'+txt+'</button>';
   const row=(lab,a,b)=>'<div style="display:flex;align-items:center;gap:6px"><span style="flex:1">'+lab+'</span>'+a+b+'</div>';
-  p.innerHTML=
+  p.innerHTML= studio +
     '<div style="display:flex;gap:6px">'+who.map(w=>btn('data-who="'+w+'"',(PORTRAIT[w].name||w)+(w.indexOf('/')>0?' '+w.split('/')[1]:''),
        'flex:1;'+(w===tuneFlWho?'background:#d4a94a;color:#120f1a;':''))).join('')+'</div>'
    +'<div style="font-size:11px;color:#8a6d2e">'+String(P.src).split('/').pop()+'</div>'
@@ -5701,8 +5704,10 @@ function tuneFlRender(){
    +'<div style="display:flex;gap:6px">'+btn('data-act="big"','步進×5', tuneFlBig?'background:#d4a94a;color:#120f1a;':'')
    +btn('data-act="undo"'+(O?'':' disabled'),'還原', O?'':'opacity:.35;')
    +btn('data-act="save"'+(O?'':' disabled'),'儲存','flex:1;color:#d4a94a;'+(O?'':'opacity:.35;'))+'</div>';
+  flStudioBind(p);
   p.querySelectorAll('button').forEach(bn=>bn.addEventListener('click', e=>{
     e.stopPropagation();
+    if(bn.dataset.act==='exit') return;   // 工作室的離開由 flStudioBind 處理
     if(bn.dataset.who){ tuneFlWho=bn.dataset.who; return tuneFlRender(); }
     const P=PORTRAIT[tuneFlWho]; if(!P) return;
     const k=bn.dataset.k, act=bn.dataset.act;
@@ -6197,7 +6202,7 @@ function drawTalk(now){
     const G=castGeom(P, im);
     if(G.sh<=0) continue;
     const fullH=Math.round(im.height*G.s);
-    const lit=(c.who===speaker);
+    const lit=(c.who===speaker) || flStudio;   // 立繪調整工作室：兩個都亮（ver -1821）
     const lod=portraitLOD(c.who, im, G.w, fullH, !lit);
     // 站位錨的是**臉的中心**，不是圖框中心
     const anchor=(c.side==='L') ? 0.24 : 0.76;

@@ -9511,7 +9511,7 @@ export const TOWNS = {
         { flag:'ss_raid_done', need:['ss_raid_go','ss_hall_done'], storyBattle:true, goto:'@santasofia:inn',
           sides:{ RENNA:'L', NOUVELLE:'L', SORANA:'L', ANYA:'R', RIPON:'R', MANU:'R', LOFA:'R', LOFA_N:'R' }, lines:[   // ver -1802 Ray：安雅不要站左位
           lof('cry',''),
-          sor('furiouscute',''),
+          sor('furiouscute','放開她！'),   // ver -1821 Ray 改稿（稿：furious ＝ sorana_si_furious.webp，鍵是 furiouscute）
           rip('clap','敢在我的地界鬧事，你們是外地的賞金獵人吧？'),
           rip('clap','身手不錯，出個價……'),
           { speaker:'NARRATION', text:'', se:'se_enemy_revolver', auto:700 },
@@ -9539,7 +9539,7 @@ export const TOWNS = {
           nou('help','來，站得起來嗎？'),
           lofN('cry','我……我還以為……'),
           lofN('cry',''),
-          sor('tire',''),
+          sor('smile',''),   // ver -1821 Ray 改稿（原 tire）
         ] } ] },
       cellar:     { bg:'sofiaout_cellar', name:'里朋莊園　地下囚室', noTime:true, exits:{ up:'backhall' } },
       forecourt:  { bg:'sofiaout_forecourt', name:'里朋莊園　噴泉前庭', noTime:true, exits:{ up:'hall', right:'carriage', down:'avenue' },
