@@ -908,9 +908,9 @@ function dmLight(node){
   const lit   = { speaker:'NARRATION', text:'', bg:'dunmor_'+node+'_lit', auto:1500 };
   const at = k => b => Object.assign({}, b, { countOf:{ of:DM_LIT, eq:k } });
   return [
-    /* 第四個（前面已點亮三座）。⚠ 稿上有一拍【SE】se_lightup —— 那支音效還沒交，先不放（交了補 `se:` 在「那個方向亮起來了」那一拍）。 */
+    /* 第四個（前面已點亮三座）。 */
     ...[ sor('point','這裡還有！'), any('scare','好。'), sense, lit,
-         sor('watch','那個方向亮起來了。'), ren('sigh','終於可以結束了嗎？'),
+         sor('watch','那個方向亮起來了。', { se:'se_lightup' }), ren('sigh','終於可以結束了嗎？'),   // 【SE】se_lightup（ver -1859 Ray 交件）
          Object.assign(nou('sadnoeye','趕快離開這個地方吧。'), { map:true }),   // 【開小地圖，標祭壇方向】
          any('silent',''), sor('confuse','你們是怎麼了……還好嗎？') ].map(at(3)),
     /* 第三個 */
@@ -9780,12 +9780,11 @@ export const TOWNS = {
       tannery:      { bg:'dunmor_tannery', name:'羅賽爾廢城　鞣皮坊', noTime:true, exits:{ up:'kilnyard' } },
       ditchW:       { bg:'dunmor_ditchw', name:'羅賽爾廢城　西壕', noTime:true, exits:{ up:'oghamrow', right:'southgate', down:'rampartW' } },
       southgate:    { bg:'dunmor_southgate', name:'羅賽爾廢城　南壘門', noTime:true, exits:{ left:'ditchW', right:'ditchE', down:'causeway' },
-        /* ══ 進入遺蹟（ver -1858）══ 娜塔莉的幻影（逝去的守護者）。⚠ 劇情戰（`storyBattle`）：打輸回檔。
-           ⚠ 稿上的【SE】se_stepslow 那支音效還沒交 —— 先用 `se_steps` 頂著，交了換名字就好。 */
+        /* ══ 進入遺蹟（ver -1858）══ 娜塔莉的幻影（逝去的守護者）。⚠ 劇情戰（`storyBattle`）：打輸回檔。 */
         acts:[{ flag:'dm_gate_done', need:'dm_arrive', storyBattle:true, sides:DM_SIDES, lines:[
           nou('cringe','感覺好奇怪……'),
           sor('watch','是啊，簡直就像前一秒還有人似地……'),
-          { speaker:'NARRATION', text:'', se:'se_steps', auto:1100 },
+          { speaker:'NARRATION', text:'', se:'se_nightmare_hp', auto:1100 },   // ver -1859 Ray：稿上的 se_stepslow 改用夢魘娜塔莉第一次出場的吼聲
           any('scare',''),
           ren('scarejump','！！！！！'),
           any('terrify','欸……？'),

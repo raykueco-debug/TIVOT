@@ -891,3 +891,4 @@ when	from	to	reason
 20260928-221338	resources/si/anya_si_terrify.webp	_recycle/resources/si/anya_si_terrify.webp.20260928-221338	09-28 安雅 terrify 重畫版修壞（Ray：「改回來」）—— 眼睛畫成正常藍眼，失去縮瞳的恐懼表情
 20260928-221338	_recycle/resources/si/anya_si_terrify.webp	resources/si/anya_si_terrify.webp	restore
 20260928-221736	resources/si/anya_si_terrify.webp	_recycle/resources/si/anya_si_terrify.webp	09-28 安雅 terrify 舊畫風版（還原用過；第二次鎖表情重畫定稿後回收）
+20260928-231702	resources/audio/se/se_lightup.mp3	_recycle/resources/audio/se/se_lightup.mp3	ver -1859：se_lightup 轉成 m4a（§6.6 音效一律 AAC），原 mp3 收回收區

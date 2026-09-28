@@ -2128,6 +2128,7 @@ const SE_FILES=[
   'se_enemy_saintroar.m4a', 'sturm.m4a', 'se_fall.m4a', 'se_kerberos_gear.m4a',
   'se_kerberos_open.m4a', 'se_kerberos_pop.m4a', 'se_kerberos_steam.m4a',
   'se_kerberos_drop.m4a',                                    // 槍棺落地（旅店那一幕，ver -392）
+  'se_lightup.m4a',                                          // 羅賽爾廢城：第四座小祭壇點亮、遠方亮起來（ver -1859，Ray 交件）
   'se_enemy_dagger.m4a', 'se_dart_fail.m4a',                 // 固定立靶點錯（ver -397）
   /* 船艦戰（ver -423／-425）：蜈蚣的攻擊音、艦砲、船戰用的機槍。 */
   'se_enemy_centipi.m4a', 'se_weapon_sniper.m4a', 'se_weapon_heavygun.m4a',
@@ -2862,7 +2863,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1858';
+const KERB_V='?v=1859';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
