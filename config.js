@@ -83,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1839';
+export const VERSION = 'ver 2026.09.22-1840';
 
 export const GAME_CONFIG = {
 
@@ -2307,7 +2307,7 @@ export const GAME_CONFIG = {
     dm_brochtop: { enemy:'ph_gifted', session:'dunmor_wild' },   // 圓塔頂：才能祝福之人
     dm_nemeton: { enemy:'ph_sword_angel', session:'dunmor_wild' },   // 聖林祭場：執劍天使
     dm_southgate: { enemy:'dm_lost_guardian', session:'dunmor_wild' },   // 南壘門：逝去的守護者（夢魘娜塔莉改名）
-    dm_watchW: { enemy:'bl_dragon_throne', session:'dunmor_wild' },   // 西望樓：王座徘徊者
+    dm_watchW: { enemy:'bl_dragon_chase', session:'dunmor_wild' },   // 西望樓：王座徘徊者（ver -1840 Ray：「用 B 的那張」＝enemies.xlsx 上 tier B 的追逐戰那隻）
     dm_watchE: { enemy:'gk_seal', session:'dunmor_wild' },   // 東望樓：守墓者 seal
     dm_tannery: { enemy:'ph_slaughter_witch', session:'dunmor_wild' },   // 鞣皮坊：殺戮魔女
     dm_lakeshore: { enemy:'sf_deer_nightmare', session:'dunmor_wild' },   // 湖岸：變異樹靈鹿主

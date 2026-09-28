@@ -3140,7 +3140,7 @@ function renderMap(){
         /* ⚠ 被指出來但還沒走到的那一格**不給地名**（Ray 指定）——
              沒有霧的圖（`mist:0`）走這一條，所以名字要在這裡擋，不能只靠上面那一段。 */
         const nm=(hint && !seenNode(id)) ? ''
-               : String((T.nodes[id]||{}).name||'').split('　').pop() + (rest?'（休息處）':'');
+               : String((T.nodes[id]||{}).name||'').split('　').pop() + (rest?'（安全區）':'');   // ver -1840 Ray：「休息區一律改稱安全區」
         return '<i class="tm-spot'+(id===nodeId?' here':'')+(rest?' rest':'')
              + (dragon?' dragon':'')+(hint&&!seenNode(id)?' hint':'')
              + '" style="'+pos+'">'

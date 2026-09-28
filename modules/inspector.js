@@ -1220,7 +1220,7 @@ function restSettle(totalTime, stats, sessionLoot, shares, title, expShares){
      ⚠ 這一局本來就是一場一場打出來的，等第與好感照給 —— 它與打贏結算怪的那一頁
        是同一件事，只是在休息處收尾。 */
   const spk = pickEvaluator(ev.grade, null);
-  evalDiagSet('(休息處)', ev.grade, spk);
+  evalDiagSet('(安全區)', ev.grade, spk);
   if(!spk) warnNoEval(ev.grade, null);
   prog.applyRankAffection(ev.grade, shares || state.pickedPartner);   // ver -921：出場數最多的全拿
   let money = moneyOf(stats, ev.grade);
@@ -1237,7 +1237,7 @@ function restSettle(totalTime, stats, sessionLoot, shares, title, expShares){
   rows += ratingStatsRows(stats, totalTime);
   if(showExp()) rows += expRows(expGains);
   if(money) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+money+'</b></div>';
-  showResultSequence(title || '休　息　處', '戰果整理', rows, ev.grade, false,
+  showResultSequence(title || '安　全　區', '戰果整理', rows, ev.grade, false,   // ver -1840 Ray：「休息區一律改稱安全區」
                      spk ? { speaker:spk } : { noInspector:true });
   /* ⚠⚠ 這一頁的底要**不透明**（ver -914，Ray：「盤面早就清掉了，棺直接把背景閉掉」）：
      結算頁平時是 94% 的黑罩在**剛剛那一場的戰鬥畫面**上（那是它該有的樣子）——
