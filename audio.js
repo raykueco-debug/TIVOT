@@ -225,7 +225,7 @@ function loopRange(buf){
   return [a/sr, (b+1)/sr];
 }
 function playBuffer(c, buf, vol, voice, handle, src){
-  if(_audioOff) return;   // 發熱排除中（ver -1805）：不排進暫停的引擎，免得恢復那一刻全部一起響
+  if(_sfxOff) return;   // 發熱排除中（ver -1805）：不排進暫停的引擎，免得恢復那一刻全部一起響
   try{
     const s = c.createBufferSource(); s.buffer = buf;
     /* 語音 → BGM 閃避（ver -847）：開播即壓、onended 放（來源一定會 ended，
@@ -359,7 +359,7 @@ export const SFX = {
   //  ③ 400ms 後仍非 running → 標記下次手勢「整顆重建 context」（手勢內新建即為 running；
   //    已解碼的 AudioBuffer 不綁 context，重建後照播）。
   unlock(){
-    if(_audioOff) return;   // 發熱排除中（ver -1805）：手勢不准把引擎叫回來
+    if(_sfxOff) return;   // 發熱排除中（ver -1805）：手勢不准把引擎叫回來
     let c = ctx();
     if(c && c.state !== 'running'){
       if(_needRebuild){
@@ -418,17 +418,22 @@ export const SFX = {
    *    變成看瀏覽器臉色。Ray 指定統一成按下才播（ver -259）。 */
   /* 發熱排除（ver -1805，管理人選單）：整個音訊引擎暫停 —— context suspend＋BGM pause，
      關著時新的 playBgm 只記下曲名不起播。⚠ 診斷工具，玩家路徑不會碰到（只在 testmode 生效）。 */
-  setAudioOff(off){
-    off=!!off; if(off===_audioOff) return; _audioOff=off;
-    const el=_bgmEl;
-    if(off){ try{ if(el && !el.paused) el.pause(); }catch(_){} try{ if(_ctx && _ctx.state==='running') _ctx.suspend(); }catch(_){} }
-    else{ try{ if(_ctx) _ctx.resume(); }catch(_){}
-          try{ if(el && _bgmPlaying){ el.volume=bgmTargetVol(); el.play().catch(()=>{}); } }catch(_){} }
+  /* ver -1810：拆成兩半（Ray：「靜音後完全不熱」→ 要分出是音樂還是音效引擎）。
+     `bgm` ＝只停 BGM 元素；`sfx` ＝只把 Web Audio 引擎休眠（音效＋語音＋合成音）。 */
+  setAudioOff(off, part){
+    off=!!off;
+    if(part!=='sfx' && off!==_bgmOff){ _bgmOff=off;
+      const el=_bgmEl;
+      if(off){ try{ if(el && !el.paused) el.pause(); }catch(_){} }
+      else{ try{ if(el && _bgmPlaying){ el.volume=bgmTargetVol(); el.play().catch(()=>{}); } }catch(_){} } }
+    if(part!=='bgm' && off!==_sfxOff){ _sfxOff=off;
+      if(off){ try{ if(_ctx && _ctx.state==='running') _ctx.suspend(); }catch(_){} }
+      else{ try{ if(_ctx) _ctx.resume(); }catch(_){} } }
   },
   playBgm(src, opts){
     opts = opts || {};
     if(!src) return;
-    if(_audioOff){ _bgmSrc=src; return; }   // 發熱排除中（ver -1805）
+    if(_bgmOff){ _bgmSrc=src; return; }   // 發熱排除中（ver -1805）
     const el = bgmElem();
     /* ══ 同曲判斷（ver -391 修，Ray：「BGM 不播下一首就停上一首」）══════════
        ⚠⚠ 舊寫法是 `if(src === _bgmSrc && !el.paused){ clearTimeout(_bgmTimer); return; }`
@@ -753,7 +758,7 @@ let _menuClickSrc = null, _menuClickGain = 1;
      音量直接寫回目標值 —— 背景期間可能凍在淡入淡出的半路上，不重設會停在半音量。
      ⚠ 這也堵「解鎖後 iOS 自己恢復舊曲、與程式新換的曲疊播」那一族的雙 BGM。 */
 let _hiddenBgmResume = false;
-let _audioOff = false;   // 發熱排除（ver -1805，見 SFX.setAudioOff）
+let _bgmOff = false, _sfxOff = false;   // 發熱排除（ver -1805／-1810 拆兩半，見 SFX.setAudioOff）
 document.addEventListener('visibilitychange', ()=>{
   if(document.hidden){
     const el=_bgmEl;
@@ -761,10 +766,9 @@ document.addEventListener('visibilitychange', ()=>{
     if(_hiddenBgmResume){ try{ el.pause(); }catch(_){} }
     try{ if(_ctx && _ctx.state==='running') _ctx.suspend(); }catch(_){}
   }else{
-    if(_audioOff){ _hiddenBgmResume=false; return; }   // 發熱排除中（ver -1805）：切回前景也不恢復
-    try{ if(_ctx) _ctx.resume(); }catch(_){}
+    if(!_sfxOff){ try{ if(_ctx) _ctx.resume(); }catch(_){} }   // 發熱排除中（ver -1805）：切回前景也不恢復
     const el=_bgmEl;
-    if(_hiddenBgmResume && el && _bgmPlaying){
+    if(_hiddenBgmResume && el && _bgmPlaying && !_bgmOff){
       try{ clearInterval(el.__fade); el.__fade=null;
            el.volume=bgmTargetVol(); el.play().catch(()=>{}); }catch(_){}
     }

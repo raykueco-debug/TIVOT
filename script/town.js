@@ -4594,6 +4594,11 @@ export const TOWNS = {
         /* ══ Stage 14・支線四的後半：走出貧民窟的下一格（ver -1769）══
            貧民窟只通舊街區，所以「走到下一格」＝這裡。演完強制回旅店（`goto`）。 */
         acts:[
+        /* ver -1810（Ray 的稿）：安雅那一支走出貧民窟的下一格。`dateAff:0` ＝約會 +3 已經在貧民窟那一段給過了。 */
+        { flag:'ss_anya_after', need:'ss_slum_anya', until:'ss_inn_merge', withWho:'ANYA', dateAff:0, lines:[
+          any('talk','為什麼……這裡明明沒有戰爭……'),
+          any('sad','……'),
+        ] },
         { flag:'ss_sor_resolve', need:'ss_slum_sor', until:'ss_inn_merge', withWho:'SORANA', goto:'inn', sides:{ SORANA:'L' }, lines:[
           sor('sad','……'),
           sor('embarrass','說了那麼多漂亮話，其實我……一點辦法也沒有啊……'),

@@ -54,7 +54,7 @@ export function peaceOn(){ return rd(PEACE_KEY)==='1'; }
      audio＝音效與 BGM（整個音訊引擎暫停，不只是靜音）
    ⚠ 這是**診斷工具**不是設定：找到兇手之後就該去修那一樣，然後把這一組拆掉。 */
 export const HEAT_KEY = 'tivot_heatoff_v1';
-export const HEAT_ITEMS = [ ['fx','普攻特效'], ['ring','延時光圈'], ['alert','警戒脈動'], ['hit','受擊演出'], ['audio','音　效'] ];
+export const HEAT_ITEMS = [ ['fx','普攻特效'], ['ring','延時光圈'], ['alert','警戒脈動'], ['hit','受擊演出'], ['audio','全部聲音'], ['bgm','只關音樂'], ['sfx','只關音效'] ];
 export function heatOff(){ try{ const a=JSON.parse(rd(HEAT_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
 function setHeatOff(k, off){ const a=heatOff().filter(x=>x!==k); if(off) a.push(k); wr(HEAT_KEY, JSON.stringify(a)); }
 const num = (v, d) => { const n=parseFloat(v); return isFinite(n) ? n : d; };
@@ -121,7 +121,10 @@ export function apply(){
   /* 發熱排除（ver -1805）：只在管理人模式生效 —— 關掉 testmode 就全部回來，玩家不會卡在一個被關掉的畫面裡。 */
   { const off = document.body.classList.contains('testmode') ? heatOff() : [];
     for(const [k] of HEAT_ITEMS) document.body.classList.toggle('heat-no'+k, off.indexOf(k)>=0);
-    try{ SFX.setAudioOff && SFX.setAudioOff(off.indexOf('audio')>=0); }catch(_){} }
+    /* ver -1810：`audio`＝兩半都關；`bgm`／`sfx` 各關一半（分出發熱是哪一半）。 */
+    { const all=off.indexOf('audio')>=0;
+      try{ SFX.setAudioOff && SFX.setAudioOff(all || off.indexOf('bgm')>=0, 'bgm');
+           SFX.setAudioOff && SFX.setAudioOff(all || off.indexOf('sfx')>=0, 'sfx'); }catch(_){} } }
 }
 
 /* ══ 面板 ══
