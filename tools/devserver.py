@@ -93,10 +93,24 @@ def _depth_map(text, start):
 
 
 def tune_patch(text, kind, key, sets):
+    """同一張圖在檔裡出現幾次就寫幾次（ver -1823）：別名鍵（awkward／awkwerd…）或兩份表指到同一張圖時，
+    它們本來就該是同一組取景（§6.5「同一張立繪＝同一個結果」）。一處都沒有 ⇒ 409。"""
     needle = "%s:'%s'" % (kind, key)
-    if text.count(needle) != 1:
-        raise ValueError('找到 %d 處 %s（要剛好一處）' % (text.count(needle), needle))
-    at = text.index(needle)
+    n = text.count(needle)
+    if n < 1:
+        raise ValueError('找不到 %s' % needle)
+    # 由後往前改：前面的索引不會被後面的改動推移
+    ats = []
+    i = text.find(needle)
+    while i >= 0:
+        ats.append(i)
+        i = text.find(needle, i + 1)
+    for at in reversed(ats):
+        text = _patch_at(text, at, needle, sets)
+    return text
+
+
+def _patch_at(text, at, needle, sets):
     # 往回找包住它的那個 `{`（同一層）
     depth = 0
     i = at - 1
