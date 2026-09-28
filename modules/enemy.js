@@ -1288,6 +1288,8 @@ export function setEnemy(key, opts){
      ⚠ 舊的 `weak{counter:1}`（不分槍、反擊一律加倍）已折進那三張卡的 weaponMod
        三把各 +1（-949 遷移），行為等值。 */
   state.enemyGanymede  = (en.Ganymede != null) ? en.Ganymede : 0;
+  /* 卡上 `healOnFault:0.1` ＝玩家點錯／受擊／逾時，敵回最大 HP 的這一成（ver -1858，羅賽爾「慈愛殘像」）。 */
+  state.enemyHealOnFault = +en.healOnFault || 0;
   /* 防禦型的 BR 增傷（ver -1584，Ray：「防禦型 BR 統一增傷 50%」）——
      卡上的 `brBonus` 由 `enemies_baseline.py` 依類型寫進去；沒寫＝0。 */
   state.enemyBrBonus   = (en.brBonus != null) ? en.brBonus : 0;

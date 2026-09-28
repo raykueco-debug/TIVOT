@@ -966,6 +966,7 @@
     55% {opacity:1;}
     80% {opacity:.75;}
     100%{opacity:0;transform:translate(var(--dx,0),var(--dy,0)) rotate(var(--a,0deg)) scale(.45);}}
+  .dmgnum.heal{color:#7fe08a;text-shadow:0 0 8px rgba(80,220,120,.6);}   /* 敵人回血（ver -1858，慈愛殘像） */
   .dmgnum{position:absolute;font-size:18px;font-weight:bold;color:var(--gold);
     text-shadow:0 0 8px #000;pointer-events:none;animation:floatup .7s ease-out forwards;}
   .critnum{color:#fff;font-size:26px;text-shadow:0 0 12px var(--danger),0 0 4px #fff;}
@@ -2987,7 +2988,7 @@
     /* cover（ver -870 實測）：鹿主那三張是橫式 1536×1024，contain 會縮成一小條 ——
        cover 以高補滿、裁掉兩側樹林，鹿主本體才站得出來。 */
     width:100%;object-fit:cover;object-position:center bottom;display:none;
-    opacity:1;transition:opacity .38s ease;}
+    opacity:var(--cgback-a,1);transition:opacity .38s ease;}   /* --cgback-a：`cgBackAlpha`（半透明殘影，ver -1858） */
   #storyCgBack.fading{opacity:0;}
   #storyCgBack.on{display:block;}
   #storyBg{position:absolute;left:0;right:0;top:0;height:var(--story-top);z-index:0;

@@ -114,6 +114,10 @@ export const BY_BATTLE = {
        所以六格填同一句，那就是「不論 RANK」的落地。
      ⚠ `E` 也填：`np_claws` 那幾筆沒給 E 是因為稿上沒有；這一筆的稿說的是「不論」。
      ⚠ 戰敗**看不到這一句**（沒有結算頁）—— 那是對的，稿上勝敗的分歧在腳本裡。 */
+  /* ══ 羅賽爾廢城・王塚（纏髮者，ver -1858）══ Ray：「戰鬥結束蕾娜不給評價」——結算頁只說「……」，
+     不印等第（戰鬥卡的 `evalNoGrade`）。 */
+  dm_kingsbarrow: (()=>{ const L={ text:'……', expr:'lookaway' };
+                        return { S:L, A:L, B:L, C:L, D:L, E:L }; })(),
   lk_nemo: (()=>{ const L={ text:'那制服……是第四騎士團的人……？', expr:'shockopen' };
                   return { S:L, A:L, B:L, C:L, D:L, E:L }; })(),
   /* ══ 夏爾村・村戰收尾（sv_wild＝sessionEnd，整段圍城在這裡結算）（ver -838（-893 前用詞），Ray 交稿）══

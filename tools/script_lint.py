@@ -696,7 +696,7 @@ def main():
                     err('%s：%s 只能是 up／down／null，收到 %r' % (tag, f, ln[f]))
             # ver -923：stage7 加了兩支（安雅的感應光圈／白光一閃，見 story 的 senseFx）
             # ver -1557：`stare`＝半透明 CI 一閃而過（脈動＋一聲心跳），要帶 `fxCi`
-            FX_OK = ('gunfire', 'purpleflame', 'sense', 'whiteflash', 'stare')
+            FX_OK = ('gunfire', 'purpleflame', 'sense', 'senseDud', 'whiteflash', 'stare')
             if ln.get('fx') and ln['fx'] not in FX_OK:
                 err('%s：fx 只有 %s，收到 %r' % (tag, '／'.join(FX_OK), ln['fx']))
             if ln.get('fx') == 'stare' and not ln.get('fxCi'):

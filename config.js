@@ -83,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1857';
+export const VERSION = 'ver 2026.09.22-1858';
 
 export const GAME_CONFIG = {
 
@@ -2301,10 +2301,11 @@ export const GAME_CONFIG = {
     /* ══ 羅賽爾廢城（ver -1839，Ray 的放怪表）══ 同一個遭遇段落 `dunmor_wild`，收局＝踏進安全區（rest）。
        ⚠ 借來的幾張敵人卡（王座徘徊者／守墓者／鹿主）在原本的地圖是劇情戰，這裡各開自己的戰鬥卡：
          原本那幾張戰鬥卡帶著那一段的對白與收段設定，不能直接借。 */
-    dm_ossuary: { enemy:'ph_mercy_remnant', session:'dunmor_wild' },   // 骨龕：慈愛殘像
-    dm_cairn: { enemy:'ph_silent_waiter', session:'dunmor_wild' },   // 積石塚：靜默等待者
-    dm_kingsbarrow: { enemy:'ph_hairbound', session:'dunmor_wild' },   // 王塚：纏髮之人
-    dm_brochtop: { enemy:'ph_gifted', session:'dunmor_wild' },   // 圓塔頂：才能祝福之人
+    /* ⚠ ver -1858：四座小祭壇的守護者＝**結算怪**（Ray 的稿：「ABCD 皆為結算怪」）⇒ `sessionEnd`；由那一格的劇情段落發動（script/town.js）。 */
+    dm_ossuary: { enemy:'ph_mercy_remnant', session:'dunmor_wild', sessionEnd:true },   // 骨龕：慈愛殘像
+    dm_cairn: { enemy:'ph_silent_waiter', session:'dunmor_wild', sessionEnd:true },   // 積石塚：靜默等待者
+    dm_kingsbarrow: { enemy:'ph_hairbound', session:'dunmor_wild', sessionEnd:true, evalNoGrade:true },   // 蕾娜不給評價（只說「……」，evaluation.js 的 BY_BATTLE）   // 王塚：纏髮之人
+    dm_brochtop: { enemy:'ph_gifted', session:'dunmor_wild', sessionEnd:true },   // 圓塔頂：才能祝福之人
     dm_nemeton: { enemy:'ph_sword_angel', session:'dunmor_wild' },   // 聖林祭場：執劍天使
     dm_southgate: { enemy:'dm_lost_guardian', session:'dunmor_wild' },   // 南壘門：逝去的守護者（夢魘娜塔莉改名）
     dm_watchW: { enemy:'bl_dragon_chase', session:'dunmor_wild' },   // 西望樓：王座徘徊者（ver -1840 Ray：「用 B 的那張」＝enemies.xlsx 上 tier B 的追逐戰那隻）

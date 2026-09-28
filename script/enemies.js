@@ -3732,6 +3732,7 @@ export const ENEMIES = {
       name:'慈愛殘像',
       story:0, counterStagger:1, boss:0,
       Ganymede:0,
+      healOnFault:0.10,   // ver -1858 Ray：玩家點錯／受擊／超時受攻擊時，敵回血 10%
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2],
       ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
@@ -3757,7 +3758,7 @@ export const ENEMIES = {
     ph_gifted: {
       name:'才能祝福之人',
       story:0, counterStagger:1, boss:0,
-      Ganymede:0,
+      Ganymede:0.20,   // ver -1858 Ray：玩家普攻 +20%
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2],
       ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },
@@ -3887,7 +3888,7 @@ export const ENEMIES = {
     ph_silent_waiter: {
       name:'靜默等待者',
       story:0, counterStagger:1, boss:0,
-      Ganymede:0,
+      Ganymede:-0.30,   // ver -1858 Ray：玩家普攻 −30%
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2],
       ult:{ on:1, hp:40, count:2, atk:25, gap:1, cd:4 },

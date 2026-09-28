@@ -1173,6 +1173,15 @@ function enemyAttack(dmg, kind, saintAmt){
          Ray 沒說要改，不要順手一起給。 */
   if(!state.saintMode) state.combo=0;
   if(state.over) return;
+  /* ══ 玩家失誤／受擊 → 敵人回血（ver -1858，Ray 的羅賽爾稿：「慈愛的殘像：玩家點錯／受擊／超時受攻擊時，
+     敵回血 10%」）══ 卡上的 `healOnFault`（enemy.setEnemy 搬進 state）。守在這個唯一入口，四條扣血路都吃到（鐵律 8）。
+     ⚠ 敵已死（overkill 中）不回：那時候牠已經倒了。 */
+  if(state.enemyHealOnFault>0 && state.enemyHp>0 && state.enemyHp<state.enemyMax){
+    const add=Math.max(1, Math.round(state.enemyMax*state.enemyHealOnFault));
+    state.enemyHp=Math.min(state.enemyMax, state.enemyHp+add);
+    floatDmg('+'+add, '50%', '22%', false, 'heal');
+    updateBars();
+  }
   /* ══⚠⚠ `kind` 有**兩個用途**，ver -600 之後不再是同一個值（ver -619 修）══
      · **計數**（評價的失誤秒數）要分得出「打中了」與「擋下一半」→ 'assault' / 'block'
      · **演出**（音效、受擊特效）分法不同 —— 見下面那一段。

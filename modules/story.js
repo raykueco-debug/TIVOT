@@ -1837,6 +1837,10 @@ function applyPersist(line){
     const first = !stageCgBack;      // 場上還沒有中景圖＝這是「牠出現了」那一拍
     stageCgBack=line.cgBack;
     swapImg($('storyCgBack'), line.cgBack||'', null, { fadeInFirst:first });
+    /* `cgBackAlpha:0.45` ＝這一張中景圖半透明（殘影、幽靈，ver -1858）。走 CSS 變數不寫 inline opacity ——
+       inline 會蓋掉 `.fading` 的淡出，收不掉。換下一張／收掉就還原。 */
+    { const el=$('storyCgBack'); if(el){ if(line.cgBack && line.cgBackAlpha!=null) el.style.setProperty('--cgback-a', line.cgBackAlpha);
+                                          else el.style.removeProperty('--cgback-a'); } }
     /* ⚠⚠ `cgBackScale`（ver -1413，Ray：「龍縮 10%」）＝這一層的縮放。
        **錨在腳底**（`transform-origin:center bottom`）：這一層是 `object-fit:cover`
        ＋ `object-position:center bottom`，錨中心的話縮小＝整隻往下沉進地面。
@@ -2618,7 +2622,7 @@ function senseClearCast(){
     leaveSlot(s);
   }
 }
-function senseFx(){
+function senseFx(dud){
   const box=$('storyFx'); if(!box) return;
   senseClearCast();
   playSe('se_flight_heartbeat');
@@ -2671,7 +2675,7 @@ function senseFx(){
     box.appendChild(ring); }
   /* 第四拍：白光。**不進 fxTimers** —— 它要撐過下一拍（換背景），見 senseBurst。 */
   stopSenseBurst();
-  senseBurstT.push(setTimeout(senseBurst, SENSE_BURST_AT));
+  if(!dud) senseBurstT.push(setTimeout(senseBurst, SENSE_BURST_AT));
 }
 function fireOneShot(line){
   /* ⚠⚠ `se` 可以是**陣列**（ver -1413，Ray：「逃了以後的震動要播破瓦聲跟流水聲」）——
@@ -2714,7 +2718,7 @@ function fireOneShot(line){
      規矩寫在**引擎**不寫在腳本（鐵律 8）：`fx:'sense'` 的拍子有五處，-1540 只有兩處記得寫
      `noSkip`，其餘三處點一下就把光圈與白光整段跳掉。保護期＝這一拍的 `auto` 與感應
      演出本身的長度（白光起點＋長成）取大者 —— 長度的真相在那組常數上，不抄秒數。 */
-  if(line.fx==='sense')
+  if(line.fx==='sense' || line.fx==='senseDud')
     noSkipUntil = Math.max(noSkipUntil, Date.now() + Math.max(line.auto|0, SENSE_BURST_AT + SENSE_BURST_GROW));
   if(line.checkpoint && !replaying) lineCheckpoint();   // 腳本上的存檔點（ver -653，見 lineCheckpoint）
   if(line.vibrate) hap.shake();
@@ -2796,6 +2800,8 @@ function fireOneShot(line){
   if(line.fx==='gunfire') fireHits(GUNFIRE_MS);
   if(line.fx==='purpleflame') purpleFlame();
   if(line.fx==='sense') senseFx();
+  /* `fx:'senseDud'` ＝感應了但**沒有反應**（ver -1858，羅賽爾主祭壇）：同一套演出，少了最後那道白光。 */
+  else if(line.fx==='senseDud') senseFx(true);
   /* 白光一閃（ver -923，stage7 諾薇兒讀術式那一拍）：與感應那一支共用同一片白
      （`.fx-sense-flash`）—— 差別只有「有沒有光圈」，不另做一份配方（鐵律 7）。 */
   /* ══⚠⚠ **半透明 CI 一閃而過**（ver -1557，Ray：「加入半透明 ci_mishastare
@@ -2856,7 +2862,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1857';
+const KERB_V='?v=1858';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3662,6 +3668,19 @@ function renderLine(){
      ⚠ 四選一的寫法：BA×H `onlyIfAll:[BA,H]`／BA×一般 `onlyIf:BA, skipIf:H`／
        A×H `skipIf:BA, onlyIf:H`／A×一般 `skipIf:[BA,H]`（skipIf 的「或」正好＝兩支都沒插）。 */
   const _allFlag = v => Array.isArray(v) ? v.every(f=>prog.hasFlag(f)) : prog.hasFlag(v);
+  /* ══ `onlyBand`／`skipBand`（ver -1858，羅賽爾稿的「依時間差分」）══ 值是 `clock.band()` 的字面
+     （Dawn／Day／Dusk／night／midnight），可給陣列；`'Night'` 同時代表 night 與 midnight。
+     ⚠ 看的是**演到這一拍當下**的時段（同背景的時段差分）。 */
+  const _bandIs = v => { const b=clock.band(); const L=(Array.isArray(v)?v:[v]).flatMap(x=> x==='Night'?['night','midnight']:[x]);
+                         return L.some(x=>String(x).toLowerCase()===String(b).toLowerCase()); };
+  if((line.onlyBand && !_bandIs(line.onlyBand)) || (line.skipBand && _bandIs(line.skipBand))) return advance();
+  /* ══ `countOf:{of:[旗…], eq|min|max}`（ver -1858，羅賽爾「戰後依第幾個跑劇情」）══
+     數 `of` 裡**已插的**有幾支，符合才演。⚠ 同一段裡要數的旗不要在這一段中途插（數到一半會變）——
+     插旗放在那一段的最後一拍。 */
+  if(line.countOf){
+    const c=line.countOf, n=(c.of||[]).filter(f=>prog.hasFlag(f)).length;
+    if((c.eq!=null && n!==c.eq) || (c.min!=null && n<c.min) || (c.max!=null && n>c.max)) return advance();
+  }
   if((line.onlyIf && !_anyFlag(line.onlyIf)) ||
      (line.onlyIfAll && !_allFlag(line.onlyIfAll)) ||
      (line.skipIf &&  _anyFlag(line.skipIf))) return advance();

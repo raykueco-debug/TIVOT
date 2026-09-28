@@ -896,6 +896,35 @@ const mnx = N('MANU_X'), lot = N('LOTI'), lof = N('LOFA'), wkr = N('WORKER_SS'),
 const lotN = N('LOTI_N');
 const lofN = N('LOFA_N'), man = N('MANU'), rip = N('RIPON'), grd = N('GUARD_SS');   // ver -1793：里朋莊園
 const door = (text, extra) => Object.assign({ speaker:'DOORMAN_SS', text }, extra||{});   // 門房：沒有立繪
+/* ══ 羅賽爾廢城（ver -1858，Ray 的「羅塞爾廢城_台詞差分」）══════════════════════════════
+   四座小祭壇（骨龕／積石塚／王塚／圓塔頂）的「戰後依第幾個跑劇情」共用這一段。
+   ⚠ 四支點亮旗（`dunmor_lit_<格>`）就是那一格段落自己的 `flag`（演完才記，鐵律 9：誰插＝那一段演完）——
+     背景的 `bgWhen` 靠它換點亮版；**這一次當場**換圖走 `bg:` 那一拍（在感應的白光底下換）。
+   ⚠⚠ 四組依「已點亮幾座」（`countOf`）**由多到少**排：旗是整段演完才插的，所以同一段裡數字不會變，
+     只會對上其中一組。 */
+const DM_LIT = ['dunmor_lit_ossuary','dunmor_lit_cairn','dunmor_lit_kingsbarrow','dunmor_lit_brochtop'];
+function dmLight(node){
+  const sense = { speaker:'NARRATION', text:'', fx:'sense', auto:4400, noSkip:true };
+  const lit   = { speaker:'NARRATION', text:'', bg:'dunmor_'+node+'_lit', auto:1500 };
+  const at = k => b => Object.assign({}, b, { countOf:{ of:DM_LIT, eq:k } });
+  return [
+    /* 第四個（前面已點亮三座）。⚠ 稿上有一拍【SE】se_lightup —— 那支音效還沒交，先不放（交了補 `se:` 在「那個方向亮起來了」那一拍）。 */
+    ...[ sor('point','這裡還有！'), any('scare','好。'), sense, lit,
+         sor('watch','那個方向亮起來了。'), ren('sigh','終於可以結束了嗎？'),
+         Object.assign(nou('sadnoeye','趕快離開這個地方吧。'), { map:true }),   // 【開小地圖，標祭壇方向】
+         any('silent',''), sor('confuse','你們是怎麼了……還好嗎？') ].map(at(3)),
+    /* 第三個 */
+    ...[ sor('wave','裝置在這邊！'), any('determine','交給我。'), sense, lit,
+         sor('worry','小公主，會不會太累了？'), any('scare','……還好。') ].map(at(2)),
+    /* 第二個 */
+    ...[ sor('point','這邊，也有一樣的裝置！'), ren('ask','……安雅小姐？'), any('nod','好。'), sense, lit,
+         nou('sigh','到底還有幾個呢……？') ].map(at(1)),
+    /* 第一個 */
+    ...[ sor('excite2','喔，這邊也有奇怪的裝置！'), ren('think','似乎是……比較小的祭壇？'), any('steady',''), sense, lit,
+         any('watch','好像……還有。'), ren('think','不止這一個的意思嗎……？') ].map(at(0)),
+  ];
+}
+const DM_SIDES = { RENNA:'L', NOUVELLE:'L' };
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
 
 export const TOWNS = {
@@ -9606,12 +9635,10 @@ export const TOWNS = {
     wildSpawn: {
       rate: 0.3,
       fixed: {
-        ossuary:'dm_ossuary',         // 骨龕：慈愛殘像
-        cairn:'dm_cairn',             // 積石塚：靜默等待者
-        kingsbarrow:'dm_kingsbarrow', // 王塚：纏髮之人
-        brochtop:'dm_brochtop',       // 圓塔頂：才能祝福之人
+        /* ⚠ ver -1858：骨龕／積石塚／王塚／圓塔頂**不在這裡了** —— 那四場改成各自那一格的劇情段落
+           （Ray 的稿：「ABCD 皆為結算怪；走到任一場景觸發戰鬥，戰後依第幾個跑劇情」），一輪一次。 */
         nemeton:'dm_nemeton',         // 聖林祭場：執劍天使
-        southgate:'dm_southgate',     // 南壘門：逝去的守護者（夢魘娜塔莉）
+        southgate:{ day:'dm_southgate', night:'dm_southgate', need:'dm_gate_done' },   // 南壘門：逝去的守護者（夢魘娜塔莉）—— 第一次是劇情（見那一格的 acts），演完之後才照表每趟出現
         watchW:'dm_watchW',           // 西望樓：王座徘徊者
         watchE:'dm_watchE',           // 東望樓：守墓者 seal
         tannery:'dm_tannery',         // 鞣皮坊：殺戮魔女
@@ -9630,9 +9657,40 @@ export const TOWNS = {
          `bgWhen`：旗 `dunmor_lit_<格>` 插著就換成 `_lit` 那一張（`_lit` 不是時段尾綴，四格都 `noTime`）。
          ⚠ 鐵律 9：**這四支旗現在還沒有人插** —— 點燃祭壇的劇情條件等 Ray；誰插就在那一段寫 `flags:['dunmor_lit_<格>']`。
          ⚠ 圓塔頂已重畫成寬闊石台（可以放戰鬥，spec §十一）。 */
-      kingsbarrow:  { bg:'dunmor_kingsbarrow', name:'羅賽爾廢城　王塚', noTime:true, bgWhen:[{ need:'dunmor_lit_kingsbarrow', bg:'dunmor_kingsbarrow_lit', noTime:true }], exits:{ right:'barrowfield' } },
+      kingsbarrow:  { bg:'dunmor_kingsbarrow', name:'羅賽爾廢城　王塚', noTime:true, bgWhen:[{ need:'dunmor_lit_kingsbarrow', bg:'dunmor_kingsbarrow_lit', noTime:true }], exits:{ right:'barrowfield' },
+        /* ══ C 王塚（纏髮者：戰後蕾娜不給評價 —— 戰鬥卡的 evalNoGrade ＋ evaluation.js 的那一句「……」）══ 結算怪。 */
+        acts:[{ flag:'dunmor_lit_kingsbarrow', need:'dm_gate_done', storyBattle:true, sides:DM_SIDES, lines:[
+          { battle:'dm_kingsbarrow' },
+          ren('lookaway','……'),
+          ...dmLight('kingsbarrow'),
+        ] }],
+      },
       barrowfield:  { bg:'dunmor_barrowfield', name:'羅賽爾廢城　塚原', noTime:true, exits:{ left:'kingsbarrow', down:'dolmen' } },
-      altar:        { bg:'dunmor_altar', name:'羅賽爾廢城　祭壇', noTime:true, exits:{ down:'nemeton' } },
+      altar:        { bg:'dunmor_altar', name:'羅賽爾廢城　祭壇', noTime:true, exits:{ down:'nemeton' },
+        /* ══ 四座小祭壇還沒點滿就先走到主祭壇（ver -1858）══ 整段只在「點亮不到四座」時演（`countOf max:3`）；
+           最後兩句依「有沒有點過任何一座」分兩支。四座都點亮之後的主祭壇，等 Ray 的下一段稿。 */
+        acts:[{ flag:'dm_altar_first', need:'dm_gate_done', sides:DM_SIDES, lines:[
+          ren('watch','這就是……最後的遺蹟了。'),
+          sor('sad','真有點寂寞呢。'),
+          nou('sad','……'),
+          any('steady','那，開始了。'),
+          { speaker:'NARRATION', text:'', fx:'senseDud', auto:4400, noSkip:true },   // 【感應動畫】無反應
+          any('curious','？？'),
+          nou('surprise','沒有反應？'),
+          any('surprise','？？？'),
+          ren('lookaway',''),
+          ren('shockopen','！！'),
+          ren('intense2','地上的紋路，一直通到祭壇之外！'),
+          nou('surprise','連動封印……'),
+          /* 【分支 1】已開啟任一座 */
+          ren('think','剛剛那個小型祭壇，或許還有幾個。', { countOf:{ of:DM_LIT, min:1, max:3 } }),
+          ren('determine','看來得一個一個找出來才行。',     { countOf:{ of:DM_LIT, min:1, max:3 } }),
+          /* 【分支 2】一座都還沒踩到 */
+          ren('sigh','姑且……先跟著紋路走看看吧。',          { countOf:{ of:DM_LIT, eq:0 } }),
+          sor('amaze','四個方向都有欸！',                   { countOf:{ of:DM_LIT, eq:0 } }),
+          ren('sighsweat','也只能試看看了。',               { countOf:{ of:DM_LIT, eq:0 } }),
+        ].map(b => b.countOf ? b : Object.assign({}, b, { countOf:{ of:DM_LIT, max:3 } })) }],
+      },
       springpool:   { bg:'dunmor_springpool', name:'羅賽爾廢城　泉池', noTime:true, rest:true, noWild:true, exits:{ right:'altarcourt', down:'triskele' } },
       altarcourt:   { bg:'dunmor_altarcourt', name:'羅賽爾廢城　祭壇前庭', noTime:true, exits:{ left:'springpool', right:'skullniche' } },
       skullniche:   { bg:'dunmor_skullniche', name:'羅賽爾廢城　顱骨壁龕', noTime:true, exits:{ left:'altarcourt', down:'bardsstep' } },
@@ -9642,7 +9700,13 @@ export const TOWNS = {
       triskele:     { bg:'dunmor_triskele', name:'羅賽爾廢城　三曲紋廊', noTime:true, exits:{ up:'springpool', left:'nemeton', right:'sacredway' } },
       sacredway:    { bg:'dunmor_sacredway', name:'羅賽爾廢城　聖道', noTime:true, exits:{ left:'triskele', down:'henge' } },
       bardsstep:    { bg:'dunmor_bardsstep', name:'羅賽爾廢城　吟遊石階', noTime:true, exits:{ up:'skullniche', right:'brochtop', down:'brochbase' } },
-      brochtop:     { bg:'dunmor_brochtop', name:'羅賽爾廢城　圓塔頂', noTime:true, bgWhen:[{ need:'dunmor_lit_brochtop', bg:'dunmor_brochtop_lit', noTime:true }], exits:{ left:'bardsstep' } },
+      brochtop:     { bg:'dunmor_brochtop', name:'羅賽爾廢城　圓塔頂', noTime:true, bgWhen:[{ need:'dunmor_lit_brochtop', bg:'dunmor_brochtop_lit', noTime:true }], exits:{ left:'bardsstep' },
+        /* ══ D 圓塔頂（天賦者：玩家普攻 +20%，卡上的 Ganymede）══ 結算怪。 */
+        acts:[{ flag:'dunmor_lit_brochtop', need:'dm_gate_done', storyBattle:true, sides:DM_SIDES, lines:[
+          { battle:'dm_brochtop' },
+          ...dmLight('brochtop'),
+        ] }],
+      },
       bogoffer:     { bg:'dunmor_bogoffer', name:'羅賽爾廢城　沼澤獻祭處', noTime:true, exits:{ down:'lakeshore' } },
       stonerow:     { bg:'dunmor_stonerow', name:'羅賽爾廢城　立石列', noTime:true, exits:{ up:'dolmen', right:'oakgrove' } },
       oakgrove:     { bg:'dunmor_oakgrove', name:'羅賽爾廢城　橡樹林', noTime:true, exits:{ up:'nemeton', left:'stonerow', right:'druidhouse' } },
@@ -9650,9 +9714,46 @@ export const TOWNS = {
       henge:        { bg:'dunmor_henge', name:'羅賽爾廢城　石環', noTime:true, exits:{ up:'sacredway', right:'brochbase', down:'lawstone' } },
       brochbase:    { bg:'dunmor_brochbase', name:'羅賽爾廢城　圓塔基座', noTime:true, exits:{ up:'bardsstep', left:'henge' } },
       boglane:      { bg:'dunmor_boglane', name:'羅賽爾廢城　泥沼小徑', noTime:true, exits:{ right:'lakeshore', down:'treasury' } },
-      lakeshore:    { bg:'dunmor_lakeshore', name:'羅賽爾廢城　湖岸', noTime:true, exits:{ up:'bogoffer', left:'boglane', right:'cairn', down:'crannog' } },
-      cairn:        { bg:'dunmor_cairn', name:'羅賽爾廢城　積石塚', noTime:true, bgWhen:[{ need:'dunmor_lit_cairn', bg:'dunmor_cairn_lit', noTime:true }], exits:{ left:'lakeshore' } },
-      ossuary:      { bg:'dunmor_ossuary', name:'羅賽爾廢城　骨龕', noTime:true, bgWhen:[{ need:'dunmor_lit_ossuary', bg:'dunmor_ossuary_lit', noTime:true }], exits:{ down:'cistgrave' } },
+      lakeshore:    { bg:'dunmor_lakeshore', name:'羅賽爾廢城　湖岸', noTime:true, exits:{ up:'bogoffer', left:'boglane', right:'cairn', down:'crannog' },
+        /* ══ B 積石塚的前一格（ver -1858）══ 半透明的賽西莉背影（中景層 `cgBackAlpha`），諾薇兒追上去 →
+           強制移動到積石塚（段落的 `goto:'cairn'`；同圖內直接寫格名，`@圖:格` 會走換圖那一道讀取頁），那一格接著演。 */
+        acts:[{ flag:'dm_cairn_call', need:'dm_gate_done', goto:'cairn', sides:DM_SIDES, lines:[
+          { speaker:'NARRATION', text:'', cgBack:'resources/si/cecilie_si_back.webp', cgBackFit:'contain', cgBackAlpha:0.45, auto:1600 },
+          nou('shock2','那……那是！'),
+          { speaker:'NARRATION', text:'', se:'se_steps', cgBack:null, auto:900 },
+          sor('surprise','喂！'),
+        ] }],
+      },
+      cairn:        { bg:'dunmor_cairn', name:'羅賽爾廢城　積石塚', noTime:true, bgWhen:[{ need:'dunmor_lit_cairn', bg:'dunmor_cairn_lit', noTime:true }], exits:{ left:'lakeshore' },
+        /* ══ B 積石塚（沉默等待者：玩家普攻 −30%，卡上的 Ganymede）══ 結算怪（sessionEnd）。 */
+        acts:[{ flag:'dunmor_lit_cairn', need:'dm_cairn_call', storyBattle:true, sides:DM_SIDES, lines:[
+          sor('upset','別突然一個人跑那麼快啊！還有安雅在呢！'),
+          { speaker:'PLAYER', blank:true },
+          nou('shock','嗯！我也有看到！'),
+          ren('curious','你們到底是看到什麼……'),
+          { speaker:'NARRATION', text:'', cgBack:'resources/enemy/phamtoms/ph_silent_waiter.webp', cgBackAs:'ph_silent_waiter', cgBackRise:true, auto:1300 },   // 【沉默等待者降臨】
+          nou('scare2','！！'),
+          { battle:'dm_cairn' },
+          Object.assign(nou('sad','這個地方……果然很奇怪……'), { cgBack:null }),
+          nou('sadnoeye','可惡！'),
+          any('nervous','諾……諾薇兒？'),
+          nou('sadsmile','對不起……我沒事。'),
+          ...dmLight('cairn'),
+        ] }],
+      },
+      ossuary:      { bg:'dunmor_ossuary', name:'羅賽爾廢城　骨龕', noTime:true, bgWhen:[{ need:'dunmor_lit_ossuary', bg:'dunmor_ossuary_lit', noTime:true }], exits:{ down:'cistgrave' },
+        /* ══ A 骨龕（慈愛的殘像：玩家點錯／受擊／超時 → 敵回血 10%，卡上的 healOnFault）══ 結算怪。 */
+        acts:[{ flag:'dunmor_lit_ossuary', need:'dm_gate_done', storyBattle:true, sides:DM_SIDES, lines:[
+          { battle:'dm_ossuary' },
+          nou('desperate',''),
+          ren('worry','諾薇兒？'),
+          nou('sad','我……我沒事……'),
+          ren('talkserious','剛剛那個，難道……'),
+          nou('sadnoeye','絕對……不是。'),
+          ren('sad','……'),
+          ...dmLight('ossuary'),
+        ] }],
+      },
       fogou:        { bg:'dunmor_fogou', name:'羅賽爾廢城　石砌暗道', noTime:true, exits:{ right:'innerditch', down:'souterrain' } },
       innerditch:   { bg:'dunmor_innerditch', name:'羅賽爾廢城　內壕', noTime:true, exits:{ left:'fogou', right:'innergate', down:'potters' } },
       innergate:    { bg:'dunmor_innergate', name:'羅賽爾廢城　內壘門', noTime:true, exits:{ up:'druidhouse', left:'innerditch', down:'boarstone' } },
@@ -9678,11 +9779,62 @@ export const TOWNS = {
       granary:      { bg:'dunmor_granary', name:'羅賽爾廢城　穀倉遺址', noTime:true, exits:{ left:'gatecourt', down:'ditchE' } },
       tannery:      { bg:'dunmor_tannery', name:'羅賽爾廢城　鞣皮坊', noTime:true, exits:{ up:'kilnyard' } },
       ditchW:       { bg:'dunmor_ditchw', name:'羅賽爾廢城　西壕', noTime:true, exits:{ up:'oghamrow', right:'southgate', down:'rampartW' } },
-      southgate:    { bg:'dunmor_southgate', name:'羅賽爾廢城　南壘門', noTime:true, exits:{ left:'ditchW', right:'ditchE', down:'causeway' } },
+      southgate:    { bg:'dunmor_southgate', name:'羅賽爾廢城　南壘門', noTime:true, exits:{ left:'ditchW', right:'ditchE', down:'causeway' },
+        /* ══ 進入遺蹟（ver -1858）══ 娜塔莉的幻影（逝去的守護者）。⚠ 劇情戰（`storyBattle`）：打輸回檔。
+           ⚠ 稿上的【SE】se_stepslow 那支音效還沒交 —— 先用 `se_steps` 頂著，交了換名字就好。 */
+        acts:[{ flag:'dm_gate_done', need:'dm_arrive', storyBattle:true, sides:DM_SIDES, lines:[
+          nou('cringe','感覺好奇怪……'),
+          sor('watch','是啊，簡直就像前一秒還有人似地……'),
+          { speaker:'NARRATION', text:'', se:'se_steps', auto:1100 },
+          any('scare',''),
+          ren('scarejump','！！！！！'),
+          any('terrify','欸……？'),
+          any('terrify','娜塔……莉？'),
+          { battle:'dm_southgate' },
+          any('desperate','哈——哈——'),
+          sor('panic','那是什麼啊！真的有幽靈啊！'),
+          ren('meltdown','特定人物形象的禍魘……'),
+          ren('intense','羅賽爾廢城……封印的記憶之都……'),
+          nou('help','安雅？妳還好嗎？'),
+          any('desperate','哈——哈——'),
+          any('desperate','那不是娜塔莉……'),
+          any('desperate','那不是娜塔莉那不是娜塔莉那不是娜塔莉那不是娜塔莉……！'),
+          nou('help','安雅……'),
+          { speaker:'PLAYER', blank:true },
+          ren('talkserious','我也是這麼想的。'),
+          ren('think','這個遺蹟，可能會比想像中棘手……'),
+        ] }],
+      },
       ditchE:       { bg:'dunmor_ditche', name:'羅賽爾廢城　東壕', noTime:true, exits:{ up:'granary', left:'southgate', down:'rampartE' } },
       watchW:       { bg:'dunmor_watchw', name:'羅賽爾廢城　西望樓', noTime:true, exits:{ right:'rampartW' } },
       rampartW:     { bg:'dunmor_rampartw', name:'羅賽爾廢城　西壘牆', noTime:true, exits:{ up:'ditchW', left:'watchW' } },
-      causeway:     { bg:'dunmor_causeway', name:'羅賽爾廢城　堤道', noTime:true, noWild:true, sail:{}, exits:{ up:'southgate' } },
+      causeway:     { bg:'dunmor_causeway', name:'羅賽爾廢城　堤道', noTime:true, noWild:true, sail:{}, exits:{ up:'southgate' },
+        /* ══ 進入廢城（ver -1858）══ 天空的顏色：索菈娜看到的是「普通的」，只有她看不出來。
+           【派生】非黃昏才多那一句（`skipBand`）；她的回答依時段換（`onlyBand`，`'Night'`＝夜晚與深夜）。 */
+        acts:[{ flag:'dm_arrive', sides:DM_SIDES, lines:[
+          nou('scare','這裡的天空……'),
+          ren('watch','令人不安的顏色呢。'),
+          any('scare',''),
+          sor('confuse','天空？天空怎麼了？'),
+          nou('cringe','索菈娜小姐不覺得天空的顏色……有點嚇人嗎？'),
+          nou('cringe','如果是黃昏也就算了，這個時間……', { skipBand:'Dusk' }),
+          sor('talk','不就是平常的天空嗎？'),
+          ren('think','……'),
+          ren('talkwork','索菈娜小姐看到的天空……是什麼顏色的？'),
+          sor('think','就……'),
+          sor('talk','藍色的啊。',   { onlyBand:'Day' }),
+          sor('talk','普通的黃昏啊。', { onlyBand:'Dusk' }),
+          sor('talk','普通的清晨啊。', { onlyBand:'Dawn' }),
+          sor('talk','普通的夜空啊。', { onlyBand:'Night' }),
+          ren('think','……'),
+          ren('talkserious','我們到底是……從什麼時候開始發現天空的顏色不對勁呢？'),
+          nou('shock','對耶！在船上的時候明明還……'),
+          ren('ask','安雅小姐覺得呢？'),
+          any('nervous','我……不知道……'),
+          any('point','但是，那裡面有東西。'),
+          ren('determine','那就只能一探究竟了呢。'),
+        ] }],
+      },
       rampartE:     { bg:'dunmor_ramparte', name:'羅賽爾廢城　東壘牆', noTime:true, exits:{ up:'ditchE', right:'watchE' } },
       watchE:       { bg:'dunmor_watche', name:'羅賽爾廢城　東望樓', noTime:true, exits:{ left:'rampartE' } },
     },

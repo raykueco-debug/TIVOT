@@ -2220,7 +2220,10 @@ function wildActDue(n){
   if(n.noWild) return wildSkip('這一格 noWild');
   let pick=null;
   const fx=W && W.fixed && W.fixed[nodeId];
-  if(fx && !wildDone.has(wildSpecies(fx))) pick=fx;
+  /* 固定怪也可以有前置（ver -1858）：寫成 `{ day, night, need:'<旗>' }`，旗插上之前這一格不出牠
+     （羅賽爾南壘門：娜塔莉那一場劇情演完之後，才照表每趟出現）。 */
+  const fxOk = fx && !(typeof fx==='object' && fx.need && !prog.hasFlag(fx.need));
+  if(fxOk && !wildDone.has(wildSpecies(fx))) pick=fx;
   if(!pick){
     const conn=connectorIds().includes(nodeId);
     const okHere = p => !(p.where==='connector' && !conn);
@@ -4517,9 +4520,16 @@ export function enter(id){
        ⚠ 它**不吃 `immediate`**（與雜怪不同）：雜怪那一支第二趟不擲是怕「打完又冒
          一隻」，而追兵**沒有擲骰子** —— 牠站在那裡就是站在那裡。真的不想連打兩場
          的話，牠打完會停 `stun`（`chaseAfterAct`），下一趟自然沒事。 */
+    /* ══⚠⚠ **一次性的劇情段落還沒演 ⇒ 這一次不擲野怪**（ver -1858，羅賽爾廢城）══
+       野怪排在 `actDue` 之前（-1577 的排序），所以一格若同時是「劇情點」又是「會出怪的格」，
+       第一次走進去劇情會被雜怪搶走（南壘門的娜塔莉、四座小祭壇都是）。
+       ⚠ 只看**有 `flag` 的**段落（＝只演一次的劇情）：每次抵達都演的常駐句不擋野怪。 */
+    const storyFirst = (()=>{ const a0=actDue(n); return !!(a0 && a0.flag); })();
     act = dragonActDue(n) || dragonTalkDue() || chaseActDue(n) || chaseNextAct(n)
-        || (immediate ? null : wildRoll(n))
+        || ((immediate || storyFirst) ? null : wildRoll(n))
         || dateCurfewAct(n) || dateByeAct(n) || actDue(n) || restActDue(n);
+    /* 段落裡打的那一場，也算「這一趟這隻打過了」（ver -1858）：同一趟走回來，那一格的固定怪不再攔一次。 */
+    if(act && act.lines) for(const ln of act.lines) if(ln && typeof ln.battle==='string') wildDone.add(ln.battle);
     /* ══⚠⚠⚠ **安全點：先結算，再演劇情 —— 這是全域規則**（ver -1574，Ray：
        「安全點處如果有劇情 先跑結算再跑劇情 **這是全域規則**」）══
        ⚠⚠ 這**推翻了 -1433 的逐段宣告**：那一版是「預設先講話，要倒過來就在那一段

@@ -1305,7 +1305,8 @@ function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
   if(money) inv.addMoney(money);
   /* ⚠ 沒有評價者、又沒有等第可印時整塊就不要出 —— 一個只寫著「評價」兩個字的空行
        比沒有還糟（打靶就是這一種）。 */
-  let rows = spk
+  /* `evalNoGrade:true`（ver -1858，Ray：「纏髮者：戰鬥結束蕾娜不給評價」）＝評價者照樣在場、講那一句，但不印等第。 */
+  let rows = (spk && !bt.evalNoGrade)
     ? ('<div class="grade-wrap"><b class="grade-badge rank-'+ev.grade+'">'+ev.grade+'</b>'
        + '<span class="grade-meta"><span class="grade-cap">' + (L.result.gradeCap||'') + '</span>'
        + '</span></div>')

@@ -118,6 +118,7 @@ export const state = {
   /* ── 3.4 武器/雙槍（擁有者：weapon） ─────────────────────────── */
   /* ── 這一隻怪的「打起來的手感」（ver -423 的敵人卡；擁有者：enemy）──
      ⚠ 每次 `setEnemy` 都要重寫，沒寫的回預設 —— 連戰換敵也會走那一支。 */
+  enemyHealOnFault: 0,     // 玩家失誤／受擊時敵人回血的比例（ver -1858，羅賽爾「慈愛殘像」；擁有者 enemy）
   enemyGanymede: 0,        // 主武器（普攻）的增減傷（ver -949，取代 resist/weak）
   /* 這一場是不是船戰（飛行頁交棒過來的）：BR 窗口期間多吃 tuning.shipDualBonus
      （ver -947，取代逐卡的 `dualBonus`）。擁有者＝combat，由發起端宣告。 */
