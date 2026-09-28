@@ -4564,7 +4564,8 @@ export const TOWNS = {
            ⚠ 「[T3以上分支]」看的是**蕾娜**的段位（`tierWho:'RENNA'`）：T3 以上走插圖
              `34_rennacityhall`（由下往上平移），T2 以下是一般對話；插圖那一支最後補一拍收圖。 */
         acts:[
-        { flag:'ss_cityhall', need:'ss_arrive', until:'ss_inn_merge', noDate:true,   // ver -1814 Ray：蕾娜的市政廳也要過期（同貧民窟三條約會） sides:{ RENNA:'L' }, lines:[
+        /* ver -1814 Ray：蕾娜的市政廳也要過期（`until:'ss_inn_merge'`，同貧民窟三條約會）。 */
+        { flag:'ss_cityhall', need:'ss_arrive', until:'ss_inn_merge', noDate:true, sides:{ RENNA:'L' }, lines:[
           ren('surprise','欸——真的假的！我還以為是很龐大的組織呢！'),
           cnS('front','哪有啊！就一群舊奴隸主養的地痞。現在奴隸主沒了，自己變著花樣壓搾森住民而已。'),
           ren('think','所以才只敢找森住民麻煩……'),
