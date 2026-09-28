@@ -352,14 +352,7 @@ function tuneStd(cur){
       for(const k of Object.keys(art.expr||{})){ const e=art.expr[k]; if(e && typeof e==='object' && e.src) Object.assign(e, set); }
       for(const it of items) delete tuneLive[it.key];
       tuneMsg='已標準化 speakers.js（'+t+'）'; layout(); tuneRender();
-      /* 同步飛行頁：每一張帶它自己**合併後**的 standCm（ver -1827）—— 標準化只統一 cm／上下／左右，
-         各張的站姿身高照劇情這邊的值走，逐張送（同一個檔，伺服器照順序讀寫）。 */
-      items.reduce((pr,it)=>pr.then(()=>{
-        const e = it.kind==='src' ? Object.keys(art.expr||{}).map(k=>art.expr[k]).find(x=>x && x.src===it.key) : null;
-        const m = Object.assign({}, art, e||{});
-        const fs = Object.assign({}, set, { standCm:(m.standCm!=null ? m.standCm : m.cm) });
-        return fetch(url, { method:'POST', body:JSON.stringify({ file:'flight/index.html', kind:'src', key:'../'+it.key, set:fs }) }).catch(()=>{});
-      }), Promise.resolve());
+      /* 飛行頁直接讀 speakers.js（ver -1833），不必同步。 */
     })
     .catch(e=>{ tuneMsg='標準化失敗：'+e; tuneRender(); });
 }
@@ -388,14 +381,7 @@ function tuneSave(cur){
       Object.assign(cur.tk.obj, L);          // 這一輪不必重載就生效（檔案已經是同一組值）
       delete tuneLive[cur.tk.key]; layout(); tuneRender();
       console.log('[立繪調整] 已寫入 speakers.js', cur.tk.key, L);
-      /* 飛行頁那一份（ver -1818，§5「兩邊一起改」）：同一張圖在 flight/index.html 也有就一起寫；
-         那一頁沒有這張（409）＝不必同步，不算失敗。 */
-      /* ⚠ ver -1827（Ray 選 A）：同步時**連 `standCm` 一起帶** —— 頭頂高度由它決定，飛行那一份沒有它就退回 `cm`，
-         彎腰／近景圖（cm 縮小、standCm 176）在飛行裡整個掉下去。帶的是劇情這邊**合併後**的值（沒寫就是 cm）。 */
-      const fset=Object.assign({}, L, { standCm:(cur.f.standCm!=null ? cur.f.standCm : (L.cm!=null ? L.cm : cur.f.cm)) });
-      fetch(url, { method:'POST', body:JSON.stringify({ file:'flight/index.html', kind:'src', key:'../'+cur.tk.key, set:fset }) })
-        .then(r=>{ if(r.ok) console.log('[立繪調整] 飛行頁同步寫入', cur.tk.key); })
-        .catch(()=>{});
+      /* 飛行頁不再有自己的一份（ver -1833：它直接讀 speakers.js），不必同步。 */
     })
     .catch(e=>{ tuneMsg='寫入失敗：'+e; tuneRender(); });
 }
@@ -2867,7 +2853,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1832';
+const KERB_V='?v=1833';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

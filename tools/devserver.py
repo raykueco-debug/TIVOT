@@ -51,8 +51,8 @@ import json
 import re
 
 TUNE_FILE = 'script/speakers.js'
-# ver -1818：飛行頁的立繪取景是另一份（`flight/index.html` 的 PORTRAIT／PORTRAIT_EXPR），憲法 §5 要兩邊一起改 ——
-# 所以 body 可以帶 `"file"`，只准這兩個。
+# body 可以帶 `"file"`，只准這兩個。⚠ ver -1833 起飛行頁直接讀 speakers.js（不再有自己的取景表），
+# 立繪調整只寫 speakers.js；flight/index.html 留在白名單裡是給舊請求不報錯用的。
 TUNE_FILES = {'script/speakers.js', 'flight/index.html'}
 TUNE_KEYS = {'cm': 1, 'standCm': 1, 'yShift': 1, 'fxShift': 3}   # 欄位 → 小數位數（standCm：ver -1827，兩份取景的頭頂要同一個數字）
 
