@@ -68,10 +68,45 @@
 | worry | ⏳ |
 
 
-## 第一批取景值（，09-28）
+## 第一批取景值（`tools/measure_si.py`，09-28）
 
+```
+anya_si_amaze            top:4 bot:1526 fx:0.485
+anya_si_angry            top:3 bot:1525 fx:0.514
+anya_si_answer           top:2 bot:1534 fx:0.468
+anya_si_argue            top:2 bot:1528 fx:0.488
+anya_si_armcross         top:0 bot:1529 fx:0.505
+anya_si_back             top:3 bot:1525 fx:0.499
+anya_si_clap             top:4 bot:1521 fx:0.493
+anya_si_cry              top:0 bot:1532 fx:0.458
+anya_si_crying           top:2 bot:1522 fx:0.470
+anya_si_cryrun           top:4 bot:1519 fx:0.452
+anya_si_curious          top:3 bot:1525 fx:0.428
+anya_si_desperate        top:6 bot:1534 fx:0.412
+anya_si_determine        top:4 bot:1521 fx:0.506
+anya_si_die              top:0 bot:1525 fx:0.439
+anya_si_eat              top:3 bot:1531 fx:0.508
+anya_si_front            top:3 bot:1532 fx:0.507
+anya_si_happy            top:3 bot:1530 fx:0.506
+anya_si_hug              top:0 bot:1534 fx:0.470
+anya_si_laugh            top:3 bot:1527 fx:0.474
+anya_si_lookback         top:5 bot:1515 fx:0.520
+anya_si_lookup           top:5 bot:1527 fx:0.479
+anya_si_makeface         top:4 bot:1531 fx:0.469
+anya_si_nervous          top:2 bot:1525 fx:0.479
+anya_si_nightmareinstall top:0 bot:1528 fx:0.507
+anya_si_nod              top:0 bot:1527 fx:0.499
+anya_si_panic            top:0 bot:1522 fx:0.434
+anya_si_peace            top:0 bot:1530 fx:0.479
+anya_si_point            top:26 bot:1520 fx:0.406
+anya_si_read             top:3 bot:1522 fx:0.491
+anya_si_relief           top:7 bot:1511 fx:0.490
+anya_si_runworry         top:8 bot:1511 fx:0.436
+anya_si_scare            top:2 bot:1515 fx:0.488
+anya_si_scare2           top:4 bot:1519 fx:0.364
+anya_si_shy              top:8 bot:1527 fx:0.443
+```
 
-
-- ⚠ ： 是**法環頂**不是頭頂，人也比舊版大一號 —— 要照憲法 §5（-635）用顏色挑人物重量，並確認  還要不要。
-- ⚠ ：原本是 Ray 丟進來、沒入庫的 （已進 ），現在是新檔 。
+- ⚠ `nightmareinstall`：`top:0` 是**法環頂**不是頭頂，人也比舊版大一號 —— 要照憲法 §5（-635）用顏色挑人物重量，並確認 `rescale` 還要不要。
+- ⚠ `cryrun`：原本是 Ray 丟進來、沒入庫的 `anya_si_cryrun.png`（已進 `_recycle/`），現在是新檔 `anya_si_cryrun.webp`。
 - 剩 24 張等 GPT 額度重置（sleep／side／silent 已送出未出圖）。

@@ -110,8 +110,8 @@
 > 28. **（09-28，Mac）蕾娜新服裝基底 `resources/si/renna_ad_si_front.webp`**（Ray：「蕾娜穿 19 世紀風格的女性冒險者裝束全身立繪，長褲但是貼身，綁高馬尾」；命名 Ray 定「`renna_ad_si_front` 走這個命名規則」＝`<角色>_ad_si_<表情>`）
 >    新檔、真 alpha。`measure_si.py` 量：`top:2 bot:1524 fx:0.479`（⚠ 馬尾頂端貼上緣，top 是髮頂不是頭頂）。用在哪一段、要不要進 `speakers.js`（另開一個 `ad` 服裝組或 expr）等 Ray。
 > 29. **（09-28，Mac）安雅立繪整套重畫成蕾娜畫風 —— 第一批 34／58 入庫**（Ray：「我一直覺得安雅的畫風跟其他人有點對不太上」→ 試畫 front →「不錯，給過，把安雅照這模式全辦了」→「把目前的進度 commit 並交給 code」）
->    同名覆蓋 34 張 ：front amaze angry answer argue armcross back clap cry crying curious desperate determine die eat happy hug laugh lookback lookup makeface nervous nightmareinstall nod panic peace point read relief runworry scare scare2 shy ＋ **新檔** 。
->    程式端：①  這 34 條 src ** 全跳**（同名覆蓋）② **取景值全部換** —— 逐張數字在  末段（），⚠  的 top 量到法環要照 §5 -635 用顏色挑人重量 ③ 要不要接  等 Ray（現在沒有引用）。
+>    同名覆蓋 34 張 `resources/si/anya_si_<鍵>.webp`：front amaze angry answer argue armcross back clap cry crying curious desperate determine die eat happy hug laugh lookback lookup makeface nervous nightmareinstall nod panic peace point read relief runworry scare scare2 shy ＋ **新檔** `cryrun`。
+>    程式端：① `script/speakers.js` 這 34 條 src **`?v=` 全跳**（同名覆蓋）② **取景值全部換** —— 逐張數字在 `resources/si/_anya_restyle_worklist.md` 末段（`tools/measure_si.py`），⚠ `nightmareinstall` 的 top 量到法環，要照 §5（-635）用顏色挑人重量 ③ `cryrun` 要不要接等 Ray（現在沒有引用）。
 >    ⚠⚠ **現在遊戲裡安雅是新舊畫風混著的**（剩 24 張等 GPT 額度重置再跑，第二批到了再同樣跳一次）—— Ray 要求先交這一批。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑；**§十三＝09-27 收工換機器：薇拉馮德 73 張、惡棍 6 張、索拉娜三張回版、還開著的事、三個不明刪除**；§十四＝GPT 拒畫的 alpha 交 PC 走本機；**§十五＝09-28 收工：蘿媞六張、cry 手指、市政廳室內、惡棍群體、產線教訓**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
