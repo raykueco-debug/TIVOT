@@ -942,7 +942,8 @@ export function loadSpec(town, nodeId){
   const warm = ()=>{ warmRest(T, id); warmEnemies(T); };
   /* ⚠ 入口圖走 `pre`（一支回 Promise 的函式）不走 `imgs`：候選鏈要**由這裡**解，
      解完的答案才記得回 `bgResolved`（見 resolveBgOnce 的說明）。 */
-  return {
+  return { dest:'town',   // 讀取頁這道門的目的地（ver -1848，story.showLoader → main.passGate）
+
     ses : [...collectSe(T, new Set(TOWN_SE), 0)],
     bgms: T.bgm ? [T.bgm] : [],
     pre : n ? (()=> resolveBgOnce(bgCandsOf(n, id), true)) : null,

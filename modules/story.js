@@ -2856,7 +2856,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1847';
+const KERB_V='?v=1848';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4662,7 +4662,15 @@ function preloadStory(startId, onProgress){
    ⚠ 進度圈的周長 301.59 與 main.js 的 RING_C 是同一個數字（r=48 的 viewBox 100）。
      改一邊要改兩邊 —— 它是 SVG 幾何，不是設定值。 */
 const AL_RING_C = 301.59;
-function showLoader(){
+/* ══⚠⚠⚠ **讀取頁是門：過了門，門前的東西全殺**（ver -1848，Ray：「探索的時候跑探索，飛行的時候就跑
+   飛行，首頁的時候就跑首頁，這些絕不可能出現兩立的狀況／只要過一次預載頁，就是殺光，預載頁以前的東西
+   通通殺…不准給我偷藏在下面」）══
+   `dest` ＝這道門通往哪裡（'town'／'story'／'battle'）。讀取頁**全黑蓋滿那一刻**叫 `gateHook(dest)`
+   （main.js 的 `passGate`，唯一那一支）—— 在任何呼叫端自己的 `onCovered` 之前。
+   ⚠ 門的殺法只寫在 `passGate` 一處（鐵律 8）；這裡只負責「在對的時刻、帶著目的地」叫它。 */
+let gateHook=null;
+export function setGateHook(fn){ gateHook=fn||null; }
+function showLoader(dest){
   let ov=document.getElementById('assetLoader');
   /* ⚠ 撿回**正在收**的那一顆：把它的收尾計時器取消，否則等一下它會被移除
      （見 `close()` 的說明）。 */
@@ -4700,7 +4708,9 @@ function showLoader(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
     if(!ov || !ov.parentNode){ _cov(); return; }
     ov.classList.remove('al-fade');                       // ① 黑幕淡入
-    setTimeout(()=>{ if(ov && ov.parentNode) ov.classList.remove('al-blank'); _cov(); },
+    setTimeout(()=>{ if(ov && ov.parentNode) ov.classList.remove('al-blank');
+                     if(gateHook) try{ gateHook(dest||'story'); }catch(e){ console.warn('[gate]', e); }
+                     _cov(); },
                AL_FADE_MS);                               // ② 全黑之後才亮光圈（也是「蓋滿了」）
   }));
   return {
@@ -4778,7 +4788,7 @@ export function loadScene(spec, onReady, onCovered){
   const imgs = (spec.imgs || []).filter(Boolean);
   const warm = typeof spec.warm==='function' ? spec.warm : (spec.warm || []).filter(Boolean);
   try{ SFX.releaseAudio(ses.concat(bgms)); }catch(e){}      // ① 放掉上一個場景
-  const ui = showLoader();
+  const ui = showLoader(spec.dest || 'story');
   if(typeof onCovered==='function') ui.covered.then(()=>{ try{ onCovered(); }catch(e){ console.warn('[load] onCovered', e); } });
   const t0 = Date.now();
   const total = ses.length + imgs.length + bgms.length + (typeof spec.pre==='function'?1:0) + 1;
@@ -4850,7 +4860,7 @@ function runLoadGate(sceneId){
   /* 上一個場景的音訊放掉（ver -1297，同 `loadScene` 的①）。⚠ `collectAssets` 收的是
      **這一段**要用的，所以 keep 就是它 —— 正在播的那一首由 releaseAudio 自己保住。 */
   try{ const A=collectAssets(sceneId); SFX.releaseAudio(A.ses.concat(A.bgms.map(b=>bgmSrc(b)||b))); }catch(e){}
-  const ui=showLoader();
+  const ui=showLoader('story');
   const t0=Date.now();
   preloadStory(sceneId, p=>ui.set(p)).then(()=>{
     ui.set(1);
@@ -4912,7 +4922,7 @@ export function open(pos, done){
   /* ⚠ 讀取頁走**開機那一頁的標準外觀**（Ray 指定：「story 按下時就要跑讀取」）——
      不再用劇情自己那一顆簡版（#storyLoad 已停用，DOM 與 CSS 先留著）。
      ⚠ 最短顯示 600ms：快取全中的時候只要一百多毫秒，閃一下讀起來像破圖。 */
-  const ui=showLoader();
+  const ui=showLoader('story');
   const t0=Date.now();
   preloadStory(id, p=>ui.set(p)).then(()=>{
     ui.set(1);
@@ -5032,7 +5042,8 @@ export function close(opts){
      打完回來 `resumeFrom` 雖然把舞台開回來，但 `showNav`／`refreshArrows` 都查不到節點
      → **箭頭與櫃台鈕全不見，玩家被關在店裡**（Ray 回報「打完靶跟賞金獵人後返回鍵不見了」）。
      收城鎮是「**離開這一切**」才要做的事 → 移到 `goHomeNow()`。 */
-  const cb=onExit; onExit=null; if(cb) cb();
+  /* `noExit`（ver -1848）：讀取頁那道門殺掉舞台時**不接**離場回呼 —— 那是門在殺，不是這一段演完。 */
+  const cb=onExit; onExit=null; if(cb && !(opts && opts.noExit)) cb();
 }
 /* 城鎮的收場器（注入，同 `setTownOpener`）。 */
 let townCloser=null;

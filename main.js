@@ -511,7 +511,7 @@ function openFlight(opts){
      iframe 這一刻已經蓋滿畫面（它有不透明底色 `#05060c`），所以收掉是看不見的
      —— **不要留任何一片「靠別人藏著」的黑幕**（黑幕第六次的預防，不是修復）。 */
   story.veil(false, 0);
-  hideHome('openFlight');
+  passGate('flight');   // 飛行畫面自己就是這道門的目的地（ver -1848）：它一蓋滿，其餘全殺
 }
 /* ══ 飛行檢查點（ver -558，Ray：「飛行畫面中斷回原位置、戰鬥中中斷回遭遇位置」
    「以移動距離做檢查點，第一次移動做一個，接下來每適當距離一個」）══════════════
@@ -594,6 +594,29 @@ function killFlightFrame(){
     f.removeAttribute('src');
   }
 }
+/* ══⚠⚠⚠ **讀取頁這道門：過了門，門前的全殺**（ver -1848，Ray 定案，見 CLAUDE.md 鐵律 13）══
+   唯一的殺法（鐵律 8）。呼叫的時刻只有兩種：
+     · 讀取頁**全黑蓋滿**那一刻（`story.showLoader` → `setGateHook`），dest＝'town'／'story'／'battle'
+     · 飛行畫面蓋滿那一刻（`openFlight` 的收尾），dest＝'flight'（它的讀取頁在 iframe 裡）
+   回首頁那一條是 `killAllPages`（它本來就殺光）。
+   殺什麼：**目的地以外的每一層** —— 首頁、飛行 iframe、城鎮介面（`suspend`：路／店／旅店／
+   立繪／環境音全收）、劇情舞台、整備頁、選單、道具單。
+   ⚠ 城鎮的**資料**（townId、所在節點）不在殺的範圍：那是「人在哪」的記錄，不是在跑的東西
+     （飛行戰敗要靠它判「這一趟是從哪座城出航的」）。
+   ⚠ 劇情舞台用 `close({keepBgm, noExit})`：不接首頁曲、不觸發離場回呼 —— 是門在殺，不是那一段演完。 */
+function passGate(dest){
+  try{ gear.close(); }catch(_){}
+  ['gameMenu','lootSheet'].forEach(id=>{ const el=document.getElementById(id); if(el && el.parentNode) el.parentNode.removeChild(el); });
+  if(dest!=='home') hideHome('gate:'+dest);
+  if(dest!=='flight') closeFlightFrame();
+  if(dest!=='town'){ try{ if(town.isOpen()) town.suspend(); }catch(_){} }
+  if(dest==='flight' || dest==='battle'){
+    const st=$('storyStage');
+    if(st && st.classList.contains('on')) try{ story.close({ keepBgm:true, noExit:true }); }catch(_){}
+  }
+  if(document.body.classList.contains('testmode')) console.log('[gate] 過門 →', dest);
+}
+story.setGateHook(passGate);
 function killAllPages(){
   /* ⚠⚠⚠ **殺畫面就要把音訊一起還**（ver -1354，Ray：「每一次切換就把前面載的 Kill 掉」）。
      `killAllPages` 從 -494 起就把每一層畫面收乾淨了，**但音訊的 buffer 照樣留著** ——
@@ -1970,7 +1993,7 @@ function startRush(){
   const id = rushFirstId();
   if(!id){ console.warn('[rush] 一隻有等級的怪都沒有 —— 先去 Excel 補 tier'); return; }
   rushFirst = rushSetupFor(id);
-  const spec = { ses: battleAudioSet(id), bgms: [battleBgmOf(id)] };
+  const spec = { dest:'battle', ses: battleAudioSet(id), bgms: [battleBgmOf(id)] };
   if(rushFirst.bg){ try{ spec.imgs = [story.bgUrl(rushFirst.bg)]; }catch(_){} }
   story.loadScene(spec,
                   ()=>{ rushAt = -1; rushNext(); },
