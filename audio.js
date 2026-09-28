@@ -327,7 +327,7 @@ function voDuckEnd(){
 const _bgmBlob = {};    // path → objectURL（快取；壓縮 mp3，體積小可多留）
 const _bgmPending = {}; // path → Promise（下載中；同曲併發呼叫去重，避免重複抓整首）
 function bgmElem(){
-  if(!_bgmEl){ _bgmEl = new Audio(); _bgmEl.loop = true; }
+  if(!_bgmEl){ _bgmEl = new Audio(); _bgmEl.loop = true; _bgmEl.muted = (_master<=0); }
   return _bgmEl;
 }
 function bgmFade(el, to, ms, done){
@@ -642,9 +642,16 @@ export const SFX = {
     }
   },
 
+  /* 主音量是不是 0（＝靜音）。HTMLAudio 的退路要問它（iOS 上 volume 無效，只能不播／muted）。 */
+  isSilent(){ return _master<=0; },
+
   setMasterVolume(v){
     _master = Math.max(0, Math.min(1, v==null ? 1 : v));
     if(_busMaster) _busMaster.gain.value = _master;
+    /* ⚠⚠ ver -1808（Ray：「靜音鈕在手機無效」）：**iOS 的 HTMLAudio `volume` 是唯讀的（永遠 1）**，
+       把 BGM 音量設 0 在 iPhone 上什麼都不會發生。靜音要走 `muted`（iOS 認得這一個）。
+       Web Audio 那條（音效）靠 `_busMaster` 本來就有效。 */
+    if(_bgmEl) _bgmEl.muted = (_master<=0);
     const el=_bgmEl;
     if(el && !el.paused && !el.__fade) el.volume = bgmTargetVol();   // 播放中即時套用（淡入淡出中不干預）
   },

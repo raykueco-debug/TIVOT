@@ -1962,6 +1962,7 @@ function playSeFallback(src, gain){
        這條路本來就是「先出聲比較重要」的權宜之計。
      ⚠ 這裡不乘 master 與分軌音量：那兩個在 Web Audio 匯流上，HTMLAudio 走不到。
        近似值比沒有聲音好，但**別把它當成正規路徑**。 */
+  if(SFX.isSilent && SFX.isSilent()) return;   // 靜音（ver -1808：iOS 上 volume 無效，這條退路要自己閃）
   try{ const a=new Audio(src); a.volume=Math.max(0, Math.min(1, (gain==null?0.9:gain)));
        const p=a.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
 }
@@ -2569,7 +2570,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1807';
+const KERB_V='?v=1808';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
