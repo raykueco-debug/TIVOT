@@ -104,6 +104,11 @@
 >    ② 新檔四張 `resources/background/dunmor/dunmor_{ossuary,cairn,kingsbarrow,brochtop}_lit.webp`（祭壇點亮版，`bg_index.js` 已重跑）—— 什麼時候切成 `_lit`（點燃祭壇的旗標／事件）由程式端接，劇情條件等 Ray。
 >       ⚠ `_lit` 不是時段尾綴，四格都是 `noTime:true`；建議做成節點上依旗標換 `bg`（例：`bgIf:{flag:'dunmor_altar_<id>', bg:'dunmor_<id>_lit'}` 之類，機制程式端定）。
 >    ③ 圓塔頂重畫成寬闊的圓形石台，中央空著 —— 可以放戰鬥了。細節 `resources/background/_dunmor_spec.md` §十一，總覽 `resources/background/_dunmor_altar8_sheet.jpg`。
+> 27. **（09-28，Mac）廢城四格祭壇第二版 —— 同名覆蓋第 26 項那八張**（Ray：「祭壇風格不對，顏色也不對，參考瓦努努石陣祭壇」→ 改成圓形石台＋翡翠綠電路發光，同 `fallen_altaractive`）
+>    ⚠⚠ **`config.js` 的 `ASSET_VER` 八鍵都要跳**：`dunmor_ossuary`／`dunmor_cairn`／`dunmor_kingsbarrow`／`dunmor_brochtop` **2→3**；`dunmor_ossuary_lit`／`dunmor_cairn_lit`／`dunmor_kingsbarrow_lit`／`dunmor_brochtop_lit` **補成 2**（-1837 已上線過第一版，玩家快取裡可能有）。
+>    檔名、`bgWhen`、旗 `dunmor_lit_<格>` 全部不變。細節 `resources/background/_dunmor_spec.md` §十一末段。
+> 28. **（09-28，Mac）蕾娜新服裝基底 `resources/si/renna_ad_si_front.webp`**（Ray：「蕾娜穿 19 世紀風格的女性冒險者裝束全身立繪，長褲但是貼身，綁高馬尾」；命名 Ray 定「`renna_ad_si_front` 走這個命名規則」＝`<角色>_ad_si_<表情>`）
+>    新檔、真 alpha。`measure_si.py` 量：`top:2 bot:1524 fx:0.479`（⚠ 馬尾頂端貼上緣，top 是髮頂不是頭頂）。用在哪一段、要不要進 `speakers.js`（另開一個 `ad` 服裝組或 expr）等 Ray。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑；**§十三＝09-27 收工換機器：薇拉馮德 73 張、惡棍 6 張、索拉娜三張回版、還開著的事、三個不明刪除**；§十四＝GPT 拒畫的 alpha 交 PC 走本機；**§十五＝09-28 收工：蘿媞六張、cry 手指、市政廳室內、惡棍群體、產線教訓**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
