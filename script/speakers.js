@@ -436,13 +436,16 @@ export const ART = {
            校準：同法量 front 得 0.571（表上 0.564，差 −0.007）、璐娜莉亞得 0.494
            （表上 0.496，差 +0.002）—— 兩個獨立校準都落在 ±0.007 內，所以直接用。
          · eye 沒量（CAST_EYE_MIX=0 不參與運算）。 */
-  /* ⚠⚠ `mirror:true`（ver -625，Ray：「諾薇兒跟索菈娜左右是對稱的，可以水平翻轉」）
+  /* ⚠⚠⚠ ver -1843 Ray：「人物變站位時（如索站左邊時）不要水平翻轉」—— 諾薇兒與索菈娜的
+     `mirror:true` 已拿掉，**現在沒有任何角色換邊會翻**。機制（`mirror` 欄位）留著，
+     下面那段是 -625 的原意，留著當紀錄。
+     ⚠⚠ `mirror:true`（ver -625，Ray：「諾薇兒跟索菈娜左右是對稱的，可以水平翻轉」）
      ＝**這個角色的立繪換到非預設那一側時可以水平翻轉**。這是 §6.5「立繪朝向是畫死的，
      換邊要水平翻轉，髮旋與持物會左右顛倒」那條的**例外開關**：翻不翻由**這張畫**決定，
      所以寫在角色上、預設不翻 —— 有髮旋／單邊持物／不對稱制服的人不要加這一格。
      ⚠ 蕾娜**沒有**這一格（Ray：「蕾娜原則右，碰到安雅就放左，因為蕾娜整體框細，
        受左右影響小」）—— 她換邊就是換邊，不翻。 */
-  nouvelle: { cm:165, eye:40, fx:0.582, top:3, bot:1536, mirror:true,
+  nouvelle: { cm:165, eye:40, fx:0.582, top:3, bot:1536,
            side:'L', alt:null, base:'resources/si/nouvelle_si_front.webp',
            expr:{ /* ══ 瓦努努遺蹟・NIEM 那一段（ver -1186，Ray 交稿）══ 同上，逐張量。
                      ⚠ 檔名 `expain2` 是交件時的拼字（少一個 l），鍵名照 Ray 的稿寫
@@ -640,7 +643,7 @@ export const ART = {
        `flight/index.html` 的 PORTRAIT.sorana 是同一組數字，改一邊要改另一邊。 */
   /* `faceFx` ＝小方框頭像的橫向錨（ver -1046）：側面圖的臉在正中、身體偏右，
      照 `fx`（0.498）擺會把她右半切掉 —— 往右挪一截才框得住頭與肩。 */
-  sorana: { fxShift:0.05, yShift:25, cm:150, eye:27, fx:0.498, faceFx:0.62, top:4, bot:1526, mirror:true,
+  sorana: { fxShift:0.05, yShift:25, cm:150, eye:27, fx:0.498, faceFx:0.62, top:4, bot:1526,
            side:'R', alt:null, base:'resources/si/sorana_si_side.webp?v=4', expr:{
     /* stage7・木雅克神殿（ver -922，Ray 交稿）。 */
     confuse:      { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/sorana_si_confuse.webp?v=3', top:6, bot:1522, fx:0.510 },
@@ -1653,14 +1656,14 @@ export const ART = {
     guard: { src:'resources/si/npc/npc_ss_loti_guard.webp', top:15,  bot:1529, fx:0.510 },
     cry:   { src:'resources/si/npc/npc_ss_loti_cry.webp?v=3', top:5,  bot:1520, fx:0.460 },   // ver -1793 Ray 交件；-1804 手指真正修好（美術 4f89ae2，同名覆蓋 ⇒ ?v=3，重量）
   } },
-  lofa: { cm:158, eye:30, fx:0.431, top:5, bot:1529,
+  lofa: { fxShift:0, yShift:14, cm:158, eye:30, fx:0.431, top:5, bot:1529,
            side:'R', alt:null, base:'resources/si/npc/npc_ss_lofa_front.webp', expr:{
-    front:    { src:'resources/si/npc/npc_ss_lofa_front.webp',    top:5, bot:1529, fx:0.431 },
-    talk:     { src:'resources/si/npc/npc_ss_lofa_talk.webp',     top:4, bot:1530, fx:0.464 },
-    complain: { src:'resources/si/npc/npc_ss_lofa_complain.webp', top:5, bot:1528, fx:0.488 },
-    lookaway: { src:'resources/si/npc/npc_ss_lofa_lookaway.webp', top:3, bot:1523, fx:0.454 },
-    cry:      { src:'resources/si/npc/npc_ss_lofa_cry.webp',      top:11, bot:1525, fx:0.464 },   // ver -1793 Ray 交件
-    cryhug:   { src:'resources/si/npc/npc_ss_lofa_cryhug.webp',   top:6,  bot:1530, fx:0.594 },
+    front:    { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_front.webp',    top:5, bot:1529, fx:0.431 },
+    talk:     { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_talk.webp',     top:4, bot:1530, fx:0.464 },
+    complain: { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_complain.webp', top:5, bot:1528, fx:0.488 },
+    lookaway: { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_lookaway.webp', top:3, bot:1523, fx:0.454 },
+    cry:      { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_cry.webp',      top:11, bot:1525, fx:0.464 },   // ver -1793 Ray 交件
+    cryhug:   { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_cryhug.webp',   top:6,  bot:1530, fx:0.594 },
   } },
   /* ══ 里朋家族的老大（ver -1793，Ray 交件）══ 身高是估的（成年男性 175）；measure_si 實量。
      ⚠ ver -1796 Ray：「里朋水平翻轉」⇒ `flip:true`（這張一律翻，同謝尼）。 */
