@@ -1021,7 +1021,7 @@ export const ART = {
     die:     { src:'resources/si/anya_si_die.webp?v=2',      top:0, bot:1525, fx:0.439 },
     sleepy:    { src:'resources/si/anya_si_sleepy.webp?v=2',     top:0, bot:1515, fx:0.464 },   // ver -772
     cry:       { src:'resources/si/anya_si_cry.webp?v=2',        top:0, bot:1532, fx:0.458 },
-    terrify:{ src:'resources/si/anya_si_terrify.webp?v=2', top:8, bot:1527, fx:0.458 },
+    terrify:{ src:'resources/si/anya_si_terrify.webp?v=3', top:0, bot:1518, fx:0.448 },   // ver -1856：還原重畫前舊版（Ray：重畫版表情壞了），取景回舊值
     /* ver -870（森林行 G 稿）——measure_si 量測。 */
     answer:    { src:'resources/si/anya_si_answer.webp?v=2',     top:2, bot:1534, fx:0.468 },
     smileshy:  { src:'resources/si/anya_si_smileshy.webp?v=2',   top:5, bot:1524, fx:0.452 },
