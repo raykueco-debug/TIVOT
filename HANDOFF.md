@@ -125,6 +125,45 @@
 > 33. **（09-28，Mac）安雅 `terrify` 鎖表情重畫版定稿**（接第 32 項；這次附舊版臉部特寫、逐條鎖死：瞪大眼、縮瞳、灰白虹膜、咬牙、冷汗）
 >    `resources/si/anya_si_terrify.webp` 同名覆蓋。程式端：`speakers.js` 的 terrify **`?v=3`→`?v=4`**、取景 **`top:8 bot:1504 fx:0.493`**（`measure_si.py`）。
 > 34. **（09-28，Mac）安雅冒險者定裝基底 `resources/si/anya_ad_si_front.webp`**（Ray：「安雅也來一張定裝，雖說是冒險者服還是要有少女感，頭髮紮成單長辮」「不要包包」「安雅可以定了」；命名同第 28 項）。新檔、真 alpha，取景見 `measure_si.py`。用在哪一段等 Ray。
+> 35. **（09-28，Mac）聖索菲亞・里朋莊園那一段：四女主冒險者裝差分 25 張＋四張基底，全部入庫**（Ray 貼的腳本：「把這一段的四女主都改繪成冒險者服」）
+>    檔名一律 `resources/si/<角色>_ad_si_<表情>.webp`，表情鍵＝腳本上寫的那個：
+>    · 索拉娜 11：amaze tease back surprise smirk ready furious guardtalk battlecry battlecrylookaside smile（腳本寫 `sorana_si_back.webp`／`sorana_si_battlecry.webp`／`sorana_si_battlecrylookaside.webp`／`sorana_si_smile.webp` 的那幾拍 → 改指 `_ad_` 版）
+>    · 蕾娜 9：lookaway smile think write watch bow remind command commandsoft（`renna_si_commandsoft.webp` 那兩拍同樣改指 `_ad_`）。⚠ Ray：蕾娜這套**不拿寫字板**，`write` 改成在隨身小筆記本上寫
+>    · 安雅 2：scare point　· 諾薇兒 3：help、coverface、coverfacepeek（後兩張是腳本新鍵，姿勢參考 `nouvelle_si_shycover`／`shycoverpeek`；衣服是「太緊」的喜劇效果，腳本的 T3 以上差分也用這兩張）
+>    · 基底：`renna_ad_si_front`／`sorana_ad_si_front`／`anya_ad_si_front`／`nouvelle_ad_si_front`（最後一張是 Ray 自製、美術轉 webp）
+>    程式端：`speakers.js` 各角色開一組 `ad` 差分（或 expr 前綴），腳本那一段的 portrait 改指這批；全部新檔、不用跳 `?v=`。取景值（`measure_si.py`）：
+>    ```
+>    anya_ad_si_front                     top:4 bot:1520 fx:0.508
+>    anya_ad_si_point                     top:26 bot:1521 fx:0.406
+>    anya_ad_si_scare                     top:2 bot:1527 fx:0.486
+>    nouvelle_ad_si_coverface             top:9 bot:1526 fx:0.583
+>    nouvelle_ad_si_coverfacepeek         top:4 bot:1527 fx:0.605
+>    nouvelle_ad_si_front                 top:3 bot:1522 fx:0.575
+>    nouvelle_ad_si_help                  top:9 bot:1533 fx:0.584
+>    renna_ad_si_bow                      top:5 bot:1510 fx:0.492
+>    renna_ad_si_command                  top:2 bot:1516 fx:0.512
+>    renna_ad_si_commandsoft              top:5 bot:1515 fx:0.531
+>    renna_ad_si_front                    top:2 bot:1524 fx:0.479
+>    renna_ad_si_lookaway                 top:6 bot:1519 fx:0.517
+>    renna_ad_si_remind                   top:6 bot:1521 fx:0.525
+>    renna_ad_si_smile                    top:3 bot:1508 fx:0.510
+>    renna_ad_si_think                    top:6 bot:1510 fx:0.508
+>    renna_ad_si_watch                    top:7 bot:1515 fx:0.522
+>    renna_ad_si_write                    top:3 bot:1521 fx:0.504
+>    sorana_ad_si_amaze                   top:4 bot:1526 fx:0.563
+>    sorana_ad_si_back                    top:6 bot:1530 fx:0.568
+>    sorana_ad_si_battlecry               top:7 bot:1520 fx:0.672
+>    sorana_ad_si_battlecrylookaside      top:7 bot:1519 fx:0.671
+>    sorana_ad_si_front                   top:6 bot:1522 fx:0.502
+>    sorana_ad_si_furious                 top:5 bot:1520 fx:0.503
+>    sorana_ad_si_guardtalk               top:4 bot:1526 fx:0.698
+>    sorana_ad_si_ready                   top:9 bot:1505 fx:0.601
+>    sorana_ad_si_smile                   top:10 bot:1525 fx:0.529
+>    sorana_ad_si_smirk                   top:6 bot:1524 fx:0.588
+>    sorana_ad_si_surprise                top:9 bot:1516 fx:0.576
+>    sorana_ad_si_tease                   top:7 bot:1529 fx:0.585
+>    ```
+>    ⚠ `sorana_ad_si_guardtalk.webp` 是 1024×1535（GPT 回來少一列，無礙）。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑；**§十三＝09-27 收工換機器：薇拉馮德 73 張、惡棍 6 張、索拉娜三張回版、還開著的事、三個不明刪除**；§十四＝GPT 拒畫的 alpha 交 PC 走本機；**§十五＝09-28 收工：蘿媞六張、cry 手指、市政廳室內、惡棍群體、產線教訓**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
