@@ -953,14 +953,14 @@ export const ART = {
        這一組值沒有可靠的自動量法（-636 已寫明），要改就再並排看一次。
      ⚠ **不要去動 `top`/`bot`** —— 那兩個是那張圖的客觀事實。
      ⚠ 也不要動 `CAST_EYE_MIX`：那是全域旋鈕，會把另外三個人一起改掉。 */
-  anya:   { cm:152, standCm:162, eye:34, fx:0.505, top:0, bot:1531,
-           side:'R', alt:null, base:'resources/si/anya_si_front.webp', expr:{
+  anya:   { cm:152, standCm:162, eye:34, fx:0.507, top:3, bot:1532,
+           side:'R', alt:null, base:'resources/si/anya_si_front.webp?v=2', expr:{
     /* ══ 瓦努努遺蹟・NIEM 那一段（ver -1186，Ray 交稿）══ 交件是 PNG，依 §5 轉 WebP；
        取景值逐張量（`tools/measure_si.py`），不沿用別張（§6.5）。 */
-    smilesneaky:  { src:'resources/si/anya_si_smilesneaky.webp', top:2, bot:1530, fx:0.441 },
+    smilesneaky:  { src:'resources/si/anya_si_smilesneaky.webp?v=2', top:3, bot:1529, fx:0.446 },
     /* ══ stage7・木雅克神殿（ver -922，Ray 交稿）══
        ⚠ `point` 的 `top:34` 是量出來的事實（她舉手指的姿勢，人物最上緣比別張低）。 */
-    point:        { src:'resources/si/anya_si_point.webp', top:34, bot:1518, fx:0.406 },
+    point:        { src:'resources/si/anya_si_point.webp?v=2', top:26, bot:1520, fx:0.460 },
     /* ══⚠⚠ **Q 版的驚嚇圖**（ver -924，Ray：「安雅的 CI scare 是 Q 版圖」「太大了，
        壓到平常的對話尺寸」）══ -923 是拿它當**全螢幕插圖**（`cg`）——那是錯的：
        它不是一張場景畫，是一張「反應圖」。改成**差分立繪**擺，走既有的 cm／standCm
@@ -975,12 +975,12 @@ export const ART = {
        ⚠ `rescale:true`：這張圖的比例與基本立繪完全不同（Q 版），要用它自己的高。 */
     chibiscared:  { src:'resources/ci/ci_anya_scared.webp', top:11, bot:1252, fx:0.442,
                     cm:95, standCm:162, rescale:true },
-    watch:        { src:'resources/si/anya_si_watch.webp', top:8, bot:1535, fx:0.476 },
-    surprise:    { src:'resources/si/anya_si_surprise.webp', top:5, bot:1527, fx:0.458 },   // Stage8（ver -953）
-    talkshy:      { src:'resources/si/anya_si_talkshy.webp', top:0, bot:1525, fx:0.451 },
+    watch:        { src:'resources/si/anya_si_watch.webp?v=2', top:8, bot:1535, fx:0.478 },
+    surprise:    { src:'resources/si/anya_si_surprise.webp?v=2', top:9, bot:1526, fx:0.459 },   // Stage8（ver -953）
+    talkshy:      { src:'resources/si/anya_si_talkshy.webp?v=2', top:2, bot:1523, fx:0.479 },
     /* 北方泊地教堂那一幕（ver -624）。逐張量（tools/measure_si.py）。 */
-    scare:   { src:'resources/si/anya_si_scare.webp',   top:0, bot:1511, fx:0.477 },
-    runworry: { src:'resources/si/anya_si_runworry.webp', top:0, bot:1534, fx:0.432 },
+    scare:   { src:'resources/si/anya_si_scare.webp?v=2',   top:2, bot:1515, fx:0.488 },
+    runworry: { src:'resources/si/anya_si_runworry.webp?v=2', top:8, bot:1511, fx:0.283 },
     /* ══ 娜塔莉那一幕（ver -636）══
        ⚠⚠ 這三張都是**近景**（比基本立繪畫得大：人物只畫到膝或大腿，頭相對大）。
          照 alpha 上下緣量 ＝「這 1535px 就是 162cm」→ 頭會比別人大一圈
@@ -996,35 +996,35 @@ export const ART = {
     /* ⚠ ver -637 換過圖：新的是**全身**（頭到靴底都在框內，取景與基本立繪一樣）——
        所以 `cm`／`standCm` 的近景修正整組拿掉，回到照量的預設。
        §5：換圖一定要重量取景值，這一組是重量的。 */
-    crying:   { src:'resources/si/anya_si_crying.webp',    top:6,  bot:1527, fx:0.454 },
-    desperate:{ src:'resources/si/anya_si_desperate.webp', top:13, bot:1535, fx:0.402, cm:110, standCm:162, faceFx:0.465, faceZoomK:0.63 },
+    crying:   { src:'resources/si/anya_si_crying.webp?v=2',    top:2,  bot:1522, fx:0.470 },
+    desperate:{ src:'resources/si/anya_si_desperate.webp?v=2', top:6, bot:1534, fx:0.412, cm:110, standCm:162, faceFx:0.465, faceZoomK:0.63 },
     /* ⚠⚠ `sobbing` 是**裁到膝蓋**的近景，不是全身（§6.5：半身圖照量 alpha 上下緣
        會把人放大好幾倍）。畫面上看得到的大約是「頭頂→膝」＝身高的 75%，
        所以 `cm` 給 162×0.75 ≈ **122** —— 這樣她的**頭**才會與其他立繪一樣大，
        而畫面下緣正好切在膝蓋（那就是近景該有的樣子）。
        ⚠ 95 是**看出來的**，不是量出來的：覺得頭太大就往上調、太小就往下調。 */
-    sob:  { src:'resources/si/anya_si_sob.webp',   top:4,  bot:1535, fx:0.320, cm:95, standCm:162 },
+    sob:  { src:'resources/si/anya_si_sob.webp?v=2',   top:8,  bot:1535, fx:0.377, cm:95, standCm:162 },
     /* 北方泊地第三天（ver -664，Ray 交稿）。四張都是**全身站姿**，照量即可
        —— 近景那幾張才要 `cm`／`standCm`（見上面的說明）。 */
-    silent:    { src:'resources/si/anya_si_silent.webp',     top:0, bot:1527, fx:0.432 },
-    panic:     { src:'resources/si/anya_si_panic.webp',      top:0, bot:1535, fx:0.395 },   // ver -842
+    silent:    { src:'resources/si/anya_si_silent.webp?v=2',     top:4, bot:1521, fx:0.423 },
+    panic:     { src:'resources/si/anya_si_panic.webp?v=2',      top:0, bot:1522, fx:0.434 },   // ver -842
     /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2` ＋ 取景值重量
        （0.426→0.522：差了將近一成的圖寬，沿用舊值臉會明顯偏左）。 */
-    talk:      { src:'resources/si/anya_si_talk.webp?v=2',   top:10, bot:1524, fx:0.522 },
+    talk:      { src:'resources/si/anya_si_talk.webp?v=3',   top:8, bot:1526, fx:0.483 },
     /* ══ Stage8 後段（ver -1092，Ray 交稿）══ 逐張量。 */
-    argue:     { src:'resources/si/anya_si_argue.webp',      top:0, bot:1530, fx:0.512 },
-    shy:       { src:'resources/si/anya_si_shy.webp',        top:0, bot:1528, fx:0.472 },
-    upset:     { src:'resources/si/anya_si_upset.webp',      top:0, bot:1523, fx:0.500 },
+    argue:     { src:'resources/si/anya_si_argue.webp?v=2',      top:2, bot:1528, fx:0.488 },
+    shy:       { src:'resources/si/anya_si_shy.webp?v=2',        top:8, bot:1527, fx:0.443 },
+    upset:     { src:'resources/si/anya_si_upset.webp?v=2',      top:0, bot:1522, fx:0.469 },
     /* 湖上甲板（ver -752，Ray 交稿）。逐張量（measure_si.py）。 */
-    wheel:     { src:'resources/si/anya_si_wheel.webp',      top:4, bot:1531, fx:0.483 },
-    wheelpoint:{ src:'resources/si/anya_si_wheelpoint.webp', top:0, bot:1529, fx:0.473 },
-    die:     { src:'resources/si/anya_si_die.webp',      top:0, bot:1526, fx:0.431 },
-    sleepy:    { src:'resources/si/anya_si_sleepy.webp',     top:0, bot:1518, fx:0.441 },   // ver -772
-    cry:       { src:'resources/si/anya_si_cry.webp',        top:0, bot:1528, fx:0.452 },
-    terrify:{ src:'resources/si/anya_si_terrify.webp', top:0, bot:1518, fx:0.448 },
+    wheel:     { src:'resources/si/anya_si_wheel.webp?v=2',      top:0, bot:1526, fx:0.477 },
+    wheelpoint:{ src:'resources/si/anya_si_wheelpoint.webp?v=2', top:5, bot:1514, fx:0.482 },
+    die:     { src:'resources/si/anya_si_die.webp?v=2',      top:0, bot:1525, fx:0.439 },
+    sleepy:    { src:'resources/si/anya_si_sleepy.webp?v=2',     top:0, bot:1515, fx:0.464 },   // ver -772
+    cry:       { src:'resources/si/anya_si_cry.webp?v=2',        top:0, bot:1532, fx:0.458 },
+    terrify:{ src:'resources/si/anya_si_terrify.webp?v=2', top:8, bot:1527, fx:0.458 },
     /* ver -870（森林行 G 稿）——measure_si 量測。 */
-    answer:    { src:'resources/si/anya_si_answer.webp',     top:3, bot:1531, fx:0.468 },
-    smileshy:  { src:'resources/si/anya_si_smileshy.webp',   top:6, bot:1532, fx:0.454 },
+    answer:    { src:'resources/si/anya_si_answer.webp?v=2',     top:2, bot:1534, fx:0.468 },
+    smileshy:  { src:'resources/si/anya_si_smileshy.webp?v=2',   top:5, bot:1524, fx:0.452 },
     /* ══ 惡夢化（ver -671）══
        ⚠⚠ **不可以照量 alpha 上下緣**（Ray：「安雅的聖徒化 SI 太低太小了，要抓臉」）：
          她頭上有一圈金色法環，`tools/measure_si.py` 量到的 `top:1` 是**法環頂**
@@ -1034,12 +1034,12 @@ export const ART = {
          腳底只看中央那一段（避開兩側披風與光帶）。這張的正解是 308 / 1530。
        ⚠⚠ `rescale:true`：人物在這張圖上只佔 1222px，而基本立繪是 1531px
          （小了 20%）—— 那不是雜訊，是真的畫得比較小，所以這一張用它自己的身高。 */
-    nightmareinstall:{ src:'resources/si/anya_si_nightmareinstall.webp',
-                       top:308, bot:1530, fx:0.519, rescale:true },
+    nightmareinstall:{ src:'resources/si/anya_si_nightmareinstall.webp?v=2',
+                       top:215, bot:1528, fx:0.500, rescale:true },
     /* stage2 出航那一段（ver -741，Ray 交稿）。全身站姿，照量（measure_si.py）。 */
-    lookup:    { src:'resources/si/anya_si_lookup.webp',     top:5, bot:1525, fx:0.479 },
-    nervous:   { src:'resources/si/anya_si_nervous.webp',    top:0, bot:1526, fx:0.459 },
-    scare2:   { src:'resources/si/anya_si_scare2.webp',    top:3, bot:1519, fx:0.356 },
+    lookup:    { src:'resources/si/anya_si_lookup.webp?v=2',     top:5, bot:1527, fx:0.479 },
+    nervous:   { src:'resources/si/anya_si_nervous.webp?v=2',    top:2, bot:1525, fx:0.479 },
+    scare2:   { src:'resources/si/anya_si_scare2.webp?v=2',    top:4, bot:1519, fx:0.364 },
     /* ══ 東方泊地・碼頭／甜品店 ＋ 貝利薩爾祭壇（ver -1372）══
        腳本（-1318／-1353）一共有 6 拍在用這兩個名字，圖是 Ray 這一輪才交的 ——
        在那之前一律**靜靜回退成基本立繪**（`script_lint.py` 每次都報，畫面上沒有訊息）。
@@ -1047,16 +1047,16 @@ export const ART = {
        ⚠ 兩張都是**全身站姿**（人物像素身高 1526／1521，與基本立繪的 1531 差 0.3%
          ＝雜訊）⇒ 照量即可，**不加** `cm`／`standCm`／`rescale`
          —— 那三個旋鈕是給近景與坐姿用的（見上面 `sobbing`／`desperate`）。 */
-    amaze:    { src:'resources/si/anya_si_amaze.webp',     top:1, bot:1527, fx:0.480 },
+    amaze:    { src:'resources/si/anya_si_amaze.webp?v=2',     top:4, bot:1526, fx:0.485 },
     /* ══ ver -1711：笑瞇眼幸福微笑（美術 2026-09-23 深夜交件）══ 底圖＝本尊、只換臉、
        alpha 與本尊逐位元相同 ⇒ 取景照抄本尊。 */
-    happy:    { src:'resources/si/anya_si_happy.webp',     top:0, bot:1531, fx:0.505 },
+    happy:    { src:'resources/si/anya_si_happy.webp?v=2',     top:3, bot:1530, fx:0.506 },
     /* ══ ver -1712：`smile` —— 圖早就在庫裡（-1554 小寫化時已存在），東泊約安雅那一拍
        `any('smile','好！')` 一直在用、卻沒登記 ⇒ 靜靜退回基本立繪（同 -1407 的 makeface）。
        全身站姿、另一張構圖 ⇒ 逐張量（`tools/measure_si.py`；同工具量本尊得 0/1531/0.505 ＝線上值）。 */
-    smile:    { src:'resources/si/anya_si_smile.webp',     top:0, bot:1526, fx:0.494 },
+    smile:    { src:'resources/si/anya_si_smile.webp?v=2',     top:0, bot:1521, fx:0.464 },
     /* ══ 貝利薩爾之後那一夜（ver -1386，Ray 交稿）══ 逐張量。 */
-    clap:      { src:'resources/si/anya_si_clap.webp',       top:0, bot:1517, fx:0.484 },
+    clap:      { src:'resources/si/anya_si_clap.webp?v=2',       top:4, bot:1521, fx:0.493 },
     /* ⚠⚠ ver -1407：圖早就交了（`Anya_SI_makeface.png`），只是**沒有登記進這張表** ——
        `script_lint` 一直在唸「ANYA 沒有 makeface 這張差分，會回退基本立繪」，
        而畫面上看不出來（靜靜換成基本立繪）。
@@ -1065,32 +1065,32 @@ export const ART = {
        ⚠ ver -1408 已轉成 `.webp`（原 PNG 進 `resources/_originals/SI/`，§5 的三步）。
        ⚠ 同一批還有一張 `Anya_SI_peace`（也轉好了）**還沒有登記**，目前沒有腳本用到它
          —— 要用的時候照這一列加一行就好（同姿勢，只寫 `src`）。 */
-    makeface:  { src:'resources/si/anya_si_makeface.webp' },
-    steady:    { src:'resources/si/anya_si_steady.webp',     top:0, bot:1526, fx:0.498 },
-    curious:   { src:'resources/si/anya_si_curious.webp',    top:3, bot:1524, fx:0.421 },
+    makeface:  { src:'resources/si/anya_si_makeface.webp?v=2', top:4, bot:1531, fx:0.469 },
+    steady:    { src:'resources/si/anya_si_steady.webp?v=2',     top:0, bot:1526, fx:0.499 },
+    curious:   { src:'resources/si/anya_si_curious.webp?v=2',    top:3, bot:1525, fx:0.428 },
     /* ══ 差分擴充 18 張（ver -1503 美術交件，-1507 接線）══
        ⚠ `wave`／`wheeltalk`／`whisper` 的 `fx` 目視重量（高舉的手套、鋪在右側的長髮
          會把 measure_si 的帶狀重心拉走）；`hug`／`thinking` 複核過，量到的就是對的。
        ⚠ `wheelback`／`wheeltalk` 的「wheel」是**船舵**不是輪椅（工單寫錯，美術已更正）。
        ⚠ `sleep` 不是全身圖 → `cm` ＋ `standCm`。 */
-    angry:     { src:'resources/si/anya_si_angry.webp', top:0, bot:1516, fx:0.495 },
-    armcross:  { src:'resources/si/anya_si_armcross.webp', top:0, bot:1524, fx:0.503 },
-    determine:{ src:'resources/si/anya_si_determine.webp', top:1, bot:1508, fx:0.496 },
-    eat:       { src:'resources/si/anya_si_eat.webp', top:0, bot:1530, fx:0.504 },
-    hug:       { src:'resources/si/anya_si_hug.webp', top:0, bot:1532, fx:0.467 },
-    laugh:     { src:'resources/si/anya_si_laugh.webp', top:1, bot:1509, fx:0.501 },
-    lookback:  { src:'resources/si/anya_si_lookback.webp', top:8, bot:1511, fx:0.504 },
-    nod:       { src:'resources/si/anya_si_nod.webp', top:2, bot:1512, fx:0.501 },
-    read:      { src:'resources/si/anya_si_read.webp', top:1, bot:1528, fx:0.501 },
-    relief:    { src:'resources/si/anya_si_relief.webp', top:0, bot:1508, fx:0.502 },
-    sleep:     { src:'resources/si/anya_si_sleep.webp', top:312, bot:1223, fx:0.548, cm:98, standCm:132 },   // 座（非全身圖）
-    stare:     { src:'resources/si/anya_si_stare.webp', top:3, bot:1521, fx:0.501 },
-    think:  { src:'resources/si/anya_si_think.webp', top:8, bot:1522, fx:0.474 },
-    wave:      { src:'resources/si/anya_si_wave.webp', top:0, bot:1521, fx:0.480 },   // fx 目視重量（量到 0.398）
-    wheelback: { src:'resources/si/anya_si_wheelback.webp', top:5, bot:1520, fx:0.501 },
-    wheeltalk: { src:'resources/si/anya_si_wheeltalk.webp', top:36, bot:1498, fx:0.525 },   // fx 目視重量（量到 0.462）
-    whisper:   { src:'resources/si/anya_si_whisper.webp', top:6, bot:1522, fx:0.315 },   // fx 目視重量（量到 0.345）
-    worry:     { src:'resources/si/anya_si_worry.webp', top:0, bot:1510, fx:0.488 },
+    angry:     { src:'resources/si/anya_si_angry.webp?v=2', top:3, bot:1525, fx:0.514 },
+    armcross:  { src:'resources/si/anya_si_armcross.webp?v=2', top:0, bot:1529, fx:0.505 },
+    determine:{ src:'resources/si/anya_si_determine.webp?v=2', top:4, bot:1521, fx:0.506 },
+    eat:       { src:'resources/si/anya_si_eat.webp?v=2', top:3, bot:1531, fx:0.508 },
+    hug:       { src:'resources/si/anya_si_hug.webp?v=2', top:0, bot:1534, fx:0.470 },
+    laugh:     { src:'resources/si/anya_si_laugh.webp?v=2', top:3, bot:1527, fx:0.474 },
+    lookback:  { src:'resources/si/anya_si_lookback.webp?v=2', top:5, bot:1515, fx:0.520 },
+    nod:       { src:'resources/si/anya_si_nod.webp?v=2', top:0, bot:1527, fx:0.499 },
+    read:      { src:'resources/si/anya_si_read.webp?v=2', top:3, bot:1522, fx:0.491 },
+    relief:    { src:'resources/si/anya_si_relief.webp?v=2', top:7, bot:1511, fx:0.490 },
+    sleep:     { src:'resources/si/anya_si_sleep.webp?v=2', top:209, bot:1269, fx:0.544, cm:98, standCm:132 },   // 座（非全身圖）
+    stare:     { src:'resources/si/anya_si_stare.webp?v=2', top:0, bot:1521, fx:0.506 },
+    think:  { src:'resources/si/anya_si_think.webp?v=2', top:11, bot:1521, fx:0.483 },
+    wave:      { src:'resources/si/anya_si_wave.webp?v=2', top:0, bot:1525, fx:0.490 },   // ver -1855：fx 以膚色重心複核（自動量被舉起的手拉偏；point／runworry 同）
+    wheelback: { src:'resources/si/anya_si_wheelback.webp?v=2', top:4, bot:1522, fx:0.504 },
+    wheeltalk: { src:'resources/si/anya_si_wheeltalk.webp?v=2', top:9, bot:1511, fx:0.458 },
+    whisper:   { src:'resources/si/anya_si_whisper.webp?v=2', top:6, bot:1515, fx:0.416 },
+    worry:     { src:'resources/si/anya_si_worry.webp?v=2', top:7, bot:1524, fx:0.492 },
   } },
   /* ══ 娜塔莉（ver -636，Ray 交稿）══ 安雅的侍女，只在北方泊地那一幕出現。
      ⚠⚠ 兩張圖都是**坐倒在地**的姿勢，不是站姿 —— 所以 `cm` 不是她的真實身高，

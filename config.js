@@ -83,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1854';
+export const VERSION = 'ver 2026.09.22-1855';
 
 export const GAME_CONFIG = {
 
@@ -4415,7 +4415,7 @@ export const ASSETS = {
      ⚠ 換成專屬的選人立繪時，`partners.nouvelle.siFit` 要重量（那是**那一張圖**的數字）。 */
   partner_nouvelle:"resources/si/nouvelle_si_front.webp",     // 諾薇兒 立繪（暫用對白圖）
   /* 安雅（ver -671）。⚠ 暫用她的對白立繪，同諾薇兒那一張的作法。 */
-  partner_anya:   "resources/si/anya_si_front.webp",
+  partner_anya:   "resources/si/anya_si_front.webp?v=2",   // ver -1855：安雅整套重畫（同名覆蓋）
   /* ── 教學（劇情版）的諾薇兒立繪與差分（ver -323（-893 前用詞））──────────────────────
      ⚠ 這一組**只給劇情帶起來的教學**用（tutorial.isStoryRun()）。首頁「教學」鈕
        那一場仍是芙蕾雅／蕾妮 —— Ray 指定兩者要分開。 */
