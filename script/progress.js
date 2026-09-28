@@ -1376,6 +1376,18 @@ const BA_CHAPTERS = [
     stage:14, clockHour:10, named:true, aff:A_AFF,
     flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb' ],
     enter:'flight', flight:{ town:'ravnsdal' } },
+  /* ══ Stage 15（ver -1860，Ray：「stage 14 結束後沒能接上 15」＝選單上沒有這一章）══
+     起點＝**救回蘿法那一幕**（ver -1850 定的 Stage 15 開頭）：聖索菲亞整段＋里朋莊園都演完、
+     被帶回旅店的那一刻 —— 一跳進來旅店就演 `ss_raid_home`（演完插 `ss_depart`，出航往羅賽爾）。
+     ⚠ 旗只列「會擋路／會重播」的那幾支：約會（`ss_date_*`）不給，那是自由探索的事。 */
+  { id:'stage15', name:'Stage 15', sub:'聖索菲亞：救回蘿法 → 出航往羅賽爾廢城',
+    stage:15, clockHour:22, named:true, aff:A_AFF,
+    flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb',
+            's14_flight_talk','ss_arrive','ss_cityhall','ss_4pm','ss_inn_merge',
+            'ss_slum_anya','ss_slum_nou','ss_slum_sor','ss_anya_after','ss_nou_after','ss_sor_resolve',
+            'ss_raid_go','ss_lodge_seen','ss_lodge_done','ss_avenue_done','ss_carriage_done',
+            'ss_forecourt_done','ss_hall_done','ss_raid_done' ],
+    enter:'town', town:'santasofia', node:'inn' },
 ];
 /* 插在 Stage 9 之後，選單才是 9 → 10-A…12-A → 10-B…12-B → 13 → 14 的順序。 */
 CHAPTERS.splice(CHAPTERS.findIndex(c=>c.id==='stage9')+1, 0, ...A_CHAPTERS);
