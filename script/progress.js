@@ -152,6 +152,19 @@ export function getStage(){
   return (isFinite(v) && v>=0) ? v : STAGE_DEFAULT;
 }
 export function setStage(n){ n=Math.max(0, n|0); wr(K.stage, n); return n; }
+/* ══ 旗標 → 章節下限（ver -1862，Ray：「我是在打完 S14 後的存檔，接不上 S15」）══
+   章節是在**演到那一拍**才升的（例：救回蘿法那一幕第一拍 `stage:15`，ver -1850 才加）。
+   在那之前就演過那一幕的存檔，那一拍永遠不會再演 ⇒ 章節號卡在舊值，後面的東西接不上。
+   ⇒ 讀檔與進城各補一次：那支旗插著、章節卻還沒到，就升上去（**只升不降**，鐵律 9 的守門看值）。
+   ⚠ 日後在已演過的段落補 `stage:` 時，順手在這裡加一列（同 memory：新劇情的鑰匙要舊存檔拿得到）。 */
+export const STAGE_BY_FLAG = [
+  { flag:'ss_raid_home', stage:15 },   // 救回蘿法（ver -1850）
+];
+export function stageFloorFromFlags(){
+  let st=getStage();
+  for(const r of STAGE_BY_FLAG) if(hasFlag(r.flag) && st < r.stage){ setStage(r.stage); st=r.stage; }
+  return st;
+}
 
 /* ── flags：一次性旗標集合（scene 播完寫入，存檔要帶）── */
 export function getFlags(){
@@ -1597,6 +1610,7 @@ export function runSnapshot(){
 export function runRestore(s){
   if(!s) return;
   if(s.progress)     restore(s.progress);
+  try{ stageFloorFromFlags(); }catch(_){}   // ver -1862：舊存檔的章節號補齊（見 STAGE_BY_FLAG）
   if(s.clock!=null)  clock.setElapsed(s.clock);
   if(s.inv)          inv.restore(s.inv);
   /* ⚠ 店鋪存貨**沒有也要清**（給舊存檔用）：不清的話讀了一個「還沒買過東西」的檔，

@@ -5209,6 +5209,7 @@ inn.setup({
 /* `node`（選填，ver -429）＝從哪一格開始，不寫就是城的入口。
    目前只有「章節」那顆跳關鈕在用；日後要記住離開時站在哪（§6.9 的清單）也走這裡。 */
 export function open(town, node, opts){
+  try{ prog.stageFloorFromFlags(); }catch(_){}   // ver -1862：舊存檔的章節號補齊（progress.STAGE_BY_FLAG）
   /* ══⚠⚠ **跨圖離開荒野＝收段**（ver -869（-893 前用詞））══ 森林的野生遭遇整張圖是一場
      （config.battles 的 session:'sf_wild'，收段＝斷崖那隻）——半途走回村子，
      那一場就沒打完：段落要收掉（資源回滿、帳與掉落作廢，同城鎮戰半途離場的
