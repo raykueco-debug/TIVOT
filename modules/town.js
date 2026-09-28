@@ -3719,12 +3719,11 @@ function nameOf(id){
   const T=TOWNS[townId]||{}, n=(T.nodes||{})[id];
   if(!n) return '';
   const s=String(n.name||'');
-  /* 節點名裡的城名前綴（`石製遺蹟　崩塌門廊`）跟著改（ver -1184）——
-     ⚠ 這樣資料那一邊**逐格的 `name` 一個字都不必動**：圖改名只改 `nameWhen`
-       一處（鐵律 7）。前綴對不上就原樣回傳（別座城的節點名本來就沒有前綴問題）。 */
-  const base=String(T.name||''), now=townName();
-  if(base && now && now!==base && s.indexOf(base+'　')===0) return now+s.slice(base.length);
-  return s;
+  /* ══ 城鎮探索時地名**不帶城名前綴**（ver -1830，Ray：「城鎮探索時地名不要加城市前綴」）══
+     `帝都　雜貨舖` → `雜貨舖`。資料上的 `name` 照舊留著前綴（別處——跨圖出口、存檔紀錄——要知道是哪座城），
+     只在這一支（這座城自己節點的顯示名，唯一的計算點）拿掉。-1184 的「圖改名時前綴跟著換」因此不需要了；
+     `stripTownPrefix` 照舊兩種前綴都認（資料上的原名／`nameWhen` 改過的現名）。 */
+  return stripTownPrefix(s);   // 剝前綴只有那一支（鐵律 8）
 }
 /* 這一格要試哪些底圖檔名（ver -575；-578 改成逐張展開候選鏈）：
    **分店優先，載不到退回節點原本那一張** —— 所以圖還沒交也不會變成空畫面。
