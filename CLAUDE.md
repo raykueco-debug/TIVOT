@@ -661,9 +661,10 @@ SPEC.md             行為規格
 - ⚠ **只放「對白裡會出現的立繪」**。戰鬥 cut-in（`Luna_CI_*`／`Renee_CI_*`／
   `Malzeno_CI_*`）留在 `partner/`,`Anya_CI_Search` 是探索 UI 也留著 —— 那些
   不是差分對象,混進來只會讓資料夾失去意義。
-- ⚠ 換掉或新增任何一張,`flight/index.html` 的 `PORTRAIT` 與 `script/speakers.js`
-  的 `SPEAKERS` **兩邊都要改**,而且 `eye/fx/top/bot` 四個取景值**必須重量**
-  （見 §6.5「新增立繪要量什麼」）。沿用上一張的數字人一定會歪。
+- ⚠ 換掉或新增任何一張,只改 `script/speakers.js` 的 `ART`（ver -1833 起**只有這一份**：
+  飛行頁開機時直接 import 它，自己那份 `PORTRAIT`／`PORTRAIT_EXPR` 已拿掉），而且
+  `eye/fx/top/bot` 四個取景值**必須重量**（見 §6.5「新增立繪要量什麼」）。沿用上一張的數字人一定會歪。
+  ⚠ 微調大小／位置用管理人的「立繪」調整區（首頁鈕），存檔直接寫進 `speakers.js`（`tools/devserver.py` 的 `/__tune`）。
 - ⚠ 露娜在對白裡目前借用 cut-in `partner/Luna_CI_exc.webp`（`speakers.js`
   標了 `unmeasured:true`）。`Luna_SI_seat` 是坐姿,還沒接進去。
 
