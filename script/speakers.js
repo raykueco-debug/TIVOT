@@ -1696,14 +1696,14 @@ export const ART = {
     complain: { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_complain.webp', top:5, bot:1528, fx:0.488 },
     lookaway: { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_lookaway.webp', top:3, bot:1523, fx:0.454 },
     cry:      { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_cry.webp',      top:11, bot:1525, fx:0.464 },   // ver -1793 Ray 交件
-    cryhug:   { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_cryhug.webp',   top:6,  bot:1530, fx:0.594 },
+    cryhug:   { fxShift:0, yShift:32, cm:132, src:'resources/si/npc/npc_ss_lofa_cryhug.webp',   top:6,  bot:1530, fx:0.594 },
   } },
   /* ══ 里朋家族的老大（ver -1793，Ray 交件）══ 身高是估的（成年男性 175）；measure_si 實量。
      ⚠ ver -1796 Ray：「里朋水平翻轉」⇒ `flip:true`（這張一律翻，同謝尼）。 */
   ripon: { cm:175, eye:30, fx:0.409, top:9, bot:1518,
            side:'R', alt:null, flip:true, base:'resources/si/npc/npc_ss_boss_clap.webp', expr:{
-    clap: { src:'resources/si/npc/npc_ss_boss_clap.webp', top:9, bot:1518, fx:0.409 },
-    hurt: { src:'resources/si/npc/npc_ss_boss_hurt.webp', top:9, bot:1529, fx:0.261 },
+    clap: { fxShift:-0.145, src:'resources/si/npc/npc_ss_boss_clap.webp', top:9, bot:1518, fx:0.409 },
+    hurt: { fxShift:-0.15, cm:156, src:'resources/si/npc/npc_ss_boss_hurt.webp', top:9, bot:1529, fx:0.261 },
   } },
   /* ══ 莊園門衛（ver -1793）══ 稿上直接點名敵人圖 `man_thug_pistol` —— 沒有另外的立繪，借敵人那一張。
      ⚠ 那張人物只畫到 34~1476（上下都留白），measure_si 實量。 */
