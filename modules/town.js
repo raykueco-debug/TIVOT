@@ -665,6 +665,12 @@ function maybeMeetOut(){
      **一定要自己問 `datingWho()`** —— 靠 `whoOutAt` 永遠等不到她。
    ⚠ 約會中走到**別的**格子什麼都不演：她就在你旁邊，不需要「碰到」。
    ⚠ 好感與「演過了」都是**演完才記**（`applyAff` ＋ `markMet`，見呼叫端）。 */
+/* 約會的好感門檻（ver -1813）：逐人覆寫 `OUTING.dateAffBy`，沒寫＝`OUTING.dateAff`。唯一的計算點（鐵律 7）。 */
+function dateNeed(who){
+  const by=OUTING.dateAffBy||{};
+  if(by[who]!=null) return by[who];
+  return OUTING.dateAff!=null ? OUTING.dateAff : 20;
+}
 function meetScene(){
   if(outOfStoryWindow()) return null;   // 章節窗（ver -1739）
   const dw=datingWho(), who = dw || whoOutAt(nodeId);
@@ -4954,6 +4960,7 @@ function afterArrive2(n, metDone){
                                       一進城就可能把其他三扇門全鎖住。 */
                                    dating: datingWho,
                                    dateAff: (OUTING.dateAff!=null ? OUTING.dateAff : 20),
+                                   dateNeed,   // 逐人門檻（ver -1813）；inn 先問它
                                    /* 同行結束回房＝睡著了（ver -567）：敲門只回
                                       `innStage1.nouAsleep` 那句旁白，約不出來。 */
                                    /* ⚠ 節點可以指定「這幾位睡著了」（`innAsleep`，
@@ -4978,8 +4985,7 @@ function afterArrive2(n, metDone){
                                      if((innDoorSet(n).out||[]).indexOf(who)>=0) return true;
                                      const kt=((n.innStage1||{}).knock||{})[who];
                                      if(!kt || !kt.absent) return false;
-                                     const need=(OUTING.dateAff!=null ? OUTING.dateAff : 20);
-                                     return ((prog.getAffection()||{})[String(who).toLowerCase()]||0) < need;
+                                     return ((prog.getAffection()||{})[String(who).toLowerCase()]||0) < dateNeed(who);
                                    },
                                    /* 這一格現在的門設定（`answerBy` / 逐人的敲門詞）。 */
                                    doors: innDoorSet(n),

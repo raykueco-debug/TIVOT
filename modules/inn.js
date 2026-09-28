@@ -598,7 +598,7 @@ function knock(i){
       }
       /* 好感的鑰匙是小寫的角色 id（`progress` 的 CHARS）—— speaker id 轉一下。 */
       const aff=(prog.getAffection()||{})[String(who).toLowerCase()]||0;
-      if(aff < (st1.dateAff!=null ? st1.dateAff : 20)){
+      if(aff < (st1.dateNeed ? st1.dateNeed(who) : (st1.dateAff!=null ? st1.dateAff : 20))){   // 逐人門檻（ver -1813：索菈娜 0）
         /* ⚠⚠ **沒寫 `low` 也要回一句**（ver -1360）：靜靜 return ＝「點了沒反應」，
            那是 §6.5.5 明令要避免的（「還不能做」不要靠藏起來或沒反應擋）。
            ⚠ 退路是**旁白**（名字欄空著）：那是主角自己的判斷，不是替她編一句話

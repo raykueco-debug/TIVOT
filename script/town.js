@@ -703,6 +703,9 @@ export const OUTING = {
      ⚠ 值＝**好感點數**不是段位號：段寬 20（`progress.tierOf`），T2 的地板就是 20。
        寫段位號的話這裡就得再算一次 `tierFloor`，那是第二個計算點。 */
   dateAff: 20,
+  /* 逐人覆寫門檻（ver -1813，Ray：「索約會不設門檻，不論好感高低」）。沒寫的人照上面那一個數字。
+     ⚠ 讀取只有 `modules/town.js` 的 `dateNeed(who)` 一支（旅店敲門與「好感不夠就不在房裡」兩邊都問它）。 */
+  dateAffBy: { SORANA:0 },
   /* ══⚠⚠ **約會場景事件演完 +3 好感**（ver -1771，Ray：「四女主每次約會完成該場景事件後都 +3 好感」）══
      實作在 `modules/town.js` 段落收尾那一支（`withWho` 的段落演完就給那個人，鐵律 8）——
      不要再在各段落裡逐一寫 `aff`。一個事件拆成兩段（聖索菲亞索菈娜那一條）時，前半寫 `dateAff:0`。
@@ -4866,7 +4869,7 @@ export const TOWNS = {
           nou('cringe','蕾娜小姐，那種話……'),
           ren('front','我知道。'),
           ren('handout','明天航行許可就會下來了，今天先好好休息吧。'),
-          ren('handout','羅賽爾的廢城很大喔，養足體力再出發吧。'),
+          ren('handout','羅賽爾的廢城很大喔，養足體力再出發吧。', { aff:{ sorana:5 } }),   // ver -1813 Ray：聖索菲亞事件結束 索好感 +5
         ] } ],
         /* ── 走出旅店（合流之後第一次離開這一格）── `onLeave`（同東泊 -1532）。
            ⚠ 蕾娜 `remind` ver -1793 交件，已換上。
@@ -10038,7 +10041,7 @@ export const TOWNS = {
             sor('tease','誰要那隻小偷龍偏偏掉水裡呢？'),
             { speaker:'PLAYER', blank:true },
             ren('blush','……'),
-            Object.assign(ren('blush','嗯，謝謝。'), { flags:['renna_t4_ok'] }),
+            Object.assign(ren('blush','嗯，謝謝。'), { flags:['renna_t4_ok'], aff:{ renna:3 } }),   // ver -1813 Ray：髮飾事件後 蕾娜好感 +3
           ] },
           /* ══⚠⚠⚠ **回到東泊的時刻**（ver -1396，Ray：「第一次古城首戰發生後強制
              回到東泊的時間固定在 18:00，若在觸發首戰之前玩家時間已經超過 15:00，
