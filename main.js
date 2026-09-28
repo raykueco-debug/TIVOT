@@ -1572,6 +1572,30 @@ function refreshContinue(){
 refreshContinue();
 /* ⚠ 讀檔前先殺光背景頁（ver -559，同 startStoryFresh 的理由）：藏著的飛行 iframe
    還活著的話，讀檔後它可能把記憶體裡的舊值寫回共用鑰匙。 */
+/* ══⚠⚠⚠ **首頁的收場只有一道門：被蓋住就殺**（ver -1847，Ray：「我直覺是某種東西堆疊背景運行
+   殺不乾淨，我懷疑是首頁」）══
+   鐵律 10 早就寫著「首頁離場即拔 `.on`」，但**拔的人是一份清單**（`hideHome` 的十幾個呼叫點）——
+   「開始故事」「繼續」讀進劇情／城鎮、章節跳關這幾條路**都沒有叫它**：劇情舞台是不透明的，
+   首頁被整個蓋住看不出來，但它**還活著**（團徽呼吸、三顆鈕的脈動一直在底下跑）。
+   ⇒ 鐵律 10 的「清單＝沒有實作」那一條：改成**一道門** —— 盯住「會蓋住首頁的那兩層」
+     （`#storyStage.on`、`body.flight-on`），任何一層掛上去而首頁還開著，就走 `hideHome`
+     （唯一那一支）收掉。呼叫端原本的 `hideHome` 照留（冪等），這一道是保證。
+   ⚠ 管理人模式下漏掉的那條路會在 console 記一筆名字（`watch:<哪一層>`）。 */
+(function homeKillGate(){
+  const st=$('storyStage');
+  const check=(why)=>{
+    const h=$('home'); if(!h || !h.classList.contains('on')) return;
+    const covered=(st && st.classList.contains('on')) || document.body.classList.contains('flight-on');
+    if(!covered) return;
+    if(document.body.classList.contains('testmode')) console.warn('[home] 被蓋住卻還活著，由守門收掉：', why);
+    hideHome('watch:'+why);
+  };
+  try{
+    if(st) new MutationObserver(()=>check('storyStage')).observe(st, { attributes:true, attributeFilter:['class'] });
+    new MutationObserver(()=>check('flight-on')).observe(document.body, { attributes:true, attributeFilter:['class'] });
+  }catch(_){}
+})();
+
 bindBtn('continueBtn', ()=>{ try{ killAllPages(); }catch(_){} if(!saveSys.loadLatest()) refreshContinue(); });
 /* 整備頁收掉了通知城鎮（ver -430）：武器店的整備教學要等玩家真的換完裝備，
    才把商店的單子擺出來（見 `modules/town.js` 的 `showTip`）。 */
