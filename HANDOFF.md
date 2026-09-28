@@ -118,7 +118,7 @@
 >    程式端：`script/speakers.js` 這 24 條 src **`?v=` 全跳**、取景值全換（`resources/si/_anya_restyle_worklist.md`「第二批取景值」）。⚠ `sleep` 是坐姿、人比舊版大，`measure_si` 提醒縱向只佔 69% ⇒ top/bot 不能當身高，`cm`／`standCm` 要看渲染調。
 >    ⇒ 第 29＋30 項接完之後，遊戲裡安雅就全部是新畫風了。
 > 31. **（09-28，Mac）索拉娜冒險者裝基底 `resources/si/sorana_ad_si_front.webp`**（Ray：「索拉娜的冒險者裝束立繪，一字領抹胸與短夾克，貼身七分褲」；命名同第 28 項 `<角色>_ad_si_<表情>`）
->    新檔、真 alpha。`measure_si.py`：`top:4 bot:1522 fx:0.533`。用在哪一段、要不要進 `speakers.js` 等 Ray（同 `renna_ad_si_front`）。
+>    新檔、真 alpha（09-28 同日改版：白抹胸→深色一字領，Ray：「配色不好看」；還沒有任何引用，所以不必跳 `?v=`）。`measure_si.py`：`top:4 bot:1523 fx:0.534`。用在哪一段、要不要進 `speakers.js` 等 Ray（同 `renna_ad_si_front`）。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑；**§十三＝09-27 收工換機器：薇拉馮德 73 張、惡棍 6 張、索拉娜三張回版、還開著的事、三個不明刪除**；§十四＝GPT 拒畫的 alpha 交 PC 走本機；**§十五＝09-28 收工：蘿媞六張、cry 手指、市政廳室內、惡棍群體、產線教訓**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
