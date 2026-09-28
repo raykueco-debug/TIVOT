@@ -54,7 +54,7 @@ TUNE_FILE = 'script/speakers.js'
 # ver -1818：飛行頁的立繪取景是另一份（`flight/index.html` 的 PORTRAIT／PORTRAIT_EXPR），憲法 §5 要兩邊一起改 ——
 # 所以 body 可以帶 `"file"`，只准這兩個。
 TUNE_FILES = {'script/speakers.js', 'flight/index.html'}
-TUNE_KEYS = {'cm': 1, 'yShift': 1, 'fxShift': 3}   # 欄位 → 小數位數
+TUNE_KEYS = {'cm': 1, 'standCm': 1, 'yShift': 1, 'fxShift': 3}   # 欄位 → 小數位數（standCm：ver -1827，兩份取景的頭頂要同一個數字）
 
 
 def _depth_map(text, start):
@@ -160,7 +160,8 @@ def _patch_at(text, at, needle, sets):
 # 還是不只一行（或一行都沒有）⇒ 409，不猜。只改那一行的差分字面：
 #   field=expr：`expr:'舊'` → `expr:'新'`，或輔助函式的第一個參數 `ren('舊',` → `ren('新',`（舊＝null 也吃）
 #   field=img ：`img:'舊'` → `img:'新'`（戰鬥內對白）
-BEAT_FILES = ['script/town.js', 'script/mainScript.js', 'config.js', 'script/evaluation.js']
+BEAT_FILES = ['script/town.js', 'script/mainScript.js', 'config.js', 'script/evaluation.js',
+              'flight/talks.js', 'flight/index.html']   # 飛行對白（ver -1827）：field=who ⇒ `who:'renna/relief'`
 
 
 def _js_str(s):
@@ -172,6 +173,8 @@ def _beat_line_ok(line, text, old, field):
         return False
     if field == 'img':
         return ("img:" + _js_str(old)) in line.replace(' ', '')
+    if field == 'who':
+        return ("who:" + _js_str(old)) in line.replace(' ', '')
     if old is None:
         return bool(re.search(r"\b[a-zA-Z_]\w*\(\s*null\s*,", line) or re.search(r"expr\s*:\s*null", line))
     return bool(re.search(r"expr\s*:\s*" + re.escape(_js_str(old)), line) or
@@ -181,6 +184,8 @@ def _beat_line_ok(line, text, old, field):
 def _beat_replace(line, old, new, field):
     if field == 'img':
         return re.sub(r"img\s*:\s*" + re.escape(_js_str(old)), "img:" + _js_str(new), line, count=1)
+    if field == 'who':
+        return re.sub(r"who\s*:\s*" + re.escape(_js_str(old)), "who:" + _js_str(new), line, count=1)
     olit = 'null' if old is None else re.escape(_js_str(old))
     out, n = re.subn(r"expr(\s*):(\s*)" + olit, lambda m: 'expr' + m.group(1) + ':' + m.group(2) + _js_str(new), line, count=1)
     if n:

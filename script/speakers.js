@@ -468,7 +468,7 @@ export const ART = {
                      · `standCm:165` ＝她**站姿的身高**，只管頭頂擺多高（不然頭會掉下去）。
                      ⚠ 只調 `cm` 一定失敗（那條規矩寫在 §6.5）：兩個旋鈕各管一件事。 */
                   worry:        { src:'resources/si/nouvelle_si_worry.webp', top:4, bot:1535, fx:0.683,
-                                  cm:139, standCm:165 },
+                                  cm:90, standCm:165 },
                   thinking:     { src:'resources/si/nouvelle_si_thinking.webp', top:3, bot:1535, fx:0.532 },
                   decode:     { src:'resources/si/nouvelle_si_decode.webp', top:4, bot:1528, fx:0.579 },
                   /* ══⚠⚠ ver -1547：美術**重交了 `sadsmilenoeye`（同名覆蓋）＋ 新增 `sadnoeye`**══
@@ -640,12 +640,12 @@ export const ART = {
        `flight/index.html` 的 PORTRAIT.sorana 是同一組數字，改一邊要改另一邊。 */
   /* `faceFx` ＝小方框頭像的橫向錨（ver -1046）：側面圖的臉在正中、身體偏右，
      照 `fx`（0.498）擺會把她右半切掉 —— 往右挪一截才框得住頭與肩。 */
-  sorana: { cm:176, eye:27, fx:0.498, faceFx:0.62, top:4, bot:1526, mirror:true,
+  sorana: { fxShift:0.05, yShift:25, cm:150, eye:27, fx:0.498, faceFx:0.62, top:4, bot:1526, mirror:true,
            side:'R', alt:null, base:'resources/si/sorana_si_side.webp?v=4', expr:{
     /* stage7・木雅克神殿（ver -922，Ray 交稿）。 */
-    confuse:      { src:'resources/si/sorana_si_confuse.webp?v=3', top:6, bot:1522, fx:0.510 },
-    front:        { src:'resources/si/sorana_si_front.webp?v=4',     top:5,  bot:1529, fx:0.659 },
-    side:         { src:'resources/si/sorana_si_side.webp?v=4',      top:4,  bot:1526, fx:0.498 },
+    confuse:      { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/sorana_si_confuse.webp?v=3', top:6, bot:1522, fx:0.510 },
+    front:        { fxShift:-0.03, yShift:25, cm:150, src:'resources/si/sorana_si_front.webp?v=4',     top:5,  bot:1529, fx:0.659 },
+    side:         { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_side.webp?v=4',      top:4,  bot:1526, fx:0.498 },
     /* ⚠⚠ ver -1047 交件（「無飛刀」那一張）：目前**只給破防計量表的頭像用**，
        所以只量了頭像要的 `faceFx`（頭那一塊的水平重心）。
        **要拿去演對白之前，`top`／`bot`／`fx` 必須先量過**（§6.5「新增立繪要量什麼」）
@@ -662,11 +662,11 @@ export const ART = {
        ⚠ 原 PNG 已進 `resources/_originals/SI/sorana_si_panic_src.png`。
        ⚠ 古墓底層那一拍（索「糟糕！」）稿上標了「注意大小，錨臉」——
          換成全身站姿之後那個顧慮本來就不存在了。 */
-    panic:     { src:'resources/si/sorana_si_panic.webp?v=2', top:8, bot:1522, fx:0.649 },
-    guard:        { src:'resources/si/sorana_si_guard.webp?v=2',         top:9,  bot:1527, fx:0.651, cm:168 },
-    guardtalk:    { src:'resources/si/sorana_si_guardtalk.webp?v=2',     top:5,  bot:1529, fx:0.653, cm:168 },
-    guardthink:{ src:'resources/si/sorana_si_guardthink.webp?v=2', top:8,  bot:1529, fx:0.672, cm:168 },
-    embarrass:   { src:'resources/si/sorana_si_embarrass.webp?v=4',    top:5,  bot:1529, fx:0.551 },
+    panic:     { fxShift:-0.06, yShift:25, cm:150, src:'resources/si/sorana_si_panic.webp?v=2', top:8, bot:1522, fx:0.649 },
+    guard:        { fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guard.webp?v=2',         top:9,  bot:1527, fx:0.651, cm:150 },
+    guardtalk:    { fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guardtalk.webp?v=2',     top:5,  bot:1529, fx:0.653, cm:150 },
+    guardthink:{ fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guardthink.webp?v=2', top:8,  bot:1529, fx:0.672, cm:150 },
+    embarrass:   { fxShift:0.015, yShift:14, cm:148, src:'resources/si/sorana_si_embarrass.webp?v=4',    top:5,  bot:1529, fx:0.551 },
     /* 夏爾村・夜襲之後那一段（`shinier.wild`）的「唉——又是南面那個遺蹟」。
        圖 ver -772 那一批就交了，但一直沒轉檔也沒登記 —— 於是那三句一路回退成
        基本立繪（script_lint 每次都在喊「SORANA 沒有 tired 這張差分」），ver -1290 補上。
@@ -675,7 +675,7 @@ export const ART = {
          改量兩眼睫毛的中點＝0.511（銀白髮的橫向重心 0.508 獨立佐證）。
        ⚠ 人物像素身高 1520，與基本立繪的 1522 差 0.1%＝雜訊，所以**不加 `rescale`**。
        ⚠ `bot` 是腳底不是裙襬的流蘇：實測 y=1500 只剩 x518..637（那是腳），流蘇沒那麼低。 */
-    tire:        { src:'resources/si/sorana_si_tire.webp?v=2',         top:2,  bot:1522, fx:0.511 },
+    tire:        { fxShift:0.025, yShift:25, cm:150, src:'resources/si/sorana_si_tire.webp?v=2',         top:2,  bot:1522, fx:0.511 },
     /* 瞭望（ver -1281，貝利薩爾降不下去那一段）。⚠ 取景值與 `flight/index.html`
        的 `PORTRAIT_EXPR.sorana.watch` **是同一次量測**，改一邊要改兩邊（§5／§6.10）。
        ⚠⚠ 飛行頁那一邊另外掛 **`cm:132 / standCm:168`**（ver -1289 的定案值，Ray 驗收過）
@@ -684,17 +684,17 @@ export const ART = {
        ⚠ ver -1291 更正：這一段原本寫的是 `cm:80 / standCm:176 / anchorBot`，
          那是 **-1280 的中途值**，被 -1281~-1289 那一串取代了（`anchorBot` 也拿掉了）。
          交叉註解寫錯比沒寫更糟 —— 下一個人會照著它去改另一邊。 */
-    watch:        { src:'resources/si/sorana_si_watch.webp?v=3',        top:6,  bot:1521, fx:0.680, cm:141, standCm:176 },
-    sorry:        { src:'resources/si/sorana_si_sorry.webp?v=3',         top:12, bot:1528, fx:0.511, cm:146, standCm:176 },
-    talk:         { src:'resources/si/sorana_si_talk.webp?v=3',          top:7,  bot:1525, fx:0.508 },
+    watch:        { fxShift:-0.095, yShift:-5, src:'resources/si/sorana_si_watch.webp?v=3',        top:6,  bot:1521, fx:0.680, cm:142, standCm:176 },
+    sorry:        { fxShift:0.04, yShift:-12, src:'resources/si/sorana_si_sorry.webp?v=3',         top:12, bot:1528, fx:0.511, cm:142, standCm:176 },
+    talk:         { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_talk.webp?v=3',          top:7,  bot:1525, fx:0.508 },
     /* `talksmile`（ver -1694 接線，第四輪新檔）。取景值逐張量（`tools/measure_si.py`）
        —— 它與 `talk` 的 bbox 差 3~4px（雜訊等級），但兩張是各自交件的圖、不是
        同一具身體換臉，所以照工單各用各的，不互抄。 */
-    talksmile:    { src:'resources/si/sorana_si_talksmile.webp',        top:6,  bot:1522, fx:0.512 },
-    laugh:        { src:'resources/si/sorana_si_laugh.webp?v=2',         top:3,  bot:1529, fx:0.579, cm:147, standCm:176 },
-    amaze:       { src:'resources/si/sorana_si_amaze.webp?v=3',        top:3,  bot:1527, fx:0.562, cm:142, standCm:176 },
+    talksmile:    { fxShift:0.01, yShift:25, cm:150, src:'resources/si/sorana_si_talksmile.webp',        top:6,  bot:1522, fx:0.512 },
+    laugh:        { fxShift:-0.015, yShift:-15, src:'resources/si/sorana_si_laugh.webp?v=2',         top:3,  bot:1529, fx:0.579, cm:145, standCm:176 },
+    amaze:       { fxShift:0.015, yShift:-15, src:'resources/si/sorana_si_amaze.webp?v=3',        top:3,  bot:1527, fx:0.562, cm:145, standCm:176 },
     /* 伊甸古墓・墓門那一段（ver -1188，同上，逐張量）。 */
-    whisper:      { src:'resources/si/sorana_si_whisper.webp?v=4',       top:4,   bot:1524, fx:0.524, cm:142, standCm:176 },   // ver -1728：回復重製前那張（美術 09-24，`_sorana_r3_worklist.md` §十六）
+    whisper:      { fxShift:-0.015, yShift:-15, src:'resources/si/sorana_si_whisper.webp?v=4',       top:4,   bot:1524, fx:0.524, cm:145, standCm:176 },   // ver -1728：回復重製前那張（美術 09-24，`_sorana_r3_worklist.md` §十六）
     /* ══ Stage8 後段（ver -1092，Ray 交稿）══ 逐張量。
        ⚠ `excite`／`excite2` 的畫布不是規約的 1024×1536（1028×1530／1026×1532）——
          那是裁切的誤差，**不是另一個尺**，所以**不加 `rescale`**：讓它照基本立繪的
@@ -706,30 +706,30 @@ export const ART = {
        檔名沒變、內容變了它照樣拿舊的那一份），取景值也**重量過**
        （top 0→6／bot 1535→1526／fx 0.500→0.454，沿用舊值會歪一截）。
        ⚠ `flight/index.html` 的 `PORTRAIT_EXPR.sorana.cringe` 是同一組數字，兩邊都改了。 */
-    cringe:       { src:'resources/si/sorana_si_cringe.webp?v=4',   top:3,  bot:1527, fx:0.454, cm:147, standCm:176 },
+    cringe:       { fxShift:0.045, yShift:1, src:'resources/si/sorana_si_cringe.webp?v=4',   top:3,  bot:1527, fx:0.454, cm:150, standCm:176 },
     /* ⚠ ver -1787：`excite` 鍵拿掉（Ray：圖刪了、鍵直接拿掉）；唯一的引用改用 `talksmile`。 */
-    excite2:      { src:'resources/si/sorana_si_excite2.webp?v=4',       top:9,  bot:1510, fx:0.688 },
+    excite2:      { fxShift:-0.075, yShift:25, cm:150, src:'resources/si/sorana_si_excite2.webp?v=4',       top:9,  bot:1510, fx:0.688 },
     /* ⚠ ver -1787：`furiouscute` 改指 `sorana_si_furious.webp`（Ray：「furious 路徑改指後刪」），取景照舊。 */
-    furiouscute:  { src:'resources/si/sorana_si_furious.webp',   top:9,  bot:1527, fx:0.474 },
-    think:        { src:'resources/si/sorana_si_think.webp?v=2',         top:10,  bot:1527, fx:0.529, cm:147, standCm:176 },
-    idea:         { src:'resources/si/sorana_si_idea.webp?v=3',          top:3,  bot:1525, fx:0.523, cm:150, standCm:176 },
-    ideasmile:    { src:'resources/si/sorana_si_ideasmile.webp',        top:3,  bot:1525, fx:0.523, cm:150, standCm:176 },   // ver -1788 新鍵：身體＝idea
+    furiouscute:  { fxShift:-0.005, yShift:29, cm:146, src:'resources/si/sorana_si_furious.webp',   top:9,  bot:1527, fx:0.474 },
+    think:        { fxShift:0.04, yShift:0, src:'resources/si/sorana_si_think.webp?v=2',         top:10,  bot:1527, fx:0.529, cm:150, standCm:176 },
+    idea:         { fxShift:0.015, yShift:-15, src:'resources/si/sorana_si_idea.webp?v=3',          top:3,  bot:1525, fx:0.523, cm:145, standCm:176 },
+    ideasmile:    { fxShift:-0.005, yShift:-15, src:'resources/si/sorana_si_ideasmile.webp',        top:3,  bot:1525, fx:0.523, cm:145, standCm:176 },   // ver -1788 新鍵：身體＝idea
     /* 夏爾村抵達稿（ver -772，Ray 交稿）。逐張量（measure_si.py）。
        ⚠ smirk/smile/remind/back/readysmile 交件是**白底**，程式端邊緣泛洪去背
          （白衣白髮保住，未去背原稿留在 _originals/SI 以備重做——Ray 指定不刪）。
        ⚠ `lauaghbig` 的拼法照稿（檔名如此），不要「修正」成 laughbig——鍵與檔名
          對得上才找得到圖。 */
-    smirk:        { src:'resources/si/sorana_si_smirk.webp?v=2',         top:8,  bot:1528, fx:0.582, cm:142, standCm:176 },
-    lauaghbig:    { src:'resources/si/sorana_si_lauaghbig.webp?v=3',     top:4,  bot:1529, fx:0.492 },
-    remind:       { src:'resources/si/sorana_si_remind.webp?v=3',        top:1,  bot:1525, fx:0.523, cm:140, standCm:176 },   // ver -1765：Ray「索的 remind 修壞，回上一版」—— 美術換回 d556b53 那版（同名覆蓋），取景 measure_si 重量
+    smirk:        { fxShift:0.015, yShift:-15, src:'resources/si/sorana_si_smirk.webp?v=2',         top:8,  bot:1528, fx:0.582, cm:145, standCm:176 },
+    lauaghbig:    { fxShift:0.02, yShift:25, cm:150, src:'resources/si/sorana_si_lauaghbig.webp?v=3',     top:4,  bot:1529, fx:0.492 },
+    remind:       { fxShift:-0.015, yShift:-15, src:'resources/si/sorana_si_remind.webp?v=3',        top:1,  bot:1525, fx:0.523, cm:145, standCm:176 },   // ver -1765：Ray「索的 remind 修壞，回上一版」—— 美術換回 d556b53 那版（同名覆蓋），取景 measure_si 重量
     /* ver -953：美術把 webp 換成新畫的 png，webp 版一度從磁碟消失（speakers 指得到、
        檔案卻不在）。轉回 webp 並**重量取景**（fx 0.547→0.528，差 0.019＝橫向約 19px，
        沿用舊值她會偏一格）；`?v=2` 是同名覆蓋的快取破除（§5）。 */
-    smile:        { src:'resources/si/sorana_si_smile.webp?v=4',    top:9,  bot:1530, fx:0.528 },
+    smile:        { fxShift:-0.015, yShift:25, cm:150, src:'resources/si/sorana_si_smile.webp?v=4',    top:9,  bot:1530, fx:0.528 },
     /* ver -953：Ray 為 Stage8「索：dying」補的圖（他原話：「dying 進去了」）。 */
-    die:        { src:'resources/si/sorana_si_die.webp?v=3',        top:7,  bot:1524, fx:0.452, cm:140, standCm:176 },
-    back:         { src:'resources/si/sorana_si_back.webp?v=3',       top:1,  bot:1516, fx:0.533 },  // ver -786 換新圖＋重量取景
-    ready:        { src:'resources/si/sorana_si_ready.webp?v=3',         top:6,  bot:1467, fx:0.567 },   // ver -1788：回 d556b53 那版（同名覆蓋），取景 measure_si 重量
+    die:        { fxShift:0.05, yShift:0, src:'resources/si/sorana_si_die.webp?v=3',        top:7,  bot:1524, fx:0.452, cm:135, standCm:176 },
+    back:         { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_back.webp?v=3',       top:1,  bot:1516, fx:0.533 },  // ver -786 換新圖＋重量取景
+    ready:        { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_ready.webp?v=3',         top:6,  bot:1467, fx:0.567 },   // ver -1788：回 d556b53 那版（同名覆蓋），取景 measure_si 重量
     /* ══⚠⚠⚠ **背著安雅的合體立繪**（ver -1646，Ray 指定三處對白用它）══
        ⚠⚠ 這是**兩個人**的一張圖（索菈娜在右、背著安雅），而說話的人是索菈娜
          ⇒ `fx` 錨的是**索菈娜的臉**（0.82，偏右）。拿整張圖的中心去錨會讓
@@ -739,26 +739,26 @@ export const ART = {
        ⚠ `cm` 沿用索菈娜那一層（176）—— 這張是斜著抱的姿勢，真要「精準」得把
          `cm` 帶到 200 以上，而那會超過 `CAST_TALL` 178 把全劇組一起縮小（§6.5）。
          先照預設跑，要調就動 `cm`／`standCm` 這兩個旋鈕（不要動 top/bot）。 */
-    backcarry:    { src:'resources/si/soranaanya_si_backcarry.webp', top:0, bot:1534, fx:0.820, withChar:['ANYA'] },
-    readysmile:   { src:'resources/si/sorana_si_readysmile.webp?v=3', top:6,  bot:1534, fx:0.578 },  // ver -837 換新圖＋重量取景（?v=2：同名覆蓋）
+    backcarry:    { fxShift:-0.035, yShift:25, cm:150, src:'resources/si/soranaanya_si_backcarry.webp', top:0, bot:1534, fx:0.820, withChar:['ANYA'] },
+    readysmile:   { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_readysmile.webp?v=3', top:6,  bot:1534, fx:0.578 },  // ver -837 換新圖＋重量取景（?v=2：同名覆蓋）
     /* ver -837（Ray：「我的 tease 也被刪了，找回來」）：從 _originals 的透明版轉回，
        逐張量（measure_si.py）。腳本還沒有用到它 —— 先掛著備用。 */
-    tease:        { src:'resources/si/sorana_si_tease.webp',         top:7,  bot:1528, fx:0.583, cm:145, standCm:176 },
-    surprise:    { src:'resources/si/sorana_si_surprise.webp?v=3',     top:9,  bot:1522, fx:0.537 },   // ver -842
+    tease:        { fxShift:-0.04, yShift:-15, src:'resources/si/sorana_si_tease.webp',         top:7,  bot:1528, fx:0.583, cm:145, standCm:176 },
+    surprise:    { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_surprise.webp?v=3',     top:9,  bot:1522, fx:0.537 },   // ver -842
     /* Stage8（ver -953）。 */
-    upset:        { src:'resources/si/sorana_si_upset.webp?v=2',         top:5,  bot:1526, fx:0.514 },
+    upset:        { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_upset.webp?v=2',         top:5,  bot:1526, fx:0.514 },
     /* ⚠⚠ `furiousq` 的畫布是 **1205×1305**，不是規約的 1024×1536（§5）——
        人物在它裡面只有 1288px 高，而基本立繪是 ~1520px。差分預設**沿用基本立繪的
        像素身高**當分母（ver -346：避免每換一次表情就縮放一次），套在這張上會小一截，
        所以要明寫 `rescale:true` ＝ 這一張用它自己的高（同諾薇兒 SAINT INSTALL 那張）。
        ⚠ 圖若之後補成 1024×1536，這一行的 rescale 與 top/bot 都要重來。 */
-    furiousq:     { src:'resources/si/sorana_si_furiousq.webp?v=2',      top:5,  bot:1293, fx:0.535, rescale:true },
-    hug:          { src:'resources/si/sorana_si_hug.webp?v=2',       top:11, bot:1485, fx:0.408, cm:111, standCm:176 },  // ver -843：Ray 換新圖＋重量（?v=2 同名覆蓋）
+    furiousq:     { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_furiousq.webp?v=2',      top:5,  bot:1293, fx:0.535, rescale:true },
+    hug:          { fxShift:0.05, yShift:-1, src:'resources/si/sorana_si_hug.webp?v=2',       top:11, bot:1485, fx:0.408, cm:150, standCm:176 },  // ver -843：Ray 換新圖＋重量（?v=2 同名覆蓋）
     /* ══ 貝利薩爾・祭壇那一段（ver -1372）══ 同蕾娜那兩張：腳本 -1353 就在用這個名字，
        圖這一輪才交。⚠ `fx:0.668` 是舉劍開闊的姿勢量出來的（她平常那幾張 ≈0.5），
        這是**那一張圖**的事實，不可沿用（§6.5）。人物像素身高 1517，與基本立繪的
        1522 差 0.3%＝雜訊 ⇒ **不加 `rescale`**（同 `tired` 那一條的判準）。 */
-    battlecry:    { src:'resources/si/sorana_si_battlecry.webp?v=3',  top:6,  bot:1523, fx:0.668 },
+    battlecry:    { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_battlecry.webp?v=3',  top:6,  bot:1523, fx:0.668 },
     /* ══ **同一具身體、六張不同的臉**（ver -1671 接線；圖是 -1670 後 Ray 的 SD 臉）══
        ⚠⚠ **取景值照抄 `battlecry` 的三個數字，不要只寫 `src`** —— 實測六張的
          alpha bbox 一模一樣（身體根本沒重畫，只換臉）⇒ 該沿用的是 `battlecry`
@@ -774,17 +774,17 @@ export const ART = {
          美術交接寫「`battlecry` 加 `?v=2`」，但它在 -1670 之後**又被覆蓋一次**
          （16 張那一批一次、SD 臉那一批一次）⇒ 實際是 **v3**。
          這五個是**新增**不是覆蓋（覆蓋 0 次）⇒ **不掛 `?v=`**。 */
-    battlecrylook:        { src:'resources/si/sorana_si_battlecrylook.webp', top:6, bot:1523, fx:0.668 },
-    battlecrylookaside:   { src:'resources/si/sorana_si_battlecrylookaside.webp', top:6, bot:1523, fx:0.668 },
-    battlecrylookserious: { src:'resources/si/sorana_si_battlecrylookserious.webp', top:6, bot:1523, fx:0.668 },
-    battlecrylookup:      { src:'resources/si/sorana_si_battlecrylookup.webp', top:6, bot:1523, fx:0.668 },
-    battlecryserious:     { src:'resources/si/sorana_si_battlecryserious.webp', top:6, bot:1523, fx:0.668 },
+    battlecrylook:        { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_battlecrylook.webp', top:6, bot:1523, fx:0.668 },
+    battlecrylookaside:   { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_battlecrylookaside.webp', top:6, bot:1523, fx:0.668 },
+    battlecrylookserious: { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_battlecrylookserious.webp', top:6, bot:1523, fx:0.668 },
+    battlecrylookup:      { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_battlecrylookup.webp', top:6, bot:1523, fx:0.668 },
+    battlecryserious:     { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_battlecryserious.webp', top:6, bot:1523, fx:0.668 },
     /* ══ 差分擴充 18 張（ver -1503 美術交件，-1507 接線）══
        ⚠ `lookaway`／`salute`／`scared`／`wave` 的 `fx` 目視重量（同上）。
        ⚠ `sleep` 不是全身圖 → `cm` ＋ `standCm`。 */
-    angry:     { src:'resources/si/sorana_si_angry.webp?v=4', top:12, bot:1530, fx:0.522 },
-    armcross:  { src:'resources/si/sorana_si_armcross.webp?v=4', top:3, bot:1529, fx:0.547 },
-    blush:   { src:'resources/si/sorana_si_blush.webp?v=3', top:6, bot:1513, fx:0.560 },
+    angry:     { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_angry.webp?v=4', top:12, bot:1530, fx:0.522 },
+    armcross:  { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_armcross.webp?v=4', top:3, bot:1529, fx:0.547 },
+    blush:   { fxShift:0.05, yShift:27, cm:148, src:'resources/si/sorana_si_blush.webp?v=3', top:6, bot:1513, fx:0.560 },
     /* ══⚠⚠⚠ **ver -1573：美術同名覆蓋了 12 張（-1571／-1572 那兩個 art commit）**══
        同名覆蓋一定要做兩件事，少一件就是**靜靜壞掉**：
        ① **跳 `?v=`**（§5 的 -650）：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份 ——
@@ -826,7 +826,7 @@ export const ART = {
            **給他決定用的**，不是我自作主張套上去的。要改就是三個數字的事。
          ⚠ 量法可重跑（三十行，用 PIL）：亮度>150、彩度<70、偏藍 ⇒ 頭髮；
            取最上面那一團的橫向質心 ÷ 圖寬。 */
-    cry:    { src:'resources/si/sorana_si_cry.webp?v=4', top:4, bot:1515, fx:0.550 },
+    cry:    { fxShift:-0.02, yShift:25, cm:150, src:'resources/si/sorana_si_cry.webp?v=4', top:4, bot:1515, fx:0.550 },
     /* ══ `crybig` ＝**大哭**（ver -1578，Ray 自己產的圖；美術工單 -1556 §三）══
        ⚠ 與 `cry`（一般哭）**並存**，不是取代 —— 兩個鍵指兩張不同的圖。
        ⚠ 這是**新增**不是同名覆蓋 ⇒ **不掛 `?v=`**（§5：新增比覆蓋安全）。
@@ -834,29 +834,29 @@ export const ART = {
          —— `cry` 是站直、單手抵著臉；這一張是仰頭、雙手收在胸前、膝蓋併攏。
          §5 的「同姿勢沿用」講的是同一個姿勢的差分，這一張不是。
        ⚠ 原 PNG 已依 §5 移進 `resources/_originals/si/`（不入版控、遊戲不載）。 */
-    crybig: { src:'resources/si/sorana_si_crybig.webp?v=3', top:7, bot:1524, fx:0.532 },
+    crybig: { fxShift:0.005, yShift:38, cm:135, src:'resources/si/sorana_si_crybig.webp?v=3', top:7, bot:1524, fx:0.532 },
     /* `cryclose` ＝哭・近景（ver -1694 接線，第四輪新檔）。
        ⚠ alpha bbox 與 `cry` 相同（10/1580）⇒ **同一具身體換臉**，取景值沿用 `cry`
          那一組（§5 的 -649），不用工單那個各自量出來的 0.552。 */
-    cryclose: { src:'resources/si/sorana_si_cryclose.webp', top:11, bot:1579, fx:0.550 },
-    determine:{ src:'resources/si/sorana_si_determine.webp?v=4', top:10, bot:1523, fx:0.547 },
+    cryclose: { fxShift:-0.02, yShift:25, cm:150, src:'resources/si/sorana_si_cryclose.webp', top:11, bot:1579, fx:0.550 },
+    determine:{ fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_determine.webp?v=4', top:10, bot:1523, fx:0.547 },
     /* ⚠⚠ ver -1536：這兩張**圖早就在版控裡**，只是從來沒登記進這張表 ——
        雪都酒吧那一段（`ravnsdal.bar`）從 -1522 起就寫著 `drink`／`shy`，
        線上一直**靜靜退回本尊立繪**（`script_lint.py` 那八行
        「SORANA 沒有 drink／shy 這張差分」講的就是它）。
        ⚠ 取景值 `tools/measure_si.py` 實測，沒有抄別張。 */
-    drink:     { src:'resources/si/sorana_si_drink.webp?v=4', top:4, bot:1527, fx:0.442 },
-    shy:       { src:'resources/si/sorana_si_shy.webp?v=2',   top:7, bot:1531, fx:0.586 },
-    eat:       { src:'resources/si/sorana_si_eat.webp?v=4', top:1, bot:1529, fx:0.569 },
-    lookaway:  { src:'resources/si/sorana_si_lookaway.webp?v=3', top:4, bot:1522, fx:0.610 },   // fx 目視手調，不隨新圖走（新圖量到 0.623，含垂下的頭髮）
-    lookawayupset: { src:'resources/si/sorana_si_lookawayupset.webp', top:4, bot:1522, fx:0.610 },   // ver -1788 新鍵：身體＝lookaway
-    nod:       { src:'resources/si/sorana_si_nod.webp?v=3', top:6, bot:1527, fx:0.529 },
+    drink:     { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_drink.webp?v=4', top:4, bot:1527, fx:0.442 },
+    shy:       { fxShift:-0.03, yShift:25, cm:150, src:'resources/si/sorana_si_shy.webp?v=2',   top:7, bot:1531, fx:0.586 },
+    eat:       { fxShift:0.005, yShift:25, cm:150, src:'resources/si/sorana_si_eat.webp?v=4', top:1, bot:1529, fx:0.569 },
+    lookaway:  { fxShift:-0.045, yShift:25, cm:150, src:'resources/si/sorana_si_lookaway.webp?v=3', top:4, bot:1522, fx:0.610 },   // fx 目視手調，不隨新圖走（新圖量到 0.623，含垂下的頭髮）
+    lookawayupset: { fxShift:-0.045, yShift:25, cm:150, src:'resources/si/sorana_si_lookawayupset.webp', top:4, bot:1522, fx:0.610 },   // ver -1788 新鍵：身體＝lookaway
+    nod:       { fxShift:0.005, yShift:25, cm:150, src:'resources/si/sorana_si_nod.webp?v=3', top:6, bot:1527, fx:0.529 },
     /* ══ 唸報告的那一張（ver -1550，Ray：「索拉娜唸報告時全用 `Sorana_SI_read`，
        判斷是**雙引號跟日期開頭**的台詞」「**只限那場戲**」）══
        用在雪都圖書館那一段（`ravnsdal.library`）：她把蕾娜的評鑑報告唸出來的那幾句。
        ⚠ 「只限那場戲」＝**不要**拿雙引號去全庫掃：`sor('tease','修女不都是只會
          『神啊～』之類的嗎？')` 也有雙引號，那是她在學人講話，不是唸報告。 */
-    read:        { src:'resources/si/sorana_si_read.webp?v=2',        top:4, bot:1533, fx:0.640, cm:154, standCm:176 },
+    read:        { fxShift:0.05, yShift:0, src:'resources/si/sorana_si_read.webp?v=2',        top:4, bot:1533, fx:0.640, cm:150, standCm:176 },
     /* ══ 唸報告的四張情緒差分（ver -1553，Ray 逐句指定）══
        ⚠⚠ **交件的檔名大小寫不一致**（`Sorana_SI_readshock.png`／`Sorana_SI_readsad.png`
          但 `sorana_SI_readhappy.png`／`sorana_SI_readconfuse.png`）——
@@ -866,22 +866,22 @@ export const ART = {
            （同 §6.5.4 的時段尾綴那一課）。
        ⚠ 取景值逐張量（`tools/measure_si.py`），沒有互抄 —— 四張的 `fx` 是
          0.645／0.644／0.643／0.671，`readconfuse` 明顯偏右（她把本子推遠了）。 */
-    readshock:   { src:'resources/si/sorana_si_readshock.webp?v=2',   top:4, bot:1522, fx:0.645, cm:153, standCm:176 },
-    readhappy:   { src:'resources/si/sorana_si_readhappy.webp?v=2',   top:0, bot:1531, fx:0.644, cm:154, standCm:176 },
-    readsad:     { src:'resources/si/sorana_si_readsad.webp?v=2',     top:5, bot:1530, fx:0.643, cm:154, standCm:176 },
-    readconfuse: { src:'resources/si/sorana_si_readconfuse.webp?v=2', top:9, bot:1528, fx:0.671, cm:142, standCm:176 },
-    point:     { src:'resources/si/sorana_si_point.webp?v=3', top:9, bot:1523, fx:0.543 },
-    relief:    { src:'resources/si/sorana_si_relief.webp?v=4', top:9, bot:1517, fx:0.555 },   // ver -1783：回上一版（d556b53），同名覆蓋跳 ?v=3、取景重量
-    sad:       { src:'resources/si/sorana_si_sad.webp?v=3', top:3, bot:1527, fx:0.515 },
-    salute:    { src:'resources/si/sorana_si_salute.webp?v=3', top:11, bot:1525, fx:0.580 },   // fx 目視手調，不隨新圖走（新圖量到 0.581，含舉起的手臂）
-    scare:    { src:'resources/si/sorana_si_scare.webp?v=3', top:16, bot:1518, fx:0.540 },   // fx 目視重量（量到 0.443）
-    serious:   { src:'resources/si/sorana_si_serious.webp?v=3', top:6, bot:1524, fx:0.576 },
+    readshock:   { fxShift:0.05, yShift:0, src:'resources/si/sorana_si_readshock.webp?v=2',   top:4, bot:1522, fx:0.645, cm:150, standCm:176 },
+    readhappy:   { fxShift:0.05, yShift:0, src:'resources/si/sorana_si_readhappy.webp?v=2',   top:0, bot:1531, fx:0.644, cm:150, standCm:176 },
+    readsad:     { fxShift:0.05, yShift:0, src:'resources/si/sorana_si_readsad.webp?v=2',     top:5, bot:1530, fx:0.643, cm:150, standCm:176 },
+    readconfuse: { fxShift:0.05, yShift:0, src:'resources/si/sorana_si_readconfuse.webp?v=2', top:9, bot:1528, fx:0.671, cm:150, standCm:176 },
+    point:     { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_point.webp?v=3', top:9, bot:1523, fx:0.543 },
+    relief:    { fxShift:-0.02, yShift:25, cm:150, src:'resources/si/sorana_si_relief.webp?v=4', top:9, bot:1517, fx:0.555 },   // ver -1783：回上一版（d556b53），同名覆蓋跳 ?v=3、取景重量
+    sad:       { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/sorana_si_sad.webp?v=3', top:3, bot:1527, fx:0.515 },
+    salute:    { fxShift:-0.005, yShift:25, cm:150, src:'resources/si/sorana_si_salute.webp?v=3', top:11, bot:1525, fx:0.580 },   // fx 目視手調，不隨新圖走（新圖量到 0.581，含舉起的手臂）
+    scare:    { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_scare.webp?v=3', top:16, bot:1518, fx:0.540 },   // fx 目視重量（量到 0.443）
+    serious:   { fxShift:-0.04, yShift:25, cm:150, src:'resources/si/sorana_si_serious.webp?v=3', top:6, bot:1524, fx:0.576 },
     /* ⚠⚠ **top/bot 於 ver -1632 重量**（新版同名覆蓋，§5：換圖一定要重量取景值）：
        304/1231 → **230/1424**（人物在新圖裡佔的高度多了 29%）。
        ⚠ `fx` 一律不動（Ray -1578 的指示）；`cm`/`standCm` 是**旋鈕**不是事實，
          沒有 Ray 看畫面不動 —— 但人物變高 29% ⇒ 同一個 `cm` 會讓她**小 22%**，
          要維持原本的大小得把 `cm` 往上帶（147→約 189，而那會超過 `CAST_TALL` 178）。 */
-    sleep:     { src:'resources/si/sorana_si_sleep.webp?v=2', top:230, bot:1424, fx:0.461, cm:147, standCm:140 },   // 座（非全身圖）
+    sleep:     { fxShift:0.05, yShift:25, src:'resources/si/sorana_si_sleep.webp?v=2', top:230, bot:1424, fx:0.461, cm:150, standCm:140 },   // 座（非全身圖）
     /* ══⚠⚠⚠ **`carrynouvelle` 一族 ＝ 索菈娜背著諾薇兒**（ver -1671，Ray 交件＋交稿）══
        畫面上是**兩個人**，所以這一族的取景與別張不同 —— 三個數字都是量出來的：
          · 索菈娜自己：頭頂 161 → 腳底 1519 ＝ 1358px ＝ 176cm ⇒ **7.72 px/cm**
@@ -908,9 +908,9 @@ export const ART = {
        ⚠ 庫裡還有第五張 `carrynouvellejealous`，Ray -1671 指示**先留著**、稿上沒用到，
          所以**不接線**（接了就是一個沒有人叫得到的鍵）。 */
     /* ⚠ ver -1787：基本那張 `carrynouvelle` 鍵拿掉（Ray：圖刪了、鍵直接拿掉）；兩處引用改用 `carrynouvellesmirk`。 */
-    carrynouvellescream: { src:'resources/si/sorana_si_carrynouvellescream.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },
-    carrynouvellesmirk:  { src:'resources/si/sorana_si_carrynouvellesmirk.webp',  top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },
-    carrynouvelleshock:  { src:'resources/si/sorana_si_carrynouvelleshock.webp?v=2',  top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },
+    carrynouvellescream: { fxShift:-0.075, yShift:0, src:'resources/si/sorana_si_carrynouvellescream.webp', top:5, bot:1520, fx:0.667, cm:150, standCm:178, withChar:['NOUVELLE'] },
+    carrynouvellesmirk:  { fxShift:-0.075, yShift:0, src:'resources/si/sorana_si_carrynouvellesmirk.webp',  top:5, bot:1520, fx:0.667, cm:150, standCm:178, withChar:['NOUVELLE'] },
+    carrynouvelleshock:  { fxShift:-0.075, yShift:0, src:'resources/si/sorana_si_carrynouvelleshock.webp?v=2',  top:5, bot:1520, fx:0.667, cm:150, standCm:178, withChar:['NOUVELLE'] },
     /* ⚠ ver -1694 接線（圖 -1671 就在庫裡，Ray 當時說「先留著」；第四輪他又重出了一張）。
        ⚠⚠ 取景值**照抄這一族的四張**，不用美術工單的 `fx:0.648`／不填 `cm`：
          · 五張的 alpha bbox 實測兩兩相同（6~7 / 1519，差 1px＝雜訊）⇒ 同一具身體換臉
@@ -921,21 +921,21 @@ export const ART = {
            在 expr 層不成立（`CAST_TALL` 只取角色層的 `cm`）。
        ⚠ 工單的 `fx:0.648` 與這一族的 0.667 差 0.019（≈8 CSS px），兩邊都說是索菈娜的
          兩眼中點。**沒有動線上那四張** —— 要改就五張一起改，那是 Ray 看畫面的事。 */
-    carrynouvellejealous:{ src:'resources/si/sorana_si_carrynouvellejealous.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },
+    carrynouvellejealous:{ fxShift:-0.075, yShift:0, src:'resources/si/sorana_si_carrynouvellejealous.webp', top:5, bot:1520, fx:0.667, cm:150, standCm:178, withChar:['NOUVELLE'] },
     /* ver -1707：shock 的索拉娜 ＋ jealous 的諾薇兒臉，alpha 逐位元沿用 ⇒ 取景照抄這一族。 */
-    carrynouvelleshock2: { src:'resources/si/sorana_si_carrynouvelleshock2.webp', top:5, bot:1520, fx:0.667, cm:196, standCm:178, withChar:['NOUVELLE'] },
+    carrynouvelleshock2: { fxShift:-0.075, yShift:0, src:'resources/si/sorana_si_carrynouvelleshock2.webp', top:5, bot:1520, fx:0.667, cm:150, standCm:178, withChar:['NOUVELLE'] },
     /* ══ 蕾娜＋索菈娜一張圖（ver -1707，Ray 確認：登記成索菈娜的表情）══
        這一拍蕾娜先下台（`hide`），這一張同時代表兩個人；`withChar:['RENNA']` ＝蕾娜開口也亮。
        ⚠ `fx` 是**估的**（兩人中間偏索菈娜，0.62）：錨在索菈娜的臉（0.51）的話，
          右半邊的蕾娜會被推出畫面。`top`/`bot` 是 alpha 上下緣。 */
     /* ⚠ ver -1710（Ray：「我們都在喔那一張從左邊出」）：這一拍擺左邊，`mirror:false` ＝擺到左邊也**不翻**
        （索菈娜本人可翻，但這張兩個人，翻了蕾娜會換到另一邊）。 */
-    rennaannoy:    { src:'resources/si/rennasorana_si_annoyedd.webp', top:4, bot:1534, fx:0.30, withChar:['RENNA'], mirror:false, side:'L' },
-    rennaannoyc:   { src:'resources/si/rennasorana_si_annoyedc.webp', top:4, bot:1535, fx:0.33, withChar:['RENNA'], mirror:false, side:'L' },
-    stare:     { src:'resources/si/sorana_si_stare.webp?v=3', top:6, bot:1524, fx:0.576 },   // ver -1788：新臉畫在 serious 的身體上 ⇒ 取景抄 serious
-    taunt:     { src:'resources/si/sorana_si_taunt.webp', top:7, bot:1528, fx:0.514 },   // ver -1788 新鍵：身體＝舊的 stare，取景照抄
-    wave:      { src:'resources/si/sorana_si_wave.webp?v=3', top:8, bot:1527, fx:0.530 },   // fx 目視手調，不隨新圖走（新圖量到 0.374，含舉起的手臂）
-    worry:     { src:'resources/si/sorana_si_worry.webp?v=3', top:4, bot:1519, fx:0.543 },
+    rennaannoy:    { fxShift:0.05, yShift:25, cm:150, src:'resources/si/rennasorana_si_annoyedd.webp', top:4, bot:1534, fx:0.30, withChar:['RENNA'], mirror:false, side:'L' },
+    rennaannoyc:   { fxShift:0.05, yShift:25, cm:150, src:'resources/si/rennasorana_si_annoyedc.webp', top:4, bot:1535, fx:0.33, withChar:['RENNA'], mirror:false, side:'L' },
+    stare:     { fxShift:-0.025, yShift:25, cm:150, src:'resources/si/sorana_si_stare.webp?v=3', top:6, bot:1524, fx:0.576 },   // ver -1788：新臉畫在 serious 的身體上 ⇒ 取景抄 serious
+    taunt:     { fxShift:-0.015, yShift:25, cm:150, src:'resources/si/sorana_si_taunt.webp', top:7, bot:1528, fx:0.514 },   // ver -1788 新鍵：身體＝舊的 stare，取景照抄
+    wave:      { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_wave.webp?v=3', top:8, bot:1527, fx:0.530 },   // fx 目視手調，不隨新圖走（新圖量到 0.374，含舉起的手臂）
+    worry:     { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/sorana_si_worry.webp?v=3', top:4, bot:1519, fx:0.543 },
   } },
   /* ⚠ 取景值於 ver -624 **重量**：`Anya_SI_front` 換過圖（舊的留成
      `XAnya_SI_front.webp`）—— §5「換圖一定要重量取景值」。

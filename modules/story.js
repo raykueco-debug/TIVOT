@@ -198,19 +198,23 @@ export function beatEditAt(x, y){
     title:(nameOf(who)||who)+'　目前：'+(slotExpr[hit]||'（基本）'),
     note: b ? '改寫的是這一拍：「'+(b.line.text||'（無台詞）')+'」' : '⚠ 找不到設定這張的那一拍（可能是沿用上一段的立繪）—— 只換畫面，不寫檔',
     items, cur:slotExpr[hit],
-    onPick:(k)=>{
-      const old = b ? (b.line.portrait && b.line.portrait.expr!==undefined ? b.line.portrait.expr : null) : null;
-      ensureOn(who, k); if(shown[who]) shown[who].expr=k; layout();
-      if(!b) return { ok:false, text:'只換了畫面（沒有可寫的那一拍）' };
-      const body={ text:b.line.text||'', old, new:k, field:'expr',
-                   prev: b.lines[b.idx-1] ? (b.lines[b.idx-1].text||'') : undefined,
-                   next: b.lines[b.idx+1] ? (b.lines[b.idx+1].text||'') : undefined };
-      return beatPick.postBeat(body).then(r=>{
-        if(r.ok && b.line.portrait) b.line.portrait.expr=k;   // 這一輪重播也是新的
-        return r;
-      });
-    } });
+    onPick:(k)=>beatChangeAt(hit, k) });
   return true;
+}
+/* 換台上某一邊的差分，並改寫「設定它的那一拍」（右鍵挑選窗與面板的「差分」下拉共用這一支，鐵律 8）。 */
+function beatChangeAt(side, k){
+  const who=slot[side]; if(!who) return Promise.resolve({ ok:false, text:'台上沒有人' });
+  const b=beatOf[who];
+  const old = b ? (b.line.portrait && b.line.portrait.expr!==undefined ? b.line.portrait.expr : null) : null;
+  ensureOn(who, k); if(shown[who]) shown[who].expr=k; layout();
+  if(!b) return Promise.resolve({ ok:false, text:'只換了畫面（沒有可寫的那一拍）' });
+  const body={ text:b.line.text||'', old, new:k, field:'expr',
+               prev: b.lines[b.idx-1] ? (b.lines[b.idx-1].text||'') : undefined,
+               next: b.lines[b.idx+1] ? (b.lines[b.idx+1].text||'') : undefined };
+  return beatPick.postBeat(body).then(r=>{
+    if(r.ok && b.line.portrait) b.line.portrait.expr=k;   // 這一輪重播也是新的
+    return r;
+  });
 }
 /* 存檔結果寫在面板上（ver -1824）：`alert` 在內建預覽視窗裡可能根本不出現 —— 那就是 Ray 存了三次都不知道失敗的原因。 */
 let tuneMsg = '', tuneArm = null;   // tuneArm：按了一次儲存、等第二下確認的那一張
@@ -262,6 +266,13 @@ function tuneRender(){
     '<div class="tn-row tn-who">'+sides.map(sd=>'<button data-side="'+sd+'" class="'+(sd===tuneSide?'on':'')+'">'
       +(sd==='L'?'左 ':'右 ')+(nameOf(slot[sd])||slot[sd])+'</button>').join('')+'</div>'
    +(c ? '<div class="tn-path">'+c.tk.expr+(c.tk.kind==='base'?'（寫在角色層：沒有自己值的差分會一起變）':'')+'</div>'
+   /* 對話中換差分（ver -1827，Ray：「對話中要可以選擇更換立繪，不是只有移動縮放」）：改的是設定這張的那一拍，
+      寫進腳本檔（`beatChangeAt`，同右鍵）。工作室模式上面已經有選角兩列，不重複。 */
+   +(studioOn ? '' : (()=>{ const art=artOf(c.id), b=beatOf[c.id];
+        const ks=Object.keys((art&&art.expr)||{});
+        return '<div class="tn-row"><span>差分</span><select data-bx>'
+          +ks.map(k=>'<option'+(k===slotExpr[tuneSide]?' selected':'')+'>'+k+'</option>').join('')+'</select></div>'
+          +'<div class="tn-path">'+(b ? '改寫這一拍：「'+(b.line.text||'（無台詞）')+'」' : '⚠ 這張是沿用前面的，換了不會寫檔')+'</div>'; })())
    /* 數字可以直接打（ver -1825）：Enter 或離開那一格就套用。 */
    +'<div class="tn-row"><span>大小 cm</span><input data-in="cm" type="number" step="1" value="'+n(c.f.cm)+'"><button data-k="cm" data-d="-1">－</button><button data-k="cm" data-d="1">＋</button></div>'
    +'<div class="tn-row"><span>上下</span><input data-in="yShift" type="number" step="1" value="'+n(c.f.yShift||0)+'"><button data-k="yShift" data-d="1">↑</button><button data-k="yShift" data-d="-1">↓</button></div>'
@@ -272,6 +283,10 @@ function tuneRender(){
    +'<button data-act="std">'+(c && tuneArm==='std:'+c.id ? '確認標準化？' : '標準化')+'</button></div>' : '')
    +(tuneMsg ? '<div class="tn-path" style="color:'+(/失敗/.test(tuneMsg)?'#e57373':'#8fd18f')+'">'+tuneMsg+'</div>' : '');
   tuneBindStudio(p);
+  { const bx=p.querySelector('select[data-bx]');
+    if(bx){ ['pointerdown','click','keydown'].forEach(ev=>bx.addEventListener(ev, e=>e.stopPropagation()));
+      bx.addEventListener('change', ()=>{ tuneMsg='寫入中…'; tuneRender();
+        beatChangeAt(tuneSide, bx.value).then(r=>{ tuneMsg=(r.ok?'已換差分，寫入：':'換差分失敗：')+r.text; tuneRender(); }); }); } }
   p.querySelectorAll('input[data-in]').forEach(inp=>inp.addEventListener('change', ()=>{
     const cur=tuneCur(tuneSide); if(!cur) return;
     const v=parseFloat(inp.value); if(!isFinite(v)) return tuneRender();
@@ -320,8 +335,14 @@ function tuneStd(cur){
       for(const k of Object.keys(art.expr||{})){ const e=art.expr[k]; if(e && typeof e==='object' && e.src) Object.assign(e, set); }
       for(const it of items) delete tuneLive[it.key];
       tuneMsg='已標準化 speakers.js（'+t+'）'; layout(); tuneRender();
-      fetch(url, { method:'POST', body:JSON.stringify({ file:'flight/index.html', set,
-        items:items.map(it=>({ kind:'src', key:'../'+it.key })) }) }).catch(()=>{});
+      /* 同步飛行頁：每一張帶它自己**合併後**的 standCm（ver -1827）—— 標準化只統一 cm／上下／左右，
+         各張的站姿身高照劇情這邊的值走，逐張送（同一個檔，伺服器照順序讀寫）。 */
+      items.reduce((pr,it)=>pr.then(()=>{
+        const e = it.kind==='src' ? Object.keys(art.expr||{}).map(k=>art.expr[k]).find(x=>x && x.src===it.key) : null;
+        const m = Object.assign({}, art, e||{});
+        const fs = Object.assign({}, set, { standCm:(m.standCm!=null ? m.standCm : m.cm) });
+        return fetch(url, { method:'POST', body:JSON.stringify({ file:'flight/index.html', kind:'src', key:'../'+it.key, set:fs }) }).catch(()=>{});
+      }), Promise.resolve());
     })
     .catch(e=>{ tuneMsg='標準化失敗：'+e; tuneRender(); });
 }
@@ -352,7 +373,10 @@ function tuneSave(cur){
       console.log('[立繪調整] 已寫入 speakers.js', cur.tk.key, L);
       /* 飛行頁那一份（ver -1818，§5「兩邊一起改」）：同一張圖在 flight/index.html 也有就一起寫；
          那一頁沒有這張（409）＝不必同步，不算失敗。 */
-      fetch(url, { method:'POST', body:JSON.stringify({ file:'flight/index.html', kind:'src', key:'../'+cur.tk.key, set:L }) })
+      /* ⚠ ver -1827（Ray 選 A）：同步時**連 `standCm` 一起帶** —— 頭頂高度由它決定，飛行那一份沒有它就退回 `cm`，
+         彎腰／近景圖（cm 縮小、standCm 176）在飛行裡整個掉下去。帶的是劇情這邊**合併後**的值（沒寫就是 cm）。 */
+      const fset=Object.assign({}, L, { standCm:(cur.f.standCm!=null ? cur.f.standCm : (L.cm!=null ? L.cm : cur.f.cm)) });
+      fetch(url, { method:'POST', body:JSON.stringify({ file:'flight/index.html', kind:'src', key:'../'+cur.tk.key, set:fset }) })
         .then(r=>{ if(r.ok) console.log('[立繪調整] 飛行頁同步寫入', cur.tk.key); })
         .catch(()=>{});
     })
@@ -2826,7 +2850,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1826';
+const KERB_V='?v=1827';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
