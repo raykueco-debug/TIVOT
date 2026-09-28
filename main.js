@@ -1443,6 +1443,54 @@ bindBtn('flightBtn', ()=>startChapter(prog.FLIGHT_TEST));
    底下的 `#app` ＝ 上一場的殘盤 —— §6.10 -576 那條「在新的一頁真的蓋上去之前，
    不可以先把舊的那一層收掉」，守望本來就每次都印一行 warn 在講這件事。 */
 bindBtn('rushBtn', ()=>{ startRush(); });
+/* ══ 立繪調整區（ver -1819，Ray：「出個立繪調整區，進去先選飛行或一般，然後選左右角色」「鈕放首頁」）══
+   一般 → 左右各選角色＋差分 → `story.tuneStage` 擺上劇情舞台（面板自動打開）；點畫面回這一頁。
+   飛行 → 插 `tivot_tune_v1`（sessionStorage，飛行頁開機讀了就清）→ `openFlight()`；
+     飛行頁自己列它那一份 PORTRAIT 的名單（那一頁的取景表只有它自己認得）。
+   ⚠ **不走「試飛」**：那顆走章節跳關、會 `newRun()` —— 調個立繪不該把進度洗掉。
+   ⚠ 只給管理人：鈕在首頁白名單之外（§6.9）。 */
+const tuneSel = { L:null, R:null };
+function tuneHub(){
+  let ov=$('tuneSheet'); if(ov) ov.remove();
+  ov=document.createElement('div'); ov.id='tuneSheet';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  const cat=story.tuneCatalog();
+  const step1=()=>{
+    ov.innerHTML='<div class="tu-panel"><div class="tu-title">立繪調整區</div>'
+      +'<button data-go="normal">一般（劇情／城鎮）</button><button data-go="flight">飛行</button>'
+      +'<button data-go="close" class="tu-dim">關閉</button></div>';
+    ov.querySelector('[data-go="normal"]').onclick=step2;
+    ov.querySelector('[data-go="flight"]').onclick=()=>{
+      close(); try{ sessionStorage.setItem('tivot_tune_v1','1'); }catch(_){}
+      openFlight();
+    };
+    ov.querySelector('[data-go="close"]').onclick=close;
+  };
+  const pick=(side)=>{
+    const cur=tuneSel[side]||{};
+    const opts='<option value="">（無）</option>'+cat.map(c=>'<option value="'+c.id+'"'+(c.id===cur.id?' selected':'')+'>'+c.name+'</option>').join('');
+    const c=cat.find(x=>x.id===cur.id);
+    const ex='<option value="">（基本）</option>'+(c?c.exprs:[]).map(e=>'<option'+(e===cur.expr?' selected':'')+'>'+e+'</option>').join('');
+    return '<div class="tu-row"><span>'+(side==='L'?'左':'右')+'</span><select data-c="'+side+'">'+opts+'</select>'
+      +'<select data-e="'+side+'">'+ex+'</select></div>';
+  };
+  const step2=()=>{
+    ov.innerHTML='<div class="tu-panel"><div class="tu-title">一般：選左右角色</div>'+pick('L')+pick('R')
+      +'<button data-go="start">上台</button><button data-go="back" class="tu-dim">返回</button></div>';
+    ov.querySelectorAll('select[data-c]').forEach(sel=>sel.onchange=()=>{
+      const sd=sel.dataset.c; tuneSel[sd]= sel.value ? { id:sel.value, expr:null } : null; step2(); });
+    ov.querySelectorAll('select[data-e]').forEach(sel=>sel.onchange=()=>{
+      const sd=sel.dataset.e; if(tuneSel[sd]) tuneSel[sd].expr = sel.value || null; });
+    ov.querySelector('[data-go="start"]').onclick=()=>{
+      if(!tuneSel.L && !tuneSel.R) return;
+      close(); story.tuneStage(tuneSel.L, tuneSel.R, ()=>{ tuneHub(); });
+    };
+    ov.querySelector('[data-go="back"]').onclick=step1;
+  };
+  step1();
+}
+bindBtn('tuneBtn', ()=>tuneHub());
 /* 主線劇情（管理人模式限定）：從 mainScript 的 MAIN_ENTRY 開始跑 scene 鏈。
    ⚠ 不換頁 —— 劇情舞台是蓋在首頁上的一層（#storyStage z-8300），離開就回首頁。
      換頁的話存讀檔要跨頁還原，複雜度沒必要。

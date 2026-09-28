@@ -259,6 +259,30 @@ function tuneSave(cur){
     })
     .catch(e=>window.alert('寫入失敗：'+e));
 }
+/* ══ 立繪調整區（ver -1819，Ray：「出個立繪調整區，進去先選飛行或一般，然後選左右角色」）══
+   首頁「立繪」鈕 → 一般 → 這兩支：`tuneCatalog()` 給名單、`tuneStage()` 把左右兩人直接擺上台並打開面板。
+   ⚠ 名單以**立繪**為單位（同一張 ART 只列一次，取第一個指到它的 speaker id）—— 正名前後兩個 id
+     指同一張圖（OFFICER／RENNA），列兩次只會讓人以為是兩組取景。 */
+export function tuneCatalog(){
+  const seen={}, out=[];
+  for(const id of Object.keys(SPEAKERS)){
+    const k=SPEAKERS[id] && SPEAKERS[id].art, a=k && ART[k];
+    if(!a || !a.base || seen[k]) continue; seen[k]=1;
+    out.push({ id, name:(nameOf(id)||id)+'（'+k+'）', exprs:Object.keys(a.expr||{}) });
+  }
+  return out;
+}
+export function tuneStage(L, R, done){
+  const lines=[], sides={};
+  const tag='（左）'+(L?(L.expr||'基本'):'—')+'　（右）'+(R?(R.expr||'基本'):'—')+'　—— 點畫面回選單';
+  /* 兩人都有時，左邊那一拍無台詞、`noHold` 自己跑過去 ⇒ 一上台就是兩個人，不必先點一下。 */
+  if(L){ sides[L.id]='L'; lines.push(R ? { speaker:L.id, text:'', auto:1, noHold:true, portrait:{ char:L.id, expr:L.expr||null, show:true } }
+                                       : { speaker:L.id, text:tag, portrait:{ char:L.id, expr:L.expr||null, show:true } }); }
+  if(R){ sides[R.id]='R'; lines.push({ speaker:R.id, text:tag, portrait:{ char:R.id, expr:R.expr||null, show:true } }); }
+  if(!lines.length){ done && done(); return; }
+  tuneOn=true;
+  playAdhoc(lines, ()=>{ tuneOn=false; tuneRender(); clearCast(); close(); done && done(); }, { sides });
+}
 function layout(){
   tuneEnsure();
   const stage=$('storyStage'); if(!stage) return;
@@ -2669,7 +2693,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1818';
+const KERB_V='?v=1819';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
