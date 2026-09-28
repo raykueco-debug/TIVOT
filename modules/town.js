@@ -391,7 +391,7 @@ function actLines(a){ if(!a) return null;
   const L=(typeof a.lines==='function') ? a.lines() : a.lines;
   return L||null; }
 function actHasBattle(a){ const L=actLines(a); return !!(L && L.some(l=>l && l.battle)); }
-/* 這一段有沒有**收局**（`{settle:true}`：休息處／撤離那一拍，ver -913）。
+/* 這一段有沒有**收局**（`{settle:true}`：安全區／撤離那一拍，ver -913）。
    ⚠ ver -1135 起它與「有戰鬥」一樣會落一個檢查點 —— Ray：「戰鬥中死亡回到上一個
      踩過的安全點或結算點」，安全點正是這一種段落。 */
 function actHasSettle(a){ const L=actLines(a); return !!(L && L.some(l=>l && l.settle)); }
@@ -1379,14 +1379,14 @@ export function tripEnds(){ return { start:cameNodeId, end:endNodeId }; }
    ⚠ 資料上的 `wildSpawn.endBattle` 現在沒有人讀 —— 欄位留著不刪（它是「這張圖的
      收局怪是誰」的宣告），但別再指望它會出現。 */
 
-/* ══⚠⚠ **休息處：走進去就閉棺結算**（ver -913，Ray：「養息之間跟命之泉、前廳這三個
+/* ══⚠⚠ **安全區：走進去就閉棺結算**（ver -913，Ray：「養息之間跟命之泉、前廳這三個
    是安全點，進入就結算戰鬥」「走進就閉棺，跳結算頁。但若之前沒有發生戰鬥就不會作動」）══
    節點寫 `rest:true`（資料，鐵律 1）；這裡只回答「這一次抵達要不要結算」。
    ⚠ **沒打過架就不作動**：問的是**帳**（`state.sessionStats`，收段那一場要報的
      那一筆）—— 沒有帳就什麼都不做，不會為了走進來而彈一頁空白戰績。
    ⚠ 交棒與回程走**戰鬥那一套**（`{settle:true}` 那一拍 → story → main → combat，
      鐵律 8）—— 城鎮這邊不自己去碰結算頁。
-   ⚠ 排在 `actDue` **之後**、`wildActDue` **之前**：劇本最優先；而休息處本來就
+   ⚠ 排在 `actDue` **之後**、`wildActDue` **之前**：劇本最優先；而安全區本來就
      不該在結算之前先冒一隻怪出來。 */
 function restActDue(n){
   if(!n || !n.rest) return null;
@@ -1412,7 +1412,7 @@ function restActDue(n){
    · 「離開戰鬥探索時如果沒有踩到任何結算怪，於離開地圖時結算」
    · 「點擊離開時先閉棺，然後才進其他地圖或飛行地圖」
    兩句講的是同一個時刻，所以收成**一支**（鐵律 8）：跨圖出口（`@`）與出航都問它。
-   ⚠ **有帳就走結算那一條**（`{settle:true}`，與休息處同一支）—— 那一拍自己會
+   ⚠ **有帳就走結算那一條**（`{settle:true}`，與安全區同一支）—— 那一拍自己會
      `playKerberosClose` 閉棺，這裡不要再多演一次門（會演兩次）。
    ⚠⚠ **沒帳就什麼都不演**（ver -1024，Ray：「目前在帝都打完賞金獵人離開帝都時會
      閉棺，像這種完全是多餘的，因為獵人戰完就已經閉棺結算了」）——
@@ -1592,8 +1592,8 @@ function dragonPickExit(from, cameDir, pool, all){
   const nx = stepToward(from, DRAGON_THRONE);             // 判不出來 → 往王座廳
   return (nx && pool.find(e=>e.to===nx)) || pool[0];
 }
-/* ══⚠⚠⚠ **休息處／過道是「經過不停留」，不是「沒有路」**（ver -1446，Ray 更正：
-   「跳過休息處往下一格，不是等於沒路　是經過了不停留」）══
+/* ══⚠⚠⚠ **安全區／過道是「經過不停留」，不是「沒有路」**（ver -1446，Ray 更正：
+   「跳過安全區往下一格，不是等於沒路　是經過了不停留」）══
    ⚠⚠ -1445 我把「停不住」讀成「那個方向沒有路」（於是龍會轉彎、或改往王座廳）——
      **那是錯的**。正確的語意是：牠**照原方向穿過去**，只是不在那裡停下來。
    ⚠ 所以 -1444 拿掉的 `dragonSlide` 這一版**回來了**，但判準換了：
@@ -1625,7 +1625,7 @@ function dragonSlide(from, dir){
 function dragonPlaceNear(id){
   const ns=nodeNeighbors(id);
   if(!ns.length){ dragonNode=id; return; }
-  /* ⚠ 隔壁那一格停不住（過道／休息處）就**沿那個方向滑出去**（ver -1446，同
+  /* ⚠ 隔壁那一格停不住（過道／安全區）就**沿那個方向滑出去**（ver -1446，同
      `dragonFleeStep`）—— 牠的位置永遠落在三岔以上的房間。
      ⚠ 方向隨機（Ray：「顯示龍在**當前格的隔壁任一位置**」），滑到死路就換一個。 */
   const order = ns.slice().sort(()=>Math.random()-0.5);
@@ -1647,7 +1647,7 @@ function dragonFleeStep(cameDir){
      表在城上（`dragonFunnel`，鐵律 1）。
      ⚠ 排在所有規則**之前**：它講的是「這一格的下一步是定死的」，
        不受「往玩家來的方向跑」與挑方向那一套影響。
-     ⚠⚠⚠ **但它還是要守「停得住」那一條**（ver -1454）：獅階是 `noWild` 的休息處
+     ⚠⚠⚠ **但它還是要守「停得住」那一條**（ver -1454）：獅階是 `noWild` 的安全區
        ⇒ 龍停在那裡**玩家踩不到**（`dragonActDue` 對 `noWild` 的格子直接回 null）
        而牠又只在打完一場才動 ⇒ **整段追擊當場卡死**。
        所以漏斗的目標停不住時，照 -1446 那條「**經過了不停留**」沿著同一個方向滑出去。
@@ -1666,7 +1666,7 @@ function dragonFleeStep(cameDir){
   const back = cameDir ? OPPOSITE[cameDir] : null;
   /* ══⚠⚠ **先挑方向（兩階段），再沿那個方向滑到停得住的房間**（ver -1446）══
      ⚠⚠ -1445 我把順序寫反了（先濾掉停不住的鄰格＝當成沒有路），Ray 更正：
-       休息處／過道是「**經過了不停留**」，方向不該因此改變。
+       安全區／過道是「**經過了不停留**」，方向不該因此改變。
      ⚠ 回頭路先排除；濾完全空（死胡同）才把回頭路放回來。
      ⚠ 那個方向整條滑到死路 ⇒ **換一個方向再試**（實測只有 6 個方向是死路）；
        全部滑不出去才留在原地。 */
@@ -1710,7 +1710,7 @@ function dragonActDue(n){
   /* ⚠⚠⚠ **不出怪的格子也不打追擊戰**（ver -1420，Ray：「追擊戰要從進到古城內
      開始，為什麼我設成安全區的前廳會遭遇戰鬥？古城外也是安全區」）——
      判準用節點自己的 `noWild`（鐵律 1）：一次涵蓋古城外（`entrance`）、
-     四個休息處、祭壇。王座之間沒有 `noWild`，決戰照舊。 */
+     四個安全區、祭壇。王座之間沒有 `noWild`，決戰照舊。 */
   if(n.noWild) return null;
   const w=[0,1,2,3].filter(i=>prog.hasFlag('bl_chase'+(i+1))).length;
   /* ══⚠⚠⚠ **兩個階段**（ver -1424，Ray 重訂前半）══════════════════════════════
@@ -2815,7 +2815,7 @@ function tmFrameEl(){
   return v ? v.querySelector('.tm-frame') : null;
 }
 /* ══⚠⚠⚠ **地名不跟著紙一起放大**（ver -1452，Ray：「以地圖清楚為優先」）══
-   實測（貝利薩爾、375 寬）：同一列最窄的間距只有 **42px**，而「近衛墓室（休息處）」
+   實測（貝利薩爾、375 寬）：同一列最窄的間距只有 **42px**，而「近衛墓室（安全區）」
    那一條字有 **90px** —— 兩個名字疊在一起，就是 Ray 說的「上字以後糊成一團」。
    ⚠⚠⚠ **而且放大救不了**：字與紙在同一個 `transform` 底下，一起放大 ⇒
      **重疊的比例是常數**，捏到 6 倍也一樣疊。
@@ -3133,8 +3133,8 @@ function renderMap(){
           if(hint)   return '<i class="tm-spot hint" style="'+pos+'"><b></b><span></span></i>';
           return '';
         }
-        /* ══ 休息處（ver -913，Ray：「探索到以後用筆圈起來，並在中文後方加入
-           『（休息處）』」）══ 圈是 CSS 畫的（`.tm-spot.rest`），字在這裡加。
+        /* ══ 安全區（ver -913，Ray：「探索到以後用筆圈起來，並在中文後方加入
+           『（安全區）』」）══ 圈是 CSS 畫的（`.tm-spot.rest`），字在這裡加。
            ⚠ 這一行**只有小地圖在用**：導覽字格那邊是另一支（`nameOfNode`）。 */
         const rest=!!(T.nodes[id]||{}).rest;
         /* ⚠ 被指出來但還沒走到的那一格**不給地名**（Ray 指定）——
@@ -4502,7 +4502,7 @@ export function enter(id){
        （`runArrival(true)`＝`immediate`），而 `immediate` **不擲野怪** ——
        所以第二趟必定輪到 `actDue`，讀起來就是「打完才講話」。
      ⚠ 一趟進圖同種不重複（`wildDone`），所以不會變成「打完又冒一隻」。
-     ⚠ 休息處（`restActDue`）不受影響：那幾格一律 `noWild`，本來就不出怪。 */
+     ⚠ 安全區（`restActDue`）不受影響：那幾格一律 `noWild`，本來就不出怪。 */
   /* 追逐（ver -1389）排在最前：那一段古堡裡只有「走」與「打」，
      其餘的段落（約會收尾、常駐句）在那一夜都不該插隊。 */
   /* ⚠⚠ **小睡醒來那一次只演那一段**（ver -1396）：其餘的（追逐、野怪、約會收尾、
@@ -4613,9 +4613,9 @@ export function enter(id){
              ⚠⚠⚠ **ver -1446：條件由「不是王座／afterThree」改成「這一段真的是一場
                追擊戰」**（Ray：「為什麼一結算龍的位置就重置了？」）——
                舊寫法是**排除法**，於是那一夜在古堡裡演完的**任何**段落都會算一場：
-               休息處的結算（`restActDue` 那一段）、獅階的「把牠往這個方向逼！」、
+               安全區的結算（`restActDue` 那一段）、獅階的「把牠往這個方向逼！」、
                降落中庭與進前廳那幾段…… 每一段都 `dragonFights++` **而且叫一次
-               `dragonFleeStep`** ⇒ 玩家看到的就是「我只是踩到休息處結算了一下，
+               `dragonFleeStep`** ⇒ 玩家看到的就是「我只是踩到安全區結算了一下，
                牠的位置就變了」，而且 `afterThree` 那一段的門檻也被灌水。
                ⇒ 改成**白名單**：只有 `DRAGON_LINES.chase[*]` 與 `chaseMore`
                  （＝真的有 `{battle:'bl_chase'}` 那一拍的段落）才算。
@@ -4637,7 +4637,7 @@ export function enter(id){
           /* ══ 追兵（ver -1577）：這一段演完了 ══ 場數／`resetAt` 歸位／擊退後停頓，
              三件都在 `chaseAfterAct` 一支裡（鐵律 8）。
              ⚠ 「這一段算不算一場」問 `actHasBattle`（＝資料上真的有戰鬥拍）——
-               與 -1446 龍那一課同一個道理：用排除法的話，休息處的結算、
+               與 -1446 龍那一課同一個道理：用排除法的話，安全區的結算、
                純對白的段落都會被算成一場，而那不會有任何錯誤訊息。
              ⚠ 排在 `goto` **之前**：歸位看的是「打完的那一刻人在哪一格」。 */
           chaseAfterAct(act, actHasBattle(act));
@@ -4731,7 +4731,7 @@ export function enter(id){
                  所以那一格照樣落得到 —— 正好就是「戰鬥結算後才有」。
                ⚠ 純對白的段落不受影響（那時 `battleSession` 本來就是 null）。 */
           /* ⚠⚠ ver -1135：**安全點（`{settle:true}`）也落**（Ray：「戰鬥中死亡回到
-             上一個踩過的安全點或結算點」）—— 休息處走進去就收局，那一刻正是
+             上一個踩過的安全點或結算點」）—— 安全區走進去就收局，那一刻正是
              「上一個踩過的結算點」。不落的話玩家在遺蹟裡走了半張圖收了一次局，
              死掉卻退回進圖那一筆，中間全白走。 */
           if(checkpoint && !state.battleSession && (actHasBattle(act) || actHasSettle(act)))

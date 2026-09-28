@@ -2853,7 +2853,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1840';
+const KERB_V='?v=1841';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3775,7 +3775,7 @@ function renderLine(){
     return advance();
   }
 
-  /* ══ 休息處：閉棺結算（ver -913；-914 補上「閉棺」那一段，見 setSettleHandler）══
+  /* ══ 安全區：閉棺結算（ver -913；-914 補上「閉棺」那一段，見 setSettleHandler）══
      `{ settle:true }` ＝把畫面交給結算頁；回程與 `line.battle` 完全同一套
      （`storyResume` → `resumeFrom`），所以續播位置照那邊的寫法組。
      ⚠⚠ **一定要演關門**（ver -914，Ray：「應該是閉棺，結算，盤面早就清掉了，
@@ -3865,7 +3865,7 @@ function renderLine(){
       : { scene: cur.sceneId, line: lineIdx+1, bgm: stageBgm };
     clearCast(); hideBubble();
     playKerberosClose(()=>{
-      /* `settleTitle` ＝這一頁的大標（ver -928）：不寫＝休息處那一頁的預設。 */
+      /* `settleTitle` ＝這一頁的大標（ver -928）：不寫＝安全區那一頁的預設。 */
       try{ settleHandler(rsm, line.settleTitle||null); }catch(e){ console.info('[story] settleHandler 出錯', e); }
     });
     return;
@@ -4888,7 +4888,7 @@ function storyMap(on){
   mapByLine = false;
   try{ if(mapViewFn) mapViewFn(false); }catch(_){}
 }
-/* ══⚠⚠ **休息處：閉棺結算**（ver -913，Ray：「走進就閉棺，跳結算頁。但若之前
+/* ══⚠⚠ **安全區：閉棺結算**（ver -913，Ray：「走進就閉棺，跳結算頁。但若之前
    沒有發生戰鬥就不會作動」）══ 腳本／段落寫 `{ settle:true }` 那一拍。
    ⚠ 它與 `line.battle` 是**同一族**（把畫面交出去、打完接回來），所以續播位置、
      回程、收尾全部沿用那一套（鐵律 8）—— 差別只有「交給誰」：那一支交給戰鬥，

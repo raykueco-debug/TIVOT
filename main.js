@@ -2097,7 +2097,7 @@ combat.setStoryReturn((res)=>{
          落在那幾個地方（鐵律 7：不要在這裡再算一次「該回哪」）：
            · 進城（`town.setCheckpoint`）
            · **一場戰鬥結束**（`enter()` 的 act 收尾，旗標之後）
-           · **安全點／休息處**（`{settle:true}` 那一拍，ver -1135 補上）
+           · **安全點／安全區**（`{settle:true}` 那一拍，ver -1135 補上）
            · 腳本明寫的 `checkpoint:true`／飛行每 600 距離
        ⚠⚠ ver -697~-1134 是「回這張地圖的**入口**」（`noJump` ＋ 明指節點）——
          那一版把「進度」與「位置」拆成兩件事，於是在遺蹟裡走了半張圖、收過一次局，
@@ -2195,12 +2195,12 @@ story.setBattleEarly((id)=>{
 /* 連續戰鬥的開棺判定（ver -585）：真相在 combat 的 `state.battleSession`，
    story 只問（它不 import combat，所以由這裡注入 —— 同 setGateHold 的理由）。 */
 story.setGateSkip(id => combat.battleNeedsGate(id));
-/* 休息處的閉棺結算（ver -913）：交棒與回程與插入戰**同一套**（storyResume →
+/* 安全區的閉棺結算（ver -913）：交棒與回程與插入戰**同一套**（storyResume →
    setStoryReturn 的最後那一條），這裡只負責把場子交給結算頁。
    ⚠ `flightBack=false`：這一頁不是飛行頁交棒過來的（同 setBattleHandler 的理由）。 */
 story.setSettleHandler((resume, title)=>{
   storyResume = resume; flightBack = false;
-  combat.restSettle(title);   // 大標由那一拍給（ver -928：休息處／撤離）
+  combat.restSettle(title);   // 大標由那一拍給（ver -928：安全區／撤離）
 });
 /* 料理那一拍的**帳**（ver -953，Stage8 的瑪麗亞）：扣食材＋記「吃過了」。
    ⚠ 與廚房介面那顆「煮」走**同一支** `loot.cookDish`（鐵律 8）——

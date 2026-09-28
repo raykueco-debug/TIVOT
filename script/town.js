@@ -3830,7 +3830,7 @@ export const TOWNS = {
          ⚠ 這張圖沒有自己的入口節點（ver -879）：入口就是夏爾森林的「遺蹟入口」。 */
 
       /* ── 入口這一帶 ── */
-      /* ══⚠⚠ **安全點（休息處）**（ver -913，Ray：「養息之間跟命之泉、前廳這三個是
+      /* ══⚠⚠ **安全點（安全區）**（ver -913，Ray：「養息之間跟命之泉、前廳這三個是
          安全點，進入就結算戰鬥」）══ `rest:true` ＝走進去就閉棺結算（判定與交棒在
          modules/town.js 的 `restActDue`；沒打過架就不作動）。
          ⚠ 三格一律 `noWild`：Ray 點名的不出怪清單是「樓梯、裂隙」，但**安全點**
@@ -4015,7 +4015,7 @@ export const TOWNS = {
          劇情才出 BOSS」）══ `rest`＝走進去就閉棺結算、`noWild`＝不刷野怪。
          ⚠ **BOSS 不受 `noWild` 管**：那一場是劇本（節點的 `acts` 那一拍），
            `noWild` 擋的只有 `wildSpawn` 的隨機刷怪 —— 兩件事各走各的路。
-           所以「平時是休息處、劇情一到就在同一格開打」兩句話同時成立。 */
+           所以「平時是安全區、劇情一到就在同一格開打」兩句話同時成立。 */
       deepaltar:  { bg:'ruins_shinier_deepaltar', name:'木雅克神殿　深部祭壇', noTime:true,
         rest:true, noWild:true,
         /* 事件差分（ver -923）：安雅把祭壇打開之後換成啟動版那一張。 */
@@ -4228,7 +4228,7 @@ export const TOWNS = {
      ──────────────────────────────────────────────────────────────────────
      ⚠⚠ **本輪的範圍是「先搭景」**（Ray，2026-09-11：「沒關係，先搭景，交給 code
        動手」）：只做到「降得下去、五格走得通、背景跟著時段換」。
-       **還沒接、等 Ray 的卡**：怪（`wildSpawn`）／劇情（`acts`）／休息處（`rest`）／
+       **還沒接、等 Ray 的卡**：怪（`wildSpawn`）／劇情（`acts`）／安全區（`rest`）／
        結算怪／`bgm`／槍棺小地圖。
      ⚠ `map:` **整欄先不寫** —— 那張羊皮紙圖還沒畫（流程：程式先接進這裡 →
        `tools/map_layout.py` 產權威佈局 → 美術照它畫 → `tools/map_check.py` 量座標）。
@@ -7172,7 +7172,7 @@ export const TOWNS = {
        是索菈娜帶路的特例）。
      ⚠ `wilderness:true`＝野外沒有門可以關（19:00 全域打烊不罩，同貝利薩爾）；
        `storyExplore:true`＝不是城，女角不排外出行程（§6.5.4.2）。
-     ⚠⚠ 兩端 `rest:true`（休息處，§6.5.4.4 的第四條結算路徑）＝**連結型地圖的頭尾**，
+     ⚠⚠ 兩端 `rest:true`（安全區，§6.5.4.4 的第四條結算路徑）＝**連結型地圖的頭尾**，
        而且**入口那一格不可以有戰鬥**（§6.5.2：它是遭遇戰的復活點）。
      ⚠⚠⚠ **`wildSpawn` 先不給** —— Ray 還沒給這一帶的敵人卡（同卡耶爾山谷那一筆）。
        沒有它就不出怪，**不會壞**；卡來了再補，`pickEndNode()` 那一套自己會把
@@ -7313,8 +7313,8 @@ export const TOWNS = {
            shockcalm」）⇒ 走 `portrait.exprByTier`（**門檻不是等於**，§6.5 的 -772）：
            `{1:'scarejump', 3:'shockcalm'}` ＝ T1/T2 嚇一跳、T3 以上只是無言。
            ⚠ 它掛在 `portrait` 上不是掛在 line 上，所以這一拍不用 `ren()` 那個縮寫。
-         ⚠ 這一格是 `rest`（休息處），而 `actDue` 排在 `restActDue` 前面，
-           所以這一段會先演；何況這一趟還沒打過架，休息處本來就不作動。 */
+         ⚠ 這一格是 `rest`（安全區），而 `actDue` 排在 `restActDue` 前面，
+           所以這一段會先演；何況這一趟還沒打過架，安全區本來就不作動。 */
       gorge:  { bg:'plains_gorge_day', noTime:true, name:'平原古道　狹窄溪谷',
         exits:{ up:'ravine', down:'windrock' },
         acts:[ { flag:'ep_bel_gorge', need:'ep_day2', sides:{ RENNA:'R' }, lines:[
@@ -8525,7 +8525,7 @@ export const TOWNS = {
          ⚠ 新的三格見下面各自的註解：`landing2`／`landing3`／`lowaltar`。 */
       /* ⚠⚠ ~~安全點之一~~（ver -1525，Ray：「整張地圖只有三處安全點，
          分別在**兩個樓梯**及**最終房間前**」）—— 走既有的 `rest:true`
-         （§6.5.4.4 的休息處：走進去閉棺結算；沒打過架就不作動）。
+         （§6.5.4.4 的安全區：走進去閉棺結算；沒打過架就不作動）。
          ⚠ `noWild` 照舊由那一條規矩帶（安全點不刷怪）——
            這張圖現在本來就沒有 `wildSpawn`，接上之後要記得。 */
       stair1:     { bg:'tomb_stair1', name:'伊甸古墓　表層階梯', noTime:true,
@@ -9485,7 +9485,7 @@ export const TOWNS = {
        餐飲街 `right:'@sofiaout'` → 入口 `road`（橄欖園道＝「中間的路」）；園道的回頭路 `back:'@santasofia:tavern'`，
        `back` 會掛在「來時方向的反向」＝左，兩端相反（§6.5.4）。
      · 每格 `noTime:true`（這一批 10 張都是下午硬光，沒有時段差分）、迷霧預設、`wilderness`（私人莊園沒有營業時間）。
-     · 草稿標的：露台 `terrace`＝休息處（`rest`＋`noWild`）、地下囚室 `cellar`＝終點（馬努決戰）。
+     · 草稿標的：露台 `terrace`＝安全區（`rest`＋`noWild`）、地下囚室 `cellar`＝終點（馬努決戰）。
      ⚠ ver -1793：Ray 的稿到了 —— 門房／車道／前庭／馬車房／大廳各一場、沙龍是劇情＋馬努收段（同一局 `ss_raid`）。
        後廊、地下囚室、露台稿上沒用到，照舊是空的；`wildSpawn`、小地圖仍沒有。
      ⚠ `bgm:'folkroma2'`（ver -1785 Ray 指定；原本是程式端暫挑的 suspense）。 */
@@ -9583,7 +9583,7 @@ export const TOWNS = {
      · 草稿上的 `gate`（跨圖出口）**不是一格**（55 張背景裡沒有它）⇒ 入口是堤道 `causeway`，
        往下（草稿上 gate 的方向）＝`sail`（回船上），同貝利薩爾入口的寫法。
      · 每格 `noTime:true`（Ray：「這張圖沒有四差分，都是同一天色」）、`wilderness:true`、**迷霧預設**（不寫 `mist:0`）。
-     · 休息處三格（`wellsq`／`oakgrove`／`nemeton`）＝`rest:true`＋`noWild:true`；入口 `noWild`。
+     · 安全區三格（`wellsq`／`oakgrove`／`nemeton`）＝`rest:true`＋`noWild:true`；入口 `noWild`。
      ⚠ **還沒有的**：祭壇那一場（`sessionEnd`）、`wildSpawn`（遭遇的怪）、劇情、章節窗 —— 等 Ray。
        沒有 `wildSpawn` ＝現在走進去不會遇到任何怪。小地圖 -1755 接上了。
      · `bgm:'lostplace'`（卡耶爾山谷那一首）：程式端自己挑的，**Ray -1753 認可**（「接得不錯」）。
@@ -9597,11 +9597,11 @@ export const TOWNS = {
     wilderness: true,
     /* ══ 放怪（ver -1839，Ray 的表）══════════════════════════════════════════
        `fixed` ＝必出格（一趟進圖各一次、不吃機率）；`pool` ＝其餘格子 30% 抽聖遺物系十隻（enemies.xlsx No.063～072）。
-       戰鬥卡都在 `config.battles.dm_*`（同一個遭遇段落 `dunmor_wild`，收局＝踏進休息處）。
+       戰鬥卡都在 `config.battles.dm_*`（同一個遭遇段落 `dunmor_wild`，收局＝踏進安全區）。
        ⚠ 不出怪：入口（堤道）、安全區（`rest`＋`noWild`，走進去就結算這一局）——
-         Ray 列的石棺墓／石棚墓／泉池／戰車棚（ver -1840：「休息區一律改稱安全區」＝就是結算點），
-         以及 -1753 原本的橡樹林／聖井廣場。
-       ⚠ 聖林祭場原本是休息處＋不出怪，Ray 在那裡放了執劍天使 ⇒ 兩條拿掉，改成戰鬥格
+         Ray 列的石棺墓／石棚墓／泉池／戰車棚（ver -1840：「休息區一律改稱安全區」＝就是結算點）。
+         -1753 原本的橡樹林／聖井廣場 ver -1841 拿掉（Ray：「拿掉」），改回一般格。
+       ⚠ 聖林祭場原本是安全區＋不出怪，Ray 在那裡放了執劍天使 ⇒ 兩條拿掉，改成戰鬥格
          （`noWild` 會連固定怪一起擋，兩者不能並存）。 */
     wildSpawn: {
       rate: 0.3,
@@ -9645,7 +9645,7 @@ export const TOWNS = {
       brochtop:     { bg:'dunmor_brochtop', name:'羅賽爾廢城　圓塔頂', noTime:true, bgWhen:[{ need:'dunmor_lit_brochtop', bg:'dunmor_brochtop_lit', noTime:true }], exits:{ left:'bardsstep' } },
       bogoffer:     { bg:'dunmor_bogoffer', name:'羅賽爾廢城　沼澤獻祭處', noTime:true, exits:{ down:'lakeshore' } },
       stonerow:     { bg:'dunmor_stonerow', name:'羅賽爾廢城　立石列', noTime:true, exits:{ up:'dolmen', right:'oakgrove' } },
-      oakgrove:     { bg:'dunmor_oakgrove', name:'羅賽爾廢城　橡樹林', noTime:true, rest:true, noWild:true, exits:{ up:'nemeton', left:'stonerow', right:'druidhouse' } },
+      oakgrove:     { bg:'dunmor_oakgrove', name:'羅賽爾廢城　橡樹林', noTime:true, exits:{ up:'nemeton', left:'stonerow', right:'druidhouse' } },
       druidhouse:   { bg:'dunmor_druidhouse', name:'羅賽爾廢城　德魯伊居所', noTime:true, exits:{ left:'oakgrove', down:'innergate' } },
       henge:        { bg:'dunmor_henge', name:'羅賽爾廢城　石環', noTime:true, exits:{ up:'sacredway', right:'brochbase', down:'lawstone' } },
       brochbase:    { bg:'dunmor_brochbase', name:'羅賽爾廢城　圓塔基座', noTime:true, exits:{ up:'bardsstep', left:'henge' } },
@@ -9669,7 +9669,7 @@ export const TOWNS = {
       chariotshed:  { bg:'dunmor_chariotshed', name:'羅賽爾廢城　戰車棚', noTime:true, rest:true, noWild:true, exits:{ up:'treasury', left:'kingshall' } },
       weaverhut:    { bg:'dunmor_weaverhut', name:'羅賽爾廢城　織工圓屋', noTime:true, exits:{ up:'souterrain', right:'roundring' } },
       roundring:    { bg:'dunmor_roundring', name:'羅賽爾廢城　圓屋環', noTime:true, exits:{ up:'potters', left:'weaverhut', right:'wellsq' } },
-      wellsq:       { bg:'dunmor_wellsq', name:'羅賽爾廢城　聖井廣場', noTime:true, rest:true, noWild:true, exits:{ left:'roundring' } },
+      wellsq:       { bg:'dunmor_wellsq', name:'羅賽爾廢城　聖井廣場', noTime:true, exits:{ left:'roundring' } },
       mainstreet:   { bg:'dunmor_mainstreet', name:'羅賽爾廢城　石板主街', noTime:true, exits:{ up:'marketcross', right:'smithy', down:'gatecourt' } },
       smithy:       { bg:'dunmor_smithy', name:'羅賽爾廢城　鐵匠爐', noTime:true, exits:{ up:'kingshall', left:'mainstreet', right:'kilnyard' } },
       kilnyard:     { bg:'dunmor_kilnyard', name:'羅賽爾廢城　陶窯場', noTime:true, exits:{ left:'smithy', down:'tannery' } },
@@ -9776,7 +9776,7 @@ export const TOWNS = {
        「往死胡同逼」那一段的意義先用掉了。
        ⚠⚠ **只管刷新那一段**（`bl_dragon_seen` 之前）：追趕開始之後牠**本來就要**
          往那裡跑，王座廳更是決戰的那一格 —— 那時這張表不適用（判定見 `dragonActDue`）。
-       ⚠ 獅階本來就被 `noWild` 擋著（它是休息處），列在這裡是**把 Ray 的話寫全**：
+       ⚠ 獅階本來就被 `noWild` 擋著（它是安全區），列在這裡是**把 Ray 的話寫全**：
          日後那一格的 `noWild` 若因別的理由拿掉，這一條仍然守得住。 */
     dragonKeepOut: ['dragstair','antecham','throne','crown','offering'],
     /* ══⚠⚠ **龍踩到謁見前廳就往王座廳跑**（ver -1437，Ray 指定）══
@@ -9789,7 +9789,7 @@ export const TOWNS = {
     /* ══⚠⚠ **漏斗：站在這一格，下一步就是定死的**（ver -1437／-1454，Ray：
        「龍的移動行為只要踩到謁見前廳就會往王座廳跑」「讓龍只要踩到甲冑廊就必往
        獅階走」）══ 判定只有 `modules/town.js` 的 `dragonFleeStep` 一處（鐵律 8）。
-       ⚠⚠ **獅階是 `noWild` 的休息處**，龍停在那裡玩家踩不到（打不起來）⇒ 引擎會
+       ⚠⚠ **獅階是 `noWild` 的安全區**，龍停在那裡玩家踩不到（打不起來）⇒ 引擎會
          照「經過了不停留」把牠**穿過去**，落在**謁見前廳**；而那一格又接著這張表的
          第二條 ⇒ 甲冑廊打完一場 → 謁見前廳，再打一場 → 王座廳。
          那正是「把牠往那個方向逼」的路。 */
@@ -9856,12 +9856,12 @@ export const TOWNS = {
       offering:  { bg:'belisar_relicroom', name:'貝利薩爾遺址　聖物室', noTime:true, exits:{ down:'wardtomb', left:'throne' } },
       /* ══⚠⚠⚠ **初踩獅階：把牠往這個方向逼**（ver -1433，Ray：「玩家只要初踩到
          獅階，就會觸發對話，**若觸發結算，結算完再跑對話**」）══
-         獅階是**休息處**（`rest:true`）⇒ 帶著帳走進來會先閉棺結算。
+         獅階是**安全區**（`rest:true`）⇒ 帶著帳走進來會先閉棺結算。
          ⚠⚠ ~~`afterSettle:true`~~ **ver -1574 起是全域預設**（Ray：「安全點處如果有劇情
            先跑結算再跑劇情 這是全域規則」）—— 這一格留著它不會壞（結果一樣），
            但**不要再新增**。原本的意思是：這一格要結算的話，結算完再演我
            （見 `modules/town.js` 的 `runArrival`）。它是**逐段宣告**不是全域換順序：
-           其餘六個「休息處＋acts」的格子（夏爾森林兩格、木雅克兩格、古道溪谷口）
+           其餘六個「安全區＋acts」的格子（夏爾森林兩格、木雅克兩格、古道溪谷口）
            照舊是先講話 —— 那幾段是劇情，先被一頁戰績打斷讀起來是斷的。
          ⚠ `need:'bl_dragon_seen'` ＝**開圖之後**（索菈娜「交給我！」那一拍插的旗）。
            這是我的判讀：那兩句講的是「往這個方向逼」，而「往哪裡逼」要看得見牠
@@ -9891,12 +9891,12 @@ export const TOWNS = {
       /* ══⚠⚠⚠ 中庭場景（ver -1353，Ray 交稿）══ 收尾**強制移轉回東方泊地**。
          ⚠⚠ `ep_belisar_done` ＝出航的那道 `hold` 的終點（東泊 `square.sail.hold.until`，
            兩邊註解互指）—— 這一段演完才走得掉。
-         ⚠ `rest:true` 照舊（它是休息處）：那一段演完之後這一格就是安全點。 */
+         ⚠ `rest:true` 照舊（它是安全區）：那一段演完之後這一格就是安全點。 */
       /* ⚠⚠⚠ ver -1403：**`courtyard`（下沉中庭）整格移除** —— `_belisar_patch.json`
          的 `_remove`（ver -1378，Ray：「把下沉中庭拿掉」）。連帶 `lamphall.up` 與
          `rooffall.left` 兩個指向它的出口也拆掉（施工單第一節）。
          ⚠ `Belisar_SunkenCourt` 那組圖從此沒有人用（美術**先不回收**，等確定不放回來）。
-         ⚠⚠ **這座城的休息處因此只剩 `foyer` 前廳一個** —— 那是施工單的設計，不是漏掉。 */
+         ⚠⚠ **這座城的安全區因此只剩 `foyer` 前廳一個** —— 那是施工單的設計，不是漏掉。 */
       rooffall:  { bg:'belisar_rooffall', name:'貝利薩爾遺址　崩頂坡', noWild:true, exits:{ up:'drywell', right:'muralwalk' } },
       muralwalk: { bg:'belisar_muralgallery', name:'貝利薩爾遺址　壁畫長廊', noTime:true, exits:{ up:'forge', down:'bellroom', left:'rooffall' } },
       stairwell: { bg:'belisar_spiralwell', name:'貝利薩爾遺址　旋梯井', noTime:true, noWild:true, rest:true, exits:{ up:'oldtomb', right:'pillars', down:'stephall', left:'candlewalk' } },
@@ -9913,7 +9913,7 @@ export const TOWNS = {
       waterjail: { bg:'belisar_waterjail', name:'貝利薩爾遺址　水牢', noTime:true, exits:{ up:'cages', right:'dragonrace', down:'mirrorpool', left:'capstan' }, acts:[BEL_WATER_FIRST] },
       bonerack:  { bg:'belisar_sarcophagi', name:'貝利薩爾遺址　石棺廊', noTime:true, exits:{ up:'stelae', left:'guardhall' } },
       /* ⚠ ver -1437（Ray：「近衛墓室設為安全點」）：`rest:true` ＝走進去就閉棺結算
-         （§6.5.4.3 的第四條結算路徑，小地圖上會多一個墨圈＋「（休息處）」）。
+         （§6.5.4.3 的第四條結算路徑，小地圖上會多一個墨圈＋「（安全區）」）。
          ⚠ 安全點一律 `noWild`：它是這一局的收尾點，在收尾點刷怪等於「先打一場再結算」。 */
       /* ══⚠⚠⚠ **ver -1438：整張圖的 `exits` 照 Ray 的新佈局重接**
          （`reference/_topology.pdf`，Ray：「用這張圖重接古城地圖」）══
@@ -9945,9 +9945,9 @@ export const TOWNS = {
       /* ══⚠⚠ **那一夜：走進前廳**（ver -1433，Ray 交稿）══ 索菈娜聞出牠還在。
          ⚠ `need` ＝任務探索開著（同中庭那一段，旗名讀 `QUEST_LOCK`）——
            白天那一趟走進前廳不演這一段。
-         ⚠ 這一格是**休息處**（`rest:true`）：帶著帳走進來會先結算 —— 那一段
+         ⚠ 這一格是**安全區**（`rest:true`）：帶著帳走進來會先結算 —— 那一段
            ⚠⚠ **ver -1574 起這一句作廢**：先結算後劇情已經是全域規則，
-             這一格（與其餘每一個「休息處＋acts」的格子）都跟著改了。 */
+             這一格（與其餘每一個「安全區＋acts」的格子）都跟著改了。 */
       foyer:     { bg:'belisar_foyer', name:'貝利薩爾遺址　前廳', noTime:true, noWild:true, rest:true, exits:{ up:'stephall', down:'entrance' },
         /* ══⚠⚠ **初入前廳**（ver -1434，Ray 交稿）══ `ep_bel_enter` 那一段的 `goto`
            就是這一格，所以白天走進古城的那一次抵達必定演到它。

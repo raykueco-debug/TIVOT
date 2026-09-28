@@ -92,7 +92,7 @@ const clamp01 = x => (x<0 ? 0 : (x>1 ? 1 : x));
 /* ══⚠⚠⚠ **這一局賺多少錢：敵人血量 × 評價**（ver -950，Ray 定案）══
    `stats.totalHP` 是**整局**的血量總和（中間幾場由 `bankSessionGain` 加起來），
    等第是併帳後評出來的那一個 —— 所以連戰是**算一次**，不是逐隻算再相加。
-   ⚠ **唯一的計算點**（鐵律 7）：三條結算路徑（監察官／劇情插入戰／休息處）
+   ⚠ **唯一的計算點**（鐵律 7）：三條結算路徑（監察官／劇情插入戰／安全區）
      都問這一支。以前錢有三個來源（敵人卡的 `money.hpRatio`、`battleLoot` 的逐場
      擲骰、連戰的記帳），調起來永遠對不準。
    ⚠ 「銀幣星」的加成**不在這裡乘** —— 那是玩家的強化，留在呼叫端與其他加成一起套。 */
@@ -762,10 +762,10 @@ export function settle(totalTime, stats, opts={}){
      ⚠ 戰敗不歸位：那一局還沒結（回捲／續戰各走各的路）。 */
   if(!isLose){
     state.playerHp = state.playerMax; state.energy = 0;
-    /* ══⚠ 拔掉持久 HP 那把鑰匙（ver -1061 立；**-1083 起這裡只剩休息處在用**）══
+    /* ══⚠ 拔掉持久 HP 那把鑰匙（ver -1061 立；**-1083 起這裡只剩安全區在用**）══
        ver -1083 之後 `combat.win()` 自己就會依「還在局內嗎」決定要寫還是要拔
        （見 `combat.carryHpOrClear`）—— 走戰鬥那條路進來時這一行已經是冪等的。
-       **留著是為了休息處**（`restSettle`，ver -913）：那條路沒有 `win()`，
+       **留著是為了安全區**（`restSettle`，ver -913）：那條路沒有 `win()`，
        但走進安全點就是**收一局**，鑰匙裡可能還留著上一場的局內殘量。
        ⚠ 拔鑰匙而不是寫一個滿值：滿值是 `tuning.playerHp` 算的，寫死一份就是
          第二個計算點（鐵律 7/8）。
@@ -783,7 +783,7 @@ export function settle(totalTime, stats, opts={}){
        玩家按了按鈕才回劇情／首頁 —— 交還的動作由 `tutorialDone` 這個回呼負責。 */
   /* ⚠ `!isLose`（ver -376）：教學／插入戰的結算頁是**給打贏用的**（戰績＋拾得）。
      戰敗一律走下面那一頁（Ray：除劇情殺／可戰敗之外，戰敗一律 Game Over 回主選單）。 */
-  /* ══ 休息處：閉棺結算（ver -913，Ray：「走進就閉棺，跳結算頁」）══
+  /* ══ 安全區：閉棺結算（ver -913，Ray：「走進就閉棺，跳結算頁」）══
      排在所有分流**最前面**：這一頁沒有敵人（不是打完誰，是把這一路的帳結掉），
      底下那三條都要問 `state.currentEnemyKey`。⚠ 併帳／清帳／HP 回滿在上面已經做完
      —— 那是「一局的終點」共通的手續，這一條只是第四條結算路徑（鐵律 8）。 */
@@ -953,7 +953,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   /* ⚠ 兩顆鈕的版面也要歸位（ver -430（-893 前用詞））：上一場戰敗留下的 `.two` 不收的話，
      下一場打贏的結算頁會多出一顆「放棄」。同 rbtn 那幾行的理由 —— 開場一律先歸零。 */
   const acts=$('bannerActs'); if(acts) acts.classList.remove('two');
-  /* ⚠ 休息處那一頁的**不透明底**每次開場先撤（ver -914，見 restSettle）：
+  /* ⚠ 安全區那一頁的**不透明底**每次開場先撤（ver -914，見 restSettle）：
      與上面兩行同一個理由 —— 上一頁留下來的樣式不收，下一頁就會帶著它。 */
   b.classList.remove('solid');
   const rbtn=$('rematchBtn');
@@ -1200,7 +1200,7 @@ function tutorialSettle(totalTime, stats){
     document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
   }
 }
-/* ══⚠⚠ 休息處的結算（ver -913，Ray：「養息之間跟命之泉、前廳這三個是安全點，
+/* ══⚠⚠ 安全區的結算（ver -913，Ray：「養息之間跟命之泉、前廳這三個是安全點，
    進入就結算戰鬥」「走進就閉棺，跳結算頁。但若之前沒有發生戰鬥就不會作動」）══
    與 `scriptSettle` 是**兄弟**：同一個版面、同一支評分（`evaluate`）、同一位評價者
    （`pickEvaluator`）、同一條拾得（`_lootPending`）—— 差別只有一件事：
@@ -1211,14 +1211,14 @@ function tutorialSettle(totalTime, stats){
      共用的部分本來就已經是抽出來的函式了。
    ⚠ 「沒打過架就不作動」擋在**呼叫端**（城鎮的 `restActDue` 問有沒有帳）——
      走到這裡就一定有帳可結。 */
-/* ⚠ `title` ＝這一頁的大標（ver -928）：休息處走進去是「休　息　處」，
+/* ⚠ `title` ＝這一頁的大標（ver -928）：安全區走進去是「安　全　區」（ver -1840 前叫「休　息　處」），
      走出這張地圖時結算是「撤　離」—— 同一頁兩個時機，字面由呼叫端給（鐵律 1）。 */
 function restSettle(totalTime, stats, sessionLoot, shares, title, expShares){
   state.sRankUnlocked = false;
   const ev = evaluate(stats);
   /* 評價者照舊（`battleId` 傳 null ＝沒有哪一場的專屬台詞，走章節／好感那張通用表）。
      ⚠ 這一局本來就是一場一場打出來的，等第與好感照給 —— 它與打贏結算怪的那一頁
-       是同一件事，只是在休息處收尾。 */
+       是同一件事，只是在安全區收尾。 */
   const spk = pickEvaluator(ev.grade, null);
   evalDiagSet('(安全區)', ev.grade, spk);
   if(!spk) warnNoEval(ev.grade, null);
@@ -1241,7 +1241,7 @@ function restSettle(totalTime, stats, sessionLoot, shares, title, expShares){
                      spk ? { speaker:spk } : { noInspector:true });
   /* ⚠⚠ 這一頁的底要**不透明**（ver -914，Ray：「盤面早就清掉了，棺直接把背景閉掉」）：
      結算頁平時是 94% 的黑罩在**剛剛那一場的戰鬥畫面**上（那是它該有的樣子）——
-     但休息處這條路底下沒有剛打完的那一場，透出來的是上一場留在 `#app` 的殘盤。
+     但安全區這條路底下沒有剛打完的那一場，透出來的是上一場留在 `#app` 的殘盤。
      ⚠ 撤掉的地方在 `showResultSequence` 開場（與其他歸位那幾行同一處，鐵律 8）。 */
   { const b=$('banner'); if(b) b.classList.add('solid'); }
   const rbtn=$('rematchBtn');

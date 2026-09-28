@@ -1742,7 +1742,7 @@
     /* 結算內容同樣避開瀏海（#banner 為絕對定位、吃不到 #app padding，需自帶墊高） */
     padding:var(--notch-bar-h) 0 0;overflow:hidden;}
   #banner.on{display:flex;}
-  /* 休息處的結算（ver -914）：底不透明 —— 那一條路底下沒有剛打完的那一場，
+  /* 安全區的結算（ver -914）：底不透明 —— 那一條路底下沒有剛打完的那一場，
      半透就會透出上一場留在 `#app` 的殘盤（見 inspector 的 restSettle）。 */
   #banner.solid{background:#05040a;}
   /* 結算內容區（大標→rows→立繪），retry 固定在最底。固定不可滑動：overflow hidden + 禁回彈。 */
@@ -4504,7 +4504,7 @@
   #townMapView .tm-img{position:absolute;inset:0;width:100%;height:100%;display:block;
     filter:drop-shadow(0 10px 24px rgba(0,0,0,.65));}
   /* ⚠ 走過的那一格要壓在霧**之上**（ver -913）：兩格靠得近時，鄰居那團霧會蓋掉
-     這一格的中文地名（實測「養息之間（休息處）」被隔壁的霧吃掉半行）。 */
+     這一格的中文地名（實測「養息之間（安全區）」被隔壁的霧吃掉半行）。 */
   #townMapView .tm-spot{position:absolute;width:0;height:0;font-style:normal;z-index:2;}
   #townMapView .tm-spot b{position:absolute;left:-6px;top:-6px;width:12px;height:12px;
     border-radius:50%;background:#3b2a16;border:2px solid #efe3c2;
@@ -4514,8 +4514,8 @@
        都要呼吸燈，不然不夠明顯」）：原本只有 `box-shadow` 在明暗之間跑，而它被
        夾在墨點那 12px 的範圍內 —— 在一張到處都是墨點的羊皮紙上，亮一點的墨點
        還是墨點。**要讀得出來，動的必須是「大小」不是只有「亮度」。**
-     ⚠ 光暈畫在 `b::before` **不是 `::after`** ——`::after` 已經被休息處的墨圈用掉了
-       （`.tm-spot.rest b::after`），一格同時是所在地＋休息處時會互相蓋掉。
+     ⚠ 光暈畫在 `b::before` **不是 `::after`** ——`::after` 已經被安全區的墨圈用掉了
+       （`.tm-spot.rest b::after`），一格同時是所在地＋安全區時會互相蓋掉。
      ⚠ `pointer-events:none`：它比墨點大兩倍，吃掉點擊的話地圖就關不掉（點畫面關）。 */
   #townMapView .tm-spot.here b{background:var(--gold);border-color:#fff;
     left:-7px;top:-7px;width:14px;height:14px;
@@ -4571,7 +4571,7 @@
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     -webkit-mask-position:center;mask-position:center;}
-  /* ══ 休息處：用筆圈起來（ver -913，Ray）══ 手繪地圖上的一個墨圈 ——
+  /* ══ 安全區：用筆圈起來（ver -913，Ray）══ 手繪地圖上的一個墨圈 ——
      所以是**歪的、不等寬的**（旋轉 −12°、上下邊比左右粗一點），不是一個正圓框。
      ⚠ 畫在 `b`（那顆墨點）上而不是另加一層：圈與點是同一個記號。 */
   #townMapView .tm-spot.rest b::after{content:'';position:absolute;
