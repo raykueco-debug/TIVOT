@@ -1099,7 +1099,8 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
-      image:'enemy_manu', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom' },
+      /* ver -1838（Ray：「man_thug_dual 馬努戰換這張圖」）—— fit 照單人惡棍卡那一套。原本借他 `draw` 立繪的 `enemy_manu` 鍵留著。 */
+      image:'enemy_thug_dual', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
