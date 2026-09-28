@@ -722,7 +722,7 @@ function typeFinish(el, text){
    ⚠ 這些是**演出**不是狀態機：`shake`／`fx`／`se` 是一次性的（每次演到就放），
      `bg`／`cg`／`ci` 是持續的（沿用到下一次改變）。混在一起寫會很難讀，
      所以分成 applyPersist 與 fireOneShot 兩支。 */
-const BG_DIR='resources/background/', CG_DIR='resources/illustration/', SI_DIR='resources/SI/';
+const BG_DIR='resources/background/', CG_DIR='resources/illustration/', SI_DIR='resources/si/';   // ver -1816：-1554 全面小寫化時漏改（Mac 不分大小寫、上線 404）
 /* 背景的區域資料夾（自動產生，見 tools/bg_index.py 與 imgSrc 的說明）。 */
 /* ══ BGM 表 ══
    ⚠ **逐支列出實際檔名**（不能拼副檔名）：這個資料夾裡 mp3 與 m4a 都有，
@@ -2664,7 +2664,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1815';
+const KERB_V='?v=1816';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
