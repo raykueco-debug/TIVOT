@@ -251,6 +251,11 @@ function tuneSave(cur){
       Object.assign(cur.tk.obj, L);          // 這一輪不必重載就生效（檔案已經是同一組值）
       delete tuneLive[cur.tk.key]; layout(); tuneRender();
       console.log('[立繪調整] 已寫入 speakers.js', cur.tk.key, L);
+      /* 飛行頁那一份（ver -1818，§5「兩邊一起改」）：同一張圖在 flight/index.html 也有就一起寫；
+         那一頁沒有這張（409）＝不必同步，不算失敗。 */
+      fetch(url, { method:'POST', body:JSON.stringify({ file:'flight/index.html', kind:'src', key:'../'+cur.tk.key, set:L }) })
+        .then(r=>{ if(r.ok) console.log('[立繪調整] 飛行頁同步寫入', cur.tk.key); })
+        .catch(()=>{});
     })
     .catch(e=>window.alert('寫入失敗：'+e));
 }
@@ -2664,7 +2669,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1817';
+const KERB_V='?v=1818';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

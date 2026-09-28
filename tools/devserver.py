@@ -51,6 +51,9 @@ import json
 import re
 
 TUNE_FILE = 'script/speakers.js'
+# ver -1818：飛行頁的立繪取景是另一份（`flight/index.html` 的 PORTRAIT／PORTRAIT_EXPR），憲法 §5 要兩邊一起改 ——
+# 所以 body 可以帶 `"file"`，只准這兩個。
+TUNE_FILES = {'script/speakers.js', 'flight/index.html'}
 TUNE_KEYS = {'cm': 1, 'yShift': 1, 'fxShift': 3}   # 欄位 → 小數位數
 
 
@@ -150,7 +153,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             try:
                 n = int(self.headers.get('Content-Length') or 0)
                 req = json.loads(self.rfile.read(n).decode('utf-8'))
-                dst = os.path.join(ROOT, TUNE_FILE)
+                rel = req.get('file') or TUNE_FILE
+                if rel not in TUNE_FILES:
+                    return self._fail(403, '不在白名單裡：' + rel)
+                dst = os.path.join(ROOT, rel)
                 with open(dst, 'r', encoding='utf-8') as f:
                     text = f.read()
                 out = tune_patch(text, req.get('kind'), req.get('key'), req.get('set') or {})
