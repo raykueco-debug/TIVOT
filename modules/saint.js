@@ -61,7 +61,8 @@ const NI_MELT_NAME    = NI.meltdownName  || 'MELTDOWN';  // 熔斷的字
 const NI_MELT_CUTIN   = NI.meltdownCutin || '';          // 熔斷的 cut-in（ASSETS 鑰匙）
 const NI_BURST_PCT    = (NI.burstPct!=null) ? NI.burstPct : 0.25;      // 滿格自爆＝敵最大 HP 的幾成
 const NI_BURST_HEAL   = (NI.burstHealPct!=null) ? NI.burstHealPct : 0;  // 自爆回血＝玩家最大 HP 的幾成（滿格時）
-const NI_BURST_FULL   = (NI.burstFullCells!=null) ? NI.burstFullCells : 16;  // 「滿格」是幾格
+const NI_GRID         = NI.grid || 9, NI_GRID_COLS = NI.gridCols || 3;   // 惡夢化的盤面（ver -1832：9 宮格、由大點到小）
+const NI_BURST_FULL   = (NI.burstFullCells!=null) ? NI.burstFullCells : NI_GRID;  // 「滿格」＝滿盤的格數
 const NI_BURST_NAME   = NI.burstName  || '';       // 自爆的名字（cut-in 的字）
 const NI_BURST_CUTIN  = NI.burstCutin || '';       // 自爆的 cut-in 圖（ASSETS 鑰匙）
 
@@ -559,10 +560,12 @@ function startNightmareMode(){
   /* 破防值不清（ver -749，同聖徒化那一條）。 */
   $('grid').classList.add('saint','ni');
   setSaintBarFx(true);
-  /* 盤面換成 16 宮格（收尾再換回來，同聖徒化）。 */
+  /* 盤面換成 9 宮格（ver -1832；收尾再換回來，同聖徒化）。**由大點到小**：建盤後游標從最大號起算，
+     點對就往下減（`nightmareTap`）。 */
   state.saintPrevBoard = { N:state.N, cols:state.cols };
-  api.setBoard(SAINT_GRID, SAINT_GRID_COLS);
+  api.setBoard(NI_GRID, NI_GRID_COLS);
   api.buildGrid();
+  state.expect = state.N;
   api.floatDmg(L.battle.nightmareLabel||'NIGHTMARE INSTALL','50%','20%',true);
   /* 抽血：從**發動當下的 HP**線性降到 1，跑完整段就是熔斷。
      ⚠ 用「起點 → 1」的線性而不是固定速率：Ray 說「以現有的 hp 開始扣除，
@@ -841,8 +844,8 @@ export function nightmareTap(num, cell){
   }
   if(num===state.expect){
     hit(false);
-    state.expect++;
-    if(state.expect>state.N) triggerNiBurst();
+    state.expect--;                              // 由大點到小（ver -1832）
+    if(state.expect<1) triggerNiBurst();
     else { api.markNext(); startSaintReactTimer(); }
   }else{
     /* 點錯＝多抽一次血（聖徒化那邊是多推一次）。

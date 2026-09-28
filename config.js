@@ -83,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1831';
+export const VERSION = 'ver 2026.09.22-1832';
 
 export const GAME_CONFIG = {
 
@@ -3936,7 +3936,10 @@ export const GAME_CONFIG = {
          ⚠ 被推翻的是 ver -888／-892（「惡夢粉碎發動時可以回復最高 25% hp，
            視你在 NI 打掉的格數而定」「是回血 25% 不是回血到 25%」）。 */
       burstHealPct: 0,
-      burstFullCells: 16,
+      /* ══ 盤面：**9 宮格、由大點到小**（ver -1832，Ray：「把 NI 改成 9 宮格，但是數字要由大點到小」）══
+         推翻 ver -690 的「固定 16 格、跟聖徒化一樣」。倒數長度本來就由血量決定（`maxSec`），與格數無關。
+         「滿格」（粉碎份量的分母）就是這個格數 —— 不另寫 `burstFullCells`（鐵律 7）。 */
+      grid: 9, gridCols: 3,
       /* 自爆的名字與 cut-in（ver -674，Ray：「CI_Anya_Dreambreaker／夢境粉碎／
          這是安雅的主動技」）。
          ⚠ **不寫進她的搭檔卡的 `active`**：那一格是搭檔系統（`partner.tryActive`）
