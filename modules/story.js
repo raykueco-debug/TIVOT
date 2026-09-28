@@ -1706,6 +1706,7 @@ function applyPersist(line){
   /* ⚠ **這一拍要立的旗標**（ver -425）：`flags:['set_sail']`。
      scene 有 `setFlags`（收尾才寫），但城鎮的 `acts` 不是 scene —— 這一條是逐拍的。
      ⚠ 演到就記（不是演完），所以只放「這一刻確實發生了」的事（出航、拿到東西…）。 */
+  if(!replaying){   // 管理人回播（←）重演這一拍時不再記帳（見 rewindLine）
   if(line.flags && line.flags.length) prog.addFlags(line.flags);
   /* `affToFloor:'RENNA'` ＝這一拍把那個人的好感降到**這一級的最低值**（ver -1707，
      實作只有 `prog.affToTierFloor` 一支）。演到就記，同 `flags`。 */
@@ -1733,6 +1734,7 @@ function applyPersist(line){
   if(line.take) for(const k in line.take) inv.remove(k, line.take[k]);
   if(line.give) for(const k in line.give) inv.add(k, line.give[k]);
   if(line.money) inv.addMoney(line.money);
+  }   // !replaying
   persistFaded=false;
   let bgChanged=false;
   if(line.bg!==undefined && line.bg!==stageBg){
@@ -1913,7 +1915,7 @@ function applyPersist(line){
      `clockToNext:8` ＝推到**下一個** 8:00（過了就是隔天）—— 走城鎮閘門同一支
      `clock.advanceToNextHour`（鐵律 8）。⚠ 在情境卡代換**之前**做：
      卡上要印的常常就是跳完之後的日期。 */
-  if(line.clockToNext!=null){ try{ clock.advanceToNextHour(line.clockToNext); }catch(_){} }
+  if(line.clockToNext!=null && !replaying){ try{ clock.advanceToNextHour(line.clockToNext); }catch(_){} }
   /* 慢黑幕（ver -739，Ray：「劇情場景轉換的黑色淡入淡出時間長點，三秒」）：
      拍上寫 `fadeOut:3000`／`fadeIn:3000` ＝用指定毫秒把場景區那片 `#storyFade`
      蓋上／掀開。inline 的 transitionDuration 用完要歸還 —— `cgFade` 的 0.5s 是
@@ -2713,7 +2715,7 @@ function fireOneShot(line){
      演出本身的長度（白光起點＋長成）取大者 —— 長度的真相在那組常數上，不抄秒數。 */
   if(line.fx==='sense')
     noSkipUntil = Math.max(noSkipUntil, Date.now() + Math.max(line.auto|0, SENSE_BURST_AT + SENSE_BURST_GROW));
-  if(line.checkpoint) lineCheckpoint();   // 腳本上的存檔點（ver -653，見 lineCheckpoint）
+  if(line.checkpoint && !replaying) lineCheckpoint();   // 腳本上的存檔點（ver -653，見 lineCheckpoint）
   if(line.vibrate) hap.shake();
   /* ══⚠⚠ **持續震動**（ver -638，Ray：「蕾娜的！！之前的畫面震動要持續 10 秒，
      點擊推進對話也要繼續」「直到進戰鬥停止」）══
@@ -2853,7 +2855,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1841';
+const KERB_V='?v=1842';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3680,6 +3682,7 @@ function renderLine(){
     if(line.tierMax!=null && t > line.tierMax) return advance();
   }
 
+  histPush(line);   // 管理人回播用的快照（這一拍套用之前的狀態，見 rewindLine）
   if(line.goto){
     const at=indexOfLabel(cur.lines, line.goto);
     if(at<0){ console.info('[story] 沒有這個 label：', line.goto); return endScene(); }
@@ -4109,7 +4112,7 @@ function renderLine(){
      ⚠ `me:true` 只是給版面用的標記（藍框，見 style.css 的 `.log-row.me`）——
        不要拿它去判「這一句是誰講的」，那是 `name` 的事。 */
   const _me = isSelfLine(line);
-  if(lineText(line) || _me) sceneLog.push({ name:(line.speaker==='PLAYER' ? prog.getPlayerNick() : nameOf(line.speaker)),
+  if((lineText(line) || _me) && !replaying) sceneLog.push({ name:(line.speaker==='PLAYER' ? prog.getPlayerNick() : nameOf(line.speaker)),
                                 text:subst(lineText(line)), me:_me });
   const nm=$('storyName'), tx=$('storyText');
   /* 主角沒有立繪、名字由玩家取（存檔裡），所以不走 speakers.js 的查表。
@@ -4288,6 +4291,61 @@ function flushReveal(){
   return true;
 }
 
+/* ══ 管理人：←／→ 回播與續播（ver -1842，Ray：「跑劇情時管理者可用鍵盤方向箭左右回播
+   或續播對話與立繪」）══
+   → ＝ `advance()`（同空白鍵，鐵律 8）；← ＝退回上一句對白。
+   作法：每一句對白**套用之前**存一份舞台快照（誰站哪邊、哪張差分、背景／插圖、站位覆寫），
+   ← 就把快照放回去、再**重演那一句**（`replaying`）—— 那一句自己的立繪指令照樣跑，
+   畫面就與第一次演到時一樣。
+   ⚠⚠ 重演時**不記帳**：旗標／章節／好感地板／錢／道具／星／時鐘／存檔點／已播腳本
+     一律跳過（`applyPersist` 與 renderLine 裡那幾處看 `replaying`）—— 回播是看，不是再發生一次。
+   ⚠ 只記**對白拍**；閘門（戰鬥／選項／讀取／結算／提示／翌日）不進歷史，所以回播不會
+     再開一場戰鬥。⚠ 不跨段：換了一段（`cur` 不同）就停在這一段的第一句。
+   ⚠ 管理人限定（`body.testmode`）；一般玩家的鍵盤行為一個字都沒動。 */
+let rewindHist = [];
+let replaying = false;
+const isTestmode = ()=>document.body.classList.contains('testmode');
+function histPush(line){
+  if(!isTestmode()) return;
+  if(!(line.text!=null || line.textByTier || line.speaker || line.blank)) return;
+  if(isGateLine(line) || line.hint || line.dayBreak) return;
+  const top = rewindHist[rewindHist.length-1];
+  if(top && top.cur===cur && top.idx===lineIdx) return;
+  const bg=$('storyBg'), cg=$('storyCg');
+  rewindHist.push({ cur, idx:lineIdx,
+    slot:{...slot}, slotExpr:{...slotExpr}, shown:JSON.parse(JSON.stringify(shown||{})),
+    sides:{...sideOverride}, darkWho, stageBg, stageCg,
+    bgSrc: bg ? bg.getAttribute('src') : null, bgOn: !!(bg && bg.classList.contains('on')),
+    cgSrc: cg ? cg.getAttribute('src') : null, cgOn: !!(cg && cg.classList.contains('on')) });
+  if(rewindHist.length>300) rewindHist.shift();
+}
+function rewindLine(){
+  if(!active || !cur) return;
+  let top = rewindHist[rewindHist.length-1];
+  if(top && top.cur===cur && top.idx===lineIdx){ rewindHist.pop(); top = rewindHist[rewindHist.length-1]; }
+  if(!top || top.cur!==cur) return;              // 已經是這一段的第一句
+  rewindHist.pop();                               // 重演時 histPush 會把它原樣放回去
+  clearTimeout(autoT); autoT=null; clearTimeout(waitT); waitT=null;
+  clearTimeout(autoT2); autoT2=null; onTyped=null;
+  pendingReveal=null; cookWaitTap=null; noSkipUntil=0; blankUntil=0;
+  stopTyping(); stopFx(); flushCgFade();
+  leaveSlot('L'); leaveSlot('R');
+  sideOverride = {...top.sides}; darkWho = top.darkWho;
+  for(const s of ['L','R']) if(top.slot[s]) ensureOn(top.slot[s], top.slotExpr[s]);
+  shown = top.shown;
+  const bg=$('storyBg'), cg=$('storyCg');
+  stageBg = top.stageBg;
+  if(bg){ if(top.bgSrc && bg.getAttribute('src')!==top.bgSrc) bg.setAttribute('src', top.bgSrc);
+          bg.classList.toggle('on', top.bgOn); }
+  stageCg = top.stageCg;
+  if(cg){ if(top.cgSrc && cg.getAttribute('src')!==top.cgSrc) cg.setAttribute('src', top.cgSrc);
+          cg.classList.toggle('on', top.cgOn); }
+  const cg2=$('storyCg2'); if(cg2) cg2.classList.remove('on');
+  lineIdx = top.idx;
+  replaying = true;
+  try{ renderLine(); } finally { replaying = false; }
+}
+
 /* ══ 推進 ══ */
 function advance(){
   if(studioOn) return;               // 立繪調整工作室：點畫面不推進（ver -1820）
@@ -4427,7 +4485,7 @@ function playScene(id){
   stopShake(); stopQuake(); stopTint(); stopSenseBurst();   // 換場一定停（跨句演出的出口，-638／-664／-1185）
   const sc = MAIN_SCRIPT[id];
   if(!sc){ console.warn('[story] 找不到 scene：', id); close(); return; }
-  cur = sc; lineIdx = 0;
+  cur = sc; lineIdx = 0; rewindHist = [];
   /* ⚠ 換場要**丟掉**上一幕還沒演的那一拍（ver -430），不是補演它 ——
      下面立刻就把台上清空了，補演等於把上一幕的人又請回來。
      （`renderLine` 那一道保險是給「同一段之內」用的，換場走這裡。） */
@@ -5728,7 +5786,7 @@ export function playAdhoc(lines, done, opts){
   cur={ sceneId:'__town', lines, next:null, __adhoc:true, __done:done };
   /* ⚠ 同 `playScene`（ver -940）：只關加速、**留著自動播放** —— 城鎮的段落常常
      一段接一段（進場對白 → 主線段落 → 戰後對白），每一段都關一次等於沒有自動播放。 */
-  lineIdx=0; sceneLog=[]; setFast(false);
+  lineIdx=0; sceneLog=[]; rewindHist=[]; setFast(false);
   renderLine();
 }
 
@@ -6002,6 +6060,12 @@ export function init(){
       if(e.key==='ArrowUp'   || e.key==='w' || e.key==='W'){ e.preventDefault(); choiceNav.move(-1); return; }
       if(e.key==='ArrowDown' || e.key==='s' || e.key==='S'){ e.preventDefault(); choiceNav.move( 1); return; }
       if(isGo(e.key)){ e.preventDefault(); choiceNav.confirm(); }
+      return;
+    }
+    /* 管理人：← 回播上一句、→ 續播（＝推進），見 rewindLine。 */
+    if(isTestmode() && (e.key==='ArrowLeft' || e.key==='ArrowRight')){
+      e.preventDefault();
+      if(e.key==='ArrowLeft') rewindLine(); else advance();
       return;
     }
     if(!isGo(e.key)) return;
