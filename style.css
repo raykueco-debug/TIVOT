@@ -2006,6 +2006,11 @@
   body.heat-noalert #grid::after{ display:none !important; animation:none !important; }
   body.heat-nohit #enemyImg, body.heat-nohit #app.hitshake{ animation:none !important; }
   body.heat-nohit #hitFxLayer, body.heat-nohit #redFlash{ display:none !important; }
+  /* ver -1846：戰鬥以外的發熱來源（見 settings.HEAT_ITEMS）。 */
+  body.heat-noanim *, body.heat-noanim *::before, body.heat-noanim *::after{ animation-iteration-count:1 !important; }
+  body.heat-nofilter *, body.heat-nofilter *::before, body.heat-nofilter *::after{
+    filter:none !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; mix-blend-mode:normal !important; }
+  body.heat-noshadow *, body.heat-noshadow *::before, body.heat-noshadow *::after{ box-shadow:none !important; text-shadow:none !important; }
   #home{position:absolute;inset:0;display:none;flex-direction:column;
     align-items:center;justify-content:flex-start;z-index:50;text-align:center;
     background:radial-gradient(120% 90% at 50% 30%,#1a1330,#07050c 90%);

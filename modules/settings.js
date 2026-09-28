@@ -53,8 +53,17 @@ export function peaceOn(){ return rd(PEACE_KEY)==='1'; }
      alert＝盤面警戒脈動（#grid::after）　hit＝敵人受擊演出（立繪動畫／受擊特效層／紅閃／震畫面）
      audio＝音效與 BGM（整個音訊引擎暫停，不只是靜音）
    ⚠ 這是**診斷工具**不是設定：找到兇手之後就該去修那一樣，然後把這一組拆掉。 */
-export const HEAT_KEY = 'tivot_heatoff_v1';
-export const HEAT_ITEMS = [ ['fx','普攻特效'], ['ring','延時光圈'], ['alert','警戒脈動'], ['hit','受擊演出'], ['audio','全部聲音'], ['bgm','只關音樂'], ['sfx','只關音效'] ];
+export const HEAT_KEY = 'tivot_heatoff_v1';   // ⚠ flight/index.html 的 HEAT_OFF 讀同一支（改一邊要改另一邊，ver -1846）
+/* ver -1846（Ray：「手機音量全關仍然發熱，把所有可能導致發熱的東西列入選單中手動開關」）加了
+   戰鬥以外那幾類（第三欄＝分組標題，只給面板排版用）：
+     anim＝常駐循環動畫（所有 infinite 的 CSS 動畫只跑一輪）　filter＝濾鏡與混色（blur／drop-shadow／
+     色調／mix-blend，全頁）　shadow＝光暈陰影（box-shadow／text-shadow）　particle＝櫻花粒子
+     tick＝槍棺齒輪轉動與閃光掃過（每秒一次的計時器）
+     fq＝飛行畫面鎖最低畫質（q4）　f30＝飛行畫面 30fps 上限 —— 這兩項讀在飛行頁，**下一次進飛行畫面才生效**。 */
+export const HEAT_ITEMS = [ ['fx','普攻特效','戰鬥'], ['ring','延時光圈'], ['alert','警戒脈動'], ['hit','受擊演出'],
+  ['audio','全部聲音','聲音'], ['bgm','只關音樂'], ['sfx','只關音效'],
+  ['anim','常駐循環動畫','畫面（全域）'], ['filter','濾鏡與混色'], ['shadow','光暈陰影'], ['particle','櫻花粒子'], ['tick','齒輪轉動／閃光掃過'],
+  ['fq','飛行：最低畫質','飛行畫面（下次進入生效）'], ['f30','飛行：30fps 上限'] ];
 export function heatOff(){ try{ const a=JSON.parse(rd(HEAT_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
 function setHeatOff(k, off){ const a=heatOff().filter(x=>x!==k); if(off) a.push(k); wr(HEAT_KEY, JSON.stringify(a)); }
 const num = (v, d) => { const n=parseFloat(v); return isFinite(n) ? n : d; };
@@ -207,8 +216,9 @@ export function open(opts){
           +   '<b>'+(peaceOn()?'跳過所有戰鬥':'關')+'</b></label>'
           /* 發熱排除法（ver -1805）：五個開關，開＝照常、關＝那一類整組不跑。 */
           + '<div class="gm-sec">發熱排除</div>'
-          + HEAT_ITEMS.map(([k,nm])=>{ const off=heatOff().indexOf(k)>=0;
-              return '<label class="gm-row gm-toggle"><span>'+nm+'</span>'
+          + HEAT_ITEMS.map(([k,nm,grp])=>{ const off=heatOff().indexOf(k)>=0;
+              return (grp ? '<div class="gm-note" style="margin-top:6px;color:var(--gold,#d4a94a)">'+grp+'</div>' : '')
+                + '<label class="gm-row gm-toggle"><span>'+nm+'</span>'
                 +   '<button class="gm-sw'+(off?'':' on')+'" data-heat="'+k+'" type="button"><i></i></button>'
                 +   '<b>'+(off?'關閉中':'開')+'</b></label>'; }).join('')
           + '<div class="gm-note">關掉一項就在手機上看 HUD（幀率／節流／rAF）比一次。只在管理人模式生效。</div>'

@@ -1279,6 +1279,7 @@ function sweepShine(sel){
 setInterval(()=>{
   if(!document.body.classList.contains('story-on')) return;
   if(document.body.classList.contains('flight-on')) return;   // ver -1729：飛行畫面蓋著時劇情層是藏的，不要在底下轉
+  if(document.body.classList.contains('heat-notick')) return; // 發熱排除（ver -1846）
   { const quiet=document.hidden || document.body.classList.contains('perf-idle');
     if(--shineGear<=0){ shineGear=11+((Math.random()*3)|0); if(!quiet) sweepShine('#storyExit .ke-shine'); }
     if(--shinePend<=0){ shinePend=9+((Math.random()*3)|0);  if(!quiet) sweepShine('#kerbPend .kp-shine'); } }
@@ -2855,7 +2856,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1845';
+const KERB_V='?v=1846';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

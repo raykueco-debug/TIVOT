@@ -11,6 +11,7 @@
 const COLORS = ['#ffd7e6', '#ffc0d4', '#f7a8c4', '#ffe4ef', '#f9b6cf'];
 
 export function sakuraBurst(opts) {
+  if(document.body.classList.contains('heat-noparticle')) return;   // 發熱排除（ver -1846）
   opts = opts || {};
   const emitMs  = opts.emitMs  != null ? opts.emitMs  : 650;    // 由外緣持續補入的時間（短）
   const density = opts.density != null ? opts.density : 1;
