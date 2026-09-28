@@ -167,6 +167,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             try:
                 n = int(self.headers.get('Content-Length') or 0)
                 req = json.loads(self.rfile.read(n).decode('utf-8'))
+                sys.stderr.write('[devserver] tune %s\n' % json.dumps(req, ensure_ascii=False))
                 rel = req.get('file') or TUNE_FILE
                 if rel not in TUNE_FILES:
                     return self._fail(403, '不在白名單裡：' + rel)
