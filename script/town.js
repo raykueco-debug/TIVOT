@@ -4852,27 +4852,27 @@ export const TOWNS = {
           sor('shy','唉呀……'),
           sor('shy','我真是……太喜歡你們啦。'),
           ren('stare','明明剛剛還說我冷血呢。'),
-          /* ── 更衣後 ── */
+          /* ── 更衣後 ── 從這一拍起到里朋莊園收尾，四人都是冒險者裝（`ad_` 差分，ver -1863 美術 HANDOFF 35） */
           { speaker:'NARRATION', text:'', fadeOut:1500, auto:1700, hide:['RENNA','NOUVELLE','ANYA','SORANA'] },
           { speaker:'NARRATION', text:'', fadeIn:1500, auto:1700 },
-          sor('amaze','意外地還不錯。'),
-          ren('lookaway','冒險者的裝束，即使是索菈娜小姐也能活動自如。'),
-          sor('tease','我是說妳啦。'),
-          ren('smile','謝謝。'),
-          sor('amaze','哇，遊刃有餘。'),
-          any('scare',''),
-          ren('think','有點太大件了嗎……'),
-          sor('back','諾薇兒好慢啊！'),
-          ren('write','別急，他們跑不了……'),
+          sor('ad_amaze','意外地還不錯。'),
+          ren('ad_lookaway','冒險者的裝束，即使是索菈娜小姐也能活動自如。'),
+          sor('ad_tease','我是說妳啦。'),
+          ren('ad_smile','謝謝。'),
+          sor('ad_amaze','哇，遊刃有餘。'),
+          any('ad_scare',''),
+          ren('ad_think','有點太大件了嗎……'),
+          sor('ad_back','諾薇兒好慢啊！'),
+          ren('ad_write','別急，他們跑不了……'),
           { speaker:'NARRATION', text:'', se:'se_dooropen', auto:800 },   // 開門聲（ver -1793 補上）
-          sor('surprise','喔！'),
-          nou('shycover',''),
-          sor('smirk','這也是……另外一種意義的不錯呢！'),
-          nou('shycover','我不能再這樣吃下去了……'),
+          sor('ad_surprise','喔！'),
+          nou('ad_coverface',''),
+          sor('ad_smirk','這也是……另外一種意義的不錯呢！'),
+          nou('ad_coverface','我不能再這樣吃下去了……'),
           /* [諾 T3 以上] */
           { speaker:'PLAYER', blank:true, tierWho:'NOUVELLE', tierMin:3 },
-          nou('shycover','',                                { tierWho:'NOUVELLE', tierMin:3 }),
-          nou('shycoverpeek','神父怎麼能講那種話……',        { tierWho:'NOUVELLE', tierMin:3 }),
+          nou('ad_coverface','',                                { tierWho:'NOUVELLE', tierMin:3 }),
+          nou('ad_coverfacepeek','神父怎麼能講那種話……',        { tierWho:'NOUVELLE', tierMin:3 }),
         ] },
         /* ══ 救完人、被強制帶回旅店（ver -1793，Ray 的稿）══
            由里朋莊園沙龍那一段收尾的 `goto:'@santasofia:inn'` 帶過來，抵達就演。
@@ -4914,13 +4914,13 @@ export const TOWNS = {
           { flag:'ss_raid_go', need:'ss_inn_merge', sides:{ RENNA:'L' }, lines:[
             /* ⚠ `checkpoint`：里朋莊園那幾場是劇情戰（打輸回檔）—— 回檔點要落在**還能自由行動**的地方，
                就是出發前這一刻（人在旅店、這一段還沒記旗 ⇒ 讀回來會再演一次出發）。 */
-            ren('watch','他們的據點在市郊，穿過市集走一段就到了。', { checkpoint:true }),
+            ren('ad_watch','他們的據點在市郊，穿過市集走一段就到了。', { checkpoint:true }),
             lotN('sad','修女大人……'),
-            ren('bow','別擔心，這個人很強的。'),
-            ren('remind','還有，不可以叫我修女大人。'),
-            ren('bow','這是我們的秘密喔。'),
+            ren('ad_bow','別擔心，這個人很強的。'),
+            ren('ad_remind','還有，不可以叫我修女大人。'),
+            ren('ad_bow','這是我們的秘密喔。'),
             lotN('happy','嗯！'),
-            sor('ready','出發！'),
+            sor('ad_ready','出發！'),
           ] } ],
         innDoors:[
           { roster:['RENNA','NOUVELLE','ANYA','SORANA'], out:['RENNA'] },
@@ -9548,7 +9548,7 @@ export const TOWNS = {
         { flag:'ss_raid_done', need:['ss_raid_go','ss_hall_done'], storyBattle:true, goto:'@santasofia:inn',
           sides:{ RENNA:'L', NOUVELLE:'L', SORANA:'L', ANYA:'R', RIPON:'R', MANU:'R', LOFA:'R', LOFA_N:'R' }, lines:[   // ver -1802 Ray：安雅不要站左位
           lof('cry',''),
-          sor('furiouscute','放開她！'),   // ver -1821 Ray 改稿（稿：furious ＝ sorana_si_furious.webp，鍵是 furiouscute）
+          sor('ad_furious','放開她！'),   // ver -1821 Ray 改稿（稿：furious ＝ sorana_si_furious.webp，鍵是 furiouscute）
           rip('clap','敢在我的地界鬧事，你們是外地的賞金獵人吧？'),
           rip('clap','身手不錯，出個價……'),
           { speaker:'NARRATION', text:'', se:'se_enemy_revolver', auto:700 },
@@ -9561,22 +9561,22 @@ export const TOWNS = {
           man('capture','都別動！'),
           { speaker:'LOFA_N', text:'啊！', portrait:{ char:'MANU', expr:'capture', show:true } },   // ver -1796 Ray：「啊！」也用 capture 那張
           man('capture','該死的，聖王廳的狗拿什麼耗子！'),
-          sor('guardtalk','卑鄙的傢伙！'),
-          ren('command','放開她，留你一條生路。'),
+          sor('ad_guardtalk','卑鄙的傢伙！'),
+          ren('ad_command','放開她，留你一條生路。'),
           man('capture','狗屁生路！進了治安廳他們一樣會吊死我！'),
           man('capture','既然如此，'),
           man('capture','我就帶這女的一起上路——'),
           { speaker:'LOFA_N', text:'呀！', se:'se_weapon_sniper', portrait:{ char:'MANU', expr:'shot', show:true } },
-          sor('battlecry','狙擊？從哪邊來的？'),
-          any('point',''),
+          sor('ad_battlecry','狙擊？從哪邊來的？'),
+          any('ad_point',''),
           { speaker:'NARRATION', text:'', cg:'35_bellinda', cgNoTime:true, cgPan:'up', auto:2400 },
-          sor('battlecrylookaside','那是……賞金獵人？'),
-          ren('commandsoft','正好，這個功勞就讓給他們了。', { cg:null }),
-          ren('commandsoft','趁還沒驚動治安廳快走吧。'),
-          nou('help','來，站得起來嗎？'),
+          sor('ad_battlecrylookaside','那是……賞金獵人？'),
+          ren('ad_commandsoft','正好，這個功勞就讓給他們了。', { cg:null }),
+          ren('ad_commandsoft','趁還沒驚動治安廳快走吧。'),
+          nou('ad_help','來，站得起來嗎？'),
           lofN('cry','我……我還以為……'),
           lofN('cry',''),
-          sor('smile',''),   // ver -1821 Ray 改稿（原 tire）
+          sor('ad_smile',''),   // ver -1821 Ray 改稿（原 tire）
         ] } ] },
       cellar:     { bg:'sofiaout_cellar', name:'里朋莊園　地下囚室', noTime:true, exits:{ up:'backhall' } },
       forecourt:  { bg:'sofiaout_forecourt', name:'里朋莊園　噴泉前庭', noTime:true, exits:{ up:'hall', right:'carriage', down:'avenue' },

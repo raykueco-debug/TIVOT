@@ -424,6 +424,17 @@ export const ART = {
     sleepdesk: { src:'resources/si/renna_si_sleepdesk.webp', top:436, bot:1098, fx:0.595, cm:52, standCm:135 },   // 座（非全身圖）
     smilesoft: { src:'resources/si/renna_si_smilesoft.webp', top:6, bot:1520, fx:0.503 },
     whisper:   { src:'resources/si/renna_si_whisper.webp', top:7, bot:1519, fx:0.566 },
+    /* ══ 冒險者裝（ver -1863，美術 164d9b9a／HANDOFF 35）══ 聖索菲亞「更衣後」＋里朋莊園那一段用 `ad_<表情>`；新檔不用 ?v=。 */
+    ad_bow: { src:'resources/si/renna_ad_si_bow.webp', top:5, bot:1510, fx:0.492 },
+    ad_command: { src:'resources/si/renna_ad_si_command.webp', top:2, bot:1516, fx:0.512 },
+    ad_commandsoft: { src:'resources/si/renna_ad_si_commandsoft.webp', top:5, bot:1515, fx:0.531 },
+    ad_front: { src:'resources/si/renna_ad_si_front.webp', top:2, bot:1524, fx:0.479 },
+    ad_lookaway: { src:'resources/si/renna_ad_si_lookaway.webp', top:6, bot:1519, fx:0.517 },
+    ad_remind: { src:'resources/si/renna_ad_si_remind.webp', top:6, bot:1521, fx:0.525 },
+    ad_smile: { src:'resources/si/renna_ad_si_smile.webp', top:3, bot:1508, fx:0.510 },
+    ad_think: { src:'resources/si/renna_ad_si_think.webp', top:6, bot:1510, fx:0.508 },
+    ad_watch: { src:'resources/si/renna_ad_si_watch.webp', top:7, bot:1515, fx:0.522 },
+    ad_write: { src:'resources/si/renna_ad_si_write.webp', top:3, bot:1521, fx:0.504 },
   } },
   /* ⚠⚠ 諾薇兒的表情差分是**不同姿勢**（跑、畏縮、驚恐、絕望、驚訝），不是換臉，
        所以每一張**各帶自己的 top/bot/fx**（ver -325 量完）。
@@ -632,6 +643,11 @@ export const ART = {
     smug:      { src:'resources/si/nouvelle_si_smug.webp', top:3, bot:1525, fx:0.562 },
     stare:     { src:'resources/si/nouvelle_si_stare.webp', top:2, bot:1523, fx:0.586 },
     wet:       { src:'resources/si/nouvelle_si_wet.webp', top:3, bot:1524, fx:0.582 },
+    /* ══ 冒險者裝（ver -1863，美術 164d9b9a／HANDOFF 35）══ 聖索菲亞「更衣後」＋里朋莊園那一段用 `ad_<表情>`；新檔不用 ?v=。 */
+    ad_coverface: { src:'resources/si/nouvelle_ad_si_coverface.webp', top:9, bot:1526, fx:0.583 },
+    ad_coverfacepeek: { src:'resources/si/nouvelle_ad_si_coverfacepeek.webp', top:4, bot:1527, fx:0.605 },
+    ad_front: { src:'resources/si/nouvelle_ad_si_front.webp', top:3, bot:1522, fx:0.575 },
+    ad_help: { src:'resources/si/nouvelle_ad_si_help.webp', top:9, bot:1533, fx:0.584 },
   } },
   /* ⚠ 索菈娜用 **side** 那張：front 橫向佔 78%，兩人同台一定疊；側面只佔 69%。
      ⚠⚠ ver -752：front／side 換了新圖（同名覆蓋 → 掛 ?v=2，§5）＋湖上甲板
@@ -939,6 +955,19 @@ export const ART = {
     taunt:     { fxShift:-0.015, yShift:25, cm:150, src:'resources/si/sorana_si_taunt.webp', top:7, bot:1528, fx:0.514 },   // ver -1788 新鍵：身體＝舊的 stare，取景照抄
     wave:      { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_wave.webp?v=3', top:8, bot:1527, fx:0.530 },   // fx 目視手調，不隨新圖走（新圖量到 0.374，含舉起的手臂）
     worry:     { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/sorana_si_worry.webp?v=3', top:4, bot:1519, fx:0.543 },
+    /* ══ 冒險者裝（ver -1863，美術 164d9b9a／HANDOFF 35）══ 聖索菲亞「更衣後」＋里朋莊園那一段用 `ad_<表情>`；新檔不用 ?v=。 */
+    ad_amaze: { src:'resources/si/sorana_ad_si_amaze.webp', top:4, bot:1526, fx:0.563 },
+    ad_back: { src:'resources/si/sorana_ad_si_back.webp', top:6, bot:1530, fx:0.568 },
+    ad_battlecry: { src:'resources/si/sorana_ad_si_battlecry.webp', top:7, bot:1520, fx:0.672 },
+    ad_battlecrylookaside: { src:'resources/si/sorana_ad_si_battlecrylookaside.webp', top:7, bot:1519, fx:0.671 },
+    ad_front: { src:'resources/si/sorana_ad_si_front.webp', top:6, bot:1522, fx:0.502 },
+    ad_furious: { src:'resources/si/sorana_ad_si_furious.webp', top:5, bot:1520, fx:0.503 },
+    ad_guardtalk: { src:'resources/si/sorana_ad_si_guardtalk.webp', top:4, bot:1526, fx:0.698 },
+    ad_ready: { src:'resources/si/sorana_ad_si_ready.webp', top:9, bot:1505, fx:0.601 },
+    ad_smile: { src:'resources/si/sorana_ad_si_smile.webp', top:10, bot:1525, fx:0.529 },
+    ad_smirk: { src:'resources/si/sorana_ad_si_smirk.webp', top:6, bot:1524, fx:0.588 },
+    ad_surprise: { src:'resources/si/sorana_ad_si_surprise.webp', top:9, bot:1516, fx:0.576 },
+    ad_tease: { src:'resources/si/sorana_ad_si_tease.webp', top:7, bot:1529, fx:0.585 },
   } },
   /* ⚠ 取景值於 ver -624 **重量**：`Anya_SI_front` 換過圖（舊的留成
      `XAnya_SI_front.webp`）—— §5「換圖一定要重量取景值」。
@@ -1091,6 +1120,10 @@ export const ART = {
     wheeltalk: { src:'resources/si/anya_si_wheeltalk.webp?v=2', top:9, bot:1511, fx:0.458 },
     whisper:   { src:'resources/si/anya_si_whisper.webp?v=2', top:6, bot:1515, fx:0.416 },
     worry:     { src:'resources/si/anya_si_worry.webp?v=2', top:7, bot:1524, fx:0.492 },
+    /* ══ 冒險者裝（ver -1863，美術 164d9b9a／HANDOFF 35）══ 聖索菲亞「更衣後」＋里朋莊園那一段用 `ad_<表情>`；新檔不用 ?v=。 */
+    ad_front: { src:'resources/si/anya_ad_si_front.webp', top:4, bot:1520, fx:0.508 },
+    ad_point: { src:'resources/si/anya_ad_si_point.webp', top:26, bot:1521, fx:0.406 },
+    ad_scare: { src:'resources/si/anya_ad_si_scare.webp', top:2, bot:1527, fx:0.486 },
   } },
   /* ══ 娜塔莉（ver -636，Ray 交稿）══ 安雅的侍女，只在北方泊地那一幕出現。
      ⚠⚠ 兩張圖都是**坐倒在地**的姿勢，不是站姿 —— 所以 `cm` 不是她的真實身高，
