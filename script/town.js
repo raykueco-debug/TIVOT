@@ -9595,6 +9595,35 @@ export const TOWNS = {
     map:{ img:'resources/map/map_dunmor.webp', spots:{ kingsbarrow:[0.0853,0.1396], barrowfield:[0.1777,0.1396], altar:[0.2702,0.1396], springpool:[0.3626,0.1396], altarcourt:[0.4551,0.1396], skullniche:[0.5475,0.1396], headshrine:[0.0853,0.2366], dolmen:[0.1777,0.2366], nemeton:[0.2702,0.2366], triskele:[0.3626,0.2366], sacredway:[0.4551,0.2366], bardsstep:[0.5475,0.2366], brochtop:[0.64,0.2366], bogoffer:[0.7324,0.2366], stonerow:[0.1777,0.3335], oakgrove:[0.2702,0.3335], druidhouse:[0.3626,0.3335], henge:[0.4551,0.3335], brochbase:[0.5475,0.3335], boglane:[0.64,0.3335], lakeshore:[0.7324,0.3335], cairn:[0.8249,0.3335], ossuary:[0.0853,0.4304], fogou:[0.1777,0.4304], innerditch:[0.2702,0.4304], innergate:[0.3626,0.4304], lawstone:[0.4551,0.4304], hallcourt:[0.5475,0.4304], treasury:[0.64,0.4304], crannog:[0.7324,0.4304], cistgrave:[0.0853,0.5273], souterrain:[0.1777,0.5273], potters:[0.2702,0.5273], boarstone:[0.3626,0.5273], marketcross:[0.4551,0.5273], kingshall:[0.5475,0.5273], chariotshed:[0.64,0.5273], weaverhut:[0.1777,0.6243], roundring:[0.2702,0.6243], wellsq:[0.3626,0.6243], mainstreet:[0.4551,0.6243], smithy:[0.5475,0.6243], kilnyard:[0.64,0.6243], oghamrow:[0.3626,0.7212], gatecourt:[0.4551,0.7212], granary:[0.5475,0.7212], tannery:[0.64,0.7212], ditchW:[0.3626,0.8181], southgate:[0.4551,0.8181], ditchE:[0.5475,0.8181], watchW:[0.2702,0.915], rampartW:[0.3626,0.915], causeway:[0.4551,0.915], rampartE:[0.5475,0.915], watchE:[0.64,0.915] } },
     bgm: 'lostplace',
     wilderness: true,
+    /* ══ 放怪（ver -1839，Ray 的表）══════════════════════════════════════════
+       `fixed` ＝必出格（一趟進圖各一次、不吃機率）；`pool` ＝其餘格子 30% 抽聖遺物系十隻（enemies.xlsx No.063～072）。
+       戰鬥卡都在 `config.battles.dm_*`（同一個遭遇段落 `dunmor_wild`，收局＝踏進休息處）。
+       ⚠ 不出怪：入口（堤道）、四個安全區（石棺墓／石棚墓／泉池／戰車棚，節點上的 `noWild`）、
+         兩個休息處（橡樹林／聖井廣場）。
+       ⚠ 聖林祭場原本是休息處＋不出怪，Ray 在那裡放了執劍天使 ⇒ 兩條拿掉，改成戰鬥格
+         （`noWild` 會連固定怪一起擋，兩者不能並存）。 */
+    wildSpawn: {
+      rate: 0.3,
+      fixed: {
+        ossuary:'dm_ossuary',         // 骨龕：慈愛殘像
+        cairn:'dm_cairn',             // 積石塚：靜默等待者
+        kingsbarrow:'dm_kingsbarrow', // 王塚：纏髮之人
+        brochtop:'dm_brochtop',       // 圓塔頂：才能祝福之人
+        nemeton:'dm_nemeton',         // 聖林祭場：執劍天使
+        southgate:'dm_southgate',     // 南壘門：逝去的守護者（夢魘娜塔莉）
+        watchW:'dm_watchW',           // 西望樓：王座徘徊者
+        watchE:'dm_watchE',           // 東望樓：守墓者 seal
+        tannery:'dm_tannery',         // 鞣皮坊：殺戮魔女
+        lakeshore:'dm_lakeshore',     // 湖岸：變異樹靈鹿主
+        headshrine:'dm_headshrine',   // 石首龕：負棺者
+      },
+      pool: [
+        { battle:'dm_relic_mirrorchoir' }, { battle:'dm_relic_bellows' },   { battle:'dm_relic_confessional' },
+        { battle:'dm_relic_hourglass' },   { battle:'dm_relic_keyward' },   { battle:'dm_relic_lectern' },
+        { battle:'dm_relic_censerlung' },  { battle:'dm_relic_veilhands' }, { battle:'dm_relic_wheelpsalm' },
+        { battle:'dm_relic_chalice' },
+      ],
+    },
     nodes: {
       /* ══ 四座祭壇的點亮差分（ver -1837，美術 5ca80357；Ray：「加入祭壇元素並增繪祭壇點亮差分」）══
          `bgWhen`：旗 `dunmor_lit_<格>` 插著就換成 `_lit` 那一張（`_lit` 不是時段尾綴，四格都 `noTime`）。
@@ -9603,12 +9632,12 @@ export const TOWNS = {
       kingsbarrow:  { bg:'dunmor_kingsbarrow', name:'羅賽爾廢城　王塚', noTime:true, bgWhen:[{ need:'dunmor_lit_kingsbarrow', bg:'dunmor_kingsbarrow_lit', noTime:true }], exits:{ right:'barrowfield' } },
       barrowfield:  { bg:'dunmor_barrowfield', name:'羅賽爾廢城　塚原', noTime:true, exits:{ left:'kingsbarrow', down:'dolmen' } },
       altar:        { bg:'dunmor_altar', name:'羅賽爾廢城　祭壇', noTime:true, exits:{ down:'nemeton' } },
-      springpool:   { bg:'dunmor_springpool', name:'羅賽爾廢城　泉池', noTime:true, exits:{ right:'altarcourt', down:'triskele' } },
+      springpool:   { bg:'dunmor_springpool', name:'羅賽爾廢城　泉池', noTime:true, noWild:true, exits:{ right:'altarcourt', down:'triskele' } },
       altarcourt:   { bg:'dunmor_altarcourt', name:'羅賽爾廢城　祭壇前庭', noTime:true, exits:{ left:'springpool', right:'skullniche' } },
       skullniche:   { bg:'dunmor_skullniche', name:'羅賽爾廢城　顱骨壁龕', noTime:true, exits:{ left:'altarcourt', down:'bardsstep' } },
       headshrine:   { bg:'dunmor_headshrine', name:'羅賽爾廢城　石首龕', noTime:true, exits:{ right:'dolmen' } },
-      dolmen:       { bg:'dunmor_dolmen', name:'羅賽爾廢城　石棚墓', noTime:true, exits:{ up:'barrowfield', left:'headshrine', down:'stonerow' } },
-      nemeton:      { bg:'dunmor_nemeton', name:'羅賽爾廢城　聖林祭場', noTime:true, rest:true, noWild:true, exits:{ up:'altar', right:'triskele', down:'oakgrove' } },
+      dolmen:       { bg:'dunmor_dolmen', name:'羅賽爾廢城　石棚墓', noTime:true, noWild:true, exits:{ up:'barrowfield', left:'headshrine', down:'stonerow' } },
+      nemeton:      { bg:'dunmor_nemeton', name:'羅賽爾廢城　聖林祭場', noTime:true, exits:{ up:'altar', right:'triskele', down:'oakgrove' } },
       triskele:     { bg:'dunmor_triskele', name:'羅賽爾廢城　三曲紋廊', noTime:true, exits:{ up:'springpool', left:'nemeton', right:'sacredway' } },
       sacredway:    { bg:'dunmor_sacredway', name:'羅賽爾廢城　聖道', noTime:true, exits:{ left:'triskele', down:'henge' } },
       bardsstep:    { bg:'dunmor_bardsstep', name:'羅賽爾廢城　吟遊石階', noTime:true, exits:{ up:'skullniche', right:'brochtop', down:'brochbase' } },
@@ -9630,13 +9659,13 @@ export const TOWNS = {
       hallcourt:    { bg:'dunmor_hallcourt', name:'羅賽爾廢城　王廳中庭', noTime:true, exits:{ left:'lawstone', down:'kingshall' } },
       treasury:     { bg:'dunmor_treasury', name:'羅賽爾廢城　頸環寶庫', noTime:true, exits:{ up:'boglane', down:'chariotshed' } },
       crannog:      { bg:'dunmor_crannog', name:'羅賽爾廢城　湖上木屋', noTime:true, exits:{ up:'lakeshore' } },
-      cistgrave:    { bg:'dunmor_cistgrave', name:'羅賽爾廢城　石棺墓', noTime:true, exits:{ up:'ossuary', right:'souterrain' } },
+      cistgrave:    { bg:'dunmor_cistgrave', name:'羅賽爾廢城　石棺墓', noTime:true, noWild:true, exits:{ up:'ossuary', right:'souterrain' } },
       souterrain:   { bg:'dunmor_souterrain', name:'羅賽爾廢城　地下甬道口', noTime:true, exits:{ up:'fogou', left:'cistgrave', down:'weaverhut' } },
       potters:      { bg:'dunmor_potters', name:'羅賽爾廢城　陶匠巷', noTime:true, exits:{ up:'innerditch', right:'boarstone', down:'roundring' } },
       boarstone:    { bg:'dunmor_boarstone', name:'羅賽爾廢城　野豬石', noTime:true, exits:{ up:'innergate', left:'potters', right:'marketcross' } },
       marketcross:  { bg:'dunmor_marketcross', name:'羅賽爾廢城　市集十字', noTime:true, exits:{ left:'boarstone', down:'mainstreet' } },
       kingshall:    { bg:'dunmor_kingshall', name:'羅賽爾廢城　王廳廢墟', noTime:true, exits:{ up:'hallcourt', right:'chariotshed', down:'smithy' } },
-      chariotshed:  { bg:'dunmor_chariotshed', name:'羅賽爾廢城　戰車棚', noTime:true, exits:{ up:'treasury', left:'kingshall' } },
+      chariotshed:  { bg:'dunmor_chariotshed', name:'羅賽爾廢城　戰車棚', noTime:true, noWild:true, exits:{ up:'treasury', left:'kingshall' } },
       weaverhut:    { bg:'dunmor_weaverhut', name:'羅賽爾廢城　織工圓屋', noTime:true, exits:{ up:'souterrain', right:'roundring' } },
       roundring:    { bg:'dunmor_roundring', name:'羅賽爾廢城　圓屋環', noTime:true, exits:{ up:'potters', left:'weaverhut', right:'wellsq' } },
       wellsq:       { bg:'dunmor_wellsq', name:'羅賽爾廢城　聖井廣場', noTime:true, rest:true, noWild:true, exits:{ left:'roundring' } },

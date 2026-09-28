@@ -290,6 +290,38 @@ export const ENEMIES = {
         assault:'bite',
       },
     },
+    /* ══ 羅賽爾廢城・南壘門（ver -1839）══ 數值照 `nightmare_natalia` 整張抄，只換名字與 story:0（固定怪不是劇情戰）。
+       北方泊地那一場照舊用原卡（改原卡的名字會把那一段一起改掉）。 */
+    dm_lost_guardian: {
+      name:'逝去的守護者',   // ver -1839 Ray：羅賽爾廢城南壘門的夢魘娜塔莉「更名為逝去的守護者」
+      story:0, counterStagger:1, boss:0,
+      Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
+      openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
+      ult:{ on:1, hp:40, count:2, atk:12, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
+      kind:'harm',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      tier:'A',
+      atype:'P',
+      stageScale:1,
+      stack:1,
+      image:'enemy_natalia',         // → resources/enemy/mon_natalia.webp?v=3
+      fit:{ pos:'50% 30%' },
+      hp:560,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      attack:20,   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      atkInterval:3.33,              // 以下全部同巨型聖徒
+      assaultEvery:[3,5],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
+      delayPenalty:{ seconds:5 },
+      entrance:null,                   // 登場音（卡上覆寫）；無則 null
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ver -1582 基準（等級×類型；Ray 補等級後重跑）
+      hitFx:{
+        delay:'claw4',
+        wrong:'slash',
+        assault:'bite',
+      },
+    },
     // 亂入怪（無傷 45 秒內通關才會出現）— 先用同一隻怪測流程，正式再換
     intruderEnemy: {
       name:'亂入者 · ???',

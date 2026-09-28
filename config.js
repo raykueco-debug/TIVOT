@@ -83,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1838';
+export const VERSION = 'ver 2026.09.22-1839';
 
 export const GAME_CONFIG = {
 
@@ -2298,6 +2298,31 @@ export const GAME_CONFIG = {
     ss_carriage:  { enemy:'thug_squad_carriage', session:'ss_raid' },
     ss_hall:      { enemy:'thug_squad',   session:'ss_raid' },
     ss_manu:      { enemy:'manu',         session:'ss_raid', sessionEnd:true },
+    /* ══ 羅賽爾廢城（ver -1839，Ray 的放怪表）══ 同一個遭遇段落 `dunmor_wild`，收局＝踏進休息處（rest）。
+       ⚠ 借來的幾張敵人卡（王座徘徊者／守墓者／鹿主）在原本的地圖是劇情戰，這裡各開自己的戰鬥卡：
+         原本那幾張戰鬥卡帶著那一段的對白與收段設定，不能直接借。 */
+    dm_ossuary: { enemy:'ph_mercy_remnant', session:'dunmor_wild' },   // 骨龕：慈愛殘像
+    dm_cairn: { enemy:'ph_silent_waiter', session:'dunmor_wild' },   // 積石塚：靜默等待者
+    dm_kingsbarrow: { enemy:'ph_hairbound', session:'dunmor_wild' },   // 王塚：纏髮之人
+    dm_brochtop: { enemy:'ph_gifted', session:'dunmor_wild' },   // 圓塔頂：才能祝福之人
+    dm_nemeton: { enemy:'ph_sword_angel', session:'dunmor_wild' },   // 聖林祭場：執劍天使
+    dm_southgate: { enemy:'dm_lost_guardian', session:'dunmor_wild' },   // 南壘門：逝去的守護者（夢魘娜塔莉改名）
+    dm_watchW: { enemy:'bl_dragon_throne', session:'dunmor_wild' },   // 西望樓：王座徘徊者
+    dm_watchE: { enemy:'gk_seal', session:'dunmor_wild' },   // 東望樓：守墓者 seal
+    dm_tannery: { enemy:'ph_slaughter_witch', session:'dunmor_wild' },   // 鞣皮坊：殺戮魔女
+    dm_lakeshore: { enemy:'sf_deer_nightmare', session:'dunmor_wild' },   // 湖岸：變異樹靈鹿主
+    dm_headshrine: { enemy:'ph_coffin_bearer', session:'dunmor_wild' },   // 石首龕：負棺者
+    /* 野怪池：enemies.xlsx No.063～072（聖遺物系十隻），出怪率 30%（wildSpawn.rate）。 */
+    dm_relic_mirrorchoir: { enemy:'relic_mirrorchoir', session:'dunmor_wild' },
+    dm_relic_bellows: { enemy:'relic_bellows', session:'dunmor_wild' },
+    dm_relic_confessional: { enemy:'relic_confessional', session:'dunmor_wild' },
+    dm_relic_hourglass: { enemy:'relic_hourglass', session:'dunmor_wild' },
+    dm_relic_keyward: { enemy:'relic_keyward', session:'dunmor_wild' },
+    dm_relic_lectern: { enemy:'relic_lectern', session:'dunmor_wild' },
+    dm_relic_censerlung: { enemy:'relic_censerlung', session:'dunmor_wild' },
+    dm_relic_veilhands: { enemy:'relic_veilhands', session:'dunmor_wild' },
+    dm_relic_wheelpsalm: { enemy:'relic_wheelpsalm', session:'dunmor_wild' },
+    dm_relic_chalice: { enemy:'relic_chalice', session:'dunmor_wild' },
     /* ══⚠⚠⚠ 鏡湖・出口前的那一場（ver -1524，Ray 的 Stage10-A 稿）══════════════
        ⚠⚠ **`allowLose:true`** —— 稿上**勝敗都有台詞**（「不愧是學長」／「你是不是
          沒睡飽呀」），所以這是「劇本要它可以被打輸」的場次（§6.5.2）：
