@@ -4624,6 +4624,7 @@ export const TOWNS = {
           sor('readysmile','回旅店去吧。'),
         ] } ] },
       gunstore: { bg:'sofia_firearm',  name:'聖索菲亞　武器店', noTime:true,
+        shop:'ss_gunstore', keeperWho:'GUNSMITH', kind:'gunstore', hours:[8,17], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',   // 商店：通用帝都版本、店主暫用帝都（ver -1831，卡在 script/shopcards.js）
         exits:{ back:'oldtown' } },
       /* ver -1743（美術 §四③）：這一格改成**貧民窟**。id 不改（小地圖 spots 與出口都指著它）；
          ⚠ 中文名是美術的暫定，**等 Ray 正名**。舊的 `sofia_dock.webp` 留著沒刪。 */
@@ -4733,6 +4734,7 @@ export const TOWNS = {
       bar:        { bg:'sofia_bar',        name:'聖索菲亞　酒吧', exits:{ back:'tavern' } },
       restaurant: { bg:'sofia_restaurant', name:'聖索菲亞　餐廳', noTime:true, exits:{ back:'tavern' } },
       grocery:  { bg:'sofia_grocerie', name:'聖索菲亞　雜貨舖', noTime:true,
+        shop:'ss_grocery', keeperWho:'SHOPKEEP', kind:'grocery', hours:[8,17], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',   // 商店：通用帝都版本、店主暫用帝都（ver -1831，卡在 script/shopcards.js）
         exits:{ back:'uptown' } },
       /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（立繪還沒交）。
          只寫 `inn:true` 而沒有人應門的話，玩家會敲到一排空門。 */
@@ -5398,6 +5400,7 @@ export const TOWNS = {
       oldtown:  { bg:'varn_oldtown',  name:'雪都瓦恩霍姆　舊街區',  
         exits:{ left:'gunstore', right:'square', up:'station', down:'guild' } },
       gunstore: { bg:'varn_firearm',  name:'雪都瓦恩霍姆　武器店',   noTime:true,
+        shop:'rv_gunstore', keeperWho:'GUNSMITH', kind:'gunstore', hours:[8,17], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',   // 商店：通用帝都版本、店主暫用帝都（ver -1831，卡在 script/shopcards.js）
         exits:{ back:'oldtown' } },
       /* ⚠⚠ 站房上那面大鐘的指針**由遊戲時間擺**（ver -1249，Ray：「不然背景的時間
          跟遊戲時間永遠對不上，對我來說那算 bug」）。**不轉動、進場抓一次。**
@@ -5510,6 +5513,7 @@ export const TOWNS = {
           nou('eat','要不要帶一份回去給安雅呢？',        { skipIf:'ep_m2_route' }),
         ] } ] },
       grocery:  { bg:'varn_grocerie', name:'雪都瓦恩霍姆　雜貨舖',   noTime:true,
+        shop:'rv_grocery', keeperWho:'SHOPKEEP', kind:'grocery', hours:[8,17], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',   // 商店：通用帝都版本、店主暫用帝都（ver -1831，卡在 script/shopcards.js）
         exits:{ back:'uptown' },
         /* ══ 約會・安雅（ver -1522）══ 棉花糖。
            ⚠ 稿上「安雅棉花糖插圖」還沒有檔案 ⇒ **不寫 `cg:`**（同酒吧那一格）。
@@ -9428,6 +9432,7 @@ export const TOWNS = {
       portmarket:{ bg:'vela_portmarket', name:'薇拉馮德　碼頭市集',
         exits:{ right:'square', left:'gunstore', up:'guild', down:'harbor' } },
       gunstore:  { bg:'vela_firearm', name:'薇拉馮德　武器店', noTime:true, hours:[8,17], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',
+        shop:'vf_gunstore', keeperWho:'GUNSMITH', kind:'gunstore',   // 商店：通用帝都版本、店主暫用帝都（ver -1831，卡在 script/shopcards.js）
         exits:{ back:'portmarket' } },
       guild:     { bg:'vela_guild', name:'薇拉馮德　賞金獵人公會', noTime:true, hours:[8,17], closed:'大門上了閂。委託要等明天早上八點。',
         exits:{ back:'portmarket' } },
@@ -9458,6 +9463,7 @@ export const TOWNS = {
       inn:       { bg:'vela_inn', name:'薇拉馮德　旅店',
         exits:{ back:'uptown' } },
       grocery:   { bg:'vela_grocerie', name:'薇拉馮德　雜貨舖', noTime:true, hours:[8,17], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',
+        shop:'vf_grocery', keeperWho:'SHOPKEEP', kind:'grocery',   // 商店：通用帝都版本、店主暫用帝都（ver -1831，卡在 script/shopcards.js）
         exits:{ back:'uptown' } },
       tavern:    { bg:'vela_tavern', name:'薇拉馮德　餐飲街',
         exits:{ left:'uptown', up:'cafe', down:'dessert', right:'restaurant' } },

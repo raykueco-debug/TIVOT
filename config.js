@@ -7,6 +7,7 @@
 import { ART } from './script/speakers.js';
 import { ENEMIES } from './script/enemies.js';   // 敵人卡抽成獨立檔（ver -794）
 import { WEAPONS } from './script/weapons.js';   // 副武器卡抽成獨立檔（ver -1781）
+import { SHOP_CARDS } from './script/shopcards.js';   // 商店卡抽成獨立檔（ver -1831，Excel：tools/shops_xlsx.py）
 
 /* ══ 受擊特效 → 視覺＋音效（ver -800，Ray：「音效直接跟 hitFx 綁定，改 hitFx 就自動
    連到音效；特殊怪 fx 直接寫 centipi_bite 之類的專屬 type」）══
@@ -82,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1830';
+export const VERSION = 'ver 2026.09.22-1831';
 
 export const GAME_CONFIG = {
 
@@ -1717,115 +1718,28 @@ export const GAME_CONFIG = {
   shop: {
     /* Ray：「買收價為物價 50%」—— 店家收購時只給市價的一半。 */
     sellRate: 0.5,
-    /* 各家店的貨單（節點的 `shop` 欄位指到這裡的鍵）。
-       ⚠⚠ **一筆＝`{id, n}`**（ver -405，Ray：「給店鋪加入存貨數量」）：`n` 是**開店時
-         的存貨量**。寫成單純的字串＝**不限量**（那一項永遠買得到，也不記帳）。
-       ⚠ 賣光了不會自動補貨 —— **玩家賣給店家才會入庫再賣**（Ray 指定）。
-         現在還剩幾個由 `script/shopstock.js` 記帳，這裡只有初始值（鐵律 1）。 */
-    stock: {
-      /* 杰羅的工坊（ver -870）：**不賣東西**（只有改槍分頁）——貨單是空的，
-         這一格只為滿足「shop 都要有貨單」的資料契約。 */
-      sv_workshop: [],
-      grocery: [ { id:'milk',     n:8 },
-                 { id:'cheese',   n:5 },
-                 { id:'lime_rum', n:3 } ],
-      /* 武器店（ver -377）。⚠ 賣的是**武器鑰匙**（`weapons` 的鍵）——武器沒有第二份
-         道具定義，價格與規格都在那張武器卡上（見 inventory.defOf 的說明）。
-         ⚠⚠ **每把都只有 1 支**（ver -405，Ray 指定）：這些是成品槍不是量產品，
-           賣掉就沒了；要再有一把，得有人賣回來。 */
-      gunstore: [ { id:'Shotgun_Dragon', n:1 },
-                  { id:'MG_Squall_Kai',  n:1 },
-                  { id:'Rifle_Shahin',   n:1 } ],
-      /* ══ 北方泊地的兩家店（ver -655，Ray：「兩間店目前都與帝都功能相同」）══
-         ⚠⚠ **貨單分開記帳**，不共用帝都那兩份：`script/shopstock.js` 的鑰匙就是
-           這裡的鍵 —— 共用的話在帝都買空的東西，飛到北方泊地也是空的（那是兩家店）。
-         ⚠ 內容照抄帝都（Ray 指定「功能相同」）。店主台詞說「物資都被徵調了、
-           貨品有限」是**氣氛**，要真的砍貨單等 Ray 指定砍哪幾樣。 */
-      np_grocery:  [ { id:'milk',     n:8 },
-                     { id:'cheese',   n:5 },
-                     { id:'lime_rum', n:3 },
-                     /* ver -979（Ray：「然後這個也可以在北泊的商店買到」）——
-                        送行那一份用掉之後還買得回來（第一道菜才不會變成死路）。 */
-                     { id:'season_goatbutter', n:4 } ],
-      /* 夏爾村雜貨街（ver -858）：小村規模，貨比城裡少。 */
-      sv_grocery:  [ { id:'milk',     n:4 },
-                     { id:'cheese',   n:3 } ],
-      np_gunstore: [ { id:'Shotgun_Dragon', n:1 },
-                     { id:'MG_Squall_Kai',  n:1 },
-                     { id:'Rifle_Shahin',   n:1 } ],
-      /* ══ 東方泊地的兩家店（ver -1340）══ 貨單**分開記帳**（同北泊那一條的理由：
-         `script/shopstock.js` 的鑰匙就是這裡的鍵）。
-         ⚠⚠ 內容先照北泊那一份 —— Ray 還沒指定東泊要賣什麼。這座城是**通商大港**
-           （§_eastport_spec.md），照設定該比北泊豐富，但「豐富成什麼樣」是內容決定，
-           不自己發明（同護符那一批）。要改就改這兩列。 */
-      ep_grocery:  [ { id:'milk',     n:8 },
-                     { id:'cheese',   n:5 },
-                     { id:'lime_rum', n:3 } ],
-      ep_gunstore: [ { id:'Shotgun_Dragon', n:1 },
-                     { id:'MG_Squall_Kai',  n:1 },
-                     { id:'Rifle_Shahin',   n:1 } ],
-    },
-    /* 每家店的長相（ver -377）。沒登記的店走預設（買／賣兩頁、雜貨舖的店主圖）。
-         title  頁首的字
-         art    店主立繪
-         tabs   要哪幾頁：buy／sell／mod（mod＝改裝，**目前留空**，Ray 指定）
-         only   這家店只收哪一類（賣出頁的過濾）；不填＝什麼都收
-         compare 買的時候要不要跟**現有的同類**比數值（武器店要） */
-    shops: {
-  /* ══⚠⚠⚠ 店主立繪住在 `resources/SI/NPC/`（ver -1411 修）══════════════════
-     ver -953 那次「NPC 路徑修復」把六張圖從 `resources/SI/` 搬進 `NPC/` 子資料夾，
-     **但這張表沒有跟著改** —— 於是六家店的店主立繪從 -953 起就一直是 404，
-     而且**畫面上沒有任何錯誤訊息**（走進店裡只是右邊空著）。
-     ⚠ 這正是 §5 那條「同名覆蓋／搬檔要連引用一起改」的反面案例：搬檔的人
-       只改了檔案系統。**日後搬任何素材，`grep` 一次舊路徑再收工。** */
-      grocery:  { title:'雜貨舖', art:'resources/si/npc/npc_grocerie_si.webp',
-                  tabs:['buy','sell'] },
-      /* ⚠ `challenge` ＝ 這一家店的櫃台可以**再挑戰**哪一場（ver -398（-893 前用詞），Ray：「槍店的選單
-         要增加一個射擊挑戰的選項」）。值是 `battles` 的鑰匙 —— 打靶那一場本來只有
-         劇情裡打得到一次，而它有最佳紀錄，本來就該能再來（見 script/town.js 的
-         `challengeLines`）。 */
-      gunstore: { title:'武器店', art:'resources/si/npc/npc_capital_gunstore_si.webp',
-                  tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
-                  only:'weapon', compare:true,
-                  challenge:'range_trainee', challengeLabel:'射擊挑戰' },
-      /* ══ 北方泊地的兩家店（ver -655（-893 前用詞））══ 功能與帝都相同，差別只有**店主圖**與
-         **貨單的鑰匙**（見上面 stock 的說明）。⚠ 射擊挑戰指的是這座城自己那一場
-         （`np_range`，25 秒、要 200G）—— 最佳紀錄與帝都那一場也是分開的。 */
-      np_grocery:  { title:'雜貨舖', art:'resources/si/npc/npc_grocery_si_northport.webp',
-                     tabs:['buy','sell'] },
-      /* ══ 夏爾村雜貨街（ver -858，Ray 交稿）══ 退休行商。`sale`＝一起經歷過
-         魔獸圍城（safehouse_shinier）之後**商品打 9 折**（loot.js 只在買價乘，
-         賣價不動）。 */
-      sv_grocery:  { title:'雜貨街', art:'resources/si/npc/npc_shinier_grocery_si.webp',
-                     tabs:['buy','sell'],
-                     sale:{ need:'safehouse_shinier', mul:0.9 } },
-      np_gunstore: { title:'武器店', art:'resources/si/npc/npc_gunsmith_si_northport.webp',
-                     tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
-                     only:'weapon', compare:true,
-                     challenge:'np_range', challengeLabel:'射擊挑戰' },
-      /* ══ 杰羅的工坊（ver -866，Ray：「杰羅不賣槍，只改槍」「杰羅的工坊就是槍店」）══
-         只有一個「改槍」分頁（賭博式改造，規則在 tuning.jeroMod；UI 在 loot.js 的
-         jero 分頁）。不賣不買 —— tabs 沒有 buy/sell，貨帳也就不存在。 */
-      sv_workshop: { title:'杰羅的工坊', art:'resources/si/npc/npc_shinier_gunsmith_si.webp',
-                     tabs:['jero'], tabName:{ jero:'改槍' } },
-      /* ══ 東方泊地的兩家店（ver -1340，Ray 交件指派店主）══ 功能同帝都／北泊，
-         差別只有**店主圖**與**貨單的鑰匙**。
-         ⚠ **沒有 `challenge`**：這座城還沒有打靶那一場（帝都 `range_trainee`／
-           北泊 `np_range` 是各自城裡的場次，最佳紀錄也是分開的）。
-         ⚠⚠ `art` 這一格**現在沒有人讀**（ver -387 起買賣視窗不放店主立繪，
-           見 modules/loot.js 的說明）—— 真正畫出來的是節點上的 `keeperWho`。
-           路徑照樣寫對：留一個假路徑等於給下一個人挖坑。 */
-      ep_grocery:  { title:'雜貨舖', art:'resources/si/npc/npc_grocer_si_v1.webp',
-                     tabs:['buy','sell'] },
-      ep_gunstore: { title:'武器店', art:'resources/si/npc/npc_gunsmith_si_v1.webp?v=2',
-                     tabs:['buy','sell','mod'], tabName:{ buy:'買武器', sell:'賣武器', mod:'武器改裝' },
-                     only:'weapon', compare:true,
-                     /* 射擊挑戰（ver -1350）：與帝都／北泊同一個機制，場次與最佳紀錄
-                        是這座城自己的（`ep_range`）。 */
-                     challenge:'ep_range', challengeLabel:'射擊挑戰' },
-    },
+    /* ══⚠⚠ **店的資料在 `script/shopcards.js`**（ver -1831，Ray：「製作 excel 商店卡之後我在表裡直接改了匯入」）══
+       一家店一張卡：`{ city, title, art, tabs, tabName?, only?, compare?, challenge?, challengeLabel?, sale?, note, stock }`。
+       那一檔由 `tools/shops_xlsx.py import` 產生（Excel ＝ 根目錄 `shops.xlsx`）；各店的說明在卡上的 `note`。
+       這裡把它拆回舊的兩張表（`stock`／`shops`），讀取端（town／loot／shopstock）一個字都不必改。
+       欄位的意義：
+         stock   開店時的存貨 `[{id, n}]`；寫成單純字串＝**不限量**（永遠買得到、不記帳）。
+                 賣光不自動補貨 —— 玩家賣給店家才入庫再賣（ver -405，Ray）。現在剩幾個由
+                 `script/shopstock.js` 記帳（鑰匙＝店的 key，兩家店兩本帳）。
+                 ⚠ 武器店賣的是**武器鑰匙**（`weapons` 的鍵），價格規格在武器卡上。
+         title   頁首的字；tabs 要哪幾頁（buy／sell／mod／jero）；tabName 分頁的字
+         only    只收哪一類（賣出頁的過濾）；compare 買的時候跟現有同類比數值（武器店）
+         challenge／challengeLabel  櫃台可以再挑戰的那一場（`battles` 的鑰匙，各城自己的場次）
+         sale    `{need, mul}`：那支旗插著時買價打折（loot.js 只乘買價）
+         art     店主立繪 —— ⚠ **現在沒有人讀**（ver -387 起買賣視窗不放店主立繪，
+                 畫出來的是節點上的 `keeperWho`）；路徑照樣寫對，留假路徑等於挖坑。
+                 ⚠ 店主立繪住在 `resources/si/npc/`（ver -1411：搬檔沒改引用，六家店 404 了好幾百版）。 */
+    stock: Object.fromEntries(Object.entries(SHOP_CARDS).map(([k, c]) => [k, c.stock || []])),
+    shops: Object.fromEntries(Object.entries(SHOP_CARDS).map(([k, c]) => {
+      const { stock, note, city, ...rest } = c; void stock; void note; void city;
+      return [k, rest];
+    })),
   },
-
   tutorial: {
     storageKey: 'tivot.tutorialSeen.v1',
     enemyKey: 'trainee',   // 教學專用敵（enemies.trainee＝訓練用聖徒；combat.startGame 於教學啟動時換上）

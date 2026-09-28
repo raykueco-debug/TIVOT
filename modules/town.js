@@ -3813,7 +3813,10 @@ function stripTownPrefix(name){
     const p=tn+'　';
     if(s.indexOf(p)===0) return s.slice(p.length);
   }
-  return s;
+  /* ⚠ ver -1831：城名與節點前綴**不一定同字**（城叫「聖索菲亞城」、節點寫「聖索菲亞　雜貨舖」）——
+     節點名的規約就是「城名＋全形空格＋地名」，對不上就剝第一個全形空格之前那一段。 */
+  const i=s.indexOf('　');
+  return (i>0 && i<s.length-1) ? s.slice(i+1) : s;
 }
 /* 營業時間那一行。⚠ 只有這一支在把 `hours` 排成字（鐵律 7）—— 打烊提示與日後
    任何要顯示營業時間的地方都問它。 */
