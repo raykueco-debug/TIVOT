@@ -4784,7 +4784,7 @@ export const TOWNS = {
           sor('determine','對不起啊，蕾娜。'),
           sor('determine','要請妳們找個新的帆手了。'),
           { speaker:'NARRATION', text:'', se:'se_reload', auto:900 },
-          sor('readysmile','走。', { aff:{ sorana:3 } }),   // ver -1793：稿補「走。」＋索好感 +3
+          sor('readysmile','好......我們走。', { aff:{ sorana:3 } }),   // ver -1793：稿補「走。」＋索好感 +3
           ren('callangry','都給我站住。'),
           sor('cringe',''),
           nou('scare',''),
@@ -4849,7 +4849,7 @@ export const TOWNS = {
            ⚠ 插圖 `36_loti&lofa` 稿上沒寫「插圖結束」—— 我讓它停在姐妹相擁那兩拍，索菈娜開口時收掉。
            ⚠ 演完才能睡（`sleepFlag:'ss_raid_home'`）；航行許可隔天早上才下來（`gates` 的 `ss_depart`）。 */
         { flag:'ss_raid_home', need:'ss_raid_done', sides:{ RENNA:'L', NOUVELLE:'L' }, lines:[
-          lotN('happy','姐姐！'),
+          Object.assign(lotN('happy','姐姐！'), { stage:15 }),   // ver -1850（Ray）：救回洛法這一幕起＝Stage 15（只升不降）
           lofN('cryhug','蘿媞！'),
           { speaker:'NARRATION', text:'', cg:'36_loti&lofa', cgNoTime:true, cgPan:'down', auto:2400 },
           sor('lauaghbig','算是告一段落了吧。', { cg:null }),
