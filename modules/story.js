@@ -167,7 +167,95 @@ function camGeom(H, W){
           px:(H-t.camTop)/(CAST_SHOW*CAST_TALL) };
   return cam;
 }
+/* ══⚠⚠ **立繪調整工具**（ver -1812，Ray：「管理人模式下新增工具，劇情播放器期間可調整立繪位置與大小，
+   儲存確認後永久寫入」）══════════════════════════════════════════════════════════
+   台上那一張的三個旋鈕：`cm`（大小）／`yShift`（上下，公分，正＝上）／`fxShift`（左右，正＝左）。
+   調的時候只存在 `tuneLive`（以那一張的路徑字串當鑰匙）＋ 即時重排；按「儲存」確認後
+   `POST /__tune`，由 `tools/devserver.py` 改進 `script/speakers.js` 那一個物件 —— **真相仍只有
+   speakers.js 一份**（鐵律 7），這裡不另存。
+   ⚠ 改的是**那一張**：有差分物件（`src:`）就寫差分；只有基本立繪（`base:`）就寫角色層
+     ＝ 沒有自己值的差分都會跟著變（面板上會標）。
+   ⚠ 只在 `body.testmode`；存檔要 devserver（`python3 -m http.server` 沒有那個端點，會報錯）。 */
+let tuneLive = {}, tuneOn = false, tuneSide = null, tuneBig = false;
+function tuneKey(id, expr){
+  const art = artOf(id); if(!art) return null;
+  const e = art.expr && art.expr[expr];
+  if(e && typeof e==='object' && e.src) return { kind:'src', key:e.src, obj:e, expr };
+  return art.base ? { kind:'base', key:art.base, obj:art, expr:expr||'(基本)' } : null;
+}
+function tuneCur(side){
+  const id=slot[side]; if(!id) return null;
+  const tk=tuneKey(id, slotExpr[side]); if(!tk) return null;
+  const f=Object.assign({}, frameOf(id, slotExpr[side]) || {}, tuneLive[tk.key] || {});
+  return { id, tk, f };
+}
+function tuneEnsure(){
+  if(!document.body.classList.contains('testmode')) return;
+  const st=$('storyStage'); if(!st || $('storyTuneBtn')) return;
+  const b=document.createElement('button'); b.id='storyTuneBtn'; b.type='button'; b.textContent='立繪';
+  const stop=e=>e.stopPropagation();
+  b.addEventListener('pointerdown', stop);
+  b.addEventListener('click', e=>{ e.stopPropagation(); tuneOn=!tuneOn; tuneRender(); });
+  st.appendChild(b);
+  const p=document.createElement('div'); p.id='storyTune';
+  ['pointerdown','pointerup','click','touchstart'].forEach(ev=>p.addEventListener(ev, stop));
+  st.appendChild(p);
+}
+function tuneRender(){
+  const p=$('storyTune'); if(!p) return;
+  p.classList.toggle('on', tuneOn);
+  if(!tuneOn) return;
+  const sides=['L','R'].filter(sd=>slot[sd]);
+  if(!sides.length){ p.innerHTML='<div class="tn-empty">台上沒有立繪</div>'; return; }
+  if(sides.indexOf(tuneSide)<0) tuneSide = sides[sides.length-1];
+  const c=tuneCur(tuneSide);
+  const live=c && tuneLive[c.tk.key];
+  const n=v=>(v==null?'—':(+v).toFixed(3).replace(/\.?0+$/,''));
+  p.innerHTML =
+    '<div class="tn-row tn-who">'+sides.map(sd=>'<button data-side="'+sd+'" class="'+(sd===tuneSide?'on':'')+'">'
+      +(sd==='L'?'左 ':'右 ')+(nameOf(slot[sd])||slot[sd])+'</button>').join('')+'</div>'
+   +(c ? '<div class="tn-path">'+c.tk.expr+(c.tk.kind==='base'?'（寫在角色層：沒有自己值的差分會一起變）':'')+'</div>'
+   +'<div class="tn-row"><span>大小 cm '+n(c.f.cm)+'</span><button data-k="cm" data-d="-1">－</button><button data-k="cm" data-d="1">＋</button></div>'
+   +'<div class="tn-row"><span>上下 '+n(c.f.yShift||0)+'</span><button data-k="yShift" data-d="1">↑</button><button data-k="yShift" data-d="-1">↓</button></div>'
+   +'<div class="tn-row"><span>左右 '+n(c.f.fxShift||0)+'</span><button data-k="fxShift" data-d="0.005">←</button><button data-k="fxShift" data-d="-0.005">→</button></div>'
+   +'<div class="tn-row"><button data-act="big" class="'+(tuneBig?'on':'')+'">步進×5</button>'
+   +'<button data-act="undo"'+(live?'':' disabled')+'>還原</button>'
+   +'<button data-act="save" class="tn-save"'+(live?'':' disabled')+'>儲存</button></div>' : '');
+  p.querySelectorAll('button').forEach(btn=>btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    if(btn.dataset.side){ tuneSide=btn.dataset.side; return tuneRender(); }
+    const cur=tuneCur(tuneSide); if(!cur) return;
+    const k=btn.dataset.k, act=btn.dataset.act;
+    if(k){
+      const d=parseFloat(btn.dataset.d)*(tuneBig?5:1);
+      const L=Object.assign({}, tuneLive[cur.tk.key] || {});
+      const v=(k==='cm') ? (cur.f.cm||0) : (cur.f[k]||0);
+      L[k]=Math.round((v+d)*1000)/1000;
+      tuneLive[cur.tk.key]=L; layout(); return tuneRender();
+    }
+    if(act==='big'){ tuneBig=!tuneBig; return tuneRender(); }
+    if(act==='undo'){ delete tuneLive[cur.tk.key]; layout(); return tuneRender(); }
+    if(act==='save') tuneSave(cur);
+  }));
+}
+function tuneSave(cur){
+  const L=tuneLive[cur.tk.key]; if(!L) return;
+  const base=frameOf(cur.id, slotExpr[tuneSide]) || {};
+  const lines=Object.keys(L).map(k=>'  '+k+'：'+(base[k]==null?'（無）':base[k])+' → '+L[k]);
+  if(!window.confirm('寫入 script/speakers.js？\n'+(nameOf(cur.id)||cur.id)+' / '+cur.tk.expr+'\n'+lines.join('\n'))) return;
+  const url=new URL('__tune', new URL('../', import.meta.url)).pathname;
+  fetch(url, { method:'POST', body:JSON.stringify({ kind:cur.tk.kind, key:cur.tk.key, set:L }) })
+    .then(r=>r.text().then(t=>({ ok:r.ok, st:r.status, t })))
+    .then(({ok, st, t})=>{
+      if(!ok){ window.alert('寫入失敗（HTTP '+st+'）：'+t+(st===404||st===501?'\n要用 tools/devserver.py 起伺服器（重開 preview）':'')); return; }
+      Object.assign(cur.tk.obj, L);          // 這一輪不必重載就生效（檔案已經是同一組值）
+      delete tuneLive[cur.tk.key]; layout(); tuneRender();
+      console.log('[立繪調整] 已寫入 speakers.js', cur.tk.key, L);
+    })
+    .catch(e=>window.alert('寫入失敗：'+e));
+}
 function layout(){
+  tuneEnsure();
   const stage=$('storyStage'); if(!stage) return;
   /* ⚠ 高度取**立繪區**（#storyCast）而不是整個舞台（ver -316）：下半是固定的
      戰鬥盤面，拿整個舞台高去算的話人會被畫到盤面底下，而且「腳落地平線」
@@ -194,7 +282,9 @@ function layout(){
   for(const side of ['L','R']){
     const el=slotEl(side), id=slot[side];
     if(!el || !id || !el.naturalWidth) continue;
-    const a=frameOf(id, slotExpr[side]); if(!a) continue;
+    const a0=frameOf(id, slotExpr[side]); if(!a0) continue;
+    const tk=tuneKey(id, slotExpr[side]);
+    const a=(tk && tuneLive[tk.key]) ? Object.assign({}, a0, tuneLive[tk.key]) : a0;   // 立繪調整工具的即時預覽（ver -1812）
     on.push({ el, a, side });
   }
   if(!on.length) return;
@@ -324,8 +414,12 @@ function layout(){
     el.style.width  = (o.s*el.naturalWidth)+'px';
     el.style.height = (o.s*el.naturalHeight)+'px';
     el.style.left   = x+'px';
-    el.style.top    = (o.yTop + (o.fitStage ? 0 : shift))+'px';
+    /* ⚠⚠ `yShift`（ver -1812，立繪調整工具）＝這一張**整個往上挪幾公分**（正＝上）。
+       加在 `shift` **之後**、不參與它的計算：`shift` 會把「腳沒落到畫面底」的人往下推，
+       用 `standCm` 往上調會被它推回來（蹲著／抱人的那幾張就是這樣「太低」調不上去）。 */
+    el.style.top    = (o.yTop + (o.fitStage ? 0 : shift - (a.yShift||0)*pxCm))+'px';
   }
+  if(tuneOn) tuneRender();   // 台上換人時面板跟著換（ver -1812）
 }
 
 /* 頂線：**由退出鈕的實際位置量出來**，不寫死 —— 那顆鈕吃 safe-area，
@@ -2570,7 +2664,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1811';
+const KERB_V='?v=1812';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

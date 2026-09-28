@@ -82,7 +82,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1811';
+export const VERSION = 'ver 2026.09.22-1812';
 
 export const GAME_CONFIG = {
 
@@ -1922,7 +1922,7 @@ export const GAME_CONFIG = {
       /* ⚠ `cm` 與 `fxShift` 在**角色**那一層、`expr` 只帶 top/bot/fx，所以要合進來
          （`fxShift` ver -645：整個角色往左右挪的手調位移，見 speakers.js）。 */
       /* ⚠ `standCm` 與 `cm` 一樣住在**角色**那一層（ver -705），要一起帶進來。 */
-      const put = (key, A, v) => { F[key] = Object.assign({ cm:A.cm, standCm:A.standCm, fxShift:A.fxShift }, v || A); };
+      const put = (key, A, v) => { F[key] = Object.assign({ cm:A.cm, standCm:A.standCm, fxShift:A.fxShift, yShift:A.yShift }, v || A); };
       put('tut_nouvelle',           N);
       put('tut_nouvelle_cringe',    N, N.expr.cringe);
       put('tut_nouvelle_surprise',  N, N.expr.surprise);

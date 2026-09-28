@@ -25,6 +25,12 @@
        作者要多留一點呼吸感可調大 --notch-extra。 */
     --notch-extra:0px;
     --notch-bar-h:calc(env(safe-area-inset-top, 0px) + var(--notch-extra));
+    /* ══⚠⚠ **可點的東西的上界**（ver -1812，Ray：「所有操作鈕都不要碰觸到頂排」）══
+       頂排（狀態列＋動態島）之下再留 16px。蓋滿畫面的面板一律用它當頂部的內距
+       （見檔尾「全螢幕面板閃頂排」那一段）。`css/lootsheet.css` 有一份同算法（飛行頁沒有這組 :root），
+       **改一邊要改另一邊**。 */
+    --tap-top:calc(env(safe-area-inset-top, 0px) + 16px);
+    --tap-bot:calc(env(safe-area-inset-bottom, 0px) + 12px);
     --notch-orn:var(--gold);
     /* ══ 三種技能的顏色（ver -989 立、**-990 調淡**）══ 變身＝金、主動＝淡紅、被動＝淡藍。
        ⚠⚠ ver -990（Ray：「紅有點太粉了，淡一點近白，藍也是」）：兩個都往白推 ——
@@ -2243,7 +2249,7 @@
   /* ── 副武器選擇畫面（全螢幕）：橫式武器卡上下滑動 + 卡疊 + 武器介紹 ── */
   #weaponSheet{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
     background:rgba(6,4,12,.96);z-index:60;
-    padding:calc(14px + env(safe-area-inset-top)) 14px calc(12px + env(safe-area-inset-bottom));}
+    padding:var(--tap-top) 14px var(--tap-bot);}   /* ver -1812 */
   #weaponSheet.on{display:flex;}
   #weaponSheet .ws-stage{position:relative;flex:1 1 auto;min-height:0;width:100%;
     display:flex;align-items:center;justify-content:center;touch-action:pan-x;user-select:none;}
@@ -2281,7 +2287,7 @@
   /* ── 搭檔選人畫面（全螢幕）：大立繪左右滑動 + 技能卡 + 發動說明 ── */
   #partnerSheet{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
     background:rgba(6,4,12,.96);z-index:60;
-    padding:calc(14px + env(safe-area-inset-top)) 14px calc(12px + env(safe-area-inset-bottom));}
+    padding:var(--tap-top) 14px var(--tap-bot);}   /* ver -1812 */
   #partnerSheet.on{display:flex;}
   #partnerSheet .ps-title, #weaponSheet .ps-title, #prepSheet .ps-title{font-size:15px;letter-spacing:6px;color:var(--gold);text-indent:6px;
     margin-bottom:8px;flex:none;}
@@ -4136,7 +4142,7 @@
   /* 縮放鈕（滑鼠與不會捏合的人用；手機主要走兩指捏合與拖曳）。
      ⚠ 擺在右上、避開探索率那一行；`pointer-events:auto` 是因為它們要被點得到。 */
   #townMapView .tm-zoom{position:absolute;z-index:3;display:flex;gap:6px;
-    right:8px; top:calc(env(safe-area-inset-top,0px) + 8px);}
+    right:8px; top:var(--tap-top);}   /* ver -1812：可點的鈕一律在 --tap-top 之下 */
   #townMapView .tm-zb{font-family:inherit;font-size:15px;line-height:1;
     width:32px;height:32px;border-radius:8px;color:var(--gold);
     background:rgba(10,8,14,.82);border:1px solid var(--gold-dim);}
@@ -4700,13 +4706,13 @@
        窄螢幕上右邊會被擠扁，所以 480px 以下改成上下堆。 */
   #gearSheet{position:fixed;inset:0;z-index:8450;display:none;flex-direction:column;
     background:radial-gradient(120% 90% at 50% 25%,#1a1330,#07050c 90%);
-    padding:calc(env(safe-area-inset-top,0px) + 12px) 14px
+    padding:var(--tap-top) 14px   /* ver -1812：頁首的分頁列是可點的 */
             calc(env(safe-area-inset-bottom,0px) + 12px);
     opacity:0;transition:opacity .3s ease;
     font-family:inherit;color:var(--ink);-webkit-tap-highlight-color:transparent;}
   #gearSheet.on{display:flex;}
   #gearSheet.vis{opacity:1;}
-  #gearSheet .gs-close{position:absolute;right:12px;top:calc(env(safe-area-inset-top,0px) + 10px);
+  #gearSheet .gs-close{position:absolute;right:12px;top:var(--tap-top);   /* ver -1812 */
     width:40px;height:40px;border-radius:50%;background:rgba(10,8,14,.7);
     border:1px solid var(--gold-dim);color:var(--gold);font-size:16px;cursor:pointer;}
   /* ══ 分頁（ver -457，Ray：「在整備頁面加入道具分頁，道具要分類」）══
@@ -5163,3 +5169,37 @@
     #choiceSheet,#nameSheet,#storyLog,#saveSheet,#exitConfirm,#tutSkipConfirm{
       width:var(--frame-w);height:var(--frame-h);margin:auto;}
   }
+
+/* ══⚠⚠⚠ **全螢幕面板閃頂排**（ver -1812，Ray：「商店中的選單還是被動態島那一排擋住無法點擊，
+   所有操作鈕都不要碰觸到頂排」）══════════════════════════════════════════════
+   病根：這幾層都是 `inset:0` ＋ **垂直置中**。內容比畫面高時，置中會把面板上緣推到
+   畫面**之外**（往上溢出），頁首那一列（分頁、關閉鈕）就落進狀態列底下 ——
+   而往上溢出的部分**捲不回來**，所以是「點不到」不是「要捲一下」。
+   ⇒ 容器上下各讓出 `--tap-top`／`--tap-bot`，面板最多只到剩下的高度，超過就在面板裡捲。
+   ⚠ 放在檔尾＝同權重時蓋過各自那一段的 `padding`／`max-height`。
+   ⚠ 新增任何「蓋滿畫面、內容置中」的層，把它加進這兩條選擇器。 */
+#exitConfirm, #tutSkipConfirm, #gameMenu, #chapterSheet, #nameSheet, #storyLog, #saveSheet{
+  padding-top:max(24px, var(--tap-top)); padding-bottom:max(24px, var(--tap-bot)); box-sizing:border-box;}
+#exitConfirm .ec-panel, #tutSkipConfirm .ec-panel, #gameMenu .gm-panel, #nameSheet .ns-panel,
+#storyLog .log-panel, #saveSheet .save-panel{max-height:100%; overflow-y:auto;}
+
+
+/* ══ 立繪調整工具（ver -1812，管理人限定；邏輯在 story.js 的 `tuneRender`）══
+   鈕在演出區左緣、面板蓋在控制區（下半）—— 不擋到要看的立繪。 */
+#storyTuneBtn{position:absolute;left:6px;top:calc(var(--tap-top) + 60px);z-index:9;
+  padding:6px 8px;font:12px/1 inherit;letter-spacing:2px;color:var(--gold);
+  background:rgba(10,8,14,.78);border:1px solid var(--gold-dim);border-radius:8px;}
+#storyTune{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);z-index:25;
+  display:none;flex-direction:column;gap:6px;padding:10px;border-radius:10px;
+  background:rgba(12,9,18,.94);border:1px solid var(--gold-dim);color:var(--ink);font-size:13px;}
+#storyTune.on{display:flex;}
+#storyTune .tn-row{display:flex;align-items:center;gap:6px;}
+#storyTune .tn-row span{flex:1;letter-spacing:1px;}
+#storyTune button{min-width:44px;min-height:36px;font:inherit;color:var(--ink);
+  background:rgba(40,32,56,.9);border:1px solid var(--gold-dim);border-radius:7px;}
+#storyTune button.on{color:#120f1a;background:var(--gold);}
+#storyTune button:disabled{opacity:.35;}
+#storyTune .tn-save{flex:1;color:var(--gold);}
+#storyTune .tn-who button{flex:1;}
+#storyTune .tn-path{font-size:11px;color:var(--gold-dim);}
+body:not(.testmode) #storyTuneBtn, body:not(.testmode) #storyTune{display:none !important;}

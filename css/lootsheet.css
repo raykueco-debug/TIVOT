@@ -47,6 +47,13 @@
     justify-content:center;background:rgba(4,3,7,.72);backdrop-filter:blur(2px);
     opacity:0;transition:opacity .22s ease;pointer-events:none;}
   #lootSheet.on{opacity:1;pointer-events:auto;}
+  /* ══⚠⚠ 閃頂排（ver -1812，Ray：「商店中的選單還是被動態島那一排擋住無法點擊」）══
+     置中的面板比畫面高時，上緣會被推到狀態列底下而且捲不回來。容器上下讓出安全區＋餘裕，
+     面板最多到剩下的高度、超過就在面板裡捲。算法同 style.css 的 `--tap-top`（飛行頁沒有那組 :root，
+     所以這裡直接寫 env()；**改一邊要改另一邊**）。 */
+  #lootSheet{padding:calc(env(safe-area-inset-top,0px) + 16px) 0 calc(env(safe-area-inset-bottom,0px) + 12px);
+    box-sizing:border-box;}
+  #lootSheet:not(.dock-left) .loot-panel{max-height:100%;overflow-y:auto;}
   #lootSheet .loot-panel{width:min(92%,360px);background:var(--panel);
     border:1px solid var(--gold-dim);border-radius:12px;padding:14px 14px 12px;
     box-shadow:0 8px 30px rgba(0,0,0,.6);transform:translateY(8px);
@@ -252,7 +259,8 @@
        再窄下去品名＋價錢就要折行了（實測 390px 寬的機器上 58% 已經開始折）。
      ⚠ 只改版面，**不改任何字級與顏色** —— 同一張單子在道具欄／拾得視窗裡是置中的，
        兩種模式要長得一樣，只是站的位置不同。 */
-  #lootSheet.dock-left{background:none;backdrop-filter:none;-webkit-backdrop-filter:none;
+  #lootSheet.dock-left{padding:0;   /* 停靠模式的單子自己用 margin 閃頂排（下面），容器內距不疊（ver -1812） */
+    background:none;backdrop-filter:none;-webkit-backdrop-filter:none;
     justify-content:flex-start;align-items:flex-start;pointer-events:none;}
   #lootSheet.dock-left.on{pointer-events:none;}
   #lootSheet.dock-left .loot-panel{pointer-events:auto;

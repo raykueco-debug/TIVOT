@@ -939,7 +939,7 @@ function placePortraitX(el, side){
   /* `fxShift`：這個角色整個往左右挪一點（ver -645，說明見 speakers.js／story.js）。 */
   const fxA = (el.classList.contains('mirrored') ? (1 - fr.fx) : fr.fx) + (fr.fxShift||0);
   if(!centered){ el.style.left = (W*anchor - w*fxA) + 'px'; el.style.right = 'auto'; }
-  el.style.top    = (headTop - s*fr.top) + 'px';       // 頭頂貼頂線（見上面 camTop/headTop 的分工）
+  el.style.top    = (headTop - s*fr.top - (fr.yShift||0)*pxCm) + 'px';   // yShift：立繪調整工具（ver -1812，同 story.layout）       // 頭頂貼頂線（見上面 camTop/headTop 的分工）
   el.style.bottom = 'auto';
 }
 

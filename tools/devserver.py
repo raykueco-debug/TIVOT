@@ -40,6 +40,102 @@ SAVE_OK = {
 }
 
 
+# ══⚠⚠ 立繪調整工具（ver -1812，Ray：「管理人模式下新增工具，劇情播放器期間可調整立繪位置與大小，
+#   儲存確認後永久寫入」）══════════════════════════════════════════════════════
+# `POST /__tune`，body＝`{"kind":"src"|"base", "key":"<那一張的路徑字串，原樣>", "set":{"cm":…, "yShift":…, "fxShift":…}}`
+# ⇒ 在 `script/speakers.js` 裡找到**唯一**那個 `src:'<key>'`（或 `base:'<key>'`），改它所在那個物件的
+#   **第一層**欄位（有就換值、沒有就補在 `{` 後面）。真相照舊只有 speakers.js 一份（鐵律 7）。
+# ⚠ 只准動這三個欄位、只准動這一個檔（白名單的同一個道理）。
+# ⚠ 找不到／不只一處 ⇒ 409，不猜。
+import json
+import re
+
+TUNE_FILE = 'script/speakers.js'
+TUNE_KEYS = {'cm': 1, 'yShift': 1, 'fxShift': 3}   # 欄位 → 小數位數
+
+
+def _depth_map(text, start):
+    """從 start（一個 `{`）往後掃，回傳 (end, top)：end＝對應的 `}`，top＝落在第一層（非字串、非註解）的索引集合。"""
+    depth = 0
+    i = start
+    n = len(text)
+    top = set()
+    while i < n:
+        c = text[i]
+        if c in '\'"`':
+            q = c
+            i += 1
+            while i < n and text[i] != q:
+                i += 2 if text[i] == '\\' else 1
+            i += 1
+            continue
+        if text.startswith('//', i):
+            j = text.find('\n', i)
+            i = n if j < 0 else j
+            continue
+        if text.startswith('/*', i):
+            j = text.find('*/', i + 2)
+            i = n if j < 0 else j + 2
+            continue
+        if c == '{':
+            depth += 1
+        elif c == '}':
+            depth -= 1
+            if depth == 0:
+                return i, top
+        elif depth == 1:
+            top.add(i)
+        i += 1
+    return -1, top
+
+
+def tune_patch(text, kind, key, sets):
+    needle = "%s:'%s'" % (kind, key)
+    if text.count(needle) != 1:
+        raise ValueError('找到 %d 處 %s（要剛好一處）' % (text.count(needle), needle))
+    at = text.index(needle)
+    # 往回找包住它的那個 `{`（同一層）
+    depth = 0
+    i = at - 1
+    while i >= 0:
+        if text[i] == '}':
+            depth += 1
+        elif text[i] == '{':
+            if depth == 0:
+                break
+            depth -= 1
+        i -= 1
+    if i < 0:
+        raise ValueError('找不到包住 %s 的物件' % needle)
+    start = i
+    end, top = _depth_map(text, start)
+    if end < 0:
+        raise ValueError('物件沒有收尾')
+    body = text[start:end + 1]
+    for k, v in sets.items():
+        if k not in TUNE_KEYS or v is None:
+            continue
+        val = ('%.' + str(TUNE_KEYS[k]) + 'f') % float(v)
+        val = val.rstrip('0').rstrip('.') if '.' in val else val
+        if val in ('', '-0'):
+            val = '0'
+        hit = None
+        for m in re.finditer(r'\b' + k + r'\s*:\s*-?[\d.]+', body):
+            if (start + m.start()) in top:
+                hit = m
+                break
+        if hit:
+            body = body[:hit.start()] + k + ':' + val + body[hit.end():]
+        else:
+            body = '{ ' + k + ':' + val + ',' + body[1:]
+        # 重算第一層索引（長度變了）
+        text2 = text[:start] + body + text[end + 1:]
+        end2, top = _depth_map(text2, start)
+        text, end = text2, end2
+        body = text[start:end + 1]
+    return text
+
+
 class Handler(http.server.SimpleHTTPRequestHandler):
     def _fail(self, code, msg):
         body = msg.encode('utf-8')
@@ -50,6 +146,23 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self):
+        if self.path.split('?')[0] == '/__tune':
+            try:
+                n = int(self.headers.get('Content-Length') or 0)
+                req = json.loads(self.rfile.read(n).decode('utf-8'))
+                dst = os.path.join(ROOT, TUNE_FILE)
+                with open(dst, 'r', encoding='utf-8') as f:
+                    text = f.read()
+                out = tune_patch(text, req.get('kind'), req.get('key'), req.get('set') or {})
+                tmp = dst + '.tmp'
+                with open(tmp, 'w', encoding='utf-8') as f:
+                    f.write(out)
+                os.replace(tmp, dst)
+            except ValueError as e:
+                return self._fail(409, str(e))
+            except Exception as e:                        # noqa: BLE001
+                return self._fail(500, '寫檔失敗：%s' % e)
+            return self._fail(200, 'ok')
         if not self.path.startswith('/__save/'):
             return self._fail(404, 'no such endpoint')
         rel = self.path[len('/__save/'):].split('?')[0].lstrip('/')
