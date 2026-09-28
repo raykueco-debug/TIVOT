@@ -291,6 +291,7 @@ function onEnemySet(){
        拉栓冷卻與排隊中的切換，那幾項是**開一局**才該歸零的（鐵律 7：不要把兩種
        粒度混成一支）。 */
   weapon.resetToFirst();
+  weapon.resetCounterCd();       // 副武器每一場滿彈（ver -1806，Ray：「副武器殘彈每一場都會復歸至滿彈」）
 }
 export function bootIdle(){
   // 開機停在首頁：先建立盤面/血條供背景顯示，但 over=true 讓計時與敵人不啟動

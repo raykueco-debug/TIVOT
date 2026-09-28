@@ -150,8 +150,10 @@ function partnerHitMul(cat, grade){
    卡上 `mag`（一個彈匣幾發）／`reloadSec`（打空之後幾秒裝填完），寫在 `story`（試玩版不限彈數）。
    **一次反擊算一發**；打空就開始裝填，裝填中＝這把槍開不了火（defense 問 `counterReady`，浮 RELOAD）。
    步槍 `mag:1, reloadSec:5` ＝原本的拉栓 5 秒，行為一模一樣。
-   ⚠ 逐把槍記帳（鑰匙＝武器 id）—— 「先開一槍、切槍、再換回來」照舊是操作空間。
-   ⚠ 裝填中切走再切回來：時間照樣在走（記的是開始裝填的時刻），不會重來。 */
+   ⚠ 逐把槍記帳（鑰匙＝武器 id）。
+   ⚠⚠ ver -1806：**換槍＝裝填**（換下來的那一把當場滿彈，`applyWeapon`）、**每一場（換一隻怪）滿彈**
+     （`combat.onEnemySet`）、**裝填中點圈沒有作用**（圈留著，`defense.resolveThreat` 入口）。
+     舊版「裝填中切走再切回來，時間照樣在走」已作廢。 */
 let ammoLeft = Object.create(null);   // 武器 id → 彈匣剩幾發（沒有記錄＝滿）
 let reloadAt = Object.create(null);   // 武器 id → 開始裝填的時刻（ms；0／沒有＝沒在裝填）
 function magOf(key){
@@ -189,7 +191,8 @@ function spendRound(k){
   if(left <= 0 && reloadSecOf(k) > 0){ reloadAt[k] = Date.now(); cdRingStart(); }
   ammoBadge();
 }
-/* 開場歸零：彈匣與裝填是**這一場**的節奏，不跨場（同 `resetWeaponSwitch` 的其他欄位）。 */
+/* 歸零＝全部滿彈、沒有在裝填。**每一場（一隻怪）**都叫（ver -1806，Ray：「副武器殘彈每一場都會復歸至滿彈」）：
+   `combat.onEnemySet` 一次、開一局的 `resetWeaponSwitch` 一次。 */
 export function resetCounterCd(){ ammoLeft = Object.create(null); reloadAt = Object.create(null); cdRingStop(); ammoBadge(); }
 
 export function weaponCounter(dmgScale, hitRate, dmgRoll, grade, opt){
@@ -795,6 +798,10 @@ function nextWeaponKey(){
    也是改 `state.equippedWeapon`，記回去兩邊才不會各說各話。 */
 function applyWeapon(key){
   if(!key || !WEAPONS[key]) return;
+  /* ⚠⚠ ver -1806（Ray：「副武器切換後等同 reload，再切回殘彈副武器時就滿彈」）：
+     換下來的那一把**當場裝滿**（清掉它的殘彈與裝填中）——換槍本身就是裝填。 */
+  const prev = state.equippedWeapon;
+  if(prev && prev!==key){ delete ammoLeft[prev]; delete reloadAt[prev]; cdRingStop(); }
   state.equippedWeapon = key;
   const c=WEAPONS[key].cat; if(c) load.setPick(c, key);
   refreshLoadoutLabels();

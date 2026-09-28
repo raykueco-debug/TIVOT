@@ -6043,9 +6043,15 @@ export const TOWNS = {
              `until:'ep_belisar_done'` ＝貝利薩爾那一段收尾才解除。
            ⚠⚠ **鐵律 9：`ep_belisar_done` 現在還沒有人插**（批次 3b 那一段的收尾
              才會插它）—— 所以這一版翌日之後是真的走不掉。名字先留好。 */
-        sail:{ hold:{ need:'ep_day2', until:'ep_belisar_done',
-                      sides:{ RENNA:'L' },
-                      lines:[ ren('talkwork','時間有限喔，別再亂跑了，先去貝利薩爾遺址吧。') ] } },
+        /* ⚠⚠ ver -1806（Ray：「東泊在初入進入蕾娜去大學劇情後，就要有出航鎖，到找髮飾段落解封」）：
+           擋的範圍改成 `ep_arrive` → `ep_hairpin_hunt`（追髮飾那一夜的任務探索＝「可以出航」）。
+           兩列＝同一道鎖的兩段台詞：貝利薩爾回來之前／之後（之後再叫他「先去貝利薩爾」就錯了）。 */
+        sail:{ hold:[
+          { need:'ep_belisar_done', until:'ep_hairpin_hunt', sides:{ RENNA:'L' },
+            lines:[ ren('meltdown','休整一下，明天就出發吧。') ] },
+          { need:'ep_arrive', until:'ep_hairpin_hunt', sides:{ RENNA:'L' },
+            lines:[ ren('talkwork','時間有限喔，別再亂跑了，先去貝利薩爾遺址吧。') ] },
+        ] },
         /* ══⚠⚠⚠ 抵達東方泊地（ver -1342，Ray 交稿）══════════════════════════
            飛行頁那一段（貝利薩爾沒有降落點 → 蕾娜指這裡）演完才有這一段 ——
            `need` 就是那一支旗（`flight/index.html` 的 `BELISAR_NOLAND_FLAG`，
@@ -6722,7 +6728,10 @@ export const TOWNS = {
            與 BA・M2（沒有審訊）第二天永遠是劇情探索、沒有人出門。守夜那一扇窗照樣擋約會，
            外出行程是 9~19 點，深夜開回來沒有副作用。 */
         { flag:'ep_hairpin_talk', need:'bl_night_done', endStoryExplore:true, sides:{ RENNA:'L' }, lines:atStage(12, [
-          sor('tire','折騰一晚上，呼啊——'),
+          /* ⚠⚠ ver -1806（Ray：「王座徘徊者戰後回到旅店的時間強制鎖在晚上十點，若已超過就推到隔天晚上十點」）：
+             `clockToNext:22`（下一個 22:00，已過就是隔天；時鐘只往前）。掛第一拍＝HUD 印跳完之後的時刻。
+             連帶讓守夜那兩小時（坐坐）剛好跨過午夜、接上安雅偷溜那一段的 `hourOfDay:[0,6]`。 */
+          Object.assign(sor('tire','折騰一晚上，呼啊——'), { clockToNext:22 }),
           nou('sleepy',''),
           any('sleepy',''),
           ren('apologize','真的很對不起……'),

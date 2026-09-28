@@ -4286,19 +4286,22 @@
        又要撐 3.5 秒；這一支是一瞬，壓暗只會讓「閃了一下」變成「畫面暗了一下」。 */
   #storyFx .fx-stare{position:absolute;inset:0;z-index:2;pointer-events:none;
     width:100%;height:100%;object-fit:cover;opacity:0;
-    animation:storyStare 1.4s ease-out forwards;}
+    animation:storyStare 4.2s ease-out forwards;}
+  /* ⚠⚠ ver -1806（Ray：「米夏眼部 CI 動畫太短，延成 3 倍」）：1.4s → 4.2s（`story.js` 的 `STARE_MS`
+     跟著 ×3，兩邊互指）。**峰值仍釘在 450ms**（心跳那一下，10.7%）—— 拉長的是淡出那一段，
+     整段等比拉的話峰值會跑到 1.34 秒、與心跳脫節。 */
   @keyframes storyStare{
-    0%  {opacity:0;    transform:scale(1.10)}
-    18% {opacity:.24;  transform:scale(1.045)}
-    32% {opacity:.62;  transform:scale(1)}      /* ＝心跳那一下 */
-    46% {opacity:.34;  transform:scale(1.015)}
-    70% {opacity:.15;  transform:scale(1.03)}
-    100%{opacity:0;    transform:scale(1.05)}}
+    0%   {opacity:0;    transform:scale(1.10)}
+    6%   {opacity:.24;  transform:scale(1.045)}
+    10.7%{opacity:.62;  transform:scale(1)}      /* ＝心跳那一下（450ms） */
+    29%  {opacity:.34;  transform:scale(1.015)}
+    60%  {opacity:.15;  transform:scale(1.03)}
+    100% {opacity:0;    transform:scale(1.05)}}
   /* 脈動的那一圈：與本體同一張圖、排在它**底下**，只有撐出去的那一圈看得到
      —— 與 `.fx-sense-ghost` 是同一個道理（那邊的註解寫著「畫在上面會整個人糊掉」）。 */
   #storyFx .fx-stare-ghost{position:absolute;inset:0;z-index:1;pointer-events:none;
     width:100%;height:100%;object-fit:cover;opacity:0;
-    animation:storySenseGhost .7s cubic-bezier(.22,.62,.3,1) .32s forwards;}
+    animation:storySenseGhost 2.1s cubic-bezier(.22,.62,.3,1) .32s forwards;}   /* -1806：×3，起點仍在心跳前 */
   /* 感應的光圈：**與白光同一個圓心（她的手）**，當白光的前緣（ver -1185）。
      ⚠ `--hx`／`--hy` 由 `story.js` 的 `senseHandAt` 算（鐵律 7）。 */
   #storyFx .fx-sense-ring{position:absolute;left:var(--hx,50%);top:var(--hy,46%);

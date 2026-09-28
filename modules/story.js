@@ -2255,7 +2255,7 @@ function senseGeom(k,w,h){
 const SENSE_BEATS=[450, 1610, 2780, 3940];
 /* 一閃而過的 CI（`fx:'stare'`，ver -1559）活多久 —— **這裡是唯一的那一個數字**
    （ver -1658）：殘影的收尾與 `noSkip` 的保護期都讀它（鐵律 7）。 */
-const STARE_MS = 1500;
+const STARE_MS = 4500;   // ver -1806 ×3（Ray：「米夏眼部 CI 太短」）；CSS 的 `storyStare` 4.2s 同步改，兩邊互指
 /* ⚠⚠ 白光**第三拍就開始跑**（ver -1185，Ray：「光圈速快一點，第三拍脈動就可以
    開始跑了」）—— 原本排在第四拍（3.94s），整段拖到 8 秒才收。
    climax 的殘影（`amp 2.2`）也跟著移到第三拍：它與白光**必須同一瞬**。 */
@@ -2569,7 +2569,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1805';
+const KERB_V='?v=1806';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

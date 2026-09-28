@@ -383,6 +383,15 @@ function staggerOnCounter(){
 // 點掉單一攻擊點 → 依剩餘時間判定 Counter / Perfect / Defense
 export function resolveThreat(th, chained){
   if(!th || state.threats.indexOf(th)<0) return;
+  /* ══⚠⚠ **裝填中點不掉攻擊圈**（ver -1806，Ray：「副武器換彈期間點反擊仍可以把攻擊圈點掉，
+     這是錯的，副武器換彈期間應無法用換彈中的副武器消除攻擊圈」）══
+     裝填中的槍＝這一下**什麼都沒發生**：圈留著照樣縮、到時照樣打下來；只浮 RELOAD。
+     ⚠ 擋在這一支的入口（玩家點圈的唯一去處，鐵律 8）；散射連鎖的鄰圈也走這裡 ——
+       最後一發打空之後，剩下的鄰圈同樣留著。 */
+  if(api.counterReady && !api.counterReady()){
+    api.floatDmg((L.battle && L.battle.boltCd) || 'RELOAD','50%','34%',false);
+    return;
+  }
   const left=Math.max(0,state.CHARGE_SECONDS-(Date.now()-th.t0)/1000);
   const ratio=left/state.CHARGE_SECONDS;
   const w=weaponOf(state.equippedWeapon, storyMode());   // 本篇／試玩版兩套數值（ver -378）

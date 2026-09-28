@@ -4191,11 +4191,16 @@ export function setFlightOpener(fn){ flightOpener=fn; }
    ⚠ 鐵律 9：`until` 那支旗誰插的要答得出來 —— 現在**還沒有人插**
      （下一段劇情的稿還沒到），所以這一版走到這裡就是走不掉的，那正是 Ray 要的。
    ⚠ 沒有名字欄 ＝ 旁白（那句話是主角自己的念頭，不是誰在講）。 */
+/* ⚠ `hold` 可以是陣列（ver -1806）：由上往下取**第一個成立的** —— 同一段鎖在不同時期要講不同的話
+   （東泊：翌日前「先去貝利薩爾」、貝利薩爾回來後「休整一下」）。 */
 function sailHeld(){
-  const n=node(), h=n && n.sail && n.sail.hold; if(!h) return null;
-  if(h.need && !prog.hasFlag(h.need)) return null;
-  if(h.until && prog.hasFlag(h.until)) return null;
-  return h;
+  const n=node(), o=n && n.sail && n.sail.hold; if(!o) return null;
+  for(const h of (Array.isArray(o) ? o : [o])){
+    if(h.need && !prog.hasFlag(h.need)) continue;
+    if(h.until && prog.hasFlag(h.until)) continue;
+    return h;
+  }
+  return null;
 }
 /* ══⚠⚠ **「出不了港」有它的窗口**（ver -925，Ray：「stage4 前可自由進出夏爾村，
    不會跳船沒修好不能離開」「stage7 結束後夏爾村就恢復自由進出」）══
