@@ -4564,7 +4564,7 @@ export const TOWNS = {
            ⚠ 「[T3以上分支]」看的是**蕾娜**的段位（`tierWho:'RENNA'`）：T3 以上走插圖
              `34_rennacityhall`（由下往上平移），T2 以下是一般對話；插圖那一支最後補一拍收圖。 */
         acts:[
-        { flag:'ss_cityhall', need:'ss_arrive', noDate:true, sides:{ RENNA:'L' }, lines:[
+        { flag:'ss_cityhall', need:'ss_arrive', until:'ss_inn_merge', noDate:true,   // ver -1814 Ray：蕾娜的市政廳也要過期（同貧民窟三條約會） sides:{ RENNA:'L' }, lines:[
           ren('surprise','欸——真的假的！我還以為是很龐大的組織呢！'),
           cnS('front','哪有啊！就一群舊奴隸主養的地痞。現在奴隸主沒了，自己變著花樣壓搾森住民而已。'),
           ren('think','所以才只敢找森住民麻煩……'),
@@ -4869,7 +4869,9 @@ export const TOWNS = {
           nou('cringe','蕾娜小姐，那種話……'),
           ren('front','我知道。'),
           ren('handout','明天航行許可就會下來了，今天先好好休息吧。'),
-          ren('handout','羅賽爾的廢城很大喔，養足體力再出發吧。', { aff:{ sorana:5 } }),   // ver -1813 Ray：聖索菲亞事件結束 索好感 +5
+          /* ver -1814（Ray：「索菲雅事件結束後就不鎖出航」）：`ss_depart` 改在這裡插 —— 出航鎖（`sail.hold.until`）、
+             飛行頁的出發對話 ④（開圖標廢城、解除禁航）都讀它，一起提前。隔天早上那道閘門看到旗已插就不再觸發。 */
+          ren('handout','羅賽爾的廢城很大喔，養足體力再出發吧。', { aff:{ sorana:5 }, flags:['ss_depart'] }),   // ver -1813 Ray：聖索菲亞事件結束 索好感 +5
         ] } ],
         /* ── 走出旅店（合流之後第一次離開這一格）── `onLeave`（同東泊 -1532）。
            ⚠ 蕾娜 `remind` ver -1793 交件，已換上。
@@ -9484,6 +9486,9 @@ export const TOWNS = {
     name: '里朋莊園',
     entry: 'road',
     bgm: 'folkroma2',   // ver -1785：Ray 指定 PerituneMaterial_Folk_Roma2（原本是程式端暫挑的 suspense）
+    /* ⚠⚠ ver -1814（Ray：「里朋戰全程戰鬥不切音樂，都用場地音樂，直到貝琳妲出場」）：攻打期間鎖曲
+       （`lock` ⇒ `main.battleBgmOf` 回 null，六場戰鬥都不換）。終點 `ss_raid_done`＝沙龍那一段（貝琳妲出場那一段）演完。 */
+    bgmWhen: [ { need:'ss_raid_go', until:'ss_raid_done', bgm:'folkroma2', lock:true } ],
     wilderness: true,
     nodes: {
       terrace:    { bg:'sofiaout_terrace', name:'里朋莊園　露台', noTime:true, rest:true, noWild:true, exits:{ down:'salon' } },
