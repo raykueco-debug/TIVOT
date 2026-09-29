@@ -3509,6 +3509,24 @@
      ⇒ **靜止狀態必須是「看得見」的那一端**：只縮放，不淡入。
      ⚠ 這是 §5「漏寫的下場必須落在安全的那一側」的同一條，套在演出上。 */
   @keyframes blankPop{ from{ scale:.84; } to{ scale:1; } }
+  /* ══ 空白框的對話框效果（ver -1874，Ray：「對話框抖動特效沒出來」）══
+     空白框的置中就是 `translate:-50% 0`，而且它有自己的彈出動畫 —— 通用那組 `bf-*`
+     在這裡會被 `blankPop` 蓋掉（同權重、它排在後面），就算沒被蓋掉，抖動動的也正是 `translate`，
+     一抖就把置中洗掉。⇒ 這裡另寫一組**把 -50% 算進去**的，並與 `blankPop` **並列**
+     （一個動縮放、一個動位移，互不干擾）。 */
+  #storyBubble.blank.bf-fear{ animation:blankPop .22s cubic-bezier(.2,1.35,.45,1) both, bfFearB .26s linear infinite; }
+  #storyBubble.blank.bf-hit{ animation:blankPop .22s cubic-bezier(.2,1.35,.45,1) both, bfHitB .42s cubic-bezier(.2,.8,.3,1) both; }
+  #storyBubble.blank.bf-weak{ animation:blankPop .22s cubic-bezier(.2,1.35,.45,1) both, bfWeakB 2.4s ease-in-out infinite; }
+  #storyBubble.blank.bf-shout{ animation:bfShout .38s cubic-bezier(.3,1.6,.5,1) both; }
+  #storyBubble.blank.bf-rage{ animation:blankPop .22s cubic-bezier(.2,1.35,.45,1) both, bfRage .9s ease-in-out infinite; }
+  @keyframes bfFearB{
+    0%{translate:-50% 0} 20%{translate:calc(-50% - 1.5px) .5px} 40%{translate:calc(-50% + 1px) -1px}
+    60%{translate:calc(-50% - 1px) 1px} 80%{translate:calc(-50% + 1.5px) 0} 100%{translate:-50% 0}}
+  @keyframes bfHitB{
+    0%{translate:-50% 0;border-color:#e57373;box-shadow:0 0 0 2px rgba(229,115,115,.7)}
+    12%{translate:calc(-50% - 9px) 5px} 26%{translate:calc(-50% + 7px) -4px} 40%{translate:calc(-50% - 5px) 2px}
+    56%{translate:calc(-50% + 3px) -1px} 72%{translate:calc(-50% - 1px) 0} 100%{translate:-50% 0}}
+  @keyframes bfWeakB{ 0%,100%{translate:-50% 0;rotate:0deg} 50%{translate:-50% 3px;rotate:-.6deg} }
   /* 正文那一格有 min-height:3.4em（撐出三行的高度）—— 小氣泡要把它整個收掉，
      不然「小」只小在寬度上，高度還是一個滿框。 */
   #storyBubble.blank .story-text,#tutBubble.blank .tut-line{ display:none; }

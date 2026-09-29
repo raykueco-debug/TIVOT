@@ -292,14 +292,14 @@ function edLocate(){
   /* 前後一拍只拿「有台詞字串」的當定位條件：空白框／分段台詞在檔裡沒有那個字串，拿來比只會一行都找不到。
      ver -1872：這一拍自己是空白框就帶 `blank:true`（伺服器改認 `blank:true` 那一行）。 */
   const ctx=l=> (l && typeof l.text==='string' && !l.blank) ? l.text : undefined;
-  /* ver -1873：前後各 10 拍的台詞序列（由近到遠；空白框記 '\u0001B'、沒有台詞記 null）——
+  /* ver -1873／-1874：前後各 80 拍（＝通常就是整段）的台詞序列（由近到遠；空白框記 '\u0001B'、沒有台詞記 null）——
      前後一拍認不出唯一時，伺服器比「連續對得上幾拍」挑最長的那一個（devserver 的 `_pick_by_seq`）。 */
   /* ⚠ 鑰匙＝台詞＋'\u0002'＋差分（同一段對白抄在兩個分支時，常常只有表情不同）；
      格式與 devserver 的 `_beat_key` 一樣，改一邊要改另一邊。 */
   const key=l=> !l ? null : l.blank ? '\u0001B'
     : (typeof l.text==='string' ? l.text+'\u0002'+((l.portrait && typeof l.portrait.expr==='string') ? l.portrait.expr : '') : null);
   const before=[], after=[];
-  for(let k=1;k<=10;k++){ if(i-k>=0) before.push(key(lines[i-k])); if(i+k<lines.length) after.push(key(lines[i+k])); }
+  for(let k=1;k<=80;k++){ if(i-k>=0) before.push(key(lines[i-k])); if(i+k<lines.length) after.push(key(lines[i+k])); }
   return { text: typeof line.text==='string' ? line.text : '', blank: line.blank ? true : undefined,
            mark:(line.portrait && typeof line.portrait.expr==='string') ? line.portrait.expr : undefined,
            prev: ctx(lines[i-1]), next: ctx(lines[i+1]), before, after };
@@ -3088,7 +3088,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1873';
+const KERB_V='?v=1874';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

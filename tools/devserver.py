@@ -300,36 +300,6 @@ def _fx_literal(v):
 FX_ANY = r"bubbleFx\s*:\s*(?:'[^']*'|\[[^\]]*\])"
 
 
-def _set_fx(lines, s, e, endcol, value):
-    """把第 s～e 行那一拍的 `bubbleFx` 設成 value（None＝拿掉）。回傳 True＝有改。"""
-    lit = _fx_literal(value)
-    chunk = '\n'.join(lines[s:e + 1])
-    if re.search(FX_ANY, chunk):
-        if lit:
-            chunk2 = re.sub(FX_ANY, 'bubbleFx:' + lit, chunk, count=1)
-        else:
-            chunk2 = re.sub(r"\{\s*" + FX_ANY + r"\s*\}", '{ }', chunk, count=1)   # 唯一的鍵（Object.assign 包的那一種）
-            if chunk2 == chunk:
-                chunk2 = re.sub(r"\s*" + FX_ANY + r"\s*,", '', chunk, count=1)
-            if chunk2 == chunk:
-                chunk2 = re.sub(r"\s*,\s*" + FX_ANY, '', chunk, count=1)
-            chunk2 = re.sub(r"Object\.assign\((.*),\s*\{\s*\}\)", r"\1", chunk2, count=1)
-        lines[s:e + 1] = chunk2.split('\n')
-        return chunk2 != chunk
-    if not lit:
-        return False
-    head = lines[s]
-    col = len(re.match(r'\s*', head).group(0))
-    if head[col] == '{':                        # 物件拍：塞在第一個欄位前面
-        lines[s] = head[:col + 1] + ' bubbleFx:' + lit + ',' + head[col + 1:]
-    else:                                       # 函式拍（ren(...)）：包一層 Object.assign
-        last = lines[e]
-        lines[e] = last[:endcol + 1] + ', { bubbleFx:' + lit + ' })' + last[endcol + 1:]
-        head = lines[s]
-        lines[s] = head[:col] + 'Object.assign(' + head[col:]
-    return True
-
-
 def _beat_literal(b):
     sp = str(b.get('speaker') or 'NARRATION')
     if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', sp):
@@ -348,96 +318,6 @@ def _beat_literal(b):
     return out + " },"
 
 
-def _beat_span(lines, i):
-    """台詞在第 i 行 ⇒ 這一拍從哪一行到哪一行（含）。拍子必須**從第 i 行開頭**（`{` 或 `名字(`），
-    括號配對到結尾；結尾那一行在拍子之後只准有 `,` 與註解。不成立回 None（不猜）。"""
-    head = lines[i]
-    m = re.match(r'\s*(?:\{|[A-Za-z_$][\w$.]*\()', head)
-    if not m:
-        return None
-    depth, j, blk = 0, i, False
-    col = len(re.match(r'\s*', head).group(0))
-    while j < len(lines) and j < i + 40:
-        ln = lines[j]
-        k, n = (col if j == i else 0), len(ln)
-        while k < n:
-            if blk:
-                e = ln.find('*/', k)
-                if e < 0:
-                    k = n
-                    break
-                blk, k = False, e + 2
-                continue
-            c = ln[k]
-            if c in '\'"`':
-                q = c
-                k += 1
-                while k < n and ln[k] != q:
-                    k += 2 if ln[k] == '\\' else 1
-                k += 1
-                continue
-            if ln.startswith('//', k):
-                break
-            if ln.startswith('/*', k):
-                blk, k = True, k + 2
-                continue
-            if c in '({[':
-                depth += 1
-            elif c in ')}]':
-                depth -= 1
-                if depth < 0:
-                    return None
-                if depth == 0:
-                    rest = ln[k + 1:]
-                    if re.match(r'^\s*,?\s*(//.*|/\*.*\*/\s*)?$', rest):
-                        return (i, j, k)   # k＝結尾那個括號在第 j 行的欄位（set 要在它後面接東西）
-                    return None
-            k += 1
-        j += 1
-    return None
-
-
-def _find_beat(req, files):
-    """原台詞（＋差分＋前後一拍）→ 剛好一拍的 (rel, s, e, lines)。"""
-    lit = _js_str(req.get('text') or '')
-    # ver -1872：主角的空白框（`{ speaker:'PLAYER', blank:true }`）沒有台詞欄位 —— 改認 `blank:true`，
-    #   剩下交給前後一拍篩（Ray：「主角空白會無法寫入效果」）。
-    if req.get('blank'):
-        lit = None
-    hits = []
-    for rel in files:
-        with open(os.path.join(ROOT, rel), 'r', encoding='utf-8') as f:
-            lines = f.read().split('\n')
-        for i, ln in enumerate(lines):
-            if (lit in ln) if lit is not None else re.search(r"blank\s*:\s*true", ln):
-                sp = _beat_span(lines, i)
-                if sp:
-                    hits.append((rel, sp[0], sp[1], lines, sp[2]))
-
-    def chunk(h):
-        return '\n'.join(h[3][h[1]:h[2] + 1])
-
-    def near(h, t, before):
-        if t is None:
-            return True
-        l2 = _js_str(t)
-        lo, hi = (h[1] - NEAR, h[1] - 1) if before else (h[2] + 1, h[2] + NEAR)
-        return any(l2 in h[3][j] for j in range(max(0, lo), min(len(h[3]), hi + 1)))
-    if len(hits) > 1 and req.get('mark'):
-        mk = _js_str(req['mark'])
-        hits = [h for h in hits if mk in chunk(h)] or hits
-    if len(hits) > 1:
-        narrowed = [h for h in hits if near(h, req.get('prev'), True) and near(h, req.get('next'), False)]
-        hits = narrowed if (narrowed or not (req.get('before') or req.get('after'))) else hits
-    # ver -1873：還是不只一拍 ⇒ 比「前後各 10 拍的台詞序列」連續對得上幾拍，取唯一最長的那一個
-    #   （空白框常常只靠前後一拍認不出來：同一段對白抄在好幾個分支裡、或連著好幾格空白 —— 實測 121 格裡 22 格）。
-    if len(hits) > 1 and (req.get('before') or req.get('after')):
-        hits = _pick_by_seq(hits, req.get('before') or [], req.get('after') or [])
-    if len(hits) != 1:
-        raise ValueError('找到 %d 拍（要剛好一拍）：%s' % (len(hits), lit if lit is not None else '（空白框）'))
-    return hits[0]
-
-
 BLANK_TAG = '\u0001B'
 KEY_SEP = '\u0002'
 _STR = r"'((?:[^'\\]|\\.)*)'"
@@ -453,7 +333,7 @@ def _beat_key(chunk):
     ⚠ 與 story.js 的 edLocate 那一支 `key()` 是同一個格式，改一邊要改另一邊。"""
     if re.search(r"blank\s*:\s*true", chunk):
         return BLANK_TAG
-    m = re.match(r"\s*(?:Object\.assign\()?\s*[A-Za-z_]\w*\(\s*(null|" + _STR + r")\s*,\s*" + _STR, chunk)
+    m = re.match(r"\s*(?:Object\.assign\(\s*)*[A-Za-z_]\w*\(\s*(null|" + _STR + r")\s*,\s*" + _STR, chunk)
     if m:
         return _js_unstr(m.group(3)) + KEY_SEP + (_js_unstr(m.group(2)) if m.group(2) is not None else '')
     m = re.search(r"\btext\s*:\s*" + _STR, chunk)
@@ -463,29 +343,135 @@ def _beat_key(chunk):
     return None
 
 
-def _beats_of(lines):
-    out, i = [], 0
-    while i < len(lines):
-        s = lines[i].strip()
-        if s.startswith('{') or re.match(r"(Object\.assign\()?[A-Za-z_]\w*\(", s):
-            sp = _beat_span(lines, i)
-            if sp and ('speaker' in lines[i] or re.match(r"(Object\.assign\()?[A-Za-z_]\w*\(\s*(null|')", s)):
-                out.append((sp[0], sp[1], _beat_key('\n'.join(lines[sp[0]:sp[1] + 1]))))
-                i = sp[1] + 1
-                continue
+def _scan(text):
+    """整份檔掃一次（ver -1874）：回傳 (配對表 open→close, 陣列元素的起點清單)。
+    元素起點＝字串／註解之外、前一個有意義的字元是 `[` 或 `,`，而且接著是 `{` 或 `名字(`。
+    ⚠ 以前是「一拍＝從行首開始、結尾只剩逗號的那幾行」—— `ren(...) ],`（拍子後面同一行接陣列收尾）
+      與 `meet:{ lines:[ { speaker:… },`（拍子從行中間開始）都認不出來，插入／刪除就「找到 0 拍」。"""
+    n = len(text)
+    match, stack, starts = {}, [], []
+    prev_sig = '['          # 檔頭視為在陣列開頭之後（不會真的用到）
+    i = 0
+    while i < n:
+        c = text[i]
+        if c in '\'"`':
+            q = c
+            i += 1
+            while i < n and text[i] != q:
+                i += 2 if text[i] == '\\' else 1
+            i += 1
+            prev_sig = q
+            continue
+        if text.startswith('//', i):
+            j = text.find('\n', i)
+            i = n if j < 0 else j
+            continue
+        if text.startswith('/*', i):
+            j = text.find('*/', i + 2)
+            i = n if j < 0 else j + 2
+            continue
+        if c.isspace():
+            i += 1
+            continue
+        if prev_sig in '[,' and (c == '{' or c.isalpha() or c in '_$'):
+            if c == '{':
+                starts.append(i)
+            else:
+                m = re.match(r'[A-Za-z_$][\w$.]*\(', text[i:i + 80])
+                if m:
+                    starts.append(i)
+        if c in '([{':
+            stack.append(i)
+        elif c in ')]}':
+            if stack:
+                match[stack.pop()] = i
+        prev_sig = c
         i += 1
+    return match, starts
+
+
+def _elements(text):
+    """(起點, 結尾那個括號的位置) —— 起點是 `名字(` 就配對那個 `(`。"""
+    match, starts = _scan(text)
+    out = []
+    for s in starts:
+        o = s if text[s] == '{' else text.index('(', s)
+        e = match.get(o)
+        if e is not None:
+            out.append((s, e))
     return out
 
 
-def _pick_by_seq(hits, before, after):
-    cache, scored = {}, []
-    for h in hits:
-        rel, s, lines = h[0], h[1], h[3]
-        beats = cache.get(rel) or cache.setdefault(rel, _beats_of(lines))
-        b = next((k for k, x in enumerate(beats) if x[0] == s), None)
-        if b is None:
-            scored.append((0, h))
+def _is_beat(seg):
+    if seg.startswith('{'):
+        m = re.search(r"\bspeaker\s*:|\[", re.sub(FX_ANY, '', seg))   # 多選效果的 `[` 不算（它在 speaker 前面）
+        return bool(m) and m.group(0) != '['
+    return bool(re.match(r"(Object\.assign\(\s*)*[A-Za-z_]\w*\(\s*(null|')", seg))
+
+
+def _beats(text):
+    """這一份檔裡所有的拍（依位置排，最內層）：[(起點, 結尾, 鑰匙)]。"""
+    els = sorted((s, e) for s, e in _elements(text) if _is_beat(text[s:e + 1]))
+    out = []
+    for k, (s, e) in enumerate(els):
+        # 只留最內層的拍：元素是正確巢狀的，下一個拍的起點落在自己裡面 ⇒ 自己是外層
+        if k + 1 < len(els) and els[k + 1][0] <= e:
             continue
+        out.append((s, e, _beat_key(text[s:e + 1])))
+    return out
+
+
+def _line_of(text, off):
+    return text.count('\n', 0, off)
+
+
+def _find_beat(req, files):
+    """原台詞（＋差分＋前後一拍＋前後序列）→ 剛好一拍：(rel, text, 起點, 結尾, beats, 第幾拍)。"""
+    want = None if req.get('blank') else (req.get('text') or '')
+    hits = []
+    for rel in files:
+        with open(os.path.join(ROOT, rel), 'r', encoding='utf-8') as f:
+            text = f.read()
+        beats = _beats(text)
+        for b, (s, e, key) in enumerate(beats):
+            if key is None:
+                continue
+            if want is None:
+                ok = key == BLANK_TAG
+            else:
+                ok = key != BLANK_TAG and key.split(KEY_SEP, 1)[0] == want
+            if ok:
+                hits.append((rel, text, s, e, beats, b))
+
+    def seg(h):
+        return h[1][h[2]:h[3] + 1]
+
+    def txt(h, k):
+        b = h[5] + k
+        if b < 0 or b >= len(h[4]):
+            return None
+        key = h[4][b][2]
+        return key.split(KEY_SEP, 1)[0] if key and key != BLANK_TAG else None
+
+    if len(hits) > 1 and req.get('mark'):
+        mk = _js_str(req['mark'])
+        hits = [h for h in hits if mk in seg(h)] or hits
+    if len(hits) > 1 and (req.get('prev') is not None or req.get('next') is not None):
+        narrowed = [h for h in hits
+                    if (req.get('prev') is None or txt(h, -1) == req['prev'])
+                    and (req.get('next') is None or txt(h, 1) == req['next'])]
+        hits = narrowed or hits
+    if len(hits) > 1 and (req.get('before') or req.get('after')):
+        hits = _pick_by_seq(hits, req.get('before') or [], req.get('after') or [])
+    if len(hits) != 1:
+        raise ValueError('找到 %d 拍（要剛好一拍）：%s' % (len(hits), '（空白框）' if want is None else _js_str(want)))
+    return hits[0]
+
+
+def _pick_by_seq(hits, before, after):
+    scored = []
+    for h in hits:
+        beats, b = h[4], h[5]
         score = 0
         for k, want in enumerate(before, 1):            # 由近到遠，連續對得上才加分
             if b - k < 0 or beats[b - k][2] != want:
@@ -503,47 +489,104 @@ def _pick_by_seq(hits, before, after):
     return top if best > 0 else hits
 
 
-def _write_lines(rel, lines):
+def _write_text(rel, text):
     dst = os.path.join(ROOT, rel)
     tmp = dst + '.tmp'
-    with open(tmp, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(lines))
+    with open(tmp, 'w', encoding='utf-8', newline='') as f:
+        f.write(text)
     os.replace(tmp, dst)
+
+
+def _set_fx_seg(seg, value):
+    """一拍的原始碼 seg → 把 `bubbleFx` 設成 value（None＝拿掉）後的 seg。"""
+    lit = _fx_literal(value)
+    if re.search(FX_ANY, seg):
+        if lit:
+            return re.sub(FX_ANY, 'bubbleFx:' + lit, seg, count=1)
+        s2 = re.sub(r"\{\s*" + FX_ANY + r"\s*\}", '{ }', seg, count=1)   # 唯一的鍵（Object.assign 包的那一種）
+        if s2 == seg:
+            s2 = re.sub(r"\s*" + FX_ANY + r"\s*,", '', seg, count=1)
+        if s2 == seg:
+            s2 = re.sub(r"\s*,\s*" + FX_ANY, '', seg, count=1)
+        m = re.match(r"^Object\.assign\((.*),\s*\{\s*\}\)$", s2, re.S)
+        return m.group(1) if m else s2
+    if not lit:
+        return seg
+    if seg.startswith('{'):
+        return '{ bubbleFx:' + lit + ',' + seg[1:]
+    m = re.match(r"^(Object\.assign\(.*,\s*\{)(.*\}\))$", seg, re.S)   # 已經包過一層 ⇒ 塞進最後那個物件
+    if m:
+        return m.group(1) + ' bubbleFx:' + lit + ',' + m.group(2)
+    return 'Object.assign(' + seg + ', { bubbleFx:' + lit + ' })'
 
 
 def line_patch(req):
     op = req.get('op')
     if op not in ('insert', 'delete', 'set'):
         raise ValueError('op 只能是 insert／delete／set')
-    rel, s, e, lines, endcol = _find_beat(req, LINE_FILES)
+    rel, text, s, e, _, _ = _find_beat(req, LINE_FILES)
+    ln = _line_of(text, s) + 1
+    ls = text.rfind('\n', 0, s) + 1                     # 起點那一行的行首
+    le = text.find('\n', e)
+    le = len(text) if le < 0 else le                    # 結尾那一行的行尾
     if op == 'set':
         if req.get('key') != 'bubbleFx':
             raise ValueError('set 只准改 bubbleFx')
-        if not _set_fx(lines, s, e, endcol, req.get('value')):
-            return '%s:%d 沒有變動' % (rel, s + 1)
-        _write_lines(rel, lines)
-        return '%s:%d' % (rel, s + 1)
+        seg = text[s:e + 1]
+        new = _set_fx_seg(seg, req.get('value'))
+        if new == seg:
+            return '%s:%d 沒有變動' % (rel, ln)
+        _write_text(rel, text[:s] + new + text[e + 1:])
+        return '%s:%d' % (rel, ln)
+    after = e + 1                                       # 拍子後面緊接的逗號算這一拍的
+    m = re.match(r'[ \t]*,', text[after:le])
+    comma = bool(m)
+    if m:
+        after += m.end()
+    lead = text[ls:s]                                   # 同一行、拍子前面的東西
+    tail = text[after:le]                               # 同一行、拍子（與它的逗號）後面的東西
+    only_ws_lead = not lead.strip()
+    tail_is_comment = (not tail.strip()) or tail.strip().startswith('//') or tail.strip().startswith('/*')
     if op == 'delete':
-        gone = ' '.join(x.strip() for x in lines[s:e + 1])
-        del lines[s:e + 1]
-        where = '%s:%d 刪除 %s' % (rel, s + 1, gone[:60])
-    else:
-        ind = re.match(r'\s*', lines[s]).group(0)
-        new = ind + _beat_literal(req.get('beat') or {})
-        if req.get('where') == 'before':
-            lines.insert(s, new)
-            where = '%s:%d 插入' % (rel, s + 1)
+        gone = re.sub(r'\s+', ' ', text[s:e + 1])[:60]
+        prev_nl = ls - 1                                # 上一行的行尾（換行字元的位置）
+        prev_ls = text.rfind('\n', 0, prev_nl) + 1 if prev_nl >= 0 else 0
+        prev_line = text[prev_ls:prev_nl] if prev_nl >= 0 else ''
+        if only_ws_lead and tail_is_comment:
+            new = text[:ls] + text[le + 1:]             # 整行（連同註解）都是這一拍 ⇒ 拿掉整行
+        elif only_ws_lead and re.match(r'\s*[\]\})]', tail) and prev_nl >= 0 and '//' not in prev_line and '/*' not in prev_line:
+            # 這一行只剩陣列收尾（`],`）⇒ 接回上一行，上一行多出來的逗號一併拿掉（插入時補的）
+            head = prev_line.rstrip()
+            head = head[:-1] if head.endswith(',') else head
+            new = text[:prev_ls] + head + ' ' + tail.strip() + text[le:]
+        elif not only_ws_lead and not tail.strip():
+            # 拍子在行尾、前面還有別的（`lines:[ `）⇒ 下一行接回來
+            nxt = re.match(r'\n[ \t]*', text[le:])
+            new = text[:s] + text[le + (nxt.end() if nxt else 0):]
         else:
-            ln = lines[e]
-            cut = re.search(r'\s*(//.*|/\*.*\*/\s*)?$', ln)
-            code = ln[:cut.start()] if cut else ln
-            if not code.rstrip().endswith(','):   # 這一拍原本是清單的最後一個 ⇒ 先補逗號
-                c2 = code.rstrip()
-                lines[e] = c2 + ',' + ln[len(c2):]
-            lines.insert(e + 1, new)
-            where = '%s:%d 插入' % (rel, e + 2)
-    _write_lines(rel, lines)
-    return where
+            new = text[:s] + text[after:].lstrip(' \t')   # 行裡還有別的 ⇒ 只拿掉這一拍
+        _write_text(rel, new)
+        return '%s:%d 刪除 %s' % (rel, ln, gone)
+    ind = lead if only_ws_lead else ' ' * len(lead)
+    lit = _beat_literal(req.get('beat') or {})
+    if req.get('where') == 'before':
+        if only_ws_lead:
+            new = text[:ls] + ind + lit + '\n' + text[ls:]
+        else:
+            new = text[:s] + lit + '\n' + ind + text[s:]
+        _write_text(rel, new)
+        return '%s:%d 插入' % (rel, ln)
+    if not comma:                                       # 這一拍原本是清單的最後一個 ⇒ 先補逗號
+        text = text[:e + 1] + ',' + text[e + 1:]
+        after, le = e + 2, le + 1
+        tail = text[after:le]
+        tail_is_comment = (not tail.strip()) or tail.strip().startswith('//') or tail.strip().startswith('/*')
+    if tail_is_comment:
+        new = text[:le] + '\n' + ind + lit + text[le:]
+    else:
+        new = text[:after] + '\n' + ind + lit + ' ' + tail.lstrip() + text[le:]
+    _write_text(rel, new)
+    return '%s:%d 插入' % (rel, ln + 1)
 
 
 def beat_span_patch(req):
@@ -551,15 +594,14 @@ def beat_span_patch(req):
     if (req.get('field') or 'expr') != 'expr':
         raise ValueError('只支援 expr')
     old, new = req.get('old'), req.get('new')
-    rel, s, e, lines, _ = _find_beat(dict(req, mark=None), BEAT_FILES)
+    rel, text, s, e, _, _ = _find_beat(dict(req, mark=None), BEAT_FILES)
     olit = 'null' if old is None else re.escape(_js_str(old))
-    for j in range(s, e + 1):
-        out, n = re.subn(r"expr(\s*):(\s*)" + olit, lambda m: 'expr' + m.group(1) + ':' + m.group(2) + _js_str(new), lines[j], count=1)
-        if n:
-            lines[j] = out
-            _write_lines(rel, lines)
-            return '%s:%d' % (rel, j + 1)
-    raise ValueError('那一拍裡找不到 expr:%s' % ('null' if old is None else _js_str(old)))
+    seg = text[s:e + 1]
+    out, n = re.subn(r"expr(\s*):(\s*)" + olit, lambda m: 'expr' + m.group(1) + ':' + m.group(2) + _js_str(new), seg, count=1)
+    if not n:
+        raise ValueError('那一拍裡找不到 expr:%s' % ('null' if old is None else _js_str(old)))
+    _write_text(rel, text[:s] + out + text[e + 1:])
+    return '%s:%d' % (rel, _line_of(text, s) + 1)
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
