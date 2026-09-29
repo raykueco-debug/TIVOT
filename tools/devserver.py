@@ -284,6 +284,52 @@ def text_patch(req):
 LINE_FILES = ['script/town.js', 'script/mainScript.js']
 
 
+FX_NAME = re.compile(r'^[a-z]+$')
+
+
+def _fx_literal(v):
+    """對話框效果（ver -1870）：None／空 ⇒ None；一個 ⇒ 'fear'；多個 ⇒ ['fear','sweat']。"""
+    vals = [x for x in ([v] if isinstance(v, str) else (v or [])) if isinstance(x, str) and FX_NAME.match(x)]
+    if not vals:
+        return None
+    if len(vals) == 1:
+        return _js_str(vals[0])
+    return '[' + ','.join(_js_str(x) for x in vals) + ']'
+
+
+FX_ANY = r"bubbleFx\s*:\s*(?:'[^']*'|\[[^\]]*\])"
+
+
+def _set_fx(lines, s, e, endcol, value):
+    """把第 s～e 行那一拍的 `bubbleFx` 設成 value（None＝拿掉）。回傳 True＝有改。"""
+    lit = _fx_literal(value)
+    chunk = '\n'.join(lines[s:e + 1])
+    if re.search(FX_ANY, chunk):
+        if lit:
+            chunk2 = re.sub(FX_ANY, 'bubbleFx:' + lit, chunk, count=1)
+        else:
+            chunk2 = re.sub(r"\{\s*" + FX_ANY + r"\s*\}", '{ }', chunk, count=1)   # 唯一的鍵（Object.assign 包的那一種）
+            if chunk2 == chunk:
+                chunk2 = re.sub(r"\s*" + FX_ANY + r"\s*,", '', chunk, count=1)
+            if chunk2 == chunk:
+                chunk2 = re.sub(r"\s*,\s*" + FX_ANY, '', chunk, count=1)
+            chunk2 = re.sub(r"Object\.assign\((.*),\s*\{\s*\}\)", r"\1", chunk2, count=1)
+        lines[s:e + 1] = chunk2.split('\n')
+        return chunk2 != chunk
+    if not lit:
+        return False
+    head = lines[s]
+    col = len(re.match(r'\s*', head).group(0))
+    if head[col] == '{':                        # 物件拍：塞在第一個欄位前面
+        lines[s] = head[:col + 1] + ' bubbleFx:' + lit + ',' + head[col + 1:]
+    else:                                       # 函式拍（ren(...)）：包一層 Object.assign
+        last = lines[e]
+        lines[e] = last[:endcol + 1] + ', { bubbleFx:' + lit + ' })' + last[endcol + 1:]
+        head = lines[s]
+        lines[s] = head[:col] + 'Object.assign(' + head[col:]
+    return True
+
+
 def _beat_literal(b):
     sp = str(b.get('speaker') or 'NARRATION')
     if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', sp):
@@ -295,6 +341,9 @@ def _beat_literal(b):
     ex = b.get('expr')
     if sp not in ('NARRATION', 'PLAYER'):
         out += ", portrait:{ char:" + _js_str(sp) + ", expr:" + ('null' if not ex else _js_str(ex)) + ", show:true }"
+    fx = _fx_literal(b.get('bubbleFx'))
+    if fx:
+        out += ", bubbleFx:" + fx
     return out + " },"
 
 
@@ -340,7 +389,7 @@ def _beat_span(lines, i):
                 if depth == 0:
                     rest = ln[k + 1:]
                     if re.match(r'^\s*,?\s*(//.*|/\*.*\*/\s*)?$', rest):
-                        return (i, j)
+                        return (i, j, k)   # k＝結尾那個括號在第 j 行的欄位（set 要在它後面接東西）
                     return None
             k += 1
         j += 1
@@ -358,7 +407,7 @@ def _find_beat(req, files):
             if lit in ln:
                 sp = _beat_span(lines, i)
                 if sp:
-                    hits.append((rel, sp[0], sp[1], lines))
+                    hits.append((rel, sp[0], sp[1], lines, sp[2]))
 
     def chunk(h):
         return '\n'.join(h[3][h[1]:h[2] + 1])
@@ -389,9 +438,16 @@ def _write_lines(rel, lines):
 
 def line_patch(req):
     op = req.get('op')
-    if op not in ('insert', 'delete'):
-        raise ValueError('op 只能是 insert／delete')
-    rel, s, e, lines = _find_beat(req, LINE_FILES)
+    if op not in ('insert', 'delete', 'set'):
+        raise ValueError('op 只能是 insert／delete／set')
+    rel, s, e, lines, endcol = _find_beat(req, LINE_FILES)
+    if op == 'set':
+        if req.get('key') != 'bubbleFx':
+            raise ValueError('set 只准改 bubbleFx')
+        if not _set_fx(lines, s, e, endcol, req.get('value')):
+            return '%s:%d 沒有變動' % (rel, s + 1)
+        _write_lines(rel, lines)
+        return '%s:%d' % (rel, s + 1)
     if op == 'delete':
         gone = ' '.join(x.strip() for x in lines[s:e + 1])
         del lines[s:e + 1]
@@ -420,7 +476,7 @@ def beat_span_patch(req):
     if (req.get('field') or 'expr') != 'expr':
         raise ValueError('只支援 expr')
     old, new = req.get('old'), req.get('new')
-    rel, s, e, lines = _find_beat(dict(req, mark=None), BEAT_FILES)
+    rel, s, e, lines, _ = _find_beat(dict(req, mark=None), BEAT_FILES)
     olit = 'null' if old is None else re.escape(_js_str(old))
     for j in range(s, e + 1):
         out, n = re.subn(r"expr(\s*):(\s*)" + olit, lambda m: 'expr' + m.group(1) + ':' + m.group(2) + _js_str(new), lines[j], count=1)

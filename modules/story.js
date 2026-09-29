@@ -242,10 +242,50 @@ function tuneCur(side){
      插入／刪除只准動**整拍寫在同一行**的那種、而且只有主線與城鎮兩支腳本。
    ⚠ 面板停在控制區、不蓋演出區：邊改邊看得到立繪；推進／←→ 回播時面板跟著換到新的那一拍。
    ⚠ 插入／刪除同時改記憶體裡的這一段（不必重整就接得上）；回播歷史清空（索引已經錯開了）。 */
+/* ══ 對話框效果（ver -1870，Ray：「為對話框加入抖動（害怕）震動（受擊）效果」「也加入一些其他
+   可能用得到的特效」「三條線、冷汗之類的，可以複選」）══
+   腳本那一拍寫 `bubbleFx:'fear'` 或 `bubbleFx:['fear','sweat']`（複選）。
+   `move` ＝框本身的動作（CSS `bf-<名字>`）、`mark` ＝框左上角的漫畫符號（下面的 SVG）。
+   ⚠ 掛與拔只有 `applyBubbleFx` 一支（鐵律 8）：renderLine 開頭拔、**框真的出現那一刻**掛
+     （受擊那一下在框還藏著時播掉就白震了）。 */
+export const BUBBLE_FX = [
+  ['fear','抖動（害怕）','move'], ['hit','震動（受擊）','move'], ['shout','吶喊','move'],
+  ['whisper','低語','move'], ['weak','虛弱','move'], ['rage','憤怒','move'],
+  ['gloom','三條線','mark'], ['sweat','冷汗','mark'], ['vein','怒筋','mark'],
+  ['exclaim','驚嘆','mark'], ['question','疑問','mark'], ['heart','心動','mark'], ['note','哼歌','mark'],
+];
+const BF_SVG = {
+  gloom:'<path d="M6 3v13M12 3v17M18 3v11" stroke="#9fb3d8" stroke-width="2.2" stroke-linecap="round" fill="none"/>',
+  sweat:'<path d="M12 3C12 3 6 11 6 15a6 6 0 0 0 12 0c0-4-6-12-6-12z" fill="#9fd4ff" stroke="#3d7fb8" stroke-width="1.5"/><ellipse cx="9.6" cy="15" rx="1.3" ry="2.2" fill="#fff" opacity=".85"/>',
+  vein:'<g fill="none" stroke="#e0443c" stroke-width="2.6" stroke-linecap="round"><path d="M4 9q5 0 5-5"/><path d="M15 4q0 5 5 5"/><path d="M20 15q-5 0-5 5"/><path d="M9 20q0-5-5-5"/></g>',
+  exclaim:'<path d="M12 3v11" stroke="#f5d06b" stroke-width="3.2" stroke-linecap="round"/><circle cx="12" cy="19.5" r="2" fill="#f5d06b"/>',
+  question:'<path d="M8 8a4 4 0 1 1 5.5 3.7c-1 .5-1.5 1.2-1.5 2.3v1" fill="none" stroke="#f5d06b" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="19.5" r="1.8" fill="#f5d06b"/>',
+  heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z" fill="#ff7aa2" stroke="#c2185b" stroke-width="1.2"/>',
+  note:'<path d="M9 17V5l10-2v12" fill="none" stroke="#d4a94a" stroke-width="2"/><circle cx="7" cy="17" r="2.5" fill="#d4a94a"/><circle cx="17" cy="15" r="2.5" fill="#d4a94a"/>',
+};
+const BF_KIND = Object.fromEntries(BUBBLE_FX.map(([k,,t])=>[k,t]));
+export function bubbleFxList(line){
+  return [].concat((line && line.bubbleFx) || []).filter(k=>BF_KIND[k]);
+}
+function applyBubbleFx(bub, line){
+  if(!bub) return;
+  for(const [k] of BUBBLE_FX) bub.classList.remove('bf-'+k);
+  const old=bub.querySelector('.bf-marks'); if(old) old.remove();
+  const fx=bubbleFxList(line); if(!fx.length) return;
+  void bub.offsetWidth;   // 同一幀拔了又掛會被合併，一次性的動畫（hit／shout）就不播
+  const marks=[];
+  for(const k of fx){
+    if(BF_KIND[k]==='move') bub.classList.add('bf-'+k);
+    else marks.push('<i class="bf-mark bf-m-'+k+'"><svg viewBox="0 0 24 24">'+BF_SVG[k]+'</svg></i>');
+  }
+  if(fx.indexOf('hit')>=0){ try{ hap.shake(); }catch(_){} }
+  if(marks.length){ const m=document.createElement('div'); m.className='bf-marks'; m.innerHTML=marks.join(''); bub.appendChild(m); }
+}
 let edTab = null;                  // 面板開著時＝目前那一頁；null＝關著
 let edArm = null;                  // 刪除要按兩下
 let edMsg = '';
-const edIns = { where:'after', speaker:null, expr:'', text:'' };
+const edIns = { where:'after', speaker:null, expr:'', text:'', fx:[] };
+let edFx = null;                  // 效果頁正在選的（null＝從這一拍讀）
 function edLine(){ return cur && cur.lines && cur.lines[lineIdx]; }
 function edLocate(){
   const lines=cur.lines, i=lineIdx, line=lines[i];
@@ -258,6 +298,13 @@ function edPost(path, body){
   return fetch(url, { method:'POST', body:JSON.stringify(body) })
     .then(r=>r.text().then(t=>({ ok:r.ok, text:t })))
     .catch(e=>({ ok:false, text:String(e) }));
+}
+/* 插入／刪除之後回播歷史跟著位移（ver -1870，Ray：「插入新的對話後會無法回捲」）——
+   -1868 是整個清空，於是插完就退不回去了。歷史記的是**這一段的第幾拍**，在 `at` 之後的一律 ±1；
+   刪掉的那一拍自己的快照丟掉（它已經不存在了）。 */
+function histShift(at, d){
+  rewindHist = rewindHist.filter(h=>!(h.cur===cur && d<0 && h.idx===at));
+  for(const h of rewindHist) if(h.cur===cur && h.idx>=at + (d<0 ? 1 : 0)) h.idx += d;
 }
 function edSpeakers(){
   const out=[{ id:'NARRATION', name:'旁白' }, { id:'PLAYER', name:'主角（空白框）' }];
@@ -290,7 +337,8 @@ function edClose(){
 function edRender(){
   const p=$('storyEdit'); if(!p || !edTab) return;
   const line=edLine();
-  const tabs=[['text','台詞'],['face','立繪'],['ins','插入'],['del','刪除'],['tune','調整']];
+  const tabs=[['text','台詞'],['face','立繪'],['fx','效果'],['ins','插入'],['del','刪除'],['tune','調整']];
+  const chips=(sel, attr)=>'<div class="ed-chips">'+BUBBLE_FX.map(([k,n,t])=>'<button data-'+attr+'="'+k+'" class="'+(sel.indexOf(k)>=0?'on':'')+(t==='mark'?' mk':'')+'">'+n+'</button>').join('')+'</div>';
   let body='';
   const who = line ? ((line.portrait && line.portrait.char) || line.speaker) : null;
   if(!line) body='<div class="ed-note">現在沒有在播的對白</div>';
@@ -307,6 +355,10 @@ function edRender(){
       : '<div class="ed-note">'+esc(nameOf(who)||who)+'　目前：'+esc(line.portrait.expr||'（基本）')+'　點一張就寫進這一拍</div>'
        +'<div class="ed-grid">'+Object.keys(art.expr||{}).map(k=>{ const s=exprSrc(art,k)||art.base; return s ?
           '<button data-face="'+esc(k)+'" class="'+(k===line.portrait.expr?'on':'')+'"><img loading="lazy" src="'+esc(s)+'"><span>'+esc(k)+'</span></button>' : ''; }).join('')+'</div>';
+  }else if(edTab==='fx'){
+    if(edFx===null) edFx=bubbleFxList(line);
+    body='<div class="ed-note">對話框效果（可複選；點了先預覽，按「套用」才寫進這一拍）</div>'+chips(edFx,'fxk')
+       +'<div class="ed-row"><button data-fxclear>全部取消</button><button data-go="fx" class="ed-go">套用</button></div>';
   }else if(edTab==='ins'){
     const sps=edSpeakers();
     if(!edIns.speaker) edIns.speaker = who && sps.some(x=>x.id===who) ? who : 'NARRATION';
@@ -316,6 +368,7 @@ function edRender(){
        +'<div class="ed-row"><span>說話者</span><select data-sp>'+sps.map(x=>'<option value="'+x.id+'"'+(x.id===edIns.speaker?' selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select></div>'
        +(art ? '<div class="ed-row"><span>差分</span><select data-ex><option value="">（基本）</option>'+ks.map(k=>'<option'+(k===edIns.expr?' selected':'')+'>'+esc(k)+'</option>').join('')+'</select></div>' : '')
        +'<textarea data-it rows="2" placeholder="台詞（空白＝無台詞拍）">'+esc(edIns.text)+'</textarea>'
+       +'<div class="ed-note">對話框效果（可複選）</div>'+chips(edIns.fx,'ifx')
        +'<div class="ed-row"><button data-go="ins" class="ed-go">插入</button></div>';
   }else if(edTab==='del'){
     body='<div class="ed-note">刪掉這一拍：「'+esc(nameOf(line.speaker)||line.speaker||'')+'：'+esc(typeof line.text==='string'?line.text:'（分段台詞）')+'」</div>'
@@ -334,12 +387,17 @@ function edRender(){
   if(host && t){ host.appendChild(t); tuneOn=true; tuneRender(); }
   else if(t && tuneOn){ tuneOn=false; const st=$('storyStage'); if(st && t.parentNode!==st) st.appendChild(t); tuneRender(); }
   p.querySelector('[data-x]').onclick=edClose;
-  p.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{ edTab=b.dataset.tab; edArm=null; edMsg=''; edRender(); });
+  p.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{ edTab=b.dataset.tab; edArm=null; edMsg=''; edFx=null; edRender(); });
   p.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{ edIns.where=b.dataset.w; edRender(); });
   const sp=p.querySelector('[data-sp]'); if(sp) sp.onchange=()=>{ edIns.speaker=sp.value; edIns.expr=''; edIns.text=(p.querySelector('[data-it]')||{}).value||''; edRender(); };
   const ex=p.querySelector('[data-ex]'); if(ex) ex.onchange=()=>{ edIns.expr=ex.value; };
   const it=p.querySelector('[data-it]'); if(it) it.oninput=()=>{ edIns.text=it.value; };
   p.querySelectorAll('[data-face]').forEach(b=>b.onclick=()=>edFace(b.dataset.face));
+  const tog=(arr,k)=>{ const i=arr.indexOf(k); if(i>=0) arr.splice(i,1); else arr.push(k); };
+  p.querySelectorAll('[data-fxk]').forEach(b=>b.onclick=()=>{ tog(edFx,b.dataset.fxk);
+    applyBubbleFx($('storyBubble'), { bubbleFx:edFx }); edRender(); });
+  p.querySelectorAll('[data-ifx]').forEach(b=>b.onclick=()=>{ tog(edIns.fx,b.dataset.ifx); edIns.text=(p.querySelector('[data-it]')||{}).value||''; edRender(); });
+  const fxc=p.querySelector('[data-fxclear]'); if(fxc) fxc.onclick=()=>{ edFx=[]; applyBubbleFx($('storyBubble'), null); edRender(); };
   const go=p.querySelector('[data-go]'); if(go) go.onclick=()=>edGo(go.dataset.go);
 }
 function edDone(r, okMsg){ edMsg = r.ok ? okMsg+'（'+r.text+'）' : '寫入失敗：'+r.text; edRender(); return r; }
@@ -364,27 +422,36 @@ function edGo(what){
       .then(r=>{ if(r.ok){ line.text=v; const t=$('storyText'); if(t && lineIdx===i) t.textContent=lineText(line); } edDone(r, '已改台詞'); });
     return;
   }
+  if(what==='fx'){
+    const v=(edFx||[]).slice(); edMsg='寫入中…'; edRender();
+    edPost('__line', Object.assign({ op:'set', key:'bubbleFx', value:v.length?v:null }, loc)).then(r=>{
+      if(r.ok){ if(v.length) line.bubbleFx = v.length===1 ? v[0] : v; else delete line.bubbleFx; edFx=null; }
+      edDone(r, v.length ? '已套用效果' : '已拿掉效果');
+    });
+    return;
+  }
   if(what==='del'){
     if(edArm!=='del'){ edArm='del'; edRender(); return; }
     edArm=null; edMsg='寫入中…'; edRender();
     edPost('__line', Object.assign({ op:'delete' }, loc)).then(r=>{
-      if(r.ok){ lines.splice(i, 1); rewindHist=[];
+      if(r.ok){ lines.splice(i, 1); histShift(i, -1);
         if(lineIdx===i){ if(i<lines.length){ replaying=true; try{ renderLine(); } finally{ replaying=false; } } else edClose(); } }
       if(edTab) edDone(r, '已刪除');
     });
     return;
   }
   if(what==='ins'){
-    const beat={ speaker:edIns.speaker||'NARRATION', expr:edIns.expr||null, text:edIns.text||'' };
+    const beat={ speaker:edIns.speaker||'NARRATION', expr:edIns.expr||null, text:edIns.text||'', bubbleFx:edIns.fx.slice() };
     edMsg='寫入中…'; edRender();
     edPost('__line', Object.assign({ op:'insert', where:edIns.where, beat }, loc)).then(r=>{
       if(r.ok){
         const sp=beat.speaker, obj = (sp==='PLAYER' && !beat.text) ? { speaker:'PLAYER', blank:true }
           : Object.assign({ speaker:sp, text:beat.text }, (sp!=='NARRATION' && sp!=='PLAYER') ? { portrait:{ char:sp, expr:beat.expr, show:true } } : {});
+        if(obj.speaker && beat.bubbleFx.length && !obj.blank) obj.bubbleFx = beat.bubbleFx.length===1 ? beat.bubbleFx[0] : beat.bubbleFx;
         const at = edIns.where==='before' ? i : i+1;
-        lines.splice(at, 0, obj); rewindHist=[];
+        lines.splice(at, 0, obj); histShift(at, +1);
         if(edIns.where==='before' && lineIdx===i) lineIdx++;   // 還停在原本那一拍
-        edIns.text='';
+        edIns.text=''; edIns.fx=[];
       }
       edDone(r, edIns.where==='before' ? '已插在前面' : '已插在後面（推進就演到它）');
     });
@@ -3010,7 +3077,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1869';
+const KERB_V='?v=1870';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4301,6 +4368,7 @@ function renderLine(){
      留著的話下一個人的框也會是藍的 —— 那正是「持續狀態忘了收」的老坑。 */
   /* ⚠ `.blank`（小氣泡＋「...」，ver -1503）與 `.self` 同一個理由：它是**這一拍**
      的性質，留著的話下一個人的框會縮成一顆小氣泡。兩個一起拔。 */
+  applyBubbleFx(bub2, null);   // 對話框效果是這一拍的性質（ver -1870），出框那一刻才掛
   if(bub2) bub2.classList.remove('self','blank','awk');   // awk：尷尬線（ver -1724），同 blank 是這一拍的性質
   /* ══⚠⚠ **`tiny:true` ＝這一句用極小字**（ver -1511，Ray 的 Stage10-B 稿：
      「距離遠，所以用極小字體」）══
@@ -4332,6 +4400,7 @@ function renderLine(){
          （同 `story.veil` 那條 `offsetWidth` 的理由）。 */
       void bub2.offsetWidth;
       bub2.classList.add('self','blank');   // -1323 主角的顏色 ＋ -1503 小氣泡與「...」
+      applyBubbleFx(bub2, line);
       /* `awk:true` ＝ 稿上的「對話框有尷尬線」（ver -1724，Ray 的 BA・M2 合流稿）：
          小氣泡右上角畫幾條漫畫式的縱線。長相在 CSS（鐵律 1），這裡只掛 class。 */
       if(line.awk) bub2.classList.add('awk');
@@ -4417,9 +4486,11 @@ function renderLine(){
     if(bub2) bub2.style.visibility='hidden';
     waitT=setTimeout(()=>{ waitT=null;
       if(bub2) bub2.style.visibility='';
+      applyBubbleFx(bub2, line);
       if(tx) typeOut(tx, lineText(line)); }, line.delay);
   }else{
     if(bub2) bub2.style.visibility='';
+    applyBubbleFx(bub2, line);
     if(tx) typeOut(tx, lineText(line));
   }
   /* 自動播放／加速：這一句唸完就排下一句。⚠ 掛在 `onTyped` 而不是固定秒數 ——
@@ -4587,6 +4658,7 @@ function advance(){
   if(waitT){
     clearTimeout(waitT); waitT=null;
     const b=$('storyBubble'); if(b) b.style.visibility='';
+    applyBubbleFx(b, line);
     if(tx && line) typeOut(tx, lineText(line));
     return;
   }
@@ -5384,6 +5456,7 @@ function verifyCastCleared(){
      玩家再點一下就換下一句，不會卡在對話裡。 */
 export function flashLine(text, name){
   const bub=$('storyBubble'), nm=$('storyName'), tx=$('storyText');
+  applyBubbleFx(bub, null);   // 路人單句不帶上一拍的效果（ver -1870）
   if(!bub||!tx) return;
   clearInterval(typing); typing=null;
   if(nm) nm.textContent=name||'';

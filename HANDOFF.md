@@ -208,6 +208,8 @@
 · -1866 手機音效常不響的三個根因：① 槍棺 `KERB_SFX` 大寫 `se_Kerberos_*`（檔案是小寫）→ 改小寫＋lint 逐項核對 ② 點擊音／普攻槍聲／槍棺被每道門放掉 → `SFX.addResident`（`releaseAudio` 永不放）③ 城裡打完仗回城，城鎮音效已被戰鬥的門放掉 → `story.sceneAudio()`，戰鬥的門保住它。另 `em_firebeam` 路徑修正。**要 Ray 手機實聽**（桌機 Windows 不分大小寫，①在這台量不出差別）。
 · -1867／-1868 管理人**對話編輯面板**（✎ 開啟，停在控制區；-1869 拿掉舞台左上的「立繪」鈕）：台詞／立繪（換這一拍的差分）／插入（前後、選人選差分）／刪除（按兩下）／調整（原立繪調整＋**水平翻轉** `flip`）。devserver 新增 `/__line`；三支定位（`/__text`／`/__beat`／`/__line`）支援**跨多行的拍子**、前後一拍窗口 6→20 行（`NEAR`）。**要重開 devserver 才有新端點**。
   ⚠ 只做了**劇情／城鎮**的對白；戰鬥內對白（`tutorial.js` 的 ✎）仍只有改台詞。插入／刪除只准動 `script/town.js`／`script/mainScript.js`。
+· -1870 **對話框效果** `bubbleFx`（可寫陣列＝複選）：動作 `fear` 抖動／`hit` 受擊（＋手機震）／`shout`／`whisper`／`weak`／`rage`；框內右上角的漫畫符號 `gloom` 三條線／`sweat` 冷汗／`vein` 怒筋／`exclaim`／`question`／`heart`／`note`。唯一實作 `story.applyBubbleFx`（框真的出現那一刻掛、下一拍拔）；表在 `story.BUBBLE_FX`。編輯面板「效果」頁（預覽→套用）、「插入」頁可帶效果；devserver `/__line` 的 `op:'set'`。插入／刪除後回播不再清空（`histShift`）。既有 `#storyBubble.shake` 改用 `translate`（原本抖的時候蓋掉置中）。
+  ⚠ 只接了**劇情／城鎮**的對話框；戰鬥內對白（`#tutBubble`）與飛行頁還沒有。
 
 # HANDOFF — 截至 `ver 2026.09.22-1864`（09-29，Mac，程式 session）
 

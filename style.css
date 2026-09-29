@@ -3418,13 +3418,61 @@
      （§6.5：「畫面抖一下（對話框不抖）」），所以這一支是它的反面 —— 兩者不共用配方，
      也不會同時掛（`shake:'bubble'` 與 `shake:true` 在 story.js 是 if/else）。
      ⚠ 振幅比全畫面小：框本來就小，同樣的位移在它身上會讀成「框要飛走了」。 */
+  /* ⚠ ver -1870：改用獨立的 `translate` 屬性 —— 原本寫 `transform`，會把框置中用的
+     `translateX(-50%)` 整個蓋掉，抖的那半秒框往右偏半個框寬。下面 `bf-*` 同一個理由。 */
   #storyBubble.shake{ animation:storyBubbleShake .46s cubic-bezier(.36,.07,.19,.97) both; }
   @keyframes storyBubbleShake{
-    10%,90%{transform:translate3d(-2px,0,0)}
-    20%,80%{transform:translate3d(3px,0,0)}
-    30%,50%,70%{transform:translate3d(-4px,0,0)}
-    40%,60%{transform:translate3d(4px,0,0)}
-    100%{transform:none}}
+    10%,90%{translate:-2px 0}
+    20%,80%{translate:3px 0}
+    30%,50%,70%{translate:-4px 0}
+    40%,60%{translate:4px 0}
+    100%{translate:0 0}}
+  /* ══ 對話框效果（ver -1870，Ray：「為對話框加入抖動（害怕）震動（受擊）效果…
+     也加入一些其他可能用得到的特效」）══ 腳本那一拍寫 `bubbleFx:'<名字>'`，
+     class 是 `bf-<名字>`；掛與拔只有 `story.applyBubbleFx` 一支（框真的出現那一刻掛、下一拍拔）。
+     ⚠ 一律動 `translate`／`scale`／`rotate` 這幾個**獨立屬性**，不碰 `transform`（置中靠它）。 */
+  #storyBubble.bf-fear{ animation:bfFear .26s linear infinite; }
+  @keyframes bfFear{
+    0%{translate:0 0} 20%{translate:-1.5px .5px} 40%{translate:1px -1px}
+    60%{translate:-1px 1px} 80%{translate:1.5px 0} 100%{translate:0 0}}
+  #storyBubble.bf-hit{ animation:bfHit .42s cubic-bezier(.2,.8,.3,1) both; }
+  @keyframes bfHit{
+    0%{translate:0 0;scale:1;border-color:#e57373;box-shadow:0 0 0 2px rgba(229,115,115,.7),0 4px 18px rgba(0,0,0,.55)}
+    12%{translate:-9px 5px;scale:1.04}
+    26%{translate:7px -4px}
+    40%{translate:-5px 2px}
+    56%{translate:3px -1px}
+    72%{translate:-1px 0}
+    100%{translate:0 0;scale:1}}
+  #storyBubble.bf-shout{ animation:bfShout .38s cubic-bezier(.3,1.6,.5,1) both; }
+  @keyframes bfShout{ 0%{scale:.86} 45%{scale:1.1} 100%{scale:1} }
+  #storyBubble.bf-shout .story-text{ font-weight:700; letter-spacing:1px; }
+  #storyBubble.bf-whisper{ opacity:.72; border-style:dashed; }
+  #storyBubble.bf-whisper .story-text{ font-size:.86em; opacity:.85; }
+  #storyBubble.bf-weak{ opacity:.8; animation:bfWeak 2.4s ease-in-out infinite; }
+  @keyframes bfWeak{ 0%,100%{translate:0 0;rotate:0deg} 50%{translate:0 3px;rotate:-.6deg} }
+  #storyBubble.bf-rage{ border-color:#c0392b; animation:bfRage .9s ease-in-out infinite; }
+  @keyframes bfRage{
+    0%,100%{box-shadow:0 0 0 1px rgba(192,57,43,.5),0 4px 18px rgba(0,0,0,.55)}
+    50%{box-shadow:0 0 12px 3px rgba(229,80,57,.75),0 4px 18px rgba(0,0,0,.55)}}
+  /* 漫畫符號（ver -1870，Ray：「三條線、冷汗之類的，可以複選」「要在框內，在框右上角」）——
+     框內右上角一排（名字那一行的高度，不壓台詞），SVG 由 `story.applyBubbleFx` 生；每一種自己的小動作。 */
+  #storyBubble .bf-marks{position:absolute;right:10px;top:6px;display:flex;gap:2px;pointer-events:none;z-index:2;}   /* 框內右上角（ver -1870，Ray 指定） */
+  #storyBubble .bf-mark{width:18px;height:18px;display:block;animation:bfPop .28s cubic-bezier(.3,1.7,.5,1) both;}
+  #storyBubble .bf-mark svg{width:100%;height:100%;display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6));}
+  @keyframes bfPop{ 0%{scale:0;opacity:0} 100%{scale:1;opacity:1} }
+  #storyBubble .bf-m-sweat svg{ animation:bfDrip 1.6s ease-in .3s infinite; }
+  @keyframes bfDrip{ 0%{translate:0 0;opacity:1} 70%{translate:0 6px;opacity:1} 100%{translate:0 9px;opacity:0} }
+  #storyBubble .bf-m-vein svg{ animation:bfBeat .7s ease-in-out infinite; }
+  #storyBubble .bf-m-heart svg{ animation:bfBeat 1s ease-in-out infinite; }
+  @keyframes bfBeat{ 0%,100%{scale:1} 30%{scale:1.2} }
+  #storyBubble .bf-m-note svg{ animation:bfFloat 1.4s ease-in-out infinite; }
+  #storyBubble .bf-m-question svg{ animation:bfTilt 1.6s ease-in-out infinite; }
+  @keyframes bfFloat{ 0%,100%{translate:0 0} 50%{translate:0 -3px} }
+  @keyframes bfTilt{ 0%,100%{rotate:-8deg} 50%{rotate:8deg} }
+  @media (prefers-reduced-motion: reduce){
+    #storyBubble[class*="bf-"], #storyBubble .bf-mark, #storyBubble .bf-mark svg{ animation:none; }
+  }
   #storyBubble.self,#tutBubble.self{ background:rgba(6,10,18,.9); border-color:var(--self-dim); }
   #storyBubble.self .story-name,#tutBubble.self .tut-name{ color:var(--self); }
   #storyBubble.self .story-next,#tutBubble.self .tut-next{ color:var(--self); }
@@ -5225,6 +5273,9 @@ body:not(.testmode) #storyTune{display:none !important;}
 #storyEdit .ed-go{color:var(--gold);}
 #storyEdit .ed-danger{color:#e57373;}
 #storyEdit .ed-note{font-size:11px;color:var(--gold-dim);}
+#storyEdit .ed-chips{display:flex;flex-wrap:wrap;gap:5px;}
+#storyEdit .ed-chips button{min-height:30px;padding:0 9px;font-size:12px;}
+#storyEdit .ed-chips button.mk{border-style:dashed;}   /* 漫畫符號那一類 */
 #storyEdit .ed-msg{font-size:12px;color:#8fd18f;}
 #storyEdit .ed-msg.bad{color:#e57373;}
 #storyEdit .ed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px;}
