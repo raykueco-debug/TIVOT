@@ -2863,7 +2863,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1865';
+const KERB_V='?v=1866';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3258,8 +3258,10 @@ function kerbPuff(el){
        1921ms 開始播（Ray：「以槍棺全開為結束，回推播放時間，可與 gear 重疊」）。
    ⚠ 換音檔要**重量這三個數字**（工具：瀏覽器 decodeAudioData 後找峰值與首尾過門檻點）。 */
 const KERB_SE_DIR='resources/audio/se/';
-const KERB_SFX={ pop:'se_Kerberos_pop', gear:'se_Kerberos_gear',
-                 open:'se_Kerberos_open', steam:'se_Kerberos_steam',
+/* ⚠⚠ ver -1866：名字一律小寫＝磁碟上的檔名。這一組是**自己拼路徑**的（不經過 `seSrc` 的轉小寫查表），
+   大寫的 `se_Kerberos_*` 在分大小寫的主機上 404、在不分的主機上又與預載的快取鑰匙對不上 —— 手機上蒸氣音不響就是這個。 */
+const KERB_SFX={ pop:'se_kerberos_pop', gear:'se_kerberos_gear',
+                 open:'se_kerberos_open', steam:'se_kerberos_steam',
                  /* 關門用（ver -366，Ray：「不要有蒸氣，原蒸氣音改為 se_metalclip」）。
                     ⚠ 只用在**關門**那一套；進場那一套維持原樣（Ray 沒要求改）。 */
                  clip:'se_metalclip' };
@@ -3280,6 +3282,8 @@ export function kerbSeSources(){
     out.push(KERB_SE_DIR + KERB_SFX[k] + '.' + (KERB_SFX_EXT[k] || 'm4a'));
   return out;
 }
+/* ver -1866：槍棺在劇情、城鎮、戰鬥三種畫面都會開關 —— 登記成常駐，任何一道門都不放它（載由 loadScene／戰鬥的門做）。 */
+try{ SFX.addResident(kerbSeSources()); }catch(_){}
 const KERB_SE_T={ popPeak:1002, openTail:1921 };
 const KERB_T={ rise:1000, thud:420, rivet:460, arrow:340, lift:1600, open:900 };
 let kerbTimers=[];
@@ -4800,13 +4804,20 @@ const AL_CLOSE_MS = AL_BLANK_MS + AL_FADE_MS;
 /* ⚠ 第三個參數 `onCovered`（ver -1321）＝**讀取頁已經全黑**那一刻。
    「把底下那一層收掉」一律掛在它上面，不要在叫 `loadScene` 的當下就收
    —— 讀取頁是淡入的，提早收就會露出再底下的東西（見 `showLoader` 的說明）。 */
+/* 目前這個場景（劇情／城鎮）那道門載的音訊（ver -1866）。戰鬥是**疊在場景上**的一段，
+   打完回到同一個場景而且不經過讀取頁 —— 戰鬥的門放音訊時要保住這一份（main.enterBattleAssets）。 */
+let _sceneAudio = [];
+export function sceneAudio(){ return _sceneAudio.slice(); }
 export function loadScene(spec, onReady, onCovered){
   spec = spec || {};
   const path = (v, f) => (typeof v === 'string' && v.indexOf('/') < 0) ? f(v) : v;
-  const ses  = (spec.ses  || []).map(v => path(v, seSrc)).filter(Boolean);
+  /* ver -1866：常駐那幾支（槍棺／點擊音）一併載 —— 城鎮的 `TOWN_SE` 裡沒有它們，
+     第一次開棺就得現抓，手機上超過 LATE_PLAY_MS 就整聲不響。已經在的不會重抓。 */
+  const ses  = [...new Set((spec.ses  || []).map(v => path(v, seSrc)).concat(SFX.residents()))].filter(Boolean);
   const bgms = (spec.bgms || []).map(v => path(v, bgmSrc)).filter(Boolean);
   const imgs = (spec.imgs || []).filter(Boolean);
   const warm = typeof spec.warm==='function' ? spec.warm : (spec.warm || []).filter(Boolean);
+  _sceneAudio = ses.concat(bgms);
   try{ SFX.releaseAudio(ses.concat(bgms)); }catch(e){}      // ① 放掉上一個場景
   const ui = showLoader(spec.dest || 'story');
   if(typeof onCovered==='function') ui.covered.then(()=>{ try{ onCovered(); }catch(e){ console.warn('[load] onCovered', e); } });
@@ -4879,7 +4890,7 @@ function runLoadGate(sceneId){
   if(fade){ fade.classList.add('on'); fadeOwner='gate'; }   // 這一塊不給 flushCgFade 收
   /* 上一個場景的音訊放掉（ver -1297，同 `loadScene` 的①）。⚠ `collectAssets` 收的是
      **這一段**要用的，所以 keep 就是它 —— 正在播的那一首由 releaseAudio 自己保住。 */
-  try{ const A=collectAssets(sceneId); SFX.releaseAudio(A.ses.concat(A.bgms.map(b=>bgmSrc(b)||b))); }catch(e){}
+  try{ const A=collectAssets(sceneId); _sceneAudio=A.ses.concat(A.bgms.map(b=>bgmSrc(b)||b)); SFX.releaseAudio(_sceneAudio); }catch(e){}
   const ui=showLoader('story');
   const t0=Date.now();
   preloadStory(sceneId, p=>ui.set(p)).then(()=>{

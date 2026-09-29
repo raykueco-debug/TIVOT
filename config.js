@@ -83,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1865';
+export const VERSION = 'ver 2026.09.22-1866';
 
 export const GAME_CONFIG = {
 
@@ -4325,7 +4325,7 @@ export const ASSETS = {
      ⚠⚠ 它**放在 `bgm/` 資料夾而且還是 `.mp3`** —— 那是 SE，照 §6.6 應該是
        `se/se_enemy_firebeam.m4a`。**我沒有搬**（搬檔要走 `tools/audio_reorg.py`，
        而且那是 Ray 放的位置）—— 已回報；搬了之後只要改這一行。 */
-  em_firebeam:      "resources/audio/bgm/enemy_firebeam.mp3",
+  em_firebeam:      "resources/audio/se/se_enemy_firebeam.mp3",   // ver -1866：檔已在 se/，舊路徑 404
   /* ⚠ 放光的音效（ver -1449，Ray：「音效用 se_enemy_holyburst」）——
      取代 -1351 起沿用的 `em_firebeam`。⚠ 它走 `playCue` 的把手（有頭有尾、收得掉），
      不是 `HITFX[].se`（那張表是一次性受擊音，combat 會直接播到底）。

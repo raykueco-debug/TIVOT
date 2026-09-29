@@ -313,7 +313,12 @@ function battleAudioSet(battleId){
    （見下），名字再叫 Audio 就是說謊。順序照 §6.6：**音效 → 圖 →（音樂隨 BGM 自己來）**。 */
 function enterBattleAssets(battleId){
   let set=[]; try{ set = battleAudioSet(battleId); }catch(e){ console.warn('[load] battleAudioSet', e); return; }
-  try{ const r = SFX.releaseAudio(set);
+  /* ver -1866：常駐那幾支（槍棺／點擊音／普攻槍聲）一併載；放的時候保住**底下那個場景**的
+     （城鎮／劇情）—— 打完是直接回那個場景、不經過讀取頁，放掉了就沒人載回來
+     （實測：城裡打一場之後走路聲、買東西聲在手機上全部不響）。 */
+  for(const s of SFX.residents()) if(set.indexOf(s)<0) set.push(s);
+  let under=[]; try{ under = story.sceneAudio(); }catch(_){}
+  try{ const r = SFX.releaseAudio(set.concat(under));
        if(r && (r.sfx||r.bgm)) console.log('[load] 進戰鬥，放掉音訊', r, SFX.audioHeld()); }catch(_){}
   try{ SFX.preload(set).catch(()=>{}); }catch(_){}
   /* 這一場的敵人立繪（ver -1414）：**推棺之前**就暖起來，門一開牠已經在那裡。

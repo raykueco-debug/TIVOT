@@ -16,6 +16,7 @@ let _needRebuild = false;   // 上次手勢 resume 沒生效（iOS 主畫面 App
 let _unlockChk = null;      // resume 生效檢查計時器
 const _buffers = {};   // src → AudioBuffer（已解碼；AudioBuffer 不綁 context，重建後仍可播）
 const _pending = {};   // src → Promise（解碼中，避免重複 fetch）
+const _resident = new Set();   // releaseAudio 永遠不放的（見 SFX.addResident）
 
 /* ── SFX 主匯流 limiter ──
  *  所有 SFX（音檔 + 合成音）先進 DynamicsCompressor 再到 destination：
@@ -580,7 +581,7 @@ export const SFX = {
     const K = keep instanceof Set ? keep : new Set(keep || []);
     let sfxN = 0, bgmN = 0;
     for(const src in _buffers){
-      if(K.has(src) || _pending[src]) continue;
+      if(K.has(src) || _pending[src] || _resident.has(src)) continue;
       delete _buffers[src]; sfxN++;
     }
     for(const src in _bgmBlob){
@@ -668,7 +669,8 @@ export const SFX = {
   setVoiceDuck(cfg){ if(cfg) _duck = Object.assign({}, _duck, cfg); },
 
   // 設定普攻槍聲候選（傳已解析路徑陣列，gunshot 隨機播其一；vol＝播放增益，未傳＝1）
-  setShots(srcs, vol){ _shots = (srcs || []).filter(Boolean); _shotsVol = (vol==null ? 1 : vol); },
+  setShots(srcs, vol){ _shots = (srcs || []).filter(Boolean); _shotsVol = (vol==null ? 1 : vol);
+    for(const s of _shots) _resident.add(s); },
   // 全域主音量（0~1）：SFX/合成音經 limiter 後的主音量節縮放、BGM 於各寫入點乘上係數。
   //   呼叫端（main.js）開機時從 config（tuning.masterVolume）設定；本模組維持葉節點不讀 config。
   /* 分軌音量（ver -397）：`'bgm' | 'se' | 'vo'`，0~1。玩家的偏好，與 config 的
@@ -783,8 +785,15 @@ export const SFX = {
   // 通用按鈕音：main.js 以 setMenuClick 注入檔案（GeneralClick_SE）——所有未指定
   //   音效的按鈕（bindBtn/選單/對話推進）皆經 menuClick 出聲；未注入前維持無聲。
   //   （本模組維持葉節點不讀 config，檔案路徑/增益由呼叫端解析注入。）
-  setMenuClick(src, gain){ _menuClickSrc = src || null; _menuClickGain = (gain==null ? 1 : gain); },
+  setMenuClick(src, gain){ _menuClickSrc = src || null; _menuClickGain = (gain==null ? 1 : gain);
+    if(_menuClickSrc) _resident.add(_menuClickSrc); },
   menuClick(){ if(_menuClickSrc) playSrc(_menuClickSrc, _menuClickGain); },
+  /* ══ 常駐音效（ver -1866）══ `releaseAudio` 永遠不放的那幾支：**不屬於任何一個畫面**、
+     到處都會響的（點擊音、普攻槍聲、槍棺）。登記不會載它 —— 載照舊由各畫面的門做，
+     這裡只保證「載過一次就不會被下一道門放掉」。
+     ⚠ 只准放**又短又到處都用**的東西：放進來就等於退出讀取分工（鐵律 13）。 */
+  addResident(srcs){ for(const s of [].concat(srcs||[])) if(s) _resident.add(s); },
+  residents(){ return [..._resident]; },
 };
 let _menuClickSrc = null, _menuClickGain = 1;
 

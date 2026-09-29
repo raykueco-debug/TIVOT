@@ -271,6 +271,20 @@ def check_lowercase_assets():
                     err('%s：素材路徑有大寫 —— %s（檔名一律小寫，ver -1554）' % (rel, a))
                 elif a not in real:
                     warn('%s：素材路徑對不到檔案 —— %s' % (rel, a))
+    # ⚠ ver -1866：**拼出來的路徑**上面掃不到 —— 槍棺那五支是 `KERB_SE_DIR + 名字 + '.m4a'`，
+    #   名字寫成 `se_Kerberos_steam` 整整一輪沒人發現（手機上蒸氣音不響）。那一張表逐項對一次。
+    sp = os.path.join(ROOT, 'modules', 'story.js')
+    try:
+        txt = open(sp, encoding='utf-8').read()
+        m = re.search(r'const KERB_SFX\s*=\s*\{(.*?)\};', txt, re.S)
+        for k, v in re.findall(r"(\w+)\s*:\s*'([^']+)'", m.group(1) if m else ''):
+            p = 'resources/audio/se/%s.m4a' % v
+            if v != v.lower():
+                err('modules/story.js：KERB_SFX.%s 有大寫 —— %s（拼出來的路徑，檔名一律小寫）' % (k, v))
+            elif p not in real:
+                err('modules/story.js：KERB_SFX.%s 對不到檔案 —— %s' % (k, p))
+    except Exception as e:
+        warn('KERB_SFX 檢查跑不起來：%s' % e)
 
 # 好感表上真的有的四個人（`script/progress.js` 的 AFFECTION 那一族）。
 AFF_KEYS = {'renna', 'nouvelle', 'sorana', 'anya'}
