@@ -5211,6 +5211,32 @@
 #storyTune .tn-who button{flex:1;}
 #storyTune .tn-path{font-size:11px;color:var(--gold-dim);}
 body:not(.testmode) #storyTuneBtn, body:not(.testmode) #storyTune{display:none !important;}
+/* ══ 對話編輯面板（ver -1866，`story.storyEditor`）══ 停在控制區，不蓋演出區（邊改邊看立繪）。 */
+#storyEdit{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);z-index:26;
+  max-height:calc(100% - var(--story-top,56%) - 8px);overflow-y:auto;display:flex;flex-direction:column;gap:6px;
+  padding:10px;border-radius:10px;background:rgba(12,9,18,.96);border:1px solid var(--gold-dim);color:var(--ink);font-size:13px;}
+#storyEdit .ed-head{display:flex;gap:4px;}
+#storyEdit .ed-head button{flex:1;}
+#storyEdit .ed-head [data-x]{flex:0 0 40px;}
+#storyEdit button{min-height:34px;font:inherit;color:var(--ink);background:rgba(40,32,56,.9);border:1px solid var(--gold-dim);border-radius:7px;}
+#storyEdit button.on{color:#120f1a;background:var(--gold);}
+#storyEdit .ed-row{display:flex;align-items:center;gap:6px;}
+#storyEdit .ed-row > span{flex:0 0 3.5em;letter-spacing:1px;}
+#storyEdit .ed-row > button{flex:1;}
+#storyEdit select{flex:1;min-width:0;min-height:32px;font:inherit;color:var(--ink);background:#1a1426;border:1px solid var(--gold-dim);border-radius:6px;}
+#storyEdit textarea{font:inherit;color:var(--ink);background:#1a1426;border:1px solid var(--gold-dim);border-radius:6px;padding:6px;resize:vertical;}
+#storyEdit .ed-go{color:var(--gold);}
+#storyEdit .ed-danger{color:#e57373;}
+#storyEdit .ed-note{font-size:11px;color:var(--gold-dim);}
+#storyEdit .ed-msg{font-size:12px;color:#8fd18f;}
+#storyEdit .ed-msg.bad{color:#e57373;}
+#storyEdit .ed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px;}
+#storyEdit .ed-grid button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px;font-size:10px;}
+#storyEdit .ed-grid img{width:64px;height:80px;object-fit:cover;object-position:50% 0;}
+#storyEdit .ed-grid span{word-break:break-all;}
+/* 搬進來的立繪調整面板：跟著面板排，不再自己浮在底部 */
+#storyEdit #storyTune{position:static;display:flex;padding:0;border:0;background:none;}
+body:not(.testmode) #storyEdit{display:none !important;}
 
 /* ══ 立繪調整區的選單（ver -1819，main.js 的 `tuneHub`）══ */
 #tuneSheet{position:fixed;inset:0;z-index:9800;display:flex;align-items:center;justify-content:center;

@@ -230,30 +230,177 @@ function tuneCur(side){
   const f=Object.assign({}, frameOf(id, slotExpr[side]) || {}, tuneLive[tk.key] || {});
   return { id, tk, f };
 }
-/* 改這一句台詞（ver -1828，管理人：對話框右上角的 ✎）。改的是**原始台詞**（`{N}`／`{P}` 照原樣），
-   用「原台詞＋這一拍的差分＋前後一拍」在腳本檔裡定位那一行（`/__text`）。 */
-function storyEditLine(){
-  const line = cur && cur.lines && cur.lines[lineIdx]; if(!line) return;
-  const lines=cur.lines, i=lineIdx;
-  if(line.textByTier || typeof line.text!=='string'){
-    beatPick.openTextEditor({ title:'改台詞', text:'', note:'⚠ 這一句是依好感分段的台詞（textByTier），請直接改腳本檔' }); return; }
-  beatPick.openTextEditor({
-    title:'改台詞：'+(nameOf(line.speaker)||line.speaker||''),
-    note:'原始台詞（{N}／{P} 等代換照原樣保留）',
-    text: line.text,
-    onSave:(v)=>beatPick.postText({ text:line.text, new:v,
-        mark:(line.portrait && typeof line.portrait.expr==='string') ? line.portrait.expr : undefined,
-        prev: lines[i-1] ? (lines[i-1].text||'') : undefined, next: lines[i+1] ? (lines[i+1].text||'') : undefined })
-      .then(r=>{ if(r.ok){ line.text=v; const t=$('storyText'); if(t && lineIdx===i) t.textContent=lineText(line); } return r; }) });
+/* ══ 對話編輯（ver -1828 改台詞 → **ver -1866 擴成整合面板**，Ray：「除了編輯對話，也加入插入、刪除
+   對話功能，同時在該功能下可選立繪，立繪編輯也整合進去，並且加入水平翻轉功能」）══
+   對話框右上角的 ✎（或舞台左上的「立繪」鈕）打開**同一張**面板，五頁：
+     台詞 ─ 改這一拍的原始台詞（`/__text`，{N}／{P} 照原樣）
+     立繪 ─ 換這一拍說話者的差分（`/__beat`，改的是**這一拍自己那一行**）
+     插入 ─ 在這一拍前／後插一拍：選人、選差分、打台詞（`/__line`）
+     刪除 ─ 刪掉這一拍（`/__line`，按兩下確認）
+     調整 ─ 原本的立繪調整（cm／上下／左右＋**水平翻轉**，`/__tune` 寫 speakers.js）
+   ⚠ 定位一律是「原台詞＋差分＋前後一拍」要剛好一行，找不到或不只一行伺服器就拒絕（不猜）；
+     插入／刪除只准動**整拍寫在同一行**的那種、而且只有主線與城鎮兩支腳本。
+   ⚠ 面板停在控制區、不蓋演出區：邊改邊看得到立繪；推進／←→ 回播時面板跟著換到新的那一拍。
+   ⚠ 插入／刪除同時改記憶體裡的這一段（不必重整就接得上）；回播歷史清空（索引已經錯開了）。 */
+let edTab = null;                  // 面板開著時＝目前那一頁；null＝關著
+let edArm = null;                  // 刪除要按兩下
+let edMsg = '';
+const edIns = { where:'after', speaker:null, expr:'', text:'' };
+function edLine(){ return cur && cur.lines && cur.lines[lineIdx]; }
+function edLocate(){
+  const lines=cur.lines, i=lineIdx, line=lines[i];
+  return { text: typeof line.text==='string' ? line.text : '',
+           mark:(line.portrait && typeof line.portrait.expr==='string') ? line.portrait.expr : undefined,
+           prev: lines[i-1] ? (lines[i-1].text||'') : undefined, next: lines[i+1] ? (lines[i+1].text||'') : undefined };
+}
+function edPost(path, body){
+  const url=new URL(path, new URL('../', import.meta.url)).pathname;
+  return fetch(url, { method:'POST', body:JSON.stringify(body) })
+    .then(r=>r.text().then(t=>({ ok:r.ok, text:t })))
+    .catch(e=>({ ok:false, text:String(e) }));
+}
+function edSpeakers(){
+  const out=[{ id:'NARRATION', name:'旁白' }, { id:'PLAYER', name:'主角（空白框）' }];
+  for(const id of Object.keys(SPEAKERS)){
+    if(id==='NARRATION' || id==='PLAYER' || !artOf(id)) continue;
+    out.push({ id, name:(nameOf(id)||id)+'　'+id });
+  }
+  return out;
+}
+const esc = s=>String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+export function storyEditor(tab){
+  if(!document.body.classList.contains('testmode') || studioOn) return;
+  const st=$('storyStage'); if(!st) return;
+  let p=$('storyEdit');
+  if(!p){
+    p=document.createElement('div'); p.id='storyEdit';
+    ['pointerdown','pointerup','click','touchstart','keydown','keyup','wheel','contextmenu'].forEach(ev=>p.addEventListener(ev, e=>e.stopPropagation()));
+    st.appendChild(p);
+  }
+  edTab = tab || edTab || 'text'; edArm=null; edMsg='';
+  edRender();
+}
+function edClose(){
+  edTab=null; tuneOn=false;
+  const t=$('storyTune'), st=$('storyStage');
+  if(t && st && t.parentNode!==st) st.appendChild(t);   // 還給舞台（工作室模式還要用它）
+  const p=$('storyEdit'); if(p) p.remove();
+  tuneRender();
+}
+function edRender(){
+  const p=$('storyEdit'); if(!p || !edTab) return;
+  const line=edLine();
+  const tabs=[['text','台詞'],['face','立繪'],['ins','插入'],['del','刪除'],['tune','調整']];
+  let body='';
+  const who = line ? ((line.portrait && line.portrait.char) || line.speaker) : null;
+  if(!line) body='<div class="ed-note">現在沒有在播的對白</div>';
+  else if(edTab==='text'){
+    body = (line.textByTier || typeof line.text!=='string')
+      ? '<div class="ed-note">⚠ 這一句依好感分段（textByTier），請直接改腳本檔</div>'
+      : '<div class="ed-note">原始台詞（{N}／{P} 代換照原樣）</div><textarea data-t rows="3">'+esc(line.text)+'</textarea>'
+       +'<div class="ed-row"><button data-go="text" class="ed-go">存檔</button></div>';
+  }else if(edTab==='face'){
+    const art=who && artOf(who);
+    const hasP=line.portrait && line.portrait.expr!==undefined;
+    body = !art ? '<div class="ed-note">這一拍的說話者沒有立繪</div>'
+      : !hasP ? '<div class="ed-note">⚠ 這一拍沒有寫立繪（沿用前面的）—— 要換的話對台上的人按右鍵，改的是設定那張的那一拍</div>'
+      : '<div class="ed-note">'+esc(nameOf(who)||who)+'　目前：'+esc(line.portrait.expr||'（基本）')+'　點一張就寫進這一拍</div>'
+       +'<div class="ed-grid">'+Object.keys(art.expr||{}).map(k=>{ const s=exprSrc(art,k)||art.base; return s ?
+          '<button data-face="'+esc(k)+'" class="'+(k===line.portrait.expr?'on':'')+'"><img loading="lazy" src="'+esc(s)+'"><span>'+esc(k)+'</span></button>' : ''; }).join('')+'</div>';
+  }else if(edTab==='ins'){
+    const sps=edSpeakers();
+    if(!edIns.speaker) edIns.speaker = who && sps.some(x=>x.id===who) ? who : 'NARRATION';
+    const art=artOf(edIns.speaker), ks=art ? Object.keys(art.expr||{}) : [];
+    body='<div class="ed-row"><button data-w="before" class="'+(edIns.where==='before'?'on':'')+'">插在這一拍前</button>'
+       +'<button data-w="after" class="'+(edIns.where==='after'?'on':'')+'">插在這一拍後</button></div>'
+       +'<div class="ed-row"><span>說話者</span><select data-sp>'+sps.map(x=>'<option value="'+x.id+'"'+(x.id===edIns.speaker?' selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select></div>'
+       +(art ? '<div class="ed-row"><span>差分</span><select data-ex><option value="">（基本）</option>'+ks.map(k=>'<option'+(k===edIns.expr?' selected':'')+'>'+esc(k)+'</option>').join('')+'</select></div>' : '')
+       +'<textarea data-it rows="2" placeholder="台詞（空白＝無台詞拍）">'+esc(edIns.text)+'</textarea>'
+       +'<div class="ed-row"><button data-go="ins" class="ed-go">插入</button></div>';
+  }else if(edTab==='del'){
+    body='<div class="ed-note">刪掉這一拍：「'+esc(nameOf(line.speaker)||line.speaker||'')+'：'+esc(typeof line.text==='string'?line.text:'（分段台詞）')+'」</div>'
+       +'<div class="ed-row"><button data-go="del" class="ed-go ed-danger">'+(edArm==='del'?'確認刪除？':'刪除這一拍')+'</button></div>';
+  }else if(edTab==='tune'){
+    body='<div data-tunehost></div>';
+  }
+  /* ⚠ 重畫前先把立繪調整面板還給舞台 —— 它若還在上一次的 tunehost 裡，innerHTML 會把它一起銷毀。 */
+  { const t0=$('storyTune'), st=$('storyStage'); if(t0 && st && p.contains(t0)) st.appendChild(t0); }
+  p.innerHTML='<div class="ed-head">'+tabs.map(([k,n])=>'<button data-tab="'+k+'" class="'+(k===edTab?'on':'')+'">'+n+'</button>').join('')
+    +'<button data-x>✕</button></div>'
+    +(line ? '<div class="ed-note">第 '+(lineIdx+1)+' 拍・'+esc(nameOf(line.speaker)||line.speaker||'（演出拍）')+'</div>' : '')
+    +body+(edMsg ? '<div class="ed-msg'+(/失敗|⚠/.test(edMsg)?' bad':'')+'">'+esc(edMsg)+'</div>' : '');
+  /* 調整頁：把原本那張立繪調整面板搬進來（同一份實作，鐵律 8）。 */
+  const t=$('storyTune'), host=p.querySelector('[data-tunehost]');
+  if(host && t){ host.appendChild(t); tuneOn=true; tuneRender(); }
+  else if(t && tuneOn){ tuneOn=false; const st=$('storyStage'); if(st && t.parentNode!==st) st.appendChild(t); tuneRender(); }
+  p.querySelector('[data-x]').onclick=edClose;
+  p.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{ edTab=b.dataset.tab; edArm=null; edMsg=''; edRender(); });
+  p.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{ edIns.where=b.dataset.w; edRender(); });
+  const sp=p.querySelector('[data-sp]'); if(sp) sp.onchange=()=>{ edIns.speaker=sp.value; edIns.expr=''; edIns.text=(p.querySelector('[data-it]')||{}).value||''; edRender(); };
+  const ex=p.querySelector('[data-ex]'); if(ex) ex.onchange=()=>{ edIns.expr=ex.value; };
+  const it=p.querySelector('[data-it]'); if(it) it.oninput=()=>{ edIns.text=it.value; };
+  p.querySelectorAll('[data-face]').forEach(b=>b.onclick=()=>edFace(b.dataset.face));
+  const go=p.querySelector('[data-go]'); if(go) go.onclick=()=>edGo(go.dataset.go);
+}
+function edDone(r, okMsg){ edMsg = r.ok ? okMsg+'（'+r.text+'）' : '寫入失敗：'+r.text; edRender(); return r; }
+function edFace(k){
+  const line=edLine(); if(!line || !line.portrait) return;
+  const who=line.portrait.char || line.speaker, loc=edLocate(), i=lineIdx;
+  edMsg='寫入中…'; edRender();
+  edPost('__beat', { text:loc.text, old:line.portrait.expr==null?null:line.portrait.expr, new:k, field:'expr', prev:loc.prev, next:loc.next })
+    .then(r=>{
+      if(r.ok){ line.portrait.expr=k;
+        if(lineIdx===i){ const sd=['L','R'].find(s=>slot[s]===who); if(sd){ ensureOn(who, k); if(shown[who]) shown[who].expr=k; layout(); } } }
+      edDone(r, '已換差分');
+    });
+}
+function edGo(what){
+  const line=edLine(); if(!line) return;
+  const loc=edLocate(), i=lineIdx, lines=cur.lines;
+  if(what==='text'){
+    const ta=$('storyEdit').querySelector('[data-t]'); if(!ta || ta.value===line.text) return;
+    const v=ta.value; edMsg='寫入中…'; edRender();
+    edPost('__text', { text:line.text, new:v, mark:loc.mark, prev:loc.prev, next:loc.next })
+      .then(r=>{ if(r.ok){ line.text=v; const t=$('storyText'); if(t && lineIdx===i) t.textContent=lineText(line); } edDone(r, '已改台詞'); });
+    return;
+  }
+  if(what==='del'){
+    if(edArm!=='del'){ edArm='del'; edRender(); return; }
+    edArm=null; edMsg='寫入中…'; edRender();
+    edPost('__line', Object.assign({ op:'delete' }, loc)).then(r=>{
+      if(r.ok){ lines.splice(i, 1); rewindHist=[];
+        if(lineIdx===i){ if(i<lines.length){ replaying=true; try{ renderLine(); } finally{ replaying=false; } } else edClose(); } }
+      if(edTab) edDone(r, '已刪除');
+    });
+    return;
+  }
+  if(what==='ins'){
+    const beat={ speaker:edIns.speaker||'NARRATION', expr:edIns.expr||null, text:edIns.text||'' };
+    edMsg='寫入中…'; edRender();
+    edPost('__line', Object.assign({ op:'insert', where:edIns.where, beat }, loc)).then(r=>{
+      if(r.ok){
+        const sp=beat.speaker, obj = (sp==='PLAYER' && !beat.text) ? { speaker:'PLAYER', blank:true }
+          : Object.assign({ speaker:sp, text:beat.text }, (sp!=='NARRATION' && sp!=='PLAYER') ? { portrait:{ char:sp, expr:beat.expr, show:true } } : {});
+        const at = edIns.where==='before' ? i : i+1;
+        lines.splice(at, 0, obj); rewindHist=[];
+        if(edIns.where==='before' && lineIdx===i) lineIdx++;   // 還停在原本那一拍
+        edIns.text='';
+      }
+      edDone(r, edIns.where==='before' ? '已插在前面' : '已插在後面（推進就演到它）');
+    });
+  }
 }
 function tuneEnsure(){
   if(!document.body.classList.contains('testmode')) return;
-  beatPick.ensureEditBtn($('storyBubble'), storyEditLine);
+  beatPick.ensureEditBtn($('storyBubble'), ()=>storyEditor('text'));
+  if(edTab && !studioOn) edRender();   // 面板開著：跟著換到這一拍
   const st=$('storyStage'); if(!st || $('storyTuneBtn')) return;
   const b=document.createElement('button'); b.id='storyTuneBtn'; b.type='button'; b.textContent='立繪';
   const stop=e=>e.stopPropagation();
   b.addEventListener('pointerdown', stop);
-  b.addEventListener('click', e=>{ e.stopPropagation(); tuneOn=!tuneOn; tuneRender(); });
+  b.addEventListener('click', e=>{ e.stopPropagation();
+    if(studioOn){ tuneOn=!tuneOn; tuneRender(); return; }
+    if(edTab==='tune') edClose(); else storyEditor('tune'); });
   st.appendChild(b);
   const p=document.createElement('div'); p.id='storyTune';
   ['pointerdown','pointerup','click','touchstart'].forEach(ev=>p.addEventListener(ev, stop));
@@ -294,6 +441,8 @@ function tuneRender(){
    +'<div class="tn-row"><span>大小 cm</span><input data-in="cm" type="number" step="1" value="'+n(c.f.cm)+'"><button data-k="cm" data-d="-1">－</button><button data-k="cm" data-d="1">＋</button></div>'
    +'<div class="tn-row"><span>上下</span><input data-in="yShift" type="number" step="1" value="'+n(c.f.yShift||0)+'"><button data-k="yShift" data-d="1">↑</button><button data-k="yShift" data-d="-1">↓</button></div>'
    +'<div class="tn-row"><span>左右</span><input data-in="fxShift" type="number" step="0.005" value="'+n(c.f.fxShift||0)+'"><button data-k="fxShift" data-d="0.005">←</button><button data-k="fxShift" data-d="-0.005">→</button></div>'
+   /* 水平翻轉（ver -1866）＝這一張的 `flip`（一律翻，同 speakers.js 既有的欄位）；存檔照「儲存」寫進去。 */
+   +'<div class="tn-row"><span>水平翻轉</span><button data-act="flip" class="'+(c.f.flip?'on':'')+'">'+(c.f.flip?'翻轉中':'未翻轉')+'</button></div>'
    +'<div class="tn-row"><button data-act="big" class="'+(tuneBig?'on':'')+'">步進×5</button>'
    +'<button data-act="undo"'+(live?'':' disabled')+'>還原</button>'
    +'<button data-act="save" class="tn-save"'+(live?'':' disabled')+'>'+(c && tuneArm===c.tk.key ? '確認寫入？' : '儲存')+'</button>'
@@ -325,6 +474,8 @@ function tuneRender(){
       tuneLive[cur.tk.key]=L; tuneArm=null; tuneMsg=''; layout(); return tuneRender();
     }
     if(act==='big'){ tuneBig=!tuneBig; return tuneRender(); }
+    if(act==='flip'){ const L=Object.assign({}, tuneLive[cur.tk.key] || {}); L.flip=!cur.f.flip;
+      tuneLive[cur.tk.key]=L; tuneArm=null; tuneMsg=''; layout(); return tuneRender(); }
     if(act==='undo'){ delete tuneLive[cur.tk.key]; layout(); return tuneRender(); }
     if(act==='save') tuneSave(cur);
     if(act==='std') tuneStd(cur);
@@ -2863,7 +3014,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1866';
+const KERB_V='?v=1868';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -5043,6 +5194,7 @@ let townOpener = null;
 export function setTownOpener(fn){ townOpener = fn || null; }
 
 export function close(opts){
+  if(edTab) edClose();   // 管理人的對話編輯面板（ver -1866）
   stopShake(); stopQuake(); stopTint(); stopSenseBurst();   // 離場一定停（跨句演出的出口，-638／-664／-1185）
   clearInterval(typing); typing=null;
   pendingReveal=null;                // ⚠ 離場：還沒演的那一拍**丟掉**（同 playScene，ver -430）

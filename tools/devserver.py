@@ -54,7 +54,8 @@ TUNE_FILE = 'script/speakers.js'
 # body 可以帶 `"file"`，只准這兩個。⚠ ver -1833 起飛行頁直接讀 speakers.js（不再有自己的取景表），
 # 立繪調整只寫 speakers.js；flight/index.html 留在白名單裡是給舊請求不報錯用的。
 TUNE_FILES = {'script/speakers.js', 'flight/index.html'}
-TUNE_KEYS = {'cm': 1, 'standCm': 1, 'yShift': 1, 'fxShift': 3}   # 欄位 → 小數位數（standCm：ver -1827，兩份取景的頭頂要同一個數字）
+TUNE_KEYS = {'cm': 1, 'standCm': 1, 'yShift': 1, 'fxShift': 3}
+TUNE_BOOL = {'flip'}   # ver -1866：水平翻轉（這一張一律翻，同 speakers.js 既有的 `flip:true`；寫 false＝蓋掉角色層的 true）   # 欄位 → 小數位數（standCm：ver -1827，兩份取景的頭頂要同一個數字）
 
 
 def _depth_map(text, start):
@@ -130,14 +131,19 @@ def _patch_at(text, at, needle, sets):
         raise ValueError('物件沒有收尾')
     body = text[start:end + 1]
     for k, v in sets.items():
-        if k not in TUNE_KEYS or v is None:
+        if (k not in TUNE_KEYS and k not in TUNE_BOOL) or v is None:
             continue
-        val = ('%.' + str(TUNE_KEYS[k]) + 'f') % float(v)
-        val = val.rstrip('0').rstrip('.') if '.' in val else val
-        if val in ('', '-0'):
-            val = '0'
+        if k in TUNE_BOOL:
+            val = 'true' if v else 'false'
+            vre = r'(?:true|false)'
+        else:
+            val = ('%.' + str(TUNE_KEYS[k]) + 'f') % float(v)
+            val = val.rstrip('0').rstrip('.') if '.' in val else val
+            if val in ('', '-0'):
+                val = '0'
+            vre = r'-?[\d.]+'
         hit = None
-        for m in re.finditer(r'\b' + k + r'\s*:\s*-?[\d.]+', body):
+        for m in re.finditer(r'\b' + k + r'\s*:\s*' + vre, body):
             if (start + m.start()) in top:
                 hit = m
                 break
@@ -160,6 +166,8 @@ def _patch_at(text, at, needle, sets):
 # 還是不只一行（或一行都沒有）⇒ 409，不猜。只改那一行的差分字面：
 #   field=expr：`expr:'舊'` → `expr:'新'`，或輔助函式的第一個參數 `ren('舊',` → `ren('新',`（舊＝null 也吃）
 #   field=img ：`img:'舊'` → `img:'新'`（戰鬥內對白）
+# 前後一拍往外找幾行（ver -1866 由 6 放寬：拍子之間常隔著一大段註解，實測主線開場「啊！」與下一拍隔 11 行）。
+NEAR = 20
 BEAT_FILES = ['script/town.js', 'script/mainScript.js', 'config.js', 'script/evaluation.js',
               'flight/talks.js', 'flight/index.html']   # 飛行對白（ver -1827）：field=who ⇒ `who:'renna/relief'`
 
@@ -210,7 +218,7 @@ def beat_patch(req):
         lit = _js_str(t)
         return any(lit in h[2][j] for j in range(max(0, h[1] + lo), min(len(h[2]), h[1] + hi + 1)) if j != h[1])
     if len(hits) > 1:
-        hits = [h for h in hits if near(h, req.get('prev'), -6, -1) and near(h, req.get('next'), 1, 6)]
+        hits = [h for h in hits if near(h, req.get('prev'), -NEAR, -1) and near(h, req.get('next'), 1, NEAR)]
     if len(hits) != 1:
         raise ValueError('找到 %d 行符合（要剛好一行）：台詞 %s／舊差分 %s' % (len(hits), _js_str(text), old))
     rel, i, lines = hits[0]
@@ -252,7 +260,7 @@ def text_patch(req):
         mk = _js_str(req['mark'])
         hits = [h for h in hits if mk in h[2][h[1]]] or hits
     if len(hits) > 1:
-        hits = [h for h in hits if near(h, req.get('prev'), -6, -1) and near(h, req.get('next'), 1, 6)]
+        hits = [h for h in hits if near(h, req.get('prev'), -NEAR, -1) and near(h, req.get('next'), 1, NEAR)]
     if len(hits) != 1:
         raise ValueError('找到 %d 行有這句（要剛好一行）：%s' % (len(hits), lit))
     rel, i, lines = hits[0]
@@ -265,6 +273,162 @@ def text_patch(req):
         f.write('\n'.join(lines))
     os.replace(tmp, dst)
     return '%s:%d' % (rel, i + 1)
+
+
+# ══ 插入／刪除一拍（ver -1866，Ray：「除了編輯對話，也加入插入、刪除對話功能」）══
+# `POST /__line`，body＝`{"op":"insert"|"delete", "text":定位用的原台詞, "mark":差分?, "prev":?, "next":?,
+#                        "where":"before"|"after", "beat":{"speaker","expr","text"}}`
+# 定位同 `/__text`（原台詞＋差分＋前後一拍，要剛好一拍）。拍子可以跨多行：從台詞那一行開頭
+#   （`{` 或 `ren(`）括號配對到結尾（`_beat_span`）；台詞不在拍子第一行、或配對不起來 ⇒ 409，不猜。
+# ⚠ 只准動主線與城鎮兩支腳本（戰鬥對白／飛行閒聊的格式不同）。
+LINE_FILES = ['script/town.js', 'script/mainScript.js']
+
+
+def _beat_literal(b):
+    sp = str(b.get('speaker') or 'NARRATION')
+    if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', sp):
+        raise ValueError('speaker 不合法：' + sp)
+    txt = b.get('text') or ''
+    if sp == 'PLAYER' and not txt:
+        return "{ speaker:'PLAYER', blank:true },"
+    out = "{ speaker:" + _js_str(sp) + ", text:" + _js_str(txt)
+    ex = b.get('expr')
+    if sp not in ('NARRATION', 'PLAYER'):
+        out += ", portrait:{ char:" + _js_str(sp) + ", expr:" + ('null' if not ex else _js_str(ex)) + ", show:true }"
+    return out + " },"
+
+
+def _beat_span(lines, i):
+    """台詞在第 i 行 ⇒ 這一拍從哪一行到哪一行（含）。拍子必須**從第 i 行開頭**（`{` 或 `名字(`），
+    括號配對到結尾；結尾那一行在拍子之後只准有 `,` 與註解。不成立回 None（不猜）。"""
+    head = lines[i]
+    m = re.match(r'\s*(?:\{|[A-Za-z_$][\w$.]*\()', head)
+    if not m:
+        return None
+    depth, j, blk = 0, i, False
+    col = len(re.match(r'\s*', head).group(0))
+    while j < len(lines) and j < i + 40:
+        ln = lines[j]
+        k, n = (col if j == i else 0), len(ln)
+        while k < n:
+            if blk:
+                e = ln.find('*/', k)
+                if e < 0:
+                    k = n
+                    break
+                blk, k = False, e + 2
+                continue
+            c = ln[k]
+            if c in '\'"`':
+                q = c
+                k += 1
+                while k < n and ln[k] != q:
+                    k += 2 if ln[k] == '\\' else 1
+                k += 1
+                continue
+            if ln.startswith('//', k):
+                break
+            if ln.startswith('/*', k):
+                blk, k = True, k + 2
+                continue
+            if c in '({[':
+                depth += 1
+            elif c in ')}]':
+                depth -= 1
+                if depth < 0:
+                    return None
+                if depth == 0:
+                    rest = ln[k + 1:]
+                    if re.match(r'^\s*,?\s*(//.*|/\*.*\*/\s*)?$', rest):
+                        return (i, j)
+                    return None
+            k += 1
+        j += 1
+    return None
+
+
+def _find_beat(req, files):
+    """原台詞（＋差分＋前後一拍）→ 剛好一拍的 (rel, s, e, lines)。"""
+    lit = _js_str(req.get('text') or '')
+    hits = []
+    for rel in files:
+        with open(os.path.join(ROOT, rel), 'r', encoding='utf-8') as f:
+            lines = f.read().split('\n')
+        for i, ln in enumerate(lines):
+            if lit in ln:
+                sp = _beat_span(lines, i)
+                if sp:
+                    hits.append((rel, sp[0], sp[1], lines))
+
+    def chunk(h):
+        return '\n'.join(h[3][h[1]:h[2] + 1])
+
+    def near(h, t, before):
+        if t is None:
+            return True
+        l2 = _js_str(t)
+        lo, hi = (h[1] - NEAR, h[1] - 1) if before else (h[2] + 1, h[2] + NEAR)
+        return any(l2 in h[3][j] for j in range(max(0, lo), min(len(h[3]), hi + 1)))
+    if len(hits) > 1 and req.get('mark'):
+        mk = _js_str(req['mark'])
+        hits = [h for h in hits if mk in chunk(h)] or hits
+    if len(hits) > 1:
+        hits = [h for h in hits if near(h, req.get('prev'), True) and near(h, req.get('next'), False)]
+    if len(hits) != 1:
+        raise ValueError('找到 %d 拍（要剛好一拍）：%s' % (len(hits), lit))
+    return hits[0]
+
+
+def _write_lines(rel, lines):
+    dst = os.path.join(ROOT, rel)
+    tmp = dst + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(lines))
+    os.replace(tmp, dst)
+
+
+def line_patch(req):
+    op = req.get('op')
+    if op not in ('insert', 'delete'):
+        raise ValueError('op 只能是 insert／delete')
+    rel, s, e, lines = _find_beat(req, LINE_FILES)
+    if op == 'delete':
+        gone = ' '.join(x.strip() for x in lines[s:e + 1])
+        del lines[s:e + 1]
+        where = '%s:%d 刪除 %s' % (rel, s + 1, gone[:60])
+    else:
+        ind = re.match(r'\s*', lines[s]).group(0)
+        new = ind + _beat_literal(req.get('beat') or {})
+        if req.get('where') == 'before':
+            lines.insert(s, new)
+            where = '%s:%d 插入' % (rel, s + 1)
+        else:
+            ln = lines[e]
+            cut = re.search(r'\s*(//.*|/\*.*\*/\s*)?$', ln)
+            code = ln[:cut.start()] if cut else ln
+            if not code.rstrip().endswith(','):   # 這一拍原本是清單的最後一個 ⇒ 先補逗號
+                c2 = code.rstrip()
+                lines[e] = c2 + ',' + ln[len(c2):]
+            lines.insert(e + 1, new)
+            where = '%s:%d 插入' % (rel, e + 2)
+    _write_lines(rel, lines)
+    return where
+
+
+def beat_span_patch(req):
+    """`/__beat` 的退路（ver -1866）：差分寫在拍子的另一行（跨多行的物件）時，以整拍為範圍換 `expr`。"""
+    if (req.get('field') or 'expr') != 'expr':
+        raise ValueError('只支援 expr')
+    old, new = req.get('old'), req.get('new')
+    rel, s, e, lines = _find_beat(dict(req, mark=None), BEAT_FILES)
+    olit = 'null' if old is None else re.escape(_js_str(old))
+    for j in range(s, e + 1):
+        out, n = re.subn(r"expr(\s*):(\s*)" + olit, lambda m: 'expr' + m.group(1) + ':' + m.group(2) + _js_str(new), lines[j], count=1)
+        if n:
+            lines[j] = out
+            _write_lines(rel, lines)
+            return '%s:%d' % (rel, j + 1)
+    raise ValueError('那一拍裡找不到 expr:%s' % ('null' if old is None else _js_str(old)))
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -288,12 +452,29 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:                        # noqa: BLE001
                 return self._fail(500, '寫檔失敗：%s' % e)
             return self._fail(200, 'ok ' + where)
+        if self.path.split('?')[0] == '/__line':
+            try:
+                n = int(self.headers.get('Content-Length') or 0)
+                req = json.loads(self.rfile.read(n).decode('utf-8'))
+                sys.stderr.write('[devserver] line %s\n' % json.dumps(req, ensure_ascii=False))
+                where = line_patch(req)
+            except ValueError as e:
+                return self._fail(409, str(e))
+            except Exception as e:                        # noqa: BLE001
+                return self._fail(500, '寫檔失敗：%s' % e)
+            return self._fail(200, 'ok ' + where)
         if self.path.split('?')[0] == '/__beat':
             try:
                 n = int(self.headers.get('Content-Length') or 0)
                 req = json.loads(self.rfile.read(n).decode('utf-8'))
                 sys.stderr.write('[devserver] beat %s\n' % json.dumps(req, ensure_ascii=False))
-                where = beat_patch(req)
+                try:
+                    where = beat_patch(req)
+                except ValueError as e1:        # 差分寫在拍子的另一行（跨多行）⇒ 以整拍為範圍再試一次
+                    try:
+                        where = beat_span_patch(req)
+                    except ValueError:
+                        raise e1
             except ValueError as e:
                 return self._fail(409, str(e))
             except Exception as e:                        # noqa: BLE001
