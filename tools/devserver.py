@@ -336,7 +336,8 @@ def _beat_literal(b):
         raise ValueError('speaker 不合法：' + sp)
     txt = b.get('text') or ''
     if sp == 'PLAYER' and not txt:
-        return "{ speaker:'PLAYER', blank:true },"
+        fx = _fx_literal(b.get('bubbleFx'))   # ver -1872：空白框也帶得了效果
+        return "{ speaker:'PLAYER', blank:true" + (", bubbleFx:" + fx if fx else '') + " },"
     out = "{ speaker:" + _js_str(sp) + ", text:" + _js_str(txt)
     ex = b.get('expr')
     if sp not in ('NARRATION', 'PLAYER'):
@@ -399,12 +400,16 @@ def _beat_span(lines, i):
 def _find_beat(req, files):
     """原台詞（＋差分＋前後一拍）→ 剛好一拍的 (rel, s, e, lines)。"""
     lit = _js_str(req.get('text') or '')
+    # ver -1872：主角的空白框（`{ speaker:'PLAYER', blank:true }`）沒有台詞欄位 —— 改認 `blank:true`，
+    #   剩下交給前後一拍篩（Ray：「主角空白會無法寫入效果」）。
+    if req.get('blank'):
+        lit = None
     hits = []
     for rel in files:
         with open(os.path.join(ROOT, rel), 'r', encoding='utf-8') as f:
             lines = f.read().split('\n')
         for i, ln in enumerate(lines):
-            if lit in ln:
+            if (lit in ln) if lit is not None else re.search(r"blank\s*:\s*true", ln):
                 sp = _beat_span(lines, i)
                 if sp:
                     hits.append((rel, sp[0], sp[1], lines, sp[2]))
@@ -424,7 +429,7 @@ def _find_beat(req, files):
     if len(hits) > 1:
         hits = [h for h in hits if near(h, req.get('prev'), True) and near(h, req.get('next'), False)]
     if len(hits) != 1:
-        raise ValueError('找到 %d 拍（要剛好一拍）：%s' % (len(hits), lit))
+        raise ValueError('找到 %d 拍（要剛好一拍）：%s' % (len(hits), lit if lit is not None else '（空白框）'))
     return hits[0]
 
 

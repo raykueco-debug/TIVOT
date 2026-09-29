@@ -289,9 +289,12 @@ let edFx = null;                  // 效果頁正在選的（null＝從這一拍
 function edLine(){ return cur && cur.lines && cur.lines[lineIdx]; }
 function edLocate(){
   const lines=cur.lines, i=lineIdx, line=lines[i];
-  return { text: typeof line.text==='string' ? line.text : '',
+  /* 前後一拍只拿「有台詞字串」的當定位條件：空白框／分段台詞在檔裡沒有那個字串，拿來比只會一行都找不到。
+     ver -1872：這一拍自己是空白框就帶 `blank:true`（伺服器改認 `blank:true` 那一行）。 */
+  const ctx=l=> (l && typeof l.text==='string' && !l.blank) ? l.text : undefined;
+  return { text: typeof line.text==='string' ? line.text : '', blank: line.blank ? true : undefined,
            mark:(line.portrait && typeof line.portrait.expr==='string') ? line.portrait.expr : undefined,
-           prev: lines[i-1] ? (lines[i-1].text||'') : undefined, next: lines[i+1] ? (lines[i+1].text||'') : undefined };
+           prev: ctx(lines[i-1]), next: ctx(lines[i+1]) };
 }
 function edPost(path, body){
   const url=new URL(path, new URL('../', import.meta.url)).pathname;
@@ -447,7 +450,7 @@ function edGo(what){
       if(r.ok){
         const sp=beat.speaker, obj = (sp==='PLAYER' && !beat.text) ? { speaker:'PLAYER', blank:true }
           : Object.assign({ speaker:sp, text:beat.text }, (sp!=='NARRATION' && sp!=='PLAYER') ? { portrait:{ char:sp, expr:beat.expr, show:true } } : {});
-        if(obj.speaker && beat.bubbleFx.length && !obj.blank) obj.bubbleFx = beat.bubbleFx.length===1 ? beat.bubbleFx[0] : beat.bubbleFx;
+        if(obj.speaker && beat.bubbleFx.length) obj.bubbleFx = beat.bubbleFx.length===1 ? beat.bubbleFx[0] : beat.bubbleFx;
         const at = edIns.where==='before' ? i : i+1;
         lines.splice(at, 0, obj); histShift(at, +1);
         if(edIns.where==='before' && lineIdx===i) lineIdx++;   // 還停在原本那一拍
@@ -3077,7 +3080,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1871';
+const KERB_V='?v=1872';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
