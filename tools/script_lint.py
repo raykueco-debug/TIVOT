@@ -91,6 +91,8 @@ def check_audio_table(files, folder, label, resolve=None):
     """resolve(f) 回傳表項 f 的實際路徑（None＝就在 folder 裡）——
        與 modules/story.js 的 SE_SRC 同一條規則（ver -566：vo_ 開頭住 vo/），
        改那邊要改這邊。"""
+    # ⚠ ver -1871：表項可以帶 `?v=N`（同名覆蓋的快取破除，§5）—— 比對檔案時去掉。
+    files = {f.split('?', 1)[0] for f in files}
     disk = {f for f in os.listdir(os.path.join(ROOT, folder))
             if not f.startswith('_') and f.lower().endswith(AUDIO_EXT)}
     known = disk | ({f for f in files

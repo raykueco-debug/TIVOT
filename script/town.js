@@ -8889,7 +8889,7 @@ export const TOWNS = {
              下一拍 `cg:null` 收掉。 */
         acts:[ { flag:'tomb_carry', need:'tomb_chase_on', sides:{ RENNA:'L' }, lines:[
           /* ⚠ 腳步音是 `se_steps`（ver -1636，Ray 指定）—— 不是 `se_walk`。 */
-          { speaker:'NARRATION', text:'', se:'se_steps', auto:1200 },
+          { speaker:'NARRATION', text:'', se:'se_stepsbig', auto:1200 },   // ver -1871（Ray）：遺蹟內改用 se_stepsbig（舊的那支腳步）
           any('talkshy',''),
           /* ⚠ **遠吼**（ver -1629，Ray 指定）：牠被打退之後留在上一格，這一段是
              「換一個房間」演的 ⇒ 照 -1622 那條規矩走 `se_monsterroardeep`
@@ -9724,7 +9724,7 @@ export const TOWNS = {
         acts:[{ flag:'dm_cairn_call', need:'dm_gate_done', goto:'cairn', sides:DM_SIDES, lines:[
           { speaker:'NARRATION', text:'', cgBack:'resources/si/cecilie_si_back.webp', cgBackFit:'contain', cgBackAlpha:0.45, auto:1600 },
           nou('shock2','那……那是！'),
-          { speaker:'NARRATION', text:'', se:'se_steps', cgBack:null, auto:900 },
+          { speaker:'NARRATION', text:'', se:'se_stepsbig', cgBack:null, auto:900 },   // ver -1871（Ray）：遺蹟內改用 se_stepsbig
           sor('surprise','喂！'),
         ] }],
       },
