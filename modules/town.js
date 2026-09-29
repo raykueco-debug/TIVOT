@@ -647,12 +647,20 @@ function hhmm(min){
    ⚠ 有 `meetBy` 的城**先走整段戲**（見 `meetScene`），這一支是它的退路 —— 帝都
      沒寫 `meetBy`，行為一個字都沒動。 */
 function maybeMeetOut(){
-  const who=whoOutAt(nodeId); if(!who) return;
+  const who=whoOutAt(nodeId); if(!who) return false;
   const w=(OUTING.who||{})[who]||{};
   story.castSolo(who);
   if(w.line) story.flashLine(w.line, (SPEAKERS[who]||{}).name||'');
   chatterOn=true;
+  return true;
 }
+/* ══ 巧遇女主時，店主等她退場才上（ver -1875，Ray：「巧遇女主的時候優先放女主立繪，
+   女主立繪退掉才換店主」）══ 以前 `maybeMeetOut` 擺完她、下一行 `shopEnter` 就把店主擺上來，
+   店主（同樣站右）當場把她換掉 —— 那一句話等於是店主在講。
+   ⚠ 等的是「那一句被點掉」（`chatterOn` 那一套的同一下點擊，bindInput）：收框 → 她滑出 →
+     SLIDE_MS 之後才擺店主與入口。⚠ 換格（`enter`）一律丟掉這個等待，不補跑 ——
+     補跑等於把上一個地點的店主請到新的一格來。 */
+let meetHold=null;
 /* ══⚠⚠ 碰面的**整段戲**與約會派生（ver -1102，Ray 的 Stage9 稿）══════════════
    回傳這一次抵達要演的那一段（沒有就 null）；資料在 `OUTING.who[誰].meetBy[城]`。
    兩條路各自成立：
@@ -3931,6 +3939,13 @@ function bindInput(){
   st.addEventListener('pointerup', e=>{
     if(hold){ cancel(); return; }               // 放太早：取消，不算點擊
     if(!townId || busy || story.isPlaying()) return;
+    /* 巧遇女主那一句 → 這一下收掉、她退場，滑出跑完才擺店主（ver -1875，見 `meetHold`）。 */
+    if(meetHold){
+      const f=meetHold, at=nodeId; meetHold=null;
+      story.hideBubble(); chatterOn=false; story.clearCast();
+      setTimeout(()=>{ if(townId && nodeId===at && !meetHold) f(); }, SLIDE_MS);
+      return;
+    }
     /* ══ 店裡：點畫面 ＝ 把入口鈕交還給玩家（ver -404；-430 改成鈕）══
        ⚠ 走的是**同一支** `openMenu`（鐵律 8），而且已經在畫面上時它只是重設一次。
        ⚠ 店裡沒有路人單句（`chatter` 只寫在餐酒館／教堂／行政廳／船塢），
@@ -4401,6 +4416,7 @@ export function enter(id){
   story.endAdhoc();
   story.clearCast();
   chatterOn=false;          // ⚠ 第四件：上一個地點的路人單句（見 §6.5 的新路徑檢查表）
+  meetHold=null;            // 上一格「等女主退場才擺店主」的等待（ver -1875）：丟掉、不補跑
   inn.close();              // ⚠ 第五件：上一個地點的旅店大廳（同一張檢查表）
   shopClose();              // ⚠ 第六件：上一個地點的店舖選單（ver -404，同一張檢查表）
   /* ⚠⚠ 第七件：**黑幕在這裡亮回來**（ver -430；-438 起每一次換景都會蓋著進來）。
@@ -4935,7 +4951,7 @@ function afterArrive(n){
 function afterArrive2(n, metDone){
   /* ⚠ `introFlag` 由城鎮算好傳進去（ver -402）：旅店已經沒有 `kind` 了，
      旗標名只有 `enter()` 那一支知道（`kind` 版／節點版兩種）—— inn 自己拼會拼錯城。 */
-  if(!metDone) maybeMeetOut();   // 有人外出時走到她那一格 → 碰到她（ver -575，取代 -461 的蕾娜版）
+  const metNow = !metDone && maybeMeetOut();   // 有人外出時走到她那一格 → 碰到她（ver -575，取代 -461 的蕾娜版）
   /* ⚠ 戰鬥地圖不開旅店大廳（ver -584）—— 伙伴門／獨自坐坐／回房睡覺都是探索的機制。 */
   /* ⚠ 沒有初見對白的旅店（北方泊地）傳 **null**（ver -656）：那面旗永遠不會立，
      而大廳是等它才出現的 —— 見 `inn.introDone()`。 */
@@ -5062,8 +5078,11 @@ function afterArrive2(n, metDone){
      ⚠ 兩條路都要把入口交還（有提示走 `showTip` 的回呼、沒提示走這裡），
        而它的實作只有 `openMenu()` 那一支（鐵律 8）。 */
   const tip=tipDue();       // 一次性的操作提示（ver -429）：對白與店舖都就位了才彈
-  shopEnter(tip ? { noMenu:true } : null);   // 店舖畫面（ver -404）：進場對白演完才擺
-  showTip(tip, tip ? openMenu : null);
+  const toShop=()=>{ shopEnter(tip ? { noMenu:true } : null);   // 店舖畫面（ver -404）：進場對白演完才擺
+                     showTip(tip, tip ? openMenu : null); };
+  /* 剛巧遇女主、而這一格有店主／駐店的人 ⇒ 等她那一句被點掉、她退場了才擺（見 `meetHold`）。 */
+  if(metNow && (shopReady(n) || (n && n.host))){ meetHold=toShop; return; }
+  toShop();
 }
 /* 初見劇情的旗標名。⚠ **只有這一支在決定**（鐵律 7）：`enter()` 與 `afterArrive()` 都問它。 */
 function flagOf(n, id){ return (n && n.kind) ? ('town_kind_'+n.kind) : ('town_'+townId+'_'+id); }

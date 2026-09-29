@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1874"></script>
+<script src="../orientation.js?v=1876"></script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +212,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1874edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1876edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +235,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1874edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1874edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1876edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1876edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +256,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1874edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1874edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1876edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1876edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -620,25 +620,25 @@
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1874edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1876edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1874edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1874edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1874edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1874edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1874edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1874edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1874edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1874edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1874edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1874edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1876edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1876edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1876edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1876edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1876edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1876edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1876edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1876edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1876edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1876edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1874edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1876edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1874edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1876edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -659,11 +659,11 @@
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1874"></script>
+<script src="settlement.js?v=1876"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1874"></script>
+<script src="talks.js?v=1876"></script>
 <script>
 /* ══⚠⚠⚠ **靜音在 iPhone 上要走 `muted`，不是音量**（ver -1808，Ray：「靜音鈕在手機無效」）══
    iOS 的 HTMLAudio `volume` 是**唯讀的**（永遠 1）—— 這一頁所有聲音都是 HTMLAudio，
@@ -733,7 +733,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1874';
+const FLIGHT_VER = 'ver -1876';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -19543,6 +19543,38 @@ function landRadius(S){
   return (S && S.planW) ? Math.max(S.planW*0.5, LAND_R_MIN)   // 有底圖：跟底圖一樣大
                         : townEdgeR(S)*LAND_K;                // 沒底圖：照舊放寬
 }
+/* ══⚠⚠ **有底圖的城：船正下方落在城的底圖上才降得下去**（ver -1875，Ray：「把所有城鎮的
+     可降落範圍設成城鎮範圍內的正上方，城多大可降範圍就多大」）══
+   以前是「以底圖寬的一半為半徑的圓」＋ 下限 384 —— 圓形套在方形、長條形的城上，
+   角落降不下去、城外一大圈卻降得下去。現在直接問**底圖那一點不透明嗎**：
+   座標換算與畫面上的取樣器**同一套**（`buildCityMask`／地形取樣的 u,v，鐵律 7），
+   所以降落範圍與看得到的城一模一樣。
+   ⚠ 透明度取自那座城的縮圖（`cityPlanLo`，開機就載好的那一張）—— GPU 路徑不建 CPU 金字塔，
+     不能借 `CITY_PYR`。每張圖第一次問的時候讀一次、之後快取。
+   ⚠ 縮圖還沒到就回 null ＝ 退回舊的圓（不會因為圖晚一拍就整座城降不下去）。
+   ⚠ 只管 `SETTLEMENTS`（城鎮）。`PLACES` 帶底圖的是地形（卡耶爾山谷），照舊用半徑。 */
+const planAlphaCache={};
+function planAlpha(plan){
+  if(planAlphaCache[plan]) return planAlphaCache[plan];
+  const img=cityPlanLo[plan]; if(!img || !img.width) return null;
+  try{
+    const w=Math.min(img.width,256), h=Math.max(1,Math.round(img.height*w/img.width));
+    const c=document.createElement('canvas'); c.width=w; c.height=h;
+    const g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(img,0,0,w,h);
+    const px=g.getImageData(0,0,w,h).data, a=new Uint8Array(w*h);
+    for(let i=0;i<w*h;i++) a[i]=px[i*4+3];
+    return (planAlphaCache[plan]={ w, h, a, ar:img.height/img.width });
+  }catch(_){ return null; }
+}
+function overCityPlan(S){
+  const A=S && S.plan && planAlpha(S.plan); if(!A) return null;
+  const hw=S.planW*0.5, hh=hw*A.ar, rot=S.planRot||0, ca=Math.cos(rot), sa=Math.sin(rot);
+  const px0=(S.planX!=null?S.planX:S.x), py0=(S.planY!=null?S.planY:S.y);
+  const rx=cam.x-px0*MAP_SCALE, ry=cam.y-py0*MAP_SCALE;
+  const u=(rx*ca+ry*sa)*(0.5/hw)+0.5, v=(-rx*sa+ry*ca)*(0.5/hh)+0.5;
+  if(u<0||u>=1||v<0||v>=1) return false;
+  return A.a[((v*A.h)|0)*A.w+((u*A.w)|0)] > 32;
+}
 let landTarget=null, landOn=false;
 /* ══⚠⚠⚠ **章節還沒到的地點，降落鈕就不要亮**（ver -1362，Ray：「S8 之前不應該
      顯示古城可進入，**四大遺跡都應該這樣處理**」）══
@@ -19564,7 +19596,8 @@ function nearestTown(){
   for(const S of SETTLEMENTS){
     if(!S.town) continue;
     const d=Math.hypot(cam.x-S.x*MAP_SCALE, cam.y-S.y*MAP_SCALE);
-    if(d < landRadius(S) && d<bd){ bd=d; best=S; }
+    const over=overCityPlan(S);                 // ver -1875：有底圖＝看正下方是不是城（null＝縮圖還沒到，退回圓）
+    if((over===null ? d < landRadius(S) : over) && d<bd){ bd=d; best=S; }
   }
   /* ver -858：帶 `town` 的 PLACES 也是著陸點（夏爾森林 —— 不進 SETTLEMENTS，
      那張表會長出道路與程序建築）。`flag`＝發現了才降得下去。 */
@@ -19659,13 +19692,28 @@ function doLand(){
   const HOLD_MS=1000;
   let t=0;
   b.style.setProperty('--hold-ms', HOLD_MS+'ms');
-  const cancel=()=>{ if(t){ clearTimeout(t); t=0; } b.classList.remove('holding'); };
+  /* ══ 或者**按住往下滑**（ver -1875，Ray：「降落可以長按或者手勢下滑」）══
+     鈕底下那排往下的箭頭就是在說這個。⚠ 只認**起點在降落鈕上**的下滑：
+     在畫面其他地方往下拖是**操舵**（往後拉），不能被降落搶走。
+     ⚠ 抓住指標（`setPointerCapture`）：手指一滑出鈕的範圍，沒抓住的話就收不到 move、
+       還會先吃到 pointerleave 被當成取消。 */
+  const SWIPE_PX=40;
+  let y0=null, pid=null;
+  const cancel=()=>{ if(t){ clearTimeout(t); t=0; } b.classList.remove('holding'); y0=null;
+    if(pid!=null){ try{ b.releasePointerCapture(pid); }catch(_){} pid=null; } };
+  const land=()=>{ cancel(); doLand(); };
   b.addEventListener('pointerdown', e=>{ e.stopPropagation();
     cancel(); b.classList.add('holding');
-    t=setTimeout(()=>{ t=0; b.classList.remove('holding'); doLand(); }, HOLD_MS);
+    y0=e.clientY; pid=e.pointerId; try{ b.setPointerCapture(pid); }catch(_){}
+    t=setTimeout(land, HOLD_MS);
   });
-  ['pointerup','pointerleave','pointercancel'].forEach(ev=>
-    b.addEventListener(ev, e=>{ e.stopPropagation(); cancel(); }));
+  b.addEventListener('pointermove', e=>{
+    if(y0==null || e.pointerId!==pid) return;
+    e.stopPropagation();
+    if(e.clientY-y0 >= SWIPE_PX) land();
+  });
+  ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>
+    b.addEventListener(ev, e=>{ e.stopPropagation(); if(y0!=null) cancel(); }));
   /* click 照樣吃掉（不做事）：不然放開的那一下會冒到底下的操作層去。 */
   b.addEventListener('click', e=>e.stopPropagation());
 })();
