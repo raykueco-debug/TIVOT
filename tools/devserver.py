@@ -427,10 +427,80 @@ def _find_beat(req, files):
         mk = _js_str(req['mark'])
         hits = [h for h in hits if mk in chunk(h)] or hits
     if len(hits) > 1:
-        hits = [h for h in hits if near(h, req.get('prev'), True) and near(h, req.get('next'), False)]
+        narrowed = [h for h in hits if near(h, req.get('prev'), True) and near(h, req.get('next'), False)]
+        hits = narrowed if (narrowed or not (req.get('before') or req.get('after'))) else hits
+    # ver -1873：還是不只一拍 ⇒ 比「前後各 10 拍的台詞序列」連續對得上幾拍，取唯一最長的那一個
+    #   （空白框常常只靠前後一拍認不出來：同一段對白抄在好幾個分支裡、或連著好幾格空白 —— 實測 121 格裡 22 格）。
+    if len(hits) > 1 and (req.get('before') or req.get('after')):
+        hits = _pick_by_seq(hits, req.get('before') or [], req.get('after') or [])
     if len(hits) != 1:
         raise ValueError('找到 %d 拍（要剛好一拍）：%s' % (len(hits), lit if lit is not None else '（空白框）'))
     return hits[0]
+
+
+BLANK_TAG = '\u0001B'
+KEY_SEP = '\u0002'
+_STR = r"'((?:[^'\\]|\\.)*)'"
+
+
+def _js_unstr(s):
+    return re.sub(r"\\(.)", lambda m: {'n': '\n', 't': '\t'}.get(m.group(1), m.group(1)), s)
+
+
+def _beat_key(chunk):
+    """一拍在序列比對裡的鑰匙：空白框 ⇒ BLANK_TAG；有台詞 ⇒「台詞 + KEY_SEP + 差分」；其餘 ⇒ None（不比）。
+    ⚠ 差分也要比（ver -1873）：同一段對白抄在兩個分支裡時，台詞常常一字不差、只有表情不同。
+    ⚠ 與 story.js 的 edLocate 那一支 `key()` 是同一個格式，改一邊要改另一邊。"""
+    if re.search(r"blank\s*:\s*true", chunk):
+        return BLANK_TAG
+    m = re.match(r"\s*(?:Object\.assign\()?\s*[A-Za-z_]\w*\(\s*(null|" + _STR + r")\s*,\s*" + _STR, chunk)
+    if m:
+        return _js_unstr(m.group(3)) + KEY_SEP + (_js_unstr(m.group(2)) if m.group(2) is not None else '')
+    m = re.search(r"\btext\s*:\s*" + _STR, chunk)
+    if m:
+        e = re.search(r"\bexpr\s*:\s*" + _STR, chunk)
+        return _js_unstr(m.group(1)) + KEY_SEP + (_js_unstr(e.group(1)) if e else '')
+    return None
+
+
+def _beats_of(lines):
+    out, i = [], 0
+    while i < len(lines):
+        s = lines[i].strip()
+        if s.startswith('{') or re.match(r"(Object\.assign\()?[A-Za-z_]\w*\(", s):
+            sp = _beat_span(lines, i)
+            if sp and ('speaker' in lines[i] or re.match(r"(Object\.assign\()?[A-Za-z_]\w*\(\s*(null|')", s)):
+                out.append((sp[0], sp[1], _beat_key('\n'.join(lines[sp[0]:sp[1] + 1]))))
+                i = sp[1] + 1
+                continue
+        i += 1
+    return out
+
+
+def _pick_by_seq(hits, before, after):
+    cache, scored = {}, []
+    for h in hits:
+        rel, s, lines = h[0], h[1], h[3]
+        beats = cache.get(rel) or cache.setdefault(rel, _beats_of(lines))
+        b = next((k for k, x in enumerate(beats) if x[0] == s), None)
+        if b is None:
+            scored.append((0, h))
+            continue
+        score = 0
+        for k, want in enumerate(before, 1):            # 由近到遠，連續對得上才加分
+            if b - k < 0 or beats[b - k][2] != want:
+                break
+            if want is not None:
+                score += 1
+        for k, want in enumerate(after, 1):
+            if b + k >= len(beats) or beats[b + k][2] != want:
+                break
+            if want is not None:
+                score += 1
+        scored.append((score, h))
+    best = max(sc for sc, _ in scored)
+    top = [h for sc, h in scored if sc == best]
+    return top if best > 0 else hits
 
 
 def _write_lines(rel, lines):
