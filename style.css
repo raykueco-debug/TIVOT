@@ -5192,9 +5192,6 @@
 
 /* ══ 立繪調整工具（ver -1812，管理人限定；邏輯在 story.js 的 `tuneRender`）══
    鈕在演出區左緣、面板蓋在控制區（下半）—— 不擋到要看的立繪。 */
-#storyTuneBtn{position:absolute;left:6px;top:calc(var(--tap-top) + 60px);z-index:9;
-  padding:6px 8px;font:12px/1 inherit;letter-spacing:2px;color:var(--gold);
-  background:rgba(10,8,14,.78);border:1px solid var(--gold-dim);border-radius:8px;}
 #storyTune{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);z-index:25;
   display:none;flex-direction:column;gap:6px;padding:10px;border-radius:10px;
   background:rgba(12,9,18,.94);border:1px solid var(--gold-dim);color:var(--ink);font-size:13px;}
@@ -5210,7 +5207,7 @@
 #storyTune .tn-save{flex:1;color:var(--gold);}
 #storyTune .tn-who button{flex:1;}
 #storyTune .tn-path{font-size:11px;color:var(--gold-dim);}
-body:not(.testmode) #storyTuneBtn, body:not(.testmode) #storyTune{display:none !important;}
+body:not(.testmode) #storyTune{display:none !important;}
 /* ══ 對話編輯面板（ver -1866，`story.storyEditor`）══ 停在控制區，不蓋演出區（邊改邊看立繪）。 */
 #storyEdit{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);z-index:26;
   max-height:calc(100% - var(--story-top,56%) - 8px);overflow-y:auto;display:flex;flex-direction:column;gap:6px;

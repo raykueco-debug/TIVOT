@@ -394,14 +394,10 @@ function tuneEnsure(){
   if(!document.body.classList.contains('testmode')) return;
   beatPick.ensureEditBtn($('storyBubble'), ()=>storyEditor('text'));
   if(edTab && !studioOn) edRender();   // 面板開著：跟著換到這一拍
-  const st=$('storyStage'); if(!st || $('storyTuneBtn')) return;
-  const b=document.createElement('button'); b.id='storyTuneBtn'; b.type='button'; b.textContent='立繪';
+  /* ver -1869（Ray：「可以把立繪鈕拿掉了」）：舞台左上那顆「立繪」鈕已拿掉 —— 入口只剩 ✎ 的「調整」頁；
+     面板本體照舊建（對話編輯的調整頁與首頁的立繪調整工作室都用它）。 */
+  const st=$('storyStage'); if(!st || $('storyTune')) return;
   const stop=e=>e.stopPropagation();
-  b.addEventListener('pointerdown', stop);
-  b.addEventListener('click', e=>{ e.stopPropagation();
-    if(studioOn){ tuneOn=!tuneOn; tuneRender(); return; }
-    if(edTab==='tune') edClose(); else storyEditor('tune'); });
-  st.appendChild(b);
   const p=document.createElement('div'); p.id='storyTune';
   ['pointerdown','pointerup','click','touchstart'].forEach(ev=>p.addEventListener(ev, stop));
   st.appendChild(p);
@@ -3014,7 +3010,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1868';
+const KERB_V='?v=1869';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
