@@ -2348,7 +2348,8 @@ function stageGate(){
          不是去動 `afterMoves` 的計數。
        ⚠ 同 `acts` 的 `until`（ver -668）是同一個概念：`flag` ＝我演過了、
          `until`／`skipIf` ＝別人那一段演完了。 */
-    if(g.skipIf && prog.hasFlag(g.skipIf)) continue;
+    /* ver -1865：可寫陣列＝任一支立了就退休（同拍子的 `skipIf`）。 */
+    if(g.skipIf && [].concat(g.skipIf).some(f=>prog.hasFlag(f))) continue;
     if(!needOk(g.need)) continue;
     /* `fromStage`（ver -954）：**到了這一章**才有效。與 acts 的同名欄位同語意
        —— Stage8 的起始時間那一道要的條件是「S7 演完了」，而 S7 有兩條分支

@@ -4427,13 +4427,15 @@ export const TOWNS = {
          · ⚠ 約索菈娜（支線四）**不走這一道**：她那一條自己在貧民窟的下一格強制回旅店；
            而這一道的台詞是「蕾娜小姐跟索菈娜吵起來了」—— 她就站在你旁邊，講不通。
        ⚠ `hourOfDay` 寫成時段 `[16,24]`（同 -664 的教訓：單值在隔天凌晨也成立）。
-       ⚠⚠ 「旅店合流」那一段稿還沒到 —— 這一道只把人帶回旅店（`goto:'inn'`）。 */
+       ⚠⚠ 「旅店合流」那一段稿還沒到 —— 這一道只把人帶回旅店（`goto:'inn'`）。
+       ⚠⚠ ver -1865（Ray）：旅店合流（換裝）演完就退休（`skipIf` 含 `ss_inn_merge`）——
+         走市政廳／貧民窟那幾條先合流的，四點以後不准再冒出「吵起來了」。 */
     gates:[
       /* ══ 航行許可下來了（ver -1793）══ 稿：「明天航行許可就會下來了」「也可直接睡覺，隔日七點接劇情」。
          ⚠ 只立旗、不演（稿上沒給台詞）—— `ss_depart` 一立，碼頭的出航鎖（`sail.hold.until`）就解開。
          ⚠ 時段 `[7,10]`：睡一覺醒來一定是 07:00；當天回到旅店通常已經過中午，不會提早成立。 */
       { flag:'ss_depart', need:'ss_raid_home', hourOfDay:[7,10] },
-      { flag:'ss_4pm', need:'ss_arrive', skipIf:'ss_date_sor', hourOfDay:[16,24],
+      { flag:'ss_4pm', need:'ss_arrive', skipIf:['ss_date_sor','ss_inn_merge'], hourOfDay:[16,24],
         goto:'inn', enterAgain:true, sides:{ RENNA:'L' }, lines:[
         nou('run','啊！在這裡！',                                { skipIf:'ss_date_nou' }),
         any('scare','',                                          { onlyIf:'ss_date_anya' }),
