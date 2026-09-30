@@ -83,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1878';
+export const VERSION = 'ver 2026.09.22-1879';
 
 export const GAME_CONFIG = {
 
@@ -3692,6 +3692,11 @@ export const GAME_CONFIG = {
       /* 樹靈鹿主的吼（ver -879，Ray 交件）——瀏覽器內 BS.1770 實測
          耳機 −19.64／手機 −24.18、平均 −21.91 LUFS，峰值 −8.33 dBFS（未觸頂）。 */
       se_enemy_roardeer:3.006,
+      /* 敵人登場音（ver -1879，Ray 交件＋enemies.xlsx 指定）—— ffmpeg ebur128 實測（全頻，
+         沒有手機模型那一次）：chant −32.1／magic −16.7／beastgrowl −13.1／beastgrowl2 −28.2／
+         squeal −14.9／squeal2 −14.3 LUFS，峰值都沒觸頂。 */
+      se_enemy_chant:8.219, se_enemy_magic:1.396, se_enemy_beastgrowl:0.922,
+      se_enemy_beastgrowl2:5.246, se_enemy_squeal:1.134, se_enemy_squeal2:1.059,
       /* ── 飛行頁（那一頁用 HTMLAudio，讀同一張表，見 flight/index.html）── */
       se_flight_heartbeat:5.064, se_flight_idle_loop:2.848,
       se_flight_sail_loop:7.928, se_flight_seagull:3.353, se_flight_train:5.059,
@@ -4557,6 +4562,14 @@ export const ASSETS = {
      `playEntranceSe` 拿到空字串就**靜靜不播** —— 卡上寫了音效名、畫面上卻沒有聲音，
      而且沒有任何錯誤訊息。⚠ 自檢：卡上要用的音效，先確認它在 `ASSETS` 裡。 */
   se_enemy_roardeer: "resources/audio/se/se_enemy_roardeer.m4a",   // 龍吟／鹿主的吼
+  /* 敵人登場音（ver -1879，enemies.xlsx 的「進場音效」指定；卡上的 `entrance` 查這裡） */
+  se_enemy_chant:       "resources/audio/se/se_enemy_chant.m4a",
+  se_enemy_magic:       "resources/audio/se/se_enemy_magic.m4a",
+  se_enemy_beastgrowl:  "resources/audio/se/se_enemy_beastgrowl.m4a",
+  se_enemy_beastgrowl2: "resources/audio/se/se_enemy_beastgrowl2.m4a",
+  se_enemy_squeal:      "resources/audio/se/se_enemy_squeal.m4a",
+  se_enemy_squeal2:     "resources/audio/se/se_enemy_squeal2.m4a",
+  se_brickcrush:        "resources/audio/se/se_brickcrush.m4a",   // 黑爪登場（原本只在 story 的 SE_FILES）
   se_mg_squall:      "resources/audio/se/se_weapon_mg_squall.m4a",       // 重機槍 反擊（連續感：整支播一次）
   se_shotgun_blast:  "resources/audio/se/se_weapon_shotgun_blast.m4a",   // 散彈槍 反擊（一次一發）
   se_sniper_falcon:  "resources/audio/se/se_weapon_sniper_falcon.m4a",   // 狙擊槍 反擊（單發）

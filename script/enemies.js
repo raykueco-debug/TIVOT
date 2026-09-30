@@ -96,18 +96,19 @@ export const ENEMIES = {
       kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'E',
-      atype:null,
+      atype:'P',
       stageScale:1,
+      stack:0,
       image:'enemy_trainee',    // → resources/enemy/saint_tr_ci.webp
-      hp:500,
-      attack:45,
+      hp:100,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      attack:10,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,         // 沿用 tuning.chargeSeconds
-      assaultEvery:[2,4],                 // 一般攻擊的頻率（秒）
+      assaultEvery:[3,5],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       delayPenalty:{ seconds:5 },   // 5 秒（ver -458，非魔女的預設）
       entrance:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
-      boardGrids:[9,9,9,9,9],
+      boardGrids:[9,9,9,9,9],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
         delay:'blood',
         wrong:'slash',
@@ -164,7 +165,7 @@ export const ENEMIES = {
       kind:'target',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       tier:'E',
-      atype:null,
+      atype:'P',
       stageScale:1,
       image:'enemy_dart_counter',    // 蕃茄人11號自己的圖（ver -862，Ray 交件 Dart_counter.webp）
       hp:300,
@@ -234,7 +235,7 @@ export const ENEMIES = {
       stageScale:1,
       stack:1,
       image:'enemy_man_sorana',
-      entrance:'vo_sorana_pack2',   // 敵立繪一出現就播（ver -818，Ray）——她是 human 不吃降臨，另掛登場音
+      entrance:'vo_sorana_pack',   // 敵立繪一出現就播（ver -818，Ray）——她是 human 不吃降臨，另掛登場音
       fit:{ pos:'50% 30%' },   // ver -745 換上專用戰鬥圖；構圖不對再調這格
       hp:270,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -360,13 +361,13 @@ export const ENEMIES = {
       ult:{ on:1, hp:20, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'human',                  // 槍之魔女是人類 → 已擊敗（ver -432，Ray 指定）
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
-      tier:'B',
+      tier:'S',
       atype:'S',
       stageScale:1,
       stack:1,
       image:'enemy_witch',      // 立繪鑰匙（附圖）
-      hp:270,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      hp:610,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      attack:25,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,         // 大絕蓄力窗口（紅圈縮放時間）；null＝沿用 tuning.chargeSeconds
       assaultEvery:[2,4],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       assault:{ count:2, gap:1 },   // 一般主動攻擊：一次先後出 2 顆、間隔 1 秒（Boss；ver -801 由舊 ult.shots/gapMs 轉）
@@ -496,7 +497,7 @@ export const ENEMIES = {
       attack:14,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:6 },
-      entrance:null,                   // 登場音（卡上覆寫）；無則 null
+      entrance:'se_enemy_chant',                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
@@ -527,7 +528,7 @@ export const ENEMIES = {
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:null,                   // 登場音（卡上覆寫）；無則 null
+      entrance:'se_enemy_magic',                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
@@ -558,7 +559,7 @@ export const ENEMIES = {
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:null,                   // 登場音（卡上覆寫）；無則 null
+      entrance:'se_enemy_magic',                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
@@ -589,7 +590,7 @@ export const ENEMIES = {
       attack:14,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:null,                   // 登場音（卡上覆寫）；無則 null
+      entrance:'se_enemy_chant',                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,9,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
@@ -627,7 +628,7 @@ export const ENEMIES = {
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:6 },
-      entrance:null,                   // 登場音（卡上覆寫）；無則 null
+      entrance:'se_enemy_chant',                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
@@ -668,7 +669,7 @@ export const ENEMIES = {
       attack:21,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:null,                   // 登場音（卡上覆寫）；無則 null
+      entrance:'se_brickcrush',                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
@@ -708,7 +709,7 @@ export const ENEMIES = {
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:null,
+      entrance:'se_enemy_beastgrowl2',
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
@@ -739,7 +740,7 @@ export const ENEMIES = {
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:null,
+      entrance:'se_enemy_squeal2',
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
@@ -770,7 +771,7 @@ export const ENEMIES = {
       attack:14,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:null,
+      entrance:'se_enemy_squeal',
       special:[],
       boardGrids:[9,9,9,9,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
@@ -801,7 +802,7 @@ export const ENEMIES = {
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:null,
+      entrance:'se_enemy_beastgrowl',
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
@@ -840,7 +841,7 @@ export const ENEMIES = {
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:6 },
-      entrance:null,
+      entrance:'se_enemy_beastgrowl2',
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
@@ -874,7 +875,7 @@ export const ENEMIES = {
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:6 },         // ＝np_boss
-      entrance:null,
+      entrance:'se_enemy_beastgrowl2',
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
@@ -994,7 +995,7 @@ export const ENEMIES = {
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
       image:'enemy_thug_pistol', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
-      hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      hp:100, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
       hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
@@ -1006,7 +1007,7 @@ export const ENEMIES = {
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
       image:'enemy_thug_rifle', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
-      hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      hp:100, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
       hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
@@ -1018,7 +1019,7 @@ export const ENEMIES = {
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
       image:'enemy_thug_dual', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
-      hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      hp:100, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
       hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
@@ -1030,7 +1031,7 @@ export const ENEMIES = {
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
       image:'enemy_thug_shotgun', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
-      hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      hp:100, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
       hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
@@ -1042,7 +1043,7 @@ export const ENEMIES = {
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
       image:'enemy_thug_lookout', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
-      hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      hp:100, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
       hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
@@ -1068,7 +1069,7 @@ export const ENEMIES = {
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
       image:'enemy_thug_squad', bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
-      hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
+      hp:250, attack:10, atkInterval:null, assaultEvery:[3,6], assault:{ count:3, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
       hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
@@ -1329,7 +1330,7 @@ export const ENEMIES = {
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:null,
+      entrance:'se_enemy_beastgrowl',
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{ delay:'claw1',
@@ -1421,7 +1422,7 @@ export const ENEMIES = {
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
-      entrance:null,
+      entrance:'se_enemy_beastgrowl',
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{ delay:'claw1',
@@ -2162,7 +2163,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
-      tier:'A',
+      tier:'B',
       atype:'D',
       stageScale:1,
       stack:1,
@@ -2171,8 +2172,8 @@ export const ENEMIES = {
       bg:'belisar_greathall',
       fit:{ mode:'contain', pos:'center bottom' },
       /* ver -1420，Ray：「追擊戰的龍血量都改到 350」——**四場追擊共用這一張卡**，所以改一次四場都吃到。 */
-      hp:660,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      attack:21,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      hp:440,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       /* ⚠⚠⚠ ver -1434：這裡原本是 `entrance:null` —— 它在**同一個物件字面量裡
@@ -3091,7 +3092,7 @@ export const ENEMIES = {
       spawnAt:'tomb',
       stack:0,
       image:'enemy_ossuary_rats',
-      bg:'tomb_ossuary',
+      bg:'',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:120,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -3375,7 +3376,7 @@ export const ENEMIES = {
       stack:0,
       brBonus:0.5,
       image:'enemy_crypt_centipede',
-      bg:'tomb_crypt',
+      bg:'',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:200,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -3403,7 +3404,7 @@ export const ENEMIES = {
       spawnAt:'tomb',
       stack:0,
       image:'enemy_crypt_hound',
-      bg:'tomb_crypt',
+      bg:'',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:120,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -3431,7 +3432,7 @@ export const ENEMIES = {
       spawnAt:'tomb',
       stack:0,
       image:'enemy_twin_skull_hound',
-      bg:'tomb_crypt',
+      bg:'',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:180,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:14,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -3459,7 +3460,7 @@ export const ENEMIES = {
       spawnAt:'tomb',
       stack:0,
       image:'enemy_vault_bat',
-      bg:'tomb_crypt',
+      bg:'',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:120,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -3544,7 +3545,7 @@ export const ENEMIES = {
       spawnAt:'tomb',
       stack:0,
       image:'enemy_tomb_bear',
-      bg:'tomb_crypt',
+      bg:'',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:150,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -3572,7 +3573,7 @@ export const ENEMIES = {
       spawnAt:'tomb',
       stack:0,
       image:'enemy_pallid_stag',
-      bg:'tomb_crypt',
+      bg:'',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:150,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -3600,7 +3601,7 @@ export const ENEMIES = {
       spawnAt:'tomb',
       stack:0,
       image:'enemy_gorge_toad',
-      bg:'tomb_crypt',
+      bg:'',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:150,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -3628,7 +3629,7 @@ export const ENEMIES = {
       spawnAt:'tomb',
       stack:0,
       image:'enemy_stone_adder',
-      bg:'tomb_crypt',
+      bg:'',
       fit:{ mode:'contain', pos:'center bottom' },
       hp:150,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
