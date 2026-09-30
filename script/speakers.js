@@ -598,7 +598,7 @@ export const ART = {
                   happy:    { src:'resources/si/nouvelle_si_happy.webp',     top:1,  bot:1533, fx:0.578 },
                   shock2: { src:'resources/si/nouvelle_si_shock2.webp',  top:3,  bot:1533, fx:0.541 },
                   /* 北方泊地第三天（ver -664）：回頭看。 */
-                  lookback: { src:'resources/si/nouvelle_si_lookback.webp',  top:2,  bot:1528, fx:0.661 },
+                  lookback: { yShift:15, cm:150, src:'resources/si/nouvelle_si_lookback.webp',  top:2,  bot:1528, fx:0.661 },
                   /* stage2 出航（ver -741，Ray 交稿）：揮手道別。 */
                   wave:     { src:'resources/si/nouvelle_si_wave.webp',      top:13, bot:1535, fx:0.483 },
                   /* 湖上甲板（ver -744）。⚠ 檔案是 **Scared2**：美術 session 把舊的
@@ -662,7 +662,7 @@ export const ART = {
   sorana: { fxShift:0.05, yShift:25, cm:150, eye:27, fx:0.498, faceFx:0.62, top:4, bot:1526,
            side:'R', alt:null, base:'resources/si/sorana_si_side.webp?v=4', expr:{
     /* stage7・木雅克神殿（ver -922，Ray 交稿）。 */
-    confuse:      { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/sorana_si_confuse.webp?v=3', top:6, bot:1522, fx:0.510 },
+    confuse:      { fxShift:-0.01, yShift:16, cm:160, src:'resources/si/sorana_si_confuse.webp?v=3', top:6, bot:1522, fx:0.510 },
     front:        { fxShift:-0.03, yShift:25, cm:150, src:'resources/si/sorana_si_front.webp?v=4',     top:5,  bot:1529, fx:0.659 },
     side:         { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_side.webp?v=4',      top:4,  bot:1526, fx:0.498 },
     /* ⚠⚠ ver -1047 交件（「無飛刀」那一張）：目前**只給破防計量表的頭像用**，
@@ -685,7 +685,7 @@ export const ART = {
     guard:        { fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guard.webp?v=2',         top:9,  bot:1527, fx:0.651, cm:150 },
     guardtalk:    { fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guardtalk.webp?v=2',     top:5,  bot:1529, fx:0.653, cm:150 },
     guardthink:{ fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guardthink.webp?v=2', top:8,  bot:1529, fx:0.672, cm:150 },
-    embarrass:   { fxShift:0.015, yShift:14, cm:148, src:'resources/si/sorana_si_embarrass.webp?v=4',    top:5,  bot:1529, fx:0.551 },
+    embarrass:   { fxShift:0.015, yShift:10, cm:150, src:'resources/si/sorana_si_embarrass.webp?v=4',    top:5,  bot:1529, fx:0.551 },
     /* 夏爾村・夜襲之後那一段（`shinier.wild`）的「唉——又是南面那個遺蹟」。
        圖 ver -772 那一批就交了，但一直沒轉檔也沒登記 —— 於是那三句一路回退成
        基本立繪（script_lint 每次都在喊「SORANA 沒有 tired 這張差分」），ver -1290 補上。
@@ -710,8 +710,8 @@ export const ART = {
        —— 它與 `talk` 的 bbox 差 3~4px（雜訊等級），但兩張是各自交件的圖、不是
        同一具身體換臉，所以照工單各用各的，不互抄。 */
     talksmile:    { fxShift:0.01, yShift:25, cm:150, src:'resources/si/sorana_si_talksmile.webp',        top:6,  bot:1522, fx:0.512 },
-    laugh:        { fxShift:-0.015, yShift:-15, src:'resources/si/sorana_si_laugh.webp?v=2',         top:3,  bot:1529, fx:0.579, cm:145, standCm:176 },
-    amaze:       { fxShift:0.015, yShift:-15, src:'resources/si/sorana_si_amaze.webp?v=3',        top:3,  bot:1527, fx:0.562, cm:145, standCm:176 },
+    laugh:        { fxShift:-0.015, yShift:-10, src:'resources/si/sorana_si_laugh.webp?v=2',         top:3,  bot:1529, fx:0.579, cm:150, standCm:176 },
+    amaze:       { fxShift:0.015, yShift:-10, src:'resources/si/sorana_si_amaze.webp?v=3',        top:3,  bot:1527, fx:0.562, cm:150, standCm:176 },
     /* 伊甸古墓・墓門那一段（ver -1188，同上，逐張量）。 */
     whisper:      { fxShift:-0.015, yShift:-15, src:'resources/si/sorana_si_whisper.webp?v=4',       top:4,   bot:1524, fx:0.524, cm:145, standCm:176 },   // ver -1728：回復重製前那張（美術 09-24，`_sorana_r3_worklist.md` §十六）
     /* ══ Stage8 後段（ver -1092，Ray 交稿）══ 逐張量。
@@ -738,9 +738,9 @@ export const ART = {
          （白衣白髮保住，未去背原稿留在 _originals/SI 以備重做——Ray 指定不刪）。
        ⚠ `lauaghbig` 的拼法照稿（檔名如此），不要「修正」成 laughbig——鍵與檔名
          對得上才找得到圖。 */
-    smirk:        { fxShift:0.015, yShift:-15, src:'resources/si/sorana_si_smirk.webp?v=2',         top:8,  bot:1528, fx:0.582, cm:145, standCm:176 },
+    smirk:        { fxShift:0.015, yShift:-10, src:'resources/si/sorana_si_smirk.webp?v=2',         top:8,  bot:1528, fx:0.582, cm:150, standCm:176 },
     lauaghbig:    { fxShift:0.02, yShift:25, cm:150, src:'resources/si/sorana_si_lauaghbig.webp?v=3',     top:4,  bot:1529, fx:0.492 },
-    remind:       { fxShift:-0.015, yShift:-15, src:'resources/si/sorana_si_remind.webp?v=3',        top:1,  bot:1525, fx:0.523, cm:145, standCm:176 },   // ver -1765：Ray「索的 remind 修壞，回上一版」—— 美術換回 d556b53 那版（同名覆蓋），取景 measure_si 重量
+    remind:       { fxShift:-0.015, yShift:-10, src:'resources/si/sorana_si_remind.webp?v=3',        top:1,  bot:1525, fx:0.523, cm:150, standCm:176 },   // ver -1765：Ray「索的 remind 修壞，回上一版」—— 美術換回 d556b53 那版（同名覆蓋），取景 measure_si 重量
     /* ver -953：美術把 webp 換成新畫的 png，webp 版一度從磁碟消失（speakers 指得到、
        檔案卻不在）。轉回 webp 並**重量取景**（fx 0.547→0.528，差 0.019＝橫向約 19px，
        沿用舊值她會偏一格）；`?v=2` 是同名覆蓋的快取破除（§5）。 */
@@ -1026,7 +1026,7 @@ export const ART = {
        所以 `cm`／`standCm` 的近景修正整組拿掉，回到照量的預設。
        §5：換圖一定要重量取景值，這一組是重量的。 */
     crying:   { src:'resources/si/anya_si_crying.webp?v=2',    top:2,  bot:1522, fx:0.470 },
-    desperate:{ src:'resources/si/anya_si_desperate.webp?v=2', top:6, bot:1534, fx:0.412, cm:110, standCm:162, faceFx:0.465, faceZoomK:0.63 },
+    desperate:{ yShift:-6, src:'resources/si/anya_si_desperate.webp?v=2', top:6, bot:1534, fx:0.412, cm:100, standCm:162, faceFx:0.465, faceZoomK:0.63 },
     /* ⚠⚠ `sobbing` 是**裁到膝蓋**的近景，不是全身（§6.5：半身圖照量 alpha 上下緣
        會把人放大好幾倍）。畫面上看得到的大約是「頭頂→膝」＝身高的 75%，
        所以 `cm` 給 162×0.75 ≈ **122** —— 這樣她的**頭**才會與其他立繪一樣大，
@@ -1035,7 +1035,7 @@ export const ART = {
     sob:  { src:'resources/si/anya_si_sob.webp?v=2',   top:8,  bot:1535, fx:0.377, cm:95, standCm:162 },
     /* 北方泊地第三天（ver -664，Ray 交稿）。四張都是**全身站姿**，照量即可
        —— 近景那幾張才要 `cm`／`standCm`（見上面的說明）。 */
-    silent:    { src:'resources/si/anya_si_silent.webp?v=2',     top:4, bot:1521, fx:0.423 },
+    silent:    { yShift:-2, cm:145, src:'resources/si/anya_si_silent.webp?v=2',     top:4, bot:1521, fx:0.423 },
     panic:     { src:'resources/si/anya_si_panic.webp?v=2',      top:0, bot:1522, fx:0.434 },   // ver -842
     /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2` ＋ 取景值重量
        （0.426→0.522：差了將近一成的圖寬，沿用舊值臉會明顯偏左）。 */

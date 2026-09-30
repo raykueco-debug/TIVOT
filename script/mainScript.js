@@ -302,7 +302,7 @@ export const MAIN_SCRIPT = {
         portrait:{ expr:'seat' } },
       { speaker:'LUNARIA', text:'帶著這兩個傢伙，去看看是怎麼回事。', portrait:{ expr:'seat' } },
       /* 主角開口，但沒有台詞：**出框、框裡沒有字**（Ray 指定）。名字取存檔裡的玩家名。 */
-      { speaker:'PLAYER', blank:true },
+      { bubbleFx:'gloom', speaker:'PLAYER', blank:true },
       { speaker:'LUNARIA', text:'你那是什麼表情？', portrait:{ char:'LUNARIA', expr:'seat' } },
       { speaker:'LUNARIA', text:'剛剛要不是這傢伙，你早就沒命了吧？', portrait:{ expr:'seat_smirk' } },
       { speaker:'LUNARIA', text:'不服氣的話，就別依靠別人的力量。', portrait:{ expr:'seat_smirk' } },
