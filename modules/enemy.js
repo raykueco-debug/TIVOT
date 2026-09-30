@@ -1273,8 +1273,12 @@ export function setEnemy(key, opts){
   const _steps = Math.max(0, prog.getStage() - (SC.from||8));
   const _sScale = (en.stageScale != null) ? en.stageScale : 1;
   const stageMul = 1 + (Math.pow(SC.k || 1, _steps) - 1) * _sScale;
-  initEnemyHp(Math.round((en.hp||0) * stageMul));   // 3.2：敵血基準（載入時 setter）
-  state.ASSAULT_DAMAGE = Math.round((en.attack||0) * stageMul);   // 3.3：大絕單擊傷害
+  /* ══⚠⚠ Boss 加成：HP 與攻擊 ×`rating.bossMul.stat`（ver -1878，Ray：「Boss=1 則
+     全能力+20%」）—— 與 stage 加成同一個計算點（鐵律 7），卡上照舊存基準值。 */
+  const _bm = (GAME_CONFIG.rating||{}).bossMul || {};
+  const bossStat = (en.boss && _bm.stat > 0) ? _bm.stat : 1;
+  initEnemyHp(Math.round((en.hp||0) * stageMul * bossStat));   // 3.2：敵血基準（載入時 setter）
+  state.ASSAULT_DAMAGE = Math.round((en.attack||0) * stageMul * bossStat);   // 3.3：大絕單擊傷害
   /* 蓄力秒數。⚠ 卡上可以給**區間**（`[3,5]`，ver -423 的巨型蜈蚣）——
      那時候每次排程各自擲一次（見 `defense.scheduleAssault`），所以這裡存的是整個欄位。 */
   state.CHARGE_SECONDS = (en.atkInterval!=null) ? en.atkInterval : GAME_CONFIG.tuning.chargeSeconds;

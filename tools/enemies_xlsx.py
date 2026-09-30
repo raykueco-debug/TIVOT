@@ -5,6 +5,7 @@
 
     python3 tools/enemies_xlsx.py export            # enemies.js → enemies.xlsx（專案根目錄）
     python3 tools/enemies_xlsx.py import [檔案]      # Excel → 改回 enemies.js（只動有變的格）
+    python3 tools/enemies_xlsx.py scale             # 只出「數值基準」表 → enemies_scale.xlsx
     python3 tools/enemies_xlsx.py newcards          # 有圖沒卡的怪 → 各建一張「最普通的怪」的卡
 
 ⚠⚠⚠ **匯入是「就地改值」不是「重新產生檔案」**。
@@ -367,12 +368,71 @@ def do_export():
         except Exception:
             ws.cell(r, names.index('圖') + 1).value = '(縮圖失敗)'
 
+    fill_scale(wb.create_sheet('數值基準'))
     meta = wb.create_sheet('__meta__')
     meta.append([STAMP, hashlib.sha256(open(JS, 'rb').read()).hexdigest()])
     meta.append(['說明', '這一頁不要改。匯入時會拿它確認「你手上這份是從哪一版匯出的」。'])
     meta.sheet_state = 'hidden'
     wb.save(XLSX)
     print(f'寫出 {XLSX}：{len(data)} 張卡、{len(cols)} 欄（含 {len(rows_img)} 張縮圖）')
+
+# ══⚠⚠ 「數值基準」那一頁（ver -1878，Ray：「以 E rank 攻擊力10, hp100為標準，往上疊加，
+#   並加上 stage 加成與 boss 加成…並做入表格」）══════════════════════════════════
+#   ⚠ 純**視圖**：數字全由 config 現算（`tuning.enemyBase`／`enemyTier`／`enemyType`／
+#     `stageCurve`、`rating.bossMul`），這一頁改了不會被匯入 —— 要改係數改 config。
+#   ⚠ 算法與 `tools/enemies_baseline.py` 同一條式子（那一支才是寫進卡的計算點）。
+def fill_scale(ws):
+    from openpyxl.styles import Font, PatternFill, Alignment
+    T = load_named('GAME_CONFIG', 'GAME_CONFIG.tuning') or {}
+    R = load_named('GAME_CONFIG', 'GAME_CONFIG.rating') or {}
+    B, TIER, TYPE = T['enemyBase'], T['enemyTier'], T['enemyType']
+    SC, BM = T.get('stageCurve') or {}, R.get('bossMul') or {}
+    stat = BM.get('stat', 1)
+    bold = Font(bold=True); head = PatternFill('solid', fgColor='DDD6C8')
+    def hdr(row):
+        ws.append(row)
+        for c in ws[ws.max_row]: c.font = bold; c.fill = head; c.alignment = Alignment(horizontal='center')
+    ws.append(['敵人數值基準（config 現算，這一頁改了不會匯入）']); ws['A1'].font = Font(bold=True, size=13)
+    ws.append(['E 級基準：HP %s／攻擊 %s；每升一級 HP ×%s、攻擊 ×%s（連乘）' % (B['hp'], B['atk'], B['hpStep'], B['atkStep'])])
+    ws.append(['Boss（卡上 boss=1）：HP／攻擊 ×%s、經驗 ×%s、錢 ×%s（錢按總 HP 算，實拿約 ×%s）'
+               % (stat, BM.get('exp'), BM.get('money'), round(BM.get('money', 1) * stat, 2))])
+    ws.append(['stage 加成：自 S%s 起每升一個 stage，HP 與攻擊 ×%s（連乘；卡上 stageScale=0 的不吃）' % (SC.get('from'), SC.get('k'))])
+    ws.append([])
+    hdr(['等級', 'lv', '類型', 'HP', '攻擊', 'Boss HP', 'Boss 攻擊', '攻擊頻率(秒)', 'BR 增傷', '盤面', '疊圈', '說明'])
+    order = sorted(TIER.items(), key=lambda kv: kv[1]['lv'])
+    for tk, t in order:
+        for yk, y in TYPE.items():
+            hp  = int(round(B['hp'] * B['hpStep'] ** t['lv'] * y['hpMul'] / 10.0)) * 10
+            atk = int(round(B['atk'] * B['atkStep'] ** t['lv']))
+            ws.append([tk, t['lv'], '%s %s' % (yk, y['name']), hp, atk, round(hp * stat), round(atk * stat),
+                       '%d~%d' % (y['every'] - 1, y['every'] + 1), y.get('brBonus') or '',
+                       '/'.join(map(str, t['grids'])), t['stack'], t.get('desc', '')])
+    ws.append([])
+    k, f0 = SC.get('k', 1), SC.get('from', 8)
+    stages = list(range(f0, f0 + 13))
+    hdr(['stage 倍率'] + ['S%d' % s for s in stages])
+    ws.append(['×'] + [round(k ** (s - f0), 3) for s in stages])
+    ws.append([])
+    hdr(['力量型 HP（非 Boss）'] + ['S%d' % s for s in stages])
+    for tk, t in order:
+        hp = int(round(B['hp'] * B['hpStep'] ** t['lv'] / 10.0)) * 10
+        ws.append([tk] + [round(hp * k ** (s - f0)) for s in stages])
+    ws.append([])
+    hdr(['攻擊（非 Boss）'] + ['S%d' % s for s in stages])
+    for tk, t in order:
+        atk = int(round(B['atk'] * B['atkStep'] ** t['lv']))
+        ws.append([tk] + [round(atk * k ** (s - f0)) for s in stages])
+    ws.column_dimensions['A'].width = 20
+    for col in 'CL': ws.column_dimensions[col].width = 12
+
+def do_scale():
+    """只出「數值基準」那一頁到 enemies_scale.xlsx —— **不碰 enemies.xlsx**
+       （那一份常常是 Ray 改到一半的草稿）。"""
+    from openpyxl import Workbook
+    wb = Workbook(); ws = wb.active; ws.title = '數值基準'
+    fill_scale(ws)
+    out = os.path.join(ROOT, 'enemies_scale.xlsx'); wb.save(out)
+    print('寫出', out)
 
 # ── 匯入（就地改值）────────────────────────────────────────────────────
 def js_literal(v):
@@ -627,5 +687,6 @@ if __name__ == '__main__':
     cmd = sys.argv[1] if len(sys.argv) > 1 else 'export'
     if cmd == 'export': do_export()
     elif cmd == 'newcards': do_newcards()
+    elif cmd == 'scale': do_scale()
     elif cmd == 'import': do_import(sys.argv[2] if len(sys.argv) > 2 else None)
     else: sys.exit(__doc__)

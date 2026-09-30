@@ -69,6 +69,7 @@ def main():
     E = load('敵人卡', DEPS, 'ENEMIES')
     T = load('tuning', DEPS, 'GAME_CONFIG.tuning')
     TIER, TYPE = T['enemyTier'], T['enemyType']
+    B = T['enemyBase']
     src = open(JS, encoding='utf-8').read()
     rows, edits = [], 0
 
@@ -78,8 +79,9 @@ def main():
             rows.append((k, e.get('tier') or '—', e.get('atype') or '—',
                          '(手動設製／等級或類型還沒填，不動數值)')); continue
         t, ty = TIER[tier], TYPE[atype]
-        hp   = int(round(t['hp'] * ty['hpMul'] / 10.0)) * 10      # 取到十位，表上好讀
-        atk  = t['atk']
+        # ⚠ ver -1878：以 E 為基準往上連乘（`tuning.enemyBase`，Ray 定案）
+        hp   = int(round(B['hp'] * B['hpStep'] ** t['lv'] * ty['hpMul'] / 10.0)) * 10   # 取到十位，表上好讀
+        atk  = int(round(B['atk'] * B['atkStep'] ** t['lv']))
         every = [ty['every'] - 1, ty['every'] + 1]
         grids = t['grids']
         stack = t['stack']
@@ -103,7 +105,7 @@ def main():
         # ⚠⚠ **行末註解一起換掉**：它講的是**舊的**數字（「槍之魔女 45 的 50%」
         #   「hp＝Ray 表」…）—— 值換了註解沒換，那就是一句會被下一個人當成
         #   規格讀的假話（鐵律 7 的但書：過期的那一份不要存在）。
-        TAG = '   // ver -1582 基準（等級×類型；Ray 補等級後重跑）'
+        TAG = '   // ver -1878 基準（E＝100/10 往上連乘 × 類型）'
         put(r'^(      hp:)\s*[0-9.]+,.*$',              '\\g<1>%d,%s' % (hp, TAG))
         put(r'^(      attack:)\s*[0-9.]+,.*$',          '\\g<1>%d,%s' % (atk, TAG))
         put(r'^(      assaultEvery:)\s*\[[^\]]*\],?.*$', '\\g<1>[%d,%d],%s' % (every[0], every[1], TAG))
