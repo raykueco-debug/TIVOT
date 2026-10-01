@@ -1575,7 +1575,9 @@ export const TOWNS = {
             { speaker:'NARRATION', text:'', auto:900, se:'se_stomp_far', shake:true },
             { speaker:'NARRATION', text:'', auto:1100, se:'se_stomp_far', shake:true },
             { speaker:'CECILIE_X', text:'不要睡！看我！' },
-            { speaker:'NARRATION', text:'', auto:900, se:'se_stomp', shake:true },
+            /* `hide:'*'`（ver -1896，Ray：「黑畫面那幾拍改自動播」）：畫面還是全黑，她卻佔著槽 ⇒
+               「台上有人的無台詞拍要點擊」把踩地／爆炸那幾拍卡住。撤掉（看不見）就照 auto 跑。 */
+            { speaker:'NARRATION', text:'', auto:900, se:'se_stomp', shake:true, hide:'*' },
             { speaker:'NARRATION', text:'', auto:1200, se:'se_enemy_holyburst', shake:true },
             /* 由下往上平移、黑幕淡入進場（ver -1892，Ray）—— 平移 2.6s，auto 等它走完。 */
             { speaker:'NARRATION', text:'', auto:2900, fadeIn:1200, cgPan:'up',

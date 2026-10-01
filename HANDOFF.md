@@ -208,6 +208,49 @@
 > · **沒實跑過**：里朋莊園整段（六場戰鬥、沙龍演出、回旅店、隔天出航說明、禁航解除）、索拉娜 19 張縮圖、挾持雙人圖的站位 —— 都要 Ray 在遊戲裡看。
 > · ⚠ 這一輪自己犯的兩次（留著提醒）：-1797 lint 報錯仍 commit 推上（之後改成 lint 通過才 commit）；-1801 `git add -A` 把 Ray 三張 untracked 夾帶進去（已移出版控）。
 
+# HANDOFF — 截至 `ver 2026.09.22-1896`（10-02，Windows，程式 session）
+
+> ⚠⚠⚠ **換 session 先讀這一塊**：`origin/main` ＝ -1896。工作區裡 `script/speakers.js` 的未 commit 改動
+> **不是這個 session 的**（開工時就在），`resources/si/*.png`、`resources/ci/*.png`、`resources/_HANDOFF_ART_*.md` 的刪除、
+> `resources/audio/**/_raw/` 等 untracked 是美術／Ray 的 —— **沒碰、不要一起 commit**。
+> ⚠ 這幾版動了 `tools/devserver.py`（新增 `/__efit`、`/__castside`，`/__tune` 吃 `side`）—— **8200 要重開**才吃得到。
+
+**-1882～-1896 做完的**
+· -1882 接 SI 更新（torsten 背影 webp `layerBottom`、諾薇兒 gossip1/salute/sigh `?v=2`、米夏 fight/ni 備用）。
+· -1883 對話框「緊張灑汗」`bubbleFx:'nervous'`；戰鬥中鎖血鈕改「敵圖」（敵立繪取景編輯，存檔寫回敵人卡 `fit`，`/__efit`）。
+· -1885 聖徒系列 10 張新怪開卡（`kind:slay`，名字／等級待 Ray）；賽西莉 blush `?v=2`／fluster。
+· **-1888～-1891 帝都第一夜的夢（賽西莉）**：帝都旅店 `acts` 的 `cap_dream`（`sleepFirst:{hours:1, disguise:true, blackAfter:3000}`，
+  條件 `inn_seen_capital_inn`、直到 `stage1_open`）。按睡覺 → 睡覺音播完再黑三秒 → 踩地×4 →「不要睡！看我！」→ 踩地／爆炸 →
+  `ci_cecilie_obe` 由下往上平移淡入 → fluster 兩句 → 推棺戰鬥 `cap_dream`（地下聖徒 faceless／搭檔賽西莉＝諾薇兒九星全亮／
+  一進戰鬥自動聖徒化 `autoSaint`／戰敗直接跳隔天 `onLose`／**夢境戰一概不評** `dream:true`）→ 戰勝對白 → 三秒轉幕到隔天 07:00。
+  BGM：場景 `deepfrost`、戰鬥 `retroroman`、戰後與鏡湖賽西莉出場前一拍 `cecilie`（World OP2）。
+· -1890 管理人「敵圖」面板加「對話・左／右」分頁（大小／上下／左右，寫回 speakers.js）；戰鬥對白 ←→／A D 回播推進，劇情頁也吃 A D。
+· **-1892～-1896（Ray 的六項＋一項）**：
+  - **立繪退回鎖框前**：拿掉 -1884 的 `boxLock`（story.layout）與 `_lock`（tutorial.placePortraitX）—— 鎖到未載好的那一張尺寸，人跑出畫面外。
+    憲法 §6.5 那一條改寫成「不要用鎖框解」。-1881 的「各人自己算 shift」**保留**（那是 33 項清單裡 Ray 要的）。
+  - 帝都直接按睡覺不再出蕾娜「真巧」：小睡路徑也記 `inn_missed`（`inn.js` 的 nap 分支）。
+  - 段落接續（`rerunIfDue` → `runArrival`）開演時 `showNav(false)`：夢境戰開場不再露「上街區」、閉棺時旅店鈕不在畫面上。
+  - **立繪調整可選站左／站右**：劇情頁 ✎→調整 寫 speakers.js 那一張的 `side`；戰鬥「敵圖」→對話分頁寫 `config.tutorial.cast[who].side`（`/__castside`）。
+    即時預覽會把台上那一邊的人對調；⚠ 這兩個面板**沒在瀏覽器點過**，要 Ray 試。
+  - 黑畫面那幾拍改自動播（「不要睡！看我！」後一拍 `hide:'*'`）：實測只要點一下就一路演到插圖與下一句。
+
+**⚠ 要 Ray 確認／還沒做的**
+1. 夢境戰**戰敗路徑沒實跑過**（`onLose:'cap_dream_lose'` → 直接隔天）。
+2. 立繪調整的「站左／站右」兩個面板沒在瀏覽器實點。
+3. -1881 那張清單第 6 項（飛行畫面要點一下才有音樂）仍等 Ray 選作法。
+4. 聖徒系列 10 張新怪的名字／等級。
+
+**資產盤點（這一段經手的）**
+| 項 | 狀態 |
+|---|---|
+| 賽西莉 SI：blush／fluster／saintinstall | ✔ 不欠（已接 speakers.js，saintinstall 也進戰鬥對白 `tut_cecilie_saintinstall`） |
+| 賽西莉 CI：deathguard／lifereturn／obe／saintinstall | ✔ 不欠（webp 已接搭檔卡；`resources/ci/*.png` 是美術原檔、未入版控，不是缺） |
+| 夢境背景 `holyseedungeonwhole` | ✔ 不欠（既有，`noTime` 單張） |
+| 夢境音效 `se_stomp`／`se_stomp_far`／`se_enemy_holyburst` | ✔ 不欠（m4a 已登記 `SE_FILES` 與 fileGain） |
+| BGM deepfrost／retroroman／cecilie | ✔ 不欠（已登記、credit 已補） |
+| 米夏 fight／ni | ✔ 不欠（Ray：備用，鍵已接、腳本未用 —— 刻意） |
+| `008_rennaholdanya.png`、`anya_si_nod`、`renna_si_hug*` 等 untracked png | ⚠ 沒盤（美術交件中，這個 session 沒經手） |
+
 # HANDOFF — 截至 `ver 2026.09.22-1881`（10-01，Windows，程式 session）
 
 **-1877～-1881 做完的**
