@@ -1567,7 +1567,7 @@ export const TOWNS = {
         acts:[
           { flag:'cap_dream', need:'inn_seen_capital_inn', until:'stage1_open', sleepFirst:{ hours:1, disguise:true },
             storyBattle:true, lines:[
-            { speaker:'NARRATION', text:'', auto:700, fadeOut:1, bg:'holyseedungeonwhole', bgm:null, show:false },
+            { speaker:'NARRATION', text:'', auto:700, fadeOut:1, bg:'holyseedungeonwhole', bgm:'deepfrost', show:false },   // 場景曲（ver -1888，Ray 指定）
             { speaker:'NARRATION', text:'', auto:900, se:'se_stomp_far', shake:true },
             { speaker:'NARRATION', text:'', auto:900, se:'se_stomp_far', shake:true },
             { speaker:'NARRATION', text:'', auto:900, se:'se_stomp_far', shake:true },
@@ -7623,7 +7623,8 @@ export const TOWNS = {
           nou('decode','是的......他就是現在HUND的第一候補——'),
           nou('decode','尼莫。'),
           ren('chase','那個百年一遇的天才？'),
-          nmo('bye','哪有那麼誇張啦——'),
+          /* `bgm:'cecilie'`（ver -1888，Ray：「鏡湖她出場前一拍也切這首」）＝賽西莉的專用曲 World OP2。 */
+          Object.assign(nmo('bye','哪有那麼誇張啦——'), { bgm:'cecilie' }),
           /* ⚠⚠ **ver -1536：賽西莉沒有人影**（Ray：「賽西莉登場時**多放了一個**
              黑影全身立繪」）—— 回去對稿，她那一段是
                賽：「諾薇兒？是諾薇兒嗎？」

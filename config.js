@@ -83,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1888';
+export const VERSION = 'ver 2026.09.22-1889';
 
 export const GAME_CONFIG = {
 
@@ -2757,6 +2757,7 @@ export const GAME_CONFIG = {
        ⚠ `allowLose`：稿上「若戰敗劇情就直接進入第二天」—— 輸了照樣往下演（跳到收尾那一拍）。
        ⚠ `noEval`：這是夢，不給蕾娜評價。`talkOnce`：打贏過就不再講（§6.5.2）。 */
     cap_dream: { enemy:'faceless', partner:'cecilie', story:1, autoSaint:true, allowLose:true, noEval:true,
+                 bgm:'bgm_retroroman', bgmAfter:'cecilie',   // ver -1888（Ray 指定；戰後＝賽西莉的專用曲）
                  bg:'holyseedungeonwhole', talkOnce:'cap_dream_talk',
                  talk:[ { trigger:'saintStart', lines:[
                    { who:'cecilie_x', img:'tut_cecilie_saintinstall', text:'讓我使出這力量的，你是第一個。' },
@@ -3744,6 +3745,7 @@ export const GAME_CONFIG = {
          ⚠ 安雅的戰鬥曲（`peritunematerial_battlefield4`）同尺量是 −5.89 LUFS
            → 0.637，與表上的 0.636 相符＝**她那一首本來就是對的**，不要跟著調。 */
       peritune_whirlwind:0.842,
+      peritune_deep_frost_calling:0.562, peritunematerial_retroroman_battle:0.623, peritunematerial_world_op2:0.519,   // ver -1888 ebur128（−8.8／−9.7／−8.1 LUFS）
       se_soranacounter:1.47, se_soranacounterhit:1.04,   // 飛刀射出/命中（ver -839 實測；hit 峰值夾）
       se_glasscrack:1.94,   // 裂紋輻射（ver -839 實測 −19.5 LUFS）
       bgm_missionfailed:1.995, bgm_capital_day:1.213, bgm_lunaria:1.230,
@@ -4864,6 +4866,10 @@ export const ASSETS = {
   /* ver -745：Ray 交專用戰鬥圖（man_sorana.jpg → webp，原檔入 _originals）。 */
   enemy_man_sorana: "resources/enemy/man_sorana.webp?v=3",
   bgm_crimson:    "resources/audio/bgm/peritune_crimson_moon_loop.m4a",
+  /* 帝都第一夜的夢（ver -1888）。 */
+  bgm_deepfrost:  "resources/audio/bgm/peritune_deep_frost_calling.m4a",
+  bgm_retroroman: "resources/audio/bgm/peritunematerial_retroroman_battle.m4a",
+  bgm_cecilie:    "resources/audio/bgm/peritunematerial_world_op2.m4a",   // 賽西莉的專用曲（World OP2）
   /* 打靶場（計時挑戰）專屬曲（ver -658（-893 前用詞），Ray：「所有打靶遊戲都用這個音樂」）。
      ⚠ 哪一場用它**不寫在卡上**而是規則：見下面的 `battleBgm.timeAttack`。 */
   bgm_hopstep:    "resources/audio/bgm/peritune_hopstep_battle_loop.m4a",

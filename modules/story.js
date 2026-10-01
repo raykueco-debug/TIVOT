@@ -1231,6 +1231,9 @@ const BGM_FILES=[
   /* ver -1564：雪都圖書館「索拉娜小姐！」那一拍起（bgm_hesitation）；
      **任務失敗也換成這一首**（`ASSETS.bgm_lose`，Ray 指定）。 */
   'peritunematerial_hesitation_loop.m4a',
+  /* 帝都第一夜的夢（ver -1888，Ray 指定；Credit 已加）。⚠ config 的 `ASSETS.bgm_*` 也補了（兩張表，見上）。 */
+  'peritune_deep_frost_calling.m4a', 'peritunematerial_retroroman_battle.m4a',
+  'peritunematerial_world_op2.m4a',   // 賽西莉的專用曲（夢境戰後、鏡湖她出場前一拍）
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。加新別名只動這裡。 */
 const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
@@ -1243,6 +1246,8 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   crimson:'peritune_crimson_moon_loop',
                   entangle:'peritunematerial_entangle',   // ver -656
                   misty:'peritune_misty_hollow_loop',       // ver -744：湖上甲板
+                  deepfrost:'peritune_deep_frost_calling', retroroman:'peritunematerial_retroroman_battle',   // ver -1888
+                  cecilie:'peritunematerial_world_op2',   // ver -1888：賽西莉的專用曲（World OP2）
                   whistling:'peritune_whistling_winds_loop',   // ver -744；-752 起＝森住民戰後（bgmAfter）
                   whirlwind:'peritune_whirlwind',   // ver -747：索菈娜插畫登場～森住民戰
                   harbor:'peritune_harbor_morning_loop',   // ver -753：stage5 起的北泊
@@ -3139,7 +3144,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1888';
+const KERB_V='?v=1889';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
