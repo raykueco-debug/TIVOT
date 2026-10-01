@@ -515,6 +515,9 @@ function pickEvaluator(rankKey, battleId){
     if(w && w.from && prog.hasFlag(w.from) && !(w.until && prog.hasFlag(w.until))){
       evalWhyNot='評價者不在場（'+w.from+' 之後、'+(w.until||'—')+' 之前）'; return null; }
   }
+  /* ══ 夢境戰一概不評（ver -1891，Ray：「夢境戰一概不給評價」）══ 卡上 `dream:true`。
+     ⚠ 排在 `noEval` 那條「約會對象是蕾娜也照評」的例外**之前**：夢裡沒有評價者，誰在場都一樣。 */
+  if(bt.dream){ evalWhyNot='夢境戰'; return null; }
   if(bt.noEval && !dateWithEvaluator()){ evalWhyNot='卡上 noEval'; return null; }
   /* 第 N 章之前整段不評（ver -1130，資料在 `evaluation.js` 的 `FROM_STAGE`）。
      ⚠ 排在卡上的特例之後、通用表之前：它是「這一套評價什麼時候開始運作」。 */
