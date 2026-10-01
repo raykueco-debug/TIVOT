@@ -1211,7 +1211,7 @@ function enemyAttack(dmg, kind, saintAmt){
       const _c=(GAME_CONFIG.partners&&GAME_CONFIG.partners[state.pickedPartner])||{};
       saint.coopShorten((_c.coop&&_c.coop.wrongShortenSec)||1);
     }
-    const sk0  = hitFxSe(state.curEnemyHitFx, fxKind);
+    const sk0  = state.curEnemyHitSe || hitFxSe(state.curEnemyHitFx, fxKind);   // 卡上 hitSe 優先（ver -1881）
     if(sk0) SFX.play(asset(sk0), sfxGain(sk0));
     screenShake();
     enemy.showHitFx(fxKind);
@@ -1238,7 +1238,7 @@ function enemyAttack(dmg, kind, saintAmt){
   /* 敵攻擊音（ver -800）：**綁在 hitFx 的 type 上**——同一格的受擊特效與音效是一組
      （HITFX 那張表：type→{base 視覺, se 音效}）。卡上不再有 `sound` 欄位，改 hitFx
      的 type 就連特效帶音一起換（Ray 定案）。block 讀 ult（fxKind 已折）。 */
-  const sk  = hitFxSe(state.curEnemyHitFx, fxKind);
+  const sk  = state.curEnemyHitSe || hitFxSe(state.curEnemyHitFx, fxKind);   // 卡上 hitSe 優先（ver -1881）
   if(sk) SFX.play(asset(sk), sfxGain(sk));   // 受擊層增益（全域響度階層見 tuning.sfxGain）
   if(state.saintMode){
     // 聖徒化期間敵攻擊不扣血：改推進倒數槽（推滿＝OBE）。視覺（震動/受擊特效/紅閃）留在 combat，
@@ -2207,6 +2207,7 @@ function stopAll(){
   clearLucidFlood(false);   // 明晰之夢的金光（ver -746）：任何結束路徑都收掉，不爆散
   enemy.stopSakura();    // 鹿主的櫻花狂亂（ver -899）：它是全螢幕的層＋一支還在響的音
   enemy.stopHolyBurst(); // 王座徘徊者的放光（ver -1351）：同上
+  enemy.stopEntranceSe(); // 登場音（龍吟／詠唱）在結束時淡出（ver -1881）
 }
 
 /* ---- 計時碼表（連戰用；規則：只在「盤面可點且非 overkill／非聖徒化」時作動）----
@@ -3014,7 +3015,6 @@ export function startGame(){
   state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0; state.installReloadPending=false; state.counterStreak=0;
   saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標；共鬥 coopMode/coopTimer 一併）
   weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
-  weapon.resetWeaponSwitch();   // 副武器切換鈕（ver -410）：排隊中的切換不可以跨場留著
   /* 重畫破防計量表（ver -1067 加，-1068 之後它只是重算 path＋重掛頭像）。
      ⚠ -1067 那顆「換武器鈕不見了」的根因是**當時的座標要靠量血條算**，
        而進戰鬥沒有人清那道快取 —— -1068 把位置整個搬進 CSS 之後那個坑就沒了。 */
@@ -3047,6 +3047,11 @@ export function startGame(){
      開場一律先歸零、再看這一次有沒有指定，才是不會漏的寫法。 */
   state.scriptRun=!!pendingScript; state.scriptBattleId=pendingScript; pendingScript=null;
   state.tutorialRun=false; state.tutorialStoryRun=false;   // 教學場旗標歸零（tutorial 擁有；開場統一歸零、maybeStart 啟動時設回）
+  /* 副武器切換鈕（ver -410）：排隊中的切換不可以跨場留著。
+     ⚠⚠ ver -1881 由上面挪到**這裡**：它要問 `storyMode()`（本篇 → 歸位編成的一順位、
+       不把開機預設那一把寫回編成），而 `scriptRun` 到這一行才設好 —— 放在前面的話
+       本篇的每一場都被當成試玩版，玩家在整備頁選的那一把就被預設的蓋回去。 */
+  weapon.resetWeaponSwitch();
   /* 劇情插入戰（ver -375（-893 前用詞））：**單敵一場**，換上卡上那隻，且這一場不能聖徒化／不能用搭檔技。
      ⚠ 要在 `stopAll()`/`loadBoard(0)` **之前**換敵 —— 盤面配置（boardGrids）
        是查「目前這隻怪」來的，換晚了第一盤會用到上一隻的格數。 */

@@ -845,6 +845,11 @@ function maybeTip(){
   tx.style.top=(Math.max(6, r.top-56))+'px';
   slot.classList.add('spot');
   t.addEventListener('click', e=>{ e.stopPropagation(); closeTip(); });
+  /* ══⚠⚠ 說明不是鎖（ver -1881，Ray：「點開整備畫面後…只點得到箭頭點不到標籤」）══
+     遮罩改成 `pointer-events:none`（CSS），頁裡**任何一處**照樣按得到；
+     按下去的那一刻順手把這則說明收掉（同 §6.5.5 旅店那一套）。 */
+  const once=()=>{ el.removeEventListener('pointerdown', once, true); closeTip(); };
+  el.addEventListener('pointerdown', once, true);
 }
 function closeTip(){
   const t=el && el.querySelector('.gs-tip'); if(!t) return;

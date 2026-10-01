@@ -1549,7 +1549,7 @@ export const TOWNS = {
         /* ⚠ 睡覺鈕由 y 0.450 上移到 **0.385**（ver -430，Ray：「睡覺鈕上移一些」）。
              橫向仍固定在櫃台正上方（0.490）—— 那個 x **不要動**（見上面 -408 的說明：
              往右就落到蕾娜的門旁邊，位置會被讀成語意）。 */
-        innSpots:{ sit:{ x:0.345, y:0.605 }, sleep:{ x:0.490, y:0.385 } },
+        innSpots:{ sit:{ x:0.345, y:0.605 }, sleep:{ x:0.490, y:0.450 } },
         /* ══ 被抬回來醒來的那一拍（ver -496，Ray：「城鎮中戰鬥死亡就回旅店，
            如果在那之前還沒觸發旅店初見就優先跑諾薇兒一句『啊，醒了。』」）══
            城鎮插入戰敗北 → 被抬回這座城的旅店。初見（上面那一幕棺材戲）還沒看過的話，
@@ -2325,7 +2325,9 @@ export const TOWNS = {
             /* ══ 第一場打完（ver -671（-893 前用詞），Ray 交稿）══
                ⚠ 染色**打完就沒了**（進戰鬥時 `stopTint` 收掉）—— 這裡不重新上，
                  因為下一段的緊張是靠聲音與立繪撐的；要再上就寫一次 `tintHold`。 */
-            ren('think','……憑空生出的禍魘，『永夜』以來第一次發生這種狀況。'),
+            /* ⚠ `np_cem1_won`（ver -1881）＝墓地第一戰打贏了 —— 「紫黑之爪戰後到這裡為止
+               主角身上沒有伙伴」的終點（config.storyPartnerNone，鐵律 9：只有這一拍插）。 */
+            Object.assign(ren('think','……憑空生出的禍魘，『永夜』以來第一次發生這種狀況。'), { flags:['np_cem1_won'] }),
             ren('write','其他地方是否也有這種異象……？'),
             ren('write','還是……'),
             any('desperate','……'),
@@ -2477,7 +2479,7 @@ export const TOWNS = {
       inn: {
         bg:'northport_hotel_bf', name:'北方泊地　旅店', exits:{ back:'east' },
         inn:true,
-        innSpots:{ sit:{ x:0.310, y:0.630 }, sleep:{ x:0.580, y:0.550 } },
+        innSpots:{ sit:{ x:0.310, y:0.630 }, sleep:{ x:0.700, y:0.585 } },
         /* ⚠⚠ 睡覺**一律擋著**（ver -665，Ray：「那一夜演完之後不用睡，直接往下
            跑劇情到八點。因為沒畫夜間差分，現階段玩家跑出去夜遊也沒東西」）——
            那一夜演完就由閘門③把時鐘推到隔天八點，玩家沒有需要睡的時刻。
@@ -2494,10 +2496,12 @@ export const TOWNS = {
            ⚠ 三種狀態不要混用：`out` ＝不在房裡（臉不畫）、`asleep` ＝人在但睡著
              （門在、燈熄、臉照畫）、亮＝正常。 */
         innDoors:[
-          { need:'np_day3_done', roster:['RENNA','NOUVELLE','ANYA'],
-            out:['NOUVELLE'], say:{ ANYA:'........' } },
-          { roster:['RENNA','NOUVELLE','ANYA'],
-            asleep:['NOUVELLE','ANYA'], answerBy:'RENNA' },
+          /* ⚠ ver -1881（Ray：「安雅在北泊劇情中尚未入隊，所以在離開北泊前不會出現旅店頭像」）
+             —— 兩個狀態的 roster 都拿掉安雅。 */
+          { need:'np_day3_done', roster:['RENNA','NOUVELLE'],
+            out:['NOUVELLE'] },
+          { roster:['RENNA','NOUVELLE'],
+            asleep:['NOUVELLE'], answerBy:'RENNA' },
         ],
         innStage1:{ renna:'你一個大男人不方便吧？我來照顧她們兩個就好了。',
                     /* 第三天出發前敲她的門（ver -664，Ray 交稿）。⚠ **無立繪**。 */
@@ -2674,7 +2678,11 @@ export const TOWNS = {
            18:00，所以是**當天 19:00**（clockGate 在演台詞/轉場之前先推）。 */
       /* ⚠ ver -1060（Ray：「夏爾村改成 17:00 諾薇兒會來喊人，原 18:00」）——
          推到的時刻跟著往前一小時（19:00 → 18:00），保持「喊完就過一小時」。 */
-      { flag:'sv_evening', need:'sv_arrive', hourOfDay:17, clockTo:18,
+      /* ⚠⚠ ver -1881（Ray：「夏爾村圍城戰劇情固定在 19:00 開始，若回索菈娜家的時間超過
+         19:00 則以當下時間開始，若已經超過夜間時間則改為 19:00 開始」）——
+         `clockToday:19` ＝推到今天 19:00、已經過了就不動（不倒轉）；凌晨（夜間之後）
+         「今天的 19:00」還在前面，所以推到 19:00。取代原本的 `clockTo:18`。 */
+      { flag:'sv_evening', need:'sv_arrive', hourOfDay:17, clockToday:19,
         goto:'sorahome', enterAgain:true, stage:5,   // 回到索拉娜小屋後的劇情＝S5（-857 重編號；原 -821 的 S6）
         lines:[ nou('front','找到你了！大家都在索菈娜家等著喔。') ] },
       /* ══ 翌日 06:00（ver -870，Ray 的森林行稿：「三秒黑淡入淡出　翌日（黑透遮罩）
@@ -3028,7 +3036,7 @@ export const TOWNS = {
              這個管「睡不睡得著」。 */
         inn:true, innFrom:'safehouse_shinier', innNoGuide:true,
         sleepFlag:'safehouse_shinier',
-        innSpots:{ sit:{ x:0.30, y:0.62 }, sleep:{ x:0.60, y:0.55 } },
+        innSpots:{ sit:{ x:0.30, y:0.62 }, sleep:{ x:0.300, y:0.600 } },
         noSleep:'……還是先別睡，總覺得今晚不會太平靜。',
         /* ══⚠⚠ 敲門（ver -1096，Ray 的 Stage9 稿）══════════════════════════
            `knock[WHO] = { low, date }` —— 四個人一張表，`inn.js` 只有一條路在走
@@ -3092,7 +3100,8 @@ export const TOWNS = {
            ⚠ 「安：Anya_SI_sleepy」這類**只有差分沒有台詞**的拍＝空框演出拍
              （台上有人→點擊推進，§6.5 -628）。 */
         /* 這一幕＝**S6**（ver -870，Ray：「加入stage6 翌日早上起床那一幕」）。 */
-        { flag:'sv_forest_go', need:'sv_forest_morning', stage:6, lines:[
+        /* `clockToday:7`（ver -1881，Ray：「出發前往遺蹟時間為 7 點」）＝晨戲演完、出門那一刻是 07:00。 */
+        { flag:'sv_forest_go', need:'sv_forest_morning', stage:6, clockToday:7, lines:[
           sor('side','好啦，趁早趕快出發吧！'),
           any('sleepy',''),
           ren('wake','這麼早嗎？'),
@@ -4798,7 +4807,7 @@ export const TOWNS = {
              每一句都插 `ss_date_*`（下午四點那一道要靠它分台詞），換稿時保留那支旗。
            ⚠ 不能睡：睡一覺會跳過下午四點那一道（旅店合流的稿還沒到）。 */
         inn:true, innNoGuide:true,
-        innSpots:{ sit:{ x:0.22, y:0.68 }, sleep:{ x:0.86, y:0.55 } },
+        innSpots:{ sit:{ x:0.22, y:0.68 }, sleep:{ x:0.410, y:0.555 } },
         noSleep:'……現在不是睡覺的時候。',
         sleepFlag:'ss_raid_home',   // ver -1793：救完人回到旅店之後才能睡（稿：「也可直接睡覺，隔日七點接劇情」）
         /* ══⚠⚠⚠ **Stage 14・旅店合流**（ver -1784，Ray 交稿「約會分支旅店合流」）══
@@ -5159,7 +5168,8 @@ export const TOWNS = {
         ] },
         { flag:'vn_arrive', need:'tomb_gate', endStoryExplore:true,
                  sides:{ RENNA:'L' }, lines:atStage(10, [
-          nou('surprise','哇，下雪了。'),
+          /* `clockToNext:12`（ver -1881，Ray：「去過古墓後第一次到雪都時間固定在 12:00」）。 */
+          Object.assign(nou('surprise','哇，下雪了。'), { clockToNext:12 }),
           sor('think','有點冷。'),
           ren('upsetstare','妳穿那樣當然會冷。'),
           nou('front','安雅，會冷嗎？'),
@@ -5593,7 +5603,7 @@ export const TOWNS = {
       inn:      { bg:'varn_hotel',    name:'雪都瓦恩霍姆　旅店',
         exits:{ back:'uptown' },
         inn:true, innNoGuide:true,
-        innSpots:{ sit:{ x:0.22, y:0.68 }, sleep:{ x:0.86, y:0.55 } },
+        innSpots:{ sit:{ x:0.22, y:0.68 }, sleep:{ x:0.440, y:0.430 } },
         /* ══⚠⚠⚠ **劇情合流：古墓之後、隔日早上 08:00**（ver -1707，Ray 交稿「[非線性Stage 10 A route結束]」）══
            由墓門那一段的 `goto:'@ravnsdal:inn'` 帶過來（翌日卡之後），抵達就演。
            稿上兩個分支 × M1／M2，但**只有三個 act、共用一支 `flag`**（`vn_after_tomb`），由上往下取第一個成立的：
@@ -6605,7 +6615,7 @@ export const TOWNS = {
            （`ep_night_anya_out` 永遠不會插，不寫就是鎖到天荒地老 —— 同 `QUEST_LOCK` 那扇窗的 `unless`）。 */
         lock:{ uptown:{ need:'ep_hairpin_talk', until:'ep_night_anya_out', skipIf:'tomb_misha_met', text:EP_VIGIL_SAY } },
         inn:true, innNoGuide:true,
-        innSpots:{ sit:{ x:0.26, y:0.62 }, sleep:{ x:0.42, y:0.34 } },
+        innSpots:{ sit:{ x:0.26, y:0.62 }, sleep:{ x:0.430, y:0.430 } },
         sleepFlag:'ep_renna_night',   // ver -1382：`noSleepUntil` 改名 `sleepFlag`（語意相同）
         noSleep:'……蕾娜還沒回來。',
         /* ══⚠⚠⚠ 門的狀態（由上往下取第一個 `need` 成立的，同 `acts`）══════════
@@ -8681,7 +8691,7 @@ export const TOWNS = {
              降臨時還是小尺寸的，調成跟戰鬥畫面一樣大」）—— 取代 `cgBackFit`／`cgBackScale:0.9`。 */
           { speaker:'NARRATION', text:'', hide:'*',
             cgBack:'resources/enemy/mon_gravekeeper_seal.webp?v=3',
-            cgBackRise:true, cgBackAs:'gk_seal',
+            cgBackRise:true, cgBackAs:'gk_seal', shake:true,   // ver -1881：降臨時畫面震動（Ray）
             se:'se_enemy_roardeer', auto:1800 },
           /* ⚠⚠ **只有這一拍推棺**（ver -1622，Ray 指定）：`kerbRise:true`。
              其餘每一場（含二戰兩輪與所有追擊戰）都是原地開棺 —— 完整的推棺儀式

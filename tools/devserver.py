@@ -520,6 +520,34 @@ def _set_fx_seg(seg, value):
     return 'Object.assign(' + seg + ', { bubbleFx:' + lit + ' })'
 
 
+SHAKE_ANY = r"shake\s*:\s*(?:'[^']*'|true|false|\d+)"
+
+
+def _set_shake_seg(seg, value):
+    """一拍的原始碼 seg → 把 `shake` 設成 value（None＝拿掉；'bubble'＝只抖框；True＝全畫面）。
+       ver -1881（Ray：「沒有我明示的角色對話框特效…讓我可以在編輯中拿掉」）。
+       作法同 `_set_fx_seg`（借它的「塞進／拿掉一個鍵」那一套，只換鍵名與值）。"""
+    lit = None if value in (None, '', False) else ("'bubble'" if value == 'bubble' else 'true')
+    if re.search(SHAKE_ANY, seg):
+        if lit:
+            return re.sub(SHAKE_ANY, 'shake:' + lit, seg, count=1)
+        s2 = re.sub(r"\{\s*" + SHAKE_ANY + r"\s*\}", '{ }', seg, count=1)
+        if s2 == seg:
+            s2 = re.sub(r"\s*" + SHAKE_ANY + r"\s*,", '', seg, count=1)
+        if s2 == seg:
+            s2 = re.sub(r"\s*,\s*" + SHAKE_ANY, '', seg, count=1)
+        m = re.match(r"^Object\.assign\((.*),\s*\{\s*\}\)$", s2, re.S)
+        return m.group(1) if m else s2
+    if not lit:
+        return seg
+    if seg.startswith('{'):
+        return '{ shake:' + lit + ',' + seg[1:]
+    m = re.match(r"^(Object\.assign\(.*,\s*\{)(.*\}\))$", seg, re.S)
+    if m:
+        return m.group(1) + ' shake:' + lit + ',' + m.group(2)
+    return 'Object.assign(' + seg + ', { shake:' + lit + ' })'
+
+
 def line_patch(req):
     op = req.get('op')
     if op not in ('insert', 'delete', 'set'):
@@ -530,10 +558,11 @@ def line_patch(req):
     le = text.find('\n', e)
     le = len(text) if le < 0 else le                    # 結尾那一行的行尾
     if op == 'set':
-        if req.get('key') != 'bubbleFx':
-            raise ValueError('set 只准改 bubbleFx')
+        key = req.get('key')
+        if key not in ('bubbleFx', 'shake'):
+            raise ValueError('set 只准改 bubbleFx／shake')
         seg = text[s:e + 1]
-        new = _set_fx_seg(seg, req.get('value'))
+        new = (_set_fx_seg if key == 'bubbleFx' else _set_shake_seg)(seg, req.get('value'))
         if new == seg:
             return '%s:%d 沒有變動' % (rel, ln)
         _write_text(rel, text[:s] + new + text[e + 1:])
@@ -594,7 +623,7 @@ def beat_span_patch(req):
     if (req.get('field') or 'expr') != 'expr':
         raise ValueError('只支援 expr')
     old, new = req.get('old'), req.get('new')
-    rel, text, s, e, _, _ = _find_beat(dict(req, mark=None), BEAT_FILES)
+    rel, text, s, e, _, _ = _find_beat(req, BEAT_FILES)   # ver -1881：帶 mark／before／after（序列比對）
     olit = 'null' if old is None else re.escape(_js_str(old))
     seg = text[s:e + 1]
     out, n = re.subn(r"expr(\s*):(\s*)" + olit, lambda m: 'expr' + m.group(1) + ':' + m.group(2) + _js_str(new), seg, count=1)

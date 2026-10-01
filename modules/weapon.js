@@ -70,11 +70,7 @@ export function init(a){ api = a; }
      直接+50%，是改造增益＋50%」）—— 例：改裝 3 階＝+60%，杰羅 +50% → +90%。
      沒改裝過的槍（增益 0）杰羅放大不了什麼，所以他不收（jeroReady 擋）。
    weaponCounter 的 scale、dmgRoll、coopCounter 全部問這一支 —— 各算一份必然走鐘。 */
-export function subgunPowerMul(id){
-  const WM = GAME_CONFIG.tuning.weaponMod || {};
-  const modLv = Math.min(prog.weaponMod(id), WM.statLv || 99);
-  return 1 + (modLv * (WM.perLv || 0)) * (1 + prog.jeroMod(id));
-}
+export function subgunPowerMul(id){ return prog.subgunPowerMul(id); }   // 本體在 progress（ver -1881）
 
 /* ============================================================================
  *  反擊武器 · 反擊演算（三段防禦 Counter／散彈 Perfect 呼叫）
@@ -840,8 +836,11 @@ export function resetWeaponSwitch(){
   const b=$('wpSwitch'); if(b) b.classList.remove('pending','flip');
   /* ⚠ 把現在這把記回編成：試玩版的出擊整備是直接改 `state.equippedWeapon` 的，
      不記回去的話整備頁與戰鬥裡會各說各話。 */
+  /* ⚠⚠⚠ **本篇不記回去**（ver -1881，Ray：「裝備好的副武器會跳回預設的副武器」）——
+     本篇的 `equippedWeapon` 在開打前常常還是開機時的預設那一把（或上一場停的那一把），
+     記回去等於拿它**蓋掉玩家在整備頁選的**那一格；本篇的真相本來就是編成（下面歸位就讀它）。 */
   const w=WEAPONS[state.equippedWeapon];
-  if(w && w.cat) load.setPick(w.cat, state.equippedWeapon);
+  if(!storyMode() && w && w.cat) load.setPick(w.cat, state.equippedWeapon);
   /* ══⚠⚠⚠ **ver -983：每一場開戰都回到玩家設定的一順位**（Ray：「把副武器每次開戰
      都固定成玩家設定的順序」）══ 兩種模式都適用 —— 輪轉模式**不再沿用上一場
      打完時停在哪一把**（那等於「這一場帶哪把槍」由上一場的最後一次切換決定，

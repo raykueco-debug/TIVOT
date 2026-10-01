@@ -83,7 +83,9 @@ const PARTY = {
   sorana:   { from: 9 },   // ver -1739 Ray：「索則是 stage9 才加入」（-1360 是 8）。⚠ 與 script/town.js 的 OUTING.who.SORANA.from 是同一件事，改一邊要改另一邊（鐵律 7）
   nouvelle: { from: 1 },
   anya:     { from: 3 },   // ver -1739 Ray：「安雅在 stage3 才會加入」（-742 是 5）。⚠ 與 OUTING.who.ANYA.from 同一件事，改一邊要改另一邊
-  renna:    { from: 1 },
+  /* `away` ＝這兩支旗之間她不參與閒聊（ver -1881，Ray：「雪都事件到古墓踏破前，不播放任何
+     有蕾娜參與的閒聊」）。起點＝第一次抵達雪都（`vn_arrive`）、終點＝走出古墓（`tomb_exit_done`）。 */
+  renna:    { from: 1, away:{ from:'vn_arrive', until:'tomb_exit_done' } },
 };
 function inParty(who, stage){
   /* ⚠ 台詞的 `who` 可能帶表情差分（`renna/relief`，ver -432）—— 先切回本尊再問。
@@ -96,6 +98,8 @@ function inParty(who, stage){
   if (!p) return true;                 // 沒登記的人（例如日後的客串）一律視為在場
   if (p.from != null && stage < p.from) return false;
   if (p.to   != null && stage > p.to)   return false;
+  if (p.away && typeof flagOn==='function'
+      && flagOn(p.away.from) && !flagOn(p.away.until)) return false;
   return true;
 }
 

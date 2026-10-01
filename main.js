@@ -39,6 +39,22 @@ import * as inv from './script/inventory.js';
 import * as clock from './script/clock.js';   // 章節的起始時刻（firstHourAt）   // 進度／旗標／「一輪遊戲」的邊界（newRun）
 import './modules/enemy.js';
 
+/* ══⚠⚠ **破圖框一律不畫**（ver -1881，Ray：「怪出現前都會先出現疑似讀不到圖的 404 框」
+   「閉棺時也常出現 404 圖框」）══ 手機 Safari 會替**沒有 src／載入失敗**的 `<img>` 畫一個
+   灰框＋破圖圖示（桌機 Chrome 不畫，所以桌機看不到）。換怪那一瞬間 `src` 是被拔掉的
+   （-1467），門與鉚釘也有幾張是用到才給 src —— 那一格就是那個框。
+   ⚠ 擋在**全域唯一的一處**（鐵律 8）：capture 階段聽 error／load，失敗就掛 `img-broken`
+     （CSS 藏起來），下一次載成功自己拿掉。⚠ 管理人模式記一行是哪一張（真的 404 要去修路徑）。 */
+document.addEventListener('error', e=>{
+  const t=e.target; if(!t || t.tagName!=='IMG') return;
+  t.classList.add('img-broken');
+  if(document.body.classList.contains('testmode') && t.getAttribute('src'))
+    console.warn('[img] 載入失敗：', t.id||t.className, t.getAttribute('src'));
+}, true);
+document.addEventListener('load', e=>{
+  const t=e.target; if(t && t.tagName==='IMG') t.classList.remove('img-broken');
+}, true);
+
 const $ = id => document.getElementById(id);
 
 // ── 多語言：最先套用（先於載入畫面/任何字串讀取）──

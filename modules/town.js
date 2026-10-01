@@ -2408,6 +2408,9 @@ function clockGate(){
   /* ⚠ 時鐘在**演台詞之前**推（ver -656）：那一段路不算時間，而下一格的背景
      要用推完之後的時段挑（`bgFor` 在 `enter()` 裡才問時鐘）。 */
   if(g.clockTo!=null) clock.advanceToNextHour(g.clockTo);
+  /* `clockToday`（ver -1881）＝推到**今天**的那個時刻、已經過了就不動（同 act 的 `clockToday`，
+     走同一支 `applyClockToday`）。夏爾村那一夜：固定 19:00，晚於 19:00 回來就照當下。 */
+  if(g.clockToday!=null) applyClockToday(g.clockToday);
   /* ══⚠⚠ **閘門也開得了／關得掉自由活動**（ver -1360，Ray：「自由活動期間可以約會，
      而第二天就關閉自由活動，完成任務才開」）══ 欄位與 act 那一邊同名同義
      （`modules/town.js` 的 act 收尾，§6.5.4 的 -666）—— 一個狀態一組欄位（鐵律 7/9）：
@@ -2608,6 +2611,8 @@ function ensureLayer(){
        現在：走進店裡＝店主 ＋ 這一顆鈕；點下去開**全畫面**的那張窗（同一份 CSS，
        只是不帶 `dock-left`，鐵律 8）。 */
     + '<button id="townShopBtn" type="button"><b></b><i>點一下開啟</i></button>'
+    /* 射擊挑戰（ver -1881，Ray：「武器店的購物跟射擊挑戰分別做成按鈕」）—— 原本藏在買賣窗裡。 */
+    + '<button id="townChallengeBtn" type="button"><b></b><i>點一下開始</i></button>'
     ;
   /* ⚠⚠ **櫃台鈕沒有了**（ver -404，Ray：「不用點擊，直接右店主左選單」）。
      走進店裡就是店舖畫面：右邊店主立繪、左邊選單，兩樣一起出來（見 shopEnter）。
@@ -3331,6 +3336,34 @@ function showShopBtn(on){
                                       : '懸賞榜';
   }
   b.classList.toggle('on', !!on);
+  /* 射擊挑戰鈕：與買賣鈕**同進同出**（同一個入口狀態，鐵律 8）。 */
+  const cb=layer.querySelector('#townChallengeBtn');
+  if(cb){
+    const cfg=challengeCfg(n);
+    if(on && cfg) cb.querySelector('b').textContent = cfg.challengeLabel || '射擊挑戰';
+    cb.classList.toggle('on', !!(on && cfg));
+  }
+}
+/* 這一家店有沒有射擊挑戰（店卡上 `challenge` ＋ 節點上 `challengeLines`）。 */
+function challengeCfg(n){
+  if(!n || !n.shop || !(n.challengeLines && n.challengeLines.length)) return null;
+  const cfg=((GAME_CONFIG.shop||{}).shops||{})[n.shop];
+  return (cfg && cfg.challenge) ? cfg : null;
+}
+/* 「再挑戰」（ver -398）：把那一段（含 `{battle:…}`）交給劇情播放器演 ——
+   它自己會推槍棺、打完接回來（`resumeFrom`），與劇情裡那一次走同一條路（鐵律 8）。
+   ⚠ 演完**回到櫃台**（同「與店主交談」的作法）：玩家本來就站在那裡。 */
+function startChallenge(){
+  const n=node(); if(!challengeCfg(n)) return;
+  try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+  showShopBtn(false);
+  setShopOn(false);                    // 進真正的對白：地名交回 `story-talking` 管
+  busy=true; showNav(false);
+  story.playAdhoc(n.challengeLines, ()=>{
+    story.clearCast();
+    busy=false; showNav(true);
+    backToShop(n);                     // ⚠ 有新段落到期就接上（ver -1368），否則回店裡
+  });
 }
 /* 這一格的「選單」＝把那顆鈕擺出來。⚠ 名字沿用 `openMenu` —— 呼叫端（`afterArrive`、
    整備教學的回呼、談完話回到店裡）要的是同一件事：「把這家店的入口交還給玩家」。 */
@@ -3902,6 +3935,8 @@ function bindInput(){
   if(layer){
     const sb=layer.querySelector('#townShopBtn');
     if(sb) sb.addEventListener('pointerup', e=>{ e.stopPropagation(); openSheet(); });
+    const cb=layer.querySelector('#townChallengeBtn');
+    if(cb) cb.addEventListener('pointerup', e=>{ e.stopPropagation(); startChallenge(); });
   }
 
   /* ══ 鍵盤：WASD ＝走（ver -427，Ray 指定）══════════════════════════════
@@ -5118,15 +5153,8 @@ function openShop(){
   /* 「再挑戰」（ver -398）：把那一段（含 `{battle:…}`）交給劇情播放器演 ——
      它自己會推槍棺、打完接回來（`resumeFrom`），與劇情裡那一次走同一條路（鐵律 8）。
      ⚠ 演完**回到櫃台**（同「與店主交談」的作法）：玩家本來就站在那裡。 */
-  const onChallenge = (n.challengeLines && n.challengeLines.length) ? ()=>{
-    setShopOn(false);                    // 進真正的對白：地名交回 `story-talking` 管
-    busy=true; showNav(false);
-    story.playAdhoc(n.challengeLines, ()=>{
-      story.clearCast();
-      busy=false; showNav(true);
-      backToShop(n);                     // ⚠ 有新段落到期就接上（ver -1368），否則回店裡
-    });
-  } : null;
+  /* ⚠ ver -1881：射擊挑戰搬到窗外自己一顆鈕（`startChallenge`），窗裡不再長那一顆。 */
+  const onChallenge = null;
   sheetClose = showShop(n.shop, hasTalk ? [1] : null, ()=>{
     let lines = (keeperOk && n.keeper && n.keeper.length) ? n.keeper : null;
     if(!lines && rnd){

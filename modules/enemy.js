@@ -784,13 +784,22 @@ const PURIFY_KINDS = { harm:1, slay:1, aerial:1 };
    （`playVoice` 會過 `voiceChain`、吃 VO 的分層音量），否則走 SE。
    ⚠ 判**路徑**不判鑰匙前綴：鑰匙的命名不是每一個都守規約（`sfx_saint` 就不是
      `se_` 開頭），而路徑是實際檔案住哪一層 —— 那才是「它是不是語音」的事實。 */
+/* ══⚠⚠ 登場音在戰鬥結束時淡出（ver -1881，Ray：「怪的登場音效在戰鬥結束後就淡出」）══
+   長的吼聲（龍吟、詠唱）會一路響進結算頁 —— 所以 SE 走 `playCue` 拿一個把手，
+   `stopEntranceSe` 由 combat 的 `stopAll`（所有結束路徑的匯流點）收掉（鐵律 8）。
+   ⚠ 語音照舊一次播完：那是台詞，短，而且 `playVoice` 走語音鏈沒有把手。 */
+let entranceCues = [];
+export function stopEntranceSe(ms){
+  for(const h of entranceCues){ try{ h.stop(ms==null ? 700 : ms); }catch(_){} }
+  entranceCues = [];
+}
 function playEntranceSe(key){
   if(!key) return;
   const p = asset(key);
   if(!p) return;
   try{
     if(/\/vo\//.test(p)) SFX.playVoice(p, sfxGain(key));
-    else                  SFX.play(p, sfxGain(key));
+    else                  entranceCues.push(SFX.playCue(p, sfxGain(key)));
   }catch(_){}
 }
 /* ⚠⚠⚠ `multi`＝**多型態 BOSS 的中間型態**（ver -1413，Ray：「王座徘徊者前兩型態的
@@ -969,7 +978,12 @@ export function loadEnemyPortrait(en){
              鐵律 1），陸戰一律鐘聲。 */
         playEntranceSe(state.curEnemyEntranceSe || 'sfx_saint');
         if(en && en.entranceAlso) playEntranceSe(en.entranceAlso); }   // 同時第二聲（ver -1703，卡上的 entranceAlso）
-      if(en && en.entranceBlast && api.roarBlast) api.roarBlast();
+      if(en && en.entranceBlast && api.roarBlast){
+        api.roarBlast();
+        /* ⚠ ver -1881（Ray：「守墓者降臨時畫面要有震動效果」）：卡上開了 `riseFx`（守墓者、古墓那幾張）
+           的，衝擊波過完再震一下 —— 兩個一起跑會互搶 `#app` 的 transform，所以接在後面。 */
+        if(en.riseFx && api.screenShake) setTimeout(()=>{ try{ api.screenShake(); }catch(_){} }, 500);
+      }
       else if(api.screenShake) api.screenShake();
       const top=$('top');
       if(top){
@@ -1367,6 +1381,9 @@ export function setEnemy(key, opts){
   state.DELAY_SECONDS = dp.seconds!=null ? dp.seconds : null;
   state.DELAY_DAMAGE  = dp.damage !=null ? dp.damage  : null;
   state.WRONG_DAMAGE  = wp.damage !=null ? wp.damage  : null;
+  /* 受擊音效（ver -1881，Ray：「受擊特效後面加一欄受擊音效」）：卡上 `hitSe` ＝**這一隻的受擊音一律用它**
+     （四種受擊共用），留白＝照舊跟著 hitFx 的 type 走（config.HITFX，ver -800）。 */
+  state.curEnemyHitSe = en.hitSe || null;
   state.curEnemyHitFx = en.hitFx || null;        // 3.7：本怪受擊特效三件套（音效綁在 type 上，見 config.HITFX；卡上不再有 sound，ver -800）
   /* 受擊特效的冷卻（秒，ver -1667）：卡上的 `hitFxCd`（Excel「受擊特效／CD秒」）。
      ⚠ 沒寫要清成 0 —— 同 setEnemy 的其他欄位，連戰換敵不能留上一隻的。 */

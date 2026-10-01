@@ -48,7 +48,18 @@ export function init(a){ api = a; }
    `storyPartnerBy` 每一條 need 成立的都在池子裡＋預設那一位墊底 —— 以前是
    「第一條成立的**取代**預設」（-671 的換人），現在是「入隊的都可選」。
    pool[0]＝旗標推出來的預設（沒選過的人用它，行為與 -671 相同）。 */
+/* 這一段劇情主角身上沒有伙伴（`config.storyPartnerNone`，ver -1881）。 */
+export function storyPartnerless(){
+  for(const r of (GAME_CONFIG.storyPartnerNone||[])){
+    if(!r) continue;
+    if(r.need && !prog.hasFlag(r.need)) continue;
+    if(r.until && [].concat(r.until).some(f=>prog.hasFlag(f))) continue;
+    return true;
+  }
+  return false;
+}
 export function storyPartnerPool(){
+  if(storyPartnerless()) return [];
   const out=[];
   for(const r of (GAME_CONFIG.storyPartnerBy||[])){
     /* `not`（ver -970）＝**這支旗立了這一條就不算**。用途：夏爾村圍城期間強配
@@ -86,6 +97,7 @@ export function benchLabel(key){
   return null;
 }
 export function storyPartnerKey(){
+  if(storyPartnerless()) return null;     // 無夥伴（ver -1881）—— 不准退回預設那一位
   const pool = storyPartnerPool();
   /* 玩家在整備頁挑過人（ver -741）：選擇存 loadout（跨輪偏好，§6.9），
      **還在池子裡才算** —— 讀檔回到安雅還沒入隊的章節時，「安雅」不能成立。

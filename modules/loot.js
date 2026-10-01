@@ -165,7 +165,7 @@ export function showBag(opts){
       const ids=inv.ownedWeapons().filter(k=>WP[k] && WP[k].cat===o.cat);
       groups=[{ name:o.cat, rows:ids.map(id=>({ id, name:inv.nameOf(id), n:1,
                  /* 規格用**本篇**那一組（這一頁只在城鎮／劇情裡開得到，§6.5.3）。 */
-                 desc:weaponDescText(id, true) })) }];
+                 desc:weaponDescText(id, true, prog.subgunPowerMul(id)) })) }];
     }else groups=null;   // 一般（非裝備）視圖 → 共用 bagListHtml（見上）
     const body=(groups||[]).map(g=>{
       /* ⚠ 道具欄**只顯示，不交易**（ver -368，Ray：「只有在商店能買賣」）。
@@ -460,7 +460,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
   /* ⚠ 商店只存在於城鎮（本篇），所以規格一律顯示**本篇那一組**數值（ver -378）。
      試玩版的出陣整備頁顯示的是另一組 —— 那是刻意的，兩邊本來就是兩套。 */
   const statTable=(id, cls)=>{
-    const rows=weaponStatRows(id, true);
+    const rows=weaponStatRows(id, true, prog.subgunPowerMul(id));
     if(!rows.length) return '';
     return '<div class="wp-stats '+(cls||'')+'">'
          + rows.map(r=>'<span class="wp-k">'+r[0]+'</span><span class="wp-v">'+r[1]+'</span>').join('')

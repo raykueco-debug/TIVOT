@@ -54,6 +54,7 @@ export const ENEMIES = {
          `result.winSubBy`，這裡只標這一隻是哪一類（鐵律 1）。三種聖徒同一類。 */
       kind:'slay',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -95,6 +96,7 @@ export const ENEMIES = {
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'E',
       atype:'P',
       stageScale:1,
@@ -131,6 +133,7 @@ export const ENEMIES = {
          `result.winSubBy`，這裡只標這一隻是哪一類（鐵律 1）。 */
       kind:'target',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'E',
       atype:null,
       stageScale:1,
@@ -164,6 +167,7 @@ export const ENEMIES = {
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'target',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'E',
       atype:'P',
       stageScale:1,
@@ -189,6 +193,7 @@ export const ENEMIES = {
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'slay',                   // 聖徒系列＝已擊殺（ver -432）
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -230,6 +235,7 @@ export const ENEMIES = {
          寫出來只是把原行為明文化，不是調數值。要讓大絕更痛就改這一格。 */
       kind:'human',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'S',
       stageScale:1,
@@ -270,6 +276,7 @@ export const ENEMIES = {
       ult:{ on:1, hp:40, count:2, atk:12, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -302,6 +309,7 @@ export const ENEMIES = {
       ult:{ on:1, hp:40, count:2, atk:12, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -328,6 +336,7 @@ export const ENEMIES = {
       name:'亂入者 · ???',
       story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
       openAssault:[1,2],   // 登場第一發大絕的延遲（秒，隨機範圍）；預設 [1,2]。改小＝一登場就攻擊、改大＝緩一下
@@ -361,6 +370,7 @@ export const ENEMIES = {
       ult:{ on:1, hp:20, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'human',                  // 槍之魔女是人類 → 已擊敗（ver -432，Ray 指定）
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'S',
       atype:'S',
       stageScale:1,
@@ -407,6 +417,7 @@ export const ENEMIES = {
       ult:{ on:1, hp:20, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'S',
       stageScale:1,
@@ -486,6 +497,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -517,6 +529,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -548,6 +561,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -579,6 +593,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -616,6 +631,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -659,6 +675,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -698,6 +715,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -729,6 +747,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -760,6 +779,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -791,6 +811,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -826,6 +847,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -863,6 +885,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -893,6 +916,7 @@ export const ENEMIES = {
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'human',                      // 結算副標「已擊敗」（ver -432）
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'E',
       atype:null,
       stageScale:1,
@@ -956,6 +980,7 @@ export const ENEMIES = {
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human',                      // 結算副標「已擊敗」（ver -432）
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'E',
       atype:null,
       stageScale:1,
@@ -994,6 +1019,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       image:'enemy_thug_pistol', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
       hp:100, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
@@ -1006,6 +1032,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       image:'enemy_thug_rifle', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
       hp:100, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
@@ -1018,6 +1045,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       image:'enemy_thug_dual', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
       hp:100, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
@@ -1030,6 +1058,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       image:'enemy_thug_shotgun', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
       hp:100, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
@@ -1042,6 +1071,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       image:'enemy_thug_lookout', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
       hp:100, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
@@ -1054,6 +1084,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       image:'enemy_thug_boss', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
@@ -1068,6 +1099,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       image:'enemy_thug_squad', bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
       hp:250, attack:10, atkInterval:null, assaultEvery:[3,6], assault:{ count:3, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
@@ -1084,6 +1116,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       image:'enemy_thug_squad_gate', bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
@@ -1096,6 +1129,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       image:'enemy_thug_squad_avenue', bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
@@ -1108,6 +1142,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       image:'enemy_thug_squad_forecourt', bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
@@ -1120,6 +1155,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       image:'enemy_thug_squad_carriage', bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
@@ -1132,6 +1168,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       /* ver -1838（Ray：「man_thug_dual 馬努戰換這張圖」）—— fit 照單人惡棍卡那一套。原本借他 `draw` 立繪的 `enemy_manu` 鍵留著。 */
       image:'enemy_thug_dual', bg:'sofia_slum', fit:{ mode:'contain', pos:'center bottom', scale:0.8, shiftY:-0.04 },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
@@ -1160,6 +1197,7 @@ export const ENEMIES = {
          （enemy.js 的 ENTRANCE_KINDS/PURIFY_KINDS 都含 aerial）。 */
       kind:'aerial',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -1220,6 +1258,7 @@ export const ENEMIES = {
       ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'aerial',               // 飛行敵人自成一類（ver -869，Ray）→ 副標照樣「已淨化」
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'S',
       stageScale:1,
@@ -1269,6 +1308,7 @@ export const ENEMIES = {
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // 大絕：on=1 才啟用（見檔頭格式說明）
       kind:'ship',                 // 船隻 → 已擊沉
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -1319,6 +1359,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'beast',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -1349,6 +1390,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'beast',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -1379,6 +1421,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'beast',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -1409,6 +1452,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'beast',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -1441,6 +1485,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'beast',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -1485,6 +1530,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0.35 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -1548,6 +1594,7 @@ export const ENEMIES = {
          ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
            改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
       riseFx:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       riseStyle:'unpurge',   // 降臨＝淨化倒放（ver -1704，Ray；見 enemy.riseClass）
       /* ⚠⚠ **倒地差分**（ver -1701／-1703）：圖、放大倍數、下移、著地線（圖內比例）。
          劇本的 `cgBackDown:'gk_seal'` 與古墓追兵擊退後殘留的那一張都讀這一格（鐵律 7）。
@@ -1602,6 +1649,7 @@ export const ENEMIES = {
          ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
            改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
       riseFx:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       riseStyle:'unpurge',   // 降臨＝淨化倒放（ver -1704，Ray；見 enemy.riseClass）
       deathFx:'quake',   // 沒死：不淨化，劇烈一震＋brickcrush（ver -1700，見 enemy.purgeEnemy）
       tier:'B',
@@ -1645,6 +1693,7 @@ export const ENEMIES = {
          ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
            改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
       riseFx:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       riseStyle:'unpurge',   // 降臨＝淨化倒放（ver -1704，Ray；見 enemy.riseClass）
       deathFx:'quake',   // 沒死：不淨化，劇烈一震＋brickcrush（ver -1700，見 enemy.purgeEnemy）
       tier:'B',
@@ -1690,6 +1739,7 @@ export const ENEMIES = {
          ⚠ 卡上原有的 `entrance`／`entranceBlast` 照舊 —— 走降臨那一條時它們
            改在**著地那一刻**發（`LAND_AT`），不是立繪一出現就發。 */
       riseFx:1,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       riseStyle:'unpurge',   // 降臨＝淨化倒放（ver -1704，Ray；見 enemy.riseClass）
       deathFx:'quake',   // 沒死：不淨化，劇烈一震＋brickcrush（ver -1700，見 enemy.purgeEnemy）
       tier:'A',
@@ -1728,6 +1778,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -1756,6 +1807,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -1786,6 +1838,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -1818,6 +1871,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -1860,6 +1914,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -1889,6 +1944,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -1919,6 +1975,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -1949,6 +2006,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -1978,6 +2036,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'D',
       stageScale:1,
@@ -2009,6 +2068,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'slay',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -2038,6 +2098,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'slay',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'S',
       stageScale:1,
@@ -2067,6 +2128,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'slay',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -2099,6 +2161,7 @@ export const ENEMIES = {
       assault:{ count:2, gap:0.35 },
       kind:'slay',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -2163,6 +2226,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'D',
       stageScale:1,
@@ -2205,6 +2269,7 @@ export const ENEMIES = {
       assault:{ count:2, gap:0.35 },
       kind:'multi',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -2276,6 +2341,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0.35 },
       kind:'multi',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -2340,6 +2406,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0.35 },
       kind:'multi',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'A',
       atype:'S',
       stageScale:1,
@@ -2407,6 +2474,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0.35 },
       kind:'aerial',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'A',
       atype:'P',
       stageScale:1,
@@ -2475,6 +2543,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2506,6 +2575,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2537,6 +2607,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2568,6 +2639,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2599,6 +2671,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2630,6 +2703,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:null,
       atype:'P',
       stageScale:1,
@@ -2660,6 +2734,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2691,6 +2766,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2722,6 +2798,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2753,6 +2830,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -2785,6 +2863,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'beast',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -2815,6 +2894,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'beast',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'S',
       stageScale:1,
@@ -2845,6 +2925,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'beast',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'D',
       stageScale:1,
@@ -2912,6 +2993,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'D',
       stageScale:1,
@@ -2941,6 +3023,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'D',
       stageScale:1,
@@ -2970,6 +3053,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'D',
       stageScale:1,
@@ -2999,6 +3083,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'D',
       stageScale:1,
@@ -3028,6 +3113,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'S',
       stageScale:1,
@@ -3056,6 +3142,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -3086,6 +3173,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -3114,6 +3202,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'S',
       stageScale:1,
@@ -3142,6 +3231,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'D',
       stageScale:1,
@@ -3171,6 +3261,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -3199,6 +3290,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -3227,6 +3319,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'P',
       stageScale:1,
@@ -3255,6 +3348,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -3283,6 +3377,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -3311,6 +3406,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -3339,6 +3435,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -3369,6 +3466,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'D',
       stageScale:1,
@@ -3398,6 +3496,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -3426,6 +3525,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'C',
       atype:'S',
       stageScale:1,
@@ -3454,6 +3554,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'S',
       stageScale:1,
@@ -3482,6 +3583,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -3510,6 +3612,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'D',
       stageScale:1,
@@ -3539,6 +3642,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -3567,6 +3671,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -3595,6 +3700,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -3623,6 +3729,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -3653,6 +3760,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -3680,6 +3788,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'D',
       atype:'P',
       stageScale:1,
@@ -3714,6 +3823,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -3741,6 +3851,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -3767,6 +3878,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -3793,6 +3905,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -3819,6 +3932,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -3845,6 +3959,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,
@@ -3871,6 +3986,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',   // ver -1834 Ray：幻影系全部 Rank B、數值用獨角虎（原 C）
       atype:'P',
       stageScale:1,
@@ -3897,6 +4013,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'harm',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
       tier:'B',
       atype:'P',
       stageScale:1,

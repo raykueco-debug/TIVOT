@@ -678,8 +678,9 @@
      淡出只留給「隱藏」那一向。 */
   #energyClasp .clasp-combo{opacity:0;transition:opacity .2s;}
   #energyClasp .clasp-combo.on{opacity:1;transition:none;}
-  /* 滿值：數字讓位給光點（ver -522）。 */
-  #energyClasp.full .clasp-combo{opacity:0;}
+  /* 滿值：數字讓位給光點（ver -522）。
+     ⚠⚠ ver -1881 撤銷（Ray：「無伙伴時破防計量顯示 combo 數，滿了也要繼續顯示」）——
+       滿檔照樣顯示連擊數（有搭檔時圓心是頭像，本來就不出數字）。 */
   /* VP 風數字（ver -512，Ray：「字太小、字體不好看，找個更有視覺效果的；
      連擊數可以大一點，可稍微遮過計量表」）：粗斜體襯線＋金色縱向漸層＋黑描邊。
      ⚠ 漸層走 background-clip:text，描邊交給 -webkit-text-stroke＋外圈 drop-shadow
@@ -3879,6 +3880,9 @@
   #innLobby .inn-lamp{position:absolute;left:50%;top:4px;transform:translateX(-50%);
     width:5px;height:5px;border-radius:50%;background:#3a3630;z-index:2;}
   #innLobby .inn-door.awake .inn-lamp{background:#f0c469;box-shadow:0 0 7px rgba(240,196,105,.9);}
+  /* ⚠ ver -1881（Ray：「旅店的女主角頭像上有個黃點，移除」）—— 門燈整個不畫；
+     醒著／睡著／不在照舊由臉的明暗與 class 表達。 */
+  #innLobby .inn-lamp{display:none;}
   #innLobby .inn-door:active{background:rgba(212,169,74,.22);}
 
   /* ── 行動鈕：**擺在背景的家具上**（ver -394，Ray：「獨自坐坐按鈕移到茶桌上，
@@ -4067,22 +4071,29 @@
      ⚠ 落點：**左上、地名那一行之下**。右邊站著店主（`castSolo` 固定 `side:'R'`），
        下半是槍棺與吊墜 —— 左上是這一頁唯一沒有東西的角落。
      ⚠ `#townNav` 是 `pointer-events:none`，子元素要自己開回來。 */
-  #townShopBtn,.town-stall{position:absolute;display:none;pointer-events:auto;
+  #townShopBtn,#townChallengeBtn,.town-stall{position:absolute;display:none;pointer-events:auto;
     left:12px;top:calc(env(safe-area-inset-top,0px) + 92px);
     width:min(46%,168px);padding:13px 12px 11px;
     background:rgba(18,15,26,.92);border:1px solid var(--gold-dim);border-radius:10px;
     box-shadow:0 8px 26px rgba(0,0,0,.6);
     font-family:inherit;text-align:center;color:var(--gold);}
   #townShopBtn.on{display:block;}
+  /* 射擊挑戰（ver -1881）：同一套樣式，排在買賣鈕正下方。 */
+  #townChallengeBtn{top:calc(env(safe-area-inset-top,0px) + 166px);}
+  #townChallengeBtn.on{display:block;}
+  /* ⚠ 演出中（對白／插圖）店的入口鈕一律讓開（ver -1881，Ray：「索菈娜試槍插圖不該有武器店選項在插圖上」）——
+     宣告走演出層的 `story-talking`（§6.5 的 -385），不在各呼叫點各收一次。 */
+  body.story-talking #townShopBtn, body.story-talking #townChallengeBtn,
+  body.story-talking .town-stall{display:none !important;}
   /* 臨時攤鈕（ver -732）：只在要顯示時才建（modules/town.js 的 showStallBtns），
      所以存在＝顯示；`right` 落在畫面右緣 ——「左右各設」，同一個 top 左右對稱
      （右上角的選單鈕在 top:10 高 44，這條 top 本來就閃得開它）。 */
   .town-stall{display:block;}
   .town-stall.right{left:auto;right:12px;}
-  #townShopBtn:active,.town-stall:active{background:var(--grid-active);transform:scale(.97);}
-  #townShopBtn b,.town-stall b{display:block;font-size:17px;letter-spacing:5px;font-weight:normal;
+  #townShopBtn:active,#townChallengeBtn:active,.town-stall:active{background:var(--grid-active);transform:scale(.97);}
+  #townShopBtn b,#townChallengeBtn b,.town-stall b{display:block;font-size:17px;letter-spacing:5px;font-weight:normal;
     text-indent:5px;}
-  #townShopBtn i,.town-stall i{display:block;margin-top:5px;font-size:10px;letter-spacing:2px;
+  #townShopBtn i,#townChallengeBtn i,.town-stall i{display:block;margin-top:5px;font-size:10px;letter-spacing:2px;
     font-style:normal;color:var(--gold-dim);}
 
   /* ══ 槍棺地圖（ver -867，Ray：「控制介面右下角放地圖選項，點開控制面板變成
@@ -5108,7 +5119,8 @@
   #gearSheet .gs-skillwin .gs-respec{color:#e6a39a;border-color:rgba(200,90,80,.55);font-size:12px;}
   #gearSheet .gs-skillwin .gs-respec.armed{background:rgba(160,40,40,.35);color:#fff;letter-spacing:1px;}
   /* ── 一次性教學（雪鐵龍箭，同旅店那一套）── */
-  #gearSheet .gs-tip{position:fixed;inset:0;z-index:3;background:rgba(4,3,7,.62);}
+  #gearSheet .gs-tip{position:fixed;inset:0;z-index:3;background:rgba(4,3,7,.62);pointer-events:none;}
+  #gearSheet .gs-tip .gt-txt{pointer-events:auto;}
   #gearSheet .gt-arrow{position:absolute;transform:translate(-50%,-100%);font-style:normal;
     font-size:18px;color:var(--holy);text-shadow:0 0 10px rgba(111,179,212,.9);
     animation:gsPoint 1s ease-in-out infinite alternate;}
@@ -5134,6 +5146,12 @@
     #gearSheet{padding-left:10px;padding-right:10px;}
     #gearSheet .gs-body{flex-direction:row;gap:8px;overflow:hidden;}
     #gearSheet .gs-left{flex:1 1 0;min-width:0;overflow:hidden;}
+    /* ══⚠⚠ 主武器卡展開之後（ver -1881，Ray：「主武器在手機版點開後無法滑動也無法關閉」）══
+       九星那一串有 459px 高，左欄 `overflow:hidden` 又不准捲 —— 於是下半截（連同收合的 ▲）
+       被裁在畫面外，看不到也點不到。⇒ 星列**自己捲**、高度封頂，▲ 一直留在看得到的地方。
+       ⚠ 不改回整欄可捲：那是 -983 為了「捲動會拖到順位」才拿掉的。 */
+    #gearSheet .gs-main .gs-stars{max-height:34vh;overflow-y:auto;overscroll-behavior:contain;
+      -webkit-overflow-scrolling:touch;touch-action:pan-y;}
     #gearSheet .gs-right{flex:1 1 0;min-width:0;min-height:0;}
     /* 順位格壓縮一點，三格＋開關才進得去半個螢幕。 */
     #gearSheet .gs-slot{padding:5px 7px;gap:6px;}
@@ -5323,3 +5341,7 @@ body:not(.testmode) #storyEdit{display:none !important;}
 .beat-edit{display:none;position:absolute;right:6px;top:-14px;z-index:3;pointer-events:auto;cursor:pointer;
   width:28px;height:28px;border-radius:50%;font:14px/1 serif;color:#d4a94a;background:rgba(12,9,18,.92);border:1px solid #8a6d2e;}
 body.testmode .beat-edit{display:block;}
+
+/* ══⚠⚠ 破圖框一律不畫（ver -1881）══ 手機 Safari 替沒有 src／載入失敗的 <img> 畫灰框＋破圖圖示。
+   `img-broken` 由 main.js 的全域 error／load 監聽掛上／拿掉（唯一的一處）。 */
+img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}

@@ -143,7 +143,9 @@ LAYOUT = [
     #   最快多久放一次**（秒）。目前只有放光（`holyburst`）在看它 —— 那一支是 2.9 秒的
     #   全螢幕演出，每次攻擊都放會連成一片。留白＝用 `config.HITFX` 表上的保底值。
     ('受擊特效', [('hitFx.delay',  '延時'), ('hitFx.wrong', '按錯'),
-                ('hitFx.assault','攻擊'), ('hitFx.ult',   '大絕'), ('hitFxCd', 'CD秒')]),
+                ('hitFx.assault','攻擊'), ('hitFx.ult',   '大絕'), ('hitFxCd', 'CD秒'),
+                # ver -1881（Ray：「受擊特效後面加一欄受擊音效」）：留白＝跟著特效的 type 走（config.HITFX）
+                ('hitSe',        '受擊音效')]),
     ('圖幅',   [('fit.mode',        '取景模式'), ('fit.pos', '取景位置')]),
     ('掉落',   [('loot1.id','掉落1'), ('loot1.n','數量'), ('loot1.p','機率'),
                 ('loot2.id','掉落2'), ('loot2.n','數量'), ('loot2.p','機率'),

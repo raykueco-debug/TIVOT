@@ -1645,7 +1645,8 @@ export const ART = {
        `mirror` 是「換邊才翻」，`flip` 是「這張畫的方向本來就反了」。
      ⚠ 還是 `.png`，美術那一邊還沒轉 webp。 */
   torsten:  { cm:178, eye:30, fx:0.518, top:20, bot:1516,
-           side:'R', alt:null, flip:true, base:'resources/si/torsten_si_back.png', expr:{
+           side:'R', alt:null, flip:true, layerBottom:true,   // 背影永遠在立繪層最底層（ver -1881，story.highlight）
+           base:'resources/si/torsten_si_back.png', expr:{
     back: { src:'resources/si/torsten_si_back.png', top:20, bot:1516, fx:0.518 },
   } },
   /* ══ 米夏的隨從（士兵）（ver -1715，Ray：「『殿下......』的那一拍放士兵立繪」；

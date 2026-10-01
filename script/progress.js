@@ -669,6 +669,14 @@ export function jeroMods(){
   try{ const j=JSON.parse(rd(K.jmod)||'null'); if(j && typeof j==='object') return j; }catch(e){}
   return {};
 }
+/* ══ 副武器的火力乘數 —— **唯一的計算點**（鐵律 7；ver -866 立在 weapon.js，
+   ver -1881 搬到這裡：商店／整備的規格表也要印改裝後的數字，而它們構不到 weapon.js）══
+   ＝ 1 ＋ 改造增益 ×（1 ＋ 杰羅加成）。weapon.subgunPowerMul 是它的別名。 */
+export function subgunPowerMul(id){
+  const WM = (GAME_CONFIG.tuning||{}).weaponMod || {};
+  const modLv = Math.min(weaponMod(id), WM.statLv || 99);
+  return 1 + (modLv * (WM.perLv || 0)) * (1 + jeroMod(id));
+}
 export function jeroMod(id){
   const v=jeroMods()[id];
   return (typeof v==='number' && isFinite(v) && v>0) ? v : 0;

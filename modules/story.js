@@ -368,8 +368,14 @@ function edRender(){
           '<button data-face="'+esc(k)+'" class="'+(k===line.portrait.expr?'on':'')+'"><img loading="lazy" src="'+esc(s)+'"><span>'+esc(k)+'</span></button>' : ''; }).join('')+'</div>';
   }else if(edTab==='fx'){
     if(edFx===null) edFx=bubbleFxList(line);
+    /* 震動（ver -1881，Ray：「沒有我明示的對話框特效…讓我可以在編輯中拿掉」）：
+       這一拍的 `shake`（只抖框 'bubble'／全畫面 true）也在這一頁看得到、改得掉。 */
+    const sk = line.shake==='bubble' ? 'bubble' : (line.shake ? 'screen' : 'none');
     body='<div class="ed-note">對話框效果（可複選；點了先預覽，按「套用」才寫進這一拍）</div>'+chips(edFx,'fxk')
-       +'<div class="ed-row"><button data-fxclear>全部取消</button><button data-go="fx" class="ed-go">套用</button></div>';
+       +'<div class="ed-row"><button data-fxclear>全部取消</button><button data-go="fx" class="ed-go">套用</button></div>'
+       +'<div class="ed-note">震動（目前：'+({none:'無',bubble:'只抖對話框',screen:'全畫面'})[sk]+'）點一下就寫進這一拍</div>'
+       +'<div class="ed-row">'+[['none','無'],['bubble','只抖對話框'],['screen','全畫面']].map(([k,n])=>
+          '<button data-shake="'+k+'" class="'+(k===sk?'on':'')+'">'+n+'</button>').join('')+'</div>';
   }else if(edTab==='ins'){
     const sps=edSpeakers();
     if(!edIns.speaker) edIns.speaker = who && sps.some(x=>x.id===who) ? who : 'NARRATION';
@@ -409,6 +415,7 @@ function edRender(){
     applyBubbleFx($('storyBubble'), { bubbleFx:edFx }); edRender(); });
   p.querySelectorAll('[data-ifx]').forEach(b=>b.onclick=()=>{ tog(edIns.fx,b.dataset.ifx); edIns.text=(p.querySelector('[data-it]')||{}).value||''; edRender(); });
   const fxc=p.querySelector('[data-fxclear]'); if(fxc) fxc.onclick=()=>{ edFx=[]; applyBubbleFx($('storyBubble'), null); edRender(); };
+  p.querySelectorAll('[data-shake]').forEach(b=>b.onclick=()=>edGo('shake:'+b.dataset.shake));
   const go=p.querySelector('[data-go]'); if(go) go.onclick=()=>edGo(go.dataset.go);
 }
 function edDone(r, okMsg){ edMsg = r.ok ? okMsg+'（'+r.text+'）' : '寫入失敗：'+r.text; edRender(); return r; }
@@ -416,7 +423,10 @@ function edFace(k){
   const line=edLine(); if(!line || !line.portrait) return;
   const who=line.portrait.char || line.speaker, loc=edLocate(), i=lineIdx;
   edMsg='寫入中…'; edRender();
-  edPost('__beat', { text:loc.text, old:line.portrait.expr==null?null:line.portrait.expr, new:k, field:'expr', prev:loc.prev, next:loc.next })
+  /* ⚠ ver -1881（Ray：「安雅說俄文時無法改差分，提示『有二行』」）：連同前後各 80 拍的序列一起送 ——
+     同一句台詞抄在兩個分支時，伺服器的退路（整拍範圍）靠它挑出唯一那一拍（同 `/__line`）。 */
+  edPost('__beat', { text:loc.text, old:line.portrait.expr==null?null:line.portrait.expr, new:k, field:'expr',
+                     prev:loc.prev, next:loc.next, blank:loc.blank, mark:loc.mark, before:loc.before, after:loc.after })
     .then(r=>{
       if(r.ok){ line.portrait.expr=k;
         if(lineIdx===i){ const sd=['L','R'].find(s=>slot[s]===who); if(sd){ ensureOn(who, k); if(shown[who]) shown[who].expr=k; layout(); } } }
@@ -431,6 +441,15 @@ function edGo(what){
     const v=ta.value; edMsg='寫入中…'; edRender();
     edPost('__text', { text:line.text, new:v, mark:loc.mark, prev:loc.prev, next:loc.next })
       .then(r=>{ if(r.ok){ line.text=v; const t=$('storyText'); if(t && lineIdx===i) t.textContent=lineText(line); } edDone(r, '已改台詞'); });
+    return;
+  }
+  if(String(what).indexOf('shake:')===0){
+    const k=what.slice(6), v = k==='bubble' ? 'bubble' : (k==='screen' ? true : null);
+    edMsg='寫入中…'; edRender();
+    edPost('__line', Object.assign({ op:'set', key:'shake', value:v }, loc)).then(r=>{
+      if(r.ok){ if(v) line.shake=v; else delete line.shake; }
+      edDone(r, v ? '已設定震動' : '已拿掉震動');
+    });
     return;
   }
   if(what==='fx'){
@@ -767,10 +786,12 @@ function layout(){
      被輪廓預算縮小之後照樣把頭頂釘在頂線的話，畫面下方會空一大塊。
      所以縮小時改成**把腳落到畫面底**（那本來就是 §6.5 要的「四個人的腳
      落在同一條地平線上」）；沒縮小、腳本來就在畫面外時 shift=0，維持貼頂。 */
-  let shift=0;
-  for(const o of m){ if(o.fitStage) continue;   // 整張入鏡的不拖別人（ver -744，見 calc）
-    shift=Math.max(shift, H - (o.yTop + o.s*o.a.bot)); }
-  shift=Math.max(0, shift);
+  /* ══⚠⚠⚠ **每個人只算自己的 shift**（ver -1881，Ray：「立繪在隨對話更迭時常常有新立繪
+     擠壓到舊立繪使舊立繪大小突然變更…立繪只要上去就不要改變大小」）══
+     以前是「台上所有人取最大」：新上來一張腳比較高的（近景／坐姿），**全員**就被一起
+     往下推 —— 舊的那一位明明沒換圖，卻整個沉下去、下半截被裁，讀起來就是突然變小。
+     改成逐人自己算：同一張立繪不論台上還有誰，都是同一個結果（§6.5 那條原則的落地）。 */
+  const shiftOf = o => o.fitStage ? 0 : Math.max(0, H - (o.yTop + o.s*o.a.bot));
 
   for(const o of m){
     const a=o.a, el=o.el, NW=el.naturalWidth;
@@ -831,7 +852,7 @@ function layout(){
     /* ⚠⚠ `yShift`（ver -1812，立繪調整工具）＝這一張**整個往上挪幾公分**（正＝上）。
        加在 `shift` **之後**、不參與它的計算：`shift` 會把「腳沒落到畫面底」的人往下推，
        用 `standCm` 往上調會被它推回來（蹲著／抱人的那幾張就是這樣「太低」調不上去）。 */
-    el.style.top    = (o.yTop + (o.fitStage ? 0 : shift - (a.yShift||0)*pxCm))+'px';
+    el.style.top    = (o.yTop + (o.fitStage ? 0 : shiftOf(o) - (a.yShift||0)*pxCm))+'px';
   }
   if(tuneOn) tuneRender();   // 台上換人時面板跟著換（ver -1812）
 }
@@ -1025,6 +1046,11 @@ function highlight(side){
        ⚠ 用 inline z-index 不用 class：兩個槽是兄弟元素，DOM 序固定（L 在前 R 在後），
          光靠 class 沒辦法讓 L 蓋過 R。 */
     el.style.zIndex = (s===side) ? '2' : '1';
+    /* ══ `layerBottom:true`（角色卡上，ver -1881）＝**這個人永遠在立繪層最底層**（Ray：「主角的
+       背影預設在立繪層最底層」—— 鏡湖「馬上出發」之後那一拍，背影要壓在蕾娜之下）。
+       他講話（空白格）也不抬上來：背影是「他走開了」，不是「他在說話」。 */
+    { const fr = slot[s] && frameOf(slot[s], slotExpr[s]);
+      if(fr && fr.layerBottom) el.style.zIndex = '0'; }
   }
 }
 
@@ -3088,7 +3114,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1880';
+const KERB_V='?v=1881';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4390,6 +4416,7 @@ function renderLine(){
      ⚠ 字級寫在 CSS（鐵律 1），不在這裡寫 px。 */
   if(bub2) bub2.classList.remove('tiny');
   blankUntil=0;                       // 空白格的保護期也是這一拍的性質（ver -1503）
+  cgTap=null;                         // 插圖等點擊出框也是這一拍的性質（ver -1881）
   clearTimeout(waitT); waitT=null;
   clearTimeout(autoT);  autoT=null;
   /* ⚠ **空台詞不出對話框**（ver -327，Ray：「插圖002出來的時候不要先出空白的
@@ -4493,7 +4520,17 @@ function renderLine(){
     return;
   }
   if(line.tiny && bub2) bub2.classList.add('tiny');   // ver -1511：遠處聽不清的那幾句
-  if(line.delay>0){
+  /* ══⚠⚠ **插圖那一拍：點一下才出對話框**（ver -1881，Ray：「所有插圖在點擊前不出對話框」）══
+     插圖是要先**看**的 —— 框一上來就蓋掉下半張。所以帶 `cg:` 的那一拍先只放圖，
+     玩家點一下（`advance` 的 `cgTap`）才出框打字；那一下**不推進**（同 delay／打字的規矩）。
+     ⚠ 自動播放／加速照舊直接出框（玩家明講「不要等我」）；回播（`replaying`）也不押。 */
+  if(line.cg && !autoPlay && !fastMode && !replaying){
+    if(bub2) bub2.style.visibility='hidden';
+    stopTyping(); if(tx) tx.textContent='';
+    cgTap = ()=>{ if(bub2) bub2.style.visibility='';
+      applyBubbleFx(bub2, line);
+      if(tx) typeOut(tx, lineText(line)); };
+  }else if(line.delay>0){
     if(bub2) bub2.style.visibility='hidden';
     waitT=setTimeout(()=>{ waitT=null;
       if(bub2) bub2.style.visibility='';
@@ -4537,6 +4574,7 @@ function renderLine(){
 /* 黑幕期間還沒跑的 `reveal`（見上）。⚠ 只有一個 —— `renderLine` 一開頭就歸零，
    所以不會累積成一疊。 */
 let pendingReveal = null;
+let cgTap = null;   // 插圖那一拍等點擊出框（ver -1881）；renderLine／換場／離場一律歸零
 /* 把還沒演的那一拍**立刻演完**。回傳 true ＝真的有東西被補上（呼叫端據此吃掉這一下點擊）。 */
 function flushReveal(){
   const r = pendingReveal; if(!r) return false;
@@ -4665,6 +4703,8 @@ function advance(){
      ⚠ 這與下面兩條（等 delay／還在打字）是**同一條規矩**：點下去先把這一拍做完。
      ⚠ 順序要在它們之前：黑幕期間那兩個都還沒開始。 */
   if(flushReveal()) return;
+  /* 插圖那一拍在等點擊出框（ver -1881）：這一下只出框，不推進。 */
+  if(cgTap){ const f=cgTap; cgTap=null; clearTimeout(waitT); waitT=null; try{ f(); }catch(_){} return; }
   /* 還在等 delay → 這一下先把對話框叫出來，不推進（同「還在打字」的規矩）。 */
   if(waitT){
     clearTimeout(waitT); waitT=null;
@@ -4744,7 +4784,7 @@ function playScene(id){
   /* ⚠ 換場要**丟掉**上一幕還沒演的那一拍（ver -430），不是補演它 ——
      下面立刻就把台上清空了，補演等於把上一幕的人又請回來。
      （`renderLine` 那一道保險是給「同一段之內」用的，換場走這裡。） */
-  pendingReveal = null;
+  pendingReveal = null; cgTap = null;
   sceneLog = [];                        // 回顧只留這一場（見 showBacklog）
   /* ══⚠⚠⚠ **自動播放要跨場**（ver -940，Ray：「自動播放時不要被選項、戰鬥以外的
      東西打斷，一路播到該段劇情結束」）══ 這一行原本是 `stopModes()`（§6.5 的
@@ -5276,7 +5316,7 @@ export function close(opts){
   if(edTab) edClose();   // 管理人的對話編輯面板（ver -1866）
   stopShake(); stopQuake(); stopTint(); stopSenseBurst();   // 離場一定停（跨句演出的出口，-638／-664／-1185）
   clearInterval(typing); typing=null;
-  pendingReveal=null;                // ⚠ 離場：還沒演的那一拍**丟掉**（同 playScene，ver -430）
+  pendingReveal=null; cgTap=null;    // ⚠ 離場：還沒演的那一拍**丟掉**（同 playScene，ver -430）
   clearTimeout(waitT); waitT=null;
   clearTimeout(autoT); autoT=null;   // ⚠ 沒清的話劇情關掉之後還會推一句（然後在關著的舞台上演）
   const b0=$('storyBubble'); if(b0) b0.style.visibility='';

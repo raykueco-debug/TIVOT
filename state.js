@@ -246,6 +246,7 @@ export const state = {
 
   /* ── 3.7 亂入/Boss + 連戰序列（擁有者：enemy） ──────────────── */
   currentEnemyKey: null,
+  curEnemyHitSe: null,     // 當前怪的受擊音效覆寫（卡上 hitSe，ver -1881；null＝跟著 hitFx 的 type）
   curEnemyHitFx: null,     // 當前怪受擊特效三件套（音效綁在 type 上，見 config.HITFX，ver -800）
   /* 這一隻的**受擊特效冷卻**（秒，ver -1667，Ray：「CD 沒有在 enemie.xls 嗎?」）——
      卡上的 `hitFxCd`（Excel「受擊特效／CD秒」那一欄）。0／沒寫＝用 `config.HITFX`

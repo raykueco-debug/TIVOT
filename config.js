@@ -83,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1880';
+export const VERSION = 'ver 2026.09.22-1881';
 
 export const GAME_CONFIG = {
 
@@ -865,6 +865,15 @@ export const GAME_CONFIG = {
        與整備頁都問它，不要各自讀這張表。
      ⚠ 這是**資料**不是狀態：換人的那個事件記的是 `np_anya_join` 那支旗
        （離開旅店那一段演完才記）—— 一個狀態一個擁有事件（鐵律 9）。 */
+  /* ══⚠⚠ **這一段主角身上沒有伙伴**（ver -1881，Ray：「紫黑之爪戰後到墓地首戰結束為止，
+     主角身上都不會有伙伴」）══ `need` 立了、`until` 還沒立 ⇒ `partner.storyPartnerKey()`
+     回 null（＝無夥伴，見 state.setPickedPartner）、池子是空的（整備頁沒有頁籤）。
+     ⚠ 判定只有 partner.js 那兩支（鐵律 7）。`np_cem1_won` 由墓地第一戰之後那一拍插。 */
+  storyPartnerNone: [
+    /* ⚠ `until` 吃陣列（任一支立了就結束）：`np_grave_done`（整段墓地戲演完）一起列，
+       舊存檔與章節跳關沒有 `np_cem1_won`（-1881 才有的旗）也不會永遠困在無伙伴。 */
+    { need:'np_claws_done', until:['np_cem1_won','np_grave_done'] },
+  ],
   storyPartnerBy: [
     /* ══ 夏爾村村內戰：強配索菈娜（ver -804，Ray：「村莊戰索拉娜是強制搭配出擊的，
        在前一段劇情就先設置，出戰之前」）══ 那一夜（`sv_night_done`）演完就切成她 ——
@@ -4953,21 +4962,27 @@ export function weaponBand(w, grade){
     take: (grade==='counter') ? 0 : ((b.take!=null) ? b.take : 0),
   };
 }
-export function weaponStatRows(key, story){
+export function weaponStatRows(key, story, mul){
   const w=weaponOf(key, story); if(!w) return [];
+  /* ⚠ `mul`＝改裝後的火力乘數（ver -1881，Ray：「副武器花錢改裝也沒有看到效果」）——
+     由呼叫端問 `progress.subgunPowerMul(id)` 傳進來（config 構不到 progress）。
+     沒傳＝1＝印基礎值。 */
+  const M = (mul>0) ? mul : 1;
+  const sc = n => Math.round(n*M);
   const shots = n => (w.hits>1 ? w.hits+'發×'+n+'傷害' : '單發'+n+'傷害');
   /* 一帶一句：會反擊就報反擊的份量（帶命中率），不反擊就報減傷。 */
   const line = (g)=>{
     const b=weaponBand(w,g);
     if(b.counter){
-      const n = b.roll ? (Math.min(...b.roll)+'~'+Math.max(...b.roll)) : b.dmgPerHit;
+      const n = b.roll ? (sc(Math.min(...b.roll))+'~'+sc(Math.max(...b.roll))) : sc(b.dmgPerHit);
       return shots(n) + (b.hit<1 ? '（命中'+Math.round(b.hit*100)+'%）' : '');
     }
     return b.take>=1 ? '無減傷效果' : (b.take<=0 ? '完全防禦' : '減傷'+Math.round((1-b.take)*100)+'%');
   };
   const crit = (w.critRate!=null ? w.critRate : GAME_CONFIG.tuning.counterCritRate);
   const rows=[['分類', w.cat||'—'], ['黃圈', line('block')], ['橘圈', line('perfect')],
-              ['反擊', shots(w.dmgPerHit)], ['暴擊率', Math.round(crit*100)+'%']];
+              ['反擊', shots(sc(w.dmgPerHit))], ['暴擊率', Math.round(crit*100)+'%']];
+  if(M>1) rows.push(['改裝加成', '+'+Math.round((M-1)*100)+'%']);
   /* 裝填時間（ver -1009，Ray：「每一把步槍都描述加上裝填時間 3 秒」）：
      ⚠ **算出來的不是手寫的**（鐵律 7）—— 數字只有卡上的 `counterCdSec` 一份，
        改秒數不必回頭改文案；沒有這一格的槍不長這一列。 */
@@ -4980,9 +4995,9 @@ export function weaponStatRows(key, story){
   return rows;
 }
 /* 卡片上那一段（與 -376 之前手寫的 `desc` 同樣的排版，只是現在是算出來的）。 */
-export function weaponDescText(key, story){
+export function weaponDescText(key, story, mul){
   const w=weaponOf(key, story); if(!w) return '';
-  const rows=weaponStatRows(key, story).filter(r=>r[0]!=='分類');
+  const rows=weaponStatRows(key, story, mul).filter(r=>r[0]!=='分類');
   return '反擊效果\n' + rows.map(r=>r[0]+'：'+r[1]).join('\n') + (w.flavor ? '\n'+w.flavor : '');
 }
 

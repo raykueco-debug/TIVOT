@@ -97,13 +97,6 @@ export const MAIN_SCRIPT = {
       { speaker:'NOUVELLE', text:'', auto:1200,
         portrait:{ char:'NOUVELLE', show:false },
         se:[{n:'se_weapon_reload'},{n:'se_weapon_reload',delay:300}] },
-      /* ⚠⚠ ver -1686（Ray 改稿）：「對不起，我已經……」**移到戰鬥之前** ——
-         原本它在 `dungeon_lunaria`（戰勝之後）那一段，現在那個位置換成
-         「如果……是賽西莉學姐的話一定可以……」。
-         ⚠ 這一拍要**把插圖收掉**（`cg:null`）：插圖的層級在立繪之上，不收的話
-           她整個被蓋住（同 -327 那一次 Ray 回報「立繪一直沒出來」的原因）。 */
-      { speaker:'NOUVELLE', text:'對不起，我已經……', cg:null,
-        portrait:{ expr:'desperate', show:true } },
       /* ⚠ 這裡**不插讀取頁**：開場那一頁已經把整條 scene 鏈都預載了
          （preloadStory 跟著 next 走）。要在別處插的話寫 `{ load:'sceneId' }`。 */
       /* 戰鬥教學。⚠ 戰鬥系統尚未接線，story.js 目前會跳過並在 console 記一筆。 */
@@ -117,6 +110,11 @@ export const MAIN_SCRIPT = {
     setFlags:['dungeon_cleared'],
     context:'scene',
     lines:[
+      /* ⚠⚠ ver -1881（Ray）：「對不起，我已經……」是**教學戰之後的第一拍**
+         （-1686 一度移到戰鬥之前，已撤回）。⚠ 這一拍要**把插圖收掉**（`cg:null`）：
+         跌倒插圖在戰前沒收，插圖的層級在立繪之上，不收的話她整個被蓋住。 */
+      { speaker:'NOUVELLE', text:'對不起，我已經……', cg:null,
+        portrait:{ expr:'desperate', show:true } },
       /* 戰勝之後：聖徒咆哮。⚠ **先咆哮＋震動，立繪才出來**（Ray 指定）——
          同一句同時上插圖、上聲音、上立繪的話，咆哮的衝擊會被她的台詞稀釋。
          這一拍沒有台詞也沒有立繪，玩家點一下推過去。 */
