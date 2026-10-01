@@ -1556,6 +1556,51 @@ export const TOWNS = {
            讓被抬進來的人聽店員講「歡迎光臨」是錯的 —— 這一拍**取代**那一次的進場對白，
            而初見的旗標不記（同打烊／傍晚插隊的作法），下次正常走進來照演。 */
         wake:[ nou('sadsmile','啊，醒了。') ],
+        /* ══⚠⚠ **第一夜的夢**（ver -1886，Ray 交稿）══ 按「回房睡覺」才演（`sleepFirst`，旅店那一支
+           小睡機制，鐵律 8）：睡覺音＋淡黑照舊 → 推 1 小時 → 演這一段。
+           · 夢境全程在地宮（`holyseedungeonwhole`，Ray 指定）；開頭畫面維持暗（`fadeOut`）。
+           · 戰鬥 `cap_dream`：地下聖徒／搭檔賽西莉／一進戰鬥就聖徒化。打輸 ⇒ 跳到收尾（`onLose`）。
+           · 收尾三秒轉幕（Ray：「結束三秒轉幕到隔天劇情」）＋推到隔天 07:00 ＋補滿體力 ＋記「錯過蕾娜」
+             ⇒ 這一段收完，帝都的 07:00 閘門（`stage1`）接手：蕾娜「好囉，該出發囉」→ 船塢。
+           ⚠ `until:'stage1_open'` ＝只在第一夜；`need` ＝旅店初見演完（同睡覺鈕的 `sleepFlag`）。
+           ⚠⚠ `cringe` 那張還沒有圖（speakers.js 暫代 upset，交件後換）。 */
+        acts:[
+          { flag:'cap_dream', need:'inn_seen_capital_inn', until:'stage1_open', sleepFirst:{ hours:1, disguise:true },
+            storyBattle:true, lines:[
+            { speaker:'NARRATION', text:'', auto:700, fadeOut:1, bg:'holyseedungeonwhole', bgm:null, show:false },
+            { speaker:'NARRATION', text:'', auto:900, se:'se_stomp_far', shake:true },
+            { speaker:'NARRATION', text:'', auto:900, se:'se_stomp_far', shake:true },
+            { speaker:'NARRATION', text:'', auto:900, se:'se_stomp_far', shake:true },
+            { speaker:'NARRATION', text:'', auto:1100, se:'se_stomp_far', shake:true },
+            { speaker:'CECILIE_X', text:'不要睡！看我！' },
+            { speaker:'NARRATION', text:'', auto:900, se:'se_stomp', shake:true },
+            { speaker:'NARRATION', text:'', auto:1200, se:'se_enemy_holyburst', shake:true },
+            { speaker:'NARRATION', text:'', auto:1800, fadeIn:900,
+              cg:'resources/ci/ci_cecilie_obe.webp' },
+            /* ⚠ `cg:null`：插圖的層級在立繪之上，不收的話 cringe 那張立繪被整個蓋住。 */
+            { speaker:'CECILIE_X', text:'怎麼能讓你死在這裡……怎麼能讓你死在這裡！', cg:null,
+              portrait:{ char:'CECILIE_X', expr:'cringe', show:true } },
+            { speaker:'CECILIE_X', text:'你可是……我的搭檔啊！',
+              portrait:{ char:'CECILIE_X', expr:'cringe', show:true } },
+            Object.assign({ battle:'cap_dream', onLose:'cap_dream_lose' }, { kerbRise:true }),
+            { speaker:'CECILIE', text:'明明不要管我，直接反擊就不會被打成這樣了。',
+              portrait:{ char:'CECILIE', expr:'spoild', show:true } },
+            { speaker:'PLAYER', blank:true },
+            { speaker:'CECILIE', text:'', portrait:{ char:'CECILIE', expr:'blush', show:true } },
+            { speaker:'CECILIE', text:'你過來。', portrait:{ char:'CECILIE', expr:null, show:true }   /* front ＝基本立繪 */ },
+            { speaker:'NARRATION', text:'', auto:1200, se:'se_healing' },
+            { speaker:'CECILIE', text:'真是的。技術是不錯，判斷還是太天真了。',
+              portrait:{ char:'CECILIE', expr:null, show:true }   /* front ＝基本立繪 */ },
+            { speaker:'CECILIE', text:'不過……我不討厭就是了。',
+              portrait:{ char:'CECILIE', expr:'tease', show:true } },
+            { goto:'cap_dream_end' },
+            { speaker:'NARRATION', text:'', auto:300, label:'cap_dream_lose' },
+            { speaker:'NARRATION', text:'', label:'cap_dream_end', auto:3300, fadeOut:3000, hide:'*',
+              clockToNext:7, healFull:true, flags:['inn_missed'] },
+            /* 隔天清晨：旅店（時段候選鏈挑清晨那張）淡回來，接著 07:00 閘門（蕾娜「好囉，該出發囉」）。 */
+            { speaker:'NARRATION', text:'', auto:1300, bgBand:'capital_hotel', fadeIn:1000 },
+          ] },
+        ],
         /* 初訪那一幕。⚠ 中間三拍是**演出**不是台詞：
              ① 畫面抖＋槍棺落地聲（無立繪）
              ② 插圖 `005_Kerberos` 由下往上平移（無立繪）

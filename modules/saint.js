@@ -100,8 +100,10 @@ export function activateSaint(dir){
      不寫死在這裡 —— 全域響度要能一處調完，漏一支就會突出來。 */
   /* 降臨語音（ver -711）：本篇＝諾薇兒，試玩版照舊露娜（同 cut-in 圖的分流，鐵律 8）。
      ⚠ 增益讀 config 的逐支表（tuning.fileGain），不寫死在這裡。 */
-  { const vk = storyMode() ? 'vo_nou_saint' : 'voice_saint_luna';
-    SFX.playVoice(asset(vk), sfxGain(vk)); }
+  /* 搭檔卡上寫了 `saintVoice` 就照卡（ver -1886：賽西莉沒有配音 ⇒ null ＝不出聲）。 */
+  { const pc = (GAME_CONFIG.partners||{})[state.pickedPartner] || {};
+    const vk = storyMode() ? (('saintVoice' in pc) ? pc.saintVoice : 'vo_nou_saint') : 'voice_saint_luna';
+    if(vk) SFX.playVoice(asset(vk), sfxGain(vk)); }
   playSlash(dir);                     // 依滑動方向的橫斬特效
   playCutin(()=>{
     if(state.over) return;
@@ -110,7 +112,9 @@ export function activateSaint(dir){
      /* 聖徒化 cut-in 分流（ver -454，Ray：「story 版搭檔為諾薇兒時聖徒化用
         CI_Nouvelle_SAINTINSTALL」）：本篇＋搭檔諾薇兒＝她的那一張；
         其餘（試玩版、或日後本篇換搭檔）照舊 Luna。 */
-     (storyMode() && state.pickedPartner==='nouvelle') ? 'cutin_nouvelle_saint'
+     (storyMode() && ((GAME_CONFIG.partners||{})[state.pickedPartner]||{}).saintCutin)
+       ? GAME_CONFIG.partners[state.pickedPartner].saintCutin          // 搭檔卡自己的那一張（ver -1886）
+     : (storyMode() && state.pickedPartner==='nouvelle') ? 'cutin_nouvelle_saint'
                                                        : 'cutin_saint_luna',
      { noShot:true });
 }
@@ -333,6 +337,7 @@ function startSaintMode(){
   //   (1) 被動回血打底：滿血/SAINT_PASSIVE_HEAL_SEC 秒定速回，無受擊時約 10 秒到 OBE；
   //   (2) 受擊額外加速：挨大絕/按錯/延時 +1s、格擋 +0.5s（見 saintAdvance / combat.enemyAttack）。
   //   推滿＝OBE，推滿前清盤＝Maximum Burst。
+  if(api.onSaintStarted) setTimeout(()=>{ if(state.saintMode) api.onSaintStarted(); }, 0);   // 戰鬥內對白 `saintStart`（ver -1886）
   const healPerTick = state.playerMax / SAINT_PASSIVE_HEAL_SEC * 0.1;   // 每 100ms 的被動推進量
   clearInterval(state.saintTimer);
   state.saintTimer = setInterval(()=>{
@@ -1220,10 +1225,11 @@ function playSaintCutin(kind, done, reload){
      ⚠ 差別**只有標題與副標**（上面已經分開：`mbSub` ／ `nmbSub`，-1506），
        演出一律借 `burst` ⇒ 這裡把 kind 折成 `vis`，下面全部讀它。 */
   const vis = (kind==='niburst') ? 'burst' : kind;
+  const _pc = (GAME_CONFIG.partners||{})[state.pickedPartner] || {};   // 搭檔卡自己的結局圖（ver -1886）
   const scImgKey = { execute: storyMode() ? 'cutin_exc_torsten' : 'cutin_exc',
-                     obe:     storyMode() ? 'cutin_obe_nouvelle' : 'cutin_obe',
+                     obe:     storyMode() ? (_pc.obeCutin || 'cutin_obe_nouvelle') : 'cutin_obe',
                      burst:   storyMode() ? 'cutin_mb_torsten'  : 'cutin_mb',
-                     return:  storyMode() ? 'cutin_return_nouvelle' : 'cutin_return' };
+                     return:  storyMode() ? (_pc.returnCutin || 'cutin_return_nouvelle') : 'cutin_return' };
   const scImgEl  = { execute:'saintCutinImg', obe:'saintCutinImgObe', burst:'saintCutinImgBurst', return:'saintCutinImgReturn' };
   if(scImgEl[vis]){ const el=$(scImgEl[vis]); if(el){ const src=asset(scImgKey[vis]); if(src) el.src=src; } }
   c.classList.remove('burst','obe','execute','return','on');
@@ -1238,7 +1244,7 @@ function playSaintCutin(kind, done, reload){
   /* ver -711：本篇換成自己人的語音（托爾斯滕的 MB／處決、諾薇兒的 OBE），
      試玩版照舊露娜 —— 同上面 cut-in 圖的那一組分流。 */
   const scSeKey = storyMode()
-    ? { execute:'vo_torsten_exc', obe:'vo_nou_obe', burst:'vo_torsten_mb' }
+    ? { execute:'vo_torsten_exc', obe:(('obeVoice' in _pc) ? _pc.obeVoice : 'vo_nou_obe'), burst:'vo_torsten_mb' }
     : { execute:'se_luna_exc',    obe:'se_luna_obe', burst:'se_luna_mb' };
   if(scSeKey[vis]){
     const k=scSeKey[vis];

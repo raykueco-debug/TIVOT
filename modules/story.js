@@ -2193,6 +2193,9 @@ function applyPersist(line){
      `clock.advanceToNextHour`（鐵律 8）。⚠ 在情境卡代換**之前**做：
      卡上要印的常常就是跳完之後的日期。 */
   if(line.clockToNext!=null && !replaying){ try{ clock.advanceToNextHour(line.clockToNext); }catch(_){} }
+  /* `healFull:true` ＝這一拍把主角的體力補滿（ver -1886，帝都第一夜：夢醒＝睡了一整夜，
+     同旅店睡覺那一條的「持久 HP 鑰匙清掉＝滿血」，走同一支 `prog.clearHp`）。 */
+  if(line.healFull && !replaying){ try{ prog.clearHp(); }catch(_){} }
   /* 慢黑幕（ver -739，Ray：「劇情場景轉換的黑色淡入淡出時間長點，三秒」）：
      拍上寫 `fadeOut:3000`／`fadeIn:3000` ＝用指定毫秒把場景區那片 `#storyFade`
      蓋上／掀開。inline 的 transitionDuration 用完要歸還 —— `cgFade` 的 0.5s 是
@@ -2433,6 +2436,7 @@ const SE_FILES=[
      ⚠⚠ **`fileGain` 還沒量**：沒有那一列＝增益 1 ＝以母帶的響度播出，
        正是 -441 抓到「跌倒音永遠不出來」的成因。要 Ray 用 `tools/audio_scan.html` 量。 */
   'se_dragonbite.mp3', 'se_enemy_throneattack.mp3', 'se_rockimpact.mp3',
+  'se_stomp.m4a', 'se_stomp_far.m4a',   // 帝都第一夜的夢境（ver -1886）
   /* ══ 伊甸古墓・底層（ver -1671，Ray 交件＋交稿）══
      `se_heavycursh` ＝ 牠在入口外面撞擊的悶響（稿上一律「`se_heavycursh` 0.2 秒後
      `se_bricks`」成一組，＝先是撞擊、再是被震落的碎磚）。
@@ -3135,7 +3139,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1885';
+const KERB_V='?v=1888';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

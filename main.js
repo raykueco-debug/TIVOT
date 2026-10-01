@@ -2390,7 +2390,9 @@ story.setBattleHandler((battleId, resume, gateOpts)=>{
     /* ⚠⚠ 問的是「城鎮介面**現在真的活著**」不是 `townId`（ver -1455）——
        `suspend()`（出航）刻意不清 `townId`（ver -437），所以 `isOpen()` 在天上
        照樣是真（憲法 §0.5 的 ver -1394 就警告過這一點）。 */
-    combat.setBattleBg((town.isOpen() && town.isLive()) ? town.currentBg() : null);
+    /* ⚠ 戰鬥卡明寫 `bg` 就用它（ver -1886：帝都第一夜的夢境戰在地宮打，不是旅店）。 */
+    { const bc=GAME_CONFIG.battles[battleId];
+      combat.setBattleBg(bc.bg || ((town.isOpen() && town.isLive()) ? town.currentBg() : null)); }
     combat.startScriptBattle(battleId);
     return;
   }

@@ -553,6 +553,17 @@ export function setGirlLevel(who, lv){
    ⚠ 它與 `bonus()` **分開**：那一支是「玩家自己」的加成（槍與料理），
      這一支是「哪一位搭檔」的 —— 混在一起就答不出「換人之後還算不算」。 */
 export function girlBonus(who, key){
+  /* ══ 代理（ver -1886，`girls.proxy`）══ 例：賽西莉 ＝ 諾薇兒九星全亮 —— 那一位的星表全部算上。 */
+  { const px = (girlCfg().proxy||{})[who];
+    if(px && px.as){
+      const arr = (girlCfg().levels||{})[px.as] || [];
+      let sum = 0;
+      for(let i=0; i<arr.length; i++){
+        if(!px.allStars && !girlStarOn(px.as, i+1)) continue;
+        const v = arr[i] && arr[i][key]; if(v!=null) sum += v;
+      }
+      return sum;
+    } }
   if(!isGirl(who)) return 0;
   const arr = (girlCfg().levels||{})[who] || [];
   /* ⚠⚠⚠ **ver -1132：只加「已點亮」的星**（原本是 Lv1~現等級全加）——

@@ -192,6 +192,7 @@ export function setup(){
   //   saint 不直接 import 其他業務模組（維持 §2 依賴方向）。改血一律走本檔 HP API（Part A）。
   saint.init({
     cutinFreeze, cutinThaw,   // ver -1779：cut-in 一律凍結（見 cutinFreeze）
+    onSaintStarted: ()=>tutorial.onSaintStarted(),   // ver -1886：戰鬥內對白的 `saintStart` 節點
     // 統一改血 API（Part A）
     healPlayer, setPlayerHpRatio, drainPlayer,
     // 教學掛鉤：倒數槽臨界攔截（引導生命歸還）＋結局通知（MB/生命歸還後的收尾台詞）
@@ -3062,7 +3063,9 @@ export function startGame(){
        ② 沒宣告（城鎮／腳本插入戰、舊交棒鑰匙）→ 讀**敵人卡**的 `story`（1/0）
        ③ 卡上也沒寫 → true（腳本叫起來的場子天生就是劇情戰）。 */
   { const en = sb && GAME_CONFIG.enemies[pickBattleEnemy(sb)];
-    const cardStory = !en || en.story==null || !!en.story;
+    /* ⚠ 戰鬥卡上寫了 `story` 就照戰鬥卡（ver -1886）：同一隻怪（地下聖徒）在挑戰裡是遭遇，
+       在帝都第一夜的夢裡是劇情戰 —— 那是「這一場」的性質，不是那隻怪的。 */
+    const cardStory = (sb && sb.story!=null) ? !!sb.story : (!en || en.story==null || !!en.story);
     state.storyBattle = state.scriptRun &&
       (pendingScriptStory!==null ? pendingScriptStory : cardStory);
     pendingScriptStory = null; }
@@ -3113,7 +3116,9 @@ export function startGame(){
        照字面套到所有城鎮戰鬥會把北泊的聖徒化教學戰打成無夥伴。
      ⚠ 約的是**蕾娜**時 `partnerKeyOf` 查不到（她沒有搭檔卡）⇒ 一樣是無夥伴；
        她的在場改成「這一場照樣給評價」（inspector 那一邊）。 */
-  if(dateParty){
+  /* ⚠ 戰鬥卡**明寫** `partner` 的那一場不吃這一條（ver -1886：帝都第一夜的夢境戰，搭檔是賽西莉 ——
+     那不是約會的延伸，是劇本指定的人）。 */
+  if(dateParty && !(sb && sb.partner)){
     const dp = dateParty();
     if(dp) setPickedPartner(partnerKeyOf(dp.who));   // null ＝無夥伴
   }
@@ -3166,6 +3171,19 @@ export function startGame(){
      隨機遭遇共用同一張卡（flight_centipede）也不播。
      已打贏過（talkOnce 旗標立了）也不播（startBattleTalk 自己守門）。 */
   if(state.storyBattle && sb) tutorial.startBattleTalk(sb.talk, { once:sb.talkOnce, sides:sb.talkSides });
+  /* ══ `autoSaint:true` ＝一進戰鬥就聖徒化（ver -1886，Ray：「一進戰鬥就開賽西莉聖徒化」）══
+     走**唯一的發動點** `saint.activateSaint`（鐵律 8）：cut-in、語音、盤面、倒數槽全照舊。
+     ⚠ 等槍棺開完（開門期間 `cutinPlaying` 是真暫停）、也等開場白（`tutorialDialog`）才發 ——
+       在門後面發動的話整段 cut-in 被門擋掉。 */
+  if(sb && sb.autoSaint){
+    let tries=0;
+    const go=()=>{
+      if(state.over || state.saintMode || state.saintUsedThisBattle) return;
+      if((state.cutinPlaying || state.transitioning || state.tutorialDialog) && tries++ < 100){ setTimeout(go, 150); return; }
+      saint.activateSaint('right');
+    };
+    setTimeout(go, 900);
+  }
   /* ══⚠⚠ 本篇的 HP 是**延續的**（ver -481（-893 前用詞）；-490 修位置）══
      讀 progress 的持久 HP；沒有鑰匙＝滿血（開局／睡醒）。挑戰（試玩版）不吃。
      ⚠⚠ 一定要在 `state.scriptRun`（上面 1094）**設好之後**才讀 —— -481 把它放在

@@ -985,7 +985,7 @@ def main():
     #    以及**自訂接續名**——`gate.then`／`strike` 的 `then` 指到的那一段
     #    （例如聖徒化教學的 `downed`／`saintOn`／`partnerOn`）。
     #    自訂名不是打錯字，所以只要**有人指得到它**就算數；沒人指到才報。
-    TALK_TRIGGERS = ('battleStart', 'threat', 'defended')
+    TALK_TRIGGERS = ('battleStart', 'threat', 'defended', 'saintStart')   # saintStart：聖徒化開始（ver -1886）
     tcast  = ((cfg.get('tutorial') or {}).get('cast') or {})
     assets = D.get('assets') or {}
     for bid, b in (cfg.get('battles') or {}).items():

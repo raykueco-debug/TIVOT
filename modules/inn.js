@@ -366,7 +366,8 @@ function refreshSleepLabel(){
   const btn = layer.querySelector('.inn-btn[data-act="sleep"]'); if(!btn) return;
   const b = btn.querySelector('b'), i = btn.querySelector('i'); if(!b || !i) return;
   const nap = (host && host.napAct) ? host.napAct() : null;
-  const h = nap && nap.sleepFirst && nap.sleepFirst.hours;
+  /* `disguise:true`（ver -1886）＝鈕的字面照一般睡覺 —— 帝都第一夜的夢不可以先在鈕上劇透。 */
+  const h = nap && nap.sleepFirst && !nap.sleepFirst.disguise && nap.sleepFirst.hours;
   b.textContent = h ? '回房睡覺……？' : '回房睡覺';
   i.textContent = h ? ('小睡 '+h+' 小時') : ('到隔日 '+wakeHour()+':00・存檔');
 }

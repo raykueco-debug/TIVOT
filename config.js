@@ -83,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1885';
+export const VERSION = 'ver 2026.09.22-1888';
 
 export const GAME_CONFIG = {
 
@@ -1873,6 +1873,8 @@ export const GAME_CONFIG = {
       put('tut_sh_villager',        V1);
       put('tut_sh_villager2',       V2);
       put('tut_sh_chief',           C);
+      /* 賽西莉（ver -1886，帝都第一夜的夢境戰）。 */
+      put('tut_cecilie_saintinstall', ART.cecilie, ART.cecilie.expr.saintinstall);
       return F;
     })(),
     cast: {
@@ -1896,6 +1898,9 @@ export const GAME_CONFIG = {
       sh_villager: { name:'村民',   image:'tut_sh_villager',  side:'right', fit:{ zoom:0.92, drop:6 } },
       sh_villager2:{ name:'村民',   image:'tut_sh_villager2', side:'right', fit:{ zoom:0.92, drop:6 } },
       sh_chief:    { name:'村長',   image:'tut_sh_chief',     side:'right', fit:{ zoom:0.92, drop:6 } },
+      /* 賽西莉（ver -1886）：夢境裡還沒報名 ⇒ 「？？？」；站**右**（搭檔側是她，但主角那一側沒有人講話，
+         右邊才不會擋住盤面左上的清盤／敵圖鈕）。 */
+      cecilie_x:   { name:'？？？', image:'tut_cecilie_saintinstall', side:'right', fit:{ zoom:0.92, drop:6 } },
       /* 安雅（ver -671（-893 前用詞），禍魘娜塔莉戰）。⚠ 站**右**（`speakers.js` 的本位）——
          她與蕾娜同台時蕾娜本來就在右…… 所以這一場**蕾娜讓到左**：
          §6.5 的表「蕾娜原則右，碰到安雅就放左」。 */
@@ -2746,6 +2751,17 @@ export const GAME_CONFIG = {
        ⚠ 通則仍然是 -670 的「預設就有評價，沒有的是特例」：特例寫在**卡**上
          （`noEval` 永遠不評／`noEvalBeforeStage:N` 第 N 章之前不評），
          不要在 inspector 那邊另列一張不評的場次名單（鐵律 7）。 */
+    /* ══ 帝都第一夜的夢境戰（ver -1886，Ray 交稿）══
+       地下聖徒、在地宮（`bg`）、搭檔是賽西莉（諾薇兒九星全亮的那一套，見 `ceciliePartner`）、
+       **一進戰鬥就聖徒化**（`autoSaint`）、聖徒化開始後她講兩句（`saintStart` 節點）。
+       ⚠ `allowLose`：稿上「若戰敗劇情就直接進入第二天」—— 輸了照樣往下演（跳到收尾那一拍）。
+       ⚠ `noEval`：這是夢，不給蕾娜評價。`talkOnce`：打贏過就不再講（§6.5.2）。 */
+    cap_dream: { enemy:'faceless', partner:'cecilie', story:1, autoSaint:true, allowLose:true, noEval:true,
+                 bg:'holyseedungeonwhole', talkOnce:'cap_dream_talk',
+                 talk:[ { trigger:'saintStart', lines:[
+                   { who:'cecilie_x', img:'tut_cecilie_saintinstall', text:'讓我使出這力量的，你是第一個。' },
+                   { who:'cecilie_x', img:'tut_cecilie_saintinstall', text:'我可不允許你死在我面前！' },
+                 ] } ] },
     range_trainee: { enemy:'dart_target', record:'range', noReward:true, noEval:true,
                      timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
                                   prizeSec:30, prize:'Shotgun_Dragon' } },
@@ -3701,6 +3717,7 @@ export const GAME_CONFIG = {
       /* 樹靈鹿主的吼（ver -879，Ray 交件）——瀏覽器內 BS.1770 實測
          耳機 −19.64／手機 −24.18、平均 −21.91 LUFS，峰值 −8.33 dBFS（未觸頂）。 */
       se_enemy_roardeer:3.006,
+      se_stomp:1.0, se_stomp_far:0.55,   // ver -1886 ebur128：stomp −13.8／far −12.8 LUFS（峰值觸頂，夾在 1.0）；far 刻意壓低約 5 dB＝遠處
       /* 敵人登場音（ver -1879，Ray 交件＋enemies.xlsx 指定）—— ffmpeg ebur128 實測（全頻，
          沒有手機模型那一次）：chant −32.1／magic −16.7／beastgrowl −13.1／beastgrowl2 −28.2／
          squeal −14.9／squeal2 −14.3 LUFS，峰值都沒觸頂。 */
@@ -4492,6 +4509,12 @@ export const ASSETS = {
        試玩版照舊 Luna。 */
   cutin_return_nouvelle: "resources/ci/ci_nouvelle_lifereturn.webp",
   cutin_obe_nouvelle:    "resources/ci/ci_nouvelle_obe.webp",
+  /* 賽西莉（ver -1886，帝都第一夜的夢境戰；美術交件 png→webp）。 */
+  cutin_cecilie_saint:   "resources/ci/ci_cecilie_saintinstall.webp",
+  cutin_cecilie_obe:     "resources/ci/ci_cecilie_obe.webp",
+  cutin_cecilie_guard:   "resources/ci/ci_cecilie_deathguard.webp",
+  cutin_cecilie_return:  "resources/ci/ci_cecilie_lifereturn.webp",
+  partner_cecilie:       "resources/si/cecilie_si_front.webp",
   partner_malzeno: "resources/partner/malzeno_si_01.webp",   // 馬季諾 立繪
   cutin_boss: "resources/enemy/belinda_ci_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
   bg_sentou: "resources/background/sentouinstall.webp",
@@ -4908,7 +4931,9 @@ export const ASSETS = {
   const need = { nouvelle:['steady','run'], renna:['shock','run'],
                  /* ver -839：夏爾村村戰的戰鬥內對白。 */
                  sorana:['guardtalk','ready'],
-                 sh_villager:[], sh_villager2:[], sh_chief:[] };
+                 sh_villager:[], sh_villager2:[], sh_chief:[],
+                 /* ver -1886：帝都第一夜的夢境戰。 */
+                 cecilie:['saintinstall'] };
   for(const who in need){
     const A = ART[who]; if(!A) continue;
     ASSETS['tut_'+who] = A.base;
@@ -4917,6 +4942,28 @@ export const ASSETS = {
       if(v && v.src) ASSETS['tut_'+who+'_'+e] = v.src;
     }
   }
+})();
+
+/* ══⚠⚠ 賽西莉的搭檔卡（ver -1886，Ray：「賽西莉的能力就是九星滿級的諾薇兒」）══
+   **照抄諾薇兒那張卡**（同一套被動／主動／聖徒化），只換掉「她是誰」的那幾格：名字、立繪、
+   各種 cut-in（`ci_cecilie_*`）、語音（她沒有配音 ⇒ null，不借諾薇兒的聲音）。
+   ⚠ 用程式抄不手寫第二份：諾薇兒的卡日後改了數值，這一張自動跟上（鐵律 7）。
+   ⚠ 「九星滿級」走 `girls.proxy`：`progress.girlBonus` 問到她時一律當作**諾薇兒九顆全亮**
+     （唯一的計算點，鐵律 7）—— 她不在 `girls.who` 裡，整備頁不會出現她的升級條。
+   ⚠ 她不在任何搭檔池裡：只有戰鬥卡明寫 `partner:'cecilie'` 的那一場會是她。 */
+(function ceciliePartner(){
+  const P = GAME_CONFIG.partners, N = P && P.nouvelle; if(!N) return;
+  const C = JSON.parse(JSON.stringify(N));
+  Object.assign(C, { name:'賽西莉', image:'partner_cecilie', cutin:'cutin_cecilie_saint',
+    selectVoice:null, levelUpVoice:null, faceSpent:null,
+    /* 聖徒化的發動／結局演出改讀這幾格（saint.js，沒寫＝照舊諾薇兒那一套）。 */
+    saintCutin:'cutin_cecilie_saint', saintVoice:null,
+    obeCutin:'cutin_cecilie_obe', obeVoice:null, returnCutin:'cutin_cecilie_return' });
+  if(C.passive) Object.assign(C.passive, { cutin:'cutin_cecilie_guard', voice:null });
+  if(C.active)  Object.assign(C.active,  { cutin:'cutin_cecilie_return', voice:null });
+  P.cecilie = C;
+  const G = GAME_CONFIG.girls = GAME_CONFIG.girls || {};
+  G.proxy = Object.assign({}, G.proxy, { cecilie:{ as:'nouvelle', allStars:true } });
 })();
 
 /* ---- 小工具：從 ASSETS 取素材（找不到回傳空字串，不會壞）---- */

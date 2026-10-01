@@ -509,6 +509,9 @@ export function onSaintCritical(){
 // saint 結局掛鉤：'mb'＝Maximum Burst（未擊殺）、'return'＝生命歸還。
 //   cut-in 結束後：收尾台詞 → 教學完成（記已看）。敵血不再中途壓縮——
 //   教學總血量（config.tutorial.enemyHp）開場即依終盤 overkill 條件反推固定。
+/* 聖徒化真的開始了（cut-in 演完、盤面換好）→ 戰鬥內對白的 `saintStart` 節點（ver -1886，
+   帝都第一夜：賽西莉在聖徒化之後才開口）。非教學走 talkFire，教學中沒有這個節點＝no-op。 */
+export function onSaintStarted(){ fire('saintStart'); }
 export function onSaintEnded(kind){
   if(!state.tutorialActive) return;
   if(kind!=='mb' && kind!=='return') return;
