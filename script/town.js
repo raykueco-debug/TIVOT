@@ -1109,6 +1109,10 @@ export const TOWNS = {
           nou('surprise','雖說不及聖王廳，不過帝都的大教堂真是氣派呢。'),
           nou('sadsmile','上一次來，還是跟學姐一起……'),
           nou('surprise','啊！對不起……'),
+          { bubbleFx:'note', speaker:'PLAYER', blank:true },
+          { speaker:'NOUVELLE', text:'......', portrait:{ char:'NOUVELLE', expr:'sad', show:true } },
+          { speaker:'NOUVELLE', text:'騙人。', portrait:{ char:'NOUVELLE', expr:'sadnoeye', show:true } },
+          { speaker:'NOUVELLE', text:'......', portrait:{ char:'NOUVELLE', expr:'sad', show:true } },
 
         ],
         /* 路人單句：**教廷**線（ver -387）。 */
@@ -1416,6 +1420,7 @@ export const TOWNS = {
         lines:[
           nou('pray','感謝神，賜與我們平安與食糧。願主降福於世——'),
           nou('surprise','你怎麼已經開始吃了？禱詞還沒——'),
+          { bubbleFx:'vein', speaker:'PLAYER', blank:true },
           { speaker:'NOUVELLE', text:'', auto:1000,   /* 無台詞立繪拍：停一秒（§6.5） */
             portrait:{ char:'NOUVELLE', expr:'shock', show:true } },
           nou('lookaway','好好吃。'),
@@ -1489,9 +1494,9 @@ export const TOWNS = {
           { speaker:'NOUVELLE', text:'', auto:1000, se:'se_tummy',
             portrait:{ char:'NOUVELLE', expr:'hungry', show:true } },
           nou('hungry','對不起，我肚子有點餓。'),
-          { speaker:'PLAYER', blank:true },
+          { bubbleFx:'question', speaker:'PLAYER', blank:true },
           nou('hungry','不、不用在意我啦。'),
-          { speaker:'PLAYER', blank:true },
+          { bubbleFx:'note', speaker:'PLAYER', blank:true },
           nou('surprise','咦？你也是？'),
           nou('awkward','也是啦……剛剛才經歷一場死鬥，最後一餐差點就是黑麥麵包配豆子了……'),
           nou('run','走吧！', { se:'se_steps' }),
@@ -1575,7 +1580,7 @@ export const TOWNS = {
           nou('lookaway','我以二等司祭之名起誓！'),
           { speaker:'CLERK', text:'那……好吧。這邊請。', portrait:{ char:'CLERK', show:true } },
           nou('concern','唉……', { hide:['CLERK'] }),
-          nou('concern','跟你在一起我越來越會胡說八道了。'),
+          Object.assign(nou('concern','跟你在一起我越來越會胡說八道了。'), { bubbleFx:'sweat' }),
         ],
         /* ══ 分支：**每次進來都判一次**（不是只判一次）══
            走完城裡所有地點了沒，決定她說哪一句。判定在 `modules/town.js`（`allSeen`）。 */
@@ -2300,7 +2305,7 @@ export const TOWNS = {
              ⚠ 三個純音效拍：台上有安雅 → 要點一下才過（ver -628），這是要的。 */
           { flag:'np_grave_done', need:'np_day3_done', storyBattle:true, lines:[
             any('cry','娜塔莉……'),
-            any('sob','（異國語言）'),
+            any('sob','Это всё я… Это всё из-за меня…'),
             { speaker:'PLAYER', blank:true },
             any('sob','我知道，可是……可是……'),
             any('desperate','都是我的錯……'),
@@ -2430,6 +2435,7 @@ export const TOWNS = {
            ⚠ 好感（+5/+5）記在最後一拍（演完才記，town 的 line.aff 慣例）。 */
         acts:[
           { flag:'np_med', need:'np_burial_done', hourOfDay:[0,18], lines:[
+            { speaker:'PLAYER', blank:true },
             groN(null,'退燒藥是嗎？來，拿著。'),
             groN(null,'不用錢啦，都什麼時候了。'),
             ren('surprise','唉呀。好巧喔。'),
@@ -4660,7 +4666,7 @@ export const TOWNS = {
           sor('confuse','我沒辦法丟下她們不管。'),
           sor('lookaway','幫我跟大家說一下，我——'),
           { speaker:'NARRATION', text:'', se:'se_reload', auto:900 },
-          sor('blush','！！'),
+          sor('surprise','！！'),
           sor('surprise','你……願意跟我一起……'),
           { speaker:'PLAYER', blank:true },
           sor('shy','我知道啦！'),
@@ -4737,11 +4743,11 @@ export const TOWNS = {
           sor('determine','竟然把森住民都趕到這種地方……！'),
           lot('happy','姐姐！'),
           sor('confuse','妳住在這種地方嗎！'),
-          lot('guard','？'),
+          lot('ask','？'),
           lot('happy','對啊。'),
           sor('remind','……要不要，跟姐姐一起走？'),
           lof('talk','那可不行。'),
-          lot('shock','姐姐！'),
+          lot('shock','蘿法！'),
           lof('talk','妳走了，誰來照顧媽媽？'),
           lof('lookaway','再說，里朋家族的那些傢伙是不會允許的。'),
           sor('confuse','……為什麼要他們允許？'),
@@ -4813,8 +4819,8 @@ export const TOWNS = {
           sor('ready','虧我還相信妳……那我自己去！'),
           ren('callangry','不可以！'),
           sor('angry',''),
-          ren('coldstare','想清楚！贏了妳就一輩子在這裡蹲苦窯！輸了妳就……！'),
-          ren('lookaway',''),
+          ren('argue','想清楚！贏了妳就一輩子在這裡蹲苦窯！輸了妳就……！'),
+          ren('arguecute',''),
           nou('cringe','索菈娜小姐……'),   // ver -1800 Ray：門房那一拍的前一拍用 cringe
           door('喂、喂！誰讓妳進來的！'),
           { speaker:'NARRATION', text:'', se:'se_steps', auto:1200 },
@@ -4823,11 +4829,12 @@ export const TOWNS = {
           lot('cry','姐姐！',     { onlyIf:'ss_date_sor' }),
           nou(null,'啊……'),
           { speaker:'NARRATION', text:'', se:'se_fall', auto:1000 },
-          lot('cry','姐姐……他們把我姐姐……！'),
+          lot('cry','蘿法……他們把我姐姐……！'),
           sor('angry',''),
           sor('determine','對不起啊，蕾娜。'),
           sor('determine','要請妳們找個新的帆手了。'),
           { speaker:'NARRATION', text:'', se:'se_reload', auto:900 },
+          { speaker:'SORANA', text:'', portrait:{ char:'SORANA', expr:'smile', show:true } },
           sor('readysmile','好......我們走。', { aff:{ sorana:3 } }),   // ver -1793：稿補「走。」＋索好感 +3
           ren('callangry','都給我站住。'),
           sor('cringe',''),
@@ -4881,7 +4888,8 @@ export const TOWNS = {
           sor('ad_surprise','喔！'),
           nou('ad_coverface',''),
           sor('ad_smirk','這也是……另外一種意義的不錯呢！'),
-          nou('ad_coverface','我不能再這樣吃下去了……'),
+          nou('ad_coverface','沒有人能跟我換嗎……'),
+          { speaker:'RENNA', text:'我明明是照資料選的尺寸啊......', portrait:{ char:'RENNA', expr:'ad_write', show:true } },
           /* [諾 T3 以上] */
           { speaker:'PLAYER', blank:true, tierWho:'NOUVELLE', tierMin:3 },
           nou('ad_coverface','',                                { tierWho:'NOUVELLE', tierMin:3 }),
@@ -5041,11 +5049,11 @@ export const TOWNS = {
       { flag:'vn_day2', need:'vn_night_done', hourOfDay:[6,12],
         goto:'square', enterAgain:true, sides:{ RENNA:'L' }, lines:[
         ren('lookawaytalk','好了，出發吧。'),
-        sor('idea','墓門要怎麼辦？用艦砲轟掉？'),
+        Object.assign(sor('idea','墓門要怎麼辦？用艦砲轟掉？'), { bubbleFx:'sweat' }),
         nou('concern','那可是千年文物耶！'),
         ren('lookawaytalk','上了船再說明會比較快，走吧。'),
         { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
-        sor('whisper','……還沒和好？'),
+        Object.assign(sor('whisper','……還沒和好？'), { bubbleFx:'weak' }),
         { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
         sor('confuse','喂……'),
         sor('sad','唉……為什麼我要幹那種蠢事呢……'),
@@ -7575,13 +7583,13 @@ export const TOWNS = {
           cec('upset','什麼嘛，妳是不想看到我嗎？'),
           cec('lookaside','啊，不想看到我的人，是另一個吧？'),
           { speaker:'PLAYER', blank:true },
-          cec('talk','好久不見啊。'),
-          cec('tease','『前』第一候補。'),
+          Object.assign(cec('talk','好久不見啊。'), { bubbleFx:'note' }),
+          Object.assign(cec('tease','『前』第一候補。'), { bubbleFx:'heart' }),
           ren('coldstare','......'),
           nou('cringe','為什麼……要用那種說法……'),
           cec(null,'我沒說錯吧？'),
           cec('smile','輸掉了排位，連搭檔都拱手讓人的『第二名』。'),
-          nou('furious','學姐！'),
+          Object.assign(nou('furious','學姐！'), { bubbleFx:'vein' }),
           lau('idea','好、好啦！難得大家在這裡合流了——'),
           /* ⚠ ver -1565（Ray：「羅芮台詞錯誤，她不會喊蕾娜學姐，一概用蕾姬娜學姐」）。 */
           lau('idea','蕾姬娜學姐，妳們也是要去伊甸古墓吧？'),
@@ -7592,14 +7600,14 @@ export const TOWNS = {
           cec('spoild','我不要。'),
           lau('lookaside','咦？'),
           cec('spoild','我說：我、不、要。'),
-          lau('idea','那個……我才是監察官……'),
+          Object.assign(lau('idea','那個……我才是監察官……'), { bubbleFx:'sweat' }),
           cec('upset',''),
-          lau('die','噫——'),
+          Object.assign(lau('die','噫——'), { bubbleFx:'gloom' }),
           nmo('bore','啊——又來了。變成那樣以後就沒辦法了呢。'),
           lau('lookaside','那、我們去另一個遺蹟……？'),
           cec('talk','知道了還不快走？'),
           lau('die','是……'),
-          nmo('bye','學長拜拜——下次再一起玩吧——'),
+          Object.assign(nmo('bye','學長拜拜——下次再一起玩吧——'), { bubbleFx:'note' }),
           /* ══⚠ 腳步聲那一拍**擺賽西莉的背影**（ver -1545，Ray：「學長拜拜之後的
              腳步聲那一拍放一張 cecilie 的 back，**然後才是主角說話**」）══
              ⚠ 原本是 `NARRATION` 空拍（只有腳步聲）—— 現在由她轉身走人**演**那個腳步聲。
@@ -7607,7 +7615,7 @@ export const TOWNS = {
                （台上有人的無台詞拍要點擊才推進，§6.5 的 -628），節奏與原本那一拍一樣。 */
           Object.assign(cec('back',''), { se:'se_walk', auto:1400 }),
           { speaker:'PLAYER', blank:true },
-          cec('sadback','……'),
+          Object.assign(cec('sadback','……'), { bubbleFx:'exclaim' }),
           cec('talk','你說呢？'),
           /* ══⚠ 她也走了（ver -1547，Ray：「你說呢之後**撤立繪**，**再放一次 se walk**」）══
              `hide:'*'` ＝把台上的人全撤（不是點名 —— 那一拍站著誰是演到那裡才知道的，
@@ -7672,12 +7680,12 @@ export const TOWNS = {
           ren('watch','應該就是這裡了。'),
           nou('surprise','跟遺蹟的祭壇好像……'),
           ren('watch','對。或許安雅小姐可以……'),
-          any('answer','是！', { shake:true }),
+          Object.assign(any('answer','是！', { shake:true }), { bubbleFx:['hit','shout'] }),
           ren('shockcalm',''),
           ren('awkward','安雅小姐不用那麼緊張的。'),
           any('answer','好……好！'),
           ren('evaluateclosemouth',''),
-          nou('whisper','安雅都嚇壞了……'),
+          Object.assign(nou('whisper','安雅都嚇壞了……'), { bubbleFx:'weak' }),
           sor('die','都是我不好……'),
           /* ══⚠⚠ **石碑啟動**（`fx:'sense'`，ver -1540 修時序）════════════════
              ⚠ **清場不寫在這裡** —— `senseFx()` 自己會把台上清空（見 story.js 的
@@ -8063,11 +8071,11 @@ export const TOWNS = {
           any('talk','幽靈……要是有就好了。'),
           ren('scarejump','連安雅小姐都……'),
           /* ⚠ 這兩拍稿上沒標表情 ⇒ **不動立繪**（立繪是持續狀態，§6.5）。 */
-          nou(null,'某種意義上來說，那些死去的人……'),
-          nou(null,'都曾經是對某人來說特別的存在吧？'),
+          nou('sadsmile','某種意義上來說，那些死去的人……'),
+          nou('sadsmilenoeye','都曾經是對某人來說特別的存在吧？'),
           ren('sad','……'),
           any('sob',''),
-          ren(null,'好啦，反正打不開就是打不開。'),
+          ren('sighsweat','好啦，反正打不開就是打不開。'),
           /* ⚠ 稿上那個 `Varnholm` 是**地名的西文**不是立繪（`resources/SI/` 沒有
              這張圖），這一拍照上一拍的表情演。
              ⚠⚠ 城名 ver -1191 由 Ray 改成**拉芬斯達爾城**（Ravnsdal，大地圖上
@@ -8377,7 +8385,7 @@ export const TOWNS = {
           ren('talkwork','米海爾殿下！',              { skipIf:'tomb_h_route' }),
           mis('front',''),   // 稿：「米：misha_si_front.webp」—— 轉回正面的無台詞拍
           ren('hugtalk', '我是聖王廳第十三騎士團一等監察官，蕾姬娜˙海森伯格。', { onlyIf:'tomb_h_route' }),
-          ren('talkwork','我是聖王廳第十三騎士團一等監察官，蕾姬娜˙海森伯格。', { skipIf:'tomb_h_route' }),
+          ren('talkwork','我是聖王廳第十三騎士團一等監察官，蕾姬娜˙馮˙海森伯格。', { skipIf:'tomb_h_route' }),
           ren('hugtalk', '基於永夜協議，我要求說明，為何您會身在此處？',       { onlyIf:'tomb_h_route' }),
           ren('talkwork','基於永夜協議，我要求說明，為何您會身在此處？',       { skipIf:'tomb_h_route' }),
           ren('hugtalk', '謝索洛夫皇國的第一皇子！',                            { onlyIf:'tomb_h_route' }),
@@ -9048,6 +9056,7 @@ export const TOWNS = {
                這支旗問的是「評價者在不在場」。 */
           Object.assign(ren('shockcalm','！！'), { flags:['tomb_rejoin'] }),
           ren('sad','這不是遍體鱗傷了嗎……'),
+          { speaker:'NOUVELLE', text:'不要緊，我還可以......', portrait:{ char:'NOUVELLE', expr:'desperate', show:true } },
           /* ⚠⚠ **同一句話、兩張表情**（稿上那兩行的字一模一樣）：她說到一半就倒下去了
              ⇒ 第二拍**照抄同一句**、只換立繪。
              ⚠ 不要寫成「一拍換兩次立繪」：換圖是延後執行的（§6.5 的 -647），
@@ -9057,7 +9066,6 @@ export const TOWNS = {
              -1671 寫成兩拍同樣的字，玩家讀到的是「這句話講了兩次」。
              ⚠ `exprThen` 的實作在 `story.js`（`reveal()` 裡那一段）：狀態立刻改成
                `faint`（她已經昏了），只有畫面上那一下是延後的。 */
-          nou('desperate','不要緊，有我在——', { exprThen:'faint', exprAt:900 }),
           { speaker:'NARRATION', text:'', se:'se_fall', auto:900 },
           /* ══ 插圖 26（諾薇兒暈倒）—— **只有諾薇兒 T3 以上看得到**（Ray 的稿）══
              ⚠⚠ `tierWho:'NOUVELLE'` **一定要寫**：不寫＝看說話者自己，而這一拍的
@@ -9067,6 +9075,7 @@ export const TOWNS = {
           { speaker:'NARRATION', text:'', cg:'26_nouvellefaint', cgNoTime:true,
             cgPan:'up', auto:2200, tierMin:3, tierWho:'NOUVELLE' },
           { speaker:'NARRATION', text:'', cg:null, auto:200, tierMin:3, tierWho:'NOUVELLE' },
+          { speaker:'NOUVELLE', text:'', portrait:{ char:'NOUVELLE', expr:'faint', show:true } },
           any('crying','諾薇兒！'),
           ren('worry','暈過去了……先給她退燒藥。'),
           /* ══⚠⚠ **從這一拍起持續撞到進戰鬥為止**（稿：「0.3～0.7 秒後再播一組…

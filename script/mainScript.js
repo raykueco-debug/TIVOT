@@ -273,7 +273,7 @@ export const MAIN_SCRIPT = {
       { speaker:'NOUVELLE', text:'', auto:1000, portrait:{ char:'NOUVELLE', expr:'cringe' } },
       { speaker:'OFFICER', text:'您見笑了。我一直想與璐娜莉亞大人見上一面呢。',
         portrait:{ char:'OFFICER', expr:'smile', show:true } },
-      { speaker:'OFFICER', text:'兩年前的極東戰場，家父多得您關照了。',
+      { speaker:'OFFICER', text:'兩年前的極東戰場，家父承蒙您關照了。',
         portrait:{ expr:'bow' } },
       { speaker:'LUNARIA', text:'兩年前……那老頭是妳爸？',
         portrait:{ char:'LUNARIA', expr:'seat_angry' } },
@@ -296,9 +296,9 @@ export const MAIN_SCRIPT = {
       /* ⚠ `expr:null` ＝ 回基本立繪（Renna_SI_front）。省略的話會沿用上一張差分。 */
       { speaker:'OFFICER', text:'這不稀奇呀，妳不也是從第十二騎士團調來輔助他的嗎？',
         portrait:{ char:'OFFICER', expr:null, show:true } },
-      { speaker:'NOUVELLE', text:'也是……？', portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
+      { speaker:'NOUVELLE', text:'也……？', portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
       { speaker:'LUNARIA', text:'就是這麼回事了。', portrait:{ char:'LUNARIA', expr:'seat' } },
-      { speaker:'LUNARIA', text:'最近北境不太平，禍魘像蛆一樣湧出，襲擊城鎮的頻率暴增。上週就多了四十起，空陸都有。',
+      { speaker:'LUNARIA', text:'最近北境不太平，禍魘像蛆一樣湧出，襲擊城鎮的頻率暴增。',
         portrait:{ expr:'seat' } },
       { speaker:'LUNARIA', text:'帶著這兩個傢伙，去看看是怎麼回事。', portrait:{ expr:'seat' } },
       /* 主角開口，但沒有台詞：**出框、框裡沒有字**（Ray 指定）。名字取存檔裡的玩家名。 */
@@ -306,7 +306,8 @@ export const MAIN_SCRIPT = {
       { speaker:'LUNARIA', text:'你那是什麼表情？', portrait:{ char:'LUNARIA', expr:'seat' } },
       { speaker:'LUNARIA', text:'剛剛要不是這傢伙，你早就沒命了吧？', portrait:{ expr:'seat_smirk' } },
       { speaker:'LUNARIA', text:'不服氣的話，就別依靠別人的力量。', portrait:{ expr:'seat_smirk' } },
-      { speaker:'NOUVELLE', text:'不，剛剛那只是我擅自——',
+      { speaker:'LUNARIA', text:'還是說，沒了賽西莉你就不會戰鬥了嗎？', portrait:{ char:'LUNARIA', expr:'seat_smirk', show:true } },
+      { speaker:'NOUVELLE', text:'不，剛剛是因為我——',
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
       { speaker:'LUNARIA', text:'不論如何，你們兩個，', portrait:{ char:'LUNARIA', expr:'seat_smirk' } },
       { speaker:'LUNARIA', text:'好好保護好侯爵大人的千金。', portrait:{ expr:'seat_smirk' } },
@@ -333,12 +334,13 @@ export const MAIN_SCRIPT = {
         portrait:{ char:'OFFICER', expr:'awkward', show:true } },
       { speaker:'LUNARIA', text:'......', portrait:{ char:'LUNARIA', expr:'seat' } },
       { speaker:'LUNARIA', text:'......你自求多福吧。', portrait:{ expr:'seat' } },
+      { speaker:'PLAYER', blank:true, bubbleFx:['sweat','gloom'] },
       { speaker:'NOUVELLE', text:'不要緊的，我也是個術師，我會保護監察官大人的安全！',
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
       { speaker:'OFFICER', text:'唉呀好可靠。多好的女孩呀？',
         portrait:{ char:'OFFICER', expr:'smile', show:true } },
       { speaker:'LUNARIA', text:'行了，要聊天的話路上聊去。', portrait:{ char:'LUNARIA', expr:'seat_angry' } },
-      { speaker:'PLAYER', blank:true },
+      { bubbleFx:'question', speaker:'PLAYER', blank:true },
       { speaker:'LUNARIA', text:'怎麼去？你自己問監察官吧！', portrait:{ char:'LUNARIA', expr:'seat_angry' } },
       { speaker:'OFFICER', text:'先到帝都去吧，交通工具已經備好了。',
         portrait:{ char:'OFFICER', expr:null, show:true } },
@@ -349,6 +351,8 @@ export const MAIN_SCRIPT = {
       { speaker:'LUNARIA', text:'', auto:1400, se:'se_walk', hide:['OFFICER','NOUVELLE'] },
       { speaker:'LUNARIA', text:'喂！', portrait:{ char:'LUNARIA', expr:'seat', show:true } },
       { speaker:'LUNARIA', text:'好歹是HUND出身的，別丟了第四騎士團的臉。', portrait:{ expr:'seat' } },
+      { speaker:'PLAYER', blank:true, bubbleFx:'vein' },
+      { speaker:'LUNARIA', text:'真敢說啊。', portrait:{ char:'LUNARIA', expr:'seat_smirk', show:true }, bubbleFx:'note' },
       /* ⚠ 交界插讀取閘門（同 dungeon→會客廳）：帝都那一幕自己的背景就 340KB，
          不該擠進上一道門。`collectAssets` 看到這一行就不再往下算。 */
       { load:'capital_square' },
@@ -417,19 +421,19 @@ export const MAIN_SCRIPT = {
         portrait:{ char:'OFFICER', expr:null, show:true } },
       { speaker:'OFFICER', text:'我以海森伯格之名請求妳，喔。', portrait:{ expr:'stare' } },
       { speaker:'NOUVELLE', text:'好、好的，蕾娜小姐。',
-        portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
+        portrait:{ char:'NOUVELLE', expr:'salute', show:true } },
       { speaker:'RENNA', text:'真是守規矩的孩子呢。',
         portrait:{ char:'RENNA', expr:'smile', show:true } },
       /* 主角開口（空框）。⚠ 這一拍**不配音效**（ver -360 修正）——
          悶響是諾薇兒揍下去那一下，排在蕾娜講完之後。 */
-      { speaker:'PLAYER', blank:true },
+      { bubbleFx:'note', speaker:'PLAYER', blank:true },
       { speaker:'RENNA', text:'……你倒是叫得挺順口的。',
         portrait:{ char:'RENNA', expr:'stare', show:true } },
       /* 揍下去：諾薇兒的驚訝立繪 ＋ 畫面震動 ＋ 悶響，同一拍（Ray 指定的節奏）。
          ⚠ 沒有台詞 → 不出框 → 沒有 ▼，所以要 `auto` 自己走；那一秒從立繪站定起算（§6.5）。 */
       { speaker:'NOUVELLE', text:'', auto:700, shake:true, se:'se_punch',
-        portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
-      { speaker:'NOUVELLE', text:'（那是侯爵的千金欸！你莊重一點！）',
+        portrait:{ char:'NOUVELLE', expr:'angry', show:true } },
+      { bubbleFx:'weak', speaker:'NOUVELLE', text:'那是侯爵的千金欸！你莊重一點！',
         portrait:{ char:'NOUVELLE', expr:'whisper', show:true } },
       { speaker:'RENNA', text:'沒關係啦，好久沒被那樣叫，有點懷念罷了。',
         portrait:{ char:'RENNA', expr:'smile', show:true } },
@@ -537,7 +541,7 @@ export const MAIN_SCRIPT = {
         cg:'009_soranadebute', cgPan:'up', bgm:'whirlwind',
         portrait:{ char:'NOUVELLE', expr:'scare' } },
       { speaker:'NOUVELLE', text:'森住民？',
-        portrait:{ expr:'scare' } },
+        portrait:{ expr:'surprise' } },
       { battle:'man_sorana' },
       /* ══ 戰後（ver -752，Ray 的續稿）══ BGM 由卡上的 bgmAfter 換成
          Whistling Winds（-747 曾改 misty，這一稿改回）；插圖收掉走黑幕。
