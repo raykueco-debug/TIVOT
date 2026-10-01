@@ -83,7 +83,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1884';
+export const VERSION = 'ver 2026.09.22-1885';
 
 export const GAME_CONFIG = {
 
@@ -4518,6 +4518,16 @@ export const ASSETS = {
   enemy_bug_mantis:               "resources/enemy/mon_bug_mantis.webp?v=5",
   enemy_relic_bellascetic:        "resources/enemy/mon_relic_bellascetic.webp?v=4",
   enemy_rictus_hooked:            "resources/enemy/mon_rictus_hooked.webp",
+  enemy_saint_acolyte:            "resources/enemy/mon_saint_acolyte.webp",
+  enemy_saint_blade:              "resources/enemy/mon_saint_blade.webp",
+  enemy_saint_crawler:            "resources/enemy/mon_saint_crawler.webp",
+  enemy_saint_fist:               "resources/enemy/mon_saint_fist.webp",
+  enemy_saint_giant:              "resources/enemy/mon_saint_giant.webp",
+  enemy_saint_haloed:             "resources/enemy/mon_saint_haloed.webp",
+  enemy_saint_maw:                "resources/enemy/mon_saint_maw.webp",
+  enemy_saint_palmeye:            "resources/enemy/mon_saint_palmeye.webp",
+  enemy_saint_pillory:            "resources/enemy/mon_saint_pillory.webp",
+  enemy_saint_prayerhead:         "resources/enemy/mon_saint_prayerhead.webp",
   inspector_renna:     "resources/si/renna_si_front.webp",         // 讀取頁的說明者（出航後）
   /* ⚠ ver -1037：破防計量表的月牙（`clasp_moon` / `clasp_moon_frame`）**已退場**
      —— Ray：「放棄原本的計量設計，改成以角色圓頭像為中心…」。兩張圖仍留在

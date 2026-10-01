@@ -547,14 +547,20 @@ SKIP_COLS = {'__no__', '圖', '圖檔', 'key'}
 #     而畫面上不會有任何錯誤訊息（ver -929 的 `np_boss` 就是這樣）。兩邊一起寫。
 CARD_TMPL = """    {key}: {{
       name:'（待命名）',
-      story:0, counterStagger:1,
+      story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] }},
       openAssault:[1,2],
       ult:{{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 }},
       assaultEvery:[2,4],
       assault:{{ count:1, gap:0 }},
-      kind:'beast',
+      kind:'{kind}',
+      riseFx:0,
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:null,
+      atype:null,
+      stageScale:1,
+      stack:0,
       image:'enemy_{key}',
       bg:'',   // ⚠ 待填：戰鬥背景的基底名
       fit:{{ mode:'contain', pos:'center bottom' }},
@@ -572,9 +578,14 @@ CARD_TMPL = """    {key}: {{
     }},
 """
 
-def do_newcards():
-    """有圖沒卡的每一張 → 在 enemies.js 補一張最普通的卡、在 config.js 補一行 ASSETS。"""
-    orphans = orphan_images()
+KIND = 'beast'
+def do_newcards(pat=None, kind=None):
+    """有圖沒卡的每一張 → 在 enemies.js 補一張最普通的卡、在 config.js 補一行 ASSETS。
+       ver -1885：`newcards <檔名片段> <kind>` 只建檔名含那一段的（孤兒圖裡也有劇情用的中景圖，
+       整批建會替它們開出沒人用的怪卡）；kind 預設 beast。"""
+    global KIND
+    if kind: KIND = kind
+    orphans = [r for r in orphan_images() if (not pat or pat in r)]
     if not orphans: print('沒有「有圖沒卡」的怪，什麼都不用做。'); return
     js  = open(JS, encoding='utf-8').read()
     cfg = open(os.path.join(ROOT, 'config.js'), encoding='utf-8').read()
@@ -601,7 +612,7 @@ def do_newcards():
         stem = os.path.splitext(os.path.basename(rel))[0]
         key  = re.sub(r'^mon_', '', stem)          # ⚠ 機器推的鑰匙：檔名去掉 mon_
         if key in cur: print(f'  略過 {key}（卡已經存在）'); continue
-        cards += CARD_TMPL.format(key=key)
+        cards += CARD_TMPL.format(key=key, kind=KIND)
         lines += ('\n  enemy_' + key + ':').ljust(34) + f' "{rel}",'
         made.append((key, rel))
     if not made: print('沒有要新增的。'); return
@@ -688,7 +699,7 @@ def do_import(path):
 if __name__ == '__main__':
     cmd = sys.argv[1] if len(sys.argv) > 1 else 'export'
     if cmd == 'export': do_export()
-    elif cmd == 'newcards': do_newcards()
+    elif cmd == 'newcards': do_newcards(sys.argv[2] if len(sys.argv) > 2 else None, sys.argv[3] if len(sys.argv) > 3 else None)
     elif cmd == 'scale': do_scale()
     elif cmd == 'import': do_import(sys.argv[2] if len(sys.argv) > 2 else None)
     else: sys.exit(__doc__)

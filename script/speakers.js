@@ -1489,6 +1489,10 @@ export const ART = {
     spoild:   { src:'resources/si/cecilie_si_spoild.webp',    top:8, bot:1526, fx:0.551 },
     nolook:   { src:'resources/si/cecilie_si_nolook.webp',    top:1, bot:1531, fx:0.543 },
     think:    { src:'resources/si/cecilie_si_think.webp',     top:5, bot:1529, fx:0.560 },
+    /* ver -1885：美術交件（HANDOFF 37）。`blush` 已同名覆蓋成真正的害羞臉（舊檔與 tease 是同一張），
+       帶 ?v=2 防快取；`fluster` 新鍵，取景同 spoild（measure_si 實量相同）。 */
+    blush:    { src:'resources/si/cecilie_si_blush.webp?v=2', top:4, bot:1529, fx:0.574 },
+    fluster:  { src:'resources/si/cecilie_si_fluster.webp',   top:8, bot:1526, fx:0.551 },
   } },
   /* ⚠⚠ **縮 20%**（ver -1536，Ray：「蘿芮登場那張圖太大了 縮20%」）——
      她的圖是**彎腰前傾**的構圖：像素高佔滿整框，但那是「彎著的 158cm」，
