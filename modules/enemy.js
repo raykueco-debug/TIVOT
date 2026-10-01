@@ -789,6 +789,38 @@ const PURIFY_KINDS = { harm:1, slay:1, aerial:1 };
    `stopEntranceSe` 由 combat 的 `stopAll`（所有結束路徑的匯流點）收掉（鐵律 8）。
    ⚠ 語音照舊一次播完：那是台詞，短，而且 `playVoice` 走語音鏈沒有把手。 */
 let entranceCues = [];
+/* ══ 敵人立繪的取景：**唯一的套用點**（ver -1883 由 setEnemy 抽出，鐵律 8）══
+   `fit` ＝卡上的 `{ mode, pos, scale, shiftY }`。setEnemy 與管理人的「敵立繪」編輯面板
+   （main.js，即時預覽）都走這一支 —— 兩邊各寫一份，預覽與實戰就會對不上。 */
+export function applyEnemyFit(fit){
+  const eImg = $('enemyImg'); if(!eImg) return;
+    eImg.style.objectPosition = (fit && fit.pos) || '';
+    /* ══⚠⚠ **`fit.scale`／`fit.shiftY` ＝把他擺遠一點**（ver -1565，Ray：「尼莫戰
+       讓他站稍遠一點，應該是圖稍縮 上移 全身入鏡但不要太上面」）══
+       · `scale`  ＝畫面上佔多大（1 ＝滿框；0.86 ＝縮到 86%）
+       · `shiftY` ＝往上／下挪，單位是**框高的比例**（負數往上）
+       ⚠⚠⚠ **不可以用 `transform`**：`#enemyImg` 的 `transform` 已經被**受擊演出**
+         佔走了（`.hit` 那一串位移與縮放，ver -598）—— 一個元素只有一份 transform，
+         寫上去會在挨打那一瞬整個被蓋掉，而且不會報錯（同 §6.5.4.4 淨化那一條的坑）。
+       ⇒ 改成**縮元素框自己**（`inset`）：它是 `position:absolute;inset:0`，
+         而 `object-fit:contain` 會跟著框縮 —— 等於把人擺遠。
+       ⚠ 沒寫這兩格的怪**一個像素都不會動**（`inset` 歸零回預設）。 */
+    { const f=fit||{}, k=(+f.scale||1), dy=(+f.shiftY||0);
+      if(k!==1 || dy!==0){
+        const h=(1-k)/2*100, v=(1-k)/2*100;
+        eImg.style.left=h+'%'; eImg.style.right=h+'%';
+        eImg.style.top=(v+dy*100)+'%'; eImg.style.bottom=(v-dy*100)+'%';
+        /* ⚠⚠⚠ **寬高也要一起給**（ver -1702 修）：CSS 的 `#enemyImg` 寫死了
+           `width:100%;height:100%` —— 有明寫寬高時 `right`／`bottom` 是**被忽略的**，
+           於是 -1565 起這一條從來沒有縮放過，只是把整張圖往左上（或右下）平移。
+           （尼莫的 0.86 其實只往右下挪了 7%；墓主的 1.4 只往左上挪、根本沒變大。） */
+        eImg.style.width=(k*100)+'%'; eImg.style.height=(k*100)+'%';
+      }else{ eImg.style.left=eImg.style.right=eImg.style.top=eImg.style.bottom='';
+             eImg.style.width=eImg.style.height=''; } }
+    /* ⚠ `fit.mode:'contain'`（ver -375）：**去背立繪**用的。滿版插圖走 cover（預設），
+       但把對話立繪借來當戰鬥立繪時，cover 會把頭裁掉 —— 那種要 contain ＋ 背景。 */
+    eImg.style.objectFit = (fit && fit.mode) || '';
+}
 export function stopEntranceSe(ms){
   for(const h of entranceCues){ try{ h.stop(ms==null ? 700 : ms); }catch(_){} }
   entranceCues = [];
@@ -1403,32 +1435,7 @@ export function setEnemy(key, opts){
     if(nameEl) nameEl.textContent = displayEnemyName(nm); }
   const eImg = $('enemyImg');
   if(eImg){
-    eImg.style.objectPosition = (en.fit && en.fit.pos) || '';
-    /* ══⚠⚠ **`fit.scale`／`fit.shiftY` ＝把他擺遠一點**（ver -1565，Ray：「尼莫戰
-       讓他站稍遠一點，應該是圖稍縮 上移 全身入鏡但不要太上面」）══
-       · `scale`  ＝畫面上佔多大（1 ＝滿框；0.86 ＝縮到 86%）
-       · `shiftY` ＝往上／下挪，單位是**框高的比例**（負數往上）
-       ⚠⚠⚠ **不可以用 `transform`**：`#enemyImg` 的 `transform` 已經被**受擊演出**
-         佔走了（`.hit` 那一串位移與縮放，ver -598）—— 一個元素只有一份 transform，
-         寫上去會在挨打那一瞬整個被蓋掉，而且不會報錯（同 §6.5.4.4 淨化那一條的坑）。
-       ⇒ 改成**縮元素框自己**（`inset`）：它是 `position:absolute;inset:0`，
-         而 `object-fit:contain` 會跟著框縮 —— 等於把人擺遠。
-       ⚠ 沒寫這兩格的怪**一個像素都不會動**（`inset` 歸零回預設）。 */
-    { const f=en.fit||{}, k=(+f.scale||1), dy=(+f.shiftY||0);
-      if(k!==1 || dy!==0){
-        const h=(1-k)/2*100, v=(1-k)/2*100;
-        eImg.style.left=h+'%'; eImg.style.right=h+'%';
-        eImg.style.top=(v+dy*100)+'%'; eImg.style.bottom=(v-dy*100)+'%';
-        /* ⚠⚠⚠ **寬高也要一起給**（ver -1702 修）：CSS 的 `#enemyImg` 寫死了
-           `width:100%;height:100%` —— 有明寫寬高時 `right`／`bottom` 是**被忽略的**，
-           於是 -1565 起這一條從來沒有縮放過，只是把整張圖往左上（或右下）平移。
-           （尼莫的 0.86 其實只往右下挪了 7%；墓主的 1.4 只往左上挪、根本沒變大。） */
-        eImg.style.width=(k*100)+'%'; eImg.style.height=(k*100)+'%';
-      }else{ eImg.style.left=eImg.style.right=eImg.style.top=eImg.style.bottom='';
-             eImg.style.width=eImg.style.height=''; } }
-    /* ⚠ `fit.mode:'contain'`（ver -375）：**去背立繪**用的。滿版插圖走 cover（預設），
-       但把對話立繪借來當戰鬥立繪時，cover 會把頭裁掉 —— 那種要 contain ＋ 背景。 */
-    eImg.style.objectFit = (en.fit && en.fit.mode) || '';
+    applyEnemyFit(en.fit);   // 取景（ver -1883 抽出：戰鬥中的「敵立繪」編輯面板也用這一支預覽）
   }
   /* 戰鬥背景（ver -375）：敵人卡的 `bg`。去背立繪身後不能是一片黑。
      ⚠ 沒寫要清掉 —— 同 setEnemy 的其他欄位，連戰換敵不能留上一隻的。 */

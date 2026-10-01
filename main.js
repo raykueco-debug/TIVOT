@@ -37,7 +37,7 @@ import * as prog from './script/progress.js';
    （Ray：「北峰奶油又沒了」）。改成靜態 import，補給在進場之前就發完。 */
 import * as inv from './script/inventory.js';
 import * as clock from './script/clock.js';   // 章節的起始時刻（firstHourAt）   // 進度／旗標／「一輪遊戲」的邊界（newRun）
-import './modules/enemy.js';
+import * as enemyMod from './modules/enemy.js';   // 敵立繪編輯面板的即時預覽（applyEnemyFit，ver -1883）
 
 /* ══⚠⚠ **破圖框一律不畫**（ver -1881，Ray：「怪出現前都會先出現疑似讀不到圖的 404 框」
    「閉棺時也常出現 404 圖框」）══ 手機 Safari 會替**沒有 src／載入失敗**的 `<img>` 畫一個
@@ -1388,12 +1388,89 @@ function showExitConfirm(){
   bind('.ec-yes',()=>{ close(); flightBack=false; storyResume=null; combat.goHome(); });
 }
 bindBtn('testClearBtn', combat.testClearBoard); // 左上（測試用）：一鍵清盤
-// 鎖血（管理人測試，ver -463）：切換 state.hpLock，開著時 enemyAttack 不扣玩家血。
-//   跨場沿用（測試工具），亮金＝開啟。
-bindBtn('hpLockBtn', ()=>{
-  state.hpLock = !state.hpLock;
-  const b=document.getElementById('hpLockBtn'); if(b) b.classList.toggle('on', state.hpLock);
-});
+/* ══ 敵立繪編輯（管理人，ver -1883，Ray：「戰鬥中鎖血鈕取消，改成編輯敵立繪」）══
+   取代鎖血鈕（同一個位置）。按下去＝真暫停（同右上暫停鈕那一支）＋開面板；
+   每改一格就用 `enemy.applyEnemyFit` 即時預覽（setEnemy 也走它，鐵律 8），
+   「存檔」走 devserver 的 `/__efit` 寫回敵人卡的 `fit`，並同步記憶體裡那張卡。
+   ⚠ `state.hpLock` 這一格還在（沒有入口了，永遠 false）—— 扣血那幾行照舊讀它，不必動。 */
+const EE_POS_KW = { left:0, center:50, right:100, top:0, bottom:100 };
+function eeParsePos(str){
+  const p = String(str||'').trim().split(/\s+/);
+  const v = t => (t in EE_POS_KW) ? EE_POS_KW[t] : (parseFloat(t)||0);
+  return { x: p[0]!=null ? v(p[0]) : 50, y: p[1]!=null ? v(p[1]) : 50 };
+}
+function openEnemyEdit(){
+  const key = state.currentEnemyKey, en = key && GAME_CONFIG.enemies[key];
+  if(!en || document.getElementById('enemyEdit')) return;
+  if(!state.over) combat.pauseForDialog();
+  const img = document.getElementById('enemyImg');
+  const cs = img ? getComputedStyle(img) : null;
+  const f0 = en.fit || {};
+  const pos = eeParsePos(f0.pos || (cs && cs.objectPosition));
+  const cur = { mode: f0.mode || ((cs && cs.objectFit==='contain') ? 'contain' : 'cover'),
+                x: pos.x, y: pos.y, scale: +f0.scale || 1, shiftY: +f0.shiftY || 0 };
+  const box = document.createElement('div'); box.id='enemyEdit';
+  let msg='';
+  const fitOf = ()=>({ mode: cur.mode==='contain' ? 'contain' : undefined,
+                       pos: Math.round(cur.x)+'% '+Math.round(cur.y)+'%',
+                       scale: +cur.scale.toFixed(3), shiftY: +cur.shiftY.toFixed(3) });
+  const row = (lab, val, k, d)=>'<div class="ee-row"><span>'+lab+'</span>'
+    +'<button data-k="'+k+'" data-d="'+(-d)+'">－</button><b>'+val+'</b>'
+    +'<button data-k="'+k+'" data-d="'+d+'">＋</button></div>';
+  const render = ()=>{
+    box.innerHTML = '<div class="ee-hd">敵立繪　'+(en.name||key)+'（'+key+'）</div>'
+      + '<div class="ee-row"><span>模式</span>'
+      +   '<button data-mode="cover" class="'+(cur.mode!=='contain'?'on':'')+'">填滿</button>'
+      +   '<button data-mode="contain" class="'+(cur.mode==='contain'?'on':'')+'">完整</button></div>'
+      + row('縮放', Math.round(cur.scale*100)+'%', 'scale', 0.02)
+      + row('上下', Math.round(cur.shiftY*100)+'%', 'shiftY', 0.01)
+      + row('焦點左右', Math.round(cur.x)+'%', 'x', 5)
+      + row('焦點上下', Math.round(cur.y)+'%', 'y', 5)
+      + '<div class="ee-row"><button data-act="save">存　檔</button><button data-act="reset">還原</button>'
+      +   '<button data-act="close">關　閉</button></div>'
+      + '<div class="ee-msg">'+msg+'</div>';
+  };
+  const preview = ()=>{ try{ enemyMod.applyEnemyFit(fitOf()); }catch(_){} };
+  box.addEventListener('click', e=>{
+    e.stopPropagation();
+    const t=e.target.closest('button'); if(!t) return;
+    try{ SFX.menuClick(); }catch(_){}
+    if(t.dataset.mode){ cur.mode=t.dataset.mode; }
+    else if(t.dataset.k){
+      const k=t.dataset.k, d=+t.dataset.d;
+      cur[k] = +(cur[k]+d).toFixed(3);
+      if(k==='x'||k==='y') cur[k]=Math.max(0, Math.min(100, cur[k]));
+      if(k==='scale') cur.scale=Math.max(0.3, Math.min(2.5, cur.scale));
+    }
+    else if(t.dataset.act==='reset'){
+      const p=eeParsePos(f0.pos || '');
+      Object.assign(cur, { mode:f0.mode||'cover', x:f0.pos?p.x:50, y:f0.pos?p.y:0, scale:+f0.scale||1, shiftY:+f0.shiftY||0 });
+      enemyMod.applyEnemyFit(f0); msg='已還原成卡上的值'; render(); return;
+    }
+    else if(t.dataset.act==='close'){
+      enemyMod.applyEnemyFit(en.fit);       // 沒存就回到卡上的樣子
+      box.remove();
+      if(!state.over && !state.tutorialDialog) combat.resumeFromDialog();
+      return;
+    }
+    else if(t.dataset.act==='save'){
+      const fit=fitOf(); msg='寫入中…'; render();
+      fetch(new URL('__efit', location.href).pathname, { method:'POST', body:JSON.stringify({ key, fit }) })
+        .then(r=>r.text().then(x=>({ok:r.ok, x})))
+        .then(r=>{ if(r.ok){ const nf={}; if(fit.mode) nf.mode=fit.mode; nf.pos=fit.pos;
+                              if(fit.scale!==1) nf.scale=fit.scale; if(fit.shiftY) nf.shiftY=fit.shiftY;
+                              en.fit=nf; }
+                   msg = r.ok ? '已存檔（'+r.x+'）' : '存檔失敗：'+r.x; render(); })
+        .catch(err=>{ msg='存檔失敗：'+err; render(); });
+      return;
+    }
+    preview(); render();
+  });
+  ['pointerdown','touchstart'].forEach(ev=>box.addEventListener(ev, e=>e.stopPropagation(), { passive:true }));
+  (document.getElementById('app')||document.body).appendChild(box);
+  render(); preview();
+}
+bindBtn('enemyEditBtn', openEnemyEdit);
 /* ⚠ 「道具」（bagBtn）與「城鎮」（townBtn）兩顆首頁鈕已於 ver -376 移除（Ray 指定）。
    `loot.showBag` 與 `town.open` 都還在（前者暫時沒有入口、後者由劇情的 `thenTown` 叫起來），
    不要因為「沒人叫」就把它們刪掉。 */

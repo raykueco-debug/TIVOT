@@ -253,6 +253,7 @@ export const BUBBLE_FX = [
   ['whisper','低語','move'], ['weak','虛弱','move'], ['rage','憤怒','move'],
   ['gloom','三條線','mark'], ['sweat','冷汗','mark'], ['vein','怒筋','mark'],
   ['exclaim','驚嘆','mark'], ['question','疑問','mark'], ['heart','心動','mark'], ['note','哼歌','mark'],
+  ['nervous','緊張灑汗','mark'],   // ver -1883（Ray：「框加上緊張灑汗的特效」）：幾滴汗從右上角噴出去
 ];
 const BF_SVG = {
   gloom:'<path d="M6 3v13M12 3v17M18 3v11" stroke="#9fb3d8" stroke-width="2.2" stroke-linecap="round" fill="none"/>',
@@ -261,6 +262,8 @@ const BF_SVG = {
   exclaim:'<path d="M12 3v11" stroke="#f5d06b" stroke-width="3.2" stroke-linecap="round"/><circle cx="12" cy="19.5" r="2" fill="#f5d06b"/>',
   question:'<path d="M8 8a4 4 0 1 1 5.5 3.7c-1 .5-1.5 1.2-1.5 2.3v1" fill="none" stroke="#f5d06b" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="19.5" r="1.8" fill="#f5d06b"/>',
   heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z" fill="#ff7aa2" stroke="#c2185b" stroke-width="1.2"/>',
+  /* 緊張灑汗：四滴汗各自往外噴（每一滴是一個 <g>，動畫在 CSS 的 `bfSpray`，逐滴錯開）。 */
+  nervous:'<g class="sp sp1" transform="translate(12 13)"><path d="M0-5C0-5-3-.6-3 1.4a3 3 0 0 0 6 0C3-.6 0-5 0-5z" fill="#9fd4ff" stroke="#3d7fb8" stroke-width=".9"/></g><g class="sp sp2" transform="translate(12 13)"><path d="M0-5C0-5-3-.6-3 1.4a3 3 0 0 0 6 0C3-.6 0-5 0-5z" fill="#9fd4ff" stroke="#3d7fb8" stroke-width=".9"/></g><g class="sp sp3" transform="translate(12 13)"><path d="M0-5C0-5-3-.6-3 1.4a3 3 0 0 0 6 0C3-.6 0-5 0-5z" fill="#9fd4ff" stroke="#3d7fb8" stroke-width=".9"/></g><g class="sp sp4" transform="translate(12 13)"><path d="M0-5C0-5-3-.6-3 1.4a3 3 0 0 0 6 0C3-.6 0-5 0-5z" fill="#9fd4ff" stroke="#3d7fb8" stroke-width=".9"/></g>',
   note:'<path d="M9 17V5l10-2v12" fill="none" stroke="#d4a94a" stroke-width="2"/><circle cx="7" cy="17" r="2.5" fill="#d4a94a"/><circle cx="17" cy="15" r="2.5" fill="#d4a94a"/>',
 };
 const BF_KIND = Object.fromEntries(BUBBLE_FX.map(([k,,t])=>[k,t]));
@@ -3114,7 +3117,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1882';
+const KERB_V='?v=1883';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

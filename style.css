@@ -1156,12 +1156,21 @@
   /* ⚠ `#perfToggle`／`#perfFreeze` 的 CSS 於 ver -926 撤掉：那兩顆常駐小鈕搬進
      選單的「管理人」那一段了（Ray：「把凍結跟狀態 HUD 收到系統設定裡面」）——
      元素不再產生，樣式留著只會讓下一個人以為它還在。 */
-  /* 鎖血鈕（管理人測試，ver -463）：清盤右側（ver -1038 由 64 推到 96 —— 見上面
-     那條「同一條數列」；64 是清盤還在最左邊時的值，早就該跟著推）。開啟＝亮金（.on）。 */
-  #hpLockBtn{top:10px;left:96px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
-  body.testmode #hpLockBtn{display:flex;}
-  #hpLockBtn.on{color:var(--gold);border-color:var(--gold);
-    box-shadow:0 0 10px var(--gold-dim),inset 0 0 8px rgba(240,196,105,.35);}
+  /* 敵立繪編輯鈕（管理人，ver -1883 取代鎖血鈕，同一個位置：清盤右側 96）。 */
+  #enemyEditBtn{top:10px;left:96px;right:auto;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
+  body.testmode #enemyEditBtn{display:flex;}
+  /* 面板：蓋在下半盤面上（上半的敵人要看得到），點擊不穿透。 */
+  #enemyEdit{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+    z-index:9800;padding:10px 12px;border:1px solid var(--gold-dim);border-radius:12px;
+    background:rgba(10,9,16,.94);color:var(--ink);font-size:12px;letter-spacing:1px;}
+  #enemyEdit .ee-hd{color:var(--gold);margin-bottom:6px;}
+  #enemyEdit .ee-row{display:flex;align-items:center;gap:6px;margin:5px 0;}
+  #enemyEdit .ee-row>span{flex:0 0 64px;color:var(--gold-dim);}
+  #enemyEdit .ee-row>b{flex:0 0 64px;text-align:center;font-weight:normal;}
+  #enemyEdit button{font-family:inherit;font-size:12px;color:var(--gold);background:rgba(18,15,26,.9);
+    border:1px solid var(--gold-dim);border-radius:8px;padding:5px 10px;}
+  #enemyEdit button.on{background:var(--gold);color:#1a1410;}
+  #enemyEdit .ee-msg{min-height:1.4em;color:var(--holy);font-size:11px;margin-top:4px;}
 
   /* ===== 過渡禎：開始/結束淡入淡出全畫面轉場 ===== */
   /* 淡入淡出時長由 JS 依 config.transitions.fadeMs 寫入 --expel-fade，CSS 與 config 同步。 */
@@ -3468,6 +3477,21 @@
   #storyBubble .bf-m-heart svg{ animation:bfBeat 1s ease-in-out infinite; }
   @keyframes bfBeat{ 0%,100%{scale:1} 30%{scale:1.2} }
   #storyBubble .bf-m-note svg{ animation:bfFloat 1.4s ease-in-out infinite; }
+  /* 緊張灑汗（ver -1883）：四滴汗從右上角往外上方噴開、邊飛邊淡，一輪 1.1 秒循環。
+     ⚠ 汗滴要飛出框外 ⇒ 這一個符號的 svg 不裁切（overflow:visible），放大一點才看得清楚。 */
+  #storyBubble .bf-m-nervous{width:30px;height:30px;}
+  #storyBubble .bf-m-nervous svg{overflow:visible;}
+  #storyBubble .bf-m-nervous .sp{transform-box:fill-box;transform-origin:center;opacity:0;
+    animation:bfSpray 1.1s ease-out infinite;}
+  #storyBubble .bf-m-nervous .sp1{--dx:-14px;--dy:-16px;--r:-35deg;animation-delay:0s;}
+  #storyBubble .bf-m-nervous .sp2{--dx:3px;  --dy:-20px;--r:5deg;  animation-delay:.18s;}
+  #storyBubble .bf-m-nervous .sp3{--dx:17px; --dy:-12px;--r:40deg; animation-delay:.36s;}
+  #storyBubble .bf-m-nervous .sp4{--dx:19px; --dy:4px;  --r:75deg; animation-delay:.54s;}
+  @keyframes bfSpray{
+    0%  {translate:0 0;rotate:var(--r);scale:.4;opacity:0}
+    15% {opacity:1;scale:1.6}
+    80% {opacity:.9}
+    100%{translate:var(--dx) var(--dy);rotate:var(--r);scale:1.2;opacity:0}}
   #storyBubble .bf-m-question svg{ animation:bfTilt 1.6s ease-in-out infinite; }
   @keyframes bfFloat{ 0%,100%{translate:0 0} 50%{translate:0 -3px} }
   @keyframes bfTilt{ 0%,100%{rotate:-8deg} 50%{rotate:8deg} }

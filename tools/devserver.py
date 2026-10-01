@@ -633,6 +633,51 @@ def beat_span_patch(req):
     return '%s:%d' % (rel, _line_of(text, s) + 1)
 
 
+# ══ 敵人立繪的取景（ver -1883，Ray：「戰鬥中鎖血鈕取消，改成編輯敵立繪」）══
+# `POST /__efit`，body＝`{"key":敵人卡鑰匙, "fit":{mode?,pos?,scale?,shiftY?}}`
+# 在 `script/enemies.js` 那一張卡裡把 `fit:{…}` 那一行換掉；沒有那一行就插在 `image:` 之後。
+# ⚠ 只動那一行，卡上其他東西（註解）一個字都不碰（同 enemies_xlsx 的就地改值）。
+EFIT_FILE = 'script/enemies.js'
+
+
+def _efit_literal(fit):
+    parts = []
+    if fit.get('mode'):
+        parts.append("mode:" + _js_str(fit['mode']))
+    if fit.get('pos'):
+        parts.append("pos:" + _js_str(fit['pos']))
+    for k in ('scale', 'shiftY'):
+        v = fit.get(k)
+        if v is not None and float(v) != (1.0 if k == 'scale' else 0.0):
+            parts.append("%s:%s" % (k, ('%.3f' % float(v)).rstrip('0').rstrip('.')))
+    return '{ ' + ', '.join(parts) + ' }' if parts else '{}'
+
+
+def efit_patch(req):
+    key, fit = req.get('key') or '', req.get('fit') or {}
+    if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', key):
+        raise ValueError('敵人卡鑰匙不合法：' + key)
+    path = os.path.join(ROOT, EFIT_FILE)
+    with open(path, 'r', encoding='utf-8', newline='') as f:
+        text = f.read()
+    m = re.search(r'^    ' + re.escape(key) + r': \{.*$', text, re.M)
+    if not m:
+        raise ValueError('找不到敵人卡：' + key)
+    end = text.index('\n    },', m.start())
+    blk = text[m.start():end]
+    lit = 'fit:' + _efit_literal(fit) + ','
+    m2 = re.search(r'^(      )fit\s*:\s*\{[^\n]*?\},?', blk, re.M)
+    if m2:
+        nb = blk[:m2.start()] + '      ' + lit + blk[m2.end():]
+    else:
+        m3 = re.search(r'^      image\s*:[^\n]*\n', blk, re.M)
+        if not m3:
+            raise ValueError('那張卡沒有 fit 也沒有 image 那一行：' + key)
+        nb = blk[:m3.end()] + '      ' + lit + '   // ver -1883 敵立繪編輯面板\n' + blk[m3.end():]
+    _write_text(EFIT_FILE, text[:m.start()] + nb + text[end:])
+    return '%s:%s %s' % (EFIT_FILE, key, lit)
+
+
 class Handler(http.server.SimpleHTTPRequestHandler):
     def _fail(self, code, msg):
         body = msg.encode('utf-8')
@@ -649,6 +694,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 req = json.loads(self.rfile.read(n).decode('utf-8'))
                 sys.stderr.write('[devserver] text %s\n' % json.dumps(req, ensure_ascii=False))
                 where = text_patch(req)
+            except ValueError as e:
+                return self._fail(409, str(e))
+            except Exception as e:                        # noqa: BLE001
+                return self._fail(500, '寫檔失敗：%s' % e)
+            return self._fail(200, 'ok ' + where)
+        if self.path.split('?')[0] == '/__efit':
+            try:
+                n = int(self.headers.get('Content-Length') or 0)
+                req = json.loads(self.rfile.read(n).decode('utf-8'))
+                sys.stderr.write('[devserver] efit %s\n' % json.dumps(req, ensure_ascii=False))
+                where = efit_patch(req)
             except ValueError as e:
                 return self._fail(409, str(e))
             except Exception as e:                        # noqa: BLE001
