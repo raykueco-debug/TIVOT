@@ -165,6 +165,13 @@
 >    ```
 >    ⚠ `sorana_ad_si_guardtalk.webp` 是 1024×1535（GPT 回來少一列，無礙）。
 >    ✅ -1863 已接。⚠ Ray 定：**救回蘿法、回到旅店那一幕換回原本的衣服**（現狀就對，不用改）；其餘角色的冒險者裝差分**等所有差分都完成後再一次跑**（美術待辦，未開）。
+> 36. **（10-01 晚，Windows，美術）聖徒系列新怪 10 張入庫** —— Ray：「聖徒系列呈攻擊態勢的全部 commit 進版控，給程式做怪卡」。
+>    `resources/enemy/mon_saint_{crawler,palmeye,acolyte,blade,fist,pillory,maw,prayerhead,giant,haloed}.webp`（新檔，不用跳 `?v=`／`ASSET_VER`；1024×1536 真 alpha）。總覽 `resources/enemy/_saint_attack10_sheet.jpg`，逐張要素在 `resources/enemy/_saint5_spec.md` 末段。
+>    程式端：① `config.js` 的 ASSETS 補十鍵（建議 `enemy_saint_<名>`）② `script/enemies.js` 各開一張敵卡，`kind:'slay'`（聖徒系列：結算「已擊殺」、吃降臨／淨化演出）；數值走 ver -1878 的統一基準，**稀有度與名字等 Ray 給**（暫名：爬行者／掌眼者／侍祭／斷劍者／巨拳／枷鎖者／裂胸者／祈首者／巨像／光環者）。
+>    ⚠ `fist`／`pillory`／`maw`／`prayerhead`／`giant` 五張有部位碰到圖邊（被裁），Ray 可能要重出 —— 同名覆蓋時會再開一項請跳 `?v=`。
+> 37. **（10-01 晚，Windows，美術）賽西莉兩張臉**（Ray 丟 `resources/si/alpha/`）：
+>    ① `cecilie_si_blush.webp` **同名覆蓋** —— 舊檔與 `tease.webp` 是同一張（md5 相同），現在換成真的害羞臉（閉嘴臉紅）。alpha 逐位元不變、取景照舊 `top:4 bot:1529 fx:0.574`。`speakers.js` 目前**沒有** `blush` 鍵；要用就開一行（新鍵、不必 `?v=`；若日後有人已引用就跳 `?v=2`）。
+>    ② **新鍵** `cecilie_si_fluster.webp`（`spoild` 的身體換成側眼冒汗咬牙的臉；現行 `spoild` 是閉眼仰頭「哼」，劇本在用，沒蓋它）。取景同 spoild：`top:8 bot:1526 fx:0.551`。鍵名是暫名，等 Ray。
 > 美術現況與換機器交接：**`resources/_HANDOFF_ART_20260925.md`**（§七＝米夏九張；§八＝廢城兩次退稿到定風格；§九＝聖索菲亞 9 張＋廢城 55 張全交、產線的坑；**§十三＝09-27 收工換機器：薇拉馮德 73 張、惡棍 6 張、索拉娜三張回版、還開著的事、三個不明刪除**；§十四＝GPT 拒畫的 alpha 交 PC 走本機；**§十五＝09-28 收工：蘿媞六張、cry 手指、市政廳室內、惡棍群體、產線教訓**）（Windows 那台收工版；09-24 那份 §六～§八是細節）。做完把這一塊刪掉或標成已接。
 
 > ✅ **`tomb_misha_met` 東泊那一邊 -1717 接上了**（Ray 定案：AB 順序長談在「滿足滿足！」收場、
