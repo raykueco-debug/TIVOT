@@ -1563,7 +1563,7 @@ export const TOWNS = {
            · 收尾三秒轉幕（Ray：「結束三秒轉幕到隔天劇情」）＋推到隔天 07:00 ＋補滿體力 ＋記「錯過蕾娜」
              ⇒ 這一段收完，帝都的 07:00 閘門（`stage1`）接手：蕾娜「好囉，該出發囉」→ 船塢。
            ⚠ `until:'stage1_open'` ＝只在第一夜；`need` ＝旅店初見演完（同睡覺鈕的 `sleepFlag`）。
-           ⚠⚠ `cringe` 那張還沒有圖（speakers.js 暫代 upset，交件後換）。 */
+           ⚠ 「怎麼能讓你死在這裡」那兩句用 `fluster`（ver -1889，Ray：「cringe 改 cecilie_si_fluster」）。 */
         acts:[
           { flag:'cap_dream', need:'inn_seen_capital_inn', until:'stage1_open', sleepFirst:{ hours:1, disguise:true },
             storyBattle:true, lines:[
@@ -1579,9 +1579,9 @@ export const TOWNS = {
               cg:'resources/ci/ci_cecilie_obe.webp' },
             /* ⚠ `cg:null`：插圖的層級在立繪之上，不收的話 cringe 那張立繪被整個蓋住。 */
             { speaker:'CECILIE_X', text:'怎麼能讓你死在這裡……怎麼能讓你死在這裡！', cg:null,
-              portrait:{ char:'CECILIE_X', expr:'cringe', show:true } },
+              portrait:{ char:'CECILIE_X', expr:'fluster', show:true } },
             { speaker:'CECILIE_X', text:'你可是……我的搭檔啊！',
-              portrait:{ char:'CECILIE_X', expr:'cringe', show:true } },
+              portrait:{ char:'CECILIE_X', expr:'fluster', show:true } },
             Object.assign({ battle:'cap_dream', onLose:'cap_dream_lose' }, { kerbRise:true }),
             { speaker:'CECILIE', text:'明明不要管我，直接反擊就不會被打成這樣了。',
               portrait:{ char:'CECILIE', expr:'spoild', show:true } },

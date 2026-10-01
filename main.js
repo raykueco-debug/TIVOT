@@ -37,7 +37,8 @@ import * as prog from './script/progress.js';
    （Ray：「北峰奶油又沒了」）。改成靜態 import，補給在進場之前就發完。 */
 import * as inv from './script/inventory.js';
 import * as clock from './script/clock.js';   // 章節的起始時刻（firstHourAt）   // 進度／旗標／「一輪遊戲」的邊界（newRun）
-import * as enemyMod from './modules/enemy.js';   // 敵立繪編輯面板的即時預覽（applyEnemyFit，ver -1883）
+import * as enemyMod from './modules/enemy.js';
+import { ART } from './script/speakers.js';   // 戰鬥對白立繪調整：找那一張在 speakers.js 的位置（ver -1889）   // 敵立繪編輯面板的即時預覽（applyEnemyFit，ver -1883）
 
 /* ══⚠⚠ **破圖框一律不畫**（ver -1881，Ray：「怪出現前都會先出現疑似讀不到圖的 404 框」
    「閉棺時也常出現 404 圖框」）══ 手機 Safari 會替**沒有 src／載入失敗**的 `<img>` 畫一個
@@ -1399,42 +1400,91 @@ function eeParsePos(str){
   const v = t => (t in EE_POS_KW) ? EE_POS_KW[t] : (parseFloat(t)||0);
   return { x: p[0]!=null ? v(p[0]) : 50, y: p[1]!=null ? v(p[1]) : 50 };
 }
+/* ══ 戰鬥中的立繪調整（ver -1889，Ray：「戰鬥中立繪調整也整合到上方的按鈕，不只怪可調，對話也可調」）══
+   同一個面板分頁：「敵人」＝敵人卡的 `fit`（`/__efit`）；「對話・左／右」＝戰鬥內對白台上那一張
+   （大小 cm／上下 yShift／左右 fxShift，`/__tune` 寫回 speakers.js 的 ART —— 與劇情頁的「調整」同一個端點、
+   同一組欄位，鐵律 7）。對話頁只在對白開著、台上有人時出現。 */
+function eeArtTarget(src){
+  const clean = s => String(s||'').split('?')[0];
+  const want = clean(src);
+  for(const k of Object.keys(ART)){
+    const A = ART[k]; if(!A) continue;
+    if(clean(A.base)===want) return { kind:'base', key:A.base, obj:A, name:k };
+    for(const e of Object.keys(A.expr||{})){
+      const v=A.expr[e]; if(v && typeof v==='object' && clean(v.src)===want) return { kind:'src', key:v.src, obj:v, name:k+'・'+e };
+    }
+  }
+  return null;
+}
 function openEnemyEdit(){
   const key = state.currentEnemyKey, en = key && GAME_CONFIG.enemies[key];
   if(!en || document.getElementById('enemyEdit')) return;
-  if(!state.over) combat.pauseForDialog();
+  const pausedHere = !state.over && !state.tutorialDialog;
+  if(pausedHere) combat.pauseForDialog();
   const img = document.getElementById('enemyImg');
   const cs = img ? getComputedStyle(img) : null;
   const f0 = en.fit || {};
   const pos = eeParsePos(f0.pos || (cs && cs.objectPosition));
   const cur = { mode: f0.mode || ((cs && cs.objectFit==='contain') ? 'contain' : 'cover'),
                 x: pos.x, y: pos.y, scale: +f0.scale || 1, shiftY: +f0.shiftY || 0 };
+  /* 對話立繪：台上那幾張的原值（關閉沒存就還原）與正在調的值。 */
+  const talk = {};
+  for(const t of (tutorial.tuneTargets ? tutorial.tuneTargets() : [])){
+    const o = { cm:t.frame.cm, yShift:t.frame.yShift||0, fxShift:t.frame.fxShift||0 };
+    talk[t.side] = { key:t.key, who:t.who, art:eeArtTarget(t.src), orig:Object.assign({}, o), v:Object.assign({}, o) };
+  }
+  let tab='enemy';
   const box = document.createElement('div'); box.id='enemyEdit';
   let msg='';
   const fitOf = ()=>({ mode: cur.mode==='contain' ? 'contain' : undefined,
                        pos: Math.round(cur.x)+'% '+Math.round(cur.y)+'%',
                        scale: +cur.scale.toFixed(3), shiftY: +cur.shiftY.toFixed(3) });
-  const row = (lab, val, k, d)=>'<div class="ee-row"><span>'+lab+'</span>'
-    +'<button data-k="'+k+'" data-d="'+(-d)+'">－</button><b>'+val+'</b>'
-    +'<button data-k="'+k+'" data-d="'+d+'">＋</button></div>';
+  const row = (lab, val, k, d, attr)=>'<div class="ee-row"><span>'+lab+'</span>'
+    +'<button '+(attr||'data-k')+'="'+k+'" data-d="'+(-d)+'">－</button><b>'+val+'</b>'
+    +'<button '+(attr||'data-k')+'="'+k+'" data-d="'+d+'">＋</button></div>';
+  const tabs = ()=>{
+    const list=[['enemy','敵人']];
+    if(talk.left)  list.push(['left','對話・左']);
+    if(talk.right) list.push(['right','對話・右']);
+    return list.length<2 ? '' : '<div class="ee-row">'+list.map(([k,n])=>'<button data-tab="'+k+'" class="'+(tab===k?'on':'')+'">'+n+'</button>').join('')+'</div>';
+  };
   const render = ()=>{
-    box.innerHTML = '<div class="ee-hd">敵立繪　'+(en.name||key)+'（'+key+'）</div>'
-      + '<div class="ee-row"><span>模式</span>'
-      +   '<button data-mode="cover" class="'+(cur.mode!=='contain'?'on':'')+'">填滿</button>'
-      +   '<button data-mode="contain" class="'+(cur.mode==='contain'?'on':'')+'">完整</button></div>'
-      + row('縮放', Math.round(cur.scale*100)+'%', 'scale', 0.02)
-      + row('上下', Math.round(cur.shiftY*100)+'%', 'shiftY', 0.01)
-      + row('焦點左右', Math.round(cur.x)+'%', 'x', 5)
-      + row('焦點上下', Math.round(cur.y)+'%', 'y', 5)
+    let body;
+    if(tab==='enemy'){
+      body = '<div class="ee-hd">敵立繪　'+(en.name||key)+'（'+key+'）</div>'
+        + '<div class="ee-row"><span>模式</span>'
+        +   '<button data-mode="cover" class="'+(cur.mode!=='contain'?'on':'')+'">填滿</button>'
+        +   '<button data-mode="contain" class="'+(cur.mode==='contain'?'on':'')+'">完整</button></div>'
+        + row('縮放', Math.round(cur.scale*100)+'%', 'scale', 0.02)
+        + row('上下', Math.round(cur.shiftY*100)+'%', 'shiftY', 0.01)
+        + row('焦點左右', Math.round(cur.x)+'%', 'x', 5)
+        + row('焦點上下', Math.round(cur.y)+'%', 'y', 5);
+    }else{
+      const T=talk[tab];
+      body = '<div class="ee-hd">對話立繪　'+(T.art ? T.art.name : T.key)+'</div>'
+        + (T.art ? '' : '<div class="ee-msg">⚠ 找不到這張圖在 speakers.js 的位置，只能預覽、不能存檔</div>')
+        + row('大小（cm）', (+T.v.cm).toFixed(0), 'cm', 1, 'data-tk')
+        + row('上下（cm）', (+T.v.yShift).toFixed(0), 'yShift', 1, 'data-tk')
+        + row('左右', (+T.v.fxShift).toFixed(3), 'fxShift', 0.005, 'data-tk');
+    }
+    box.innerHTML = tabs() + body
       + '<div class="ee-row"><button data-act="save">存　檔</button><button data-act="reset">還原</button>'
       +   '<button data-act="close">關　閉</button></div>'
       + '<div class="ee-msg">'+msg+'</div>';
   };
   const preview = ()=>{ try{ enemyMod.applyEnemyFit(fitOf()); }catch(_){} };
+  const revertTalk = ()=>{ for(const sd in talk){ const T=talk[sd]; try{ tutorial.tuneApply(T.key, T.orig); }catch(_){} } };
   box.addEventListener('click', e=>{
     e.stopPropagation();
     const t=e.target.closest('button'); if(!t) return;
     try{ SFX.menuClick(); }catch(_){}
+    if(t.dataset.tab){ tab=t.dataset.tab; msg=''; render(); return; }
+    if(t.dataset.tk){
+      const T=talk[tab], k=t.dataset.tk, d=+t.dataset.d;
+      T.v[k] = +((+T.v[k]||0) + d).toFixed(3);
+      if(k==='cm') T.v.cm=Math.max(40, T.v.cm);
+      tutorial.tuneApply(T.key, T.v); render(); return;
+    }
     if(t.dataset.mode){ cur.mode=t.dataset.mode; }
     else if(t.dataset.k){
       const k=t.dataset.k, d=+t.dataset.d;
@@ -1443,14 +1493,27 @@ function openEnemyEdit(){
       if(k==='scale') cur.scale=Math.max(0.3, Math.min(2.5, cur.scale));
     }
     else if(t.dataset.act==='reset'){
+      if(tab!=='enemy'){ const T=talk[tab]; T.v=Object.assign({}, T.orig); tutorial.tuneApply(T.key, T.v); msg='已還原'; render(); return; }
       const p=eeParsePos(f0.pos || '');
       Object.assign(cur, { mode:f0.mode||'cover', x:f0.pos?p.x:50, y:f0.pos?p.y:0, scale:+f0.scale||1, shiftY:+f0.shiftY||0 });
       enemyMod.applyEnemyFit(f0); msg='已還原成卡上的值'; render(); return;
     }
     else if(t.dataset.act==='close'){
       enemyMod.applyEnemyFit(en.fit);       // 沒存就回到卡上的樣子
+      revertTalk();
       box.remove();
-      if(!state.over && !state.tutorialDialog) combat.resumeFromDialog();
+      if(pausedHere && !state.over && !state.tutorialDialog) combat.resumeFromDialog();
+      return;
+    }
+    else if(t.dataset.act==='save' && tab!=='enemy'){
+      const T=talk[tab]; if(!T.art){ msg='這一張不能存檔（找不到來源）'; render(); return; }
+      const set={ cm:+T.v.cm, yShift:+T.v.yShift, fxShift:+T.v.fxShift };
+      msg='寫入中…'; render();
+      fetch(new URL('__tune', location.href).pathname, { method:'POST', body:JSON.stringify({ kind:T.art.kind, key:T.art.key, set }) })
+        .then(r=>r.text().then(x=>({ok:r.ok, x})))
+        .then(r=>{ if(r.ok){ Object.assign(T.art.obj, set); T.orig=Object.assign({}, set); }
+                   msg = r.ok ? '已寫入 speakers.js（'+r.x+'）' : '存檔失敗：'+r.x; render(); })
+        .catch(err=>{ msg='存檔失敗：'+err; render(); });
       return;
     }
     else if(t.dataset.act==='save'){

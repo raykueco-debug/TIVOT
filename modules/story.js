@@ -3144,7 +3144,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1889';
+const KERB_V='?v=1890';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -6408,9 +6408,10 @@ export function init(){
       return;
     }
     /* 管理人：← 回播上一句、→ 續播（＝推進），見 rewindLine。 */
-    if(isTestmode() && (e.key==='ArrowLeft' || e.key==='ArrowRight')){
+    /* ver -1889：A／D 也是回播／推進（Ray 指定，同 ←／→）。 */
+    if(isTestmode() && (e.key==='ArrowLeft' || e.key==='ArrowRight' || /^[adAD]$/.test(e.key))){
       e.preventDefault();
-      if(e.key==='ArrowLeft') rewindLine(); else advance();
+      if(e.key==='ArrowLeft' || e.key==='a' || e.key==='A') rewindLine(); else advance();
       return;
     }
     if(!isGo(e.key)) return;

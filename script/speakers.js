@@ -1493,11 +1493,8 @@ export const ART = {
        帶 ?v=2 防快取；`fluster` 新鍵，取景同 spoild（measure_si 實量相同）。 */
     blush:    { src:'resources/si/cecilie_si_blush.webp?v=2', top:4, bot:1529, fx:0.574 },
     fluster:  { src:'resources/si/cecilie_si_fluster.webp',   top:8, bot:1526, fx:0.551 },
-    /* ver -1886：帝都第一夜的夢境戰（Ray 的稿）。`saintinstall` 美術交件 png→webp、實量。
-       ⚠ `cringe` **還沒有圖**（稿上指定 cecilie_si_cringe，資料夾裡沒有這一張）——
-         先暫代 `upset` 那一張，交件後把 src 換成 `cecilie_si_cringe.webp` 並重量。 */
+    /* ver -1886：帝都第一夜的夢境戰（Ray 的稿）。`saintinstall` 美術交件 png→webp、實量。 */
     saintinstall:{ src:'resources/si/cecilie_si_saintinstall.webp', top:2, bot:1528, fx:0.493 },
-    cringe:   { src:'resources/si/cecilie_si_upset.webp',     top:2, bot:1526, fx:0.535 },   // 暫代（見上）
   } },
   /* ⚠⚠ **縮 20%**（ver -1536，Ray：「蘿芮登場那張圖太大了 縮20%」）——
      她的圖是**彎腰前傾**的構圖：像素高佔滿整框，但那是「彎著的 158cm」，

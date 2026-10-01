@@ -741,6 +741,28 @@ function applyMirror(el, key){
   el.classList.toggle('mirrored',
     (!!(a && a.flip)) !== !!(a && a.mirror && c.side && sd && sd!==c.side));
 }
+/* ══ 管理人：戰鬥對白立繪的取景調整（ver -1889，main.js 的「敵圖」面板用）══
+   回傳台上（`.in`）每一張：哪一邊、它的取景鑰匙（`portraitFrames` 的 key）、目前的值。
+   ⚠ 寫回去的真相是 `speakers.js` 的 ART（面板走 `/__tune`）；這裡只管**即時預覽**：
+     改 `portraitFrames[key]`、拆掉那一張的框鎖（-1884 的 `_lock`）再排一次。 */
+export function tuneTargets(){
+  const out=[];
+  for(const [side, id] of [['left','tutCastL'],['right','tutCastR']]){
+    const el=$(id); if(!el || !el.classList.contains('in')) continue;
+    const key=el.dataset.imgKey; const fr=(CFG().portraitFrames||{})[key];
+    if(!key || !fr) continue;
+    out.push({ side, key, who:el.dataset.castKey||'', src:asset(key), frame:Object.assign({}, fr) });
+  }
+  return out;
+}
+export function tuneApply(key, patch){
+  const F=CFG().portraitFrames||{}; if(!F[key]) return;
+  Object.assign(F[key], patch);
+  for(const id of ['tutCastL','tutCastR']){
+    const el=$(id); if(!el || el.dataset.imgKey!==key) continue;
+    el._lock=null; placePortraitX(el, id==='tutCastR' ? 'right' : 'left');
+  }
+}
 function portraitEl(c, key){
   const side = key ? sideOf(key) : (c && c.side);
   return side==='right' ? $('tutCastR') : $('tutCastL');
@@ -1628,6 +1650,24 @@ function bindUI(){
        用空白帶過去等於把教學跳掉。即時閘門（`immediate`）下空白照樣推台詞 ——
        那正是觸控那邊「一般點擊照常推台詞」的同一條規矩。
      ⚠ 焦點在輸入框時讓位。 */
+  /* ══ 管理人：←／A 回播上一句、→／D 推進（ver -1889，同劇情頁那一套）══
+     只在對話開著、而且不是閘門的時候；回播只在這一段之內（不跨段）。 */
+  window.addEventListener('keydown', e=>{
+    if(!state.tutorialDialog || e.repeat || !cur) return;
+    if(e.ctrlKey||e.altKey||e.metaKey) return;
+    if(!document.body.classList.contains('testmode')) return;
+    const k=e.key, back=(k==='ArrowLeft'||k==='a'||k==='A'), fwd=(k==='ArrowRight'||k==='d'||k==='D');
+    if(!back && !fwd) return;
+    if(gate && !gate.immediate) return;
+    const a=document.activeElement;
+    if(a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    if(fwd){ advance(); return; }
+    if(lineIdx>0){
+      if(typeTimer){ clearInterval(typeTimer); typeTimer=null; }
+      lineIdx--; cutinLine=lineIdx; syncCast(cur, lineIdx); showLine();
+    }
+  }, true);
   window.addEventListener('keydown', e=>{
     if(!state.tutorialDialog || e.repeat) return;
     if(e.ctrlKey||e.altKey||e.metaKey) return;
