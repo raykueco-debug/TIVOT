@@ -546,7 +546,7 @@ export const ART = {
                      ⚠⚠ `gossip1` 的臉在 **0.710** —— 其他差分落在 0.39~0.60，這張她整個人
                        偏右。沿用別張的 fx 會把她推出畫面，這就是「每張差分都要自己量」的活例子。 */
                   awkward:  { src:'resources/si/nouvelle_si_awkwerd.webp',   top:2,  bot:1534, fx:0.468 },
-                  gossip1:  { src:'resources/si/nouvelle_si_gossip1.webp',   top:0,  bot:1536, fx:0.710 },
+                  gossip1:  { src:'resources/si/nouvelle_si_gossip1.webp?v=2', top:2,  bot:1535, fx:0.708 },   // ver -1882：美術重交（同名覆蓋，重量）
                   gossip2:  { src:'resources/si/nouvelle_si_gossip2.webp',   top:2,  bot:1536, fx:0.603 },
                   shy:      { src:'resources/si/nouvelle_si_shy.webp',       top:4,  bot:1533, fx:0.592 },
                   /* ⚠ `whisper` 的臉在 **0.697**（其他差分 0.39~0.60）——她整個人偏右，
@@ -624,8 +624,8 @@ export const ART = {
     nod:       { src:'resources/si/nouvelle_si_nod.webp', top:8, bot:1516, fx:0.574 },
     point:     { src:'resources/si/nouvelle_si_point.webp', top:0, bot:1519, fx:0.561 },
     reach:     { src:'resources/si/nouvelle_si_reach.webp', top:35, bot:1499, fx:0.575 },   // fx 目視重量（量到 0.512）
-    salute:    { src:'resources/si/nouvelle_si_salute.webp', top:5, bot:1517, fx:0.565 },
-    sigh:      { src:'resources/si/nouvelle_si_sigh.webp', top:5, bot:1535, fx:0.579 },
+    salute:    { src:'resources/si/nouvelle_si_salute.webp?v=2', top:6, bot:1529, fx:0.581 },   // ver -1882：美術重交，重量
+    sigh:      { src:'resources/si/nouvelle_si_sigh.webp?v=2', top:6, bot:1530, fx:0.593 },   // ver -1882：美術重交，重量
     sleep:     { src:'resources/si/nouvelle_si_sleep.webp', top:233, bot:1301, fx:0.435, cm:104, standCm:135 },   // 座（非全身圖）
     /* ══⚠⚠ **`faint` ＝癱坐（ver -1671，Ray 交件＋交稿：古墓底層「不要緊，有我在——」）**══
        ⚠⚠ **不是全身站姿 ⇒ 一定要 `cm` ＋ `standCm`**（§5）：
@@ -1563,6 +1563,9 @@ export const ART = {
     saluteopen: { src:'resources/si/misha_si_saluteopen.webp', top:9, bot:1520, fx:0.447 },   // 照 salute
     stareopen:  { src:'resources/si/misha_si_stareopen.webp', top:13, bot:1526, fx:0.449 },   // 照 stare
     sideopen:   { src:'resources/si/misha_si_sideopen.webp', top:16, bot:1512, fx:0.37 },   // 照 side
+    /* ver -1882：美術 09-30 交件（備用，還沒有腳本在用）—— measure_si 實量。 */
+    fight:      { src:'resources/si/misha_si_fight.webp', top:7, bot:1523, fx:0.529 },
+    ni:         { src:'resources/si/misha_si_ni.webp', top:2, bot:1532, fx:0.553 },
   } },
   arrhenius: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
            side:'R', alt:null, base:'resources/si/arrhenius_si_front.webp', expr:{
@@ -1644,10 +1647,11 @@ export const ART = {
        （同瑪麗亞／謝尼那一格的語意）：不管站哪一邊都翻。它與上面那句不衝突 ——
        `mirror` 是「換邊才翻」，`flip` 是「這張畫的方向本來就反了」。
      ⚠ 還是 `.png`，美術那一邊還沒轉 webp。 */
-  torsten:  { cm:178, eye:30, fx:0.518, top:20, bot:1516,
+  /* ver -1882：美術重去背（Ray：「torsten 背影去背已完成」）→ 轉 webp、重量（png 留著當原檔）。 */
+  torsten:  { cm:178, eye:30, fx:0.442, top:74, bot:1497,
            side:'R', alt:null, flip:true, layerBottom:true,   // 背影永遠在立繪層最底層（ver -1881，story.highlight）
-           base:'resources/si/torsten_si_back.png', expr:{
-    back: { src:'resources/si/torsten_si_back.png', top:20, bot:1516, fx:0.518 },
+           base:'resources/si/torsten_si_back.webp', expr:{
+    back: { src:'resources/si/torsten_si_back.webp', top:74, bot:1497, fx:0.442 },
   } },
   /* ══ 米夏的隨從（士兵）（ver -1715，Ray：「『殿下......』的那一拍放士兵立繪」；
      美術 -1710 交件 `retainer_si_front.webp`；**-1732 美術搬進 `npc/` 並改名 `sodier_.webp`**（位元組相同，只是搬家），路徑跟著改）══
