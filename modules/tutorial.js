@@ -769,6 +769,7 @@ function syncCast(step, uptoIdx){
   for(const [el, on] of want){
     el.classList.toggle('center', on && !!(step && step.center));   // 正中模式（引導箭頭讓位）
     el.classList.toggle('in', on);
+    if(!on) el._lock=null;   // 下台＝解鎖（ver -1883）
   }
 }
 
@@ -883,6 +884,17 @@ function placePortraitX(el, side){
   /* ⚠ `.center`（引導箭頭讓位那個模式）不碰 left：那個 class 靠 left:50% +
      translateX(-50%) 置中，寫死 inline left 會把它推歪半個身寬。 */
   const centered = el.classList.contains('center');
+  /* ══⚠⚠⚠ 人一上台框就鎖住（ver -1883，同 story.layout 的 boxLock；Ray：「已經在畫面上的角色位移，
+     嚴禁發生」）══ 同一個人換差分只換圖、不重算位置與大小，直到滑出（`.in` 被拿掉那兩處解鎖）。
+     ⚠ 只在**圖真的載好**時才落鎖：換 src 那一刻的第一次排版是拿規格比例先排的，
+       鎖在那一刻就會把錯的框鎖住。 */
+  { const lk=el._lock, who=el.dataset.castKey||'';
+    if(lk && lk.who===who && lk.W===W && lk.c===centered){
+      el.style.maxWidth='none'; el.style.width=lk.w; el.style.height=lk.h;
+      if(!centered){ el.style.left=lk.l; el.style.right='auto'; }
+      el.style.top=lk.t; el.style.bottom='auto';
+      return;
+    } }
   const C = CFG();
   /* ⚠⚠ 頂線不得高於左上角那顆鈕的下緣（Ray：「頭頂不能超過清盤鈕，否則會被
      動態島吃掉」）。鈕吃 safe-area，所以**量它的實際位置**，不要寫死 ——
@@ -985,6 +997,8 @@ function placePortraitX(el, side){
   if(!centered){ el.style.left = (W*anchor - w*fxA) + 'px'; el.style.right = 'auto'; }
   el.style.top    = (headTop - s*fr.top - (fr.yShift||0)*pxCm) + 'px';   // yShift：立繪調整工具（ver -1812，同 story.layout）       // 頭頂貼頂線（見上面 camTop/headTop 的分工）
   el.style.bottom = 'auto';
+  if(el.complete && el.naturalWidth)
+    el._lock = { who:el.dataset.castKey||'', W, c:centered, w:el.style.width, h:el.style.height, l:el.style.left, t:el.style.top };
 }
 
 /* 本段的在場立繪：換圖 ＋ 套取景。⚠ 段落接續（queue）時也要重跑 ——
@@ -1191,7 +1205,7 @@ function showLine(){
     if(el._swapT){ clearTimeout(el._swapT); el._swapT=null; el.classList.add('in'); }
     const changedChar = el.dataset.castKey && el.dataset.castKey !== line.who;
     if(key && el.dataset.imgKey!==key && changedChar && el.classList.contains('in')){
-      el.classList.remove('in');
+      el.classList.remove('in'); el._lock=null;   // 換人＝解鎖（ver -1883）
       clearTimeout(el._swapT);
       const sd0 = sideOf(line.who);
       el._swapT = setTimeout(()=>{
@@ -1303,7 +1317,7 @@ function closeDialog(resume, silent){
   if(bubble) setTimeout(()=>{ if(!state.tutorialDialog) bubble.classList.remove('on'); }, 500);
   if(wrap){
     const L=$('tutCastL'), R=$('tutCastR');
-    for(const el of [L,R]){ if(el){ el.classList.remove('in','speaking','center'); } }   // 立繪滑出
+    for(const el of [L,R]){ if(el){ el.classList.remove('in','speaking','center'); el._lock=null; } }   // 立繪滑出（＝解鎖，ver -1883）
     setTimeout(()=>{ if(!state.tutorialDialog) wrap.classList.remove('on'); }, 500);
   }
   if(resume){

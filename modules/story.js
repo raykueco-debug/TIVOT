@@ -688,6 +688,15 @@ function studioExit(){
   tuneRender(); close();
   const cb=studioDone; studioDone=null; if(cb) cb();
 }
+/* ══⚠⚠⚠ **人一上台，框就鎖住**（ver -1883，Ray：「人物對話時還是發生已經在畫面上的角色位移
+   狀況，嚴禁發生」）══ 量到的原因：**同一個人換差分**時，每一張差分各有自己的取景值
+   （top／bot／fx／cm／standCm／yShift，量的或手調的）—— 實測夏爾村戰後那一段，索菈娜
+   `talk → idea` 那一拍整個人往下掉 58px、蕾娜每換一次表情左右跳 10~16px。
+   ⇒ 她**第一次站定時**算出的那個框（left／top／width／height）就是她這一次上台的框；
+     之後換差分**只換圖、不重算位置與大小**，直到她下台（`leaveSlot` 解鎖）。
+   ⚠ 鎖的鑰匙是**那一邊站的是誰**：同一邊換成別人＝新的人新的框。
+   ⚠ 視窗寬度變了（轉向）、立繪調整工具開著（要即時看調整）→ 不用鎖。 */
+const boxLock = { L:null, R:null };
 function layout(){
   tuneEnsure();
   const stage=$('storyStage'); if(!stage) return;
@@ -849,6 +858,12 @@ function layout(){
          「手調的」，下次重量那張圖會把手調一起洗掉。 */
     const x = o.fitStage ? 0
             : faceX - o.s*((mir ? 1-fx : fx) + (a.fxShift||0))*NW;
+    /* 鎖框（ver -1883，見 boxLock）：這個人這一次上台已經有框了就照用，不重算。 */
+    { const lk = boxLock[o.side], who = slot[o.side];
+      if(!tuneOn && !studioOn && lk && lk.who===who && lk.W===W){
+        el.style.width=lk.w; el.style.height=lk.h; el.style.left=lk.l; el.style.top=lk.t;
+        continue;
+      } }
     el.style.width  = (o.s*el.naturalWidth)+'px';
     el.style.height = (o.s*el.naturalHeight)+'px';
     el.style.left   = x+'px';
@@ -856,6 +871,8 @@ function layout(){
        加在 `shift` **之後**、不參與它的計算：`shift` 會把「腳沒落到畫面底」的人往下推，
        用 `standCm` 往上調會被它推回來（蹲著／抱人的那幾張就是這樣「太低」調不上去）。 */
     el.style.top    = (o.yTop + (o.fitStage ? 0 : shiftOf(o) - (a.yShift||0)*pxCm))+'px';
+    if(!tuneOn && !studioOn)
+      boxLock[o.side] = { who:slot[o.side], W, w:el.style.width, h:el.style.height, l:el.style.left, t:el.style.top };
   }
   if(tuneOn) tuneRender();   // 台上換人時面板跟著換（ver -1812）
 }
@@ -1011,6 +1028,7 @@ function leaveSlot(side){
   el.onload=null;
   el.classList.remove('on'); el.classList.remove('fading');
   slot[side]=null; slotExpr[side]=null;
+  boxLock[side]=null;             // 下台＝解鎖（ver -1883，見 layout 的 boxLock）
   layout();                       // ⚠ 人數變了＝預算與縮限跟著變，剩下的人要重排
 }
 
@@ -3117,7 +3135,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1883';
+const KERB_V='?v=1884';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
