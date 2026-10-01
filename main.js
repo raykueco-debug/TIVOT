@@ -1428,11 +1428,22 @@ function openEnemyEdit(){
   const cur = { mode: f0.mode || ((cs && cs.objectFit==='contain') ? 'contain' : 'cover'),
                 x: pos.x, y: pos.y, scale: +f0.scale || 1, shiftY: +f0.shiftY || 0 };
   /* 對話立繪：台上那幾張的原值（關閉沒存就還原）與正在調的值。 */
-  const talk = {};
-  for(const t of (tutorial.tuneTargets ? tutorial.tuneTargets() : [])){
-    const o = { cm:t.frame.cm, yShift:t.frame.yShift||0, fxShift:t.frame.fxShift||0 };
-    talk[t.side] = { key:t.key, who:t.who, art:eeArtTarget(t.src), orig:Object.assign({}, o), v:Object.assign({}, o) };
-  }
+  let talk = {};
+  const prevTalk = {};   // key → 那一張的 orig／v（換邊重建時保留）
+  /* 站位（ver -1892，Ray：「立繪調整要可以決定人物站左或右」）：who → 開面板時站哪邊（關閉沒存就搬回去）。 */
+  const side0 = {};
+  const buildTalk = ()=>{
+    for(const sd in talk) prevTalk[talk[sd].key]=talk[sd];
+    talk = {};
+    for(const t of (tutorial.tuneTargets ? tutorial.tuneTargets() : [])){
+      const old = prevTalk[t.key];
+      const o = { cm:t.frame.cm, yShift:t.frame.yShift||0, fxShift:t.frame.fxShift||0 };
+      if(!(t.who in side0)) side0[t.who] = t.side;
+      talk[t.side] = old ? Object.assign(old, { who:t.who })
+                         : { key:t.key, who:t.who, art:eeArtTarget(t.src), orig:Object.assign({}, o), v:Object.assign({}, o) };
+    }
+  };
+  buildTalk();
   let tab='enemy';
   const box = document.createElement('div'); box.id='enemyEdit';
   let msg='';
@@ -1465,7 +1476,10 @@ function openEnemyEdit(){
         + (T.art ? '' : '<div class="ee-msg">⚠ 找不到這張圖在 speakers.js 的位置，只能預覽、不能存檔</div>')
         + row('大小（cm）', (+T.v.cm).toFixed(0), 'cm', 1, 'data-tk')
         + row('上下（cm）', (+T.v.yShift).toFixed(0), 'yShift', 1, 'data-tk')
-        + row('左右', (+T.v.fxShift).toFixed(3), 'fxShift', 0.005, 'data-tk');
+        + row('左右', (+T.v.fxShift).toFixed(3), 'fxShift', 0.005, 'data-tk')
+        + '<div class="ee-row"><span>站位</span>'
+        +   '<button data-side="left" class="'+(tab==='left'?'on':'')+'">站左</button>'
+        +   '<button data-side="right" class="'+(tab==='right'?'on':'')+'">站右</button></div>';
     }
     box.innerHTML = tabs() + body
       + '<div class="ee-row"><button data-act="save">存　檔</button><button data-act="reset">還原</button>'
@@ -1473,12 +1487,21 @@ function openEnemyEdit(){
       + '<div class="ee-msg">'+msg+'</div>';
   };
   const preview = ()=>{ try{ enemyMod.applyEnemyFit(fitOf()); }catch(_){} };
-  const revertTalk = ()=>{ for(const sd in talk){ const T=talk[sd]; try{ tutorial.tuneApply(T.key, T.orig); }catch(_){} } };
+  const revertTalk = ()=>{
+    for(const sd in talk){ const T=talk[sd]; try{ tutorial.tuneApply(T.key, T.orig); }catch(_){} }
+    for(const who in side0){ const T=Object.keys(talk).find(sd=>talk[sd].who===who);
+      if(T && T!==side0[who]) try{ tutorial.tuneSetSide(who, side0[who]); }catch(_){} }
+  };
   box.addEventListener('click', e=>{
     e.stopPropagation();
     const t=e.target.closest('button'); if(!t) return;
     try{ SFX.menuClick(); }catch(_){}
     if(t.dataset.tab){ tab=t.dataset.tab; msg=''; render(); return; }
+    if(t.dataset.side){
+      const T=talk[tab], to=t.dataset.side; if(!T || to===tab) return;
+      tutorial.tuneSetSide(T.who, to);
+      buildTalk(); tab=to; msg='已換到'+(to==='left'?'左':'右')+'（存檔才寫進 config.js）'; render(); return;
+    }
     if(t.dataset.tk){
       const T=talk[tab], k=t.dataset.tk, d=+t.dataset.d;
       T.v[k] = +((+T.v[k]||0) + d).toFixed(3);
@@ -1506,14 +1529,17 @@ function openEnemyEdit(){
       return;
     }
     else if(t.dataset.act==='save' && tab!=='enemy'){
-      const T=talk[tab]; if(!T.art){ msg='這一張不能存檔（找不到來源）'; render(); return; }
+      const T=talk[tab];
       const set={ cm:+T.v.cm, yShift:+T.v.yShift, fxShift:+T.v.fxShift };
+      const post=(ep, body)=>fetch(new URL(ep, location.href).pathname, { method:'POST', body:JSON.stringify(body) })
+        .then(r=>r.text().then(x=>({ok:r.ok, x})));
+      const jobs=[];
+      if(side0[T.who]!==tab) jobs.push(post('__castside', { who:T.who, side:tab }).then(r=>{ if(r.ok) side0[T.who]=tab; return '站位 '+(r.ok?'✔ ':'✘ ')+r.x; }));
+      if(T.art) jobs.push(post('__tune', { kind:T.art.kind, key:T.art.key, set }).then(r=>{
+        if(r.ok){ Object.assign(T.art.obj, set); T.orig=Object.assign({}, set); } return '取景 '+(r.ok?'✔ ':'✘ ')+r.x; }));
+      else jobs.push(Promise.resolve('取景 ✘ 找不到這張圖在 speakers.js 的位置'));
       msg='寫入中…'; render();
-      fetch(new URL('__tune', location.href).pathname, { method:'POST', body:JSON.stringify({ kind:T.art.kind, key:T.art.key, set }) })
-        .then(r=>r.text().then(x=>({ok:r.ok, x})))
-        .then(r=>{ if(r.ok){ Object.assign(T.art.obj, set); T.orig=Object.assign({}, set); }
-                   msg = r.ok ? '已寫入 speakers.js（'+r.x+'）' : '存檔失敗：'+r.x; render(); })
-        .catch(err=>{ msg='存檔失敗：'+err; render(); });
+      Promise.all(jobs).then(rs=>{ msg=rs.join('／'); render(); }).catch(err=>{ msg='存檔失敗：'+err; render(); });
       return;
     }
     else if(t.dataset.act==='save'){

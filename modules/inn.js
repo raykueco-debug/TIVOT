@@ -862,10 +862,20 @@ function sleepHere(){
      9.9 秒的漸暗讀起來是卡住，不是入睡。
      ⚠ 長度仍然**從音檔推**（鐵律 7）：換一支音檔這裡不必改，比例還是一半。 */
   const ms = Math.round((SFX.duration(src) || SLEEP_FADE_FALLBACK) * SLEEP_FADE_RATIO);
+  /* ══ 小睡後的全黑（ver -1893，Ray：「播完睡覺音效黑畫面三秒再開始夢」）══
+     `sleepFirst.blackAfter`＝睡覺音**整支播完之後**再黑幾毫秒才醒（演那一段）。
+     ⚠ 那一段 BGM 不淡回來（全黑、安靜）—— 接下來那一段自己會換曲；不寫 `blackAfter` 照舊。 */
+  const blackAfter = napH && nap.sleepFirst.blackAfter!=null ? (nap.sleepFirst.blackAfter|0) : null;
   try{ SFX.duckBgm(ms); }catch(_){}
-  setTimeout(()=>{ try{ SFX.unduckBgm(900); }catch(_){} }, Math.round(full));
+  if(blackAfter==null) setTimeout(()=>{ try{ SFX.unduckBgm(900); }catch(_){} }, Math.round(full));
   story.veil(true, ms);
-  setTimeout(()=>{
+  /* ⚠ 睡覺音第一次播時多半還沒解碼完 ⇒ 這一刻 `SFX.duration` 是空的（走退路）。有 `blackAfter` 的那一種
+     等到淡黑走完再問一次真正的長度，補足「播完」那一段再加黑的毫秒數（ver -1894）。 */
+  const t0 = performance.now();
+  const wake = fn => blackAfter==null ? setTimeout(fn, ms)
+    : setTimeout(()=>{ const len = SFX.duration(src) || full;
+                       setTimeout(fn, Math.max(0, len + blackAfter - (performance.now()-t0))); }, ms);
+  wake(()=>{
     /* ══⚠⚠⚠ **小睡那一條**（ver -1396）══ 只推 `hours` 小時就醒，
        **不記「錯過蕾娜」、不回滿體力、不記「上一次睡覺的旅店」、不存檔**：
        那四件都是「睡了一夜」的後果，而他只是躺了一個鐘頭爬起來。
@@ -875,11 +885,22 @@ function sleepHere(){
          「這一格現在該演什麼」，那一問就是要它取到 `sleepFirst` 那一段。
        ⚠ 黑幕照舊由這裡收（`settle()` 回 false 時）—— 與正常睡覺同一個收法。 */
     if(napH){
+      /* ⚠ 小睡也是睡著了 → 蕾娜回來那一段**跳過**（ver -1892，Ray：「在帝都直接按睡覺蕾娜還是
+         跑出來說真巧，睡過去就會跳過那一段了」）。不記的話 `settle → runBranch` 看到 20~21 點
+         ＋ `wait`，會讓她在夢之前先上台。與整夜那一條同一句（見下）。 */
+      if(stage()!=='slept') prog.addFlags([F_MISS]);
       clock.advance(Math.round(napH*60));
       if(host && host.refreshBg) host.refreshBg();   // 時段可能跨過去了
       refresh();
       if(host && host.napArm) host.napArm();
       if(settle()) return;
+      /* 有 `blackAfter` 的那一種（夢）：黑幕交給場景區那一片 `#storyFade`（＝那一段第一拍的 `fadeOut`），
+         切景黑幕瞬間收掉 —— 不然中間會亮一下旅店（段落第一拍要先停一秒才演）。 */
+      if(blackAfter!=null){
+        const f=document.getElementById('storyFade');
+        if(f){ f.style.transitionDuration='0ms'; f.classList.add('on'); void f.offsetWidth; f.style.transitionDuration=''; }
+        story.veil(false, 0); return;
+      }
       story.veil(false, WAKE_FADE_MS);
       return;
     }
@@ -908,7 +929,7 @@ function sleepHere(){
        其餘情況：淡入回旅店（Ray：「如果沒有特別劇情就淡入回旅店」）。 */
     if(settle()) return;
     story.veil(false, WAKE_FADE_MS);
-  }, ms);
+  });
 }
 
 /* ══ 進旅店 ══ 由 `modules/town.js` 的 `afterArrive` 呼叫（進場對白演完之後）。 */

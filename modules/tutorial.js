@@ -744,7 +744,7 @@ function applyMirror(el, key){
 /* ══ 管理人：戰鬥對白立繪的取景調整（ver -1889，main.js 的「敵圖」面板用）══
    回傳台上（`.in`）每一張：哪一邊、它的取景鑰匙（`portraitFrames` 的 key）、目前的值。
    ⚠ 寫回去的真相是 `speakers.js` 的 ART（面板走 `/__tune`）；這裡只管**即時預覽**：
-     改 `portraitFrames[key]`、拆掉那一張的框鎖（-1884 的 `_lock`）再排一次。 */
+     改 `portraitFrames[key]` 再排一次。 */
 export function tuneTargets(){
   const out=[];
   for(const [side, id] of [['left','tutCastL'],['right','tutCastR']]){
@@ -760,8 +760,37 @@ export function tuneApply(key, patch){
   Object.assign(F[key], patch);
   for(const id of ['tutCastL','tutCastR']){
     const el=$(id); if(!el || el.dataset.imgKey!==key) continue;
-    el._lock=null; placePortraitX(el, id==='tutCastR' ? 'right' : 'left');
+    placePortraitX(el, id==='tutCastR' ? 'right' : 'left');
   }
+}
+/* 戰鬥對白的站位（ver -1892，Ray：「立繪調整要可以決定人物站左或右」）：把 `who` 搬到 `side`
+   （'left'/'right'），那一邊站著別人就對調。真相是 `config.tutorial.cast[who].side`（面板存檔走
+   `/__castside`），這裡只改記憶體裡那一份＋即時重排；段落覆寫（`sides`）對這個人的那一筆一起拿掉。 */
+export function tuneSetSide(who, side){
+  const cast=CFG().cast||{}, c=cast[who]; if(!c) return false;
+  const L=$('tutCastL'), R=$('tutCastR');
+  const from=[L,R].find(el=>el && el.classList.contains('in') && el.dataset.castKey===who);
+  const to=side==='left' ? L : R;
+  c.side=side;
+  if(stepSides && stepSides[who]){ stepSides=Object.assign({}, stepSides); delete stepSides[who]; }
+  if(!from || !to || from===to) return !!from;
+  const snap=el=>({ src:el.getAttribute('src'), ck:el.dataset.castKey, ik:el.dataset.imgKey, bk:el.dataset.baseKey,
+                    on:el.classList.contains('in'), sp:el.classList.contains('speaking'), beat:el._beat });
+  const put=(el,v)=>{
+    if(v.src) el.src=v.src; else el.removeAttribute('src');
+    for(const [k,x] of [['castKey',v.ck],['imgKey',v.ik],['baseKey',v.bk]]){ if(x) el.dataset[k]=x; else delete el.dataset[k]; }
+    el.classList.toggle('in', !!v.on); el.classList.toggle('speaking', !!v.sp); el._beat=v.beat;
+  };
+  const a=snap(from), b=snap(to);
+  put(to, a); put(from, b);
+  if(b.on && b.ck && cast[b.ck]) cast[b.ck].side = side==='left' ? 'right' : 'left';
+  for(const el of [L,R]){
+    if(!el || !el.dataset.castKey) continue;
+    const sd = el===L ? 'left' : 'right';
+    applyMirror(el, el.dataset.castKey);
+    placePortraitX(el, sd); el.onload=()=>{ el.onload=null; placePortraitX(el, sd); };
+  }
+  return true;
 }
 function portraitEl(c, key){
   const side = key ? sideOf(key) : (c && c.side);
@@ -794,7 +823,6 @@ function syncCast(step, uptoIdx){
   for(const [el, on] of want){
     el.classList.toggle('center', on && !!(step && step.center));   // 正中模式（引導箭頭讓位）
     el.classList.toggle('in', on);
-    if(!on) el._lock=null;   // 下台＝解鎖（ver -1883）
   }
 }
 
@@ -909,17 +937,6 @@ function placePortraitX(el, side){
   /* ⚠ `.center`（引導箭頭讓位那個模式）不碰 left：那個 class 靠 left:50% +
      translateX(-50%) 置中，寫死 inline left 會把它推歪半個身寬。 */
   const centered = el.classList.contains('center');
-  /* ══⚠⚠⚠ 人一上台框就鎖住（ver -1883，同 story.layout 的 boxLock；Ray：「已經在畫面上的角色位移，
-     嚴禁發生」）══ 同一個人換差分只換圖、不重算位置與大小，直到滑出（`.in` 被拿掉那兩處解鎖）。
-     ⚠ 只在**圖真的載好**時才落鎖：換 src 那一刻的第一次排版是拿規格比例先排的，
-       鎖在那一刻就會把錯的框鎖住。 */
-  { const lk=el._lock, who=el.dataset.castKey||'';
-    if(lk && lk.who===who && lk.W===W && lk.c===centered){
-      el.style.maxWidth='none'; el.style.width=lk.w; el.style.height=lk.h;
-      if(!centered){ el.style.left=lk.l; el.style.right='auto'; }
-      el.style.top=lk.t; el.style.bottom='auto';
-      return;
-    } }
   const C = CFG();
   /* ⚠⚠ 頂線不得高於左上角那顆鈕的下緣（Ray：「頭頂不能超過清盤鈕，否則會被
      動態島吃掉」）。鈕吃 safe-area，所以**量它的實際位置**，不要寫死 ——
@@ -1022,8 +1039,6 @@ function placePortraitX(el, side){
   if(!centered){ el.style.left = (W*anchor - w*fxA) + 'px'; el.style.right = 'auto'; }
   el.style.top    = (headTop - s*fr.top - (fr.yShift||0)*pxCm) + 'px';   // yShift：立繪調整工具（ver -1812，同 story.layout）       // 頭頂貼頂線（見上面 camTop/headTop 的分工）
   el.style.bottom = 'auto';
-  if(el.complete && el.naturalWidth)
-    el._lock = { who:el.dataset.castKey||'', W, c:centered, w:el.style.width, h:el.style.height, l:el.style.left, t:el.style.top };
 }
 
 /* 本段的在場立繪：換圖 ＋ 套取景。⚠ 段落接續（queue）時也要重跑 ——
@@ -1230,7 +1245,7 @@ function showLine(){
     if(el._swapT){ clearTimeout(el._swapT); el._swapT=null; el.classList.add('in'); }
     const changedChar = el.dataset.castKey && el.dataset.castKey !== line.who;
     if(key && el.dataset.imgKey!==key && changedChar && el.classList.contains('in')){
-      el.classList.remove('in'); el._lock=null;   // 換人＝解鎖（ver -1883）
+      el.classList.remove('in');
       clearTimeout(el._swapT);
       const sd0 = sideOf(line.who);
       el._swapT = setTimeout(()=>{
@@ -1342,7 +1357,7 @@ function closeDialog(resume, silent){
   if(bubble) setTimeout(()=>{ if(!state.tutorialDialog) bubble.classList.remove('on'); }, 500);
   if(wrap){
     const L=$('tutCastL'), R=$('tutCastR');
-    for(const el of [L,R]){ if(el){ el.classList.remove('in','speaking','center'); el._lock=null; } }   // 立繪滑出（＝解鎖，ver -1883）
+    for(const el of [L,R]){ if(el){ el.classList.remove('in','speaking','center'); } }   // 立繪滑出
     setTimeout(()=>{ if(!state.tutorialDialog) wrap.classList.remove('on'); }, 500);
   }
   if(resume){

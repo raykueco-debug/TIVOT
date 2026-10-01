@@ -1017,7 +1017,9 @@ export const TOWNS = {
     /* ver -562 編號重排：升段點改在「進帝都」(S1) 與「出航」(S2)，
        這個七點的閘門只負責開船塢劇情與強制移動，不再動 stage。 */
     stage1: { hour: 7, flag: 'stage1_open', goto: 'dock',
-              lines: [ ren(null,'好囉，該出發囉') ] },
+              lines: [ ren(null,'好囉，該出發囉'),
+                       { speaker:'RENNA', text:'是做了什麼惡夢嗎？', portrait:{ char:'RENNA', expr:'armcross', show:true } },
+                       { speaker:'NOUVELLE', text:'哇，你沒有睡好嗎？黑眼圈好重。', portrait:{ char:'NOUVELLE', expr:'surprise', show:true } }, ] },
     /* ══ 餐飲街的四家店（ver -578，Ray 交件）══════════════════════════════
        誰在店裡就開哪一家（判定見 DINE）。⚠ 檔名是 Ray 給的**完整基底名**，
        不是「餐酒館＋後綴」—— 這正是 -575 那版拼錯的地方。
@@ -1565,7 +1567,7 @@ export const TOWNS = {
            ⚠ `until:'stage1_open'` ＝只在第一夜；`need` ＝旅店初見演完（同睡覺鈕的 `sleepFlag`）。
            ⚠ 「怎麼能讓你死在這裡」那兩句用 `fluster`（ver -1889，Ray：「cringe 改 cecilie_si_fluster」）。 */
         acts:[
-          { flag:'cap_dream', need:'inn_seen_capital_inn', until:'stage1_open', sleepFirst:{ hours:1, disguise:true },
+          { flag:'cap_dream', need:'inn_seen_capital_inn', until:'stage1_open', sleepFirst:{ hours:1, disguise:true, blackAfter:3000 },   /* 睡覺音播完再黑三秒才入夢（ver -1893，Ray） */
             storyBattle:true, lines:[
             { speaker:'NARRATION', text:'', auto:700, fadeOut:1, bg:'holyseedungeonwhole', bgm:'deepfrost', show:false },   // 場景曲（ver -1888，Ray 指定）
             { speaker:'NARRATION', text:'', auto:900, se:'se_stomp_far', shake:true },
@@ -1575,7 +1577,8 @@ export const TOWNS = {
             { speaker:'CECILIE_X', text:'不要睡！看我！' },
             { speaker:'NARRATION', text:'', auto:900, se:'se_stomp', shake:true },
             { speaker:'NARRATION', text:'', auto:1200, se:'se_enemy_holyburst', shake:true },
-            { speaker:'NARRATION', text:'', auto:1800, fadeIn:900,
+            /* 由下往上平移、黑幕淡入進場（ver -1892，Ray）—— 平移 2.6s，auto 等它走完。 */
+            { speaker:'NARRATION', text:'', auto:2900, fadeIn:1200, cgPan:'up',
               cg:'resources/ci/ci_cecilie_obe.webp' },
             /* ⚠ `cg:null`：插圖的層級在立繪之上，不收的話 cringe 那張立繪被整個蓋住。 */
             { speaker:'CECILIE_X', text:'怎麼能讓你死在這裡……怎麼能讓你死在這裡！', cg:null,

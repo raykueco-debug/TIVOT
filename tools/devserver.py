@@ -55,6 +55,7 @@ TUNE_FILE = 'script/speakers.js'
 # 立繪調整只寫 speakers.js；flight/index.html 留在白名單裡是給舊請求不報錯用的。
 TUNE_FILES = {'script/speakers.js', 'flight/index.html'}
 TUNE_KEYS = {'cm': 1, 'standCm': 1, 'yShift': 1, 'fxShift': 3}
+TUNE_ENUM = {'side': ('L', 'R')}   # ver -1892：站左／站右（這一張的 `side`，同 speakers.js 既有的差分 side）
 TUNE_BOOL = {'flip'}   # ver -1866：水平翻轉（這一張一律翻，同 speakers.js 既有的 `flip:true`；寫 false＝蓋掉角色層的 true）   # 欄位 → 小數位數（standCm：ver -1827，兩份取景的頭頂要同一個數字）
 
 
@@ -111,6 +112,35 @@ def tune_patch(text, kind, key, sets):
     return text
 
 
+
+# ══ 戰鬥對白的站位（ver -1892，Ray：「立繪調整要可以決定人物站左或右」）══
+# `POST /__castside`，body＝`{"who":"cecilie_x","side":"left"|"right"}` ⇒ 改 config.js 的
+# `tutorial.cast` 裡**那一行** `<who>: { … side:'…' … }` 的 side。只准這一欄、這一檔；找不到／不只一行 ⇒ 409。
+def castside_patch(req):
+    who, side = req.get('who') or '', req.get('side')
+    if side not in ('left', 'right') or not re.match(r'^[a-z0-9_]+$', who):
+        raise ValueError('參數不對')
+    dst = os.path.join(ROOT, 'config.js')
+    with open(dst, 'r', encoding='utf-8') as f:
+        text = f.read()
+    a = text.find('    cast: {')
+    b = text.find('\n    },', a)
+    if a < 0 or b < 0:
+        raise ValueError('找不到 tutorial.cast')
+    blk = text[a:b]
+    rx = re.compile(r"^(\s+" + who + r"\s*:\s*\{[^\n]*?side:')(left|right)(')", re.M)
+    ms = list(rx.finditer(blk))
+    if len(ms) != 1:
+        raise ValueError('cast 裡 %s 的 side 有 %d 處' % (who, len(ms)))
+    m = ms[0]
+    blk = blk[:m.start(2)] + side + blk[m.end(2):]
+    out = text[:a] + blk + text[b:]
+    tmp = dst + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        f.write(out)
+    os.replace(tmp, dst)
+    return who + '→' + side
+
 def _patch_at(text, at, needle, sets):
     # 往回找包住它的那個 `{`（同一層）
     depth = 0
@@ -131,9 +161,14 @@ def _patch_at(text, at, needle, sets):
         raise ValueError('物件沒有收尾')
     body = text[start:end + 1]
     for k, v in sets.items():
-        if (k not in TUNE_KEYS and k not in TUNE_BOOL) or v is None:
+        if (k not in TUNE_KEYS and k not in TUNE_BOOL and k not in TUNE_ENUM) or v is None:
             continue
-        if k in TUNE_BOOL:
+        if k in TUNE_ENUM:
+            if v not in TUNE_ENUM[k]:
+                continue
+            val = "'%s'" % v
+            vre = r"'[A-Za-z]*'"
+        elif k in TUNE_BOOL:
             val = 'true' if v else 'false'
             vre = r'(?:true|false)'
         else:
@@ -694,6 +729,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 req = json.loads(self.rfile.read(n).decode('utf-8'))
                 sys.stderr.write('[devserver] text %s\n' % json.dumps(req, ensure_ascii=False))
                 where = text_patch(req)
+            except ValueError as e:
+                return self._fail(409, str(e))
+            except Exception as e:                        # noqa: BLE001
+                return self._fail(500, '寫檔失敗：%s' % e)
+            return self._fail(200, 'ok ' + where)
+        if self.path.split('?')[0] == '/__castside':
+            try:
+                n = int(self.headers.get('Content-Length') or 0)
+                req = json.loads(self.rfile.read(n).decode('utf-8'))
+                sys.stderr.write('[devserver] castside %s\n' % json.dumps(req, ensure_ascii=False))
+                where = castside_patch(req)
             except ValueError as e:
                 return self._fail(409, str(e))
             except Exception as e:                        # noqa: BLE001
