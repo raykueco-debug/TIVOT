@@ -84,7 +84,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1916';
+export const VERSION = 'ver 2026.09.22-1917';
 
 export const GAME_CONFIG = {
 
@@ -2757,7 +2757,7 @@ export const GAME_CONFIG = {
        **一進戰鬥就聖徒化**（`autoSaint`）、聖徒化開始後她講兩句（`saintStart` 節點）。
        ⚠ `allowLose`：稿上「若戰敗劇情就直接進入第二天」—— 輸了照樣往下演（跳到收尾那一拍）。
        ⚠ `noEval`：這是夢，不給蕾娜評價。`talkOnce`：打贏過就不再講（§6.5.2）。 */
-    cap_dream: { enemy:'faceless', partner:'cecilie', story:1, autoSaint:true, allowLose:true, noEval:true, dream:true,   // dream：夢境戰一概不評（ver -1891，見 inspector）
+    cap_dream: { enemy:'faceless', enemyHp:330, startHp:1, partner:'cecilie', story:1, autoSaint:true, allowLose:true, noEval:true, dream:true,   // dream：夢境戰一概不評（ver -1891，見 inspector）
                  bgm:'bgm_retroroman', bgmAfter:'cecilie',   // ver -1888（Ray 指定；戰後＝賽西莉的專用曲）
                  bg:'holyseedungeonwhole', talkOnce:'cap_dream_talk',
                  talk:[ { trigger:'saintStart', lines:[

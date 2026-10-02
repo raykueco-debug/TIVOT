@@ -1496,9 +1496,9 @@ export const TOWNS = {
           /* 肚子叫：沒有台詞的一拍（立繪＋音效），停一秒自己走（§6.5）。 */
           { speaker:'NOUVELLE', text:'', auto:1000, se:'se_tummy',
             portrait:{ char:'NOUVELLE', expr:'hungry', show:true } },
-          nou('hungry','對不起，我肚子有點餓。'),
+          Object.assign(nou('hungry','對不起，我肚子有點餓。'), { bubbleFx:'gloom' }),
           { bubbleFx:'question', speaker:'PLAYER', blank:true },
-          nou('hungry','不、不用在意我啦。'),
+          Object.assign(nou('hungry','不、不用在意我啦。'), { bubbleFx:'nervous' }),
           { bubbleFx:'note', speaker:'PLAYER', blank:true },
           nou('surprise','咦？你也是？'),
           nou('awkward','也是啦……剛剛才經歷一場死鬥，最後一餐差點就是黑麥麵包配豆子了……'),
@@ -1592,13 +1592,15 @@ export const TOWNS = {
             { speaker:'NARRATION', text:'', auto:1100, shake:true },
             /* ⚠ `cg:null`：插圖的層級在立繪之上，不收的話 cringe 那張立繪被整個蓋住。 */
             { speaker:'CECILIE_X', text:'怎麼能讓你死在這裡……怎麼能讓你死在這裡！', cg:null,
-              portrait:{ char:'CECILIE_X', expr:'fluster', show:true } },
+              portrait:{ char:'CECILIE_X', expr:'cringe', show:true } },
             { speaker:'CECILIE_X', text:'你可是……我的搭檔啊！',
-              portrait:{ char:'CECILIE_X', expr:'fluster', show:true } },
+              portrait:{ char:'CECILIE_X', expr:'cringe', show:true } },
             Object.assign({ battle:'cap_dream', onLose:'cap_dream_lose' }, { kerbRise:true }),
             /* 戰後三秒轉幕（ver -1912，Ray：「夢境戰結束後用三秒轉幕」）—— 同 -755／-1874 的寫法：一拍淡黑三秒＋清場，下一拍淡回三秒。 */
             { speaker:'NARRATION', text:'', auto:3200, fadeOut:3000, hide:'*' },
-            { speaker:'CECILIE', text:'真傻。明明不要管我，直接反擊就不會被打成這樣了。', fadeIn:3000,
+            /* 先淡回純背景，賽西莉下一拍才滑進來（ver -1917，Ray：「夢境戰鬥結束後先放純背景 賽西莉再移入」）。 */
+            { speaker:'NARRATION', text:'', auto:3200, fadeIn:3000 },
+            { speaker:'CECILIE', text:'真傻。明明不要管我，直接反擊就不會被打成這樣了。',
               portrait:{ char:'CECILIE', expr:'spoild', show:true } },
             { speaker:'PLAYER', blank:true },
             { speaker:'CECILIE', text:'', portrait:{ char:'CECILIE', expr:'blush', show:true } },
@@ -1608,6 +1610,7 @@ export const TOWNS = {
               portrait:{ char:'CECILIE', expr:null, show:true }   /* front ＝基本立繪 */ },
             { speaker:'CECILIE', text:'不過……我不討厭就是了。',
               portrait:{ char:'CECILIE', expr:'tease', show:true } },
+            { bubbleFx:'note', speaker:'CECILIE', text:'多多指教囉，搭檔。', portrait:{ char:'CECILIE', expr:'smile', show:true } },
             { goto:'cap_dream_end' },
             { speaker:'NARRATION', text:'', auto:300, label:'cap_dream_lose' },
             /* ⚠ 這一拍**不撤立繪**（ver -1903，Ray：「我不討厭就是了那一拍不用撤立繪」）：賽西莉跟著場景一起淡入黑
@@ -5497,7 +5500,10 @@ export const TOWNS = {
           nou('surprise','！！',                    { tierMin:3, tierWho:'NOUVELLE' }),
           arh(null,'是嗎？你已經向前走了啊？',      { tierMin:3, tierWho:'NOUVELLE' }),
           arh(null,'真的長大了呢。',                { tierMin:3, tierWho:'NOUVELLE' }),
-          nou('bigsmileclose','',                   { tierMin:3, tierWho:'NOUVELLE' }),
+          /* 插圖 `024_nouvellesmile`（ver -1917，Ray：「024 掛在神父那段『真的長大了呢』之後」）—— 掛在後面那一拍（她的笑），
+             只有 T3 那一支看得到；下一拍收掉。 */
+          nou('bigsmileclose','',                   { tierMin:3, tierWho:'NOUVELLE', cg:'024_nouvellesmile', cgNoTime:true }),
+          { speaker:'NARRATION', text:'', cg:null, auto:600, noHold:true, tierMin:3, tierWho:'NOUVELLE' },
           arh(null,'坐下聊聊吧。說說這幾年都發生了什麼事。', { tierMax:2, tierWho:'NOUVELLE' }),
         ] } ] },
       lookout:  { bg:'varn_lookout',  name:'雪都瓦恩霍姆　瞭望台',  

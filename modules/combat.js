@@ -3208,6 +3208,11 @@ export function startGame(){
        其餘場次照舊延續血量（§tivot_php_v1）。
      ⚠ 位置在讀完持久 HP **之後**（要蓋過它），在連戰搬運資源之前。 */
   if(sb && sb.fullHp) state.playerHp = state.playerMax;
+  /* ver -1917（Ray：「地下聖徒血改 330，夢境戰開場主角 hp 1 然後再跑 SI」）——卡上兩格，只管這一場：
+     `startHp`＝主角開場血量（蓋過持久 HP／fullHp）；`enemyHp`＝這一場的敵人血量（蓋過敵人卡，地下聖徒那張卡挑戰也在用，不能改卡）。
+     ⚠ 敵血走 `initEnemyHp`（同教學那條具名管道）；`autoSaint` 在 900ms 後才發，那時血已經是 1。 */
+  if(sb && sb.startHp>0) state.playerHp = Math.min(state.playerMax, sb.startHp|0);
+  if(sb && sb.enemyHp>0) initEnemyHp(sb.enemyHp|0);
   /* ══ 連續戰鬥：接上一格的資源（ver -585（-893 前用詞），見 sessionSave 那一段的說明）══
      ⚠ 要在**所有歸零之後**才放回去 —— 這一段是「把上一格的殘值搬回來」，
        不是在開頭挖特例（那會讓「這一場重置了什麼」有兩份答案，鐵律 7）。

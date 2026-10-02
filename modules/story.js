@@ -1482,9 +1482,10 @@ function swapImg(el, src, done, opts){
      是給**背景／插圖**用的（開場直接上，不然會先黑一段空白）；
      而中景層的第一張是「**牠出現了**」，直接跳出來讀起來是貼上去的。
      作法：先掛 `.on.fading`（opacity 0）→ 等圖真的畫上去 → 拿掉 `.fading` 淡進來。 */
-  if(!on && src && opts && opts.fadeInFirst){
+  if(!on && src && opts && (opts.fadeInFirst || opts.inMs)){   // inMs：場上原本沒有背景也一樣慢慢淡進來（ver -1917）
     el.classList.add('fading');
     const up=()=>{ el.onload=null;
+      if(opts.inMs){ el.style.transitionDuration=opts.inMs+'ms'; setTimeout(()=>{ el.style.transitionDuration=''; }, opts.inMs+60); }
       requestAnimationFrame(()=>requestAnimationFrame(()=>{ el.classList.remove('fading'); fin(); })); };
     el.onload=up;
     el.setAttribute('src', src);
@@ -1501,7 +1502,10 @@ function swapImg(el, src, done, opts){
   el.classList.add('fading');
   setTimeout(()=>{
     if(!src){ el.classList.remove('on','fading'); fin(); return; }
-    const back=()=>{ el.onload=null; el.classList.remove('fading'); el.classList.add('on'); fin(); };
+    const back=()=>{ el.onload=null;
+      /* `opts.inMs`＝淡回來那一段要多久（ver -1917，插圖當背景用，Ray：「saintassault 淡入太快」）。 */
+      if(opts && opts.inMs){ el.style.transitionDuration=opts.inMs+'ms'; setTimeout(()=>{ el.style.transitionDuration=''; }, opts.inMs+60); }
+      el.classList.remove('fading'); el.classList.add('on'); fin(); };
     el.onload=back;
     el.setAttribute('src', src);
     if(el.complete && el.naturalWidth) back();
@@ -1855,8 +1859,10 @@ function cgList(base, noTime){
   /* ver -870：含 `/` 的插圖名＝**明確路徑**（含副檔名）——不吃時段候選鏈、不掛
      CG_DIR。樹靈鹿主那三張住在 resources/enemy/（同時是戰鬥立繪；鐵律 7：
      一張圖一份，不複製進 illustration/）。 */
-  if(String(base).indexOf('/')>=0) return [String(base)];
-  return bandNames(base, noTime).map(n=>CG_DIR+n);
+  /* ⚠⚠ 插圖也要掛 `ASSET_VER`（ver -1917，Ray：「rennaintro 我重開 server 還是沒看到」）——
+     以前只有背景的 `imgSrc` 掛，插圖這條沒掛 ⇒ 同名覆蓋的插圖永遠吃舊快取（008 的 2、004 的 2 都是白寫）。 */
+  if(String(base).indexOf('/')>=0){ const b=String(base); return [b.indexOf('?')<0 ? b+assetVer(b) : b]; }
+  return bandNames(base, noTime).map(n=>CG_DIR+n+assetVer(n));
 }
 /* 顯示時要試哪幾個：解析過就只回那一個，沒解析過就回整串（照舊逐個試）。 */
 function cgCandidates(base, noTime){
@@ -2080,8 +2086,10 @@ function applyPersist(line){
          `swapImg` 的第三個參數是 `whenPainted` 之後才叫的 —— 新的像素真的畫上去了。
        ⚠ 同 §6.5「取景在 onload 那一刻才換」那一條的同族：凡是「依畫面算」的東西，
          都要等畫面真的換好，不要另外猜一個秒數（鐵律 7）。 */
+    /* ⚠ 插圖（`NNN_` 開頭）當背景時淡回來放慢到 CG_FADE_MS×2（ver -1917，Ray：「saintassault 又沒有好好淡入了，淡入太快」）。 */
     swapImg($('storyBg'), line.bg?imgSrc(line.bg):'',
-            ()=>matchPortraits(toneSrcEl(), $('storyCast')));
+            ()=>matchPortraits(toneSrcEl(), $('storyCast')),
+            /^\d{3}_/.test(String(line.bg||'')) ? { inMs: CG_FADE_MS*2 } : undefined);
   }
   /* ══⚠⚠⚠ **換背景＝換場，台上的人先下去**（ver -1420，Ray：「切換場景時不要殘留
      立繪，要講幾次？憲法沒有嗎？**每次轉場都要把前面的立繪清掉**」）══
@@ -3201,7 +3209,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1916';
+const KERB_V='?v=1917';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
