@@ -1293,7 +1293,8 @@ function enemyAttack(dmg, kind, saintAmt){
   if(immune && dmg>0) floatDmg((L.battle.immune||i18nT('免傷')),'50%','46%',true);
   // 鎖血（管理人測試，ver -463）：只擋掉血這一行——上面的特效/計數照走，手感不失真
   if(!state.hpLock && !immune) state.playerHp=Math.max(0,state.playerHp-dmg);
-  if(dmg>0 && !immune && !state.hpLock) enemy.playHitVoice();   // 敵人卡的 hitVoice（ver -1920，尼莫）
+  /* 敵人卡的 hitVoice（ver -1920，尼莫）。⚠ 點錯（`wrong`）不出聲（ver -1926，Ray：「會跟我方的點錯音混在一起」）。 */
+  if(dmg>0 && !immune && !state.hpLock && kind!=='wrong') enemy.playHitVoice();
   updateBars();
   tutorial.onHpChange();             // 血量觸發（ver -599）：玩家這一側（`php:N`）
   enemy.showHitFx(fxKind);           // 依 kind 播放該怪對應受擊特效（'block' 讀成 'ult'）
@@ -2696,7 +2697,7 @@ export function warmBattleImage(battleId){
 export function holdEnemyRise(){ enemy.holdRise(); }
 export function releaseEnemyRise(){ enemy.releaseRise(); }
 /* 這一場不降臨（ver -1650）：走完整推棺的那一場，劇情層已經演過降臨了。 */
-export function suppressEnemyRise(){ enemy.suppressRiseOnce(); }
+export function suppressEnemyRise(mute){ enemy.suppressRiseOnce(mute); }
 /* 這一場是連續戰鬥的**中間一場**嗎（＝不是收段的那一場）。
    ⚠ 問的是**卡**不是 `state.battleSession`：Boss 打贏時段落已經被 `endSession()`
      收掉了，拿 state 判會把 Boss 也算成中間場（鐵律 9：判定要看得到擁有者的那個值）。 */

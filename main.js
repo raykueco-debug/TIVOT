@@ -2464,7 +2464,8 @@ story.setBattleHandler((battleId, resume, gateOpts)=>{
      ⚠ 一次性：只罩這一場，同一張卡在追擊戰照舊降臨。 */
   /* ⚠ ver -1715：**原地開棺**的那一場也一樣 —— 只要前一拍劇情層已經降臨過（`storyRose`），
      戰鬥裡就不再降、鐘聲與咆哮也不再響（Ray：「一次戰鬥只跑一次降臨音跟咆哮」）。 */
-  if(gateOpts && (gateOpts.kerbRise || gateOpts.storyRose)) combat.suppressEnemyRise();
+  /* ⚠ ver -1926：只有 `storyRose` 才連聲音一起壓（完整推棺只壓降臨動畫，登場音照播 —— 尼莫的 play）。 */
+  if(gateOpts && (gateOpts.kerbRise || gateOpts.storyRose)) combat.suppressEnemyRise(!!gateOpts.storyRose);
   /* 劇情插入戰（ver -375（-893 前用詞））：腳本寫 `{battle:'guild_hunter'}`，查得到 `config.battles`
      就開那一場（單敵、卡上的數值、不能聖徒化／用搭檔技）。
      ⚠ 查不到才退回教學那一場 —— 舊腳本（地宮那一段）寫的就是教學，不能被改掉。

@@ -893,8 +893,11 @@ const ENTRANCE_KINDS = { harm:1, slay:1, ship:1, aerial:1 };
 /* 降臨用哪一組動畫（ver -1704）：卡上 `riseStyle:'unpurge'` ＝淨化倒放，其餘照舊。
    ⚠ 劇情層的中景降臨（`story` 的 `cgBackRise`＋`cgBackAs`）也問這一支，兩邊同一個答案。 */
 export function riseClass(en){ return (en && en.riseStyle==='unpurge') ? 'enemy-unpurge' : 'enemy-rise'; }
-let riseOff = false;
-export function suppressRiseOnce(){ riseOff = true; }
+let riseOff = false, riseOffMute = true;
+/* `mute`（ver -1926）＝連登場音／衝擊一起壓。只有**劇情層真的降臨過**（`storyRose`）才壓聲音 ——
+   完整推棺（`kerbRise`）只代表「門一開牠已經站好」，劇情裡沒降臨過的（尼莫）那一聲 `entrance` 要照播
+   （Ray：「開棺以後沒播 play」）。 */
+export function suppressRiseOnce(mute){ riseOff = true; riseOffMute = (mute !== false); }
 /* ⚠⚠ 「這一次被壓掉了」要讓 `loadEnemyPortrait` 知道（ver -1715）：`isRise` 回 false 之後
    走的是**不降臨那一條**，而那一條會在圖出現時發登場音＋衝擊（`arrive`）——
    於是「不再降臨」變成「畫面不降，鐘聲與咆哮照樣再響一遍」（Ray 回報的正是這個）。
@@ -902,7 +905,7 @@ export function suppressRiseOnce(){ riseOff = true; }
 let riseSuppressedNow = false;
 function isRise(en){
   riseSuppressedNow = false;
-  if(riseOff){ riseOff=false; riseSuppressedNow=true; return false; }
+  if(riseOff){ riseOff=false; riseSuppressedNow=riseOffMute; return false; }
   return !!(en && (ENTRANCE_KINDS[en.kind] || en.riseFx));
 }
 function isPurify(){
