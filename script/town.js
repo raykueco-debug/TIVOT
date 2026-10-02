@@ -751,7 +751,7 @@ export const OUTING = {
      ⚠ 獵人小屋那一段**沒有好感**：Ray 的稿只給了另外三個地點的數字（+1／+2／+3），
        這一格他沒寫 —— 空著等他補，不要自己填一個。 */
   who: {
-    NOUVELLE: { from:1, dine:'restaurant', nodes:['cityhall','church','grocery'],
+    NOUVELLE: { from:0, dine:'restaurant', nodes:['cityhall','church','grocery'],
                 nodesBy:{ shinier:['restaurant'] },
                 line:'啊，{N}！我正想著要不要買點什麼回去呢。',
                 meetBy:{ shinier:{
@@ -760,7 +760,7 @@ export const OUTING = {
                                  nou('surprise','咦？你也是嗎？'),
                                  nou('bigsmile','那我們一起吃吧！'),
                                  nou('shy','……我可以再點一份嗎？', { aff:{ nouvelle:1 } }) ] } } } },
-    RENNA:    { from:1, dine:'cafe',       nodes:['cityhall','church','grocery'],
+    RENNA:    { from:0, dine:'cafe',       nodes:['cityhall','church','grocery'],
                 nodesBy:{ shinier:['chief'] },
                 line:'寫報告寫累了，出來透透氣。',
                 /* ⚠ 蕾娜本位左、村長本位右（speakers.js）→ 兩個人自然分兩邊，
@@ -1014,9 +1014,10 @@ export const TOWNS = {
        ⚠ 睡醒那一刻黑幕還蓋著（旅店的睡覺演出留下來的）—— `clockGate()` 會先把
          畫面亮回來再放她上場，所以這裡不必寫任何演出指示。
        ⚠ 台詞一字照 Ray 的稿。 */
-    /* ver -562 編號重排：升段點改在「進帝都」(S1) 與「出航」(S2)，
-       這個七點的閘門只負責開船塢劇情與強制移動，不再動 stage。 */
-    stage1: { hour: 7, flag: 'stage1_open', goto: 'dock',
+    /* ver -1898（Ray：「stage1 切點改成夢結束後開始」）：S1 改由**這一道閘門**設 ——
+       夢的收尾推到隔天 07:00，正好觸發它；沒睡、坐到天亮也走同一道門。
+       （-562 的「進帝都＝S1」已拿掉，見 modules/town.js 的 open 收尾。） */
+    stage1: { hour: 7, flag: 'stage1_open', goto: 'dock', stage: 1,
               lines: [ ren(null,'好囉，該出發囉'),
                        { speaker:'RENNA', text:'是做了什麼惡夢嗎？', portrait:{ char:'RENNA', expr:'armcross', show:true } },
                        { speaker:'NOUVELLE', text:'哇，你沒有睡好嗎？黑眼圈好重。', portrait:{ char:'NOUVELLE', expr:'surprise', show:true } }, ] },
@@ -1579,9 +1580,11 @@ export const TOWNS = {
                「台上有人的無台詞拍要點擊」把踩地／爆炸那幾拍卡住。撤掉（看不見）就照 auto 跑。 */
             { speaker:'NARRATION', text:'', auto:900, se:'se_stomp', shake:true, hide:'*' },
             { speaker:'NARRATION', text:'', auto:1200, se:'se_enemy_holyburst', shake:true },
-            /* 由下往上平移、黑幕淡入進場（ver -1892，Ray）—— 平移 2.6s，auto 等它走完。 */
-            { speaker:'NARRATION', text:'', auto:2900, fadeIn:1200, cgPan:'up',
-              cg:'resources/ci/ci_cecilie_obe.webp' },
+            /* 由黑淡入、由下往上平移（ver -1892／-1897，Ray：「應該要由黑淡入，不要露出背景」）。
+               ⚠ 分兩拍：插圖先在全黑底下換上（`#storyFade` 還蓋著），下一拍才掀黑幕＋起平移 ——
+                 同一拍做的話黑幕先掀、插圖還在載，中間會露出地宮的背景（-1896 實測 0.4 秒）。 */
+            { speaker:'NARRATION', text:'', auto:900, fadeOut:1, cg:'resources/ci/ci_cecilie_obe.webp' },
+            { speaker:'NARRATION', text:'', auto:2900, fadeIn:1200, cgPan:'up' },
             /* ⚠ `cg:null`：插圖的層級在立繪之上，不收的話 cringe 那張立繪被整個蓋住。 */
             { speaker:'CECILIE_X', text:'怎麼能讓你死在這裡……怎麼能讓你死在這裡！', cg:null,
               portrait:{ char:'CECILIE_X', expr:'fluster', show:true } },

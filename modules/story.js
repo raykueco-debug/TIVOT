@@ -253,7 +253,7 @@ export const BUBBLE_FX = [
   ['whisper','低語','move'], ['weak','虛弱','move'], ['rage','憤怒','move'],
   ['gloom','三條線','mark'], ['sweat','冷汗','mark'], ['vein','怒筋','mark'],
   ['exclaim','驚嘆','mark'], ['question','疑問','mark'], ['heart','心動','mark'], ['note','哼歌','mark'],
-  ['nervous','緊張灑汗','mark'],   // ver -1883（Ray：「框加上緊張灑汗的特效」）：幾滴汗從右上角噴出去
+  ['nervous','緊張灑汗','mark'],   // ver -1883（Ray：「框加上緊張灑汗的特效」）；-1898 改：小水花只往第一象限（右上）噴、循環
 ];
 const BF_SVG = {
   gloom:'<path d="M6 3v13M12 3v17M18 3v11" stroke="#9fb3d8" stroke-width="2.2" stroke-linecap="round" fill="none"/>',
@@ -263,7 +263,7 @@ const BF_SVG = {
   question:'<path d="M8 8a4 4 0 1 1 5.5 3.7c-1 .5-1.5 1.2-1.5 2.3v1" fill="none" stroke="#f5d06b" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="19.5" r="1.8" fill="#f5d06b"/>',
   heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z" fill="#ff7aa2" stroke="#c2185b" stroke-width="1.2"/>',
   /* 緊張灑汗：四滴汗各自往外噴（每一滴是一個 <g>，動畫在 CSS 的 `bfSpray`，逐滴錯開）。 */
-  nervous:'<g class="sp sp1" transform="translate(12 13)"><path d="M0-5C0-5-3-.6-3 1.4a3 3 0 0 0 6 0C3-.6 0-5 0-5z" fill="#9fd4ff" stroke="#3d7fb8" stroke-width=".9"/></g><g class="sp sp2" transform="translate(12 13)"><path d="M0-5C0-5-3-.6-3 1.4a3 3 0 0 0 6 0C3-.6 0-5 0-5z" fill="#9fd4ff" stroke="#3d7fb8" stroke-width=".9"/></g><g class="sp sp3" transform="translate(12 13)"><path d="M0-5C0-5-3-.6-3 1.4a3 3 0 0 0 6 0C3-.6 0-5 0-5z" fill="#9fd4ff" stroke="#3d7fb8" stroke-width=".9"/></g><g class="sp sp4" transform="translate(12 13)"><path d="M0-5C0-5-3-.6-3 1.4a3 3 0 0 0 6 0C3-.6 0-5 0-5z" fill="#9fd4ff" stroke="#3d7fb8" stroke-width=".9"/></g>',
+  nervous:'<g class="sp sp1" transform="translate(5 19)"><path d="M0-5C0-5-3-.6-3 1.4a3 3 0 0 0 6 0C3-.6 0-5 0-5z" fill="#9fd4ff" stroke="#3d7fb8" stroke-width=".9"/></g><g class="sp sp2" transform="translate(5 19)"><path d="M0-5C0-5-3-.6-3 1.4a3 3 0 0 0 6 0C3-.6 0-5 0-5z" fill="#9fd4ff" stroke="#3d7fb8" stroke-width=".9"/></g><g class="sp sp3" transform="translate(5 19)"><path d="M0-5C0-5-3-.6-3 1.4a3 3 0 0 0 6 0C3-.6 0-5 0-5z" fill="#9fd4ff" stroke="#3d7fb8" stroke-width=".9"/></g><g class="sp sp4" transform="translate(5 19)"><path d="M0-5C0-5-3-.6-3 1.4a3 3 0 0 0 6 0C3-.6 0-5 0-5z" fill="#9fd4ff" stroke="#3d7fb8" stroke-width=".9"/></g><g class="sp sp5" transform="translate(5 19)"><path d="M0-5C0-5-3-.6-3 1.4a3 3 0 0 0 6 0C3-.6 0-5 0-5z" fill="#9fd4ff" stroke="#3d7fb8" stroke-width=".9"/></g>',
   note:'<path d="M9 17V5l10-2v12" fill="none" stroke="#d4a94a" stroke-width="2"/><circle cx="7" cy="17" r="2.5" fill="#d4a94a"/><circle cx="17" cy="15" r="2.5" fill="#d4a94a"/>',
 };
 const BF_KIND = Object.fromEntries(BUBBLE_FX.map(([k,,t])=>[k,t]));
@@ -537,10 +537,12 @@ function tuneRender(){
    +'<div class="tn-row"><span>大小 cm</span><input data-in="cm" type="number" step="1" value="'+n(c.f.cm)+'"><button data-k="cm" data-d="-1">－</button><button data-k="cm" data-d="1">＋</button></div>'
    +'<div class="tn-row"><span>上下</span><input data-in="yShift" type="number" step="1" value="'+n(c.f.yShift||0)+'"><button data-k="yShift" data-d="1">↑</button><button data-k="yShift" data-d="-1">↓</button></div>'
    +'<div class="tn-row"><span>左右</span><input data-in="fxShift" type="number" step="0.005" value="'+n(c.f.fxShift||0)+'"><button data-k="fxShift" data-d="0.005">←</button><button data-k="fxShift" data-d="-0.005">→</button></div>'
-   /* 水平翻轉（ver -1866）＝這一張的 `flip`（一律翻，同 speakers.js 既有的欄位）；存檔照「儲存」寫進去。 */
    /* 站位（ver -1892，Ray：「立繪調整要可以決定人物站左或右」）＝這一張的 `side`（同 speakers.js 既有的差分 side）。 */
    +'<div class="tn-row"><span>站位</span><button data-act="sideL" class="'+(tuneSide==='L'?'on':'')+'">站左</button><button data-act="sideR" class="'+(tuneSide==='R'?'on':'')+'">站右</button></div>'
-   +'<div class="tn-row"><span>水平翻轉</span><button data-act="flip" class="'+(c.f.flip?'on':'')+'">'+(c.f.flip?'翻轉中':'未翻轉')+'</button></div>'
+   /* 水平翻轉（ver -1898 改，Ray：「立繪編輯的翻轉只是轉那一拍的圖而已」）＝**這一拍**的 `flip:true`，
+      按下去直接寫進腳本那一行（`/__line set`），不寫 speakers.js。工作室模式沒有「這一拍」，不給。 */
+   +(studioOn ? '' : (()=>{ const ln=edLine(); const on=!!(ln && ln.flip && beatFlipWho===c.id);
+        return '<div class="tn-row"><span>這一拍翻轉</span><button data-act="flip" class="'+(on?'on':'')+'">'+(on?'翻轉中':'未翻轉')+'</button></div>'; })())
    +'<div class="tn-row"><button data-act="big" class="'+(tuneBig?'on':'')+'">步進×5</button>'
    +'<button data-act="undo"'+(live?'':' disabled')+'>還原</button>'
    +'<button data-act="save" class="tn-save"'+(live?'':' disabled')+'>'+(c && tuneArm===c.tk.key ? '確認寫入？' : '儲存')+'</button>'
@@ -572,8 +574,16 @@ function tuneRender(){
       tuneLive[cur.tk.key]=L; tuneArm=null; tuneMsg=''; layout(); return tuneRender();
     }
     if(act==='big'){ tuneBig=!tuneBig; return tuneRender(); }
-    if(act==='flip'){ const L=Object.assign({}, tuneLive[cur.tk.key] || {}); L.flip=!cur.f.flip;
-      tuneLive[cur.tk.key]=L; tuneArm=null; tuneMsg=''; layout(); return tuneRender(); }
+    if(act==='flip'){
+      const ln=edLine(); if(!ln) return;
+      const on=!(ln.flip && beatFlipWho===cur.id), loc=edLocate();
+      tuneMsg='寫入中…'; tuneRender();
+      edPost('__line', Object.assign({ op:'set', key:'flip', value:on||null }, loc)).then(r=>{
+        if(r.ok){ if(on){ ln.flip=true; beatFlipWho=cur.id; } else { delete ln.flip; beatFlipWho=null; } layout(); }
+        tuneMsg=(r.ok?(on?'這一拍已翻轉：':'這一拍已取消翻轉：'):'寫入失敗：')+r.text; tuneRender();
+      });
+      return;
+    }
     if(act==='sideL' || act==='sideR'){
       const to = act==='sideL' ? 'L' : 'R';
       if(to===tuneSide) return;
@@ -709,6 +719,7 @@ function studioExit(){
   tuneRender(); close();
   const cb=studioDone; studioDone=null; if(cb) cb();
 }
+let beatFlipWho = null;   // 這一拍要水平翻轉的人（renderLine 設；見那裡的說明）
 function layout(){
   tuneEnsure();
   const stage=$('storyStage'); if(!stage) return;
@@ -857,8 +868,15 @@ function layout(){
        站在右邊時就永遠翻不到。兩者相加是 XOR：可翻的人被翻到另一側時再翻回來。 */
     /* 立繪調整工作室不做「換邊就翻」（ver -1822，Ray：「不要水平翻轉」）—— 調的是這張圖本身；
        `flip`（圖本來就畫反了）照舊，那是遊戲裡永遠的樣子。 */
-    const mir = (!!a.flip) !== !!(!studioOn && a.mirror && a.side && o.side && o.side !== a.side);
-    el.classList.toggle('mirrored', mir);
+    const mir0 = (!!a.flip) !== !!(!studioOn && a.mirror && a.side && o.side && o.side !== a.side);
+    const mir = mir0 !== !!(beatFlipWho && slot[o.side]===beatFlipWho);
+    /* 翻轉不放動畫（ver -1898，Ray）：`mirrored` 與滑入共用同一條 transform 過場 —— 人已經站在台上時
+       換翻轉會演成「轉身」。這一刻把過場關掉、強制排版一次再還回去。 */
+    if(el.classList.contains('mirrored') !== mir){
+      if(el.classList.contains('on')){
+        el.style.transition='none'; el.classList.toggle('mirrored', mir); void el.offsetWidth; el.style.transition='';
+      } else el.classList.toggle('mirrored', mir);
+    }
     /* 雙人立繪（`withChar`）進出場的幅度收小、改淡入淡出（ver -1710，Ray：「看起來好忙，
        圖的出入幅度太大了」）—— 位移與透明度寫在 CSS 的 `.duo`。 */
     el.classList.toggle('duo', !!(a.withChar && a.withChar.length));
@@ -2221,6 +2239,10 @@ function applyPersist(line){
       f.style.transitionDuration=ms+'ms';
       void f.offsetWidth;                 // 同 veil：先讓瀏覽器看到起始狀態
       f.classList.toggle('on', line.fadeOut!=null);
+      /* ⚠ 拍上明寫的黑幕歸**這一拍**（ver -1899）：同一拍換插圖時 `cgFade` 先把擁有者記成 'cg'，
+         圖一載好就自己掀 —— 「插圖在黑底下換好、下一拍才 `fadeIn`」那種寫法就會提早露出來
+         （賽西莉的夢，Ray：「應該要由黑淡入」）。寫了 `fadeOut` ＝等腳本自己的 `fadeIn` 來掀。 */
+      fadeOwner = line.fadeOut!=null ? 'beat' : null;
       setTimeout(()=>{ if(my===slowFadeSeq) f.style.transitionDuration=''; }, ms+120);
     }
   }
@@ -3150,7 +3172,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1896';
+const KERB_V='?v=1901';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3908,6 +3930,9 @@ export function playKerberosClose(onDone){
 function renderLine(){
   const line = cur.lines[lineIdx];
   if(!line) return;
+  /* 這一拍的水平翻轉（ver -1898，Ray：「立繪編輯的翻轉只是轉那一拍的圖而已」）：拍上寫 `flip:true`
+     ＝說話者（或 portrait.char）這一拍的立繪左右翻；下一拍沒寫就翻回來。與圖本身的 `flip`（畫反了）是 XOR。 */
+  beatFlipWho = line.flip ? ((line.portrait && line.portrait.char) || line.speaker) : null;
   tuneEnsure();   // 管理人的 ✎／立繪鈕（ver -1828：沒有立繪的拍也要掛得上）
   /* ══⚠⚠ **換一拍就先停上一拍的打字機**（ver -1127）══
      -1062 把它補在空框與演出拍那兩個分支裡，但那是「哪幾種拍會出事」的清單 ——
@@ -5499,6 +5524,7 @@ export function veilOn(){ const v=$('storyVeil'); return !!(v && v.classList.con
 export function sceneFadeOn(){ const f=$('storyFade'); return !!(f && f.classList.contains('on')); }
 
 export function clearCast(){
+  beatFlipWho = null;
   stopTyping();   // ver -1127：清場＝這一段結束，框裡不可以還有字在跑（同 renderLine）
   storyMap(false);   // 這一段攤開的小地圖跟著收（ver -1397；只收自己開的那一次）
   kitchenOpen=false;   // 閘門的鎖：清場就一定解掉（不然下一段點不動，ver -956）

@@ -583,6 +583,30 @@ def _set_shake_seg(seg, value):
     return 'Object.assign(' + seg + ', { shake:' + lit + ' })'
 
 
+def _set_bool_seg(seg, key, on):
+    """一拍的原始碼 seg → 把布林鍵 `key` 設成 true（on）或拿掉（ver -1898，這一拍的 `flip`）。
+       作法同 `_set_shake_seg`。"""
+    rx = r"\b" + key + r"\s*:\s*(?:true|false)"
+    if re.search(rx, seg):
+        if on:
+            return re.sub(rx, key + ':true', seg, count=1)
+        s2 = re.sub(r"\{\s*" + rx + r"\s*\}", '{ }', seg, count=1)
+        if s2 == seg:
+            s2 = re.sub(r"\s*" + rx + r"\s*,", '', seg, count=1)
+        if s2 == seg:
+            s2 = re.sub(r"\s*,\s*" + rx, '', seg, count=1)
+        m = re.match(r"^Object\.assign\((.*),\s*\{\s*\}\)$", s2, re.S)
+        return m.group(1) if m else s2
+    if not on:
+        return seg
+    if seg.startswith('{'):
+        return '{ ' + key + ':true,' + seg[1:]
+    m = re.match(r"^(Object\.assign\(.*,\s*\{)(.*\}\))$", seg, re.S)
+    if m:
+        return m.group(1) + ' ' + key + ':true,' + m.group(2)
+    return 'Object.assign(' + seg + ', { ' + key + ':true })'
+
+
 def line_patch(req):
     op = req.get('op')
     if op not in ('insert', 'delete', 'set'):
@@ -594,10 +618,13 @@ def line_patch(req):
     le = len(text) if le < 0 else le                    # 結尾那一行的行尾
     if op == 'set':
         key = req.get('key')
-        if key not in ('bubbleFx', 'shake'):
-            raise ValueError('set 只准改 bubbleFx／shake')
+        if key not in ('bubbleFx', 'shake', 'flip'):
+            raise ValueError('set 只准改 bubbleFx／shake／flip')
         seg = text[s:e + 1]
-        new = (_set_fx_seg if key == 'bubbleFx' else _set_shake_seg)(seg, req.get('value'))
+        if key == 'flip':
+            new = _set_bool_seg(seg, 'flip', bool(req.get('value')))
+        else:
+            new = (_set_fx_seg if key == 'bubbleFx' else _set_shake_seg)(seg, req.get('value'))
         if new == seg:
             return '%s:%d 沒有變動' % (rel, ln)
         _write_text(rel, text[:s] + new + text[e + 1:])

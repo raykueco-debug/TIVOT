@@ -5317,10 +5317,9 @@ export function open(town, node, opts){
     const _a=prog.getAffection();
     if((_a.nouvelle||0) < 5){ _a.nouvelle=5; prog.setAffection(_a); }
   }
-  /* 進帝都＝S1（ver -562，Ray 定案的編號：開頭 S0 → 進帝都 S1 → 出航 S2）。
-     守門看**值**不看旗標：只從 0 升上來 —— 讀檔在更後面的章節不會被倒退，
-     試玩版（無鑰匙，getStage 回測試預設 5）也不受影響。 */
-  if(townId==='capital' && prog.getStage()===0) prog.setStage(1);
+  /* ⚠ 進帝都**不再升段**（ver -1898，Ray：「stage1 切點改成夢結束後開始」）：
+     S0 ＝地宮 → 帝都第一天 → 旅店的夢；S1 由隔天 07:00 那一道閘門（`TOWNS.capital.stage1` 的 `stage:1`）設，
+     那正是夢演完、推到七點的那一刻 —— 沒睡（坐到天亮）也同一道門，所以兩條路都對。 */
   /* ver -858（Ray：「解除夏爾村的前期進入管制」）：主線抵達（S4）之前來過
      就記一支旗 —— sv_arrive 那一幕的「之前我們好像來過」分歧讀它（鐵律 9：
      插旗＝這一次早訪，沒有人拔）。 */

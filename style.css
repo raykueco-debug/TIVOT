@@ -3477,21 +3477,22 @@
   #storyBubble .bf-m-heart svg{ animation:bfBeat 1s ease-in-out infinite; }
   @keyframes bfBeat{ 0%,100%{scale:1} 30%{scale:1.2} }
   #storyBubble .bf-m-note svg{ animation:bfFloat 1.4s ease-in-out infinite; }
-  /* 緊張灑汗（ver -1883）：四滴汗從右上角往外上方噴開、邊飛邊淡，一輪 1.1 秒循環。
-     ⚠ 汗滴要飛出框外 ⇒ 這一個符號的 svg 不裁切（overflow:visible），放大一點才看得清楚。 */
+  /* 緊張灑汗（ver -1883；**-1898 Ray 改**：「做成小水花往第一象限方向噴出 loop 就好」）：
+     五顆小水滴從左下角往**右上**（第一象限，25°~65°）噴出、邊飛邊縮邊淡，一輪 0.9 秒循環。
+     ⚠ 水滴的尖端轉向飛行方向（`--r`＝90°−方向角）；汗滴要飛出框外 ⇒ svg 不裁切。 */
   #storyBubble .bf-m-nervous{width:30px;height:30px;}
   #storyBubble .bf-m-nervous svg{overflow:visible;}
   #storyBubble .bf-m-nervous .sp{transform-box:fill-box;transform-origin:center;opacity:0;
-    animation:bfSpray 1.1s ease-out infinite;}
-  #storyBubble .bf-m-nervous .sp1{--dx:-14px;--dy:-16px;--r:-35deg;animation-delay:0s;}
-  #storyBubble .bf-m-nervous .sp2{--dx:3px;  --dy:-20px;--r:5deg;  animation-delay:.18s;}
-  #storyBubble .bf-m-nervous .sp3{--dx:17px; --dy:-12px;--r:40deg; animation-delay:.36s;}
-  #storyBubble .bf-m-nervous .sp4{--dx:19px; --dy:4px;  --r:75deg; animation-delay:.54s;}
+    animation:bfSpray .9s ease-out infinite;}
+  #storyBubble .bf-m-nervous .sp1{--dx:16px;--dy:-8px; --r:65deg;animation-delay:0s;}
+  #storyBubble .bf-m-nervous .sp2{--dx:14px;--dy:-14px;--r:45deg;animation-delay:.18s;}
+  #storyBubble .bf-m-nervous .sp3{--dx:8px; --dy:-16px;--r:25deg;animation-delay:.36s;}
+  #storyBubble .bf-m-nervous .sp4{--dx:11px;--dy:-8px; --r:55deg;animation-delay:.54s;}
+  #storyBubble .bf-m-nervous .sp5{--dx:8px; --dy:-12px;--r:35deg;animation-delay:.72s;}
   @keyframes bfSpray{
-    0%  {translate:0 0;rotate:var(--r);scale:.4;opacity:0}
-    15% {opacity:1;scale:1.6}
-    80% {opacity:.9}
-    100%{translate:var(--dx) var(--dy);rotate:var(--r);scale:1.2;opacity:0}}
+    0%  {translate:0 0;rotate:var(--r);scale:.3;opacity:0}
+    15% {opacity:1;scale:.7}
+    100%{translate:var(--dx) var(--dy);rotate:var(--r);scale:.45;opacity:0}}
   #storyBubble .bf-m-question svg{ animation:bfTilt 1.6s ease-in-out infinite; }
   @keyframes bfFloat{ 0%,100%{translate:0 0} 50%{translate:0 -3px} }
   @keyframes bfTilt{ 0%,100%{rotate:-8deg} 50%{rotate:8deg} }

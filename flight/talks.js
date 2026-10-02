@@ -81,11 +81,11 @@
      真正的入隊章節定了就改這兩個數字，其餘什麼都不必動。 */
 const PARTY = {
   sorana:   { from: 9 },   // ver -1739 Ray：「索則是 stage9 才加入」（-1360 是 8）。⚠ 與 script/town.js 的 OUTING.who.SORANA.from 是同一件事，改一邊要改另一邊（鐵律 7）
-  nouvelle: { from: 1 },
+  nouvelle: { from: 0 },   // ver -1898：S0 起就在（S1 改到帝都第一夜的夢之後才開始）。⚠ 與 script/town.js 的 OUTING.who.NOUVELLE.from 同一件事，改一邊要改另一邊
   anya:     { from: 3 },   // ver -1739 Ray：「安雅在 stage3 才會加入」（-742 是 5）。⚠ 與 OUTING.who.ANYA.from 同一件事，改一邊要改另一邊
   /* `away` ＝這兩支旗之間她不參與閒聊（ver -1881，Ray：「雪都事件到古墓踏破前，不播放任何
      有蕾娜參與的閒聊」）。起點＝第一次抵達雪都（`vn_arrive`）、終點＝走出古墓（`tomb_exit_done`）。 */
-  renna:    { from: 1, away:{ from:'vn_arrive', until:'tomb_exit_done' } },
+  renna:    { from: 0, away:{ from:'vn_arrive', until:'tomb_exit_done' } },
 };
 function inParty(who, stage){
   /* ⚠ 台詞的 `who` 可能帶表情差分（`renna/relief`，ver -432）—— 先切回本尊再問。

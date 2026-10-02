@@ -115,6 +115,10 @@ function bossMul(which){
   return (v>0) ? v : 1;
 }
 export function moneyOf(stats, grade){
+  /* 夢境戰不給錢（ver -1900，Ray：「夢戰不要有金錢」）—— 卡上 `dream:true`。收在**唯一的計算點**，
+     三條結算路徑一起吃到（同 Boss 加乘那一條的理由，鐵律 7）。 */
+  const bt0 = (GAME_CONFIG.battles||{})[state.scriptBattleId];
+  if(bt0 && bt0.dream) return 0;
   const tbl = (GAME_CONFIG.rating && GAME_CONFIG.rating.moneyByGrade) || {};
   const pct = tbl[grade] != null ? tbl[grade] : (tbl.D != null ? tbl.D : 0.5);
   /* Boss 的錢 ×2.5（ver -1024）。⚠ 乘在**這一支**：錢的計算點只有這裡，
