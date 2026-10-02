@@ -40,6 +40,7 @@
 /* ⚠⚠ 以下全部是**示範用的佔位內容**，等 Ray 的正式主線稿替換。
    放著的目的只有一個：讓「首頁 story 鈕 → 播主線 → 存讀檔」整條流程
    現在就跑得起來、測得出來。正式開稿時整段刪掉重寫。 */
+import { trTree } from '../i18n/scriptTr.js';   // 劇本譯文（只在非中文時就地換字，ver -1908）
 export const MAIN_SCRIPT = {
 
   /* ══ 地宮：追擊 → 戰鬥教學 → 璐娜莉亞登場（Ray 的第一段正式稿）══════════
@@ -646,3 +647,5 @@ export const MAIN_SCRIPT = {
 /* ⚠ 入口暫時指到新寫的地宮段，方便直接驗這一幕。
    正式串主線時改回 'prologue_audience'（或把地宮段接進鏈裡）。 */
 export const MAIN_ENTRY = 'dungeon_chase';
+
+trTree(MAIN_SCRIPT);   // 劇本譯文：選了別的語言才會換（i18n/scriptTr.js）

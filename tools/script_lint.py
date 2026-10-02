@@ -61,7 +61,8 @@ def check_syntax():
 def load_data():
     _jsrun.require()
     check_syntax()
-    parts = []
+    # ⚠ 劇本譯文（ver -1908）：資料檔尾的 `trTree(...)` 在這裡是中文原樣 —— lint 驗的是中文母本。
+    parts = ['function trTree(o){ return o; }']
     # ⚠ 城鎮（`script/town.js`）與 config 也一起載（ver -375）：城鎮節點現在會帶
     #   **劇情插入戰**與整段對白，跟主線一樣需要驗 —— 缺圖／打錯角色 id／
     #   battle 指到不存在的場次，一樣要在這裡就抓到，不要等演到那一句。

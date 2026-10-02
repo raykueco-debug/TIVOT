@@ -33,7 +33,7 @@ def modules():
     """所有會被 index.html 的模組圖抓到的本機 .js（flight/ 與 tools/ 不算：
        飛行頁是另一個 document、非模組，自己另外帶版本號）。"""
     out = []
-    for pat in ('*.js', 'modules/*.js', 'script/*.js', 'i18n/*.js'):
+    for pat in ('*.js', 'modules/*.js', 'script/*.js', 'i18n/*.js', 'i18n/script/*.js'):
         out += [p.replace(os.sep, '/') for p in
                 sorted(glob.glob(os.path.join(ROOT, pat)))]
     return [os.path.relpath(p, ROOT).replace(os.sep, '/') for p in out]

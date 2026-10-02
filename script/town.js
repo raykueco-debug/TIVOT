@@ -49,6 +49,7 @@
    ⚠ 口氣守則見 flight/script/STYLE.md，這裡不重寫一份。
    ══════════════════════════════════════════════════════════════════════ */
 
+import { trTree } from '../i18n/scriptTr.js';   // 劇本譯文（只在非中文時就地換字，ver -1908）
 /* 諾薇兒的差分（縮寫，對到 speakers.js 的 expr）。寫成常數只是為了讓下面的稿子好讀。 */
 const N = who => (expr, text, extra) => Object.assign(
   { speaker:who, text:text||'', portrait:{ char:who, expr:expr||null, show:true } }, extra||{});
@@ -10552,7 +10553,4 @@ export const TOWNS = {
   },
 };
 
-
-
-
-
+[DRAGON_LINES, QUEST_LOCK, OUTING, DINE, TOWNS].forEach(trTree);   // 劇本譯文：選了別的語言才會換（i18n/scriptTr.js）

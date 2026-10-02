@@ -10,6 +10,7 @@
 
 import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain, HOME_IMG, HOME_SFX, HITFX } from './config.js';
 import { L, LANG, applyToConfig, applyToDom, decorateLine } from './i18n.js';   // 多語言＋台詞關鍵字裝飾
+import { trTree } from './i18n/scriptTr.js';   // 劇本譯文（戰鬥卡上的對白 talk 那一族，ver -1908）
 import { state } from './state.js';
 import { SFX } from './audio.js';
 import { TEL } from './telemetry.js';   // 遙測（未設定後端時 no-op）
@@ -61,6 +62,7 @@ const $ = id => document.getElementById(id);
 // ── 多語言：最先套用（先於載入畫面/任何字串讀取）──
 //    config 內容字串就地覆寫 + index.html 靜態文字置換；語言切換＝首頁鈕→重載生效
 applyToConfig(GAME_CONFIG);
+trTree(GAME_CONFIG.battles);   // 戰鬥內對白（battles[].talk）走劇本譯文表
 applyToDom();
 
 /* ── 首頁主標單行自適應：主標鎖單行（white-space:nowrap），但各語言長度差異大

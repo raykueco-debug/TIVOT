@@ -4,6 +4,7 @@
     python3 tools/script_i18n.py extract            # → i18n/script/strings.json（母本清單）
     python3 tools/script_i18n.py check es           # 驗 i18n/script/es.json：缺譯／孤兒／佔位符
     python3 tools/script_i18n.py xlsx es            # → reference/script_es.xlsx（給人審）
+    python3 tools/script_i18n.py js es              # → i18n/script/es.js（遊戲讀的那一份；改了 es.json 就重跑）
 
 譯文表 i18n/script/<lang>.json ＝ { 中文原句: 譯句 }。鑰匙就是原句本身：
 腳本改了某一句，那一句的譯文就變成「孤兒」、新句變成「缺譯」，`check` 會列出來。
@@ -134,8 +135,18 @@ def xlsx(lang):
     ws.freeze_panes = 'A2'
     p = os.path.join(ROOT, 'reference', f'script_{lang}.xlsx'); wb.save(p); print('→', os.path.relpath(p, ROOT))
 
+def js(lang):
+    src, tr = load(lang)
+    out = {x['zh']: tr[x['zh']] for x in src if tr.get(x['zh'])}
+    p = os.path.join(OUT, f'{lang}.js')
+    with open(p, 'w', encoding='utf-8') as f:
+        f.write('/* 由 tools/script_i18n.py js %s 從 %s.json 產生 —— 不要手改，改 json 再重跑。 */\n' % (lang, lang))
+        f.write('export default ' + json.dumps(out, ensure_ascii=False, separators=(',', ':')) + ';\n')
+    print(f'→ {os.path.relpath(p, ROOT)}（{len(out)} 句，{os.path.getsize(p)//1024} KB）')
+
 if __name__ == '__main__':
     cmd = sys.argv[1] if len(sys.argv) > 1 else 'extract'
     if cmd == 'extract': extract()
     elif cmd == 'check': sys.exit(check(sys.argv[2]))
     elif cmd == 'xlsx': xlsx(sys.argv[2])
+    elif cmd == 'js': js(sys.argv[2])

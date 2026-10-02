@@ -13,6 +13,7 @@
      本名只在劇情需要時當台詞內容出現，不另立 id。
    ══════════════════════════════════════════════════════════════════════ */
 
+import { trTree } from '../i18n/scriptTr.js';   // 劇本譯文（只在非中文時就地換字，ver -1908）
 export const SPEAKERS = {
   OFFICER:  { name:'監察官', art:'renna'    },   // 正名前的蕾娜，只出現一幕多
   RENNA:    { name:'蕾娜',   art:'renna'    },
@@ -1799,3 +1800,5 @@ export function faceStyle(who, zoom, expr){
   return 'background-image:url("'+((e&&e.src)||a.base)+'");background-size:'+z.toFixed(1)+'% auto;'
        + 'background-position:'+(fx*100).toFixed(1)+'% 0%;';
 }
+
+trTree(SPEAKERS);   // 劇本譯文（顯示名）：選了別的語言才會換（i18n/scriptTr.js）

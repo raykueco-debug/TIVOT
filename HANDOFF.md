@@ -213,7 +213,11 @@
 > · ✅ **西語（拉美中性，Ray 定案：拉美市場）**：介面語言包 `i18n/es.js`（語言鈕 zh→en→ja→es；瀏覽器首語系 es* 自動選）。
 > · ✅ **劇本西文版**：`tools/script_i18n.py`（extract／check／xlsx）抽出 2,928 句 → `i18n/script/strings.json`；譯文 `i18n/script/es.json`（中文原句→西文）；審稿表 `reference/script_es.xlsx`。`check es`：0 缺／0 孤兒／0 佔位符不符。
 >   ⚠ 鑰匙是**中文原句**：之後改任何台詞要重跑 `extract` → `check es`，改過的那句會變成「缺譯＋孤兒」。
->   ⚠ **還沒接進遊戲**：story／town／飛行頁讀台詞的地方都沒查表，切到西語時劇本仍是中文。下一步就是接這一層（等 Ray 看過譯文）。
+>   ✅ **-1908 已接進遊戲**：`i18n/scriptTr.js`（選了西語才載 `i18n/script/es.js`，237 KB；中文玩家 0 位元組）；
+>     各劇本資料模組檔尾 `trTree(...)` 就地換字（town／mainScript／evaluation／speakers），戰鬥內對白在 `main.js` 開機、飛行閒聊在 `flight/index.html`。
+>     ⚠ 改了 `es.json` 要跑 `python3 tools/script_i18n.py js es` 重產 `es.js`。⚠ 拿中文當識別字的欄位要進 `scriptTr.js` 的 `SKIP`（現在：talks 的 `time`）。
+>   ⚠ **引擎裡寫死的介面字還是中文**（約 1,700 句／1.9 萬字）：日期格式（clock）、「出航」「（已打烊）」「？？？」、旅店鈕、整備頁、商店、選單、
+>     敵人／道具／武器卡、讀取頁說話者名牌「蕾娜」。等 Ray 決定要不要做下一批。
 >   ⚠ 審稿表的「說話者」是抽取工具**推測**的，常標成 PLAYER，不可靠。
 > · ✅ 對照表：薇拉馮德四語統一 **Velafonte**（原文義大利文，帆＋泉）。表本身有 Ray 未 commit 的改動，**沒 commit**。
 > · ✅ Ray 定案已套用（獸骸＝cáscara／璐娜團長＝Lunaria／諾薇兒對安雅「只想當安雅」前 usted 後 tú）。西文譯法定案一律記在 `i18n/script/NOTES_es.md`。

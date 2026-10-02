@@ -25,6 +25,7 @@
    ══════════════════════════════════════════════════════════════════════ */
 
 /* 誰來評。⚠ 是 `script/speakers.js` 的 id：顯示名與立繪都查那一份（鐵律 7）。 */
+import { trTree } from '../i18n/scriptTr.js';   // 劇本譯文（只在非中文時就地換字，ver -1908）
 export const EVALUATOR = 'RENNA';
 
 /* ══⚠⚠⚠ **評價者不在場的那幾段**（ver -1571，Ray：「夥伴只剩諾薇兒，無蕾娜評價畫面，
@@ -194,3 +195,5 @@ export const INTRUDE = {
          text:'嘿嘿！要是沒有我你就倒楣了吧！' },
   },
 };
+
+[LINES, BY_BATTLE, INTRUDE].forEach(trTree);   // 劇本譯文：選了別的語言才會換（i18n/scriptTr.js）
