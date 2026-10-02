@@ -1,7 +1,7 @@
 /* ============================================================================
  *  i18n.js — 多語言核心（語言選擇／深層回退／套用到 config 與 DOM）
  *  ---------------------------------------------------------------------------
- *  語言包：i18n/zh.js（母本）＋ i18n/ja.js（en.js 翻譯就位後在 PACKS 加一行 import）。
+ *  語言包：i18n/zh.js（母本）＋ en.js／ja.js／es.js（新語言＝在 PACKS 加一行 import）。
  *  選擇存 localStorage('tivot.lang')，首頁「中/A/あ」鈕切換後整頁重載生效
  *  （切換只在首頁，無戰局可失）。缺包或缺鍵一律深層回退母本 zh。
  *
@@ -15,8 +15,9 @@
 import { STRINGS as ZH } from './i18n/zh.js';
 import { STRINGS as EN } from './i18n/en.js';
 import { STRINGS as JA } from './i18n/ja.js';
+import { STRINGS as ES } from './i18n/es.js';
 
-const PACKS = { zh: ZH, en: EN, ja: JA };
+const PACKS = { zh: ZH, en: EN, ja: JA, es: ES };
 
 /* ---- 語言選擇 ----
  *  優先序：使用者手動選過（localStorage）→ 地區偵測 → 預設中文。
@@ -24,11 +25,12 @@ const PACKS = { zh: ZH, en: EN, ja: JA };
  *  偵測結果不寫入 localStorage——只有按語言鈕的手動選擇才落地，之後恆以手選為準。 */
 export const LANG = (()=>{
   let v=null; try{ v=localStorage.getItem('tivot.lang'); }catch(e){}
-  if(v==='zh'||v==='en'||v==='ja') return v;
+  if(v && Object.prototype.hasOwnProperty.call(PACKS, v)) return v;
   try{
     const langs=(navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language||''];
     const tz=(Intl.DateTimeFormat().resolvedOptions().timeZone)||'';
     if(langs.some(l=>String(l).toLowerCase().indexOf('ja')===0) || tz==='Asia/Tokyo') return 'ja';
+    if(String(langs[0]||'').toLowerCase().indexOf('es')===0) return 'es';   // 西語：只看第一語系
   }catch(e){}
   return 'zh';
 })();
@@ -129,7 +131,7 @@ export function applyToConfig(GC){
  * ========================================================================== */
 export function applyToDom(){
   // <html lang>：跟隨語言（字體堆疊/斷行規則依此適配，見 style.css html[lang="ja"]）
-  document.documentElement.lang = LANG==='ja' ? 'ja' : (LANG==='en' ? 'en' : 'zh-Hant');
+  document.documentElement.lang = ({ ja:'ja', en:'en', es:'es' })[LANG] || 'zh-Hant';
   const $=id=>document.getElementById(id);
   const set=(el,txt)=>{ if(el && txt!=null) el.textContent=txt; };
   const q=sel=>document.querySelector(sel);

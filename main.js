@@ -1329,13 +1329,13 @@ story.setFlightOpener(()=>{ const f=town.sailFrom(); town.suspend(); sailOut(f);
 // 首頁「教學」鈕：強制下一場進教學（不動已看旗標），不經整備頁直接出陣
 bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
 
-/* ── 語言切換鈕（zh→en→ja 循環）──
+/* ── 語言切換鈕（zh→en→ja→es 循環）──
  *  鈕面顯示「按下會切換到的下一個語言」，且用該語言自己的文字——
  *  中文介面時顯示 En（給英文使用者認）、英文時顯示 日本語、日文時顯示 中文。
  *  選擇存 localStorage('tivot.lang')，按下重載生效（僅首頁可按，無戰局可失）。 */
 (function bindLangBtn(){
-  const LANGS=['zh','en','ja'];
-  const NEXT_FACE={ zh:'En', en:'日本語', ja:'中文' };   // 鈕面＝下一個語言的自稱
+  const LANGS=['zh','en','ja','es'];
+  const NEXT_FACE={ zh:'En', en:'日本語', ja:'Es', es:'中文' };   // 鈕面＝下一個語言的自稱
   const KEY='tivot.lang';
   let cur = LANG;                        // 現行語言（含地區偵測結果；手選後 LANG 即讀 localStorage）
   if(LANGS.indexOf(cur)<0) cur='zh';
