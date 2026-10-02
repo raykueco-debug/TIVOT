@@ -1020,8 +1020,8 @@ export const TOWNS = {
        （-562 的「進帝都＝S1」已拿掉，見 modules/town.js 的 open 收尾。） */
     stage1: { hour: 7, flag: 'stage1_open', goto: 'dock', stage: 1,
               lines: [ ren(null,'好囉，該出發囉'),
-                       { speaker:'RENNA', text:'是做了什麼惡夢嗎？', portrait:{ char:'RENNA', expr:'armcross', show:true } },
-                       { speaker:'NOUVELLE', text:'哇，你沒有睡好嗎？黑眼圈好重。', portrait:{ char:'NOUVELLE', expr:'surprise', show:true } }, ] },
+                       { speaker:'NOUVELLE', text:'哇，你沒有睡好嗎？黑眼圈好重。', portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
+                       { speaker:'RENNA', text:'是做了什麼惡夢嗎？', portrait:{ char:'RENNA', expr:'armcross', show:true } } ] },
     /* ══ 餐飲街的四家店（ver -578，Ray 交件）══════════════════════════════
        誰在店裡就開哪一家（判定見 DINE）。⚠ 檔名是 Ray 給的**完整基底名**，
        不是「餐酒館＋後綴」—— 這正是 -575 那版拼錯的地方。
@@ -1596,10 +1596,9 @@ export const TOWNS = {
             { speaker:'CECILIE_X', text:'你可是……我的搭檔啊！',
               portrait:{ char:'CECILIE_X', expr:'cringe', show:true } },
             Object.assign({ battle:'cap_dream', onLose:'cap_dream_lose' }, { kerbRise:true }),
-            /* 戰後三秒轉幕（ver -1912，Ray：「夢境戰結束後用三秒轉幕」）—— 同 -755／-1874 的寫法：一拍淡黑三秒＋清場，下一拍淡回三秒。 */
-            { speaker:'NARRATION', text:'', auto:3200, fadeOut:3000, hide:'*' },
-            /* 先淡回純背景，賽西莉下一拍才滑進來（ver -1917，Ray：「夢境戰鬥結束後先放純背景 賽西莉再移入」）。 */
-            { speaker:'NARRATION', text:'', auto:3200, fadeIn:3000 },
+            /* 戰後直接出背景，停一拍，賽西莉自己滑進來（ver -1925，Ray：「夢境戰打完不要從背景到黑屏，直接出背景 一拍後賽西莉自動滑出真傻」）——
+               取代 -1912／-1917 的三秒轉幕。`hide:'*'` ＝台上先清空（這一拍沒人，照 auto 自己走）。 */
+            { speaker:'NARRATION', text:'', auto:1000, hide:'*' },
             { speaker:'CECILIE', text:'真傻。明明不要管我，直接反擊就不會被打成這樣了。',
               portrait:{ char:'CECILIE', expr:'spoild', show:true } },
             { speaker:'PLAYER', blank:true },
