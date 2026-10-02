@@ -2517,7 +2517,7 @@ const SE_FILES=[
   /* ⚠ `se_saint_maxburst` 於 ver -641 改名成 `vo_saint_maxburst`，而它**還躺在 `se/`**
      —— 這張表是照 `vo_` 前綴推資料夾的，列進來會指到 `vo/` 而 404。
      它本來就在 `ASSETS.se_luna_mb`（開機那一批照樣預載得到），所以這裡直接不列。 */
-  'se_saint_install.m4a', 'se_stepsbig.m4a?v=2', 'se_ui_click.m4a',   // ver -1871：se_steps 換新（同名覆蓋 ?v=2），舊的那支改名 se_stepsbig（遺蹟內用）
+  'se_saint_install.m4a', 'se_stepsbig.m4a?v=3', 'se_ui_click.m4a',   // ver -1871：se_steps 換新（同名覆蓋 ?v=2），舊的那支改名 se_stepsbig（遺蹟內用）
   'se_ginclick.m4a', 'se_tummy.m4a', 'se_metalclip.m4a', 'se_sailorshout.mp3',
   /* stage7・木雅克神殿（ver -922，Ray 交件）：古代機械開門的金屬聲、深處的禍魘咆哮。 */
   'se_metalopen.m4a', 'se_monsterroardeep.m4a',
@@ -3201,7 +3201,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1910';
+const KERB_V='?v=1911';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
