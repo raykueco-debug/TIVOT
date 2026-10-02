@@ -204,7 +204,8 @@ def _patch_at(text, at, needle, sets):
 # 前後一拍往外找幾行（ver -1866 由 6 放寬：拍子之間常隔著一大段註解，實測主線開場「啊！」與下一拍隔 11 行）。
 NEAR = 20
 BEAT_FILES = ['script/town.js', 'script/mainScript.js', 'config.js', 'script/evaluation.js',
-              'flight/talks.js', 'flight/index.html']   # 飛行對白（ver -1827）：field=who ⇒ `who:'renna/relief'`
+              'flight/talks.js', 'flight/index.html',   # 飛行對白（ver -1827）：field=who ⇒ `who:'renna/relief'`
+              'i18n/zh.js']   # ver -1912（Ray：「有些台詞改不了」）：教學戰的台詞住在中文語言包（config.tutorial 由它覆寫），不在腳本檔
 
 
 def _js_str(s):
