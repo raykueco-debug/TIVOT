@@ -975,10 +975,17 @@ export function setPlayerNick(v){ wr(K.nick, (v||'').trim() || NICK_DEFAULT); }
 export const CHAPTERS = [
   { id:'stage0', name:'Stage 0', sub:'地宮 → 帝都探索 → 旅店睡覺',
     enter:'story' },
-  { id:'stage1', name:'Stage 1', sub:'第二日・船塢 → 出航 → 北方泊地',
-    stage:1, clockHour:7, named:true,
-    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open'],
-    enter:'town', town:'capital', node:'dock' },
+  /* ⚠ Stage 1 從**夢結束後的那一幕**開始（ver -1904，Ray：「stage1 切點改成夢結束後開始，
+     從『不過……我不討厭就是了。』之後的那一幕開始」）：隔天 07:00 的帝都旅店 ——
+     落在旅店、**不帶** `stage1_open`，進場那一刻 07:00 閘門自己接手
+     （蕾娜「好囉，該出發囉」→ 船塢、升 S1，同正常玩，鐵律 8）。所以這裡 `stage:0`。
+     ⚠ 旅店的初入對白／夢／蕾娜晚歸都要擋掉：`inn_seen_capital_inn`／`town_kind_inn`／`cap_dream`／`inn_missed`。 */
+  { id:'stage1', name:'Stage 1', sub:'夢醒・旅店 → 船塢 → 出航 → 北方泊地',
+    stage:0, clockHour:7, named:true,
+    flags:['dungeon_cleared','hq_briefed','renna_named','mapcard_capital',
+           'inn_seen_capital_inn','town_capital_inn','town_kind_inn','inn_wait','inn_missed','cap_dream',
+           'inn_tip_sit','inn_tip_knock','inn_tip_sleep'],
+    enter:'town', town:'capital', node:'inn' },
   /* ⚠⚠ 章節重編號（ver -857，Ray：「章節編排錯誤，沒有第二章 —— 修正把第三章
      變成第二章，以降回推」）：新表 S0 開頭／S1 進帝都／S2 出航＋北泊第一天／
      S3 北泊第二天／S4 北泊出航／S5 夏爾村。落點：初進北泊**不再升段**
