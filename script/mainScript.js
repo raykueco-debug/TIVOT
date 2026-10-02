@@ -65,7 +65,7 @@ export const MAIN_SCRIPT = {
            base 立繪站在卡片後面，下一句才換成跑姿，看起來像閃了一下。 */
         portrait:{ char:'NOUVELLE', show:false } },
       /* 開場：腳步聲與喘息。 */
-      { speaker:'NOUVELLE', text:'追、追上來了！', se:'se_steps',
+      { speaker:'NOUVELLE', text:'追、追上來了！', se:'se_stepsbig',   /* ver -1914（Ray：「se_stepsbig 只用在遺跡內、地宮內的跑步聲」）——聖王廳地宮 */
         portrait:{ char:'NOUVELLE', expr:'run', show:true } },
       /* ⚠ 這一拍要抖（Ray 指定）。抖的是場景各層，對話框不抖 —— 見 style.css
          的 `#storyStage.shake` 選擇器清單。 */

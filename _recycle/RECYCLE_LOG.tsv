@@ -915,3 +915,4 @@ when	from	to	reason
 20260929-170636	resources/si/sorana_si_furious.webp	_recycle/resources/si/sorana_si_furious.webp	git pull 時與 remote 同名檔衝突（remote 已有另一版），本機未進版控那張（240282 B，與舊 furiouscute 同大小）收進回收區
 20260929-204525	resources/audio/se/se_steps.mp3	_recycle/resources/audio/se/se_steps.mp3	與 se/_raw/se_steps.mp3 逐位元組相同的重複檔（-1871 已轉 m4a 接上）
 20261001-230416	resources/si/cecilie_si_blush.webp	_recycle/resources/si/cecilie_si_blush.webp	cecilie blush 與 tease 是同一張（md5 相同），換成 Ray 交的真害羞臉
+20261002-213053	resources/audio/se/_raw/se_steps.mp3	_recycle/resources/audio/se/_raw/se_steps.mp3	ver -1914 Ray 換新 se_steps；舊的原 mp3（-1871 那支）
