@@ -84,7 +84,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1918';
+export const VERSION = 'ver 2026.09.22-1919';
 
 export const GAME_CONFIG = {
 
@@ -3522,6 +3522,7 @@ export const GAME_CONFIG = {
                 /* ver -711 這一批全是語音（走 voiceChain）。 */
                 'vo_dual_torsten2','vo_torsten_mb','vo_torsten_exc',
                 'vo_nou_saint','vo_nou_obe','vo_nou_guard','vo_nou_return',
+                'vo_cec_saint','vo_cec_obe','vo_cec_guard','vo_cec_return',   // ver -1919：賽西莉
                 'vo_anya_ni','vo_anya_burst','vo_anya_burst2','vo_anya_melt',
                 'vo_anya_lucid',
                 /* ver -818：索菈娜語音（共鬥/供給/共鬥結束）。 */
@@ -3560,6 +3561,9 @@ export const GAME_CONFIG = {
          錨換算（vo_nouvelle_saintinstall 2.43 ÷ 本機量 1.724 ＝鏈補償 1.41）。 */
       vo_nouvelle_obe:2.04,
       vo_nouvelle_deathguard:1.35,   vo_nouvelle_lifereturn:1.63,   // ver -837 新錄音重量
+      /* ver -1919：賽西莉四支。audio_scan 的建議值（原始波形）× 諾薇兒那四支的平均鏈補償 1.33
+         （她的四支 config÷scan＝0.99／1.87／1.14／1.33）—— 同是女聲、同一條 voiceChain，近似可用；峰值都留在 −1 dBFS 以下。 */
+      vo_cecilie_saintinstall:2.42, vo_cecilie_obe:4.10, vo_cecilie_deathguard:3.30, vo_cecilie_lifereturn:2.39,
       vo_anya_nightmareinstall:4.14, vo_anya_obe:0.67,   // obe ver -837 新錄音重量
       vo_anya_dreambreaker1:5.15,    vo_anya_dreambreaker2:2.63,
       /* ver -881：Ray 重錄。瀏覽器內 BS.1770＋voiceChain 實測 —— 耳機 −14.88／
@@ -4697,6 +4701,11 @@ export const ASSETS = {
   vo_nou_obe:        "resources/audio/vo/vo_nouvelle_obe.m4a?v=0c7d6842",         // O.B.E.
   vo_nou_guard:      "resources/audio/vo/vo_nouvelle_deathguard.m4a?v=81a164d8",  // 即死防禦（?v=2 同上）
   vo_nou_return:     "resources/audio/vo/vo_nouvelle_lifereturn.m4a?v=b4fc5f3b",  // 生命歸還（?v=2 同上）
+  /* 賽西莉（ver -1919，Ray 交 wav：SI／即死防禦／生命歸還／OBE；原檔在 _originals/audio/vo/）。 */
+  vo_cec_saint:      "resources/audio/vo/vo_cecilie_saintinstall.m4a",
+  vo_cec_obe:        "resources/audio/vo/vo_cecilie_obe.m4a",
+  vo_cec_guard:      "resources/audio/vo/vo_cecilie_deathguard.m4a",
+  vo_cec_return:     "resources/audio/vo/vo_cecilie_lifereturn.m4a",
   vo_anya_ni:        "resources/audio/vo/vo_anya_nightmareinstall.m4a",// 惡夢化降臨
   vo_anya_burst:     "resources/audio/vo/vo_anya_dreambreaker1.m4a",   // 夢境粉碎（預設）
   vo_anya_burst2:    "resources/audio/vo/vo_anya_dreambreaker2.m4a",   // 夢境粉碎（娜塔莉戰，見戰鬥卡）
@@ -4953,7 +4962,7 @@ export const ASSETS = {
 
 /* ══⚠⚠ 賽西莉的搭檔卡（ver -1886，Ray：「賽西莉的能力就是九星滿級的諾薇兒」）══
    **照抄諾薇兒那張卡**（同一套被動／主動／聖徒化），只換掉「她是誰」的那幾格：名字、立繪、
-   各種 cut-in（`ci_cecilie_*`）、語音（她沒有配音 ⇒ null，不借諾薇兒的聲音）。
+   各種 cut-in（`ci_cecilie_*`）、語音（ver -1919 起有自己的四支 `vo_cec_*`）。
    ⚠ 用程式抄不手寫第二份：諾薇兒的卡日後改了數值，這一張自動跟上（鐵律 7）。
    ⚠ 「九星滿級」走 `girls.proxy`：`progress.girlBonus` 問到她時一律當作**諾薇兒九顆全亮**
      （唯一的計算點，鐵律 7）—— 她不在 `girls.who` 裡，整備頁不會出現她的升級條。
@@ -4964,10 +4973,11 @@ export const ASSETS = {
   Object.assign(C, { name:i18nT('賽西莉'), image:'partner_cecilie', cutin:'cutin_cecilie_saint',
     selectVoice:null, levelUpVoice:null, faceSpent:null,
     /* 聖徒化的發動／結局演出改讀這幾格（saint.js，沒寫＝照舊諾薇兒那一套）。 */
-    saintCutin:'cutin_cecilie_saint', saintVoice:null,
-    obeCutin:'cutin_cecilie_obe', obeVoice:null, returnCutin:'cutin_cecilie_return' });
-  if(C.passive) Object.assign(C.passive, { cutin:'cutin_cecilie_guard', voice:null });
-  if(C.active)  Object.assign(C.active,  { cutin:'cutin_cecilie_return', voice:null });
+    /* ver -1919：她有配音了（SI／OBE／即死防禦／生命歸還）。 */
+    saintCutin:'cutin_cecilie_saint', saintVoice:'vo_cec_saint',
+    obeCutin:'cutin_cecilie_obe', obeVoice:'vo_cec_obe', returnCutin:'cutin_cecilie_return' });
+  if(C.passive) Object.assign(C.passive, { cutin:'cutin_cecilie_guard', voice:'vo_cec_guard' });
+  if(C.active)  Object.assign(C.active,  { cutin:'cutin_cecilie_return', voice:'vo_cec_return' });
   P.cecilie = C;
   const G = GAME_CONFIG.girls = GAME_CONFIG.girls || {};
   G.proxy = Object.assign({}, G.proxy, { cecilie:{ as:'nouvelle', allStars:true } });
