@@ -172,7 +172,10 @@ export function open(opts){
       + '<b id="'+id+'V">'+Math.round(val*100)+'</b></label>';
     const autoPct = Math.round((autoDelayMs()-AUTO_MIN)/(AUTO_MAX-AUTO_MIN)*100);
     panel.innerHTML =
-        i18nT('<div class="gm-title">選　單</div>')
+        /* ver -1913（Ray：「選單的關閉鈕放在右上角 一個X鈕就好」）：底下那顆「關　閉」拿掉，改成右上角的 ✕（兩條槓畫，不靠字型）。
+           ⚠ 保留 `gm-close` 這個 class —— Esc 的通用關閉（main 的 bindEscClose）按的就是它。 */
+        '<button class="gm-x gm-close" type="button" aria-label="'+i18nT('關閉')+'"><i></i><i></i></button>'
+      + i18nT('<div class="gm-title">選　單</div>')
       + i18nT('<div class="gm-sec">音　量</div>')
       + (muteHook
         ? i18nT('<label class="gm-row gm-toggle"><span>靜　音</span>')
@@ -239,7 +242,6 @@ export function open(opts){
         : '')
       + '<div class="gm-acts">'
       +   (o.onHome ? i18nT('<button class="gm-btn gm-home" type="button">回到主選單</button>') : '')
-      +   i18nT('<button class="gm-btn gm-close" type="button">關　閉</button>')
       + '</div>';
     const bind=(id, layer)=>{
       const el=panel.querySelector('#'+id), lab=panel.querySelector('#'+id+'V');

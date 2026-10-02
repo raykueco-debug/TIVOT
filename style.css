@@ -3709,6 +3709,12 @@
      ⚠ 捲軸給**面板**不是給容器：給容器的話 `align-items:center` 會把過高的子元素
        頂端切掉（flex 的老問題），捲下去也回不到最上面那一列。
      ⚠ `100%` 是容器的**內容框**（已經扣掉那 24px padding），所以不必再算一次。 */
+  /* 選單右上角的 ✕（ver -1913）：sticky＝面板捲動時一直在右上角。 */
+  #gameMenu .gm-x{position:sticky;top:0;float:right;z-index:2;width:34px;height:34px;margin:-6px -8px 0 6px;
+    border:1px solid var(--gold-dim);border-radius:50%;background:rgba(14,11,20,.9);cursor:pointer;padding:0;}
+  #gameMenu .gm-x i{position:absolute;left:50%;top:50%;width:16px;height:2px;margin:-1px 0 0 -8px;
+    background:var(--gold,#d4a94a);border-radius:1px;transform:rotate(45deg);}
+  #gameMenu .gm-x i+i{transform:rotate(-45deg);}
   #gameMenu .gm-panel,#chapterSheet .gm-panel{width:100%;max-width:330px;padding:16px 18px 14px;
     background:var(--panel,rgba(14,11,20,.96));
     border:1px solid var(--gold-dim);border-radius:12px;
