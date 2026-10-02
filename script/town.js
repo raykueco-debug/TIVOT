@@ -308,7 +308,7 @@ const SV_S8_DINE = { flag:'sv_s8_dine', need:'sv_s8_home', fromStage:8, lines:[
   nou('furious','帝都的人們難道就無所謂嗎！'),
   ren('lookaway','......'),
   ren('lookawaytalk','十分抱歉。是我......思慮不周。'),
-  { speaker:'SOLDIER', text:'', se:'se_stepsbig', auto:1200 },   // （跑步聲）
+  { speaker:'SOLDIER', text:'', se:'se_steps', auto:1200 },   // （跑步聲）
   sld(null,'副座！'),
   cor('shock','！'),
   /* ⚠ 「（耳語）」是那一拍的全部內容，保留原文（見檔頭的說明）。 */
@@ -1146,7 +1146,7 @@ export const TOWNS = {
           ren('smile','這地方挺無聊的，你們先去旅店安頓好吧？'),
           nou(null,'有沒有什麼我可以幫忙的？'),
           ren('stare','有。你的同伴已經走掉了，幫我看好他。', { se:'se_walk' }),
-          nou('run','啊——！', { se:'se_stepsbig' }),
+          nou('run','啊——！', { se:'se_steps' }),
         ],
         /* 路人單句：**政治**線（ver -387）。 */
         chatter:[
@@ -1502,7 +1502,7 @@ export const TOWNS = {
           { bubbleFx:'note', speaker:'PLAYER', blank:true },
           nou('surprise','咦？你也是？'),
           nou('awkward','也是啦……剛剛才經歷一場死鬥，最後一餐差點就是黑麥麵包配豆子了……'),
-          nou('run','走吧！', { se:'se_stepsbig' }),
+          nou('run','走吧！', { se:'se_steps' }),
         ],
         /* ══ 她說餓了，你下一步去哪（ver -440，Ray 交稿）══════════════════
            「不去其它地方而是**直接**往餐酒館走 → 諾薇兒好感 +1，反之不動。」
@@ -1583,7 +1583,7 @@ export const TOWNS = {
             /* 由黑淡入、由下往上平移（ver -1892／-1897，Ray：「應該要由黑淡入，不要露出背景」）。
                ⚠ 分兩拍：插圖先在全黑底下換上（`#storyFade` 還蓋著），下一拍才掀黑幕＋起平移 ——
                  同一拍做的話黑幕先掀、插圖還在載，中間會露出地宮的背景（-1896 實測 0.4 秒）。 */
-            { speaker:'NARRATION', text:'', auto:900, fadeOut:1, cg:'resources/ci/ci_cecilie_obe.webp' },
+            { speaker:'NARRATION', text:'', auto:900, fadeOut:1, cg:'005_cecilieintro', cgNoTime:true },   // ver -1912（Ray：「夢境戰一開場的插圖改用 005_cecilieintro」）
             /* 插圖期間照樣隨踩地的拍子震（ver -1902，Ray：「夢中賽西莉插圖時也要隨 stomp 拍子震動」）——
                拆成三拍，每拍 shake（⚠ ver -1910 Ray：「se_stomp 只播一次」—— 那支音檔 9 秒、本身就是一串踩地，
                前面「不要睡」之後那一拍已經起播，這三拍不再各播一次，否則疊成好幾串）；只有第一拍寫 `cgPan`（後兩拍不寫＝不重置平移），總長照舊約 2.9 秒。 */
@@ -1596,7 +1596,9 @@ export const TOWNS = {
             { speaker:'CECILIE_X', text:'你可是……我的搭檔啊！',
               portrait:{ char:'CECILIE_X', expr:'fluster', show:true } },
             Object.assign({ battle:'cap_dream', onLose:'cap_dream_lose' }, { kerbRise:true }),
-            { speaker:'CECILIE', text:'明明不要管我，直接反擊就不會被打成這樣了。',
+            /* 戰後三秒轉幕（ver -1912，Ray：「夢境戰結束後用三秒轉幕」）—— 同 -755／-1874 的寫法：一拍淡黑三秒＋清場，下一拍淡回三秒。 */
+            { speaker:'NARRATION', text:'', auto:3200, fadeOut:3000, hide:'*' },
+            { speaker:'CECILIE', text:'真傻。明明不要管我，直接反擊就不會被打成這樣了。', fadeIn:3000,
               portrait:{ char:'CECILIE', expr:'spoild', show:true } },
             { speaker:'PLAYER', blank:true },
             { speaker:'CECILIE', text:'', portrait:{ char:'CECILIE', expr:'blush', show:true } },
@@ -2247,7 +2249,7 @@ export const TOWNS = {
                 portrait:{ char:'ANYA_X', expr:'scare', show:true } },
               ren('talkwork','先別亂動！妳剛剛還被壓瓦礫在下面呢！'),
               /* 她轉身就跑：換表情＋跑步音的**演出拍**，沒有台詞所以給 auto。 */
-              { speaker:'ANYA_X', text:'', auto:900, se:'se_stepsbig',
+              { speaker:'ANYA_X', text:'', auto:900, se:'se_steps',
                 portrait:{ char:'ANYA_X', expr:'runworry', show:true } },
               /* 人跑掉了 → 下一拍把她請下台（`hide` 是**立刻**執行的，不等 reveal）。 */
               ren('pause','啊——', { hide:['ANYA_X'] }),
@@ -2264,7 +2266,7 @@ export const TOWNS = {
               ren('evaluate','……傷？'),
               ren('evaluateclosemouth','……有道理。被壓在這麼厚的石堆裡，怎麼連一道劃傷都沒有？'),
               /* 主角追出去（跑步音）。 */
-              { speaker:'PLAYER', blank:true, se:'se_stepsbig' },
+              { speaker:'PLAYER', blank:true, se:'se_steps' },
               ren('chase','喂、喂！別丟下我們兩個啊！'),
 
               /* ══ 娜塔莉（ver -636，Ray 交稿）══════════════════════════════════
@@ -2379,7 +2381,7 @@ export const TOWNS = {
             { speaker:'ANYA', text:'', auto:1100, se:'se_saintroar', shake:true,
               portrait:{ char:'ANYA', expr:'terrify', show:true } },
             any('terrify','不可以……'),
-            { speaker:'ANYA', text:'', auto:900, se:'se_stepsbig',
+            { speaker:'ANYA', text:'', auto:900, se:'se_steps',
               portrait:{ char:'ANYA', expr:'terrify', show:true } },
             ren('shock','禍魘！是從哪裡——'),
             { battle:'np_cemetery' },
@@ -2851,7 +2853,7 @@ export const TOWNS = {
         onLeave:{ flag:'sv_s9_leave', need:'sv_s9_order', sailOnly:true, lines:[
           nou('front','真是個不錯的村子呢。'),
           ren('watch','是啊。將來有機會的話——'),
-          Object.assign(sor('hug','喂——'), { se:'se_stepsbig' }),   // （跑步聲）
+          Object.assign(sor('hug','喂——'), { se:'se_steps' }),   // （跑步聲）
           nou('surprise','索菈娜小姐？'),
           ren('bow','叨擾那麼久，怎麼還好意思勞您遠送……'),
           sor('side','遠送？我是要跟你們一起走啊！'),
@@ -4893,7 +4895,7 @@ export const TOWNS = {
           ren('arguecute',''),
           nou('cringe','索菈娜小姐……'),   // ver -1800 Ray：門房那一拍的前一拍用 cringe
           door('喂、喂！誰讓妳進來的！'),
-          { speaker:'NARRATION', text:'', se:'se_stepsbig', auto:1200 },
+          { speaker:'NARRATION', text:'', se:'se_steps', auto:1200 },
           lot('cry','祭司大人！', { skipIf:['ss_date_anya','ss_date_sor'] }),
           lot('cry','神父大人！', { onlyIf:'ss_date_anya' }),
           lot('cry','姐姐！',     { onlyIf:'ss_date_sor' }),
@@ -5251,7 +5253,7 @@ export const TOWNS = {
         acts:[ { flag:'vn_night_done', need:'vn_lib_done', sides:{ RENNA:'L' }, lines:[
           /* ⚠ ver -1564（Ray：「諾薇兒追出的『等一下等等我』那一拍 音效要用
              se_steps，跑步音」）——`se_walk` 是走路，這一拍她是追出來的。 */
-          Object.assign(nou('run','等一下！等等我！'), { se:'se_stepsbig' }),
+          Object.assign(nou('run','等一下！等等我！'), { se:'se_steps' }),
           nou('shock','吶，這一定是有什麼誤會，聽聽蕾娜小姐怎麼說嘛！'),
           { speaker:'PLAYER', blank:true },
           /* 好感分歧：稿上是「諾T2以下」與「諾T3以下（＝T3 以上）」兩條。

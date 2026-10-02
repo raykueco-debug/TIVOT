@@ -267,7 +267,7 @@ export const STRINGS = {
           { who:'nouvelle', img:'tut_nouvelle_surprise',
             text:'不要緊張……照著數字的順序點下面的盤面就好。' },
           { who:'nouvelle', img:'tut_nouvelle_surprise',
-            text:'敵人似乎還在觀查……先習慣手感就好。不過失誤、或者停太久的話，敵人還是會攻過來的！' },
+            text:'敵人似乎還在觀查……不過失誤、或者停太久的話，敵人還是會攻過來的！' },
         ],
         /* ⚠⚠ **空陣列＝這一段劇情版不演**（ver -938，Ray：「這一段就這樣而已」）——
            反擊教學收成三拍：台詞 → 箭頭指圈點掉 → 台詞。原本這裡的兩句
