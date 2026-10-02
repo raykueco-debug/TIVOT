@@ -86,6 +86,14 @@ def run(check=False):
     ], v)
     if s != s0: dirty.append(('modules/story.js', p, s))
 
+    # ④ 素材：同名覆蓋過的那一批，版本號＝內容雜湊（ver -1918，見 tools/asset_bust.py）。
+    #   前幾步已經改過的那幾支以記憶體裡的內容為底，結果取代原本那一筆。
+    import asset_bust
+    man, cityv = asset_bust.manifest(ROOT)
+    ach, amb = asset_bust.rewrite(ROOT, man, cityv, base={d[0]: d[2] for d in dirty})
+    for rel, s2, n in ach:
+        dirty = [d for d in dirty if d[0] != rel] + [(rel, os.path.join(ROOT, rel), s2)]
+    if amb and not check: print('⚠ 素材檔名對不到唯一一支（沒掛版本號）：', '、'.join(amb))
     if check:
         if dirty:
             print('⚠ 快取版本號沒有同步（跑 python3 tools/bust.py）：',

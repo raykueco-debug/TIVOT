@@ -1217,7 +1217,7 @@ const BG_DIR='resources/background/', CG_DIR='resources/illustration/', SI_DIR='
    ⚠ 這份清單由 `tools/script_lint.py` 對照 resources/audio/bgm/ 檢查；
      加了新檔案而忘了加進來，lint 會報「表裡沒有」。 */
 const BGM_FILES=[
-  'bgm_lunaria.m4a', 'peritunematerial_crisis_loop.m4a', 'bgm_capital_day.m4a',
+  'bgm_lunaria.m4a?v=8a61fc07', 'peritunematerial_crisis_loop.m4a?v=c8dffe27', 'bgm_capital_day.m4a',
   'bgm_battle.m4a', 'bgm_boss.m4a', 'bgm_flight.m4a', 'bgm_mainmenu.m4a',
   'bgm_missionfailed.m4a', 'bgm_result.m4a',
   /* 北方泊地那一段（ver -614；-615 Ray 補上 m4a 版）。
@@ -2252,7 +2252,7 @@ function applyPersist(line){
     if(el){ el.classList.remove('enemy-purge'); void el.offsetWidth; el.classList.add('enemy-purge');
             setTimeout(()=>{ if(stageCgBack===mine){ setSceneCgBack(null); } el.classList.remove('enemy-purge'); }, 640); }
   }
-  if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp':''); }
+  if(line.ci!==undefined){ stageCi=line.ci; setImg($('storyCi'), line.ci?SI_DIR+line.ci+'.webp'+assetVer(line.ci):''); }
   /* 推時鐘（ver -739，Ray：「這一幕結束轉景後…時間是早上八點」）：拍上寫
      `clockToNext:8` ＝推到**下一個** 8:00（過了就是隔天）—— 走城鎮閘門同一支
      `clock.advanceToNextHour`（鐵律 8）。⚠ 在情境卡代換**之前**做：
@@ -2473,9 +2473,9 @@ const SE_FILES=[
   'se_kerberos_open.m4a', 'se_kerberos_pop.m4a', 'se_kerberos_steam.m4a',
   'se_kerberos_drop.m4a',                                    // 槍棺落地（旅店那一幕，ver -392）
   'se_lightup.m4a',                                          // 羅賽爾廢城：第四座小祭壇點亮、遠方亮起來（ver -1859，Ray 交件）
-  'se_enemy_dagger.m4a', 'se_dart_fail.m4a',                 // 固定立靶點錯（ver -397）
+  'se_enemy_dagger.m4a?v=608c768c', 'se_dart_fail.m4a',                 // 固定立靶點錯（ver -397）
   /* 船艦戰（ver -423／-425）：蜈蚣的攻擊音、艦砲、船戰用的機槍。 */
-  'se_enemy_centipi.m4a', 'se_weapon_sniper.m4a', 'se_weapon_heavygun.m4a',
+  'se_enemy_centipi.m4a', 'se_weapon_sniper.m4a', 'se_weapon_heavygun.m4a?v=35919155',
   'se_enemy_revolver.m4a', 'se_enemy_shot.m4a', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
   'se_land.m4a',   // 著岸（ver -744，湖上甲板）
   'se_woodbreak.m4a',   // 舵斷裂的木裂聲（ver -751，Ray 交件；取代暫代的 se_brickcrush）
@@ -2504,7 +2504,7 @@ const SE_FILES=[
        改了這幾行與 `tuning.fileGain` 都要跟著動。
      ⚠⚠ **`fileGain` 還沒量**：沒有那一列＝增益 1 ＝以母帶的響度播出，
        正是 -441 抓到「跌倒音永遠不出來」的成因。要 Ray 用 `tools/audio_scan.html` 量。 */
-  'se_dragonbite.mp3', 'se_enemy_throneattack.mp3', 'se_rockimpact.mp3',
+  'se_dragonbite.mp3', 'se_enemy_throneattack.mp3', 'se_rockimpact.mp3?v=d2a1f043',
   'se_stomp.m4a', 'se_stomp_far.m4a',   // 帝都第一夜的夢境（ver -1886）
   /* ══ 伊甸古墓・底層（ver -1671，Ray 交件＋交稿）══
      `se_heavycursh` ＝ 牠在入口外面撞擊的悶響（稿上一律「`se_heavycursh` 0.2 秒後
@@ -2525,7 +2525,7 @@ const SE_FILES=[
   /* ⚠ `se_saint_maxburst` 於 ver -641 改名成 `vo_saint_maxburst`，而它**還躺在 `se/`**
      —— 這張表是照 `vo_` 前綴推資料夾的，列進來會指到 `vo/` 而 404。
      它本來就在 `ASSETS.se_luna_mb`（開機那一批照樣預載得到），所以這裡直接不列。 */
-  'se_saint_install.m4a', 'se_steps.m4a?v=3', 'se_stepsbig.m4a?v=4', 'se_ui_click.m4a',   // ver -1871：se_steps 換新（同名覆蓋 ?v=2），舊的那支改名 se_stepsbig（遺蹟內用）
+  'se_saint_install.m4a', 'se_steps.m4a?v=d271dff8', 'se_stepsbig.m4a?v=c1670181', 'se_ui_click.m4a',   // ver -1871：se_steps 換新（同名覆蓋 ?v=2），舊的那支改名 se_stepsbig（遺蹟內用）
   'se_ginclick.m4a', 'se_tummy.m4a', 'se_metalclip.m4a', 'se_sailorshout.mp3',
   /* stage7・木雅克神殿（ver -922，Ray 交件）：古代機械開門的金屬聲、深處的禍魘咆哮。 */
   'se_metalopen.m4a', 'se_monsterroardeep.m4a',
@@ -2533,7 +2533,7 @@ const SE_FILES=[
      交來的是 256 kbps 的 mp3，照 §6.6 轉成 AAC 96k（167→61 KB），
      原檔進 `resources/audio/se/_raw/`（底線開頭＝不會被載入）。
      ⚠ -1413 我程序合成的那支暫代品已走 `tools/recycle.sh` 進回收區。 */
-  'se_waterfall.m4a',
+  'se_waterfall.m4a?v=8db65283',
   /* 雪都圖書館（ver -1556，Ray 交件）：蕾娜拍桌／搶回報告。
      交來的是 wav／mp3，照 §6.6 轉成 AAC 96k，原檔走 tools/recycle.sh。 */
   'se_tablepunch.m4a', 'se_snatch.m4a',
@@ -2899,7 +2899,7 @@ const STARE_MS = 4500;   // ver -1806 ×3（Ray：「米夏眼部 CI 太短」�
 const SENSE_CLIMAX=2;
 /* ⚠ 同一張圖兩邊共用（飛行頁 canvas／這裡 DOM）—— 路徑帶 `?v=2`：Ray 換過圖，
    不掛 cache-buster 會拿到舊的那一份（§5）。 */
-const SENSE_CI_SRC='resources/partner/anya_ci_search.webp?v=2';
+const SENSE_CI_SRC='resources/partner/anya_ci_search.webp?v=f9fd5aa6';
 const SENSE_BURST_AT=SENSE_BEATS[SENSE_CLIMAX];
 /* ⚠ `HOLD` 要**撐過換背景那一拍**：那一拍在 4400ms 起跑（`town.js` 的 `auto`），
    `swapImg` 再淡 220ms —— 所以白光最早只能在 2780+2000＝4780ms 才開始淡，
@@ -3209,7 +3209,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1917';
+const KERB_V='?v=1918';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4955,7 +4955,7 @@ function collectAssets(startId){
          404 才是「插圖沒出現」的成因，見 `resolveCg`）。改成收基底名，
          預載時解析**一次**，之後顯示只請求解出來的那一張。 */
       if(ln.cg && !cgs.has(ln.cg)) cgs.set(ln.cg, !!ln.cgNoTime);
-      if(ln.ci) imgs.add(SI_DIR+ln.ci+'.webp');
+      if(ln.ci) imgs.add(SI_DIR+ln.ci+'.webp'+assetVer(ln.ci));
       if(ln.bgm && bgmSrc(ln.bgm)) bgms.add(bgmSrc(ln.bgm));
       for(const n of [].concat(ln.se||[])){ const k=(typeof n==='string')?n:n.n;
         if(seSrc(k)) ses.add(seSrc(k)); }

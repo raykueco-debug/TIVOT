@@ -84,7 +84,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1917';
+export const VERSION = 'ver 2026.09.22-1918';
 
 export const GAME_CONFIG = {
 
@@ -4191,11 +4191,11 @@ export const ASSETS = {
   inspector_freya: "resources/inspector/freya_si_01.webp",
   /* Boss 戰（挑戰的槍之魔女）勝利結算評價者：璐娜莉亞（ver -471，Ray 交稿）——
      坐姿立繪逐**等第**差分（S/A 共用 smirk）。lose 仍是芙蕾雅，這五張只有打贏用。 */
-  inspector_luna_smirk:    "resources/si/luna_si_seat_smirk.webp",
+  inspector_luna_smirk:    "resources/si/luna_si_seat_smirk.webp?v=ebd94af4",
   inspector_luna_n:        "resources/si/luna_si_seat_n.webp",
   inspector_luna_lookdown: "resources/si/luna_si_seat_lookdown.webp",
-  inspector_luna_angry:    "resources/si/luna_si_seat_angry.webp",
-  inspector_luna_hand:     "resources/si/luna_si_seat_hand.webp",
+  inspector_luna_angry:    "resources/si/luna_si_seat_angry.webp?v=a9b48e9c",
+  inspector_luna_hand:     "resources/si/luna_si_seat_hand.webp?v=b16230b4",
   enemy_witch:    "resources/enemy/gunwitch_boss_ci.jpg",   // 槍之魔女（Boss）內嵌立繪
   /* 尼莫（ver -1524，Ray 的 Stage10-A 稿：鏡湖出口前那一場）。
      ⚠⚠ **這張圖的用途是美術推斷的**（-1503 的交接寫著「接卡之前要 Ray 確認一句
@@ -4206,38 +4206,38 @@ export const ASSETS = {
      ⚠ **四張圖 ＝ 四張卡**（Ray：「四張是同一隻，程式上算四隻，
        三隻追擊輪出，一隻留做決戰」）。
      ⚠ 新檔名不是同名覆蓋 ⇒ `ASSET_VER` 不必動（§5：新增比覆蓋安全）。 */
-  enemy_gk_seal:   "resources/enemy/mon_gravekeeper_seal.webp?v=3",     // 聖印失效（追擊）
-  enemy_gk_offset: "resources/enemy/mon_gravekeeper_offset.webp?v=2",   // 錯格重影（追擊）
-  enemy_gk_many:   "resources/enemy/mon_gravekeeper_many.webp?v=2",     // 數不清（追擊）
-  enemy_gk_crypt:  "resources/enemy/mon_gravekeeper_crypt.webp?v=2",    // 墓室胸腔（決戰）
+  enemy_gk_seal:   "resources/enemy/mon_gravekeeper_seal.webp?v=a94669c5",     // 聖印失效（追擊）
+  enemy_gk_offset: "resources/enemy/mon_gravekeeper_offset.webp?v=46c05edc",   // 錯格重影（追擊）
+  enemy_gk_many:   "resources/enemy/mon_gravekeeper_many.webp?v=e64d8c82",     // 數不清（追擊）
+  enemy_gk_crypt:  "resources/enemy/mon_gravekeeper_crypt.webp?v=9b1652d7",    // 墓室胸腔（決戰）
   enemy_gk_seal_down: "resources/enemy/mon_gravekeeper_seal_down.webp",  // 倒地差分：被擊退、停頓期間殘留在那一格（ver -1701，chase.downArt）
-  enemy_facelessgiant: "resources/enemy/saint_gt_ci.webp",   // 連戰第二隻：巨型聖徒（GT=giant）
-  enemy_trainee:  "resources/enemy/saint_tr_ci.webp",   // 教學專用敵：訓練用聖徒
-  enemy_dart_target: "resources/enemy/dart_timeattack.webp",   // 打靶場：固定立靶（ver -396）
+  enemy_facelessgiant: "resources/enemy/saint_gt_ci.webp?v=2c191ece",   // 連戰第二隻：巨型聖徒（GT=giant）
+  enemy_trainee:  "resources/enemy/saint_tr_ci.webp?v=1f885777",   // 教學專用敵：訓練用聖徒
+  enemy_dart_target: "resources/enemy/dart_timeattack.webp?v=df0a5635",   // 打靶場：固定立靶（ver -396）
   enemy_dart_counter: "resources/enemy/dart_counter.webp",   // 蕃茄人11號：杰羅的自動人型靶（ver -862，Ray 交件）
   /* 禍魘娜塔莉（ver -671，Ray 交件）＋惡夢化 cut-in。
      ⚠ cut-in 住在 `resources/CI/`（Ray 指定；-672 曾誤指 `partner/`）。 */
-  enemy_natalia:  "resources/enemy/mon_natalia.webp?v=3",
+  enemy_natalia:  "resources/enemy/mon_natalia.webp?v=46dacdbf",
   /* ⚠⚠ `?v=2`：這兩張是**同名覆蓋**的（ver -689，Ray：「這兩個 CI 都有改」）——
      檔名沒變、內容變了，瀏覽器照樣拿舊的那一份（§5 的老坑，娜塔莉那一組踩過
      四版才查出來）。**一組要一起帶**，漏掉哪一張哪一張就被快取住。 */
-  ci_anya_ni:     "resources/ci/ci_anya_nightmareinstall.webp?v=2",
+  ci_anya_ni:     "resources/ci/ci_anya_nightmareinstall.webp?v=26b448f3",
   /* 索菈娜的三張 CI（ver -803，Ray 交件於 resources/CI/）——共鬥／上滑 bullets rain／
      被動。⚠ 目前是 jpg/png（美術交件格式），轉 webp 後改副檔名（§5 轉檔三步）。
      ⚠ 伙伴立繪先用她的 SI 佔位（本篇強配不經選人，整備頁才顯示；Ray 交專用選人圖再換）。 */
-  partner_sorana:     "resources/si/sorana_si_front.webp?v=4",
+  partner_sorana:     "resources/si/sorana_si_front.webp?v=c4629a3a",
   /* ver -837：索菈娜 CI 整批轉 webp（2.0~2.5MB 的 1024×1536 PNG → 0.10~0.27MB）——
      戰鬥中 cut-in 解碼那一口就是手機卡頓的主嫌之一；原 PNG 留在原位給美術 session。 */
   /* 東方泊地・那一夜（ver -1557，Ray 交件）：安雅打瞌睡那一拍閃過的米夏注視。
      ⚠ 它**不是插圖**（`cg`）而是 `fx:'stare'` 那一支的素材 —— 一瞬的半透明脈動。 */
   ci_mishastare:      "resources/ci/ci_mishastare.webp",
-  ci_sorana_predator: "resources/ci/ci_sorana_predator.webp",
-  ci_sorana_supply:   "resources/ci/ci_sorana_supply.webp",   // -820 過渡圖 → -837 webp
+  ci_sorana_predator: "resources/ci/ci_sorana_predator.webp?v=84e84cd8",
+  ci_sorana_supply:   "resources/ci/ci_sorana_supply.webp?v=2fcb31ce",   // -820 過渡圖 → -837 webp
   /* 獵手的直覺（被動）發動的 CI：三張隨機輪播（ver -809，Ray 指定）——與三位女角的合擊圖。 */
-  ci_sorana_roar_renna:    "resources/ci/ci_sorana_roar_renna.webp",
-  ci_sorana_roar_anya:     "resources/ci/ci_sorana_roar_anya.webp",
-  ci_sorana_roar_nouvelle: "resources/ci/ci_sorana_roar_nouvelle.webp",
-  ci_sorana_obe:           "resources/ci/ci_sorana_obe.webp",   // 飛刀耗盡（共鬥結束，ver -822）
+  ci_sorana_roar_renna:    "resources/ci/ci_sorana_roar_renna.webp?v=a9c77259",
+  ci_sorana_roar_anya:     "resources/ci/ci_sorana_roar_anya.webp?v=d80e6c3b",
+  ci_sorana_roar_nouvelle: "resources/ci/ci_sorana_roar_nouvelle.webp?v=5c3f9605",
+  ci_sorana_obe:           "resources/ci/ci_sorana_obe.webp?v=9137c47e",   // 飛刀耗盡（共鬥結束，ver -822）
   /* 共鬥反擊的飛刀（ver -839，Ray 交件 weapon/dagger）：黑底光暈圖，畫面上走
      mix-blend-mode:screen（黑自然消失，同星芒那條的理由）。刀尖朝下＝畫的 +90°。 */
   vfx_dagger:         "resources/weapon/dagger.webp",
@@ -4245,13 +4245,13 @@ export const ASSETS = {
   se_soranacounterhit: "resources/audio/se/se_soranacounterhit.m4a",  // 飛刀命中
   se_glasscrack:       "resources/audio/se/se_glasscrack.m4a",        // 破防/ovk 裂紋輻射（ver -839）
   /* 夢境粉碎（ver -674，Ray 交件）：惡夢化期間上滑的那一發。 */
-  ci_anya_dreambreaker: "resources/ci/ci_anya_dreambreaker.webp?v=3",   // ver -702：Ray 又換了一版
+  ci_anya_dreambreaker: "resources/ci/ci_anya_dreambreaker.webp?v=5b660d7e",   // ver -702：Ray 又換了一版
   /* 惡夢化熔斷（ver -692，Ray 交件 `CI_Anya_OBE`）：倒數槽抽乾的那一結局。 */
-  ci_anya_obe:    "resources/ci/ci_anya_obe.webp",
+  ci_anya_obe:    "resources/ci/ci_anya_obe.webp?v=f8337149",
   /* stage7・養息之間那一拍（ver -922，Ray 的稿：安：CI_Anya_scared）。 */
   ci_anya_scared: "resources/ci/ci_anya_scared.webp",
   /* 明晰之夢（ver -681 交件／-682 定中文名）：安雅的被動 —— HP≤30% 普攻加倍 5 秒。 */
-  ci_anya_lucid:  "resources/ci/ci_anya_luciddream.webp?v=2",   // ver -708：Ray 換了一版（同名覆蓋 → 必掛 ?v，§5）
+  ci_anya_lucid:  "resources/ci/ci_anya_luciddream.webp?v=773af9dd",   // ver -708：Ray 換了一版（同名覆蓋 → 必掛 ?v，§5）
   /* 賞金獵人（ver -375）：戰鬥立繪＝對話立繪的 `attack` 那張（去背，配 `bg` 用）。 */
   /* ⚠⚠ **ver -975 修**（Ray 回報「賞金獵人戰中的敵人圖不見了」）：那 18 張 NPC 立繪
      ver -955 搬進 `resources/SI/NPC/` 時**這一條漏改**，於是這張圖一直是 404 ——
@@ -4269,10 +4269,10 @@ export const ASSETS = {
   enemy_thug_pistol:  "resources/enemy/man_thug_pistol.webp",
   enemy_thug_rifle:   "resources/enemy/man_thug_rifle.webp",
   enemy_thug_dual:    "resources/enemy/man_thug_dual.webp",
-  enemy_thug_shotgun: "resources/enemy/man_thug_shotgun.webp",
+  enemy_thug_shotgun: "resources/enemy/man_thug_shotgun.webp?v=504d26bc",
   enemy_thug_lookout: "resources/enemy/man_thug_lookout.webp",
   enemy_thug_boss:    "resources/enemy/man_thug_boss.webp",
-  enemy_thug_squad:   "resources/enemy/man_thug_squad.webp",   // ver -1793：里朋莊園大廳
+  enemy_thug_squad:   "resources/enemy/man_thug_squad.webp?v=dfd75032",   // ver -1793：里朋莊園大廳
   /* 惡棍四場的群戰圖（ver -1835，美術 9f030e84）：大門口＝馬車掩體、其餘＝木桶木箱。 */
   enemy_thug_squad_gate:      "resources/enemy/man_thug_squad_gate.webp",
   enemy_thug_squad_avenue:    "resources/enemy/man_thug_squad_avenue.webp",
@@ -4286,10 +4286,10 @@ export const ASSETS = {
        —— 本機的 dev server 照給，線上一律 404，所以只有手機（吃線上版）看不到。
        ⚠ 順手補了根目錄的 `.nojekyll`（那才是根治：以後任何底線路徑都不會消失），
          但**草稿還是不要直接引用** —— `_drafts` 的意思就是「還沒選定」。 */
-  enemy_np_candletower:    "resources/enemy/mon_relic_candletower.webp?v=3",
-  enemy_np_candlepenitent: "resources/enemy/mon_relic_candlepenitent.webp?v=3",
-  enemy_np_coralman:       "resources/enemy/mon_sea_coralman.webp?v=3",
-  enemy_np_reassembled:    "resources/enemy/mon_relic_reassembled.webp?v=3",
+  enemy_np_candletower:    "resources/enemy/mon_relic_candletower.webp?v=d3ea7ec1",
+  enemy_np_candlepenitent: "resources/enemy/mon_relic_candlepenitent.webp?v=c5142b92",
+  enemy_np_coralman:       "resources/enemy/mon_sea_coralman.webp?v=754847d3",
+  enemy_np_reassembled:    "resources/enemy/mon_relic_reassembled.webp?v=b0329247",
   /* ⚠ 美術把 `mon_beast_altar` 更名成 `mon_beast_reliquary`（ver -928 才發現）——
      舊檔名一直指著一個不存在的檔案＝北泊教堂 Boss 沒有立繪，而**畫面上不會有錯誤訊息**。
      自檢：把 config 裡所有 resources 路徑抓出來逐個 `test -f`（同 §5 的同名覆蓋自檢）。 */
@@ -4297,21 +4297,21 @@ export const ASSETS = {
      **不是改名，是兩隻不同的怪** —— `mon_beast_altar`（背上扛著教堂的祭壇獸＝背負祭壇者）在
      ver -919（58533b9d）被刪掉，-928 把它誤判成「更名為 reliquary」，於是背負祭壇者一直借聖匣熊的圖。
      已從 git（fc0ba3a2）原樣放回 `mon_beast_altar.webp`。聖匣熊照舊給 `enemy_sv_reliquary`。 */
-  enemy_np_boss: "resources/enemy/mon_beast_altar.webp?v=4",
+  enemy_np_boss: "resources/enemy/mon_beast_altar.webp?v=314d3a60",
   /* 教堂那一場之後的真 BOSS：**瓦礫中生出的紫黑之爪**（ver -595（-893 前用詞），Ray：「boss 圖為
      TheClaws」）。⚠ 這一張是**連背景一起畫的整張戰鬥圖**（規格見
      `resources/background/_boss_claw_spec.md`）—— 所以敵人卡**不給 `bg`、不給
      `fit.contain`**，走預設的 cover 滿版；那兩個是給去背立繪配背景用的。 */
-  enemy_np_claws: "resources/enemy/theclaws.webp",
+  enemy_np_claws: "resources/enemy/theclaws.webp?v=0e70c2c5",
   /* 夏爾村村內戰（ver -802，Ray 交稿）—— 敵人卡見 script/enemies.js 的 sv_*。
      ⚠ bear／stag 目前仍是 **.png**（美術尚未去背轉 webp）：先指 .png 讓它載得出來，
        轉檔後把副檔名改成 .webp（同 §5 的轉檔三步）。其餘四張已是 webp。 */
-  enemy_sv_wolf_pack:     "resources/enemy/mon_wolf_pack.webp?v=3",
-  enemy_sv_beast_organ:   "resources/enemy/mon_beast_organ.webp?v=3",
-  enemy_sv_stag:          "resources/enemy/mon_stag_nightmare.webp?v=3",   // ver -845：2.4MB PNG → webp（手機發燙/圖讀不出來的調查）
-  enemy_sv_beast_shackle: "resources/enemy/mon_beast_shackle.webp?v=4",
-  enemy_sv_bear:          "resources/enemy/mon_bear_nightmare.webp?v=3",   // 同上
-  enemy_sv_reliquary:     "resources/enemy/mon_beast_reliquary.webp?v=3",
+  enemy_sv_wolf_pack:     "resources/enemy/mon_wolf_pack.webp?v=f6f41b90",
+  enemy_sv_beast_organ:   "resources/enemy/mon_beast_organ.webp?v=2cb2855b",
+  enemy_sv_stag:          "resources/enemy/mon_stag_nightmare.webp?v=f0940269",   // ver -845：2.4MB PNG → webp（手機發燙/圖讀不出來的調查）
+  enemy_sv_beast_shackle: "resources/enemy/mon_beast_shackle.webp?v=3f7e0727",
+  enemy_sv_bear:          "resources/enemy/mon_bear_nightmare.webp?v=8b9715dd",   // 同上
+  enemy_sv_reliquary:     "resources/enemy/mon_beast_reliquary.webp?v=9e728c27",
   /* ══ 夏爾森林野生怪（ver -862，卡在 script/enemies.js 的 sf_ 系列）══
      ⚠ 夜間的熊骸/鹿骸**沿用 enemy_sv_bear／enemy_sv_stag**（同一張圖一個鍵，鐵律 7）。 */
   enemy_sf_lynx:      "resources/enemy/mon_shinierforest_lynx.webp",
@@ -4320,8 +4320,8 @@ export const ASSETS = {
   enemy_sf_tiger:     "resources/enemy/mon_shinierforest_tiger.webp",
   enemy_sf_crows:     "resources/enemy/mon_shinierforest_crows.webp",
   enemy_sf_deer:      "resources/enemy/mon_shinierforest_deer.webp",
-  enemy_sf_bear_husk: "resources/enemy/mon_bear_husk.webp?v=3",
-  enemy_sf_stag_rot:  "resources/enemy/mon_stag_rot.webp?v=3",
+  enemy_sf_bear_husk: "resources/enemy/mon_bear_husk.webp?v=08453d77",
+  enemy_sf_stag_rot:  "resources/enemy/mon_stag_rot.webp?v=5671f64b",
   enemy_sf_deer_nightmare: "resources/enemy/mon_shinierforest_deernightmare.webp",   // 鹿主變異（ver -870，G 稿）
 
   /* ══ 木雅克神殿的怪（ver -919，Ray 交表）══ 圖是 Ray 交的 PNG，這一版轉成 webp
@@ -4349,7 +4349,7 @@ export const ASSETS = {
      Ray：「未封印形態的龍立繪翅膀被裁掉」）—— 不掛版號的話瀏覽器照樣拿舊的那一份，
      而**畫面上不會有任何錯誤訊息**，症狀只是「翅膀還是被切掉的」。
      ⚠ 立繪這條路的路徑是**手寫字串**，所以直接把 `?v=` 打進去（背景才走 ASSET_VER）。 */
-  enemy_bl_dragon_chase:  "resources/enemy/mon_dragon_v1_shackled.webp?v=2",
+  enemy_bl_dragon_chase:  "resources/enemy/mon_dragon_v1_shackled.webp?v=19baca48",
   enemy_bl_dragon_throne: "resources/enemy/mon_dragon_v1_unsealed.webp",
   /* 第三型態（空中戰第一形態，ver -1418 接線、**-1424 圖到了**）：
      美術去背完交的是 `mon_dragon_v1_flight.webp`（1536×1024，真 alpha：
@@ -4363,7 +4363,7 @@ export const ASSETS = {
        **對應的圖完全一樣，只是鑰匙分兩支** —— 不要照字面把 sky 改指 flight，
        那會變成兩階都是同一張。 */
   enemy_bl_dragon_front:  "resources/enemy/mon_dragon_v1_flight.webp",
-  enemy_bl_dragon_sky:    "resources/enemy/mon_dragon_v1_ascendant.webp?v=2",
+  enemy_bl_dragon_sky:    "resources/enemy/mon_dragon_v1_ascendant.webp?v=d30dd2e3",
   /* 王座徘徊者的放光音（ver -1351，Ray：「音效用 enemy_firebeam」）。
      ⚠⚠ 它**放在 `bgm/` 資料夾而且還是 `.mp3`** —— 那是 SE，照 §6.6 應該是
        `se/se_enemy_firebeam.m4a`。**我沒有搬**（搬檔要走 `tools/audio_reorg.py`，
@@ -4404,30 +4404,30 @@ export const ASSETS = {
        `enemy.loadEnemyPortrait` 現抓。
      ⚠ 這 28 隻**還沒有任何戰鬥卡或刷怪池指到**（`config.battles`／`wildSpawn`
        一個字沒動）⇒ 現在遇不到，也因此一張都不會被預熱。接進去那一刻兩邊就通了。 */
-  enemy_arch_warden:             "resources/enemy/mon_arch_warden.webp?v=2",
-  enemy_sarcoph_crawler:         "resources/enemy/mon_sarcoph_crawler.webp?v=2",
-  enemy_slab_creeper:            "resources/enemy/mon_slab_creeper.webp?v=2",
-  enemy_kneeling_penitent:       "resources/enemy/mon_kneeling_penitent.webp?v=2",
-  enemy_chain_hanged:            "resources/enemy/mon_chain_hanged.webp?v=2",
-  enemy_iron_maiden:             "resources/enemy/mon_iron_maiden.webp?v=2",
-  enemy_ossuary_rats:            "resources/enemy/mon_ossuary_rats.webp?v=2",
-  enemy_ossuary_wheel:           "resources/enemy/mon_ossuary_wheel.webp?v=2",
-  enemy_choir_organ:             "resources/enemy/mon_choir_organ.webp?v=2",
-  enemy_choir_pale:              "resources/enemy/mon_choir_pale.webp?v=2",
-  enemy_bellfounder:             "resources/enemy/mon_bellfounder.webp?v=2",
-  enemy_grave_censer:            "resources/enemy/mon_grave_censer.webp?v=2",
-  enemy_candelabra_fiend:        "resources/enemy/mon_candelabra_fiend.webp?v=2",
-  enemy_reliquary_hand:          "resources/enemy/mon_reliquary_hand.webp?v=2",
-  enemy_spiral_veil:             "resources/enemy/mon_spiral_veil.webp?v=2",
-  enemy_shroud_widow:            "resources/enemy/mon_shroud_widow.webp?v=2",
-  enemy_crypt_centipede:         "resources/enemy/mon_crypt_centipede.webp?v=2",
-  enemy_crypt_hound:             "resources/enemy/mon_crypt_hound.webp?v=2",
-  enemy_twin_skull_hound:        "resources/enemy/mon_twin_skull_hound.webp?v=2",
-  enemy_vault_bat:               "resources/enemy/mon_vault_bat.webp?v=2",
-  enemy_skull_cairn:             "resources/enemy/mon_skull_cairn.webp?v=2",
+  enemy_arch_warden:             "resources/enemy/mon_arch_warden.webp?v=69358667",
+  enemy_sarcoph_crawler:         "resources/enemy/mon_sarcoph_crawler.webp?v=427145a4",
+  enemy_slab_creeper:            "resources/enemy/mon_slab_creeper.webp?v=ae03c6f8",
+  enemy_kneeling_penitent:       "resources/enemy/mon_kneeling_penitent.webp?v=df4ac8d2",
+  enemy_chain_hanged:            "resources/enemy/mon_chain_hanged.webp?v=dfaaae52",
+  enemy_iron_maiden:             "resources/enemy/mon_iron_maiden.webp?v=e0797afd",
+  enemy_ossuary_rats:            "resources/enemy/mon_ossuary_rats.webp?v=7117d6e6",
+  enemy_ossuary_wheel:           "resources/enemy/mon_ossuary_wheel.webp?v=afde9cd5",
+  enemy_choir_organ:             "resources/enemy/mon_choir_organ.webp?v=15a645f4",
+  enemy_choir_pale:              "resources/enemy/mon_choir_pale.webp?v=177e606d",
+  enemy_bellfounder:             "resources/enemy/mon_bellfounder.webp?v=996b6674",
+  enemy_grave_censer:            "resources/enemy/mon_grave_censer.webp?v=853df80f",
+  enemy_candelabra_fiend:        "resources/enemy/mon_candelabra_fiend.webp?v=bedacbdc",
+  enemy_reliquary_hand:          "resources/enemy/mon_reliquary_hand.webp?v=9216bd5c",
+  enemy_spiral_veil:             "resources/enemy/mon_spiral_veil.webp?v=2418f6c6",
+  enemy_shroud_widow:            "resources/enemy/mon_shroud_widow.webp?v=7cfbfa40",
+  enemy_crypt_centipede:         "resources/enemy/mon_crypt_centipede.webp?v=d77b735b",
+  enemy_crypt_hound:             "resources/enemy/mon_crypt_hound.webp?v=5d511a2d",
+  enemy_twin_skull_hound:        "resources/enemy/mon_twin_skull_hound.webp?v=91ccfda0",
+  enemy_vault_bat:               "resources/enemy/mon_vault_bat.webp?v=34f4b298",
+  enemy_skull_cairn:             "resources/enemy/mon_skull_cairn.webp?v=ee510068",
   enemy_pall_bearers:            "resources/enemy/mon_pall_bearers.webp",
-  enemy_tomb_bear:               "resources/enemy/mon_tomb_bear.webp?v=2",
-  enemy_pallid_stag:             "resources/enemy/mon_pallid_stag.webp?v=2",
+  enemy_tomb_bear:               "resources/enemy/mon_tomb_bear.webp?v=532d0a28",
+  enemy_pallid_stag:             "resources/enemy/mon_pallid_stag.webp?v=b0bd8089",
   /* 幻影系（ver -1742，Ray 交件 resources/enemy/phamtoms/，原 PNG 在 _originals/enemy/phamtoms/） */
   enemy_ph_sword_angel:          "resources/enemy/phamtoms/ph_sword_angel.webp",   // 執劍天使
   enemy_ph_mercy_remnant:        "resources/enemy/phamtoms/ph_mercy_remnant.webp",   // 慈愛殘像
@@ -4437,8 +4437,8 @@ export const ASSETS = {
   enemy_ph_coffin_bearer:        "resources/enemy/phamtoms/ph_coffin_bearer.webp",   // 負棺者
   enemy_ph_greed:                "resources/enemy/phamtoms/ph_greed.webp",   // 貪欲者
   enemy_ph_silent_waiter:        "resources/enemy/phamtoms/ph_silent_waiter.webp",   // 靜默等待者
-  enemy_gorge_toad:              "resources/enemy/mon_gorge_toad.webp?v=2",
-  enemy_stone_adder:             "resources/enemy/mon_stone_adder.webp?v=2",
+  enemy_gorge_toad:              "resources/enemy/mon_gorge_toad.webp?v=fa0dc50f",
+  enemy_stone_adder:             "resources/enemy/mon_stone_adder.webp?v=e3e8744c",
   enemy_dragon_throne_awakened:  "resources/enemy/mon_dragon_throne_awakened.webp",
   enemy_dragon_throne_roar:      "resources/enemy/mon_dragon_throne_roar.webp",
 
@@ -4449,7 +4449,7 @@ export const ASSETS = {
   cutin_obe: "resources/partner/luna_ci_obe.jpg",   // O.B.E. cut-in（Luna）
   cutin_mb: "resources/partner/luna_ci_maxburst.jpg",   // Maximum Burst cut-in（Luna）
   cutin_guard: "resources/partner/renee_ci_pas.jpg",   // 即死防禦 cut-in（蕾妮/Renee·被動；檔名 _pas＝passive）
-  cutin_nouvelle_guard: "resources/ci/ci_nouvelle_deathguard.webp",   // 諾薇兒的即死防禦 cut-in（ver -499，Ray 交件）
+  cutin_nouvelle_guard: "resources/ci/ci_nouvelle_deathguard.webp?v=5a505484",   // 諾薇兒的即死防禦 cut-in（ver -499，Ray 交件）
   cutin_return: "resources/partner/renee_ci_act.jpg",   // 生命歸還 cut-in（蕾妮/Renee·主動；檔名 _act＝active）
   cutin_malzeno_act: "resources/partner/malzeno_ci_act.webp",   // 前線補給 cut-in（馬季諾·主動）
   cutin_malzeno_pas: "resources/partner/malzeno_ci_pas.webp",   // 高裝藥彈 cut-in（馬季諾·被動；正式圖）
@@ -4458,13 +4458,13 @@ export const ASSETS = {
   partner_renee:   "resources/partner/renee_si_01.webp",     // 蕾妮 立繪
   /* 諾薇兒的搭檔立繪（ver -422）：先借對白用的正面全身圖。
      ⚠ 換成專屬的選人立繪時，`partners.nouvelle.siFit` 要重量（那是**那一張圖**的數字）。 */
-  partner_nouvelle:"resources/si/nouvelle_si_front.webp",     // 諾薇兒 立繪（暫用對白圖）
+  partner_nouvelle:"resources/si/nouvelle_si_front.webp?v=eb1ad716",     // 諾薇兒 立繪（暫用對白圖）
   /* 安雅（ver -671）。⚠ 暫用她的對白立繪，同諾薇兒那一張的作法。 */
-  partner_anya:   "resources/si/anya_si_front.webp?v=2",   // ver -1855：安雅整套重畫（同名覆蓋）
+  partner_anya:   "resources/si/anya_si_front.webp?v=390969c5",   // ver -1855：安雅整套重畫（同名覆蓋）
   /* ── 教學（劇情版）的諾薇兒立繪與差分（ver -323（-893 前用詞））──────────────────────
      ⚠ 這一組**只給劇情帶起來的教學**用（tutorial.isStoryRun()）。首頁「教學」鈕
        那一場仍是芙蕾雅／蕾妮 —— Ray 指定兩者要分開。 */
-  tut_nouvelle:          "resources/si/nouvelle_si_front.webp",
+  tut_nouvelle:          "resources/si/nouvelle_si_front.webp?v=eb1ad716",
   tut_nouvelle_cringe:   "resources/si/nouvelle_si_cringe.webp",
   tut_nouvelle_surprise: "resources/si/nouvelle_si_surprise.webp",
   tut_nouvelle_desperate:"resources/si/nouvelle_si_desperate.webp",
@@ -4490,17 +4490,17 @@ export const ASSETS = {
   tut_anya_terrify:      ART.anya.expr.terrify.src,
   tut_anya_ni:              ART.anya.expr.nightmareinstall.src,
   /* ⚠ 檔名 ver -454 由 Ray 改為 `CI_` 前綴（`Nouvelle_SAINTINSTALL` → 同名加前綴）。 */
-  cutin_nouvelle_saint:  "resources/ci/ci_nouvelle_saintinstall.webp",   // 全畫面 cut-in
+  cutin_nouvelle_saint:  "resources/ci/ci_nouvelle_saintinstall.webp?v=a8fa2804",   // 全畫面 cut-in
   /* ══ 本篇（story）的 cut-in 差分（ver -454，Ray 指定三張）══════════════
      試玩版照舊用 Luna／Renee 那一組；分流都走 `storyMode()`（鐵律 8）：
        破防     → weapon.activateDual
        聖徒化   → saint.activateSaint（搭檔為諾薇兒時）
        生命歸還 → saint.playSaintCutin('return') */
-  cutin_dual_torsten:    "resources/ci/ci_torsten_dualcrush.webp",
+  cutin_dual_torsten:    "resources/ci/ci_torsten_dualcrush.webp?v=c3eae643",
   /* ══ 本篇的 MB／處決 cut-in（ver -702，Ray 交件）══ 試玩版照舊 Luna（見 cutin_mb／
      cutin_exc）；分流走 `storyMode()`，與破防／生命歸還那兩張同一套（鐵律 8）。
      ⚠ ver -703：檔名的拼字由 `Excute` 更正為 `Execute`（Ray 指定）。 */
-  cutin_mb_torsten:      "resources/ci/ci_torsten_mb.webp",
+  cutin_mb_torsten:      "resources/ci/ci_torsten_mb.webp?v=ba40bc80",
   /* ⚠ ver -1698：Ray 把這一張換成 `.png`（原本的 `.webp` 他自己刪了）。
      這條路徑是**寫死的完整字串**、沒有候選鏈 —— 副檔名對不上就是整張不出現，
      而畫面上不會有任何錯誤訊息。轉回 webp 的時候記得把這兩處一起改。 */
@@ -4510,17 +4510,17 @@ export const ASSETS = {
        那張 Sturm 留著（她自己的招，日後用得到）。
      ⚠ OBE 在本篇也換成諾薇兒：那一拍是**搭檔**把靈魂拉回來，本篇的搭檔是她。
        試玩版照舊 Luna。 */
-  cutin_return_nouvelle: "resources/ci/ci_nouvelle_lifereturn.webp",
-  cutin_obe_nouvelle:    "resources/ci/ci_nouvelle_obe.webp",
+  cutin_return_nouvelle: "resources/ci/ci_nouvelle_lifereturn.webp?v=1223b2d1",
+  cutin_obe_nouvelle:    "resources/ci/ci_nouvelle_obe.webp?v=1b547b75",
   /* 賽西莉（ver -1886，帝都第一夜的夢境戰；美術交件 png→webp）。 */
   cutin_cecilie_saint:   "resources/ci/ci_cecilie_saintinstall.webp",
   cutin_cecilie_obe:     "resources/ci/ci_cecilie_obe.webp",
   cutin_cecilie_guard:   "resources/ci/ci_cecilie_deathguard.webp",
   cutin_cecilie_return:  "resources/ci/ci_cecilie_lifereturn.webp",
-  partner_cecilie:       "resources/si/cecilie_si_front.webp",
+  partner_cecilie:       "resources/si/cecilie_si_front.webp?v=d57dbd14",
   partner_malzeno: "resources/partner/malzeno_si_01.webp",   // 馬季諾 立繪
   cutin_boss: "resources/enemy/belinda_ci_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
-  bg_sentou: "resources/background/sentouinstall.webp",
+  bg_sentou: "resources/background/sentouinstall.webp?v=741f9db5",
   /* 瑪麗亞的料理插圖（ver -953）。⚠ **只有第一道有圖**，其餘九道等美術；
      `cooking.dishes[x].ci` 查不到就不出插圖，不會壞。 */
   dish_deersteak: "resources/dishes/di_deersteak.webp",
@@ -4531,15 +4531,15 @@ export const ASSETS = {
   // ── 副武器圖（換裝選單縮圖）：鑰匙對應 weapons.image；檔名＝類型_武器名 ──
   /* 巨型蜈蚣（ver -423）：**三張時段差分**（Ray 指定：上午下午 day、晚上 night、
      黃昏黎明 dd）。解析在 `modules/enemy.js` 的 `enemyImage()`，那裡是唯一一處。 */
-  enemy_centipi_day:   "resources/enemy/centipi_day.webp",
-  enemy_serpent_day:   "resources/enemy/serpent_day.webp",     // 羽蛇（ver -500，Ray 的卡）
-  enemy_pirate_day:    "resources/enemy/pirateship_day.webp",   // 空賊船（ver -509，Ray 的卡）
-  enemy_pirate_dd:     "resources/enemy/pirateship_dd.webp",
-  enemy_pirate_night:  "resources/enemy/pirateship_night.webp",
-  enemy_serpent_dd:    "resources/enemy/serpent_dd.webp",
-  enemy_serpent_night: "resources/enemy/serpent_night.webp",
-  enemy_centipi_night: "resources/enemy/centipi_night.webp",
-  enemy_centipi_dd:    "resources/enemy/centipi_dd.webp",
+  enemy_centipi_day:   "resources/enemy/centipi_day.webp?v=c86a074a",
+  enemy_serpent_day:   "resources/enemy/serpent_day.webp?v=8b55f618",     // 羽蛇（ver -500，Ray 的卡）
+  enemy_pirate_day:    "resources/enemy/pirateship_day.webp?v=052ea83c",   // 空賊船（ver -509，Ray 的卡）
+  enemy_pirate_dd:     "resources/enemy/pirateship_dd.webp?v=ba5848b9",
+  enemy_pirate_night:  "resources/enemy/pirateship_night.webp?v=830e4305",
+  enemy_serpent_dd:    "resources/enemy/serpent_dd.webp?v=7574b2ec",
+  enemy_serpent_night: "resources/enemy/serpent_night.webp?v=720cc1c8",
+  enemy_centipi_night: "resources/enemy/centipi_night.webp?v=515d5f8b",
+  enemy_centipi_dd:    "resources/enemy/centipi_dd.webp?v=2c254b24",
   /* ══ 新怪圖：卡是 `newcards` 建的「最普通的怪」，數值等 Ray 手動改 ══ */
   enemy_bug_mantis:               "resources/enemy/mon_bug_mantis.webp?v=5",
   enemy_relic_bellascetic:        "resources/enemy/mon_relic_bellascetic.webp?v=4",
@@ -4561,9 +4561,9 @@ export const ASSETS = {
      開機那一批白抓兩張沒有人要用的圖。要回頭用把這兩行接回來就行。 */
   /* ── 副武器切換鈕的類別徽章（ver -549，Ray 交件：連射/散射/高爆）──
      原檔白底 → 轉檔時沿金環裁圓去背、縮 256（原 PNG 在 _originals/vfx）。 */
-  switch_mg:    "resources/vfx/switch_mg.webp",
-  switch_split: "resources/vfx/switch_split.webp",
-  switch_hyper: "resources/vfx/switch_hyper.webp",
+  switch_mg:    "resources/vfx/switch_mg.webp?v=a7138df0",
+  switch_split: "resources/vfx/switch_split.webp?v=e5e02408",
+  switch_hyper: "resources/vfx/switch_hyper.webp?v=be7a804d",
   /* 主武器（ver -699）：交叉雙槍＝整備頁的卡；單槍留著給日後的改裝頁。 */
   weapon_ganymede_ab:   "resources/weapon/ganymedeab.webp",       // 迦尼米德 α（上）＋β（下）＝整備頁的卡
   weapon_ganymede_twin: "resources/weapon/ganymedetwin.webp",     // 交叉雙槍（備用）
@@ -4597,7 +4597,7 @@ export const ASSETS = {
      ⚠ 艦砲的素材原檔叫 `se_weapon_spitCannon`（本來放在 `_unused/`）——
        Ray 確認「是要當艦砲用的」，轉檔時一併正名成 `se_weapon_cannon_120mm`。 */
   se_ship_cannon:    "resources/audio/se/se_weapon_sniper.m4a",   // 艦砲（步槍在船戰也用它）
-  se_ship_heavygun:  "resources/audio/se/se_weapon_heavygun.m4a",       // 船戰的機槍
+  se_ship_heavygun:  "resources/audio/se/se_weapon_heavygun.m4a?v=35919155",       // 船戰的機槍
   se_enemy_centipi:  "resources/audio/se/se_enemy_centipi.m4a",         // 巨型蜈蚣（登場／攻擊）
   se_enemy_serpent:  "resources/audio/se/se_enemy_serpent.m4a",   // 羽蛇出場（ver -500）
   /* ⚠⚠⚠ 王座徘徊者的龍吟（ver -1434，Ray：「龍的追擊戰每一場出場都要有龍吟，
@@ -4632,10 +4632,10 @@ export const ASSETS = {
        第一版用 0.945／1.055／1.115（±1.9 半音）**聽得出來是被變調的**，
        那不是「同一批子彈」，是「三支不同的音效」。第 1 支刻意與原檔一模一樣。
      ⚠ 隨機挑一支的實作只有 `modules/enemy.js` 的 `bulletsFlySe()`（鐵律 8）。 */
-  se_bulletsfly1:    "resources/audio/se/se_bulletsfly1.m4a",
-  se_bulletsfly2:    "resources/audio/se/se_bulletsfly2.m4a",
-  se_bulletsfly3:    "resources/audio/se/se_bulletsfly3.m4a",
-  se_bulletsfly4:    "resources/audio/se/se_bulletsfly4.m4a",
+  se_bulletsfly1:    "resources/audio/se/se_bulletsfly1.m4a?v=7a3f47e9",
+  se_bulletsfly2:    "resources/audio/se/se_bulletsfly2.m4a?v=0cf50f26",
+  se_bulletsfly3:    "resources/audio/se/se_bulletsfly3.m4a?v=2cb3b08e",
+  se_bulletsfly4:    "resources/audio/se/se_bulletsfly4.m4a?v=22517956",
   sfx_reload:        "resources/audio/se/se_weapon_reload.m4a",
 
   // 開始遊戲 stinger（點下開始瞬間，蓋過 BGM 切歌的淡出/進入前段）
@@ -4648,7 +4648,7 @@ export const ASSETS = {
   se_buy:            "resources/audio/se/se_buy.m4a",       // 商店結帳（ver -499，Ray 交件）
   se_bulletpiece:    "resources/audio/se/se_bulletpiece.m4a",   // 船戰散射的彈幕聲（ver -503，兩支素材混剪）
   se_spiltcannon:    "resources/audio/se/se_spiltcannon.m4a",   // 船戰散射的發射音（ver -505，Ray 交件）
-  se_weapon_cannon:  "resources/audio/se/se_weapon_cannon.m4a?v=2",   // 船戰高爆(爆發型)發射音（ver -816 Ray 更新素材）
+  se_weapon_cannon:  "resources/audio/se/se_weapon_cannon.m4a?v=5faf9cfe",   // 船戰高爆(爆發型)發射音（ver -816 Ray 更新素材）
   se_weapon_cannonshell: "resources/audio/se/se_weapon_cannonshell.m4a",  // 船戰高爆的彈殼音（發射同時，ver -816）
   se_weapon_riflereload: "resources/audio/se/se_weapon_riflereload.m4a",  // 陸戰高爆發射後 0.5s 上膛音（ver -816）
   se_weapon_shell:   "resources/audio/se/se_weapon_shell.m4a",    // 砲彈殼落地（舊船戰高爆跟播音，-816 起未用）
@@ -4693,27 +4693,27 @@ export const ASSETS = {
   vo_dual_torsten2:  "resources/audio/vo/vo_torsten_dualcrush2.m4a",   // 破防第二版（與上面交互）
   vo_torsten_mb:     "resources/audio/vo/vo_torsten_mb.m4a",           // Maximum Burst
   vo_torsten_exc:    "resources/audio/vo/vo_torsten_execute.m4a",      // 處決 EXSECUTIŌ
-  vo_nou_saint:      "resources/audio/vo/vo_nouvelle_saintinstall.m4a?v=2",// 聖徒化降臨（?v=2：ver -837 新錄音同名覆蓋）
-  vo_nou_obe:        "resources/audio/vo/vo_nouvelle_obe.m4a",         // O.B.E.
-  vo_nou_guard:      "resources/audio/vo/vo_nouvelle_deathguard.m4a?v=2",  // 即死防禦（?v=2 同上）
-  vo_nou_return:     "resources/audio/vo/vo_nouvelle_lifereturn.m4a?v=2",  // 生命歸還（?v=2 同上）
+  vo_nou_saint:      "resources/audio/vo/vo_nouvelle_saintinstall.m4a?v=a0d22041",// 聖徒化降臨（?v=2：ver -837 新錄音同名覆蓋）
+  vo_nou_obe:        "resources/audio/vo/vo_nouvelle_obe.m4a?v=0c7d6842",         // O.B.E.
+  vo_nou_guard:      "resources/audio/vo/vo_nouvelle_deathguard.m4a?v=81a164d8",  // 即死防禦（?v=2 同上）
+  vo_nou_return:     "resources/audio/vo/vo_nouvelle_lifereturn.m4a?v=b4fc5f3b",  // 生命歸還（?v=2 同上）
   vo_anya_ni:        "resources/audio/vo/vo_anya_nightmareinstall.m4a",// 惡夢化降臨
   vo_anya_burst:     "resources/audio/vo/vo_anya_dreambreaker1.m4a",   // 夢境粉碎（預設）
   vo_anya_burst2:    "resources/audio/vo/vo_anya_dreambreaker2.m4a",   // 夢境粉碎（娜塔莉戰，見戰鬥卡）
-  vo_anya_melt:      "resources/audio/vo/vo_anya_obe.m4a?v=2",             // 熔斷 MELTDOWN（?v=2 同上）
+  vo_anya_melt:      "resources/audio/vo/vo_anya_obe.m4a?v=615ba712",             // 熔斷 MELTDOWN（?v=2 同上）
   /* 明晰之夢語音（ver -759 ×4 輪播 → ver -837 收成單支新錄音）。 */
   /* ?v=2：Ray 重錄後同名覆蓋（ver -881）——同名換檔一定要掛 cache-buster（§5）。 */
-  vo_anya_lucid:     "resources/audio/vo/vo_anya_luciddream.m4a?v=2",
+  vo_anya_lucid:     "resources/audio/vo/vo_anya_luciddream.m4a?v=60bed254",
   /* Reload 三兄弟（ver -894，Ray 交件）——聖徒／夢魘各自的 reload 語音與 CI。
      ⚠ `?v=2`：諾薇兒那支是**同名覆蓋**（-893 那版已被新錄音取代），必掛 buster（§5）。 */
-  vo_nou_saintreload:"resources/audio/vo/vo_nouvelle_saintreload.m4a?v=2",
+  vo_nou_saintreload:"resources/audio/vo/vo_nouvelle_saintreload.m4a?v=653a7b27",
   vo_anya_nireload:  "resources/audio/vo/vo_anya_nightmarereload.m4a",
   cutin_saintreload: "resources/ci/ci_nouvelle_saintreload.webp",
   cutin_nireload:    "resources/ci/ci_anya_nightmarereload.webp",
   /* 索菈娜語音（ver -818，Ray 交件）——共鬥發動 pack/pack2 輪播、共鬥結束 obe、
      供給技 supply；pack2 另作 man_sorana 敵登場音。 */
-  vo_sorana_pack:    "resources/audio/vo/vo_sorana_pack.m4a?v=2",   // ?v=2：ver -837 新錄音同名覆蓋
-  vo_sorana_pack2:   "resources/audio/vo/vo_sorana_pack2.m4a?v=2",
+  vo_sorana_pack:    "resources/audio/vo/vo_sorana_pack.m4a?v=417630a9",   // ?v=2：ver -837 新錄音同名覆蓋
+  vo_sorana_pack2:   "resources/audio/vo/vo_sorana_pack2.m4a?v=57c876ef",
   vo_sorana_supply1: "resources/audio/vo/vo_sorana_supply1.m4a",   // ver -837：獵手的智慧 ×2 輪播
   vo_sorana_supply2: "resources/audio/vo/vo_sorana_supply2.m4a",
   vo_sorana_obe1:    "resources/audio/vo/vo_sorana_obe1.m4a",   // ver -837：飛刀耗盡 ×2 輪播
@@ -4735,7 +4735,7 @@ export const ASSETS = {
      ⚠ 這種錯**程式驗不出來**：檔名對、路徑對、載得到、響度也量得出來 ——
        只有聽的人分得出那是誰在講話。交檔換錄音時值得順手確認一次時長。
      ⚠ 三支**一起**掛 buster：`?v=` 漏掉哪一支，哪一支就被快取住（§5）。 */
-  vo_nouvellemiss1:  "resources/audio/vo/vo_nouvellemiss1.m4a?v=3",
+  vo_nouvellemiss1:  "resources/audio/vo/vo_nouvellemiss1.m4a?v=1e056954",
   vo_nouvellemiss2:  "resources/audio/vo/vo_nouvellemiss2.m4a?v=3",
   vo_nouvellemiss3:  "resources/audio/vo/vo_nouvellemiss3.m4a?v=3",
   vo_sorana_miss1:   "resources/audio/vo/vo_sorana_miss1.m4a",
@@ -4750,7 +4750,7 @@ export const ASSETS = {
   vo_nouvelle_lvup:  "resources/audio/vo/vo_nouvelle_lvup.m4a",
   vo_anya_lvup:      "resources/audio/vo/vo_anya_lvup.m4a",
   vo_sorana_lvup:    "resources/audio/vo/vo_sorana_lvup.m4a",
-  vo_sorana_roar:    "resources/audio/vo/vo_sorana_roar.m4a?v=3",   // ver -859：Ray 更新 5連完美戰吼   // 獵手的戰吼・連5盤那一發（ver -837 新錄音）
+  vo_sorana_roar:    "resources/audio/vo/vo_sorana_roar.m4a?v=184fbea0",   // ver -859：Ray 更新 5連完美戰吼   // 獵手的戰吼・連5盤那一發（ver -837 新錄音）
   vo_sorana_roar2:   "resources/audio/vo/vo_sorana_roar2.m4a",      // 獵手的戰吼・連3盤那一發
   se_luna_exc:       "resources/audio/vo/vo_luna_execution.m4a",    // 處決 EXSECUTIŌ cut-in
   /* ⚠ ver -641 改名 `se_saint_maxburst` → `vo_saint_maxburst`（它是語音）。
@@ -4764,7 +4764,7 @@ export const ASSETS = {
   em_smack:          "resources/audio/se/se_enemy_smack.m4a",    // 聖徒：延時懲罰
   em_shot:           "resources/audio/se/se_enemy_shot.m4a",     // Boss：延時懲罰
   em_revolver:       "resources/audio/se/se_enemy_revolver.m4a", // Boss：大絕/不完美防禦（左輪）
-  em_dagger:         "resources/audio/se/se_enemy_dagger.m4a?v=2", // Boss：按錯（ver -899 換新音，同名覆蓋 → ?v）
+  em_dagger:         "resources/audio/se/se_enemy_dagger.m4a?v=608c768c", // Boss：按錯（ver -899 換新音，同名覆蓋 → ?v）
   /* 櫻花受擊（ver -899，Ray：「櫻花受擊音效是 se_enemy_sakura，只在第一 hit 播」）。
      ⚠ 它**不掛在 `HITFX.sakura.se` 上** —— 那條路是每一擊都播，而這一招一波三顆。
        由 `enemy.spawnSakura` 播，那一支「一陣風只跑一次」，所以自然只有第一下有聲。 */
@@ -4784,7 +4784,7 @@ export const ASSETS = {
   //  BGM 一律 .m4a（AAC-LC 96k，自 128k MP3 轉檔，體積 −24%）：全平台原生支援；
   //  .mp3 母帶在 resources/audio/bgm/_master/，需要重轉時用 ffmpeg -c:a aac -b:a 96k。
   bgm_home:      "resources/audio/bgm/bgm_mainmenu.m4a",       // 主選單（含次要選單）
-  bgm_crisis:     "resources/audio/bgm/peritunematerial_crisis_loop.m4a",   // 劇情/教學的緊張曲；教學結算也用它（ver -361，Ray：結算不要 result BGM）
+  bgm_crisis:     "resources/audio/bgm/peritunematerial_crisis_loop.m4a?v=c8dffe27",   // 劇情/教學的緊張曲；教學結算也用它（ver -361，Ray：結算不要 result BGM）
   /* ══ 北方泊地那一段的三首（ver -614，Ray 交辦）══
        抵達／城鎮戰打完到 BOSS 登場前 → `bgm_suspense`（Suspense6）
        城鎮戰進行中                   → `bgm_crisis`（既有那一首）
@@ -4865,7 +4865,7 @@ export const ASSETS = {
   bgm_whirlwind:    "resources/audio/bgm/peritune_whirlwind.m4a",   // 索菈娜為夥伴的戰鬥曲（ver -837；ver -1105 刪掉下面那份重複的）
   bgm_whistling:    "resources/audio/bgm/peritune_whistling_winds_loop.m4a",
   /* ver -745：Ray 交專用戰鬥圖（man_sorana.jpg → webp，原檔入 _originals）。 */
-  enemy_man_sorana: "resources/enemy/man_sorana.webp?v=3",
+  enemy_man_sorana: "resources/enemy/man_sorana.webp?v=11180f49",
   bgm_crimson:    "resources/audio/bgm/peritune_crimson_moon_loop.m4a",
   /* 帝都第一夜的夢（ver -1888）。 */
   bgm_deepfrost:  "resources/audio/bgm/peritune_deep_frost_calling.m4a",
@@ -5236,6 +5236,425 @@ export const ASSET_VER = {
   'dunmor_cairn_lit': 2,
   'dunmor_kingsbarrow_lit': 2,
   'dunmor_brochtop_lit': 2,
+  /* ══ BUST:ASSETVER START —— 由 tools/asset_bust.py 產生（同名覆蓋過的背景／插圖，值＝內容雜湊），不要手改 ══ */
+  '001_nouvelle_fell': 'e9167e69',
+  '002_saintassult': 'fd1c9d19',
+  '003_lunaria_armed': 'f656d515',
+  '004_renna_intro': '7d0c2d39',
+  '005-1_kerberos': 'c503a76b',
+  '005_kerberos_day': '5926e3f7',
+  '005_kerberos_dd': 'e4531a48',
+  '006_ship': '9f4fd88c',
+  '007-2_anya_awake': '42d4f49c',
+  '007_anya_passout': 'f67aba29',
+  '008_rennaholdanya': 'a6142239',
+  '009_soranadebute': '43cf9606',
+  '42452231-c355-429f-ba86-81c0d0c5e369': 'a1997305',
+  '_dunmor_altar8_sheet': 'c1938d79',
+  '_dunmor_batch3_sheet': '62501d0e',
+  '_layout_belisar': 'bfa9cad6',
+  '_layout_dunmor': '8d75256e',
+  '_layout_eastport': 'affe9040',
+  '_layout_fallen': '66d4be48',
+  '_layout_plainsroad': 'de8db36f',
+  '_layout_santasofia': 'b8ad20f1',
+  '_layout_sofiaout': '3a2297fe',
+  '_layout_tomb': '1a47bf82',
+  '_layout_undercity': '17f71d1b',
+  '_layout_verafond': '6d44630f',
+  'anya_ci_search': 'f9fd5aa6',
+  'anya_si_amaze': 'f61132c2',
+  'anya_si_angry': 'd59e9bd9',
+  'anya_si_answer': 'db505ca1',
+  'anya_si_argue': 'df7ed249',
+  'anya_si_armcross': '7d786d11',
+  'anya_si_back': '42e83426',
+  'anya_si_clap': '47761974',
+  'anya_si_cry': '9718e366',
+  'anya_si_crying': '8f61a530',
+  'anya_si_curious': 'aa9fd998',
+  'anya_si_desperate': '55a4b871',
+  'anya_si_determine': 'c6b1a1a5',
+  'anya_si_die': '6bf8f19e',
+  'anya_si_eat': '86cf7818',
+  'anya_si_front': '390969c5',
+  'anya_si_happy': '76e4bf93',
+  'anya_si_hug': '723fb6dd',
+  'anya_si_laugh': '3c066055',
+  'anya_si_lookback': 'd1b1ace1',
+  'anya_si_lookup': 'b62b187e',
+  'anya_si_makeface': 'fe17c6b1',
+  'anya_si_nervous': 'f425f52e',
+  'anya_si_nightmareinstall': '0ed9e71f',
+  'anya_si_nod': '3b3fd12d',
+  'anya_si_panic': '960811a2',
+  'anya_si_peace': 'dd38e70d',
+  'anya_si_point': '183ee592',
+  'anya_si_read': '989b1c91',
+  'anya_si_relief': 'fa5a33fb',
+  'anya_si_runworry': '447aadcf',
+  'anya_si_scare': '0c2554a9',
+  'anya_si_scare2': 'fb151f9d',
+  'anya_si_shy': '4c36a30d',
+  'anya_si_side': '1deb739a',
+  'anya_si_silent': '5497fc32',
+  'anya_si_sleep': 'a73888a2',
+  'anya_si_sleepy': 'a3eaadb7',
+  'anya_si_smile': 'acf05d43',
+  'anya_si_smileshy': '6c55f102',
+  'anya_si_smilesneaky': '36640755',
+  'anya_si_sob': '0a1de04c',
+  'anya_si_stare': '0bed1469',
+  'anya_si_steady': '4688040a',
+  'anya_si_surprise': '05df518b',
+  'anya_si_talk': 'd6e12e73',
+  'anya_si_talkshy': 'b15938e5',
+  'anya_si_terrify': 'becb7f82',
+  'anya_si_think': 'e1f2808b',
+  'anya_si_upset': 'f748f150',
+  'anya_si_watch': '420108d5',
+  'anya_si_wave': '734870b6',
+  'anya_si_wheel': '8719944a',
+  'anya_si_wheelback': '7296dc2d',
+  'anya_si_wheelpoint': '232665e8',
+  'anya_si_wheeltalk': '90330ad3',
+  'anya_si_whisper': 'b8e7eea3',
+  'anya_si_worry': '2c490215',
+  'arrhenius_si_lookdown': '71f8e683',
+  'arrhenius_si_smileclose': '39affa34',
+  'arrhenius_si_smileopen': 'd7dfdd59',
+  'arrhenius_si_surprisejoy': 'eb69c002',
+  'arrhenius_si_wrysmile': '0e40f4ad',
+  'arrhenius_si_wrysmileopen': 'e7b05e04',
+  'belisar_bellroom': '78d98957',
+  'belisar_cages': 'ec515e6d',
+  'belisar_drywell': '91c5b4d1',
+  'belisar_forge': '1e7cc774',
+  'belisar_oldaltar': '6ddfe60d',
+  'belisar_orrery': '4ebfe3ec',
+  'belisar_ossuary': 'ebf11c9f',
+  'belisar_rooffall_dawn': '88f65d14',
+  'belisar_rooffall_day': 'a128d9fd',
+  'belisar_rooffall_dusk': '23656517',
+  'belisar_rooffall_night': 'd183d00f',
+  'bgm_lunaria': '8a61fc07',
+  'cecilie_si_front': 'd57dbd14',
+  'centipi_day': 'c86a074a',
+  'centipi_dd': '2c254b24',
+  'centipi_night': '515d5f8b',
+  'ci_anya_dreambreaker': '5b660d7e',
+  'ci_anya_luciddream': '773af9dd',
+  'ci_anya_nightmareinstall': '26b448f3',
+  'ci_anya_obe': 'f8337149',
+  'ci_nouvelle_deathguard': '5a505484',
+  'ci_nouvelle_lifereturn': '1223b2d1',
+  'ci_nouvelle_obe': '1b547b75',
+  'ci_nouvelle_saintinstall': 'a8fa2804',
+  'ci_sorana_obe': '9137c47e',
+  'ci_sorana_predator': '84e84cd8',
+  'ci_sorana_roar_anya': 'd80e6c3b',
+  'ci_sorana_roar_nouvelle': '5c3f9605',
+  'ci_sorana_roar_renna': 'a9c77259',
+  'ci_sorana_search': 'd044558c',
+  'ci_sorana_supply': '2fcb31ce',
+  'ci_torsten_dualcrush': 'c3eae643',
+  'ci_torsten_mb': 'ba40bc80',
+  'corvin_si_ecstasy': '7c3e1372',
+  'dart_timeattack': 'df0a5635',
+  'dunmor_altar': '1cedb6a4',
+  'dunmor_boarstone': '0996225f',
+  'dunmor_brochtop': '8606ca5e',
+  'dunmor_brochtop_lit': 'd119629a',
+  'dunmor_cairn': '796d57ef',
+  'dunmor_cairn_lit': '37e2e9c3',
+  'dunmor_causeway': '26cf4dbc',
+  'dunmor_ditchw': 'ec29147f',
+  'dunmor_druidhouse': 'f6c3dc12',
+  'dunmor_gatecourt': '9905113f',
+  'dunmor_innergate': 'bd77c5d9',
+  'dunmor_kingsbarrow': 'a1f47f0a',
+  'dunmor_kingsbarrow_lit': '6a6873f7',
+  'dunmor_mainstreet': '9dffab9b',
+  'dunmor_marketcross': '0f264390',
+  'dunmor_nemeton': '7dca476b',
+  'dunmor_oakgrove': 'f78c4481',
+  'dunmor_oghamrow': '553c3bd7',
+  'dunmor_ossuary': '4d591a43',
+  'dunmor_ossuary_lit': '70aa5540',
+  'dunmor_southgate': '8f0ebadb',
+  'dunmor_wellsq': '99fff986',
+  'east_midtown_dawn': '3232813a',
+  'east_midtown_dusk': 'd3d6d722',
+  'east_midtown_night': 'af779e11',
+  'east_square_dawn': '221f688b',
+  'east_square_dusk': '949aef1e',
+  'east_square_night': 'b51a72df',
+  'kidd_ci': 'a4cda953',
+  'lake_boathouse_day': 'c13a8f74',
+  'lake_causeway_day': '8baece67',
+  'lake_cave_day': 'db1e8de5',
+  'lake_deadfall_day': '26b33d91',
+  'lake_eastshore_day': '923b13c1',
+  'lake_fallbase_day': 'cd081ad5',
+  'lake_grove_day': '33e40073',
+  'lake_grove_glow_day': '5ac3687a',
+  'lake_grove_glow_night': 'd7829765',
+  'lake_inlet_day': '35cd553e',
+  'lake_northshore_day': '3a3de1f8',
+  'lake_shingle_day': 'a69ac69f',
+  'luna_si_seat_angry': 'a9b48e9c',
+  'luna_si_seat_hand': 'b16230b4',
+  'luna_si_seat_smirk': 'ebd94af4',
+  'man_sorana': '11180f49',
+  'man_thug_shotgun': '504d26bc',
+  'man_thug_squad': 'dfd75032',
+  'map_belisar': 'aa8a8214',
+  'map_capital': '9b04a6c4',
+  'map_northport': '2ef488d7',
+  'map_plainsroad': '62fc80b7',
+  'map_shinierforest': 'ad99358f',
+  'map_tomb': 'cd3c27d3',
+  'map_tomb_l1': '4e3e5aa0',
+  'map_tomb_l2': '65f4ba57',
+  'map_tomb_l3': '1593ff7f',
+  'misha_si_close': '47dd4349',
+  'misha_si_closeopen': '102292c5',
+  'misha_si_draw': '68b1b653',
+  'misha_si_drawopen': '9820e0a3',
+  'misha_si_frontshock': '83fbd0fe',
+  'misha_si_frown': 'b2049866',
+  'misha_si_frownopen': 'ed089647',
+  'misha_si_order': '78023185',
+  'misha_si_stare': '4d8a9846',
+  'misha_si_stareopen': '8dc35b0a',
+  'misha_si_talk': 'd6a9b68a',
+  'misha_si_wound': '3a49219d',
+  'mon_arch_warden': '69358667',
+  'mon_bear_husk': '08453d77',
+  'mon_bear_nightmare': '8b9715dd',
+  'mon_beast_altar': '314d3a60',
+  'mon_beast_organ': '2cb2855b',
+  'mon_beast_reliquary': '9e728c27',
+  'mon_beast_shackle': '3f7e0727',
+  'mon_bellfounder': '996b6674',
+  'mon_candelabra_fiend': 'bedacbdc',
+  'mon_chain_hanged': 'dfaaae52',
+  'mon_choir_organ': '15a645f4',
+  'mon_choir_pale': '177e606d',
+  'mon_crypt_centipede': 'd77b735b',
+  'mon_crypt_hound': '5d511a2d',
+  'mon_dragon_v1_ascendant': 'd30dd2e3',
+  'mon_dragon_v1_shackled': '19baca48',
+  'mon_gorge_toad': 'fa0dc50f',
+  'mon_grave_censer': '853df80f',
+  'mon_gravekeeper_crypt': '9b1652d7',
+  'mon_gravekeeper_many': 'e64d8c82',
+  'mon_gravekeeper_offset': '46c05edc',
+  'mon_gravekeeper_seal': 'a94669c5',
+  'mon_iron_maiden': 'e0797afd',
+  'mon_kneeling_penitent': 'df4ac8d2',
+  'mon_natalia': '46dacdbf',
+  'mon_ossuary_rats': '7117d6e6',
+  'mon_ossuary_wheel': 'afde9cd5',
+  'mon_pallid_stag': 'b0bd8089',
+  'mon_relic_candlepenitent': 'c5142b92',
+  'mon_relic_candletower': 'd3ea7ec1',
+  'mon_relic_reassembled': 'b0329247',
+  'mon_reliquary_hand': '9216bd5c',
+  'mon_sarcoph_crawler': '427145a4',
+  'mon_sea_coralman': '754847d3',
+  'mon_shroud_widow': '7cfbfa40',
+  'mon_skull_cairn': 'ee510068',
+  'mon_slab_creeper': 'ae03c6f8',
+  'mon_spiral_veil': '2418f6c6',
+  'mon_stag_nightmare': 'f0940269',
+  'mon_stag_rot': '5671f64b',
+  'mon_stone_adder': 'e3e8744c',
+  'mon_tomb_bear': '532d0a28',
+  'mon_twin_skull_hound': '91ccfda0',
+  'mon_vault_bat': '34f4b298',
+  'mon_wolf_pack': 'f6f41b90',
+  'nouvelle_si_angry': 'f0ab6dac',
+  'nouvelle_si_apologize': '674cbeca',
+  'nouvelle_si_armcross': '8c2a0c93',
+  'nouvelle_si_coldstare': 'b3d25c77',
+  'nouvelle_si_covermouth': '6e81bf5c',
+  'nouvelle_si_cry': 'f417591d',
+  'nouvelle_si_eat': '4bc6c5cf',
+  'nouvelle_si_front': 'eb1ad716',
+  'nouvelle_si_gossip1': 'fa5646f3',
+  'nouvelle_si_handout': 'cfd114d6',
+  'nouvelle_si_lookdown': 'd5415b93',
+  'nouvelle_si_nod': 'fce9cd93',
+  'nouvelle_si_point': '41b0b6aa',
+  'nouvelle_si_reach': 'ae7a251d',
+  'nouvelle_si_sadsmilenoeye': '04a5eb59',
+  'nouvelle_si_salute': 'c06bb53a',
+  'nouvelle_si_sigh': '96d6cd1c',
+  'nouvelle_si_sleep': '06247c0d',
+  'nouvelle_si_smug': 'ead192bf',
+  'nouvelle_si_stare': '748130da',
+  'nouvelle_si_wet': 'a3153aed',
+  'nouvelle_sturm': 'ea6a08c7',
+  'npc_grocer_si_v2': 'c57d7891',
+  'npc_grocer_si_v3': '0198dddd',
+  'npc_grocer_si_v4': '0871fe0f',
+  'npc_grocer_si_v5': 'dcdbff19',
+  'npc_guildcounter_si_v1': 'cb74bb90',
+  'npc_guildcounter_si_v3': '34bf88ad',
+  'npc_guildcounter_si_v4': 'e1e14d0f',
+  'npc_guildcounter_si_v5': '0bc9f958',
+  'npc_gunsmith_si_v1': '0a1369e8',
+  'npc_gunsmith_si_v2': '31a08b56',
+  'npc_gunsmith_si_v3': 'f7f416c3',
+  'npc_gunsmith_si_v4': 'cbc9fdad',
+  'npc_gunsmith_si_v5': '3af0caca',
+  'npc_ss_cityhall_front': 'e84cc2c7',
+  'npc_ss_loti_cry': 'f76eaddc',
+  'peritunematerial_crisis_loop': 'c8dffe27',
+  'pirateship_day': '052ea83c',
+  'pirateship_dd': 'ba5848b9',
+  'pirateship_night': '830e4305',
+  'plains_cairn_day': '78317a12',
+  'renna_ad_si_bow': '3135fc88',
+  'renna_ad_si_command': '4e9ddbfa',
+  'renna_ad_si_commandsoft': '1bd948f4',
+  'renna_ad_si_lookaway': 'eb57314f',
+  'renna_ad_si_remind': '4409cebc',
+  'renna_ad_si_smile': 'dad01c2a',
+  'renna_ad_si_think': '5b5c49da',
+  'renna_ad_si_watch': '783a9cea',
+  'renna_ad_si_write': '6fbb019e',
+  'renna_si_apologize': '4f46910b',
+  'renna_si_armcross': 'ff5aa880',
+  'renna_si_back': 'ff6b4da3',
+  'renna_si_blushangry': 'f9c73fd5',
+  'renna_si_coldstare': '6c0d2f79',
+  'renna_si_determine': '3cadfcd7',
+  'renna_si_handout': '42b42b05',
+  'renna_si_holdfile': 'd5f548b1',
+  'renna_si_laugh': '2d37e1a7',
+  'renna_si_lookaside': 'ef1b0822',
+  'renna_si_nod': '14bc1ee3',
+  'renna_si_pointmap': '447e33de',
+  'renna_si_salute': '27a9cc02',
+  'renna_si_scream': 'be6be86a',
+  'renna_si_side': '651c4bb5',
+  'renna_si_sipdrink': '97a08595',
+  'renna_si_sleepdesk': 'a00b2045',
+  'renna_si_smilesoft': 'd679a125',
+  'renna_si_whisper': '7f5b08ec',
+  'saint_gt_ci': '2c191ece',
+  'saint_tr_ci': '1f885777',
+  'se_bulletsfly1': '7a3f47e9',
+  'se_bulletsfly2': '0cf50f26',
+  'se_bulletsfly3': '2cb3b08e',
+  'se_bulletsfly4': '22517956',
+  'se_enemy_dagger': '608c768c',
+  'se_rockimpact': 'd2a1f043',
+  'se_steps': 'd271dff8',
+  'se_stepsbig': 'c1670181',
+  'se_waterfall': '8db65283',
+  'se_weapon_cannon': '5faf9cfe',
+  'se_weapon_heavygun': '35919155',
+  'sentouinstall': '741f9db5',
+  'serpent_day': '8b55f618',
+  'serpent_dd': '7574b2ec',
+  'serpent_night': '720cc1c8',
+  'sofia_firearm': 'b15578da',
+  'sofia_grocerie': 'ba7299e9',
+  'sofia_guild': 'b798355f',
+  'sofia_slum': 'e8ccdf88',
+  'sorana_ad_si_front': '20880b1e',
+  'sorana_si_amaze': '785ff8ea',
+  'sorana_si_angry': '0224ab8c',
+  'sorana_si_armcross': 'c6e3937f',
+  'sorana_si_back': '3ce461d5',
+  'sorana_si_battlecry': '13d82475',
+  'sorana_si_blush': 'c185eb59',
+  'sorana_si_carrynouvellejealous': 'a80a5a30',
+  'sorana_si_carrynouvelleshock': '523306f9',
+  'sorana_si_confuse': '035963ac',
+  'sorana_si_cringe': '2304c98c',
+  'sorana_si_cry': '2d8d6fa3',
+  'sorana_si_crybig': '803e1af1',
+  'sorana_si_determine': '48e30a47',
+  'sorana_si_die': '1bb0c105',
+  'sorana_si_drink': '00f11fc3',
+  'sorana_si_eat': '135f3f55',
+  'sorana_si_embarrass': '4b2fec64',
+  'sorana_si_excite2': '9326f8b8',
+  'sorana_si_front': 'c4629a3a',
+  'sorana_si_furiousq': '11907382',
+  'sorana_si_guard': 'e18306d1',
+  'sorana_si_guardtalk': '415fd57d',
+  'sorana_si_guardthink': 'eeda0c67',
+  'sorana_si_hug': '7bbdeb5c',
+  'sorana_si_idea': '743e875c',
+  'sorana_si_lauaghbig': '4012b7ec',
+  'sorana_si_laugh': '2641bdd1',
+  'sorana_si_lookaway': '153b094e',
+  'sorana_si_nod': '619e6ebc',
+  'sorana_si_panic': '13cf60c2',
+  'sorana_si_point': '0e7575dd',
+  'sorana_si_q': '6c376662',
+  'sorana_si_read': 'bc4b1f6e',
+  'sorana_si_readconfuse': 'c3fc845f',
+  'sorana_si_readhappy': 'fe2488cf',
+  'sorana_si_readsad': 'd8bfd951',
+  'sorana_si_readshock': '480b822b',
+  'sorana_si_ready': '03ede89c',
+  'sorana_si_readysmile': '205d5df6',
+  'sorana_si_relief': 'b3419e81',
+  'sorana_si_remind': 'ecad11dc',
+  'sorana_si_sad': 'c1b7aeae',
+  'sorana_si_salute': '83e6ced4',
+  'sorana_si_scare': '0b58b11b',
+  'sorana_si_serious': '8120a7e9',
+  'sorana_si_shy': 'a92e42c1',
+  'sorana_si_side': '5e97123e',
+  'sorana_si_sleep': 'de017c28',
+  'sorana_si_smile': '428a5d04',
+  'sorana_si_smirk': '27484329',
+  'sorana_si_sorry': 'ab94f657',
+  'sorana_si_stare': '6b3a1691',
+  'sorana_si_surprise': '2d1b7286',
+  'sorana_si_talk': 'a8b9c3d4',
+  'sorana_si_tease': 'd54788f0',
+  'sorana_si_think': '60fe8a2c',
+  'sorana_si_tire': 'c8315709',
+  'sorana_si_upset': '72a164d8',
+  'sorana_si_watch': '662a12d0',
+  'sorana_si_wave': '9d90ee30',
+  'sorana_si_whisper': '5a9fa56c',
+  'sorana_si_worry': '5cab263e',
+  'ssophia_si_manu_complain': '9ee1a687',
+  'switch_hyper': 'be7a804d',
+  'switch_mg': 'a7138df0',
+  'switch_split': 'e5e02408',
+  'theclaws': '0e70c2c5',
+  'tivot_emblem': '9220f8bb',
+  'tomb_bonepit': '5f20e6cd',
+  'tomb_crypt': 'deaf2adb',
+  'tomb_gallery3': '1b3b6a12',
+  'tomb_landing3': 'fe68005b',
+  'tomb_lowaltar': '4a99cc53',
+  'tomb_lowaltar_off': '8babe73e',
+  'tomb_vaultw': '69754276',
+  'torsten_si_back': 'a56f91a6',
+  'vela_square_day': 'dc514e1a',
+  'vo_anya_luciddream': '60bed254',
+  'vo_anya_obe': '615ba712',
+  'vo_nouvelle_deathguard': '81a164d8',
+  'vo_nouvelle_lifereturn': 'b4fc5f3b',
+  'vo_nouvelle_obe': '0c7d6842',
+  'vo_nouvelle_saintinstall': 'a0d22041',
+  'vo_nouvelle_saintreload': '653a7b27',
+  'vo_nouvellemiss1': '1e056954',
+  'vo_sorana_pack': '417630a9',
+  'vo_sorana_pack2': '57c876ef',
+  'vo_sorana_roar': '184fbea0',
+  /* ══ BUST:ASSETVER END ══ */
 };
 export function assetVer(nameOrPath){
   const n = String(nameOrPath||'').split('/').pop().split('?')[0]

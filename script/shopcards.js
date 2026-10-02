@@ -105,7 +105,7 @@ export const SHOP_CARDS = {
   ep_gunstore: {
     city: "東方泊地",
     title: "武器店",
-    art: "resources/si/npc/npc_gunsmith_si_v1.webp?v=2",
+    art: "resources/si/npc/npc_gunsmith_si_v1.webp?v=0a1369e8",
     tabs: ["buy", "sell", "mod"],
     tabName: {"buy": "買武器", "sell": "賣武器", "mod": "武器改裝"},
     only: "weapon",

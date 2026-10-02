@@ -457,7 +457,7 @@ export const DRAGON_LINES = {
          不是震動）。兩者不可以一起寫 —— 都動 transform，後掛的會蓋掉前一個。 */
       { speaker:'NARRATION', text:'', roarBlast:true, auto:900,
         se:'se_monsterroardeep', cgBackScale:0.9, cgBackRise:true, cgBackFit:'contain',
-        cgBack:'resources/enemy/mon_dragon_v1_shackled.webp?v=2' },
+        cgBack:'resources/enemy/mon_dragon_v1_shackled.webp?v=19baca48' },
       sor('guardtalk','喔！學不乖的傢伙！'),
       any('argue','小偷龍！'),
       nou('awkward','叫人家小偷龍實在有點……'),
@@ -952,7 +952,7 @@ export const TOWNS = {
        ⚠ 這座城 `mist:0`（大城市全開，見上面那一列）：每一格一開圖就看得到，
          沒有迷霧幫忙遮，所以墨點對齊要比荒野那幾張嚴。 */
     map: {
-      img: 'resources/map/map_capital.webp',
+      img: 'resources/map/map_capital.webp?v=9b04a6c4',
       spots: {
         square:[0.500, 0.572], midtown:[0.500, 0.163], church:[0.667, 0.163],
         cityhall:[0.330, 0.163], oldtown:[0.251, 0.560], gunstore:[0.118, 0.562],
@@ -1762,7 +1762,7 @@ export const TOWNS = {
        ⚠ 只有一張：這座城現在是戰損、日後會重建（`rebuild`），但地圖是主角畫的**街廓**，
          街還是那些街。真的要兩版再說。 */
     map: {
-      img: 'resources/map/map_northport.webp',
+      img: 'resources/map/map_northport.webp?v=2ef488d7',
       spots: {
         entrance:[0.488, 0.584], west:[0.244, 0.583], port:[0.242, 0.422],
         north:[0.504, 0.240], east:[0.740, 0.584], gunstore:[0.111, 0.584],
@@ -3504,7 +3504,7 @@ export const TOWNS = {
     map: {
       /* ?v=2：去白背 alpha 版（ver -878，Ray：「小地圖要去白背，走alpha通道」）
          —— 同名覆蓋必掛 cache-buster（§5）。 */
-      img: 'resources/map/map_shinierforest.webp?v=2',
+      img: 'resources/map/map_shinierforest.webp?v=ad99358f',
       spots: {
         entry: [0.697, 0.857], glade: [0.635, 0.659], nest:  [0.846, 0.652],
         shoal: [0.423, 0.618], valley:[0.232, 0.672], trail: [0.383, 0.447],
@@ -3854,7 +3854,7 @@ export const TOWNS = {
          `darkbridge` 0.120→0.183）。「只有四格變了所以其餘照抄」會讓十幾個光點
          偏出墨點，而且畫面上看起來只是「有點歪」，很難查。 */
     map: {
-      img: 'resources/map/map_ruins_shinier.webp?v=5',
+      img: 'resources/map/map_ruins_shinier.webp?v=a9959e65',
       spots: {
         antechamber:[0.544, 0.722], corridora:[0.394, 0.724], crossway:[0.392, 0.576],
         well:[0.392, 0.522], stairup:[0.232, 0.580], brazier:[0.236, 0.469],
@@ -7331,7 +7331,7 @@ export const TOWNS = {
        —— 舊座標會讓探索率永遠停在 5/5＝100%，而實際上有一半的路沒走過（說謊）。
        ⚠ 新紙交件時要**同名覆蓋 ＋ 跳 `?v=`**（§5 ver -650）。 */
     map: {
-      img: 'resources/map/map_plainsroad.webp',
+      img: 'resources/map/map_plainsroad.webp?v=62fc80b7',
       /* ⚠⚠ **版面是菱形**：石塚群往上分左右兩條（碎石坡／枯木林），在風蝕岩匯合。
          那四條邊因此是 **L 形的**（先左／右再上），同貝利薩爾那三條 ——
          `script_lint.py` 會發提醒，**那是預期中的**，不要「修」掉。
@@ -8018,7 +8018,7 @@ export const TOWNS = {
     map: {
       sheets: [
         /* ── 一層（21 格）── */
-        { img:'resources/map/map_tomb_l1.webp', spots:{
+        { img:'resources/map/map_tomb_l1.webp?v=4e3e5aa0', spots:{
           gate:[0.4551, 0.9150], vestibule:[0.4551, 0.7600], lapidarium:[0.6400, 0.7600],
           ossuaryA:[0.8249, 0.7600], cryptA:[0.8249, 0.6049], nave:[0.4551, 0.6049],
           aisleW:[0.2702, 0.6049], tombniche:[0.0853, 0.6049], charnel:[0.0853, 0.7600],
@@ -8028,7 +8028,7 @@ export const TOWNS = {
           cloister:[0.2702, 0.2947], wellyard:[0.2702, 0.1396], stair1:[0.0853, 0.2947],
         } },
         /* ── 二層（33 格）── */
-        { img:'resources/map/map_tomb_l2.webp', spots:{
+        { img:'resources/map/map_tomb_l2.webp?v=65f4ba57', spots:{
           landing2:[0.1777, 0.4304], hall2:[0.1777, 0.3335], colonnade:[0.0853, 0.3335],
           mason:[0.0853, 0.2366], cistern:[0.1777, 0.2366], waterstair:[0.1777, 0.1396],
           corr2:[0.2702, 0.3335], sump:[0.2702, 0.4304], rotunda:[0.3626, 0.3335],
@@ -8042,7 +8042,7 @@ export const TOWNS = {
           crossvault:[0.6400, 0.7212], falsestair:[0.5475, 0.7212], stair2:[0.7324, 0.7212],
         } },
         /* ── 三層（7 格）── */
-        { img:'resources/map/map_tomb_l3.webp', spots:{
+        { img:'resources/map/map_tomb_l3.webp?v=1593ff7f', spots:{
           landing3:[0.1871, 0.1723], gallery3:[0.1871, 0.4133], vaultW:[0.6157, 0.4133],
           crypt:[0.1871, 0.6542], bonepit:[0.6157, 0.6542], lowaltar:[0.6157, 0.8952],
           adit:[0.1871, 0.8952],
@@ -8760,7 +8760,7 @@ export const TOWNS = {
           /* ⚠⚠ `cgBackAs:'gk_seal'` ＝**與開打之後同一個大小**（ver -1703，Ray：「墓主劇情中
              降臨時還是小尺寸的，調成跟戰鬥畫面一樣大」）—— 取代 `cgBackFit`／`cgBackScale:0.9`。 */
           { speaker:'NARRATION', text:'', hide:'*',
-            cgBack:'resources/enemy/mon_gravekeeper_seal.webp?v=3',
+            cgBack:'resources/enemy/mon_gravekeeper_seal.webp?v=a94669c5',
             cgBackRise:true, cgBackAs:'gk_seal', shake:true,   // ver -1881：降臨時畫面震動（Ray）
             se:'se_enemy_roardeer', auto:1800 },
           /* ⚠⚠ **只有這一拍推棺**（ver -1622，Ray 指定）：`kerbRise:true`。
@@ -10087,7 +10087,7 @@ export const TOWNS = {
          ⚠ 背景走 `ASSET_VER` 是因為檔名是組出來的；小地圖的路徑是**手寫字串**，
            所以直接把 `?v=` 打進去（同 `sfx_saint` 的作法）。 */
     map: {
-      img: 'resources/map/map_belisar.webp?v=4',
+      img: 'resources/map/map_belisar.webp?v=aa8a8214',
       spots: {
         altar:[0.7407, 0.8431], antecham:[0.3979, 0.1719], bellroom:[0.1693, 0.7312],
         bonerack:[0.5121, 0.3956], cages:[0.7407, 0.3956], candlewalk:[0.2836, 0.6194],
@@ -10488,7 +10488,7 @@ export const TOWNS = {
             /* ⚠ ver -1420（Ray：「龍降臨上半怎麼被裁了？」）：這一層預設 `cover`
                （為鹿主訂的，主體在下半）—— 龍是滿框展翅，要 `contain` 才不會被切頭。 */
             cgBackFit:'contain',
-            cgBack:'resources/enemy/mon_dragon_v1_shackled.webp?v=2' },
+            cgBack:'resources/enemy/mon_dragon_v1_shackled.webp?v=19baca48' },
           /* ⚠ ver -1420（Ray 指定）：被嚇到那一聲配跌倒音。 */
           Object.assign(ren('scream','呀！'), { se:'se_fall' }),
           /* ══⚠⚠⚠ **蕾娜倒地・髮飾脫落**（ver -1397，Ray 交件 `020_rennadrop`）══

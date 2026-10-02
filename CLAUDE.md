@@ -1454,6 +1454,10 @@ document.body.appendChild(a); a.click(); a.remove();            // 直接落進 
   ③**原 PNG 移進 `resources/_originals/<同層資料夾>/`**,絕不留在會被載入的目錄裡。
 - 為什麼是 `_originals`:底線開頭的資料夾**不會被遊戲載入**(同 `_master`/`_unused`),
   而且已在 `.gitignore` 裡 —— 不進版控、不上靜態空間,但本機留著可回滾。
+- ⚠⚠⚠⚠ **ver -1918 起這一條是自動的**：`tools/bust.py`（→ `tools/asset_bust.py`）把「同名覆蓋過」的素材（git 有過 M 或工作區有改）
+  一律換成 `?v=<內容雜湊>`：字面路徑直接蓋、組出來的名字寫進 `ASSET_VER` 的自動區塊、飛行頁拼字串的走 `fav()`、城的整批走 `CITY_V`。
+  **覆蓋完跑一次 `python3 tools/bust.py --bump` 就好**；lint 的 `--check` 沒同步會報。下面那幾段是它被做出來之前的紀錄。
+  ⚠ 新增「拼字串組路徑」的地方要過 `assetVer()`（主頁）或 `fav()`（飛行頁），不然吃不到。
 - ⚠⚠⚠ **同名覆蓋的圖一定要加／改 `?v=N`**(ver -650)。瀏覽器會沿用舊的快取 ——
   檔名沒變、內容變了,它照樣拿舊的那一份。實測:美術把娜塔莉那兩張同名蓋回去之後,
   不帶 cache-buster 抓到的 `dead.webp` **像素指紋與 `dying` 完全相同**,
