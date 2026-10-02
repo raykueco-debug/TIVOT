@@ -216,7 +216,8 @@
 >   ⚠ **還沒接進遊戲**：story／town／飛行頁讀台詞的地方都沒查表，切到西語時劇本仍是中文。下一步就是接這一層（等 Ray 看過譯文）。
 >   ⚠ 審稿表的「說話者」是抽取工具**推測**的，常標成 PLAYER，不可靠。
 > · ✅ 對照表：薇拉馮德四語統一 **Velafonte**（原文義大利文，帆＋泉）。表本身有 Ray 未 commit 的改動，**沒 commit**。
-> · **等 Ray**：獸骸＝cáscara de bestia 要不要改／璐娜團長是 Luna 還是 Lunaria（`mainScript.js:320`、`town.js:3264`）／諾薇兒對安雅 tú／usted 混用要不要統一／對照表「說明」分頁「專案目前沒有西文語言包」那句過時。
+> · ✅ Ray 定案已套用（獸骸＝cáscara／璐娜團長＝Lunaria／諾薇兒對安雅「只想當安雅」前 usted 後 tú）。西文譯法定案一律記在 `i18n/script/NOTES_es.md`。
+> · **等 Ray**：對照表「說明」分頁「專案目前沒有西文語言包」那句過時。
 
 # HANDOFF — 截至 `ver 2026.09.22-1904`（10-02，Windows，程式 session 收工）
 
