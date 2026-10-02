@@ -236,6 +236,59 @@
 > · ✅ Ray 定案已套用（獸骸＝cáscara／璐娜團長＝Lunaria／諾薇兒對安雅「只想當安雅」前 usted 後 tú）。西文譯法定案一律記在 `i18n/script/NOTES_es.md`。
 > · **等 Ray**：對照表「說明」分頁「專案目前沒有西文語言包」那句過時。
 
+# HANDOFF — 截至 `ver 2026.09.22-1926`（10-02 晚，Mac，程式 session 收工）
+
+> ⚠ `origin/main` ＝ -1926。工作區沒 commit 的 `script/speakers.js`／`script/town.js`／`reference/TIVOT_Glossary_ZH_EN_JA_ES.xlsx`
+> **不是這個 session 的**（Ray 用管理人工具改的）—— 沒碰、沒 commit。另有一個 i18n（西文）session 同日並行推過 -1906～-1909。
+> ⚠ `tools/devserver.py` 在 -1912 改過（改台詞也搜 `i18n/zh.js`）—— **8200 要重開**。
+
+**⚠⚠⚠ 新規矩（-1918）：素材快取破除改成自動**
+· `tools/bust.py` 現在會呼叫 `tools/asset_bust.py`：凡是「同名覆蓋過」的素材（git 有過 M、或工作區跟 HEAD 不同），
+  版本號一律換成 `?v=<內容雜湊>` —— 字面路徑直接蓋；背景／插圖／ci 寫進 `config.js` `ASSET_VER` 尾端的**自動區塊**；
+  飛行頁拼字串的（貼材 `geo/`、羽蛇插圖、怪 sprite）走 `fav()` ＋ `FLIGHT_AV` 自動行；飛行城整批 `CITY_V`＝整批雜湊。
+· ⇒ **覆蓋完跑一次 `python3 tools/bust.py --bump` 就好**；lint 的 `--check` 沒同步會報。憲法 §5 已註明。
+· ⚠ 新增「拼字串組路徑」的地方要過 `assetVer()`（主頁）或 `fav()`（飛行頁）。插圖的 `cgList` 以前沒掛 ASSET_VER（-1917 補）。
+
+**-1905～-1926 做完的**
+· -1905 緊張灑汗改「驚慌三珠汗」（Ray 參考圖）；插圖 `36_loti&lofa` → `36_loti_lofa`。
+· -1910／-1917 背景換圖淡入淡出接回（-664 的 `#storyBg{transition:filter}` 把 opacity 那條蓋掉）；插圖當背景（`NNN_`）淡回放慢 CG_FADE_MS×2。
+· 腳步聲最終定案（-1914／-1915）：`se_steps`＝城鎮／室外（Ray 新交 3.8 秒，增益 4.92，原 mp3 在 se/_raw）；
+  `se_stepsbig`＝遺蹟／地宮內（Ray 新交 wav 4.3 秒，增益 6.96，原檔在 _originals）——用在地宮開場追逐、伊甸古墓、羅賽爾廢城三處。
+  ⚠ 中途 -1910／-1911 我弄反過兩次，-1912 全部退回再照 Ray 的分法重接；36 秒舊 stepsbig 在回收區。
+· 夢（帝都第一夜）：開場插圖改 `005_cecilieintro`；「不要睡！看我！」唸完自己走（新欄位 `autoText`）；se_stomp 只播一次（9 秒音檔本身就是一串）；
+  恢復音效那一拍金光飄散（`fx:'goldmotes'`，借淨化的 `.fx-star`，-1924 拿掉 mix-blend 改順）；
+  戰鬥卡 `cap_dream` 新欄位 `enemyHp:330`／`startHp:1`（-1917）；戰後直接出背景、一拍後賽西莉滑進來（-1925）；
+  入夢不再閃槍棺（-1924：小睡用 `#storyFade` 淡黑、醒來不經 `settle()` 直接接夢）。
+· 城鎮非同步背景晚到不再蓋掉腳本剛換的 bg（`setSceneBg(name, done, reqAt)`，手機夢境背景讀不到）。
+· 選單關閉改右上角 ✕（-1913）。
+· 美術接上：插圖 004_renna_intro 重交、023_anyacottoncandy（雪都安雅約會「真的……跟雲朵一樣。」）、024_nouvellesmile（雪都神父那段 T3 諾薇兒笑那一拍）；
+  賽西莉 front 重交＋新差分 `cringe`（目前沒有腳本在用）。
+· 語音：賽西莉四支 `vo_cecilie_{saintinstall,obe,deathguard,lifereturn}`（-1919，接上搭檔卡）；
+  尼莫六支（-1920）——敵人卡新欄位 `hitVoice`（受擊輪播、間隔 ≥2.6 秒、點錯不出聲 -1926）／`loseVoice`／`winVoice`，開戰走 `entrance`。
+· -1926：完整推棺只壓降臨動畫、**不再連登場音一起壓**（只有前一拍劇情降臨過 `storyRose` 才靜音）——尼莫 `play` 因此開棺後會播。
+· 章節選單加「夢境戰」（帝都旅店 21:00，按睡覺入夢）。
+
+**⚠ 等 Ray／還沒驗的（累計）**
+1. 這一輪幾乎都**沒在手機實跑**：夢的整段（入夢不閃槍棺、淡黑速度、金光、HP1 進 SI、戰後滑入）、鏡湖尼莫語音、004/023/024 插圖、背景淡入速度。
+2. 語音增益是**換算的不是過鏈實量**：賽西莉（×諾薇兒平均鏈補償 1.33）、尼莫（×主角平均 1.72、三支被峰值夾）——要 Ray 聽。
+3. -1926 副作用：其他「完整推棺＋卡上有 `entrance`」的怪開棺後會開始播登場音（以前被壓掉）——聽到多一聲回報是哪一場。
+4. 「免戰」（`tivot_flight_peace_v1`，飛行免戰鈕與管理人選單共用）開著時劇情戰會被當成打贏跳過 —— Ray 問過「戰鬥怎麼被跳過」，多半是它。
+5. `pos.wav` 我判成賽西莉**生命歸還**（主動技）那一支 —— 錯了要說。
+6. 舊的累計（-1904 那一段的 3、4）：飛行畫面要點一下才有音樂（等選作法）、聖徒系列 10 張新怪的名字／等級。
+7. ⚠ 這一輪自己犯的：`_originals/illustration/004_Renna_intro.png`（舊版原檔）被我 `mv -f` 蓋掉，救不回來；以後搬檔先查目的地（用 recycle.sh）。
+
+**資產盤點（這一輪經手的）**
+| 項 | 狀態 |
+|---|---|
+| `se_steps.m4a`（3.8 秒新版） | ✔ 不欠（城鎮／室外 11 處；原 mp3 在 `se/_raw/`） |
+| `se_stepsbig.m4a`（4.3 秒新版） | ✔ 不欠（遺蹟／地宮 3 處；原 wav 在 `_originals/audio/se/`；36 秒舊版在回收區） |
+| 賽西莉語音 4 支 | ✔ 不欠（原 wav 在 `_originals/audio/vo/`） |
+| 尼莫語音 6 支 | ✔ 不欠（原 mp3 在 `_originals/audio/vo/`） |
+| 插圖 004／005_cecilieintro／023／024 | ✔ 不欠（webp 入庫，原 PNG 在 `_originals/illustration/`；004 舊原檔遺失，見上） |
+| 賽西莉 SI front／cringe | ✔ 不欠（cringe 是刻意先入庫、腳本還沒用） |
+| `resources/si/image - 2026-09-26….png`、`npc_ss_lofa_shoot.png`（畫上去的棋盤格） | ⚠ 沒處理（舊的未定項） |
+| `resources/audio/se/` 未追蹤的 `se_page1/2`、`se_pickup`、`se_pant`、`enemy_lowroar` 等 mp3 | ⚠ 沒盤（沒人交代用途） |
+
 # HANDOFF — 截至 `ver 2026.09.22-1904`（10-02，Windows，程式 session 收工）
 
 > ⚠ `origin/main` ＝ -1904。工作區未 commit 的 `script/speakers.js` **不是這個 session 的**（開工時就在），
