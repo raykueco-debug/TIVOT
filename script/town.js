@@ -5641,11 +5641,11 @@ export const TOWNS = {
         shop:'rv_grocery', keeperWho:'SHOPKEEP', kind:'grocery', hours:[8,17], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',   // 商店：通用帝都版本、店主暫用帝都（ver -1831，卡在 script/shopcards.js）
         exits:{ back:'uptown' },
         /* ══ 約會・安雅（ver -1522）══ 棉花糖。
-           ⚠ 稿上「安雅棉花糖插圖」還沒有檔案 ⇒ **不寫 `cg:`**（同酒吧那一格）。
-             圖到了補在「真的……跟雲朵一樣。」那一拍、下一拍 `cg:null` 收掉。 */
+           ⚠ 插圖 `023_anyacottoncandy`（ver -1916 接上）掛在「真的……跟雲朵一樣。」那一拍、下一拍 `cg:null` 收掉。 */
         acts:[ { flag:'vn_shop_anya', withWho:'ANYA', lines:[
-          any('amaze','真的……跟雲朵一樣。'),
-          any('smileshy','好甜。'),
+          /* ver -1916：插圖 `023_anyacottoncandy` 到了 —— 掛在這一句，下一拍收掉。 */
+          Object.assign(any('amaze','真的……跟雲朵一樣。'), { cg:'023_anyacottoncandy', cgNoTime:true }),
+          Object.assign(any('smileshy','好甜。'), { cg:null }),
         ] } ] },
       /* ⚠ 這一格**沒有** `inn:true`：旅店大廳與四扇伙伴門這一輪不做（同聖索菲亞）
          —— 只寫 `inn:true` 而沒有人應門的話，玩家會敲到一排空門（§6.5.5）。 */

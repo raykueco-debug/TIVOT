@@ -1475,8 +1475,10 @@ export const ART = {
     /* ⚠ 雙槍那一張還沒有人用（戰鬥立繪走敵人卡的 `enemy_nemo`）—— 先接著。 */
     dual:     { src:'resources/si/nemo_si_dual.webp',     top:0, bot:1535, fx:0.408 },
   } },
-  cecilie:   { cm:170, eye:32, fx:0.534, top:7, bot:1533,
-           side:'R', alt:null, base:'resources/si/cecilie_si_front.webp', expr:{
+  /* ver -1916：front 美術重交（同名覆蓋 ?v=2，measure_si 重量 top/bot/fx）；新增 `cringe`。 */
+  cecilie:   { cm:170, eye:32, fx:0.536, top:8, bot:1533,
+           side:'R', alt:null, base:'resources/si/cecilie_si_front.webp?v=2', expr:{
+    cringe:   { src:'resources/si/cecilie_si_cringe.webp',    top:7, bot:1535, fx:0.632 },
     talk:     { src:'resources/si/cecilie_si_talk.webp',      top:7, bot:1527, fx:0.539 },
     tease:    { src:'resources/si/cecilie_si_tease.webp',     top:4, bot:1529, fx:0.574 },
     upset:    { src:'resources/si/cecilie_si_upset.webp',     top:2, bot:1526, fx:0.535 },

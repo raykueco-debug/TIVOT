@@ -84,7 +84,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1915';
+export const VERSION = 'ver 2026.09.22-1916';
 
 export const GAME_CONFIG = {
 
@@ -5082,6 +5082,7 @@ export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : 
      呼叫端各自拼一次。 */
 export const ASSET_VER = {
   '008_rennaholdanya': 2,   // ver -1882：美術重交（png→webp 同名覆蓋）
+  '004_renna_intro':   2,   // ver -1916：美術重交（png→webp 同名覆蓋）
   /* ⚠ `tomb_landing3`（ver -1684，Ray 換了底層梯廳的背景）：**同名覆蓋**
      ⇒ 一定要跳版本，否則玩家的快取會抱著舊的那一張不放，而畫面上看起來
      就只是「圖沒換」，查不到原因（§5 的 -650／-905）。
