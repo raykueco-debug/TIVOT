@@ -208,6 +208,21 @@
 > · **沒實跑過**：里朋莊園整段（六場戰鬥、沙龍演出、回旅店、隔天出航說明、禁航解除）、索拉娜 19 張縮圖、挾持雙人圖的站位 —— 都要 Ray 在遊戲裡看。
 > · ⚠ 這一輪自己犯的兩次（留著提醒）：-1797 lint 報錯仍 commit 推上（之後改成 lint 通過才 commit）；-1801 `git add -A` 把 Ray 三張 untracked 夾帶進去（已移出版控）。
 
+# HANDOFF — 截至 `ver 2026.09.22-1902`（10-02，Windows，程式 session）
+
+**-1897～-1902（接在 -1896 那一段後面）**
+· 賽西莉插圖：拆成兩拍 —— 先在全黑下換圖（`fadeOut:1`），下一拍 `fadeIn:1200` 由黑淡入＋由下往上平移；
+  插圖期間三拍 `se_stomp`＋shake 跟著踩地的拍子（平移不中斷，實測 88%→0%）。
+  引擎：拍上明寫 `fadeOut` 的黑幕歸這一拍（`fadeOwner='beat'`），`cgFade` 不再提早掀。
+· **S1 切點改到夢結束後**：進帝都不再升段；隔天 07:00 的 `stage1` 閘門帶 `stage:1`（沒睡、坐到天亮也走同一道門）。
+  諾薇兒／蕾娜的 `from` 改 0（`OUTING.who` 與 `flight/talks.js` 的 `PARTY` 兩邊一起改），帝都第一天旅店門照舊。
+· 立繪編輯的「這一拍翻轉」：寫腳本那一拍的 `flip:true`（`/__line set key:'flip'`），不再寫 speakers.js；翻轉不放動畫。
+· 緊張灑汗 `bubbleFx:'nervous'` 改成五顆小水花往右上噴、0.9 秒循環。
+· 夢境戰不給錢（`moneyOf` 看卡上 `dream:true`）。
+· ⚠ 沒在瀏覽器實點：「這一拍翻轉」按鈕、灑汗的新樣子、夢境戰的錢（要打贏才看得到）、S1 閘門實際升段那一刻。
+· ⚠ ver -1897 測試時我的指令跑到了 **8200**（Ray 的 tivot-ray 那個 origin）並執行了一次 `newRun()` ——
+  那個瀏覽器分頁裡的一輪進度（旗標／時鐘／道具）被清掉；存檔庫 `tivot_save_v1` 還在。之後只在 8123 測。
+
 # HANDOFF — 截至 `ver 2026.09.22-1896`（10-02，Windows，程式 session）
 
 > ⚠⚠⚠ **換 session 先讀這一塊**：`origin/main` ＝ -1896。工作區裡 `script/speakers.js` 的未 commit 改動

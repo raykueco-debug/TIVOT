@@ -1584,7 +1584,11 @@ export const TOWNS = {
                ⚠ 分兩拍：插圖先在全黑底下換上（`#storyFade` 還蓋著），下一拍才掀黑幕＋起平移 ——
                  同一拍做的話黑幕先掀、插圖還在載，中間會露出地宮的背景（-1896 實測 0.4 秒）。 */
             { speaker:'NARRATION', text:'', auto:900, fadeOut:1, cg:'resources/ci/ci_cecilie_obe.webp' },
-            { speaker:'NARRATION', text:'', auto:2900, fadeIn:1200, cgPan:'up' },
+            /* 插圖期間照樣隨踩地的拍子震（ver -1902，Ray：「夢中賽西莉插圖時也要隨 stomp 拍子震動」）——
+               拆成三拍，每拍一聲 `se_stomp`＋shake；只有第一拍寫 `cgPan`（後兩拍不寫＝不重置平移），總長照舊約 2.9 秒。 */
+            { speaker:'NARRATION', text:'', auto:900,  fadeIn:1200, cgPan:'up', se:'se_stomp', shake:true },
+            { speaker:'NARRATION', text:'', auto:900,  se:'se_stomp', shake:true },
+            { speaker:'NARRATION', text:'', auto:1100, se:'se_stomp', shake:true },
             /* ⚠ `cg:null`：插圖的層級在立繪之上，不收的話 cringe 那張立繪被整個蓋住。 */
             { speaker:'CECILIE_X', text:'怎麼能讓你死在這裡……怎麼能讓你死在這裡！', cg:null,
               portrait:{ char:'CECILIE_X', expr:'fluster', show:true } },
