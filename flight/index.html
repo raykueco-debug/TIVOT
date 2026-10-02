@@ -3,7 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=1908"></script>
+<script src="../orientation.js?v=1909"></script>
+<script>
+/* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
+   （document.write，只在選了有譯文的語言時）。語言判定與 i18n.js 的 LANG 同一套
+   （手選優先 → 瀏覽器首語系；⚠ 改一邊要改另一邊）。 */
+(function(){
+  var l=null; try{ l=localStorage.getItem('tivot.lang'); }catch(e){}
+  if(!l){ try{ var n=(navigator.languages&&navigator.languages[0])||navigator.language||''; if(String(n).toLowerCase().indexOf('es')===0) l='es'; }catch(e){} }
+  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=1909"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=1909"><\/script>');
+})();
+function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
+document.addEventListener('DOMContentLoaded', function(){
+  var t=window.__TIVOT_TR; if(!t) return;
+  var w=document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for(var n=w.nextNode(); n; n=w.nextNode()){ var v=n.nodeValue, k=v.trim(); if(k && t[k]!=null) n.nodeValue=v.replace(k, t[k]); }
+  document.querySelectorAll('[placeholder],[title],[aria-label],[alt]').forEach(function(el){
+    ['placeholder','title','aria-label','alt'].forEach(function(a){ var v=el.getAttribute(a); if(v && t[v.trim()]!=null) el.setAttribute(a, t[v.trim()]); }); });
+});
+</script>
 <title>TIVOT — 銀月大陸航行</title>
 <style>
   :root{ --gold:#c9a227; --parch:#d8cdb4; }
@@ -212,7 +230,7 @@
     100%{transform:translate(0,0);} }
   #fkerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.22,.9,.25,1);
-    background-image:url('../resources/vfx/kerberos_door.webp?v=1908edab');
+    background-image:url('../resources/vfx/kerberos_door.webp?v=1909edab');
     background-repeat:no-repeat;background-size:100% 100%;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -235,8 +253,8 @@
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1908edab");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1908edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=1909edab");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=1909edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -256,8 +274,8 @@
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1908edab");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1908edab");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1909edab");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=1909edab");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -622,25 +640,25 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1908edab" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=1909edab" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=1908edab" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1908edab" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1908edab" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1908edab" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1908edab" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1908edab" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1908edab" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1908edab" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1908edab" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1908edab" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=1909edab" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=1909edab" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=1909edab" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=1909edab" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=1909edab" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=1909edab" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=1909edab" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=1909edab" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=1909edab" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=1909edab" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=1908edab" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=1909edab" alt=""><i class="fkp-shine"></i>
   </div></div></div>
-  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1908edab" alt="">
+  <img id="fkerbTop" src="../resources/vfx/kerberos_top.webp?v=1909edab" alt="">
 </div></div>
 <div id="boot">
   <div id="bRing">
@@ -661,11 +679,11 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=1908"></script>
+<script src="settlement.js?v=1909"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=1908"></script>
+<script src="talks.js?v=1909"></script>
 <script>
 /* 破圖框一律不畫（ver -1881，同主頁 main.js 那一支，這一頁是另一個 document）。 */
 document.addEventListener('error', e=>{ const t=e.target; if(t && t.tagName==='IMG') t.classList.add('img-broken'); }, true);
@@ -738,7 +756,7 @@ const COLOR_URL  = 'silvermoon_terrain.png'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -1908';
+const FLIGHT_VER = 'ver -1909';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1103,7 +1121,7 @@ const SETTLEMENTS = [
      街廓，要復原直接看 git。 */
   /* ⚠ `town`＝**這座城在 `script/town.js` 裡的鑰匙**（ver -416）。有寫的才會出現降落鈕，
      沒寫的城還沒有城鎮內容 —— 降下去會是一片空白。加城鎮時記得補這一欄。 */
-  { n:'帝都',   x:1005, y:600, t:'city1', f:'church', town:'capital',
+  { n:i18nT('帝都'),   x:1005, y:600, t:'city1', f:'church', town:'capital',
     plan:'city/capital_plan.webp', planH:'city/capital_h.webp',
     planW:1250, planRot:0.0, planTall:55 },
   /* 聖王廳＝塔林立的聖座，量體要看得出來。planTall 100 遠高於其他城的 26 ——
@@ -1111,7 +1129,7 @@ const SETTLEMENTS = [
        橫向的 2.9 倍，抬到 100 等於在螢幕上位移 290 個單位，網格被剪成長條。
        40 是「量體立得出來、還沒開始拖曳」的實測上限，其他城是 26。
        要再高就得先讓量體改走多邊形（街廓拉伸），不能靠位移網格頂點。 */
-  { n:'聖王廳', x:934,  y:606, t:'city2', f:'church',
+  { n:i18nT('聖王廳'), x:934,  y:606, t:'city2', f:'church',
     plan:'city/holysee_plan.webp', planH:'city/holysee_h.webp',
     /* ⚠ ver -213：整體縮至 50%(1100→550)。planTall 必須同步減半，否則
        高度/半徑比從 0.18 變成 0.36，聖座會變成一叢細高竹竿。 */
@@ -1142,7 +1160,7 @@ const SETTLEMENTS = [
      掃描城心與旋轉取吻合度最高者（1366,936,1.40 → 91.7%，原本 1335,929,1.10
      只有 89.2%）。改圖或改地形都要重跑那個搜尋。
      ⚠ 這三個值必須與 build_city.py 的 JOBS 一致。 */
-  { n:'薇拉馮德港', x:1366, y:936, t:'city1', f:'empire', c:1, sea:1.90, town:'verafond',   // ver -1764：接上 TOWNS.verafond（降落鈕）
+  { n:i18nT('薇拉馮德港'), x:1366, y:936, t:'city1', f:'empire', c:1, sea:1.90, town:'verafond',   // ver -1764：接上 TOWNS.verafond（降落鈕）
     plan:'city/velafonte_plan.webp', planH:'city/velafonte_h.webp',
     planW:1050, planRot:1.40, planTall:50,
     /* ⚠⚠ **整地**（ver -443，Ray：「地圖變形問題參照聖王廳的處理方式」）。
@@ -1171,7 +1189,7 @@ const SETTLEMENTS = [
   /* ⚠ `town:'santasofia'`（ver -1121）＝ 12 格的地圖內容做好了，降得下去了。
      ⚠⚠ x/y/planRot **一個字都不要動**（見上面那一段：那是 place_city.py 搜出來的，
        而且必須與 build_city.py 的 JOBS 一致）。 */
-  { n:'聖索菲亞城', x:559, y:562, t:'city1', f:'free', town:'santasofia',
+  { n:i18nT('聖索菲亞城'), x:559, y:562, t:'city1', f:'free', town:'santasofia',
     plan:'city/stown_plan.webp', planH:'city/stown_h.webp',
     planW:800, planRot:0.79, planTall:50 },
   /* ── 北方泊地（ver -444，Ray 交件 `Northport1516,150.png`）──────────────
@@ -1192,7 +1210,7 @@ const SETTLEMENTS = [
        -444 的 `plateThick`／`noLandFill`（貼盤子時代的厚度與懸空）因此退役。 */
   /* `smoke`（ver -446，Ray：「讓北方泊地城鎮冒煙」）：煙囪數與種子；
      `area` 是煙囪落點的局部範圍（-1..1）—— 上緣是碼頭與海灣，煙囪讓開它。 */
-  { n:'北方泊地', x:1516, y:150, t:'city2', f:'free', c:1, sea:0.0,
+  { n:i18nT('北方泊地'), x:1516, y:150, t:'city2', f:'free', c:1, sea:0.0,
     town:'northport',   // ver -565：城鎮骨架上線（script/town.js northport，兩邊互指）→ 降落鈕
     plan:'city/northport_plan.webp', planH:'city/northport_h.webp',
     planW:700, planRot:0.0, planTall:40,
@@ -1207,7 +1225,7 @@ const SETTLEMENTS = [
        maxdim 200（像素化）；整地照聖王廳。
      ⚠⚠ mx/my/planW/planRot **必須與 build_city.py 的 shinier JOB 一致**。
      ⚠ `planRot` 待 3D 對齊地形湖水（Ray：「北向貼地形現有的湖水，可旋轉調整」）——先 0.0。 */
-  { n:'夏爾村', x:1098, y:798, t:'village', f:'empire', town:'shinier',   // ver -835：Ray 二改（-834 的 (1116,828) 還是泡在湖裡）
+  { n:i18nT('夏爾村'), x:1098, y:798, t:'village', f:'empire', town:'shinier',   // ver -835：Ray 二改（-834 的 (1116,828) 還是泡在湖裡）
     plan:'city/shinier_plan.webp', planH:'city/shinier_h.webp',
     /* ver -1114（Ray：「房子是平的」）：`planTall` 24→48 —— 量體的牆高＝這個數字
        × 那一塊的 h（build_city 的 `towers` 讓屋頂有 0.20~0.62 的高低差）。
@@ -1239,7 +1257,7 @@ const SETTLEMENTS = [
        也整批拔掉了。城鎮資料（`bgm:portside`／`entry:square`）-1291 之前就在。
      ⚠ `planTall` 40：碼頭市鎮，與北方泊地同級（帝都 55、聖王廳 68）。
      ⚠ 整地照聖王廳那一套；它是港城，「海不整平」的守門會自動吃到。 */
-  { n:'東方泊地', x:2003, y:590, t:'city2', f:'free', c:1, sea:0.0, town:'eastport',
+  { n:i18nT('東方泊地'), x:2003, y:590, t:'city2', f:'free', c:1, sea:0.0, town:'eastport',
     plan:'city/eastport_plan.webp', planH:'city/eastport_h.webp',
     planW:700, planRot:-1.5708, planTall:40,
     podium:{ r:1.05, skirt:8, lift:0 } },
@@ -1256,7 +1274,7 @@ const SETTLEMENTS = [
        —— 北方泊地 0.401/0.135 與帝都 0.422/0.235 之間，正是規格要的那一段。
      ⚠ 街廓 280 塊：在既有城的範圍內（聖王廳 24／夏爾村 23／北方泊地 180／
        帝都 344）—— `maxdim` 給 1254（不縮）時門檻一定要跟著放大，見 JOB。 */
-  { n:'雪都瓦恩霍姆', x:577, y:243, t:'city2', f:'free', c:1, sea:0.0,
+  { n:i18nT('雪都瓦恩霍姆'), x:577, y:243, t:'city2', f:'free', c:1, sea:0.0,
     town:'ravnsdal',
     plan:'city/ravnsdal_plan.webp', planH:'city/ravnsdal_h.webp',
     planW:800, planRot:-1.5708, planTall:45,
@@ -2003,7 +2021,7 @@ async function loadMapEdits(){
     MAP_EDITS=localEdits;
     console.warn('⚠ 地圖編輯：'+localEdits.length+' 筆還只在這個瀏覽器裡（檔案是空的）'
                +' —— 正在搬進 flight/map_edits.json…');
-    mapEditPush('一次性搬家');
+    mapEditPush(i18nT('一次性搬家'));
   }
 }
 
@@ -2090,14 +2108,14 @@ function meStroke(pts, r, cb, core){
      郊區與軌道自己算出來的，手塗會與 `buildRoads`／`buildRails` 打架。
    ⚠ 水也不給 —— 那是「水」筆的事（它還要設 RIV）。 */
 const MAT_PALETTE=[
-  { g:0,  n:'深林', c:[ 58, 72, 48] },
-  { g:1,  n:'疏林', c:[ 92,102, 62] },
-  { g:2,  n:'灰岩', c:[124,124,124] },
-  { g:3,  n:'棕岩', c:[122,104, 82] },
-  { g:4,  n:'暗礫', c:[ 92, 88, 80] },
-  { g:5,  n:'淺礫', c:[150,142,126] },
-  { g:6,  n:'荒土', c:[136,116, 84] },
-  { g:7,  n:'雪原', c:[224,228,234] },
+  { g:0,  n:i18nT('深林'), c:[ 58, 72, 48] },
+  { g:1,  n:i18nT('疏林'), c:[ 92,102, 62] },
+  { g:2,  n:i18nT('灰岩'), c:[124,124,124] },
+  { g:3,  n:i18nT('棕岩'), c:[122,104, 82] },
+  { g:4,  n:i18nT('暗礫'), c:[ 92, 88, 80] },
+  { g:5,  n:i18nT('淺礫'), c:[150,142,126] },
+  { g:6,  n:i18nT('荒土'), c:[136,116, 84] },
+  { g:7,  n:i18nT('雪原'), c:[224,228,234] },
 ];
 const RIVER_COL=[88,116,132];   // ⚠ 與 loadWorld 的河道偵測同一組數字（見那一段的註解）
 /* 挖一刀的深度（世界單位，ver -1259 Ray 指定）。⚠ 它是**常數不是滑桿** ——
@@ -3186,11 +3204,11 @@ function buildSettlements(){
 
 /* 地標：座標＝地圖像素座標（同 terrain_generator.py 的 PLACES） */
 const PLACES=[
-  {x:1005,y:600, name:'帝都',   type:'教廷・中樞'},
-  {x:934, y:606, name:'聖王廳', type:'教廷・聖座'},
+  {x:1005,y:600, name:i18nT('帝都'),   type:i18nT('教廷・中樞')},
+  {x:934, y:606, name:i18nT('聖王廳'), type:i18nT('教廷・聖座')},
   /* ⚠ 原本 (1310,965) 在海上，而且與 SETTLEMENTS 那一列差了 60px
      —— 地圖上會看到城與名牌分家。名牌跟著城走。 */
-  {x:1366,y:936, name:'薇拉馮德港',   type:'帝國・港灣'},
+  {x:1366,y:936, name:i18nT('薇拉馮德港'),   type:i18nT('帝國・港灣')},
   /* ══ 卡耶爾山谷（ver -1240，Ray：「把那一組放在卡耶爾山谷」）══
      美術 2026-09-06 交的 `Canyon_*` 那一組（死亡峽谷，5 節點×3 時段）接在這裡；
      節點資料在 `script/town.js` 的 `canyon`。
@@ -3212,21 +3230,21 @@ const PLACES=[
        ⚠ **不要 `podium`**（不整地）：那道谷是 -1235~-1237 手刻的，整平就是把谷填掉。
        ⚠ **不進 `SETTLEMENTS`**：進了會被 `buildRoads` 連一條路通到死谷 ——
          平面圖靠 `cityPlates()` 這條路吃到（ver -1243）。 */
-  {x:985, y:858, name:'卡耶爾山谷', n:'卡耶爾山谷', type:'險地', town:'canyon',
+  {x:985, y:858, name:i18nT('卡耶爾山谷'), n:i18nT('卡耶爾山谷'), type:i18nT('險地'), town:'canyon',
     plan:'city/canyon_plan.webp', planW:450, planRot:0},
   /* ⚠ ver -313 由 Ray 現場指定 (1496,160)；ver -444 城的插畫落地在 (1516,150)
      （檔名自帶座標），名牌跟著城走（同薇拉馮德那一條的理由）。
      export_mapref.py 的 PLACES 要同步，否則地圖參考圖會標在舊位置。 */
-  {x:1516,y:150, name:'北方泊地',     type:'泊地'},
+  {x:1516,y:150, name:i18nT('北方泊地'),     type:i18nT('泊地')},
   /* ⚠ ver -1177：城的插畫落地在 (2003,590)（build_city 的 eastport JOB），
      名牌跟著城走（同薇拉馮德那一條的理由）。舊值 (2030,590) 在**海上**。
      ⚠ export_mapref.py 的 PLACES 要同步。 */
-  {x:2003,y:590, name:'東方泊地',     type:'泊地'},
+  {x:2003,y:590, name:i18nT('東方泊地'),     type:i18nT('泊地')},
   /* ver -836（Ray：「要跟帝都一樣遠遠的就看得到提示箭頭」）：夏爾村的名牌。
      遠距的金箭頭與近距展開的名牌都是 drawPlaces 畫的 —— 沒這一筆就什麼都沒有。
      ⚠ 座標＝SETTLEMENTS 那一列（名牌跟著城走，§6.7.5）；拖城工具搬同名的兩份。
      ⚠ export_mapref.py 的 PLACES 要同步。 */
-  {x:1098,y:798, name:'夏爾村',       type:'帝國・村落'},
+  {x:1098,y:798, name:i18nT('夏爾村'),       type:i18nT('帝國・村落')},
   /* ══⚠⚠ 拉芬斯達爾城（Ravnsdal，ver -1191，Ray 指定 (577,243)）══════════════
      規格在 `resources/map/_ravnsdal_spec.md`（美術 ver -1162/-1163）。
      · 城本體在 `SETTLEMENTS`（ver -1193 落地），**降落鈕也掛在那一列**
@@ -3271,12 +3289,12 @@ const PLACES=[
        `PLACE_STAGE_FROM` 是空的），所以換字不會打斷誰。
        ⚠ 唯一的代價：這台機器若存過這座城的**拖城覆寫**，鑰匙對不上會退回
          code 寫的 (577,243) —— 而那本來就是權威值（§6.7.5）。 */
-  {x:577, y:243, name:'雪都瓦恩霍姆', type:'港市'},
+  {x:577, y:243, name:i18nT('雪都瓦恩霍姆'), type:i18nT('港市')},
   /* ══ 夏爾森林（ver -858，Ray：「開啟的新地點會標在大地圖上，日後可直接降落」）══
      `flag`＝**發現了才存在**（sv_forest_found，第一次從村子野外走進森林時
      town.open 插）：drawPlaces 與著陸掃描都會跳過沒插旗的（見 -858 的兩處守門）。
      座標在村子西南（森林在村外圍）；SETTLEMENTS 的同名著陸列要同步。 */
-  {x:1072,y:824, name:'夏爾森林', n:'夏爾森林', type:'森林', flag:'sv_forest_found',
+  {x:1072,y:824, name:i18nT('夏爾森林'), n:i18nT('夏爾森林'), type:i18nT('森林'), flag:'sv_forest_found',
     town:'shinier_forest'},   /* `n`＝降落鈕的字（doLand 讀 S.n，同 SETTLEMENTS 欄名）
                                  ⚠ 不進 SETTLEMENTS（那張表會被道路網與程序建築當成城）
                                  ——著陸掃描（nearestTown）兼掃帶 town 的 PLACES。 */
@@ -3296,7 +3314,7 @@ const PLACES=[
        （那一格的**下方**已經是回斷崖邊的路）。
      ⚠ 不進 `SETTLEMENTS`（同夏爾森林）：那張表會被道路網與程序建築當成城。
      ⚠ 名牌一直看得見（沒有 `flag`）：它是地圖上標出來的地點，不是隱藏點。 */
-  {x:1038,y:798, name:'木雅克神殿', n:'木雅克神殿', type:'遺蹟',
+  {x:1038,y:798, name:i18nT('木雅克神殿'), n:i18nT('木雅克神殿'), type:i18nT('遺蹟'),
     town:'shinier_forest', node:'ruins', stageFrom:8, ruin:'muyak'},
   /* ══⚠⚠ 隱藏遺蹟（ver -1105，Ray：「在 1144,788 位置放置一個隱藏遺蹟，
      要用安雅感知才掃得到」）══
@@ -3329,8 +3347,8 @@ const PLACES=[
        所以**看畫面與看程式會得到兩個答案**，這一版收斂成一個。
        ⚠ 他同時用刪除筆把舊的 `石製遺蹟` 刪掉了（刪除帳本裡有那一筆）——
          程式端這一版也刪了，所以那筆帳一起清掉就好。 */
-  {x:1080,y:676, name:'無名遺蹟', n:'無名遺蹟', type:'遺蹟',
-   nameWhen:[{ need:'fallen_named', name:'瓦努努石陣' }],
+  {x:1080,y:676, name:i18nT('無名遺蹟'), n:i18nT('無名遺蹟'), type:i18nT('遺蹟'),
+   nameWhen:[{ need:'fallen_named', name:i18nT('瓦努努石陣') }],
    sense:true, flag:'ruin_a_found', ruin:'stone', town:'fallen', stageFrom:8},
   /* ══⚠⚠ 石製遺蹟（ver -1107，Ray：「1125,757 放一個隱藏地點／石製遺蹟，走 B，
      要像素風，倒塌的石柱跟石地板」）══
@@ -3374,7 +3392,7 @@ const PLACES=[
      ⚠ `sense` 不加：它不是隱藏點，遠遠就該看得到名牌（-1134 起就是這樣）。
      ⚠ 這一格與 `export_mapref.py` 的 PLACES **兩邊都要改**（那張參考圖是給美術
        對位置用的，不同步就會標在舊位置）。 */
-  {x:723, y:137, name:'伊甸古墓', n:'伊甸古墓', type:'遺蹟', town:'tomb', ruin:'tomb', stageFrom:8},
+  {x:723, y:137, name:i18nT('伊甸古墓'), n:i18nT('伊甸古墓'), type:i18nT('遺蹟'), town:'tomb', ruin:'tomb', stageFrom:8},
   /* ══⚠⚠ 鏡湖（ver -1491 放點、**ver -1496 改名**）══════════════════════════
      Ray -1491：「在 647 135 放一個隱藏地點 山谷湖碑」→ -1496：「改成『鏡湖』」。
      ⚠⚠ **旗沿用 `lakestele_found` 不改**（同無名遺蹟 -1320 改叫瓦努努石陣時
@@ -3415,7 +3433,7 @@ const PLACES=[
        石製遺蹟／伊甸古墓），程式不必改。
      ⚠ **`sense:true` 不動**：名牌仍然要感應才掃得到 —— 掃不到就降不下去，
        那正是「隱藏地點」該有的樣子。 */
-  {x:647, y:135, name:'鏡湖', n:'鏡湖', type:'遺蹟',
+  {x:647, y:135, name:i18nT('鏡湖'), n:i18nT('鏡湖'), type:i18nT('遺蹟'),
    sense:true, flag:'lakestele_found', ruin:'stele', town:'lake'},
   /* ══⚠⚠ 貝利薩爾遺址（ver -1156，Ray：「在 1972,656 放一個崩壞的哥德式的古堡…
      地點為貝利薩爾遺址」「沒有地宮，就是整個哥德古堡」）══
@@ -3442,14 +3460,14 @@ const PLACES=[
        而降落點到城堡 432 —— 差的那 48 就是讓開量體用的。看到這裡想「順手修一下」
        之前先讀這一段。
      ⚠ 只有這一座需要（其餘遺蹟最高 88，撞不到）；日後再有很高的量體照這個辦法挪。 */
-  {x:1972, y:656, name:'貝利薩爾遺址', n:'貝利薩爾遺址', type:'遺蹟',
+  {x:1972, y:656, name:i18nT('貝利薩爾遺址'), n:i18nT('貝利薩爾遺址'), type:i18nT('遺蹟'),
    town:'belisar', ruin:'belisar', land:{x:1951, y:651}, stageFrom:8},
   /* ══ 羅賽爾廢城（ver -1746 放上、-1753 正名並接上 `TOWNS.dunmor`，Ray 指定座標 183,762）══ 地表的手寫量體 `RUIN_ART.dunmor`。
      `town:'dunmor'` ⇒ 降落鈕（`nearestTown` 兼掃帶 town 的 PLACES），落在那張圖的 `entry`（堤道）。
      ⚠ 最高 78，不必挪降落點（同貝利薩爾那條 `land:` 的理由）。
      ⚠ 這一點在**第 9 國（羅賽爾）＝禁航區**裡：正常遊玩飛不進去（試飛放行）。
      ⚠ 不進 SETTLEMENTS（同貝利薩爾：那張表會被當成城去長道路與程序建築）。 */
-  {x:183, y:762, name:'羅賽爾廢城', n:'羅賽爾廢城', type:'遺蹟', ruin:'dunmor', town:'dunmor'},   // ver -1753：正名＋接上拓樸（降落鈕）
+  {x:183, y:762, name:i18nT('羅賽爾廢城'), n:i18nT('羅賽爾廢城'), type:i18nT('遺蹟'), ruin:'dunmor', town:'dunmor'},   // ver -1753：正名＋接上拓樸（降落鈕）
 ];
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -4578,7 +4596,7 @@ const SENSE_TOTAL_MS  = SENSE_SUMMON_MS + SENSE_HOLD_MS;
    取「藍明顯高於紅且夠亮」的像素、限定在領結那一帶，取重心。 */
 const SENSE_BROOCH = { x:0.4934, y:0.3864 };
 const STAR_KEY  = 'tivot_stars_v1';
-const STAR_KIND = {峰:'孤峰',崖:'斷崖',谷:'窪谷',岬:'海岬',水:'水濱',島:'孤島'};
+const STAR_KIND = {峰:i18nT('孤峰'),崖:i18nT('斷崖'),谷:i18nT('窪谷'),岬:i18nT('海岬'),水:i18nT('水濱'),島:i18nT('孤島')};
 /* 地圖上的星號顯示：0＝全關、1＝只顯示已發現（正式行為）、2＝全部顯示。
    ⚠ 2 是**管理人專用的驗收視角** —— 一般玩家沒有這個開關，也不該看得到
      沒發現的點（見上面的規則）。 */
@@ -4835,9 +4853,9 @@ const SENSE_TRY_WIN = 30000;    // 滑動視窗＝冷卻 30 秒
    三個人的站位都是 'L'，輪到誰就誰上場 —— 對白演出通則說同側換人要
    「舊角滑出、新角滑入」，那由 castEnter 自己處理，這裡只管挑人。 */
 const SENSE_CHIME = [
-  {who:'sorana',   text:'真會使喚人耶！'},
-  {who:'nouvelle', text:'讓安雅先休息一下吧？'},
-  {who:'renna',    text:'不要太勉強耶。'},
+  {who:'sorana',   text:i18nT('真會使喚人耶！')},
+  {who:'nouvelle', text:i18nT('讓安雅先休息一下吧？')},
+  {who:'renna',    text:i18nT('不要太勉強耶。')},
 ];
 let senseChimeI = 0;
 /* ⚠ 對白**不自動跳拍**（Ray 指定改成點擊推進），所以沒有「每拍停留多久」。
@@ -4881,7 +4899,7 @@ const FLIGHT_CAST = ['anya','sorana','nouvelle','renna'];
 const PORTRAIT = {
   /* 無立繪的蕾娜話框（ver -753，Ray：「大地圖插一個蕾娜無立繪話框」）：
      沒有 src → castEnter 的「還沒有立繪的人不上場」那道門直接跳過，只出名字欄＋文字。 */
-  renna_v:  { name:'蕾娜' },
+  renna_v:  { name:i18nT('蕾娜') },
 };
 const PORTRAIT_EXPR = {};
 let artReady = false;
@@ -5466,7 +5484,7 @@ function flStudioStage(){
   let kR = R ? pkey(flStudioKey(R)) : null;
   if(kR){ const al=kR.replace('/','~')+'#R'; PORTRAIT[al]=PORTRAIT[kR]; kR=al; }
   const sides={}; if(kL) sides[baseWho(kL)]='L'; if(kR) sides[kR]='R';
-  const tag='（左）'+(L?(L.expr||'基本'):'—')+'　（右）'+(R?(R.expr||'基本'):'—');
+  const tag=i18nT('（左）')+(L?(L.expr||i18nT('基本')):'—')+i18nT('　（右）')+(R?(R.expr||i18nT('基本')):'—');
   const t=performance.now();
   say([{ who:(kR||kL), text:tag }], t, { sides, force:true, done:()=>{ if(flStudio) flStudioStage(); } });
   /* 一拍只會叫說話的那一個上台 —— 兩個人要同時在台上，直接走上台的唯一入口（`castEnter`）。 */
@@ -5479,10 +5497,10 @@ function flStudioRows(){
   const chars=Object.keys(PORTRAIT).filter(k=>k.indexOf('/')<0 && PORTRAIT[k].src);
   const ss='flex:1;min-width:0;min-height:30px;font:inherit;color:#ece6d8;background:#1a1426;border:1px solid #8a6d2e;border-radius:6px;';
   const row=sd=>{ const cur=tuneHubSel[sd]||{};
-    const co='<option value="">（無）</option>'+chars.map(k=>'<option value="'+k+'"'+(k===cur.who?' selected':'')+'>'+(PORTRAIT[k].name||k)+'（'+k+'）</option>').join('');
+    const co=i18nT('<option value="">（無）</option>')+chars.map(k=>'<option value="'+k+'"'+(k===cur.who?' selected':'')+'>'+(PORTRAIT[k].name||k)+i18nT('（')+k+i18nT('）</option>')).join('');
     const exs=Object.keys((cur.who && PORTRAIT_EXPR[cur.who])||{});
-    const ex='<option value="">（基本）</option>'+exs.map(e=>'<option'+(e===cur.expr?' selected':'')+'>'+e+'</option>').join('');
-    return '<div style="display:flex;align-items:center;gap:6px"><span style="width:1.5em;color:#d4a94a">'+(sd==='L'?'左':'右')+'</span>'
+    const ex=i18nT('<option value="">（基本）</option>')+exs.map(e=>'<option'+(e===cur.expr?' selected':'')+'>'+e+'</option>').join('');
+    return '<div style="display:flex;align-items:center;gap:6px"><span style="width:1.5em;color:#d4a94a">'+(sd==='L'?i18nT('左'):i18nT('右'))+'</span>'
       +'<select data-sc="'+sd+'" style="'+ss+'">'+co+'</select><select data-se="'+sd+'" style="'+ss+'"'+(cur.who?'':' disabled')+'>'+ex+'</select></div>'; };
   return row('L')+row('R');
 }
@@ -5510,7 +5528,7 @@ function tuneFlTick(){
   const want=!!sayQueue || flStudio;
   if(!b){
     if(!want) return;
-    b=document.createElement('button'); b.id='flTuneBtn'; b.type='button'; b.textContent='立繪';
+    b=document.createElement('button'); b.id='flTuneBtn'; b.type='button'; b.textContent=i18nT('立繪');
     b.style.cssText='position:fixed;left:6px;top:calc(env(safe-area-inset-top,0px) + 76px);z-index:9000;'
       +'padding:6px 8px;font:12px/1 serif;letter-spacing:2px;color:#d4a94a;background:rgba(10,8,14,.78);'
       +'border:1px solid #8a6d2e;border-radius:8px;';
@@ -5533,8 +5551,8 @@ function tuneFlRender(){
   p.style.display = tuneFlOn ? 'flex' : 'none';
   if(!tuneFlOn) return;
   const who=tuneFlCast();
-  const studio = flStudio ? flStudioRows()+'<div style="display:flex;gap:6px"><button data-act="exit" style="min-height:30px;font:inherit;color:#ece6d8;background:rgba(40,32,56,.9);border:1px solid #8a6d2e;border-radius:7px;padding:0 12px">離開</button></div>' : '';
-  if(!who.length){ p.innerHTML=studio+'<div>台上沒有立繪</div>'; flStudioBind(p); return; }
+  const studio = flStudio ? flStudioRows()+i18nT('<div style="display:flex;gap:6px"><button data-act="exit" style="min-height:30px;font:inherit;color:#ece6d8;background:rgba(40,32,56,.9);border:1px solid #8a6d2e;border-radius:7px;padding:0 12px">離開</button></div>') : '';
+  if(!who.length){ p.innerHTML=studio+i18nT('<div>台上沒有立繪</div>'); flStudioBind(p); return; }
   if(who.indexOf(tuneFlWho)<0) tuneFlWho=who[who.length-1];
   const P=PORTRAIT[tuneFlWho], O=tuneFlOrig[tuneFlWho];
   const n=v=>(v==null?'—':(+v).toFixed(3).replace(/\.?0+$/,''));
@@ -5551,23 +5569,23 @@ function tuneFlRender(){
       這個人最近講的那一拍**（`who:'角色/差分'`），寫進腳本（`/__beat` field=who）。工作室上面已經有選角兩列，不重複。 */
    +(flStudio ? '' : (()=>{ const base=tuneFlBase(tuneFlWho), cur=String(tuneFlWho).split('/')[1]||'';
        const ks=Object.keys(PORTRAIT_EXPR[base]||{}); const bt=tuneFlBeat(base);
-       return '<div style="display:flex;align-items:center;gap:6px"><span style="flex:1">差分</span>'
+       return i18nT('<div style="display:flex;align-items:center;gap:6px"><span style="flex:1">差分</span>')
          +'<select data-bx style="flex:2;min-height:30px;font:inherit;color:#ece6d8;background:#1a1426;border:1px solid #8a6d2e;border-radius:6px">'
-         +'<option value="">（基本）</option>'+ks.map(k=>'<option'+(k===cur?' selected':'')+'>'+k+'</option>').join('')+'</select></div>'
-         +'<div style="font-size:11px;color:#8a6d2e">'+(bt ? '改寫這一拍：「'+(bt.b.text||'')+'」' : '⚠ 找不到這個人講的那一拍')+'</div>'; })())
-   +row('大小 cm', btn('data-k="cm" data-d="-1"','－'), btn('data-k="cm" data-d="1"','＋'), inp('cm', n(P.cm), 1))
-   +row('上下', btn('data-k="yShift" data-d="1"','↑'), btn('data-k="yShift" data-d="-1"','↓'), inp('yShift', n(P.yShift||0), 1))
-   +row('左右', btn('data-k="fxShift" data-d="0.005"','←'), btn('data-k="fxShift" data-d="-0.005"','→'), inp('fxShift', n(P.fxShift||0), 0.005))
-   +'<div style="display:flex;gap:6px">'+btn('data-act="big"','步進×5', tuneFlBig?'background:#d4a94a;color:#120f1a;':'')
-   +btn('data-act="undo"'+(O?'':' disabled'),'還原', O?'':'opacity:.35;')
-   +btn('data-act="save"'+(O?'':' disabled'),(tuneFlArm===tuneFlWho?'確認寫入？':'儲存'),'flex:1;color:#d4a94a;'+(O?'':'opacity:.35;'))
-   +btn('data-act="std"',(tuneFlArm==='std:'+tuneFlBase(tuneFlWho)?'確認標準化？':'標準化'))+'</div>'
+         +i18nT('<option value="">（基本）</option>')+ks.map(k=>'<option'+(k===cur?' selected':'')+'>'+k+'</option>').join('')+'</select></div>'
+         +'<div style="font-size:11px;color:#8a6d2e">'+(bt ? i18nT('改寫這一拍：「')+(bt.b.text||'')+i18nT('」') : i18nT('⚠ 找不到這個人講的那一拍'))+'</div>'; })())
+   +row(i18nT('大小 cm'), btn('data-k="cm" data-d="-1"',i18nT('－')), btn('data-k="cm" data-d="1"',i18nT('＋')), inp('cm', n(P.cm), 1))
+   +row(i18nT('上下'), btn('data-k="yShift" data-d="1"','↑'), btn('data-k="yShift" data-d="-1"','↓'), inp('yShift', n(P.yShift||0), 1))
+   +row(i18nT('左右'), btn('data-k="fxShift" data-d="0.005"','←'), btn('data-k="fxShift" data-d="-0.005"','→'), inp('fxShift', n(P.fxShift||0), 0.005))
+   +'<div style="display:flex;gap:6px">'+btn('data-act="big"',i18nT('步進×5'), tuneFlBig?'background:#d4a94a;color:#120f1a;':'')
+   +btn('data-act="undo"'+(O?'':' disabled'),i18nT('還原'), O?'':'opacity:.35;')
+   +btn('data-act="save"'+(O?'':' disabled'),(tuneFlArm===tuneFlWho?i18nT('確認寫入？'):i18nT('儲存')),'flex:1;color:#d4a94a;'+(O?'':'opacity:.35;'))
+   +btn('data-act="std"',(tuneFlArm==='std:'+tuneFlBase(tuneFlWho)?i18nT('確認標準化？'):i18nT('標準化')))+'</div>'
 
    /* 改這一句台詞（ver -1828，Ray：「對話框也插個編輯鈕改台詞」）：飛行的對話框畫在 canvas 上掛不了鈕，放在這裡。
       改的是**現在這一拍**（原始台詞，`/__text` 以原台詞＋who＋前後一拍定位）。 */
    +(flStudio || !sayQueue || !sayQueue[sayIdx] ? '' :
      '<div style="display:flex;gap:6px;align-items:flex-start"><textarea data-line rows="2" style="flex:1;font:inherit;color:#ece6d8;background:#1a1426;border:1px solid #8a6d2e;border-radius:6px;padding:4px"></textarea>'
-     +btn('data-act="line"','改台詞')+'</div>')
+     +btn('data-act="line"',i18nT('改台詞'))+'</div>')
    +(tuneFlMsg ? '<div style="font-size:11px;color:'+(/失敗/.test(tuneFlMsg)?'#e57373':'#8fd18f')+'">'+tuneFlMsg+'</div>' : '');
   flStudioBind(p);
   { const bx=p.querySelector('select[data-bx]');
@@ -5622,26 +5640,26 @@ function tuneFlBeatChange(base, expr){
   if(c){ c.who=key; portraitArt(key); }
   const oldWho = bt ? bt.b.who : null;
   if(bt) bt.b.who=key;
-  tuneFlWho=key; tuneFlMsg='寫入中…'; tuneFlRender();
-  if(!bt){ tuneFlMsg='換差分失敗：找不到那一拍（只換了畫面）'; tuneFlRender(); return; }
+  tuneFlWho=key; tuneFlMsg=i18nT('寫入中…'); tuneFlRender();
+  if(!bt){ tuneFlMsg=i18nT('換差分失敗：找不到那一拍（只換了畫面）'); tuneFlRender(); return; }
   const q=sayQueue||[], prev=q[bt.i-1], next=q[bt.i+1];
   fetch(new URL('../__beat', location.href).pathname, { method:'POST', body:JSON.stringify({
       text:bt.b.text||'', old:oldWho, new:newWho, field:'who',
       prev: prev ? (prev.text||'') : undefined, next: next ? (next.text||'') : undefined }) })
     .then(r=>r.text().then(t=>({ ok:r.ok, t })))
-    .then(({ok,t})=>{ tuneFlMsg=(ok?'已換差分，寫入：':'換差分失敗：')+t; tuneFlRender(); })
-    .catch(e=>{ tuneFlMsg='換差分失敗：'+e; tuneFlRender(); });
+    .then(({ok,t})=>{ tuneFlMsg=(ok?i18nT('已換差分，寫入：'):i18nT('換差分失敗：'))+t; tuneFlRender(); })
+    .catch(e=>{ tuneFlMsg=i18nT('換差分失敗：')+e; tuneFlRender(); });
 }
 function tuneFlEditLine(ta){
   const q=sayQueue||[], i=sayIdx, bt=q[i]; if(!ta || !bt) return;
   const v=ta.value; if(v===(bt.text||'')) return;
-  tuneFlMsg='寫入中…'; tuneFlRender();
+  tuneFlMsg=i18nT('寫入中…'); tuneFlRender();
   fetch(new URL('../__text', location.href).pathname, { method:'POST', body:JSON.stringify({
       text:bt.text||'', new:v, mark:bt.who||undefined,
       prev: q[i-1] ? (q[i-1].text||'') : undefined, next: q[i+1] ? (q[i+1].text||'') : undefined }) })
     .then(r=>r.text().then(t=>({ ok:r.ok, t })))
-    .then(({ok,t})=>{ if(ok) bt.text=v; tuneFlMsg=(ok?'已改台詞，寫入：':'改台詞失敗：')+t; tuneFlRender(); })
-    .catch(e=>{ tuneFlMsg='改台詞失敗：'+e; tuneFlRender(); });
+    .then(({ok,t})=>{ if(ok) bt.text=v; tuneFlMsg=(ok?i18nT('已改台詞，寫入：'):i18nT('改台詞失敗：'))+t; tuneFlRender(); })
+    .catch(e=>{ tuneFlMsg=i18nT('改台詞失敗：')+e; tuneFlRender(); });
 }
 /* 台上那一格的鍵 → 本尊（`renna/relief`、別名 `anya~relief#R` 都回 `renna`／`anya`）。 */
 function tuneFlBase(who){ return String(who||'').split(/[\/~#]/)[0]; }
@@ -5653,20 +5671,20 @@ function tuneFlStd(who){
   const set={ cm:P.cm, yShift:P.yShift||0, fxShift:P.fxShift||0 };
   const srcs=[B.src].concat(Object.keys(PORTRAIT_EXPR[base]||{}).map(k=>PORTRAIT_EXPR[base][k].src)).filter(Boolean);
   const armKey='std:'+base;
-  if(tuneFlArm!==armKey){ tuneFlArm=armKey; tuneFlMsg='再按一次「標準化」：'+(B.name||base)+' 全部 '+srcs.length+' 張 → cm '+set.cm+'，上下 '+set.yShift+'，左右 '+set.fxShift; tuneFlRender(); return; }
+  if(tuneFlArm!==armKey){ tuneFlArm=armKey; tuneFlMsg=i18nT('再按一次「標準化」：')+(B.name||base)+i18nT(' 全部 ')+srcs.length+i18nT(' 張 → cm ')+set.cm+i18nT('，上下 ')+set.yShift+i18nT('，左右 ')+set.fxShift; tuneFlRender(); return; }
   tuneFlArm=null;
   const url=new URL('../__tune', location.href).pathname;
   const post=(file,items)=>fetch(url,{ method:'POST', body:JSON.stringify({ file, items, set }) })
                              .then(r=>r.text().then(t=>({ ok:r.ok, st:r.status, t })));
   post('script/speakers.js', srcs.map(k=>({ kind:'src', key:String(k).replace(/^\.\.\//,'') }))).then(({ok,st,t})=>{   // ver -1833：只寫 speakers.js
-    if(!ok){ tuneFlMsg='標準化失敗（HTTP '+st+'）：'+t; tuneFlRender(); return; }
+    if(!ok){ tuneFlMsg=i18nT('標準化失敗（HTTP ')+st+i18nT('）：')+t; tuneFlRender(); return; }
     /* 這一輪就生效：本尊、差分表、已經合成出來的 PORTRAIT['base/expr'] 全部套上。 */
     Object.assign(B, set);
     for(const k of Object.keys(PORTRAIT_EXPR[base]||{})) Object.assign(PORTRAIT_EXPR[base][k], set);
     for(const k of Object.keys(PORTRAIT)) if(k.indexOf(base+'/')===0){ Object.assign(PORTRAIT[k], set); PORTRAIT[k].standCm=set.cm; }
     for(const k of Object.keys(tuneFlOrig)) if(tuneFlBase(k)===base) delete tuneFlOrig[k];
-    tuneFlMsg='已標準化 speakers.js（'+t+'）'; tuneFlRender();
-  }).catch(e=>{ tuneFlMsg='標準化失敗：'+e; tuneFlRender(); });
+    tuneFlMsg=i18nT('已標準化 speakers.js（')+t+i18nT('）'); tuneFlRender();
+  }).catch(e=>{ tuneFlMsg=i18nT('標準化失敗：')+e; tuneFlRender(); });
 }
 function tuneFlSave(who){
   const P=PORTRAIT[who], O=tuneFlOrig[who]; if(!P || !O) return;
@@ -5674,21 +5692,21 @@ function tuneFlSave(who){
   /* ⚠ ver -1827（Ray 選 A）：頭頂高度由 `standCm` 決定 —— 兩份取景要同一個數字，存檔一律帶上（沒寫就是 cm）。 */
   if(Object.keys(set).length) set.standCm = (P.standCm!=null ? P.standCm : P.cm);
   if(!Object.keys(set).length) return;
-  const lines=Object.keys(set).map(k=>'  '+k+'：'+(O[k]==null?'（無）':O[k])+' → '+set[k]);
+  const lines=Object.keys(set).map(k=>'  '+k+i18nT('：')+(O[k]==null?i18nT('（無）'):O[k])+' → '+set[k]);
   /* ⚠ 不用 `window.confirm`（ver -1824）：預覽視窗會吞掉、當成取消。面板上按兩下：第一下顯示要寫什麼，第二下才寫。 */
-  if(tuneFlArm!==who){ tuneFlArm=who; tuneFlMsg='再按一次「儲存」寫入：'+lines.join('，'); tuneFlRender(); return; }
+  if(tuneFlArm!==who){ tuneFlArm=who; tuneFlMsg=i18nT('再按一次「儲存」寫入：')+lines.join(i18nT('，')); tuneFlRender(); return; }
   tuneFlArm=null;
   const url=new URL('../__tune', location.href).pathname;
   const post=(file,key)=>fetch(url,{ method:'POST', body:JSON.stringify({ file, kind:'src', key, set }) })
                           .then(r=>r.text().then(t=>({ ok:r.ok, st:r.status, t })));
   /* ver -1833：這一頁的取景就是 speakers.js 那一份 —— 只寫那一份。 */
   post('script/speakers.js', String(P.src).replace(/^\.\.\//,'')).then(({ok,st,t})=>{
-    if(!ok){ tuneFlMsg='寫入失敗（HTTP '+st+'）：'+t+(st===404||st===501?'（這個伺服器沒有存檔功能，要重開 devserver）':''); tuneFlRender(); return; }
-    tuneFlMsg='已寫入 speakers.js：'+String(P.src).split('/').pop();
+    if(!ok){ tuneFlMsg=i18nT('寫入失敗（HTTP ')+st+i18nT('）：')+t+(st===404||st===501?i18nT('（這個伺服器沒有存檔功能，要重開 devserver）'):''); tuneFlRender(); return; }
+    tuneFlMsg=i18nT('已寫入 speakers.js：')+String(P.src).split('/').pop();
     delete tuneFlOrig[who]; tuneFlRender();
     console.log('[立繪調整] 已寫入 speakers.js', P.src, set);
 
-  }).catch(e=>{ tuneFlMsg='寫入失敗：'+e; tuneFlRender(); });
+  }).catch(e=>{ tuneFlMsg=i18nT('寫入失敗：')+e; tuneFlRender(); });
 }
 function portraitArt(who){
   if(portraitImg[who] || !PORTRAIT[who] || !PORTRAIT[who].src) return;
@@ -5965,9 +5983,9 @@ function senseUpdate(now){
            原本是 Math.random() 二選一 —— 隨機會連抽到同一個人，玩家看到的
            是「又是她」，那就不叫輪流了。改成依序循環，三個人保證都會輪到。 */
         const chime = SENSE_CHIME[senseChimeI++ % SENSE_CHIME.length];
-        say([{who:'anya', text:'......我累了。'}, chime], now);
+        say([{who:'anya', text:i18nT('......我累了。')}, chime], now);
       }else{
-        say([{who:'anya', text:'讓我休息一下......'}], now);
+        say([{who:'anya', text:i18nT('讓我休息一下......')}], now);
       }
       senseT0=0; return;
     }
@@ -6630,7 +6648,7 @@ function loadImg(url){
   return new Promise((res,rej)=>{
     const im=new Image();
     im.onload=()=>res(im);
-    im.onerror=()=>rej(new Error('載入失敗：'+url));
+    im.onerror=()=>rej(new Error(i18nT('載入失敗：')+url));
     im.src=url;
   });
 }
@@ -8514,7 +8532,7 @@ function syncClock(){
   const dEl=document.getElementById('date');   if(dEl) dEl.textContent=t.d;
   const cEl=document.getElementById('clock');  if(cEl)
     cEl.textContent=String(t.h).padStart(2,'0')+':'+String(t.mi).padStart(2,'0');
-  const yEl=document.getElementById('era');    if(yEl) yEl.textContent='大陸曆 '+t.y+'年'+t.mo+'月';
+  const yEl=document.getElementById('era');    if(yEl) yEl.textContent=i18nT('大陸曆 {y}年{m}月').replace('{y}',t.y).replace('{m}',t.mo).replace('{M}',i18nT(t.mo+i18nT('月')));   // 樣板（ver -1909，語序各語言不同）
 }
 syncClock();
 
@@ -8912,18 +8930,18 @@ function drawMap(){
   {
     const mx=Math.round(cam.x/MAP_SCALE), my=Math.round(cam.y/MAP_SCALE);
     const deg=Math.round(((cam.angle*180/Math.PI)%360+360)%360);
-    const t1='自機 ('+mx+','+my+')  '+deg+'°  h'+Math.round(cam.alt);
+    const t1=i18nT('自機 (')+mx+','+my+')  '+deg+'°  h'+Math.round(cam.alt);
     /* ⚠ 不顯示「畫面中心的座標」：MV.cx/cy 是**浮雕像素**，而浮雕是斜角投影
        （reliefXY 會依高度位移），除以 MAP_SS 反推回去是錯的 —— 寧可不給，
        也不要給一個看起來像座標的錯數字。 */
     /* 平面模式的中心座標是**準的**（沒有 tilt／高度位移，MV.cx/cy 就是地圖像素）——
        上面那條「寧可不給」只針對浮雕。 */
     const t2=R.flat
-      ? ('×'+MV.zoom.toFixed(2)+'  平面1:1  中心 ('+Math.round(MV.cx)+','+Math.round(MV.cy)+')')
-      : ('×'+MV.zoom.toFixed(2)+'  地圖像素');
+      ? ('×'+MV.zoom.toFixed(2)+i18nT('  平面1:1  中心 (')+Math.round(MV.cx)+','+Math.round(MV.cy)+')')
+      : ('×'+MV.zoom.toFixed(2)+i18nT('  地圖像素'));
     /* 點選讀數（開發用）：回報位置問題時直接把這組數字給我，
        不必再從地形猜 —— HANDOFF A3 那條教訓。 */
-    const t3=MV.pick?('點選 ('+MV.pick[0]+','+MV.pick[1]+')'):null;
+    const t3=MV.pick?(i18nT('點選 (')+MV.pick[0]+','+MV.pick[1]+')'):null;
     /* ⚠ 拖城的狀態列已隨移城搬進地圖編輯器（ver -1254）——
        這一頁不再拿得起任何聚落，讀數也就沒有第四行。 */
     const t4=null;
@@ -9051,7 +9069,7 @@ function updateMapMe(){ if(mapOpen) drawMap(); }
      兩段對白搶同一個舞台。
    ⚠ `s9On` 期間不唸 —— 那一段的 pointerdown 早就被守門擋掉了，這裡再擋一次是保險
      （而且教學提示現在是全畫面遮罩，根本碰不到方向計）。 */
-const STURM_NAG=[{ who:'nouvelle/relief', text:'抱歉，讓我休息一下。' }];
+const STURM_NAG=[{ who:'nouvelle/relief', text:i18nT('抱歉，讓我休息一下。') }];
 let sturmNagFor=0;
 function sturmNag(){
   if(s9On || sayQueue || senseOn || senseFireAt || senseT0 || mapOpen) return;
@@ -9245,8 +9263,8 @@ window.settleDragRestore=(i)=>{
      遷移是一次性的、而且**會先推一份備份進回收區**，所以加錯了也救得回來。
    ⚠ 這不是「多存一份真相」：表上記的是**舊名 → 現名**的歷史，資料上只有現名。 */
 const SETTLE_RENAMES = {
-  '拉芬斯達爾城': '雪都瓦恩霍姆',      // ver -1491
-  '山谷湖碑':     '鏡湖',              // ver -1496
+  '拉芬斯達爾城': i18nT('雪都瓦恩霍姆'),      // ver -1491
+  '山谷湖碑':     i18nT('鏡湖'),              // ver -1496
 };
 /* 把一本帳裡的舊鑰匙換成現名。`arr` ＝這本帳是陣列（刪城）還是物件（拖城）。
    ⚠ 現名已經有一筆就**不覆蓋**（那是後來拖的，比較新）—— 只把舊的那一筆丟掉。 */
@@ -9406,7 +9424,7 @@ if(ADMIN) window.resetFlags=()=>{
   try{ localStorage.removeItem(PLAYER_NAME_KEY); }catch(e){}
   for(const k in AFFECTION) AFFECTION[k]=AFFECTION_DEFAULT;
   return { stage:gameStage(), 好感:JSON.parse(JSON.stringify(AFFECTION)),
-           玩家名:playerName(), 提示:'已回到預設；重整一次最保險' };
+           玩家名:playerName(), 提示:i18nT('已回到預設；重整一次最保險') };
 };
 /* 鐵路與火車驗收用：RAIL_PATHS／TRAINS 都是 top-level，外部讀不到。
    回「每條線多長、現在車跑到哪、還要等多久發車」—— 要確認「偶有」這件事
@@ -9504,7 +9522,7 @@ if(ADMIN){
   const st=document.getElementById('starTgl');
   if(st){
     st.hidden=false;
-    const LBL=['★ 關','★ 已發現','★ 全部'];
+    const LBL=[i18nT('★ 關'),i18nT('★ 已發現'),i18nT('★ 全部')];
     st.textContent=LBL[starShow];
     st.addEventListener('click',e=>{
       e.stopPropagation();
@@ -9519,7 +9537,7 @@ if(ADMIN){
     const p=pick3dAt(e.clientX-r.left, e.clientY-r.top);
     if(!p) return;                       // 點到天空／操作盤就不攔，讓瀏覽器選單照常
     e.preventDefault();
-    const s='('+p.x+','+p.y+')  h'+p.h+(p.river?' 河':'')+'  距 '+p.dist;
+    const s='('+p.x+','+p.y+')  h'+p.h+(p.river?i18nT(' 河'):'')+i18nT('  距 ')+p.dist;
     console.log('[pick3d] '+s);
     pickHud.textContent=s; pickHud.style.opacity='1';
     clearTimeout(pickHud._t); pickHud._t=setTimeout(()=>{pickHud.style.opacity='0';},4000);
@@ -9708,7 +9726,7 @@ function mapEditPush(why){
       console.warn('⚠⚠ 存不進 flight/map_edits.json（'+e+'）—— 這一版只留在這個瀏覽器'); } });
 }
 function meSave(){
-  meBakPush('存檔前');                                  // ⚠ 先留上一版，再覆蓋
+  meBakPush(i18nT('存檔前'));                                  // ⚠ 先留上一版，再覆蓋
   /* ⚠ localStorage 仍然寫（備援＋那一環回收區都靠它）—— 只是**讀的時候**
      檔案優先（見 loadWorld 那一段）。 */
   try{ localStorage.setItem(MAPEDIT_KEY, JSON.stringify(MAP_EDITS)); }catch(_){}
@@ -9753,7 +9771,7 @@ window.lakeLift=(n, which)=>{
   const tgt=(MAP_EDITS||[]).map((e,i)=>({e,i}))
     .filter(o=>o.e.t==='lake' && (which==null || o.i===which));
   if(!tgt.length){ console.warn('沒有符合的 lake 筆畫（lakeInfo() 看清單）'); return false; }
-  meBakPush('lakeLift 前');
+  meBakPush(i18nT('lakeLift 前'));
   for(const o of tgt){ o.e.h=(o.e.h|0)+n; }
   try{ localStorage.setItem(MAPEDIT_KEY, JSON.stringify(MAP_EDITS)); }catch(_){ }
   console.log('已把 '+tgt.length+' 筆湖的水面抬高 '+n+'（現在是 '
@@ -9768,7 +9786,7 @@ window.mapEditBackups=()=>meBakRead().map((e,i)=>({
 window.mapEditRestore=(i)=>{
   const a=meBakRead(), e=a[i||0];
   if(!e){ console.warn('回收區裡沒有第 '+(i||0)+' 份（mapEditBackups() 看清單）'); return false; }
-  meBakPush('restore 前');
+  meBakPush(i18nT('restore 前'));
   try{ localStorage.setItem(MAPEDIT_KEY, e.d); }catch(_){}
   console.log('已放回 '+new Date(e.t).toLocaleString()+' 那一份；**重新整理**才會生效');
   return true;
@@ -9952,7 +9970,7 @@ function meDraw(){
     const mx=cam.x/MAP_SCALE, my=cam.y/MAP_SCALE;
     const q=P(mx,my);
     drawShipMark(g, q[0], q[1], cam.angle);
-    const lab='自機 ('+Math.round(mx)+','+Math.round(my)+')';
+    const lab=i18nT('自機 (')+Math.round(mx)+','+Math.round(my)+')';
     const w=g.measureText(lab).width;
     g.fillStyle='rgba(8,7,12,.78)'; g.fillRect(q[0]+17, q[1]-8, w+8, 16);
     g.fillStyle='#ffd98a'; g.fillText(lab, q[0]+21, q[1]);
@@ -9997,22 +10015,22 @@ function meUndoPush(rec){ meUndo.push(rec); if(meUndo.length>MEUNDO_MAX) meUndo.
 function meDoUndo(){
   if(meBusy()){ meNag(); return; }
   const u=meUndo.pop();
-  if(!u){ meFlash('沒有可以復原的步驟'); return; }
+  if(!u){ meFlash(i18nT('沒有可以復原的步驟')); return; }
   /* ⚠ 復原與「取消」是同一件事，走同一支 `meRevert`（鐵律 8）——
      差別只有：復原要**先把它從 `MAP_EDITS` 拿掉**（它已經生效過了），
      取消那一筆則根本還沒進去。 */
   if(u.k==='edit'){ const k=MAP_EDITS.indexOf(u.e); if(k>=0) MAP_EDITS.splice(k,1); }
   meRevert(u); meSave();
-  meFlash('已復原：'+meUndoLabel(u));
+  meFlash(i18nT('已復原：')+meUndoLabel(u));
   meDraw();
 }
 function meUndoLabel(u){
-  if(u.k==='move')  return u.name+' 搬回 ('+u.from[0]+','+u.from[1]+')';
-  if(u.k==='del')   return u.name+' 放回來了';
+  if(u.k==='move')  return u.name+i18nT(' 搬回 (')+u.from[0]+','+u.from[1]+')';
+  if(u.k==='del')   return u.name+i18nT(' 放回來了');
   return meLabel(u.e.t);
 }
-function meLabel(t){ return {hill:'山',dig:'挖',flat:'平',fix:'自動修正',water:'水',lake:'湖',
-  river:'河',mat:'貼材',rail:'鐵路',road:'公路',erase:'擦除'}[t]||t; }
+function meLabel(t){ return {hill:i18nT('山'),dig:i18nT('挖'),flat:i18nT('平'),fix:i18nT('自動修正'),water:i18nT('水'),lake:i18nT('湖'),
+  river:i18nT('河'),mat:i18nT('貼材'),rail:i18nT('鐵路'),road:i18nT('公路'),erase:i18nT('擦除')}[t]||t; }
 let meFlashT=0;
 function meFlash(msg){ meFlashT=performance.now(); meEl('meInfo').textContent=msg; }
 
@@ -10021,7 +10039,7 @@ function openMapEdit(){
   if(!ADMIN||!MAPW) return;
   meOpen=true; meEl('mapEdit').classList.add('on');
   meBuildBase(); meFit(); meDraw();
-  meFlash('筆畫 '+MAP_EDITS.length+' 筆　⚠ 關閉時會重新載入，讓地形重新烘一次');
+  meFlash(i18nT('筆畫 ')+MAP_EDITS.length+i18nT(' 筆　⚠ 關閉時會重新載入，讓地形重新烘一次'));
 }
 function closeMapEdit(){
   /* ⚠ 還有沒答的那一題就不准關：關閉＝重整，那一筆沒寫進 `MAP_EDITS`
@@ -10103,8 +10121,8 @@ function meExport(){
   const txt='const MAP_EDITS_SRC=[\n'+body+'\n];';
   console.log('%c[地圖編輯] 貼進 flight/index.html 的 MAP_EDITS_SRC，再 mapEditClear()','color:#c9a227');
   console.log(txt);
-  try{ navigator.clipboard.writeText(txt); meFlash('已複製到剪貼簿（'+MAP_EDITS.length+' 筆），也印在 console'); }
-  catch(_){ meFlash('已印在 console（'+MAP_EDITS.length+' 筆）'); }
+  try{ navigator.clipboard.writeText(txt); meFlash(i18nT('已複製到剪貼簿（')+MAP_EDITS.length+i18nT(' 筆），也印在 console')); }
+  catch(_){ meFlash(i18nT('已印在 console（')+MAP_EDITS.length+i18nT(' 筆）')); }
 }
 
 /* ── 指標 ──────────────────────────────────────────────────────── */
@@ -10198,14 +10216,14 @@ function meStrokeEnd(){
     meCovClear(meDirty); meDirty=null;
     if(!nLine && !nWet){
       meSnapI=null;
-      meFlash('這一筆沒有擦到任何公路、鐵路或水');
+      meFlash(i18nT('這一筆沒有擦到任何公路、鐵路或水'));
       meDraw(); return;
     }
     meAsk({ k:'edit', e:E, i:meSnapI, h:meSnapH, r:meSnapR, c:meSnapC, b:meSnapB,
             d:meStrokeBox(E) },
-          '擦除　大小 '+(E.r||14)+
-          (nLine?('　軌道／路面 '+nLine+' 節'):'')+
-          (nWet?('　水面 '+nWet+' 格'):''));
+          i18nT('擦除　大小 ')+(E.r||14)+
+          (nLine?(i18nT('　軌道／路面 ')+nLine+i18nT(' 節')):'')+
+          (nWet?(i18nT('　水面 ')+nWet+i18nT(' 格')):''));
     meSnapI=null;
     meDraw(); return;
   }
@@ -10222,7 +10240,7 @@ function meStrokeEnd(){
     let L=0; for(let k=1;k<E.pts.length;k++)
       L+=Math.hypot(E.pts[k][0]-E.pts[k-1][0], E.pts[k][1]-E.pts[k-1][1]);
     meAsk({ k:'edit', e:E },
-          meLabel(E.t)+'　'+E.pts.length+' 點・全長 '+Math.round(L*MAP_SCALE)+' 單位');
+          meLabel(E.t)+'　'+E.pts.length+i18nT(' 點・全長 ')+Math.round(L*MAP_SCALE)+i18nT(' 單位'));
     meDraw(); return;
   }
   if(E.t==='fix'||E.t==='river'){
@@ -10239,13 +10257,13 @@ function meStrokeEnd(){
   if(E.t!=='fix'&&E.t!=='river')            // 那兩支上面已經簡化過了
     E.pts=meSimplify(E.pts, Math.max(0.5,(E.r||18)/8));
   meAsk({ k:'edit', e:E, i:meSnapI, h:meSnapH, r:meSnapR, c:meSnapC, b:meSnapB, d:box },
-        meLabel(E.t)+'　大小 '+(E.r||0)+
-        (E.a!=null?('　力道 '+E.a):'')+
-        (E.t==='dig'?('　深 '+DIG_STEP):'')+
-        (E.h!=null?((E.t==='lake'?'　水面 ':'　鏟到 ')+E.h
-                    +(E.t==='flat'&&E.h===capitalH()?'（帝都高）':'')):'')+
+        meLabel(E.t)+i18nT('　大小 ')+(E.r||0)+
+        (E.a!=null?(i18nT('　力道 ')+E.a):'')+
+        (E.t==='dig'?(i18nT('　深 ')+DIG_STEP):'')+
+        (E.h!=null?((E.t==='lake'?i18nT('　水面 '):i18nT('　鏟到 '))+E.h
+                    +(E.t==='flat'&&E.h===capitalH()?i18nT('（帝都高）'):'')):'')+
         (E.g!=null?('　'+((MAT_PALETTE.find(m=>m.g===E.g)||{}).n||'')):'')+
-        '　'+E.pts.length+' 點　共 '+(meSnapI.length)+' 格');
+        '　'+E.pts.length+i18nT(' 點　共 ')+(meSnapI.length)+i18nT(' 格'));
   meSnapI=null;
   meDraw();
 }
@@ -10269,7 +10287,7 @@ function meAskClose(){ mePend=null;
 function meNag(){
   const b=meEl('meAsk'); if(!b) return;
   b.classList.remove('nag'); void b.offsetWidth; b.classList.add('nag');
-  meFlash('這一筆還沒確認：按「確定」留下，或「取消」丟掉（Enter／Esc 也行）');
+  meFlash(i18nT('這一筆還沒確認：按「確定」留下，或「取消」丟掉（Enter／Esc 也行）'));
 }
 function meAskYes(){
   const u=mePend; if(!u) return;
@@ -10282,18 +10300,18 @@ function meAskYes(){
     Object.assign(u, settleDelApply(u.name));
     try{ buildCityMask(); }catch(_){}
     meUndoPush(u);
-    meFlash(u.name+' 已刪除\n⚠ 道路／鐵路／整地要**重整**才會跟著消失；定稿請從 SETTLEMENTS／PLACES 刪掉再 settleDelClear()');
+    meFlash(u.name+i18nT(' 已刪除\n⚠ 道路／鐵路／整地要**重整**才會跟著消失；定稿請從 SETTLEMENTS／PLACES 刪掉再 settleDelClear()'));
     console.log('刪城：'+u.name+'　定稿請從 SETTLEMENTS／PLACES 真的刪掉，再 settleDelClear()');
     drawMap(); meDraw(); return;
   }
   if(u.k==='move'){
     settleOvWrite(u.name,[u.x,u.y]);
     meUndoPush(u);
-    meFlash(u.name+' → ('+u.x+','+u.y+')　已生效\n⚠ 定稿請寫回 SETTLEMENTS／build_city.py 再 settleDragClear()');
+    meFlash(u.name+' → ('+u.x+','+u.y+i18nT(')　已生效\n⚠ 定稿請寫回 SETTLEMENTS／build_city.py 再 settleDragClear()'));
     console.log('移城落定：'+u.name+' ('+u.x+','+u.y+')　定稿請寫回 SETTLEMENTS／build_city.py，再 settleDragClear()');
   }else{
     MAP_EDITS.push(u.e); meUndoPush(u); meSave();
-    meFlash('已生效：'+meLabel(u.e.t)+'（共 '+MAP_EDITS.length+' 筆）');
+    meFlash(i18nT('已生效：')+meLabel(u.e.t)+i18nT('（共 ')+MAP_EDITS.length+i18nT(' 筆）'));
   }
   meDraw();
 }
@@ -10301,8 +10319,8 @@ function meAskNo(){
   const u=mePend; if(!u) return;
   meAskClose();
   meRevert(u);
-  meFlash('已取消'+(u.k==='move'?('：'+u.name+' 搬回 ('+u.from[0]+','+u.from[1]+')')
-                  :(u.k==='del'?('：'+u.name+' 留著'):'，畫面已還原')));
+  meFlash(i18nT('已取消')+(u.k==='move'?(i18nT('：')+u.name+i18nT(' 搬回 (')+u.from[0]+','+u.from[1]+')')
+                  :(u.k==='del'?(i18nT('：')+u.name+i18nT(' 留著')):i18nT('，畫面已還原'))));
   meDraw();
 }
 /* 還原一筆（取消與復原**共用**，鐵律 8）。 */
@@ -10385,14 +10403,14 @@ function meStrokeBox(E){
      ⚠ 「取游標下」讀的是 `meBrushAt`（最後一次滑過的位置）—— 那是唯一知道
         「游標在地圖上的哪裡」的地方，不要另外去算一次（鐵律 7）。 */
   document.getElementById('meFlatCap').addEventListener('click', ()=>{
-    meEl('meFlatH').value=capitalH(); meFlash('鏟平高度 → 帝都高 '+capitalH());
+    meEl('meFlatH').value=capitalH(); meFlash(i18nT('鏟平高度 → 帝都高 ')+capitalH());
   });
   document.getElementById('meFlatPick').addEventListener('click', ()=>{
-    if(!meBrushAt){ meFlash('先把游標移到地圖上要取高度的那一點'); return; }
+    if(!meBrushAt){ meFlash(i18nT('先把游標移到地圖上要取高度的那一點')); return; }
     const x=clamp(meBrushAt[0]|0,0,MAPW-1), y=clamp(meBrushAt[1]|0,0,MAPH-1);
     const v=HGT[y*MAPW+x];
     meEl('meFlatH').value=v;
-    meFlash('鏟平高度 → ('+x+','+y+') 的高度 '+v);
+    meFlash(i18nT('鏟平高度 → (')+x+','+y+i18nT(') 的高度 ')+v);
   });
   document.getElementById('meAskYes').addEventListener('click', meAskYes);
   document.getElementById('meAskNo').addEventListener('click', meAskNo);
@@ -10401,7 +10419,7 @@ function meStrokeBox(E){
   document.getElementById('meClose').addEventListener('click', closeMapEdit);
   document.getElementById('meLayers').addEventListener('click', function(){
     meMode=meMode?0:1; this.classList.toggle('on', meMode===1);
-    this.textContent = meMode ? '◱ 地貌' : '◱ 圖層';
+    this.textContent = meMode ? i18nT('◱ 地貌') : i18nT('◱ 圖層');
     mePaint(null); meDraw();
   });
 
@@ -10438,8 +10456,8 @@ function meStrokeBox(E){
       /* 移城（ver -1254 由地圖頁搬過來）：點在聚落／地標上才拿得起來。 */
       const g=grabSettlementAt(q[0],q[1]);
       if(g){ meDragS={ s:g, from:[Math.round(g.mx),Math.round(g.my)],
-                       prevOv:settleOvRead(g.name) }; meFlash('拿起 '+g.name); }
-      else meFlash('這裡沒有聚落或地標');
+                       prevOv:settleOvRead(g.name) }; meFlash(i18nT('拿起 ')+g.name); }
+      else meFlash(i18nT('這裡沒有聚落或地標'));
       return;
     }
     if(meTool==='del'){
@@ -10447,11 +10465,11 @@ function meStrokeBox(E){
          「這一點上是哪座城／哪個地標」只能有一份答案，兩支筆共用它，
          點得到的範圍才會一致。 */
       const g=grabSettlementAt(q[0],q[1]);
-      if(!g){ meFlash('這裡沒有聚落或地標'); return; }
+      if(!g){ meFlash(i18nT('這裡沒有聚落或地標')); return; }
       const isTown=SETTLEMENTS.some(S=>S.n===g.name);
       meAsk({ k:'del', name:g.name, prevOv:settleOvRead(g.name) },
-            '刪除　'+g.name+'　('+Math.round(g.mx)+','+Math.round(g.my)+')'+
-            (isTown?'　⚠ 這是聚落：道路／鐵路／整地要**重整**才會跟著消失':''));
+            i18nT('刪除　')+g.name+'　('+Math.round(g.mx)+','+Math.round(g.my)+')'+
+            (isTown?i18nT('　⚠ 這是聚落：道路／鐵路／整地要**重整**才會跟著消失'):''));
       return;
     }
     meStrokeBegin(q[0],q[1]);
@@ -10483,8 +10501,8 @@ function meStrokeBox(E){
       const x=clamp(q[0]|0,0,MAPW-1), y=clamp(q[1]|0,0,MAPH-1), i=y*MAPW+x;
       const h=HGT[i];
       document.getElementById('meInfo').textContent =
-        '('+x+', '+y+')　高 '+h+(h<=CLOUD_H?'　雲海':'')+(RIV[i]?'　河':'')+
-        '\n筆畫 '+MAP_EDITS.length+' 筆　縮放 '+meView.s.toFixed(2)+'×';
+        '('+x+', '+y+i18nT(')　高 ')+h+(h<=CLOUD_H?i18nT('　雲海'):'')+(RIV[i]?i18nT('　河'):'')+
+        i18nT('\n筆畫 ')+MAP_EDITS.length+i18nT(' 筆　縮放 ')+meView.s.toFixed(2)+'×';
     }
     meDraw();
   });
@@ -10502,7 +10520,7 @@ function meStrokeBox(E){
       try{ buildCityMask(); }catch(_){}
       meAsk({ k:'move', name:g.s.name, from:g.from, prevOv:g.prevOv, x, y },
             g.s.name+'　('+g.from[0]+','+g.from[1]+') → ('+x+','+y+')'+
-            (HGT[clamp(y,0,MAPH-1)*MAPW+clamp(x,0,MAPW-1)]<=CLOUD_H?'　⚠這一格是雲海/海':''));
+            (HGT[clamp(y,0,MAPH-1)*MAPW+clamp(x,0,MAPW-1)]<=CLOUD_H?i18nT('　⚠這一格是雲海/海'):''));
       meDraw(); return;
     }
     if(meCur) meStrokeEnd();
@@ -11137,7 +11155,7 @@ function update(dt,now){
 
   document.getElementById('dist').textContent=Math.round(clock.dist);
   const deg=((-cam.angle*180/Math.PI)+1080)%360;
-  document.getElementById('compass').textContent=['北','東北','東','東南','南','西南','西','西北'][Math.round(deg/45)%8];
+  document.getElementById('compass').textContent=[i18nT('北'),i18nT('東北'),i18nT('東'),i18nT('東南'),i18nT('南'),i18nT('西南'),i18nT('西'),i18nT('西北')][Math.round(deg/45)%8];
   senseUpdate(now);           // 長按船身的感應演出
   prefetchCityArt();          // 城的全解析插畫：飛進 PREFETCH_R 就開始載
   updateEnemy(dt,now);
@@ -15293,7 +15311,7 @@ const ENEMY_CFG = {
    上下起伏才對 —— 這是兩者最容易分辨的動態特徵，不能共用。 */
 const ENEMY_KINDS = {
   centipede: {
-    name:'巨型蜈蚣', plan:'chain', segs:22, bodyLen:210, vertical:false,
+    name:i18nT('巨型蜈蚣'), plan:'chain', segs:22, bodyLen:210, vertical:false,
     /* 素材：split_enemy.py 自六視圖拆出來的俯視圖。
        head/body/tail 是「佔圖高的比例」，由該圖的**每列寬度剖面**量出來的
        （翅那段寬 255~268，身體穩定在 72~88，尾端收到 29~34）——不是目測。
@@ -15323,7 +15341,7 @@ const ENEMY_KINDS = {
          （量法：逐列的不透明寬度，取「>最寬 40% 且包含最寬列」的連續區段＝翼帶。
           我重跑過一次，與美術的數字對得上；完整過程在 `resources/enemy/_dragon_spec.md`。）
        ⚠ **只有一張正面圖**（Ray：「正面就可」）：沒有六視圖、沒跑 `split_enemy.py`。 */
-    name:'王座徘徊者', plan:'chain', wing:'bird', segs:26, bodyLen:360, vertical:true,
+    name:i18nT('王座徘徊者'), plan:'chain', wing:'bird', segs:26, bodyLen:360, vertical:true,
     /* ⚠⚠ **素材換過就要重量三帶**（ver -1468，美術交優化版：511×768 → **1230×1278**）：
        舊的那一組（head 0.079／wings 0.368）是對**舊那張**量的，照抄就是把翼根切進頭。
        量法同 -1427（逐列不透明寬度，取「>最寬 40% 且含最寬列」的連續區段＝翼帶），
@@ -15386,7 +15404,7 @@ const ENEMY_KINDS = {
   serpent: {
     /* 羽蛇：比蜈蚣更長更細，扭動慢而大 —— 蛇的波長比節肢動物長得多，
        用同一組 wavePhase 會扭成一條抽搐的毛毛蟲。翅是鳥翼，拍得比蟲慢。 */
-    name:'羽蛇', plan:'chain', wing:'bird', segs:26, bodyLen:280, vertical:true,
+    name:i18nT('羽蛇'), plan:'chain', wing:'bird', segs:26, bodyLen:280, vertical:true,
     /* ── 出場條件（ver -500，Ray 的卡：[場景：飛行][區域：全陸域][稀有等級：E]
        「stage2 的劇情之後才會加入隨機敵人」）──
        這三格與 config.enemies.serpent 的卡互指（那邊是戰鬥數值、這邊是刷新規則）。 */
@@ -15407,7 +15425,7 @@ const ENEMY_KINDS = {
          split_enemy.py 已改成全張共用一個縮放係數。 */
     /* turnRate 0.0011 → 0.00055（63°/秒 → 32°/秒）：一艘三桅飛船不會像
        戰鬥機那樣甩頭。轉得慢，掉轉本身才有重量，也讓每個方位停留得夠久。 */
-    name:'空賊', plan:'rigid', speedK:0.85, turnRate:0.00055,
+    name:i18nT('空賊'), plan:'rigid', speedK:0.85, turnRate:0.00055,
     /* ── 出場條件（ver -509，Ray 的空賊船卡：[區域：薩梅爾空域外全域]
        [稀有等級：E][Stage:1 以後才登場]）—— 與 config.enemies.pirate_ship 互指。 */
     /* 為什麼不進薩梅爾（Ray 的設定）：**會被防空砲打下來** —— 故事需求。 */
@@ -15774,12 +15792,12 @@ function runSerpentIntro(S){
   setIntroArt();
   setTimeout(()=>{
     say([
-      { who:'nouvelle/surprise', text:'好快！' },
-      { who:'anya/lookup',       text:'……！' },
-      { who:'renna/watch',       text:'用廣域破片彈或許能抓到！' },
-      { who:'anya/nervous',      text:'我、我也能幫忙！' },
+      { who:'nouvelle/surprise', text:i18nT('好快！') },
+      { who:'anya/lookup',       text:i18nT('……！') },
+      { who:'renna/watch',       text:i18nT('用廣域破片彈或許能抓到！') },
+      { who:'anya/nervous',      text:i18nT('我、我也能幫忙！') },
       { who:'renna/curious',     text:'……' },
-      { who:'renna/talkserious', text:'那就讓她試試看，可以嗎？' },
+      { who:'renna/talkserious', text:i18nT('那就讓她試試看，可以嗎？') },
     ], performance.now(), { done:()=>spotlightGearEntry(()=>waitGearThenBattle()) });
   }, 900);
 }
@@ -15882,8 +15900,8 @@ function spotlightGearEntry(done){
   };
   let fin=false;
   const sp=makeSpotlight(rect,
-    '<b style="color:#d4a94a">教學提示</b><br>點左下發光的<b style="color:#d4a94a">吊墜</b>'
-    +'進入整備畫面，可以切換戰鬥搭檔。',
+    i18nT('<b style="color:#d4a94a">教學提示</b><br>點左下發光的<b style="color:#d4a94a">吊墜</b>')
+    +i18nT('進入整備畫面，可以切換戰鬥搭檔。'),
     { onSkip:()=>off() });          // 點提示放行（沒有要換人也走得下去）
   const off=()=>{ if(fin) return; fin=true; sp.off(); done(); };
   /* 開了整備頁＝教學接棒給父頁 → 這邊的聚光燈收掉。 */
@@ -16614,22 +16632,22 @@ const DEPART_TALKS=[
      ⚠ 方向＝東北：帝都 (1005,600) → 北方泊地 (1516,150) ＝ Δx 東 511・Δy 北 450。
        座標與 `SETTLEMENTS` 同一套（改城的位置這兩句要跟著改）。 */
   { flag:'capital_depart_talk', stage:2,
-    mark:[1516, 150, '北方泊地'],
+    mark:[1516, 150, i18nT('北方泊地')],
     lines:[
-      { name:'蕾娜', text:'從這裡往東北方，一路飛過去。' },
-      { name:'蕾娜', text:'看到那片朝北的海灣，就是北方泊地了。' },
-      { name:'蕾娜', text:'可別飛到非教區的國家，會被打下來的。' },
+      { name:i18nT('蕾娜'), text:i18nT('從這裡往東北方，一路飛過去。') },
+      { name:i18nT('蕾娜'), text:i18nT('看到那片朝北的海灣，就是北方泊地了。') },
+      { name:i18nT('蕾娜'), text:i18nT('可別飛到非教區的國家，會被打下來的。') },
     ] },
   /* ② 北方泊地 → 聖王廳（ver -741／-743／-753／-756／-786 的那一段，一字未動）。
      ⚠ 方向＝西南：北泊 1516,150 → 聖王廳 934,606＝Δx 西 582・Δy 南 456。 */
   /* `stage:4`（ver -1853，Ray：「stage14 空中戰後蕾娜還是跑出來講回到聖王廳…那是北泊結束以後的台詞」）：
      只屬於 S4 的回程；跳章節時 `np_depart_talk` 沒補到也不會在後面的章節冒出來。 */
   { flag:'np_depart_talk', need:'np_leave_ok', stage:4,
-    intro:{ who:'renna/talkserious', text:'事不宜遲，直接回聖王廳去吧。' },
-    mark:[934, 606, '聖王廳'],
+    intro:{ who:'renna/talkserious', text:i18nT('事不宜遲，直接回聖王廳去吧。') },
+    mark:[934, 606, i18nT('聖王廳')],
     lines:[
-      { name:'蕾娜', text:'往西南方一路飛回去。' },
-      { name:'蕾娜', text:'看到帝都就表示到了。' },
+      { name:i18nT('蕾娜'), text:i18nT('往西南方一路飛回去。') },
+      { name:i18nT('蕾娜'), text:i18nT('看到帝都就表示到了。') },
     ] },
   /* ③ 東泊 → 聖索菲亞城（ver -1534 的 `sofia_depart_talk`）**已拆**（ver -1769）：
      Stage 14 三條路合流之後，往聖索菲亞的那一段改由 `S14_TALK`（`s14FlightMaybe`）統一演，
@@ -16640,12 +16658,12 @@ const DEPART_TALKS=[
   /* ⚠ ver -1832：`need` 由 `ss_depart` 改成 `ss_raid_home` —— -1814 起兩支在同一拍插，意思一樣；
      但 -1814 之前的存檔只有後者（`ss_depart` 要等隔天早上才插），起飛時這一段會輪不到。 */
   { flag:'ss_depart_talk', need:'ss_raid_home',
-    intro:{ who:'renna/pointmap', text:'那麼，直接往羅賽爾的方向前進吧。' },
-    markName:'羅賽爾廢城',
+    intro:{ who:'renna/pointmap', text:i18nT('那麼，直接往羅賽爾的方向前進吧。') },
+    markName:i18nT('羅賽爾廢城'),
     lines:[
-      { name:'蕾娜', text:'目的地就在大陸西南方的羅賽爾半島。' },
+      { name:i18nT('蕾娜'), text:i18nT('目的地就在大陸西南方的羅賽爾半島。') },
     ],
-    outro:{ who:'renna/talkwork', text:'做好準備喔，我們沒有著水許可，附近的城鎮都不能登陸。' },
+    outro:{ who:'renna/talkwork', text:i18nT('做好準備喔，我們沒有著水許可，附近的城鎮都不能登陸。') },
     flags:['nofly_lifted'] },
 ];
 function departureTalkMaybe(){
@@ -16710,49 +16728,49 @@ function departureTalkMaybe(){
    ══════════════════════════════════════════════════════════════════════ */
 const S9_SIDES = { renna:'L', nouvelle:'L', sorana:'R', anya:'R' };
 const S9_A=[
-  { who:'sorana/think',     text:'這破船，比我想像得還慢耶！' },
-  { who:'renna/upset',      text:'別說破船啊。帝國不會給聖王廳新船……這也沒辦法。' },
-  { who:'sorana/think',     text:'全得靠風吹了。對了，說起風……' },
-  { who:'sorana/side',      text:'諾薇兒剛才，不是學會了黑魔法嗎？' },
-  { who:'nouvelle/shock2',text:'不是黑魔法啦！是術式！' },
-  { who:'sorana/think',     text:'嘿——以前都聽人家說那是黑魔法耶？' },
-  { who:'renna/write',   text:'那是以前。永夜之後，聖王廳也不得不正視這些『技術』了。' },
-  { who:'renna/write',   text:'畢竟這些事，都是異端管理局定義的。' },
-  { who:'nouvelle/shock', text:'蕾娜小姐！這些事……' },
-  { who:'renna',            text:'公開的秘密啦。只是與世隔絕的夏爾村不知道吧。' },
-  { who:'sorana/think',     text:'反正我就是鄉巴佬。' },
-  { who:'anya',             text:'鄉巴佬……是什麼？' },
-  { who:'nouvelle/awkward', text:'不可以學這些難聽的話喔！' },
+  { who:'sorana/think',     text:i18nT('這破船，比我想像得還慢耶！') },
+  { who:'renna/upset',      text:i18nT('別說破船啊。帝國不會給聖王廳新船……這也沒辦法。') },
+  { who:'sorana/think',     text:i18nT('全得靠風吹了。對了，說起風……') },
+  { who:'sorana/side',      text:i18nT('諾薇兒剛才，不是學會了黑魔法嗎？') },
+  { who:'nouvelle/shock2',text:i18nT('不是黑魔法啦！是術式！') },
+  { who:'sorana/think',     text:i18nT('嘿——以前都聽人家說那是黑魔法耶？') },
+  { who:'renna/write',   text:i18nT('那是以前。永夜之後，聖王廳也不得不正視這些『技術』了。') },
+  { who:'renna/write',   text:i18nT('畢竟這些事，都是異端管理局定義的。') },
+  { who:'nouvelle/shock', text:i18nT('蕾娜小姐！這些事……') },
+  { who:'renna',            text:i18nT('公開的秘密啦。只是與世隔絕的夏爾村不知道吧。') },
+  { who:'sorana/think',     text:i18nT('反正我就是鄉巴佬。') },
+  { who:'anya',             text:i18nT('鄉巴佬……是什麼？') },
+  { who:'nouvelle/awkward', text:i18nT('不可以學這些難聽的話喔！') },
   { who:'anya/nervous',     text:'' },
-  { who:'sorana/laugh',     text:'好啦好啦。那，諾薇兒的『那個』，能用在船上嗎？' },
-  { who:'nouvelle/steady',  text:'我試試看。' },
-  { who:'nouvelle/decode',text:'向量指定……收束……出力設定……' },
-  { who:'sorana/amaze',    text:'奇怪的咒文……' },
+  { who:'sorana/laugh',     text:i18nT('好啦好啦。那，諾薇兒的『那個』，能用在船上嗎？') },
+  { who:'nouvelle/steady',  text:i18nT('我試試看。') },
+  { who:'nouvelle/decode',text:i18nT('向量指定……收束……出力設定……') },
+  { who:'sorana/amaze',    text:i18nT('奇怪的咒文……') },
 ];
 const S9_B=[
-  { who:'sorana/excite2',   text:'喔哇！哈哈哈哈！' },
+  { who:'sorana/excite2',   text:i18nT('喔哇！哈哈哈哈！') },
   { who:'renna/scarejump',  text:'' },
   { who:'anya/scare2',     text:'' },
-  { who:'sorana/readysmile',text:'好棒！再來！' },
-  { who:'renna/scarejump',  text:'還不住手！' },
-  { who:'renna/scarejump',  text:'這種破船哪能這樣折騰！' },
-  { who:'sorana/smirk',     text:'啊，妳自己還不是說『破船』。' },
+  { who:'sorana/readysmile',text:i18nT('好棒！再來！') },
+  { who:'renna/scarejump',  text:i18nT('還不住手！') },
+  { who:'renna/scarejump',  text:i18nT('這種破船哪能這樣折騰！') },
+  { who:'sorana/smirk',     text:i18nT('啊，妳自己還不是說『破船』。') },
   { who:'renna/die',      text:'' },
-  { who:'nouvelle/awkward', text:'抱歉，我也沒辦法一直施術。' },
-  { who:'nouvelle/relief',  text:'得休息一下才行。' },
-  { who:'sorana/amaze',    text:'呿——真沒勁。' },
+  { who:'nouvelle/awkward', text:i18nT('抱歉，我也沒辦法一直施術。') },
+  { who:'nouvelle/relief',  text:i18nT('得休息一下才行。') },
+  { who:'sorana/amaze',    text:i18nT('呿——真沒勁。') },
 ];
 const S9_C=[
   { who:'anya/watch',       text:'……' },
-  { who:'sorana/side',      text:'算了，小公主都嚇傻了。' },
-  { who:'anya/argue',       text:'才不是！' },
-  { who:'sorana/cringe',    text:'！！' },
-  { who:'anya/point',       text:'這附近……有什麼東西。' },
-  { who:'renna/curious',    text:'有什麼東西？' },
-  { who:'sorana/surprise', text:'又來了！小狗模式！' },
+  { who:'sorana/side',      text:i18nT('算了，小公主都嚇傻了。') },
+  { who:'anya/argue',       text:i18nT('才不是！') },
+  { who:'sorana/cringe',    text:i18nT('！！') },
+  { who:'anya/point',       text:i18nT('這附近……有什麼東西。') },
+  { who:'renna/curious',    text:i18nT('有什麼東西？') },
+  { who:'sorana/surprise', text:i18nT('又來了！小狗模式！') },
   { who:'anya/upset',       text:'……' },
-  { who:'renna/ask',        text:'能知道在什麼方向嗎？' },
-  { who:'anya/silent',      text:'我試試。' },
+  { who:'renna/ask',        text:i18nT('能知道在什麼方向嗎？') },
+  { who:'anya/silent',      text:i18nT('我試試。') },
 ];
 /* ══⚠⚠⚠ 任務期限：**這個值的擁有者是劇本，不是這裡**（ver -1182，Ray：
    「走劇情就會有，交給劇情定」）══
@@ -16763,14 +16781,14 @@ const S9_C=[
    ⚠ 在那之前它只是台詞裡的一個日期：沒有倒數、沒有逾期判定、沒有旗在讀它。
    ⚠ 要改只改這一處。 */
 const S9_DEADLINE={ mo:10, d:25 };   // ver -1324：開局改 10/11，這個暫填值跟著往後兩週
-const s9Deadline=()=>S9_DEADLINE.mo+'月'+S9_DEADLINE.d+'日';
+const s9Deadline=()=>i18nT('{m}月{d}日').replace('{m}',S9_DEADLINE.mo).replace('{d}',S9_DEADLINE.d).replace('{M}',i18nT(S9_DEADLINE.mo+i18nT('月')));   // 樣板（ver -1909）
 const S9_D=[
-  { who:'anya/point',       text:'在那裡！' },
-  { who:'renna/watch',      text:'那裡？我印象中那邊應該沒有什麼遺蹟……' },
-  { who:'renna/watch',      text:'時間還很充裕，想先去看看的話也不是不行。' },
+  { who:'anya/point',       text:i18nT('在那裡！') },
+  { who:'renna/watch',      text:i18nT('那裡？我印象中那邊應該沒有什麼遺蹟……') },
+  { who:'renna/watch',      text:i18nT('時間還很充裕，想先去看看的話也不是不行。') },
   { who:'player',           text:'' },
-  { who:'renna',            text:'……我沒有意見，你決定吧。' },
-  { who:'renna',            text:'但是記得'+s9Deadline()+'前要完成任務喔！' },
+  { who:'renna',            text:i18nT('……我沒有意見，你決定吧。') },
+  { who:'renna',            text:i18nT('但是記得')+s9Deadline()+i18nT('前要完成任務喔！') },
 ];
 /* ④-b **大地圖**（ver -1181，Ray：「這句話結束以後，跳大地圖，根據對話移動大地圖
    設標」）：三個去處，一句一個標記。
@@ -16780,9 +16798,9 @@ const S9_D=[
    ⚠ 「安雅找到的遺蹟」＝ 感應教學那一拍掃到的那一座 ＝ **石製遺蹟**
      （另外兩座 Ray 自己在台詞裡點名了：東海的貝利薩爾、北境的伊甸古墓）。 */
 const S9_MAP=[
-  { name:'蕾娜', text:'是要先去看看安雅找到的遺蹟呢，', markName:'石製遺蹟' },
-  { name:'蕾娜', text:'是要去東海的貝利薩爾遺址呢？',   markName:'貝利薩爾遺址' },
-  { name:'蕾娜', text:'還是……要先去北境伊甸古墓？',     markName:'伊甸古墓' },
+  { name:i18nT('蕾娜'), text:i18nT('是要先去看看安雅找到的遺蹟呢，'), markName:i18nT('石製遺蹟') },
+  { name:i18nT('蕾娜'), text:i18nT('是要去東海的貝利薩爾遺址呢？'),   markName:i18nT('貝利薩爾遺址') },
+  { name:i18nT('蕾娜'), text:i18nT('還是……要先去北境伊甸古墓？'),     markName:i18nT('伊甸古墓') },
 ];
 /* ④-c **回飛行畫面**（ver -1181，Ray 的稿，台詞一字未改）。
    ⚠ 「安：「不哭。」」那一句稿上**沒有標差分** —— 依 §6.5「立繪是持續狀態」，
@@ -16790,25 +16808,25 @@ const S9_MAP=[
    ⚠ 「埃爾王國的廢城」是**第四座遺蹟**，目前只存在於台詞裡（沒有地點資料、
      也不在大地圖那三個標記裡）—— 那正是這一段在說的事：得先辦入境許可才去得了。 */
 const S9_E=[
-  { who:'sorana/think',      text:'不是還有一個西面的什麼來著？' },
-  { who:'anya/talk',         text:'埃爾王國的廢城。' },
-  { who:'sorana/cringe',     text:'！！' },
-  { who:'sorana/smirk',      text:'小公主很厲害嘛。' },
+  { who:'sorana/think',      text:i18nT('不是還有一個西面的什麼來著？') },
+  { who:'anya/talk',         text:i18nT('埃爾王國的廢城。') },
+  { who:'sorana/cringe',     text:i18nT('！！') },
+  { who:'sorana/smirk',      text:i18nT('小公主很厲害嘛。') },
   { who:'anya/upset',        text:'' },
   { who:'player',            text:'' },
   { who:'anya/smileshy',     text:'' },
-  { who:'nouvelle/awkward',  text:'總覺得你越來越會哄安雅了。' },
-  { who:'renna/talkwork',    text:'埃爾王國不是聖王廳教圈，沒辦法直接飛過去。' },
-  { who:'renna/talkwork',    text:'得先去聖索菲亞辦入境許可。' },
-  { who:'sorana/think',      text:'偷偷從海上繞過去的話？' },
-  { who:'renna/ask',         text:'那可是能與帝國在海外爭殖民地的國家喔。' },
-  { who:'nouvelle/awkward',  text:'這艘破船應該馬上就會被擊沉了吧……' },
-  { who:'renna/die',       text:'連諾薇兒都說他是破船……' },
-  { who:'renna/meltdowncry', text:'為了讓旅途舒適點我費好大勁才申請到的！' },
-  { who:'nouvelle/surprise', text:'是、是這樣嗎？' },
-  { who:'sorana/sorry',      text:'總覺得有點不好意思了……' },
-  { who:'anya/smileshy',     text:'不哭。' },
-  { who:'renna/upsetstare',  text:'哼。' },
+  { who:'nouvelle/awkward',  text:i18nT('總覺得你越來越會哄安雅了。') },
+  { who:'renna/talkwork',    text:i18nT('埃爾王國不是聖王廳教圈，沒辦法直接飛過去。') },
+  { who:'renna/talkwork',    text:i18nT('得先去聖索菲亞辦入境許可。') },
+  { who:'sorana/think',      text:i18nT('偷偷從海上繞過去的話？') },
+  { who:'renna/ask',         text:i18nT('那可是能與帝國在海外爭殖民地的國家喔。') },
+  { who:'nouvelle/awkward',  text:i18nT('這艘破船應該馬上就會被擊沉了吧……') },
+  { who:'renna/die',       text:i18nT('連諾薇兒都說他是破船……') },
+  { who:'renna/meltdowncry', text:i18nT('為了讓旅途舒適點我費好大勁才申請到的！') },
+  { who:'nouvelle/surprise', text:i18nT('是、是這樣嗎？') },
+  { who:'sorana/sorry',      text:i18nT('總覺得有點不好意思了……') },
+  { who:'anya/smileshy',     text:i18nT('不哭。') },
+  { who:'renna/upsetstare',  text:i18nT('哼。') },
 ];
 function s9Talk(lines, done){ say(lines, performance.now(), { sides:S9_SIDES, done }); }
 
@@ -16911,27 +16929,27 @@ const S14_FLAG = 's14_flight_talk';
 function s14Route(){ return flagOn('ep_leave_final') || (flagOn('vn_after_tomb') && flagOn('ep_leave_tomb')); }
 const S14_SIDES = { renna:'L', nouvelle:'L', sorana:'R', anya:'R' };
 const S14_A=[
-  { who:'renna/write',   text:'埃爾王國不是聖王廳教區，直接飛過去的話最壞可能會被防空砲打下來。' },
-  { who:'sorana/amaze',  text:'啊？那怎麼辦？' },
-  { who:'renna/write',   text:'先到聖索菲亞申請入境許可。' },
+  { who:'renna/write',   text:i18nT('埃爾王國不是聖王廳教區，直接飛過去的話最壞可能會被防空砲打下來。') },
+  { who:'sorana/amaze',  text:i18nT('啊？那怎麼辦？') },
+  { who:'renna/write',   text:i18nT('先到聖索菲亞申請入境許可。') },
 ];
 const S14_MAP=[
-  { name:'蕾娜', text:'瓦勒里亞王國是中立國，應該比較容易通過。', markName:'聖索菲亞城' },
+  { name:i18nT('蕾娜'), text:i18nT('瓦勒里亞王國是中立國，應該比較容易通過。'), markName:i18nT('聖索菲亞城') },
 ];
 function s14B(){
   const T=w=>progTier(affection(w));
   const L=[
-    { who:'renna/evaluateclosemouth', text:'不過……' },
-    { who:'sorana/upset',             text:'？' },
-    { who:'renna/evaluate',           text:'索菈娜小姐要不要考慮換身衣服？' },
-    { who:'sorana/surprise',          text:'欸？為什麼？我也沒其他衣服啊！' },
+    { who:'renna/evaluateclosemouth', text:i18nT('不過……') },
+    { who:'sorana/upset',             text:i18nT('？') },
+    { who:'renna/evaluate',           text:i18nT('索菈娜小姐要不要考慮換身衣服？') },
+    { who:'sorana/surprise',          text:i18nT('欸？為什麼？我也沒其他衣服啊！') },
   ];
-  if(T('sorana')>=3) L.push({ who:'sorana/smirk', text:'而且有人很喜歡這一件呢。' },
+  if(T('sorana')>=3) L.push({ who:'sorana/smirk', text:i18nT('而且有人很喜歡這一件呢。') },
                             { who:'player', text:'', shake:'bubble' });
   if(T('nouvelle')>=3) L.push({ who:'nouvelle/angry', text:'' });
   if(T('anya')>=3)     L.push({ who:'anya/argue',     text:'' });
-  L.push({ who:'renna/tire', text:'……那就這樣吧。但願不要惹出事來。' },
-         { who:'sorana/nod', text:'我會乖乖的啦！' });
+  L.push({ who:'renna/tire', text:i18nT('……那就這樣吧。但願不要惹出事來。') },
+         { who:'sorana/nod', text:i18nT('我會乖乖的啦！') });
   return L;
 }
 function s14FlightMaybe(){
@@ -16940,7 +16958,7 @@ function s14FlightMaybe(){
   if(!s14Route() || flagOn(S14_FLAG) || flagOn('ss_arrive')) return false;
   if(!talkStageIn(14,14)) return false;   // 章節窗（ver -1850）
   say(S14_A, performance.now(), { sides:S14_SIDES, done:()=>{
-    const M=markOf('聖索菲亞城');
+    const M=markOf(i18nT('聖索菲亞城'));
     openMapView();
     setMapMark(M[0], M[1], M[2]||'');
     setTimeout(()=>mapPanTo(M[0], M[1], 1100), 350);
@@ -17011,8 +17029,8 @@ function s9FlightMaybe(){
   s9Talk(S9_A, ()=>{
     s9Gate('sturm',
       ()=>{ const CR=compassRect(); return { left:CR.x, top:CR.y, width:CR.w, height:CR.h }; },
-      '<b style="color:#d4a94a">教學提示</b><br>長按畫面下方的<b style="color:#d4a94a">方向計</b>，'
-      +'發動〈破凪之吐息〉。',
+      i18nT('<b style="color:#d4a94a">教學提示</b><br>長按畫面下方的<b style="color:#d4a94a">方向計</b>，')
+      +i18nT('發動〈破凪之吐息〉。'),
       { shape:'rect', tipTop:'32%' },
       ()=>{
         /* 這一拍玩家已經真的放出那一發了（`update()` 的發動點順手叫了 `s9GateHit`）。 */
@@ -17026,8 +17044,8 @@ function s9FlightMaybe(){
               /* ⚠ ver -1292：圈的是 `senseTargetRect()`（船圈 ∩ 索敵有效範圍）
                  不是整個船圈 —— 索敵收到螢幕上半之後，整圈會有下半按不動。 */
               ()=>senseTargetRect(),
-              '<b style="color:#d4a94a">教學提示</b><br>長按<b style="color:#d4a94a">船身</b>，'
-              +'發動〈混沌感知〉。',
+              i18nT('<b style="color:#d4a94a">教學提示</b><br>長按<b style="color:#d4a94a">船身</b>，')
+              +i18nT('發動〈混沌感知〉。'),
               { tipTop:'22%' },
               ()=>{
                 /* 索敵（方向計上的紅色敵方指示）與探索同一拍解鎖 —— Ray 的稿把
@@ -17091,13 +17109,13 @@ function deckChaosScene(){
   try{ document.body.classList.add('deck-quake'); }catch(_){}
   if(!muted){ try{ playSfx(sturmSE); }catch(_){} try{ playSfx(seSailSE); }catch(_){} }
   say([
-    { who:'nouvelle/shock2', text:'啊！' },
-    { who:'anya/lookup',       text:'……！' },
-    { who:'renna/lookup',      text:'糟糕！帆被——' },
-    { who:'renna/intense',     text:'要失控了！' },
-    { who:'anya/scare2',      text:'……！' },
-    { who:'renna/command',     text:'那裡！在那片湖著水！' },
-    { who:'renna/intense',     text:'！！' },
+    { who:'nouvelle/shock2', text:i18nT('啊！') },
+    { who:'anya/lookup',       text:i18nT('……！') },
+    { who:'renna/lookup',      text:i18nT('糟糕！帆被——') },
+    { who:'renna/intense',     text:i18nT('要失控了！') },
+    { who:'anya/scare2',      text:i18nT('……！') },
+    { who:'renna/command',     text:i18nT('那裡！在那片湖著水！') },
+    { who:'renna/intense',     text:i18nT('！！') },
   ], performance.now(), { done:()=>{
     /* 黑幕三秒（ver -745，Ray：「船著水的黑淡入淡出轉景太快，要三秒」——
        同 -739 劇情轉場三秒的規矩）。 */
@@ -17506,11 +17524,11 @@ function noflyAt(mx,my){ return !noflyOff() && NOFLY_IDS.indexOf(regionAt(mx,my)
    ⚠ 「播完了沒」記成**旗**（`nofly_told`）：誰插的＝第三句播出去那一刻；
      沒有人拔（鐵律 9）。不記旗的話每次出航都會再聽一輪。 */
 const NOFLY_LINES = [
-  { who:'renna/chase',    text:'慢著！那邊不是教區！直接飛進去會被打下來的！' },
-  { who:'renna/talkwork', text:'非教區的國家可不認聖王廳紋章，要入國得乖乖辦手續。' },
-  { who:'renna/bow',      text:'如果你非要硬闖，可以先把我們放下船嗎？。' },
+  { who:'renna/chase',    text:i18nT('慢著！那邊不是教區！直接飛進去會被打下來的！') },
+  { who:'renna/talkwork', text:i18nT('非教區的國家可不認聖王廳紋章，要入國得乖乖辦手續。') },
+  { who:'renna/bow',      text:i18nT('如果你非要硬闖，可以先把我們放下船嗎？。') },
 ];
-const NOFLY_SILENT = { who:'renna/upsetstare', text:'......就跟你說是禁航區了。' };
+const NOFLY_SILENT = { who:'renna/upsetstare', text:i18nT('......就跟你說是禁航區了。') };
 const NOFLY_FLAG = 'nofly_told';
 const NOFLY_COOL = 1200;            // 同一次撞牆不重複說話（ms）
 let noflyIdx = 0;                   // 這一趟講到第幾句（旗立了就一律最後那一句）
@@ -17698,9 +17716,9 @@ function drawEngagePrompt(){
   ctx.textAlign='center';
   ctx.font='13px "Noto Serif TC",serif';
   const yy=Math.round(VIEWH*0.30);
-  const t='遭遇　'+ENEMY_KINDS[enemy.kind].name;
+  const t=i18nT('遭遇　')+ENEMY_KINDS[enemy.kind].name;
   /* ⚠ 只剩免戰版（ver -389）：正常遭遇根本不畫這一格（見呼叫端）。 */
-  const t2 = '—　免 戰 中　—';
+  const t2 = i18nT('—　免 戰 中　—');
   ctx.fillStyle='rgba(6,7,12,.62)';
   ctx.fillRect(W/2-92,yy-22,184,46);
   ctx.fillStyle='rgba(216,205,180,.92)'; ctx.fillText(t,W/2,yy-4);
@@ -19653,7 +19671,7 @@ function updateLandBtn(){
   /* ⚠ 鈕上的字快取在 `landLabel` 而不是只看 `S` 有沒有換（ver -1184）：
        地名現在可以改（`placeName`／`nameWhen`），同一個地點的字會變 ——
        只比物件的話，玩家從遺蹟走回天上，鈕上還印著舊名字。 */
-  const label = S ? '降落　'+placeName(S) : '';
+  const label = S ? i18nT('降落　')+placeName(S) : '';
   if(S!==landTarget || label!==landLabel){
     landTarget=S; landLabel=label;
     const t=document.getElementById('landTxt');
@@ -19748,8 +19766,8 @@ function doLand(){
 /* ⚠⚠ **帝都也放行**（ver -432，Ray：「除了帝都與北方泊地都還不能進去」）——
    那是他剛出發的地方，擋掉等於回不了家。⚠ 寫成清單不是單一字串：
    日後多開一個地方只加一項（鐵律 1）。 */
-const STAGE1_DEST = ['北方泊地', '帝都', '夏爾村', '夏爾森林'];   /* ver -858：Ray 解除夏爾村管制（S2 也可繞去） */
-const STAGE1_NAG  = [{ who:'renna', text:'別晃了，趕快往北方泊地去！' }];
+const STAGE1_DEST = [i18nT('北方泊地'), i18nT('帝都'), i18nT('夏爾村'), i18nT('夏爾森林')];   /* ver -858：Ray 解除夏爾村管制（S2 也可繞去） */
+const STAGE1_NAG  = [{ who:'renna', text:i18nT('別晃了，趕快往北方泊地去！') }];
 /* ══ 地點的章節鎖（ver -844，Ray：「在 stage5 前無法進入夏爾村，蕾娜會說
    『這個地方跟任務無關吧？請繼續任務。』『不然我扣分喔。』」）══
    鑰匙＝SETTLEMENTS 的 `town` 鍵**與** PLACES 的 `name`（兩個入口各用各的鑰匙，
@@ -19760,8 +19778,8 @@ const STAGE1_NAG  = [{ who:'renna', text:'別晃了，趕快往北方泊地去�
    日後真的要鎖的地點（-844 的蕾娜扣分 nag 照舊由這張表驅動）。 */
 const PLACE_STAGE_FROM = {};
 const PLACE_LOCK_NAG = [
-  { who:'renna', text:'這個地方跟任務無關吧？請繼續任務。' },
-  { who:'renna', text:'不然我扣分喔。' },
+  { who:'renna', text:i18nT('這個地方跟任務無關吧？請繼續任務。') },
+  { who:'renna', text:i18nT('不然我扣分喔。') },
 ];
 function placeLockedNag(key){
   if(freeFlight()) return false;   // 試飛：無限航區（ver -1744）
@@ -19786,18 +19804,18 @@ function placeLockedNag(key){
 const BELISAR_NOLAND_FLAG = 'belisar_noland_talk';
 const BELISAR_LAND_OK     = 'belisar_land_ok';
 const BELISAR_NOLAND_TALK = [
-  { who:'sorana/watch',       text:'沒有適合的降落點啊。' },
-  { who:'nouvelle/surprise',  text:'連索菈娜都沒辦法嗎？' },
-  { who:'sorana/think',       text:'海風跟山風不好預測。下降高度找一下的話......' },
-  { who:'renna/talkwork',     text:'別冒險吧？先在東方泊地停船。' },
-  { who:'renna/front',        text:'正好也差不多該補給了。' },
-  { who:'nouvelle/risehand',  text:'贊成！' },
-  { who:'anya/shy',           text:'東......東方港！' },
-  { who:'sorana/amaze',      text:'喔？小公主意外地興緻高昂呢。' },
+  { who:'sorana/watch',       text:i18nT('沒有適合的降落點啊。') },
+  { who:'nouvelle/surprise',  text:i18nT('連索菈娜都沒辦法嗎？') },
+  { who:'sorana/think',       text:i18nT('海風跟山風不好預測。下降高度找一下的話......') },
+  { who:'renna/talkwork',     text:i18nT('別冒險吧？先在東方泊地停船。') },
+  { who:'renna/front',        text:i18nT('正好也差不多該補給了。') },
+  { who:'nouvelle/risehand',  text:i18nT('贊成！') },
+  { who:'anya/shy',           text:i18nT('東......東方港！') },
+  { who:'sorana/amaze',      text:i18nT('喔？小公主意外地興緻高昂呢。') },
   /* ⚠ 這一拍**沒有台詞、只換表情**（Ray 的稿寫「安：shy」）——
      被索菈娜點名之後的反應，空框只印名字。 */
   { who:'anya/shy',           text:'' },
-  { who:'renna/smile',        text:'畢竟是教圈僅次於薇拉馮德的大港嘛。' },
+  { who:'renna/smile',        text:i18nT('畢竟是教圈僅次於薇拉馮德的大港嘛。') },
 ];
 /* 大地圖上的那一句（蕾娜無立繪話框，同出航方向說明）。
    ⚠⚠ **依「之前去過那座港沒有」換一句**（ver -1342，Ray 交稿：
@@ -19808,16 +19826,16 @@ const BELISAR_NOLAND_TALK = [
    ⚠ 為什麼不寫成一筆帶 `onlyIf`／`skipIf`：`mapDlgStart` 吃的是一個純陣列，
      它不認那兩個欄位（那是劇情播放器那一邊的東西）—— 在呼叫點挑陣列最誠實。 */
 const BELISAR_NOLAND_MAP = [
-  { name:'蕾娜', text:'就在北面，馬上就到囉。', markName:'東方泊地' },
+  { name:i18nT('蕾娜'), text:i18nT('就在北面，馬上就到囉。'), markName:i18nT('東方泊地') },
 ];
 const BELISAR_NOLAND_MAP_AGAIN = [
-  { name:'蕾娜', text:'就是我們之前去過的那座港。', markName:'東方泊地' },
+  { name:i18nT('蕾娜'), text:i18nT('就是我們之前去過的那座港。'), markName:i18nT('東方泊地') },
 ];
 function belisarNolandMap(){
   return (flagOn('eastport_seen') ? BELISAR_NOLAND_MAP_AGAIN : BELISAR_NOLAND_MAP).slice();
 }
 /* 演過之後再按降落。 */
-const BELISAR_NOLAND_NAG = [{ who:'renna/talkwork', text:'先去東方泊地吧。' }];
+const BELISAR_NOLAND_NAG = [{ who:'renna/talkwork', text:i18nT('先去東方泊地吧。') }];
 /* 回 true ＝這一次降落被擋下來了（呼叫端直接 return，不收時間、不清追兵）。 */
 function belisarLandGate(S){
   if(freeFlight()) return false;   // 試飛（ver -1744）
@@ -19853,8 +19871,8 @@ function belisarLandGate(S){
 const HUNT_FLAG  = 'ep_hairpin_hunt';
 const HUNT_UNTIL = 'bl_night_sky';
 const HUNT_NAG = [
-  [{ who:'sorana/confuse',  text:'喂！蕾娜的髮飾不要了嗎？' }],
-  [{ who:'nouvelle/cringe', text:'先去找蕾娜小姐的髮飾啦！' }],
+  [{ who:'sorana/confuse',  text:i18nT('喂！蕾娜的髮飾不要了嗎？') }],
+  [{ who:'nouvelle/cringe', text:i18nT('先去找蕾娜小姐的髮飾啦！') }],
   [{ who:'anya/upset',      text:'......' }],
 ];
 let huntNagAt = 0;
@@ -19884,12 +19902,12 @@ function stage1Blocked(P){
      （§6.5：他不在台上，他說話不代表別人要換位）。 */
 const AFTER_SHIP_FLAG = 'renna_recommend_talk';
 const AFTER_SHIP_TALK = [
-  { who:'renna/relief',       text:'不愧是璐娜莉亞團長推薦的人呢。小命保住了。' },
-  { who:'nouvelle/surprise',  text:'咦？是團長推薦的嗎？' },
-  { who:'renna/covermouth',   text:'啊，好像不該說出來。' },
+  { who:'renna/relief',       text:i18nT('不愧是璐娜莉亞團長推薦的人呢。小命保住了。') },
+  { who:'nouvelle/surprise',  text:i18nT('咦？是團長推薦的嗎？') },
+  { who:'renna/covermouth',   text:i18nT('啊，好像不該說出來。') },
   { who:'player',             text:'' },
-  { who:'nouvelle/awkward',   text:'不會啦，她對任何人都那樣吧，尤其是男性。' },
-  { who:'renna/smile',        text:'嗯，別想太多。' },
+  { who:'nouvelle/awkward',   text:i18nT('不會啦，她對任何人都那樣吧，尤其是男性。') },
+  { who:'renna/smile',        text:i18nT('嗯，別想太多。') },
 ];
 
 /* ══⚠⚠⚠ **上船追牠：兩句 → 索敵提示**（ver -1416，Ray 交稿）══════════════════
@@ -19910,8 +19928,8 @@ const AFTER_SHIP_TALK = [
    —— 索菈娜那一句 -1418 就已經是 `guardthinking` 了；換的是諾薇兒這一張。
    ⚠ 稿上寫 `shock2`，`ART.nouvelle` 的鍵就是 `shock2`（`shock` 是另一張）。 */
 const SKY_HUNT_TALK = [
-  { who:'nouvelle/shock2',     text:'一片黑，看不到在哪！' },
-  { who:'sorana/guardthink',  text:'諾薇兒，安靜下！' },
+  { who:'nouvelle/shock2',     text:i18nT('一片黑，看不到在哪！') },
+  { who:'sorana/guardthink',  text:i18nT('諾薇兒，安靜下！') },
 ];
 /* 索敵動畫演完了沒（ver -1482）：`skyHeldOnce` ＝手勢做到了（教學收聚光燈用），
    這一支 ＝**演出收尾了**（劇本遭遇的放行條件）。兩件事分開，不要共用一支。 */
@@ -19939,17 +19957,17 @@ function skyHuntHint(){
   skyHuntArmed=true;
   say(SKY_HUNT_TALK, performance.now(), { sides:{ renna:'L' }, done:()=>{
     s9Gate('skyhold', ()=>skyTargetRect(),
-      '<b style="color:#d4a94a">教學提示</b><br>長按<b style="color:#d4a94a">天空</b>，'
-      +'發動〈獵手之眼〉索敵。',
+      i18nT('<b style="color:#d4a94a">教學提示</b><br>長按<b style="color:#d4a94a">天空</b>，')
+      +i18nT('發動〈獵手之眼〉索敵。'),
       { tipTop:'62%', fitRect:true }, ()=>{});   // ver -1481：圈不要碰到船
   }});
 }
 
 /* ══ 空中戰打贏（ver -1416，Ray 的原稿）══ 站位：台上有安雅 ⇒ 蕾娜放左（§6.5）。 */
 const SKY_WIN_TALK = [
-  { who:'sorana/excite2',    text:'活該！跑不了了吧！' },
-  { who:'anya/lookup',       text:'掉到中庭了！' },
-  { who:'nouvelle/furious',  text:'快下降！屍體完全淨化的話就不知道位置了！' },
+  { who:'sorana/excite2',    text:i18nT('活該！跑不了了吧！') },
+  { who:'anya/lookup',       text:i18nT('掉到中庭了！') },
+  { who:'nouvelle/furious',  text:i18nT('快下降！屍體完全淨化的話就不知道位置了！') },
 ];
 
 /* 進入地標（目前只做確認演出；之後接場景切換） */
@@ -19975,7 +19993,7 @@ function enterPlace(P){
   entering={P,t:performance.now()};
   const pn=document.getElementById('place');
   document.getElementById('pnm').textContent=placeName(P);
-  document.getElementById('pty').textContent='—　進入　—';
+  document.getElementById('pty').textContent=i18nT('—　進入　—');
   pn.classList.add('show');
   setTimeout(()=>{ entering=null; pn.classList.remove('show'); },1400);
 }
@@ -20845,7 +20863,7 @@ function drawPanel(S){
     ctx.beginPath(); ctx.moveTo(px,ccy+4); ctx.lineTo(px,ccy+(major?-2:1)); ctx.stroke();
     if(major){
       ctx.fillStyle='rgba(216,205,180,.75)';
-      ctx.fillText(['北','東北','東','東南','南','西南','西','西北'][(an/45)%8],px,ccy-6);
+      ctx.fillText([i18nT('北'),i18nT('東北'),i18nT('東'),i18nT('東南'),i18nT('南'),i18nT('西南'),i18nT('西'),i18nT('西北')][(an/45)%8],px,ccy-6);
     }
   }
   ctx.restore();
@@ -21123,13 +21141,13 @@ function loop(now){
    ⚠ 只有這一份會出現字。圈內字樣仍是 SAINT INSTALL，**階段名稱不放回來** ——
      那是給讀程式的人看的，留在呼叫端當註解就好。 */
 const BOOT_HINTS=[
-  '往後拉＝前進，拉得越遠越快。放開後船靠慣性滑行，不會立刻停。',
-  '左右偏移＝轉向。輕推只轉幾度，中央有一段死區，手指的晃動不會讓船偏航。',
-  '往前推再左右拉＝原地迴轉。停著不動時船不會自己打轉。',
-  '舵輪的轉速跟著你的偏移幅度走；基座頭盤上那根銅針是舵手的速度表，扣到紅漆那段就是全速。',
-  '右上角「地圖」可查看大陸全貌與自己的位置，放大可見市鎮街廓。',
-  '大陸邊緣之外是雲海。低於雲海高度的地方一律沒入雲中。',
-  '長按船身可請安雅感應四周；找到的地點會留在地圖上。連按會累壞她，隔一會兒再試。',
+  i18nT('往後拉＝前進，拉得越遠越快。放開後船靠慣性滑行，不會立刻停。'),
+  i18nT('左右偏移＝轉向。輕推只轉幾度，中央有一段死區，手指的晃動不會讓船偏航。'),
+  i18nT('往前推再左右拉＝原地迴轉。停著不動時船不會自己打轉。'),
+  i18nT('舵輪的轉速跟著你的偏移幅度走；基座頭盤上那根銅針是舵手的速度表，扣到紅漆那段就是全速。'),
+  i18nT('右上角「地圖」可查看大陸全貌與自己的位置，放大可見市鎮街廓。'),
+  i18nT('大陸邊緣之外是雲海。低於雲海高度的地方一律沒入雲中。'),
+  i18nT('長按船身可請安雅感應四周；找到的地點會留在地圖上。連按會累壞她，隔一會兒再試。'),
 ];
 /* ══ 讀取頁的說明者（ver -425，Ray：「出航之後換成蕾娜」）══════════════════
    ⚠⚠ 這是 `config.loadingHost` 的**第二份**（這一頁是非 module 的獨立文件，
@@ -21137,8 +21155,8 @@ const BOOT_HINTS=[
    ⚠ 旗標與主遊戲共用同一把鑰匙（`tivot_flags_v1`，§6.10）。 */
 const BOOT_HOST = {
   flag:'set_sail',
-  before:{ name:'監察官　フレイヤ', img:'../resources/inspector/freya_si_01.webp' },
-  after: { name:'蕾娜',            img:'../resources/si/renna_si_front.webp' },
+  before:{ name:i18nT('監察官　フレイヤ'), img:'../resources/inspector/freya_si_01.webp' },
+  after: { name:i18nT('蕾娜'),            img:'../resources/si/renna_si_front.webp' },
 };
 function bootHost(){
   return flagOn(BOOT_HOST.flag) ? BOOT_HOST.after : BOOT_HOST.before;
@@ -21348,7 +21366,7 @@ function preloadSfx(){
     }), 700);
     requestAnimationFrame(loop);
   }catch(e){
-    document.getElementById('bootMsg').textContent=e.message+'（需以 http 提供，不能直接雙擊開啟）';
+    document.getElementById('bootMsg').textContent=e.message+i18nT('（需以 http 提供，不能直接雙擊開啟）');
   }
 })();
 </script>

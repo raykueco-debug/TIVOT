@@ -24,6 +24,7 @@
    輪廓界由 measureBounds 在載入時量一次。
    ══════════════════════════════════════════════════════════════════════ */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, fileGain, assetVer, asset } from '../config.js';   // 舞台幾何常數（castStage）與逐支音量（fileGain）：鐵律 7 的單一真相；asset＝料理演出的鍋子與成品圖（ver -953）
 import { MAIN_SCRIPT, MAIN_ENTRY } from '../script/mainScript.js';
 import { SPEAKERS, ART, CAST_TALL, nameOf, artOf, exprSrc, frameOf } from '../script/speakers.js';
@@ -195,19 +196,19 @@ export function beatEditAt(x, y){
   const b=beatOf[who];
   const items=Object.keys(art.expr||{}).map(k=>({ key:k, label:k, src:exprSrc(art,k)||art.base })).filter(it=>it.src);
   beatPick.openPicker({
-    title:(nameOf(who)||who)+'　目前：'+(slotExpr[hit]||'（基本）'),
-    note: b ? '改寫的是這一拍：「'+(b.line.text||'（無台詞）')+'」' : '⚠ 找不到設定這張的那一拍（可能是沿用上一段的立繪）—— 只換畫面，不寫檔',
+    title:(nameOf(who)||who)+i18nT('　目前：')+(slotExpr[hit]||i18nT('（基本）')),
+    note: b ? i18nT('改寫的是這一拍：「')+(b.line.text||i18nT('（無台詞）'))+i18nT('」') : i18nT('⚠ 找不到設定這張的那一拍（可能是沿用上一段的立繪）—— 只換畫面，不寫檔'),
     items, cur:slotExpr[hit],
     onPick:(k)=>beatChangeAt(hit, k) });
   return true;
 }
 /* 換台上某一邊的差分，並改寫「設定它的那一拍」（右鍵挑選窗與面板的「差分」下拉共用這一支，鐵律 8）。 */
 function beatChangeAt(side, k){
-  const who=slot[side]; if(!who) return Promise.resolve({ ok:false, text:'台上沒有人' });
+  const who=slot[side]; if(!who) return Promise.resolve({ ok:false, text:i18nT('台上沒有人') });
   const b=beatOf[who];
   const old = b ? (b.line.portrait && b.line.portrait.expr!==undefined ? b.line.portrait.expr : null) : null;
   ensureOn(who, k); if(shown[who]) shown[who].expr=k; layout();
-  if(!b) return Promise.resolve({ ok:false, text:'只換了畫面（沒有可寫的那一拍）' });
+  if(!b) return Promise.resolve({ ok:false, text:i18nT('只換了畫面（沒有可寫的那一拍）') });
   const body={ text:b.line.text||'', old, new:k, field:'expr',
                prev: b.lines[b.idx-1] ? (b.lines[b.idx-1].text||'') : undefined,
                next: b.lines[b.idx+1] ? (b.lines[b.idx+1].text||'') : undefined };
@@ -222,7 +223,7 @@ function tuneKey(id, expr){
   const art = artOf(id); if(!art) return null;
   const e = art.expr && art.expr[expr];
   if(e && typeof e==='object' && e.src) return { kind:'src', key:e.src, obj:e, expr };
-  return art.base ? { kind:'base', key:art.base, obj:art, expr:expr||'(基本)' } : null;
+  return art.base ? { kind:'base', key:art.base, obj:art, expr:expr||i18nT('(基本)') } : null;
 }
 function tuneCur(side){
   const id=slot[side]; if(!id) return null;
@@ -249,11 +250,11 @@ function tuneCur(side){
    ⚠ 掛與拔只有 `applyBubbleFx` 一支（鐵律 8）：renderLine 開頭拔、**框真的出現那一刻**掛
      （受擊那一下在框還藏著時播掉就白震了）。 */
 export const BUBBLE_FX = [
-  ['fear','抖動（害怕）','move'], ['hit','震動（受擊）','move'], ['shout','吶喊','move'],
-  ['whisper','低語','move'], ['weak','虛弱','move'], ['rage','憤怒','move'],
-  ['gloom','三條線','mark'], ['sweat','冷汗','mark'], ['vein','怒筋','mark'],
-  ['exclaim','驚嘆','mark'], ['question','疑問','mark'], ['heart','心動','mark'], ['note','哼歌','mark'],
-  ['nervous','緊張灑汗','mark'],   // ver -1883（Ray：「框加上緊張灑汗的特效」）；-1905 改：驚慌三珠汗（Ray 參考圖）
+  ['fear',i18nT('抖動（害怕）'),'move'], ['hit',i18nT('震動（受擊）'),'move'], ['shout',i18nT('吶喊'),'move'],
+  ['whisper',i18nT('低語'),'move'], ['weak',i18nT('虛弱'),'move'], ['rage',i18nT('憤怒'),'move'],
+  ['gloom',i18nT('三條線'),'mark'], ['sweat',i18nT('冷汗'),'mark'], ['vein',i18nT('怒筋'),'mark'],
+  ['exclaim',i18nT('驚嘆'),'mark'], ['question',i18nT('疑問'),'mark'], ['heart',i18nT('心動'),'mark'], ['note',i18nT('哼歌'),'mark'],
+  ['nervous',i18nT('緊張灑汗'),'mark'],   // ver -1883（Ray：「框加上緊張灑汗的特效」）；-1905 改：驚慌三珠汗（Ray 參考圖）
 ];
 const BF_SVG = {
   gloom:'<path d="M6 3v13M12 3v17M18 3v11" stroke="#9fb3d8" stroke-width="2.2" stroke-linecap="round" fill="none"/>',
@@ -321,7 +322,7 @@ function histShift(at, d){
   for(const h of rewindHist) if(h.cur===cur && h.idx>=at + (d<0 ? 1 : 0)) h.idx += d;
 }
 function edSpeakers(){
-  const out=[{ id:'NARRATION', name:'旁白' }, { id:'PLAYER', name:'主角（空白框）' }];
+  const out=[{ id:'NARRATION', name:i18nT('旁白') }, { id:'PLAYER', name:i18nT('主角（空白框）') }];
   for(const id of Object.keys(SPEAKERS)){
     if(id==='NARRATION' || id==='PLAYER' || !artOf(id)) continue;
     out.push({ id, name:(nameOf(id)||id)+'　'+id });
@@ -351,22 +352,22 @@ function edClose(){
 function edRender(){
   const p=$('storyEdit'); if(!p || !edTab) return;
   const line=edLine();
-  const tabs=[['text','台詞'],['face','立繪'],['fx','效果'],['ins','插入'],['del','刪除'],['tune','調整']];
+  const tabs=[['text',i18nT('台詞')],['face',i18nT('立繪')],['fx',i18nT('效果')],['ins',i18nT('插入')],['del',i18nT('刪除')],['tune',i18nT('調整')]];
   const chips=(sel, attr)=>'<div class="ed-chips">'+BUBBLE_FX.map(([k,n,t])=>'<button data-'+attr+'="'+k+'" class="'+(sel.indexOf(k)>=0?'on':'')+(t==='mark'?' mk':'')+'">'+n+'</button>').join('')+'</div>';
   let body='';
   const who = line ? ((line.portrait && line.portrait.char) || line.speaker) : null;
-  if(!line) body='<div class="ed-note">現在沒有在播的對白</div>';
+  if(!line) body=i18nT('<div class="ed-note">現在沒有在播的對白</div>');
   else if(edTab==='text'){
     body = (line.textByTier || typeof line.text!=='string')
-      ? '<div class="ed-note">⚠ 這一句依好感分段（textByTier），請直接改腳本檔</div>'
-      : '<div class="ed-note">原始台詞（{N}／{P} 代換照原樣）</div><textarea data-t rows="3">'+esc(line.text)+'</textarea>'
-       +'<div class="ed-row"><button data-go="text" class="ed-go">存檔</button></div>';
+      ? i18nT('<div class="ed-note">⚠ 這一句依好感分段（textByTier），請直接改腳本檔</div>')
+      : i18nT('<div class="ed-note">原始台詞（{N}／{P} 代換照原樣）</div><textarea data-t rows="3">')+esc(line.text)+'</textarea>'
+       +i18nT('<div class="ed-row"><button data-go="text" class="ed-go">存檔</button></div>');
   }else if(edTab==='face'){
     const art=who && artOf(who);
     const hasP=line.portrait && line.portrait.expr!==undefined;
-    body = !art ? '<div class="ed-note">這一拍的說話者沒有立繪</div>'
-      : !hasP ? '<div class="ed-note">⚠ 這一拍沒有寫立繪（沿用前面的）—— 要換的話對台上的人按右鍵，改的是設定那張的那一拍</div>'
-      : '<div class="ed-note">'+esc(nameOf(who)||who)+'　目前：'+esc(line.portrait.expr||'（基本）')+'　點一張就寫進這一拍</div>'
+    body = !art ? i18nT('<div class="ed-note">這一拍的說話者沒有立繪</div>')
+      : !hasP ? i18nT('<div class="ed-note">⚠ 這一拍沒有寫立繪（沿用前面的）—— 要換的話對台上的人按右鍵，改的是設定那張的那一拍</div>')
+      : '<div class="ed-note">'+esc(nameOf(who)||who)+i18nT('　目前：')+esc(line.portrait.expr||i18nT('（基本）'))+i18nT('　點一張就寫進這一拍</div>')
        +'<div class="ed-grid">'+Object.keys(art.expr||{}).map(k=>{ const s=exprSrc(art,k)||art.base; return s ?
           '<button data-face="'+esc(k)+'" class="'+(k===line.portrait.expr?'on':'')+'"><img loading="lazy" src="'+esc(s)+'"><span>'+esc(k)+'</span></button>' : ''; }).join('')+'</div>';
   }else if(edTab==='fx'){
@@ -374,25 +375,25 @@ function edRender(){
     /* 震動（ver -1881，Ray：「沒有我明示的對話框特效…讓我可以在編輯中拿掉」）：
        這一拍的 `shake`（只抖框 'bubble'／全畫面 true）也在這一頁看得到、改得掉。 */
     const sk = line.shake==='bubble' ? 'bubble' : (line.shake ? 'screen' : 'none');
-    body='<div class="ed-note">對話框效果（可複選；點了先預覽，按「套用」才寫進這一拍）</div>'+chips(edFx,'fxk')
-       +'<div class="ed-row"><button data-fxclear>全部取消</button><button data-go="fx" class="ed-go">套用</button></div>'
-       +'<div class="ed-note">震動（目前：'+({none:'無',bubble:'只抖對話框',screen:'全畫面'})[sk]+'）點一下就寫進這一拍</div>'
-       +'<div class="ed-row">'+[['none','無'],['bubble','只抖對話框'],['screen','全畫面']].map(([k,n])=>
+    body=i18nT('<div class="ed-note">對話框效果（可複選；點了先預覽，按「套用」才寫進這一拍）</div>')+chips(edFx,'fxk')
+       +i18nT('<div class="ed-row"><button data-fxclear>全部取消</button><button data-go="fx" class="ed-go">套用</button></div>')
+       +i18nT('<div class="ed-note">震動（目前：')+({none:i18nT('無'),bubble:i18nT('只抖對話框'),screen:i18nT('全畫面')})[sk]+i18nT('）點一下就寫進這一拍</div>')
+       +'<div class="ed-row">'+[['none',i18nT('無')],['bubble',i18nT('只抖對話框')],['screen',i18nT('全畫面')]].map(([k,n])=>
           '<button data-shake="'+k+'" class="'+(k===sk?'on':'')+'">'+n+'</button>').join('')+'</div>';
   }else if(edTab==='ins'){
     const sps=edSpeakers();
     if(!edIns.speaker) edIns.speaker = who && sps.some(x=>x.id===who) ? who : 'NARRATION';
     const art=artOf(edIns.speaker), ks=art ? Object.keys(art.expr||{}) : [];
-    body='<div class="ed-row"><button data-w="before" class="'+(edIns.where==='before'?'on':'')+'">插在這一拍前</button>'
-       +'<button data-w="after" class="'+(edIns.where==='after'?'on':'')+'">插在這一拍後</button></div>'
-       +'<div class="ed-row"><span>說話者</span><select data-sp>'+sps.map(x=>'<option value="'+x.id+'"'+(x.id===edIns.speaker?' selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select></div>'
-       +(art ? '<div class="ed-row"><span>差分</span><select data-ex><option value="">（基本）</option>'+ks.map(k=>'<option'+(k===edIns.expr?' selected':'')+'>'+esc(k)+'</option>').join('')+'</select></div>' : '')
-       +'<textarea data-it rows="2" placeholder="台詞（空白＝無台詞拍）">'+esc(edIns.text)+'</textarea>'
-       +'<div class="ed-note">對話框效果（可複選）</div>'+chips(edIns.fx,'ifx')
-       +'<div class="ed-row"><button data-go="ins" class="ed-go">插入</button></div>';
+    body='<div class="ed-row"><button data-w="before" class="'+(edIns.where==='before'?'on':'')+i18nT('">插在這一拍前</button>')
+       +'<button data-w="after" class="'+(edIns.where==='after'?'on':'')+i18nT('">插在這一拍後</button></div>')
+       +i18nT('<div class="ed-row"><span>說話者</span><select data-sp>')+sps.map(x=>'<option value="'+x.id+'"'+(x.id===edIns.speaker?' selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select></div>'
+       +(art ? i18nT('<div class="ed-row"><span>差分</span><select data-ex><option value="">（基本）</option>')+ks.map(k=>'<option'+(k===edIns.expr?' selected':'')+'>'+esc(k)+'</option>').join('')+'</select></div>' : '')
+       +i18nT('<textarea data-it rows="2" placeholder="台詞（空白＝無台詞拍）">')+esc(edIns.text)+'</textarea>'
+       +i18nT('<div class="ed-note">對話框效果（可複選）</div>')+chips(edIns.fx,'ifx')
+       +i18nT('<div class="ed-row"><button data-go="ins" class="ed-go">插入</button></div>');
   }else if(edTab==='del'){
-    body='<div class="ed-note">刪掉這一拍：「'+esc(nameOf(line.speaker)||line.speaker||'')+'：'+esc(typeof line.text==='string'?line.text:'（分段台詞）')+'」</div>'
-       +'<div class="ed-row"><button data-go="del" class="ed-go ed-danger">'+(edArm==='del'?'確認刪除？':'刪除這一拍')+'</button></div>';
+    body=i18nT('<div class="ed-note">刪掉這一拍：「')+esc(nameOf(line.speaker)||line.speaker||'')+i18nT('：')+esc(typeof line.text==='string'?line.text:i18nT('（分段台詞）'))+i18nT('」</div>')
+       +'<div class="ed-row"><button data-go="del" class="ed-go ed-danger">'+(edArm==='del'?i18nT('確認刪除？'):i18nT('刪除這一拍'))+'</button></div>';
   }else if(edTab==='tune'){
     body='<div data-tunehost></div>';
   }
@@ -400,7 +401,7 @@ function edRender(){
   { const t0=$('storyTune'), st=$('storyStage'); if(t0 && st && p.contains(t0)) st.appendChild(t0); }
   p.innerHTML='<div class="ed-head">'+tabs.map(([k,n])=>'<button data-tab="'+k+'" class="'+(k===edTab?'on':'')+'">'+n+'</button>').join('')
     +'<button data-x>✕</button></div>'
-    +(line ? '<div class="ed-note">第 '+(lineIdx+1)+' 拍・'+esc(nameOf(line.speaker)||line.speaker||'（演出拍）')+'</div>' : '')
+    +(line ? i18nT('<div class="ed-note">第 ')+(lineIdx+1)+i18nT(' 拍・')+esc(nameOf(line.speaker)||line.speaker||i18nT('（演出拍）'))+'</div>' : '')
     +body+(edMsg ? '<div class="ed-msg'+(/失敗|⚠/.test(edMsg)?' bad':'')+'">'+esc(edMsg)+'</div>' : '');
   /* 調整頁：把原本那張立繪調整面板搬進來（同一份實作，鐵律 8）。 */
   const t=$('storyTune'), host=p.querySelector('[data-tunehost]');
@@ -421,11 +422,11 @@ function edRender(){
   p.querySelectorAll('[data-shake]').forEach(b=>b.onclick=()=>edGo('shake:'+b.dataset.shake));
   const go=p.querySelector('[data-go]'); if(go) go.onclick=()=>edGo(go.dataset.go);
 }
-function edDone(r, okMsg){ edMsg = r.ok ? okMsg+'（'+r.text+'）' : '寫入失敗：'+r.text; edRender(); return r; }
+function edDone(r, okMsg){ edMsg = r.ok ? okMsg+i18nT('（')+r.text+i18nT('）') : i18nT('寫入失敗：')+r.text; edRender(); return r; }
 function edFace(k){
   const line=edLine(); if(!line || !line.portrait) return;
   const who=line.portrait.char || line.speaker, loc=edLocate(), i=lineIdx;
-  edMsg='寫入中…'; edRender();
+  edMsg=i18nT('寫入中…'); edRender();
   /* ⚠ ver -1881（Ray：「安雅說俄文時無法改差分，提示『有二行』」）：連同前後各 80 拍的序列一起送 ——
      同一句台詞抄在兩個分支時，伺服器的退路（整拍範圍）靠它挑出唯一那一拍（同 `/__line`）。 */
   edPost('__beat', { text:loc.text, old:line.portrait.expr==null?null:line.portrait.expr, new:k, field:'expr',
@@ -433,7 +434,7 @@ function edFace(k){
     .then(r=>{
       if(r.ok){ line.portrait.expr=k;
         if(lineIdx===i){ const sd=['L','R'].find(s=>slot[s]===who); if(sd){ ensureOn(who, k); if(shown[who]) shown[who].expr=k; layout(); } } }
-      edDone(r, '已換差分');
+      edDone(r, i18nT('已換差分'));
     });
 }
 function edGo(what){
@@ -441,41 +442,41 @@ function edGo(what){
   const loc=edLocate(), i=lineIdx, lines=cur.lines;
   if(what==='text'){
     const ta=$('storyEdit').querySelector('[data-t]'); if(!ta || ta.value===line.text) return;
-    const v=ta.value; edMsg='寫入中…'; edRender();
+    const v=ta.value; edMsg=i18nT('寫入中…'); edRender();
     edPost('__text', { text:line.text, new:v, mark:loc.mark, prev:loc.prev, next:loc.next })
-      .then(r=>{ if(r.ok){ line.text=v; const t=$('storyText'); if(t && lineIdx===i) t.textContent=lineText(line); } edDone(r, '已改台詞'); });
+      .then(r=>{ if(r.ok){ line.text=v; const t=$('storyText'); if(t && lineIdx===i) t.textContent=lineText(line); } edDone(r, i18nT('已改台詞')); });
     return;
   }
   if(String(what).indexOf('shake:')===0){
     const k=what.slice(6), v = k==='bubble' ? 'bubble' : (k==='screen' ? true : null);
-    edMsg='寫入中…'; edRender();
+    edMsg=i18nT('寫入中…'); edRender();
     edPost('__line', Object.assign({ op:'set', key:'shake', value:v }, loc)).then(r=>{
       if(r.ok){ if(v) line.shake=v; else delete line.shake; }
-      edDone(r, v ? '已設定震動' : '已拿掉震動');
+      edDone(r, v ? i18nT('已設定震動') : i18nT('已拿掉震動'));
     });
     return;
   }
   if(what==='fx'){
-    const v=(edFx||[]).slice(); edMsg='寫入中…'; edRender();
+    const v=(edFx||[]).slice(); edMsg=i18nT('寫入中…'); edRender();
     edPost('__line', Object.assign({ op:'set', key:'bubbleFx', value:v.length?v:null }, loc)).then(r=>{
       if(r.ok){ if(v.length) line.bubbleFx = v.length===1 ? v[0] : v; else delete line.bubbleFx; edFx=null; }
-      edDone(r, v.length ? '已套用效果' : '已拿掉效果');
+      edDone(r, v.length ? i18nT('已套用效果') : i18nT('已拿掉效果'));
     });
     return;
   }
   if(what==='del'){
     if(edArm!=='del'){ edArm='del'; edRender(); return; }
-    edArm=null; edMsg='寫入中…'; edRender();
+    edArm=null; edMsg=i18nT('寫入中…'); edRender();
     edPost('__line', Object.assign({ op:'delete' }, loc)).then(r=>{
       if(r.ok){ lines.splice(i, 1); histShift(i, -1);
         if(lineIdx===i){ if(i<lines.length){ replaying=true; try{ renderLine(); } finally{ replaying=false; } } else edClose(); } }
-      if(edTab) edDone(r, '已刪除');
+      if(edTab) edDone(r, i18nT('已刪除'));
     });
     return;
   }
   if(what==='ins'){
     const beat={ speaker:edIns.speaker||'NARRATION', expr:edIns.expr||null, text:edIns.text||'', bubbleFx:edIns.fx.slice() };
-    edMsg='寫入中…'; edRender();
+    edMsg=i18nT('寫入中…'); edRender();
     edPost('__line', Object.assign({ op:'insert', where:edIns.where, beat }, loc)).then(r=>{
       if(r.ok){
         const sp=beat.speaker, obj = (sp==='PLAYER' && !beat.text) ? { speaker:'PLAYER', blank:true }
@@ -486,7 +487,7 @@ function edGo(what){
         if(edIns.where==='before' && lineIdx===i) lineIdx++;   // 還停在原本那一拍
         edIns.text=''; edIns.fx=[];
       }
-      edDone(r, edIns.where==='before' ? '已插在前面' : '已插在後面（推進就演到它）');
+      edDone(r, edIns.where==='before' ? i18nT('已插在前面') : i18nT('已插在後面（推進就演到它）'));
     });
   }
 }
@@ -512,47 +513,47 @@ function tuneRender(){
   if(studioOn){
     const cat=tuneCatalog();
     const row=sd=>{ const cur=studioSel[sd]||{}; const c=cat.find(x=>x.id===cur.id);
-      return '<div class="tn-row tn-pick"><span>'+(sd==='L'?'左':'右')+'</span>'
-        +'<select data-sc="'+sd+'"><option value="">（無）</option>'+cat.map(x=>'<option value="'+x.id+'"'+(x.id===cur.id?' selected':'')+'>'+x.name+'</option>').join('')+'</select>'
-        +'<select data-se="'+sd+'"'+(c?'':' disabled')+'><option value="">（基本）</option>'+(c?c.exprs:[]).map(e=>'<option'+(e===cur.expr?' selected':'')+'>'+e+'</option>').join('')+'</select></div>'; };
-    studio=row('L')+row('R')+'<div class="tn-row"><button data-act="exit">離開</button></div>';
+      return '<div class="tn-row tn-pick"><span>'+(sd==='L'?i18nT('左'):i18nT('右'))+'</span>'
+        +'<select data-sc="'+sd+i18nT('"><option value="">（無）</option>')+cat.map(x=>'<option value="'+x.id+'"'+(x.id===cur.id?' selected':'')+'>'+x.name+'</option>').join('')+'</select>'
+        +'<select data-se="'+sd+'"'+(c?'':' disabled')+i18nT('><option value="">（基本）</option>')+(c?c.exprs:[]).map(e=>'<option'+(e===cur.expr?' selected':'')+'>'+e+'</option>').join('')+'</select></div>'; };
+    studio=row('L')+row('R')+i18nT('<div class="tn-row"><button data-act="exit">離開</button></div>');
   }
-  if(!sides.length){ p.innerHTML=studio+'<div class="tn-empty">台上沒有立繪</div>'; tuneBindStudio(p); return; }
+  if(!sides.length){ p.innerHTML=studio+i18nT('<div class="tn-empty">台上沒有立繪</div>'); tuneBindStudio(p); return; }
   if(sides.indexOf(tuneSide)<0) tuneSide = sides[sides.length-1];
   const c=tuneCur(tuneSide);
   const live=c && tuneLive[c.tk.key];
   const n=v=>(v==null?'—':(+v).toFixed(3).replace(/\.?0+$/,''));
   p.innerHTML = studio +
     '<div class="tn-row tn-who">'+sides.map(sd=>'<button data-side="'+sd+'" class="'+(sd===tuneSide?'on':'')+'">'
-      +(sd==='L'?'左 ':'右 ')+(nameOf(slot[sd])||slot[sd])+'</button>').join('')+'</div>'
-   +(c ? '<div class="tn-path">'+c.tk.expr+(c.tk.kind==='base'?'（寫在角色層：沒有自己值的差分會一起變）':'')+'</div>'
+      +(sd==='L'?i18nT('左 '):i18nT('右 '))+(nameOf(slot[sd])||slot[sd])+'</button>').join('')+'</div>'
+   +(c ? '<div class="tn-path">'+c.tk.expr+(c.tk.kind==='base'?i18nT('（寫在角色層：沒有自己值的差分會一起變）'):'')+'</div>'
    /* 對話中換差分（ver -1827，Ray：「對話中要可以選擇更換立繪，不是只有移動縮放」）：改的是設定這張的那一拍，
       寫進腳本檔（`beatChangeAt`，同右鍵）。工作室模式上面已經有選角兩列，不重複。 */
    +(studioOn ? '' : (()=>{ const art=artOf(c.id), b=beatOf[c.id];
         const ks=Object.keys((art&&art.expr)||{});
-        return '<div class="tn-row"><span>差分</span><select data-bx>'
+        return i18nT('<div class="tn-row"><span>差分</span><select data-bx>')
           +ks.map(k=>'<option'+(k===slotExpr[tuneSide]?' selected':'')+'>'+k+'</option>').join('')+'</select></div>'
-          +'<div class="tn-path">'+(b ? '改寫這一拍：「'+(b.line.text||'（無台詞）')+'」' : '⚠ 這張是沿用前面的，換了不會寫檔')+'</div>'; })())
+          +'<div class="tn-path">'+(b ? i18nT('改寫這一拍：「')+(b.line.text||i18nT('（無台詞）'))+i18nT('」') : i18nT('⚠ 這張是沿用前面的，換了不會寫檔'))+'</div>'; })())
    /* 數字可以直接打（ver -1825）：Enter 或離開那一格就套用。 */
-   +'<div class="tn-row"><span>大小 cm</span><input data-in="cm" type="number" step="1" value="'+n(c.f.cm)+'"><button data-k="cm" data-d="-1">－</button><button data-k="cm" data-d="1">＋</button></div>'
-   +'<div class="tn-row"><span>上下</span><input data-in="yShift" type="number" step="1" value="'+n(c.f.yShift||0)+'"><button data-k="yShift" data-d="1">↑</button><button data-k="yShift" data-d="-1">↓</button></div>'
-   +'<div class="tn-row"><span>左右</span><input data-in="fxShift" type="number" step="0.005" value="'+n(c.f.fxShift||0)+'"><button data-k="fxShift" data-d="0.005">←</button><button data-k="fxShift" data-d="-0.005">→</button></div>'
+   +i18nT('<div class="tn-row"><span>大小 cm</span><input data-in="cm" type="number" step="1" value="')+n(c.f.cm)+i18nT('"><button data-k="cm" data-d="-1">－</button><button data-k="cm" data-d="1">＋</button></div>')
+   +i18nT('<div class="tn-row"><span>上下</span><input data-in="yShift" type="number" step="1" value="')+n(c.f.yShift||0)+'"><button data-k="yShift" data-d="1">↑</button><button data-k="yShift" data-d="-1">↓</button></div>'
+   +i18nT('<div class="tn-row"><span>左右</span><input data-in="fxShift" type="number" step="0.005" value="')+n(c.f.fxShift||0)+'"><button data-k="fxShift" data-d="0.005">←</button><button data-k="fxShift" data-d="-0.005">→</button></div>'
    /* 站位（ver -1892，Ray：「立繪調整要可以決定人物站左或右」）＝這一張的 `side`（同 speakers.js 既有的差分 side）。 */
-   +'<div class="tn-row"><span>站位</span><button data-act="sideL" class="'+(tuneSide==='L'?'on':'')+'">站左</button><button data-act="sideR" class="'+(tuneSide==='R'?'on':'')+'">站右</button></div>'
+   +i18nT('<div class="tn-row"><span>站位</span><button data-act="sideL" class="')+(tuneSide==='L'?'on':'')+i18nT('">站左</button><button data-act="sideR" class="')+(tuneSide==='R'?'on':'')+i18nT('">站右</button></div>')
    /* 水平翻轉（ver -1898 改，Ray：「立繪編輯的翻轉只是轉那一拍的圖而已」）＝**這一拍**的 `flip:true`，
       按下去直接寫進腳本那一行（`/__line set`），不寫 speakers.js。工作室模式沒有「這一拍」，不給。 */
    +(studioOn ? '' : (()=>{ const ln=edLine(); const on=!!(ln && ln.flip && beatFlipWho===c.id);
-        return '<div class="tn-row"><span>這一拍翻轉</span><button data-act="flip" class="'+(on?'on':'')+'">'+(on?'翻轉中':'未翻轉')+'</button></div>'; })())
-   +'<div class="tn-row"><button data-act="big" class="'+(tuneBig?'on':'')+'">步進×5</button>'
-   +'<button data-act="undo"'+(live?'':' disabled')+'>還原</button>'
-   +'<button data-act="save" class="tn-save"'+(live?'':' disabled')+'>'+(c && tuneArm===c.tk.key ? '確認寫入？' : '儲存')+'</button>'
-   +'<button data-act="std">'+(c && tuneArm==='std:'+c.id ? '確認標準化？' : '標準化')+'</button></div>' : '')
+        return i18nT('<div class="tn-row"><span>這一拍翻轉</span><button data-act="flip" class="')+(on?'on':'')+'">'+(on?i18nT('翻轉中'):i18nT('未翻轉'))+'</button></div>'; })())
+   +'<div class="tn-row"><button data-act="big" class="'+(tuneBig?'on':'')+i18nT('">步進×5</button>')
+   +'<button data-act="undo"'+(live?'':' disabled')+i18nT('>還原</button>')
+   +'<button data-act="save" class="tn-save"'+(live?'':' disabled')+'>'+(c && tuneArm===c.tk.key ? i18nT('確認寫入？') : i18nT('儲存'))+'</button>'
+   +'<button data-act="std">'+(c && tuneArm==='std:'+c.id ? i18nT('確認標準化？') : i18nT('標準化'))+'</button></div>' : '')
    +(tuneMsg ? '<div class="tn-path" style="color:'+(/失敗/.test(tuneMsg)?'#e57373':'#8fd18f')+'">'+tuneMsg+'</div>' : '');
   tuneBindStudio(p);
   { const bx=p.querySelector('select[data-bx]');
     if(bx){ ['pointerdown','click','keydown'].forEach(ev=>bx.addEventListener(ev, e=>e.stopPropagation()));
-      bx.addEventListener('change', ()=>{ tuneMsg='寫入中…'; tuneRender();
-        beatChangeAt(tuneSide, bx.value).then(r=>{ tuneMsg=(r.ok?'已換差分，寫入：':'換差分失敗：')+r.text; tuneRender(); }); }); } }
+      bx.addEventListener('change', ()=>{ tuneMsg=i18nT('寫入中…'); tuneRender();
+        beatChangeAt(tuneSide, bx.value).then(r=>{ tuneMsg=(r.ok?i18nT('已換差分，寫入：'):i18nT('換差分失敗：'))+r.text; tuneRender(); }); }); } }
   p.querySelectorAll('input[data-in]').forEach(inp=>inp.addEventListener('change', ()=>{
     const cur=tuneCur(tuneSide); if(!cur) return;
     const v=parseFloat(inp.value); if(!isFinite(v)) return tuneRender();
@@ -577,10 +578,10 @@ function tuneRender(){
     if(act==='flip'){
       const ln=edLine(); if(!ln) return;
       const on=!(ln.flip && beatFlipWho===cur.id), loc=edLocate();
-      tuneMsg='寫入中…'; tuneRender();
+      tuneMsg=i18nT('寫入中…'); tuneRender();
       edPost('__line', Object.assign({ op:'set', key:'flip', value:on||null }, loc)).then(r=>{
         if(r.ok){ if(on){ ln.flip=true; beatFlipWho=cur.id; } else { delete ln.flip; beatFlipWho=null; } layout(); }
-        tuneMsg=(r.ok?(on?'這一拍已翻轉：':'這一拍已取消翻轉：'):'寫入失敗：')+r.text; tuneRender();
+        tuneMsg=(r.ok?(on?i18nT('這一拍已翻轉：'):i18nT('這一拍已取消翻轉：')):i18nT('寫入失敗：'))+r.text; tuneRender();
       });
       return;
     }
@@ -619,20 +620,20 @@ function tuneStd(cur){
   if(art.base) items.push({ kind:'base', key:art.base });
   for(const k of Object.keys(art.expr||{})){ const e=art.expr[k]; if(e && typeof e==='object' && e.src) items.push({ kind:'src', key:e.src }); }
   const armKey='std:'+cur.id;
-  if(tuneArm!==armKey){ tuneArm=armKey; tuneMsg='再按一次「標準化」：'+(nameOf(cur.id)||cur.id)+' 全部 '+items.length+' 張 → cm '+set.cm+'，上下 '+set.yShift+'，左右 '+set.fxShift; tuneRender(); return; }
+  if(tuneArm!==armKey){ tuneArm=armKey; tuneMsg=i18nT('再按一次「標準化」：')+(nameOf(cur.id)||cur.id)+i18nT(' 全部 ')+items.length+i18nT(' 張 → cm ')+set.cm+i18nT('，上下 ')+set.yShift+i18nT('，左右 ')+set.fxShift; tuneRender(); return; }
   tuneArm=null;
   const url=new URL('__tune', new URL('../', import.meta.url)).pathname;
   fetch(url, { method:'POST', body:JSON.stringify({ items, set }) })
     .then(r=>r.text().then(t=>({ ok:r.ok, st:r.status, t })))
     .then(({ok, st, t})=>{
-      if(!ok){ tuneMsg='標準化失敗（HTTP '+st+'）：'+t; tuneRender(); return; }
+      if(!ok){ tuneMsg=i18nT('標準化失敗（HTTP ')+st+i18nT('）：')+t; tuneRender(); return; }
       Object.assign(art, set);
       for(const k of Object.keys(art.expr||{})){ const e=art.expr[k]; if(e && typeof e==='object' && e.src) Object.assign(e, set); }
       for(const it of items) delete tuneLive[it.key];
-      tuneMsg='已標準化 speakers.js（'+t+'）'; layout(); tuneRender();
+      tuneMsg=i18nT('已標準化 speakers.js（')+t+i18nT('）'); layout(); tuneRender();
       /* 飛行頁直接讀 speakers.js（ver -1833），不必同步。 */
     })
-    .catch(e=>{ tuneMsg='標準化失敗：'+e; tuneRender(); });
+    .catch(e=>{ tuneMsg=i18nT('標準化失敗：')+e; tuneRender(); });
 }
 function tuneBindStudio(p){
   if(!studioOn) return;
@@ -645,23 +646,23 @@ function tuneBindStudio(p){
 function tuneSave(cur){
   const L=tuneLive[cur.tk.key]; if(!L) return;
   const base=frameOf(cur.id, slotExpr[tuneSide]) || {};
-  const lines=Object.keys(L).map(k=>'  '+k+'：'+(base[k]==null?'（無）':base[k])+' → '+L[k]);
+  const lines=Object.keys(L).map(k=>'  '+k+i18nT('：')+(base[k]==null?i18nT('（無）'):base[k])+' → '+L[k]);
   /* ⚠ 不用 `window.confirm`（ver -1824）：內建預覽視窗會把它吞掉、當成「取消」，連請求都不送 ——
      Ray 存了好幾次伺服器一筆都沒收到。改成面板上按兩下：第一下顯示要寫什麼，第二下才寫。 */
-  if(tuneArm!==cur.tk.key){ tuneArm=cur.tk.key; tuneMsg='再按一次「儲存」寫入：'+lines.join('，'); tuneRender(); return; }
+  if(tuneArm!==cur.tk.key){ tuneArm=cur.tk.key; tuneMsg=i18nT('再按一次「儲存」寫入：')+lines.join(i18nT('，')); tuneRender(); return; }
   tuneArm=null;
   const url=new URL('__tune', new URL('../', import.meta.url)).pathname;
   fetch(url, { method:'POST', body:JSON.stringify({ kind:cur.tk.kind, key:cur.tk.key, set:L }) })
     .then(r=>r.text().then(t=>({ ok:r.ok, st:r.status, t })))
     .then(({ok, st, t})=>{
-      if(!ok){ tuneMsg='寫入失敗（HTTP '+st+'）：'+t+(st===404||st===501?'（這個伺服器沒有存檔功能，要重開 devserver）':''); tuneRender(); return; }
-      tuneMsg='已寫入 speakers.js：'+cur.tk.key.split('/').pop();
+      if(!ok){ tuneMsg=i18nT('寫入失敗（HTTP ')+st+i18nT('）：')+t+(st===404||st===501?i18nT('（這個伺服器沒有存檔功能，要重開 devserver）'):''); tuneRender(); return; }
+      tuneMsg=i18nT('已寫入 speakers.js：')+cur.tk.key.split('/').pop();
       Object.assign(cur.tk.obj, L);          // 這一輪不必重載就生效（檔案已經是同一組值）
       delete tuneLive[cur.tk.key]; layout(); tuneRender();
       console.log('[立繪調整] 已寫入 speakers.js', cur.tk.key, L);
       /* 飛行頁不再有自己的一份（ver -1833：它直接讀 speakers.js），不必同步。 */
     })
-    .catch(e=>{ tuneMsg='寫入失敗：'+e; tuneRender(); });
+    .catch(e=>{ tuneMsg=i18nT('寫入失敗：')+e; tuneRender(); });
 }
 /* ══ 立繪調整區（ver -1819，Ray：「出個立繪調整區，進去先選飛行或一般，然後選左右角色」）══
    首頁「立繪」鈕 → 一般 → 這兩支：`tuneCatalog()` 給名單、`tuneStudio()` 開工作室（見下）。
@@ -674,7 +675,7 @@ export function tuneCatalog(){
     if(!a || !a.base || seen[k]) continue; seen[k]=1;
     /* 優先用與立繪同名的那個 id（`renna` → RENNA，不是正名前的 OFFICER「監察官」）。 */
     const up=String(k).toUpperCase(), id=(SPEAKERS[up] && SPEAKERS[up].art===k) ? up : id0;
-    out.push({ id, name:(nameOf(id)||id)+'（'+k+'）', exprs:Object.keys(a.expr||{}) });
+    out.push({ id, name:(nameOf(id)||id)+i18nT('（')+k+i18nT('）'), exprs:Object.keys(a.expr||{}) });
   }
   return out;
 }
@@ -3172,7 +3173,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1908';
+const KERB_V='?v=1909';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4084,7 +4085,7 @@ function renderLine(){
     /* ⚠ **台上要空、框要收**：這是一個換幕的分隔，上一幕的人與那一句話不該印在
        翌日的卡上（對話框 z-7 在卡之上，不收的話字會浮在「翌日」上面）。 */
     clearCast(); hideBubble();
-    const t = (typeof line.dayBreak==='string') ? line.dayBreak : '翌日';
+    const t = (typeof line.dayBreak==='string') ? line.dayBreak : i18nT('翌日');
     showTitleCard({ title:t, sub:clock.dateText()+'　'+clock.timeText(), opaque:true },
                   ()=>advance());
     return;
@@ -5594,10 +5595,10 @@ export function flashLine(text, name){
      這一支是**驗收**不是規矩 —— 真的驗到就是上游有 bug，靜靜清掉會讓下一次查不出來。
      測試模式再多浮一行字，Ray 在手機上看得到是哪一片，回報時直接講名字。 */
 const DARK_LAYERS = [
-  { id:'storyVeil',  name:'切景黑幕 #storyVeil' },
-  { id:'storyFade',  name:'場景區黑幕 #storyFade' },
-  { id:'transition', name:'戰鬥過場 #transition' },
-  { id:'storyCook',  name:'料理演出 #storyCook' },   // ver -953：86% 暗罩，沒有「點一下收掉」的出路
+  { id:'storyVeil',  name:i18nT('切景黑幕 #storyVeil') },
+  { id:'storyFade',  name:i18nT('場景區黑幕 #storyFade') },
+  { id:'transition', name:i18nT('戰鬥過場 #transition') },
+  { id:'storyCook',  name:i18nT('料理演出 #storyCook') },   // ver -953：86% 暗罩，沒有「點一下收掉」的出路
 ];
 export function assertNoDarkOverlay(where){
   const stuck=[];
@@ -5606,9 +5607,9 @@ export function assertNoDarkOverlay(where){
     if(el && el.classList.contains('on')){ el.classList.remove('on'); el.style.transitionDuration=''; stuck.push(L.name); }
   }
   { const st=$('storyStage');
-    if(st && st.classList.contains('kerb-veil')){ st.classList.remove('kerb-veil'); stuck.push('關棺暗罩 kerb-veil'); } }
+    if(st && st.classList.contains('kerb-veil')){ st.classList.remove('kerb-veil'); stuck.push(i18nT('關棺暗罩 kerb-veil')); } }
   if(!stuck.length) return false;
-  const msg='['+(where||'?')+'] 畫面該亮了卻還蓋著：'+stuck.join('、')+' —— 已清掉，上游有路徑沒收它';
+  const msg='['+(where||'?')+i18nT('] 畫面該亮了卻還蓋著：')+stuck.join(i18nT('、'))+i18nT(' —— 已清掉，上游有路徑沒收它');
   /* ⚠⚠ **不浮字**（ver -926，Ray：「現在遊戲中控制面板會一直跳一條訊息出來擋住…
      把它拿掉」）：-904 那條紅字是給管理人讀的，但它蓋在控制面板上、而且一有
      誤報就一直跳。**留 console 就夠了** —— 它是驗收不是通知，真的驗到東西時
@@ -5839,7 +5840,7 @@ export function showBoon(up, done){
        讀起來是「掉下去」不是「飄上去」。
      ⚠ 音效走既有的 `se_healing`（＝使用回復道具那一支，鐵律 8）—— 這一份加成
        就是「補了體力上限」，用同一個聲音玩家一聽就懂。 */
-  b.innerHTML='<b>體力上限　＋'+up+'</b>';
+  b.innerHTML=i18nT('<b>體力上限　＋')+up+'</b>';
   b.classList.remove('show','out'); b.classList.add('on'); void b.offsetWidth;
   playSe('se_healing');
   cookT.push(setTimeout(()=>{ b.classList.add('show'); }, 40));
@@ -6020,12 +6021,12 @@ function openNameInput(done){
   const nm = named ? prog.getPlayerName() : prog.PLAYER_DEFAULT;
   const nk = named ? prog.getPlayerNick() : prog.NICK_DEFAULT;
   ov.innerHTML='<div class="ns-panel">'
-    + '<div class="ns-title">請問您的名字是？</div>'
-    + '<label class="ns-row"><span>名　字</span>'
+    + i18nT('<div class="ns-title">請問您的名字是？</div>')
+    + i18nT('<label class="ns-row"><span>名　字</span>')
     +   '<input id="nsName" type="text" maxlength="12" value="'+nm.replace(/"/g,'&quot;')+'"></label>'
-    + '<label class="ns-row"><span>暱　稱</span>'
+    + i18nT('<label class="ns-row"><span>暱　稱</span>')
     +   '<input id="nsNick" type="text" maxlength="8" value="'+nk.replace(/"/g,'&quot;')+'"></label>'
-    + '<button class="ns-ok" type="button">確　定</button></div>';
+    + i18nT('<button class="ns-ok" type="button">確　定</button></div>');
   document.body.appendChild(ov);
   ov.addEventListener('pointerdown', e=>e.stopPropagation());
   ov.addEventListener('click', e=>e.stopPropagation());
@@ -6357,10 +6358,10 @@ function showBacklog(){
   const rows = sceneLog.length
     ? sceneLog.map(r=>'<div class="log-row'+(r.me?' me':'')+'"><span class="log-name">'+r.name+'</span>'
                      +'<span class="log-text">'+r.text+'</span></div>').join('')
-    : '<div class="log-empty">（這一場還沒有台詞）</div>';
-  ov.innerHTML='<div class="log-panel"><div class="log-title">已播腳本</div>'
+    : i18nT('<div class="log-empty">（這一場還沒有台詞）</div>');
+  ov.innerHTML=i18nT('<div class="log-panel"><div class="log-title">已播腳本</div>')
              + '<div class="log-list">'+rows+'</div>'
-             + '<button class="log-ok" type="button">關閉</button></div>';
+             + i18nT('<button class="log-ok" type="button">關閉</button></div>');
   document.body.appendChild(ov);
   requestAnimationFrame(()=>{ ov.classList.add('on');
     const list=ov.querySelector('.log-list'); if(list) list.scrollTop=list.scrollHeight; });

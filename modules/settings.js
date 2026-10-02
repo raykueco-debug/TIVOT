@@ -9,6 +9,7 @@
    ⚠ 套用只有一支（`apply()`）：開機、改設定都呼叫它，不要在別處各自 setLayerVolume。
    ══════════════════════════════════════════════════════════════════════ */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { SFX } from '../audio.js';
 /* ══ 進度面板（ver -1094，Ray：「不要在飛行畫面，把進度放到管理者限定的系統設定選單」）══
    它以前住在 `flight/index.html`（-983 起，入口是那顆「進度」鈕；-1085 我把鈕拿掉
@@ -60,10 +61,10 @@ export const HEAT_KEY = 'tivot_heatoff_v1';   // ⚠ flight/index.html 的 HEAT_
      色調／mix-blend，全頁）　shadow＝光暈陰影（box-shadow／text-shadow）　particle＝櫻花粒子
      tick＝槍棺齒輪轉動與閃光掃過（每秒一次的計時器）
      fq＝飛行畫面鎖最低畫質（q4）　f30＝飛行畫面 30fps 上限 —— 這兩項讀在飛行頁，**下一次進飛行畫面才生效**。 */
-export const HEAT_ITEMS = [ ['fx','普攻特效','戰鬥'], ['ring','延時光圈'], ['alert','警戒脈動'], ['hit','受擊演出'],
-  ['audio','全部聲音','聲音'], ['bgm','只關音樂'], ['sfx','只關音效'],
-  ['anim','常駐循環動畫','畫面（全域）'], ['filter','濾鏡與混色'], ['shadow','光暈陰影'], ['particle','櫻花粒子'], ['tick','齒輪轉動／閃光掃過'],
-  ['fq','飛行：最低畫質','飛行畫面（下次進入生效）'], ['f30','飛行：30fps 上限'] ];
+export const HEAT_ITEMS = [ ['fx',i18nT('普攻特效'),i18nT('戰鬥')], ['ring',i18nT('延時光圈')], ['alert',i18nT('警戒脈動')], ['hit',i18nT('受擊演出')],
+  ['audio',i18nT('全部聲音'),i18nT('聲音')], ['bgm',i18nT('只關音樂')], ['sfx',i18nT('只關音效')],
+  ['anim',i18nT('常駐循環動畫'),i18nT('畫面（全域）')], ['filter',i18nT('濾鏡與混色')], ['shadow',i18nT('光暈陰影')], ['particle',i18nT('櫻花粒子')], ['tick',i18nT('齒輪轉動／閃光掃過')],
+  ['fq',i18nT('飛行：最低畫質'),i18nT('飛行畫面（下次進入生效）')], ['f30',i18nT('飛行：30fps 上限')] ];
 export function heatOff(){ try{ const a=JSON.parse(rd(HEAT_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
 function setHeatOff(k, off){ const a=heatOff().filter(x=>x!==k); if(off) a.push(k); wr(HEAT_KEY, JSON.stringify(a)); }
 const num = (v, d) => { const n=parseFloat(v); return isFinite(n) ? n : d; };
@@ -86,7 +87,7 @@ export function syncMute(){
   const on=!!muteHook.get();
   mu.classList.toggle('on', on);
   const lab=mu.parentNode && mu.parentNode.querySelector('b');
-  if(lab) lab.textContent = on ? '靜音中' : '關';
+  if(lab) lab.textContent = on ? i18nT('靜音中') : i18nT('關');
 }
 export function setMuteHook(h){ muteHook = h; }
 /* ══⚠⚠ **管理人工具收進這一頁**（ver -926，Ray：「把凍結跟狀態 HUD 收到系統設定裡面，
@@ -164,81 +165,81 @@ export function open(opts){
         '<label class="gm-row gm-toggle"><span>'+label+'</span>'
       + '<button class="gm-sw'+(fxOn(kind)?' on':'')+'" id="'+id+'" type="button" data-fx="'+kind+'">'
       +   '<i></i></button>'
-      + '<b>'+(fxOn(kind)?'開':'關')+'</b></label>';
+      + '<b>'+(fxOn(kind)?i18nT('開'):i18nT('關'))+'</b></label>';
     const row = (id, label, val) =>
         '<label class="gm-row"><span>'+label+'</span>'
       + '<input id="'+id+'" type="range" min="0" max="100" step="1" value="'+Math.round(val*100)+'">'
       + '<b id="'+id+'V">'+Math.round(val*100)+'</b></label>';
     const autoPct = Math.round((autoDelayMs()-AUTO_MIN)/(AUTO_MAX-AUTO_MIN)*100);
     panel.innerHTML =
-        '<div class="gm-title">選　單</div>'
-      + '<div class="gm-sec">音　量</div>'
+        i18nT('<div class="gm-title">選　單</div>')
+      + i18nT('<div class="gm-sec">音　量</div>')
       + (muteHook
-        ? '<label class="gm-row gm-toggle"><span>靜　音</span>'
+        ? i18nT('<label class="gm-row gm-toggle"><span>靜　音</span>')
           + '<button class="gm-sw'+(muteHook.get()?' on':'')+'" id="gmMute" type="button"><i></i></button>'
-          + '<b>'+(muteHook.get()?'靜音中':'關')+'</b></label>'
+          + '<b>'+(muteHook.get()?i18nT('靜音中'):i18nT('關'))+'</b></label>'
         : '')
-      +   row('gmBgm','音　樂', volOf('bgm'))
-      +   row('gmSe', '音　效', volOf('se'))
-      +   row('gmVo', '語　音', volOf('vo'))
-      + '<div class="gm-sec">自動播放</div>'
-      + '<label class="gm-row"><span>間　隔</span>'
+      +   row('gmBgm',i18nT('音　樂'), volOf('bgm'))
+      +   row('gmSe', i18nT('音　效'), volOf('se'))
+      +   row('gmVo', i18nT('語　音'), volOf('vo'))
+      + i18nT('<div class="gm-sec">自動播放</div>')
+      + i18nT('<label class="gm-row"><span>間　隔</span>')
       +   '<input id="gmAuto" type="range" min="0" max="100" step="1" value="'+autoPct+'">'
       +   '<b id="gmAutoV">'+(autoDelayMs()/1000).toFixed(1)+'s</b></label>'
-      + '<div class="gm-note">一句唸完之後停多久才走下一句。往左＝快。</div>'
-      + '<div class="gm-sec">戰鬥提示</div>'
-      + fxRow('gmFxDelay','延時懲罰計時器','delay')
-      + fxRow('gmFxPass','被動技能計時器','pass')
-      + fxRow('gmFxAlert','敵人攻擊警告','alert')
-      + '<div class="gm-sec">其　他</div>'
-      + '<label class="gm-row gm-toggle"><span>對話文字</span>'
+      + i18nT('<div class="gm-note">一句唸完之後停多久才走下一句。往左＝快。</div>')
+      + i18nT('<div class="gm-sec">戰鬥提示</div>')
+      + fxRow('gmFxDelay',i18nT('延時懲罰計時器'),'delay')
+      + fxRow('gmFxPass',i18nT('被動技能計時器'),'pass')
+      + fxRow('gmFxAlert',i18nT('敵人攻擊警告'),'alert')
+      + i18nT('<div class="gm-sec">其　他</div>')
+      + i18nT('<label class="gm-row gm-toggle"><span>對話文字</span>')
       +   '<button class="gm-sw'+(bigText()?' on':'')+'" id="gmBigText" type="button">'
       +     '<i></i></button>'
-      +   '<b>'+(bigText()?'加大':'預設')+'</b></label>'
-      + '<label class="gm-row gm-toggle"><span>震　動</span>'
+      +   '<b>'+(bigText()?i18nT('加大'):i18nT('預設'))+'</b></label>'
+      + i18nT('<label class="gm-row gm-toggle"><span>震　動</span>')
       +   '<button class="gm-sw'+(haptics()?' on':'')+'" id="gmHap" type="button">'
       +     '<i></i></button>'
-      +   '<b>'+(haptics()?'開':'關')+'</b></label>'
+      +   '<b>'+(haptics()?i18nT('開'):i18nT('關'))+'</b></label>'
       + ((devTools && document.body.classList.contains('testmode'))
-        ? '<div class="gm-sec">管理人</div>'
-          + '<label class="gm-row gm-toggle"><span>凍　結</span>'
+        ? i18nT('<div class="gm-sec">管理人</div>')
+          + i18nT('<label class="gm-row gm-toggle"><span>凍　結</span>')
           +   '<button class="gm-sw'+(devTools.frozen&&devTools.frozen()?' on':'')+'" id="gmFreeze" type="button">'
           +     '<i></i></button>'
-          +   '<b>'+(devTools.frozen&&devTools.frozen()?'凍結中':'關')+'</b></label>'
-          + '<label class="gm-row gm-toggle"><span>狀態 HUD</span>'
+          +   '<b>'+(devTools.frozen&&devTools.frozen()?i18nT('凍結中'):i18nT('關'))+'</b></label>'
+          + i18nT('<label class="gm-row gm-toggle"><span>狀態 HUD</span>')
           +   '<button class="gm-sw" id="gmHud" type="button"><i></i></button>'
-          +   '<b>開關</b></label>'
+          +   i18nT('<b>開關</b></label>')
           /* 免戰（ver -1723，Ray：「加入一個免戰選項在設定內，迴避所有戰鬥把三大分支跑一次」）——
              鑰匙就是飛行頁那顆免戰鈕的 `tivot_flight_peace_v1`（一份真相）：開著時劇情／城鎮的
              `{battle}` 拍當成打贏直接跳過（`story.renderLine`），飛行地圖照舊不進戰鬥。管理人限定。 */
-          + '<label class="gm-row gm-toggle"><span>免　戰</span>'
+          + i18nT('<label class="gm-row gm-toggle"><span>免　戰</span>')
           +   '<button class="gm-sw'+(peaceOn()?' on':'')+'" id="gmPeace" type="button"><i></i></button>'
-          +   '<b>'+(peaceOn()?'跳過所有戰鬥':'關')+'</b></label>'
+          +   '<b>'+(peaceOn()?i18nT('跳過所有戰鬥'):i18nT('關'))+'</b></label>'
           /* 發熱排除法（ver -1805）：五個開關，開＝照常、關＝那一類整組不跑。 */
-          + '<div class="gm-sec">發熱排除</div>'
+          + i18nT('<div class="gm-sec">發熱排除</div>')
           + HEAT_ITEMS.map(([k,nm,grp])=>{ const off=heatOff().indexOf(k)>=0;
               return (grp ? '<div class="gm-note" style="margin-top:6px;color:var(--gold,#d4a94a)">'+grp+'</div>' : '')
                 + '<label class="gm-row gm-toggle"><span>'+nm+'</span>'
                 +   '<button class="gm-sw'+(off?'':' on')+'" data-heat="'+k+'" type="button"><i></i></button>'
-                +   '<b>'+(off?'關閉中':'開')+'</b></label>'; }).join('')
-          + '<div class="gm-note">關掉一項就在手機上看 HUD（幀率／節流／rAF）比一次。只在管理人模式生效。</div>'
-          + '<div class="gm-note">凍結＝停掉這一刻所有動畫／音訊／戰鬥計時（再按解凍）。'
-          + 'HUD＝版本與幀率那一片。兩者都只有管理人模式看得到。</div>'
+                +   '<b>'+(off?i18nT('關閉中'):i18nT('開'))+'</b></label>'; }).join('')
+          + i18nT('<div class="gm-note">關掉一項就在手機上看 HUD（幀率／節流／rAF）比一次。只在管理人模式生效。</div>')
+          + i18nT('<div class="gm-note">凍結＝停掉這一刻所有動畫／音訊／戰鬥計時（再按解凍）。')
+          + i18nT('HUD＝版本與幀率那一片。兩者都只有管理人模式看得到。</div>')
           /* ══ 管理人的存檔與統計（ver -1023，Ray 交辦）══
              · 存檔：**一對一**的獨立格（`save.devSave`），首頁那顆「讀檔」讀它。
              · 統計：另開一頁（`renderStats`）。
              ⚠ 只長在 `body.testmode` 裡（與上面那兩顆同一個判準）。 */
           + '<div class="gm-acts gm-dev2">'
-          +   '<button class="gm-btn" id="gmDevSave" type="button">存　檔</button>'
-          +   '<button class="gm-btn" id="gmStats" type="button">統計表</button>'
-          +   '<button class="gm-btn" id="gmProg" type="button">進　度</button>'
+          +   i18nT('<button class="gm-btn" id="gmDevSave" type="button">存　檔</button>')
+          +   i18nT('<button class="gm-btn" id="gmStats" type="button">統計表</button>')
+          +   i18nT('<button class="gm-btn" id="gmProg" type="button">進　度</button>')
           + '</div>'
-          + '<div class="gm-note">存檔＝管理人專用的**獨立**一格（與玩家的存檔互不影響），'
-          + '在首頁用「讀檔」讀回來。</div>'
+          + i18nT('<div class="gm-note">存檔＝管理人專用的**獨立**一格（與玩家的存檔互不影響），')
+          + i18nT('在首頁用「讀檔」讀回來。</div>')
         : '')
       + '<div class="gm-acts">'
-      +   (o.onHome ? '<button class="gm-btn gm-home" type="button">回到主選單</button>' : '')
-      +   '<button class="gm-btn gm-close" type="button">關　閉</button>'
+      +   (o.onHome ? i18nT('<button class="gm-btn gm-home" type="button">回到主選單</button>') : '')
+      +   i18nT('<button class="gm-btn gm-close" type="button">關　閉</button>')
       + '</div>';
     const bind=(id, layer)=>{
       const el=panel.querySelector('#'+id), lab=panel.querySelector('#'+id+'V');
@@ -267,14 +268,14 @@ export function open(opts){
     panel.querySelectorAll('.gm-sw[data-fx]').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
       const kind=b.dataset.fx, on=!fxOn(kind); setFx(kind, on);
       b.classList.toggle('on', on);
-      const lab=b.parentNode.querySelector('b'); if(lab) lab.textContent = on ? '開' : '關';
+      const lab=b.parentNode.querySelector('b'); if(lab) lab.textContent = on ? i18nT('開') : i18nT('關');
       try{ SFX.menuClick(); }catch(_){}
     }));
     const bt=panel.querySelector('#gmBigText');
     if(bt) bt.addEventListener('click', e=>{ e.stopPropagation();
       const on=!bigText(); setBigText(on);
       bt.classList.toggle('on', on);
-      const lab=bt.parentNode.querySelector('b'); if(lab) lab.textContent = on ? '加大' : '預設';
+      const lab=bt.parentNode.querySelector('b'); if(lab) lab.textContent = on ? i18nT('加大') : i18nT('預設');
       apply();   // 即時套用 body.dlg-large
       try{ SFX.menuClick(); }catch(_){}
     });
@@ -285,7 +286,7 @@ export function open(opts){
         devTools.freeze();
         const on=!!(devTools.frozen && devTools.frozen());
         fz.classList.toggle('on', on);
-        const lab=fz.parentNode.querySelector('b'); if(lab) lab.textContent = on ? '凍結中' : '關';
+        const lab=fz.parentNode.querySelector('b'); if(lab) lab.textContent = on ? i18nT('凍結中') : i18nT('關');
         try{ SFX.menuClick(); }catch(_){}
       });
       const hd=panel.querySelector('#gmHud');
@@ -296,21 +297,21 @@ export function open(opts){
         const k=b.dataset.heat, off=heatOff().indexOf(k)<0;   // 按下去＝翻面
         setHeatOff(k, off); apply();
         b.classList.toggle('on', !off);
-        const lab=b.parentNode.querySelector('b'); if(lab) lab.textContent = off ? '關閉中' : '開';
+        const lab=b.parentNode.querySelector('b'); if(lab) lab.textContent = off ? i18nT('關閉中') : i18nT('開');
         try{ SFX.menuClick(); }catch(_){}
       }));
       const pc=panel.querySelector('#gmPeace');
       if(pc) pc.addEventListener('click', e=>{ e.stopPropagation();
         const on=!peaceOn(); wr(PEACE_KEY, on?'1':'0');
         pc.classList.toggle('on', on);
-        const lab=pc.parentNode.querySelector('b'); if(lab) lab.textContent = on ? '跳過所有戰鬥' : '關';
+        const lab=pc.parentNode.querySelector('b'); if(lab) lab.textContent = on ? i18nT('跳過所有戰鬥') : i18nT('關');
         try{ SFX.menuClick(); }catch(_){}
       }); }
     const sw=panel.querySelector('#gmHap');
     if(sw) sw.addEventListener('click', e=>{ e.stopPropagation();
       const on=!haptics(); setHaptics(on);
       sw.classList.toggle('on', on);
-      const lab=sw.parentNode.querySelector('b'); if(lab) lab.textContent = on ? '開' : '關';
+      const lab=sw.parentNode.querySelector('b'); if(lab) lab.textContent = on ? i18nT('開') : i18nT('關');
       try{ SFX.menuClick(); }catch(_){}
       /* 打開的時候震一下當作試用 —— 沒有回饋的話玩家不知道這台到底震不震得動
          （iOS 完全沒有這個 API）。 */
@@ -340,11 +341,11 @@ export function open(opts){
      ⚠ 用面板換頁不疊第二層對話框：疊兩層很難點得準。 */
   const renderConfirm = ()=>{
     panel.innerHTML =
-        '<div class="gm-title">回到主選單</div>'
-      + '<div class="gm-warn">尚未儲存的進度將會遺失。<br>確定要回到主選單嗎？</div>'
+        i18nT('<div class="gm-title">回到主選單</div>')
+      + i18nT('<div class="gm-warn">尚未儲存的進度將會遺失。<br>確定要回到主選單嗎？</div>')
       + '<div class="gm-acts">'
-      +   '<button class="gm-btn gm-back" type="button">返　回</button>'
-      +   '<button class="gm-btn gm-yes" type="button">確　定</button>'
+      +   i18nT('<button class="gm-btn gm-back" type="button">返　回</button>')
+      +   i18nT('<button class="gm-btn gm-yes" type="button">確　定</button>')
       + '</div>';
     panel.querySelector('.gm-back').addEventListener('click', e=>{ e.stopPropagation();
       try{ SFX.menuClick(); }catch(_){} renderMain(); });
@@ -362,11 +363,11 @@ export function open(opts){
     const rows = (d && d.rows || []).map(r =>
         '<div class="gm-row gm-stat"><span>'+r[0]+'</span><b>'+r[1]+'</b></div>').join('');
     panel.innerHTML =
-        '<div class="gm-title">統　計</div>'
-      + (rows || '<div class="gm-note">還沒有任何紀錄。</div>')
+        i18nT('<div class="gm-title">統　計</div>')
+      + (rows || i18nT('<div class="gm-note">還沒有任何紀錄。</div>'))
       + (d && d.note ? '<div class="gm-note">'+d.note+'</div>' : '')
       + '<div class="gm-acts">'
-      +   '<button class="gm-btn gm-back" type="button">返　回</button>'
+      +   i18nT('<button class="gm-btn gm-back" type="button">返　回</button>')
       + '</div>';
     panel.querySelector('.gm-back').addEventListener('click', e=>{ e.stopPropagation();
       try{ SFX.menuClick(); }catch(_){} renderMain(); });
@@ -376,8 +377,8 @@ export function open(opts){
      ⚠ 四個人**都列**（含蕾娜）：整備頁的伙伴欄沒有她的格子，而她正是唯一
        拿得到小數好感的那一位（S +0.5／A +0.25），不列就看不到她。
      ⚠ 段位名沿用 docs/TIVOT_IMPL_SPEC.md §2 的五段。 */
-  const PROG_CHARS=[['renna','蕾娜'],['nouvelle','諾薇兒'],['sorana','索菈娜'],['anya','安雅']];
-  const TIER_NAME=['同行','朋友','摯友','羈絆','愛'];
+  const PROG_CHARS=[['renna',i18nT('蕾娜')],['nouvelle',i18nT('諾薇兒')],['sorana',i18nT('索菈娜')],['anya',i18nT('安雅')]];
+  const TIER_NAME=[i18nT('同行'),i18nT('朋友'),i18nT('摯友'),i18nT('羈絆'),i18nT('愛')];
   const renderProg = ()=>{
     const st=prog.getStage(), aff=prog.getAffection();
     const rows=PROG_CHARS.map(([k,nm])=>{
@@ -388,23 +389,23 @@ export function open(opts){
       return '<div class="gm-row gm-stat gm-prog"><span>'+nm+'</span>'
            +   '<b class="pr-b pr-big" data-aff="'+k+':-10">−10</b>'
            +   '<b class="pr-b" data-aff="'+k+':-1">−</b>'
-           +   '<i class="pr-aff" data-affjump="'+k+'">'+v+'　T'+t+'・'+TIER_NAME[t-1]+'</i>'
-           +   '<b class="pr-b" data-aff="'+k+':1">＋</b>'
-           +   '<b class="pr-b pr-big" data-aff="'+k+':10">＋10</b>'
+           +   '<i class="pr-aff" data-affjump="'+k+'">'+v+'　T'+t+i18nT('・')+TIER_NAME[t-1]+'</i>'
+           +   '<b class="pr-b" data-aff="'+k+i18nT(':1">＋</b>')
+           +   '<b class="pr-b pr-big" data-aff="'+k+i18nT(':10">＋10</b>')
            + '</div>';
     }).join('');
     panel.innerHTML =
-        '<div class="gm-title">進　度</div>'
-      + '<div class="gm-row gm-stat"><span>章節 STAGE</span>'
+        i18nT('<div class="gm-title">進　度</div>')
+      + i18nT('<div class="gm-row gm-stat"><span>章節 STAGE</span>')
       +   '<b class="pr-b" data-stage="-1">−</b><i class="pr-aff">'+st+'</i>'
-      +   '<b class="pr-b" data-stage="1">＋</b></div>'
-      + '<div class="gm-sec">好　感</div>' + rows
+      +   i18nT('<b class="pr-b" data-stage="1">＋</b></div>')
+      + i18nT('<div class="gm-sec">好　感</div>') + rows
       /* ⚠ 地板寫「1」不是 0：`progress.tierFloor` 對 T1 回的是 1（它有一道
          `Math.max(1,…)`）—— 這裡照它的實際行為寫，不要照「一段 20」推。 */
-      + '<div class="gm-note">±10／± 各動 10 與 1；點中間的數字跳到下一段的地板'
-      + '（1→20→40→60→80→回 0）。一段 20 點，上限 100。</div>'
+      + i18nT('<div class="gm-note">±10／± 各動 10 與 1；點中間的數字跳到下一段的地板')
+      + i18nT('（1→20→40→60→80→回 0）。一段 20 點，上限 100。</div>')
       + '<div class="gm-acts">'
-      +   '<button class="gm-btn gm-back" type="button">返　回</button>'
+      +   i18nT('<button class="gm-btn gm-back" type="button">返　回</button>')
       + '</div>';
     /* 事件每次 render 之後重掛（`innerHTML` 換掉了整批節點）。 */
     panel.querySelectorAll('.pr-b[data-aff]').forEach(d=>d.addEventListener('click', e=>{

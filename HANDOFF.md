@@ -208,6 +208,19 @@
 > · **沒實跑過**：里朋莊園整段（六場戰鬥、沙龍演出、回旅店、隔天出航說明、禁航解除）、索拉娜 19 張縮圖、挾持雙人圖的站位 —— 都要 Ray 在遊戲裡看。
 > · ⚠ 這一輪自己犯的兩次（留著提醒）：-1797 lint 報錯仍 commit 推上（之後改成 lint 通過才 commit）；-1801 `git add -A` 把 Ray 三張 untracked 夾帶進去（已移出版控）。
 
+# HANDOFF — 截至 `ver 2026.09.22-1909`（10-02，Mac，程式 session：介面字西文）
+
+> · ✅ **介面字也做了西文**（Ray：「介面字也做西文，做完推上」）。`tools/ui_i18n.py`：
+>   `extract` 盤點 1,734 種中文字串（要翻 1,484 種／2 萬字）→ `i18n/ui/strings.json`＋**`i18n/ui/INVENTORY.md`（統計，語種無關）**；
+>   `wrap` 把程式字面值包成 `i18nT('…')`（1,500+ 處，modules／main／config／clock／progress／inventory／飛行頁）；
+>   譯文 `i18n/ui/es.json`、審稿表 `reference/ui_es.xlsx`。`check es` 全過。
+> · **新增語種照 `i18n/README.md`**（Ray：「保留這次的統計，之後其他語種可以快速參照」）—— 盤點與包裝不必重做，只翻表。
+> · ⚠ 新寫的程式字串：寫完跑 `python3 tools/ui_i18n.py extract && python3 tools/ui_i18n.py wrap`，再補 `es.json` → `js es`。
+> · ⚠ 資料卡（enemies／weapons／shopcards）**沒改檔**：由 `config.js` 檔尾 `trTree(GAME_CONFIG)` 換。武器 `cat` 是識別字不換，顯示端 `i18nT(cat)`。
+> · ⚠ 驗過（8123、手機尺寸）：首頁、讀取頁、城鎮（地名／日期／導覽）、整備頁、飛行頁 HUD 全西文；中文模式不變、不載譯文表。
+>   **沒逐頁點過**：商店、旅店、選單、結算頁、戰鬥中浮字 —— 譯文都在表上，但要 Ray 在遊戲裡看排版（西文比中文長，按鈕可能擠）。
+> · ⚠ 這一輪我誤跑 `tools/girlstars_xlsx.py --help`（它沒有 help，直接重寫了 `girlstars.xlsx`）—— 已 `git checkout` 還原（跑之前它與 HEAD 一致）。
+
 # HANDOFF — 截至 `ver 2026.09.22-1907`（10-02，Mac，程式 session：多語・西語）
 
 > · ✅ **西語（拉美中性，Ray 定案：拉美市場）**：介面語言包 `i18n/es.js`（語言鈕 zh→en→ja→es；瀏覽器首語系 es* 自動選）。

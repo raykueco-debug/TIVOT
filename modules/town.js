@@ -10,6 +10,7 @@
    ⚠ 每次移動：`se_walk` ＋ 時鐘前進（時間是資源）。
    ══════════════════════════════════════════════════════════════════════ */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, fileGain, asset } from '../config.js';   // asset＝鍵→路徑（warmEnemies 用）
 import { TOWNS, OUTING, DINE, DRAGON_LINES, QUEST_LOCK} from '../script/town.js';
 import * as clock from '../script/clock.js';
@@ -1433,7 +1434,7 @@ function restActDue(n){
    ⚠ 呼叫端要**先把導覽收掉、busy 立起來**：這一段期間畫面交給門與結算頁。 */
 function leaveMapRitual(done){
   if(state.sessionStats){
-    story.playAdhoc([{ settle:true, settleTitle:'撤　離' }],
+    story.playAdhoc([{ settle:true, settleTitle:i18nT('撤　離') }],
                     ()=>{ story.clearCast(); done(); });
     return;
   }
@@ -2085,25 +2086,25 @@ function refreshChaseDown(){
 export function chaseAt(){ const c=chaseGet(); return (c && c.node) || null; }
 export function chaseDebug(){
   const spec=chaseSpec(), c=chaseGet();
-  const why = ref => { if(!ref) return '（沒設定）';
+  const why = ref => { if(!ref) return i18nT('（沒設定）');
     const src=((TOWNS[townId]||{}).nodes||{})[ref.at];
     const a=(src && (src.acts||[]).find(x=>x && x.flag===ref.flag))||null;
-    if(!a) return '找不到那一段（'+ref.at+'/'+ref.flag+'）';
-    if(prog.hasFlag(a.flag)) return '★已經演過了（旗 '+a.flag+' 插著）⇒ 不會重演';
-    if(a.need && !prog.hasFlag(a.need)) return '等前置旗 '+a.need;
-    if(a.until && prog.hasFlag(a.until)) return '★過期作廢（旗 '+a.until+' 插著）⇒ 不補演';
-    if(a.fromStage!=null && prog.getStage()<a.fromStage) return '等 stage '+a.fromStage;
-    return '還沒演，條件已到 ✔'; };
+    if(!a) return i18nT('找不到那一段（')+ref.at+'/'+ref.flag+i18nT('）');
+    if(prog.hasFlag(a.flag)) return i18nT('★已經演過了（旗 ')+a.flag+i18nT(' 插著）⇒ 不會重演');
+    if(a.need && !prog.hasFlag(a.need)) return i18nT('等前置旗 ')+a.need;
+    if(a.until && prog.hasFlag(a.until)) return i18nT('★過期作廢（旗 ')+a.until+i18nT(' 插著）⇒ 不補演');
+    if(a.fromStage!=null && prog.getStage()<a.fromStage) return i18nT('等 stage ')+a.fromStage;
+    return i18nT('還沒演，條件已到 ✔'); };
   return {
-    現在: c || '（還沒上線）',
-    上線條件: spec ? ('打過 '+spec.startFights+' 場'+((spec.startStep|0)>0?('，或踩到第 '+spec.startStep+' 格'):'')) : '（這張圖沒有追逐）',
+    現在: c || i18nT('（還沒上線）'),
+    上線條件: spec ? (i18nT('打過 ')+spec.startFights+i18nT(' 場')+((spec.startStep|0)>0?(i18nT('，或踩到第 ')+spec.startStep+i18nT(' 格')):'')) : i18nT('（這張圖沒有追逐）'),
     已打場數: c ? (c.fights|0) : 0,
     被追上要演的那幾段: spec
-      ? (spec.scenes||(spec.intro?[spec.intro]:[])).map(r=>r.flag+'：'+why(r))
+      ? (spec.scenes||(spec.intro?[spec.intro]:[])).map(r=>r.flag+i18nT('：')+why(r))
       : '—',
     密急階段: spec && spec.hard
-      ? (prog.hasFlag(spec.hard.need) ? '★已開（'+spec.hard.need+'）' : '還沒（等 '+spec.hard.need+'）')
-      : '（這張圖沒有）',
+      ? (prog.hasFlag(spec.hard.need) ? i18nT('★已開（')+spec.hard.need+i18nT('）') : i18nT('還沒（等 ')+spec.hard.need+i18nT('）'))
+      : i18nT('（這張圖沒有）'),
     下一格那一段: spec ? why(spec.next) : '—',
     參數: spec || null,
   };
@@ -2165,19 +2166,19 @@ function wildActDue(n){
   const T0=TOWNS[townId]||{};
   wildStat.asked++;
   const cardPool = cardSpawnPool(nodeId);
-  const W=T0.wildSpawn; if((!W && !cardPool.length) || !n) return wildSkip('這張圖沒有怪');
-  if(prog.hasFlag(safehouseFlag())) return wildSkip('安全區旗');
+  const W=T0.wildSpawn; if((!W && !cardPool.length) || !n) return wildSkip(i18nT('這張圖沒有怪'));
+  if(prog.hasFlag(safehouseFlag())) return wildSkip(i18nT('安全區旗'));
   /* ══⚠⚠ **`wildFrom:'<旗>'` ＝這支旗插上去之前，這張圖一隻野怪都沒有**
      （ver -1399，Ray：「貝利薩爾在王座徘徊者擊敗前沒有野怪」）══
      ⚠ 它與**安全區旗**是兩件事，不要拿其中一個去湊：
        · 安全區旗（`safehouse_<圖>`）＝**會開會關**的狀態，特殊戰還會把它拔掉再插回去
        · `wildFrom` ＝這張圖的**資料**：在那個事件之前它根本還不是一張會出怪的圖
      ⚠ 寫在城上（鐵律 1）；旗名由那一段劇情自己認領（鐵律 9：誰插得出來）。 */
-  if(T0.wildFrom && !prog.hasFlag(T0.wildFrom)) return wildSkip('wildFrom 還沒開');
+  if(T0.wildFrom && !prog.hasFlag(T0.wildFrom)) return wildSkip(i18nT('wildFrom 還沒開'));
   /* 墓主倒在這一格 ⇒ 這一格不刷野怪（ver -1704，Ray：「墓主倒地的那一格不刷野怪」）——
      判「倒地」只問追兵那一筆的 `down`（同 `chaseActDue`／`refreshChaseDown`，鐵律 7）。 */
   { const c=chaseSpec() ? chaseGet() : null;
-    if(c && c.down && c.node===nodeId) return wildSkip('追兵倒在這一格'); }
+    if(c && c.down && c.node===nodeId) return wildSkip(i18nT('追兵倒在這一格')); }
   /* ══⚠⚠⚠ **結算怪已取消**（ver -1024，Ray：「取消結算怪的放置，一律以踏入結算點
      為結算條件」）══ ver -895／-898 的那一套（把 `wildSpawn.endBattle` 擺在
      「這一趟沒走進來的那個出口」、那一格拒絕戰鬥就退一格）**整組撤掉**：
@@ -2189,14 +2190,14 @@ function wildActDue(n){
   /* **起點必不出怪**（ver -1026）：這一趟真的走進來的那一格 —— 它同時是遭遇戰的
      復活點。⚠ 與 `entryNodeId`（資料上的入口）**兩個都擋**：讀檔／跳關可以落在
      中間任何一格，那時 `cameNodeId` 是入口，兩者重合；從另一頭走進來時才分家。 */
-  if(cameNodeId && nodeId===cameNodeId) return wildSkip('這一趟的起點格');
-  if(nodeId===entryNodeId) return wildSkip('入口（復活點）');
+  if(cameNodeId && nodeId===cameNodeId) return wildSkip(i18nT('這一趟的起點格'));
+  if(nodeId===entryNodeId) return wildSkip(i18nT('入口（復活點）'));
   /* ══⚠⚠ **`noWildFirst:true` ＝這一趟第一次踏進這一格不出怪**（ver -1618，Ray：
      「門廳第一次進去不出怪」）══ 走出去再走回來就照常擲。
      ⚠ 與 `noWild`（永遠不出）、`mustWild`（這一趟第一次必出）是同一族的三個旋鈕，
        三個都宣告在**節點上**（名單寫在城上會與節點走鐘，見 ruins 的 wildSpawn 註解）。 */
   if(n.noWildFirst && !wildVisited.has(nodeId)){
-    wildVisited.add(nodeId); return wildSkip('門廳：這一趟第一次進來不出怪');
+    wildVisited.add(nodeId); return wildSkip(i18nT('門廳：這一趟第一次進來不出怪'));
   }
   wildVisited.add(nodeId);
   /* ══⚠⚠ **指定遭遇**（ver -879，Ray：「鹿主未變異日後則會在黃昏夜晚時段在夏爾森林
@@ -2225,7 +2226,7 @@ function wildActDue(n){
   }
   /* ⚠ 節點自己宣告「這裡不出野怪」（ver -879（-893 前用詞），Ray：「神殿入口除了鹿主戰之外是
      安全區，不出怪」）——擋在**指定遭遇之後**：那一場是劇本，不受這條管。 */
-  if(n.noWild) return wildSkip('這一格 noWild');
+  if(n.noWild) return wildSkip(i18nT('這一格 noWild'));
   let pick=null;
   const fx=W && W.fixed && W.fixed[nodeId];
   /* 固定怪也可以有前置（ver -1858）：寫成 `{ day, night, need:'<旗>' }`，旗插上之前這一格不出牠
@@ -2270,10 +2271,10 @@ function wildActDue(n){
        ⚠ 旗是**一輪內**的（`newRun()` 清、存讀檔帶，§6.9 那張清單）。 */
     if(n.mustWild && !prog.hasFlag(mustWildFlag(nodeId))) rate = 1;
     wildStat.rolled++;
-    if(Math.random() >= rate){ wildSkip('擲骰沒中（rate '+rate+'）'); return null; }
+    if(Math.random() >= rate){ wildSkip(i18nT('擲骰沒中（rate ')+rate+i18nT('）')); return null; }
     wildStat.hit++;
     const cands = repeat ? pool0.filter(okHere) : fresh;
-    if(!cands.length){ wildStat.hit--; return wildSkip('中了但池子是空的'); }
+    if(!cands.length){ wildStat.hit--; return wildSkip(i18nT('中了但池子是空的')); }
     pick=cands[Math.floor(Math.random()*cands.length)].battle;
   }
   /* 取走就記（同一趟不再出同種）：這一場**立刻開打**（沒有可被中途放掉的對白），
@@ -2610,9 +2611,9 @@ function ensureLayer(){
        而那張單子窄到只看得到一兩列商品，本來就要點標題展開才好用。
        現在：走進店裡＝店主 ＋ 這一顆鈕；點下去開**全畫面**的那張窗（同一份 CSS，
        只是不帶 `dock-left`，鐵律 8）。 */
-    + '<button id="townShopBtn" type="button"><b></b><i>點一下開啟</i></button>'
+    + i18nT('<button id="townShopBtn" type="button"><b></b><i>點一下開啟</i></button>')
     /* 射擊挑戰（ver -1881，Ray：「武器店的購物跟射擊挑戰分別做成按鈕」）—— 原本藏在買賣窗裡。 */
-    + '<button id="townChallengeBtn" type="button"><b></b><i>點一下開始</i></button>'
+    + i18nT('<button id="townChallengeBtn" type="button"><b></b><i>點一下開始</i></button>')
     ;
   /* ⚠⚠ **櫃台鈕沒有了**（ver -404，Ray：「不用點擊，直接右店主左選單」）。
      走進店裡就是店舖畫面：右邊店主立繪、左邊選單，兩樣一起出來（見 shopEnter）。
@@ -2732,7 +2733,7 @@ function showStallBtns(on){
     const b=document.createElement('button');
     b.type='button';
     b.className='town-stall'+(st.side==='right' ? ' right' : '');
-    b.innerHTML='<b></b><i>點一下開啟</i>';
+    b.innerHTML=i18nT('<b></b><i>點一下開啟</i>');
     b.querySelector('b').textContent = st.label || '';
     /* ⚠ 同 `#townShopBtn`：一定要 stopPropagation —— 舞台上還有「點一下」那一支。 */
     b.addEventListener('pointerup', e=>{ e.stopPropagation(); openStallSheet(st); });
@@ -2960,7 +2961,7 @@ function showMapBtn(){
     b=document.createElement('button');
     b.type='button'; b.id='townMapBtn';
     /* 旅誌 icon（ver -868，Ray：「地圖用 vfx/map 這個 icon」）。 */
-    b.innerHTML='<img src="resources/vfx/map.webp" alt="地圖">';
+    b.innerHTML=i18nT('<img src="resources/vfx/map.webp" alt="地圖">');
     /* 同槍棺功能鍵：不讓「點畫面」吃到這一下（§story 的 swallowTap 同款理由）。 */
     b.addEventListener('pointerdown', e=>e.stopPropagation());
     b.addEventListener('pointerup', e=>{ e.stopPropagation();
@@ -2990,7 +2991,7 @@ function showEscortBadge(){
   if(el && el.parentElement!==host){ el.remove(); el=null; }
   if(!el){
     el=document.createElement('div'); el.id='townEscort';
-    el.innerHTML='<b>同行</b><span class="te-face"></span><i class="te-name"></i>';
+    el.innerHTML=i18nT('<b>同行</b><span class="te-face"></span><i class="te-name"></i>');
     /* 純狀態顯示，不吃點擊 —— 讓「點畫面推進一句」照樣穿過去（CSS 也寫了
        `pointer-events:none`，這裡不綁任何 listener 就是第二道保險）。 */
     host.appendChild(el);
@@ -3039,13 +3040,13 @@ function renderMap(){
   /* 這張圖還沒有手繪地圖（ver -899）：鈕照樣在，用一句話回答。
      ⚠ 走路人單句那一套（`say`），不是另做一個面板 —— 它就是一句話。
      ⚠ 名字欄空著＝旁白（主角自己的念頭），同旅店「現在不是睡覺的時候。」。 */
-  if(!M){ story.flashLine('這一帶還沒有留下地圖。', ''); chatterOn=true; return; }
+  if(!M){ story.flashLine(i18nT('這一帶還沒有留下地圖。'), ''); chatterOn=true; return; }
   /* ══⚠⚠ **這一次要攤開哪一張紙**（ver -1649）══ 一層一張的圖（古墓）由
      `mapSheet()` 挑「裝得下你現在那一格」的那一張；單張的城它回那唯一一張。
      ⚠ 下面**一律讀 `SH`**（`SH.img` / `SH.spots`），不要再讀 `M.img` / `M.spots`
        —— 那兩個在多張的圖上根本不存在（鐵律 7：挑哪一張只有一個計算點）。 */
   const SH=mapSheet();
-  if(!SH){ story.flashLine('這一帶還沒有留下地圖。', ''); chatterOn=true; return; }
+  if(!SH){ story.flashLine(i18nT('這一帶還沒有留下地圖。'), ''); chatterOn=true; return; }
   const st=story.stageEl(); if(!st) return;
   let v=document.getElementById('townMapView');
   if(!v){
@@ -3158,7 +3159,7 @@ function renderMap(){
         /* ⚠ 被指出來但還沒走到的那一格**不給地名**（Ray 指定）——
              沒有霧的圖（`mist:0`）走這一條，所以名字要在這裡擋，不能只靠上面那一段。 */
         const nm=(hint && !seenNode(id)) ? ''
-               : String((T.nodes[id]||{}).name||'').split('　').pop() + (rest?'（安全區）':'');   // ver -1840 Ray：「休息區一律改稱安全區」
+               : String((T.nodes[id]||{}).name||'').split('　').pop() + (rest?i18nT('（安全區）'):'');   // ver -1840 Ray：「休息區一律改稱安全區」
         return '<i class="tm-spot'+(id===nodeId?' here':'')+(rest?' rest':'')
              + (dragon?' dragon':'')+(hint&&!seenNode(id)?' hint':'')
              + '" style="'+pos+'">'
@@ -3167,13 +3168,13 @@ function renderMap(){
     + '</div>'
     /* ⚠ 探索率擺在 `.tm-frame` **外面**（同 `.tm-save` 那一條的理由）：框裡的尺寸
        都是「地圖的百分比」，字塞進去會跟著圖縮放，小螢幕上讀不出來。 */
-    + '<div class="tm-pct">探索率<b>'+pct+'%</b><i>'+seenN+' ／ '+ids.length+' 處</i></div>'
+    + i18nT('<div class="tm-pct">探索率<b>')+pct+'%</b><i>'+seenN+i18nT(' ／ ')+ids.length+i18nT(' 處</i></div>')
     /* 縮放鈕（ver -1449）：手機主要走兩指捏合，這三顆是給滑鼠與不捏合的人用的。
        ⚠ 演出模式（`.map-story`）整層不吃點擊，所以它們那時自然是死的 —— 那是對的。 */
     + '<div class="tm-zoom">'
-      + '<button class="tm-zb" type="button" data-z="out">－</button>'
+      + i18nT('<button class="tm-zb" type="button" data-z="out">－</button>')
       + '<button class="tm-zb" type="button" data-z="fit">⤢</button>'
-      + '<button class="tm-zb" type="button" data-z="in">＋</button>'
+      + i18nT('<button class="tm-zb" type="button" data-z="in">＋</button>')
       + '</div>'
     /* ══ 模擬存檔那一列（ver -936；管理人限定，見 setSimSave）══
        ⚠ 擺在 `.tm-frame` **外面**：框裡是那張羊皮紙，尺寸與座標都是「地圖的百分比」
@@ -3181,10 +3182,10 @@ function renderMap(){
     /* （ver -937：`body.testmode` 的守門已拿掉，見 setSimSave） */
     + (simIO
         ? '<div class="tm-save">'
-          + '<button class="tm-sv" type="button" data-a="save">存　檔</button>'
-          + '<button class="tm-sv" type="button" data-a="load">讀　檔</button>'
+          + i18nT('<button class="tm-sv" type="button" data-a="save">存　檔</button>')
+          + i18nT('<button class="tm-sv" type="button" data-a="load">讀　檔</button>')
           + '<i>'+ (()=>{ const r=simIO.info&&simIO.info();
-                          return r ? String(r.label||'').replace(/</g,'&lt;') : '（空）'; })() +'</i>'
+                          return r ? String(r.label||'').replace(/</g,'&lt;') : i18nT('（空）'); })() +'</i>'
           + '</div>'
         : '');
   /* ⚠⚠ 綁在 `pointerup` 並 `stopPropagation`：這一層自己有一條
@@ -3228,7 +3229,7 @@ function renderMap(){
                        量出來的間距會是 0 ⇒ 需要的倍率變成無限大（名字永遠不出現）。 */
                     tmMeasureNames(); tmApply(); };
     const gone=()=>{ console.info('[town] 小地圖載不到：', SH.img);
-                     mapClose(); story.flashLine('這一帶還沒有留下地圖。', ''); chatterOn=true; };
+                     mapClose(); story.flashLine(i18nT('這一帶還沒有留下地圖。'), ''); chatterOn=true; };
     if(im){ if(im.complete && im.naturalWidth) fit();
             else { im.addEventListener('load', fit, { once:true });
                    im.addEventListener('error', gone, { once:true }); } } }
@@ -3330,17 +3331,17 @@ function showShopBtn(on){
   const b=layer && layer.querySelector('#townShopBtn'); if(!b) return;
   const n=node();
   if(on && n){
-    b.querySelector('b').textContent = n.shop ? (shopBtnName(n) || '買　賣')
-                                      : n.exchange ? '兌　換'
-                                      : n.kitchen  ? '料　理'      // ver -953
-                                      : '懸賞榜';
+    b.querySelector('b').textContent = n.shop ? (shopBtnName(n) || i18nT('買　賣'))
+                                      : n.exchange ? i18nT('兌　換')
+                                      : n.kitchen  ? i18nT('料　理')      // ver -953
+                                      : i18nT('懸賞榜');
   }
   b.classList.toggle('on', !!on);
   /* 射擊挑戰鈕：與買賣鈕**同進同出**（同一個入口狀態，鐵律 8）。 */
   const cb=layer.querySelector('#townChallengeBtn');
   if(cb){
     const cfg=challengeCfg(n);
-    if(on && cfg) cb.querySelector('b').textContent = cfg.challengeLabel || '射擊挑戰';
+    if(on && cfg) cb.querySelector('b').textContent = cfg.challengeLabel || i18nT('射擊挑戰');
     cb.classList.toggle('on', !!(on && cfg));
   }
 }
@@ -3413,7 +3414,7 @@ function openSheet(){
 /* 單子標題下那一行：地名＋時刻（＋打烊）。⚠ 與上緣的 `#townInfo` 是**同一組字**，
    所以由同一支算（鐵律 7）—— 那一行在店裡被招呼語讓開了，資訊要在這裡找得到。 */
 function infoText(n){
-  return (n ? nameOf(nodeId) : '') + '　' + clock.timeText() + (isOpenNow(n) ? '' : '　已打烊');
+  return (n ? nameOf(nodeId) : '') + '　' + clock.timeText() + (isOpenNow(n) ? '' : i18nT('　已打烊'));
 }
 
 /* ══⚠⚠⚠ 背景上的鐘（ver -1249，Ray：「如果要讓時鐘的分針時針隨遊戲時間變動
@@ -3555,7 +3556,7 @@ function refreshArrows(){
       '<span class="ti-date">' + clock.dateText() + '</span>'
     + '<span class="ti-line">' + nameOf(nodeId)
     +   '<span class="ti-time">' + clock.timeText() + '</span>'
-    +   (isOpenNow(n) ? '' : '<span class="ti-shut">已打烊</span>')
+    +   (isOpenNow(n) ? '' : i18nT('<span class="ti-shut">已打烊</span>'))
     + '</span>';
   /* 背景上的鐘：誰更新這一行時刻，誰順便擺指針（鐵律 8，見 `syncBgClock`）。 */
   syncBgClock();
@@ -3737,7 +3738,7 @@ function exitsOf(){
 const asArrE = v => v==null ? [] : (Array.isArray(v) ? v : [v]);
 const SAIL_ID='__sail';
 /* 出航被擋、而那一格又沒寫自己的台詞時的預設旁白（見 setSail）。 */
-const SAIL_NO_SHIP='沒有船，離不開這裡。';
+const SAIL_NO_SHIP=i18nT('沒有船，離不開這裡。');
 /* ══ 節點的顯示名（含城名前綴）══════════════════════════════════════════
    ⚠⚠ **只有這一支在決定**（鐵律 7）：上緣那一行、目的地字格、店舖鈕、閉門羹的
      名字欄全部問它 —— 四個地方各自讀 `n.name` 的話，哪天有一個要變就只有一個會變。
@@ -3825,7 +3826,7 @@ function bgCandsOf(n, id){
   return out;
 }
 function nameOfNode(id){
-  if(id===SAIL_ID) return '出航';
+  if(id===SAIL_ID) return i18nT('出航');
   /* 跨地圖出口（ver -758）：目的地字格印**那張圖的名字**（或指定節點的名字）。 */
   if(typeof id==='string' && id[0]==='@'){
     const seg=id.slice(1).split(':'), T=TOWNS[seg[0]];
@@ -3839,12 +3840,12 @@ function nameOfNode(id){
      與小地圖的迷霧是**同一件事**，所以問同一支 `fogOn()`／`seenNode()`（鐵律 7）。
      ⚠ 排在打烊那一條**之前**：連地名都還不知道的地方，不該先知道它幾點關門。
      ⚠ 跨地圖出口（`@`）在上面就回掉了 —— 那是「往外走」不是這張圖的一格。 */
-  if(fogOn() && !seenNode(id)) return '？？？';
+  if(fogOn() && !seenNode(id)) return i18nT('？？？');
   /* ⚠ 打烊的地方在**目的地字格上就標出來**（ver -406）：走過去才發現關門是白走一趟，
      而移動要花掉遊戲內時間（時間是資源）。標在這裡＝所有顯示目的地名的地方
      （字格、蓄能提示）都吃得到，只有這一支在決定（鐵律 7）。 */
   const nm=stripTownPrefix(nameOf(id));
-  return isOpenNow(n) ? nm : (nm+'（已打烊）');
+  return isOpenNow(n) ? nm : (nm+i18nT('（已打烊）'));
 }
 /* 節點名去掉「城名＋全形空格」前綴（ver -571，Ray：「指示箭不要加『北方泊地』前綴」）。
    ⚠ 城名從 `TOWNS[townId].name` 推，不寫死是哪座城（鐵律 7；舊版寫死 `^帝都　`，
@@ -3870,7 +3871,7 @@ function hoursText(n){
   const h=n && n.hours;
   if(!h || h.length<2) return '';
   const p2=v=>(v<10?'0':'')+v;
-  return '營業時間　'+p2(h[0])+':00 – '+p2(h[1]%24)+':00';
+  return i18nT('營業時間　')+p2(h[0])+':00 – '+p2(h[1]%24)+':00';
 }
 
 function updateCompass(){
@@ -4408,8 +4409,8 @@ export function enter(id){
      ⚠ 這兩道 return 是資料壞掉才會走到（沒有這座城／沒有這一格），但**壞資料不該
        變成黑畫面**：要讓玩家看得見自己卡在哪裡，才有機會回報。 */
   const bail = (why)=>{ console.warn('[town] '+why); story.veil(false, 0); busy=false; };
-  const T=TOWNS[townId]; if(!T){ bail('沒有這座城：'+townId); return; }
-  const n=T.nodes[id];  if(!n){ bail('沒有這個節點：'+id); return; }
+  const T=TOWNS[townId]; if(!T){ bail(i18nT('沒有這座城：')+townId); return; }
+  const n=T.nodes[id];  if(!n){ bail(i18nT('沒有這個節點：')+id); return; }
   nodeId=id;
   /* ══⚠⚠ **這一格自己的環境音**（ver -1565 建、**-1568 改成循環**，Ray：
      「水拾洞跟瀑布底兩個場景都要播 se_waterfall」→「waterfall 在**場景內要一直 loop**」）══

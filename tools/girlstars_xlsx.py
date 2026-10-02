@@ -73,7 +73,8 @@ def load():
         src = re.sub(r'^\s*export\s+(?=(const|let|var|function|class|async))', '', src, flags=re.M)
         src = re.sub(r'^\s*export\s*\{[^}]*\};?', '', src, flags=re.M)
         return src
-    parts = [strip(open(os.path.join(ROOT, f), encoding='utf-8').read()) for f in SRC]
+    parts = ['function trTree(o){ return o; }', 'function i18nT(s){ return s; }']   # 譯文 shim（ver -1909）
+    parts += [strip(open(os.path.join(ROOT, f), encoding='utf-8').read()) for f in SRC]
     parts.append('print(JSON.stringify({v:VERSION, girls:GAME_CONFIG.girls, partners:GAME_CONFIG.partners}));')
     return _jsrun.dump(NL.join(parts), what='config')
 

@@ -23,6 +23,7 @@
  *    一律由 combat 於 setup() 注入 api（維持 §2 依賴方向，不反向 import）。
  * ========================================================================== */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, asset, sfxGain, isVoiceKey } from '../config.js';
 import { state, enterSaint, exitSaint, enterNightmare, exitNightmare, enterCoop, exitCoop, markExecution, markMaxBurst, addInstallDamage, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
@@ -174,7 +175,7 @@ export function activateCoop(dir){
   playCutin(()=>{ if(state.over) return; startCoop(); },
     /* ⚠ 英文讀**卡上的 `install.en`**（ver -894 由 PACK 改成 FANGS，Ray 指定）——
        以前寫死在這裡，改名要動兩處（鐵律 7）。卡沒寫才回去用預設。 */
-    (L.battle && L.battle.coopMode || '共鬥')
+    (L.battle && L.battle.coopMode || i18nT('共鬥'))
       +'<span class="cutin-en">'+(((card.install&&card.install.en)||"PREDATOR'S FANGS")+'!!')+'</span>',
     card.cutin || 'ci_sorana_predator', { noShot:true });
 }
@@ -199,7 +200,7 @@ function startCoop(){
   coopLast = Date.now();
   coopPublish();                                       // 開無敵窗（partner.setImmuneUntil）
   const g=$('grid'); if(g) g.classList.add('coop');
-  api.floatDmg(L.battle && L.battle.coopMode || '共鬥','50%','20%',true);
+  api.floatDmg(L.battle && L.battle.coopMode || i18nT('共鬥'),'50%','20%',true);
   /* ⚠ 發動時指一下「現在該點的格子」（ver -833，Ray：「聖徒夢魘共鬥發動後都要
      標示現在應該點的格子」）—— 共鬥不換盤面，玩家眼前是打到一半的殘局。
      走既有的 hintCurrentCell（鐵律 8）；只指這一次，之後照盤面自己的提示規則。 */
@@ -1182,7 +1183,7 @@ function playSaintCutin(kind, done, reload){
   if(api.clockPause) api.clockPause();     // 結局全畫面 cut-in 期間碼表暫停（非可點不計時）
   const c=$('saintCutin');
   let title, sub;
-  const enName=(($('enemyName')&&$('enemyName').textContent)||'目標');
+  const enName=(($('enemyName')&&$('enemyName').textContent)||i18nT('目標'));
   /* ⚠⚠ **兩種 MB 的副標分開**（ver -1506）：聖徒化的 MB 回滿、惡夢化的 MB 回到
      「發動夢魘時的血量」（-974）—— 規則不同就不能共用一句話。共用到 -1505 為止，
      那句話從 -974 起對惡夢化就是錯的（印「HP 50%」，實際回的是 niFrom）。 */
@@ -1196,7 +1197,7 @@ function playSaintCutin(kind, done, reload){
        ⚠ 大字是英文（兩行），副標是中文名＋「血量保留」—— 沿用原本的版面。 */
     const _ac=((GAME_CONFIG.partners||{})[state.pickedPartner]||{}).active||{};
     title=(_ac.en || 'Life Return').toUpperCase().replace(' ','\n');
-    sub=_ac.name ? (_ac.name+' · 血量保留') : L.cutins.lifeReturnSub;
+    sub=_ac.name ? (_ac.name+i18nT(' · 血量保留')) : L.cutins.lifeReturnSub;
   }
   else { title='OVERWRITE\nBREAKER\nENGAGED'; sub=L.cutins.obeSub; }
   $('saintCutinTitle').textContent = title;

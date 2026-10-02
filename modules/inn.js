@@ -15,6 +15,7 @@
      把臉挪到框中央（鐵律 7：取景值只有那一份）。
    ══════════════════════════════════════════════════════════════════════ */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { asset, sfxGain } from '../config.js';   // 睡覺音（ver -430）：路徑與增益都只有 config 一份
 import { SPEAKERS, faceStyle } from '../script/speakers.js';
 import * as prog from '../script/progress.js';
@@ -121,11 +122,11 @@ function introDone(){ return !introFlag || prog.hasFlag(introFlag); }
    ⚠ 被說明的那顆要**抬到遮罩之上**（`.spot`），否則玩家看著一片暗、不知道在指什麼。
    ⚠ 一次只演一個：三個提示（坐、敲門、睡）會在不同時機到齊，排隊比疊在一起清楚。 */
 const TIPS = {
-  sit:   { flag:'inn_tip_sit',   sel:'[data-act="sit"]',   text:'坐下來消磨時間。一次過兩個小時。' },
+  sit:   { flag:'inn_tip_sit',   sel:'[data-act="sit"]',   text:i18nT('坐下來消磨時間。一次過兩個小時。') },
   knock: { flag:'inn_tip_knock', sel:'.inn-door.awake, .inn-door.asleep',
-           text:'敲敲伙伴的門，看看他們在做什麼。' },
+           text:i18nT('敲敲伙伴的門，看看他們在做什麼。') },
   sleep: { flag:'inn_tip_sleep', sel:'[data-act="sleep"]',
-           text:'推進時間至隔日早上七點，恢復體力並存檔。' },
+           text:i18nT('推進時間至隔日早上七點，恢復體力並存檔。') },
   /* ══⚠⚠ **守夜那一晚，再指一次「獨自坐坐」**（ver -1511，Ray 的 Stage10-B 稿：
      「點擊睡覺提示『今晚好像不太安寧，先守著吧。』提示點擊獨自坐坐」）══
      上面那三則是**一輩子只教一次**的操作說明；這一則不是說明，是**那一夜的指路**
@@ -133,7 +134,7 @@ const TIPS = {
      而且用 `need`／`until` 把自己關在那一段時間裡。
      ⚠ 指的是同一顆鈕（`sel` 一樣）：那是同一個動作，不要另做一顆。 */
   watch: { flag:'ep_tip_watch', need:'ep_hairpin_talk', until:'ep_night_anya_out',
-           sel:'[data-act="sit"]', text:'今晚先守著吧。　→　獨自坐坐' },
+           sel:'[data-act="sit"]', text:i18nT('今晚先守著吧。　→　獨自坐坐') },
 };
 let guideKey=null;
 function showGuide(key){
@@ -213,13 +214,13 @@ function ensureLayer(){
        ⚠ 成本那一行的字**寫在這裡**而不是資料上：它是那顆鈕的行為說明（`SIT_MIN` /
          `WAKE_HOUR` 就在這一支），不是內容 —— 改常數就要改字，放在一起才不會走鐘。 */
     +   '<button class="inn-btn" data-act="sit" type="button">'
-    +     '<b>獨自坐坐</b><i>消磨 '+(SIT_MIN/60)+' 小時</i></button>'
+    +     i18nT('<b>獨自坐坐</b><i>消磨 ')+(SIT_MIN/60)+i18nT(' 小時</i></button>')
     /* ⚠⚠⚠ 小睡那一晚，**這兩行字都要跟著改**（ver -1396 小字／**-1490 連大字**）：
        見 `refreshSleepLabel`。它與「到隔日 N:00・存檔」是同一顆鈕的兩種**結果**，
        而成本那一行的整個用意就是「按之前就看得到代價」—— 不改的話它在承諾一件
        不會發生的事。⚠ 這裡寫的是**一般版**（初值），小睡版由 `refresh()` 換上去。 */
     +   '<button class="inn-btn primary" data-act="sleep" type="button">'
-    +     '<b>回房睡覺</b><i>到隔日 '+wakeHour()+':00・存檔</i></button>'
+    +     i18nT('<b>回房睡覺</b><i>到隔日 ')+wakeHour()+i18nT(':00・存檔</i></button>')
     /* ⚠ 常駐的雪鐵龍箭與說明**都撤掉了**（ver -401 撤說明、-402 撤箭，
        Ray：「說明都是一次性的」「雪鐵龍箭也都是一次性說明」）——
        箭與文字現在都只在下面 `.inn-guide` 那個一次性遮罩裡出現一次。 */
@@ -227,7 +228,7 @@ function ensureLayer(){
     /* 一次性說明（ver -401，Ray：「用遮罩跟箭頭說明…說明都是一次性的」）。
        ⚠ 遮罩壓暗全場、被說明的那顆抬到遮罩之上（`.spot`），箭頭指著它。點一下收掉。 */
     + '<div class="inn-guide"><div class="ig-arrow"><i></i><i></i></div>'
-    +   '<div class="ig-text"></div><div class="ig-go">點一下繼續</div></div>';
+    +   i18nT('<div class="ig-text"></div><div class="ig-go">點一下繼續</div></div>');
   /* ⚠ 這一層**沒有自己的黑幕**（ver -430 移除）：暗場走 `story.veil()`。
      舊版在這裡放過一片 `.inn-veil`，但它住在 `#innLobby` 底下，而演出一開始就
      `lock(true)` 收掉導覽 → 整層 `display:none` → **那片黑幕從來沒有亮過**。
@@ -368,8 +369,8 @@ function refreshSleepLabel(){
   const nap = (host && host.napAct) ? host.napAct() : null;
   /* `disguise:true`（ver -1886）＝鈕的字面照一般睡覺 —— 帝都第一夜的夢不可以先在鈕上劇透。 */
   const h = nap && nap.sleepFirst && !nap.sleepFirst.disguise && nap.sleepFirst.hours;
-  b.textContent = h ? '回房睡覺……？' : '回房睡覺';
-  i.textContent = h ? ('小睡 '+h+' 小時') : ('到隔日 '+wakeHour()+':00・存檔');
+  b.textContent = h ? i18nT('回房睡覺……？') : i18nT('回房睡覺');
+  i.textContent = h ? (i18nT('小睡 ')+h+i18nT(' 小時')) : (i18nT('到隔日 ')+wakeHour()+i18nT(':00・存檔'));
 }
 function refresh(){
   if(!layer) return;
@@ -546,7 +547,7 @@ function knock(i){
        ⚠ 台詞在資料上（`innStage1.dateShut`）；沒寫就回一句旁白 ——
          §6.5.5：不可以「點了沒反應」，也不可以靠把門藏起來擋。 */
     if(st1.dateOpen && !st1.dateOpen()){
-      const sl = st1.data.dateShut || '（現在不是約人出門的時候。）';
+      const sl = st1.data.dateShut || i18nT('（現在不是約人出門的時候。）');
       if(host && host.say) host.say(sl, st1.data.dateShut ? nm : '');
       return;
     }
@@ -580,7 +581,7 @@ function knock(i){
          它是世界的狀態（現在有更急的事），不是某一個人的心情
          （同宵禁那一條排在人的分支前面的理由）。 */
       if(st1.questLocked && st1.questLocked()){
-        if(host && host.say) host.say(st1.questSay('date') || '現在不是約人出門的時候。', '');
+        if(host && host.say) host.say(st1.questSay('date') || i18nT('現在不是約人出門的時候。'), '');
         return;
       }
       /* ⚠ 問的是「正在約會嗎」（`dating`）不是「有沒有人同行」—— 殘留事件那一種
@@ -594,7 +595,7 @@ function knock(i){
       /* ⚠ `need`／`needSay`（ver -1719）：這一段約會**某支旗立了才開**（雪都的蕾娜＝出墓合流之後）。
          還沒到就回 `needSay`（旁白＝主角自己的判斷，同 `low` 的退路），**不要靜靜 return**（§6.5.5）。 */
       if(KT.need && !prog.hasFlag(KT.need)){
-        if(host && host.say) host.say(KT.needSay || KT.low || '（她好像沒什麼興趣。）', '');
+        if(host && host.say) host.say(KT.needSay || KT.low || i18nT('（她好像沒什麼興趣。）'), '');
         return;
       }
       /* 好感的鑰匙是小寫的角色 id（`progress` 的 CHARS）—— speaker id 轉一下。 */
@@ -604,7 +605,7 @@ function knock(i){
            那是 §6.5.5 明令要避免的（「還不能做」不要靠藏起來或沒反應擋）。
            ⚠ 退路是**旁白**（名字欄空著）：那是主角自己的判斷，不是替她編一句話
              —— 同旅店 `noSleep` 那一句的作法。 */
-        if(host && host.say) host.say(KT.low || '（她好像沒什麼興趣。）', KT.low ? nm : '');
+        if(host && host.say) host.say(KT.low || i18nT('（她好像沒什麼興趣。）'), KT.low ? nm : '');
         return;
       }
       const lines=KT.date||[];
@@ -807,11 +808,11 @@ function sleepHere(){
      ⚠ 底下那三段台詞不刪：鍵盤／程式化入口（測試、章節跳關）仍可能繞過鈕。 */
   if(!canSleep() && !(st1 && st1.questLocked && st1.questLocked())) console.info('[inn] 睡覺鈕出來了卻按不動 —— 上游有路徑沒問 canSleep()');   // 任務鎖那一道是刻意讓鈕出來的（ver -1727）
   if(st1 && st1.questLocked && st1.questLocked()){
-    if(host && host.say) host.say(st1.questSay('sleep') || '現在不是睡覺的時候。', '');
+    if(host && host.say) host.say(st1.questSay('sleep') || i18nT('現在不是睡覺的時候。'), '');
     return;
   }
   if(!sleepOpened()){          // ver -1658：判準只有那一支（含「天黑後才抵達」那一條）
-    if(host && host.say) host.say((node && node.noSleep) || '現在不是睡覺的時候。', '');
+    if(host && host.say) host.say((node && node.noSleep) || i18nT('現在不是睡覺的時候。'), '');
     return;
   }
   if(clock.hourF() < eveningHour){
@@ -830,7 +831,7 @@ function sleepHere(){
        ⚠⚠ 而且它**很難查**：`eveningHour` 的預設是 18（`let eveningHour = 18`），
          城上沒寫 `evening` 就沿用它 —— 資料上看不出這一格有一條 18:00 的線。
        ⚠ 旁白（名字欄空）＝主角自己的念頭，同 `noSleep` 那一句的作法。 */
-    if(host && host.say) host.say('……天還沒黑，先做點別的吧。', '');
+    if(host && host.say) host.say(i18nT('……天還沒黑，先做點別的吧。'), '');
     return;
   }
   /* ⚠ 蕾娜還沒回來就先去睡 → 記「錯過」（ver -405）：她 20:00 才進門，人睡著了

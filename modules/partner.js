@@ -24,6 +24,7 @@
  *    注入 api（維持 §2 依賴方向，不反向 import）。
  * ========================================================================== */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, asset, sfxGain } from '../config.js';
 import { state, applyDeathGuard } from '../state.js';
 import { SFX } from '../audio.js';
@@ -92,7 +93,7 @@ export function benchLabel(key){
     if(r.until && prog.hasFlag(r.until)) continue;
     if(r.map){ let here=null; try{ here = mapGetter && mapGetter(); }catch(_){}
                if(here !== r.map) continue; }
-    return r.label || '出　局';
+    return r.label || i18nT('出　局');
   }
   return null;
 }

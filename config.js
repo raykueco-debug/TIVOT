@@ -4,6 +4,7 @@
      （speakers.js 與 flight 的 PORTRAIT 至今仍是「改一邊要改兩邊」，
       那是因為兩邊隔著資料夾邊界不好共用，不是因為抄一份比較好）。
    ⚠ speakers.js 不 import 任何東西，所以這條相依不會成環。 */
+import { i18nT, trTree } from './i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { ART } from './script/speakers.js';
 import { ENEMIES } from './script/enemies.js';   // 敵人卡抽成獨立檔（ver -794）
 import { WEAPONS } from './script/weapons.js';   // 副武器卡抽成獨立檔（ver -1781）
@@ -83,7 +84,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1908';
+export const VERSION = 'ver 2026.09.22-1909';
 
 export const GAME_CONFIG = {
 
@@ -198,12 +199,12 @@ export const GAME_CONFIG = {
      ⚠ 強化走槍店（Ray 指定）：目前只有打靶獎品那一項（`tuning.gunTune`），
        改裝分頁的內容等 Ray 的卡 —— 不要先做一個半套的出來（同 loot.js 那一頁）。 */
   mainGun: {
-    name:'迦尼米德', image:'weapon_ganymede_ab', fixed:true,
+    name:i18nT('迦尼米德'), image:'weapon_ganymede_ab', fixed:true,
     /* Ray 指定的字面（ver -700）：不寫「固定・不可更換」，寫**固有武裝**。 */
-    tag:'固有武裝',
+    tag:i18nT('固有武裝'),
     barrels:[
-      { id:'alpha', name:'迦尼米德α「王之運」' },
-      { id:'beta',  name:'迦尼米德β「運之王」' },
+      { id:'alpha', name:i18nT('迦尼米德α「王之運」') },
+      { id:'beta',  name:i18nT('迦尼米德β「運之王」') },
     ],
     /* 掛件槽收哪一類道具（鐵律 1：不在程式裡寫死類別字串）。 */
     charmCat:'charm',
@@ -228,31 +229,31 @@ export const GAME_CONFIG = {
      交界點→界星、源泉→泉之星；**吞噬者移到最下面**（順序＝改裝頁的排列，
      效果查詢全走 id，搬動不影響任何計算）。 */
   gunStars: [
-    { id:'sadalmelik', star:'Sadalmelik', name:'王之運',
-      desc:'增加爆擊傷害',                 critDmg:0.20 },
-    { id:'sadalsuud',  star:'Sadalsuud',  name:'運之王',
-      desc:'增加爆擊機率',                 critRate:0.10 },
-    { id:'skat',       star:'Skat',       name:'疾行星',
-      desc:'加速破防值累積',               energyMul:0.10 },
-    { id:'sadaltager', star:'Sadaltager', name:'銀幣星',
-      desc:'增加戰鬥金錢掉落數額',         moneyMul:0.20 },
-    { id:'safina',     star:'Safina',     name:'方舟星',
-      desc:'無傷使敵 HP 歸零，可回復已使用的被動技' },   // ⚠ 無數值參數（Ray 註明）
-    { id:'sadachbia',  star:'Sadachbia',  name:'幸運星',
-      desc:'增加戰鬥掉落物機率',           lootMul:0.10 },
-    { id:'ancha',      star:'Ancha',      name:'界星',
-      desc:'增加反擊後的普攻增益持續時間', buffSec:3 },
-    { id:'situla',     star:'Situla',     name:'泉之星',
-      desc:'聖徒化期間連續普攻 3 Combo，可微量增加聖徒化時間',
+    { id:'sadalmelik', star:'Sadalmelik', name:i18nT('王之運'),
+      desc:i18nT('增加爆擊傷害'),                 critDmg:0.20 },
+    { id:'sadalsuud',  star:'Sadalsuud',  name:i18nT('運之王'),
+      desc:i18nT('增加爆擊機率'),                 critRate:0.10 },
+    { id:'skat',       star:'Skat',       name:i18nT('疾行星'),
+      desc:i18nT('加速破防值累積'),               energyMul:0.10 },
+    { id:'sadaltager', star:'Sadaltager', name:i18nT('銀幣星'),
+      desc:i18nT('增加戰鬥金錢掉落數額'),         moneyMul:0.20 },
+    { id:'safina',     star:'Safina',     name:i18nT('方舟星'),
+      desc:i18nT('無傷使敵 HP 歸零，可回復已使用的被動技') },   // ⚠ 無數值參數（Ray 註明）
+    { id:'sadachbia',  star:'Sadachbia',  name:i18nT('幸運星'),
+      desc:i18nT('增加戰鬥掉落物機率'),           lootMul:0.10 },
+    { id:'ancha',      star:'Ancha',      name:i18nT('界星'),
+      desc:i18nT('增加反擊後的普攻增益持續時間'), buffSec:3 },
+    { id:'situla',     star:'Situla',     name:i18nT('泉之星'),
+      desc:i18nT('聖徒化期間連續普攻 3 Combo，可微量增加聖徒化時間'),
       saintCombo:3, saintSec:1 },
     /* ⚠⚠ 吞噬者的第 1 級是**北方泊地槍匠**開的（打靶 30 秒內，腳本
        `gunStar:'albali'`）—— `storyFirst` ＝ 還沒點亮之前**素材升級不開放**
        （Ray ver -737：「北泊槍匠開啟至 LV.1 以後才走素材升級，每一次升級
        +5% 普攻」）。判定只在 `loot.modReady` 一處（鐵律 8）；鎖著時
        改裝頁印 `lockText` 不印素材。 */
-    { id:'albali',     star:'Albali',     name:'吞噬者',
-      desc:'增加普攻攻擊力（可多次升級）', dmgMul:0.05, repeat:true,
-      storyFirst:true, lockText:'尚未開啟——聽說北方泊地的槍匠有辦法' },
+    { id:'albali',     star:'Albali',     name:i18nT('吞噬者'),
+      desc:i18nT('增加普攻攻擊力（可多次升級）'), dmgMul:0.05, repeat:true,
+      storyFirst:true, lockText:i18nT('尚未開啟——聽說北方泊地的槍匠有辦法') },
   ],
   /* ══ 每一顆星要交什麼（ver -707；-701 的按等級配方已改成按星）══════════════
      鑰匙＝星的 id。⚠⚠⚠ **下面的素材與價格仍是我擬的草案**，等 Ray 的卡覆蓋 ——
@@ -312,7 +313,7 @@ export const GAME_CONFIG = {
    * ------------------------------------------------------------------ */
   partners: {
     renee: {
-      name:'蕾妮',
+      name:i18nT('蕾妮'),
       image:'partner_renee',   // 選人畫面大立繪（Renee_SI_01）
       // 選人畫面取景（基準）：zoom=1 整張以高度貼合取景框；top=0 頭頂對齊框頂。
       //   蕾妮原圖即膝上構圖、頭約佔畫高 22%，作為所有搭檔「頭部大小」的基準。
@@ -320,7 +321,7 @@ export const GAME_CONFIG = {
       cutin:'cutin_saint',     // 聖徒化演出大圖
       voice:null,              // 語音（PARTNER_SE_SI）之後填
       selectVoice:'vo_life_return', // 選人畫面「選擇此搭檔」確認 SE（→ Renee_VC_Act.wav，與生命歸還共用）
-      perk:'即死防禦（被動）＋生命歸還（主動）',
+      perk:i18nT('即死防禦（被動）＋生命歸還（主動）'),
       // ── 被動技：即死防禦 ─────────────────────────────
       //   整場一次性。受到足以致死的攻擊時，改為保留 1 HP，並插入 cut-in。用掉後失效。
       /* ⚠⚠ **蕾妮的技能名不跟著諾薇兒改**（ver -985）：ver -984 把「即死防禦／生命歸還」
@@ -329,7 +330,7 @@ export const GAME_CONFIG = {
          現在名字一律**讀卡**，所以這裡要把她自己的名字與英文明寫出來。 */
       passive:{
         key:'deathGuard',
-        name:'即死防禦',
+        name:i18nT('即死防禦'),
         en:'Death Guard',
         oncePerBattle:true,      // true=整場只擋一次；false=每次都擋（不建議）
         cutin:'cutin_guard',     // 即死防禦專屬大圖（→ Renee_CI_pas.jpg）；程式讀此欄，不硬寫
@@ -337,18 +338,18 @@ export const GAME_CONFIG = {
         /* ⚠ ver -888（Ray：「death guard 改成每一場（每個怪）都會 reload 一次」）：
            `oncePerBattle` 的語意由「一局一次」收窄成「**一場（怪）一次**」——
            解鎖點是 partner.onEnemySet（換敵那一刻，鐵律 9）。（ver -893 用詞） */
-        desc:'受到足以致死的攻擊時，為玩家保留1hp續命。每換一隻敵人可再觸發一次。',
+        desc:i18nT('受到足以致死的攻擊時，為玩家保留1hp續命。每換一隻敵人可再觸發一次。'),
       },
       // ── 主動技：生命歸還 ─────────────────────────────
       //   聖徒化中，由「下往上滑」發動：強制中止聖徒化，保留當前血量（第四結局）。
       active:{
         key:'lifeReturn',
-        name:'生命歸還',
+        name:i18nT('生命歸還'),
         en:'Life Return',
         context:'saint',         // 發動情境：'saint'＝聖徒化內 / 'board'＝一般盤面 / 'any'＝兩者皆可
         cutin:'cutin_return',    // 生命歸還演出大圖（→ Renee_CI_act.jpg）；實際演出由 saint scImgKey.return 讀同一鑰匙
         voice:'vo_life_return',  // cut-in 對應 SE（→ Renee_VC_Act.wav）
-        desc:'聖徒化期間發動：強制中止聖徒化，保留當前血量。',
+        desc:i18nT('聖徒化期間發動：強制中止聖徒化，保留當前血量。'),
       },
     },
     /* ── 諾薇兒（ver -422，Ray：「延用蕾妮的能力，CI 之後再補」）───────────
@@ -370,7 +371,7 @@ export const GAME_CONFIG = {
          ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
       faceSpent:'desperate',
       levelUpVoice:'vo_nouvelle_lvup',
-      name:'諾薇兒',
+      name:i18nT('諾薇兒'),
       image:'partner_nouvelle',
       /* 整備頁伙伴卡的「變身」欄（ver -841，Ray：「伙伴卡也要記載聖徒化 夢魘化
          共鬥的效果」）—— 純顯示文案（gear.js 讀），機制本體在 saint.js。 */
@@ -380,10 +381,10 @@ export const GAME_CONFIG = {
            頁面放最基本的說明即可」）—— 所以這幾段字**不要**跟著九星去補條件，
            星的效果各自寫在 `girls.levels` 的 `desc` 上（技能表視窗才看得到）。
          ⚠ 換行用 `<br>`：整備頁是 innerHTML 塞進去的（`gear.js` 的 `.gs-perk`）。 */
-      install:{ name:'聖徒化', en:'SAINT INSTALL',
-        desc:'發動方式：戰鬥畫面右滑<br>'
-            +'強行灌注聖徒之力的爆發模式。期間 HP 快速回復至全滿後結束聖徒化。'
-            +'HP 越低，持續時間越長。受敵攻擊僅會縮短時間，不會受到傷害，連擊疊傷無上限。' },
+      install:{ name:i18nT('聖徒化'), en:'SAINT INSTALL',
+        desc:i18nT('發動方式：戰鬥畫面右滑<br>')
+            +i18nT('強行灌注聖徒之力的爆發模式。期間 HP 快速回復至全滿後結束聖徒化。')
+            +i18nT('HP 越低，持續時間越長。受敵攻擊僅會縮短時間，不會受到傷害，連擊疊傷無上限。') },
       /* 取景：她的立繪是全身直幅（1024×1536），蕾妮那張是膝上構圖 ——
          同樣的框要放到「頭大小相當」，得往下推並放大。⚠ 這是估的，Ray 換圖時要重量。 */
       siFit:{ zoom:1.6, top:0.01 },
@@ -391,7 +392,7 @@ export const GAME_CONFIG = {
       voice:null,
       /* 選人確認的語音（ver -743，Ray：「諾薇兒播主動技語音」＝生命歸還）。 */
       selectVoice:'vo_nou_return',
-      perk:'即死防禦（被動）＋生命歸還（主動）',
+      perk:i18nT('即死防禦（被動）＋生命歸還（主動）'),
       /* ⚠⚠ ver -740（Ray）：即死防禦加**十秒免傷**、期間普攻每次回血 2%
          （「免傷仍算受擊，只是不扣血」—— 實作見 combat.enemyAttack 的扣血行）。
          `immuneSeconds`／`immuneHealPct` 是**這張卡**的：蕾妮的即死防禦沒寫
@@ -406,7 +407,7 @@ export const GAME_CONFIG = {
          ⚠ 它在**戰鬥中**印出來的字走 i18n（`L.cutins.deathGuard`／`L.battle.deathGuard`），
            不是這裡的 `name` —— 兩邊都改了才不會一邊「獄門天鎖」一邊「即死防禦」。
            英文副標維持 `Death Guard`（[EN-STYLE] 不譯；Ray 沒給新的英文名）。 */
-      passive:{ key:'deathGuard', name:'獄門天鎖', en:'Hellgate Seal', oncePerBattle:true,
+      passive:{ key:'deathGuard', name:i18nT('獄門天鎖'), en:'Hellgate Seal', oncePerBattle:true,
                 /* 她自己的 CI（ver -499，Ray 交件 CI_Nouvelle_Deathguard）——
                    之前借蕾妮的 `cutin_guard`；蕾妮那張是試玩版的，不動。 */
                 cutin:'cutin_nouvelle_guard', voice:'vo_nou_guard',   // ver -711：她自己的語音（原本借蕾妮的）
@@ -418,7 +419,7 @@ export const GAME_CONFIG = {
                      蕾妮的卡沒寫＝沒有這扇窗（試玩版不動）。
                    ⚠ 讀值走 `partner.guardHealPct`：那一支現在是 **卡上的值 ＋ 星**。 */
                 immuneSeconds:10, immuneHealPct:0,
-                desc:'發動方式：戰鬥中受到致死攻擊時保留 1 HP，並獲得 10 秒免傷。' },
+                desc:i18nT('發動方式：戰鬥中受到致死攻擊時保留 1 HP，並獲得 10 秒免傷。') },
       /* ⚠⚠⚠ **ver -964（Ray 改定）：不再回滿，改成「保留現血量 ＋ 10 秒吸血」**
            > 「主動技中止聖徒化，**保留現血量**並發動 10 秒吸血 buff，
            >   **一發回復玩家最大血量 5%**」
@@ -454,7 +455,7 @@ export const GAME_CONFIG = {
          那一條走的是 partner 的 `act.cutin` ＝ 卡上這一格，於是本篇演出裡
          出現了蕾妮（同 -454「本篇的搭檔是諾薇兒，演出裡出現蕾妮是錯的人」）。
          ⚠ 蕾妮自己那張卡（`partners.renee`）不動 —— 試玩版照舊。 */
-      active:{ key:'lifeReturn', name:'魂之歸所', en:'Soul Return', context:'any',
+      active:{ key:'lifeReturn', name:i18nT('魂之歸所'), en:'Soul Return', context:'any',
                /* ⚠⚠⚠ **ver -1463 補上**（Ray：「魂之歸所不知為何可以無限使用，沒關好？」）
                   —— 這一格以前**漏寫**，而 `partner.tryActive` 的守門是
                   `if(act.oncePerBattle && …)` ⇒ 條件永遠 false ⇒ **守門等於不存在**。
@@ -493,9 +494,9 @@ export const GAME_CONFIG = {
                     決定（9 格最多 45%、16 格 80%），而玩家可以自己挑「開盤時發動」，
                     那是技術表現不是讀秒。實作見 `partner.vampBoardPct`。 */
                boardHealPct:0.05,
-               desc:'發動方式：戰鬥畫面上滑。<br>'
-                   +'一般時間發動：至本盤清盤為止，每次射擊回復最大體力 5%。<br>'
-                   +'聖徒化期間發動：強制中止爆發時間，保留已回復之 HP。' },
+               desc:i18nT('發動方式：戰鬥畫面上滑。<br>')
+                   +i18nT('一般時間發動：至本盤清盤為止，每次射擊回復最大體力 5%。<br>')
+                   +i18nT('聖徒化期間發動：強制中止爆發時間，保留已回復之 HP。') },
       /* ══ 點錯的兩層聲音（ver -1015，Ray 交檔）══
          · `missVoice` ＝**只要點錯就出**的失誤語音（三支輪播，走 `SFX.pickRot`）。
          · `missBlockSe` ＝那一下**被擋下來**時**同時**再疊一聲：
@@ -524,7 +525,7 @@ export const GAME_CONFIG = {
          `needStar` ＝要有那顆星才生效（`progress.girlHas` 那個唯一查詢點）。
          -903~-970 它是預設就有的，現在 Lv1~2 沒有。⚠ 欄位寫在**卡上**不寫死在
          `partner.js`（鐵律 1）：日後別的搭檔要有自己的回填條件，加一格就好。 */
-      installReload:{ flawless:1, name:'聖徒再臨', en:'SAINT RELOAD',
+      installReload:{ flawless:1, name:i18nT('聖徒再臨'), en:'SAINT RELOAD',
                       needStar:'saintReload',         // ver -971：諾薇兒 Lv3（探覓星）
                       cutin:'cutin_saintreload',      // ver -894：專屬 CI（原本借被動那張）
                       voice:'vo_nou_saintreload' },
@@ -548,24 +549,24 @@ export const GAME_CONFIG = {
          ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
       faceSpent:'desperate',
       levelUpVoice:'vo_anya_lvup',
-      install:{ name:'夢魘化', en:'NIGHTMARE INSTALL',
+      install:{ name:i18nT('夢魘化'), en:'NIGHTMARE INSTALL',
         /* ⚠ ver -967：「體力灌滿後」→「由**當下的體力**」（不再灌滿）。
            ⚠ ver -974：**滿血 13 秒**（長度由血量決定，不再是一律 15 秒）、
              期間反擊命中 100%、清空 16 格＝**回到發動時的體力**（不是全回復）。 */
         /* ⚠⚠ **ver -994：文案由 Ray 定稿**，排版比照諾薇兒（「發動方式」一行 ＋ 一段白話）。
            ⚠ 定稿**不再提「每場一次」「命中 100%」「清空 16 格＝MB」** —— 三件事機制照舊
              （Ray 確認「命中 100% 兩邊都保留」），只是不寫進這一段。 */
-        desc:'發動方式：戰鬥畫面右滑<br>'
-            +'強行灌注惡夢之力的爆發模式。期間 HP 快速削減至 1 後結束夢魘化。'
-            +'HP 越高，持續時間越長。受敵攻擊僅會縮短時間，不會受到傷害，連擊疊傷無上限。' },
-      name:'安雅',
+        desc:i18nT('發動方式：戰鬥畫面右滑<br>')
+            +i18nT('強行灌注惡夢之力的爆發模式。期間 HP 快速削減至 1 後結束夢魘化。')
+            +i18nT('HP 越高，持續時間越長。受敵攻擊僅會縮短時間，不會受到傷害，連擊疊傷無上限。') },
+      name:i18nT('安雅'),
       image:'partner_anya',
       siFit:{ zoom:1.6, top:0.01 },
       cutin:'ci_anya_ni',
       voice:null,
       /* 選人確認的語音（ver -743，Ray：「安雅播被動技語音」＝明晰之夢）。 */
       selectVoice:'vo_anya_lucid',   // 選人確認音（ver -837：明晰之夢語音收成單支）
-      perk:'明晰之夢（被動）＋惡夢化・夢境粉碎（劇情）',
+      perk:i18nT('明晰之夢（被動）＋惡夢化・夢境粉碎（劇情）'),
       /* ══ 被動：明晰之夢（Lucid Dream；中文名 ver -682 由 Ray 定）══
          ⚠⚠ **觸發條件 ver -693 改了**（Ray：「娜塔莉戰如果先觸發 lucid dream 再進入
            NI 劇情會卡住，或者同時，所以我決定改 luciddream 的發動條件為觸發單怪
@@ -583,7 +584,7 @@ export const GAME_CONFIG = {
       passive:{
         key:'firstCounter',
         /* ⚠ cut-in 上印的就是這個字（`partner` 讀 `passive.name`）—— 只有這一處。 */
-        name:'明晰之夢',
+        name:i18nT('明晰之夢'),
         en:'Lucid Dream',
         /* ⚠⚠⚠ **ver -974（Ray 改定）：10 秒，而且只有「命中 100%」** ══
            > 「被動技：是完美反擊後 10 秒間普攻加倍。**反擊命中 100%**。
@@ -610,7 +611,7 @@ export const GAME_CONFIG = {
            探覓星的作法）—— -887~-973 它是預設就有的，現在 Lv1~2 沒有。
            ⚠ 條件寫在**卡上**不寫死在 `partner.js`（鐵律 1，同 `installReload.needStar`）。 */
         reloadNeedStar:'niReload',
-        reloadName:'夢魘再臨',
+        reloadName:i18nT('夢魘再臨'),
         /* 專屬 CI 與語音（ver -894，Ray 交件）—— 那一發不再借明晰之夢那張圖。 */
         reloadCutin:'cutin_nireload',
         reloadVoice:'vo_anya_nireload',
@@ -623,8 +624,8 @@ export const GAME_CONFIG = {
         voice:'vo_anya_lucid',   // ver -837：Ray 交新單支，取代 -759 的 ×4 輪播（沒編號＝不輪播）
         /* ver -740（Ray）：發動期間追加「反擊不論哪一圈都算完美反擊（傷害與評價）」
            與「指引每一個應點格」—— 實作見 defense.resolveThreat 與 combat.markNext。 */
-        desc:'發動方式：觸發完美反擊即發動。<br>'
-            +'5 秒內普攻傷害加倍、反擊命中率為 100%。',
+        desc:i18nT('發動方式：觸發完美反擊即發動。<br>')
+            +i18nT('5 秒內普攻傷害加倍、反擊命中率為 100%。'),
       },
       /* ══⚠⚠⚠ **夢境破碎：純顯示的一格**（ver -994，Ray 的定稿給了它自己一段）══
          她的這一招**不走搭檔主動技那套系統** —— 它是夢魘化期間的上滑，由
@@ -640,10 +641,10 @@ export const GAME_CONFIG = {
          夢魘化期間的上滑照舊是粉碎本體（`saint.nightmareActive`，不經這裡）。 */
       /* ⚠ ver -1779b（Ray）：非夢魘化那一半**固定 5 秒**（`buffSec`），不吃赤足／鐵蹄的延長 ——
          「用來跟 Boss 丟的密集圈對沖，不用太長駐，免得又變永動機」。 */
-      active:{ key:'dreamBreakInfo', name:'夢境破碎', en:'Dream Breaker', context:'board', buffSec:5,
-               desc:'發動方式：戰鬥畫面上滑。<br>'
-                   +'夢魘化期間發動：強制中止爆發時間，保留已削減之 HP，並一次性給予敵最大 HP 20% 的傷害。<br>'
-                   +'非夢魘化期間發動：進入明晰之夢的增益狀態 5 秒，場上攻擊圈不重置。' },
+      active:{ key:'dreamBreakInfo', name:i18nT('夢境破碎'), en:'Dream Breaker', context:'board', buffSec:5,
+               desc:i18nT('發動方式：戰鬥畫面上滑。<br>')
+                   +i18nT('夢魘化期間發動：強制中止爆發時間，保留已削減之 HP，並一次性給予敵最大 HP 20% 的傷害。<br>')
+                   +i18nT('非夢魘化期間發動：進入明晰之夢的增益狀態 5 秒，場上攻擊圈不重置。') },
     },
     /* ══ 索菈娜（ver -803，Ray 交稿）══ 夏爾村村內戰一進場就強配（見 config.battles
        的 sv_* 的 `partner:'sorana'`，combat.startGame 讀它覆寫）。
@@ -662,7 +663,7 @@ export const GAME_CONFIG = {
          ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
       faceSpent:'panic',
       levelUpVoice:'vo_sorana_lvup',
-      name:'索菈娜',
+      name:i18nT('索菈娜'),
       image:'partner_sorana',
       selectVoice:'vo_sorana_pack',   // 選人確認音（ver -839，Ray 指定）
       /* ⚠ 英文 ver -894 由 `PREDATOR'S PACK` 改成 **`PREDATOR'S FANGS`**（Ray 指定）。
@@ -671,13 +672,13 @@ export const GAME_CONFIG = {
          說明，細節交給九星那九列）。⚠ 定稿**不再提「每場一次」「無敵」與「滿值 12 秒」**
          —— 那三件事機制照舊在（`saintUsedThisBattle` 的槽、`partner` 的免傷窗、
          `coop.baseSec`），只是不寫進這一段（同諾薇兒的 MB／每場一次）。 */
-      install:{ name:'獵手的共鬥', en:"PREDATOR'S FANGS",
+      install:{ name:i18nT('獵手的共鬥'), en:"PREDATOR'S FANGS",
         /* ⚠ ver -996：排版比照諾薇兒（「發動方式」一行 ＋ 一段白話）。
            ⚠ 手勢那一句統一寫「**戰鬥畫面右滑**」—— 三位是同一個手勢，
              -993 這裡寫「敵人框右滑」是三段裡唯一的異寫。 */
-        desc:'發動方式：戰鬥畫面右滑<br>'
-            +'消耗全部破防值發動共鬥，期間索菈娜會自動反擊敵人攻擊。'
-            +'玩家射擊失誤會加速消耗。' },
+        desc:i18nT('發動方式：戰鬥畫面右滑<br>')
+            +i18nT('消耗全部破防值發動共鬥，期間索菈娜會自動反擊敵人攻擊。')
+            +i18nT('玩家射擊失誤會加速消耗。') },
       siFit:{ zoom:1.6, top:0.01 },   // 估（同諾薇兒/安雅）；Ray 交專用選人立繪再重量
       cutin:'ci_sorana_predator',     // 共鬥的變身 cut-in
       voice:null,
@@ -724,7 +725,7 @@ export const GAME_CONFIG = {
            （這一格存的是差值不是絕對值 —— 它是「比別人嚴多少」）。
          ⚠ -805 原本是 +100（＝當時的 500）。 */
       timeKBonus:250,
-      perk:'獵手的共鬥（共鬥/無敵）＋獵手的智慧（上滑 Bullets Rain）＋獵手的戰吼（被動）',
+      perk:i18nT('獵手的共鬥（共鬥/無敵）＋獵手的智慧（上滑 Bullets Rain）＋獵手的戰吼（被動）'),
       /* ══ 共鬥（Predator's Pack）的參數（saint.activateCoop 讀，鐵律 1）══
          無敵秒數 ＝ baseSec × (破防值/100)（下夾 minSec），發動消耗全部破防值、
          每場一次；點錯縮短 wrongShortenSec 秒；敵攻擊自動完美反擊（counterScale 倍）。
@@ -752,21 +753,21 @@ export const GAME_CONFIG = {
       coop:{ baseSec:12, minSec:3, wrongShortenSec:1, counterScale:1, energyBackMul:0.5,
              voice:['vo_sorana_pack','vo_sorana_pack2'],
              /* 共鬥結束＝飛刀耗盡（obe，ver -822）。ver -837：語音兩支輪播（Ray：「有編1、2的都是輪播」）。 */
-             endVoice:['vo_sorana_obe1','vo_sorana_obe2'], endCutin:'ci_sorana_obe', endName:'飛刀耗盡' },
+             endVoice:['vo_sorana_obe1','vo_sorana_obe2'], endCutin:'ci_sorana_obe', endName:i18nT('飛刀耗盡') },
       /* 主動技：**照搬馬季諾的前線補給**（Ray 指定）＝ supplyRefill（立即進入雙槍破防、
          不吃破防值）。上滑手勢（bindBoardActiveSwipe → tryActive('board')）發動，
          只換她自己的名字與 CI。 */
       /* ⚠ `reloadName`／`reloadEn`／`reloadVoice` ＝ Lv7「聚落星」那一發的臉與聲音
          （ver -976 由被動的 streak2 搬過來 —— 那一段已被 Ray 的新卡取代）。
          CI 沿用被動那三張輪播（`passive.cutin`）：同一個人吼的同一件事。 */
-      active:{ key:'supplyRefill', name:'獵手的智慧', en:"Predator's Wisdom", context:'board',
+      active:{ key:'supplyRefill', name:i18nT('獵手的智慧'), en:"Predator's Wisdom", context:'board',
                oncePerBattle:true, cutin:'ci_sorana_supply', voice:['vo_sorana_supply1','vo_sorana_supply2'],   // ver -837 輪播
-               reloadName:'共鬥再開', reloadEn:'FANGS RELOAD', reloadVoice:'vo_sorana_roar',
+               reloadName:i18nT('共鬥再開'), reloadEn:'FANGS RELOAD', reloadVoice:'vo_sorana_roar',
                // ⚠ 定稿用「彈雨傾洩」（＝那扇窗的正式名字，i18n 的 cutins.dualBreak，ver -750）。
                /* ⚠ 「共鬥期間以外」＝Ray 的卡上那一句（`context:'board'`：一般盤面才發得動，
                   共鬥期間不算）—— 排版比照諾薇兒的主動技那一段。 */
-               desc:'發動方式：共鬥期間以外，戰鬥畫面上滑。<br>'
-                   +'無視破防值，立即進入彈雨傾洩。' },
+               desc:i18nT('發動方式：共鬥期間以外，戰鬥畫面上滑。<br>')
+                   +i18nT('無視破防值，立即進入彈雨傾洩。') },
       /* 被動：連續三輪完美清盤 → 10 秒破防值累積速度加倍，可重覆發動。
          實作＝ combat.clearBoard 累加 `svPerfectStreak`，滿 `streak` 由 partner.fireEnergyBuff
          開一段 `energyBoostUntil`（addEnergy 讀它 ×`energyMul`）。 */
@@ -790,18 +791,18 @@ export const GAME_CONFIG = {
            所以 `streak2`／`voice2` 整組拿掉，「共鬥再開」的字與語音搬到 `active`。
          ⚠ `voice` 改成**兩支輪播**（Ray：「被動語音改輪播」「兩個輪播」）——
            走既有的 `SFX.pickRot`（同 `active.voice` 那一組的作法）。 */
-      passive:{ key:'perfectStreak', name:'獵手的戰吼', en:"Predator's Roar",
+      passive:{ key:'perfectStreak', name:i18nT('獵手的戰吼'), en:"Predator's Roar",
                 streak:5, buffSeconds:10, energyMul:2,
                 voice:['vo_sorana_roar2','vo_sorana_roar'],
                 cutin:['ci_sorana_roar_renna','ci_sorana_roar_anya','ci_sorana_roar_nouvelle'],
                 /* ⚠ 「同戰役內可跨戰鬥累計」＝既有行為（ver -891/-892：連段跨場不歸零、
                    換局才歸零；`sessionSave` 帶著 `svStreak` 過場）—— 定稿把它寫出來了。 */
-                desc:'發動方式：連續五輪完美清盤即發動。<br>'
-                    +'10 秒內破防值累積速度加倍。同戰役內可跨戰鬥累計。' },
+                desc:i18nT('發動方式：連續五輪完美清盤即發動。<br>')
+                    +i18nT('10 秒內破防值累積速度加倍。同戰役內可跨戰鬥累計。') },
     },
     // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────
     malzeno: {
-      name:'馬季諾',
+      name:i18nT('馬季諾'),
       image:'partner_malzeno', // 選人畫面大立繪（Malzeno_SI_01）
       // 選人畫面取景：原圖為全身立繪（頭僅約佔畫高 11%）→ 放大 1.85 倍使頭部與蕾妮基準等大，
       //   由頭頂往下取景、下緣自然裁在膝上（不露全身）。調整框內構圖改這兩個數即可。
@@ -809,20 +810,20 @@ export const GAME_CONFIG = {
       cutin:'cutin_saint',     // 聖徒化演出大圖（沿用共通）
       voice:null,
       selectVoice:'vo_hc_rounds',   // 選人畫面「選擇此搭檔」確認 SE（→ Malzeno_VC_Pas.wav，與高裝藥彈共用）
-      perk:'前線補給（主動）＋高爆彈頭（被動）',
+      perk:i18nT('前線補給（主動）＋高爆彈頭（被動）'),
       // ── 被動技：高裝藥彈 ─────────────────────────────
       //   玩家 HP 降至 threshold（50%）以下的瞬間發動：普攻傷害加倍 buffSeconds 秒，
       //   時間到自然結束、效果可跨盤面延續。邊緣觸發：HP 回到門檻上才重新上膛、
       //   再跌破可再發動（門檻下不重複觸發）。發動瞬間插 cut-in。
       passive:{
         key:'lowHpBuff',
-        name:'高裝藥彈',
+        name:i18nT('高裝藥彈'),
         en:'High-Charge Rounds', // cut-in 英文副標
         threshold:0.50,          // 發動門檻：HP ≤ playerMax × 此值
         buffSeconds:10,          // 普攻加倍持續秒數（可跨盤）
         cutin:'cutin_malzeno_pas', // 被動 cut-in 大圖（→ Malzeno_CI_pas.png）
         voice:'vo_hc_rounds',    // cut-in 對應 SE（→ Malzeno_VC_Pas.wav）
-        desc:'HP 降至 50% 以下時發動：10 秒普攻傷害加倍，效果可跨盤面延續。',
+        desc:i18nT('HP 降至 50% 以下時發動：10 秒普攻傷害加倍，效果可跨盤面延續。'),
       },
       // ── 主動技：前線補給 ─────────────────────────────
       //   一般盤面發動：立即進入雙槍破防射擊窗口（不吃破防值、不另播雙槍 cut-in——
@@ -830,13 +831,13 @@ export const GAME_CONFIG = {
       //   ⚠ 聖徒化期間不可發動（「聖徒化不能開雙槍」原則）：context:'board' 擋掉聖徒化入口。
       active:{
         key:'supplyRefill',
-        name:'前線補給',
+        name:i18nT('前線補給'),
         en:'Frontline Supply',   // cut-in 英文副標
         context:'board',         // 一般盤面限定（聖徒化中不可發動）
         oncePerBattle:true,      // 每場一次（可調：false＝不限次數）
         cutin:'cutin_malzeno_act', // 前線補給 cut-in 大圖（→ Malzeno_CI_act.png）
         voice:'vo_supply_refill',  // cut-in 對應 SE（→ Malzeno_VC_Act.wav）
-        desc:'立即進入雙槍破防。聖徒化期間無法發動。',
+        desc:i18nT('立即進入雙槍破防。聖徒化期間無法發動。'),
       },
     },
   },
@@ -935,7 +936,7 @@ export const GAME_CONFIG = {
    *  ⚠ 判定只有 `partner.benchLabel()` 一支（鐵律 7）。
    * ══════════════════════════════════════════════════════════════════════ */
   partnerBench: [
-    { key:'nouvelle', need:'nou_melted', map:'tomb', label:'熔　斷' },
+    { key:'nouvelle', need:'nou_melted', map:'tomb', label:i18nT('熔　斷') },
   ],
 
   /* ══════════════════════════════════════════════════════════════════════ *
@@ -1065,9 +1066,9 @@ export const GAME_CONFIG = {
     niem: {
       voice: { sorana:'vo_sorana_roar2', nouvelle:'vo_nouvelle_saintreload', anya:'vo_anya_lvup' },
       skill: {
-        sorana:   { name:'獵手之眼',   per:0.10, desc:'在船上發現稀有敵人的機率增加。' },
-        nouvelle: { name:'破凪之吐息', per:0.10, desc:'破凪之吐息的冷卻時間減少。' },
-        anya:     { name:'混沌感知',   per:0.10, desc:'混沌感知的範圍增加。' },
+        sorana:   { name:i18nT('獵手之眼'),   per:0.10, desc:i18nT('在船上發現稀有敵人的機率增加。') },
+        nouvelle: { name:i18nT('破凪之吐息'), per:0.10, desc:i18nT('破凪之吐息的冷卻時間減少。') },
+        anya:     { name:i18nT('混沌感知'),   per:0.10, desc:i18nT('混沌感知的範圍增加。') },
       },
       /* ⚠⚠ **第一份一定給索菈娜**（Ray：「使用對象三女角，但只有索菈娜高光可點」）
          —— 那一段戲就是她自告奮勇。教過之後（`niem_taught`）三位都能選。
@@ -1111,8 +1112,8 @@ export const GAME_CONFIG = {
            所以每一格寫的是**增量**不是絕對值（`guardHealPct:0.03` ＝卡上的
            0.02 再加 3% ＝ 5%）。 */
       nouvelle: [
-        { star:'Guisuer', skill:'install',           name:'先鋒星',
-          desc:'聖徒化的連擊疊傷提升至 150%。',
+        { star:'Guisuer', skill:'install',           name:i18nT('先鋒星'),
+          desc:i18nT('聖徒化的連擊疊傷提升至 150%。'),
           /* 聖徒化每 combo 的疊傷斜率（`tuning.saintComboStep` 1.0）**乘上 1+這個值**
              → 1.5。⚠ Ray 選的是「只調斜率」：「無上限」是對現況的確認
              （聖徒化那一段本來就沒有上限），**普攻 `dmgComboCap:20` 不解除**。 */
@@ -1126,22 +1127,22 @@ export const GAME_CONFIG = {
            ⚠ 舊 Lv5「引路星」的效果（魂之歸所後延續連擊增傷 15 秒＋指引）**整顆退場**
              （Ray：「先不用，本來就是湊數的」）—— 連擊延續的**基礎那 10 秒仍在**
              （卡上的 `comboKeepSeconds`），沒有一起消失。 */
-        { star:'Asellus Borealis', skill:'install',  name:'引路星',
-          desc:'失誤一次不受擊，點擊正確就重置。並在聖徒化期間全程指引下一格。',
+        { star:'Asellus Borealis', skill:'install',  name:i18nT('引路星'),
+          desc:i18nT('失誤一次不受擊，點擊正確就重置。並在聖徒化期間全程指引下一格。'),
           /* `missGuard` ＝容錯本體（實作見 `partner.tryMissGuard` ／ `combat.tap`）；
              `saintHint` ＝聖徒化全程指引（舊「端首星」的那一半，搬過來合併）。
              ⚠ 被吃掉的那一次**盤面與評價都不算**（Ray：「留著，她就是衝評價女神，
                這是最開始我給她的定位」）、而且**連擊不斷**。 */
           missGuard:1, saintHint:1 },
-        { star:'Nahn', skill:'active',               name:'探覓星',
-          desc:'發動彈雨傾洩可回復魂之歸所的使用次數。',
+        { star:'Nahn', skill:'active',               name:i18nT('探覓星'),
+          desc:i18nT('發動彈雨傾洩可回復魂之歸所的使用次數。'),
           /* ver -1014（Ray 交卡）：舊效果（單場無傷擊殺回填聖徒化）搬到 Lv5「端首星」。
              ⚠ 回填的是**主動技的次數**（`state.partnerActiveUsed`）——
                掛在雙槍破防真的發動那一刻（`weapon.activateDual`），那是唯一的入口。 */
           brReloadActive:1 },
-        { star:'Tegmine', skill:'passive',           name:'堅殼星',
-          desc:'獄門天鎖的十秒免傷期間，每次射擊回復最大體力 5%。'
-              +'反擊一次算一發，聖徒化期間不作動。',
+        { star:'Tegmine', skill:'passive',           name:i18nT('堅殼星'),
+          desc:i18nT('獄門天鎖的十秒免傷期間，每次射擊回復最大體力 5%。')
+              +i18nT('反擊一次算一發，聖徒化期間不作動。'),
           /* `guardHealPct` 是**增量**：卡上 0.02 ＋ 這裡 0.03 ＝ 5%。
              ⚠ 「單局一次」＝**即死防禦本身**一局一次（Ray 確認）——
                那正是 Lv1~6 的基礎行為（Lv7 的蟹生星才放寬成一場一次），
@@ -1155,25 +1156,25 @@ export const GAME_CONFIG = {
                即死防禦接住 → 10 秒窗開著 → 立刻右滑進聖徒化，那幾秒的每一次反擊
                都會推槽。守門在 `combat.shotHeal()` 一支（鐵律 8）。 */
           guardHealPct:0.05, guardHealCounter:1 },
-        { star:'Guisuyi', skill:'install',           name:'端首星',
-          desc:'單場無傷擊殺即回復聖徒化熔斷；同場戰鬥內不可連續使用。同戰役的次場戰鬥生效。',
+        { star:'Guisuyi', skill:'install',           name:i18nT('端首星'),
+          desc:i18nT('單場無傷擊殺即回復聖徒化熔斷；同場戰鬥內不可連續使用。同戰役的次場戰鬥生效。'),
           /* ver -1014：由 Lv3「探覓星」搬過來（效果一個字沒改，只換星位）。
              ⚠ 用字統一成「**熔斷**」（Ray：「聖徒跟夢魘用字都是熔斷」）——
                聖徒化推滿與夢魘化抽乾是同一件事的兩端，兩邊同一個詞。 */
           saintReload:1 },
-        { star:'Acubens', skill:'install',           name:'斷鉗星',
-          desc:'聖徒化時體力降至 1。',
+        { star:'Acubens', skill:'install',           name:i18nT('斷鉗星'),
+          desc:i18nT('聖徒化時體力降至 1。'),
           /* 聖徒化的長度＝倒數槽從**當下血量**推到滿要多久，所以血越少撐越久
              （抬頭那句「血越少持續時間越長」）。這顆星把它推到極限。
              ⚠ 走 `combat.setPlayerHpRatio(0)`（下限夾 1 HP，既有語意）。 */
           saintStartHp1:1 },
-        { star:'Yuyu', skill:'passive',              name:'蟹生星',
-          desc:'獄門天鎖於同場戰役內的每一場戰鬥都可發動一次。',
+        { star:'Yuyu', skill:'passive',              name:i18nT('蟹生星'),
+          desc:i18nT('獄門天鎖於同場戰役內的每一場戰鬥都可發動一次。'),
           /* ＝ver -888 那條「每換一隻怪 reload」，現在是這一級的獎勵。
              ⚠ 九星「方舟」（無傷擊殺回復被動）與它**是兩件事**，照舊各自生效。 */
           guardPerEnemy:1 },
-        { star:'Asellus Australis', skill:'install', name:'負行星',
-          desc:'聖徒化時間不受到敵方攻擊減少。',
+        { star:'Asellus Australis', skill:'install', name:i18nT('負行星'),
+          desc:i18nT('聖徒化時間不受到敵方攻擊減少。'),
           /* ══⚠⚠⚠ **ver -988：Lv8 與 Lv9 的效果對調**（Ray 定稿）══
              星名與順位不動，換的是**效果**：這一顆現在是「受擊不推進倒數槽」
              （-987 之前在 Lv9 終焉星）。
@@ -1181,8 +1182,8 @@ export const GAME_CONFIG = {
                那兩支在 `saint.js` 自己叫 `saintAdvance`，守門在
                `combat.enemyAttack` 的聖徒化分支。 */
           saintNoHitAdvance:1 },
-        { star:'Tarf', skill:'install',              name:'終焉星',
-          desc:'聖徒化期間的攻擊可小幅延長爆發時間。',
+        { star:'Tarf', skill:'install',              name:i18nT('終焉星'),
+          desc:i18nT('聖徒化期間的攻擊可小幅延長爆發時間。'),
           /* ══⚠⚠⚠ **ver -988：與 Lv8 對調**（Ray 定稿）══ 這一顆現在是
              「每一發射擊延長倒數」（-987 之前在 Lv8 負行星）。
              聖徒化期間血條＝倒數槽，**扣血＝延長**：每發扣 `playerMax` 的 1%
@@ -1231,60 +1232,60 @@ export const GAME_CONFIG = {
              索菈娜的「地弓星」（破防彈雨的攻擊力 → 歸主動，因為主動技就是直接進 BR）
              與「海宣星」（戰吼發動時回填主動技 → 歸被動，因為觸發的是戰吼）。 */
       anya: [
-        { star:'Pollux', skill:'install',          name:'拳鬥者星',
+        { star:'Pollux', skill:'install',          name:i18nT('拳鬥者星'),
           /* ⚠ ver -1012（Ray：「我記得夢魘化好像也會加普攻，拿掉」）：
              這顆星只加**反擊** —— 盤面點格那一份（`saint.nightmareTap`）已經拿掉。
              安雅的定位是反擊，普攻加成是白給的。 */
-          desc:'夢魘化期間反擊攻擊力提升至 120%。',
+          desc:i18nT('夢魘化期間反擊攻擊力提升至 120%。'),
           /* 只在**夢魘化期間**生效。普攻在 `saint.nightmareTap`、反擊在
              `weapon.weaponCounter` 的 `scale`（各自唯一的計算點，鐵律 7）。 */
           niDmgMul:0.20 },
-        { star:'Castor', skill:'active',          name:'築壩者星',
-          desc:'夢境破碎發動後追加 10 秒反擊增益，並全程指引下一格。',
+        { star:'Castor', skill:'active',          name:i18nT('築壩者星'),
+          desc:i18nT('夢境破碎發動後追加 10 秒反擊增益，並全程指引下一格。'),
           /* 那扇窗的擁有者是 `partner`（`burstBuffUntil`）—— 與生命歸還那扇窗
              同一個形狀。⚠ 這裡**只抬攻擊力**，不壓命中（卡上沒說）。 */
           burstBuffSec:10, burstAtk:1, burstHint:1 },
-        { star:'Alhena', skill:'install',          name:'烙印星',
+        { star:'Alhena', skill:'install',          name:i18nT('烙印星'),
           /* ⚠ Ray 的定稿這一句寫成「回填**聖徒化**」—— 那是諾薇兒的招，已確認是筆誤
              （「是筆誤，改夢魘化」），照實作寫成夢魘化。措辭比照諾薇兒的探覓星。 */
-          desc:'連續三次完美反擊即回復夢魘化熔斷；同場戰鬥內不可連續使用。同戰役的次場戰鬥生效。',
+          desc:i18nT('連續三次完美反擊即回復夢魘化熔斷；同場戰鬥內不可連續使用。同戰役的次場戰鬥生效。'),
           /* ＝既有的 `passive.reloadStreak`（ver -887），ver -974 起收成這一級的獎勵
              （同諾薇兒探覓星的作法，Ray：「收」）。守門走卡上的 `reloadNeedStar`。
              ⚠ 「連續三次**紅圈**」數的是 `realGrade` —— 靠技能算成紅圈的不算
                （ver -887 就定了）。判定分色之後這件事更單純：兩個等級現在一樣。 */
           niReload:1 },
-        { star:'Tejat', skill:'passive',           name:'赤足星',
-          desc:'明晰之夢延長為 10 秒。明晰之夢與夢魘化期間的反擊威力升一階：黃圈打橘圈傷害、橘圈打紅圈傷害、紅圈全暴擊。',
+        { star:'Tejat', skill:'passive',           name:i18nT('赤足星'),
+          desc:i18nT('明晰之夢延長為 10 秒。明晰之夢與夢魘化期間的反擊威力升一階：黃圈打橘圈傷害、橘圈打紅圈傷害、紅圈全暴擊。'),
           /* `lucidSec` 是**增量**：卡上的 10 ＋ 5 ＝ 15 秒。 */
           lucidSec:5, counterAtk:1 },
-        { star:'Mebsuta', skill:'active',         name:'赤爪星',
-          desc:'連續十次反擊成功（不限圈色）即回填夢境破碎。',
+        { star:'Mebsuta', skill:'active',         name:i18nT('赤爪星'),
+          desc:i18nT('連續十次反擊成功（不限圈色）即回填夢境破碎。'),
           /* ══ ver -1778 改（Ray：「赤爪星改成連續十次反擊成功（不限圈色）回填主動技」）══
              舊效果（夢境破碎後的反擊增益再升一階，`burstAtk:1`）退場 —— 升階改由赤足／鐵蹄統一管。
              「成功」＝那一次**真的開火**（任何一圈；拉栓中、該圈不反擊、整顆挨打都算中斷）。
              計數在 `partner.onCounterResult`（state.counterStreak，跨場累積、換局歸零）。 */
           counterReloadActive:10 },
-        { star:'Propus', skill:'install',          name:'前引星',
-          desc:'夢魘化發動時體力先回滿，發動時間最大化。',
+        { star:'Propus', skill:'install',          name:i18nT('前引星'),
+          desc:i18nT('夢魘化發動時體力先回滿，發動時間最大化。'),
           /* 夢魘化的長度＝從**發動當下的血**以固定速率抽到 1（滿血＝`maxSec`），
              所以血少就比較短 —— 這顆星把起點拉回滿血＝一律撐滿 13 秒。
              ⚠ 「從滿 HP 開始算」只有「**真的把血灌滿再抽**」這一個讀法能自洽：
                不灌血而用滿血的斜率去抽，會提早見底，比原本還短。 */
           niFullStart:1 },
-        { star:'Alzirr', skill:'passive',          name:'鐵蹄星',
-          desc:'明晰之夢延長為 15 秒。反擊威力再升一階：黃圈打紅圈傷害、橘圈全暴擊、紅圈兩倍傷害。',
+        { star:'Alzirr', skill:'passive',          name:i18nT('鐵蹄星'),
+          desc:i18nT('明晰之夢延長為 15 秒。反擊威力再升一階：黃圈打紅圈傷害、橘圈全暴擊、紅圈兩倍傷害。'),
           /* 攻擊力與赤足星累計＝2（紅圈）。**秒數也再 +5**（ver -994）：
              5 →（赤足星）10 →（這一顆）15 —— 定稿的兩句都寫了「延長為」。
              ⚠ 中文名「鐵蹄星」由 Ray 定（ver -995）—— 他的卡上這一顆原本只有西文
                星名與「被動技升級」，我一度暫填成「蹄鐵星」，已更正。 */
           lucidSec:5, counterAtk:1 },
-        { star:'Wasat', skill:'active',           name:'界心星',
-          desc:'夢境破碎若在夢魘化期間最後一格時發動，一次給與敵人最大體力的 30% 傷害。',
+        { star:'Wasat', skill:'active',           name:i18nT('界心星'),
+          desc:i18nT('夢境破碎若在夢魘化期間最後一格時發動，一次給與敵人最大體力的 30% 傷害。'),
           /* 取代比例算法的那一發（比例算到 15/16 也只有 23.4%）。
              ⚠ 「打不死」的下限（`burstFloor`）照舊 —— 那是另一條規則。 */
           burstLastCell:0.30 },
-        { star:'κ Geminorum', skill:'install',     name:'孿生星',
-          desc:'夢魘化期間發動反擊先消耗破防計，破防計耗盡才開始消耗體力。',
+        { star:'κ Geminorum', skill:'install',     name:i18nT('孿生星'),
+          desc:i18nT('夢魘化期間發動反擊先消耗破防計，破防計耗盡才開始消耗體力。'),
           /* ══⚠⚠⚠ ver -1012（Ray 定案）：整顆換掉 —— 舊效果是「反擊讓抽血減緩
              0.5 秒」（`niCounterPauseSec`），那是**在補她已經最強的地方**。
              現在它是「**先付破防、再付命**」：霸王條款那一發反擊的代價
@@ -1325,48 +1326,48 @@ export const GAME_CONFIG = {
              改裝、`weaponBand` 都不再參與 —— 連帶「萊福槍 nerf 50% 自動成立」
              那一句也不再適用（飛刀根本不看武器了）。 */
       sorana: [
-        { star:'Kaus Australis', skill:'active',  name:'地弓星',
-          desc:'彈雨傾洩的攻擊力提升至 120%。',
+        { star:'Kaus Australis', skill:'active',  name:i18nT('地弓星'),
+          desc:i18nT('彈雨傾洩的攻擊力提升至 120%。'),
           /* 「破防攻擊力」＝雙槍破防（Bullets Rain）那一段的每一發。
              唯一的計算點在 `combat.tap` 的 `dualWield` 分支。 */
           brDmgMul:0.20 },
-        { star:'Alnasl', skill:'passive',          name:'箭頭星',
-          desc:'獵手的戰吼發動條件由連續5盤完美清盤降低為3盤。',
+        { star:'Alnasl', skill:'passive',          name:i18nT('箭頭星'),
+          desc:i18nT('獵手的戰吼發動條件由連續5盤完美清盤降低為3盤。'),
           /* 減量寫在星上（5 − 2 ＝ 3）：門檻的真相仍是卡上的 `passive.streak`。 */
           roarStreakCut:2 },
         /* ⚠ ver -1778：② 與 ⑤ 對調（Ray：「海宣太便宜了，海宣＋箭頭基本就永動了」）—— 海宣（回填主動技）改 3 份、箭頭（戰吼 3 盤）改 1 份。 */
-        { star:'Ascella', skill:'active',         name:'曳弦星',
-          desc:'獵手的智慧發動後追加 10 秒破防值累積量 200%。',
+        { star:'Ascella', skill:'active',         name:i18nT('曳弦星'),
+          desc:i18nT('獵手的智慧發動後追加 10 秒破防值累積量 200%。'),
           /* 與戰吼**同一個執行體**（`partner.fireEnergyBuff`，鐵律 8）：
              倍率照卡上的 `passive.energyMul`，這裡只給秒數。 */
           activeEnergyBuffSec:10 },
-        { star:'Kaus Media', skill:'install',      name:'獵弓星',
+        { star:'Kaus Media', skill:'install',      name:i18nT('獵弓星'),
           /* ⚠ ver -1012 起兩顆星的**數字不同**（+50% / +100%），所以文案也分開寫了
              —— -976~-1011 那條「兩顆一字不差是刻意的」已不再適用（那時是帶位制，
              刻意不對玩家講橘圈／紅圈）。加成走 `prog.girlBonus` 累加：滿星 ×2.5。 */
-          desc:'獵手的共鬥期間，自動反擊威力提升 50%。',
+          desc:i18nT('獵手的共鬥期間，自動反擊威力提升 50%。'),
           coopCounterMul:0.5 },
-        { star:'Nunki', skill:'passive',           name:'海宣星',
-          desc:'獵手的戰吼發動時，可再次使用獵手的智慧。',
+        { star:'Nunki', skill:'passive',           name:i18nT('海宣星'),
+          desc:i18nT('獵手的戰吼發動時，可再次使用獵手的智慧。'),
           /* ⚠ 「5 盤」是**戰吼的門檻**不是另一個數字 —— 點了箭頭星之後就是 3 盤
              （鐵律 7：門檻只有 `passive.streak` 減去 `roarStreakCut` 一處在算）。 */
           roarReloadActive:1 },
-        { star:'Kaus Borealis', skill:'install',   name:'天弓星',
-          desc:'獵手的共鬥期間，自動反擊威力再提升 100%。',
+        { star:'Kaus Borealis', skill:'install',   name:i18nT('天弓星'),
+          desc:i18nT('獵手的共鬥期間，自動反擊威力再提升 100%。'),
           coopCounterMul:1.0 },
-        { star:'Albaldah', skill:'active',        name:'聚落星',
-          desc:'主動技發動同時回填獵手的共鬥。同一場戰鬥可連續使用。',
+        { star:'Albaldah', skill:'active',        name:i18nT('聚落星'),
+          desc:i18nT('主動技發動同時回填獵手的共鬥。同一場戰鬥可連續使用。'),
           /* 與海宣星串成一個循環：戰吼 → 回填主動技 → 主動技 → 回填共鬥。
              ⚠ 「單場可連續使用」是這個循環的**結果**，不是另一條規則 ——
                不必再開一個「共鬥不限次數」的旗（那會讓兩處各說一次）。 */
           activeReloadCoop:1 },
-        { star:'Eta Sagittarii', skill:'install',  name:'射手星',
-          desc:'獵手的共鬥最大持續時間延長。',
+        { star:'Eta Sagittarii', skill:'install',  name:i18nT('射手星'),
+          desc:i18nT('獵手的共鬥最大持續時間延長。'),
           /* 增量：卡上的 `coop.baseSec` 12 ＋ 3 ＝ 15。
              ⚠ 實際秒數仍照破防值換算（`baseSec × 破防值/100`）—— 這顆星抬的是**上限**。 */
           coopSec:3 },
-        { star:'Phi Sagittarii', skill:'install',  name:'獵手星',
-          desc:'獵手的共鬥期間可累積之破防值，延長爆發時間。',
+        { star:'Phi Sagittarii', skill:'install',  name:i18nT('獵手星'),
+          desc:i18nT('獵手的共鬥期間可累積之破防值，延長爆發時間。'),
           /* 「每一 hit 可增加破防值，即延長共鬥時間」—— 共鬥期間本來就照常
              `addEnergy`（共鬥不是盤面模式，玩家照樣點盤），這顆星把**那一份增量**
              即時換算成秒數（同一條匯率：`baseSec/100` 秒 per 點）。
@@ -1386,22 +1387,22 @@ export const GAME_CONFIG = {
    *  展示參數見 tuning.loadingHintHoldMs / loadingHintFadeMs。
    * ------------------------------------------------------------------ */
   loadingHints: [
-    '反擊武器的有效攻擊時間各不相同,可別手忙腳亂了。',
-    '太早反擊的話,雖然安全,但傷害很有限。',
-    '越是危機時刻聖徒化的價值越高,覺得撐不住了的話就別猶豫。',
-    '好好與搭檔配合,戰鬥也能更加輕鬆的吧?',
-    '連擊會讓子彈越來越痛。手停下來的那一刻,一切歸零。',
-    '猶豫太久,敵人可不會站著等你。指尖別停。',
-    '按錯一格,代價是血。看清楚,再出手。',
-    '連續命中能磨利你的暴擊。失手一次,就從頭來過。',
-    '紅圈收得越小,反擊的價值越高。賭不賭,你自己決定。',
-    '防住了不代表沒事——半傷,也是傷。',
-    '計量表滿了就別捨不得,那雙槍是替你保命用的。',
-    '乾淨俐落地打出一輪,敵人的架勢就更容易崩潰。',
-    '聖徒化中受的每一擊,都在把你推向深淵。',
-    '能撐到聖徒化的最後一槍,就再多送他兩成的痛苦。',
-    '敵人倒下後的三秒,是追加審判的時間。別浪費。',
-    '傷痕太多的話,我給的評價可不會好看。',
+    i18nT('反擊武器的有效攻擊時間各不相同,可別手忙腳亂了。'),
+    i18nT('太早反擊的話,雖然安全,但傷害很有限。'),
+    i18nT('越是危機時刻聖徒化的價值越高,覺得撐不住了的話就別猶豫。'),
+    i18nT('好好與搭檔配合,戰鬥也能更加輕鬆的吧?'),
+    i18nT('連擊會讓子彈越來越痛。手停下來的那一刻,一切歸零。'),
+    i18nT('猶豫太久,敵人可不會站著等你。指尖別停。'),
+    i18nT('按錯一格,代價是血。看清楚,再出手。'),
+    i18nT('連續命中能磨利你的暴擊。失手一次,就從頭來過。'),
+    i18nT('紅圈收得越小,反擊的價值越高。賭不賭,你自己決定。'),
+    i18nT('防住了不代表沒事——半傷,也是傷。'),
+    i18nT('計量表滿了就別捨不得,那雙槍是替你保命用的。'),
+    i18nT('乾淨俐落地打出一輪,敵人的架勢就更容易崩潰。'),
+    i18nT('聖徒化中受的每一擊,都在把你推向深淵。'),
+    i18nT('能撐到聖徒化的最後一槍,就再多送他兩成的痛苦。'),
+    i18nT('敵人倒下後的三秒,是追加審判的時間。別浪費。'),
+    i18nT('傷痕太多的話,我給的評價可不會好看。'),
   ],
 
   inspectors: {
@@ -1411,41 +1412,41 @@ export const GAME_CONFIG = {
        ⚠ 立繪先借對白用的正面圖（`resources/si/renna_si_front.webp`）；
          日後有專屬的讀取頁立繪就改 `image` 那一行。 */
     renna: {
-      name:'蕾娜',
+      name:i18nT('蕾娜'),
       tier:'rookie',
       image:'inspector_renna',
       portraits:{}, dialogues:{},
     },
     freya: {
-      name:'芙蕾雅',
+      name:i18nT('芙蕾雅'),
       tier:'rookie',
       // 處決勝利（聖徒化 Maximum Burst 擊殺）專屬台詞：優先於 rank 台詞
-      executionLine:'熔斷了？真慘烈呢。',
+      executionLine:i18nT('熔斷了？真慘烈呢。'),
       // S 評價點「再度執槍」時的隱藏關警告台詞
-      interceptLine:'慢著！有新的敵人！',
+      interceptLine:i18nT('慢著！有新的敵人！'),
       image:'inspector_freya',          // 單張立繪鑰匙（無 portraits 時的 fallback）
       portraits:{                       // 好感度門檻 → 立繪鑰匙（留空則用 image）
         // 0:'inspector_freya', 30:'inspector_freya__lv1', 60:'inspector_freya__lv2',
       },
       // dialogues[評價等第][好感度門檻] → 台詞陣列（隨機取一句）。目前僅好感 0 檔。
       dialogues:{
-        S:{ 0:['怎麼可能？竟然能夠做到這種程度！'] },
-        A:{ 0:['有興趣加入第十三騎士團嗎？我們需要你這樣的人才。'] },
-        B:{ 0:['這不是還不錯嗎？'] },
-        C:{ 0:['也就比一般人強一點嗎……？'] },
-        D:{ 0:['……你們團長有好好訓練你嗎？'] },
+        S:{ 0:[i18nT('怎麼可能？竟然能夠做到這種程度！')] },
+        A:{ 0:[i18nT('有興趣加入第十三騎士團嗎？我們需要你這樣的人才。')] },
+        B:{ 0:[i18nT('這不是還不錯嗎？')] },
+        C:{ 0:[i18nT('也就比一般人強一點嗎……？')] },
+        D:{ 0:[i18nT('……你們團長有好好訓練你嗎？')] },
         E:{ 0:['………………'] },
-        lose:{ 0:['（監察官失敗台詞待填）'] },
+        lose:{ 0:[i18nT('（監察官失敗台詞待填）')] },
       },
       // v17.3：Boss 戰（槍之魔女）專屬台詞組。Boss 結算時優先於上方 dialogues。格式同上（[rank][好感門檻]）。
       bossDialogues:{
-        S:{ 0:['你的實力，說不定能與團長比肩！'] },
-        A:{ 0:['HUND中竟然有你這樣的人存在……！'] },
-        B:{ 0:['幸虧有你，竟然連那種對手也能戰勝！'] },
-        C:{ 0:['我果然沒有看走眼呢。'] },
-        D:{ 0:['辛苦了，慘烈的戰鬥呢。'] },
-        E:{ 0:['醫療班！千萬別讓他死了！'] },
-        lose:{ 0:['......確認HUND {rand3}號機能停止。辛苦了。'] },   // {rand3}＝隨機 3 位數（零補），由 inspector 代入
+        S:{ 0:[i18nT('你的實力，說不定能與團長比肩！')] },
+        A:{ 0:[i18nT('HUND中竟然有你這樣的人存在……！')] },
+        B:{ 0:[i18nT('幸虧有你，竟然連那種對手也能戰勝！')] },
+        C:{ 0:[i18nT('我果然沒有看走眼呢。')] },
+        D:{ 0:[i18nT('辛苦了，慘烈的戰鬥呢。')] },
+        E:{ 0:[i18nT('醫療班！千萬別讓他死了！')] },
+        lose:{ 0:[i18nT('......確認HUND {rand3}號機能停止。辛苦了。')] },   // {rand3}＝隨機 3 位數（零補），由 inspector 代入
       },
     },
     /* ══ 璐娜莉亞（ver -471（-893 前用詞），Ray 交稿）：**挑戰的 Boss 戰**的結算評價者 ══
@@ -1454,7 +1455,7 @@ export const GAME_CONFIG = {
        ver -553（Ray 交稿）：**戰敗也是她**（angry＋「討人厭的夢......」）——
        -471「戰敗仍是芙蕾雅」那條作廢。 */
     luna: {
-      name:'璐娜莉亞',
+      name:i18nT('璐娜莉亞'),
       tier:'rookie',
       image:'inspector_luna_n',            // 保險 fallback（portraitsByRank 缺該等第時）
       portraitsByRank:{
@@ -1465,13 +1466,13 @@ export const GAME_CONFIG = {
       },
       portraits:{},
       dialogues:{
-        S:{ 0:['做了場好夢呢。'] },
-        A:{ 0:['是夢啊......？ 真想再跟那傢伙打一場啊。'] },
-        B:{ 0:['只是夢啊......現在的我可不會輸。'] },
-        C:{ 0:['連在夢裡都那麼討人厭。'] },
-        D:{ 0:['......只是場夢而已嗎？'] },
-        E:{ 0:['手......又開始痛了。'] },
-        lose:{ 0:['討人厭的夢......'] },
+        S:{ 0:[i18nT('做了場好夢呢。')] },
+        A:{ 0:[i18nT('是夢啊......？ 真想再跟那傢伙打一場啊。')] },
+        B:{ 0:[i18nT('只是夢啊......現在的我可不會輸。')] },
+        C:{ 0:[i18nT('連在夢裡都那麼討人厭。')] },
+        D:{ 0:[i18nT('......只是場夢而已嗎？')] },
+        E:{ 0:[i18nT('手......又開始痛了。')] },
+        lose:{ 0:[i18nT('討人厭的夢......')] },
       },
     },
   },
@@ -1544,7 +1545,7 @@ export const GAME_CONFIG = {
          `charm.dmgMul` 是目前唯一接上的效果（`combat.mainGunDmgMul`）；
          要別的效果（暴擊、破防、聖能）就在那一支加，**不要另開第二個計算點**。 */
     catOrder: ['item','weapon','charm','material','food','treasure','equip','special'],
-    catName:  { item:'道具', weapon:'武器', charm:'護符', material:'素材', food:'食材', treasure:'寶物', equip:'裝備', special:'特殊' },
+    catName:  { item:i18nT('道具'), weapon:i18nT('武器'), charm:i18nT('護符'), material:i18nT('素材'), food:i18nT('食材'), treasure:i18nT('寶物'), equip:i18nT('裝備'), special:i18nT('特殊') },
     /* ⚠ `price`＝**市價**（買進的價）。賣出價由 `shop.sellRate` 折算（Ray：買收價為物價 50%）
        —— 一個道具只寫一個數字，折扣是店家的事，不是道具的屬性（鐵律 7 的精神）。
        ⚠ 沒寫 `price` 的道具**不能買也不能賣**（劇情道具、任務物品都該如此）。
@@ -1565,9 +1566,9 @@ export const GAME_CONFIG = {
            `partners[key].name` 組成「<她>的戰鬥紀錄」（鐵律 7：她的名字只有一處）。
          ⚠ 沒有 `price`／`sellValue` ＝**不能買也不能賣**（那是她的東西，不是貨）。
          ⚠ `cat:'special'` ＝道具欄的「特殊」頁籤（`catOrder` 已有這一格）。 */
-      rec_nouvelle: { girl:'nouvelle', cat:'special', desc:'與她並肩作戰的紀錄。整理之後，能看出下一步該練什麼。' },
-      rec_anya:     { girl:'anya',     cat:'special', desc:'與她並肩作戰的紀錄。整理之後，能看出下一步該練什麼。' },
-      rec_sorana:   { girl:'sorana',   cat:'special', desc:'與她並肩作戰的紀錄。整理之後，能看出下一步該練什麼。' },
+      rec_nouvelle: { girl:'nouvelle', cat:'special', desc:i18nT('與她並肩作戰的紀錄。整理之後，能看出下一步該練什麼。') },
+      rec_anya:     { girl:'anya',     cat:'special', desc:i18nT('與她並肩作戰的紀錄。整理之後，能看出下一步該練什麼。') },
+      rec_sorana:   { girl:'sorana',   cat:'special', desc:i18nT('與她並肩作戰的紀錄。整理之後，能看出下一步該練什麼。') },
       /* ══⚠⚠⚠ NIEM（ver -1186，Ray 交稿）══════════════════════════════════════
          > 蕾：「『神經介面擴張模組』。簡單來說，可以提升人的認知能力。」「太古文明的遺產。」
          遺蹟啟動的產物：每啟動一座拿一份，用在**一位女角**身上提升她的飛行能力
@@ -1578,23 +1579,23 @@ export const GAME_CONFIG = {
            —— 同一個東西只有一個名字（鐵律 7 的精神）。 */
       niem: { name:'NIEM', cat:'special',
               use:{ niem:true },          // ← 道具欄長「使　用」（見 loot.bagListHtml）
-              desc:'神經介面擴張模組。太古文明的遺產，能擴張使用者的認知能力。' },
-      verafond_crest: { name:'薇拉馮德家的紋章', cat:'item', sellValue:10000, always:true,   /* ver -859：Ray 改 10000 */
-                        desc:'薇拉馮德家的家徽。同樣的東西他身上似乎總還有一個。' },
-      saint_claw_low: { name:'聖徒之爪（低品質）', cat:'material', price:24,
-                        desc:'從訓練用聖徒上剝下來的爪。質地脆，勉強能當研磨材。' },
+              desc:i18nT('神經介面擴張模組。太古文明的遺產，能擴張使用者的認知能力。') },
+      verafond_crest: { name:i18nT('薇拉馮德家的紋章'), cat:'item', sellValue:10000, always:true,   /* ver -859：Ray 改 10000 */
+                        desc:i18nT('薇拉馮德家的家徽。同樣的東西他身上似乎總還有一個。') },
+      saint_claw_low: { name:i18nT('聖徒之爪（低品質）'), cat:'material', price:24,
+                        desc:i18nT('從訓練用聖徒上剝下來的爪。質地脆，勉強能當研磨材。') },
       /* 巨型蜈蚣的掉落（ver -423，Ray 的卡）。⚠ **價格是我填的**（卡上沒寫）——
          照既有素材的量級：常見的 6~8、稀有的 24 以上。要改直接動這裡。 */
       /* ══ 夏爾森林狩獵食材（ver -858，Ray 交稿）══ 森林戰鬥的掉落（掉落表
          等森林敵卡到了再接）；獵人謝尼每日收一種换獎勵（script/town.js 的
          svHunterTrade）。⚠ 價格是我擬的草案。 */
-      meat_lynx:  { name:'山貓腿肉', cat:'food', food:'meat', price:60,  desc:'緊實的山貓腿肉。烤過之後香氣四溢。' },
-      meat_boar:  { name:'山豬腹肉', cat:'food', food:'meat', price:80,  desc:'油花漂亮的山豬腹肉。獵人的最愛。' },
+      meat_lynx:  { name:i18nT('山貓腿肉'), cat:'food', food:'meat', price:60,  desc:i18nT('緊實的山貓腿肉。烤過之後香氣四溢。') },
+      meat_boar:  { name:i18nT('山豬腹肉'), cat:'food', food:'meat', price:80,  desc:i18nT('油花漂亮的山豬腹肉。獵人的最愛。') },
       /* ⚠ 這三樣是**食材**（ver -862 補正：-861 說「五食材改 cat:'food'」只改了兩樣）——
          「五食材」＝ huntExchange.foods 那五樣，獵人兌換表與料理都當食材看。 */
-      antler_deer:{ name:'鹿角',     cat:'food', price:50,  desc:'分岔漂亮的鹿角。可入藥也可做工藝。' },
-      paw_bear:   { name:'熊掌',     cat:'food', food:'meat', price:120, desc:'稀有的熊掌。燉煮費工，滋味濃厚。' },
-      meat_snake: { name:'蛇肉',     cat:'food', food:'meat', price:40,  desc:'處理乾淨的蛇肉。意外地清爽可口。' },
+      antler_deer:{ name:i18nT('鹿角'),     cat:'food', price:50,  desc:i18nT('分岔漂亮的鹿角。可入藥也可做工藝。') },
+      paw_bear:   { name:i18nT('熊掌'),     cat:'food', food:'meat', price:120, desc:i18nT('稀有的熊掌。燉煮費工，滋味濃厚。') },
+      meat_snake: { name:i18nT('蛇肉'),     cat:'food', food:'meat', price:40,  desc:i18nT('處理乾淨的蛇肉。意外地清爽可口。') },
       /* ══ 料理食材（ver -953，Ray：「食材做成道具，準備十道菜…材料都是一肉一菜一調味」）══
          ⚠⚠ **`food` 這一格＝它在料理裡佔哪一格**（`meat` 肉／`veg` 菜／`season` 調味），
            只有這裡在說（鐵律 7）：`cooking.dishes` 的配方只列三個 id，
@@ -1603,8 +1604,8 @@ export const GAME_CONFIG = {
          ⚠⚠ `huntExchange.foods` 那五樣是**另一件事**（獵人每日兌換），
            不要因為這裡多了食材就去動那張表。
          ⚠ 價格是我擬的草案（照既有食材的量級：常見 20~60、費工的 80~120）。 */
-      meat_deer:      { name:'鹿腿肉',   cat:'food', food:'meat',   always:true, price:90,
-                        desc:'厚實的鹿後腿肉。腥味淡，煎烤都合適。' },
+      meat_deer:      { name:i18nT('鹿腿肉'),   cat:'food', food:'meat',   always:true, price:90,
+                        desc:i18nT('厚實的鹿後腿肉。腥味淡，煎烤都合適。') },
       /* ⚠⚠⚠ **那三樣的 `always:true` 是測試期間的暫時措施**（ver -956，Ray：「設計上
          玩家此時一定會有鹿排食材，測試期間讓包裡永遠有那三樣就好」）——
          鹿腿肉／迷迭香／草原奶油**目前遊戲裡拿不到**（沒有怪掉、沒有店賣），
@@ -1615,19 +1616,19 @@ export const GAME_CONFIG = {
            ／店貨（奶油）／野外採集（迷迭香）。拿掉的同時要確認 Stage8 那一段仍然
            煮得出第一道 —— 不然那一拍會開著菜單卻一道都按不下去。 */
       /* ── 菜（蔬菜與香草）── */
-      herb_rosemary:  { name:'迷迭香',   cat:'food', food:'veg',    always:true, price:25,
-                        desc:'林間隨處可見的香草。一小把就能壓住肉的腥。' },
-      veg_wildgarlic: { name:'野蒜',     cat:'food', food:'veg',    price:20,
-                        desc:'葉子寬而柔軟的野蒜。氣味比栽種的溫和些。' },
-      veg_mushroom:   { name:'林地菇',   cat:'food', food:'veg',    price:35,
-                        desc:'長在倒木背面的菇。摘的人得認得清楚才行。' },
-      veg_sorrel:     { name:'酸模葉',   cat:'food', food:'veg',    price:20,
-                        desc:'帶酸味的野菜。配油脂重的肉正好。' },
-      veg_watercress: { name:'河芹',     cat:'food', food:'veg',    price:30,
-                        desc:'淺灘邊成叢的水芹。清爽，帶一點辛。' },
+      herb_rosemary:  { name:i18nT('迷迭香'),   cat:'food', food:'veg',    always:true, price:25,
+                        desc:i18nT('林間隨處可見的香草。一小把就能壓住肉的腥。') },
+      veg_wildgarlic: { name:i18nT('野蒜'),     cat:'food', food:'veg',    price:20,
+                        desc:i18nT('葉子寬而柔軟的野蒜。氣味比栽種的溫和些。') },
+      veg_mushroom:   { name:i18nT('林地菇'),   cat:'food', food:'veg',    price:35,
+                        desc:i18nT('長在倒木背面的菇。摘的人得認得清楚才行。') },
+      veg_sorrel:     { name:i18nT('酸模葉'),   cat:'food', food:'veg',    price:20,
+                        desc:i18nT('帶酸味的野菜。配油脂重的肉正好。') },
+      veg_watercress: { name:i18nT('河芹'),     cat:'food', food:'veg',    price:30,
+                        desc:i18nT('淺灘邊成叢的水芹。清爽，帶一點辛。') },
       /* ── 調味 ── */
-      season_butter:  { name:'草原奶油', cat:'food', food:'season', always:true, price:60,
-                        desc:'草原牧場的奶油。煎過之後香得很霸道。' },
+      season_butter:  { name:i18nT('草原奶油'), cat:'food', food:'season', always:true, price:60,
+                        desc:i18nT('草原牧場的奶油。煎過之後香得很霸道。') },
       /* ══ 北峰山羊奶油（ver -979，Ray 交辦）══ 北方泊地的居民在碼頭送行時塞給你的
          那一份心意（`np_farewell` 那一拍 `give`），**也在北方泊地的雜貨舖買得到**。
          ⚠ 它是**食材**（Ray 指定），佔調味那一格 —— 瑪麗亞第一道菜（奶油鹿腿排）
@@ -1645,72 +1646,72 @@ export const GAME_CONFIG = {
          ⚠ 寫成**道具身上的一格**不是在 `main.js` 寫死 id（鐵律 1，同那一批回復道具
            走 `use.hp` 的作法）—— 日後再有「劇情發的、跳關拿不到」的東西，
            加一格就自動進補給包。 */
-      season_goatbutter:{ name:'北峰山羊奶油', cat:'food', food:'season', price:90, devKit:5,
-                        desc:'北峰山羊奶製的奶油。奶香濃得多，煎起來會回甘。' },
-      season_rocksalt:{ name:'岩鹽',     cat:'food', food:'season', price:20,
-                        desc:'敲下來的粗粒岩鹽。撒上去就很夠味。' },
-      season_honey:   { name:'森蜜',     cat:'food', food:'season', price:80,
-                        desc:'森林裡取的野蜂蜜。收得少，甜得深。' },
-      season_pepper:  { name:'黑胡椒',   cat:'food', food:'season', price:70,
-                        desc:'從河港運來的黑胡椒。研碎了香氣才出得來。' },
-      season_limezest:{ name:'萊姆皮',   cat:'food', food:'season', price:40,
-                        desc:'刨下來曬乾的萊姆皮。去油膩的一手。' },
+      season_goatbutter:{ name:i18nT('北峰山羊奶油'), cat:'food', food:'season', price:90, devKit:5,
+                        desc:i18nT('北峰山羊奶製的奶油。奶香濃得多，煎起來會回甘。') },
+      season_rocksalt:{ name:i18nT('岩鹽'),     cat:'food', food:'season', price:20,
+                        desc:i18nT('敲下來的粗粒岩鹽。撒上去就很夠味。') },
+      season_honey:   { name:i18nT('森蜜'),     cat:'food', food:'season', price:80,
+                        desc:i18nT('森林裡取的野蜂蜜。收得少，甜得深。') },
+      season_pepper:  { name:i18nT('黑胡椒'),   cat:'food', food:'season', price:70,
+                        desc:i18nT('從河港運來的黑胡椒。研碎了香氣才出得來。') },
+      season_limezest:{ name:i18nT('萊姆皮'),   cat:'food', food:'season', price:40,
+                        desc:i18nT('刨下來曬乾的萊姆皮。去油膩的一手。') },
       /* 禍魘素材（獵人兌換的獎勵；日後接九星配方）。⚠ 價格是我擬的草案。 */
-      harm_claw_s:   { name:'禍魘的小爪', cat:'material', price:60,  desc:'小型禍魘的爪。泛著不祥的光。' },
-      harm_claw:     { name:'禍魘之爪',   cat:'material', price:200, desc:'成體禍魘的利爪。堅硬異常。' },
-      harm_bone_big: { name:'禍魘巨骨',   cat:'material', price:350, desc:'大型禍魘的骨。沉重而緻密。' },
-      harm_bone_frag:{ name:'禍魘碎骨',   cat:'material', price:120, desc:'禍魘骨骼的碎片。仍殘留著微弱的脈動。' },
-      harm_fang:     { name:'禍魘的細牙', cat:'material', price:80,  desc:'細小的禍魘牙。串起來像一條項鍊。' },
+      harm_claw_s:   { name:i18nT('禍魘的小爪'), cat:'material', price:60,  desc:i18nT('小型禍魘的爪。泛著不祥的光。') },
+      harm_claw:     { name:i18nT('禍魘之爪'),   cat:'material', price:200, desc:i18nT('成體禍魘的利爪。堅硬異常。') },
+      harm_bone_big: { name:i18nT('禍魘巨骨'),   cat:'material', price:350, desc:i18nT('大型禍魘的骨。沉重而緻密。') },
+      harm_bone_frag:{ name:i18nT('禍魘碎骨'),   cat:'material', price:120, desc:i18nT('禍魘骨骼的碎片。仍殘留著微弱的脈動。') },
+      harm_fang:     { name:i18nT('禍魘的細牙'), cat:'material', price:80,  desc:i18nT('細小的禍魘牙。串起來像一條項鍊。') },
       /* ══ 木雅克神殿的掉落（ver -919，Ray 交表）══ ⚠ **價格與說明是我擬的草案**
          （表上只有名字與機率）：照既有素材的量級 —— 10% 的稀有品 200~400、
          100% 的必掉品 120~350。要改直接動這裡（鐵律 1：數值住在資料上）。
          ⚠ 「禍魘之爪」表上有，但**既有的 `harm_claw` 就是它**，不另開一筆（鐵律 7）。 */
-      harm_bone:      { name:'禍魘之骨',   cat:'material', price:260,
-                        desc:'成體禍魘的骨。比看起來輕，敲擊時會有餘響。' },
-      bell_shard:     { name:'喪鐘碎片',   cat:'material', price:300,
-                        desc:'鏽蝕的鐘體碎片。貼近耳邊仍聽得見很遠的一聲。' },
-      saint_claw:     { name:'聖徒之爪',   cat:'material', price:220,
-                        desc:'聖徒指端的角質。比鋼還硬，斷面像結晶。' },
-      saint_fang:     { name:'聖徒之牙',   cat:'material', price:240,
-                        desc:'聖徒的牙。齒根仍連著一小截未腐的組織。' },
-      saint_bone_big: { name:'聖徒巨骨',   cat:'material', price:350,
-                        desc:'大型聖徒的長骨。表面刻著看不懂的細密經文。' },
-      saint_bone:     { name:'聖徒之骨',   cat:'material', price:400,
-                        desc:'聖徒的骨。溫的 —— 明明已經不會動了。' },
+      harm_bone:      { name:i18nT('禍魘之骨'),   cat:'material', price:260,
+                        desc:i18nT('成體禍魘的骨。比看起來輕，敲擊時會有餘響。') },
+      bell_shard:     { name:i18nT('喪鐘碎片'),   cat:'material', price:300,
+                        desc:i18nT('鏽蝕的鐘體碎片。貼近耳邊仍聽得見很遠的一聲。') },
+      saint_claw:     { name:i18nT('聖徒之爪'),   cat:'material', price:220,
+                        desc:i18nT('聖徒指端的角質。比鋼還硬，斷面像結晶。') },
+      saint_fang:     { name:i18nT('聖徒之牙'),   cat:'material', price:240,
+                        desc:i18nT('聖徒的牙。齒根仍連著一小截未腐的組織。') },
+      saint_bone_big: { name:i18nT('聖徒巨骨'),   cat:'material', price:350,
+                        desc:i18nT('大型聖徒的長骨。表面刻著看不懂的細密經文。') },
+      saint_bone:     { name:i18nT('聖徒之骨'),   cat:'material', price:400,
+                        desc:i18nT('聖徒的骨。溫的 —— 明明已經不會動了。') },
       /* 夏爾森林獸掉落的素材（ver -860，改槍用）。⚠ 價格草案。 */
-      tiger_horn:  { name:'虎王的獨角', cat:'material', price:400, desc:'森林之王額上的獨角。堅硬如鐵。' },
-      crow_beak:   { name:'尖喙',       cat:'material', price:90,  desc:'食腐鴉的利喙。意外地鋒利。' },
-      elf_antler:  { name:'精靈鹿角',   cat:'material', price:300, desc:'靈鹿的角。泛著淡淡螢光。' },
-      venom_fang:     { name:'毒牙',               cat:'material', price:30,
-                        desc:'蜈蚣型禍魘的毒牙。稀有，硝製後可作彈頭。' },
-      venom_claw:     { name:'毒爪',               cat:'material', price:12,
-                        desc:'蜈蚣型禍魘的節肢末端。仍帶著麻痺性的體液。' },
-      chitin_wing:    { name:'飛翅',               cat:'material', price:26,
-                        desc:'極少數個體才長得出的薄翅。輕而不折。' },
-      chitin_shell:   { name:'殼甲',               cat:'material', price:10,
-                        desc:'蜈蚣型禍魘的節甲。硬度足以擋下小口徑彈。' },
+      tiger_horn:  { name:i18nT('虎王的獨角'), cat:'material', price:400, desc:i18nT('森林之王額上的獨角。堅硬如鐵。') },
+      crow_beak:   { name:i18nT('尖喙'),       cat:'material', price:90,  desc:i18nT('食腐鴉的利喙。意外地鋒利。') },
+      elf_antler:  { name:i18nT('精靈鹿角'),   cat:'material', price:300, desc:i18nT('靈鹿的角。泛著淡淡螢光。') },
+      venom_fang:     { name:i18nT('毒牙'),               cat:'material', price:30,
+                        desc:i18nT('蜈蚣型禍魘的毒牙。稀有，硝製後可作彈頭。') },
+      venom_claw:     { name:i18nT('毒爪'),               cat:'material', price:12,
+                        desc:i18nT('蜈蚣型禍魘的節肢末端。仍帶著麻痺性的體液。') },
+      chitin_wing:    { name:i18nT('飛翅'),               cat:'material', price:26,
+                        desc:i18nT('極少數個體才長得出的薄翅。輕而不折。') },
+      chitin_shell:   { name:i18nT('殼甲'),               cat:'material', price:10,
+                        desc:i18nT('蜈蚣型禍魘的節甲。硬度足以擋下小口徑彈。') },
       /* 羽蛇的掉落（ver -500，Ray 的卡）。⚠ **價格是我填的**（卡上沒寫）——
          照 33% 掉落物的量級（殼甲 10、毒爪 12）。要改直接動這裡。 */
-      azure_scale:    { name:'蒼鱗',               cat:'material', price:12,
-                        desc:'羽蛇的青色鱗片。輕薄而韌，映著天光。' },
-      azure_feather:  { name:'蒼羽',               cat:'material', price:14,
-                        desc:'羽蛇翼上的長羽。飛行工匠拿它做配重翎。' },
-      brass_casing:   { name:'黃銅彈殼',           cat:'material', price:8,
-                        desc:'打完的彈殼。收集起來能重新裝填，槍匠都收。' },
-      scrap_iron:     { name:'碎鐵片',             cat:'material', price:6,
-                        desc:'地宮裡到處都有的碎片。攢多了能換點東西。' },
-      milk:           { name:'牛奶',   cat:'item', price:50,  use:{ hp:50 },
-                        desc:'恢復 50 點體力。' },
-      cheese:         { name:'起司',   cat:'item', price:100, use:{ hp:100 },
-                        desc:'恢復 100 點體力。' },
-      lime_rum:       { name:'萊姆酒', cat:'item', price:200, use:{ hp:200 },
-                        desc:'恢復 200 點體力。' },
+      azure_scale:    { name:i18nT('蒼鱗'),               cat:'material', price:12,
+                        desc:i18nT('羽蛇的青色鱗片。輕薄而韌，映著天光。') },
+      azure_feather:  { name:i18nT('蒼羽'),               cat:'material', price:14,
+                        desc:i18nT('羽蛇翼上的長羽。飛行工匠拿它做配重翎。') },
+      brass_casing:   { name:i18nT('黃銅彈殼'),           cat:'material', price:8,
+                        desc:i18nT('打完的彈殼。收集起來能重新裝填，槍匠都收。') },
+      scrap_iron:     { name:i18nT('碎鐵片'),             cat:'material', price:6,
+                        desc:i18nT('地宮裡到處都有的碎片。攢多了能換點東西。') },
+      milk:           { name:i18nT('牛奶'),   cat:'item', price:50,  use:{ hp:50 },
+                        desc:i18nT('恢復 50 點體力。') },
+      cheese:         { name:i18nT('起司'),   cat:'item', price:100, use:{ hp:100 },
+                        desc:i18nT('恢復 100 點體力。') },
+      lime_rum:       { name:i18nT('萊姆酒'), cat:'item', price:200, use:{ hp:200 },
+                        desc:i18nT('恢復 200 點體力。') },
     },
     /* 金錢的單位（Ray 指定：**G**）。⚠ 只有一種貨幣，不做多幣別。 */
     /* ⚠ ver -1024（Ray：「G 改為金錢」）：畫面上一律印「金錢」。
        ⚠ 這是**唯一的真相**（鐵律 7）—— 結算頁、道具欄、商店、戰利品視窗都問
          `inv.moneyName()`／`items.moneyName`，改這一個字全部一起換。 */
-    moneyName: '金錢',
+    moneyName: i18nT('金錢'),
   },
 
   /* 戰鬥掉落（ver -368（-893 前用詞），Ray：「戰鬥有機會掉落」）。
@@ -1878,45 +1879,45 @@ export const GAME_CONFIG = {
       return F;
     })(),
     cast: {
-      inspector: { name:'芙蕾雅', image:'inspector_freya', side:'left',  fit:{ zoom:1,    drop:10 } },
-      partner:   { name:'蕾妮',   image:'partner_renee',   side:'right', fit:{ zoom:0.82, drop:0 } },
+      inspector: { name:i18nT('芙蕾雅'), image:'inspector_freya', side:'left',  fit:{ zoom:1,    drop:10 } },
+      partner:   { name:i18nT('蕾妮'),   image:'partner_renee',   side:'right', fit:{ zoom:0.82, drop:0 } },
       /* 劇情版教學的唯一說話者。⚠ 站**左**：與地宮那一幕同側，玩家的空間記憶才連得起來
          （CLAUDE.md §6.5：同一個人每次都站同一邊）。 */
       /* ⚠⚠ 「這張畫能不能水平翻」寫在 **`speakers.js` 的 `ART[key].mirror`**（ver -625
          由這裡搬過去）—— 那是**這個角色的立繪**的性質，劇情頁與戰鬥對白共用一份
          （鐵律 7）。這裡只寫「戰鬥對白把她擺哪一邊」（`side`），那是兩件事。 */
-      nouvelle:  { name:'諾薇兒', image:'tut_nouvelle',    side:'left',  fit:{ zoom:0.92, drop:6 } },
+      nouvelle:  { name:i18nT('諾薇兒'), image:'tut_nouvelle',    side:'left',  fit:{ zoom:0.92, drop:6 } },
       /* 蕾娜（ver -429，船艦戰的戰鬥內對白）。
          ⚠⚠ 站**右**：她與諾薇兒在 `speakers.js` 裡**都是左**（左 蕾娜・諾薇兒），
            兩個人同台會一直互相擠掉 —— 這是 §6.5 那條「一幕裡只有兩個人又剛好同側時
            可以整幕覆寫」的同一個情形。船塢那一幕（`sides:{RENNA:'R'}`）已經把她擺右，
            這裡跟著同一個安排，玩家的空間記憶才連得起來。 */
-      renna:     { name:'蕾娜',   image:'tut_renna',       side:'right', fit:{ zoom:0.92, drop:6 } },
+      renna:     { name:i18nT('蕾娜'),   image:'tut_renna',       side:'right', fit:{ zoom:0.92, drop:6 } },
       /* 夏爾村村戰的戰鬥內對白（ver -839）：索菈娜站左（搭檔側，ART.sorana.mirror
          會自己翻），村民村長站右（對面的人在右）。 */
-      sorana:      { name:'索菈娜', image:'tut_sorana',       side:'left',  fit:{ zoom:0.92, drop:6 } },
-      sh_villager: { name:'村民',   image:'tut_sh_villager',  side:'right', fit:{ zoom:0.92, drop:6 } },
-      sh_villager2:{ name:'村民',   image:'tut_sh_villager2', side:'right', fit:{ zoom:0.92, drop:6 } },
-      sh_chief:    { name:'村長',   image:'tut_sh_chief',     side:'right', fit:{ zoom:0.92, drop:6 } },
+      sorana:      { name:i18nT('索菈娜'), image:'tut_sorana',       side:'left',  fit:{ zoom:0.92, drop:6 } },
+      sh_villager: { name:i18nT('村民'),   image:'tut_sh_villager',  side:'right', fit:{ zoom:0.92, drop:6 } },
+      sh_villager2:{ name:i18nT('村民'),   image:'tut_sh_villager2', side:'right', fit:{ zoom:0.92, drop:6 } },
+      sh_chief:    { name:i18nT('村長'),   image:'tut_sh_chief',     side:'right', fit:{ zoom:0.92, drop:6 } },
       /* 賽西莉（ver -1886）：夢境裡還沒報名 ⇒ 「？？？」；站**右**（搭檔側是她，但主角那一側沒有人講話，
          右邊才不會擋住盤面左上的清盤／敵圖鈕）。 */
-      cecilie_x:   { name:'？？？', image:'tut_cecilie_saintinstall', side:'right', fit:{ zoom:0.92, drop:6 } },
+      cecilie_x:   { name:i18nT('？？？'), image:'tut_cecilie_saintinstall', side:'right', fit:{ zoom:0.92, drop:6 } },
       /* 安雅（ver -671（-893 前用詞），禍魘娜塔莉戰）。⚠ 站**右**（`speakers.js` 的本位）——
          她與蕾娜同台時蕾娜本來就在右…… 所以這一場**蕾娜讓到左**：
          §6.5 的表「蕾娜原則右，碰到安雅就放左」。 */
-      anya:      { name:'安雅',   image:'tut_anya_terrify', side:'right', fit:{ zoom:0.92, drop:6 } },
+      anya:      { name:i18nT('安雅'),   image:'tut_anya_terrify', side:'right', fit:{ zoom:0.92, drop:6 } },
     },
     // 罵人台詞（監察官）：教學中玩家「按錯 / 延時」即插入一句（隨機取、可重複觸發；
     //   defended 段講完後停用）。early＝太早防禦（Defense 格擋半傷）專用——不受 defended
     //   停用限制、聖徒化期間不插（見 tutorial.onEarlyBlock）。
     scold: {
       wrong: [
-        '看清楚數字再出手。你的搭檔可不會替你挨這一下。',
-        '慌了？順序，是基本中的基本。',
+        i18nT('看清楚數字再出手。你的搭檔可不會替你挨這一下。'),
+        i18nT('慌了？順序，是基本中的基本。'),
       ],
       delay: [
-        '手停下來做什麼？敵人可不會等你。',
-        '猶豫的代價，記住這種痛。',
+        i18nT('手停下來做什麼？敵人可不會等你。'),
+        i18nT('猶豫的代價，記住這種痛。'),
       ],
       /* ⚠ 「太早了！看清楚一點！」Ray 指定**刪除**（ver -728）。
          ⚠ 空陣列是**有意義的**：`onEarlyBlock` 看到空的就跳過台詞、**直接重放
@@ -1926,14 +1927,14 @@ export const GAME_CONFIG = {
     steps: [
       // 第一盤：純清盤教學（noAssaultBoards=1 → 敵人不出大絕）
       { trigger:'battleStart', lines:[
-        { who:'inspector', text:'開始實戰考核。HUND，讓我看看你的基礎是否紮實。' },
-        { who:'partner',   text:'別緊張！照著數字順序點擊下方的盤面，每一次命中都會對敵人開火！' },
-        { who:'partner',   text:'這一回合敵人還不會出手——先把手感練起來。不過按錯或停太久，還是會受傷的喔。' },
+        { who:'inspector', text:i18nT('開始實戰考核。HUND，讓我看看你的基礎是否紮實。') },
+        { who:'partner',   text:i18nT('別緊張！照著數字順序點擊下方的盤面，每一次命中都會對敵人開火！') },
+        { who:'partner',   text:i18nT('這一回合敵人還不會出手——先把手感練起來。不過按錯或停太久，還是會受傷的喔。') },
       ]},
       // 第二盤開始：反擊教學開場（此盤起敵人開始發動大絕）
       { trigger:'board:1', lines:[
-        { who:'inspector', text:'基礎還行。接下來——敵人要開始反擊了。' },
-        { who:'partner',   text:'敵人蓄力時，畫面上會出現光圈。那就是防禦的信號！' },
+        { who:'inspector', text:i18nT('基礎還行。接下來——敵人要開始反擊了。') },
+        { who:'partner',   text:i18nT('敵人蓄力時，畫面上會出現光圈。那就是防禦的信號！') },
       ]},
       // 第一顆紅點生成瞬間（凍結在畫面上講解）——防禦分級講確實：
       //   太早＝格擋（仍受一半傷害）；時機正確＝完美防禦（免傷）
@@ -1944,21 +1945,21 @@ export const GAME_CONFIG = {
            —— 那正是 tutorial.js 檔頭那條「只換台詞，不換流程」。
          ⚠ 完成＝**點掉那顆光圈**（tutorial.onThreatResolved 收門），不是點畫面。 */
       { trigger:'threat', gate:{ type:'threat', immediate:true }, lines:[
-        { who:'partner',   text:'光圈會越縮越小——太早出手雖然擋得下來，但反擊的傷害很有限！' },
-        { who:'partner',   text:'等光圈收得夠小、時機正確，反擊才真的打得痛！' },
-        { who:'inspector', text:'防住給我看。' },
+        { who:'partner',   text:i18nT('光圈會越縮越小——太早出手雖然擋得下來，但反擊的傷害很有限！') },
+        { who:'partner',   text:i18nT('等光圈收得夠小、時機正確，反擊才真的打得痛！') },
+        { who:'inspector', text:i18nT('防住給我看。') },
       ]},
       // 首次成功防下攻擊（點掉紅點）之後：反擊與副武器說明。
       //   此段結束後直到第二盤清完不再插入任何提示（罵人停用、延時懲罰恢復）。
       { trigger:'defended', lines:[
-        { who:'inspector', text:'擋得不錯。記住——在敵人出手的前一瞬反擊，就能用副武器造成大量傷害。' },
-        { who:'partner',   text:'不過別勉強反擊，覺得危險的話，防下來就好。' },
-        { who:'inspector', text:'那樣的話，我的評價可不會留情。' },
-        { who:'inspector', text:'不同副武器的效果與反擊時機各不相同。選擇能發揮自己天賦的武器吧。' },
+        { who:'inspector', text:i18nT('擋得不錯。記住——在敵人出手的前一瞬反擊，就能用副武器造成大量傷害。') },
+        { who:'partner',   text:i18nT('不過別勉強反擊，覺得危險的話，防下來就好。') },
+        { who:'inspector', text:i18nT('那樣的話，我的評價可不會留情。') },
+        { who:'inspector', text:i18nT('不同副武器的效果與反擊時機各不相同。選擇能發揮自己天賦的武器吧。') },
       ]},
       // 第四回合：玩家清滿 strike.afterCells 格後觸發（收段後劇情殺三連擊 → 聖徒化引導）
       { trigger:'strike', lines:[
-        { who:'inspector', text:'小心！' },
+        { who:'inspector', text:i18nT('小心！') },
       ]},
     ],
     /* ── 腳本化段落（scripted）：由 tutorial 內部流程觸發，不走 steps 的 trigger ──
@@ -1970,32 +1971,32 @@ export const GAME_CONFIG = {
      *  finishMB   ＝Maximum Burst 結束後；finishLR＝生命歸還結束後（皆接「玩家收尾殺敵」）
      */
     script: {
-      dualReady:  [ { who:'partner',   text:'敵人露出破綻了！就是現在！' } ],
+      dualReady:  [ { who:'partner',   text:i18nT('敵人露出破綻了！就是現在！') } ],
       /* ⚠⚠ ver -1329：操作方式換了（Ray：「教學只要告訴玩家在敵人恢復態勢前
          對著視野中的敵人傾洩火力吧！畫面提示連點」）—— 舊台詞是
          「敵人無法抵抗，無視順序猛攻吧！」，那是**點盤面**時代的說法，
          現在盤面根本不能點，照唸會把玩家指到錯的地方。
          ⚠ ver -1332 起畫面上那行「連點！」已拿掉（Ray 指定）——要玩家點哪裡，
          由敵人身上的**瞄準點**自己說明。 */
-      dualGo:     [ { who:'partner',   text:'在敵人恢復態勢前，對著視野中的敵人傾洩火力吧！' } ],
+      dualGo:     [ { who:'partner',   text:i18nT('在敵人恢復態勢前，對著視野中的敵人傾洩火力吧！') } ],
       // center:true → 立繪移到畫面正中（左側讓給向右滑的引導箭頭，箭頭不壓立繪）
-      saintCall:  { center:true, lines:[ { who:'inspector', text:'沒時間了，立刻聖徒化！' } ] },
-      saintStart: [ { who:'inspector', text:'在熔斷前你死不了，但承受攻擊會加速熔斷！' },
-                    { who:'inspector', text:'別失誤！只要撐過這回合就有機會逆轉！' } ],
-      saintFail:  [ { who:'partner',   text:'不行了！交給我！' } ],
-      finishMB:   [ { who:'inspector', text:'總算撐過來了，體力也回復了一些，現在結束這場戰鬥吧！' } ],
-      finishLR:   [ { who:'inspector', text:'總算撐過來了，現在結束這場戰鬥吧！' } ],
+      saintCall:  { center:true, lines:[ { who:'inspector', text:i18nT('沒時間了，立刻聖徒化！') } ] },
+      saintStart: [ { who:'inspector', text:i18nT('在熔斷前你死不了，但承受攻擊會加速熔斷！') },
+                    { who:'inspector', text:i18nT('別失誤！只要撐過這回合就有機會逆轉！') } ],
+      saintFail:  [ { who:'partner',   text:i18nT('不行了！交給我！') } ],
+      finishMB:   [ { who:'inspector', text:i18nT('總算撐過來了，體力也回復了一些，現在結束這場戰鬥吧！') } ],
+      finishLR:   [ { who:'inspector', text:i18nT('總算撐過來了，現在結束這場戰鬥吧！') } ],
     },
     // 引導箭頭（雪鐵龍雙箭羽依次閃滅）文字標示
-    guideLabels: { click:'CLICK！', right:'向右側滑動', up:'向上滑動',
-                   wswitch:'點擊切換' },   // 副武器切換教學（ver -478）
+    guideLabels: { click:i18nT('CLICK！'), right:i18nT('向右側滑動'), up:i18nT('向上滑動'),
+                   wswitch:i18nT('點擊切換') },   // 副武器切換教學（ver -478）
     /* ── 教學專屬結算（inspector.tutorialSettle 讀取；tutorialRun 旗標存續到結算）──
      *  ver -358 起教學結算**無監察官、不評等級**（Ray 指定），台詞欄位
      *  （usedLifeReturn／noLifeReturn／outro／buttonLine）已隨舊版 applyTutorialResult
      *  一併清掉（ver -567 清死碼）。⚠ 這一塊開機時被 i18n 整包蓋掉（i18n.js 的
      *  `tut.result={...L.tutorial.result}`）——改欄位要連 i18n 三份一起改。 */
     result: {
-      buttonLabel:    '繼續',            // ver -361：教學結算是「往下走」不是「離場」
+      buttonLabel:    i18nT('繼續'),            // ver -361：教學結算是「往下走」不是「離場」
     },
   },
 
@@ -2224,13 +2225,13 @@ export const GAME_CONFIG = {
    * ------------------------------------------------------------------ */
   transitions: {
     fadeMs: 300,
-    hint: '輕觸畫面繼續',
+    hint: i18nT('輕觸畫面繼續'),
     /* ⚠ **已停用**（ver -433，Ray：「戰鬥結算畫面放置過久會自動退回主頁，取消此機制」）。
        欄位留著當紀錄，`modules/inspector.js` 已經沒有人讀它 —— ver -430 之後這一頁
        常常是岔路（繼續／再戰／放棄），時間到了自己走人等於幫玩家做了決定。 */
     resultAutoMs: 70000,
     start: {
-      cn: '驅逐開始',
+      cn: i18nT('驅逐開始'),
       autoMs: 3000,     // 3 秒內沒點 → 強制進入戰鬥
       en: [
         'For thou art of dust; unto dust shalt thou return.',
@@ -2238,7 +2239,7 @@ export const GAME_CONFIG = {
       ],
     },
     finish: {
-      cn: '驅逐完成',
+      cn: i18nT('驅逐完成'),
       autoMs: 3000,     // 3 秒內沒點 → 自動進結算
       en: [
         'The Lord shall send forth Her apostles.',
@@ -2247,7 +2248,7 @@ export const GAME_CONFIG = {
       ],
     },
     fail: {
-      cn: '驅逐失敗',
+      cn: i18nT('驅逐失敗'),
       fadeInMs: 2000,   // 黑白定格後，戰敗畫面慢慢浮現（淡入約 2 秒；淡出仍用全域 fadeMs）
       autoMs: 3000,     // 3 秒內沒點 → 自動進戰敗結算
       en: [
@@ -2424,7 +2425,7 @@ export const GAME_CONFIG = {
        擋在「搭檔是安雅 → 惡夢化」那個分流之前 ⇒ 寫了 `noSaint` 就等於**連 NI 一起禁**。
        ⚠ 諾薇兒已熔斷出局、夥伴強配安雅，這一場本來就不可能聖徒化，這一格是多寫的。 */
     tomb_low_final: { enemy:'gk_crypt', session:'tomb_wild',
-      partner:'anya', enemyName:'伊甸古墓' },
+      partner:'anya', enemyName:i18nT('伊甸古墓') },
     /* ══⚠⚠ 貝利薩爾・祭壇的那一場（ver -1353，Ray 的稿：「進入戰鬥，雖是 boss
        但只是**略弱的中 boss 水準**」）══
        ⚠ 敵人是 `bl_dragon_chase`（古城裡的龍，拘束態立繪）—— 它的數值是 Ray 指定
@@ -2558,13 +2559,13 @@ export const GAME_CONFIG = {
                    於是每一格都重講（Ray：「怎麼每打一次怪都出一次村民對話？」）。 */
                 talkOnce:'sv_siege_talk',
                 talk:[ { trigger:'battleStart', lines:[
-                  { who:'sh_villager',  img:'tut_sh_villager',    text:'是……是獸骸！' },
-                  { who:'sh_chief',     img:'tut_sh_chief',       text:'！！' },
-                  { who:'sh_chief',     img:'tut_sh_chief',       text:'擋下來！絕不能讓牠們踏進村子一步！' },
-                  { who:'sh_villager2', img:'tut_sh_villager2',   text:'不行！太多了！' },
-                  { who:'sh_chief',     img:'tut_sh_chief',       text:'可惡！' },
-                  { who:'sorana',       img:'tut_sorana_guardtalk', text:'盡量別殺！往森林裡趕！' },
-                  { who:'sorana',       img:'tut_sorana_ready',   text:'要上了！' },
+                  { who:'sh_villager',  img:'tut_sh_villager',    text:i18nT('是……是獸骸！') },
+                  { who:'sh_chief',     img:'tut_sh_chief',       text:i18nT('！！') },
+                  { who:'sh_chief',     img:'tut_sh_chief',       text:i18nT('擋下來！絕不能讓牠們踏進村子一步！') },
+                  { who:'sh_villager2', img:'tut_sh_villager2',   text:i18nT('不行！太多了！') },
+                  { who:'sh_chief',     img:'tut_sh_chief',       text:i18nT('可惡！') },
+                  { who:'sorana',       img:'tut_sorana_guardtalk', text:i18nT('盡量別殺！往森林裡趕！') },
+                  { who:'sorana',       img:'tut_sorana_ready',   text:i18nT('要上了！') },
                 ]} ] },
     sv_altar: { enemy:'sv_reliquary', session:'shinier_siege' },
     sv_wild:  { enemy:'sv_bear', session:'shinier_siege', sessionEnd:true },
@@ -2679,18 +2680,18 @@ export const GAME_CONFIG = {
            ⚠ 只有一句：喊完就打。她的驚呼與那三下之間不要再插別的話 ——
              「小心！」是**對那三下的預告**，隔了一段就成了無主的驚呼。 */
         { trigger:'hp:50', strike:true, then:'downed', soloLine:true, lines:[
-          { who:'renna', img:'tut_renna_shout', text:'小心！' },
+          { who:'renna', img:'tut_renna_shout', text:i18nT('小心！') },
         ]},
         /* ── ② 倒下之後（即死防禦已經接住他）→ 聖徒化 ──────────────────
            ⚠ `soloLine`（ver -613，Ray：「蕾娜話講完立繪就移出，不然看不到雪鐵龍」）：
              右滑的箭貼在**敵人框左緣**，所以台上只留現在講話的那一位 ——
              蕾娜講完就滑出去，左邊空出來給箭（諾薇兒在右邊，不擋）。 */
         { trigger:'downed', soloLine:true, lines:[
-          { who:'nouvelle', img:'tut_nouvelle_desperate', text:'不行！' },
-          { who:'renna',    img:'tut_renna_think',     text:'到此為止了嗎？' },
+          { who:'nouvelle', img:'tut_nouvelle_desperate', text:i18nT('不行！') },
+          { who:'renna',    img:'tut_renna_think',     text:i18nT('到此為止了嗎？') },
           /* ⚠ 這一句用 `steady`（Ray 指定）不是 SAINTINSTALL —— 那張是發動的瞬間，
              這一拍她還在「準備好了」。 */
-          { who:'nouvelle', img:'tut_nouvelle_steady',    text:'我準備好了，現在聖徒化！' },
+          { who:'nouvelle', img:'tut_nouvelle_steady',    text:i18nT('我準備好了，現在聖徒化！') },
           /* ⚠ **箭要等她說完才出**（ver -607，Ray 指定）：`immediate` 拿掉 ——
              `immediate:true` 是「段落一開就進閘、台詞照常可讀」，那樣箭會跟
              「不行！」一起亮，玩家還沒聽到她說要聖徒化就先被指著滑。
@@ -2699,9 +2700,9 @@ export const GAME_CONFIG = {
                她的驚呼上，發動的理由就從諾薇兒身上跑掉了。 */
         ], gate:{ type:'right', action:'saint', then:'saintOn' } },
         { trigger:'saintOn', lines:[
-          { who:'renna',    img:'tut_renna_shock',      text:'那就是……聖徒化？' },
+          { who:'renna',    img:'tut_renna_shock',      text:i18nT('那就是……聖徒化？') },
           { who:'nouvelle', img:'tut_nouvelle_saintinstall',
-            text:'在我熔斷之前你都會是不死之身！趁現在！' },
+            text:i18nT('在我熔斷之前你都會是不死之身！趁現在！') },
         ]},
         /* ⚠⚠ `when:'saint'`（ver -612，Ray：「boss 戰只要開一槍諾薇兒就會跳撐不住了」）：
            `php:99` 在**開場就成立**（玩家滿血），第一發傷害一觸發就把這一段吐出來。
@@ -2709,11 +2710,11 @@ export const GAME_CONFIG = {
         /* ⚠ 箭放中央（ver -613）；諾薇兒照 `talkSides` 站**右**（ver -619 改，
            原本這一段特地把她挪到左邊，那正是「一下左一下右」）。 */
         { trigger:'php:99', when:'saint', soloLine:true, lines:[
-          { who:'nouvelle', img:'tut_nouvelle_desperate', text:'我撐不住了！至少……' },
+          { who:'nouvelle', img:'tut_nouvelle_desperate', text:i18nT('我撐不住了！至少……') },
         ], gate:{ type:'up', immediate:true, action:'partner', then:'partnerOn' } },
         { trigger:'partnerOn', lines:[
-          { who:'renna',    img:'tut_renna_shock',      text:'諾薇兒！' },
-          { who:'renna',    img:'tut_renna_shout',        text:'解決祂！不要白費諾薇兒的覺悟！' },
+          { who:'renna',    img:'tut_renna_shock',      text:i18nT('諾薇兒！') },
+          { who:'renna',    img:'tut_renna_shout',        text:i18nT('解決祂！不要白費諾薇兒的覺悟！') },
         ]},
       ] },
     /* 槍店的打靶（ver -377（-893 前用詞））。⚠ 這一場**可以輸**（`allowLose`）—— Ray 的稿子有
@@ -2760,8 +2761,8 @@ export const GAME_CONFIG = {
                  bgm:'bgm_retroroman', bgmAfter:'cecilie',   // ver -1888（Ray 指定；戰後＝賽西莉的專用曲）
                  bg:'holyseedungeonwhole', talkOnce:'cap_dream_talk',
                  talk:[ { trigger:'saintStart', lines:[
-                   { who:'cecilie_x', img:'tut_cecilie_saintinstall', text:'讓我使出這力量的，你是第一個。' },
-                   { who:'cecilie_x', img:'tut_cecilie_saintinstall', text:'我可不允許你死在我面前！' },
+                   { who:'cecilie_x', img:'tut_cecilie_saintinstall', text:i18nT('讓我使出這力量的，你是第一個。') },
+                   { who:'cecilie_x', img:'tut_cecilie_saintinstall', text:i18nT('我可不允許你死在我面前！') },
                  ] } ] },
     range_trainee: { enemy:'dart_target', record:'range', noReward:true, noEval:true,
                      timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
@@ -2865,13 +2866,13 @@ export const GAME_CONFIG = {
            期間點掉那十幾格的傷（約一成），30% 打完正好落在 5% 那條下限上。
            50% 觸發的話爆完還剩兩成多，讀起來就不是「一擊把她打到只剩一口氣」。 */
         { trigger:'hp:30', lines:[
-          { who:'anya', img:'tut_anya_terrify', text:'娜塔莉！' },
+          { who:'anya', img:'tut_anya_terrify', text:i18nT('娜塔莉！') },
         ], gate:{ type:'right', immediate:true, action:'nightmare', then:'niCall', tone:'red' } },
         { trigger:'niCall', lines:[
-          { who:'renna', img:'tut_renna_shock', text:'那是……！' },
-          { who:'renna', img:'tut_renna_shock', text:'聖徒化？' },
-          { who:'anya',  img:'tut_anya_ni',       text:'對不起……！' },
-          { who:'anya',  img:'tut_anya_ni',       text:'請讓娜塔莉安息吧！' },
+          { who:'renna', img:'tut_renna_shock', text:i18nT('那是……！') },
+          { who:'renna', img:'tut_renna_shock', text:i18nT('聖徒化？') },
+          { who:'anya',  img:'tut_anya_ni',       text:i18nT('對不起……！') },
+          { who:'anya',  img:'tut_anya_ni',       text:i18nT('請讓娜塔莉安息吧！') },
         ] },
         /* ══ 熔斷前教一次「上滑自爆」（ver -672，Ray：「在熔斷前增加一個教學
            上滑雪鐵龍發動自爆一次把娜塔莉炸死」）══
@@ -2883,8 +2884,8 @@ export const GAME_CONFIG = {
              把血停在 1 不熔斷（同生命歸還攔在滿−1 的作法，鐵律 8）。
            ⚠⚠ 這兩句是**我寫的**（Ray 只寫了「教學上滑雪鐵龍發動自爆」）。 */
         { trigger:'phplow:1', lines:[
-          { who:'anya', img:'tut_anya_ni', text:'撐不住了……' },
-          { who:'anya', img:'tut_anya_ni', text:'一起……結束吧，娜塔莉。' },
+          { who:'anya', img:'tut_anya_ni', text:i18nT('撐不住了……') },
+          { who:'anya', img:'tut_anya_ni', text:i18nT('一起……結束吧，娜塔莉。') },
         ], gate:{ type:'up', immediate:true, action:'niBurst', tone:'red' } },
       ] },
     /* ══ 飛行頁的遭遇戰（ver -382）══ 怪撞上船 → 跳來這一頁打舒爾特盤。
@@ -2945,18 +2946,18 @@ export const GAME_CONFIG = {
                           { trigger:'battleStart', lines:[
                             { se:'se_enemy_centipi', shake:true, hold:900 },   // 演出拍：牠先出聲
                             { who:'renna',    img:'tut_renna_shock',
-                              text:'竟然在內陸碰到這麼巨大的禍魘……' },
-                            { who:'nouvelle', img:'tut_nouvelle_steady', text:'交給我們！' },
-                            { who:'nouvelle', img:'tut_nouvelle_steady', text:'大型敵人就要靠重武器！' },
+                              text:i18nT('竟然在內陸碰到這麼巨大的禍魘……') },
+                            { who:'nouvelle', img:'tut_nouvelle_steady', text:i18nT('交給我們！') },
+                            { who:'nouvelle', img:'tut_nouvelle_steady', text:i18nT('大型敵人就要靠重武器！') },
                             /* 主角的空白對話框（他開口了，但沒有台詞 —— §6.5 的慣例）。
                                ver -507/-508（Ray 指定）：這一拍主音是 se_metalclip（上膛），
                                齒輪聲疊在底下、metalclip 停了齒輪就收（seFollow）——
                                他正在拆艦砲，下一句蕾娜才喊「單手就把艦砲……！」。 */
                             { blank:true, se:'se_metalclip', seFollow:'se_kerberos_gear' },
-                            { who:'renna',    img:'tut_renna_shock',   text:'騙人的吧……單手就把艦砲……！' },
-                            { who:'nouvelle', img:'tut_nouvelle_run',    text:'蕾娜小姐！請穩住船身！' },
-                            { who:'nouvelle', img:'tut_nouvelle_run',    text:'這樣的話，那種東西對他來說就只是靶子！' },
-                            { who:'renna',    img:'tut_renna_run',       text:'知道了！拜託了！' },
+                            { who:'renna',    img:'tut_renna_shock',   text:i18nT('騙人的吧……單手就把艦砲……！') },
+                            { who:'nouvelle', img:'tut_nouvelle_run',    text:i18nT('蕾娜小姐！請穩住船身！') },
+                            { who:'nouvelle', img:'tut_nouvelle_run',    text:i18nT('這樣的話，那種東西對他來說就只是靶子！') },
+                            { who:'renna',    img:'tut_renna_run',       text:i18nT('知道了！拜託了！') },
                           ]},
                           /* ══ 反擊短教學（諾薇兒帶，Ray 交稿）══
                              第一顆紅點生成的瞬間（對話會真暫停，圈就凍在畫面上）——
@@ -2967,9 +2968,9 @@ export const GAME_CONFIG = {
                                隔著一段實際戰鬥再講，就變成「剛才你也試過了吧」。 */
                           { trigger:'threat', lines:[
                             { who:'nouvelle', img:'tut_nouvelle_cringe',
-                              text:'大型敵人用普通武器很難應付！' },
+                              text:i18nT('大型敵人用普通武器很難應付！') },
                             { who:'nouvelle', img:'tut_nouvelle_steady',
-                              text:'抓準時機，在敵人攻擊前的一瞬間用艦載武器反擊！' },
+                              text:i18nT('抓準時機，在敵人攻擊前的一瞬間用艦載武器反擊！') },
                           ]},
                           /* ══ 副武器切換教學（ver -478，Ray：「反擊教學加一段
                              副武器切換教學雪鐵龍」）：首次防禦成功後接一句，
@@ -2977,7 +2978,7 @@ export const GAME_CONFIG = {
                              ⚠ 台詞是暫擬的 —— Ray 要換稿直接改這一行。 */
                           { trigger:'defended', lines:[
                             { who:'nouvelle', img:'tut_nouvelle_steady', guide:'wswitch',
-                              text:'點血條旁的武器圖可以切換艦載武器，反擊的時機與威力各有不同！' },
+                              text:i18nT('點血條旁的武器圖可以切換艦載武器，反擊的時機與威力各有不同！') },
                           ]},
                         ] },
     /* ══ 森住民戰（man_sorana，ver -744，Ray 的 stage5 稿）══
@@ -3031,11 +3032,11 @@ export const GAME_CONFIG = {
      ⚠ `city` ＝ 在哪一座城的公會看得到（櫃台：「各個城市的委託也會不同」）。
      ⚠ `reward` 的單位同金錢（G，見 items.moneyName）—— 不要在文案裡再寫一次單位。 */
   bounties: {
-    rolf: { name:'黑船洛爾夫', city:'capital', reward:500,
-            desc:'在瓦爾士大公國與法爾登王國交界出沒的空賊。' },
+    rolf: { name:i18nT('黑船洛爾夫'), city:'capital', reward:500,
+            desc:i18nT('在瓦爾士大公國與法爾登王國交界出沒的空賊。') },
     /* 北方泊地（ver -664，Ray 交稿）。 */
-    arad: { name:'北海暴徒阿拉德', city:'northport', reward:2000,   /* ver -858：Ray 改 2000G */
-            desc:'出沒地：東北空域。' },
+    arad: { name:i18nT('北海暴徒阿拉德'), city:'northport', reward:2000,   /* ver -858：Ray 改 2000G */
+            desc:i18nT('出沒地：東北空域。') },
   },
 
   /* ══ 夏爾村獵人兌換表（ver -859，Ray：「獵人小屋要像賞金獵人公會一樣有表可以看…
@@ -3127,54 +3128,54 @@ export const GAME_CONFIG = {
            ⚠ 不要「順手」給它 `boon:{hpMax:40}`：那樣沒食材那一條會變成 80，
              而且之後真的料理還會再拿 40（總共 120），與 Ray 的三句話對不上。
          · 沒有 `ci`（成品圖）—— 它本來就不演成品，見 `playCooking` 的 `noAnim`。 */
-      usual:      { name:'跟平常一樣的', hidden:true,
-                    desc:'瑪麗亞看你們沒帶東西來，隨手做的家常菜。' },
+      usual:      { name:i18nT('跟平常一樣的'), hidden:true,
+                    desc:i18nT('瑪麗亞看你們沒帶東西來，隨手做的家常菜。') },
       /* 第一道是劇本指定的（Stage8 瑪麗亞的第一頓）。⚠ Ray 口頭說「羊腿排」，
          但稿上的台詞是「奶油鹿腿一份」、交件的插圖也是 `di_deersteak`（鹿）
          —— 以稿與圖為準寫成鹿腿。要改成羊的話，圖與台詞要一起改。 */
       /* ⚠ 調味 ver -979 由 `season_butter` 換成 `season_goatbutter`（Ray：「瑪莉亞
          第一道料理所需的就是這一個調味」）—— 那一份正是北方泊地居民送行時給的。
          連帶解掉 -955 的待辦「草原奶油目前遊戲裡拿不到」：第一道菜不再依賴它。 */
-      deersteak:  { name:'奶油鹿腿排',   ci:'dish_deersteak',
+      deersteak:  { name:i18nT('奶油鹿腿排'),   ci:'dish_deersteak',
                     mats:['meat_deer','herb_rosemary','season_goatbutter'],
                     boon:{ hpMax:40 },
-                    desc:'厚切鹿腿以奶油慢煎，最後撒上迷迭香。不用再調味就很好吃。' },
-      lynxgrill:  { name:'香煎山貓腿',   ci:'dish_lynxgrill',
+                    desc:i18nT('厚切鹿腿以奶油慢煎，最後撒上迷迭香。不用再調味就很好吃。') },
+      lynxgrill:  { name:i18nT('香煎山貓腿'),   ci:'dish_lynxgrill',
                     mats:['meat_lynx','veg_wildgarlic','season_rocksalt'],
                     boon:{ hpMax:40 },
-                    desc:'岩鹽抹過再下鍋，野蒜連葉子一起煎香。' },
-      boarhoney:  { name:'蜜燒山豬腹肉', ci:'dish_boarhoney',
+                    desc:i18nT('岩鹽抹過再下鍋，野蒜連葉子一起煎香。') },
+      boarhoney:  { name:i18nT('蜜燒山豬腹肉'), ci:'dish_boarhoney',
                     mats:['meat_boar','veg_mushroom','season_honey'],
                     boon:{ hpMax:40 },
-                    desc:'油花厚的腹肉裹上森蜜，慢火燒到收汁。' },
-      snakestew:  { name:'胡椒燉蛇肉',   ci:'dish_snakestew',
+                    desc:i18nT('油花厚的腹肉裹上森蜜，慢火燒到收汁。') },
+      snakestew:  { name:i18nT('胡椒燉蛇肉'),   ci:'dish_snakestew',
                     mats:['meat_snake','veg_watercress','season_pepper'],
                     boon:{ hpMax:40 },
-                    desc:'清爽的蛇肉配河芹，起鍋前才磨黑胡椒。' },
-      bearbutter: { name:'奶油燴熊掌',   ci:'dish_bearbutter',
+                    desc:i18nT('清爽的蛇肉配河芹，起鍋前才磨黑胡椒。') },
+      bearbutter: { name:i18nT('奶油燴熊掌'),   ci:'dish_bearbutter',
                     mats:['paw_bear','veg_mushroom','season_butter'],
                     boon:{ hpMax:40 },
-                    desc:'燉了半天的熊掌，最後以奶油與林地菇收尾。費工，但值得。' },
-      deersorrel: { name:'酸模烤鹿腿',   ci:'dish_deersorrel',
+                    desc:i18nT('燉了半天的熊掌，最後以奶油與林地菇收尾。費工，但值得。') },
+      deersorrel: { name:i18nT('酸模烤鹿腿'),   ci:'dish_deersorrel',
                     mats:['meat_deer','veg_sorrel','season_pepper'],
                     boon:{ hpMax:40 },
-                    desc:'烤得焦香的鹿腿，佐一把帶酸的酸模葉解膩。' },
-      beargarlic: { name:'野蒜燜熊掌',   ci:'dish_beargarlic',
+                    desc:i18nT('烤得焦香的鹿腿，佐一把帶酸的酸模葉解膩。') },
+      beargarlic: { name:i18nT('野蒜燜熊掌'),   ci:'dish_beargarlic',
                     mats:['paw_bear','veg_wildgarlic','season_rocksalt'],
                     boon:{ hpMax:40 },
-                    desc:'整顆野蒜跟熊掌一起燜，鹹香得能配三碗飯。' },
-      lynxhoney:  { name:'蜜漬山貓腿',   ci:'dish_lynxhoney',
+                    desc:i18nT('整顆野蒜跟熊掌一起燜，鹹香得能配三碗飯。') },
+      lynxhoney:  { name:i18nT('蜜漬山貓腿'),   ci:'dish_lynxhoney',
                     mats:['meat_lynx','veg_watercress','season_honey'],
                     boon:{ hpMax:40 },
-                    desc:'先用森蜜漬過再烤，肉緊實卻不柴。' },
-      boarlime:   { name:'萊姆烤山豬',   ci:'dish_boarlime',
+                    desc:i18nT('先用森蜜漬過再烤，肉緊實卻不柴。') },
+      boarlime:   { name:i18nT('萊姆烤山豬'),   ci:'dish_boarlime',
                     mats:['meat_boar','herb_rosemary','season_limezest'],
                     boon:{ hpMax:40 },
-                    desc:'萊姆皮與迷迭香一起塞進肉裡，烤出來滿屋子都是香的。' },
-      snakesteam: { name:'河芹清蒸蛇',   ci:'dish_snakesteam',
+                    desc:i18nT('萊姆皮與迷迭香一起塞進肉裡，烤出來滿屋子都是香的。') },
+      snakesteam: { name:i18nT('河芹清蒸蛇'),   ci:'dish_snakesteam',
                     mats:['meat_snake','veg_mushroom','season_limezest'],
                     boon:{ hpMax:40 },
-                    desc:'幾乎不加東西的清蒸，吃的是食材本身。瑪麗亞說這道最難。' },
+                    desc:i18nT('幾乎不加東西的清蒸，吃的是食材本身。瑪麗亞說這道最難。') },
     },
   },
 
@@ -3198,7 +3199,7 @@ export const GAME_CONFIG = {
     reward: {
       image:'bg_sentou',                       // 獎勵大圖（ASSETS 鑰匙）
       btnLabel:'SAINT INSTALL...?',            // 變身後按鈕字樣
-      sign:['銭湯','インストール'],             // 毛筆招牌：橫排兩行（左上角木框額）
+      sign:[i18nT('銭湯'),i18nT('インストール')],             // 毛筆招牌：橫排兩行（左上角木框額）
       charMs:380,                              // 每字書寫間隔(ms)
     },
   },
@@ -4009,7 +4010,7 @@ export const GAME_CONFIG = {
          ⚠ **不寫進她的搭檔卡的 `active`**：那一格是搭檔系統（`partner.tryActive`）
            在讀的 —— 寫進去的話聖徒化期間上滑會去問它，而夢境粉碎是**惡夢化自己的**
            主動技，只在 NI 期間存在（鐵律 8：一個動作一個入口）。 */
-      burstName: '夢境粉碎',
+      burstName: i18nT('夢境粉碎'),
       burstCutin: 'ci_anya_dreambreaker',
       /* ══⚠⚠ **熔斷就是 OBE**（ver -731（-893 前用詞），Ray 定案）══════════════════════════
          -692 的註解寫成「對稱的失敗結局，**不是**同一件事」—— 那是錯的，已更正：
@@ -4094,12 +4095,12 @@ export const GAME_CONFIG = {
          是唯一計算點，算完寫進卡上的絕對值）。**這裡不再寫 hp／atk**（鐵律 7）。
          ⚠ -1582 那一版 E 是「劇情敵，套帝都賞金獵人 200」、D 比 E 弱 —— 已推翻：
            現在 E 是最底層。 */
-      S: { lv:5, grids:[9,9,9,16,16], stack:1, desc:'強力boss' },
+      S: { lv:5, grids:[9,9,9,16,16], stack:1, desc:i18nT('強力boss') },
       A: { lv:4, grids:[9,9,9,16,16], stack:1, desc:'Boss' },
-      B: { lv:3, grids:[9,9,9,16,16], stack:1, desc:'中boss' },
-      C: { lv:2, grids:[9,9,9,9,16],  stack:0, desc:'略強小怪' },
-      D: { lv:1, grids:[9,9,9,9,9],    stack:0, desc:'弱小怪' },
-      E: { lv:0, grids:[9,9,9,9,9],    stack:0, desc:'基準' },
+      B: { lv:3, grids:[9,9,9,16,16], stack:1, desc:i18nT('中boss') },
+      C: { lv:2, grids:[9,9,9,9,16],  stack:0, desc:i18nT('略強小怪') },
+      D: { lv:1, grids:[9,9,9,9,9],    stack:0, desc:i18nT('弱小怪') },
+      E: { lv:0, grids:[9,9,9,9,9],    stack:0, desc:i18nT('基準') },
     },
     /* ══ 等級的基準與級距（ver -1878，Ray 定案）══
        HP ＝ `hp × hpStep^lv × 類型 hpMul`（取到十位）；攻擊 ＝ `atk × atkStep^lv`（四捨五入）。
@@ -4113,9 +4114,9 @@ export const GAME_CONFIG = {
        D 防禦型**。⚠⚠ `S` 是**速度型不是等級 S** —— 等級在 `tier` 那一欄，
        兩欄各自獨立（一隻可以是「等級 S 的速度型」）。 */
     enemyType: {
-      S: { name:'速度型', every:3, hpMul:0.8, brBonus:0    },
-      P: { name:'力量型', every:4, hpMul:1.0, brBonus:0    },
-      D: { name:'防禦型', every:5, hpMul:1.3, brBonus:0.5  },
+      S: { name:i18nT('速度型'), every:3, hpMul:0.8, brBonus:0    },
+      P: { name:i18nT('力量型'), every:4, hpMul:1.0, brBonus:0    },
+      D: { name:i18nT('防禦型'), every:5, hpMul:1.3, brBonus:0.5  },
     },
     /* ══⚠⚠ 後天的 stage 加成（ver -1584b，Ray：「stage 加成從 stage8 開始算，
        每升一個 stage ×1.025（因為目前有很多 stage 沒有戰鬥只有劇情）」）══
@@ -4960,7 +4961,7 @@ export const ASSETS = {
 (function ceciliePartner(){
   const P = GAME_CONFIG.partners, N = P && P.nouvelle; if(!N) return;
   const C = JSON.parse(JSON.stringify(N));
-  Object.assign(C, { name:'賽西莉', image:'partner_cecilie', cutin:'cutin_cecilie_saint',
+  Object.assign(C, { name:i18nT('賽西莉'), image:'partner_cecilie', cutin:'cutin_cecilie_saint',
     selectVoice:null, levelUpVoice:null, faceSpent:null,
     /* 聖徒化的發動／結局演出改讀這幾格（saint.js，沒寫＝照舊諾薇兒那一套）。 */
     saintCutin:'cutin_cecilie_saint', saintVoice:null,
@@ -5032,36 +5033,36 @@ export function weaponStatRows(key, story, mul){
      沒傳＝1＝印基礎值。 */
   const M = (mul>0) ? mul : 1;
   const sc = n => Math.round(n*M);
-  const shots = n => (w.hits>1 ? w.hits+'發×'+n+'傷害' : '單發'+n+'傷害');
+  const shots = n => (w.hits>1 ? w.hits+i18nT('發×')+n+i18nT('傷害') : i18nT('單發')+n+i18nT('傷害'));
   /* 一帶一句：會反擊就報反擊的份量（帶命中率），不反擊就報減傷。 */
   const line = (g)=>{
     const b=weaponBand(w,g);
     if(b.counter){
       const n = b.roll ? (sc(Math.min(...b.roll))+'~'+sc(Math.max(...b.roll))) : sc(b.dmgPerHit);
-      return shots(n) + (b.hit<1 ? '（命中'+Math.round(b.hit*100)+'%）' : '');
+      return shots(n) + (b.hit<1 ? i18nT('（命中')+Math.round(b.hit*100)+i18nT('%）') : '');
     }
-    return b.take>=1 ? '無減傷效果' : (b.take<=0 ? '完全防禦' : '減傷'+Math.round((1-b.take)*100)+'%');
+    return b.take>=1 ? i18nT('無減傷效果') : (b.take<=0 ? i18nT('完全防禦') : i18nT('減傷')+Math.round((1-b.take)*100)+'%');
   };
   const crit = (w.critRate!=null ? w.critRate : GAME_CONFIG.tuning.counterCritRate);
-  const rows=[['分類', w.cat||'—'], ['黃圈', line('block')], ['橘圈', line('perfect')],
-              ['反擊', shots(sc(w.dmgPerHit))], ['暴擊率', Math.round(crit*100)+'%']];
-  if(M>1) rows.push(['改裝加成', '+'+Math.round((M-1)*100)+'%']);
+  const rows=[[i18nT('分類'), i18nT(w.cat)||'—'], [i18nT('黃圈'), line('block')], [i18nT('橘圈'), line('perfect')],
+              [i18nT('反擊'), shots(sc(w.dmgPerHit))], [i18nT('暴擊率'), Math.round(crit*100)+'%']];
+  if(M>1) rows.push([i18nT('改裝加成'), '+'+Math.round((M-1)*100)+'%']);
   /* 裝填時間（ver -1009，Ray：「每一把步槍都描述加上裝填時間 3 秒」）：
      ⚠ **算出來的不是手寫的**（鐵律 7）—— 數字只有卡上的 `counterCdSec` 一份，
        改秒數不必回頭改文案；沒有這一格的槍不長這一列。 */
   /* ver -1781：彈數／裝填時間（卡上 `mag`／`reloadSec`，試玩版沒有這兩格就不長這兩列）。 */
-  if(w.mag>0) rows.push(['彈數', w.mag+' 發']);
-  if(w.reloadSec>0) rows.push(['裝填時間', w.reloadSec+' 秒']);
-  if(w.maxMod) rows.push(['最大改裝等級', String(w.maxMod)]);   // 卡上就寫「5」，不加單位
+  if(w.mag>0) rows.push([i18nT('彈數'), w.mag+i18nT(' 發')]);
+  if(w.reloadSec>0) rows.push([i18nT('裝填時間'), w.reloadSec+i18nT(' 秒')]);
+  if(w.maxMod) rows.push([i18nT('最大改裝等級'), String(w.maxMod)]);   // 卡上就寫「5」，不加單位
   /* 改造滿級特效（ver -1781，卡上的 `perk`）：還沒定就寫「未定」—— 欄位先讓玩家看得到。 */
-  if(w.maxMod) rows.push(['改造滿級', (w.perk && w.perk.name) ? w.perk.name : '（未定）']);
+  if(w.maxMod) rows.push([i18nT('改造滿級'), (w.perk && w.perk.name) ? w.perk.name : i18nT('（未定）')]);
   return rows;
 }
 /* 卡片上那一段（與 -376 之前手寫的 `desc` 同樣的排版，只是現在是算出來的）。 */
 export function weaponDescText(key, story, mul){
   const w=weaponOf(key, story); if(!w) return '';
-  const rows=weaponStatRows(key, story, mul).filter(r=>r[0]!=='分類');
-  return '反擊效果\n' + rows.map(r=>r[0]+'：'+r[1]).join('\n') + (w.flavor ? '\n'+w.flavor : '');
+  const rows=weaponStatRows(key, story, mul).slice(1);   // 第一列一定是「分類」（ver -1909：不拿中文字串比對，切語言才不會壞）
+  return i18nT('反擊效果\n') + rows.map(r=>r[0]+i18nT('：')+r[1]).join('\n') + (w.flavor ? '\n'+w.flavor : '');
 }
 
 export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ""; }
@@ -5273,3 +5274,6 @@ export const TELEMETRY = {
   url: 'https://yirmivtawwyhkftnaxbb.supabase.co',
   anonKey: 'sb_publishable_WRTo91T8Y4RIBULuIPWrRw_dXrVdQGb',   // 公開金鑰（publishable，本來就設計為前端可見）
 };
+
+/* 純資料卡（敵人／武器／商店，script/*.js，不 import 任何東西）的中文由這裡換（ver -1909；中文時什麼都不做）。 */
+trTree(GAME_CONFIG);

@@ -11,6 +11,7 @@
    ⚠ 分類（道具/武器/素材/裝備/特殊）也在 config，這裡不寫死 —— 要加第六類只改 config。
    ══════════════════════════════════════════════════════════════════════ */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, weaponDescText } from '../config.js';
 
 const KEY = 'tivot_inventory_v1';
@@ -64,7 +65,7 @@ export function nameOf(id){
   const d=defOf(id); if(!d) return String(id);
   if(d.girl){
     const nm=((GAME_CONFIG.partners||{})[d.girl]||{}).name;
-    return nm ? (nm+'的戰鬥紀錄') : String(id);
+    return nm ? (nm+i18nT('的戰鬥紀錄')) : String(id);
   }
   return d.name;
 }
@@ -147,7 +148,7 @@ export function spendMoney(n){
   if(have<n) return false;
   setMoney(have-n); return true;
 }
-export function moneyName(){ return (ITEMS().moneyName)||'克朗'; }
+export function moneyName(){ return (ITEMS().moneyName)||i18nT('克朗'); }
 
 /* ══ 變賣 ══
    ⚠ 沒寫 `sell` 的道具**不能賣**（劇情道具／任務物品）。回傳實際賣掉的數量與入袋金額。 */

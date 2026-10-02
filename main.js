@@ -8,9 +8,10 @@
  *  聖徒化左右滑、生命歸還上滑、雙槍點計量表、換裝面板等綁定為下一輪。
  * ========================================================================== */
 
+import { i18nT } from './i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain, HOME_IMG, HOME_SFX, HITFX } from './config.js';
 import { L, LANG, applyToConfig, applyToDom, decorateLine } from './i18n.js';   // 多語言＋台詞關鍵字裝飾
-import { trTree } from './i18n/scriptTr.js';   // 劇本譯文（戰鬥卡上的對白 talk 那一族，ver -1908）
+import { trTree, trDom } from './i18n/scriptTr.js';   // 劇本譯文（戰鬥卡上的對白 talk 那一族，ver -1908）
 import { state } from './state.js';
 import { SFX } from './audio.js';
 import { TEL } from './telemetry.js';   // 遙測（未設定後端時 no-op）
@@ -64,6 +65,7 @@ const $ = id => document.getElementById(id);
 applyToConfig(GAME_CONFIG);
 trTree(GAME_CONFIG.battles);   // 戰鬥內對白（battles[].talk）走劇本譯文表
 applyToDom();
+trDom(document.body);   // index.html 靜態標記裡其餘的中文（介面譯文表，ver -1909）
 
 /* ── 首頁主標單行自適應：主標鎖單行（white-space:nowrap），但各語言長度差異大
  *    （en「The IV Order of Testament」遠長於中日七字），clamp 下限在窄機仍可能溢出
@@ -792,7 +794,7 @@ function bootBattleGate(req){
   /* 提示：做成門上的一行字，不是一顆鈕 —— 這一拍是儀式的一部分，不是一個對話框。
      ⚠ 讀取還沒到位時不亮：亮了才點得有意義（同讀取頁 `.al-done` 的作法）。 */
   const tip=document.createElement('div'); tip.id='gateTip';
-  tip.innerHTML='<span>開　棺</span>';
+  tip.innerHTML=i18nT('<span>開　棺</span>');
   document.body.appendChild(tip);
 
   const en=(GAME_CONFIG.enemies||{})[((GAME_CONFIG.battles||{})[req.battle]||{}).enemy]||{};
@@ -1257,8 +1259,8 @@ function openPrep(opts){
   /* ⚠ 開在劇情層上時要把整備頁抬起來（見 style.css 的 `body.prep-over`）。 */
   document.body.classList.toggle('prep-over', prepStoryMode);
   const ti=$('prepTitle'), go=$('prepGo');
-  if(ti) ti.textContent = prepStoryMode ? '整　備' : '出擊整備';
-  if(go) go.textContent = prepStoryMode ? '完　成' : '執　槍';
+  if(ti) ti.textContent = prepStoryMode ? i18nT('整　備') : i18nT('出擊整備');
+  if(go) go.textContent = prepStoryMode ? i18nT('完　成') : i18nT('執　槍');
   const s=$('prepSheet'); if(!s) return;
   clearTimeout(prepCloseTimer);
   s.classList.add('on');
@@ -1337,7 +1339,7 @@ bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
  *  選擇存 localStorage('tivot.lang')，按下重載生效（僅首頁可按，無戰局可失）。 */
 (function bindLangBtn(){
   const LANGS=['zh','en','ja','es'];
-  const NEXT_FACE={ zh:'En', en:'日本語', ja:'Es', es:'中文' };   // 鈕面＝下一個語言的自稱
+  const NEXT_FACE={ zh:'En', en:i18nT('日本語'), ja:'Es', es:i18nT('中文') };   // 鈕面＝下一個語言的自稱
   const KEY='tivot.lang';
   let cur = LANG;                        // 現行語言（含地區偵測結果；手選後 LANG 即讀 localStorage）
   if(LANGS.indexOf(cur)<0) cur='zh';
@@ -1413,7 +1415,7 @@ function eeArtTarget(src){
     const A = ART[k]; if(!A) continue;
     if(clean(A.base)===want) return { kind:'base', key:A.base, obj:A, name:k };
     for(const e of Object.keys(A.expr||{})){
-      const v=A.expr[e]; if(v && typeof v==='object' && clean(v.src)===want) return { kind:'src', key:v.src, obj:v, name:k+'・'+e };
+      const v=A.expr[e]; if(v && typeof v==='object' && clean(v.src)===want) return { kind:'src', key:v.src, obj:v, name:k+i18nT('・')+e };
     }
   }
   return null;
@@ -1453,39 +1455,39 @@ function openEnemyEdit(){
                        pos: Math.round(cur.x)+'% '+Math.round(cur.y)+'%',
                        scale: +cur.scale.toFixed(3), shiftY: +cur.shiftY.toFixed(3) });
   const row = (lab, val, k, d, attr)=>'<div class="ee-row"><span>'+lab+'</span>'
-    +'<button '+(attr||'data-k')+'="'+k+'" data-d="'+(-d)+'">－</button><b>'+val+'</b>'
-    +'<button '+(attr||'data-k')+'="'+k+'" data-d="'+d+'">＋</button></div>';
+    +'<button '+(attr||'data-k')+'="'+k+'" data-d="'+(-d)+i18nT('">－</button><b>')+val+'</b>'
+    +'<button '+(attr||'data-k')+'="'+k+'" data-d="'+d+i18nT('">＋</button></div>');
   const tabs = ()=>{
-    const list=[['enemy','敵人']];
-    if(talk.left)  list.push(['left','對話・左']);
-    if(talk.right) list.push(['right','對話・右']);
+    const list=[['enemy',i18nT('敵人')]];
+    if(talk.left)  list.push(['left',i18nT('對話・左')]);
+    if(talk.right) list.push(['right',i18nT('對話・右')]);
     return list.length<2 ? '' : '<div class="ee-row">'+list.map(([k,n])=>'<button data-tab="'+k+'" class="'+(tab===k?'on':'')+'">'+n+'</button>').join('')+'</div>';
   };
   const render = ()=>{
     let body;
     if(tab==='enemy'){
-      body = '<div class="ee-hd">敵立繪　'+(en.name||key)+'（'+key+'）</div>'
-        + '<div class="ee-row"><span>模式</span>'
-        +   '<button data-mode="cover" class="'+(cur.mode!=='contain'?'on':'')+'">填滿</button>'
-        +   '<button data-mode="contain" class="'+(cur.mode==='contain'?'on':'')+'">完整</button></div>'
-        + row('縮放', Math.round(cur.scale*100)+'%', 'scale', 0.02)
-        + row('上下', Math.round(cur.shiftY*100)+'%', 'shiftY', 0.01)
-        + row('焦點左右', Math.round(cur.x)+'%', 'x', 5)
-        + row('焦點上下', Math.round(cur.y)+'%', 'y', 5);
+      body = i18nT('<div class="ee-hd">敵立繪　')+(en.name||key)+i18nT('（')+key+i18nT('）</div>')
+        + i18nT('<div class="ee-row"><span>模式</span>')
+        +   '<button data-mode="cover" class="'+(cur.mode!=='contain'?'on':'')+i18nT('">填滿</button>')
+        +   '<button data-mode="contain" class="'+(cur.mode==='contain'?'on':'')+i18nT('">完整</button></div>')
+        + row(i18nT('縮放'), Math.round(cur.scale*100)+'%', 'scale', 0.02)
+        + row(i18nT('上下'), Math.round(cur.shiftY*100)+'%', 'shiftY', 0.01)
+        + row(i18nT('焦點左右'), Math.round(cur.x)+'%', 'x', 5)
+        + row(i18nT('焦點上下'), Math.round(cur.y)+'%', 'y', 5);
     }else{
       const T=talk[tab];
-      body = '<div class="ee-hd">對話立繪　'+(T.art ? T.art.name : T.key)+'</div>'
-        + (T.art ? '' : '<div class="ee-msg">⚠ 找不到這張圖在 speakers.js 的位置，只能預覽、不能存檔</div>')
-        + row('大小（cm）', (+T.v.cm).toFixed(0), 'cm', 1, 'data-tk')
-        + row('上下（cm）', (+T.v.yShift).toFixed(0), 'yShift', 1, 'data-tk')
-        + row('左右', (+T.v.fxShift).toFixed(3), 'fxShift', 0.005, 'data-tk')
-        + '<div class="ee-row"><span>站位</span>'
-        +   '<button data-side="left" class="'+(tab==='left'?'on':'')+'">站左</button>'
-        +   '<button data-side="right" class="'+(tab==='right'?'on':'')+'">站右</button></div>';
+      body = i18nT('<div class="ee-hd">對話立繪　')+(T.art ? T.art.name : T.key)+'</div>'
+        + (T.art ? '' : i18nT('<div class="ee-msg">⚠ 找不到這張圖在 speakers.js 的位置，只能預覽、不能存檔</div>'))
+        + row(i18nT('大小（cm）'), (+T.v.cm).toFixed(0), 'cm', 1, 'data-tk')
+        + row(i18nT('上下（cm）'), (+T.v.yShift).toFixed(0), 'yShift', 1, 'data-tk')
+        + row(i18nT('左右'), (+T.v.fxShift).toFixed(3), 'fxShift', 0.005, 'data-tk')
+        + i18nT('<div class="ee-row"><span>站位</span>')
+        +   '<button data-side="left" class="'+(tab==='left'?'on':'')+i18nT('">站左</button>')
+        +   '<button data-side="right" class="'+(tab==='right'?'on':'')+i18nT('">站右</button></div>');
     }
     box.innerHTML = tabs() + body
-      + '<div class="ee-row"><button data-act="save">存　檔</button><button data-act="reset">還原</button>'
-      +   '<button data-act="close">關　閉</button></div>'
+      + i18nT('<div class="ee-row"><button data-act="save">存　檔</button><button data-act="reset">還原</button>')
+      +   i18nT('<button data-act="close">關　閉</button></div>')
       + '<div class="ee-msg">'+msg+'</div>';
   };
   const preview = ()=>{ try{ enemyMod.applyEnemyFit(fitOf()); }catch(_){} };
@@ -1502,7 +1504,7 @@ function openEnemyEdit(){
     if(t.dataset.side){
       const T=talk[tab], to=t.dataset.side; if(!T || to===tab) return;
       tutorial.tuneSetSide(T.who, to);
-      buildTalk(); tab=to; msg='已換到'+(to==='left'?'左':'右')+'（存檔才寫進 config.js）'; render(); return;
+      buildTalk(); tab=to; msg=i18nT('已換到')+(to==='left'?i18nT('左'):i18nT('右'))+i18nT('（存檔才寫進 config.js）'); render(); return;
     }
     if(t.dataset.tk){
       const T=talk[tab], k=t.dataset.tk, d=+t.dataset.d;
@@ -1518,10 +1520,10 @@ function openEnemyEdit(){
       if(k==='scale') cur.scale=Math.max(0.3, Math.min(2.5, cur.scale));
     }
     else if(t.dataset.act==='reset'){
-      if(tab!=='enemy'){ const T=talk[tab]; T.v=Object.assign({}, T.orig); tutorial.tuneApply(T.key, T.v); msg='已還原'; render(); return; }
+      if(tab!=='enemy'){ const T=talk[tab]; T.v=Object.assign({}, T.orig); tutorial.tuneApply(T.key, T.v); msg=i18nT('已還原'); render(); return; }
       const p=eeParsePos(f0.pos || '');
       Object.assign(cur, { mode:f0.mode||'cover', x:f0.pos?p.x:50, y:f0.pos?p.y:0, scale:+f0.scale||1, shiftY:+f0.shiftY||0 });
-      enemyMod.applyEnemyFit(f0); msg='已還原成卡上的值'; render(); return;
+      enemyMod.applyEnemyFit(f0); msg=i18nT('已還原成卡上的值'); render(); return;
     }
     else if(t.dataset.act==='close'){
       enemyMod.applyEnemyFit(en.fit);       // 沒存就回到卡上的樣子
@@ -1536,23 +1538,23 @@ function openEnemyEdit(){
       const post=(ep, body)=>fetch(new URL(ep, location.href).pathname, { method:'POST', body:JSON.stringify(body) })
         .then(r=>r.text().then(x=>({ok:r.ok, x})));
       const jobs=[];
-      if(side0[T.who]!==tab) jobs.push(post('__castside', { who:T.who, side:tab }).then(r=>{ if(r.ok) side0[T.who]=tab; return '站位 '+(r.ok?'✔ ':'✘ ')+r.x; }));
+      if(side0[T.who]!==tab) jobs.push(post('__castside', { who:T.who, side:tab }).then(r=>{ if(r.ok) side0[T.who]=tab; return i18nT('站位 ')+(r.ok?'✔ ':'✘ ')+r.x; }));
       if(T.art) jobs.push(post('__tune', { kind:T.art.kind, key:T.art.key, set }).then(r=>{
-        if(r.ok){ Object.assign(T.art.obj, set); T.orig=Object.assign({}, set); } return '取景 '+(r.ok?'✔ ':'✘ ')+r.x; }));
-      else jobs.push(Promise.resolve('取景 ✘ 找不到這張圖在 speakers.js 的位置'));
-      msg='寫入中…'; render();
-      Promise.all(jobs).then(rs=>{ msg=rs.join('／'); render(); }).catch(err=>{ msg='存檔失敗：'+err; render(); });
+        if(r.ok){ Object.assign(T.art.obj, set); T.orig=Object.assign({}, set); } return i18nT('取景 ')+(r.ok?'✔ ':'✘ ')+r.x; }));
+      else jobs.push(Promise.resolve(i18nT('取景 ✘ 找不到這張圖在 speakers.js 的位置')));
+      msg=i18nT('寫入中…'); render();
+      Promise.all(jobs).then(rs=>{ msg=rs.join(i18nT('／')); render(); }).catch(err=>{ msg=i18nT('存檔失敗：')+err; render(); });
       return;
     }
     else if(t.dataset.act==='save'){
-      const fit=fitOf(); msg='寫入中…'; render();
+      const fit=fitOf(); msg=i18nT('寫入中…'); render();
       fetch(new URL('__efit', location.href).pathname, { method:'POST', body:JSON.stringify({ key, fit }) })
         .then(r=>r.text().then(x=>({ok:r.ok, x})))
         .then(r=>{ if(r.ok){ const nf={}; if(fit.mode) nf.mode=fit.mode; nf.pos=fit.pos;
                               if(fit.scale!==1) nf.scale=fit.scale; if(fit.shiftY) nf.shiftY=fit.shiftY;
                               en.fit=nf; }
-                   msg = r.ok ? '已存檔（'+r.x+'）' : '存檔失敗：'+r.x; render(); })
-        .catch(err=>{ msg='存檔失敗：'+err; render(); });
+                   msg = r.ok ? i18nT('已存檔（')+r.x+i18nT('）') : i18nT('存檔失敗：')+r.x; render(); })
+        .catch(err=>{ msg=i18nT('存檔失敗：')+err; render(); });
       return;
     }
     preview(); render();
@@ -1613,13 +1615,13 @@ function buildStatRows(){
   const st  = prog.getStats();
   const inv = ((GAME_CONFIG.rating||{}).exp||{}).invertFor || [];
   const rows = [
-    ['總局數',   String(st.sessions|0)],
-    ['總擊場數', String(st.kills|0)],
+    [i18nT('總局數'),   String(st.sessions|0)],
+    [i18nT('總擊場數'), String(st.kills|0)],
   ];
   const secs = (prog.playSeconds ? prog.playSeconds() : 0)|0;
   if(secs>0){
     const h=Math.floor(secs/3600), m=Math.floor(secs%3600/60);
-    rows.push(['遊玩時間', (h? h+' 小時 ':'')+m+' 分']);
+    rows.push([i18nT('遊玩時間'), (h? h+i18nT(' 小時 '):'')+m+i18nT(' 分')]);
   }
   let any=false;
   for(const who of ((GAME_CONFIG.girls||{}).who || [])){
@@ -1628,12 +1630,12 @@ function buildStatRows(){
     const pc = (GAME_CONFIG.partners||{})[who] || {};
     const raw = g.score / g.n;
     const avg = (inv.indexOf(who)>=0) ? (100 - raw) : raw;
-    rows.push([(pc.name||who)+'　局數', String(g.n)]);
-    rows.push([(pc.name||who)+'　平均得分',
-               avg.toFixed(1) + (inv.indexOf(who)>=0 ? '（反算）' : '')]);
+    rows.push([(pc.name||who)+i18nT('　局數'), String(g.n)]);
+    rows.push([(pc.name||who)+i18nT('　平均得分'),
+               avg.toFixed(1) + (inv.indexOf(who)>=0 ? i18nT('（反算）') : '')]);
   }
-  return { rows, note: any ? '「反算」＝那一位的評價越低越好（同她的 EXP 方向）。'
-                           : '打完一場（結算）之後才會有各女角的資料。' };
+  return { rows, note: any ? i18nT('「反算」＝那一位的評價越低越好（同她的 EXP 方向）。')
+                           : i18nT('打完一場（結算）之後才會有各女角的資料。') };
 }
 // 試飛：大地圖飛行原型（管理人模式限定；鈕本身由 CSS 隱藏，見 style.css）
 // ver -388：內嵌 iframe，不再跳頁；ver -389：「進入」這條路會跑讀取頁（見 openFlight）
@@ -1666,9 +1668,9 @@ function tuneHub(){
   ov=document.createElement('div'); ov.id='tuneSheet';
   document.body.appendChild(ov);
   const close=()=>ov.remove();
-  ov.innerHTML='<div class="tu-panel"><div class="tu-title">立繪調整區</div>'
-    +'<button data-go="normal">一般（劇情／城鎮）</button><button data-go="flight">飛行</button>'
-    +'<button data-go="close" class="tu-dim">關閉</button></div>';
+  ov.innerHTML=i18nT('<div class="tu-panel"><div class="tu-title">立繪調整區</div>')
+    +i18nT('<button data-go="normal">一般（劇情／城鎮）</button><button data-go="flight">飛行</button>')
+    +i18nT('<button data-go="close" class="tu-dim">關閉</button></div>');
   /* 一般 → 劇情舞台的「調整工作室」（ver -1820：選了就上台，面板上直接選角色／差分）。 */
   ov.querySelector('[data-go="normal"]').onclick=()=>{ close(); story.tuneStudio(()=>tuneHub()); };
   ov.querySelector('[data-go="flight"]').onclick=()=>{
@@ -1869,7 +1871,7 @@ function pickSheet(title, rows, onPick){
   ov.innerHTML='<div class="gm-panel"><div class="gm-title">'+title+'</div>'
     + rows.map((r,i)=>'<button class="ch-row" type="button" data-i="'+i+'">'
         + '<b>'+r.name+'</b><i>'+(r.sub||'')+'</i></button>').join('')
-    + '<div class="gm-acts"><button class="gm-btn gm-close" type="button">關　閉</button></div></div>';
+    + i18nT('<div class="gm-acts"><button class="gm-btn gm-close" type="button">關　閉</button></div></div>');
   document.body.appendChild(ov);
   ov.addEventListener('click', e=>e.stopPropagation());
   const close=(after)=>{ ov.classList.remove('on');
@@ -1896,13 +1898,13 @@ function pickSheet(title, rows, onPick){
      分歧的路線選擇＝章節的 `variants`（-1732）。`script/branches.js` 已回收。
    ⚠ 不進城的章節（`enter:'flight'`／`story`）沒有「無劇情」可言，直接開。 */
 bindBtn('chapterBtn', ()=>{
-  pickSheet('章　節', prog.CHAPTERS.map(c=>({ name:c.name, sub:c.sub })),
+  pickSheet(i18nT('章　節'), prog.CHAPTERS.map(c=>({ name:c.name, sub:c.sub })),
     (i, close)=>{
       const c=prog.CHAPTERS[i];
       const rows=(c.variants||[]).map(v=>({ name:v.label, sub:v.sub||'', v }));
       if(c.enter==='town'){
-        if(!rows.length) rows.push({ name:'演　劇　情', sub:'照這一章的旗進場' });
-        rows.push({ name:'無　劇　情', sub:'無怪・這座城的段落全部當成演過了（原「巡場」）', noStory:true });
+        if(!rows.length) rows.push({ name:i18nT('演　劇　情'), sub:i18nT('照這一章的旗進場') });
+        rows.push({ name:i18nT('無　劇　情'), sub:i18nT('無怪・這座城的段落全部當成演過了（原「巡場」）'), noStory:true });
       }
       if(!rows.length){ startChapter(c); close(); return; }
       close(()=> pickSheet(c.name, rows, (j, close2)=>{
@@ -2890,17 +2892,17 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
       if(++benchTick>=5){ benchTick=0; bench(); }             // 每 5 秒量一次降頻
       const thr=benchBest? (benchLast/benchBest) : 0;
       hud.textContent=
-        VERSION+'  fps '+fps+'（最長幀 '+maxDtShow+'ms）  long '+ltMs+'ms/5s'
-        +'\n節流 x'+(thr?thr.toFixed(2):'—')+'（'+Math.round(benchLast)+'ms/基準'+Math.round(benchBest)+'ms）'
-        +'\nheap '+mem+'  dom '+domN+'（開機+'+ (domN-domBase) +'）'
-        +'\n圖估 '+Math.round(imgB/1048576)+'MB/'+imgN+'張  canvas '+Math.round(cvB/1048576)+'MB/'+cvN
-        +'\nrAF '+rafRate+'/s  sto '+stoRate+'/s  網5s '+netN+'req '+netKB+'KB'
+        VERSION+'  fps '+fps+i18nT('（最長幀 ')+maxDtShow+i18nT('ms）  long ')+ltMs+'ms/5s'
+        +i18nT('\n節流 x')+(thr?thr.toFixed(2):'—')+i18nT('（')+Math.round(benchLast)+i18nT('ms/基準')+Math.round(benchBest)+i18nT('ms）')
+        +'\nheap '+mem+'  dom '+domN+i18nT('（開機+')+ (domN-domBase) +i18nT('）')
+        +i18nT('\n圖估 ')+Math.round(imgB/1048576)+'MB/'+imgN+i18nT('張  canvas ')+Math.round(cvB/1048576)+'MB/'+cvN
+        +'\nrAF '+rafRate+'/s  sto '+stoRate+i18nT('/s  網5s ')+netN+'req '+netKB+'KB'
         /* app 那一格讀 #top（戰鬥 UI）不讀 #app —— #home 長在 #app 裡面，
            整層永遠 visible（-851 的覆蓋規則藏的就是 #top/#bottom）。 */
-        +'\n層 home'+(hm?'●':'×')+' stage'+(st?'●':'×')+' 戰鬥'+(paintable($('top'))?'●':'隱')+' flight'+(fl?'●':'×')+(ovl?'  疊:'+ovl:'')
-        +'\n動畫中 '+runAll+'（∞ '+anims.length+'）'+(anims.length?'：\n  '+anims.slice(0,8).join('\n  '):'')
-        +'\ntimer '+tms.length+(tms.length?'：\n  '+tms.slice(0,8).join('\n  '):'')
-        +'\n♪ 播 '+med.length+'/載 '+medAll.length+'  src♪'+(P.srcLive|0)+'  ctx:'+ctxSt
+        +i18nT('\n層 home')+(hm?'●':'×')+' stage'+(st?'●':'×')+i18nT(' 戰鬥')+(paintable($('top'))?'●':i18nT('隱'))+' flight'+(fl?'●':'×')+(ovl?i18nT('  疊:')+ovl:'')
+        +i18nT('\n動畫中 ')+runAll+i18nT('（∞ ')+anims.length+i18nT('）')+(anims.length?i18nT('：\n  ')+anims.slice(0,8).join('\n  '):'')
+        +'\ntimer '+tms.length+(tms.length?i18nT('：\n  ')+tms.slice(0,8).join('\n  '):'')
+        +i18nT('\n♪ 播 ')+med.length+i18nT('/載 ')+medAll.length+'  src♪'+(P.srcLive|0)+'  ctx:'+ctxSt
         +(med.length?'\n♪ '+med.join('\n♪ '):'')
         /* ══ 搭檔與星（ver -1017，Ray：「終焉星效果沒發動啊」）══
            那一整串排查全卡在同一個答不出來的問題：**那顆星現在到底亮著沒？**
@@ -2910,18 +2912,18 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
            ⚠ 只印**旗標型**的那幾顆（有沒有）——數值型的看星表，不要在這裡重印一份。
            ⚠ 讀 `prog.girlHas`（唯一查詢點，鐵律 7），不要自己翻 levels 陣列。 */
         +'\n──────'
-        +'\n搭檔 '+(state.pickedPartner||'—')+' Lv'+(prog.isGirl(state.pickedPartner)?prog.girlLevel(state.pickedPartner):'-')
+        +i18nT('\n搭檔 ')+(state.pickedPartner||'—')+' Lv'+(prog.isGirl(state.pickedPartner)?prog.girlLevel(state.pickedPartner):'-')
         +(prog.isGirl(state.pickedPartner)
-            ? '\n星 '+['missGuard','saintHint','saintReload','brReloadActive','saintStartHp1',
+            ? i18nT('\n星 ')+['missGuard','saintHint','saintReload','brReloadActive','saintStartHp1',
                        'saintNoHitAdvance','guardPerEnemy','guardHealCounter',
                        'niReload','niFullStart','coopEnergyTime','roarReloadActive']
-                      .filter(k=>prog.girlHas(state.pickedPartner,k)).join(' ') || '（無）'
+                      .filter(k=>prog.girlHas(state.pickedPartner,k)).join(' ') || i18nT('（無）')
               : '')
         /* 最近一次結算有沒有評價（ver -1128）：手機上看不到 console，
            而「蕾娜評價不見了」已經回報過三次 —— 結論留在這裡才問得出原因。 */
-        +'\n評價 '+inspector.evalDiag()
-        +'\n聖徒 '+(state.saintMode?'●':'×')+' 夢魘'+(state.niMode?'●':'×')+' 共鬥'+(state.coopMode?'●':'×')
-        +'  combo '+(state.combo|0)+'  破防 '+Math.round(state.energy||0)
+        +i18nT('\n評價 ')+inspector.evalDiag()
+        +i18nT('\n聖徒 ')+(state.saintMode?'●':'×')+i18nT(' 夢魘')+(state.niMode?'●':'×')+i18nT(' 共鬥')+(state.coopMode?'●':'×')
+        +'  combo '+(state.combo|0)+i18nT('  破防 ')+Math.round(state.energy||0)
         +'\n──────'
         +'\ninner '+innerWidth+'x'+innerHeight+'  vh '+pVH.offsetHeight+' dvh '+pDVH.offsetHeight
         +'\nsafe top '+pT.offsetHeight+' / bot '+pB.offsetHeight
@@ -3100,9 +3102,9 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
       const ps=prog.playSeconds();
       const t=Math.floor(ps/3600)+':'+String(Math.floor(ps/60)%60).padStart(2,'0')+':'+String(ps%60).padStart(2,'0');
       d.textContent='stage '+prog.getStage()
-        +'｜'+VER_SHORT
-        +'｜蕾'+v('renna')+' 諾'+v('nouvelle')+' 索'+v('sorana')+' 安'+v('anya')
-        +'｜⏱'+t;
+        +i18nT('｜')+VER_SHORT
+        +i18nT('｜蕾')+v('renna')+i18nT(' 諾')+v('nouvelle')+i18nT(' 索')+v('sorana')+i18nT(' 安')+v('anya')
+        +i18nT('｜⏱')+t;
     },1000);
   })();
   homeEl.addEventListener('pointerdown', e=>{

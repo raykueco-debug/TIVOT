@@ -33,7 +33,7 @@ def modules():
     """所有會被 index.html 的模組圖抓到的本機 .js（flight/ 與 tools/ 不算：
        飛行頁是另一個 document、非模組，自己另外帶版本號）。"""
     out = []
-    for pat in ('*.js', 'modules/*.js', 'script/*.js', 'i18n/*.js', 'i18n/script/*.js'):
+    for pat in ('*.js', 'modules/*.js', 'script/*.js', 'i18n/*.js', 'i18n/script/*.js', 'i18n/ui/*.js'):
         out += [p.replace(os.sep, '/') for p in
                 sorted(glob.glob(os.path.join(ROOT, pat)))]
     return [os.path.relpath(p, ROOT).replace(os.sep, '/') for p in out]
@@ -72,6 +72,8 @@ def run(check=False):
         (r'src="(\.\./orientation|settlement|talks)\.js(\?v=[^"]*)?"',
          r'src="\1.js?v=<V>"'),
         (r"const FLIGHT_VER = 'ver [^']*';", "const FLIGHT_VER = 'ver -<V>';"),
+        # 譯文表的 classic 版（ver -1909，head 裡 document.write 的那一行）
+        (r"\.classic\.js\?v=\d+", ".classic.js?v=<V>"),
         # ⚠ 門的素材是會被同名覆蓋的（-1215 削過 alpha 底噪），所以圖也要帶版本號。
         #   §5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是「看起來沒變」。
         (r'(\.\./resources/vfx/kerberos_[a-z]+\.webp)(\?v=[0-9.]*)?', r'\1?v=<V>'),

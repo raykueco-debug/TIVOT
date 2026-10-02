@@ -142,6 +142,11 @@ def js(lang):
     with open(p, 'w', encoding='utf-8') as f:
         f.write('/* 由 tools/script_i18n.py js %s 從 %s.json 產生 —— 不要手改，改 json 再重跑。 */\n' % (lang, lang))
         f.write('export default ' + json.dumps(out, ensure_ascii=False, separators=(',', ':')) + ';\n')
+    # 飛行頁是非模組、要同步載 → 另出一份 classic（掛到 window.__TIVOT_TR，兩張表合併）
+    pc = p[:-3] + '.classic.js'
+    with open(pc, 'w', encoding='utf-8') as f:
+        f.write('/* 由 tools/%s js %s 產生（飛行頁用的 classic 版）—— 不要手改。 */\n' % (os.path.basename(__file__), lang))
+        f.write('window.__TIVOT_TR=Object.assign(window.__TIVOT_TR||{},' + json.dumps(out, ensure_ascii=False, separators=(',', ':')) + ');\n')
     print(f'→ {os.path.relpath(p, ROOT)}（{len(out)} 句，{os.path.getsize(p)//1024} KB）')
 
 if __name__ == '__main__':

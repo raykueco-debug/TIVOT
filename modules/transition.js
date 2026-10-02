@@ -13,6 +13,7 @@
  *    輕觸才繼續，提示不自動消失。
  * ========================================================================== */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG } from '../config.js';
 
 const $ = id => document.getElementById(id);
@@ -40,7 +41,7 @@ export function playTransition(kind, done, opts){
   $('expelEn').innerHTML   = (data.en || []).map(line => `<div>${line}</div>`).join('');
   const hintEl = $('expelHint'); if(hintEl) hintEl.textContent = hint;
   // 無障礙：aria-label 併中文大字 + 繼續提示，顯示時聚焦以利螢幕報讀
-  el.setAttribute('aria-label', (cn ? cn+'。' : '') + hint);
+  el.setAttribute('aria-label', (cn ? cn+i18nT('。') : '') + hint);
 
   // 顯示（先 opacity 0）→ 強制 reflow → 次影格加 vis 觸發淡入
   el.classList.add('show');
@@ -119,22 +120,22 @@ export function playTransition(kind, done, opts){
    ⚠ 這張表是「事實」不是「規矩」：新增任何一個滿版不透明層就補一列，
      不補的下場只是多一行假警告，不會壞掉（安全的那一側是預設）。 */
 const HOME_COVERS = [
-  ['#storyStage.on',                     '劇情／城鎮舞台'],          // 不透明底色
-  ['#expelTransition.show',              '過渡禎'],                  // 出陣的櫻花／驅逐那一張
-  ['#alFlash',                           '開機的聖光'],              // 光暈實心蓋滿才交棒（main 的 2500ms）
-  ['#kerb.rise.full',                    '槍棺（推到頂）'],          // 交棒進戰鬥：門蓋滿畫面
-  ['#transition.on',                     '結算過場'],
+  ['#storyStage.on',                     i18nT('劇情／城鎮舞台')],          // 不透明底色
+  ['#expelTransition.show',              i18nT('過渡禎')],                  // 出陣的櫻花／驅逐那一張
+  ['#alFlash',                           i18nT('開機的聖光')],              // 光暈實心蓋滿才交棒（main 的 2500ms）
+  ['#kerb.rise.full',                    i18nT('槍棺（推到頂）')],          // 交棒進戰鬥：門蓋滿畫面
+  ['#transition.on',                     i18nT('結算過場')],
   /* ⚠⚠ **讀取頁也是一層蓋滿的**（ver -1663）：`#assetLoader` 是
      `position:fixed; inset:0; background:#0a0812`（不透明），而所有走
      `story.loadScene()` 的路徑都在它的 `onCovered`（全黑那一刻）才收首頁
      —— 那正是這張表要的「等新的那一層真的蓋上去」。
      名單裡漏了它，於是那幾條**做對了的**路徑反而每次被警告一次（誤報）。
      ⚠ `:not(.al-fade)` ＝正在淡出的那半秒不算：那時它已經在讓位了。 */
-  ['#assetLoader:not(.al-fade)',         '讀取頁'],
+  ['#assetLoader:not(.al-fade)',         i18nT('讀取頁')],
 ];
 export function homeCoveredBy(){
   /* 飛行 iframe 沒有自己的 class，看的是 body 那一支（它有不透明底色 #05060c）。 */
-  if(document.body.classList.contains('flight-on')) return '飛行畫面';
+  if(document.body.classList.contains('flight-on')) return i18nT('飛行畫面');
   for(const [sel, name] of HOME_COVERS){
     if(document.querySelector(sel)) return name;
   }
@@ -157,7 +158,7 @@ export function hideHome(where){
 function flashHomeWarn(where){
   try{
     const d=document.createElement('div');
-    d.textContent='⚠ 收首頁時沒有東西蓋著：'+where;
+    d.textContent=i18nT('⚠ 收首頁時沒有東西蓋著：')+where;
     d.style.cssText='position:fixed;left:8px;bottom:8px;z-index:99999;background:#a01020;color:#fff;'
                    +'font:12px/1.5 monospace;padding:4px 8px;border-radius:4px;pointer-events:none';
     document.body.appendChild(d);

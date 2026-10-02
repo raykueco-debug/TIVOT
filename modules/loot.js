@@ -10,6 +10,7 @@
      常駐在 index.html 裡只是多一塊沒人看的節點。
    ══════════════════════════════════════════════════════════════════════ */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, weaponStatRows, weaponOf, weaponDescText, asset, sfxGain } from '../config.js';
 import * as inv from '../script/inventory.js';
 import * as shopStock from '../script/shopstock.js';   // 店鋪存貨（ver -405）
@@ -62,16 +63,16 @@ export function showLoot(list, done, money, opts){
   const gain = (money || exp)
     ? '<div class="loot-row loot-gain">'
       + (money ? '<span class="lg-item"><span class="loot-name">'+inv.moneyName()
-               + '</span><span class="loot-n">＋'+money+'</span></span>' : '')
+               + i18nT('</span><span class="loot-n">＋')+money+'</span></span>' : '')
       + (exp   ? '<span class="lg-item"><span class="loot-name">EXP</span>'
-               + '<span class="loot-n">＋'+exp+'</span></span>' : '')
+               + i18nT('<span class="loot-n">＋')+exp+'</span></span>' : '')
       + '</div>'
     : '';
 
   const ov=document.createElement('div'); ov.id='lootSheet';
   ov.innerHTML =
       '<div class="loot-panel">'
-    +   '<div class="loot-title">'+(o.title || '拾得道具')+'</div>'
+    +   '<div class="loot-title">'+(o.title || i18nT('拾得道具'))+'</div>'
     +   '<div class="loot-list">'
     +     gain
     +     rows.map(r=>{
@@ -84,7 +85,7 @@ export function showLoot(list, done, money, opts){
                  + '</div>';
           }).join('')
     +   '</div>'
-    +   '<button class="loot-ok" type="button">確認</button>'
+    +   i18nT('<button class="loot-ok" type="button">確認</button>')
     + '</div>';
   document.body.appendChild(ov);
   requestAnimationFrame(()=>ov.classList.add('on'));
@@ -134,7 +135,7 @@ export function bagListHtml(catFilter, opts){
                —— 日後多一種用途只要卡上寫 `use:{…}`（鐵律 1）。 */
           const u=o.use && ((inv.defOf(r.id)||{}).use||null);
           const useBtn=(u && (u.hp!=null || u.niem))
-            ? '<button class="bag-use" data-id="'+r.id+'" type="button">使　用</button>' : '';
+            ? '<button class="bag-use" data-id="'+r.id+i18nT('" type="button">使　用</button>') : '';
           return '<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
                + '<span class="loot-n">×'+qtyText(r.n)+'</span>'
                + (r.desc?'<span class="loot-desc">'+r.desc+'</span>':'')
@@ -178,7 +179,7 @@ export function showBag(opts){
             const cur = o.equip && isW && o.current===r.id;
             const btn = (o.equip && isW)
               ? '<button class="bag-eq'+(cur?' cur':'')+'" data-id="'+r.id+'" type="button">'
-                + (cur?'使用中':'裝　備')+'</button>' : '';
+                + (cur?i18nT('使用中'):i18nT('裝　備'))+'</button>' : '';
             return '<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
                  + (o.equip ? '' : '<span class="loot-n">×'+qtyText(r.n)+'</span>')
                  + (r.desc?'<span class="loot-desc">'+r.desc+'</span>':'')+btn+'</div>';
@@ -186,10 +187,10 @@ export function showBag(opts){
         : '<div class="bag-empty">—</div>';
       return '<div class="bag-cat">'+g.name+'</div>'+rows;
     }).join('') || bagListHtml(o.cat);
-    ov.innerHTML='<div class="loot-panel"><div class="loot-title">'+(o.cat||'道具欄')+'</div>'
+    ov.innerHTML='<div class="loot-panel"><div class="loot-title">'+(i18nT(o.cat)||i18nT('道具欄'))+'</div>'
                + '<div class="bag-money">'+inv.moneyName()+'　<b>'+inv.getMoney()+'</b></div>'
                + '<div class="loot-list">'+body+'</div>'
-               + '<button class="loot-ok" type="button">關閉</button></div>';
+               + i18nT('<button class="loot-ok" type="button">關閉</button></div>');
     ov.querySelector('.loot-ok').addEventListener('click', e=>{ e.stopPropagation();
       try{ SFX.unlock(); SFX.menuClick(); }catch(_){} close(); });
     ov.querySelectorAll('.bag-eq').forEach(b=>b.addEventListener('click', e=>{
@@ -278,10 +279,10 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
   };
   let jeroMsg=null;   // 杰羅這一把的結果台詞（換頁／換槍就清）
   function jeroRows(){
-    const head='<div class="mod-head">「先說好——俺不是專業槍匠，改壞了不退錢。'
-      +'不過改成的話，出來的傢伙比制式的火力還兇。要賭就把槍放上來。」</div>';
+    const head=i18nT('<div class="mod-head">「先說好——俺不是專業槍匠，改壞了不退錢。')
+      +i18nT('不過改成的話，出來的傢伙比制式的火力還兇。要賭就把槍放上來。」</div>');
     const list=wOwned();
-    if(!list.length) return head+'<div class="bag-empty">身上沒有可以改的副武器。</div>';
+    if(!list.length) return head+i18nT('<div class="bag-empty">身上沒有可以改的副武器。</div>');
     return head + list.map(id=>{
       const w=(GAME_CONFIG.weapons||{})[id]||{};
       const b=prog.jeroMod(id), cost=jeroCost(id);
@@ -289,25 +290,25 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
          ⚠ 標的是**改造增益 +N%**（ver -867，Ray 更正：放大的是改造增益不是火力）。 */
       const noMod = !(prog.weaponMod(id)>0);
       const tag = b>0
-        ? '<span class="mod-mat">改造済　改造增益 +'+Math.round(b*100)+'%</span>'
+        ? i18nT('<span class="mod-mat">改造済　改造增益 +')+Math.round(b*100)+'%</span>'
         : noMod
-        ? '<span class="mod-mat lack">先去改裝再來</span>'
+        ? i18nT('<span class="mod-mat lack">先去改裝再來</span>')
         : '<span class="mod-mat'+(inv.getMoney()>=cost?'':' lack')+'">'+cost+' '+inv.moneyName()+'</span>';
       return '<div class="shop-row mod-row'+((b>0||noMod)?' done':'')+(pick==='jero:'+id?' pick':'')+'"'
            +   ' data-id="jero:'+id+'">'
-           + '<span class="loot-name"><i class="mod-star">'+(w.cat||'')+'</i>'
+           + '<span class="loot-name"><i class="mod-star">'+i18nT(w.cat||'')+'</i>'
            +   (w.shortName||w.name||id)+'</span>'
            + '<span class="mod-need">'+tag+'</span></div>';
     }).join('');
   }
   /* 「點下去以後跳槍的圖與數值出來」（Ray）：說明區＝槍圖＋規格表＋改造狀態。 */
   function jeroDesc(){
-    if(!pick || pick.indexOf('jero:')!==0) return '選一把槍看看。';
+    if(!pick || pick.indexOf('jero:')!==0) return i18nT('選一把槍看看。');
     const id=pick.slice(5), w=(GAME_CONFIG.weapons||{})[id]||{};
     const b=prog.jeroMod(id);
     return (w.image ? '<img class="jero-gunimg" src="'+asset(w.image)+'" alt="">' : '')
          + statTable(id)
-         + (b>0 ? '<div class="wp-vs">杰羅改造済：改造增益 +'+Math.round(b*100)+'%</div>' : '')
+         + (b>0 ? i18nT('<div class="wp-vs">杰羅改造済：改造增益 +')+Math.round(b*100)+'%</div>' : '')
          + (jeroMsg ? '<div class="wp-flavor">'+jeroMsg+'</div>' : '');
   }
   /* 選中的那一項：`star:<id>` 或 `wmod:<id>`（兩種東西同一個 `pick`，鐵律 8）。 */
@@ -339,18 +340,18 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
   }
   function modGrid(){
     const lit=STARS().filter(st=>prog.starCount(st.id)>0).length;
-    const cells=[{k:'main', t:(GAME_CONFIG.mainGun||{}).name||'主武器',
-                  tag:(GAME_CONFIG.mainGun||{}).tag||'', s:'已點亮 '+lit+' / '+STARS().length}]
+    const cells=[{k:'main', t:(GAME_CONFIG.mainGun||{}).name||i18nT('主武器'),
+                  tag:(GAME_CONFIG.mainGun||{}).tag||'', s:i18nT('已點亮 ')+lit+' / '+STARS().length}]
       .concat(weaponCats().map(c=>{
         const n=wOwned().filter(id=>(GAME_CONFIG.weapons[id]||{}).cat===c).length;
-        return {k:'cat:'+c, t:c, tag:'副武器', s:'持有 '+n+' 把'};
+        return {k:'cat:'+c, t:c, tag:i18nT('副武器'), s:i18nT('持有 ')+n+i18nT(' 把')};
       }));
     return '<div class="mod-grid">'+cells.map(c=>
         '<div class="mod-cell" data-modcell="'+c.k+'">'
       +   '<i>'+c.tag+'</i><b>'+c.t+'</b><span>'+c.s+'</span>'
       + '</div>').join('')+'</div>';
   }
-  const modBack='<div class="mod-back" data-modback="1" role="button">‹　返回分類</div>';
+  const modBack=i18nT('<div class="mod-back" data-modback="1" role="button">‹　返回分類</div>');
   function modRows(){
     if(!modTab) return modGrid();
     if(modTab!=='main') return modBack+modSubRows(modTab.slice(4));
@@ -361,12 +362,12 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
          整列走 done 的壓暗（modReady 已經擋著，選了也按不動）。 */
       const locked=!!(st.storyFirst && n===0);
       const mats=locked
-        ? '<span class="mod-mat lack">'+(st.lockText||'尚未開啟')+'</span>'
+        ? '<span class="mod-mat lack">'+(st.lockText||i18nT('尚未開啟'))+'</span>'
         : r ? Object.keys(r.items||{}).map(id=>{
         const have=inv.count(id), need=r.items[id];
         return '<span class="mod-mat'+(have>=need?'':' lack')+'">'
              + inv.nameOf(id)+' '+(isFinite(have)?have:'∞')+'/'+need+'</span>';
-      }).join('') : '<span class="mod-mat lack">配方未定</span>';
+      }).join('') : i18nT('<span class="mod-mat lack">配方未定</span>');
       return '<div class="shop-row mod-row'+((done||locked)?' done':'')+(pick==='star:'+st.id?' pick':'')+'"'
            +   ' data-id="star:'+st.id+'">'
            + '<span class="loot-name"><i class="mod-star">'+st.star+'</i>'+st.name
@@ -378,37 +379,37 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
            + '</span></div>';
     });
     return modBack
-         + '<div class="mod-head">'+((GAME_CONFIG.mainGun||{}).name||'主武器')
-         + '　已點亮 '+lit+' / '+STARS().length+'</div>' + rows.join('');
+         + '<div class="mod-head">'+((GAME_CONFIG.mainGun||{}).name||i18nT('主武器'))
+         + i18nT('　已點亮 ')+lit+' / '+STARS().length+'</div>' + rows.join('');
   }
   /* ── 副武器：一把一列，只收錢（ver -714；-857 起**逐類**進來，cat 由格子帶） ── */
   function modSubRows(cat){
     const list=wOwned().filter(id=>!cat || (GAME_CONFIG.weapons[id]||{}).cat===cat);
     if(!list.length)
-      return '<div class="mod-head">'+(cat||'副武器')+'</div>'
-           + '<div class="bag-empty">還沒有這一類的武器。</div>';
+      return '<div class="mod-head">'+(cat||i18nT('副武器'))+'</div>'
+           + i18nT('<div class="bag-empty">還沒有這一類的武器。</div>');
     const sub=list.map(id=>{
       const w=GAME_CONFIG.weapons[id]||{};
       const lv=prog.weaponMod(id), max=prog.weaponModMax(id), nx=wNext(id), cost=wCost(id);
       const statLv=WM().statLv||max;
       /* ⚠ 第 5 階不加數值 —— 那一列要講清楚，不然玩家付了三倍價會覺得被騙。 */
-      const nxt = !nx ? '<span class="mod-mat">已滿階</span>'
-        : '<span class="mod-mat">→ '+nx+' 階'+(nx>statLv?'（特殊能力）':'（攻擊 +'
-          + Math.round((WM().perLv||0)*100)+'%）')+'</span>'
+      const nxt = !nx ? i18nT('<span class="mod-mat">已滿階</span>')
+        : '<span class="mod-mat">→ '+nx+i18nT(' 階')+(nx>statLv?i18nT('（特殊能力）'):i18nT('（攻擊 +')
+          + Math.round((WM().perLv||0)*100)+i18nT('%）'))+'</span>'
           + '<span class="mod-mat'+(inv.getMoney()>=cost?'':' lack')+'">'+cost+' '+inv.moneyName()+'</span>';
       return '<div class="shop-row mod-row'+(!nx?' done':'')+(pick==='wmod:'+id?' pick':'')+'"'
            +   ' data-id="wmod:'+id+'">'
-           + '<span class="loot-name"><i class="mod-star">'+(w.cat||'')+'</i>'
+           + '<span class="loot-name"><i class="mod-star">'+i18nT(w.cat||'')+'</i>'
            +   (w.shortName||w.name||id)+'　'+lv+'/'+max+'</span>'
            + '<span class="mod-need">'+nxt+'</span></div>';
     }).join('');
-    return '<div class="mod-head">'+(cat||'副武器')+'　改裝（每階 攻擊 +'
-         + Math.round((WM().perLv||0)*100)+'%，第 '+((WM().statLv||4)+1)+' 階為特殊能力）</div>'
+    return '<div class="mod-head">'+(cat||i18nT('副武器'))+i18nT('　改裝（每階 攻擊 +')
+         + Math.round((WM().perLv||0)*100)+i18nT('%，第 ')+((WM().statLv||4)+1)+i18nT(' 階為特殊能力）</div>')
          + sub;
   }
   const cfg=((SHOP.shops||{})[stockKey])||{};
   const TABS=(cfg.tabs&&cfg.tabs.length)?cfg.tabs:['buy','sell'];
-  const TABNAME=Object.assign({ buy:'買', sell:'賣', mod:'改裝', jero:'改槍' }, cfg.tabName||{});
+  const TABNAME=Object.assign({ buy:i18nT('買'), sell:i18nT('賣'), mod:i18nT('改裝'), jero:i18nT('改槍') }, cfg.tabName||{});
   let tab=TABS[0], pick=null;
   /* 改裝頁的導覽（ver -857 由 -716 的「主／副」兩頁籤改成四大格入口，見 modGrid）。
      ⚠ 換頁要清 `pick`：主副的 id 前綴不同，留著會讓結帳鈕亮著卻按不動。 */
@@ -447,7 +448,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     return '<span class="shop-cartline">'
          + '<button class="cr-m'+(n<=0?' off':'')+'" type="button">−</button>'
          + '<b class="cr-n'+(n>0?' on':'')+'">×'+n+'</b>'
-         + '<button class="cr-p" type="button">＋</button></span>'; };
+         + i18nT('<button class="cr-p" type="button">＋</button></span>'); };
 
   /* ⚠ `o.onClose`（ver -404）：**任何**收掉這張單子的路徑都要通知呼叫端 ——
      城鎮那邊記著「單子開著沒」，不通知的話玩家按了關閉之後就再也開不回來。
@@ -492,11 +493,11 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
         const has=inv.count(id)>0 || ((GAME_CONFIG.weapons||{})[id]||{}).owned;
         /* 存貨：不限量的不標（標了反而讓人以為那是一個數字）；賣完的整列變暗、不能選。 */
         const out=(e.n<=0);
-        const left = isFinite(e.n) ? ('<i class="wp-stock">'+(out?'售完':'庫存 '+e.n)+'</i>') : '';
+        const left = isFinite(e.n) ? ('<i class="wp-stock">'+(out?i18nT('售完'):i18nT('庫存 ')+e.n)+'</i>') : '';
         /* ⚠ 標籤（持有／庫存）自己一列（ver -405）：塞在品名後面的話，長品名一換行
            就會與右邊的價錢疊在一起（實測「短板霰彈槍『龍息』」那一列，
            `持有` 的框被拆成兩半夾著 3000 G）。 */
-        const tags = (has?'<i class="wp-have">持有</i>':'') + left;
+        const tags = (has?i18nT('<i class="wp-have">持有</i>'):'') + left;
         /* 這一列的 −/＋（ver -496 購物車）：買不到的不給 —— 售完、以及**已持有的武器**
            （`hasWeapon` 是布林，第二把在資料上表達不出來）。一般道具持有了照樣加購
            （-405 的 `owned` 擋掉整鈕是連牛奶都不能買第二瓶，那是 bug 不是規則）。
@@ -507,14 +508,14 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
              + '<span class="loot-name">'+(d.name||id)+'</span>'
              + '<span class="loot-n">'+price+' '+inv.moneyName()+'</span>'
              + ((tags||ctrl) ? '<span class="shop-tags">'+tags+ctrl+'</span>' : '')+'</div>';
-      }).join('') : '<div class="bag-empty">這家店沒有在賣東西。</div>';
+      }).join('') : i18nT('<div class="bag-empty">這家店沒有在賣東西。</div>');
     }else if(tab==='sell'){
       rows = sellable.length ? sellable.map(r=>
             '<div class="shop-row'+(pick===r.id?' pick':'')+'" data-id="'+r.id+'">'
           + '<span class="loot-name">'+r.name+'</span>'
           + '<span class="loot-n">×'+qtyText(r.n)+'　'+inv.sellPrice(r.id)+' '+inv.moneyName()+'</span>'
           + '<span class="shop-tags">'+cartCtrl(r.id)+'</span></div>'
-          ).join('') : '<div class="bag-empty">沒有可以賣的東西。</div>';
+          ).join('') : i18nT('<div class="bag-empty">沒有可以賣的東西。</div>');
     }else if(tab==='jero'){
       rows = jeroRows();          // 杰羅的賭博式改造（ver -866）
     }else{
@@ -540,11 +541,11 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     /* 說明區：武器 → 規格表（＋同類比較）；其餘 → 文字說明。 */
     let desc;
     if(tab==='jero') desc = jeroDesc();
-    else if(!pick) desc = (tab==='mod') ? '' : '選一項看說明。';
+    else if(!pick) desc = (tab==='mod') ? '' : i18nT('選一項看說明。');
     else if(weaponStatRows(pick, true).length){
       const rk=rivalOf(pick);
       desc = statTable(pick)
-           + (rk ? '<div class="wp-vs">對比現有：'+(GAME_CONFIG.weapons[rk].shortName||rk)+'</div>'
+           + (rk ? i18nT('<div class="wp-vs">對比現有：')+(GAME_CONFIG.weapons[rk].shortName||rk)+'</div>'
                  + statTable(rk,'rival') : '')
            + (((GAME_CONFIG.weapons||{})[pick]||{}).flavor ?
               '<div class="wp-flavor">'+GAME_CONFIG.weapons[pick].flavor+'</div>' : '');
@@ -555,7 +556,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
        重建前記下、重建後放回（鐵律 8：所有走 render 的路徑一次全好）。 */
     const _sl=ov.querySelector('.shop-list'); const _scroll=_sl?_sl.scrollTop:0;
     ov.innerHTML='<div class="loot-panel shop-panel">'
-      + '<div class="loot-title">'+(cfg.title||'商店')
+      + '<div class="loot-title">'+(cfg.title||i18nT('商店'))
       +   (o.info ? '<span class="shop-info">'+o.info+'</span>' : '')+'</div>'
       + (o.dock ? '<i class="lt-exp">'+(ov.classList.contains('dock-'+o.dock)?'⤢':'⤡')+'</i>' : '')
       + '<div class="bag-money">'+inv.moneyName()+'　<b>'+inv.getMoney()+'</b></div>'
@@ -574,24 +575,24 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
       + '<div class="shop-desc">'+desc+'</div>'
       + '<div class="shop-acts">'
       +   (tab==='jero'
-          ? ('<button class="shop-do'+(can?'':' broke')+'" type="button">改　造'
+          ? ('<button class="shop-do'+(can?'':' broke')+i18nT('" type="button">改　造')
              +(can ? '　'+jeroCost(pick.slice(5))+' '+inv.moneyName() : '')+'</button>')
           : tab==='mod'
-          ? ('<button class="shop-do'+(can?'':' broke')+'" type="button">強　化</button>')
+          ? ('<button class="shop-do'+(can?'':' broke')+i18nT('" type="button">強　化</button>'))
           : '<button class="shop-do'+(can?'':' broke')+'" type="button">'
             /* 結帳（ver -496）：整車一次付清；車是空的鈕就暗著（字不變，
                玩家看得到這一顆是幹嘛的）。售完／已持有的狀態在各自那一列上。 */
             /* ⚠ 賣的總價前面加「＋」：同一顆鈕在兩頁的金額方向相反，
                不標的話「結帳 1000」讀起來像要付錢。 */
-            + (can ? ('結帳　'+(tab==='sell'?'＋':'')+total+' '+inv.moneyName()) : '結　帳')
+            + (can ? (i18nT('結帳　')+(tab==='sell'?i18nT('＋'):'')+total+' '+inv.moneyName()) : i18nT('結　帳'))
             +'</button>')
       /* ⚠ 字短一點（ver -404 由「與店主交談」改）：靠左停的窄單子上，四顆鈕
          （買下／交談／挑戰／關閉）要排進一列，五個字會被擠成兩行。店主就站在右邊，
          「交談」跟誰交談不會有疑義。 */
-      +   (keeper&&keeper.length ? '<button class="shop-talk" type="button">交　談</button>' : '')
+      +   (keeper&&keeper.length ? i18nT('<button class="shop-talk" type="button">交　談</button>') : '')
       +   ((cfg.challenge && onChallenge)
-          ? '<button class="shop-challenge" type="button">'+(cfg.challengeLabel||'挑戰')+'</button>' : '')
-      +   '<button class="loot-ok" type="button">關閉</button>'
+          ? '<button class="shop-challenge" type="button">'+(cfg.challengeLabel||i18nT('挑戰'))+'</button>' : '')
+      +   i18nT('<button class="loot-ok" type="button">關閉</button>')
       + '</div></div>';
 
     const _sl2=ov.querySelector('.shop-list'); if(_sl2 && _scroll) _sl2.scrollTop=_scroll;
@@ -661,13 +662,13 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
         if(!inv.spendMoney(cost)) return;
         const jm=JM();
         if(Math.random() < (jm.failP==null ? 0.5 : jm.failP)){
-          jeroMsg='「……嘖，搞砸了。說好的，錢不退。」';
+          jeroMsg=i18nT('「……嘖，搞砸了。說好的，錢不退。」');
           try{ SFX.wrong(); }catch(_){}
         }else{
           const rng=jm.bonus||[0.15,0.50];
           const b=Math.round((rng[0]+Math.random()*(rng[1]-rng[0]))*100)/100;
           prog.setJeroMod(id, b);
-          jeroMsg='「哈！成了！這把比制式的還兇——拿去試試。」';
+          jeroMsg=i18nT('「哈！成了！這把比制式的還兇——拿去試試。」');
           checkoutSfx();
         }
         render();
@@ -810,7 +811,7 @@ export function cookDish(id){
      配方只列 id，那一格的真相在道具上（鐵律 7）。
    ⚠ 已經吃過的照樣煮得出來（吃飯不必只吃一次），但**不再加上限** ——
      所以那一列標「已習得」，免得玩家以為刷得到。 */
-const FOOD_SLOT={ meat:'肉', veg:'菜', season:'調味' };
+const FOOD_SLOT={ meat:i18nT('肉'), veg:i18nT('菜'), season:i18nT('調味') };
 export function showKitchen(opts){
   ensureCss();
   const o=opts||{};
@@ -842,12 +843,12 @@ export function showKitchen(opts){
              + (slot?'<i>'+slot+'</i>':'') + inv.nameOf(m)
              + '<b>'+(have>0?have:0)+'</b></span>';
       }).join('');
-      const btn = done ? '<span class="cook-do done">已習得</span>'
-                : can  ? '<button class="cook-do" type="button">料　理</button>'
-                       : '<span class="cook-do lack">料　理</span>';
+      const btn = done ? i18nT('<span class="cook-do done">已習得</span>')
+                : can  ? i18nT('<button class="cook-do" type="button">料　理</button>')
+                       : i18nT('<span class="cook-do lack">料　理</span>');
       return '<div class="loot-row cook-row" data-id="'+id+'">'
            + '<span class="cook-pic'+(pic?'':' unknown')+'"'
-           +   (pic?' style="background-image:url(\''+pic+'\')"':'')+'>'+(pic?'':'？？？')+'</span>'
+           +   (pic?' style="background-image:url(\''+pic+'\')"':'')+'>'+(pic?'':i18nT('？？？'))+'</span>'
            + '<span class="cook-body"><b class="cook-name">'+d.name+'</b>'
            +   '<span class="cook-mats">'+mhtml+'</span></span>'
            + btn
@@ -861,13 +862,13 @@ export function showKitchen(opts){
     /* ⚠ ver -1659：問 `canCookAny()`（同一支，鐵律 7）—— 直接 `some(canCook)` 會把
        `usual` 算進去（它不需要食材，永遠 true），於是「關閉」鈕永遠被收掉＝卡死。 */
     const gate = !!o.mustCook && canCookAny();
-    ov.innerHTML='<div class="loot-panel"><div class="loot-title">瑪麗亞的廚房'
+    ov.innerHTML=i18nT('<div class="loot-panel"><div class="loot-title">瑪麗亞的廚房')
                + (o.info ? '<span class="shop-info">'+o.info+'</span>' : '')+'</div>'
                + '<div class="shop-desc">'
-               + (gate ? '想吃哪一道？' : '帶食材來，我做給你們吃。一道菜是一份肉、一份菜、一份調味。')
+               + (gate ? i18nT('想吃哪一道？') : i18nT('帶食材來，我做給你們吃。一道菜是一份肉、一份菜、一份調味。'))
                + '</div>'
                + '<div class="loot-list">'+body+'</div>'
-               + (gate ? '' : '<button class="loot-ok" type="button">關閉</button>')+'</div>';
+               + (gate ? '' : i18nT('<button class="loot-ok" type="button">關閉</button>'))+'</div>';
     ov.querySelectorAll('.cook-row').forEach(row=>{
       const b=row.querySelector('button.cook-do'); if(!b) return;   // ⚠ 只有真的可按的那一態是 <button>
       b.addEventListener('click', e=>{ e.stopPropagation();
@@ -907,16 +908,16 @@ export function showExchange(opts){
       const can=have>0;
       return '<div class="loot-row exch-row"'+(can?' data-i="'+i+'"':'')+'>'
            + '<span class="loot-name">'+inv.nameOf(pr.food)+'　→　'+prizeName(pr.prize)+'</span>'
-           + '<span class="loot-n">持有 '+(isFinite(have)?have:'∞')+'</span>'
-           + (can ? '<button class="exch-do" type="button">交　換</button>'
-                  : '<span class="mod-mat lack">未持有</span>')
+           + i18nT('<span class="loot-n">持有 ')+(isFinite(have)?have:'∞')+'</span>'
+           + (can ? i18nT('<button class="exch-do" type="button">交　換</button>')
+                  : i18nT('<span class="mod-mat lack">未持有</span>'))
            + '</div>';
     }).join('');
-    ov.innerHTML='<div class="loot-panel"><div class="loot-title">獵人的兌換'
+    ov.innerHTML=i18nT('<div class="loot-panel"><div class="loot-title">獵人的兌換')
                + (o.info ? '<span class="shop-info">'+o.info+'</span>' : '')+'</div>'
-               + '<div class="shop-desc">今天想收的獵物。帶來就換。（每天不同）</div>'
+               + i18nT('<div class="shop-desc">今天想收的獵物。帶來就換。（每天不同）</div>')
                + '<div class="loot-list">'+body+'</div>'
-               + '<button class="loot-ok" type="button">關閉</button></div>';
+               + i18nT('<button class="loot-ok" type="button">關閉</button></div>');
     ov.querySelectorAll('.exch-row[data-i]').forEach(row=>{
       const b=row.querySelector('.exch-do'); if(!b) return;
       b.addEventListener('click', e=>{ e.stopPropagation();
@@ -952,12 +953,12 @@ export function showBounty(city, opts){
     ? list.map(b=>'<div class="loot-row bounty-row"><span class="loot-name">'+b.name+'</span>'
         + '<span class="loot-n">'+b.reward+unit+'</span>'
         + (b.desc?'<span class="loot-desc">'+b.desc+'</span>':'')+'</div>').join('')
-    : '<div class="bag-empty">目前沒有委託。</div>';
-  ov.innerHTML='<div class="loot-panel"><div class="loot-title">懸賞榜'
+    : i18nT('<div class="bag-empty">目前沒有委託。</div>');
+  ov.innerHTML=i18nT('<div class="loot-panel"><div class="loot-title">懸賞榜')
              + (o.info ? '<span class="shop-info">'+o.info+'</span>' : '')+'</div>'
              + (o.dock ? '<i class="lt-exp">⤢</i>' : '')
              + '<div class="loot-list">'+body+'</div>'
-             + '<button class="loot-ok" type="button">關閉</button></div>';
+             + i18nT('<button class="loot-ok" type="button">關閉</button></div>');
   const close=()=>{ ov.classList.remove('on');
     setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 220);
     if(o.onClose){ const f=o.onClose; o.onClose=null; try{ f(); }catch(_){} } };

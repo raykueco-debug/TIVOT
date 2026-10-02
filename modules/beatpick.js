@@ -1,3 +1,4 @@
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 /* ══ 改這一拍的立繪（ver -1826，Ray：「管理者功能，對話、戰鬥中點立繪可以更改該拍的立繪」）══
    管理人**右鍵點台上的立繪** → 這一支開一張縮圖牆（那個角色能用的每一張）→ 點一張：
    呼叫端當場換上，並 `POST /__beat` 由 `tools/devserver.py` 改寫腳本檔裡**那一拍**的差分字面。
@@ -27,7 +28,7 @@ export function openPicker(opts){
   ov.innerHTML='<div style="width:min(92vw,760px);max-height:86vh;display:flex;flex-direction:column;gap:8px;padding:12px;'
     +'border-radius:12px;background:#120f1a;border:1px solid #8a6d2e">'
     +'<div style="display:flex;align-items:center;gap:8px"><b style="flex:1;color:#d4a94a;letter-spacing:2px">'+(opts.title||'')+'</b>'
-    +'<button data-x style="font:inherit;color:#ece6d8;background:rgba(40,32,56,.9);border:1px solid #8a6d2e;border-radius:6px;padding:4px 10px">關閉</button></div>'
+    +i18nT('<button data-x style="font:inherit;color:#ece6d8;background:rgba(40,32,56,.9);border:1px solid #8a6d2e;border-radius:6px;padding:4px 10px">關閉</button></div>')
     +(opts.note ? '<div style="font-size:11px;color:#8a6d2e">'+opts.note+'</div>' : '')
     +'<div data-msg style="font-size:12px;min-height:1.2em"></div>'
     +'<div style="overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px">'
@@ -42,11 +43,11 @@ export function openPicker(opts){
   ov.querySelector('[data-x]').onclick=closePicker;
   ov.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>{
     const it=items[+b.dataset.i]; if(!it) return;
-    msg.style.color='#d4a94a'; msg.textContent='寫入中…';
+    msg.style.color='#d4a94a'; msg.textContent=i18nT('寫入中…');
     Promise.resolve(opts.onPick && opts.onPick(it.key)).then(r=>{
       if(!r){ closePicker(); return; }
       msg.style.color = r.ok ? '#8fd18f' : '#e57373';
-      msg.textContent = (r.ok ? '已寫入：' : '寫入失敗：') + r.text;
+      msg.textContent = (r.ok ? i18nT('已寫入：') : i18nT('寫入失敗：')) + r.text;
       if(r.ok) setTimeout(closePicker, 900);
     });
   });
@@ -61,7 +62,7 @@ export function closePicker(){ const o=document.getElementById('beatPick'); if(o
 export function ensureEditBtn(box, onClick){
   if(!box || box.querySelector('.beat-edit')) return;
   const b=document.createElement('button'); b.type='button'; b.className='beat-edit'; b.textContent='✎';
-  b.title='改這一句台詞（管理人）';
+  b.title=i18nT('改這一句台詞（管理人）');
   ['pointerdown','pointerup','touchstart','mousedown'].forEach(ev=>b.addEventListener(ev, e=>e.stopPropagation()));
   b.addEventListener('click', e=>{ e.stopPropagation(); e.preventDefault(); onClick(); });
   box.appendChild(b);
@@ -81,22 +82,22 @@ export function openTextEditor(opts){
   ['pointerdown','pointerup','click','touchstart','keydown','keyup','contextmenu','wheel'].forEach(ev=>ov.addEventListener(ev, stop));
   const bs='font:inherit;color:#ece6d8;background:rgba(40,32,56,.9);border:1px solid #8a6d2e;border-radius:6px;padding:6px 14px';
   ov.innerHTML='<div style="width:min(92vw,640px);display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:12px;background:#120f1a;border:1px solid #8a6d2e">'
-    +'<b style="color:#d4a94a;letter-spacing:2px">'+(opts.title||'改台詞')+'</b>'
+    +'<b style="color:#d4a94a;letter-spacing:2px">'+(opts.title||i18nT('改台詞'))+'</b>'
     +(opts.note ? '<div style="font-size:11px;color:#8a6d2e">'+opts.note+'</div>' : '')
     +'<textarea data-t rows="3" style="font:inherit;color:#ece6d8;background:#1a1426;border:1px solid #8a6d2e;border-radius:6px;padding:8px;resize:vertical"></textarea>'
     +'<div data-msg style="font-size:12px;min-height:1.2em"></div>'
-    +'<div style="display:flex;gap:8px;justify-content:flex-end"><button data-c style="'+bs+'">取消</button><button data-s style="'+bs+';color:#d4a94a">存檔</button></div></div>';
+    +'<div style="display:flex;gap:8px;justify-content:flex-end"><button data-c style="'+bs+i18nT('">取消</button><button data-s style="')+bs+i18nT(';color:#d4a94a">存檔</button></div></div>');
   document.body.appendChild(ov);
   const ta=ov.querySelector('[data-t]'), msg=ov.querySelector('[data-msg]');
   ta.value = opts.text || ''; ta.focus();
   ov.querySelector('[data-c]').onclick=closePicker;
   ov.querySelector('[data-s]').onclick=()=>{
     if(ta.value===(opts.text||'')){ closePicker(); return; }
-    msg.style.color='#d4a94a'; msg.textContent='寫入中…';
+    msg.style.color='#d4a94a'; msg.textContent=i18nT('寫入中…');
     Promise.resolve(opts.onSave && opts.onSave(ta.value)).then(r=>{
       if(!r){ closePicker(); return; }
       msg.style.color = r.ok ? '#8fd18f' : '#e57373';
-      msg.textContent = (r.ok ? '已寫入：' : '寫入失敗：') + r.text;
+      msg.textContent = (r.ok ? i18nT('已寫入：') : i18nT('寫入失敗：')) + r.text;
       if(r.ok) setTimeout(closePicker, 700);
     });
   };

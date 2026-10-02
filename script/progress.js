@@ -12,6 +12,7 @@
      來 import 本檔即可。
    ══════════════════════════════════════════════════════════════════════ */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG } from '../config.js';   // 只為了拿教學的 storageKey（不要抄第二份字串）
 /* ⚠ 「一輪遊戲」包含道具與時鐘，所以存讀檔要一起帶（見 runSnapshot）。
    兩支都是 `script/` 的同層資料模組，沒有循環相依。 */
@@ -122,8 +123,8 @@ export const AFFECTION_DEFAULT = 0;
    ⚠ 故事文本**一律用暱稱 `{N}`**，除非 Ray 的稿特別標註使用全名（ver -477 同批指定）。
    西文的檔名/id（素材、插圖）與玩家自己輸入的名字**脫鉤** ——
    不要拿玩家輸入的字去拼路徑。 */
-export const PLAYER_DEFAULT = '托爾斯坦';
-export const NICK_DEFAULT   = '托爾';
+export const PLAYER_DEFAULT = i18nT('托爾斯坦');
+export const NICK_DEFAULT   = i18nT('托爾');
 /* ⚠⚠ **取名之前一律叫 `HUND`**（ver -398，Ray 指定）—— 那是蕾娜在還不知道他名字時
    對他的稱呼（德語「犬」）。所以「還沒取名」與「取了名」是**兩個不同的顯示**，
    不是「預設值」：預設值（托爾斯坦／托爾）是**輸入框裡的預填**，玩家按確定才成立。
@@ -973,14 +974,14 @@ export function setPlayerNick(v){ wr(K.nick, (v||'').trim() || NICK_DEFAULT); }
      stage 1 是「隔天早上七點」，所以問 `clock.firstHourAt(7)` **不要寫死 1200**（鐵律 7）。
    ⚠ `enter` 由 `main.js` 執行（劇情／城鎮的入口在啟動層，這裡不認識它們）。 */
 export const CHAPTERS = [
-  { id:'stage0', name:'Stage 0', sub:'地宮 → 帝都探索 → 旅店睡覺',
+  { id:'stage0', name:'Stage 0', sub:i18nT('地宮 → 帝都探索 → 旅店睡覺'),
     enter:'story' },
   /* ⚠ Stage 1 從**夢結束後的那一幕**開始（ver -1904，Ray：「stage1 切點改成夢結束後開始，
      從『不過……我不討厭就是了。』之後的那一幕開始」）：隔天 07:00 的帝都旅店 ——
      落在旅店、**不帶** `stage1_open`，進場那一刻 07:00 閘門自己接手
      （蕾娜「好囉，該出發囉」→ 船塢、升 S1，同正常玩，鐵律 8）。所以這裡 `stage:0`。
      ⚠ 旅店的初入對白／夢／蕾娜晚歸都要擋掉：`inn_seen_capital_inn`／`town_kind_inn`／`cap_dream`／`inn_missed`。 */
-  { id:'stage1', name:'Stage 1', sub:'夢醒・旅店 → 船塢 → 出航 → 北方泊地',
+  { id:'stage1', name:'Stage 1', sub:i18nT('夢醒・旅店 → 船塢 → 出航 → 北方泊地'),
     stage:0, clockHour:7, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','mapcard_capital',
            'inn_seen_capital_inn','town_capital_inn','town_kind_inn','inn_wait','inn_missed','cap_dream',
@@ -998,7 +999,7 @@ export const CHAPTERS = [
      ⚠ `flags` 只列**擋路的那幾支**（§6.5.8）：出航／船塢那一段要當成看過，
        不然一進城會被主線段落抓走。城鎮戰與碼頭那一幕的旗標**故意不給** ——
        那正是要測的東西。 */
-  { id:'stage2', name:'Stage 2', sub:'北方泊地・碼頭 → 城鎮戰 → 教堂 → 聖徒化教學戰',
+  { id:'stage2', name:'Stage 2', sub:i18nT('北方泊地・碼頭 → 城鎮戰 → 教堂 → 聖徒化教學戰'),
     stage:2, clockHour:13, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2'],
@@ -1010,7 +1011,7 @@ export const CHAPTERS = [
      ⚠ `clockHour:8` ＝ `firstHourAt(8)`（開局是 6/13 11:00，所以是**隔天 08:00**）。
      ⚠ 安全區旗要給：北方泊地這時已經不打仗了，不給的話走一格就被城鎮戰抓走。
      ⚠ `node:'inn'` ＝直接站在旅店裡（那一幕就在那裡演）。 */
-  { id:'stage3', name:'Stage 3', sub:'北方泊地・第二天早上（旅店） → 自由探索 → 墓地',
+  { id:'stage3', name:'Stage 3', sub:i18nT('北方泊地・第二天早上（旅店） → 自由探索 → 墓地'),
     stage:3, clockHour:8, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2',
@@ -1024,7 +1025,7 @@ export const CHAPTERS = [
        章節工具只把人擺到那一段之前。
      ⚠ `np_depart` 要給（閘門已用掉——直接站在碼頭，不再被抓一次）；
        `np_farewell` **不給**（那正是要演的）。 */
-  { id:'stage4', name:'Stage 4', sub:'北泊出航・送行 → 羽蛇 → 甲板混亂',
+  { id:'stage4', name:'Stage 4', sub:i18nT('北泊出航・送行 → 羽蛇 → 甲板混亂'),
     stage:3, clockHour:8, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
@@ -1039,7 +1040,7 @@ export const CHAPTERS = [
      ⚠ `stage:5` 直接寫（正常玩是 sv_evening 閘門把它從 4 升上來，這裡是跳關工具）。
      ⚠ `clockHour:19` ＝ firstHourAt(19)＝夜景（band 19:00 起，ver -816）；羽蛇/甲板/
        man_sorana 都在飛行/scene（無城鎮旗），所以旗只需 S4 那批＋sv_arrive＋sv_evening。 */
-  { id:'stage5', name:'Stage 5', sub:'夏爾村・回到索菈娜的家（那一夜） → 村內戰',
+  { id:'stage5', name:'Stage 5', sub:i18nT('夏爾村・回到索菈娜的家（那一夜） → 村內戰'),
     stage:5, clockHour:19, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
@@ -1055,7 +1056,7 @@ export const CHAPTERS = [
      ⚠ `shinier_siege`＋`sv_clear_wild`＋`safehouse_shinier` 都給：圍城已打完、
        村子是安全區——少了 siege 旗踏出家門會重演出擊那一段（onLeave 的旗）。
      ⚠ `clockHour:6` ＝ firstHourAt(6)＝隔天 06:00（開局 11:00 已過 6 點）。 */
-  { id:'stage6', name:'Stage 6', sub:'夏爾村・翌日早上 → 森林行 → 遺蹟入口',
+  { id:'stage6', name:'Stage 6', sub:i18nT('夏爾村・翌日早上 → 森林行 → 遺蹟入口'),
     stage:6, clockHour:6, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
@@ -1073,7 +1074,7 @@ export const CHAPTERS = [
      ⚠ `sv_forest_intro` 要給（入口的叮嚀已經看過，不然一進去先被它抓走）；
        `sv_deer_met`／`sv_deer_harm` **不給** —— 那正是要演的。
      ⚠ `node:'ruins'` ＝直接站在遺蹟入口那一格。 */
-  { id:'stage7', name:'Stage 7', sub:'夏爾森林・遺蹟入口（黃昏）→ 樹靈鹿主 → 紮營討論',
+  { id:'stage7', name:'Stage 7', sub:i18nT('夏爾森林・遺蹟入口（黃昏）→ 樹靈鹿主 → 紮營討論'),
     stage:6, clockHour:18, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
@@ -1095,7 +1096,7 @@ export const CHAPTERS = [
        走回神殿會重演收尾那一段。
      ⚠ `sv_s8_noon` 也要給：不給的話一走進神殿就會被那道閘門再搬一次。
      ⚠ `sv_s8_home`／`sv_s8_dine`／`sv_s8_corvin` **不給** —— 那正是要演的。 */
-  { id:'stage8', name:'Stage 8', sub:'夏爾村・索菈娜家（正午）→ 餐廳・瑪麗亞的廚房 → 科爾文',
+  { id:'stage8', name:'Stage 8', sub:i18nT('夏爾村・索菈娜家（正午）→ 餐廳・瑪麗亞的廚房 → 科爾文'),
     stage:8, clockHour:12, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
@@ -1118,7 +1119,7 @@ export const CHAPTERS = [
      ⚠ `sv_s8_hungry` **也列進來**：不列的話跳進這一章之後走六步，
        諾薇兒會再餓一次（ver -1095 那個 bug 的另一半 —— 章節工具這條路
        `skipIf` 擋得到，但把它插著更直接：那一段本來就算演過了）。 */
-  { id:'stage9', name:'Stage 9', sub:'夏爾村・索菈娜家：聖皇的諭令 → 自由探索（可約會）',
+  { id:'stage9', name:'Stage 9', sub:i18nT('夏爾村・索菈娜家：聖皇的諭令 → 自由探索（可約會）'),
     stage:9, clockHour:12, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
@@ -1150,7 +1151,7 @@ export const CHAPTERS = [
        —— ver -1489 把那一夜（`ep_night_raid`）的 `needTier:{renna:3}` 拿掉了
        （Ray：「髮飾劇情必跑」），所以好感給多少都演得到。
        留 40 的理由只剩「跳進這一章時，蕾娜的好感本來就該在這個位置」。 */
-  { id:'stage10b', name:'Stage 10-B', sub:'那一夜・二次進入古城（夜襲）→ 追擊王座徘徊者',
+  { id:'stage10b', name:'Stage 10-B', sub:i18nT('那一夜・二次進入古城（夜襲）→ 追擊王座徘徊者'),
     stage:10, clockHour:21, named:true, aff:{ renna:40 },
     /* ⚠ `bl_night_land` **不插** —— 降落中庭那一段正是這一章要演的第一拍。 */
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
@@ -1186,7 +1187,7 @@ export const CHAPTERS = [
            'ep_night_raid','ep_hairpin_hunt','belisar_land_ok'],
     enter:'town', town:'belisar', node:'entrance' },
 
-  { id:'stage11b', name:'Stage 11-B', sub:'升空追擊（上船追）→ 空中戰',
+  { id:'stage11b', name:'Stage 11-B', sub:i18nT('升空追擊（上船追）→ 空中戰'),
     stage:11, clockHour:23, named:true, aff:{ renna:40 },
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
@@ -1252,7 +1253,7 @@ export const CHAPTERS = [
        ＝這一章的 `need`）／`renna_t4_ok`（那一段最後插的 T4 解鎖，鐵律 9：
        它是那個事件的產物，不給的話蕾娜會莫名其妙封頂在 T3）。
      ⚠⚠ **`ep_hairpin_talk` 不給** —— 那正是這一章要演的第一拍。 */
-  { id:'stage12b', name:'Stage 12-B', sub:'那一夜之後・東泊旅店：長談 →（守夜）安雅溜出房間',
+  { id:'stage12b', name:'Stage 12-B', sub:i18nT('那一夜之後・東泊旅店：長談 →（守夜）安雅溜出房間'),
     stage:12, clockHour:23, named:true, aff:{ renna:40 },
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
@@ -1357,13 +1358,13 @@ const A_TO_EXIT = [ ...A_TO_LANDING3,
 const A_AFF = { renna:45, nouvelle:45, sorana:45, anya:45 };
 /* ver -1741：`H_VARIANTS` 拿掉 —— H／非 H 併進 Stage 13 的第二層（見 BA_CHAPTERS 的 `stage13`）。 */
 const A_CHAPTERS = [
-  { id:'stage10a', name:'Stage 10-A', sub:'先 A：諭令 → 墓門初見 → **初入雪都**（→ 鏡湖）',
+  { id:'stage10a', name:'Stage 10-A', sub:i18nT('先 A：諭令 → 墓門初見 → **初入雪都**（→ 鏡湖）'),
     stage:10, clockHour:10, named:true, aff:A_AFF, flags:A_TO_RAVNSDAL,
     enter:'town', town:'ravnsdal', node:'square' },
-  { id:'stage11a', name:'Stage 11-A', sub:'先 A：鏡湖・石碑林開門 → **古墓門口**（初入古墓）',
+  { id:'stage11a', name:'Stage 11-A', sub:i18nT('先 A：鏡湖・石碑林開門 → **古墓門口**（初入古墓）'),
     stage:11, clockHour:10, named:true, aff:A_AFF, flags:A_TO_TOMB,
     enter:'town', town:'tomb', node:'gate' },
-  { id:'stage12a', name:'Stage 12-A', sub:'先 A：**古墓第三層**（底層梯廳）：會合 → 熔斷 → 祭壇終戰',
+  { id:'stage12a', name:'Stage 12-A', sub:i18nT('先 A：**古墓第三層**（底層梯廳）：會合 → 熔斷 → 祭壇終戰'),
     stage:12, clockHour:10, named:true, aff:A_AFF, flags:A_TO_LANDING3,
     enter:'town', town:'tomb', node:'landing3' },
   /* ══ Stage 13（ver -1732，Ray：「stage 13-A／13-BAM1／13-BAM2 始於古墓出口，可選 H 或非 H；
@@ -1393,25 +1394,25 @@ const BA_CHAPTERS = [
      第二層每一項用 `over`（整份覆寫：旗／落點／時刻／好感）—— 各分支的起點不在同一張圖上，只加旗不夠。
      ⚠ B・M1／B・M2 隔日＝東泊旅店早上八點（M1 接審訊、M2 接離店簡報，那兩段的第一拍就是升 13 的拍）。
      ⚠ 古墓出口那幾項照舊（A／BA・M1／BA・M2 × H／非 H）。 */
-  { id:'stage13', name:'Stage 13', sub:'東泊隔日（B・M1／M2）或 古墓出口（A／BA × M × H）',
+  { id:'stage13', name:'Stage 13', sub:i18nT('東泊隔日（B・M1／M2）或 古墓出口（A／BA × M × H）'),
     stage:13, clockHour:10, named:true, aff:A_AFF, flags:A_TO_EXIT,
     enter:'town', town:'tomb', node:'gate',
     variants:[
-      { label:'B・M1：東泊旅店隔日', sub:'審訊',
+      { label:i18nT('B・M1：東泊旅店隔日'), sub:i18nT('審訊'),
         over:{ flags:[ ...B_COMMON, ...B_M1_NIGHT ], town:'eastport', node:'inn', clockHour:8, aff:{ renna:40 } } },
-      { label:'B・M2：東泊旅店隔日', sub:'離店簡報（原「12-B・M2 隔日」）',
+      { label:i18nT('B・M2：東泊旅店隔日'), sub:i18nT('離店簡報（原「12-B・M2 隔日」）'),
         over:{ flags:[ ...B_COMMON, ...B_M2_NIGHT ], town:'eastport', node:'inn', clockHour:8, aff:{ renna:40 } } },
-      { label:'A：古墓出口',      sub:'非 H', over:{ flags:[ ...A_TO_EXIT ] } },
-      { label:'A：古墓出口・H',    sub:'插 tomb_h_route', over:{ flags:[ ...A_TO_EXIT, 'tomb_h_route' ] } },
-      { label:'BA・M1：古墓出口',  sub:'非 H', over:{ flags:[ ...BA_M1_EXIT ] } },
-      { label:'BA・M1H：古墓出口', sub:'插 tomb_h_route', over:{ flags:[ ...BA_M1_EXIT, 'tomb_h_route' ] } },
-      { label:'BA・M2：古墓出口',  sub:'非 H', over:{ flags:[ ...BA_M2_EXIT ] } },
-      { label:'BA・M2H：古墓出口', sub:'插 tomb_h_route', over:{ flags:[ ...BA_M2_EXIT, 'tomb_h_route' ] } },
+      { label:i18nT('A：古墓出口'),      sub:i18nT('非 H'), over:{ flags:[ ...A_TO_EXIT ] } },
+      { label:i18nT('A：古墓出口・H'),    sub:i18nT('插 tomb_h_route'), over:{ flags:[ ...A_TO_EXIT, 'tomb_h_route' ] } },
+      { label:i18nT('BA・M1：古墓出口'),  sub:i18nT('非 H'), over:{ flags:[ ...BA_M1_EXIT ] } },
+      { label:i18nT('BA・M1H：古墓出口'), sub:i18nT('插 tomb_h_route'), over:{ flags:[ ...BA_M1_EXIT, 'tomb_h_route' ] } },
+      { label:i18nT('BA・M2：古墓出口'),  sub:i18nT('非 H'), over:{ flags:[ ...BA_M2_EXIT ] } },
+      { label:i18nT('BA・M2H：古墓出口'), sub:i18nT('插 tomb_h_route'), over:{ flags:[ ...BA_M2_EXIT, 'tomb_h_route' ] } },
     ] },
   /* Stage 14：13 章結束（雪都旅店合流演完、自由探索、出航）之後的飛行地圖。
      底用 BA・M1（三條路合流後只差 `ep_m2_route` 那一支影響蕾娜的路線）；
      `flight:{town:'ravnsdal'}` ＝從雪都的出港位起飛（同讀檔接回飛行那把鑰匙）。 */
-  { id:'stage14', name:'Stage 14', sub:'合流 → 往聖索菲亞（從雪都出航，起飛就演出航對白）',
+  { id:'stage14', name:'Stage 14', sub:i18nT('合流 → 往聖索菲亞（從雪都出航，起飛就演出航對白）'),
     stage:14, clockHour:10, named:true, aff:A_AFF,
     flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb' ],
     enter:'flight', flight:{ town:'ravnsdal' } },
@@ -1419,7 +1420,7 @@ const BA_CHAPTERS = [
      起點＝**救回蘿法那一幕**（ver -1850 定的 Stage 15 開頭）：聖索菲亞整段＋里朋莊園都演完、
      被帶回旅店的那一刻 —— 一跳進來旅店就演 `ss_raid_home`（演完插 `ss_depart`，出航往羅賽爾）。
      ⚠ 旗只列「會擋路／會重播」的那幾支：約會（`ss_date_*`）不給，那是自由探索的事。 */
-  { id:'stage15', name:'Stage 15', sub:'聖索菲亞：救回蘿法 → 出航往羅賽爾廢城',
+  { id:'stage15', name:'Stage 15', sub:i18nT('聖索菲亞：救回蘿法 → 出航往羅賽爾廢城'),
     stage:15, clockHour:22, named:true, aff:A_AFF,
     flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb',
             's14_flight_talk','ss_arrive','ss_cityhall','ss_4pm','ss_inn_merge',
@@ -1471,8 +1472,8 @@ CHAPTERS.push(...BA_CHAPTERS);
    **要改測別張圖**：換 `town`（＋需要的話 `node`／`clockHour`／`stage`），
    並把 `flags` 調成「那一段**之前**」的狀態 —— 要測的那幾支旗**不要給**。 */
 export const SCRIPT_TEST = {
-  id:'scripttest', name:'腳本測試',
-  sub:'雪都・中心區 →（往上）圖書館：評鑑報告（測索菈娜唸報告的差分）',
+  id:'scripttest', name:i18nT('腳本測試'),
+  sub:i18nT('雪都・中心區 →（往上）圖書館：評鑑報告（測索菈娜唸報告的差分）'),
   stage:13, clockHour:18, named:true, aff:{ renna:40 },
   flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2','flight_centipede_met',
@@ -1525,7 +1526,7 @@ export const SCRIPT_TEST = {
 export function noStorySpec(ch, storyFlags){
   const id = ch.town;
   const flags = (ch.flags||[]).concat(['safehouse_'+id], storyFlags||[]);
-  return Object.assign({}, ch, { sub:(ch.sub||'')+'（無劇情・無怪）', flags });
+  return Object.assign({}, ch, { sub:(ch.sub||'')+i18nT('（無劇情・無怪）'), flags });
 }
 
 /* ══⚠⚠⚠ **試飛的預設進度**（ver -1359，Ray：「試飛默認為 s8 瓦努努開啟後的
@@ -1555,7 +1556,7 @@ export function noStorySpec(ch, storyFlags){
    ⚠ 加速（Sturm）與感應的解鎖是 `FEATURE_FROM`（暫填 5）—— stage 8 ≥ 5，
      兩個都開著，這正是找隱藏點要用的。 */
 export const FLIGHT_TEST = {
-  id:'flighttest', name:'試飛', sub:'S8・瓦努努開啟後的自由活動期間（無劇情・無限航區，ver -1744）',
+  id:'flighttest', name:i18nT('試飛'), sub:i18nT('S8・瓦努努開啟後的自由活動期間（無劇情・無限航區，ver -1744）'),
   stage:8, clockHour:12, named:true,
   flags:['free_flight',   // ver -1744：試飛＝完全無劇情、無限航區（誰問它見 flight/index.html 的 freeFlight）
          'dungeon_cleared','hq_briefed','renna_named','stage1_open',

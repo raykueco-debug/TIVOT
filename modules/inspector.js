@@ -19,6 +19,7 @@
  *    evaluate/scoreToExp 為純函式（見下），可單獨測試；stats 由 combat.win 組裝。
  * ========================================================================== */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, asset, bgmVol, sfxGain } from '../config.js';
 import { showLoot } from './loot.js';
 import * as inv from '../script/inventory.js';   // 破紀錄的獎品要先問「是不是已經有了」
@@ -281,7 +282,7 @@ function expRows(gains){
   for(const g of (gains||[])){
     /* ⚠ 抬頭 ver -1132 由「EXP」改成**戰鬥紀錄**（Ray：「把 exp 改成戰鬥紀錄」）——
        字串在 i18n（`result.rowRecord`），不要寫死中文。 */
-    rows += '<div class="row"><span>'+(L.result.rowRecord||'EXP')+'　'+g.name+'</span><b>＋'+g.gain+'</b></div>';
+    rows += '<div class="row"><span>'+(L.result.rowRecord||'EXP')+'　'+g.name+i18nT('</span><b>＋')+g.gain+'</b></div>';
     if(g.to>g.from){
       /* ══⚠⚠ 升級那一行報的是**入手幾份**，不再報星名（ver -1132）══
          等級到了**不會自動亮星**了 —— 印星名會讓玩家以為那一顆已經有了。
@@ -289,7 +290,7 @@ function expRows(gains){
          ⚠ 份數用 `g.records`（`addGirlExp` 發放時算好的），不要在這裡乘一次
            `recordPerLevel`（同一個量兩個計算點，鐵律 7）。 */
       rows += '<div class="row"><span>LEVEL UP</span><b>'+g.name+'　Lv'+g.to
-            + (g.records ? '　'+fmt(L.result.recordGain||'＋{n}', {n:g.records}) : '')
+            + (g.records ? '　'+fmt(L.result.recordGain||i18nT('＋{n}'), {n:g.records}) : '')
             + '</b></div>';
     }
     /* ══⚠⚠⚠ **這一局之後她在哪裡**（ver -1021，Ray：「EXP 現在要在結算顯示」）══
@@ -388,7 +389,7 @@ function animateExpBars(){
       if(j.lvEl)  j.lvEl.textContent = 'Lv'+pr.lv;
       if(j.fill)  j.fill.style.width = Math.round(pr.ratio*100)+'%';
       if(j.numEl) j.numEl.textContent = (pr.to==null) ? 'MAX'
-                    : (pr.exp+' / '+pr.to+'　還差 '+pr.need);
+                    : (pr.exp+' / '+pr.to+i18nT('　還差 ')+pr.need);
     }
     expBarRaf = alive ? requestAnimationFrame(tick) : 0;
   };
@@ -517,20 +518,20 @@ function pickEvaluator(rankKey, battleId){
      ⚠ 只擋評價者：等第／EXP／金錢照算（沒有評價者時結算頁本來就走 `grade-noRank`）。 */
   for(const w of (EVAL_AWAY||[])){
     if(w && w.from && prog.hasFlag(w.from) && !(w.until && prog.hasFlag(w.until))){
-      evalWhyNot='評價者不在場（'+w.from+' 之後、'+(w.until||'—')+' 之前）'; return null; }
+      evalWhyNot=i18nT('評價者不在場（')+w.from+i18nT(' 之後、')+(w.until||'—')+i18nT(' 之前）'); return null; }
   }
   /* ══ 夢境戰一概不評（ver -1891，Ray：「夢境戰一概不給評價」）══ 卡上 `dream:true`。
      ⚠ 排在 `noEval` 那條「約會對象是蕾娜也照評」的例外**之前**：夢裡沒有評價者，誰在場都一樣。 */
-  if(bt.dream){ evalWhyNot='夢境戰'; return null; }
-  if(bt.noEval && !dateWithEvaluator()){ evalWhyNot='卡上 noEval'; return null; }
+  if(bt.dream){ evalWhyNot=i18nT('夢境戰'); return null; }
+  if(bt.noEval && !dateWithEvaluator()){ evalWhyNot=i18nT('卡上 noEval'); return null; }
   /* 第 N 章之前整段不評（ver -1130，資料在 `evaluation.js` 的 `FROM_STAGE`）。
      ⚠ 排在卡上的特例之後、通用表之前：它是「這一套評價什麼時候開始運作」。 */
   if(prog.getStage() < EVAL_FROM){
-    evalWhyNot='第 '+EVAL_FROM+' 章才開始評（現在第 '+prog.getStage()+' 章）'; return null; }
+    evalWhyNot=i18nT('第 ')+EVAL_FROM+i18nT(' 章才開始評（現在第 ')+prog.getStage()+i18nT(' 章）'); return null; }
   /* `noEvalBeforeStage:N`（ver -756，Ray：「帝都賞金獵人戰如在 stage2 才打，
      就要放蕾娜評價」）＝那一章之前不評、到了就評 —— 問**結算那一刻**的 stage。 */
   if(bt.noEvalBeforeStage!=null && prog.getStage() < bt.noEvalBeforeStage){
-    evalWhyNot='noEvalBeforeStage '+bt.noEvalBeforeStage+'（現在第 '+prog.getStage()+' 章）'; return null; }
+    evalWhyNot='noEvalBeforeStage '+bt.noEvalBeforeStage+i18nT('（現在第 ')+prog.getStage()+i18nT(' 章）'); return null; }
   const who = SPEAKERS[EVALUATOR] || {};
   /* ⚠ **某一場專屬的台詞優先**（ver -597（-893 前用詞））：`evaluation.js` 的 `BY_BATTLE`
      查得到這一場就用它，查不到才回去走依章節／好感的通用表。
@@ -566,13 +567,13 @@ function pickEvaluator(rankKey, battleId){
         console.warn('[eval] 第 '+prog.getStage()+' 章沒有評價表，退回第 '+ks[0]+' 章的稿');
       }
     }
-    if(!byStage){ evalWhyNot='EVAL_LINES 是空的'; return null; }
+    if(!byStage){ evalWhyNot=i18nT('EVAL_LINES 是空的'); return null; }
     const aff = (prog.getAffection() || {})[(who.art||'')] ;
     const byAff = pickByThreshold(byStage, (aff==null ? 0 : aff), null);
     one = byAff && byAff[rankKey];
   }
   if(!one){
-    evalWhyNot='查不到台詞：battle='+(battleId||'-')+' rank='+rankKey
+    evalWhyNot=i18nT('查不到台詞：battle=')+(battleId||'-')+' rank='+rankKey
              +' stage='+prog.getStage()+' aff='+(((prog.getAffection()||{})[(who.art||'')])|0);
     return null;
   }
@@ -626,11 +627,11 @@ let _evalSeeT=0;      // 「畫面上看得到嗎」那一支驗收的計時器�
 let _evalLast='—';
 export function evalDiag(){ return _evalLast; }
 function evalDiagSet(battleId, rank, spk){
-  _evalLast = (battleId||'(無場次)')+' '+rank+' → '
-            + (spk ? ('有：'+(spk.name||'?')+(spk.follow?'（有亂入）':'')) : ('無：'+(evalWhyNot||'?')));
+  _evalLast = (battleId||i18nT('(無場次)'))+' '+rank+' → '
+            + (spk ? (i18nT('有：')+(spk.name||'?')+(spk.follow?i18nT('（有亂入）'):'')) : (i18nT('無：')+(evalWhyNot||'?')));
 }
 function warnNoEval(rank, battleId){
-  const why=evalWhyNot||'（沒有原因，代表這一頁本來就不該有評價）';
+  const why=evalWhyNot||i18nT('（沒有原因，代表這一頁本來就不該有評價）');
   console.warn('[eval] 這一場沒有評價：'+why+'　battle='+(battleId||'-')+' rank='+rank);
   _evalNote = document.body.classList.contains('testmode') ? why : '';
 }
@@ -667,7 +668,7 @@ function combatStatsRows(){
 function ratingStatsRows(stats, totalTime){
   /* ⚠ 管理人模式限定：這一頁**沒有評價**時，把原因印出來（ver -1050）——
      它不是給玩家看的資料，是給下一次「評價又不見了」的人看的。 */
-  const note = _evalNote ? '<div class="row"><span>⚠ 無評價</span><b>'+_evalNote+'</b></div>' : '';
+  const note = _evalNote ? i18nT('<div class="row"><span>⚠ 無評價</span><b>')+_evalNote+'</b></div>' : '';
   _evalNote='';
   return note + ratingStatsRowsBody(stats, totalTime);
 }
@@ -795,7 +796,7 @@ export function settle(totalTime, stats, opts={}){
      底下那三條都要問 `state.currentEnemyKey`。⚠ 併帳／清帳／HP 回滿在上面已經做完
      —— 那是「一局的終點」共通的手續，這一條只是第四條結算路徑（鐵律 8）。 */
   if(opts.rest && !isLose){ restSettle(totalTime, stats, sessionLoot, shares, opts.restTitle, expShares); return; }
-  if(state.tutorialRun && !isLose){ _evalLast='教學結算（這一頁本來就沒有評價）'; tutorialSettle(totalTime, stats); return; }
+  if(state.tutorialRun && !isLose){ _evalLast=i18nT('教學結算（這一頁本來就沒有評價）'); tutorialSettle(totalTime, stats); return; }
   /* 劇情插入戰（ver -375）：與教學結算同一頁 —— **沒有監察官、沒有等級**，
      只有戰績、EXP 與拾得。⚠ 不是教學，所以不走教學那兩句台詞。 */
   if(state.scriptRun && !isLose){ scriptSettle(totalTime, stats, sessionLoot, shares, expShares); return; }
@@ -806,7 +807,7 @@ export function settle(totalTime, stats, opts={}){
        ⚠ 算是 `combat.lose()` 做的（`state.deathPenalty`），這裡只印。 */
     { const d=state.deathPenalty;
       if(d && d.lost>0) rows += '<div class="row"><span>'+(L.result.rowRecord||'EXP')
-        + '　' + d.name + '</span><b>－' + d.lost + '</b></div>'; }
+        + '　' + d.name + i18nT('</span><b>－') + d.lost + '</b></div>'; }
     showResultSequence(L.result.loseTitle, L.result.loseSub, rows, 'lose', true);
     setupLoseNav();
     return;
@@ -861,8 +862,8 @@ export function settle(totalTime, stats, opts={}){
      ⚠ 日後要讓試玩版也給等級，改的是 `config.girls.who`，不是在這裡加一行。 */
   const totalExp = evalResult.exp|0;      // EXP 由**整場的總和**算出來（ver -601）
   if(gainMoney) inv.addMoney(gainMoney);
-  if(totalExp && showExp()) rows += '<div class="row"><span>EXP</span><b>＋'+totalExp+'</b></div>';
-  if(gainMoney) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+gainMoney+'</b></div>';
+  if(totalExp && showExp()) rows += i18nT('<div class="row"><span>EXP</span><b>＋')+totalExp+'</b></div>';
+  if(gainMoney) rows += '<div class="row"><span>'+inv.moneyName()+i18nT('</span><b>＋')+gainMoney+'</b></div>';
   if(isRecord) rows += `<div class="record">${L.result.newRecord}</div>`;
   // ── 監察官結算展示（依評價等第挑台詞）──
   showResultSequence(L.result.winTitle, sub, rows, evalResult.grade, false);
@@ -1096,7 +1097,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
         bubble.style.pointerEvents=pe;
         if(hit && !(hit===bubble || bubble.contains(hit))){
           const hz=getComputedStyle(hit).zIndex;
-          covered=' 被蓋:'+(hit.id?('#'+hit.id):hit.tagName)
+          covered=i18nT(' 被蓋:')+(hit.id?('#'+hit.id):hit.tagName)
                  +(hit.className&&typeof hit.className==='string'?('.'+hit.className.trim().split(/\s+/).join('.')):'')
                  +' z'+hz;
         }
@@ -1109,7 +1110,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
                +' vh='+Math.round(vh)+' stage='+(()=>{const q=stage.getBoundingClientRect();
                   return [q.x,q.y,q.width,q.height].map(n=>Math.round(n)).join(',');})()+covered;
       console.warn('[eval] 評價算出來了，但畫面上看不到：'+info);
-      _evalLast += '｜⚠ 算出來了但畫面上看不到 '+info;   // ver -1128：留給診斷 HUD
+      _evalLast += i18nT('｜⚠ 算出來了但畫面上看不到 ')+info;   // ver -1128：留給診斷 HUD
       /* 先把它補回來（玩家這一次還是看得到）：class ＋ **inline 的可見性**
          —— 只加 class 救不了「動畫沒跑／被誰壓成透明」那幾種（ver -1128）。 */
       bubble.classList.add('show');
@@ -1117,7 +1118,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
       const host=$('resultStats');
       if(host && document.body.classList.contains('testmode')){
         const d=document.createElement('div'); d.className='row';
-        d.innerHTML='<span>⚠ 評價被蓋住</span><b>'+info+'</b>';
+        d.innerHTML=i18nT('<span>⚠ 評價被蓋住</span><b>')+info+'</b>';
         host.appendChild(d);
       }
     }, 2500);
@@ -1188,7 +1189,7 @@ function tutorialSettle(totalTime, stats){
   showResultSequence(tr.title || L.result.winTitle, tr.sub || '', rows, 'tutorial', false,
                      { noInspector:true });
   const rbtn=$('rematchBtn');
-  if(rbtn) rbtn.textContent = tr.buttonLabel || '回到主畫面';
+  if(rbtn) rbtn.textContent = tr.buttonLabel || i18nT('回到主畫面');
   state.resultMode = 'tutorial-home';
   /* 拾得道具：**點畫面才跳出**（ver -361，Ray 指定；原本是 800ms 自動彈）。
      讓玩家先把戰績看完，想看下一頁再點 —— 與對話推進同一個手感。
@@ -1227,7 +1228,7 @@ function restSettle(totalTime, stats, sessionLoot, shares, title, expShares){
      ⚠ 這一局本來就是一場一場打出來的，等第與好感照給 —— 它與打贏結算怪的那一頁
        是同一件事，只是在安全區收尾。 */
   const spk = pickEvaluator(ev.grade, null);
-  evalDiagSet('(安全區)', ev.grade, spk);
+  evalDiagSet(i18nT('(安全區)'), ev.grade, spk);
   if(!spk) warnNoEval(ev.grade, null);
   prog.applyRankAffection(ev.grade, shares || state.pickedPartner);   // ver -921：出場數最多的全拿
   let money = moneyOf(stats, ev.grade);
@@ -1243,8 +1244,8 @@ function restSettle(totalTime, stats, sessionLoot, shares, title, expShares){
     : '';
   rows += ratingStatsRows(stats, totalTime);
   if(showExp()) rows += expRows(expGains);
-  if(money) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+money+'</b></div>';
-  showResultSequence(title || '安　全　區', '戰果整理', rows, ev.grade, false,   // ver -1840 Ray：「休息區一律改稱安全區」
+  if(money) rows += '<div class="row"><span>'+inv.moneyName()+i18nT('</span><b>＋')+money+'</b></div>';
+  showResultSequence(title || i18nT('安　全　區'), i18nT('戰果整理'), rows, ev.grade, false,   // ver -1840 Ray：「休息區一律改稱安全區」
                      spk ? { speaker:spk } : { noInspector:true });
   /* ⚠⚠ 這一頁的底要**不透明**（ver -914，Ray：「盤面早就清掉了，棺直接把背景閉掉」）：
      結算頁平時是 94% 的黑罩在**剛剛那一場的戰鬥畫面**上（那是它該有的樣子）——
@@ -1252,7 +1253,7 @@ function restSettle(totalTime, stats, sessionLoot, shares, title, expShares){
      ⚠ 撤掉的地方在 `showResultSequence` 開場（與其他歸位那幾行同一處，鐵律 8）。 */
   { const b=$('banner'); if(b) b.classList.add('solid'); }
   const rbtn=$('rematchBtn');
-  if(rbtn) rbtn.textContent = '繼續';
+  if(rbtn) rbtn.textContent = i18nT('繼續');
   /* 回程與劇情插入戰**同一條**（`script-continue` → storyReturn → 續播那一段）：
      那一支已經知道「這一場是誰叫起來的、回去要接什麼」（鐵律 8）。 */
   state.resultMode = 'script-continue';
@@ -1320,7 +1321,7 @@ function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
     : '';
   rows += ratingStatsRows(stats, totalTime);
   if(showExp()) rows += expRows(expGains);
-  if(money) rows += '<div class="row"><span>'+inv.moneyName()+'</span><b>＋'+money+'</b></div>';
+  if(money) rows += '<div class="row"><span>'+inv.moneyName()+i18nT('</span><b>＋')+money+'</b></div>';
   /* ══ 這一場自己的最佳紀錄（ver -377（-893 前用詞），Ray：「紀錄最佳紀錄，破紀錄時加上 New」）══
      ⚠ 只有卡上寫了 `record` 的場次才記（打靶場那種「一直挑戰」的）；
        一般的劇情插入戰打一次就過去了，記它沒有意義。
@@ -1338,7 +1339,7 @@ function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
     const prev = loadBestTotal(bt.record);
     const isRec = (prev==null) || (totalTime < prev);
     if(isRec) saveBestTotal(totalTime, bt.record);
-    rows += '<div class="row"><span>最佳紀錄</span><b>'
+    rows += i18nT('<div class="row"><span>最佳紀錄</span><b>')
           + fmtTime(isRec ? totalTime : prev) + '</b></div>';
     if(isRec) rows += '<div class="record">'+L.result.newRecord+'</div>';
   }
@@ -1347,7 +1348,7 @@ function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
   showResultSequence(L.result.winTitle, sub, rows, ev.grade, false,
                      spk ? { speaker:spk } : { noInspector:true });
   const rbtn=$('rematchBtn');
-  if(rbtn) rbtn.textContent = '繼續';
+  if(rbtn) rbtn.textContent = i18nT('繼續');
   state.resultMode = 'script-continue';
   /* 掉落：卡上的 `loot`（在上面就擲好了 —— 金錢與 EXP 要先印上結算頁）。
      ⚠ **有道具才彈視窗**（ver -453，Ray 指定）：金錢與 EXP 已經在結算頁上、
@@ -1419,7 +1420,7 @@ function popLootOnce(e){
   const list=_lootPending, money=_lootMoney, exp=_lootExp;
   _lootPending=null; _lootMoney=0; _lootExp=0;
   document.removeEventListener('pointerup', popLootOnce, { capture:true });
-  if(list || money || exp) showLoot(list||[], afterLoot, money, { exp, title:'戰利品' });
+  if(list || money || exp) showLoot(list||[], afterLoot, money, { exp, title:i18nT('戰利品') });
 }
 /* ══⚠⚠ 「戰利品確認完點擊後就離開結算頁」（ver -439（-893 前用詞），Ray 指定）══════════════
    以前要按兩次：確認戰利品收掉視窗 → 再按一次「繼續」才走。但戰利品本來就是這一頁
@@ -1457,7 +1458,7 @@ function openSentouReward(){
   const per=rw.charMs || 380;
   let idx=0;
   sign.innerHTML='';
-  (rw.sign || ['銭湯','インストール']).forEach(txt=>{
+  (rw.sign || [i18nT('銭湯'),i18nT('インストール')]).forEach(txt=>{
     const col=document.createElement('span'); col.className='sentou-col';
     [...txt].forEach(ch=>{
       const s=document.createElement('i'); s.textContent=ch;

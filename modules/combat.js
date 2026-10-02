@@ -13,6 +13,7 @@
  *    與監察官結算為下一輪；相關分支以 TODO 標註、以最小佔位不影響本輪流程。
  * ========================================================================== */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, HITFX, asset, bgmVol, sfxGain } from '../config.js';
 import { state, initEnemyHp, setPickedPartner } from '../state.js';
 import { SFX } from '../audio.js';
@@ -1289,7 +1290,7 @@ function enemyAttack(dmg, kind, saintAmt){
      受擊計數、破無傷、失誤折秒、震動特效**全部照走**（上面一行都沒跳過），
      只有扣血這一行不做。與鎖血同一個位置、同一個理由：手感不失真。 */
   const immune = partner.immuneActive();
-  if(immune && dmg>0) floatDmg((L.battle.immune||'免傷'),'50%','46%',true);
+  if(immune && dmg>0) floatDmg((L.battle.immune||i18nT('免傷')),'50%','46%',true);
   // 鎖血（管理人測試，ver -463）：只擋掉血這一行——上面的特效/計數照走，手感不失真
   if(!state.hpLock && !immune) state.playerHp=Math.max(0,state.playerHp-dmg);
   updateBars();

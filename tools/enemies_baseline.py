@@ -32,7 +32,7 @@ JS   = os.path.join(ROOT, 'script', 'enemies.js')
 def load(name, files, expr):
     """⚠ `config.js` 會 import `ART`／`ENEMIES` —— 要把它依賴的那幾支一起串起來跑
        （同 script_lint.py 的 load_data）。"""
-    parts = []
+    parts = ['function trTree(o){ return o; }', 'function i18nT(s){ return s; }']   # 譯文 shim（ver -1909：驗中文母本）
     for f in files:
         src = open(os.path.join(ROOT, f), encoding='utf-8').read()
         parts.append(re.sub(r'^\s*(import|export)\s.*$',

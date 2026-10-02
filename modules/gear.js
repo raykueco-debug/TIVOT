@@ -15,6 +15,7 @@
    ⚠ 從劇情層叫出來，所以整頁 z-index 要在 `#storyStage`（8300）之上。
    ══════════════════════════════════════════════════════════════════════ */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, asset, sfxGain, weaponDescText } from '../config.js';
 import * as load from '../script/loadout.js';
 import * as inv from '../script/inventory.js';
@@ -135,12 +136,12 @@ function girlStarListHtml(key){
        ⚠ **點不動也要看得見成本**（§6.5.5「還不能做不要靠藏起來擋」）：
          玩家要知道「差多少」才知道該去做什麼。 */
     const btn = on
-      ? '<b class="gs-light on">已點亮</b>'
+      ? i18nT('<b class="gs-light on">已點亮</b>')
       : '<b class="gs-light'+(can.ok?' go':'')+'" data-glight="'+key+':'+(i+1)+'">'
         /* 三種字面：等級不夠＝報還要幾級；份數不夠＝只報成本（不寫「點亮」，
            那個詞是動作，按不動的東西不該假裝自己是鈕）；點得動＝「點亮 ◆N」。 */
-        + (can.why==='cond'  ? '條件未達'                 // ver -1774：第 9 顆（特定條件，不花紀錄）
-         : can.ok            ? (cost ? ('點亮 ◆'+cost) : '點亮')
+        + (can.why==='cond'  ? i18nT('條件未達')                 // ver -1774：第 9 顆（特定條件，不花紀錄）
+         : can.ok            ? (cost ? (i18nT('點亮 ◆')+cost) : i18nT('點亮'))
          :                     ('◆'+cost)) + '</b>';
     /* ══ 顏色與凹槽（ver -990，Ray：「在技能表裡也要標色」「讓每個星前面有一個凹槽，
        等級到了就點亮相對應的顏色」）══
@@ -184,7 +185,7 @@ function skillBtnHtml(key){
      《戰鬥紀錄》—— 收起來之後這是唯一看得到的線索。 */
   let lit=0; for(let i=1;i<=arr.length;i++) if(prog.girlStarOn(key,i)) lit++;
   const rec=prog.girlRecords(key);
-  return '<div class="gs-skillbtn" data-skills="'+key+'">技　能　表　'
+  return '<div class="gs-skillbtn" data-skills="'+key+i18nT('">技　能　表　')
        +   lit+' / '+arr.length   // ver -1776：星數（9），不是等級上限（20）
        +   '<em class="gs-recn">◆'+rec+'</em></div>';
 }
@@ -196,8 +197,8 @@ function respecBtnHtml(key){
   if(!c || !c.stars) return '';
   const armed = respecArm===key;
   const txt = armed
-    ? ('再按一次確認：退回 ◆'+c.refund+'　'+(c.lostExp ? ('本級經驗 '+c.lostExp+' 歸零') : '本級經驗為零（免費）'))
-    : ('重　新　配　點　（退回 ◆'+c.refund+'）');
+    ? (i18nT('再按一次確認：退回 ◆')+c.refund+'　'+(c.lostExp ? (i18nT('本級經驗 ')+c.lostExp+i18nT(' 歸零')) : i18nT('本級經驗為零（免費）')))
+    : (i18nT('重　新　配　點　（退回 ◆')+c.refund+i18nT('）'));
   return '<div class="gs-swclose gs-respec'+(armed?' armed':'')+'" data-respec="'+key+'">'+txt+'</div>';
 }
 function skillWinHtml(key){
@@ -208,11 +209,11 @@ function skillWinHtml(key){
      `.gs-swbox`（置中、依內容給尺寸、有邊框）。 */
   return '<div class="gs-skillwin" data-skillclose="1">'
        +   '<div class="gs-swbox">'
-       +     '<div class="gs-swtitle">'+(p.name||'')+'　技　能　表'
-       +       '<em class="gs-recn">戰鬥紀錄 ◆'+prog.girlRecords(key)+'</em></div>'
+       +     '<div class="gs-swtitle">'+(p.name||'')+i18nT('　技　能　表')
+       +       i18nT('<em class="gs-recn">戰鬥紀錄 ◆')+prog.girlRecords(key)+'</em></div>'
        +     girlStarListHtml(key)
        +     respecBtnHtml(key)
-       +     '<div class="gs-swclose" data-skillclose="1">關　閉</div>'
+       +     i18nT('<div class="gs-swclose" data-skillclose="1">關　閉</div>')
        +   '</div>'
        + '</div>';
 }
@@ -233,12 +234,12 @@ function slotHtml(cat, n){
        一個動作只留一個入口（鐵律 8）。 */
   const mod=key ? prog.weaponMod(key) : 0, modMax=key ? prog.weaponModMax(key) : 0;
   const devMod = (key && modMax && mod>0)
-    ? '<span class="gs-mod">改 '+mod+'/'+modMax+'</span>' : '';
+    ? i18nT('<span class="gs-mod">改 ')+mod+'/'+modMax+'</span>' : '';
   return '<div class="gs-slot" data-cat="'+cat+'">'
        +   '<i class="gs-no">'+n+'</i>'
        +   (img ? '<img src="'+img+'" alt="">' : '<span class="gs-none">—</span>')
-       +   '<div class="gs-txt"><span class="gs-cat">'+cat+'</span>'
-       +     '<b>'+(w ? (w.shortName||w.name) : '未持有')+'</b></div>'
+       +   '<div class="gs-txt"><span class="gs-cat">'+i18nT(cat)+'</span>'
+       +     '<b>'+(w ? (w.shortName||w.name) : i18nT('未持有'))+'</b></div>'
        +   devMod
        +   '<span class="gs-arrow">›</span>'
        + '</div>';
@@ -286,17 +287,17 @@ function mainGunHtml(){
     return '<div class="gs-barrel" data-barrel="'+b.id+'">'
          +   '<b>'+b.name+'</b>'
          +   '<span class="gs-charm'+(d?' on':'')+'">'
-         +     '<i>掛件</i>'+(d ? (d.name||id) : '—')+'</span>'
+         +     i18nT('<i>掛件</i>')+(d ? (d.name||id) : '—')+'</span>'
          +   '<span class="gs-arrow">›</span>'
          + '</div>';
   }).join('');
-  return '<div class="gs-sec">主武器</div>'
+  return i18nT('<div class="gs-sec">主武器</div>')
        + '<div class="gs-main">'
        +   (MG.image ? '<img class="gs-mimg" src="'+(asset(MG.image)||'')+'" alt="">' : '')
        +   '<div class="gs-mname">'+MG.name
        +     (MG.tag ? '<span class="gs-mfix">'+MG.tag+'</span>' : '')+'</div>'
-       +   '<div class="gs-mtune">強　化　<b>'+lit+'</b>'
-       +     '<span>／'+stars.length+'</span></div>'
+       +   i18nT('<div class="gs-mtune">強　化　<b>')+lit+'</b>'
+       +     i18nT('<span>／')+stars.length+'</span></div>'
        +   (starsOpen ? '<div class="gs-stars">'+starListHtml()+'</div>' : '')
        /* 倒三角＝「這張卡點得開」的記號（ver -738，Ray 指定）：收著 ▼、開著 ▲。
           放在星列之後 —— 開著時它在展開內容的底部，再點一下就收，動線自然。 */
@@ -333,9 +334,9 @@ function render(){
   const hpG=prog.getHp();
   const hpCur=(hpG!=null) ? Math.min(hpG, hpMax) : hpMax;
   const hpHtml =
-      '<div class="gs-hp"><span class="gs-hplab">體　力</span>'
+      i18nT('<div class="gs-hp"><span class="gs-hplab">體　力</span>')
     +   '<i class="gs-hpbar"><i style="width:'+Math.round(hpCur/hpMax*100)+'%"></i></i>'
-    +   '<b>'+hpCur+'</b><span class="gs-hpmax">／'+hpMax+'</span></div>';
+    +   '<b>'+hpCur+i18nT('</b><span class="gs-hpmax">／')+hpMax+'</span></div>';
   /* 道具分頁（ver -457；-497 改成**類別分頁**，Ray：「道具按類別分頁，使用類的
      放第一」）：頁籤照 config 的 `catOrder`（item 本來就排第一），清單走
      `bagListHtml`（與道具欄同一份實作，鐵律 8），`use:true` 讓回復道具長出
@@ -353,31 +354,31 @@ function render(){
     +   (niemPick ? niemPickHtml() : '')
     + '</div>';
   el.innerHTML =
-      '<button class="gs-close" type="button" aria-label="關閉">✕</button>'
+      i18nT('<button class="gs-close" type="button" aria-label="關閉">✕</button>')
     + '<div class="gs-tabs">'
-    +   '<button class="gs-tab'+(tab==='gear' ?' on':'')+'" data-tab="gear"  type="button">整　備</button>'
-    +   '<button class="gs-tab'+(tab==='items'?' on':'')+'" data-tab="items" type="button">道　具</button>'
+    +   '<button class="gs-tab'+(tab==='gear' ?' on':'')+i18nT('" data-tab="gear"  type="button">整　備</button>')
+    +   '<button class="gs-tab'+(tab==='items'?' on':'')+i18nT('" data-tab="items" type="button">道　具</button>')
     + '</div>'
     + hpHtml
     + (tab==='items' ? itemsBody :
       '<div class="gs-body">'
     +   '<div class="gs-left">'
     +     mainGunHtml()
-    +     '<div class="gs-sec">副武器・順位</div>'
+    +     i18nT('<div class="gs-sec">副武器・順位</div>')
     +     '<div class="gs-slots">' + cats.map((c,i)=>slotHtml(c,i+1)).join('') + '</div>'
-    +     '<div class="gs-hint">長按拖曳可換順位</div>'
+    +     i18nT('<div class="gs-hint">長按拖曳可換順位</div>')
     +     '<div class="gs-mode">'
-    +       '<span class="'+(rot?'':'on')+'">固定順序</span>'
+    +       '<span class="'+(rot?'':'on')+i18nT('">固定順序</span>')
     +       '<button class="gs-sw'+(rot?' right':'')+'" type="button"><i></i></button>'
-    +       '<span class="'+(rot?'on':'')+'">輪轉順序</span>'
+    +       '<span class="'+(rot?'on':'')+i18nT('">輪轉順序</span>')
     +     '</div>'
     +     '<div class="gs-modedesc">' + (rot
-          ? '按一下換下一順位，一直輪下去。'
-          : '永遠從一順位開始；連按 N 下切到第 N 順位，發射完（或吃了黃／橘圈）自動歸位。')
+          ? i18nT('按一下換下一順位，一直輪下去。')
+          : i18nT('永遠從一順位開始；連按 N 下切到第 N 順位，發射完（或吃了黃／橘圈）自動歸位。'))
     +     '</div>'
     +   '</div>'
     +   '<div class="gs-right">'
-    +     '<div class="gs-sec">搭　檔</div>'
+    +     i18nT('<div class="gs-sec">搭　檔</div>')
     /* ══ 換搭檔（ver -741，Ray 的 stage2 稿：「進入整備畫面可以切換戰鬥搭檔…
        選安或諾都可以」）══ 池子裡不只一位才長頁籤（`storyPartnerPool`）；
        選擇存 loadout（跨輪偏好），套用走 `setPickedPartner`（唯一管道，§3.6）。 */
@@ -403,8 +404,8 @@ function render(){
             + ((()=>{ const bn=partner.benchLabel(pk);
                 if(bn) return '<button class="gs-pconfirm gs-paired" type="button" disabled>'+bn+'</button>';
                 return pk!==cur
-                  ? '<button class="gs-pconfirm" type="button">確　認</button>'
-                  : '<button class="gs-pconfirm gs-paired" type="button" disabled>已配對</button>'; })())
+                  ? i18nT('<button class="gs-pconfirm" type="button">確　認</button>')
+                  : i18nT('<button class="gs-pconfirm gs-paired" type="button" disabled>已配對</button>'); })())
             : '')
     +     '<div class="gs-pcard">'
     +       (p.image ? '<img class="gs-pimg" src="'+(asset(p.image)||'')+'" alt=""'
@@ -434,13 +435,13 @@ function render(){
        · 「（變身）」那個字面**撤掉** —— 這一族的正式稱呼是**覺醒技**。
        · 前綴在**名字前面**、與名字同一個 `<b>`（所以同色，那是 -989 要的）。
        · 順序改成 **覺醒 → 主動 → 被動**（-996 之前是 覺醒 → 被動 → 主動）。 */
-    +       (p.install ? '<div class="gs-perk install"><b>覺醒技：'+p.install.name+'</b>'
+    +       (p.install ? i18nT('<div class="gs-perk install"><b>覺醒技：')+p.install.name+'</b>'
                        + '<span>'+colorSkillWords(p.install.desc,p)+'</span></div>' : '')
-    +       (p.active  ? '<div class="gs-perk active"><b>主動技：'+p.active.name+'</b>'
+    +       (p.active  ? i18nT('<div class="gs-perk active"><b>主動技：')+p.active.name+'</b>'
                        + '<span>'+colorSkillWords(p.active.desc,p)+'</span></div>' : '')
-    +       (p.passive ? '<div class="gs-perk passive"><b>被動技：'+p.passive.name+'</b>'
+    +       (p.passive ? i18nT('<div class="gs-perk passive"><b>被動技：')+p.passive.name+'</b>'
                        + '<span>'+colorSkillWords(p.passive.desc,p)+'</span></div>' : '')
-    +       '<div class="gs-perk empty"><b>常駐</b><span>—</span></div>'
+    +       i18nT('<div class="gs-perk empty"><b>常駐</b><span>—</span></div>')
     /* 女主的九星（ver -980）：唯讀，管理人模式整列可點（見 girlStarListHtml）。
        ⚠ 放在 `.gs-perks` 裡面 —— 那一塊本來就會自己捲，九列塞得下。 */
     +       skillBtnHtml(pk)          // 星辰收成一顆鈕（ver -983）
@@ -484,7 +485,7 @@ function openGuide(msg){
     +'transform:translateX(-50%);max-width:80%;padding:10px 14px;border:1px solid var(--gold-dim);'
     +'border-radius:10px;background:rgba(8,9,14,.92);color:var(--ink);font-size:13px;'
     +'line-height:1.7;letter-spacing:1px;text-align:center;pointer-events:auto;cursor:pointer;';
-  tip.textContent=msg || '在這裡切換戰鬥搭檔——選好按「確　認」才會生效。';
+  tip.textContent=msg || i18nT('在這裡切換戰鬥搭檔——選好按「確　認」才會生效。');
   tip.addEventListener('click', e=>{ e.stopPropagation(); closeGuide(); });
   document.body.appendChild(dim); document.body.appendChild(ring); document.body.appendChild(tip);
   guideEls=[dim,ring,tip];
@@ -518,8 +519,8 @@ function niemPickHtml(){
          +   '<span class="gs-niemdesc">'+sk.desc+'</span>'
          + '</button>';
   }).join('');
-  return '<div class="gs-niem"><div class="gs-niemhd">要用在誰身上？</div>'+rows
-       + '<button class="gs-niemcancel" type="button">取　消</button></div>';
+  return i18nT('<div class="gs-niem"><div class="gs-niemhd">要用在誰身上？</div>')+rows
+       + i18nT('<button class="gs-niemcancel" type="button">取　消</button></div>');
 }
 
 function gsNote(txt){
@@ -545,7 +546,7 @@ function bind(){
   el.querySelectorAll('.gs-ptab').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
     const k=b.dataset.pk;
     if(!GAME_CONFIG.partners[k]) return;
-    if(lockedTo && k!==lockedTo){ gsNote('本場戰鬥由'+((GAME_CONFIG.partners[lockedTo]||{}).name||'')+'出擊'); return; }   // ver -839 鎖定
+    if(lockedTo && k!==lockedTo){ gsNote(i18nT('本場戰鬥由')+((GAME_CONFIG.partners[lockedTo]||{}).name||'')+i18nT('出擊')); return; }   // ver -839 鎖定
     try{ SFX.menuClick(); }catch(_){}
     pendingPartner = (k===partner.storyPartnerKey()) ? null : k;
     render();
@@ -556,7 +557,7 @@ function bind(){
       if(!k || !GAME_CONFIG.partners[k]) return;
       /* ⚠ 第二道門（ver -1679）：鈕已經 `disabled` 了，但**擋在真的寫進去那一步**
          才是安全的 —— 版面重繪與旗標變動之間有空窗（同 §6.5 那條「不要從畫面反推」）。 */
-      { const bn=partner.benchLabel(k); if(bn){ gsNote((GAME_CONFIG.partners[k].name||'')+'現在無法出擊'); return; } }
+      { const bn=partner.benchLabel(k); if(bn){ gsNote((GAME_CONFIG.partners[k].name||'')+i18nT('現在無法出擊')); return; } }
       pendingPartner=null;
       load.setPartner(k);
       setPickedPartner(k);
@@ -579,12 +580,12 @@ function bind(){
     try{ SFX.menuClick(); }catch(_){} niemPick=false; render(); });
   el.querySelectorAll('.gs-niemrow').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
     const res=prog.useNiem(b.dataset.who);
-    if(!res){ gsNote('現在不能用在她身上。'); return; }
+    if(!res){ gsNote(i18nT('現在不能用在她身上。')); return; }
     /* 語音由卡上指定（`girls.niem.voice`，鐵律 1）：索菈娜 roar2／
        諾薇兒 saintreload／安雅 lvup —— Ray 逐位點名的那三支。 */
     if(res.voice){ try{ SFX.unlock(); SFX.playVoice(asset(res.voice), sfxGain(res.voice)); }catch(_){} }
     niemPick=false; spotItem=null; render();
-    gsNote('〈'+res.skill.name+'〉等級提升為 LV.'+res.lv);
+    gsNote(i18nT('〈')+res.skill.name+i18nT('〉等級提升為 LV.')+res.lv);
   }));
   /* 道具的類別頁籤（ver -497）。 */
   el.querySelectorAll('.gs-icat').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation();
@@ -605,7 +606,7 @@ function bind(){
     }
     const res=prog.useHealItem(b.dataset.id);
     if(!res) return;
-    if(res.full){ try{ SFX.menuClick(); }catch(_){} gsNote('體力已滿'); return; }
+    if(res.full){ try{ SFX.menuClick(); }catch(_){} gsNote(i18nT('體力已滿')); return; }
     /* 回復音（ver -499，Ray：「使用道具恢復時跑 se_healing」）—— 真的補到血才響。 */
     try{ SFX.unlock(); SFX.play(asset('se_healing'), sfxGain('se_healing')); }catch(_){}
     render();                          // ⚠ 先重畫再浮字：render 會把整頁（含提示）洗掉
@@ -623,7 +624,7 @@ function bind(){
       bar.classList.add('heal');
       setTimeout(()=>{ bar.classList.remove('heal'); }, 900);
     }
-    gsNote('恢復了 '+res.healed+' 點體力');
+    gsNote(i18nT('恢復了 ')+res.healed+i18nT(' 點體力'));
   }));
   const sw=el.querySelector('.gs-sw');
   if(sw) sw.addEventListener('click', e=>{ e.stopPropagation();
@@ -674,7 +675,7 @@ function bind(){
     const r=prog.respecGirl(who);
     try{ SFX.confirm ? SFX.confirm() : SFX.menuClick(); }catch(_){}
     render();
-    if(r) gsNote('已收回 '+r.stars+' 顆星，退回 ◆'+r.refund);
+    if(r) gsNote(i18nT('已收回 ')+r.stars+i18nT(' 顆星，退回 ◆')+r.refund);
   }));
   el.querySelectorAll('.gs-light[data-glight]').forEach(d=>d.addEventListener('click', e=>{
     e.stopPropagation();
@@ -834,8 +835,8 @@ function maybeTip(){
   const slot=el.querySelector('.gs-slot[data-cat="'+w.cat+'"]'); if(!slot) return;
   const r=slot.getBoundingClientRect(); if(!r.width) return;
   const t=document.createElement('div'); t.className='gs-tip';
-  t.innerHTML='<i class="gt-arrow">▼</i><div class="gt-txt">拿到了「'+(w.shortName||w.name)
-            + '」。點這一格換上去。</div>';
+  t.innerHTML=i18nT('<i class="gt-arrow">▼</i><div class="gt-txt">拿到了「')+(w.shortName||w.name)
+            + i18nT('」。點這一格換上去。</div>');
   el.appendChild(t);
   /* ⚠ 箭擺在那一格的**正上方**（同旅店那一套）：擺右邊的話在窄螢幕上會被切掉
      （實測 390 寬時箭心落在 377）。文字再往上一行，不壓到格子本身。 */

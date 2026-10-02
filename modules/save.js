@@ -21,6 +21,7 @@
        兩邊都要加。
    ══════════════════════════════════════════════════════════════════════ */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import * as prog from '../script/progress.js';
 import * as story from './story.js';
 import { MAIN_SCRIPT } from '../script/mainScript.js';
@@ -91,8 +92,8 @@ function capture(){
 }
 function labelOf(pos, twn){
   /* 在城裡就印地名（玩家看得懂的），在劇情裡才印 scene／行號（那是開發用的座標）。 */
-  if(twn) return (host.placeName ? host.placeName(twn) : '') || twn.node || '城鎮';
-  if(!pos) return '（劇情外）';
+  if(twn) return (host.placeName ? host.placeName(twn) : '') || twn.node || i18nT('城鎮');
+  if(!pos) return i18nT('（劇情外）');
   const sc = MAIN_SCRIPT[pos.scene];
   const total = sc ? sc.lines.length : '?';
   return `${pos.scene}  ${pos.line+1}/${total}`;
@@ -168,7 +169,7 @@ export function autoFlightSave(fp){
   const db=load();
   const rec=capture();
   rec.flightPos={ x:fp.x, y:fp.y, angle:fp.angle, alt:fp.alt };
-  rec.label='大地圖航行中';
+  rec.label=i18nT('大地圖航行中');
   db.auto=rec;
   store(db);
   return rec;
@@ -206,14 +207,14 @@ export function loadLatest(opts){
    ⚠ 存讀的動作本身完全沿用 `capture()`／`apply()`（鐵律 8）—— 換的只有存哪一格。 */
 export function simSave(){
   const db=load(); db.sim=capture(); store(db);
-  toast('模擬存檔  '+db.sim.label);
+  toast(i18nT('模擬存檔  ')+db.sim.label);
   return db.sim;
 }
 export function simLoad(){
   const db=load();
-  if(!db.sim){ toast('還沒有模擬存檔'); return false; }
+  if(!db.sim){ toast(i18nT('還沒有模擬存檔')); return false; }
   apply(db.sim);
-  toast('模擬讀檔  '+db.sim.label);
+  toast(i18nT('模擬讀檔  ')+db.sim.label);
   return true;
 }
 /* 那一格現在裝著什麼（給小地圖那顆鈕印在旁邊；沒有就回 null）。 */
@@ -234,14 +235,14 @@ export function simInfo(){ return load().sim || null; }
      但這一支本身不判：判斷是**畫面**的事，資料層只負責存讀（鐵律 8）。 */
 export function devSave(){
   const db=load(); db.dev=capture(); store(db);
-  toast('管理人存檔  '+db.dev.label);
+  toast(i18nT('管理人存檔  ')+db.dev.label);
   return db.dev;
 }
 export function devLoad(){
   const db=load();
-  if(!db.dev){ toast('還沒有管理人存檔'); return false; }
+  if(!db.dev){ toast(i18nT('還沒有管理人存檔')); return false; }
   apply(db.dev);
-  toast('管理人讀檔  '+db.dev.label);
+  toast(i18nT('管理人讀檔  ')+db.dev.label);
   return true;
 }
 export function devInfo(){ return load().dev || null; }
@@ -249,14 +250,14 @@ export function devInfo(){ return load().dev || null; }
 /* ══ 即時存讀（F4 / F7）══ */
 export function quickSave(){
   const db=load(); db.quick=capture(); store(db);
-  toast('即時存檔  '+db.quick.label);
+  toast(i18nT('即時存檔  ')+db.quick.label);
   return true;
 }
 export function quickLoad(){
   const db=load();
-  if(!db.quick){ toast('沒有即時存檔'); return false; }
+  if(!db.quick){ toast(i18nT('沒有即時存檔')); return false; }
   apply(db.quick);
-  toast('即時讀檔  '+db.quick.label);
+  toast(i18nT('即時讀檔  ')+db.quick.label);
   return true;
 }
 
@@ -280,7 +281,7 @@ function render(){
   if(page<0) page=0;
 
   const title=$('saveTitle'), list=$('saveList'), pg=$('savePage');
-  if(title) title.textContent = (mode==='save' ? '存檔' : '讀檔');
+  if(title) title.textContent = (mode==='save' ? i18nT('存檔') : i18nT('讀檔'));
   if(pg)    pg.textContent = `${page+1} / ${pc}`;
   if(!list) return;
 
@@ -308,7 +309,7 @@ function render(){
       body.appendChild(a); body.appendChild(b);
     }else{
       const a=document.createElement('span'); a.className='sv-label';
-      a.textContent='— 空欄 —';
+      a.textContent=i18nT('— 空欄 —');
       body.appendChild(a);
     }
     row.appendChild(no); row.appendChild(body);

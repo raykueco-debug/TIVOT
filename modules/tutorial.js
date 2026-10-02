@@ -19,6 +19,7 @@
  *    （維持 §2 依賴方向：combat 為協調者 import 本模組並轉交所需原語）。
  * ========================================================================== */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, asset } from '../config.js';
 import { state } from '../state.js';
 import { SFX } from '../audio.js';
@@ -313,7 +314,7 @@ export function onPlayerDead(){
   deadHandled = true;
   queue = [];                                        // 佇列段落全廢棄：整場即將重開
   if(state.tutorialDialog) closeDialog(false, true); // 蓋掉現開段落，確保 dead 段獨占（不被接續吃掉）
-  const line=scoldCfg().dead || '服了你了。重來！';
+  const line=scoldCfg().dead || i18nT('服了你了。重來！');
   openStep({ key:'tutorialDead', lines:[scoldLine(line)] });
   return true;
 }
@@ -641,7 +642,7 @@ function tutEditLine(){
   const line = cur && cur.lines && cur.lines[lineIdx]; if(!line || typeof line.text!=='string') return;
   const lines=cur.lines, i=lineIdx;
   beatPick.openTextEditor({
-    title:'改台詞：'+(castOf(line.who).name||line.who||''),
+    title:i18nT('改台詞：')+(castOf(line.who).name||line.who||''),
     text: line.text,
     onSave:(v)=>beatPick.postText({ text:line.text, new:v, mark: line.img || undefined,
         prev: lines[i-1] ? (lines[i-1].text||'') : undefined, next: lines[i+1] ? (lines[i+1].text||'') : undefined })
@@ -663,15 +664,15 @@ export function beatEditAt(x, y){
   const keys=Object.keys(CFG().portraitFrames||{}).filter(k=>k.indexOf('tut_'+who)===0);
   const img0=castOf(who).image; if(img0 && keys.indexOf(img0)<0) keys.unshift(img0);
   beatPick.openPicker({
-    title:(castOf(who).name||who)+'　目前：'+(el.dataset.imgKey||''),
-    note: b ? '改寫的是這一拍：「'+(b.line.text||'（無台詞）')+'」（只列已登記的戰鬥對白立繪）'
-            : '⚠ 這一拍沒有明寫 img（用的是角色預設圖）—— 只換畫面，不寫檔',
+    title:(castOf(who).name||who)+i18nT('　目前：')+(el.dataset.imgKey||''),
+    note: b ? i18nT('改寫的是這一拍：「')+(b.line.text||i18nT('（無台詞）'))+i18nT('」（只列已登記的戰鬥對白立繪）')
+            : i18nT('⚠ 這一拍沒有明寫 img（用的是角色預設圖）—— 只換畫面，不寫檔'),
     items: keys.map(k=>({ key:k, label:k.replace('tut_',''), src:asset(k) })).filter(it=>it.src),
     cur: el.dataset.imgKey,
     onPick:(k)=>{
       el.dataset.imgKey=k; el.src=asset(k);
       const sd=sideOf(who); placePortraitX(el, sd); el.onload=()=>{ el.onload=null; placePortraitX(el, sd); };
-      if(!b) return { ok:false, text:'只換了畫面（這一拍沒有 img 可改）' };
+      if(!b) return { ok:false, text:i18nT('只換了畫面（這一拍沒有 img 可改）') };
       const body={ text:b.line.text||'', old:b.line.img, new:k, field:'img',
                    prev: b.lines[b.idx-1] ? (b.lines[b.idx-1].text||'') : undefined,
                    next: b.lines[b.idx+1] ? (b.lines[b.idx+1].text||'') : undefined };
@@ -1469,13 +1470,13 @@ function showGuide(type, tone){
   if(type==='click'){
     // 破防計量表上方，箭頭向下指、標示 CLICK！
     const r=$('energyClasp') ? $('energyClasp').getBoundingClientRect() : {left:20,top:innerHeight/2,width:24};
-    dir='g-down'; label = labels.click || 'CLICK！';
+    dir='g-down'; label = labels.click || i18nT('CLICK！');
     x = r.left + r.width/2 + 8;
     y = r.top - 52;
   }else if(type==='wswitch'){
     // 副武器切換鈕（血條右側的槍圖）上方，箭頭向下指（ver -478，切換教學）
     const r=$('wpSwitch') ? $('wpSwitch').getBoundingClientRect() : {left:innerWidth-80,top:innerHeight/2,width:60};
-    dir='g-down'; label = labels.wswitch || '點擊切換';
+    dir='g-down'; label = labels.wswitch || i18nT('點擊切換');
     x = r.left + r.width/2;
     y = r.top - 52;
   }else if(type==='threat'){
@@ -1487,7 +1488,7 @@ function showGuide(type, tone){
        ⚠ 圈不在（被別的路徑收掉了）就退回敵人框中央，不要讓箭飛到畫面外。 */
     const th=(state.threats && state.threats[0]) || null;
     const r=(th && th.el) ? th.el.getBoundingClientRect() : null;
-    dir='g-up'; label = labels.click || 'CLICK！';
+    dir='g-up'; label = labels.click || i18nT('CLICK！');
     if(r && r.width){ x = r.left + r.width/2; y = r.bottom + 30; }
     else{
       const tr=$('top') ? $('top').getBoundingClientRect() : {left:0,top:0,width:innerWidth,height:innerHeight/2};
@@ -1498,7 +1499,7 @@ function showGuide(type, tone){
     // ⚠ #tutGuide 為 fixed（視口座標）：x 必須以 #top 的 rect.left 起算——
     //   桌機 #app 置中（max-width 520）時，直接用 42 會落在畫框外。
     const tr=$('top') ? $('top').getBoundingClientRect() : {left:0,top:0,height:innerHeight/2};
-    dir='g-right'; label = labels.right || '向右側滑動';
+    dir='g-right'; label = labels.right || i18nT('向右側滑動');
     x = (tr.left||0) + 42;
     y = tr.top + tr.height*0.45;
   }else{
@@ -1511,7 +1512,7 @@ function showGuide(type, tone){
          右邊有人、左邊沒人 → 箭在左 1/4；反過來 → 右 1/4；兩邊都有或都沒有 → 正中。
        ⚠ 讀的是 `.in`（現在台上的那幾個）不是資料上的 side：`soloLine` 的段落
          台上只留說話的那一位，其他人已經滑出去了。 */
-    dir='g-up'; label = labels.up || '向上滑動';
+    dir='g-up'; label = labels.up || i18nT('向上滑動');
     const on = stageSides();
     const inL=on.has('left'), inR=on.has('right');
     const fx = (inR && !inL) ? 0.25 : (inL && !inR) ? 0.75 : 0.5;
@@ -1575,10 +1576,10 @@ function showSkipConfirm(){
   const t=(L.tutorial && L.tutorial.skipConfirm) || {};
   const dlg=document.createElement('div'); dlg.id='tutSkipConfirm';
   dlg.innerHTML='<div class="ec-panel">'
-    +'<div class="ec-title">'+(t.title||'是否跳過教學？')+'</div>'
+    +'<div class="ec-title">'+(t.title||i18nT('是否跳過教學？'))+'</div>'
     +'<div class="ec-sub">'+(t.sub||'')+'</div>'
-    +'<div class="ec-btns"><button class="ec-no">'+(t.no||'繼續教學')+'</button>'
-    +'<button class="ec-yes">'+(t.yes||'跳　過')+'</button></div>'
+    +'<div class="ec-btns"><button class="ec-no">'+(t.no||i18nT('繼續教學'))+'</button>'
+    +'<button class="ec-yes">'+(t.yes||i18nT('跳　過'))+'</button></div>'
     +'</div>';
   document.body.appendChild(dlg);
   const close=()=>{ if(dlg.parentNode) dlg.remove();

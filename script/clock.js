@@ -1,3 +1,4 @@
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 /* ══════════════════════════════════════════════════════════════════════
    clock.js — 遊戲內時間（ver -369）
    ──────────────────────────────────────────────────────────────────────
@@ -45,7 +46,11 @@ export function now(){
            h:d.getUTCHours(), mi:d.getUTCMinutes() };
 }
 const p2 = n => (n<10?'0':'')+n;
-export function dateText(){ const t=now(); return t.y+'年'+t.mo+'月'+t.d+'日'; }
+/* 日期格式走譯文表的**樣板**（ver -1909）：語序各語言不同（西文是「12 de octubre de 1908」），
+   拼字串片段做不出來。{y}{m}{d}＝數字、{M}＝月名（譯文表的 '1月'…'12月'）。 */
+const fillDate = (tpl, y, m, d) => tpl.replace(/\{([ymdM])\}/g, (_, k) =>
+  k==='y' ? y : k==='m' ? m : k==='d' ? d : i18nT(m+i18nT('月')));
+export function dateText(){ const t=now(); return fillDate(i18nT('{y}年{m}月{d}日'), t.y, t.mo, t.d); }
 /* ══ N 天之後的日期（ver -953，Stage8 的「兩個月內完成任務」）══
    ⚠ 走 `now()`＋真的 `Date`（跨月跨年由它算），不要自己數天數。
    ⚠ 只回**日期**不回時刻：期限講的是哪一天，不是幾點幾分。
@@ -56,7 +61,7 @@ export function dateTextIn(days){
   const t=now();
   const d=new Date(Date.UTC(t.y, t.mo-1, t.d, t.h, t.mi));
   d.setUTCDate(d.getUTCDate()+(days|0));
-  return (d.getUTCMonth()+1)+'月'+d.getUTCDate()+'日';
+  return fillDate(i18nT('{m}月{d}日'), d.getUTCFullYear(), d.getUTCMonth()+1, d.getUTCDate());
 }
 export function timeText(){ const t=now(); return p2(t.h)+':'+p2(t.mi); }
 /* 現在的「小時」含分鐘的小數（8:30 → 8.5）。⚠ 營業時間之類的比較**一律問這支**

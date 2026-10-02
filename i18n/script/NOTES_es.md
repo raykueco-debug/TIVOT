@@ -25,3 +25,9 @@
 學姐・學長＝veterana／veterano／小公主（索菈娜叫安雅）＝princesita／
 修女大人・修女小姐＝hermana（索菈娜的調侃可用 monjita）／璐娜大人＝la señora Luna／
 店主（名牌）＝Tendero／扣分＝Te resto puntos
+
+## 介面（ver -1909）
+日期：`{d} de {M} de {y}`（月名小寫 enero…diciembre）／飛行頁：`{M} de {y}, Calendario Continental`。
+首頁鈕大寫（HISTORIA、DESAFÍO、CONTINUAR）；整備頁頁籤 EQUIPO／OBJETOS。
+武器類別：重機槍＝Ametralladora／霰彈槍＝Escopeta／萊福槍＝Rifle（顯示端 `i18nT(cat)`，資料上的 cat 仍是中文識別字）；貨幣 克朗＝coronas。
+審稿表：`reference/ui_es.xlsx`（介面）、`reference/script_es.xlsx`（劇本）。
