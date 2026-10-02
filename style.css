@@ -561,6 +561,17 @@
   .fx-star.gold::before{background:linear-gradient(90deg,transparent,#ffe08a 45%,#fff3c4 55%,transparent);}
   .fx-star.gold::after{background:linear-gradient(180deg,transparent,#ffe08a 45%,#fff3c4 55%,transparent);}
   .fx-star.gold i{background:radial-gradient(circle,#fff6d0 0%,rgba(255,214,110,.85) 35%,transparent 70%);}
+  /* ⚠ 不順的修法（ver -1922，Ray：「補血特效太不順了 禎數高點」）：
+     ① 金色版**不用 `mix-blend-mode`**（三十幾顆各自做加亮混合，手機上每格都要重算整片 ⇒ 掉幀）；
+     ② `will-change` 讓每一顆升成自己的合成層，只動 transform／opacity（GPU 直接做）；
+     ③ 自己一條較長、較平的曲線（淨化那條是 0.5 秒的爆散，拿來當飄起會一頓一頓）。 */
+  .fx-star.gold{mix-blend-mode:normal;will-change:transform,opacity;
+    animation-name:goldMote;animation-timing-function:cubic-bezier(.25,.6,.35,1);}
+  @keyframes goldMote{
+    0%  {opacity:0;   transform:translate3d(0,0,0) rotate(var(--r,0deg)) scale(.45);}
+    20% {opacity:1;   transform:translate3d(calc(var(--dx)*.2),calc(var(--dy)*.2),0) rotate(var(--r,0deg)) scale(1);}
+    70% {opacity:.75; transform:translate3d(calc(var(--dx)*.72),calc(var(--dy)*.72),0) rotate(var(--r,0deg)) scale(.8);}
+    100%{opacity:0;   transform:translate3d(var(--dx),var(--dy),0) rotate(var(--r,0deg)) scale(.45);}}
   #storyStage .story-motes{position:absolute;left:0;right:0;top:0;height:var(--story-top);
     z-index:3;pointer-events:none;overflow:hidden;}   /* 幾何同 #storyFx：演出區、楣（z 6）之下 */
   #topVignette{position:absolute;inset:0;pointer-events:none;

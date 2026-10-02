@@ -976,6 +976,14 @@ export function setPlayerNick(v){ wr(K.nick, (v||'').trim() || NICK_DEFAULT); }
 export const CHAPTERS = [
   { id:'stage0', name:'Stage 0', sub:i18nT('地宮 → 帝都探索 → 旅店睡覺'),
     enter:'story' },
+  /* ══ 夢境戰（ver -1922，Ray：「開個夢境戰給我」）══ 測試用：帝都旅店、第一天 21:00，**按睡覺就入夢**
+     （同正常玩那一條，鐵律 8）。旅店初見／蕾娜晚歸／一次性說明都當成看過，不擋路；`cap_dream` **不給**（那就是夢本身）。 */
+  { id:'dream', name:i18nT('夢境戰'), sub:i18nT('帝都旅店 21:00・按「回房睡覺」入夢（賽西莉）'),
+    stage:0, clockHour:21, named:true,
+    flags:['dungeon_cleared','hq_briefed','renna_named','mapcard_capital',
+           'inn_seen_capital_inn','town_capital_inn','town_kind_inn','inn_wait','inn_missed',
+           'inn_tip_sit','inn_tip_knock','inn_tip_sleep'],
+    enter:'town', town:'capital', node:'inn' },
   /* ⚠ Stage 1 從**夢結束後的那一幕**開始（ver -1904，Ray：「stage1 切點改成夢結束後開始，
      從『不過……我不討厭就是了。』之後的那一幕開始」）：隔天 07:00 的帝都旅店 ——
      落在旅店、**不帶** `stage1_open`，進場那一刻 07:00 閘門自己接手

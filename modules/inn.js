@@ -869,7 +869,14 @@ function sleepHere(){
   const blackAfter = napH && nap.sleepFirst.blackAfter!=null ? (nap.sleepFirst.blackAfter|0) : null;
   try{ SFX.duckBgm(ms); }catch(_){}
   if(blackAfter==null) setTimeout(()=>{ try{ SFX.unduckBgm(900); }catch(_){} }, Math.round(full));
-  story.veil(true, ms);
+  /* ⚠⚠ 入夢（有 `blackAfter`）只黑**上半**（ver -1921，Ray：「睡覺鈕轉夢境的時候槍棺被重讀了一次，閃了一下，槍棺維持」）——
+     全畫面黑幕（`#storyVeil`）會連槍棺一起蓋黑，入夢那一刻又要瞬間掀掉換成只蓋上半的 `#storyFade`，
+     槍棺就「啪」一下冒回來。直接用 `#storyFade` 淡黑（楣之下、只罩演出區），槍棺從頭到尾都在。 */
+  if(blackAfter!=null){
+    const f=document.getElementById('storyFade');
+    if(f){ f.style.transitionDuration=ms+'ms'; void f.offsetWidth; f.classList.add('on');   // 同 story.veil 的寫法
+           setTimeout(()=>{ f.style.transitionDuration=''; }, ms+120); }
+  }else story.veil(true, ms);
   /* ⚠ 睡覺音第一次播時多半還沒解碼完 ⇒ 這一刻 `SFX.duration` 是空的（走退路）。有 `blackAfter` 的那一種
      等到淡黑走完再問一次真正的長度，補足「播完」那一段再加黑的毫秒數（ver -1894）。 */
   const t0 = performance.now();
@@ -894,13 +901,17 @@ function sleepHere(){
       if(host && host.refreshBg) host.refreshBg();   // 時段可能跨過去了
       refresh();
       if(host && host.napArm) host.napArm();
+      /* ⚠⚠ 入夢（`blackAfter`）**不經過 `settle()`**（ver -1922）：那一支先 `lock(false)` ⇒ `showNav(true)`
+         ⇒ 暗罩守望把黑幕清掉 ⇒ 旅店大廳與槍棺亮回來一格，下一拍夢才又蓋黑 —— 那就是「槍棺閃了一下」。
+         夢那一段直接接上（`rerun`＝`town.rerunIfDue`），導覽由那一段演完自己開。 */
+      if(blackAfter!=null && host && host.rerun){ busy=false; if(host.rerun()) return; }
       if(settle()) return;
       /* 有 `blackAfter` 的那一種（夢）：黑幕交給場景區那一片 `#storyFade`（＝那一段第一拍的 `fadeOut`），
          切景黑幕瞬間收掉 —— 不然中間會亮一下旅店（段落第一拍要先停一秒才演）。 */
       if(blackAfter!=null){
-        const f=document.getElementById('storyFade');
-        if(f){ f.style.transitionDuration='0ms'; f.classList.add('on'); void f.offsetWidth; f.style.transitionDuration=''; }
-        story.veil(false, 0); return;
+        const f=document.getElementById('storyFade');   // 入睡那一刻就已經是它在蓋（見上）；這裡只是保證還蓋著
+        if(f && !f.classList.contains('on')){ f.style.transitionDuration='0ms'; f.classList.add('on'); void f.offsetWidth; f.style.transitionDuration=''; }
+        return;
       }
       story.veil(false, WAKE_FADE_MS);
       return;

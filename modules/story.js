@@ -1749,7 +1749,7 @@ function goldMotes(){
   for(let i=0;i<34;i++){
     const d=document.createElement('div'); d.className='fx-star gold';
     d.appendChild(document.createElement('i'));
-    const life=1100+Math.random()*900, delay=Math.random()*900;
+    const life=1800+Math.random()*1000, delay=Math.random()*900;   // ver -1922：飄久一點（金光是「升起消散」，不是爆散）
     d.style.left=(2+Math.random()*96)+'%'; d.style.top=(45+Math.random()*52)+'%';
     d.style.setProperty('--s', (12+Math.random()*26).toFixed(0)+'px');
     d.style.setProperty('--r', (Math.random()*90).toFixed(0)+'deg');
@@ -3209,7 +3209,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1920';
+const KERB_V='?v=1924';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
