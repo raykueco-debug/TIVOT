@@ -84,7 +84,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1914';
+export const VERSION = 'ver 2026.09.22-1915';
 
 export const GAME_CONFIG = {
 
@@ -3673,7 +3673,7 @@ export const GAME_CONFIG = {
       se_dart_fail:2.792,
       /* ── 劇情／城鎮（這一批以前完全沒有增益，見上面的說明）── */
       se_lightup:1.34,   // ver -1859：本機量 −16.1 LUFS（耳機−15.2／手機−17.0 平均），以 se_steps 校正 +0.25 dB
-      se_steps:4.92, se_stepsbig:7.198,   /* ver -1914（Ray：「se_steps 改了，城鎮、室外都用這個；se_stepsbig 只用在遺跡內、地宮內的跑步聲」）：se_steps 換新（3.8 秒，原 mp3 在 se/_raw/，?v=3）；增益照 audio_scan 建議值 5.54 × 舊檔校準比（7.198／8.11）＝4.92 */   // ver -1871：se_steps 換新（ffmpeg ebur128 耳機−23.9／手機−24.8，以舊檔 7.198 校正 −6.8 dB）；se_stepsbig＝舊的那支原檔
+      se_steps:4.92, se_stepsbig:6.96,   /* ver -1915：stepsbig 換新（Ray 交 wav，4.3 秒，原檔進 _originals，?v=4）；audio_scan 建議 7.84 × 校準比 7.198／8.11 */   /* ver -1914（Ray：「se_steps 改了，城鎮、室外都用這個；se_stepsbig 只用在遺跡內、地宮內的跑步聲」）：se_steps 換新（3.8 秒，原 mp3 在 se/_raw/，?v=3）；增益照 audio_scan 建議值 5.54 × 舊檔校準比（7.198／8.11）＝4.92 */   // ver -1871：se_steps 換新（ffmpeg ebur128 耳機−23.9／手機−24.8，以舊檔 7.198 校正 −6.8 dB）；se_stepsbig＝舊的那支原檔
       se_walk:4.481, se_fall:3.724, se_punch:1.596,
       se_tummy:8.268, se_sailorshout:2.048, se_sleep:1.708,
       se_kerberos_open:1.558, se_kerberos_pop:1.479, se_kerberos_steam:1.301,
