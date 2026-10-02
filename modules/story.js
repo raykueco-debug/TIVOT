@@ -1732,7 +1732,33 @@ const missingCg=new Set();   // 退回過的插圖：只提示一次，不然每
      進城、讀檔回來、回檔）。
    ⚠ 這一支**只收「上一個畫面的殘留」**，不碰立繪（那是 `clearCast` 的事）
      與背景（那是 `enter()` 自己要換的）。 */
+/* ══ 金色光芒飄起消散（ver -1910，Ray：「夢境中放恢復音效時畫面特效，金色光芒飄起消散，禍魘淨化有類似特效，
+     用那個，全畫面寬度，圖層在楣以下」）══ 腳本那一拍寫 `fx:'goldmotes'`。
+   ⚠ 光斑本身**就是淨化那一套**（CSS `.fx-star` ＋ `purgeStar`，enemy.js 的 `spawnPurgeStars`），只多 `.gold` 換色 ——
+     不另寫一套動畫（鐵律 8）。撒滿演出區整個寬度、由下往上飄。
+   ⚠ 容器自己一層（`.story-motes`，幾何同 `#storyFx`、z 3 ＝楣之下）：`#storyFx` 每推一句就被 `stopFx` 清空，
+     光還沒飄完就沒了。這一層由自己的計時器收，換畫面時 `clearStageLeftovers` 再保險一次。 */
+function goldMotes(){
+  const st=$('storyStage'); if(!st) return;
+  const box=document.createElement('div'); box.className='story-motes'; st.appendChild(box);
+  let end=0;
+  for(let i=0;i<34;i++){
+    const d=document.createElement('div'); d.className='fx-star gold';
+    d.appendChild(document.createElement('i'));
+    const life=1100+Math.random()*900, delay=Math.random()*900;
+    d.style.left=(2+Math.random()*96)+'%'; d.style.top=(45+Math.random()*52)+'%';
+    d.style.setProperty('--s', (12+Math.random()*26).toFixed(0)+'px');
+    d.style.setProperty('--r', (Math.random()*90).toFixed(0)+'deg');
+    d.style.setProperty('--dx', ((Math.random()*2-1)*40).toFixed(0)+'px');
+    d.style.setProperty('--dy', (-90-Math.random()*170).toFixed(0)+'px');
+    d.style.setProperty('--life', life.toFixed(0)+'ms');
+    d.style.animationDelay=delay.toFixed(0)+'ms';
+    box.appendChild(d); end=Math.max(end, life+delay);
+  }
+  setTimeout(()=>box.remove(), end+120);
+}
 export function clearStageLeftovers(){
+  document.querySelectorAll('#storyStage .story-motes').forEach(e=>e.remove());   // 金光（ver -1910）
   stopDust();     // 揚煙（ver -1639）：換畫面就收，不要飄到下一景去
   killCgRush();   // 放射狀疊影（ver -1562）：換畫面時的第二道保險
   /* ⚠ 龍吟的模糊（ver -1465）：`forwards` 的一次性動畫，換畫面時一起拔
@@ -2042,6 +2068,7 @@ function applyPersist(line){
   let bgChanged=false;
   if(line.bg!==undefined && line.bg!==stageBg){
     bgChanged=true;
+    lineBgAt=performance.now();   // 腳本這一拍親自換了背景（見 setSceneBg 的 reqAt）
     stageBg=line.bg;
     setBgFlip(false);   // 主線場景不吃翻轉（那是城鎮節點的資料，ver -877）
     /* 立繪的色調跟著背景走一點點（見 modules/tone.js）。
@@ -2490,7 +2517,7 @@ const SE_FILES=[
   /* ⚠ `se_saint_maxburst` 於 ver -641 改名成 `vo_saint_maxburst`，而它**還躺在 `se/`**
      —— 這張表是照 `vo_` 前綴推資料夾的，列進來會指到 `vo/` 而 404。
      它本來就在 `ASSETS.se_luna_mb`（開機那一批照樣預載得到），所以這裡直接不列。 */
-  'se_saint_install.m4a', 'se_steps.m4a?v=2', 'se_stepsbig.m4a', 'se_ui_click.m4a',   // ver -1871：se_steps 換新（同名覆蓋 ?v=2），舊的那支改名 se_stepsbig（遺蹟內用）
+  'se_saint_install.m4a', 'se_stepsbig.m4a?v=2', 'se_ui_click.m4a',   // ver -1871：se_steps 換新（同名覆蓋 ?v=2），舊的那支改名 se_stepsbig（遺蹟內用）
   'se_ginclick.m4a', 'se_tummy.m4a', 'se_metalclip.m4a', 'se_sailorshout.mp3',
   /* stage7・木雅克神殿（ver -922，Ray 交件）：古代機械開門的金屬聲、深處的禍魘咆哮。 */
   'se_metalopen.m4a', 'se_monsterroardeep.m4a',
@@ -3150,6 +3177,7 @@ function fireOneShot(line){
       holdSkip(STARE_MS);
     }
   }
+  if(line.fx==='goldmotes') goldMotes();
   if(line.fx==='whiteflash'){ const b=$('storyFx');
     if(b){ const f=document.createElement('div'); f.className='fx-sense-flash';
            b.appendChild(f); fxTimers.push(setTimeout(()=>f.remove(), 2200)); } }
@@ -3173,7 +3201,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1909';
+const KERB_V='?v=1910';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4606,6 +4634,10 @@ function renderLine(){
   /* 自動播放／加速：這一句唸完就排下一句。⚠ 掛在 `onTyped` 而不是固定秒數 ——
      長句與短句該停一樣久的「讀完之後」，不是一樣久的「出現之後」。 */
   onTyped = ()=>{ onTyped=null; scheduleAuto(); };
+  /* ⚠ `autoText:<毫秒>` ＝**有台詞**的這一拍唸完之後自己往下走，不等點擊（ver -1910，Ray：「點睡覺以後，
+     睡眠音播完直接播夢境 不要點」）。`auto` 只管無台詞拍；這是明寫的例外，預設照舊等點擊。 */
+  if(line.autoText>0) onTyped = ()=>{ onTyped=null;
+    clearTimeout(autoT2); autoT2=setTimeout(()=>{ autoT2=null; if(active) advance(); }, line.autoText); };
   };   // reveal 結束
 
   markTalking(true);   // ver -385：這一拍開始演了（收場在 clearCast／close）
@@ -6130,8 +6162,14 @@ export function setSceneCgBack(src, opts){
   else    el.style.removeProperty('object-fit');
   swapImg(el, src||'', shade, { fadeInFirst:first });
 }
-export function setSceneBg(name, done){
+/* ⚠⚠ `reqAt`＝呼叫端**開始探測**那一刻（ver -1910）：城鎮的 `bgFor` 是非同步的（逐個試候選、等 onload），
+   手機上它可能在**腳本那一拍已經換了背景之後**才回來 —— 那時再換回城鎮那一張，就是「夢境背景讀不到」
+   （旅店小睡：refreshBg 先起跑、夢的第一拍 `bg:` 先畫上、旅店那一張晚到蓋掉）。
+   腳本的 `bg:` 比這個請求晚 ⇒ 這個請求過期，不換。 */
+let lineBgAt=0;
+export function setSceneBg(name, done, reqAt){
   const el=$('storyBg'); if(!el){ done&&done(); return; }
+  if(reqAt!=null && lineBgAt>reqAt){ done&&done(); return; }
   if(name===stageBg){ done&&done(); return; }
   stageBg=name;
   swapImg(el, name ? imgSrc(name) : '', done);
@@ -6157,6 +6195,9 @@ export function playAdhoc(lines, done, opts){
        以前差（顯示端那條路自己也會解析並寫回同一份快取）。
      ⚠ 一段之內同一張只解一次（`resolveCg` 自己有快取）。 */
   for(const ln of lines){ if(ln && ln.cg) resolveCg(ln.cg, ln.cgNoTime); }
+  /* ⚠ 這一段自己寫的 `bg:` 也先暖起來（ver -1910，Ray：「手機上夢境的背景讀不到」）——
+     城鎮段落不經過 `collectAssets`，第一次演到才抓；手機上那一張還沒到，黑幕就已經掀了。 */
+  for(const ln of lines){ if(ln && typeof ln.bg==='string' && ln.bg){ const im=new Image(); im.src=imgSrc(ln.bg); } }
   st.classList.add('on'); document.body.classList.add('story-on');
   active=true;
   clearCast();                      // ⚠ 新的一段＝新的台上（見 clearCast 的說明）

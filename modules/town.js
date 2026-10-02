@@ -967,7 +967,7 @@ export function loadSpec(town, nodeId){
    餐酒館有），一個共用的 `noTime` 參數表達不了 —— 而候選鏈的展開只有
    `story.bandNames` 一支（鐵律 7），所以展開的地方就該在知道每一張是誰的那一支。 */
 function bgFor(list, done){
-  const my=++bgSeq;
+  const my=++bgSeq, reqAt=performance.now();
   const fin=()=>{ if(my===bgSeq && done) done(); };
   const all=(list||[]).filter(Boolean);
   if(!all.length){ fin(); return; }
@@ -990,7 +990,7 @@ function bgFor(list, done){
       bgNow = name;                          // 現在畫面上是哪一張（ver -592，見 currentBg）
       /* ⚠ 回報的時機是**它真的畫上去**，不是「叫了 setSceneBg」（ver -442）：
          那一支底下可能還要淡一段（`swapImg`），早報就會在舊圖上把黑幕掀開。 */
-      story.setSceneBg(name, fin);
+      story.setSceneBg(name, fin, reqAt);
       /* 旅店那兩顆行動鈕（獨自坐坐／回房睡覺）要靠圖的原始比例換算位置（見 bgPoint），
          所以在這裡記下來 —— 這一支本來就要載那張圖，不必另外再抓一次
          （鐵律 7：算的那一支發佈出去）。 */

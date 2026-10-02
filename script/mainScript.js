@@ -65,7 +65,7 @@ export const MAIN_SCRIPT = {
            base 立繪站在卡片後面，下一句才換成跑姿，看起來像閃了一下。 */
         portrait:{ char:'NOUVELLE', show:false } },
       /* 開場：腳步聲與喘息。 */
-      { speaker:'NOUVELLE', text:'追、追上來了！', se:'se_steps',
+      { speaker:'NOUVELLE', text:'追、追上來了！', se:'se_stepsbig',
         portrait:{ char:'NOUVELLE', expr:'run', show:true } },
       /* ⚠ 這一拍要抖（Ray 指定）。抖的是場景各層，對話框不抖 —— 見 style.css
          的 `#storyStage.shake` 選擇器清單。 */
@@ -201,11 +201,12 @@ export const MAIN_SCRIPT = {
         portrait:{ char:'LUNARIA', show:false } },
       { speaker:'LUNARIA', text:'在G2就熔斷了嗎？真是派不上用場。',
         portrait:{ char:'LUNARIA', expr:'angry', show:true } },
-      { speaker:'NOUVELLE', text:'真的……非常抱歉！',
+      { bubbleFx:'nervous', speaker:'NOUVELLE', text:'真的……非常抱歉！',
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
       { speaker:'LUNARIA', text:'不是在說妳。', portrait:{ char:'LUNARIA', expr:'angry' } },
       { speaker:'LUNARIA', text:'如果你也是HUND的話，不要依賴他人的力量如何？',
         portrait:{ expr:'taunt' } },
+      { speaker:'PLAYER', blank:true },
       { speaker:'LUNARIA', text:'算了。13th來人了，說是要來找這傢伙。',
         portrait:{ expr:'angry' } },
       { speaker:'NOUVELLE', text:' 13th……第十三騎士團嗎！？',
@@ -334,7 +335,7 @@ export const MAIN_SCRIPT = {
       { speaker:'LUNARIA', text:'......', portrait:{ char:'LUNARIA', expr:'seat' } },
       { speaker:'LUNARIA', text:'......你自求多福吧。', portrait:{ expr:'seat' } },
       { speaker:'PLAYER', blank:true, bubbleFx:['sweat','gloom'] },
-      { speaker:'NOUVELLE', text:'不要緊的，我也是個術師，我會保護監察官大人的安全！',
+      { bubbleFx:'nervous', speaker:'NOUVELLE', text:'不要緊的，我也是個術師，我會保護監察官大人的安全！',
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
       { speaker:'OFFICER', text:'唉呀好可靠。多好的女孩呀？',
         portrait:{ char:'OFFICER', expr:'smile', show:true } },
@@ -632,7 +633,7 @@ export const MAIN_SCRIPT = {
       { speaker:'SORANA', text:'唉呀很簡單的，走吧！',
         portrait:{ expr:'front' } },
       /* 走路腳步聲（稿上的演出指示）掛在下一句上。 */
-      { speaker:'RENNA', text:'我真的跟不上……', se:'se_steps',
+      { speaker:'RENNA', text:'我真的跟不上……', se:'se_stepsbig',
         portrait:{ char:'RENNA', expr:'die' } },
       { speaker:'NOUVELLE', text:'',
         portrait:{ char:'NOUVELLE', expr:'awkward' } },

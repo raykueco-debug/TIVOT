@@ -557,6 +557,12 @@
                                 rotate(var(--r,0deg)) scale(1.15);}
     100%{opacity:0;   transform:translate(var(--dx),var(--dy))
                                 rotate(var(--r,0deg)) scale(.35);}}
+  /* 金色版（ver -1910，劇情的 `fx:'goldmotes'`）：同一顆光斑、同一條 purgeStar，只換色。 */
+  .fx-star.gold::before{background:linear-gradient(90deg,transparent,#ffe08a 45%,#fff3c4 55%,transparent);}
+  .fx-star.gold::after{background:linear-gradient(180deg,transparent,#ffe08a 45%,#fff3c4 55%,transparent);}
+  .fx-star.gold i{background:radial-gradient(circle,#fff6d0 0%,rgba(255,214,110,.85) 35%,transparent 70%);}
+  #storyStage .story-motes{position:absolute;left:0;right:0;top:0;height:var(--story-top);
+    z-index:3;pointer-events:none;overflow:hidden;}   /* 幾何同 #storyFx：演出區、楣（z 6）之下 */
   #topVignette{position:absolute;inset:0;pointer-events:none;
     background:radial-gradient(120% 80% at 50% 20%,transparent 40%,rgba(0,0,0,.7) 100%);}
 
@@ -3805,7 +3811,9 @@
      （見 `#storyStage.town-on #storyBg`），而 `filter` 是**整條取代**不是疊加 ——
      兩種情況各寫一份完整的式子一定走鐘。用變數把配方抽出來，兩條規則各接前綴。 */
   :root{ --tint-nightmare:invert(1) sepia(1) hue-rotate(238deg) saturate(3.4) contrast(1.08) brightness(.86); }
-  #storyBg{transition:filter .26s linear;}
+  /* ⚠⚠ `transition` 是整條取代：只寫 filter 會把上面那條 `opacity .22s`（換背景的淡出淡入，＝story.js 的 FADE_MS）
+     整個蓋掉 —— -664～-1905 背景換圖一直是硬切（Ray：「002_saintassult 就被改掉了」）。兩項都要列。 */
+  #storyBg{transition:opacity .22s ease, filter .26s linear;}
   #storyStage.story-tint-nightmare #storyBg{filter:var(--tint-nightmare);}
   #storyStage.town-on.story-tint-nightmare #storyBg{
     filter:blur(0.6px) contrast(1.03) var(--tint-nightmare);}
