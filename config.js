@@ -84,7 +84,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1919';
+export const VERSION = 'ver 2026.09.22-1920';
 
 export const GAME_CONFIG = {
 
@@ -3523,6 +3523,7 @@ export const GAME_CONFIG = {
                 'vo_dual_torsten2','vo_torsten_mb','vo_torsten_exc',
                 'vo_nou_saint','vo_nou_obe','vo_nou_guard','vo_nou_return',
                 'vo_cec_saint','vo_cec_obe','vo_cec_guard','vo_cec_return',   // ver -1919：賽西莉
+                'vo_nemo_play','vo_nemo_slow1','vo_nemo_slow2','vo_nemo_feint','vo_nemo_bulletrain','vo_nemo_win',   // ver -1920：尼莫
                 'vo_anya_ni','vo_anya_burst','vo_anya_burst2','vo_anya_melt',
                 'vo_anya_lucid',
                 /* ver -818：索菈娜語音（共鬥/供給/共鬥結束）。 */
@@ -3563,6 +3564,9 @@ export const GAME_CONFIG = {
       vo_nouvelle_deathguard:1.35,   vo_nouvelle_lifereturn:1.63,   // ver -837 新錄音重量
       /* ver -1919：賽西莉四支。audio_scan 的建議值（原始波形）× 諾薇兒那四支的平均鏈補償 1.33
          （她的四支 config÷scan＝0.99／1.87／1.14／1.33）—— 同是女聲、同一條 voiceChain，近似可用；峰值都留在 −1 dBFS 以下。 */
+      /* ver -1920：尼莫六支。audio_scan 建議值 × 主角三支（dualcrush／mb／execute）的平均鏈補償 1.72，
+         再夾峰值 ≤ +2 dBFS（bulletrain／feint／play 被夾）。 */
+      vo_nemo_play:4.22, vo_nemo_slow1:4.39, vo_nemo_slow2:4.39, vo_nemo_feint:2.09, vo_nemo_bulletrain:2.34, vo_nemo_win:4.28,
       vo_cecilie_saintinstall:2.42, vo_cecilie_obe:4.10, vo_cecilie_deathguard:3.30, vo_cecilie_lifereturn:2.39,
       vo_anya_nightmareinstall:4.14, vo_anya_obe:0.67,   // obe ver -837 新錄音重量
       vo_anya_dreambreaker1:5.15,    vo_anya_dreambreaker2:2.63,
@@ -4706,6 +4710,13 @@ export const ASSETS = {
   vo_cec_obe:        "resources/audio/vo/vo_cecilie_obe.m4a",
   vo_cec_guard:      "resources/audio/vo/vo_cecilie_deathguard.m4a",
   vo_cec_return:     "resources/audio/vo/vo_cecilie_lifereturn.m4a",
+  /* 尼莫（ver -1920，Ray 交 mp3；原檔在 _originals/audio/vo/）。用法在敵人卡 `nemo` 的 entrance／hitVoice／loseVoice／winVoice。 */
+  vo_nemo_play:      "resources/audio/vo/vo_nemo_play.m4a",
+  vo_nemo_slow1:     "resources/audio/vo/vo_nemo_slow1.m4a",
+  vo_nemo_slow2:     "resources/audio/vo/vo_nemo_slow2.m4a",
+  vo_nemo_feint:     "resources/audio/vo/vo_nemo_feint.m4a",
+  vo_nemo_bulletrain:"resources/audio/vo/vo_nemo_bulletrain.m4a",
+  vo_nemo_win:       "resources/audio/vo/vo_nemo_win.m4a",
   vo_anya_ni:        "resources/audio/vo/vo_anya_nightmareinstall.m4a",// 惡夢化降臨
   vo_anya_burst:     "resources/audio/vo/vo_anya_dreambreaker1.m4a",   // 夢境粉碎（預設）
   vo_anya_burst2:    "resources/audio/vo/vo_anya_dreambreaker2.m4a",   // 夢境粉碎（娜塔莉戰，見戰鬥卡）

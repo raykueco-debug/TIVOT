@@ -411,6 +411,9 @@ export const ENEMIES = {
            就另開一張卡（不要在這裡改回去 —— 初戰那一場永遠是「？？？」）。 */
       name:'？？？',
       story:1, counterStagger:1, boss:0,
+      /* 語音（ver -1920，Ray）：開戰 play／玩家受擊三句輪播／玩家戰敗 bulletrain／戰勝 win（播法見 enemy.js 的 playHitVoice）。 */
+      hitVoice:['vo_nemo_slow1','vo_nemo_slow2','vo_nemo_feint'],
+      loseVoice:'vo_nemo_bulletrain', winVoice:'vo_nemo_win',
       Ganymede:0,
       weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0,0.3], '萊福槍':[0,0.3] },
       openAssault:[1,2],
@@ -433,7 +436,7 @@ export const ENEMIES = {
       atkInterval:null,
       assaultEvery:[2,4],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       assault:{ count:2, gap:1 },
-      entrance:null,
+      entrance:'vo_nemo_play',
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       delayPenalty:{ dmgScale:0.5, timeDelta:-1 },

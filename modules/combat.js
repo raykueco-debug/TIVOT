@@ -1293,6 +1293,7 @@ function enemyAttack(dmg, kind, saintAmt){
   if(immune && dmg>0) floatDmg((L.battle.immune||i18nT('免傷')),'50%','46%',true);
   // 鎖血（管理人測試，ver -463）：只擋掉血這一行——上面的特效/計數照走，手感不失真
   if(!state.hpLock && !immune) state.playerHp=Math.max(0,state.playerHp-dmg);
+  if(dmg>0 && !immune && !state.hpLock) enemy.playHitVoice();   // 敵人卡的 hitVoice（ver -1920，尼莫）
   updateBars();
   tutorial.onHpChange();             // 血量觸發（ver -599）：玩家這一側（`php:N`）
   enemy.showHitFx(fxKind);           // 依 kind 播放該怪對應受擊特效（'block' 讀成 'ult'）
@@ -2825,6 +2826,7 @@ function win(){
     const _wsb = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
     if(state.storyBattle && _wsb && _wsb.talkOnce) prog.addFlags([_wsb.talkOnce]);   // 只有劇情戰記（ver -493）
   }
+  enemy.playEndVoice(true);   // 敵人卡的 winVoice（ver -1920）
   state.over=true; clockPause(); stopAll();
   const totalTime=clockElapsedMs()/1000;               // 只累計實打時間（overkill/轉場/cut-in 皆不計）
   /* ══ 計時挑戰：超過標準時間就算「沒過關」（ver -396，Ray：「時間超過 50 秒出失敗分支的台詞」）══
@@ -2922,6 +2924,7 @@ function win(){
 }
 function lose(){
   if(state.over) return;
+  enemy.playEndVoice(false);   // 敵人卡的 loseVoice（ver -1920）——排在 allowLose 分流之前，兩條路都播
   /* ══ 戰敗的去向（ver -376（-893 前用詞），Ray 定案）══
      「**除標明劇情殺／可戰敗之外，戰敗一律接 Game Over 畫面回主選單**」。
      所以這裡只有一個例外：那一場的卡上明寫 `allowLose`（＝劇本要它被打輸，

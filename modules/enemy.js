@@ -834,6 +834,28 @@ function playEntranceSe(key){
     else                  entranceCues.push(SFX.playCue(p, sfxGain(key)));
   }catch(_){}
 }
+/* ══ 敵人的台詞語音（ver -1920，Ray：尼莫「玩家受擊用 slow1／slow2／feint 輪播、玩家戰敗播 bulletrain、戰勝播 win」）══
+   卡上三格（開戰那一聲照舊走 `entrance`）：
+     `hitVoice:[…]`  玩家**被打到**時輪播（同一隻怪換一句；上一句還在講就不疊，至少隔 `HIT_VO_GAP_MS`）
+     `loseVoice`     玩家**戰敗**那一刻
+     `winVoice`      玩家**戰勝**那一刻
+   ⚠ 一律走 `playEntranceSe`（路徑在 /vo/ ⇒ playVoice、過 voiceChain），唯一的播法（鐵律 8）。 */
+const HIT_VO_GAP_MS = 2600;
+let hitVoAt = 0, hitVoIdx = 0, hitVoKey = null;
+function curCard(){ return (GAME_CONFIG.enemies||{})[state.currentEnemyKey] || null; }
+export function playHitVoice(){
+  const en = curCard(); const list = en && en.hitVoice;
+  if(!list || !list.length) return;
+  if(hitVoKey !== state.currentEnemyKey){ hitVoKey = state.currentEnemyKey; hitVoIdx = 0; hitVoAt = 0; }
+  const now = performance.now();
+  if(now - hitVoAt < HIT_VO_GAP_MS) return;
+  hitVoAt = now;
+  playEntranceSe(list[hitVoIdx++ % list.length]);
+}
+export function playEndVoice(won){
+  const en = curCard(); if(!en) return;
+  playEntranceSe(won ? en.winVoice : en.loseVoice);
+}
 /* ⚠⚠⚠ `multi`＝**多型態 BOSS 的中間型態**（ver -1413，Ray：「王座徘徊者前兩型態的
    kind 定為 multi，戰勝後綴為王座徘徊者已擊退」）——
    **有降臨、沒有淨化**，而且那是刻意的：
