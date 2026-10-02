@@ -208,6 +208,16 @@
 > · **沒實跑過**：里朋莊園整段（六場戰鬥、沙龍演出、回旅店、隔天出航說明、禁航解除）、索拉娜 19 張縮圖、挾持雙人圖的站位 —— 都要 Ray 在遊戲裡看。
 > · ⚠ 這一輪自己犯的兩次（留著提醒）：-1797 lint 報錯仍 commit 推上（之後改成 lint 通過才 commit）；-1801 `git add -A` 把 Ray 三張 untracked 夾帶進去（已移出版控）。
 
+# HANDOFF — 截至 `ver 2026.09.22-1907`（10-02，Mac，程式 session：多語・西語）
+
+> · ✅ **西語（拉美中性，Ray 定案：拉美市場）**：介面語言包 `i18n/es.js`（語言鈕 zh→en→ja→es；瀏覽器首語系 es* 自動選）。
+> · ✅ **劇本西文版**：`tools/script_i18n.py`（extract／check／xlsx）抽出 2,928 句 → `i18n/script/strings.json`；譯文 `i18n/script/es.json`（中文原句→西文）；審稿表 `reference/script_es.xlsx`。`check es`：0 缺／0 孤兒／0 佔位符不符。
+>   ⚠ 鑰匙是**中文原句**：之後改任何台詞要重跑 `extract` → `check es`，改過的那句會變成「缺譯＋孤兒」。
+>   ⚠ **還沒接進遊戲**：story／town／飛行頁讀台詞的地方都沒查表，切到西語時劇本仍是中文。下一步就是接這一層（等 Ray 看過譯文）。
+>   ⚠ 審稿表的「說話者」是抽取工具**推測**的，常標成 PLAYER，不可靠。
+> · ✅ 對照表：薇拉馮德四語統一 **Velafonte**（原文義大利文，帆＋泉）。表本身有 Ray 未 commit 的改動，**沒 commit**。
+> · **等 Ray**：獸骸＝cáscara de bestia 要不要改／璐娜團長是 Luna 還是 Lunaria（`mainScript.js:320`、`town.js:3264`）／諾薇兒對安雅 tú／usted 混用要不要統一／對照表「說明」分頁「專案目前沒有西文語言包」那句過時。
+
 # HANDOFF — 截至 `ver 2026.09.22-1904`（10-02，Windows，程式 session 收工）
 
 > ⚠ `origin/main` ＝ -1904。工作區未 commit 的 `script/speakers.js` **不是這個 session 的**（開工時就在），

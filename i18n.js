@@ -131,7 +131,7 @@ export function applyToConfig(GC){
  * ========================================================================== */
 export function applyToDom(){
   // <html lang>：跟隨語言（字體堆疊/斷行規則依此適配，見 style.css html[lang="ja"]）
-  document.documentElement.lang = ({ ja:'ja', en:'en', es:'es' })[LANG] || 'zh-Hant';
+  document.documentElement.lang = ({ ja:'ja', en:'en', es:'es-419' })[LANG] || 'zh-Hant';
   const $=id=>document.getElementById(id);
   const set=(el,txt)=>{ if(el && txt!=null) el.textContent=txt; };
   const q=sel=>document.querySelector(sel);

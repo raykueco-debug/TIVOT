@@ -1,9 +1,9 @@
 /* ============================================================================
- *  i18n/es.js — Paquete de idioma español（母本＝i18n/zh.js、構造完全一致）
+ *  i18n/es.js — Paquete de idioma español latinoamericano（母本＝i18n/zh.js、構造完全一致）
  *  ---------------------------------------------------------------------------
  *  專有名詞一律照 reference/TIVOT_Glossary_ZH_EN_JA_ES.xlsx 的 Español 欄。
  *  [EN-STYLE]／[KEEP] 的字樣照母本規則不譯（RELOADING／OVERKILL／SAINT INSTALL…）。
- *  引號用西語慣用的 «»。
+ *  引號用西語慣用的 «»。拉美中性西語（Ray 定案：拉美市場）：不用 vosotros、避開西班牙限定用字（coger／vale…）。
  * ========================================================================== */
 
 export const STRINGS = {
@@ -174,7 +174,7 @@ export const STRINGS = {
       B:    '¡Gracias a ti, hasta un rival así ha caído!',
       C:    'No me equivoqué contigo.',
       D:    'Buen trabajo. Ha sido una batalla terrible.',
-      E:    '¡Equipo médico! ¡No dejéis que muera!',
+      E:    '¡Equipo médico! ¡No dejen que muera!',
       lose: '...... Confirmado el cese de funciones del HUND n.º {rand3}. Buen trabajo.',
     },
   },
@@ -235,7 +235,7 @@ export const STRINGS = {
           { who:'nouvelle', img:'tut_nouvelle_surprise',
             text:'Tranquilo... solo tienes que tocar las casillas de abajo en el orden de los números.' },
           { who:'nouvelle', img:'tut_nouvelle_surprise',
-            text:'Parece que el enemigo todavía está observando... ve cogiéndole el tacto. ¡Pero si fallas o te detienes demasiado, atacará igualmente!' },
+            text:'Parece que el enemigo todavía está observando... ve agarrándole la mano. ¡Pero si fallas o te detienes demasiado, atacará igualmente!' },
         ],
         board1: [],
         threat: [
@@ -279,7 +279,7 @@ export const STRINGS = {
       battleStart: [
         { who:'inspector', text:'Comienza la evaluación práctica. HUND, muéstrame si tus fundamentos son sólidos.' },
         { who:'partner',   text:'¡No te pongas nervioso! Toca las casillas de abajo en el orden de los números; ¡cada acierto dispara contra el enemigo!' },
-        { who:'partner',   text:'En este asalto el enemigo aún no atacará; aprovecha para cogerle el tacto. Pero si fallas o te detienes demasiado, te harán daño igualmente.' },
+        { who:'partner',   text:'En este asalto el enemigo aún no atacará; aprovecha para agarrarle la mano. Pero si fallas o te detienes demasiado, te harán daño igualmente.' },
       ],
       board1: [
         { who:'inspector', text:'Los fundamentos no están mal. A partir de ahora, el enemigo empezará a contraatacar.' },
