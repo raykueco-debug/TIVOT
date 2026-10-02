@@ -3477,22 +3477,18 @@
   #storyBubble .bf-m-heart svg{ animation:bfBeat 1s ease-in-out infinite; }
   @keyframes bfBeat{ 0%,100%{scale:1} 30%{scale:1.2} }
   #storyBubble .bf-m-note svg{ animation:bfFloat 1.4s ease-in-out infinite; }
-  /* 緊張灑汗（ver -1883；**-1898 Ray 改**：「做成小水花往第一象限方向噴出 loop 就好」）：
-     五顆小水滴從左下角往**右上**（第一象限，25°~65°）噴出、邊飛邊縮邊淡，一輪 0.9 秒循環。
-     ⚠ 水滴的尖端轉向飛行方向（`--r`＝90°−方向角）；汗滴要飛出框外 ⇒ svg 不裁切。 */
-  #storyBubble .bf-m-nervous{width:30px;height:30px;}
+  /* 緊張灑汗（ver -1883；-1898 小水花版被退；**-1905 Ray：「就是驚慌三珠汗小動畫而已」＋參考圖**）：
+     三顆淺藍水滴（黑描邊、白高光）錯落排開，逐滴往自己圓的那一端彈一下再回來，0.8 秒循環。
+     ⚠ 水滴的位置與朝向在外層 <g transform>，動畫只動內層 `.sp`（transform-box:fill-box ⇒ 沿自己的軸彈）。 */
+  #storyBubble .bf-m-nervous{width:24px;height:24px;}
   #storyBubble .bf-m-nervous svg{overflow:visible;}
-  #storyBubble .bf-m-nervous .sp{transform-box:fill-box;transform-origin:center;opacity:0;
-    animation:bfSpray .9s ease-out infinite;}
-  #storyBubble .bf-m-nervous .sp1{--dx:16px;--dy:-8px; --r:65deg;animation-delay:0s;}
-  #storyBubble .bf-m-nervous .sp2{--dx:14px;--dy:-14px;--r:45deg;animation-delay:.18s;}
-  #storyBubble .bf-m-nervous .sp3{--dx:8px; --dy:-16px;--r:25deg;animation-delay:.36s;}
-  #storyBubble .bf-m-nervous .sp4{--dx:11px;--dy:-8px; --r:55deg;animation-delay:.54s;}
-  #storyBubble .bf-m-nervous .sp5{--dx:8px; --dy:-12px;--r:35deg;animation-delay:.72s;}
-  @keyframes bfSpray{
-    0%  {translate:0 0;rotate:var(--r);scale:.3;opacity:0}
-    15% {opacity:1;scale:.7}
-    100%{translate:var(--dx) var(--dy);rotate:var(--r);scale:.45;opacity:0}}
+  #storyBubble .bf-m-nervous .sp{transform-box:fill-box;transform-origin:center;animation:bfPanic .8s ease-in-out infinite;}
+  #storyBubble .bf-m-nervous g:nth-child(2) .sp{animation-delay:.13s;}
+  #storyBubble .bf-m-nervous g:nth-child(3) .sp{animation-delay:.26s;}
+  @keyframes bfPanic{
+    0%,100%{translate:0 0;scale:.9}
+    35%    {translate:0 1.6px;scale:1.08}
+    60%    {translate:0 .4px;scale:.96}}
   #storyBubble .bf-m-question svg{ animation:bfTilt 1.6s ease-in-out infinite; }
   @keyframes bfFloat{ 0%,100%{translate:0 0} 50%{translate:0 -3px} }
   @keyframes bfTilt{ 0%,100%{rotate:-8deg} 50%{rotate:8deg} }

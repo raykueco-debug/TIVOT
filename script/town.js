@@ -4967,12 +4967,12 @@ export const TOWNS = {
         /* ══ 救完人、被強制帶回旅店（ver -1793，Ray 的稿）══
            由里朋莊園沙龍那一段收尾的 `goto:'@santasofia:inn'` 帶過來，抵達就演。
            ⚠ 稿上寫「蘿姬」＝同一個孩子，照 Ray 的定名寫「蘿媞」（-1793 蘿奇 → -1801 蘿媞）。
-           ⚠ 插圖 `36_loti&lofa` 稿上沒寫「插圖結束」—— 我讓它停在姐妹相擁那兩拍，索菈娜開口時收掉。
+           ⚠ 插圖 `36_loti_lofa` 稿上沒寫「插圖結束」—— 我讓它停在姐妹相擁那兩拍，索菈娜開口時收掉。
            ⚠ 演完才能睡（`sleepFlag:'ss_raid_home'`）；航行許可隔天早上才下來（`gates` 的 `ss_depart`）。 */
         { flag:'ss_raid_home', need:'ss_raid_done', sides:{ RENNA:'L', NOUVELLE:'L' }, lines:[
           Object.assign(lotN('happy','姐姐！'), { stage:15 }),   // ver -1850（Ray）：救回洛法這一幕起＝Stage 15（只升不降）
           lofN('cryhug','蘿媞！'),
-          { speaker:'NARRATION', text:'', cg:'36_loti&lofa', cgNoTime:true, cgPan:'down', auto:2400 },
+          { speaker:'NARRATION', text:'', cg:'36_loti_lofa', cgNoTime:true, cgPan:'down', auto:2400 },
           sor('lauaghbig','算是告一段落了吧。', { cg:null }),
           nou('bigsmile','太好了呢。'),
           any('happy',''),
