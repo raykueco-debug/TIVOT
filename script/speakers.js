@@ -1492,7 +1492,7 @@ export const ART = {
     /* ver -1885：美術交件（HANDOFF 37）。`blush` 已同名覆蓋成真正的害羞臉（舊檔與 tease 是同一張），
        帶 ?v=2 防快取；`fluster` 新鍵，取景同 spoild（measure_si 實量相同）。 */
     blush:    { src:'resources/si/cecilie_si_blush.webp?v=2', top:4, bot:1529, fx:0.574 },
-    fluster:  { src:'resources/si/cecilie_si_fluster.webp',   top:8, bot:1526, fx:0.551 },
+    fluster:  { flip:true, src:'resources/si/cecilie_si_fluster.webp',   top:8, bot:1526, fx:0.551 },
     /* ver -1886：帝都第一夜的夢境戰（Ray 的稿）。`saintinstall` 美術交件 png→webp、實量。 */
     saintinstall:{ src:'resources/si/cecilie_si_saintinstall.webp', top:2, bot:1528, fx:0.493 },
   } },
