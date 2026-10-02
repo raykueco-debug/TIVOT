@@ -1607,7 +1607,10 @@ export const TOWNS = {
               portrait:{ char:'CECILIE', expr:'tease', show:true } },
             { goto:'cap_dream_end' },
             { speaker:'NARRATION', text:'', auto:300, label:'cap_dream_lose' },
-            { speaker:'NARRATION', text:'', label:'cap_dream_end', auto:3300, fadeOut:3000, hide:'*',
+            /* ⚠ 這一拍**不撤立繪**（ver -1903，Ray：「我不討厭就是了那一拍不用撤立繪」）：賽西莉跟著場景一起淡入黑
+               （`#storyFade` 在立繪之上）；下一拍換背景（`bgBand`）時在全黑底下才清場。
+               `noHold`：她還站在台上，不寫的話這一拍會停下來等點擊（台上有人的無台詞拍），黑畫面就卡住。 */
+            { speaker:'NARRATION', text:'', label:'cap_dream_end', auto:3300, fadeOut:3000, noHold:true,
               clockToNext:7, healFull:true, flags:['inn_missed'] },
             /* 隔天清晨：旅店（時段候選鏈挑清晨那張）淡回來，接著 07:00 閘門（蕾娜「好囉，該出發囉」）。 */
             { speaker:'NARRATION', text:'', auto:1300, bgBand:'capital_hotel', fadeIn:1000 },
