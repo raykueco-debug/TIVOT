@@ -101,18 +101,26 @@ def seg_lid_skin(rgb, seg, box):
     return np.median(px, axis=0)
 
 
-def seg_eyes(seg, pad=(3, 6, 3, 5)):
+def seg_eyes(seg, pad=(3, 6, 3, 5), rgb=None):
     """從眼睛類找兩隻眼睛的框（左、上、右、下各外擴 pad）。
-    取最大的連通塊，第二塊要有最大塊的 1/4 以上、而且高度落在同一帶 —— 側臉只剩一隻就回一個。"""
+    取最大的連通塊，第二塊要有最大塊的 1/4 以上、而且高度落在同一帶 —— 側臉只剩一隻就回一個。
+    rgb 有給的話，整塊幾乎全黑的不算眼睛（露娜的眼罩會被模型判成眼睛，待修D）。"""
     from scipy import ndimage as nd
     lab, k = nd.label(seg == SEG_EYE)
     if k == 0:
         return []
+    if rgb is not None:
+        Lm = nd.mean(lum(rgb.astype(np.float32)), lab, range(1, k + 1))
+        for j in range(k):
+            if Lm[j] < 70:
+                lab[lab == j + 1] = 0
     sz = nd.sum(np.ones_like(lab), lab, range(1, k + 1))
     order = np.argsort(-sz)
     sl = nd.find_objects(lab)
     boxes = []
     big = sz[order[0]]
+    if big <= 0:
+        return []
     for i in order[:4]:
         if sz[i] < big * 0.25:
             break
@@ -134,6 +142,7 @@ def analyse(rgb, box, seg=None, hs=None):
     seg＝臉部分割的類別圖、hs＝seg_hair_core(seg)（整張圖座標）；有的話膚色取眼睛周圍的
     「臉」類、睫毛偵測排除模型判成頭髮的像素（陰影裡的暗髮束不再被當成睫毛）。"""
     x0, y0, x1, y1 = box
+    segmap = seg                               # ⚠ 下面有一個區域變數也叫 seg（欄位分段），先另存
     roi = rgb[y0:y1, x0:x1].astype(np.float32)
     L = lum(roi)
     ring = np.concatenate([roi[0], roi[-1]])
@@ -202,6 +211,12 @@ def analyse(rgb, box, seg=None, hs=None):
     # 再從睫毛往下做連通擴展：凡是「非膚色／比膚色亮」而且連到眼睛的都算（虹膜、眼白的下緣）
     E = np.zeros(rgb.shape[:2], bool)
     E[y0:y1, x0 + xs[0]:x0 + xs[-1] + 1] = eyeish[:, xs[0]:xs[-1] + 1]
+    # 模型判成頭髮（且不是眼睛類）的不准長進去：深膚色＋白髮（索拉娜）時白髮「比膚色亮」，
+    # 會被當成眼白一路長進頭髮，填成膚色就是一層灰霧（待修C）
+    HN = None
+    if segmap is not None:
+        HN = (segmap == SEG_HAIR) & ~(segmap == SEG_EYE)
+        E &= ~HN
     from collections import deque
     q = deque(zip(*np.where(M & E))); seen = M.copy()
     ylim = {x0 + int(xr): y0 + int(bb[i]) + 3 for i, xr in enumerate(xs)}   # 每一欄最多往下 3px（不溢進頭髮）
@@ -214,6 +229,24 @@ def analyse(rgb, box, seg=None, hs=None):
                 seen[ny, nx] = True; q.append((ny, nx))
     M = seen
     # 只往下、左右外擴（不往上 —— 往上會吃掉雙眼皮的摺線）
+    # 模型的眼睛類（含眼白、虹膜下緣）也一律算進眼睛：瞪大眼時從睫毛往下長的規則常常長不到底，
+    # 閉眼後就殘留一截虹膜或眼白（待修A）。只取睫毛上緣以下，不吃雙眼皮。
+    if segmap is not None:
+        EY = segmap == SEG_EYE
+        for i, xr in enumerate(xs):
+            x = x0 + int(xr)
+            col = EY[y0:y1, x]
+            rows = np.where(col)[0]
+            rows = rows[rows >= int(tt[i]) - 1]
+            M[y0 + rows, x] = True
+        for xr, i in ((xs[0], 0), (xs[-1], -1)):           # 眼角外 3px（眼白常常多出一點）
+            for dx in (1, 2, 3):
+                x = x0 + int(xr) + (dx if i == -1 else -dx)
+                if 0 <= x < M.shape[1]:
+                    col = EY[y0:y1, x]
+                    rows = np.where(col)[0]
+                    rows = rows[rows >= int(tt[i]) - 1]
+                    M[y0 + rows, x] = True
     M1 = M.copy(); M1[1:] |= M[:-1]; M = M1
     # 眼角往左右多擴 2px（只水平，不往上 —— 往上會吃掉雙眼皮的摺線），清掉眼角殘留的眼白
     M0 = M.copy()
@@ -223,6 +256,8 @@ def analyse(rgb, box, seg=None, hs=None):
     # 眼角的眼白常常再多出幾格：往左右 3~5px 內「比膚色亮」的也抹掉（不亮的不動，不吃到皮膚與頭髮）
     bright = np.zeros(rgb.shape[:2], bool)
     bright[y0:y1, x0:x1] = L > Ls + 4
+    if HN is not None:
+        bright &= ~HN
     M0 = M.copy()
     for dx in (3, 4, 5):
         M[:, dx:] |= M0[:, :-dx] & bright[:, dx:]
@@ -297,6 +332,27 @@ def hair_alpha(rgb, pal, skin, M, eyes, pad=14, tol=48, soft=22, keeps=(), segk=
         # 眼睛內部：只有「非常接近髮色、而且明顯不像眼睛」的才算（穿過眼睛的髮絲），其餘一律不是頭髮
         strict = np.clip((22 - dh) / 8.0, 0, 1) * np.clip((de - dh - 12) / 8.0, 0, 1)
         Ie = e['I'][y0:y1, x0:x1].copy()
+        # 貫穿眼睛的髮絲（索拉娜：白髮橫過眼睛，顏色跟眼白分不開）—— 改看**形狀**：
+        # 眼睛內部的髮色連通塊，若同時碰到眼睛內部的上緣與下緣 ＝ 從上面垂下來穿過去的髮絲
+        # （眼白被睫毛線與下眼瞼圍住，不可能上下貫穿）。這種塊不套嚴格判定，照髮色算。
+        from scipy import ndimage as nd
+        cand = (a > 0.5) & Ie
+        S = np.zeros(Ie.shape, bool)                  # 貫穿的髮絲（之後併進保留框 K）
+        if cand.any():
+            lab, k = nd.label(cand)
+            cols = np.where(Ie.any(0))[0]
+            ytop = np.full(Ie.shape[1], -1); ybot = np.full(Ie.shape[1], -1)
+            for cx in cols:
+                rr = np.where(Ie[:, cx])[0]; ytop[cx] = rr[0]; ybot[cx] = rr[-1]
+            for j, sl in enumerate(nd.find_objects(lab), 1):
+                ys_, xs_ = np.where(lab[sl] == j)
+                ys_ = ys_ + sl[0].start; xs_ = xs_ + sl[1].start
+                top_hit = (ys_ <= ytop[xs_] + 1).any()
+                bot_hit = (ys_ >= ybot[xs_] - 1).any()
+                # 要**細**：平均每一列不超過 4px —— 虹膜也是上下貫穿的一大塊（安雅藍眼配淡紫髮踩過）
+                thin = len(ys_) / max(1, ys_.max() - ys_.min() + 1) <= 4.0
+                if top_hit and bot_hit and thin:
+                    S[ys_, xs_] = True
         # 保留框（標註）：蓋在眼睛上的髮束 —— 框內不套眼睛內部的嚴格判定，像頭髮就蓋回原圖
         K = np.zeros(Ie.shape, bool)
         for kx0, ky0, kx1, ky1 in keeps:
@@ -304,6 +360,7 @@ def hair_alpha(rgb, pal, skin, M, eyes, pad=14, tol=48, soft=22, keeps=(), segk=
         # 分割模型判成頭髮的（已扣掉貼著眼睛類的那一圈）＝自動的保留框
         if segk is not None:
             K |= segk[y0:y1, x0:x1]
+        K |= _dil(S, 1) & (a > 0.3)                    # 貫穿的髮絲＋邊緣 1px（反鋸齒）
         Ie &= ~K
         a = np.where(Ie, np.minimum(a, strict), a)
         # 填色區的其他地方（睫毛上緣那一圈）：要比起眼睛的顏色（含睫毛的棕）更像頭髮 ——
@@ -527,7 +584,7 @@ def main():
     if not boxes:
         if seg is None:
             raise SystemExit('沒有 --eye，也沒有分割圖（先在 .venv-face 跑 tools/face_parse.py ' + name + '）')
-        boxes = seg_eyes(seg)
+        boxes = seg_eyes(seg, rgb=rgb)
         print('自動眼框', ' '.join('--eye ' + ','.join(map(str, b)) for b in boxes))
         if not boxes:
             raise SystemExit('分割圖裡找不到眼睛')
@@ -545,6 +602,7 @@ def main():
     fills = {id(e): harmonic_fill(rgb.astype(np.float32), e['M'] | hard) for e in eyes}
     # 瀏海直接壓在睫毛上（諾薇兒）：眼皮的拉伸來源整片是頭髮，擴散填色會得到偏髮色的
     # 一塊補丁。來源是頭髮的地方一律換成這隻眼睛的膚色 —— 頭髮最後照樣由原圖蓋回最上層。
+    # ⚠ 待修B（賽西莉）試過「壓暗＋混髮色」：白塊只變成灰塊 —— 毛病在那一塊的形狀與鋸齒邊，不在顏色，已撤回。
     for e in eyes:
         f = fills[id(e)]
         f[HA > 0.3] = e['lid']

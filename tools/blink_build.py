@@ -86,7 +86,7 @@ def run_one(n):
     return n, json.load(open(mp)), None
 
 
-def qa_sheets(names):
+def qa_sheets(names, prefix='_qa_'):
     """驗收總覽：每張一格＝「睜｜閉」眼部放大並排，下方寫檔名。一頁 4×6。"""
     try:
         font = ImageFont.truetype('msjh.ttc', 18)
@@ -121,7 +121,7 @@ def qa_sheets(names):
         sh = Image.new('RGB', (cols * (W + 8), rows * (H + 8)), (0, 0, 60))
         for i, t in enumerate(page):
             sh.paste(t, ((i % cols) * (W + 8), (i // cols) * (H + 8)))
-        sh.save(os.path.join(OUTD, f'_qa_{p // per + 1:02d}.png'))
+        sh.save(os.path.join(OUTD, f'{prefix}{p // per + 1:02d}.png'))
     print('驗收總覽', (len(tiles) + per - 1) // per, '頁 →', OUTD)
 
 
@@ -136,6 +136,19 @@ def main():
     names = [n for n in names if find_src(n)]
     if '--qa-only' in args:
         qa_sheets([n for n in names if n.lower() not in rej])
+        return
+    # --try 待修C ＝ 把排除清單裡理由含「待修C」的那幾張重跑一次、只出總覽（_try_NN.png），不寫表、不交件 ——
+    # 修工具時用來看「這一類修好了沒」。
+    if '--try' in args:
+        tag = args[args.index('--try') + 1]
+        tn = [n for n in all_names() if tag in rej.get(n.lower(), '')]
+        print('試跑', tag, len(tn), '張')
+        with ThreadPoolExecutor(WORKERS) as ex:
+            res = list(ex.map(run_one, tn))
+        for n, _, err in res:
+            if err:
+                print('✘', n, err)
+        qa_sheets([n for n, m, err in res if not err], prefix='_try_')
         return
     todo = [n for n in names if n.lower() not in rej]
     need = [n for n in todo if not os.path.exists(os.path.join(SEGD, n, 'classes_s1.6.png'))]

@@ -135,30 +135,10 @@ ssophia_si_manu_front  # 不適用：寫實男性
 torsten_si_q  # 不適用：瀏海遮眼
 
 # ── 待修A：閉眼後殘留虹膜／眼白 ──
-anya_ad_si_scare  # 待修A
-anya_si_runworry  # 待修A
-anya_si_scare  # 待修A
-anya_si_surprise  # 待修A
-nouvelle_si_expain2  # 待修A
-nouvelle_si_happy  # 待修A
-nouvelle_si_hungry  # 待修A
-nouvelle_si_shock2  # 待修A
-nouvelle_si_surprise  # 待修A
-nouvelle_si_worry  # 待修A
 npc_grocer_si_v1  # 待修A
 npc_guildcounter_si_northport  # 待修A
-npc_ss_lofa_cry  # 待修A
-npc_ss_loti_ask  # 待修A
-npc_ss_loti_cry  # 待修A
-npc_ss_loti_give  # 待修A
-npc_ss_loti_happy  # 待修A
-npc_ss_loti_shock  # 待修A
 renna_si_hugshock  # 待修A
-sorana_ad_si_surprise  # 待修A
-sorana_si_carrynouvellescream  # 待修A
 sorana_si_carrynouvelleshock  # 待修A
-sorana_si_cringe  # 待修A
-sorana_si_hug  # 待修A
 sorana_si_panic  # 待修A
 sorana_si_scare  # 待修A
 sorana_si_surprise  # 待修A
@@ -211,11 +191,7 @@ sorana_si_worry  # 待修C
 
 # ── 待修D：眼罩 ──
 luna_si_angry  # 待修D
-luna_si_front  # 待修D
 luna_si_seat_angry  # 待修D
 luna_si_seat_hand  # 待修D
-luna_si_seat_lookdown  # 待修D
-luna_si_seat_n  # 待修D
 luna_si_seat_smirk  # 待修D
-luna_si_taunt  # 待修D
 lunaria_si_arm  # 待修D
