@@ -750,6 +750,7 @@ def main():
     ap.add_argument('--face', help='驗收圖的裁切框 x0,y0,x1,y1（預設：兩眼外擴）')
     ap.add_argument('--no-hair', action='store_true', help='關掉頭髮保護（對照用）')
     ap.add_argument('--keep', action='append', default=[], help='保留框 x0,y0,x1,y1：蓋在眼睛上的髮束（標註）')
+    ap.add_argument('--half-from', help='半閉改用這張整張合成圖（tools/_blink_base/<名>_half.png）')
     ap.add_argument('--closed-from', help='全閉改用這張整張合成圖（tools/_blink_base/<名>_closed.png，與原圖同尺寸同 alpha）')
     ap.add_argument('--glasses', action='store_true', help='戴眼鏡：鏡框（灰、低彩度、連到眼框外）一律保留原圖')
     ap.add_argument('--hairmask', action='store_true', help='另存 hairmask.png（頭髮 alpha 疊紅，除錯用）')
@@ -847,12 +848,13 @@ def main():
         print('glasses px', int(GL.sum()))
     meta = {'w': im.width, 'h': im.height}
     for key, s in (('half', HALF_S), ('closed', CLOSED_S)):
-        if key == 'closed' and A.closed_from:
-            # 全閉改用外部合成好的整張圖（Ray 10-03：GPT 畫閉眼 → 對位 → 只貼眼睛那塊，見 tools/blink_gpt.py）。
+        ext = A.closed_from if key == 'closed' else A.half_from
+        if ext:
+            # 全閉／半閉改用外部合成好的整張圖（Ray 10-03／10-04：GPT 畫 → 對位 → 只貼眼睛那塊，見 tools/blink_gpt.py）。
             # 合成時 alpha 沿用原圖、頭髮蓋回原圖；這裡只驗尺寸與 alpha 再切補丁。
-            cf = np.array(Image.open(A.closed_from).convert('RGBA'))
+            cf = np.array(Image.open(ext).convert('RGBA'))
             if cf.shape != arr.shape or not (cf[..., 3] == arr[..., 3]).all():
-                raise SystemExit('--closed-from 的尺寸或 alpha 與原圖不符：' + A.closed_from)
+                raise SystemExit('外部合成圖的尺寸或 alpha 與原圖不符：' + ext)
             p, (x, y, w, h) = patch(rgb, cf[..., :3].astype(np.float32))
             p.save(os.path.join(od, key + '.png'))
             meta[key] = dict(x=x, y=y, w=w, h=h, src=key + '.png')

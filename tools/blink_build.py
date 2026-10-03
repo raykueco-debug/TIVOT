@@ -101,10 +101,13 @@ def run_one(n):
     extra = []
     for b in read_eyes().get(n.lower(), []):
         extra += ['--glasses'] if b == 'glasses' else ['--eye', b]
-    # GPT 閉眼合成（Ray 10-03）：tools/_blink_base/<名>_closed.png 在 ⇒ 全閉用它，半閉照舊本機做
+    # GPT 閉眼合成（Ray 10-03）：tools/_blink_base/<名>_closed.png 在 ⇒ 全閉用它
     cf = os.path.join(ROOT, 'tools', '_blink_base', n + '_closed.png')
     if os.path.exists(cf):
         extra += ['--closed-from', cf]
+    hf = os.path.join(ROOT, 'tools', '_blink_base', n + '_half.png')   # 半閉同理（Ray 10-04）
+    if os.path.exists(hf):
+        extra += ['--half-from', hf]
     r = subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'blink_patch.py'), find_src(n), '--out', OUTD] + extra,
                        capture_output=True, text=True, encoding='utf-8', errors='replace')
     mp = os.path.join(OUTD, n, 'blink.json')

@@ -2,7 +2,7 @@
 """眨眼的全閉格改用 GPT 畫閉眼（Ray 10-03 定）：3×3 拼圖 → GPT → 拆格對位 → 只貼眼睛那塊。
 
   py -3.11 tools/blink_gpt.py grid  <批名> <立繪名> x9      # → tools/_blink_base/grid_<批名>.png（上傳給 GPT 的）＋ .json
-  py -3.11 tools/blink_gpt.py merge <批名> <GPT 回來的圖>    # → tools/_blink_base/<名>_closed.png（blink_build 會自動用）
+  py -3.11 tools/blink_gpt.py merge <批名> <GPT 回來的圖> [closed|half]  # → tools/_blink_base/<名>_<kind>.png（blink_build 會自動用）
   py -3.11 tools/blink_gpt.py todo                         # 表上還沒有 GPT 全閉的立繪（依角色排好）
 
 為什麼這樣做（試過、輸掉的不要再試）：
@@ -38,6 +38,15 @@ PROMPT = ("這是同一個角色（或幾個角色）的 9 張頭像拼成的 3�
           "其餘一切 100% 保留原圖 —— 3×3 的格線位置、每一格的構圖、裁切、人物位置與大小、瀏海與每一根髮絲、眉毛、嘴、臉紅、"
           "眼淚以外的部分、服裝、配件、手全部不變，不要重新設計角色，不要拉遠、不要改變構圖或格子大小，輸出同樣是 1024×1024 的 3×3 拼圖。"
           "anime style, cel shading, clean lineart，絕不要顆粒感、不要雜訊噪點、不要油畫質感。")
+
+# 半閉（Ray 10-04：「半閉也交給 GPT 做」）：同一張拼圖、同一套合成，只換提示詞
+PROMPT_HALF = ("這是同一個角色（或幾個角色）的頭像拼成的 3×3 拼圖（每格之間有細白線）。請做一張「半閉眼」的表情差分（眨眼途中的那一格）："
+               "每一格的兩隻眼睛都改成「上眼瞼往下蓋到一半」—— 上眼瞼連同睫毛線往下移，蓋住虹膜的上半部（大約一半），"
+               "虹膜與瞳孔的下半部、眼白下緣、下眼瞼都保持原圖的位置與形狀不動；睫毛線的走向跟著那一格臉的角度，不要變成八字或吊眼。"
+               "眼神方向不變，不是瞇眼笑也不是睏，只是眨眼眨到一半。其餘一切 100% 保留原圖 —— 格線位置、每一格的構圖、裁切、"
+               "人物位置與大小、瀏海與每一根髮絲、眉毛、嘴、臉紅、服裝、配件、手全部不變，不要重新設計角色，不要拉遠、不要改變構圖或格子大小，"
+               "輸出同樣是 1024×1024 的 3×3 拼圖。角色衣服都有穿好，只是因為是禮服所以看不到。"
+               "anime style, cel shading, clean lineart，絕不要顆粒感、不要雜訊噪點、不要油畫質感。")
 
 
 def src(n):
@@ -127,7 +136,7 @@ def refine(orig, ga, ez, al):
     return (out if d1 <= d0 else ga), d0, min(d0, d1)
 
 
-def merge(tag, gpath):
+def merge(tag, gpath, kind='closed'):
     meta = json.load(open(os.path.join(BASE, f'grid_{tag}.json')))
     GG = np.array(Image.open(gpath).convert('RGB'))
     sc = GG.shape[1] / float(meta[0].get('canvas', N * CELL + (N - 1) * GAP))
@@ -181,7 +190,7 @@ def merge(tag, gpath):
         C = rgb.astype(float) * (1 - mf) + Gc * mf
         out = O.copy(); out[..., :3] = np.clip(C, 0, 255).astype(np.uint8)
         assert (out[..., 3] == O[..., 3]).all()
-        Image.fromarray(out).save(os.path.join(BASE, n + '_closed.png'))
+        Image.fromarray(out).save(os.path.join(BASE, n + '_' + kind + '.png'))
         ok.append(n)
         print(f'✔ {n}  cc {cc:.4f}  眼外差 {outside:.1f}  接縫差 {seam0:.2f}→{seam1:.2f}  校色 {np.round(d, 1).tolist()}')
     for n, why in bad:
@@ -204,8 +213,8 @@ if __name__ == '__main__':
     if a[0] == 'grid':
         grid(a[1], a[2:])
     elif a[0] == 'merge':
-        merge(a[1], a[2])
+        merge(a[1], a[2], a[3] if len(a) > 3 else 'closed')
     elif a[0] == 'todo':
         todo()
     elif a[0] == 'prompt':
-        print(PROMPT)
+        print(PROMPT_HALF if len(a) > 1 and a[1] == 'half' else PROMPT)
