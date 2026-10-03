@@ -1,3 +1,14 @@
+> ⭐ **立繪眨眼（10-03，雲端程式 session，分支 `claude/standing-art-blink-animation-ub7vw7`）—— 原型通過，Ray：「不錯，回去小範圍多次動工，不要一次全部做完」**
+> · 作法定案：**眼部補丁**（半閉／全閉兩格小圖疊在立繪上），**不生成** —— `tools/blink_patch.py` 從原圖睜眼像素推出：上眼瞼線整條剪下沿平滑弧線次像素下移、蓋過處擴散內插補膚色。SD inpaint 全閉出不來、半閉也會有色／形／大小落差（Ray），所以不走生成。
+> · 已驗：`renna_si_front` 實機模擬（390×844、帝都場景）補丁對位正確；補丁各約 100×45px／9KB。眼框目前**手給**（`--eye 480,100,522,126 --eye 540,116,575,146`）。
+> · ⚠ **分小步做，每步可獨立驗收、各自 commit**：
+>   ① 壓力測試 3 張難圖（安雅／索拉娜／瀏海擋眼），調工具門檻 —— 只動 `tools/`
+>   ② 眼框自動定位或標註頁 —— 只動 `tools/`
+>   ③ 劇情頁立繪槽包外框（transform／filter／鏡射搬到外框）—— **只做這件、不加眨眼**，驗完所有既有演出沒壞再往下
+>   ④ `speakers.js` 加 `blink:{half,closed}` 欄位＋眨眼函式（唯一一支，鐵律 8），先只給 1 張圖
+>   ⑤ 戰鬥對白 `#tutCast` 接同一支；⑥ 飛行頁 canvas（第二期）；⑦ 依用量逐批量產（HANDOFF 資產盤點 ✔／⚠）
+> · ⚠ 這一輪 push 403（GitHub 權限），commit 只在那個容器；若此段不在 origin 上，工具原始碼 Ray 手機上有備份。
+
 > ⚠⚠⚠ **`-1787`（09-27，Windows，程式 session）—— Ray 的決定與已接**
 > · ✅ 第 20 項的刪除：`excite`／`carrynouvelle`（基本那張）**鍵直接拿掉**（Ray）；引用改 `sor('talksmile',…)`（「跟平常一樣的！」）與 `carrynouvellesmirk`（古墓背人那兩句）。`furiouscute` 改指 `sorana_si_furious.webp`。三張圖的刪除與這一版同 commit。第 20 項**其餘**（20 條版號、`stare`、三個新鍵）**還沒做**。
 > · ✅ 第 21 項：`holdnouvelle` → `.webp`，舊 PNG 已回收。
