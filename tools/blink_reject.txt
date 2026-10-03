@@ -194,3 +194,5 @@ luna_si_angry  # 待修D
 luna_si_seat_angry  # 待修D
 luna_si_seat_hand  # 待修D
 luna_si_seat_smirk  # 待修D
+cecilie_si_back  # 不適用：背影（分割把耳環當成眼睛）
+nouvelle_si_desperate  # 不適用：瀏海蓋眼（分割把牙齒當成眼睛）

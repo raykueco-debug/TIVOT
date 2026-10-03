@@ -268,7 +268,18 @@ def analyse(rgb, box, seg=None, hs=None):
     tp = np.polyval(np.polyfit(xf, tt, 2), xf); bp = np.polyval(np.polyfit(xf, bb, 2), xf)
     for i, xr in enumerate(xs):
         I[int(round(y0 + tp[i])):int(round(y0 + max(bp[i], bb[i]))) + 1, x0 + int(xr)] = True
-    return dict(x0=x0, y0=y0, xs=xs, t=tt, b=bb, h=hh, skin=skin, lid=lid, Ls=Ls, M=M, I=I)
+    # 眼角（上下眼瞼交會處）：分割的眼睛類最左／最右 3 欄的平均高度（box 座標）。閉眼線就拉在兩個眼角之間。
+    corners = None
+    if segmap is not None:
+        ex0, ex1 = max(0, x0 - 4), min(rgb.shape[1], x1 + 4)
+        EYb = segmap[y0:y1, ex0:ex1] == SEG_EYE
+        cols = np.where(EYb.any(0))[0]
+        if len(cols) >= 8:
+            def cy(cs):
+                ys_ = [np.where(EYb[:, c])[0].mean() for c in cs]
+                return float(np.mean(ys_))
+            corners = ((ex0 + cols[0] - x0, cy(cols[:3])), (ex0 + cols[-1] - x0, cy(cols[-3:])))
+    return dict(x0=x0, y0=y0, xs=xs, t=tt, b=bb, h=hh, skin=skin, lid=lid, Ls=Ls, M=M, I=I, corners=corners)
 
 
 def kmeans(a, k, iters=15, seed=0):
@@ -445,8 +456,31 @@ def frame(rgb, eye, s, skinfill):
     t = np.polyval(np.polyfit(xf, eye['t'], 2), xf)
     bb = np.polyval(np.polyfit(xf, eye['b'], 2), xf)
     hc = float(np.median(eye['h'])) + 1.5
-    taper = np.sin(np.pi * u) ** 0.5
-    d = np.maximum(0, (bb - t - hc) * s) * taper
+    # ══ 閉眼線要「躺在下眼瞼上」，眼角也要跟著下來（Ray 10-03：「沒有睜很大的眼睛，閉眼時內眼側偏高，
+    #   半閉跟閉眼時眼睛成八字」）══
+    # 舊版 d＝(bb−t−hc)·s·sin(πu)^0.5：兩端乘到 0 ⇒ 眼角留在上眼瞼原本的高度；
+    # 上眼瞼內側本來就比較高的眼睛，閉起來就斜成八字。
+    # 新版：用中段（20%~80%，偵測最穩）的下眼瞼擬合一條直線，延伸到兩端，再加一點往下的弧（閉眼的自然弧度）；
+    # 睫毛線的上緣要移到「那條線往上 hc」，每一欄都移，兩端不再釘死。
+    eh = float(np.median(bb - t))                       # 眼高（中段）
+    # 閉眼線＝兩個眼角（分割的眼睛類左右端）之間的連線 ＋ 一點往下的弧；斜率夾在 ±0.3。
+    # ⚠ 第一版用「中段下眼瞼的直線擬合」：遠側那隻眼的下眼瞼常被頭髮陰影帶歪，擬合出一條陡斜線（蕾娜 apologize 右眼）。
+    if eye.get('corners'):
+        (ax, ay), (bx, by) = eye['corners']
+        k1 = (by - ay) / max(1.0, bx - ax)
+        k1 = max(-0.3, min(0.3, k1))
+        mx, my = (ax + bx) / 2, (ay + by) / 2
+        line = my + k1 * (xf - mx)
+        target = line + eh * 0.12 * np.sin(np.pi * u) - hc * 0.5
+    else:
+        mid = (u >= 0.2) & (u <= 0.8)
+        if mid.sum() >= 3:
+            k1, k0 = np.polyfit(xf[mid], eye['b'][mid], 1)
+        else:
+            k1, k0 = 0.0, float(np.median(eye['b']))
+        k1 = max(-0.3, min(0.3, k1))
+        target = k1 * xf + k0 + eh * 0.12 * np.sin(np.pi * u) - hc
+    d = np.maximum(0, (target - t) * s)
     SH = 3 if s < 0.7 else 0                       # 半閉：眼球陰影帶幾列
     BH = int(np.ceil(hc)) + 3 + SH
     LID = 6                                        # 眼皮來源：睫毛上方幾列
