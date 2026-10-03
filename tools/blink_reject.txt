@@ -1,0 +1,221 @@
+# 眨眼補丁的排除清單（tools/blink_build.py 讀這一份）：清單上的不產、表上有也拿掉 —— 不上線＝不眨，安全。
+# 格式：<立繪檔名>  # 理由
+# 理由分兩種：
+#   「不適用：…」＝這張圖本來就不該眨（已經閉眼、背影、臉被遮、偵測到別的地方、畫風不適用）—— 永久排除
+#   「待修A/B/C/D：…」＝工具的瑕疵，修好工具後從清單拿掉、重跑這幾張
+#     A＝閉眼後殘留虹膜／眼白（多半是瞪大眼、深膚綠眼）
+#     B＝眼皮上方出現白色方塊／白色虛線（賽西莉那一型：深色瀏海壓眼）
+#     C＝白髮蓋眼時閉眼的眼皮變成一層灰霧（索拉娜那一型）
+#     D＝戴眼罩：眼罩被當成第二隻眼睛（露娜）
+# 2026-10-03 全量 457 張逐頁看過（tools/_blink_out/_qa_NN.png）。
+
+# ── 不適用：本來就閉眼（笑瞇眼、睡著、閉眼表情）──
+anya_si_happy  # 不適用：本來就閉眼
+anya_si_laugh  # 不適用：本來就閉眼
+anya_si_nod  # 不適用：本來就閉眼
+anya_si_peace  # 不適用：本來就閉眼
+anya_si_relief  # 不適用：本來就閉眼
+anya_si_scare2  # 不適用：本來就閉眼
+anya_si_sleep  # 不適用：本來就閉眼
+anya_si_smile  # 不適用：本來就閉眼
+anya_si_smileshy  # 不適用：本來就閉眼
+arrhenius_si_smileclose  # 不適用：本來就閉眼
+arrhenius_si_smileopen  # 不適用：眼睛瞇成線
+cecilie_si_smile  # 不適用：本來就閉眼
+cecilie_si_spoild  # 不適用：本來就閉眼
+corvin_si_smile  # 不適用：本來就閉眼
+laurie_si_idea  # 不適用：本來就閉眼
+misha_si_close  # 不適用：本來就閉眼
+nemo_si_happy  # 不適用：一眼已閉
+nouvelle_si_awkwerd  # 不適用：本來就閉眼
+nouvelle_si_bigsmile  # 不適用：本來就閉眼
+nouvelle_si_bigsmileclose  # 不適用：本來就閉眼
+nouvelle_si_concern  # 不適用：本來就閉眼
+nouvelle_si_eat  # 不適用：本來就閉眼
+nouvelle_si_nod  # 不適用：本來就閉眼
+nouvelle_si_pray  # 不適用：本來就閉眼
+nouvelle_si_relief  # 不適用：本來就閉眼
+nouvelle_si_reliefbreath  # 不適用：本來就閉眼
+nouvelle_si_sigh  # 不適用：本來就閉眼
+nouvelle_si_sleep  # 不適用：本來就閉眼
+npc_ss_lofa_cryshoot  # 不適用：本來就閉眼
+renna_ad_si_bow  # 不適用：本來就閉眼
+renna_ad_si_smile  # 不適用：本來就閉眼
+renna_si_awkwerd  # 不適用：本來就閉眼
+renna_si_bow  # 不適用：本來就閉眼
+renna_si_hugclose  # 不適用：本來就閉眼
+renna_si_laugh  # 不適用：本來就閉眼
+renna_si_nod  # 不適用：本來就閉眼
+renna_si_relief  # 不適用：本來就閉眼
+renna_si_remindsmile  # 不適用：本來就閉眼
+renna_si_scarecute  # 不適用：>< 眼
+renna_si_scream  # 不適用：本來就閉眼
+renna_si_sigh  # 不適用：本來就閉眼
+renna_si_sighsweat  # 不適用：本來就閉眼
+renna_si_sleepdesk  # 不適用：本來就閉眼
+renna_si_smile  # 不適用：本來就閉眼
+renna_si_snivel  # 不適用：本來就閉眼
+renna_si_tire  # 不適用：本來就閉眼
+renna_si_wake  # 不適用：本來就閉眼
+sorana_si_carrynouvellejealous  # 不適用：本來就閉眼
+sorana_si_cryclose  # 不適用：本來就閉眼
+sorana_si_drink  # 不適用：本來就閉眼
+sorana_si_eat  # 不適用：本來就閉眼
+sorana_si_embarrass  # 不適用：本來就閉眼
+sorana_si_guardthink  # 不適用：本來就閉眼
+sorana_si_idea  # 不適用：本來就閉眼
+sorana_si_lauaghbig  # 不適用：本來就閉眼
+sorana_si_laugh  # 不適用：本來就閉眼
+sorana_si_readhappy  # 不適用：本來就閉眼
+sorana_si_relief  # 不適用：本來就閉眼
+sorana_si_salute  # 不適用：單眼眨眼（wink）
+sorana_si_sleep  # 不適用：本來就閉眼
+sorana_si_tire  # 不適用：本來就閉眼
+sorana_si_wave  # 不適用：本來就閉眼
+
+# ── 不適用：臉被遮／背影／偵測到別的地方（嘴、身體、別人的頭髮）──
+anya_si_desperate  # 不適用：偵測錯位置（辮子）
+anya_si_die  # 不適用：看不到眼睛
+anya_si_sob  # 不適用：偵測錯位置
+cecilie_si_sadback  # 不適用：背影
+nemo_si_bye  # 不適用：把張開的嘴當成眼睛
+nouvelle_ad_si_coverface  # 不適用：雙手遮臉
+nouvelle_si_apologize  # 不適用：鞠躬看不到臉
+nouvelle_si_die  # 不適用：看不到眼睛
+nouvelle_si_sadsmilenoeye  # 不適用：看不到眼睛
+renna_si_back  # 不適用：背影
+renna_si_hugangry2  # 不適用：偵測到別人的頭髮
+sorana_si_crybig  # 不適用：把張開的嘴當成眼睛
+sorana_si_die  # 不適用：把嘴當成眼睛
+sorana_si_sorry  # 不適用：臉被遮
+npc_ss_cityhall_cringe  # 不適用：把嘴當成眼睛
+npc_ss_lofa_capture  # 不適用：嘴被改到
+npc_guildhunter_si_attack  # 不適用：把嘴當成眼睛
+npc_gunsmith_si_northport  # 不適用：把嘴當成眼睛
+npc_natalia_si_dead  # 不適用：死亡，看不到眼睛
+npc_natalia_si_die  # 不適用：偵測錯位置
+ssophia_si_manu_draw  # 不適用：嘴被改到
+ssophia_si_manu_scream  # 不適用：嘴被改到
+
+# ── 不適用：特殊眼睛（發光、噴火、紅瞳演出）──
+anya_si_nightmareinstall  # 不適用：紅瞳演出，閉眼殘留紅色
+misha_si_ni  # 不適用：紅瞳演出
+nouvelle_si_saintinstall  # 不適用：發光的眼睛
+sorana_si_furiousq  # 不適用：噴火眼
+
+# ── 不適用：畫風（寫實／粗獷男性、皺紋、護目鏡）閉眼變髒污 ──
+arrhenius_si_front  # 不適用：寫實老人
+arrhenius_si_lookdown  # 不適用：寫實老人
+arrhenius_si_surprisejoy  # 不適用：寫實老人
+arrhenius_si_wrysmile  # 不適用：寫實老人
+arrhenius_si_wrysmileopen  # 不適用：寫實老人
+laurie_si_die  # 不適用：咬牙閉眼
+nemo_si_dual  # 不適用：閉眼變一團黑
+npc_capital_gunstore_si  # 不適用：寫實老人＋眼鏡
+npc_grocer_si_v2  # 不適用：寫實老人
+npc_grocerie_si  # 不適用：寫實老人＋眼鏡
+npc_guildcounter_si_v4  # 不適用：側臉＋眼鏡
+npc_guildcounter_si_v5  # 不適用：寫實
+npc_guildhunter_si_lost  # 不適用：寫實男性
+npc_guildhunter_si_shock  # 不適用：寫實男性
+npc_gunsmith_si_v2  # 不適用：寫實男性
+npc_gunsmith_si_v3  # 不適用：寫實男性
+npc_gunsmith_si_v4  # 不適用：寫實＋眼鏡
+npc_gunsmith_si_v5  # 不適用：寫實老人
+npc_northport_crowd  # 不適用：群眾圖
+npc_np_priest  # 不適用：寫實老人
+npc_shinier_grocery_si  # 不適用：寫實男性
+npc_shinier_gunsmith_si  # 不適用：護目鏡
+npc_shinier_hunter_si  # 不適用：寫實男性
+npc_ss_boss_hurt  # 不適用：寫實男性
+sodier_  # 不適用：寫實男性
+ssophia_si_manu_complain  # 不適用：寫實男性
+ssophia_si_manu_cringe  # 不適用：寫實男性
+ssophia_si_manu_front  # 不適用：寫實男性
+torsten_si_q  # 不適用：瀏海遮眼
+
+# ── 待修A：閉眼後殘留虹膜／眼白 ──
+anya_ad_si_scare  # 待修A
+anya_si_runworry  # 待修A
+anya_si_scare  # 待修A
+anya_si_surprise  # 待修A
+nouvelle_si_expain2  # 待修A
+nouvelle_si_happy  # 待修A
+nouvelle_si_hungry  # 待修A
+nouvelle_si_shock2  # 待修A
+nouvelle_si_surprise  # 待修A
+nouvelle_si_worry  # 待修A
+npc_grocer_si_v1  # 待修A
+npc_guildcounter_si_northport  # 待修A
+npc_ss_lofa_cry  # 待修A
+npc_ss_loti_ask  # 待修A
+npc_ss_loti_cry  # 待修A
+npc_ss_loti_give  # 待修A
+npc_ss_loti_happy  # 待修A
+npc_ss_loti_shock  # 待修A
+renna_si_hugshock  # 待修A
+sorana_ad_si_surprise  # 待修A
+sorana_si_carrynouvellescream  # 待修A
+sorana_si_carrynouvelleshock  # 待修A
+sorana_si_cringe  # 待修A
+sorana_si_hug  # 待修A
+sorana_si_panic  # 待修A
+sorana_si_scare  # 待修A
+sorana_si_surprise  # 待修A
+
+# ── 待修B：眼皮上方白塊／白色虛線 ──
+cecilie_si_cringe  # 待修B
+cecilie_si_fluster  # 待修B
+cecilie_si_front  # 待修B
+cecilie_si_lookaside  # 待修B
+cecilie_si_nolook  # 待修B
+cecilie_si_saintinstall  # 待修B
+cecilie_si_talk  # 待修B
+cecilie_si_tease  # 待修B
+cecilie_si_think  # 待修B
+cecilie_si_upset  # 待修B
+xanya_si_front  # 待修B
+
+# ── 待修C：白髮蓋眼時眼皮變灰霧 ──
+sorana_ad_si_back  # 待修C
+sorana_ad_si_battlecry  # 待修C
+sorana_ad_si_battlecrylookaside  # 待修C
+sorana_ad_si_guardtalk  # 待修C
+sorana_si_angry  # 待修C
+sorana_si_back  # 待修C
+sorana_si_battlecry  # 待修C
+sorana_si_battlecrylook  # 待修C
+sorana_si_battlecrylookaside  # 待修C
+sorana_si_battlecrylookserious  # 待修C
+sorana_si_battlecryserious  # 待修C
+sorana_si_confuse  # 待修C
+sorana_si_front  # 待修C
+sorana_si_furious  # 待修C
+sorana_si_guard  # 待修C
+sorana_si_guardtalk  # 待修C
+sorana_si_ideasmile  # 待修C
+sorana_si_nod  # 待修C
+sorana_si_point  # 待修C
+sorana_si_readsad  # 待修C
+sorana_si_ready  # 待修C
+sorana_si_readysmile  # 待修C
+sorana_si_remind  # 待修C
+sorana_si_sad  # 待修C
+sorana_si_serious  # 待修C
+sorana_si_shy  # 待修C
+sorana_si_side  # 待修C
+sorana_si_stare  # 待修C
+sorana_si_talk  # 待修C
+sorana_si_talksmile  # 待修C
+sorana_si_worry  # 待修C
+
+# ── 待修D：眼罩 ──
+luna_si_angry  # 待修D
+luna_si_front  # 待修D
+luna_si_seat_angry  # 待修D
+luna_si_seat_hand  # 待修D
+luna_si_seat_lookdown  # 待修D
+luna_si_seat_n  # 待修D
+luna_si_seat_smirk  # 待修D
+luna_si_taunt  # 待修D
+lunaria_si_arm  # 待修D
