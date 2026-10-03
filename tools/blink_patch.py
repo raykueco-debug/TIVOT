@@ -83,6 +83,7 @@ def analyse(rgb, box, segmap=None):
     green = roi[..., 1] - np.maximum(roi[..., 0], roi[..., 2])
     dark = L < min(Ls - 70, 105)               # 睫毛是真的暗；淡色頭髮的線條（安雅）不算
     eyeish = (dist > 26) | (L > Ls + 6)          # 非膚色，或比膚色亮（眼白）
+    dark0 = dark.copy()
     if Ed is not None:
         # 睫毛與眼睛只准出現在「眼睛」類外擴 3px 之內 —— 暗髮束（分割判成頭髮）不會再被當成睫毛
         dark &= Ed
@@ -170,6 +171,21 @@ def analyse(rgb, box, segmap=None):
         box_m = np.zeros(rgb.shape[:2], bool); box_m[y0:y1, x0:x1] = True
         Hs = segmap == 1
         M = (M | (dilate(Eseg, 2) & box_m)) & dilate(Eseg, 4) & ~Hs
+        # 眼角往外翹的睫毛（分割常常沒把它算進眼睛）：眼睛外擴 10px 內、不是頭髮、
+        # 跟眼睛連在一起的暗色像素也抹掉 —— 不然閉眼後會在原位留一小段殘線
+        D = np.zeros(rgb.shape[:2], bool)
+        D[y0:y1, x0:x1] = (L < Ls - 50) | dark0
+        D &= dilate(Eseg, 10) & ~Hs
+        from collections import deque
+        seen2 = M.copy(); q = deque(zip(*np.where(M)))
+        HH, WW = D.shape
+        while q:
+            yy, xx = q.popleft()
+            for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)):
+                ny, nx = yy + dy, xx + dx
+                if 0 <= ny < HH and 0 <= nx < WW and D[ny, nx] and not seen2[ny, nx]:
+                    seen2[ny, nx] = True; q.append((ny, nx))
+        M = dilate(seen2 & ~M, 1) & ~Hs | M      # 新加的那段外擴 1px（反鋸齒邊）
         I &= dilate(Eseg, 2)
     return dict(x0=x0, y0=y0, xs=xs, t=tt, b=bb, h=hh, skin=skin, Ls=Ls, M=M, I=I)
 
