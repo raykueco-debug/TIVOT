@@ -1,3 +1,24 @@
+> ⭐⭐⭐ **【眨眼・3070 接手】（10-03，Mac 程式 session → 交給 3070）**
+> · ✅ **ver -1928 已在 Mac 本機驗過**（390×844、8123 埠）：對位準、半閉／全閉無接縫；節奏每眨約 0.2 秒、間隔 3.6~6.1 秒、會連眨；別人說話時壓暗、補丁跟著暗、照樣眨。
+>   ⚠ 下面那段的測試指令要改成 `import('./modules/story.js?v=1928')`（不帶 `?v=` 會載到另一份模組實例，測的不是遊戲本身那份）。
+> · **下一步＝量產補丁（在 3070 的 `.venv-face` 跑分割）**。Mac 是 Intel、無 GPU，已放棄在 Mac 建環境（`.venv-face`／`_ext` 在 Mac 上是半成品，gitignore，不影響）。
+> · **挑批次**：`python3 tools/si_usage.py out.json` → 依劇本使用次數排序（實測 416 張裡 334 張有用到）。**照 Ray「小範圍多次」：一批 10~15 張，由排行最前面往下**，每批 commit。
+> · ⛔⛔ **Ray 定的不眨規則**：**die 系列**（`*_die`／`*_dead`）、**本來就沒畫眼睛的**（`*noeye*`、背影 `*_back`、臉被頭髮／手遮住）、**眼睛本來就閉著的**（`*close*`、`*sleep*`、笑瞇眼 ^^）**一律不做**。
+>   · 名字擋不完：跑完 `face_parse.py` 後**眼睛類（class 2）面積過小＝閉眼／沒眼，自動跳過**，剩下的再出總覽讓 Ray 掃一眼。
+>   · 已目視過排行前 36 張，**閉眼／沒眼（跳過）**：`renna_si_smile`、`nouvelle_si_awkwerd`、`anya_si_desperate`（沒眼）、`sorana_si_lauaghbig`、`renna_si_meltdown`（遮住）、`renna_si_bow`、`sorana_si_tire`、`npc/corvin_si_smile`。`renna_si_think` 是半垂眼，**可以眨**（眼皮從半閉起算，要確認工具的 half 不會比原圖還開）。37 名以後還沒看。
+> · 每張流程照下面那段：`face_parse.py <圖名>` → `blink_patch.py ... --seg ... --install` → 那一行貼進 `BLINK` → `py tools/script_lint.py`（`check_blink`）→ 實機看一次。
+
+> ⭐⭐ **【眨眼・接手先看這裡】（10-03 收工，雲端 session → 交給本機 session）**
+> · **現況**：分支 `claude/standing-art-blink-animation-ub7vw7` ＝ main（含 PR #1，ver -1927 立繪槽包外框）＋ **ver -1928 接上眨眼**（只有 `anya_si_front`，**還沒合進 main**）。
+> · **第一件事：本機驗 ver -1928**（Ray 指定用本機 server＋內建瀏覽器，**不要錄影／做網頁替代**）：
+>   `git pull` → 開本機 server（`$env:PORT="8200"; py tools\devserver.py`）→ 內建瀏覽器開 `http://localhost:8200/`、點掉開機讀取頁 → HUD 版本 **1928** →
+>   Console 執行 `import('./modules/story.js').then(s=>s.playAdhoc([{speaker:'ANYA',text:'眨眼測試',portrait:{char:'ANYA'}, bg:'capital_cityhall_day'}],()=>{}))`
+>   看：位置對準、節奏自然（2.5~6 秒一次、偶爾連眨）、別人說話時安雅壓暗眨眼跟著暗。
+> · **Ray 驗過之後的順序**（小步、每步各自 commit）：① 開 PR 合 ver -1928 進 main（要 Ray 同意）② 其他常用立繪量產補丁（分割在 3060 的 `.venv-face` 跑）③ 戰鬥對白 `#tutCast` 接同一支 blinkBind ④ 呼吸／微晃（CSS，做在外框上）⑤ 髮梢擺動試做（安雅）。
+> · ⚠ **線上網址（GitHub Pages）合併後仍是 1926** —— 部署來源／流程沒查，要另外查。
+> · ⚠⚠ **Ray 的規矩（這一輪立的）**：做不到的事**先講清楚原因與選項、等他決定**，不要自作主張繞路（錄影、轉檔、做網頁）—— token 很貴。
+> · 3060 那台的環境：`C:\Users\User\Desktop\TIVOT`、PowerShell（執行要 `.\`、環境變數用 `$env:`）、`.venv-face`（Python 3.12、torch cu121）、分割模型在 `_ext\Anime-Face-Segmentation`；那台還有一份**美術交接檔的本機改動**（`resources/_HANDOFF_ART_20260925.md`，不是程式端的，別 commit 掉）。
+
 > ⭐ **立繪眨眼（10-03，雲端程式 session，分支 `claude/standing-art-blink-animation-ub7vw7`）—— 原型通過，Ray：「不錯，回去小範圍多次動工，不要一次全部做完」**
 > · 作法定案：**眼部補丁**（半閉／全閉兩格小圖疊在立繪上），**不生成** —— `tools/blink_patch.py` 從原圖睜眼像素推出：上眼瞼線整條剪下沿平滑弧線次像素下移、蓋過處擴散內插補膚色。SD inpaint 全閉出不來、半閉也會有色／形／大小落差（Ray），所以不走生成。
 > · 已驗：`renna_si_front` 實機模擬（390×844、帝都場景）補丁對位正確；補丁各約 100×45px／9KB。眼框目前**手給**（`--eye 480,100,522,126 --eye 540,116,575,146`）。
@@ -14,6 +35,12 @@
 > · **下一步就是 ①「保護頭髮」**（只動 `tools/`）：依角色髮色挑出眼框內的髮絲 → 填膚色時跳過 → 最後把原圖頭髮蓋回最上層（頭髮本來就在眼睛前面）。改完重跑上面四張，用實機模擬頁給 Ray 看。
 > · ✅ **① 保護頭髮已做（安雅先過，Ray 指定：她頭髮最複雜、眼睛比例最大）**：`blink_patch.py` 取樣髮色（頭頂＋眼框上方 k-means）→ 像髮色且**連到眼框外頭髮**的才算 → 填膚色時當未知、最後原圖蓋回；眼睛內部用嚴格判定（藍眼／淡紫髮會混）；睫毛上緣反鋸齒邊與翹起的睫毛尖一併抹掉。安雅現行參數（第四版）：`--eye 446,134,480,168 --eye 494,110,550,142 --keep 428,138,452,178`（`--keep`＝保留框，標註蓋在眼睛上的髮束；陰影裡的暗髮束會被誤當睫毛、顏色規則分不開，靠標註）。後續又加：半閉帶眼球陰影、閉眼拉伸上眼皮＋梯度域融合（去色塊／色差）、眼角眼白清除。除錯：`--hairmask`、對照：`--no-hair`。其餘四張還沒用新版重跑。
 > · ⛔ **已評估並否決**：「GPT 整顆換頭、把頭髮偏差當成飄動」—— 眨眼只有 ~200ms，兩張圖瞬切讀成「跳」不是「飄」；補中間格會鬼影／融化（GPT 是重畫不是位移，髮束拓樸會變）；臉的線條也會一起閃；約 500 次生成。頭髮飄動若要做，另立項（程式挑頭髮＋平滑位移場，持續動畫要先上手機量發熱，鐵律 12）。
+> · ✅ **ver -1927 立繪槽包外框**（已合進 main，PR #1；Ray 本機驗過）／✅ **ver -1928 接上眨眼（只有安雅 front）**：
+>   資料 `script/speakers.js` 的 `BLINK`（鑰匙＝圖檔名、`base`＝底圖雜湊）、補丁 `resources/si/blink/`、
+>   執行 `modules/story.js` 的 `blinkBind/blinkStop`（唯一一支）、lint `check_blink`（底圖換過就報錯）。
+>   新增一張：3060 跑 `tools/face_parse.py <圖名>` → `tools/blink_patch.py resources/si/<圖名>.webp --seg tools/_blink_seg/<圖名> --out <暫存> --install` → 印出的那一行貼進 BLINK。
+>   ⚠ 雲端 session 跑 `tools/bust.py` 前先 `git fetch --unshallow`：淺複製看不到素材歷史，`asset_bust` 會把 ASSET_VER 誤刪約 400 筆（ver -1927 踩過，未推出）。
+>   還沒做：戰鬥對白 `#tutCast`、飛行頁、其他角色的補丁量產、呼吸。
 > · **顏色規則已到極限（10-03，Ray：「這樣好像不可靠」）** → 改用模型分區，候選與授權（只做開發工具、不進 App）：
 >   ✅ `siyeong0/Anime-Face-Segmentation`（MIT；UNet＋MobileNetV2、512×512、7 類含 hair/eye/skin/face；權重 `model/UNet.pth` 在 repo 裡；訓練資料來源未說明、8 個 commit ⇒ 要先實測品質）
 >   ✅ `hysts/anime-face-detector`（MIT，vendor 部分 Apache 2.0；28 點臉部特徵含眼睛；新版已不需 mmcv；**Python ≥3.12、torch ≥2.2** ⇒ 另開 venv，不要動 `.venv-matting`）

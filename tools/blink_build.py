@@ -18,7 +18,7 @@
   那是安全的失敗模式。理由一定要寫，下一個人才知道是「不適用」還是「待修」。
 ⚠ 補丁的座標是**原圖像素**；引擎（modules/blink.js）依立繪外框的百分比擺，所以跟著縮放／翻轉／壓暗一起動。
 """
-import glob, json, os, re, subprocess, sys
+import glob, hashlib, json, os, re, subprocess, sys
 from concurrent.futures import ThreadPoolExecutor
 from PIL import Image, ImageDraw, ImageFont
 
@@ -48,6 +48,11 @@ def read_table():
     return json.loads(m.group(1)) if m else {}
 
 
+def base_hash(name):
+    """底圖內容雜湊前 8 碼 —— 補丁是對著這一版做的；底圖被同名覆蓋時 lint 的 check_blink 會報錯。"""
+    return hashlib.sha1(open(find_src(name), 'rb').read()).hexdigest()[:8]
+
+
 def read_reject():
     out = {}
     if os.path.exists(REJECT):
@@ -64,7 +69,8 @@ def write_table(tab):
     rows = ',\n'.join(f'  {json.dumps(k)}: {json.dumps(tab[k], separators=(",", ":"))}' for k in sorted(tab))
     open(TABLE, 'w', encoding='utf-8', newline='\n').write(
         '/* ══ 立繪眨眼補丁表 —— **機器產生，不要手改**（tools/blink_build.py）══\n'
-        '   鑰匙＝立繪檔名（去副檔名、去 ?v=、轉小寫）；值＝兩格補丁在**原圖像素**的框 [x,y,w,h]。\n'
+        '   鑰匙＝立繪檔名（去副檔名、去 ?v=、轉小寫）；值＝兩格補丁在**原圖像素**的框 [x,y,w,h]；\n'
+        '   base＝底圖內容雜湊前 8 碼（底圖被同名覆蓋時 tools/script_lint.py 的 check_blink 會報錯）。\n'
         '   補丁檔：resources/si/blink/<鑰匙>_half.webp／_closed.webp。\n'
         '   引擎（modules/blink.js）只認這一張表：表上有的立繪就會眨眼，沒有的不動。\n'
         '   不上線的在 tools/blink_reject.txt（附理由）。 */\n'
@@ -129,6 +135,13 @@ def main():
     args = sys.argv[1:]
     tab = read_table()
     rej = read_reject()
+    if '--rehash' in args:          # 補上缺 base 的舊條目（補丁沒重做，前提是底圖沒換過）
+        for k in tab:
+            if 'base' not in tab[k] and find_src(k):
+                tab[k]['base'] = base_hash(k)
+        write_table(tab)
+        print('rehash', len(tab))
+        return
     if '--list' in args:
         print(len(tab), '張：', ' '.join(sorted(tab)))
         return
@@ -170,6 +183,7 @@ def main():
                 Image.open(os.path.join(OUTD, n, m['src'])).save(
                     os.path.join(DST, f'{n}_{k}.webp'), 'WEBP', quality=92, alpha_quality=100, method=6)
                 ent[k] = [m['x'], m['y'], m['w'], m['h']]
+            ent['base'] = base_hash(n)
             tab[n.lower()] = ent
             ok.append(n)
             print('✔', n, flush=True)

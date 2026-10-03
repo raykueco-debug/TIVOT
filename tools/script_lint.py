@@ -47,7 +47,7 @@ def strip_module(src):
 # ⚠ **先逐檔驗語法，再合起來跑**（ver -403）。合起來跑也會抓到語法錯，但行號是
 #   「串起來那個暫存檔」的行號，對不回原檔 —— Ray 手改稿子時最需要的正是
 #   「哪一個檔、第幾行」。逐檔 `--module-file` 一次就給得出來。
-SRC_FILES = ('script/speakers.js', 'script/mainScript.js', 'script/town.js', 'script/enemies.js', 'script/weapons.js', 'script/shopcards.js', 'config.js')
+SRC_FILES = ('script/speakers.js', 'script/blink.js', 'script/mainScript.js', 'script/town.js', 'script/enemies.js', 'script/weapons.js', 'script/shopcards.js', 'config.js')
 
 def check_syntax():
     bad = 0
@@ -70,7 +70,8 @@ def load_data():
         parts.append(strip_module(open(os.path.join(ROOT, f), encoding='utf-8').read()))
     parts.append('print(JSON.stringify({script:MAIN_SCRIPT, entry:MAIN_ENTRY,'
                  ' speakers:SPEAKERS, art:ART, towns:TOWNS, cfg:GAME_CONFIG,'
-                 ' assets:ASSETS, homeImg:HOME_IMG, homeSfx:HOME_SFX}));')
+                 ' assets:ASSETS, homeImg:HOME_IMG, homeSfx:HOME_SFX,'
+                 ' blink:(typeof BLINK!=="undefined" ? BLINK : {})}));')
     return _jsrun.dump(NL.join(parts), what='腳本資料')
 
 # ── story.js 的音效／BGM 表 ────────────────────────────────────────────────
@@ -472,6 +473,27 @@ def check_map_enemy_images(D):
                 err('%s：場次 %s（%s）的立繪檔不存在：%s' % (tid, b, ek, path))
 
 
+def check_blink(D):
+    """眨眼補丁（script/blink.js 的 BLINK，tools/blink_build.py 產生）：補丁是對著「那一版」底圖做的。
+    底圖被同名覆蓋 → 補丁錯位，畫面上沒有任何錯誤訊息 ⇒ 這裡比對內容雜湊（鐵律 7 的但書：寫成會執行的）。"""
+    import hashlib
+    for name, b in (D.get('blink') or {}).items():
+        base = None
+        for sub in ('', 'npc'):
+            p = os.path.join(ROOT, 'resources', 'si', sub, name + '.webp')
+            if os.path.isfile(p):
+                base = p; break
+        if not base:
+            err('BLINK.%s：底圖 resources/si/(npc/)%s.webp 不存在' % (name, name)); continue
+        h = hashlib.sha1(open(base, 'rb').read()).hexdigest()[:8]
+        if b.get('base') and h != b.get('base'):
+            err('BLINK.%s：底圖換過了（雜湊 %s ≠ 補丁記的 %s）—— 眨眼補丁會錯位，'
+                '重跑 py -3.11 tools/blink_build.py %s，或先把它加進 tools/blink_reject.txt' % (name, h, b.get('base'), name))
+        for k in ('half', 'closed'):
+            f = os.path.join(ROOT, 'resources', 'si', 'blink', '%s_%s.webp' % (name, k))
+            if not os.path.isfile(f):
+                err('BLINK.%s.%s：補丁檔不存在：%s' % (name, k, os.path.relpath(f, ROOT)))
+
 def main():
     D = load_data()
     check_map_enemy_images(D)
@@ -479,6 +501,7 @@ def main():
     boot = check_boot_batch(D)
     check_map_sessions(D)
     check_lowercase_assets()
+    check_blink(D)
     script, entry, speakers, art = D['script'], D['entry'], D['speakers'], D['art']
     check_tense_exprs(art)
 
