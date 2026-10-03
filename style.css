@@ -2944,8 +2944,13 @@
   /* 進場：從**自己那一側**滑入，450ms ease-out（CLAUDE.md §6.5）。 */
   /* ⚠ opacity 也要進 transition：同一個人只換表情時走**淡入淡出**（Ray 指定
      「不要直接切」）；換人才走滑入滑出（那是 transform 那一條）。 */
-  .story-portrait{position:absolute;object-fit:contain;pointer-events:none;opacity:1;
+  .story-portrait{position:absolute;pointer-events:none;opacity:1;
     transition:transform .45s cubic-bezier(.16,1,.3,1),filter .25s ease,opacity .18s ease;}
+  /* 外框裡的圖本體（眨眼 step ③）：滿版貼外框；外框的寬高由 story.layout 依這張圖的原尺寸設。
+     ⚠ 位置／滑入／翻轉／壓暗都在外框上 —— 日後的眨眼補丁也放在外框裡，才會跟著一起動。 */
+  .story-portrait > .sp-img{position:absolute;left:0;top:0;width:100%;height:100%;
+    object-fit:contain;pointer-events:none;display:block;}
+  .story-portrait > .sp-img:not([src]){visibility:hidden;}
   .story-portrait.fading{opacity:0;}
   #storyCastL{transform:translateX(-140%);}
   #storyCastR{transform:translateX(140%);}
