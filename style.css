@@ -2959,7 +2959,7 @@
   /* ══ 立繪呼吸：分段平移（選項 1，Ray 2026-10-03「分頭胸腹」；取代 -1934 的整張伸縮）══
      實作與分段的算法在 modules/breath.js。這裡只有動畫與幅度：
        腿／腰（底圖）  不動
-       軀幹（.br-torso） 上移 --br-t，髮梢擺動層（.sw-*）跟著它
+       軀幹（.br-torso） 上移 --br-t，只有胸口全量、到肚臍歸零（-1937 Ray：腹部以下要小，不然像在飄）
        頭（.br-head）    上移 --br-h（整塊平移、不縮放），眨眼補丁（.sp-blink）跟著它
      · 吸氣比吐氣快一點（keyframes 40% 到頂）；左右兩個槽錯開相位（--br-delay）。
      · 只用 `translate` 屬性：與滑入／翻轉的 transform、髮梢的 rotate 各自疊加，GPU 合成不重繪。
@@ -2971,20 +2971,16 @@
     object-fit:contain; pointer-events:none; max-width:none; }
   #storyCast .story-portrait, #tutCast .tut-portrait{ --br-delay:0s; }
   #storyCastR, #tutCastR{ --br-delay:-1.7s; }
-  #storyCast .story-portrait.on > .br-torso, #tutCast .tut-portrait.in > .br-torso,
-  #storyCast .story-portrait.on > .sw-under, #tutCast .tut-portrait.in > .sw-under{
+  #storyCast .story-portrait.on > .br-torso, #tutCast .tut-portrait.in > .br-torso{
     animation:brTorso var(--br-sec) ease-in-out var(--br-delay) infinite; }
   #storyCast .story-portrait.on > .br-head, #tutCast .tut-portrait.in > .br-head,
   #storyCast .story-portrait.on > .sp-blink, #tutCast .tut-portrait.in > .sp-blink{
     animation:brHead var(--br-sec) ease-in-out var(--br-delay) infinite; }
   /* 髮梢擺動（路線 B，modules/sway.js）：墊底層與擺動層，位置是原圖百分比；擺幅 --sw-a、週期 --sw-d 由 JS 逐層給。
-     擺動層同時跟著軀幹呼吸（兩個動畫：rotate 擺、translate 呼吸）。 */
+     ⚠ 不跟呼吸上下（-1937）：擺動的那段頭髮多半垂在腰臀一帶，跟著上下就是「整個人在飄」。 */
   .sw-under, .sw-layer{position:absolute;pointer-events:none;display:block;max-width:none;}
   @keyframes swSway{ 0%,100%{ rotate:calc(var(--sw-a,.5deg) * -1); } 50%{ rotate:var(--sw-a,.5deg); } }
   .sw-layer{ animation:swSway var(--sw-d,3.3s) ease-in-out var(--sw-off,0s) infinite; }
-  #storyCast .story-portrait.on > .sw-layer, #tutCast .tut-portrait.in > .sw-layer{
-    animation:swSway var(--sw-d,3.3s) ease-in-out var(--sw-off,0s) infinite,
-              brTorso var(--br-sec) ease-in-out var(--br-delay) infinite; }
   @media (prefers-reduced-motion: reduce){
     .sw-layer, .br-torso, .br-head, .sw-under, .sp-blink{ animation:none !important; }
   }

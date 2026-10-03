@@ -30,7 +30,9 @@ export function bind(box, img, fr){
   const P = y => Math.max(0, Math.min(100, y / NH * 100)).toFixed(2) + '%';
   // 遮罩：往上是不透明（黑），往下漸成透明。頭：下巴→鎖骨淡出；軀幹：胸口（1.5 頭身）全動 → 腰線不動
   const mHead  = 'linear-gradient(to bottom, #000 ' + P(chin) + ', transparent ' + P(chin + hh * 0.55) + ')';
-  const mTorso = 'linear-gradient(to bottom, #000 ' + P(fr.top + hh * 1.5) + ', transparent ' + P(waist) + ')';
+  // ⚠ Ray（-1937）：「腹部以下擺幅要小，不然看起來整個人在飄浮」—— 只有胸口（1.3 頭身以上）全量動，
+  //   到肚臍（1.9 頭身）就歸零；腰線以下一點都不動。
+  const mTorso = 'linear-gradient(to bottom, #000 ' + P(fr.top + hh * 1.3) + ', transparent ' + P(Math.min(waist, fr.top + hh * 1.9)) + ')';
   const ref = img.nextSibling;
   // 有髮梢擺動時（modules/sway.js 把底圖遮罩記在 box.dataset.swaymask）：兩份副本也要挖掉擺動的那段頭髮，
   // 不然副本裡不動的頭髮會跟擺動層疊成殘影。兩層遮罩取交集。
