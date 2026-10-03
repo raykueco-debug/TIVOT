@@ -33,7 +33,7 @@ function els(box){
 
 export function unbind(box){
   if(!box) return;
-  const r=T.get(box); if(r){ clearTimeout(r.t); T.delete(box); }
+  const r=T.get(box); if(r){ cancel(r.t); T.delete(box); live_.delete(box); }
   const e=els(box);
   for(const im of [e.h, e.c]){ im.classList.remove('on'); im.onload=null; delete im.dataset.ok; delete im.dataset.key; }
 }
@@ -68,31 +68,61 @@ export function bind(box, img, live, mode){
   };
   put(e.h, d.half, 'half'); put(e.c, d.closed, 'closed');
   const rec={ t:0, live, mode, n:0 };   // n＝第幾次（一二拍／二一拍輪流用）
-  T.set(box, rec);
-  rec.t=setTimeout(()=>once(box), 500+Math.random()*1500);   // 上台後第一次眨：0.5~2 秒隨機（Ray，-1940）
+  T.set(box, rec); live_.set(box, rec);
+  rec.t=sched(()=>once(box), stepMode ? 300 : 500+Math.random()*1500);   // 上台後第一次眨：0.5~2 秒隨機（Ray，-1940）
 }
 
-/* 管理人工具（首頁「立繪」→ 調整工作室）用的兩個入口：
+/* 管理人工具（首頁「立繪」→ 調整工作室）用的入口：
    now(box)   ＝這一刻就眨一次（不等排程）
-   setFast(on)＝頻繁眨眼（約 1 秒一次）—— 驗補丁用，下一次排程起生效 */
+   setFast(on)＝頻繁眨眼（約 1 秒一次）—— 驗補丁用，下一次排程起生效
+   ══ 逐格（ver -1942，Ray：「不應該放慢放，應該放逐格，點一下往後推一禎」）══
+   setStep(on)＝暫停真時間，改走虛擬時鐘；stepBy(ms)＝把虛擬時鐘往後推 ms（一格＝1/30 秒）。
+   所有等待都經過 sched()：平常＝setTimeout，逐格時＝排進虛擬時鐘的佇列。 */
 let fast=false;
 export function setFast(on){ fast=!!on; }
-/* 慢放（ver -1941，Ray：「立繪調整加入面部特寫跟慢放」）：spd＝速度倍率（1＝正常、0.25＝四倍慢）。
-   眨眼每一格的毫秒與間隔都除以它；CSS 動畫那一半由呼叫端調 playbackRate。 */
-let spd=1;
-export function setSpeed(k){ spd=Math.max(0.02, +k||1); }
-export function speed(){ return spd; }
 export function isFast(){ return fast; }
+
+let stepMode=false, vnow=0, vq=[];            // vq：{ at, fn, dead }
+function sched(fn, ms){
+  if(stepMode){ const j={ at:vnow+ms, fn, dead:false }; vq.push(j); return j; }
+  return { real:setTimeout(fn, ms) };
+}
+function cancel(h){ if(!h) return; if(h.real) clearTimeout(h.real); else h.dead=true; }
+export function isStep(){ return stepMode; }
+export function setStep(on){
+  on=!!on; if(on===stepMode) return;
+  stepMode=on; vnow=0; vq=[];
+  // 換時鐘：每一個綁著的立繪都睜眼、重新排下一次（逐格時 0.3 秒後；回真時間照正常間隔）
+  for(const [box, rec] of live_){
+    if(T.get(box)!==rec) continue;
+    cancel(rec.t);
+    const e=els(box); e.h.classList.remove('on'); e.c.classList.remove('on');
+    rec.t=sched(()=>once(box), on ? 300 : 500+Math.random()*1500);
+  }
+}
+export function stepBy(ms){
+  if(!stepMode) return;
+  const end=vnow+ms;
+  for(;;){
+    vq=vq.filter(j=>!j.dead);
+    const due=vq.filter(j=>j.at<=end).sort((a,b)=>a.at-b.at)[0];
+    if(!due) break;
+    vq.splice(vq.indexOf(due),1); vnow=due.at; due.fn();
+  }
+  vnow=end;
+}
+const live_=new Map();   // WeakMap 不能列舉；逐格切換時要掃一遍綁著的立繪
+
 export function now(box){
   const rec=box && T.get(box); if(!rec) return false;
-  clearTimeout(rec.t); once(box); return true;
+  cancel(rec.t); once(box); return true;
 }
 
 function once(box){
   const rec=T.get(box); if(!rec) return;
   const e=els(box);
   // 間隔：「平均時間」＝約 4 秒、只抖 ±0.6 秒（舊版 2.6~6 秒亂數加 15% 隨機連眨，已由節奏取代）
-  const next=()=>{ if(T.get(box)===rec) rec.t=setTimeout(()=>once(box), (fast ? 700+Math.random()*500 : 3400+Math.random()*1200)/spd); };
+  const next=()=>{ if(T.get(box)===rec) rec.t=sched(()=>once(box), fast ? 700+Math.random()*500 : 3400+Math.random()*1200); };
   const go = e.h.dataset.ok && e.c.dataset.ok && !document.hidden && (!rec.live || rec.live());
   if(!go){ next(); return; }
   const cs = COUNTS[rec.mode] || COUNTS.one;
@@ -105,7 +135,7 @@ function once(box){
     if(i>=seq.length){ e.h.classList.remove('on'); e.c.classList.remove('on'); next(); return; }
     const [f, ms]=seq[i++];
     e.h.classList.toggle('on', f==='h'); e.c.classList.toggle('on', f==='c');
-    rec.t=setTimeout(step, ms/spd);
+    rec.t=sched(step, ms);
   };
   step();
 }

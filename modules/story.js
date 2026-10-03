@@ -531,7 +531,9 @@ function tuneRender(){
          慢放＝眨眼計時與 CSS 動畫（呼吸／髮梢）一起放慢。只在工作室有效，離開就還原。 */
       +'<div class="tn-row"><span>'+i18nT('檢視')+'</span>'
       +'<button data-act="zoom" class="'+(studioZoom?'on':'')+'">'+i18nT('面部特寫')+'</button>'
-      +'<button data-act="slow" class="'+(studioSpd!==1?'on':'')+'">'+i18nT('慢放')+' ×'+(studioSpd===1?'1':studioSpd===0.25?'¼':'⅒')+'</button></div>'
+      +'<button data-act="step" class="'+(studioStepOn?'on':'')+'">'+i18nT('逐格')+'</button>'
+      +(studioStepOn ? '<button data-act="stepnext">'+i18nT('下一格 ▶')+'</button><span class="tn-path">'+studioFrame+'</span>' : '')
+      +'</div>'
       +i18nT('<div class="tn-row"><button data-act="exit">離開</button></div>');
   }
   if(!sides.length){ p.innerHTML=studio+i18nT('<div class="tn-empty">台上沒有立繪</div>'); tuneBindStudio(p); return; }
@@ -678,16 +680,17 @@ function tuneBindStudio(p){
   if(bn) bn.addEventListener('click', e=>{ e.stopPropagation(); for(const sd of ['L','R']) if(slot[sd]) blink.now(slotEl(sd)); });
   const bz=p.querySelector('[data-act="zoom"]');
   if(bz) bz.addEventListener('click', e=>{ e.stopPropagation(); studioZoom=!studioZoom; studioZoomApply(); tuneRender(); });
-  const bsl=p.querySelector('[data-act="slow"]');
-  if(bsl) bsl.addEventListener('click', e=>{ e.stopPropagation();
-    studioSpeed(studioSpd===1 ? 0.25 : studioSpd===0.25 ? 0.1 : 1); tuneRender(); });
+  const bst=p.querySelector('[data-act="step"]');
+  if(bst) bst.addEventListener('click', e=>{ e.stopPropagation(); studioStep(!studioStepOn); tuneRender(); });
+  const bsn=p.querySelector('[data-act="stepnext"]');
+  if(bsn) bsn.addEventListener('click', e=>{ e.stopPropagation(); studioStepNext(); tuneRender(); });
   const bf=p.querySelector('[data-act="blinkfast"]');
   if(bf) bf.addEventListener('click', e=>{ e.stopPropagation(); blink.setFast(!blink.isFast());
     if(blink.isFast()) for(const sd of ['L','R']) if(slot[sd]) blink.now(slotEl(sd));
     tuneRender(); });
 }
 /* ══ 工作室的檢視工具（ver -1941）══ */
-let studioZoom=false, studioSpd=1, studioSpdT=0;
+let studioZoom=false;
 /* 面部特寫：#storyCast 整層放大 3 倍，把目前選取那一邊的臉移到畫面中上。
    臉的位置由取景值推（fx＝臉中心的橫向比例；縱向＝頭頂往下 0.55 頭身，同 breath.js 的頭身算法）。 */
 function studioZoomApply(){
@@ -704,14 +707,26 @@ function studioZoomApply(){
   cast.style.transformOrigin='0 0';
   cast.style.transform='translate('+(cx-px*k)+'px,'+(cy-py*k)+'px) scale('+k+')';
 }
-/* 慢放：眨眼的計時走 blink.setSpeed；CSS 動畫（呼吸、髮梢、之後的眼部特效）調 playbackRate ——
-   新起的動畫也要吃到，所以開著時每 0.3 秒掃一次。 */
-function studioSpeed(s){
-  studioSpd=s; blink.setSpeed(s);
-  clearInterval(studioSpdT); studioSpdT=0;
-  const apply=()=>{ const c=$('storyCast'); if(c) for(const a of c.getAnimations({subtree:true})) a.playbackRate=s; };
-  apply();
-  if(s!==1) studioSpdT=setInterval(apply, 300);
+/* 逐格（ver -1942，Ray：「不應該放慢放，應該放逐格，點一下往後推一禎」）：一格＝1/30 秒。
+   · 眨眼：blink.setStep 換成虛擬時鐘，每格 blink.stepBy(1000/30)。
+   · CSS 動畫（呼吸、髮梢、眼部特效）：全部 pause，每格 currentTime 往後推一格；
+     逐格期間新起的動畫（換人、換表情）也要停 —— 每 0.2 秒掃一次。 */
+const STEP_MS=1000/30;
+let studioStepOn=false, studioStepT=0, studioFrame=0;
+function studioAnims(){ const c=$('storyCast'); return c ? c.getAnimations({subtree:true}) : []; }
+function studioStep(on){
+  studioStepOn=!!on; studioFrame=0; blink.setStep(studioStepOn);
+  clearInterval(studioStepT); studioStepT=0;
+  if(studioStepOn){
+    const hold=()=>{ for(const a of studioAnims()) if(a.playState==='running') a.pause(); };
+    hold(); studioStepT=setInterval(hold, 200);
+  }else for(const a of studioAnims()) a.play();
+}
+function studioStepNext(){
+  if(!studioStepOn) return;
+  for(const a of studioAnims()){ a.pause(); a.currentTime=(a.currentTime||0)+STEP_MS; }
+  blink.stepBy(STEP_MS);
+  studioFrame++;
 }
 /* 工作室下拉選單的 ●：這個角色的這一張差分（null＝基本立繪）有沒有眨眼補丁。 */
 function studioHasBlink(id, e){
@@ -791,7 +806,7 @@ function studioPut(side, id, expr){
 function studioExit(){
   studioOn=false; tuneOn=false;
   blink.setFast(false);   // 頻繁眨眼只給工作室驗補丁用，離開就回到正常節奏
-  studioZoom=false; studioSpeed(1); studioZoomApply();   // 特寫與慢放也一樣（ver -1941）
+  studioZoom=false; studioStep(false); studioZoomApply();   // 特寫與逐格也一樣（ver -1941／-1942）
   for(const sd of ['L','R']) if(slot[sd]) leaveSlot(sd);
   sideOverride={};
   tuneRender(); close();
@@ -3314,7 +3329,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1941';
+const KERB_V='?v=1942';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
