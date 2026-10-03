@@ -1,3 +1,14 @@
+> ⭐⭐ **【眨眼・接手先看這裡】（10-03 收工，雲端 session → 交給本機 session）**
+> · **現況**：分支 `claude/standing-art-blink-animation-ub7vw7` ＝ main（含 PR #1，ver -1927 立繪槽包外框）＋ **ver -1928 接上眨眼**（只有 `anya_si_front`，**還沒合進 main**）。
+> · **第一件事：本機驗 ver -1928**（Ray 指定用本機 server＋內建瀏覽器，**不要錄影／做網頁替代**）：
+>   `git pull` → 開本機 server（`$env:PORT="8200"; py tools\devserver.py`）→ 內建瀏覽器開 `http://localhost:8200/`、點掉開機讀取頁 → HUD 版本 **1928** →
+>   Console 執行 `import('./modules/story.js').then(s=>s.playAdhoc([{speaker:'ANYA',text:'眨眼測試',portrait:{char:'ANYA'}, bg:'capital_cityhall_day'}],()=>{}))`
+>   看：位置對準、節奏自然（2.5~6 秒一次、偶爾連眨）、別人說話時安雅壓暗眨眼跟著暗。
+> · **Ray 驗過之後的順序**（小步、每步各自 commit）：① 開 PR 合 ver -1928 進 main（要 Ray 同意）② 其他常用立繪量產補丁（分割在 3060 的 `.venv-face` 跑）③ 戰鬥對白 `#tutCast` 接同一支 blinkBind ④ 呼吸／微晃（CSS，做在外框上）⑤ 髮梢擺動試做（安雅）。
+> · ⚠ **線上網址（GitHub Pages）合併後仍是 1926** —— 部署來源／流程沒查，要另外查。
+> · ⚠⚠ **Ray 的規矩（這一輪立的）**：做不到的事**先講清楚原因與選項、等他決定**，不要自作主張繞路（錄影、轉檔、做網頁）—— token 很貴。
+> · 3060 那台的環境：`C:\Users\User\Desktop\TIVOT`、PowerShell（執行要 `.\`、環境變數用 `$env:`）、`.venv-face`（Python 3.12、torch cu121）、分割模型在 `_ext\Anime-Face-Segmentation`；那台還有一份**美術交接檔的本機改動**（`resources/_HANDOFF_ART_20260925.md`，不是程式端的，別 commit 掉）。
+
 > ⭐ **立繪眨眼（10-03，雲端程式 session，分支 `claude/standing-art-blink-animation-ub7vw7`）—— 原型通過，Ray：「不錯，回去小範圍多次動工，不要一次全部做完」**
 > · 作法定案：**眼部補丁**（半閉／全閉兩格小圖疊在立繪上），**不生成** —— `tools/blink_patch.py` 從原圖睜眼像素推出：上眼瞼線整條剪下沿平滑弧線次像素下移、蓋過處擴散內插補膚色。SD inpaint 全閉出不來、半閉也會有色／形／大小落差（Ray），所以不走生成。
 > · 已驗：`renna_si_front` 實機模擬（390×844、帝都場景）補丁對位正確；補丁各約 100×45px／9KB。眼框目前**手給**（`--eye 480,100,522,126 --eye 540,116,575,146`）。
