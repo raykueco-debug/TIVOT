@@ -526,7 +526,7 @@ def frame(rgb, eye, s, skinfill, fa=None):
     d = np.maximum(0, (target - t) * s)
     SH = 3 if s < 0.7 else 0                       # 半閉：眼球陰影帶幾列
     BH = int(np.ceil(hc)) + 3 + SH
-    LID = 6                                        # 眼皮來源：睫毛上方幾列
+    LID = max(6, int(round(eh * 0.22)))           # 眼皮來源：睫毛上方幾列（大眼睛要多取幾列，6 列拉成十幾列會變成色塊 —— Loti／Lofa）
     SHD = 2                                        # 其中貼著睫毛的眼影陰影（維持原寬度）
     rgbf = rgb.astype(np.float32)
     lidm = np.zeros(rgb.shape[:2], bool)              # 拉伸出來的眼皮（最後做水平平滑）
@@ -805,8 +805,14 @@ def main():
         cur = rgb.astype(np.float32)
         for e in eyes:
             cur = frame(cur, e, s, fills[id(e)], fa)
-        a3 = HA[..., None]
-        cur = cur * (1 - a3) + rgb.astype(np.float32) * a3     # 原圖的頭髮蓋回最上層
+        # 原圖的頭髮蓋回最上層。眼瞼之間以外，半透明的髮緣一律加硬（×3）：
+        # 髮緣 alpha 0.1~0.3 時底下的眼皮色會透出一圈粉／白邊（諾薇兒 hungry、think 的瀏海邊）
+        Ieye = np.zeros(HA.shape, bool)
+        for e in eyes:
+            Ieye |= e['I']
+        HAo = np.where(Ieye, HA, np.clip(HA * 3.0, 0, 1))
+        a3 = HAo[..., None]
+        cur = cur * (1 - a3) + rgb.astype(np.float32) * a3
         # 臉的輪廓線與臉外的頭髮一律不准動（Ray 10-03：「stare 右眼吃到臉外頭髮，有一塊糊，幾乎都有這個狀況」）——
         # 遠側那隻眼的外眼角常貼著臉的輪廓線，補丁範圍伸過去就把輪廓線抹掉。分割的頭髮類往外 2px（含輪廓線），扣掉眼睛類。
         if seg is not None:
