@@ -567,7 +567,7 @@ function tuneRender(){
    /* 眼部特效（ver -1945，Ray：「瞳孔顫動／淚眼汪汪，在立繪模式裡設定」）：寫這一張的 `eyeFx`。
       素材要先由 tools/eye_fx.py 產生（script/eyefx.js），沒有的那幾個選項灰掉。 */
    +(()=>{ const m=c.f.eyeFx||'none', src=(slotImg(tuneSide)||{getAttribute:()=>''}).getAttribute('src');
-       const opts=[['none',i18nT('無')],['tremble',i18nT('瞳孔顫動')]];
+       const opts=[['none',i18nT('無')],['tremble',i18nT('瞳孔顫動')],['tear',i18nT('淚眼汪汪')]];
        return '<div class="tn-row"><span>'+i18nT('眼部特效')+'</span><select data-eyefx>'
          +opts.map(([v,t])=>'<option value="'+v+'"'+(v===m?' selected':'')+(v!=='none'&&!eyefx.has(src,v)?' disabled':'')+'>'+t+(v!=='none'&&!eyefx.has(src,v)?i18nT('（未產生）'):'')+'</option>').join('')
          +'</select></div>'; })()
@@ -3351,7 +3351,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1946';
+const KERB_V='?v=1947';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

@@ -113,6 +113,7 @@ def main():
     iris = np.zeros((H, W), bool)       # 看得到的虹膜（原圖像素）
     ell = np.zeros((H, W), bool)        # 完整的橢圓（看不到的部分用擴散補）
     yy, xx = np.mgrid[0:H, 0:W]
+    irises = []                         # 每隻眼的虹膜橢圓 (cx, cy, rx, ry)，淚眼的高光用
     for e in eyes:
         oe = opening_of(e, (H, W), seg)
         ids = np.unique(lab[oe & irisraw]); ids = ids[ids > 0]
@@ -132,6 +133,7 @@ def main():
         Es = ((xx - cx) / (rx * 0.92)) ** 2 + ((yy - cy) / (ry * 0.92)) ** 2 <= 1
         Eb = ((xx - cx) / (rx * 1.15)) ** 2 + ((yy - cy) / (ry * 1.15)) ** 2 <= 1
         comp = nd.binary_fill_holes((comp | (Es & O)) & Eb)    # 虹膜不准超出放大 15% 的橢圓
+        irises.append((cx, cy, rx, ry))
         iris |= comp
         ell |= E | comp        # 擬合不準時也要把原圖的虹膜整塊包進來（原位才不會留一塊灰）
         # 開口扣掉橢圓外的暗線（下眼瞼線、下睫毛）：它們留在原圖上、蓋在虹膜上面，虹膜往下抖不會蓋過下眼瞼
@@ -190,6 +192,54 @@ def main():
     Image.fromarray(fl, 'RGBA').save(os.path.join(DST, key + '_tr_fill.webp'), 'WEBP', quality=95, alpha_quality=100, method=6)
     ir = np.dstack([np.clip(crop(irisC), 0, 255).astype(np.uint8), (crop(irisA) * 255).astype(np.uint8)])
     Image.fromarray(ir, 'RGBA').save(os.path.join(DST, key + '_tr_iris.webp'), 'WEBP', quality=95, alpha_quality=100, method=6)
+    # ══ 淚眼汪汪（tear）══ 兩張疊在同一個框上（不裁開口：水線要稍微蓋過下眼瞼）：
+    #   te_water  下眼瞼的一汪水：沿開口下緣、往上漸淡的淡藍白帶，上緣一條細高光，兩端收細
+    #   te_hl     眼裡的高光：大小兩顆柔邊白點＋虹膜下半一層淡淡的水光
+    water = np.zeros((H, W), np.float32)
+    wtop = np.zeros((H, W), np.float32)
+    for e in eyes:
+        oe = opening_of(e, (H, W), seg) & O
+        cols = np.where(oe.any(0))[0]
+        if not len(cols):
+            continue
+        c0, c1 = cols[0], cols[-1]
+        for x in cols:
+            rr = np.where(oe[:, x])[0]
+            yb, yt = rr[-1], rr[0]
+            eh = yb - yt + 1
+            k = max(3.0, eh * 0.34)
+            u = (x - c0) / max(1, c1 - c0)
+            taper = np.sin(np.pi * np.clip(u, 0, 1)) ** 0.6
+            for y in range(int(yb - k), yb + 2):
+                t = (y - (yb - k)) / k
+                a = (0.22 + 0.55 * np.clip(t, 0, 1) ** 1.3) if y <= yb else 0.45   # 最下面一列稍微蓋過下眼瞼
+                water[y, x] = max(water[y, x], a * taper)
+            ytop = int(round(yb - k))
+            wtop[ytop, x] = max(wtop[ytop, x], 0.95 * taper ** 1.2)       # 水面的高光（中段兩列）
+            if taper > 0.7:
+                wtop[ytop + 1, x] = max(wtop[ytop + 1, x], 0.55 * taper)
+    hl = np.zeros((H, W), np.float32); gloss = np.zeros((H, W), np.float32)
+    for (cx, cy, rx, ry) in irises:
+        for (ox, oy, r, a) in ((-0.30, -0.36, 0.36, 1.0), (0.34, 0.40, 0.17, 0.9), (0.42, -0.10, 0.09, 0.8)):
+            d2 = ((xx - (cx + ox * rx)) ** 2 + (yy - (cy + oy * ry)) ** 2) / (r * rx) ** 2
+            hl = np.maximum(hl, a * np.clip(1.6 - d2 * 1.6, 0, 1))
+        Ei = ((xx - cx) / rx) ** 2 + ((yy - cy) / ry) ** 2 <= 1
+        gloss = np.maximum(gloss, Ei * np.clip((yy - cy) / ry + 0.1, 0, 1) * 0.40)
+        # 虹膜下方一道白色弧（水面映在眼球上的反光）：橢圓 0.62~0.74 倍那一圈的下半段
+        rr_ = np.sqrt(((xx - cx) / rx) ** 2 + ((yy - cy) / ry) ** 2)
+        arc = (np.abs(rr_ - 0.68) < 0.07) & (yy > cy + 0.25 * ry) & (np.abs(xx - cx) < 0.6 * rx)
+        hl = np.maximum(hl, arc * 0.75)
+    hl = hl * O; gloss = gloss * O                                      # 高光只在看得到的眼球上
+    wc = np.array([226, 238, 255], np.float32)
+    wa = np.clip(water + wtop, 0, 1)
+    wrgb = np.where(wtop[..., None] > 0, np.array([255, 255, 255], np.float32), wc)
+    te_w = np.dstack([np.broadcast_to(wrgb, (H, W, 3)), wa * 255])
+    ha = np.clip(hl + gloss * (1 - hl), 0, 1)
+    hrgb = np.where((hl > gloss)[..., None], np.array([255, 255, 255], np.float32), np.array([220, 236, 255], np.float32))
+    te_h = np.dstack([hrgb, ha * 255])
+    for nm_, arr_ in (('water', te_w), ('hl', te_h)):
+        Image.fromarray(np.clip(crop(arr_), 0, 255).astype(np.uint8), 'RGBA').save(
+            os.path.join(DST, key + '_te_' + nm_ + '.webp'), 'WEBP', quality=95, alpha_quality=100, method=6)
     # 表
     tab = {}
     if os.path.exists(TABLE):
@@ -197,6 +247,7 @@ def main():
         tab = json.loads(m.group(1)) if m else {}
     ent = tab.get(key, {})
     ent['tr'] = [bx0, by0, bx1 - bx0, by1 - by0]
+    ent['te'] = [bx0, by0, bx1 - bx0, by1 - by0]   # 淚眼：同一個框（_te_water／_te_hl）
     tab[key] = ent
     rows = ',\n'.join(f'  {json.dumps(k)}: {json.dumps(tab[k], separators=(",", ":"))}' for k in sorted(tab))
     open(TABLE, 'w', encoding='utf-8', newline='\n').write(
@@ -218,8 +269,13 @@ def main():
             clipped = Image.new('RGBA', cv.size, (0, 0, 0, 0)); clipped.paste(box, (0, 0), m)
             cv.alpha_composite(clipped)
             tiles.append(cv.convert('RGB').resize((cv.width * 6, cv.height * 6), Image.NEAREST))
+        # 第五格：淚眼（原圖＋水線＋高光）
+        cv = im.copy().crop((bx0, by0, bx1, by1)).convert('RGBA')
+        for arr_ in (te_w, te_h):
+            cv.alpha_composite(Image.fromarray(np.clip(crop(arr_), 0, 255).astype(np.uint8), 'RGBA'))
+        tiles.append(cv.convert('RGB').resize((cv.width * 6, cv.height * 6), Image.NEAREST))
         Wt, Ht = tiles[0].size
-        out = Image.new('RGB', (Wt, Ht * 4 + 24), (0, 0, 0))
+        out = Image.new('RGB', (Wt, Ht * len(tiles) + 8 * len(tiles)), (0, 0, 0))
         for i, t in enumerate(tiles):
             out.paste(t, (0, i * (Ht + 8)))
         out.save(A.preview)

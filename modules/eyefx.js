@@ -15,19 +15,39 @@ const keyOf = src => String(src||'').split('/').pop().split('?')[0].replace(/\.[
 const url = p => p + assetVer(p);
 const pct = (v, n) => (v / n * 100) + '%';
 
-export function has(src, mode){ const d=EYEFX[keyOf(src)]; return !!(d && (mode!=='tremble' || d.tr)); }
+export function has(src, mode){
+  const d=EYEFX[keyOf(src)]; if(!d) return false;
+  return mode==='tremble' ? !!d.tr : mode==='tear' ? !!d.te : false;
+}
 
 export function unbind(box){
   if(!box) return;
-  box.querySelectorAll(':scope > .ef-tr').forEach(e=>e.remove());
+  box.querySelectorAll(':scope > .ef-tr, :scope > .ef-te').forEach(e=>e.remove());
+}
+
+/* 淚眼汪汪（tear，ver -1947）：.ef-te 容器（不裁開口：水線要稍微蓋過下眼瞼）裡兩張 ——
+   .ef-water 下眼瞼的一汪水（緩慢晃、亮度起伏）、.ef-hl 眼裡的高光（輕輕閃）。動畫在 style.css。 */
+function bindTear(box, img, key, d){
+  const W = img.naturalWidth, H = img.naturalHeight, r = d.te;
+  const c = document.createElement('div'); c.className = 'ef-te';
+  c.dataset.key = key; c.dataset.mode = 'tear';
+  c.style.left = pct(r[0], W); c.style.top = pct(r[1], H);
+  c.style.width = pct(r[2], W); c.style.height = pct(r[3], H);
+  for(const [cls, suf] of [['ef-water','water'], ['ef-hl','hl']]){
+    const e = document.createElement('img'); e.className = cls; e.alt = '';
+    e.src = url(DIR + key + '_te_' + suf + '.webp');
+    c.appendChild(e);
+  }
+  box.insertBefore(c, box.querySelector(':scope > .sp-blink'));
 }
 
 export function bind(box, img, mode){
   if(!box || !img) return;
   const key = keyOf(img.getAttribute('src')), d = EYEFX[key];
-  const cur = box.querySelector(':scope > .ef-tr');
+  const cur = box.querySelector(':scope > .ef-tr, :scope > .ef-te');
   if(cur && cur.dataset.key===key && cur.dataset.mode===mode) return;
   unbind(box);
+  if(mode==='tear' && d && d.te && img.naturalWidth){ bindTear(box, img, key, d); return; }
   if(mode!=='tremble' || !d || !d.tr || !img.naturalWidth) return;
   const W = img.naturalWidth, H = img.naturalHeight, r = d.tr;
   const c = document.createElement('div'); c.className = 'ef-tr';

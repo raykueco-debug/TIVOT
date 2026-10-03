@@ -3003,7 +3003,16 @@
   .ef-tr > .ef-iris{ animation:efTremble var(--tr-sec) steps(1, end) infinite; }
   #storyCast .story-portrait.on > .ef-tr, #tutCast .tut-portrait.in > .ef-tr{
     animation:brHead var(--br-sec) ease-in-out var(--br-delay) infinite; }
-  @media (prefers-reduced-motion: reduce){ .ef-tr, .ef-tr > .ef-iris{ animation:none !important; } }
+  /* 淚眼汪汪（ver -1947）：水線慢慢晃（上下 0.3px＋亮度起伏）、高光輕閃；容器同樣跟著頭呼吸。 */
+  .ef-te{ position:absolute; pointer-events:none; }
+  .ef-te > img{ position:absolute; left:0; top:0; width:100%; height:100%; display:block; max-width:none; pointer-events:none; }
+  @keyframes efWater{ 0%,100%{ translate:0 0; opacity:.85; } 50%{ translate:0 -.3px; opacity:1; } }
+  @keyframes efGlint{ 0%,100%{ opacity:.8; } 40%{ opacity:1; } 70%{ opacity:.9; } }
+  .ef-te > .ef-water{ animation:efWater 1.9s ease-in-out infinite; }
+  .ef-te > .ef-hl{ animation:efGlint 1.3s ease-in-out infinite; }
+  #storyCast .story-portrait.on > .ef-te, #tutCast .tut-portrait.in > .ef-te{
+    animation:brHead var(--br-sec) ease-in-out var(--br-delay) infinite; }
+  @media (prefers-reduced-motion: reduce){ .ef-tr, .ef-tr > .ef-iris, .ef-te, .ef-te > img{ animation:none !important; } }
   /* 眨眼補丁（modules/blink.js；劇情頁 .story-portrait 與戰鬥對白 .tut-portrait 共用）：
      位置與大小是 inline 的原圖百分比，只切 visibility —— 不做淡入淡出（一格 45~85ms，淡了就看不出眨眼）。 */
   .sp-blink{position:absolute;pointer-events:none;display:block;visibility:hidden;max-width:none;}
