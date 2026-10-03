@@ -393,7 +393,10 @@ def hair_alpha(rgb, pal, skin, M, eyes, pad=14, tol=48, soft=22, keeps=(), segk=
         # 模型說是頭髮的一律蓋回原圖（顏色規則認不出的陰影暗髮束就靠這一條；
         # 它已經扣掉貼著眼睛的那一圈，蓋回去的地方本來就沒被眨眼改到）
         if segk is not None:
-            a = np.maximum(a, segk[y0:y1, x0:x1].astype(np.float32))
+            # 還要顏色大致像頭髮（放寬的容許值）：髮絲蓋在眼睛上時，旁邊的虹膜也常被分割判成頭髮，
+            # 不擋的話墨綠的虹膜會被當頭髮蓋回去，閉眼時吊著一塊（unbraid）
+            loose = np.clip((tol * 1.8 + soft - dh) / soft, 0, 1)
+            a = np.maximum(a, segk[y0:y1, x0:x1].astype(np.float32) * loose)
         A[y0:y1, x0:x1] = np.maximum(A[y0:y1, x0:x1], a)
     return A
 
@@ -507,6 +510,12 @@ def frame(rgb, eye, s, skinfill):
         hcol = min(float(eye['h'][i]) + 1.0, hc)
         rw = np.clip(hcol + 1.5 - k, 0, 1)
         al = np.clip((Ls - 25 - Lb) / 70.0, 0, 1) * hue * rw
+        # 虹膜邊緣很暗的墨綠／深藍會被當成睫毛一起搬下來，閉眼時吊著幾塊顏色（unbraid）——
+        # 睫毛是棕黑（R ≥ G），綠或藍明顯多過紅的不算睫毛
+        # 門檻：R 至少要跟 G/B 差不多（−4 以內開始淡、R≥G+2 才算全量）；橄欖色（R≈G）的暗虹膜邊緣也排掉
+        gate = np.clip((band[:, 0] - np.maximum(band[:, 1], band[:, 2]) + 4) / 6.0, 0, 1)
+        gate = np.maximum(gate, np.clip((60 - Lb) / 20.0, 0, 1))   # 接近黑的（灰黑睫毛：米夏、安雅）一律算睫毛
+        al = al * gate
         if SH:
             sh = np.clip(1 - (k - (hc + 1.5)) / SH, 0, 1) * (k >= hc + 1.5) * 0.85   # 陰影帶：漸淡
             al = np.maximum(al, sh)
@@ -546,6 +555,19 @@ def frame(rgb, eye, s, skinfill):
         pad_ = np.pad(Aal, ((2, 2), (0, 0)), mode='edge')
         med = np.median(np.stack([pad_[j:j + len(Aal)] for j in range(5)]), 0)
         Aal = np.minimum(Aal, med)
+        # 下緣抹平（Ray 10-03：「unbraid、commandsoft 睫毛鋸齒」）：原圖下緣一根根的睫毛搬下來，
+        # 每欄厚度不同 ⇒ 梳齒狀。量每一欄的下緣（alpha>0.5 的最後一列），橫向取中位數（寬 9），
+        # 超出平滑下緣的削掉，邊上留 1px 柔邊。
+        nb = len(Aal)
+        bot = np.array([(np.where(a > 0.5)[0][-1] if (a > 0.5).any() else -1) for a in Aal], np.float32)
+        okb = bot >= 0
+        if okb.sum() >= 3:
+            bi = np.where(okb, bot, np.interp(np.arange(nb), np.where(okb)[0], bot[okb]))
+            padb = np.pad(bi, 4, mode='edge')
+            bs = np.median(np.stack([padb[j:j + nb] for j in range(9)]), 0)
+            kk = np.arange(Aal.shape[1])[None, :]
+            cut = np.clip(bs[:, None] + 1.0 - kk, 0, 1)        # 平滑下緣以下：0；下緣那一列：柔邊
+            Aal = Aal * cut
         lash = [(x, top, band, Aal[j]) for j, (x, top, band, _) in enumerate(lash)]
     # ③ 睫毛（＋半閉的陰影帶）貼到新位置
     for x, top, band, al in lash:
@@ -649,6 +671,15 @@ def main():
             cur = frame(cur, e, s, fills[id(e)])
         a3 = HA[..., None]
         cur = cur * (1 - a3) + rgb.astype(np.float32) * a3     # 原圖的頭髮蓋回最上層
+        # 臉的輪廓線與臉外的頭髮一律不准動（Ray 10-03：「stare 右眼吃到臉外頭髮，有一塊糊，幾乎都有這個狀況」）——
+        # 遠側那隻眼的外眼角常貼著臉的輪廓線，補丁範圍伸過去就把輪廓線抹掉。分割的頭髮類往外 2px（含輪廓線），扣掉眼睛類。
+        if seg is not None:
+            Iall = np.zeros(seg.shape, bool)
+            for e in eyes:
+                Iall |= e['I'] | e['M']
+            # ⚠ 眼睛內部（上下眼瞼之間＋要改的遮罩）不保護：橫過眼睛的髮絲旁邊就是虹膜，保護下去閉眼會吊著一塊虹膜（unbraid）
+            prot = _dil(seg == SEG_HAIR, 2) & ~(seg == SEG_EYE) & ~_dil(Iall, 1)
+            cur[prot] = rgb[prot]
         p, (x, y, w, h) = patch(rgb, cur)
         p.save(os.path.join(od, key + '.png'))
         meta[key] = dict(x=x, y=y, w=w, h=h, src=key + '.png')

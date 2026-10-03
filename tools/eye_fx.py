@@ -30,12 +30,21 @@ def src_of(name):
     raise SystemExit('找不到立繪 ' + name)
 
 
-def opening_of(e, shape):
-    """睫毛線（t+h）以下、下眼瞼（b）以上 ＝ 看得到眼球的地方。"""
+def opening_of(e, shape, seg=None):
+    """睫毛線（t+h）以下、看得到眼球的地方。
+    有分割圖時下界用「分割的眼睛類」（Ray 10-03：「瞳顫要全眼，現在看起來只有上半眼球在抖」——
+    逐欄偵測的下緣 b 常常停在虹膜中段，下半顆眼球就沒進開口）；沒有才退回 b。"""
     O = np.zeros(shape, bool)
+    EY = (seg == B.SEG_EYE) if seg is not None else None
     for i, xr in enumerate(e['xs']):
         x = e['x0'] + int(xr)
         y0 = int(round(e['y0'] + e['t'][i] + e['h'][i] + 0.5))
+        if EY is not None:
+            rows = np.where(EY[:, x])[0]
+            rows = rows[rows >= y0]
+            if len(rows):
+                O[y0:rows[-1] + 1, x] = True
+                continue
         y1 = int(round(e['y0'] + e['b'][i] - 1))
         if y1 > y0:
             O[y0:y1, x] = True
@@ -86,7 +95,7 @@ def main():
     eyes = [B.analyse(rgb, b, seg, hs) for b in boxes]
     O = np.zeros((H, W), bool)
     for e in eyes:
-        O |= opening_of(e, (H, W))
+        O |= opening_of(e, (H, W), seg)
     if seg is not None:   # 只留模型判成眼睛的地方（逐欄算的開口會把眼角外的皮膚也算進去）
         O &= nd.binary_dilation(seg == B.SEG_EYE, iterations=1)
     O = nd.binary_opening(O, iterations=1)
@@ -94,7 +103,8 @@ def main():
     L = B.lum(f); sat = f.max(-1) - f.min(-1)
     # 眼白＝低飽和、不太暗（上眼皮的陰影眼白偏灰紫，也算眼白 —— 只看亮度會被當成虹膜）
     sclera = O & (L > 120) & (sat < 45)
-    irisraw = O & ~sclera
+    # 找虹膜時先把開口往內縮 2px：上下眼瞼線、下睫毛都貼在開口邊上，縮掉就不會黏進虹膜那一塊
+    irisraw = nd.binary_erosion(O, iterations=2) & ~sclera
     lab, k = nd.label(irisraw)
     if not k:
         raise SystemExit('找不到虹膜')
@@ -104,12 +114,13 @@ def main():
     ell = np.zeros((H, W), bool)        # 完整的橢圓（看不到的部分用擴散補）
     yy, xx = np.mgrid[0:H, 0:W]
     for e in eyes:
-        oe = opening_of(e, (H, W))
+        oe = opening_of(e, (H, W), seg)
         ids = np.unique(lab[oe & irisraw]); ids = ids[ids > 0]
         if not len(ids):
             continue
         j = ids[np.argmax(sz[ids - 1])]
-        comp = nd.binary_fill_holes(lab == j) & O
+        comp = nd.binary_fill_holes(lab == j)
+        comp = nd.binary_dilation(comp, iterations=2) & O & ~sclera     # 擴回 2px（虹膜外框）
         rows = np.where(comp.any(1))[0]
         wid = np.array([comp[r].sum() for r in rows])
         rc = rows[int(np.argmax(wid))]
@@ -119,9 +130,12 @@ def main():
         E = ((xx - cx) / (rx + 0.5)) ** 2 + ((yy - cy) / (ry + 0.5)) ** 2 <= 1
         # 虹膜邊上的白色反光會被判成眼白、又沒被外框圍住 ⇒ 用縮小 8% 的橢圓補進來（抖動時反光跟著動）
         Es = ((xx - cx) / (rx * 0.92)) ** 2 + ((yy - cy) / (ry * 0.92)) ** 2 <= 1
-        comp = nd.binary_fill_holes(comp | (Es & O))
+        Eb = ((xx - cx) / (rx * 1.15)) ** 2 + ((yy - cy) / (ry * 1.15)) ** 2 <= 1
+        comp = nd.binary_fill_holes((comp | (Es & O)) & Eb)    # 虹膜不准超出放大 15% 的橢圓
         iris |= comp
         ell |= E | comp        # 擬合不準時也要把原圖的虹膜整塊包進來（原位才不會留一塊灰）
+        # 開口扣掉橢圓外的暗線（下眼瞼線、下睫毛）：它們留在原圖上、蓋在虹膜上面，虹膜往下抖不會蓋過下眼瞼
+        O &= ~(~Eb & (L < 110) & oe)
     # 開口的框（兩眼合起來）＋ 抖動餘裕
     ys, xs = np.where(O)
     PAD = 4
