@@ -8,6 +8,10 @@
 頭髮連在一起），填膚色時當成未知區，最後用**原圖**的頭髮蓋回去，所以眨眼時髮絲不會糊。
 
 用法：
+  python3 tools/blink_patch.py resources/si/renna_si_front.webp --out <目錄>
+    先在 .venv-face 跑 tools/face_parse.py <圖名>（臉部分割），這支會自動讀
+    tools/_blink_seg/<圖名>/classes_s1.6.png：眼框自動找、膚色取臉類、模型判成頭髮的
+    自動當保留框。沒有分割圖時要手給 --eye（舊作法，--no-seg 可強制走舊作法對照）：
   python3 tools/blink_patch.py resources/si/renna_si_front.webp \
       --eye 480,100,522,126 --eye 540,118,578,144 --out <目錄>
 
@@ -36,17 +40,120 @@ def smooth(v, k=2):
     return out
 
 
-def analyse(rgb, box):
-    """回傳這一隻眼睛在 box 裡的逐欄資料：上緣 t、下緣 b、睫毛厚 h、膚色、眼睛遮罩。"""
+# ── 臉部分割（tools/face_parse.py 的輸出）────────────────────────────
+# 類別：0 背景 1 頭髮 2 眼睛 3 嘴 4 臉 5 皮膚 6 衣服；255＝裁切框外。
+# 模型的解析度大約是原圖 1:1，邊界會差 1~2px，而且**橫過臉的細髮絲常被判成臉** ——
+# 所以它只負責「大範圍」：眼框在哪、哪一大片是頭髮；細髮絲照舊由顏色規則補。
+SEG_HAIR, SEG_EYE, SEG_FACE = 1, 2, 4
+
+
+def load_seg(path, shape):
+    c = np.array(Image.open(path))
+    if c.shape != tuple(shape[:2]):
+        raise SystemExit(f'分割圖尺寸 {c.shape} 與原圖 {shape[:2]} 不符：{path}')
+    return c
+
+
+def _dil(m, r):
+    return np.array(Image.fromarray(m.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(2 * r + 1))) > 0
+
+
+def _ero(m, r):
+    return np.array(Image.fromarray(m.astype(np.uint8) * 255).filter(ImageFilter.MinFilter(2 * r + 1))) > 0
+
+
+def seg_hair_core(seg):
+    """模型判成頭髮、而且離眼睛類至少 2px 的像素（邊界會差 1~2px，貼著睫毛的那一圈不算）。"""
+    return _ero(seg == SEG_HAIR, 1) & ~_dil(seg == SEG_EYE, 2)
+
+
+def seg_skin(rgb, seg, box):
+    """眼框外一圈的「臉」類像素中位數（比框上下兩列準：那兩列常常碰到頭髮或眉毛）。"""
+    x0, y0, x1, y1 = box
+    H, W = seg.shape
+    r = np.zeros(seg.shape, bool)
+    r[max(0, y0 - 8):min(H, y1 + 8), max(0, x0 - 8):min(W, x1 + 8)] = True
+    r[y0:y1, x0:x1] = False
+    m = r & _ero(seg == SEG_FACE, 1)
+    if m.sum() < 40:
+        return None
+    px = rgb[m].astype(np.float32)
+    L = lum(px)
+    px = px[L > np.percentile(L, 35)]          # 去掉陰影與線稿，留平塗的膚色
+    return np.median(px, axis=0)
+
+
+def seg_lid_skin(rgb, seg, box):
+    """眼皮該有的顏色：眼框**兩側、與上半部同高**的「臉」類像素中位數。
+    瀏海壓著的那一帶皮膚本來就在陰影裡 —— 拿整張臉的亮膚色會亮出一塊（諾薇兒踩過）。"""
+    x0, y0, x1, y1 = box
+    H, W = seg.shape
+    ym = (y0 + y1) // 2
+    r = np.zeros(seg.shape, bool)
+    r[max(0, y0 - 4):ym, max(0, x0 - 12):x0] = True
+    r[max(0, y0 - 4):ym, x1:min(W, x1 + 12)] = True
+    m = r & _ero(seg == SEG_FACE, 1)
+    if m.sum() < 12:
+        return None
+    px = rgb[m].astype(np.float32)
+    L = lum(px)
+    px = px[L > np.percentile(L, 20)]          # 去掉線稿
+    return np.median(px, axis=0)
+
+
+def seg_eyes(seg, pad=(3, 6, 3, 5)):
+    """從眼睛類找兩隻眼睛的框（左、上、右、下各外擴 pad）。
+    取最大的連通塊，第二塊要有最大塊的 1/4 以上、而且高度落在同一帶 —— 側臉只剩一隻就回一個。"""
+    from scipy import ndimage as nd
+    lab, k = nd.label(seg == SEG_EYE)
+    if k == 0:
+        return []
+    sz = nd.sum(np.ones_like(lab), lab, range(1, k + 1))
+    order = np.argsort(-sz)
+    sl = nd.find_objects(lab)
+    boxes = []
+    big = sz[order[0]]
+    for i in order[:4]:
+        if sz[i] < big * 0.25:
+            break
+        ys, xs = sl[i]
+        bx = (xs.start - pad[0], ys.start - pad[1], xs.stop + pad[2], ys.stop + pad[3])
+        if boxes:
+            b0 = boxes[0]
+            h0 = b0[3] - b0[1]
+            if abs((bx[1] + bx[3]) / 2 - (b0[1] + b0[3]) / 2) > h0 * 1.6:
+                continue
+        boxes.append(tuple(int(v) for v in bx))
+        if len(boxes) == 2:
+            break
+    return sorted(boxes)
+
+
+def analyse(rgb, box, seg=None, hs=None):
+    """回傳這一隻眼睛在 box 裡的逐欄資料：上緣 t、下緣 b、睫毛厚 h、膚色、眼睛遮罩。
+    seg＝臉部分割的類別圖、hs＝seg_hair_core(seg)（整張圖座標）；有的話膚色取眼睛周圍的
+    「臉」類、睫毛偵測排除模型判成頭髮的像素（陰影裡的暗髮束不再被當成睫毛）。"""
     x0, y0, x1, y1 = box
     roi = rgb[y0:y1, x0:x1].astype(np.float32)
     L = lum(roi)
     ring = np.concatenate([roi[0], roi[-1]])
     skin = np.median(ring, axis=0)
+    hairseg = None
+    lid = None
+    if seg is not None:
+        sk = seg_skin(rgb, seg, box)
+        if sk is not None:
+            skin = sk
+        lid = seg_lid_skin(rgb, seg, box)
+        hairseg = hs[y0:y1, x0:x1]
+    if lid is None:
+        lid = skin * 0.94
     Ls = lum(skin[None])[0]
     dist = np.sqrt(((roi - skin) ** 2).sum(-1))
     green = roi[..., 1] - np.maximum(roi[..., 0], roi[..., 2])
     dark = L < min(Ls - 70, 105)               # 睫毛是真的暗；淡色頭髮的線條（安雅）不算
+    if hairseg is not None:
+        dark &= ~hairseg
     eyeish = (dist > 26) | (L > Ls + 6)          # 非膚色，或比膚色亮（眼白）
     H, W = L.shape
     t = np.full(W, -1.0); b = np.full(W, -1.0); h = np.zeros(W)
@@ -126,7 +233,7 @@ def analyse(rgb, box):
     tp = np.polyval(np.polyfit(xf, tt, 2), xf); bp = np.polyval(np.polyfit(xf, bb, 2), xf)
     for i, xr in enumerate(xs):
         I[int(round(y0 + tp[i])):int(round(y0 + max(bp[i], bb[i]))) + 1, x0 + int(xr)] = True
-    return dict(x0=x0, y0=y0, xs=xs, t=tt, b=bb, h=hh, skin=skin, Ls=Ls, M=M, I=I)
+    return dict(x0=x0, y0=y0, xs=xs, t=tt, b=bb, h=hh, skin=skin, lid=lid, Ls=Ls, M=M, I=I)
 
 
 def kmeans(a, k, iters=15, seed=0):
@@ -166,7 +273,7 @@ def hair_palette(arr, eyes, skin):
     return c[keep]
 
 
-def hair_alpha(rgb, pal, skin, M, eyes, pad=14, tol=48, soft=22, keeps=()):
+def hair_alpha(rgb, pal, skin, M, eyes, pad=14, tol=48, soft=22, keeps=(), segk=None):
     """回傳整張圖大小的頭髮 alpha（0~1）。只在眼框外擴 pad 的範圍內算。
     條件：顏色接近某一種髮色、比膚色更像頭髮，而且**連到眼框外的頭髮**
     （眼白／虹膜被睫毛線圍住，連不出去 —— 白髮角色才不會把眼白當頭髮）。"""
@@ -194,6 +301,9 @@ def hair_alpha(rgb, pal, skin, M, eyes, pad=14, tol=48, soft=22, keeps=()):
         K = np.zeros(Ie.shape, bool)
         for kx0, ky0, kx1, ky1 in keeps:
             K[max(0, ky0 - y0):max(0, ky1 - y0), max(0, kx0 - x0):max(0, kx1 - x0)] = True
+        # 分割模型判成頭髮的（已扣掉貼著眼睛類的那一圈）＝自動的保留框
+        if segk is not None:
+            K |= segk[y0:y1, x0:x1]
         Ie &= ~K
         a = np.where(Ie, np.minimum(a, strict), a)
         # 填色區的其他地方（睫毛上緣那一圈）：要比起眼睛的顏色（含睫毛的棕）更像頭髮 ——
@@ -211,7 +321,12 @@ def hair_alpha(rgb, pal, skin, M, eyes, pad=14, tol=48, soft=22, keeps=()):
                 if 0 <= ny < H and 0 <= nx < W and core[ny, nx] and not seen[ny, nx]:
                     seen[ny, nx] = True; q.append((ny, nx))
         conn = np.array(Image.fromarray(seen.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(3))) > 0
-        A[y0:y1, x0:x1] = np.maximum(A[y0:y1, x0:x1], a * conn)
+        a = a * conn
+        # 模型說是頭髮的一律蓋回原圖（顏色規則認不出的陰影暗髮束就靠這一條；
+        # 它已經扣掉貼著眼睛的那一圈，蓋回去的地方本來就沒被眨眼改到）
+        if segk is not None:
+            a = np.maximum(a, segk[y0:y1, x0:x1].astype(np.float32))
+        A[y0:y1, x0:x1] = np.maximum(A[y0:y1, x0:x1], a)
     return A
 
 
@@ -296,7 +411,10 @@ def frame(rgb, eye, s, skinfill):
         hue = np.maximum(np.clip((band[:, 0] - band[:, 1] - 6) / 8.0, 0, 1),   # 睫毛偏紅棕、虹膜暗部 R−G≈5
                          np.clip((45 - Lb) / 20.0, 0, 1))                  # 極暗的一律算睫毛（線芯）
         k = np.arange(BH)
-        rw = np.clip(hc + 1.5 - k, 0, 1)                                    # 睫毛那幾列
+        # 睫毛那幾列：用這一欄自己量到的厚度（上限是全體的 hc）—— 一律用 hc 的話，
+        # 睫毛比較薄的那幾欄會把底下的虹膜暗部一起帶下去，閉眼時變成往下滴的黑點
+        hcol = min(float(eye['h'][i]) + 1.0, hc)
+        rw = np.clip(hcol + 1.5 - k, 0, 1)
         al = np.clip((Ls - 25 - Lb) / 70.0, 0, 1) * hue * rw
         if SH:
             sh = np.clip(1 - (k - (hc + 1.5)) / SH, 0, 1) * (k >= hc + 1.5) * 0.85   # 陰影帶：漸淡
@@ -330,6 +448,14 @@ def frame(rgb, eye, s, skinfill):
     # 拉伸出來的眼皮做水平平滑（在畫睫毛之前，睫毛才不會被抹糊）
     out = hsmooth(out, lidm)
     out = poisson_blend(out, skinfill, wm)
+    # 睫毛 alpha 做水平中值（寬 5）：只有一兩欄往下突出的尖刺＝閉眼時往下滴的黑點，
+    # 連續的睫毛線不受影響。只能壓低、不能抬高（取兩者較小）。
+    if lash:
+        Aal = np.stack([l[3] for l in lash])           # n×BH
+        pad_ = np.pad(Aal, ((2, 2), (0, 0)), mode='edge')
+        med = np.median(np.stack([pad_[j:j + len(Aal)] for j in range(5)]), 0)
+        Aal = np.minimum(Aal, med)
+        lash = [(x, top, band, Aal[j]) for j, (x, top, band, _) in enumerate(lash)]
     # ③ 睫毛（＋半閉的陰影帶）貼到新位置
     for x, top, band, al in lash:
         for yo in range(int(np.floor(top)), int(np.ceil(top + BH)) + 1):
@@ -374,7 +500,9 @@ def patch(orig, new, pad=2):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('src')
-    ap.add_argument('--eye', action='append', required=True, help='x0,y0,x1,y1（原圖像素）')
+    ap.add_argument('--eye', action='append', default=[], help='x0,y0,x1,y1（原圖像素）；不給就由分割自動找')
+    ap.add_argument('--seg', default='auto', help='分割類別圖；auto＝tools/_blink_seg/<圖名>/classes_s1.6.png（有就用）')
+    ap.add_argument('--no-seg', action='store_true', help='不用分割（舊的純顏色規則，對照用）')
     ap.add_argument('--out', required=True)
     ap.add_argument('--face', help='驗收圖的裁切框 x0,y0,x1,y1（預設：兩眼外擴）')
     ap.add_argument('--no-hair', action='store_true', help='關掉頭髮保護（對照用）')
@@ -384,8 +512,26 @@ def main():
     im = Image.open(A.src).convert('RGBA')
     arr = np.array(im)
     rgb = arr[..., :3]
-    eyes = [analyse(rgb, tuple(int(v) for v in e.split(','))) for e in A.eye]
     name = os.path.splitext(os.path.basename(A.src))[0]
+    seg = hs = None
+    if not A.no_seg:
+        sp = A.seg
+        if sp == 'auto':
+            sp = os.path.join(os.path.dirname(os.path.abspath(__file__)), '_blink_seg', name, 'classes_s1.6.png')
+            if not os.path.exists(sp):
+                sp = None
+        if sp:
+            seg = load_seg(sp, arr.shape)
+            hs = seg_hair_core(seg)
+    boxes = [tuple(int(v) for v in e.split(',')) for e in A.eye]
+    if not boxes:
+        if seg is None:
+            raise SystemExit('沒有 --eye，也沒有分割圖（先在 .venv-face 跑 tools/face_parse.py ' + name + '）')
+        boxes = seg_eyes(seg)
+        print('自動眼框', ' '.join('--eye ' + ','.join(map(str, b)) for b in boxes))
+        if not boxes:
+            raise SystemExit('分割圖裡找不到眼睛')
+    eyes = [analyse(rgb, b, seg, hs) for b in boxes]
     od = os.path.join(A.out, name); os.makedirs(od, exist_ok=True)
     frames = {}
     skin = np.median(np.stack([e['skin'] for e in eyes]), 0)
@@ -393,10 +539,15 @@ def main():
     for e in eyes:
         Mall |= e['M']
     pal = [] if A.no_hair else hair_palette(arr, eyes, skin)
-    HA = hair_alpha(rgb, np.array(pal, np.float32).reshape(-1, 3), skin, Mall, eyes, keeps=[tuple(int(v) for v in k.split(',')) for k in A.keep]) if len(pal) else np.zeros(rgb.shape[:2], np.float32)
+    HA = hair_alpha(rgb, np.array(pal, np.float32).reshape(-1, 3), skin, Mall, eyes, keeps=[tuple(int(v) for v in k.split(',')) for k in A.keep], segk=hs) if len(pal) else np.zeros(rgb.shape[:2], np.float32)
     # 填膚色時，眼框裡的頭髮也當成未知（不然髮色會被擴散進皮膚）
     hard = (HA > 0.04) & (np.array(Image.fromarray(Mall.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5))) > 0)
     fills = {id(e): harmonic_fill(rgb.astype(np.float32), e['M'] | hard) for e in eyes}
+    # 瀏海直接壓在睫毛上（諾薇兒）：眼皮的拉伸來源整片是頭髮，擴散填色會得到偏髮色的
+    # 一塊補丁。來源是頭髮的地方一律換成這隻眼睛的膚色 —— 頭髮最後照樣由原圖蓋回最上層。
+    for e in eyes:
+        f = fills[id(e)]
+        f[HA > 0.3] = e['lid']
     meta = {'w': im.width, 'h': im.height}
     for key, s in (('half', HALF_S), ('closed', CLOSED_S)):
         cur = rgb.astype(np.float32)
