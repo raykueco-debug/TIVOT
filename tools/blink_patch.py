@@ -23,7 +23,7 @@
 """
 import argparse, json, os
 import numpy as np
-from PIL import Image, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter
 
 HALF_S, CLOSED_S = 0.45, 0.92     # 眼瞼線移到（眼高−睫毛厚）的幾成
 
@@ -268,6 +268,22 @@ def analyse(rgb, box, seg=None, hs=None):
     tp = np.polyval(np.polyfit(xf, tt, 2), xf); bp = np.polyval(np.polyfit(xf, bb, 2), xf)
     for i, xr in enumerate(xs):
         I[int(round(y0 + tp[i])):int(round(y0 + max(bp[i], bb[i]))) + 1, x0 + int(xr)] = True
+    # ══ 第 1 層（Ray 10-03：「evaluate 右眼閉眼糊出去一大塊」）══ 要改的範圍 M 與眼瞼之間 I 只准在臉／眼睛裡：
+    # M 是用顏色往外長的，遠側那隻眼會越過臉的輪廓長進頭髮；全閉時 M 裡睫毛線以下整塊塗成膚色 ⇒ 頭髮被塗成一塊皮。
+    # 分割判成頭髮或背景的地方（貼著眼睛類 1px 以內除外）一律不准進來。
+    if segmap is not None:
+        outside = (segmap == SEG_HAIR) | (segmap == 0)
+        # I（上下眼瞼之間）只留「這一欄真的有眼睛類」的欄（左右各寬 2）：遠側眼的睫毛欄會伸過臉的輪廓
+        EYm = segmap == SEG_EYE
+        # 這隻眼（框內）眼睛類的最左～最右整段欄位（髮絲蓋住、中間沒判出眼睛的欄也算），左右各寬 2
+        ec = np.where(EYm[y0:y1, max(0, x0 - 4):x1 + 4].any(0))[0]
+        if len(ec):
+            eyecols = np.zeros(rgb.shape[1], bool)
+            eyecols[max(0, x0 - 4) + ec[0] - 2: max(0, x0 - 4) + ec[-1] + 3] = True
+            I &= eyecols[None, :]
+        # M：在臉／眼睛裡，或在 I 裡（髮絲橫過眼睛時，底下的虹膜被判成頭髮，那些還是要抹掉 —— unbraid）
+        keep = ~outside | _dil(EYm, 1) | I
+        M &= keep
     # 眼角（上下眼瞼交會處）：分割的眼睛類最左／最右 3 欄的平均高度（box 座標）。閉眼線就拉在兩個眼角之間。
     corners = None
     if segmap is not None:
@@ -279,7 +295,14 @@ def analyse(rgb, box, seg=None, hs=None):
                 ys_ = [np.where(EYb[:, c])[0].mean() for c in cs]
                 return float(np.mean(ys_))
             corners = ((ex0 + cols[0] - x0, cy(cols[:3])), (ex0 + cols[-1] - x0, cy(cols[-3:])))
-    return dict(x0=x0, y0=y0, xs=xs, t=tt, b=bb, h=hh, skin=skin, lid=lid, Ls=Ls, M=M, I=I, corners=corners)
+    # 眼底線（Ray 10-03：「眼外角好像也不對，用眼底線的話呢？」）：分割的眼睛類每一欄的最下緣（框座標）。
+    # 只取中間 90% 的欄，兩端是眼角的尖，最下緣會往上收、不算眼底線。
+    lower = None
+    if segmap is not None and corners is not None:
+        bx_ = ex0 + cols - x0
+        by_ = np.array([np.where(EYb[:, c])[0].max() for c in cols], float)
+        lower = (bx_.astype(float), by_)
+    return dict(lower=lower, x0=x0, y0=y0, xs=xs, t=tt, b=bb, h=hh, skin=skin, lid=lid, Ls=Ls, M=M, I=I, corners=corners)
 
 
 def kmeans(a, k, iters=15, seed=0):
@@ -440,7 +463,7 @@ def poisson_blend(guide, border, R, iters=500):
     return out
 
 
-def frame(rgb, eye, s, skinfill):
+def frame(rgb, eye, s, skinfill, fa=None):
     """s＝眼瞼線移到 t+(b-t-h)·s。skinfill＝眼睛與眼框內頭髮都抹成皮膚之後的圖。
 
     · 眼瞼皮膚：**把睫毛上方那幾列真的眼皮往下拉伸**到新的眼瞼線（動畫的閉眼就是上眼皮
@@ -468,7 +491,24 @@ def frame(rgb, eye, s, skinfill):
     eh = float(np.median(bb - t))                       # 眼高（中段）
     # 閉眼線＝兩個眼角（分割的眼睛類左右端）之間的連線 ＋ 一點往下的弧；斜率夾在 ±0.3。
     # ⚠ 第一版用「中段下眼瞼的直線擬合」：遠側那隻眼的下眼瞼常被頭髮陰影帶歪，擬合出一條陡斜線（蕾娜 apologize 右眼）。
-    if eye.get('corners'):
+    if fa is not None and id(eye) in fa.get('span', {}):
+        # Ray 10-03：閉眼線要跟著臉的角度 ⇒ 角度與彎度取「眼底線轉折點連線、以鼻樑為中心的弧」
+        # （向量重畫睫毛／擴散填色那一版試過、品質明顯較差，已撤；眼皮與睫毛仍搬原圖的像素）
+        xa_, xb_ = fa['span'][id(eye)]
+        xx = np.linspace(min(xa_, xb_), max(xa_, xb_), 200)
+        GX, GY = fa['to_img'](xx, 0.0)
+        GX = np.asarray(GX) - x0; GY = np.asarray(GY) - y0
+        o_ = np.argsort(GX)
+        arcy = np.interp(xf, GX[o_], GY[o_])
+        # 高度沿用舊版（兩眼角中點那條線），只換「角度與彎度」：弧整條平移到舊線的平均高度
+        if eye.get('corners'):
+            (ax, ay), (bx, by) = eye['corners']
+            base = (ay + by) / 2
+        else:
+            base = float(np.median(eye['b'])) - hc * 0.5
+        arcy = arcy - arcy.mean() + base
+        target = arcy + eh * 0.12 * np.sin(np.pi * u) - hc * 0.5
+    elif eye.get('corners'):
         (ax, ay), (bx, by) = eye['corners']
         k1 = (by - ay) / max(1.0, bx - ax)
         k1 = max(-0.3, min(0.3, k1))
@@ -586,6 +626,96 @@ def frame(rgb, eye, s, skinfill):
     return out
 
 
+def lower_fit(e):
+    """眼底線：二次擬合（框座標的點 → 整張圖座標）；回傳 (左端, 右端, 多項式係數, x 範圍)。"""
+    if not e.get('lower'):
+        return None
+    bx, by = e['lower']
+    n = len(bx)
+    if n < 8:
+        return None
+    k = max(1, int(n * 0.05))
+    bx, by = bx[k:n - k], by[k:n - k]
+    # 抗離群：先擬合、丟掉殘差最大的 15%，再擬合
+    c = np.polyfit(bx, by, 2)
+    res = np.abs(np.polyval(c, bx) - by)
+    ok = res <= np.quantile(res, 0.85)
+    c = np.polyfit(bx[ok], by[ok], 2)
+    xa, xb = float(bx[0]), float(bx[-1])
+    gx = lambda x: e['x0'] + x
+    gy = lambda x: e['y0'] + float(np.polyval(c, x))
+    return ((gx(xa), gy(xa)), (gx(xb), gy(xb)), c, (xa, xb))
+
+
+ARC_KAPPA = 0.08    # 弧的彎度：離鼻樑 D/2 處比鼻樑高 0.02·D（D＝兩轉折點距離）
+
+
+def turning_point(e):
+    """眼底線的轉折點：把眼底點切成兩段各自擬合直線，總誤差最小的切點（整張圖座標）。"""
+    if not e.get('lower'):
+        return None
+    bx, by = e['lower']
+    n = len(bx)
+    if n < 10:
+        return None
+    k = max(1, int(n * 0.05)); bx, by = bx[k:n - k], by[k:n - k]; n = len(bx)
+    best = None
+    for i in range(int(n * 0.2), int(n * 0.8)):
+        c1 = np.polyfit(bx[:i + 1], by[:i + 1], 1); c2 = np.polyfit(bx[i:], by[i:], 1)
+        sse = ((np.polyval(c1, bx[:i + 1]) - by[:i + 1]) ** 2).sum() + ((np.polyval(c2, bx[i:]) - by[i:]) ** 2).sum()
+        if best is None or sse < best[0]:
+            yb = (np.polyval(c1, bx[i]) + np.polyval(c2, bx[i])) / 2
+            best = (sse, bx[i], yb)
+    return (e['x0'] + float(best[1]), e['y0'] + float(best[2]))
+
+
+def face_arc(eyes, seg):
+    """Ray 10-03：「把眼底線轉折點連線，以鼻樑為中心畫成弧」。
+    弧＝對稱於鼻樑中線的拋物線 y＝c − k·x²（x 從鼻樑量起、沿臉的橫軸），鼻樑處最低、往兩側上彎；
+    k 固定（ARC_KAPPA/D），傾斜角 θ 解成「兩個轉折點都剛好落在弧上」。"""
+    E = sorted([e for e in eyes if e.get('lowfit')], key=lambda e: e['lowfit'][0][0])
+    if len(E) != 2:
+        return None
+    T = [turning_point(e) for e in E]
+    if None in T:
+        return None
+    P1, P2 = np.array(T[0]), np.array(T[1])
+    Li = np.array(E[0]['lowfit'][1]); Ri = np.array(E[1]['lowfit'][0])     # 內眼角（眼底線靠鼻端）
+    nose = (Li + Ri) / 2
+    warn = None
+    if seg is not None and (seg == 3).any():
+        my, mx = np.where(seg == 3)
+        mouth = np.array([mx.mean(), my.mean()])
+    else:
+        mouth = None
+    D = np.linalg.norm(P2 - P1)
+    k = ARC_KAPPA / D
+    def rot(P, th):
+        c_, s_ = np.cos(-th), np.sin(-th); d = P - nose
+        return np.array([c_ * d[0] - s_ * d[1], s_ * d[0] + c_ * d[1]])
+    best = None
+    for th in np.radians(np.arange(-45, 45, 0.05)):
+        a, b = rot(P1, th), rot(P2, th)
+        r = (a[1] + k * a[0] ** 2) - (b[1] + k * b[0] ** 2)
+        if best is None or abs(r) < abs(best[1]):
+            best = (th, r, a, b)
+    th, _, a, b = best
+    c = ((a[1] + k * a[0] ** 2) + (b[1] + k * b[0] ** 2)) / 2
+    if mouth is not None:
+        dm = rot(mouth, th)[0]
+        if abs(dm) > 0.15 * D:
+            warn = f'鼻樑（內眼角中點）與嘴中線差 {dm:.0f}px'
+    c2, s2 = np.cos(th), np.sin(th)
+    def to_img(x, lift):
+        y = c - k * x ** 2 - lift
+        return nose[0] + c2 * x - s2 * y, nose[1] + s2 * x + c2 * y
+    def xr(P):
+        return rot(np.array(P, float), th)[0]
+    return {'roll': float(np.degrees(th)), 'warn': warn, 'T': (P1, P2), 'nose': nose, 'to_img': to_img, 'xr': xr,
+            'span': {id(E[0]): (xr(E[0]['lowfit'][0]), xr(E[0]['lowfit'][1])),
+                     id(E[1]): (xr(E[1]['lowfit'][0]), xr(E[1]['lowfit'][1]))}}
+
+
 def hsmooth(img, m, r=2):
     """只在 m 裡做水平方向的盒狀平滑 —— 逐欄拉伸會把欄與欄的小差異放大成直條紋。"""
     out = img.copy()
@@ -664,11 +794,17 @@ def main():
     for e in eyes:
         f = fills[id(e)]
         f[HA > 0.3] = e['lid']
+    # 閉眼線的角度：眼底線轉折點連線、以鼻樑為中心的弧（只有兩隻眼都找得到時；否則退回兩眼角連線）
+    for e in eyes:
+        e['lowfit'] = lower_fit(e)
+    fa = face_arc(eyes, seg)
+    if fa:
+        print('face_arc roll %.1f°' % fa['roll'], fa['warn'] or '')
     meta = {'w': im.width, 'h': im.height}
     for key, s in (('half', HALF_S), ('closed', CLOSED_S)):
         cur = rgb.astype(np.float32)
         for e in eyes:
-            cur = frame(cur, e, s, fills[id(e)])
+            cur = frame(cur, e, s, fills[id(e)], fa)
         a3 = HA[..., None]
         cur = cur * (1 - a3) + rgb.astype(np.float32) * a3     # 原圖的頭髮蓋回最上層
         # 臉的輪廓線與臉外的頭髮一律不准動（Ray 10-03：「stare 右眼吃到臉外頭髮，有一塊糊，幾乎都有這個狀況」）——
@@ -676,9 +812,15 @@ def main():
         if seg is not None:
             Iall = np.zeros(seg.shape, bool)
             for e in eyes:
-                Iall |= e['I'] | e['M']
-            # ⚠ 眼睛內部（上下眼瞼之間＋要改的遮罩）不保護：橫過眼睛的髮絲旁邊就是虹膜，保護下去閉眼會吊著一塊虹膜（unbraid）
-            prot = _dil(seg == SEG_HAIR, 2) & ~(seg == SEG_EYE) & ~_dil(Iall, 1)
+                Iall |= e['I']
+            # ⚠ 眼睛內部（上下眼瞼之間）不保護：橫過眼睛的髮絲旁邊就是虹膜，保護下去閉眼會吊著一塊虹膜（unbraid）。
+            # ══ 第 2 層 ══ 以前連 M 一起排除 ⇒ M 越界長進頭髮的那段正好沒被保護（evaluate 右眼）。
+            # 現在只排除 I（第 1 層已把 I 裁在臉裡），背景也一起保護 ⇒ 閉眼線畫到臉的輪廓就停，輪廓外保持原圖。
+            # Ray 10-03：「色塊突出面部」⇒ 改動只准落在 臉／皮膚／眼睛 類上；
+            # 例外只有「眼瞼之間、被細髮絲蓋住而判成頭髮的虹膜」（頭髮 alpha 低的）—— 不抹掉的話閉眼會吊著一塊虹膜（unbraid）。
+            facek = (seg == SEG_EYE) | (seg == SEG_FACE) | (seg == 5)
+            allow = facek | (Iall & (seg == SEG_HAIR) & (HA < 0.3))
+            prot = ~allow
             cur[prot] = rgb[prot]
         p, (x, y, w, h) = patch(rgb, cur)
         p.save(os.path.join(od, key + '.png'))
@@ -706,6 +848,23 @@ def main():
         return bg.convert('RGB').resize((c.width * z, c.height * z), Image.LANCZOS)
 
     z = 4
+    if fa:
+        ov = crop('open', z); dr = ImageDraw.Draw(ov)
+        P = lambda q: ((q[0] - fb[0]) * z, (q[1] - fb[1]) * z)
+        for e in eyes:
+            if e.get('lower') is not None:
+                for xx, yy in zip(*e['lower']):
+                    x_, y_ = P((e['x0'] + xx, e['y0'] + yy)); dr.point((x_, y_), fill=(0, 255, 0))
+        xs_ = [v for sp in fa['span'].values() for v in sp]
+        xa = np.linspace(min(xs_) - 15, max(xs_) + 15, 120)
+        ax_, ay_ = fa['to_img'](xa, 0.0)
+        dr.line([P((ax_[i], ay_[i])) for i in range(len(xa))], fill=(0, 255, 255), width=3)
+        for q in fa['T']:
+            x_, y_ = P(q); dr.ellipse((x_ - 10, y_ - 10, x_ + 10, y_ + 10), outline=(255, 255, 0), width=4)
+        nx_, ny_ = fa['nose']; r_ = np.radians(fa['roll']); d = 60
+        dr.line([P((nx_ + np.sin(r_) * d, ny_ - np.cos(r_) * d)), P((nx_ - np.sin(r_) * d * 2, ny_ + np.cos(r_) * d * 2))], fill=(255, 0, 255), width=3)
+        dr.text((6, 6), 'roll %.1f' % fa['roll'], fill=(255, 255, 0))
+        ov.save(os.path.join(od, 'arc.png'))
     tiles = [crop(k, z) for k in ('open', 'half', 'closed')]
     sheet = Image.new('RGB', (tiles[0].width * 3 + 20, tiles[0].height), (20, 20, 24))
     for i, t in enumerate(tiles):
