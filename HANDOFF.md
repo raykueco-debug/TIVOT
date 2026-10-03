@@ -1,3 +1,13 @@
+> ⭐⭐⭐ **【眨眼・3070 接手】（10-03，Mac 程式 session → 交給 3070）**
+> · ✅ **ver -1928 已在 Mac 本機驗過**（390×844、8123 埠）：對位準、半閉／全閉無接縫；節奏每眨約 0.2 秒、間隔 3.6~6.1 秒、會連眨；別人說話時壓暗、補丁跟著暗、照樣眨。
+>   ⚠ 下面那段的測試指令要改成 `import('./modules/story.js?v=1928')`（不帶 `?v=` 會載到另一份模組實例，測的不是遊戲本身那份）。
+> · **下一步＝量產補丁（在 3070 的 `.venv-face` 跑分割）**。Mac 是 Intel、無 GPU，已放棄在 Mac 建環境（`.venv-face`／`_ext` 在 Mac 上是半成品，gitignore，不影響）。
+> · **挑批次**：`python3 tools/si_usage.py out.json` → 依劇本使用次數排序（實測 416 張裡 334 張有用到）。**照 Ray「小範圍多次」：一批 10~15 張，由排行最前面往下**，每批 commit。
+> · ⛔⛔ **Ray 定的不眨規則**：**die 系列**（`*_die`／`*_dead`）、**本來就沒畫眼睛的**（`*noeye*`、背影 `*_back`、臉被頭髮／手遮住）、**眼睛本來就閉著的**（`*close*`、`*sleep*`、笑瞇眼 ^^）**一律不做**。
+>   · 名字擋不完：跑完 `face_parse.py` 後**眼睛類（class 2）面積過小＝閉眼／沒眼，自動跳過**，剩下的再出總覽讓 Ray 掃一眼。
+>   · 已目視過排行前 36 張，**閉眼／沒眼（跳過）**：`renna_si_smile`、`nouvelle_si_awkwerd`、`anya_si_desperate`（沒眼）、`sorana_si_lauaghbig`、`renna_si_meltdown`（遮住）、`renna_si_bow`、`sorana_si_tire`、`npc/corvin_si_smile`。`renna_si_think` 是半垂眼，**可以眨**（眼皮從半閉起算，要確認工具的 half 不會比原圖還開）。37 名以後還沒看。
+> · 每張流程照下面那段：`face_parse.py <圖名>` → `blink_patch.py ... --seg ... --install` → 那一行貼進 `BLINK` → `py tools/script_lint.py`（`check_blink`）→ 實機看一次。
+
 > ⭐⭐ **【眨眼・接手先看這裡】（10-03 收工，雲端 session → 交給本機 session）**
 > · **現況**：分支 `claude/standing-art-blink-animation-ub7vw7` ＝ main（含 PR #1，ver -1927 立繪槽包外框）＋ **ver -1928 接上眨眼**（只有 `anya_si_front`，**還沒合進 main**）。
 > · **第一件事：本機驗 ver -1928**（Ray 指定用本機 server＋內建瀏覽器，**不要錄影／做網頁替代**）：
