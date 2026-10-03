@@ -35,6 +35,7 @@ import * as hap from './haptics.js';        // 畫面震動＝手上也震（§6
 import * as blink from './blink.js';        // 立繪眨眼（與劇情頁共用同一支）
 import * as sway from './sway.js';          // 髮梢擺動（同上）
 import * as breath from './breath.js';      // 呼吸：分段平移（同上）
+import * as eyefx from './eyefx.js';        // 眼部特效：瞳孔顫動（同上）
 
 const $ = id => document.getElementById(id);
 const CFG = () => GAME_CONFIG.tutorial;
@@ -781,7 +782,7 @@ export function tuneSetSide(who, side){
   const snap=el=>({ src:pimg(el).getAttribute('src'), ck:el.dataset.castKey, ik:el.dataset.imgKey, bk:el.dataset.baseKey,
                     on:el.classList.contains('in'), sp:el.classList.contains('speaking'), beat:el._beat });
   const put=(el,v)=>{
-    if(v.src) setPortraitSrc(el, v.src); else { blink.unbind(el); breath.unbind(el); sway.unbind(el); pimg(el).removeAttribute('src'); }
+    if(v.src) setPortraitSrc(el, v.src); else { blink.unbind(el); eyefx.unbind(el); breath.unbind(el); sway.unbind(el); pimg(el).removeAttribute('src'); }
     for(const [k,x] of [['castKey',v.ck],['imgKey',v.ik],['baseKey',v.bk]]){ if(x) el.dataset[k]=x; else delete el.dataset[k]; }
     el.classList.toggle('in', !!v.on); el.classList.toggle('speaking', !!v.sp); el._beat=v.beat;
   };
@@ -807,7 +808,7 @@ function portraitEl(c, key){
 function pimg(el){ return el ? el.querySelector('.tp-img') : null; }
 function setPortraitSrc(el, url){
   const im=pimg(el); if(!im) return;
-  if(im.getAttribute('src')!==url){ blink.unbind(el); breath.unbind(el); sway.unbind(el); im.src=url; }
+  if(im.getAttribute('src')!==url){ blink.unbind(el); eyefx.unbind(el); breath.unbind(el); sway.unbind(el); im.src=url; }
 }
 function blinkLive(el){ const w=$('tutCast'); return !!(el.classList.contains('in') && w && w.classList.contains('on')); }
 /* 眨眼節奏（ver -1938）：真相是 speakers.js 那一張立繪的 `blink`（差分自己寫的優先、再看角色層，沒寫＝one）。
@@ -828,6 +829,16 @@ function blinkModeOf(im){
   }
   return 'one';
 }
+/* speakers.js 那一張的某個欄位（差分自己寫的優先、再看角色層）。 */
+function artFieldOf(im, k, dflt){
+  const want=cleanSrc(im && im.getAttribute('src'));
+  for(const n of Object.keys(ART)){
+    const A=ART[n]; if(!A) continue;
+    if(cleanSrc(A.base)===want) return A[k] || dflt;
+    for(const e of Object.keys(A.expr||{})){ const v=A.expr[e]; if(v && typeof v==='object' && cleanSrc(v.src)===want) return v[k] || A[k] || dflt; }
+  }
+  return dflt;
+}
 export function tuneBlink(side, mode){
   const el = side==='right' ? $('tutCastR') : $('tutCastL'), im=pimg(el); if(!im) return;
   blinkLiveMode[cleanSrc(im.getAttribute('src'))]=mode;
@@ -837,7 +848,7 @@ export function tuneBlink(side, mode){
 export function blinkModeAt(side){ const el = side==='right' ? $('tutCastR') : $('tutCastL'); return blinkModeOf(pimg(el)); }
 for(const id of ['tutCastL','tutCastR']){
   const b=document.getElementById(id), im=pimg(b);
-  if(im) im.addEventListener('load', ()=>{ sway.bind(b, im); breath.bind(b, im, frameOf(b)); blink.bind(b, im, ()=>blinkLive(b), blinkModeOf(im)); });
+  if(im) im.addEventListener('load', ()=>{ sway.bind(b, im); breath.bind(b, im, frameOf(b)); eyefx.bind(b, im, artFieldOf(im, 'eyeFx', 'none')); blink.bind(b, im, ()=>blinkLive(b), blinkModeOf(im)); });
 }
 /* 依步驟台詞決定在場立繪：只有一個人說話的段落（如罵人插話）不出現另一名角色。
  * .in 逐立繪掛在 img 上（CSS transition 滑入/滑出）；段落接續（queue）時差異更新即可。 */
@@ -1399,7 +1410,7 @@ function closeDialog(resume, silent){
   if(bubble) setTimeout(()=>{ if(!state.tutorialDialog) bubble.classList.remove('on'); }, 500);
   if(wrap){
     const L=$('tutCastL'), R=$('tutCastR');
-    for(const el of [L,R]){ if(el){ el.classList.remove('in','speaking','center'); blink.unbind(el); breath.unbind(el); sway.unbind(el); } }   // 立繪滑出（眨眼一起收）
+    for(const el of [L,R]){ if(el){ el.classList.remove('in','speaking','center'); blink.unbind(el); eyefx.unbind(el); breath.unbind(el); sway.unbind(el); } }   // 立繪滑出（眨眼一起收）
     setTimeout(()=>{ if(!state.tutorialDialog) wrap.classList.remove('on'); }, 500);
   }
   if(resume){

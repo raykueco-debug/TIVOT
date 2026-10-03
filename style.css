@@ -2984,6 +2984,26 @@
   @media (prefers-reduced-motion: reduce){
     .sw-layer, .br-torso, .br-head, .sw-under, .sp-blink{ animation:none !important; }
   }
+  /* ══ 瞳孔顫動（modules/eyefx.js，Ray 10-03）══ 容器裁在眼睛開口裡，虹膜層做 steps 跳格的隨機小抖動。
+     幅度／速度：--tr-a（螢幕 px）、--tr-sec。容器跟著頭呼吸（同 .sp-blink）。 */
+  :root{ --tr-a:.6px; --tr-sec:.42s; }
+  .ef-tr{ position:absolute; pointer-events:none; mask-size:100% 100%; -webkit-mask-size:100% 100%;
+    mask-repeat:no-repeat; -webkit-mask-repeat:no-repeat; }
+  .ef-tr > img{ position:absolute; left:0; top:0; width:100%; height:100%; display:block; max-width:none; pointer-events:none; }
+  @keyframes efTremble{
+    0%  { translate:0 0; }
+    14% { translate:var(--tr-a) calc(var(--tr-a) * -.5); }
+    28% { translate:calc(var(--tr-a) * -1) 0; }
+    42% { translate:calc(var(--tr-a) * .5) calc(var(--tr-a) * .6); }
+    57% { translate:calc(var(--tr-a) * -.6) calc(var(--tr-a) * -.4); }
+    71% { translate:var(--tr-a) calc(var(--tr-a) * .3); }
+    85% { translate:calc(var(--tr-a) * -.4) calc(var(--tr-a) * .5); }
+    100%{ translate:0 0; }
+  }
+  .ef-tr > .ef-iris{ animation:efTremble var(--tr-sec) steps(1, end) infinite; }
+  #storyCast .story-portrait.on > .ef-tr, #tutCast .tut-portrait.in > .ef-tr{
+    animation:brHead var(--br-sec) ease-in-out var(--br-delay) infinite; }
+  @media (prefers-reduced-motion: reduce){ .ef-tr, .ef-tr > .ef-iris{ animation:none !important; } }
   /* 眨眼補丁（modules/blink.js；劇情頁 .story-portrait 與戰鬥對白 .tut-portrait 共用）：
      位置與大小是 inline 的原圖百分比，只切 visibility —— 不做淡入淡出（一格 45~85ms，淡了就看不出眨眼）。 */
   .sp-blink{position:absolute;pointer-events:none;display:block;visibility:hidden;max-width:none;}

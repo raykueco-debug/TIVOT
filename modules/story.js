@@ -30,7 +30,8 @@ import { MAIN_SCRIPT, MAIN_ENTRY } from '../script/mainScript.js';
 import { SPEAKERS, ART, CAST_TALL, nameOf, artOf, exprSrc, frameOf } from '../script/speakers.js';
 import * as blink from './blink.js';
 import * as sway from './sway.js';   // 髮梢擺動（路線 B）
-import * as breath from './breath.js';   // 呼吸：分段平移（選項 1）   // 立繪眨眼（劇情頁與戰鬥對白共用；資料在 script/blink.js）
+import * as breath from './breath.js';   // 呼吸：分段平移（選項 1）
+import * as eyefx from './eyefx.js';     // 眼部特效：瞳孔顫動（ver -1945）   // 立繪眨眼（劇情頁與戰鬥對白共用；資料在 script/blink.js）
 import * as prog from '../script/progress.js';
 import { decorateLine } from '../i18n.js';
 import { SFX } from '../audio.js';
@@ -563,6 +564,13 @@ function tuneRender(){
        return '<div class="tn-row"><span>'+i18nT('眨眼')+'</span><select data-blink'+(has?'':' disabled')+'>'
          +opts.map(([v,t])=>'<option value="'+v+'"'+(v===m?' selected':'')+'>'+t+'</option>').join('')+'</select>'
          +(has?'':'<span class="tn-path">'+i18nT('（這張沒有眨眼補丁）')+'</span>')+'</div>'; })()
+   /* 眼部特效（ver -1945，Ray：「瞳孔顫動／淚眼汪汪，在立繪模式裡設定」）：寫這一張的 `eyeFx`。
+      素材要先由 tools/eye_fx.py 產生（script/eyefx.js），沒有的那幾個選項灰掉。 */
+   +(()=>{ const m=c.f.eyeFx||'none', src=(slotImg(tuneSide)||{getAttribute:()=>''}).getAttribute('src');
+       const opts=[['none',i18nT('無')],['tremble',i18nT('瞳孔顫動')]];
+       return '<div class="tn-row"><span>'+i18nT('眼部特效')+'</span><select data-eyefx>'
+         +opts.map(([v,t])=>'<option value="'+v+'"'+(v===m?' selected':'')+(v!=='none'&&!eyefx.has(src,v)?' disabled':'')+'>'+t+(v!=='none'&&!eyefx.has(src,v)?i18nT('（未產生）'):'')+'</option>').join('')
+         +'</select></div>'; })()
    +i18nT('<div class="tn-row"><span>站位</span><button data-act="sideL" class="')+(tuneSide==='L'?'on':'')+i18nT('">站左</button><button data-act="sideR" class="')+(tuneSide==='R'?'on':'')+i18nT('">站右</button></div>')
    /* 水平翻轉（ver -1898 改，Ray：「立繪編輯的翻轉只是轉那一拍的圖而已」）＝**這一拍**的 `flip:true`，
       按下去直接寫進腳本那一行（`/__line set`），不寫 speakers.js。工作室模式沒有「這一拍」，不給。 */
@@ -578,6 +586,14 @@ function tuneRender(){
     if(bx){ ['pointerdown','click','keydown'].forEach(ev=>bx.addEventListener(ev, e=>e.stopPropagation()));
       bx.addEventListener('change', ()=>{ tuneMsg=i18nT('寫入中…'); tuneRender();
         beatChangeAt(tuneSide, bx.value).then(r=>{ tuneMsg=(r.ok?i18nT('已換差分，寫入：'):i18nT('換差分失敗：'))+r.text; tuneRender(); }); }); } }
+  { const es=p.querySelector('select[data-eyefx]');
+    if(es){ ['pointerdown','click','keydown'].forEach(ev=>es.addEventListener(ev, e=>e.stopPropagation()));
+      es.addEventListener('change', ()=>{
+        const cur=tuneCur(tuneSide); if(!cur) return;
+        const L=Object.assign({}, tuneLive[cur.tk.key] || {}); L.eyeFx=es.value;
+        tuneLive[cur.tk.key]=L; tuneArm=null; tuneMsg='';
+        blinkBind(tuneSide); tuneRender();
+      }); } }
   { const bs=p.querySelector('select[data-blink]');
     if(bs){ ['pointerdown','click','keydown'].forEach(ev=>bs.addEventListener(ev, e=>e.stopPropagation()));
       bs.addEventListener('change', ()=>{
@@ -1040,7 +1056,15 @@ function blinkBind(side){
   const box=slotEl(side), im=slotImg(side);
   sway.bind(box, im);
   breath.bind(box, im, slot[side] ? frameOf(slot[side], slotExpr[side]) : null);
+  eyefx.bind(box, im, eyeFxOf(side));
   blink.bind(box, im, ()=>blinkLive(side), blinkModeOf(side));
+}
+/* 這一張的眼部特效（ver -1945）：工作室還沒存檔的即時值優先，其次 speakers.js 的 `eyeFx`（沒寫＝none）。 */
+function eyeFxOf(side){
+  const id=slot[side]; if(!id) return 'none';
+  const tk=tuneKey(id, slotExpr[side]), L=tk && tuneLive[tk.key];
+  if(L && L.eyeFx) return L.eyeFx;
+  return (frameOf(id, slotExpr[side]) || {}).eyeFx || 'none';
 }
 /* 這一張的眨眼節奏：立繪工作室還沒存檔的即時值優先，其次 speakers.js 的 `blink`（沒寫＝one）。 */
 function blinkModeOf(side){
@@ -1049,7 +1073,7 @@ function blinkModeOf(side){
   if(L && L.blink) return L.blink;
   return (frameOf(id, slotExpr[side]) || {}).blink || 'one';
 }
-function blinkUnbind(side){ blink.unbind(slotEl(side)); breath.unbind(slotEl(side)); sway.unbind(slotEl(side)); }
+function blinkUnbind(side){ blink.unbind(slotEl(side)); eyefx.unbind(slotEl(side)); breath.unbind(slotEl(side)); sway.unbind(slotEl(side)); }
 
 /* ══ 站位（ver -360）══
    預設是角色的固定站位（`speakers.js` 的 `ART[].side`，§6.5：同一個人每次都站同一邊）。
@@ -3327,7 +3351,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1944';
+const KERB_V='?v=1945';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
