@@ -26,6 +26,7 @@ resources/map/_thumbs/
 .venv-matting/
 # 眨眼工具的臉部分割／特徵點 venv（Python 3.12；anime-face-detector 要求）
 .venv-face/
+_ext/
 
 # SI 投放夾：Ray 丟白底稿的地方，內容不入版控（收完移進 _originals/si/），只留 README
 resources/si/alpha/*
