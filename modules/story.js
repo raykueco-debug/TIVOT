@@ -28,7 +28,8 @@ import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；
 import { GAME_CONFIG, fileGain, assetVer, asset } from '../config.js';   // 舞台幾何常數（castStage）與逐支音量（fileGain）：鐵律 7 的單一真相；asset＝料理演出的鍋子與成品圖（ver -953）
 import { MAIN_SCRIPT, MAIN_ENTRY } from '../script/mainScript.js';
 import { SPEAKERS, ART, CAST_TALL, nameOf, artOf, exprSrc, frameOf } from '../script/speakers.js';
-import * as blink from './blink.js';   // 立繪眨眼（劇情頁與戰鬥對白共用；資料在 script/blink.js）
+import * as blink from './blink.js';
+import * as sway from './sway.js';   // 髮梢擺動（路線 B）   // 立繪眨眼（劇情頁與戰鬥對白共用；資料在 script/blink.js）
 import * as prog from '../script/progress.js';
 import { decorateLine } from '../i18n.js';
 import { SFX } from '../audio.js';
@@ -964,8 +965,9 @@ function blinkLive(side){
   const box=slotEl(side), st=$('storyStage');
   return !!(box && box.classList.contains('on') && !box.classList.contains('fading') && st && st.classList.contains('on'));
 }
-function blinkBind(side){ blink.bind(slotEl(side), slotImg(side), ()=>blinkLive(side)); }
-function blinkUnbind(side){ blink.unbind(slotEl(side)); }
+/* 髮梢擺動（modules/sway.js）跟眨眼同一個綁定時機，一起掛在這兩支（不另開入口）。 */
+function blinkBind(side){ sway.bind(slotEl(side), slotImg(side)); blink.bind(slotEl(side), slotImg(side), ()=>blinkLive(side)); }
+function blinkUnbind(side){ blink.unbind(slotEl(side)); sway.unbind(slotEl(side)); }
 
 /* ══ 站位（ver -360）══
    預設是角色的固定站位（`speakers.js` 的 `ART[].side`，§6.5：同一個人每次都站同一邊）。
@@ -3243,7 +3245,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1934';
+const KERB_V='?v=1935';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

@@ -33,6 +33,7 @@ import { playSe, playSePair, blankHold } from './story.js';   // blankHold＝主
 import * as beatPick from './beatpick.js';   // 管理人：右鍵改這一拍的立繪（ver -1826，葉模組）
 import * as hap from './haptics.js';        // 畫面震動＝手上也震（§6.5.6）
 import * as blink from './blink.js';        // 立繪眨眼（與劇情頁共用同一支）
+import * as sway from './sway.js';          // 髮梢擺動（同上）
 
 const $ = id => document.getElementById(id);
 const CFG = () => GAME_CONFIG.tutorial;
@@ -779,7 +780,7 @@ export function tuneSetSide(who, side){
   const snap=el=>({ src:pimg(el).getAttribute('src'), ck:el.dataset.castKey, ik:el.dataset.imgKey, bk:el.dataset.baseKey,
                     on:el.classList.contains('in'), sp:el.classList.contains('speaking'), beat:el._beat });
   const put=(el,v)=>{
-    if(v.src) setPortraitSrc(el, v.src); else { blink.unbind(el); pimg(el).removeAttribute('src'); }
+    if(v.src) setPortraitSrc(el, v.src); else { blink.unbind(el); sway.unbind(el); pimg(el).removeAttribute('src'); }
     for(const [k,x] of [['castKey',v.ck],['imgKey',v.ik],['baseKey',v.bk]]){ if(x) el.dataset[k]=x; else delete el.dataset[k]; }
     el.classList.toggle('in', !!v.on); el.classList.toggle('speaking', !!v.sp); el._beat=v.beat;
   };
@@ -805,12 +806,12 @@ function portraitEl(c, key){
 function pimg(el){ return el ? el.querySelector('.tp-img') : null; }
 function setPortraitSrc(el, url){
   const im=pimg(el); if(!im) return;
-  if(im.getAttribute('src')!==url){ blink.unbind(el); im.src=url; }
+  if(im.getAttribute('src')!==url){ blink.unbind(el); sway.unbind(el); im.src=url; }
 }
 function blinkLive(el){ const w=$('tutCast'); return !!(el.classList.contains('in') && w && w.classList.contains('on')); }
 for(const id of ['tutCastL','tutCastR']){
   const b=document.getElementById(id), im=pimg(b);
-  if(im) im.addEventListener('load', ()=>blink.bind(b, im, ()=>blinkLive(b)));
+  if(im) im.addEventListener('load', ()=>{ sway.bind(b, im); blink.bind(b, im, ()=>blinkLive(b)); });
 }
 /* 依步驟台詞決定在場立繪：只有一個人說話的段落（如罵人插話）不出現另一名角色。
  * .in 逐立繪掛在 img 上（CSS transition 滑入/滑出）；段落接續（queue）時差異更新即可。 */
@@ -1372,7 +1373,7 @@ function closeDialog(resume, silent){
   if(bubble) setTimeout(()=>{ if(!state.tutorialDialog) bubble.classList.remove('on'); }, 500);
   if(wrap){
     const L=$('tutCastL'), R=$('tutCastR');
-    for(const el of [L,R]){ if(el){ el.classList.remove('in','speaking','center'); blink.unbind(el); } }   // 立繪滑出（眨眼一起收）
+    for(const el of [L,R]){ if(el){ el.classList.remove('in','speaking','center'); blink.unbind(el); sway.unbind(el); } }   // 立繪滑出（眨眼一起收）
     setTimeout(()=>{ if(!state.tutorialDialog) wrap.classList.remove('on'); }, 500);
   }
   if(resume){

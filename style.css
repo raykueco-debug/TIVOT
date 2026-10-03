@@ -2974,6 +2974,11 @@
   @media (prefers-reduced-motion: reduce){
     #storyCast .story-portrait.on, #tutCast .tut-portrait.in{ animation:none; }
   }
+  /* 髮梢擺動（路線 B，modules/sway.js）：墊底層與擺動層，位置是原圖百分比；擺幅 --sw-a、週期由 JS 逐層給。 */
+  .sw-under, .sw-layer{position:absolute;pointer-events:none;display:block;max-width:none;}
+  @keyframes swSway{ 0%,100%{ rotate:calc(var(--sw-a,.5deg) * -1); } 50%{ rotate:var(--sw-a,.5deg); } }
+  .sw-layer{ animation:swSway 3.3s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce){ .sw-layer{ animation:none; } }
   /* 眨眼補丁（modules/blink.js；劇情頁 .story-portrait 與戰鬥對白 .tut-portrait 共用）：
      位置與大小是 inline 的原圖百分比，只切 visibility —— 不做淡入淡出（一格 45~85ms，淡了就看不出眨眼）。 */
   .sp-blink{position:absolute;pointer-events:none;display:block;visibility:hidden;max-width:none;}
