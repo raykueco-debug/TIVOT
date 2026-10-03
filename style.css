@@ -2949,6 +2949,9 @@
   .story-portrait.fading{opacity:0;}
   /* 立繪槽是外框（ver -1927）：圖片撐滿外框；外框的寬高由 castLayout 照圖的比例設，所以不必 object-fit。 */
   .story-portrait > .sp-img{position:absolute;left:0;top:0;width:100%;height:100%;display:block;pointer-events:none;}
+  /* 眨眼補丁（ver -1928，story.js 的 blinkShow）：外框裡的一張小圖，位置是底圖的百分比；切換用 display 不用 opacity（不要過渡）。 */
+  .story-portrait > .sp-blink{position:absolute;display:none;pointer-events:none;}
+  .story-portrait > .sp-blink.on{display:block;}
   #storyCastL{transform:translateX(-140%);}
   #storyCastR{transform:translateX(140%);}
   #storyCast .story-portrait.on{transform:translateX(0);}

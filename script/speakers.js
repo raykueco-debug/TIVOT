@@ -1739,6 +1739,21 @@ export const ART = {
   } },
 };
 
+/* ══ 眨眼補丁（ver -1928）══════════════════════════════════════════════════
+   鑰匙＝**立繪的圖檔名**（不是表情鍵）：同一張圖不論被哪個表情鍵引用都共用這一份
+   （鐵律 7）。沒有這一筆的圖＝不眨（睡著、閉眼、wink 那類表情就是靠不寫）。
+     base   補丁是對著哪一版底圖做的（底圖內容雜湊前 8 碼）—— 底圖被同名覆蓋，補丁就會錯位，
+            而且畫面上沒有任何錯誤訊息；`tools/script_lint.py` 的 check_blink 會比對它
+     w/h    底圖尺寸（補丁座標的分母）
+     half／closed  兩格補丁：原圖像素座標 x/y/w/h
+   產法：`tools/face_parse.py`（分割＋特徵點，3060 那台）→ `tools/blink_patch.py --seg … --install`
+   （印出的那一行直接貼進來）。 */
+export const BLINK = {
+  anya_si_front: { base:'68edf906', w:1024, h:1536,
+    half:  { src:'resources/si/blink/anya_si_front_half.webp',   x:440, y:107, w:101, h:55 },
+    closed:{ src:'resources/si/blink/anya_si_front_closed.webp', x:440, y:107, w:101, h:68 } },
+};
+
 /* 最高的人：她定義相機（頭頂貼在舞台頂線，其餘人依身高往下排）。 */
 export const CAST_TALL = Math.max(...Object.values(ART).filter(a=>!a.unmeasured).map(a=>a.cm));
 

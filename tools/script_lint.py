@@ -70,7 +70,8 @@ def load_data():
         parts.append(strip_module(open(os.path.join(ROOT, f), encoding='utf-8').read()))
     parts.append('print(JSON.stringify({script:MAIN_SCRIPT, entry:MAIN_ENTRY,'
                  ' speakers:SPEAKERS, art:ART, towns:TOWNS, cfg:GAME_CONFIG,'
-                 ' assets:ASSETS, homeImg:HOME_IMG, homeSfx:HOME_SFX}));')
+                 ' assets:ASSETS, homeImg:HOME_IMG, homeSfx:HOME_SFX,'
+                 ' blink:(typeof BLINK!=="undefined" ? BLINK : {})}));')
     return _jsrun.dump(NL.join(parts), what='腳本資料')
 
 # ── story.js 的音效／BGM 表 ────────────────────────────────────────────────
@@ -472,6 +473,24 @@ def check_map_enemy_images(D):
                 err('%s：場次 %s（%s）的立繪檔不存在：%s' % (tid, b, ek, path))
 
 
+def check_blink(D):
+    """眨眼補丁（script/speakers.js 的 BLINK）：補丁是對著「那一版」底圖做的。
+    底圖被同名覆蓋 → 補丁錯位，畫面上沒有任何錯誤訊息 ⇒ 這裡比對內容雜湊（鐵律 7 的但書：寫成會執行的）。"""
+    import hashlib
+    for name, b in (D.get('blink') or {}).items():
+        base = os.path.join(ROOT, 'resources', 'si', name + '.webp')
+        if not os.path.isfile(base):
+            err('BLINK.%s：底圖 resources/si/%s.webp 不存在' % (name, name)); continue
+        h = hashlib.sha1(open(base, 'rb').read()).hexdigest()[:8]
+        if h != b.get('base'):
+            err('BLINK.%s：底圖換過了（雜湊 %s ≠ 補丁記的 %s）—— 眨眼補丁會錯位，'
+                '重跑 tools/face_parse.py 與 tools/blink_patch.py --install，或先拿掉這一筆' % (name, h, b.get('base')))
+        for k in ('half', 'closed'):
+            f = (b.get(k) or {}).get('src')
+            if not f or not os.path.isfile(os.path.join(ROOT, f)):
+                err('BLINK.%s.%s：補丁檔不存在：%s' % (name, k, f))
+
+
 def main():
     D = load_data()
     check_map_enemy_images(D)
@@ -479,6 +498,7 @@ def main():
     boot = check_boot_batch(D)
     check_map_sessions(D)
     check_lowercase_assets()
+    check_blink(D)
     script, entry, speakers, art = D['script'], D['entry'], D['speakers'], D['art']
     check_tense_exprs(art)
 

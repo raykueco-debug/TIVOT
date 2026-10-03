@@ -437,6 +437,30 @@ def patch(orig, new, pad=2):
     return Image.fromarray(rgba, 'RGBA'), (int(x0), int(y0), int(x1 - x0), int(y1 - y0))
 
 
+BLINK_DIR = 'resources/si/blink'
+
+
+def file_hash(path):
+    """底圖的內容雜湊（前 8 碼）—— 補丁是對著「這一版」底圖做的；底圖被同名覆蓋就會錯位，
+    lint（tools/script_lint.py 的 check_blink）拿它比對。"""
+    import hashlib
+    return hashlib.sha1(open(path, 'rb').read()).hexdigest()[:8]
+
+
+def install(src, name, od, meta):
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    dst = os.path.join(root, BLINK_DIR); os.makedirs(dst, exist_ok=True)
+    ent = {'base': file_hash(src), 'w': meta['w'], 'h': meta['h']}
+    for k in ('half', 'closed'):
+        rel = '%s/%s_%s.webp' % (BLINK_DIR, name, k)
+        Image.open(os.path.join(od, k + '.png')).save(os.path.join(root, rel), 'WEBP',
+                                                     quality=95, alpha_quality=100, method=6)
+        m = meta[k]
+        ent[k] = {'src': rel, 'x': m['x'], 'y': m['y'], 'w': m['w'], 'h': m['h']}
+    print('\n貼進 script/speakers.js 的 BLINK：')
+    print("  %s: %s," % (name, json.dumps(ent, ensure_ascii=False).replace('"', "'")))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('src')
@@ -447,6 +471,8 @@ def main():
     ap.add_argument('--no-hair', action='store_true', help='關掉頭髮保護（對照用）')
     ap.add_argument('--keep', action='append', default=[], help='保留框 x0,y0,x1,y1：蓋在眼睛上的髮束（標註）')
     ap.add_argument('--hairmask', action='store_true', help='另存 hairmask.png（頭髮 alpha 疊紅，除錯用）')
+    ap.add_argument('--install', action='store_true',
+                    help='把兩格補丁轉成 WebP 放進 resources/si/blink/，並印出 script/speakers.js 的 BLINK 那一筆')
     A = ap.parse_args()
     im = Image.open(A.src).convert('RGBA')
     arr = np.array(im)
@@ -485,6 +511,8 @@ def main():
         frames[key] = full
     frames['open'] = im
     json.dump(meta, open(os.path.join(od, 'blink.json'), 'w'), indent=1)
+    if A.install:
+        install(A.src, name, od, meta)
     if A.hairmask:
         dbg = rgb.astype(np.float32).copy()
         dbg = dbg * (1 - HA[..., None] * 0.6) + np.array([255, 0, 0]) * (HA[..., None] * 0.6)

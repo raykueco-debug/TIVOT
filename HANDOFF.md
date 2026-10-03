@@ -14,6 +14,12 @@
 > · **下一步就是 ①「保護頭髮」**（只動 `tools/`）：依角色髮色挑出眼框內的髮絲 → 填膚色時跳過 → 最後把原圖頭髮蓋回最上層（頭髮本來就在眼睛前面）。改完重跑上面四張，用實機模擬頁給 Ray 看。
 > · ✅ **① 保護頭髮已做（安雅先過，Ray 指定：她頭髮最複雜、眼睛比例最大）**：`blink_patch.py` 取樣髮色（頭頂＋眼框上方 k-means）→ 像髮色且**連到眼框外頭髮**的才算 → 填膚色時當未知、最後原圖蓋回；眼睛內部用嚴格判定（藍眼／淡紫髮會混）；睫毛上緣反鋸齒邊與翹起的睫毛尖一併抹掉。安雅現行參數（第四版）：`--eye 446,134,480,168 --eye 494,110,550,142 --keep 428,138,452,178`（`--keep`＝保留框，標註蓋在眼睛上的髮束；陰影裡的暗髮束會被誤當睫毛、顏色規則分不開，靠標註）。後續又加：半閉帶眼球陰影、閉眼拉伸上眼皮＋梯度域融合（去色塊／色差）、眼角眼白清除。除錯：`--hairmask`、對照：`--no-hair`。其餘四張還沒用新版重跑。
 > · ⛔ **已評估並否決**：「GPT 整顆換頭、把頭髮偏差當成飄動」—— 眨眼只有 ~200ms，兩張圖瞬切讀成「跳」不是「飄」；補中間格會鬼影／融化（GPT 是重畫不是位移，髮束拓樸會變）；臉的線條也會一起閃；約 500 次生成。頭髮飄動若要做，另立項（程式挑頭髮＋平滑位移場，持續動畫要先上手機量發熱，鐵律 12）。
+> · ✅ **ver -1927 立繪槽包外框**（已合進 main，PR #1；Ray 本機驗過）／✅ **ver -1928 接上眨眼（只有安雅 front）**：
+>   資料 `script/speakers.js` 的 `BLINK`（鑰匙＝圖檔名、`base`＝底圖雜湊）、補丁 `resources/si/blink/`、
+>   執行 `modules/story.js` 的 `blinkBind/blinkStop`（唯一一支）、lint `check_blink`（底圖換過就報錯）。
+>   新增一張：3060 跑 `tools/face_parse.py <圖名>` → `tools/blink_patch.py resources/si/<圖名>.webp --seg tools/_blink_seg/<圖名> --out <暫存> --install` → 印出的那一行貼進 BLINK。
+>   ⚠ 雲端 session 跑 `tools/bust.py` 前先 `git fetch --unshallow`：淺複製看不到素材歷史，`asset_bust` 會把 ASSET_VER 誤刪約 400 筆（ver -1927 踩過，未推出）。
+>   還沒做：戰鬥對白 `#tutCast`、飛行頁、其他角色的補丁量產、呼吸。
 > · **顏色規則已到極限（10-03，Ray：「這樣好像不可靠」）** → 改用模型分區，候選與授權（只做開發工具、不進 App）：
 >   ✅ `siyeong0/Anime-Face-Segmentation`（MIT；UNet＋MobileNetV2、512×512、7 類含 hair/eye/skin/face；權重 `model/UNet.pth` 在 repo 裡；訓練資料來源未說明、8 個 commit ⇒ 要先實測品質）
 >   ✅ `hysts/anime-face-detector`（MIT，vendor 部分 Apache 2.0；28 點臉部特徵含眼睛；新版已不需 mmcv；**Python ≥3.12、torch ≥2.2** ⇒ 另開 venv，不要動 `.venv-matting`）

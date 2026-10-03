@@ -27,7 +27,7 @@
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, fileGain, assetVer, asset } from '../config.js';   // 舞台幾何常數（castStage）與逐支音量（fileGain）：鐵律 7 的單一真相；asset＝料理演出的鍋子與成品圖（ver -953）
 import { MAIN_SCRIPT, MAIN_ENTRY } from '../script/mainScript.js';
-import { SPEAKERS, ART, CAST_TALL, nameOf, artOf, exprSrc, frameOf } from '../script/speakers.js';
+import { SPEAKERS, ART, BLINK, CAST_TALL, nameOf, artOf, exprSrc, frameOf } from '../script/speakers.js';
 import * as prog from '../script/progress.js';
 import { decorateLine } from '../i18n.js';
 import { SFX } from '../audio.js';
@@ -940,6 +940,65 @@ function slotEl(side){ return $(side==='R' ? 'storyCastR' : 'storyCastL'); }
      壓暗與滑入都要再各寫一份。 */
 function slotImg(side){ const el=slotEl(side); return el ? el.querySelector('.sp-img') : null; }
 
+/* ══ 眨眼（ver -1928）══════════════════════════════════════════════════════
+   **唯一的一支**（鐵律 8）：立繪真的畫上去那一刻 `blinkBind(side)`，撤場 `blinkStop(side)`。
+   · 補丁資料在 `speakers.js` 的 BLINK（鑰匙＝圖檔名）；沒有那一筆＝不眨。
+   · 補丁是外框裡的一張小圖（`.sp-blink`），以底圖的**百分比**定位 —— 外框的寬高本來就照
+     圖的比例設，所以不必另算一次幾何（鐵律 7）；滑入、壓暗、鏡射都跟著外框走。
+   · 兩格都解碼完才開始眨（沒載到就不眨，不會閃一格空白）。
+   · 節奏：每 2.5～6 秒一次，15% 連眨兩下；一次＝半閉 50ms → 全閉 90ms → 半閉 50ms。
+   · 外框沒站好（滑入中／淡出中）、舞台沒開、分頁在背景 ⇒ 這一次跳過，晚一點再試。
+   · 計時器只有 `blinkT` 一份；撤場（leaveSlot／清場／殘留驗收）一律 blinkStop（鐵律 10：
+     畫面不在了就不要還有東西在跑）。 */
+const BLINK_ONE = [['half',50],['closed',90],['half',50]];
+const BLINK_TWO = [['half',45],['closed',80],['half',45],[null,140],['half',45],['closed',80],['half',45]];
+const blinkT = { L:0, R:0 }, blinkCur = { L:null, R:null };
+function blinkKey(src){ const m=/([^\/?#]+)\.(webp|png|jpe?g)/i.exec(src||''); return m ? m[1].toLowerCase() : ''; }
+function blinkOv(side){
+  const el=slotEl(side); if(!el) return null;
+  let o=el.querySelector('.sp-blink');
+  if(!o){ o=document.createElement('img'); o.className='sp-blink'; o.alt=''; o.draggable=false; el.appendChild(o); }
+  return o;
+}
+function blinkShow(side, k){
+  const cur=blinkCur[side], o=blinkOv(side); if(!o) return;
+  if(!k || !cur){ o.classList.remove('on'); return; }
+  const b=cur.b, f=b[k];
+  if(o.getAttribute('src')!==f.src) o.setAttribute('src', f.src);
+  o.style.left  =(100*f.x/b.w)+'%'; o.style.top   =(100*f.y/b.h)+'%';
+  o.style.width =(100*f.w/b.w)+'%'; o.style.height=(100*f.h/b.h)+'%';
+  o.classList.add('on');
+}
+function blinkStop(side){
+  clearTimeout(blinkT[side]); blinkT[side]=0; blinkCur[side]=null;
+  const el=slotEl(side), o=el && el.querySelector('.sp-blink');
+  if(o){ o.classList.remove('on'); o.removeAttribute('src'); }
+}
+function blinkLater(side, ms){ clearTimeout(blinkT[side]); blinkT[side]=setTimeout(()=>blinkRun(side), ms); }
+function blinkRun(side){
+  const cur=blinkCur[side], el=slotEl(side), st=$('storyStage'); if(!cur || !el) return;
+  if(!el.classList.contains('on') || el.classList.contains('fading') || document.hidden
+     || !st || !st.classList.contains('on')){ blinkLater(side, 1500); return; }
+  const seq = Math.random()<0.15 ? BLINK_TWO : BLINK_ONE;
+  let i=0;
+  const step=()=>{
+    if(blinkCur[side]!==cur) return;
+    if(i>=seq.length){ blinkShow(side, null); blinkLater(side, 2500+Math.random()*3500); return; }
+    const [k, ms]=seq[i++]; blinkShow(side, k);
+    blinkT[side]=setTimeout(step, ms);
+  };
+  step();
+}
+function blinkBind(side){
+  blinkStop(side);
+  const im=slotImg(side), b=im && BLINK[blinkKey(im.getAttribute('src'))]; if(!b) return;
+  const cur={ b }; blinkCur[side]=cur;
+  const pre=['half','closed'].map(k=>{ const i=new Image(); i.src=b[k].src;
+    return i.decode ? i.decode() : new Promise((res,rej)=>{ i.onload=res; i.onerror=rej; }); });
+  Promise.all(pre).then(()=>{ if(blinkCur[side]===cur) blinkLater(side, 1200+Math.random()*2500); },
+                       ()=>{ if(blinkCur[side]===cur) blinkCur[side]=null; });   // 補丁載不到：這張就不眨
+}
+
 /* ══ 站位（ver -360）══
    預設是角色的固定站位（`speakers.js` 的 `ART[].side`，§6.5：同一個人每次都站同一邊）。
    ⚠ **scene 可以覆寫**（`sides:{RENNA:'R'}`）—— 為的是「一幕裡只有兩個人、又剛好同側」
@@ -992,6 +1051,7 @@ function ensureOn(id, expr){
   const setExpr = ()=>{ slotExpr[side]=expr||null; };
 
   if(slot[side]!==id || im.getAttribute('src')!==src){
+    blinkStop(side);   // 換圖／換人：上一張的補丁不准疊到新圖上（新圖畫上去那一刻再 blinkBind）
     const apply = ()=>{
       /* ⚠⚠ **取景要跟著「畫面上真的是哪一張」走**（ver -647 修，Ray：「娜塔莉說
          『安娜』的時候位置跑掉了，此時應該就是用 dead 了，但圖還是 dying」）。
@@ -1001,7 +1061,7 @@ function ensureOn(id, expr){
          **舊圖被套上新圖的取景**：娜塔莉 dying→dead 的 `fx` 差 0.23、`top` 差 56，
          畫面上就是「圖還沒換、人先跳走」。
          正解：`slotExpr` 與 `src` **同一刻**更新，然後才 `layout()`。 */
-      const ready=()=>{ im.onload=null; setExpr(); layout(); el.classList.add('on'); };
+      const ready=()=>{ im.onload=null; setExpr(); layout(); el.classList.add('on'); blinkBind(side); };
       im.onload = ready;
       im.setAttribute('src', src);
       el.dataset.who = id;
@@ -1029,7 +1089,7 @@ function ensureOn(id, expr){
            要靠 `complete && naturalWidth` 這條退路。 */
       el.classList.add('fading');
       slotT[side]=setTimeout(()=>{
-        const back=()=>{ setExpr(); el.classList.remove('fading'); layout(); el.classList.add('on'); };
+        const back=()=>{ setExpr(); el.classList.remove('fading'); layout(); el.classList.add('on'); blinkBind(side); };
         im.onload=()=>{ im.onload=null; back(); };
         im.setAttribute('src', src);
         el.dataset.who = id;
@@ -1057,6 +1117,7 @@ function leaveSlot(side){
   const el=slotEl(side); if(!el) return;
   clearTimeout(slotT[side]); slotT[side]=0;
   const im=slotImg(side); if(im) im.onload=null;
+  blinkStop(side);
   el.classList.remove('on'); el.classList.remove('fading');
   slot[side]=null; slotExpr[side]=null;
   layout();                       // ⚠ 人數變了＝預算與縮限跟著變，剩下的人要重排
@@ -3214,7 +3275,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1927';
+const KERB_V='?v=1928';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4933,7 +4994,7 @@ function resetStage(){
   const st2=$('storyStage'); if(st2) st2.classList.remove('shake','hold');
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   for(const s2 of ['L','R']){ const el=slotEl(s2);
-    if(el){ el.classList.remove('on','dim','fading'); const im=slotImg(s2); if(im) im.removeAttribute('src'); } }
+    if(el){ el.classList.remove('on','dim','fading'); blinkStop(s2); const im=slotImg(s2); if(im) im.removeAttribute('src'); } }
 }
 
 /* 這一段（整條 scene 鏈）要用到的圖／音效／音樂。
@@ -5605,7 +5666,7 @@ function verifyCastCleared(){
       const el=slotEl(s); if(!el) continue;
       if(!el.classList.contains('on')) continue;
       console.info('[story] 撤場後仍有立繪殘留，已清除：', s, el.dataset.who||'');
-      clearTimeout(slotT[s]); slotT[s]=0; { const im=slotImg(s); if(im) im.onload=null; }
+      clearTimeout(slotT[s]); slotT[s]=0; blinkStop(s); { const im=slotImg(s); if(im) im.onload=null; }
       el.classList.remove('on','fading');
     }
   }, SLIDE_MS+80);
