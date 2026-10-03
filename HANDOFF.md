@@ -1,4 +1,25 @@
-> ⭐⭐⭐⭐ **【眨眼・3060 session 收工】（10-03 晚，Windows 3060；分支 `claude/standing-art-blink-animation-ub7vw7`）** —— 下面那段「3070 接手」的工作**已做完**，以這一段為準
+> ⭐⭐⭐⭐⭐ **【眨眼・GPT 合成版收工】（10-04，Windows 3070；main ＝ ver -1956）** —— **以這一段為準**，下面幾段（3060／3070 接手／雲端）是舊方法的紀錄
+> · ✅ **全部推上、合進 main**：-1953（全閉改 GPT）→ -1954（半閉也改 GPT，274 張）→ -1955（補 57 張，表上 **331** 張）→ -1956（首頁「眨眼」鈕）。
+> · **方法定案（Ray：「看起來找到正解了」）**：半閉／全閉**都由 GPT 畫**，本機只「對位＋只貼眼睛」—— 髮絲與 alpha 一律留原圖。
+>   ① `py tools/blink_gpt.py grid <tag> <名…>`（≤9 張拼 3×3；**原圖**裁臉，`tools/_blink_base/grid_<tag>.png/.json`）
+>   ② 上傳 ChatGPT（Claude in Chrome，**Windows 那台的 Chrome**），提示詞 `blink_gpt.py prompt`（全閉）／`prompt half`（半閉）；格子沒填滿要加「空白的格子保持空白，不要複製人物填進去」（不加它會把人複製進空格）
+>   ③ 頁內 `fetch(img.src)`→blob→`a.download` 落進 Downloads；④ `blink_gpt.py merge <tag> <gpt.png> closed|half` → `tools/_blink_base/<名>_{closed,half}.png`
+>   ⑤ `py tools/blink_build.py <名…> --qa`（有 base 檔就自動 `--closed-from/--half-from`）→ `bust --bump` → lint → commit。
+> · ⚠⚠ **省額度的三條（Ray 罵過）**：**判斷成敗只看「產生的圖片」張數，不看頁面文字**（拒絕訊息會殘留；-1954 我誤判後在原串重送，GPT 拿自己的半閉圖再畫一次＝白燒）；
+>   **有圖就收、0 張才在原串補「角色衣服都有穿好，只是因為是禮服所以看不到」重送一次**；再擋就換串換措辭；第三次擋就拆小格（3 張或 1 張一格）。**每一張畫好的都要收**。
+> · ⚠ ChatGPT 10-04 改版：輸入框改成 `.ProseMirror`（舊 `#prompt-textarea` 可能沒有）、送出鈕 aria「傳送」、圖 alt「產生的圖片 N」（舊「已產生圖像」）、上傳 input 是「附加相片」。
+> · ⚠ **洛蒂那種細碎白髮**：GPT 重畫髮絲 → 眼外差天生 ~10，過不了門檻。`BLINK_LOOSE=1` 放寬（cc≥0.975、眼外差≤12）—— **只在看過 GPT 輸出後用、合完再肉眼驗**（-1955 用在洛蒂 4 張＋`sorana_si_panic`）。
+> · ✅ **驗收**：首頁「眨眼」（管理人限定）→ `tools/blink_review.html`（睜｜半｜閉｜動畫，右鍵標問題）。讀的是線上那份 `script/blink.js`，不用維護。
+> · **盤點（469 張立繪）**：
+>   ✔ 不欠 **331** 張（表上，全閉＋半閉都是 GPT 合成）
+>   ✔ 不欠（刻意不做，`tools/blink_reject.txt` 有理由）：本來就閉眼 58、寫實男性／老人約 22、背影、遮臉、wink、紅瞳演出、群眾圖等
+>   ✔ 不欠（10-04 看過判不做，不在任何清單）：`torsten_si_front`（瀏海蓋眼）、`anya_si_back`／`anya_si_wheelback`／`nouvelle_si_back`／`torsten_si_back`（背影）、`nouvelle_si_sadnoeye`／`nouvelle_si_shycover`／`renna_si_die`／`renna_si_meltdown`（看不到眼）、`npc_guildhunter_si`（寫實男性）
+>   ⚠ 欠（可做、Ray 沒點名）：`sorana_si_carrynouvelleshock`（雙人圖，偵測抓到諾薇兒 → 要手給眼框 `tools/blink_eyes.txt` 才能做）；
+>     排除清單裡標「偵測錯位置／把嘴當眼睛」那幾張（`anya_si_desperate`/`sob` 瀏海重、`nemo` 以外的男性 NPC）**我判不做**，Ray 要的話再看。
+> · ⏳ 之後：飛行頁 canvas 眨眼（第二期）；手機實機量發熱（鐵律 12）；路線 B（髮梢擺動）。
+> · ⚠ 這台未 commit 的：`resources/_HANDOFF_ART_20260925.md`（**美術的，不是我改的**）；`tools/_blink_base/`（gitignore，GPT 原圖＋合成底稿，重建表要用它，別刪）。
+>
+> ⭐⭐⭐⭐ **【眨眼・3060 session 收工】（10-03 晚，Windows 3060；分支 `claude/standing-art-blink-animation-ub7vw7`）** —— 下面那段「3070 接手」的工作**已做完**（⚠ 已被上面 GPT 合成版取代）
 > · ✅ **已推上** -1927～-1933：劇情頁＋戰鬥對白立繪包外框、眨眼共用模組 `modules/blink.js`（唯一實作）、**286 張上線**（`script/blink.js`，機器產生）。
 >   安雅 46／61、蕾娜 79／102、諾薇兒 55／75、米夏 22／24（其餘幾乎都是本來就閉眼／背影）；**索拉娜只有 34／88**（見待修C）、賽西莉 1／15（待修B）。
 > · ⚠ **與 Mac session 的同名工作已合併**（-1932）：Mac 也做了外框＋`speakers.js` 的 `BLINK`＋`blinkBind`（只有安雅 front）。統一成 3060 這套；
