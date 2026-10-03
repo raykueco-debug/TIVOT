@@ -77,6 +77,11 @@ export function bind(box, img, live, mode){
    setFast(on)＝頻繁眨眼（約 1 秒一次）—— 驗補丁用，下一次排程起生效 */
 let fast=false;
 export function setFast(on){ fast=!!on; }
+/* 慢放（ver -1941，Ray：「立繪調整加入面部特寫跟慢放」）：spd＝速度倍率（1＝正常、0.25＝四倍慢）。
+   眨眼每一格的毫秒與間隔都除以它；CSS 動畫那一半由呼叫端調 playbackRate。 */
+let spd=1;
+export function setSpeed(k){ spd=Math.max(0.02, +k||1); }
+export function speed(){ return spd; }
 export function isFast(){ return fast; }
 export function now(box){
   const rec=box && T.get(box); if(!rec) return false;
@@ -87,7 +92,7 @@ function once(box){
   const rec=T.get(box); if(!rec) return;
   const e=els(box);
   // 間隔：「平均時間」＝約 4 秒、只抖 ±0.6 秒（舊版 2.6~6 秒亂數加 15% 隨機連眨，已由節奏取代）
-  const next=()=>{ if(T.get(box)===rec) rec.t=setTimeout(()=>once(box), fast ? 700+Math.random()*500 : 3400+Math.random()*1200); };
+  const next=()=>{ if(T.get(box)===rec) rec.t=setTimeout(()=>once(box), (fast ? 700+Math.random()*500 : 3400+Math.random()*1200)/spd); };
   const go = e.h.dataset.ok && e.c.dataset.ok && !document.hidden && (!rec.live || rec.live());
   if(!go){ next(); return; }
   const cs = COUNTS[rec.mode] || COUNTS.one;
@@ -100,7 +105,7 @@ function once(box){
     if(i>=seq.length){ e.h.classList.remove('on'); e.c.classList.remove('on'); next(); return; }
     const [f, ms]=seq[i++];
     e.h.classList.toggle('on', f==='h'); e.c.classList.toggle('on', f==='c');
-    rec.t=setTimeout(step, ms);
+    rec.t=setTimeout(step, ms/spd);
   };
   step();
 }
