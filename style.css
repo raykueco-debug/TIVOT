@@ -2951,6 +2951,10 @@
   .story-portrait > .sp-img{position:absolute;left:0;top:0;width:100%;height:100%;
     object-fit:contain;pointer-events:none;display:block;}
   .story-portrait > .sp-img:not([src]){visibility:hidden;}
+  /* 眨眼補丁（step ④，story.js 的 blinkBind）：位置與大小是 inline 的原圖百分比，
+     只切 visibility —— 不做淡入淡出（一格 45~85ms，淡了就看不出眨眼）。 */
+  .story-portrait > .sp-blink{position:absolute;pointer-events:none;display:block;visibility:hidden;}
+  .story-portrait > .sp-blink.on{visibility:visible;}
   .story-portrait.fading{opacity:0;}
   #storyCastL{transform:translateX(-140%);}
   #storyCastR{transform:translateX(140%);}

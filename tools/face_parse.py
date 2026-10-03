@@ -51,13 +51,23 @@ def segment(net, dev, crop_rgb):
     return y
 
 
+def find_src(n):
+    for p in (os.path.join(ROOT, 'resources', 'si', n + '.webp'), os.path.join(ROOT, 'resources', 'si', 'npc', n + '.webp')):
+        if os.path.exists(p):
+            return p
+    return os.path.join(ROOT, 'resources', 'si', n + '.webp')
+
+
 def main():
-    names = sys.argv[1:] or DEFAULT
+    # --lite（量產用，tools/blink_build.py 會帶）：只寫 classes_s1.6.png＋face.json，不出疊圖與總覽
+    lite = '--lite' in sys.argv
+    names = [a for a in sys.argv[1:] if not a.startswith('--')] or DEFAULT
+    scales = (1.6,) if lite else SCALES
     det, net, dev = load_models()
     os.makedirs(OUT, exist_ok=True)
     tiles = []
     for n in names:
-        src = os.path.join(ROOT, 'resources', 'si', n + '.webp')
+        src = find_src(n)
         im = Image.open(src).convert('RGBA')
         W, H = im.size
         white = Image.new('RGBA', im.size, (255, 255, 255, 255)); white.alpha_composite(im)
@@ -71,7 +81,7 @@ def main():
         kp = [[float(a), float(b), float(c)] for a, b, c in f['keypoints']]
         meta = {'bbox': [x0, y0, x1, y1, sc], 'keypoints': kp, 'crops': {}}
         cx, cy, side0 = (x0 + x1) / 2, (y0 + y1) / 2, max(x1 - x0, y1 - y0)
-        for s in SCALES:
+        for s in scales:
             side = side0 * s
             box = [int(round(cx - side / 2)), int(round(cy - side / 2)), int(round(cx + side / 2)), int(round(cy + side / 2))]
             crop = Image.new('RGB', (box[2] - box[0], box[3] - box[1]), (255, 255, 255))
@@ -85,6 +95,9 @@ def main():
             sx0, sy0 = max(0, box[0]), max(0, box[1]); sx1, sy1 = min(W, box[2]), min(H, box[3])
             full[sy0:sy1, sx0:sx1] = cls[sy0 - box[1]:sy1 - box[1], sx0 - box[0]:sx1 - box[0]]
             Image.fromarray(full).save(os.path.join(od, f'classes_s{s}.png'))
+            meta['crops'][str(s)] = box
+            if lite:
+                continue
             # 疊圖
             col = np.array(COLORS, np.uint8)[cls]
             base = np.asarray(crop, np.float32)
@@ -96,13 +109,12 @@ def main():
                 d.text((px + 4, py - 6), str(i), fill=(0, 0, 0))
             ov = ov.resize((512, 512), Image.LANCZOS)
             ov.save(os.path.join(od, f'overlay_s{s}.png'))
-            meta['crops'][str(s)] = box
             share = {NAMES[k]: round(float((cls == k).mean()), 3) for k in range(7)}
             print(n, f's{s}', '類別佔比', share)
             tiles.append((n, s, ov))
         json.dump(meta, open(os.path.join(od, 'face.json'), 'w'), ensure_ascii=False, indent=1)
     # 總覽：每張圖一列，兩種裁切並排
-    if tiles:
+    if tiles and not lite:
         rows = sorted({t[0] for t in tiles}, key=names.index)
         sheet = Image.new('RGB', (512 * len(SCALES) + 10 * (len(SCALES) - 1), 512 * len(rows) + 10 * (len(rows) - 1)), (20, 20, 24))
         for n, s, ov in tiles:
