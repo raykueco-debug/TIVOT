@@ -2511,9 +2511,14 @@
      蓋過 z 較高的 #tutBubble（8000）—— 與 dlg-pause 那條「盤面壓過對話框」
      同一族（桌機 Chrome 重現不了，實機必現）。亮暗改瞬切，promotion 的
      來源就沒了；transform 的過渡照留（滑入滑出）。 */
-  .tut-portrait{position:absolute;bottom:0;height:88%;max-width:62%;object-fit:contain;
-    object-position:bottom;filter:brightness(.38) saturate(.75);
+  .tut-portrait{position:absolute;bottom:0;height:88%;max-width:62%;aspect-ratio:1024/1536;
+    filter:brightness(.38) saturate(.75);
     transition:transform .45s ease;}
+  /* 外框裡的圖本體（眨眼 step ⑤）：滿版貼外框；外框的寬高由 tutorial.placePortraitX 依原尺寸設
+     （沒有取景值的退路只給 height%，外框靠 aspect-ratio 撐出寬度 —— 這批立繪都是 1024×1536）。 */
+  .tut-portrait > .tp-img{position:absolute;left:0;top:0;width:100%;height:100%;
+    object-fit:contain;object-position:bottom;pointer-events:none;display:block;}
+  .tut-portrait > .tp-img:not([src]){visibility:hidden;}
   /* .in 逐立繪掛在 img 上：只有說到話的角色才在場（單人段落不出現另一位） */
   #tutCastL{left:-2%;transform:translateX(-108%);}
   #tutCastR{right:-2%;transform:translateX(108%);}
@@ -2951,10 +2956,10 @@
   .story-portrait > .sp-img{position:absolute;left:0;top:0;width:100%;height:100%;
     object-fit:contain;pointer-events:none;display:block;}
   .story-portrait > .sp-img:not([src]){visibility:hidden;}
-  /* 眨眼補丁（step ④，story.js 的 blinkBind）：位置與大小是 inline 的原圖百分比，
-     只切 visibility —— 不做淡入淡出（一格 45~85ms，淡了就看不出眨眼）。 */
-  .story-portrait > .sp-blink{position:absolute;pointer-events:none;display:block;visibility:hidden;}
-  .story-portrait > .sp-blink.on{visibility:visible;}
+  /* 眨眼補丁（modules/blink.js；劇情頁 .story-portrait 與戰鬥對白 .tut-portrait 共用）：
+     位置與大小是 inline 的原圖百分比，只切 visibility —— 不做淡入淡出（一格 45~85ms，淡了就看不出眨眼）。 */
+  .sp-blink{position:absolute;pointer-events:none;display:block;visibility:hidden;max-width:none;}
+  .sp-blink.on{visibility:visible;}
   .story-portrait.fading{opacity:0;}
   #storyCastL{transform:translateX(-140%);}
   #storyCastR{transform:translateX(140%);}

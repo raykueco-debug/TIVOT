@@ -32,6 +32,7 @@ import { ART } from '../script/speakers.js';   // 「這張畫能不能水平翻
 import { playSe, playSePair, blankHold } from './story.js';   // blankHold＝主角空白格停多久（ver -1503），與劇情層同一個數字
 import * as beatPick from './beatpick.js';   // 管理人：右鍵改這一拍的立繪（ver -1826，葉模組）
 import * as hap from './haptics.js';        // 畫面震動＝手上也震（§6.5.6）
+import * as blink from './blink.js';        // 立繪眨眼（與劇情頁共用同一支）
 
 const $ = id => document.getElementById(id);
 const CFG = () => GAME_CONFIG.tutorial;
@@ -670,8 +671,8 @@ export function beatEditAt(x, y){
     items: keys.map(k=>({ key:k, label:k.replace('tut_',''), src:asset(k) })).filter(it=>it.src),
     cur: el.dataset.imgKey,
     onPick:(k)=>{
-      el.dataset.imgKey=k; el.src=asset(k);
-      const sd=sideOf(who); placePortraitX(el, sd); el.onload=()=>{ el.onload=null; placePortraitX(el, sd); };
+      el.dataset.imgKey=k; setPortraitSrc(el, asset(k));
+      const sd=sideOf(who); placePortraitX(el, sd); pimg(el).onload=()=>{ pimg(el).onload=null; placePortraitX(el, sd); };
       if(!b) return { ok:false, text:i18nT('只換了畫面（這一拍沒有 img 可改）') };
       const body={ text:b.line.text||'', old:b.line.img, new:k, field:'img',
                    prev: b.lines[b.idx-1] ? (b.lines[b.idx-1].text||'') : undefined,
@@ -775,10 +776,10 @@ export function tuneSetSide(who, side){
   c.side=side;
   if(stepSides && stepSides[who]){ stepSides=Object.assign({}, stepSides); delete stepSides[who]; }
   if(!from || !to || from===to) return !!from;
-  const snap=el=>({ src:el.getAttribute('src'), ck:el.dataset.castKey, ik:el.dataset.imgKey, bk:el.dataset.baseKey,
+  const snap=el=>({ src:pimg(el).getAttribute('src'), ck:el.dataset.castKey, ik:el.dataset.imgKey, bk:el.dataset.baseKey,
                     on:el.classList.contains('in'), sp:el.classList.contains('speaking'), beat:el._beat });
   const put=(el,v)=>{
-    if(v.src) el.src=v.src; else el.removeAttribute('src');
+    if(v.src) setPortraitSrc(el, v.src); else { blink.unbind(el); pimg(el).removeAttribute('src'); }
     for(const [k,x] of [['castKey',v.ck],['imgKey',v.ik],['baseKey',v.bk]]){ if(x) el.dataset[k]=x; else delete el.dataset[k]; }
     el.classList.toggle('in', !!v.on); el.classList.toggle('speaking', !!v.sp); el._beat=v.beat;
   };
@@ -789,7 +790,7 @@ export function tuneSetSide(who, side){
     if(!el || !el.dataset.castKey) continue;
     const sd = el===L ? 'left' : 'right';
     applyMirror(el, el.dataset.castKey);
-    placePortraitX(el, sd); el.onload=()=>{ el.onload=null; placePortraitX(el, sd); };
+    placePortraitX(el, sd); pimg(el).onload=()=>{ pimg(el).onload=null; placePortraitX(el, sd); };
   }
   return true;
 }
@@ -797,7 +798,20 @@ function portraitEl(c, key){
   const side = key ? sideOf(key) : (c && c.side);
   return side==='right' ? $('tutCastR') : $('tutCastL');
 }
-
+/* ══ 立繪外框（眨眼 step ⑤，同 story.js 的 slotImg）══
+   #tutCastL/R 是外框（div）：位置／滑入／翻轉／壓暗／dataset 都在它身上；
+   圖的 src／onload／naturalWidth 一律問 `pimg`。換圖一律走 `setPortraitSrc`：先撤舊圖的眨眼補丁，
+   新圖載好（load）那一刻由 modules/blink.js 重新綁 —— 眨眼的實作與劇情頁同一支（鐵律 8）。 */
+function pimg(el){ return el ? el.querySelector('.tp-img') : null; }
+function setPortraitSrc(el, url){
+  const im=pimg(el); if(!im) return;
+  if(im.getAttribute('src')!==url){ blink.unbind(el); im.src=url; }
+}
+function blinkLive(el){ const w=$('tutCast'); return !!(el.classList.contains('in') && w && w.classList.contains('on')); }
+for(const id of ['tutCastL','tutCastR']){
+  const b=document.getElementById(id), im=pimg(b);
+  if(im) im.addEventListener('load', ()=>blink.bind(b, im, ()=>blinkLive(b)));
+}
 /* 依步驟台詞決定在場立繪：只有一個人說話的段落（如罵人插話）不出現另一名角色。
  * .in 逐立繪掛在 img 上（CSS transition 滑入/滑出）；段落接續（queue）時差異更新即可。 */
 /* `uptoIdx`＝只讓**已經輪到過**的人上場（ver -478，落實 §6.5「說話的人先上場，
@@ -1003,8 +1017,8 @@ function placePortraitX(el, side){
      **story.js 的 castLayout 早就這樣做了，這一份漏掉** ＝ 同一條規矩兩份實作
      （鐵律 8 的老毛病）：於是安雅在劇情裡站對位置、在戰鬥對白裡卻沉下去一截。 */
   const headTop = BTN_TOP + (( C.castTall||176 ) - (fr.standCm||fr.cm)) * pxCm;
-  const nH    = el.naturalHeight || 1536;              // 這批立繪都是 1024×1536
-  const nW    = el.naturalWidth  || 1024;
+  const nH    = pimg(el).naturalHeight || 1536;              // 這批立繪都是 1024×1536
+  const nW    = pimg(el).naturalWidth  || 1024;
   /* 鎖身高。⚠ 分母用**該角色基本立繪**的像素身高，不是這一張差分自己的
      （ver -346）：差分是不同姿勢，alpha 上下緣會差 1%（諾薇兒 cringe 1528 /
      surprise 1519），每換一次表情就縮放一次 —— 那是「同一個人忽大忽小」的另一半。
@@ -1066,7 +1080,7 @@ function syncCastFit(step){
     const c = cast[key], el = portraitEl(c, key);
     if(!el) continue;
     el.dataset.baseKey = c.image;   // 鎖縮放用的基準（見 placePortraitX 的說明）
-    if(el.dataset.castKey!==key){ el.src = asset(c.image); el.dataset.castKey = key; el.dataset.imgKey = c.image; }
+    if(el.dataset.castKey!==key){ setPortraitSrc(el, asset(c.image)); el.dataset.castKey = key; el.dataset.imgKey = c.image; }
     const sd = sideOf(key);
     applyMirror(el, key);
     applyPortraitFit(el, c.fit || {}, baseH, soloRun, sd);   // ⚠ 站位吃這一段的覆寫（ver -613）
@@ -1251,16 +1265,16 @@ function showLine(){
       const sd0 = sideOf(line.who);
       el._swapT = setTimeout(()=>{
         el.dataset.imgKey = key; el.dataset.castKey = line.who;
-        el.src = asset(key);
+        setPortraitSrc(el, asset(key));
         applyMirror(el, line.who); placePortraitX(el, sd0);
-        el.onload = ()=>{ el.onload=null; placePortraitX(el, sd0); };
+        pimg(el).onload = ()=>{ pimg(el).onload=null; placePortraitX(el, sd0); };
         void el.offsetWidth; el.classList.add('in');
       }, 200);
     }
     else if(key && el.dataset.imgKey!==key){
       el.dataset.imgKey = key;
       el.dataset.castKey = line.who;
-      el.src = asset(key);
+      setPortraitSrc(el, asset(key));
       /* ⚠ 換圖必須重排橫向：每張差分的臉位置不同（見 placePortraitX）。
          先用規格比例排一次（不等載入＝不閃），載好再排一次修正真實寬高比。
          ⚠⚠ 站位吃 `sideOf()` **不是 `c.side`**（ver -619 修）：-613 的站位覆寫
@@ -1270,7 +1284,7 @@ function showLine(){
       const sd = sideOf(line.who);
       applyMirror(el, line.who);
       placePortraitX(el, sd);
-      el.onload = ()=>{ el.onload=null; placePortraitX(el, sd); };
+      pimg(el).onload = ()=>{ pimg(el).onload=null; placePortraitX(el, sd); };
     }
     else if(el.dataset.castKey !== line.who){ el.dataset.castKey = line.who; }
   }
@@ -1358,7 +1372,7 @@ function closeDialog(resume, silent){
   if(bubble) setTimeout(()=>{ if(!state.tutorialDialog) bubble.classList.remove('on'); }, 500);
   if(wrap){
     const L=$('tutCastL'), R=$('tutCastR');
-    for(const el of [L,R]){ if(el){ el.classList.remove('in','speaking','center'); } }   // 立繪滑出
+    for(const el of [L,R]){ if(el){ el.classList.remove('in','speaking','center'); blink.unbind(el); } }   // 立繪滑出（眨眼一起收）
     setTimeout(()=>{ if(!state.tutorialDialog) wrap.classList.remove('on'); }, 500);
   }
   if(resume){

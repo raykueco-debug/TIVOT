@@ -28,7 +28,7 @@ import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；
 import { GAME_CONFIG, fileGain, assetVer, asset } from '../config.js';   // 舞台幾何常數（castStage）與逐支音量（fileGain）：鐵律 7 的單一真相；asset＝料理演出的鍋子與成品圖（ver -953）
 import { MAIN_SCRIPT, MAIN_ENTRY } from '../script/mainScript.js';
 import { SPEAKERS, ART, CAST_TALL, nameOf, artOf, exprSrc, frameOf } from '../script/speakers.js';
-import { BLINK } from '../script/blink.js';   // 立繪眨眼補丁表（機器產生，tools/blink_build.py）
+import * as blink from './blink.js';   // 立繪眨眼（劇情頁與戰鬥對白共用；資料在 script/blink.js）
 import * as prog from '../script/progress.js';
 import { decorateLine } from '../i18n.js';
 import { SFX } from '../audio.js';
@@ -939,68 +939,14 @@ function slotEl(side){ return $(side==='R' ? 'storyCastR' : 'storyCastL'); }
    src／onload／naturalWidth 一律問這一支 —— 外框是 div，沒有那些屬性。 */
 function slotImg(side){ const b=slotEl(side); return b ? b.querySelector('.sp-img') : null; }
 
-/* ══ 立繪眨眼（眨眼 step ④）══════════════════════════════════════════════
-   補丁＝半閉／全閉兩格小圖，疊在立繪外框裡（跟著縮放、翻轉、壓暗、淡入淡出一起動）。
-   **唯一的資料是 `script/blink.js` 的 BLINK**（機器產生）：表上有這張圖就眨，沒有就不動 ——
-   換表情、換人都由 `blinkBind` 重新對一次，不必在 speakers.js 逐條加欄位。
-   · 綁定時機：新的立繪像素**真的畫上去那一刻**（ensureOn 的 ready／back，同取景那一條，-647）。
-   · 解除時機：開始換圖／下台／清場 —— 舊圖的補丁疊在新圖上就是「別人的眼睛」。
-   · 補丁晚到不等：載到之前不眨（失敗模式是「晚一拍才開始眨」，鐵律 13 的安全側）。
-   · 沒有 rAF：每 2.6~6 秒一個 setTimeout，切兩次 visibility；分頁在背景／舞台不在就不眨。 */
-const BLINK_DIR = 'resources/si/blink/';
-const BLINK_SEQ = [['h',45],['c',85],['h',45]];   // 半閉 → 全閉 → 半閉（毫秒），之後回到睜眼
-const blinkT = { L:0, R:0 };
-function blinkKey(src){ return String(src||'').split('/').pop().split('?')[0].replace(/\.[^.]+$/,'').toLowerCase(); }
-function blinkEls(side){
-  const box=slotEl(side); if(!box) return null;
-  let h=box.querySelector('.sp-blink-h'), c=box.querySelector('.sp-blink-c');
-  if(!h){
-    h=document.createElement('img'); h.className='sp-blink sp-blink-h'; h.alt=''; box.appendChild(h);
-    c=document.createElement('img'); c.className='sp-blink sp-blink-c'; c.alt=''; box.appendChild(c);
-  }
-  return { h, c };
+/* ══ 立繪眨眼：實作在 modules/blink.js（劇情頁與戰鬥對白共用，鐵律 8）══
+   這裡只回答兩件事：外框是哪一個、這一刻可不可以眨（人在台上、不在換圖中、舞台開著）。 */
+function blinkLive(side){
+  const box=slotEl(side), st=$('storyStage');
+  return !!(box && box.classList.contains('on') && !box.classList.contains('fading') && st && st.classList.contains('on'));
 }
-function blinkUnbind(side){
-  clearTimeout(blinkT[side]); blinkT[side]=0;
-  const e=blinkEls(side); if(!e) return;
-  for(const im of [e.h, e.c]){ im.classList.remove('on'); im.onload=null; delete im.dataset.ok; delete im.dataset.key; }
-}
-function blinkBind(side){
-  const im=slotImg(side), e=blinkEls(side); if(!im || !e) return;
-  const key=blinkKey(im.getAttribute('src')), d=BLINK[key];
-  if(e.h.dataset.key===key && blinkT[side]) return;   // 同一張圖重綁＝什麼都不用做
-  blinkUnbind(side);
-  if(!d || !im.naturalWidth) return;
-  const NW=im.naturalWidth, NH=im.naturalHeight;
-  const put=(el, r, suf)=>{
-    el.dataset.key=key;
-    el.style.left=(r[0]/NW*100)+'%'; el.style.top=(r[1]/NH*100)+'%';
-    el.style.width=(r[2]/NW*100)+'%'; el.style.height=(r[3]/NH*100)+'%';
-    el.onload=()=>{ el.onload=null; el.dataset.ok='1'; };
-    const p=BLINK_DIR+key+'_'+suf+'.webp';
-    el.setAttribute('src', p+assetVer(p));
-    if(el.complete && el.naturalWidth){ el.onload=null; el.dataset.ok='1'; }
-  };
-  put(e.h, d.half, 'half'); put(e.c, d.closed, 'closed');
-  blinkT[side]=setTimeout(()=>blinkOnce(side), 900+Math.random()*2400);
-}
-function blinkOnce(side){
-  const box=slotEl(side), e=blinkEls(side); if(!box || !e) return;
-  const st=$('storyStage');
-  const go = e.h.dataset.ok && e.c.dataset.ok && box.classList.contains('on') && !box.classList.contains('fading')
-           && !document.hidden && st && st.classList.contains('on');
-  const next=()=>{ blinkT[side]=setTimeout(()=>blinkOnce(side), 2600+Math.random()*3400); };
-  if(!go){ next(); return; }
-  const seq = Math.random()<0.15 ? BLINK_SEQ.concat([[null,110]], BLINK_SEQ) : BLINK_SEQ;   // 偶爾連眨兩下
-  let i=0;
-  const step=()=>{
-    if(i>=seq.length){ e.h.classList.remove('on'); e.c.classList.remove('on'); next(); return; }
-    const [f, ms]=seq[i++];
-    e.h.classList.toggle('on', f==='h'); e.c.classList.toggle('on', f==='c');
-    blinkT[side]=setTimeout(step, ms);
-  };
-  step();
-}
+function blinkBind(side){ blink.bind(slotEl(side), slotImg(side), ()=>blinkLive(side)); }
+function blinkUnbind(side){ blink.unbind(slotEl(side)); }
 
 /* ══ 站位（ver -360）══
    預設是角色的固定站位（`speakers.js` 的 `ART[].side`，§6.5：同一個人每次都站同一邊）。
@@ -3278,7 +3224,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1928';
+const KERB_V='?v=1929';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
