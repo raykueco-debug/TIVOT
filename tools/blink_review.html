@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>眨眼驗收</title>
+<style>
+:root{--bg:#15151b;--fg:#e8e2d0;--dim:#8a8578;--gold:#d8b45a;--card:#1f1f27}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 system-ui,"Microsoft JhengHei",sans-serif}
+header{position:sticky;top:0;z-index:2;background:#101015ee;padding:10px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;border-bottom:1px solid #333}
+header b{color:var(--gold)} input,select{background:#222;color:var(--fg);border:1px solid #444;padding:4px 8px;border-radius:4px}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:10px;padding:12px 16px}
+.c{background:var(--card);border-radius:6px;padding:6px;cursor:pointer}
+.c.bad{outline:2px solid #e05050}
+.row{display:flex;gap:4px}.row canvas{flex:1;min-width:0;width:25%;border-radius:3px;background:#2a2a34}
+.n{font-size:12px;color:var(--gold);margin-top:4px;display:flex;justify-content:space-between}
+.n span{color:var(--dim)}
+#zoom{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:5;flex-direction:column;gap:8px}
+#zoom canvas{max-width:96vw;max-height:80vh}
+</style></head><body>
+<header><a href="../index.html" style="color:var(--gold);text-decoration:none">← 首頁</a><b>眨眼驗收</b><span id="cnt"></span>
+<input id="q" placeholder="篩選檔名（例 sorana）">
+<label>速度 <select id="spd"><option value="1">正常</option><option value="3">慢</option><option value="8">很慢</option></select></label>
+<span style="color:var(--dim)">每格：睜｜半｜閉｜動畫　點一下放大　右鍵標記有問題（會列在最下面）</span></header>
+<div id="grid"></div>
+<pre id="bad" style="padding:0 16px 30px;color:#e08080"></pre>
+<div id="zoom"><canvas id="zc"></canvas><div id="zn"></div></div>
+<script type="module">
+const V='?t='+Date.now();
+const {BLINK}=await import('../script/blink.js'+V);
+const names=Object.keys(BLINK).sort();
+const img=s=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=s});
+async function src(n){return await img(`../resources/si/${n}.webp${V}`)||await img(`../resources/si/npc/${n}.webp${V}`)}
+const grid=document.getElementById('grid'),bad=new Set(),cards=[];
+document.getElementById('cnt').textContent=names.length+' 張';
+function box(e){const b=[e.half,e.closed];const x0=Math.min(...b.map(v=>v[0])),y0=Math.min(...b.map(v=>v[1])),x1=Math.max(...b.map(v=>v[0]+v[2])),y1=Math.max(...b.map(v=>v[1]+v[3]));const w=x1-x0,h=y1-y0,pw=w*.25,ph=Math.max(h*.6,w*.2);return [x0-pw,y0-ph,w+2*pw,h+2*ph]}
+function draw(cv,o,p,e,k,b){const c=cv.getContext('2d');c.clearRect(0,0,cv.width,cv.height);c.drawImage(o,b[0],b[1],b[2],b[3],0,0,cv.width,cv.height);if(k&&p[k]){const r=e[k],s=cv.width/b[2];c.drawImage(p[k],(r[0]-b[0])*s,(r[1]-b[1])*s,r[2]*s,r[3]*s)}}
+// 遊戲節奏近似：睜 → 半 → 閉 → 半 → 睜
+const SEQ=[[null,1400],['half',60],['closed',90],['half',60]];
+let t0=performance.now();
+function frame(now){const sp=+document.getElementById('spd').value,tot=SEQ.reduce((a,s)=>a+s[1]*sp,0);let t=(now-t0)%tot,k=null;for(const s of SEQ){if(t<s[1]*sp){k=s[0];break}t-=s[1]*sp}
+for(const c of cards)if(c.vis&&c.anim&&c.k!==k){c.k=k;draw(c.anim,c.o,c.p,c.e,k,c.b)}
+if(zoomC&&zoomC.k2!==k){zoomC.k2=k;const z=document.getElementById('zc');draw(z,zoomC.o,zoomC.p,zoomC.e,k,zoomC.b)}
+requestAnimationFrame(frame)}
+let zoomC=null;
+const io=new IntersectionObserver(es=>es.forEach(x=>{const c=x.target._c;c.vis=x.isIntersecting;if(c.vis&&!c.loaded)load(c)}),{rootMargin:'400px'});
+async function load(c){c.loaded=true;const n=c.n;c.o=await src(n);c.p={half:await img(`../resources/si/blink/${n}_half.webp${V}`),closed:await img(`../resources/si/blink/${n}_closed.webp${V}`)};
+if(!c.o){c.el.querySelector('.n span').textContent='找不到底圖';return}
+c.b=box(c.e);const H=Math.round(160*c.b[3]/c.b[2]);c.el.querySelectorAll('canvas').forEach(v=>{v.width=160;v.height=H});
+const cv=c.el.querySelectorAll('canvas');draw(cv[0],c.o,c.p,c.e,null,c.b);draw(cv[1],c.o,c.p,c.e,'half',c.b);draw(cv[2],c.o,c.p,c.e,'closed',c.b);c.anim=cv[3];c.k=-1}
+for(const n of names){const el=document.createElement('div');el.className='c';el.innerHTML=`<div class="row"><canvas></canvas><canvas></canvas><canvas></canvas><canvas></canvas></div><div class="n">${n}<span></span></div>`;
+const c={n,el,e:BLINK[n]};el._c=c;cards.push(c);grid.appendChild(el);io.observe(el);
+el.onclick=()=>{if(!c.o)return;zoomC={...c,k2:-1};const z=document.getElementById('zc');z.width=720;z.height=Math.round(720*c.b[3]/c.b[2]);document.getElementById('zn').textContent=n;document.getElementById('zoom').style.display='flex'};
+el.oncontextmenu=ev=>{ev.preventDefault();bad.has(n)?bad.delete(n):bad.add(n);el.classList.toggle('bad');document.getElementById('bad').textContent=bad.size?'標記有問題（'+bad.size+'）：\n'+[...bad].join('\n'):''}}
+document.getElementById('zoom').onclick=()=>{zoomC=null;document.getElementById('zoom').style.display='none'};
+document.getElementById('q').oninput=e=>{const q=e.target.value.toLowerCase();for(const c of cards)c.el.style.display=c.n.includes(q)?'':'none'};
+requestAnimationFrame(frame);
+</script></body></html>

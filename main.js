@@ -1598,6 +1598,7 @@ document.querySelectorAll('#originalSheet .os-link').forEach(a=>{
 // 沒看到清盤鈕就不會看到後臺鈕，一般使用者無從誤入。裝置的永久簽名（localStorage）
 // 只作遙測排除，不再於開機時直接顯示後臺鈕；已簽裝置要進後臺，每場重做解鎖手勢即可。
 bindBtn('statsBtn', ()=>{ window.location.href = 'stats.html'; });
+bindBtn('blinkBtn', ()=>{ window.location.href = 'tools/blink_review.html'; });   // 眨眼驗收頁（ver -1956）
 /* ══ 讀檔（ver -1023，Ray：「首頁做個讀檔鈕，一對一」）══ 讀**管理人專用的那一格**
    （`save.devLoad`），與系統選單裡的「存檔」一對一。
    ⚠ 與「繼續」是兩件事：那一顆讀玩家的最新存檔（main／auto），這一顆只讀管理人
