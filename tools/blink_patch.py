@@ -218,6 +218,30 @@ def harmonic_fill(img, M, iters=400):
     return out
 
 
+def poisson_blend(guide, border, R, iters=500):
+    """梯度域融合：R 裡保留 guide 的明暗（拉普拉斯），邊界接 border 的顏色。
+    拉伸出來的眼皮整片偏某個色、邊緣又是硬的 ＝ 一塊眼睛形狀的補丁；這一步把它的色調
+    逐點接到周圍原圖（上緣眼皮陰影、下緣臉頰、兩端眼角），紋理與陰影留著。"""
+    if not R.any():
+        return guide
+    ys, xs = np.where(R)
+    y0, y1, x0, x1 = ys.min() - 1, ys.max() + 2, xs.min() - 1, xs.max() + 2
+    g = guide[y0:y1, x0:x1].astype(np.float32); m = R[y0:y1, x0:x1]
+    b = border[y0:y1, x0:x1].astype(np.float32)
+    f = np.where(m[..., None], g, b)
+    # 紋理（梯度）只取 R 裡面的鄰居：R 外面緊鄰的是眼白／睫毛，那個落差不是眼皮的紋理
+    sh = [(1, 0), (-1, 0), (1, 1), (-1, 1)]
+    inn = [np.roll(m, k, a) for k, a in sh]
+    gsum = sum(np.where(inn[j][..., None], g - np.roll(g, k, a), 0) for j, (k, a) in enumerate(sh))
+    bsum = sum(np.where(~inn[j][..., None], np.roll(b, k, a), 0) for j, (k, a) in enumerate(sh))
+    for _ in range(iters):
+        fin = sum(np.where(inn[j][..., None], np.roll(f, k, a), 0) for j, (k, a) in enumerate(sh))
+        f[m] = ((fin + bsum + gsum) / 4)[m]
+    out = guide.copy()
+    out[y0:y1, x0:x1][m] = f[m]
+    return out
+
+
 def frame(rgb, eye, s, skinfill):
     """s＝眼瞼線移到 t+(b-t-h)·s。skinfill＝眼睛與眼框內頭髮都抹成皮膚之後的圖。
 
@@ -241,9 +265,11 @@ def frame(rgb, eye, s, skinfill):
     d = np.maximum(0, (bb - t - hc) * s) * taper
     SH = 3 if s < 0.7 else 0                       # 半閉：眼球陰影帶幾列
     BH = int(np.ceil(hc)) + 3 + SH
-    LID = 5                                        # 眼皮來源：睫毛上方幾列
+    LID = 6                                        # 眼皮來源：睫毛上方幾列
+    SHD = 2                                        # 其中貼著睫毛的眼影陰影（維持原寬度）
     rgbf = rgb.astype(np.float32)
     lidm = np.zeros(rgb.shape[:2], bool)              # 拉伸出來的眼皮（最後做水平平滑）
+    wm = np.zeros(rgb.shape[:2], bool)                # 這一格改寫過的皮膚（做梯度域融合的範圍）
     lash = []
 
     def samp(img, x, yy):
@@ -264,24 +290,34 @@ def frame(rgb, eye, s, skinfill):
             sh = np.clip(1 - (k - (hc + 1.5)) / SH, 0, 1) * (k >= hc + 1.5) * 0.85   # 陰影帶：漸淡
             al = np.maximum(al, sh)
 
-        # ① 眼皮：來源 [top0, ty) 拉伸到 [top0, ty + d)
+        # ① 眼皮：分兩段 —— 乾淨的眼皮 [top0, ty−SHD) 拉伸到 [top0, ty+d−SHD)；
+        #    貼著睫毛的那條眼影陰影 [ty−SHD, ty) **維持原寬度**，只平移到新睫毛線正上方。
+        #    （整段一起拉伸的話，1~2px 的粉色眼影會被拉成十幾 px，整片眼皮偏粉偏暗 ＝ 色差。）
         top0 = ty - LID
+        mid_src = ty - SHD                     # 來源：乾淨眼皮的下緣
+        mid_dst = ty + d[i] - SHD              # 目的：拉伸後的下緣
         dst0, dst1 = int(np.floor(top0)), int(np.ceil(ty + d[i] + 1))
         for yo in range(dst0, dst1):
-            v = (yo - top0) / max(1e-3, (ty + d[i] - top0))                # 0..1
-            sy = top0 + np.clip(v, 0, 1) * LID
+            if yo < mid_dst:
+                v = (yo - top0) / max(1e-3, (mid_dst - top0))
+                sy = top0 + np.clip(v, 0, 1) * (mid_src - top0)
+            else:
+                sy = mid_src + (yo - mid_dst)   # 陰影帶：原樣平移
             if eye['M'][yo, x] or yo >= ty:
                 out[yo, x] = samp(src, x, np.array([sy]))[0]
-                if yo >= ty:
+                wm[yo, x] = True
+                if yo >= ty and yo < mid_dst:
                     lidm[yo, x] = True
         # ② 全閉：新睫毛線以下，遮罩裡剩下的用 skinfill（下眼瞼那一窄條）
         if s >= 0.7:
             rows = np.where(eye['M'][:, x])[0]
             rows = rows[rows >= ty + d[i]]            # 從睫毛線上緣就鋪：睫毛半透明的地方底下要是皮膚，不是原本的虹膜
             out[rows, x] = skinfill[rows, x]
+            wm[rows, x] = True
         lash.append((x, ty + d[i], band, al))
     # 拉伸出來的眼皮做水平平滑（在畫睫毛之前，睫毛才不會被抹糊）
     out = hsmooth(out, lidm)
+    out = poisson_blend(out, skinfill, wm)
     # ③ 睫毛（＋半閉的陰影帶）貼到新位置
     for x, top, band, al in lash:
         for yo in range(int(np.floor(top)), int(np.ceil(top + BH)) + 1):
@@ -346,7 +382,7 @@ def main():
     pal = [] if A.no_hair else hair_palette(arr, eyes, skin)
     HA = hair_alpha(rgb, np.array(pal, np.float32).reshape(-1, 3), skin, Mall, eyes) if len(pal) else np.zeros(rgb.shape[:2], np.float32)
     # 填膚色時，眼框裡的頭髮也當成未知（不然髮色會被擴散進皮膚）
-    hard = (HA > 0.25) & (np.array(Image.fromarray(Mall.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5))) > 0)
+    hard = (HA > 0.04) & (np.array(Image.fromarray(Mall.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5))) > 0)
     fills = {id(e): harmonic_fill(rgb.astype(np.float32), e['M'] | hard) for e in eyes}
     meta = {'w': im.width, 'h': im.height}
     for key, s in (('half', HALF_S), ('closed', CLOSED_S)):
