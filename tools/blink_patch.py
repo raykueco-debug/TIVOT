@@ -84,12 +84,13 @@ def analyse(rgb, box):
     # 眼睛遮罩（整張圖座標），外擴 1px
     M = np.zeros(rgb.shape[:2], bool)
     for i, xr in enumerate(xs):
-        M[int(y0 + tt[i]) - 1:int(y0 + bb[i]) + 2, x0 + int(xr)] = True   # 往上多 1px：睫毛上緣的反鋸齒邊
+        M[int(y0 + tt[i]):int(y0 + bb[i]) + 2, x0 + int(xr)] = True
     # 睫毛上緣往上 4px 內的暗點（往上翹的單根睫毛尖端）也要抹掉，不然閉眼後會留一排點線
     for i, xr in enumerate(xs):
         x = int(xr)
         for yy in range(max(0, int(tt[i]) - 5), max(0, int(tt[i]) - 1)):
-            if dark[yy, x]:                       # 跟睫毛同一個暗度標準（淡色髮絲的陰影不算）
+            # 睫毛上緣的反鋸齒邊（緊貼的 2 列，比膚色暗就算）＋翹起的睫毛尖（真的暗）；淺色的雙眼皮摺線不算
+            if dark[yy, x] or (yy >= int(tt[i]) - 2 and L[yy, x] < Ls - 25):
                 M[y0 + yy, x0 + x] = True
     # 再從睫毛往下做連通擴展：凡是「非膚色／比膚色亮」而且連到眼睛的都算（虹膜、眼白的下緣）
     E = np.zeros(rgb.shape[:2], bool)
@@ -105,7 +106,8 @@ def analyse(rgb, box):
             if nx in ylim and ytop[nx] <= ny <= ylim[nx] and E[ny, nx] and not seen[ny, nx]:
                 seen[ny, nx] = True; q.append((ny, nx))
     M = seen
-    M = np.array(Image.fromarray(M.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(3))) > 0
+    # 只往下、左右外擴（不往上 —— 往上會吃掉雙眼皮的摺線）
+    M1 = M.copy(); M1[1:] |= M[:-1]; M = M1
     # 眼角往左右多擴 2px（只水平，不往上 —— 往上會吃掉雙眼皮的摺線），清掉眼角殘留的眼白
     M0 = M.copy()
     for dx in (1, 2):
@@ -217,11 +219,17 @@ def harmonic_fill(img, M, iters=400):
 
 
 def frame(rgb, eye, s, skinfill):
-    """s＝眼瞼線移到 t+(b-t-h)·s。skinfill＝整隻眼睛抹成皮膚之後的圖。
+    """s＝眼瞼線移到 t+(b-t-h)·s。skinfill＝眼睛與眼框內頭髮都抹成皮膚之後的圖。
 
-    睫毛線當成**一整條圖層**剪下來（alpha＝暗度×不是綠色），再沿一條平滑的
-    位移曲線做次像素的垂直重取樣 —— 逐欄取整數會變成鋸齒。"""
+    · 眼瞼皮膚：**把睫毛上方那幾列真的眼皮往下拉伸**到新的眼瞼線（動畫的閉眼就是上眼皮
+      往下拉）—— 顏色與平塗陰影都是原圖的，不會變成一塊擴散抹平的色塊。
+      拉伸的來源取 skinfill（眼皮上的髮絲已換成皮膚，免得把髮絲一起拉長；髮絲最後由原圖蓋回）。
+    · 睫毛線：一整條圖層（alpha＝暗度×不是虹膜色）沿平滑曲線做次像素重取樣。
+    · 半閉：睫毛下面再帶 SH 列「眼球上的陰影」一起搬，漸淡接回原圖 —— 不然露出來的是
+      虹膜中段的亮色，讀成一條平切的色塊。
+    · 全閉：新睫毛線（含）以下用 skinfill。"""
     out = rgb.astype(np.float32).copy()
+    src = skinfill
     x0, y0, Ls = eye['x0'], eye['y0'], eye['Ls']
     xs = eye['xs']; n = len(xs)
     u = np.linspace(0, 1, n)
@@ -231,32 +239,56 @@ def frame(rgb, eye, s, skinfill):
     hc = float(np.median(eye['h'])) + 1.5
     taper = np.sin(np.pi * u) ** 0.5
     d = np.maximum(0, (bb - t - hc) * s) * taper
-    BH = int(np.ceil(hc)) + 3
+    SH = 3 if s < 0.7 else 0                       # 半閉：眼球陰影帶幾列
+    BH = int(np.ceil(hc)) + 3 + SH
+    LID = 5                                        # 眼皮來源：睫毛上方幾列
+    rgbf = rgb.astype(np.float32)
+    lidm = np.zeros(rgb.shape[:2], bool)              # 拉伸出來的眼皮（最後做水平平滑）
+    lash = []
+
+    def samp(img, x, yy):
+        y_ = np.clip(yy, 0, img.shape[0] - 1.001); i0 = np.floor(y_).astype(int); f = (y_ - i0)[:, None]
+        return img[i0, x] * (1 - f) + img[i0 + 1, x] * f
+
     for i, xr in enumerate(xs):
         x = x0 + int(xr)
-        ty = y0 + t[i] - 1.0                     # 圖層從睫毛上緣往上 1px 起
-        ys = ty + np.arange(BH)
-        # 原圖垂直線性取樣出這一欄的睫毛圖層
-        def samp(img, yy):
-            y_ = np.clip(yy, 0, img.shape[0] - 1.001); i0 = np.floor(y_).astype(int); f = (y_ - i0)[:, None]
-            return img[i0, x] * (1 - f) + img[i0 + 1, x] * f
-        band = samp(rgb.astype(np.float32), ys)
+        ty = y0 + t[i] - 1.0                       # 睫毛圖層的起點（上緣往上 1px）
+        band = samp(rgbf, x, ty + np.arange(BH))
         Lb = lum(band)
-        hue = np.maximum(np.clip((band[:, 0] - band[:, 1] - 6) / 8.0, 0, 1),   # 睫毛偏紅棕（R−G≥12）、虹膜暗部 R−G≈5
+        hue = np.maximum(np.clip((band[:, 0] - band[:, 1] - 6) / 8.0, 0, 1),   # 睫毛偏紅棕、虹膜暗部 R−G≈5
                          np.clip((45 - Lb) / 20.0, 0, 1))                  # 極暗的一律算睫毛（線芯）
-        rw = np.clip(hc + 1.5 - np.arange(BH), 0, 1)        # 只取睫毛那幾列（再往下是虹膜）
+        k = np.arange(BH)
+        rw = np.clip(hc + 1.5 - k, 0, 1)                                    # 睫毛那幾列
         al = np.clip((Ls - 25 - Lb) / 70.0, 0, 1) * hue * rw
-        col = eye['M'][:, x]
-        rows = np.where(col)[0]
-        if s < 0.7:
-            rows = rows[rows < y0 + t[i] + d[i] + hc]
-        out[rows, x] = skinfill[rows, x]
-        # 貼到新位置：輸出列 y 對應圖層座標 (y - (ty + d))
-        for yo in range(int(np.floor(ty + d[i])), int(np.ceil(ty + d[i] + BH)) + 1):
-            k = yo - (ty + d[i])
-            if k < 0 or k > BH - 1:
+        if SH:
+            sh = np.clip(1 - (k - (hc + 1.5)) / SH, 0, 1) * (k >= hc + 1.5) * 0.85   # 陰影帶：漸淡
+            al = np.maximum(al, sh)
+
+        # ① 眼皮：來源 [top0, ty) 拉伸到 [top0, ty + d)
+        top0 = ty - LID
+        dst0, dst1 = int(np.floor(top0)), int(np.ceil(ty + d[i] + 1))
+        for yo in range(dst0, dst1):
+            v = (yo - top0) / max(1e-3, (ty + d[i] - top0))                # 0..1
+            sy = top0 + np.clip(v, 0, 1) * LID
+            if eye['M'][yo, x] or yo >= ty:
+                out[yo, x] = samp(src, x, np.array([sy]))[0]
+                if yo >= ty:
+                    lidm[yo, x] = True
+        # ② 全閉：新睫毛線以下，遮罩裡剩下的用 skinfill（下眼瞼那一窄條）
+        if s >= 0.7:
+            rows = np.where(eye['M'][:, x])[0]
+            rows = rows[rows >= ty + d[i]]            # 從睫毛線上緣就鋪：睫毛半透明的地方底下要是皮膚，不是原本的虹膜
+            out[rows, x] = skinfill[rows, x]
+        lash.append((x, ty + d[i], band, al))
+    # 拉伸出來的眼皮做水平平滑（在畫睫毛之前，睫毛才不會被抹糊）
+    out = hsmooth(out, lidm)
+    # ③ 睫毛（＋半閉的陰影帶）貼到新位置
+    for x, top, band, al in lash:
+        for yo in range(int(np.floor(top)), int(np.ceil(top + BH)) + 1):
+            kk = yo - top
+            if kk < 0 or kk > BH - 1:
                 continue
-            k0 = int(np.floor(k)); f = k - k0; k1 = min(BH - 1, k0 + 1)
+            k0 = int(np.floor(kk)); f = kk - k0; k1 = min(BH - 1, k0 + 1)
             px = band[k0] * (1 - f) + band[k1] * f
             a_ = al[k0] * (1 - f) + al[k1] * f
             out[yo, x] = out[yo, x] * (1 - a_) + px * a_
@@ -264,6 +296,16 @@ def frame(rgb, eye, s, skinfill):
         cols = x0 + xs.astype(int)
         rest = eye['M'].copy(); rest[:, cols.min():cols.max() + 1] = False
         out[rest] = skinfill[rest]
+    return out
+
+
+def hsmooth(img, m, r=2):
+    """只在 m 裡做水平方向的盒狀平滑 —— 逐欄拉伸會把欄與欄的小差異放大成直條紋。"""
+    out = img.copy()
+    acc = np.zeros_like(img); cnt = 0
+    for dx in range(-r, r + 1):
+        acc += np.roll(img, dx, 1); cnt += 1
+    out[m] = (acc / cnt)[m]
     return out
 
 
