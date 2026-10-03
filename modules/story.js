@@ -516,8 +516,15 @@ function tuneRender(){
     const row=sd=>{ const cur=studioSel[sd]||{}; const c=cat.find(x=>x.id===cur.id);
       return '<div class="tn-row tn-pick"><span>'+(sd==='L'?i18nT('左'):i18nT('右'))+'</span>'
         +'<select data-sc="'+sd+i18nT('"><option value="">（無）</option>')+cat.map(x=>'<option value="'+x.id+'"'+(x.id===cur.id?' selected':'')+'>'+x.name+'</option>').join('')+'</select>'
-        +'<select data-se="'+sd+'"'+(c?'':' disabled')+i18nT('><option value="">（基本）</option>')+(c?c.exprs:[]).map(e=>'<option'+(e===cur.expr?' selected':'')+'>'+e+'</option>').join('')+'</select></div>'; };
-    studio=row('L')+row('R')+i18nT('<div class="tn-row"><button data-act="exit">離開</button></div>');
+        +'<select data-se="'+sd+'"'+(c?'':' disabled')+'><option value="">'+i18nT('（基本）')+(c&&studioHasBlink(c.id,null)?' ●':'')+'</option>'
+        +(c?c.exprs:[]).map(e=>'<option value="'+e+'"'+(e===cur.expr?' selected':'')+'>'+e+(studioHasBlink(c.id,e)?' ●':'')+'</option>').join('')+'</select></div>'; };
+    /* 眨眼（Ray 2026-10-03：「整合到首頁的立繪檢查鈕」）：● ＝這張有眨眼補丁（script/blink.js）；
+       「眨一下」立刻演一次、「頻繁眨眼」約 1 秒一次 —— 驗補丁對位用。 */
+    const bk=['L','R'].filter(sd=>slot[sd]).map(sd=>(sd==='L'?i18nT('左'):i18nT('右'))+(blink.has((slotImg(sd)||{}).getAttribute?slotImg(sd).getAttribute('src'):'')?i18nT('有'):i18nT('無'))).join(' ／ ');
+    studio=row('L')+row('R')
+      +'<div class="tn-row"><span>'+i18nT('眨眼')+'</span><span class="tn-path" style="flex:1">'+(bk||'—')+'</span>'
+      +'<button data-act="blinknow">'+i18nT('眨一下')+'</button><button data-act="blinkfast" class="'+(blink.isFast()?'on':'')+'">'+i18nT('頻繁眨眼')+'</button></div>'
+      +i18nT('<div class="tn-row"><button data-act="exit">離開</button></div>');
   }
   if(!sides.length){ p.innerHTML=studio+i18nT('<div class="tn-empty">台上沒有立繪</div>'); tuneBindStudio(p); return; }
   if(sides.indexOf(tuneSide)<0) tuneSide = sides[sides.length-1];
@@ -643,6 +650,17 @@ function tuneBindStudio(p){
     const sd=sel.dataset.se, cur=studioSel[sd]; if(cur) studioPut(sd, cur.id, sel.value||null); }));
   const ex=p.querySelector('[data-act="exit"]');
   if(ex) ex.addEventListener('click', e=>{ e.stopPropagation(); studioExit(); });
+  const bn=p.querySelector('[data-act="blinknow"]');
+  if(bn) bn.addEventListener('click', e=>{ e.stopPropagation(); for(const sd of ['L','R']) if(slot[sd]) blink.now(slotEl(sd)); });
+  const bf=p.querySelector('[data-act="blinkfast"]');
+  if(bf) bf.addEventListener('click', e=>{ e.stopPropagation(); blink.setFast(!blink.isFast());
+    if(blink.isFast()) for(const sd of ['L','R']) if(slot[sd]) blink.now(slotEl(sd));
+    tuneRender(); });
+}
+/* 工作室下拉選單的 ●：這個角色的這一張差分（null＝基本立繪）有沒有眨眼補丁。 */
+function studioHasBlink(id, e){
+  const sp=SPEAKERS[id]; if(!sp) return false;
+  return blink.has(srcFor(sp.art, e||null));
 }
 function tuneSave(cur){
   const L=tuneLive[cur.tk.key]; if(!L) return;
@@ -716,6 +734,7 @@ function studioPut(side, id, expr){
 }
 function studioExit(){
   studioOn=false; tuneOn=false;
+  blink.setFast(false);   // 頻繁眨眼只給工作室驗補丁用，離開就回到正常節奏
   for(const sd of ['L','R']) if(slot[sd]) leaveSlot(sd);
   sideOverride={};
   tuneRender(); close();
@@ -3224,7 +3243,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1932';
+const KERB_V='?v=1933';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

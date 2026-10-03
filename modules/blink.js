@@ -62,10 +62,21 @@ export function bind(box, img, live){
   rec.t=setTimeout(()=>once(box), 900+Math.random()*2400);
 }
 
+/* 管理人工具（首頁「立繪」→ 調整工作室）用的兩個入口：
+   now(box)   ＝這一刻就眨一次（不等排程）
+   setFast(on)＝頻繁眨眼（約 1 秒一次）—— 驗補丁用，下一次排程起生效 */
+let fast=false;
+export function setFast(on){ fast=!!on; }
+export function isFast(){ return fast; }
+export function now(box){
+  const rec=box && T.get(box); if(!rec) return false;
+  clearTimeout(rec.t); once(box); return true;
+}
+
 function once(box){
   const rec=T.get(box); if(!rec) return;
   const e=els(box);
-  const next=()=>{ if(T.get(box)===rec) rec.t=setTimeout(()=>once(box), 2600+Math.random()*3400); };
+  const next=()=>{ if(T.get(box)===rec) rec.t=setTimeout(()=>once(box), fast ? 700+Math.random()*500 : 2600+Math.random()*3400); };
   const go = e.h.dataset.ok && e.c.dataset.ok && !document.hidden && (!rec.live || rec.live());
   if(!go){ next(); return; }
   const seq = Math.random()<0.15 ? SEQ.concat([[null,110]], SEQ) : SEQ;   // 偶爾連眨兩下
