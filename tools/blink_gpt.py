@@ -141,7 +141,7 @@ def merge(tag, gpath):
         seam0 = seam1 = 0.0
         if not os.environ.get('BLINK_NOREFINE'):
             ga, seam0, seam1 = refine(orig, ga, ez, al)
-        if cc < CC_MIN or outside > OUT_MAX:
+        if not ((cc >= CC_MIN and outside <= OUT_MAX) or (cc >= 0.975 and outside <= 9.0)):   # 次門檻：對位略差但眼外幾乎一致（白髮／兩人同框）
             bad.append((n, f'cc {cc:.4f} 眼外差 {outside:.1f}')); continue
         Gf = rgb.copy(); Gf[sy0:sy1, sx0:sx1] = ga[sy0 - y0:sy1 - y0, sx0 - x0:sx1 - x0]
         mk = bp._dil(Mall | Iall, 6) & ~((seg == bp.SEG_HAIR) & ~bp._dil(Iall, 1)) & (seg != 0)
