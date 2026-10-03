@@ -2956,29 +2956,38 @@
   .story-portrait > .sp-img{position:absolute;left:0;top:0;width:100%;height:100%;
     object-fit:contain;pointer-events:none;display:block;}
   .story-portrait > .sp-img:not([src]){visibility:hidden;}
-  /* ══ 立繪的呼吸與微晃（Ray 2026-10-03 路線 A：「整張立繪以腳底為軸，每 3~4 秒極輕微地上下伸縮
-       約 0.5%，再加一點點左右晃」）══
-     · 掛在**外框**上，用獨立的 `scale`／`rotate` 屬性 —— 它們與 `transform`（滑入、翻轉）各自疊加，
-       不會互相蓋掉（同一個元素的 transform 只有一份，寫在那裡就要四個狀態各抄一次）。
-     · 以腳底為軸：transform-origin 的 x 仍是 50%，所以 scaleX(-1) 的翻轉不受影響。
-     · 呼吸與晃動用**不同週期**（3.7s／7.9s），兩者不會同步成一個機械的節奏；左右兩個槽再錯開相位。
-     · 只在台上（.on／.in）才動；GPU 合成、不重繪，眨眼補丁在外框裡跟著一起動。
-     · 幅度都是變數，調手感只動這裡；發熱排除的「常駐循環動畫」開關（heat-noanim）照樣關得掉它。 */
-  :root{ --breath-amp:1.005; --breath-sec:3.7s; --sway-deg:.12deg; --sway-sec:7.9s; }
-  @keyframes spBreath{ 0%,100%{ scale:1 1; } 50%{ scale:1 var(--breath-amp); } }
-  @keyframes spSway{ 0%,100%{ rotate:calc(var(--sway-deg) * -1); } 50%{ rotate:var(--sway-deg); } }
-  #storyCast .story-portrait, #tutCast .tut-portrait{ transform-origin:50% 100%; }
-  #storyCast .story-portrait.on, #tutCast .tut-portrait.in{
-    animation:spBreath var(--breath-sec) ease-in-out infinite, spSway var(--sway-sec) ease-in-out infinite; }
-  #storyCastR.on, #tutCastR.in{ animation-delay:-1.6s, -4.3s; }
-  @media (prefers-reduced-motion: reduce){
-    #storyCast .story-portrait.on, #tutCast .tut-portrait.in{ animation:none; }
-  }
-  /* 髮梢擺動（路線 B，modules/sway.js）：墊底層與擺動層，位置是原圖百分比；擺幅 --sw-a、週期由 JS 逐層給。 */
+  /* ══ 立繪呼吸：分段平移（選項 1，Ray 2026-10-03「分頭胸腹」；取代 -1934 的整張伸縮）══
+     實作與分段的算法在 modules/breath.js。這裡只有動畫與幅度：
+       腿／腰（底圖）  不動
+       軀幹（.br-torso） 上移 --br-t，髮梢擺動層（.sw-*）跟著它
+       頭（.br-head）    上移 --br-h（整塊平移、不縮放），眨眼補丁（.sp-blink）跟著它
+     · 吸氣比吐氣快一點（keyframes 40% 到頂）；左右兩個槽錯開相位（--br-delay）。
+     · 只用 `translate` 屬性：與滑入／翻轉的 transform、髮梢的 rotate 各自疊加，GPU 合成不重繪。
+     · 只在台上（.on／.in）才動；10 秒沒操作照 perf-idle 暫停；heat-noanim／reduced-motion 都關得掉。 */
+  :root{ --br-t:-.6px; --br-h:-1.1px; --br-sec:3.8s; }
+  @keyframes brTorso{ 0%,100%{ translate:0 0; } 40%{ translate:0 var(--br-t); } }
+  @keyframes brHead { 0%,100%{ translate:0 0; } 40%{ translate:0 var(--br-h); } }
+  .br-torso, .br-head{ position:absolute; left:0; top:0; width:100%; height:100%; display:block;
+    object-fit:contain; pointer-events:none; max-width:none; }
+  #storyCast .story-portrait, #tutCast .tut-portrait{ --br-delay:0s; }
+  #storyCastR, #tutCastR{ --br-delay:-1.7s; }
+  #storyCast .story-portrait.on > .br-torso, #tutCast .tut-portrait.in > .br-torso,
+  #storyCast .story-portrait.on > .sw-under, #tutCast .tut-portrait.in > .sw-under{
+    animation:brTorso var(--br-sec) ease-in-out var(--br-delay) infinite; }
+  #storyCast .story-portrait.on > .br-head, #tutCast .tut-portrait.in > .br-head,
+  #storyCast .story-portrait.on > .sp-blink, #tutCast .tut-portrait.in > .sp-blink{
+    animation:brHead var(--br-sec) ease-in-out var(--br-delay) infinite; }
+  /* 髮梢擺動（路線 B，modules/sway.js）：墊底層與擺動層，位置是原圖百分比；擺幅 --sw-a、週期 --sw-d 由 JS 逐層給。
+     擺動層同時跟著軀幹呼吸（兩個動畫：rotate 擺、translate 呼吸）。 */
   .sw-under, .sw-layer{position:absolute;pointer-events:none;display:block;max-width:none;}
   @keyframes swSway{ 0%,100%{ rotate:calc(var(--sw-a,.5deg) * -1); } 50%{ rotate:var(--sw-a,.5deg); } }
-  .sw-layer{ animation:swSway 3.3s ease-in-out infinite; }
-  @media (prefers-reduced-motion: reduce){ .sw-layer{ animation:none; } }
+  .sw-layer{ animation:swSway var(--sw-d,3.3s) ease-in-out var(--sw-off,0s) infinite; }
+  #storyCast .story-portrait.on > .sw-layer, #tutCast .tut-portrait.in > .sw-layer{
+    animation:swSway var(--sw-d,3.3s) ease-in-out var(--sw-off,0s) infinite,
+              brTorso var(--br-sec) ease-in-out var(--br-delay) infinite; }
+  @media (prefers-reduced-motion: reduce){
+    .sw-layer, .br-torso, .br-head, .sw-under, .sp-blink{ animation:none !important; }
+  }
   /* 眨眼補丁（modules/blink.js；劇情頁 .story-portrait 與戰鬥對白 .tut-portrait 共用）：
      位置與大小是 inline 的原圖百分比，只切 visibility —— 不做淡入淡出（一格 45~85ms，淡了就看不出眨眼）。 */
   .sp-blink{position:absolute;pointer-events:none;display:block;visibility:hidden;max-width:none;}

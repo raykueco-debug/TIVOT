@@ -21,7 +21,7 @@ export function unbind(box){
   box.querySelectorAll(':scope > .sw-under, :scope > .sw-layer').forEach(e=>e.remove());
   const im = box.querySelector(':scope > .sp-img, :scope > .tp-img');
   if(im){ im.style.maskImage = im.style.webkitMaskImage = ''; }
-  delete box.dataset.sway;
+  delete box.dataset.sway; delete box.dataset.swaymask;
 }
 
 export function bind(box, img){
@@ -35,6 +35,7 @@ export function bind(box, img){
   // 底圖挖洞（整張圖大小的遮罩）
   const m = 'url("' + url(DIR + key + '_mask.webp') + '")';
   img.style.maskImage = img.style.webkitMaskImage = m;
+  box.dataset.swaymask = m;   // modules/breath.js 的兩份副本也要套（一定要先綁 sway 再綁 breath）
   img.style.maskSize = img.style.webkitMaskSize = '100% 100%';
   img.style.maskRepeat = img.style.webkitMaskRepeat = 'no-repeat';
   const ref = box.querySelector(':scope > .sp-blink');     // 眨眼補丁要留在最上面
@@ -51,7 +52,7 @@ export function bind(box, img){
     const e = put('sw-layer', DIR + key + '_l' + i + '.webp', L.r);
     e.style.transformOrigin = pct(L.p[0] - L.r[0], L.r[2]) + ' ' + pct(L.p[1] - L.r[1], L.r[3]);
     e.style.setProperty('--sw-a', L.a + 'deg');
-    e.style.animationDuration = L.d + 's';
-    e.style.animationDelay = (-Math.random() * L.d).toFixed(2) + 's';
+    e.style.setProperty('--sw-d', L.d + 's');                                    // 週期／相位走變數：
+    e.style.setProperty('--sw-off', (-Math.random() * L.d).toFixed(2) + 's');    // 這一層同時有呼吸動畫，inline 的 animation-delay 會兩個一起蓋
   });
 }
