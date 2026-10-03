@@ -747,12 +747,12 @@ function layout(){
 
   const on=[];
   for(const side of ['L','R']){
-    const el=slotEl(side), id=slot[side];
-    if(!el || !id || !el.naturalWidth) continue;
+    const el=slotEl(side), im=slotImg(side), id=slot[side];
+    if(!el || !im || !id || !im.naturalWidth) continue;
     const a0=frameOf(id, slotExpr[side]); if(!a0) continue;
     const tk=tuneKey(id, slotExpr[side]);
     const a=(tk && tuneLive[tk.key]) ? Object.assign({}, a0, tuneLive[tk.key]) : a0;   // 立繪調整工具的即時預覽（ver -1812）
-    on.push({ el, a, side });
+    on.push({ el, im, a, side });
   }
   if(!on.length) return;
   const solo = on.length===1;
@@ -772,11 +772,11 @@ function layout(){
       /* ver -745（Ray：「群眾可以過中線，以全員入鏡為標準，腳部可以裁，
          左右上不可」）：改鎖**寬度**——整張圖貼滿舞台寬（過中線是當然的），
          上緣貼頂；比舞台高的部分裁**腳**（下緣），比舞台矮就底貼底。 */
-      const s0 = W / o.el.naturalWidth;
-      const ih = s0 * o.el.naturalHeight;
+      const s0 = W / o.im.naturalWidth;
+      const ih = s0 * o.im.naturalHeight;
       const yT = (ih >= H) ? 0 : (H - ih);   // 高則頂貼頂裁腳；矮則底貼底
       return { ...o, s:s0, headY:yT+s0*a.top, yTop:yT, fitStage:true,
-               b:measureBounds(o.el, a.top, a.bot) };
+               b:measureBounds(o.im, a.top, a.bot) };
     }
     /* 縮放：鎖身高。faceAdj＝逐張的畫風補償（見 speakers.js 的說明），沒寫就是 1。
        ⚠⚠ 中景有敵人（stageCgBack 非空）時再乘「戰鬥中對話立繪尺寸」（ver -878，
@@ -803,7 +803,7 @@ function layout(){
     /* ⚠ b（輪廓左右界）ver -325 起**沒有人用**了 —— 夾中線那道拿掉之後就沒有
        消費者。留著是因為它是唯一「量得出立繪實際佔多寬」的工具，日後要做
        任何位置自動調整都會需要它；量一次幾百微秒，不值得為省它而刪。 */
-    return { ...o, s, headY, yTop, b:measureBounds(o.el, visLo, visHi) };
+    return { ...o, s, headY, yTop, b:measureBounds(o.im, visLo, visHi) };
   });
 
   const m = calc();
@@ -830,7 +830,7 @@ function layout(){
   const shiftOf = o => o.fitStage ? 0 : Math.max(0, H - (o.yTop + o.s*o.a.bot));
 
   for(const o of m){
-    const a=o.a, el=o.el, NW=el.naturalWidth;
+    const a=o.a, el=o.el, NW=o.im.naturalWidth;
     const fx=a.fx;
     /* 橫向錨的是**臉的中心**（fx），不是圖框中心 —— 插畫左右留白差很多。 */
     /* ⚠ ver -316：**單人也站自己那一側**，不置中（Ray 指定「同一人物立繪需
@@ -889,8 +889,8 @@ function layout(){
          「手調的」，下次重量那張圖會把手調一起洗掉。 */
     const x = o.fitStage ? 0
             : faceX - o.s*((mir ? 1-fx : fx) + (a.fxShift||0))*NW;
-    el.style.width  = (o.s*el.naturalWidth)+'px';
-    el.style.height = (o.s*el.naturalHeight)+'px';
+    el.style.width  = (o.s*o.im.naturalWidth)+'px';
+    el.style.height = (o.s*o.im.naturalHeight)+'px';
     el.style.left   = x+'px';
     /* ⚠⚠ `yShift`（ver -1812，立繪調整工具）＝這一張**整個往上挪幾公分**（正＝上）。
        加在 `shift` **之後**、不參與它的計算：`shift` 會把「腳沒落到畫面底」的人往下推，
@@ -934,6 +934,11 @@ function topLines(){
 
 /* ══ 立繪槽 ══ */
 function slotEl(side){ return $(side==='R' ? 'storyCastR' : 'storyCastL'); }
+/* 立繪槽是**外框**（ver -1927）：位置、滑入、壓暗、淡入淡出、鏡射、`data-who` 都在外框上；
+   只有圖本身的東西（`src`、`onload`、`naturalWidth`）問裡面那張圖。
+   ⚠ 外框是為了讓疊在立繪上的東西（眨眼補丁、呼吸）跟著立繪一起動、一起壓暗 —— 放在外框外面的話
+     壓暗與滑入都要再各寫一份。 */
+function slotImg(side){ const el=slotEl(side); return el ? el.querySelector('.sp-img') : null; }
 
 /* ══ 站位（ver -360）══
    預設是角色的固定站位（`speakers.js` 的 `ART[].side`，§6.5：同一個人每次都站同一邊）。
@@ -969,7 +974,7 @@ function ensureOn(id, expr){
   const liveSide = tk0 && tuneLive[tk0.key] && tuneLive[tk0.key].side;
   const side = liveSide || (ex && typeof ex==='object' && ex.side) || sideOf(id);   // 固定站位（可由 scene 覆寫），見 sideOf
   { const other = side==='L' ? 'R' : 'L'; if(slot[other]===id){ leaveSlot(other); } }
-  const el = slotEl(side); if(!el) return null;
+  const el = slotEl(side), im = slotImg(side); if(!el || !im) return null;
   const src = srcFor(sp.art, expr);
   const swapping = (slot[side] && slot[side]!==id);
   /* ══⚠⚠ **取景要跟著「畫面上真的畫出來的那一張」走**（ver -647／-648，Ray：
@@ -986,7 +991,7 @@ function ensureOn(id, expr){
      ⚠ 娜塔莉 dying→dead 的 `fx` 差 0.23、`top` 差 56，跳起來是 45px，很顯眼。 */
   const setExpr = ()=>{ slotExpr[side]=expr||null; };
 
-  if(slot[side]!==id || el.getAttribute('src')!==src){
+  if(slot[side]!==id || im.getAttribute('src')!==src){
     const apply = ()=>{
       /* ⚠⚠ **取景要跟著「畫面上真的是哪一張」走**（ver -647 修，Ray：「娜塔莉說
          『安娜』的時候位置跑掉了，此時應該就是用 dead 了，但圖還是 dying」）。
@@ -996,11 +1001,11 @@ function ensureOn(id, expr){
          **舊圖被套上新圖的取景**：娜塔莉 dying→dead 的 `fx` 差 0.23、`top` 差 56，
          畫面上就是「圖還沒換、人先跳走」。
          正解：`slotExpr` 與 `src` **同一刻**更新，然後才 `layout()`。 */
-      const ready=()=>{ el.onload=null; setExpr(); layout(); el.classList.add('on'); };
-      el.onload = ready;
-      el.setAttribute('src', src);
+      const ready=()=>{ im.onload=null; setExpr(); layout(); el.classList.add('on'); };
+      im.onload = ready;
+      im.setAttribute('src', src);
       el.dataset.who = id;
-      if(el.complete && el.naturalWidth) ready();
+      if(im.complete && im.naturalWidth) ready();
     };
     const first = !slot[side];
     if(swapping || first) slidIn = true;
@@ -1025,10 +1030,10 @@ function ensureOn(id, expr){
       el.classList.add('fading');
       slotT[side]=setTimeout(()=>{
         const back=()=>{ setExpr(); el.classList.remove('fading'); layout(); el.classList.add('on'); };
-        el.onload=()=>{ el.onload=null; back(); };
-        el.setAttribute('src', src);
+        im.onload=()=>{ im.onload=null; back(); };
+        im.setAttribute('src', src);
         el.dataset.who = id;
-        if(el.complete && el.naturalWidth){ el.onload=null; back(); }
+        if(im.complete && im.naturalWidth){ im.onload=null; back(); }
       }, 190);
     }
     slot[side]=id;
@@ -1051,7 +1056,7 @@ let slotT = { L:0, R:0 };
 function leaveSlot(side){
   const el=slotEl(side); if(!el) return;
   clearTimeout(slotT[side]); slotT[side]=0;
-  el.onload=null;
+  const im=slotImg(side); if(im) im.onload=null;
   el.classList.remove('on'); el.classList.remove('fading');
   slot[side]=null; slotExpr[side]=null;
   layout();                       // ⚠ 人數變了＝預算與縮限跟著變，剩下的人要重排
@@ -3209,7 +3214,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1926';
+const KERB_V='?v=1927';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4928,7 +4933,7 @@ function resetStage(){
   const st2=$('storyStage'); if(st2) st2.classList.remove('shake','hold');
   slot={L:null,R:null}; slotExpr={L:null,R:null}; shown={};
   for(const s2 of ['L','R']){ const el=slotEl(s2);
-    if(el){ el.classList.remove('on','dim','fading'); el.removeAttribute('src'); } }
+    if(el){ el.classList.remove('on','dim','fading'); const im=slotImg(s2); if(im) im.removeAttribute('src'); } }
 }
 
 /* 這一段（整條 scene 鏈）要用到的圖／音效／音樂。
@@ -5600,7 +5605,7 @@ function verifyCastCleared(){
       const el=slotEl(s); if(!el) continue;
       if(!el.classList.contains('on')) continue;
       console.info('[story] 撤場後仍有立繪殘留，已清除：', s, el.dataset.who||'');
-      clearTimeout(slotT[s]); slotT[s]=0; el.onload=null;
+      clearTimeout(slotT[s]); slotT[s]=0; { const im=slotImg(s); if(im) im.onload=null; }
       el.classList.remove('on','fading');
     }
   }, SLIDE_MS+80);
