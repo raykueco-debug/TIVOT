@@ -113,6 +113,13 @@ def analyse(rgb, box):
     for dx in (1, 2):
         M[:, dx:] |= M0[:, :-dx]
         M[:, :-dx] |= M0[:, dx:]
+    # 眼角的眼白常常再多出幾格：往左右 3~5px 內「比膚色亮」的也抹掉（不亮的不動，不吃到皮膚與頭髮）
+    bright = np.zeros(rgb.shape[:2], bool)
+    bright[y0:y1, x0:x1] = L > Ls + 4
+    M0 = M.copy()
+    for dx in (3, 4, 5):
+        M[:, dx:] |= M0[:, :-dx] & bright[:, dx:]
+        M[:, :-dx] |= M0[:, dx:] & bright[:, :-dx]
     # 眼睛內部（上下眼瞼之間）：這裡一律不算頭髮 —— 眼白、虹膜亮部與淡色頭髮常常同色
     I = np.zeros(rgb.shape[:2], bool)
     xf = xs.astype(float)
@@ -159,7 +166,7 @@ def hair_palette(arr, eyes, skin):
     return c[keep]
 
 
-def hair_alpha(rgb, pal, skin, M, eyes, pad=14, tol=48, soft=22):
+def hair_alpha(rgb, pal, skin, M, eyes, pad=14, tol=48, soft=22, keeps=()):
     """回傳整張圖大小的頭髮 alpha（0~1）。只在眼框外擴 pad 的範圍內算。
     條件：顏色接近某一種髮色、比膚色更像頭髮，而且**連到眼框外的頭髮**
     （眼白／虹膜被睫毛線圍住，連不出去 —— 白髮角色才不會把眼白當頭髮）。"""
@@ -182,11 +189,16 @@ def hair_alpha(rgb, pal, skin, M, eyes, pad=14, tol=48, soft=22):
         # 頭髮自己也會被算進眼睛的色群裡，所以比的是「髮色明顯更近」而不是「一定更近」
         # 眼睛內部：只有「非常接近髮色、而且明顯不像眼睛」的才算（穿過眼睛的髮絲），其餘一律不是頭髮
         strict = np.clip((22 - dh) / 8.0, 0, 1) * np.clip((de - dh - 12) / 8.0, 0, 1)
-        Ie = e['I'][y0:y1, x0:x1]
+        Ie = e['I'][y0:y1, x0:x1].copy()
+        # 保留框（標註）：蓋在眼睛上的髮束 —— 框內不套眼睛內部的嚴格判定，像頭髮就蓋回原圖
+        K = np.zeros(Ie.shape, bool)
+        for kx0, ky0, kx1, ky1 in keeps:
+            K[max(0, ky0 - y0):max(0, ky1 - y0), max(0, kx0 - x0):max(0, kx1 - x0)] = True
+        Ie &= ~K
         a = np.where(Ie, np.minimum(a, strict), a)
         # 填色區的其他地方（睫毛上緣那一圈）：要比起眼睛的顏色（含睫毛的棕）更像頭髮 ——
         # 半透明的睫毛尖端混了膚色會接近淡色髮，不擋的話會被「蓋回去」成一排點
-        a = np.where(m & ~Ie, a * np.clip((de - dh - 4) / 8.0, 0, 1), a)
+        a = np.where(m & ~Ie & ~K, a * np.clip((de - dh - 4) / 8.0, 0, 1), a)
         core = a > 0.5
         seen = core & ~m                          # 種子：眼框外的頭髮
         from collections import deque
@@ -366,6 +378,7 @@ def main():
     ap.add_argument('--out', required=True)
     ap.add_argument('--face', help='驗收圖的裁切框 x0,y0,x1,y1（預設：兩眼外擴）')
     ap.add_argument('--no-hair', action='store_true', help='關掉頭髮保護（對照用）')
+    ap.add_argument('--keep', action='append', default=[], help='保留框 x0,y0,x1,y1：蓋在眼睛上的髮束（標註）')
     ap.add_argument('--hairmask', action='store_true', help='另存 hairmask.png（頭髮 alpha 疊紅，除錯用）')
     A = ap.parse_args()
     im = Image.open(A.src).convert('RGBA')
@@ -380,7 +393,7 @@ def main():
     for e in eyes:
         Mall |= e['M']
     pal = [] if A.no_hair else hair_palette(arr, eyes, skin)
-    HA = hair_alpha(rgb, np.array(pal, np.float32).reshape(-1, 3), skin, Mall, eyes) if len(pal) else np.zeros(rgb.shape[:2], np.float32)
+    HA = hair_alpha(rgb, np.array(pal, np.float32).reshape(-1, 3), skin, Mall, eyes, keeps=[tuple(int(v) for v in k.split(',')) for k in A.keep]) if len(pal) else np.zeros(rgb.shape[:2], np.float32)
     # 填膚色時，眼框裡的頭髮也當成未知（不然髮色會被擴散進皮膚）
     hard = (HA > 0.04) & (np.array(Image.fromarray(Mall.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5))) > 0)
     fills = {id(e): harmonic_fill(rgb.astype(np.float32), e['M'] | hard) for e in eyes}
