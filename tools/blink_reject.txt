@@ -194,4 +194,3 @@ luna_si_angry  # 待修D
 luna_si_seat_angry  # 待修D
 luna_si_seat_hand  # 待修D
 luna_si_seat_smirk  # 待修D
-lunaria_si_arm  # 待修D

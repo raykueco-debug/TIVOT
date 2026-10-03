@@ -68,6 +68,7 @@ export const BLINK = {
   "luna_si_seat_lookdown": {"half":[523,63,76,52],"closed":[523,63,78,55],"base":"b51935c0"},
   "luna_si_seat_n": {"half":[439,120,49,33],"closed":[438,120,55,38],"base":"5bbae83c"},
   "luna_si_taunt": {"half":[521,94,43,25],"closed":[520,94,47,30],"base":"9b75ab39"},
+  "lunaria_si_arm": {"half":[494,77,37,20],"closed":[494,77,45,26],"base":"2bc396fd"},
   "misha_si_back": {"half":[406,109,65,37],"closed":[406,109,67,42],"base":"4fb96a18"},
   "misha_si_closeopen": {"half":[349,103,66,43],"closed":[349,103,68,43],"base":"ab913270"},
   "misha_si_draw": {"half":[392,110,76,47],"closed":[390,110,80,51],"base":"df439e6a"},
