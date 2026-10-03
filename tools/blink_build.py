@@ -86,7 +86,8 @@ EYES = os.path.join(ROOT, 'tools', 'blink_eyes.txt')
 
 
 def read_eyes():
-    """手給的眼框（分割抓錯時用）：一行 `<名>  x0,y0,x1,y1 [x0,y0,x1,y1]  # 理由`。"""
+    """手給的眼框（分割抓錯時用）：一行 `<名>  x0,y0,x1,y1 [x0,y0,x1,y1]  # 理由`。
+    另一種寫法 `<名>  glasses  # 理由`：戴眼鏡，鏡框保留原圖（blink_patch --glasses）。"""
     out = {}
     if os.path.exists(EYES):
         for ln in open(EYES, encoding='utf-8'):
@@ -99,7 +100,11 @@ def read_eyes():
 def run_one(n):
     extra = []
     for b in read_eyes().get(n.lower(), []):
-        extra += ['--eye', b]
+        extra += ['--glasses'] if b == 'glasses' else ['--eye', b]
+    # GPT 閉眼合成（Ray 10-03）：tools/_blink_base/<名>_closed.png 在 ⇒ 全閉用它，半閉照舊本機做
+    cf = os.path.join(ROOT, 'tools', '_blink_base', n + '_closed.png')
+    if os.path.exists(cf):
+        extra += ['--closed-from', cf]
     r = subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'blink_patch.py'), find_src(n), '--out', OUTD] + extra,
                        capture_output=True, text=True, encoding='utf-8', errors='replace')
     mp = os.path.join(OUTD, n, 'blink.json')

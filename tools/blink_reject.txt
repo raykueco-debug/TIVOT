@@ -196,3 +196,16 @@ luna_si_seat_hand  # 待修D
 luna_si_seat_smirk  # 待修D
 cecilie_si_back  # 不適用：背影（分割把耳環當成眼睛）
 nouvelle_si_desperate  # 不適用：瀏海蓋眼（分割把牙齒當成眼睛）
+npc_ss_lofa_complain  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
+npc_ss_lofa_cry  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
+npc_ss_lofa_cryhug  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
+npc_ss_lofa_front  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
+npc_ss_lofa_lookaway  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
+npc_ss_lofa_talk  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
+npc_ss_loti_ask  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
+npc_ss_loti_cry  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
+npc_ss_loti_give  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
+npc_ss_loti_guard  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
+npc_ss_loti_happy  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
+npc_ss_loti_sad  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
+npc_ss_loti_shock  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）

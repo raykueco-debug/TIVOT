@@ -34,6 +34,7 @@ resources/si/alpha/*
 
 # 眨眼量產的中間檔（tools/blink_build.py）：補丁原檔與分割圖，可重跑；交件在 resources/si/blink/
 tools/_blink_out/
+tools/_blink_base/
 tools/_blink_seg/*/
 !tools/_blink_seg/anya_si_front/
 !tools/_blink_seg/renna_si_front/

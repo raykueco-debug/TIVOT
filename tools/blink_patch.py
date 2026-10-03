@@ -750,6 +750,8 @@ def main():
     ap.add_argument('--face', help='驗收圖的裁切框 x0,y0,x1,y1（預設：兩眼外擴）')
     ap.add_argument('--no-hair', action='store_true', help='關掉頭髮保護（對照用）')
     ap.add_argument('--keep', action='append', default=[], help='保留框 x0,y0,x1,y1：蓋在眼睛上的髮束（標註）')
+    ap.add_argument('--closed-from', help='全閉改用這張整張合成圖（tools/_blink_base/<名>_closed.png，與原圖同尺寸同 alpha）')
+    ap.add_argument('--glasses', action='store_true', help='戴眼鏡：鏡框（灰、低彩度、連到眼框外）一律保留原圖')
     ap.add_argument('--hairmask', action='store_true', help='另存 hairmask.png（頭髮 alpha 疊紅，除錯用）')
     A = ap.parse_args()
     im = Image.open(A.src).convert('RGBA')
@@ -785,23 +787,78 @@ def main():
     HA = hair_alpha(rgb, np.array(pal, np.float32).reshape(-1, 3), skin, Mall, eyes, keeps=[tuple(int(v) for v in k.split(',')) for k in A.keep], segk=hs) if len(pal) else np.zeros(rgb.shape[:2], np.float32)
     # 填膚色時，眼框裡的頭髮也當成未知（不然髮色會被擴散進皮膚）
     hard = (HA > 0.04) & (np.array(Image.fromarray(Mall.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5))) > 0)
+    # 眼框旁邊比膚色亮的（眼白、瀏海下露出的眼白、高光）也當未知：當成擴散的邊界值的話，填出來的眼皮會近乎白色
+    # （諾薇兒 think：閉眼後瀏海下一條白帶）
+    Lr = lum(rgb.astype(np.float32))
+    bright = (Lr > lum(skin[None])[0] + 10) & (np.array(Image.fromarray(Mall.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(13))) > 0)
+    hard = hard | bright
+    # 比膚色暗很多的（眼睛的輪廓線、下眼瞼線、眼角的睫毛尾）也當未知：當成邊界值會把擴散填色拉灰，
+    # 閉眼後眼睛下面一圈灰 ＝ 黑眼圈（Ray 10-03：「為何都會有黑眼圈？」）
+    darkn = (Lr < lum(skin[None])[0] - 40) & (np.array(Image.fromarray(Mall.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(13))) > 0)
+    hard = hard | darkn
     fills = {id(e): harmonic_fill(rgb.astype(np.float32), e['M'] | hard) for e in eyes}
     # 瀏海直接壓在睫毛上（諾薇兒）：眼皮的拉伸來源整片是頭髮，擴散填色會得到偏髮色的
     # 一塊補丁。來源是頭髮的地方一律換成這隻眼睛的膚色 —— 頭髮最後照樣由原圖蓋回最上層。
     # ⚠ 待修B（賽西莉）試過「壓暗＋混髮色」：白塊只變成灰塊 —— 毛病在那一塊的形狀與鋸齒邊，不在顏色，已撤回。
     # ⚠ 待修C（索拉娜白髮灰霧）試過且**無效**的三條（2026-10-03）：眼皮改用擴散填色混 60%、
     #   頭髮 alpha 二值化、眼睛遮罩不准長進頭髮（這條保留，修好了別的）。灰霧的來源還沒找到。
+    # 瀏海下的眼皮色（Ray 10-03：「諾薇兒 front 有明顯超出的色塊」）：用固定的 e['lid'] 會比瀏海陰影下的皮膚亮一截，
+    # 閉眼後瀏海下緣露出一條淡粉帶。改取「頭髮下緣往下 1~4px 的臉／皮膚類」的中位色（＝陰影裡的皮膚），取不到才用 e['lid']。
+    hm = HA > 0.5
     for e in eyes:
+        lidc = e['lid']
+        if seg is not None and hm.any():
+            ys, xs_ = np.where(e['M'])
+            y0_, y1_ = max(0, ys.min() - 20), min(rgb.shape[0], ys.max() + 20)
+            x0_, x1_ = max(0, xs_.min() - 20), min(rgb.shape[1], xs_.max() + 20)
+            sub = hm[y0_:y1_, x0_:x1_]
+            band = _dil(sub, 4) & ~_dil(sub, 1)
+            sk = ((seg[y0_:y1_, x0_:x1_] == SEG_FACE) | (seg[y0_:y1_, x0_:x1_] == 5)) & ~e['M'][y0_:y1_, x0_:x1_]
+            pick = band & sk
+            if pick.sum() >= 20:
+                lidc = np.median(rgb[y0_:y1_, x0_:x1_][pick].astype(np.float32), 0)
         f = fills[id(e)]
-        f[HA > 0.3] = e['lid']
+        f[HA > 0.3] = lidc
     # 閉眼線的角度：眼底線轉折點連線、以鼻樑為中心的弧（只有兩隻眼都找得到時；否則退回兩眼角連線）
     for e in eyes:
         e['lowfit'] = lower_fit(e)
     fa = face_arc(eyes, seg)
     if fa:
         print('face_arc roll %.1f°' % fa['roll'], fa['warn'] or '')
+    GL = np.zeros(rgb.shape[:2], bool)
+    if A.glasses:
+        # 鏡框（Ray 10-03：「眼鏡框被抹掉一截」laurie）：低彩度、中高亮度的細線，而且連到眼框外 ——
+        # 眼白被睫毛圍住連不出去，所以不會被當成鏡框
+        from scipy import ndimage as nd
+        rf = rgb.astype(np.float32); mx, mn = rf.max(-1), rf.min(-1)
+        sat = (mx - mn) / np.maximum(mx, 1)
+        Lg = lum(rf)
+        zone = np.array(Image.fromarray(Mall.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(31))) > 0
+        cand = zone & (sat < 0.16) & (Lg > 110) & (Lg < 238)
+        lab, k = nd.label(cand, structure=np.ones((3, 3)))
+        out_ = zone & ~(np.array(Image.fromarray(Mall.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5))) > 0)
+        keep_ids = np.unique(lab[out_ & (lab > 0)])
+        GL = np.isin(lab, keep_ids[keep_ids > 0])
+        GL = _dil(GL, 1) & (sat < 0.24)
+        # 鏡框是細線：粗的一塊（眼角的眼白連到外面）不算；眼睛類裡很亮的（眼白）也不算
+        GL &= ~_dil(_ero(GL, 2), 3)
+        if seg is not None:
+            GL &= ~((seg == SEG_EYE) & (Lg > 205))
+        print('glasses px', int(GL.sum()))
     meta = {'w': im.width, 'h': im.height}
     for key, s in (('half', HALF_S), ('closed', CLOSED_S)):
+        if key == 'closed' and A.closed_from:
+            # 全閉改用外部合成好的整張圖（Ray 10-03：GPT 畫閉眼 → 對位 → 只貼眼睛那塊，見 tools/blink_gpt.py）。
+            # 合成時 alpha 沿用原圖、頭髮蓋回原圖；這裡只驗尺寸與 alpha 再切補丁。
+            cf = np.array(Image.open(A.closed_from).convert('RGBA'))
+            if cf.shape != arr.shape or not (cf[..., 3] == arr[..., 3]).all():
+                raise SystemExit('--closed-from 的尺寸或 alpha 與原圖不符：' + A.closed_from)
+            p, (x, y, w, h) = patch(rgb, cf[..., :3].astype(np.float32))
+            p.save(os.path.join(od, key + '.png'))
+            meta[key] = dict(x=x, y=y, w=w, h=h, src=key + '.png')
+            full = im.copy(); full.alpha_composite(p, (x, y))
+            frames[key] = full
+            continue
         cur = rgb.astype(np.float32)
         for e in eyes:
             cur = frame(cur, e, s, fills[id(e)], fa)
@@ -821,7 +878,19 @@ def main():
             facek = (seg == SEG_EYE) | (seg == SEG_FACE) | (seg == 5)
             allow = facek | (Iall & (seg == SEG_HAIR) & (HA < 0.3))
             prot = ~allow
+            # 眼瞼之間以外，顏色比起膚色更像頭髮的像素一律保留原圖：被分割判成「臉」的細髮絲（諾薇兒 front 外眼角）
+            if len(pal):
+                ch = np.abs(cur - rgb).sum(-1) > 3
+                if ch.any():
+                    yy, xx = np.where(ch & ~_dil(Iall, 1))
+                    px = rgb[yy, xx].astype(np.float32)
+                    dh = np.sqrt(((px[:, None, :] - np.array(pal, np.float32)[None]) ** 2).sum(-1)).min(1)
+                    dsk = np.sqrt(((px - skin) ** 2).sum(-1))
+                    hl = (dh < 40) & (dh < dsk - 10) & (seg[yy, xx] != SEG_EYE)   # 眼睛類不算（白髮配眼白：索拉娜 hug）
+                    prot[yy[hl], xx[hl]] = True
             cur[prot] = rgb[prot]
+        if A.glasses:
+            cur[GL] = rgb[GL]
         p, (x, y, w, h) = patch(rgb, cur)
         p.save(os.path.join(od, key + '.png'))
         meta[key] = dict(x=x, y=y, w=w, h=h, src=key + '.png')
