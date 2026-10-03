@@ -38,14 +38,24 @@ export function unbind(box){
   for(const im of [e.h, e.c]){ im.classList.remove('on'); im.onload=null; delete im.dataset.ok; delete im.dataset.key; }
 }
 
-/* box＝立繪外框、img＝外框裡的圖本體、live()＝這一刻可以眨嗎（舞台在、人在台上、不在換圖中）。 */
-export function bind(box, img, live){
+/* ══ 眨眼節奏（ver -1938，Ray：「立繪模式裡加入眨眼選項」）══
+   寫在 speakers.js 那一張立繪上的 `blink` 欄位（首頁「立繪」工作室存檔），沒寫＝one：
+     one     一般眨眼：平均間隔、每次單眨
+     oneTwo  一二拍：第一次眨一下、第二次連眨兩下，loop
+     twoOne  二一拍：第一次連眨兩下、第二次眨一下，loop
+     off     不眨 */
+export const MODES = ['one', 'oneTwo', 'twoOne', 'off'];
+const COUNTS = { one:[1], oneTwo:[1,2], twoOne:[2,1] };
+
+/* box＝立繪外框、img＝外框裡的圖本體、live()＝這一刻可以眨嗎（舞台在、人在台上、不在換圖中）、mode＝眨眼節奏。 */
+export function bind(box, img, live, mode){
   if(!box || !img) return;
+  mode = COUNTS[mode] || mode==='off' ? mode : 'one';
   const key=keyOf(img.getAttribute('src')), d=BLINK[key];
   const e=els(box);
-  if(e.h.dataset.key===key && T.has(box)){ T.get(box).live=live; return; }   // 同一張圖重綁＝不動
+  if(e.h.dataset.key===key && T.has(box) && T.get(box).mode===mode){ T.get(box).live=live; return; }   // 同一張圖、同一個節奏重綁＝不動
   unbind(box);
-  if(!d || !img.naturalWidth) return;
+  if(!d || !img.naturalWidth || mode==='off') return;
   const NW=img.naturalWidth, NH=img.naturalHeight;
   const put=(el, r, suf)=>{
     el.dataset.key=key;
@@ -57,7 +67,7 @@ export function bind(box, img, live){
     if(el.complete && el.naturalWidth){ el.onload=null; el.dataset.ok='1'; }
   };
   put(e.h, d.half, 'half'); put(e.c, d.closed, 'closed');
-  const rec={ t:0, live };
+  const rec={ t:0, live, mode, n:0 };   // n＝第幾次（一二拍／二一拍輪流用）
   T.set(box, rec);
   rec.t=setTimeout(()=>once(box), 900+Math.random()*2400);
 }
@@ -76,10 +86,14 @@ export function now(box){
 function once(box){
   const rec=T.get(box); if(!rec) return;
   const e=els(box);
-  const next=()=>{ if(T.get(box)===rec) rec.t=setTimeout(()=>once(box), fast ? 700+Math.random()*500 : 2600+Math.random()*3400); };
+  // 間隔：「平均時間」＝約 4 秒、只抖 ±0.6 秒（舊版 2.6~6 秒亂數加 15% 隨機連眨，已由節奏取代）
+  const next=()=>{ if(T.get(box)===rec) rec.t=setTimeout(()=>once(box), fast ? 700+Math.random()*500 : 3400+Math.random()*1200); };
   const go = e.h.dataset.ok && e.c.dataset.ok && !document.hidden && (!rec.live || rec.live());
   if(!go){ next(); return; }
-  const seq = Math.random()<0.15 ? SEQ.concat([[null,110]], SEQ) : SEQ;   // 偶爾連眨兩下
+  const cs = COUNTS[rec.mode] || COUNTS.one;
+  const times = cs[rec.n++ % cs.length];
+  let seq = SEQ;
+  for(let k=1;k<times;k++) seq = seq.concat([[null,110]], SEQ);   // 連眨：中間睜開 110ms
   let i=0;
   const step=()=>{
     if(T.get(box)!==rec) return;

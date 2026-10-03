@@ -549,6 +549,12 @@ function tuneRender(){
    +i18nT('<div class="tn-row"><span>上下</span><input data-in="yShift" type="number" step="1" value="')+n(c.f.yShift||0)+'"><button data-k="yShift" data-d="1">↑</button><button data-k="yShift" data-d="-1">↓</button></div>'
    +i18nT('<div class="tn-row"><span>左右</span><input data-in="fxShift" type="number" step="0.005" value="')+n(c.f.fxShift||0)+'"><button data-k="fxShift" data-d="0.005">←</button><button data-k="fxShift" data-d="-0.005">→</button></div>'
    /* 站位（ver -1892，Ray：「立繪調整要可以決定人物站左或右」）＝這一張的 `side`（同 speakers.js 既有的差分 side）。 */
+   /* 眨眼節奏（ver -1938，Ray）：寫這一張的 `blink`，存檔同大小／上下／左右那顆「儲存」。 */
+   +(()=>{ const m=c.f.blink||'one', has=blink.has((slotImg(tuneSide)||{getAttribute:()=>''}).getAttribute('src'));
+       const opts=[['one',i18nT('一般眨眼（平均時間單眨）')],['oneTwo',i18nT('一二拍眨眼')],['twoOne',i18nT('二一拍眨眼')],['off',i18nT('不眨眼')]];
+       return '<div class="tn-row"><span>'+i18nT('眨眼')+'</span><select data-blink'+(has?'':' disabled')+'>'
+         +opts.map(([v,t])=>'<option value="'+v+'"'+(v===m?' selected':'')+'>'+t+'</option>').join('')+'</select>'
+         +(has?'':'<span class="tn-path">'+i18nT('（這張沒有眨眼補丁）')+'</span>')+'</div>'; })()
    +i18nT('<div class="tn-row"><span>站位</span><button data-act="sideL" class="')+(tuneSide==='L'?'on':'')+i18nT('">站左</button><button data-act="sideR" class="')+(tuneSide==='R'?'on':'')+i18nT('">站右</button></div>')
    /* 水平翻轉（ver -1898 改，Ray：「立繪編輯的翻轉只是轉那一拍的圖而已」）＝**這一拍**的 `flip:true`，
       按下去直接寫進腳本那一行（`/__line set`），不寫 speakers.js。工作室模式沒有「這一拍」，不給。 */
@@ -564,6 +570,16 @@ function tuneRender(){
     if(bx){ ['pointerdown','click','keydown'].forEach(ev=>bx.addEventListener(ev, e=>e.stopPropagation()));
       bx.addEventListener('change', ()=>{ tuneMsg=i18nT('寫入中…'); tuneRender();
         beatChangeAt(tuneSide, bx.value).then(r=>{ tuneMsg=(r.ok?i18nT('已換差分，寫入：'):i18nT('換差分失敗：'))+r.text; tuneRender(); }); }); } }
+  { const bs=p.querySelector('select[data-blink]');
+    if(bs){ ['pointerdown','click','keydown'].forEach(ev=>bs.addEventListener(ev, e=>e.stopPropagation()));
+      bs.addEventListener('change', ()=>{
+        const cur=tuneCur(tuneSide); if(!cur) return;
+        const L=Object.assign({}, tuneLive[cur.tk.key] || {}); L.blink=bs.value;
+        tuneLive[cur.tk.key]=L; tuneArm=null; tuneMsg='';
+        blinkBind(tuneSide);                       // 立刻換節奏預覽
+        if(bs.value!=='off') blink.now(slotEl(tuneSide));
+        tuneRender();
+      }); } }
   p.querySelectorAll('input[data-in]').forEach(inp=>inp.addEventListener('change', ()=>{
     const cur=tuneCur(tuneSide); if(!cur) return;
     const v=parseFloat(inp.value); if(!isFinite(v)) return tuneRender();
@@ -603,7 +619,7 @@ function tuneRender(){
       tuneMoveSide(tuneSide, to);
       return tuneRender();
     }
-    if(act==='undo'){ delete tuneLive[cur.tk.key]; layout(); return tuneRender(); }
+    if(act==='undo'){ delete tuneLive[cur.tk.key]; layout(); blinkBind(tuneSide); return tuneRender(); }
     if(act==='save') tuneSave(cur);
     if(act==='std') tuneStd(cur);
   }));
@@ -972,7 +988,14 @@ function blinkBind(side){
   const box=slotEl(side), im=slotImg(side);
   sway.bind(box, im);
   breath.bind(box, im, slot[side] ? frameOf(slot[side], slotExpr[side]) : null);
-  blink.bind(box, im, ()=>blinkLive(side));
+  blink.bind(box, im, ()=>blinkLive(side), blinkModeOf(side));
+}
+/* 這一張的眨眼節奏：立繪工作室還沒存檔的即時值優先，其次 speakers.js 的 `blink`（沒寫＝one）。 */
+function blinkModeOf(side){
+  const id=slot[side]; if(!id) return 'one';
+  const tk=tuneKey(id, slotExpr[side]), L=tk && tuneLive[tk.key];
+  if(L && L.blink) return L.blink;
+  return (frameOf(id, slotExpr[side]) || {}).blink || 'one';
 }
 function blinkUnbind(side){ blink.unbind(slotEl(side)); breath.unbind(slotEl(side)); sway.unbind(slotEl(side)); }
 
@@ -3252,7 +3275,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1937';
+const KERB_V='?v=1938';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

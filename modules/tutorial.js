@@ -810,9 +810,34 @@ function setPortraitSrc(el, url){
   if(im.getAttribute('src')!==url){ blink.unbind(el); breath.unbind(el); sway.unbind(el); im.src=url; }
 }
 function blinkLive(el){ const w=$('tutCast'); return !!(el.classList.contains('in') && w && w.classList.contains('on')); }
+/* 眨眼節奏（ver -1938）：真相是 speakers.js 那一張立繪的 `blink`（差分自己寫的優先、再看角色層，沒寫＝one）。
+   戰鬥對白的圖是 ASSETS 路徑 —— 用路徑回查 ART（同 main.js 的 eeArtTarget）。
+   `blinkLiveMode`＝「敵圖」面板還沒存檔的即時值。 */
+const blinkLiveMode = {};
+const cleanSrc = s => String(s||'').split('?')[0];
+function blinkModeOf(im){
+  const want=cleanSrc(im && im.getAttribute('src'));
+  if(blinkLiveMode[want]) return blinkLiveMode[want];
+  for(const k of Object.keys(ART)){
+    const A=ART[k]; if(!A) continue;
+    if(cleanSrc(A.base)===want) return A.blink || 'one';
+    for(const e of Object.keys(A.expr||{})){
+      const v=A.expr[e];
+      if(v && typeof v==='object' && cleanSrc(v.src)===want) return v.blink || A.blink || 'one';
+    }
+  }
+  return 'one';
+}
+export function tuneBlink(side, mode){
+  const el = side==='right' ? $('tutCastR') : $('tutCastL'), im=pimg(el); if(!im) return;
+  blinkLiveMode[cleanSrc(im.getAttribute('src'))]=mode;
+  blink.bind(el, im, ()=>blinkLive(el), mode);
+  if(mode!=='off') blink.now(el);
+}
+export function blinkModeAt(side){ const el = side==='right' ? $('tutCastR') : $('tutCastL'); return blinkModeOf(pimg(el)); }
 for(const id of ['tutCastL','tutCastR']){
   const b=document.getElementById(id), im=pimg(b);
-  if(im) im.addEventListener('load', ()=>{ sway.bind(b, im); breath.bind(b, im, frameOf(b)); blink.bind(b, im, ()=>blinkLive(b)); });
+  if(im) im.addEventListener('load', ()=>{ sway.bind(b, im); breath.bind(b, im, frameOf(b)); blink.bind(b, im, ()=>blinkLive(b), blinkModeOf(im)); });
 }
 /* 依步驟台詞決定在場立繪：只有一個人說話的段落（如罵人插話）不出現另一名角色。
  * .in 逐立繪掛在 img 上（CSS transition 滑入/滑出）；段落接續（queue）時差異更新即可。 */

@@ -55,7 +55,9 @@ TUNE_FILE = 'script/speakers.js'
 # 立繪調整只寫 speakers.js；flight/index.html 留在白名單裡是給舊請求不報錯用的。
 TUNE_FILES = {'script/speakers.js', 'flight/index.html'}
 TUNE_KEYS = {'cm': 1, 'standCm': 1, 'yShift': 1, 'fxShift': 3}
-TUNE_ENUM = {'side': ('L', 'R')}   # ver -1892：站左／站右（這一張的 `side`，同 speakers.js 既有的差分 side）
+TUNE_ENUM = {'side': ('L', 'R'),   # ver -1892：站左／站右（這一張的 `side`，同 speakers.js 既有的差分 side）
+             # ver -1938：眨眼節奏（modules/blink.js）。one＝一般單眨／oneTwo＝一、二拍輪流／twoOne＝二、一拍輪流／off＝不眨
+             'blink': ('one', 'oneTwo', 'twoOne', 'off')}
 TUNE_BOOL = {'flip'}   # ver -1866：水平翻轉（這一張一律翻，同 speakers.js 既有的 `flip:true`；寫 false＝蓋掉角色層的 true）   # 欄位 → 小數位數（standCm：ver -1827，兩份取景的頭頂要同一個數字）
 
 

@@ -1441,7 +1441,8 @@ function openEnemyEdit(){
     talk = {};
     for(const t of (tutorial.tuneTargets ? tutorial.tuneTargets() : [])){
       const old = prevTalk[t.key];
-      const o = { cm:t.frame.cm, yShift:t.frame.yShift||0, fxShift:t.frame.fxShift||0 };
+      const o = { cm:t.frame.cm, yShift:t.frame.yShift||0, fxShift:t.frame.fxShift||0,
+                  blink:(tutorial.blinkModeAt ? tutorial.blinkModeAt(t.side) : 'one') };   // 眨眼節奏（ver -1938）
       if(!(t.who in side0)) side0[t.who] = t.side;
       talk[t.side] = old ? Object.assign(old, { who:t.who })
                          : { key:t.key, who:t.who, art:eeArtTarget(t.src), orig:Object.assign({}, o), v:Object.assign({}, o) };
@@ -1483,7 +1484,11 @@ function openEnemyEdit(){
         + row(i18nT('左右'), (+T.v.fxShift).toFixed(3), 'fxShift', 0.005, 'data-tk')
         + i18nT('<div class="ee-row"><span>站位</span>')
         +   '<button data-side="left" class="'+(tab==='left'?'on':'')+i18nT('">站左</button>')
-        +   '<button data-side="right" class="'+(tab==='right'?'on':'')+i18nT('">站右</button></div>');
+        +   '<button data-side="right" class="'+(tab==='right'?'on':'')+i18nT('">站右</button></div>')
+        /* 眨眼節奏（ver -1938，Ray：「立繪編輯都加入這個選項」）：同劇情頁的立繪工作室，寫這一張的 `blink`。 */
+        + '<div class="ee-row"><span>'+i18nT('眨眼')+'</span>'
+        +   [['one',i18nT('一般')],['oneTwo',i18nT('一二拍')],['twoOne',i18nT('二一拍')],['off',i18nT('不眨')]]
+              .map(([v,n])=>'<button data-blink="'+v+'" class="'+((T.v.blink||'one')===v?'on':'')+'">'+n+'</button>').join('')+'</div>';
     }
     box.innerHTML = tabs() + body
       + i18nT('<div class="ee-row"><button data-act="save">存　檔</button><button data-act="reset">還原</button>')
@@ -1492,7 +1497,7 @@ function openEnemyEdit(){
   };
   const preview = ()=>{ try{ enemyMod.applyEnemyFit(fitOf()); }catch(_){} };
   const revertTalk = ()=>{
-    for(const sd in talk){ const T=talk[sd]; try{ tutorial.tuneApply(T.key, T.orig); }catch(_){} }
+    for(const sd in talk){ const T=talk[sd]; try{ tutorial.tuneApply(T.key, T.orig); if(T.v.blink!==T.orig.blink) tutorial.tuneBlink(sd, T.orig.blink); }catch(_){} }
     for(const who in side0){ const T=Object.keys(talk).find(sd=>talk[sd].who===who);
       if(T && T!==side0[who]) try{ tutorial.tuneSetSide(who, side0[who]); }catch(_){} }
   };
@@ -1501,6 +1506,7 @@ function openEnemyEdit(){
     const t=e.target.closest('button'); if(!t) return;
     try{ SFX.menuClick(); }catch(_){}
     if(t.dataset.tab){ tab=t.dataset.tab; msg=''; render(); return; }
+    if(t.dataset.blink){ const T=talk[tab]; if(!T) return; T.v.blink=t.dataset.blink; tutorial.tuneBlink(tab, T.v.blink); render(); return; }
     if(t.dataset.side){
       const T=talk[tab], to=t.dataset.side; if(!T || to===tab) return;
       tutorial.tuneSetSide(T.who, to);
@@ -1520,7 +1526,7 @@ function openEnemyEdit(){
       if(k==='scale') cur.scale=Math.max(0.3, Math.min(2.5, cur.scale));
     }
     else if(t.dataset.act==='reset'){
-      if(tab!=='enemy'){ const T=talk[tab]; T.v=Object.assign({}, T.orig); tutorial.tuneApply(T.key, T.v); msg=i18nT('已還原'); render(); return; }
+      if(tab!=='enemy'){ const T=talk[tab]; T.v=Object.assign({}, T.orig); tutorial.tuneApply(T.key, T.v); tutorial.tuneBlink(tab, T.v.blink); msg=i18nT('已還原'); render(); return; }
       const p=eeParsePos(f0.pos || '');
       Object.assign(cur, { mode:f0.mode||'cover', x:f0.pos?p.x:50, y:f0.pos?p.y:0, scale:+f0.scale||1, shiftY:+f0.shiftY||0 });
       enemyMod.applyEnemyFit(f0); msg=i18nT('已還原成卡上的值'); render(); return;
@@ -1534,7 +1540,7 @@ function openEnemyEdit(){
     }
     else if(t.dataset.act==='save' && tab!=='enemy'){
       const T=talk[tab];
-      const set={ cm:+T.v.cm, yShift:+T.v.yShift, fxShift:+T.v.fxShift };
+      const set={ cm:+T.v.cm, yShift:+T.v.yShift, fxShift:+T.v.fxShift, blink:T.v.blink||'one' };
       const post=(ep, body)=>fetch(new URL(ep, location.href).pathname, { method:'POST', body:JSON.stringify(body) })
         .then(r=>r.text().then(x=>({ok:r.ok, x})));
       const jobs=[];
