@@ -918,3 +918,5 @@ when	from	to	reason
 20261002-213053	resources/audio/se/_raw/se_steps.mp3	_recycle/resources/audio/se/_raw/se_steps.mp3	ver -1914 Ray 換新 se_steps；舊的原 mp3（-1871 那支）
 20261002-213514	resources/audio/se/se_stepsbig.m4a	_recycle/resources/audio/se/se_stepsbig.m4a	ver -1915 Ray 換新 se_stepsbig；舊的 36 秒那支
 20261003-185249	tools/blink_preview.html	_recycle/tools/blink_preview.html	眨眼預覽頁：Ray 改用首頁立繪鈕的調整工作室
+20261003-205757	resources/si/eyefx/renna_si_shockopen_te_water.webp	_recycle/resources/si/eyefx/renna_si_shockopen_te_water.webp	淚眼改成虹膜白光閃動（Ray），水線／高光舊版素材
+20261003-205757	resources/si/eyefx/renna_si_shockopen_te_hl.webp	_recycle/resources/si/eyefx/renna_si_shockopen_te_hl.webp	淚眼改成虹膜白光閃動（Ray），水線／高光舊版素材

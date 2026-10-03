@@ -3003,13 +3003,16 @@
   .ef-tr > .ef-iris{ animation:efTremble var(--tr-sec) steps(1, end) infinite; }
   #storyCast .story-portrait.on > .ef-tr, #tutCast .tut-portrait.in > .ef-tr{
     animation:brHead var(--br-sec) ease-in-out var(--br-delay) infinite; }
-  /* 淚眼汪汪（ver -1947）：水線慢慢晃（上下 0.3px＋亮度起伏）、高光輕閃；容器同樣跟著頭呼吸。 */
+  /* 淚眼汪汪（ver -1948，Ray：「讓虹膜有白光閃動就好」）：三組光點各自閃 ——
+     g0 左上主光慢慢明滅、g1 右下小光一亮一暗、g2 細碎閃點快閃；週期互質，不會同步成一個節拍。容器跟著頭呼吸。 */
   .ef-te{ position:absolute; pointer-events:none; }
   .ef-te > img{ position:absolute; left:0; top:0; width:100%; height:100%; display:block; max-width:none; pointer-events:none; }
-  @keyframes efWater{ 0%,100%{ translate:0 0; opacity:.85; } 50%{ translate:0 -.3px; opacity:1; } }
-  @keyframes efGlint{ 0%,100%{ opacity:.8; } 40%{ opacity:1; } 70%{ opacity:.9; } }
-  .ef-te > .ef-water{ animation:efWater 1.9s ease-in-out infinite; }
-  .ef-te > .ef-hl{ animation:efGlint 1.3s ease-in-out infinite; }
+  @keyframes efG0{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
+  @keyframes efG1{ 0%,100%{ opacity:.15; } 20%{ opacity:1; } 45%{ opacity:.3; } }
+  @keyframes efG2{ 0%,100%{ opacity:0; } 12%{ opacity:1; } 30%{ opacity:0; } 60%{ opacity:.7; } 72%{ opacity:0; } }
+  .ef-te > .ef-g0{ animation:efG0 2.3s ease-in-out infinite; }
+  .ef-te > .ef-g1{ animation:efG1 1.7s ease-in-out -.6s infinite; }
+  .ef-te > .ef-g2{ animation:efG2 1.1s linear -.3s infinite; }
   #storyCast .story-portrait.on > .ef-te, #tutCast .tut-portrait.in > .ef-te{
     animation:brHead var(--br-sec) ease-in-out var(--br-delay) infinite; }
   @media (prefers-reduced-motion: reduce){ .ef-tr, .ef-tr > .ef-iris, .ef-te, .ef-te > img{ animation:none !important; } }

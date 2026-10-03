@@ -25,15 +25,15 @@ export function unbind(box){
   box.querySelectorAll(':scope > .ef-tr, :scope > .ef-te').forEach(e=>e.remove());
 }
 
-/* 淚眼汪汪（tear，ver -1947）：.ef-te 容器（不裁開口：水線要稍微蓋過下眼瞼）裡兩張 ——
-   .ef-water 下眼瞼的一汪水（緩慢晃、亮度起伏）、.ef-hl 眼裡的高光（輕輕閃）。動畫在 style.css。 */
+/* 淚眼汪汪（tear，ver -1948，Ray：「不是畫水線，讓虹膜有白光閃動就好」）：.ef-te 容器裡三張光點
+   .ef-g0／g1／g2（都只在虹膜裡），各用不同節奏與相位閃。動畫在 style.css。 */
 function bindTear(box, img, key, d){
   const W = img.naturalWidth, H = img.naturalHeight, r = d.te;
   const c = document.createElement('div'); c.className = 'ef-te';
   c.dataset.key = key; c.dataset.mode = 'tear';
   c.style.left = pct(r[0], W); c.style.top = pct(r[1], H);
   c.style.width = pct(r[2], W); c.style.height = pct(r[3], H);
-  for(const [cls, suf] of [['ef-water','water'], ['ef-hl','hl']]){
+  for(const [cls, suf] of [['ef-g0','g0'], ['ef-g1','g1'], ['ef-g2','g2']]){
     const e = document.createElement('img'); e.className = cls; e.alt = '';
     e.src = url(DIR + key + '_te_' + suf + '.webp');
     c.appendChild(e);
