@@ -69,7 +69,7 @@ export function bind(box, img, live, mode){
   put(e.h, d.half, 'half'); put(e.c, d.closed, 'closed');
   const rec={ t:0, live, mode, n:0 };   // n＝第幾次（一二拍／二一拍輪流用）
   T.set(box, rec);
-  rec.t=setTimeout(()=>once(box), 900+Math.random()*2400);
+  rec.t=setTimeout(()=>once(box), 500+Math.random()*1500);   // 上台後第一次眨：0.5~2 秒隨機（Ray，-1940）
 }
 
 /* 管理人工具（首頁「立繪」→ 調整工作室）用的兩個入口：
