@@ -532,7 +532,7 @@ function tuneRender(){
       +'<div class="tn-row"><span>'+i18nT('檢視')+'</span>'
       +'<button data-act="zoom" class="'+(studioZoom?'on':'')+'">'+i18nT('面部特寫')+'</button>'
       +'<button data-act="step" class="'+(studioStepOn?'on':'')+'">'+i18nT('逐格')+'</button>'
-      +(studioStepOn ? '<button data-act="stepnext">'+i18nT('下一格 ▶')+'</button><span class="tn-path">'+studioFrame+'</span>' : '')
+      +(studioStepOn ? '<button data-act="stepnext">'+i18nT('下一格 ▶')+'</button><span class="tn-path">'+i18nT(FRAME_NAME[blink.FRAMES[studioFrame]])+'</span>' : '')
       +'</div>'
       +i18nT('<div class="tn-row"><button data-act="exit">離開</button></div>');
   }
@@ -707,12 +707,11 @@ function studioZoomApply(){
   cast.style.transformOrigin='0 0';
   cast.style.transform='translate('+(cx-px*k)+'px,'+(cy-py*k)+'px) scale('+k+')';
 }
-/* 逐格（ver -1942，Ray：「不應該放慢放，應該放逐格，點一下往後推一禎」）：一格＝1/30 秒。
-   · 眨眼：blink.setStep 換成虛擬時鐘，每格 blink.stepBy(1000/30)。
-   · CSS 動畫（呼吸、髮梢、眼部特效）：全部 pause，每格 currentTime 往後推一格；
-     逐格期間新起的動畫（換人、換表情）也要停 —— 每 0.2 秒掃一次。 */
-const STEP_MS=1000/30;
+/* 逐格（ver -1942，Ray：「應該只有睜、半、閉三格，逐格是指這三格」）：
+   · 眨眼：blink.setStep 停掉自動眨眼；「下一格」＝睜 → 半閉 → 全閉 → 睜…（blink.frame），台上兩邊一起。
+   · CSS 動畫（呼吸、髮梢）也一起停住，看眼睛時畫面不會動；逐格期間新起的動畫每 0.2 秒掃一次停住。 */
 let studioStepOn=false, studioStepT=0, studioFrame=0;
+const FRAME_NAME={ o:'睜', h:'半', c:'閉' };
 function studioAnims(){ const c=$('storyCast'); return c ? c.getAnimations({subtree:true}) : []; }
 function studioStep(on){
   studioStepOn=!!on; studioFrame=0; blink.setStep(studioStepOn);
@@ -724,9 +723,8 @@ function studioStep(on){
 }
 function studioStepNext(){
   if(!studioStepOn) return;
-  for(const a of studioAnims()){ a.pause(); a.currentTime=(a.currentTime||0)+STEP_MS; }
-  blink.stepBy(STEP_MS);
-  studioFrame++;
+  studioFrame=(studioFrame+1)%blink.FRAMES.length;
+  for(const sd of ['L','R']) if(slot[sd]) blink.frame(slotEl(sd), blink.FRAMES[studioFrame]);
 }
 /* 工作室下拉選單的 ●：這個角色的這一張差分（null＝基本立繪）有沒有眨眼補丁。 */
 function studioHasBlink(id, e){
@@ -3329,7 +3327,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1942';
+const KERB_V='?v=1943';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

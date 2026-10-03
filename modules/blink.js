@@ -69,49 +69,39 @@ export function bind(box, img, live, mode){
   put(e.h, d.half, 'half'); put(e.c, d.closed, 'closed');
   const rec={ t:0, live, mode, n:0 };   // n＝第幾次（一二拍／二一拍輪流用）
   T.set(box, rec); live_.set(box, rec);
-  rec.t=sched(()=>once(box), stepMode ? 300 : 500+Math.random()*1500);   // 上台後第一次眨：0.5~2 秒隨機（Ray，-1940）
+  rec.t=sched(()=>once(box), 500+Math.random()*1500);   // 上台後第一次眨：0.5~2 秒隨機（Ray，-1940）
 }
 
 /* 管理人工具（首頁「立繪」→ 調整工作室）用的入口：
    now(box)   ＝這一刻就眨一次（不等排程）
    setFast(on)＝頻繁眨眼（約 1 秒一次）—— 驗補丁用，下一次排程起生效
-   ══ 逐格（ver -1942，Ray：「不應該放慢放，應該放逐格，點一下往後推一禎」）══
-   setStep(on)＝暫停真時間，改走虛擬時鐘；stepBy(ms)＝把虛擬時鐘往後推 ms（一格＝1/30 秒）。
-   所有等待都經過 sched()：平常＝setTimeout，逐格時＝排進虛擬時鐘的佇列。 */
+   ══ 逐格（ver -1942，Ray：「只有睜、半、閉三格，逐格是指這三格」）══
+   setStep(on)＝停掉自動眨眼（睜眼停住）；frame(box, f)＝直接顯示某一格（'o' 睜／'h' 半閉／'c' 全閉）。 */
 let fast=false;
 export function setFast(on){ fast=!!on; }
 export function isFast(){ return fast; }
 
-let stepMode=false, vnow=0, vq=[];            // vq：{ at, fn, dead }
-function sched(fn, ms){
-  if(stepMode){ const j={ at:vnow+ms, fn, dead:false }; vq.push(j); return j; }
-  return { real:setTimeout(fn, ms) };
-}
-function cancel(h){ if(!h) return; if(h.real) clearTimeout(h.real); else h.dead=true; }
+let stepMode=false;
+function sched(fn, ms){ return stepMode ? null : { real:setTimeout(fn, ms) }; }
+function cancel(h){ if(h && h.real) clearTimeout(h.real); }
 export function isStep(){ return stepMode; }
 export function setStep(on){
   on=!!on; if(on===stepMode) return;
-  stepMode=on; vnow=0; vq=[];
-  // 換時鐘：每一個綁著的立繪都睜眼、重新排下一次（逐格時 0.3 秒後；回真時間照正常間隔）
+  stepMode=on;
   for(const [box, rec] of live_){
     if(T.get(box)!==rec) continue;
     cancel(rec.t);
     const e=els(box); e.h.classList.remove('on'); e.c.classList.remove('on');
-    rec.t=sched(()=>once(box), on ? 300 : 500+Math.random()*1500);
+    rec.t=sched(()=>once(box), 500+Math.random()*1500);   // 回到自動：照正常的第一次延遲重新排
   }
 }
-export function stepBy(ms){
-  if(!stepMode) return;
-  const end=vnow+ms;
-  for(;;){
-    vq=vq.filter(j=>!j.dead);
-    const due=vq.filter(j=>j.at<=end).sort((a,b)=>a.at-b.at)[0];
-    if(!due) break;
-    vq.splice(vq.indexOf(due),1); vnow=due.at; due.fn();
-  }
-  vnow=end;
-}
-const live_=new Map();   // WeakMap 不能列舉；逐格切換時要掃一遍綁著的立繪
+export const FRAMES=['o','h','c'];
+export function frame(box, f){
+  if(!box || !T.get(box)) return false;
+  const e=els(box);
+  e.h.classList.toggle('on', f==='h'); e.c.classList.toggle('on', f==='c');
+  return true;
+}const live_=new Map();   // WeakMap 不能列舉；逐格切換時要掃一遍綁著的立繪
 
 export function now(box){
   const rec=box && T.get(box); if(!rec) return false;
