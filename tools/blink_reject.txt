@@ -78,7 +78,6 @@ anya_si_desperate  # 不適用：偵測錯位置（辮子）
 anya_si_die  # 不適用：看不到眼睛
 anya_si_sob  # 不適用：偵測錯位置
 cecilie_si_sadback  # 不適用：背影
-nemo_si_bye  # 不適用：把張開的嘴當成眼睛
 nouvelle_ad_si_coverface  # 不適用：雙手遮臉
 nouvelle_si_apologize  # 不適用：鞠躬看不到臉
 nouvelle_si_die  # 不適用：看不到眼睛
@@ -135,77 +134,21 @@ ssophia_si_manu_front  # 不適用：寫實男性
 torsten_si_q  # 不適用：瀏海遮眼
 
 # ── 待修A：閉眼後殘留虹膜／眼白 ──
-npc_grocer_si_v1  # 待修A
-npc_guildcounter_si_northport  # 待修A
-renna_si_hugshock  # 待修A
 sorana_si_carrynouvelleshock  # 待修A
-sorana_si_panic  # 待修A
-sorana_si_scare  # 待修A
-sorana_si_surprise  # 待修A
 
 # ── 待修B：眼皮上方白塊／白色虛線 ──
 cecilie_si_cringe  # 待修B
-cecilie_si_fluster  # 待修B
-cecilie_si_front  # 待修B
-cecilie_si_lookaside  # 待修B
-cecilie_si_nolook  # 待修B
 cecilie_si_saintinstall  # 待修B
-cecilie_si_talk  # 待修B
-cecilie_si_tease  # 待修B
-cecilie_si_think  # 待修B
-cecilie_si_upset  # 待修B
-xanya_si_front  # 待修B
 
 # ── 待修C：白髮蓋眼時眼皮變灰霧 ──
 sorana_ad_si_back  # 待修C
-sorana_ad_si_battlecry  # 待修C
-sorana_ad_si_battlecrylookaside  # 待修C
-sorana_ad_si_guardtalk  # 待修C
-sorana_si_angry  # 待修C
 sorana_si_back  # 待修C
-sorana_si_battlecry  # 待修C
-sorana_si_battlecrylook  # 待修C
-sorana_si_battlecrylookaside  # 待修C
-sorana_si_battlecrylookserious  # 待修C
-sorana_si_battlecryserious  # 待修C
-sorana_si_confuse  # 待修C
-sorana_si_front  # 待修C
-sorana_si_furious  # 待修C
-sorana_si_guard  # 待修C
-sorana_si_guardtalk  # 待修C
-sorana_si_ideasmile  # 待修C
 sorana_si_nod  # 待修C
-sorana_si_point  # 待修C
-sorana_si_readsad  # 待修C
 sorana_si_ready  # 待修C
 sorana_si_readysmile  # 待修C
-sorana_si_remind  # 待修C
-sorana_si_sad  # 待修C
-sorana_si_serious  # 待修C
-sorana_si_shy  # 待修C
-sorana_si_side  # 待修C
-sorana_si_stare  # 待修C
-sorana_si_talk  # 待修C
-sorana_si_talksmile  # 待修C
-sorana_si_worry  # 待修C
 
 # ── 待修D：眼罩 ──
-luna_si_angry  # 待修D
-luna_si_seat_angry  # 待修D
-luna_si_seat_hand  # 待修D
 luna_si_seat_smirk  # 待修D
 cecilie_si_back  # 不適用：背影（分割把耳環當成眼睛）
 nouvelle_si_desperate  # 不適用：瀏海蓋眼（分割把牙齒當成眼睛）
-npc_ss_lofa_complain  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
-npc_ss_lofa_cry  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
-npc_ss_lofa_cryhug  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
-npc_ss_lofa_front  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
-npc_ss_lofa_lookaway  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
-npc_ss_lofa_talk  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
-npc_ss_loti_ask  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
-npc_ss_loti_cry  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
-npc_ss_loti_give  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
-npc_ss_loti_guard  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
-npc_ss_loti_happy  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
 npc_ss_loti_sad  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
-npc_ss_loti_shock  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
