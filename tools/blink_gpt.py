@@ -47,6 +47,29 @@ def src(n):
     raise SystemExit('找不到立繪：' + n)
 
 
+def manual_boxes(n):
+    fp = os.path.join(HERE, 'blink_eyes.txt')
+    if os.path.exists(fp):
+        for ln in open(fp, encoding='utf-8'):
+            t = ln.split('#')[0].split()
+            if len(t) >= 2 and t[0].lower() == n.lower():
+                return [tuple(int(v) for v in x.split(',')) for x in t[1:] if x.count(',') == 3]
+    return []
+
+
+def eye_boxes(n, seg, O):
+    """眼框：tools/blink_eyes.txt 有手給的就用（同 blink_build），否則分割自動找。"""
+    fp = os.path.join(HERE, 'blink_eyes.txt')
+    if os.path.exists(fp):
+        for ln in open(fp, encoding='utf-8'):
+            t = ln.split('#')[0].split()
+            if len(t) >= 2 and t[0].lower() == n.lower():
+                bs = [tuple(int(v) for v in x.split(',')) for x in t[1:] if x.count(',') == 3]
+                if bs:
+                    return bs
+    return bp.seg_eyes(seg, rgb=O[..., :3])
+
+
 def load(n):
     O = np.array(Image.open(src(n)).convert('RGBA'))
     seg = bp.load_seg(os.path.join(HERE, '_blink_seg', n, 'classes_s1.6.png'), O.shape)
@@ -61,7 +84,7 @@ def grid(tag, names):
     meta = []
     for i, n in enumerate(names):
         O, seg = load(n)
-        boxes = bp.seg_eyes(seg, rgb=O[..., :3])
+        boxes = eye_boxes(n, seg, O)
         if not boxes:
             raise SystemExit('分割找不到眼睛：' + n)
         xs = [b[0] for b in boxes] + [b[2] for b in boxes]
@@ -120,7 +143,7 @@ def merge(tag, gpath):
         orig[sy0 - y0:sy1 - y0, sx0 - x0:sx1 - x0] = rgb[sy0:sy1, sx0:sx1]
         al[sy0 - y0:sy1 - y0, sx0 - x0:sx1 - x0] = O[sy0:sy1, sx0:sx1, 3]
         hs = bp.seg_hair_core(seg)
-        eyes = [bp.analyse(rgb, b, seg, hs) for b in bp.seg_eyes(seg, rgb=rgb)]
+        eyes = [bp.analyse(rgb, b, seg, hs) for b in eye_boxes(n, seg, O)]
         Mall = np.zeros(rgb.shape[:2], bool); Iall = Mall.copy()
         for e in eyes:
             Mall |= e['M']; Iall |= e['I']
@@ -147,6 +170,10 @@ def merge(tag, gpath):
             bad.append((n, f'cc {cc:.4f} 眼外差 {outside:.1f}')); continue
         Gf = rgb.copy(); Gf[sy0:sy1, sx0:sx1] = ga[sy0 - y0:sy1 - y0, sx0 - x0:sx1 - x0]
         mk = bp._dil(Mall | Iall, 6) & ~((seg == bp.SEG_HAIR) & ~bp._dil(Iall, 1)) & (seg != 0)
+        if manual_boxes(n):
+            # 手給眼框的那幾張（被頭髮蓋住、分割判成頭髮的眼睛：sorana cry）：框內整塊都換成 GPT 的
+            for bx0, by0, bx1, by1 in manual_boxes(n):
+                mk[max(0, by0 - 2):by1 + 2, max(0, bx0 - 2):bx1 + 2] = True
         ring = bp._dil(mk, 10) & ~bp._dil(mk, 3) & ((seg == bp.SEG_FACE) | (seg == 5))
         d = (rgb[ring].astype(float) - Gf[ring].astype(float)).mean(0) if ring.any() else np.zeros(3)
         Gc = np.clip(Gf.astype(float) + d, 0, 255)

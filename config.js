@@ -84,7 +84,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1952';
+export const VERSION = 'ver 2026.09.22-1953';
 
 export const GAME_CONFIG = {
 
@@ -5838,8 +5838,8 @@ export const ASSET_VER = {
   'npc_hotel_capital_half': '475c6aa5',
   'npc_shinier_chief_si_closed': '61bf4882',
   'npc_shinier_chief_si_half': '4c751252',
-  'npc_shinier_cook_si_closed': 'f857290b',
-  'npc_shinier_cook_si_half': 'f0ded297',
+  'npc_shinier_cook_si_closed': '4795231a',
+  'npc_shinier_cook_si_half': 'ed96736d',
   'npc_ss_boss_clap_closed': '025be529',
   'npc_ss_boss_clap_half': '2ed9d6c5',
   'npc_ss_cityhall_front': 'e84cc2c7',
@@ -6137,8 +6137,8 @@ export const ASSET_VER = {
   'sorana_si_cringe_closed': 'f3f840ba',
   'sorana_si_cringe_half': '7cf7113e',
   'sorana_si_cry': '2d8d6fa3',
-  'sorana_si_cry_closed': 'b157bdda',
-  'sorana_si_cry_half': 'ac6f77bd',
+  'sorana_si_cry_closed': '24cb6dbe',
+  'sorana_si_cry_half': 'c50d5bc6',
   'sorana_si_crybig': '803e1af1',
   'sorana_si_determine': '48e30a47',
   'sorana_si_determine_closed': '8939a395',
@@ -6173,16 +6173,16 @@ export const ASSET_VER = {
   'sorana_si_q_closed': '0734f3ae',
   'sorana_si_q_half': '3b72dc5f',
   'sorana_si_read': 'bc4b1f6e',
-  'sorana_si_read_closed': 'c13a3d74',
-  'sorana_si_read_half': '594d3b47',
+  'sorana_si_read_closed': '00fc14a4',
+  'sorana_si_read_half': 'c9bbd65f',
   'sorana_si_readconfuse': 'c3fc845f',
   'sorana_si_readconfuse_closed': 'd3b67077',
   'sorana_si_readconfuse_half': '1c42a57d',
   'sorana_si_readhappy': 'fe2488cf',
   'sorana_si_readsad': 'd8bfd951',
   'sorana_si_readshock': '480b822b',
-  'sorana_si_readshock_closed': 'cb03a386',
-  'sorana_si_readshock_half': '07ebf1c7',
+  'sorana_si_readshock_closed': '3ce0811e',
+  'sorana_si_readshock_half': 'e07f6a83',
   'sorana_si_ready': '03ede89c',
   'sorana_si_readysmile': '205d5df6',
   'sorana_si_relief': 'b3419e81',
