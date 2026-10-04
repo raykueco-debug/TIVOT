@@ -45,7 +45,42 @@ export function unbind(box){
 
 /* 淚眼汪汪（tear，ver -1948，Ray：「不是畫水線，讓虹膜有白光閃動就好」）：.ef-te 容器裡三張光點
    .ef-g0／g1／g2（都只在虹膜裡），各用不同節奏與相位閃。動畫在 style.css。 */
+/* ══ 淚眼 v2（ver -1973，Ray：「淚眼效果很不明顯，細長橫橢圓的白光一大一小，可超出虹膜不可超出眼框，左右擺動」）══
+   表上有 `tg`（每隻眼 [虹膜中心 x, y, 眼框半寬, 眼框半高]，框內像素）就走這一條：
+   · 容器用 `<鑰匙>_te_mask.webp`（眼睛開口）當 mask ⇒ 光可以越過虹膜，但出不了眼框
+   · 每隻眼兩顆**橫的細長橢圓**白光：大的在虹膜上半、小的在右下；擺動在 CSS（`.ef-tl`）
+   · 位置大小一律換成容器的百分比 —— 立繪縮放時跟著走
+   沒有 `tg` 的（還沒用新版 tools/eye_fx.py 重跑的）退回下面的 v1 三張光點。 */
+const TL = [   // [相對虹膜中心的 x, y（眼框半寬／半高的倍數）, 寬, 高（同）, class]
+  [-0.12, -0.30, 1.00, 0.40, 'big'],     // ⚠ 高 0.26→0.40、0.17→0.26（Ray：「橢圓太扁了」）
+  [ 0.30,  0.36, 0.48, 0.26, 'small'],
+];
+function bindTearV2(box, img, key, d){
+  const W = img.naturalWidth, H = img.naturalHeight, r = d.te;
+  const c = document.createElement('div'); c.className = 'ef-te v2';
+  c.dataset.key = key; c.dataset.mode = 'tear';
+  c.style.left = pct(r[0], W); c.style.top = pct(r[1], H);
+  c.style.width = pct(r[2], W); c.style.height = pct(r[3], H);
+  const m = 'url("' + url(DIR + key + '_te_mask.webp') + '")';
+  c.style.maskImage = c.style.webkitMaskImage = m;
+  /* 傾斜：與兩眼下眼線最低點的連線平行（表上的 `ta`，度；CSS 的 `--ta` 給擺動那組 keyframes 用）。 */
+  c.style.setProperty('--ta', (d.ta || 0) + 'deg');
+  d.tg.forEach(([cx, cy, ex, ey], i) => {
+    for(const [ox, oy, w, h, cls] of TL){
+      const e = document.createElement('i'); e.className = 'ef-tl ' + cls + (i % 2 ? ' alt' : '');
+      const gw = w * ex * 2, gh = h * ey * 2;
+      /* 相對虹膜的位移也跟著傾斜轉（光本身在 CSS 轉，排列在這裡轉）。 */
+      const t = (d.ta || 0) * Math.PI / 180, dx = ox * ex, dy = oy * ey;
+      const px = cx + dx * Math.cos(t) - dy * Math.sin(t), py = cy + dx * Math.sin(t) + dy * Math.cos(t);
+      e.style.left = pct(px - gw / 2, r[2]); e.style.top = pct(py - gh / 2, r[3]);
+      e.style.width = pct(gw, r[2]); e.style.height = pct(gh, r[3]);
+      c.appendChild(e);
+    }
+  });
+  box.insertBefore(c, box.querySelector(':scope > .sp-blink'));
+}
 function bindTear(box, img, key, d){
+  if(d.tg && d.tg.length){ bindTearV2(box, img, key, d); return; }
   const W = img.naturalWidth, H = img.naturalHeight, r = d.te;
   const c = document.createElement('div'); c.className = 'ef-te';
   c.dataset.key = key; c.dataset.mode = 'tear';

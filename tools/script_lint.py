@@ -688,11 +688,18 @@ def main():
 
             # `bgBand`（ver -1187）＝走時段候選鏈的換背景：驗的是**基底名**
             # （與節點的 `bg` 同一條規矩：`_Day` 或不帶時段的那一張在不在）。
+            # ⚠ 拍上的 `bgPending:true`（ver -1971）＝同節點那一格的意思：「知道缺、圖在路上」
+            #   —— 降為提醒；交件後提醒拔掉（第一個用例：廢城主祭壇點亮版，等 GPT 額度）。
             if ln.get('bgBand'):
                 b0 = ln['bgBand']
-                if not (bg_exists(BG_DIR + b0 + '_Day.webp') or bg_exists(BG_DIR + b0 + '_day.webp')
-                        or bg_exists(BG_DIR + b0 + '.webp')):
+                have = (bg_exists(BG_DIR + b0 + '_Day.webp') or bg_exists(BG_DIR + b0 + '_day.webp')
+                        or bg_exists(BG_DIR + b0 + '.webp'))
+                if not have and ln.get('bgPending'):
+                    warn('%s：背景 %s 產圖中（bgPending）——交件後拔掉 bgPending' % (tag, b0))
+                elif not have:
                     err('%s：沒有這張背景 %s（bgBand，找 %s，含 _Day／_day）' % (tag, b0, BG_DIR))
+                elif ln.get('bgPending'):
+                    warn('%s：背景 %s 已交件，bgPending 可以拔了' % (tag, b0))
             if ln.get('bg'):
                 cgq = bool(re.match(r'^\d{3}_', ln['bg']))
                 d = CG_DIR if cgq else BG_DIR

@@ -2415,6 +2415,11 @@ function battleBgmOf(id){
      這一場的搭檔＝卡上的 `partner`（sv_* 的強配），否則整備頁選的人
      （partner.storyPartnerKey —— cue 的當下 startGame 還沒跑，state.pickedPartner 未定）。
      表在 `config.battleBgm.partner`（鐵律 1）；卡上明寫的 `bgm` 仍最優先（上一行）。 */
+  /* 空中戰（ver -1973，Ray：「空中戰未指定 bgm 一律預設 EpicBattle」）：卡上沒寫曲子就一律這一首 ——
+     排在搭檔專屬曲之前（「一律」）。「是不是空中戰」看卡上的 `ship`（ver -1456 定的唯一記號，
+     舊的 `weaponSound` 判法是第二份真相，已拿掉）。 */
+  { const t1 = GAME_CONFIG.battleBgm || {};
+    if(b && b.ship && t1.ship) return t1.ship; }
   { const t0 = GAME_CONFIG.battleBgm || {};
     const pk = (b && b.partner) || partner.storyPartnerKey();
     if(t0.partner && t0.partner[pk]) return t0.partner[pk]; }
@@ -2422,13 +2427,6 @@ function battleBgmOf(id){
      資料在 `config.battleBgm`（鐵律 1）。 */
   const t = GAME_CONFIG.battleBgm || {};
   if(b && b.timeAttack && t.timeAttack) return t.timeAttack;
-  /* 船戰的禍魘默認曲（ver -741（-893 前用詞），Ray：「船戰禍魘默認 EpicBattle」）：
-     船戰的記號＝卡上有 `weaponSound`（艦載武器音只有船戰有）；
-     禍魘看敵人卡的 `kind`。空賊那一場卡上寫了自己的 `bgm`，走上面那一條。 */
-  if(b && b.weaponSound && t.shipHarm){
-    const e = GAME_CONFIG.enemies && GAME_CONFIG.enemies[b.enemy];
-    if(e && e.kind==='harm') return t.shipHarm;
-  }
   return t.default || 'bgm_battle';
 }
 story.setBattleCue((id)=>{

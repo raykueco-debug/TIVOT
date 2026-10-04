@@ -466,6 +466,7 @@ export const ENEMIES = {
       name:'米夏',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,
+      bgm:'bgm_havoc',   // 米夏戰（ver -1973，Ray：「米夏戰 bgm：PerituneMaterial_Havoc_loop」）—— 掛在卡上，哪一場打米夏都吃到
       parryBasic:1,   // 劈落：普攻整發無效、改演銀色刀光＋浮字 GUARD（ver -1957）
       /* 語音（ver -1964／-1967 第二批）：一串＝輪播；全部走敵人的語音閘（播放中不疊下一句）。 */
       parryVoice:['vo_misha_guard1','vo_misha_guard2','vo_misha_guard3','vo_misha_guard4','vo_misha_guard5'],   // 普攻被劈落

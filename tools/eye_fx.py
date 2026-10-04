@@ -217,6 +217,12 @@ def main():
         arr_ = np.dstack([np.full((H, W, 3), 255, np.float32), g * 255])
         Image.fromarray(np.clip(crop(arr_), 0, 255).astype(np.uint8), 'RGBA').save(
             os.path.join(DST, key + '_te_g%d.webp' % i), 'WEBP', quality=95, alpha_quality=100, method=6)
+    # ══ 淚眼 v2（ver -1973，Ray：「細長橫橢圓的白光一大一小，可超出虹膜不可超出眼框，左右擺動」）══
+    #   光由引擎畫（兩顆橫橢圓、CSS 擺動），工具只給兩樣：
+    #   · `_te_mask.webp` ＝眼睛開口（同 `_tr_mask` 那一份 O）—— 容器拿它裁，光就出不了眼框
+    #   · 表上的 `tg` ＝每隻眼的虹膜橢圓 [cx,cy,rx,ry]（框內像素）—— 引擎依它擺光的位置與大小
+    #   舊的 `_te_g0~2` 照產（還沒重跑 v2 的立繪引擎退回它們）。
+    Image.fromarray(mk, 'RGBA').save(os.path.join(DST, key + '_te_mask.webp'), 'WEBP', lossless=True, method=6)
     te_w = te_h = None    # 表
     tab = {}
     if os.path.exists(TABLE):
@@ -226,6 +232,33 @@ def main():
     if not A.tear_only:
         ent['tr'] = [bx0, by0, bx1 - bx0, by1 - by0]
     ent['te'] = [bx0, by0, bx1 - bx0, by1 - by0]   # 淚眼：同一個框（_te_g0／g1／g2 三張光點）
+    # 淚眼 v2：每隻眼 [虹膜中心 x, y, 眼框半寬, 眼框半高]（框內像素）。
+    #   ⚠ 大小用**眼框**不用虹膜：虹膜只算得到看得見的那一塊（被眼瞼蓋掉的不算），常常小一截。
+    olab, on = nd.label(O)
+    tg = []
+    for (cx, cy, rx, ry) in irises:
+        iy, ix = int(round(cy)), int(round(cx))
+        k = olab[min(max(iy, 0), H - 1), min(max(ix, 0), W - 1)]
+        if not k:   # 中心剛好落在眼框外（斜視、半閉）：取最近的那一塊
+            ys, xs = np.nonzero(olab)
+            j = int(np.argmin((xs - cx) ** 2 + (ys - cy) ** 2)); k = olab[ys[j], xs[j]]
+        ys, xs = np.nonzero(olab == k)
+        tg.append([round(cx - bx0, 1), round(cy - by0, 1),
+                   round((xs.max() - xs.min() + 1) / 2, 1), round((ys.max() - ys.min() + 1) / 2, 1)])
+    ent['tg'] = tg
+    # 淚眼 v2 的傾斜（ver -1973，Ray：「角度要跟臉的斜度，以下眼線最低點的那條線為基準，平行」）：
+    #   兩隻眼的開口各取**最低點**（同一列有好幾個就取中點），連線的角度（度，順時針為正）。只有一隻眼＝0。
+    lows = []
+    for (cx, cy, rx, ry) in irises:
+        iy, ix = int(round(cy)), int(round(cx))
+        k = olab[min(max(iy, 0), H - 1), min(max(ix, 0), W - 1)]
+        if not k:
+            ys, xs = np.nonzero(olab)
+            j = int(np.argmin((xs - cx) ** 2 + (ys - cy) ** 2)); k = olab[ys[j], xs[j]]
+        ys, xs = np.nonzero(olab == k)
+        yb = ys.max(); lows.append((float(xs[ys == yb].mean()), float(yb)))
+    lows.sort()
+    ent['ta'] = round(float(np.degrees(np.arctan2(lows[-1][1] - lows[0][1], lows[-1][0] - lows[0][0]))), 1) if len(lows) >= 2 else 0
     tab[key] = ent
     rows = ',\n'.join(f'  {json.dumps(k)}: {json.dumps(tab[k], separators=(",", ":"))}' for k in sorted(tab))
     open(TABLE, 'w', encoding='utf-8', newline='\n').write(

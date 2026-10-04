@@ -18,6 +18,14 @@
 
 ## 未完成
 
+**米夏／羅賽爾廢城主祭壇（-1957～-1972，Mac 程式 session）**
+- ⚠ 欠 `resources/background/dunmor/dunmor_altar_lit.webp`（主祭壇點亮版；照四座小祭壇 `_lit` 的翡翠綠電路紋，GPT 從 `dunmor_altar` 衍生）。
+  程式已接（白光那一拍 `bgBand`＋節點 `bgWhen need:'dm_altar_done'`），**交件就生效**；交件後拔掉那一拍的 `bgPending`。Ray：不要用 Gemini。
+- ⚠ 欠 `man_misha_guards` 正式版（現在是 Gemini 代圖，等 GPT 重畫；同名覆蓋要跳 `?v=`）。
+- ⚠ 欠插圖「主角被刺穿」（那一拍現在只有斬殺音＋震動）。
+- ❓ 米夏「這點成色還想成王……」那一拍表上寫 `mishaattack`，立繪庫沒有，暫用 `fight`。
+- ❓ 米夏戰的 BGM 沒指定（走預設戰鬥曲）。
+
 **眨眼／眼睛**
 1. ⚠⚠ **GPT 半閉還欠 10 張**（10-04 額度用完，22:52 重置）。拼格已做好：
    `tools/_blink_base/grid_fixh4.png`（米夏 side／sideopen／talk、蘿法 complain／front／talk、諾薇兒 decode）、

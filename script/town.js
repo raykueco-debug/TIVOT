@@ -936,14 +936,16 @@ const DM_SIDES = { RENNA:'L', NOUVELLE:'L' };
      `amb:'se_troops'` 三秒淡出；斬殺音 → `se_enemy_slash`；上膛 → `se_weapon_reload`。
    ⚠ 【插圖】主角被刺穿：圖待補，這一拍先只演斬殺音＋震動。 */
 const rtn = N('RETAINER');
-const DM_PLAYER = (extra) => Object.assign({ speaker:'PLAYER', blank:true }, extra||{});
 const DM_RELOADS = [{ n:'se_weapon_reload' }, { n:'se_weapon_reload', delay:180 }, { n:'se_weapon_reload', delay:420 }, { n:'se_weapon_reload', delay:530 }];
 const DM_ALTAR_MAIN = [
   Object.assign(nou('think','祭壇……好像已經在半啟動狀態了。'), { checkpoint:true }),
   any('stare','……'),
-  { speaker:'NARRATION', text:'', fx:'whiteflash', auto:1500 },   // 【白光，遺蹟啟動】
+  /* 【白光，遺蹟啟動】—— 白光底下換成主祭壇點亮版（Ray：「祭壇沒有換成點亮的差分」）。
+     ⚠ `dunmor_altar_lit` **還沒有圖**（等 GPT 額度，照四座小祭壇 `_lit` 的翡翠綠電路紋）：
+       走 `bgBand` 候選鏈，載不到就留原圖、只記一行 console —— 圖一交件就生效，不必再改程式。 */
+  { speaker:'NARRATION', text:'', fx:'whiteflash', bgBand:'dunmor_altar_lit', bgNoTime:true, bgPending:true, auto:1500 },
   any('surprise','！！'),
-  any('nervous','我……還沒……'),
+  any('nervous','我……明明還沒……'),
   ren('think','……'),
   ren('talkwork','如此一來，作戰課發布的任務就完成了。'),
   ren('smilesoft','一路以來，辛苦各位了。'),
@@ -958,10 +960,10 @@ const DM_ALTAR_MAIN = [
   any('silent',''),
   ren('talkserious','下一步會給出什麼指示，我也不敢說，'),
   ren('ask','所以，在事情變得無法回頭之前，我還是想確認一下安雅小姐的想法。'),
-  any('curious',''),
+  Object.assign(any('curious',''), { eyes:'tear' }),
   nou('bigsmile','不論安雅怎麼決定，我都會支持喔！'),
   ren('remindsmile','前提是在聖王廳的法度之內呢。'),
-  DM_PLAYER(),
+  { bubbleFx:'note', speaker:'PLAYER', blank:true },
   ren('blush','那、那是……'),
   sor('tease','不用裝啦，蕾娜妳的個性早就被摸透了。'),
   sor('smirk','嘴上說著這不行那不行，到最後出謀畫策的都是妳。'),
@@ -989,7 +991,6 @@ const DM_ALTAR_MAIN = [
   mis('talk','你們啟動了遺蹟之後，禍魘有減少過一匹嗎？'),
   sor('guard','！！'),
   mis('sideopen','聖王廳覬覦失落遺蹟，可不是這一兩百年內的事。'),
-  mis('sideopen','而妳的因果逆轉能力，正是他們渴望的鑰匙！'),
   any('silent','……'),
   ren('determine','……'),
   ren('talkwork','沒錯，我確實是利用了安娜殿下。'),
@@ -1010,7 +1011,7 @@ const DM_ALTAR_MAIN = [
   nou('desperate',''),
   ren('meltdown','怎麼會……'),
   ren('shockopen','竟然是團長級別的怪物……'),
-  DM_PLAYER({ se:'se_weapon_reload' }),                             // 【SE】上膛音
+  { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },                             // 【SE】上膛音
   { speaker:'NARRATION', text:'', se:'se_enemy_slash', shake:true, auto:900 },   // 【SE】斬殺音／【插圖】主角被刺穿（待補）
   mis('fight','這點成色還想成王……？不自量力。'),                      // ⚠ 表上寫 mishaattack（沒有這張），先用 fight
   any('crying','住手！'),
@@ -1032,7 +1033,7 @@ const DM_ALTAR_MAIN = [
   mis('closeopen','也罷。這次就依妳。'),
   mis('sideopen','但是別忘了，我仍然可以取他們性命。'),
   mis('back','我一個人就可以。'),
-  DM_PLAYER({ se:'se_weapon_reload' }),                             // 【SE】上膛音
+  { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },                             // 【SE】上膛音
   mis('back',''),
   any('panic','不要！'),
   nou('help','別再動了！會死的！'),
@@ -1051,7 +1052,7 @@ const DM_ALTAR_MAIN = [
   sor('sad','小公主……'),
   any('runworry',''),
   any('worry','你、沒事了嗎？', { se:'se_steps' }),
-  DM_PLAYER(),
+  { speaker:'PLAYER', blank:true },
   nou('sadnoeye','治癒術式在起作用了，沒事的。'),
   any('talk','對不起……大家、我……'),
   any('talk','我得到、薩梅爾的帝都去……'),
@@ -9907,7 +9908,10 @@ export const TOWNS = {
         ] }],
       },
       barrowfield:  { bg:'dunmor_barrowfield', name:'羅賽爾廢城　塚原', noTime:true, exits:{ left:'kingsbarrow', down:'dolmen' } },
+      /* `bgWhen`：主祭壇啟動之後（`dm_altar_done`，那一段演完才插）回來看到的是點亮版。
+         ⚠ 圖還沒交（同上），載不到就退回 `dunmor_altar`。 */
       altar:        { bg:'dunmor_altar', name:'羅賽爾廢城　祭壇', noTime:true, exits:{ down:'nemeton' },
+        bgWhen:[{ need:'dm_altar_done', bg:'dunmor_altar_lit', noTime:true }],
         /* ══ 四座小祭壇還沒點滿就先走到主祭壇（ver -1858）══ 整段只在「點亮不到四座」時演（`countOf max:3`）；
            最後兩句依「有沒有點過任何一座」分兩支。四座都點亮之後的主祭壇，等 Ray 的下一段稿。 */
         /* ⚠ 四座點滿之後的主祭壇排在**最前面**：一進來四座都亮了，就直接演這一段（先撞過祭壇的玩家也一樣）。 */

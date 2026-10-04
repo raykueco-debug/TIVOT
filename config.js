@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1970';
+export const VERSION = 'ver 2026.09.22-1974';
 
 export const GAME_CONFIG = {
 
@@ -147,7 +147,9 @@ export const GAME_CONFIG = {
      ⚠⚠ ver -1456：「是不是船戰」由 `卡上有 weaponSound` 改成 **`卡上的 ship`**
        —— 拿音效表當記號是第二份真相（鐵律 7，見 `modules/weapon.js` 那一段）。
        ⚠ 既有那三張船戰卡都已經補上 `ship:true`，行為不變。 */
-  battleBgm: { default:'bgm_battle', timeAttack:'bgm_hopstep', shipHarm:'bgm_epicbattle',
+  /* ⚠⚠ ver -1973（Ray：「空中戰未指定 bgm 一律預設 EpicBattle」）：`shipHarm`（只管船戰的禍魘）
+       改成 `ship` ＝**空中戰／船戰沒指定曲子就一律這一首**，不分敵人種類、也蓋過搭檔專屬曲。 */
+  battleBgm: { default:'bgm_battle', timeAttack:'bgm_hopstep', ship:'bgm_epicbattle',
                /* ver -837（-893 前用詞）（Ray：「索拉娜為夥伴時戰鬥音樂換成 Peritune_Whirlwind」）——
                   這一場的搭檔（卡上的 partner，否則整備頁選的人）在這張表裡就換曲；
                   卡上明寫的 bgm 仍最優先（main.battleBgmOf，鐵律 7）。 */
@@ -2369,7 +2371,7 @@ export const GAME_CONFIG = {
     /* 米夏戰（ver -1957，測試用；Ray：「開個米夏戰來試試」）。⚠ 還沒有任何腳本用它 ——
        正式的米夏戰（STORY_ROADMAP：第四遺蹟「打不贏」、終戰）要另外開卡、另外決定 allowLose。
        曲子先借尼莫戰那一首。 */
-    test_misha: { enemy:'misha', allowLose:true, bgm:'nemo', bg:'holyseedungeonwhole' },
+    test_misha: { enemy:'misha', allowLose:true, bg:'holyseedungeonwhole' },   // 曲子跟著敵人卡（Havoc）
     /* 羅賽爾廢城主祭壇（ver -1969，Ray 的「羅塞爾廢城_台詞差分」）：護衛戰 → 米夏戰。
        ⚠ 米夏戰**打不贏**（卡上 lastStand：血到 1 → NI → 劇情殺）⇒ `allowLose`，腳本 `onLose` 接後面的戲。
        曲子沒指定，走預設戰鬥曲。 */
@@ -3790,6 +3792,7 @@ export const GAME_CONFIG = {
       peritune_hopstep_battle_loop:1.0,
       /* 船戰兩首（ver -741，本機 BS.1770 實測，同上錨）。 */
       peritunematerial_epicbattle_loop:0.523,
+      peritunematerial_havoc_loop:0.442,   // 米夏戰（ver -1973；對齊 EpicBattle 換算）
       /* 安雅戰鬥曲（ver -873 本機 BS.1770 實測 −8.4 LUFS，錨校正 bgm_battle 0.849：
          尺差 ×1.18 對回表尺 → 0.636；峰值 1.1dB 未觸頂）。 */
       peritunematerial_battlefield4:0.636,
@@ -4866,9 +4869,10 @@ export const ASSETS = {
        手機上會變成「那一段沒有音樂」。Crimson_Moon 的 m4a 版由 Ray 於 -615 補上。 */
   bgm_suspense:   "resources/audio/bgm/peritunematerial_suspense6_loop.m4a",
   /* 船戰兩首（ver -741，Ray：「船戰禍魘默認這一首」「船戰的空賊戰定成 bgm_piratebattle」）。
-     禍魘船戰的「默認」規則在 battleBgm.shipHarm（main.battleBgmOf 讀）；
+     空中戰的「默認」規則在 battleBgm.ship（main.battleBgmOf 讀）；
      空賊寫在 flight_pirate 卡上。 */
   bgm_epicbattle:   "resources/audio/bgm/peritunematerial_epicbattle_loop.m4a",
+  bgm_havoc:        "resources/audio/bgm/peritunematerial_havoc_loop.m4a",   // 米夏戰（ver -1973，Ray 指定；原檔名 PerituneMaterial_Havoc_loop，改小寫）
   /* 安雅為夥伴時的戰鬥曲（ver -873，Ray 指定 BattleField4——混亂 session 遺失件補回）。 */
   bgm_battlefield4: "resources/audio/bgm/peritunematerial_battlefield4.m4a",
   bgm_frosylva:     "resources/audio/bgm/peritune_frosylva.m4a",   // 木雅克神殿（ver -876）
@@ -5539,7 +5543,6 @@ export const ASSET_VER = {
   'ci_anya_luciddream': '773af9dd',
   'ci_anya_nightmareinstall': '26b448f3',
   'ci_anya_obe': 'f8337149',
-  'ci_misha_ni': '407d39b1',
   'ci_nouvelle_deathguard': '5a505484',
   'ci_nouvelle_lifereturn': '1223b2d1',
   'ci_nouvelle_obe': '1b547b75',
@@ -5643,10 +5646,6 @@ export const ASSET_VER = {
   'luna_si_taunt_half': '13a82f50',
   'lunaria_si_arm_closed': '2f0bf75e',
   'lunaria_si_arm_half': 'a1db391e',
-  'man_misha': '89c56bd8',
-  'man_misha_attack': 'a534d729',
-  'man_misha_guards': '7bc297b3',
-  'man_misha_ni': '9576ea75',
   'man_sorana': '11180f49',
   'man_thug_shotgun': '504d26bc',
   'man_thug_squad': 'dfd75032',
@@ -6187,7 +6186,6 @@ export const ASSET_VER = {
   'ruins_shinier_deepspring': '20609f66',
   'saint_gt_ci': '2c191ece',
   'saint_tr_ci': '1f885777',
-  'se_bulletguard': 'f8c96a23',
   'se_bulletsfly1': '7a3f47e9',
   'se_bulletsfly2': '0cf50f26',
   'se_bulletsfly3': '2cb3b08e',
@@ -6427,26 +6425,6 @@ export const ASSET_VER = {
   'vela_square_day': 'dc514e1a',
   'vo_anya_luciddream': '60bed254',
   'vo_anya_obe': '615ba712',
-  'vo_misha_attack': 'b9e274ca',
-  'vo_misha_attack2': '73566366',
-  'vo_misha_attack3': '21c74ec4',
-  'vo_misha_attack4': '36747c50',
-  'vo_misha_attack5': '686be4d9',
-  'vo_misha_attack6': 'a4700681',
-  'vo_misha_attack7': 'a4700681',
-  'vo_misha_damage1': '482797fc',
-  'vo_misha_damage2': '060fbdd9',
-  'vo_misha_damage3': '6ac94d6f',
-  'vo_misha_damage4': 'e1f4b9bc',
-  'vo_misha_finish': 'e3d92915',
-  'vo_misha_guard1': '84fd4682',
-  'vo_misha_guard2': '32f8b88c',
-  'vo_misha_guard3': 'a6979e8f',
-  'vo_misha_guard4': 'c8ab9d76',
-  'vo_misha_guard5': 'c8b74667',
-  'vo_misha_hp20': 'a76ef440',
-  'vo_misha_hp50': '7117e605',
-  'vo_misha_ni': 'bada3c54',
   'vo_nouvelle_deathguard': '81a164d8',
   'vo_nouvelle_lifereturn': 'b4fc5f3b',
   'vo_nouvelle_obe': '0c7d6842',
