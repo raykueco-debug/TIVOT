@@ -956,3 +956,30 @@ when	from	to	reason
 20261004-142104	resources/background/Ravn_Uptown.webp	_recycle/resources/background/Ravn_Uptown.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
 20261004-142104	resources/SI/Sorana_SI_tired.png	_recycle/resources/SI/Sorana_SI_tired.png	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
 20261004-142949	resources/background/_similarity_audit_20261003.md	_recycle/resources/background/_similarity_audit_20261003.md	與 origin 0e5c716e 同內容（只差 CRLF），rebase 前移開
+20261004-151635	resources/si/eyefx/sorana_si_crybig_te_g0.webp	_recycle/resources/si/eyefx/sorana_si_crybig_te_g0.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/sorana_si_crybig_te_g1.webp	_recycle/resources/si/eyefx/sorana_si_crybig_te_g1.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/sorana_si_crybig_te_g2.webp	_recycle/resources/si/eyefx/sorana_si_crybig_te_g2.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/sorana_si_furiousq_te_g0.webp	_recycle/resources/si/eyefx/sorana_si_furiousq_te_g0.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/sorana_si_furiousq_te_g1.webp	_recycle/resources/si/eyefx/sorana_si_furiousq_te_g1.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/sorana_si_furiousq_te_g2.webp	_recycle/resources/si/eyefx/sorana_si_furiousq_te_g2.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/npc_ss_lofa_capture_te_g0.webp	_recycle/resources/si/eyefx/npc_ss_lofa_capture_te_g0.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/npc_ss_lofa_capture_te_g1.webp	_recycle/resources/si/eyefx/npc_ss_lofa_capture_te_g1.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/npc_ss_lofa_capture_te_g2.webp	_recycle/resources/si/eyefx/npc_ss_lofa_capture_te_g2.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/nemo_si_bye_te_g0.webp	_recycle/resources/si/eyefx/nemo_si_bye_te_g0.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/nemo_si_bye_te_g1.webp	_recycle/resources/si/eyefx/nemo_si_bye_te_g1.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/nemo_si_bye_te_g2.webp	_recycle/resources/si/eyefx/nemo_si_bye_te_g2.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/nemo_si_happy_te_g0.webp	_recycle/resources/si/eyefx/nemo_si_happy_te_g0.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/nemo_si_happy_te_g1.webp	_recycle/resources/si/eyefx/nemo_si_happy_te_g1.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/nemo_si_happy_te_g2.webp	_recycle/resources/si/eyefx/nemo_si_happy_te_g2.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/npc_ss_loti_sad_te_g0.webp	_recycle/resources/si/eyefx/npc_ss_loti_sad_te_g0.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/npc_ss_loti_sad_te_g1.webp	_recycle/resources/si/eyefx/npc_ss_loti_sad_te_g1.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/npc_ss_loti_sad_te_g2.webp	_recycle/resources/si/eyefx/npc_ss_loti_sad_te_g2.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/npc_ss_boss_hurt_te_g0.webp	_recycle/resources/si/eyefx/npc_ss_boss_hurt_te_g0.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/npc_ss_boss_hurt_te_g1.webp	_recycle/resources/si/eyefx/npc_ss_boss_hurt_te_g1.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/npc_ss_boss_hurt_te_g2.webp	_recycle/resources/si/eyefx/npc_ss_boss_hurt_te_g2.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/ssophia_si_manu_draw_te_g0.webp	_recycle/resources/si/eyefx/ssophia_si_manu_draw_te_g0.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/ssophia_si_manu_draw_te_g1.webp	_recycle/resources/si/eyefx/ssophia_si_manu_draw_te_g1.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/ssophia_si_manu_draw_te_g2.webp	_recycle/resources/si/eyefx/ssophia_si_manu_draw_te_g2.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/ssophia_si_manu_scream_te_g0.webp	_recycle/resources/si/eyefx/ssophia_si_manu_scream_te_g0.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/ssophia_si_manu_scream_te_g1.webp	_recycle/resources/si/eyefx/ssophia_si_manu_scream_te_g1.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
+20261004-151635	resources/si/eyefx/ssophia_si_manu_scream_te_g2.webp	_recycle/resources/si/eyefx/ssophia_si_manu_scream_te_g2.webp	淚眼光點偵測到嘴／額頭／閉眼（10-04 總覽目視）
