@@ -5459,7 +5459,9 @@ export const TOWNS = {
            不跑就是查不到區域資料夾 → 404 → `bgFor` 載不到就不換 ⇒
            **畫面留著上一格的背景，而且沒有任何錯誤訊息**（ver -1647 踩過）。
          ⚠ 四張時段差分都齊 ⇒ **不寫 `noTime`**；是**新增**不是覆蓋 ⇒ **不掛 `?v=`**。 */
-      church:   { bg:'Varn_Church',    name:'雪都瓦恩霍姆　大教堂',  
+      /* ⚠ ver -1957：鍵一律小寫 —— 原本寫 `Varn_Church`，Windows／Mac 不分大小寫看得到，
+           手機連的靜態空間分大小寫 ⇒ 404、背景留著上一格（Ray：「手機板雪都教堂沒接上」）。 */
+      church:   { bg:'varn_church',    name:'雪都瓦恩霍姆　大教堂',  
         exits:{ back:'midtown' },
         /* ══ 約會・諾薇兒（ver -1522）══ 阿瑞尼斯神父那一段。
            ⚠ 他的 speaker id 是 `ARRHENIUS`（`speakers.js` -1504 建、-1509 接了六張差分）
@@ -5467,20 +5469,20 @@ export const TOWNS = {
            ⚠ 收尾分歧：稿上「諾T3以上」多三拍、「諾T2以下」另一句收尾。
              走 `tierMin`／`tierMax`（一拍的屬性），不是 `needTier`（那是擋整段的）。 */
         acts:[ { flag:'vn_church_nou', withWho:'NOUVELLE', lines:[
-          arh(null,'喔！喔喔！這不是小諾微兒嗎？'),
+          arh('surprisejoy','喔！喔喔！這不是小諾微兒嗎？'),
           nou('happy','神父！'),
           { speaker:'PLAYER', blank:true },
-          arh(null,'好久不見。你也長好大了呢。'),
-          arh(null,'賽西莉呢？沒有一起來嗎？'),
+          arh('smileopen','好久不見。你也長好大了呢。'),
+          arh('smileclose','賽西莉呢？沒有一起來嗎？'),
           nou('explain','啊……學姐她現在……'),
           { speaker:'PLAYER', blank:true },
-          arh(null,'是嗎……抱歉。'),
-          arh(null,'傻小子，你難不難受我會不知道嗎？'),
-          arh(null,'老愛逞強，反而會一步都踏不出去。'),
+          arh('lookdown','是嗎……抱歉。'),
+          arh('wrysmileopen','傻小子，你難不難受我會不知道嗎？'),
+          arh('wrysmile','老愛逞強，反而會一步都踏不出去。'),
           { speaker:'PLAYER', blank:true, shake:true },
-          arh(null,'試著邁開步伐吧。那是讓你比昨天的自己更強的唯一道路。'),
+          arh('smileclose','試著邁開步伐吧。那是讓你比昨天的自己更強的唯一道路。'),
           nou('smug','神父又開始說教了。'),
-          arh(null,'他要是好好聽進去的話，下次來就能帶著賽西莉一起了吧。'),
+          arh('wrysmileopen','他要是好好聽進去的話，下次來就能帶著賽西莉一起了吧。'),
           nou('sad','……'),
           /* ⚠ ver -1564（Ray：「出好感差分前補一個主角說話的拍」）：**無條件**的一拍。
              下面那一拍是 `tierMin:3` ——T2 以下的玩家看不到它，於是她那句「……」之後
@@ -5497,13 +5499,13 @@ export const TOWNS = {
                `tools/script_lint.py` 現在會擋（`tierWho` 指到沒有好感的人就報錯）。 */
           { speaker:'PLAYER', blank:true, tierMin:3, tierWho:'NOUVELLE' },
           nou('surprise','！！',                    { tierMin:3, tierWho:'NOUVELLE' }),
-          arh(null,'是嗎？你已經向前走了啊？',      { tierMin:3, tierWho:'NOUVELLE' }),
-          arh(null,'真的長大了呢。',                { tierMin:3, tierWho:'NOUVELLE' }),
+          arh('surprisejoy','是嗎？你已經向前走了啊？',      { tierMin:3, tierWho:'NOUVELLE' }),
+          arh('smileclose','真的長大了呢。',                { tierMin:3, tierWho:'NOUVELLE' }),
           /* 插圖 `024_nouvellesmile`（ver -1917，Ray：「024 掛在神父那段『真的長大了呢』之後」）—— 掛在後面那一拍（她的笑），
              只有 T3 那一支看得到；下一拍收掉。 */
           nou('bigsmileclose','',                   { tierMin:3, tierWho:'NOUVELLE', cg:'024_nouvellesmile', cgNoTime:true }),
           { speaker:'NARRATION', text:'', cg:null, auto:600, noHold:true, tierMin:3, tierWho:'NOUVELLE' },
-          arh(null,'坐下聊聊吧。說說這幾年都發生了什麼事。', { tierMax:2, tierWho:'NOUVELLE' }),
+          arh('smileopen','坐下聊聊吧。說說這幾年都發生了什麼事。', { tierMax:2, tierWho:'NOUVELLE' }),
         ] } ] },
       lookout:  { bg:'varn_lookout',  name:'雪都瓦恩霍姆　瞭望台',  
         exits:{ back:'midtown' },

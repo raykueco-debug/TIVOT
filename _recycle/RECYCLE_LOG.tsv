@@ -920,3 +920,38 @@ when	from	to	reason
 20261003-185249	tools/blink_preview.html	_recycle/tools/blink_preview.html	眨眼預覽頁：Ray 改用首頁立繪鈕的調整工作室
 20261003-205757	resources/si/eyefx/renna_si_shockopen_te_water.webp	_recycle/resources/si/eyefx/renna_si_shockopen_te_water.webp	淚眼改成虹膜白光閃動（Ray），水線／高光舊版素材
 20261003-205757	resources/si/eyefx/renna_si_shockopen_te_hl.webp	_recycle/resources/si/eyefx/renna_si_shockopen_te_hl.webp	淚眼改成虹膜白光閃動（Ray），水線／高光舊版素材
+20261004-142014	_TO_CODE_20260922.md	_recycle/_TO_CODE_20260922.md	Ray 10-04：太久了就當接過了，刪掉
+20261004-142047	HANDOFF.md	_recycle/HANDOFF.md	Ray 10-04：確認新交接就把舊的刪掉（舊全文亦在 git 1a059078）
+20261004-142104	resources/si/npc/npc_ss_lofa_shoot.png	_recycle/resources/si/npc/npc_ss_lofa_shoot.png	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/si/npc/f66a41f1-462b-4167-ab1e-4d235f012a0e.png	_recycle/resources/si/npc/f66a41f1-462b-4167-ab1e-4d235f012a0e.png	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/si/sorana_si_carrynouvelle.webp	_recycle/resources/si/sorana_si_carrynouvelle.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/si/sorana_si_excite.webp	_recycle/resources/si/sorana_si_excite.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/si/sorana_si_furiouscute.webp	_recycle/resources/si/sorana_si_furiouscute.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/si/gen_renna_si_blush.webp	_recycle/resources/si/gen_renna_si_blush.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/illustration/29-2_rennaprincesshold.png	_recycle/resources/illustration/29-2_rennaprincesshold.png	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/lake/Lake_Monolith_day.webp	_recycle/resources/background/lake/Lake_Monolith_day.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/lake/Lake_Monolith_glow_day.webp	_recycle/resources/background/lake/Lake_Monolith_glow_day.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/Flight_Enemy/FLM_DragonThrone.png	_recycle/resources/Flight_Enemy/FLM_DragonThrone.png	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/belisar/Belisar_SunkenCourtB.webp	_recycle/resources/background/belisar/Belisar_SunkenCourtB.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/SI/Renna_SI_annoyed.png	_recycle/resources/SI/Renna_SI_annoyed.png	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/SI/Renna_SI_blushed.png	_recycle/resources/SI/Renna_SI_blushed.png	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/SI/Thotsten_SI_front.png	_recycle/resources/SI/Thotsten_SI_front.png	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/SI/gen_Renna_SI_blushed.png	_recycle/resources/SI/gen_Renna_SI_blushed.png	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/illustration/020-rennadrop.png	_recycle/resources/illustration/020-rennadrop.png	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/SI/Renna_SI_crying.png	_recycle/resources/SI/Renna_SI_crying.png	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/Belisar_Exterior.webp	_recycle/resources/background/Belisar_Exterior.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/Capital_Dock_midnight.webp	_recycle/resources/background/Capital_Dock_midnight.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/East_Bistro.webp	_recycle/resources/background/East_Bistro.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/East_Cafe.webp	_recycle/resources/background/East_Cafe.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/East_Firearm.webp	_recycle/resources/background/East_Firearm.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/East_Grocerie.webp	_recycle/resources/background/East_Grocerie.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/East_Guild.webp	_recycle/resources/background/East_Guild.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/East_Hotel.webp	_recycle/resources/background/East_Hotel.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/East_Restaurant.webp	_recycle/resources/background/East_Restaurant.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/Ravn_Lookout.webp	_recycle/resources/background/Ravn_Lookout.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/Ravn_Midtown.webp	_recycle/resources/background/Ravn_Midtown.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/Ravn_Oldtown.webp	_recycle/resources/background/Ravn_Oldtown.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/Ravn_Square.webp	_recycle/resources/background/Ravn_Square.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/Ravn_Station.webp	_recycle/resources/background/Ravn_Station.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/background/Ravn_Uptown.webp	_recycle/resources/background/Ravn_Uptown.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142104	resources/SI/Sorana_SI_tired.png	_recycle/resources/SI/Sorana_SI_tired.png	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
