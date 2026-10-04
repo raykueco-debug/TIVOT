@@ -927,6 +927,143 @@ function dmLight(node){
   ];
 }
 const DM_SIDES = { RENNA:'L', NOUVELLE:'L' };
+/* ══ 羅賽爾廢城・四座小祭壇點滿後的主祭壇（ver -1969，Ray 的「羅塞爾廢城_台詞差分」第 34 列起）══
+   演完自動出航，從廢城起飛（Ray：「這一段跑完自動接回飛行畫面從廢城起飛」）＝段落的 `sailOut:true`。
+   ⚠ 差分照表；表上查不到的三個：`deseprade`→`desperate`、`misha_si_frontgrit`→`frontgrit`、
+     `nouvelle_si_sadnoeye`→`sadnoeye`（同一個鍵的寫法差）。`mishaattack`（米夏「這點成色…」那一拍）
+     **立繪庫沒有這張**，先用 `fight` 頂著 —— 等 Ray 指定。
+   ⚠ 音效：稿上的 `se_drawdagger` → 現有的 `se_drawknife`；`se_march`（撤收）→ 米夏上一場撤收同一套
+     `amb:'se_troops'` 三秒淡出；斬殺音 → `se_enemy_slash`；上膛 → `se_weapon_reload`。
+   ⚠ 【插圖】主角被刺穿：圖待補，這一拍先只演斬殺音＋震動。 */
+const rtn = N('RETAINER');
+const DM_PLAYER = (extra) => Object.assign({ speaker:'PLAYER', blank:true }, extra||{});
+const DM_RELOADS = [{ n:'se_weapon_reload' }, { n:'se_weapon_reload', delay:180 }, { n:'se_weapon_reload', delay:420 }, { n:'se_weapon_reload', delay:530 }];
+const DM_ALTAR_MAIN = [
+  Object.assign(nou('think','祭壇……好像已經在半啟動狀態了。'), { checkpoint:true }),
+  any('stare','……'),
+  { speaker:'NARRATION', text:'', fx:'whiteflash', auto:1500 },   // 【白光，遺蹟啟動】
+  any('surprise','！！'),
+  any('nervous','我……還沒……'),
+  ren('think','……'),
+  ren('talkwork','如此一來，作戰課發布的任務就完成了。'),
+  ren('smilesoft','一路以來，辛苦各位了。'),
+  sor('confuse','老實說我一直覺得很奇怪，讓小公主點亮這些東西到底要幹嘛？'),
+  nou('think','說是可以鎮壓禍魘……'),
+  sor('confuse','是這樣嗎？完全沒感覺啊！'),
+  ren('lookaway','……老實說，我也不確定。'),
+  ren('talkserious','只是從送出第一份報告起，聖王廳就積極得可怕，簡直就像……'),
+  ren('pause','早就知道安雅小姐的能力一樣。'),
+  nou('surprise','欸？那為什麼科爾文副團長……'),
+  ren('think','他不可能承認吧。一旦確認了謝索洛夫王女的身份，就必須把人交給帝國。'),
+  any('silent',''),
+  ren('talkserious','下一步會給出什麼指示，我也不敢說，'),
+  ren('ask','所以，在事情變得無法回頭之前，我還是想確認一下安雅小姐的想法。'),
+  any('curious',''),
+  nou('bigsmile','不論安雅怎麼決定，我都會支持喔！'),
+  ren('remindsmile','前提是在聖王廳的法度之內呢。'),
+  DM_PLAYER(),
+  ren('blush','那、那是……'),
+  sor('tease','不用裝啦，蕾娜妳的個性早就被摸透了。'),
+  sor('smirk','嘴上說著這不行那不行，到最後出謀畫策的都是妳。'),
+  ren('blush','……'),
+  ren('blushangry','我、我的事不重要啦，重點是安雅小姐怎麼想！'),
+  any('curious',''),
+  any('talk','……'),
+  any('talkshy','大家……其實、我——'),
+  /* se_steps 兩個隔 0.25 秒重疊播放 → 索菈娜拔匕首 */
+  sor('guard','！！', { se:[{ n:'se_steps' }, { n:'se_steps', delay:250 }, { n:'se_drawknife', delay:450 }] }),
+  nou('shock2','什麼時候……！'),
+  ren('intense2','被包圍了嗎……'),
+  any('terrify','米夏！'),
+  /* 【SE】上膛聲此起彼落（同米夏上一場那一組） */
+  mis('frontopen','已經由不得妳任性了。現在就跟我走。', { se:DM_RELOADS }),
+  any('desperate','……'),
+  sor('guardtalk','看不出來她不願意嗎？虧你還是做哥哥的！'),
+  mis('talk','正因為是哥哥，所以才看不下去。'),
+  mis('talk','妳要被騙到什麼時候？'),
+  any('talk','我……'),
+  mis('frownopen','這些傢伙只是在利用妳的惡夢之力，解放因果鎖而已！'),
+  nou('furious','我們是為了鎮壓禍魘——'),
+  mis('closeopen','愚昧。'),
+  ren('coldstare','……'),
+  mis('talk','你們啟動了遺蹟之後，禍魘有減少過一匹嗎？'),
+  sor('guard','！！'),
+  mis('sideopen','聖王廳覬覦失落遺蹟，可不是這一兩百年內的事。'),
+  mis('sideopen','而妳的因果逆轉能力，正是他們渴望的鑰匙！'),
+  any('silent','……'),
+  ren('determine','……'),
+  ren('talkwork','沒錯，我確實是利用了安娜殿下。'),
+  nou('shock2','！'),
+  ren('talkserious','只要她還有利用價值，我就能用聖王廳的立場保護她。'),
+  ren('shout','即使是……不知道要從誰的手上保護她！'),
+  nou('happy','蕾娜小姐……'),
+  mis('closeopen','無恥之輩，多言無用。'),
+  mis('frontgrit','拿人。'),
+  { battle:'dm_misha_guards' },                                    // 護衛戰
+  mis('sideopen','看來不只是裝飾啊。'),
+  rtn('front','殿下，十分抱歉……'),
+  mis('sideopen','退下吧，不能在這裡折損兵力。'),
+  mis('draw','', { se:'se_sworddraw' }),                            // 【SE】拔刀
+  mis('drawopen','由我來當你們對手。'),
+  { battle:'dm_misha', onLose:'dm_misha_lost' },                    // 米夏戰（打不贏：NI → 劇情殺）
+  sor('determine','呃——', { label:'dm_misha_lost' }),
+  nou('desperate',''),
+  ren('meltdown','怎麼會……'),
+  ren('shockopen','竟然是團長級別的怪物……'),
+  DM_PLAYER({ se:'se_weapon_reload' }),                             // 【SE】上膛音
+  { speaker:'NARRATION', text:'', se:'se_enemy_slash', shake:true, auto:900 },   // 【SE】斬殺音／【插圖】主角被刺穿（待補）
+  mis('fight','這點成色還想成王……？不自量力。'),                      // ⚠ 表上寫 mishaattack（沒有這張），先用 fight
+  any('crying','住手！'),
+  any('crying','我會……照米夏說的做……所以住手！'),
+  mis('fight','……'),
+  mis('drawopen','也罷。', { se:'se_swordcease' }),                  // 【SE】入鞘音
+  mis('talk','走。'),
+  any('determine','我會、照米夏說的、做，但是！'),
+  any('angry','要由他們，帶我、進帝都！'),
+  mis('frownopen','……妳說什麼？'),
+  any('argue','如果我、跟你走、你會把大家都殺掉！'),
+  nou('shock','！！'),
+  mis('close','……'),
+  mis('closeopen','哼。'),
+  mis('sideopen','畢竟是雙胞胎，沒人比妳更瞭解我。'),
+  any('angry',''),
+  rtn('front','殿下，與其由我軍護送安娜殿下到薩梅爾，不如……'),
+  mis('close','……'),
+  mis('closeopen','也罷。這次就依妳。'),
+  mis('sideopen','但是別忘了，我仍然可以取他們性命。'),
+  mis('back','我一個人就可以。'),
+  DM_PLAYER({ se:'se_weapon_reload' }),                             // 【SE】上膛音
+  mis('back',''),
+  any('panic','不要！'),
+  nou('help','別再動了！會死的！'),
+  ren('determine','……'),
+  ren('askserious','米海爾殿下，若我們護送安娜殿下進入帝都，您當真能放過我們？'),
+  sor('angry','喂！蕾娜！'),
+  mis('sideopen','……你們的命，我沒有興趣。'),
+  ren('think','……'),
+  mis('sideopen','到了帝都，自會有人接應。'),
+  any('worry',''),
+  mis('sideopen','安娜，'),
+  any('terrify',''),
+  mis('sideopen','完成妳的使命。這是妳僅存的價值。'),
+  mis('back','撤收。'),
+  Object.assign(any('desperate',''), { hide:['MISHA'], amb:'se_troops', ambStop:3000 }),   // 撤收（稿上 se_march ⇒ 同上一場的 troop 三秒淡出）
+  sor('sad','小公主……'),
+  any('runworry',''),
+  any('worry','你、沒事了嗎？', { se:'se_steps' }),
+  DM_PLAYER(),
+  nou('sadnoeye','治癒術式在起作用了，沒事的。'),
+  any('talk','對不起……大家、我……'),
+  any('talk','我得到、薩梅爾的帝都去……'),
+  ren('evaluate','……是有什麼想見的人嗎？'),
+  any('silent','……'),
+  nou('talk','如果只是到帝都，應該沒什麼問題吧？'),
+  sor('talk','對呀！而且那個哥哥也不敢追到帝國中心吧？'),
+  ren('think','……'),
+  ren('talkwork','好。就回帝都。但是安雅小姐，'),
+  ren('remind','有什麼其他的想法，隨時都可以告訴我們喔。'),
+  any('silent','……'),
+];
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
 
 export const TOWNS = {
@@ -5124,20 +5261,20 @@ export const TOWNS = {
         goto:'square', enterAgain:true, sides:{ RENNA:'L' }, lines:[
         ren('lookawaytalk','好了，出發吧。'),
         Object.assign(sor('idea','墓門要怎麼辦？用艦砲轟掉？'), { bubbleFx:'sweat' }),
-        nou('concern','那可是千年文物耶！'),
+        Object.assign(nou('concern','那可是千年文物耶！'), { bubbleFx:'sweat' }),
         ren('lookawaytalk','上了船再說明會比較快，走吧。'),
         { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
         Object.assign(sor('whisper','……還沒和好？'), { bubbleFx:'weak' }),
         { speaker:'NARRATION', text:'', se:'se_walk', auto:1400 },
         sor('confuse','喂……'),
         sor('sad','唉……為什麼我要幹那種蠢事呢……'),
-        any('argue','對啊。', { skipIf:'ep_m2_route' }),
+        Object.assign(any('argue','對啊。', { skipIf:'ep_m2_route' }), { bubbleFx:'vein' }),
         any('upset','',       { onlyIf:'ep_m2_route' }),
         sor('cringe',''),
         nou('decode','也不能怪索拉娜啦……'),
         sor('surprise','諾薇兒……！'),
         nou('sadsmile','只能怪我拖後腿，沒辦法像上一個搭檔那樣支援他。'),
-        sor('die','……我寧可妳罵我。'),
+        Object.assign(sor('die','……我寧可妳罵我。'), { bubbleFx:'gloom' }),
       ] },
     ],
     /* 大城市不上迷霧（ver -913）—— ⚠ **要明寫**：沒寫就是有霧。 */
@@ -5225,7 +5362,7 @@ export const TOWNS = {
           ren('think','『魂寄鏡湖，魄鎮幽宮；身雖已朽，墓即其身。』。'),
           sor(null,'……不是因為怕鬼所以胡謅的吧？'),
           ren('coldstare',''),
-          sor('sorry','對不起，我再也不敢了。'),
+          Object.assign(sor('sorry','對不起，我再也不敢了。'), { bubbleFx:['fear','gloom'] }),
           nou('concern',''),
           ren('pointmap','位置是在群山中的一小片湖，應該不難找。'),
           ren('invite','船開到附近，再麻煩安雅小姐感知看看。'),
@@ -5344,24 +5481,24 @@ export const TOWNS = {
           /* ⚠ `se_page3`＝Ray 指定的翻頁音（ver -1564）。⚠ 這與檔頭那句「翻頁音走
              既有的 `se_ui_pageflip`」不衝突：那是**沒有檔案時**的權宜，現在他交了。 */
           Object.assign(sor('amaze','喔。這是什麼？'), { cg:null, se:'se_page3' }),
-          nou('reach','那是我們的評價紀錄。不要拿啦！'),
+          Object.assign(nou('reach','那是我們的評價紀錄。不要拿啦！'), { bubbleFx:'nervous' }),
           Object.assign(sor('readshock','有什麼關係——喔？'), { se:'se_ui_pageflip' }),
-          Object.assign(sor('readhappy','嗯——哈！真有意思！'), { se:'se_ui_pageflip' }),
+          Object.assign(sor('readhappy','嗯——哈！真有意思！'), { bubbleFx:'note', se:'se_ui_pageflip' }),
           nou('shock','……'),
-          { speaker:'PLAYER', blank:true },
-          sor('tease','少來，你也很想知道她怎麼看你吧？'),
-          nou('shock2','我們不能看啦！'),
+          { bubbleFx:'vein', speaker:'PLAYER', blank:true },
+          Object.assign(sor('tease','少來，你也很想知道她怎麼看你吧？'), { bubbleFx:'whisper' }),
+          Object.assign(nou('shock2','我們不能看啦！'), { bubbleFx:'exclaim' }),
           sor('read','不要看啊，我唸不就好了？'),
-          nou('explain','哪有這種道理……'),
-          sor('whisper','想知道嗎？'),
+          Object.assign(nou('explain','哪有這種道理……'), { bubbleFx:'sweat' }),
+          Object.assign(sor('whisper','想知道嗎？'), { bubbleFx:'heart' }),
           /* ⚠ ver -1564（Ray：「想知道嗎？後面的抖動只抖對話框，不要抖全畫面」）：
              這一下是**他心頭一跳**，不是世界在震 —— 抖整個畫面會讀成外面出事了。 */
-          { speaker:'PLAYER', blank:true, shake:'bubble' },
+          { bubbleFx:'weak', speaker:'PLAYER', blank:true, shake:'bubble' },
           sor('readshock','喔——原來是這麼評價的呀？'),
           Object.assign(sor('readhappy','嘿——'), { se:'se_ui_pageflip' }),
           nou('shock','……'),
           nou('shy','好啦！妳就唸吧！'),
-          nou('lookaway','搞得我都跟著緊張了！'),
+          Object.assign(nou('lookaway','搞得我都跟著緊張了！'), { bubbleFx:'sweat' }),
           sor('readsad','咳哼。'),
           /* ══⚠⚠⚠ **這一段索菈娜的立繪由 Ray 逐句指定**（ver -1553）══
              -1550 的那條通則（「雙引號＋日期開頭 ⇒ `read`」）**被這一份逐句表取代**：
@@ -5380,7 +5517,7 @@ export const TOWNS = {
           nou('nod','嘿嘿……'),
           Object.assign(sor('read','『10月14日23時，疑似聖徒之力的不明力量輸入，初判仍能保持神經完整，適性判斷修正：極佳。』'),
                         { se:'se_ui_pageflip' }),
-          any(null,'是在說……我？'),
+          any('curious','是在說……我？'),
           /* ⚠ 前面那半句是她自己喊的，但整拍的主體是**唸出來的那一條**（雙引號＋日期開頭）⇒ `read`。 */
           Object.assign(sor('readhappy','喔！講到我了！『10月16日20時，與一般人連攜戰鬥無阻滯誤傷。註記：此記事應比照現第四席戰鬥紀錄，著重評估。』'),
                         { se:'se_ui_pageflip' }),
@@ -5398,7 +5535,7 @@ export const TOWNS = {
           Object.assign(sor('readshock','！！'), { se:'se_ui_pageflip' }),
           sor('readsad','……'),
           nou('lookback','怎麼了？'),
-          sor('readhappy','沒、沒事啦！看來修女小姐對你們的評價很高呢！'),
+          Object.assign(sor('readhappy','沒、沒事啦！看來修女小姐對你們的評價很高呢！'), { bubbleFx:'nervous' }),
           nou('shock','……後面寫了什麼嗎？'),
           sor('sad','……'),
           /* ══⚠ ver -1564（Ray：「諾：『索菈娜小姐！』那一拍，換 bgm
@@ -5406,9 +5543,9 @@ export const TOWNS = {
              ⚠⚠ 拍上的 `bgm:` 只管**換曲的那一刻**；「撐到隔天」是城上的 `bgmWhen`
                在管（`vn_lib_done` → `vn_day2`）—— 不然走一格就被打回 `taisho2`。
                兩者分工不同，不是抄兩份（同東方泊地那一組的說明）。 */
-          nou('worry','索拉娜小姐！'),
+          Object.assign(nou('worry','索拉娜小姐！'), { bubbleFx:'shout' }),
           sor('readhappy','只是些評價而已，沒那麼重要啦！'),
-          nou('furious','很重要！'),
+          Object.assign(nou('furious','很重要！'), { bubbleFx:'shout' }),
           sor('cringe',''),
           /* ⚠ ver -1565（Ray：「把圖書館切 bgm 那一拍改到諾：『對他......很重要......』
              那一拍」）—— -1564 掛在「索菈娜小姐！」上，那時還只是在攔人；
@@ -5497,7 +5634,6 @@ export const TOWNS = {
                不管諾薇兒的好感多高，看到的都是 T2 那一句收尾。
              ⚠ 這不是資料打錯字，是「預設值是說話者」在這一段不適用 ——
                `tools/script_lint.py` 現在會擋（`tierWho` 指到沒有好感的人就報錯）。 */
-          { speaker:'PLAYER', blank:true, tierMin:3, tierWho:'NOUVELLE' },
           nou('surprise','！！',                    { tierMin:3, tierWho:'NOUVELLE' }),
           arh('surprisejoy','是嗎？你已經向前走了啊？',      { tierMin:3, tierWho:'NOUVELLE' }),
           arh('smileclose','真的長大了呢。',                { tierMin:3, tierWho:'NOUVELLE' }),
@@ -7695,7 +7831,7 @@ export const TOWNS = {
              ⚠ 台詞留空 ⇒ 對話框自己藏起來；`auto` 只有自動播放吃得到
                （台上有人的無台詞拍要點擊才推進，§6.5 的 -628），節奏與原本那一拍一樣。 */
           Object.assign(cec('back',''), { se:'se_walk', auto:1400 }),
-          { speaker:'PLAYER', blank:true },
+          { bubbleFx:'question', speaker:'PLAYER', blank:true },
           Object.assign(cec('sadback','……'), { bubbleFx:'exclaim' }),
           cec('talk','你說呢？'),
           /* ══⚠ 她也走了（ver -1547，Ray：「你說呢之後**撤立繪**，**再放一次 se walk**」）══
@@ -7767,7 +7903,7 @@ export const TOWNS = {
           any('answer','好……好！'),
           ren('evaluateclosemouth',''),
           Object.assign(nou('whisper','安雅都嚇壞了……'), { bubbleFx:'weak' }),
-          sor('die','都是我不好……'),
+          Object.assign(sor('die','都是我不好……'), { bubbleFx:'gloom' }),
           /* ══⚠⚠ **石碑啟動**（`fx:'sense'`，ver -1540 修時序）════════════════
              ⚠ **清場不寫在這裡** —— `senseFx()` 自己會把台上清空（見 story.js 的
                `senseClearCast`）。舊版另外三段寫的 `hide:[…]` 是那一版的寫法，
@@ -9774,7 +9910,10 @@ export const TOWNS = {
       altar:        { bg:'dunmor_altar', name:'羅賽爾廢城　祭壇', noTime:true, exits:{ down:'nemeton' },
         /* ══ 四座小祭壇還沒點滿就先走到主祭壇（ver -1858）══ 整段只在「點亮不到四座」時演（`countOf max:3`）；
            最後兩句依「有沒有點過任何一座」分兩支。四座都點亮之後的主祭壇，等 Ray 的下一段稿。 */
-        acts:[{ flag:'dm_altar_first', need:'dm_gate_done', sides:DM_SIDES, lines:[
+        /* ⚠ 四座點滿之後的主祭壇排在**最前面**：一進來四座都亮了，就直接演這一段（先撞過祭壇的玩家也一樣）。 */
+        acts:[{ flag:'dm_altar_done', need:['dm_gate_done', ...DM_LIT], storyBattle:true, sailOut:true,
+                sides:DM_SIDES, lines:DM_ALTAR_MAIN },
+              { flag:'dm_altar_first', need:'dm_gate_done', sides:DM_SIDES, lines:[
           ren('watch','這就是……最後的遺蹟了。'),
           sor('sad','真有點寂寞呢。'),
           nou('sad','……'),

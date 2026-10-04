@@ -287,10 +287,16 @@ function releaseToHome(){
      而且真正要在第 0 毫秒響的是門自己那三支，那幾支由劇情層的 `loadScene`／
      `preloadStory` 早就載好了。開場的第一發主動攻擊排在 1~2 秒後（`openAssault`）。
    ⚠ 沒載完也不會消音：`playSrc` 查不到 buffer 會自己 `load()`（§6.6 既有行為）。 */
-const AUDIO_KEY = /(^|[a-z])(se|sfx|vo|voice|bgm|cue)([A-Z_]|$)/;
-function scanAudioNames(obj, out, depth){
+const AUDIO_KEY = /(^|[a-z])(se|sfx|vo|voice|bgm|cue)([A-Z_]|$)|Voice$|^entrance/;
+/* ⚠ ver -1967：**音訊欄位底下的陣列／物件，裡面的字串全部算**（`inAudio`）——
+   以前只認「值是字串」的那一層，於是 `hitVoice:[…]`（尼莫）、`parryVoice:[…]`、
+   `hpVoice:{50:…}` 整串沒被預載（第一次播要現抓，慢網就晚一拍或不響）。
+   `killVoice`／`entrance` 這類名字也補進 `AUDIO_KEY`。誤收的鍵不怕：`battleAudioSet`
+   只留解析得到、而且是音檔副檔名的那些。 */
+function scanAudioNames(obj, out, depth, inAudio){
   if(!obj || depth>4) return out;
-  if(Array.isArray(obj)){ for(const v of obj) scanAudioNames(v, out, depth+1); return out; }
+  if(typeof obj==='string'){ if(inAudio) out.push(obj); return out; }
+  if(Array.isArray(obj)){ for(const v of obj) scanAudioNames(v, out, depth+1, inAudio); return out; }
   if(typeof obj!=='object') return out;
   for(const k of Object.keys(obj)){
     const v = obj[k];
@@ -300,8 +306,9 @@ function scanAudioNames(obj, out, depth){
       for(const f of fxs){ const row = HITFX[f]; if(row && row.se) out.push(row.se); }
       continue;
     }
-    if(typeof v==='string'){ if(AUDIO_KEY.test(k)) out.push(v); }
-    else if(v && typeof v==='object') scanAudioNames(v, out, depth+1);
+    const aud = inAudio || AUDIO_KEY.test(k);
+    if(typeof v==='string'){ if(aud) out.push(v); }
+    else if(v && typeof v==='object') scanAudioNames(v, out, depth+1, aud);
   }
   return out;
 }
@@ -325,7 +332,7 @@ function battleAudioSet(battleId){
     if(!n || typeof n!=='string' || seen[n]) continue; seen[n]=1;
     let src=null; try{ src = story.seSrc(n); }catch(_){}
     if(!src) src = asset(n);
-    if(src && out.indexOf(src)<0) out.push(src);
+    if(src && /\.(m4a|mp3|wav|ogg|aac)(\?|$)/i.test(src) && out.indexOf(src)<0) out.push(src);
   }
   return out;
 }

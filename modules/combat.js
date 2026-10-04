@@ -560,6 +560,10 @@ export function dualShot(x, y){
      （它的 else 分支），這裡不必也不該再判一次。 */
   if(state.dualShotsLeft<=0) return false;
   state.dualShotsLeft--;
+  /* 受創語音在 BR 只給第一發與最後一發（ver -1969，Ray：「米夏如果是被 BR 打中，vo damage
+     只播第一發跟最後一發」）。計數在收窗（`onDualClosed`）歸零。 */
+  brShotN++;
+  brVoiceOk = (brShotN===1 || state.dualShotsLeft<=0);
   weapon.pokeDual();          // 閒置逾時往後推（ver -1434）：還在打就不收窗
   /* ══⚠⚠ 拋彈殼與槍火：**與普攻同一份特效**（ver -1335）══ 普攻那一支（`tap`）是
      `enemy.ejectShell(cell)` ＋ `gunHitOnEnemy(cell)`，兩個都以「點到的那一格」為準；
@@ -611,6 +615,7 @@ export function dualShot(x, y){
    ⚠ 敵人已死（overkill）／戰鬥結束／聖徒化中**不掃**：那幾種情況盤面另有歸屬，
      掃掉會在敵人已清空時憑空推進一盤。
    ⚠ 音效只放**一次**（不是逐格）：九格各放一次會疊成一片白噪。 */
+let brShotN=0, brVoiceOk=false;   // BR 這一窗打到第幾發／這一發要不要出受創語音（見 dualShot）
 function brSweepBoard(){
   if(state.over||state.saintMode||state.niMode||state.enemyHp<=0) return;
   const left=state.cells.filter(c=>!c.classList.contains('done'));
@@ -923,6 +928,13 @@ function gunHitOnEnemy(cell){
   const sx0=cr.left+cr.width/2 - top.left;
   const sy0=cr.top +cr.height/2 - top.top;
   const imp=enemy.enemyImpact(sx0, top.width, top.height);
+  /* 劈落（ver -1957，米夏）：子彈打到那一點被銀色刀光擋下 —— 不噴槍火、不冒煙。
+     ⚠ 條件與 `enemyDamage` 擋普攻那一條同一組（`parryNow`，鐵律 7）。 */
+  if(parryNow()){
+    enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, imp.x, imp.y);
+    enemy.spawnParry(imp.x, imp.y);
+    return;
+  }
   muzzleBurst(fxTop, imp.x, imp.y);
   /* ══ 子彈的火線（ver -1622，Ray 指定）══ 從**點到的那一格**射向那個落點。
      ⚠ 座標換算成 `#top` 相對就交出去 —— 格子在 `#top` 之外（它在控制面板上），
@@ -1435,7 +1447,20 @@ function applyEnemyMods(dmg, src){
   if(state.dualWield && state.enemyBrBonus) k += state.enemyBrBonus;
   return Math.max(1, Math.round(dmg * Math.max(0, k)));
 }
+/* 劈落是否生效（ver -1957）：卡上 `parryBasic` ＋ 牠還活著 ＋ 不在聖徒化／惡夢化／破防窗口。
+   ⚠ 槍火那一邊（`gunHitOnEnemy`）與傷害這一邊（`enemyDamage`）都問這一支（鐵律 7）。 */
+function parryNow(){
+  return state.enemyParry && state.enemyHp>0 && !state.saintMode && !state.niMode && !state.dualWield;
+}
 function enemyDamage(dmg,isCrit,silent,src){
+  /* 劈落（ver -1957，Ray：「普攻無效」「劈落在畫面顯示字樣跳 guard」）：普攻整發不計，
+     浮一個 GUARD。⚠ 連擊／破防值／清盤照常（`tap` 那一支在這之外記帳）——
+     那是「打中了但被擋下」，不是「沒點到」；破防值照累積，BR 才開得出來。 */
+  if((src||'basic')==='basic' && lsActive) lastStandTap();   // NI 期間每一發普攻都催它回血（ver -1964）
+  if((src||'basic')==='basic' && parryNow()){
+    if(!silent) floatDmg('GUARD', (30+Math.random()*40)+'%', '35%', false, 'guardnum');
+    return;
+  }
   /* ══⚠⚠⚠ **換型態的空窗裡不吃傷害**（ver -1486，Ray：「我剛剛好像是用反擊殺的」）══
      這是**最常踩到**的那一條：反擊是**連發**的 —— 第一發把血打到 0、`maybeMorph`
      接走；**同一串的後續幾發**再進來時 `morphed` 已經是 true ⇒ 不再攔，
@@ -1454,11 +1479,22 @@ function enemyDamage(dmg,isCrit,silent,src){
   }
   if(dmg>0){
     if(state.enemyHp>0){
-      const after=state.enemyHp-dmg;
+      let after=state.enemyHp-dmg;
+      /* 米夏的 NI（ver -1964）：卡上有 `lastStand` 的那一隻，血**最低停在 1** ——
+         第一次被打到 1 就發動，NI 期間也打不下去（這一場打不贏，靠劇情殺收尾）。 */
+      let lsTrigger=false;
+      if(after<1 && (lsActive || lastStandDue())){
+        after=1; dmg=state.enemyHp-1; lsTrigger=!lsActive;
+      }
       if(after<0) state.overkill+=(-after);
       state.enemyHp=Math.max(0,after);
       tutorial.onHpChange();          // 血量觸發的 talk 步驟（ver -599）
       updateBars();
+      /* 卡上語音（ver -1967，米夏）：這一下真的打進去了 → 受創語音；跨過血量門檻 → 那一句。
+         NI 一發動就由 NI 語音接手（必播），這一擊不再疊受創那一句。 */
+      if(lsTrigger) startLastStand();
+      else if(dmg>0){ enemy.checkHpVoice(state.enemyHp/state.enemyMax*100);
+                      if(src!=='dual' || brVoiceOk) enemy.playDamageVoice(); }
       tutorial.onEnemyHp(state.enemyHp/state.enemyMax);   // 教學：削血保底觸發（非教學為 no-op）
       const morphing = maybeMorph();    // 型態切換（ver -1418 空中戰；-1433 起也吃 onDeath）
       if(!silent) floatDmg((isCrit?L.battle.crit:'')+dmg, (30+Math.random()*40)+'%','35%',isCrit);
@@ -2163,8 +2199,11 @@ function wrongDamage(base){
 /* 本盤實際延時時限。卡上寫了絕對秒數（DELAY_SECONDS）就是那個數字，逐盤都一樣；
    否則＝盤面 intervalLimit + 該怪 DELAY_TIME_DELTA（Boss=-1）。下限 0.6 秒防呆。 */
 function effIntervalLimit(){
-  if(state.DELAY_SECONDS!=null) return Math.max(0.6, state.DELAY_SECONDS);
-  return Math.max(0.6, state.intervalLimit + state.DELAY_TIME_DELTA);
+  /* 米夏 NI 期間延時縮短（卡上 `lastStand.delayMul`，Ray：「NI 後延時縮短為 1/2」）。 */
+  const ls = lsActive && lsCard();
+  const k = (ls && ls.delayMul>0) ? ls.delayMul : 1;
+  if(state.DELAY_SECONDS!=null) return Math.max(0.6, state.DELAY_SECONDS*k);
+  return Math.max(0.6, (state.intervalLimit + state.DELAY_TIME_DELTA)*k);
 }
 function resetIntervalDeadline(){ state.intervalDeadline=Date.now()+effIntervalLimit()*1000; }
 function stopIntervalTimer(){ clearInterval(state.intervalTimer); stopDelayRing(); }
@@ -2212,6 +2251,8 @@ function stopAll(){
   enemy.stopSakura();    // 鹿主的櫻花狂亂（ver -899）：它是全螢幕的層＋一支還在響的音
   enemy.stopHolyBurst(); // 王座徘徊者的放光（ver -1351）：同上
   enemy.stopEntranceSe(); // 登場音（龍吟／詠唱）在結束時淡出（ver -1881）
+  stopLastStand();       // 米夏的 NI 回血計時（ver -1964）
+  brShotN=0; brVoiceOk=false;   // BR 受創語音計數（ver -1969）：戰鬥中途收場也歸零
 }
 
 /* ---- 計時碼表（連戰用；規則：只在「盤面可點且非 overkill／非聖徒化」時作動）----
@@ -2334,6 +2375,7 @@ function armOverkillLimit(){
    ⚠ 這裡是在 `endDual` 裡面被叫的（`dualWield` 已經是 false），所以
      `autoClearOverkill` 內那一行 `if(state.dualWield) weapon.endDual()` 不會再遞迴。 */
 export function onDualClosed(){
+  brShotN=0; brVoiceOk=false;          // 受創語音的 BR 計數歸零（ver -1969）
   if(state.over) return;
   if(state.enemyHp>0){ brSweepBoard(); return; }
   if(state.saintMode) return;                    // 聖徒化的追打不吃這一套
@@ -2692,6 +2734,9 @@ export function warmBattleImage(battleId){
     const en=(GAME_CONFIG.enemies||{})[B.enemy];
     const u=en && enemy.enemyImage(en);
     if(u){ const i=new Image(); i.src=u; }
+    /* NI 那一刻要換的立繪與 cut-in（ver -1964，米夏）—— 先暖著，發動時不閃空白。 */
+    const ls=en && en.lastStand;
+    if(ls) [ls.image, ls.ci].forEach(k=>{ const p=k && asset(k); if(p){ const i=new Image(); i.src=p; } });
   }catch(_){}
 }
 export function holdEnemyRise(){ enemy.holdRise(); }
@@ -2923,6 +2968,80 @@ function win(){
   if(storyFramed() && storyClose) storyClose(toResult);
   else playTransition('finish', toResult);
 }
+/* ══ 敵人的 NI（ver -1964，米夏；Ray：「米夏 hp 被打到 1 就會發動 15 秒的 NI 開始回血，
+   NI 狀態反擊無法重置延時，每次普攻可加速 0.5 秒回血，NI 結束前米夏會發動劇情殺一刀斬殺玩家，
+   進入後面劇情」）══════════════════════════════════════════════════════════════
+   資料在敵人卡的 `lastStand`（鐵律 1）：
+     sec 時長／tapSpeed 每發普攻把它往前推幾秒／killLead 結束前幾秒出劇情殺／
+     ci＋label 發動的 cut-in／voice 發動語音／image NI 立繪／killFx＋killVoice 那一刀。
+   · 觸發：`enemyDamage` 一擊會把血打到 1 以下 ⇒ 停在 1、發動（一場一次）。之後也打不下去。
+   · 回血：從當下的血線性回到滿，節奏＝`(max−1)/sec` 每秒；普攻每一發等於多過 `tapSpeed` 秒
+     （剩餘時間扣、血也多回那一段 —— 「加速回血」兩件事一起成立）。
+   · 反擊不重置延時：發動時把 `enemyCounterStagger` 關掉（下一隻 `setEnemy` 會自己寫回）。
+   · 劇情殺：剩 `killLead` 秒時一刀 —— 演 `killFx`、玩家血直接歸零走 `lose()`
+     （⚠ 不經 `enemyAttack`：那條路有即死防禦與鎖血，劇情殺兩個都不吃）。
+     這一場的戰鬥卡寫 `allowLose`＋`onLose` 就接後面的劇情（§6.5.2）。
+   · 暫停：cut-in／暫停選單／轉場期間不走（`state.cutinPlaying`／`transitioning`）。 */
+let lsUsed=false, lsActive=false, lsLeft=0, lsTimer=0, lsKilling=false;
+function lsCard(){ const c=(GAME_CONFIG.enemies||{})[state.currentEnemyKey]; return c && c.lastStand; }
+function lastStandDue(){ return !lsUsed && !state.tutorialActive && !!lsCard(); }
+function lsRegen(sec){
+  const L=lsCard(); if(!L) return;
+  const per=(state.enemyMax-1)/(L.sec||15);
+  state.enemyHp=Math.min(state.enemyMax, state.enemyHp + per*sec);
+  updateBars();
+}
+function startLastStand(){
+  const L=lsCard(); if(!L) return;
+  lsUsed=true; lsActive=true; lsKilling=false; lsLeft=(L.sec||15);
+  state.enemyCounterStagger=0;                       // NI 期間反擊不重置延時
+  enemy.playCardVoice(L.voice, true);                // 必播（Ray）：不受語音閘擋
+  if(L.image) enemy.swapPortrait(L.image);           // 換上 NI 立繪並鎖住（見 enemy.swapPortrait）
+  lsBarFx(true);                                     // 回血期間血條轉金（同主角聖徒化，`.saint-heal`）
+  resetIntervalDeadline();                           // 延時從這一刻起就用縮短後的長度（delayMul）
+  const tick=()=>{
+    clearInterval(lsTimer);
+    lsTimer=setInterval(()=>{
+      if(state.over){ stopLastStand(); return; }
+      if(state.cutinPlaying || state.transitioning || lsKilling) return;
+      lsLeft-=0.1; lsRegen(0.1);
+      if(lsLeft <= (L.killLead!=null ? L.killLead : 1)) lastStandKill();
+    }, 100);
+  };
+  if(L.ci) saint.playCutin(tick, L.label||'NIGHTMARE INSTALL', L.ci); else tick();
+}
+function lastStandTap(){
+  const L=lsCard(); if(!L || lsKilling) return;
+  const t=(L.tapSpeed!=null ? L.tapSpeed : 0.5);
+  lsLeft-=t; lsRegen(t);
+  if(lsLeft <= (L.killLead!=null ? L.killLead : 1)) lastStandKill();
+}
+function lastStandKill(){
+  if(lsKilling || state.over) return;
+  const L=lsCard()||{};
+  lsKilling=true; clearInterval(lsTimer); lsTimer=0; lsBarFx(false);
+  state.transitioning=true;                          // 那一刀落下之前鎖點擊
+  stopIntervalTimer();
+  defense.resetEnemyTimers();
+  enemy.playFx(L.killFx||'misha_attack');
+  enemy.playCardVoice(L.killVoice);
+  setTimeout(()=>{
+    if(state.over) return;
+    screenShake();
+    $('redFlash').style.opacity=.9; setTimeout(()=>$('redFlash').style.opacity=0,160);
+    state.playerHp=0; updateBars();
+    state.transitioning=false;
+    lose();
+  }, L.killMs!=null ? L.killMs : 650);
+}
+function lsBarFx(on){
+  const b=document.querySelector('.hpbar.enemy-bar'); if(b) b.classList.toggle('saint-heal', !!on);
+}
+function stopLastStand(){
+  clearInterval(lsTimer); lsTimer=0; lsBarFx(false);
+  lsActive=false; lsKilling=false; lsUsed=false;
+}
+
 function lose(){
   if(state.over) return;
   enemy.playEndVoice(false);   // 敵人卡的 loseVoice（ver -1920）——排在 allowLose 分流之前，兩條路都播

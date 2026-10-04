@@ -306,7 +306,7 @@ export const MAIN_SCRIPT = {
       { speaker:'LUNARIA', text:'你那是什麼表情？', portrait:{ char:'LUNARIA', expr:'seat' } },
       { speaker:'LUNARIA', text:'剛剛要不是這傢伙，你早就沒命了吧？', portrait:{ expr:'seat_smirk' } },
       { speaker:'LUNARIA', text:'不服氣的話，就別依靠別人的力量。', portrait:{ expr:'seat_smirk' } },
-      { speaker:'LUNARIA', text:'還是說，沒了賽西莉你就不會戰鬥了嗎？', portrait:{ char:'LUNARIA', expr:'seat_smirk', show:true } },
+      { bubbleFx:'note', speaker:'LUNARIA', text:'還是說，沒了賽西莉你就不會戰鬥了嗎？', portrait:{ char:'LUNARIA', expr:'seat_smirk', show:true } },
       { speaker:'NOUVELLE', text:'不，剛剛是因為我——',
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
       { speaker:'LUNARIA', text:'不論如何，你們兩個，', portrait:{ char:'LUNARIA', expr:'seat_smirk' } },

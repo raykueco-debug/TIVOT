@@ -60,6 +60,9 @@ export const HITFX = {
   bullet:     { base:'bullet', se:'em_shot', count:1, pos:'random' },              // 彈孔
   bullet_big: { base:'bullet', se:'em_shot', count:1, pos:'random', scale:1.8 },  // 大彈孔
   dagger: { base:'slash',  se:'em_dagger' },   // 匕首（貝琳妲語彙）：slash 視覺＋匕首音
+  /* 米夏的大絕（ver -1957，Ray：「像殘影一樣脈動彈出＋斬」）：`img` 那張攻擊圖疊三層殘影
+     一拍一拍彈出，最後一斬（`enemy.spawnAfterimage`）。音效照 slash 那一支（斬的那一下）。 */
+  misha_attack: { base:'afterimage', se:'em_slash', img:'misha_attack' },
   // ── 特殊怪的簽名（視覺沿用 base、音效專屬）──
   serpent_bite:      { base:'bite',   se:'se_enemy_serpent' },   // 羽蛇：牙印＋吼叫
   centipi_claw:      { base:'claw',   se:'se_enemy_centipi' },   // 蜈蚣：爪痕＋叫聲
@@ -84,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1961';
+export const VERSION = 'ver 2026.09.22-1970';
 
 export const GAME_CONFIG = {
 
@@ -2363,6 +2366,15 @@ export const GAME_CONFIG = {
            這一場改成**門開始上推那一瞬**就換。走既有的那一格（-1433 追擊戰同一支），
            `story` 那邊只問「要不要早播」，播放點仍然只有 `riseCue` 一個（鐵律 7）。 */
     lk_nemo: { enemy:'nemo', allowLose:true, bgm:'nemo', bgmAfter:'@town', bgmOnRise:true },
+    /* 米夏戰（ver -1957，測試用；Ray：「開個米夏戰來試試」）。⚠ 還沒有任何腳本用它 ——
+       正式的米夏戰（STORY_ROADMAP：第四遺蹟「打不贏」、終戰）要另外開卡、另外決定 allowLose。
+       曲子先借尼莫戰那一首。 */
+    test_misha: { enemy:'misha', allowLose:true, bgm:'nemo', bg:'holyseedungeonwhole' },
+    /* 羅賽爾廢城主祭壇（ver -1969，Ray 的「羅塞爾廢城_台詞差分」）：護衛戰 → 米夏戰。
+       ⚠ 米夏戰**打不贏**（卡上 lastStand：血到 1 → NI → 劇情殺）⇒ `allowLose`，腳本 `onLose` 接後面的戲。
+       曲子沒指定，走預設戰鬥曲。 */
+    dm_misha_guards: { enemy:'misha_guards' },
+    dm_misha:        { enemy:'misha', allowLose:true },
     /* ══ 守墓者（ver -1525）══ 三張追擊、一張決戰（規格 §九）。
        ⚠ 都不寫 `sessionEnd`：追擊那三場是一場一結算（玩家被追上就打一場）；
          決戰那一張是這一段的終點，等 ⑨ 追逐機制接上時再決定要不要收段。
@@ -3524,6 +3536,8 @@ export const GAME_CONFIG = {
                 'vo_nou_saint','vo_nou_obe','vo_nou_guard','vo_nou_return',
                 'vo_cec_saint','vo_cec_obe','vo_cec_guard','vo_cec_return',   // ver -1919：賽西莉
                 'vo_nemo_play','vo_nemo_slow1','vo_nemo_slow2','vo_nemo_feint','vo_nemo_bulletrain','vo_nemo_win',   // ver -1920：尼莫
+                'vo_misha_guard1','vo_misha_guard2','vo_misha_ni','vo_misha_attack',   // ver -1964：米夏
+                'vo_misha_attack2','vo_misha_attack3','vo_misha_attack4','vo_misha_attack5','vo_misha_attack6','vo_misha_attack7','vo_misha_damage1','vo_misha_damage2','vo_misha_damage3','vo_misha_damage4','vo_misha_finish','vo_misha_guard3','vo_misha_guard4','vo_misha_guard5','vo_misha_hp20','vo_misha_hp50',   // ver -1967：米夏第二批
                 'vo_anya_ni','vo_anya_burst','vo_anya_burst2','vo_anya_melt',
                 'vo_anya_lucid',
                 /* ver -818：索菈娜語音（共鬥/供給/共鬥結束）。 */
@@ -3567,6 +3581,11 @@ export const GAME_CONFIG = {
       /* ver -1920：尼莫六支。audio_scan 建議值 × 主角三支（dualcrush／mb／execute）的平均鏈補償 1.72，
          再夾峰值 ≤ +2 dBFS（bulletrain／feint／play 被夾）。 */
       vo_nemo_play:4.22, vo_nemo_slow1:4.39, vo_nemo_slow2:4.39, vo_nemo_feint:2.09, vo_nemo_bulletrain:2.34, vo_nemo_win:4.28,
+      /* ver -1964：米夏四支。對齊尼莫（vo_nemo_play 4.22 ＠ −26.7 LUFS ⇒ 播出約 −14.2）換算；
+         guard2 被峰值上限夾住。⚠ 鄰居對照量的，要精修就跑 audio_scan。 */
+      vo_misha_guard1:3.35, vo_misha_guard2:2.83, vo_misha_ni:2.88, vo_misha_attack:2.22,
+      /* ver -1967：米夏第二批十六支，同一套換算（damage3／attack3／hp20 原檔很小聲，增益偏高是那樣來的）。 */
+      vo_misha_attack2:6.18, vo_misha_attack3:9.59, vo_misha_attack4:3.53, vo_misha_attack5:3.39, vo_misha_attack6:3.62, vo_misha_attack7:3.62, vo_misha_damage1:4.30, vo_misha_damage2:3.63, vo_misha_damage3:11.34, vo_misha_damage4:5.38, vo_misha_finish:4.68, vo_misha_guard3:3.84, vo_misha_guard4:4.63, vo_misha_guard5:4.04, vo_misha_hp20:8.98, vo_misha_hp50:6.22,
       vo_cecilie_saintinstall:2.42, vo_cecilie_obe:4.10, vo_cecilie_deathguard:3.30, vo_cecilie_lifereturn:2.39,
       vo_anya_nightmareinstall:4.14, vo_anya_obe:0.67,   // obe ver -837 新錄音重量
       vo_anya_dreambreaker1:5.15,    vo_anya_dreambreaker2:2.63,
@@ -3652,6 +3671,9 @@ export const GAME_CONFIG = {
       se_weapon_sniper:0.839, se_weapon_heavygun:0.738,
       /* ── 敵人 ── */
       se_enemy_slash:0.602, se_enemy_smack:1.173, se_enemy_shot:0.854,
+      /* 劈落（ver -1957，米夏）：實測 −16.2 LUFS、峰值 0 dBFS —— 照目標要 ×1.57，
+         被 `peakCeilDb`（+2 dB）夾在 1.259。⚠ 鄰居對照量的，不是 audio_scan 那一套；要精修就跑一次。 */
+      se_bulletguard:1.259,
       se_enemy_revolver:0.732, se_enemy_dagger:2.192, se_enemy_centipi:1.272,
       /* ver -899 兩支新音。⚠⚠ **值是「對照鄰居」定的，不是照公式硬算**：
          本機用 numpy 重寫的 BS.1770 量出來，與這張表既有的值換算不回去
@@ -4209,6 +4231,12 @@ export const ASSETS = {
      ⚠⚠ **這張圖的用途是美術推斷的**（-1503 的交接寫著「接卡之前要 Ray 確認一句
        『它是不是尼莫的戰鬥立繪』」）—— 到現在還沒確認過。**不是的話換這一行就好。** */
   enemy_nemo:     "resources/enemy/man_nemo.webp",          // 尼莫（劇情戰）
+  /* 米夏（ver -1957，Ray：「用 fight 當初始立繪」）—— 兩張是 SI 的 fight／ni 複製過來的（man 編碼）。
+     `misha_attack` 是大絕的殘影彈出圖（`HITFX.misha_attack`），不是立繪。 */
+  enemy_misha:    "resources/enemy/man_misha.webp?v=89c56bd8",
+  enemy_misha_ni: "resources/enemy/man_misha_ni.webp?v=9576ea75",      // 聖徒化版（卡還沒用到，備著）
+  misha_attack:   "resources/enemy/man_misha_attack.webp?v=a534d729",
+  enemy_misha_guards: "resources/enemy/man_misha_guards.webp?v=7bc297b3",   // 親衛隊三人＋主祭壇背景（ver -1969，Gemini）
   /* ══ 守墓者・不死者之龍（ver -1525；美術 -1501 交件、規格
      `resources/enemy/_tomb_mon_spec.md` §八～九）══
      ⚠ **四張圖 ＝ 四張卡**（Ray：「四張是同一隻，程式上算四隻，
@@ -4239,6 +4267,7 @@ export const ASSETS = {
   /* 東方泊地・那一夜（ver -1557，Ray 交件）：安雅打瞌睡那一拍閃過的米夏注視。
      ⚠ 它**不是插圖**（`cg`）而是 `fx:'stare'` 那一支的素材 —— 一瞬的半透明脈動。 */
   ci_mishastare:      "resources/ci/ci_mishastare.webp",
+  ci_misha_ni:        "resources/ci/ci_misha_ni.webp?v=407d39b1",      // 米夏 NI 發動（ver -1964；原檔 ci_misha_dreambreaker.png 在 _originals）
   ci_sorana_predator: "resources/ci/ci_sorana_predator.webp?v=84e84cd8",
   ci_sorana_supply:   "resources/ci/ci_sorana_supply.webp?v=2fcb31ce",   // -820 過渡圖 → -837 webp
   /* 獵手的直覺（被動）發動的 CI：三張隨機輪播（ver -809，Ray 指定）——與三位女角的合擊圖。 */
@@ -4717,6 +4746,28 @@ export const ASSETS = {
   vo_nemo_feint:     "resources/audio/vo/vo_nemo_feint.m4a",
   vo_nemo_bulletrain:"resources/audio/vo/vo_nemo_bulletrain.m4a",
   vo_nemo_win:       "resources/audio/vo/vo_nemo_win.m4a",
+  /* 米夏（ver -1964，Ray 交 wav；原檔在 _originals/audio/vo/）。用法在敵人卡 `misha` 的
+     parryVoice（劈落輪播）／lastStand.voice（NI 發動）／lastStand.killVoice＋assaultVoice（斬）。 */
+  vo_misha_guard1:   "resources/audio/vo/vo_misha_guard1.m4a?v=84fd4682",
+  vo_misha_guard2:   "resources/audio/vo/vo_misha_guard2.m4a?v=32f8b88c",
+  vo_misha_ni:       "resources/audio/vo/vo_misha_ni.m4a?v=bada3c54",
+  vo_misha_attack:   "resources/audio/vo/vo_misha_attack.m4a?v=b9e274ca",
+  vo_misha_attack2:  "resources/audio/vo/vo_misha_attack2.m4a?v=73566366",
+  vo_misha_attack3:  "resources/audio/vo/vo_misha_attack3.m4a?v=21c74ec4",
+  vo_misha_attack4:  "resources/audio/vo/vo_misha_attack4.m4a?v=36747c50",
+  vo_misha_attack5:  "resources/audio/vo/vo_misha_attack5.m4a?v=686be4d9",
+  vo_misha_attack6:  "resources/audio/vo/vo_misha_attack6.m4a?v=a4700681",
+  vo_misha_attack7:  "resources/audio/vo/vo_misha_attack7.m4a?v=a4700681",
+  vo_misha_damage1:  "resources/audio/vo/vo_misha_damage1.m4a?v=482797fc",
+  vo_misha_damage2:  "resources/audio/vo/vo_misha_damage2.m4a?v=060fbdd9",
+  vo_misha_damage3:  "resources/audio/vo/vo_misha_damage3.m4a?v=6ac94d6f",
+  vo_misha_damage4:  "resources/audio/vo/vo_misha_damage4.m4a?v=e1f4b9bc",
+  vo_misha_finish:   "resources/audio/vo/vo_misha_finish.m4a?v=e3d92915",
+  vo_misha_guard3:   "resources/audio/vo/vo_misha_guard3.m4a?v=a6979e8f",
+  vo_misha_guard4:   "resources/audio/vo/vo_misha_guard4.m4a?v=c8ab9d76",
+  vo_misha_guard5:   "resources/audio/vo/vo_misha_guard5.m4a?v=c8b74667",
+  vo_misha_hp20:     "resources/audio/vo/vo_misha_hp20.m4a?v=a76ef440",
+  vo_misha_hp50:     "resources/audio/vo/vo_misha_hp50.m4a?v=7117e605",
   vo_anya_ni:        "resources/audio/vo/vo_anya_nightmareinstall.m4a",// 惡夢化降臨
   vo_anya_burst:     "resources/audio/vo/vo_anya_dreambreaker1.m4a",   // 夢境粉碎（預設）
   vo_anya_burst2:    "resources/audio/vo/vo_anya_dreambreaker2.m4a",   // 夢境粉碎（娜塔莉戰，見戰鬥卡）
@@ -4785,6 +4836,7 @@ export const ASSETS = {
   em_shot:           "resources/audio/se/se_enemy_shot.m4a",     // Boss：延時懲罰
   em_revolver:       "resources/audio/se/se_enemy_revolver.m4a", // Boss：大絕/不完美防禦（左輪）
   em_dagger:         "resources/audio/se/se_enemy_dagger.m4a?v=608c768c", // Boss：按錯（ver -899 換新音，同名覆蓋 → ?v）
+  se_bulletguard:    "resources/audio/se/se_bulletguard.m4a?v=f8c96a23",   // 劈落：普攻被刀光擋下（ver -1957，米夏；由 enemy.spawnParry 播）
   /* 櫻花受擊（ver -899，Ray：「櫻花受擊音效是 se_enemy_sakura，只在第一 hit 播」）。
      ⚠ 它**不掛在 `HITFX.sakura.se` 上** —— 那條路是每一擊都播，而這一招一波三顆。
        由 `enemy.spawnSakura` 播，那一支「一陣風只跑一次」，所以自然只有第一下有聲。 */
@@ -5451,6 +5503,16 @@ export const ASSET_VER = {
   'belisar_rooffall_dusk': '23656517',
   'belisar_rooffall_night': 'd183d00f',
   'bgm_lunaria': '8a61fc07',
+  'capital_church_dawn': 'aad19c04',
+  'capital_church_day': 'eb3c8c8d',
+  'capital_church_dusk': '3ae037ec',
+  'capital_church_midnight': 'def907f1',
+  'capital_church_night': '92fee355',
+  'capital_cityhall_dawn': '06b44160',
+  'capital_cityhall_day': '31773fbf',
+  'capital_cityhall_dusk': '2b8a77c8',
+  'capital_cityhall_midnight': '5a4193aa',
+  'capital_cityhall_night': '41ad4a15',
   'cecilie_si_blush_closed': 'bec29dba',
   'cecilie_si_blush_half': 'd4688f86',
   'cecilie_si_fluster_closed': 'dd39833a',
@@ -5477,6 +5539,7 @@ export const ASSET_VER = {
   'ci_anya_luciddream': '773af9dd',
   'ci_anya_nightmareinstall': '26b448f3',
   'ci_anya_obe': 'f8337149',
+  'ci_misha_ni': '407d39b1',
   'ci_nouvelle_deathguard': '5a505484',
   'ci_nouvelle_lifereturn': '1223b2d1',
   'ci_nouvelle_obe': '1b547b75',
@@ -5536,6 +5599,10 @@ export const ASSET_VER = {
   'east_square_dawn': '221f688b',
   'east_square_dusk': '949aef1e',
   'east_square_night': 'b51a72df',
+  'east_university_dawn': '82688602',
+  'east_university_day': 'caaf76f4',
+  'east_university_dusk': '7d82df44',
+  'east_university_night': 'a4396469',
   'guildcounterca_si_closed': '80cc27b6',
   'guildcounterca_si_half': 'f341b6bb',
   'kidd_ci': 'a4cda953',
@@ -5576,6 +5643,10 @@ export const ASSET_VER = {
   'luna_si_taunt_half': '13a82f50',
   'lunaria_si_arm_closed': '2f0bf75e',
   'lunaria_si_arm_half': 'a1db391e',
+  'man_misha': '89c56bd8',
+  'man_misha_attack': 'a534d729',
+  'man_misha_guards': '7bc297b3',
+  'man_misha_ni': '9576ea75',
   'man_sorana': '11180f49',
   'man_thug_shotgun': '504d26bc',
   'man_thug_squad': 'dfd75032',
@@ -5697,6 +5768,16 @@ export const ASSET_VER = {
   'nemo_si_front_half': '32966d66',
   'nemo_si_surprise_closed': '38ca89fa',
   'nemo_si_surprise_half': 'f027c2a4',
+  'northport_east_bf': '737a5c9b',
+  'northport_east_dawn': '855ee80d',
+  'northport_east_day': '0d94e916',
+  'northport_east_dusk': 'd5674ca2',
+  'northport_east_night': '00413761',
+  'northport_grocery_bf': '88f10810',
+  'northport_grocery_dawn': 'f5de3321',
+  'northport_grocery_day': '8c5cfae0',
+  'northport_grocery_dusk': '94c85db9',
+  'northport_grocery_night': '682b0849',
   'nouvelle_ad_si_coverfacepeek_closed': '1c052f59',
   'nouvelle_ad_si_coverfacepeek_half': '674c994e',
   'nouvelle_ad_si_front_closed': 'f0bad78c',
@@ -5845,6 +5926,7 @@ export const ASSET_VER = {
   'npc_grocer_si_v5_half': 'e980c768',
   'npc_grocery_si_northport_closed': '268e0e69',
   'npc_grocery_si_northport_half': 'a5c105b9',
+  'npc_guildcounter_si_northport': '70fc48d6',
   'npc_guildcounter_si_northport_closed': '2920c6bf',
   'npc_guildcounter_si_northport_half': 'f2ff48be',
   'npc_guildcounter_si_v1': 'cb74bb90',
@@ -6102,8 +6184,10 @@ export const ASSET_VER = {
   'rennasorana_si_annoyedc_half': '8b73acc5',
   'rennasorana_si_annoyedd_closed': '8aaead36',
   'rennasorana_si_annoyedd_half': '3a63b8ef',
+  'ruins_shinier_deepspring': '20609f66',
   'saint_gt_ci': '2c191ece',
   'saint_tr_ci': '1f885777',
+  'se_bulletguard': 'f8c96a23',
   'se_bulletsfly1': '7a3f47e9',
   'se_bulletsfly2': '0cf50f26',
   'se_bulletsfly3': '2cb3b08e',
@@ -6119,6 +6203,10 @@ export const ASSET_VER = {
   'serpent_day': '8b55f618',
   'serpent_dd': '7574b2ec',
   'serpent_night': '720cc1c8',
+  'shinier_altar_dawn': 'dbc7d470',
+  'shinier_altar_day': '86a8dbcc',
+  'shinier_altar_dusk': '17cbdc15',
+  'shinier_altar_night': '0862baf9',
   'sofia_firearm': 'b15578da',
   'sofia_grocerie': 'ba7299e9',
   'sofia_guild': 'b798355f',
@@ -6328,9 +6416,37 @@ export const ASSET_VER = {
   'tomb_lowaltar_off': '8babe73e',
   'tomb_vaultw': '69754276',
   'torsten_si_back': 'a56f91a6',
+  'vela_cathedral_dawn': '37e3f375',
+  'vela_cathedral_day': '4799171e',
+  'vela_cathedral_dusk': 'fc6927b0',
+  'vela_cathedral_night': 'ad5a0077',
+  'vela_midtown_dawn': 'fddf925d',
+  'vela_midtown_day': '80739de1',
+  'vela_midtown_dusk': '6e7a79ba',
+  'vela_midtown_night': '72cd5c0f',
   'vela_square_day': 'dc514e1a',
   'vo_anya_luciddream': '60bed254',
   'vo_anya_obe': '615ba712',
+  'vo_misha_attack': 'b9e274ca',
+  'vo_misha_attack2': '73566366',
+  'vo_misha_attack3': '21c74ec4',
+  'vo_misha_attack4': '36747c50',
+  'vo_misha_attack5': '686be4d9',
+  'vo_misha_attack6': 'a4700681',
+  'vo_misha_attack7': 'a4700681',
+  'vo_misha_damage1': '482797fc',
+  'vo_misha_damage2': '060fbdd9',
+  'vo_misha_damage3': '6ac94d6f',
+  'vo_misha_damage4': 'e1f4b9bc',
+  'vo_misha_finish': 'e3d92915',
+  'vo_misha_guard1': '84fd4682',
+  'vo_misha_guard2': '32f8b88c',
+  'vo_misha_guard3': 'a6979e8f',
+  'vo_misha_guard4': 'c8ab9d76',
+  'vo_misha_guard5': 'c8b74667',
+  'vo_misha_hp20': 'a76ef440',
+  'vo_misha_hp50': '7117e605',
+  'vo_misha_ni': 'bada3c54',
   'vo_nouvelle_deathguard': '81a164d8',
   'vo_nouvelle_lifereturn': 'b4fc5f3b',
   'vo_nouvelle_obe': '0c7d6842',

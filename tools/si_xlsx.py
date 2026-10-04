@@ -83,7 +83,9 @@ def load_speakers():
     src = re.sub(r'^\s*(import|export)\s.*$',
                  lambda m: m.group(0).replace('export ', '').replace('import ', '//import '),
                  src, flags=re.M)
-    D = _jsrun.dump(src + chr(10) + 'print(JSON.stringify({ART:ART, S:SPEAKERS}));',
+    # 譯文 shim（ver -1909 起 speakers.js 用 trTree／i18nT 包中文母本；這裡要的就是中文，原樣回傳）
+    shim = 'function trTree(o){ return o; } function i18nT(s){ return s; }' + chr(10)
+    D = _jsrun.dump(shim + src + chr(10) + 'print(JSON.stringify({ART:ART, S:SPEAKERS}));',
                     what='speakers.js')
     return D['ART'], D['S']
 

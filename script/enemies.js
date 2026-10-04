@@ -446,6 +446,101 @@ export const ENEMIES = {
         assault:'witch_revolver',
       },
     },
+    /* ══ 米夏（ver -1957，Ray 交辦）══════════════════════════════════════════
+       > Ray：「用 fight 當初始立繪，攻擊頻率用 nemo，攻擊特效是延時斬、按錯斬、
+       >   大招是 Misha attack 像殘影一樣脈動彈出＋斬，S rank，普攻無效，射出的子彈
+       >   會被銀色刀光擋下，該特效定義為『劈落』」「劈落在畫面顯示字樣跳 guard」
+       · 立繪 `enemy_misha` ＝ SI 的 `misha_si_fight` 複製過來的（man 編碼）。
+       · **攻擊頻率抄尼莫**：`assaultEvery [2,4]`／`assault 2 顆隔 1 秒`／`atkInterval null`
+         ——剛好就是速度型（`atype:'S'`）的頻率，所以基準工具重算也不會動到它。
+       · **S rank** ＝ `tier:'S'`；hp／attack 照 `tools/enemies_baseline.py` 的公式
+         （S×速度型：100×1.5⁵×0.8→610、10×1.2⁵→25）。
+       · **普攻無效**＝ `parryBasic:1`（劈落，見 `enemy.setEnemy`／`combat.parryNow`）——
+         打得動牠的只有反擊、雙槍破防、聖徒化追打。
+       · **「大招」＝一般攻擊**（Ray 更正：「大招是普攻」）⇒ `hitFx.assault:'misha_attack'`。
+         `ult`（血 ≤20% 的門檻波）沒寫自己的特效 ⇒ 退回 assault，一樣是殘影＋斬。
+         ⚠ `ult` 的開關、門檻與顆數照尼莫那張抄（Ray 沒給）。
+       · ⚠ 沒寫到的我自己填的：`story:1`（主線的米夏戰）、`boss:0`（填 1 會再 ×1.2）、
+         `delayPenalty` 5 秒（全卡預設）、`weaponMod` 全 0。 */
+    misha: {
+      name:'米夏',
+      story:1, counterStagger:1, boss:0,
+      Ganymede:0,
+      parryBasic:1,   // 劈落：普攻整發無效、改演銀色刀光＋浮字 GUARD（ver -1957）
+      /* 語音（ver -1964／-1967 第二批）：一串＝輪播；全部走敵人的語音閘（播放中不疊下一句）。 */
+      parryVoice:['vo_misha_guard1','vo_misha_guard2','vo_misha_guard3','vo_misha_guard4','vo_misha_guard5'],   // 普攻被劈落
+      parryVoiceRate:0.5,   // 劈落語音的出聲機率（ver -1966，Ray：「50% 機率出，免得太密集」）
+      assaultVoice:['vo_misha_attack','vo_misha_attack2','vo_misha_attack3','vo_misha_attack4',
+                    'vo_misha_attack5','vo_misha_attack6','vo_misha_attack7'],               // 攻擊打中時
+      damageVoice:['vo_misha_damage1','vo_misha_damage2','vo_misha_damage3','vo_misha_damage4'],   // 被玩家有效攻擊（真的扣到血）
+      hpVoice:{ 50:'vo_misha_hp50', 20:'vo_misha_hp20' },   // 血量跌到 50%／20% 以下各講一次（必播）
+      /* NI（ver -1964，Ray：「米夏 hp 被打到 1 就會發動 15 秒的 NI 開始回血，NI 狀態反擊無法
+         重置延時，每次普攻可加速 0.5 秒回血，NI 結束前米夏會發動劇情殺一刀斬殺玩家，進入後面劇情」）。
+         實作在 combat 的 `startLastStand` 那一段；欄位說明見那裡。
+         ⚠ `killLead`（結束前幾秒出刀）與 `killMs`（揮刀到斃命）是我填的節奏，Ray 沒給。
+         ⚠⚠ **這一場打不贏**：血最低停在 1，NI 結束前劇情殺 ⇒ 戰鬥卡一定要寫
+           `allowLose`＋`onLose`（接後面的劇情），不然會掉進一般的 Game Over。 */
+      lastStand:{ sec:15, tapSpeed:0.5, killLead:1, killMs:650, delayMul:0.5,   // delayMul：NI 期間延時 ×0.5（ver -1966）
+                  ci:'ci_misha_ni', label:'NIGHTMARE INSTALL', voice:'vo_misha_ni',
+                  image:'enemy_misha_ni', killFx:'misha_attack', killVoice:'vo_misha_finish' },   // finish＝劇情殺那一刀（ver -1967）
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:20, count:4, atk:20, gap:0.4, cd:4 },   // 照尼莫
+      kind:'human',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'S',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_misha',
+      fit:{ mode:'contain', pos:'center bottom', scale:0.9 },   // 全身入鏡（同尼莫的作法）；看畫面再調
+      hp:610,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      attack:25,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      atkInterval:null,
+      assaultEvery:[2,4],   // 照尼莫
+      assault:{ count:2, gap:1 },   // 照尼莫
+      delayPenalty:{ seconds:5 },
+      entrance:null,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      hitFx:{
+        delay:'slash',
+        wrong:'slash',
+        assault:'misha_attack',   // 一般攻擊＝殘影彈出＋斬（ver -1957，Ray：「大招是普攻」）
+      },
+    },
+    /* ══ 米夏的親衛隊（ver -1969，羅賽爾廢城主祭壇「護衛戰」）══ 三人一張圖、整群當一隻（同 thug_squad 的作法）。
+       圖是 Gemini 連背景（主祭壇）一起畫的 ⇒ `fit:cover`；原稿 `_originals/enemy/man_misha_guards_gem1.jpeg`。
+       ⚠⚠ **這張是代圖**（Ray：「先作代圖吧，之後 GPT 額度恢復再重畫」）—— 重畫時同名覆蓋要跳 `?v=`／ASSET_VER。
+       數值照基準工具：B 級 × 速度型（100×1.5³×0.8→270、10×1.2³→17、每 2~4 秒）；三把步槍一波三發（我填的）。 */
+    misha_guards: {
+      name:'親衛隊',
+      story:1, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      kind:'human',
+      riseFx:0,
+      hitSe:null,
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_misha_guards',
+      fit:{ mode:'cover', pos:'center 35%' },
+      hp:270,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      atkInterval:null,
+      assaultEvery:[2,4],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      assault:{ count:3, gap:0.35 },
+      delayPenalty:{ seconds:5 },
+      entrance:null,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      hitFx:{ delay:'bullet', wrong:'bullet', assault:'bullet_big' },
+    },
     /* ══ 賞金獵人（ver -375）══ 舊街區・賞金獵人公會那一場（劇情插入戰）。
        ⚠ 這一筆是「**敵人資訊標準卡**」的第一個實例（Ray 交稿的格式，見
          `script/SCRIPT_FORMAT.md` 的「敵人卡」一節）。卡上有的欄位這裡都要有，

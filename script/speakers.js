@@ -542,7 +542,7 @@ export const ART = {
                      ⚠ 自檢：`node --input-type=module --check` **驗不出**重複鍵
                      （物件實字的重複鍵在非嚴格模式下合法），所以這一類只能靠人看或另外寫檢查。 */
                   desperate:{ src:'resources/si/nouvelle_si_desperate.webp', top:2,  bot:1532, fx:0.415, faceFx:0.450, faceZoomK:0.79 },
-                  surprise: { yShift:0, src:'resources/si/nouvelle_si_surprise.webp',  top:5,  bot:1524, fx:0.487 },
+                  surprise: { blink:'twoOne', fxShift:0, cm:165, yShift:0, src:'resources/si/nouvelle_si_surprise.webp',  top:5,  bot:1524, fx:0.487 },
                   /* 會客廳那一幕的四張（ver -348）。
                      ⚠⚠ `gossip1` 的臉在 **0.710** —— 其他差分落在 0.39~0.60，這張她整個人
                        偏右。沿用別張的 fx 會把她推出畫面，這就是「每張差分都要自己量」的活例子。 */
@@ -1097,7 +1097,7 @@ export const ART = {
          —— 要用的時候照這一列加一行就好（同姿勢，只寫 `src`）。 */
     makeface:  { src:'resources/si/anya_si_makeface.webp?v=fe17c6b1', top:4, bot:1531, fx:0.469 },
     steady:    { src:'resources/si/anya_si_steady.webp?v=4688040a',     top:0, bot:1526, fx:0.499 },
-    curious:   { src:'resources/si/anya_si_curious.webp?v=aa9fd998',    top:3, bot:1525, fx:0.428 },
+    curious:   { fxShift:0, src:'resources/si/anya_si_curious.webp?v=aa9fd998',    top:3, bot:1525, fx:0.428 },
     /* ══ 差分擴充 18 張（ver -1503 美術交件，-1507 接線）══
        ⚠ `wave`／`wheeltalk`／`whisper` 的 `fx` 目視重量（高舉的手套、鋪在右側的長髮
          會把 measure_si 的帶狀重心拉走）；`hug`／`thinking` 複核過，量到的就是對的。
@@ -1365,7 +1365,7 @@ export const ART = {
   /* 北泊公會櫃台（ver -858）。⚠ 原檔白底未去背 —— matte.py（isnet-anime）粗胚
      先頂著（?v=2 蓋過快取），待 GPT 正式重製後**換圖要重量**（§5）。身高估 167。 */
   counter_np:{ cm:167, eye:32, fx:0.490, top:24, bot:1522,
-           side:'R', alt:null, base:'resources/si/npc/npc_guildcounter_si_northport.webp?v=2', expr:{} },
+           side:'R', alt:null, base:'resources/si/npc/npc_guildcounter_si_northport.webp?v=70fc48d6', expr:{} },
   /* ══ 東方泊地的三位（ver -1340，Ray 交件）══════════════════════════════
      ⚠⚠ **`fx` 不是 `tools/measure_si.py` 印的那個** —— 那支量的是「頭頂往下 8%
        那一帶的 alpha 重心」，而這三張裡有兩張的頭帶被別的東西佔著（同 `gunsmith_np`

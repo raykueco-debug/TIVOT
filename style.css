@@ -839,20 +839,23 @@
   .hpbar.enemy-bar>i{background:linear-gradient(90deg,var(--blood),#d14e4e);}
   .hpbar.player-bar>i{background:linear-gradient(90deg,#2b6d9a,var(--holy));}
   /* ── 聖徒化回血特效（saint.js 掛 .saint-heal 於 .player-bar）──
+     ⚠ ver -1965：選擇器改成 `.hpbar.saint-heal`（不限玩家那一條）—— 米夏 NI 回血時
+       敵人血條掛同一個 class（combat 的 `startLastStand`，Ray：「回血要跟主角 SI 一樣金色血條特效」），
+       同一份特效兩條血條共用，不另寫一套（鐵律 8）。
      血條轉金；亮紋自左向右流動「聚集」到末端；末端騎在填充前緣的呼吸強光點。
      overflow:visible 讓光點光暈溢出條外（填充改小圓角補償失去的裁切）。 */
-  .hpbar.player-bar.saint-heal{border-color:var(--gold);overflow:visible;
+  .hpbar.saint-heal{border-color:var(--gold);overflow:visible;
     box-shadow:0 0 10px rgba(212,169,74,.55),0 0 10px #000;}
-  .hpbar.player-bar.saint-heal>i{position:relative;border-radius:2px;
+  .hpbar.saint-heal>i{position:relative;border-radius:2px;
     background:linear-gradient(90deg,#8a6d2e,#ffd970 70%,#fff3c4);
     box-shadow:0 0 8px rgba(255,224,138,.7);}
-  .hpbar.player-bar.saint-heal>i::before{content:"";position:absolute;inset:0;border-radius:2px;
+  .hpbar.saint-heal>i::before{content:"";position:absolute;inset:0;border-radius:2px;
     background:repeating-linear-gradient(90deg,transparent 0 16px,rgba(255,255,255,.38) 16px 19px);
     animation:healFlow .5s linear infinite;
     -webkit-mask-image:linear-gradient(90deg,transparent,#000 55%);
     mask-image:linear-gradient(90deg,transparent,#000 55%);}
   @keyframes healFlow{from{background-position:0 0;}to{background-position:19px 0;}}
-  .hpbar.player-bar.saint-heal>i::after{content:"";position:absolute;right:-7px;top:50%;
+  .hpbar.saint-heal>i::after{content:"";position:absolute;right:-7px;top:50%;
     width:14px;height:14px;transform:translateY(-50%);border-radius:50%;
     background:radial-gradient(circle,#fff 0%,#ffe9a8 40%,rgba(255,224,138,.4) 65%,transparent 75%);
     box-shadow:0 0 12px 4px rgba(255,224,138,.85),0 0 26px 8px rgba(212,169,74,.5);
@@ -989,6 +992,9 @@
     text-shadow:0 0 8px #000;pointer-events:none;animation:floatup .7s ease-out forwards;}
   .critnum{color:#fff;font-size:26px;text-shadow:0 0 12px var(--danger),0 0 4px #fff;}
   .snipernum{color:#ff3232;font-size:42px;text-shadow:0 0 18px var(--danger),0 0 6px #fff;}
+  /* 劈落的浮字（ver -1957，Ray：「劈落在畫面顯示字樣跳 guard」）：銀白、斜體，跟傷害數字分得開。 */
+  .guardnum{color:#e8eef6;font-size:20px;font-style:italic;letter-spacing:.08em;
+    text-shadow:0 0 10px rgba(170,200,235,.9),0 0 3px #fff;}
   @keyframes floatup{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-40px)}}
 
   /* 爪痕（被攻擊） */
@@ -1061,6 +1067,50 @@
   @keyframes slashCut{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--deg,-25deg)) scaleX(.05)}
     16%{opacity:1;transform:translate(-50%,-50%) rotate(var(--deg,-25deg)) scaleX(1)}
     100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--deg,-25deg)) scaleX(1)}}
+  /* ══ 米夏的大絕：殘影脈動彈出（ver -1957，`enemy.spawnAfterimage`）══
+     三層同一張攻擊圖：`--i` 0／1 是偏冷的殘影（錯開一拍、往外脈動一下就散），
+     2 是實體（最後落定、撐住到那一斬）。⚠ 總長與 enemy.js 的 AFTERIMG_LIFE 同一段。
+     ⚠ 那張圖帶著自己的暗底，邊緣用 mask 羽化掉 —— 不然彈出來的是一張「卡片」。 */
+  .fx-afterimg{inset:0;}
+  .fx-afterimg .fx-ghost{position:absolute;inset:-4% 6%;
+    background:center/contain no-repeat;opacity:0;
+    -webkit-mask-image:radial-gradient(ellipse 62% 58% at 50% 50%,#000 55%,transparent 100%);
+            mask-image:radial-gradient(ellipse 62% 58% at 50% 50%,#000 55%,transparent 100%);
+    filter:brightness(1.25) saturate(.35) hue-rotate(185deg);
+    mix-blend-mode:screen;
+    animation:ghostPulse .5s ease-out calc(var(--i,0) * 140ms) forwards;}
+  .fx-afterimg .fx-ghost.solid{filter:none;mix-blend-mode:normal;
+    animation:ghostSolid .62s ease-out 280ms forwards;}
+  /* ⚠ 不要彈跳（Ray：「不要有彈跳感，放大淡出就好」）：一律單向放大＋淡出，
+     沒有縮回、沒有過頭再回彈。 */
+  @keyframes ghostPulse{
+    0%{opacity:0;transform:translateX(var(--gx,0)) scale(1)}
+    15%{opacity:.75;transform:translateX(var(--gx,0)) scale(1.03)}
+    100%{opacity:0;transform:translateX(calc(var(--gx,0) * 2)) scale(1.2)}}
+  @keyframes ghostSolid{
+    0%{opacity:0;transform:scale(1)}
+    15%{opacity:1;transform:scale(1.02)}
+    100%{opacity:0;transform:scale(1.15)}}
+  /* ══ 劈落（ver -1957，`enemy.spawnParry`）══ 子彈落點一道銀色弧光＋幾顆白火星。
+     掛在 `#fxTop`（與槍火同一層、同一個落點）。 */
+  /* ══ 劈落的刃光（Ray：「劈落要弧型刃光」→ 幾輪調形 → 三張參考圖 →
+     「用最後兩個，隨機交互，水平翻轉出現」）══
+     兩種形狀（橢圓刀弧／實心刀弧）由 `enemy.spawnParry` 隨機挑、隨機左右翻（`--flip`），
+     形狀是 SVG（`bandPath` 算好快取）。
+     · 光暈掛在外層（`filter:drop-shadow` 兩層：貼身白＋外圈淡藍）。
+     · 一刀掃過去＝旋轉 −28° → 0° ＋ 由小放大，0.32 秒散掉；`--deg` 是這一刀的傾角。 */
+  .fx-parry{position:absolute;width:340px;height:160px;margin:-80px 0 0 -170px;pointer-events:none;
+    filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 12px rgba(215,230,255,.9));
+    transform:scaleX(var(--flip,1)) rotate(calc(var(--deg,0deg) - 28deg)) scale(.7);opacity:0;
+    animation:parryCut .32s ease-out forwards;}
+  .fx-parry svg{display:block;overflow:visible;}
+  @keyframes parryCut{0%{opacity:0;transform:scaleX(var(--flip,1)) rotate(calc(var(--deg,0deg) - 28deg)) scale(.7)}
+    22%{opacity:1;transform:scaleX(var(--flip,1)) rotate(calc(var(--deg,0deg) - 6deg)) scale(.98)}
+    100%{opacity:0;transform:scaleX(var(--flip,1)) rotate(var(--deg,0deg)) scale(1.06)}}
+  .fx-parry-spark{position:absolute;width:4px;height:4px;margin:-2px;border-radius:50%;pointer-events:none;
+    background:#fff;box-shadow:0 0 5px rgba(190,215,255,1);
+    animation:parrySpark .3s ease-out forwards;}
+  @keyframes parrySpark{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--dx,0),var(--dy,0)) scale(.4)}}
   /* 濺血小血滴：自中心沿 --dx/--dy 飛散、短促淡出（刀痕專用，與延時寬血痕區隔） */
   .fx-drop{border-radius:50%;opacity:0;
     background:radial-gradient(circle at 40% 35%,rgba(255,40,50,1),rgba(150,0,6,.96) 70%);

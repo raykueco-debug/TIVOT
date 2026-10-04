@@ -67,6 +67,9 @@ export function showHitFx(kind){
   const key = (typeof raw === 'string') ? raw : raw.type;
   const fx  = Object.assign({}, HITFX[key] || {}, (typeof raw === 'string') ? {} : raw);
   spawnFxNamed(key, fx);
+  /* 攻擊打中時的語音（卡上 `assaultVoice`，ver -1964 米夏）：只給主動攻擊（assault／ult），
+     延時與點錯不出聲。走語音閘，不疊。 */
+  if(kind==='assault' || kind==='ult') rotVoice('assaultVoice');
 }
 /* ══⚠⚠⚠ **依「特效的名字」直接放一個特效**（ver -1455，Ray：「為什麼三轉四型態
    我會看到爪擊特效？我不是說要放光特效嗎？」）══
@@ -96,6 +99,8 @@ function spawnFxNamed(key, fx){
        ⚠ 與 `bullet`（玻璃碎裂）刻意不同：那一隻獵人是拿槍托招呼你，不是開槍。 */
     case 'blunt': spawnBlunt(fx.scale); break;
     case 'sakura':spawnSakura(); break;
+    /* 米夏的大絕（ver -1957）：殘影脈動彈出＋最後一斬。 */
+    case 'afterimage': spawnAfterimage(fx); break;
     /* 王座徘徊者的放光（ver -1351）。⚠ **冷卻中就退回三爪**（ver -1666）：
        那一發照樣打中、照樣扣血，只是不再放光 —— 打中卻什麼都不演比放光太多還糟。 */
     case 'holyburst': if(!spawnHolyBurst(fx)) triggerClaw(); break;
@@ -114,6 +119,98 @@ function screenFlash(color){
   const d=document.createElement('div');
   d.className='fx fx-screenflash fx-screenflash-'+color;
   addFx(d, 340);
+}
+/* ══ 殘影彈出＋斬（ver -1957，米夏的大絕；Ray：「Misha attack 像殘影一樣脈動彈出＋斬」）══
+   `fx.img` 那張攻擊圖（ASSETS 鍵）疊**三層**：前兩層是偏冷的殘影，一拍一拍往外脈動、
+   一閃就散；第三層是實體，最後落定一斬（`spawnSlash`，同按錯那一支刀痕，鐵律 8）。
+   ⚠ 節奏在 CSS（`.fx-ghost` 的 `--i` 錯開），這裡只負責擺圖與收尾。
+   ⚠ 全部掛在受擊層（`addFx`）—— 壽命管理同其他受擊特效，換敵／離場不必另收。 */
+const AFTERIMG_LIFE = 900;   // 與 CSS `ghostPulse`（.72s ＋ 最後一層延遲）同一段，改一邊要改另一邊
+const AFTERIMG_CUT  = 470;   // 實體那一層落定的時刻 → 斬
+export function spawnAfterimage(fx){
+  const src = asset((fx && fx.img) || 'misha_attack');
+  if(!src){ spawnSlash(); return; }
+  const wrap=document.createElement('div');
+  wrap.className='fx fx-afterimg';
+  for(let i=0;i<3;i++){
+    const g=document.createElement('div');
+    g.className='fx-ghost'+(i===2?' solid':'');
+    g.style.backgroundImage='url("'+src+'")';
+    g.style.setProperty('--i', i);
+    /* 殘影各自往左右偏一點：疊在同一個位置只會讀成「一張在閃」，不是殘影。 */
+    g.style.setProperty('--gx', (i===2 ? 0 : (i ? 7 : -7))+'%');
+    wrap.appendChild(g);
+  }
+  addFx(wrap, AFTERIMG_LIFE);
+  setTimeout(spawnSlash, AFTERIMG_CUT);
+}
+/* ══ 劈落（ver -1957，Ray：「射出的子彈會被銀色刀光擋下，該特效定義為『劈落』」）══
+   普攻打到卡上 `parryBasic:1` 的敵人時，命中點不噴槍火，改成一道**銀色刀光**把子彈
+   劈下來（斜向弧光＋幾顆白火星）。座標是 `#fxTop` 相對的（與槍火同一個落點，
+   由 combat 的 `gunHitOnEnemy` 算好交過來，鐵律 7）。
+   ⚠ 浮字 GUARD 由 combat 那一邊打（傷害數字的擁有者是它，`floatDmg`）。
+   ⚠ 音效 `se_bulletguard` 會連點連響：節流 90ms，免得機槍般的連點疊成一片白噪。 */
+let parrySeAt=0;
+/* 刀弧的形狀（Ray 給了三張參考，定案：「用最後兩個，隨機交互，水平翻轉出現」）——
+   兩種，每一刀隨機挑一種、隨機左右翻（`--flip`）：
+   · **A 橢圓刀弧**（參考二）：斜的橢圓弧，一端細細起刀、另一端粗亮收尾；
+     內側一條細副弧、下方一道直的細光。
+   · **B 實心刀弧**（參考三）：一道實心白弧，尖細起刀、越揮越粗，收尾內側三根毛刺。
+   沿橢圓取點、逐點給厚度，算一次快取成 SVG（每一刀只是 innerHTML 一份字串）。 */
+let parrySvgs=null;
+/* 沿橢圓 (cx,cy,rx,ry) 從 a0 到 a1 畫一道帶狀；`wOf(t,k)` 給第 k 點的厚度。 */
+function bandPath(cx, cy, rx, ry, a0, a1, wOf, squash){
+  const N=60, out=[], inn=[];
+  for(let k=0;k<=N;k++){
+    const t=k/N, th=a0+(a1-a0)*t, c=Math.cos(th), sn=Math.sin(th), w=wOf(t,k);
+    out.push((cx+rx*c).toFixed(1)+' '+(cy+ry*sn).toFixed(1));
+    inn.push((cx+(rx-w)*c).toFixed(1)+' '+(cy+(ry-w*squash)*sn).toFixed(1));
+  }
+  return 'M'+out.join(' L')+' L'+inn.reverse().join(' L')+'Z';
+}
+/* 起刀慢慢長、過了 peak 急收成尖（不對稱，才是「揮出去」不是一圈環）。 */
+const swing = (wMax, peak, grow, cut) => (t)=>
+  wMax * (t<peak ? Math.pow(t/peak, grow) : Math.pow((1-t)/(1-peak), cut));
+function parrySvgList(){
+  if(parrySvgs) return parrySvgs;
+  const D=Math.PI/180;
+  /* A：橢圓刀弧 */
+  const a = '<svg viewBox="-170 -80 340 160" width="340" height="160">'
+    +'<path d="'+bandPath(0,0,150,52,200*D,395*D, swing(22,0.82,1.4,0.6), 0.55)+'" fill="#fff"/>'
+    +'<path d="'+bandPath(0,0,124,38,215*D,330*D, swing(3.4,0.6,1.4,0.6), 0.55)+'" fill="#fff" opacity=".85"/>'
+    +'<path d="M-95 38 L60 60 L135 66 L60 63 Z" fill="#fff" opacity=".9"/></svg>';
+  /* B：實心刀弧。毛刺＝收尾那一段內緣挑三個點往裡多咬一口（單點 ⇒ 尖的三角）。 */
+  const SPIKE={ 38:16, 46:20, 54:13 };
+  const wB = swing(36, 0.94, 2.2, 0.5);
+  const b = '<svg viewBox="-170 -80 340 160" width="340" height="160">'
+    +'<path d="'+bandPath(-70,95,210,185,-128*D,-8*D, (t,k)=>wB(t)+(SPIKE[k]||0), 1)
+    +'" fill="#fff" transform="translate(30,-30) scale(.72)"/></svg>';
+  parrySvgs=[a,b];
+  return parrySvgs;
+}
+export function spawnParry(px, py){
+  const host=$('fxTop'); if(!host) return;
+  const d=document.createElement('div');
+  d.className='fx-parry';
+  d.style.left=px+'px'; d.style.top=py+'px';
+  d.style.setProperty('--deg', (Math.random()*50-25).toFixed(1)+'deg');
+  d.style.setProperty('--flip', Math.random()<0.5 ? -1 : 1);   // 隨機水平翻轉（Ray 指定）
+  const L=parrySvgList(); d.innerHTML=L[(Math.random()*L.length)|0];
+  host.appendChild(d);
+  setTimeout(()=>d.remove(), 360);
+  for(let i=0;i<5;i++){
+    const k=document.createElement('div'); k.className='fx-parry-spark';
+    const a=Math.random()*Math.PI*2, r=18+Math.random()*34;
+    k.style.left=px+'px'; k.style.top=py+'px';
+    k.style.setProperty('--dx',(Math.cos(a)*r).toFixed(0)+'px');
+    k.style.setProperty('--dy',(Math.sin(a)*r).toFixed(0)+'px');
+    host.appendChild(k);
+    setTimeout(()=>k.remove(), 320);
+  }
+  const now=Date.now();
+  if(now-parrySeAt>90){ parrySeAt=now;
+    const se=asset('se_bulletguard'); if(se) SFX.play(se, sfxGain('se_bulletguard')); }
+  playParryVoice();   // 卡上 `parryVoice` 兩句輪播（語音閘擋重疊）
 }
 // 紅刀痕濺血：一條斜向亮紅刀痕 + 數顆散開的小血滴（按錯懲罰用）。
 //   ⚠ 不沿用 spawnBlood（那是延時懲罰的寬血痕，會誤看成兩個特效同時出現）；改自帶小血滴區隔。
@@ -739,6 +836,8 @@ export function ejectCounterShell(x, y, opts){
      `Dawn/Day/Dusk/night/midnight`，這裡把黎明與黃昏併成 `dd`、深夜併進 `night`。
    ⚠ 缺哪一張就往 `day` 退，`day` 也沒有就取物件裡的第一個 —— 不要讓立繪變空白。 */
 export function enemyImage(en){
+  if(portraitOverride && en && en===curCard() && portraitOverride.key===state.currentEnemyKey)
+    return portraitOverride.src;   // NI 換上的立繪（見 swapPortrait）
   const im = en && en.image;
   if(!im) return '';
   if(typeof im === 'string') return asset(im);
@@ -825,14 +924,77 @@ export function stopEntranceSe(ms){
   for(const h of entranceCues){ try{ h.stop(ms==null ? 700 : ms); }catch(_){} }
   entranceCues = [];
 }
-function playEntranceSe(key){
-  if(!key) return;
+/* ══ 敵人語音不疊（ver -1964，Ray：「語音注意不要重疊，播放中就不要播下一個語音」）══
+   這一隻的語音只有一條聲道：上一句還在播，下一句**直接不播**（不排隊 —— 排隊的話
+   連點劈落會積一長串，播到後面早就不對拍了）。長度問 `SFX.duration`（音檔本身，鐵律 7），
+   還沒解碼就保守當 1.5 秒。⚠ 所有敵人卡的語音（登場／受擊／戰敗戰勝／劈落／NI／斬）
+   都走這一支，所以這條閘門一處就管全部（鐵律 8）。 */
+let voBusyUntil = 0;
+function playEntranceSe(key, force){
+  if(!key) return false;
   const p = asset(key);
-  if(!p) return;
+  if(!p) return false;
   try{
-    if(/\/vo\//.test(p)) SFX.playVoice(p, sfxGain(key));
-    else                  entranceCues.push(SFX.playCue(p, sfxGain(key)));
-  }catch(_){}
+    if(/\/vo\//.test(p)){
+      const now = performance.now();
+      /* `force` ＝必播（Ray：「NI 語音必播」）：不看閘門，播完照樣佔住聲道。 */
+      if(!force && now < voBusyUntil) return false;
+      SFX.playVoice(p, sfxGain(key));
+      voBusyUntil = now + (SFX.duration(p) || 1500) + 80;
+    }
+    else entranceCues.push(SFX.playCue(p, sfxGain(key)));
+  }catch(_){ return false; }
+  return true;
+}
+/* 給 combat 用的同一支（米夏的 NI 發動／斬殺語音）。 */
+export function playCardVoice(key, force){ return playEntranceSe(key, force); }
+/* ══ 卡上語音的輪播（ver -1967，米夏第二批：攻擊／受創／劈落各一串）══
+   卡上欄位寫一個鍵或一串鍵；一串就輪播。`rate` ＝出聲機率（`<欄位>Rate`）。
+   ⚠ 被語音閘擋掉的那一次**不推進輪播**，下一次還是輪到同一句 ——
+     不然連點時各句的出現比例會被閘門的節奏打亂。
+   ⚠ 換一隻怪輪播從頭來。 */
+const rotIdx = {};   // 欄位 → 下一句
+let rotKey = null;
+function rotVoice(field){
+  const en = curCard(); if(!en) return;
+  let list = en[field]; if(!list) return;
+  if(!Array.isArray(list)) list=[list];
+  if(!list.length) return;
+  if(rotKey !== state.currentEnemyKey){ rotKey = state.currentEnemyKey; for(const k in rotIdx) delete rotIdx[k]; }
+  const rate = (en[field+'Rate'] != null) ? en[field+'Rate'] : 1;
+  if(Math.random() >= rate) return;
+  const i = rotIdx[field] || 0;
+  if(playEntranceSe(list[i % list.length])) rotIdx[field] = i + 1;
+}
+/* 劈落（卡上 `parryVoice`；Ray：「防禦語音改成 50% 機率出」→ `parryVoiceRate:0.5`）。 */
+function playParryVoice(){ rotVoice('parryVoice'); }
+/* 玩家**有效攻擊**打中牠（卡上 `damageVoice`，Ray：「countered 為被玩家有效攻擊，tag 改成 damage」）。
+   ⚠ 「有效」＝真的扣到血；被劈落擋掉的普攻不算（那一下 combat 根本不叫這一支）。 */
+export function playDamageVoice(){ rotVoice('damageVoice'); }
+/* 血量門檻語音（卡上 `hpVoice:{50:'…', 20:'…'}`，Ray：「50 為 hp50% 以下、20 為 hp20% 以下」）——
+   每一個門檻一隻怪只講一次；一擊跨過兩條只講最低那一條。**必播**（劇情性的一句，不給閘門吃掉）。 */
+const hpVoSaid = new Set(); let hpVoKey = null;
+export function checkHpVoice(pct){
+  const en = curCard(); const map = en && en.hpVoice; if(!map) return;
+  if(hpVoKey !== state.currentEnemyKey){ hpVoKey = state.currentEnemyKey; hpVoSaid.clear(); }
+  const due = Object.keys(map).map(Number).filter(t => pct <= t && !hpVoSaid.has(t)).sort((a,b)=>a-b);
+  if(!due.length) return;
+  due.forEach(t => hpVoSaid.add(t));
+  playEntranceSe(map[due[0]], true);
+}
+/* 換這一隻的立繪（不重演降臨、不動數值）：米夏 NI 那一刻換成 `enemy_misha_ni`。
+   ⚠ 先解碼再換：直接設 `src` 的話新圖解碼完之前會閃一格空白。 */
+/* ⚠ 換上之後**鎖住**（Ray：「NI 後把戰鬥立繪改成 NI 版」）：記進 `portraitOverride`，
+   `enemyImage()` 對這一隻一律回它 —— 之後任何重掛立繪的路（門放行、重載）都拿到 NI 版，
+   不會被換回去。換敵（`setEnemy`）時清掉。 */
+let portraitOverride=null;   // { key:這一隻的卡鍵, src }
+export function swapPortrait(assetKey){
+  const el=$('enemyImg'); const u=asset(assetKey);
+  if(!el || !u) return;
+  portraitOverride={ key:state.currentEnemyKey, src:u };
+  const im=new Image(); im.src=u;
+  const go=()=>{ el.src=u; };
+  (im.decode ? im.decode() : Promise.resolve()).then(go, go);
 }
 /* ══ 敵人的台詞語音（ver -1920，Ray：尼莫「玩家受擊用 slow1／slow2／feint 輪播、玩家戰敗播 bulletrain、戰勝播 win」）══
    卡上三格（開戰那一聲照舊走 `entrance`）：
@@ -1325,6 +1487,7 @@ export function randomBodyPoint(){
 export function setEnemy(key, opts){
   const en = GAME_CONFIG.enemies[key];
   if(!en) return;
+  portraitOverride=null;                        // 換了一隻（或重開一場）→ NI 鎖住的立繪放掉（ver -1965）
   stopSakura();                                 // 換了一隻怪 → 上一隻的櫻花與 Sturm 一起收（ver -899）
   stopHolyBurst();                              // 同上：放光也是全螢幕的層＋一支還在響的音（ver -1351）
   rollSmokeDir();                               // 船戰的煙往哪一邊飄：這一場擲一次（ver -1653）
@@ -1363,6 +1526,12 @@ export function setEnemy(key, opts){
      ⚠ 舊的 `weak{counter:1}`（不分槍、反擊一律加倍）已折進那三張卡的 weaponMod
        三把各 +1（-949 遷移），行為等值。 */
   state.enemyGanymede  = (en.Ganymede != null) ? en.Ganymede : 0;
+  /* ══ 劈落（ver -1957，Ray：「普攻無效，射出的子彈會被銀色刀光擋下，該特效定義為『劈落』」）══
+     卡上 `parryBasic:1` ＝普攻（`basic`）整發不計傷害，命中點改演刀光＋浮字 GUARD。
+     ⚠ 與 `Ganymede:-1` 不是同一件事：抗性那一條至少留 1 點（`applyEnemyMods`），
+       而且畫面上照樣噴槍火 —— 讀起來是「打不痛」不是「被擋下」。
+     ⚠ 只擋普攻：反擊／雙槍破防／聖徒化追打照常（那些才是打得動牠的路）。 */
+  state.enemyParry     = !!en.parryBasic;
   /* 卡上 `healOnFault:0.1` ＝玩家點錯／受擊／逾時，敵回最大 HP 的這一成（ver -1858，羅賽爾「慈愛殘像」）。 */
   state.enemyHealOnFault = +en.healOnFault || 0;
   /* 防禦型的 BR 增傷（ver -1584，Ray：「防禦型 BR 統一增傷 50%」）——

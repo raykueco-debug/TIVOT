@@ -120,6 +120,7 @@ export const state = {
      ⚠ 每次 `setEnemy` 都要重寫，沒寫的回預設 —— 連戰換敵也會走那一支。 */
   enemyHealOnFault: 0,     // 玩家失誤／受擊時敵人回血的比例（ver -1858，羅賽爾「慈愛殘像」；擁有者 enemy）
   enemyGanymede: 0,        // 主武器（普攻）的增減傷（ver -949，取代 resist/weak）
+  enemyParry: false,       // 劈落：普攻（basic）整發無效、改演刀光擋彈（ver -1957，米夏；卡上 `parryBasic:1`）
   /* 這一場是不是船戰（飛行頁交棒過來的）：BR 窗口期間多吃 tuning.shipDualBonus
      （ver -947，取代逐卡的 `dualBonus`）。擁有者＝combat，由發起端宣告。 */
   shipBattle: false,
