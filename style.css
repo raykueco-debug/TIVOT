@@ -3076,10 +3076,12 @@
        每秒 8～12 格輪替）。三格：原樣／變寬變矮／變窄變高，旋轉跟著臉（`--ta`）。
      ⚠ 全部同步（Ray：「不要錯開閃，兩個閃動的方向跟頻率一致」）。
      ⚠ 閒置也不停（Ray：「不要停 loop」）：`perf-idle` 會凍住舞台上所有動畫，淚眼明寫例外。 */
+  /* ⚠ 改這組幅度要回去改 tools/eye_fx.py 的 TL_WOB（淚光擺放算「三格疊起來的外框」不出眼框，ver -1987）。 */
   @keyframes efWob{
     0%   { transform:rotate(var(--ta,0deg)) scale(1,1); }
-    33.3%{ transform:rotate(var(--ta,0deg)) translate(3%,-4%) scale(1.10,.86); }
-    66.6%{ transform:rotate(var(--ta,0deg)) translate(-3%,3%) scale(.92,1.10); }
+    /* ver -1994（Ray：「形變讓他盡量水平就不會有往下吃框的問題」）：只做水平的寬窄與左右位移，垂直不動。 */
+    33.3%{ transform:rotate(var(--ta,0deg)) translate(3%,0) scale(1.10,1); }
+    66.6%{ transform:rotate(var(--ta,0deg)) translate(-3%,0) scale(.92,1); }
     100% { transform:rotate(var(--ta,0deg)) scale(1,1); } }
   body.perf-idle #storyStage .ef-tl, body.perf-idle #tutCast .ef-tl{ animation-play-state:running !important; }
   #storyCast .story-portrait.on > .ef-te, #tutCast .tut-portrait.in > .ef-te{

@@ -25,6 +25,126 @@ TEAR_MAX_H = 1.25   # 淚眼 v2：大光高 ÷ 眼框半高的上限（見 tg �
 TEAR_REJECT = os.path.join(ROOT, 'tools', 'tear_reject.txt')
 
 
+# ══ 淚光擺放（ver -1987，Ray：「一大一小、一橢一圓，以不論怎麼形變都不出框為原則，再考慮效果」）══
+#   引擎只照表擺（表上的 `tl`），**能不能塞進眼框在這裡用真正的遮罩算**（鐵律 7：一個量一個計算點）。
+#   「形變」＝ style.css 的 efWob 三格（scale 1.10／.86、.92／1.10 ＋ translate 3~4%）＋ 依 ta 旋轉：
+#     三格疊起來的外框 ≈ 光本身半軸的 WOB 倍 —— 整個外框都要在「眼框內縮 EDGE 之後」的遮罩裡。
+#   ⚠ 改 efWob 的幅度要回來改 WOB（兩邊註解互指）。
+TL_UP = 4            # 擺放在 4 倍解析度上算（眼睛常常只有十幾 px 高）
+TL_WOB = 1.18        # efWob 三格外框 ÷ 光本身，水平（0.5×1.10＋0.03 ≈ 0.58 → 1.16，再多留一點）
+TL_WOB_Y = 1.02      # 垂直（ver -1994 起 efWob 垂直不動，只留一點邊）
+TL_EDGE = 0.20       # 黃框（眼框遮罩 Ot）整圈往內退＝眼框半高 × TL_EDGE（ver -1988，Ray：「以現有黃框當標準多退一點」）
+TL_BOT = 0.50        # 光的下緣離眼底＝閃光高 × TL_BOT（ver -1993，Ray：「眼底改半個閃光高」）
+TL_PUPIL = 0.45     # 瞳孔＝亮度 < 這隻眼虹膜中位亮度 × TL_PUPIL 的地方
+TL_PUPIL_COVER = 0.50  # 兩顆光（含形變外框）合計最多蓋住瞳孔面積的 50%（ver -1992，Ray：「可蓋瞳孔但不能超過瞳孔的50%」）
+# ══ 瞳孔規則（ver -1995，Ray：「走瞳孔規則，兩個光點都要吃到瞳孔一點，大致是 ._ 或 _. ，視面部角度而定」）══
+#   兩顆都壓在**瞳孔下緣**、各吃一點瞳孔；大光＝扁橢圓「_」、小光＝圓點「.」，左右各一邊、小點略高。
+#   左右：ta ≥ 0 ⇒「._」（點左、橢圓右）；ta < 0 ⇒「_.」。
+TL_BIG_W = (1.0, 0.25, 0.45)   # 大光寬＝瞳孔寬 × 1.0，夾在虹膜寬的 0.25～0.45
+TL_SMALL = 0.40                # 小點直徑＝大光寬 × 0.40
+TL_BIG_IW = 0.35               # 大光寬＝虹膜寬 × 0.35（ver -1997）
+TL_ALONG = 0.18                # 沿眼頭眼尾線：大光、小光各離「虹膜中心投影點」虹膜寬 × 0.18
+TL_PUP_W = 0.35                # 虛擬瞳孔＝以虹膜中心為圓心、寬＝虹膜寬 × 0.35、高＝寬 × 1.2（ver -1996，Ray：「那眼中心偵測?」——偵測最暗那一塊不可靠）
+TL_SHIFT = 0.15      # 放不下時位置最多挪 虹膜寬 × TL_SHIFT（先縮小、再小挪）
+
+
+def _ell_kernel(a, b, ang):
+    """旋轉 ang 度、半軸 a×b（像素）的實心橢圓結構元素（奇數邊長、中心對齊）。"""
+    t = np.radians(ang); R = int(np.ceil(max(a, b))) + 1
+    yy, xx = np.mgrid[-R:R + 1, -R:R + 1]
+    u = xx * np.cos(t) + yy * np.sin(t); v = -xx * np.sin(t) + yy * np.cos(t)
+    return (u / max(a, .5)) ** 2 + (v / max(b, .5)) ** 2 <= 1
+
+
+def find_pupil(Lc, comp, cx, cy, iw):
+    """瞳孔＝虹膜中心 65% 的橢圓裡最暗的那一塊（亮度 ≤ 最暗＋(中位−最暗)×0.35 的最大連通塊）。
+    回傳 (mask, px, py, pw, ph)；找不到回 None。（瞳孔常常只有幾 px，睫毛線與虹膜外圈都避開。）"""
+    h, w = Lc.shape
+    ys, xs = np.mgrid[0:h, 0:w]
+    rx, ry = iw / 2 * 0.65, iw / 2 * 1.1 * 0.65
+    reg = (((xs - cx) / max(rx, 1)) ** 2 + ((ys - cy) / max(ry, 1)) ** 2 <= 1) & comp
+    if reg.sum() < 4:
+        return None
+    v = Lc[reg]; thr = v.min() + 0.35 * (np.median(v) - v.min())
+    pm = reg & (Lc <= thr)
+    lab, k = nd.label(pm)
+    if not k:
+        return None
+    j = int(np.argmax(nd.sum(pm, lab, range(1, k + 1)))) + 1
+    m = lab == j
+    yy, xx = np.nonzero(m)
+    return m, (xx.min() + xx.max() + 1) / 2, (yy.min() + yy.max() + 1) / 2, xx.max() - xx.min() + 1, yy.max() - yy.min() + 1
+
+
+def eye_corners(comp):
+    """眼頭／眼尾＝這隻眼的開口最左、最右那一欄的中點（連續座標）。"""
+    ys, xs = np.nonzero(comp)
+    l, r = xs.min(), xs.max()
+    return (np.array([l + 0.5, ys[xs == l].mean() + 0.5]), np.array([r + 0.5, ys[xs == r].mean() + 0.5]))
+
+
+def fit_lights(Oc, Lc, IRc, tg, ta):
+    """每隻眼回傳 [[cx,cy,w,h,ang], …]（框內像素、連續座標；第一顆＝大的橢圓、第二顆＝小的圓點；ang＝這一顆的旋轉角度）。
+    ══ 眼頭眼尾線（ver -1997，Ray：「用眼頭眼尾拉出一條線來，大圈以線為中軸，小圈以線為頂」）══
+      · 線＝眼頭到眼尾（eye_corners）；兩顆都沿這條線的角度轉
+      · 大光（橢圓）中心在線上；小光（圓點）頂端貼線、掛在線下
+      · 沿線的位置：虹膜中心投影到線上那一點，大光往一邊、小光往另一邊（ta ≥ 0 ⇒「._」大光在右）
+      框：黃框（Ot）整圈退 TL_EDGE、下緣離眼底 TL_BOT 個閃光高；放不下先縮、再小挪（≤ TL_SHIFT）。"""
+    U = TL_UP
+    lab, nl = nd.label(Oc)
+    out = []
+    side = 1 if (ta or 0) >= 0 else -1
+    for (cx, cy, exw, exh, mt, mb, iw) in tg:
+        cx = cx + 0.5
+        x0, y0 = int(np.clip(round(cx - 0.5), 0, Oc.shape[1] - 1)), int(np.clip(round(cy), 0, Oc.shape[0] - 1))
+        k = lab[y0, x0]
+        if not k:
+            ys, xs = np.nonzero(lab)
+            if not len(ys):
+                out.append([]); continue
+            j = int(np.argmin((xs - cx) ** 2 + (ys - cy) ** 2)); k = lab[ys[j], xs[j]]
+        comp = lab == k
+        A, Bc = eye_corners(comp)
+        u = Bc - A; u = u / max(np.linalg.norm(u), 1e-6)
+        nrm = np.array([-u[1], u[0]])                    # 線的法向（往下）
+        ang = float(np.degrees(np.arctan2(u[1], u[0])))
+        t0 = A + np.dot(np.array([cx, cy]) - A, u) * u   # 虹膜中心投影到線上
+        room = nd.binary_erosion(np.kron(comp, np.ones((U, U), bool)), iterations=max(U, int(round(exh * TL_EDGE * U))))
+        compU = np.kron(comp, np.ones((U, U), bool))
+        yy_ = np.arange(compU.shape[0])[:, None]
+        bot = np.where(compU.any(0), compU.shape[0] - 1 - np.argmax(compU[::-1], 0), -1)
+        bw0 = iw * TL_BIG_IW
+        specs = [('big', t0 + side * TL_ALONG * iw * u, 0.0, bw0, 2.0),                 # 中心在線上
+                 ('small', t0 - side * TL_ALONG * iw * u, 0.5, bw0 * TL_SMALL, 1.0)]   # 頂貼線：中心往下半徑
+        lights = []
+        for name, base, hang, w0, asp in specs:
+            got = None
+            for s in np.arange(1.0, 0.24, -0.05):
+                w = w0 * s; h = w / asp
+                c = base + nrm * (h * hang)
+                want = c * U
+                kern = _ell_kernel(w / 2 * TL_WOB * U, h / 2 * TL_WOB_Y * U, ang)
+                hk = (kern.shape[0] - 1) * TL_BOT
+                ok = nd.binary_erosion(room & (yy_ < bot[None, :] - hk), structure=kern)
+                ys, xs = np.nonzero(ok)
+                if not len(ys):
+                    continue
+                d2 = (xs - want[0]) ** 2 + (ys - want[1]) ** 2
+                j = int(np.argmin(d2))
+                if d2[j] > (TL_SHIFT * iw * U) ** 2:
+                    continue
+                got = (xs[j], ys[j], w, h, kern)
+                break
+            if got is None:
+                continue
+            gx, gy, w, h, kern = got
+            lights.append([round((gx + 0.5) / U, 2), round((gy + 0.5) / U, 2), round(w, 2), round(h, 2), round(ang, 1)])
+            fp = np.zeros_like(room); fp[gy, gx] = True
+            room &= ~nd.binary_dilation(fp, structure=kern)
+        out.append(lights)
+    return out
+
+
 def tear_rejected(name):
     """tools/tear_reject.txt（一行 `<名>  # 理由`）：人看過、判定淚眼不能上線的。"""
     if not os.path.exists(TEAR_REJECT):
@@ -348,6 +468,7 @@ def main():
         yb = ys.max(); lows.append((float(xs[ys == yb].mean()), float(yb)))
     lows.sort()
     ent['ta'] = round(float(np.degrees(np.arctan2(lows[-1][1] - lows[0][1], lows[-1][0] - lows[0][0]))), 1) if len(lows) >= 2 else 0
+    ent['tl'] = fit_lights(crop(Ot), crop(L), crop(iris), tg, ent['ta'])
     # ⚠ v2.1 的下眼線濕光／下半變亮（`_te_lid`／`_te_low`）**已拿掉**（ver -1980，Ray：「眼框下方的可以不用，
     #   只要虹膜的那兩點就可以」）。
     tab[key] = ent

@@ -54,10 +54,13 @@ export function unbind(box){
 /* [相對虹膜中心的 x（眼框半寬倍數）, 高度（在遮罩上下緣之間的比例）, 寬（虹膜寬的倍數）, class]
    ⚠ ver -1984（Ray：「大小就用虹膜等寬，壓成 1:2 的橢圓，做變形的輪播」）：大光寬＝虹膜寬、高＝寬的一半；
      小光是大光的一半，一樣 1:2。舊表沒有虹膜寬（第 7 格）時，用眼框寬的 0.6 倍頂。 */
+/* ⚠ ver -1986（Ray：「太偏下眼框都超出眼睛了，小一點」）：大光 1.0→0.8 虹膜寬、高度 0.38→0.30；小光仍是大光的一半、
+     高度 0.72→0.58。另加一道夾（EDGE_PAD）：「不要碰觸到任何眼框」—— 上下都夾，不靠比例碰運氣。 */
 const TL = [
-  [-0.05, 0.38, 1.0, 'big'],
-  [ 0.28, 0.72, 0.5, 'small'],
+  [-0.05, 0.30, 0.8, 'big'],
+  [ 0.28, 0.58, 0.4, 'small'],
 ];
+const EDGE_PAD = 0.15;  // 光與遮罩上下緣的留白＝遮罩高 × EDGE_PAD（至少 1px）
 function bindTearV2(box, img, key, d){
   const W = img.naturalWidth, H = img.naturalHeight, r = d.te;
   const c = document.createElement('div'); c.className = 'ef-te v2';
@@ -68,6 +71,23 @@ function bindTearV2(box, img, key, d){
   c.style.maskImage = c.style.webkitMaskImage = m;
   /* 傾斜：與兩眼下眼線最低點的連線平行（表上的 `ta`，度；CSS 的 `--ta` 給擺動那組 keyframes 用）。 */
   c.style.setProperty('--ta', (d.ta || 0) + 'deg');
+  /* ══ ver -1987：表上有 `tl` 就照它擺（Ray：「一大一小、一橢一圓，以不論怎麼形變都不出框為原則」）══
+     每隻眼 [[cx,cy,w,h], …]（框內像素、連續座標）；第一顆＝大的橢圓、第二顆＝小的正圓。
+     ⚠ 塞不塞得進眼框（含 efWob 形變與 ta 旋轉）**只在 tools/eye_fx.py 的 fit_lights 算**（鐵律 7）——
+       這裡不再縮、不再夾，照抄。改 efWob 的幅度要回去改那邊的 TL_WOB。 */
+  if(d.tl){
+    d.tl.forEach(eye => eye.forEach(([x, y, w, h, ang], j) => {
+      const e = document.createElement('i'); e.className = 'ef-tl ' + (j ? 'small' : 'big');
+      /* 第 5 格＝這一顆自己的角度（ver -1997：沿眼頭眼尾線）；沒有就沿用容器的 --ta。 */
+      if(ang != null) e.style.setProperty('--ta', ang + 'deg');
+      e.style.left = pct(x - w / 2, r[2]); e.style.top = pct(y - h / 2, r[3]);
+      e.style.width = pct(w, r[2]); e.style.height = pct(h, r[3]);
+      c.appendChild(e);
+    }));
+    box.insertBefore(c, box.querySelector(':scope > .sp-blink'));
+    syncBreath(box, c);
+    return;
+  }
   d.tg.forEach(([cx, cy, ex, ey, mt, mb, iw], i) => {
     const irisW = iw || ex * 1.2;
     for(const [ox, fy, w, cls] of TL){
@@ -76,11 +96,20 @@ function bindTearV2(box, img, key, d){
          舊表沒有 mt/mb 時退回舊算法。 */
       const oy = (mt != null && mb != null) ? ((mt + (mb - mt) * fy) - cy) / ey : (fy < 0.5 ? -0.30 : 0.36);
       const e = document.createElement('i'); e.className = 'ef-tl ' + cls + (i % 2 ? ' alt' : '');
-      const gw = w * irisW, gh = gw / 2;   // 1:2 的橢圓
+      let gw = w * irisW, gh = gw / 2;   // 1:2 的橢圓
+      /* ⚠ ver -1986（Ray：「不要碰觸到任何眼框」）：光整顆要在開口裡、上下各留 EDGE_PAD ——
+         塞不下就等比縮（1:2 不變），位置再夾進 [上緣＋留白, 下緣−留白]。 */
+      const pad = (mt != null && mb != null) ? Math.max(1, (mb - mt) * EDGE_PAD) : 0;
+      if(mt != null && mb != null){
+        const room = (mb - mt) - 2 * pad;
+        if(gh > room){ gh = Math.max(0.5, room); gw = gh * 2; }
+      }
       /* ⚠ -1983 的「高度不超過可用高度 45%」拿掉：那會改掉 1:2。離眼框的距離改由遮罩負責（近鏡頭那隻眼內縮一圈）。 */
       /* 相對虹膜的位移也跟著傾斜轉（光本身在 CSS 轉，排列在這裡轉）。 */
       const t = (d.ta || 0) * Math.PI / 180, dx = ox * ex, dy = oy * ey;
-      const px = cx + dx * Math.cos(t) - dy * Math.sin(t), py = cy + dx * Math.sin(t) + dy * Math.cos(t);
+      const px = cx + dx * Math.cos(t) - dy * Math.sin(t);
+      let py = cy + dx * Math.sin(t) + dy * Math.cos(t);
+      if(mt != null && mb != null) py = Math.min(Math.max(py, mt + pad + gh / 2), mb - pad - gh / 2);
       e.style.left = pct(px - gw / 2, r[2]); e.style.top = pct(py - gh / 2, r[3]);
       e.style.width = pct(gw, r[2]); e.style.height = pct(gh, r[3]);
       c.appendChild(e);
