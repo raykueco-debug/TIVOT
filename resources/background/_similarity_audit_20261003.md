@@ -73,3 +73,33 @@ forest_cliff（石柱雲海，自然地貌）、ravn_square／station、sofia_ch
 - ⚠ #8／#9 的字 GPT 常常拼錯：收圖一定放大看拼字，錯了在同串重送一次；兩次都錯就改成**純圖示招牌**（酒杯、麥穗、子彈的剪影），不要留亂碼。
 - ⚠ #3、#4 是帝都門面，**做完先給 Ray 看一眼再衍生時段**（改的是地標性的東西，方向不對整組要重來）。
 - ⚠ 同一串 GPT 失敗兩次就換串（§5 差分產線第 2 條）；判斷成敗只看「產生的圖片」張數，不看頁面文字。
+
+---
+
+# 交件紀錄（2026-10-04，Windows 3070 美術 session）
+
+⚠ **Ray 中途改方向**：「不要讓人一眼就看出現實原形，不要只做小修改，有雷同的圖就要整個重繪不是小改」。
+上面工單那種「100% 保留原圖、只改一處」的提示詞**作廢**。範圍由 Ray 選：建築 5 組＋物件 2 組整張重繪，北泊 2 組招牌維持只改字。
+
+**重繪的作法（下次照這個做）**：不上傳舊圖（上傳就會沿用原型），只上傳「同一座城的另一個場景」當畫風參考，用文字指定一個新設計，並**點名要避開的真實地標**；
+出圖後再自己判一次像不像別的地標（帝都行政廳第一版就變成巴黎市政廳，重下）。時段差分由 Gemini 從新 day 衍生，重繪的那幾組**不附舊時段圖**（舊圖構圖不同，附了會把舊建築帶回來），光線用文字描述；北泊兩組構圖沒變，附舊時段圖當光線參考。
+
+| # | 檔 | 結果 |
+|---|---|---|
+| 1 | `verafond/vela_cathedral_{day,dawn,dusk,night}` | ✔ 整張重繪（2026-10-04）：蜂蜜色砂岩、大拱龕包圓花窗、兩座圓角塔＋鉛皮圓錐、後方藍灰圓頂；立面天體紋一律**滿月**（第一版出現新月，已改） |
+| 2 | `verafond/vela_midtown_{day,dawn,dusk,night}` | ✔ 整張重繪：十字路口，前＝林蔭大道、左＝鐘樓市政建築、右＝露出 #1 新大教堂的圓角塔 |
+| 3 | `capital/capital_cityhall_{day,dawn,dusk,midnight,night}` | ✔ 整張重繪：不對稱的長廊公署＋左前角塔、一樓粗石拱廊、陡斜石板瓦。⚠ 第一版太像巴黎市政廳（正中鐘樓＋對稱法式立面），重下 |
+| 4 | `capital/capital_church_{day,dawn,dusk,midnight,night}` | ✔ 整張重繪：一面山牆＋中央八角尖塔＋兩角圓錐圓塔，三道拱門；沒有綠銅圓頂與雙塔（Ray 問過像不像聖母院：沒有雙方塔、沒有國王廊，判不像） |
+| 5 | `eastport/east_university_{day,dawn,dusk,night}` | ✔ 整張重繪：赤陶瓦兩層迴廊中庭、細鐘樓、棕櫚與橄欖、八角石井；沒有神殿門廊、沒有雕像 |
+| 6 | `ruins/ruins_shinier_deepspring` | ✔ 整張重繪：圓形泉室、頂上落下一道水柱、青綠發光水潭；沒有文字、盧恩、生命樹 |
+| 7 | `shinier/shinier_altar_{day,dawn,dusk,night}` | ✔ 整張重繪：林間圓形矮石壇、老樹、木杆褪色布條；沒有羽飾、十字架、湖。⚠ 第一版樹幹綁一圈繩子垂布條（像注連繩），已拿掉 |
+| 8 | `northport/northport_grocery_{day,dawn,dusk,night,bf}` | ✔ 只改字：「HALVORSEN DRY GOODS」（`_bf` 是室內那張小招牌） |
+| 9 | `northport/northport_east_{day,dawn,dusk,night,bf}` | ✔ 只改字：「Munition & Waffen」／「Brauerei · Bier · Wein」 |
+
+- 交件尺寸照原檔（`shinier_altar_day/dusk/night` 與 `deepspring` 是 1024×683，其餘 1536×1024 或原檔的 1025／1535）；webp q85 method 6。
+- 舊檔：`_recycle/resources/background/...`（`RECYCLE_LOG.tsv` 有紀錄）；新母版 PNG：`resources/_originals/background/<資料夾>/`。
+- ⚠ 程式端：同名覆蓋 38 個檔（含櫃台立繪），要 `bust.py --bump` —— 寫在 HANDOFF 第 7 項。
+
+**同場附帶：北泊公會櫃台 `si/npc/npc_guildcounter_si_northport.webp` 重新去背**（Ray：「去背不全」）
+舊圖：右臂與馬甲之間留一塊白底、頭髮左側一條白邊，半透明邊緣 64% 是近白色。GPT「100% 保留，只把白色背景變成真正透明 Alpha PNG」一次過，
+新圖半透明邊緣近白 0%、人物位置不變（頂 25、底 1521→1522）。⚠ 眨眼補丁要重跑（底圖雜湊變了）。

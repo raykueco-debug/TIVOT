@@ -31,9 +31,13 @@
 5. 之後：飛行頁 canvas 眨眼、手機實機量發熱（鐵律 12）、路線 B 髮梢擺動。
 6. ⏸ 呼吸與微晃（路線 A，-1934）：commit 在 3060 本機、沒推上來，等 Ray 看效果。
 
-**背景雷同修正（美術進行中）**
-7. 9 組要改（工單＋逐組提示詞：`resources/background/_similarity_audit_20261003.md` 下半部；其餘 405 組 ✔ 不欠）。
-   ⚠⚠ 程式端要接：同名覆蓋，美術交件後跑 `py -3.11 tools/bust.py --bump`（改了哪幾張看工單每一列的 ✔）。
+**背景雷同修正（10-04 美術已交件）**
+7. ✔ 美術已交：9 組共 37 張背景＋北泊公會櫃台立繪 1 張，**全部同名覆蓋**（舊檔在 `_recycle/`，母版在 `_originals/`）。明細在 `resources/background/_similarity_audit_20261003.md` 末段「交件紀錄」。
+   Ray 改了方向：「有雷同的圖要整張重繪，不是小改」→ 7 組整張重繪（大教堂、中心區、帝都行政廳、帝都大教堂、東泊大學、命之泉、夏爾村祭壇），北泊 grocery／east 兩組只改招牌字（含 `_bf`）。
+   ⚠⚠ **程式端要接**：
+   ① 跑 `py -3.11 tools/bust.py --bump`（38 個檔都是同名覆蓋，不跳版號玩家拿到的還是舊圖）。
+   ② `npc_guildcounter_si_northport.webp` 重新去背（Ray：「去背不全」，臂與馬甲夾縫留白、髮側白邊）→ **底圖換了，眨眼補丁要重跑**：`tools/blink_build.py npc_guildcounter_si_northport`（lint `check_blink` 會報）。人物位置沒變（頂 25、底 1521→1522），取景值不必改。
+   ③ midtown 的四個出口方向照舊（上＝大道、左＝市政廳、右＝大教堂、下＝廣場），新圖照這個畫；其餘 6 張都是末端，節點資料不用動。
 
 **程式端要接的**
 8. 峽谷 `canyon` 的小地圖 `map:{img,spots}`（整段可抄：`resources/map/_minimap_worklist.md` 末段）。
