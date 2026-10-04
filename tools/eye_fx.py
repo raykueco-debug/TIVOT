@@ -21,6 +21,19 @@ import blink_patch as B
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DST = os.path.join(ROOT, 'resources', 'si', 'eyefx')
 TABLE = os.path.join(ROOT, 'script', 'eyefx.js')
+TEAR_MAX_H = 1.25   # 淚眼 v2：大光高 ÷ 眼框半高的上限（見 tg 那一段）
+TEAR_REJECT = os.path.join(ROOT, 'tools', 'tear_reject.txt')
+
+
+def tear_rejected(name):
+    """tools/tear_reject.txt（一行 `<名>  # 理由`）：人看過、判定淚眼不能上線的。"""
+    if not os.path.exists(TEAR_REJECT):
+        return False
+    for ln in open(TEAR_REJECT, encoding='utf-8'):
+        ln = ln.split('#')[0].strip()
+        if ln and ln.lower() == name.lower():
+            return True
+    return False
 
 
 def src_of(name):
@@ -278,6 +291,21 @@ def main():
     ent = tab.get(key, {})
     if not A.tear_only:
         ent['tr'] = [bx0, by0, bx1 - bx0, by1 - by0]
+    if tear_rejected(n):   # 排除清單上的：表上拿掉淚眼（tr 照留）
+        for k_ in ('te', 'tg', 'ta'):
+            ent.pop(k_, None)
+        if ent:
+            tab[key] = ent
+        else:
+            tab.pop(key, None)
+        rows = ',\n'.join(f'  {json.dumps(k)}: {json.dumps(tab[k], separators=(",", ":"))}' for k in sorted(tab))
+        open(TABLE, 'w', encoding='utf-8', newline='\n').write(
+            '/* ══ 立繪眼部特效表 —— **機器產生，不要手改**（tools/eye_fx.py）══\n'
+            '   鑰匙＝立繪檔名；tr＝瞳孔顫動三張圖的框 [x,y,w,h]（原圖像素）。檔案：resources/si/eyefx/<鑰匙>_tr_{mask,fill,iris}.webp。\n'
+            '   開不開由 腳本那一拍的 `eyes` 決定（ver -1959；引擎 modules/eyefx.js 的 eyesOf）。 */\n'
+            'export const EYEFX = {\n' + rows + '\n};\n')
+        print('淚眼排除（tools/tear_reject.txt）：', key, '→', json.dumps(ent))
+        return
     ent['te'] = [bx0, by0, bx1 - bx0, by1 - by0]   # 淚眼：同一個框（_te_g0／g1／g2 三張光點）
     # 淚眼 v2：每隻眼 [虹膜中心 x, y, 眼框半寬, 眼框半高]（框內像素）。
     #   ⚠ 大小用**眼框**不用虹膜：虹膜只算得到看得見的那一塊（被眼瞼蓋掉的不算），常常小一截。
@@ -297,8 +325,14 @@ def main():
         # 虹膜寬（ver -1984，Ray：「大小就用虹膜等寬，壓成 1:2 的橢圓」）：擬合的 rx 常常偏小
         #   （只量得到看得見的那一塊），夾在眼框寬的 50%～70%（動畫眼的虹膜大致就在這個範圍）。
         iw = float(np.clip(2 * rx, 1.0 * exw, 1.4 * exw))
+        exh = (ys.max() - ys.min() + 1) / 2
+        # 扁的眼睛（瞇眼／細長眼）整顆光等比縮小（ver -1985，Ray 選 C）：大光高（iw/2）最多＝眼框半高 × TEAR_MAX_H。
+        #   不縮的話 1:2 的光比開口還高，被遮罩裁成「整個開口一片白」（Luna 全系列、蕾娜 lookaside）。
+        #   1:2 不變、小光照舊是大光的一半 —— 縮的是大小，不是比例。
+        #   1.25 ＝ Ray 定型過的 5 張裡最大的那一個（renna_si_front），所以那 5 張依定義不受影響。
+        iw = min(iw, 2 * TEAR_MAX_H * exh)
         tg.append([round(cx - bx0, 1), round(cy - by0, 1),
-                   round(exw, 1), round((ys.max() - ys.min() + 1) / 2, 1),
+                   round(exw, 1), round(exh, 1),
                    mt - by0, mb - by0, round(iw, 1)])
     ent['tg'] = tg
     # 淚眼 v2 的傾斜（ver -1973，Ray：「角度要跟臉的斜度，以下眼線最低點的那條線為基準，平行」）：

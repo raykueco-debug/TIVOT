@@ -1,0 +1,8 @@
+# 淚眼 v2 排除清單（tools/eye_fx.py 讀）：清單上的不產淚眼、表上有也拿掉（不出光＝安全的失敗模式）。
+# 一行一張：<名>  # 理由。瞳顫（tr）不受影響。
+luna_si_seat_angry        # 待修：擬合虹膜偏大，光比虹膜大一圈（ver -1985）
+luna_si_seat_n            # 待修：擬合虹膜偏大，光比虹膜大一圈（ver -1985）
+npc_gunsmith_si_v2        # 待修：擬合虹膜偏大，光比虹膜大一圈（ver -1985）
+corvin_si_think           # 待修：近鏡頭那隻眼擬合虹膜偏大（ver -1985）
+npc_guildhunter_si_shock  # 待修：瞳孔極小、找不到虹膜，光落在眼白（ver -1985）
+cecilie_si_fluster        # 待修：瞳孔極小、找不到虹膜，光落在眼白（ver -1985）
