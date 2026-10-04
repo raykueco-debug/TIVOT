@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1985';
+export const VERSION = 'ver 2026.09.22-1998';
 
 export const GAME_CONFIG = {
 
@@ -4239,7 +4239,7 @@ export const ASSETS = {
   enemy_misha:    "resources/enemy/man_misha.webp?v=89c56bd8",
   enemy_misha_ni: "resources/enemy/man_misha_ni.webp?v=9576ea75",      // 聖徒化版（卡還沒用到，備著）
   misha_attack:   "resources/enemy/man_misha_attack.webp?v=a534d729",
-  enemy_misha_guards: "resources/enemy/man_misha_guards.webp?v=7bc297b3",   // 親衛隊三人＋主祭壇背景（ver -1969，Gemini）
+  enemy_misha_guards: "resources/enemy/man_misha_guards.webp?v=5b0d73a9",   // 親衛隊三人＋主祭壇背景（ver -1998 GPT 正式版）
   /* ══ 守墓者・不死者之龍（ver -1525；美術 -1501 交件、規格
      `resources/enemy/_tomb_mon_spec.md` §八～九）══
      ⚠ **四張圖 ＝ 四張卡**（Ray：「四張是同一隻，程式上算四隻，
@@ -5647,6 +5647,7 @@ export const ASSET_VER = {
   'luna_si_taunt_half': '13a82f50',
   'lunaria_si_arm_closed': '2f0bf75e',
   'lunaria_si_arm_half': 'a1db391e',
+  'man_misha_guards': '5b0d73a9',
   'man_sorana': '11180f49',
   'man_thug_shotgun': '504d26bc',
   'man_thug_squad': 'dfd75032',

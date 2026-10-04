@@ -941,9 +941,8 @@ const DM_ALTAR_MAIN = [
   Object.assign(nou('think','祭壇……好像已經在半啟動狀態了。'), { checkpoint:true }),
   any('stare','……'),
   /* 【白光，遺蹟啟動】—— 白光底下換成主祭壇點亮版（Ray：「祭壇沒有換成點亮的差分」）。
-     ⚠ `dunmor_altar_lit` **還沒有圖**（等 GPT 額度，照四座小祭壇 `_lit` 的翡翠綠電路紋）：
-       走 `bgBand` 候選鏈，載不到就留原圖、只記一行 console —— 圖一交件就生效，不必再改程式。 */
-  { speaker:'NARRATION', text:'', fx:'whiteflash', bgBand:'dunmor_altar_lit', bgNoTime:true, bgPending:true, auto:1500 },
+     `dunmor_altar_lit` 已交件（ver -1998，Gemini 畫、Ray 驗收；照四座小祭壇 `_lit` 的翡翠綠電路紋）。 */
+  { speaker:'NARRATION', text:'', fx:'whiteflash', bgBand:'dunmor_altar_lit', bgNoTime:true, auto:1500 },
   any('surprise','！！'),
   any('nervous','我……明明還沒……'),
   ren('think','……'),

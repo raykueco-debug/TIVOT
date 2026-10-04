@@ -512,8 +512,8 @@ export const ENEMIES = {
       },
     },
     /* ══ 米夏的親衛隊（ver -1969，羅賽爾廢城主祭壇「護衛戰」）══ 三人一張圖、整群當一隻（同 thug_squad 的作法）。
-       圖是 Gemini 連背景（主祭壇）一起畫的 ⇒ `fit:cover`；原稿 `_originals/enemy/man_misha_guards_gem1.jpeg`。
-       ⚠⚠ **這張是代圖**（Ray：「先作代圖吧，之後 GPT 額度恢復再重畫」）—— 重畫時同名覆蓋要跳 `?v=`／ASSET_VER。
+       圖連背景（主祭壇）一起畫 ⇒ `fit:cover`。ver -1998 換成 GPT 正式版（Ray 驗收；同名覆蓋，母版 `_originals/enemy/man_misha_guards.png`，
+       舊的 Gemini 代圖在 `_recycle/`）。三人：前排半蹲黑髮士官、後排金髮女兵／銀髮老兵，槍口對鏡頭。
        數值照基準工具：B 級 × 速度型（100×1.5³×0.8→270、10×1.2³→17、每 2~4 秒）；三把步槍一波三發（我填的）。 */
     misha_guards: {
       name:'親衛隊',
