@@ -955,3 +955,4 @@ when	from	to	reason
 20261004-142104	resources/background/Ravn_Station.webp	_recycle/resources/background/Ravn_Station.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
 20261004-142104	resources/background/Ravn_Uptown.webp	_recycle/resources/background/Ravn_Uptown.webp	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
 20261004-142104	resources/SI/Sorana_SI_tired.png	_recycle/resources/SI/Sorana_SI_tired.png	Ray 10-04：git 刪除、無替代無備份的 33 張，先回收留底（未還原進遊戲）
+20261004-142949	resources/background/_similarity_audit_20261003.md	_recycle/resources/background/_similarity_audit_20261003.md	與 origin 0e5c716e 同內容（只差 CRLF），rebase 前移開
