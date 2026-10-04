@@ -938,7 +938,7 @@ const DM_SIDES = { RENNA:'L', NOUVELLE:'L' };
 const rtn = N('RETAINER');
 const DM_RELOADS = [{ n:'se_weapon_reload' }, { n:'se_weapon_reload', delay:180 }, { n:'se_weapon_reload', delay:420 }, { n:'se_weapon_reload', delay:530 }];
 const DM_ALTAR_MAIN = [
-  Object.assign(nou('think','祭壇……好像已經在半啟動狀態了。'), { checkpoint:true }),
+  Object.assign(nou('think','祭壇……好像已經在半啟動狀態了。'), { checkpoint:true, stage:16 }),   // stage 16＝進主祭壇這一拍（Ray -2001）
   any('stare','……'),
   /* 【白光，遺蹟啟動】—— 白光底下換成主祭壇點亮版（Ray：「祭壇沒有換成點亮的差分」）。
      `dunmor_altar_lit` 已交件（ver -1998，Gemini 畫、Ray 驗收；照四座小祭壇 `_lit` 的翡翠綠電路紋）。 */
@@ -974,7 +974,7 @@ const DM_ALTAR_MAIN = [
      「諾：什麼時候……！　Se_march 停」）：稿上的 `se_march` 專案裡沒有這支，用 `se_troops`
      （米夏上一場撤收同一支行軍聲）當循環環境音 —— 安雅這一拍起播、經過插圖、諾薇兒那一拍淡出。 */
   any('talkshy','大家……其實、我——', { amb:'se_troops' }),
-  { speaker:'NARRATION', text:'', cg:'037_mishamarch', cgNoTime:true, auto:1600 },   // 插圖：米夏的隊伍
+  { speaker:'NARRATION', text:'', cg:'037_mishamarch', cgNoTime:true, cgPan:'up', auto:2600 },   // 插圖：米夏的隊伍（下往上平移，Ray -2000）
   { speaker:'NARRATION', text:'', cg:null, auto:200 },
   sor('guard','！！', { se:'se_drawknife' }),
   nou('shock2','什麼時候……！', { ambStop:1 }),                                       // 行軍聲停（淡出）
@@ -1017,7 +1017,9 @@ const DM_ALTAR_MAIN = [
   { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },                             // 【SE】上膛音
   /* 【SE】斬殺音＋【插圖】主角被刺穿（ver -1985，Ray 交件 `038_mishasting`）。米夏那句在插圖期間講，不放立繪
      （表上寫的 `mishaattack` 立繪庫沒有 —— 有插圖就不需要了）。 */
-  { speaker:'NARRATION', text:'', se:'se_enemy_slash', shake:true, cg:'038_mishasting', cgNoTime:true, auto:1600 },
+  /* 突刺：`se_slash`＋震動與插圖**同一拍**（Ray -2002：「slash 播太慢，上膛音後馬上播」——
+     -2000 拆成兩拍、等插圖亮出來才播，被退回）。 */
+  { speaker:'NARRATION', text:'', cg:'038_mishasting', cgNoTime:true, cgPan:'up', se:'se_slash', shake:true, auto:2600 },
   mis(null,'這點成色還想成王……？不自量力。'),
   { speaker:'NARRATION', text:'', cg:null, auto:200 },
   any('crying','住手！'),
@@ -1056,8 +1058,8 @@ const DM_ALTAR_MAIN = [
   mis('back','撤收。'),
   Object.assign(any('desperate',''), { hide:['MISHA'], amb:'se_troops', ambStop:3000 }),   // 撤收（稿上 se_march ⇒ 同上一場的 troop 三秒淡出）
   sor('sad','小公主……'),
-  any('runworry',''),
-  any('worry','你、沒事了嗎？', { se:'se_steps' }),
+  any('runworry','', { se:'se_steps' }),          // 腳步聲在她跑過來這一拍（Ray -2002：「se_step 在前一拍播」）
+  any('worry','你、沒事了嗎？'),
   { speaker:'PLAYER', blank:true },
   nou('sadnoeye','治癒術式在起作用了，沒事的。'),
   any('talk','對不起……大家、我……'),

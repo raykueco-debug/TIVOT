@@ -76,7 +76,8 @@ def run(check=False):
         (r"\.classic\.js\?v=\d+", ".classic.js?v=<V>"),
         # ⚠ 門的素材是會被同名覆蓋的（-1215 削過 alpha 底噪），所以圖也要帶版本號。
         #   §5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是「看起來沒變」。
-        (r'(\.\./resources/vfx/kerberos_[a-z]+\.webp)(\?v=[0-9.]*)?', r'\1?v=<V>'),
+        # ⚠ ver -2003：`?v=` 後面**整段英數**都吃掉（舊的 `[0-9.]*` 碰到字母就停，留下 `?v=2000edab` 這種殘尾）
+        (r'(\.\./resources/vfx/kerberos_[a-z]+\.webp)(\?v=[0-9A-Za-z.]*)?', r'\1?v=<V>'),
     ], v)
     if s != s0: dirty.append(('flight/index.html', p, s))
 

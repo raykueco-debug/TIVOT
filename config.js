@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2000';
+export const VERSION = 'ver 2026.09.22-2003';
 
 export const GAME_CONFIG = {
 
@@ -3676,6 +3676,7 @@ export const GAME_CONFIG = {
       /* 劈落（ver -1957，米夏）：實測 −16.2 LUFS、峰值 0 dBFS —— 照目標要 ×1.57，
          被 `peakCeilDb`（+2 dB）夾在 1.259。⚠ 鄰居對照量的，不是 audio_scan 那一套；要精修就跑一次。 */
       se_bulletguard:1.259,
+      se_slash:0.869,   // 米夏突刺（ver -2000；對齊 se_enemy_slash 換算）
       se_enemy_revolver:0.732, se_enemy_dagger:2.192, se_enemy_centipi:1.272,
       /* ver -899 兩支新音。⚠⚠ **值是「對照鄰居」定的，不是照公式硬算**：
          本機用 numpy 重寫的 BS.1770 量出來，與這張表既有的值換算不回去
@@ -6200,6 +6201,7 @@ export const ASSET_VER = {
   'se_bulletsfly4': '22517956',
   'se_enemy_dagger': '608c768c',
   'se_rockimpact': 'd2a1f043',
+  'se_slash': '1f6783d5',
   'se_steps': 'd271dff8',
   'se_stepsbig': 'c1670181',
   'se_waterfall': '8db65283',
