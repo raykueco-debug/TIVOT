@@ -795,8 +795,8 @@ export const ART = {
          （16 張那一批一次、SD 臉那一批一次）⇒ 實際是 **v3**。
          這五個是**新增**不是覆蓋（覆蓋 0 次）⇒ **不掛 `?v=`**。 */
     battlecrylook:        { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_battlecrylook.webp', top:6, bot:1523, fx:0.668 },
-    battlecrylookaside:   { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_battlecrylookaside.webp', top:6, bot:1523, fx:0.668 },
-    battlecrylookserious: { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_battlecrylookserious.webp', top:6, bot:1523, fx:0.668 },
+    battlecrylookaside:   { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_battlecrylookserious.webp', top:6, bot:1523, fx:0.668 },
+    battlecrylookserious: { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_battlecrylookaside.webp', top:6, bot:1523, fx:0.668 },
     battlecrylookup:      { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_battlecrylookup.webp', top:6, bot:1523, fx:0.668 },
     battlecryserious:     { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_battlecryserious.webp', top:6, bot:1523, fx:0.668 },
     /* ══ 差分擴充 18 張（ver -1503 美術交件，-1507 接線）══

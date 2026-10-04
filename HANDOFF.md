@@ -1,4 +1,4 @@
-# HANDOFF — 截至 `ver 2026.09.22-1958`（10-04，Windows 3070，程式 session）
+# HANDOFF — 截至 `ver 2026.09.22-1960`（10-04，Windows 3070，程式 session）
 
 > **-1958**：阿瑞尼斯神父 11 句台詞原本全是 `arh(null,…)` → 一直顯示 -582 的舊底圖；改成逐句指定 -1509 那六張新差分（表情是我配的，Ray 可再改）。
 
@@ -20,6 +20,11 @@
 ## 未完成
 
 **眨眼**
+- ⚠⚠ **GPT 半閉還欠 10 張**（10-04 額度用完，22:52 重置）：拼格已做好 `tools/_blink_base/grid_fixh4.png`（米夏 side／sideopen／talk、蘿法 complain／front／talk、諾薇兒 decode）與 `grid_fixh3.png`（柯文 ecstasy／lookaside、族長）。
+  提示詞照 `blink_gpt.py prompt half` ＋「半閉不是閉眼：要看得到下半個虹膜」「只動眼睛，頭髮臉一個像素都不要移動」（-1960 那一輪 fixh2 有 7 格被 GPT 挪了構圖，對位擋下）。
+  合併：`PYTHONIOENCODING=utf-8 py -3.11 -X utf8 tools/blink_gpt.py merge fixh4 <下載的圖> half` → `blink_build.py <名…>`。在那之前米夏／蘿法這 6 張照舊像眨兩下。
+- 淚眼：表上 329 張全產（`eye_fx.py --tear-only`）；瞳顫：Ray 選的 40 張（`script/eyefx.js` 的 `tr`）。都要在腳本那一拍寫 `eyes:` 才會出現。
+  瞳顫框偏大／只框一隻、要進遊戲看的：索拉娜 surprise／furious／readshock、柯文 shock。
 - ⚠ `sorana_si_carrynouvelleshock` 欠：雙人圖，要先在 `tools/blink_eyes.txt` 手動給眼框（Ray 沒點名）。
 - 之後要做：飛行頁 canvas 眨眼、手機實機量發熱（鐵律 12）、路線 B 髮梢擺動。
 - ⏸ 呼吸與微晃（路線 A，-1934）：commit 在 3060 本機、沒推上來，等 Ray 看效果。

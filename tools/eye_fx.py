@@ -5,7 +5,7 @@
   <名>_tr_mask.webp   眼睛開口（睫毛線以下、下眼瞼以上）的 alpha —— 容器用它裁切，虹膜抖不出眼眶、睫毛留在上面
   <名>_tr_fill.webp   開口內「虹膜挖掉、用眼白補上」的底
   <名>_tr_iris.webp   虹膜＋瞳孔＋高光（上下各多補 3 列邊緣色，抖動時不會露出一條白縫）
-引擎：modules/eyefx.js。開不開在 speakers.js 那一張立繪的 `eyeFx:'tremble'`（首頁「立繪」工作室設定）。
+引擎：modules/eyefx.js。開不開在腳本那一拍的 `eyes`（ver -1959；首頁「立繪」工具的「這一拍眼睛」）。
 
 用法：py -3.11 tools/eye_fx.py renna_si_shockopen [--eye x0,y0,x1,y1 ...] [--preview out.png]
   眼框沿用 blink_patch 的自動找法（分割圖 tools/_blink_seg/<名>/classes_s1.6.png）。
@@ -82,6 +82,7 @@ def main():
     ap.add_argument('name')
     ap.add_argument('--eye', action='append', default=[])
     ap.add_argument('--preview')
+    ap.add_argument('--tear-only', action='store_true', help='只產淚眼（ver -1959，Ray：「全表情都做淚眼、瞳顫只做我選的」）')
     A = ap.parse_args()
     n = A.name
     im = Image.open(src_of(n)).convert('RGBA'); arr = np.array(im); rgb = arr[..., :3]
@@ -187,11 +188,14 @@ def main():
     os.makedirs(DST, exist_ok=True)
     key = n.lower()
     mk = np.dstack([np.full((by1 - by0, bx1 - bx0, 3), 255, np.uint8), (crop(O) * 255).astype(np.uint8)])
-    Image.fromarray(mk, 'RGBA').save(os.path.join(DST, key + '_tr_mask.webp'), 'WEBP', lossless=True, method=6)
+    if not A.tear_only:
+        Image.fromarray(mk, 'RGBA').save(os.path.join(DST, key + '_tr_mask.webp'), 'WEBP', lossless=True, method=6)
     fl = np.dstack([np.clip(crop(fill), 0, 255).astype(np.uint8), (crop(O) * 255).astype(np.uint8)])
-    Image.fromarray(fl, 'RGBA').save(os.path.join(DST, key + '_tr_fill.webp'), 'WEBP', quality=95, alpha_quality=100, method=6)
+    if not A.tear_only:
+        Image.fromarray(fl, 'RGBA').save(os.path.join(DST, key + '_tr_fill.webp'), 'WEBP', quality=95, alpha_quality=100, method=6)
     ir = np.dstack([np.clip(crop(irisC), 0, 255).astype(np.uint8), (crop(irisA) * 255).astype(np.uint8)])
-    Image.fromarray(ir, 'RGBA').save(os.path.join(DST, key + '_tr_iris.webp'), 'WEBP', quality=95, alpha_quality=100, method=6)
+    if not A.tear_only:
+        Image.fromarray(ir, 'RGBA').save(os.path.join(DST, key + '_tr_iris.webp'), 'WEBP', quality=95, alpha_quality=100, method=6)
     # ══ 淚眼汪汪（tear）══ Ray 10-03：「不是畫水線，讓虹膜有白光閃動就好」——
     #   三張光點圖（te_g0／g1／g2），各在虹膜裡放一兩顆白色柔邊光點，引擎用不同節奏與相位閃（像淚光在眼裡一閃一閃）。
     #   光點只在虹膜（看得到的部分）裡。位置：左上大光點、右下小光點、右側與下方的細碎閃點。
@@ -219,14 +223,15 @@ def main():
         m = re.search(r'EYEFX\s*=\s*(\{.*\});', open(TABLE, encoding='utf-8').read(), re.S)
         tab = json.loads(m.group(1)) if m else {}
     ent = tab.get(key, {})
-    ent['tr'] = [bx0, by0, bx1 - bx0, by1 - by0]
+    if not A.tear_only:
+        ent['tr'] = [bx0, by0, bx1 - bx0, by1 - by0]
     ent['te'] = [bx0, by0, bx1 - bx0, by1 - by0]   # 淚眼：同一個框（_te_g0／g1／g2 三張光點）
     tab[key] = ent
     rows = ',\n'.join(f'  {json.dumps(k)}: {json.dumps(tab[k], separators=(",", ":"))}' for k in sorted(tab))
     open(TABLE, 'w', encoding='utf-8', newline='\n').write(
         '/* ══ 立繪眼部特效表 —— **機器產生，不要手改**（tools/eye_fx.py）══\n'
         '   鑰匙＝立繪檔名；tr＝瞳孔顫動三張圖的框 [x,y,w,h]（原圖像素）。檔案：resources/si/eyefx/<鑰匙>_tr_{mask,fill,iris}.webp。\n'
-        '   開不開由 speakers.js 那一張立繪的 `eyeFx` 決定（引擎 modules/eyefx.js）。 */\n'
+        '   開不開由 腳本那一拍的 `eyes` 決定（ver -1959；引擎 modules/eyefx.js 的 eyesOf）。 */\n'
         'export const EYEFX = {\n' + rows + '\n};\n')
     print(json.dumps(ent), 'iris px', int(iris.sum()), 'opening px', int(O.sum()))
     if A.preview:
