@@ -115,6 +115,7 @@ def main():
     ell = np.zeros((H, W), bool)        # 完整的橢圓（看不到的部分用擴散補）
     yy, xx = np.mgrid[0:H, 0:W]
     irises = []                         # 每隻眼的虹膜橢圓 (cx, cy, rx, ry)，淚眼的高光用
+    O_tear = O.copy()                   # 淚眼的裁切框：**扣睫毛之前**的眼框（見下面淚眼 v2 那一段）
     for e in eyes:
         oe = opening_of(e, (H, W), seg)
         ids = np.unique(lab[oe & irisraw]); ids = ids[ids > 0]
@@ -222,7 +223,53 @@ def main():
     #   · `_te_mask.webp` ＝眼睛開口（同 `_tr_mask` 那一份 O）—— 容器拿它裁，光就出不了眼框
     #   · 表上的 `tg` ＝每隻眼的虹膜橢圓 [cx,cy,rx,ry]（框內像素）—— 引擎依它擺光的位置與大小
     #   舊的 `_te_g0~2` 照產（還沒重跑 v2 的立繪引擎退回它們）。
-    Image.fromarray(mk, 'RGBA').save(os.path.join(DST, key + '_te_mask.webp'), 'WEBP', lossless=True, method=6)
+    # ⚠⚠ 淚眼的裁切框**不用** `O`（ver -1980，Ray：「為什麼會有虹膜圖層比淚光更上層的狀況？」）——
+    #   `O` 在上面的虹膜迴圈裡扣掉了「擬合橢圓外的暗像素」（那是給瞳顫擋睫毛用的），而擬合常常偏小偏低，
+    #   **虹膜上半那一塊暗色被當成睫毛扣掉** ⇒ 高光被從虹膜中間橫切，看起來就是虹膜蓋在淚光上。
+    #   改用扣之前的 `O_tear`：每隻眼補洞、收邊（closing）、再羽化 0.7px（邊緣淡出，不是一格一格的鋸齒）。
+    # ⚠⚠ 睫毛帶裡**被誤算成睫毛的虹膜上緣**要還回來（ver -1980，Ray：「解決他」）——
+    #   `opening_of` 的上緣是「睫毛線頂端＋偵測到的厚度」，而虹膜上半同樣是深色、緊貼著睫毛，
+    #   厚度就被算厚了（安雅左眼：偵測 6~7px，實際睫毛約 2~3px）。分割模型的「眼睛」又從睫毛頂端就開始，太寬。
+    #   ⇒ 逐欄、在那條睫毛帶裡**由下往上**看：顏色比較像**這隻眼的虹膜色**就算回眼框，像**睫毛色**就停。
+    #     虹膜色＝這隻眼看得到的虹膜平均；睫毛色＝睫毛帶最上面兩列的平均。
+    for e in eyes:
+        oe = opening_of(e, (H, W), seg)
+        ir_px = f[iris & oe]
+        if len(ir_px) < 6:
+            continue
+        ic = ir_px.mean(0)
+        for i, xr in enumerate(e['xs']):
+            x = e['x0'] + int(xr)
+            t0 = int(round(e['y0'] + e['t'][i])); y0 = int(round(e['y0'] + e['t'][i] + e['h'][i] + 0.5))
+            if y0 - t0 < 3 or not (0 <= x < W):
+                continue
+            lc = f[t0:t0 + 2, x].mean(0)
+            for yy_ in range(y0 - 1, t0, -1):
+                c = f[yy_, x]
+                # ⚠ 頭髮不收（ver -1982，Ray：「太大了，都跑頭髮上了」）：蕾娜的虹膜黃綠、瀏海金色，
+                #   顏色太近，垂到眼睛上的那幾綹會被當成虹膜收進來 ⇒ 只收分割判成「眼睛」的像素。
+                if seg is not None and seg[yy_, x] != B.SEG_EYE:
+                    break
+                if np.linalg.norm(c - ic) < np.linalg.norm(c - lc) * 0.9:
+                    O_tear[yy_, x] = True
+                else:
+                    break
+    Ot = nd.binary_fill_holes(nd.binary_closing(O_tear, iterations=2))
+    if seg is not None:   # 最後再扣一次頭髮（補洞／收邊可能把蓋在眼睛上的髮絲補進來）
+        Ot &= ~(seg == B.SEG_HAIR)
+    # 離鏡頭較近的那隻眼（開口面積較大）**往內縮一圈**（ver -1983，Ray：「還是太貼眼眶，離鏡頭較近的眼一律要留一點空」）：
+    #   縮的量＝那隻眼開口半高的 15%（至少 1px）。光的高度照縮過的框定（下面的 mt／mb），一定離眼框有一段距離。
+    tl_, tn_ = nd.label(Ot)
+    if tn_ >= 2:
+        areas = nd.sum(Ot, tl_, range(1, tn_ + 1))
+        kn = int(np.argmax(areas)) + 1
+        ys_n = np.nonzero(tl_ == kn)[0]
+        er = max(1, int(round((ys_n.max() - ys_n.min() + 1) / 2 * 0.15)))
+        near = tl_ == kn
+        Ot = (Ot & ~near) | nd.binary_erosion(near, iterations=er)
+    Ota = np.clip(nd.gaussian_filter(Ot.astype(np.float32), 0.7) * 1.25, 0, 1)
+    tm = np.dstack([np.full((by1 - by0, bx1 - bx0, 3), 255, np.uint8), (crop(Ota) * 255).astype(np.uint8)])
+    Image.fromarray(tm, 'RGBA').save(os.path.join(DST, key + '_te_mask.webp'), 'WEBP', lossless=True, method=6)
     te_w = te_h = None    # 表
     tab = {}
     if os.path.exists(TABLE):
@@ -243,8 +290,16 @@ def main():
             ys, xs = np.nonzero(olab)
             j = int(np.argmin((xs - cx) ** 2 + (ys - cy) ** 2)); k = olab[ys[j], xs[j]]
         ys, xs = np.nonzero(olab == k)
+        # 遮罩在虹膜中心那一欄的上下緣（ver -1980）：光依它定高度，一定落在框內、不會被從虹膜中間橫切
+        colm = np.nonzero(Ot[:, min(max(ix, 0), W - 1)])[0]
+        mt, mb = (int(colm.min()), int(colm.max())) if len(colm) else (int(ys.min()), int(ys.max()))
+        exw = (xs.max() - xs.min() + 1) / 2
+        # 虹膜寬（ver -1984，Ray：「大小就用虹膜等寬，壓成 1:2 的橢圓」）：擬合的 rx 常常偏小
+        #   （只量得到看得見的那一塊），夾在眼框寬的 50%～70%（動畫眼的虹膜大致就在這個範圍）。
+        iw = float(np.clip(2 * rx, 1.0 * exw, 1.4 * exw))
         tg.append([round(cx - bx0, 1), round(cy - by0, 1),
-                   round((xs.max() - xs.min() + 1) / 2, 1), round((ys.max() - ys.min() + 1) / 2, 1)])
+                   round(exw, 1), round((ys.max() - ys.min() + 1) / 2, 1),
+                   mt - by0, mb - by0, round(iw, 1)])
     ent['tg'] = tg
     # 淚眼 v2 的傾斜（ver -1973，Ray：「角度要跟臉的斜度，以下眼線最低點的那條線為基準，平行」）：
     #   兩隻眼的開口各取**最低點**（同一列有好幾個就取中點），連線的角度（度，順時針為正）。只有一隻眼＝0。
@@ -259,6 +314,8 @@ def main():
         yb = ys.max(); lows.append((float(xs[ys == yb].mean()), float(yb)))
     lows.sort()
     ent['ta'] = round(float(np.degrees(np.arctan2(lows[-1][1] - lows[0][1], lows[-1][0] - lows[0][0]))), 1) if len(lows) >= 2 else 0
+    # ⚠ v2.1 的下眼線濕光／下半變亮（`_te_lid`／`_te_low`）**已拿掉**（ver -1980，Ray：「眼框下方的可以不用，
+    #   只要虹膜的那兩點就可以」）。
     tab[key] = ent
     rows = ',\n'.join(f'  {json.dumps(k)}: {json.dumps(tab[k], separators=(",", ":"))}' for k in sorted(tab))
     open(TABLE, 'w', encoding='utf-8', newline='\n').write(

@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1974';
+export const VERSION = 'ver 2026.09.22-1984';
 
 export const GAME_CONFIG = {
 
@@ -5387,6 +5387,7 @@ export const ASSET_VER = {
   'anya_si_front': '390969c5',
   'anya_si_front_closed': '3d5e8d19',
   'anya_si_front_half': '91f04df6',
+  'anya_si_front_te_mask': '713d6425',
   'anya_si_happy': '76e4bf93',
   'anya_si_hug': '723fb6dd',
   'anya_si_hug_closed': 'c8130948',
@@ -5674,6 +5675,7 @@ export const ASSET_VER = {
   'misha_si_fight_half': 'caf2160a',
   'misha_si_front_closed': '5345d455',
   'misha_si_front_half': '1eaba805',
+  'misha_si_front_te_mask': '39e003fc',
   'misha_si_frontgrit_closed': 'aa4abda2',
   'misha_si_frontgrit_half': '87205976',
   'misha_si_frontopen_closed': 'b1f43c52',
@@ -5819,6 +5821,7 @@ export const ASSET_VER = {
   'nouvelle_si_front': 'eb1ad716',
   'nouvelle_si_front_closed': '5f0cbb45',
   'nouvelle_si_front_half': '632e60ef',
+  'nouvelle_si_front_te_mask': 'c7e60670',
   'nouvelle_si_furious_closed': '80927e92',
   'nouvelle_si_furious_half': 'dc3200f9',
   'nouvelle_si_gossip1': 'fa5646f3',
@@ -6065,6 +6068,7 @@ export const ASSET_VER = {
   'renna_si_evaluateclosemouth_half': '005fac0e',
   'renna_si_front_closed': '35358854',
   'renna_si_front_half': '3d289abf',
+  'renna_si_front_te_mask': '63e68d2a',
   'renna_si_handout': '42b42b05',
   'renna_si_handout_closed': '049a9d93',
   'renna_si_handout_half': 'f4288ff0',
@@ -6357,6 +6361,7 @@ export const ASSET_VER = {
   'sorana_si_side': '5e97123e',
   'sorana_si_side_closed': '018465c0',
   'sorana_si_side_half': 'f800a91c',
+  'sorana_si_side_te_mask': '80cdb1e4',
   'sorana_si_sleep': 'de017c28',
   'sorana_si_smile': '428a5d04',
   'sorana_si_smile_closed': '6b035b6e',

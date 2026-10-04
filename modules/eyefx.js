@@ -51,9 +51,12 @@ export function unbind(box){
    · 每隻眼兩顆**橫的細長橢圓**白光：大的在虹膜上半、小的在右下；擺動在 CSS（`.ef-tl`）
    · 位置大小一律換成容器的百分比 —— 立繪縮放時跟著走
    沒有 `tg` 的（還沒用新版 tools/eye_fx.py 重跑的）退回下面的 v1 三張光點。 */
-const TL = [   // [相對虹膜中心的 x, y（眼框半寬／半高的倍數）, 寬, 高（同）, class]
-  [-0.12, -0.30, 1.00, 0.40, 'big'],     // ⚠ 高 0.26→0.40、0.17→0.26（Ray：「橢圓太扁了」）
-  [ 0.30,  0.36, 0.48, 0.26, 'small'],
+/* [相對虹膜中心的 x（眼框半寬倍數）, 高度（在遮罩上下緣之間的比例）, 寬（虹膜寬的倍數）, class]
+   ⚠ ver -1984（Ray：「大小就用虹膜等寬，壓成 1:2 的橢圓，做變形的輪播」）：大光寬＝虹膜寬、高＝寬的一半；
+     小光是大光的一半，一樣 1:2。舊表沒有虹膜寬（第 7 格）時，用眼框寬的 0.6 倍頂。 */
+const TL = [
+  [-0.05, 0.38, 1.0, 'big'],
+  [ 0.28, 0.72, 0.5, 'small'],
 ];
 function bindTearV2(box, img, key, d){
   const W = img.naturalWidth, H = img.naturalHeight, r = d.te;
@@ -65,10 +68,16 @@ function bindTearV2(box, img, key, d){
   c.style.maskImage = c.style.webkitMaskImage = m;
   /* 傾斜：與兩眼下眼線最低點的連線平行（表上的 `ta`，度；CSS 的 `--ta` 給擺動那組 keyframes 用）。 */
   c.style.setProperty('--ta', (d.ta || 0) + 'deg');
-  d.tg.forEach(([cx, cy, ex, ey], i) => {
-    for(const [ox, oy, w, h, cls] of TL){
+  d.tg.forEach(([cx, cy, ex, ey, mt, mb, iw], i) => {
+    const irisW = iw || ex * 1.2;
+    for(const [ox, fy, w, cls] of TL){
+      /* 高度＝**遮罩在虹膜那一欄的上下緣之間**（ver -1980，Ray：「為什麼會有虹膜圖層比淚光更上層」）——
+         以前用「虹膜中心往上 0.3 個眼框高」，而遮罩常常沒蓋到虹膜上緣，光就被橫切成一半。
+         舊表沒有 mt/mb 時退回舊算法。 */
+      const oy = (mt != null && mb != null) ? ((mt + (mb - mt) * fy) - cy) / ey : (fy < 0.5 ? -0.30 : 0.36);
       const e = document.createElement('i'); e.className = 'ef-tl ' + cls + (i % 2 ? ' alt' : '');
-      const gw = w * ex * 2, gh = h * ey * 2;
+      const gw = w * irisW, gh = gw / 2;   // 1:2 的橢圓
+      /* ⚠ -1983 的「高度不超過可用高度 45%」拿掉：那會改掉 1:2。離眼框的距離改由遮罩負責（近鏡頭那隻眼內縮一圈）。 */
       /* 相對虹膜的位移也跟著傾斜轉（光本身在 CSS 轉，排列在這裡轉）。 */
       const t = (d.ta || 0) * Math.PI / 180, dx = ox * ex, dy = oy * ey;
       const px = cx + dx * Math.cos(t) - dy * Math.sin(t), py = cy + dx * Math.sin(t) + dy * Math.cos(t);
@@ -78,6 +87,20 @@ function bindTearV2(box, img, key, d){
     }
   });
   box.insertBefore(c, box.querySelector(':scope > .sp-blink'));
+  syncBreath(box, c);
+}
+/* ══ 呼吸對齊（ver -1983，Ray：「人物有呼吸律動，淚光沒跟上」）══
+   淚光容器跟頭部同一段 `brHead`，但 CSS 動畫從**元素出現那一刻**才起算 —— 頭部那一層早就在跑，
+   淚光是這一拍才掛上去的 ⇒ 永遠差一截相位。掛上去之後把它的動畫時間對齊到頭部那一層。 */
+function syncBreath(box, el){
+  requestAnimationFrame(() => {
+    try{
+      const head = box.querySelector(':scope > .br-head') || box.querySelector(':scope > .sp-blink');
+      const ha = head && head.getAnimations ? head.getAnimations().find(a => a.animationName === 'brHead') : null;
+      const ea = el.getAnimations ? el.getAnimations().find(a => a.animationName === 'brHead') : null;
+      if(ha && ea && ha.currentTime != null) ea.currentTime = ha.currentTime;
+    }catch(_){}
+  });
 }
 function bindTear(box, img, key, d){
   if(d.tg && d.tg.length){ bindTearV2(box, img, key, d); return; }

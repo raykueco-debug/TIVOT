@@ -3066,18 +3066,22 @@
   .ef-te > .ef-g1{ animation:efG1 1.7s ease-in-out -.6s infinite; }
   .ef-te > .ef-g2{ animation:efG2 1.1s linear -.3s infinite; }
   /* 淚眼 v2（ver -1973，Ray：「細長橫橢圓的白光一大一小，可超出虹膜不可超出眼框，左右擺動」）：
-     容器 mask＝眼睛開口（modules/eyefx.js 掛 inline）；光是白色柔邊橫橢圓，左右擺動＋微微明滅。
-     兩隻眼錯開相位（`.alt`），大小光錯開週期，不會整齊劃一。 */
+     容器 mask＝眼睛開口（modules/eyefx.js 掛 inline）；光是白色柔邊橫橢圓，角度跟著臉（`--ta`）。
+     ⚠ ver -1978 起「抖」改成原地換形狀（`efWob`），全部同步，見下。 */
   .ef-te.v2{ -webkit-mask-size:100% 100%; mask-size:100% 100%; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; }
   .ef-tl{ position:absolute; display:block; border-radius:50%; pointer-events:none;
-    background:radial-gradient(ellipse at center, rgba(255,255,255,.95) 0%, rgba(255,255,255,.8) 30%, rgba(255,255,255,.3) 58%, rgba(255,255,255,0) 72%);
-    animation:efSway .5s steps(1,end) infinite; }
-  /* ⚠ 兩格跳（Ray：「不要平移，小幅兩禎左右來回就好」）：steps(1) ＝只有左／右兩個位置，沒有中間的滑動。 */
-  .ef-tl.small{ animation-duration:.42s; animation-delay:-.21s; }
-  .ef-tl.alt{ animation-delay:-.25s; }
-  .ef-tl.small.alt{ animation-delay:0s; }
-  /* 傾斜 `--ta`＝兩眼下眼線最低點連線的角度（modules/eyefx.js 掛在容器上）—— 先轉、再沿著那條線左右跳。 */
-  @keyframes efSway{ 0%{ transform:rotate(var(--ta,0deg)) translateX(-6%); } 50%{ transform:rotate(var(--ta,0deg)) translateX(6%); } }
+    background:radial-gradient(ellipse at center, #fff 0%, #fff 24%, rgba(255,255,255,.8) 44%, rgba(255,255,255,.25) 62%, rgba(255,255,255,0) 74%);
+    animation:efWob .3s steps(1,end) infinite; }
+  /* ⚠ 高光的「抖」＝**原地換形狀**，不是平移（ver -1978；動畫的作法：2～3 張形狀略不同的高光、
+       每秒 8～12 格輪替）。三格：原樣／變寬變矮／變窄變高，旋轉跟著臉（`--ta`）。
+     ⚠ 全部同步（Ray：「不要錯開閃，兩個閃動的方向跟頻率一致」）。
+     ⚠ 閒置也不停（Ray：「不要停 loop」）：`perf-idle` 會凍住舞台上所有動畫，淚眼明寫例外。 */
+  @keyframes efWob{
+    0%   { transform:rotate(var(--ta,0deg)) scale(1,1); }
+    33.3%{ transform:rotate(var(--ta,0deg)) translate(3%,-4%) scale(1.10,.86); }
+    66.6%{ transform:rotate(var(--ta,0deg)) translate(-3%,3%) scale(.92,1.10); }
+    100% { transform:rotate(var(--ta,0deg)) scale(1,1); } }
+  body.perf-idle #storyStage .ef-tl, body.perf-idle #tutCast .ef-tl{ animation-play-state:running !important; }
   #storyCast .story-portrait.on > .ef-te, #tutCast .tut-portrait.in > .ef-te{
     animation:brHead var(--br-sec) ease-in-out var(--br-delay) infinite; }
   @media (prefers-reduced-motion: reduce){ .ef-tr, .ef-tr > .ef-iris, .ef-te, .ef-te > img, .ef-tl{ animation:none !important; } }

@@ -1023,3 +1023,14 @@ when	from	to	reason
 20261004-163426	resources/background/verafond/vela_midtown_night.webp	_recycle/resources/background/verafond/vela_midtown_night.webp	背景雷同修正（整張重繪／招牌改字）2026-10-04
 20261004-163426	resources/si/npc/npc_guildcounter_si_northport.webp	_recycle/resources/si/npc/npc_guildcounter_si_northport.webp	北泊公會櫃台重新去背（夾縫白塊、髮側白邊）2026-10-04
 20261004-164233	羅塞爾廢城_台詞差分.xlsx	_recycle/羅塞爾廢城_台詞差分.xlsx	dialogue_xlsx --append：接新稿前的原檔
+20261004-195021	resources/si/eyefx/anya_si_front_te_lid.webp	_recycle/resources/si/eyefx/anya_si_front_te_lid.webp	淚眼 v2.1 的下眼線濕光／下半變亮，Ray：「眼框下方的可以不用」
+20261004-195021	resources/si/eyefx/misha_si_front_te_lid.webp	_recycle/resources/si/eyefx/misha_si_front_te_lid.webp	淚眼 v2.1 的下眼線濕光／下半變亮，Ray：「眼框下方的可以不用」
+20261004-195021	resources/si/eyefx/nouvelle_si_front_te_lid.webp	_recycle/resources/si/eyefx/nouvelle_si_front_te_lid.webp	淚眼 v2.1 的下眼線濕光／下半變亮，Ray：「眼框下方的可以不用」
+20261004-195021	resources/si/eyefx/renna_si_front_te_lid.webp	_recycle/resources/si/eyefx/renna_si_front_te_lid.webp	淚眼 v2.1 的下眼線濕光／下半變亮，Ray：「眼框下方的可以不用」
+20261004-195021	resources/si/eyefx/sorana_si_side_te_lid.webp	_recycle/resources/si/eyefx/sorana_si_side_te_lid.webp	淚眼 v2.1 的下眼線濕光／下半變亮，Ray：「眼框下方的可以不用」
+20261004-195021	resources/si/eyefx/anya_si_front_te_low.webp	_recycle/resources/si/eyefx/anya_si_front_te_low.webp	淚眼 v2.1 的下眼線濕光／下半變亮，Ray：「眼框下方的可以不用」
+20261004-195021	resources/si/eyefx/misha_si_front_te_low.webp	_recycle/resources/si/eyefx/misha_si_front_te_low.webp	淚眼 v2.1 的下眼線濕光／下半變亮，Ray：「眼框下方的可以不用」
+20261004-195021	resources/si/eyefx/nouvelle_si_front_te_low.webp	_recycle/resources/si/eyefx/nouvelle_si_front_te_low.webp	淚眼 v2.1 的下眼線濕光／下半變亮，Ray：「眼框下方的可以不用」
+20261004-195021	resources/si/eyefx/renna_si_front_te_low.webp	_recycle/resources/si/eyefx/renna_si_front_te_low.webp	淚眼 v2.1 的下眼線濕光／下半變亮，Ray：「眼框下方的可以不用」
+20261004-195021	resources/si/eyefx/sorana_si_side_te_low.webp	_recycle/resources/si/eyefx/sorana_si_side_te_low.webp	淚眼 v2.1 的下眼線濕光／下半變亮，Ray：「眼框下方的可以不用」
+20261004-201026	HANDOFF.md	_recycle/HANDOFF.md	Ray 10-04：換機器交接，生成新的一份（規則：只留一份現況）
