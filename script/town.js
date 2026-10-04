@@ -931,10 +931,10 @@ const DM_SIDES = { RENNA:'L', NOUVELLE:'L' };
    演完自動出航，從廢城起飛（Ray：「這一段跑完自動接回飛行畫面從廢城起飛」）＝段落的 `sailOut:true`。
    ⚠ 差分照表；表上查不到的三個：`deseprade`→`desperate`、`misha_si_frontgrit`→`frontgrit`、
      `nouvelle_si_sadnoeye`→`sadnoeye`（同一個鍵的寫法差）。`mishaattack`（米夏「這點成色…」那一拍）
-     **立繪庫沒有這張**，先用 `fight` 頂著 —— 等 Ray 指定。
+     立繪庫沒有這張 —— ver -1985 那一拍改在刺穿插圖期間講，不放立繪。
    ⚠ 音效：稿上的 `se_drawdagger` → 現有的 `se_drawknife`；`se_march`（撤收）→ 米夏上一場撤收同一套
      `amb:'se_troops'` 三秒淡出；斬殺音 → `se_enemy_slash`；上膛 → `se_weapon_reload`。
-   ⚠ 【插圖】主角被刺穿：圖待補，這一拍先只演斬殺音＋震動。 */
+   ⚠ 插圖：`037_mishamarch`（米夏的隊伍，行軍聲期間）、`038_mishasting`（主角被刺穿）—— ver -1985 Ray 交件。 */
 const rtn = N('RETAINER');
 const DM_RELOADS = [{ n:'se_weapon_reload' }, { n:'se_weapon_reload', delay:180 }, { n:'se_weapon_reload', delay:420 }, { n:'se_weapon_reload', delay:530 }];
 const DM_ALTAR_MAIN = [
@@ -970,10 +970,14 @@ const DM_ALTAR_MAIN = [
   ren('blushangry','我、我的事不重要啦，重點是安雅小姐怎麼想！'),
   any('curious',''),
   any('talk','……'),
-  any('talkshy','大家……其實、我——'),
-  /* se_steps 兩個隔 0.25 秒重疊播放 → 索菈娜拔匕首 */
-  sor('guard','！！', { se:[{ n:'se_steps' }, { n:'se_steps', delay:250 }, { n:'se_drawknife', delay:450 }] }),
-  nou('shock2','什麼時候……！'),
+  /* 行軍聲（ver -1985，Ray：「安：大家……其實、我——　Se_march」「插圖 037_mishamarch　Se_march 續播」
+     「諾：什麼時候……！　Se_march 停」）：稿上的 `se_march` 專案裡沒有這支，用 `se_troops`
+     （米夏上一場撤收同一支行軍聲）當循環環境音 —— 安雅這一拍起播、經過插圖、諾薇兒那一拍淡出。 */
+  any('talkshy','大家……其實、我——', { amb:'se_troops' }),
+  { speaker:'NARRATION', text:'', cg:'037_mishamarch', cgNoTime:true, auto:1600 },   // 插圖：米夏的隊伍
+  { speaker:'NARRATION', text:'', cg:null, auto:200 },
+  sor('guard','！！', { se:'se_drawknife' }),
+  nou('shock2','什麼時候……！', { ambStop:1 }),                                       // 行軍聲停（淡出）
   ren('intense2','被包圍了嗎……'),
   any('terrify','米夏！'),
   /* 【SE】上膛聲此起彼落（同米夏上一場那一組） */
@@ -1011,8 +1015,11 @@ const DM_ALTAR_MAIN = [
   ren('meltdown','怎麼會……'),
   ren('shockopen','竟然是團長級別的怪物……'),
   { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },                             // 【SE】上膛音
-  { speaker:'NARRATION', text:'', se:'se_enemy_slash', shake:true, auto:900 },   // 【SE】斬殺音／【插圖】主角被刺穿（待補）
-  mis('fight','這點成色還想成王……？不自量力。'),                      // ⚠ 表上寫 mishaattack（沒有這張），先用 fight
+  /* 【SE】斬殺音＋【插圖】主角被刺穿（ver -1985，Ray 交件 `038_mishasting`）。米夏那句在插圖期間講，不放立繪
+     （表上寫的 `mishaattack` 立繪庫沒有 —— 有插圖就不需要了）。 */
+  { speaker:'NARRATION', text:'', se:'se_enemy_slash', shake:true, cg:'038_mishasting', cgNoTime:true, auto:1600 },
+  mis(null,'這點成色還想成王……？不自量力。'),
+  { speaker:'NARRATION', text:'', cg:null, auto:200 },
   any('crying','住手！'),
   any('crying','我會……照米夏說的做……所以住手！'),
   mis('fight','……'),

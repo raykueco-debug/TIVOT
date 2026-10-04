@@ -33,11 +33,7 @@
   扁眼規則（ver -1985，Ray 選 C）：大光高 ≤ 眼框半高 × 1.25，超過整顆等比縮、1:2 不變。
 
 **米夏／羅賽爾廢城主祭壇（-1957～-1984）**
-- ⚠ 欠 `resources/background/dunmor/dunmor_altar_lit.webp`（主祭壇點亮版；照四座小祭壇 `_lit` 的翡翠綠電路紋，GPT 從 `dunmor_altar` 衍生）。
-  程式已接（白光那一拍 `bgBand`＋節點 `bgWhen need:'dm_altar_done'`），**交件就生效**；交件後拔掉那一拍的 `bgPending`。⛔ 不要用 Gemini。
-- ⚠ 欠 `man_misha_guards` 正式版（現在是 Gemini 代圖，等 GPT 重畫；同名覆蓋要跑 `bust --bump`）。
-- ⚠ 欠插圖「主角被刺穿」（那一拍現在只有斬殺音＋震動）。
-- ❓ 米夏「這點成色還想成王……」那一拍表上寫 `mishaattack`，立繪庫沒有，暫用 `fight`。
+- ❓ 稿上的 `se_march` 專案裡沒有這支，用 `se_troops`（行軍聲）頂著（Mac -1985 插圖那一段）；Ray 若有專用檔，換 `town.js` 那一拍的 `amb` 就好。
 - 主祭壇那一段**最後「自動出航、從廢城起飛」還沒親眼確認**。
 
 **眨眼／眼睛**
@@ -66,3 +62,4 @@
 雪都教堂大小寫、阿瑞尼斯台詞差分、廢城祭壇 `_lit`、眨眼修正（賽西莉／露娜眼罩／柯文與 decode／族長／米夏 11 張半閉／closeopen 與 nemo bye）、
 索拉娜 battlecry 兩鍵對調、背景雷同修正 9 組、米夏敵卡（劈落／NI／語音 20 支／BR 首末發／Havoc BGM）、空中戰預設 EpicBattle、
 主祭壇劇本與兩場戰鬥、主角空白框可寫、**淚眼 v2 整批重算（-1985：356 張上線、分割 3070 已齊）**。
+主祭壇點亮版 `dunmor_altar_lit`、親衛隊正式版 `man_misha_guards`（-1998 美術交件）、主祭壇插圖 037_mishamarch（行軍聲期間）與 038_mishasting（刺穿，米夏那句在插圖期間講、`mishaattack` 不再需要）。
