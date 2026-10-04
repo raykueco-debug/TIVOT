@@ -855,7 +855,16 @@ def main():
             cf = np.array(Image.open(ext).convert('RGBA'))
             if cf.shape != arr.shape or not (cf[..., 3] == arr[..., 3]).all():
                 raise SystemExit('外部合成圖的尺寸或 alpha 與原圖不符：' + ext)
-            p, (x, y, w, h) = patch(rgb, cf[..., :3].astype(np.float32))
+            cfr = cf[..., :3].astype(np.float32)
+            if A.eye:
+                # 手給眼框（tools/blink_eyes.txt）＝只准框內（外擴 4px）換成合成圖，框外一律原圖 ——
+                # GPT 會連旁邊的東西一起重畫（Ray 10-04：露娜 angry「眼罩也在眨眼」）。
+                keep = np.zeros(rgb.shape[:2], bool)
+                for b in A.eye:
+                    x0, y0, x1, y1 = [int(v) for v in b.split(',')]
+                    keep[max(0, y0 - 4):y1 + 4, max(0, x0 - 4):x1 + 4] = True
+                cfr[~keep] = rgb[~keep]
+            p, (x, y, w, h) = patch(rgb, cfr)
             p.save(os.path.join(od, key + '.png'))
             meta[key] = dict(x=x, y=y, w=w, h=h, src=key + '.png')
             full = im.copy(); full.alpha_composite(p, (x, y))

@@ -15,6 +15,11 @@ import { assetVer } from '../config.js';
 
 const DIR = 'resources/si/blink/';
 const SEQ = [['h',45],['c',85],['h',45]];   // 半閉 → 全閉 → 半閉（毫秒），之後回到睜眼
+/* ══ 半眨（ver -1959，Ray：「不播全睜，只有半睜跟閉上的眨眼」）══
+   `rest:'h'`＝平時停在**半閉**那一格，眨的時候只到全閉再回半閉（不經過全睜）。
+   ⚠ 它是**那一拍**的標記（腳本的 `eyes:'half'`），不是立繪的屬性 —— 呼叫端每一拍算好傳進來；
+     這裡只負責「平時停哪一格」。 */
+const SEQ_HALF = [['c',95]];
 const T = new WeakMap();                      // 外框 → { t:計時器, live:fn }
 
 export function keyOf(src){
@@ -48,12 +53,17 @@ export const MODES = ['one', 'oneTwo', 'twoOne', 'off'];
 const COUNTS = { one:[1], oneTwo:[1,2], twoOne:[2,1] };
 
 /* box＝立繪外框、img＝外框裡的圖本體、live()＝這一刻可以眨嗎（舞台在、人在台上、不在換圖中）、mode＝眨眼節奏。 */
-export function bind(box, img, live, mode){
+export function bind(box, img, live, mode, rest){
   if(!box || !img) return;
   mode = COUNTS[mode] || mode==='off' ? mode : 'one';
+  rest = rest==='h' ? 'h' : null;
   const key=keyOf(img.getAttribute('src')), d=BLINK[key];
   const e=els(box);
-  if(e.h.dataset.key===key && T.has(box) && T.get(box).mode===mode){ T.get(box).live=live; return; }   // 同一張圖、同一個節奏重綁＝不動
+  if(e.h.dataset.key===key && T.has(box) && T.get(box).mode===mode){   // 同一張圖、同一個節奏重綁＝不重排程
+    const r=T.get(box); r.live=live;
+    if(r.rest!==rest){ r.rest=rest; if(!r.busy){ e.h.classList.toggle('on', rest==='h'); e.c.classList.remove('on'); } }
+    return;
+  }
   unbind(box);
   if(!d || !img.naturalWidth || mode==='off') return;
   const NW=img.naturalWidth, NH=img.naturalHeight;
@@ -67,7 +77,8 @@ export function bind(box, img, live, mode){
     if(el.complete && el.naturalWidth){ el.onload=null; el.dataset.ok='1'; }
   };
   put(e.h, d.half, 'half'); put(e.c, d.closed, 'closed');
-  const rec={ t:0, live, mode, n:0 };   // n＝第幾次（一二拍／二一拍輪流用）
+  const rec={ t:0, live, mode, n:0, rest, busy:false };   // n＝第幾次（一二拍／二一拍輪流用）；busy＝正在眨
+  if(rest==='h') e.h.classList.add('on');   // 半眨：一上台就是半閉
   T.set(box, rec); live_.set(box, rec);
   rec.t=sched(()=>once(box), 500+Math.random()*1500);   // 上台後第一次眨：0.5~2 秒隨機（Ray，-1940）
 }
@@ -91,7 +102,7 @@ export function setStep(on){
   for(const [box, rec] of live_){
     if(T.get(box)!==rec) continue;
     cancel(rec.t);
-    const e=els(box); e.h.classList.remove('on'); e.c.classList.remove('on');
+    const e=els(box); e.h.classList.toggle('on', rec.rest==='h'); e.c.classList.remove('on'); rec.busy=false;
     rec.t=sched(()=>once(box), 500+Math.random()*1500);   // 回到自動：照正常的第一次延遲重新排
   }
 }
@@ -117,12 +128,13 @@ function once(box){
   if(!go){ next(); return; }
   const cs = COUNTS[rec.mode] || COUNTS.one;
   const times = cs[rec.n++ % cs.length];
-  let seq = SEQ;
-  for(let k=1;k<times;k++) seq = seq.concat([[null,110]], SEQ);   // 連眨：中間睜開 110ms
-  let i=0;
+  const half = rec.rest==='h', one = half ? SEQ_HALF : SEQ, idle = half ? 'h' : null;
+  let seq = one;
+  for(let k=1;k<times;k++) seq = seq.concat([[idle,110]], one);   // 連眨：中間回到平時那一格 110ms
+  let i=0; rec.busy=true;
   const step=()=>{
     if(T.get(box)!==rec) return;
-    if(i>=seq.length){ e.h.classList.remove('on'); e.c.classList.remove('on'); next(); return; }
+    if(i>=seq.length){ rec.busy=false; e.h.classList.toggle('on', rec.rest==='h'); e.c.classList.remove('on'); next(); return; }
     const [f, ms]=seq[i++];
     e.h.classList.toggle('on', f==='h'); e.c.classList.toggle('on', f==='c');
     rec.t=sched(step, ms);

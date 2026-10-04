@@ -829,26 +829,24 @@ function blinkModeOf(im){
   }
   return 'one';
 }
-/* speakers.js 那一張的某個欄位（差分自己寫的優先、再看角色層）。 */
-function artFieldOf(im, k, dflt){
-  const want=cleanSrc(im && im.getAttribute('src'));
-  for(const n of Object.keys(ART)){
-    const A=ART[n]; if(!A) continue;
-    if(cleanSrc(A.base)===want) return A[k] || dflt;
-    for(const e of Object.keys(A.expr||{})){ const v=A.expr[e]; if(v && typeof v==='object' && cleanSrc(v.src)===want) return v[k] || A[k] || dflt; }
-  }
-  return dflt;
-}
 export function tuneBlink(side, mode){
   const el = side==='right' ? $('tutCastR') : $('tutCastL'), im=pimg(el); if(!im) return;
   blinkLiveMode[cleanSrc(im.getAttribute('src'))]=mode;
-  blink.bind(el, im, ()=>blinkLive(el), mode);
+  blink.bind(el, im, ()=>blinkLive(el), mode, eyefx.eyesOf(el._eyes).half ? 'h' : null);
   if(mode!=='off') blink.now(el);
+}
+/* 這一拍的眼睛（ver -1959）：`line.eyes` 只套在這一拍說話的人（el._eyes），另一位回到平常。
+   ⚠ 不讀 speakers.js —— 特效是「這一拍」的事（Ray）。解讀走 eyefx.eyesOf（與劇情頁同一支）。 */
+function eyesBind(b){
+  const im=pimg(b); if(!b || !im || !im.complete || !im.naturalWidth) return;
+  const ey=eyefx.eyesOf(b._eyes);
+  eyefx.bind(b, im, ey.fx);
+  blink.bind(b, im, ()=>blinkLive(b), blinkModeOf(im), ey.half ? 'h' : null);
 }
 export function blinkModeAt(side){ const el = side==='right' ? $('tutCastR') : $('tutCastL'); return blinkModeOf(pimg(el)); }
 for(const id of ['tutCastL','tutCastR']){
   const b=document.getElementById(id), im=pimg(b);
-  if(im) im.addEventListener('load', ()=>{ sway.bind(b, im); breath.bind(b, im, frameOf(b)); eyefx.bind(b, im, artFieldOf(im, 'eyeFx', 'none')); blink.bind(b, im, ()=>blinkLive(b), blinkModeOf(im)); });
+  if(im) im.addEventListener('load', ()=>{ sway.bind(b, im); breath.bind(b, im, frameOf(b)); eyesBind(b); });
 }
 /* 依步驟台詞決定在場立繪：只有一個人說話的段落（如罵人插話）不出現另一名角色。
  * .in 逐立繪掛在 img 上（CSS transition 滑入/滑出）；段落接續（queue）時差異更新即可。 */
@@ -1281,6 +1279,8 @@ function showLine(){
      ⚠ 用 inline z-index：兩個槽是兄弟元素、DOM 序固定，光靠 class 沒辦法讓左邊蓋過右邊。 */
   if(el) el.style.zIndex='2';
   if(other) other.style.zIndex='1';
+  if(el){ el._eyes = line.eyes || null; eyesBind(el); }       // 這一拍的眼睛（ver -1959）
+  if(other && other._eyes){ other._eyes = null; eyesBind(other); }
   // 逐句表情差分（line.img＝ASSETS 鍵）：沒寫就回該角色的預設立繪。
   // ⚠ 直接換 src，不做淡入淡出——同一角色同一槽的表情切換，淡出會讓她整個人消失一拍。
   if(document.body.classList.contains('testmode')) beatPick.ensureEditBtn($('tutBubble'), tutEditLine);   // ✎（ver -1828）

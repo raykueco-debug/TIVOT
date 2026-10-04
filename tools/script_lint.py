@@ -20,7 +20,7 @@ script_lint.py — 劇本稿的體檢工具（ver -342）
 ⚠ 音效／BGM 表（story.js 的 SE_FILES / BGM_FILES）也一併對照資料夾：
   加了檔案忘了加進表裡，遊戲會靜默找不到，這裡會報。
 """
-import json, os, re, sys
+import glob, json, os, re, sys
 import _jsrun              # JS 資料的唯一引擎（jsc／node），見 tools/_jsrun.py
 import _utf8  # noqa: F401  # 主控台 UTF-8（中文 Windows 的 cp950），見 tools/_utf8.py
 
@@ -494,6 +494,20 @@ def check_blink(D):
             if not os.path.isfile(f):
                 err('BLINK.%s.%s：補丁檔不存在：%s' % (name, k, os.path.relpath(f, ROOT)))
 
+def check_eyes():
+    """這一拍的眼睛標記（ver -1959）：`eyes:` 的值只准是 modules/eyefx.js 的 MARKS ——
+       打錯字不會報錯，只是那一拍靜靜沒有效果。名單現讀 eyefx.js（鐵律 7：不另抄一份）。"""
+    src = open(os.path.join(ROOT, 'modules', 'eyefx.js'), encoding='utf-8').read()
+    m = re.search(r"MARKS\s*=\s*\[([^\]]*)\]", src)
+    ok = set(re.findall(r"'([a-z]+)'", m.group(1))) if m else set()
+    for rel in sorted(glob.glob(os.path.join(ROOT, 'script', '*.js'))) + [os.path.join(ROOT, 'config.js')]:
+        txt = open(rel, encoding='utf-8').read()
+        for mm in re.finditer(r"(?<![A-Za-z_])eyes\s*:\s*('[^']*'|\[[^\]]*\])", txt):
+            for v in re.findall(r"'([^']*)'", mm.group(1)):
+                if v not in ok:
+                    err('%s:%d：eyes 的值 `%s` 不認得（只准 %s）' % (os.path.relpath(rel, ROOT), txt.count(chr(10), 0, mm.start()) + 1, v, '／'.join(sorted(ok))))
+
+
 def main():
     D = load_data()
     check_map_enemy_images(D)
@@ -502,6 +516,7 @@ def main():
     check_map_sessions(D)
     check_lowercase_assets()
     check_blink(D)
+    check_eyes()
     script, entry, speakers, art = D['script'], D['entry'], D['speakers'], D['art']
     check_tense_exprs(art)
 

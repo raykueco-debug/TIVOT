@@ -3001,6 +3001,8 @@
     100%{ translate:0 0; }
   }
   .ef-tr > .ef-iris{ animation:efTremble var(--tr-sec) steps(1, end) infinite; }
+  /* 慢速瞳顫（ver -1959，Ray：「瞳顫要分快慢」）：同一套素材，只拉長週期（腳本 `eyes:'trembleslow'`）。 */
+  .ef-tr.slow{ --tr-sec:1.25s; }
   #storyCast .story-portrait.on > .ef-tr, #tutCast .tut-portrait.in > .ef-tr{
     animation:brHead var(--br-sec) ease-in-out var(--br-delay) infinite; }
   /* 淚眼汪汪（ver -1948，Ray：「讓虹膜有白光閃動就好」）：三組光點各自閃 ——

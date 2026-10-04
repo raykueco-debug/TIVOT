@@ -84,7 +84,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-1958';
+export const VERSION = 'ver 2026.09.22-1959';
 
 export const GAME_CONFIG = {
 
@@ -5451,8 +5451,8 @@ export const ASSET_VER = {
   'belisar_rooffall_dusk': '23656517',
   'belisar_rooffall_night': 'd183d00f',
   'bgm_lunaria': '8a61fc07',
-  'cecilie_si_blush_closed': 'c56a5a4d',
-  'cecilie_si_blush_half': '8620e05d',
+  'cecilie_si_blush_closed': '747779d2',
+  'cecilie_si_blush_half': 'd4688f86',
   'cecilie_si_fluster_closed': 'dd39833a',
   'cecilie_si_fluster_half': '937d953c',
   'cecilie_si_front': 'd57dbd14',
@@ -5464,8 +5464,8 @@ export const ASSET_VER = {
   'cecilie_si_nolook_half': 'f421d4cc',
   'cecilie_si_talk_closed': '21d7d136',
   'cecilie_si_talk_half': 'ce763931',
-  'cecilie_si_tease_closed': '354a9f8b',
-  'cecilie_si_tease_half': '14b8d225',
+  'cecilie_si_tease_closed': 'b3beeaa3',
+  'cecilie_si_tease_half': '97734166',
   'cecilie_si_think_closed': 'd9cd1733',
   'cecilie_si_think_half': 'ec8981cc',
   'cecilie_si_upset_closed': '5101801a',
@@ -5557,8 +5557,8 @@ export const ASSET_VER = {
   'laurie_si_front_half': '5f4f7753',
   'laurie_si_lookaside_closed': '4ec30422',
   'laurie_si_lookaside_half': '7b74d4a2',
-  'luna_si_angry_closed': 'cd9f1bc5',
-  'luna_si_angry_half': '16e18832',
+  'luna_si_angry_closed': 'd9e50e23',
+  'luna_si_angry_half': '11449e42',
   'luna_si_front_closed': '92d5ab8f',
   'luna_si_front_half': '820a518a',
   'luna_si_seat_angry': 'a9b48e9c',

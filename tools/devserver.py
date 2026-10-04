@@ -57,9 +57,9 @@ TUNE_FILES = {'script/speakers.js', 'flight/index.html'}
 TUNE_KEYS = {'cm': 1, 'standCm': 1, 'yShift': 1, 'fxShift': 3}
 TUNE_ENUM = {'side': ('L', 'R'),   # ver -1892：站左／站右（這一張的 `side`，同 speakers.js 既有的差分 side）
              # ver -1938：眨眼節奏（modules/blink.js）。one＝一般單眨／oneTwo＝一、二拍輪流／twoOne＝二、一拍輪流／off＝不眨
-             'blink': ('one', 'oneTwo', 'twoOne', 'off'),
-             # ver -1945：眼部特效（modules/eyefx.js）。none＝無／tremble＝瞳孔顫動／tear＝淚眼汪汪（還沒做）
-             'eyeFx': ('none', 'tremble', 'tear')}
+             'blink': ('one', 'oneTwo', 'twoOne', 'off')}
+# ⚠ ver -1959：`eyeFx`（立繪層的眼部特效）已拿掉 —— Ray：「半眨、瞳顫、淚眼…都是單獨標記在該拍，
+#   不是將該表情全域改成特效」。改由 `/__line set key:'eyes'` 寫在那一拍上（EYES_NAMES）。
 TUNE_BOOL = {'flip'}   # ver -1866：水平翻轉（這一張一律翻，同 speakers.js 既有的 `flip:true`；寫 false＝蓋掉角色層的 true）   # 欄位 → 小數位數（standCm：ver -1827，兩份取景的頭頂要同一個數字）
 
 
@@ -560,6 +560,35 @@ def _set_fx_seg(seg, value):
     return 'Object.assign(' + seg + ', { bubbleFx:' + lit + ' })'
 
 
+# ver -1959：這一拍的眼睛標記（modules/eyefx.js 的 MARKS，改一邊要改另一邊）。
+EYES_NAMES = ('half', 'tremble', 'trembleslow', 'tear')
+EYES_ANY = r"(?<![A-Za-z_])eyes\s*:\s*(?:'[^']*'|\[[^\]]*\])"
+
+
+def _set_eyes_seg(seg, value):
+    """一拍的原始碼 seg → 把 `eyes` 設成 value（None／空＝拿掉）。作法同 `_set_fx_seg`。"""
+    vals = [x for x in ([value] if isinstance(value, str) else (value or [])) if x in EYES_NAMES]
+    lit = None if not vals else (_js_str(vals[0]) if len(vals) == 1 else '[' + ','.join(_js_str(x) for x in vals) + ']')
+    if re.search(EYES_ANY, seg):
+        if lit:
+            return re.sub(EYES_ANY, 'eyes:' + lit, seg, count=1)
+        s2 = re.sub(r"\{\s*" + EYES_ANY + r"\s*\}", '{ }', seg, count=1)
+        if s2 == seg:
+            s2 = re.sub(r"\s*" + EYES_ANY + r"\s*,", '', seg, count=1)
+        if s2 == seg:
+            s2 = re.sub(r"\s*,\s*" + EYES_ANY, '', seg, count=1)
+        m = re.match(r"^Object\.assign\((.*),\s*\{\s*\}\)$", s2, re.S)
+        return m.group(1) if m else s2
+    if not lit:
+        return seg
+    if seg.startswith('{'):
+        return '{ eyes:' + lit + ',' + seg[1:]
+    m = re.match(r"^(Object\.assign\(.*,\s*\{)(.*\}\))$", seg, re.S)
+    if m:
+        return m.group(1) + ' eyes:' + lit + ',' + m.group(2)
+    return 'Object.assign(' + seg + ', { eyes:' + lit + ' })'
+
+
 SHAKE_ANY = r"shake\s*:\s*(?:'[^']*'|true|false|\d+)"
 
 
@@ -623,10 +652,12 @@ def line_patch(req):
     le = len(text) if le < 0 else le                    # 結尾那一行的行尾
     if op == 'set':
         key = req.get('key')
-        if key not in ('bubbleFx', 'shake', 'flip'):
-            raise ValueError('set 只准改 bubbleFx／shake／flip')
+        if key not in ('bubbleFx', 'shake', 'flip', 'eyes'):
+            raise ValueError('set 只准改 bubbleFx／shake／flip／eyes')
         seg = text[s:e + 1]
-        if key == 'flip':
+        if key == 'eyes':
+            new = _set_eyes_seg(seg, req.get('value'))
+        elif key == 'flip':
             new = _set_bool_seg(seg, 'flip', bool(req.get('value')))
         else:
             new = (_set_fx_seg if key == 'bubbleFx' else _set_shake_seg)(seg, req.get('value'))

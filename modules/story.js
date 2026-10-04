@@ -564,13 +564,13 @@ function tuneRender(){
        return '<div class="tn-row"><span>'+i18nT('眨眼')+'</span><select data-blink'+(has?'':' disabled')+'>'
          +opts.map(([v,t])=>'<option value="'+v+'"'+(v===m?' selected':'')+'>'+t+'</option>').join('')+'</select>'
          +(has?'':'<span class="tn-path">'+i18nT('（這張沒有眨眼補丁）')+'</span>')+'</div>'; })()
-   /* 眼部特效（ver -1945，Ray：「瞳孔顫動／淚眼汪汪，在立繪模式裡設定」）：寫這一張的 `eyeFx`。
-      素材要先由 tools/eye_fx.py 產生（script/eyefx.js），沒有的那幾個選項灰掉。 */
-   +(()=>{ const m=c.f.eyeFx||'none', src=(slotImg(tuneSide)||{getAttribute:()=>''}).getAttribute('src');
-       const opts=[['none',i18nT('無')],['tremble',i18nT('瞳孔顫動')],['tear',i18nT('淚眼汪汪')]];
-       return '<div class="tn-row"><span>'+i18nT('眼部特效')+'</span><select data-eyefx>'
-         +opts.map(([v,t])=>'<option value="'+v+'"'+(v===m?' selected':'')+(v!=='none'&&!eyefx.has(src,v)?' disabled':'')+'>'+t+(v!=='none'&&!eyefx.has(src,v)?i18nT('（未產生）'):'')+'</option>').join('')
-         +'</select></div>'; })()
+   /* 這一拍的眼睛（ver -1959，Ray：「半眨、瞳顫、淚眼…都是單獨標記在該拍」）：寫這一拍的 `eyes`（`/__line set`），
+      不寫 speakers.js。工作室模式沒有「這一拍」，只做預覽。素材沒產生的那幾顆灰掉。 */
+   +(()=>{ const src=(slotImg(tuneSide)||{getAttribute:()=>''}).getAttribute('src'), ey=eyesAt(tuneSide);
+       const can={ half:blink.has(src), tremble:eyefx.has(src,'tremble'), trembleslow:eyefx.has(src,'trembleslow'), tear:eyefx.has(src,'tear') };
+       const nm={ half:i18nT('半眨'), tremble:i18nT('瞳顫快'), trembleslow:i18nT('瞳顫慢'), tear:i18nT('淚眼') };
+       return '<div class="tn-row"><span>'+(studioOn?i18nT('眼睛（預覽）'):i18nT('這一拍眼睛'))+'</span>'
+         +eyefx.MARKS.map(k=>'<button data-eyes="'+k+'" class="'+(ey.list.includes(k)?'on':'')+'"'+(can[k]?'':' disabled')+'>'+nm[k]+'</button>').join('')+'</div>'; })()
    +i18nT('<div class="tn-row"><span>站位</span><button data-act="sideL" class="')+(tuneSide==='L'?'on':'')+i18nT('">站左</button><button data-act="sideR" class="')+(tuneSide==='R'?'on':'')+i18nT('">站右</button></div>')
    /* 水平翻轉（ver -1898 改，Ray：「立繪編輯的翻轉只是轉那一拍的圖而已」）＝**這一拍**的 `flip:true`，
       按下去直接寫進腳本那一行（`/__line set`），不寫 speakers.js。工作室模式沒有「這一拍」，不給。 */
@@ -586,14 +586,22 @@ function tuneRender(){
     if(bx){ ['pointerdown','click','keydown'].forEach(ev=>bx.addEventListener(ev, e=>e.stopPropagation()));
       bx.addEventListener('change', ()=>{ tuneMsg=i18nT('寫入中…'); tuneRender();
         beatChangeAt(tuneSide, bx.value).then(r=>{ tuneMsg=(r.ok?i18nT('已換差分，寫入：'):i18nT('換差分失敗：'))+r.text; tuneRender(); }); }); } }
-  { const es=p.querySelector('select[data-eyefx]');
-    if(es){ ['pointerdown','click','keydown'].forEach(ev=>es.addEventListener(ev, e=>e.stopPropagation()));
-      es.addEventListener('change', ()=>{
-        const cur=tuneCur(tuneSide); if(!cur) return;
-        const L=Object.assign({}, tuneLive[cur.tk.key] || {}); L.eyeFx=es.value;
-        tuneLive[cur.tk.key]=L; tuneArm=null; tuneMsg='';
-        blinkBind(tuneSide); tuneRender();
-      }); } }
+  p.querySelectorAll('button[data-eyes]').forEach(bt=>bt.addEventListener('click', e=>{
+    e.stopPropagation();
+    const cur=tuneCur(tuneSide); if(!cur) return;
+    const k=bt.dataset.eyes, had=eyesAt(tuneSide).list;
+    let nx=had.includes(k) ? had.filter(x=>x!==k) : had.filter(x=>!(k!=='half' && x!=='half')).concat([k]);   // 瞳顫快／慢／淚眼三選一（半眨可疊）
+    nx=eyefx.MARKS.filter(x=>nx.includes(x));
+    const val = nx.length ? (nx.length===1 ? nx[0] : nx) : null;
+    if(studioOn){ studioEyes[tuneSide]=val; blinkBind(tuneSide); return tuneRender(); }
+    const ln=edLine(); if(!ln) return;
+    if(beatEyesWho && beatEyesWho!==cur.id && ln.eyes){ tuneMsg=i18nT('這一拍的眼睛標在另一個人身上，先取消那邊'); return tuneRender(); }
+    tuneMsg=i18nT('寫入中…'); tuneRender();
+    edPost('__line', Object.assign({ op:'set', key:'eyes', value:val }, edLocate())).then(r=>{
+      if(r.ok){ if(val){ ln.eyes=val; beatEyesWho=cur.id; beatEyes=val; } else { delete ln.eyes; beatEyesWho=null; beatEyes=null; } blinkBind(tuneSide); }
+      tuneMsg=(r.ok?i18nT('這一拍眼睛已寫入：'):i18nT('寫入失敗：'))+r.text; tuneRender();
+    });
+  }));
   { const bs=p.querySelector('select[data-blink]');
     if(bs){ ['pointerdown','click','keydown'].forEach(ev=>bs.addEventListener(ev, e=>e.stopPropagation()));
       bs.addEventListener('change', ()=>{
@@ -827,6 +835,10 @@ function studioExit(){
   const cb=studioDone; studioDone=null; if(cb) cb();
 }
 let beatFlipWho = null;   // 這一拍要水平翻轉的人（renderLine 設；見那裡的說明）
+/* 這一拍的眼睛標記（ver -1959）：`eyes`（half／tremble／tear，見 modules/eyefx.js 的 eyesOf）套在誰身上。
+   同 flip：只管這一拍，下一拍沒寫就回到平常。`studioEyes`＝工作室模式（沒有「這一拍」）的預覽值。 */
+let beatEyesWho = null, beatEyes = null;
+const studioEyes = { L:null, R:null };
 function layout(){
   tuneEnsure();
   const stage=$('storyStage'); if(!stage) return;
@@ -1056,15 +1068,18 @@ function blinkBind(side){
   const box=slotEl(side), im=slotImg(side);
   sway.bind(box, im);
   breath.bind(box, im, slot[side] ? frameOf(slot[side], slotExpr[side]) : null);
-  eyefx.bind(box, im, eyeFxOf(side));
-  blink.bind(box, im, ()=>blinkLive(side), blinkModeOf(side));
+  const ey=eyesAt(side);
+  eyefx.bind(box, im, ey.fx);
+  blink.bind(box, im, ()=>blinkLive(side), blinkModeOf(side), ey.half ? 'h' : null);
 }
-/* 這一張的眼部特效（ver -1945）：工作室還沒存檔的即時值優先，其次 speakers.js 的 `eyeFx`（沒寫＝none）。 */
-function eyeFxOf(side){
-  const id=slot[side]; if(!id) return 'none';
-  const tk=tuneKey(id, slotExpr[side]), L=tk && tuneLive[tk.key];
-  if(L && L.eyeFx) return L.eyeFx;
-  return (frameOf(id, slotExpr[side]) || {}).eyeFx || 'none';
+/* 這一側這一拍的眼睛（ver -1959）：工作室模式讀預覽值，否則讀這一拍的 `eyes`（只套在那一拍標記的人）。
+   ⚠ 不讀 speakers.js —— 特效是「這一拍」的事，不是這張表情的屬性（Ray）。 */
+function eyesAt(side){
+  if(studioOn) return eyefx.eyesOf(studioEyes[side]);
+  return eyefx.eyesOf(beatEyesWho && slot[side]===beatEyesWho ? beatEyes : null);
+}
+function eyesRefresh(){
+  for(const sd of ['L','R']){ const im=slotImg(sd); if(im && im.complete && im.naturalWidth && slot[sd]) blinkBind(sd); }
 }
 /* 這一張的眨眼節奏：立繪工作室還沒存檔的即時值優先，其次 speakers.js 的 `blink`（沒寫＝one）。 */
 function blinkModeOf(side){
@@ -3351,7 +3366,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=1958';
+const KERB_V='?v=1959';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4112,6 +4127,9 @@ function renderLine(){
   /* 這一拍的水平翻轉（ver -1898，Ray：「立繪編輯的翻轉只是轉那一拍的圖而已」）：拍上寫 `flip:true`
      ＝說話者（或 portrait.char）這一拍的立繪左右翻；下一拍沒寫就翻回來。與圖本身的 `flip`（畫反了）是 XOR。 */
   beatFlipWho = line.flip ? ((line.portrait && line.portrait.char) || line.speaker) : null;
+  beatEyesWho = line.eyes ? ((line.portrait && line.portrait.char) || line.speaker) : null;
+  beatEyes = line.eyes || null;
+  eyesRefresh();   // 圖沒換的人也要換到這一拍的眼睛（換圖的人等 onload 那一刻自己綁）
   tuneEnsure();   // 管理人的 ✎／立繪鈕（ver -1828：沒有立繪的拍也要掛得上）
   /* ══⚠⚠ **換一拍就先停上一拍的打字機**（ver -1127）══
      -1062 把它補在空框與演出拍那兩個分支裡，但那是「哪幾種拍會出事」的清單 ——
@@ -5707,7 +5725,7 @@ export function veilOn(){ const v=$('storyVeil'); return !!(v && v.classList.con
 export function sceneFadeOn(){ const f=$('storyFade'); return !!(f && f.classList.contains('on')); }
 
 export function clearCast(){
-  beatFlipWho = null;
+  beatFlipWho = null; beatEyesWho = null; beatEyes = null;
   stopTyping();   // ver -1127：清場＝這一段結束，框裡不可以還有字在跑（同 renderLine）
   storyMap(false);   // 這一段攤開的小地圖跟著收（ver -1397；只收自己開的那一次）
   kitchenOpen=false;   // 閘門的鎖：清場就一定解掉（不然下一段點不動，ver -956）
