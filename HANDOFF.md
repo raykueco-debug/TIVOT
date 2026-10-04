@@ -1,39 +1,38 @@
-# HANDOFF — 截至 `ver 2026.09.22-1985`（10-04 晚，Windows 3070 程式 session）
+# HANDOFF — 截至 `ver 2026.09.22-2000`（10-04 深夜，Windows 3070 程式 session）
 
 > ⚠⚠ **交接規則（Ray 10-04 定）**：
 > 1. 開工讀交接 → **逐項清點這一份的「完成／未完成」**，給 Ray 確認。
 > 2. 確認後**生成新交接、刪掉舊交接**（舊的走 `tools/recycle.sh`）—— 這個檔**只留一份現況**，不往下疊。
 > 3. 已完成、已定案、Ray 說移除的，**不要再抄進新的一份**。
-> 上一份：`_recycle/HANDOFF.md.20261004-220521`（git 歷史也有）。
+> 上一份：`_recycle/HANDOFF.md.20261004-233258`（git 歷史也有）。
 
 ## 現況
-- 分支 `claude/standing-art-blink-animation-ub7vw7` ＝ origin ＝ ver -1985（本機的 `main` 比較舊，不要從它開工）。
+- 分支 `claude/standing-art-blink-animation-ub7vw7` ＝ origin ＝ ver -2000（本機的 `main` 比較舊，不要從它開工）。
 - 本機 server：`py -X utf8 tools/devserver.py`（不加 `-X utf8` 中文主控台會直接退出）。
   3070 的三台（桌面 `C:\Users\User\Desktop\.claude\launch.json`）：**8200、8201 是 Ray 在用的，不要動**；8202 是程式 session 自己測試用。
   ⚠ 拉了遠端、而且 `tools/devserver.py` 有變，就重開自己那台 server（server 開機時載入規則）。
 - Python 工具一律 `py -3.11 -X utf8`；批次叫子程序時加 `PYTHONIOENCODING=utf-8`。
-  ⚠⚠ **Windows 上用 Python 產清單再餵給 bash 的 `while read`，先 `tr -d '\r'`**（ver -1985 踩過：每行尾巴的 `\r`
-  讓 224 張全部「找不到立繪」，工具本身沒問題）。
+  ⚠⚠ **Windows 上用 Python 產清單再餵給 bash 的 `while read`，先 `tr -d '\r'`**（每行尾巴的 `\r` 讓整批「找不到立繪」）。
+- ⚠⚠ **改視覺效果先做幾張給 Ray 看，看過才整批**（10-04 整批重跑兩次都白跑：我自己的「0 出框」指標跟 Ray 說的「眼框」不是同一件事）。
 - **眼睛特效標在「那一拍」**：腳本寫 `eyes:'half'|'tremble'|'trembleslow'|'tear'`，可疊 `['half','tear']`；解讀只有 `modules/eyefx.js` 的 `eyesOf`。
 - 不要 commit：`resources/_HANDOFF_ART_20260925.md`（美術的）；`tools/_blink_base/`（gitignore）；
   `resources/si/eyefx/cecilie_si_fluster_te_mask.webp`（排除清單上的，表上沒有、遊戲不讀）。
+- 另一個 session「美術背景重繪替換」會用跨 session 訊息交件；**Ray 本人點頭才接、才 commit**，而且只挑它的檔單獨 commit。
 
 ## 未完成
 
-**淚眼（v2 已全套上線，剩下的）**
-1. ⚠ **等 Ray 進遊戲抽看**（離線合成驗收過，遊戲裡的呼吸對齊／輪播還沒人看）：建議 Luna（front／seat_hand／taunt）、
-   `renna_si_lookaside`、`renna_si_stare`、`sorana_si_smile`、雙人圖 `sorana_si_carrynouvellescream`。
-2. ⚠ `tools/tear_reject.txt` 的 6 張**待修**（現在沒有淚眼，那一拍寫 `tear` 不會出光）：
-   - 擬合虹膜偏大、光比虹膜大一圈：`luna_si_seat_angry`／`luna_si_seat_n`／`npc_gunsmith_si_v2`／`corvin_si_think`
-   - 瞳孔極小、找不到虹膜：`npc_guildhunter_si_shock`／`cecilie_si_fluster`
-   修法未定（手給虹膜框？）。修好從清單拿掉、重跑 `py -3.11 tools/eye_fx.py <名> --tear-only`。
-3. 只抓到一隻眼的 30 張：多半本來就只看得到一隻（Luna 眼罩、側臉、`sorana_si_salute` 眨眼），
-   但 `nouvelle_si_lookdown`／`nouvelle_si_sleepy` 另一隻（半閉）沒抓到 —— 那隻眼沒光，安全的失敗模式，要不要補等 Ray。
-- 規格的唯一真相在 `tools/eye_fx.py`（tg／ta／`TEAR_MAX_H`）與 `modules/eyefx.js`（`TL`），不在這裡重抄。
-  扁眼規則（ver -1985，Ray 選 C）：大光高 ≤ 眼框半高 × 1.25，超過整顆等比縮、1:2 不變。
+**淚光（ver -1999 上線，Ray：「先用這版，不盡完美但至少能用了」）**
+- 規則的唯一真相在 `tools/eye_fx.py` 的 `fit_lights`（常數 `TL_*`）＋ `style.css` 的 `efWob`（只做水平）；引擎照表上的 `tl` 擺。
+  現行：眼頭眼尾線、大光（2:1 橢圓）中心在線上／小光（圓點）頂端貼線、ta≥0「._」ta<0「_.」、
+  大光寬 0.35 虹膜寬、黃框退 20%、離眼底半個閃光高、含形變外框整顆塞得進才放。
+1. 「不盡完美」—— Ray 之後可能再調。已知可以調的旋鈕：`TL_BIG_IW`（大小）、`TL_ALONG`（沿線離多遠）、`TL_EDGE`／`TL_BOT`（離框多遠）、左右順序（現在看 ta 的正負）。
+   ⚠ 試過不行的：偵測最暗那一塊當瞳孔（會抓到睫毛線、眼角線）；排除「碰到眼框的暗塊」（瞳孔本來就貼上眼瞼，全部被排除）；
+     虹膜中心當瞳孔中心（一半偏掉）。眼頭眼尾線是目前最穩的基準。
+2. 30 隻眼只放得下一顆（眼睛太細）；`tools/tear_reject.txt` 6 張待修（現在沒有淚光）。
+3. 驗收工具在 scratchpad（不入版控）：離線合成、最壞形變外框 vs 黃框；要再做可照 `fit_lights` 的幾何重寫一支。
 
-**米夏／羅賽爾廢城主祭壇（-1957～-1984）**
-- ❓ 稿上的 `se_march` 專案裡沒有這支，用 `se_troops`（行軍聲）頂著（Mac -1985 插圖那一段）；Ray 若有專用檔，換 `town.js` 那一拍的 `amb` 就好。
+**米夏／羅賽爾廢城主祭壇**
+- ❓ 稿上的 `se_march` 專案裡沒有這支，用 `se_troops`（行軍聲）頂著；Ray 若有專用檔，換 `town.js` 那一拍的 `amb` 就好。
 - 主祭壇那一段**最後「自動出航、從廢城起飛」還沒親眼確認**。
 
 **眨眼／眼睛**
@@ -61,5 +60,6 @@
 惡棍六人敵卡、冒險者裝與安雅重畫、賽西莉 fluster、按鈕避開動態島、聖徒系列敵卡、米夏隨從、`_TO_CODE_20260922.md`、
 雪都教堂大小寫、阿瑞尼斯台詞差分、廢城祭壇 `_lit`、眨眼修正（賽西莉／露娜眼罩／柯文與 decode／族長／米夏 11 張半閉／closeopen 與 nemo bye）、
 索拉娜 battlecry 兩鍵對調、背景雷同修正 9 組、米夏敵卡（劈落／NI／語音 20 支／BR 首末發／Havoc BGM）、空中戰預設 EpicBattle、
-主祭壇劇本與兩場戰鬥、主角空白框可寫、**淚眼 v2 整批重算（-1985：356 張上線、分割 3070 已齊）**。
-主祭壇點亮版 `dunmor_altar_lit`、親衛隊正式版 `man_misha_guards`（-1998 美術交件）、主祭壇插圖 037_mishamarch（行軍聲期間）與 038_mishasting（刺穿，米夏那句在插圖期間講、`mishaattack` 不再需要）。
+主祭壇劇本與兩場戰鬥、主角空白框可寫、淚眼 v2 整批重算（分割 3070 已齊）、
+主祭壇點亮版 `dunmor_altar_lit`、親衛隊正式版 `man_misha_guards`（-1998）、主祭壇插圖 037_mishamarch／038_mishasting、
+**淚光改版（-1999：眼頭眼尾線＋水平形變，356 張 0 失敗 0 出框）**。
