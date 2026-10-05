@@ -955,7 +955,7 @@ const DM_ALTAR_MAIN = [
   ren('talkserious','只是從送出第一份報告起，聖王廳就積極得可怕，簡直就像……'),
   ren('pause','早就知道安雅小姐的能力一樣。'),
   nou('surprise','欸？那為什麼科爾文副團長……'),
-  ren('think','他不可能承認吧。一旦確認了謝索洛夫王女的身份，就必須把人交給帝國。'),
+  ren('think','他不可能承認吧。一旦確認了謝索洛夫王女的身份，就必須把人交給帝國不是嗎？'),
   any('silent',''),
   ren('talkserious','下一步會給出什麼指示，我也不敢說，'),
   ren('ask','所以，在事情變得無法回頭之前，我還是想確認一下安雅小姐的想法。'),
@@ -968,17 +968,17 @@ const DM_ALTAR_MAIN = [
   sor('smirk','嘴上說著這不行那不行，到最後出謀畫策的都是妳。'),
   ren('blush','……'),
   ren('blushangry','我、我的事不重要啦，重點是安雅小姐怎麼想！'),
-  any('curious',''),
-  any('talk','……'),
+  Object.assign(any('curious',''), { eyes:'tear' }),
+  Object.assign(any('talk','……'), { eyes:'tear' }),
   /* 行軍聲（ver -1985，Ray：「安：大家……其實、我——　Se_march」「插圖 037_mishamarch　Se_march 續播」
      「諾：什麼時候……！　Se_march 停」）：稿上的 `se_march` 專案裡沒有這支，用 `se_troops`
      （米夏上一場撤收同一支行軍聲）當循環環境音 —— 安雅這一拍起播、經過插圖、諾薇兒那一拍淡出。 */
-  any('talkshy','大家……其實、我——', { amb:'se_troops' }),
+  Object.assign(any('talkshy','大家……其實、我——', { amb:'se_troops' }), { eyes:'tear' }),
   { speaker:'NARRATION', text:'', cg:'037_mishamarch', cgNoTime:true, cgPan:'up', auto:2600 },   // 插圖：米夏的隊伍（下往上平移，Ray -2000）
   { speaker:'NARRATION', text:'', cg:null, auto:200 },
   sor('guard','！！', { se:'se_drawknife' }),
   nou('shock2','什麼時候……！', { ambStop:1 }),                                       // 行軍聲停（淡出）
-  ren('intense2','被包圍了嗎……'),
+  ren('intense2','被埋伏了嗎……'),
   any('terrify','米夏！'),
   /* 【SE】上膛聲此起彼落（同米夏上一場那一組） */
   mis('frontopen','已經由不得妳任性了。現在就跟我走。', { se:DM_RELOADS }),
@@ -986,7 +986,7 @@ const DM_ALTAR_MAIN = [
   sor('guardtalk','看不出來她不願意嗎？虧你還是做哥哥的！'),
   mis('talk','正因為是哥哥，所以才看不下去。'),
   mis('talk','妳要被騙到什麼時候？'),
-  any('talk','我……'),
+  Object.assign(any('talk','我……'), { eyes:'tear' }),
   mis('frownopen','這些傢伙只是在利用妳的惡夢之力，解放因果鎖而已！'),
   nou('furious','我們是為了鎮壓禍魘——'),
   mis('closeopen','愚昧。'),
@@ -1000,7 +1000,7 @@ const DM_ALTAR_MAIN = [
   nou('shock2','！'),
   ren('talkserious','只要她還有利用價值，我就能用聖王廳的立場保護她。'),
   ren('shout','即使是……不知道要從誰的手上保護她！'),
-  nou('happy','蕾娜小姐……'),
+  Object.assign(nou('happy','蕾娜小姐……'), { eyes:'tear' }),
   mis('closeopen','無恥之輩，多言無用。'),
   mis('frontgrit','拿人。'),
   { battle:'dm_misha_guards' },                                    // 護衛戰
@@ -7530,6 +7530,8 @@ export const TOWNS = {
            ⚠ 那一段原本借的是 `Belisar_Exterior`（古堡外觀），所以「裡面有燈光！」
              說得通；現在這一格是**窄谷**。台詞沒有改（那是 Ray 的稿），
              但**如果讀起來不對，要換的是台詞不是背景** —— 跟他確認過再動。
+         ✔ ver -2011：dawn／dusk／night 早在 -1486 就交齊（「平原古道 20 張到齊」），這五格已改回基底名、拿掉 `noTime`。
+           以下是當時暫接的紀錄。
          ⚠⚠⚠ **五張新圖目前只有 `_day`**（`Plains_Cairn`／`Scree`／`Deadwood`／
            `Windrock`／`Gorge`），所以這五格的 `bg` **暫時直接寫到帶尾綴的檔名
            ＋ `noTime:true`**，不是寫基底名。理由：
@@ -7544,15 +7546,15 @@ export const TOWNS = {
              —— 忘了改的症狀是「走一整天天色都不會變」，不會壞但看得出來。 */
       /* 石塚群：一片矮石堆（古代路標堆），路在此分成左右兩條 —— 抉擇點③。
          ⚠ 荒蕪梯度的轉折點（工單 §荒蕪梯度）：它原本是全線最綠的一張，已重畫。 */
-      cairn:  { bg:'plains_cairn_day', noTime:true, name:'平原古道　石塚群',
+      cairn:  { bg:'plains_cairn', name:'平原古道　石塚群',
         exits:{ up:'deadwood', right:'well', left:'sea' } },
       /* 碎石坡：碎石鋪成的緩坡，路沿坡往上。 */
-      scree:  { bg:'plains_scree_day', noTime:true, name:'平原古道　碎石坡',
+      scree:  { bg:'plains_scree', name:'平原古道　碎石坡',
         exits:{ up:'windrock', down:'sea' } },
       /* 枯木林：一小片枯死的樹幹，路從中間穿過。 */
       /* ⚠ 死路（ver -1461）：它的圖是「路從中間穿過」—— 走進來看得到路往前延伸，
          但那一段已經斷了。**少接只是「那邊沒路」，可以接受；多接才是說謊**（憲法 §6.5.4.3）。 */
-      deadwood:{ bg:'plains_deadwood_day', noTime:true, name:'平原古道　枯木林',
+      deadwood:{ bg:'plains_deadwood', name:'平原古道　枯木林',
         exits:{ back:'cairn' } },
       /* 風蝕岩：被風蝕成蕈狀的孤岩，兩條路在此匯合。
          ⚠⚠ **`right:'deadwood'` 是 L 形的邊**（工單寫的是 `left`）：
@@ -7562,7 +7564,7 @@ export const TOWNS = {
            工單那一行假設的是另一種版面，**版面是這裡定的，所以以這裡為準**。
            ⚠ `script_lint.py` 會對 L 形邊發提醒 —— 那是預期中的，不要「修」掉。 */
       /* ⚠ 這一格的圖畫得出三條路，這一版只用了兩條（`up`／`down`）—— 同上，少接無妨。 */
-      windrock:{ bg:'plains_windrock_day', noTime:true, name:'平原古道　風蝕岩',
+      windrock:{ bg:'plains_windrock', name:'平原古道　風蝕岩',
         exits:{ up:'gorge', down:'scree' } },
       /* 狹窄溪谷：兩側岩壁夾著一條路，谷底一道細流 —— **倒數最後一格**（Ray 指定）。
          ⚠ ver -1447 由 `ravine`（借貝利薩爾外觀圖）換成這一格，見上面那一段的說明。
@@ -7592,7 +7594,7 @@ export const TOWNS = {
            ⚠ 它掛在 `portrait` 上不是掛在 line 上，所以這一拍不用 `ren()` 那個縮寫。
          ⚠ 這一格是 `rest`（安全區），而 `actDue` 排在 `restActDue` 前面，
            所以這一段會先演；何況這一趟還沒打過架，安全區本來就不作動。 */
-      gorge:  { bg:'plains_gorge_day', noTime:true, name:'平原古道　狹窄溪谷',
+      gorge:  { bg:'plains_gorge', name:'平原古道　狹窄溪谷',
         exits:{ up:'ravine', down:'windrock' },
         acts:[ { flag:'ep_bel_gorge', need:'ep_day2', sides:{ RENNA:'R' }, lines:[
           nou('surprise','好窄喔，難怪不能騎馬來！'),
@@ -10312,7 +10314,7 @@ export const TOWNS = {
       draincliff:{ bg:'belisar_draincliff', name:'貝利薩爾遺址　排水崖口', exits:{ down:'dragonrace', left:'culvert' } },
       incense:   { bg:'belisar_chrismroom', name:'貝利薩爾遺址　聖油室', noTime:true, exits:{ up:'starroom', down:'trihall' } },
       bellroom:  { bg:'belisar_bellroom', name:'貝利薩爾遺址　鐘室', noTime:true, exits:{ up:'muralwalk', right:'mirrorway' } },
-      drywell:   { bg:'belisar_drywell', name:'貝利薩爾遺址　枯井底', noTime:true, noWild:true, exits:{ right:'forge', down:'rooffall' } },
+      drywell:   { bg:'belisar_drywell', name:'貝利薩爾遺址　枯井底',   /* ver -2011：四差分接上（原圖改名 _day） */ noWild:true, exits:{ right:'forge', down:'rooffall' } },
       /* ⚠ 安全點（ver -1397，Ray：「旋梯井　獅階　武器工坊為安全點　不出怪」）——
          另外兩格（`stairwell`／`dragstair`）本來就寫了 `noWild`。 */
       forge:     { bg:'belisar_forge', name:'貝利薩爾遺址　兵器工坊', noTime:true, noWild:true, exits:{ up:'starroom', right:'trihall', down:'muralwalk', left:'drywell' } },
@@ -10355,7 +10357,7 @@ export const TOWNS = {
          ⚠ 這一格是**安全區**（`rest:true`）：帶著帳走進來會先結算 —— 那一段
            ⚠⚠ **ver -1574 起這一句作廢**：先結算後劇情已經是全域規則，
              這一格（與其餘每一個「安全區＋acts」的格子）都跟著改了。 */
-      foyer:     { bg:'belisar_foyer', name:'貝利薩爾遺址　前廳', noTime:true, noWild:true, rest:true, exits:{ up:'stephall', down:'entrance' },
+      foyer:     { bg:'belisar_foyer', name:'貝利薩爾遺址　前廳',   /* ver -2011：四差分接上（原圖改名 _day） */ noWild:true, rest:true, exits:{ up:'stephall', down:'entrance' },
         /* ══⚠⚠ **初入前廳**（ver -1434，Ray 交稿）══ `ep_bel_enter` 那一段的 `goto`
            就是這一格，所以白天走進古城的那一次抵達必定演到它。
            ⚠ 安雅與諾薇兒那兩拍**只有立繪沒有台詞**（稿上就是「安：lookup／諾：shock」）
