@@ -943,6 +943,8 @@ export function onGiveupBtn(){
  * ========================================================================== */
 let _inspTypeTimer=null;
 let _inspFollowTimer=null;   // 亂入第二句的排程（ver -838）
+let _followNow=null;         // 亂入還沒演時＝立刻演的那一支（「繼續」先叫她出來，ver -2010）；演了就清
+let _followAsap=false;       // 評價框還沒出來就按了「繼續」＝框一出來就接亂入（ver -2010）
 let _resultAutoTimer=null;   // 結算/戰敗畫面自動回首頁計時
 /* opts.noInspector＝這一頁**不出監察官**（ver -358，Ray 指定教學結算不要她）。
    ⚠ 不要用「傳 isLose」來偷渡：那會連按鈕文案與 BGM 分支一起改掉。 */
@@ -1009,7 +1011,9 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   const nameEl=$('inspectorName');
   const lineEl=$('inspectorLine');
   clearTimeout(_inspTypeTimer);
-  clearTimeout(_inspFollowTimer);   // 亂入的第二句（ver -838）：重進這一頁要收乾淨
+  clearTimeout(_inspFollowTimer); _followNow=null; _followAsap=false;   // 亂入的第二句（ver -838）：重進這一頁要收乾淨
+  /* 框還沒出來前按「繼續」：先記著，框一出來就接亂入（不是直接走掉，ver -2010） */
+  if(spk && spk.follow) _followNow = ()=>{ _followAsap=true; };
   bubble.classList.remove('show');
   /* ⚠ 補救留下的 inline 可見性要清掉（ver -1128）：不清的話**下一頁**一進來
      那個框就已經亮著、而且裝著上一場的字。 */
@@ -1133,7 +1137,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
         const f = spk.follow;
         /* 先把亂入那張圖抓來解碼（換場那一刻才載會閃白）。 */
         if(f.portrait){ const wi=new Image(); wi.src=f.portrait; }
-        _inspFollowTimer = setTimeout(()=>{
+        const playFollow = ()=>{
           /* ══ 水平抽卡（ver -839，Ray：「索拉娜亂入用水平抽卡特效」）══
              舊立繪往**右**抽走 → 換圖換名 → 新的一張從**左**滑入 —— §6.5「同側換人＝
              抽牌輪轉」的語彙，這裡是同一個 img 的兩段動畫。
@@ -1143,7 +1147,6 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
           let swapped=false;
           const swap=()=>{
             if(swapped) return; swapped=true;
-            if(state.resultMode==='tutorial-leaving') return;   // 已按「繼續」離場：不再換人（ver -2009）
             if(f.portrait){ portrait.src = f.portrait; portrait.style.display='block'; }
             if(f.name) nameEl.textContent = f.name;
             /* 她那一句**打完**才放行戰利品（ver -961；-1128 改走打字機自己的回呼——
@@ -1162,7 +1165,10 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
             out.onfinish=swap;
             setTimeout(swap, 400);   // 保險：onfinish 沒到也要換（swap 冪等）
           }catch(_){ swap(); }
-        }, 2000 + (f.delayMs!=null ? f.delayMs : 900));
+        };
+        /* 「繼續」先叫她出來（ver -2010）：排程與立刻演是同一支，誰先到誰演、另一個取消。 */
+        _followNow = ()=>{ clearTimeout(_inspFollowTimer); _followNow=null; playFollow(); };
+        _inspFollowTimer = setTimeout(_followNow, _followAsap ? 0 : 2000 + (f.delayMs!=null ? f.delayMs : 900));
       }
     }, Math.max(sweepDone, 1100));
   }
@@ -1539,10 +1545,9 @@ export function onRematchBtn(){
   }
   /* 劇情插入戰：「繼續」→ 先彈拾得（同教學），再把場子交還劇情/城鎮。 */
   if(state.resultMode==='script-continue'){
-    /* ══ 按「繼續」＝看完了：還沒演的亂入整段收掉，不再插一拍（ver -2009，Ray：
-       「索菈娜亂入評價按繼續會先出亂入，再按一次才離開」）══ 打字機與亂入的排程一起停，押制解除。 */
-    clearTimeout(_inspFollowTimer); _inspFollowTimer=null;
-    clearTimeout(_inspTypeTimer); _lootHold=false;
+    /* ══ 有亂入還沒演 → 這一按先把她叫出來，再按一次才走（ver -2010，Ray：
+       「索菈娜亂入評價按繼續會先出亂入，再按一次才離開」）══ */
+    if(_followNow){ const f=_followNow; f(); return; }
     if(_lootPending){ popLootOnce(); return; }
     state.resultMode='tutorial-leaving';        // 借用「離場中」防連點（同一個狀態機）
     SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
