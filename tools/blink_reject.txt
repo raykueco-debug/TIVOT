@@ -154,3 +154,6 @@ nouvelle_si_desperate  # 不適用：瀏海蓋眼（分割把牙齒當成眼睛�
 npc_ss_loti_sad  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸齒（10-03 Ray：先不眨，之後另想辦法）
 misha_si_closeopen  # 不適用：Ray 10-04「不需要做眨眼」
 nemo_si_bye  # 不適用：Ray 10-04「不用眨眼」
+
+# ── 待修F：底圖換過、要重新分割 ──
+npc_guildcounter_si_northport  # 待修F：底圖換過（雜湊 4e1c4da6），補丁會錯位；等有 .venv-face 的機器重跑 blink_build 後從這裡拿掉（10-05）
