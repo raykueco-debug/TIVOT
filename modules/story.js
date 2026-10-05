@@ -387,7 +387,7 @@ function edRender(){
   }else if(edTab==='ins'){
     const sps=edSpeakers();
     if(!edIns.speaker) edIns.speaker = who && sps.some(x=>x.id===who) ? who : 'NARRATION';
-    const art=artOf(edIns.speaker), ks=art ? Object.keys(art.expr||{}) : [];
+    const art=artOf(edIns.speaker), ks=art ? abcSort(Object.keys(art.expr||{})) : [];
     body='<div class="ed-row"><button data-w="before" class="'+(edIns.where==='before'?'on':'')+i18nT('">插在這一拍前</button>')
        +'<button data-w="after" class="'+(edIns.where==='after'?'on':'')+i18nT('">插在這一拍後</button></div>')
        +i18nT('<div class="ed-row"><span>說話者</span><select data-sp>')+sps.map(x=>'<option value="'+x.id+'"'+(x.id===edIns.speaker?' selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select></div>'
@@ -549,7 +549,7 @@ function tuneRender(){
    /* 對話中換差分（ver -1827，Ray：「對話中要可以選擇更換立繪，不是只有移動縮放」）：改的是設定這張的那一拍，
       寫進腳本檔（`beatChangeAt`，同右鍵）。工作室模式上面已經有選角兩列，不重複。 */
    +(studioOn ? '' : (()=>{ const art=artOf(c.id), b=beatOf[c.id];
-        const ks=Object.keys((art&&art.expr)||{});
+        const ks=abcSort(Object.keys((art&&art.expr)||{}));
         return i18nT('<div class="tn-row"><span>差分</span><select data-bx>')
           +ks.map(k=>'<option'+(k===slotExpr[tuneSide]?' selected':'')+'>'+k+'</option>').join('')+'</select></div>'
           +'<div class="tn-path">'+(b ? i18nT('改寫這一拍：「')+(b.line.text||i18nT('（無台詞）'))+i18nT('」') : i18nT('⚠ 這張是沿用前面的，換了不會寫檔'))+'</div>'; })())
@@ -781,6 +781,10 @@ function tuneSave(cur){
    首頁「立繪」鈕 → 一般 → 這兩支：`tuneCatalog()` 給名單、`tuneStudio()` 開工作室（見下）。
    ⚠ 名單以**立繪**為單位（同一張 ART 只列一次，取第一個指到它的 speaker id）—— 正名前後兩個 id
      指同一張圖（OFFICER／RENNA），列兩次只會讓人以為是兩組取景。 */
+/* 編輯器的立繪／差分選單一律字母順序（ver -2008，Ray：「編輯器立繪選擇用字母順序排列」）。
+   ⚠ 只排**選單**；`ART[].expr` 的原始順序不動（別處還有照它走的東西）。 */
+const abcCmp = (a,b)=>String(a).localeCompare(String(b), 'en', { sensitivity:'base', numeric:true });
+const abcSort = list => list.slice().sort(abcCmp);
 export function tuneCatalog(){
   const seen={}, out=[];
   for(const id0 of Object.keys(SPEAKERS)){
@@ -788,9 +792,9 @@ export function tuneCatalog(){
     if(!a || !a.base || seen[k]) continue; seen[k]=1;
     /* 優先用與立繪同名的那個 id（`renna` → RENNA，不是正名前的 OFFICER「監察官」）。 */
     const up=String(k).toUpperCase(), id=(SPEAKERS[up] && SPEAKERS[up].art===k) ? up : id0;
-    out.push({ id, name:(nameOf(id)||id)+i18nT('（')+k+i18nT('）'), exprs:Object.keys(a.expr||{}) });
+    out.push({ id, key:String(k), name:(nameOf(id)||id)+i18nT('（')+k+i18nT('）'), exprs:abcSort(Object.keys(a.expr||{})) });
   }
-  return out;
+  return out.sort((x,y)=>abcCmp(x.key, y.key));   // 編輯器的立繪選單一律字母順序（ver -2008，Ray）
 }
 /* ══ 調整工作室（ver -1820，Ray：「立繪調整是用電腦進行…隨選隨上」「選擇角色，然後下一欄就可以下拉選擇差分」）══
    舞台開著但**不播任何劇本**：面板上兩列「左／右：角色 → 差分」下拉，選了就上台（`studioPut`），
@@ -3374,7 +3378,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2007';
+const KERB_V='?v=2008';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
