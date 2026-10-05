@@ -25,6 +25,64 @@
 - 學到的：「像爸爸」要**上傳父親的成品圖**並逐項寫出要繼承的骨架（瘦長臉、高顴骨、細長眼、濃眉、鷹勾鼻）；
   一繼承鬍子與神情就會連年紀一起繼承 → 再明寫「刮乾淨、無皺紋、臉頰不凹」拉回年輕。
 
+## 正式差分（10-05 晚，Ray：「依以上腳本製作三人立繪」—— 薇拉馮德莊園兩段稿）
+
+試作那三張＝基底（`front`）。每一張都要**真 alpha**（產圖時直接要透明；回來先看 `mode` 與角落 alpha）。
+交件：`resources/si/npc/<角色>_si_<鍵>.webp`，原 PNG 進 `resources/_originals/SI/NPC/`。
+⚠ 鍵名是美術擬的，程式端接 `speakers.js` 時可改。羅伯特在稿上寫作「羅貝爾特」。
+
+### ✔ 交件盤點（10-05 晚，Windows 美術 session）—— 茉莉 15／羅伯特 7／亞隆 9 **不欠**
+- 檔案：`resources/si/npc/{molly,robert,aaron}_si_<鍵>.webp`，全部真 alpha、1024×1536。
+- 原 PNG：`resources/_originals/SI/NPC/_vela_v2/`（gitignore，本機）；茉莉調眼色前的原檔在 `_vela_v2/_eye_before/`。
+- **產法**：每張差分都**附 front 原圖**、每人一個新對話（第一輪同串接力越畫越髒、茉莉的蕾絲高領逐張消失，已整批作廢）。
+- **後製**：
+  · 茉莉的虹膜用程式加藍（Ray 選 C：飽和 ×1.9、明度 ×1.2；只動虹膜，胸針不動；閉眼的 closedtalk／eyesmile 無變化）。
+  · 貼邊的那幾組整組**同一個係數**縮進畫布中心、四周留 14px（同角色的差分大小一致，取景值照量即可）。
+- ⚠ 稿的兩處更正（Ray）：**拔劍三句全是亞隆**（稿上後兩句誤標「羅」）⇒ 羅伯特**沒有** `draw`；
+  「睜一隻眼張嘴」＝**睜一隻眼閉一隻眼的裝傻**，不是俏皮眨眼 ⇒ 鍵名 `blindeye`（兩人都有）。
+- 茉莉 `gossip`／`whisper` 是**輕鬆**的八卦表情（Ray 指定），不是狡猾的笑。
+
+### ⚠ 程式端要接的（鐵律 11：美術不碰）
+1. `script/speakers.js` 新增三人（建議 id：`MOLLY`／`ROBERT`／`AARON`；稿上第一次出場茉莉是「？？？」）＋ `ART` 三組，
+   **每張量 `top/bot/fx`**（同角色差分已同一縮放，但姿勢不同的要各自量）。身高 cm 待 Ray 定。
+2. 教廷衛兵 `resources/si/npc/church_guard_si_{a..f}.webp`（六個不同的人、同一套制服：黑色立領長衣、腰間槍套轉輪手槍＋收鞘短軍刀；e＝深褐皮膚綠眼）。
+   用途（對話立繪／敵人卡）Ray 還沒定；帝都五場教廷衛士戰見 `resources/background/_capital_churchfight_worklist.md`。
+
+| 角色 | 鍵 | 稿上的標註 |
+|---|---|---|
+| 羅伯特 | `front` | （基底，試作那張去背） |
+| | `bow` | 閉眼行禮 |
+| | `sideeye` | 斜眼看旁邊 |
+| | `surprise` | 略驚訝 |
+| | `talk` | 一般說話 |
+| | `closedtalk` | 閉眼說話 |
+| | ~~`draw`~~ | ⛔ 不做（Ray 更正稿：拔劍三句都是亞隆，羅伯特不拔刀） |
+| | `blindeye` | 睜一隻眼張嘴（＝「睜一隻眼閉一隻眼」的裝傻，**不是俏皮眨眼**，Ray 更正） |
+| 茉莉 | `front` | （基底） |
+| | `talk` | 說話 無表情 臉略仰 |
+| | `superior` | 上位者的微笑 |
+| | `eyesmile` | 笑瞇眼微笑／瞇眼笑 |
+| | `serious` | 嚴肅說話 |
+| | `stern` | 嚴肅（不說話） |
+| | `closedtalk` | 閉眼說話 |
+| | `think` | 看 viewer 思考 |
+| | `surprise` | 嘴閉起 略驚訝 但冷靜／略訝問 嘴閉 |
+| | `ask` | 略訝問 |
+| | `lookdown` | 低頭思考（說話那一拍共用） |
+| | `softsmile` | 略柔軟微笑 |
+| | `order` | 手微前伸像在下指令說話 |
+| | `gossip` | 八卦遮嘴 |
+| | `whisper` | 八卦遮嘴微旁傾 像講悄悄話 |
+| 亞隆 | `front` | （基底；擋門那段的敵意用它） |
+| | `attention` | 待命 |
+| | `confused` | 高低眉困惑 |
+| | `angry` | 走向 viewer 怒吼 青筋 |
+| | `signal` | 使眼色 |
+| | `draw` | 拔劍 嚴肅（三句都是他：「妳這話…」「同為神的子民…」「馬上離去…」；稿上後兩句誤標「羅」，Ray 更正） |
+| | `armscross` | 高低眉 抱胸 |
+| | `closedsmile` | 閉眼微笑 |
+| | `blindeye` | 睜一隻眼張嘴（＝「睜一隻眼閉一隻眼」的裝傻，**不是俏皮眨眼**，Ray 更正） |
+
 ## 上傳三張
 - `reference/Molly.png`（茉莉 36 歲）
 - `reference/Roberto.png`（羅伯特 43 歲）

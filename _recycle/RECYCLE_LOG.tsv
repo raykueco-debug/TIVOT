@@ -1047,3 +1047,13 @@ when	from	to	reason
 20261005-172223	resources/si/npc/_trial/_aaron_v2_face.jpg	_recycle/resources/si/npc/_trial/_aaron_v2_face.jpg	試作比對用的拼圖，交件後不需要
 20261005-172223	resources/si/npc/_trial/_aaron_v3_face.jpg	_recycle/resources/si/npc/_trial/_aaron_v3_face.jpg	試作比對用的拼圖，交件後不需要
 20261005-172223	resources/si/npc/_trial/_aaron_v3_full.jpg	_recycle/resources/si/npc/_trial/_aaron_v3_full.jpg	試作比對用的拼圖，交件後不需要
+20261005-174721	resources/_originals/SI/NPC/_vela_wip	_recycle/resources/_originals/SI/NPC/_vela_wip	薇拉馮德差分第一輪下載順序錯位（頁面虛擬化），改用對話資料重抓
+20261005-174721	_tmp_dl	_recycle/_tmp_dl	薇拉馮德差分第一輪下載順序錯位（頁面虛擬化），改用對話資料重抓
+20261005-175219	resources/_originals/SI/NPC/_vela_wip/robert_si_draw.png	_recycle/resources/_originals/SI/NPC/_vela_wip/robert_si_draw.png	Ray：羅伯特從頭到尾沒拔刀（拔劍那兩拍是亞隆），不要這張
+20261005-175219	resources/_originals/SI/NPC/_vela_wip/_robert_draw_wink.jpg	_recycle/resources/_originals/SI/NPC/_vela_wip/_robert_draw_wink.jpg	Ray：羅伯特從頭到尾沒拔刀（拔劍那兩拍是亞隆），不要這張
+20261005-175219	resources/_originals/SI/NPC/_vela_wip/_rf.jpg	_recycle/resources/_originals/SI/NPC/_vela_wip/_rf.jpg	Ray：羅伯特從頭到尾沒拔刀（拔劍那兩拍是亞隆），不要這張
+20261005-175320	_recycle/resources/_originals/SI/NPC/_vela_wip/robert_si_draw.png	resources/_originals/SI/NPC/_vela_wip/robert_si_draw.png	restore
+20261005-175525	resources/_originals/SI/NPC/_vela_wip/robert_si_draw.png	_recycle/resources/_originals/SI/NPC/_vela_wip/robert_si_draw.png	Ray 更正稿：拔劍三句都是亞隆，羅伯特不拔刀
+20261005-175649	resources/_originals/SI/NPC/_vela_wip/aaron_si_draw.png	_recycle/resources/_originals/SI/NPC/_vela_wip/aaron_si_draw.png	亞隆 draw 黑手套版，重出白手套
+20261005-185232	resources/_originals/SI/NPC/_vela_v2/robert_si_wink.png	_recycle/resources/_originals/SI/NPC/_vela_v2/robert_si_wink.png	羅伯特俏皮眨眼版，改成睜一隻眼閉一隻眼（blindeye）
+20261005-191711	resources/_originals/SI/NPC/_vela_v2/church_guard_si_c.png	_recycle/resources/_originals/SI/NPC/_vela_v2/church_guard_si_c.png	衛兵 c 棋盤格假透明版，已換真 alpha
