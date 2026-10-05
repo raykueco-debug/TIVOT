@@ -1280,7 +1280,9 @@ function showLine(){
   if(el) el.style.zIndex='2';
   if(other) other.style.zIndex='1';
   if(el){ el._eyes = line.eyes || null; eyesBind(el); }       // 這一拍的眼睛（ver -1959）
-  if(other && other._eyes){ other._eyes = null; eyesBind(other); }
+  /* 另一位：半眨／瞳顫收掉，**淚眼留著**（ver -2006，Ray：「淚眼在人物不說話暗調時就會撤掉，應該維持」；同 story.js 的 heldTear） */
+  if(other && other._eyes){ const keep = eyefx.eyesOf(other._eyes).fx==='tear' ? 'tear' : null;
+    if(keep!==other._eyes){ other._eyes = keep; eyesBind(other); } }
   // 逐句表情差分（line.img＝ASSETS 鍵）：沒寫就回該角色的預設立繪。
   // ⚠ 直接換 src，不做淡入淡出——同一角色同一槽的表情切換，淡出會讓她整個人消失一拍。
   if(document.body.classList.contains('testmode')) beatPick.ensureEditBtn($('tutBubble'), tutEditLine);   // ✎（ver -1828）

@@ -598,7 +598,8 @@ function tuneRender(){
     if(beatEyesWho && beatEyesWho!==cur.id && ln.eyes){ tuneMsg=i18nT('這一拍的眼睛標在另一個人身上，先取消那邊'); return tuneRender(); }
     tuneMsg=i18nT('寫入中…'); tuneRender();
     edPost('__line', Object.assign({ op:'set', key:'eyes', value:val }, edLocate())).then(r=>{
-      if(r.ok){ if(val){ ln.eyes=val; beatEyesWho=cur.id; beatEyes=val; } else { delete ln.eyes; beatEyesWho=null; beatEyes=null; } blinkBind(tuneSide); }
+      if(r.ok){ if(val){ ln.eyes=val; beatEyesWho=cur.id; beatEyes=val; } else { delete ln.eyes; beatEyesWho=null; beatEyes=null; }
+                if(eyefx.eyesOf(val).fx==='tear') heldTear[cur.id]=true; else delete heldTear[cur.id]; blinkBind(tuneSide); }
       tuneMsg=(r.ok?i18nT('這一拍眼睛已寫入：'):i18nT('寫入失敗：'))+r.text; tuneRender();
     });
   }));
@@ -838,6 +839,11 @@ let beatFlipWho = null;   // 這一拍要水平翻轉的人（renderLine 設；�
 /* 這一拍的眼睛標記（ver -1959）：`eyes`（half／tremble／tear，見 modules/eyefx.js 的 eyesOf）套在誰身上。
    同 flip：只管這一拍，下一拍沒寫就回到平常。`studioEyes`＝工作室模式（沒有「這一拍」）的預覽值。 */
 let beatEyesWho = null, beatEyes = null;
+/* ══ 淚眼是「狀態」，不是「這一拍」（ver -2006，Ray：「淚眼在人物不說話暗調時就會撤掉，這不對，應該維持」）══
+   標了 tear 的人，換別人講話（她被壓暗）時淚光**照留**；要等**她自己的下一拍**才重新決定
+   （那一拍還寫 tear 就續、沒寫就收）。半眨與瞳顫照舊只管那一拍 —— 那是動作，淚是狀態。
+   擁有者：`renderLine`（她自己的拍）／`clearCast`（整段收場）／管理人改那一拍的眼睛。 */
+const heldTear = {};
 const studioEyes = { L:null, R:null };
 function layout(){
   tuneEnsure();
@@ -1076,7 +1082,9 @@ function blinkBind(side){
    ⚠ 不讀 speakers.js —— 特效是「這一拍」的事，不是這張表情的屬性（Ray）。 */
 function eyesAt(side){
   if(studioOn) return eyefx.eyesOf(studioEyes[side]);
-  return eyefx.eyesOf(beatEyesWho && slot[side]===beatEyesWho ? beatEyes : null);
+  const id=slot[side];
+  if(beatEyesWho && id===beatEyesWho) return eyefx.eyesOf(beatEyes);
+  return eyefx.eyesOf(id && heldTear[id] ? 'tear' : null);
 }
 function eyesRefresh(){
   for(const sd of ['L','R']){ const im=slotImg(sd); if(im && im.complete && im.naturalWidth && slot[sd]) blinkBind(sd); }
@@ -3366,7 +3374,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2005';
+const KERB_V='?v=2006';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4129,6 +4137,8 @@ function renderLine(){
   beatFlipWho = line.flip ? ((line.portrait && line.portrait.char) || line.speaker) : null;
   beatEyesWho = line.eyes ? ((line.portrait && line.portrait.char) || line.speaker) : null;
   beatEyes = line.eyes || null;
+  { const who=(line.portrait && line.portrait.char) || line.speaker;   // 她自己的這一拍才重新決定淚眼（見 heldTear）
+    if(who){ if(beatEyesWho===who && eyefx.eyesOf(beatEyes).fx==='tear') heldTear[who]=true; else delete heldTear[who]; } }
   eyesRefresh();   // 圖沒換的人也要換到這一拍的眼睛（換圖的人等 onload 那一刻自己綁）
   tuneEnsure();   // 管理人的 ✎／立繪鈕（ver -1828：沒有立繪的拍也要掛得上）
   /* ══⚠⚠ **換一拍就先停上一拍的打字機**（ver -1127）══
@@ -5726,6 +5736,7 @@ export function sceneFadeOn(){ const f=$('storyFade'); return !!(f && f.classLis
 
 export function clearCast(){
   beatFlipWho = null; beatEyesWho = null; beatEyes = null;
+  for(const k in heldTear) delete heldTear[k];   // 整段收場：淚眼一起收（見 heldTear）
   stopTyping();   // ver -1127：清場＝這一段結束，框裡不可以還有字在跑（同 renderLine）
   storyMap(false);   // 這一段攤開的小地圖跟著收（ver -1397；只收自己開的那一次）
   kitchenOpen=false;   // 閘門的鎖：清場就一定解掉（不然下一段點不動，ver -956）
