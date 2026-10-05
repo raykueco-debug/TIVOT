@@ -1077,7 +1077,7 @@ function mainGunDmgMul(){ return gunTuneMul() * charmDmgMul(); }
 /* ══ 普攻暴擊：率與加傷（ver -707）══ 兩處點擊分支（聖徒化／一般）**共用這兩支**
    （鐵律 7）—— 九階強化的「運之王」（率 +10%）與「王之運」（加傷 +20%）
    只加在這裡。 */
-function critRateAt(cc){ return CRIT_BASE_RATE + cc*CRIT_PER_COMBO + prog.bonus('critRate'); }
+function critRateAt(cc){ return CRIT_BASE_RATE + cc*CRIT_PER_COMBO + prog.bonus('critRate') + partner.installCritRate(); }   // 諾的聖徒化 +30%（ver -2019）
 function critDmgAt(cc){  return CRIT_DMG_BASE  + cc*CRIT_DMG_PER_COMBO + prog.bonus('critDmg'); }
 /* ver -707：普攻的永久強化＝九階裡的**吞噬者**（可多次，每次 +5%）。
    ⚠ -700 的線性等級已退役，舊存檔由 `progress.gunStars` 自動遷移成吞噬者的次數。 */

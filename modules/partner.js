@@ -114,6 +114,12 @@ export function storyPartnerKey(){
    `p && p.xxx`，所以被動（即死防禦／明晰之夢／獵手的直覺…）一律不發 ——
    那正是「沒有任何主被動技能」（§6.5.2 的 -681）。
    ⚠ `tryActive` 的 `noPartner` 是**另一件事**：那是「有人，但這一場不准用主動技」。 */
+/* 聖徒化期間的爆擊率加成（ver -2019）：卡上 `install.critRate`，沒寫＝0。只有 combat.critRateAt 在問。 */
+export function installCritRate(){
+  if(!state.saintMode) return 0;
+  const p = currentPartner();
+  return (p && p.install && p.install.critRate) || 0;
+}
 export function currentPartner(){
   if(state.pickedPartner===null) return null;
   return GAME_CONFIG.partners[state.pickedPartner] || GAME_CONFIG.partners[GAME_CONFIG.defaultPartner];
