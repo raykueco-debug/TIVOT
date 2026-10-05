@@ -48,7 +48,8 @@ function busOut(c){
      在它之後只有一顆總音量，切不開軌。所以每一軌各掛一顆 gain 接進 limiter，
      發聲端改連 `busIn(c, 軌)`。
    ⚠ context 會被 `unlock()` 重建（iOS）—— 節點跟著重建，所以用 `_layerCtx` 記住是哪一個。
-   ⚠ BGM 不走 Web Audio（它是 HTMLAudio），所以那一軌是在 `bgmTargetVol()` 乘進去的。
+   ⚠ BGM 不走這些軌節點（它是 HTMLAudio；iPhone 上另接一顆自己的增益，見 `bgmWire`），
+     所以那一軌是在 `bgmTargetVol()` 乘進去的。
    ⚠ 這一層是**玩家的偏好**，與 `config` 那份「每一支音檔的實測增益」是兩回事：
      那份負責把三層拉齊（§6.6），這一層負責讓玩家再調整。兩者相乘。 */
 const _layerVol = { bgm:1, se:1, vo:1 };
@@ -68,7 +69,7 @@ function applyLayer(layer){
   const g=_layerNode[layer]; if(g) try{ g.gain.value=layerGain(layer); }catch(e){}
   if(layer==='bgm'){
     const el=_bgmEl;
-    if(el && !el.paused && !el.__fade) el.volume = bgmTargetVol();
+    if(el && !el.paused && !el.__fade) setElVol(el, bgmTargetVol());
   }
 }
 function busIn(c, layer){
@@ -135,6 +136,8 @@ function idleBusy(ms){
 }
 function idleTry(){
   if(_idleOff || _idleLoops>0 || !_ctx) return;
+  /* BGM 接在這顆引擎上時（iOS，見 bgmWire）引擎一睡曲子就啞了 —— 播著就不睡，3 秒後再看一次。 */
+  if(_bgmWire && _bgmWire.ctx===_ctx && _bgmEl && !_bgmEl.paused){ idleBusy(0); return; }
   if(Date.now() < _idleBusyUntil){ idleBusy(0); return; }
   if(_ctx.state==='running'){ try{ _ctx.suspend(); _idleSusp = true; }catch(_){} }
 }
@@ -369,15 +372,73 @@ function bgmElem(){
   if(!_bgmEl){ _bgmEl = new Audio(); _bgmEl.loop = true; _bgmEl.muted = (_master<=0); }
   return _bgmEl;
 }
+
+/* ══⚠⚠⚠ **iPhone 上 BGM 的音量要走 Web Audio 的增益節點**（ver -2015，Ray：
+   「手機版的語音總是被音樂壓過，電腦版沒這問題」）══
+   病根：**iOS 的 HTMLAudio `volume` 是唯讀的（永遠 1）**。這一支所有寫 `el.volume` 的地方
+   —— 分層 80%、逐檔增益、玩家的音樂滑桿、語音閃避、淡入淡出 —— 在 iPhone 上**一個都沒生效**，
+   BGM 永遠全音量，而語音／音效走 Web Audio 照設定算 ⇒ 音樂蓋過語音。
+   飛行頁的循環音 -1809 就是同一個病、同一個解法（`makeLoop`，兩邊註解互指）。
+   ⇒ 偵測得到「volume 寫不進去」才把元素接進 AudioContext（`createMediaElementSource` →
+     GainNode → destination），音量一律改寫那顆節點。**桌機照舊寫 `volume`**（那裡本來就對，
+     也不必為了 BGM 讓 Web Audio 引擎一直醒著 —— -1817 的發熱）。
+   ⚠ 音量的讀寫只准走 `elVol`／`setElVol` 兩支（鐵律 8）：漏一處直接寫 `el.volume`，
+     那一處在 iPhone 上就是靜靜失效，沒有任何錯誤訊息。
+   ⚠ 一個元素一輩子只能 `createMediaElementSource` 一次，而且綁死在那一個 context ——
+     `unlock()` 重建 context（iOS 主畫面 App）時，舊元素的聲音就只會流進一個關掉的 context。
+     所以 context 換了就**換一顆元素**（同曲、同位置、同音量），不是重接。
+   ⚠ 接上之後引擎睡著＝曲子啞掉：`idleTry` 在 BGM 播著時不睡；`bgmPlay` 經過 `ctx()` 叫醒。
+   ⚠ 建不起 context 就什麼都不做 —— 退回現狀（iPhone 上全音量），不會比現在更糟。 */
+/* `?vollock=1`：桌機上強制走 iPhone 那一條（驗證用）。 */
+const VOL_LOCKED = /[?&]vollock=1/.test(location.search) || (()=>{ try{ const a=new Audio(); a.volume=0.5; return Math.abs(a.volume-0.5)>0.01; }catch(_){ return false; } })();
+let _bgmWire = null;    // {ctx, gain}：_bgmEl 目前接在哪一個 context 上
+function bgmWire(){
+  if(!VOL_LOCKED || !_bgmEl) return null;
+  const c = ctx(); if(!c) return null;
+  if(_bgmWire && _bgmWire.ctx === c) return _bgmWire.gain;
+  if(_bgmWire){
+    /* context 換了：換一顆元素，接在新的上面 */
+    const old = _bgmEl, n = new Audio();
+    n.loop = old.loop; n.muted = old.muted; n.__vol = old.__vol;
+    clearInterval(old.__fade); old.__fade = null;
+    const wasOn = !old.paused, t = old.currentTime || 0, s = old.getAttribute('src') || old.src;
+    try{ old.pause(); old.removeAttribute('src'); old.load(); }catch(_){}
+    if(s){ try{ n.src = s; n.currentTime = t; }catch(_){} }
+    _bgmEl = n;
+    if(wasOn){ try{ const p=n.play(); if(p&&p.catch) p.catch(()=>{}); }catch(_){} }
+  }
+  try{
+    const g = c.createGain();
+    g.gain.value = (_bgmEl.__vol!=null ? _bgmEl.__vol : 1);
+    c.createMediaElementSource(_bgmEl).connect(g);
+    g.connect(c.destination);
+    _bgmWire = { ctx:c, gain:g };
+    return g;
+  }catch(e){ console.warn('[audio] BGM 接不上 Web Audio，退回 HTMLAudio 音量（iPhone 上會是全音量）', e); _bgmWire = null; return null; }
+}
+function elVol(el){ return (VOL_LOCKED && el.__vol!=null) ? el.__vol : el.volume; }
+function setElVol(el, v){
+  v = Math.max(0, Math.min(1, v));
+  el.__vol = v;
+  if(!VOL_LOCKED){ el.volume = v; return; }
+  const g = (el === _bgmEl) ? bgmWire() : null;
+  if(g) try{ g.gain.value = v; }catch(_){}
+}
+/* 起播只有這一支：先接線（iPhone）、叫醒引擎，再 play()。回傳 play() 的 promise。 */
+function bgmPlay(){
+  bgmWire();
+  const el = _bgmEl; if(!el) return null;
+  return el.play();
+}
 function bgmFade(el, to, ms, done){
   if(!el) return;
   clearInterval(el.__fade);
-  const from = el.volume;
+  const from = elVol(el);
   const steps = Math.max(1, Math.round(ms/40));
   let i = 0;
   el.__fade = setInterval(()=>{
     i++;
-    el.volume = Math.max(0, Math.min(1, from + (to-from)*(i/steps)));
+    setElVol(el, from + (to-from)*(i/steps));
     if(i>=steps){ clearInterval(el.__fade); el.__fade=null; if(done) done(); }
   }, 40);
 }
@@ -405,6 +466,7 @@ export const SFX = {
         try{ c.close(); }catch(e){}
         _ctx = null; _needRebuild = false;
         c = ctx();   // 手勢內重建：iOS 直接進 running
+        if(_bgmWire) bgmWire();   // BGM 接在舊的 context 上 → 換一顆元素接到新的（見 bgmWire）
       }
       if(c){
         try{
@@ -436,7 +498,7 @@ export const SFX = {
        ⚠ 切歌中不補播不會漏掉：`switchTo` 自己會 `play()`，而那時元素已經解鎖過了。 */
     const el = _bgmEl;
     if(el && el.paused && el.src && _bgmSrc && !_bgmSwitching && _bgmPlaying===_bgmSrc){
-      el.volume=bgmTargetVol(); const p=el.play(); if(p&&p.catch) p.catch(()=>{});
+      setElVol(el, bgmTargetVol()); const p=bgmPlay(); if(p&&p.catch) p.catch(()=>{});
     }
   },
 
@@ -464,7 +526,7 @@ export const SFX = {
     if(part!=='sfx' && off!==_bgmOff){ _bgmOff=off;
       const el=_bgmEl;
       if(off){ try{ if(el && !el.paused) el.pause(); }catch(_){} }
-      else{ try{ if(el && _bgmPlaying){ el.volume=bgmTargetVol(); el.play().catch(()=>{}); } }catch(_){} } }
+      else{ try{ if(el && _bgmPlaying){ setElVol(el, bgmTargetVol()); const p=bgmPlay(); if(p&&p.catch) p.catch(()=>{}); } }catch(_){} } }
     if(part!=='bgm' && off!==_sfxOff){ _sfxOff=off;
       if(off){ try{ if(_ctx && _ctx.state==='running') _ctx.suspend(); }catch(_){} }
       else{ try{ if(_ctx) _ctx.resume(); }catch(_){} } }
@@ -510,6 +572,7 @@ export const SFX = {
          armOnly、淡入，只有一份。 */
     const apply = (url)=>{
       if(_bgmSrc !== src) return;        // 已被後續切歌取代（那一支自己會管旗標）
+      const el = bgmElem();              // 現讀：iPhone 換 context 時元素會被換掉（bgmWire）
       _bgmSwitching = false;
       /* ⚠ 抓不到 blob 就**退回直接串流**（`el.src = src`）：整首下載失敗（離線、
          快取被清、CORS）不該讓整段變安靜 —— 串流播得動就播，播不動也只是同樣安靜。
@@ -517,11 +580,11 @@ export const SFX = {
       const u = url || src;
       try{ el.src = u; el.currentTime = 0; }catch(e){}
       _bgmPlaying = src;
-      el.volume = (fadeIn > 0 ? 0 : bgmTargetVol());
+      setElVol(el, fadeIn > 0 ? 0 : bgmTargetVol());
       // 只上膛：src 已就位、留在 paused，等 unlock() 於手勢內同步開火。
       // 若手勢**已經**發生過（玩家點得比 blob 快），就不必再憋 —— 直接開火。
-      if(opts.armOnly && !_unlocked){ el.volume = bgmTargetVol(); return; }
-      const p = el.play();
+      if(opts.armOnly && !_unlocked){ setElVol(el, bgmTargetVol()); return; }
+      const p = bgmPlay();
       if(p && p.catch) p.catch(()=>{});   // 尚未解鎖 → 等 unlock 於手勢補播
       if(fadeIn > 0) bgmFade(el, bgmTargetVol(), fadeIn);
     };
@@ -533,7 +596,7 @@ export const SFX = {
       ensureBlob(src).then(url=>apply(url));
     };
     const afterOut = ()=>{ if(delay>0) _bgmTimer=setTimeout(switchTo, delay); else switchTo(); };
-    if(!el.paused && el.src && el.volume>0.001) bgmFade(el, 0, fadeOut, afterOut);
+    if(!el.paused && el.src && elVol(el)>0.001) bgmFade(el, 0, fadeOut, afterOut);
     else afterOut();
   },
   /* 暫時把 BGM 讓開（ver -499，Ray：「播旅店睡覺音樂時原 bgm 要淡出，播完再淡入」）：
@@ -692,6 +755,11 @@ export const SFX = {
 
   /* 主音量是不是 0（＝靜音）。HTMLAudio 的退路要問它（iOS 上 volume 無效，只能不播／muted）。 */
   isSilent(){ return _master<=0; },
+  /* BGM 現在的音量真相（驗證 iPhone 那條路用）：locked＝volume 寫不進去、wired＝接在 Web Audio 上。 */
+  bgmDebug(){ const el=_bgmEl; return { locked:VOL_LOCKED, wired:!!(_bgmWire && _bgmWire.ctx===_ctx),
+    gain:_bgmWire ? +_bgmWire.gain.gain.value.toFixed(3) : null, vol:el ? +elVol(el).toFixed(3) : null,
+    elVolume:el ? el.volume : null, paused:el ? el.paused : null, song:_bgmPlaying, ctx:_ctx ? _ctx.state : null,
+    target:+bgmTargetVol().toFixed(3) }; },
 
   setMasterVolume(v){
     _master = Math.max(0, Math.min(1, v==null ? 1 : v));
@@ -701,7 +769,7 @@ export const SFX = {
        Web Audio 那條（音效）靠 `_busMaster` 本來就有效。 */
     if(_bgmEl) _bgmEl.muted = (_master<=0);
     const el=_bgmEl;
-    if(el && !el.paused && !el.__fade) el.volume = bgmTargetVol();   // 播放中即時套用（淡入淡出中不干預）
+    if(el && !el.paused && !el.__fade) setElVol(el, bgmTargetVol());   // 播放中即時套用（淡入淡出中不干預）
   },
 
   // 合成「重擊感」：完防／格擋用。短促低頻衝擊 + 高頻噪音瞬態（打擊質感）。可重疊。
@@ -820,7 +888,7 @@ document.addEventListener('visibilitychange', ()=>{
     const el=_bgmEl;
     if(_hiddenBgmResume && el && _bgmPlaying && !_bgmOff){
       try{ clearInterval(el.__fade); el.__fade=null;
-           el.volume=bgmTargetVol(); el.play().catch(()=>{}); }catch(_){}
+           setElVol(el, bgmTargetVol()); const p=bgmPlay(); if(p&&p.catch) p.catch(()=>{}); }catch(_){}
     }
     _hiddenBgmResume = false;
   }
