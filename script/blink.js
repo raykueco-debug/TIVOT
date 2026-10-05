@@ -165,6 +165,7 @@ export const BLINK = {
   "npc_grocer_si_v4": {"half":[454,103,59,49],"closed":[454,103,59,50],"base":"bb9cdac4"},
   "npc_grocer_si_v5": {"half":[593,94,122,89],"closed":[593,94,123,90],"base":"1681e441"},
   "npc_grocery_si_northport": {"half":[488,107,116,74],"closed":[489,107,115,73],"base":"b1eb3c5f"},
+  "npc_guildcounter_si_northport": {"half":[449,110,93,68],"closed":[450,110,91,68],"base":"4e1c4da6"},
   "npc_guildcounter_si_v1": {"half":[431,85,105,53],"closed":[431,85,105,53],"base":"48859c25"},
   "npc_guildcounter_si_v3": {"half":[392,111,129,87],"closed":[392,111,129,87],"base":"64c4ed2a"},
   "npc_gunsmith_si_v1": {"half":[520,106,101,57],"closed":[520,106,102,56],"base":"e2785009"},

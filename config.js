@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2013';
+export const VERSION = 'ver 2026.09.22-2014';
 
 export const GAME_CONFIG = {
 
@@ -5929,8 +5929,8 @@ export const ASSET_VER = {
   'npc_grocery_si_northport_closed': '268e0e69',
   'npc_grocery_si_northport_half': 'a5c105b9',
   'npc_guildcounter_si_northport': '70fc48d6',
-  'npc_guildcounter_si_northport_closed': '2920c6bf',
-  'npc_guildcounter_si_northport_half': 'f2ff48be',
+  'npc_guildcounter_si_northport_closed': 'f3fba7d1',
+  'npc_guildcounter_si_northport_half': 'faf6eedb',
   'npc_guildcounter_si_northport_te_g0': '66ba009c',
   'npc_guildcounter_si_northport_te_g1': '7a899798',
   'npc_guildcounter_si_northport_te_g2': 'de54dd64',
