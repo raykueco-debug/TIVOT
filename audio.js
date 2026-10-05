@@ -379,7 +379,7 @@ function bgmElem(){
    —— 分層 80%、逐檔增益、玩家的音樂滑桿、語音閃避、淡入淡出 —— 在 iPhone 上**一個都沒生效**，
    BGM 永遠全音量，而語音／音效走 Web Audio 照設定算 ⇒ 音樂蓋過語音。
    飛行頁的循環音 -1809 就是同一個病、同一個解法（`makeLoop`，兩邊註解互指）。
-   ⇒ 偵測得到「volume 寫不進去」才把元素接進 AudioContext（`createMediaElementSource` →
+   ⇒ iOS（或偵測得到「volume 寫不進去」）才把元素接進 AudioContext（`createMediaElementSource` →
      GainNode → destination），音量一律改寫那顆節點。**桌機照舊寫 `volume`**（那裡本來就對，
      也不必為了 BGM 讓 Web Audio 引擎一直醒著 —— -1817 的發熱）。
    ⚠ 音量的讀寫只准走 `elVol`／`setElVol` 兩支（鐵律 8）：漏一處直接寫 `el.volume`，
@@ -389,8 +389,14 @@ function bgmElem(){
      所以 context 換了就**換一顆元素**（同曲、同位置、同音量），不是重接。
    ⚠ 接上之後引擎睡著＝曲子啞掉：`idleTry` 在 BGM 播著時不睡；`bgmPlay` 經過 `ctx()` 叫醒。
    ⚠ 建不起 context 就什麼都不做 —— 退回現狀（iPhone 上全音量），不會比現在更糟。 */
-/* `?vollock=1`：桌機上強制走 iPhone 那一條（驗證用）。 */
-const VOL_LOCKED = /[?&]vollock=1/.test(location.search) || (()=>{ try{ const a=new Audio(); a.volume=0.5; return Math.abs(a.volume-0.5)>0.01; }catch(_){ return false; } })();
+/* ⚠⚠ **不能靠「寫進去再讀回來」偵測**（ver -2017，Ray 的 iPhone 實測 HUD：`lock×`）——
+   新的 iOS 會把寫進去的值照樣讀回來，但**聲音完全不跟著變**（廢城那首目標 0.086，實際放 1）。
+   所以 iOS／iPadOS 一律接線（iPad 會偽裝成 Mac：MacIntel ＋ 多點觸控），其他平台才看讀回值。
+   `?vollock=1`：桌機上強制走這一條（驗證用）。 */
+const IS_IOS = (()=>{ try{ const n=navigator; return /iPad|iPhone|iPod/.test(n.userAgent||'')
+  || (n.platform==='MacIntel' && n.maxTouchPoints>1); }catch(_){ return false; } })();
+const VOL_LOCKED = /[?&]vollock=1/.test(location.search) || IS_IOS
+  || (()=>{ try{ const a=new Audio(); a.volume=0.5; return Math.abs(a.volume-0.5)>0.01; }catch(_){ return false; } })();
 let _bgmWire = null;    // {ctx, gain}：_bgmEl 目前接在哪一個 context 上
 function bgmWire(){
   if(!VOL_LOCKED || !_bgmEl) return null;
