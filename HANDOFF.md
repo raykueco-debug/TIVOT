@@ -1,4 +1,4 @@
-# HANDOFF — 截至 `ver 2026.09.22-2011`（10-05，Mac 程式 session）
+# HANDOFF — 截至 `ver 2026.09.22-2012`（10-05，Mac 程式 session）
 
 > ⚠⚠ **交接規則（Ray 10-04 定）**：
 > 1. 開工讀交接 → **逐項清點這一份的「完成／未完成」**，給 Ray 確認。
@@ -7,7 +7,8 @@
 > 上一份：`_recycle/HANDOFF.md.20261005-114536`（git 歷史也有）。
 
 ## 現況
-- 分支 `claude/standing-art-blink-animation-ub7vw7` ＝ origin ＝ ver -2011（本機的 `main` 比較舊，不要從它開工）。
+- ⚠⚠ **只有一個分支：`main`**（10-05，Ray 定案）。`claude/standing-art-blink-animation-ub7vw7` 已刪 ——
+  兩個名字指同一份進度，漏推一邊就分岔（鐵律 7）。其他機器若還停在那個分支：`git checkout main && git pull`。
 - Windows 3070：server `py -X utf8 tools/devserver.py`；8200、8201 是 Ray 在用的，不要動；8202 給程式 session 測。
   Python 工具一律 `py -3.11 -X utf8`；批次叫子程序加 `PYTHONIOENCODING=utf-8`；餵 bash `while read` 先 `tr -d '\r'`。
 - **Mac**：`python3` 跑 lint／bust／bg_index 都行（jsc 內建）；**沒有 node**。
@@ -29,6 +30,7 @@
 | -2007 | **赤爪星**：連續十次開火的反擊，**只有斷 combo 才歸零**；蓄滿而夢境破碎沒用過＝留著，用掉後下一次反擊就回填 | 要先點亮那顆星 |
 | -2008 | 編輯器的立繪／差分選單改**字母順序**（插入拍的「說話者」沒排） | — |
 | -2010 | 索菈娜亂入那一頁：**第一下「繼續」先叫她出來，第二下才走**（-2009 做反了、已撤） | C／D 評價連按兩下 |
+| -2012 | **米夏：暴擊打穿劈落**（Ray：「米夏被爆擊的時候也可以打穿防禦」）—— 暴擊骰子改在 `tap` 開頭擲一次，槍火與傷害讀同一顆；點錯照舊劈落。8123 實測過 | 連打時偶爾冒暴擊字樣、真的扣血 |
 | -2011 | 背景差分接線：平原古道五格改吃四時段；貝利薩爾枯井底／前廳原圖改名 `_day` 接上四時段 | 夜裡走一次 |
 
 ## 背景差分盤點（-2011，362 個來源逐格模擬候選鏈＋逐字比對磁碟）
@@ -66,6 +68,7 @@
 12. 峽谷 `canyon` 的小地圖 `map:{img,spots}`（可抄 `resources/map/_minimap_worklist.md` 末段）。
 
 **等 Ray**
+- 古城（貝利薩爾）單張背景裡有室外天光、卻沒有時段差分的六張：階梯大廳 `stairhall`（前廳下一格）、中央大廳 `greathall`、兵器工坊 `forge`、星象室 `orrery`、王座廳 `thronehall`、聖物室 `relicroom` —— 要不要列美術工單、先做哪幾張（交件後程式端拿掉那幾格的 `noTime` ＋ `bust`）。
 - 被刪的 33 張圖：已放進 `_recycle/` 留底，要不要還原哪幾張。
 - 廢城 `hallcourt` 正門碎石只擋一半 —— 要不要重出（美術）。
 - `023_anyacottoncandy`／`024_nouvellesmile` 沒有腳本引用；`032_rennablush` 插圖還沒交。
