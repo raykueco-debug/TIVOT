@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2011';
+export const VERSION = 'ver 2026.09.22-2012';
 
 export const GAME_CONFIG = {
 
@@ -5498,9 +5498,7 @@ export const ASSET_VER = {
   'arrhenius_si_wrysmileopen': 'e7b05e04',
   'belisar_bellroom': '78d98957',
   'belisar_cages': 'ec515e6d',
-  'belisar_drywell_day': '91c5b4d1',
   'belisar_forge': '1e7cc774',
-  'belisar_foyer_day': 'ec72ffa4',
   'belisar_oldaltar': '6ddfe60d',
   'belisar_orrery': '4ebfe3ec',
   'belisar_ossuary': 'ebf11c9f',

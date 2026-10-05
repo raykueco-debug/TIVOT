@@ -639,7 +639,13 @@ function tap(num,cell,e){
   clockResume();                    // 盤面可點 → 碼表起算（冪等；overkill 時因 enemyHp<=0 不起算）
   SFX.unlock();                     // iOS：首次觸控解鎖音訊
   enemy.ejectShell(cell);           // 每次點擊都彈殼
-  gunHitOnEnemy(cell);              // 槍擊特效映射到敵人對應位置
+  /* ══ 暴擊打穿劈落（ver -2012，Ray：「米夏被爆擊的時候也可以打穿防禦」）══
+     暴擊的骰子**在這裡擲一次**，槍火（劈落刀光 or 正常槍火）與傷害（普攻那一支）都讀它 ——
+     以前骰子在傷害分支裡才擲，而槍火在這一行就畫了，兩邊無從一致（鐵律 7）。
+     ⚠ 只有「依序點中」那一發會真的用到它；點錯照舊被劈落（`pierce` 為 false）。 */
+  const critRoll = Math.random();
+  const critHit  = num===state.expect && critRoll < critRateAt(state.critCombo);
+  gunHitOnEnemy(cell, critHit);     // 槍擊特效映射到敵人對應位置
 
   // 聖徒化：依序點擊 16 格、受擊推進倒數槽（combat 於期間讓出主迴圈，交由 saint 驅動盤面游標）。
   if(state.saintMode){ saint.saintTap(num, cell); updateStatus(); return; }
@@ -703,7 +709,7 @@ function tap(num,cell,e){
     //   本擊先以「現值」擲骰再 +1（首擊＝base 暴擊率）；命中則跳紅字「暴擊」（交由 enemyDamage 的 isCrit 呈現）。
     let crit=false;
     const cc=state.critCombo;
-    if(Math.random() < critRateAt(cc)){
+    if(critRoll < critRateAt(cc)){   // 骰子是 tap 開頭那一顆（ver -2012：槍火要先知道會不會打穿劈落）
       crit=true; dmg*=(1 + critDmgAt(cc));
     }
     state.critCombo++;
@@ -911,7 +917,7 @@ function recordBoardTime(sec){
  *  打擊 / 傷害
  * ========================================================================== */
 // 槍擊命中敵人：從點到的那一格射一條火線過去，**火花就炸在火線的落點**（ver -1627）
-function gunHitOnEnemy(cell){
+function gunHitOnEnemy(cell, pierce){
   const fxTop=$('fxTop');
   const cr=cell.getBoundingClientRect();
   const top=$('top').getBoundingClientRect();
@@ -930,7 +936,7 @@ function gunHitOnEnemy(cell){
   const imp=enemy.enemyImpact(sx0, top.width, top.height);
   /* 劈落（ver -1957，米夏）：子彈打到那一點被銀色刀光擋下 —— 不噴槍火、不冒煙。
      ⚠ 條件與 `enemyDamage` 擋普攻那一條同一組（`parryNow`，鐵律 7）。 */
-  if(parryNow()){
+  if(!pierce && parryNow()){
     enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, imp.x, imp.y);
     enemy.spawnParry(imp.x, imp.y);
     return;
@@ -1448,6 +1454,8 @@ function applyEnemyMods(dmg, src){
   return Math.max(1, Math.round(dmg * Math.max(0, k)));
 }
 /* 劈落是否生效（ver -1957）：卡上 `parryBasic` ＋ 牠還活著 ＋ 不在聖徒化／惡夢化／破防窗口。
+   ⚠ **暴擊打穿劈落**（ver -2012）：那一條不在這裡判 —— 這一支回答「牠現在擋不擋」，
+     「這一發擋不擋得住」由呼叫端帶 `isCrit`／`pierce` 進來（`enemyDamage`／`gunHitOnEnemy`）。
    ⚠ 槍火那一邊（`gunHitOnEnemy`）與傷害這一邊（`enemyDamage`）都問這一支（鐵律 7）。 */
 function parryNow(){
   return state.enemyParry && state.enemyHp>0 && !state.saintMode && !state.niMode && !state.dualWield;
@@ -1457,7 +1465,7 @@ function enemyDamage(dmg,isCrit,silent,src){
      浮一個 GUARD。⚠ 連擊／破防值／清盤照常（`tap` 那一支在這之外記帳）——
      那是「打中了但被擋下」，不是「沒點到」；破防值照累積，BR 才開得出來。 */
   if((src||'basic')==='basic' && lsActive) lastStandTap();   // NI 期間每一發普攻都催它回血（ver -1964）
-  if((src||'basic')==='basic' && parryNow()){
+  if((src||'basic')==='basic' && !isCrit && parryNow()){   // 暴擊打穿（ver -2012）
     if(!silent) floatDmg('GUARD', (30+Math.random()*40)+'%', '35%', false, 'guardnum');
     return;
   }
