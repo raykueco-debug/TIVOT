@@ -904,7 +904,7 @@ const door = (text, extra) => Object.assign({ speaker:'DOORMAN_SS', text }, extr
      背景的 `bgWhen` 靠它換點亮版；**這一次當場**換圖走 `bg:` 那一拍（在感應的白光底下換）。
    ⚠⚠ 四組依「已點亮幾座」（`countOf`）**由多到少**排：旗是整段演完才插的，所以同一段裡數字不會變，
      只會對上其中一組。 */
-const DM_LIT = ['dunmor_lit_ossuary','dunmor_lit_cairn','dunmor_lit_kingsbarrow','dunmor_lit_brochtop'];
+const DM_LIT = ['dunmor_lit_ossuary','dunmor_lit_cairn','dunmor_lit_kingsbarrow','dunmor_lit_brochtop'];   // ⚠ progress.js 的 Stage 16 章節抄了一份，改一邊要改另一邊
 function dmLight(node){
   const sense = { speaker:'NARRATION', text:'', fx:'sense', auto:4400, noSkip:true };
   const lit   = { speaker:'NARRATION', text:'', bg:'dunmor_'+node+'_lit', auto:1500 };

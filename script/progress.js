@@ -1436,6 +1436,21 @@ const BA_CHAPTERS = [
             'ss_raid_go','ss_lodge_seen','ss_lodge_done','ss_avenue_done','ss_carriage_done',
             'ss_forecourt_done','ss_hall_done','ss_raid_done' ],
     enter:'town', town:'santasofia', node:'inn' },
+  /* ══ Stage 16（ver -2004，Ray：「stage 16 章加入章節選擇」）══
+     起點＝**羅賽爾廢城・主祭壇**（`DM_ALTAR_MAIN` 第一拍 `stage:16`，-2001 定的）：
+     進圖／南壘門（娜塔莉幻影）／積石塚的呼喚／四座小祭壇全部演完 —— 一跳進主祭壇那一格就開演。
+     ⚠ `dm_altar_done` **不給**（那就是這一章的內容）；`dm_altar_first`（還沒點滿就先撞進來那一段）給，免得撞到。 */
+  { id:'stage16', name:'Stage 16', sub:i18nT('羅賽爾廢城：四座小祭壇點滿 → 主祭壇'),
+    stage:16, clockHour:10, named:true, aff:A_AFF,
+    flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb',
+            's14_flight_talk','ss_arrive','ss_cityhall','ss_4pm','ss_inn_merge',
+            'ss_slum_anya','ss_slum_nou','ss_slum_sor','ss_anya_after','ss_nou_after','ss_sor_resolve',
+            'ss_raid_go','ss_lodge_seen','ss_lodge_done','ss_avenue_done','ss_carriage_done',
+            'ss_forecourt_done','ss_hall_done','ss_raid_done','ss_raid_home','ss_depart',
+            'mapcard_dunmor','dm_arrive','dm_gate_done','dm_cairn_call','dm_altar_first',
+            /* 四座小祭壇（＝town.js 的 `DM_LIT`，改一邊要改另一邊） */
+            'dunmor_lit_ossuary','dunmor_lit_cairn','dunmor_lit_kingsbarrow','dunmor_lit_brochtop' ],
+    enter:'town', town:'dunmor', node:'altar' },
 ];
 /* 插在 Stage 9 之後，選單才是 9 → 10-A…12-A → 10-B…12-B → 13 → 14 的順序。 */
 CHAPTERS.splice(CHAPTERS.findIndex(c=>c.id==='stage9')+1, 0, ...A_CHAPTERS);
