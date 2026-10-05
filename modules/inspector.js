@@ -1143,6 +1143,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
           let swapped=false;
           const swap=()=>{
             if(swapped) return; swapped=true;
+            if(state.resultMode==='tutorial-leaving') return;   // 已按「繼續」離場：不再換人（ver -2009）
             if(f.portrait){ portrait.src = f.portrait; portrait.style.display='block'; }
             if(f.name) nameEl.textContent = f.name;
             /* 她那一句**打完**才放行戰利品（ver -961；-1128 改走打字機自己的回呼——
@@ -1538,6 +1539,10 @@ export function onRematchBtn(){
   }
   /* 劇情插入戰：「繼續」→ 先彈拾得（同教學），再把場子交還劇情/城鎮。 */
   if(state.resultMode==='script-continue'){
+    /* ══ 按「繼續」＝看完了：還沒演的亂入整段收掉，不再插一拍（ver -2009，Ray：
+       「索菈娜亂入評價按繼續會先出亂入，再按一次才離開」）══ 打字機與亂入的排程一起停，押制解除。 */
+    clearTimeout(_inspFollowTimer); _inspFollowTimer=null;
+    clearTimeout(_inspTypeTimer); _lootHold=false;
     if(_lootPending){ popLootOnce(); return; }
     state.resultMode='tutorial-leaving';        // 借用「離場中」防連點（同一個狀態機）
     SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
