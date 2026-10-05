@@ -640,17 +640,20 @@ export function onEnemyCleared(){
    ⚠ 第三次那一發**即使效果還在跑也照演**：那一拍的重點是「夢魘再臨」這張 CI，
      擋掉玩家就看不到自己把惡夢化賺回來了。 */
 /* ══ 安雅「赤爪星」：連續十次反擊成功（不限圈色）→ 回填主動技（ver -1778，Ray）══
-   `fired` 由 defense 回報（那一次有沒有真的開火）。沒開火＝中斷；整發挨打由 combat.enemyAttack 歸零。
+   `fired` 由 defense 回報（那一次有沒有真的開火）；沒開火的那一次**不算數也不中斷**。
+   ⚠⚠ **中斷只有一種：斷 combo**（ver -2007，Ray：「赤爪星目前沒有發動，發動條件是連續十次反擊，
+     中間未被斷 combo」）—— 點錯／逾時／受擊，與 `state.combo=0` 同一處歸零（combat／saint）。
+     -1778 原本「沒開火就歸零」＋「到 10 次槍沒空就把計數丟掉」，兩條都會讓它看起來永遠不發動。
+   ⚠ 滿 10 次但主動技還在膛裡（沒用過）＝**留著蓄滿的計數**，用掉之後下一次反擊就回填。
    ⚠ 回填的是**主動技**（`partnerActiveUsed`，一局一次那一格），立即生效（同索菈娜海宣星），不是 Install。 */
 export function onCounterResult(fired){
   const who = state.pickedPartner;
   const need = prog.girlBonus(who,'counterReloadActive');
-  if(!(need>0)) return;
-  if(!fired){ state.counterStreak = 0; return; }
-  state.counterStreak = (state.counterStreak||0) + 1;
+  if(!(need>0) || !fired) return;
+  state.counterStreak = Math.min(need, (state.counterStreak||0) + 1);
   if(state.counterStreak < need) return;
+  if(!state.partnerActiveUsed) return;          // 空槍才回填（同 -896 的規矩）；計數蓄滿留著
   state.counterStreak = 0;
-  if(!state.partnerActiveUsed) return;          // 空槍才回填（同 -896 的規矩）
   state.partnerActiveUsed = false;
   const act = (currentPartner()||{}).active || {};
   api.floatDmg((act.name||'')+' RELOAD','50%','30%',true);

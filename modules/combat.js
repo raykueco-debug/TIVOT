@@ -736,7 +736,7 @@ function tap(num,cell,e){
     state.boardClean=false;
     state.wrongTaps++;                    // 命中率分母（按錯格）
     cell.classList.add('wrong'); setTimeout(()=>cell.classList.remove('wrong'),300);
-    state.combo=0;
+    state.combo=0; state.counterStreak=0;  // 斷 combo＝赤爪星的連續反擊中斷（ver -2007）
     /* 共鬥（ver -803）：點錯不受擊（enemyAttack 的 coopMode 分支不扣血），但**縮短
        無敵窗** —— 亂點會提早結束，點得準才維持滿窗口（Ray：技術仍有意義）。 */
     if(state.coopMode){
@@ -1185,7 +1185,7 @@ function enemyAttack(dmg, kind, saintAmt){
          `startSaintReactTimer` 自己歸零）—— 那是玩家的失誤，不是免傷管得到的事。
        ⚠ 惡夢化（`niMode`）**不吃這一條**：那一段的血條是她自己的代價，
          Ray 沒說要改，不要順手一起給。 */
-  if(!state.saintMode) state.combo=0;
+  if(!state.saintMode){ state.combo=0; state.counterStreak=0; }  // 斷 combo＝赤爪星的連續反擊中斷（ver -2007）
   if(state.over) return;
   /* ══ 玩家失誤／受擊 → 敵人回血（ver -1858，Ray 的羅賽爾稿：「慈愛的殘像：玩家點錯／受擊／超時受攻擊時，
      敵回血 10%」）══ 卡上的 `healOnFault`（enemy.setEnemy 搬進 state）。守在這個唯一入口，四條扣血路都吃到（鐵律 8）。
@@ -1244,7 +1244,7 @@ function enemyAttack(dmg, kind, saintAmt){
      ⚠ 放在聖徒化分支**之前**：聖徒化期間挨打不掉血，但那一擊照樣把倒數槽推短，
        仍是失誤。 */
   if(!_scriptedAtk){
-    if(kind==='assault'){ state.penAssault++; state.counterStreak=0; }   // 赤爪星：整發挨打＝連續反擊中斷（ver -1778）
+    if(kind==='assault'){ state.penAssault++; }   // 赤爪星的中斷改由「斷 combo」統一處理（ver -2007，見上面那一行）
     else if(kind==='block') state.penBlock++;
     else if(kind==='delay') state.penDelay++;
     // 'wrong' 由 state.wrongTaps 記（點錯那一支自己的計數），不重複記
@@ -2173,7 +2173,7 @@ function startIntervalTimer(){
     if(state.intervalDeadline && Date.now()>=state.intervalDeadline){
       // 教學：第二盤在首次防禦成功前不套延時懲罰（只重置期限，手感不受壓）
       if(tutorial.delayPenaltySuppressed()){ resetIntervalDeadline(); return; }
-      state.combo=0;
+      state.combo=0; state.counterStreak=0;  // 斷 combo＝赤爪星的連續反擊中斷（ver -2007）
       // 延時懲罰傷害＝一般怪基礎 × 該怪 DELAY_PENALTY_SCALE（Boss=0.5）；時限已由 effIntervalLimit 減
       if(state.enemyHp>0){
         enemyAttack(tutAtkDmg(delayDamage()), 'delay');

@@ -860,7 +860,7 @@ export function nightmareTap(num, cell){
          而惡夢化本來就是「一路失血」的段落。份量與聖徒化的一次受擊相同。 */
     SFX.wrong();
     cell.classList.add('wrong'); setTimeout(()=>cell.classList.remove('wrong'),300);
-    state.combo=0;
+    state.combo=0; state.counterStreak=0;  // 斷 combo＝赤爪星的連續反擊中斷（ver -2007）
     api.floatDmg(L.battle.miss,'50%','44%',true);
     /* ⚠ 點錯也走**秒**（ver -691）：`playerMax/DIVISOR` 是**聖徒化那條槽**的刻度，
        在惡夢化這條槽上代表的秒數完全不同（同 `nightmareHit` 的理由）。 */
@@ -930,7 +930,7 @@ export function saintTap(num, cell){
     // 點錯（掃格失誤）＝一次「受擊」：統一推進 +1 秒
     SFX.wrong();
     cell.classList.add('wrong'); setTimeout(()=>cell.classList.remove('wrong'),300);
-    state.combo=0;
+    state.combo=0; state.counterStreak=0;  // 斷 combo＝赤爪星的連續反擊中斷（ver -2007）
     api.floatDmg(L.battle.miss,'50%','44%',true);
     saintAdvance(state.playerMax/SAINT_ADVANCE_DIVISOR);        // 推進；推滿→OBE
     if(state.saintMode) startSaintReactTimer();                // 未推滿（仍在聖徒化）→ 重設反應時限
@@ -946,7 +946,7 @@ function startSaintReactTimer(){
   state.saintReactTimer = setTimeout(function tick(){
     if(state.over||!state.saintMode||state.cutinPlaying){ return; }
     SFX.wrong();
-    state.combo=0;
+    state.combo=0; state.counterStreak=0;  // 斷 combo＝赤爪星的連續反擊中斷（ver -2007）
     api.floatDmg(L.battle.tooSlowEn,'50%','40%',true);
     saintAdvance(state.playerMax/SAINT_ADVANCE_DIVISOR);        // 推進；推滿→OBE
     if(!state.saintMode) return;                               // 已因推滿進 OBE → 停
