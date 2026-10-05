@@ -64,11 +64,14 @@
 10. 之後：飛行頁 canvas 眨眼、手機實機量發熱、路線 B 髮梢擺動。
 11. ⏸ 呼吸與微晃（路線 A，-1934）：commit 在 3060 本機、沒推上來，等 Ray 看效果。
 
+**古城室外天光六張（美術進行中，10-05 開單）**
+- 工單：`resources/background/_belisar_skylight_worklist.md`（階梯大廳／中央大廳／兵器工坊／星象室／王座廳／聖物室，補四時段）。
+  ⚠ 程式端交件後要接：拿掉那幾格的 `noTime` ＋ `bg_index` ＋ `bust --bump`（工單第五節）。
+
 **程式端要接的**
 12. 峽谷 `canyon` 的小地圖 `map:{img,spots}`（可抄 `resources/map/_minimap_worklist.md` 末段）。
 
 **等 Ray**
-- 古城（貝利薩爾）單張背景裡有室外天光、卻沒有時段差分的六張：階梯大廳 `stairhall`（前廳下一格）、中央大廳 `greathall`、兵器工坊 `forge`、星象室 `orrery`、王座廳 `thronehall`、聖物室 `relicroom` —— 要不要列美術工單、先做哪幾張（交件後程式端拿掉那幾格的 `noTime` ＋ `bust`）。
 - 被刪的 33 張圖：已放進 `_recycle/` 留底，要不要還原哪幾張。
 - 廢城 `hallcourt` 正門碎石只擋一半 —— 要不要重出（美術）。
 - `023_anyacottoncandy`／`024_nouvellesmile` 沒有腳本引用；`032_rennablush` 插圖還沒交。
