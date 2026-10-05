@@ -483,7 +483,8 @@ export const ENEMIES = {
            `allowLose`＋`onLose`（接後面的劇情），不然會掉進一般的 Game Over。 */
       lastStand:{ sec:15, tapSpeed:0.5, killLead:1, killMs:650, delayMul:0.5,   // delayMul：NI 期間延時 ×0.5（ver -1966）
                   ci:'ci_misha_ni', label:'NIGHTMARE INSTALL', voice:'vo_misha_ni',
-                  image:'enemy_misha_ni', killFx:'misha_attack', killVoice:'vo_misha_finish' },   // finish＝劇情殺那一刀（ver -1967）
+                  image:'enemy_misha_ni', killFx:'misha_attack', killVoice:'vo_misha_finish',   // finish＝劇情殺那一刀（ver -1967）
+                  killSe:'se_slash' },   // killSe＝那一刀的斬擊音（ver -2019，Ray：「最後一擊加入 se_slash」）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2],
       ult:{ on:1, hp:20, count:4, atk:20, gap:0.4, cd:4 },   // 照尼莫

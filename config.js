@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2018';
+export const VERSION = 'ver 2026.09.22-2019';
 
 export const GAME_CONFIG = {
 
@@ -4844,6 +4844,7 @@ export const ASSETS = {
 
   // 敵人攻擊音（依攻擊種類 kind：ult 大絕命中/不完美防禦格擋、delay 太慢、wrong 按錯）。
   em_slash:          "resources/audio/se/se_enemy_slash.m4a",    // 聖徒：大絕/不完美防禦/按錯
+  se_slash:          "resources/audio/se/se_slash.m4a?v=1f6783d5",   // 米夏突刺（劇情 038）＋NI 劇情殺那一刀（ver -2019 由 story 的 SE_FILES 搬來：戰鬥那一邊只查 ASSETS）
   em_smack:          "resources/audio/se/se_enemy_smack.m4a",    // 聖徒：延時懲罰
   em_shot:           "resources/audio/se/se_enemy_shot.m4a",     // Boss：延時懲罰
   em_revolver:       "resources/audio/se/se_enemy_revolver.m4a", // Boss：大絕/不完美防禦（左輪）

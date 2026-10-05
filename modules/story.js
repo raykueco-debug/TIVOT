@@ -2718,7 +2718,7 @@ const SE_FILES=[
   /* ver -1715（Ray 交件 + 交辦）：瀑布的**循環版**（11.8 秒、頭尾無靜音，給節點的 `amb` 用；
      舊的 `se_waterfall` 4.9 秒那一支留給一次性的 `se:` 用）、拔刀／收刀（墓門米夏那一段）。
      原 mp3 在 `se/_raw/`。 */
-  'se_waterfall_loop.m4a', 'se_sworddraw.m4a', 'se_swordcease.m4a', 'se_slash.m4a?v=1f6783d5',
+  'se_waterfall_loop.m4a', 'se_sworddraw.m4a', 'se_swordcease.m4a',   // se_slash 搬去 config 的 ASSETS（ver -2019：戰鬥也要用，asset() 才查得到）
   'se_coins.m4a', 'se_drawknife.m4a',   // ver -1769：Stage 14 聖索菲亞（Ray 交 mp3，轉 AAC 96k，原檔進 se/_raw/）
 ];
 /* 別名：腳本裡慣用的短名 → 實際檔名（去副檔名）。 */
@@ -3378,7 +3378,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2018';
+const KERB_V='?v=2019';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

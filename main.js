@@ -287,7 +287,7 @@ function releaseToHome(){
      而且真正要在第 0 毫秒響的是門自己那三支，那幾支由劇情層的 `loadScene`／
      `preloadStory` 早就載好了。開場的第一發主動攻擊排在 1~2 秒後（`openAssault`）。
    ⚠ 沒載完也不會消音：`playSrc` 查不到 buffer 會自己 `load()`（§6.6 既有行為）。 */
-const AUDIO_KEY = /(^|[a-z])(se|sfx|vo|voice|bgm|cue)([A-Z_]|$)|Voice$|^entrance/;
+const AUDIO_KEY = /(^|[a-z])(se|sfx|vo|voice|bgm|cue)([A-Z_]|$)|Voice$|Se$|^entrance/;   // Se$：killSe／hitSe（ver -2019）
 /* ⚠ ver -1967：**音訊欄位底下的陣列／物件，裡面的字串全部算**（`inAudio`）——
    以前只認「值是字串」的那一層，於是 `hitVoice:[…]`（尼莫）、`parryVoice:[…]`、
    `hpVoice:{50:…}` 整串沒被預載（第一次播要現抓，慢網就晚一拍或不響）。

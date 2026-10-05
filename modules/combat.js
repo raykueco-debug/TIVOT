@@ -3033,6 +3033,7 @@ function lastStandKill(){
   defense.resetEnemyTimers();
   enemy.playFx(L.killFx||'misha_attack');
   enemy.playCardVoice(L.killVoice);
+  if(L.killSe && asset(L.killSe)) SFX.play(asset(L.killSe), sfxGain(L.killSe));   // 斬擊音（ver -2019）
   setTimeout(()=>{
     if(state.over) return;
     screenShake();
