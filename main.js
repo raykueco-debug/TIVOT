@@ -2917,6 +2917,10 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
         +'\ntimer '+tms.length+(tms.length?i18nT('：\n  ')+tms.slice(0,8).join('\n  '):'')
         +i18nT('\n♪ 播 ')+med.length+i18nT('/載 ')+medAll.length+'  src♪'+(P.srcLive|0)+'  ctx:'+ctxSt
         +(med.length?'\n♪ '+med.join('\n♪ '):'')
+        /* BGM 音量的真相（ver -2016）：iPhone 上 `v` 永遠是 1，實際音量在增益節點（audio.js 的 bgmWire）。
+           lock＝volume 寫不進去、wire＝接上了、g＝增益節點上的值、t＝應該要是多少。 */
+        +(()=>{ try{ const d=SFX.bgmDebug(); return '\n♪BGM lock'+(d.locked?'●':'×')+' wire'+(d.wired?'●':'×')
+              +' g'+(d.gain==null?'—':d.gain)+' t'+d.target+(d.paused?' ⏸':''); }catch(_){ return ''; } })()
         /* ══ 搭檔與星（ver -1017，Ray：「終焉星效果沒發動啊」）══
            那一整串排查全卡在同一個答不出來的問題：**那顆星現在到底亮著沒？**
            等級是靠 EXP 算的、而管理人模式的手動點亮是「點第 i 顆＝等級設成 i」
