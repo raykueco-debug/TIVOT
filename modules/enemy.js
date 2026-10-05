@@ -960,13 +960,23 @@ function rotVoice(field){
   let list = en[field]; if(!list) return;
   if(!Array.isArray(list)) list=[list];
   if(!list.length) return;
-  if(rotKey !== state.currentEnemyKey){ rotKey = state.currentEnemyKey; for(const k in rotIdx) delete rotIdx[k]; }
-  const rate = (en[field+'Rate'] != null) ? en[field+'Rate'] : 1;
-  if(Math.random() >= rate) return;
+  if(rotKey !== state.currentEnemyKey){ rotKey = state.currentEnemyKey; for(const k in rotIdx) delete rotIdx[k]; for(const k in rotLeft) delete rotLeft[k]; }
+  /* `<欄位>Every:[min,max]` ＝每 min~max 次才出一句（間隔逐次重擲；ver -2005，Ray：「米夏防禦語音太密，防 7~9 次出一次」）。
+     語音閘擋掉時計數不歸零 —— 下一次再試。有寫它就不看 `Rate`。 */
+  const every = en[field+'Every'];
+  if(every){
+    if(rotLeft[field] == null) rotLeft[field] = rollEvery(every);   // 這隻怪第一次：先擲間隔
+    if(--rotLeft[field] > 0) return;
+  } else {
+    const rate = (en[field+'Rate'] != null) ? en[field+'Rate'] : 1;
+    if(Math.random() >= rate) return;
+  }
   const i = rotIdx[field] || 0;
-  if(playEntranceSe(list[i % list.length])) rotIdx[field] = i + 1;
+  if(playEntranceSe(list[i % list.length])){ rotIdx[field] = i + 1; if(every) rotLeft[field] = rollEvery(every); }
 }
-/* 劈落（卡上 `parryVoice`；Ray：「防禦語音改成 50% 機率出」→ `parryVoiceRate:0.5`）。 */
+const rotLeft = {};
+function rollEvery(e){ const [a,b] = Array.isArray(e) ? e : [e,e]; return a + Math.floor(Math.random()*(b-a+1)); }
+/* 劈落（卡上 `parryVoice`；頻率走 `parryVoiceEvery`，ver -2005 起取代 `parryVoiceRate`）。 */
 function playParryVoice(){ rotVoice('parryVoice'); }
 /* 玩家**有效攻擊**打中牠（卡上 `damageVoice`，Ray：「countered 為被玩家有效攻擊，tag 改成 damage」）。
    ⚠ 「有效」＝真的扣到血；被劈落擋掉的普攻不算（那一下 combat 根本不叫這一支）。 */

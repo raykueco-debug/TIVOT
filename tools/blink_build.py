@@ -29,7 +29,9 @@ SEGD = os.path.join(ROOT, 'tools', '_blink_seg')
 DST = os.path.join(SI, 'blink')
 TABLE = os.path.join(ROOT, 'script', 'blink.js')
 REJECT = os.path.join(ROOT, 'tools', 'blink_reject.txt')
-VENV_FACE = os.path.join(ROOT, '.venv-face', 'Scripts', 'python.exe')
+VENV_FACE = next((p for p in (os.path.join(ROOT, '.venv-face', 'Scripts', 'python.exe'),   # Windows
+                              os.path.join(ROOT, '.venv-face', 'bin', 'python'))         # macOS
+                  if os.path.exists(p)), os.path.join(ROOT, '.venv-face', 'Scripts', 'python.exe'))
 WORKERS = max(1, min(8, (os.cpu_count() or 4) - 2))
 
 

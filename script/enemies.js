@@ -470,7 +470,7 @@ export const ENEMIES = {
       parryBasic:1,   // 劈落：普攻整發無效、改演銀色刀光＋浮字 GUARD（ver -1957）
       /* 語音（ver -1964／-1967 第二批）：一串＝輪播；全部走敵人的語音閘（播放中不疊下一句）。 */
       parryVoice:['vo_misha_guard1','vo_misha_guard2','vo_misha_guard3','vo_misha_guard4','vo_misha_guard5'],   // 普攻被劈落
-      parryVoiceRate:0.5,   // 劈落語音的出聲機率（ver -1966，Ray：「50% 機率出，免得太密集」）
+      parryVoiceEvery:[7,9],   // 劈落 7~9 次才出一句（ver -2005，Ray：「米夏防禦語音太密，防 7~9 次出一次」；取代 -1966 的 50% 機率）
       assaultVoice:['vo_misha_attack','vo_misha_attack2','vo_misha_attack3','vo_misha_attack4',
                     'vo_misha_attack5','vo_misha_attack6','vo_misha_attack7'],               // 攻擊打中時
       damageVoice:['vo_misha_damage1','vo_misha_damage2','vo_misha_damage3','vo_misha_damage4'],   // 被玩家有效攻擊（真的扣到血）
