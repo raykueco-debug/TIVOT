@@ -1,10 +1,10 @@
-# HANDOFF — 截至 `ver 2026.09.22-2012`（10-05，Mac 程式 session）
+# HANDOFF — 截至 `ver 2026.09.22-2012`（10-05 晚，Mac 程式 session 收工，換機器）
 
 > ⚠⚠ **交接規則（Ray 10-04 定）**：
 > 1. 開工讀交接 → **逐項清點這一份的「完成／未完成」**，給 Ray 確認。
 > 2. 確認後**生成新交接、刪掉舊交接**（舊的走 `tools/recycle.sh`）—— 這個檔**只留一份現況**，不往下疊。
 > 3. 已完成、已定案、Ray 說移除的，**不要再抄進新的一份**。
-> 上一份：`_recycle/HANDOFF.md.20261005-114536`（git 歷史也有）。
+> 上一份：`_recycle/HANDOFF.md`（git 歷史也有）。
 
 ## 現況
 - ⚠⚠ **只有一個分支：`main`**（10-05，Ray 定案）。`claude/standing-art-blink-animation-ub7vw7` 已刪 ——
@@ -12,6 +12,10 @@
 - Windows 3070：server `py -X utf8 tools/devserver.py`；8200、8201 是 Ray 在用的，不要動；8202 給程式 session 測。
   Python 工具一律 `py -3.11 -X utf8`；批次叫子程序加 `PYTHONIOENCODING=utf-8`；餵 bash `while read` 先 `tr -d '\r'`。
 - **Mac**：`python3` 跑 lint／bust／bg_index 都行（jsc 內建）；**沒有 node**。
+  ⚠ Mac 推 GitHub 用的是 fine-grained token（存在鑰匙圈，**2027-01-03 到期**，只授權 TIVOT、Contents 讀寫）。
+  到期或換機器推不動（403／could not read Username）：重建一支，**Permissions 要按 Add permissions 加 Contents: Read and write**
+  —— 新版頁面不會自動列出 Contents，不加就只有讀權限（10-05 踩過）。
+  ⚠ Mac 這份工作區 10-05 之前缺了 565 支檔（`resources/SI`／`enemy`／`map`／`tools`）＋ 83 支只差換行碼 —— 已 stash 後 pull、stash 已丟，現在乾淨。
   ⚠ Mac 的 `.venv-face` 是空的、也沒有 `_ext/Anime-Face-Segmentation` ⇒ **眨眼／淚光的分割只能在 Windows 3070 跑**
   （-2005 已讓 `blink_build.py` 認得 Mac 的 venv 路徑，裝好就能用）。
 - ⚠⚠ **改視覺效果先做幾張給 Ray 看，看過才整批**。
@@ -21,7 +25,7 @@
 - ⚠ 工作區 `script/speakers.js` 有一筆**不是程式 session 改的**修改（10-05 發現，沒動、沒 commit）—— 是誰的、要不要收，問 Ray。
 - 另一個 session「美術背景重繪替換」用跨 session 訊息交件；**Ray 點頭才接、才 commit**，只挑它的檔單獨 commit。
 
-## 本輪做的（10-05，-2004～-2011）—— 都等 Ray 實測
+## 本輪做的（10-05，-2004～-2012）—— 都等 Ray 實測
 | 版 | 內容 | 測什麼 |
 |---|---|---|
 | -2004 | 章節選擇加 **Stage 16**（廢城主祭壇；四座小祭壇全亮、`dm_altar_done` 不給） | 選了直接開演主祭壇 |
@@ -34,7 +38,7 @@
 | -2011 | 背景差分接線：平原古道五格改吃四時段；貝利薩爾枯井底／前廳原圖改名 `_day` 接上四時段 | 夜裡走一次 |
 
 ## 背景差分盤點（-2011，362 個來源逐格模擬候選鏈＋逐字比對磁碟）
-- ⚠ **欠：0 格**。
+- ⚠ **欠：0 格**（指「腳本要的時段檔都在」）。但古城有六張單張其實有室外天光 → 已開美術工單（見「未完成」）。
 - ✔ 不欠（長得像缺）：北泊 13 格 `_bf`（戰損版單張）／木雅克神殿深層 14 格（無天光，spec 定單張）／
   卡耶爾山谷 5 格、夏爾森林 9 格（刻意三差分，沒有 dawn）／帝都槍店・公會・雜貨沒有 night（營業到 17）／
   夏爾工坊沒有 night（營業到 19，夜從 19 起）／聖索菲亞酒吧沒有 dawn（酒吧三差分）／深夜退夜晚（正常退路）。
@@ -63,6 +67,11 @@
 9. `sorana_si_carrynouvelleshock` 欠眨眼（雙人圖，`tools/blink_eyes.txt` 手給眼框）。
 10. 之後：飛行頁 canvas 眨眼、手機實機量發熱、路線 B 髮梢擺動。
 11. ⏸ 呼吸與微晃（路線 A，-1934）：commit 在 3060 本機、沒推上來，等 Ray 看效果。
+
+**茉莉 39／羅伯特 60／亞隆 36 全身立繪（10-05 開單，一張都還沒產）**
+- 工單＋三則提示詞：`resources/si/_molly_robert_aaron_spec.md`；參考圖 `reference/Molly.png`／`Roberto.png`（已入版控）。
+- 羅伯特＝武官出身、M 型禿；亞隆＝羅伯特之子、現任侍衛長。**先各出一張給 Ray 看**，不進遊戲。
+- 10-05 Mac 卡在 Claude in Chrome 連不上（清單回空、重試五次）。⚠ 這是產圖的活（鐵律 11）—— 換機器後最好交美術 session 做。
 
 **古城室外天光六張（美術進行中，10-05 開單）**
 - 工單：`resources/background/_belisar_skylight_worklist.md`（階梯大廳／中央大廳／兵器工坊／星象室／王座廳／聖物室，補四時段）。
