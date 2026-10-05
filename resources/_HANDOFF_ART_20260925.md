@@ -288,3 +288,42 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 | `npc_guildcounter_si_northport` | ✔ 不欠（美術）；⚠ 程式端欠眨眼重跑 |
 | `dunmor_altar_lit` | ✔ 不欠 |
 | `man_misha_guards` | ✔ 不欠 |
+
+## 十七、2026-10-05～06（Windows 4070 SUPER）：薇拉馮德三人＋教廷衛兵＋帝都教廷衛士戰＋本機 Wan 動檔工具
+
+### ✔ 做完、已入庫（commit `43c00b76`／`4bc8d4da`／`768b9561`／`3b202f42`）
+| 件 | 交件 | 程式端 |
+|---|---|---|
+| 茉莉 15／羅伯特 7／亞隆 9 張差分（薇拉馮德莊園兩段稿） | `resources/si/npc/{molly,robert,aaron}_si_*.webp`；原 PNG `_originals/SI/NPC/_vela_v2/` | ⚠ 待接：`speakers.js`＋取景、三人身高（工單 `resources/si/_molly_robert_aaron_spec.md`） |
+| 教廷衛兵 a~f（六個不同的人、同制服） | `resources/si/npc/church_guard_si_{a..f}.webp`（e＝深褐皮膚綠眼） | 用途未定 |
+| 帝都教廷衛士戰 5 張空景戰鬥背景 | `resources/background/capital/capital_{hotel,uptown,square,downtown,dock}_battle.webp` | 已被「整張插圖」方向取代一部分，見下 |
+
+### 這一輪的定案（Ray）
+- 稿的兩處更正：**拔劍三句全是亞隆**（羅伯特沒有 draw）；「睜一隻眼張嘴」＝**睜一隻眼閉一隻眼的裝傻**（鍵名 `blindeye`），不是俏皮眨眼。
+- 茉莉虹膜用程式加藍（Ray 選 C）；`gossip`／`whisper` 是輕鬆的八卦表情。
+- **教廷衛士戰改成「背景＋人一起生成的整張插圖」**（拼貼感太重）：衛兵戴頭盔去識別化、臉各不相同、全員直視鏡頭、人物在畫面中間一半寬度內。
+  旅店 3 人 ✔（`_originals/background/capital/_battle_wip/capital_hotel_fight_v3.png`）；上街區 4 人 ✔ 修過兩輪（`..._uptown_fight_v3.png`，右射手略貼邊待 Ray 定）；廣場要加**指揮官**、舊街區 ⚠ 未做；**碼頭 ⛔ 留空（Ray 改 Boss 戰）**。
+  另有一條：用 GPT「去人只留背景」（旅店已做 `capital_hotel_fight_plate.png`，品質 OK），再把人一個一個疊上去，好讓個別的人可以播中彈動畫 —— 疊人那一步未做。
+- 碼頭 Boss「瞇眼青年術師」（原型 Ray 確認＝市丸銀＋獸神官塞羅斯，不寫進提示詞）：立繪 ✔（`_originals/SI/NPC/_mage/mage_si_front.png`，19 世紀輕便神父服）；
+  施展防禦術式差分（掌前一團六角障壁、不笑、瞇眼）出了一版，**另一隻手還摀著嘴**，待 Ray 決定要不要改。
+- **人類敵人中彈＝本機 Wan 影片抽 10 格、0.9 秒、動畫一開始就同時淡出、512 寬**（5 格被否決）。全文 `resources/enemy/_enemy_motion_research.md`。
+- 對話立繪：整張 Wan 不行（眨眼不可控、臉會走樣）；折衷＝**只取 Wan 的頭髮飄動＋呼吸**，臉身不動 —— 待實測。
+
+### 本機 Wan 環境（新建）
+- ComfyUI 專用 venv：`ComfyUI-master/.venv`（系統 Python 的 transformers／huggingface_hub 衝突，**不要動系統那份**）；啟動 `start_wan_venv.bat`。
+- 模型：Wan2.2 I2V A14B **GGUF Q4_K_M**（High／Low）＋ LightX2V 4 步 LoRA ＋ umt5 fp8 scaled ＋ wan_2.1_vae（約 29 GB）。
+- ⚠ 記憶體只有 16 GB：要用 `--disable-smart-memory --cache-none` 啟動，不然第三段左右會無聲掛掉。
+- **一鍵工具** `ComfyUI-master/tivot_wan/`：`run.bat`（hit）、`run_idle.bat`（idle）、`--mode portrait`（對話立繪）、`--reuse` 不重跑只重抽格；說明 `README.md`。
+  實測：衛兵中彈 130 秒；聖遺物 wheelpsalm／candlepenitent 待機 175 秒，結構撐得住、肢體不夠怪異需加重提示詞；**明暗閃動**已內建去閃（整體 Lab 對齊第 1 格）。
+
+### ⚠ 下一步（Ray 交代：先交接，換 prompt）
+1. **portrait 模式換提示詞**：強調**呼吸的垂直起伏**（現有 `breath.js` 與上一版 Wan 都看不出來），頭髮飄動照舊，**臉部不動**。測試圖 `resources/si/renna_si_front.webp`。
+2. 接著做「Wan 只取頭髮＋呼吸、臉用原圖」的合成實測（髮際線接縫是關鍵；Wan 只出 480 寬要放大）。
+3. 教廷衛士戰：廣場（含指揮官）、舊街區；上街區右射手是否再收。
+
+### 產線的坑（這一輪學到的）
+1. **ChatGPT 頁面的 `eval` 被 CSP 擋了**：localStorage 存 helper 再 `eval` 的作法失效，送出程式要直接內嵌。
+2. **送出前一定要確認 URL 還在我開的新對話**：一次分頁被切到 Ray 的「腳本開發討論」，提示詞誤送進去。
+3. 頁面會虛擬化舊訊息，**數 `<img>` 判斷新圖會錯位**；要用 `/backend-api/conversation/<id>` 照「提示詞→圖」對應下載；但**高頻查詢會 429**（每分鐘一次以內）。
+4. Gemini 只在 Chrome 視窗**沒被蓋住**時才渲染（Windows 遮擋偵測）；建議 Ray 關 `chrome://flags/#calculate-native-win-occlusion`、Gemini 獨立視窗。
+5. 差分每張都要**附 front 原圖**（同串接力會越畫越髒）；給 Ray 看之前先用**遊戲實際取景**（上半近正方形、cover 置中）自檢。
