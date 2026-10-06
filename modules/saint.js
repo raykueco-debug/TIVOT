@@ -1114,12 +1114,15 @@ function finishSaintMode(finalHpThunk){
 const ciAnim = {};   // key → { urls, ready }
 export function warmCutinAnim(key){
   const A=(GAME_CONFIG.tuning.cutinAnim||{})[key];
-  if(!A || ciAnim[key]) return;
+  if(!A) return;
+  const old=ciAnim[key];
+  if(old && (old.ready || old.pending)) return;   // 好了／暖著 → 不重來；上一次失敗 → 重暖
   const urls=[]; for(let i=0;i<A.frames;i++) urls.push(A.dir+'frame_'+String(i).padStart(2,'0')+'.webp');
-  const rec=ciAnim[key]={ urls, ready:false, imgs:[] };
+  const rec=ciAnim[key]={ urls, ready:false, pending:true, imgs:[] };
   Promise.all(urls.map(u=>{ const im=new Image(); im.src=u; rec.imgs.push(im);
       return im.decode ? im.decode().catch(()=>{}) : Promise.resolve(); }))
-    .then(()=>{ rec.ready = rec.imgs.every(im=>im.naturalWidth>0); });
+    .then(()=>{ rec.pending=false; rec.ready = rec.imgs.every(im=>im.naturalWidth>0);
+      if(!rec.ready) console.warn('[cutin] 動檔有格子載不到，這一次退回靜態圖：'+key); });
 }
 let ciAnimT=0;
 function playCiAnim(ci, key){
