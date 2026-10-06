@@ -612,6 +612,17 @@ function spawnAim(){
   layer.appendChild(el);
 }
 
+/* 群體敵人有人倒下（ver -2048）：落在空處、還沒打的瞄準點收掉，照數補回（補的只會落在站著的人身上）。 */
+try{ window.addEventListener('tivot:groupfall', ()=>{
+  const layer=aimLayer(); if(!layer || !state.dualWield || !api.enemyOnBody) return;
+  let n=0;
+  for(const el of [...layer.children]){
+    if(el.classList.contains('hit')) continue;
+    if(!api.enemyOnBody(parseFloat(el.dataset.l), parseFloat(el.dataset.t))){ el.remove(); n++; }
+  }
+  while(n-- > 0) spawnAim();
+}); }catch(_){}
+
 /* ══ 重設額度（ver -1337，Ray：「ovk 時 br 配額＝殘磚數」）══
    BR 中途把敵人打死時由 combat 呼叫：額度換成殘磚數，瞄準點跟著補上或收掉。
    ⚠ `dualShotsLeft` 的擁有者是 weapon（§3.4），所以改它的入口在這一邊。

@@ -172,7 +172,8 @@ export function setup(){
     addEnergy,                                    // 反擊給破防值（ver -880，見 weapon.counterEnergy）
     dualShot,                                     // 破防窗口開火（ver -1330：瞄準點點中時呼叫）
     onDualClosed,                                 // 破防收窗 → 掃殘磚／交還 overkill（ver -1336）
-    enemyBodyPoint: enemy.randomBodyPoint,        // 瞄準點要落在敵人身上（ver -1332）
+    enemyBodyPoint: enemy.randomBodyPoint,
+    enemyOnBody: enemy.onStandingBody,          // 群體敵人倒下時清掉落在空處的瞄準點（ver -2048）        // 瞄準點要落在敵人身上（ver -1332）
     /* 諾薇兒 Lv3「探覓星」（ver -1014）：彈雨傾洩回復主動技次數。
        `partnerActiveUsed` 的擁有者是 combat，跨模組的寫走具名 setter。 */
     resetPartnerActive: ()=>{ state.partnerActiveUsed = false; },
@@ -1506,7 +1507,7 @@ function enemyDamage(dmg,isCrit,silent,src){
       if(after<1 && (lsActive || lastStandDue())){
         after=1; dmg=state.enemyHp-1; lsTrigger=!lsActive;
       }
-      if(after<0) state.overkill+=(-after);
+      if(after<0 && !noOverkill()) state.overkill+=(-after);
       state.enemyHp=Math.max(0,after);
       tutorial.onHpChange();          // 血量觸發的 talk 步驟（ver -599）
       updateBars();
@@ -1531,10 +1532,11 @@ function enemyDamage(dmg,isCrit,silent,src){
            ⚠ 碼表由 `win()`／`advanceEnemy()` 收（兩邊本來就有 `clockPause`），
              這裡不收也不會漏掉。 */
         defense.killThreatSchedule(); clearAtkBuff();
-        floatDmg(L.battle.overkill,'50%','48%',true);
-        enterOverkillFx();   // 聖徒化中擊殺也進 overkill（藍光/鈴鐺；限時與撤游標僅非聖徒化，見函式內）
+        if(noOverkill()) skipOverkill();
+        else { floatDmg(L.battle.overkill,'50%','48%',true);
+               enterOverkillFx(); }   // 聖徒化中擊殺也進 overkill（藍光/鈴鐺；限時與撤游標僅非聖徒化，見函式內）
       }
-    }else{
+    }else if(!noOverkill()){
       state.overkill+=dmg;
       SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));   // overkill 期間每一槍帶神楽鈴（StartBT_SE；普攻/雙槍/聖徒化追打統一在此掛鉤）
       floatDmg(fmt(L.battle.overkillAdd,{n:dmg}), (30+Math.random()*40)+'%','35%',true);
@@ -2346,6 +2348,22 @@ export function resumeFromDialog(){
  *  → finishEnemyOrAdvance。所有 overkill 結束路徑（自然清盤/按錯/逾時/聖徒化擊殺）
  *  都經 finishEnemyOrAdvance → endOverkillFx 統一清理（冪等）。 */
 let overkillTimer=null;
+/* ══ 人類不給 OVK（ver -2048，Ray：「人類敵人不給 ovk」）══
+   判定只有這一支（鐵律 7）：卡上 `kind:'human'` ＝沒有 overkill 那一段；
+   個案要給回來就在卡上寫 `overkill:1`。 */
+function noOverkill(){
+  const en=(GAME_CONFIG.enemies||{})[state.currentEnemyKey];
+  return !!(en && en.kind==='human' && !en.overkill);
+}
+/* 擊殺那一下直接收尾：BR 開著就關窗（收尾照舊走 onDualClosed → autoClearOverkill），
+   否則直接走 autoClearOverkill —— 殘磚碎掉、延一拍進下一隻／結算，與 OVK 結束同一條路（鐵律 8）。
+   聖徒化中擊殺不碰：那一段的收尾歸 saint。 */
+function skipOverkill(){
+  if(state.saintMode) return;
+  state.cells.forEach(c=>c.classList.remove('next'));
+  if(state.dualWield) weapon.endDual();
+  else autoClearOverkill();
+}
 function enterOverkillFx(){
   $('grid').classList.add('overkill');            // 數字藍光（見 style.css #grid.overkill）
   try{ SFX.play(asset('se_glasscrack'), sfxGain('se_glasscrack')); }catch(_){}   // 裂紋輻射音（ver -839）

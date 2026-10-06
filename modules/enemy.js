@@ -1184,8 +1184,9 @@ function buildMask(im){
     const cx=cv.getContext('2d'); cx.drawImage(im,0,0,w,h);
     const d=cx.getImageData(0,0,w,h).data, a=new Uint8Array(w*h);
     let sx=0, sy=0, cnt=0;
-    for(let k=0;k<w*h;k++){ const v=d[k*4+3]; a[k]=v; if(v>96){ sx+=k%w; sy+=(k/w)|0; cnt++; } }
-    groupMasks[im.dataset.n]={ w, h, a, cx:cnt?sx/cnt/w:0.5, cy:cnt?sy/cnt/h:0.5 };
+    const pts=[];
+    for(let k=0;k<w*h;k++){ const v=d[k*4+3]; a[k]=v; if(v>96){ sx+=k%w; sy+=(k/w)|0; cnt++; if(!(k%3)) pts.push(k); } }
+    groupMasks[im.dataset.n]={ w, h, a, pts, cx:cnt?sx/cnt/w:0.5, cy:cnt?sy/cnt/h:0.5 };
   }catch(_){}
 }
 function buildGroup(en){
@@ -1231,6 +1232,39 @@ function toImageUV(x, y, im){
   const ox=(W-dw)*(isNaN(p[0])?0.5:p[0]), oy=(H-dh)*(isNaN(p[1])?0:p[1]);
   return { u:(x-ox)/dw, v:(y-oy)/dh };
 }
+/* 反方向：圖上的比例座標 → `#top` 的百分比（BR 瞄準點用的座標系）。 */
+function imageUVToTopPct(u, v, im){
+  const g=$('enemyGroup'), top=$('top'); if(!g || !top || !im.naturalWidth) return null;
+  const gr=g.getBoundingClientRect(), tr=top.getBoundingClientRect();
+  const W=gr.width, H=gr.height, iw=im.naturalWidth, ih=im.naturalHeight;
+  const k=Math.max(W/iw, H/ih), dw=iw*k, dh=ih*k;
+  const p=String(getComputedStyle(im).objectPosition||'50% 0%').split(/\s+/).map(x=>parseFloat(x)/100);
+  const ox=(W-dw)*(isNaN(p[0])?0.5:p[0]), oy=(H-dh)*(isNaN(p[1])?0:p[1]);
+  const x=gr.left-tr.left+ox+u*dw, y=gr.top-tr.top+oy+v*dh;
+  if(x<0 || y<0 || x>tr.width || y>tr.height) return null;
+  return { l:x/tr.width*100, t:y/tr.height*100 };
+}
+function standingGuards(){
+  const g=$('enemyGroup'); if(!g || !groupCard) return [];
+  return [...g.querySelectorAll('.eg-guard')].filter(im=>!im.classList.contains('eg-down'));
+}
+/* BR 瞄準點（ver -2048，Ray：「br 時不要往已經沒人的地方射」）：只落在**還站著的人**身上。 */
+function groupBodyPoint(){
+  const alive=standingGuards().filter(im=>groupMasks[im.dataset.n] && groupMasks[im.dataset.n].pts.length);
+  if(!alive.length) return null;
+  const im=alive[(Math.random()*alive.length)|0], m=groupMasks[im.dataset.n];
+  const k=m.pts[(Math.random()*m.pts.length)|0];
+  return imageUVToTopPct(((k%m.w)+Math.random())/m.w, (((k/m.w)|0)+Math.random())/m.h, im);
+}
+/* 這一點（`#top` 的百分比）還壓在某個站著的人身上嗎？—— 不是群體敵人一律 true。 */
+export function onStandingBody(l, t){
+  if(!groupCard) return true;
+  const top=$('top'); if(!top) return true;
+  const tr=top.getBoundingClientRect(), x=l/100*tr.width, y=t/100*tr.height;
+  return standingGuards().some(im=>{ const m=groupMasks[im.dataset.n], uv=toImageUV(x, y, im);
+    return m && uv && uv.u>=0 && uv.u<=1 && uv.v>=0 && uv.v<=1
+      && m.a[Math.min(m.h-1,(uv.v*m.h)|0)*m.w + Math.min(m.w-1,(uv.u*m.w)|0)] > 96; });
+}
 function pickVictim(alive){
   if(!alive.length) return null;
   if(lastImpact){
@@ -1249,7 +1283,8 @@ function pickVictim(alive){
   return alive[alive.length-1];   // ③ 最前排
 }
 /* 倒下：**唯一的一支**（Ray：之後會有倒地動畫 —— 換的時候只改這裡）。 */
-function fallGuard(im){ im.classList.add('eg-down'); if(im._sh) im._sh.classList.add('eg-down'); }
+function fallGuard(im){ im.classList.add('eg-down'); if(im._sh) im._sh.classList.add('eg-down');
+  try{ window.dispatchEvent(new CustomEvent('tivot:groupfall')); }catch(_){} }   // weapon 據此清掉落空的 BR 瞄準點
 /* 依現在的敵血決定該倒幾個（combat.updateBars 每次都叫，冪等）：還沒倒夠就再倒，每一個照落點挑。 */
 export function syncGroup(){
   const g=$('enemyGroup'); if(!g || !groupCard) return;
@@ -1584,6 +1619,7 @@ function buildBodyMask(){
 
 /* 回一個落在敵人身上的點：`{l,t}` ＝ `#top` 的百分比；問不出來就回 null。 */
 export function randomBodyPoint(){
+  if(groupCard) return groupBodyPoint();   // 群體敵人：只挑還站著的人（ver -2048）
   const cells = buildBodyMask();
   const img = $('enemyImg');
   if(!cells || !cells.length || !img) return null;
