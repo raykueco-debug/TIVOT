@@ -385,3 +385,32 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
   ⚠ 關鍵格要與原 CI **同尺寸同構圖**（1024×1536、人物位置不變），Wan 的 A→B 才補得出連續動作 —— 構圖一變它就溶接。
 - 兩邊都**不碰程式**（鐵律 11）：交件後各自通知程式 session。
 - ⚠ 同一台 Chrome／同一張顯卡：美術用 Chrome 產圖、動畫用顯卡跑 Wan，互不干擾；但 Wan 跑的時候不要在同一台開 SD／ComfyUI 其他工作（16 GB 記憶體會掛）。
+
+## 二十、資產盤點（2026-10-06，動畫 session 依磁碟實查；⚠ 這一輪美術**沒有產新圖**，下表全是 §十七 留下的狀態）
+
+### 帝都教廷衛士戰
+| 件 | 狀態 | 位置／說明 |
+|---|---|---|
+| 空景戰鬥背景 5 張（旅店／上街區／廣場／舊街區／碼頭） | ✔ 不欠（已入 `resources`） | `background/capital/capital_*_battle.webp`；⚠ Ray 已改走「整張插圖」方向，空景版留著當備案 |
+| 整張插圖・旅店（3 人） | ✔ 畫完，⚠ **未交件進 `resources`** | `_originals/background/capital/_battle_wip/capital_hotel_fight_v3.png` |
+| 整張插圖・上街區（4 人） | ✔ 畫完，⚠ 未交件；右射手略貼邊**等 Ray 定** | `…/_battle_wip/capital_uptown_fight_v3.png` |
+| 整張插圖・廣場（＋指揮官） | ⚠ **欠** | 只有預覽 `_square_prev.jpg` |
+| 整張插圖・舊街區 | ⚠ **欠** | 沒動 |
+| 整張插圖・碼頭 | ✔ 不欠（刻意留空：Ray 改 Boss 戰） | — |
+| 分繪：去人背景（plate） | 旅店 ✔（`capital_hotel_fight_plate.png`，品質 OK）／上街區・廣場・舊街區 ⚠ **欠** | 給「人一個一個疊回去、可播中彈動畫」用 |
+| 分繪：人物單獨去背疊層 | ⚠ **欠**（四場都還沒做） | 疊回 plate 時位置要與整張插圖一致 |
+
+### 立繪
+| 件 | 狀態 | 位置／說明 |
+|---|---|---|
+| 茉莉 15／羅伯特 7／亞隆 9 | ✔ 不欠（美術） | `si/npc/{molly,robert,aaron}_si_*.webp`；⚠ 程式端欠接 `speakers.js`＋取景＋身高 |
+| 教廷衛兵 a～f | ✔ 不欠 | `si/npc/church_guard_si_*.webp`；用途未定 |
+| 碼頭 Boss 瞇眼術師 front | ✔ 畫完，⚠ **未交件**（`resources/si/npc` 裡沒有 mage） | `_originals/SI/NPC/_mage/mage_si_front.png` |
+| 術師 防禦術式差分 barrier | ⚠ **欠修**：另一隻手還摀著嘴，等 Ray 決定改不改 | `…/_mage/mage_si_barrier.png` |
+| 術師其他差分（表情／受擊…） | ⚠ 未盤（稿未定要幾張） | — |
+
+### 插圖
+| 件 | 狀態 |
+|---|---|
+| `032_rennablush` | ⚠ **欠**（`illustration/` 裡沒有） |
+| `023_anyacottoncandy`／`024_nouvellesmile` | ✔ 圖在，⚠ 沒有腳本引用（等 Ray） |
