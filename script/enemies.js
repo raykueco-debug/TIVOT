@@ -1022,7 +1022,7 @@ export const ENEMIES = {
       tier:'C', atype:'P', stageScale:1,
       image:null,   // 群體敵人沒有單張立繪：背景是 group.plate、人是 group 那幾層（ver -2043）
       group:{ plate:'resources/background/capital/fight_hotel/plate.webp', dir:'resources/background/capital/fight_hotel/', order:[2,3,1], hpEach:100 },   // order＝疊放（後→前，美術給的）；倒誰看子彈落點（enemy.js 的 pickVictim）
-      fit:{ pos:'50% 50%' }, noShadow:1,   // fit＝**人那一組**的取景（縮放／位置）；背景不受影響。影子每個人各一顆（enemy.buildGroup）
+      fit:{ pos:'50% 50%', scale:1.4, shiftY:-0.05 }, noShadow:1,   // fit＝**人那一組**的取景（縮放／位置）；背景不受影響。影子每個人各一顆（enemy.buildGroup）
       parryBasic:0.3,   // 普攻有 30% 被劈落（Ray：先說 50%、改「劈落率改 30%」；ver -2043 起 parryBasic 是機率）
       hp:220,   // ⚠ 實際血量寫在戰鬥卡的 enemyHp（Ray 指定），這一格只是等級基準
       attack:14,
