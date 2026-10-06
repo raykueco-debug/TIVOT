@@ -28,7 +28,7 @@
 | 件 | 位置 | 狀態 |
 |---|---|---|
 | 索拉娜共鬥 CI | `resources/ci/anim/ci_sorana_predator_v4/`（12 格，播完停住） | ✅ 程式已接（-2027）；⚠ 違反規矩 1，重做與否等 Ray |
-| 諾薇兒聖徒化 CI | `resources/ci/anim/ci_nouvelle_saintinstall_v1/`（56 格、3.5 秒） | ⚠ 已通知程式，待接（含 CSS 拉長到 3.5 秒） |
+| 諾薇兒聖徒化 CI | `resources/ci/anim/ci_nouvelle_saintinstall_v1/`（56 格、3.5 秒） | ✅ 程式已接（-2028）：CI 總長由 `ms` 決定（CSS `--ci-dur`），推入／停留／推出照比例放大。靜態退路圖仍是舊 B 圖 —— 要換成 `saintinstall1` 得交 webp（新檔名），等 Ray |
 | 怪物待機 94 隻 | `tivot_wan/out/monsters/`（未進 resources） | ⚠ 等 Ray 檢查 `check.html`；每隻解碼約 33 MB 記憶體，交件要提醒程式做釋放 |
 
 ## 等 Ray
