@@ -2745,6 +2745,8 @@ export function warmBattleImage(battleId){
     /* NI 那一刻要換的立繪與 cut-in（ver -1964，米夏）—— 先暖著，發動時不閃空白。 */
     const ls=en && en.lastStand;
     if(ls) [ls.image, ls.ci].forEach(k=>{ const p=k && asset(k); if(p){ const i=new Image(); i.src=p; } });
+    /* 搭檔變身 cut-in 的動檔（ver -2021）：發動那一刻要每一格都解碼好，所以進戰鬥就暖。 */
+    const pc=partner.currentPartner(); if(pc && pc.cutin) saint.warmCutinAnim(pc.cutin);
   }catch(_){}
 }
 export function holdEnemyRise(){ enemy.holdRise(); }

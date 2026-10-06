@@ -1108,6 +1108,29 @@ function finishSaintMode(finalHpThunk){
  *  演出：降臨 cut-in（通用）／結局全畫面 cut-in
  * ========================================================================== */
 // 通用 cut-in（雙槍破防／聖徒化降臨共用格式）：1.5 秒演出，期間鎖點擊。
+/* ══ cut-in 動檔（ver -2021，美術交接 §十八）══ 資料在 `tuning.cutinAnim`（鐵律 1）。
+   預熱：每一格 `new Image()` ＋ `decode()`，全部好了才算 ready；播的時候只換 `src`
+   （已解碼的圖在記憶體快取裡，換 src 不必再解一次）。沒 ready 就照舊播靜態圖。 */
+const ciAnim = {};   // key → { urls, ready }
+export function warmCutinAnim(key){
+  const A=(GAME_CONFIG.tuning.cutinAnim||{})[key];
+  if(!A || ciAnim[key]) return;
+  const urls=[]; for(let i=0;i<A.frames;i++) urls.push(A.dir+'frame_'+String(i).padStart(2,'0')+'.webp');
+  const rec=ciAnim[key]={ urls, ready:false, imgs:[] };
+  Promise.all(urls.map(u=>{ const im=new Image(); im.src=u; rec.imgs.push(im);
+      return im.decode ? im.decode().catch(()=>{}) : Promise.resolve(); }))
+    .then(()=>{ rec.ready = rec.imgs.every(im=>im.naturalWidth>0); });
+}
+let ciAnimT=0;
+function playCiAnim(ci, key){
+  clearInterval(ciAnimT); ciAnimT=0;
+  const A=(GAME_CONFIG.tuning.cutinAnim||{})[key], rec=ciAnim[key];
+  if(!A) return;
+  if(!rec || !rec.ready){ warmCutinAnim(key); return; }   // 這一次播靜態圖，下一次就有動檔
+  let i=0; ci.src=rec.urls[0];
+  ciAnimT=setInterval(()=>{ i++; if(i>=rec.urls.length){ clearInterval(ciAnimT); ciAnimT=0; return; }
+    ci.src=rec.urls[i]; }, 1000/(A.fps||16));
+}
 export function playCutin(done, label, imgKey, opts){
   opts = opts || {};
   state.cutinPlaying=true;
@@ -1128,6 +1151,7 @@ export function playCutin(done, label, imgKey, opts){
   // cut-in 槍聲已全面取消：雙槍破防有 Luna_dual_VC、聖徒化降臨有 SI_01，槍聲只留給盤面實際射擊
   const start=()=>{
     c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');
+    if(ci && imgKey) playCiAnim(ci, imgKey);   // 動檔（有登記才播；沒有就是那張靜態圖）
     setTimeout(()=>{
       c.classList.remove('on');
       // ⚠ 教學對話開著時不清暫停旗標：cut-in（如即死防禦）與教學對話重疊時，

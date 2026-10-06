@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2020';
+export const VERSION = 'ver 2026.09.22-2021';
 
 export const GAME_CONFIG = {
 
@@ -3441,6 +3441,14 @@ export const GAME_CONFIG = {
        手機版幾乎全被裁掉」）：獵手戰吼三張縮到 0.62 —— 後方那位 Q 版夥伴才進得了框。 */
     cutinFit: { ci_sorana_supply:0.78,
                 ci_sorana_roar_renna:0.62, ci_sorana_roar_anya:0.62, ci_sorana_roar_nouvelle:0.62 },
+    /* ══ cut-in 動檔（ver -2021，美術交接 §十八：索拉娜共鬥）══ 鑰匙＝靜態圖的鍵（`cutin:` 那一格）；
+       有這一列的那張 CI 播時逐格換圖（saint.playCutin），推入推出照舊是 CSS 那一套。
+       `frames` 格 ÷ `fps` ＝ 1.5 秒＝ `#cutin` 動畫長度（style.css 的 cutinImg 1.5s）——
+       改一邊要改另一邊。不循環、停在最後一格。
+       ⚠ 格還沒全部解碼好就退回靜態圖（第 0 格≈靜態圖），不會等它。
+       ⚠ 檔名 `frame_NN` 每一組都一樣 —— 同名覆蓋時 `ASSET_VER` 分不出是哪一組，
+         **重交動檔請換資料夾名**，不要就地覆蓋。 */
+    cutinAnim: { ci_sorana_predator:{ dir:'resources/ci/anim/ci_sorana_predator/', frames:24, fps:16 } },
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],
