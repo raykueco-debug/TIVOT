@@ -1674,12 +1674,12 @@
     0%{opacity:0;transform:scale(1.06);}
     16%{opacity:1;transform:scale(1.03);}
     84%{opacity:1;transform:scale(1);}
-    100%{opacity:0;transform:scale(1);}}
+    100%{opacity:1;transform:scale(1);}}   /* 撤出改由 .ciout 做（ver -2042） */
   @keyframes cutinImg{
     0%{transform:translate(-120%,-50%) scale(calc(var(--ci-s,1)*1.5)) rotate(-8deg);opacity:0;}
     18%{transform:translate(-50%,-50%) scale(calc(var(--ci-s,1)*1.28)) rotate(0deg);opacity:1;}
     82%{transform:translate(-50%,-50%) scale(calc(var(--ci-s,1)*1.22));opacity:1;}
-    100%{transform:translate(30%,-50%) scale(calc(var(--ci-s,1)*1.2));opacity:0;}
+    100%{transform:translate(-50%,-50%) scale(calc(var(--ci-s,1)*1.2));opacity:1;}   /* 撤出改由 .ciout 做（ver -2042；原本往右滑出） */
   }
   /* i18n 斷行規則：keep-all＝CJK/假名連續串視為一個詞不得中斷（セイント／インストール
      只能在空白或 \n 換行，不會斷成「～インスト／ール」）；pre-line＝語言包可用 \n 指定斷點；
@@ -1733,6 +1733,11 @@
   }
   @keyframes auraCore{ 0%,100%{transform:scale(.85);opacity:.75;} 50%{transform:scale(1.15);opacity:1;} }
   #saintCutin.on{display:block;}
+  /* ══ CI 的撤出（ver -2042，Ray：「CI 類的移出都用放大淡出，0.25 秒」「移入還是一樣」）══
+     撤下前 0.25 秒整張（圖＋字＋閃光）一起放大淡出；進場照舊。
+     ⚠ 0.25 秒寫在這裡也寫在 saint.js 的 CI_OUT_MS —— 改一邊要改另一邊。 */
+  #cutin.ciout,#saintCutin.ciout{animation:ciOut .25s ease-in forwards;}
+  @keyframes ciOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.15)}}
   #saintCutin.burst{background:radial-gradient(circle at 50% 45%,rgba(60,45,10,.85),rgba(8,6,2,.97));}
   #saintCutin.obe{background:radial-gradient(circle at 50% 45%,rgba(60,8,40,.9),rgba(6,2,8,.98));}
   #saintCutin.execute{background:radial-gradient(circle at 50% 45%,rgba(80,60,10,.92),rgba(4,2,0,.99));}
@@ -1749,7 +1754,7 @@
   #saintCutin.on .scimg{animation:saintCutinImgIn var(--sc-dur,1.6s) ease-out forwards;}
   @keyframes saintCutinImgIn{0%{opacity:0;transform:scale(1.15)}
     18%{opacity:1;transform:scale(1)}82%{opacity:1;transform:scale(1)}
-    100%{opacity:.85;transform:scale(1.03)}}
+    100%{opacity:1;transform:scale(1.03)}}   /* 撤出改由 .ciout 做（ver -2042） */
   #saintCutin.execute.on .scimg[data-kind="execute"]{animation-duration:3s;}
   #saintCutinFlash{position:absolute;inset:0;opacity:0;z-index:1;}
   #saintCutinStreak,#saintCutinTitle,#saintCutinSub{z-index:2;}

@@ -1146,6 +1146,10 @@ export function warmCutinAnim(key){
       if(!rec.ready) console.warn('[cutin] 動檔有格子載不到，這一次退回靜態圖：'+key); });
 }
 let ciAnimT=0;
+/* CI 撤出：最後這麼多毫秒整張放大淡出（ver -2042；style.css 的 .ciout 也寫 0.25s，兩邊互指）。 */
+const CI_OUT_MS = 250;
+function ciOutAt(c, dur){ if(!c) return; c.classList.remove('ciout');
+  clearTimeout(c.__ciOutT); c.__ciOutT=setTimeout(()=>c.classList.add('ciout'), Math.max(0, dur-CI_OUT_MS)); }
 function playCiAnim(ci, key){
   clearInterval(ciAnimT); ciAnimT=0;
   const A=(GAME_CONFIG.tuning.cutinAnim||{})[key], rec=ciAnim[key];
@@ -1180,10 +1184,11 @@ export function playCutin(done, label, imgKey, opts){
           ci.style.setProperty('--ci-s', fit || 1); }
   // cut-in 槍聲已全面取消：雙槍破防有 Luna_dual_VC、聖徒化降臨有 SI_01，槍聲只留給盤面實際射擊
   const start=()=>{
-    c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');
+    c.classList.remove('on','ciout'); void c.offsetWidth; c.classList.add('on');
+    ciOutAt(c, ciDur);                          // 撤出＝最後 0.25 秒放大淡出（ver -2042）
     if(ci && imgKey) playCiAnim(ci, imgKey);   // 動檔（有登記才播；沒有就是那張靜態圖）
     setTimeout(()=>{
-      c.classList.remove('on');
+      c.classList.remove('on','ciout');
       clearInterval(ciAnimT); ciAnimT=0;   // 動檔比 CI 長的話，撤下時一併停（ver -2037：不在背後空跑）
       // ⚠ 教學對話開著時不清暫停旗標：cut-in（如即死防禦）與教學對話重疊時，
       //   這裡清掉會讓盤面在對話中恢復可點（懲罰/插話亂入，曾致陣亡重開流程被劫持）。
@@ -1288,7 +1293,7 @@ function playSaintCutin(kind, done, reload){
                      return:  storyMode() ? (_pc.returnCutin || 'cutin_return_nouvelle') : 'cutin_return' };
   const scImgEl  = { execute:'saintCutinImg', obe:'saintCutinImgObe', burst:'saintCutinImgBurst', return:'saintCutinImgReturn' };
   if(scImgEl[vis]){ const el=$(scImgEl[vis]); if(el){ const src=asset(scImgKey[vis]); if(src) el.src=src; } }
-  c.classList.remove('burst','obe','execute','return','on');
+  c.classList.remove('burst','obe','execute','return','on','ciout');
   c.classList.add(vis);
   void c.offsetWidth;                      // reflow → 重播動畫
   c.classList.add('on');
@@ -1316,8 +1321,9 @@ function playSaintCutin(kind, done, reload){
      發佈成 CSS 的 `--sc-dur`（style.css 的 #saintCutin 那幾段動畫讀它），計時也是同一個數字（鐵律 7）。 */
   const holdMs = (GAME_CONFIG.tuning.cutinDur||{})[scImgKey[vis]] || (vis==='execute' ? 3000 : 1600);   // EXSECUTIŌ 停留 3 秒
   c.style.setProperty('--sc-dur', (holdMs/1000)+'s');
+  ciOutAt(c, holdMs);                        // 撤出＝最後 0.25 秒放大淡出（ver -2042）
   setTimeout(()=>{
-    c.classList.remove('on');
+    c.classList.remove('on','ciout');
     clearInterval(ciAnimT); ciAnimT=0;   // 動檔撤下時一併停（ver -2037）
     state.cutinPlaying=false;
     if(api.cutinThaw) api.cutinThaw(frz);   // ver -1779
