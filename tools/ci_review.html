@@ -57,7 +57,7 @@ for(const k of keys){
   const d=document.createElement('div'); d.className='c';
   const A=ANIM[k];
   d.innerHTML='<img loading="lazy" src="'+(ASSETS[k]?url(ASSETS[k]):frames(k)[0])+'"><div class="n">'+k
-    +(A?' <span class="tag">動 '+A.frames+' 格／'+(A.ms||1500)+'ms</span>':'')+'</div>';
+    +(A?' <span class="tag">動 '+A.frames+' 格／'+(A.fps?A.fps+'fps 後停住':(A.ms||1500)+'ms')+'</span>':'')+'</div>';
   d.onclick=()=>open(k); grid.appendChild(d); cards.push({k,d,anim:!!A});
 }
 const cnt=document.getElementById('cnt');
@@ -78,7 +78,7 @@ function play(){ if(!fr) return; stop(); if(idx>=fr.length-1) idx=0;   // 停在
 function open(k){
   cur=k; fr=frames(k); stop(); view.classList.add('on');
   const A=ANIM[k];
-  if(fr){ step=(A.ms||1500)/fr.length; fr.forEach(u=>{ const i=new Image(); i.src=u; }); idx=0; show(0); play(); }
+  if(fr){ step=A.fps ? 1000/A.fps : (A.ms||1500)/fr.length;   // 同 saint.playCiAnim fr.forEach(u=>{ const i=new Image(); i.src=u; }); idx=0; show(0); play(); }
   else { vimg.src=url(ASSETS[k]); }
   for(const b of ['bPrev','bPlay','bPause','bReplay','bNext']) $(b).disabled=!fr;
   label();

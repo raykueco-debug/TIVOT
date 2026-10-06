@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2026';
+export const VERSION = 'ver 2026.09.22-2027';
 
 export const GAME_CONFIG = {
 
@@ -3443,7 +3443,8 @@ export const GAME_CONFIG = {
                 ci_sorana_roar_renna:0.62, ci_sorana_roar_anya:0.62, ci_sorana_roar_nouvelle:0.62 },
     /* ══ cut-in 動檔（ver -2021，美術交接 §十八：索拉娜共鬥）══ 鑰匙＝靜態圖的鍵（`cutin:` 那一格）；
        有這一列的那張 CI 播時逐格換圖（saint.playCutin），推入推出照舊是 CSS 那一套。
-       `frames` 格平均分在 `ms` 裡播完；`ms` ＝ `#cutin` 動畫長度（style.css 的 cutinImg 1.5s）——
+       有寫 `fps` ＝照那個速度播、播完停在最後一格到 cut-in 撤下（ver -2027）；沒寫 ＝ `frames` 格平均分在 `ms` 裡播完。
+       `ms` ＝ `#cutin` 動畫長度（style.css 的 cutinImg 1.5s）——
        改一邊要改另一邊。不循環、停在最後一格。
        ⚠ ver -2022（Ray：「取 48 格的前 16 格，1.5 秒播完」）：v1 是整段 49 格隔格抽 24 格，
          片子本身是持續晃動，播一輪看起來還是在 loop；改成只取原檔開頭那一下（ver -2023 再改 14 格，≈9.3fps）。
@@ -3452,7 +3453,7 @@ export const GAME_CONFIG = {
        ⚠ 格還沒全部解碼好就退回靜態圖（第 0 格≈靜態圖），不會等它。
        ⚠ 檔名 `frame_NN` 每一組都一樣 —— 同名覆蓋時 `ASSET_VER` 分不出是哪一組，
          **重交動檔請換資料夾名**，不要就地覆蓋。 */
-    cutinAnim: { ci_sorana_predator:{ dir:'resources/ci/anim/ci_sorana_predator_v3/', frames:24, ms:1500 } },   // ver -2025：美術新交（4 秒原片 #40~63，只彈一下）
+    cutinAnim: { ci_sorana_predator:{ dir:'resources/ci/anim/ci_sorana_predator_v4/', frames:12, fps:16, ms:1500 } },   // ver -2027：1.5 秒直出取第一下，12 格 16fps（≈750ms）後停在最後一格
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],

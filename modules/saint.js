@@ -1132,7 +1132,7 @@ function playCiAnim(ci, key){
   if(!rec || !rec.ready){ warmCutinAnim(key); return; }   // 這一次播靜態圖，下一次就有動檔
   let i=0; ci.src=rec.urls[0];
   ciAnimT=setInterval(()=>{ i++; if(i>=rec.urls.length){ clearInterval(ciAnimT); ciAnimT=0; return; }
-    ci.src=rec.urls[i]; }, (A.ms||1500)/rec.urls.length);
+    ci.src=rec.urls[i]; }, A.fps ? 1000/A.fps : (A.ms||1500)/rec.urls.length);   // fps：播完停在最後一格（ver -2027）
 }
 export function playCutin(done, label, imgKey, opts){
   opts = opts || {};
