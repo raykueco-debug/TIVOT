@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2029';
+export const VERSION = 'ver 2026.09.22-2030';
 
 export const GAME_CONFIG = {
 
@@ -3441,11 +3441,15 @@ export const GAME_CONFIG = {
        手機版幾乎全被裁掉」）：獵手戰吼三張縮到 0.62 —— 後方那位 Q 版夥伴才進得了框。 */
     cutinFit: { ci_sorana_supply:0.78,
                 ci_sorana_roar_renna:0.62, ci_sorana_roar_anya:0.62, ci_sorana_roar_nouvelle:0.62 },
+    /* ══ CI 的長度（ver -2030，Ray：「諾的 SI CI 改成 2 秒看看」）══ 鑰匙＝靜態圖的鍵，值＝毫秒；
+       沒寫＝1.5 秒。推入／停留／撤出的比例照 1.5 秒那一版放大（style.css 的 --ci-dur）。
+       ⚠ 與 `cutinAnim` 的播放速度無關：動檔照自己的速度播，CI 時間到就撤。 */
+    cutinDur: { cutin_nouvelle_saint:2000 },
     /* ══ cut-in 動檔（ver -2021，美術交接 §十八：索拉娜共鬥）══ 鑰匙＝靜態圖的鍵（`cutin:` 那一格）；
        有這一列的那張 CI 播時逐格換圖（saint.playCutin），推入推出照舊是 CSS 那一套。
        有寫 `fps` ＝照那個速度播、播完停在最後一格到 cut-in 撤下（ver -2027）；沒寫 ＝ `frames` 格平均分在 `ms` 裡播完。
-       `ms` ＝ 動檔**播完要多久**（只管播放速度）。⚠ **CI 本身一律 1.5 秒**（ver -2029，Ray：「ci 還是
-       1.5 秒，不管有沒有播完」）—— 動檔比 1.5 秒長就在撤下那一刻被截掉。不循環、停在最後一格。
+       `ms` ＝ 動檔**播完要多久**（只管播放速度）。⚠ **CI 的長度另外看 `cutinDur`**（預設 1.5 秒；ver -2029，Ray：「不管有沒有播完」）——
+       動檔比 CI 長就在撤下那一刻被截掉。不循環、停在最後一格。
        ⚠ ver -2022（Ray：「取 48 格的前 16 格，1.5 秒播完」）：v1 是整段 49 格隔格抽 24 格，
          片子本身是持續晃動，播一輪看起來還是在 loop；改成只取原檔開頭那一下（ver -2023 再改 14 格，≈9.3fps）。
        ⚠ ver -2025（Ray：「索的共鬥新 CI 接上」）：換成美術重交的 24 格（4 秒原片切 #40~63，只彈一下）。
@@ -3454,7 +3458,7 @@ export const GAME_CONFIG = {
        ⚠ 檔名 `frame_NN` 每一組都一樣 —— 同名覆蓋時 `ASSET_VER` 分不出是哪一組，
          **重交動檔請換資料夾名**，不要就地覆蓋。 */
     cutinAnim: { ci_sorana_predator:{ dir:'resources/ci/anim/ci_sorana_predator_v4/', frames:12, fps:16, ms:1500 },
-                 /* ver -2028：56 格平均分到 3.5 秒＝16fps。⚠ CI 照舊 1.5 秒（ver -2029），播到第 24 格左右就撤。 */
+                 /* ver -2028：56 格平均分到 3.5 秒＝16fps。⚠ CI 長 2 秒（cutinDur，ver -2030），播到第 32 格左右就撤。 */
                  cutin_nouvelle_saint:{ dir:'resources/ci/anim/ci_nouvelle_saintinstall_v1/', frames:56, ms:3500 } },   // ver -2027：1.5 秒直出取第一下，12 格 16fps（≈750ms）後停在最後一格
 
     voiceChain: {

@@ -1147,10 +1147,12 @@ export function playCutin(done, label, imgKey, opts){
   /* `opts.full`（ver -874，Ray：「索拉娜的被動技要放全屏」）：整張圖滿版 cover
      淡入（CSS 的 #cutin.full）。**每次都要設**——上一張的 full 不能殘留。 */
   if(c) c.classList.toggle('full', !!opts.full);
-  /* ⚠ CI 一律 1.5 秒（ver -2029，Ray：「ci 還是 1.5 秒，不管有沒有播完」）——
-     動檔照它自己的速度播（`cutinAnim` 的 fps／ms），1.5 秒一到就跟著撤，沒播完就是截掉。
-     -2028 曾經讓 CI 總長跟著動檔的 ms 變，已撤。 */
-  const ciDur = 1500;
+  /* CI 的長度（ver -2030，Ray：「諾的 SI CI 改成 2 秒看看」）：預設 1.5 秒，個別張寫在 `tuning.cutinDur`。
+     ⚠ 與動檔的速度是兩件事（ver -2029，Ray：「ci 還是 1.5 秒，不管有沒有播完」）——
+       動檔照 `cutinAnim` 自己的速度播，CI 時間一到就撤，沒播完就是截掉。
+     發佈成 CSS 的 `--ci-dur`（style.css 的 cut-in 動畫讀它），撤下的計時也是同一個數字（鐵律 7）。 */
+  const ciDur = (GAME_CONFIG.tuning.cutinDur||{})[imgKey] || 1500;
+  if(c) c.style.setProperty('--ci-dur', (ciDur/1000)+'s');
   if(label!==undefined) $('cutinText').innerHTML = label;
   const ci=$('cutinImg');
   const src=imgKey ? asset(imgKey) : null;
