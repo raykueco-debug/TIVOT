@@ -1032,7 +1032,7 @@ export const ENEMIES = {
       entrance:null, special:[],
       boardGrids:[9,9,9,9,16],
       delayPenalty:{ seconds:5 },
-      hitFx:{ delay:'slash', wrong:'blunt', assault:'slash' },
+      hitFx:{ delay:'slash', wrong:'blunt', assault:'bullet' },   // Ray：攻擊是槍彈效果（ver -2050，四場都是）
     },
     cap_guard_uptown: {
       name:'教廷衛士',
@@ -1055,7 +1055,7 @@ export const ENEMIES = {
       entrance:null, special:[],
       boardGrids:[9,9,9,9,16],
       delayPenalty:{ seconds:5 },
-      hitFx:{ delay:'slash', wrong:'blunt', assault:'slash' },
+      hitFx:{ delay:'slash', wrong:'blunt', assault:'bullet' },   // Ray：攻擊是槍彈效果（ver -2050，四場都是）
     },
     cap_guard_square: {
       name:'教廷衛士・指揮官',
@@ -1064,6 +1064,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2],
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      parryBasic:0.3,   // 普攻 30% 被劈落（ver -2050，Ray：「都要有劈落」）
       kind:'human', hitSe:null,
       tier:'B', atype:'P', stageScale:1,
       image:null,   // 群體敵人沒有單張立繪：背景是 group.plate、人是 group 那幾層（ver -2043）
@@ -1077,7 +1078,7 @@ export const ENEMIES = {
       entrance:null, special:[],
       boardGrids:[9,9,9,16,16],
       delayPenalty:{ seconds:5 },
-      hitFx:{ delay:'slash', wrong:'blunt', assault:'slash' },
+      hitFx:{ delay:'slash', wrong:'blunt', assault:'bullet' },   // Ray：攻擊是槍彈效果（ver -2050，四場都是）
     },
     cap_guard_oldtown: {
       name:'教廷衛士',
@@ -1086,6 +1087,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2],
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      parryBasic:0.3,   // 普攻 30% 被劈落（ver -2050，Ray：「都要有劈落」）
       kind:'human', hitSe:null,
       tier:'C', atype:'P', stageScale:1,
       image:null,   // 群體敵人沒有單張立繪：背景是 group.plate、人是 group 那幾層（ver -2043）
