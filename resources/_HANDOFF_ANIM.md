@@ -27,7 +27,7 @@
 ## 交件現況
 | 件 | 位置 | 狀態 |
 |---|---|---|
-| 索拉娜共鬥 CI | `resources/ci/anim/ci_sorana_predator_v7/`（**32 格、2 秒**，`ms:2000`）＋退路圖 `ci/ci_sorana_predator_start.webp` | ⚠ 10-06 交件待接（取代 `_v5`）。原圖改用 `ci_sorana_predator1.png`（眉毛清楚）；A 段＝LoRA 1.5 單彈一下的第 0～7 格；B 段＝從 A 第 7 格接、同樣的風、LoRA 0.6、咬刀、seed 1（Ray：「可以了 交件」） |
+| 索拉娜共鬥 CI | `resources/ci/anim/ci_sorana_predator_v7/`（**32 格、2 秒**，`ms:2000`）＋退路圖 `ci/ci_sorana_predator_start.webp` | ✅ 已接（-2033）：`ASSETS.ci_sorana_predator` 改指 `_start.webp`，`_v5` 已回收；舊靜態圖 `ci_sorana_predator.webp` 已無引用（未刪）。原圖改用 `ci_sorana_predator1.png`（眉毛清楚）；A 段＝LoRA 1.5 單彈一下的第 0～7 格；B 段＝從 A 第 7 格接、同樣的風、LoRA 0.6、咬刀、seed 1（Ray：「可以了 交件」） |
 | 諾薇兒聖徒化 CI | `resources/ci/anim/ci_nouvelle_saintinstall_v1/`（56 格、3.5 秒） | ✅ 程式已接（-2028）；⚠ -2029 CI 改回固定 1.5 秒 ⇒ 只看得到前 24 格左右（變身剛完成就撤），要不要重剪成 24 格等 Ray。靜態退路圖仍是舊 B 圖 —— 要換成 `saintinstall1` 得交 webp（新檔名），等 Ray |
 | 怪物待機 94 隻 | `tivot_wan/out/monsters/`（未進 resources） | ⚠ 等 Ray 檢查 `check.html`；每隻解碼約 33 MB 記憶體，交件要提醒程式做釋放 |
 
