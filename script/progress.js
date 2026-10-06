@@ -1451,6 +1451,14 @@ const BA_CHAPTERS = [
             /* 四座小祭壇（＝town.js 的 `DM_LIT`，改一邊要改另一邊） */
             'dunmor_lit_ossuary','dunmor_lit_cairn','dunmor_lit_kingsbarrow','dunmor_lit_brochtop' ],
     enter:'town', town:'dunmor', node:'altar' },
+  /* ══ 帝都・教廷衛士戰（ver -2043，Ray：「劇情還沒推到，但是先把帝都戰處理一下」）══ 測試入口：
+     落在旅店、插 `cap_raid` ⇒ 一進來就打第一場（旅店 → 上街區 → 廣場結算 → 舊街區）。
+     旗與好感照 Stage 16（劇情接上之前，這一段在哪一章還沒定）；旅店的初見／夢都當成看過。 */
+  { id:'capraid', name:i18nT('帝都・教廷衛士戰'), sub:i18nT('測試：旅店 → 上街區 → 廣場（結算）→ 舊街區'),
+    stage:16, clockHour:23, named:true, aff:A_AFF,
+    flags:[ 'cap_raid','mapcard_capital','inn_seen_capital_inn','town_capital_inn','town_kind_inn',
+            'inn_wait','inn_missed','cap_dream','inn_tip_sit','inn_tip_knock','inn_tip_sleep' ],
+    enter:'town', town:'capital', node:'inn' },
 ];
 /* 插在 Stage 9 之後，選單才是 9 → 10-A…12-A → 10-B…12-B → 13 → 14 的順序。 */
 CHAPTERS.splice(CHAPTERS.findIndex(c=>c.id==='stage9')+1, 0, ...A_CHAPTERS);

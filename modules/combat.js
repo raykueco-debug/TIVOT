@@ -645,6 +645,7 @@ function tap(num,cell,e){
      ⚠ 只有「依序點中」那一發會真的用到它；點錯照舊被劈落（`pierce` 為 false）。 */
   const critRoll = Math.random();
   const critHit  = num===state.expect && critRoll < critRateAt(state.critCombo);
+  rollShotParry();                  // 劈落的骰子也在這裡擲一次（ver -2043，見 parryNow）
   gunHitOnEnemy(cell, critHit);     // 槍擊特效映射到敵人對應位置
 
   // 聖徒化：依序點擊 16 格、受擊推進倒數槽（combat 於期間讓出主迴圈，交由 saint 驅動盤面游標）。
@@ -934,6 +935,7 @@ function gunHitOnEnemy(cell, pierce){
   const sx0=cr.left+cr.width/2 - top.left;
   const sy0=cr.top +cr.height/2 - top.top;
   const imp=enemy.enemyImpact(sx0, top.width, top.height);
+  enemy.noteImpact(imp.x, imp.y);   // 群體敵人：血量達標時倒的是被這一發打到的那一個（ver -2043）
   /* 劈落（ver -1957，米夏）：子彈打到那一點被銀色刀光擋下 —— 不噴槍火、不冒煙。
      ⚠ 條件與 `enemyDamage` 擋普攻那一條同一組（`parryNow`，鐵律 7）。 */
   if(!pierce && parryNow()){
@@ -1457,9 +1459,19 @@ function applyEnemyMods(dmg, src){
    ⚠ **暴擊打穿劈落**（ver -2012）：那一條不在這裡判 —— 這一支回答「牠現在擋不擋」，
      「這一發擋不擋得住」由呼叫端帶 `isCrit`／`pierce` 進來（`enemyDamage`／`gunHitOnEnemy`）。
    ⚠ 槍火那一邊（`gunHitOnEnemy`）與傷害這一邊（`enemyDamage`）都問這一支（鐵律 7）。 */
-function parryNow(){
-  return state.enemyParry && state.enemyHp>0 && !state.saintMode && !state.niMode && !state.dualWield;
+/* ⚠ ver -2043：`parryBasic` 是**機率**（1＝每發都擋，米夏；0.5＝一半，帝都教廷衛士 Ray 指定）。
+   骰子在 `tap` 開頭擲一次（`shotParry`），槍火（gunHitOnEnemy）與傷害（enemyDamage）讀同一顆 ——
+   同暴擊那一顆的理由（ver -2012）：兩邊各擲一次會「畫面被擋、血卻掉了」。
+   ⚠ 這一發的結果只活到這一次點擊結束（microtask 歸零），不會漏到下一發或別的路徑。 */
+let shotParry=false;
+function parryOpen(){
+  return state.enemyParry>0 && state.enemyHp>0 && !state.saintMode && !state.niMode && !state.dualWield;
 }
+function rollShotParry(){
+  shotParry = parryOpen() && Math.random() < state.enemyParry;
+  queueMicrotask(()=>{ shotParry=false; });
+}
+function parryNow(){ return shotParry && parryOpen(); }
 function enemyDamage(dmg,isCrit,silent,src){
   /* 劈落（ver -1957，Ray：「普攻無效」「劈落在畫面顯示字樣跳 guard」）：普攻整發不計，
      浮一個 GUARD。⚠ 連擊／破防值／清盤照常（`tap` 那一支在這之外記帳）——
@@ -2220,6 +2232,7 @@ function stopIntervalTimer(){ clearInterval(state.intervalTimer); stopDelayRing(
  *  UI
  * ========================================================================== */
 function updateBars(){
+  enemy.syncGroup();   // 群體敵人：每掉一份血倒一個（ver -2043；冪等）
   const eh=Math.max(0,state.enemyHp), ph=Math.max(0,state.playerHp);
   $('enemyHp').style.width=(eh/state.enemyMax*100)+'%';
   $('enemyHpNum').textContent=Math.round(eh)+' / '+state.enemyMax;
@@ -2742,6 +2755,8 @@ export function warmBattleImage(battleId){
     const en=(GAME_CONFIG.enemies||{})[B.enemy];
     const u=en && enemy.enemyImage(en);
     if(u){ const i=new Image(); i.src=u; }
+    /* 群體敵人的每一層（ver -2043）：開場就要整組站好，不然會先看到空的背景。 */
+    if(en && en.group) for(const n of en.group.order){ const i=new Image(); i.src=en.group.dir+'guard_'+n+'.webp'; }
     /* NI 那一刻要換的立繪與 cut-in（ver -1964，米夏）—— 先暖著，發動時不閃空白。 */
     const ls=en && en.lastStand;
     if(ls) [ls.image, ls.ci].forEach(k=>{ const p=k && asset(k); if(p){ const i=new Image(); i.src=p; } });
@@ -3348,6 +3363,8 @@ export function startGame(){
      ⚠ 敵血走 `initEnemyHp`（同教學那條具名管道）；`autoSaint` 在 900ms 後才發，那時血已經是 1。 */
   if(sb && sb.startHp>0) state.playerHp = Math.min(state.playerMax, sb.startHp|0);
   if(sb && sb.enemyHp>0) initEnemyHp(sb.enemyHp|0);
+  /* 群體敵人（ver -2043）：血量＝人數 × 每人血量（enemy.groupHp 是唯一計算點）。 */
+  { const ce=(GAME_CONFIG.enemies||{})[state.currentEnemyKey]; const gh=enemy.groupHp(ce); if(gh>0) initEnemyHp(gh); }
   /* ══ 連續戰鬥：接上一格的資源（ver -585（-893 前用詞），見 sessionSave 那一段的說明）══
      ⚠ 要在**所有歸零之後**才放回去 —— 這一段是「把上一格的殘值搬回來」，
        不是在開頭挖特例（那會讓「這一場重置了什麼」有兩份答案，鐵律 7）。

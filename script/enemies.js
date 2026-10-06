@@ -1007,6 +1007,100 @@ export const ENEMIES = {
         assault:'blunt',
       },
     },
+    /* ══ 帝都・教廷衛士戰（ver -2043，Ray 交辦；劇情還沒推到，先建好）══════════════════
+       旅店 → 上街區 → 攝政王廣場（打完結算）→ 舊街區（另一局；之後接船塢 Boss）。
+       上半是美術的**分層版**（去人背景＋每個衛兵一層），一個人 100 血、每掉 100 倒一個（`group`，ver -2043）。
+       ⚠ 前三場的受擊特效 Ray 沒指定，先照「拔刀的衛兵」：攻擊斬擊／按錯重擊／超時斬擊。 */
+    cap_guard_inn: {
+      name:'教廷衛士',
+      story:1, counterStagger:1, boss:0, riseFx:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      kind:'human', hitSe:null,
+      tier:'C', atype:'P', stageScale:1,
+      image:'enemy_cap_guard_inn',   // 去人背景（plate）；人在 group 那一層（ver -2043）
+      group:{ dir:'resources/background/capital/fight_hotel/', order:[2,3,1], hpEach:100 },   // order＝疊放（後→前，美術給的）；倒誰看子彈落點（enemy.js 的 pickVictim）
+      fit:{ pos:'50% 50%' }, noShadow:1,   // 整張插圖不要接地陰影
+      parryBasic:0.3,   // 普攻有 30% 被劈落（Ray：先說 50%、改「劈落率改 30%」；ver -2043 起 parryBasic 是機率）
+      hp:220,   // ⚠ 實際血量寫在戰鬥卡的 enemyHp（Ray 指定），這一格只是等級基準
+      attack:14,
+      atkInterval:null,
+      assaultEvery:[3,5],
+      assault:{ count:1, gap:0 },
+      entrance:null, special:[],
+      boardGrids:[9,9,9,9,16],
+      delayPenalty:{ seconds:5 },
+      hitFx:{ delay:'slash', wrong:'blunt', assault:'slash' },
+    },
+    cap_guard_uptown: {
+      name:'教廷衛士',
+      story:1, counterStagger:1, boss:0, riseFx:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      kind:'human', hitSe:null,
+      tier:'C', atype:'P', stageScale:1,
+      image:'enemy_cap_guard_uptown',   // 去人背景（plate）；人在 group 那一層（ver -2043）
+      group:{ dir:'resources/background/capital/fight_uptown/', order:[4,3,2,1], hpEach:100 },   // order＝疊放（後→前，美術給的）；倒誰看子彈落點（enemy.js 的 pickVictim）
+      fit:{ pos:'50% 50%' }, noShadow:1,   // 整張插圖不要接地陰影
+      parryBasic:0.3,   // 普攻有 30% 被劈落（Ray：先說 50%、改「劈落率改 30%」；ver -2043 起 parryBasic 是機率）
+      hp:220,   // ⚠ 實際血量寫在戰鬥卡的 enemyHp（Ray 指定），這一格只是等級基準
+      attack:14,
+      atkInterval:null,
+      assaultEvery:[3,5],
+      assault:{ count:1, gap:0 },
+      entrance:null, special:[],
+      boardGrids:[9,9,9,9,16],
+      delayPenalty:{ seconds:5 },
+      hitFx:{ delay:'slash', wrong:'blunt', assault:'slash' },
+    },
+    cap_guard_square: {
+      name:'教廷衛士・指揮官',
+      story:1, counterStagger:1, boss:0, riseFx:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      kind:'human', hitSe:null,
+      tier:'B', atype:'P', stageScale:1,
+      image:'enemy_cap_guard_square',   // 去人背景（plate）；人在 group 那一層（ver -2043）
+      group:{ dir:'resources/background/capital/fight_square/', order:[4,5,2,3,1], hpEach:100 },   // order＝疊放（後→前，美術給的）；倒誰看子彈落點（enemy.js 的 pickVictim）
+      fit:{ pos:'50% 50%' }, noShadow:1,   // 整張插圖不要接地陰影
+      hp:300,   // ⚠ 實際血量寫在戰鬥卡的 enemyHp（Ray 指定），這一格只是等級基準
+      attack:17,
+      atkInterval:null,
+      assaultEvery:[3,5],
+      assault:{ count:1, gap:0 },
+      entrance:null, special:[],
+      boardGrids:[9,9,9,16,16],
+      delayPenalty:{ seconds:5 },
+      hitFx:{ delay:'slash', wrong:'blunt', assault:'slash' },
+    },
+    cap_guard_oldtown: {
+      name:'教廷衛士',
+      story:1, counterStagger:1, boss:0, riseFx:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      kind:'human', hitSe:null,
+      tier:'C', atype:'P', stageScale:1,
+      image:'enemy_cap_guard_oldtown',   // 去人背景（plate）；人在 group 那一層（ver -2043）
+      group:{ dir:'resources/background/capital/fight_downtown/', order:[3,4,2,1], hpEach:100 },   // order＝疊放（後→前，美術給的）；倒誰看子彈落點（enemy.js 的 pickVictim）
+      fit:{ pos:'50% 50%' }, noShadow:1,   // 整張插圖不要接地陰影
+      hp:220,   // ⚠ 實際血量寫在戰鬥卡的 enemyHp（Ray 指定），這一格只是等級基準
+      attack:14,
+      atkInterval:null,
+      assaultEvery:[3,5],
+      assault:{ count:1, gap:0 },
+      entrance:null, special:[],
+      boardGrids:[9,9,9,9,16],
+      delayPenalty:{ seconds:5 },
+      hitFx:{ delay:'slash', wrong:'blunt', assault:'bullet' }   // Ray：攻擊槍彈型／按錯重擊／超時斬擊,
+    },
     guild_hunter: {
       name:'賞金獵人',
       story:1, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）

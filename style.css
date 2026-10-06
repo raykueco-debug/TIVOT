@@ -365,6 +365,13 @@
      ⚠ 用動畫不用 transition：連點時 transition 會被下一次覆蓋掉、只剩最後一下，
        動畫才每一發都完整播（呼叫端每次 remove→reflow→add）。 */
   #enemyImg.hit{animation:enemyHit .15s ease-out;}
+  /* 群體敵人（ver -2043）：每個人一層，版型照 #enemyImg（同尺寸的透明圖疊在去人背景上就對位）。
+     命中時整組跟著閃縮；倒下＝下沉淡出。 */
+  #enemyGroup{position:absolute;inset:0;pointer-events:none;}
+  #enemyGroup .eg-guard{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;
+    transition:transform .45s ease-in, opacity .45s ease-in, filter .45s;}
+  #enemyGroup .eg-guard.eg-down{transform:translateY(6%);opacity:0;filter:brightness(.4);}
+  #enemyImg.hit + #enemyGroup{animation:enemyHit .15s ease-out;}
   @keyframes enemyHit{
     0%  {transform:translateX(0)    scale(1);    filter:brightness(1.9) saturate(.6);}
     35% {transform:translateX(-5px) scale(.985); filter:brightness(1.35) saturate(.8);}

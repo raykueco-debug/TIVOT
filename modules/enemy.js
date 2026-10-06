@@ -1149,9 +1149,98 @@ try{
   if(eImg0) eImg0.addEventListener('load', ()=>placeEnemyShadow());
   window.addEventListener('resize', ()=>placeEnemyShadow());
 }catch(_){}
+/* ══ 群體敵人（ver -2043，Ray：「一個人 100 血，每打掉 100 血倒一個」，帝都教廷衛士戰）══════════
+   卡上 `group:{ dir, order, hpEach }`：
+     · `image` ＝**去人背景**（plate），照舊進 `#enemyImg`（cover）；
+     · 每個人一層透明圖（`<dir>guard_<n>.webp`，與 plate 同尺寸，疊上去就對位），
+       依 `order`（後→前，美術給的）疊在 `#enemyGroup` 裡 —— 版型與 `#enemyImg` 同一套；
+     · 血量＝人數 × `hpEach`（`groupHp`，combat.startGame 只算這一次，鐵律 7）；
+     · 每掉 `hpEach` 倒一個。**倒哪一個**（Ray：「倒的會是 hp 達標時被子彈打到的那一個」）：
+       ① 最後一發子彈的落點（`noteImpact`，combat 的 gunHitOnEnemy 記）壓在誰身上（逐人 alpha 判定，前排優先）
+       ② 落在背景上 ⇒ 離落點最近的那一個（各人輪廓的重心）
+       ③ 沒有落點（反擊、聖徒化之類）⇒ 最前排還站著的那一個
+   ⚠ 倒下只有 `fallGuard()` 一支（Ray：「之後會有倒地動畫，記得預留」）——
+     現在演「下沉淡出」（style.css 的 `.eg-down`）；換成逐格動畫時只改這一支。
+   ⚠ 命中的閃縮：`#enemyImg.hit + #enemyGroup` 跟著一起演（style.css），整組是同一個敵人。 */
+let groupCard=null, groupMasks={}, lastImpact=null;
+const MASK_W=192;
+function groupEl(){
+  let g=$('enemyGroup');
+  if(!g){ const eImg=$('enemyImg'); if(!eImg) return null;
+    g=document.createElement('div'); g.id='enemyGroup'; eImg.after(g); }
+  return g;
+}
+/* 每個人的輪廓（縮小的 alpha 遮罩＋重心）：落點判定用。圖載到才建。 */
+function buildMask(im){
+  try{
+    const w=MASK_W, h=Math.round(MASK_W*im.naturalHeight/im.naturalWidth);
+    const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+    const cx=cv.getContext('2d'); cx.drawImage(im,0,0,w,h);
+    const d=cx.getImageData(0,0,w,h).data, a=new Uint8Array(w*h);
+    let sx=0, sy=0, cnt=0;
+    for(let k=0;k<w*h;k++){ const v=d[k*4+3]; a[k]=v; if(v>96){ sx+=k%w; sy+=(k/w)|0; cnt++; } }
+    groupMasks[im.dataset.n]={ w, h, a, cx:cnt?sx/cnt/w:0.5, cy:cnt?sy/cnt/h:0.5 };
+  }catch(_){}
+}
+function buildGroup(en){
+  const g=groupEl(); if(!g) return;
+  groupCard = (en && en.group) ? en : null;
+  groupMasks={}; lastImpact=null; g.innerHTML='';
+  if(!groupCard) return;
+  const G=en.group, pos=(en.fit&&en.fit.pos)||'';
+  for(const n of G.order){
+    const im=document.createElement('img'); im.className='eg-guard'; im.dataset.n=n; im.alt='';
+    if(pos) im.style.objectPosition=pos;
+    im.onload=()=>buildMask(im);
+    im.src=G.dir+'guard_'+n+'.webp';
+    g.appendChild(im);
+  }
+}
+/* 最後一發子彈打在 `#top` 的哪一點（px，#top 相對）。combat 的 gunHitOnEnemy 每一發都記。 */
+export function noteImpact(x, y){ lastImpact = (x!=null && y!=null) ? { x, y } : null; }
+/* `#top` 上的一點 → 圖上的比例座標（照 object-fit:cover ＋ object-position 換算）。 */
+function toImageUV(x, y, im){
+  const g=$('enemyGroup'), top=$('top'); if(!g || !top || !im.naturalWidth) return null;
+  const gr=g.getBoundingClientRect(), tr=top.getBoundingClientRect();
+  x += tr.left-gr.left; y += tr.top-gr.top;          // 落點是 #top 相對 → 換成這一層的框
+  const W=gr.width, H=gr.height, iw=im.naturalWidth, ih=im.naturalHeight;
+  const k=Math.max(W/iw, H/ih), dw=iw*k, dh=ih*k;
+  const p=String(getComputedStyle(im).objectPosition||'50% 0%').split(/\s+/).map(v=>parseFloat(v)/100);
+  const ox=(W-dw)*(isNaN(p[0])?0.5:p[0]), oy=(H-dh)*(isNaN(p[1])?0:p[1]);
+  return { u:(x-ox)/dw, v:(y-oy)/dh };
+}
+function pickVictim(alive){
+  if(!alive.length) return null;
+  if(lastImpact){
+    /* ① 壓在誰身上：前排先問（order 是後→前，所以倒著找） */
+    for(let i=alive.length-1;i>=0;i--){
+      const im=alive[i], m=groupMasks[im.dataset.n], uv=toImageUV(lastImpact.x, lastImpact.y, im);
+      if(!m || !uv || uv.u<0 || uv.u>1 || uv.v<0 || uv.v>1) continue;
+      if(m.a[Math.min(m.h-1,(uv.v*m.h)|0)*m.w + Math.min(m.w-1,(uv.u*m.w)|0)] > 96) return im;
+    }
+    /* ② 落在背景上：離落點最近的那一個 */
+    let best=null, bd=1e9;
+    for(const im of alive){ const m=groupMasks[im.dataset.n], uv=toImageUV(lastImpact.x, lastImpact.y, im);
+      if(!m || !uv) continue; const d=(uv.u-m.cx)**2+(uv.v-m.cy)**2; if(d<bd){ bd=d; best=im; } }
+    if(best) return best;
+  }
+  return alive[alive.length-1];   // ③ 最前排
+}
+/* 倒下：**唯一的一支**（Ray：之後會有倒地動畫 —— 換的時候只改這裡）。 */
+function fallGuard(im){ im.classList.add('eg-down'); }
+/* 依現在的敵血決定該倒幾個（combat.updateBars 每次都叫，冪等）：還沒倒夠就再倒，每一個照落點挑。 */
+export function syncGroup(){
+  const g=$('enemyGroup'); if(!g || !groupCard) return;
+  const G=groupCard.group, each=G.hpEach||100, n=G.order.length;
+  const shouldStand=Math.max(0, Math.min(n, Math.ceil(Math.max(0,state.enemyHp)/each)));
+  let alive=[...g.children].filter(im=>!im.classList.contains('eg-down'));
+  while(alive.length>shouldStand){ const v=pickVictim(alive); if(!v) break; fallGuard(v); alive=alive.filter(x=>x!==v); }
+}
+export function groupHp(en){ return (en && en.group) ? en.group.order.length*(en.group.hpEach||100) : 0; }
 export function loadEnemyPortrait(en){
   const eImg = $('enemyImg');
   if(!eImg) return;
+  buildGroup(en);   // 群體敵人的每一層（沒有 group 的怪＝清空，ver -2043）
   shadowCard = en || null;
   groundShadow.hide($('enemyShadow'));     // 換怪：新的腳量好之前不留上一隻的影子
   clearTimeout(riseT); riseT=0;
@@ -1541,7 +1630,7 @@ export function setEnemy(key, opts){
      ⚠ 與 `Ganymede:-1` 不是同一件事：抗性那一條至少留 1 點（`applyEnemyMods`），
        而且畫面上照樣噴槍火 —— 讀起來是「打不痛」不是「被擋下」。
      ⚠ 只擋普攻：反擊／雙槍破防／聖徒化追打照常（那些才是打得動牠的路）。 */
-  state.enemyParry     = !!en.parryBasic;
+  state.enemyParry     = (en.parryBasic===true) ? 1 : (+en.parryBasic || 0);   // 機率（ver -2043：1＝每發都擋、0.5＝一半）
   /* 卡上 `healOnFault:0.1` ＝玩家點錯／受擊／逾時，敵回最大 HP 的這一成（ver -1858，羅賽爾「慈愛殘像」）。 */
   state.enemyHealOnFault = +en.healOnFault || 0;
   /* 防禦型的 BR 增傷（ver -1584，Ray：「防禦型 BR 統一增傷 50%」）——

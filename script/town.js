@@ -1082,6 +1082,15 @@ export const TOWNS = {
        ⚠ 賞金獵人與打靶那兩場是**特殊戰**（玩家自己走過去挑的），
          那幾段 act 寫 `pullSafehouse:true`：開演前拔旗、演完插回去。 */
     safehouse: true,
+    /* ══ 教廷衛士戰（ver -2043，Ray 交辦；劇情還沒推到，先由管理人章節進）══════════════
+       插 `cap_raid` ＝帝都進入城鎮戰：只有「走」與「打」，末端只留旅店（起點）與船塢（之後的 Boss）。
+       動線：旅店 → 上街區 → 攝政王廣場（打完結算）→ 舊街區（另一局）。中心區走得到但沒東西。
+       ⚠ 安全區旗：城鎮戰期間進城**不插**（modules/town.js 的 `siegeArmed`）；開啟這一段的事件
+         要負責把已經插著的 `safehouse_capital` 拔掉（鐵律 9：誰開戰誰拔）。
+       ⚠ `until` 現在是舊街區清掉；船塢 Boss 做好之後改成 Boss 那一格。 */
+    siege: { from:'cap_raid', until:'cap_clear_oldtown', keep:['inn','dock'], bgm:'crisis' },
+    /* ⚠ 四場段落都寫 `fromStage:0`：帝都有章節窗（storyStages:[0,1]），窗外的段落一律不演 ——
+       這一段的開關是 `cap_raid` 本身，不看章節（明寫的例外，見 modules/town.js 的 storyOff）。 */
     name: '帝都',
     storyStages:[0,1],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     entry: 'square',
@@ -1222,6 +1231,7 @@ export const TOWNS = {
       square: {
         bg:'capital_square', name:'帝都　攝政王廣場',
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
+        acts:[ { flag:'cap_clear_square', need:'cap_raid', fromStage:0, storyBattle:true, lines:[ { battle:'cap_guard_square' } ] } ],   // 第三場（指揮官，打完結算；ver -2043）
         once:true,
         lines:[ nou('surprise','帝都的攝政王廣場，好壯觀。'),
                 nou('surprise','每次看都覺得很震憾呢。') ],
@@ -1315,6 +1325,7 @@ export const TOWNS = {
         /* ver -788：左進（square 左→oldtown）→右出（右回 square）。原本 down→square
            違反「左進右出」，把 square 挪到 right、被佔的 guild 移到空出的 down。 */
         exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' },
+        acts:[ { flag:'cap_clear_oldtown', need:'cap_raid', fromStage:0, storyBattle:true, lines:[ { battle:'cap_guard_oldtown' } ] } ],   // 第四場（另一局；ver -2043）
         lines:[
           nou('cringe','這地方……好像很複雜。'),
           nou('surprise','啊，是要去保養武器嗎？'),
@@ -1638,6 +1649,7 @@ export const TOWNS = {
         /* ver -788：右進（square 右→uptown）→左出（左回 square）。square 挪到 left、
            被佔的 grocery 移到空出的 down。 */
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' },
+        acts:[ { flag:'cap_clear_uptown', need:'cap_raid', fromStage:0, storyBattle:true, lines:[ { battle:'cap_guard_uptown' } ] } ],   // 教廷衛士戰第二場（ver -2043）
         lines:[
           /* 肚子叫：沒有台詞的一拍（立繪＋音效），停一秒自己走（§6.5）。 */
           { speaker:'NOUVELLE', text:'', auto:1000, se:'se_tummy',
@@ -1714,6 +1726,8 @@ export const TOWNS = {
            ⚠ `until:'stage1_open'` ＝只在第一夜；`need` ＝旅店初見演完（同睡覺鈕的 `sleepFlag`）。
            ⚠ 「怎麼能讓你死在這裡」那兩句用 `fluster`（ver -1889，Ray：「cringe 改 cecilie_si_fluster」）。 */
         acts:[
+          /* 教廷衛士戰第一場（ver -2043）：排在最前面 —— 城鎮戰開著時先打這一格。 */
+          { flag:'cap_clear_inn', need:'cap_raid', fromStage:0, storyBattle:true, lines:[ { battle:'cap_guard_inn' } ] },
           { flag:'cap_dream', need:'inn_seen_capital_inn', until:'stage1_open', sleepFirst:{ hours:1, disguise:true, blackAfter:3000 },   /* 睡覺音播完再黑三秒才入夢（ver -1893，Ray） */
             storyBattle:true, lines:[
             { speaker:'NARRATION', text:'', auto:700, fadeOut:1, bg:'holyseedungeonwhole', bgm:'deepfrost', show:false },   // 場景曲（ver -1888，Ray 指定）

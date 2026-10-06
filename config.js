@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2042';
+export const VERSION = 'ver 2026.09.22-2043';
 
 export const GAME_CONFIG = {
 
@@ -2585,6 +2585,12 @@ export const GAME_CONFIG = {
                   { who:'sorana',       img:'tut_sorana_guardtalk', text:i18nT('盡量別殺！往森林裡趕！') },
                   { who:'sorana',       img:'tut_sorana_ready',   text:i18nT('要上了！') },
                 ]} ] },
+    /* ══ 帝都・教廷衛士戰（ver -2043，Ray 交辦）══ 旅店→上街區→廣場 同一局（廣場打完結算），
+       舊街區另外一局（船塢 Boss 做好之後接成同一局、收尾移到船塢）。血量＝人數×100（敵人卡的 group）。 */
+    cap_guard_inn: { enemy:'cap_guard_inn', session:'cap_raid' },
+    cap_guard_uptown: { enemy:'cap_guard_uptown', session:'cap_raid' },
+    cap_guard_square: { enemy:'cap_guard_square', session:'cap_raid', sessionEnd:true },
+    cap_guard_oldtown: { enemy:'cap_guard_oldtown' },
     sv_altar: { enemy:'sv_reliquary', session:'shinier_siege' },
     sv_wild:  { enemy:'sv_bear', session:'shinier_siege', sessionEnd:true },
     /* ══ 夏爾森林野生遭遇（ver -862（-893 前用詞）；-869 掛 session）══
@@ -4603,6 +4609,11 @@ export const ASSETS = {
   cutin_obe_nouvelle:    "resources/ci/ci_nouvelle_obe.webp?v=1b547b75",
   /* 賽西莉（ver -1886，帝都第一夜的夢境戰；美術交件 png→webp）。 */
   cutin_cecilie_saint:   "resources/ci/ci_cecilie_saintinstall.webp",
+  // 帝都・教廷衛士戰：去人背景（ver -2043，美術分層版 3cb77b95；人在敵人卡的 group）
+  enemy_cap_guard_inn:     "resources/background/capital/fight_hotel/plate.webp",
+  enemy_cap_guard_uptown:  "resources/background/capital/fight_uptown/plate.webp",
+  enemy_cap_guard_square:  "resources/background/capital/fight_square/plate.webp",
+  enemy_cap_guard_oldtown: "resources/background/capital/fight_downtown/plate.webp",
   cutin_cecilie_obe:     "resources/ci/ci_cecilie_obe.webp",
   cutin_cecilie_guard:   "resources/ci/ci_cecilie_deathguard.webp",
   cutin_cecilie_return:  "resources/ci/ci_cecilie_lifereturn.webp",

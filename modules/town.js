@@ -397,9 +397,16 @@ function actHasBattle(a){ const L=actLines(a); return !!(L && L.some(l=>l && l.b
      踩過的安全點或結算點」，安全點正是這一種段落。 */
 function actHasSettle(a){ const L=actLines(a); return !!(L && L.some(l=>l && l.settle)); }
 function siegeOn(){
+  const g=siegeArmed();
+  if(!g) return null;
+  if(prog.hasFlag(safehouseFlag())) return null;
+  return g;
+}
+/* 城鎮戰「已經開了、還沒結束」（不看安全區旗）—— 進城插安全區旗之前問它（ver -2043，帝都教廷衛士戰：
+   帝都平常進城就插安全區旗，那會把城鎮戰整個蓋掉）。`siegeOn` 也從它出發（鐵律 7）。 */
+function siegeArmed(){
   const g=(TOWNS[townId]||{}).siege;
   if(!g || !g.from || !prog.hasFlag(g.from)) return null;
-  if(prog.hasFlag(safehouseFlag())) return null;
   if(g.until && prog.hasFlag(g.until)) return null;
   return g;
 }
@@ -5291,7 +5298,7 @@ export function open(town, node, opts){
      ⚠ 為什麼要真的插一支旗而不是「沒寫 siege 就當安全」：**旗才拔得掉**。
        特殊戰（帝都的賞金獵人、打靶）就是靠拔它才打得起來（見 `pullSafehouse`）。
      ⚠ 插在 `townId` 設好之後 —— 旗名是由它推的。 */
-  if(T.safehouse && !prog.hasFlag(safehouseFlag())) prog.addFlags([safehouseFlag()]);
+  if(T.safehouse && !siegeArmed() && !prog.hasFlag(safehouseFlag())) prog.addFlags([safehouseFlag()]);   // 城鎮戰期間不插（ver -2043）
   /* ══⚠⚠⚠ 「**來過這張圖了**」（`visitFlag`，ver -1188）══════════════════════
      三座遺蹟是 Ray 開放給玩家自己挑順序的（`s9_ruins_open`「三遺蹟全開」），
      所以「**先去了哪一座**」會一直是分歧的條件（伊甸古墓那一段就是第一個）。
