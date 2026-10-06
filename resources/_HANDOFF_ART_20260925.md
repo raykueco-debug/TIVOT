@@ -337,12 +337,13 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 
 ### ⚠ 程式端要接（鐵律 11：美術不碰程式）
 **索拉娜共鬥 CI 動起來**（Ray：「先把 lora15 接上 ci 看看」）
-- 交件：`resources/ci/anim/ci_sorana_predator/frame_00~23.webp`（24 格、480×720、約 1.1 MB、整張含背景、非 alpha）。
+- 交件：`resources/ci/anim/ci_sorana_predator/frame_00~23.webp`（24 格、480×720、約 1.2 MB、整張含背景、非 alpha）。
+  ⚠ 10-06 換版：Wan 生 4 秒（65 格、LoRA 1.5、seed 423310195），**切第 40～63 格＝只彈一下**（Ray 選定）；舊版（3 秒平均抽格）進 `_recycle/`。
 - 對應靜態圖：`config` 的 `cutin:'ci_sorana_predator'`（共鬥的變身 cut-in）。
 - 播法：**24 格以 16fps 播一輪＝1.5 秒，剛好等於 `#cutin` 動畫長度**（推入 0.27s／停 ~1s／推出 0.27s），不循環。
   推入推出的滑動照舊由 CSS 做（Ray：「CI 照樣由遊戲滑，動畫只要帶出往右跳的慣性」）。
 - ⚠ 解析度比靜態圖低（480×720 vs 683×1024），全螢幕會略糊 —— 先接上看效果再說。
-- ⚠ 第 0 格≈靜態圖，載入前可先顯示靜態圖當退路。
+- ⚠ 第 0 格**不等於**靜態圖（切自中段，姿勢光影略有差）；載入前仍可先顯示靜態圖當退路。
 
 ### 產法（之後其他 CI 照抄）
 - 工具 `ComfyUI-master/tivot_wan/tivot_wan.py --mode ci --lora zxtp_wan22_bb_high.safetensors:1.5 --fps 8 --length 49`（首尾不鎖、英文提示詞：右往左的風＋胸部彈跳形變、姿勢鏡頭不變）。
