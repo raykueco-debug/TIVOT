@@ -116,6 +116,16 @@ export function activateSaint(dir){
      installCutinKey(),
      { noShot:true });
 }
+/* 這位搭檔這一場**可能用到**的變身 cut-in（ver -2034：給 combat 預熱動檔用）。
+   ⚠ 分流照 `activateSaint` 那一支（安雅＝惡夢化、索菈娜＝共鬥、其餘＝聖徒化）—— 改那邊要一起改這裡。 */
+export function partnerCutinKeys(){
+  const pc=(GAME_CONFIG.partners||{})[state.pickedPartner]||{};
+  const ks=[pc.cutin];
+  if(storyMode() && state.pickedPartner==='anya') ks.push('ci_anya_ni', NI_BURST_CUTIN, NI_MELT_CUTIN);
+  else if(storyMode() && state.pickedPartner==='sorana') ks.push(pc.cutin || 'ci_sorana_predator');
+  else ks.push(installCutinKey());
+  return ks.filter(Boolean);
+}
 /* 聖徒化降臨用哪一張 cut-in（ver -2028 抽出來：發動與 combat 的預熱都問它，鐵律 7）。 */
 export function installCutinKey(){
   const pc=(GAME_CONFIG.partners||{})[state.pickedPartner]||{};
@@ -1116,12 +1126,19 @@ function finishSaintMode(finalHpThunk){
    預熱：每一格 `new Image()` ＋ `decode()`，全部好了才算 ready；播的時候只換 `src`
    （已解碼的圖在記憶體快取裡，換 src 不必再解一次）。沒 ready 就照舊播靜態圖。 */
 const ciAnim = {};   // key → { urls, ready }
+/* 這一張動檔實際要播哪幾格（ver -2034）：預設 0..frames-1；`pick:{from,to,step}` ＝從原檔挑一段
+   （to 不含）—— 去頭去尾／抽格都在這裡，不必去搬美術的檔案。CI 驗收頁有同一段（tools/ci_review.html，兩邊互指）。 */
+function ciAnimUrls(A){
+  const P=A.pick||{}, a=P.from||0, b=(P.to!=null?P.to:A.frames), st=P.step||1, out=[];
+  for(let i=a;i<b;i+=st) out.push(A.dir+'frame_'+String(i).padStart(2,'0')+'.webp');
+  return out;
+}
 export function warmCutinAnim(key){
   const A=(GAME_CONFIG.tuning.cutinAnim||{})[key];
   if(!A) return;
   const old=ciAnim[key];
   if(old && (old.ready || old.pending)) return;   // 好了／暖著 → 不重來；上一次失敗 → 重暖
-  const urls=[]; for(let i=0;i<A.frames;i++) urls.push(A.dir+'frame_'+String(i).padStart(2,'0')+'.webp');
+  const urls=ciAnimUrls(A);
   const rec=ciAnim[key]={ urls, ready:false, pending:true, imgs:[] };
   Promise.all(urls.map(u=>{ const im=new Image(); im.src=u; rec.imgs.push(im);
       return im.decode ? im.decode().catch(()=>{}) : Promise.resolve(); }))

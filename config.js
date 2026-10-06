@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2033';
+export const VERSION = 'ver 2026.09.22-2034';
 
 export const GAME_CONFIG = {
 
@@ -3444,7 +3444,7 @@ export const GAME_CONFIG = {
     /* ══ CI 的長度（ver -2030，Ray：「諾的 SI CI 改成 2 秒看看」）══ 鑰匙＝靜態圖的鍵，值＝毫秒；
        沒寫＝1.5 秒。推入／停留／撤出的比例照 1.5 秒那一版放大（style.css 的 --ci-dur）。
        ⚠ 與 `cutinAnim` 的播放速度無關：動檔照自己的速度播，CI 時間到就撤。 */
-    cutinDur: { cutin_nouvelle_saint:2000, ci_sorana_predator:2000 },   // 索拉娜共鬥 ver -2032（Ray：「2 秒可以」；_v7 動檔剛好 2 秒）
+    cutinDur: { cutin_nouvelle_saint:2000, ci_sorana_predator:2000, ci_anya_dreambreaker:2000 },   // 安雅夢境粉碎 ver -2034（Ray：「跟諾一樣」）   // 索拉娜共鬥 ver -2032（Ray：「2 秒可以」；_v7 動檔剛好 2 秒）
     /* ══ cut-in 動檔（ver -2021，美術交接 §十八：索拉娜共鬥）══ 鑰匙＝靜態圖的鍵（`cutin:` 那一格）；
        有這一列的那張 CI 播時逐格換圖（saint.playCutin），推入推出照舊是 CSS 那一套。
        有寫 `fps` ＝照那個速度播、播完停在最後一格到 cut-in 撤下（ver -2027）；沒寫 ＝ `frames` 格平均分在 `ms` 裡播完。
@@ -3459,7 +3459,11 @@ export const GAME_CONFIG = {
          **重交動檔請換資料夾名**，不要就地覆蓋。 */
     cutinAnim: { ci_sorana_predator:{ dir:'resources/ci/anim/ci_sorana_predator_v7/', frames:32, ms:2000 },   // ver -2033：_v7（Ray 新原圖 predator1，單彈＋小晃，32 格 2 秒＝cutinDur，全程在動）
                  /* ver -2028：56 格平均分到 3.5 秒＝16fps。⚠ CI 長 2 秒（cutinDur，ver -2030），播到第 32 格左右就撤。 */
-                 cutin_nouvelle_saint:{ dir:'resources/ci/anim/ci_nouvelle_saintinstall_v1/', frames:56, ms:3500 } },   // ver -2027：1.5 秒直出取第一下，12 格 16fps（≈750ms）後停在最後一格
+                 cutin_nouvelle_saint:{ dir:'resources/ci/anim/ci_nouvelle_saintinstall_v1/', frames:56, ms:3500 },
+                 /* ver -2034：安雅夢境粉碎 _v1（A→B 一鏡到底，原檔 64 格 4 秒＝16fps）。
+                    Ray：「frame 數減半、維持時長，然後去頭 1.5 秒、去尾 0.5 秒」⇒ 隔格取（8fps），
+                    取 1.5~3.5 秒那一段＝原檔第 24～54 格（偶數）共 16 格、2 秒播完＝ CI 長度。 */
+                 ci_anya_dreambreaker:{ dir:'resources/ci/anim/ci_anya_dreambreaker_v1/', frames:64, pick:{from:24, to:56, step:2}, ms:2000 } },   // ver -2027：1.5 秒直出取第一下，12 格 16fps（≈750ms）後停在最後一格
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],
@@ -4317,7 +4321,7 @@ export const ASSETS = {
   se_soranacounterhit: "resources/audio/se/se_soranacounterhit.m4a",  // 飛刀命中
   se_glasscrack:       "resources/audio/se/se_glasscrack.m4a",        // 破防/ovk 裂紋輻射（ver -839）
   /* 夢境粉碎（ver -674，Ray 交件）：惡夢化期間上滑的那一發。 */
-  ci_anya_dreambreaker: "resources/ci/ci_anya_dreambreaker.webp?v=5b660d7e",   // ver -702：Ray 又換了一版
+  ci_anya_dreambreaker: "resources/ci/ci_anya_dreambreaker_start.webp",   // ver -2034：動檔 _v1 的第 0 格（Ray 新給的 A 圖）；舊的握拳金光那張（B 圖）沒有人用了
   /* 惡夢化熔斷（ver -692，Ray 交件 `CI_Anya_OBE`）：倒數槽抽乾的那一結局。 */
   ci_anya_obe:    "resources/ci/ci_anya_obe.webp?v=f8337149",
   /* stage7・養息之間那一拍（ver -922，Ray 的稿：安：CI_Anya_scared）。 */
