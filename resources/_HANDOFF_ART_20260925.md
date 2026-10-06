@@ -348,6 +348,11 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 - ✅ **程式端已接**（ver -2025，`5a111f10`）：檔案搬到 `resources/ci/anim/ci_sorana_predator_v3/`，`config` 的 `tuning.cutinAnim` 指它（24 格、1500 ms）。
 - ⚠⚠ **重交動檔一律開新資料夾（`_v4`、`_v5`…），不要覆蓋舊資料夾**：檔名都是 `frame_NN`，同名覆蓋時手機快取會吃到舊圖、版本號也分不出是哪一組（程式端 -2025 要求）。
 
+- ⚠⚠ **10-06 再換版 → `_v4`**（Ray：「1.5 秒直出取第一下是可以的」）：
+  `resources/ci/anim/ci_sorana_predator_v4/frame_00~11.webp`（**12 格**、480×720、含背景）。
+  來源：Wan 直出 1.5 秒（25 格、LoRA 1.5、seed 隨機那次）的第 0～11 格＝完整的第一下（上甩→落底→回原位）。
+  **播法：12 格以 16fps 播（750 ms），然後停在最後一格直到 1500 ms 結束**。第 0 格≈靜態圖。
+
 ### 產法（之後其他 CI 照抄）
 - 工具 `ComfyUI-master/tivot_wan/tivot_wan.py --mode ci --lora zxtp_wan22_bb_high.safetensors:1.5 --fps 8 --length 49`（首尾不鎖、英文提示詞：右往左的風＋胸部彈跳形變、姿勢鏡頭不變）。
 - LoRA：Bouncing B（HF `zxtopower/loras`，只有 High）。⚠ 授權只寫「生成內容可自由發佈、不必付費」，沒明寫商用 —— **上架前要私訊作者確認**。
