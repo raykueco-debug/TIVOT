@@ -1066,3 +1066,5 @@ when	from	to	reason
 20261006-201102	resources/ci/anim/ci_sorana_predator_v4	_recycle/resources/ci/anim/ci_sorana_predator_v4	ver -2031：索拉娜共鬥換 _v5（48 格 3 秒），_v4 退役
 20261006-211003	resources/ci/anim/ci_sorana_predator_v5	_recycle/resources/ci/anim/ci_sorana_predator_v5	ver -2033：索拉娜共鬥換 _v7（32 格 2 秒），_v5 退役
 20261006-211121	resources/ci/anim/ci_sorana_predator_v6	_recycle/resources/ci/anim/ci_sorana_predator_v6	補眉毛試做，Ray 改用 predator1 原圖重做 _v7，不用
+20261006-231516	resources/ci/anim/ci_sorana_predator_v7	_recycle/resources/ci/anim/ci_sorana_predator_v7	ver -2040：Ray 的剪輯版（out/export）取代
+20261006-231516	resources/ci/anim/ci_cecilie_saintinstall_v1	_recycle/resources/ci/anim/ci_cecilie_saintinstall_v1	ver -2040：Ray 的剪輯版（out/export）取代
