@@ -919,6 +919,12 @@ export function applyEnemyFit(fit){
     /* ⚠ `fit.mode:'contain'`（ver -375）：**去背立繪**用的。滿版插圖走 cover（預設），
        但把對話立繪借來當戰鬥立繪時，cover 會把頭裁掉 —— 那種要 contain ＋ 背景。 */
     eImg.style.objectFit = (fit && fit.mode) || '';
+    /* 群體敵人（ver -2043，Ray：「縮放要讓我縮敵人，那個是戰鬥用背景」）：取景套在**人那一組**上 ——
+       框（inset／寬高）照抄 #enemyImg，每一層的 object-position／object-fit 也照抄。 */
+    { const g=$('enemyGroup');
+      if(g){ for(const k of ['left','right','top','bottom','width','height']) g.style[k]=eImg.style[k];
+             for(const im of g.querySelectorAll('.eg-guard')){ im.style.objectPosition=eImg.style.objectPosition; im.style.objectFit=eImg.style.objectFit; }
+             placeGroupShadows(); } }
 }
 export function stopEntranceSe(ms){
   for(const h of entranceCues){ try{ h.stop(ms==null ? 700 : ms); }catch(_){} }
@@ -1187,15 +1193,26 @@ function buildGroup(en){
   groupCard = (en && en.group) ? en : null;
   groupMasks={}; lastImpact=null; g.innerHTML='';
   if(!groupCard) return;
-  const G=en.group, pos=(en.fit&&en.fit.pos)||'';
+  const G=en.group;
   for(const n of G.order){
     const im=document.createElement('img'); im.className='eg-guard'; im.dataset.n=n; im.alt='';
-    if(pos) im.style.objectPosition=pos;
-    im.onload=()=>buildMask(im);
+    /* 接地陰影：每個人一顆（ver -2045，Ray：「他們是不是沒給影子啊」）——
+       美術的人物層是去背的、不帶影子；量腳與擺位照舊走 `groundShadow.place`（鐵律 8）。
+       影子全部排在人之前（DOM 序＝圖層）：後排的人也該站在前排的影子之上。 */
+    const sh=document.createElement('div'); sh.className='ground-shadow eg-shadow';
+    g.insertBefore(sh, g.querySelector('.eg-guard'));
+    im._sh=sh;
+    im.onload=()=>{ buildMask(im); groundShadow.place(im, sh); };
     im.src=G.dir+'guard_'+n+'.webp';
     g.appendChild(im);
   }
 }
+/* 取景變了（fit／視窗尺寸）就重擺每個人的影子。 */
+function placeGroupShadows(){
+  const g=$('enemyGroup'); if(!g || !groupCard) return;
+  for(const im of g.querySelectorAll('.eg-guard')) if(im._sh) groundShadow.place(im, im._sh);
+}
+try{ window.addEventListener('resize', ()=>placeGroupShadows()); }catch(_){}
 /* 最後一發子彈打在 `#top` 的哪一點（px，#top 相對）。combat 的 gunHitOnEnemy 每一發都記。 */
 export function noteImpact(x, y){ lastImpact = (x!=null && y!=null) ? { x, y } : null; }
 /* `#top` 上的一點 → 圖上的比例座標（照 object-fit:cover ＋ object-position 換算）。 */
@@ -1227,13 +1244,13 @@ function pickVictim(alive){
   return alive[alive.length-1];   // ③ 最前排
 }
 /* 倒下：**唯一的一支**（Ray：之後會有倒地動畫 —— 換的時候只改這裡）。 */
-function fallGuard(im){ im.classList.add('eg-down'); }
+function fallGuard(im){ im.classList.add('eg-down'); if(im._sh) im._sh.classList.add('eg-down'); }
 /* 依現在的敵血決定該倒幾個（combat.updateBars 每次都叫，冪等）：還沒倒夠就再倒，每一個照落點挑。 */
 export function syncGroup(){
   const g=$('enemyGroup'); if(!g || !groupCard) return;
   const G=groupCard.group, each=G.hpEach||100, n=G.order.length;
   const shouldStand=Math.max(0, Math.min(n, Math.ceil(Math.max(0,state.enemyHp)/each)));
-  let alive=[...g.children].filter(im=>!im.classList.contains('eg-down'));
+  let alive=[...g.querySelectorAll('.eg-guard')].filter(im=>!im.classList.contains('eg-down'));
   while(alive.length>shouldStand){ const v=pickVictim(alive); if(!v) break; fallGuard(v); alive=alive.filter(x=>x!==v); }
 }
 export function groupHp(en){ return (en && en.group) ? en.group.order.length*(en.group.hpEach||100) : 0; }
@@ -1241,6 +1258,10 @@ export function loadEnemyPortrait(en){
   const eImg = $('enemyImg');
   if(!eImg) return;
   buildGroup(en);   // 群體敵人的每一層（沒有 group 的怪＝清空，ver -2043）
+  /* 群體敵人：`#enemyImg` 不放圖（背景在 #top 的背景層，人在 #enemyGroup）——
+     元素留著當命中閃縮的觸發點（`#enemyImg.hit + #enemyGroup`），但不畫。 */
+  if(en && en.group){ eImg.removeAttribute('src'); eImg.style.visibility='hidden'; applyEnemyFit(en.fit); return; }
+  eImg.style.visibility='';
   shadowCard = en || null;
   groundShadow.hide($('enemyShadow'));     // 換怪：新的腳量好之前不留上一隻的影子
   clearTimeout(riseT); riseT=0;
@@ -1744,7 +1765,10 @@ export function setEnemy(key, opts){
   const topEl = $('top');
   if(topEl){
     const nm = state.battleBg || en.bg || '';
-    topEl.style.backgroundImage = nm ? ('url("'+story.bgUrl(nm)+'")') : '';
+    /* 群體敵人的去人背景（ver -2043）：**它就是這一場的戰鬥背景**，蓋過城鎮那一格的（battleBg）。
+       ⚠ 直接寫路徑（四張都叫 plate.webp，走 bgUrl 的資料夾表會撞名）。 */
+    const plate = en.group && en.group.plate;
+    topEl.style.backgroundImage = plate ? ('url("'+plate+'")') : nm ? ('url("'+story.bgUrl(nm)+'")') : '';
   }
   /* ⚠ `noArt`：開機那一次不載圖，而且**把 src 整個拔掉** —— 只是不載的話
      上一次留下的那張還掛在 `#enemyImg` 上，空窗一樣會露出來。 */

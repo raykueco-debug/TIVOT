@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2043';
+export const VERSION = 'ver 2026.09.22-2045';
 
 export const GAME_CONFIG = {
 
@@ -4609,11 +4609,7 @@ export const ASSETS = {
   cutin_obe_nouvelle:    "resources/ci/ci_nouvelle_obe.webp?v=1b547b75",
   /* 賽西莉（ver -1886，帝都第一夜的夢境戰；美術交件 png→webp）。 */
   cutin_cecilie_saint:   "resources/ci/ci_cecilie_saintinstall.webp",
-  // 帝都・教廷衛士戰：去人背景（ver -2043，美術分層版 3cb77b95；人在敵人卡的 group）
-  enemy_cap_guard_inn:     "resources/background/capital/fight_hotel/plate.webp",
-  enemy_cap_guard_uptown:  "resources/background/capital/fight_uptown/plate.webp",
-  enemy_cap_guard_square:  "resources/background/capital/fight_square/plate.webp",
-  enemy_cap_guard_oldtown: "resources/background/capital/fight_downtown/plate.webp",
+
   cutin_cecilie_obe:     "resources/ci/ci_cecilie_obe.webp",
   cutin_cecilie_guard:   "resources/ci/ci_cecilie_deathguard.webp",
   cutin_cecilie_return:  "resources/ci/ci_cecilie_lifereturn.webp",
