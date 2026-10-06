@@ -332,3 +332,23 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 3. 頁面會虛擬化舊訊息，**數 `<img>` 判斷新圖會錯位**；要用 `/backend-api/conversation/<id>` 照「提示詞→圖」對應下載；但**高頻查詢會 429**（每分鐘一次以內）。
 4. Gemini 只在 Chrome 視窗**沒被蓋住**時才渲染（Windows 遮擋偵測）；建議 Ray 關 `chrome://flags/#calculate-native-win-occlusion`、Gemini 獨立視窗。
 5. 差分每張都要**附 front 原圖**（同串接力會越畫越髒）；給 Ray 看之前先用**遊戲實際取景**（上半近正方形、cover 置中）自檢。
+
+## 十八、2026-10-06（Windows 4070 SUPER）：CI 動檔（索拉娜共鬥）＋怪物待機批次
+
+### ⚠ 程式端要接（鐵律 11：美術不碰程式）
+**索拉娜共鬥 CI 動起來**（Ray：「先把 lora15 接上 ci 看看」）
+- 交件：`resources/ci/anim/ci_sorana_predator/frame_00~23.webp`（24 格、480×720、約 1.1 MB、整張含背景、非 alpha）。
+- 對應靜態圖：`config` 的 `cutin:'ci_sorana_predator'`（共鬥的變身 cut-in）。
+- 播法：**24 格以 16fps 播一輪＝1.5 秒，剛好等於 `#cutin` 動畫長度**（推入 0.27s／停 ~1s／推出 0.27s），不循環。
+  推入推出的滑動照舊由 CSS 做（Ray：「CI 照樣由遊戲滑，動畫只要帶出往右跳的慣性」）。
+- ⚠ 解析度比靜態圖低（480×720 vs 683×1024），全螢幕會略糊 —— 先接上看效果再說。
+- ⚠ 第 0 格≈靜態圖，載入前可先顯示靜態圖當退路。
+
+### 產法（之後其他 CI 照抄）
+- 工具 `ComfyUI-master/tivot_wan/tivot_wan.py --mode ci --lora zxtp_wan22_bb_high.safetensors:1.5 --fps 8 --length 49`（首尾不鎖、英文提示詞：右往左的風＋胸部彈跳形變、姿勢鏡頭不變）。
+- LoRA：Bouncing B（HF `zxtopower/loras`，只有 High）。⚠ 授權只寫「生成內容可自由發佈、不必付費」，沒明寫商用 —— **上架前要私訊作者確認**。
+- 試過不行：寫「衝刺」→ 整個構圖重演；中文「明顯晃動」幾乎沒反應；極點停留＋大跳格 → Ray：「平均抽格加速播放還好一點」。
+
+### 怪物待機（idle）批次
+- `ComfyUI-master/tivot_wan/out/monsters/`，總檢查頁 `check.html`；3 秒 24 格 8fps；野獸系 `--style beast`（伏身低喘）／聖遺物・葬系・守墓者 `--style eerie`（詭異）／其餘呼吸。
+- 舊版（2 秒、全都舉手）在 `out/_old/`。還沒交件進 `resources/`，等 Ray 檢查完。
