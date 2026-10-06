@@ -122,7 +122,7 @@ export function partnerCutinKeys(){
   const pc=(GAME_CONFIG.partners||{})[state.pickedPartner]||{};
   const ks=[pc.cutin];
   if(storyMode() && state.pickedPartner==='anya') ks.push('ci_anya_ni', NI_BURST_CUTIN, NI_MELT_CUTIN);
-  else if(storyMode() && state.pickedPartner==='sorana') ks.push(pc.cutin || 'ci_sorana_predator');
+  else if(storyMode() && state.pickedPartner==='sorana') ks.push(pc.cutin || 'ci_sorana_predator', pc.coop && pc.coop.endCutin);   // ＋飛刀耗盡（ver -2051）
   else ks.push(installCutinKey(), storyMode() ? (pc.obeCutin || 'cutin_obe_nouvelle') : 'cutin_obe');   // 聖徒化＋OBE（ver -2037）
   return ks.filter(Boolean);
 }

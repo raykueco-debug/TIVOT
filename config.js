@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2050';
+export const VERSION = 'ver 2026.09.22-2051';
 
 export const GAME_CONFIG = {
 
@@ -3452,7 +3452,8 @@ export const GAME_CONFIG = {
        ⚠ 與 `cutinAnim` 的播放速度無關：動檔照自己的速度播，CI 時間到就撤。 */
     cutinDur: { cutin_nouvelle_saint:2000, ci_sorana_predator:1125, ci_anya_ni:2813,   // 安雅惡夢化 ver -2036（Ray：「動畫是 NI，DB 另外做」）
                 ci_anya_obe:2000, cutin_obe_nouvelle:2000,
-                cutin_cecilie_saint:3125, cutin_cecilie_obe:2000 },
+                cutin_cecilie_saint:3125, cutin_cecilie_obe:2000,
+                ci_sorana_obe:1625 },   // 索拉娜飛刀耗盡 ver -2051（26 格 16fps，撤出時還在播；同 cutinAnim 的 ms，兩處互指）
     /* ⚠ ver -2040（Ray：「秒數控制在每一個在撤出時都還在播放狀態，不要停」）：索拉娜共鬥／賽西莉聖徒化／賽西莉 OBE
        的 CI 長度＝那段動檔的實際長度（格數 ÷ 16fps）—— 最後一格剛出現就撤，不會停格。
        改動檔的格數就要一起改這裡（同一個數字的兩處，兩邊互指：cutinAnim 的 ms）。 */   // 兩張 OBE ver -2038（Ray：「兩個都改 2 秒」）；結局全畫面 CI（playSaintCutin）也讀這張表   // 索拉娜共鬥 ver -2032（Ray：「2 秒可以」；_v7 動檔剛好 2 秒）
@@ -3482,7 +3483,9 @@ export const GAME_CONFIG = {
                  /* ver -2040：Ray 的剪輯版（v1 剪 50 格，3.125 秒＝ cutinDur）；-2039 的「去頭 2 秒去尾 1 秒」已由這一版取代。 */
                  cutin_cecilie_saint:{ dir:'resources/ci/anim/ci_cecilie_saintinstall_v2/', frames:50, ms:3125 },
                  /* ver -2040：賽西莉 OBE（Ray 剪的 _cut_2，32 格 2 秒＝ cutinDur；結局全畫面 CI）。 */
-                 cutin_cecilie_obe:{ dir:'resources/ci/anim/ci_cecilie_obe_v1/', frames:32, ms:2000 } },
+                 cutin_cecilie_obe:{ dir:'resources/ci/anim/ci_cecilie_obe_v1/', frames:32, ms:2000 },
+                 /* ver -2051（Ray：「sora_obe_A2_cl2_s77_cut 接上索拉娜飛刀用盡」）：26 格 16fps＝1.625 秒＝ cutinDur。 */
+                 ci_sorana_obe:{ dir:'resources/ci/anim/ci_sorana_obe_v1/', frames:26, ms:1625 } },
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],
@@ -4332,7 +4335,7 @@ export const ASSETS = {
   ci_sorana_roar_renna:    "resources/ci/ci_sorana_roar_renna.webp?v=a9c77259",
   ci_sorana_roar_anya:     "resources/ci/ci_sorana_roar_anya.webp?v=d80e6c3b",
   ci_sorana_roar_nouvelle: "resources/ci/ci_sorana_roar_nouvelle.webp?v=5c3f9605",
-  ci_sorana_obe:           "resources/ci/ci_sorana_obe.webp?v=9137c47e",   // 飛刀耗盡（共鬥結束，ver -822）
+  ci_sorana_obe:           "resources/ci/ci_sorana_obe_start.webp",   // 飛刀耗盡：動檔 _v1 的第 0 格（ver -2051）；舊的 ci_sorana_obe.webp 已沒有人用
   /* 共鬥反擊的飛刀（ver -839，Ray 交件 weapon/dagger）：黑底光暈圖，畫面上走
      mix-blend-mode:screen（黑自然消失，同星芒那條的理由）。刀尖朝下＝畫的 +90°。 */
   vfx_dagger:         "resources/weapon/dagger.webp",
