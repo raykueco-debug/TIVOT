@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2038';
+export const VERSION = 'ver 2026.09.22-2039';
 
 export const GAME_CONFIG = {
 
@@ -3445,7 +3445,8 @@ export const GAME_CONFIG = {
        沒寫＝1.5 秒。推入／停留／撤出的比例照 1.5 秒那一版放大（style.css 的 --ci-dur）。
        ⚠ 與 `cutinAnim` 的播放速度無關：動檔照自己的速度播，CI 時間到就撤。 */
     cutinDur: { cutin_nouvelle_saint:2000, ci_sorana_predator:2000, ci_anya_ni:2000,   // 安雅惡夢化 ver -2036（Ray：「動畫是 NI，DB 另外做」）
-                ci_anya_obe:2000, cutin_obe_nouvelle:2000 },   // 兩張 OBE ver -2038（Ray：「兩個都改 2 秒」）；結局全畫面 CI（playSaintCutin）也讀這張表   // 索拉娜共鬥 ver -2032（Ray：「2 秒可以」；_v7 動檔剛好 2 秒）
+                ci_anya_obe:2000, cutin_obe_nouvelle:2000,
+                cutin_cecilie_saint:2000 },   // 賽西莉聖徒化 ver -2039（Ray 沒指定長度，先照諾薇兒的聖徒化 2 秒）   // 兩張 OBE ver -2038（Ray：「兩個都改 2 秒」）；結局全畫面 CI（playSaintCutin）也讀這張表   // 索拉娜共鬥 ver -2032（Ray：「2 秒可以」；_v7 動檔剛好 2 秒）
     /* ══ cut-in 動檔（ver -2021，美術交接 §十八：索拉娜共鬥）══ 鑰匙＝靜態圖的鍵（`cutin:` 那一格）；
        有這一列的那張 CI 播時逐格換圖（saint.playCutin），推入推出照舊是 CSS 那一套。
        有寫 `fps` ＝照那個速度播、播完停在最後一格到 cut-in 撤下（ver -2027）；沒寫 ＝ `frames` 格平均分在 `ms` 裡播完。
@@ -3471,7 +3472,10 @@ export const GAME_CONFIG = {
                     安雅熔斷走 playCutin、諾薇兒 OBE 走結局全畫面 playSaintCutin，兩張 CI 都 2 秒（cutinDur，ver -2038），播到第 32 格左右。
                     ⚠ 諾薇兒的動檔是 2:3（靜態圖 4:5 左右各裁 94px），結局 CI 是 cover 滿版，看不出差。 */
                  ci_anya_obe:{ dir:'resources/ci/anim/ci_anya_obe_v1/', frames:64, ms:4000 },
-                 cutin_obe_nouvelle:{ dir:'resources/ci/anim/ci_nouvelle_obe_v1/', frames:64, ms:4000 } },   // ver -2027：1.5 秒直出取第一下，12 格 16fps（≈750ms）後停在最後一格
+                 cutin_obe_nouvelle:{ dir:'resources/ci/anim/ci_nouvelle_obe_v1/', frames:64, ms:4000 },
+                 /* ver -2039（Ray：「賽西莉 SI 動畫交件，前兩秒去掉」「最後一秒也去掉」）：原檔 80 格 5 秒＝16fps，
+                    去頭 2 秒、去尾 1 秒＝第 32～63 格共 32 格 2 秒＝ CI 長度。 */
+                 cutin_cecilie_saint:{ dir:'resources/ci/anim/ci_cecilie_saintinstall_v1/', frames:80, pick:{from:32, to:64}, ms:2000 } },   // ver -2027：1.5 秒直出取第一下，12 格 16fps（≈750ms）後停在最後一格
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],
