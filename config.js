@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2030';
+export const VERSION = 'ver 2026.09.22-2031';
 
 export const GAME_CONFIG = {
 
@@ -3457,7 +3457,7 @@ export const GAME_CONFIG = {
        ⚠ 格還沒全部解碼好就退回靜態圖（第 0 格≈靜態圖），不會等它。
        ⚠ 檔名 `frame_NN` 每一組都一樣 —— 同名覆蓋時 `ASSET_VER` 分不出是哪一組，
          **重交動檔請換資料夾名**，不要就地覆蓋。 */
-    cutinAnim: { ci_sorana_predator:{ dir:'resources/ci/anim/ci_sorana_predator_v4/', frames:12, fps:16, ms:1500 },
+    cutinAnim: { ci_sorana_predator:{ dir:'resources/ci/anim/ci_sorana_predator_v5/', frames:48, ms:3000 },   // ver -2031：_v5（一晃＋輕呼吸，48 格 3 秒＝16fps，全程在動）
                  /* ver -2028：56 格平均分到 3.5 秒＝16fps。⚠ CI 長 2 秒（cutinDur，ver -2030），播到第 32 格左右就撤。 */
                  cutin_nouvelle_saint:{ dir:'resources/ci/anim/ci_nouvelle_saintinstall_v1/', frames:56, ms:3500 } },   // ver -2027：1.5 秒直出取第一下，12 格 16fps（≈750ms）後停在最後一格
 
