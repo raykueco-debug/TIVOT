@@ -353,6 +353,9 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
   來源：Wan 直出 1.5 秒（25 格、LoRA 1.5、seed 隨機那次）的第 0～11 格＝完整的第一下（上甩→落底→回原位）。
   **播法：12 格以 16fps 播（750 ms），然後停在最後一格直到 1500 ms 結束**。第 0 格≈靜態圖。
 
+- ✅ `_v4` 程式端已接（ver -2027，`d8a75598`），`_v3` 已回收。`tuning.cutinAnim` 格式：`{dir, frames, fps, ms}` ——
+  **要「播完停住」就寫 `fps`；要平均分配到整段就只寫 `ms`**。交件單照這個寫。
+
 ### 產法（之後其他 CI 照抄）
 - 工具 `ComfyUI-master/tivot_wan/tivot_wan.py --mode ci --lora zxtp_wan22_bb_high.safetensors:1.5 --fps 8 --length 49`（首尾不鎖、英文提示詞：右往左的風＋胸部彈跳形變、姿勢鏡頭不變）。
 - LoRA：Bouncing B（HF `zxtopower/loras`，只有 High）。⚠ 授權只寫「生成內容可自由發佈、不必付費」，沒明寫商用 —— **上架前要私訊作者確認**。
@@ -361,3 +364,12 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 ### 怪物待機（idle）批次
 - `ComfyUI-master/tivot_wan/out/monsters/`，總檢查頁 `check.html`；3 秒 24 格 8fps；野獸系 `--style beast`（伏身低喘）／聖遺物・葬系・守墓者 `--style eerie`（詭異）／其餘呼吸。
 - 舊版（2 秒、全都舉手）在 `out/_old/`。還沒交件進 `resources/`，等 Ray 檢查完。
+
+### ⚠ 程式端要接：諾薇兒聖徒化 CI 動檔（10-06，Ray：「3.5 秒給 code」）
+- 交件：`resources/ci/anim/ci_nouvelle_saintinstall_v1/frame_00~55.webp`（**56 格**、480×720、含背景、約 3.3 MB）。
+- 對應：`ASSETS.cutin_nouvelle_saint`（`ci_nouvelle_saintinstall.webp`，全畫面 cut-in）。
+- 播法：**56 格平均分配到 3500 ms（16fps）**，從推入到撤出全程都在動、**不停格**（Ray：「插入到撤出都是動畫，不可停」）。
+  ⇒ 這一張 CI 的總長要從 1.5 秒拉到 **3.5 秒**（CSS 的推入／停留／推出比例照舊或另議）。`cutinAnim` 寫 `ms:3500`、不寫 `fps`。
+- ⚠ 第 0 格＝`ci_nouvelle_saintinstall1.png`（暗金背景、手還張開），**不是**現在線上的靜態圖；最後一格接近 B（合十金光）但不等於它。
+- 產法：Wan A→B 一次生 4 秒（A＝`saintinstall1`、B＝`saintinstall`、LoRA Bouncing B 1.0、seed 7），**只剪第 0～55 格**（不要結尾吸附到 B 的那幾格 —— 兩段拼接的接點怎麼修都明顯，一鏡到底才沒有接點）。
+- ⚠ 同一條規矩回頭看：索拉娜 `_v4` 是「播完停住」，違反「不可停」—— 要不要重做等 Ray。
