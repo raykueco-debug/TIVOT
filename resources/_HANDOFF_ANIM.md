@@ -31,6 +31,8 @@
 | 諾薇兒聖徒化 CI | `resources/ci/anim/ci_nouvelle_saintinstall_v1/`（56 格、3.5 秒） | ✅ 程式已接（-2028）；⚠ -2029 CI 改回固定 1.5 秒 ⇒ 只看得到前 24 格左右（變身剛完成就撤），要不要重剪成 24 格等 Ray。靜態退路圖仍是舊 B 圖 —— 要換成 `saintinstall1` 得交 webp（新檔名），等 Ray |
 | 安雅**惡夢化（NI）發動** CI | `resources/ci/anim/ci_anya_dreambreaker_v1/`（64 格；⚠ 資料夾名是誤植，實際是 NI 發動） | ✅ 已接（-2036）：`cutinAnim.ci_anya_ni` 取 `pick:{from:24,to:56}`（去頭 1.5 秒、去尾 0.5 秒、原速 16fps、32 格 2 秒）。`ci_anya_dreambreaker_start.webp` 目前沒人用 |
 | 安雅夢境粉碎（DB）CI | 待做 → 交件開 `ci_anya_dreambreaker_v2/` | ⚠ 欠（等 Ray 給 A／B 圖） |
+| 安雅 OBE（熔斷）抱頭崩潰 CI | `resources/ci/anim/ci_anya_obe_v1/`（64 格、4 秒） | ⚠ 10-06 交件待接。單張 `ci_anya_obe.webp` 自由動 4 秒、無 LoRA、seed 7 |
+| 諾薇兒 OBE 崩潰金光爆散 CI | `resources/ci/anim/ci_nouvelle_obe_v1/`（64 格、4 秒） | ⚠ 10-06 交件待接。⚠ 原圖 1122×1402（4:5），送 Wan 前**左右各裁 94 px 成 2:3**，動檔比靜態圖窄；無 LoRA、seed 7 |
 | 怪物待機 94 隻 | `tivot_wan/out/monsters/`（未進 resources） | ⚠ 等 Ray 檢查 `check.html`；每隻解碼約 33 MB 記憶體，交件要提醒程式做釋放 |
 
 ## 等 Ray
