@@ -3257,7 +3257,8 @@ export function startGame(){
   }
   /* 搭檔定下來了 → 暖她的變身 cut-in 動檔（ver -2024：-2021 掛在 warmBattleImage，那時搭檔還沒挑，
      暖到的是上一位或沒有人；共鬥一局只發一次，第一次沒就緒就永遠看不到它動）。 */
-  { const pc=partner.currentPartner(); if(pc && pc.cutin) saint.warmCutinAnim(pc.cutin); }
+  { const pc=partner.currentPartner(); if(pc && pc.cutin) saint.warmCutinAnim(pc.cutin);
+    saint.warmCutinAnim(saint.installCutinKey()); }   // 聖徒化降臨那一張（ver -2028，諾薇兒 3.5 秒）
   /* ══⚠⚠⚠ **這一場的怪，只在這裡上場一次**（ver -1467，Ray：「打空戰怪的圖竟然是
      出地下聖徒？？？？這個東西改過好幾次了怎麼還是會出？？？？」）══
      這一行以前是 `startGame` 最上面那一句無條件的 `enemy.startLineup()` ——

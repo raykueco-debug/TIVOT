@@ -1654,7 +1654,7 @@
     background:radial-gradient(circle at 50% 50%,rgba(40,10,50,.6),rgba(5,4,10,.95));}
   #cutin.on{display:block;}
   #cutinFlash{position:absolute;inset:0;background:#fff;opacity:0;}
-  #cutin.on #cutinFlash{animation:cutinFlash 1.5s ease-out;}
+  #cutin.on #cutinFlash{animation:cutinFlash var(--ci-dur,1.5s) ease-out;}
   @keyframes cutinFlash{0%{opacity:1}12%{opacity:0}100%{opacity:0}}
   /* ⚠ scale 一律乘 var(--ci-s)（ver -837，Ray：「CI 後方角色不要被裁掉太多」）——
      96% 高再乘 1.2~1.3 等於放大到約 120%，低角度構圖的後方角色頭部會被裁掉。
@@ -1662,14 +1662,14 @@
   #cutinImg{position:absolute;top:50%;left:50%;height:96%;max-width:none;
     filter:drop-shadow(0 0 30px #c0308a) drop-shadow(0 0 12px #6a30c0);
     transform:translate(-50%,-50%) scale(calc(var(--ci-s,1)*1.3));opacity:0;}
-  #cutin.on #cutinImg{animation:cutinImg 1.5s cubic-bezier(.15,.7,.3,1);}
+  #cutin.on #cutinImg{animation:cutinImg var(--ci-dur,1.5s) cubic-bezier(.15,.7,.3,1);}   /* --ci-dur：saint.playCutin 依動檔長度設（ver -2028） */
   /* ══ 全屏 cut-in（ver -874，Ray：「索拉娜的被動技要放全屏」）══
      `playCutin` 的 opts.full：整張圖滿版 cover 淡入（不走滑入）——
      交件規格＝**直式 1024×1536**（同 OBE/熔斷那批；19.5:9 螢幕左右各裁一成半，
      主體置中就安全）。 */
   #cutin.full #cutinImg{top:0;left:0;height:100%;width:100%;max-width:100%;
     object-fit:cover;object-position:center top;transform:none;filter:none;}
-  #cutin.full.on #cutinImg{animation:cutinFullImg 1.5s ease-out;}
+  #cutin.full.on #cutinImg{animation:cutinFullImg var(--ci-dur,1.5s) ease-out;}
   @keyframes cutinFullImg{
     0%{opacity:0;transform:scale(1.06);}
     16%{opacity:1;transform:scale(1.03);}
@@ -1703,7 +1703,7 @@
   @keyframes ciReload{0%{transform:scale(1);filter:brightness(1);}
     35%{transform:scale(1.10);filter:brightness(1.5);}
     100%{transform:scale(1);filter:brightness(1);}}
-  #cutin.on #cutinText{animation:cutinText 1.5s ease-out;}
+  #cutin.on #cutinText{animation:cutinText var(--ci-dur,1.5s) ease-out;}
   @keyframes cutinText{0%{opacity:0;transform:skewX(-10deg) scale(2)}
     20%{opacity:1;transform:skewX(-10deg) scale(1)}
     80%{opacity:1}100%{opacity:0}}

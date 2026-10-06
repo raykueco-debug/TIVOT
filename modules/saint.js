@@ -113,11 +113,15 @@ export function activateSaint(dir){
      /* 聖徒化 cut-in 分流（ver -454，Ray：「story 版搭檔為諾薇兒時聖徒化用
         CI_Nouvelle_SAINTINSTALL」）：本篇＋搭檔諾薇兒＝她的那一張；
         其餘（試玩版、或日後本篇換搭檔）照舊 Luna。 */
-     (storyMode() && ((GAME_CONFIG.partners||{})[state.pickedPartner]||{}).saintCutin)
-       ? GAME_CONFIG.partners[state.pickedPartner].saintCutin          // 搭檔卡自己的那一張（ver -1886）
-     : (storyMode() && state.pickedPartner==='nouvelle') ? 'cutin_nouvelle_saint'
-                                                       : 'cutin_saint_luna',
+     installCutinKey(),
      { noShot:true });
+}
+/* 聖徒化降臨用哪一張 cut-in（ver -2028 抽出來：發動與 combat 的預熱都問它，鐵律 7）。 */
+export function installCutinKey(){
+  const pc=(GAME_CONFIG.partners||{})[state.pickedPartner]||{};
+  if(storyMode() && pc.saintCutin) return pc.saintCutin;                 // 搭檔卡自己的那一張（ver -1886）
+  if(storyMode() && state.pickedPartner==='nouvelle') return 'cutin_nouvelle_saint';
+  return 'cutin_saint_luna';
 }
 
 /* ============================================================================
@@ -1143,6 +1147,11 @@ export function playCutin(done, label, imgKey, opts){
   /* `opts.full`（ver -874，Ray：「索拉娜的被動技要放全屏」）：整張圖滿版 cover
      淡入（CSS 的 #cutin.full）。**每次都要設**——上一張的 full 不能殘留。 */
   if(c) c.classList.toggle('full', !!opts.full);
+  /* CI 的總長（ver -2028，Ray：「CI 從推入到撤出全程都要在動」→ 諾薇兒聖徒化 3.5 秒）：
+     有動檔就用它的 `ms`（那一列就是這張 CI 的長度，鐵律 7），沒有＝1.5 秒。
+     CSS 那幾段動畫讀 `--ci-dur`（style.css），撤下的計時也是同一個數字。 */
+  const ciDur = ((GAME_CONFIG.tuning.cutinAnim||{})[imgKey]||{}).ms || 1500;
+  if(c) c.style.setProperty('--ci-dur', (ciDur/1000)+'s');
   if(label!==undefined) $('cutinText').innerHTML = label;
   const ci=$('cutinImg');
   const src=imgKey ? asset(imgKey) : null;
@@ -1175,7 +1184,7 @@ export function playCutin(done, label, imgKey, opts){
          ⚠ **BR 不指**：`hintCurrentCell` 自己擋掉 `dualWield`（那一段無視順序，
            指一格反而誤導）—— 同一個真相只有一處（鐵律 7），不必在這裡再判一次。 */
       if(api.hintCurrentCell) api.hintCurrentCell();
-    }, 1500);
+    }, ciDur);
   };
   if(ci && src){
     if(ci.getAttribute('src')!==src) ci.src=src;
