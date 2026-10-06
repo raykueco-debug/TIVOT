@@ -1312,7 +1312,10 @@ function playSaintCutin(kind, done, reload){
     if(isVoiceKey(k)) SFX.playVoice(asset(k), sfxGain(k));
     else              SFX.play(asset(k), sfxGain(k));
   }
-  const holdMs = vis==='execute' ? 3000 : 1600;   // EXSECUTIŌ 停留 3 秒
+  /* 長度：`tuning.cutinDur` 有寫就照它（ver -2038，Ray：諾薇兒 OBE 2 秒），沒寫照舊（處決 3 秒、其餘 1.6 秒）。
+     發佈成 CSS 的 `--sc-dur`（style.css 的 #saintCutin 那幾段動畫讀它），計時也是同一個數字（鐵律 7）。 */
+  const holdMs = (GAME_CONFIG.tuning.cutinDur||{})[scImgKey[vis]] || (vis==='execute' ? 3000 : 1600);   // EXSECUTIŌ 停留 3 秒
+  c.style.setProperty('--sc-dur', (holdMs/1000)+'s');
   setTimeout(()=>{
     c.classList.remove('on');
     clearInterval(ciAnimT); ciAnimT=0;   // 動檔撤下時一併停（ver -2037）

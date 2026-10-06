@@ -1746,7 +1746,7 @@
   #saintCutin.execute .scimg[data-kind="execute"],
   #saintCutin.return .scimg[data-kind="return"],
   #saintCutin.boss .scimg[data-kind="boss"]{display:block;}
-  #saintCutin.on .scimg{animation:saintCutinImgIn 1.6s ease-out forwards;}
+  #saintCutin.on .scimg{animation:saintCutinImgIn var(--sc-dur,1.6s) ease-out forwards;}
   @keyframes saintCutinImgIn{0%{opacity:0;transform:scale(1.15)}
     18%{opacity:1;transform:scale(1)}82%{opacity:1;transform:scale(1)}
     100%{opacity:.85;transform:scale(1.03)}}
@@ -1758,7 +1758,7 @@
   #saintCutin.execute #saintCutinFlash{background:#fff;}
   #saintCutin.return #saintCutinFlash{background:#fff;}
   #saintCutin.boss #saintCutinFlash{background:#ff3b3b;}
-  #saintCutin.on #saintCutinFlash{animation:cutinFlash 1.6s ease-out forwards;}
+  #saintCutin.on #saintCutinFlash{animation:cutinFlash var(--sc-dur,1.6s) ease-out forwards;}
   #saintCutinStreak{position:absolute;inset:0;pointer-events:none;}
   #saintCutin.burst #saintCutinStreak{
     background:repeating-linear-gradient(-24deg,transparent 0 16px,rgba(255,223,120,.16) 16px 19px);}
@@ -1786,7 +1786,7 @@
     text-shadow:0 0 22px var(--holy),0 0 10px #ffe9a8,3px 3px 0 var(--gold);}
   #saintCutin.boss #saintCutinTitle{color:#fff;
     text-shadow:0 0 22px #ff3b6b,0 0 10px #ff8a8a,3px 3px 0 #6a1030;}
-  #saintCutin.on #saintCutinTitle{animation:saintCutinTitle 1.6s ease-out forwards;}
+  #saintCutin.on #saintCutinTitle{animation:saintCutinTitle var(--sc-dur,1.6s) ease-out forwards;}
   @keyframes saintCutinTitle{0%{opacity:0;transform:translateY(-50%) skewX(-8deg) scale(2.2)}
     18%{opacity:1;transform:translateY(-50%) skewX(-8deg) scale(1)}
     82%{opacity:1}100%{opacity:0;transform:translateY(-50%) skewX(-8deg) scale(1.05)}}
@@ -1805,7 +1805,7 @@
   #saintCutin.execute #saintCutinSub{color:#ffe9a8;text-shadow:0 0 14px var(--gold);}
   #saintCutin.return #saintCutinSub{color:var(--gold);text-shadow:0 0 12px var(--holy);}
   #saintCutin.boss #saintCutinSub{color:#ff9db3;text-shadow:0 0 12px #ff3b6b;}
-  #saintCutin.on #saintCutinSub{animation:cutinTextIn 1.6s ease-out forwards;}
+  #saintCutin.on #saintCutinSub{animation:cutinTextIn var(--sc-dur,1.6s) ease-out forwards;}
   /* EXSECUTIŌ 停留 3 秒：拉長各元素動畫 */
   #saintCutin.execute.on #saintCutinFlash{animation-duration:3s;}
   #saintCutin.execute.on #saintCutinTitle{animation:saintCutinTitleHold 3s ease-out forwards;}
