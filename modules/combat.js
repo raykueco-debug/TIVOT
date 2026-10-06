@@ -2756,6 +2756,7 @@ export function warmBattleImage(battleId){
     const u=en && enemy.enemyImage(en);
     if(u){ const i=new Image(); i.src=u; }
     /* 群體敵人的每一層（ver -2043）：開場就要整組站好，不然會先看到空的背景。 */
+    if(en && en.group && en.group.plate){ const i=new Image(); i.src=en.group.plate; }   // 背景層（#top）
     if(en && en.group) for(const n of en.group.order){ const i=new Image(); i.src=en.group.dir+'guard_'+n+'.webp'; }
     /* NI 那一刻要換的立繪與 cut-in（ver -1964，米夏）—— 先暖著，發動時不閃空白。 */
     const ls=en && en.lastStand;

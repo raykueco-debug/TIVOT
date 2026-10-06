@@ -1168,7 +1168,7 @@ try{
    ⚠ 倒下只有 `fallGuard()` 一支（Ray：「之後會有倒地動畫，記得預留」）——
      現在演「下沉淡出」（style.css 的 `.eg-down`）；換成逐格動畫時只改這一支。
    ⚠ 命中的閃縮：`#enemyImg.hit + #enemyGroup` 跟著一起演（style.css），整組是同一個敵人。 */
-let groupCard=null, groupMasks={}, lastImpact=null;
+let groupCard=null, groupMasks={}, lastImpact=null, groupWaitT=0;
 const MASK_W=192;
 function groupEl(){
   let g=$('enemyGroup');
@@ -1194,6 +1194,10 @@ function buildGroup(en){
   groupMasks={}; lastImpact=null; g.innerHTML='';
   if(!groupCard) return;
   const G=en.group;
+  /* 整組一起出場（ver -2047）：冷快取時一個一個冒出來很難看 —— 全部載到才掀（保險 4 秒）。 */
+  g.classList.add('eg-wait');
+  let left=G.order.length; const done=()=>{ if(--left<=0) g.classList.remove('eg-wait'); };
+  clearTimeout(groupWaitT); groupWaitT=setTimeout(()=>g.classList.remove('eg-wait'), 4000);
   for(const n of G.order){
     const im=document.createElement('img'); im.className='eg-guard'; im.dataset.n=n; im.alt='';
     /* 接地陰影：每個人一顆（ver -2045，Ray：「他們是不是沒給影子啊」）——
@@ -1202,7 +1206,8 @@ function buildGroup(en){
     const sh=document.createElement('div'); sh.className='ground-shadow eg-shadow';
     g.insertBefore(sh, g.querySelector('.eg-guard'));
     im._sh=sh;
-    im.onload=()=>{ buildMask(im); groundShadow.place(im, sh); };
+    im.onload=()=>{ buildMask(im); groundShadow.place(im, sh); done(); };
+    im.onerror=done;
     im.src=G.dir+'guard_'+n+'.webp';
     g.appendChild(im);
   }
