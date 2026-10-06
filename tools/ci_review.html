@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CI 驗收</title>
+<!-- CI 驗收頁（ver -2026，Ray：「把眨眼鈕換成 ci，ci 都不要 loop」「還有暫停重播跟逐格鈕」）。
+     管理人模式首頁的「CI」鈕跳過來（同眨眼驗收頁的跳頁作法）。
+     資料全讀 config：ASSETS 裡 ci_／cutin_ 開頭的靜態圖 ＋ tuning.cutinAnim 的動檔（鐵律 7：不另列名單）。
+     ⚠ 動檔一律只播一輪、停在最後一格（同遊戲裡 saint.playCutin），**沒有循環**。 -->
+<style>
+:root{--bg:#15151b;--fg:#e8e2d0;--dim:#8a8578;--gold:#d8b45a;--card:#1f1f27}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 system-ui,"Microsoft JhengHei",sans-serif}
+header{position:sticky;top:0;z-index:2;background:#101015ee;padding:10px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;border-bottom:1px solid #333}
+header b{color:var(--gold)} input,label{color:var(--fg)}
+input{background:#222;border:1px solid #444;padding:4px 8px;border-radius:4px}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:12px 16px}
+.c{background:var(--card);border-radius:6px;padding:6px;cursor:pointer}
+.c img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:3px;background:#2a2a34;display:block}
+.n{font-size:12px;color:var(--gold);margin-top:4px;word-break:break-all}
+.n span{color:var(--dim)} .tag{color:#7fd4a0}
+#view{position:fixed;inset:0;background:#000e;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:5;padding:12px;box-sizing:border-box}
+#view.on{display:flex}
+#vimg{max-width:96vw;max-height:72vh;object-fit:contain}
+#bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+#bar button{min-width:64px;padding:10px 12px;font-size:15px;background:#2a2a34;color:var(--fg);border:1px solid #555;border-radius:6px}
+#bar button:disabled{opacity:.35}
+#info{color:var(--dim);font-size:13px;text-align:center}
+</style></head><body>
+<header><a href="../index.html" style="color:var(--gold);text-decoration:none">← 首頁</a><b>CI 驗收</b><span id="cnt"></span>
+<input id="q" placeholder="篩選（例 sorana）">
+<label><input type="checkbox" id="onlyAnim"> 只看動檔</label>
+<span style="color:var(--dim)">點一張打開；動檔只播一輪，停在最後一格</span></header>
+<div id="grid"></div>
+<div id="view">
+  <img id="vimg" alt="">
+  <div id="info"></div>
+  <div id="bar">
+    <button id="bPrev">◀ 上一格</button>
+    <button id="bPlay">▶ 播放</button>
+    <button id="bPause">❚❚ 暫停</button>
+    <button id="bReplay">↺ 重播</button>
+    <button id="bNext">下一格 ▶</button>
+    <button id="bClose">✕ 關閉</button>
+  </div>
+</div>
+<script type="module">
+const V='?t='+Date.now();
+const C=await import('../config.js'+V);
+const ASSETS=C.ASSETS, ANIM=(C.GAME_CONFIG.tuning&&C.GAME_CONFIG.tuning.cutinAnim)||{};
+const keys=Object.keys(ASSETS).filter(k=>/^(ci_|cutin_)/.test(k) && /\.(webp|png|jpe?g)(\?|$)/i.test(ASSETS[k])).sort();
+for(const k of Object.keys(ANIM)) if(keys.indexOf(k)<0) keys.push(k);
+const url=p=>'../'+String(p).replace(/^\.?\//,'');
+const frames=k=>{ const A=ANIM[k]; if(!A) return null;
+  const a=[]; for(let i=0;i<A.frames;i++) a.push(url(A.dir+'frame_'+String(i).padStart(2,'0')+'.webp'));
+  return a; };
+const grid=document.getElementById('grid'); const cards=[];
+for(const k of keys){
+  const d=document.createElement('div'); d.className='c';
+  const A=ANIM[k];
+  d.innerHTML='<img loading="lazy" src="'+(ASSETS[k]?url(ASSETS[k]):frames(k)[0])+'"><div class="n">'+k
+    +(A?' <span class="tag">動 '+A.frames+' 格／'+(A.ms||1500)+'ms</span>':'')+'</div>';
+  d.onclick=()=>open(k); grid.appendChild(d); cards.push({k,d,anim:!!A});
+}
+const cnt=document.getElementById('cnt');
+function filt(){ const q=document.getElementById('q').value.trim().toLowerCase(), oa=document.getElementById('onlyAnim').checked;
+  let n=0; for(const c of cards){ const show=(!q||c.k.toLowerCase().includes(q)) && (!oa||c.anim); c.d.style.display=show?'':'none'; if(show) n++; }
+  cnt.textContent=n+' 張（動檔 '+cards.filter(c=>c.anim).length+'）'; }
+document.getElementById('q').oninput=filt; document.getElementById('onlyAnim').onchange=filt; filt();
+
+/* ── 檢視器：一輪、不循環 ── */
+const view=document.getElementById('view'), vimg=document.getElementById('vimg'), info=document.getElementById('info');
+let cur=null, fr=null, idx=0, timer=0, step=100;
+const $=id=>document.getElementById(id);
+function show(i){ idx=Math.max(0,Math.min(fr.length-1,i)); vimg.src=fr[idx]; label(); }
+function label(){ info.textContent=cur+(fr?'　格 '+(idx+1)+' / '+fr.length+'　'+(timer?'播放中':'停'):'　（靜態圖）'); }
+function stop(){ clearInterval(timer); timer=0; }
+function play(){ if(!fr) return; stop(); if(idx>=fr.length-1) idx=0;   // 停在最後一格時按播放＝從頭
+  show(idx); timer=setInterval(()=>{ if(idx>=fr.length-1){ stop(); label(); return; } show(idx+1); }, step); label(); }
+function open(k){
+  cur=k; fr=frames(k); stop(); view.classList.add('on');
+  const A=ANIM[k];
+  if(fr){ step=(A.ms||1500)/fr.length; fr.forEach(u=>{ const i=new Image(); i.src=u; }); idx=0; show(0); play(); }
+  else { vimg.src=url(ASSETS[k]); }
+  for(const b of ['bPrev','bPlay','bPause','bReplay','bNext']) $(b).disabled=!fr;
+  label();
+}
+$('bPlay').onclick=play;
+$('bPause').onclick=()=>{ stop(); label(); };
+$('bReplay').onclick=()=>{ if(!fr) return; stop(); idx=0; play(); };
+$('bPrev').onclick=()=>{ if(!fr) return; stop(); show(idx-1); };
+$('bNext').onclick=()=>{ if(!fr) return; stop(); show(idx+1); };
+$('bClose').onclick=()=>{ stop(); view.classList.remove('on'); };
+addEventListener('keydown',e=>{ if(!view.classList.contains('on')) return;
+  if(e.key==='ArrowLeft') $('bPrev').click(); else if(e.key==='ArrowRight') $('bNext').click();
+  else if(e.key===' '){ e.preventDefault(); timer?$('bPause').click():$('bPlay').click(); }
+  else if(e.key==='Escape') $('bClose').click(); });
+</script>
+</body></html>

@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2025';
+export const VERSION = 'ver 2026.09.22-2026';
 
 export const GAME_CONFIG = {
 
@@ -5631,30 +5631,6 @@ export const ASSET_VER = {
   'east_university_day': 'caaf76f4',
   'east_university_dusk': '7d82df44',
   'east_university_night': 'a4396469',
-  'frame_00': '9e823ebf',
-  'frame_01': '483e1ecf',
-  'frame_02': '3776eff6',
-  'frame_03': 'f1254b66',
-  'frame_04': '0b862198',
-  'frame_05': '87de6abf',
-  'frame_06': 'a1362a65',
-  'frame_07': 'a560aced',
-  'frame_08': '5b331830',
-  'frame_09': '26073916',
-  'frame_10': '03dbad5c',
-  'frame_11': '7d9f3f53',
-  'frame_12': 'e5776bf2',
-  'frame_13': 'b0d4805d',
-  'frame_14': '08d3e564',
-  'frame_15': '69dca5e7',
-  'frame_16': 'ac9c928c',
-  'frame_17': 'f737a1ac',
-  'frame_18': 'ff3e948f',
-  'frame_19': '3a716653',
-  'frame_20': '865b7301',
-  'frame_21': '8a56bf38',
-  'frame_22': '8a4623e9',
-  'frame_23': 'b784b18d',
   'guildcounterca_si_closed': '80cc27b6',
   'guildcounterca_si_half': 'f341b6bb',
   'kidd_ci': 'a4cda953',
