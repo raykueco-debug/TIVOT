@@ -3296,7 +3296,11 @@ export function startGame(){
   }
   /* 搭檔定下來了 → 暖她的變身 cut-in 動檔（ver -2024：-2021 掛在 warmBattleImage，那時搭檔還沒挑，
      暖到的是上一位或沒有人；共鬥一局只發一次，第一次沒就緒就永遠看不到它動）。 */
-  for(const k of saint.partnerCutinKeys()) saint.warmCutinAnim(k);   // 沒登記動檔的鍵 warmCutinAnim 自己略過（ver -2034）
+  /* ⚠ ver -2052（Ray：「士兵讀取速度有點慢」）：**等這一場的敵人圖載完才暖**。上百格的動檔一開戰就丟出去，
+     敵人圖排在它們後面（手機一次只開 6 條連線），衛士實測晚了快 7 秒才出現。
+     setTimeout 0：這一行跑的時候怪還沒上場（下面才 setEnemy）。 */
+  setTimeout(()=>{ enemy.visualsReady().then(()=>{
+    for(const k of saint.partnerCutinKeys()) saint.warmCutinAnim(k); }); }, 0);   // 沒登記動檔的鍵 warmCutinAnim 自己略過（ver -2034）
   /* ══⚠⚠⚠ **這一場的怪，只在這裡上場一次**（ver -1467，Ray：「打空戰怪的圖竟然是
      出地下聖徒？？？？這個東西改過好幾次了怎麼還是會出？？？？」）══
      這一行以前是 `startGame` 最上面那一句無條件的 `enemy.startLineup()` ——

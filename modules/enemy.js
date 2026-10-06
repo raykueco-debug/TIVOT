@@ -1293,6 +1293,18 @@ export function syncGroup(){
   let alive=[...g.querySelectorAll('.eg-guard')].filter(im=>!im.classList.contains('eg-down'));
   while(alive.length>shouldStand){ const v=pickVictim(alive); if(!v) break; fallGuard(v); alive=alive.filter(x=>x!==v); }
 }
+/* 這一場的敵人圖（群體＝每個人那一層；單隻＝#enemyImg）載完了沒（ver -2052）。
+   給「次要的預熱」排隊用：搭檔 CI 動檔一開戰就丟上百張請求，會把衛士圖擠到後面（實測等了快 7 秒）。
+   最多等 maxMs，到了照樣放行。 */
+export function visualsReady(maxMs){
+  maxMs = maxMs || 3000;
+  return new Promise(res=>{
+    const ok=()=>{ const ims = groupCard ? [...document.querySelectorAll('#enemyGroup .eg-guard')] : [$('enemyImg')];
+      return ims.every(im=>!im || !im.getAttribute('src') || im.complete); };
+    if(ok()) return res();
+    const t0=Date.now(), iv=setInterval(()=>{ if(ok() || Date.now()-t0>maxMs){ clearInterval(iv); res(); } }, 80);
+  });
+}
 export function groupHp(en){ return (en && en.group) ? en.group.order.length*(en.group.hpEach||100) : 0; }
 export function loadEnemyPortrait(en){
   const eImg = $('enemyImg');
