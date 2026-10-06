@@ -345,6 +345,9 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 - ⚠ 解析度比靜態圖低（480×720 vs 683×1024），全螢幕會略糊 —— 先接上看效果再說。
 - ⚠ 第 0 格**不等於**靜態圖（切自中段，姿勢光影略有差）；載入前仍可先顯示靜態圖當退路。
 
+- ✅ **程式端已接**（ver -2025，`5a111f10`）：檔案搬到 `resources/ci/anim/ci_sorana_predator_v3/`，`config` 的 `tuning.cutinAnim` 指它（24 格、1500 ms）。
+- ⚠⚠ **重交動檔一律開新資料夾（`_v4`、`_v5`…），不要覆蓋舊資料夾**：檔名都是 `frame_NN`，同名覆蓋時手機快取會吃到舊圖、版本號也分不出是哪一組（程式端 -2025 要求）。
+
 ### 產法（之後其他 CI 照抄）
 - 工具 `ComfyUI-master/tivot_wan/tivot_wan.py --mode ci --lora zxtp_wan22_bb_high.safetensors:1.5 --fps 8 --length 49`（首尾不鎖、英文提示詞：右往左的風＋胸部彈跳形變、姿勢鏡頭不變）。
 - LoRA：Bouncing B（HF `zxtopower/loras`，只有 High）。⚠ 授權只寫「生成內容可自由發佈、不必付費」，沒明寫商用 —— **上架前要私訊作者確認**。
