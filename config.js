@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2040';
+export const VERSION = 'ver 2026.09.22-2041';
 
 export const GAME_CONFIG = {
 
@@ -3444,7 +3444,7 @@ export const GAME_CONFIG = {
     /* ══ CI 的長度（ver -2030，Ray：「諾的 SI CI 改成 2 秒看看」）══ 鑰匙＝靜態圖的鍵，值＝毫秒；
        沒寫＝1.5 秒。推入／停留／撤出的比例照 1.5 秒那一版放大（style.css 的 --ci-dur）。
        ⚠ 與 `cutinAnim` 的播放速度無關：動檔照自己的速度播，CI 時間到就撤。 */
-    cutinDur: { cutin_nouvelle_saint:2000, ci_sorana_predator:1125, ci_anya_ni:2000,   // 安雅惡夢化 ver -2036（Ray：「動畫是 NI，DB 另外做」）
+    cutinDur: { cutin_nouvelle_saint:2000, ci_sorana_predator:1125, ci_anya_ni:2813,   // 安雅惡夢化 ver -2036（Ray：「動畫是 NI，DB 另外做」）
                 ci_anya_obe:2000, cutin_obe_nouvelle:2000,
                 cutin_cecilie_saint:3125, cutin_cecilie_obe:2000 },
     /* ⚠ ver -2040（Ray：「秒數控制在每一個在撤出時都還在播放狀態，不要停」）：索拉娜共鬥／賽西莉聖徒化／賽西莉 OBE
@@ -3465,12 +3465,9 @@ export const GAME_CONFIG = {
     cutinAnim: { ci_sorana_predator:{ dir:'resources/ci/anim/ci_sorana_predator_v8/', frames:18, ms:1125 },   // ver -2040：Ray 的剪輯版（v7 剪 18 格，1.125 秒＝ cutinDur）
                  /* ver -2028：56 格平均分到 3.5 秒＝16fps。⚠ CI 長 2 秒（cutinDur，ver -2030），播到第 32 格左右就撤。 */
                  cutin_nouvelle_saint:{ dir:'resources/ci/anim/ci_nouvelle_saintinstall_v1/', frames:56, ms:3500 },
-                 /* ⚠ ver -2036（Ray：「動畫是 NI，DB 另外做」）：這段是**惡夢化發動**的 CI，不是夢境粉碎 ——
-                    鍵由 ci_anya_dreambreaker 改掛 ci_anya_ni；資料夾名照美術交件的不動。
-                    ver -2034：原檔 A→B 一鏡到底，64 格 4 秒＝16fps。
-                    Ray：「去頭 1.5 秒、去尾 0.5 秒」「不要抽 frame」⇒ 16fps 原速，取 1.5~3.5 秒那一段
-                    ＝原檔第 24～55 格共 32 格、2 秒播完＝ CI 長度。（-2034 第一版隔格抽成 8fps，已撤） */
-                 ci_anya_ni:{ dir:'resources/ci/anim/ci_anya_dreambreaker_v1/', frames:64, pick:{from:24, to:56}, ms:2000 },
+                 /* ver -2041：安雅惡夢化（NI）改用 Ray 剪的 ni3 版（ci_anya_dreambreaker0_ni3_s77_cut，45 格 2.8125 秒＝ cutinDur，撤出時還在播）。
+                    -2034～-2036 那段（ci_anya_dreambreaker_v1 去頭去尾）已由這一版取代、資料夾已回收。DB（夢境粉碎）的動檔另外做。 */
+                 ci_anya_ni:{ dir:'resources/ci/anim/ci_anya_ni_v1/', frames:45, ms:2813 },
                  /* ver -2037（Ray：「兩個 obe 都可以交件」）：OBE 崩潰兩張，各 64 格 16fps＝4 秒。
                     安雅熔斷走 playCutin、諾薇兒 OBE 走結局全畫面 playSaintCutin，兩張 CI 都 2 秒（cutinDur，ver -2038），播到第 32 格左右。
                     ⚠ 諾薇兒的動檔是 2:3（靜態圖 4:5 左右各裁 94px），結局 CI 是 cover 滿版，看不出差。 */
