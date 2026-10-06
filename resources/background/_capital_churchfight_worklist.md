@@ -41,6 +41,23 @@
 - ⚠ 程式端：整張插圖＝**一個敵人**。現行對人類敵人的效果只有「命中整張閃白縮一下／連戰換人整張掠過／接地陰影」，**沒有倒下、也沒有個別淡出**（Ray 確認本來就沒這設計）。
   插圖放敵人層（命中會連背景一起閃）或背景層（命中無反應）由程式端決定；接地陰影對整張插圖應關掉。
 
+### 10-06 美術：廣場、舊街區出圖（待 Ray 驗收）
+- 廣場 `_battle_wip/capital_square_fight_v2.png`：4 衛兵＋指揮官（中央，金鍊與胸章區分）。ChatGPT 串 `https://chatgpt.com/c/6ac4f10e-d240-83ee-a2dc-56a783ba3b5b`
+- 舊街區 `_battle_wip/capital_downtown_fight_v2.png`：4 衛兵。串 `https://chatgpt.com/c/6ac4f142-00a4-83e8-8033-8d3d3d813c52`
+- 參考：該地點 `capital_*_battle.png`（場景）＋ `capital_uptown_fight_v3.png`（制服畫風）。
+- v1 兩側射手在遊戲裁切下被切掉 → v2 要求「全員收進中央 55% 寬」，裁切自檢 `_sq_dt_v2_review.jpg`。
+- ✅ 10-06 Ray：「可以，統一大小，交件」→ 旅店、上街區照廣場的人物大小重出（前排頭盔頂到腳底約佔畫面高 60~65%，全員在中央 55% 寬內）：
+  · 旅店 `capital_hotel_fight_v5.png`（串 `https://chatgpt.com/c/6ac4f3b2-6ed4-83ee-803f-fe9a50289e76`；舊串 `6ac4f2e5…` 生圖錯誤兩次棄用）
+  · 上街區 `capital_uptown_fight_v5.png`（串 `https://chatgpt.com/c/6ac4f2e8-ff70-83ee-aef6-49b2c69496a8`；v4 縮過頭 → v5 放大）。右射手貼邊的問題一併解決。
+- **交件**：`resources/background/capital/capital_{hotel,uptown,square,downtown}_fight.webp`（1536×1024，新檔名不是同名覆蓋）。四張並排自檢 `_battle_wip/_four_review2.jpg`。
+
+### ⚠ 程式端要接（鐵律 11，美術不碰）
+- 四場戰鬥的上半改用 `capital_<地點>_fight.webp`（整張插圖＝一個敵人）；放敵人層或背景層由程式定，整張插圖要關接地陰影。單張 ⇒ `noTime:true`。
+- 碼頭仍留空（Ray 改 Boss 戰）。
+
+### ⚠ 美術還欠
+- 分繪：去人背景 plate（旅店的舊 plate 是 v3 構圖，**已不對應 v5，要重出**）＋ 人物單獨去背疊層，四場都欠 —— 要不要做等 Ray（給個別中彈動畫用）。
+
 ## （舊）群體敵人構想
 教廷衛兵 a~f（`resources/_originals/SI/NPC/_vela_v2/church_guard_si_*.png`）組成 3~5 人群體圖（拔刀／射擊／遠處奔來），最後一場最多人。
 
