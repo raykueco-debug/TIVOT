@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2034';
+export const VERSION = 'ver 2026.09.22-2035';
 
 export const GAME_CONFIG = {
 
@@ -3461,9 +3461,9 @@ export const GAME_CONFIG = {
                  /* ver -2028：56 格平均分到 3.5 秒＝16fps。⚠ CI 長 2 秒（cutinDur，ver -2030），播到第 32 格左右就撤。 */
                  cutin_nouvelle_saint:{ dir:'resources/ci/anim/ci_nouvelle_saintinstall_v1/', frames:56, ms:3500 },
                  /* ver -2034：安雅夢境粉碎 _v1（A→B 一鏡到底，原檔 64 格 4 秒＝16fps）。
-                    Ray：「frame 數減半、維持時長，然後去頭 1.5 秒、去尾 0.5 秒」⇒ 隔格取（8fps），
-                    取 1.5~3.5 秒那一段＝原檔第 24～54 格（偶數）共 16 格、2 秒播完＝ CI 長度。 */
-                 ci_anya_dreambreaker:{ dir:'resources/ci/anim/ci_anya_dreambreaker_v1/', frames:64, pick:{from:24, to:56, step:2}, ms:2000 } },   // ver -2027：1.5 秒直出取第一下，12 格 16fps（≈750ms）後停在最後一格
+                    Ray：「去頭 1.5 秒、去尾 0.5 秒」「不要抽 frame」⇒ 16fps 原速，取 1.5~3.5 秒那一段
+                    ＝原檔第 24～55 格共 32 格、2 秒播完＝ CI 長度。（-2034 第一版隔格抽成 8fps，已撤） */
+                 ci_anya_dreambreaker:{ dir:'resources/ci/anim/ci_anya_dreambreaker_v1/', frames:64, pick:{from:24, to:56}, ms:2000 } },   // ver -2027：1.5 秒直出取第一下，12 格 16fps（≈750ms）後停在最後一格
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],
