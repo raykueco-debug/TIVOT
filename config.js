@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2036';
+export const VERSION = 'ver 2026.09.22-2037';
 
 export const GAME_CONFIG = {
 
@@ -3465,7 +3465,13 @@ export const GAME_CONFIG = {
                     ver -2034：原檔 A→B 一鏡到底，64 格 4 秒＝16fps。
                     Ray：「去頭 1.5 秒、去尾 0.5 秒」「不要抽 frame」⇒ 16fps 原速，取 1.5~3.5 秒那一段
                     ＝原檔第 24～55 格共 32 格、2 秒播完＝ CI 長度。（-2034 第一版隔格抽成 8fps，已撤） */
-                 ci_anya_ni:{ dir:'resources/ci/anim/ci_anya_dreambreaker_v1/', frames:64, pick:{from:24, to:56}, ms:2000 } },   // ver -2027：1.5 秒直出取第一下，12 格 16fps（≈750ms）後停在最後一格
+                 ci_anya_ni:{ dir:'resources/ci/anim/ci_anya_dreambreaker_v1/', frames:64, pick:{from:24, to:56}, ms:2000 },
+                 /* ver -2037（Ray：「兩個 obe 都可以交件」）：OBE 崩潰兩張，各 64 格 16fps＝4 秒。
+                    安雅熔斷走 playCutin（1.5 秒）、諾薇兒 OBE 走結局全畫面 playSaintCutin（1.6 秒）——
+                    CI 長度沒動，所以都只播到第 24~26 格左右；要加長再跟 Ray 定。
+                    ⚠ 諾薇兒的動檔是 2:3（靜態圖 4:5 左右各裁 94px），結局 CI 是 cover 滿版，看不出差。 */
+                 ci_anya_obe:{ dir:'resources/ci/anim/ci_anya_obe_v1/', frames:64, ms:4000 },
+                 cutin_obe_nouvelle:{ dir:'resources/ci/anim/ci_nouvelle_obe_v1/', frames:64, ms:4000 } },   // ver -2027：1.5 秒直出取第一下，12 格 16fps（≈750ms）後停在最後一格
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],

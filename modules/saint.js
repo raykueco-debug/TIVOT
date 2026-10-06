@@ -123,7 +123,7 @@ export function partnerCutinKeys(){
   const ks=[pc.cutin];
   if(storyMode() && state.pickedPartner==='anya') ks.push('ci_anya_ni', NI_BURST_CUTIN, NI_MELT_CUTIN);
   else if(storyMode() && state.pickedPartner==='sorana') ks.push(pc.cutin || 'ci_sorana_predator');
-  else ks.push(installCutinKey());
+  else ks.push(installCutinKey(), storyMode() ? (pc.obeCutin || 'cutin_obe_nouvelle') : 'cutin_obe');   // 聖徒化＋OBE（ver -2037）
   return ks.filter(Boolean);
 }
 /* 聖徒化降臨用哪一張 cut-in（ver -2028 抽出來：發動與 combat 的預熱都問它，鐵律 7）。 */
@@ -1184,6 +1184,7 @@ export function playCutin(done, label, imgKey, opts){
     if(ci && imgKey) playCiAnim(ci, imgKey);   // 動檔（有登記才播；沒有就是那張靜態圖）
     setTimeout(()=>{
       c.classList.remove('on');
+      clearInterval(ciAnimT); ciAnimT=0;   // 動檔比 CI 長的話，撤下時一併停（ver -2037：不在背後空跑）
       // ⚠ 教學對話開著時不清暫停旗標：cut-in（如即死防禦）與教學對話重疊時，
       //   這裡清掉會讓盤面在對話中恢復可點（懲罰/插話亂入，曾致陣亡重開流程被劫持）。
       //   對話層收段時自會 resumeFromDialog。
@@ -1291,6 +1292,8 @@ function playSaintCutin(kind, done, reload){
   c.classList.add(vis);
   void c.offsetWidth;                      // reflow → 重播動畫
   c.classList.add('on');
+  /* 動檔（ver -2037：諾薇兒 OBE）：同 playCutin 那一支逐格換（有登記才播，沒有就是靜態圖）。 */
+  if(scImgEl[vis]){ const el=$(scImgEl[vis]); if(el) playCiAnim(el, scImgKey[vis]); }
   // 結局 cut-in 專屬 SE（Luna；return＝生命歸還為 Renee，其 SE 由 partner.lifeReturn 播 vo_life_return——saint 不知觸發者）。
   /*   槍聲/合成占位音已拔除——cut-in 只播專屬 SE。
        ⚠ 這三支**不在同一層**：exc/obe 是 Luna 的語音（走語音鏈），
@@ -1312,6 +1315,7 @@ function playSaintCutin(kind, done, reload){
   const holdMs = vis==='execute' ? 3000 : 1600;   // EXSECUTIŌ 停留 3 秒
   setTimeout(()=>{
     c.classList.remove('on');
+    clearInterval(ciAnimT); ciAnimT=0;   // 動檔撤下時一併停（ver -2037）
     state.cutinPlaying=false;
     if(api.cutinThaw) api.cutinThaw(frz);   // ver -1779
     if(done) done();
