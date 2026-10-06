@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2054';
+export const VERSION = 'ver 2026.09.22-2055';
 
 export const GAME_CONFIG = {
 
@@ -3469,23 +3469,26 @@ export const GAME_CONFIG = {
        ⚠ 格還沒全部解碼好就退回靜態圖（第 0 格≈靜態圖），不會等它。
        ⚠ 檔名 `frame_NN` 每一組都一樣 —— 同名覆蓋時 `ASSET_VER` 分不出是哪一組，
          **重交動檔請換資料夾名**，不要就地覆蓋。 */
-    cutinAnim: { ci_sorana_predator:{ dir:'resources/ci/anim/ci_sorana_predator_v8/', frames:18, ms:1125 },   // ver -2040：Ray 的剪輯版（v7 剪 18 格，1.125 秒＝ cutinDur）
+    /* ══ ver -2055（Ray：「全部套 C 規格」）：所有 CI 動檔改成 **12 格／秒、360×540**（`_c12` 資料夾，由 16 格 480×720 的原片平均抽格＋縮圖；
+       比較頁實測一位搭檔解碼後的記憶體約 87 MB → 36 MB）。長度不變（cutinDur 照舊），撤出時照舊還在播。
+       ⚠ 新交的動檔照這個規格做（或交 16 格原片，由程式端抽格縮圖）。 */
+    cutinAnim: { ci_sorana_predator:{ dir:'resources/ci/anim/ci_sorana_predator_c12/', frames:14, fps:12 },   // ver -2040：Ray 的剪輯版（v7 剪 18 格，1.125 秒＝ cutinDur）
                  /* ver -2028：56 格平均分到 3.5 秒＝16fps。⚠ CI 長 2 秒（cutinDur，ver -2030），播到第 32 格左右就撤。 */
-                 cutin_nouvelle_saint:{ dir:'resources/ci/anim/ci_nouvelle_saintinstall_v1/', frames:56, ms:3500 },
+                 cutin_nouvelle_saint:{ dir:'resources/ci/anim/ci_nouvelle_saintinstall_c12/', frames:42, fps:12 },
                  /* ver -2041：安雅惡夢化（NI）改用 Ray 剪的 ni3 版（ci_anya_dreambreaker0_ni3_s77_cut，45 格 2.8125 秒＝ cutinDur，撤出時還在播）。
                     -2034～-2036 那段（ci_anya_dreambreaker_v1 去頭去尾）已由這一版取代、資料夾已回收。DB（夢境粉碎）的動檔另外做。 */
-                 ci_anya_ni:{ dir:'resources/ci/anim/ci_anya_ni_v1/', frames:45, ms:2813 },
+                 ci_anya_ni:{ dir:'resources/ci/anim/ci_anya_ni_c12/', frames:34, fps:12 },
                  /* ver -2037（Ray：「兩個 obe 都可以交件」）：OBE 崩潰兩張，各 64 格 16fps＝4 秒。
                     安雅熔斷走 playCutin、諾薇兒 OBE 走結局全畫面 playSaintCutin，兩張 CI 都 2 秒（cutinDur，ver -2038），播到第 32 格左右。
                     ⚠ 諾薇兒的動檔是 2:3（靜態圖 4:5 左右各裁 94px），結局 CI 是 cover 滿版，看不出差。 */
-                 ci_anya_obe:{ dir:'resources/ci/anim/ci_anya_obe_v1/', frames:64, ms:4000 },
-                 cutin_obe_nouvelle:{ dir:'resources/ci/anim/ci_nouvelle_obe_v1/', frames:64, ms:4000 },
+                 ci_anya_obe:{ dir:'resources/ci/anim/ci_anya_obe_c12/', frames:48, fps:12 },
+                 cutin_obe_nouvelle:{ dir:'resources/ci/anim/ci_nouvelle_obe_c12/', frames:48, fps:12 },
                  /* ver -2040：Ray 的剪輯版（v1 剪 50 格，3.125 秒＝ cutinDur）；-2039 的「去頭 2 秒去尾 1 秒」已由這一版取代。 */
-                 cutin_cecilie_saint:{ dir:'resources/ci/anim/ci_cecilie_saintinstall_v2/', frames:50, ms:3125 },
+                 cutin_cecilie_saint:{ dir:'resources/ci/anim/ci_cecilie_saintinstall_c12/', frames:38, fps:12 },
                  /* ver -2040：賽西莉 OBE（Ray 剪的 _cut_2，32 格 2 秒＝ cutinDur；結局全畫面 CI）。 */
-                 cutin_cecilie_obe:{ dir:'resources/ci/anim/ci_cecilie_obe_v1/', frames:32, ms:2000 },
+                 cutin_cecilie_obe:{ dir:'resources/ci/anim/ci_cecilie_obe_c12/', frames:24, fps:12 },
                  /* ver -2051（Ray：「sora_obe_A2_cl2_s77_cut 接上索拉娜飛刀用盡」）：26 格 16fps＝1.625 秒＝ cutinDur。 */
-                 ci_sorana_obe:{ dir:'resources/ci/anim/ci_sorana_obe_v1/', frames:26, ms:1625 } },
+                 ci_sorana_obe:{ dir:'resources/ci/anim/ci_sorana_obe_c12/', frames:20, fps:12 } },
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],

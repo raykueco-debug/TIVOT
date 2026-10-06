@@ -1069,3 +1069,13 @@ when	from	to	reason
 20261006-231516	resources/ci/anim/ci_sorana_predator_v7	_recycle/resources/ci/anim/ci_sorana_predator_v7	ver -2040：Ray 的剪輯版（out/export）取代
 20261006-231516	resources/ci/anim/ci_cecilie_saintinstall_v1	_recycle/resources/ci/anim/ci_cecilie_saintinstall_v1	ver -2040：Ray 的剪輯版（out/export）取代
 20261006-231739	resources/ci/anim/ci_anya_dreambreaker_v1	_recycle/resources/ci/anim/ci_anya_dreambreaker_v1	ver -2041：安雅 NI 改用 Ray 剪的 ni3（ci_anya_ni_v1）
+20261007-011953	resources/ci/anim/ci_anya_ni_v1	_recycle/resources/ci/anim/ci_anya_ni_v1	ver -2056 CI 全部改 C 規格（_c12），16 格原尺寸版退役
+20261007-011953	resources/ci/anim/ci_anya_obe_v1	_recycle/resources/ci/anim/ci_anya_obe_v1	ver -2056 CI 全部改 C 規格（_c12），16 格原尺寸版退役
+20261007-011953	resources/ci/anim/ci_cecilie_obe_v1	_recycle/resources/ci/anim/ci_cecilie_obe_v1	ver -2056 CI 全部改 C 規格（_c12），16 格原尺寸版退役
+20261007-011953	resources/ci/anim/ci_cecilie_saintinstall_v2	_recycle/resources/ci/anim/ci_cecilie_saintinstall_v2	ver -2056 CI 全部改 C 規格（_c12），16 格原尺寸版退役
+20261007-011953	resources/ci/anim/ci_nouvelle_obe_v1	_recycle/resources/ci/anim/ci_nouvelle_obe_v1	ver -2056 CI 全部改 C 規格（_c12），16 格原尺寸版退役
+20261007-011953	resources/ci/anim/ci_nouvelle_saintinstall_v1	_recycle/resources/ci/anim/ci_nouvelle_saintinstall_v1	ver -2056 CI 全部改 C 規格（_c12），16 格原尺寸版退役
+20261007-011953	resources/ci/anim/ci_sorana_obe_v1	_recycle/resources/ci/anim/ci_sorana_obe_v1	ver -2056 CI 全部改 C 規格（_c12），16 格原尺寸版退役
+20261007-011953	resources/ci/anim/ci_sorana_predator_v8	_recycle/resources/ci/anim/ci_sorana_predator_v8	ver -2056 CI 全部改 C 規格（_c12），16 格原尺寸版退役
+20261007-011954	tools/ci_compare.html	_recycle/tools/ci_compare.html	CI 格率比較已定案（C 規格），比較頁與素材回收
+20261007-011954	resources/ci/_compare	_recycle/resources/ci/_compare	CI 格率比較已定案（C 規格），比較頁與素材回收
