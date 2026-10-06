@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2032';
+export const VERSION = 'ver 2026.09.22-2033';
 
 export const GAME_CONFIG = {
 
@@ -3444,7 +3444,7 @@ export const GAME_CONFIG = {
     /* ══ CI 的長度（ver -2030，Ray：「諾的 SI CI 改成 2 秒看看」）══ 鑰匙＝靜態圖的鍵，值＝毫秒；
        沒寫＝1.5 秒。推入／停留／撤出的比例照 1.5 秒那一版放大（style.css 的 --ci-dur）。
        ⚠ 與 `cutinAnim` 的播放速度無關：動檔照自己的速度播，CI 時間到就撤。 */
-    cutinDur: { cutin_nouvelle_saint:2000, ci_sorana_predator:2000 },   // 索拉娜共鬥 ver -2032（Ray：「先用 2 秒看看」；動檔 3 秒，2 秒播到第 32 格）
+    cutinDur: { cutin_nouvelle_saint:2000, ci_sorana_predator:2000 },   // 索拉娜共鬥 ver -2032（Ray：「2 秒可以」；_v7 動檔剛好 2 秒）
     /* ══ cut-in 動檔（ver -2021，美術交接 §十八：索拉娜共鬥）══ 鑰匙＝靜態圖的鍵（`cutin:` 那一格）；
        有這一列的那張 CI 播時逐格換圖（saint.playCutin），推入推出照舊是 CSS 那一套。
        有寫 `fps` ＝照那個速度播、播完停在最後一格到 cut-in 撤下（ver -2027）；沒寫 ＝ `frames` 格平均分在 `ms` 裡播完。
@@ -3457,7 +3457,7 @@ export const GAME_CONFIG = {
        ⚠ 格還沒全部解碼好就退回靜態圖（第 0 格≈靜態圖），不會等它。
        ⚠ 檔名 `frame_NN` 每一組都一樣 —— 同名覆蓋時 `ASSET_VER` 分不出是哪一組，
          **重交動檔請換資料夾名**，不要就地覆蓋。 */
-    cutinAnim: { ci_sorana_predator:{ dir:'resources/ci/anim/ci_sorana_predator_v5/', frames:48, ms:3000 },   // ver -2031：_v5（一晃＋輕呼吸，48 格 3 秒＝16fps，全程在動）
+    cutinAnim: { ci_sorana_predator:{ dir:'resources/ci/anim/ci_sorana_predator_v7/', frames:32, ms:2000 },   // ver -2033：_v7（Ray 新原圖 predator1，單彈＋小晃，32 格 2 秒＝cutinDur，全程在動）
                  /* ver -2028：56 格平均分到 3.5 秒＝16fps。⚠ CI 長 2 秒（cutinDur，ver -2030），播到第 32 格左右就撤。 */
                  cutin_nouvelle_saint:{ dir:'resources/ci/anim/ci_nouvelle_saintinstall_v1/', frames:56, ms:3500 } },   // ver -2027：1.5 秒直出取第一下，12 格 16fps（≈750ms）後停在最後一格
 
@@ -4303,7 +4303,7 @@ export const ASSETS = {
      ⚠ 它**不是插圖**（`cg`）而是 `fx:'stare'` 那一支的素材 —— 一瞬的半透明脈動。 */
   ci_mishastare:      "resources/ci/ci_mishastare.webp",
   ci_misha_ni:        "resources/ci/ci_misha_ni.webp?v=407d39b1",      // 米夏 NI 發動（ver -1964；原檔 ci_misha_dreambreaker.png 在 _originals）
-  ci_sorana_predator: "resources/ci/ci_sorana_predator.webp?v=84e84cd8",
+  ci_sorana_predator: "resources/ci/ci_sorana_predator_start.webp",   // ver -2033：動檔 _v7 的第 0 格（Ray 新原圖 predator1）；舊的 ci_sorana_predator.webp 已沒有人用
   ci_sorana_supply:   "resources/ci/ci_sorana_supply.webp?v=2fcb31ce",   // -820 過渡圖 → -837 webp
   /* 獵手的直覺（被動）發動的 CI：三張隨機輪播（ver -809，Ray 指定）——與三位女角的合擊圖。 */
   ci_sorana_roar_renna:    "resources/ci/ci_sorana_roar_renna.webp?v=a9c77259",

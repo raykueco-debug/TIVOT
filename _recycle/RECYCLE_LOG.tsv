@@ -1064,3 +1064,4 @@ when	from	to	reason
 20261006-152614	resources/ci/anim/ci_sorana_predator_v2	_recycle/resources/ci/anim/ci_sorana_predator_v2.20261006-152614	ver -2025：Ray 改用美術新交的 24 格（v3），14 格版退役
 20261006-183339	resources/ci/anim/ci_sorana_predator_v3	_recycle/resources/ci/anim/ci_sorana_predator_v3	ver -2027：Ray 換 _v4（1.5 秒直出取第一下，12 格 16fps 後停住），_v3 退役
 20261006-201102	resources/ci/anim/ci_sorana_predator_v4	_recycle/resources/ci/anim/ci_sorana_predator_v4	ver -2031：索拉娜共鬥換 _v5（48 格 3 秒），_v4 退役
+20261006-211003	resources/ci/anim/ci_sorana_predator_v5	_recycle/resources/ci/anim/ci_sorana_predator_v5	ver -2033：索拉娜共鬥換 _v7（32 格 2 秒），_v5 退役
