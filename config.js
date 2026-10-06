@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2055';
+export const VERSION = 'ver 2026.09.22-2056';
 
 export const GAME_CONFIG = {
 
@@ -5205,6 +5205,41 @@ export function weaponDescText(key, story, mul){
   return i18nT('反擊效果\n') + rows.map(r=>r[0]+i18nT('：')+r[1]).join('\n') + (w.flavor ? '\n'+w.flavor : '');
 }
 
+/* ══ 搭檔的 CI 名單與「播得到幾格」—— **唯一的一份**（ver -2056，Ray：「做預算檢查，主被動技也接進預熱」）══
+   遊戲（saint 的預熱／發動）與 `tools/script_lint.py` 的解碼預算檢查**都呼叫這兩支**（鐵律 7）：
+   名單算錯一次，預熱與預算一起錯，不會出現「lint 說沒超、遊戲其實暖了更多」。
+   · 名單＝**卡上所有叫 *cutin／*Cutin 的欄位**（字串或陣列，含主動技／被動技／共鬥收尾…巢狀也算）
+     ＋本篇才有的那幾張（聖徒化降臨、OBE、惡夢化的 MB／熔斷）。⚠ 列死名單的話，下一張新技能 CI 就會漏。 */
+export function installCiKey(pk, story){
+  const pc=(GAME_CONFIG.partners||{})[pk]||{};
+  if(story && pc.saintCutin) return pc.saintCutin;                 // 搭檔卡自己的那一張（ver -1886）
+  if(story && pk==='nouvelle') return 'cutin_nouvelle_saint';
+  return 'cutin_saint_luna';
+}
+export function partnerCiKeys(pk, story){
+  const pc=(GAME_CONFIG.partners||{})[pk]; if(!pc) return [];
+  const out=[], add=k=>{ if(typeof k==='string' && k && out.indexOf(k)<0) out.push(k); };
+  const walk=o=>{ if(!o || typeof o!=='object') return;
+    for(const f in o){ const v=o[f];
+      if(/cutin$/i.test(f)) (Array.isArray(v) ? v : [v]).forEach(add);
+      else if(v && typeof v==='object') walk(v); } };
+  walk(pc);
+  const NI=(GAME_CONFIG.tuning||{}).nightmare||{};
+  if(story && pk==='anya') [NI.burstCutin, NI.meltdownCutin].forEach(add);
+  else if(story && pk==='sorana'){ /* 共鬥：卡上的 cutin／coop.endCutin 已由 walk 收進來 */ }
+  else { add(installCiKey(pk, story)); add(story ? (pc.obeCutin || 'cutin_obe_nouvelle') : 'cutin_obe'); }
+  return out;
+}
+/* 這張 CI 的動檔**實際播得到幾格**：CI 只有 `cutinDur` 那麼長，撤出之後的格子永遠不會顯示 ——
+   預熱只暖這幾格、預算也只算這幾格（ver -2053／-2056）。沒有動檔＝0。 */
+export function ciShownFrames(key){
+  const T=GAME_CONFIG.tuning||{}, A=(T.cutinAnim||{})[key]; if(!A) return 0;
+  const P=A.pick||{}, a=P.from||0, b=(P.to!=null?P.to:A.frames), st=P.step||1;
+  const all=Math.max(0, Math.ceil((b-a)/st));
+  const ms=A.fps ? 1000/A.fps : (A.ms||1500)/(all||1);
+  const dur=((T.cutinDur||{})[key])||1500;
+  return Math.min(all, Math.ceil(dur/ms)+1);
+}
 export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ""; }
 
 /* ══⚠⚠⚠ 同名覆蓋的圖要換一次快取（ver -905）══════════════════════════════

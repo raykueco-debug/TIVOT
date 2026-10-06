@@ -24,7 +24,7 @@
  * ========================================================================== */
 
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
-import { GAME_CONFIG, asset, sfxGain, isVoiceKey } from '../config.js';
+import { partnerCiKeys, installCiKey, ciShownFrames, GAME_CONFIG, asset, sfxGain, isVoiceKey } from '../config.js';
 import { state, enterSaint, exitSaint, enterNightmare, exitNightmare, enterCoop, exitCoop, markExecution, markMaxBurst, addInstallDamage, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, fmt } from '../i18n.js';   // 多語言（cut-in 副標/浮動字）
@@ -121,21 +121,13 @@ export function activateSaint(dir){
 export function partnerCutinKeys(pk, story){
   if(pk===undefined) pk=state.pickedPartner;
   if(story===undefined) story=storyMode();
-  const pc=(GAME_CONFIG.partners||{})[pk]||{};
-  const ks=[pc.cutin];
-  if(story && pk==='anya') ks.push('ci_anya_ni', NI_BURST_CUTIN, NI_MELT_CUTIN);
-  else if(story && pk==='sorana') ks.push(pc.cutin || 'ci_sorana_predator', pc.coop && pc.coop.endCutin);   // ＋飛刀耗盡（ver -2051）
-  else ks.push(installCutinKey(pk, story), story ? (pc.obeCutin || 'cutin_obe_nouvelle') : 'cutin_obe');   // 聖徒化＋OBE（ver -2037）
-  return ks.filter(Boolean);
+  return partnerCiKeys(pk, story);   // 名單只有 config 那一份（ver -2056：含主動技／被動技，lint 的預算也讀它）
 }
-/* 聖徒化降臨用哪一張 cut-in（ver -2028 抽出來：發動與 combat 的預熱都問它，鐵律 7）。 */
+/* 聖徒化降臨用哪一張 cut-in（ver -2028 抽出來；ver -2056 起實作在 config.installCiKey，鐵律 7）。 */
 export function installCutinKey(pk, story){
   if(pk===undefined) pk=state.pickedPartner;
   if(story===undefined) story=storyMode();
-  const pc=(GAME_CONFIG.partners||{})[pk]||{};
-  if(story && pc.saintCutin) return pc.saintCutin;                 // 搭檔卡自己的那一張（ver -1886）
-  if(story && pk==='nouvelle') return 'cutin_nouvelle_saint';
-  return 'cutin_saint_luna';
+  return installCiKey(pk, story);
 }
 
 /* ============================================================================
@@ -1141,10 +1133,7 @@ function ciAnimUrls(A){
 function ciFrameMs(A){ const n=ciAnimUrls(A).length||1; return A.fps ? 1000/A.fps : (A.ms||1500)/n; }
 /* 實際會播到的那幾格（ver -2053）：CI 只有 `cutinDur` 那麼長，撤出之後的格子**永遠不會顯示** ——
    不暖、不播（諾薇兒聖徒化 56 格裡只播得到 33 格左右，OBE 64 格裡也是）。多留一格當餘裕。 */
-function ciShownUrls(A, key){
-  const all=ciAnimUrls(A), dur=((GAME_CONFIG.tuning.cutinDur||{})[key])||1500;
-  return all.slice(0, Math.min(all.length, Math.ceil(dur/ciFrameMs(A))+1));
-}
+function ciShownUrls(A, key){ return ciAnimUrls(A).slice(0, ciShownFrames(key)); }   // 幾格由 config 算（lint 的預算同一支）
 /* ══ CI 動檔的預熱：插旗／拔旗（ver -2053，Ray：「戰前插旗預熱 CI 動畫，切地圖才拔旗；進入有戰鬥畫面的圖就
    開始預熱；飛行畫面全程以現有伙伴為優先預熱；重選人就再預熱」「CI 預熱要排最後」「預熱不全就先用靜態圖」）══
    · 旗＝`ciWarmFor`（現在暖的是哪一位搭檔）。插：`warmPartnerCi(pk)`（進有戰鬥的地圖／飛行畫面／開戰／重選人）；

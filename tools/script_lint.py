@@ -71,7 +71,11 @@ def load_data():
     parts.append('print(JSON.stringify({script:MAIN_SCRIPT, entry:MAIN_ENTRY,'
                  ' speakers:SPEAKERS, art:ART, towns:TOWNS, cfg:GAME_CONFIG,'
                  ' assets:ASSETS, homeImg:HOME_IMG, homeSfx:HOME_SFX,'
-                 ' blink:(typeof BLINK!=="undefined" ? BLINK : {})}));')
+                 ' blink:(typeof BLINK!=="undefined" ? BLINK : {}),'
+                 # CI 解碼預算（ver -2056）：名單與「播得到幾格」都問 config 那兩支（遊戲同一份，鐵律 7）
+                 ' ci:Object.fromEntries(Object.keys(GAME_CONFIG.partners).map(k=>[k,'
+                 '   partnerCiKeys(k, (GAME_CONFIG.challengePartners||[]).indexOf(k)<0)'
+                 '   .map(x=>[x, ciShownFrames(x), ((GAME_CONFIG.tuning.cutinAnim||{})[x]||{}).dir||null])]))}));')
     return _jsrun.dump(NL.join(parts), what='腳本資料')
 
 # ── story.js 的音效／BGM 表 ────────────────────────────────────────────────
@@ -342,6 +346,35 @@ def check_tense_exprs(art):
 BOOT_MAX_IMG_BYTES = 3 * 1024 * 1024    # 首頁的圖（團徽 555 KB ＋ 挑戰的武器卡與立繪）
 BOOT_MAX_SFX_FILES = 12                 # 首頁 UI 音（-1354 之後是 4 支）
 BOOT_MAX_SFX_BYTES = 1 * 1024 * 1024
+# ══⚠⚠⚠ **CI 動檔的解碼預算**（ver -2056，Ray：「要評估這些會不會爆」「做預算檢查」）══
+#   解碼後的圖是整張點陣（寬×高×4 位元組），與檔案多小無關；iPhone 給一個網頁／App 的記憶體
+#   約 1～1.5 GB，超過就閃退或整頁重載，**沒有任何錯誤訊息**。同一時間會解碼的 CI 是
+#   「現任搭檔的整套」（saint.warmPartnerCi），所以預算算在**每一位搭檔**上。
+#   ⚠ 名單（含主動技／被動技）與格數都是 config 的 `partnerCiKeys`／`ciShownFrames` 算的 ——
+#     遊戲預熱的就是這一份，這裡不另算（鐵律 7）。
+#   ⚠ 沒有動檔的 CI 是一張靜態圖，不算進來（那一張不管有沒有動畫都會載）。
+CI_DECODE_BUDGET = 120 * 1024 * 1024    # 一位搭檔整套 CI 動檔解碼後的上限
+def check_ci_budget(D):
+    from PIL import Image
+    rows = []
+    for pk, lst in (D.get('ci') or {}).items():
+        tot, parts = 0, []
+        for key, n, d in lst:
+            if not n or not d: continue
+            fr = os.path.join(ROOT, d, 'frame_00.webp')
+            if not os.path.exists(fr):
+                err('CI 動檔 `%s` 的第 0 格不存在：%s' % (key, d)); continue
+            w, h = Image.open(fr).size
+            b = n * w * h * 4; tot += b; parts.append((key, n, b))
+        if not parts: continue
+        rows.append((pk, tot))
+        if tot > CI_DECODE_BUDGET:
+            err('搭檔 `%s` 的 CI 動檔解碼後 %.0f MB，超過預算 %.0f MB —— %s。'
+                '先轉 C 規格（12 格／秒、360×540）、或縮短 cutinDur（只暖撤出前播得到的格）。'
+                % (pk, tot / 1048576.0, CI_DECODE_BUDGET / 1048576.0,
+                   '／'.join('%s %d格 %.0fMB' % (k, n, b / 1048576.0) for k, n, b in sorted(parts, key=lambda r: -r[2]))))
+    return rows
+
 def check_boot_batch(D):
     assets  = D.get('assets') or {}
     him     = D.get('homeImg') or {}
@@ -513,6 +546,7 @@ def main():
     check_map_enemy_images(D)
     check_heavy_pairs()
     boot = check_boot_batch(D)
+    ci_rows = check_ci_budget(D)
     check_map_sessions(D)
     check_lowercase_assets()
     check_blink(D)
@@ -1091,6 +1125,8 @@ def main():
 
     print('開機那一批：圖 %d 張 %.2f MB ／ 音效 %d 支 %.2f MB（鐵律 13 的守望）'
           % (boot[0], boot[1] / 1048576.0, boot[2], boot[3] / 1048576.0))
+    print('CI 動檔解碼（每位搭檔，預算 %.0f MB）：%s' % (CI_DECODE_BUDGET / 1048576.0,
+          '／'.join('%s %.0fMB' % (k, b / 1048576.0) for k, b in sorted(ci_rows, key=lambda r: -r[1])) or '（沒有動檔）'))
     for m in errs:  print('❌ ' + m)
     for m in warns: print('⚠  ' + m)
     print('\n%d 個錯誤、%d 個提醒。' % (len(errs), len(warns)))
