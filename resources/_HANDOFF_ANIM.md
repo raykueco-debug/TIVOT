@@ -16,7 +16,7 @@
 - LoRA：`models/loras/zxtp_wan22_bb_high.safetensors`（Bouncing B，HF `zxtopower/loras`）。⚠ 授權只寫「生成內容可自由發佈」，**上架前要私訊作者確認商用**。
 
 ## Ray 定的規矩（這一輪）
-1. **CI 從推入到撤出全程都要在動，不可停格**。CI 長度由動畫決定（諾薇兒 3.5 秒），程式端跟著改 CSS。
+1. **CI 從推入到撤出全程都要在動，不可停格**。⚠⚠ **CI 固定 1.5 秒**（Ray 定案，ver -2029 改回）：不管動檔多長，1.5 秒一到就撤 —— **動檔一律做成「1.5 秒內要看到的那一段」**（16fps＝24 格）。
 2. **重交動檔一律開新資料夾**（`_v2`、`_v3`…），不覆蓋。`cutinAnim` 寫 `fps`＝播完停住、只寫 `ms`＝平均分配。
 3. **A→B 變身要一鏡到底**：兩段拼接的接點怎麼修都明顯（試過：重生起點、交叉淡化、光流拉近、先快後慢抽格，全部被退）。
    作法：Wan 一次生長一點（4 秒），**剪中間**，丟掉結尾吸附到 B 的那幾格。
@@ -28,7 +28,7 @@
 | 件 | 位置 | 狀態 |
 |---|---|---|
 | 索拉娜共鬥 CI | `resources/ci/anim/ci_sorana_predator_v4/`（12 格，播完停住） | ✅ 程式已接（-2027）；⚠ 違反規矩 1，重做與否等 Ray |
-| 諾薇兒聖徒化 CI | `resources/ci/anim/ci_nouvelle_saintinstall_v1/`（56 格、3.5 秒） | ✅ 程式已接（-2028）：CI 總長由 `ms` 決定（CSS `--ci-dur`），推入／停留／推出照比例放大。靜態退路圖仍是舊 B 圖 —— 要換成 `saintinstall1` 得交 webp（新檔名），等 Ray |
+| 諾薇兒聖徒化 CI | `resources/ci/anim/ci_nouvelle_saintinstall_v1/`（56 格、3.5 秒） | ✅ 程式已接（-2028）；⚠ -2029 CI 改回固定 1.5 秒 ⇒ 只看得到前 24 格左右（變身剛完成就撤），要不要重剪成 24 格等 Ray。靜態退路圖仍是舊 B 圖 —— 要換成 `saintinstall1` 得交 webp（新檔名），等 Ray |
 | 怪物待機 94 隻 | `tivot_wan/out/monsters/`（未進 resources） | ⚠ 等 Ray 檢查 `check.html`；每隻解碼約 33 MB 記憶體，交件要提醒程式做釋放 |
 
 ## 等 Ray
