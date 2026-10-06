@@ -1129,7 +1129,7 @@ function playCiAnim(ci, key){
   if(!rec || !rec.ready){ warmCutinAnim(key); return; }   // 這一次播靜態圖，下一次就有動檔
   let i=0; ci.src=rec.urls[0];
   ciAnimT=setInterval(()=>{ i++; if(i>=rec.urls.length){ clearInterval(ciAnimT); ciAnimT=0; return; }
-    ci.src=rec.urls[i]; }, 1000/(A.fps||16));
+    ci.src=rec.urls[i]; }, (A.ms||1500)/rec.urls.length);
 }
 export function playCutin(done, label, imgKey, opts){
   opts = opts || {};
