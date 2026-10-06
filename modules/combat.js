@@ -2355,14 +2355,18 @@ function noOverkill(){
   const en=(GAME_CONFIG.enemies||{})[state.currentEnemyKey];
   return !!(en && en.kind==='human' && !en.overkill);
 }
-/* 擊殺那一下直接收尾：BR 開著就關窗（收尾照舊走 onDualClosed → autoClearOverkill），
-   否則直接走 autoClearOverkill —— 殘磚碎掉、延一拍進下一隻／結算，與 OVK 結束同一條路（鐵律 8）。
+/* 擊殺那一下**直接閉棺**（ver -2049，Ray：「不要給 ovk 就是直接閉棺，不管殘格」）——
+   殘格不碎、不等，直接走「一隻怪倒下」的匯流點（finishEnemyOrAdvance → 換敵／win 閉棺）。
+   BR 開著就順手關窗（onDualClosed 看到「人類已死」就不再走 OVK 收尾）。
    聖徒化中擊殺不碰：那一段的收尾歸 saint。 */
 function skipOverkill(){
   if(state.saintMode) return;
   state.cells.forEach(c=>c.classList.remove('next'));
+  state.overkillClean=true;
+  clearAtkBuff();
   if(state.dualWield) weapon.endDual();
-  else autoClearOverkill();
+  state.transitioning=true;                       // 這一拍之後不再吃點擊
+  setTimeout(()=>{ if(state.over) return; state.transitioning=false; finishEnemyOrAdvance(); }, 0);
 }
 function enterOverkillFx(){
   $('grid').classList.add('overkill');            // 數字藍光（見 style.css #grid.overkill）
@@ -2417,7 +2421,8 @@ export function onDualClosed(){
   brShotN=0; brVoiceOk=false;          // 受創語音的 BR 計數歸零（ver -1969）
   if(state.over) return;
   if(state.enemyHp>0){ brSweepBoard(); return; }
-  if(state.saintMode) return;                    // 聖徒化的追打不吃這一套
+  if(state.saintMode) return;
+  if(noOverkill()) return;                       // 人類：skipOverkill 已經直接閉棺（ver -2049）                    // 聖徒化的追打不吃這一套
   clearTimeout(overkillTimer); overkillTimer=null;
   autoClearOverkill();
 }
