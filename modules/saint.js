@@ -118,19 +118,23 @@ export function activateSaint(dir){
 }
 /* 這位搭檔這一場**可能用到**的變身 cut-in（ver -2034：給 combat 預熱動檔用）。
    ⚠ 分流照 `activateSaint` 那一支（安雅＝惡夢化、索菈娜＝共鬥、其餘＝聖徒化）—— 改那邊要一起改這裡。 */
-export function partnerCutinKeys(){
-  const pc=(GAME_CONFIG.partners||{})[state.pickedPartner]||{};
+export function partnerCutinKeys(pk, story){
+  if(pk===undefined) pk=state.pickedPartner;
+  if(story===undefined) story=storyMode();
+  const pc=(GAME_CONFIG.partners||{})[pk]||{};
   const ks=[pc.cutin];
-  if(storyMode() && state.pickedPartner==='anya') ks.push('ci_anya_ni', NI_BURST_CUTIN, NI_MELT_CUTIN);
-  else if(storyMode() && state.pickedPartner==='sorana') ks.push(pc.cutin || 'ci_sorana_predator', pc.coop && pc.coop.endCutin);   // ＋飛刀耗盡（ver -2051）
-  else ks.push(installCutinKey(), storyMode() ? (pc.obeCutin || 'cutin_obe_nouvelle') : 'cutin_obe');   // 聖徒化＋OBE（ver -2037）
+  if(story && pk==='anya') ks.push('ci_anya_ni', NI_BURST_CUTIN, NI_MELT_CUTIN);
+  else if(story && pk==='sorana') ks.push(pc.cutin || 'ci_sorana_predator', pc.coop && pc.coop.endCutin);   // ＋飛刀耗盡（ver -2051）
+  else ks.push(installCutinKey(pk, story), story ? (pc.obeCutin || 'cutin_obe_nouvelle') : 'cutin_obe');   // 聖徒化＋OBE（ver -2037）
   return ks.filter(Boolean);
 }
 /* 聖徒化降臨用哪一張 cut-in（ver -2028 抽出來：發動與 combat 的預熱都問它，鐵律 7）。 */
-export function installCutinKey(){
-  const pc=(GAME_CONFIG.partners||{})[state.pickedPartner]||{};
-  if(storyMode() && pc.saintCutin) return pc.saintCutin;                 // 搭檔卡自己的那一張（ver -1886）
-  if(storyMode() && state.pickedPartner==='nouvelle') return 'cutin_nouvelle_saint';
+export function installCutinKey(pk, story){
+  if(pk===undefined) pk=state.pickedPartner;
+  if(story===undefined) story=storyMode();
+  const pc=(GAME_CONFIG.partners||{})[pk]||{};
+  if(story && pc.saintCutin) return pc.saintCutin;                 // 搭檔卡自己的那一張（ver -1886）
+  if(story && pk==='nouvelle') return 'cutin_nouvelle_saint';
   return 'cutin_saint_luna';
 }
 
@@ -1133,18 +1137,63 @@ function ciAnimUrls(A){
   for(let i=a;i<b;i+=st) out.push(A.dir+'frame_'+String(i).padStart(2,'0')+'.webp');
   return out;
 }
+/* 每一格幾毫秒：**照完整那一段算**（ver -2053：截短之後不能拿截短的格數去除 ms，播放速度會變）。 */
+function ciFrameMs(A){ const n=ciAnimUrls(A).length||1; return A.fps ? 1000/A.fps : (A.ms||1500)/n; }
+/* 實際會播到的那幾格（ver -2053）：CI 只有 `cutinDur` 那麼長，撤出之後的格子**永遠不會顯示** ——
+   不暖、不播（諾薇兒聖徒化 56 格裡只播得到 33 格左右，OBE 64 格裡也是）。多留一格當餘裕。 */
+function ciShownUrls(A, key){
+  const all=ciAnimUrls(A), dur=((GAME_CONFIG.tuning.cutinDur||{})[key])||1500;
+  return all.slice(0, Math.min(all.length, Math.ceil(dur/ciFrameMs(A))+1));
+}
+/* ══ CI 動檔的預熱：插旗／拔旗（ver -2053，Ray：「戰前插旗預熱 CI 動畫，切地圖才拔旗；進入有戰鬥畫面的圖就
+   開始預熱；飛行畫面全程以現有伙伴為優先預熱；重選人就再預熱」「CI 預熱要排最後」「預熱不全就先用靜態圖」）══
+   · 旗＝`ciWarmFor`（現在暖的是哪一位搭檔）。插：`warmPartnerCi(pk)`（進有戰鬥的地圖／飛行畫面／開戰／重選人）；
+     拔：`releasePartnerCi()`（**只有切地圖**：main 的 passGate 往首頁／城鎮／飛行、killAllPages）。
+   · **排最後**：一次只開 `CI_CONC` 條連線、`fetchPriority:'low'`；開戰時 combat 用 `holdCiWarm()` 讓它先停，
+     等這一場的敵人圖載完才繼續（上百格搶連線，衛士晚 7 秒出現就是這個，ver -2052）。
+   · 沒暖完就是靜態圖（playCiAnim 看 `ready`），不會等它。 */
+const CI_CONC = 2;
+let ciWarmFor, ciQ=[], ciLive=0, ciHoldP=null;
+function pumpCi(){
+  if(ciHoldP) return;
+  while(ciLive<CI_CONC && ciQ.length){ const job=ciQ.shift(); ciLive++;
+    job().catch(()=>{}).then(()=>{ ciLive--; pumpCi(); }); }
+}
+export function holdCiWarm(p){
+  ciHoldP=p;
+  Promise.resolve(p).catch(()=>{}).then(()=>{ if(ciHoldP===p){ ciHoldP=null; pumpCi(); } });
+}
 export function warmCutinAnim(key){
   const A=(GAME_CONFIG.tuning.cutinAnim||{})[key];
   if(!A) return;
   const old=ciAnim[key];
   if(old && (old.ready || old.pending)) return;   // 好了／暖著 → 不重來；上一次失敗 → 重暖
-  const urls=ciAnimUrls(A);
-  const rec=ciAnim[key]={ urls, ready:false, pending:true, imgs:[] };
-  Promise.all(urls.map(u=>{ const im=new Image(); im.src=u; rec.imgs.push(im);
-      return im.decode ? im.decode().catch(()=>{}) : Promise.resolve(); }))
-    .then(()=>{ rec.pending=false; rec.ready = rec.imgs.every(im=>im.naturalWidth>0);
-      if(!rec.ready) console.warn('[cutin] 動檔有格子載不到，這一次退回靜態圖：'+key); });
+  const urls=ciShownUrls(A, key);
+  const rec=ciAnim[key]={ urls, ready:false, pending:true, imgs:[], left:urls.length };
+  const fin=()=>{ if(ciAnim[key]!==rec) return;   // 拔過旗了 → 這一筆作廢
+    if(--rec.left>0) return;
+    rec.pending=false; rec.ready = rec.imgs.every(im=>im.naturalWidth>0);
+    if(!rec.ready) console.warn('[cutin] 動檔有格子載不到，這一次退回靜態圖：'+key); };
+  for(const u of urls) ciQ.push(()=>{
+    if(ciAnim[key]!==rec) return Promise.resolve();
+    const im=new Image(); try{ im.fetchPriority='low'; }catch(_){}
+    rec.imgs.push(im); im.src=u;
+    return (im.decode ? im.decode() : Promise.resolve()).catch(()=>{}).then(fin);
+  });
+  pumpCi();
 }
+export function warmPartnerCi(pk){
+  if(pk===undefined) return;
+  if(ciWarmFor!==undefined && ciWarmFor!==pk) releasePartnerCi();   // 換人：舊的那一位放掉
+  ciWarmFor=pk;
+  for(const k of partnerCutinKeys(pk, true)) warmCutinAnim(k);
+}
+export function releasePartnerCi(){
+  ciWarmFor=undefined; ciQ=[];
+  for(const k in ciAnim){ const r=ciAnim[k]; delete ciAnim[k];
+    for(const im of (r.imgs||[])){ try{ im.removeAttribute('src'); }catch(_){} } }
+}
+export function ciWarmPartner(){ return ciWarmFor; }
 let ciAnimT=0;
 /* CI 撤出：最後這麼多毫秒整張放大淡出（ver -2042；style.css 的 .ciout 也寫 0.25s，兩邊互指）。 */
 const CI_OUT_MS = 250;
@@ -1157,7 +1206,7 @@ function playCiAnim(ci, key){
   if(!rec || !rec.ready){ warmCutinAnim(key); return; }   // 這一次播靜態圖，下一次就有動檔
   let i=0; ci.src=rec.urls[0];
   ciAnimT=setInterval(()=>{ i++; if(i>=rec.urls.length){ clearInterval(ciAnimT); ciAnimT=0; return; }
-    ci.src=rec.urls[i]; }, A.fps ? 1000/A.fps : (A.ms||1500)/rec.urls.length);   // fps：播完停在最後一格（ver -2027）
+    ci.src=rec.urls[i]; }, ciFrameMs(A));   // 速度照完整那一段（ver -2053）；fps：播完停在最後一格（ver -2027）
 }
 export function playCutin(done, label, imgKey, opts){
   opts = opts || {};

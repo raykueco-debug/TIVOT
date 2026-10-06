@@ -561,6 +561,7 @@ function bind(){
       pendingPartner=null;
       load.setPartner(k);
       setPickedPartner(k);
+      try{ window.dispatchEvent(new CustomEvent('tivot:partnerchange')); }catch(_){}   // 重選人 → 重暖 CI（main 接，ver -2053）
       const v=GAME_CONFIG.partners[k].selectVoice;
       try{ if(v && asset(v)) SFX.playVoice(asset(v), sfxGain(v)); else SFX.menuClick(); }catch(_){}
       closeGuide();          // 教學聚光燈（有開的話）到此收（ver -743）

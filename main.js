@@ -545,6 +545,13 @@ function openFlight(opts){
      —— **不要留任何一片「靠別人藏著」的黑幕**（黑幕第六次的預防，不是修復）。 */
   story.veil(false, 0);
   passGate('flight');   // 飛行畫面自己就是這道門的目的地（ver -1848）：它一蓋滿，其餘全殺
+  /* 飛行畫面全程預熱現任搭檔的 CI（ver -2053，Ray：「飛行畫面全程以現有伙伴為優先預熱」「CI 預熱要排最後」）——
+     等飛行頁自己載完再起跑（iframe 的 load ＋ 2.5 秒）；沒有重載的那條路（打完回來）退回 6 秒保險。
+     已經暖著同一位就什麼都不做（warmPartnerCi 自己判）。 */
+  { let done=false; const go=()=>{ if(done) return; done=true;
+      if(document.body.classList.contains('flight-on')) combat.warmStoryPartnerCi(); };
+    f.addEventListener('load', ()=>setTimeout(go, 2500), { once:true });
+    setTimeout(go, 6000); }
 }
 /* ══ 飛行檢查點（ver -558，Ray：「飛行畫面中斷回原位置、戰鬥中中斷回遭遇位置」
    「以移動距離做檢查點，第一次移動做一個，接下來每適當距離一個」）══════════════
@@ -647,6 +654,9 @@ function passGate(dest){
     const st=$('storyStage');
     if(st && st.classList.contains('on')) try{ story.close({ keepBgm:true, noExit:true }); }catch(_){}
   }
+  /* CI 預熱的旗**只有切地圖才拔**（ver -2053）：往城鎮／飛行／首頁＝換了一張地圖；戰鬥與劇情場景不拔。
+     新地圖要不要再插旗由它自己決定（有戰鬥的城鎮暖完背景與怪之後、飛行頁載完之後）。 */
+  if(dest==='town' || dest==='flight' || dest==='home') combat.releasePartnerCi();
   if(document.body.classList.contains('testmode')) console.log('[gate] 過門 →', dest);
 }
 story.setGateHook(passGate);
@@ -656,6 +666,7 @@ function killAllPages(){
      那是鐵律 10 只做了一半：畫面死了，它載進來的資源沒死。
      ⚠ 排在最前面（與 `loadScene` 同形狀：先放、再讓下一個畫面載自己的）。 */
   releaseToHome();
+  combat.releasePartnerCi();   // 回首頁＝切地圖：CI 預熱的旗拔掉（ver -2053）
   closeFlightFrame();   // ⚠ 它自己就會殺（ver -1457）
   try{ town.suspend(); }catch(_){}
   try{ town.close(); }catch(_){}
@@ -1832,6 +1843,9 @@ town.setGearWatch(gear.onceClosed);
    「功能未開的城鎮裡戰死 → 回檔」會退回**上一次讀取頁**，把整段抵達的戲一起退掉。
    ⚠ 走**同一支** `autoSave`（劇情讀取頁的檢查點也是它，鐵律 8）。 */
 town.setCheckpoint(()=>{ saveSys.autoSave(); refreshContinue(); });
+town.setCiWarm(()=>combat.warmStoryPartnerCi());   // 有戰鬥的地圖：背景與怪暖完之後插旗暖 CI（ver -2053）
+/* 整備頁重選搭檔（ver -2053，Ray：「重選人就再預熱」）：旗插著才換人重暖 —— 沒插旗的地方（安全的城）不必暖。 */
+window.addEventListener('tivot:partnerchange', ()=>{ if(saint.ciWarmPartner()!==undefined) combat.warmStoryPartnerCi(); });
 /* 小地圖裡的「模擬存檔」（ver -936，見 save.js 的 sim 那一段）。
    ⚠ 注入而不是 import（同 setCheckpoint）：城鎮不認識存檔層。 */
 town.setSimSave({ save:()=>saveSys.simSave(), load:()=>saveSys.simLoad(), info:()=>saveSys.simInfo() });

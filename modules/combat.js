@@ -2772,6 +2772,11 @@ export function setBattleBg(name){ state.battleBg = name || null; }
      誰、什麼時候把圖掛上去，仍然只有 `loadEnemyPortrait` 一支說了算（鐵律 8）。
    ⚠ 圖是誰問 `enemy.enemyImage`（它會依時段挑 day/night 差分，鐵律 7）——
      不要在這裡自己拼一次 `asset(en.image)`。 */
+/* 地圖／飛行畫面插旗用（ver -2053）：本篇現在的搭檔是誰，由 partner 回答（鐵律 8，同 startGame 的挑人點）。 */
+export function warmStoryPartnerCi(){
+  try{ const pk=partner.storyPartnerKey(); if(pk) saint.warmPartnerCi(pk); }catch(_){}
+}
+export function releasePartnerCi(){ saint.releasePartnerCi(); }
 export function warmBattleImage(battleId){
   try{
     const B=(GAME_CONFIG.battles||{})[battleId]||{};
@@ -3296,11 +3301,11 @@ export function startGame(){
   }
   /* 搭檔定下來了 → 暖她的變身 cut-in 動檔（ver -2024：-2021 掛在 warmBattleImage，那時搭檔還沒挑，
      暖到的是上一位或沒有人；共鬥一局只發一次，第一次沒就緒就永遠看不到它動）。 */
-  /* ⚠ ver -2052（Ray：「士兵讀取速度有點慢」）：**等這一場的敵人圖載完才暖**。上百格的動檔一開戰就丟出去，
-     敵人圖排在它們後面（手機一次只開 6 條連線），衛士實測晚了快 7 秒才出現。
+  /* 開戰：CI 預熱**讓位給這一場的敵人圖**（ver -2052／-2053，Ray：「CI 預熱要排最後」）——
+     先 hold 住佇列，等敵人圖載完才放行；這一位還沒暖的話順手插旗（排在佇列最後）。
      setTimeout 0：這一行跑的時候怪還沒上場（下面才 setEnemy）。 */
-  setTimeout(()=>{ enemy.visualsReady().then(()=>{
-    for(const k of saint.partnerCutinKeys()) saint.warmCutinAnim(k); }); }, 0);   // 沒登記動檔的鍵 warmCutinAnim 自己略過（ver -2034）
+  setTimeout(()=>{ saint.holdCiWarm(enemy.visualsReady());
+    if(state.pickedPartner!=null) saint.warmPartnerCi(state.pickedPartner); }, 0);
   /* ══⚠⚠⚠ **這一場的怪，只在這裡上場一次**（ver -1467，Ray：「打空戰怪的圖竟然是
      出地下聖徒？？？？這個東西改過好幾次了怎麼還是會出？？？？」）══
      這一行以前是 `startGame` 最上面那一句無條件的 `enemy.startLineup()` ——

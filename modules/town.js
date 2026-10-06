@@ -879,18 +879,25 @@ function resolveBgOnce(all, decode, maxTry){
    涵蓋專案裡實際存在的兩種命名（`Varn_Square_Day.webp` 與 `Northport_west_BF.webp`）。 */
 const WARM_TRIES = 3;
 let warmSeq = 0;
-function warmRest(T, skipId){
-  const my = ++warmSeq;
+/* 兩條連線的背景佇列（warmRest／warmEnemies 共用，ver -2053 抽出來）：全部跑完才 resolve —— 給排在最後的 CI 預熱接棒。 */
+function warmPool(list, run, my){
+  return new Promise(res=>{
+    if(!list.length) return res(true);
+    let at=0, live=0;
+    const next=()=>{
+      if(my!==warmSeq) return res(false);
+      if(at>=list.length){ if(live===0) res(true); return; }
+      const x=list[at++]; live++;
+      Promise.resolve().then(()=>run(x)).catch(()=>{}).then(()=>{ live--; next(); });
+    };
+    for(let c=0;c<2;c++) next();
+  });
+}
+function warmRest(T, skipId, my){
   const ids = Object.keys(T.nodes || {}).filter(k => k !== skipId);
-  let at = 0;
-  const nextNode = ()=>{
-    if(my !== warmSeq || at >= ids.length) return;
-    const k = ids[at++];
-    /* ⚠ 走**同一支** `resolveBgOnce`（鐵律 8）——只差不解碼：這幾格還沒要畫，
-       位元組進了 HTTP 快取、答案進了 `bgResolved` 就夠了。 */
-    resolveBgOnce(bgCandsOf(T.nodes[k], k), false, WARM_TRIES).then(()=>{ if(my===warmSeq) nextNode(); });
-  };
-  for(let c = 0; c < 2; c++) nextNode();
+  /* ⚠ 走**同一支** `resolveBgOnce`（鐵律 8）——只差不解碼：這幾格還沒要畫，
+     位元組進了 HTTP 快取、答案進了 `bgResolved` 就夠了。 */
+  return warmPool(ids, k=>resolveBgOnce(bgCandsOf(T.nodes[k], k), false, WARM_TRIES), my);
 }
 /* ══ 這張圖會出現的怪，進圖時就預熱（ver -1578）══ 鐵律 13 第 3／5 條套用到
    敵人立繪：這張圖的怪由**這張圖自己**在讀取頁收掉之後背景預熱。
@@ -933,16 +940,8 @@ function enemyImgsOf(T){
   }
   return out;
 }
-function warmEnemies(T){
-  const my=warmSeq, list=enemyImgsOf(T);
-  let at=0;
-  const next=()=>{
-    if(my!==warmSeq || at>=list.length) return;   // 已經換圖了 → 這一輪作廢
-    const im=new Image();
-    im.onload=im.onerror=()=>{ if(my===warmSeq) next(); };
-    im.src=list[at++];
-  };
-  for(let c=0;c<2;c++) next();
+function warmEnemies(T, my){
+  return warmPool(enemyImgsOf(T), u=>new Promise(r=>{ const im=new Image(); im.onload=im.onerror=r; im.src=u; }), my);
 }
 export function loadSpec(town, nodeId){
   const T = TOWNS[town || 'capital']; if(!T) return {};
@@ -955,7 +954,11 @@ export function loadSpec(town, nodeId){
   /* ⚠ 兩件事都在讀取頁**收掉之後**才跑：其餘格子的背景、以及這張圖會出現的怪
      （ver -1578，見 `warmEnemies`）。⚠ 背景排前面 —— 玩家下一步就會走到，
      而怪要等遭遇（同 §6.6「哪一張鋪滿畫面就哪一張先」的判準）。 */
-  const warm = ()=>{ warmRest(T, id); warmEnemies(T); };
+  /* ⚠ 有戰鬥的地圖：背景與怪都暖完之後，**最後**才插旗暖搭檔的 CI 動檔（ver -2053，Ray：「進入有戰鬥畫面的圖
+     就開始預熱」「CI 預熱要排最後」）。換圖就作廢（warmSeq）。 */
+  const warm = ()=>{ const my=++warmSeq;
+    Promise.all([warmRest(T, id, my), warmEnemies(T, my)]).then(()=>{
+      if(my===warmSeq && ciWarm && battleIdsOf(T).length) ciWarm(); }); };
   /* ⚠ 入口圖走 `pre`（一支回 Promise 的函式）不走 `imgs`：候選鏈要**由這裡**解，
      解完的答案才記得回 `bgResolved`（見 resolveBgOnce 的說明）。 */
   return { dest:'town',   // 讀取頁這道門的目的地（ver -1848，story.showLoader → main.passGate）
@@ -4941,6 +4944,9 @@ export function setGearWatch(fn){ gearWatch=fn||null; }
    ⚠ 注入而不是 import（同上）：城鎮不認識存檔層。 */
 let checkpoint=null;
 export function setCheckpoint(fn){ checkpoint=fn||null; }
+/* 有戰鬥的地圖暖完背景與怪之後，插旗暖搭檔 CI（ver -2053；注入：城鎮不認識戰鬥層）。 */
+let ciWarm=null;
+export function setCiWarm(fn){ ciWarm=fn||null; }
 /* ══ 小地圖裡的「模擬存檔」（ver -936，Ray：「幫我做個存檔鈕在小地圖選單，存的檔跟
    其他進度都錯開，獨立，用來模擬真實玩家推進」）══
    `{save, load, info}` 由 main 注入（城鎮不認識存檔層，同 setCheckpoint）。
