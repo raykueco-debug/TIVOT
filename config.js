@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2024';
+export const VERSION = 'ver 2026.09.22-2025';
 
 export const GAME_CONFIG = {
 
@@ -3447,10 +3447,12 @@ export const GAME_CONFIG = {
        改一邊要改另一邊。不循環、停在最後一格。
        ⚠ ver -2022（Ray：「取 48 格的前 16 格，1.5 秒播完」）：v1 是整段 49 格隔格抽 24 格，
          片子本身是持續晃動，播一輪看起來還是在 loop；改成只取原檔開頭那一下（ver -2023 再改 14 格，≈9.3fps）。
+       ⚠ ver -2025（Ray：「索的共鬥新 CI 接上」）：換成美術重交的 24 格（4 秒原片切 #40~63，只彈一下）。
+         美術交在舊資料夾名 `ci_sorana_predator/`，搬成 `_v3/` —— 那個名字手機快取裡還是 v1 的晃動版。
        ⚠ 格還沒全部解碼好就退回靜態圖（第 0 格≈靜態圖），不會等它。
        ⚠ 檔名 `frame_NN` 每一組都一樣 —— 同名覆蓋時 `ASSET_VER` 分不出是哪一組，
          **重交動檔請換資料夾名**，不要就地覆蓋。 */
-    cutinAnim: { ci_sorana_predator:{ dir:'resources/ci/anim/ci_sorana_predator_v2/', frames:14, ms:1500 } },   // ver -2023 Ray：16→14 格
+    cutinAnim: { ci_sorana_predator:{ dir:'resources/ci/anim/ci_sorana_predator_v3/', frames:24, ms:1500 } },   // ver -2025：美術新交（4 秒原片 #40~63，只彈一下）
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],
@@ -5629,6 +5631,30 @@ export const ASSET_VER = {
   'east_university_day': 'caaf76f4',
   'east_university_dusk': '7d82df44',
   'east_university_night': 'a4396469',
+  'frame_00': '9e823ebf',
+  'frame_01': '483e1ecf',
+  'frame_02': '3776eff6',
+  'frame_03': 'f1254b66',
+  'frame_04': '0b862198',
+  'frame_05': '87de6abf',
+  'frame_06': 'a1362a65',
+  'frame_07': 'a560aced',
+  'frame_08': '5b331830',
+  'frame_09': '26073916',
+  'frame_10': '03dbad5c',
+  'frame_11': '7d9f3f53',
+  'frame_12': 'e5776bf2',
+  'frame_13': 'b0d4805d',
+  'frame_14': '08d3e564',
+  'frame_15': '69dca5e7',
+  'frame_16': 'ac9c928c',
+  'frame_17': 'f737a1ac',
+  'frame_18': 'ff3e948f',
+  'frame_19': '3a716653',
+  'frame_20': '865b7301',
+  'frame_21': '8a56bf38',
+  'frame_22': '8a4623e9',
+  'frame_23': 'b784b18d',
   'guildcounterca_si_closed': '80cc27b6',
   'guildcounterca_si_half': 'f341b6bb',
   'kidd_ci': 'a4cda953',

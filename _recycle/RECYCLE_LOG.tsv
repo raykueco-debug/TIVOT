@@ -1061,3 +1061,4 @@ when	from	to	reason
 20261006-151111	resources/ci/anim/ci_sorana_predator	_recycle/resources/ci/anim/ci_sorana_predator	ver -2022：Ray 改用 48 格原檔的前 16 格（ci_sorana_predator_v2），24 格隔格版退役
 20261006-151213	resources/ci/anim/ci_sorana_predator_v2/frame_14.webp	_recycle/resources/ci/anim/ci_sorana_predator_v2/frame_14.webp	ver -2023：Ray 改 14 格，多的兩格退役
 20261006-151213	resources/ci/anim/ci_sorana_predator_v2/frame_15.webp	_recycle/resources/ci/anim/ci_sorana_predator_v2/frame_15.webp	ver -2023：Ray 改 14 格，多的兩格退役
+20261006-152614	resources/ci/anim/ci_sorana_predator_v2	_recycle/resources/ci/anim/ci_sorana_predator_v2.20261006-152614	ver -2025：Ray 改用美術新交的 24 格（v3），14 格版退役
