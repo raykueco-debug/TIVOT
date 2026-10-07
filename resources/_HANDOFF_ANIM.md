@@ -34,6 +34,7 @@
 | 安雅 OBE（熔斷）抱頭崩潰 CI | `resources/ci/anim/ci_anya_obe_v1/`（64 格、4 秒） | ✅ 已接（-2037，`ms:4000`；CI 仍 1.5 秒，只播到第 25 格左右，加長等 Ray）。單張 `ci_anya_obe.webp` 自由動 4 秒、無 LoRA、seed 7 |
 | 諾薇兒 OBE 崩潰金光爆散 CI | `resources/ci/anim/ci_nouvelle_obe_v1/`（64 格、4 秒） | ✅ 已接（-2037，結局全畫面 CI 也能播動檔了；CI 仍 1.6 秒，加長等 Ray）。⚠ 原圖 1122×1402（4:5），送 Wan 前**左右各裁 94 px 成 2:3**，動檔比靜態圖窄；無 LoRA、seed 7 |
 | 賽西莉聖徒化 CI | `resources/ci/anim/ci_cecilie_saintinstall_v1/`（80 格、5 秒） | ✅ 已接（-2039）：Ray「前兩秒去掉、最後一秒也去掉」⇒ `pick:{from:32,to:64}`、32 格 2 秒（cutinDur 2000 暫照諾）。沒有常態 A 圖 ⇒ 先倒播法（B 往回散光再倒放）生出常態格，**拿那一格當 A、原圖當 B，A→B 一鏡到底**、LoRA 1.0、seed 77。法環快速閃現、力量從周身升起（Ray）。⚠ 第 0 格（常態）只有 480 寬的 Wan 輸出，沒有高解析原圖 |
+| 米夏夢魘化 敵人待機 | `resources/enemy/anim/man_misha_ni_idle_v1/`（24 格、3 秒循環、8fps、原圖畫布座標 box） | ⚠ 10-07 交件待接（Ray：「s7 可以 交件」）。法環緩轉、金色氣浪升騰、髮衣飄起；seed 7。⚠ 原尺寸解碼約 64 MB，程式端可縮 |
 | 怪物待機 94 隻 | `tivot_wan/out/monsters/`（未進 resources） | ⚠ 等 Ray 檢查 `check.html`；每隻解碼約 33 MB 記憶體，交件要提醒程式做釋放 |
 
 ## 等 Ray
