@@ -555,3 +555,15 @@ Ray 交辦：`resources/ci/ci_nouvelle_deathguard.webp`（1023×1537，含背景
   ⚠ 頭頂左後方有一小塊暗色，那是原圖逆光的頭髮背面，放在暗色背景上看不出來。
 - A：同一個 GPT 對話改出來的（閉眼、閉嘴、平靜祈禱、雙手合握，衣服沒有光斑），位置對位與 B 相同，顏色映射回原圖色調。
 - 中間檔都在 `_originals/CI/_dg/`。
+
+## 三十、2026-10-07：⚠ 動畫開單 —— 安雅夢魘裝填（nightmarereload）CI 兩張去背
+Ray 交辦：`resources/ci/ci_anya_nightmarereload.webp`（1024×1536，含紫色背景）＝**結尾圖 B**。動畫：**從閉眼開始、雙手握在胸前、像是對 viewer 說話；黑色背景＋火星；紫色力量從第一格就緩緩升騰**（背景與紫色力量都由動畫生，原背景不要）。
+**要 GPT 出兩張去背的人物**，交到 `resources/ci/layers/anya_nightmarereload/`：
+
+| 檔名 | 內容 |
+|---|---|
+| `anya_A.png` | 起手：以原圖為底，**閉眼、嘴閉上、表情平靜**，雙手照舊握在胸前，其餘不變。**去背成真 alpha**，**紫色光焰／煙全部不要**（頭髮周圍的紫光也拿掉，頭髮保持原本的淡紫色） |
+| `anya_B.png` | 原圖的安雅去背真 alpha，同樣**拿掉紫色光焰**，同畫布同位置 |
+
+- 1024×1536；anime style, cel shading, clean lineart，絕不要顆粒感。
+- 交完回訊息給「動畫」session。
