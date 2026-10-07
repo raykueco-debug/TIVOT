@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2074';
+export const VERSION = 'ver 2026.09.22-2075';
 
 export const GAME_CONFIG = {
 
@@ -5241,6 +5241,99 @@ export function ciShownFrames(key){
   const dur=((T.cutinDur||{})[key])||1500;
   return Math.min(all, Math.ceil(dur/ms)+1);
 }
+/* ══ 怪的待機循環（ver -2075，Ray：「把怪的待機動作都接上」）══ 立繪檔的基底名 → 待機動檔資料夾（anim.json＋frame_NN）。
+   由 tools/anim/deliver_idle_lite.py 轉檔（動畫產線 tivot_wan/out/monsters，24 格 3 秒 8fps 循環；格子維持產出解析度的 3/4，解碼約 14 MB／隻）。
+   enemy.idleDirFor 查這張表：卡上 `image` 指到的那張圖有登記就自動播（不必逐張改卡）；卡上寫 `idle:false` ＝個案關掉。
+   ⚠ mon_beast_altar 沒收：動畫去背把身體吃掉一半（交件時剔除）。 */
+export const ENEMY_IDLE = {
+  mon_arch_warden: 'resources/enemy/anim/mon_arch_warden_idle_v1/',
+  mon_bear_husk: 'resources/enemy/anim/mon_bear_husk_idle_v1/',
+  mon_bear_nightmare: 'resources/enemy/anim/mon_bear_nightmare_idle_v1/',
+  mon_beast_bonemaw: 'resources/enemy/anim/mon_beast_bonemaw_idle_v1/',
+  mon_beast_organ: 'resources/enemy/anim/mon_beast_organ_idle_v1/',
+  mon_beast_reliquary: 'resources/enemy/anim/mon_beast_reliquary_idle_v1/',
+  mon_beast_shackle: 'resources/enemy/anim/mon_beast_shackle_idle_v1/',
+  mon_bellfounder: 'resources/enemy/anim/mon_bellfounder_idle_v1/',
+  mon_bug_mantis: 'resources/enemy/anim/mon_bug_mantis_idle_v1/',
+  mon_candelabra_fiend: 'resources/enemy/anim/mon_candelabra_fiend_idle_v1/',
+  mon_chain_hanged: 'resources/enemy/anim/mon_chain_hanged_idle_v1/',
+  mon_choir_organ: 'resources/enemy/anim/mon_choir_organ_idle_v1/',
+  mon_choir_pale: 'resources/enemy/anim/mon_choir_pale_idle_v1/',
+  mon_crypt_centipede: 'resources/enemy/anim/mon_crypt_centipede_idle_v1/',
+  mon_crypt_hound: 'resources/enemy/anim/mon_crypt_hound_idle_v1/',
+  mon_dragon_throne_awakened: 'resources/enemy/anim/mon_dragon_throne_awakened_idle_v1/',
+  mon_dragon_throne_roar: 'resources/enemy/anim/mon_dragon_throne_roar_idle_v1/',
+  mon_dragon_v1_ascendant: 'resources/enemy/anim/mon_dragon_v1_ascendant_idle_v1/',
+  mon_dragon_v1_flight: 'resources/enemy/anim/mon_dragon_v1_flight_idle_v1/',
+  mon_dragon_v1_shackled: 'resources/enemy/anim/mon_dragon_v1_shackled_idle_v1/',
+  mon_dragon_v1_unsealed: 'resources/enemy/anim/mon_dragon_v1_unsealed_idle_v1/',
+  mon_gorge_toad: 'resources/enemy/anim/mon_gorge_toad_idle_v1/',
+  mon_gravekeeper_crypt: 'resources/enemy/anim/mon_gravekeeper_crypt_idle_v1/',
+  mon_gravekeeper_many: 'resources/enemy/anim/mon_gravekeeper_many_idle_v1/',
+  mon_gravekeeper_offset: 'resources/enemy/anim/mon_gravekeeper_offset_idle_v1/',
+  mon_gravekeeper_seal: 'resources/enemy/anim/mon_gravekeeper_seal_idle_v1/',
+  mon_grave_censer: 'resources/enemy/anim/mon_grave_censer_idle_v1/',
+  mon_halo_ring: 'resources/enemy/anim/mon_halo_ring_idle_v1/',
+  mon_iron_maiden: 'resources/enemy/anim/mon_iron_maiden_idle_v1/',
+  mon_kneeling_penitent: 'resources/enemy/anim/mon_kneeling_penitent_idle_v1/',
+  mon_natalia: 'resources/enemy/anim/mon_natalia_idle_v1/',
+  mon_ossuary_rats: 'resources/enemy/anim/mon_ossuary_rats_idle_v1/',
+  mon_ossuary_wheel: 'resources/enemy/anim/mon_ossuary_wheel_idle_v1/',
+  mon_pallid_stag: 'resources/enemy/anim/mon_pallid_stag_idle_v1/',
+  mon_pall_bearers: 'resources/enemy/anim/mon_pall_bearers_idle_v1/',
+  mon_relic_bellascetic: 'resources/enemy/anim/mon_relic_bellascetic_idle_v1/',
+  mon_relic_bellows: 'resources/enemy/anim/mon_relic_bellows_idle_v1/',
+  mon_relic_bellreacher: 'resources/enemy/anim/mon_relic_bellreacher_idle_v1/',
+  mon_relic_bellwalker: 'resources/enemy/anim/mon_relic_bellwalker_idle_v1/',
+  mon_relic_candlepenitent: 'resources/enemy/anim/mon_relic_candlepenitent_idle_v1/',
+  mon_relic_candletower: 'resources/enemy/anim/mon_relic_candletower_idle_v1/',
+  mon_relic_censerlung: 'resources/enemy/anim/mon_relic_censerlung_idle_v1/',
+  mon_relic_chalice: 'resources/enemy/anim/mon_relic_chalice_idle_v1/',
+  mon_relic_confessional: 'resources/enemy/anim/mon_relic_confessional_idle_v1/',
+  mon_relic_heartripper: 'resources/enemy/anim/mon_relic_heartripper_idle_v1/',
+  mon_relic_hourglass: 'resources/enemy/anim/mon_relic_hourglass_idle_v1/',
+  mon_relic_keyward: 'resources/enemy/anim/mon_relic_keyward_idle_v1/',
+  mon_relic_lectern: 'resources/enemy/anim/mon_relic_lectern_idle_v1/',
+  mon_relic_mirrorchoir: 'resources/enemy/anim/mon_relic_mirrorchoir_idle_v1/',
+  mon_relic_reassembled: 'resources/enemy/anim/mon_relic_reassembled_idle_v1/',
+  mon_relic_veilhands: 'resources/enemy/anim/mon_relic_veilhands_idle_v1/',
+  mon_relic_wheelpsalm: 'resources/enemy/anim/mon_relic_wheelpsalm_idle_v1/',
+  mon_reliquary_hand: 'resources/enemy/anim/mon_reliquary_hand_idle_v1/',
+  mon_rictus_hooked: 'resources/enemy/anim/mon_rictus_hooked_idle_v1/',
+  mon_saint_acolyte: 'resources/enemy/anim/mon_saint_acolyte_idle_v1/',
+  mon_saint_blade: 'resources/enemy/anim/mon_saint_blade_idle_v1/',
+  mon_saint_crawler: 'resources/enemy/anim/mon_saint_crawler_idle_v1/',
+  mon_saint_fist: 'resources/enemy/anim/mon_saint_fist_idle_v1/',
+  mon_saint_giant: 'resources/enemy/anim/mon_saint_giant_idle_v1/',
+  mon_saint_haloed: 'resources/enemy/anim/mon_saint_haloed_idle_v1/',
+  mon_saint_inspector: 'resources/enemy/anim/mon_saint_inspector_idle_v1/',
+  mon_saint_maw: 'resources/enemy/anim/mon_saint_maw_idle_v1/',
+  mon_saint_palmeye: 'resources/enemy/anim/mon_saint_palmeye_idle_v1/',
+  mon_saint_pillory: 'resources/enemy/anim/mon_saint_pillory_idle_v1/',
+  mon_saint_prayerhead: 'resources/enemy/anim/mon_saint_prayerhead_idle_v1/',
+  mon_saint_prison: 'resources/enemy/anim/mon_saint_prison_idle_v1/',
+  mon_saint_temperance: 'resources/enemy/anim/mon_saint_temperance_idle_v1/',
+  mon_saint_thug: 'resources/enemy/anim/mon_saint_thug_idle_v1/',
+  mon_sarcoph_crawler: 'resources/enemy/anim/mon_sarcoph_crawler_idle_v1/',
+  mon_sea_coralman: 'resources/enemy/anim/mon_sea_coralman_idle_v1/',
+  mon_shinierforest_crows: 'resources/enemy/anim/mon_shinierforest_crows_idle_v1/',
+  mon_shinierforest_deernightmare: 'resources/enemy/anim/mon_shinierforest_deernightmare_idle_v1/',
+  mon_shinierforest_hog: 'resources/enemy/anim/mon_shinierforest_hog_idle_v1/',
+  mon_shinierforest_lynx: 'resources/enemy/anim/mon_shinierforest_lynx_idle_v1/',
+  mon_shinierforest_snake: 'resources/enemy/anim/mon_shinierforest_snake_idle_v1/',
+  mon_shinierforest_tiger: 'resources/enemy/anim/mon_shinierforest_tiger_idle_v1/',
+  mon_shroud_widow: 'resources/enemy/anim/mon_shroud_widow_idle_v1/',
+  mon_skull_cairn: 'resources/enemy/anim/mon_skull_cairn_idle_v1/',
+  mon_slab_creeper: 'resources/enemy/anim/mon_slab_creeper_idle_v1/',
+  mon_spiral_veil: 'resources/enemy/anim/mon_spiral_veil_idle_v1/',
+  mon_stag_nightmare: 'resources/enemy/anim/mon_stag_nightmare_idle_v1/',
+  mon_stag_rot: 'resources/enemy/anim/mon_stag_rot_idle_v1/',
+  mon_stone_adder: 'resources/enemy/anim/mon_stone_adder_idle_v1/',
+  mon_tomb_bear: 'resources/enemy/anim/mon_tomb_bear_idle_v1/',
+  mon_twin_skull_hound: 'resources/enemy/anim/mon_twin_skull_hound_idle_v1/',
+  mon_vault_bat: 'resources/enemy/anim/mon_vault_bat_idle_v1/',
+  mon_wolf_pack: 'resources/enemy/anim/mon_wolf_pack_idle_v1/',
+};
 export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ""; }
 
 /* ══⚠⚠⚠ 同名覆蓋的圖要換一次快取（ver -905）══════════════════════════════
@@ -5435,6 +5528,7 @@ export const ASSET_VER = {
   '_layout_tomb': '1a47bf82',
   '_layout_undercity': '17f71d1b',
   '_layout_verafond': '6d44630f',
+  'anya_a': 'e441af7c',
   'anya_ad_si_front_closed': '4b5278ba',
   'anya_ad_si_front_half': '0c427692',
   'anya_ad_si_point_closed': '8444ead5',

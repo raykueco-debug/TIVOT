@@ -15,7 +15,7 @@
 
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import * as prog from '../script/progress.js';  // stage 加成要問現在第幾章（ver -1584b）
-import { GAME_CONFIG, HITFX, asset, sfxGain } from '../config.js';
+import { ENEMY_IDLE, GAME_CONFIG, HITFX, asset, sfxGain } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
@@ -919,6 +919,7 @@ export function applyEnemyFit(fit){
     /* ⚠ `fit.mode:'contain'`（ver -375）：**去背立繪**用的。滿版插圖走 cover（預設），
        但把對話立繪借來當戰鬥立繪時，cover 會把頭裁掉 —— 那種要 contain ＋ 背景。 */
     eImg.style.objectFit = (fit && fit.mode) || '';
+    placeIdle();   // 待機層跟著新的取景重新對位（ver -2075）
     /* 群體敵人（ver -2043，Ray：「縮放要讓我縮敵人，那個是戰鬥用背景」）：取景套在**人那一組**上 ——
        框（inset／寬高）照抄 #enemyImg，每一層的 object-position／object-fit 也照抄。 */
     { const g=$('enemyGroup');
@@ -1012,7 +1013,7 @@ export function swapPortrait(assetKey, opts){
   const im=new Image(); im.src=u;
   /* 換上的那張可以有**自己的取景**與**待機循環**（ver -2068，米夏 NI 重畫：人縮小、四周留白給光效）——
      卡上 `lastStand.fit`／`lastStand.idle`。沒寫＝照舊沿用卡的取景、靜態圖。 */
-  const go=()=>{ el.src=u; if(opts.fit) applyEnemyFit(opts.fit); if(opts.idle) startIdleLoop(opts.idle); };
+  const go=()=>{ stopIdleLoop(); el.src=u; if(opts.fit) applyEnemyFit(opts.fit); if(opts.idle) startIdleLoop(opts.idle); };
   (im.decode ? im.decode() : Promise.resolve()).then(go, go);
 }
 /* 立繪畫布上的一塊（anim.json 的 canvas／box）→ `#top` 座標：照 #enemyImg 現在的框與 object-fit／object-position。
@@ -1029,7 +1030,19 @@ function canvasBoxInTop(eImg, j){
 /* ══ 待機循環（ver -2068，動畫 dc7527d8：米夏夢魘化待機 24 格 3 秒）══ 資料夾裡 anim.json（canvas／box／frames／fps／loop）＋ frame_NN。
    全部載好才換上（沒好就照舊靜態圖）；換怪／換立繪時收掉（stopIdleLoop）。
    ⚠ 格子是縮成六成的版本（_s60，解碼約 22 MB；原尺寸 64 MB），照 box 拉回原大小 —— 畫面上看不出差別。 */
-let idleT=0, idleEl=null;
+let idleT=0, idleEl=null, idleJ=null;
+/* 視窗尺寸／取景變了：待機層照立繪現在的框重新對位。 */
+function placeIdle(){ if(!idleEl || !idleJ) return; const r=canvasBoxInTop($('enemyImg'), idleJ); if(!r) return;
+  idleEl.style.left=r.left+'px'; idleEl.style.top=r.top+'px'; idleEl.style.width=r.width+'px'; idleEl.style.height=r.height+'px'; }
+try{ window.addEventListener('resize', ()=>placeIdle()); }catch(_){}
+/* 這張卡的待機動檔資料夾：卡上 `idle` 明寫優先（false＝關），否則照立繪檔名查 config 的 ENEMY_IDLE（ver -2075）。群體敵人不吃。 */
+function idleDirFor(en){
+  if(!en || en.group || en.idle===false) return null;
+  if(typeof en.idle==='string') return en.idle;
+  const p=String(asset(en.image)||'').split('?')[0], b=p.slice(p.lastIndexOf('/')+1).replace(/\.\w+$/,'');
+  return ENEMY_IDLE[b] || null;
+}
+function startCardIdle(en){ if(portraitOverride) return; const d=idleDirFor(en); if(d) startIdleLoop(d); }
 function stopIdleLoop(){ clearInterval(idleT); idleT=0; if(idleEl){ idleEl.remove(); idleEl=null; }
   const e=$('enemyImg'); if(e && e.style.visibility==='hidden' && !document.querySelector('#top .en-fall')) e.style.visibility=''; }
 function startIdleLoop(dir){
@@ -1043,7 +1056,7 @@ function startIdleLoop(dir){
       const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, j); if(!r) return;
       const el=document.createElement('img'); el.className='en-idle'; el.alt='';
       el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.width=r.width+'px'; el.style.height=r.height+'px';
-      el.src=fr[0].src; eImg.after(el); idleEl=el; eImg.style.visibility='hidden';
+      el.src=fr[0].src; eImg.after(el); idleEl=el; idleJ=j; eImg.style.visibility='hidden';
       let i=0; idleT=setInterval(()=>{ i=(i+1)%fr.length; el.src=fr[i].src; }, 1000/(j.fps||8));
     });
   }).catch(()=>{});
@@ -1505,6 +1518,7 @@ export function loadEnemyPortrait(en){
       if(e.animationName!=='enemyRise' && e.animationName!=='enemyPurge') return;
       eImg.removeEventListener('animationend', off);
       eImg.classList.remove(riseCls);
+      if(e.animationName==='enemyRise' || riseCls==='enemy-unpurge') startCardIdle(en);   // 降臨演完才換成待機循環（ver -2075）
     }); };
   /* ══⚠⚠ **登場音只有一格**（ver -948，Ray：「entranceVo 跟 landSe 應該是同一時間
      發生，併為一格」）══ 卡上寫 `entrance`，播的**時機由這隻怪自己決定**：
@@ -1555,9 +1569,9 @@ export function loadEnemyPortrait(en){
        ⚠ 已經放行了（`riseHeld` 是 false，例如不走門的路徑）就當場發，行為不變。 */
     /* ⚠ 被 `suppressRiseOnce` 壓掉的那一場：登場音與衝擊也不發（見 riseSuppressedNow）。 */
     const fire=()=>{ if(riseSuppressedNow) return; if(riseHeld) risePending=arrive; else arrive(); };
-    eImg.onload = ()=>{ eImg.onload=null; fire(); };
+    eImg.onload = ()=>{ eImg.onload=null; fire(); startCardIdle(en); };
     eImg.src = enemyImage(en);
-    if(eImg.complete && eImg.naturalWidth){ eImg.onload=null; fire(); }
+    if(eImg.complete && eImg.naturalWidth){ eImg.onload=null; fire(); startCardIdle(en); }
     return;
   }
   const arm=()=>{ eImg.onload=null; clearTimeout(riseT); riseT=setTimeout(rise, RISE_DELAY_MS);
@@ -1638,6 +1652,7 @@ function spawnPurgeStars(){
    ⚠ 聲音走 `story.playSe`（音效表只有那一份，鐵律 7；它自己擋 brickcrush 疊播）。
    ⚠ 冪等：同 `enemy-purge`，overkill 期間重複叫到不會重播。 */
 export function purgeEnemy(){
+  stopIdleLoop();   // 死亡演出在立繪本體上演（ver -2075）
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
   if(en && en.deathFx==='quake'){
     const eImg = $('enemyImg');
@@ -1986,6 +2001,7 @@ export function advanceToNextEnemy(done){
   const en = GAME_CONFIG.enemies[key] || {};
   const src = enemyImage(en);
   const start = ()=>{
+    stopIdleLoop();   // 連戰換敵：掠過演出在立繪本體上演（ver -2075）
     if(img){ img.classList.remove('enemy-enter'); img.classList.add('enemy-leave'); }
     setTimeout(()=>{
       setEnemy(key);            // 換立繪/名稱/血量與大絕/懲罰/hitFx config

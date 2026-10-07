@@ -378,6 +378,9 @@
   #enemyGroup .eg-shadow.eg-down{opacity:0;}
   #enemyGroup .eg-guard.eg-down{transform:translateY(6%);opacity:0;filter:brightness(.4);}
   #enemyImg.hit + #enemyGroup{animation:enemyHit .15s ease-out;}
+  /* 待機循環那一層吃同一套受擊反應（ver -2075；.en-idle 緊跟在 #enemyImg 後面） */
+  #enemyImg.hit + .en-idle{animation:enemyHit .15s ease-out;}
+  #enemyImg.shake + .en-idle{animation:camShake .3s;}
   @keyframes enemyHit{
     0%  {transform:translateX(0)    scale(1);    filter:brightness(1.9) saturate(.6);}
     35% {transform:translateX(-5px) scale(.985); filter:brightness(1.35) saturate(.8);}
