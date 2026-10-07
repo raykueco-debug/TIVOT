@@ -457,9 +457,9 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 
 ## 二十四、2026-10-07：米夏夢魘化立繪重畫（Ray：「米夏的 SI 立繪被裁了，重畫」→ 指定 ni 那張）
 - ✔ 同名覆蓋 `si/misha_si_ni.webp` ＋ `enemy/man_misha_ni.webp`（兩檔本來就是同一張）；舊版走 `tools/recycle.sh` 進 `_recycle/`。
-  GPT 重畫（同人同姿勢同光效，整體縮進框內），本機再縮排置中補白：外框 x72–952、y176–1359，四邊都不碰。
+  GPT 重畫（同人同姿勢同光效，整體縮進框內），本機再縮排置中補白。⚠ Ray 追加「多留周邊空白，要做動畫」⇒ 再縮：外框 x162–861、y297–1237（左右各約 16%、上下約 19% 空白，給動畫的光帶飄動留位）。母版 `_originals/SI/_misha_ni_v2_pad2.png`。
 - ⚠⚠ **程式端要接（鐵律 11，美術不碰）**：
   1. `python3 tools/bust.py --bump`（同名覆蓋，`ASSET_VER` 要跳）。
-  2. `speakers.js` 的 `misha.expr.ni` 取景要重量：舊值 `top:2 bot:1532 fx:0.553` 已失效。美術粗量：頭頂（不含光環）≈245、腳底≈1358、臉中心 fx≈0.55；人比其他差分小一號 ⇒ 要 `rescale:true`。
+  2. `speakers.js` 的 `misha.expr.ni` 取景要重量：舊值 `top:2 bot:1532 fx:0.553` 已失效。美術粗量（-pad2 版）：頭頂（不含光環）≈355、腳底≈1237、臉中心 fx≈0.55；人比其他差分小一號 ⇒ 要 `rescale:true`。
   3. `script/eyefx.js` 的 `misha_si_ni` 眼睛座標整組失效（圖重畫了），眨眼／眼效要重跑。
   4. `man_misha_ni` 戰鬥 fit 也要重看（人變小了）。
