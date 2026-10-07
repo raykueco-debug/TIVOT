@@ -511,3 +511,9 @@ Ray：「應該把現有的光球拿掉，用動畫生」。本機用 alpha 去�
 - 兩張都：**純黑背景**（不要透明）、1024×1536、構圖人物位置大小與原圖完全相同、表情不變。
 - 畫風：anime style, cel shading, clean lineart，絕不要顆粒感。
 - 交完回訊息給「動畫」session。
+
+### ✔ 二十七 交件（2026-10-07，美術）
+- `resources/ci/ci_nouvelle_breath_B.png`：光球拿掉；手掌、手指、手腕完整，手周圍全黑。
+- `resources/ci/ci_nouvelle_breath_A.png`：以 B 為底，舉起的手收成鬆拳，手腕位置不變。
+- 兩張都是 1024×1536 RGB 純黑背景。疊在原圖上檢查過，人物位置大小一致（原圖本來就是手指貼著右緣，這兩張也一樣）。
+- 送 GPT 的底圖（原圖先鋪成黑底）在 `_originals/CI/_breath/`。
