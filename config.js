@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2077';
+export const VERSION = 'ver 2026.09.22-2078';
 
 export const GAME_CONFIG = {
 
@@ -3450,11 +3450,13 @@ export const GAME_CONFIG = {
     /* ══ CI 的長度（ver -2030，Ray：「諾的 SI CI 改成 2 秒看看」）══ 鑰匙＝靜態圖的鍵，值＝毫秒；
        沒寫＝1.5 秒。推入／停留／撤出的比例照 1.5 秒那一版放大（style.css 的 --ci-dur）。
        ⚠ 與 `cutinAnim` 的播放速度無關：動檔照自己的速度播，CI 時間到就撤。 */
-    cutinDur: { cutin_nouvelle_saint:2000, ci_sorana_predator:1125, ci_anya_ni:2813,   // 安雅惡夢化 ver -2036（Ray：「動畫是 NI，DB 另外做」）
+    cutinDur: { cutin_nouvelle_saint:2000, ci_sorana_predator:1125, ci_anya_ni:2875,   // ver -2078：NI 換 v2（1.875 秒）＋Ray「安雅再延 1 秒」（播完停最後一格 1 秒）   // 安雅惡夢化 ver -2036（Ray：「動畫是 NI，DB 另外做」）
                 ci_anya_obe:2000, cutin_obe_nouvelle:2000,
                 cutin_cecilie_saint:3125, cutin_cecilie_obe:2000,
                 ci_sorana_obe:1625,
-                cutin_nouvelle_guard:2000, ci_sorana_supply:1500 },   // ver -2076：即死防禦／補給影片（片長＝CI 長，撤出時還在播；同 cutinAnim 那兩列）   // 索拉娜飛刀耗盡 ver -2051（26 格 16fps，撤出時還在播；同 cutinAnim 的 ms，兩處互指）
+                cutin_nouvelle_guard:2000, ci_sorana_supply:1500,
+                ci_anya_dreambreaker:2813, ci_anya_lucid:2000, cutin_return_nouvelle:2000,   // ver -2078：片長＝CI 長
+                ci_sorana_roar_renna:2000, ci_sorana_roar_anya:2000, ci_sorana_roar_nouvelle:2000 },   // ver -2076：即死防禦／補給影片（片長＝CI 長，撤出時還在播；同 cutinAnim 那兩列）   // 索拉娜飛刀耗盡 ver -2051（26 格 16fps，撤出時還在播；同 cutinAnim 的 ms，兩處互指）
     /* ⚠ ver -2040（Ray：「秒數控制在每一個在撤出時都還在播放狀態，不要停」）：索拉娜共鬥／賽西莉聖徒化／賽西莉 OBE
        的 CI 長度＝那段動檔的實際長度（格數 ÷ 16fps）—— 最後一格剛出現就撤，不會停格。
        改動檔的格數就要一起改這裡（同一個數字的兩處，兩邊互指：cutinAnim 的 ms）。 */   // 兩張 OBE ver -2038（Ray：「兩個都改 2 秒」）；結局全畫面 CI（playSaintCutin）也讀這張表   // 索拉娜共鬥 ver -2032（Ray：「2 秒可以」；_v7 動檔剛好 2 秒）
@@ -3485,7 +3487,7 @@ export const GAME_CONFIG = {
                  cutin_nouvelle_saint:{ video:'resources/ci/video/cutin_nouvelle_saint_v1.mp4' },
                  /* ver -2041：安雅惡夢化（NI）改用 Ray 剪的 ni3 版（ci_anya_dreambreaker0_ni3_s77_cut，45 格 2.8125 秒＝ cutinDur，撤出時還在播）。
                     -2034～-2036 那段（ci_anya_dreambreaker_v1 去頭去尾）已由這一版取代、資料夾已回收。DB（夢境粉碎）的動檔另外做。 */
-                 ci_anya_ni:{ video:'resources/ci/video/ci_anya_ni_v1.mp4' },
+                 ci_anya_ni:{ video:'resources/ci/video/ci_anya_ni_v2.mp4' },   // ver -2078：新 NI（Ray 剪 anya_ni_s7_cut）；舊 v1 改做夢境粉碎
                  /* ver -2037（Ray：「兩個 obe 都可以交件」）：OBE 崩潰兩張，各 64 格 16fps＝4 秒。
                     安雅熔斷走 playCutin、諾薇兒 OBE 走結局全畫面 playSaintCutin，兩張 CI 都 2 秒（cutinDur，ver -2038），播到第 32 格左右。
                     ⚠ 諾薇兒的動檔是 2:3（靜態圖 4:5 左右各裁 94px），結局 CI 是 cover 滿版，看不出差。 */
@@ -3500,7 +3502,14 @@ export const GAME_CONFIG = {
                  /* ver -2076（動畫 964946af／交接表「待程式接」）：諾薇兒即死防禦（被動，2.0 秒）、索拉娜前線補給（主動，1.5 秒）。
                     主被動技的 CI 名單本來就會預熱（config.partnerCiKeys 掃卡上的 *cutin），登記進這張表就自動接上。 */
                  cutin_nouvelle_guard:{ video:'resources/ci/video/ci_nouvelle_deathguard_v1.mp4' },
-                 ci_sorana_supply:{ video:'resources/ci/video/ci_sorana_supply_v1.mp4' } },
+                 ci_sorana_supply:{ video:'resources/ci/video/ci_sorana_supply_v1.mp4' },
+                 /* ver -2078（動畫交接表「待程式接」）：夢境粉碎（＝舊 NI 原片）、明晰之夢、諾薇兒魂之歸所、索拉娜怒吼三支。 */
+                 ci_anya_dreambreaker:{ video:'resources/ci/video/ci_anya_dreambreaker_v1.mp4' },
+                 ci_anya_lucid:{ video:'resources/ci/video/ci_anya_luciddream_v1.mp4' },
+                 cutin_return_nouvelle:{ video:'resources/ci/video/ci_nouvelle_lifereturn_v1.mp4' },
+                 ci_sorana_roar_renna:{ video:'resources/ci/video/ci_sorana_roar_renna_v1.mp4' },
+                 ci_sorana_roar_anya:{ video:'resources/ci/video/ci_sorana_roar_anya_v1.mp4' },
+                 ci_sorana_roar_nouvelle:{ video:'resources/ci/video/ci_sorana_roar_nouvelle_v1.mp4' } },
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],
