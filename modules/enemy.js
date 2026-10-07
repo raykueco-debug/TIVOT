@@ -1004,13 +1004,49 @@ export function checkHpVoice(pct){
    `enemyImage()` 對這一隻一律回它 —— 之後任何重掛立繪的路（門放行、重載）都拿到 NI 版，
    不會被換回去。換敵（`setEnemy`）時清掉。 */
 let portraitOverride=null;   // { key:這一隻的卡鍵, src }
-export function swapPortrait(assetKey){
+export function swapPortrait(assetKey, opts){
   const el=$('enemyImg'); const u=asset(assetKey);
   if(!el || !u) return;
+  opts=opts||{};
   portraitOverride={ key:state.currentEnemyKey, src:u };
   const im=new Image(); im.src=u;
-  const go=()=>{ el.src=u; };
+  /* 換上的那張可以有**自己的取景**與**待機循環**（ver -2068，米夏 NI 重畫：人縮小、四周留白給光效）——
+     卡上 `lastStand.fit`／`lastStand.idle`。沒寫＝照舊沿用卡的取景、靜態圖。 */
+  const go=()=>{ el.src=u; if(opts.fit) applyEnemyFit(opts.fit); if(opts.idle) startIdleLoop(opts.idle); };
   (im.decode ? im.decode() : Promise.resolve()).then(go, go);
+}
+/* 立繪畫布上的一塊（anim.json 的 canvas／box）→ `#top` 座標：照 #enemyImg 現在的框與 object-fit／object-position。
+   單人倒地（playKillFall）與待機循環（startIdleLoop）共用（鐵律 7）。 */
+function canvasBoxInTop(eImg, j){
+  const top=$('top'); if(!eImg || !top) return null;
+  const cw=(j.canvas||[eImg.naturalWidth||1024, eImg.naturalHeight||1536])[0], ch=(j.canvas||[eImg.naturalWidth||1024, eImg.naturalHeight||1536])[1], b=j.box||[0,0,cw,ch];
+  const er=eImg.getBoundingClientRect(), tr=top.getBoundingClientRect(), cs=getComputedStyle(eImg);
+  const W=er.width, H=er.height, k = cs.objectFit==='contain' ? Math.min(W/cw, H/ch) : Math.max(W/cw, H/ch);
+  const dw=cw*k, dh=ch*k, p=String(cs.objectPosition||'50% 0%').split(/\s+/).map(x=>parseFloat(x)/100);
+  const ox=er.left-tr.left+(W-dw)*(isNaN(p[0])?0.5:p[0]), oy=er.top-tr.top+(H-dh)*(isNaN(p[1])?0:p[1]);
+  return { left:ox+b[0]*k, top:oy+b[1]*k, width:b[2]*k, height:b[3]*k };
+}
+/* ══ 待機循環（ver -2068，動畫 dc7527d8：米夏夢魘化待機 24 格 3 秒）══ 資料夾裡 anim.json（canvas／box／frames／fps／loop）＋ frame_NN。
+   全部載好才換上（沒好就照舊靜態圖）；換怪／換立繪時收掉（stopIdleLoop）。
+   ⚠ 格子是縮成六成的版本（_s60，解碼約 22 MB；原尺寸 64 MB），照 box 拉回原大小 —— 畫面上看不出差別。 */
+let idleT=0, idleEl=null;
+function stopIdleLoop(){ clearInterval(idleT); idleT=0; if(idleEl){ idleEl.remove(); idleEl=null; }
+  const e=$('enemyImg'); if(e && e.style.visibility==='hidden' && !document.querySelector('#top .en-fall')) e.style.visibility=''; }
+function startIdleLoop(dir){
+  stopIdleLoop();
+  const key=state.currentEnemyKey;
+  fetch(dir+'anim.json').then(r=>r.ok?r.json():null).then(j=>{
+    if(!j || state.currentEnemyKey!==key) return;
+    const fr=Array.from({length:j.frames||0},(_,i)=>{ const f=new Image(); f.src=dir+'frame_'+String(i).padStart(2,'0')+'.webp'; return f; });
+    return Promise.all(fr.map(f=>f.decode ? f.decode().catch(()=>{}) : Promise.resolve())).then(()=>{
+      if(state.currentEnemyKey!==key || !fr.length || !fr.every(f=>f.naturalWidth)) return;
+      const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, j); if(!r) return;
+      const el=document.createElement('img'); el.className='en-idle'; el.alt='';
+      el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.width=r.width+'px'; el.style.height=r.height+'px';
+      el.src=fr[0].src; eImg.after(el); idleEl=el; eImg.style.visibility='hidden';
+      let i=0; idleT=setInterval(()=>{ i=(i+1)%fr.length; el.src=fr[i].src; }, 1000/(j.fps||8));
+    });
+  }).catch(()=>{});
 }
 /* ══ 敵人的台詞語音（ver -1920，Ray：尼莫「玩家受擊用 slow1／slow2／feint 輪播、玩家戰敗播 bulletrain、戰勝播 win」）══
    卡上三格（開戰那一聲照舊走 `entrance`）：
@@ -1318,15 +1354,10 @@ function loadSingleFall(en){
 export function playKillFall(){
   const F=singleFall; if(!F || !F.j || !F.frames.length || !F.frames.every(f=>f.complete && f.naturalWidth)) return 0;
   const eImg=$('enemyImg'), top=$('top'); if(!eImg || !top || !eImg.naturalWidth) return 0;
-  const en=F.card||{}, j=F.j, cw=(j.canvas||[eImg.naturalWidth,eImg.naturalHeight])[0], ch=(j.canvas||[eImg.naturalWidth,eImg.naturalHeight])[1], b=j.box||[0,0,cw,ch];
-  /* 畫布 → #top 座標：照 #enemyImg 的 object-fit／object-position（同 groundShadow 的換算）。 */
-  const er=eImg.getBoundingClientRect(), tr=top.getBoundingClientRect(), cs=getComputedStyle(eImg);
-  const W=er.width, H=er.height, fit=cs.objectFit;
-  const k = fit==='contain' ? Math.min(W/cw, H/ch) : Math.max(W/cw, H/ch);
-  const dw=cw*k, dh=ch*k, p=String(cs.objectPosition||'50% 0%').split(/\s+/).map(x=>parseFloat(x)/100);
-  const ox=er.left-tr.left+(W-dw)*(isNaN(p[0])?0.5:p[0]), oy=er.top-tr.top+(H-dh)*(isNaN(p[1])?0:p[1]);
+  const en=F.card||{}, j=F.j, r=canvasBoxInTop(eImg, j); if(!r) return 0;
+  stopIdleLoop();
   const el=document.createElement('img'); el.className='en-fall'; el.alt='';
-  el.style.left=(ox+b[0]*k)+'px'; el.style.top=(oy+b[1]*k)+'px'; el.style.width=(b[2]*k)+'px'; el.style.height=(b[3]*k)+'px';
+  el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.width=r.width+'px'; el.style.height=r.height+'px';
   el.src=F.frames[0].src; eImg.after(el);
   eImg.style.visibility='hidden';
   const ms=en.fallMs||500, hold=en.fallHold!=null?en.fallHold:600, n=F.frames.length;
@@ -1394,6 +1425,7 @@ export function loadEnemyPortrait(en){
   if(en && en.group){ eImg.removeAttribute('src'); eImg.style.visibility='hidden'; applyEnemyFit(en.fit); return; }
   eImg.style.visibility='';
   document.querySelectorAll('#top .en-fall').forEach(e=>e.remove());   // 上一隻的倒地動畫（ver -2065）
+  stopIdleLoop();                                                       // 上一隻的待機循環（ver -2068）
   shadowCard = en || null;
   groundShadow.hide($('enemyShadow'));     // 換怪：新的腳量好之前不留上一隻的影子
   clearTimeout(riseT); riseT=0;

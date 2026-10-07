@@ -1574,7 +1574,7 @@ export const ART = {
     sideopen:   { src:'resources/si/misha_si_sideopen.webp', top:16, bot:1512, fx:0.37 },   // 照 side
     /* ver -1882：美術 09-30 交件（備用，還沒有腳本在用）—— measure_si 實量。 */
     fight:      { src:'resources/si/misha_si_fight.webp', top:7, bot:1523, fx:0.529 },
-    ni:         { src:'resources/si/misha_si_ni.webp', top:2, bot:1532, fx:0.553 },
+    ni:         { src:'resources/si/misha_si_ni.webp?v=1d6384ac', top:350, bot:1237, fx:0.521, rescale:true },   // ver -2068 重畫（人縮小＋頭頂光環）：top 量頭頂不量光環（光環上緣 297）；人比基本立繪小 ⇒ rescale。⚠ 眼效（eyefx.js）是舊圖的座標，還沒重產
   } },
   arrhenius: { cm:172, eye:32, fx:0.536, top:7, bot:1531,
            side:'R', alt:null, base:'resources/si/arrhenius_si_front.webp', expr:{

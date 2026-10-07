@@ -3051,7 +3051,7 @@ function startLastStand(){
   lsUsed=true; lsActive=true; lsKilling=false; lsLeft=(L.sec||15);
   state.enemyCounterStagger=0;                       // NI 期間反擊不重置延時
   enemy.playCardVoice(L.voice, true);                // 必播（Ray）：不受語音閘擋
-  if(L.image) enemy.swapPortrait(L.image);           // 換上 NI 立繪並鎖住（見 enemy.swapPortrait）
+  if(L.image) enemy.swapPortrait(L.image, { fit:L.fit, idle:L.idle });   // 換上 NI 立繪並鎖住；自己的取景＋待機循環（ver -2068）
   lsBarFx(true);                                     // 回血期間血條轉金（同主角聖徒化，`.saint-heal`）
   resetIntervalDeadline();                           // 延時從這一刻起就用縮短後的長度（delayMul）
   const tick=()=>{

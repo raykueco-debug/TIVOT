@@ -484,7 +484,13 @@ export const ENEMIES = {
       lastStand:{ sec:15, tapSpeed:0.5, killLead:1, killMs:650, delayMul:0.5,   // delayMul：NI 期間延時 ×0.5（ver -1966）
                   ci:'ci_misha_ni', label:'NIGHTMARE INSTALL', voice:'vo_misha_ni',
                   image:'enemy_misha_ni', killFx:'misha_attack', killVoice:'vo_misha_finish',   // finish＝劇情殺那一刀（ver -1967）
-                  killSe:'se_slash' },   // killSe＝那一刀的斬擊音（ver -2019，Ray：「最後一擊加入 se_slash」）
+                  killSe:'se_slash',   // killSe＝那一刀的斬擊音（ver -2019，Ray：「最後一擊加入 se_slash」）
+                  /* NI 立繪重畫（ver -2068，美術 767036b7／0e78be41：人縮小、頭頂加光環、四周留白給動畫）——
+                     換上時用自己的取景：頭頂到腳底約 350～1220（光環上緣 297）。放大 1.45 倍、不偏移 ——
+                     光環頂離上緣約 5%（1.57 倍會切到光環）、腳底 92.7%（一般版 94.2%），人比一般版小約 8%。
+                     待機循環＝動畫 dc7527d8 的 24 格 3 秒（縮六成的 _s60，解碼約 22 MB）。 */
+                  fit:{ mode:'contain', pos:'center bottom', scale:1.45 },
+                  idle:'resources/enemy/anim/man_misha_ni_idle_s60/' },
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2],
       ult:{ on:1, hp:20, count:4, atk:20, gap:0.4, cd:4 },   // 照尼莫

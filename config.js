@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2067';
+export const VERSION = 'ver 2026.09.22-2069';
 
 export const GAME_CONFIG = {
 
@@ -4305,7 +4305,7 @@ export const ASSETS = {
   /* 米夏（ver -1957，Ray：「用 fight 當初始立繪」）—— 兩張是 SI 的 fight／ni 複製過來的（man 編碼）。
      `misha_attack` 是大絕的殘影彈出圖（`HITFX.misha_attack`），不是立繪。 */
   enemy_misha:    "resources/enemy/man_misha.webp?v=89c56bd8",
-  enemy_misha_ni: "resources/enemy/man_misha_ni.webp?v=9576ea75",      // 聖徒化版（卡還沒用到，備著）
+  enemy_misha_ni: "resources/enemy/man_misha_ni.webp?v=1d6384ac",      // 聖徒化版（卡還沒用到，備著）
   misha_attack:   "resources/enemy/man_misha_attack.webp?v=a534d729",
   /* ══ 守墓者・不死者之龍（ver -1525；美術 -1501 交件、規格
      `resources/enemy/_tomb_mon_spec.md` §八～九）══
@@ -5639,7 +5639,6 @@ export const ASSET_VER = {
   'centipi_night': '515d5f8b',
   'ci_anya_dreambreaker': '5b660d7e',
   'ci_anya_luciddream': '773af9dd',
-  'ci_anya_nightmareinstall': '26b448f3',
   'ci_anya_obe': 'f8337149',
   'ci_nouvelle_deathguard': '5a505484',
   'ci_nouvelle_lifereturn': '1223b2d1',
@@ -5745,6 +5744,7 @@ export const ASSET_VER = {
   'lunaria_si_arm_closed': '2f0bf75e',
   'lunaria_si_arm_half': 'a1db391e',
   'man_misha_guards': '5b0d73a9',
+  'man_misha_ni': '1d6384ac',
   'man_sorana': '11180f49',
   'man_thug_shotgun': '504d26bc',
   'man_thug_squad': 'dfd75032',
@@ -5791,6 +5791,7 @@ export const ASSET_VER = {
   'misha_si_guard_half': 'aab11c9f',
   'misha_si_guardopen_closed': 'd8c08525',
   'misha_si_guardopen_half': '662dcc9a',
+  'misha_si_ni': '1d6384ac',
   'misha_si_order': '78023185',
   'misha_si_order_closed': 'efdb7d9b',
   'misha_si_order_half': '9395a155',
