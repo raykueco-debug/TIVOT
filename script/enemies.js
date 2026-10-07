@@ -530,7 +530,10 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_misha_guards',
+      image:null,
+      /* 群戰分層（ver -2066，美術 aab356a5）：plate＝去人背景（主祭壇，進 #top 背景層）＋每人一層，疊回＝原圖。
+         沒有掩體、每人完整全身 ⇒ 照帝都衛士戰那一套（影子每人一顆）。總血沿用原卡 270，三人平分；倒誰看子彈落點。 */
+      group:{ plate:'resources/enemy/man_misha_guards_layers/plate.webp', dir:'resources/enemy/man_misha_guards_layers/', order:[2,3,1], hp:270 },
       fit:{ mode:'cover', pos:'center 35%' },
       hp:270,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
