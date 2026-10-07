@@ -126,6 +126,7 @@
 | 安雅 NI（新）＋ 夢境粉碎 | `resources/ci/video/ci_anya_ni_v2.mp4`（新 NI：Ray 剪的 `anya_ni_s7_cut`，30 格 16fps＝1.875 秒，A＝`anya_ni1_start.png`→B＝`anya_ni2.png`）／`ci_anya_dreambreaker_v1.mp4`（＝舊 `ci_anya_ni_v1` 原檔複製，Ray：「原 NI 移去做 Dream Breaker」） | ⚠ 待程式接：NI 改指 v2、夢境粉碎接 dreambreaker_v1；接完 `ci_anya_ni_v1.mp4` 由程式回收（`tools/recycle.sh`） |
 | 安雅 Lucid Dream | `resources/ci/video/ci_anya_luciddream_v1.mp4`（Ray 剪的 `anya_ld_A_ab3_s7_cut`，32 格 16fps＝2 秒） | ⚠ 待程式接 |
 | 諾薇兒生命歸還 | `resources/ci/video/ci_nouvelle_lifereturn_v1.mp4`（Ray 剪的 `nb_open_s7_fx_cut`，32 格 16fps＝2 秒）：A＝`ci_nouvelle_breath_A.png`（收拳）只鎖起手、光由 Wan 從無到有生；火星由 `embers2.py` 另畫在背景層（每格從邊緣找連通黑區＝背景）再疊人物 | ⚠ 待程式接 |
+| 索拉娜補給 | `resources/ci/video/ci_sorana_supply_v1.mp4`（Ray 剪的 `supply_s77_cut`）：美術去背 A（手在腰後握彈匣）→B（往後遞），綠幕 idle 模式＋Bouncing 0.8；`comp_black_embers.py` 放回原畫布、純黑底＋同向直飛火星（無尾巴，Ray：「火星要往一個方向飛」） | ⚠ 待程式接 |
 | 怪物待機 94 隻 | `tivot_wan/out/monsters/`（未交） | ⚠ 等 Ray 檢查；長期建議 GPU 貼圖 |
 
 ---
