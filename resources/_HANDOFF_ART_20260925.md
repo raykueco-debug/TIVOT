@@ -575,3 +575,9 @@ Ray 交辦：`resources/ci/ci_anya_nightmarereload.webp`（1024×1536，含紫�
 - 合握的雙手**壓低**到胸口下方、手肘貼身
 - 頭髮自然垂下；衣服沒有光斑
 ⇒ A2→B 是「整個人往上挺起來吶喊」，動作幅度要明顯。舊的 `nouvelle_A.png` 留著不用刪。
+
+### ✔ 三十 交件（2026-10-07，美術）
+- `resources/ci/layers/anya_nightmarereload/anya_A.png`／`anya_B.png`：1024×1536 RGBA。
+- B：GPT 先換白底，同時拿掉紫色光焰、煙霧和頭髮周圍的光暈（髮色維持淡紫），再出 alpha。和原圖比對，位移 0。
+  ⚠ 顏色來自 GPT 版本，因為原圖頭髮本身就染著紫光，用原圖像素就去不掉。
+- A：同一個 GPT 對話只改表情（閉眼、嘴閉上、平靜），和 B 疊在一起只有臉不同。
