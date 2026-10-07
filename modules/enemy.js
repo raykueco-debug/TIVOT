@@ -1301,6 +1301,40 @@ function fallGuard(im){
   else { im.classList.add('eg-down'); fallUntil=Math.max(fallUntil, Date.now()+500); }   // 沒有動畫／還沒載好 → 原本的下沉淡出
   if(im._sh) im._sh.classList.add('eg-down');
   try{ window.dispatchEvent(new CustomEvent('tivot:groupfall')); }catch(_){} }   // weapon 據此清掉落空的 BR 瞄準點
+/* ══ 單人敵人的倒地（ver -2065，Ray：「man 戰閉棺也要等倒地播了才開始關」）══
+   卡上 `fall:'<資料夾>/'`（同群戰的格式：anim.json＋frame_00..，box 是**立繪畫布**上的位置）。
+   擊殺那一刻（combat.skipOverkill）立繪換成這幾格，播完停一下才閉棺 —— 沒寫 `fall` 的照舊立刻閉棺。 */
+let singleFall=null;   // { key, j, frames }
+function loadSingleFall(en){
+  singleFall=null;
+  const dir=en && !en.group && en.fall; if(!dir) return;
+  const key=state.currentEnemyKey, rec={ key:null, j:null, frames:[] };
+  fetch(dir+'anim.json').then(r=>r.ok?r.json():null).then(j=>{
+    if(!j) return;
+    rec.j=j; rec.frames=Array.from({length:j.frames||0},(_,i)=>{ const f=new Image(); f.src=dir+'frame_'+String(i).padStart(2,'0')+'.webp'; return f; });
+  }).catch(()=>{});
+  rec.card=en; singleFall=rec;
+}
+export function playKillFall(){
+  const F=singleFall; if(!F || !F.j || !F.frames.length || !F.frames.every(f=>f.complete && f.naturalWidth)) return 0;
+  const eImg=$('enemyImg'), top=$('top'); if(!eImg || !top || !eImg.naturalWidth) return 0;
+  const en=F.card||{}, j=F.j, cw=(j.canvas||[eImg.naturalWidth,eImg.naturalHeight])[0], ch=(j.canvas||[eImg.naturalWidth,eImg.naturalHeight])[1], b=j.box||[0,0,cw,ch];
+  /* 畫布 → #top 座標：照 #enemyImg 的 object-fit／object-position（同 groundShadow 的換算）。 */
+  const er=eImg.getBoundingClientRect(), tr=top.getBoundingClientRect(), cs=getComputedStyle(eImg);
+  const W=er.width, H=er.height, fit=cs.objectFit;
+  const k = fit==='contain' ? Math.min(W/cw, H/ch) : Math.max(W/cw, H/ch);
+  const dw=cw*k, dh=ch*k, p=String(cs.objectPosition||'50% 0%').split(/\s+/).map(x=>parseFloat(x)/100);
+  const ox=er.left-tr.left+(W-dw)*(isNaN(p[0])?0.5:p[0]), oy=er.top-tr.top+(H-dh)*(isNaN(p[1])?0:p[1]);
+  const el=document.createElement('img'); el.className='en-fall'; el.alt='';
+  el.style.left=(ox+b[0]*k)+'px'; el.style.top=(oy+b[1]*k)+'px'; el.style.width=(b[2]*k)+'px'; el.style.height=(b[3]*k)+'px';
+  el.src=F.frames[0].src; eImg.after(el);
+  eImg.style.visibility='hidden';
+  const ms=en.fallMs||500, hold=en.fallHold!=null?en.fallHold:600, n=F.frames.length;
+  let i=0; const t=setInterval(()=>{ i++; if(i>=n){ clearInterval(t); return; } el.src=F.frames[i].src; }, ms/n);
+  singleFall=null;
+  fallUntil=Math.max(fallUntil, Date.now()+ms+hold);
+  return ms+hold;
+}
 /* 倒地還要演多久（ver -2063，Ray：「敵人倒下畫面播完才閉棺」）：最後一個人倒下時，combat 等它播完（含倒地停留）才收尾。 */
 let fallUntil=0;
 export function fallPendingMs(){ return Math.max(0, fallUntil-Date.now()); }
@@ -1359,6 +1393,7 @@ export function loadEnemyPortrait(en){
      元素留著當命中閃縮的觸發點（`#enemyImg.hit + #enemyGroup`），但不畫。 */
   if(en && en.group){ eImg.removeAttribute('src'); eImg.style.visibility='hidden'; applyEnemyFit(en.fit); return; }
   eImg.style.visibility='';
+  document.querySelectorAll('#top .en-fall').forEach(e=>e.remove());   // 上一隻的倒地動畫（ver -2065）
   shadowCard = en || null;
   groundShadow.hide($('enemyShadow'));     // 換怪：新的腳量好之前不留上一隻的影子
   clearTimeout(riseT); riseT=0;
@@ -1706,6 +1741,7 @@ export function setEnemy(key, opts){
   const en = GAME_CONFIG.enemies[key];
   if(!en) return;
   portraitOverride=null;                        // 換了一隻（或重開一場）→ NI 鎖住的立繪放掉（ver -1965）
+  loadSingleFall(en);                           // 單人的倒地動畫（ver -2065）：有寫 `fall` 就先抓
   stopSakura();                                 // 換了一隻怪 → 上一隻的櫻花與 Sturm 一起收（ver -899）
   stopHolyBurst();                              // 同上：放光也是全螢幕的層＋一支還在響的音（ver -1351）
   rollSmokeDir();                               // 船戰的煙往哪一邊飄：這一場擲一次（ver -1653）

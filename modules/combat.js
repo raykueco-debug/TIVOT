@@ -2366,7 +2366,8 @@ function skipOverkill(){
   clearAtkBuff();
   if(state.dualWield) weapon.endDual();
   state.transitioning=true;                       // 這一拍之後不再吃點擊
-  /* 群體敵人：等最後倒下的那個人播完倒地動畫才閉棺（ver -2063，Ray：「敵人倒下畫面播完才閉棺」）。 */
+  enemy.playKillFall();                           // 單人敵人有倒地動畫就播（ver -2065，Ray：「man 戰閉棺也要等倒地播了才開始關」）
+  /* 等倒地播完才閉棺：群體＝最後倒下的那個人（ver -2063）、單人＝上面那一段（-2065），都記在 enemy.fallPendingMs。 */
   setTimeout(()=>{ if(state.over) return; state.transitioning=false; finishEnemyOrAdvance(); }, enemy.fallPendingMs());
 }
 function enterOverkillFx(){
