@@ -1294,7 +1294,7 @@ function imageUVToTopPct(u, v, im){
 }
 function standingGuards(){
   const g=$('enemyGroup'); if(!g || !groupCard) return [];
-  return [...g.querySelectorAll('.eg-guard')].filter(im=>!im.classList.contains('eg-down'));
+  return [...g.querySelectorAll('.eg-guard')].filter(im=>!im.classList.contains('eg-down') && !im.classList.contains('eg-leaving'));
 }
 /* BR 瞄準點（ver -2048，Ray：「br 時不要往已經沒人的地方射」）：只落在**還站著的人**身上。 */
 function groupBodyPoint(){
@@ -1383,22 +1383,27 @@ function playFall(im, F){
   el.style.width=(b[2]*k)+'px'; el.style.height=(b[3]*k)+'px';
   el.src=F.frames[0].src;
   const cover=g.querySelector('.eg-cover');
-  if(j.kind==='back' && cover) g.insertBefore(el, cover); else im.after(el);
-  im.style.transition='none'; im.classList.add('eg-down');   // 分層當場換掉（不走淡出）
-  const n=F.frames.length, step=(G.fallMs||500)/n;
-  fallUntil=Math.max(fallUntil, Date.now()+(G.fallMs||500)+(G.fallHold!=null?G.fallHold:600));
-  let i=0; const t=setInterval(()=>{ i++;
-    if(i>=n){ clearInterval(t);
-      setTimeout(()=>{ el.classList.add('eg-gone'); setTimeout(()=>el.remove(), 450); }, G.fallHold!=null?G.fallHold:600);
-      return; }
-    el.src=F.frames[i].src; }, step);
+  /* `group.fallLead`（ver -2070，帝都衛士／米夏親衛隊：「第 1 格就是原本那張分層」）＝中彈後原圖先停這麼久，才換成 5 格。
+     先標成倒下（`eg-down` 的判定照舊立刻生效），只是畫面晚一拍換。 */
+  const lead=+G.fallLead||0, n=F.frames.length, step=(G.fallMs||500)/n, hold=G.fallHold!=null?G.fallHold:600;
+  fallUntil=Math.max(fallUntil, Date.now()+lead+(G.fallMs||500)+hold);
+  const swap=()=>{
+    if(j.kind==='back' && cover) g.insertBefore(el, cover); else im.after(el);
+    im.style.transition='none'; im.classList.add('eg-down');   // 分層當場換掉（不走淡出）
+    let i=0; const t=setInterval(()=>{ i++;
+      if(i>=n){ clearInterval(t);
+        setTimeout(()=>{ el.classList.add('eg-gone'); setTimeout(()=>el.remove(), 450); }, hold);
+        return; }
+      el.src=F.frames[i].src; }, step);
+  };
+  if(lead>0){ im.classList.add('eg-leaving'); setTimeout(swap, lead); } else swap();
 }
 /* 依現在的敵血決定該倒幾個（combat.updateBars 每次都叫，冪等）：還沒倒夠就再倒，每一個照落點挑。 */
 export function syncGroup(){
   const g=$('enemyGroup'); if(!g || !groupCard) return;
   const G=groupCard.group, n=G.order.length, each=groupEach(G);
   const shouldStand=Math.max(0, Math.min(n, Math.ceil(Math.max(0,state.enemyHp)/each)));
-  let alive=[...g.querySelectorAll('.eg-guard')].filter(im=>!im.classList.contains('eg-down'));
+  let alive=[...g.querySelectorAll('.eg-guard')].filter(im=>!im.classList.contains('eg-down') && !im.classList.contains('eg-leaving'));
   while(alive.length>shouldStand){ const v=pickVictim(alive); if(!v) break; fallGuard(v); alive=alive.filter(x=>x!==v); }
 }
 /* 這一場的敵人圖（群體＝每個人那一層；單隻＝#enemyImg）載完了沒（ver -2052）。

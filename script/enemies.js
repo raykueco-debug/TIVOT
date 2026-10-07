@@ -539,7 +539,7 @@ export const ENEMIES = {
       image:null,
       /* 群戰分層（ver -2066，美術 aab356a5）：plate＝去人背景（主祭壇，進 #top 背景層）＋每人一層，疊回＝原圖。
          沒有掩體、每人完整全身 ⇒ 照帝都衛士戰那一套（影子每人一顆）。總血沿用原卡 270，三人平分；倒誰看子彈落點。 */
-      group:{ plate:'resources/enemy/man_misha_guards_layers/plate.webp', dir:'resources/enemy/man_misha_guards_layers/', order:[2,3,1], hp:270 },
+      group:{ plate:'resources/enemy/man_misha_guards_layers/plate.webp', dir:'resources/enemy/man_misha_guards_layers/', fall:'resources/enemy/anim/man_misha_guards_hit_v1/', fallLead:80, fallMs:400, order:[2,3,1], hp:270 },
       fit:{ mode:'cover', pos:'center 35%' },
       hp:270,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -1030,7 +1030,7 @@ export const ENEMIES = {
       kind:'human', hitSe:null,
       tier:'C', atype:'P', stageScale:1,
       image:null,   // 群體敵人沒有單張立繪：背景是 group.plate、人是 group 那幾層（ver -2043）
-      group:{ plate:'resources/background/capital/fight_hotel/plate.webp', dir:'resources/background/capital/fight_hotel/', order:[2,3,1], hpEach:100 },   // order＝疊放（後→前，美術給的）；倒誰看子彈落點（enemy.js 的 pickVictim）
+      group:{ plate:'resources/background/capital/fight_hotel/plate.webp', dir:'resources/background/capital/fight_hotel/', fall:'resources/background/capital/fight_hotel_hit_v1/', fallLead:80, fallMs:400, order:[2,3,1], hpEach:100 },   // order＝疊放（後→前，美術給的）；倒誰看子彈落點（enemy.js 的 pickVictim）
       fit:{ pos:'50% 50%', scale:1.4, shiftY:-0.05 }, noShadow:1,   // fit＝**人那一組**的取景（縮放／位置）；背景不受影響。影子每個人各一顆（enemy.buildGroup）
       parryBasic:0.3,   // 普攻有 30% 被劈落（Ray：先說 50%、改「劈落率改 30%」；ver -2043 起 parryBasic 是機率）
       hp:220,   // ⚠ 實際血量寫在戰鬥卡的 enemyHp（Ray 指定），這一格只是等級基準
@@ -1053,7 +1053,7 @@ export const ENEMIES = {
       kind:'human', hitSe:null,
       tier:'C', atype:'P', stageScale:1,
       image:null,   // 群體敵人沒有單張立繪：背景是 group.plate、人是 group 那幾層（ver -2043）
-      group:{ plate:'resources/background/capital/fight_uptown/plate.webp', dir:'resources/background/capital/fight_uptown/', order:[4,3,2,1], hpEach:100 },   // order＝疊放（後→前，美術給的）；倒誰看子彈落點（enemy.js 的 pickVictim）
+      group:{ plate:'resources/background/capital/fight_uptown/plate.webp', dir:'resources/background/capital/fight_uptown/', fall:'resources/background/capital/fight_uptown_hit_v1/', fallLead:80, fallMs:400, order:[4,3,2,1], hpEach:100 },   // order＝疊放（後→前，美術給的）；倒誰看子彈落點（enemy.js 的 pickVictim）
       fit:{ pos:'50% 50%', scale:1.06, shiftY:-0.08 }, noShadow:1,   // fit＝**人那一組**的取景（縮放／位置）；背景不受影響。影子每個人各一顆（enemy.buildGroup）
       parryBasic:0.3,   // 普攻有 30% 被劈落（Ray：先說 50%、改「劈落率改 30%」；ver -2043 起 parryBasic 是機率）
       hp:220,   // ⚠ 實際血量寫在戰鬥卡的 enemyHp（Ray 指定），這一格只是等級基準
@@ -1077,7 +1077,7 @@ export const ENEMIES = {
       kind:'human', hitSe:null,
       tier:'B', atype:'P', stageScale:1,
       image:null,   // 群體敵人沒有單張立繪：背景是 group.plate、人是 group 那幾層（ver -2043）
-      group:{ plate:'resources/background/capital/fight_square/plate.webp', dir:'resources/background/capital/fight_square/', order:[4,5,2,3,1], hpEach:100 },   // order＝疊放（後→前，美術給的）；倒誰看子彈落點（enemy.js 的 pickVictim）
+      group:{ plate:'resources/background/capital/fight_square/plate.webp', dir:'resources/background/capital/fight_square/', fall:'resources/background/capital/fight_square_hit_v1/', fallLead:80, fallMs:400, order:[4,5,2,3,1], hpEach:100 },   // order＝疊放（後→前，美術給的）；倒誰看子彈落點（enemy.js 的 pickVictim）
       fit:{ pos:'50% 50%', scale:1.26, shiftY:-0.12 }, noShadow:1,   // fit＝**人那一組**的取景（縮放／位置）；背景不受影響。影子每個人各一顆（enemy.buildGroup）
       hp:300,   // ⚠ 實際血量寫在戰鬥卡的 enemyHp（Ray 指定），這一格只是等級基準
       attack:17,
@@ -1100,7 +1100,7 @@ export const ENEMIES = {
       kind:'human', hitSe:null,
       tier:'C', atype:'P', stageScale:1,
       image:null,   // 群體敵人沒有單張立繪：背景是 group.plate、人是 group 那幾層（ver -2043）
-      group:{ plate:'resources/background/capital/fight_downtown/plate.webp', dir:'resources/background/capital/fight_downtown/', order:[3,4,2,1], hpEach:100 },   // order＝疊放（後→前，美術給的）；倒誰看子彈落點（enemy.js 的 pickVictim）
+      group:{ plate:'resources/background/capital/fight_downtown/plate.webp', dir:'resources/background/capital/fight_downtown/', fall:'resources/background/capital/fight_downtown_hit_v1/', fallLead:80, fallMs:400, order:[3,4,2,1], hpEach:100 },   // order＝疊放（後→前，美術給的）；倒誰看子彈落點（enemy.js 的 pickVictim）
       fit:{ pos:'50% 50%', scale:1.06, shiftY:-0.11 }, noShadow:1,   // fit＝**人那一組**的取景（縮放／位置）；背景不受影響。影子每個人各一顆（enemy.buildGroup）
       hp:220,   // ⚠ 實際血量寫在戰鬥卡的 enemyHp（Ray 指定），這一格只是等級基準
       attack:14,
