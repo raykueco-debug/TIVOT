@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2075';
+export const VERSION = 'ver 2026.09.22-2076';
 
 export const GAME_CONFIG = {
 
@@ -3453,7 +3453,8 @@ export const GAME_CONFIG = {
     cutinDur: { cutin_nouvelle_saint:2000, ci_sorana_predator:1125, ci_anya_ni:2813,   // 安雅惡夢化 ver -2036（Ray：「動畫是 NI，DB 另外做」）
                 ci_anya_obe:2000, cutin_obe_nouvelle:2000,
                 cutin_cecilie_saint:3125, cutin_cecilie_obe:2000,
-                ci_sorana_obe:1625 },   // 索拉娜飛刀耗盡 ver -2051（26 格 16fps，撤出時還在播；同 cutinAnim 的 ms，兩處互指）
+                ci_sorana_obe:1625,
+                cutin_nouvelle_guard:2000, ci_sorana_supply:1500 },   // ver -2076：即死防禦／補給影片（片長＝CI 長，撤出時還在播；同 cutinAnim 那兩列）   // 索拉娜飛刀耗盡 ver -2051（26 格 16fps，撤出時還在播；同 cutinAnim 的 ms，兩處互指）
     /* ⚠ ver -2040（Ray：「秒數控制在每一個在撤出時都還在播放狀態，不要停」）：索拉娜共鬥／賽西莉聖徒化／賽西莉 OBE
        的 CI 長度＝那段動檔的實際長度（格數 ÷ 16fps）—— 最後一格剛出現就撤，不會停格。
        改動檔的格數就要一起改這裡（同一個數字的兩處，兩邊互指：cutinAnim 的 ms）。 */   // 兩張 OBE ver -2038（Ray：「兩個都改 2 秒」）；結局全畫面 CI（playSaintCutin）也讀這張表   // 索拉娜共鬥 ver -2032（Ray：「2 秒可以」；_v7 動檔剛好 2 秒）
@@ -3495,7 +3496,11 @@ export const GAME_CONFIG = {
                  /* ver -2040：賽西莉 OBE（Ray 剪的 _cut_2，32 格 2 秒＝ cutinDur；結局全畫面 CI）。 */
                  cutin_cecilie_obe:{ video:'resources/ci/video/cutin_cecilie_obe_v1.mp4' },
                  /* ver -2051（Ray：「sora_obe_A2_cl2_s77_cut 接上索拉娜飛刀用盡」）：26 格 16fps＝1.625 秒＝ cutinDur。 */
-                 ci_sorana_obe:{ video:'resources/ci/video/ci_sorana_obe_v1.mp4' } },
+                 ci_sorana_obe:{ video:'resources/ci/video/ci_sorana_obe_v1.mp4' },
+                 /* ver -2076（動畫 964946af／交接表「待程式接」）：諾薇兒即死防禦（被動，2.0 秒）、索拉娜前線補給（主動，1.5 秒）。
+                    主被動技的 CI 名單本來就會預熱（config.partnerCiKeys 掃卡上的 *cutin），登記進這張表就自動接上。 */
+                 cutin_nouvelle_guard:{ video:'resources/ci/video/ci_nouvelle_deathguard_v1.mp4' },
+                 ci_sorana_supply:{ video:'resources/ci/video/ci_sorana_supply_v1.mp4' } },
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],
