@@ -452,5 +452,5 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 | 件 | 狀態 |
 |---|---|
 | 謎之術師戰鬥立繪 `man_mage` | ✔ 不欠（敵人卡等程式／Ray 數值） |
-| 謎之術師對話立繪 front（透明） | ✔ 原稿已是乾淨 alpha（`_originals/SI/NPC/_mage/mage_si_front.png`），⚠ 未進 `si/npc`（無腳本引用、檔名待定） |
+| 謎之術師對話立繪 front／barrier／cast | ✔ 不欠（`si/npc/mage_si_*.webp`，Ray：「術師的 si 收一收交件」）；barrier 的掩嘴手未改（Ray 沒要求）；⚠ 程式端欠 speaker＋取景，cast 人較小要 rescale |
 | 米夏親衛隊分層 | ✔ 不欠；✅ 程式端已接（ver -2067，`203b9269`：plate 進背景層、三人各自接地影子、總血 270） |
