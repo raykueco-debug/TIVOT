@@ -4,6 +4,11 @@ body{margin:0;background:#15151b;color:#ccc;font:14px sans-serif}
 #top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 12px;background:#1e1d25;position:sticky;top:0;z-index:2}
 select{max-width:420px;font-size:14px}button{padding:5px 12px;font-size:14px}
 #main{display:flex;gap:12px;padding:12px}
+#list{flex:0 0 236px;max-height:calc(100vh - 70px);overflow:auto;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+#list h4{flex:0 0 100%;margin:8px 0 0;color:#fc6;font-size:13px}
+.c{width:112px;cursor:pointer;border:3px solid transparent;background:#222}.c.cur{border-color:#fc6}
+.c img{width:112px;height:150px;object-fit:cover;display:block;background:#2a2730}
+.c div{font:11px monospace;color:#bbb;padding:2px 3px;word-break:break-all;line-height:1.25}
 #view{flex:0 0 auto;text-align:center}#im{width:420px;height:630px;object-fit:contain;background:#2a2730;display:block}
 #info{font:15px monospace;color:#fc6;margin:6px 0}
 #strip{flex:1;display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start;max-height:calc(100vh - 70px);overflow:auto}
@@ -17,7 +22,7 @@ select{max-width:420px;font-size:14px}button{padding:5px 12px;font-size:14px}
 small{color:#888}
 </style>
 <div id=top>
- <select id=sel></select>
+ <input id=q placeholder="篩選名稱…" style="width:160px;font-size:14px">
  <button id=pv>◀</button><button id=pp>▶ 播放</button><button id=nx>▶|</button>
  <label><input type=checkbox id=loop> 循環</label>
  倍速 <input id=sp type=range min=0.1 max=3 step=0.05 value=1 style="width:160px"> <b id=spv></b>
@@ -25,7 +30,7 @@ small{color:#888}
  <button id=clr>全部取消勾選</button> <span id=dur style="font:bold 15px monospace;color:#9f9;margin-left:8px"></span> <button id=exp style="background:#c90;color:#000;font-weight:bold">⬇ 輸出</button>
  <small>空白＝播放/暫停・← →＝逐格・X＝勾/取消目前格・點縮圖＝勾掉／取消，按住拖過去＝一次勾多格（勾掉的格不播）</small>
 </div>
-<div id=main>
+<div id=main><div id=list></div>
  <div id=view><img id=im><div id=info></div>
   <div style="width:420px"><small>保留的格（給程式用）：</small><textarea id=kept rows=4 readonly></textarea></div></div>
  <div id=strip></div>
@@ -38,8 +43,12 @@ document.addEventListener('pointerup',()=>{drag=null});
 const key=()=>'tivot_player_off_'+A.dir;
 function save(){try{localStorage.setItem(key(),JSON.stringify([...off]))}catch(e){}}
 function load(){try{off=new Set(JSON.parse(localStorage.getItem(key())||'[]'))}catch(e){off=new Set()}}
-ANIMS.forEach((a,k)=>{const o=document.createElement('option');o.value=k;o.textContent=`[${a.group}] ${a.name}（${a.frames.length}）`;$('sel').appendChild(o)});
-function open(k){stop();A=ANIMS[k];load();i=first();build();show();try{localStorage.setItem('tivot_player_last',A.dir)}catch(e){}}
+function list(){const q=$('q').value.trim().toLowerCase(),L=$('list');L.innerHTML='';let g=null;
+ ANIMS.forEach((a,k)=>{if(q&&!a.name.toLowerCase().includes(q))return;if(a.group!==g){g=a.group;const h=document.createElement('h4');h.textContent=g;L.appendChild(h)}
+  const c=document.createElement('div');c.className='c'+(A===a?' cur':'');c.id='c'+k;c.innerHTML=`<img loading=lazy src="${a.dir}/${a.frames[0]}"><div>${a.name}（${a.frames.length}）</div>`;
+  c.onclick=()=>{open(k);location.hash=a.dir};L.appendChild(c)})}
+$('q').oninput=list;
+function open(k){stop();A=ANIMS[k];load();i=first();build();show();document.querySelectorAll('.c.cur').forEach(x=>x.classList.remove('cur'));const cc=$('c'+k);if(cc){cc.classList.add('cur');cc.scrollIntoView({block:'nearest'})}try{localStorage.setItem('tivot_player_last',A.dir)}catch(e){}}
 function kept(){return A.frames.map((_,k)=>k).filter(k=>!off.has(k))}
 function first(){return kept()[0]??0}
 function build(){const s=$('strip');s.innerHTML='';A.frames.forEach((f,k)=>{const d=document.createElement('div');d.className='t';d.id='t'+k;
@@ -64,7 +73,7 @@ function play(){if(!kept().length)return;if(off.has(i)||nextIdx(1)===null&&!$('l
  playing=true;$('pp').textContent='⏸ 暫停';clearInterval(timer);timer=setInterval(tick,1000/(+$('base').value*+$('sp').value))}
 function stop(){playing=false;clearInterval(timer);timer=null;$('pp').textContent='▶ 播放'}
 function step(d){stop();const n=nextIdx(d);if(n!==null){i=n;show()}}
-$('sel').onchange=e=>open(+e.target.value);
+
 $('pp').onclick=()=>playing?stop():play();$('pv').onclick=()=>step(-1);$('nx').onclick=()=>step(1);
 $('sp').oninput=()=>{$('spv').textContent=(+$('sp').value).toFixed(2)+'×';show();if(playing)play()};
 $('base').onchange=()=>{show();keptText();if(playing)play()};
@@ -76,13 +85,13 @@ $('exp').onclick=async()=>{const k=kept();if(!k.length){alert('沒有保留的�
  try{const r=await (await fetch('/export',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
   alert(r.ok?`已輸出 ${r.count} 格：\n${r.path}`:'輸出失敗：'+r.error)}catch(e){alert('輸出失敗：'+e)}};
 $('clr').onclick=()=>{off.clear();save();mark()};
-document.addEventListener('keydown',e=>{if(e.target.tagName==='SELECT')return;
+document.addEventListener('keydown',e=>{if(e.target.tagName==='SELECT'||e.target.tagName==='INPUT')return;
  if(e.key===' '){e.preventDefault();playing?stop():play()}
  else if(e.key==='ArrowRight'){e.preventDefault();step(1)}
  else if(e.key==='ArrowLeft'){e.preventDefault();step(-1)}
  else if(e.key==='x'||e.key==='X'){tog(i,!off.has(i))}});
 $('spv').textContent='1.00×';
 let last=null;try{last=localStorage.getItem('tivot_player_last')}catch(e){}
-const h=decodeURIComponent(location.hash.slice(1));if(h)last=h;
-const k0=Math.max(0,ANIMS.findIndex(a=>a.dir===last));$('sel').value=k0;open(k0);
+const h=decodeURIComponent(location.hash.slice(1)).replace(/^dir=/,'');if(h)last=h;
+list();const k0=Math.max(0,ANIMS.findIndex(a=>a.dir===last));open(k0);
 </script>
