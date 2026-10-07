@@ -3622,6 +3622,10 @@ export const TOWNS = {
     bgm: 'lostplace',              // 荒廢之地（死谷）
     wilderness: true,
     stepMin: 60,
+    /* 小地圖（ver -2073，美術 09-24 交件；座標照抄 resources/map/_spots_canyon.json）。沒寫 mist ⇒ 預設有霧（走過才亮）。 */
+    map:{ img:'resources/map/map_canyon.webp',
+          spots:{ entry:[0.1871,0.8952], corridor:[0.1871,0.6542], bones:[0.1871,0.4133],
+                  bridge:[0.6157,0.4133], altar:[0.1871,0.1723] } },
     nodes: {
       /* 入口＝復活點，**不可以有戰鬥**（§6.5.2）。往下＝出航離開這張圖 ——
          玩家是從天上降落進來的，這裡沒有相鄰的城可以走回去。 */
@@ -7726,6 +7730,12 @@ export const TOWNS = {
     storyExplore: true,   // 不是城：女角不排外出行程（§6.5.4.2）
     wilderness: true,     // 野外的路沒有門可以關（19:00 全域打烊不罩，ver -862）
     stepMin: 10,          // 遺蹟／野外那一級（ver -917）
+    /* 小地圖（ver -2073，美術 09-24 交件；座標照抄 resources/map/_spots_lake.json）。沒寫 mist ⇒ 預設有霧（走過才亮）。 */
+    map:{ img:'resources/map/map_lake.webp',
+          spots:{ inlet:[0.431,0.915], shingle:[0.431,0.7212], fallbase:[0.131,0.7212],
+                  cave:[0.131,0.5273], grove:[0.131,0.3335], eastshore:[0.431,0.5273],
+                  deadfall:[0.731,0.5273], northshore:[0.431,0.3335],
+                  boathouse:[0.731,0.3335], causeway:[0.431,0.1396] } },
     nodes: {
       /* ── 入口：隘口，前方第一次看到湖 ── */
       inlet:      { bg:'lake_inlet',      name:'鏡湖　山口',
