@@ -121,14 +121,14 @@
 | 米夏夢魘化待機 | `resources/enemy/anim/man_misha_ni_idle_v1/`（24 格 8fps 循環） | ✅ 已接（ver -2069）：程式另存六成尺寸 `man_misha_ni_idle_s60`（約 22 MB） |
 | 單人中槍 18 隻（`man_*`） | `tivot_wan/out/hit/`（未交） | ⚠ 舊規格（3 秒、10 格），Ray 未說交件；要做請用 1 秒＋最終抽法重跑 |
 | 索拉娜吼叫 CI 3 支 | `resources/ci/video/ci_sorana_roar_{anya,nouvelle,renna}_v1.mp4`（480×720、16fps、2 秒） | ⚠ 待程式接。三層：火（Wan）＋Q 版從右滑入彈抖（程式合成，`compose_roar.py`）＋索拉娜（Wan seed 7，原色＋保護眼睛去背） |
+| 安雅 NI（新）＋ 夢境粉碎 | `resources/ci/video/ci_anya_ni_v2.mp4`（新 NI：Ray 剪的 `anya_ni_s7_cut`，30 格 16fps＝1.875 秒，A＝`anya_ni1_start.png`→B＝`anya_ni2.png`）／`ci_anya_dreambreaker_v1.mp4`（＝舊 `ci_anya_ni_v1` 原檔複製，Ray：「原 NI 移去做 Dream Breaker」） | ⚠ 待程式接：NI 改指 v2、夢境粉碎接 dreambreaker_v1；接完 `ci_anya_ni_v1.mp4` 由程式回收（`tools/recycle.sh`） |
 | 怪物待機 94 隻 | `tivot_wan/out/monsters/`（未交） | ⚠ 等 Ray 檢查；長期建議 GPU 貼圖 |
 
 ---
 
 ## 七、進行中／待辦
 
-0. **安雅 NI 第二段 CI（5 秒，`anya_ni2.png`＝結尾圖）**：左手從右胸前往外一揮作灑的手勢（不真的灑出東西）、動作一開始冒金色氣浪、眼睛藍→紅。Wan 逆推起手圖失敗三次（手套變長、眼睛不藍、鏡頭拉遠）→ **已開單給美術出起手圖**（`_HANDOFF_ART_20260925.md` §二十六，交件 `resources/ci/anya_ni1_start.png`）。拿到後跑 A→B 正向 5 秒（length 81）。
-1. **安雅夢境粉碎（DB）CI**：還沒做，等 Ray 給 A／B 圖。
+1. **安雅 Lucid Dream CI**：10-06 跑過（逆推 A＝`out/ci/anya_ld_A.png` → `anya_ld_A_ab3_s7`／`s77`），未交件，等 Ray 看。
 2. **敵人動畫改 GPU 貼圖（KTX2/Basis）**：已跟 Ray 分析過是最優解（記憶體 4～8 MB、播放零成本、透明乾淨、循環無縫、逐格精準），還沒實作，要先做一隻試樣量數據，再跟程式談。
 3. 惡棍群戰要不要照最終抽法（原圖＋7/9/11/13/15）重做：未問。
 
