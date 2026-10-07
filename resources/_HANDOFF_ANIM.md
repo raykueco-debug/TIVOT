@@ -106,6 +106,8 @@
 - 用 `&` 丟背景的指令**收不到完成通知** —— 要另外掛監看（`until grep … ; do sleep 30; done`），不然會漏通知 Ray（發生過）。
 - 提示詞壓不住的：臉（張嘴、眨眼、眼睛變圓）、構圖跑掉（寫「衝刺」就整個重演）、Wan 提早往 B 圖光效靠、LoRA 帶入鏡頭晃動。對策：換 seed、分段、鎖首尾、降 LoRA。
 - 背景頭尾不一致（A 圖有雜物、B 圖沒有）→ 整個畫面會像在晃。A／B 要用同一個乾淨背景。
+- **要結尾沒有的效果（光從無到有）就不要鎖結尾**：B 沒光、鎖了 B 光會在最後消失。只鎖 A。
+- **Wan 生不出密的背景粒子（火星）**：提示詞只撒零星幾顆。改用 `embers2.py` 背景人物分層合成（純黑背景的 CI 適用）。
 - Wan 第一格已經在動（約差 10～20 px），所以中槍改成「第 1 格用遊戲原圖」。
 - **綠眼角色走綠底去背，眼睛會被挖掉**（索拉娜吼叫踩到：原色時眼睛發暗，改鮮綠後整個被挖空、露出後面的火變紅眼）。解法 `rekey_eyes.py`：從 ComfyUI 原始輸出重新去背，臉部範圍內「沒有連到外圍綠幕」的綠色區塊保留。⚠ 臉部範圍是寫死的座標，換角色要改。**不要為了這個去改原圖的眼色**（Ray：太綠；改顏色前要先給他挑）。
 
@@ -123,6 +125,7 @@
 | 索拉娜吼叫 CI 3 支 | `resources/ci/video/ci_sorana_roar_{anya,nouvelle,renna}_v1.mp4`（480×720、16fps、2 秒） | ⚠ 待程式接。三層：火（Wan）＋Q 版從右滑入彈抖（程式合成，`compose_roar.py`）＋索拉娜（Wan seed 7，原色＋保護眼睛去背） |
 | 安雅 NI（新）＋ 夢境粉碎 | `resources/ci/video/ci_anya_ni_v2.mp4`（新 NI：Ray 剪的 `anya_ni_s7_cut`，30 格 16fps＝1.875 秒，A＝`anya_ni1_start.png`→B＝`anya_ni2.png`）／`ci_anya_dreambreaker_v1.mp4`（＝舊 `ci_anya_ni_v1` 原檔複製，Ray：「原 NI 移去做 Dream Breaker」） | ⚠ 待程式接：NI 改指 v2、夢境粉碎接 dreambreaker_v1；接完 `ci_anya_ni_v1.mp4` 由程式回收（`tools/recycle.sh`） |
 | 安雅 Lucid Dream | `resources/ci/video/ci_anya_luciddream_v1.mp4`（Ray 剪的 `anya_ld_A_ab3_s7_cut`，32 格 16fps＝2 秒） | ⚠ 待程式接 |
+| 諾薇兒生命歸還 | `resources/ci/video/ci_nouvelle_lifereturn_v1.mp4`（Ray 剪的 `nb_open_s7_fx_cut`，32 格 16fps＝2 秒）：A＝`ci_nouvelle_breath_A.png`（收拳）只鎖起手、光由 Wan 從無到有生；火星由 `embers2.py` 另畫在背景層（每格從邊緣找連通黑區＝背景）再疊人物 | ⚠ 待程式接 |
 | 怪物待機 94 隻 | `tivot_wan/out/monsters/`（未交） | ⚠ 等 Ray 檢查；長期建議 GPU 貼圖 |
 
 ---
