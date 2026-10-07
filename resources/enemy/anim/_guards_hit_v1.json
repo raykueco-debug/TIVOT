@@ -1,0 +1,306 @@
+{
+ "background/capital/fight_downtown_hit_v1/guard_1": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   575,
+   310,
+   596,
+   703
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 231
+ },
+ "background/capital/fight_downtown_hit_v1/guard_2": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   309,
+   243,
+   604,
+   653
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 171
+ },
+ "background/capital/fight_downtown_hit_v1/guard_3": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   374,
+   295,
+   326,
+   449
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 96
+ },
+ "background/capital/fight_downtown_hit_v1/guard_4": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   852,
+   284,
+   331,
+   519
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 110
+ },
+ "background/capital/fight_hotel_hit_v1/guard_1": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   517,
+   105,
+   516,
+   738
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 186
+ },
+ "background/capital/fight_hotel_hit_v1/guard_2": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   328,
+   163,
+   424,
+   522
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 119
+ },
+ "background/capital/fight_hotel_hit_v1/guard_3": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   813,
+   150,
+   389,
+   519
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 127
+ },
+ "enemy/anim/man_misha_guards_hit_v1/guard_1": {
+  "canvas": [
+   1024,
+   1536
+  ],
+  "box": [
+   80,
+   331,
+   944,
+   1205
+  ],
+  "frames": 5,
+  "kind": "forward",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 482
+ },
+ "enemy/anim/man_misha_guards_hit_v1/guard_2": {
+  "canvas": [
+   1024,
+   1536
+  ],
+  "box": [
+   0,
+   82,
+   700,
+   1421
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 404
+ },
+ "enemy/anim/man_misha_guards_hit_v1/guard_3": {
+  "canvas": [
+   1024,
+   1536
+  ],
+  "box": [
+   349,
+   96,
+   675,
+   1434
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 336
+ },
+ "background/capital/fight_square_hit_v1/guard_1": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   422,
+   124,
+   674,
+   871
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 254
+ },
+ "background/capital/fight_square_hit_v1/guard_2": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   329,
+   377,
+   429,
+   509
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 127
+ },
+ "background/capital/fight_square_hit_v1/guard_3": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   804,
+   409,
+   422,
+   518
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 138
+ },
+ "background/capital/fight_square_hit_v1/guard_4": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   487,
+   398,
+   244,
+   351
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 75
+ },
+ "background/capital/fight_square_hit_v1/guard_5": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   823,
+   401,
+   248,
+   347
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 67
+ },
+ "background/capital/fight_uptown_hit_v1/guard_1": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   524,
+   107,
+   708,
+   917
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 250
+ },
+ "background/capital/fight_uptown_hit_v1/guard_2": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   165,
+   190,
+   764,
+   750
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 210
+ },
+ "background/capital/fight_uptown_hit_v1/guard_3": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   307,
+   349,
+   241,
+   354
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 65
+ },
+ "background/capital/fight_uptown_hit_v1/guard_4": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "box": [
+   976,
+   331,
+   261,
+   393
+  ],
+  "frames": 5,
+  "kind": "back",
+  "note": "第 1 格先顯示原本的分層，再播這 5 格（原片第 7/9/11/13/15 格）",
+  "kb": 73
+ }
+}

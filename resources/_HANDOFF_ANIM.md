@@ -66,3 +66,8 @@
 - 交件解析度可低（群戰的人轉回原圖位置與大小）；往後倒的人要讓掩體蓋在他上面（程式疊層）。
 - ✅ **群戰中槍交件（10-07，Ray：「可以 交件」）**：`resources/enemy/anim/<場>_hit_v1/thug_N/frame_00~04.webp`＋`anim.json`（`canvas` 1024×1536、`box`＝這人 5 格聯集在原圖畫布上的 [x,y,w,h]、`kind` back/forward/prone）；總表 `resources/enemy/anim/_squad_hit_v1.json`。共 26 人、4.7 MB。
   ⚠ 這批是 3 秒原片抽 5 格（之後改生 1 秒）；第 0 格與原分層位置差約 10～20 px（Wan 第一格已在動、槍口火光已拿掉）。
+- ✅ **帝都教廷衛士 16 人＋米夏親衛隊 3 人中槍交件（10-07，Ray：「敵倒地全過 交件給 code」）**：
+  `resources/background/capital/fight_<場>_hit_v1/guard_N/`（場＝hotel/uptown/square/downtown，畫布 1536×1024）、
+  `resources/enemy/anim/man_misha_guards_hit_v1/guard_N/`（畫布 1024×1536）；每人 frame_00~04＋anim.json（canvas／box／kind）；總表 `resources/enemy/anim/_guards_hit_v1.json`。約 3.9 MB。
+  **抽格（Ray 定）**：生 1 秒（16 格），**第 1 格＝遊戲原本的分層（不另交）**，之後原片第 7、9、11、13、15 格（1 起算）—— 第 3 格也不要，中彈直接跳。
+  倒法：衛士 16 人全往後倒（無掩體站姿，預設後倒）；親衛隊 1 號蹲射往前倒、2／3 號往後倒。
