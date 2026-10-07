@@ -529,3 +529,10 @@ Ray 改定：**背景換成純黑＋動畫另畫火星飛散**（原圖的暗灰
 
 - 1024×1536；畫風 anime style, cel shading, clean lineart，絕不要顆粒感。
 - 交完回訊息給「動畫」session。
+
+### ✔ 二十八 交件（2026-10-07，美術；bg.png 依改單取消）
+- `resources/ci/layers/sorana_supply/sorana_B.png`／`sorana_A.png`：1024×1536 RGBA，兩張同一個畫布、同一個位置。
+- 作法：GPT 直接去背被擋了兩次（詐騙判定），本機 ToonOut 會連背景一起留。改走「GPT 先把背景換純白 → 再出 alpha」。
+- B 用 GPT 的 alpha 當遮罩，顏色取原圖真實像素，所以疊回原圖完全對位（實測位移 0）。原圖壓在身上的碎片與速度線改填 GPT 那版；alpha 裡的破洞補滿。
+- A 是 GPT 改姿勢後的圖（手收到腰後皮帶握住兩個彈匣），顏色用同一組映射拉回原圖色調。
+- 中間檔都在 `_originals/CI/_supply/`。
