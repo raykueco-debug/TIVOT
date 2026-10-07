@@ -494,3 +494,7 @@ Ray 交辦的動畫：`resources/ci/anya_ni2.png` 是**結尾圖（B）**，5 �
 - 交件位置：`resources/ci/anya_ni1_start.png`（PNG，不用去背）。
 - 交件後通知動畫 session（或請 Ray 轉告），動畫用它當 A、`anya_ni2` 當 B 跑正向 5 秒。
 - Wan 逆推的失敗候選在 `ComfyUI-master/tivot_wan/out/ci/anya_ni2_rev*/`（僅供參考構圖，不要用）。
+
+### ✔ 二十六 交件（2026-10-07，美術）
+- `resources/ci/anya_ni1_start.png`（1024×1536 RGB）＝以 `ci_anya_nightmareinstall` 為底的 GPT 出圖：畫面右側那隻手（她的左手，與 ni2 伸出去的同一隻）橫過胸前、手停在右胸前；藍眼、短手套、無光效無法環、不笑。疊 `anya_ni2` 檢查過，頭、身體、裙、腰帶的位置都對得上。
+- 試過「手貼右肩」四次，**GPT 每次都換成另一隻手臂**（畫面左側那隻伸到畫面右側的肩），連「鏡像底圖再翻回來」也一樣。候選留在 `_originals/CI/anya_ni1_v2~v6.png`，都不能用（v3 多長一隻手）。
