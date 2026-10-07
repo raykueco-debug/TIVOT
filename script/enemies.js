@@ -2453,7 +2453,7 @@ export const ENEMIES = {
       stack:1,
       brBonus:0.5,
       image:'enemy_bl_dragon_chase',
-      bg:'belisar_greathall',
+      bg:'belisar_greathall_night',   // ver -2071：單張退役（天光補四時段），_night＝原單張原樣轉存
       fit:{ mode:'contain', pos:'center bottom' },
       /* ver -1420，Ray：「追擊戰的龍血量都改到 350」——**四場追擊共用這一張卡**，所以改一次四場都吃到。 */
       hp:440,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -2495,7 +2495,7 @@ export const ENEMIES = {
       stageScale:1,
       stack:1,
       image:'enemy_bl_dragon_throne',
-      bg:'belisar_thronehall',
+      bg:'belisar_thronehall_night',   // ver -2071：單張退役（天光補四時段），_night＝原單張原樣轉存
       /* ══⚠⚠⚠ **`cover` 不是 `contain`**（ver -1433，Ray：「第二型態的左右好像被裁了，
          修好它」）══
          ⚠⚠ **根因是素材**：`mon_dragon_v1_unsealed` 那張**圖本身就裁掉了翅膀** ——
@@ -2567,7 +2567,7 @@ export const ENEMIES = {
       stageScale:1,
       stack:1,
       image:'enemy_bl_dragon_throne',
-      bg:'belisar_thronehall',
+      bg:'belisar_thronehall_night',   // ver -2071：單張退役（天光補四時段），_night＝原單張原樣轉存
       fit:{ mode:'cover', pos:'center top' },   // 同第一型態：那張圖的翅膀被裁掉了（見上）
       hp:510,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:21,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -3986,7 +3986,7 @@ export const ENEMIES = {
       stageScale:1,
       stack:0,
       image:'enemy_dragon_throne_awakened',
-      bg:'belisar_thronehall',
+      bg:'belisar_thronehall_night',   // ver -2071：單張退役（天光補四時段），_night＝原單張原樣轉存
       fit:{ mode:'contain', pos:'center bottom' },
       hp:150,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -4014,7 +4014,7 @@ export const ENEMIES = {
       stageScale:1,
       stack:0,
       image:'enemy_dragon_throne_roar',
-      bg:'belisar_thronehall',
+      bg:'belisar_thronehall_night',   // ver -2071：單張退役（天光補四時段），_night＝原單張原樣轉存
       fit:{ mode:'contain', pos:'center bottom' },
       hp:150,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）

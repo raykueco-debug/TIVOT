@@ -10273,10 +10273,10 @@ export const TOWNS = {
       },
     },
     nodes: {
-      throne:    { bg:'belisar_thronehall', name:'貝利薩爾遺址　王座廳', noTime:true, exits:{ right:'offering', down:'antecham', left:'crown' } },
+      throne:    { bg:'belisar_thronehall', name:'貝利薩爾遺址　王座廳', exits:{ right:'offering', down:'antecham', left:'crown' } },
       crown:     { bg:'belisar_crownroom', name:'貝利薩爾遺址　寶冠室', noTime:true, exits:{ right:'throne' } },
       antecham:  { bg:'belisar_antechamber', name:'貝利薩爾遺址　謁見前廳', noTime:true, exits:{ up:'throne', right:'wardtomb', down:'dragstair' } },
-      offering:  { bg:'belisar_relicroom', name:'貝利薩爾遺址　聖物室', noTime:true, exits:{ down:'wardtomb', left:'throne' } },
+      offering:  { bg:'belisar_relicroom', name:'貝利薩爾遺址　聖物室', exits:{ down:'wardtomb', left:'throne' } },
       /* ══⚠⚠⚠ **初踩獅階：把牠往這個方向逼**（ver -1433，Ray：「玩家只要初踩到
          獅階，就會觸發對話，**若觸發結算，結算完再跑對話**」）══
          獅階是**安全區**（`rest:true`）⇒ 帶著帳走進來會先閉棺結算。
@@ -10300,9 +10300,9 @@ export const TOWNS = {
           ren('command','把牠往這個方向逼！'),
           sor('battlecry','瞭解！'),
         ] } ] },
-      starroom:  { bg:'belisar_orrery', name:'貝利薩爾遺址　星象室', noTime:true, exits:{ down:'incense', left:'forge' } },
+      starroom:  { bg:'belisar_orrery', name:'貝利薩爾遺址　星象室', exits:{ down:'incense', left:'forge' } },
       guardhall: { bg:'belisar_armourgallery', name:'貝利薩爾遺址　甲冑廊', noTime:true, exits:{ up:'dragstair', right:'bonerack', down:'greathall', left:'trihall' } },
-      greathall: { bg:'belisar_greathall', name:'貝利薩爾遺址　中央大廳', noTime:true, exits:{ up:'guardhall', right:'oldtomb', left:'lamphall' } },
+      greathall: { bg:'belisar_greathall', name:'貝利薩爾遺址　中央大廳', exits:{ up:'guardhall', right:'oldtomb', left:'lamphall' } },
       lamphall:  { bg:'belisar_chandelierhall', name:'貝利薩爾遺址　枝燈長廊', noTime:true, exits:{ up:'trihall', right:'greathall', down:'candlewalk' } },
       ossuary:   { bg:'belisar_ossuary', name:'貝利薩爾遺址　納骨堂', noTime:true, exits:{ right:'culvert', left:'stelae' } },
       mirrorpool:{ bg:'belisar_stillpool', name:'貝利薩爾遺址　靜水池', noTime:true, exits:{ up:'waterjail', down:'floodway', left:'pillars' }, acts:[BEL_WATER_FIRST] },
@@ -10331,7 +10331,7 @@ export const TOWNS = {
       drywell:   { bg:'belisar_drywell', name:'貝利薩爾遺址　枯井底',   /* ver -2011：四差分接上（原圖改名 _day） */ noWild:true, exits:{ right:'forge', down:'rooffall' } },
       /* ⚠ 安全點（ver -1397，Ray：「旋梯井　獅階　武器工坊為安全點　不出怪」）——
          另外兩格（`stairwell`／`dragstair`）本來就寫了 `noWild`。 */
-      forge:     { bg:'belisar_forge', name:'貝利薩爾遺址　兵器工坊', noTime:true, noWild:true, exits:{ up:'starroom', right:'trihall', down:'muralwalk', left:'drywell' } },
+      forge:     { bg:'belisar_forge', name:'貝利薩爾遺址　兵器工坊', noWild:true, exits:{ up:'starroom', right:'trihall', down:'muralwalk', left:'drywell' } },
       trihall:   { bg:'belisar_triarch', name:'貝利薩爾遺址　三拱廳', noTime:true, exits:{ up:'incense', right:'guardhall', down:'lamphall', left:'forge' } },
       waterjail: { bg:'belisar_waterjail', name:'貝利薩爾遺址　水牢', noTime:true, exits:{ up:'cages', right:'dragonrace', down:'mirrorpool', left:'capstan' }, acts:[BEL_WATER_FIRST] },
       bonerack:  { bg:'belisar_sarcophagi', name:'貝利薩爾遺址　石棺廊', noTime:true, exits:{ up:'stelae', left:'guardhall' } },
@@ -10363,7 +10363,7 @@ export const TOWNS = {
       capstan:   { bg:'belisar_capstan', name:'貝利薩爾遺址　絞盤室', noTime:true, exits:{ right:'waterjail', down:'pillars', left:'oldtomb' } },
       candlewalk:{ bg:'belisar_candlewalk', name:'貝利薩爾遺址　燭廊', noTime:true, exits:{ up:'lamphall', right:'stairwell', down:'mirrorway' } },
       stelae:    { bg:'belisar_stelewalk', name:'貝利薩爾遺址　銘碑廊', noTime:true, exits:{ up:'wardtomb', right:'ossuary', down:'bonerack' } },
-      stephall:  { bg:'belisar_stairhall', name:'貝利薩爾遺址　階梯大廳', noTime:true, exits:{ up:'pillars', right:'floodway', down:'foyer', left:'stairwell' } },
+      stephall:  { bg:'belisar_stairhall', name:'貝利薩爾遺址　階梯大廳', exits:{ up:'pillars', right:'floodway', down:'foyer', left:'stairwell' } },
       floodway:  { bg:'belisar_floodway', name:'貝利薩爾遺址　積水甬道', noTime:true, exits:{ up:'mirrorpool', down:'altar', left:'stephall' }, acts:[BEL_WATER_FIRST] },
       /* ══⚠⚠ **那一夜：走進前廳**（ver -1433，Ray 交稿）══ 索菈娜聞出牠還在。
          ⚠ `need` ＝任務探索開著（同中庭那一段，旗名讀 `QUEST_LOCK`）——

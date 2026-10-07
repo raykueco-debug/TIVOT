@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2070';
+export const VERSION = 'ver 2026.09.22-2072';
 
 export const GAME_CONFIG = {
 
@@ -5289,10 +5289,8 @@ export const ASSET_VER = {
      死路的房間上，那些圖畫不出那麼多門」）裡**還有五間也是同名覆蓋**，而版號只跳了
      納骨堂那一個。漏掉的那五格會讓玩家看到「牆上沒有那道門」的舊圖，
      然後按著一個畫面上不存在的方向走出去。 */
-  'belisar_orrery':          2,
   'belisar_bellroom':        2,
   'belisar_cages':           2,
-  'belisar_forge':           2,
   'belisar_rooffall_dawn':   2,
   'belisar_rooffall_day':    2,
   'belisar_rooffall_dusk':   2,
@@ -5596,9 +5594,7 @@ export const ASSET_VER = {
   'arrhenius_si_wrysmileopen': 'e7b05e04',
   'belisar_bellroom': '78d98957',
   'belisar_cages': 'ec515e6d',
-  'belisar_forge': '1e7cc774',
   'belisar_oldaltar': '6ddfe60d',
-  'belisar_orrery': '4ebfe3ec',
   'belisar_ossuary': 'ebf11c9f',
   'belisar_rooffall_dawn': '88f65d14',
   'belisar_rooffall_day': 'a128d9fd',
