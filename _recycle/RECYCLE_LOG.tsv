@@ -1100,3 +1100,5 @@ when	from	to	reason
 20261008-003236	resources/ci/video/ci_anya_ni_v1.mp4	_recycle/resources/ci/video/ci_anya_ni_v1.mp4	ver -2078 安雅 NI 換 v2；v1 已原樣複製成 ci_anya_dreambreaker_v1（sha1 相同），照動畫交接表由程式回收
 20261008-011654	_misha_breath_compare.webp	_recycle/_misha_breath_compare.webp	米夏呼吸測試的暫存並排動畫（已定案：不掛 LoRA 的深呼吸版）
 20261008-011654	_misha_breath_compare2.webp	_recycle/_misha_breath_compare2.webp	米夏呼吸測試的暫存並排動畫（已定案：不掛 LoRA 的深呼吸版）
+20261008-014227	resources/ci/video/ci_nouvelle_deathguard_v1.mp4	_recycle/resources/ci/video/ci_nouvelle_deathguard_v1.mp4	ver -2081 諾薇兒即死防禦換 Ray 剪的 dg3j_s7_cut（v2）
+20261008-014313	HANDOFF.md	_recycle/HANDOFF.md.20261008-014313	交接換新（ver -2081 Windows 程式 session 收工）

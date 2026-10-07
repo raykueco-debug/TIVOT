@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2080';
+export const VERSION = 'ver 2026.09.22-2081';
 
 export const GAME_CONFIG = {
 
@@ -3502,7 +3502,7 @@ export const GAME_CONFIG = {
                  ci_sorana_obe:{ video:'resources/ci/video/ci_sorana_obe_v1.mp4' },
                  /* ver -2076（動畫 964946af／交接表「待程式接」）：諾薇兒即死防禦（被動，2.0 秒）、索拉娜前線補給（主動，1.5 秒）。
                     主被動技的 CI 名單本來就會預熱（config.partnerCiKeys 掃卡上的 *cutin），登記進這張表就自動接上。 */
-                 cutin_nouvelle_guard:{ video:'resources/ci/video/ci_nouvelle_deathguard_v1.mp4' },
+                 cutin_nouvelle_guard:{ video:'resources/ci/video/ci_nouvelle_deathguard_v2.mp4' },   // ver -2081：Ray 剪 dg3j_s7_cut（32 格 2 秒，程式端轉 mp4）
                  ci_sorana_supply:{ video:'resources/ci/video/ci_sorana_supply_v1.mp4' },
                  /* ver -2078（動畫交接表「待程式接」）：夢境粉碎（＝舊 NI 原片）、明晰之夢、諾薇兒魂之歸所、索拉娜怒吼三支。 */
                  ci_anya_dreambreaker:{ video:'resources/ci/video/ci_anya_dreambreaker_v1.mp4' },
