@@ -548,3 +548,10 @@ Ray 交辦：`resources/ci/ci_nouvelle_deathguard.webp`（1023×1537，含背景
 
 - 畫布 1024×1536（原圖 1023×1537，請補/裁到 1024×1536，兩張一致）；anime style, cel shading, clean lineart，絕不要顆粒感。
 - 交完回訊息給「動畫」session。
+
+### ✔ 二十九 交件（2026-10-07，美術）
+- `resources/ci/layers/nouvelle_deathguard/nouvelle_B.png`／`nouvelle_A.png`：1024×1536 RGBA。原圖 1023×1537，裁掉底下 1 列、右邊補 1 欄，沒有縮放。
+- B：GPT 先換白底再出 alpha。GPT 那版整個人往上偏了約 30px，用邊緣比對把位置對回原圖；顏色取原圖真實像素，所以衣服上的光斑留著，背景的光片光點都清掉了。
+  ⚠ 頭頂左後方有一小塊暗色，那是原圖逆光的頭髮背面，放在暗色背景上看不出來。
+- A：同一個 GPT 對話改出來的（閉眼、閉嘴、平靜祈禱、雙手合握，衣服沒有光斑），位置對位與 B 相同，顏色映射回原圖色調。
+- 中間檔都在 `_originals/CI/_dg/`。
