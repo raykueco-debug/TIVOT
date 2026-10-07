@@ -454,3 +454,12 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 | 謎之術師戰鬥立繪 `man_mage` | ✔ 不欠（敵人卡等程式／Ray 數值） |
 | 謎之術師對話立繪 front／barrier／cast | ✔ 不欠（`si/npc/mage_si_*.webp`，Ray：「術師的 si 收一收交件」）；barrier 的掩嘴手未改（Ray 沒要求）；⚠ 程式端欠 speaker＋取景，cast 人較小要 rescale |
 | 米夏親衛隊分層 | ✔ 不欠；✅ 程式端已接（ver -2067，`203b9269`：plate 進背景層、三人各自接地影子、總血 270） |
+
+## 二十四、2026-10-07：米夏夢魘化立繪重畫（Ray：「米夏的 SI 立繪被裁了，重畫」→ 指定 ni 那張）
+- ✔ 同名覆蓋 `si/misha_si_ni.webp` ＋ `enemy/man_misha_ni.webp`（兩檔本來就是同一張）；舊版走 `tools/recycle.sh` 進 `_recycle/`。
+  GPT 重畫（同人同姿勢同光效，整體縮進框內），本機再縮排置中補白：外框 x72–952、y176–1359，四邊都不碰。
+- ⚠⚠ **程式端要接（鐵律 11，美術不碰）**：
+  1. `python3 tools/bust.py --bump`（同名覆蓋，`ASSET_VER` 要跳）。
+  2. `speakers.js` 的 `misha.expr.ni` 取景要重量：舊值 `top:2 bot:1532 fx:0.553` 已失效。美術粗量：頭頂（不含光環）≈245、腳底≈1358、臉中心 fx≈0.55；人比其他差分小一號 ⇒ 要 `rescale:true`。
+  3. `script/eyefx.js` 的 `misha_si_ni` 眼睛座標整組失效（圖重畫了），眨眼／眼效要重跑。
+  4. `man_misha_ni` 戰鬥 fit 也要重看（人變小了）。
