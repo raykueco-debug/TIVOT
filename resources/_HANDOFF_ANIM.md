@@ -108,6 +108,9 @@
 - 背景頭尾不一致（A 圖有雜物、B 圖沒有）→ 整個畫面會像在晃。A／B 要用同一個乾淨背景。
 - **要結尾沒有的效果（光從無到有）就不要鎖結尾**：B 沒光、鎖了 B 光會在最後消失。只鎖 A。
 - **Wan 生不出密的背景粒子（火星）**：提示詞只撒零星幾顆。改用 `embers2.py` 背景人物分層合成（純黑背景的 CI 適用）。
+- **白衣服走綠幕會變半透明**（白袍帶綠反光被 key 掉）→ 用 `rekey_solid.py`（輪廓內 alpha=1）。
+- **A／B 外框不同大小**（例如 A 蜷縮比 B 矮）→ 工具會各自裁切縮放、A/B 對不上 → 先跑 `align_bbox.py` 讓兩張共用聯集外框。
+- **Bouncing LoRA 0.5～1.0 會讓乳房左右甩**（Ray：「變成左右甩奶」）；不加 LoRA 的強英文提示詞動作最好但沒乳搖。
 - Wan 第一格已經在動（約差 10～20 px），所以中槍改成「第 1 格用遊戲原圖」。
 - **綠眼角色走綠底去背，眼睛會被挖掉**（索拉娜吼叫踩到：原色時眼睛發暗，改鮮綠後整個被挖空、露出後面的火變紅眼）。解法 `rekey_eyes.py`：從 ComfyUI 原始輸出重新去背，臉部範圍內「沒有連到外圍綠幕」的綠色區塊保留。⚠ 臉部範圍是寫死的座標，換角色要改。**不要為了這個去改原圖的眼色**（Ray：太綠；改顏色前要先給他挑）。
 
@@ -127,6 +130,7 @@
 | 安雅 Lucid Dream | `resources/ci/video/ci_anya_luciddream_v1.mp4`（Ray 剪的 `anya_ld_A_ab3_s7_cut`，32 格 16fps＝2 秒） | ⚠ 待程式接 |
 | 諾薇兒生命歸還 | `resources/ci/video/ci_nouvelle_lifereturn_v1.mp4`（Ray 剪的 `nb_open_s7_fx_cut`，32 格 16fps＝2 秒）：A＝`ci_nouvelle_breath_A.png`（收拳）只鎖起手、光由 Wan 從無到有生；火星由 `embers2.py` 另畫在背景層（每格從邊緣找連通黑區＝背景）再疊人物 | ⚠ 待程式接 |
 | 索拉娜補給 | `resources/ci/video/ci_sorana_supply_v1.mp4`（Ray 剪的 `supply_s77_cut`）：美術去背 A（手在腰後握彈匣）→B（往後遞），綠幕 idle 模式＋Bouncing 0.8；`comp_black_embers.py` 放回原畫布、純黑底＋同向直飛火星（無尾巴，Ray：「火星要往一個方向飛」） | ⚠ 待程式接 |
+| 諾薇兒即死防禦 | `resources/ci/video/ci_nouvelle_deathguard_v1.mp4`（Ray 剪的 `dg2n_s7_cut`）：美術去背 A2（低頭蜷縮）→B（吶喊），綠幕 idle、**不用 LoRA**、強英文提示詞；`rekey_solid.py` 實心去背（白袍不半透明）、`fix_magenta.py` 修頭頂洋紅色塊、`comp_black_embers.py` 黑底＋火星 | ⚠ 待程式接（乳搖版另在試，見待辦） |
 | 怪物待機 94 隻 | `tivot_wan/out/monsters/`（未交） | ⚠ 等 Ray 檢查；長期建議 GPU 貼圖 |
 
 ---

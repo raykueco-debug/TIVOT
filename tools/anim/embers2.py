@@ -7,8 +7,8 @@ src, dst = sys.argv[1], sys.argv[2]
 N = int(sys.argv[3]) if len(sys.argv) > 3 else 70; ANG = math.radians(float(sys.argv[4]) if len(sys.argv) > 4 else 35)
 os.makedirs(dst, exist_ok=True); os.makedirs(dst + '_mask', exist_ok=True)
 fs = sorted(glob.glob(os.path.join(src, 'frame_*.webp'))); W, H = Image.open(fs[0]).size; rnd = random.Random(5)
-P = [dict(x=rnd.uniform(-W * .3, W), y=rnd.uniform(0, H * 1.3), sp=rnd.uniform(5, 11), r=rnd.uniform(1.0, 2.4),
-          ph=rnd.uniform(0, 6.28), fl=rnd.uniform(0.25, 0.6), cu=rnd.uniform(-0.04, 0.04)) for _ in range(N)]
+P = [dict(x=rnd.uniform(-W * .3, W), y=rnd.uniform(0, H * 1.3), sp=rnd.uniform(6, 9), r=rnd.uniform(0.9, 2.0),
+          ph=rnd.uniform(0, 6.28), fl=rnd.uniform(0.25, 0.6), cu=rnd.uniform(-0.07, 0.07)) for _ in range(N)]
 def bgmask(im):
     lum = im.max(axis=2)
     dark = (lum < 22).astype(np.uint8)
@@ -22,12 +22,11 @@ for t, f in enumerate(fs):
     im = np.asarray(Image.open(f).convert('RGB')).astype(np.float32)
     lay = np.zeros((H * 2, W * 2, 3), np.float32)
     for p in P:
-        a_ = ANG + p['cu'] * t
+        a_ = ANG + p['cu']
         dx, dy = math.cos(a_) * p['sp'], -math.sin(a_) * p['sp']
         x = (p['x'] + dx * t) % (W * 1.3) - W * .15; y = (p['y'] + dy * t) % (H * 1.3) - H * .15
         a = 0.55 + 0.45 * math.sin(t * p['fl'] * 2 + p['ph'])
         c = (np.array([255, 105 + 45 * a, 25 * a]) * a).tolist()
-        cv2.line(lay, (int((x - dx * 1.6) * 2), int((y - dy * 1.6) * 2)), (int(x * 2), int(y * 2)), [v * .45 for v in c], max(1, int(p['r'] * 2)), cv2.LINE_AA)
         cv2.circle(lay, (int(x * 2), int(y * 2)), int(p['r'] * 2.2), c, -1, cv2.LINE_AA)
     lay = cv2.resize(lay, (W, H), interpolation=cv2.INTER_AREA)
     bgl = lay + cv2.GaussianBlur(lay, (0, 0), 3.5) * 2.2           # 背景層：黑底＋火星
