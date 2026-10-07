@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2078';
+export const VERSION = 'ver 2026.09.22-2080';
 
 export const GAME_CONFIG = {
 
@@ -3456,7 +3456,8 @@ export const GAME_CONFIG = {
                 ci_sorana_obe:1625,
                 cutin_nouvelle_guard:2000, ci_sorana_supply:1500,
                 ci_anya_dreambreaker:2813, ci_anya_lucid:2000, cutin_return_nouvelle:2000,   // ver -2078：片長＝CI 長
-                ci_sorana_roar_renna:2000, ci_sorana_roar_anya:2000, ci_sorana_roar_nouvelle:2000 },   // ver -2076：即死防禦／補給影片（片長＝CI 長，撤出時還在播；同 cutinAnim 那兩列）   // 索拉娜飛刀耗盡 ver -2051（26 格 16fps，撤出時還在播；同 cutinAnim 的 ms，兩處互指）
+                ci_sorana_roar_renna:2000, ci_sorana_roar_anya:2000, ci_sorana_roar_nouvelle:2000,
+                cutin_nireload:2000 },   // ver -2079：安雅夢魘再臨（Ray 剪 nr_blue77_cut，32 格 2 秒）   // ver -2076：即死防禦／補給影片（片長＝CI 長，撤出時還在播；同 cutinAnim 那兩列）   // 索拉娜飛刀耗盡 ver -2051（26 格 16fps，撤出時還在播；同 cutinAnim 的 ms，兩處互指）
     /* ⚠ ver -2040（Ray：「秒數控制在每一個在撤出時都還在播放狀態，不要停」）：索拉娜共鬥／賽西莉聖徒化／賽西莉 OBE
        的 CI 長度＝那段動檔的實際長度（格數 ÷ 16fps）—— 最後一格剛出現就撤，不會停格。
        改動檔的格數就要一起改這裡（同一個數字的兩處，兩邊互指：cutinAnim 的 ms）。 */   // 兩張 OBE ver -2038（Ray：「兩個都改 2 秒」）；結局全畫面 CI（playSaintCutin）也讀這張表   // 索拉娜共鬥 ver -2032（Ray：「2 秒可以」；_v7 動檔剛好 2 秒）
@@ -3509,7 +3510,10 @@ export const GAME_CONFIG = {
                  cutin_return_nouvelle:{ video:'resources/ci/video/ci_nouvelle_lifereturn_v1.mp4' },
                  ci_sorana_roar_renna:{ video:'resources/ci/video/ci_sorana_roar_renna_v1.mp4' },
                  ci_sorana_roar_anya:{ video:'resources/ci/video/ci_sorana_roar_anya_v1.mp4' },
-                 ci_sorana_roar_nouvelle:{ video:'resources/ci/video/ci_sorana_roar_nouvelle_v1.mp4' } },
+                 ci_sorana_roar_nouvelle:{ video:'resources/ci/video/ci_sorana_roar_nouvelle_v1.mp4' },
+                 /* ver -2079（Ray：「nr_blue77_cut，安雅被動動畫改這個」）：被動技裡的夢魘再臨（reloadCutin）。
+                    Ray 的剪輯（tivot_wan/out/export/nr_blue77_cut，32 格 16fps）由程式端轉成 mp4（H.264 480×720 crf22 faststart）。 */
+                 cutin_nireload:{ video:'resources/ci/video/cutin_nireload_v1.mp4' } },
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],
@@ -5260,6 +5264,7 @@ export function ciShownFrames(key){
    enemy.idleDirFor 查這張表：卡上 `image` 指到的那張圖有登記就自動播（不必逐張改卡）；卡上寫 `idle:false` ＝個案關掉。
    ⚠ mon_beast_altar 沒收：動畫去背把身體吃掉一半（交件時剔除）。 */
 export const ENEMY_IDLE = {
+  man_misha: 'resources/enemy/anim/man_misha_idle_v1/',   // ver -2079：人類用「明顯深呼吸」提示詞、不掛 LoRA（Live2D LoRA 兩輪測不出效果）
   mon_arch_warden: 'resources/enemy/anim/mon_arch_warden_idle_v1/',
   mon_bear_husk: 'resources/enemy/anim/mon_bear_husk_idle_v1/',
   mon_bear_nightmare: 'resources/enemy/anim/mon_bear_nightmare_idle_v1/',

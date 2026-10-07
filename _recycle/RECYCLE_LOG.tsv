@@ -1098,3 +1098,5 @@ when	from	to	reason
 20261007-201725	resources/background/belisar/belisar_relicroom.webp	_recycle/resources/background/belisar/belisar_relicroom.webp	ver -2071 古城天光六格補四時段（美術 c2b4d351），noTime 拔掉後單張退役
 20261008-000908	resources/enemy/anim/mon_beast_altar_idle_v1	_recycle/resources/enemy/anim/mon_beast_altar_idle_v1	ver -2075 祭壇獸待機：動畫去背吃掉身體一半，不接
 20261008-003236	resources/ci/video/ci_anya_ni_v1.mp4	_recycle/resources/ci/video/ci_anya_ni_v1.mp4	ver -2078 安雅 NI 換 v2；v1 已原樣複製成 ci_anya_dreambreaker_v1（sha1 相同），照動畫交接表由程式回收
+20261008-011654	_misha_breath_compare.webp	_recycle/_misha_breath_compare.webp	米夏呼吸測試的暫存並排動畫（已定案：不掛 LoRA 的深呼吸版）
+20261008-011654	_misha_breath_compare2.webp	_recycle/_misha_breath_compare2.webp	米夏呼吸測試的暫存並排動畫（已定案：不掛 LoRA 的深呼吸版）
