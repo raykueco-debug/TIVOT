@@ -53,3 +53,13 @@ resources/background/belisar/belisar_<圖名>_{dawn,day,dusk,night}.webp
 3. 都是**新檔名**，不是同名覆蓋，所以不必加 `ASSET_VER`。
 4. 夜裡與白天各走一次這六格，確認沒有一格跳回單張。
 5. 舊的單張走 `tools/recycle.sh` 退役。
+
+## 六、✔ 交件（2026-10-07，美術）
+- 六格 × `{dawn,day,dusk,night}` 共 24 張已入 `resources/background/belisar/`（1536×1024 WebP，尾綴小寫）。
+  `_night` ＝ 原單張（冷藍月光）原樣轉存；`dawn/day/dusk` 由 Gemini 從原單張衍生（18 張）。
+- ⚠⚠ **Gemini 衍生的有效作法**（Ray：「明確告訴他他只能改光跟色」）：**每張開新對話、只附原圖**，提示詞只寫
+  「你只能改『光』跟『顏色』。其他一律不准動：線條、筆觸、畫風、構圖、視角、物件、形狀、細節」＋一句該時段的光。
+  長提示詞＋同串接力那一版畫風跑掉（Ray：「畫風跑得一踏糊塗」），已作廢。
+- 驗收：每張與原圖的輪廓相關度 0.78～0.87、肉眼並排無增減物件；總覽 `_originals/background/belisar/_skylight/_all18.jpg`。
+- 原單張 `belisar_<名>.webp` 照第四節**留著**，等程式端拔 `noTime` 後再回收。
+- ⚠ 程式端照第五節接（拔 `noTime`、`bg_index.py`、`bust.py --bump`、走一遍六格）。

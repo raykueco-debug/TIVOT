@@ -463,3 +463,13 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
   2. `speakers.js` 的 `misha.expr.ni` 取景要重量：舊值 `top:2 bot:1532 fx:0.553` 已失效。美術粗量（-pad2 版）：頭頂（不含光環）≈355、腳底≈1237、臉中心 fx≈0.55；人比其他差分小一號 ⇒ 要 `rescale:true`。
   3. `script/eyefx.js` 的 `misha_si_ni` 眼睛座標整組失效（圖重畫了），眨眼／眼效要重跑。
   4. `man_misha_ni` 戰鬥 fit 也要重看（人變小了）。
+
+## 二十五、2026-10-07：古城室外天光六格補時段（24 張）＋ 程式端待辦
+- ✔ `background/belisar/belisar_{stairhall,greathall,forge,orrery,thronehall,relicroom}_{dawn,day,dusk,night}.webp`。細節與作法見 `background/_belisar_skylight_worklist.md` 第六節。
+- ⚠ 程式端欠：拔那六格 `noTime`＋`bg_index`＋`bust --bump`（程式 session 當時已關，未能通知）。
+- 待辦（美術）：動畫開單「索拉娜吼叫 CI 分層」（bg_fire＋sorana，`resources/ci/layers/sorana_roar/`）。
+
+### 資產盤點
+| 件 | 狀態 |
+|---|---|
+| 古城室外天光六格四時段 | ✔ 不欠（24 張）；⚠ 程式端欠接 |
