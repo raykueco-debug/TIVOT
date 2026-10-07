@@ -1,0 +1,88 @@
+<!doctype html><meta charset="utf-8"><title>動檔播放器</title>
+<style>
+body{margin:0;background:#15151b;color:#ccc;font:14px sans-serif}
+#top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 12px;background:#1e1d25;position:sticky;top:0;z-index:2}
+select{max-width:420px;font-size:14px}button{padding:5px 12px;font-size:14px}
+#main{display:flex;gap:12px;padding:12px}
+#view{flex:0 0 auto;text-align:center}#im{width:420px;height:630px;object-fit:contain;background:#2a2730;display:block}
+#info{font:15px monospace;color:#fc6;margin:6px 0}
+#strip{flex:1;display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start;max-height:calc(100vh - 70px);overflow:auto}
+.t{position:relative;width:120px;cursor:pointer;user-select:none;touch-action:none;border:3px solid transparent}
+.t img{-webkit-user-drag:none;pointer-events:none;width:120px;height:180px;object-fit:cover;display:block}
+.t span{position:absolute;left:4px;top:2px;font:bold 15px monospace;color:#fff;text-shadow:0 0 4px #000}
+.t input{position:absolute;right:4px;top:4px;margin:0;width:26px;height:26px;pointer-events:none}
+.t.off::after{content:'✕';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:bold 64px sans-serif;color:#f44;text-shadow:0 0 6px #000;pointer-events:none}
+.t.off img{opacity:.25}.t.cur{border-color:#fc6}
+#kept{width:100%;font:12px monospace;background:#222;color:#9f9;border:1px solid #444}
+small{color:#888}
+</style>
+<div id=top>
+ <select id=sel></select>
+ <button id=pv>◀</button><button id=pp>▶ 播放</button><button id=nx>▶|</button>
+ <label><input type=checkbox id=loop> 循環</label>
+ 倍速 <input id=sp type=range min=0.1 max=3 step=0.05 value=1 style="width:160px"> <b id=spv></b>
+ 基準 <select id=base><option>16</option><option>8</option><option>12</option><option>24</option></select> fps
+ <button id=clr>全部取消勾選</button> <span id=dur style="font:bold 15px monospace;color:#9f9;margin-left:8px"></span> <button id=exp style="background:#c90;color:#000;font-weight:bold">⬇ 輸出</button>
+ <small>空白＝播放/暫停・← →＝逐格・X＝勾/取消目前格・點縮圖＝勾掉／取消，按住拖過去＝一次勾多格（勾掉的格不播）</small>
+</div>
+<div id=main>
+ <div id=view><img id=im><div id=info></div>
+  <div style="width:420px"><small>保留的格（給程式用）：</small><textarea id=kept rows=4 readonly></textarea></div></div>
+ <div id=strip></div>
+</div>
+<script src="player_list.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+let A=null,off=new Set(),i=0,timer=null,playing=false,drag=null;
+document.addEventListener('pointerup',()=>{drag=null});
+const key=()=>'tivot_player_off_'+A.dir;
+function save(){try{localStorage.setItem(key(),JSON.stringify([...off]))}catch(e){}}
+function load(){try{off=new Set(JSON.parse(localStorage.getItem(key())||'[]'))}catch(e){off=new Set()}}
+ANIMS.forEach((a,k)=>{const o=document.createElement('option');o.value=k;o.textContent=`[${a.group}] ${a.name}（${a.frames.length}）`;$('sel').appendChild(o)});
+function open(k){stop();A=ANIMS[k];load();i=first();build();show();try{localStorage.setItem('tivot_player_last',A.dir)}catch(e){}}
+function kept(){return A.frames.map((_,k)=>k).filter(k=>!off.has(k))}
+function first(){return kept()[0]??0}
+function build(){const s=$('strip');s.innerHTML='';A.frames.forEach((f,k)=>{const d=document.createElement('div');d.className='t';d.id='t'+k;
+ d.innerHTML=`<img loading=lazy src="${A.dir}/${f}"><span>${k}</span><input type=checkbox title="勾＝不播">`;
+ d.querySelector('input').checked=off.has(k);
+ d.onpointerdown=e=>{e.preventDefault();stop();drag=!off.has(k);tog(k,drag);i=k;show()};
+ d.onpointerenter=()=>{if(drag===null)return;if(off.has(k)!==drag)tog(k,drag)};s.appendChild(d);new Image().src=`${A.dir}/${f}`});mark()}
+function tog(k,v){v?off.add(k):off.delete(k);save();mark();keptText()}
+function mark(){A.frames.forEach((_,k)=>{const d=$('t'+k);d.classList.toggle('off',off.has(k));d.classList.toggle('cur',k===i);d.querySelector('input').checked=off.has(k)});keptText()}
+function ranges(a){const r=[];for(const k of a){if(r.length&&r[r.length-1][1]===k-1)r[r.length-1][1]=k;else r.push([k,k])}return r.map(([a,b])=>a===b?`${a}`:`${a}-${b}`).join(', ')}
+function durText(){const f=+$('base').value*+$('sp').value,n=A.frames.length,m=kept().length;
+ $('dur').textContent=`原始 ${n} 格 ${(n/f).toFixed(2)} 秒 → 保留 ${m} 格 ${(m/f).toFixed(2)} 秒（${f.toFixed(1)} fps）`}
+function keptText(){durText();const k=kept();$('kept').value=`共 ${k.length} 格（${(k.length/+$('base').value).toFixed(2)} 秒 @${$('base').value}fps）\n保留：${ranges(k)}\n去掉：${ranges([...off].sort((a,b)=>a-b))||'無'}`}
+function show(){$('im').src=`${A.dir}/${A.frames[i]}`;const fps=+$('base').value*+$('sp').value;
+ $('info').textContent=`第 ${i} 格 / 0~${A.frames.length-1}${off.has(i)?'（已勾掉）':''}　${fps.toFixed(1)} fps`;mark();
+ const d=$('t'+i);if(d)d.scrollIntoView({block:'nearest'})}
+function nextIdx(d){const k=kept();if(!k.length)return null;let p=k.findIndex(x=>x>=i);
+ if(d>0){const n=k.find(x=>x>i);if(n!==undefined)return n;return $('loop').checked?k[0]:null}
+ const pr=[...k].reverse().find(x=>x<i);if(pr!==undefined)return pr;return $('loop').checked?k[k.length-1]:null}
+function tick(){const n=nextIdx(1);if(n===null){stop();return}i=n;show()}
+function play(){if(!kept().length)return;if(off.has(i)||nextIdx(1)===null&&!$('loop').checked)i=first();show();
+ playing=true;$('pp').textContent='⏸ 暫停';clearInterval(timer);timer=setInterval(tick,1000/(+$('base').value*+$('sp').value))}
+function stop(){playing=false;clearInterval(timer);timer=null;$('pp').textContent='▶ 播放'}
+function step(d){stop();const n=nextIdx(d);if(n!==null){i=n;show()}}
+$('sel').onchange=e=>open(+e.target.value);
+$('pp').onclick=()=>playing?stop():play();$('pv').onclick=()=>step(-1);$('nx').onclick=()=>step(1);
+$('sp').oninput=()=>{$('spv').textContent=(+$('sp').value).toFixed(2)+'×';show();if(playing)play()};
+$('base').onchange=()=>{show();keptText();if(playing)play()};
+$('exp').onclick=async()=>{const k=kept();if(!k.length){alert('沒有保留的格');return}
+ const name=prompt(`輸出 ${k.length} 格，資料夾名稱：`,A.name+'_cut');if(!name)return;
+ const body={dir:A.dir,name,keep:k,frames:k.map(x=>A.frames[x]),fps:+$('base').value*+$('sp').value};
+ if(location.protocol==='file:'){const b=new Blob([JSON.stringify(body,null,1)],{type:'application/json'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download=name+'.json';a.click();alert('目前是直接開檔，只能下載清單 json。\n要直接輸出成資料夾，請用 http://localhost:8130/player.html 開');return}
+ try{const r=await (await fetch('/export',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
+  alert(r.ok?`已輸出 ${r.count} 格：\n${r.path}`:'輸出失敗：'+r.error)}catch(e){alert('輸出失敗：'+e)}};
+$('clr').onclick=()=>{off.clear();save();mark()};
+document.addEventListener('keydown',e=>{if(e.target.tagName==='SELECT')return;
+ if(e.key===' '){e.preventDefault();playing?stop():play()}
+ else if(e.key==='ArrowRight'){e.preventDefault();step(1)}
+ else if(e.key==='ArrowLeft'){e.preventDefault();step(-1)}
+ else if(e.key==='x'||e.key==='X'){tog(i,!off.has(i))}});
+$('spv').textContent='1.00×';
+let last=null;try{last=localStorage.getItem('tivot_player_last')}catch(e){}
+const h=decodeURIComponent(location.hash.slice(1));if(h)last=h;
+const k0=Math.max(0,ANIMS.findIndex(a=>a.dir===last));$('sel').value=k0;open(k0);
+</script>

@@ -1089,3 +1089,4 @@ when	from	to	reason
 20261007-101155	resources/ci/anim/ci_sorana_predator_c12	_recycle/resources/ci/anim/ci_sorana_predator_c12	ver -2057 CI 改影片（resources/ci/video），_c12 序列退役
 20261007-185836	resources/si/misha_si_ni.webp	_recycle/resources/si/misha_si_ni.webp	米夏 NI 立繪被裁（光帶／披風／光環出框），Ray 要求重畫；舊版回收
 20261007-185836	resources/enemy/man_misha_ni.webp	_recycle/resources/enemy/man_misha_ni.webp	米夏 NI 立繪被裁（光帶／披風／光環出框），Ray 要求重畫；舊版回收
+20261007-200528	resources/_HANDOFF_ANIM.md	_recycle/resources/_HANDOFF_ANIM.md	動畫交接重寫成完整版（舊版併入）
