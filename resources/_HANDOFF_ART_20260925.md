@@ -481,7 +481,7 @@ Ray 交辦的動畫：`resources/ci/anya_ni2.png` 是**結尾圖（B）**，5 �
 
 | 項目 | 要求 |
 |---|---|
-| 底圖 | 上傳 `resources/ci/anya_ni2.png`（結尾圖）＋ `resources/SI/Anya_SI_front.webp`（服裝、手套參考） |
+| 底圖 | ⭐ **主參考 `resources/ci/ci_anya_nightmareinstall.png`**（Ray 指定：藍眼、短手套、無光效、構圖與結尾圖幾乎相同 —— 基本上就是**以它為底，只把伸出去的手收回胸前**）＋ `resources/ci/anya_ni2.png`（結尾圖，對齊構圖用）＋ `resources/SI/Anya_SI_front.webp`（服裝） |
 | 構圖 | **與 `anya_ni2` 完全相同**：同仰角、同鏡頭距離、人物同位置同大小、1024×1536、暗色背景 |
 | 姿勢 | 伸出去的那隻手**收在胸前**（其餘姿勢不變） |
 | 手套 | **只到手腕的短手套**，前臂是白色泡泡袖＋蕾絲袖口（照 `Anya_SI_front`，⛔ 不要長手套） |
