@@ -1669,17 +1669,17 @@
   /* ⚠ scale 一律乘 var(--ci-s)（ver -837，Ray：「CI 後方角色不要被裁掉太多」）——
      96% 高再乘 1.2~1.3 等於放大到約 120%，低角度構圖的後方角色頭部會被裁掉。
      逐張的縮小倍率在 config.tuning.cutinFit（saint.playCutin 逐次設，預設 1）。 */
-  #cutinImg{position:absolute;top:50%;left:50%;height:96%;max-width:none;
+  #cutinImg,#cutin .ci-vid{position:absolute;top:50%;left:50%;height:96%;max-width:none;
     filter:drop-shadow(0 0 30px #c0308a) drop-shadow(0 0 12px #6a30c0);
     transform:translate(-50%,-50%) scale(calc(var(--ci-s,1)*1.3));opacity:0;}
-  #cutin.on #cutinImg{animation:cutinImg var(--ci-dur,1.5s) cubic-bezier(.15,.7,.3,1);}
+  #cutin.on #cutinImg,#cutin.on .ci-vid{animation:cutinImg var(--ci-dur,1.5s) cubic-bezier(.15,.7,.3,1);}
   /* ══ 全屏 cut-in（ver -874，Ray：「索拉娜的被動技要放全屏」）══
      `playCutin` 的 opts.full：整張圖滿版 cover 淡入（不走滑入）——
      交件規格＝**直式 1024×1536**（同 OBE/熔斷那批；19.5:9 螢幕左右各裁一成半，
      主體置中就安全）。 */
-  #cutin.full #cutinImg{top:0;left:0;height:100%;width:100%;max-width:100%;
+  #cutin.full #cutinImg,#cutin.full .ci-vid{top:0;left:0;height:100%;width:100%;max-width:100%;
     object-fit:cover;object-position:center top;transform:none;filter:none;}
-  #cutin.full.on #cutinImg{animation:cutinFullImg var(--ci-dur,1.5s) ease-out;}
+  #cutin.full.on #cutinImg,#cutin.full.on .ci-vid{animation:cutinFullImg var(--ci-dur,1.5s) ease-out;}
   @keyframes cutinFullImg{
     0%{opacity:0;transform:scale(1.06);}
     16%{opacity:1;transform:scale(1.03);}
@@ -1753,6 +1753,7 @@
   #saintCutin.execute{background:radial-gradient(circle at 50% 45%,rgba(80,60,10,.92),rgba(4,2,0,.99));}
   #saintCutin.return{background:radial-gradient(circle at 50% 45%,rgba(70,55,15,.9),rgba(6,4,1,.98));}
   #saintCutin.boss{background:radial-gradient(circle at 50% 45%,rgba(70,10,20,.9),rgba(8,2,4,.98));}
+  /* `.ci-vid`（ver -2057）：CI 影片疊在靜態圖的位置，吃同一組規則（#cutin 那四條與這一條）。 */
   .scimg{position:absolute;inset:0;width:100%;height:100%;
     object-fit:cover;object-position:50% 30%;opacity:0;z-index:0;display:none;}
   /* 依結局類型只顯示對應圖片 */

@@ -1126,7 +1126,7 @@ def main():
     print('開機那一批：圖 %d 張 %.2f MB ／ 音效 %d 支 %.2f MB（鐵律 13 的守望）'
           % (boot[0], boot[1] / 1048576.0, boot[2], boot[3] / 1048576.0))
     print('CI 動檔解碼（每位搭檔，預算 %.0f MB）：%s' % (CI_DECODE_BUDGET / 1048576.0,
-          '／'.join('%s %.0fMB' % (k, b / 1048576.0) for k, b in sorted(ci_rows, key=lambda r: -r[1])) or '（沒有動檔）'))
+          '／'.join('%s %.0fMB' % (k, b / 1048576.0) for k, b in sorted(ci_rows, key=lambda r: -r[1])) or '（全部是影片，不逐格解碼）'))
     for m in errs:  print('❌ ' + m)
     for m in warns: print('⚠  ' + m)
     print('\n%d 個錯誤、%d 個提醒。' % (len(errs), len(warns)))

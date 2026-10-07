@@ -1157,6 +1157,27 @@ export function warmCutinAnim(key){
   if(!A) return;
   const old=ciAnim[key];
   if(old && (old.ready || old.pending)) return;   // 好了／暖著 → 不重來；上一次失敗 → 重暖
+  /* ══ 影片版（ver -2057，動畫交件：「CI 動檔全部改成影片」）══ 一張 CI 一個 `<video>`，排進同一個低優先佇列預載；
+     影片只留當前那一格、走硬體解碼 ⇒ 不吃逐格解碼的記憶體（序列版一位搭檔 36 MB）。可以播＝`canplaythrough`。 */
+  if(A.video){
+    /* ⚠ 預熱＝把整支 mp4 抓成 **blob**（壓縮檔，一位搭檔約 3 MB），開演時才建 `<video>` 播它（ver -2057）。
+       不預先建好 `<video>` 放著：閒置一陣子的預載影片會被瀏覽器回收解碼器，之後 play() 卡在第 0 格不動
+       （實測：剛暖好立刻播正常，放一分鐘以上就不動）—— 而進圖預熱到開戰常常是好幾分鐘。 */
+    const rec=ciAnim[key]={ video:true, ready:false, pending:true, blob:null };
+    ciQ.push(()=>{
+      if(ciAnim[key]!==rec) return Promise.resolve();
+      const ac=('AbortController' in window) ? new AbortController() : null;
+      const t=setTimeout(()=>{ try{ ac && ac.abort(); }catch(_){} }, 15000);   // 逐支逾時（同鐵律 13 的斷路器）
+      return fetch(A.video, ac ? { signal:ac.signal, priority:'low' } : {})
+        .then(r=>{ if(!r.ok) throw new Error(r.status); return r.blob(); })
+        .then(b=>{ clearTimeout(t); if(ciAnim[key]!==rec) return;
+          rec.blob=URL.createObjectURL(b); rec.pending=false; rec.ready=true; })
+        .catch(()=>{ clearTimeout(t); if(ciAnim[key]===rec){ rec.pending=false; rec.ready=false;
+          console.warn('[cutin] 影片載不到，這一次退回靜態圖：'+key); } });
+    });
+    pumpCi();
+    return;
+  }
   const urls=ciShownUrls(A, key);
   const rec=ciAnim[key]={ urls, ready:false, pending:true, imgs:[], left:urls.length };
   const fin=()=>{ if(ciAnim[key]!==rec) return;   // 拔過旗了 → 這一筆作廢
@@ -1179,19 +1200,50 @@ export function warmPartnerCi(pk){
 }
 export function releasePartnerCi(){
   ciWarmFor=undefined; ciQ=[];
+  stopCiAnim();
   for(const k in ciAnim){ const r=ciAnim[k]; delete ciAnim[k];
-    for(const im of (r.imgs||[])){ try{ im.removeAttribute('src'); }catch(_){} } }
+    for(const im of (r.imgs||[])){ try{ im.removeAttribute('src'); }catch(_){} }
+    if(r.blob){ try{ URL.revokeObjectURL(r.blob); }catch(_){} } }
 }
 export function ciWarmPartner(){ return ciWarmFor; }
+/* 除錯用：每張 CI 的預熱狀態（管理人 HUD／測試讀）。 */
+export function ciWarmState(){ const o={}; for(const k in ciAnim){ const r=ciAnim[k]; o[k]=(r.video?'vid ':'seq ')+(r.ready?'ready':r.pending?'pending':'fail'); } return { queue:ciQ.length, live:ciLive, held:!!ciHoldP, keys:o }; }
 let ciAnimT=0;
+let ciVidOn=null;   // 正在台上的那一支影片：{ v, img, key }
+function freeVideo(v){ try{ v.pause(); v.removeAttribute('src'); v.load(); }catch(_){} if(v.parentNode) v.parentNode.removeChild(v); }
+/* CI 撤下：序列停表、影片停播**並釋放**（src 拔掉＋load()，動畫交件的規格），靜態圖放回來。
+   blob 留著（同一張圖裡再播不必重抓），切地圖時由 releasePartnerCi 一起放掉。 */
+function stopCiAnim(){
+  clearInterval(ciAnimT); ciAnimT=0;
+  if(ciVidOn){ const o=ciVidOn; ciVidOn=null;
+    freeVideo(o.v); if(o.img) o.img.style.visibility=''; }
+}
 /* CI 撤出：最後這麼多毫秒整張放大淡出（ver -2042；style.css 的 .ciout 也寫 0.25s，兩邊互指）。 */
 const CI_OUT_MS = 250;
 function ciOutAt(c, dur){ if(!c) return; c.classList.remove('ciout');
   clearTimeout(c.__ciOutT); c.__ciOutT=setTimeout(()=>c.classList.add('ciout'), Math.max(0, dur-CI_OUT_MS)); }
 function playCiAnim(ci, key){
-  clearInterval(ciAnimT); ciAnimT=0;
+  stopCiAnim();
   const A=(GAME_CONFIG.tuning.cutinAnim||{})[key], rec=ciAnim[key];
   if(!A) return;
+  if(A.video){
+    if(!rec || !rec.ready || !rec.blob){ warmCutinAnim(key); return; }   // 沒預載好 → 這一次播靜態圖
+    const v=document.createElement('video');
+    v.muted=true; v.defaultMuted=true; v.playsInline=true; v.preload='auto';
+    v.setAttribute('muted',''); v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
+    v.src=rec.blob;
+    /* 影片疊在靜態圖的位置、吃同一組 CSS（#cutin 的 `.ci-vid`／結局 CI 的 `.scimg[data-kind]`）——
+       進場動畫是 `.on` 掛上那一刻一起起跑的，兩者同步。第一格真的出來（playing）才藏靜態圖。 */
+    v.className = ci.classList.contains('scimg') ? 'scimg ci-vid' : 'ci-vid';
+    if(ci.dataset && ci.dataset.kind) v.dataset.kind=ci.dataset.kind;
+    v.style.visibility='hidden';
+    ci.parentNode.insertBefore(v, ci.nextSibling);
+    ciVidOn={ v, img:ci, key };
+    v.onplaying=()=>{ if(ciVidOn && ciVidOn.v===v){ v.style.visibility=''; ci.style.visibility='hidden'; } };
+    try{ v.currentTime=0; }catch(_){}
+    const p=v.play(); if(p && p.catch) p.catch(()=>{ /* 自動播放被擋 → 留著靜態圖 */ });
+    return;
+  }
   if(!rec || !rec.ready){ warmCutinAnim(key); return; }   // 這一次播靜態圖，下一次就有動檔
   let i=0; ci.src=rec.urls[0];
   ciAnimT=setInterval(()=>{ i++; if(i>=rec.urls.length){ clearInterval(ciAnimT); ciAnimT=0; return; }
@@ -1227,7 +1279,7 @@ export function playCutin(done, label, imgKey, opts){
     if(ci && imgKey) playCiAnim(ci, imgKey);   // 動檔（有登記才播；沒有就是那張靜態圖）
     setTimeout(()=>{
       c.classList.remove('on','ciout');
-      clearInterval(ciAnimT); ciAnimT=0;   // 動檔比 CI 長的話，撤下時一併停（ver -2037：不在背後空跑）
+      stopCiAnim();   // 動檔比 CI 長的話，撤下時一併停（ver -2037：不在背後空跑；-2057 起影片也在這裡釋放）
       // ⚠ 教學對話開著時不清暫停旗標：cut-in（如即死防禦）與教學對話重疊時，
       //   這裡清掉會讓盤面在對話中恢復可點（懲罰/插話亂入，曾致陣亡重開流程被劫持）。
       //   對話層收段時自會 resumeFromDialog。
@@ -1362,7 +1414,7 @@ function playSaintCutin(kind, done, reload){
   ciOutAt(c, holdMs);                        // 撤出＝最後 0.25 秒放大淡出（ver -2042）
   setTimeout(()=>{
     c.classList.remove('on','ciout');
-    clearInterval(ciAnimT); ciAnimT=0;   // 動檔撤下時一併停（ver -2037）
+    stopCiAnim();   // 動檔撤下時一併停（ver -2037；-2057 起影片也在這裡釋放）
     state.cutinPlaying=false;
     if(api.cutinThaw) api.cutinThaw(frz);   // ver -1779
     if(done) done();

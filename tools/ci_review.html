@@ -32,6 +32,7 @@ input{background:#222;border:1px solid #444;padding:4px 8px;border-radius:4px}
 <div id="grid"></div>
 <div id="view">
   <img id="vimg" alt="">
+  <video id="vvid" muted playsinline preload="auto" style="max-width:96vw;max-height:72vh;display:none"></video>
   <div id="info"></div>
   <div id="bar">
     <button id="bPrev">◀ 上一格</button>
@@ -49,7 +50,7 @@ const ASSETS=C.ASSETS, ANIM=(C.GAME_CONFIG.tuning&&C.GAME_CONFIG.tuning.cutinAni
 const keys=Object.keys(ASSETS).filter(k=>/^(ci_|cutin_)/.test(k) && /\.(webp|png|jpe?g)(\?|$)/i.test(ASSETS[k])).sort();
 for(const k of Object.keys(ANIM)) if(keys.indexOf(k)<0) keys.push(k);
 const url=p=>'../'+String(p).replace(/^\.?\//,'');
-const frames=k=>{ const A=ANIM[k]; if(!A) return null;   // pick：同 saint.js 的 ciAnimUrls（兩邊互指）
+const frames=k=>{ const A=ANIM[k]; if(!A || A.video) return null;   // pick：同 saint.js 的 ciAnimUrls（兩邊互指）
   const P=A.pick||{}, s=P.from||0, e=(P.to!=null?P.to:A.frames), st=P.step||1, a=[];
   for(let i=s;i<e;i+=st) a.push(url(A.dir+'frame_'+String(i).padStart(2,'0')+'.webp'));
   return a; };
@@ -57,8 +58,8 @@ const grid=document.getElementById('grid'); const cards=[];
 for(const k of keys){
   const d=document.createElement('div'); d.className='c';
   const A=ANIM[k];
-  d.innerHTML='<img loading="lazy" src="'+(ASSETS[k]?url(ASSETS[k]):frames(k)[0])+'"><div class="n">'+k
-    +(A?' <span class="tag">動 '+frames(k).length+' 格／'+(A.fps?A.fps+'fps 後停住':(A.ms||1500)+'ms')+'</span>':'')+'</div>';
+  d.innerHTML='<img loading="lazy" src="'+(ASSETS[k]?url(ASSETS[k]):(frames(k)||[''])[0])+'"><div class="n">'+k
+    +(A?' <span class="tag">'+(A.video?'影片 '+A.video.split('/').pop():'動 '+frames(k).length+' 格／'+(A.fps?A.fps+'fps 後停住':(A.ms||1500)+'ms'))+'</span>':'')+'</div>';
   d.onclick=()=>open(k); grid.appendChild(d); cards.push({k,d,anim:!!A});
 }
 const cnt=document.getElementById('cnt');
@@ -68,8 +69,11 @@ function filt(){ const q=document.getElementById('q').value.trim().toLowerCase()
 document.getElementById('q').oninput=filt; document.getElementById('onlyAnim').onchange=filt; filt();
 
 /* ── 檢視器：一輪、不循環 ── */
-const view=document.getElementById('view'), vimg=document.getElementById('vimg'), info=document.getElementById('info');
-let cur=null, fr=null, idx=0, timer=0, step=100;
+const view=document.getElementById('view'), vimg=document.getElementById('vimg'), info=document.getElementById('info'), vvid=document.getElementById('vvid');
+let cur=null, fr=null, idx=0, timer=0, step=100, vid=false;
+const FS=1/16;   // 影片逐格：16fps（動畫交件規格）
+vvid.addEventListener('timeupdate', ()=>{ if(vid) info.textContent=cur+'　影片 '+vvid.currentTime.toFixed(3)+' / '+(vvid.duration||0).toFixed(3)+' 秒　'+(vvid.paused?'停':'播放中'); });
+vvid.addEventListener('ended', ()=>{ if(vid) info.textContent=cur+'　影片播完（停在最後一格）'; });
 const $=id=>document.getElementById(id);
 function show(i){ idx=Math.max(0,Math.min(fr.length-1,i)); vimg.src=fr[idx]; label(); }
 function label(){ info.textContent=cur+(fr?'　格 '+(idx+1)+' / '+fr.length+'　'+(timer?'播放中':'停'):'　（靜態圖）'); }
@@ -79,20 +83,24 @@ function play(){ if(!fr) return; stop(); if(idx>=fr.length-1) idx=0;   // 停在
 function open(k){
   cur=k; fr=frames(k); stop(); view.classList.add('on');
   const A=ANIM[k];
+  vid=!!(A && A.video); vvid.style.display=vid?'':'none'; vimg.style.display=vid?'none':'';
+  if(vid){ vvid.src=url(A.video); vvid.currentTime=0; vvid.play().catch(()=>{});
+    for(const b of ['bPrev','bPlay','bPause','bReplay','bNext']) $(b).disabled=false; return; }
+  else { vvid.pause(); vvid.removeAttribute('src'); }
   if(fr){ step=A.fps ? 1000/A.fps : (A.ms||1500)/fr.length;   // 同 saint.playCiAnim fr.forEach(u=>{ const i=new Image(); i.src=u; }); idx=0; show(0); play(); }
   else { vimg.src=url(ASSETS[k]); }
   for(const b of ['bPrev','bPlay','bPause','bReplay','bNext']) $(b).disabled=!fr;
   label();
 }
-$('bPlay').onclick=play;
-$('bPause').onclick=()=>{ stop(); label(); };
-$('bReplay').onclick=()=>{ if(!fr) return; stop(); idx=0; play(); };
-$('bPrev').onclick=()=>{ if(!fr) return; stop(); show(idx-1); };
-$('bNext').onclick=()=>{ if(!fr) return; stop(); show(idx+1); };
-$('bClose').onclick=()=>{ stop(); view.classList.remove('on'); };
+$('bPlay').onclick=()=>{ if(vid){ if(vvid.ended) vvid.currentTime=0; vvid.play(); } else play(); };
+$('bPause').onclick=()=>{ if(vid){ vvid.pause(); return; } stop(); label(); };
+$('bReplay').onclick=()=>{ if(vid){ vvid.currentTime=0; vvid.play(); return; } if(!fr) return; stop(); idx=0; play(); };
+$('bPrev').onclick=()=>{ if(vid){ vvid.pause(); vvid.currentTime=Math.max(0,vvid.currentTime-FS); return; } if(!fr) return; stop(); show(idx-1); };
+$('bNext').onclick=()=>{ if(vid){ vvid.pause(); vvid.currentTime=Math.min(vvid.duration||0,vvid.currentTime+FS); return; } if(!fr) return; stop(); show(idx+1); };
+$('bClose').onclick=()=>{ stop(); vvid.pause(); vvid.removeAttribute('src'); vvid.load(); view.classList.remove('on'); };
 addEventListener('keydown',e=>{ if(!view.classList.contains('on')) return;
   if(e.key==='ArrowLeft') $('bPrev').click(); else if(e.key==='ArrowRight') $('bNext').click();
-  else if(e.key===' '){ e.preventDefault(); timer?$('bPause').click():$('bPlay').click(); }
+  else if(e.key===' '){ e.preventDefault(); (vid ? !vvid.paused : timer)?$('bPause').click():$('bPlay').click(); }
   else if(e.key==='Escape') $('bClose').click(); });
 </script>
 </body></html>

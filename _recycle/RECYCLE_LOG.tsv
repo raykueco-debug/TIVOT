@@ -1079,3 +1079,11 @@ when	from	to	reason
 20261007-011953	resources/ci/anim/ci_sorana_predator_v8	_recycle/resources/ci/anim/ci_sorana_predator_v8	ver -2056 CI 全部改 C 規格（_c12），16 格原尺寸版退役
 20261007-011954	tools/ci_compare.html	_recycle/tools/ci_compare.html	CI 格率比較已定案（C 規格），比較頁與素材回收
 20261007-011954	resources/ci/_compare	_recycle/resources/ci/_compare	CI 格率比較已定案（C 規格），比較頁與素材回收
+20261007-101155	resources/ci/anim/ci_anya_ni_c12	_recycle/resources/ci/anim/ci_anya_ni_c12	ver -2057 CI 改影片（resources/ci/video），_c12 序列退役
+20261007-101155	resources/ci/anim/ci_anya_obe_c12	_recycle/resources/ci/anim/ci_anya_obe_c12	ver -2057 CI 改影片（resources/ci/video），_c12 序列退役
+20261007-101155	resources/ci/anim/ci_cecilie_obe_c12	_recycle/resources/ci/anim/ci_cecilie_obe_c12	ver -2057 CI 改影片（resources/ci/video），_c12 序列退役
+20261007-101155	resources/ci/anim/ci_cecilie_saintinstall_c12	_recycle/resources/ci/anim/ci_cecilie_saintinstall_c12	ver -2057 CI 改影片（resources/ci/video），_c12 序列退役
+20261007-101155	resources/ci/anim/ci_nouvelle_obe_c12	_recycle/resources/ci/anim/ci_nouvelle_obe_c12	ver -2057 CI 改影片（resources/ci/video），_c12 序列退役
+20261007-101155	resources/ci/anim/ci_nouvelle_saintinstall_c12	_recycle/resources/ci/anim/ci_nouvelle_saintinstall_c12	ver -2057 CI 改影片（resources/ci/video），_c12 序列退役
+20261007-101155	resources/ci/anim/ci_sorana_obe_c12	_recycle/resources/ci/anim/ci_sorana_obe_c12	ver -2057 CI 改影片（resources/ci/video），_c12 序列退役
+20261007-101155	resources/ci/anim/ci_sorana_predator_c12	_recycle/resources/ci/anim/ci_sorana_predator_c12	ver -2057 CI 改影片（resources/ci/video），_c12 序列退役
