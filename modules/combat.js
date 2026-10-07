@@ -2366,7 +2366,8 @@ function skipOverkill(){
   clearAtkBuff();
   if(state.dualWield) weapon.endDual();
   state.transitioning=true;                       // 這一拍之後不再吃點擊
-  setTimeout(()=>{ if(state.over) return; state.transitioning=false; finishEnemyOrAdvance(); }, 0);
+  /* 群體敵人：等最後倒下的那個人播完倒地動畫才閉棺（ver -2063，Ray：「敵人倒下畫面播完才閉棺」）。 */
+  setTimeout(()=>{ if(state.over) return; state.transitioning=false; finishEnemyOrAdvance(); }, enemy.fallPendingMs());
 }
 function enterOverkillFx(){
   $('grid').classList.add('overkill');            // 數字藍光（見 style.css #grid.overkill）

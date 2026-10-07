@@ -1298,9 +1298,12 @@ function pickVictim(alive){
 function fallGuard(im){
   const F=im._fall;
   if(F && F.frames.length && F.frames.every(f=>f.complete && f.naturalWidth)) playFall(im, F);
-  else im.classList.add('eg-down');   // 沒有動畫／還沒載好 → 原本的下沉淡出
+  else { im.classList.add('eg-down'); fallUntil=Math.max(fallUntil, Date.now()+500); }   // 沒有動畫／還沒載好 → 原本的下沉淡出
   if(im._sh) im._sh.classList.add('eg-down');
   try{ window.dispatchEvent(new CustomEvent('tivot:groupfall')); }catch(_){} }   // weapon 據此清掉落空的 BR 瞄準點
+/* 倒地還要演多久（ver -2063，Ray：「敵人倒下畫面播完才閉棺」）：最後一個人倒下時，combat 等它播完（含倒地停留）才收尾。 */
+let fallUntil=0;
+export function fallPendingMs(){ return Math.max(0, fallUntil-Date.now()); }
 /* 倒地動畫：分層換成 5 格依序播（每格等長，`group.fallMs` 總長，預設 500ms），停在倒地那格 `fallHold`（預設 600ms）再淡出。
    ⚠ 位置：格子貼在 anim.json 的 box（畫布座標），照分層同一套 cover＋object-position 換算到畫面（同 toImageUV 的反算）。
    ⚠ 疊層：`back`（掩體後往後倒、往下掉出視線）**改畫在掩體下面**，才會掉到掩體後；forward／prone 照舊在原位（掩體上面）。 */
@@ -1318,6 +1321,7 @@ function playFall(im, F){
   if(j.kind==='back' && cover) g.insertBefore(el, cover); else im.after(el);
   im.style.transition='none'; im.classList.add('eg-down');   // 分層當場換掉（不走淡出）
   const n=F.frames.length, step=(G.fallMs||500)/n;
+  fallUntil=Math.max(fallUntil, Date.now()+(G.fallMs||500)+(G.fallHold!=null?G.fallHold:600));
   let i=0; const t=setInterval(()=>{ i++;
     if(i>=n){ clearInterval(t);
       setTimeout(()=>{ el.classList.add('eg-gone'); setTimeout(()=>el.remove(), 450); }, G.fallHold!=null?G.fallHold:600);

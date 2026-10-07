@@ -1715,6 +1715,9 @@
   @keyframes ciReload{0%{transform:scale(1);filter:brightness(1);}
     35%{transform:scale(1.10);filter:brightness(1.5);}
     100%{transform:scale(1);filter:brightness(1);}}
+  /* CI 的字一律壓在畫面上（ver -2063，Ray：「CI 的字也要壓上」）：影片畫在 canvas（.ci-vid）上，字與光束固定在它上面一層。 */
+  #cutin .ci-vid{z-index:1;}
+  #cutinText,#cutinStreak{z-index:3;}
   #cutin.on #cutinText{animation:cutinText var(--ci-dur,1.5s) ease-out;}
   @keyframes cutinText{0%{opacity:0;transform:skewX(-10deg) scale(2)}
     20%{opacity:1;transform:skewX(-10deg) scale(1)}

@@ -1216,7 +1216,9 @@ function freeVideo(v){ try{ v.pause(); v.removeAttribute('src'); v.load(); }catc
 function stopCiAnim(){
   clearInterval(ciAnimT); ciAnimT=0;
   if(ciVidOn){ const o=ciVidOn; ciVidOn=null;
-    freeVideo(o.v); if(o.img) o.img.style.visibility=''; }
+    try{ if(o.raf) cancelAnimationFrame(o.raf); if(o.vfc && o.v.cancelVideoFrameCallback) o.v.cancelVideoFrameCallback(o.vfc); }catch(_){}
+    freeVideo(o.v); if(o.cv && o.cv.parentNode) o.cv.parentNode.removeChild(o.cv);
+    if(o.img) o.img.style.visibility=''; }
 }
 /* CI 撤出：最後這麼多毫秒整張放大淡出（ver -2042；style.css 的 .ciout 也寫 0.25s，兩邊互指）。 */
 const CI_OUT_MS = 250;
@@ -1228,18 +1230,35 @@ function playCiAnim(ci, key){
   if(!A) return;
   if(A.video){
     if(!rec || !rec.ready || !rec.blob){ warmCutinAnim(key); return; }   // 沒預載好 → 這一次播靜態圖
+    /* ══⚠⚠ 畫面上**不放 `<video>`**，放一張 canvas（ver -2063，Ray：「2062 在手機上 CI 還是被圖層擋住，CI 要在最上層」）══
+       iPhone 的 Safari 把 `<video>` 放在獨立的硬體圖層，配上 CI 的濾鏡／位移動畫／外框裁切，疊放順序會亂掉。
+       作法：影片藏在畫面外（1×1、幾乎透明）照常播，每一格畫進 canvas；canvas 吃靜態圖同一組 CSS
+       （#cutin 的 `.ci-vid`／結局 CI 的 `.scimg[data-kind]`），跟 `<img>` 一樣是普通圖層。第一格畫上去才藏靜態圖。 */
     const v=document.createElement('video');
     v.muted=true; v.defaultMuted=true; v.playsInline=true; v.preload='auto';
     v.setAttribute('muted',''); v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
+    v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1;';
     v.src=rec.blob;
-    /* 影片疊在靜態圖的位置、吃同一組 CSS（#cutin 的 `.ci-vid`／結局 CI 的 `.scimg[data-kind]`）——
-       進場動畫是 `.on` 掛上那一刻一起起跑的，兩者同步。第一格真的出來（playing）才藏靜態圖。 */
-    v.className = ci.classList.contains('scimg') ? 'scimg ci-vid' : 'ci-vid';
-    if(ci.dataset && ci.dataset.kind) v.dataset.kind=ci.dataset.kind;
-    v.style.visibility='hidden';
-    ci.parentNode.insertBefore(v, ci.nextSibling);
-    ciVidOn={ v, img:ci, key };
-    v.onplaying=()=>{ if(ciVidOn && ciVidOn.v===v){ v.style.visibility=''; ci.style.visibility='hidden'; } };
+    document.body.appendChild(v);
+    const cv=document.createElement('canvas'); cv.width=480; cv.height=720;
+    cv.className = ci.classList.contains('scimg') ? 'scimg ci-vid' : 'ci-vid';
+    if(ci.dataset && ci.dataset.kind) cv.dataset.kind=ci.dataset.kind;
+    cv.style.visibility='hidden';
+    ci.parentNode.insertBefore(cv, ci.nextSibling);
+    const ctx=cv.getContext('2d');
+    const on={ v, cv, img:ci, key, raf:0, vfc:0 };
+    ciVidOn=on;
+    const draw=()=>{
+      if(ciVidOn!==on) return;
+      if(v.readyState>=2 && v.videoWidth){
+        if(cv.width!==v.videoWidth){ cv.width=v.videoWidth; cv.height=v.videoHeight; }
+        ctx.drawImage(v, 0, 0, cv.width, cv.height);
+        if(cv.style.visibility==='hidden'){ cv.style.visibility=''; ci.style.visibility='hidden'; }
+      }
+      if(v.requestVideoFrameCallback) on.vfc=v.requestVideoFrameCallback(draw);
+      else on.raf=requestAnimationFrame(draw);
+    };
+    v.onplaying=()=>{ if(ciVidOn===on && !on.vfc && !on.raf) draw(); };
     try{ v.currentTime=0; }catch(_){}
     const p=v.play(); if(p && p.catch) p.catch(()=>{ /* 自動播放被擋 → 留著靜態圖 */ });
     return;
