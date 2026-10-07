@@ -2,7 +2,8 @@
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CI 驗收</title>
-<!-- CI 驗收頁（ver -2026，Ray：「把眨眼鈕換成 ci，ci 都不要 loop」「還有暫停重播跟逐格鈕」）。
+<!-- ver -2077：加「循環」開關（CI 預設關、怪的待機預設開）與怪的待機循環列表（config.ENEMY_IDLE）。
+     CI 驗收頁（ver -2026，Ray：「把眨眼鈕換成 ci，ci 都不要 loop」「還有暫停重播跟逐格鈕」）。
      管理人模式首頁的「CI」鈕跳過來（同眨眼驗收頁的跳頁作法）。
      資料全讀 config：ASSETS 裡 ci_／cutin_ 開頭的靜態圖 ＋ tuning.cutinAnim 的動檔（鐵律 7：不另列名單）。
      ⚠ 動檔一律只播一輪、停在最後一格（同遊戲裡 saint.playCutin），**沒有循環**。 -->
@@ -28,6 +29,7 @@ input{background:#222;border:1px solid #444;padding:4px 8px;border-radius:4px}
 <header><a href="../index.html" style="color:var(--gold);text-decoration:none">← 首頁</a><b>CI 驗收</b><span id="cnt"></span>
 <input id="q" placeholder="篩選（例 sorana）">
 <label><input type="checkbox" id="onlyAnim"> 只看動檔</label>
+<label><input type="checkbox" id="onlyIdle"> 只看怪的待機</label>
 <span style="color:var(--dim)">點一張打開；動檔只播一輪，停在最後一格</span></header>
 <div id="grid"></div>
 <div id="view">
@@ -40,6 +42,7 @@ input{background:#222;border:1px solid #444;padding:4px 8px;border-radius:4px}
     <button id="bPause">❚❚ 暫停</button>
     <button id="bReplay">↺ 重播</button>
     <button id="bNext">下一格 ▶</button>
+    <label style="padding:10px 6px"><input type="checkbox" id="bLoop"> 循環</label>
     <button id="bClose">✕ 關閉</button>
   </div>
 </div>
@@ -47,6 +50,8 @@ input{background:#222;border:1px solid #444;padding:4px 8px;border-radius:4px}
 const V='?t='+Date.now();
 const C=await import('../config.js'+V);
 const ASSETS=C.ASSETS, ANIM=(C.GAME_CONFIG.tuning&&C.GAME_CONFIG.tuning.cutinAnim)||{};
+/* 怪的待機循環（ver -2077）：config.ENEMY_IDLE（立繪基底名 → 動檔資料夾）。開的時候才讀 anim.json。 */
+const IDLE=C.ENEMY_IDLE||{};
 const keys=Object.keys(ASSETS).filter(k=>/^(ci_|cutin_)/.test(k) && /\.(webp|png|jpe?g)(\?|$)/i.test(ASSETS[k])).sort();
 for(const k of Object.keys(ANIM)) if(keys.indexOf(k)<0) keys.push(k);
 const url=p=>'../'+String(p).replace(/^\.?\//,'');
@@ -62,11 +67,16 @@ for(const k of keys){
     +(A?' <span class="tag">'+(A.video?'影片 '+A.video.split('/').pop():'動 '+frames(k).length+' 格／'+(A.fps?A.fps+'fps 後停住':(A.ms||1500)+'ms'))+'</span>':'')+'</div>';
   d.onclick=()=>open(k); grid.appendChild(d); cards.push({k,d,anim:!!A});
 }
+for(const b of Object.keys(IDLE).sort()){
+  const k='idle:'+b, d=document.createElement('div'); d.className='c';
+  d.innerHTML='<img loading="lazy" src="'+url(IDLE[b]+'frame_00.webp')+'"><div class="n">'+b+' <span class="tag">待機循環</span></div>';
+  d.onclick=()=>open(k); grid.appendChild(d); cards.push({k,d,anim:true,idle:true});
+}
 const cnt=document.getElementById('cnt');
-function filt(){ const q=document.getElementById('q').value.trim().toLowerCase(), oa=document.getElementById('onlyAnim').checked;
-  let n=0; for(const c of cards){ const show=(!q||c.k.toLowerCase().includes(q)) && (!oa||c.anim); c.d.style.display=show?'':'none'; if(show) n++; }
+function filt(){ const q=document.getElementById('q').value.trim().toLowerCase(), oa=document.getElementById('onlyAnim').checked, oi=document.getElementById('onlyIdle').checked;
+  let n=0; for(const c of cards){ const show=(!q||c.k.toLowerCase().includes(q)) && (!oa||c.anim) && (!oi||c.idle); c.d.style.display=show?'':'none'; if(show) n++; }
   cnt.textContent=n+' 張（動檔 '+cards.filter(c=>c.anim).length+'）'; }
-document.getElementById('q').oninput=filt; document.getElementById('onlyAnim').onchange=filt; filt();
+document.getElementById('q').oninput=filt; document.getElementById('onlyAnim').onchange=filt; document.getElementById('onlyIdle').onchange=filt; filt();
 
 /* ── 檢視器：一輪、不循環 ── */
 const view=document.getElementById('view'), vimg=document.getElementById('vimg'), info=document.getElementById('info'), vvid=document.getElementById('vvid');
@@ -79,15 +89,27 @@ function show(i){ idx=Math.max(0,Math.min(fr.length-1,i)); vimg.src=fr[idx]; lab
 function label(){ info.textContent=cur+(fr?'　格 '+(idx+1)+' / '+fr.length+'　'+(timer?'播放中':'停'):'　（靜態圖）'); }
 function stop(){ clearInterval(timer); timer=0; }
 function play(){ if(!fr) return; stop(); if(idx>=fr.length-1) idx=0;   // 停在最後一格時按播放＝從頭
-  show(idx); timer=setInterval(()=>{ if(idx>=fr.length-1){ stop(); label(); return; } show(idx+1); }, step); label(); }
-function open(k){
+  show(idx); timer=setInterval(()=>{ if(idx>=fr.length-1){ if($('bLoop').checked){ show(0); return; } stop(); label(); return; } show(idx+1); }, step); label(); }
+async function open(k){
+  if(k.startsWith('idle:')){   // 怪的待機：讀 anim.json，預設循環（它在遊戲裡就是循環播）
+    const dir=IDLE[k.slice(5)]; let j={frames:24,fps:8};
+    try{ j=await (await fetch(url(dir+'anim.json')+V)).json(); }catch(_){}
+    cur=k; stop(); view.classList.add('on'); vid=false; vvid.style.display='none'; vimg.style.display='';
+    vvid.pause(); vvid.removeAttribute('src');
+    fr=Array.from({length:j.frames||24},(_,i)=>url(dir+'frame_'+String(i).padStart(2,'0')+'.webp'));
+    step=1000/(j.fps||8); $('bLoop').checked=true;
+    fr.forEach(u=>{ const i=new Image(); i.src=u; }); idx=0; show(0); play();
+    for(const b of ['bPrev','bPlay','bPause','bReplay','bNext']) $(b).disabled=false;
+    return;
+  }
+  $('bLoop').checked=false;   // CI 在遊戲裡不循環，開的時候預設關（要看可以自己勾）
   cur=k; fr=frames(k); stop(); view.classList.add('on');
   const A=ANIM[k];
   vid=!!(A && A.video); vvid.style.display=vid?'':'none'; vimg.style.display=vid?'none':'';
-  if(vid){ vvid.src=url(A.video); vvid.currentTime=0; vvid.play().catch(()=>{});
+  if(vid){ vvid.src=url(A.video); vvid.loop=$('bLoop').checked; vvid.currentTime=0; vvid.play().catch(()=>{});
     for(const b of ['bPrev','bPlay','bPause','bReplay','bNext']) $(b).disabled=false; return; }
   else { vvid.pause(); vvid.removeAttribute('src'); }
-  if(fr){ step=A.fps ? 1000/A.fps : (A.ms||1500)/fr.length;   // 同 saint.playCiAnim fr.forEach(u=>{ const i=new Image(); i.src=u; }); idx=0; show(0); play(); }
+  if(fr){ step=A.fps ? 1000/A.fps : (A.ms||1500)/fr.length;   /* 同 saint.playCiAnim */ fr.forEach(u=>{ const i=new Image(); i.src=u; }); idx=0; show(0); play(); }
   else { vimg.src=url(ASSETS[k]); }
   for(const b of ['bPrev','bPlay','bPause','bReplay','bNext']) $(b).disabled=!fr;
   label();
@@ -97,6 +119,7 @@ $('bPause').onclick=()=>{ if(vid){ vvid.pause(); return; } stop(); label(); };
 $('bReplay').onclick=()=>{ if(vid){ vvid.currentTime=0; vvid.play(); return; } if(!fr) return; stop(); idx=0; play(); };
 $('bPrev').onclick=()=>{ if(vid){ vvid.pause(); vvid.currentTime=Math.max(0,vvid.currentTime-FS); return; } if(!fr) return; stop(); show(idx-1); };
 $('bNext').onclick=()=>{ if(vid){ vvid.pause(); vvid.currentTime=Math.min(vvid.duration||0,vvid.currentTime+FS); return; } if(!fr) return; stop(); show(idx+1); };
+$('bLoop').onchange=()=>{ vvid.loop=$('bLoop').checked; if($('bLoop').checked && !vid && !timer && fr) play(); };
 $('bClose').onclick=()=>{ stop(); vvid.pause(); vvid.removeAttribute('src'); vvid.load(); view.classList.remove('on'); };
 addEventListener('keydown',e=>{ if(!view.classList.contains('on')) return;
   if(e.key==='ArrowLeft') $('bPrev').click(); else if(e.key==='ArrowRight') $('bNext').click();

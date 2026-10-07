@@ -98,9 +98,12 @@ function layerOf(src, voice){
      是那一支要重新做母帶才救得回來。 */
 function bgmTargetVol(){ return Math.min(1, _bgmVol * _master * layerGain('bgm')); }
 
+let _ctxRan = false;   // 這顆 context 有沒有真的跑起來過（ver -2077：iOS 第一下手勢要不要當場重建）
 function ctx(){
   if(!_ctx){
     try{ _ctx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ _ctx = null; }
+    _ctxRan = false;
+    if(_ctx){ try{ _ctx.addEventListener('statechange', ()=>{ if(_ctx && _ctx.state==='running') _ctxRan=true; }); }catch(e){} }
   }
   if(_ctx) idleWake();
   return _ctx;
@@ -467,6 +470,12 @@ export const SFX = {
   unlock(){
     if(_sfxOff) return;   // 發熱排除中（ver -1805）：手勢不准把引擎叫回來
     let c = ctx();
+    /* ══ iPhone：開機時（手勢之前）建立、從沒跑起來過的 context，**第一下手勢就當場重建**（ver -2077，
+       Ray：「首頁讀取完點一下照理說會啟動 BGM，為何現在無效？現在一定要點按鈕出 SE 以後才會放」）══
+       -2015 起 iPhone 的 BGM 接進這顆 context（為了音量拉桿有效，bgmWire）—— 於是 BGM 要等 context 真的 running 才出聲。
+       舊流程是「resume 失敗 → 400ms 後標記 → **下一次**手勢才重建」，那一下就是玩家去點的按鈕（所以先有 SE 才有音樂）。
+       手勢之前建的 context 在 iOS 上 resume 常常失敗；手勢內新建的一定 running —— 所以第一下就重建，不必等。 */
+    if(c && IS_IOS && c.state !== 'running' && !_ctxRan) _needRebuild = true;
     if(c && c.state !== 'running'){
       if(_needRebuild){
         try{ c.close(); }catch(e){}
