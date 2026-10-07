@@ -467,7 +467,8 @@ Ray：「生成一條前往郊外的拓樸，不用太複雜，還有馬努的�
 ## 二十五、2026-10-07：古城室外天光六格補時段（24 張）＋ 程式端待辦
 - ✔ `background/belisar/belisar_{stairhall,greathall,forge,orrery,thronehall,relicroom}_{dawn,day,dusk,night}.webp`。細節與作法見 `background/_belisar_skylight_worklist.md` 第六節。
 - ⚠ 程式端欠：拔那六格 `noTime`＋`bg_index`＋`bust --bump`（程式 session 當時已關，未能通知）。
-- 待辦（美術）：動畫開單「索拉娜吼叫 CI 分層」（bg_fire＋sorana，`resources/ci/layers/sorana_roar/`）。
+- ✔ 動畫開單「索拉娜吼叫 CI 分層」已交：`resources/ci/layers/sorana_roar/{bg_fire.png, sorana.png}`（1024×1536）。
+  sorana＝GPT 去背（第一次被內容判定擋，原串重送就過），疊回原圖完全對位；bg_fire＝Gemini 去人（第二次才去乾淨）＋本機合成（人物以外用原圖、殘留的流蘇與頭髮殘影本機補掉）。人物背後那一大片火是 Gemini 補的，與原圖不同。
 
 ### 資產盤點
 | 件 | 狀態 |
