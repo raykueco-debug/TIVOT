@@ -1215,6 +1215,13 @@ function buildGroup(en){
     im.onload=()=>{ buildMask(im); if(im._sh) groundShadow.place(im, im._sh); done(); };
     im.onerror=done;
     im.src=G.dir+pre+n+'.webp';
+    /* 中槍倒下（ver -2062，動畫交件 56d17af4）：`group.fall` ＝倒地動畫的資料夾，每人一組 `<prefix><n>/frame_00..` ＋ anim.json
+       （canvas＝分層畫布、box＝這人 5 格在畫布上的位置、kind＝back／forward／prone）。開場就抓（每場只有幾個人、一人 5 格）。 */
+    if(G.fall){ const base=G.fall+pre+n+'/';
+      fetch(base+'anim.json').then(r=>r.ok?r.json():null).then(j=>{
+        if(!j || groupCard!==en) return;
+        im._fall={ j, frames:Array.from({length:j.frames||0},(_,i)=>{ const f=new Image(); f.src=base+'frame_'+String(i).padStart(2,'0')+'.webp'; return f; }) };
+      }).catch(()=>{}); }
     g.appendChild(im);
   }
 }
@@ -1288,8 +1295,35 @@ function pickVictim(alive){
   return alive[alive.length-1];   // ③ 最前排
 }
 /* 倒下：**唯一的一支**（Ray：之後會有倒地動畫 —— 換的時候只改這裡）。 */
-function fallGuard(im){ im.classList.add('eg-down'); if(im._sh) im._sh.classList.add('eg-down');
+function fallGuard(im){
+  const F=im._fall;
+  if(F && F.frames.length && F.frames.every(f=>f.complete && f.naturalWidth)) playFall(im, F);
+  else im.classList.add('eg-down');   // 沒有動畫／還沒載好 → 原本的下沉淡出
+  if(im._sh) im._sh.classList.add('eg-down');
   try{ window.dispatchEvent(new CustomEvent('tivot:groupfall')); }catch(_){} }   // weapon 據此清掉落空的 BR 瞄準點
+/* 倒地動畫：分層換成 5 格依序播（每格等長，`group.fallMs` 總長，預設 500ms），停在倒地那格 `fallHold`（預設 600ms）再淡出。
+   ⚠ 位置：格子貼在 anim.json 的 box（畫布座標），照分層同一套 cover＋object-position 換算到畫面（同 toImageUV 的反算）。
+   ⚠ 疊層：`back`（掩體後往後倒、往下掉出視線）**改畫在掩體下面**，才會掉到掩體後；forward／prone 照舊在原位（掩體上面）。 */
+function playFall(im, F){
+  const g=$('enemyGroup'); if(!g || !groupCard) return;
+  const G=groupCard.group, j=F.j, cw=(j.canvas||[1024,1536])[0], ch=(j.canvas||[1024,1536])[1], b=j.box||[0,0,cw,ch];
+  const W=g.clientWidth, H=g.clientHeight, k=Math.max(W/cw, H/ch), dw=cw*k, dh=ch*k;
+  const p=String(getComputedStyle(im).objectPosition||'50% 0%').split(/\s+/).map(x=>parseFloat(x)/100);
+  const ox=(W-dw)*(isNaN(p[0])?0.5:p[0]), oy=(H-dh)*(isNaN(p[1])?0:p[1]);
+  const el=document.createElement('img'); el.className='eg-fall'; el.alt='';
+  el.style.left=(ox+b[0]*k)+'px'; el.style.top=(oy+b[1]*k)+'px';
+  el.style.width=(b[2]*k)+'px'; el.style.height=(b[3]*k)+'px';
+  el.src=F.frames[0].src;
+  const cover=g.querySelector('.eg-cover');
+  if(j.kind==='back' && cover) g.insertBefore(el, cover); else im.after(el);
+  im.style.transition='none'; im.classList.add('eg-down');   // 分層當場換掉（不走淡出）
+  const n=F.frames.length, step=(G.fallMs||500)/n;
+  let i=0; const t=setInterval(()=>{ i++;
+    if(i>=n){ clearInterval(t);
+      setTimeout(()=>{ el.classList.add('eg-gone'); setTimeout(()=>el.remove(), 450); }, G.fallHold!=null?G.fallHold:600);
+      return; }
+    el.src=F.frames[i].src; }, step);
+}
 /* 依現在的敵血決定該倒幾個（combat.updateBars 每次都叫，冪等）：還沒倒夠就再倒，每一個照落點挑。 */
 export function syncGroup(){
   const g=$('enemyGroup'); if(!g || !groupCard) return;

@@ -1299,7 +1299,7 @@ export const ENEMIES = {
       image:null, bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
       /* 群戰分層（ver -2061，美術 23c88dfe）：掩體一層＋每人一層，疊回＝原圖；人都疊在掩體上（被擋處已剪掉）。
          總血沿用原卡（250）平均分給每人；每掉一份倒一個（倒誰看子彈落點）。人站在掩體後、腳被剪掉 ⇒ 不畫影子。 */
-      group:{ cover:'resources/enemy/man_thug_squad_layers/cover.webp', dir:'resources/enemy/man_thug_squad_layers/', prefix:'thug_', order:[3,2,1,5,4], hp:250, shadow:false },
+      group:{ cover:'resources/enemy/man_thug_squad_layers/cover.webp', dir:'resources/enemy/man_thug_squad_layers/', fall:'resources/enemy/anim/man_thug_squad_hit_v1/', prefix:'thug_', order:[3,2,1,5,4], hp:250, shadow:false },
       hp:250, attack:10, atkInterval:null, assaultEvery:[3,6], assault:{ count:3, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
@@ -1319,7 +1319,7 @@ export const ENEMIES = {
       image:null, bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
       /* 群戰分層（ver -2061，美術 23c88dfe）：掩體一層＋每人一層，疊回＝原圖；人都疊在掩體上（被擋處已剪掉）。
          總血沿用原卡（200）平均分給每人；每掉一份倒一個（倒誰看子彈落點）。人站在掩體後、腳被剪掉 ⇒ 不畫影子。 */
-      group:{ cover:'resources/enemy/man_thug_squad_gate_layers/cover.webp', dir:'resources/enemy/man_thug_squad_gate_layers/', prefix:'thug_', order:[4,5,2,3,1], hp:200, shadow:false },
+      group:{ cover:'resources/enemy/man_thug_squad_gate_layers/cover.webp', dir:'resources/enemy/man_thug_squad_gate_layers/', fall:'resources/enemy/anim/man_thug_squad_gate_hit_v1/', prefix:'thug_', order:[4,5,2,3,1], hp:200, shadow:false },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
@@ -1335,7 +1335,7 @@ export const ENEMIES = {
       image:null, bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
       /* 群戰分層（ver -2061，美術 23c88dfe）：掩體一層＋每人一層，疊回＝原圖；人都疊在掩體上（被擋處已剪掉）。
          總血沿用原卡（200）平均分給每人；每掉一份倒一個（倒誰看子彈落點）。人站在掩體後、腳被剪掉 ⇒ 不畫影子。 */
-      group:{ cover:'resources/enemy/man_thug_squad_avenue_layers/cover.webp', dir:'resources/enemy/man_thug_squad_avenue_layers/', prefix:'thug_', order:[3,4,5,2,1], hp:200, shadow:false },
+      group:{ cover:'resources/enemy/man_thug_squad_avenue_layers/cover.webp', dir:'resources/enemy/man_thug_squad_avenue_layers/', fall:'resources/enemy/anim/man_thug_squad_avenue_hit_v1/', prefix:'thug_', order:[3,4,5,2,1], hp:200, shadow:false },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
@@ -1351,7 +1351,7 @@ export const ENEMIES = {
       image:null, bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
       /* 群戰分層（ver -2061，美術 23c88dfe）：掩體一層＋每人一層，疊回＝原圖；人都疊在掩體上（被擋處已剪掉）。
          總血沿用原卡（200）平均分給每人；每掉一份倒一個（倒誰看子彈落點）。人站在掩體後、腳被剪掉 ⇒ 不畫影子。 */
-      group:{ cover:'resources/enemy/man_thug_squad_forecourt_layers/cover.webp', dir:'resources/enemy/man_thug_squad_forecourt_layers/', prefix:'thug_', order:[3,4,5,6,2,1], hp:200, shadow:false },
+      group:{ cover:'resources/enemy/man_thug_squad_forecourt_layers/cover.webp', dir:'resources/enemy/man_thug_squad_forecourt_layers/', fall:'resources/enemy/anim/man_thug_squad_forecourt_hit_v1/', prefix:'thug_', order:[3,4,5,6,2,1], hp:200, shadow:false },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
@@ -1367,7 +1367,7 @@ export const ENEMIES = {
       image:null, bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
       /* 群戰分層（ver -2061，美術 23c88dfe）：掩體一層＋每人一層，疊回＝原圖；人都疊在掩體上（被擋處已剪掉）。
          總血沿用原卡（200）平均分給每人；每掉一份倒一個（倒誰看子彈落點）。人站在掩體後、腳被剪掉 ⇒ 不畫影子。 */
-      group:{ cover:'resources/enemy/man_thug_squad_carriage_layers/cover.webp', dir:'resources/enemy/man_thug_squad_carriage_layers/', prefix:'thug_', order:[2,3,4,5,1], hp:200, shadow:false },
+      group:{ cover:'resources/enemy/man_thug_squad_carriage_layers/cover.webp', dir:'resources/enemy/man_thug_squad_carriage_layers/', fall:'resources/enemy/anim/man_thug_squad_carriage_hit_v1/', prefix:'thug_', order:[2,3,4,5,1], hp:200, shadow:false },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
