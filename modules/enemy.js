@@ -923,7 +923,7 @@ export function applyEnemyFit(fit){
        框（inset／寬高）照抄 #enemyImg，每一層的 object-position／object-fit 也照抄。 */
     { const g=$('enemyGroup');
       if(g){ for(const k of ['left','right','top','bottom','width','height']) g.style[k]=eImg.style[k];
-             for(const im of g.querySelectorAll('.eg-guard')){ im.style.objectPosition=eImg.style.objectPosition; im.style.objectFit=eImg.style.objectFit; }
+             for(const im of g.querySelectorAll('.eg-guard,.eg-cover')){ im.style.objectPosition=eImg.style.objectPosition; im.style.objectFit=eImg.style.objectFit; }
              placeGroupShadows(); } }
 }
 export function stopEntranceSe(ms){
@@ -1156,7 +1156,7 @@ try{
   window.addEventListener('resize', ()=>placeEnemyShadow());
 }catch(_){}
 /* ══ 群體敵人（ver -2043，Ray：「一個人 100 血，每打掉 100 血倒一個」，帝都教廷衛士戰）══════════
-   卡上 `group:{ dir, order, hpEach }`：
+   卡上 `group:{ dir, order, hpEach | hp, plate?, cover?, prefix?, shadow? }`（cover／prefix／hp／shadow 見 buildGroup，ver -2061）：
      · `image` ＝**去人背景**（plate），照舊進 `#enemyImg`（cover）；
      · 每個人一層透明圖（`<dir>guard_<n>.webp`，與 plate 同尺寸，疊上去就對位），
        依 `order`（後→前，美術給的）疊在 `#enemyGroup` 裡 —— 版型與 `#enemyImg` 同一套；
@@ -1197,19 +1197,24 @@ function buildGroup(en){
   const G=en.group;
   /* 整組一起出場（ver -2047）：冷快取時一個一個冒出來很難看 —— 全部載到才掀（保險 4 秒）。 */
   g.classList.add('eg-wait');
-  let left=G.order.length; const done=()=>{ if(--left<=0) g.classList.remove('eg-wait'); };
+  let left=G.order.length+(G.cover?1:0); const done=()=>{ if(--left<=0) g.classList.remove('eg-wait'); };
   clearTimeout(groupWaitT); groupWaitT=setTimeout(()=>g.classList.remove('eg-wait'), 4000);
+  /* 掩體（ver -2061，聖索菲亞惡棍群戰）：`group.cover` ＝一層**最底下**的掩體（木桶／石柱／馬車…），
+     不算人頭、打不到、不會倒；戰鬥背景照舊是城鎮那一張。人層已依原圖剪掉被擋的部分，疊在它上面。 */
+  if(G.cover){ const cv=document.createElement('img'); cv.className='eg-cover'; cv.alt='';
+    cv.onload=cv.onerror=done; cv.src=G.cover; g.appendChild(cv); }
+  const pre=G.prefix||'guard_', shadow=G.shadow!==false;
   for(const n of G.order){
     const im=document.createElement('img'); im.className='eg-guard'; im.dataset.n=n; im.alt='';
     /* 接地陰影：每個人一顆（ver -2045，Ray：「他們是不是沒給影子啊」）——
        美術的人物層是去背的、不帶影子；量腳與擺位照舊走 `groundShadow.place`（鐵律 8）。
        影子全部排在人之前（DOM 序＝圖層）：後排的人也該站在前排的影子之上。 */
-    const sh=document.createElement('div'); sh.className='ground-shadow eg-shadow';
-    g.insertBefore(sh, g.querySelector('.eg-guard'));
-    im._sh=sh;
-    im.onload=()=>{ buildMask(im); groundShadow.place(im, sh); done(); };
+    /* ⚠ `group.shadow:false` ＝不畫（人站在掩體後面、腳被剪掉了：量到的「腳」是掩體頂端，影子會浮在木桶上）。 */
+    if(shadow){ const sh=document.createElement('div'); sh.className='ground-shadow eg-shadow';
+      g.insertBefore(sh, g.querySelector('.eg-guard')); im._sh=sh; }
+    im.onload=()=>{ buildMask(im); if(im._sh) groundShadow.place(im, im._sh); done(); };
     im.onerror=done;
-    im.src=G.dir+'guard_'+n+'.webp';
+    im.src=G.dir+pre+n+'.webp';
     g.appendChild(im);
   }
 }
@@ -1288,7 +1293,7 @@ function fallGuard(im){ im.classList.add('eg-down'); if(im._sh) im._sh.classList
 /* 依現在的敵血決定該倒幾個（combat.updateBars 每次都叫，冪等）：還沒倒夠就再倒，每一個照落點挑。 */
 export function syncGroup(){
   const g=$('enemyGroup'); if(!g || !groupCard) return;
-  const G=groupCard.group, each=G.hpEach||100, n=G.order.length;
+  const G=groupCard.group, n=G.order.length, each=groupEach(G);
   const shouldStand=Math.max(0, Math.min(n, Math.ceil(Math.max(0,state.enemyHp)/each)));
   let alive=[...g.querySelectorAll('.eg-guard')].filter(im=>!im.classList.contains('eg-down'));
   while(alive.length>shouldStand){ const v=pickVictim(alive); if(!v) break; fallGuard(v); alive=alive.filter(x=>x!==v); }
@@ -1305,7 +1310,9 @@ export function visualsReady(maxMs){
     const t0=Date.now(), iv=setInterval(()=>{ if(ok() || Date.now()-t0>maxMs){ clearInterval(iv); res(); } }, 80);
   });
 }
-export function groupHp(en){ return (en && en.group) ? en.group.order.length*(en.group.hpEach||100) : 0; }
+/* 每個人幾血：`hpEach`（帝都衛士：一人 100）；或寫整群的 `hp`、平均分（惡棍群戰沿用原卡的總血，ver -2061）。 */
+function groupEach(G){ return G.hpEach || ((G.hp||0)/(G.order.length||1)) || 100; }
+export function groupHp(en){ return (en && en.group) ? (en.group.hp || en.group.order.length*groupEach(en.group)) : 0; }
 export function loadEnemyPortrait(en){
   const eImg = $('enemyImg');
   if(!eImg) return;

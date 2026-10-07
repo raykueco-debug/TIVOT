@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2060';
+export const VERSION = 'ver 2026.09.22-2061';
 
 export const GAME_CONFIG = {
 
@@ -4380,12 +4380,7 @@ export const ASSETS = {
   enemy_thug_shotgun: "resources/enemy/man_thug_shotgun.webp?v=504d26bc",
   enemy_thug_lookout: "resources/enemy/man_thug_lookout.webp",
   enemy_thug_boss:    "resources/enemy/man_thug_boss.webp",
-  enemy_thug_squad:   "resources/enemy/man_thug_squad.webp?v=dfd75032",   // ver -1793：里朋莊園大廳
   /* 惡棍四場的群戰圖（ver -1835，美術 9f030e84）：大門口＝馬車掩體、其餘＝木桶木箱。 */
-  enemy_thug_squad_gate:      "resources/enemy/man_thug_squad_gate.webp",
-  enemy_thug_squad_avenue:    "resources/enemy/man_thug_squad_avenue.webp",
-  enemy_thug_squad_forecourt: "resources/enemy/man_thug_squad_forecourt.webp",
-  enemy_thug_squad_carriage:  "resources/enemy/man_thug_squad_carriage.webp",
   enemy_manu:         "resources/si/npc/ssophia_si_manu_draw.webp",   // ver -1793：沙龍的馬努（借立繪）
   /* ══⚠⚠ 北方泊地城鎮戰的雜怪（ver -596，Ray 指定四隻隨機出）＋教堂的 Boss（祭壇獸）══
      ⚠⚠ **一定要放在 `resources/enemy/` 底下，不可以留在 `_drafts`**（ver -595，

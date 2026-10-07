@@ -1296,7 +1296,10 @@ export const ENEMIES = {
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
       hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
-      image:'enemy_thug_squad', bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
+      image:null, bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
+      /* 群戰分層（ver -2061，美術 23c88dfe）：掩體一層＋每人一層，疊回＝原圖；人都疊在掩體上（被擋處已剪掉）。
+         總血沿用原卡（250）平均分給每人；每掉一份倒一個（倒誰看子彈落點）。人站在掩體後、腳被剪掉 ⇒ 不畫影子。 */
+      group:{ cover:'resources/enemy/man_thug_squad_layers/cover.webp', dir:'resources/enemy/man_thug_squad_layers/', prefix:'thug_', order:[3,2,1,5,4], hp:250, shadow:false },
       hp:250, attack:10, atkInterval:null, assaultEvery:[3,6], assault:{ count:3, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
@@ -1313,7 +1316,10 @@ export const ENEMIES = {
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
       hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
-      image:'enemy_thug_squad_gate', bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
+      image:null, bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
+      /* 群戰分層（ver -2061，美術 23c88dfe）：掩體一層＋每人一層，疊回＝原圖；人都疊在掩體上（被擋處已剪掉）。
+         總血沿用原卡（200）平均分給每人；每掉一份倒一個（倒誰看子彈落點）。人站在掩體後、腳被剪掉 ⇒ 不畫影子。 */
+      group:{ cover:'resources/enemy/man_thug_squad_gate_layers/cover.webp', dir:'resources/enemy/man_thug_squad_gate_layers/', prefix:'thug_', order:[4,5,2,3,1], hp:200, shadow:false },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
@@ -1326,7 +1332,10 @@ export const ENEMIES = {
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
       hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
-      image:'enemy_thug_squad_avenue', bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
+      image:null, bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
+      /* 群戰分層（ver -2061，美術 23c88dfe）：掩體一層＋每人一層，疊回＝原圖；人都疊在掩體上（被擋處已剪掉）。
+         總血沿用原卡（200）平均分給每人；每掉一份倒一個（倒誰看子彈落點）。人站在掩體後、腳被剪掉 ⇒ 不畫影子。 */
+      group:{ cover:'resources/enemy/man_thug_squad_avenue_layers/cover.webp', dir:'resources/enemy/man_thug_squad_avenue_layers/', prefix:'thug_', order:[3,4,5,2,1], hp:200, shadow:false },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
@@ -1339,7 +1348,10 @@ export const ENEMIES = {
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
       hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
-      image:'enemy_thug_squad_forecourt', bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
+      image:null, bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
+      /* 群戰分層（ver -2061，美術 23c88dfe）：掩體一層＋每人一層，疊回＝原圖；人都疊在掩體上（被擋處已剪掉）。
+         總血沿用原卡（200）平均分給每人；每掉一份倒一個（倒誰看子彈落點）。人站在掩體後、腳被剪掉 ⇒ 不畫影子。 */
+      group:{ cover:'resources/enemy/man_thug_squad_forecourt_layers/cover.webp', dir:'resources/enemy/man_thug_squad_forecourt_layers/', prefix:'thug_', order:[3,4,5,6,2,1], hp:200, shadow:false },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
@@ -1352,7 +1364,10 @@ export const ENEMIES = {
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
       hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
-      image:'enemy_thug_squad_carriage', bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
+      image:null, bg:'sofia_slum', fit:{ mode:'cover', pos:'center 25%' },
+      /* 群戰分層（ver -2061，美術 23c88dfe）：掩體一層＋每人一層，疊回＝原圖；人都疊在掩體上（被擋處已剪掉）。
+         總血沿用原卡（200）平均分給每人；每掉一份倒一個（倒誰看子彈落點）。人站在掩體後、腳被剪掉 ⇒ 不畫影子。 */
+      group:{ cover:'resources/enemy/man_thug_squad_carriage_layers/cover.webp', dir:'resources/enemy/man_thug_squad_carriage_layers/', prefix:'thug_', order:[2,3,4,5,1], hp:200, shadow:false },
       hp:200, attack:10, atkInterval:null, assaultEvery:[2,4], assault:{ count:1, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,9,9],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },

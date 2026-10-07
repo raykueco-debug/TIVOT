@@ -369,7 +369,7 @@
      命中時整組跟著閃縮；倒下＝下沉淡出。 */
   #enemyGroup{position:absolute;inset:0;pointer-events:none;transition:opacity .35s ease-out;}
   #enemyGroup.eg-wait{opacity:0;transition:none;}
-  #enemyGroup .eg-guard{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;
+  #enemyGroup .eg-guard,#enemyGroup .eg-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;
     transition:transform .45s ease-in, opacity .45s ease-in, filter .45s;}
   #enemyGroup .eg-shadow{transition:opacity .5s ease-in;}
   #enemyGroup .eg-shadow.eg-down{opacity:0;}
