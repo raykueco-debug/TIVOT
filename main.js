@@ -491,7 +491,9 @@ function openFlight(opts){
      `fileGain` 有那一列）—— 自己拼鍵就會查不到，而那是**靜靜壞掉**的：
      只印一行 console，畫面上什麼事都沒有，曲子就是不響（-1398 踩過同一個坑）。 */
   if(fk){ try{ story.ensureBgm(fk); }catch(_){} }
-  else if(!keepBgm){ try{ SFX.stopBgm(600); }catch(_){} }
+  /* ⚠ 當場停（ver -2082）：這一刻畫面已被黑幕蓋住，飛行頁一載入就放自己的航行曲 ——
+     淡出 600ms 在飛行頁整頁重載時會被拖成好幾秒，兩首疊在一起（Ray 回報、8123 實測 6 秒）。 */
+  else if(!keepBgm){ try{ SFX.stopBgm(0); }catch(_){} }
   /* ══⚠⚠ 進飛行畫面＝把主頁這一邊的音訊整個放掉（ver -1299，Ray 的讀取分工）══
      飛行頁是**另一個 document**，音樂與音效都是它自己那一套（§6.10）——
      主頁這邊留著的解碼音效與 BGM blob（實測 117 支 ＋ 21 首、31.6 MB）

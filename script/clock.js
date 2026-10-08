@@ -29,7 +29,11 @@ const KEY = 'tivot_clock_v1';
 export const EPOCH = { y:1908, mo:10, d:11, h:11, mi:0 };
 
 const rd = () => { try{ const n=parseInt(localStorage.getItem(KEY),10); return isFinite(n)&&n>0?n:0; }catch(e){ return 0; } };
-const wr = n => { try{ localStorage.setItem(KEY, String(Math.max(0, n|0))); }catch(e){} };
+const wr = n => { try{ localStorage.setItem(KEY, String(Math.max(0, n|0))); }catch(e){}
+  /* 時鐘動了就廣播（ver -2082，Ray：「進入地圖的那一格常有差分對不上時間」）：
+     城鎮聽到就照新時段重選背景（town 的 onClockChanged）—— 不管是哪一條路推的時間（段落的 clockToday、
+     閘門、劇本的翌日、旅店…），都不必各自記得重畫（鐵律 8：規矩做成一道門，不是一份清單）。 */
+  try{ window.dispatchEvent(new CustomEvent('tivot:clock')); }catch(e){} };
 
 /* 從起點算起經過幾分鐘。 */
 export function elapsed(){ return rd(); }

@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2081';
+export const VERSION = 'ver 2026.09.22-2083';
 
 export const GAME_CONFIG = {
 
@@ -611,7 +611,7 @@ export const GAME_CONFIG = {
            連擊那一段（`combo × DMG_PER_COMBO`）不跟著放大。
            判定與加總只有 `combat.hitDamage` 一處（問 `partner.lucidBaseAtk`，鐵律 7）。 */
         baseAtk:0.25,
-        cutin:'ci_anya_lucid',
+        cutin:'cutin_nireload',   // ver -2082（Ray：「安雅的被動 CI 改用 nightmare reload 的動畫」）；原 ci_anya_lucid 留著沒人用
         /* ══ 連續三次完美反擊 → reload 惡夢化（ver -887，Ray）══
            那一發的 CI 與浮字換成「夢魘再臨 / Nightmare Returns」（只換字，圖沿用）。
            實作只有 partner.onCounter 一支（鐵律 8）；解槽走 saint.resetInstallSlot。 */

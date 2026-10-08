@@ -4502,6 +4502,7 @@ export function enter(id){
      同曲重播由 `playBgm` 自己擋掉，所以重複呼叫是安全的。 */
   story.ensureBgm(townBgm());
   story.setBgFlip(!!n.bgFlip);   // 背景鏡像（ver -877：崩塌走道×2 同圖翻轉）
+  _bandShown=clock.band();   // 這一格是照這個時段畫的（給 tivot:clock 比對，ver -2082）
   bgFor(bgCandsOf(n, id), needReveal ? reveal : null);
   refreshChaseDown();       // 倒地的追兵留在這一格的畫面上（ver -1701）
   ensureLayer(); bindInput(); refreshArrows(); showNav(false);
@@ -5237,6 +5238,15 @@ function chatter(){
      lock  演出期間鎖住導覽（同對白）
      play  一段有立繪的對白（走同一個劇情播放器）
    ⚠ `inn.setup` 只呼叫一次（模組載入時），不要放進 `open()` —— 那會每進一次城疊一次。 */
+/* 時鐘動過了：城鎮正在畫面上、而且時段換了 → 照新時段重選這一格的背景（ver -2082）。
+   ⚠ 只比「時段」：同一個時段內走路推了 10 分鐘不必重畫。 */
+let _bandShown=null;
+try{ window.addEventListener('tivot:clock', ()=>{
+  if(!townLive || !townId) return;
+  const b=clock.band(); if(b===_bandShown) return;
+  _bandShown=b;
+  const n=node(); if(n) bgFor(bgCandsOf(n, nodeId));
+}); }catch(_){}
 inn.setup({
   say(text, name){ story.flashLine(text, name||''); chatterOn=true; },
   lock(on){ busy=!!on; showNav(!on); },

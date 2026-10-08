@@ -434,21 +434,52 @@ function setElVol(el, v){
   if(g) try{ g.gain.value = v; }catch(_){}
 }
 /* 起播只有這一支：先接線（iPhone）、叫醒引擎，再 play()。回傳 play() 的 promise。 */
+/* ══ 手勢內「認證」BGM 元素（ver -2082，Ray：「首頁音樂還是沒解決」）══
+   iPhone：一個 `<audio>` 從沒在使用者手勢裡 play() 過，之後在手勢外 play() 一律被擋。
+   熱啟動時讀取頁一出現就能點，那一下手勢發生時主選單曲**還沒上膛**（blob 還在抓）——
+   等它上膛後的 play() 已經在手勢外，被擋，要到下一次手勢（按鈕出 SE）才補播。
+   ⇒ 每次 unlock（一定在手勢內）檢查：元素還沒認證、也沒掛曲子 → 先放一段 0.1 秒的無聲 WAV，
+     放得動就算認證過了（WebKit 記在元素上），之後曲子上膛直接 play() 就過。換元素（bgmWire）時新元素沒有記號，會再認證一次。 */
+let _silentUrl = null;
+function silentUrl(){
+  if(_silentUrl) return _silentUrl;
+  const n=800, b=new ArrayBuffer(44+n*2), v=new DataView(b);
+  const w=(o,str)=>{ for(let i=0;i<str.length;i++) v.setUint8(o+i, str.charCodeAt(i)); };
+  w(0,'RIFF'); v.setUint32(4,36+n*2,true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16,16,true);
+  v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,8000,true); v.setUint32(28,16000,true);
+  v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,n*2,true);
+  try{ _silentUrl = URL.createObjectURL(new Blob([b], {type:'audio/wav'})); }catch(_){ _silentUrl = ''; }
+  return _silentUrl;
+}
+function blessBgmElem(){
+  const el = bgmElem();
+  if(!el || el.__blessed || !el.paused || el.getAttribute('src')) return;
+  const u = silentUrl(); if(!u) return;
+  try{
+    el.src = u;
+    const p = el.play();
+    const done = ()=>{ el.__blessed = true;
+      if(el.getAttribute('src') === u){ try{ el.pause(); el.removeAttribute('src'); el.load(); }catch(_){} } };   // 曲子已經接手了就不動它
+    if(p && p.then) p.then(done, ()=>{ if(el.getAttribute('src') === u){ try{ el.removeAttribute('src'); el.load(); }catch(_){} } });
+    else done();
+  }catch(_){}
+}
 function bgmPlay(){
   bgmWire();
   const el = _bgmEl; if(!el) return null;
   return el.play();
 }
+/* ⚠ 淡入淡出**照經過的時間**算，不數次數（ver -2082，Ray：「飛行戰結束後戰鬥音樂與飛行音樂重疊」）：
+   主執行緒忙的時候（例：飛行頁整頁重載）40ms 的計時器會被一路往後拖 —— 數 15 次的寫法實測把 600ms 的淡出
+   拖成 6 秒，兩首疊在一起。照時間算的話，計時器晚到就直接跳到該有的音量，時間到就收尾。 */
 function bgmFade(el, to, ms, done){
   if(!el) return;
   clearInterval(el.__fade);
-  const from = elVol(el);
-  const steps = Math.max(1, Math.round(ms/40));
-  let i = 0;
+  const from = elVol(el), t0 = Date.now(), dur = Math.max(1, ms||0);
   el.__fade = setInterval(()=>{
-    i++;
-    setElVol(el, from + (to-from)*(i/steps));
-    if(i>=steps){ clearInterval(el.__fade); el.__fade=null; if(done) done(); }
+    const k = Math.min(1, (Date.now()-t0)/dur);
+    setElVol(el, from + (to-from)*k);
+    if(k>=1){ clearInterval(el.__fade); el.__fade=null; if(done) done(); }
   }, 40);
 }
 // 整首下載成 Blob（快取 objectURL）：完整在記憶體後播 → 不再串流 → 不卡頓
@@ -515,6 +546,7 @@ export const SFX = {
     if(el && el.paused && el.src && _bgmSrc && !_bgmSwitching && _bgmPlaying===_bgmSrc){
       setElVol(el, bgmTargetVol()); const p=bgmPlay(); if(p&&p.catch) p.catch(()=>{});
     }
+    blessBgmElem();   // 曲子還沒上膛：先在這一下手勢裡認證元素（ver -2082）
   },
 
   /* 切換 BGM：同一元素先淡出 →（可選 delayMs 空一拍）→ 換 blobURL 起播（預設不淡入）loop。
@@ -625,7 +657,10 @@ export const SFX = {
     clearTimeout(_bgmTimer); _bgmTimer=null;
     _bgmSrc = null; _bgmPlaying = null; _bgmSwitching = false;
     const el = _bgmEl;
-    if(el && !el.paused) bgmFade(el, 0, fadeOutMs!=null ? fadeOutMs : 700, ()=>{ try{ el.pause(); }catch(e){} });
+    if(!el || el.paused) return;
+    /* `stopBgm(0)` ＝當場停（不經計時器）：畫面已經被黑幕蓋住、下一頁馬上要放自己的曲子時用（ver -2082）。 */
+    if(fadeOutMs===0){ clearInterval(el.__fade); el.__fade=null; try{ el.pause(); }catch(e){} return; }
+    bgmFade(el, 0, fadeOutMs!=null ? fadeOutMs : 700, ()=>{ try{ el.pause(); }catch(e){} });
   },
 
   // 預載一批 SFX（Web Audio 解碼成 buffer）：回傳 Promise（全部解完）

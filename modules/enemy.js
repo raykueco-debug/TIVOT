@@ -1376,10 +1376,11 @@ export function playKillFall(){
   const ms=en.fallMs||500, hold=en.fallHold!=null?en.fallHold:600, n=F.frames.length;
   let i=0; const t=setInterval(()=>{ i++; if(i>=n){ clearInterval(t); return; } el.src=F.frames[i].src; }, ms/n);
   singleFall=null;
-  fallUntil=Math.max(fallUntil, Date.now()+ms+hold);
-  return ms+hold;
+  const closeAt=ms/n*2;   // 播到第 3 格就開始閉棺（ver -2082，Ray：「倒到第三 F 開始閉就好」）
+  fallUntil=Math.max(fallUntil, Date.now()+closeAt);
+  return closeAt;
 }
-/* 倒地還要演多久（ver -2063，Ray：「敵人倒下畫面播完才閉棺」）：最後一個人倒下時，combat 等它播完（含倒地停留）才收尾。 */
+/* 倒地要等多久才閉棺（ver -2063 立；-2082 Ray：「倒地不用播完才閉棺，倒到第三 F 開始閉就好」）：最後一個人倒下時，combat 等到第 3 格出現就收尾。 */
 let fallUntil=0;
 export function fallPendingMs(){ return Math.max(0, fallUntil-Date.now()); }
 /* 倒地動畫：分層換成 5 格依序播（每格等長，`group.fallMs` 總長，預設 500ms），停在倒地那格 `fallHold`（預設 600ms）再淡出。
@@ -1399,7 +1400,7 @@ function playFall(im, F){
   /* `group.fallLead`（ver -2070，帝都衛士／米夏親衛隊：「第 1 格就是原本那張分層」）＝中彈後原圖先停這麼久，才換成 5 格。
      先標成倒下（`eg-down` 的判定照舊立刻生效），只是畫面晚一拍換。 */
   const lead=+G.fallLead||0, n=F.frames.length, step=(G.fallMs||500)/n, hold=G.fallHold!=null?G.fallHold:600;
-  fallUntil=Math.max(fallUntil, Date.now()+lead+(G.fallMs||500)+hold);
+  fallUntil=Math.max(fallUntil, Date.now()+lead+step*2);   // 播到第 3 格就開始閉棺（ver -2082，Ray：「倒到第三 F 開始閉就好」）
   const swap=()=>{
     if(j.kind==='back' && cover) g.insertBefore(el, cover); else im.after(el);
     im.style.transition='none'; im.classList.add('eg-down');   // 分層當場換掉（不走淡出）
