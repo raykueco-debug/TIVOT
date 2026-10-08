@@ -849,7 +849,9 @@ function fireBuff(pas, reload){
   const vk = SFX.pickRot((reload && pas.reloadVoice) ? pas.reloadVoice : pas.voice);
   const vo = asset(vk); if(vo) SFX.playVoice(vo, sfxGain(vk));
   api.floatDmg(nm,'50%','34%',true);
-  if(state.cutinPlaying){ fire(); return; }   // 已有演出在播 → 只跳字、buff 立即起算
+  /* 這一發用哪張 CI：reload 那一發卡上**有寫**就用它（空字串＝刻意不放，ver -2084），沒寫才退回 `cutin`。 */
+  const ci = (reload && pas.reloadCutin !== undefined) ? pas.reloadCutin : pas.cutin;
+  if(state.cutinPlaying || !ci){ fire(); return; }   // 已有演出在播／這一發不放 CI → 只跳字、buff 立即起算
   api.playCutin(()=>{
     fire();                                   // cut-in 撤下才起算，秒數完整可用
     if(state.over) return;
@@ -859,7 +861,7 @@ function fireBuff(pas, reload){
         NIGHTMARE RELOAD…要讓人一看就知道夢魘可以再用了」）—— 副標平常是 16px 的
         小字，那一行要跳出來才讀得到「可以再發一次」。樣式在 style.css。 */
   }, `${nm}<span class="cutin-en${reload?' reload':''}">${en||''}</span>`,
-     (reload && pas.reloadCutin) ? pas.reloadCutin : pas.cutin);   // 專屬 CI（ver -894）
+     ci);   // 專屬 CI（ver -894；判斷見上面 `ci`）
 }
 export function checkLowHpBuff(){
   /* ⚠⚠ **惡夢化期間不發動**（ver -688，Ray：「明晰之夢在夢魘期間不發動，如果是

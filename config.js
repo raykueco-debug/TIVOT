@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2083';
+export const VERSION = 'ver 2026.09.22-2084';
 
 export const GAME_CONFIG = {
 
@@ -611,7 +611,7 @@ export const GAME_CONFIG = {
            連擊那一段（`combo × DMG_PER_COMBO`）不跟著放大。
            判定與加總只有 `combat.hitDamage` 一處（問 `partner.lucidBaseAtk`，鐵律 7）。 */
         baseAtk:0.25,
-        cutin:'cutin_nireload',   // ver -2082（Ray：「安雅的被動 CI 改用 nightmare reload 的動畫」）；原 ci_anya_lucid 留著沒人用
+        cutin:'cutin_nireload',   // ver -2082（Ray：「安雅的被動 CI 改用 nightmare reload 的動畫」）；ci_anya_lucid（紅色氣浪）-2084 起給夢境粉碎
         /* ══ 連續三次完美反擊 → reload 惡夢化（ver -887，Ray）══
            那一發的 CI 與浮字換成「夢魘再臨 / Nightmare Returns」（只換字，圖沿用）。
            實作只有 partner.onCounter 一支（鐵律 8）；解槽走 saint.resetInstallSlot。 */
@@ -622,7 +622,10 @@ export const GAME_CONFIG = {
         reloadNeedStar:'niReload',
         reloadName:i18nT('夢魘再臨'),
         /* 專屬 CI 與語音（ver -894，Ray 交件）—— 那一發不再借明晰之夢那張圖。 */
-        reloadCutin:'cutin_nireload',
+        /* ⚠ ver -2084（Ray：「夢魘裝填現在為空 不放 CI，原夢魘裝填 CI 移給明晰夢」）：
+           空字串＝**刻意不放 CI**（只跳字＋語音、buff 立即起算）；不寫才是「退回 `cutin`」。
+           判斷只有 `partner.fireBuff` 一處。 */
+        reloadCutin:'',
         reloadVoice:'vo_anya_nireload',
         /* ⚠ 英文用 **NIGHTMARE RELOAD**（ver -891，Ray：「用顯眼的字寫
            NIGHTMARE RELOAD…要讓人一看就知道夢魘可以再用了」）——
@@ -4130,7 +4133,10 @@ export const GAME_CONFIG = {
            在讀的 —— 寫進去的話聖徒化期間上滑會去問它，而夢境粉碎是**惡夢化自己的**
            主動技，只在 NI 期間存在（鐵律 8：一個動作一個入口）。 */
       burstName: i18nT('夢境粉碎'),
-      burstCutin: 'ci_anya_dreambreaker',
+      /* ver -2084（Ray：「主動技用紅色氣浪的那一個」）：改播紅色氣浪那支（`ci_anya_lucid` ＝ luciddream_v1，
+         靜態圖同一張紅光版）。舊的 `ci_anya_dreambreaker`（舊 NI 原片）暫時沒人播，檔案留著。
+         ⚠ 那支眼睛不夠藍，動畫重做中；重交換新鍵時這裡跟著改。 */
+      burstCutin: 'ci_anya_lucid',
       /* ══⚠⚠ **熔斷就是 OBE**（ver -731（-893 前用詞），Ray 定案）══════════════════════════
          -692 的註解寫成「對稱的失敗結局，**不是**同一件事」—— 那是錯的，已更正：
          聖徒化推滿與惡夢化抽乾**是同一個結局的兩個方向**，所以行為要一致：
