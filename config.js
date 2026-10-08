@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2086';
+export const VERSION = 'ver 2026.09.22-2087';
 
 export const GAME_CONFIG = {
 
@@ -575,7 +575,7 @@ export const GAME_CONFIG = {
       voice:null,
       /* 選人確認的語音（ver -743，Ray：「安雅播被動技語音」＝明晰之夢）。 */
       selectVoice:'vo_anya_lucid',   // 選人確認音（ver -837：明晰之夢語音收成單支）
-      perk:i18nT('明晰之夢（被動）＋惡夢化・夢境粉碎（劇情）'),
+      perk:i18nT('夢中夢（被動）＋清醒夢（主動）＋惡夢化・夢境粉碎（劇情）'),   // ver -2087 改名（Ray）
       /* ══ 被動：明晰之夢（Lucid Dream；中文名 ver -682 由 Ray 定）══
          ⚠⚠ **觸發條件 ver -693 改了**（Ray：「娜塔莉戰如果先觸發 lucid dream 再進入
            NI 劇情會卡住，或者同時，所以我決定改 luciddream 的發動條件為觸發單怪
@@ -593,8 +593,9 @@ export const GAME_CONFIG = {
       passive:{
         key:'firstCounter',
         /* ⚠ cut-in 上印的就是這個字（`partner` 讀 `passive.name`）—— 只有這一處。 */
-        name:i18nT('明晰之夢'),
-        en:'Lucid Dream',
+        /* ver -2087（Ray 改名）：被動＝夢中夢／Dream Within；「清醒夢／Lucid Dream」改給主動技與增益狀態本身。內部鍵（lucid*）不改。 */
+        name:i18nT('夢中夢'),
+        en:'Dream Within',
         /* ⚠⚠⚠ **ver -974（Ray 改定）：10 秒，而且只有「命中 100%」** ══
            > 「被動技：是完美反擊後 10 秒間普攻加倍。**反擊命中 100%**。
            >   改成這樣，點星以後才升攻」
@@ -636,7 +637,7 @@ export const GAME_CONFIG = {
         voice:'vo_anya_lucid',   // ver -837：Ray 交新單支，取代 -759 的 ×4 輪播（沒編號＝不輪播）
         /* ver -740（Ray）：發動期間追加「反擊不論哪一圈都算完美反擊（傷害與評價）」
            與「指引每一個應點格」—— 實作見 defense.resolveThreat 與 combat.markNext。 */
-        desc:i18nT('發動方式：觸發完美反擊即發動。<br>')
+        desc:i18nT('發動方式：觸發完美反擊即進入清醒夢。<br>')
             +i18nT('5 秒內普攻傷害加倍、反擊命中率為 100%。'),
       },
       /* ══⚠⚠⚠ **夢境破碎：純顯示的一格**（ver -994，Ray 的定稿給了它自己一段）══
@@ -653,10 +654,12 @@ export const GAME_CONFIG = {
          夢魘化期間的上滑照舊是粉碎本體（`saint.nightmareActive`，不經這裡）。 */
       /* ⚠ ver -1779b（Ray）：非夢魘化那一半**固定 5 秒**（`buffSec`），不吃赤足／鐵蹄的延長 ——
          「用來跟 Boss 丟的密集圈對沖，不用太長駐，免得又變永動機」。 */
-      active:{ key:'dreamBreakInfo', name:i18nT('夢境破碎'), en:'Dream Breaker', context:'board', buffSec:5,
+      /* ver -2087（Ray 改名）：這一格的名字＝一般版「清醒夢／Lucid Dream」（`startLucidDirect` 的 CI 字讀它）；
+         夢魘化版仍叫「夢境粉碎」（`tuning.nightmare.burstName`，saint 讀那一份）。 */
+      active:{ key:'dreamBreakInfo', name:i18nT('清醒夢'), en:'Lucid Dream', context:'board', buffSec:5,
                desc:i18nT('發動方式：戰鬥畫面上滑。<br>')
-                   +i18nT('夢魘化期間發動：強制中止爆發時間，保留已削減之 HP，並一次性給予敵最大 HP 20% 的傷害。<br>')
-                   +i18nT('非夢魘化期間發動：進入明晰之夢的增益狀態 5 秒，場上攻擊圈不重置。') },
+                   +i18nT('非夢魘化期間發動：進入清醒夢 5 秒，場上攻擊圈不重置。<br>')
+                   +i18nT('夢魘化期間發動（夢境粉碎）：強制中止爆發時間，保留已削減之 HP，並一次性給予敵最大 HP 20% 的傷害。') },
     },
     /* ══ 索菈娜（ver -803，Ray 交稿）══ 夏爾村村內戰一進場就強配（見 config.battles
        的 sv_* 的 `partner:'sorana'`，combat.startGame 讀它覆寫）。
@@ -1253,7 +1256,7 @@ export const GAME_CONFIG = {
              `weapon.weaponCounter` 的 `scale`（各自唯一的計算點，鐵律 7）。 */
           niDmgMul:0.20 },
         { star:'Castor', skill:'active',          name:i18nT('築壩者星'),
-          desc:i18nT('夢境破碎發動後追加 10 秒反擊增益，並全程指引下一格。'),
+          desc:i18nT('夢境粉碎發動後追加 10 秒反擊增益，並全程指引下一格。'),
           /* 那扇窗的擁有者是 `partner`（`burstBuffUntil`）—— 與生命歸還那扇窗
              同一個形狀。⚠ 這裡**只抬攻擊力**，不壓命中（卡上沒說）。 */
           burstBuffSec:10, burstAtk:1, burstHint:1 },
@@ -1267,11 +1270,11 @@ export const GAME_CONFIG = {
                （ver -887 就定了）。判定分色之後這件事更單純：兩個等級現在一樣。 */
           niReload:1 },
         { star:'Tejat', skill:'passive',           name:i18nT('赤足星'),
-          desc:i18nT('明晰之夢延長為 10 秒。明晰之夢與夢魘化期間的反擊威力升一階：黃圈打橘圈傷害、橘圈打紅圈傷害、紅圈全暴擊。'),
+          desc:i18nT('清醒夢延長為 10 秒。清醒夢與夢魘化期間的反擊威力升一階：黃圈打橘圈傷害、橘圈打紅圈傷害、紅圈全暴擊。'),
           /* `lucidSec` 是**增量**：卡上的 10 ＋ 5 ＝ 15 秒。 */
           lucidSec:5, counterAtk:1 },
         { star:'Mebsuta', skill:'active',         name:i18nT('赤爪星'),
-          desc:i18nT('連續十次反擊成功（不限圈色）即回填夢境破碎。'),
+          desc:i18nT('連續十次反擊成功（不限圈色）即回填夢境粉碎。'),
           /* ══ ver -1778 改（Ray：「赤爪星改成連續十次反擊成功（不限圈色）回填主動技」）══
              舊效果（夢境破碎後的反擊增益再升一階，`burstAtk:1`）退場 —— 升階改由赤足／鐵蹄統一管。
              「成功」＝那一次**真的開火**（任何一圈；拉栓中、該圈不反擊、整顆挨打都算中斷）。
@@ -1285,14 +1288,14 @@ export const GAME_CONFIG = {
                不灌血而用滿血的斜率去抽，會提早見底，比原本還短。 */
           niFullStart:1 },
         { star:'Alzirr', skill:'passive',          name:i18nT('鐵蹄星'),
-          desc:i18nT('明晰之夢延長為 15 秒。反擊威力再升一階：黃圈打紅圈傷害、橘圈全暴擊、紅圈兩倍傷害。'),
+          desc:i18nT('清醒夢延長為 15 秒。反擊威力再升一階：黃圈打紅圈傷害、橘圈全暴擊、紅圈兩倍傷害。'),
           /* 攻擊力與赤足星累計＝2（紅圈）。**秒數也再 +5**（ver -994）：
              5 →（赤足星）10 →（這一顆）15 —— 定稿的兩句都寫了「延長為」。
              ⚠ 中文名「鐵蹄星」由 Ray 定（ver -995）—— 他的卡上這一顆原本只有西文
                星名與「被動技升級」，我一度暫填成「蹄鐵星」，已更正。 */
           lucidSec:5, counterAtk:1 },
         { star:'Wasat', skill:'active',           name:i18nT('界心星'),
-          desc:i18nT('夢境破碎若在夢魘化期間最後一格時發動，一次給與敵人最大體力的 30% 傷害。'),
+          desc:i18nT('夢境粉碎若在夢魘化期間最後一格時發動，一次給與敵人最大體力的 30% 傷害。'),
           /* 取代比例算法的那一發（比例算到 15/16 也只有 23.4%）。
              ⚠ 「打不死」的下限（`burstFloor`）照舊 —— 那是另一條規則。 */
           burstLastCell:0.30 },

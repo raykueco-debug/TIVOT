@@ -6,10 +6,10 @@
 | 檔案 | wrap | data | html | script | skip-console | skip-key | skip-case | skip-compare | skip-template | skip-shader | skip-id |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | `(FORCE)` |  | 15 |  |  |  |  |  |  |  |  |  |
-| `config.js` | 353 |  |  | 69 |  | 20 |  |  |  |  | 1 |
+| `config.js` | 354 |  |  | 69 |  | 20 |  |  |  |  | 1 |
 | `flight/index.html` | 343 |  | 42 | 60 | 97 | 2 |  |  |  | 5 |  |
 | `index.html` |  |  | 83 | 8 |  |  |  |  |  |  |  |
-| `main.js` | 105 |  |  |  | 14 |  |  |  |  |  |  |
+| `main.js` | 110 |  |  |  | 14 |  |  |  |  |  |  |
 | `modules/beatpick.js` | 11 |  |  |  |  |  |  |  |  |  |  |
 | `modules/combat.js` | 1 |  |  |  |  |  |  |  |  |  |  |
 | `modules/enemy.js` |  |  |  |  | 1 |  |  |  |  |  |  |
@@ -18,23 +18,23 @@
 | `modules/inspector.js` | 40 |  |  |  | 5 |  |  |  |  |  |  |
 | `modules/loot.js` | 80 |  |  |  |  |  |  |  |  |  |  |
 | `modules/partner.js` | 1 |  |  |  |  |  |  |  |  |  |  |
-| `modules/saint.js` | 4 |  |  |  | 1 |  |  |  |  |  |  |
+| `modules/saint.js` | 4 |  |  |  | 3 |  |  |  |  |  |  |
 | `modules/save.js` | 15 |  |  |  |  |  |  |  | 4 |  |  |
 | `modules/settings.js` | 100 |  |  | 4 |  |  |  |  |  |  |  |
-| `modules/story.js` | 158 |  |  | 1 | 33 |  |  |  |  |  |  |
+| `modules/story.js` | 189 |  |  | 1 | 33 |  |  |  |  |  |  |
 | `modules/town.js` | 65 |  |  |  | 3 |  |  |  |  |  |  |
 | `modules/transition.js` | 9 |  |  |  | 2 |  |  |  |  |  |  |
 | `modules/tutorial.js` | 16 |  |  |  | 2 |  |  |  |  |  |  |
 | `modules/weapon.js` |  |  |  |  | 5 |  |  |  |  |  |  |
 | `script/clock.js` | 3 |  |  |  |  |  |  |  |  |  |  |
-| `script/enemies.js` |  | 125 |  | 2 |  | 381 |  |  |  |  |  |
+| `script/enemies.js` |  | 130 |  | 3 |  | 399 |  |  |  |  |  |
 | `script/inventory.js` | 2 |  |  |  | 1 |  |  |  |  |  |  |
-| `script/progress.js` | 42 |  |  |  |  |  |  |  |  |  |  |
+| `script/progress.js` | 47 |  |  |  |  |  |  |  |  |  |  |
 | `script/shopcards.js` |  | 54 |  | 10 |  |  |  |  |  |  |  |
 | `script/weapons.js` |  | 20 |  |  |  |  |  |  |  |  | 6 |
-| **合計（處）** | **1421** | **214** | **125** | **157** | **165** | **403** | **0** | **0** | **4** | **5** | **7** |
+| **合計（處）** | **1463** | **219** | **125** | **158** | **167** | **421** | **0** | **0** | **4** | **5** | **7** |
 
-- 不重複字串：1734 種；要翻：**1484 種／20005 字**
+- 不重複字串：1771 種；要翻：**1518 種／20146 字**
 - `skip-template`／`skip-compare` 的那幾處是**人工檢查清單**：含 `${}` 的樣板字串查不了表、
   比較運算元換了會壞邏輯 —— 玩家看得到的要改寫成 `T()` 能查的形狀。
 
