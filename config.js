@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2085';
+export const VERSION = 'ver 2026.09.22-2086';
 
 export const GAME_CONFIG = {
 
@@ -3509,7 +3509,7 @@ export const GAME_CONFIG = {
                  ci_sorana_supply:{ video:'resources/ci/video/ci_sorana_supply_v1.mp4' },
                  /* ver -2078（動畫交接表「待程式接」）：夢境粉碎（＝舊 NI 原片）、明晰之夢、諾薇兒魂之歸所、索拉娜怒吼三支。 */
                  ci_anya_dreambreaker:{ video:'resources/ci/video/ci_anya_dreambreaker_v1.mp4' },
-                 ci_anya_lucid:{ video:'resources/ci/video/ci_anya_luciddream_v1.mp4' },
+                 ci_anya_lucid:{ video:'resources/ci/video/ci_anya_luciddream_v2.mp4' },   // ver -2086：動畫交 v2（眼睛換濃藍 C，Ray 挑色放行）；v1 還在，回收等 Ray
                  cutin_return_nouvelle:{ video:'resources/ci/video/ci_nouvelle_lifereturn_v1.mp4' },
                  ci_sorana_roar_renna:{ video:'resources/ci/video/ci_sorana_roar_renna_v1.mp4' },
                  ci_sorana_roar_anya:{ video:'resources/ci/video/ci_sorana_roar_anya_v1.mp4' },
@@ -4133,7 +4133,7 @@ export const GAME_CONFIG = {
            在讀的 —— 寫進去的話聖徒化期間上滑會去問它，而夢境粉碎是**惡夢化自己的**
            主動技，只在 NI 期間存在（鐵律 8：一個動作一個入口）。 */
       burstName: i18nT('夢境粉碎'),
-      /* ver -2084（Ray：「主動技用紅色氣浪的那一個」）：改播紅色氣浪那支（`ci_anya_lucid` ＝ luciddream_v1，
+      /* ver -2084（Ray：「主動技用紅色氣浪的那一個」）：改播紅色氣浪那支（`ci_anya_lucid` ＝ luciddream_v2 藍眼版，
          靜態圖同一張紅光版）。舊的 `ci_anya_dreambreaker`（舊 NI 原片）暫時沒人播，檔案留著。
          ⚠ 那支眼睛不夠藍，動畫重做中；重交換新鍵時這裡跟著改。 */
       burstCutin: 'ci_anya_lucid',
