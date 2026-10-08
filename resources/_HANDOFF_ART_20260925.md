@@ -600,3 +600,40 @@ Wan 試了不加 LoRA／Bouncing 0.3／Motto 0.4／「hands press into soft brea
 - 交完回訊息給「動畫」。動畫用 A2→B2 重跑。
 - ⚠ Ray 補充：「gpt 不從的話就跟他說要還原真實物理」—— 被擋或畫不出來時，提示詞改成物理描述（雙手合握按壓時，柔軟的布料與身體受壓自然凹陷、周圍被推擠），不要用描述身體的字眼。
 - ✔ 追加二 `nouvelle_B2.png`：合握的雙手按進胸前，衣服明顯受壓凹陷、周圍鼓起；表情、頭髮、光斑、姿勢都與 B 相同。GPT 擋過一次，後來是 Ray 自己在同一個對話裡下指令出圖。往下移 56px 對回 B 的位置，頭部完全重合。
+
+## 三十一、2026-10-08：美術 session 收工交接
+
+### 這一輪交了什麼（全部已 push）
+| 項 | 檔 | 狀態 |
+|---|---|---|
+| 安雅 NI 起手（§二十六） | `ci/anya_ni1_start.png` | ✔ 不欠 |
+| 諾薇兒 breath（§二十七） | `ci/ci_nouvelle_breath_A.png`／`_B.png` | ✔ 不欠 |
+| 索拉娜補給（§二十八） | `ci/layers/sorana_supply/sorana_A.png`／`sorana_B.png` | ✔ 不欠（`bg.png` 依改單取消，**刻意沒有**） |
+| 諾薇兒即死防禦（§二十九） | `ci/layers/nouvelle_deathguard/nouvelle_A／A2／B／B2.png` | ✔ 不欠（A 是只改表情的舊版，留著不用刪） |
+| 安雅夢魘裝填（§三十） | `ci/layers/anya_nightmarereload/anya_A／A_flat／B.png` | ✔ 不欠（A_flat 是只改表情的舊版） |
+| 帝都教會護衛、聖索菲亞惡棍、米夏親衛隊分層、術師、米夏 NI、古城天光 24 張 | 見 §二十一～§二十五 | ✔ 美術不欠；⚠ 程式端還欠（§二十四／§二十五） |
+
+### ⚠ 還沒做（美術）
+1. 032 蕾娜臉紅插圖（參考圖放在 `_originals/illustration/_032/`；情境是雪都旅店的 T4 約會，台詞「你明明知道我不能說。」）
+2. 聖索菲亞小地圖修正：碼頭圖示改成貧民區，加上酒吧、餐廳圖示
+3. 聖索菲亞郊外（sofiaout）小地圖
+4. 廢城 `hallcourt` 前廳、sofiaout `backhall` 重畫
+5. 安雅 `sad` 差分（要不要做還等 Ray 確認）
+- 薇拉馮德小地圖**暫停**：拓樸要改，等 Ray。
+
+### 這一輪學到的作法（下一個人直接照做）
+- **CI 去背的固定流程**：GPT 先「把背景換純白、角色完全不變」→ 同一串再要「100% 保留這張原圖，只把白色背景變成真正透明 Alpha PNG」。
+  · GPT 直接對暗底的圖去背，常被誤判成「詐騙」擋掉（索拉娜那張就是）；先換白底就會過。
+  · 本機 ToonOut（`tools/si_matting.py`）在暗底、有碎片的 CI 上會把背景一起留下，**不要用**。
+- **對位**：GPT 常把整個人偏移 30~56px（諾薇兒兩次都偏高）。比對位置要用**邊緣**，不能用顏色差（GPT 版本整體比較亮，用顏色比會對錯位置）。
+  工具在 scratchpad 的 `fit2.py`，複本放在 `_originals/CI/_dg/fit2.py`。
+- **顏色**：
+  · 要和原圖一致時，用 GPT 的 alpha 當遮罩、顏色取原圖像素，再用 pymatting 清邊（`.venv-matting`），這樣位移是 0。
+  · 原圖本身染著光效時（安雅的紫光），原圖像素去不掉光，只能用 GPT 那一版的顏色。
+  · 改姿勢的版本（A）一律用 3×3 色彩矩陣映射，拉回 B 的色調。
+- **GPT 擋圖**：Ray 說「要還原真實物理」。B2 被以色情內容擋下後，這個 session 的權限**不准再改措辭重送**，那一張是 Ray 自己出的。遇到同樣情況就停下來交給 Ray，不要繞。
+- **安雅 NI「手貼右肩」**：試四次 GPT 都換成另一隻手臂，連鏡像底圖都一樣，所以 Ray 才改規格成「右胸前」。
+- **Chrome 斷線**：`list_connected_browsers` 回空時，請 Ray 打開側欄喚醒就會回來。
+
+### 工作區裡不是美術的東西（不要動）
+`.claude/launch.json`、`resources/ci/ci_nouvelle_saintinstall0/1.png`、`tools/anim/*`：這幾個是動畫 session 的，還沒 commit。
