@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2087';
+export const VERSION = 'ver 2026.09.22-2088';
 
 export const GAME_CONFIG = {
 
@@ -3463,7 +3463,8 @@ export const GAME_CONFIG = {
                 cutin_nouvelle_guard:2000, ci_sorana_supply:1500,
                 ci_anya_dreambreaker:2813, ci_anya_lucid:2000, cutin_return_nouvelle:2000,   // ver -2078：片長＝CI 長
                 ci_sorana_roar_renna:2000, ci_sorana_roar_anya:2000, ci_sorana_roar_nouvelle:2000,
-                cutin_nireload:2000 },   // ver -2079：安雅夢魘再臨（Ray 剪 nr_blue77_cut，32 格 2 秒）   // ver -2076：即死防禦／補給影片（片長＝CI 長，撤出時還在播；同 cutinAnim 那兩列）   // 索拉娜飛刀耗盡 ver -2051（26 格 16fps，撤出時還在播；同 cutinAnim 的 ms，兩處互指）
+                cutin_nireload:2000,
+                cutin_dual_torsten:1000 },   // ver -2088：托爾斯滕彈雨傾洩（Ray：「拉到 1 秒就好」；16 格 16fps＝片長）   // ver -2079：安雅夢魘再臨（Ray 剪 nr_blue77_cut，32 格 2 秒）   // ver -2076：即死防禦／補給影片（片長＝CI 長，撤出時還在播；同 cutinAnim 那兩列）   // 索拉娜飛刀耗盡 ver -2051（26 格 16fps，撤出時還在播；同 cutinAnim 的 ms，兩處互指）
     /* ⚠ ver -2040（Ray：「秒數控制在每一個在撤出時都還在播放狀態，不要停」）：索拉娜共鬥／賽西莉聖徒化／賽西莉 OBE
        的 CI 長度＝那段動檔的實際長度（格數 ÷ 16fps）—— 最後一格剛出現就撤，不會停格。
        改動檔的格數就要一起改這裡（同一個數字的兩處，兩邊互指：cutinAnim 的 ms）。 */   // 兩張 OBE ver -2038（Ray：「兩個都改 2 秒」）；結局全畫面 CI（playSaintCutin）也讀這張表   // 索拉娜共鬥 ver -2032（Ray：「2 秒可以」；_v7 動檔剛好 2 秒）
@@ -3519,7 +3520,9 @@ export const GAME_CONFIG = {
                  ci_sorana_roar_nouvelle:{ video:'resources/ci/video/ci_sorana_roar_nouvelle_v1.mp4' },
                  /* ver -2079（Ray：「nr_blue77_cut，安雅被動動畫改這個」）：被動技裡的夢魘再臨（reloadCutin）。
                     Ray 的剪輯（tivot_wan/out/export/nr_blue77_cut，32 格 16fps）由程式端轉成 mp4（H.264 480×720 crf22 faststart）。 */
-                 cutin_nireload:{ video:'resources/ci/video/cutin_nireload_v1.mp4' } },
+                 cutin_nireload:{ video:'resources/ci/video/cutin_nireload_v1.mp4' },
+                 /* ver -2088（動畫交件，Ray 放行）：本篇破防 CI。VACE 釘關鍵格（Plan A）＋Ray 手剪，16 格 1 秒；靜態圖照舊當底。 */
+                 cutin_dual_torsten:{ video:'resources/ci/video/cutin_dual_torsten_v1.mp4' } },
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],
@@ -5244,6 +5247,9 @@ export function installCiKey(pk, story){
   if(story && pk==='nouvelle') return 'cutin_nouvelle_saint';
   return 'cutin_saint_luna';
 }
+/* 破防 cut-in 用哪一張（ver -454 分流：本篇＝托爾斯滕、試玩版＝Luna）。ver -2088 抽出來：
+   weapon.activateDual 播它、partnerCiKeys 把它排進預熱 —— 只有這一處判定（鐵律 7）。 */
+export function dualCiKey(story){ return story ? 'cutin_dual_torsten' : 'cutin_saint'; }
 export function partnerCiKeys(pk, story){
   const pc=(GAME_CONFIG.partners||{})[pk]; if(!pc) return [];
   const out=[], add=k=>{ if(typeof k==='string' && k && out.indexOf(k)<0) out.push(k); };
@@ -5256,6 +5262,7 @@ export function partnerCiKeys(pk, story){
   if(story && pk==='anya') [NI.burstCutin, NI.meltdownCutin].forEach(add);
   else if(story && pk==='sorana'){ /* 共鬥：卡上的 cutin／coop.endCutin 已由 walk 收進來 */ }
   else { add(installCiKey(pk, story)); add(story ? (pc.obeCutin || 'cutin_obe_nouvelle') : 'cutin_obe'); }
+  add(dualCiKey(story));   // 破防 CI 每場都可能出（不分搭檔）；ver -2088 起本篇那張是影片，要暖
   return out;
 }
 /* 這張 CI 的動檔**實際播得到幾格**：CI 只有 `cutinDur` 那麼長，撤出之後的格子永遠不會顯示 ——

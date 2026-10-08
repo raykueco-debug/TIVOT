@@ -29,7 +29,7 @@
  *     buildGrid / resetEnergy），不 import combat/saint/defense（維持依賴方向）。
  * ========================================================================== */
 
-import { GAME_CONFIG, asset, sfxGain, weaponDescText, weaponOf } from '../config.js';   // ⚠ ver -1013 拿掉 weaponBand：飛刀改成「三刀＝一次普攻」，不再問帶位
+import { GAME_CONFIG, asset, sfxGain, weaponDescText, weaponOf, dualCiKey } from '../config.js';   // ⚠ ver -1013 拿掉 weaponBand：飛刀改成「三刀＝一次普攻」，不再問帶位
 import * as hap from './haptics.js';   // 震動（ver -398）
 import { state, addCounter, setPickedPartner, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
@@ -706,7 +706,7 @@ export function activateDual(){
      /* 破防 cut-in 分流（ver -454，Ray：「story 版的破防 CI 換成這一張
         CI_Torsten_Dualcrush」）：本篇＝托爾斯滕、試玩版照舊 Luna。
         ⚠ 走 `storyMode()`（＝scriptRun || tutorialStoryRun，唯一的判定，鐵律 8）。 */
-     storyMode() ? 'cutin_dual_torsten' : 'cutin_saint');
+     dualCiKey(storyMode()));   // 判定在 config.dualCiKey（ver -2088，預熱名單同一份）
 }
 
 // 進入破防射擊窗口（窗口本體）：activateDual 的 cut-in 撤下後呼叫；馬季諾「前線補給」
