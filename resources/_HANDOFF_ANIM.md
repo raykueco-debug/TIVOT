@@ -37,7 +37,16 @@
 | `batch_*.py` | 批次（monsters／hit／squad／guards），每支之間歇 30～90 秒讓顯卡休息；`out/*_batch.log` 看進度 |
 | `pick_*.py` | 抽格＋產總覽頁（`out/<x>_pick/index.html`，播一次、空白鍵重播） |
 | `deliver_*.py` | 把 Wan 的格**轉回原圖畫布座標**、裁成全格聯集框、寫 `anim.json`、存進 `resources/` |
-| `serve_player.py`＋`make_player.py`＋`out/player.html` | **播放器**（下方） |
+| `serve_player.py`＋`make_player.py`＋`out/player.html` | **播放器**（下方；選單是左側縮圖欄＋篩選框） |
+| `rekey_solid.py` | 綠幕重新去背（**實心版**）：白衣服帶綠反光時原 key 會變半透明 → 輪廓內 alpha=1、只柔化邊緣。白衣角色一律用它 |
+| `rekey_eyes.py` | 綠眼角色走綠幕會被挖掉 → 臉部範圍內「沒連到外圍綠幕」的綠色區塊保留 |
+| `align_bbox.py` | A／B 去背圖外框不同大（A 蜷縮比 B 矮）→ 補幾乎透明的角點讓兩張共用聯集外框，否則 Wan 收到的 A/B 縮放不一致 |
+| `comp_black_embers.py` | 去背人物格放回原畫布 → 純黑底＋同向直飛火星 → 480×720 16fps mp4 |
+| `embers2.py` | 已在黑底的整張格（ci 模式）：邊緣連通的近黑＝背景，火星只畫在背景層 |
+| `fix_magenta.py` | 修 Wan 在低頭→抬頭時頭頂冒出的洋紅色塊（色相拉回髮色） |
+| `compose_roar.py` | 三層合成（火＋Q 版滑入彈抖＋人物） |
+| `blue_eyes.py`／`eye_levels.py` | 安雅夢魘裝填結尾圖的虹膜換藍（手量橢圓，只動虹膜）＋出色階比較圖 |
+| `make_dg*.py`／`make_nr*.py` | 產生批次 .bat 的範本（⚠ Bash 工具裡的反斜線會被吃掉，批次一律用 Python 以 `chr(92)` 產生） |
 
 ### 播放器 animechk
 - 桌面 **`animechk.bat`**（備份 `tools/anim/animechk.bat`）：先砍掉舊的 8130 伺服器、再啟動、再開 `http://localhost:8130/player.html`。
@@ -61,7 +70,10 @@
 5. **沒有血、沒有槍火**（遊戲引擎自己有槍火）。提示詞要逐項寫死：no blood stains/drops/spray/red liquid/wounds、no muzzle flash/bullets/sparks/smoke/light effects。
 6. **工不是優先，成品的品質、效率、資源才是**：先找最優解，再談工夫。
 7. 給 Ray 看的預覽頁**不要 loop**：播一次停在最後，可重播。
-8. 動畫格式：**CI（不透明、一次性）→ 影片 mp4**；**敵人（透明、循環／倒地）→ 長期最優是 GPU 壓縮貼圖（KTX2）**（尚未實作；目前交 webp 序列）。
+8. **一次只跑一支（一個 seed）**（Ray：「每個都嘛差不多，還浪費時間給我看四個一樣的」）。改一處、跑一支、給他看，再改。
+9. **改顏色前先給 Ray 挑**（出幾個色階並排），不要自己決定色值就跑（索拉娜綠眼、安雅藍眼都踩過）。
+10. 背景要「純黑＋火星」時：**火星一律同方向直飛、無尾巴**（`comp_black_embers.py`／`embers2.py`，Ray：「火星要往一個方向飛，不要像精蟲」）。
+11. 動畫格式：**CI（不透明、一次性）→ 影片 mp4**；**敵人（透明、循環／倒地）→ 長期最優是 GPU 壓縮貼圖（KTX2）**（尚未實作；目前交 webp 序列）。
 
 ---
 
@@ -135,10 +147,15 @@
 
 ---
 
-## 七、進行中／待辦
+## 七、進行中／待辦（2026-10-08 收工時）
 
-1. **敵人動畫改 GPU 貼圖（KTX2/Basis）**：已跟 Ray 分析過是最優解（記憶體 4～8 MB、播放零成本、透明乾淨、循環無縫、逐格精準），還沒實作，要先做一隻試樣量數據，再跟程式談。
-2. 惡棍群戰要不要照最終抽法（原圖＋7/9/11/13/15）重做：未問。
+1. **諾薇兒即死防禦 v2（壓胸）**：Wan 怎麼寫胸都「硬得像石頭」→ Ray 親自用 GPT 出 `layers/nouvelle_deathguard/nouvelle_B2.png`（雙手壓胸）。最新一支 `out/ci/dg3j_s7`（A2→B2、seed 7、Bouncing 0.3、提示詞「soft breasts, jelly breasts…hands sink in」），**等 Ray 看**。已交 v1＝`ci_nouvelle_deathguard_v1.mp4`（dg2n_s7_cut，無乳搖）。
+   - 試過無效的：Bouncing 0.5/1.0（左右甩）、Motto 0.4/0.8、強英文提示詞「single vertical bounce」「press into soft breasts」。
+2. **安雅夢魘裝填**（`ci_anya_nightmarereload`）：A＝美術動感版 `anya_A.png`（黑底），B＝原圖紫焰保留、背景壓黑、虹膜換 A 級藍（`in_nr/anya_nr_Bblue.png`），**4 秒**（Ray：延 1 秒）。成品 `out/ci/nr_blue7`／`nr_blue77`，**等 Ray 選 seed／剪**。眼睛在 Wan 中段偏青綠，Ray 說**不用校色**。
+3. **米夏戰鬥立繪待機**：`out/monsters/man_misha_idle_s7k`／`s77k`（24 格 8fps 循環、實心去背），**等 Ray 選**；選好用 `deliver_idle.py`（原圖 `resources/enemy/man_misha.webp`）交到 `resources/enemy/anim/man_misha_idle_v1/`。
+4. Lucid Dream 的眼睛是灰黑（不是藍）—— Ray 說要藍的是夢魘裝填，Lucid Dream 沒要求改，暫不動。
+5. **敵人動畫改 GPU 貼圖（KTX2/Basis）**：最優解，未實作。
+6. 惡棍群戰要不要照最終抽法重做：未問。
 
 ## 八、等 Ray
 - 單人中槍 18 隻、怪物待機 94 隻要不要交。
