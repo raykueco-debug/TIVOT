@@ -185,7 +185,8 @@ def pick(n_total, mode, frames, fps):
         a, z = int(n_total * 0.17), int(n_total * 0.92)
         return [round(a + (z - a) * i / (frames - 1)) for i in range(frames)]
     step = max(1, round(16 / fps))                 # 待機：Wan 16fps，去掉與首格相同的最後一格
-    return list(range(0, n_total - 1, step))
+    last = n_total if END_IMG else n_total - 1     # A to B：最後一格就是 B，要留；循環才去掉與首格相同的那格
+    return list(range(0, last, step))
 
 # ── 主流程 ─────────────────────────────────────────────────────────────
 def read_cfg(src):
