@@ -12,6 +12,13 @@
  * ========================================================================== */
 
 let _ctx = null;
+/* ══⚠⚠ **iPhone 靜音鍵**（ver -2085，Ray：「BGM 出不來的問題很嚴重…自從改過 bgm 的播放歸屬以後就常常聽不到首頁 bgm」）══
+   iOS 的 Web Audio 預設走 ambient 類別 —— **側邊靜音鍵一開就整個消音**；純 `<audio>` 走 playback，不受靜音鍵管。
+   -2015 以前 BGM 是純 `<audio>`（靜音鍵擋不住）；-2015 起 iOS 的 BGM 接進 Web Audio（bgmWire，為了音量拉桿），
+   從此手機開著靜音鍵就聽不到 BGM。⇒ 宣告這一頁是 playback（iOS 17 起支援），回到 -2015 以前「靜音鍵不擋遊戲聲音」的行為。
+   ⚠ 舊版 iOS 沒有 `audioSession` → 見 `VOL_LOCKED`：不接線，退回純 `<audio>`（音量拉桿無效，但至少有聲音）。 */
+const HAS_AUDIO_SESSION = (()=>{ try{ return !!(navigator.audioSession && 'type' in navigator.audioSession); }catch(_){ return false; } })();
+try{ if(HAS_AUDIO_SESSION) navigator.audioSession.type = 'playback'; }catch(_){}
 let _needRebuild = false;   // 上次手勢 resume 沒生效（iOS 主畫面 App 常見）→ 下次手勢內重建 context
 let _unlockChk = null;      // resume 生效檢查計時器
 const _buffers = {};   // src → AudioBuffer（已解碼；AudioBuffer 不綁 context，重建後仍可播）
@@ -141,6 +148,10 @@ function idleTry(){
   if(_idleOff || _idleLoops>0 || !_ctx) return;
   /* BGM 接在這顆引擎上時（iOS，見 bgmWire）引擎一睡曲子就啞了 —— 播著就不睡，3 秒後再看一次。 */
   if(_bgmWire && _bgmWire.ctx===_ctx && _bgmEl && !_bgmEl.paused){ idleBusy(0); return; }
+  /* ⚠ ver -2085：**曲子還在路上**也不睡 —— 熱啟動時一點就解鎖，但主選單曲要等音效解完、圖暖完才開始抓；
+     那幾秒引擎先睡了，曲子到了以後的 resume() 在手勢外，iOS 常常叫不醒 ⇒ 元素在播、聲音流進睡著的引擎＝全啞，
+     要等下一次手勢（按鈕出 SE）才有音樂。iOS 上 BGM 接在引擎上，所以「有想要的曲子」就不睡。 */
+  if(VOL_LOCKED && _bgmSrc && !_bgmOff){ idleBusy(0); return; }
   if(Date.now() < _idleBusyUntil){ idleBusy(0); return; }
   if(_ctx.state==='running'){ try{ _ctx.suspend(); _idleSusp = true; }catch(_){} }
 }
@@ -398,8 +409,9 @@ function bgmElem(){
    `?vollock=1`：桌機上強制走這一條（驗證用）。 */
 const IS_IOS = (()=>{ try{ const n=navigator; return /iPad|iPhone|iPod/.test(n.userAgent||'')
   || (n.platform==='MacIntel' && n.maxTouchPoints>1); }catch(_){ return false; } })();
-const VOL_LOCKED = /[?&]vollock=1/.test(location.search) || IS_IOS
-  || (()=>{ try{ const a=new Audio(); a.volume=0.5; return Math.abs(a.volume-0.5)>0.01; }catch(_){ return false; } })();
+/* ⚠ ver -2085：iOS 而且**沒有 audioSession**（iOS 16 以前）就不接線 —— 接了會被靜音鍵消音（見檔頭）。 */
+const VOL_LOCKED = /[?&]vollock=1/.test(location.search) || (IS_IOS ? HAS_AUDIO_SESSION
+  : (()=>{ try{ const a=new Audio(); a.volume=0.5; return Math.abs(a.volume-0.5)>0.01; }catch(_){ return false; } })());
 let _bgmWire = null;    // {ctx, gain}：_bgmEl 目前接在哪一個 context 上
 function bgmWire(){
   if(!VOL_LOCKED || !_bgmEl) return null;
@@ -483,12 +495,22 @@ function bgmFade(el, to, ms, done){
   }, 40);
 }
 // 整首下載成 Blob（快取 objectURL）：完整在記憶體後播 → 不再串流 → 不卡頓
+/* ⚠ ver -2085：比照 `load()` 的 LOAD_TIMEOUT_MS 加逾時 —— 以前這支沒有逾時，連線卡住時 promise 永遠 pending，
+   `apply` 連「退回串流」那一條都走不到（整段安靜）。逾時就回 null → apply 改用串流播。 */
+const BGM_BLOB_TIMEOUT_MS = 8000;
 function ensureBlob(src){
   if(_bgmBlob[src]) return Promise.resolve(_bgmBlob[src]);
   if(_bgmPending[src]) return _bgmPending[src];
-  _bgmPending[src] = fetch(src).then(r=>r.blob())
-    .then(b=>{ const u=URL.createObjectURL(b); _bgmBlob[src]=u; delete _bgmPending[src]; return u; })
-    .catch(()=>{ delete _bgmPending[src]; return null; });
+  const ac = (typeof AbortController!=='undefined') ? new AbortController() : null;
+  let timer = null;
+  const job = fetch(src, ac ? {signal:ac.signal} : undefined).then(r=>{ if(!r.ok) throw new Error(r.status); return r.blob(); })
+    .then(b=>{ clearTimeout(timer); const u=URL.createObjectURL(b); _bgmBlob[src]=u; delete _bgmPending[src]; return u; })
+    .catch(()=>{ clearTimeout(timer); delete _bgmPending[src]; return null; });
+  const tmo = new Promise(res=>{ timer = setTimeout(()=>{
+    try{ if(ac) ac.abort(); }catch(_){}
+    try{ console.warn('[audio] BGM 整首下載逾時，改用串流：', src); }catch(_){}
+    delete _bgmPending[src]; res(null); }, BGM_BLOB_TIMEOUT_MS); });
+  _bgmPending[src] = Promise.race([job, tmo]);
   return _bgmPending[src];
 }
 
@@ -809,7 +831,9 @@ export const SFX = {
   bgmDebug(){ const el=_bgmEl; return { locked:VOL_LOCKED, wired:!!(_bgmWire && _bgmWire.ctx===_ctx),
     gain:_bgmWire ? +_bgmWire.gain.gain.value.toFixed(3) : null, vol:el ? +elVol(el).toFixed(3) : null,
     elVolume:el ? el.volume : null, paused:el ? el.paused : null, song:_bgmPlaying, ctx:_ctx ? _ctx.state : null,
-    target:+bgmTargetVol().toFixed(3) }; },
+    target:+bgmTargetVol().toFixed(3),
+    session:HAS_AUDIO_SESSION ? navigator.audioSession.type : null, blessed:el ? !!el.__blessed : null,
+    idle:_idleOff ? 'off' : (_idleSusp ? 'susp' : 'on') }; },
 
   setMasterVolume(v){
     _master = Math.max(0, Math.min(1, v==null ? 1 : v));
