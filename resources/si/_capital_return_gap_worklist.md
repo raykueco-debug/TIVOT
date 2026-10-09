@@ -9,7 +9,7 @@ Ray 交的稿（返回帝都／郊外風車荒地／帝都旅店與城鎮戰／�
 |---|---|---|
 | `si/anya_si_sad.webp` | 安：sad（兩次） | 8／1524 |
 | `si/anya_si_shakehead.webp` | 安：搖頭 | 5／1522 |
-| `si/nouvelle_si_runcry.webp` | 諾：邊哭邊跑 | 4／1523 |
+| `si/nouvelle_si_runcry.webp` | 諾：邊哭邊跑（v2：閉眼捂嘴，Ray 改定） | 4／1529 |
 | `si/npc/mage_si_hurt.webp` | ？？？：「咕……」（碼頭戰後） | 13／1515 |
 | `si/cecilie_si_teary.webp` | 備用橋段：賽不甘含淚 | 3／1532 |
 | `si/npc/npc_commander_si_front.webp` | 碎片 02：指揮官（**新角色**，同 `sodier_` 部隊制服＋軍官配件，徽章原創） | 4／1526 |
