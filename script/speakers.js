@@ -286,6 +286,10 @@ export const ART = {
                   lookaway: { src:'resources/si/renna_si_lookaway.webp',   top:2, bot:1529, fx:0.532 },   // ver -842
                   lookawaytalk:{src:'resources/si/renna_si_lookawaytalk.webp',top:3,bot:1519, fx:0.545 },  // ver -842
                   tire:    { src:'resources/si/renna_si_tire.webp',    top:7, bot:1522, fx:0.495 },
+                  /* 聖索菲亞旅店收尾＋另一台的新交件（ver -2102）。measure_si 量測；`check`／`checktalk` 腳本還沒用，先掛著。 */
+                  letter:   { src:'resources/si/renna_si_letter.webp',    top:3, bot:1524, fx:0.504 },
+                  check:    { src:'resources/si/renna_si_check.webp',     top:4, bot:1530, fx:0.494 },
+                  checktalk:{ src:'resources/si/renna_si_checktalk.webp', top:3, bot:1519, fx:0.517 },
                   /* ver -427 交件。`talkserious`＝正色說明、`talkwork`＝談公事、
                      `think`＝思索。取景值一張一張量（§6.5）。 */
                   talkserious:{src:'resources/si/renna_si_talkserious.webp',top:3, bot:1516, fx:0.509 },
@@ -382,7 +386,7 @@ export const ART = {
                   /* ══ 伊甸古墓・墓門那一段（ver -1188，Ray 交稿）══ 交件是 PNG，
                      依 §5 轉 WebP；取景值逐張量（`tools/measure_si.py`）。 */
                   sad:         { src:'resources/si/renna_si_sad.webp',         top:5,  bot:1517, fx:0.520 },
-                  askserious:  { src:'resources/si/renna_si_askserious.webp',  top:3,  bot:1527, fx:0.525 },
+                  askserious:  { yShift:3, src:'resources/si/renna_si_askserious.webp',  top:3,  bot:1527, fx:0.525 },
                   /* ══ 貝利薩爾・祭壇那一段（ver -1372）══ 腳本（-1353）早就在用這兩個名字，
                      圖是 Ray 這一輪才交的 —— 在那之前 `script_lint.py` 一直報
                      「沒有這張差分，會回退基本立繪」（**靜靜回退，畫面上沒有錯誤訊息**）。
@@ -767,7 +771,7 @@ export const ART = {
     readysmile:   { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_readysmile.webp?v=205d5df6', top:6,  bot:1534, fx:0.578 },  // ver -837 換新圖＋重量取景（?v=2：同名覆蓋）
     /* ver -837（Ray：「我的 tease 也被刪了，找回來」）：從 _originals 的透明版轉回，
        逐張量（measure_si.py）。腳本還沒有用到它 —— 先掛著備用。 */
-    tease:        { fxShift:-0.04, yShift:-15, src:'resources/si/sorana_si_tease.webp?v=d54788f0',         top:7,  bot:1528, fx:0.583, cm:145, standCm:176 },
+    tease:        { fxShift:0.015, yShift:-10, src:'resources/si/sorana_si_tease.webp?v=d54788f0',         top:7,  bot:1528, fx:0.583, cm:150, standCm:176 },
     surprise:    { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_surprise.webp?v=2d1b7286',     top:9,  bot:1522, fx:0.537 },   // ver -842
     /* Stage8（ver -953）。 */
     upset:        { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_upset.webp?v=72a164d8',         top:5,  bot:1526, fx:0.514 },
@@ -1040,11 +1044,11 @@ export const ART = {
     sob:  { src:'resources/si/anya_si_sob.webp?v=0a1de04c',   top:8,  bot:1535, fx:0.377, cm:95, standCm:162 },
     /* 北方泊地第三天（ver -664，Ray 交稿）。四張都是**全身站姿**，照量即可
        —— 近景那幾張才要 `cm`／`standCm`（見上面的說明）。 */
-    silent:    { yShift:-2, cm:145, src:'resources/si/anya_si_silent.webp?v=5497fc32',     top:4, bot:1521, fx:0.423 },
+    silent:    { fxShift:0, yShift:-2, cm:145, src:'resources/si/anya_si_silent.webp?v=5497fc32',     top:4, bot:1521, fx:0.423 },
     panic:     { src:'resources/si/anya_si_panic.webp?v=960811a2',      top:0, bot:1522, fx:0.434 },   // ver -842
     /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2` ＋ 取景值重量
        （0.426→0.522：差了將近一成的圖寬，沿用舊值臉會明顯偏左）。 */
-    talk:      { yShift:0, src:'resources/si/anya_si_talk.webp?v=d6e12e73',   top:8, bot:1526, fx:0.483 },
+    talk:      { fxShift:0, yShift:0, src:'resources/si/anya_si_talk.webp?v=d6e12e73',   top:8, bot:1526, fx:0.483 },
     /* ══ Stage8 後段（ver -1092，Ray 交稿）══ 逐張量。 */
     argue:     { src:'resources/si/anya_si_argue.webp?v=df7ed249',      top:2, bot:1528, fx:0.488 },
     shy:       { src:'resources/si/anya_si_shy.webp?v=4c36a30d',        top:8, bot:1527, fx:0.443 },
@@ -1055,6 +1059,8 @@ export const ART = {
     die:     { src:'resources/si/anya_si_die.webp?v=6bf8f19e',      top:0, bot:1525, fx:0.439 },
     sleepy:    { src:'resources/si/anya_si_sleepy.webp?v=a3eaadb7',     top:0, bot:1515, fx:0.464 },   // ver -772
     cry:       { src:'resources/si/anya_si_cry.webp?v=9718e366',        top:0, bot:1532, fx:0.458 },
+    cryhard:   { src:'resources/si/anya_si_cryhard.webp',  top:6, bot:1527, fx:0.411 },   // ver -2102 交件，腳本還沒用
+    shysmile:  { src:'resources/si/anya_si_shysmile.webp', top:4, bot:1530, fx:0.461 },   // ver -2102 交件，腳本還沒用
     terrify:{ src:'resources/si/anya_si_terrify.webp?v=becb7f82', top:8, bot:1504, fx:0.493 },   // ver -1857：鎖表情重畫定稿
     /* ver -870（森林行 G 稿）——measure_si 量測。 */
     answer:    { src:'resources/si/anya_si_answer.webp?v=db505ca1',     top:2, bot:1534, fx:0.468 },
@@ -1573,9 +1579,9 @@ export const ART = {
     frontopen:  'resources/si/misha_si_frontopen.webp',
     frontgrit:  'resources/si/misha_si_frontgrit.webp',
     frontshock: 'resources/si/misha_si_frontshock.webp?v=83fbd0fe',
-    closeopen:  { src:'resources/si/misha_si_closeopen.webp?v=102292c5', top:14, bot:1509, fx:0.469 },   // 照 close
+    closeopen:  { fxShift:-0.04, src:'resources/si/misha_si_closeopen.webp?v=102292c5', top:14, bot:1509, fx:0.469 },   // 照 close
     drawopen:   { src:'resources/si/misha_si_drawopen.webp?v=9820e0a3', top:6, bot:1534, fx:0.434 },   // 照 draw（-1728 隨 draw 重做）
-    frownopen:  { src:'resources/si/misha_si_frownopen.webp?v=ed089647', top:11, bot:1526, fx:0.469 },   // 照 frown
+    frownopen:  { fxShift:-0.04, src:'resources/si/misha_si_frownopen.webp?v=ed089647', top:11, bot:1526, fx:0.469 },   // 照 frown
     guardopen:  { src:'resources/si/misha_si_guardopen.webp', top:49, bot:1501, fx:0.344 },   // 照 guard
     saluteopen: { src:'resources/si/misha_si_saluteopen.webp', top:9, bot:1520, fx:0.447 },   // 照 salute
     stareopen:  { src:'resources/si/misha_si_stareopen.webp?v=8dc35b0a', top:13, bot:1526, fx:0.449 },   // 照 stare
@@ -1733,6 +1739,9 @@ export const ART = {
     lookaway: { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_lookaway.webp', top:3, bot:1523, fx:0.454 },
     cry:      { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_cry.webp',      top:11, bot:1525, fx:0.464 },   // ver -1793 Ray 交件
     cryhug:   { fxShift:0, yShift:32, cm:132, src:'resources/si/npc/npc_ss_lofa_cryhug.webp',   top:6,  bot:1530, fx:0.594 },
+    shy:      { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_shy.webp',      top:2,  bot:1521, fx:0.480 },   // ver -2102（旅店收尾）
+    ask:      { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_ask.webp',      top:3,  bot:1522, fx:0.497 },
+    lookdown: { fxShift:0, yShift:14, cm:158, src:'resources/si/npc/npc_ss_lofa_lookdown.webp', top:5,  bot:1522, fx:0.512 },
   } },
   /* ══ 里朋家族的老大（ver -1793，Ray 交件）══ 身高是估的（成年男性 175）；measure_si 實量。
      ⚠ ver -1796 Ray：「里朋水平翻轉」⇒ `flip:true`（這張一律翻，同謝尼）。 */

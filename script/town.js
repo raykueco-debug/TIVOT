@@ -5156,16 +5156,13 @@ export const TOWNS = {
           ren('write','那不應該是『神』該做的事嗎？'),
           nou('sad','……'),
           /* ══ ver -2099（Ray 修稿）：拿掉「修女不信神」那一段，改成蘿法道謝 → 蕾娜託她發報（一道保險）══
-             ⚠ 缺圖在 Ray 另一台電腦（ver -2101）：蘿法 `shy`／`ask`／`lookdown`、蕾娜 `letter`（稿上的 tired＝既有 `tire`）。
-               **不要先在 speakers.js 預留路徑** —— 立繪沒有 onerror 退路，指到不存在的檔案＝那一格永遠不 onload ＝人從畫面上消失；
-               沒登記的差分才會靜靜回退基本立繪。圖進庫後再登記（measure_si 量）。
-             ⚠ 稿上的「Se Paper fold」＝`se_paperfold`（ver -2100 接好鍵；檔案在 Ray 另一台電腦，下次 git 進來就會響，見 story.js 的 SE_FILES）。 */
+             蘿法 `shy`／`ask`／`lookdown`、蕾娜 `letter` 於 ver -2102 進庫登記（稿上的 tired＝既有 `tire`）；摺信聲 `se_paperfold` 同版進庫。 */
           ren('write','有能力幫助眼前的人，已經是最大的幸運了。'),
           lofN('shy','謝謝妳們……'),
           lofN('shy','我真的不知道該怎麼回報妳們……'),
           ren('write','……有件小事，倒是要請妳幫個忙。'),
           lofN('shy','只要是我辦得到的……'),
-          { speaker:'NARRATION', text:'', se:'se_paperfold', auto:1400 },   // 摺信聲（檔案待進庫，見上）
+          { speaker:'NARRATION', text:'', se:'se_paperfold', auto:1400 },   // 摺信聲
           ren('letter','如果一個月內沒有收到我的消息，請妳把這封信的內容發報到西南戰區司令部。'),
           lofN('ask','給海里希˙馮˙海森伯格……？'),
           lofN('lookdown','就只是……這樣？'),
