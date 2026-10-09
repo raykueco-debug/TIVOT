@@ -5299,7 +5299,7 @@ export function open(town, node, opts){
   /* 換圖之前先把上一張城鎮圖借走的搭檔放回去（ver -1394，見 `restoreTownPartner`）。 */
   restoreTownPartner();
   townId = town || 'capital';
-  try{ prog.markVisitDate(townId); }catch(_){}   // 地點的初訪日期（ver -2111；第一次才記）
+  try{ const ed=(TOWNS[townId]||{}).eventDate; if(ed) prog.markEventDate(ed); }catch(_){}   // 城上的 `eventDate`＝「第一次進這張圖」這個事件（ver -2112；第一次才記）
   townLive = true;
   gateMoves={};   // 閘門的 afterMoves 計數：這一趟進城重新算（ver -953）
   const T=TOWNS[townId]; if(!T) return;

@@ -1208,12 +1208,13 @@ const CAP_RETURN = [
   any('desperate','……'),
   ren('check','這就是我想確認的。'),
   { speaker:'NARRATION', text:'', se:'se_page3', auto:700 },               // 翻頁音
-  /* 日期跟遊戲時間掛勾（ver -2111）：`{VD:…}` ＝那張圖的初訪日期（見 story.js 的 subst）。
-     北泊＝northport 初訪日；瓦爾士＝北泊＋2 天；木雅克＝shinier_ruins 初訪日，之後依序再推 9／15／13 天（累加）。
-     跳章沒有記錄：北泊＝開局第 7 天（Ray）；木雅克的退路取第 10 天（排在瓦爾士之後，我定的）。 */
-  ren('checktalk','{VD:northport?7}，北方泊地來源不明的禍魘討伐52體。'),
-  ren('checktalk','{VD:northport?7+2}，瓦爾士空域大型禍魘一體。'),
-  ren('checktalk','{VD:shinier_ruins?10}，木雅克遺蹟不明禍魘討伐43體。含一體異化禍魘……{VD:shinier_ruins?10+9}31體、{VD:shinier_ruins?10+24}27體、{VD:shinier_ruins?10+37}9體……'),
+  /* 日期跟遊戲時間掛勾（ver -2112，Ray：「不是記進城，記事件」）：`{VD:事件?退路天數+加幾天}`（見 story.js 的 subst）。
+     北泊＝娜塔莉戰打完那天（np_natalia）；瓦爾士＝羽蛇強制戰那天（valse_serpent）；
+     木雅克＝第一次進木雅克神殿那天（muyak），之後依序再往後推 9／15／13 天（累加）。
+     跳章沒有記錄：開局第 7 天起算（Ray）——北泊 7、瓦爾士 9、木雅克 10（後兩個我照順序排）。 */
+  ren('checktalk','{VD:np_natalia?7}，北方泊地來源不明的禍魘討伐52體。'),
+  ren('checktalk','{VD:valse_serpent?9}，瓦爾士空域大型禍魘一體。'),
+  ren('checktalk','{VD:muyak?10}，木雅克遺蹟不明禍魘討伐43體。含一體異化禍魘……{VD:muyak?10+9}31體、{VD:muyak?10+24}27體、{VD:muyak?10+37}9體……'),
   nou('surprise','數量……在減少？'),
   ren('write','沒錯，從夏爾村開始我就把『永夜以來就存在的禍魘』跟『憑空出現的禍魘』分開記錄。'),
   ren('checktalk','到羅賽爾廢城之前，懷疑因安雅小姐而生成的禍魘，幾乎可以說是歸零了。'),
@@ -2764,7 +2765,7 @@ export const TOWNS = {
             /* ⚠ ver -739：這一段照 Ray 的修正稿逐句對過 —— thinking 那一句改字、
                「如果是這樣的話」拆成獨立一拍（表情沿用 thinking）、
                「沒事了」回 base（front）、「刻不容緩」換 command。 */
-            ren('shock','剛剛那是……禍魘？'),
+            Object.assign(ren('shock','剛剛那是……禍魘？'), { eventDate:'np_natalia' }),   // 娜塔莉戰打完的日子（ver -2112，蕾娜返回帝都那一段念的日期）
             { speaker:'PLAYER', blank:true },
             ren('surprised','不要嚇我啦！'),
             ren('upsetstare','真是……'),
@@ -4147,6 +4148,7 @@ export const TOWNS = {
      · ⚠ 還沒有怪與劇情（Ray 的稿未到）；槍棺地圖的手繪圖未交（`map:` 空著）。 */
   shinier_ruins: {
     name: '木雅克神殿',
+    eventDate: 'muyak',   // 第一次進來的日子（ver -2112，蕾娜返回帝都那一段念的日期；modules/town.js 的 open 記）
     storyStages:[6,7],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     entry: 'antechamber',        // ＝這座圖的第一格（入口在森林那邊，見上）
     /* ══ Stage 8 的入口（ver -956，Ray：「神殿攻略結束後自動跳轉回索拉娜家，

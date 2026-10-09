@@ -1305,9 +1305,9 @@ function subst(t){ return String(t==null?'':t)
   .split('{P}').join(prog.getPlayerName())
   .split('{N}').join(prog.getPlayerNick())
   .replace(/\{D\+(\d+)\}/g, (_,n)=>clock.dateTextIn(+n))
-  /* `{VD:地點?退路天數+加幾天}`（ver -2111）＝那個地點的**初訪日期**（town.open 第一次記下的遊戲時間）＋N 天。
+  /* `{VD:事件?退路天數+加幾天}`（ver -2111／-2112）＝那個事件的**日期**（progress 的 eventDate，事件第一次發生時記下的遊戲時間）＋N 天。
      沒有記錄（跳章／舊存檔）＝開局第「退路天數」天（不寫＝7，Ray：「跳章檢查時以遊戲初日後 7 天起算」）。 */
-  .replace(/\{VD:([a-z_]+)(?:\?(\d+))?(?:\+(\d+))?\}/g, (_,p,fb,n)=>prog.visitDateText(p, +(n||0), fb==null?7:+fb)); }
+  .replace(/\{VD:([a-z_]+)(?:\?(\d+))?(?:\+(\d+))?\}/g, (_,p,fb,n)=>prog.eventDateText(p, +(n||0), fb==null?7:+fb)); }
 
 /* ══ 打字機 ══ */
 /* 打字機。⚠ 速度吃 `typeSpeed()` —— 按住下拉的加速模式要即時變快（ver -367），
@@ -3204,6 +3204,8 @@ function senseFx(dud){
   if(!dud) senseBurstT.push(setTimeout(senseBurst, SENSE_BURST_AT));
 }
 function fireOneShot(line){
+  /* `eventDate:'<事件名>'`（ver -2112）＝這一拍記下那個事件的日期（第一次才記，見 progress 的 K.eventDate）。 */
+  if(line.eventDate) try{ prog.markEventDate(line.eventDate); }catch(_){}
   /* ⚠⚠ `se` 可以是**陣列**（ver -1413，Ray：「逃了以後的震動要播破瓦聲跟流水聲」）——
      一拍兩個聲音以前只能拆成兩拍（見貝利薩爾那一段的舊註解「`se` 一拍只有一支」），
      而那會把「同時發生」演成「先後發生」。收在這一支（鐵律 8）：所有讀 `line.se`
@@ -3389,7 +3391,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2111';
+const KERB_V='?v=2112';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
