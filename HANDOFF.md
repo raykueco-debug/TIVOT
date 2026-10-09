@@ -12,7 +12,7 @@
   Python 一律 `py -3.11 -X utf8`（openpyxl 已裝在 3.11）；跑會印符號的工具前 `PYTHONIOENCODING=utf-8`。
 - ⚠⚠ **西文翻譯暫停**（Ray 10-09：「西文之後不用做，完成後再一次做」）—— 改中文時不要動 `i18n/*/es*`。
 - ⚠⚠ 改視覺效果先做幾張給 Ray 看，看過才整批。刪／覆蓋／回收任何檔案前先問 Ray。
-- 其他 session：**動畫**（`resources/_HANDOFF_ANIM.md`）、**美術**（`resources/_HANDOFF_ART_20260925.md`）。交件由程式接、commit。
+- 其他 session：**動畫**（`resources/_HANDOFF_ANIM.md`）、**美術**（`resources/_HANDOFF_ART.md`；10-09 美術自己換新，舊的兩份已回收、刪除待美術 commit）。交件由程式接、commit。
   動畫交件說明另有 `resources/ci/layers/torsten_bulletrain/TO_CODE.md`（BR，已接到 v5；刪不刪等 Ray）。
 - 不要 commit：`tools/anim/*` 未提交的修改（動畫的）、`resources/ci/layers/**` 的中間檔、`resources/si/eyefx/cecilie_si_fluster_te_mask.webp`（來源不明）。
 
