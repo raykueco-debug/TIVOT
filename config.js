@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2088';
+export const VERSION = 'ver 2026.09.22-2089';
 
 export const GAME_CONFIG = {
 
@@ -656,7 +656,9 @@ export const GAME_CONFIG = {
          「用來跟 Boss 丟的密集圈對沖，不用太長駐，免得又變永動機」。 */
       /* ver -2087（Ray 改名）：這一格的名字＝一般版「清醒夢／Lucid Dream」（`startLucidDirect` 的 CI 字讀它）；
          夢魘化版仍叫「夢境粉碎」（`tuning.nightmare.burstName`，saint 讀那一份）。 */
-      active:{ key:'dreamBreakInfo', name:i18nT('清醒夢'), en:'Lucid Dream', context:'board', buffSec:5,
+      /* ver -2089（Ray：「明晰夢還是放錯 CI，要用 ci_anya_luciddream_v2」）：一般版上滑播紅色氣浪藍眼版（`ci_anya_lucid` ＝ v2）。
+         沒寫的話 `startLucidDirect` 會退回被動的 `cutin`（夢魘再臨那支）—— -2084 就是錯在這裡。 */
+      active:{ key:'dreamBreakInfo', name:i18nT('清醒夢'), en:'Lucid Dream', context:'board', buffSec:5, cutin:'ci_anya_lucid',
                desc:i18nT('發動方式：戰鬥畫面上滑。<br>')
                    +i18nT('非夢魘化期間發動：進入清醒夢 5 秒，場上攻擊圈不重置。<br>')
                    +i18nT('夢魘化期間發動（夢境粉碎）：強制中止爆發時間，保留已削減之 HP，並一次性給予敵最大 HP 20% 的傷害。') },
@@ -4139,10 +4141,9 @@ export const GAME_CONFIG = {
            在讀的 —— 寫進去的話聖徒化期間上滑會去問它，而夢境粉碎是**惡夢化自己的**
            主動技，只在 NI 期間存在（鐵律 8：一個動作一個入口）。 */
       burstName: i18nT('夢境粉碎'),
-      /* ver -2084（Ray：「主動技用紅色氣浪的那一個」）：改播紅色氣浪那支（`ci_anya_lucid` ＝ luciddream_v2 藍眼版，
-         靜態圖同一張紅光版）。舊的 `ci_anya_dreambreaker`（舊 NI 原片）暫時沒人播，檔案留著。
-         ⚠ 那支眼睛不夠藍，動畫重做中；重交換新鍵時這裡跟著改。 */
-      burstCutin: 'ci_anya_lucid',
+      /* ver -2089：-2084 把「主動技用紅色氣浪」誤讀成夢境粉碎 —— Ray 指的是主動技一般版（清醒夢，見安雅卡 `active.cutin`）。
+         夢境粉碎回到原本的 `ci_anya_dreambreaker`（舊 NI 原片，ver -2078）。 */
+      burstCutin: 'ci_anya_dreambreaker',
       /* ══⚠⚠ **熔斷就是 OBE**（ver -731（-893 前用詞），Ray 定案）══════════════════════════
          -692 的註解寫成「對稱的失敗結局，**不是**同一件事」—— 那是錯的，已更正：
          聖徒化推滿與惡夢化抽乾**是同一個結局的兩個方向**，所以行為要一致：

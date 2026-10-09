@@ -128,11 +128,19 @@ function bindBtn(id, fn){
 combat.setup();
 
 // 首次任意手勢即解鎖音訊：主選單 BGM 在 autoplay 被擋下後，玩家一互動就補播（unlock 內處理）
+/* ══⚠⚠⚠ **每一下手勢都解鎖，而且要聽 touchend／click**（ver -2089，Ray：「音樂問題還是一樣，一定要點到某個鈕跑 SE 以後才會出」）══
+   兩個洞疊在一起：
+   ① iOS 只把 **touchend／click／pointerup（觸控）／keydown** 算成使用者啟用（HTML 的 activation-triggering 事件）——
+     `touchstart`／觸控的 `pointerdown` **不算**。首頁 COMPLETE 那一下的 `go()` 掛在 touchstart、這裡也只聽 pointerdown／touchstart，
+     於是第一下的 unlock 跑在「不算手勢」的事件裡：context 重建了也起不來、元素 play() 被擋。
+   ② 舊寫法**第一下就把自己拆掉**：第一下沒成功之後，空白處再怎麼點都沒有人叫 unlock —— 只剩按鈕（bindBtn 會叫）。
+     那正是「要點到某個鈕出 SE 以後才有音樂」。
+   ⇒ 常駐、每一下都叫（unlock 冪等：已 running、已在播就什麼都不做），而且加聽 touchend／click／pointerup。 */
 (function primeAudio(){
-  const go=()=>{ SFX.unlock(); window.removeEventListener('pointerdown',go); window.removeEventListener('touchstart',go); window.removeEventListener('keydown',go); };
-  window.addEventListener('pointerdown', go);
-  window.addEventListener('touchstart', go, {passive:true});
-  window.addEventListener('keydown', go);
+  const go=()=>{ try{ SFX.unlock(); }catch(_){} };
+  ['pointerdown','pointerup','click','keydown'].forEach(t=>window.addEventListener(t, go, true));
+  window.addEventListener('touchstart', go, {passive:true, capture:true});
+  window.addEventListener('touchend', go, {passive:true, capture:true});
 })();
 
 // 全域主音量（tuning.masterVolume＝0.7）：先於任何預載/BGM 起播套用

@@ -565,7 +565,8 @@ export const SFX = {
          不要只問其中一個）。
        ⚠ 切歌中不補播不會漏掉：`switchTo` 自己會 `play()`，而那時元素已經解鎖過了。 */
     const el = _bgmEl;
-    if(el && el.paused && el.src && _bgmSrc && !_bgmSwitching && _bgmPlaying===_bgmSrc){
+    /* ⚠ ver -2089：`!_bgmOff` —— 起 main 的 primeAudio 改成每一下手勢都叫 unlock，發熱排除關掉的 BGM 不能被點回來。 */
+    if(el && el.paused && el.src && _bgmSrc && !_bgmOff && !_bgmSwitching && _bgmPlaying===_bgmSrc){
       setElVol(el, bgmTargetVol()); const p=bgmPlay(); if(p&&p.catch) p.catch(()=>{});
     }
     blessBgmElem();   // 曲子還沒上膛：先在這一下手勢裡認證元素（ver -2082）
