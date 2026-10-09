@@ -2662,7 +2662,7 @@ const SE_FILES=[
      ver -2102 進庫（Ray 的 mp3 → m4a 96k），`fileGain` 3.40（audio_scan 量）。 */
   'se_paperfold.m4a',
   /* 返回帝都（ver -2102，Ray 的稿）：`enemy_lowroar`＝遠處的低頻魔物咆哮（Ray 交的 mp3；敵人卡 script/enemies.js 也直接引用這一支，
-     所以不轉檔改名）；`se_kidlaughter`＝孩童笑聲 —— ⚠ **檔案還沒有**，進庫前 lint 會報缺檔、那一拍安靜。 */
+     所以不轉檔改名）；`se_kidlaughter`＝孩童笑聲（ver -2104 Ray 交 mp3 → m4a 96k，8 秒，當 `amb` 循環、母親那一拍淡出）。 */
   'enemy_lowroar.mp3', 'se_kidlaughter.m4a',
   'se_villagealarm.m4a',   // 夏爾村警鐘（ver -772，Ray 交件）
   'se_enemy_roardeer.m4a',   // 樹靈鹿主的吼（ver -879，Ray 交件；配變異那一拍的紫炎）

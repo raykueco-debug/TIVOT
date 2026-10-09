@@ -1083,7 +1083,7 @@ const DM_ALTAR_MAIN = [
      諾 `confuse`（她沒有這張）→`surprise`、索 `furious`→`angry`；「索：小公主沒有訓練嗎？」稿上沒寫差分 →`talk`。
    ⚠ 「諾：『妳怎麼知道！』Sorana_SI_surprised」：圖是索菈娜的 ⇒ 當成索菈娜講（等 Ray 確認）。
    ⚠ 音效：`se_heels`→`se_highheels`、`se_sturm`→`sturm`（`ambVol:0.4` 小聲循環）、翻頁→`se_page3`、
-     低頻魔物咆哮→`enemy_lowroar`（Ray 交件）、`se_kidlaughter` **檔案還沒有**（那一拍安靜）。
+     低頻魔物咆哮→`enemy_lowroar`（Ray 交件）、`se_kidlaughter` 孩童笑聲（ver -2104 進庫）。
    ⚠ 蕾娜念的日期稿上是「O月X日」＋括號說明（北泊戰日期、兩日後、木雅克日期再往後 9／15／13 天）——
      **照稿先放 O月X日**，要接真實日期得先記下那幾場的日子（等 Ray 定）。
    ⚠ 收尾：蕾娜說「想回旅店洗澡睡覺」⇒ 演完走回旅店（`goto:'inn'`，我的判讀，Ray 可改）。 */
