@@ -3466,7 +3466,8 @@ export const GAME_CONFIG = {
                 ci_anya_dreambreaker:2813, ci_anya_lucid:1375,   /* ver -2096：清醒夢換 Ray 剪的 v3（片長 1.375 秒） */ cutin_return_nouvelle:2000,   // ver -2078：片長＝CI 長
                 ci_sorana_roar_renna:2000, ci_sorana_roar_anya:2000, ci_sorana_roar_nouvelle:2000,
                 cutin_nireload:917,   // ver -2097：v3 片長
-                cutin_dual_torsten:1000 },
+                cutin_dual_torsten:1000,
+                cutin_cecilie_guard:1000, cutin_cecilie_return:1042 },   // ver -2103：賽西莉即死防禦／生命歸還（片長＝CI 長）
     /* BR（彈雨傾洩）的進場（ver -2091，Ray：「發動瞬間快速淡入蓋一層 70% 不透明度的黑遮罩當背景，再移入 CI」）：
        `alpha`＝黑遮罩不透明度、`ms`＝淡入多久（淡完才開始滑入 CI）。weapon.activateDual 傳給 playCutin 的 opts.dim。 */
     brDim: { alpha:0.7, ms:120 },   // ver -2088：托爾斯滕彈雨傾洩（Ray：「拉到 1 秒就好」；16 格 16fps＝片長）   // ver -2079：安雅夢魘再臨（Ray 剪 nr_blue77_cut，32 格 2 秒）   // ver -2076：即死防禦／補給影片（片長＝CI 長，撤出時還在播；同 cutinAnim 那兩列）   // 索拉娜飛刀耗盡 ver -2051（26 格 16fps，撤出時還在播；同 cutinAnim 的 ms，兩處互指）
@@ -3512,10 +3513,11 @@ export const GAME_CONFIG = {
                  cutin_cecilie_obe:{ video:'resources/ci/video/cutin_cecilie_obe_v1.mp4' },
                  /* ver -2102（Ray：「賽西莉的即死防 CI 用 cec_guard_a2_2bounce_1.3_cut」）：**檔案還在動畫那台**，這台沒有 ——
                     先接鍵；mp4 進庫前預熱抓不到 ⇒ 照舊播靜態圖 `ci_cecilie_deathguard.webp`（warmCutinAnim 的 catch）。
-                    ⚠ 到件要做兩件：轉成這個檔名（480×720 H.264，同其他 CI）＋ `cutinDur` 補 `cutin_cecilie_guard:<片長毫秒>`（沒寫＝1.5 秒）。 */
+                    ver -2103：動畫交件到了（24 格 24fps＝1.00 秒），cutinDur 已補。 */
                  cutin_cecilie_guard:{ video:'resources/ci/video/cutin_cecilie_guard_v1.mp4' },
                  /* ver -2102（Ray：「cec_return_A3_2bounce_1.3_3s_cut 賽西莉 lifereturn 接上」）：同上，**檔案也還在動畫那台** ——
-                    先接鍵，進庫前播靜態圖 `ci_cecilie_lifereturn.webp`；到件後轉成這個檔名＋補 `cutinDur`（檔名寫 3s ⇒ 多半是 3000）。 */
+                    先接鍵，進庫前播靜態圖 `ci_cecilie_lifereturn.webp`；到件後轉成這個檔名＋補 `cutinDur`（檔名寫 3s ⇒ 多半是 3000）。
+                    ver -2103：動畫交件到了（25 格 24fps≈1.04 秒，不是 3 秒），cutinDur 補 1042；`returnCutin` 同一張，一起吃到。 */
                  cutin_cecilie_return:{ video:'resources/ci/video/cutin_cecilie_return_v1.mp4' },
                  /* ver -2051（Ray：「sora_obe_A2_cl2_s77_cut 接上索拉娜飛刀用盡」）：26 格 16fps＝1.625 秒＝ cutinDur。 */
                  ci_sorana_obe:{ video:'resources/ci/video/ci_sorana_obe_v1.mp4' },
