@@ -1076,7 +1076,8 @@ const DM_ALTAR_MAIN = [
 /* ══ 返回帝都（ver -2102，Ray 的稿，台詞一字未改）══════════════════════════════════
    廢城主祭壇那一段（`DM_ALTAR_MAIN`）演完自動出航 → 飛行畫面那一段在 `flight/index.html` 的 `crFlightMaybe`
    （開大地圖標帝都）→ 降落帝都，抵達攝政王廣場就演這一段（`need:'dm_altar_done'`）。
-   ⚠ 帝都的章節窗是 [0,1]，這一段明寫 `fromStage:16` 才不會被窗擋掉（storyOff 的例外）。
+   ⚠ 帝都的章節窗是 [0,1]，這一段明寫 `fromStage:17` 才不會被窗擋掉（storyOff 的例外）。
+   ⚠ **Stage 17**（ver -2107）＝廢城升空那一刻起（flight 的 crFlightMaybe 升章）。
    ⚠ 差分名照表；表上查不到的取最接近的：`lookasidetalk`→`lookawaytalk`、`raisehand`→`risehand`、
      `evalutating`→`evaluate`、`asksious`→`askserious`、`terrifying`→`terrify`、`sobbing`→`sob`、
      `deseprade`→`desperate`、`surprised`→`surprise`（索）、`smilebig`→`lauaghbig`（索）、
@@ -1404,7 +1405,7 @@ export const TOWNS = {
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
         acts:[ { flag:'cap_clear_square', need:'cap_raid', fromStage:0, storyBattle:true, lines:[ { battle:'cap_guard_square' } ] },   // 第三場（指揮官，打完結算；ver -2043）
                /* 返回帝都（ver -2102）：廢城主祭壇之後第一次回到廣場就演（見 CAP_RETURN 的說明）；演完走回旅店。 */
-               { flag:'cr_return', need:'dm_altar_done', fromStage:16, sides:CR_SIDES, goto:'inn', lines:CAP_RETURN } ],
+               { flag:'cr_return', need:'dm_altar_done', fromStage:17, sides:CR_SIDES, goto:'inn', lines:CAP_RETURN } ],
         once:true,
         lines:[ nou('surprise','帝都的攝政王廣場，好壯觀。'),
                 nou('surprise','每次看都覺得很震憾呢。') ],

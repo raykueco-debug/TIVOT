@@ -1451,6 +1451,21 @@ const BA_CHAPTERS = [
             /* 四座小祭壇（＝town.js 的 `DM_LIT`，改一邊要改另一邊） */
             'dunmor_lit_ossuary','dunmor_lit_cairn','dunmor_lit_kingsbarrow','dunmor_lit_brochtop' ],
     enter:'town', town:'dunmor', node:'altar' },
+  /* ══ Stage 17（ver -2107，Ray：「加入 stage17，從米夏戰後從廢城升空開始」「加入章節列表」）══
+     起點＝**主祭壇（米夏戰）演完、從羅賽爾廢城起飛** —— 一進飛行畫面升空完就演返回帝都的飛行對白
+     （flight 的 `crFlightMaybe`）→ 開大地圖標帝都 → 降落帝都廣場演 `cr_return`（script/town.js 的 CAP_RETURN）。
+     ⚠ 旗＝Stage 16 那一份＋`dm_altar_done`（主祭壇那一段本身）。 */
+  { id:'stage17', name:'Stage 17', sub:i18nT('廢城升空 → 返回帝都（米夏戰之後）'),
+    stage:17, clockHour:14, named:true, aff:A_AFF,
+    flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb',
+            's14_flight_talk','ss_arrive','ss_cityhall','ss_4pm','ss_inn_merge',
+            'ss_slum_anya','ss_slum_nou','ss_slum_sor','ss_anya_after','ss_nou_after','ss_sor_resolve',
+            'ss_raid_go','ss_lodge_seen','ss_lodge_done','ss_avenue_done','ss_carriage_done',
+            'ss_forecourt_done','ss_hall_done','ss_raid_done','ss_raid_home','ss_depart',
+            'mapcard_dunmor','dm_arrive','dm_gate_done','dm_cairn_call','dm_altar_first',
+            'dunmor_lit_ossuary','dunmor_lit_cairn','dunmor_lit_kingsbarrow','dunmor_lit_brochtop',
+            'dm_altar_done' ],
+    enter:'flight', flight:{ town:'dunmor' } },
   /* ══ 帝都・教廷衛士戰（ver -2043，Ray：「劇情還沒推到，但是先把帝都戰處理一下」）══ 測試入口：
      落在旅店、插 `cap_raid` ⇒ 一進來就打第一場（旅店 → 上街區 → 廣場結算 → 舊街區）。
      旗與好感照 Stage 16（劇情接上之前，這一段在哪一章還沒定）；旅店的初見／夢都當成看過。 */
