@@ -491,7 +491,7 @@ export const ART = {
                      · `standCm:165` ＝她**站姿的身高**，只管頭頂擺多高（不然頭會掉下去）。
                      ⚠ 只調 `cm` 一定失敗（那條規矩寫在 §6.5）：兩個旋鈕各管一件事。 */
                   worry:        { src:'resources/si/nouvelle_si_worry.webp', top:4, bot:1535, fx:0.683,
-                                  cm:90, standCm:165 },
+                                  cm:102, standCm:165 },
                   thinking:     { src:'resources/si/nouvelle_si_thinking.webp', top:3, bot:1535, fx:0.532 },
                   decode:     { src:'resources/si/nouvelle_si_decode.webp', top:4, bot:1528, fx:0.579 },
                   /* ══⚠⚠ ver -1547：美術**重交了 `sadsmilenoeye`（同名覆蓋）＋ 新增 `sadnoeye`**══
@@ -1701,11 +1701,11 @@ export const ART = {
      ⚠ 男孩那張上下都留白（47~1501），照量即可。 */
   capiboy: { cm:120, eye:30, fx:0.352, top:47, bot:1501,
            side:'R', alt:null, base:'resources/si/npc/capi_boy.webp', expr:{
-    front: { src:'resources/si/npc/capi_boy.webp', top:47, bot:1501, fx:0.352 },
+    front: { fxShift:0.1, cm:106, yShift:44, src:'resources/si/npc/capi_boy.webp', top:47, bot:1501, fx:0.352 },
   } },
   capimom: { cm:160, eye:30, fx:0.413, top:6, bot:1535,
            side:'R', alt:null, base:'resources/si/npc/capi_mom.webp', expr:{
-    front: { src:'resources/si/npc/capi_mom.webp', top:6, bot:1535, fx:0.413 },
+    front: { yShift:63, cm:103, src:'resources/si/npc/capi_mom.webp', top:6, bot:1535, fx:0.413 },
   } },
   commander: { cm:180, eye:30, fx:0.53, top:4, bot:1525,
            side:'R', alt:null, base:'resources/si/npc/npc_commander_si_front.webp', expr:{
