@@ -187,6 +187,11 @@ def thumb(path, f, measured):
     return out
 
 
+# ⚠ 動畫層的資料夾不是差分（ver -2098）：眨眼格（blink/）、淚光／瞳顫（eyefx/）、搖擺分層（sway/）
+#   是同一張立繪的**動畫素材**，-1960 起才長出來 —— 沒擋的話表從 434 個差分暴增成 3000 多列。
+ANIM_DIRS = {'blink', 'eyefx', 'sway', '__pycache__'}
+
+
 def scan_files():
     """SI 底下所有圖（含子資料夾，例如 NPC/）—— 回專案相對路徑。
        ⚠⚠ **底線開頭的不列**（ver -1487）：`_ornament_master2.png`、`_ref_*.png`
@@ -194,6 +199,7 @@ def scan_files():
          遊戲根本不會載。把它們列進差分表等於拿五張沒有臉的圖去佔五列。"""
     out = []
     for dirpath, _dirs, files in os.walk(SI_DIR):
+        _dirs[:] = [d for d in _dirs if d.lower() not in ANIM_DIRS]
         for fn in files:
             if fn.startswith('_'):
                 continue
