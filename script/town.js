@@ -1084,7 +1084,7 @@ const DM_ALTAR_MAIN = [
      諾 `confuse`（她沒有這張）→`surprise`、索 `furious`→`angry`；「索：小公主沒有訓練嗎？」稿上沒寫差分 →`talk`。
    ⚠ 「諾：『妳怎麼知道！』Sorana_SI_surprised」：圖是索菈娜的 ⇒ 當成索菈娜講（等 Ray 確認）。
    ⚠ 音效：`se_heels`→`se_highheels`、`se_sturm`→`sturm`（`ambVol:0.4` 小聲循環）、翻頁→`se_page3`、
-     低頻魔物咆哮→`se_roarfar`（ver -2109 Ray 改定，檔案待進庫）、`se_kidlaughter` 孩童笑聲（ver -2104 進庫）。
+     低頻魔物咆哮→`se_monsterroardeep`（ver -2110 Ray 改定）、`se_kidlaughter` 孩童笑聲（ver -2104 進庫）。
    ⚠ 蕾娜念的日期稿上是「O月X日」＋括號說明（北泊戰日期、兩日後、木雅克日期再往後 9／15／13 天）——
      **照稿先放 O月X日**，要接真實日期得先記下那幾場的日子（等 Ray 定）。
    ⚠ 收尾：蕾娜說「想回旅店洗澡睡覺」⇒ 演完走回旅店（`goto:'inn'`，我的判讀，Ray 可改）。 */
@@ -1106,10 +1106,9 @@ const CAP_RETURN = [
   ren('upset','說什麼傻話，人家可是謝索洛夫的公主。'),
   sor('amaze','對耶！'),
   /* 畫面猛烈紫紅負片瞬閃＋心跳重音＋遠處的低頻魔物咆哮。 */
-  /* ver -2109（Ray）：低吼改 `se_roarfar`、這一拍起 BGM 換 Anya & Misha（Glass Cradle）。
-     ⚠ `se_roarfar` **檔案還沒進庫**（本機沒有）：到之前那一聲安靜，lint 會報缺檔。 */
+  /* ver -2109／-2110（Ray）：低吼用 `se_monsterroardeep`、這一拍起 BGM 換 Anya & Misha（Glass Cradle）。 */
   { speaker:'NARRATION', text:'', tintHold:'nightmare', shake:true, auto:700, bgm:'glasscradle',
-    se:['se_flight_heartbeat', { n:'se_roarfar', delay:250 }] },
+    se:['se_flight_heartbeat', { n:'se_monsterroardeep', delay:250 }] },
   any('terrify','！！', { tintHold:null }),
   any('terrify','不……不行……'),
   ren('curious','安雅小姐？'),
@@ -1125,10 +1124,9 @@ const CAP_RETURN = [
   ren('command','別管我們，快去！'),
   sor('back','噢！'),
   /* ══【場景：帝都郊外 廢棄風車荒地】══ 黑幕 → 換背景（只有黃昏一張 ⇒ 硬指定 `capital_outskirts_dusk`；日後補其他時段再改 bgBand）＋荒草風聲小聲循環。
-     BGM：稿上寫 Entangle → Ray 改 result → ver -2109 再改「應該是放 missionfailed」＝檔案 `bgm_missionfailed`
-     （⚠ 不是 `failed` 那個別名 —— 那個現在指 Hesitation）。 */
+     BGM：稿上寫 Entangle → Ray 改 result → ver -2109 再改 missionfailed ＝ Hesitation（`failed` 別名，ver -2110 Ray 確認）。 */
   { speaker:'NARRATION', text:'', fadeOut:900, auto:1000, hide:['RENNA','NOUVELLE','SORANA','ANYA'] },
-  { speaker:'NARRATION', text:'', bg:'capital_outskirts_dusk', bgm:'bgm_missionfailed', amb:'sturm', ambVol:0.4, fadeIn:1200, auto:1400 },
+  { speaker:'NARRATION', text:'', bg:'capital_outskirts_dusk', bgm:'failed', amb:'sturm', ambVol:0.4, fadeIn:1200, auto:1400 },
   any('sob','哈啊……哈啊……'),
   { speaker:'PLAYER', blank:true, se:'se_walk' },
   any('sob','……別管我'),
@@ -1142,9 +1140,9 @@ const CAP_RETURN = [
   nou('worry','安雅！沒事吧？'),
   any('desperate','……'),
   { speaker:'NARRATION', text:'', se:'se_highheels', auto:700 },
-  ren('relief','哈啊——真是的……'),
+  ren('pause','哈啊——真是的……'),
   ren('talkwork','答應米海爾殿下要進帝都的妳，一看到那些毫無防備的街道和平民……'),
-  ren('front','就後悔了，是嗎？'),
+  ren('askserious','就後悔了，是嗎？'),
   any('nervous','……！'),
   ren('commandsoft','安雅小姐。'),
   ren('evaluate','一路上妳好幾次想說，又好幾次吞回去的話，'),

@@ -307,7 +307,7 @@ export const ART = {
                      ⚠ 交件時的拼字是 `evalutating`，ver -1555 去時態時一併改成 `evaluate`
                        —— 腳本裡寫的是鍵名，路徑只有這裡一處在對。 */
                   worry:    { src:'resources/si/renna_si_worry.webp',      top:6, bot:1527, fx:0.568 },
-                  pause:    { src:'resources/si/renna_si_pause.webp',      top:3, bot:1525, fx:0.513 },
+                  pause:    { yShift:0, src:'resources/si/renna_si_pause.webp',      top:3, bot:1525, fx:0.513 },
                   upsetstare:{src:'resources/si/renna_si_upsetstare.webp', top:0, bot:1524, fx:0.503 },
                   upset:    { src:'resources/si/renna_si_upset.webp',      top:2, bot:1524, fx:0.507 },   // Stage8（ver -953）
                   chase:    { src:'resources/si/renna_si_chase.webp',      top:4, bot:1532, fx:0.554 },
