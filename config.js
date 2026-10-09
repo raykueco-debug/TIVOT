@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2097';
+export const VERSION = 'ver 2026.09.22-2098';
 
 export const GAME_CONFIG = {
 
@@ -3527,7 +3527,7 @@ export const GAME_CONFIG = {
                     Ray 的剪輯（tivot_wan/out/export/nr_blue77_cut，32 格 16fps）由程式端轉成 mp4（H.264 480×720 crf22 faststart）。 */
                  cutin_nireload:{ video:'resources/ci/video/cutin_nireload_v3.mp4' },   // ver -2097：夢中夢換 Ray 剪的 ni_reload_auto24_cut（22 格 24fps＝0.917 秒，程式端轉 mp4）；v1/v2 還在
                  /* ver -2088（動畫交件，Ray 放行）：本篇破防 CI。VACE 釘關鍵格（Plan A）＋Ray 手剪，16 格 1 秒；靜態圖照舊當底。 */
-                 cutin_dual_torsten:{ video:'resources/ci/video/cutin_dual_torsten_v4.mp4' } },   // ver -2094：BR v4（v3 眼睛抖已固定；v2 虹膜糊已修；23 格 24fps＝0.96 秒，cutinDur 仍 1000）
+                 cutin_dual_torsten:{ video:'resources/ci/video/cutin_dual_torsten_v5.mp4' } },   // ver -2098：BR v5（火星改金色線狀火花、往右上飄；人物同 v4）；-2094 v4（v3 眼睛抖已固定；v2 虹膜糊已修；23 格 24fps＝0.96 秒，cutinDur 仍 1000）
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],
