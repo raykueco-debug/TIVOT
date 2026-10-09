@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2091';
+export const VERSION = 'ver 2026.09.22-2092';
 
 export const GAME_CONFIG = {
 
@@ -3527,7 +3527,7 @@ export const GAME_CONFIG = {
                     Ray 的剪輯（tivot_wan/out/export/nr_blue77_cut，32 格 16fps）由程式端轉成 mp4（H.264 480×720 crf22 faststart）。 */
                  cutin_nireload:{ video:'resources/ci/video/cutin_nireload_v1.mp4' },
                  /* ver -2088（動畫交件，Ray 放行）：本篇破防 CI。VACE 釘關鍵格（Plan A）＋Ray 手剪，16 格 1 秒；靜態圖照舊當底。 */
-                 cutin_dual_torsten:{ video:'resources/ci/video/cutin_dual_torsten_v1.mp4' } },
+                 cutin_dual_torsten:{ video:'resources/ci/video/cutin_dual_torsten_v2.mp4' } },   // ver -2092：BR 改版 v2（23 格 24fps＝0.96 秒，cutinDur 仍 1000）
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],
@@ -6086,6 +6086,7 @@ export const ASSET_VER = {
   'nouvelle_si_risehand_half': 'a4b5b24b',
   'nouvelle_si_run_closed': '04a3aafa',
   'nouvelle_si_run_half': 'd7a3bffa',
+  'nouvelle_si_runcry': 'f4a57f27',
   'nouvelle_si_runserious_closed': '3908f208',
   'nouvelle_si_runserious_half': 'b1559abd',
   'nouvelle_si_sad_closed': '3a8501ea',
