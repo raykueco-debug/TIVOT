@@ -1085,8 +1085,7 @@ const DM_ALTAR_MAIN = [
    ⚠ 「諾：『妳怎麼知道！』Sorana_SI_surprised」：圖是索菈娜的 ⇒ 當成索菈娜講（等 Ray 確認）。
    ⚠ 音效：`se_heels`→`se_highheels`、`se_sturm`→`sturm`（`ambVol:0.4` 小聲循環）、翻頁→`se_page3`、
      低頻魔物咆哮→`se_monsterroardeep`（ver -2110 Ray 改定）、`se_kidlaughter` 孩童笑聲（ver -2104 進庫）。
-   ⚠ 蕾娜念的日期稿上是「O月X日」＋括號說明（北泊戰日期、兩日後、木雅克日期再往後 9／15／13 天）——
-     **照稿先放 O月X日**，要接真實日期得先記下那幾場的日子（等 Ray 定）。
+   ⚠ 蕾娜念的日期（ver -2111）照遊戲時間算：見那幾拍上面的說明。
    ⚠ 收尾：蕾娜說「想回旅店洗澡睡覺」⇒ 演完走回旅店（`goto:'inn'`，我的判讀，Ray 可改）。 */
 const cbo = N('CAPI_BOY'), cmo = N('CAPI_MOM');
 const CR_SIDES = { RENNA:'L', NOUVELLE:'L', SORANA:'R', ANYA:'R', CAPI_BOY:'R', CAPI_MOM:'R' };
@@ -1209,9 +1208,12 @@ const CAP_RETURN = [
   any('desperate','……'),
   ren('check','這就是我想確認的。'),
   { speaker:'NARRATION', text:'', se:'se_page3', auto:700 },               // 翻頁音
-  ren('checktalk','O月X日，北方泊地來源不明的禍魘討伐52體。'),
-  ren('checktalk','O月X日，瓦爾士空域大型禍魘一體。'),
-  ren('checktalk','O月X日，木雅克遺蹟不明禍魘討伐43體。含一體異化禍魘……O月X日31體、O月X日27體、O月X日9體……'),
+  /* 日期跟遊戲時間掛勾（ver -2111）：`{VD:…}` ＝那張圖的初訪日期（見 story.js 的 subst）。
+     北泊＝northport 初訪日；瓦爾士＝北泊＋2 天；木雅克＝shinier_ruins 初訪日，之後依序再推 9／15／13 天（累加）。
+     跳章沒有記錄：北泊＝開局第 7 天（Ray）；木雅克的退路取第 10 天（排在瓦爾士之後，我定的）。 */
+  ren('checktalk','{VD:northport?7}，北方泊地來源不明的禍魘討伐52體。'),
+  ren('checktalk','{VD:northport?7+2}，瓦爾士空域大型禍魘一體。'),
+  ren('checktalk','{VD:shinier_ruins?10}，木雅克遺蹟不明禍魘討伐43體。含一體異化禍魘……{VD:shinier_ruins?10+9}31體、{VD:shinier_ruins?10+24}27體、{VD:shinier_ruins?10+37}9體……'),
   nou('surprise','數量……在減少？'),
   ren('write','沒錯，從夏爾村開始我就把『永夜以來就存在的禍魘』跟『憑空出現的禍魘』分開記錄。'),
   ren('checktalk','到羅賽爾廢城之前，懷疑因安雅小姐而生成的禍魘，幾乎可以說是歸零了。'),

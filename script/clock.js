@@ -67,6 +67,13 @@ export function dateTextIn(days){
   d.setUTCDate(d.getUTCDate()+(days|0));
   return fillDate(i18nT('{m}月{d}日'), d.getUTCFullYear(), d.getUTCMonth()+1, d.getUTCDate());
 }
+/* ══ 某個「開局起算的分鐘數」＋N 天的日期（ver -2111，地點的初訪日期用）══ 同 `dateTextIn` 只印月日。 */
+export function dateTextAt(elapsedMin, days){
+  const d=new Date(Date.UTC(EPOCH.y, EPOCH.mo-1, EPOCH.d, EPOCH.h, EPOCH.mi));
+  d.setUTCMinutes(d.getUTCMinutes()+(elapsedMin|0));
+  d.setUTCDate(d.getUTCDate()+(days|0));
+  return fillDate(i18nT('{m}月{d}日'), d.getUTCFullYear(), d.getUTCMonth()+1, d.getUTCDate());
+}
 export function timeText(){ const t=now(); return p2(t.h)+':'+p2(t.mi); }
 /* 現在的「小時」含分鐘的小數（8:30 → 8.5）。⚠ 營業時間之類的比較**一律問這支**
    （鐵律 7：一個量一個計算點）—— 不要在別處自己 `now().h + now().mi/60`。 */

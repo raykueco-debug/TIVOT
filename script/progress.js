@@ -98,6 +98,10 @@ const K = {
      ⚠ 這與貝利薩爾那條龍**不同類**：龍那一段從頭到尾沒有存檔點，所以它刻意
        只活在記憶體裡（`modules/town.js` 的 `dragonNode`，`open()` 歸零）。 */
   chase:     'tivot_chase_v1',
+  /* ══ 地點的初訪日期（ver -2111，Ray：「O月X日要實際跟遊戲時間掛勾，要用玩家遊玩指定地點的時間為記錄日期」）══
+     `{townId: 開局起算的分鐘數}`。**一輪內**。鐵律 9：誰插＝`town.open` 第一次進那張圖（`markVisitDate`）；
+     誰拔＝沒有人（只有 newRun 清）。沒有那一格＝沒去過（或跳章跳過了），查詢端自己給退路（`visitDateText`）。 */
+  visitDate: 'tivot_visitdate_v1',
   /* 副武器的改裝等級（ver -714）：`{武器id: 階}`，0~卡上的 `maxMod`。一輪內。 */
   wmod:      'tivot_wmod_v1',
   /* ══ 吃過的料理（ver -953，Ray：「HP 上限＋40 是一輪內」）══ 陣列，元素＝
@@ -1630,7 +1634,7 @@ export function newRun(opts){
                   K.hp, K.innLast, K.flightLoss, K.rennaS, K.playtime,
                   K.charms, K.gunLv, K.gunStars, K.wmod, K.jmod, K.dishes,
                   K.girlExp, K.girlStars, K.girlNiem, K.stats,
-                  K.chase]) {                                   // chase＝追兵狀態（ver -1577，一輪內）   // stats＝戰績統計（ver -1023，一輪內）   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造／吃過的料理／女主等級（-970）
+                  K.chase, K.visitDate]) {                                   // chase＝追兵狀態（ver -1577，一輪內）   // stats＝戰績統計（ver -1023，一輪內）   // 持久HP／上次旅店／連敗數／蕾娜S計數／遊玩時間／掛件／強化／杰羅改造／吃過的料理／女主等級（-970）
     try{ localStorage.removeItem(k); }catch(e){}
   }
   /* ⚠⚠ 從頭開始＝**S0 要寫進鑰匙**（ver -563）。清掉 stage 之後不寫回的話，
@@ -1723,7 +1727,8 @@ export function snapshot(){
            girlStarsRaw:rawJ(K.girlStars),  // 女主已點亮的星（ver -1132，一輪內）
            girlNiemRaw:rawJ(K.girlNiem),    // 女主的 NIEM 等級（ver -1186，一輪內）
            statsRaw:rawJ(K.stats),          // 戰績統計（ver -1023，一輪內）
-           chaseRaw:rawJ(K.chase) };        // 追兵狀態（ver -1577，一輪內）
+           chaseRaw:rawJ(K.chase),          // 追兵狀態（ver -1577，一輪內）
+           visitDateRaw:rawJ(K.visitDate) };   // 地點的初訪日期（ver -2111，一輪內）
 }
 export function restore(s){
   if(!s) return;
@@ -1769,6 +1774,23 @@ export function restore(s){
   /* 追兵狀態（ver -1577）：舊存檔沒有這一欄 → **原樣移除**（讀一個「還沒被追」的
      檔不該帶著這一輪的追兵，§6.9 的兩面）。 */
   putRaw(K.chase,    ('chaseRaw'    in s)?s.chaseRaw   :null, true);
+  /* 地點的初訪日期（ver -2111）：舊存檔沒有這一欄 → 原樣移除（查詢端走「開局第 N 天」的退路）。 */
+  putRaw(K.visitDate,('visitDateRaw' in s)?s.visitDateRaw:null, true);
+}
+/* ══ 地點的初訪日期（ver -2111）══ 讀寫只有這兩支（鐵律 7/8）。 */
+function visitDates(){ try{ const o=JSON.parse(localStorage.getItem(K.visitDate)||'{}'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
+/* 第一次才記（已經有就不動）；試飛不記。 */
+export function markVisitDate(place){
+  if(!place || hasFlag('free_flight')) return;
+  const o=visitDates(); if(o[place]!=null) return;
+  o[place]=clock.elapsed(); wr(K.visitDate, JSON.stringify(o));
+}
+/* 那個地點的初訪日期 ＋ plusDays 天，印成「M月D日」。沒有記錄（跳章／舊存檔）＝**開局第 fallbackDays 天**
+   （Ray：「跳章檢查時以遊戲初日後 7 天起算」）。 */
+export function visitDateText(place, plusDays, fallbackDays){
+  const o=visitDates();
+  const base = (o[place]!=null) ? o[place] : (fallbackDays==null?7:fallbackDays)*1440;
+  return clock.dateTextAt(base, plusDays|0);
 }
 
 /* ══⚠⚠⚠ **戰績統計**（ver -1023，Ray 交辦）══════════════════════════════════
