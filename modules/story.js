@@ -2661,6 +2661,9 @@ const SE_FILES=[
   /* 摺信聲（ver -2100，Ray：「摺紙音在另一台電腦上，你先接，另一台 git 的時候接上」）——
      ver -2102 進庫（Ray 的 mp3 → m4a 96k），`fileGain` 3.40（audio_scan 量）。 */
   'se_paperfold.m4a',
+  /* 返回帝都（ver -2102，Ray 的稿）：`enemy_lowroar`＝遠處的低頻魔物咆哮（Ray 交的 mp3；敵人卡 script/enemies.js 也直接引用這一支，
+     所以不轉檔改名）；`se_kidlaughter`＝孩童笑聲 —— ⚠ **檔案還沒有**，進庫前 lint 會報缺檔、那一拍安靜。 */
+  'enemy_lowroar.mp3', 'se_kidlaughter.m4a',
   'se_villagealarm.m4a',   // 夏爾村警鐘（ver -772，Ray 交件）
   'se_enemy_roardeer.m4a',   // 樹靈鹿主的吼（ver -879，Ray 交件；配變異那一拍的紫炎）
   'se_enemy_sakura.m4a',     // 櫻花狂亂的受擊音（ver -899，鹿主的主動攻擊）
@@ -2808,14 +2811,15 @@ export function stopAmb(ms){
   if(_amb){ try{ _amb.stop(ms==null?60:ms); }catch(_){} }
   _amb=null; _ambName=null;
 }
-export function playAmb(name){
+/* `vol`（ver -2102，Ray：「荒草風聲 se_sturm 小聲播放」）＝乘在 fileGain 上（同 `se` 的 `vol`），腳本寫 `ambVol:0.4`。 */
+export function playAmb(name, vol){
   const n = name || null;
   if(n === _ambName) return;            // 同一支還在響 ⇒ 什麼都不做
   stopAmb(60);
   if(!n) return;
   const src = seSrc(n);
   if(!src){ console.info('[story] 沒有這個環境音：', n); return; }
-  try{ _amb = SFX.playLoop(src, fileGain(src)); _ambName = n; }catch(_){ _amb=null; _ambName=null; }
+  try{ _amb = SFX.playLoop(src, fileGain(src)*(vol>0?vol:1)); _ambName = n; }catch(_){ _amb=null; _ambName=null; }
 }
 /* ══⚠⚠⚠ **崩塌音 ⇒ 演出區最前景揚煙**（ver -1639，Ray：「只要播 se_brickcrush 或
    se_rockimpact 演出畫面就給揚煙特效在最前景」）══════════════════════════════
@@ -3205,7 +3209,7 @@ function fireOneShot(line){
      『這些傢伙是……？軍隊？』那一拍就停」）══ 走城鎮節點同一支 `playAmb`（鐵律 8：環境音只有那一對
      在動；換節點時 `enter()` 照舊會把它換成那一格的 `amb`，所以停不掉的風險不存在）。
      ⚠ 用 `hasOwnProperty`：`amb:null` 是「停」，不寫是「不動」。 */
-  if(Object.prototype.hasOwnProperty.call(line,'amb')) playAmb(line.amb);
+  if(Object.prototype.hasOwnProperty.call(line,'amb')) playAmb(line.amb, line.ambVol);
   /* `ambStop:<ms>`：這一拍起的環境音放 N 毫秒就淡出（ver -1734，見 `ambStopAfter`）。
      ⚠ 只對「這一拍真的有 amb 在響」有效；寫在沒有 `amb` 的拍上也接得到（對現在在響的那一支計時）。 */
   if(line.ambStop) ambStopAfter(line.ambStop);
@@ -3381,7 +3385,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2102';
+const KERB_V='?v=2103';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

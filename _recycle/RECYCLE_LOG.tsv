@@ -1109,3 +1109,4 @@ when	from	to	reason
 20261009-214000	HANDOFF.md	_recycle/HANDOFF.md.20261009-214000	
 20261009-213938	resources/_HANDOFF_ART_20260925.md	_recycle/resources/_HANDOFF_ART_20260925.md	美術交接換新（只留一份現況）
 20261009-213938	resources/_HANDOFF_ART_20260924.md	_recycle/resources/_HANDOFF_ART_20260924.md	美術交接換新（只留一份現況）
+20261009-221157	resources/audio/se/se_enemy_lowroar.m4a	_recycle/resources/audio/se/se_enemy_lowroar.m4a	ver -2103 改回直接用敵人卡已引用的 enemy_lowroar.mp3，這支轉檔重複

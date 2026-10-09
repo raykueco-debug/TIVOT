@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2102';
+export const VERSION = 'ver 2026.09.22-2103';
 
 export const GAME_CONFIG = {
 
@@ -3514,6 +3514,9 @@ export const GAME_CONFIG = {
                     先接鍵；mp4 進庫前預熱抓不到 ⇒ 照舊播靜態圖 `ci_cecilie_deathguard.webp`（warmCutinAnim 的 catch）。
                     ⚠ 到件要做兩件：轉成這個檔名（480×720 H.264，同其他 CI）＋ `cutinDur` 補 `cutin_cecilie_guard:<片長毫秒>`（沒寫＝1.5 秒）。 */
                  cutin_cecilie_guard:{ video:'resources/ci/video/cutin_cecilie_guard_v1.mp4' },
+                 /* ver -2102（Ray：「cec_return_A3_2bounce_1.3_3s_cut 賽西莉 lifereturn 接上」）：同上，**檔案也還在動畫那台** ——
+                    先接鍵，進庫前播靜態圖 `ci_cecilie_lifereturn.webp`；到件後轉成這個檔名＋補 `cutinDur`（檔名寫 3s ⇒ 多半是 3000）。 */
+                 cutin_cecilie_return:{ video:'resources/ci/video/cutin_cecilie_return_v1.mp4' },
                  /* ver -2051（Ray：「sora_obe_A2_cl2_s77_cut 接上索拉娜飛刀用盡」）：26 格 16fps＝1.625 秒＝ cutinDur。 */
                  ci_sorana_obe:{ video:'resources/ci/video/ci_sorana_obe_v1.mp4' },
                  /* ver -2076（動畫 964946af／交接表「待程式接」）：諾薇兒即死防禦（被動，2.0 秒）、索拉娜前線補給（主動，1.5 秒）。
@@ -3766,7 +3769,7 @@ export const GAME_CONFIG = {
          ⚠ 實測那張表本身是混的：33 支語音的「現值÷掃描建議」從 0.69 到 2.62、
            中位數 1.00 —— 多數本來就直接用掃描值，只有 -711 那一批過鏈另量。
            所以這裡不套任何「修正係數」（套了就是憑空發明一個數字）。 */
-      se_cooking:1.59, se_openletter:3.70, se_paperfold:3.40 /* ver -2102 audio_scan：平均 −24.4 */, se_dooropen:2.55,   /* ver -1793 audio_scan：平均 −21.9 */ vo_maria_dishdone:0.91,   // ⚠ se_cooking ver -954 換新檔（39.7→3.73 秒）重量
+      se_cooking:1.59, se_openletter:3.70, se_paperfold:3.40 /* ver -2102 audio_scan：平均 −24.4 */, enemy_lowroar:1.15 /* ver -2102 audio_scan：平均 −15.0 */, se_dooropen:2.55,   /* ver -1793 audio_scan：平均 −21.9 */ vo_maria_dishdone:0.91,   // ⚠ se_cooking ver -954 換新檔（39.7→3.73 秒）重量
 
       /* ── 武器 ── */
       se_weapon_pistol_01:0.607, se_weapon_pistol_02:1.165, se_weapon_pistol_03:1.751,

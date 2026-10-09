@@ -59,6 +59,8 @@ export const SPEAKERS = {
   SOLDIER:  { name:'士兵',   art:null },
   RETAINER: { name:'隨從',   art:'retainer' },
   MAGE:      { name:'謎之術師', art:'mage' },        // ver -2099：碼頭 Boss（名字等 Ray 定稿）
+  CAPI_BOY:  { name:'小男孩', art:'capiboy' },     // ver -2102：返回帝都（攝政王廣場的路人母子）
+  CAPI_MOM:  { name:'母親',   art:'capimom' },
   COMMANDER: { name:'指揮官',   art:'commander' },   // ver -2099：碎片 02   // 米夏的隨從（ver -1707 立；-1715 接上立繪，見 ART.retainer）
   VOICE:    { name:'路人',   art:null },
   /* 旁白（ver -656）：**沒有立繪、名字欄空著** —— 「跳一個對話框」那種畫面訊息
@@ -1694,6 +1696,16 @@ export const ART = {
     front:   { src:'resources/si/npc/mage_si_front.webp',   top:3,  bot:1530, fx:0.43 },
     barrier: { src:'resources/si/npc/mage_si_barrier.webp', top:2,  bot:1529, fx:0.43 },
     hurt:    { src:'resources/si/npc/mage_si_hurt.webp',    top:13, bot:1514, fx:0.36 },
+  } },
+  /* ══ 返回帝都的路人母子（ver -2102，Ray 交件 capi_boy／capi_mom）══ measure_si 量；身高是估的（男孩 120、母親 160）。
+     ⚠ 男孩那張上下都留白（47~1501），照量即可。 */
+  capiboy: { cm:120, eye:30, fx:0.352, top:47, bot:1501,
+           side:'R', alt:null, base:'resources/si/npc/capi_boy.webp', expr:{
+    front: { src:'resources/si/npc/capi_boy.webp', top:47, bot:1501, fx:0.352 },
+  } },
+  capimom: { cm:160, eye:30, fx:0.413, top:6, bot:1535,
+           side:'R', alt:null, base:'resources/si/npc/capi_mom.webp', expr:{
+    front: { src:'resources/si/npc/capi_mom.webp', top:6, bot:1535, fx:0.413 },
   } },
   commander: { cm:180, eye:30, fx:0.53, top:4, bot:1525,
            side:'R', alt:null, base:'resources/si/npc/npc_commander_si_front.webp', expr:{
