@@ -5156,7 +5156,9 @@ export const TOWNS = {
           ren('write','那不應該是『神』該做的事嗎？'),
           nou('sad','……'),
           /* ══ ver -2099（Ray 修稿）：拿掉「修女不信神」那一段，改成蘿法道謝 → 蕾娜託她發報（一道保險）══
-             ⚠ 缺圖（美術開單，交到前靜靜回退基本立繪）：蘿法 `shy`／`ask`／`lookdown`、蕾娜 `letter`／`tired`。
+             ⚠ 缺圖在 Ray 另一台電腦（ver -2101）：蘿法 `shy`／`ask`／`lookdown`、蕾娜 `letter`（稿上的 tired＝既有 `tire`）。
+               **不要先在 speakers.js 預留路徑** —— 立繪沒有 onerror 退路，指到不存在的檔案＝那一格永遠不 onload ＝人從畫面上消失；
+               沒登記的差分才會靜靜回退基本立繪。圖進庫後再登記（measure_si 量）。
              ⚠ 稿上的「Se Paper fold」＝`se_paperfold`（ver -2100 接好鍵；檔案在 Ray 另一台電腦，下次 git 進來就會響，見 story.js 的 SE_FILES）。 */
           ren('write','有能力幫助眼前的人，已經是最大的幸運了。'),
           lofN('shy','謝謝妳們……'),
@@ -5164,14 +5166,14 @@ export const TOWNS = {
           ren('write','……有件小事，倒是要請妳幫個忙。'),
           lofN('shy','只要是我辦得到的……'),
           { speaker:'NARRATION', text:'', se:'se_paperfold', auto:1400 },   // 摺信聲（檔案待進庫，見上）
-          ren('letter','如果一個月內沒有收到我的消息，請妳這封信的內容發報到西南戰區司令部。'),
+          ren('letter','如果一個月內沒有收到我的消息，請妳把這封信的內容發報到西南戰區司令部。'),
           lofN('ask','給海里希˙馮˙海森伯格……？'),
           lofN('lookdown','就只是……這樣？'),
           ren('smile','就只是這樣。麻煩妳了。'),
           nou('shock','蕾娜小姐，那是……？'),
           ren('lookaside','一道保險罷了。'),
           any('curious',''),
-          ren('tired','希望用不上吧。'),
+          ren('tire','希望用不上吧。'),   // 稿上寫 tired ＝既有的 `tire`（-1555 統一無時態）
           ren('handout','明天航行許可就會下來了，今天先好好休息。'),
           /* ver -1814（Ray：「索菲雅事件結束後就不鎖出航」）：`ss_depart` 改在這裡插 —— 出航鎖（`sail.hold.until`）、
              飛行頁的出發對話 ④（開圖標廢城、解除禁航）都讀它，一起提前。隔天早上那道閘門看到旗已插就不再觸發。 */
