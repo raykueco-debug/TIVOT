@@ -57,7 +57,9 @@ export const SPEAKERS = {
   /* 士兵（ver -953，Stage8）：只有一兩句傳令，**沒有立繪** —— 同 VOICE 的作法，
      名字框標明是誰在講話就夠了（§6.5.4：路人單句要標名字）。 */
   SOLDIER:  { name:'士兵',   art:null },
-  RETAINER: { name:'隨從',   art:'retainer' },   // 米夏的隨從（ver -1707 立；-1715 接上立繪，見 ART.retainer）
+  RETAINER: { name:'隨從',   art:'retainer' },
+  MAGE:      { name:'謎之術師', art:'mage' },        // ver -2099：碼頭 Boss（名字等 Ray 定稿）
+  COMMANDER: { name:'指揮官',   art:'commander' },   // ver -2099：碎片 02   // 米夏的隨從（ver -1707 立；-1715 接上立繪，見 ART.retainer）
   VOICE:    { name:'路人',   art:null },
   /* 旁白（ver -656）：**沒有立繪、名字欄空著** —— 「跳一個對話框」那種畫面訊息
      （「該回去看看了。」）。⚠ 與 `VOICE` 的差別只有名字：那是「某個路人在講話」，
@@ -507,6 +509,8 @@ export const ART = {
                      ⚠ 交件是 PNG，依 §5 的規約轉成 WebP 後才接（原 PNG 留在 resources/SI）。
                      ⚠ 取景值是 `tools/measure_si.py` 量的，不是沿用 `run` 那一張。 */
                   runserious:{src:'resources/si/nouvelle_si_runserious.webp',top:12, bot:1521, fx:0.402 },
+                  /* ver -2099 返回帝都稿缺差分（美術 9086789c）：measure_si 量 top/bot；fx 照臉中心目測校正（v2：閉眼捂嘴） */
+                  runcry:   { src:'resources/si/nouvelle_si_runcry.webp?v=f4a57f27',   top:4,  bot:1528, fx:0.725 },
                   /* ver -427 交件：酒館第一句要的那張（在此之前一直回退基本立繪）。 */
                   pray:     { src:'resources/si/nouvelle_si_pray.webp',     top:0,  bot:1533, fx:0.535 },
                   /* 北方泊地教堂那一段（ver -595，Ray 交稿）。`relief` 交件是 PNG，
@@ -1070,6 +1074,9 @@ export const ART = {
     lookup:    { src:'resources/si/anya_si_lookup.webp?v=b62b187e',     top:5, bot:1527, fx:0.479 },
     nervous:   { src:'resources/si/anya_si_nervous.webp?v=f425f52e',    top:2, bot:1525, fx:0.479 },
     scare2:   { src:'resources/si/anya_si_scare2.webp?v=fb151f9d',    top:4, bot:1519, fx:0.364 },
+    /* ver -2099 返回帝都稿缺差分（美術 9086789c）：measure_si 量 top/bot；fx 照臉中心目測校正 */
+    sad:       { src:'resources/si/anya_si_sad.webp',       top:8, bot:1523, fx:0.465 },
+    shakehead: { src:'resources/si/anya_si_shakehead.webp', top:5, bot:1521, fx:0.405 },
     /* ══ 東方泊地・碼頭／甜品店 ＋ 貝利薩爾祭壇（ver -1372）══
        腳本（-1318／-1353）一共有 6 拍在用這兩個名字，圖是 Ray 這一輪才交的 ——
        在那之前一律**靜靜回退成基本立繪**（`script_lint.py` 每次都報，畫面上沒有訊息）。
@@ -1479,6 +1486,7 @@ export const ART = {
   cecilie:   { cm:170, eye:32, fx:0.536, top:8, bot:1533,
            side:'R', alt:null, base:'resources/si/cecilie_si_front.webp?v=d57dbd14', expr:{
     cringe:   { yShift:0, src:'resources/si/cecilie_si_cringe.webp',    top:7, bot:1535, fx:0.632 },
+    teary:    { src:'resources/si/cecilie_si_teary.webp',     top:3, bot:1531, fx:0.574 },   // ver -2099 返回帝都稿缺差分（美術 9086789c）：measure_si 量 top/bot；fx 照臉中心目測校正
     talk:     { src:'resources/si/cecilie_si_talk.webp',      top:7, bot:1527, fx:0.539 },
     tease:    { src:'resources/si/cecilie_si_tease.webp',     top:4, bot:1529, fx:0.574 },
     upset:    { src:'resources/si/cecilie_si_upset.webp',     top:2, bot:1526, fx:0.535 },
@@ -1670,6 +1678,20 @@ export const ART = {
   retainer: { cm:176, eye:30, fx:0.451, top:4, bot:1534,
            side:'R', alt:null, base:'resources/si/npc/sodier_.webp', expr:{
     front: { src:'resources/si/npc/sodier_.webp', top:4, bot:1534, fx:0.451 },
+  } },
+  /* ══ 謎之術師（碼頭 Boss）＋指揮官（碎片 02）（ver -2099）══
+     ver -2099 返回帝都稿缺差分（美術 9086789c）：measure_si 量 top/bot；fx 照臉中心目測校正。身高是估的（成年男性 178／180）。
+     ⚠ 術師的 `cast`（mage_si_cast.webp）縱向只佔 87%（不是全身），沒接 —— 要用時照 §6.5 加 `rescale` 另量。
+     ⚠ 術師 `barrier` 的 fx 用臉不用 alpha 重心（伸出去的手與結界會把重心拉到 0.49）。 */
+  mage: { cm:178, eye:30, fx:0.43, top:3, bot:1530,
+           side:'R', alt:null, base:'resources/si/npc/mage_si_front.webp', expr:{
+    front:   { src:'resources/si/npc/mage_si_front.webp',   top:3,  bot:1530, fx:0.43 },
+    barrier: { src:'resources/si/npc/mage_si_barrier.webp', top:2,  bot:1529, fx:0.43 },
+    hurt:    { src:'resources/si/npc/mage_si_hurt.webp',    top:13, bot:1514, fx:0.36 },
+  } },
+  commander: { cm:180, eye:30, fx:0.53, top:4, bot:1525,
+           side:'R', alt:null, base:'resources/si/npc/npc_commander_si_front.webp', expr:{
+    front: { src:'resources/si/npc/npc_commander_si_front.webp', top:4, bot:1525, fx:0.53 },   // 指著左邊的手會把 alpha 重心拉到 0.495，用臉
   } },
   /* ══ 聖索菲亞的五位（Stage 14，ver -1769）══
      取景一律 `tools/measure_si.py` 實量（全身、1024×1536）。身高是**估的**：
