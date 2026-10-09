@@ -1669,6 +1669,15 @@
   #cutin{position:absolute;inset:0;z-index:8100;display:none;overflow:hidden;
     background:radial-gradient(circle at 50% 50%,rgba(40,10,50,.6),rgba(5,4,10,.95));}
   #cutin.on{display:block;}
+  /* ══ BR 的黑遮罩（ver -2091）：`.dimpre` 發動當下就顯示（只有遮罩，CI 的東西都還藏著），淡完 `.on` 才滑入 CI ══
+     遮罩是 ::before（在所有子層下面）；原本的紫色漸層背景在這一模式拿掉。數字由 saint.playCutin 從 config.tuning.brDim 寫進來。 */
+  #cutin.dimpre{display:block;}
+  #cutin.dim{background:transparent;}
+  #cutin.dim::before{content:'';position:absolute;inset:0;background:#000;opacity:var(--ci-dim-a,.7);
+    animation:ciDimIn var(--ci-dim-ms,.12s) ease-out both;}
+  @keyframes ciDimIn{from{opacity:0}to{opacity:var(--ci-dim-a,.7)}}
+  #cutin.dimpre:not(.on) > :not(#cutinFlash){visibility:hidden;}
+  #cutin.dim #cutinFlash{display:none;}
   #cutinFlash{position:absolute;inset:0;background:#fff;opacity:0;}
   #cutin.on #cutinFlash{animation:cutinFlash var(--ci-dur,1.5s) ease-out;}
   @keyframes cutinFlash{0%{opacity:1}12%{opacity:0}100%{opacity:0}}

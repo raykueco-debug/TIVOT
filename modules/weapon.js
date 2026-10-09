@@ -706,7 +706,8 @@ export function activateDual(){
      /* 破防 cut-in 分流（ver -454，Ray：「story 版的破防 CI 換成這一張
         CI_Torsten_Dualcrush」）：本篇＝托爾斯滕、試玩版照舊 Luna。
         ⚠ 走 `storyMode()`（＝scriptRun || tutorialStoryRun，唯一的判定，鐵律 8）。 */
-     dualCiKey(storyMode()));   // 判定在 config.dualCiKey（ver -2088，預熱名單同一份）
+     dualCiKey(storyMode()),   // 判定在 config.dualCiKey（ver -2088，預熱名單同一份）
+     { dim: GAME_CONFIG.tuning.brDim });   // ver -2091：先淡入黑遮罩再滑入 CI
 }
 
 // 進入破防射擊窗口（窗口本體）：activateDual 的 cut-in 撤下後呼叫；馬季諾「前線補給」

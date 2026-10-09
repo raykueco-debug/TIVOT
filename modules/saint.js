@@ -1277,6 +1277,13 @@ export function playCutin(done, label, imgKey, opts){
   /* `opts.full`（ver -874，Ray：「索拉娜的被動技要放全屏」）：整張圖滿版 cover
      淡入（CSS 的 #cutin.full）。**每次都要設**——上一張的 full 不能殘留。 */
   if(c) c.classList.toggle('full', !!opts.full);
+  /* `opts.dim`（ver -2091，BR）：發動當下就淡入一層黑遮罩（不等圖解碼），淡完才開演（滑入 CI）。
+     每次都要設 —— 上一張的 dim 不能殘留。數字在 config.tuning.brDim。 */
+  const dim = opts.dim || null, t0 = Date.now();
+  if(c){ c.classList.toggle('dim', !!dim); c.classList.remove('dimpre');
+    if(dim){ c.style.setProperty('--ci-dim-a', dim.alpha!=null ? dim.alpha : 0.7);
+             c.style.setProperty('--ci-dim-ms', ((dim.ms||0)/1000)+'s');
+             c.classList.remove('on','ciout'); void c.offsetWidth; c.classList.add('dimpre'); } }
   /* CI 的長度（ver -2030，Ray：「諾的 SI CI 改成 2 秒看看」）：預設 1.5 秒，個別張寫在 `tuning.cutinDur`。
      ⚠ 與動檔的速度是兩件事（ver -2029，Ray：「ci 還是 1.5 秒，不管有沒有播完」）——
        動檔照 `cutinAnim` 自己的速度播，CI 時間一到就撤，沒播完就是截掉。
@@ -1295,11 +1302,13 @@ export function playCutin(done, label, imgKey, opts){
           ci.style.setProperty('--ci-s', fit || 1); }
   // cut-in 槍聲已全面取消：雙槍破防有 Luna_dual_VC、聖徒化降臨有 SI_01，槍聲只留給盤面實際射擊
   const start=()=>{
+    /* dim：遮罩還沒淡完就等它淡完再開演（解碼通常比 120ms 久，多半不必等）。 */
+    if(dim){ const wait = (dim.ms||0) - (Date.now()-t0); if(wait > 0){ setTimeout(start, wait); return; } }
     c.classList.remove('on','ciout'); void c.offsetWidth; c.classList.add('on');
     ciOutAt(c, ciDur);                          // 撤出＝最後 0.25 秒放大淡出（ver -2042）
     if(ci && imgKey) playCiAnim(ci, imgKey);   // 動檔（有登記才播；沒有就是那張靜態圖）
     setTimeout(()=>{
-      c.classList.remove('on','ciout');
+      c.classList.remove('on','ciout','dim','dimpre');
       stopCiAnim();   // 動檔比 CI 長的話，撤下時一併停（ver -2037：不在背後空跑；-2057 起影片也在這裡釋放）
       // ⚠ 教學對話開著時不清暫停旗標：cut-in（如即死防禦）與教學對話重疊時，
       //   這裡清掉會讓盤面在對話中恢復可點（懲罰/插話亂入，曾致陣亡重開流程被劫持）。

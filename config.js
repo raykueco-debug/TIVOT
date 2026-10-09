@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2090';
+export const VERSION = 'ver 2026.09.22-2091';
 
 export const GAME_CONFIG = {
 
@@ -3466,7 +3466,10 @@ export const GAME_CONFIG = {
                 ci_anya_dreambreaker:2813, ci_anya_lucid:2000, cutin_return_nouvelle:2000,   // ver -2078：片長＝CI 長
                 ci_sorana_roar_renna:2000, ci_sorana_roar_anya:2000, ci_sorana_roar_nouvelle:2000,
                 cutin_nireload:2000,
-                cutin_dual_torsten:1000 },   // ver -2088：托爾斯滕彈雨傾洩（Ray：「拉到 1 秒就好」；16 格 16fps＝片長）   // ver -2079：安雅夢魘再臨（Ray 剪 nr_blue77_cut，32 格 2 秒）   // ver -2076：即死防禦／補給影片（片長＝CI 長，撤出時還在播；同 cutinAnim 那兩列）   // 索拉娜飛刀耗盡 ver -2051（26 格 16fps，撤出時還在播；同 cutinAnim 的 ms，兩處互指）
+                cutin_dual_torsten:1000 },
+    /* BR（彈雨傾洩）的進場（ver -2091，Ray：「發動瞬間快速淡入蓋一層 70% 不透明度的黑遮罩當背景，再移入 CI」）：
+       `alpha`＝黑遮罩不透明度、`ms`＝淡入多久（淡完才開始滑入 CI）。weapon.activateDual 傳給 playCutin 的 opts.dim。 */
+    brDim: { alpha:0.7, ms:120 },   // ver -2088：托爾斯滕彈雨傾洩（Ray：「拉到 1 秒就好」；16 格 16fps＝片長）   // ver -2079：安雅夢魘再臨（Ray 剪 nr_blue77_cut，32 格 2 秒）   // ver -2076：即死防禦／補給影片（片長＝CI 長，撤出時還在播；同 cutinAnim 那兩列）   // 索拉娜飛刀耗盡 ver -2051（26 格 16fps，撤出時還在播；同 cutinAnim 的 ms，兩處互指）
     /* ⚠ ver -2040（Ray：「秒數控制在每一個在撤出時都還在播放狀態，不要停」）：索拉娜共鬥／賽西莉聖徒化／賽西莉 OBE
        的 CI 長度＝那段動檔的實際長度（格數 ÷ 16fps）—— 最後一格剛出現就撤，不會停格。
        改動檔的格數就要一起改這裡（同一個數字的兩處，兩邊互指：cutinAnim 的 ms）。 */   // 兩張 OBE ver -2038（Ray：「兩個都改 2 秒」）；結局全畫面 CI（playSaintCutin）也讀這張表   // 索拉娜共鬥 ver -2032（Ray：「2 秒可以」；_v7 動檔剛好 2 秒）
