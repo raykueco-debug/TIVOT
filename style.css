@@ -1678,6 +1678,13 @@
   @keyframes ciDimIn{from{opacity:0}to{opacity:var(--ci-dim-a,.7)}}
   #cutin.dimpre:not(.on) > :not(#cutinFlash){visibility:hidden;}
   #cutin.dim #cutinFlash{display:none;}
+  /* ══ BR 的移入（ver -2093，Ray：「BR 改版改成由左下滑入，結尾拉回一些」「滑到尾要有一點拉回煞車感」）══
+     `.br`（weapon.activateDual 傳 opts.cls）：從**左下**斜著滑進來，衝過定位一點（往右上）再拉回來煞住。停留段照一般 CI。 */
+  #cutin.br.on #cutinImg,#cutin.br.on .ci-vid{animation-name:cutinImgInBR,cutinImgHold;}
+  @keyframes cutinImgInBR{
+    0%{transform:translate(-125%,-5%) scale(calc(var(--ci-s,1)*1.5)) rotate(-10deg);opacity:0;animation-timing-function:cubic-bezier(.2,.8,.4,1);}
+    68%{transform:translate(-45%,-54%) scale(calc(var(--ci-s,1)*1.27)) rotate(1.5deg);opacity:1;animation-timing-function:cubic-bezier(.3,0,.3,1);}
+    100%{transform:translate(-50%,-50%) scale(calc(var(--ci-s,1)*1.28)) rotate(0deg);opacity:1;}}
   #cutinFlash{position:absolute;inset:0;background:#fff;opacity:0;}
   #cutin.on #cutinFlash{animation:cutinFlash var(--ci-dur,1.5s) ease-out;}
   @keyframes cutinFlash{0%{opacity:1}12%{opacity:0}100%{opacity:0}}

@@ -1280,6 +1280,8 @@ export function playCutin(done, label, imgKey, opts){
   /* `opts.dim`（ver -2091，BR）：發動當下就淡入一層黑遮罩（不等圖解碼），淡完才開演（滑入 CI）。
      每次都要設 —— 上一張的 dim 不能殘留。數字在 config.tuning.brDim。 */
   const dim = opts.dim || null, t0 = Date.now();
+  /* `opts.cls`（ver -2093）：這一張 CI 專屬的動畫樣式（例：BR 的 `.br` 從左下滑入）。每次都要換掉上一張的。 */
+  if(c){ if(c.__ciCls) c.classList.remove(c.__ciCls); c.__ciCls = opts.cls || ''; if(opts.cls) c.classList.add(opts.cls); }
   if(c){ c.classList.toggle('dim', !!dim); c.classList.remove('dimpre');
     if(dim){ c.style.setProperty('--ci-dim-a', dim.alpha!=null ? dim.alpha : 0.7);
              c.style.setProperty('--ci-dim-ms', ((dim.ms||0)/1000)+'s');

@@ -707,7 +707,7 @@ export function activateDual(){
         CI_Torsten_Dualcrush」）：本篇＝托爾斯滕、試玩版照舊 Luna。
         ⚠ 走 `storyMode()`（＝scriptRun || tutorialStoryRun，唯一的判定，鐵律 8）。 */
      dualCiKey(storyMode()),   // 判定在 config.dualCiKey（ver -2088，預熱名單同一份）
-     { dim: GAME_CONFIG.tuning.brDim });   // ver -2091：先淡入黑遮罩再滑入 CI
+     { dim: GAME_CONFIG.tuning.brDim, cls:'br' });   // ver -2091：先淡入黑遮罩再滑入 CI；-2093：左下滑入、收尾拉回（style.css 的 .br）
 }
 
 // 進入破防射擊窗口（窗口本體）：activateDual 的 cut-in 撤下後呼叫；馬季諾「前線補給」
