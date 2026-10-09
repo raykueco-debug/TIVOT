@@ -1,66 +1,81 @@
-# HANDOFF — 截至 `ver 2026.09.22-2101`（10-09 晚，Windows 3060 程式 session 收工）
+# HANDOFF — 截至 `ver 2026.09.22-2112`（10-09 深夜，iMac 程式 session 收工）
 
 > ⚠⚠ **交接規則（Ray 10-04 定）**：
 > 1. 開工讀交接 → **逐項清點這一份的「完成／未完成」**，給 Ray 確認。
 > 2. 確認後**生成新交接、回收舊交接**（`tools/recycle.sh`）—— 這個檔**只留一份現況**，不往下疊。
 > 3. 已完成、已定案、Ray 說移除的，**不要再抄進新的一份**。
-> 上一份：`_recycle/HANDOFF.md.20261009-214000`（git 歷史也有）。
+> 上一份：`_recycle/HANDOFF.md.*`（-2101，3060 機那一份；git 歷史也有）。
 
 ## 現況
-- 只有一個分支：`main`。這台是 **RTX 3060 12GB／16GB RAM**（使用者資料夾 `C:\Users\User`，舊機是 `C:\Users\Ray Ku`）。
-- 測試伺服器：桌面 `.claude/launch.json` 的 **`tivot-claude`（8202）**；8200／8201 是 Ray 的。一進頁面先設 `tivot_admin_v1`＋`tivot_mute_v1`。
-  Python 一律 `py -3.11 -X utf8`（openpyxl 已裝在 3.11）；跑會印符號的工具前 `PYTHONIOENCODING=utf-8`。
-- ⚠⚠ **西文翻譯暫停**（Ray 10-09：「西文之後不用做，完成後再一次做」）—— 改中文時不要動 `i18n/*/es*`。
-- ⚠⚠ 改視覺效果先做幾張給 Ray 看，看過才整批。刪／覆蓋／回收任何檔案前先問 Ray。
-- 其他 session：**動畫**（`resources/_HANDOFF_ANIM.md`）、**美術**（`resources/_HANDOFF_ART.md`；10-09 美術自己換新，舊的兩份已回收、刪除待美術 commit）。交件由程式接、commit。
-  動畫交件說明另有 `resources/ci/layers/torsten_bulletrain/TO_CODE.md`（BR，已接到 v5；刪不刪等 Ray）。
-- 不要 commit：`tools/anim/*` 未提交的修改（動畫的）、`resources/ci/layers/**` 的中間檔、`resources/si/eyefx/cecilie_si_fluster_te_mask.webp`（來源不明）。
+- 只有一個分支：`main`。兩台在推：**Windows 3060**（`C:\Users\User`）與 **iMac**（`~/Desktop/TIVOT`，iMac18,3／8 GB，macOS 13）。
+  ⚠ 兩台同時推過一次（-2103 撞號，`e923c854` 合併）—— **開工先 `git pull`，推之前再 pull 一次**。
+- 測試伺服器：Windows 用 `.claude/launch.json` 的 `tivot-claude`（8202）；iMac 用 **`tivot-verify`（8123）**。8200 是 Ray 的，不要碰。
+  iMac 沒有 node：`script_lint.py` 走 macOS 內建 jsc，照樣能跑。
+- ⚠⚠ 西文翻譯暫停（Ray 10-09）—— 改中文時不要動 `i18n/*/es*`。
+- 其他 session：**動畫**（`resources/_HANDOFF_ANIM.md`）、**美術**（`resources/_HANDOFF_ART.md`）。交件由程式接、commit。
+- 不要 commit：`tools/anim/*` 未提交的修改、`resources/ci/layers/**` 中間檔、`resources/si/eyefx/cecilie_si_fluster_te_mask.webp`（來源不明）、
+  Ray 本機的 `docs/EOS_CONTEST.md`／`reference/TIVOT_Glossary_ZH_EN_JA_ES.xlsx` 改動（他自己的）。
 
-## 本機 Wan 動畫環境（10-08 建好，全部 SHA256 對過官方）
-- `ComfyUI-master\.venv`（py3.12、torch 2.11+cu128）；`C:\ffmpeg\bin\ffmpeg.exe`（7.1，有 libx264）。
-- 模型：I2V A14B High/Low Q4_K_M（`models/unet`）、VACE-Fun A14B high/low Q4_K_M（`models/unet`）、
-  lightx2v 4 步 LoRA：I2V v1 high/low＋T2V v1.1 high/low（`models/loras`）、`umt5_xxl_fp8_e4m3fn_scaled`、`wan_2.1_vae`。沒有 Bouncing/Motto LoRA。
-- 工具在 `ComfyUI-master\tivot_wan\`（從 `tools/anim` 拷來，寫死的 `Ray Ku` 路徑只在拷貝裡改成 `User`）。idle 測試一支約 226 秒。
-
-## 本輪做的（-2082～-2101）—— 都推上了
-- **首頁 BGM**：iOS `audioSession='playback'`（靜音鍵不再消掉 BGM；舊 iOS 不接 Web Audio）、曲子在路上引擎不休眠、BGM 下載 8 秒逾時退串流（-2085）；
-  **解鎖改成每一下手勢都叫、加聽 touchend/click/pointerup**（iOS 的 touchstart 不算使用者啟用，舊寫法第一下就拆監聽 ⇒ 要按鈕出 SE 才有音樂，-2089）。HUD 多 `ctx/ses/bless/idle`。
-- **CI 進場**：滑入段獨立計時 `--ci-in`（短 CI 也 0.27 秒，-2090）；BR 專屬：發動瞬間淡入 70% 黑遮罩（`tuning.brDim`）→ 從左下滑入、衝過頭拉回煞車（`.br`，-2091／-2093）。
-  `playCutin` 新增 `opts.dim`／`opts.cls`。破防 CI 分流抽成 `config.dualCiKey`，並排進預熱。
-- **CI 現行影片**：BR＝`cutin_dual_torsten_v5`（24fps 0.96 秒，cutinDur 1000）；安雅清醒夢（主動一般版）＝`ci_anya_luciddream_v3`（Ray 剪，1.375 秒）；
-  夢中夢（被動）＝`cutin_nireload_v3`（Ray 剪 ni_reload_auto24_cut，0.917 秒）；夢魘裝填（reload）**不放 CI**（`reloadCutin:''`）；夢境粉碎＝`ci_anya_dreambreaker`。
-  之後 CI 交件以 **24fps** 為主（Ray 定）。
-- **安雅改名**：被動 夢中夢／Dream Within、主動一般版與增益狀態 清醒夢／Lucid Dream、夢魘化版 夢境粉碎。語音兩邊**暫時共用** `vo_anya_lucid`（Ray）。
-- **新差分接線**（-2099）：安雅 `sad`／`shakehead`、諾薇兒 `runcry`、賽西莉 `teary`；新 speaker `MAGE`（謎之術師：front／barrier／hurt）、`COMMANDER`（指揮官）。
-  術師 `cast` 不是全身圖，沒接。差分總表重出（`si_xlsx.py` 已排除 blink/eyefx/sway，516 個差分）。
-- **聖索菲亞旅店收尾**照 Ray 修稿（蘿法道謝 → 蕾娜託她發報，一道保險）。
+## 本輪做的（-2102～-2112）—— 都推上了
+- **另一台的資源接上**（-2102）：蘿法 `shy/ask/lookdown`、蕾娜 `letter/check/checktalk`、安雅 `cryhard/shysmile`（WebP＋measure_si）；摺信聲 `se_paperfold`（fileGain 3.40）。
+- **返回帝都整段**（-2103～-2110，Ray 稿；`script/town.js` 的 `CAP_RETURN`、`flight/index.html` 的 `crFlightMaybe`）：
+  廢城出航 → 飛行對白＋開大地圖標帝都 → 降落攝政王廣場（`cr_return`，fromStage:17）→ 負片瞬閃（`se_monsterroardeep`、BGM 換 Glass Cradle）
+  → 追到帝都郊外風車荒地（`capital_outskirts_dusk`，BGM Hesitation＝`failed`，`sturm` ambVol 0.4）→ 演完 `goto:'inn'`（我的判讀）。
+  新 speaker 小男孩／母親（`capi_boy`／`capi_mom`）；孩童笑聲 `se_kidlaughter`（fileGain 2.31）；`playAmb` 吃 `ambVol`。
+- **Stage 17**（-2107）：廢城升空完由 16 升 17（`crFlightMaybe`）；章節列表加 Stage 17（從廢城起飛）。
+- **Stage 16 以後無禁航區**（-2108，`noflyOff` 加章節判定）。
+- **蕾娜念的禍魘日期跟遊戲時間掛勾**（-2111／-2112）：事件日期 `tivot_eventdate_v1`（一輪內，存檔帶；鐵律 9：第一次才記、沒人拔）。
+  `np_natalia`＝娜塔莉戰打完那一拍、`valse_serpent`＝羽蛇強制戰打贏（飛行頁自己寫同一把鑰匙，兩邊互指）、`muyak`＝第一次進木雅克神殿（城上 `eventDate`）。
+  台詞寫 `{VD:事件?退路天數+加幾天}`；跳章沒記錄＝開局第 7 天起算（瓦爾士 9、木雅克 10 是我排的）；木雅克之後 +9／+24／+37（累加）。
+- **Credit** 加「Animation LoRA」：Bouncing B、Motto Hayaku（zxtopower）。⚠ 模型卡沒寫商用 —— 上架前要私訊作者確認。
+- 賽西莉即死防禦／生命歸還 CI 影片：另一台（`5626ed7f`）交件並接好，生命歸還 cutinDur 1042。
 
 ## 未完成
-**等另一台電腦 git 進來（Ray 的檔）**
-1. `resources/audio/se/se_paperfold.m4a`（摺信聲，鍵已接在 `story.js` 的 `SE_FILES`；進庫前 lint 報 2 個錯是預期的；到件要量 `fileGain`）。
-2. 缺圖 4 張：`si/npc/npc_ss_lofa_shy／ask／lookdown.webp`、`si/renna_si_letter.webp` —— 進庫後在 `speakers.js` 登記並 `measure_si` 量。
-   ⚠ **不要先預留路徑**：立繪沒有 onerror 退路，指到不存在的檔＝人從畫面消失；沒登記的差分才會回退基本立繪。
+**等 Ray 確認（這一輪我自己判斷的）**
+1. 返回帝都：「諾：『妳怎麼知道！』」稿上圖是 `Sorana_SI_surprised` ⇒ 我讓索菈娜講；演完走回旅店（`goto:'inn'`）。
+2. 差分取最接近的：蕾 `lookasidetalk→lookawaytalk`、`evalutating→evaluate`、`asksious→askserious`；諾 `raisehand→risehand`、`confuse→surprise`（她沒這張）；
+   索 `smilebig→lauaghbig`、`furious→angry`、`surprised→surprise`；安 `terrifying→terrify`、`sobbing→sob`、`deseprade→desperate`。
+3. 禍魘日期：木雅克之後「9／15／13 天」我當**累加**；跳章退路瓦爾士 9、木雅克 10 天。
+4. 小男孩／母親身高是估的（120／160 cm）。
+
+**要實測（還沒實際演過）**
+5. 返回帝都整段：降落廣場之後到風車荒地那一段沒人實際播過（只做了靜態檢查＋飛行段開頭）；羽蛇戰打贏後 `valse_serpent` 有沒有寫進去。
+6. Stage 16/17 進飛行畫面確認沒有紅罩、可飛進羅賽爾那幾國。
+7. 上一份留下的手機實測：首頁 BGM（冷／熱啟動）、BR 進場、群戰倒地與閉棺、米夏 NI 取景、主祭壇自動出航。
 
 **等 Ray**
-3. 謎之術師數值卡（建卡＋碼頭 Boss）；術師名字定稿。
-4. 其他人類敵人要不要比照米夏補呼吸待機。
-5. 帝都衛士戰四件假設：前三場受擊特效、storyBattle 輸了回檔、守衛名稱、舊街區後城鎮戰結束。
-6. 被刪的 33 張圖要不要還原；廢城 `hallcourt` 碎石重出；插圖 `023`／`024` 沒腳本引用、`032_rennablush` 未交。
-7. 舊影片回收：BR v1～v4、清醒夢 v1／v2、夢中夢 v1／v2（`cutin_nireload_v2` 是動畫的候選，已沒在用）。
-
-**要手機實測**
-8. 首頁 BGM（-2089：冷／熱啟動各點一次 COMPLETE、不按按鈕）、BR 進場（黑遮罩＋左下滑入煞車）、群戰倒地與閉棺、米夏 NI 取景、主祭壇最後自動出航（Stage 16 可直接跳）。
+8. 謎之術師數值卡（建卡＋碼頭 Boss）、術師名字定稿。
+9. 其他人類敵人要不要比照米夏補呼吸待機。
+10. 帝都衛士戰四件假設：前三場受擊特效、storyBattle 輸了回檔、守衛名稱、舊街區後城鎮戰結束。
+11. 被刪的 33 張圖要不要還原；廢城 `hallcourt` 碎石重出；插圖 `023`／`024` 沒腳本引用、`032_rennablush` 未交、`042_annadeclare` 已交未引用。
+12. 舊影片回收：BR v1～v4、清醒夢 v1／v2、夢中夢 v1／v2。
+13. 郊外風車荒地只有黃昏一張（硬指定 `capital_outskirts_dusk`）—— 要不要補其他時段（補了就改 `bgBand`）。
+14. iMac 工作區沒進版控、沒人提過的檔：兩張 UUID png（根目錄）、`resources/enemy/phamtoms/*.jpeg`、`resources/enemy/rivon/man_thug_*.webp`、
+    `se_flesh/se_pant/se_page1/se_page2/se_pickup.mp3`、`vo_sorana_miss4.wav`、`resources/ci/nemo_ci_dual.webp`、`npc_ss_lofa_shoot.png`（假透明，已用 cryshoot 頂）、
+    `resources/si/image - 2026-09-26…png`、`resources/map/_layout_dunmor.pptx` —— 要不要接或回收。
 
 **程式端可做**
-9. `misha_si_ni` 眼效是舊圖座標，要用時重產（`tools/eye_fx.py`）。
-10. `se_march` 不存在，主祭壇那一拍用 `se_troops` 頂著。
-11. 茉莉／羅伯特／亞隆的立繪已在 `si/npc/`，還沒接進 `speakers.js`（差分總表「未接線」那一頁）。
-12. 美術 10-09 新交卡耶爾山谷怪物 16 隻（`resources/enemy/mon_canyon_*`，見 `_canyon_horror_spec.md`）—— 敵卡／待機都還沒接。
+15. `misha_si_ni` 眼效是舊圖座標，要用時重產（`tools/eye_fx.py`）。
+16. 茉莉／羅伯特／亞隆的立繪已在 `si/npc/`，還沒接進 `speakers.js`。
+17. 卡耶爾山谷 16 隻怪（`resources/enemy/mon_canyon_*`）—— 敵卡／遭遇表等 Ray 數值。
+18. `se_march` 不存在，主祭壇那一拍用 `se_troops` 頂著。
 
 **眨眼／眼睛（舊單）**
-13. GPT 半閉欠 10 張（`tools/_blink_base/grid_fixh4.png`、`grid_fixh3.png`）；瞳顫框偏大（索拉娜 surprise／furious／readshock、柯文 shock）；
+19. GPT 半閉欠 10 張（`tools/_blink_base/grid_fixh4.png`、`grid_fixh3.png`）；瞳顫框偏大（索拉娜 surprise／furious／readshock、柯文 shock）；
     `sorana_si_carrynouvelleshock` 欠眨眼；淚光 6 張待修（`tools/tear_reject.txt`）。
 
+## 資產盤點（這一輪碰過的；`✔ 不欠`／`⚠ 欠`）
+| 件 | 狀態 |
+|---|---|
+| 聖索菲亞旅店收尾：蘿法 shy/ask/lookdown、蕾娜 letter、摺信聲 | ✔ 不欠（-2102 進庫，lint 0 錯） |
+| 返回帝都稿的立繪差分 | ✔ 不欠 —— 全部有對應（取最接近的見上「等 Ray 確認」2） |
+| 返回帝都稿的音效：kidlaughter／monsterroardeep／steps／walk／highheels／sturm／page3／heartbeat | ✔ 不欠 |
+| 返回帝都稿的 BGM：Glass Cradle、Hesitation | ✔ 不欠 |
+| 帝都郊外風車荒地背景 | ✔ 黃昏一張（Ray 只交這張）；其他時段要不要補 ⇒ 上面 13 |
+| 小男孩／母親立繪 | ✔ 不欠（各一張 front） |
+| 蕾娜 check/checktalk、安雅 cryhard/shysmile | ✔ 不欠（返回帝都已用上） |
+| 賽西莉即死防禦／生命歸還 CI 影片 | ✔ 不欠（另一台 -2103 交件） |
+
 ## 已結案（不要再列）
-（-2081 以前的見上一份。）本輪：首頁 BGM 靜音鍵／休眠／逾時／手勢監聽、CI 滑入計時、BR 黑遮罩與左下煞車、BR v1→v5、安雅三支 CI 定案、安雅技能改名、
-Wan 環境（含 VACE、T2V LoRA）、怪物待機（87 隻已交，非 94 隻待交）、返回帝都 6 張差分接線、聖索菲亞旅店修稿、摺信聲接鍵。
+（-2101 以前的見上一份。）本輪：另一台資源接線、返回帝都整段、Stage 17＋章節、Stage 16 起無禁航、禍魘日期掛事件、Credit LoRA 兩支、
+`se_paperfold`／`se_kidlaughter` 進庫、`se_roarfar` 撤掉（改用既有 `se_monsterroardeep`）。
