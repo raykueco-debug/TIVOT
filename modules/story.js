@@ -2658,6 +2658,10 @@ const SE_FILES=[
      ⚠ `se_cooking` 有 **39.7 秒**（一整段煎煮）—— 演出只用前面幾秒，
        所以它走 `SFX.playCue` 的把手收掉，不是 `playSe`（那一支會放到底）。 */
   'se_cooking.m4a', 'se_openletter.m4a', 'se_dooropen.m4a', 'vo_maria_dishdone.m4a',
+  /* 摺信聲（ver -2100，Ray：「摺紙音在另一台電腦上，你先接，另一台 git 的時候接上」）——
+     ⚠ 檔案**還沒進庫**：交件請用這個檔名 `resources/audio/se/se_paperfold.m4a`；到之前那一拍安靜（404 不擋演出）。
+     ⚠ `fileGain` 也還沒量（到件後要量一次，同 se_highheels 那條）。 */
+  'se_paperfold.m4a',
   'se_villagealarm.m4a',   // 夏爾村警鐘（ver -772，Ray 交件）
   'se_enemy_roardeer.m4a',   // 樹靈鹿主的吼（ver -879，Ray 交件；配變異那一拍的紫炎）
   'se_enemy_sakura.m4a',     // 櫻花狂亂的受擊音（ver -899，鹿主的主動攻擊）
@@ -3378,7 +3382,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2099';
+const KERB_V='?v=2100';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

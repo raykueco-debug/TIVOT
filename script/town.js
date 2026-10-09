@@ -5157,13 +5157,13 @@ export const TOWNS = {
           nou('sad','……'),
           /* ══ ver -2099（Ray 修稿）：拿掉「修女不信神」那一段，改成蘿法道謝 → 蕾娜託她發報（一道保險）══
              ⚠ 缺圖（美術開單，交到前靜靜回退基本立繪）：蘿法 `shy`／`ask`／`lookdown`、蕾娜 `letter`／`tired`。
-             ⚠ 稿上的「Se Paper fold」沒有這支音檔 → 先走既有的 `se_openletter`（同 Stage8 拆電報、遞紙音那兩拍）。 */
+             ⚠ 稿上的「Se Paper fold」＝`se_paperfold`（ver -2100 接好鍵；檔案在 Ray 另一台電腦，下次 git 進來就會響，見 story.js 的 SE_FILES）。 */
           ren('write','有能力幫助眼前的人，已經是最大的幸運了。'),
           lofN('shy','謝謝妳們……'),
           lofN('shy','我真的不知道該怎麼回報妳們……'),
           ren('write','……有件小事，倒是要請妳幫個忙。'),
           lofN('shy','只要是我辦得到的……'),
-          { speaker:'NARRATION', text:'', se:'se_openletter', auto:1400 },   // 摺信聲（暫代，見上）
+          { speaker:'NARRATION', text:'', se:'se_paperfold', auto:1400 },   // 摺信聲（檔案待進庫，見上）
           ren('letter','如果一個月內沒有收到我的消息，請妳這封信的內容發報到西南戰區司令部。'),
           lofN('ask','給海里希˙馮˙海森伯格……？'),
           lofN('lookdown','就只是……這樣？'),
