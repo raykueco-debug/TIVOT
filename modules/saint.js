@@ -1283,6 +1283,8 @@ export function playCutin(done, label, imgKey, opts){
      發佈成 CSS 的 `--ci-dur`（style.css 的 cut-in 動畫讀它），撤下的計時也是同一個數字（鐵律 7）。 */
   const ciDur = (GAME_CONFIG.tuning.cutinDur||{})[imgKey] || 1500;
   if(c) c.style.setProperty('--ci-dur', (ciDur/1000)+'s');
+  /* 滑入段的長度（ver -2090）：照舊佔 18%，但短於 1.5 秒的 CI 也用 1.5 秒那一份（0.27 秒）—— BR 1 秒時滑入才看得見。 */
+  if(c) c.style.setProperty('--ci-in', (0.18*Math.max(ciDur,1500)/1000).toFixed(3)+'s');
   if(label!==undefined) $('cutinText').innerHTML = label;
   const ci=$('cutinImg');
   const src=imgKey ? asset(imgKey) : null;
