@@ -298,7 +298,8 @@ def check_lowercase_assets():
 AFF_KEYS = {'renna', 'nouvelle', 'sorana', 'anya'}
 
 TENSE_OK = {('anya', 'crying'), ('nouvelle', 'thinking'), ('renna', 'surprised'),
-            ('anya', 'chibiscared')}
+            ('anya', 'chibiscared'),
+            ('cecilie', 'nosebleed')}   # ver -2116：不是時態 —— 「bleed」本身就是 -eed 結尾的原形（鼻血），沒有更「無時態」的寫法
 
 def check_tense_exprs(art):
     """⚠⚠⚠ **差分的鍵一律無時態**（ver -1555，Ray：「檔名時態全部拿掉，crying 改成 cry」

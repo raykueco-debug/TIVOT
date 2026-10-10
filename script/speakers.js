@@ -1519,6 +1519,21 @@ export const ART = {
     fluster:  { flip:true, src:'resources/si/cecilie_si_fluster.webp',   top:8, bot:1526, fx:0.551 },
     /* ver -1886：帝都第一夜的夢境戰（Ray 的稿）。`saintinstall` 美術交件 png→webp、實量。 */
     saintinstall:{ src:'resources/si/cecilie_si_saintinstall.webp', top:2, bot:1528, fx:0.493 },
+    /* ══ 碎片 02／03（ver -2116，美術 441ba93c，GPT 真 alpha）══ 後勤術師：沒有戰損，戰後只流汗喘氣，鼻血＝能力過載（Ray 定）。measure_si 量。
+       ⚠ `battlecry` 的 top/fx 是頭髮量的（alpha 會被術式光拉到 0／0.528）；`shyhand` 頭頂碰到畫布上緣。
+       ⚠ `pant` 單膝跪地、不是站姿：cm／standCm 是估的（§6.5 近景／坐姿那兩個旋鈕），畫面上不對就用管理人的「立繪」調整區調。
+       ⚠ 已知小偏差（Ray 看過不重畫）：`pant` 左肩露出；`call`／`ready`／`battlecry` 頭髮比 front 長而散。 */
+    smirk:     { src:'resources/si/cecilie_si_smirk.webp',     top:8,  bot:1529, fx:0.520 },
+    call:      { src:'resources/si/cecilie_si_call.webp',      top:4,  bot:1526, fx:0.680 },
+    ready:     { src:'resources/si/cecilie_si_ready.webp',     top:10, bot:1509, fx:0.701 },
+    battlecry: { src:'resources/si/cecilie_si_battlecry.webp', top:46, bot:1528, fx:0.649 },
+    command:   { src:'resources/si/cecilie_si_command.webp',   top:7,  bot:1526, fx:0.375 },
+    pant:      { src:'resources/si/cecilie_si_pant.webp',      top:69, bot:1443, fx:0.626, cm:150, standCm:135 },
+    proud:     { src:'resources/si/cecilie_si_proud.webp',     top:5,  bot:1526, fx:0.550 },
+    nosebleed: { src:'resources/si/cecilie_si_nosebleed.webp', top:5,  bot:1511, fx:0.553 },
+    shynose:   { src:'resources/si/cecilie_si_shynose.webp',   top:6,  bot:1496, fx:0.524 },
+    shocknose: { src:'resources/si/cecilie_si_shocknose.webp', top:6,  bot:1497, fx:0.401 },
+    shyhand:   { src:'resources/si/cecilie_si_shyhand.webp',   top:0,  bot:1498, fx:0.559 },
   } },
   /* ⚠⚠ **縮 20%**（ver -1536，Ray：「蘿芮登場那張圖太大了 縮20%」）——
      她的圖是**彎腰前傾**的構圖：像素高佔滿整框，但那是「彎著的 158cm」，
@@ -1707,13 +1722,14 @@ export const ART = {
     barrier: { src:'resources/si/npc/mage_si_barrier.webp', top:2,  bot:1529, fx:0.43 },
     hurt:    { src:'resources/si/npc/mage_si_hurt.webp',    top:13, bot:1514, fx:0.36 },
     /* ver -2115（美術 0b5a5d29，GPT 真 alpha）：碼頭那一段的角度與動作，眼睛一律瞇著。measure_si 量。
-       ⚠ 戰後「不愧是前第一後補」那張 `hurtsmile` 美術重畫中，到之前稿上寫它就回退基本立繪（或暫用 `hurt`）。 */
+       `hurtsmile`（戰後「不愧是前第一後補」）ver -2116 美術補交無血版。 */
     wave:    { src:'resources/si/npc/mage_si_wave.webp',    top:7,  bot:1532, fx:0.444 },   // 嗨！
     talk:    { src:'resources/si/npc/mage_si_talk.webp',    top:2,  bot:1533, fx:0.431 },   // 一般說話
     shrug:   { src:'resources/si/npc/mage_si_shrug.webp',   top:9,  bot:1530, fx:0.443 },   // 攤手
     laugh:   { src:'resources/si/npc/mage_si_laugh.webp',   top:3,  bot:1529, fx:0.515 },   // 笑，側身仰頭
     threat:  { src:'resources/si/npc/mage_si_threat.webp',  top:6,  bot:1527, fx:0.462 },   // 手上紫光
     leave:   { src:'resources/si/npc/mage_si_leave.webp',   top:5,  bot:1523, fx:0.715 },   // 半轉身回頭兩指揮別
+    hurtsmile: { src:'resources/si/npc/mage_si_hurtsmile.webp', top:8, bot:1529, fx:0.360 },   // 不愧是前第一後補（無血版；ver -2116 美術補交）
   } },
   /* ══ 返回帝都的路人母子（ver -2102，Ray 交件 capi_boy／capi_mom）══ measure_si 量；身高是估的（男孩 120、母親 160）。
      ⚠ 男孩那張上下都留白（47~1501），照量即可。 */
