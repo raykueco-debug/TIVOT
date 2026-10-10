@@ -1402,20 +1402,29 @@ const CR_DOCK = [
   sor('backcarry','既然蕾娜這麼說一定錯不了，走。'),
   nou('steady','嗯！', { stage:19 }),   // Stage 18 到這一句結束 → Stage 19：強制從帝都升空（段落的 sailOut，ver -2125）
 ];
-/* ══ 碎片 02・卡耶爾山谷（ver -2134，Ray 的「卡耶爾山谷_碎片02_台詞差分」，台詞一字未改）══════════════════
-   稿頭：「北方泊地過夜（Stage 02 結束）」⇒ 北方泊地「那一夜」演完（三秒黑）**經讀取頁到卡耶爾山谷**（ver -2135，Ray：
-   「這一段不在北泊，在另一個地方，來回要過預載頁」），在 `canyon` 的風蝕迴廊演這一段，演完再經讀取頁回北泊旅店；
-   北泊的閘門 ③ 在回來那一刻推到隔天 8:00、升 S3。⚠ 不碰北泊的安全區旗。
-   ⚠ 放在風蝕迴廊不放峽谷入口：入口是復活點兼安全點，規定不能有戰鬥（§6.5.2）。第一拍再把背景換成入口的白天那張。
-   三格：開場＝峽谷入口、下一格＝白骨之地、最後一格＝谷底祭場（插圖 044 畫的地方）；都用白天（稿：「應該中午就該到了」）。
+/* ══ 碎片 02・卡耶爾山谷（ver -2134～-2138，Ray 的「卡耶爾山谷_碎片02_台詞差分」，台詞一字未改）══════════════════
+   流程（ver -2138 Ray 定案）：
+     北泊那一夜收尾 → **睡覺音＋長黑幕** → 讀取頁 → 卡耶爾山谷**峽谷入口**登場：黑幕裡戰場聲由遠到近、士兵第一句在黑幕出
+     （照碎片一「不要睡」的節奏）→ 淡入背景 → 開場戲＋第一場 → 玩家**自己走**：
+     下一格（風蝕迴廊）演中段 → 路上隨機遇怪（山谷群體小怪，一次 2～3 隻）→ 地圖末端（谷底祭場）演最後一場＋插圖
+     （由下往上平移，跑完才出士兵那句）→ 三秒轉幕 → 讀取頁回北泊旅店，閘門 ③ 推到隔天 8:00、升 S3。
+   ⚠ 只有夢境入口會觸發：北泊那一夜最後一拍插 `frag02_go`，三段都要它；`until:'frag02_done'`（最後一段演完插）。
+   ⚠ 打輸＝這一段不演了，直接回北泊：劇情那兩場走 `onLose` 跳到收尾；路上的遇怪走城上的 `loseGoto`（main 的戰敗分流）。
+   ⚠ 這段期間：背景鎖白天（節點的 `bgWhen`，稿上「應該中午就該到了」）、不能出航（`sail.hold`）。
    ⚠ 「？？？ 閃開」＝還沒報名的賽西莉（`CECILIE_X`）；之後叫她賽西莉。
-   ⚠ 音效對應：轟擊＝`se_earthquake`、咆嘯＝`se_monsterroardeep`、上膛＝`se_weapon_reload`、跑步＝`se_steps`、
-     槍擊＝`se_weapon_pistol_01`、蠢動＝`se_stepsbig`（暫代，沒有蠢動音）。
-   ⚠ 兩場戰鬥（frag02_a／frag02_b）暫用北方泊地的禍魘，見 config 的說明。插圖 `044_cecilietorsten`（美術交件，Ray 驗收）。 */
+   ⚠ 音效：戰場聲＝`se_battlefield`（**檔案還沒有**，進庫前那幾拍安靜）、轟擊＝`se_earthquake`、咆嘯＝`se_monsterroardeep`、
+     上膛＝`se_weapon_reload`、跑步＝`se_steps`、槍擊＝`se_weapon_pistol_01`、蠢動＝`se_stepsbig`（暫代）。 */
 const ims = N('IM_SOLDIER'), cmd = N('COMMANDER');
-const NP_FRAG02 = [
-  { speaker:'NARRATION', text:'', bg:'canyon_entry_day', bgm:'lostplace', auto:1200, checkpoint:true },
-  ims('panic','不行了！數量太多！'),
+const FRAG02_SIDES = { COMMANDER:'L', CECILIE_X:'L', CECILIE:'L', IM_SOLDIER:'R' };
+/* ① 峽谷入口：黑幕開場 → 第一場 */
+const FRAG02_OPEN = [
+  { speaker:'NARRATION', text:'', auto:700, fadeOut:1, show:false, checkpoint:true },
+  { speaker:'NARRATION', text:'', auto:1000, se:{ n:'se_battlefield', vol:0.25 } },   // 戰場聲由遠……
+  { speaker:'NARRATION', text:'', auto:1000, se:{ n:'se_battlefield', vol:0.5 } },
+  { speaker:'NARRATION', text:'', auto:1100, se:{ n:'se_battlefield', vol:0.8 }, shake:true },   // ……到近
+  { speaker:'IM_SOLDIER', text:'不行了！數量太多！', autoText:900 },                       // 士兵第一句在黑幕出（同碎片一「不要睡」）
+  { speaker:'NARRATION', text:'', auto:900, se:'se_battlefield', shake:true, hide:'*' },
+  { speaker:'NARRATION', text:'', auto:1500, fadeIn:1500 },                              // 淡入背景
   cmd('urgent','援軍呢？還沒有到嗎？'),
   ims('worry','應該中午就該到了才對……'),
   { speaker:'NARRATION', text:'', se:'se_earthquake', shake:true, auto:900 },      // 轟擊聲
@@ -1423,7 +1432,7 @@ const NP_FRAG02 = [
   ims('alarm','南門被攻破了！'),
   csx('nolook','閃開。'),
   cmd('shock','！！'),
-  { battle:'frag02_a', onLose:'frag02_end' },   // 打輸就不演了，直接回北泊（ver -2136）
+  { battle:'frag02_a', onLose:'frag02_lose' },
   cmd('surprise','聖王廳的援軍……？'),
   ims('awe','竟然，一個人就擋下了禍魘……'),
   cec('smirk','是『兩個人』吧？', { hide:['CECILIE_X'] }),
@@ -1433,8 +1442,13 @@ const NP_FRAG02 = [
   cec('tease','就是為了這個來的喔。'),
   { speaker:'NARRATION', text:'', se:'se_steps', auto:800 },                      // 跑步音
   cec('call','喂！等我一下！'),
-  /* ── 下一格 ── */
-  { speaker:'NARRATION', text:'', bg:'canyon_bones_day', hide:['CECILIE','COMMANDER','IM_SOLDIER'], auto:1000 },
+  { goto:'frag02_end' },                                                         // 演完 → 玩家自己往前走
+  /* 打輸（onLose 跳過來）：插 `frag02_done`（這一段結束了），段落收尾的 `gotoIf` 看到它就經讀取頁回北泊。 */
+  { speaker:'NARRATION', text:'', label:'frag02_lose', flags:['frag02_done'], fadeOut:3000, auto:3200 },
+  { speaker:'NARRATION', text:'', label:'frag02_end', auto:100 },
+];
+/* ② 下一格（風蝕迴廊） */
+const FRAG02_MID = [
   cec('lookaside','……還殘部。基本全軍覆沒了吧。'),
   { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:900 },           // 咆嘯
   { speaker:'NARRATION', text:'', se:'se_weapon_pistol_01', auto:600 },          // 槍擊音
@@ -1443,19 +1457,21 @@ const NP_FRAG02 = [
   { speaker:'PLAYER', blank:true },
   cec('tease','狂妄的小鬼。'),
   cec('battlecry','那就把他們驅逐殆盡吧！'),
-  /* ── 最後一格 ── */
-  { speaker:'NARRATION', text:'', bg:'canyon_altar_day', hide:['CECILIE'], auto:1000 },
+];
+/* ③ 最後一格（谷底祭場）→ 插圖 → 三秒轉幕 → 回北泊 */
+const FRAG02_LAST = [
   ims('rally','撐下去！援軍一定會到的！'),
   cec('smirk','到了喔。'),
   ims('doubt','就你們……兩個人？'),
   cec('command','往後撤，離開火線。被波擊可不負責喔。'),
   { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:900 },           // 咆嘯
   { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },                       // 上膛音
-  { battle:'frag02_b', onLose:'frag02_end' },
-  { speaker:'NARRATION', text:'', cg:'044_cecilietorsten', cgNoTime:true, hide:['CECILIE','IM_SOLDIER'], auto:2600 },   // 插圖：主角與賽西莉
-  ims('awe','那就是……聖約騎士團！'),
-  { speaker:'NARRATION', text:'', cg:null, auto:300 },
-  { speaker:'NARRATION', text:'', auto:3200, fadeOut:3000, hide:['IM_SOLDIER','CECILIE','CECILIE_X','COMMANDER'], label:'frag02_end' },   // 夢醒（三秒黑）；打輸也跳到這裡（ver -2136）
+  { battle:'frag02_b', onLose:'frag02_last_end' },
+  /* 插圖由下往上平移，**跑完才出士兵的對話框**（平移 2.6 秒，style.css 的 storyPanUp）。 */
+  { speaker:'NARRATION', text:'', cg:'044_cecilietorsten', cgNoTime:true, cgPan:'up', hide:'*', auto:3000 },
+  ims(null,'那就是……聖約騎士團！', { show:false }),
+  { speaker:'NARRATION', text:'', auto:3200, fadeOut:3000, label:'frag02_last_end' },   // 三秒轉幕（打輸也跳到這裡）
+  { speaker:'NARRATION', text:'', cg:null, auto:100 },
 ];
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
 
@@ -2877,7 +2893,7 @@ export const TOWNS = {
               ren('pause','不，好像是侍女……還是侍衛之類的人。'),
               nou('sad','那是……是紫月語言？'),
               ren('pause','嗯。我也只聽得懂一些。'),
-              grl('desperate','……'),
+              grl('cryhard','……'),
               nou('sad','好可憐……那一定是很重要的人吧？'),
               ren('pause','妳，叫什麼名字？'),
               anx('sob','……'),
@@ -2885,11 +2901,11 @@ export const TOWNS = {
               ren('write','安雅小姐是紫月人吧？會說標準語嗎？'),
               any('sob','……'),
               /* 這兩句同一個立繪（稿上第一句沒標圖）—— 沿用上一拍的 `invite` 之前那一張。 */
-              ren('write','我們不是帝國軍，是教廷的人。'),
+              ren('write','我們不是帝國軍，是聖王廳的人。'),
               ren('invite','如果可以的話，讓我們幫幫妳，好嗎？'),
               ren('worry','否則讓死者就這麼客死異鄉，也太令人難過了。'),
               any('sob','……'),
-              any('sob','拜託妳……把娜塔莉……拜託……'),
+              any('cryhard','拜託妳……把娜塔莉……拜託……'),
               /* ⚠ 插圖由**上往下**平移（Ray 指定）。ver -858（Ray：「不是無立繪，
                  是保持原立繪」）：-656 的 hide 拆掉 —— 台上的人留著，插圖疊在後面平移。 */
               { speaker:'RENNA', text:'交給我們吧。死者的歸途，是不分教派的。',
@@ -3162,7 +3178,7 @@ export const TOWNS = {
         acts:[
           /* `goto`（ver -2135，Ray：「這一段不在北泊，在另一個地方，來回要過預載頁」）：演完經讀取頁去卡耶爾山谷演碎片 02，
              那邊演完再經讀取頁回這間旅店 —— 閘門 ③ 照舊在回來那一刻把時鐘推到隔天 8:00、升 S3。 */
-          { flag:'np_night_done', need:'np_night', goto:'@canyon:corridor', lines:[
+          { flag:'np_night_done', need:'np_night', goto:'@canyon:entry', lines:[
             { speaker:'RENNA', text:'結束了嗎？', bgm:'entangle',
               bg:'northport_hotel_room_night',
               portrait:{ char:'RENNA', expr:'ask', show:true } },
@@ -3188,6 +3204,8 @@ export const TOWNS = {
             /* ver -858（Ray：「三秒淡入黑」）：同教堂→娜塔莉的 slowFade 拍。 */
             { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000,
               hide:['RENNA','NOUVELLE','ANYA'], flags:['frag02_go'] },   // frag02_go：碎片 02 的夢境入口（ver -2136，只有這裡插；卡耶爾那一段只認它）
+            /* 睡覺音＋長黑幕（ver -2138，Ray：「進卡耶爾山谷前先放睡覺音樂、長黑幕」）—— 睡覺音約 10 秒，播完才過讀取頁。 */
+            { speaker:'PLAYER', text:'', se:'se_sleep', auto:10500 },
           ] },
           /* ══ 第三天早上八點（ver -664，Ray 交稿）══════════════════════════
              ⚠ 「如果聽不懂的話也沒關係，先跟我們回聖王廳吧？」是**諾薇兒**
@@ -4044,25 +4062,42 @@ export const TOWNS = {
     map:{ img:'resources/map/map_canyon.webp',
           spots:{ entry:[0.1871,0.8952], corridor:[0.1871,0.6542], bones:[0.1871,0.4133],
                   bridge:[0.6157,0.4133], altar:[0.1871,0.1723] } },
+    /* 隨機遇怪（ver -2138，Ray：「卡耶爾的怪一次會出兩到三隻」）：山谷的群體小怪 5 種 × 2／3 隻（config 的 canyon_w_*）。
+       入口與谷底祭場是安全點（`rest`）不刷。 */
+    wildSpawn: { rate:0.5, pool:[
+      { battle:'canyon_w_crawler2' }, { battle:'canyon_w_crawler3' },
+      { battle:'canyon_w_bellmite2' }, { battle:'canyon_w_bellmite3' },
+      { battle:'canyon_w_chainhound2' }, { battle:'canyon_w_chainhound3' },
+      { battle:'canyon_w_lanternimp2' }, { battle:'canyon_w_lanternimp3' },
+      { battle:'canyon_w_bonecrow2' }, { battle:'canyon_w_bonecrow3' } ] },
+    /* 碎片 02 期間遇怪打輸＝這一段不演了，直接回北泊（ver -2138，main 的戰敗分流讀 `town.loseGoto()`）。 */
+    loseGoto: { need:'frag02_go', until:'frag02_done', to:'@northport:inn', flags:['frag02_done'] },
     nodes: {
-      /* 入口＝復活點，**不可以有戰鬥**（§6.5.2）。往下＝出航離開這張圖 ——
-         玩家是從天上降落進來的，這裡沒有相鄰的城可以走回去。 */
-      entry:    { bg:'canyon_entry',    name:'卡耶爾山谷　峽谷入口', rest:true,
-                  exits:{ up:'corridor' }, sail:{ dir:'down' } },
+      /* 入口＝復活點、安全點。往下＝出航離開這張圖 —— 玩家是從天上降落進來的，這裡沒有相鄰的城可以走回去。
+         ⚠ 碎片 02 的開場在這裡（Ray：「從入口登場」），裡面有一場戲裡的戰鬥（入口不刷野怪的規則照舊）。
+         碎片期間不能出航（`sail.hold`）、背景鎖白天（`bgWhen`）。 */
+      entry:    { bg:'canyon_entry',    name:'卡耶爾山谷　峽谷入口', rest:true, noWild:true,
+                  bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_entry_day', noTime:true }],
+                  exits:{ up:'corridor' },
+                  sail:{ dir:'down', hold:{ need:'frag02_go', until:'frag02_done', text:'……現在不是離開的時候。' } },
+                  acts:[ { flag:'frag02_open', need:'frag02_go', until:'frag02_done', storyBattle:true, sides:FRAG02_SIDES,
+                           gotoIf:{ flag:'frag02_done', to:'@northport:inn' }, lines:FRAG02_OPEN } ] },
       corridor: { bg:'canyon_corridor', name:'卡耶爾山谷　風蝕迴廊',
+                  bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_corridor_day', noTime:true }],
                   exits:{ up:'bones', down:'entry' },
-                  /* 碎片 02（ver -2135）：北泊那一夜演完經讀取頁帶過來，抵達就演；演完經讀取頁回北泊旅店（見 NP_FRAG02）。
-                     `need:'frag02_go'` ＝只有夢境入口（北泊那一夜最後一拍）插的旗，自己飛來卡耶爾不會觸發（ver -2136）；
-                     `until:'np_day3'` ＝北泊第三天之後就不會再演。打輸跳到最後一拍（`onLose`）直接回北泊。 */
-                  acts:[ { flag:'frag02_done', need:'frag02_go', until:'np_day3', storyBattle:true,   // need：只有北泊那一夜的夢境入口插的旗（自己飛來不會有，ver -2136）
-                           sides:{ COMMANDER:'L', CECILIE_X:'L', CECILIE:'L', IM_SOLDIER:'R' },
-                           goto:'@northport:inn', lines:NP_FRAG02 } ] },
+                  acts:[ { flag:'frag02_mid', need:['frag02_go','frag02_open'], until:'frag02_done', sides:FRAG02_SIDES, lines:FRAG02_MID } ] },
       bones:    { bg:'canyon_bones',    name:'卡耶爾山谷　白骨之地',
+                  bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_bones_day', noTime:true }],
                   exits:{ up:'altar', right:'bridge', down:'corridor' } },
       bridge:   { bg:'canyon_bridge',   name:'卡耶爾山谷　斷橋',
+                  bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_bridge_day', noTime:true }],
                   exits:{ left:'bones' } },                    // 岔出去的死路
-      altar:    { bg:'canyon_altar',    name:'卡耶爾山谷　谷底祭場', rest:true,
-                  exits:{ down:'bones' } },                    // 谷底盡頭（Boss 場）
+      altar:    { bg:'canyon_altar',    name:'卡耶爾山谷　谷底祭場', rest:true, noWild:true,
+                  bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_altar_day', noTime:true }],
+                  exits:{ down:'bones' },                      // 谷底盡頭（Boss 場）
+                  /* 碎片 02 的最後一格（地圖末端）：演完插 `frag02_done`、經讀取頁回北泊旅店。 */
+                  acts:[ { flag:'frag02_done', need:['frag02_go','frag02_open'], until:'frag02_done', storyBattle:true, sides:FRAG02_SIDES,
+                           goto:'@northport:inn', lines:FRAG02_LAST } ] },
     },
   },
   shinier_forest: {

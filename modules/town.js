@@ -3763,6 +3763,15 @@ function exitsOf(){
     } }
   return ex;
 }
+/* 城上 `loseGoto:{ need, until, to:'@地圖:節點', flags }`（ver -2138，碎片 02）＝這段期間**遭遇戰打輸**不回檢查點，改去 `to`。
+   main 的戰敗分流讀它；回傳 { town, node, flags } 或 null。 */
+export function loseGoto(){
+  const g=(TOWNS[townId]||{}).loseGoto; if(!g) return null;
+  if(g.need && !needOk(g.need)) return null;
+  if(g.until && prog.hasFlag(g.until)) return null;
+  const seg=String(g.to||'').replace(/^@/,'').split(':');
+  return seg[0] ? { town:seg[0], node:seg[1]||null, flags:g.flags||[] } : null;
+}
 /* 追擊期間（ver -2118／-2129）：`siege.from` 插了、`siege.stepSeUntil` 還沒插。
    ⚠ **不看 `until`**：帝都的城鎮戰在舊街區就結束，但從舊街區跑到碼頭那一步還在被追（直到碼頭戰演完）。
    跑步聲（stepSfx）與單一路線（exitsOf）都問這一支（鐵律 7）。 */
@@ -4871,6 +4880,8 @@ export function enter(id){
                常駐句不屬於那條鏈。 */
           const nx=actDue(n);
           if(nx && nx!==act && nx.flag){ story.clearCast(); runArrival(true); return; }
+          /* `gotoIf:{ flag, to }`（ver -2138，碎片 02）＝演完時**那支旗插著**才改去 `to`（打輸了這一段就結束、回北泊）；沒插就照下一行。 */
+          if(act.gotoIf && prog.hasFlag(act.gotoIf.flag)){ forceGo(act.gotoIf.to); return; }
           if(act.goto){ forceGo(act.goto); return; }   // 段落收尾的強制移轉（ver -1353，見上）
         }
         else if(ev){

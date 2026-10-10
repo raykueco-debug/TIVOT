@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2137';
+export const VERSION = 'ver 2026.09.22-2138';
 
 export const GAME_CONFIG = {
 
@@ -2799,10 +2799,21 @@ export const GAME_CONFIG = {
                    { who:'cecilie_x', img:'tut_cecilie_saintinstall', text:i18nT('我可不允許你死在我面前！') },
                  ] } ] },
     /* ══ 碎片 02・卡耶爾山谷（ver -2134，Ray 的「卡耶爾山谷_碎片02_台詞差分」）══ 北方泊地那一夜之後的回憶：主角與賽西莉。
-       ⚠ 暫用：卡耶爾山谷的 16 隻怪還沒有數值卡，先借北方泊地的禍魘（np_harm 那一池）。搭檔賽西莉；
+       ⚠ 暫用：卡耶爾山谷的 16 隻怪還沒有數值卡，先借北方泊地的禍魘（np_harm 那一池）→ ver -2138 改用山谷的群體小怪（數值套北泊禍魘，enemies.js 的 canyon_*）。搭檔賽西莉；
          回憶不評（dream）；打輸＝跳到收尾直接回北泊（allowLose＋腳本的 onLose，ver -2136）。 */
-    frag02_a: { enemy:['np_candletower','np_candlepenitent','np_coralman','np_reassembled'], partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true },
-    frag02_b: { enemy:['np_candletower','np_candlepenitent','np_coralman','np_reassembled'], partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true },
+    frag02_a: { enemy:'canyon_crawler3',   partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true },   // ver -2138：山谷群怪（爬行朝聖者 ×3）
+    frag02_b: { enemy:'canyon_chainhound3', partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true },   // ver -2138：山谷群怪（鎖鏈餓犬 ×3）
+    /* 卡耶爾山谷的隨機遇怪（ver -2138）：群體小怪 5 種 × 2／3 隻（見 enemies.js 的 canyon_*）。同一局（`canyon_wild`），踏進安全點（入口／谷底祭場）才結算。 */
+    canyon_w_crawler2: { enemy:'canyon_crawler2', session:'canyon_wild' },
+    canyon_w_crawler3: { enemy:'canyon_crawler3', session:'canyon_wild' },
+    canyon_w_bellmite2: { enemy:'canyon_bellmite2', session:'canyon_wild' },
+    canyon_w_bellmite3: { enemy:'canyon_bellmite3', session:'canyon_wild' },
+    canyon_w_chainhound2: { enemy:'canyon_chainhound2', session:'canyon_wild' },
+    canyon_w_chainhound3: { enemy:'canyon_chainhound3', session:'canyon_wild' },
+    canyon_w_lanternimp2: { enemy:'canyon_lanternimp2', session:'canyon_wild' },
+    canyon_w_lanternimp3: { enemy:'canyon_lanternimp3', session:'canyon_wild' },
+    canyon_w_bonecrow2: { enemy:'canyon_bonecrow2', session:'canyon_wild' },
+    canyon_w_bonecrow3: { enemy:'canyon_bonecrow3', session:'canyon_wild' },
     range_trainee: { enemy:'dart_target', record:'range', noReward:true, noEval:true,
                      timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
                                   prizeSec:30, prize:'Shotgun_Dragon' } },

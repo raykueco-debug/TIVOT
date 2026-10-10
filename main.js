@@ -2363,6 +2363,10 @@ combat.setStoryReturn((res)=>{
          `special:true`**（ver -698 他自己定的那一格），不要再加第二個旗（鐵律 7）。
          它的意思正是「這一場是城鎮探索裡的支線，不是戰役」。 */
     if(bt && bt.special){ carriedToInn({ rollback:false }); return; }
+    /* ⓪ 城上 `loseGoto`（ver -2138，碎片 02：「打輸就不演了，直接回北泊」）—— 這段期間的遭遇戰打輸不回檢查點，直接去那裡（同一道讀取頁）。 */
+    { const lg = town.loseGoto ? town.loseGoto() : null;
+      if(lg){ prog.setLossStreak(0); if(lg.flags.length) prog.addFlags(lg.flags);
+              combat.goHome(()=>{ enterTown(lg.town, lg.node); }, { noBgm:true }); return; } }
     /* ② **劇情戰** → 讀最新的那一筆快照。回檔點是**腳本明寫**的（`checkpoint:true`），
        而且必須落在玩家還能自由行動的地方 —— 那是寫劇本時的責任。 */
     const isStory = town.isOpen() ? town.storyBattleAct() : true;
