@@ -1484,7 +1484,7 @@ const FRAG02_LAST = [
   /* 插圖由下往上平移，**跑完才出士兵的對話框**（平移 2.6 秒，style.css 的 storyPanUp）。 */
   { speaker:'NARRATION', text:'', cg:'044_cecilietorsten', cgNoTime:true, cgPan:'up', hide:'*', auto:3000 },
   ims(null,'那就是……聖約騎士團！', { show:false }),
-  { speaker:'NARRATION', text:'', auto:3200, fadeOut:3000, label:'frag02_last_end' },   // 三秒轉幕（打輸也跳到這裡）
+  { speaker:'NARRATION', text:'', auto:3200, fadeOut:3000, bgm:null, label:'frag02_last_end' },   // bgm:null：插圖收掉、曲子跟著淡出（ver -2145）   // 三秒轉幕（打輸也跳到這裡）
   Object.assign({ speaker:'NARRATION', text:'', cg:null, auto:100 }, FRAG02_WAKE),   // 黑透了才推到隔天（推時鐘會換背景，不能在淡出途中）
 ];
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
