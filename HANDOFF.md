@@ -1,3 +1,17 @@
+> ⭐⭐⭐⭐⭐ **【賽西莉差分 11 張・等程式端接】（10-10，Mac 美術）** —— 碎片 02／03 的劇本。她是後勤術師：**沒有戰損**，戰後疲憊只畫流汗喘氣，鼻血＝能力過載（Ray 定）。檔在 `resources/si/`，**還沒寫進 `speakers.js`**：
+>   `smirk:{ src:'resources/si/cecilie_si_smirk.webp', top:8, bot:1529, fx:0.520 },`（是『兩個人』吧？）
+>   `call:{ src:'resources/si/cecilie_si_call.webp', top:4, bot:1526, fx:0.680 },`（喂！等我一下！）
+>   `ready:{ src:'resources/si/cecilie_si_ready.webp', top:10, bot:1509, fx:0.701 },`（數量不少。可以嗎？）
+>   `battlecry:{ src:'resources/si/cecilie_si_battlecry.webp', top:46, bot:1528, fx:0.649 },`（驅逐殆盡吧！ ⚠ top/fx 是頭髮量的，alpha 量會被術式光拉到 0／0.528）
+>   `command:{ src:'resources/si/cecilie_si_command.webp', top:7, bot:1526, fx:0.375 },`（往後撤，離開火線）
+>   `pant:{ src:'resources/si/cecilie_si_pant.webp', top:69, bot:1443, fx:0.626 },`（哈啊……，單膝跪地 ⚠ 非站姿，要用 §6.5 的 cm／standCm 調）
+>   `proud:{ src:'resources/si/cecilie_si_proud.webp', top:5, bot:1526, fx:0.550 },`（你以為我是誰？）
+>   `nosebleed:{ src:'resources/si/cecilie_si_nosebleed.webp', top:5, bot:1511, fx:0.553 },`（鼻血插分 ！！）
+>   `shynose:{ src:'resources/si/cecilie_si_shynose.webp', top:6, bot:1496, fx:0.524 },`（不、不要看！／不是說了不准看嗎 —— 手遮鼻 shy）
+>   `shocknose:{ src:'resources/si/cecilie_si_shocknose.webp', top:6, bot:1497, fx:0.401 },`（等一下！很髒的啊！ shock）
+>   `shyhand:{ src:'resources/si/cecilie_si_shyhand.webp', top:0, bot:1498, fx:0.559 },`（脫下來。回去我給你洗洗。 ⚠ 頭頂碰到畫布上緣，髮梢被裁一點點）
+> · ⚠ 已知小偏差：`pant` 左肩露出（front 有袖）；`call`／`ready`／`battlecry` 的頭髮比 front 長而散。Ray 看過不要再重畫。
+>
 > ⭐⭐⭐⭐⭐ **【愛里歐（謎之術師 `mage`）差分 6 張・等程式端接】（10-10，Mac 美術）** —— 照碼頭那一段劇本補角度與動作，眼睛一律瞇著。檔在 `resources/si/npc/`，**還沒寫進 `speakers.js`**：
 >   `wave:{ src:'resources/si/npc/mage_si_wave.webp', top:7, bot:1532, fx:0.444 },`（嗨！）
 >   `talk:{ src:'resources/si/npc/mage_si_talk.webp', top:2, bot:1533, fx:0.431 },`（一般說話）
@@ -5,7 +19,7 @@
 >   `laugh:{ src:'resources/si/npc/mage_si_laugh.webp', top:3, bot:1529, fx:0.515 },`（笑，側身仰頭）
 >   `threat:{ src:'resources/si/npc/mage_si_threat.webp', top:6, bot:1527, fx:0.462 },`（得請你們倒在這裡了，手上紫光）
 >   `leave:{ src:'resources/si/npc/mage_si_leave.webp', top:5, bot:1523, fx:0.715 },`（有緣再會吧，半轉身回頭兩指揮別）
-> · ⚠ 戰後「不愧是前第一後補」那張（`hurtsmile`）重畫中（Ray：不要吐血），暫用既有的 `hurt`。
+> · ✔ 補交 `hurtsmile:{ src:'resources/si/npc/mage_si_hurtsmile.webp', top:8, bot:1529, fx:0.360 },`（不愧是前第一後補，無血版 —— Ray：不要吐血）
 >
 > ⭐⭐⭐⭐⭐ **【新立繪 7 張・等程式端接】（10-10，Mac 美術 session；commit a904d66d）** —— 檔案已在 `resources/si/`，**還沒寫進 `script/speakers.js`**（美術不碰程式，鐵律 11）。
 > · 索菈娜 `ART.sorana.expr` 加：
