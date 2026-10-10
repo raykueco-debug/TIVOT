@@ -1115,3 +1115,5 @@ when	from	to	reason
 20261010-143223	resources/si/sorana_si_battlecrycalm.webp	_recycle/resources/si/sorana_si_battlecrycalm.webp	ver -2113 誤轉：soranagpt 那四張是白底 RGB（無 alpha），不能當立繪；檔案已放回原位
 20261010-143223	resources/si/sorana_si_battlecryoh.webp	_recycle/resources/si/sorana_si_battlecryoh.webp	ver -2113 誤轉：soranagpt 那四張是白底 RGB（無 alpha），不能當立繪；檔案已放回原位
 20261010-143223	resources/si/sorana_si_battlecryohside.webp	_recycle/resources/si/sorana_si_battlecryohside.webp	ver -2113 誤轉：soranagpt 那四張是白底 RGB（無 alpha），不能當立繪；檔案已放回原位
+20261010-145305	resources/si/sorana_si_runserious.webp	_recycle/resources/si/sorana_si_runserious.webp	sorana runserious 側面版，Ray 要正面
+20261010-145305	resources/_originals/si/sorana_si_runserious.png	_recycle/resources/_originals/si/sorana_si_runserious.png	sorana runserious 側面版，Ray 要正面
