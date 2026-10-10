@@ -369,6 +369,7 @@ export function loadBoard(idx){
     state.intervalLimit=(BOARDS[si]||BOARDS[BOARDS.length-1]).interval; }
   state.boardStartTime=Date.now();
   state.boardClean=true;
+  state.shieldDown=false; state.shieldBank=0;   // 六角護罩（ver -2120）：每一盤重新張開、帳歸零
   state.critCombo=0;              // 暴擊連擊為「盤內連續」：新盤（含清盤後換盤/換敵）歸零＝「清盤中斷」
   buildGrid();
   startIntervalTimer();
@@ -586,7 +587,7 @@ export function dualShot(x, y){
     if(cell){ enemy.ejectShell(cell); gunHitOnEnemy(cell); }
   }
   state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
-  resetIntervalDeadline();
+  if(!shieldUp()) resetIntervalDeadline();   // 六角護罩（ver -2120）：BR 也不歸零延時
   /* 索菈娜「地弓星」（Lv1，ver -976）：破防彈雨的攻擊力 ×1.2。
      ⚠ 只有這一支在算（鐵律 7）—— BR 的傷害就這一處。 */
   const dmg=hitDamage()*DMG_DUAL_MULT*(1+prog.girlBonus(state.pickedPartner,'brDmgMul'));
@@ -705,7 +706,8 @@ function tap(num,cell,e){
     state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
     state.correctTaps++;                 // 命中率分子（依序正確點擊）
     partner.armMissGuard();              // 「點擊正確就重置」（引路星，ver -1014）
-    resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
+    if(!shieldUp()) resetIntervalDeadline();   // 六角護罩（ver -2120）：普攻不歸零延時，只有清盤歸零
+    addEnergy(ENERGY_PER_HIT);
     let dmg=hitDamage()+comboKeepDmg(); if(state.atkBuff||state.lowHpBuff) dmg*=2;   // 計時型（Counter）或低血量（高裝藥彈）皆加倍，不疊乘；連擊延續見 comboKeepDmg（ver -971）
     // 暴擊（普攻）：此分支必為普攻（雙槍破防走上面獨立分支，本輪 saintMode 亦 return），暴擊率/加傷隨 critCombo 成長。
     //   本擊先以「現值」擲骰再 +1（首擊＝base 暴擊率）；命中則跳紅字「暴擊」（交由 enemyDamage 的 isCrit 呈現）。
@@ -862,6 +864,15 @@ function clearLucidFlood(burst){
 function clearBoard(opts){
   const brClear = !!(opts && opts.br);
   SFX.clear();                      // 清盤：神聖鈴響
+  /* 六角護罩（ver -2120）：清盤那一刻護罩碎掉，**一次打掉最大 HP 的固定比例**（Ray：「清盤時一次性釋放 25%」，
+     卡上 `shieldClearPct`，沒寫＝0.25）。這一盤擋下了多少（`shieldBank`）不影響份量 —— 只記帳，不結算。
+     ⚠ 先放下護罩再結算 —— 那一下要真的打進血條、而且擊殺照常走下面的 enemyHp<=0。 */
+  if(state.enemyHexShield && !state.shieldDown){
+    state.shieldDown=true; state.shieldBank=0;
+    try{ enemy.breakHexShield(); }catch(_){}
+    const hit=Math.max(1, Math.round(state.enemyMax*(state.enemyShieldClearPct||0.25)));
+    enemyDamage(hit, false, false, 'shield');
+  }
   clearAtkBuff();                   // 攻擊加倍 buff 不跨盤
   const elapsed=(Date.now()-state.boardStartTime)/1000;
   recordBoardTime(elapsed);
@@ -942,6 +953,12 @@ function gunHitOnEnemy(cell, pierce){
   if(!pierce && parryNow()){
     enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, imp.x, imp.y);
     enemy.spawnParry(imp.x, imp.y);
+    return;
+  }
+  /* 六角護罩（ver -2120）：子彈打在那一點的護罩上 —— 不噴槍火，閃一片六角形。暴擊也打不穿（防禦率 100%）。 */
+  if(shieldUp()){
+    enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, imp.x, imp.y);
+    enemy.spawnHexShield(imp.x, imp.y);
     return;
   }
   muzzleBurst(fxTop, imp.x, imp.y);
@@ -1473,6 +1490,8 @@ function rollShotParry(){
   queueMicrotask(()=>{ shotParry=false; });
 }
 function parryNow(){ return shotParry && parryOpen(); }
+/* 六角護罩張著嗎（ver -2120）：卡上 `hexShield` ＋ 這一盤還沒清 ＋ 牠還活著。聖徒化／BR 期間**照樣擋**（Ray：「BR 反擊都一樣」）。 */
+function shieldUp(){ return !!state.enemyHexShield && !state.shieldDown && state.enemyHp>0; }
 function enemyDamage(dmg,isCrit,silent,src){
   /* 劈落（ver -1957，Ray：「普攻無效」「劈落在畫面顯示字樣跳 guard」）：普攻整發不計，
      浮一個 GUARD。⚠ 連擊／破防值／清盤照常（`tap` 那一支在這之外記帳）——
@@ -1491,7 +1510,18 @@ function enemyDamage(dmg,isCrit,silent,src){
        所以正解是**這一段時間的傷害整個不計**，而不是「再攔一次死亡」。
      ⚠ 擋在**唯一的入口**（鐵律 8）：所有傷害來源都經過這一支。 */
   if(morphSwapping) return;
-  dmg = applyEnemyMods(dmg, src||'basic');
+  if(src!=='shield') dmg = applyEnemyMods(dmg, src||'basic');   // 'shield'＝清盤釋放的帳，記帳時已經乘過了
+  /* ══ 六角護罩（ver -2120，Ray：「術師全程都會開防護，被子彈打中的地方會閃六邊型構成的防護罩，防禦率 100%，
+     要清盤才會破碎並造成傷害，BR 反擊都一樣」）══ 卡上 `hexShield:true`。
+     所有來源（普攻／BR／反擊／聖徒化…）在護罩張著時**全額擋下**（記在 `shieldBank` 只供除錯）；
+     清盤那一刻護罩碎掉、一次打掉最大 HP 的 25%（clearBoard，Ray：「清盤時一次性釋放 25%」）。
+     ⚠ 擋在唯一的入口（鐵律 8）。普攻的命中點演出在 gunHitOnEnemy；其他來源沒有落點，隨機閃在牠身上。 */
+  if(shieldUp() && dmg>0){
+    state.shieldBank=(state.shieldBank|0)+Math.round(dmg);
+    if(src!=='basic'){ try{ enemy.spawnHexShield(); }catch(_){} }
+    if(!silent) floatDmg('SHIELD', (30+Math.random()*40)+'%', '35%', false, 'guardnum');
+    return;
+  }
   // 教學：段落未播完前（tutorialActive）敵不可被打死——致死傷害夾到留 1 HP。
   //   防 EXSECUTIŌ／聖徒化中擊殺跳過最後一段教學（finishMB/LR 播完 endTutorial 後才解鎖擊殺）。
   if(state.tutorialActive && dmg>=state.enemyHp && state.enemyHp>0){

@@ -1118,7 +1118,7 @@ export const ENEMIES = {
        ⚠ 暫用：Ray 給正式數值卡之後整張改。 */
     cap_mage: {
       name:'愛里歐',
-      story:1, counterStagger:1, boss:0,
+      story:1, counterStagger:0, boss:0,   // 反擊不歸零延時（ver -2120）
       Ganymede:0,
       weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
       entrance:null, entranceBlast:false,
@@ -1135,13 +1135,17 @@ export const ENEMIES = {
       stack:1,
       image:'enemy_cap_mage',
       bg:'capital_dock_night',
-      hp:510,
+      hp:200,   // ver -2120 Ray 指定
       attack:21,
       atkInterval:null,
       delayPenalty:{ seconds:5 },
       special:[],
-      boardGrids:[9,9,9,16,16],
+      boardGrids:[9,9,9,9,16],   // ver -2120 Ray 指定
       hitFx:{ delay:'blunt', wrong:'slash', assault:'claw' },
+      /* ══ 六角護罩（ver -2120，Ray）══ 全程開防護，被打中的地方閃六角護罩、防禦率 100%；
+         **只吃清盤傷害**：清盤那一刻一次打掉最大 HP 的 `shieldClearPct`（Ray：「清盤時一次性釋放 25%」；combat 的 clearBoard）。
+         普攻／反擊都不歸零延時（反擊＝counterStagger:0），只有清盤歸零。 */
+      hexShield:true, shieldClearPct:0.25,
       loot:[],
     },
     guild_hunter: {

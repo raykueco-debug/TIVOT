@@ -212,6 +212,39 @@ export function spawnParry(px, py){
     const se=asset('se_bulletguard'); if(se) SFX.play(se, sfxGain('se_bulletguard')); }
   playParryVoice();   // 卡上 `parryVoice` 兩句輪播（語音閘擋重疊）
 }
+/* ══ 六角護罩（ver -2120，Ray：「被子彈打中的地方會閃六邊型構成的防護罩」）══
+   `spawnHexShield(x,y)` ＝命中點閃一片六角格（沒給座標＝隨機落在牠身上：BR／反擊沒有落點）；
+   `breakHexShield()` ＝清盤那一刻整片護罩碎掉。全部程式生成（SVG），樣式在 style.css 的 .fx-hex*。 */
+let hexSeAt=0;
+function hexSvg(r){
+  const cells=[]; const s=r/3.2, h=s*Math.sqrt(3)/2;
+  for(let q=-3;q<=3;q++) for(let k=-3;k<=3;k++){
+    const x=q*s*1.5, y=(k+(q&1?0.5:0))*h*2;
+    if(Math.hypot(x,y)>r-s*0.6) continue;
+    const pts=[0,1,2,3,4,5].map(i=>{ const a=Math.PI/3*i; return (x+s*0.92*Math.cos(a)).toFixed(1)+','+(y+s*0.92*Math.sin(a)).toFixed(1); }).join(' ');
+    cells.push('<polygon points="'+pts+'"/>');
+  }
+  return '<svg viewBox="'+(-r)+' '+(-r)+' '+(2*r)+' '+(2*r)+'" width="'+(2*r)+'" height="'+(2*r)+'">'+cells.join('')+'</svg>';
+}
+export function spawnHexShield(px, py){
+  const host=$('fxTop'); if(!host) return;
+  if(px==null){ const b=host.getBoundingClientRect(); px=b.width*(0.32+Math.random()*0.36); py=b.height*(0.25+Math.random()*0.4); }
+  const d=document.createElement('div'); d.className='fx-hex';
+  d.style.left=px+'px'; d.style.top=py+'px';
+  d.innerHTML=hexSvg(46);
+  host.appendChild(d); setTimeout(()=>d.remove(), 420);
+  const now=Date.now();
+  if(now-hexSeAt>90){ hexSeAt=now; const se=asset('se_bulletguard'); if(se) SFX.play(se, sfxGain('se_bulletguard')); }
+}
+export function breakHexShield(){
+  const host=$('fxTop'); if(!host) return;
+  const b=host.getBoundingClientRect();
+  const d=document.createElement('div'); d.className='fx-hexbreak';
+  d.style.left=(b.width/2)+'px'; d.style.top=(b.height*0.45)+'px';
+  d.innerHTML=hexSvg(Math.round(Math.min(b.width,b.height)*0.42));
+  host.appendChild(d); setTimeout(()=>d.remove(), 650);
+  const se=asset('se_glasscrack'); if(se) SFX.play(se, sfxGain('se_glasscrack'));
+}
 // 紅刀痕濺血：一條斜向亮紅刀痕 + 數顆散開的小血滴（按錯懲罰用）。
 //   ⚠ 不沿用 spawnBlood（那是延時懲罰的寬血痕，會誤看成兩個特效同時出現）；改自帶小血滴區隔。
 export function spawnSlash(){
@@ -1839,6 +1872,9 @@ export function setEnemy(key, opts){
        而且畫面上照樣噴槍火 —— 讀起來是「打不痛」不是「被擋下」。
      ⚠ 只擋普攻：反擊／雙槍破防／聖徒化追打照常（那些才是打得動牠的路）。 */
   state.enemyParry     = (en.parryBasic===true) ? 1 : (+en.parryBasic || 0);   // 機率（ver -2043：1＝每發都擋、0.5＝一半）
+  /* 六角護罩（ver -2120，碼頭戰愛里歐）：卡上 `hexShield:true` ＝只吃清盤傷害（combat 的 shieldUp）。 */
+  state.enemyHexShield = !!en.hexShield; state.shieldDown=false; state.shieldBank=0;
+  state.enemyShieldClearPct = +en.shieldClearPct || 0.25;   // 清盤一次打掉最大 HP 的這個比例（ver -2120）
   /* 卡上 `healOnFault:0.1` ＝玩家點錯／受擊／逾時，敵回最大 HP 的這一成（ver -1858，羅賽爾「慈愛殘像」）。 */
   state.enemyHealOnFault = +en.healOnFault || 0;
   /* 防禦型的 BR 增傷（ver -1584，Ray：「防禦型 BR 統一增傷 50%」）——
