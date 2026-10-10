@@ -2367,6 +2367,8 @@ combat.setStoryReturn((res)=>{
     /* ⓪ 城上 `loseGoto`（ver -2138，碎片 02：「打輸就不演了，直接回北泊」）—— 這段期間的遭遇戰打輸不回檢查點，直接去那裡（同一道讀取頁）。 */
     { const lg = town.loseGoto ? town.loseGoto() : null;
       if(lg){ prog.setLossStreak(0); if(lg.flags.length) prog.addFlags(lg.flags);
+              if(lg.clockToNext!=null) clock.advanceToNextHour(lg.clockToNext);              // 夢醒直接是隔天（ver -2142）
+              if(lg.stage!=null && lg.stage>prog.getStage()) prog.setStage(lg.stage);
               combat.goHome(()=>{ enterTown(lg.town, lg.node); }, { noBgm:true }); return; } }
     /* ② **劇情戰** → 讀最新的那一筆快照。回檔點是**腳本明寫**的（`checkpoint:true`），
        而且必須落在玩家還能自由行動的地方 —— 那是寫劇本時的責任。 */

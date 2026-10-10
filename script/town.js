@@ -1417,6 +1417,11 @@ const CR_DOCK = [
 const ims = N('IM_SOLDIER'), cmd = N('COMMANDER');
 const FRAG02_SIDES = { COMMANDER:'L', CECILIE_X:'L', CECILIE:'L', IM_SOLDIER:'R' };
 /* ① 峽谷入口：黑幕開場 → 第一場 */
+/* 夢醒（ver -2142，Ray：「夢醒黑幕直接轉到隔天場景，不要再從場景走回去」「插圖與隔天之間除了黑幕轉景不可有其他畫面」）：
+   碎片收尾的那一拍就把北泊那一夜的閘門（`np_day3`）做掉 —— 推到隔天 8:00、進 S3、插閘門的旗。
+   於是回北泊旅店那一刻直接是「翌日」那一段（它寫 `darkStart`，抵達就全黑、卡出完才淡入），中間不會先露出夜裡的旅店再被閘門帶走。
+   ⚠ 與北泊的 `np_day3` 閘門同一組值（clockTo 8／stage 3）—— 改一邊要改另一邊；打輸那條（城上 `loseGoto`）也照抄。 */
+const FRAG02_WAKE = { clockToNext:8, stage:3, flags:['frag02_done','np_day3'] };
 const FRAG02_OPEN = [
   { speaker:'NARRATION', text:'', auto:700, fadeOut:1, show:false, checkpoint:true },
   /* 戰場聲（ver -2140，Ray：「只播一次，由遠到近，五秒後壓低變成背景音，直到打完第一場」）：
@@ -1446,7 +1451,8 @@ const FRAG02_OPEN = [
   cec('call','喂！等我一下！'),
   { goto:'frag02_end' },                                                         // 演完 → 玩家自己往前走
   /* 打輸（onLose 跳過來）：插 `frag02_done`（這一段結束了），段落收尾的 `gotoIf` 看到它就經讀取頁回北泊。 */
-  { speaker:'NARRATION', text:'', label:'frag02_lose', flags:['frag02_done'], fadeOut:3000, auto:3200, ambStop:1 },
+  { speaker:'NARRATION', text:'', label:'frag02_lose', fadeOut:3000, auto:3200, ambStop:1 },
+  Object.assign({ speaker:'NARRATION', text:'', auto:100 }, FRAG02_WAKE),   // 黑透了才推到隔天（推時鐘會換背景，不能在淡出途中）
   { speaker:'NARRATION', text:'', label:'frag02_end', auto:100 },
 ];
 /* ② 下一格（風蝕迴廊） */
@@ -1461,13 +1467,14 @@ const FRAG02_MID = [
   cec('battlecry','那就把他們驅逐殆盡吧！'),
   { battle:'frag02_mid', onLose:'frag02_mid_lose' },
   { goto:'frag02_mid_end' },
-  { speaker:'NARRATION', text:'', label:'frag02_mid_lose', flags:['frag02_done'], fadeOut:3000, auto:3200, ambStop:1 },   // 打輸＝這一段不演了，回北泊（act 的 gotoIf）
+  { speaker:'NARRATION', text:'', label:'frag02_mid_lose', fadeOut:3000, auto:3200, ambStop:1 },   // 打輸＝這一段不演了，回北泊（act 的 gotoIf）
+  Object.assign({ speaker:'NARRATION', text:'', auto:100 }, FRAG02_WAKE),   // 黑透了才推到隔天（推時鐘會換背景，不能在淡出途中）
   { speaker:'NARRATION', text:'', label:'frag02_mid_end', auto:100 },
 ];
 /* ③ 最後一格（谷底祭場）→ 插圖 → 三秒轉幕 → 回北泊 */
 const FRAG02_LAST = [
-  ims('rally','撐下去！援軍一定會到的！'),
-  cec('smirk','到了喔。'),
+  Object.assign(ims('rally','撐下去！援軍一定會到的！'), { flip:true }),
+  Object.assign(cec('smirk','到了喔。'), { flip:true }),
   ims('doubt','就你們……兩個人？'),
   cec('command','往後撤，離開火線。被波擊可不負責喔。'),
   { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:900 },           // 咆嘯
@@ -1478,7 +1485,7 @@ const FRAG02_LAST = [
   { speaker:'NARRATION', text:'', cg:'044_cecilietorsten', cgNoTime:true, cgPan:'up', hide:'*', auto:3000 },
   ims(null,'那就是……聖約騎士團！', { show:false }),
   { speaker:'NARRATION', text:'', auto:3200, fadeOut:3000, label:'frag02_last_end' },   // 三秒轉幕（打輸也跳到這裡）
-  { speaker:'NARRATION', text:'', cg:null, auto:100 },
+  Object.assign({ speaker:'NARRATION', text:'', cg:null, auto:100 }, FRAG02_WAKE),   // 黑透了才推到隔天（推時鐘會換背景，不能在淡出途中）
 ];
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
 
@@ -3223,7 +3230,7 @@ export const TOWNS = {
                蕾娜左、諾薇兒左、安雅右。蕾娜與諾薇兒共用左槽，第三個人上場時
                由引擎抽牌輪轉（§6.5）。⚠ 這裡**不可以**把諾薇兒指到右：
                安雅本位就在右，兩個人擠同一槽會每換一句就換一次人。 */
-          { flag:'np_day3_done', need:'np_day3', lines:[
+          { flag:'np_day3_done', darkStart:true, need:'np_day3', lines:[   // darkStart：從夢裡回來直接黑著進「翌日」（ver -2142）
             /* ⚠⚠ **這一拍落一個檢查點**（ver -687，Ray：「劇情戰戰敗是回捲至上一段
                劇情，以這一段來說就是回捲到蕾娜問話」）—— 純對白的段落引擎不再自動
                落點（-687），所以這一段自己宣告：**它就是這一天的起點**。
@@ -4081,7 +4088,7 @@ export const TOWNS = {
     wildForce: { need:'frag02_go', until:'frag02_done', pool:[ { battle:'frag02_w_crawler2' }, { battle:'frag02_w_crawler3' }, { battle:'frag02_w_bellmite2' }, { battle:'frag02_w_bellmite3' }, { battle:'frag02_w_chainhound2' }, { battle:'frag02_w_chainhound3' }, { battle:'frag02_w_lanternimp2' }, { battle:'frag02_w_lanternimp3' }, { battle:'frag02_w_bonecrow2' }, { battle:'frag02_w_bonecrow3' } ] },
     /* 碎片 02 期間遇怪打輸＝這一段不演了，直接回北泊（ver -2138，main 的戰敗分流讀 `town.loseGoto()`）。 */
     noGear: { need:'frag02_go', until:'frag02_done', text:'……夢裡沒有整備的餘裕。' },   // 夢境不可入整備頁（ver -2141）
-    loseGoto: { need:'frag02_go', until:'frag02_done', to:'@northport:inn', flags:['frag02_done'] },
+    loseGoto: { need:'frag02_go', until:'frag02_done', to:'@northport:inn', flags:['frag02_done','np_day3'], clockToNext:8, stage:3 },   // 同 FRAG02_WAKE
     nodes: {
       /* 入口＝復活點、安全點。往下＝出航離開這張圖 —— 玩家是從天上降落進來的，這裡沒有相鄰的城可以走回去。
          ⚠ 碎片 02 的開場在這裡（Ray：「從入口登場」），裡面有一場戲裡的戰鬥（入口不刷野怪的規則照舊）。

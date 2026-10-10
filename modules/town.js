@@ -3794,7 +3794,7 @@ export function loseGoto(){
   if(g.need && !needOk(g.need)) return null;
   if(g.until && prog.hasFlag(g.until)) return null;
   const seg=String(g.to||'').replace(/^@/,'').split(':');
-  return seg[0] ? { town:seg[0], node:seg[1]||null, flags:g.flags||[] } : null;
+  return seg[0] ? { town:seg[0], node:seg[1]||null, flags:g.flags||[], clockToNext:g.clockToNext, stage:g.stage } : null;
 }
 /* 追擊期間（ver -2118／-2129）：`siege.from` 插了、`siege.stepSeUntil` 還沒插。
    ⚠ **不看 `until`**：帝都的城鎮戰在舊街區就結束，但從舊街區跑到碼頭那一步還在被追（直到碼頭戰演完）。
@@ -4561,10 +4561,12 @@ export function enter(id){
   /* 這座城的曲子（ver -375（-893 前用詞））。⚠ 每進一個節點都確認一次，不是只在 `open` 時放一次 ——
      中間可能插進一場戰鬥（戰鬥有自己的曲子），回來要接得回去。
      同曲重播由 `playBgm` 自己擋掉，所以重複呼叫是安全的。 */
-  story.ensureBgm(townBgm());
+  /* 這一段要從全黑開場（`darkStart`，ver -2141）：演出區直接蓋黑；這一格的曲子等腳本的 `fadeIn` 掀開才放（ver -2142）。 */
+  { const a0=actDue(n);
+    if(a0 && a0.darkStart){ const bk=townBgm(); story.holdSceneFade(()=>story.ensureBgm(bk)); }
+    else story.ensureBgm(townBgm()); }
   story.setBgFlip(!!n.bgFlip);   // 背景鏡像（ver -877：崩塌走道×2 同圖翻轉）
   _bandShown=clock.band();   // 這一格是照這個時段畫的（給 tivot:clock 比對，ver -2082）
-  { const a0=actDue(n); if(a0 && a0.darkStart) story.holdSceneFade(); }   // 這一段要從全黑開場（ver -2141）
   bgFor(bgCandsOf(n, id), needReveal ? reveal : null);
   refreshChaseDown();       // 倒地的追兵留在這一格的畫面上（ver -1701）
   ensureLayer(); bindInput(); refreshArrows(); showNav(false);

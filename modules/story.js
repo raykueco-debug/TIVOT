@@ -1994,6 +1994,7 @@ export function clearStageLeftovers(){
     } }
 }
 export function clearSceneFade(){
+  liftCb=null;
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
   cgFinish=null; fadeOwner=null;
   cgSeq++;                       // ver -979：同 clearCg —— 舊的候選鏈不要再回頭貼圖
@@ -2461,6 +2462,7 @@ function applyPersist(line){
          圖一載好就自己掀 —— 「插圖在黑底下換好、下一拍才 `fadeIn`」那種寫法就會提早露出來
          （賽西莉的夢，Ray：「應該要由黑淡入」）。寫了 `fadeOut` ＝等腳本自己的 `fadeIn` 來掀。 */
       fadeOwner = line.fadeOut!=null ? 'beat' : null;
+      if(line.fadeIn!=null && liftCb){ const cb=liftCb; liftCb=null; try{ cb(); }catch(_){} }   // 黑幕亮起才放這一格的曲子（holdSceneFade）
       setTimeout(()=>{ if(my===slowFadeSeq) f.style.transitionDuration=''; }, ms+120);
     }
   }
@@ -3421,7 +3423,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2142';
+const KERB_V='?v=2143';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -5782,10 +5784,15 @@ export function veilOn(){ const v=$('storyVeil'); return !!(v && v.classList.con
 /* 抵達就全黑（ver -2141，Ray：「睡覺音播了以後保持上半全黑…全黑狀態出士兵第一句話」）：
    城鎮那一段寫 `darkStart:true` 時，town.enter 在背景擺上之前就把演出區蓋黑（不淡），
    擁有者記成 'beat' ＝等腳本自己的 `fadeIn` 來掀（同拍上的 fadeOut）。 */
-export function holdSceneFade(){
+/* `onLift` ＝黑幕被腳本的 `fadeIn` 掀開那一刻才做的事（ver -2142，Ray：「場景 bgm 從黑幕亮起才開始放」）——
+   town 把這一格的曲子交進來；黑著的期間把上一首收掉（黑幕裡只有腳本自己放的聲音）。 */
+let liftCb=null;
+export function holdSceneFade(onLift){
   const f=$('storyFade'); if(!f) return;
   f.style.transitionDuration='0ms'; f.classList.add('on'); void f.offsetWidth;
   f.style.transitionDuration=''; fadeOwner='beat';
+  liftCb = onLift || null;
+  if(liftCb){ stageBgm=null; try{ SFX.stopBgm(600); }catch(_){} }
 }
 export function sceneFadeOn(){ const f=$('storyFade'); return !!(f && f.classList.contains('on')); }
 
