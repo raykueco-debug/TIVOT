@@ -1412,7 +1412,7 @@ export const TOWNS = {
        ⚠ 安全區旗：城鎮戰期間進城**不插**（modules/town.js 的 `siegeArmed`）；開啟這一段的事件
          要負責把已經插著的 `safehouse_capital` 拔掉（鐵律 9：誰開戰誰拔）。
        ⚠ `until` 現在是舊街區清掉；船塢 Boss 做好之後改成 Boss 那一格。 */
-    siege: { from:'cap_raid', until:'cap_clear_oldtown', keep:['inn','dock'], bgm:'crisis' },
+    siege: { from:'cap_raid', until:'cap_clear_oldtown', keep:['inn','dock'], bgm:'crisis', stepSe:'se_steps', stepSeUntil:'cr_dock' },   // stepSe：追擊戰走一步播跑步聲，到碼頭戰演完為止（ver -2118）
     /* ⚠ 四場段落都寫 `fromStage:0`：帝都有章節窗（storyStages:[0,1]），窗外的段落一律不演 ——
        這一段的開關是 `cap_raid` 本身，不看章節（明寫的例外，見 modules/town.js 的 storyOff）。 */
     name: '帝都',

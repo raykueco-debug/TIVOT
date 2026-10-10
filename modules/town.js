@@ -4042,7 +4042,14 @@ function bindInput(){
      兩件事要一起發生，就不要讓呼叫端各記得一次。
    ⚠ 幅度小（6°）：這是走路的震動，不是槍棺在動 —— 與上彈那一下（22°）要分得出來。 */
 function stepSfx(){
-  try{ const w='resources/audio/se/se_walk.m4a'; SFX.play(w, fileGain(w)); }catch(_){}   // ⚠ 增益要帶（ver -441）
+  /* 城鎮戰期間可以換腳步聲（ver -2118，Ray：「帝都追擊戰移動時不播 walk，播 steps」）：
+     城上 `siege.stepSe:'<音效名>'`，走 story 的音效表（`seSrc`，鐵律 7）；沒寫＝平常的 se_walk。
+     ⚠ 期間＝`siege.from` 插了、`siege.stepSeUntil` 還沒插 —— **不看 `until`**：帝都的城鎮戰在舊街區就結束，
+       但從舊街區跑到碼頭那一步還在被追（直到碼頭戰演完 `cr_dock`）。 */
+  const g=(TOWNS[townId]||{}).siege;
+  const on=g && g.stepSe && prog.hasFlag(g.from) && !(g.stepSeUntil && prog.hasFlag(g.stepSeUntil));
+  const alt=on ? story.seSrc(g.stepSe) : null;
+  try{ const w=alt || 'resources/audio/se/se_walk.m4a'; SFX.play(w, fileGain(w)); }catch(_){}   // ⚠ 增益要帶（ver -441）
   try{ story.kerbPendSwing(6, 1.5); }catch(_){}
 }
 
