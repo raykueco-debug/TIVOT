@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2117';
+export const VERSION = 'ver 2026.09.22-2118';
 
 export const GAME_CONFIG = {
 
@@ -2599,8 +2599,8 @@ export const GAME_CONFIG = {
     cap_guard_uptown: { enemy:'cap_guard_uptown', session:'cap_raid' },
     cap_guard_square: { enemy:'cap_guard_square', session:'cap_raid', sessionEnd:true },
     cap_guard_oldtown: { enemy:'cap_guard_oldtown' },
-    /* 碼頭戰・愛里歐（ver -2117）：數值暫用王座徘徊者（見 enemies.js 的 cap_mage）；曲子同王座戰。 */
-    cap_mage: { enemy:'cap_mage', bgm:'bgm_gothic' },
+    /* 碼頭戰・愛里歐（ver -2117）：數值暫用王座徘徊者（見 enemies.js 的 cap_mage）。 */
+    cap_mage: { enemy:'cap_mage', bgm:'bgm_retroroman2' },   // ver -2119（Ray：「PerituneMaterial_RetroRoman_Battle2 術師戰的音樂接上」）
     sv_altar: { enemy:'sv_reliquary', session:'shinier_siege' },
     sv_wild:  { enemy:'sv_bear', session:'shinier_siege', sessionEnd:true },
     /* ══ 夏爾森林野生遭遇（ver -862（-893 前用詞）；-869 掛 session）══
@@ -3889,7 +3889,7 @@ export const GAME_CONFIG = {
          ⚠ 安雅的戰鬥曲（`peritunematerial_battlefield4`）同尺量是 −5.89 LUFS
            → 0.637，與表上的 0.636 相符＝**她那一首本來就是對的**，不要跟著調。 */
       peritune_whirlwind:0.842,
-      peritune_deep_frost_calling:0.562, peritunematerial_retroroman_battle:0.623, peritunematerial_world_op2:0.519,   // ver -1888 ebur128（−8.8／−9.7／−8.1 LUFS）
+      peritune_deep_frost_calling:0.562, peritunematerial_retroroman_battle:0.623, peritunematerial_retroroman_battle2:0.586 /* ver -2119：audio_scan 比 Battle 大 0.53 dB ⇒ 照它的 0.623 等比換算 */, peritunematerial_world_op2:0.519,   // ver -1888 ebur128（−8.8／−9.7／−8.1 LUFS）
       se_soranacounter:1.47, se_soranacounterhit:1.04,   // 飛刀射出/命中（ver -839 實測；hit 峰值夾）
       se_glasscrack:1.94,   // 裂紋輻射（ver -839 實測 −19.5 LUFS）
       bgm_missionfailed:1.995, bgm_capital_day:1.213, bgm_lunaria:1.230,
@@ -5056,6 +5056,7 @@ export const ASSETS = {
   /* 帝都第一夜的夢（ver -1888）。 */
   bgm_deepfrost:  "resources/audio/bgm/peritune_deep_frost_calling.m4a",
   bgm_retroroman: "resources/audio/bgm/peritunematerial_retroroman_battle.m4a",
+  bgm_retroroman2: "resources/audio/bgm/peritunematerial_retroroman_battle2.m4a",   // ver -2119：碼頭戰・愛里歐
   bgm_cecilie:    "resources/audio/bgm/peritunematerial_world_op2.m4a",   // 賽西莉的專用曲（World OP2）
   /* 打靶場（計時挑戰）專屬曲（ver -658（-893 前用詞），Ray：「所有打靶遊戲都用這個音樂」）。
      ⚠ 哪一場用它**不寫在卡上**而是規則：見下面的 `battleBgm.timeAttack`。 */
