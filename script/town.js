@@ -4077,6 +4077,7 @@ export const TOWNS = {
          ⚠ 碎片 02 的開場在這裡（Ray：「從入口登場」），裡面有一場戲裡的戰鬥（入口不刷野怪的規則照舊）。
          碎片期間不能出航（`sail.hold`）、背景鎖白天（`bgWhen`）。 */
       entry:    { bg:'canyon_entry',    name:'卡耶爾山谷　峽谷入口', rest:true, noWild:true,
+                  restOff:{ need:'frag02_go', until:'frag02_done' },   // 碎片期間不結算：打到最後一隻（frag02_b）才結算（ver -2139）
                   bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_entry_day', noTime:true }],
                   exits:{ up:'corridor' },
                   sail:{ dir:'down', hold:{ need:'frag02_go', until:'frag02_done', text:'……現在不是離開的時候。' } },
@@ -4093,6 +4094,7 @@ export const TOWNS = {
                   bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_bridge_day', noTime:true }],
                   exits:{ left:'bones' } },                    // 岔出去的死路
       altar:    { bg:'canyon_altar',    name:'卡耶爾山谷　谷底祭場', rest:true, noWild:true,
+                  restOff:{ need:'frag02_go', until:'frag02_done' },
                   bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_altar_day', noTime:true }],
                   exits:{ down:'bones' },                      // 谷底盡頭（Boss 場）
                   /* 碎片 02 的最後一格（地圖末端）：演完插 `frag02_done`、經讀取頁回北泊旅店。 */

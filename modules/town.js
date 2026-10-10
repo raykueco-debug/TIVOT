@@ -1420,6 +1420,8 @@ export function tripEnds(){ return { start:cameNodeId, end:endNodeId }; }
      不該在結算之前先冒一隻怪出來。 */
 function restActDue(n){
   if(!n || !n.rest) return null;
+  /* `restOff:{ need, until }`（ver -2139，Ray：「夢境卡耶爾只有打到最後一隻怪才結算」）＝這段期間這個安全點**不結算**。 */
+  if(n.restOff && needOk(n.restOff.need) && !(n.restOff.until && prog.hasFlag(n.restOff.until))) return null;
   /* ══ **終點必出結算怪**（ver -1026）══ 這一格是這一趟的終點、卡還在、而且這一趟
      還沒打過它 → **打完接結算**（同一段裡串兩拍，一次抵達就走完）。
      ⚠ 串成一段而不是「這次打、下次結算」：後者要玩家再走一次才收局，

@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2138';
+export const VERSION = 'ver 2026.09.22-2139';
 
 export const GAME_CONFIG = {
 
@@ -2801,8 +2801,8 @@ export const GAME_CONFIG = {
     /* ══ 碎片 02・卡耶爾山谷（ver -2134，Ray 的「卡耶爾山谷_碎片02_台詞差分」）══ 北方泊地那一夜之後的回憶：主角與賽西莉。
        ⚠ 暫用：卡耶爾山谷的 16 隻怪還沒有數值卡，先借北方泊地的禍魘（np_harm 那一池）→ ver -2138 改用山谷的群體小怪（數值套北泊禍魘，enemies.js 的 canyon_*）。搭檔賽西莉；
          回憶不評（dream）；打輸＝跳到收尾直接回北泊（allowLose＋腳本的 onLose，ver -2136）。 */
-    frag02_a: { enemy:'canyon_crawler3',   partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true },   // ver -2138：山谷群怪（爬行朝聖者 ×3）
-    frag02_b: { enemy:'canyon_chainhound3', partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true },   // ver -2138：山谷群怪（鎖鏈餓犬 ×3）
+    frag02_a: { enemy:'canyon_crawler3',   partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild' },   // ver -2138：山谷群怪（爬行朝聖者 ×3）
+    frag02_b: { enemy:'canyon_chainhound3', partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild', sessionEnd:true },   // ver -2139：開場戰＋路上遇怪＋這一場同一局，打完這一隻才結算   // ver -2138：山谷群怪（鎖鏈餓犬 ×3）
     /* 卡耶爾山谷的隨機遇怪（ver -2138）：群體小怪 5 種 × 2／3 隻（見 enemies.js 的 canyon_*）。同一局（`canyon_wild`），踏進安全點（入口／谷底祭場）才結算。 */
     canyon_w_crawler2: { enemy:'canyon_crawler2', session:'canyon_wild' },
     canyon_w_crawler3: { enemy:'canyon_crawler3', session:'canyon_wild' },
