@@ -376,6 +376,12 @@ PENDING_NAMES = {
     'nemo':    '尼莫',      # Ray ver -1503 定名
     'laurie':  '蘿芮',      # Ray ver -1503 定名
     'torsten': '托爾斯坦',  # Ray ver -1503 定案（`Thotsten` 是拼錯的）
+    # ver -2113：NPC/ 資料夾裡有名有姓、自己一頁之後才看得到頁籤的那幾位（還沒接進 speakers.js；
+    #   科爾文／馬努／謎之術師已接線，頁籤由投票取名，不必列）。
+    'molly':        '茉莉',
+    'robert':       '羅伯特',
+    'aaron':        '亞隆',
+    'church_guard': '教廷衛士',
 }
 # 檔案放在 `resources/SI/` 根目錄、但**名字就說了它是 NPC** 的那幾個。
 # ⚠ 這是**歸檔沒做好的補丁**，不是分類規則 —— 正解是把檔案搬進 `NPC/`，
@@ -387,7 +393,11 @@ NPC_SHEET = '城鎮店主 NPC'
 def sheet_of(rel):
     """這一張歸到哪一頁（回傳分頁的**鑰匙**，不是頁籤的字）。"""
     pre = char_of_filename(rel).lower()
-    if is_npc(rel) or pre in FORCE_NPC or pre.startswith('npc_'):
+    # ══ ver -2113（Ray：「怎麼沒有科爾文的分頁？」）══ `NPC/` 資料夾裡**有名有姓的角色**（科爾文／茉莉／羅伯特／亞隆…）
+    #   以前整批掉進 NPC 那一頁。判準照檔名：`<名字>_SI_<變體>` 而且**不是 `npc_` 開頭** ⇒ 自己一頁；
+    #   `npc_*`（店主、路人）與不照規約命名的照舊歸 NPC。⚠ 規則不是名單：日後放進 NPC/ 的新角色自動有頁。
+    named = is_npc(rel) and not pre.startswith('npc_') and re.search(r'_si_', os.path.basename(rel), re.I)
+    if (is_npc(rel) and not named) or pre in FORCE_NPC or pre.startswith('npc_'):
         return '@npc'
     return PREFIX_ALIAS.get(pre, pre)
 
