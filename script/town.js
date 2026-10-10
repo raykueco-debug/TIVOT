@@ -1263,7 +1263,9 @@ const CAP_RETURN = [
 const gcp = N('GUARD_CAP');
 const CR_RAID_SIDES = { RENNA:'L', NOUVELLE:'L', SORANA:'R', ANYA:'R', CORVIN:'R', GUARD_CAP:'R' };
 const CR_INN_RAID = [
-  any('scare','', { amb:'se_sneaky', checkpoint:true }),
+  /* ══ Stage 18（ver -2125，Ray：「加入 stage 18，時間鎖在晚上 11:00，始於安雅偷溜被主角逮到」）══
+     第一拍升 18、時鐘設成當晚 23:00（clockSet；之後走路照常推時間）。結束於碼頭戰最後一句（那一拍升 19、出航）。 */
+  any('scare','', { amb:'se_sneaky', checkpoint:true, stage:18, clockSet:23 }),
   { speaker:'PLAYER', blank:true },
   any('panic','噫！', { amb:null }),
   any('talkshy','不、不會再跑了啦！'),
@@ -1395,7 +1397,7 @@ const CR_DOCK = [
   any('curious','薇拉……馮德？'),
   sor('backcarry','唷。', { hide:['ANYA'] }),
   sor('backcarry','既然蕾娜這麼說一定錯不了，走。'),
-  nou('steady','嗯！'),
+  nou('steady','嗯！', { stage:19 }),   // Stage 18 到這一句結束 → Stage 19：強制從帝都升空（段落的 sailOut，ver -2125）
 ];
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
 
@@ -1569,7 +1571,7 @@ export const TOWNS = {
                  nou('runcry',''),
                  ren('run','別說了！會咬到舌頭的！', { ambStop:1 }) ] },
                /* 返回帝都（ver -2102）：廢城主祭壇之後第一次回到廣場就演（見 CAP_RETURN 的說明）；演完走回旅店。 */
-               { flag:'cr_return', need:'dm_altar_done', fromStage:17, sides:CR_SIDES, goto:'inn', clockToday:22, lines:CAP_RETURN } ],   // clockToday：旅店那一段是「大晚上」（ver -2114）
+               { flag:'cr_return', need:'dm_altar_done', fromStage:17, sides:CR_SIDES, goto:'inn', lines:CAP_RETURN } ],
         once:true,
         lines:[ nou('surprise','帝都的攝政王廣場，好壯觀。'),
                 nou('surprise','每次看都覺得很震憾呢。') ],

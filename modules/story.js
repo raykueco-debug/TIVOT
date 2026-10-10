@@ -2433,6 +2433,8 @@ function applyPersist(line){
      `clock.advanceToNextHour`（鐵律 8）。⚠ 在情境卡代換**之前**做：
      卡上要印的常常就是跳完之後的日期。 */
   if(line.clockToNext!=null && !replaying){ try{ clock.advanceToNextHour(line.clockToNext); }catch(_){} }
+  /* `clockSet:23` ＝這一拍把時鐘設成**今天的 23:00**（ver -2125；可能倒轉，只給「這一段開場就是幾點」用，見 clock.setHourToday）。 */
+  if(line.clockSet!=null && !replaying){ try{ clock.setHourToday(line.clockSet); }catch(_){} }
   /* `healFull:true` ＝這一拍把主角的體力補滿（ver -1886，帝都第一夜：夢醒＝睡了一整夜，
      同旅店睡覺那一條的「持久 HP 鑰匙清掉＝滿血」，走同一支 `prog.clearHp`）。 */
   if(line.healFull && !replaying){ try{ prog.clearHp(); }catch(_){} }
@@ -3396,7 +3398,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2123';
+const KERB_V='?v=2124';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

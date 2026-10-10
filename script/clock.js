@@ -112,6 +112,14 @@ export function advanceToHour(h){
    ⚠ 與 `advanceToHour` 是兩件事，不要合併：那一支是「推到今天的 h 點，過了就不動」
      （傍晚被抓回旅店用的），這一支是「一定要到 h 點」。兩者都不倒轉。
    ⚠ 剛好等於 h:00 時**不動**（已經在那一刻了，不必再等一天）。 */
+/* 把時鐘**設成今天（遊戲裡的這個日曆日）的 h:00**（ver -2125，Ray：「時間鎖在晚上 11:00」「我要你鎖開場時間」）。
+   ⚠ 與上面兩支不同：這一支**可能倒轉**（現在若已經過了 h 點就退回去）—— 只給劇本明寫「這一段開場就是幾點」的那一拍用，
+     腳本寫 `clockSet:23`（story.js 的 applyPersist）。之後走路照常推時間。 */
+export function setHourToday(h){
+  const t=now();
+  const day=Date.UTC(t.y, t.mo-1, t.d), ep=Date.UTC(EPOCH.y, EPOCH.mo-1, EPOCH.d, EPOCH.h, EPOCH.mi);
+  setElapsed(Math.round((day + (h|0)*3600000 - ep)/60000));
+}
 export function advanceToNextHour(h){
   let mins = Math.round((h - hourF())*60);
   if(mins < 0) mins += 1440;

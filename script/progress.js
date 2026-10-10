@@ -1475,6 +1475,38 @@ const BA_CHAPTERS = [
             'dunmor_lit_ossuary','dunmor_lit_cairn','dunmor_lit_kingsbarrow','dunmor_lit_brochtop',
             'dm_altar_done' ],
     enter:'flight', flight:{ town:'dunmor' } },
+  /* ══ Stage 18（ver -2125，Ray：「時間鎖在晚上 11:00，始於安雅偷溜被主角逮到」「加入章節選擇」）══
+     起點＝**帝都旅店・安雅偷溜**（`CR_INN_RAID` 第一拍，`stage:18`＋`clockSet:23`）——返回帝都那一段演完、走回旅店那一刻。
+     ⚠ 旗＝Stage 17 那一份＋飛行段／返回帝都（`cr_flight_talk`／`cr_return`）＋旅店初見那一組（同下面衛士戰測試入口）。 */
+  { id:'stage18', name:'Stage 18', sub:i18nT('帝都旅店 23:00：安雅偷溜 → 科爾文來襲 → 一路打到碼頭（愛里歐）'),
+    stage:18, clockHour:23, named:true, aff:A_AFF,
+    flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb',
+            's14_flight_talk','ss_arrive','ss_cityhall','ss_4pm','ss_inn_merge',
+            'ss_slum_anya','ss_slum_nou','ss_slum_sor','ss_anya_after','ss_nou_after','ss_sor_resolve',
+            'ss_raid_go','ss_lodge_seen','ss_lodge_done','ss_avenue_done','ss_carriage_done',
+            'ss_forecourt_done','ss_hall_done','ss_raid_done','ss_raid_home','ss_depart',
+            'mapcard_dunmor','dm_arrive','dm_gate_done','dm_cairn_call','dm_altar_first',
+            'dunmor_lit_ossuary','dunmor_lit_cairn','dunmor_lit_kingsbarrow','dunmor_lit_brochtop',
+            'dm_altar_done','cr_flight_talk','cr_return',
+            'mapcard_capital','inn_seen_capital_inn','town_capital_inn','town_kind_inn',
+            'inn_wait','inn_missed','cap_dream','inn_tip_sit','inn_tip_knock','inn_tip_sleep' ],
+    enter:'town', town:'capital', node:'inn' },
+  /* ══ Stage 19（ver -2125，Ray：「轉 stage19 強制從帝都升空」）══ 碼頭戰演完、從帝都起飛那一刻。
+     ⚠ 旗＝Stage 18 那一份＋整段帝都追擊戰（`cr_inn_raid`／`cap_raid`／四場城鎮戰／`cr_dock`）。 */
+  { id:'stage19', name:'Stage 19', sub:i18nT('碼頭戰之後：從帝都起飛（往薇拉馮德）'),
+    stage:19, clockHour:23, named:true, aff:A_AFF,
+    flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb',
+            's14_flight_talk','ss_arrive','ss_cityhall','ss_4pm','ss_inn_merge',
+            'ss_slum_anya','ss_slum_nou','ss_slum_sor','ss_anya_after','ss_nou_after','ss_sor_resolve',
+            'ss_raid_go','ss_lodge_seen','ss_lodge_done','ss_avenue_done','ss_carriage_done',
+            'ss_forecourt_done','ss_hall_done','ss_raid_done','ss_raid_home','ss_depart',
+            'mapcard_dunmor','dm_arrive','dm_gate_done','dm_cairn_call','dm_altar_first',
+            'dunmor_lit_ossuary','dunmor_lit_cairn','dunmor_lit_kingsbarrow','dunmor_lit_brochtop',
+            'dm_altar_done','cr_flight_talk','cr_return',
+            'mapcard_capital','inn_seen_capital_inn','town_capital_inn','town_kind_inn',
+            'inn_wait','inn_missed','cap_dream','inn_tip_sit','inn_tip_knock','inn_tip_sleep',
+            'cr_inn_raid','cap_raid','cap_clear_inn','cap_clear_uptown','cap_clear_square','cap_clear_oldtown','cr_dock' ],
+    enter:'flight', flight:{ town:'capital' } },
   /* ══ 帝都・教廷衛士戰（ver -2043，Ray：「劇情還沒推到，但是先把帝都戰處理一下」）══ 測試入口：
      落在旅店、插 `cap_raid` ⇒ 一進來就打第一場（旅店 → 上街區 → 廣場結算 → 舊街區）。
      旗與好感照 Stage 16（劇情接上之前，這一段在哪一章還沒定）；旅店的初見／夢都當成看過。 */
