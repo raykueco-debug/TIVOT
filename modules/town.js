@@ -2809,6 +2809,8 @@ function armMapCard(){
 function gateArrival(fn){
   if(!mapCardArmed){ fn(); return; }
   mapCardArmed=false;
+  /* 從全黑開場的那一段（夢境入口，`darkStart`）不報圖名：那不是「踏進這張地圖」，旗也不記（真的飛來時照報）。 */
+  { const nd=node(), a0=nd && actDue(nd); if(a0 && a0.darkStart){ fn(); return; } }
   heldArrival=fn;
   if(!showMapCard()){ const f=heldArrival; heldArrival=null; if(f) f(); }   // 卡出不來就別擋路
 }
@@ -4542,6 +4544,7 @@ export function enter(id){
   story.ensureBgm(townBgm());
   story.setBgFlip(!!n.bgFlip);   // 背景鏡像（ver -877：崩塌走道×2 同圖翻轉）
   _bandShown=clock.band();   // 這一格是照這個時段畫的（給 tivot:clock 比對，ver -2082）
+  { const a0=actDue(n); if(a0 && a0.darkStart) story.holdSceneFade(); }   // 這一段要從全黑開場（ver -2141）
   bgFor(bgCandsOf(n, id), needReveal ? reveal : null);
   refreshChaseDown();       // 倒地的追兵留在這一格的畫面上（ver -1701）
   ensureLayer(); bindInput(); refreshArrows(); showNav(false);

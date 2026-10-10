@@ -3421,7 +3421,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2140';
+const KERB_V='?v=2141';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -5779,6 +5779,14 @@ export function veilOn(){ const v=$('storyVeil'); return !!(v && v.classList.con
    ⚠ 它與 `veilOn()` 是**兩片不同的黑幕**：這一片只罩演出區（`z-4`），
      那一片罩整個舞台（`z-20`）。要問「畫面是不是已經被蓋住了」就兩片都問
      —— 不要把它們合成一個（擁有者不同，鐵律 7/9）。 */
+/* 抵達就全黑（ver -2141，Ray：「睡覺音播了以後保持上半全黑…全黑狀態出士兵第一句話」）：
+   城鎮那一段寫 `darkStart:true` 時，town.enter 在背景擺上之前就把演出區蓋黑（不淡），
+   擁有者記成 'beat' ＝等腳本自己的 `fadeIn` 來掀（同拍上的 fadeOut）。 */
+export function holdSceneFade(){
+  const f=$('storyFade'); if(!f) return;
+  f.style.transitionDuration='0ms'; f.classList.add('on'); void f.offsetWidth;
+  f.style.transitionDuration=''; fadeOwner='beat';
+}
 export function sceneFadeOn(){ const f=$('storyFade'); return !!(f && f.classList.contains('on')); }
 
 export function clearCast(){

@@ -4083,7 +4083,7 @@ export const TOWNS = {
                   bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_entry_day', noTime:true }],
                   exits:{ up:'corridor' },
                   sail:{ dir:'down', hold:{ need:'frag02_go', until:'frag02_done', text:'……現在不是離開的時候。' } },
-                  acts:[ { flag:'frag02_open', need:'frag02_go', until:'frag02_done', storyBattle:true, sides:FRAG02_SIDES,
+                  acts:[ { flag:'frag02_open', darkStart:true, need:'frag02_go', until:'frag02_done', storyBattle:true, sides:FRAG02_SIDES,
                            gotoIf:{ flag:'frag02_done', to:'@northport:inn' }, lines:FRAG02_OPEN } ] },
       corridor: { bg:'canyon_corridor', name:'卡耶爾山谷　風蝕迴廊',
                   bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_corridor_day', noTime:true }],
