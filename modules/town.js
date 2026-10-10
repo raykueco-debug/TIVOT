@@ -654,9 +654,17 @@ function hhmm(min){
    ⚠ 走**路人單句那一套**（`flashLine` ＋ `chatterOn`）：再點一下收掉，節奏一致。
    ⚠ 有 `meetBy` 的城**先走整段戲**（見 `meetScene`），這一支是它的退路 —— 帝都
      沒寫 `meetBy`，行為一個字都沒動。 */
+/* ══ 巧遇的好感（ver -2133，Ray：「約會、巧遇好感度都 +5」）══ 街上碰到外出的她：**每人每天第一次** +`OUTING.meetAff`。
+   ⚠ 單句（maybeMeetOut）與整段戲（meetScene 的偶遇那條）都走這一支（鐵律 8）；記帳鑰匙 `<誰>#aff`（metSet，換日自己清）。 */
+function meetBonus(who){
+  const k=who+'#aff'; if(metToday(k)) return;
+  markMet(k);
+  prog.addAffection(String(who).toLowerCase(), OUTING.meetAff!=null ? OUTING.meetAff : 5);
+}
 function maybeMeetOut(){
   const who=whoOutAt(nodeId); if(!who) return false;
   const w=(OUTING.who||{})[who]||{};
+  meetBonus(who);
   story.castSolo(who);
   if(w.line) story.flashLine(w.line, (SPEAKERS[who]||{}).name||'');
   chatterOn=true;
@@ -737,9 +745,11 @@ function resolveFavor(to){
      連接用場景（東側／西側／北側／碼頭大道）**只是路**，走過去不算「去了別的地方」——
      不然從旅店到教堂中間一定要經過兩三格，這個機會根本不可能達成。
      ⚠ 「連接場景」是**算出來的**（`connectorIds`，鐵律 7），不列死名單。 */
-  if(f.throughConnectors && to!==f.to && connectorIds().indexOf(to)>=0) return;
-  pendingFavor = null;                            // 機會只有一次，去哪裡都用掉
-  if(to !== f.to) return;                         // 去了別的地方 → 不加也不扣
+  /* ══ ver -2133（Ray：「原本限制要馬上去才會加好感的事件，通通改成去了就會加好感，不限定一定要立刻去」）══
+     去了別的地方**不再作廢**：機會留著，這一趟（`open()` 歸零之前）只要走到 `to` 就加。
+     ⚠ `throughConnectors` 因此失去作用（欄位留著不刪）；帝都那一段的「只限第一天」（expire）照舊。 */
+  if(to !== f.to) return;                         // 還沒到 → 機會留著
+  pendingFavor = null;
   for(const who in (f.aff||{})) prog.addAffection(who, f.aff[who]);
   if(f.flag) prog.addFlags([f.flag]);
 }
@@ -5015,6 +5025,7 @@ function afterArrive(n){
     busy=true; showNav(false);
     story.playAdhoc(ms.play, ()=>{ story.clearCast();   // 鐵律 8：離開這一段就清場
       applyAff(ms.play); markMet(ms.key);
+      if(/#m$/.test(ms.key)) meetBonus(ms.key.slice(0,-2));   // 偶遇那一條也算巧遇（ver -2133）；約會那條的好感在 date 的拍上
       busy=false; showNav(true);
       afterArrive2(n, true); });
     return;

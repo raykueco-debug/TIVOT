@@ -712,7 +712,9 @@ export const OUTING = {
      不要再在各段落裡逐一寫 `aff`。一個事件拆成兩段（聖索菲亞索菈娜那一條）時，前半寫 `dateAff:0`。
      ⚠ 依路線給不同值寫成 `dateAff:{ <旗>:<值> }`（第一支插著的旗說了算，都沒插＝這裡的預設）——
        雪都瞭望台：`{ ep_m2_route:5 }`（Ray -1772：M2 +5、其他 +3）。 */
-  dateDoneAff: 3,
+  dateDoneAff: 5,   // ver -2133（Ray：「約會 +5」；原 3）
+  /* 巧遇（街上碰到外出的她）：每人每天第一次 +5（ver -2133，modules/town.js 的 meetBonus）。 */
+  meetAff: 5,
   /* ══⚠⚠ **出了門就不回來，直到 19:00**（ver -1100，Ray：「角色如果出門，
      在 19:00 之前不會回來」）══
      原本是「一天最多兩次、每次待 `stay` 分鐘」（-575）—— 那會讓玩家走到那一格時
@@ -760,7 +762,7 @@ export const OUTING = {
                   date:{ lines:[ { speaker:'PLAYER', blank:true },
                                  nou('surprise','咦？你也是嗎？'),
                                  nou('bigsmile','那我們一起吃吧！'),
-                                 nou('shy','……我可以再點一份嗎？', { aff:{ nouvelle:1 } }) ] } } } },
+                                 nou('shy','……我可以再點一份嗎？', { aff:{ nouvelle:5 } }) ] } } } },   // 約會 +5（ver -2133，原 +1）
     RENNA:    { from:0, dine:'cafe',       nodes:['cityhall','church','grocery'],
                 nodesBy:{ shinier:['chief'] },
                 line:'寫報告寫累了，出來透透氣。',
@@ -779,7 +781,7 @@ export const OUTING = {
                   date:{ lines:[ { speaker:'PLAYER', blank:true },
                                  ren('arguecute','也不能怪我們啊！從來沒有收到過求救嘛！'),
                                  chf(null,'還不到需要求救的程度啦，魔獸的爪牙價格很好，源源不絕地自己送上門來也很不錯。'),
-                                 ren('shockcalm','我這輩子沒想到能聽到這種話……', { aff:{ renna:2 } }) ] } } } },
+                                 ren('shockcalm','我這輩子沒想到能聽到這種話……', { aff:{ renna:5 } }) ] } } } },   // 約會 +5（ver -2133，原 +2）
     ANYA:     { from:3, dine:'dessert',    nodes:['grocery'],
                 nodesBy:{ shinier:['lakeside'] },
                 line:'……嗯。今天的份，還沒吃到。',
@@ -790,7 +792,7 @@ export const OUTING = {
                   date:{ lines:[ any('talk','這個地方，我很喜歡……'),
                                  { speaker:'PLAYER', blank:true },
                                  any('shy',''),
-                                 any('talkshy','好。', { aff:{ anya:3 } }) ] } } } },
+                                 any('talkshy','好。', { aff:{ anya:5 } }) ] } } } },   // 約會 +5（ver -2133，原 +3）
     /* ⚠⚠⚠ **索菈娜 S9 才入隊**（ver -1739，Ray：「索則是 stage9 才加入」；-1360 是 S8，
        再之前暫填 5）。安雅同版改 S3（Ray：「安雅在 stage3 才會加入」）。
        `girlsHere()` 依它濾旅店的四扇門 ⇒ S8 之前那一格根本不存在，
@@ -804,7 +806,7 @@ export const OUTING = {
                   lines:[ sor('lauaghbig','好，今天的目標是山豬！') ],
                   date:{ lines:[ sor('smirk','要不要來比賽呀？'),
                                  sor('tease','要是你贏的話……就……'),
-                                 sor('idea','就算你贏啦！') ] } } } },
+                                 sor('idea','就算你贏啦！', { aff:{ sorana:5 } }) ] } } } },   // 約會 +5（ver -2133；原本沒寫）
   },
 };
 
@@ -5256,7 +5258,7 @@ export const TOWNS = {
           nou('sad','就算在神的名下……就算身負奇蹟之力……'),
           nou('sadnoeye','我們還是……救不了所有人……'),
         ] },
-        { flag:'ss_sor_resolve', need:'ss_slum_sor', until:'ss_inn_merge', withWho:'SORANA', goto:'inn', sides:{ SORANA:'L' }, lines:[
+        { flag:'ss_sor_resolve', need:'ss_slum_sor', until:'ss_inn_merge', withWho:'SORANA', dateAff:10,   /* ver -2133 Ray：「聖索菲亞如果約索拉娜的話好感 +10」 */ goto:'inn', sides:{ SORANA:'L' }, lines:[
           sor('sad','……'),
           sor('embarrass','說了那麼多漂亮話，其實我……一點辦法也沒有啊……'),
           sor('sad','……'),
@@ -6046,7 +6048,7 @@ export const TOWNS = {
            ⚠⚠ 兩套：`[已發生米夏事件，蕾娜不知]` ＝ **M2**（`ep_m2_route`），其餘走另一套
              —— 寫成「M2 才演 A、其餘演 B」（A route 先跑的人兩支旗都沒有）。
            ⚠ 好感：M2 +5、其他 +3（ver -1772，Ray）—— 走段落的 `dateAff`（約會統一 +3 那一支），不再掛在拍上。 */
-        acts:[ { flag:'vn_lookout_anya', withWho:'ANYA', dateAff:{ ep_m2_route:5 },   /* ver -1772 Ray：M2 +5、其他路線 +3（約會統一那一筆，不再另外加） */ lines:[
+        acts:[ { flag:'vn_lookout_anya', withWho:'ANYA',   /* ver -1772 Ray：M2 +5、其他 +3 → ver -2133 約會一律 +5，特例拿掉 */ lines:[
           any('watch','……'),
           { speaker:'PLAYER', blank:true },
           any('silent','一點點。',                        { skipIf:'ep_m2_route' }),
