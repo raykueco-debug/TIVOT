@@ -1031,7 +1031,7 @@ export const ENEMIES = {
       tier:'C', atype:'P', stageScale:1,
       image:null,   // 群體敵人沒有單張立繪：背景是 group.plate、人是 group 那幾層（ver -2043）
       group:{ plate:'resources/background/capital/fight_hotel/plate.webp', dir:'resources/background/capital/fight_hotel/', fall:'resources/background/capital/fight_hotel_hit_v1/', fallLead:80, fallMs:400, order:[2,3,1], hpEach:100 },   // order＝疊放（後→前，美術給的）；倒誰看子彈落點（enemy.js 的 pickVictim）
-      fit:{ pos:'50% 50%', scale:1.4, shiftY:-0.05 }, noShadow:1,   // fit＝**人那一組**的取景（縮放／位置）；背景不受影響。影子每個人各一顆（enemy.buildGroup）
+      fit:{ pos:'50% 50%', scale:1.4 }, noShadow:1,   // fit＝**人那一組**的取景（縮放／位置）；背景不受影響。影子每個人各一顆（enemy.buildGroup）
       parryBasic:0.3,   // 普攻有 30% 被劈落（Ray：先說 50%、改「劈落率改 30%」；ver -2043 起 parryBasic 是機率）
       hp:220,   // ⚠ 實際血量寫在戰鬥卡的 enemyHp（Ray 指定），這一格只是等級基準
       attack:14,
@@ -1135,7 +1135,7 @@ export const ENEMIES = {
       stack:1,
       image:'enemy_cap_mage',
       bg:'capital_dock_battle',   // ver -2123：碼頭戰專用背景（Ray）
-      fit:{ mode:'contain', pos:'center bottom', scale:0.78, shiftY:0.08 },   // ver -2123（Ray：「人站遠點，不要那麼近」）；⚠ 沒寫 mode 會被當 cover 裁掉頭
+      fit:{ mode:'contain', pos:'50% 100%', scale:0.82, shiftY:-0.01 },   // ver -2123（Ray：「人站遠點，不要那麼近」）；⚠ 沒寫 mode 會被當 cover 裁掉頭
       hp:400,   // ver -2123 Ray 改（-2120 是 200）
       attack:21,
       atkInterval:null,
@@ -1147,6 +1147,7 @@ export const ENEMIES = {
          **只吃清盤傷害**：清盤那一刻把**那一盤擋下的傷害全額**打進去（Ray -2122：「25% 拿掉，清盤就給全傷」；combat 的 clearBoard）。
          只有**反擊**不歸零延時（counterStagger:0）；普攻照常歸零（-2122 Ray：「太難了」）。 */
       hexShield:true,
+      counterImmune:true,   // ver -2131 Ray：「愛里歐對反擊完全免疫，反擊不要對他造成任何傷害累積」
       loot:[],
     },
     guild_hunter: {

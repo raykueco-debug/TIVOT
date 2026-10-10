@@ -1458,7 +1458,7 @@ function openEnemyEdit(){
   const f0 = en.fit || {};
   const pos = eeParsePos(f0.pos || (cs && cs.objectPosition));
   const cur = { mode: f0.mode || ((cs && cs.objectFit==='contain') ? 'contain' : 'cover'),
-                x: pos.x, y: pos.y, scale: +f0.scale || 1, shiftY: +f0.shiftY || 0 };
+                x: pos.x, y: pos.y, scale: +f0.scale || 1, shiftY: +f0.shiftY || 0, flip: !!f0.flip };   // flip：水平翻轉（ver -2131）
   /* 對話立繪：台上那幾張的原值（關閉沒存就還原）與正在調的值。 */
   let talk = {};
   const prevTalk = {};   // key → 那一張的 orig／v（換邊重建時保留）
@@ -1482,7 +1482,7 @@ function openEnemyEdit(){
   let msg='';
   const fitOf = ()=>({ mode: cur.mode==='contain' ? 'contain' : undefined,
                        pos: Math.round(cur.x)+'% '+Math.round(cur.y)+'%',
-                       scale: +cur.scale.toFixed(3), shiftY: +cur.shiftY.toFixed(3) });
+                       scale: +cur.scale.toFixed(3), shiftY: +cur.shiftY.toFixed(3), flip: cur.flip || undefined });
   const row = (lab, val, k, d, attr)=>'<div class="ee-row"><span>'+lab+'</span>'
     +'<button '+(attr||'data-k')+'="'+k+'" data-d="'+(-d)+i18nT('">－</button><b>')+val+'</b>'
     +'<button '+(attr||'data-k')+'="'+k+'" data-d="'+d+i18nT('">＋</button></div>');
@@ -1499,6 +1499,8 @@ function openEnemyEdit(){
         + i18nT('<div class="ee-row"><span>模式</span>')
         +   '<button data-mode="cover" class="'+(cur.mode!=='contain'?'on':'')+i18nT('">填滿</button>')
         +   '<button data-mode="contain" class="'+(cur.mode==='contain'?'on':'')+i18nT('">完整</button></div>')
+        + i18nT('<div class="ee-row"><span>翻轉</span>')
+        +   '<button data-flip="1" class="'+(cur.flip?'on':'')+i18nT('">水平翻轉</button></div>')
         + row(i18nT('縮放'), Math.round(cur.scale*100)+'%', 'scale', 0.02)
         + row(i18nT('上下'), Math.round(cur.shiftY*100)+'%', 'shiftY', 0.01)
         + row(i18nT('焦點左右'), Math.round(cur.x)+'%', 'x', 5)
@@ -1547,6 +1549,7 @@ function openEnemyEdit(){
       tutorial.tuneApply(T.key, T.v); render(); return;
     }
     if(t.dataset.mode){ cur.mode=t.dataset.mode; }
+    else if(t.dataset.flip){ cur.flip=!cur.flip; }
     else if(t.dataset.k){
       const k=t.dataset.k, d=+t.dataset.d;
       cur[k] = +(cur[k]+d).toFixed(3);
@@ -1556,7 +1559,7 @@ function openEnemyEdit(){
     else if(t.dataset.act==='reset'){
       if(tab!=='enemy'){ const T=talk[tab]; T.v=Object.assign({}, T.orig); tutorial.tuneApply(T.key, T.v); tutorial.tuneBlink(tab, T.v.blink); msg=i18nT('已還原'); render(); return; }
       const p=eeParsePos(f0.pos || '');
-      Object.assign(cur, { mode:f0.mode||'cover', x:f0.pos?p.x:50, y:f0.pos?p.y:0, scale:+f0.scale||1, shiftY:+f0.shiftY||0 });
+      Object.assign(cur, { mode:f0.mode||'cover', x:f0.pos?p.x:50, y:f0.pos?p.y:0, scale:+f0.scale||1, shiftY:+f0.shiftY||0, flip:!!f0.flip });
       enemyMod.applyEnemyFit(f0); msg=i18nT('已還原成卡上的值'); render(); return;
     }
     else if(t.dataset.act==='close'){
@@ -1585,7 +1588,7 @@ function openEnemyEdit(){
       fetch(new URL('__efit', location.href).pathname, { method:'POST', body:JSON.stringify({ key, fit }) })
         .then(r=>r.text().then(x=>({ok:r.ok, x})))
         .then(r=>{ if(r.ok){ const nf={}; if(fit.mode) nf.mode=fit.mode; nf.pos=fit.pos;
-                              if(fit.scale!==1) nf.scale=fit.scale; if(fit.shiftY) nf.shiftY=fit.shiftY;
+                              if(fit.scale!==1) nf.scale=fit.scale; if(fit.shiftY) nf.shiftY=fit.shiftY; if(fit.flip) nf.flip=true;
                               en.fit=nf; }
                    msg = r.ok ? i18nT('已存檔（')+r.x+i18nT('）') : i18nT('存檔失敗：')+r.x; render(); })
         .catch(err=>{ msg=i18nT('存檔失敗：')+err; render(); });

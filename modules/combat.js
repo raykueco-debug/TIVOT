@@ -1516,10 +1516,17 @@ function enemyDamage(dmg,isCrit,silent,src){
      所有來源（普攻／BR／反擊／聖徒化…）在護罩張著時**全額擋下、記在 `shieldBank`**；
      清盤那一刻護罩碎掉、這一盤的帳全額打進去（clearBoard，Ray -2122：「清盤就給全傷」）。
      ⚠ 擋在唯一的入口（鐵律 8）。普攻的命中點演出在 gunHitOnEnemy；其他來源沒有落點，隨機閃在牠身上。 */
+  /* 卡上 `counterImmune`（ver -2131，Ray：「愛里歐對反擊完全免疫，反擊不要對他造成任何傷害累積」）：
+     反擊**任何時候**都不計（護罩剛碎、下一盤還沒開的空檔也一樣）—— 閃護罩、跳 GUARD（ver -2131 Ray：「打上去跳 guard 就好」）、不記帳、不扣血。 */
+  if(src==='counter' && state.enemyCounterImmune && state.enemyHp>0 && dmg>0){
+    try{ enemy.spawnHexShield(); }catch(_){}
+    if(!silent) floatDmg('GUARD', (30+Math.random()*40)+'%', '35%', false, 'guardnum');
+    return;
+  }
   if(shieldUp() && dmg>0){
     state.shieldBank=(state.shieldBank|0)+Math.round(dmg);
     if(src!=='basic'){ try{ enemy.spawnHexShield(); }catch(_){} }
-    if(!silent) floatDmg('SHIELD', (30+Math.random()*40)+'%', '35%', false, 'guardnum');
+    if(!silent) floatDmg('GUARD', (30+Math.random()*40)+'%', '35%', false, 'guardnum');
     return;
   }
   // 教學：段落未播完前（tutorialActive）敵不可被打死——致死傷害夾到留 1 HP。

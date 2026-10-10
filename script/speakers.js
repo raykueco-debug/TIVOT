@@ -518,7 +518,7 @@ export const ART = {
                      ⚠ 取景值是 `tools/measure_si.py` 量的，不是沿用 `run` 那一張。 */
                   runserious:{src:'resources/si/nouvelle_si_runserious.webp',top:12, bot:1521, fx:0.402 },
                   /* ver -2099 返回帝都稿缺差分（美術 9086789c）：measure_si 量 top/bot；fx 照臉中心目測校正（v2：閉眼捂嘴） */
-                  runcry:   { src:'resources/si/nouvelle_si_runcry.webp?v=f4a57f27',   top:4,  bot:1528, fx:0.725 },
+                  runcry:   { fxShift:0.01, src:'resources/si/nouvelle_si_runcry.webp?v=f4a57f27',   top:4,  bot:1528, fx:0.725 },
                   /* ver -427 交件：酒館第一句要的那張（在此之前一直回退基本立繪）。 */
                   pray:     { src:'resources/si/nouvelle_si_pray.webp',     top:0,  bot:1533, fx:0.535 },
                   /* 北方泊地教堂那一段（ver -595，Ray 交稿）。`relief` 交件是 PNG，
@@ -695,13 +695,13 @@ export const ART = {
        ⚠ 古墓底層那一拍（索「糟糕！」）稿上標了「注意大小，錨臉」——
          換成全身站姿之後那個顧慮本來就不存在了。 */
     panic:     { fxShift:-0.06, yShift:25, cm:150, src:'resources/si/sorana_si_panic.webp?v=13cf60c2', top:8, bot:1522, fx:0.649 },
-    guard:        { fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guard.webp?v=e18306d1',         top:9,  bot:1527, fx:0.651, cm:150 },
+    guard:        { fxShift:-0.01, yShift:25, src:'resources/si/sorana_si_guard.webp?v=e18306d1',         top:9,  bot:1527, fx:0.651, cm:150 },
     /* ver -2114（美術 a904d66d；guardgrimace 10-10 Ray 重交 png → 同名覆蓋）：與 guard 同姿勢 ⇒ 位置沿用 guard 的值（§6.5）。 */
-    guardgrimace: { fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guardgrimace.webp?v=82a69b87', top:9, bot:1527, fx:0.651, cm:150 },
+    guardgrimace: { fxShift:-0.01, yShift:25, src:'resources/si/sorana_si_guardgrimace.webp?v=0a88b738', top:9, bot:1527, fx:0.651, cm:150 },
     runserious:      { src:'resources/si/sorana_si_runserious.webp',      top:8,  bot:1515, fx:0.509 },   // 正面朝鏡頭跑（ver -2114）
     runserious_side: { src:'resources/si/sorana_si_runserious_side.webp', top:23, bot:1507, fx:0.774 },   // 側面奔跑（Ray：兩個都留）
     guardtalk:    { fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guardtalk.webp?v=415fd57d',     top:5,  bot:1529, fx:0.653, cm:160 },
-    guardthink:{ fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guardthink.webp?v=eeda0c67', top:8,  bot:1529, fx:0.672, cm:150 },
+    guardthink:{ fxShift:-0.01, yShift:25, src:'resources/si/sorana_si_guardthink.webp?v=eeda0c67', top:8,  bot:1529, fx:0.672, cm:150 },
     embarrass:   { fxShift:0.015, yShift:10, cm:150, src:'resources/si/sorana_si_embarrass.webp?v=4b2fec64',    top:5,  bot:1529, fx:0.551 },
     /* 夏爾村・夜襲之後那一段（`shinier.wild`）的「唉——又是南面那個遺蹟」。
        圖 ver -772 那一批就交了，但一直沒轉檔也沒登記 —— 於是那三句一路回退成
@@ -1056,7 +1056,7 @@ export const ART = {
     panic:     { src:'resources/si/anya_si_panic.webp?v=960811a2',      top:0, bot:1522, fx:0.434 },   // ver -842
     /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2` ＋ 取景值重量
        （0.426→0.522：差了將近一成的圖寬，沿用舊值臉會明顯偏左）。 */
-    talk:      { fxShift:0, yShift:0, src:'resources/si/anya_si_talk.webp?v=d6e12e73',   top:8, bot:1526, fx:0.483 },
+    talk:      { cm:140, fxShift:0, yShift:0, src:'resources/si/anya_si_talk.webp?v=d6e12e73',   top:8, bot:1526, fx:0.483 },
     /* ══ Stage8 後段（ver -1092，Ray 交稿）══ 逐張量。 */
     argue:     { src:'resources/si/anya_si_argue.webp?v=df7ed249',      top:2, bot:1528, fx:0.488 },
     shy:       { src:'resources/si/anya_si_shy.webp?v=4c36a30d',        top:8, bot:1527, fx:0.443 },
@@ -1719,18 +1719,18 @@ export const ART = {
      ⚠ 術師 `barrier` 的 fx 用臉不用 alpha 重心（伸出去的手與結界會把重心拉到 0.49）。 */
   mage: { cm:178, eye:30, fx:0.43, top:3, bot:1530,
            side:'R', alt:null, base:'resources/si/npc/mage_si_front.webp?v=6d3cf63f', expr:{
-    front:   { src:'resources/si/npc/mage_si_front.webp?v=6d3cf63f',   top:3,  bot:1530, fx:0.43 },
-    barrier: { src:'resources/si/npc/mage_si_barrier.webp', top:2,  bot:1529, fx:0.43 },
-    hurt:    { src:'resources/si/npc/mage_si_hurt.webp',    top:13, bot:1514, fx:0.36 },
+    front:   { fxShift:-0.05, src:'resources/si/npc/mage_si_front.webp?v=6d3cf63f',   top:3,  bot:1530, fx:0.43 },
+    barrier: { fxShift:-0.05, src:'resources/si/npc/mage_si_barrier.webp', top:2,  bot:1529, fx:0.43 },
+    hurt:    { fxShift:0, src:'resources/si/npc/mage_si_hurt.webp',    top:13, bot:1514, fx:0.36 },
     /* ver -2115（美術 0b5a5d29，GPT 真 alpha）：碼頭那一段的角度與動作，眼睛一律瞇著。measure_si 量。
-       `hurtsmile`（戰後「不愧是前第一後補」）ver -2116 美術補交無血版。 */
+       戰後受創：`hurtdown`（ver -2131，取代 -2116 的 hurtsmile —— 那張美術已回收，Ray：不要破衣髒污、低頭瞇眼無笑容）。 */
     wave:    { src:'resources/si/npc/mage_si_wave.webp',    top:7,  bot:1532, fx:0.444 },   // 嗨！
     talk:    { src:'resources/si/npc/mage_si_talk.webp',    top:2,  bot:1533, fx:0.431 },   // 一般說話
-    shrug:   { src:'resources/si/npc/mage_si_shrug.webp',   top:9,  bot:1530, fx:0.443 },   // 攤手
+    shrug:   { yShift:0, fxShift:-0.06, src:'resources/si/npc/mage_si_shrug.webp',   top:9,  bot:1530, fx:0.443 },   // 攤手
     laugh:   { src:'resources/si/npc/mage_si_laugh.webp',   top:3,  bot:1529, fx:0.515 },   // 笑，側身仰頭
-    threat:  { src:'resources/si/npc/mage_si_threat.webp',  top:6,  bot:1527, fx:0.462 },   // 手上紫光
+    threat:  { fxShift:0, src:'resources/si/npc/mage_si_threat.webp',  top:6,  bot:1527, fx:0.462 },   // 手上紫光
     leave:   { src:'resources/si/npc/mage_si_leave.webp',   top:5,  bot:1523, fx:0.715 },   // 半轉身回頭兩指揮別
-    hurtsmile: { src:'resources/si/npc/mage_si_hurtsmile.webp', top:8, bot:1529, fx:0.360 },   // 不愧是前第一後補（無血版；ver -2116 美術補交）
+    hurtdown:  { src:'resources/si/npc/mage_si_hurtdown.webp', top:35, bot:1517, fx:0.351 },   // 咕……／不愧是前第一後補（ver -2131 美術：低頭瞇眼無笑容、不破衣不髒污；取代已回收的 hurtsmile）
   } },
   /* ══ 返回帝都的路人母子（ver -2102，Ray 交件 capi_boy／capi_mom）══ measure_si 量；身高是估的（男孩 120、母親 160）。
      ⚠ 男孩那張上下都留白（47~1501），照量即可。 */
@@ -1738,7 +1738,7 @@ export const ART = {
      原尺寸裁進 512×768（不放大，免得糊）。⚠ 圖裡人物只佔 83% 高 —— 那是留白，不是半身；top/bot 照量。身高是估的（178）。 */
   capguard: { cm:178, eye:30, fx:0.446, top:120, bot:758,
            side:'R', alt:null, base:'resources/si/npc/church_guard_si_draw.webp', expr:{
-    draw: { src:'resources/si/npc/church_guard_si_draw.webp', top:120, bot:758, fx:0.446 },
+    draw: { yShift:46, cm:130, src:'resources/si/npc/church_guard_si_draw.webp', top:120, bot:758, fx:0.446 },
   } },
   capiboy: { cm:120, eye:30, fx:0.352, top:47, bot:1501,
            side:'R', alt:null, base:'resources/si/npc/capi_boy.webp', expr:{

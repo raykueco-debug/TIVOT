@@ -1001,10 +1001,13 @@ function layout(){
     const mir = mir0 !== !!(beatFlipWho && slot[o.side]===beatFlipWho);
     /* 翻轉不放動畫（ver -1898，Ray）：`mirrored` 與滑入共用同一條 transform 過場 —— 人已經站在台上時
        換翻轉會演成「轉身」。這一刻把過場關掉、強制排版一次再還回去。 */
+    /* ⚠ ver -2131（Ray：「為什麼我只是翻轉立繪會跑出翻轉動畫？」）：翻轉時臉的錨點也換邊（fx → 1-fx），
+       所以**位置**跟著變 —— 以前過場在翻轉那一行之後就還回去，下面改 left 時又演了一次「滑過去」。
+       ⇒ 過場關到這一段的位置全部套完（見本函式這一輪的結尾 `snapFlip`）才還回去。 */
+    let snapFlip=false;
     if(el.classList.contains('mirrored') !== mir){
-      if(el.classList.contains('on')){
-        el.style.transition='none'; el.classList.toggle('mirrored', mir); void el.offsetWidth; el.style.transition='';
-      } else el.classList.toggle('mirrored', mir);
+      if(el.classList.contains('on')){ snapFlip=true; el.style.transition='none'; }
+      el.classList.toggle('mirrored', mir);
     }
     /* 雙人立繪（`withChar`）進出場的幅度收小、改淡入淡出（ver -1710，Ray：「看起來好忙，
        圖的出入幅度太大了」）—— 位移與透明度寫在 CSS 的 `.duo`。 */
@@ -1024,6 +1027,7 @@ function layout(){
        加在 `shift` **之後**、不參與它的計算：`shift` 會把「腳沒落到畫面底」的人往下推，
        用 `standCm` 往上調會被它推回來（蹲著／抱人的那幾張就是這樣「太低」調不上去）。 */
     el.style.top    = (o.yTop + (o.fitStage ? 0 : shiftOf(o) - (a.yShift||0)*pxCm))+'px';
+    if(snapFlip){ void el.offsetWidth; el.style.transition=''; }   // 翻轉：位置一次到位，之後才恢復過場（ver -2131）
   }
   if(tuneOn) tuneRender();   // 台上換人時面板跟著換（ver -1812）
 }
@@ -3399,7 +3403,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2130';
+const KERB_V='?v=2132';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

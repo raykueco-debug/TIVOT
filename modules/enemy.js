@@ -958,6 +958,9 @@ let entranceCues = [];
 export function applyEnemyFit(fit){
   const eImg = $('enemyImg'); if(!eImg) return;
     eImg.style.objectPosition = (fit && fit.pos) || '';
+    /* `fit.flip`（ver -2131，Ray：「戰鬥中的敵繪修改也要有翻轉選項」）＝水平翻轉。
+       ⚠ 用獨立的 `scale` 屬性，**不可以用 transform**（下面那段說明的同一個理由：transform 被受擊／降臨演出佔走了）。 */
+    eImg.style.scale = (fit && fit.flip) ? '-1 1' : '';
     /* ══⚠⚠ **`fit.scale`／`fit.shiftY` ＝把他擺遠一點**（ver -1565，Ray：「尼莫戰
        讓他站稍遠一點，應該是圖稍縮 上移 全身入鏡但不要太上面」）══
        · `scale`  ＝畫面上佔多大（1 ＝滿框；0.86 ＝縮到 86%）
@@ -1909,6 +1912,7 @@ export function setEnemy(key, opts){
   state.enemyParry     = (en.parryBasic===true) ? 1 : (+en.parryBasic || 0);   // 機率（ver -2043：1＝每發都擋、0.5＝一半）
   /* 六角護罩（ver -2120，碼頭戰愛里歐）：卡上 `hexShield:true` ＝只吃清盤傷害（combat 的 shieldUp）。 */
   state.enemyHexShield = !!en.hexShield; state.shieldDown=false; state.shieldBank=0;
+  state.enemyCounterImmune = !!en.counterImmune;   // 反擊完全免疫（ver -2131）：護罩期間反擊不記帳（combat.enemyDamage）
   state.enemyShieldClearPct = +en.shieldClearPct || 1;   // 清盤時把那一盤擋下的傷害打這個比例進去（ver -2122：沒寫＝全額）
   /* 卡上 `healOnFault:0.1` ＝玩家點錯／受擊／逾時，敵回最大 HP 的這一成（ver -1858，羅賽爾「慈愛殘像」）。 */
   state.enemyHealOnFault = +en.healOnFault || 0;

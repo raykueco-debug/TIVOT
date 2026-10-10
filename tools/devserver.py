@@ -732,7 +732,7 @@ def beat_span_patch(req):
 
 
 # ══ 敵人立繪的取景（ver -1883，Ray：「戰鬥中鎖血鈕取消，改成編輯敵立繪」）══
-# `POST /__efit`，body＝`{"key":敵人卡鑰匙, "fit":{mode?,pos?,scale?,shiftY?}}`
+# `POST /__efit`，body＝`{"key":敵人卡鑰匙, "fit":{mode?,pos?,scale?,shiftY?,flip?}}`（flip：水平翻轉，ver -2131）
 # 在 `script/enemies.js` 那一張卡裡把 `fit:{…}` 那一行換掉；沒有那一行就插在 `image:` 之後。
 # ⚠ 只動那一行，卡上其他東西（註解）一個字都不碰（同 enemies_xlsx 的就地改值）。
 EFIT_FILE = 'script/enemies.js'
@@ -748,6 +748,8 @@ def _efit_literal(fit):
         v = fit.get(k)
         if v is not None and float(v) != (1.0 if k == 'scale' else 0.0):
             parts.append("%s:%s" % (k, ('%.3f' % float(v)).rstrip('0').rstrip('.')))
+    if fit.get('flip'):
+        parts.append("flip:true")
     return '{ ' + ', '.join(parts) + ' }' if parts else '{}'
 
 

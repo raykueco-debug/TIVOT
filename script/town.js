@@ -1266,7 +1266,7 @@ const CR_INN_RAID = [
   /* ══ Stage 18（ver -2125，Ray：「加入 stage 18，時間鎖在晚上 11:00，始於安雅偷溜被主角逮到」）══
      第一拍升 18、時鐘設成當晚 23:00（clockSet；之後走路照常推時間）。結束於碼頭戰最後一句（那一拍升 19、出航）。 */
   any('scare','', { amb:'se_sneaky', checkpoint:true, stage:18, clockSet:23, bgm:'nocturnal' }),
-  { speaker:'PLAYER', blank:true },
+  { bubbleFx:['question','shout'], speaker:'PLAYER', blank:true },
   any('panic','噫！', { amb:null }),
   any('talkshy','不、不會再跑了啦！'),
   { speaker:'NARRATION', text:'', se:'se_highheels', auto:700 },
@@ -1379,9 +1379,9 @@ const CR_DOCK = [
   Object.assign(mg('front','我挺喜歡你們的，不過——'), { flip:true }),
   Object.assign(mg('threat','得請你們倒在這裡了。', { flags:['cr_mage_fight'] }), { flip:true }),   // 解開 Rituale 的鎖 ⇒ 愛里歐戰放自己的曲（ver -2126）
   { battle:'cap_mage' },
-  mg('hurt','咕……'),
-  mg('hurtsmile','不愧是前第一後補，小瞧你了啊。'),
-  mg('hurtsmile','跟賽西莉說的一樣呢。'),
+  mg('hurtdown','咕……'),
+  mg('hurtdown','不愧是前第一後補，小瞧你了啊。'),   // ver -2131：美術交的 hurtdown（取代已回收的 hurtsmile）
+  mg('hurt','跟賽西莉說的一樣呢。'),
   { speaker:'PLAYER', blank:true },
   mg('laugh','在這裡跟HUND死戰到底，我還沒有自大到那種程度。'),
   mg('leave','有緣再會吧。'),
