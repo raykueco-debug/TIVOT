@@ -1121,8 +1121,15 @@
   .fx-hex polygon,.fx-hexbreak polygon{fill:rgba(170,120,255,.16);stroke:rgba(225,200,255,.95);stroke-width:1.6;}
   .fx-hex{filter:drop-shadow(0 0 6px rgba(190,140,255,.95));animation:hexFlash .4s ease-out forwards;}
   @keyframes hexFlash{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}20%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.08)}}
-  .fx-hexbreak{filter:drop-shadow(0 0 10px rgba(190,140,255,1));animation:hexBreak .62s ease-out forwards;}
-  @keyframes hexBreak{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.04)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.45)}}
+  /* 破碎（ver -2129）：① 整片亮一下 ② 一片片小六角形噴散（--dx/--dy/--rot 由 enemy.breakHexShield 逐片給） */
+  .fx-hexbreak{filter:drop-shadow(0 0 10px rgba(190,140,255,1)) brightness(1.6);animation:hexBreak .22s ease-out forwards;}
+  @keyframes hexBreak{0%{opacity:0;transform:translate(-50%,-50%) scale(.96)}40%{opacity:1;transform:translate(-50%,-50%) scale(1.02)}100%{opacity:.9;transform:translate(-50%,-50%) scale(1.03)}}
+  .fx-hexshard{position:absolute;pointer-events:none;transform:translate(-50%,-50%);filter:drop-shadow(0 0 5px rgba(190,140,255,.95));
+    animation:hexShard .75s cubic-bezier(.2,.7,.4,1) both;}
+  .fx-hexshard svg{display:block;overflow:visible;}
+  .fx-hexshard polygon{fill:rgba(190,150,255,.32);stroke:rgba(235,215,255,1);stroke-width:1.4;}
+  @keyframes hexShard{0%{opacity:1;transform:translate(-50%,-50%) rotate(0) scale(1)}
+    100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(var(--rot)) scale(.55)}}
   .fx-parry{position:absolute;width:340px;height:160px;margin:-80px 0 0 -170px;pointer-events:none;
     filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 12px rgba(215,230,255,.9));
     transform:scaleX(var(--flip,1)) rotate(calc(var(--deg,0deg) - 28deg)) scale(.7);opacity:0;

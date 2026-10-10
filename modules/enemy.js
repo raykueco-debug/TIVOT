@@ -216,14 +216,22 @@ export function spawnParry(px, py){
    `spawnHexShield(x,y)` ＝命中點閃一片六角格（沒給座標＝隨機落在牠身上：BR／反擊沒有落點）；
    `breakHexShield()` ＝清盤那一刻整片護罩碎掉。全部程式生成（SVG），樣式在 style.css 的 .fx-hex*。 */
 let hexSeAt=0;
-function hexSvg(r){
-  const cells=[]; const s=r/3.2, h=s*Math.sqrt(3)/2;
-  for(let q=-3;q<=3;q++) for(let k=-3;k<=3;k++){
+/* `n` ＝半徑裡排幾格（越大越密）。⚠ ver -2129：原本固定 3.2 ⇒ 整片只有 7 格，讀起來是「幾塊大磚」。 */
+function hexCells(r, n){
+  const out=[]; const s=r/n, h=s*Math.sqrt(3)/2, m=Math.ceil(n)+1;
+  for(let q=-m;q<=m;q++) for(let k=-m;k<=m;k++){
     const x=q*s*1.5, y=(k+(q&1?0.5:0))*h*2;
     if(Math.hypot(x,y)>r-s*0.6) continue;
-    const pts=[0,1,2,3,4,5].map(i=>{ const a=Math.PI/3*i; return (x+s*0.92*Math.cos(a)).toFixed(1)+','+(y+s*0.92*Math.sin(a)).toFixed(1); }).join(' ');
-    cells.push('<polygon points="'+pts+'"/>');
+    out.push([x,y]);
   }
+  return { s, cells:out };
+}
+function hexSvg(r, n){
+  const { s, cells:C }=hexCells(r, n||5);
+  const cells=C.map(([x,y])=>{
+    const pts=[0,1,2,3,4,5].map(i=>{ const a=Math.PI/3*i; return (x+s*0.92*Math.cos(a)).toFixed(1)+','+(y+s*0.92*Math.sin(a)).toFixed(1); }).join(' ');
+    return '<polygon points="'+pts+'"/>';
+  });
   return '<svg viewBox="'+(-r)+' '+(-r)+' '+(2*r)+' '+(2*r)+'" width="'+(2*r)+'" height="'+(2*r)+'">'+cells.join('')+'</svg>';
 }
 export function spawnHexShield(px, py){
@@ -231,18 +239,41 @@ export function spawnHexShield(px, py){
   if(px==null){ const b=host.getBoundingClientRect(); px=b.width*(0.32+Math.random()*0.36); py=b.height*(0.25+Math.random()*0.4); }
   const d=document.createElement('div'); d.className='fx-hex';
   d.style.left=px+'px'; d.style.top=py+'px';
-  d.innerHTML=hexSvg(46);
+  d.innerHTML=hexSvg(46, 4);
   host.appendChild(d); setTimeout(()=>d.remove(), 420);
   const now=Date.now();
   if(now-hexSeAt>90){ hexSeAt=now; const se=asset('se_bulletguard'); if(se) SFX.play(se, sfxGain('se_bulletguard')); }
 }
+/* ⚠ ver -2129（Ray：「防壁要真的破碎四散的效果，現在是莫名出現一個大六角磚」）：
+   護罩先**整片亮一下**（罩在牠身上的那一圈六角格），隨即**裂成一片片小六角形**往外噴、旋轉、往下掉、淡出。
+   每一片是獨立的元素（位置＝蜂巢格的格心），飛行向量由「離中心的方向」＋隨機量決定 —— 讀起來是從牠身上炸開。 */
 export function breakHexShield(){
   const host=$('fxTop'); if(!host) return;
-  const b=host.getBoundingClientRect();
-  const d=document.createElement('div'); d.className='fx-hexbreak';
-  d.style.left=(b.width/2)+'px'; d.style.top=(b.height*0.45)+'px';
-  d.innerHTML=hexSvg(Math.round(Math.min(b.width,b.height)*0.42));
-  host.appendChild(d); setTimeout(()=>d.remove(), 650);
+  const hb=host.getBoundingClientRect();
+  /* 罩在立繪上：中心＝#enemyImg 的框（群體沒有這張就退回畫面中央） */
+  const ei=$('enemyImg'), er=ei && ei.getBoundingClientRect();
+  const cx = er && er.width ? (er.left+er.width/2-hb.left) : hb.width/2;
+  const cy = er && er.height ? (er.top+er.height*0.45-hb.top) : hb.height*0.45;
+  const R = Math.round(Math.min(hb.width, hb.height)*0.40);
+  /* ① 整片亮一下 */
+  const flash=document.createElement('div'); flash.className='fx-hexbreak';
+  flash.style.left=cx+'px'; flash.style.top=cy+'px'; flash.innerHTML=hexSvg(R, 8);
+  host.appendChild(flash); setTimeout(()=>flash.remove(), 220);
+  /* ② 碎片：蜂巢格心，逐片飛散 */
+  const { s, cells:SH }=hexCells(R, 8);
+  setTimeout(()=>{
+    for(const [x,y] of SH){
+      const a=Math.atan2(y,x)+(Math.random()-0.5)*0.6, sp=R*(0.55+Math.random()*0.9);
+      const d=document.createElement('div'); d.className='fx-hexshard';
+      d.style.left=(cx+x)+'px'; d.style.top=(cy+y)+'px';
+      d.style.setProperty('--dx', (Math.cos(a)*sp).toFixed(0)+'px');
+      d.style.setProperty('--dy', (Math.sin(a)*sp + R*(0.35+Math.random()*0.5)).toFixed(0)+'px');   // 往外噴＋往下掉
+      d.style.setProperty('--rot', ((Math.random()-0.5)*540).toFixed(0)+'deg');
+      d.style.animationDelay=(Math.random()*70).toFixed(0)+'ms';
+      d.innerHTML='<svg viewBox="-10 -10 20 20" width="'+Math.round(s*1.85)+'" height="'+Math.round(s*1.85)+'"><polygon points="9.2,0 4.6,8 -4.6,8 -9.2,0 -4.6,-8 4.6,-8"/></svg>';
+      host.appendChild(d); setTimeout(()=>d.remove(), 900);
+    }
+  }, 120);
   const se=asset('se_glasscrack'); if(se) SFX.play(se, sfxGain('se_glasscrack'));
 }
 // 紅刀痕濺血：一條斜向亮紅刀痕 + 數顆散開的小血滴（按錯懲罰用）。
