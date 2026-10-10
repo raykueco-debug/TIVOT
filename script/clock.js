@@ -136,8 +136,8 @@ export function band(){
   if(h>=5  && h<8 ) return 'Dawn';       // 黎明
   if(h>=8  && h<17) return 'Day';        // 上午/下午
   if(h>=17 && h<19) return 'Dusk';       // 黃昏
-  if(h>=19 && h<24) return 'night';      // 夜（ver -816，Ray：夜景改 19:00 開始）
-  return 'midnight';                     // 深夜（0~5）
+  if(h>=19 && h<22) return 'night';      // 夜（ver -816，Ray：夜景改 19:00 開始）
+  return 'midnight';                     // 深夜（22~5；ver -2128，Ray：「改成 22:00 開始，19 世紀應該這樣比較合理」）
 }
 /* 地點的背景檔名（含時段）。`<base>_<band>`。 */
 export function bgName(base){ return base+'_'+band(); }
