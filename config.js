@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2121';
+export const VERSION = 'ver 2026.09.22-2122';
 
 export const GAME_CONFIG = {
 
@@ -2600,7 +2600,7 @@ export const GAME_CONFIG = {
     cap_guard_square: { enemy:'cap_guard_square', session:'cap_raid', sessionEnd:true },
     cap_guard_oldtown: { enemy:'cap_guard_oldtown' },
     /* 碼頭戰・愛里歐（ver -2117）：數值暫用王座徘徊者（見 enemies.js 的 cap_mage）。 */
-    cap_mage: { enemy:'cap_mage', bgm:'bgm_retroroman2' },   // ver -2119（Ray：「PerituneMaterial_RetroRoman_Battle2 術師戰的音樂接上」）
+    cap_mage: { enemy:'cap_mage', bgm:'bgm_retroroman2', bg:'capital_dock_battle' },   // bg：碼頭戰專用背景，蓋過城鎮交棒的那一格（ver -2123）   // ver -2119（Ray：「PerituneMaterial_RetroRoman_Battle2 術師戰的音樂接上」）
     sv_altar: { enemy:'sv_reliquary', session:'shinier_siege' },
     sv_wild:  { enemy:'sv_bear', session:'shinier_siege', sessionEnd:true },
     /* ══ 夏爾森林野生遭遇（ver -862（-893 前用詞）；-869 掛 session）══

@@ -1134,8 +1134,9 @@ export const ENEMIES = {
       stageScale:1,
       stack:1,
       image:'enemy_cap_mage',
-      bg:'capital_dock_night',
-      hp:200,   // ver -2120 Ray 指定
+      bg:'capital_dock_battle',   // ver -2123：碼頭戰專用背景（Ray）
+      fit:{ pos:'center bottom', scale:0.78, shiftY:0.08 },   // ver -2123（Ray：「人站遠點，不要那麼近」）
+      hp:400,   // ver -2123 Ray 改（-2120 是 200）
       attack:21,
       atkInterval:null,
       delayPenalty:{ seconds:5 },
