@@ -1,3 +1,16 @@
+> ⭐⭐⭐⭐⭐ **【新立繪 7 張・等程式端接】（10-10，Mac 美術 session；commit a904d66d）** —— 檔案已在 `resources/si/`，**還沒寫進 `script/speakers.js`**（美術不碰程式，鐵律 11）。
+> · 索菈娜 `ART.sorana.expr` 加：
+>   `guardgrimace:{ fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guardgrimace.webp', top:9, bot:1527, fx:0.651, cm:150 },`（與 guard 同姿勢，沿用 guard 的值）
+>   `runserious:{ src:'resources/si/sorana_si_runserious.webp', top:8, bot:1515, fx:0.509 },`（正面朝鏡頭跑）
+>   `runserious_side:{ src:'resources/si/sorana_si_runserious_side.webp', top:23, bot:1507, fx:0.774 },`（側面奔跑，Ray：兩個都留）
+> · 科爾文 `ART.corvin.expr` 加：
+>   `bow:{ src:'resources/si/npc/corvin_si_bow.webp', top:15, bot:1522, fx:0.371 },`（向女士致意，戴眼鏡）
+>   `hurthold:{ src:'resources/si/npc/corvin_si_hurthold.webp', top:7, bot:1523, fx:0.419 },`
+>   `hurttalk:{ src:'resources/si/npc/corvin_si_hurttalk.webp', top:4, bot:1504, fx:0.456 },`
+>   `hurtcommand:{ src:'resources/si/npc/corvin_si_hurtcommand.webp', top:6, bot:1522, fx:0.469 },`（Ray 稿寫 hurtcoomand，當成拼錯；三張受傷版都無眼鏡、傷勢一致）
+> · top/bot/fx 都是 `tools/measure_si.py` 量的。眨眼補丁這 7 張都還沒做。
+> · 資產盤點：✔ 不欠＝以上 7 張（Ray 點名的都交了）。
+>
 # HANDOFF — 截至 `ver 2026.09.22-2112`（10-09 深夜，iMac 程式 session 收工）
 
 > ⚠⚠ **交接規則（Ray 10-04 定）**：
