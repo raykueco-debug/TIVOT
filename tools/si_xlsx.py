@@ -388,6 +388,7 @@ PENDING_NAMES = {
 #   搬了之後這兩列就可以拿掉（`is_npc()` 自己會接住）。
 FORCE_NPC = {'guildcounterca', 'npc_np_priest'}
 NPC_SHEET = '城鎮店主 NPC'
+ORPHAN_SHEET = '孤兒圖'   # ver -2115：沒接線、對不到角色的檔（見 plan_sheets）
 
 
 def sheet_of(rel):
@@ -412,8 +413,10 @@ def sheet_title(key, grp, fallback):
        ⚠ 取**出現最多次**的那一個：一群裡混到別人的圖時不會被一張帶走。"""
     from collections import Counter
     votes = Counter(r['who'] for r in grp if r.get('key') and r.get('who'))
-    if votes:
-        return votes.most_common(1)[0][0]
+    # ⚠ 名字表裡是代換字（主角＝`{N}`）的不算 —— 頁籤會印出「{N}」（ver -2115）。
+    for who, _n in votes.most_common():
+        if '{' not in str(who):
+            return who
     return PENDING_NAMES.get(key) or fallback
 
 
@@ -427,6 +430,14 @@ def plan_sheets(rows):
         groups.setdefault(sheet_of(r['rel']), []).append(r)
 
     npc = groups.pop('@npc', [])
+    # ══ 孤兒圖（ver -2115，Ray：「孤兒圖不用另外開分頁，全部放同一頁就好」）══
+    #   ＝這一群**一張都沒接線**、而且查不到角色名（speakers 的名字表與 PENDING_NAMES 都沒有）——
+    #   多半是沒照規約命名的檔（`image - 2026-…png`）。一檔一頁只會把頁籤列塞爆，收成一頁。
+    orphan = []
+    for k in [k for k in groups if k not in HEROINES]:
+        g = groups[k]
+        if not any(r.get('key') for r in g) and k not in NAMES and k not in PENDING_NAMES:
+            orphan += groups.pop(k)
     order = [k for k in HEROINES if k in groups]
     rest = sorted((k for k in groups if k not in order),
                   key=lambda k: (-len(groups[k]), k))
@@ -435,6 +446,8 @@ def plan_sheets(rows):
         out.append((sheet_title(k, groups[k], NAMES.get(k, k)), groups[k]))
     if npc:
         out.append((NPC_SHEET, npc))
+    if orphan:
+        out.append((ORPHAN_SHEET, orphan))
     # Excel 的頁籤有長度與字元限制，而且不可以重名
     seen, final = set(), []
     for i, (t, sub) in enumerate(out):

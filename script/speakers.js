@@ -1706,6 +1706,14 @@ export const ART = {
     front:   { src:'resources/si/npc/mage_si_front.webp',   top:3,  bot:1530, fx:0.43 },
     barrier: { src:'resources/si/npc/mage_si_barrier.webp', top:2,  bot:1529, fx:0.43 },
     hurt:    { src:'resources/si/npc/mage_si_hurt.webp',    top:13, bot:1514, fx:0.36 },
+    /* ver -2115（美術 0b5a5d29，GPT 真 alpha）：碼頭那一段的角度與動作，眼睛一律瞇著。measure_si 量。
+       ⚠ 戰後「不愧是前第一後補」那張 `hurtsmile` 美術重畫中，到之前稿上寫它就回退基本立繪（或暫用 `hurt`）。 */
+    wave:    { src:'resources/si/npc/mage_si_wave.webp',    top:7,  bot:1532, fx:0.444 },   // 嗨！
+    talk:    { src:'resources/si/npc/mage_si_talk.webp',    top:2,  bot:1533, fx:0.431 },   // 一般說話
+    shrug:   { src:'resources/si/npc/mage_si_shrug.webp',   top:9,  bot:1530, fx:0.443 },   // 攤手
+    laugh:   { src:'resources/si/npc/mage_si_laugh.webp',   top:3,  bot:1529, fx:0.515 },   // 笑，側身仰頭
+    threat:  { src:'resources/si/npc/mage_si_threat.webp',  top:6,  bot:1527, fx:0.462 },   // 手上紫光
+    leave:   { src:'resources/si/npc/mage_si_leave.webp',   top:5,  bot:1523, fx:0.715 },   // 半轉身回頭兩指揮別
   } },
   /* ══ 返回帝都的路人母子（ver -2102，Ray 交件 capi_boy／capi_mom）══ measure_si 量；身高是估的（男孩 120、母親 160）。
      ⚠ 男孩那張上下都留白（47~1501），照量即可。 */
