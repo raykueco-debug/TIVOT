@@ -1359,24 +1359,25 @@ const CR_DOCK = [
   ren('lookup','有點……太安靜了。'),
   ren('lookup','那個科爾文，會算不到我們的目的？'),
   any('terrify','！！', { tintHold:'nightmare', se:'se_flight_heartbeat' }),
-  mgx('wave','嗨！', { tintHold:null }),
-  { speaker:'NARRATION', text:'', cg:'043_eliointro', cgNoTime:true, cgPan:'up', se:'se_clothes', auto:2600 },
+  /* ver -2129（Ray：「愛里歐的『嗨』不用立繪，直接先跑插圖，然後出對話框『嗨』」）：插圖先上（負片同時收），「嗨！」只出對話框。 */
+  { speaker:'NARRATION', text:'', cg:'043_eliointro', cgNoTime:true, cgPan:'up', se:'se_clothes', tintHold:null, auto:2600 },
+  { speaker:'MAGE_X', text:'嗨！' },
   mgx(null,'本來想等到船出航再動手的，還是被發現了呢。'),
   mgx(null,'不愧是惡夢之主啊。'),
   { speaker:'NARRATION', text:'', cg:null, auto:200 },
-  mgx('shrug',''),
+  Object.assign(mgx('shrug',''), { flip:true }),
   { speaker:'PLAYER', blank:true },
-  ren('shockcalm','！！'),
+  Object.assign(ren('shockcalm','！！'), { flip:true }),
   { speaker:'NARRATION', text:'', se:['se_weapon_pistol_01', { n:'se_bulletguard', delay:120 }], shake:true, auto:800 },   // 槍聲，被術式擋下
-  mgx('barrier','粗暴的招呼呢。'),
-  nou('cringe','術師！難道是……！'),
-  ren('intense2','第八騎士團的愛里歐副團長……？'),
-  mg('barrier','真討厭，藏起爪子是我的強項啊。', { hide:['MAGE_X'] }),
+  Object.assign(mgx('barrier','粗暴的招呼呢。'), { flip:true }),
+  Object.assign(nou('cringe','術師！難道是……！'), { flip:true }),
+  Object.assign(ren('intense2','第八騎士團的愛里歐副團長……？'), { flip:true }),
+  Object.assign(mg('barrier','真討厭，藏起爪子是我的強項啊。', { hide:['MAGE_X'] }), { flip:true }),
   mg('barrier','不愧是HUND，嗅覺很靈敏呢。'),
-  ren('talkserious','刻意不帶武器、屏退會被術式波擊的友軍，會這麼想很正常吧？'),
-  mg('shrug',''),
-  mg('front','我挺喜歡你們的，不過——'),
-  mg('threat','得請你們倒在這裡了。', { flags:['cr_mage_fight'] }),   // 解開 Rituale 的鎖 ⇒ 愛里歐戰放自己的曲（ver -2126）
+  Object.assign(ren('talkserious','刻意不帶武器、屏退會被術式波擊的友軍，會這麼想很正常吧？'), { flip:true }),
+  Object.assign(mg('shrug',''), { flip:true }),
+  Object.assign(mg('front','我挺喜歡你們的，不過——'), { flip:true }),
+  Object.assign(mg('threat','得請你們倒在這裡了。', { flags:['cr_mage_fight'] }), { flip:true }),   // 解開 Rituale 的鎖 ⇒ 愛里歐戰放自己的曲（ver -2126）
   { battle:'cap_mage' },
   mg('hurt','咕……'),
   mg('hurtsmile','不愧是前第一後補，小瞧你了啊。'),
@@ -1414,7 +1415,8 @@ export const TOWNS = {
        ⚠ 安全區旗：城鎮戰期間進城**不插**（modules/town.js 的 `siegeArmed`）；開啟這一段的事件
          要負責把已經插著的 `safehouse_capital` 拔掉（鐵律 9：誰開戰誰拔）。
        ⚠ `until` 現在是舊街區清掉；船塢 Boss 做好之後改成 Boss 那一格。 */
-    siege: { from:'cap_raid', until:'cap_clear_oldtown', keep:['inn','dock'], bgm:'crisis', stepSe:'se_steps', stepSeUntil:'cr_dock' },   // stepSe：追擊戰走一步播跑步聲，到碼頭戰演完為止（ver -2118）
+    siege: { from:'cap_raid', until:'cap_clear_oldtown', keep:['inn','dock'], bgm:'crisis', stepSe:'se_steps', stepSeUntil:'cr_dock',   // stepSe：追擊戰走一步播跑步聲，到碼頭戰演完為止（ver -2118）
+             route:['inn','uptown','square','oldtown','dock'] },   // 追擊期間只有這一條路：不能回頭、不能進中心區、不能出航（ver -2129）
     /* ⚠ 四場段落都寫 `fromStage:0`：帝都有章節窗（storyStages:[0,1]），窗外的段落一律不演 ——
        這一段的開關是 `cap_raid` 本身，不看章節（明寫的例外，見 modules/town.js 的 storyOff）。 */
     name: '帝都',
@@ -1577,7 +1579,7 @@ export const TOWNS = {
                  ren('run','團長級的戰力都在帝國的監視下！就是因為這樣才會由我們帶安雅小姐去開啟遺蹟！'),
                  sor('runserious','什麼啦越聽越糊塗！'),
                  nou('run','就是聖王廳不想讓帝國知道安雅跟著我們嗚——！'),
-                 nou('runcry',''),
+                 Object.assign(nou('runcry',''), { flip:true }),
                  ren('run','別說了！會咬到舌頭的！', { ambStop:1 }) ] },
                /* 返回帝都（ver -2102）：廢城主祭壇之後第一次回到廣場就演（見 CAP_RETURN 的說明）；演完走回旅店。 */
                { flag:'cr_return', need:'dm_altar_done', fromStage:17, sides:CR_SIDES, goto:'inn', lines:CAP_RETURN } ],

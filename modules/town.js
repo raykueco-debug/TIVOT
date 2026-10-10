@@ -3743,8 +3743,20 @@ function exitsOf(){
                : (!ex.down ? 'down' : ['up','left','right','down'].find(d=>!ex[d]));
     if(want) ex[want]=back2;
   }
+  /* ══ 追擊路線（ver -2129，Ray：「帝都追擊戰不能走回頭路，不能走中心區，不能出航，只有一條路線」）══
+     城上 `siege.route:[節點…]`：追擊期間（chaseOn）每一格**只留往路線下一格的那個出口**——
+     回頭、岔路、出航全部不出現（同城鎮戰「不用顯示箭頭」的語彙）。⚠ 擺在最後：back／出航都算完了才濾。 */
+  { const g=(TOWNS[townId]||{}).siege;
+    if(chaseOn(g) && Array.isArray(g.route)){
+      const i=g.route.indexOf(nodeId), next=i>=0 ? g.route[i+1] : null;
+      for(const d in ex) if(ex[d]!==next) delete ex[d];
+    } }
   return ex;
 }
+/* 追擊期間（ver -2118／-2129）：`siege.from` 插了、`siege.stepSeUntil` 還沒插。
+   ⚠ **不看 `until`**：帝都的城鎮戰在舊街區就結束，但從舊街區跑到碼頭那一步還在被追（直到碼頭戰演完）。
+   跑步聲（stepSfx）與單一路線（exitsOf）都問這一支（鐵律 7）。 */
+function chaseOn(g){ return !!(g && g.from && prog.hasFlag(g.from) && !(g.stepSeUntil && prog.hasFlag(g.stepSeUntil))); }
 const asArrE = v => v==null ? [] : (Array.isArray(v) ? v : [v]);
 const SAIL_ID='__sail';
 /* 出航被擋、而那一格又沒寫自己的台詞時的預設旁白（見 setSail）。 */
@@ -4047,8 +4059,7 @@ function stepSfx(){
      ⚠ 期間＝`siege.from` 插了、`siege.stepSeUntil` 還沒插 —— **不看 `until`**：帝都的城鎮戰在舊街區就結束，
        但從舊街區跑到碼頭那一步還在被追（直到碼頭戰演完 `cr_dock`）。 */
   const g=(TOWNS[townId]||{}).siege;
-  const on=g && g.stepSe && prog.hasFlag(g.from) && !(g.stepSeUntil && prog.hasFlag(g.stepSeUntil));
-  const alt=on ? story.seSrc(g.stepSe) : null;
+  const alt=(g && g.stepSe && chaseOn(g)) ? story.seSrc(g.stepSe) : null;
   try{ const w=alt || 'resources/audio/se/se_walk.m4a'; SFX.play(w, fileGain(w)); }catch(_){}   // ⚠ 增益要帶（ver -441）
   try{ story.kerbPendSwing(6, 1.5); }catch(_){}
 }
