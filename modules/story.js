@@ -2825,18 +2825,30 @@ function ambStopAfter(ms){
    ⚠ 留一個很短的預設（60ms）只為了避開 `stop()` 那一聲「喀」（audio.js 的註解）。 */
 export function stopAmb(ms){
   if(_ambTimer){ clearTimeout(_ambTimer); _ambTimer=null; }
+  if(_ambDuckT){ clearTimeout(_ambDuckT); _ambDuckT=null; }
   if(_amb){ try{ _amb.stop(ms==null?60:ms); }catch(_){} }
   _amb=null; _ambName=null;
 }
-/* `vol`（ver -2102，Ray：「荒草風聲 se_sturm 小聲播放」）＝乘在 fileGain 上（同 `se` 的 `vol`），腳本寫 `ambVol:0.4`。 */
-export function playAmb(name, vol){
+/* `vol`（ver -2102，Ray：「荒草風聲 se_sturm 小聲播放」）＝乘在 fileGain 上（同 `se` 的 `vol`），腳本寫 `ambVol:0.4`。
+   `opts`（ver -2140，碎片 02 的戰場聲：「由遠到近，五秒後壓低變成背景音，直到打完第一場」）：
+     · `swell:<ms>`            ＝開頭由小漸大（腳本 `ambSwell`）
+     · `duck:{ at, vol, ms }`  ＝`at` 毫秒後在 `ms`（預設 1500）內降到 `vol` 倍（腳本 `ambDuck`），之後照這個音量循環 */
+let _ambDuckT=null;
+export function playAmb(name, vol, opts){
   const n = name || null;
   if(n === _ambName) return;            // 同一支還在響 ⇒ 什麼都不做
   stopAmb(60);
   if(!n) return;
   const src = seSrc(n);
   if(!src){ console.info('[story] 沒有這個環境音：', n); return; }
-  try{ _amb = SFX.playLoop(src, fileGain(src)*(vol>0?vol:1)); _ambName = n; }catch(_){ _amb=null; _ambName=null; }
+  const o=opts||{};
+  try{ _amb = SFX.playLoop(src, fileGain(src)*(vol>0?vol:1), o.swell ? { from:0.12, ms:o.swell } : null); _ambName = n; }catch(_){ _amb=null; _ambName=null; }
+  if(_amb && o.duck && o.duck.at>0){
+    const h=_amb, to=(o.duck.vol!=null ? o.duck.vol : 0.3), d=Math.max(0.05,(o.duck.ms||1500)/1000);
+    _ambDuckT=setTimeout(()=>{ _ambDuckT=null; try{ if(!h.gain||!h.ctx) return;
+      const t=h.ctx.currentTime, g=h.gain.gain; g.cancelScheduledValues(t); g.setValueAtTime(g.value,t);
+      g.linearRampToValueAtTime(Math.max(0.0001, g.value*to), t+d); }catch(_){} }, o.duck.at);
+  }
 }
 /* ══⚠⚠⚠ **崩塌音 ⇒ 演出區最前景揚煙**（ver -1639，Ray：「只要播 se_brickcrush 或
    se_rockimpact 演出畫面就給揚煙特效在最前景」）══════════════════════════════
@@ -2938,7 +2950,12 @@ export function playSe(spec){
         let d=0; try{ d=(SFX.duration && SFX.duration(src))||0; }catch(_){}
         _seBusyUntil[n] = now + (d>0 ? d*1000 : 800);
       }
-      try{ if(SFX.ready && !SFX.ready(src)) playSeFallback(src, g); else SFX.play(src, g); }catch(_){} 
+      /* `swell:<ms>`（ver -2140，Ray：「se_battlefield 由遠到近」）＝**只播一次**、音量從 `swellFrom`（預設 0.12）漸大到正常。 */
+      /* `stopAfter:<ms>`（ver -2140，Ray：「只播一次，五秒後淡出掉」）＝播到那一刻就淡掉（800ms），不必等整支播完。 */
+      if(opt && (opt.swell || opt.stopAfter)){ try{
+        const h=SFX.playCue(src, g, opt.swell ? { from: opt.swellFrom!=null ? opt.swellFrom : 0.12, ms: opt.swell } : null);
+        if(opt.stopAfter) setTimeout(()=>{ try{ h.stop(800); }catch(_){} }, opt.stopAfter); }catch(_){} }
+      else try{ if(SFX.ready && !SFX.ready(src)) playSeFallback(src, g); else SFX.play(src, g); }catch(_){} 
                    if(DUST_SE[n]) dustPlume(opt && opt.dust); };   // 崩塌音 ⇒ 揚煙（ver -1639，見上）
     if(delay>0) setTimeout(go, delay); else go(); };
   if(!spec) return;
@@ -3228,7 +3245,7 @@ function fireOneShot(line){
      『這些傢伙是……？軍隊？』那一拍就停」）══ 走城鎮節點同一支 `playAmb`（鐵律 8：環境音只有那一對
      在動；換節點時 `enter()` 照舊會把它換成那一格的 `amb`，所以停不掉的風險不存在）。
      ⚠ 用 `hasOwnProperty`：`amb:null` 是「停」，不寫是「不動」。 */
-  if(Object.prototype.hasOwnProperty.call(line,'amb')) playAmb(line.amb, line.ambVol);
+  if(Object.prototype.hasOwnProperty.call(line,'amb')) playAmb(line.amb, line.ambVol, { swell:line.ambSwell, duck:line.ambDuck });
   /* `ambStop:<ms>`：這一拍起的環境音放 N 毫秒就淡出（ver -1734，見 `ambStopAfter`）。
      ⚠ 只對「這一拍真的有 amb 在響」有效；寫在沒有 `amb` 的拍上也接得到（對現在在響的那一支計時）。 */
   if(line.ambStop) ambStopAfter(line.ambStop);
@@ -3404,7 +3421,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2139';
+const KERB_V='?v=2140';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

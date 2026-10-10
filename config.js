@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2139';
+export const VERSION = 'ver 2026.09.22-2140';
 
 export const GAME_CONFIG = {
 
@@ -3789,7 +3789,7 @@ export const GAME_CONFIG = {
          ⚠ 實測那張表本身是混的：33 支語音的「現值÷掃描建議」從 0.69 到 2.62、
            中位數 1.00 —— 多數本來就直接用掃描值，只有 -711 那一批過鏈另量。
            所以這裡不套任何「修正係數」（套了就是憑空發明一個數字）。 */
-      se_cooking:1.59, se_openletter:3.70, se_paperfold:3.40 /* ver -2102 audio_scan：平均 −24.4 */, enemy_lowroar:1.15 /* ver -2102 audio_scan：平均 −15.0 */, se_kidlaughter:2.31 /* ver -2104 audio_scan：平均 −21.1 */, se_sneaky:12.44 /* ver -2114 audio_scan：平均 −47.9（想要 50.7，被 peakCeilDb 夾住）CAP */, se_clothes:2.09 /* ver -2117 audio_scan：平均 −20.2 */, se_dooropen:2.55,   /* ver -1793 audio_scan：平均 −21.9 */ vo_maria_dishdone:0.91,   // ⚠ se_cooking ver -954 換新檔（39.7→3.73 秒）重量
+      se_cooking:1.59, se_openletter:3.70, se_paperfold:3.40 /* ver -2102 audio_scan：平均 −24.4 */, enemy_lowroar:1.15 /* ver -2102 audio_scan：平均 −15.0 */, se_kidlaughter:2.31 /* ver -2104 audio_scan：平均 −21.1 */, se_sneaky:12.44 /* ver -2114 audio_scan：平均 −47.9（想要 50.7，被 peakCeilDb 夾住）CAP */, se_clothes:2.09 /* ver -2117 audio_scan：平均 −20.2 */, se_battlefield:0.84 /* ver -2140 audio_scan：平均 −12.3 */, se_dooropen:2.55,   /* ver -1793 audio_scan：平均 −21.9 */ vo_maria_dishdone:0.91,   // ⚠ se_cooking ver -954 換新檔（39.7→3.73 秒）重量
 
       /* ── 武器 ── */
       se_weapon_pistol_01:0.607, se_weapon_pistol_02:1.165, se_weapon_pistol_03:1.751,

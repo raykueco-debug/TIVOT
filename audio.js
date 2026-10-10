@@ -312,6 +312,10 @@ function playBuffer(c, buf, vol, voice, handle, src){
        要在 `start()` **之前**設 —— BufferSource 開跑之後 `loop` 就改不動了。
        （上面那一行已經 start 過，所以真正的設定在 playBuffer 進來之前，見下。） */
     if(handle){ handle.node=s; handle.gain=g; handle.ctx=c;
+      /* `handle.swell:{ from, ms }`（ver -2140）＝開頭從 `from` 倍的音量斜升到正常（由遠到近）。 */
+      if(handle.swell){ try{ const t=c.currentTime, full=g.gain.value;
+        g.gain.setValueAtTime(full*Math.max(0.001, handle.swell.from||0.1), t);
+        g.gain.linearRampToValueAtTime(full, t+Math.max(0.05,(handle.swell.ms||3000)/1000)); }catch(_){} }
       if(handle.stopAt!=null) handle.fade(handle.stopAt); }
   }catch(e){}
 }
@@ -752,8 +756,8 @@ export const SFX = {
      ⚠⚠ 它**永遠不會自己停** —— 所以呼叫端一定要答得出「誰收它」
        （§6.5.4 那張檢查表）。現在唯一的擁有者是 `story.playAmb`／`stopAmb`。
      ⚠ 走 SE 那一軌（`layerOf`）：環境音是「世界的聲音」，不是音樂（§6.6 的 -436）。 */
-  playLoop(src, vol){
-    const h = this.playCue(src, vol);
+  playLoop(src, vol, swell){
+    const h = this.playCue(src, vol, swell);   // swell：開頭由小漸大（ver -2140）
     h.loop = true;
     /* ⚠⚠ `playCue` 在**已經解碼**時是同步播的（`playBuffer` 當場跑完）——
        那時 `h.node` 已經在，`loop` 要直接補在節點上；**還在解碼**時
@@ -765,8 +769,8 @@ export const SFX = {
     }catch(_){} }
     return h;
   },
-  playCue(src, vol){
-    const h = { node:null, gain:null, ctx:null, stopAt:null,
+  playCue(src, vol, swell){
+    const h = { node:null, gain:null, ctx:null, stopAt:null, swell:swell||null,
       fade(ms){
         const c=this.ctx, g=this.gain, n=this.node;
         if(!c||!g||!n) return;

@@ -1419,11 +1419,13 @@ const FRAG02_SIDES = { COMMANDER:'L', CECILIE_X:'L', CECILIE:'L', IM_SOLDIER:'R'
 /* ① 峽谷入口：黑幕開場 → 第一場 */
 const FRAG02_OPEN = [
   { speaker:'NARRATION', text:'', auto:700, fadeOut:1, show:false, checkpoint:true },
-  { speaker:'NARRATION', text:'', auto:1000, se:{ n:'se_battlefield', vol:0.25 } },   // 戰場聲由遠……
-  { speaker:'NARRATION', text:'', auto:1000, se:{ n:'se_battlefield', vol:0.5 } },
-  { speaker:'NARRATION', text:'', auto:1100, se:{ n:'se_battlefield', vol:0.8 }, shake:true },   // ……到近
+  /* 戰場聲（ver -2140，Ray：「只播一次，由遠到近，五秒後壓低變成背景音，直到打完第一場」）：
+     走環境音（循環）——3 秒由遠到近（`ambSwell`）、5 秒時壓到 30% 當背景（`ambDuck`）、打完第一場那一拍淡出（`ambStop`）。 */
+  { speaker:'NARRATION', text:'', auto:1300, amb:'se_battlefield', ambSwell:3000, ambDuck:{ at:5000, vol:0.3 } },
+  { speaker:'NARRATION', text:'', auto:1300 },
+  { speaker:'NARRATION', text:'', auto:1300, shake:true },
   { speaker:'IM_SOLDIER', text:'不行了！數量太多！', autoText:900 },                       // 士兵第一句在黑幕出（同碎片一「不要睡」）
-  { speaker:'NARRATION', text:'', auto:900, se:'se_battlefield', shake:true, hide:'*' },
+  { speaker:'NARRATION', text:'', auto:900, shake:true, hide:'*' },
   { speaker:'NARRATION', text:'', auto:1500, fadeIn:1500 },                              // 淡入背景
   cmd('urgent','援軍呢？還沒有到嗎？'),
   ims('worry','應該中午就該到了才對……'),
@@ -1433,7 +1435,7 @@ const FRAG02_OPEN = [
   csx('nolook','閃開。'),
   cmd('shock','！！'),
   { battle:'frag02_a', onLose:'frag02_lose' },
-  cmd('surprise','聖王廳的援軍……？'),
+  cmd('surprise','聖王廳的援軍……？', { ambStop:1 }),   // 打完第一場：戰場聲淡出（ver -2140）
   ims('awe','竟然，一個人就擋下了禍魘……'),
   cec('smirk','是『兩個人』吧？', { hide:['CECILIE_X'] }),
   cmd('salute','失禮了。'),
@@ -1444,7 +1446,7 @@ const FRAG02_OPEN = [
   cec('call','喂！等我一下！'),
   { goto:'frag02_end' },                                                         // 演完 → 玩家自己往前走
   /* 打輸（onLose 跳過來）：插 `frag02_done`（這一段結束了），段落收尾的 `gotoIf` 看到它就經讀取頁回北泊。 */
-  { speaker:'NARRATION', text:'', label:'frag02_lose', flags:['frag02_done'], fadeOut:3000, auto:3200 },
+  { speaker:'NARRATION', text:'', label:'frag02_lose', flags:['frag02_done'], fadeOut:3000, auto:3200, ambStop:1 },
   { speaker:'NARRATION', text:'', label:'frag02_end', auto:100 },
 ];
 /* ② 下一格（風蝕迴廊） */
