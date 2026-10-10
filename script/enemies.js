@@ -1143,9 +1143,9 @@ export const ENEMIES = {
       boardGrids:[9,9,9,9,16],   // ver -2120 Ray 指定
       hitFx:{ delay:'blunt', wrong:'slash', assault:'claw' },
       /* ══ 六角護罩（ver -2120，Ray）══ 全程開防護，被打中的地方閃六角護罩、防禦率 100%；
-         **只吃清盤傷害**：清盤那一刻把**那一盤擋下的傷害**的 `shieldClearPct` 一次打進去（Ray：「每清掉一盤就扣該盤損傷的 25%」；combat 的 clearBoard）。
-         普攻／反擊都不歸零延時（反擊＝counterStagger:0），只有清盤歸零。 */
-      hexShield:true, shieldClearPct:0.25,
+         **只吃清盤傷害**：清盤那一刻把**那一盤擋下的傷害全額**打進去（Ray -2122：「25% 拿掉，清盤就給全傷」；combat 的 clearBoard）。
+         只有**反擊**不歸零延時（counterStagger:0）；普攻照常歸零（-2122 Ray：「太難了」）。 */
+      hexShield:true,
       loot:[],
     },
     guild_hunter: {

@@ -1874,7 +1874,7 @@ export function setEnemy(key, opts){
   state.enemyParry     = (en.parryBasic===true) ? 1 : (+en.parryBasic || 0);   // 機率（ver -2043：1＝每發都擋、0.5＝一半）
   /* 六角護罩（ver -2120，碼頭戰愛里歐）：卡上 `hexShield:true` ＝只吃清盤傷害（combat 的 shieldUp）。 */
   state.enemyHexShield = !!en.hexShield; state.shieldDown=false; state.shieldBank=0;
-  state.enemyShieldClearPct = +en.shieldClearPct || 0.25;   // 清盤時把那一盤擋下的傷害打這個比例進去（ver -2121）
+  state.enemyShieldClearPct = +en.shieldClearPct || 1;   // 清盤時把那一盤擋下的傷害打這個比例進去（ver -2122：沒寫＝全額）
   /* 卡上 `healOnFault:0.1` ＝玩家點錯／受擊／逾時，敵回最大 HP 的這一成（ver -1858，羅賽爾「慈愛殘像」）。 */
   state.enemyHealOnFault = +en.healOnFault || 0;
   /* 防禦型的 BR 增傷（ver -1584，Ray：「防禦型 BR 統一增傷 50%」）——

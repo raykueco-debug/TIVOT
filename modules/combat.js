@@ -587,7 +587,7 @@ export function dualShot(x, y){
     if(cell){ enemy.ejectShell(cell); gunHitOnEnemy(cell); }
   }
   state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
-  if(!shieldUp()) resetIntervalDeadline();   // 六角護罩（ver -2120）：BR 也不歸零延時
+  resetIntervalDeadline();
   /* 索菈娜「地弓星」（Lv1，ver -976）：破防彈雨的攻擊力 ×1.2。
      ⚠ 只有這一支在算（鐵律 7）—— BR 的傷害就這一處。 */
   const dmg=hitDamage()*DMG_DUAL_MULT*(1+prog.girlBonus(state.pickedPartner,'brDmgMul'));
@@ -706,8 +706,7 @@ function tap(num,cell,e){
     state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
     state.correctTaps++;                 // 命中率分子（依序正確點擊）
     partner.armMissGuard();              // 「點擊正確就重置」（引路星，ver -1014）
-    if(!shieldUp()) resetIntervalDeadline();   // 六角護罩（ver -2120）：普攻不歸零延時，只有清盤歸零
-    addEnergy(ENERGY_PER_HIT);
+    resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
     let dmg=hitDamage()+comboKeepDmg(); if(state.atkBuff||state.lowHpBuff) dmg*=2;   // 計時型（Counter）或低血量（高裝藥彈）皆加倍，不疊乘；連擊延續見 comboKeepDmg（ver -971）
     // 暴擊（普攻）：此分支必為普攻（雙槍破防走上面獨立分支，本輪 saintMode 亦 return），暴擊率/加傷隨 critCombo 成長。
     //   本擊先以「現值」擲骰再 +1（首擊＝base 暴擊率）；命中則跳紅字「暴擊」（交由 enemyDamage 的 isCrit 呈現）。
@@ -864,14 +863,14 @@ function clearLucidFlood(burst){
 function clearBoard(opts){
   const brClear = !!(opts && opts.br);
   SFX.clear();                      // 清盤：神聖鈴響
-  /* 六角護罩（ver -2120／-2121）：清盤那一刻護罩碎掉，把**這一盤擋下的傷害（`shieldBank`）的 25%** 一次打進去
-     （Ray：「每清掉一盤就扣該盤損傷的 25%」；卡上 `shieldClearPct`，沒寫＝0.25）。
+  /* 六角護罩（ver -2120～-2122）：清盤那一刻護罩碎掉，把**這一盤擋下的傷害（`shieldBank`）全部**打進去
+     （Ray -2122：「25% 拿掉，清盤就給全傷」；卡上 `shieldClearPct` 可以打折，沒寫＝1）。
      ⚠ 先放下護罩再結算 —— 那一下要真的打進血條、而且擊殺照常走下面的 enemyHp<=0。 */
   if(state.enemyHexShield && !state.shieldDown){
     state.shieldDown=true;
     const bank=state.shieldBank|0; state.shieldBank=0;
     try{ enemy.breakHexShield(); }catch(_){}
-    const hit=Math.round(bank*(state.enemyShieldClearPct||0.25));
+    const hit=Math.round(bank*(state.enemyShieldClearPct||1));
     if(hit>0) enemyDamage(hit, false, false, 'shield');
   }
   clearAtkBuff();                   // 攻擊加倍 buff 不跨盤
@@ -1515,7 +1514,7 @@ function enemyDamage(dmg,isCrit,silent,src){
   /* ══ 六角護罩（ver -2120，Ray：「術師全程都會開防護，被子彈打中的地方會閃六邊型構成的防護罩，防禦率 100%，
      要清盤才會破碎並造成傷害，BR 反擊都一樣」）══ 卡上 `hexShield:true`。
      所有來源（普攻／BR／反擊／聖徒化…）在護罩張著時**全額擋下、記在 `shieldBank`**；
-     清盤那一刻護罩碎掉、把這一盤的帳打 25% 進去（clearBoard，Ray：「每清掉一盤就扣該盤損傷的 25%」）。
+     清盤那一刻護罩碎掉、這一盤的帳全額打進去（clearBoard，Ray -2122：「清盤就給全傷」）。
      ⚠ 擋在唯一的入口（鐵律 8）。普攻的命中點演出在 gunHitOnEnemy；其他來源沒有落點，隨機閃在牠身上。 */
   if(shieldUp() && dmg>0){
     state.shieldBank=(state.shieldBank|0)+Math.round(dmg);
