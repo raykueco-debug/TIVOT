@@ -3677,8 +3677,13 @@ function tutorialStrike(){
       }
       _scriptedHits++;            // 本擊為腳本演出（結算受擊數扣除）
       _scriptedAtk=true;          // …失誤秒數也不算（ver -619）
+      const guardBefore = state.deathGuardUsed;
       enemyAttack(dmg, h.kind);
       _scriptedAtk=false;
+      /* ══ 劇情殺用掉的獄門天鎖不算數（ver -2137，Ray：「我被北泊聖徒教學戰的 boss 打死了，明明有獄門天鎖啊」）══
+         末擊是**劇本安排**讓它發動的（演給玩家看），一局一次的那一次不該被劇情吃掉 ——
+         演出照舊（cut-in＋免傷窗都在 tryDeathGuard 裡跑完了），只把「已用過」還回去，之後真的瀕死它還會再接一次。 */
+      if(last && !guardBefore && state.deathGuardUsed) state.deathGuardUsed = false;
     }, i*gap);
   });
   return (hits.length-1)*gap;

@@ -1123,3 +1123,5 @@ when	from	to	reason
 20261010-173906	resources/_originals/si/npc/mage_si_hurtsmile.png	_recycle/resources/_originals/si/npc/mage_si_hurtsmile.png.20261010-173906	mage hurtsmile 破衣髒污版，Ray：不要破衣髒污、低頭無笑容 → hurtdown
 20261010-234228	resources/illustration/044_cecilietorsten.webp	_recycle/resources/illustration/044_cecilietorsten.webp	044 第一版（太亮太鮮、右手與槍不對）
 20261010-234228	resources/_originals/illustration/044_cecilietorsten.png	_recycle/resources/_originals/illustration/044_cecilietorsten.png	044 第一版（太亮太鮮、右手與槍不對）
+20261011-000146	resources/ci/layers/anya_nightmarereload/TO_CODE.md	_recycle/resources/ci/layers/anya_nightmarereload/TO_CODE.md	ver -2137 已接（動畫 665f2c5b 的交接便條，內容記在 commit 與 HANDOFF）
+20261011-000146	resources/ci/layers/sorana_supply/TO_CODE.md	_recycle/resources/ci/layers/sorana_supply/TO_CODE.md	ver -2137 已接（動畫 665f2c5b 的交接便條，內容記在 commit 與 HANDOFF）
