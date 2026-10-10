@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2133';
+export const VERSION = 'ver 2026.09.22-2134';
 
 export const GAME_CONFIG = {
 
@@ -2798,6 +2798,11 @@ export const GAME_CONFIG = {
                    { who:'cecilie_x', img:'tut_cecilie_saintinstall', text:i18nT('讓我使出這力量的，你是第一個。') },
                    { who:'cecilie_x', img:'tut_cecilie_saintinstall', text:i18nT('我可不允許你死在我面前！') },
                  ] } ] },
+    /* ══ 碎片 02・卡耶爾山谷（ver -2134，Ray 的「卡耶爾山谷_碎片02_台詞差分」）══ 北方泊地那一夜之後的回憶：主角與賽西莉。
+       ⚠ 暫用：卡耶爾山谷的 16 隻怪還沒有數值卡，先借北方泊地的禍魘（np_harm 那一池）。搭檔賽西莉；
+         回憶不評（dream）、打輸照樣往下演（allowLose，同帝都第一夜的夢）。 */
+    frag02_a: { enemy:['np_candletower','np_candlepenitent','np_coralman','np_reassembled'], partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true },
+    frag02_b: { enemy:['np_candletower','np_candlepenitent','np_coralman','np_reassembled'], partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true },
     range_trainee: { enemy:'dart_target', record:'range', noReward:true, noEval:true,
                      timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
                                   prizeSec:30, prize:'Shotgun_Dragon' } },

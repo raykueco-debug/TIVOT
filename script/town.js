@@ -1402,6 +1402,59 @@ const CR_DOCK = [
   sor('backcarry','既然蕾娜這麼說一定錯不了，走。'),
   nou('steady','嗯！', { stage:19 }),   // Stage 18 到這一句結束 → Stage 19：強制從帝都升空（段落的 sailOut，ver -2125）
 ];
+/* ══ 碎片 02・卡耶爾山谷（ver -2134，Ray 的「卡耶爾山谷_碎片02_台詞差分」，台詞一字未改）══════════════════
+   稿頭：「北方泊地過夜（Stage 02 結束）」⇒ 接在北方泊地「那一夜」最後的三秒黑幕後面（同一段 act），
+   演完才記 `np_night_done`，原本的閘門照舊把時鐘推到隔天 8:00、升 S3、回旅店（背景與曲子自然還原）。
+   三格：開場＝峽谷入口、下一格＝白骨之地、最後一格＝谷底祭場（插圖 044 畫的地方）；都用白天（稿：「應該中午就該到了」）。
+   ⚠ 「？？？ 閃開」＝還沒報名的賽西莉（`CECILIE_X`）；之後叫她賽西莉。
+   ⚠ 音效對應：轟擊＝`se_earthquake`、咆嘯＝`se_monsterroardeep`、上膛＝`se_weapon_reload`、跑步＝`se_steps`、
+     槍擊＝`se_weapon_pistol_01`、蠢動＝`se_stepsbig`（暫代，沒有蠢動音）。
+   ⚠ 兩場戰鬥（frag02_a／frag02_b）暫用北方泊地的禍魘，見 config 的說明。插圖 `044_cecilietorsten`（美術交件，Ray 驗收）。 */
+const ims = N('IM_SOLDIER'), cmd = N('COMMANDER');
+const NP_FRAG02 = [
+  { speaker:'NARRATION', text:'', bg:'canyon_entry_day', bgm:'lostplace', fadeIn:1500, auto:1700 },
+  ims('panic','不行了！數量太多！'),
+  cmd('urgent','援軍呢？還沒有到嗎？'),
+  ims('worry','應該中午就該到了才對……'),
+  { speaker:'NARRATION', text:'', se:'se_earthquake', shake:true, auto:900 },      // 轟擊聲
+  { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:1100 },          // 咆嘯
+  ims('alarm','南門被攻破了！'),
+  csx('nolook','閃開。'),
+  cmd('shock','！！'),
+  { battle:'frag02_a' },
+  cmd('surprise','聖王廳的援軍……？'),
+  ims('awe','竟然，一個人就擋下了禍魘……'),
+  cec('smirk','是『兩個人』吧？', { hide:['CECILIE_X'] }),
+  cmd('salute','失禮了。'),
+  cmd('plead','出海口方向還有我軍殘部，能否……'),
+  { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },                       // 上膛音
+  cec('tease','就是為了這個來的喔。'),
+  { speaker:'NARRATION', text:'', se:'se_steps', auto:800 },                      // 跑步音
+  cec('call','喂！等我一下！'),
+  /* ── 下一格 ── */
+  { speaker:'NARRATION', text:'', bg:'canyon_bones_day', hide:['CECILIE','COMMANDER','IM_SOLDIER'], auto:1000 },
+  cec('lookaside','……還殘部。基本全軍覆沒了吧。'),
+  { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:900 },           // 咆嘯
+  { speaker:'NARRATION', text:'', se:'se_weapon_pistol_01', auto:600 },          // 槍擊音
+  { speaker:'NARRATION', text:'', se:'se_stepsbig', auto:900 },                  // 蠢動音（暫代）
+  cec('ready','數量不少。可以嗎？'),
+  { speaker:'PLAYER', blank:true },
+  cec('tease','狂妄的小鬼。'),
+  cec('battlecry','那就把他們驅逐殆盡吧！'),
+  /* ── 最後一格 ── */
+  { speaker:'NARRATION', text:'', bg:'canyon_altar_day', hide:['CECILIE'], auto:1000 },
+  ims('rally','撐下去！援軍一定會到的！'),
+  cec('smirk','到了喔。'),
+  ims('doubt','就你們……兩個人？'),
+  cec('command','往後撤，離開火線。被波擊可不負責喔。'),
+  { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:900 },           // 咆嘯
+  { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },                       // 上膛音
+  { battle:'frag02_b' },
+  { speaker:'NARRATION', text:'', cg:'044_cecilietorsten', cgNoTime:true, hide:['CECILIE','IM_SOLDIER'], auto:2600 },   // 插圖：主角與賽西莉
+  ims('awe','那就是……聖約騎士團！'),
+  { speaker:'NARRATION', text:'', cg:null, auto:300 },
+  { speaker:'NARRATION', text:'', auto:3200, fadeOut:3000, hide:['IM_SOLDIER'] },   // 夢醒（三秒黑，同那一夜收尾）
+];
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
 
 export const TOWNS = {
@@ -3105,7 +3158,8 @@ export const TOWNS = {
              `show:false` ＝不上台；蕾娜留在台上（她在講話之外的每一拍都在場）。
            ⚠ 站位不必覆寫：台上只有蕾娜一個人。 */
         acts:[
-          { flag:'np_night_done', need:'np_night', lines:[
+          { flag:'np_night_done', need:'np_night', storyBattle:true, sides:{ COMMANDER:'L', CECILIE_X:'L', CECILIE:'L', IM_SOLDIER:'R' },   // 碎片 02 的站位（ver -2134；那一夜本身只有蕾娜在台上，不受影響）；storyBattle：碎片裡有兩場戰鬥，北泊這時插著安全區旗，不標會被擋掉
+            lines:[
             { speaker:'RENNA', text:'結束了嗎？', bgm:'entangle',
               bg:'northport_hotel_room_night',
               portrait:{ char:'RENNA', expr:'ask', show:true } },
@@ -3131,6 +3185,7 @@ export const TOWNS = {
             /* ver -858（Ray：「三秒淡入黑」）：同教堂→娜塔莉的 slowFade 拍。 */
             { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000,
               hide:['RENNA','NOUVELLE','ANYA'] },
+            ...NP_FRAG02,   // 碎片 02・卡耶爾山谷（ver -2134）：那一夜的夢。演完才記 np_night_done，閘門照舊推到隔天 8:00 升 S3、回旅店
           ] },
           /* ══ 第三天早上八點（ver -664，Ray 交稿）══════════════════════════
              ⚠ 「如果聽不懂的話也沒關係，先跟我們回聖王廳吧？」是**諾薇兒**

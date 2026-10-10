@@ -63,7 +63,8 @@ export const SPEAKERS = {
   GUARD_CAP: { name:'衛士',   art:'capguard' },   // ver -2114：帝都教廷衛士（借旅店那一場的拔刀衛兵）
   CAPI_BOY:  { name:'小男孩', art:'capiboy' },     // ver -2102：返回帝都（攝政王廣場的路人母子）
   CAPI_MOM:  { name:'母親',   art:'capimom' },
-  COMMANDER: { name:'指揮官',   art:'commander' },   // ver -2099：碎片 02   // 米夏的隨從（ver -1707 立；-1715 接上立繪，見 ART.retainer）
+  COMMANDER: { name:'指揮官',   art:'imcommander' },   // ver -2099：碎片 02；ver -2134 改指美術的藍制服 imcommander（舊的白制服 commander 留著不刪）
+  IM_SOLDIER:{ name:'士兵',     art:'imsoldier' },     // ver -2134：碎片 02 的帝國軍士兵（與夏爾村那位沒有立繪的 SOLDIER 分開）   // 米夏的隨從（ver -1707 立；-1715 接上立繪，見 ART.retainer）
   VOICE:    { name:'路人',   art:null },
   /* 旁白（ver -656）：**沒有立繪、名字欄空著** —— 「跳一個對話框」那種畫面訊息
      （「該回去看看了。」）。⚠ 與 `VOICE` 的差別只有名字：那是「某個路人在講話」，
@@ -1747,6 +1748,27 @@ export const ART = {
   capimom: { cm:160, eye:30, fx:0.413, top:6, bot:1535,
            side:'R', alt:null, base:'resources/si/npc/capi_mom.webp', expr:{
     front: { yShift:63, cm:103, src:'resources/si/npc/capi_mom.webp', top:6, bot:1535, fx:0.413 },
+  } },
+  /* ══ 帝國軍：士兵＋前線指揮官（ver -2134，美術 6a52066b，碎片 02 卡耶爾山谷）══ 藍制服照 Ray 參考圖、戰地塵土。measure_si 量；
+     舉手指人那幾張的 fx 可能被手拉偏（美術註），上線看臉再微調。 */
+  imsoldier: { cm:172, eye:30, fx:0.493, top:24, bot:1516,
+           side:'R', alt:null, base:'resources/si/npc/npc_imsoldier_si_front.webp', expr:{
+    front:   { src:'resources/si/npc/npc_imsoldier_si_front.webp',   top:24, bot:1516, fx:0.493 },
+    panic:   { src:'resources/si/npc/npc_imsoldier_si_panic.webp',   top:14, bot:1517, fx:0.441 },
+    worry:   { src:'resources/si/npc/npc_imsoldier_si_worried.webp', top:11, bot:1519, fx:0.592 },   // 鍵用無時態（lint，ver -1555）；稿上寫 worried
+    alarm:   { src:'resources/si/npc/npc_imsoldier_si_alarm.webp',   top:10, bot:1507, fx:0.351 },
+    awe:     { src:'resources/si/npc/npc_imsoldier_si_awe.webp',     top:2,  bot:1514, fx:0.406 },
+    rally:   { src:'resources/si/npc/npc_imsoldier_si_rally.webp',   top:18, bot:1512, fx:0.365 },
+    doubt:   { src:'resources/si/npc/npc_imsoldier_si_doubt.webp',   top:14, bot:1521, fx:0.647 },
+  } },
+  imcommander: { cm:180, eye:30, fx:0.460, top:8, bot:1523,
+           side:'R', alt:null, base:'resources/si/npc/npc_imcommander_si_front.webp', expr:{
+    front:    { src:'resources/si/npc/npc_imcommander_si_front.webp',    top:8,  bot:1523, fx:0.460 },
+    urgent:   { src:'resources/si/npc/npc_imcommander_si_urgent.webp',   top:4,  bot:1518, fx:0.669 },
+    shock:    { src:'resources/si/npc/npc_imcommander_si_shock.webp',    top:12, bot:1518, fx:0.699 },
+    surprise: { src:'resources/si/npc/npc_imcommander_si_surprise.webp', top:4,  bot:1521, fx:0.444 },
+    salute:   { src:'resources/si/npc/npc_imcommander_si_salute.webp',   top:11, bot:1521, fx:0.452 },
+    plead:    { src:'resources/si/npc/npc_imcommander_si_plead.webp',    top:8,  bot:1515, fx:0.481 },
   } },
   commander: { cm:180, eye:30, fx:0.53, top:4, bot:1525,
            side:'R', alt:null, base:'resources/si/npc/npc_commander_si_front.webp', expr:{
