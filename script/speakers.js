@@ -58,7 +58,8 @@ export const SPEAKERS = {
      名字框標明是誰在講話就夠了（§6.5.4：路人單句要標名字）。 */
   SOLDIER:  { name:'士兵',   art:null },
   RETAINER: { name:'隨從',   art:'retainer' },
-  MAGE:      { name:'謎之術師', art:'mage' },        // ver -2099：碼頭 Boss（名字等 Ray 定稿）
+  MAGE:      { name:'愛里歐', art:'mage' },          // ver -2099：碼頭 Boss；ver -2117 Ray 的碼頭戰稿定名（第八騎士團副團長）
+  MAGE_X:    { name:'？？？', art:'mage' },          // ver -2117：表明身分前（同 CORVIN_Q 的作法）
   GUARD_CAP: { name:'衛士',   art:'capguard' },   // ver -2114：帝都教廷衛士（借旅店那一場的拔刀衛兵）
   CAPI_BOY:  { name:'小男孩', art:'capiboy' },     // ver -2102：返回帝都（攝政王廣場的路人母子）
   CAPI_MOM:  { name:'母親',   art:'capimom' },
@@ -1717,8 +1718,8 @@ export const ART = {
      ⚠ 術師的 `cast`（mage_si_cast.webp）縱向只佔 87%（不是全身），沒接 —— 要用時照 §6.5 加 `rescale` 另量。
      ⚠ 術師 `barrier` 的 fx 用臉不用 alpha 重心（伸出去的手與結界會把重心拉到 0.49）。 */
   mage: { cm:178, eye:30, fx:0.43, top:3, bot:1530,
-           side:'R', alt:null, base:'resources/si/npc/mage_si_front.webp', expr:{
-    front:   { src:'resources/si/npc/mage_si_front.webp',   top:3,  bot:1530, fx:0.43 },
+           side:'R', alt:null, base:'resources/si/npc/mage_si_front.webp?v=6d3cf63f', expr:{
+    front:   { src:'resources/si/npc/mage_si_front.webp?v=6d3cf63f',   top:3,  bot:1530, fx:0.43 },
     barrier: { src:'resources/si/npc/mage_si_barrier.webp', top:2,  bot:1529, fx:0.43 },
     hurt:    { src:'resources/si/npc/mage_si_hurt.webp',    top:13, bot:1514, fx:0.36 },
     /* ver -2115（美術 0b5a5d29，GPT 真 alpha）：碼頭那一段的角度與動作，眼睛一律瞇著。measure_si 量。

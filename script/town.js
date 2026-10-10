@@ -1341,6 +1341,62 @@ const CR_INN_RAID = [
   gcp('draw','呃！'),
   Object.assign(nou('shock2','索菈娜別打了！快走啦！', { hide:['GUARD_CAP'] }), { flags:['cap_clear_inn'] }),
 ];
+/* ══ 碼頭戰・愛里歐（ver -2117，Ray 的稿，台詞一字未改）══════════════════════════════════
+   帝都教廷衛士戰一路打到船塢（舊街區只通這裡）就演；演完直接出航（`sailOut`，往薇拉馮德 —— 我的判讀，
+   稿上最後是「走」）。戰鬥 `cap_mage`（數值暫用王座徘徊者，立繪 mage_si_threat）。
+   ⚠ 表明身分前是 `MAGE_X`（？？？），蕾娜叫出名字之後換 `MAGE`（愛里歐）。
+   ⚠ 差分：愛里歐 `cast`（那張不是全身圖，沒接）→ `barrier`；蕾「刻意不帶武器…」沒寫 →`talkserious`；
+     索「背起安雅」→ `backcarry`（背著安雅的合體立繪），那兩拍安雅下台。
+   ⚠ 插圖 `043_eliointro`（Ray 交件，由下往上平移）；`se_clothes` 衣擺聲（現身／撤走各一次）；
+     槍聲被術式擋下＝`se_weapon_pistol_01` 接 `se_bulletguard`；安雅「！！」那一拍紫紅負片，下一拍收。 */
+const mgx = N('MAGE_X'), mg = N('MAGE');
+const CR_DOCK_SIDES = { RENNA:'L', NOUVELLE:'L', SORANA:'R', ANYA:'R', MAGE:'R', MAGE_X:'R' };
+const CR_DOCK = [
+  Object.assign(nou('happy','船……還在！'), { checkpoint:true }),
+  sor('ready','好，走吧！'),
+  ren('lookup','有點……太安靜了。'),
+  ren('lookup','那個科爾文，會算不到我們的目的？'),
+  any('terrify','！！', { tintHold:'nightmare', se:'se_flight_heartbeat' }),
+  mgx('wave','嗨！', { tintHold:null }),
+  { speaker:'NARRATION', text:'', cg:'043_eliointro', cgNoTime:true, cgPan:'up', se:'se_clothes', auto:2600 },
+  mgx(null,'本來想等到船出航再動手的，還是被發現了呢。'),
+  mgx(null,'不愧是惡夢之主啊。'),
+  { speaker:'NARRATION', text:'', cg:null, auto:200 },
+  mgx('shrug',''),
+  { speaker:'PLAYER', blank:true },
+  ren('shockcalm','！！'),
+  { speaker:'NARRATION', text:'', se:['se_weapon_pistol_01', { n:'se_bulletguard', delay:120 }], shake:true, auto:800 },   // 槍聲，被術式擋下
+  mgx('barrier','粗暴的招呼呢。'),
+  nou('cringe','術師！難道是……！'),
+  ren('intense2','第八騎士團的愛里歐副團長……？'),
+  mg('barrier','真討厭，藏起爪子是我的強項啊。', { hide:['MAGE_X'] }),
+  mg('barrier','不愧是HUND，嗅覺很靈敏呢。'),
+  ren('talkserious','刻意不帶武器、屏退會被術式波擊的友軍，會這麼想很正常吧？'),
+  mg('shrug',''),
+  mg('front','我挺喜歡你們的，不過——'),
+  mg('threat','得請你們倒在這裡了。'),
+  { battle:'cap_mage' },
+  mg('hurt','咕……'),
+  mg('hurtsmile','不愧是前第一後補，小瞧你了啊。'),
+  mg('hurtsmile','跟賽西莉說的一樣呢。'),
+  { speaker:'PLAYER', blank:true },
+  mg('laugh','在這裡跟HUND死戰到底，我還沒有自大到那種程度。'),
+  mg('leave','有緣再會吧。'),
+  { speaker:'NARRATION', text:'', se:'se_clothes', hide:['MAGE'], auto:800 },
+  sor('battlecrylookaside','嘖、跑得真快！'),
+  ren('blushangry','得救的是我們啊，萬一剛才沒發現他就上了船……'),
+  any('talk',''),
+  nou('happy','安雅立功了呢。'),
+  any('shysmile',''),
+  ren('command','走吧，趁追兵還沒到啟航！'),
+  sor('back','但是……我們還能到哪裡去啊？'),
+  ren('talkserious','往東南、'),
+  ren('invite','到薇拉馮德去！'),
+  any('curious','薇拉……馮德？'),
+  sor('backcarry','唷。', { hide:['ANYA'] }),
+  sor('backcarry','既然蕾娜這麼說一定錯不了，走。'),
+  nou('steady','嗯！'),
+];
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
 
 export const TOWNS = {
@@ -1751,6 +1807,8 @@ export const TOWNS = {
              的話旗標照樣記下（那一場戲看過了），下次再來只演**第二段**那一句問答 ——
              不然玩家每次回船塢都要重看一次全部台詞。 */
         acts:[
+          /* 碼頭戰・愛里歐（ver -2117，見 CR_DOCK）：教廷衛士戰打到船塢就演，演完出航。 */
+          { flag:'cr_dock', need:'cr_inn_raid', fromStage:17, storyBattle:true, sailOut:true, sides:CR_DOCK_SIDES, lines:CR_DOCK },
           { flag:'dock_day2', need:'stage1_open', sides:{ RENNA:'R' },
             lines:[
               ren('watch','28號碼頭的白帆三桅船……有了。'),

@@ -1112,6 +1112,38 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       hitFx:{ delay:'slash', wrong:'blunt', assault:'bullet' }   // Ray：攻擊槍彈型／按錯重擊／超時斬擊,
     },
+    /* ══ 碼頭戰・愛里歐（ver -2117，Ray：「立繪用 mage_si_threat，模式跟數值暫用王座徘徊者終戰型態」）══
+       數值與攻擊模式逐格照抄 `bl_dragon_throne`（王座徘徊者，-1449 起就是一條血的終戰）；換掉的只有
+       名字／立繪／`kind`（人類）／登場龍吟（人不吼）／背景（戰鬥背景照城鎮交棒那一格，這裡只是退路）。
+       ⚠ 暫用：Ray 給正式數值卡之後整張改。 */
+    cap_mage: {
+      name:'愛里歐',
+      story:1, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },
+      entrance:null, entranceBlast:false,
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[3,5],
+      assault:{ count:2, gap:0.35 },
+      kind:'human',
+      riseFx:0,
+      hitSe:null,
+      tier:'A',
+      atype:'P',
+      stageScale:1,
+      stack:1,
+      image:'enemy_cap_mage',
+      bg:'capital_dock_night',
+      hp:510,
+      attack:21,
+      atkInterval:null,
+      delayPenalty:{ seconds:5 },
+      special:[],
+      boardGrids:[9,9,9,16,16],
+      hitFx:{ delay:'blunt', wrong:'slash', assault:'claw' },
+      loot:[],
+    },
     guild_hunter: {
       name:'賞金獵人',
       story:1, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）

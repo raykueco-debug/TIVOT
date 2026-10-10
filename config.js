@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2115';
+export const VERSION = 'ver 2026.09.22-2116';
 
 export const GAME_CONFIG = {
 
@@ -2599,6 +2599,8 @@ export const GAME_CONFIG = {
     cap_guard_uptown: { enemy:'cap_guard_uptown', session:'cap_raid' },
     cap_guard_square: { enemy:'cap_guard_square', session:'cap_raid', sessionEnd:true },
     cap_guard_oldtown: { enemy:'cap_guard_oldtown' },
+    /* 碼頭戰・愛里歐（ver -2117）：數值暫用王座徘徊者（見 enemies.js 的 cap_mage）；曲子同王座戰。 */
+    cap_mage: { enemy:'cap_mage', bgm:'bgm_gothic' },
     sv_altar: { enemy:'sv_reliquary', session:'shinier_siege' },
     sv_wild:  { enemy:'sv_bear', session:'shinier_siege', sessionEnd:true },
     /* ══ 夏爾森林野生遭遇（ver -862（-893 前用詞）；-869 掛 session）══
@@ -3771,7 +3773,7 @@ export const GAME_CONFIG = {
          ⚠ 實測那張表本身是混的：33 支語音的「現值÷掃描建議」從 0.69 到 2.62、
            中位數 1.00 —— 多數本來就直接用掃描值，只有 -711 那一批過鏈另量。
            所以這裡不套任何「修正係數」（套了就是憑空發明一個數字）。 */
-      se_cooking:1.59, se_openletter:3.70, se_paperfold:3.40 /* ver -2102 audio_scan：平均 −24.4 */, enemy_lowroar:1.15 /* ver -2102 audio_scan：平均 −15.0 */, se_kidlaughter:2.31 /* ver -2104 audio_scan：平均 −21.1 */, se_sneaky:12.44 /* ver -2114 audio_scan：平均 −47.9（想要 50.7，被 peakCeilDb 夾住）CAP */, se_dooropen:2.55,   /* ver -1793 audio_scan：平均 −21.9 */ vo_maria_dishdone:0.91,   // ⚠ se_cooking ver -954 換新檔（39.7→3.73 秒）重量
+      se_cooking:1.59, se_openletter:3.70, se_paperfold:3.40 /* ver -2102 audio_scan：平均 −24.4 */, enemy_lowroar:1.15 /* ver -2102 audio_scan：平均 −15.0 */, se_kidlaughter:2.31 /* ver -2104 audio_scan：平均 −21.1 */, se_sneaky:12.44 /* ver -2114 audio_scan：平均 −47.9（想要 50.7，被 peakCeilDb 夾住）CAP */, se_clothes:2.09 /* ver -2117 audio_scan：平均 −20.2 */, se_dooropen:2.55,   /* ver -1793 audio_scan：平均 −21.9 */ vo_maria_dishdone:0.91,   // ⚠ se_cooking ver -954 換新檔（39.7→3.73 秒）重量
 
       /* ── 武器 ── */
       se_weapon_pistol_01:0.607, se_weapon_pistol_02:1.165, se_weapon_pistol_03:1.751,
@@ -4496,6 +4498,7 @@ export const ASSETS = {
      ⚠ 立繪這條路的路徑是**手寫字串**，所以直接把 `?v=` 打進去（背景才走 ASSET_VER）。 */
   enemy_bl_dragon_chase:  "resources/enemy/mon_dragon_v1_shackled.webp?v=19baca48",
   enemy_bl_dragon_throne: "resources/enemy/mon_dragon_v1_unsealed.webp",
+  enemy_cap_mage:         "resources/si/npc/mage_si_threat.webp",   // ver -2117：碼頭戰愛里歐（Ray 指定用 threat 立繪）
   /* 第三型態（空中戰第一形態，ver -1418 接線、**-1424 圖到了**）：
      美術去背完交的是 `mon_dragon_v1_flight.webp`（1536×1024，真 alpha：
      全透 48.6%／半透 10.0%）—— 這一格改指它。 */
@@ -5881,6 +5884,7 @@ export const ASSET_VER = {
   'luna_si_taunt_half': '13a82f50',
   'lunaria_si_arm_closed': '2f0bf75e',
   'lunaria_si_arm_half': 'a1db391e',
+  'mage_si_front': '6d3cf63f',
   'man_misha_guards': '5b0d73a9',
   'man_misha_ni': '1d6384ac',
   'man_sorana': '11180f49',
