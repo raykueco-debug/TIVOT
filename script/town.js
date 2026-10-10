@@ -1423,7 +1423,7 @@ const NP_FRAG02 = [
   ims('alarm','南門被攻破了！'),
   csx('nolook','閃開。'),
   cmd('shock','！！'),
-  { battle:'frag02_a' },
+  { battle:'frag02_a', onLose:'frag02_end' },   // 打輸就不演了，直接回北泊（ver -2136）
   cmd('surprise','聖王廳的援軍……？'),
   ims('awe','竟然，一個人就擋下了禍魘……'),
   cec('smirk','是『兩個人』吧？', { hide:['CECILIE_X'] }),
@@ -1451,11 +1451,11 @@ const NP_FRAG02 = [
   cec('command','往後撤，離開火線。被波擊可不負責喔。'),
   { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:900 },           // 咆嘯
   { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },                       // 上膛音
-  { battle:'frag02_b' },
+  { battle:'frag02_b', onLose:'frag02_end' },
   { speaker:'NARRATION', text:'', cg:'044_cecilietorsten', cgNoTime:true, hide:['CECILIE','IM_SOLDIER'], auto:2600 },   // 插圖：主角與賽西莉
   ims('awe','那就是……聖約騎士團！'),
   { speaker:'NARRATION', text:'', cg:null, auto:300 },
-  { speaker:'NARRATION', text:'', auto:3200, fadeOut:3000, hide:['IM_SOLDIER'] },   // 夢醒（三秒黑，同那一夜收尾）
+  { speaker:'NARRATION', text:'', auto:3200, fadeOut:3000, hide:['IM_SOLDIER','CECILIE','CECILIE_X','COMMANDER'], label:'frag02_end' },   // 夢醒（三秒黑）；打輸也跳到這裡（ver -2136）
 ];
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
 
@@ -3187,7 +3187,7 @@ export const TOWNS = {
             ren('stare','早點休息吧，辛苦你囉。'),
             /* ver -858（Ray：「三秒淡入黑」）：同教堂→娜塔莉的 slowFade 拍。 */
             { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000,
-              hide:['RENNA','NOUVELLE','ANYA'] },
+              hide:['RENNA','NOUVELLE','ANYA'], flags:['frag02_go'] },   // frag02_go：碎片 02 的夢境入口（ver -2136，只有這裡插；卡耶爾那一段只認它）
           ] },
           /* ══ 第三天早上八點（ver -664，Ray 交稿）══════════════════════════
              ⚠ 「如果聽不懂的話也沒關係，先跟我們回聖王廳吧？」是**諾薇兒**
@@ -4052,8 +4052,9 @@ export const TOWNS = {
       corridor: { bg:'canyon_corridor', name:'卡耶爾山谷　風蝕迴廊',
                   exits:{ up:'bones', down:'entry' },
                   /* 碎片 02（ver -2135）：北泊那一夜演完經讀取頁帶過來，抵達就演；演完經讀取頁回北泊旅店（見 NP_FRAG02）。
-                     `until:'np_day3'` ＝北泊第三天之後就不會再演（舊存檔走過那一段的也一樣）。 */
-                  acts:[ { flag:'frag02_done', need:'np_night_done', until:'np_day3', storyBattle:true,
+                     `need:'frag02_go'` ＝只有夢境入口（北泊那一夜最後一拍）插的旗，自己飛來卡耶爾不會觸發（ver -2136）；
+                     `until:'np_day3'` ＝北泊第三天之後就不會再演。打輸跳到最後一拍（`onLose`）直接回北泊。 */
+                  acts:[ { flag:'frag02_done', need:'frag02_go', until:'np_day3', storyBattle:true,   // need：只有北泊那一夜的夢境入口插的旗（自己飛來不會有，ver -2136）
                            sides:{ COMMANDER:'L', CECILIE_X:'L', CECILIE:'L', IM_SOLDIER:'R' },
                            goto:'@northport:inn', lines:NP_FRAG02 } ] },
       bones:    { bg:'canyon_bones',    name:'卡耶爾山谷　白骨之地',
