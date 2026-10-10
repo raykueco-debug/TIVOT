@@ -864,14 +864,15 @@ function clearLucidFlood(burst){
 function clearBoard(opts){
   const brClear = !!(opts && opts.br);
   SFX.clear();                      // 清盤：神聖鈴響
-  /* 六角護罩（ver -2120）：清盤那一刻護罩碎掉，**一次打掉最大 HP 的固定比例**（Ray：「清盤時一次性釋放 25%」，
-     卡上 `shieldClearPct`，沒寫＝0.25）。這一盤擋下了多少（`shieldBank`）不影響份量 —— 只記帳，不結算。
+  /* 六角護罩（ver -2120／-2121）：清盤那一刻護罩碎掉，把**這一盤擋下的傷害（`shieldBank`）的 25%** 一次打進去
+     （Ray：「每清掉一盤就扣該盤損傷的 25%」；卡上 `shieldClearPct`，沒寫＝0.25）。
      ⚠ 先放下護罩再結算 —— 那一下要真的打進血條、而且擊殺照常走下面的 enemyHp<=0。 */
   if(state.enemyHexShield && !state.shieldDown){
-    state.shieldDown=true; state.shieldBank=0;
+    state.shieldDown=true;
+    const bank=state.shieldBank|0; state.shieldBank=0;
     try{ enemy.breakHexShield(); }catch(_){}
-    const hit=Math.max(1, Math.round(state.enemyMax*(state.enemyShieldClearPct||0.25)));
-    enemyDamage(hit, false, false, 'shield');
+    const hit=Math.round(bank*(state.enemyShieldClearPct||0.25));
+    if(hit>0) enemyDamage(hit, false, false, 'shield');
   }
   clearAtkBuff();                   // 攻擊加倍 buff 不跨盤
   const elapsed=(Date.now()-state.boardStartTime)/1000;
@@ -1513,8 +1514,8 @@ function enemyDamage(dmg,isCrit,silent,src){
   if(src!=='shield') dmg = applyEnemyMods(dmg, src||'basic');   // 'shield'＝清盤釋放的帳，記帳時已經乘過了
   /* ══ 六角護罩（ver -2120，Ray：「術師全程都會開防護，被子彈打中的地方會閃六邊型構成的防護罩，防禦率 100%，
      要清盤才會破碎並造成傷害，BR 反擊都一樣」）══ 卡上 `hexShield:true`。
-     所有來源（普攻／BR／反擊／聖徒化…）在護罩張著時**全額擋下**（記在 `shieldBank` 只供除錯）；
-     清盤那一刻護罩碎掉、一次打掉最大 HP 的 25%（clearBoard，Ray：「清盤時一次性釋放 25%」）。
+     所有來源（普攻／BR／反擊／聖徒化…）在護罩張著時**全額擋下、記在 `shieldBank`**；
+     清盤那一刻護罩碎掉、把這一盤的帳打 25% 進去（clearBoard，Ray：「每清掉一盤就扣該盤損傷的 25%」）。
      ⚠ 擋在唯一的入口（鐵律 8）。普攻的命中點演出在 gunHitOnEnemy；其他來源沒有落點，隨機閃在牠身上。 */
   if(shieldUp() && dmg>0){
     state.shieldBank=(state.shieldBank|0)+Math.round(dmg);
