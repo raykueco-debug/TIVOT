@@ -10,7 +10,7 @@
 >   `shynose:{ src:'resources/si/cecilie_si_shynose.webp', top:6, bot:1496, fx:0.524 },`（不、不要看！／不是說了不准看嗎 —— 手遮鼻 shy）
 >   `shocknose:{ src:'resources/si/cecilie_si_shocknose.webp', top:6, bot:1497, fx:0.401 },`（等一下！很髒的啊！ shock）
 >   `shyhand:{ src:'resources/si/cecilie_si_shyhand.webp', top:0, bot:1498, fx:0.559 },`（脫下來。回去我給你洗洗。 ⚠ 頭頂碰到畫布上緣，髮梢被裁一點點）
-> · ⚠ 已知小偏差：`pant` 左肩露出（front 有袖）；`call`／`ready`／`battlecry` 的頭髮比 front 長而散。Ray 看過不要再重畫。
+> · ⚠ 已知小偏差：`pant` 左肩露出（front 有袖）；`call`／`ready`／`battlecry` 的頭髮比 front 長而散 —— 要不要重畫等 Ray 看過再定。
 >
 > ⭐⭐⭐⭐⭐ **【愛里歐（謎之術師 `mage`）差分 6 張・等程式端接】（10-10，Mac 美術）** —— 照碼頭那一段劇本補角度與動作，眼睛一律瞇著。檔在 `resources/si/npc/`，**還沒寫進 `speakers.js`**：
 >   `wave:{ src:'resources/si/npc/mage_si_wave.webp', top:7, bot:1532, fx:0.444 },`（嗨！）
