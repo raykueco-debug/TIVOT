@@ -1,3 +1,12 @@
+> ⭐⭐⭐⭐⭐ **【愛里歐（謎之術師 `mage`）差分 6 張・等程式端接】（10-10，Mac 美術）** —— 照碼頭那一段劇本補角度與動作，眼睛一律瞇著。檔在 `resources/si/npc/`，**還沒寫進 `speakers.js`**：
+>   `wave:{ src:'resources/si/npc/mage_si_wave.webp', top:7, bot:1532, fx:0.444 },`（嗨！）
+>   `talk:{ src:'resources/si/npc/mage_si_talk.webp', top:2, bot:1533, fx:0.431 },`（一般說話）
+>   `shrug:{ src:'resources/si/npc/mage_si_shrug.webp', top:9, bot:1530, fx:0.443 },`（藏起爪子／嗅覺很靈敏，攤手）
+>   `laugh:{ src:'resources/si/npc/mage_si_laugh.webp', top:3, bot:1529, fx:0.515 },`（笑，側身仰頭）
+>   `threat:{ src:'resources/si/npc/mage_si_threat.webp', top:6, bot:1527, fx:0.462 },`（得請你們倒在這裡了，手上紫光）
+>   `leave:{ src:'resources/si/npc/mage_si_leave.webp', top:5, bot:1523, fx:0.715 },`（有緣再會吧，半轉身回頭兩指揮別）
+> · ⚠ 戰後「不愧是前第一後補」那張（`hurtsmile`）重畫中（Ray：不要吐血），暫用既有的 `hurt`。
+>
 > ⭐⭐⭐⭐⭐ **【新立繪 7 張・等程式端接】（10-10，Mac 美術 session；commit a904d66d）** —— 檔案已在 `resources/si/`，**還沒寫進 `script/speakers.js`**（美術不碰程式，鐵律 11）。
 > · 索菈娜 `ART.sorana.expr` 加：
 >   `guardgrimace:{ fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guardgrimace.webp', top:9, bot:1527, fx:0.651, cm:150 },`（與 guard 同姿勢，沿用 guard 的值）
