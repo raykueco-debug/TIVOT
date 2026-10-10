@@ -1403,8 +1403,10 @@ const CR_DOCK = [
   nou('steady','嗯！', { stage:19 }),   // Stage 18 到這一句結束 → Stage 19：強制從帝都升空（段落的 sailOut，ver -2125）
 ];
 /* ══ 碎片 02・卡耶爾山谷（ver -2134，Ray 的「卡耶爾山谷_碎片02_台詞差分」，台詞一字未改）══════════════════
-   稿頭：「北方泊地過夜（Stage 02 結束）」⇒ 接在北方泊地「那一夜」最後的三秒黑幕後面（同一段 act），
-   演完才記 `np_night_done`，原本的閘門照舊把時鐘推到隔天 8:00、升 S3、回旅店（背景與曲子自然還原）。
+   稿頭：「北方泊地過夜（Stage 02 結束）」⇒ 北方泊地「那一夜」演完（三秒黑）**經讀取頁到卡耶爾山谷**（ver -2135，Ray：
+   「這一段不在北泊，在另一個地方，來回要過預載頁」），在 `canyon` 的風蝕迴廊演這一段，演完再經讀取頁回北泊旅店；
+   北泊的閘門 ③ 在回來那一刻推到隔天 8:00、升 S3。⚠ 不碰北泊的安全區旗。
+   ⚠ 放在風蝕迴廊不放峽谷入口：入口是復活點兼安全點，規定不能有戰鬥（§6.5.2）。第一拍再把背景換成入口的白天那張。
    三格：開場＝峽谷入口、下一格＝白骨之地、最後一格＝谷底祭場（插圖 044 畫的地方）；都用白天（稿：「應該中午就該到了」）。
    ⚠ 「？？？ 閃開」＝還沒報名的賽西莉（`CECILIE_X`）；之後叫她賽西莉。
    ⚠ 音效對應：轟擊＝`se_earthquake`、咆嘯＝`se_monsterroardeep`、上膛＝`se_weapon_reload`、跑步＝`se_steps`、
@@ -1412,7 +1414,7 @@ const CR_DOCK = [
    ⚠ 兩場戰鬥（frag02_a／frag02_b）暫用北方泊地的禍魘，見 config 的說明。插圖 `044_cecilietorsten`（美術交件，Ray 驗收）。 */
 const ims = N('IM_SOLDIER'), cmd = N('COMMANDER');
 const NP_FRAG02 = [
-  { speaker:'NARRATION', text:'', bg:'canyon_entry_day', bgm:'lostplace', fadeIn:1500, auto:1700 },
+  { speaker:'NARRATION', text:'', bg:'canyon_entry_day', bgm:'lostplace', auto:1200, checkpoint:true },
   ims('panic','不行了！數量太多！'),
   cmd('urgent','援軍呢？還沒有到嗎？'),
   ims('worry','應該中午就該到了才對……'),
@@ -3158,8 +3160,9 @@ export const TOWNS = {
              `show:false` ＝不上台；蕾娜留在台上（她在講話之外的每一拍都在場）。
            ⚠ 站位不必覆寫：台上只有蕾娜一個人。 */
         acts:[
-          { flag:'np_night_done', need:'np_night', storyBattle:true, sides:{ COMMANDER:'L', CECILIE_X:'L', CECILIE:'L', IM_SOLDIER:'R' },   // 碎片 02 的站位（ver -2134；那一夜本身只有蕾娜在台上，不受影響）；storyBattle：碎片裡有兩場戰鬥，北泊這時插著安全區旗，不標會被擋掉
-            lines:[
+          /* `goto`（ver -2135，Ray：「這一段不在北泊，在另一個地方，來回要過預載頁」）：演完經讀取頁去卡耶爾山谷演碎片 02，
+             那邊演完再經讀取頁回這間旅店 —— 閘門 ③ 照舊在回來那一刻把時鐘推到隔天 8:00、升 S3。 */
+          { flag:'np_night_done', need:'np_night', goto:'@canyon:corridor', lines:[
             { speaker:'RENNA', text:'結束了嗎？', bgm:'entangle',
               bg:'northport_hotel_room_night',
               portrait:{ char:'RENNA', expr:'ask', show:true } },
@@ -3185,7 +3188,6 @@ export const TOWNS = {
             /* ver -858（Ray：「三秒淡入黑」）：同教堂→娜塔莉的 slowFade 拍。 */
             { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000,
               hide:['RENNA','NOUVELLE','ANYA'] },
-            ...NP_FRAG02,   // 碎片 02・卡耶爾山谷（ver -2134）：那一夜的夢。演完才記 np_night_done，閘門照舊推到隔天 8:00 升 S3、回旅店
           ] },
           /* ══ 第三天早上八點（ver -664，Ray 交稿）══════════════════════════
              ⚠ 「如果聽不懂的話也沒關係，先跟我們回聖王廳吧？」是**諾薇兒**
@@ -4048,7 +4050,12 @@ export const TOWNS = {
       entry:    { bg:'canyon_entry',    name:'卡耶爾山谷　峽谷入口', rest:true,
                   exits:{ up:'corridor' }, sail:{ dir:'down' } },
       corridor: { bg:'canyon_corridor', name:'卡耶爾山谷　風蝕迴廊',
-                  exits:{ up:'bones', down:'entry' } },
+                  exits:{ up:'bones', down:'entry' },
+                  /* 碎片 02（ver -2135）：北泊那一夜演完經讀取頁帶過來，抵達就演；演完經讀取頁回北泊旅店（見 NP_FRAG02）。
+                     `until:'np_day3'` ＝北泊第三天之後就不會再演（舊存檔走過那一段的也一樣）。 */
+                  acts:[ { flag:'frag02_done', need:'np_night_done', until:'np_day3', storyBattle:true,
+                           sides:{ COMMANDER:'L', CECILIE_X:'L', CECILIE:'L', IM_SOLDIER:'R' },
+                           goto:'@northport:inn', lines:NP_FRAG02 } ] },
       bones:    { bg:'canyon_bones',    name:'卡耶爾山谷　白骨之地',
                   exits:{ up:'altar', right:'bridge', down:'corridor' } },
       bridge:   { bg:'canyon_bridge',   name:'卡耶爾山谷　斷橋',
