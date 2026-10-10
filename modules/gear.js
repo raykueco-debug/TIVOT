@@ -860,7 +860,12 @@ function closeTip(){
   t.remove();
 }
 
+/* 開整備頁的守門（ver -2141，夢境不可入整備頁）：main 注入；回 true ＝擋下（它自己負責說一句）。
+   ⚠ 擋在 open 這唯一的入口（鐵律 8）：吊墜、飛行面板、劇情的 `gear:` 那一拍全部經過這裡。 */
+let blocker=null;
+export function setBlocker(fn){ blocker=fn; }
 export function open(opts){
+  if(blocker){ try{ if(blocker(opts)) return; }catch(_){} }
   ensure();
   pendingPartner=null;   // 預覽不跨開關（ver -743）
   /* 蓋在飛行畫面上 → 底下整個暫停（ver -481，Ray 指定）。收場（close）放開。

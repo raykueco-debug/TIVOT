@@ -1459,6 +1459,10 @@ const FRAG02_MID = [
   { speaker:'PLAYER', blank:true },
   cec('tease','狂妄的小鬼。'),
   cec('battlecry','那就把他們驅逐殆盡吧！'),
+  { battle:'frag02_mid', onLose:'frag02_mid_lose' },
+  { goto:'frag02_mid_end' },
+  { speaker:'NARRATION', text:'', label:'frag02_mid_lose', flags:['frag02_done'], fadeOut:3000, auto:3200, ambStop:1 },   // 打輸＝這一段不演了，回北泊（act 的 gotoIf）
+  { speaker:'NARRATION', text:'', label:'frag02_mid_end', auto:100 },
 ];
 /* ③ 最後一格（谷底祭場）→ 插圖 → 三秒轉幕 → 回北泊 */
 const FRAG02_LAST = [
@@ -1469,6 +1473,7 @@ const FRAG02_LAST = [
   { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:900 },           // 咆嘯
   { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },                       // 上膛音
   { battle:'frag02_b', onLose:'frag02_last_end' },
+  ims('awe','竟然......只憑兩個人就......'),   // ver -2141：進結尾插畫前士兵的驚訝
   /* 插圖由下往上平移，**跑完才出士兵的對話框**（平移 2.6 秒，style.css 的 storyPanUp）。 */
   { speaker:'NARRATION', text:'', cg:'044_cecilietorsten', cgNoTime:true, cgPan:'up', hide:'*', auto:3000 },
   ims(null,'那就是……聖約騎士團！', { show:false }),
@@ -4072,7 +4077,10 @@ export const TOWNS = {
       { battle:'canyon_w_chainhound2' }, { battle:'canyon_w_chainhound3' },
       { battle:'canyon_w_lanternimp2' }, { battle:'canyon_w_lanternimp3' },
       { battle:'canyon_w_bonecrow2' }, { battle:'canyon_w_bonecrow3' } ] },
+    /* 碎片 02 期間（ver -2141，Ray：「每一格都要有戰鬥」）：每一格必出怪（入口／谷底祭場照舊不刷），而且換用賽西莉當搭檔的那一池。 */
+    wildForce: { need:'frag02_go', until:'frag02_done', pool:[ { battle:'frag02_w_crawler2' }, { battle:'frag02_w_crawler3' }, { battle:'frag02_w_bellmite2' }, { battle:'frag02_w_bellmite3' }, { battle:'frag02_w_chainhound2' }, { battle:'frag02_w_chainhound3' }, { battle:'frag02_w_lanternimp2' }, { battle:'frag02_w_lanternimp3' }, { battle:'frag02_w_bonecrow2' }, { battle:'frag02_w_bonecrow3' } ] },
     /* 碎片 02 期間遇怪打輸＝這一段不演了，直接回北泊（ver -2138，main 的戰敗分流讀 `town.loseGoto()`）。 */
+    noGear: { need:'frag02_go', until:'frag02_done', text:'……夢裡沒有整備的餘裕。' },   // 夢境不可入整備頁（ver -2141）
     loseGoto: { need:'frag02_go', until:'frag02_done', to:'@northport:inn', flags:['frag02_done'] },
     nodes: {
       /* 入口＝復活點、安全點。往下＝出航離開這張圖 —— 玩家是從天上降落進來的，這裡沒有相鄰的城可以走回去。
@@ -4088,7 +4096,8 @@ export const TOWNS = {
       corridor: { bg:'canyon_corridor', name:'卡耶爾山谷　風蝕迴廊',
                   bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_corridor_day', noTime:true }],
                   exits:{ up:'bones', down:'entry' },
-                  acts:[ { flag:'frag02_mid', need:['frag02_go','frag02_open'], until:'frag02_done', sides:FRAG02_SIDES, lines:FRAG02_MID } ] },
+                  acts:[ { flag:'frag02_mid', need:['frag02_go','frag02_open'], until:'frag02_done', storyBattle:true, sides:FRAG02_SIDES,
+                           gotoIf:{ flag:'frag02_done', to:'@northport:inn' }, lines:FRAG02_MID } ] },
       bones:    { bg:'canyon_bones',    name:'卡耶爾山谷　白骨之地',
                   bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_bones_day', noTime:true }],
                   exits:{ up:'altar', right:'bridge', down:'corridor' } },

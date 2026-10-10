@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2141';
+export const VERSION = 'ver 2026.09.22-2142';
 
 export const GAME_CONFIG = {
 
@@ -154,7 +154,8 @@ export const GAME_CONFIG = {
                   這一場的搭檔（卡上的 partner，否則整備頁選的人）在這張表裡就換曲；
                   卡上明寫的 bgm 仍最優先（main.battleBgmOf，鐵律 7）。 */
                /* ver -873（Ray 指定，混亂 session 遺失件補回）：安雅＝BattleField4。 */
-               partner:{ sorana:'bgm_whirlwind', anya:'bgm_battlefield4' } },
+               partner:{ sorana:'bgm_whirlwind', anya:'bgm_battlefield4',
+                        cecilie:'bgm_retroroman' } },   // ver -2141（Ray：「賽西莉有固定 BGM」）：碎片 01 她那一場的曲子，搭檔是她就放這首
 
   /* ══⚠⚠⚠ **飛行畫面的曲子由旗決定**（ver -1433，Ray 兩條）══════════════════
      > 「上船追換 warhorn 是**進到飛行畫面以後**換」
@@ -2814,6 +2815,18 @@ export const GAME_CONFIG = {
     canyon_w_lanternimp3: { enemy:'canyon_lanternimp3', session:'canyon_wild' },
     canyon_w_bonecrow2: { enemy:'canyon_bonecrow2', session:'canyon_wild' },
     canyon_w_bonecrow3: { enemy:'canyon_bonecrow3', session:'canyon_wild' },
+    /* 碎片 02 夢裡的路上遇怪（ver -2141，Ray：「風蝕迴廊也要放戰鬥，每一格都要有戰鬥」）：同一批群怪，但搭檔是賽西莉、夢境戰不評。城上 `wildForce` 換用這一池。 */
+    frag02_w_crawler2: { enemy:'canyon_crawler2', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_crawler3: { enemy:'canyon_crawler3', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_bellmite2: { enemy:'canyon_bellmite2', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_bellmite3: { enemy:'canyon_bellmite3', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_chainhound2: { enemy:'canyon_chainhound2', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_chainhound3: { enemy:'canyon_chainhound3', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_lanternimp2: { enemy:'canyon_lanternimp2', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_lanternimp3: { enemy:'canyon_lanternimp3', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_bonecrow2: { enemy:'canyon_bonecrow2', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_bonecrow3: { enemy:'canyon_bonecrow3', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_mid: { enemy:'canyon_bellmite3', partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild' },   // 風蝕迴廊那一場（ver -2141）
     range_trainee: { enemy:'dart_target', record:'range', noReward:true, noEval:true,
                      timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
                                   prizeSec:30, prize:'Shotgun_Dragon' } },

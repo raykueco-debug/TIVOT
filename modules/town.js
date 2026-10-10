@@ -2261,7 +2261,9 @@ function wildActDue(n){
     /* 這一趟**還沒打過的**那幾隻（「一趟同種不重複」的規約）。 */
     /* 卡上宣告的那幾隻（見 cardSpawnPool）與地圖自己的池子**聯集**。
        ⚠ 卡上那一批沒有 `where` 限制（牠自己已經說了住哪），所以直接包成同樣的形狀。 */
-    const pool0 = ((W&&W.pool)||[]).concat(cardPool.map(k=>({ battle:k })));
+    /* 城上 `wildForce:{need,until,pool}`（ver -2141，碎片 02）＝這段期間**每一格必出怪**，而且換用它自己那一池。 */
+    const force = wildForceOn();
+    const pool0 = force ? force.pool : ((W&&W.pool)||[]).concat(cardPool.map(k=>({ battle:k })));
     const fresh=pool0.filter(p=> okHere(p) && !wildDone.has(wildSpecies(p.battle)));
     /* ══⚠⚠ **池子清空之後要能重刷**（ver -958，Ray：「重複攻略神殿時路上要有 25%
        機率遇怪，好像打完中 boss 走到休息點就幾乎碰不到怪了」）══
@@ -2292,6 +2294,7 @@ function wildActDue(n){
          （鐵律 9：一個狀態一個擁有事件；誰插＝那一格真的出過怪那一次）。
        ⚠ 旗是**一輪內**的（`newRun()` 清、存讀檔帶，§6.9 那張清單）。 */
     if(n.mustWild && !prog.hasFlag(mustWildFlag(nodeId))) rate = 1;
+    if(force) rate = 1;
     wildStat.rolled++;
     if(Math.random() >= rate){ wildSkip(i18nT('擲骰沒中（rate ')+rate+i18nT('）')); return null; }
     wildStat.hit++;
@@ -3769,6 +3772,23 @@ function exitsOf(){
 }
 /* 城上 `loseGoto:{ need, until, to:'@地圖:節點', flags }`（ver -2138，碎片 02）＝這段期間**遭遇戰打輸**不回檢查點，改去 `to`。
    main 的戰敗分流讀它；回傳 { town, node, flags } 或 null。 */
+function wildForceOn(){
+  const g=(TOWNS[townId]||{}).wildForce; if(!g || !g.pool) return null;
+  if(g.need && !needOk(g.need)) return null;
+  if(g.until && prog.hasFlag(g.until)) return null;
+  return g;
+}
+/* 城上 `noGear:{need,until,text}`（ver -2141，Ray：「夢境不可入整備頁」）：這段期間按吊墜只回一句 `text`。
+   擋下就說那一句並回 true；放行回 null。gear.open 的唯一守門由 main 注入（gear.setBlocker）。 */
+export function gearBlocked(){
+  if(!townId) return null;
+  const g=(TOWNS[townId]||{}).noGear; if(!g) return null;
+  if(g.need && !needOk(g.need)) return null;
+  if(g.until && prog.hasFlag(g.until)) return null;
+  story.flashLine(g.text || '……現在不能整備。', '');   // 走路人單句那一套：再點一下收掉（同 knockClosed）
+  chatterOn=true;
+  return true;
+}
 export function loseGoto(){
   const g=(TOWNS[townId]||{}).loseGoto; if(!g) return null;
   if(g.need && !needOk(g.need)) return null;

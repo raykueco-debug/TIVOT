@@ -1322,6 +1322,7 @@ bindBtn('prepGo', ()=>{ const st=prepStoryMode; closePrep(); if(!st) launchBattl
 /* ⚠ 帶著 opts（ver -1186）：劇情那一拍要能指定「開在哪一頁、高光哪一項」
    —— 玩家自己點吊墜時不帶，行為一個字都沒變。 */
 story.setPrepOpener(o=>gear.open(o||undefined));
+gear.setBlocker(()=>!!(town.gearBlocked && town.gearBlocked()));   // 夢境不可入整備頁（ver -2141）
 /* 劇情裡的「出航」那一拍（ver -424）：交給同一支 `openFlight`（唯一的入口，鐵律 8）。 */
 /* ⚠ 腳本的 `goFlight` 那一拍（主線的出航）也要先收城鎮的介面（ver -437）——
    與城鎮自己那顆「出航」走同一條規矩（鐵律 8）：`town.suspend()` 只收介面不收狀態，
