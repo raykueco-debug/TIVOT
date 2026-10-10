@@ -1416,7 +1416,7 @@ export function playKillFall(){
 /* 倒地要等多久才閉棺（ver -2063 立；-2082 Ray：「倒地不用播完才閉棺，倒到第三 F 開始閉就好」）：最後一個人倒下時，combat 等到第 3 格出現就收尾。 */
 let fallUntil=0;
 export function fallPendingMs(){ return Math.max(0, fallUntil-Date.now()); }
-/* 倒地動畫：分層換成 5 格依序播（每格等長，`group.fallMs` 總長，預設 500ms），停在倒地那格 `fallHold`（預設 600ms）再淡出。
+/* 倒地動畫：分層換成 5 格依序播（每格等長，`group.fallMs` 總長，預設 500ms），**換上去那一刻就同時淡出**（ver -2127）。
    ⚠ 位置：格子貼在 anim.json 的 box（畫布座標），照分層同一套 cover＋object-position 換算到畫面（同 toImageUV 的反算）。
    ⚠ 疊層：`back`（掩體後往後倒、往下掉出視線）**改畫在掩體下面**，才會掉到掩體後；forward／prone 照舊在原位（掩體上面）。 */
 function playFall(im, F){
@@ -1434,13 +1434,17 @@ function playFall(im, F){
      先標成倒下（`eg-down` 的判定照舊立刻生效），只是畫面晚一拍換。 */
   const lead=+G.fallLead||0, n=F.frames.length, step=(G.fallMs||500)/n, hold=G.fallHold!=null?G.fallHold:600;
   fallUntil=Math.max(fallUntil, Date.now()+lead+step*2);   // 播到第 3 格就開始閉棺（ver -2082，Ray：「倒到第三 F 開始閉就好」）
+  /* ⚠ ver -2127（Ray：「敵人被擊倒播放擊倒動畫同時就開始淡出」）：換成倒地那一刻**同時**開始淡出，
+     淡出長度＝動畫長度（`fallMs`），播完剛好消失 —— 以前是播完、停 `fallHold`、再淡 0.4 秒。
+     ⚠ `hold` 因此不再用在畫面上（欄位留著，卡上寫了也不會出錯）。 */
   const swap=()=>{
     if(j.kind==='back' && cover) g.insertBefore(el, cover); else im.after(el);
     im.style.transition='none'; im.classList.add('eg-down');   // 分層當場換掉（不走淡出）
+    const total=step*n;
+    el.style.transition='opacity '+total+'ms linear';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('eg-gone')));   // 隔一幀才加，過場才會跑（同 story.veil 的理由）
     let i=0; const t=setInterval(()=>{ i++;
-      if(i>=n){ clearInterval(t);
-        setTimeout(()=>{ el.classList.add('eg-gone'); setTimeout(()=>el.remove(), 450); }, hold);
-        return; }
+      if(i>=n){ clearInterval(t); setTimeout(()=>el.remove(), 60); return; }
       el.src=F.frames[i].src; }, step);
   };
   if(lead>0){ im.classList.add('eg-leaving'); setTimeout(swap, lead); } else swap();
