@@ -1,3 +1,22 @@
+> ⭐⭐⭐⭐⭐ **【帝國軍：士兵 7 張＋前線指揮官 6 張・等程式端接】（10-10，Mac 美術）** —— 碎片 02（卡耶爾山谷）。制服照 Ray 給的參考圖（深藍雙排扣、金滾邊、筒帽），帶戰地塵土；指揮官與士兵同制服、只差金色流蘇肩章＋軍刀。檔在 `resources/si/npc/`，**還沒寫進 `speakers.js`**。
+> · ⚠⚠ 程式端要決定的兩件：① `SOLDIER` 現在是 `art:null`（沒有立繪）→ 要新開一個 ART 鍵（建議 `imsoldier`）並把 `SOLDIER.art` 指過去；② 既有的 `commander`（`npc_commander_si_front`）是**白色制服**、對不上參考圖 → 建議 `COMMANDER.art` 改指新的 `imcommander`。
+> · 士兵 `imsoldier`（`cm:172`、`side:'R'`、`base` 用 front）：
+>   `front:{ src:'resources/si/npc/npc_imsoldier_si_front.webp', top:24, bot:1516, fx:0.493 },`
+>   `panic:{ src:'resources/si/npc/npc_imsoldier_si_panic.webp', top:14, bot:1517, fx:0.441 },`（不行了！數量太多！）
+>   `worried:{ src:'resources/si/npc/npc_imsoldier_si_worried.webp', top:11, bot:1519, fx:0.592 },`（應該中午就該到了才對……）
+>   `alarm:{ src:'resources/si/npc/npc_imsoldier_si_alarm.webp', top:10, bot:1507, fx:0.351 },`（南門被攻破了！）
+>   `awe:{ src:'resources/si/npc/npc_imsoldier_si_awe.webp', top:2, bot:1514, fx:0.406 },`（一個人就擋下了禍魘／那就是……聖約騎士團！）
+>   `rally:{ src:'resources/si/npc/npc_imsoldier_si_rally.webp', top:18, bot:1512, fx:0.365 },`（撐下去！援軍一定會到的！ 舉槍射擊）
+>   `doubt:{ src:'resources/si/npc/npc_imsoldier_si_doubt.webp', top:14, bot:1521, fx:0.647 },`（就你們……兩個人？）
+> · 指揮官 `imcommander`（`cm:180`、`side:'R'`）：
+>   `front:{ src:'resources/si/npc/npc_imcommander_si_front.webp', top:8, bot:1523, fx:0.460 },`
+>   `urgent:{ src:'resources/si/npc/npc_imcommander_si_urgent.webp', top:4, bot:1518, fx:0.669 },`（援軍呢？還沒有到嗎？ ⚠ 右腳靴尖貼到畫布右緣被裁一點，舞台看不到）
+>   `shock:{ src:'resources/si/npc/npc_imcommander_si_shock.webp', top:12, bot:1518, fx:0.699 },`（！！）
+>   `surprise:{ src:'resources/si/npc/npc_imcommander_si_surprise.webp', top:4, bot:1521, fx:0.444 },`（聖王廳的援軍……？）
+>   `salute:{ src:'resources/si/npc/npc_imcommander_si_salute.webp', top:11, bot:1521, fx:0.452 },`（失禮了。行軍禮）
+>   `plead:{ src:'resources/si/npc/npc_imcommander_si_plead.webp', top:8, bot:1515, fx:0.481 },`（出海口方向還有我軍殘部，能否……）
+> · top/bot/fx 是 `measure_si.py` 量的；舉手指人那幾張的 fx 可能被手拉偏，上線看臉再微調。
+>
 > ⭐⭐⭐⭐⭐ **【賽西莉差分 11 張・等程式端接】（10-10，Mac 美術）** —— 碎片 02／03 的劇本。她是後勤術師：**沒有戰損**，戰後疲憊只畫流汗喘氣，鼻血＝能力過載（Ray 定）。檔在 `resources/si/`，**還沒寫進 `speakers.js`**：
 >   `smirk:{ src:'resources/si/cecilie_si_smirk.webp', top:8, bot:1529, fx:0.520 },`（是『兩個人』吧？）
 >   `call:{ src:'resources/si/cecilie_si_call.webp', top:4, bot:1526, fx:0.680 },`（喂！等我一下！）
