@@ -1265,7 +1265,7 @@ const CR_RAID_SIDES = { RENNA:'L', NOUVELLE:'L', SORANA:'R', ANYA:'R', CORVIN:'R
 const CR_INN_RAID = [
   /* ══ Stage 18（ver -2125，Ray：「加入 stage 18，時間鎖在晚上 11:00，始於安雅偷溜被主角逮到」）══
      第一拍升 18、時鐘設成當晚 23:00（clockSet；之後走路照常推時間）。結束於碼頭戰最後一句（那一拍升 19、出航）。 */
-  any('scare','', { amb:'se_sneaky', checkpoint:true, stage:18, clockSet:23 }),
+  any('scare','', { amb:'se_sneaky', checkpoint:true, stage:18, clockSet:23, bgm:'nocturnal' }),
   { speaker:'PLAYER', blank:true },
   any('panic','噫！', { amb:null }),
   any('talkshy','不、不會再跑了啦！'),
@@ -1292,7 +1292,7 @@ const CR_INN_RAID = [
   ren('think','的確，這一點連聖王廳都不能觸碰呢。'),
   any('sad',''),
   { speaker:'PLAYER', blank:true },
-  sor('back','！！'),
+  sor('back','！！', { bgm:'rituale', flags:['cr_rituale'] }),   // 換 Rituale Machina，鎖到愛里歐戰（城上 bgmWhen）
   sor('ready','喂，蕾娜，我們是在帝都內吧？'),
   ren('curious','這不是當然的嗎？'),
   sor('battlecrylookaside','那、為什麼我們被包圍了？'),
@@ -1376,7 +1376,7 @@ const CR_DOCK = [
   ren('talkserious','刻意不帶武器、屏退會被術式波擊的友軍，會這麼想很正常吧？'),
   mg('shrug',''),
   mg('front','我挺喜歡你們的，不過——'),
-  mg('threat','得請你們倒在這裡了。'),
+  mg('threat','得請你們倒在這裡了。', { flags:['cr_mage_fight'] }),   // 解開 Rituale 的鎖 ⇒ 愛里歐戰放自己的曲（ver -2126）
   { battle:'cap_mage' },
   mg('hurt','咕……'),
   mg('hurtsmile','不愧是前第一後補，小瞧你了啊。'),
@@ -1419,6 +1419,15 @@ export const TOWNS = {
        這一段的開關是 `cap_raid` 本身，不看章節（明寫的例外，見 modules/town.js 的 storyOff）。 */
     name: '帝都',
     storyStages:[0,1],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
+    /* ══ Stage 18 的曲子（ver -2126，Ray：「stage 18 開場音樂改成 Peritune_Nocturnal_Bloom_loop，到主角空白、索『！！』時
+       改成 Rituale Machina，直到愛里歐戰」）══ 由上往下取第一個成立的（modules/town.js 的 bgmWhenRow）：
+       · Rituale：索菈娜「！！」那一拍插 `cr_rituale` 起，到愛里歐「得請你們倒在這裡了」那一拍插 `cr_mage_fight` 為止；
+         `lock` ＝中間三場衛士戰也不換曲（battleBgmOf 看到鎖就不動），解鎖之後愛里歐戰照卡上放 RetroRoman Battle2。
+       · Nocturnal Bloom：返回帝都演完（`cr_return`）起 —— 走回旅店那一刻就是它（不會先閃一下帝都的曲子）。 */
+    bgmWhen: [
+      { need:'cr_rituale', until:'cr_mage_fight', bgm:'rituale', lock:true },
+      { need:'cr_return',  until:'cr_rituale',    bgm:'nocturnal' },
+    ],
     entry: 'square',
     /* 大城市不上迷霧（ver -913，Ray：「大城市 mist 都是 0」）——
        ⚠ **要明寫**：-913 起沒寫就是有霧（走過才亮、字格印「？？？」）。 */

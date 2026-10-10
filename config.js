@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2124';
+export const VERSION = 'ver 2026.09.22-2125';
 
 export const GAME_CONFIG = {
 
@@ -4012,7 +4012,7 @@ export const GAME_CONFIG = {
            （-8.37）一字不差；量 `peritune_harbor_morning_loop` 得平均 −11.39，
            反推 0.758 ＝ 表上那一列 ⇒ 量法沒走鐘。
          ⚠ 峰值 1.000 ⇒ 夾值 10^(2/20)＝1.259，0.461 沒有撞到 `peakCeilDb`。 */
-      peritune_rituale_machina_loop:0.461,
+      peritune_rituale_machina_loop:0.461, peritune_nocturnal_bloom_loop:0.67,   // ver -2126：audio_scan 0.96 × (Rituale 現值 0.461 ÷ 它的 0.66) —— 與 BGM 表既有的尺度對齊
       bgm_flight:4.056,
     },
 
@@ -5015,6 +5015,7 @@ export const ASSETS = {
      ⚠ 「直到指定下一首」＝城上的 `bgmWhen` 那一條**刻意沒有 `until`**
        （`script/town.js` 的 `TOWNS.tomb.bgmWhen`）。要換就在那裡補一條排在它上面。 */
   bgm_rituale:      "resources/audio/bgm/peritune_rituale_machina_loop.m4a",
+  bgm_nocturnal:    "resources/audio/bgm/peritune_nocturnal_bloom_loop.m4a",   // ver -2126：Stage 18 帝都旅店（Ray 交件，檔名改全小寫）
   bgm_irregular:    "resources/audio/bgm/peritunematerial_irregular_loop.m4a",
   bgm_prairie:      "resources/audio/bgm/peritunematerial_prairie4_loop.m4a",                // 平原古道（ver -1408，Ray 指定）
   /* 尼莫戰的預設曲（ver -1508，Ray：「PerituneMaterial_Prairie5_loop　Nemo 尼莫戰預設 bgm」）。
