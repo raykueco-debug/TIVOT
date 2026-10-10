@@ -1135,7 +1135,7 @@ export const ENEMIES = {
       stack:1,
       image:'enemy_cap_mage',
       bg:'capital_dock_battle',   // ver -2123：碼頭戰專用背景（Ray）
-      fit:{ pos:'center bottom', scale:0.78, shiftY:0.08 },   // ver -2123（Ray：「人站遠點，不要那麼近」）
+      fit:{ mode:'contain', pos:'center bottom', scale:0.78, shiftY:0.08 },   // ver -2123（Ray：「人站遠點，不要那麼近」）；⚠ 沒寫 mode 會被當 cover 裁掉頭
       hp:400,   // ver -2123 Ray 改（-2120 是 200）
       attack:21,
       atkInterval:null,
