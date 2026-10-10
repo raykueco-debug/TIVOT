@@ -3427,7 +3427,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2145';
+const KERB_V='?v=2146';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4186,8 +4186,13 @@ function renderLine(){
   const line = cur.lines[lineIdx];
   if(!line) return;
   /* 這一拍的水平翻轉（ver -1898，Ray：「立繪編輯的翻轉只是轉那一拍的圖而已」）：拍上寫 `flip:true`
-     ＝說話者（或 portrait.char）這一拍的立繪左右翻；下一拍沒寫就翻回來。與圖本身的 `flip`（畫反了）是 XOR。 */
-  beatFlipWho = line.flip ? ((line.portrait && line.portrait.char) || line.speaker) : null;
+     ＝說話者（或 portrait.char）這一拍的立繪左右翻；她自己的下一拍沒寫就翻回來（-2146 起別人講話時照樣翻著，見下）。與圖本身的 `flip`（畫反了）是 XOR。 */
+  /* ⚠ ver -2146（Ray：「翻轉的角色，在暗調的時候也一樣翻轉」）：翻過的人**換別人講話（她被壓暗）時照樣翻著**，
+     直到**她自己的下一拍**沒寫 `flip` 才翻回來；她下台（兩個槽都不是她）也就收掉。
+     「她自己的拍」＝說話者或 portrait.char 是她（旁白／主角空白框不算）。 */
+  { const fc=(line.portrait && line.portrait.char) || line.speaker;
+    if(line.flip) beatFlipWho = fc;
+    else if(beatFlipWho && (fc===beatFlipWho || (slot.L!==beatFlipWho && slot.R!==beatFlipWho))) beatFlipWho = null; }
   beatEyesWho = line.eyes ? ((line.portrait && line.portrait.char) || line.speaker) : null;
   beatEyes = line.eyes || null;
   { const who=(line.portrait && line.portrait.char) || line.speaker;   // 她自己的這一拍才重新決定淚眼（見 heldTear）
