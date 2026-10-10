@@ -1182,7 +1182,7 @@ const CAP_RETURN = [
   any('cry','米夏說，讓我、潛進帝都、產生禍魘……'),
   ren('think','就可以擾亂後方，讓北方前線的帝國軍進退兩難吧。'),
   any('cry','……'),
-  ren('lookaside','而且，禍魘如何產生根本無從得知，藏身帝都的安雅小姐就像一劑猛毒，根本無法被找到。'),
+  ren('lookaside','而且，禍魘如何產生根本無從得知，藏身帝都的安雅小姐就像一劑無法被找到的猛毒。'),
   any('cry','蕾娜……早就知道？'),
   ren('think','懷疑而已。襲擊北境的禍魘、願意跟著我們回聖王廳的妳、還有科爾文想將妳安置在帝都的意圖……'),
   ren('commandsoft','令兄的出現，才證明了我的猜想。'),
@@ -1221,7 +1221,7 @@ const CAP_RETURN = [
   any('curious','為什麼……'),
   ren('think','我不確定……但是妳剛剛說了，令兄是在訓練中得到了控制力量的能力。'),
   { speaker:'PLAYER', blank:true },
-  sor('amaze','啊！'),
+  sor('surprise','啊！'),
   nou('happy','難道說，跟我們一起經歷的戰鬥……！'),
   ren('command','有可能。或許安雅小姐已經漸漸掌握了力量的使用方式。'),
   any('curious',''),
@@ -1248,6 +1248,98 @@ const CAP_RETURN = [
   ren('remindsmile','要是『安雅小姐』能一起來就好了呢。'),
   any('shy',''),
   any('shysmile','嗯！'),
+  { speaker:'NARRATION', text:'', fadeOut:3000, auto:3100, hide:['RENNA','NOUVELLE','SORANA','ANYA'] },   // 三秒轉景帝都旅店（ver -2114）
+];
+/* ══ 帝都旅店・科爾文來襲（ver -2114，Ray 的稿，台詞一字未改）══════════════════════════════════
+   CAP_RETURN 演完（clockToday 22 ＋三秒黑）→ 走回旅店演這一段 → 科爾文「拿下」那一拍插 `cap_raid`、拔 `safehouse_capital`
+   （鐵律 9：誰開戰誰拔）＝帝都進入教廷衛士戰（城上 `siege`）→ 第一場 `cap_guard_inn` → 演完自動走到上街區（`goto:'uptown'`），
+   那一格既有的 `cap_clear_uptown` 接第二場；之後一路打到碼頭（廣場結算）。
+   ⚠ `cap_clear_inn` 由這一段最後一拍插（旅店那一格既有的第一場段落就不會再打一次）。
+   ⚠ 差分：諾 `smilebig`→`bigsmile`、索 `surpirse`→`surprise`、蕾 `shockcalmclose`→`shockcalm`；
+     科爾文 `salute`→`bow`（美術交的「向女士致意」那張）、`hurtcoomand`→`hurtcommand`；
+     沒寫差分的：蕾「副團長，您這是……？」→`ask`、科爾文→`talk`／`stare`／`smile`／`ecstasy`（照語氣）、索「！！」→`angry`。
+   ⚠ 衛士＝`GUARD_CAP`（借旅店那一場的拔刀衛兵 `church_guard_si_draw`）。拔刀＋上膛錯落＝同主祭壇那套的寫法。
+   ⚠ 安雅偷溜那一拍：`se_sneaky` 當 amb，「噫！」那一拍停。 */
+const gcp = N('GUARD_CAP');
+const CR_RAID_SIDES = { RENNA:'L', NOUVELLE:'L', SORANA:'R', ANYA:'R', CORVIN:'R', GUARD_CAP:'R' };
+const CR_INN_RAID = [
+  any('scare','', { amb:'se_sneaky', checkpoint:true }),
+  { speaker:'PLAYER', blank:true },
+  any('panic','噫！', { amb:null }),
+  any('talkshy','不、不會再跑了啦！'),
+  { speaker:'NARRATION', text:'', se:'se_highheels', auto:700 },
+  ren('front','沒錯，現在暫時先跟著我們是最安全的。'),
+  any('talk','不是那樣……'),
+  any('talkshy','我想……跟大家在一起……很安心！'),
+  nou('bigsmile',''),
+  sor('smirk','那妳大晚上的又溜出房間幹嘛？'),
+  any('silent','……'),
+  any('answer','我有事想跟蕾娜……想跟大家說！'),
+  ren('ask','跟我？'),
+  any('silent',''),
+  any('talk','是關於……我接下來……'),
+  any('answer','我想、聯絡在紫月的父王和姐姐！'),
+  sor('surprise','咦？可是他不是要殺妳……'),
+  any('amaze','如果、他們知道、我不會再喚出禍魘！'),
+  any('talk','或許……'),
+  ren('evaluateclosemouth','……'),
+  ren('evaluate','值得一試呢。'),
+  any('amaze',''),
+  nou('shock','可是，要怎麼聯絡呢？'),
+  nou('shock2','弄不好，就是叛國罪……'),
+  ren('think','的確，這一點連聖王廳都不能觸碰呢。'),
+  any('sad',''),
+  { speaker:'PLAYER', blank:true },
+  sor('back','！！'),
+  sor('ready','喂，蕾娜，我們是在帝都內吧？'),
+  ren('curious','這不是當然的嗎？'),
+  sor('battlecrylookaside','那、為什麼我們被包圍了？'),
+  nou('surprise','！！'),
+  any('terrify',''),
+  ren('lookup','包圍？'),
+  sor('guardthink','十……二十個以上，很安靜。'),
+  nou('shock2','難道、我們帶著安雅的事被帝國……'),
+  ren('determine','不……這大概是……'),
+  { speaker:'NARRATION', text:'', se:['se_dooropen', { n:'se_walk', delay:300 }], auto:1000 },   // 推門音＋腳步
+  sor('guard',''),
+  sor('guardgrimace','呃！豆芽男！'),
+  cor('bow','您還記得我，榮幸之至。'),
+  ren('ask','副團長，您這是……？'),
+  cor('talk','不用在意。諸君漂亮地完成了任務，從現在起那位大人就由我們接手監管。'),
+  nou('shock',''),
+  any('steady',''),
+  ren('determine','……'),
+  { speaker:'PLAYER', blank:true },
+  ren('shockcalm','！！'),
+  cor('stare','……'),
+  cor('talk','不用你說，王女殿下的身份我們早就知道。'),
+  ren('command','副團長既然知道，是不是應該收手為好？'),
+  ren('command','與他國產生紛爭，比出現一兩隻禍魘棘手吧？'),
+  cor('smile','這就不是海森伯格小姐需要操心的事了。'),
+  ren('commandsoft','那可不行。安娜殿下是敵國要人，根據永夜協定應該直接交給帝國軍！'),
+  cor('stare','妳這是……打算背棄聖王廳嗎？'),
+  ren('askserious','你才是。若帝國追究知情不報的責任，聖王廳承受得住嗎？'),
+  cor('stare','……'),
+  cor('ecstasy','妳虛張聲勢的模樣，也是那麼美啊。'),
+  { speaker:'PLAYER', blank:true, se:'se_snatch' },
+  cor('talk','HUND，想對我提意見的話，先學會用兩隻腳走路吧。'),
+  sor('angry','！！'),
+  { speaker:'NARRATION', text:'', se:'se_punch', shake:true, auto:700 },   // 重擊音
+  nou('shock2','索菈娜！'),
+  sor('determine','抱歉，我果然還是討厭這傢伙。'),
+  gcp('draw','副團長！', { se:[ { n:'se_sworddraw' }, { n:'se_weapon_reload', delay:180 }, { n:'se_sworddraw', delay:360 }, { n:'se_weapon_reload', delay:520 } ] }),   // 拔刀＋上膛錯落
+  cor('hurthold','沒事。先退下。', { hide:['GUARD_CAP'] }),
+  ren('determine','……'),
+  cor('hurttalk','海森伯格小姐，我可以把這當作妳對聖王廳的回應嗎？'),
+  ren('determine','在聖王廳之前，我也是帝國子民。事關重大，恕我不能從命。'),
+  cor('hurttalk','這也是妳，身為貴族的氣節吧。'),
+  cor('hurttalk','真是太可惜了。'),
+  Object.assign(cor('hurtcommand','拿下。'), { flags:['cap_raid'], unflags:['safehouse_capital'] }),   // 開戰：帝都進入教廷衛士戰
+  { battle:'cap_guard_inn' },                                                                        // 第一場
+  gcp('draw','該死的……HUND！', { hide:['CORVIN'] }),
+  { speaker:'NARRATION', text:'', se:'se_punch', shake:true, auto:600 },
+  gcp('draw','呃！'),
+  Object.assign(nou('shock2','索菈娜別打了！快走啦！', { hide:['GUARD_CAP'] }), { flags:['cap_clear_inn'] }),
 ];
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
 
@@ -1407,9 +1499,21 @@ export const TOWNS = {
       square: {
         bg:'capital_square', name:'帝都　攝政王廣場',
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
-        acts:[ { flag:'cap_clear_square', need:'cap_raid', fromStage:0, storyBattle:true, lines:[ { battle:'cap_guard_square' } ] },   // 第三場（指揮官，打完結算；ver -2043）
+        acts:[ { flag:'cap_clear_square', need:'cap_raid', fromStage:0, storyBattle:true, sides:CR_RAID_SIDES, lines:[ { battle:'cap_guard_square' },   // 第三場（指揮官，打完結算；ver -2043）
+                 /* 攝政王廣場戰後（ver -2114，Ray 的稿）：邊跑邊講 —— `se_steps` 當 amb 從這裡開始、最後一句淡出。
+                    差分：安雅沒有 `run` → `runworry`；索 `runserious` 是美術 -2114 交的正面奔跑。 */
+                 sor('guardtalk','可惡！這些傢伙怎麼回事？太難纏了吧！'),
+                 ren('lookup','這些只是騎士團的下級士兵而已！'),
+                 any('runworry','！！', { amb:'se_steps' }),
+                 nou('runserious','萬一、出動團長追擊的話……！'),
+                 ren('run','不會的！'),
+                 ren('run','團長級的戰力都在帝國的監視下！就是因為這樣才會由我們帶安雅小姐去開啟遺蹟！'),
+                 sor('runserious','什麼啦越聽越糊塗！'),
+                 nou('run','就是聖王廳不想讓帝國知道安雅跟著我們嗚——！'),
+                 nou('runcry',''),
+                 ren('run','別說了！會咬到舌頭的！', { ambStop:1 }) ] },
                /* 返回帝都（ver -2102）：廢城主祭壇之後第一次回到廣場就演（見 CAP_RETURN 的說明）；演完走回旅店。 */
-               { flag:'cr_return', need:'dm_altar_done', fromStage:17, sides:CR_SIDES, goto:'inn', lines:CAP_RETURN } ],
+               { flag:'cr_return', need:'dm_altar_done', fromStage:17, sides:CR_SIDES, goto:'inn', clockToday:22, lines:CAP_RETURN } ],   // clockToday：旅店那一段是「大晚上」（ver -2114）
         once:true,
         lines:[ nou('surprise','帝都的攝政王廣場，好壯觀。'),
                 nou('surprise','每次看都覺得很震憾呢。') ],
@@ -1827,7 +1931,11 @@ export const TOWNS = {
         /* ver -788：右進（square 右→uptown）→左出（左回 square）。square 挪到 left、
            被佔的 grocery 移到空出的 down。 */
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' },
-        acts:[ { flag:'cap_clear_uptown', need:'cap_raid', fromStage:0, storyBattle:true, lines:[ { battle:'cap_guard_uptown' } ] } ],   // 教廷衛士戰第二場（ver -2043）
+        acts:[ { flag:'cap_clear_uptown', need:'cap_raid', fromStage:0, storyBattle:true, sides:CR_RAID_SIDES, lines:[ { battle:'cap_guard_uptown' },
+                 /* 第二場打完（ver -2114，Ray 的稿）。 */
+                 sor('back','現在怎麼辦？'),
+                 ren('command','到碼頭去！'),
+                 ren('command','聖王廳不會通報帝國軍！趁船還沒被扣趕快走！') ] } ],   // 教廷衛士戰第二場（ver -2043）
         lines:[
           /* 肚子叫：沒有台詞的一拍（立繪＋音效），停一秒自己走（§6.5）。 */
           { speaker:'NOUVELLE', text:'', auto:1000, se:'se_tummy',
@@ -1905,6 +2013,8 @@ export const TOWNS = {
            ⚠ 「怎麼能讓你死在這裡」那兩句用 `fluster`（ver -1889，Ray：「cringe 改 cecilie_si_fluster」）。 */
         acts:[
           /* 教廷衛士戰第一場（ver -2043）：排在最前面 —— 城鎮戰開著時先打這一格。 */
+          /* 帝都旅店・科爾文來襲（ver -2114，見 CR_INN_RAID）：返回帝都演完、走回旅店就演；演完自動走到上街區打第二場。 */
+          { flag:'cr_inn_raid', need:'cr_return', fromStage:17, storyBattle:true, sides:CR_RAID_SIDES, goto:'uptown', lines:CR_INN_RAID },
           { flag:'cap_clear_inn', need:'cap_raid', fromStage:0, storyBattle:true, lines:[ { battle:'cap_guard_inn' } ] },
           { flag:'cap_dream', need:'inn_seen_capital_inn', until:'stage1_open', sleepFirst:{ hours:1, disguise:true, blackAfter:3000 },   /* 睡覺音播完再黑三秒才入夢（ver -1893，Ray） */
             storyBattle:true, lines:[

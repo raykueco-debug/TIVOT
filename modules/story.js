@@ -2215,6 +2215,8 @@ function applyPersist(line){
      ⚠ 演到就記（不是演完），所以只放「這一刻確實發生了」的事（出航、拿到東西…）。 */
   if(!replaying){   // 管理人回播（←）重演這一拍時不再記帳（見 rewindLine）
   if(line.flags && line.flags.length) prog.addFlags(line.flags);
+  /* `unflags:[…]`（ver -2114）＝這一拍**拔掉**旗（帝都教廷衛士戰：開戰那一拍拔 `safehouse_capital`，鐵律 9：誰開戰誰拔）。 */
+  if(line.unflags && line.unflags.length) prog.removeFlags(line.unflags);
   /* `affToFloor:'RENNA'` ＝這一拍把那個人的好感降到**這一級的最低值**（ver -1707，
      實作只有 `prog.affToTierFloor` 一支）。演到就記，同 `flags`。 */
   if(line.affToFloor) prog.affToTierFloor(String(line.affToFloor).toLowerCase());
@@ -2667,6 +2669,7 @@ const SE_FILES=[
   /* 返回帝都（ver -2102，Ray 的稿）：`enemy_lowroar`＝低頻魔物咆哮（Ray 交的 mp3；敵人卡 script/enemies.js 也直接引用這一支，
      所以不轉檔改名；返回帝都那一拍 ver -2110 改用 `se_monsterroardeep`）；`se_kidlaughter`＝孩童笑聲（ver -2104 Ray 交 mp3 → m4a 96k，8 秒，當 `amb` 循環、母親那一拍淡出）。 */
   'enemy_lowroar.mp3', 'se_kidlaughter.m4a',
+  'se_sneaky.m4a',   // ver -2114：帝都旅店，安雅偷溜出房間（Ray 交 mp3 → m4a 96k，18.8 秒，當 amb）
 
   'se_villagealarm.m4a',   // 夏爾村警鐘（ver -772，Ray 交件）
   'se_enemy_roardeer.m4a',   // 樹靈鹿主的吼（ver -879，Ray 交件；配變異那一拍的紫炎）
@@ -3391,7 +3394,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2112';
+const KERB_V='?v=2113';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

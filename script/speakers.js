@@ -59,6 +59,7 @@ export const SPEAKERS = {
   SOLDIER:  { name:'士兵',   art:null },
   RETAINER: { name:'隨從',   art:'retainer' },
   MAGE:      { name:'謎之術師', art:'mage' },        // ver -2099：碼頭 Boss（名字等 Ray 定稿）
+  GUARD_CAP: { name:'衛士',   art:'capguard' },   // ver -2114：帝都教廷衛士（借旅店那一場的拔刀衛兵）
   CAPI_BOY:  { name:'小男孩', art:'capiboy' },     // ver -2102：返回帝都（攝政王廣場的路人母子）
   CAPI_MOM:  { name:'母親',   art:'capimom' },
   COMMANDER: { name:'指揮官',   art:'commander' },   // ver -2099：碎片 02   // 米夏的隨從（ver -1707 立；-1715 接上立繪，見 ART.retainer）
@@ -694,6 +695,10 @@ export const ART = {
          換成全身站姿之後那個顧慮本來就不存在了。 */
     panic:     { fxShift:-0.06, yShift:25, cm:150, src:'resources/si/sorana_si_panic.webp?v=13cf60c2', top:8, bot:1522, fx:0.649 },
     guard:        { fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guard.webp?v=e18306d1',         top:9,  bot:1527, fx:0.651, cm:150 },
+    /* ver -2114（美術 a904d66d；guardgrimace 10-10 Ray 重交 png → 同名覆蓋）：與 guard 同姿勢 ⇒ 位置沿用 guard 的值（§6.5）。 */
+    guardgrimace: { fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guardgrimace.webp?v=82a69b87', top:9, bot:1527, fx:0.651, cm:150 },
+    runserious:      { src:'resources/si/sorana_si_runserious.webp',      top:8,  bot:1515, fx:0.509 },   // 正面朝鏡頭跑（ver -2114）
+    runserious_side: { src:'resources/si/sorana_si_runserious_side.webp', top:23, bot:1507, fx:0.774 },   // 側面奔跑（Ray：兩個都留）
     guardtalk:    { fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guardtalk.webp?v=415fd57d',     top:5,  bot:1529, fx:0.653, cm:160 },
     guardthink:{ fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guardthink.webp?v=eeda0c67', top:8,  bot:1529, fx:0.672, cm:150 },
     embarrass:   { fxShift:0.015, yShift:10, cm:150, src:'resources/si/sorana_si_embarrass.webp?v=4b2fec64',    top:5,  bot:1529, fx:0.551 },
@@ -1644,6 +1649,11 @@ export const ART = {
               think:     { src:'resources/si/npc/corvin_si_think.webp',     top:8, bot:1530, fx:0.450 },
               read:      { src:'resources/si/npc/corvin_si_read.webp',      top:6, bot:1532, fx:0.459 },
               lookaside: { src:'resources/si/npc/corvin_si_lookaside.webp', top:1, bot:1533, fx:0.501 },
+              /* ver -2114（美術 a904d66d，GPT 真 alpha）：帝都旅店對峙那一段。measure_si 量；三張受傷版無眼鏡、傷勢一致。 */
+              bow:         { src:'resources/si/npc/corvin_si_bow.webp',         top:15, bot:1522, fx:0.371 },
+              hurthold:    { src:'resources/si/npc/corvin_si_hurthold.webp',    top:7,  bot:1523, fx:0.419 },
+              hurttalk:    { src:'resources/si/npc/corvin_si_hurttalk.webp',    top:4,  bot:1504, fx:0.456 },
+              hurtcommand: { src:'resources/si/npc/corvin_si_hurtcommand.webp', top:6,  bot:1522, fx:0.469 },
             } },
   /* ══ 北方泊地的群眾（ver -741，Ray 交件 NPC_northport_Crowd）══
      碼頭道別那一幕的送行人群 —— 一張圖畫好幾個人，當一個「角色」上台。
@@ -1699,6 +1709,12 @@ export const ART = {
   } },
   /* ══ 返回帝都的路人母子（ver -2102，Ray 交件 capi_boy／capi_mom）══ measure_si 量；身高是估的（男孩 120、母親 160）。
      ⚠ 男孩那張上下都留白（47~1501），照量即可。 */
+  /* ══ 教廷衛士（ver -2114，Ray：「拔刀敵圖中選一個合適的，不要太寬的」）══ 取 `fight_hotel/guard_1`（旅店那一場、拔刀、寬高比 0.76），
+     原尺寸裁進 512×768（不放大，免得糊）。⚠ 圖裡人物只佔 83% 高 —— 那是留白，不是半身；top/bot 照量。身高是估的（178）。 */
+  capguard: { cm:178, eye:30, fx:0.446, top:120, bot:758,
+           side:'R', alt:null, base:'resources/si/npc/church_guard_si_draw.webp', expr:{
+    draw: { src:'resources/si/npc/church_guard_si_draw.webp', top:120, bot:758, fx:0.446 },
+  } },
   capiboy: { cm:120, eye:30, fx:0.352, top:47, bot:1501,
            side:'R', alt:null, base:'resources/si/npc/capi_boy.webp', expr:{
     front: { fxShift:0.1, cm:106, yShift:44, src:'resources/si/npc/capi_boy.webp', top:47, bot:1501, fx:0.352 },
