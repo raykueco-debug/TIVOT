@@ -574,7 +574,7 @@ function tuneRender(){
    +i18nT('<div class="tn-row"><span>站位</span><button data-act="sideL" class="')+(tuneSide==='L'?'on':'')+i18nT('">站左</button><button data-act="sideR" class="')+(tuneSide==='R'?'on':'')+i18nT('">站右</button></div>')
    /* 水平翻轉（ver -1898 改，Ray：「立繪編輯的翻轉只是轉那一拍的圖而已」）＝**這一拍**的 `flip:true`，
       按下去直接寫進腳本那一行（`/__line set`），不寫 speakers.js。工作室模式沒有「這一拍」，不給。 */
-   +(studioOn ? '' : (()=>{ const ln=edLine(); const on=!!(ln && ln.flip && beatFlipWho===c.id);
+   +(studioOn ? '' : (()=>{ const ln=edLine(); const on=!!(ln && ln.flip && beatFlip.has(c.id));
         return i18nT('<div class="tn-row"><span>這一拍翻轉</span><button data-act="flip" class="')+(on?'on':'')+'">'+(on?i18nT('翻轉中'):i18nT('未翻轉'))+'</button></div>'; })())
    +'<div class="tn-row"><button data-act="big" class="'+(tuneBig?'on':'')+i18nT('">步進×5</button>')
    +'<button data-act="undo"'+(live?'':' disabled')+i18nT('>還原</button>')
@@ -636,10 +636,10 @@ function tuneRender(){
     if(act==='big'){ tuneBig=!tuneBig; return tuneRender(); }
     if(act==='flip'){
       const ln=edLine(); if(!ln) return;
-      const on=!(ln.flip && beatFlipWho===cur.id), loc=edLocate();
+      const on=!(ln.flip && beatFlip.has(cur.id)), loc=edLocate();
       tuneMsg=i18nT('寫入中…'); tuneRender();
       edPost('__line', Object.assign({ op:'set', key:'flip', value:on||null }, loc)).then(r=>{
-        if(r.ok){ if(on){ ln.flip=true; beatFlipWho=cur.id; } else { delete ln.flip; beatFlipWho=null; } layout(); }
+        if(r.ok){ if(on){ ln.flip=true; beatFlip.add(cur.id); } else { delete ln.flip; beatFlip.delete(cur.id); } layout(); }
         tuneMsg=(r.ok?(on?i18nT('這一拍已翻轉：'):i18nT('這一拍已取消翻轉：')):i18nT('寫入失敗：'))+r.text; tuneRender();
       });
       return;
@@ -839,7 +839,7 @@ function studioExit(){
   tuneRender(); close();
   const cb=studioDone; studioDone=null; if(cb) cb();
 }
-let beatFlipWho = null;   // 這一拍要水平翻轉的人（renderLine 設；見那裡的說明）
+let beatFlip = new Set();   // 現在翻著的人（renderLine 設；見那裡的說明；ver -2147 起可以同時好幾個）
 /* 這一拍的眼睛標記（ver -1959）：`eyes`（half／tremble／tear，見 modules/eyefx.js 的 eyesOf）套在誰身上。
    同 flip：只管這一拍，下一拍沒寫就回到平常。`studioEyes`＝工作室模式（沒有「這一拍」）的預覽值。 */
 let beatEyesWho = null, beatEyes = null;
@@ -998,7 +998,7 @@ function layout(){
     /* 立繪調整工作室不做「換邊就翻」（ver -1822，Ray：「不要水平翻轉」）—— 調的是這張圖本身；
        `flip`（圖本來就畫反了）照舊，那是遊戲裡永遠的樣子。 */
     const mir0 = (!!a.flip) !== !!(!studioOn && a.mirror && a.side && o.side && o.side !== a.side);
-    const mir = mir0 !== !!(beatFlipWho && slot[o.side]===beatFlipWho);
+    const mir = mir0 !== !!(slot[o.side] && beatFlip.has(slot[o.side]));
     /* 翻轉不放動畫（ver -1898，Ray）：`mirrored` 與滑入共用同一條 transform 過場 —— 人已經站在台上時
        換翻轉會演成「轉身」。這一刻把過場關掉、強制排版一次再還回去。 */
     /* ⚠ ver -2131（Ray：「為什麼我只是翻轉立繪會跑出翻轉動畫？」）：翻轉時臉的錨點也換邊（fx → 1-fx），
@@ -3427,7 +3427,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2146';
+const KERB_V='?v=2147';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4191,8 +4191,9 @@ function renderLine(){
      直到**她自己的下一拍**沒寫 `flip` 才翻回來；她下台（兩個槽都不是她）也就收掉。
      「她自己的拍」＝說話者或 portrait.char 是她（旁白／主角空白框不算）。 */
   { const fc=(line.portrait && line.portrait.char) || line.speaker;
-    if(line.flip) beatFlipWho = fc;
-    else if(beatFlipWho && (fc===beatFlipWho || (slot.L!==beatFlipWho && slot.R!==beatFlipWho))) beatFlipWho = null; }
+    if(line.flip) beatFlip.add(fc); else beatFlip.delete(fc);
+    /* 每個人各記各的（ver -2147，Ray：士兵翻了、下一句賽西莉也翻，士兵又轉回去 —— 以前只記得一個人）。 */
+    for(const w of [...beatFlip]) if(w!==fc && slot.L!==w && slot.R!==w) beatFlip.delete(w); }
   beatEyesWho = line.eyes ? ((line.portrait && line.portrait.char) || line.speaker) : null;
   beatEyes = line.eyes || null;
   { const who=(line.portrait && line.portrait.char) || line.speaker;   // 她自己的這一拍才重新決定淚眼（見 heldTear）
@@ -5806,7 +5807,7 @@ export function holdSceneFade(onLift){
 export function sceneFadeOn(){ const f=$('storyFade'); return !!(f && f.classList.contains('on')); }
 
 export function clearCast(){
-  beatFlipWho = null; beatEyesWho = null; beatEyes = null;
+  beatFlip.clear(); beatEyesWho = null; beatEyes = null;
   for(const k in heldTear) delete heldTear[k];   // 整段收場：淚眼一起收（見 heldTear）
   stopTyping();   // ver -1127：清場＝這一段結束，框裡不可以還有字在跑（同 renderLine）
   storyMap(false);   // 這一段攤開的小地圖跟著收（ver -1397；只收自己開的那一次）
