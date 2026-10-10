@@ -1,3 +1,8 @@
+> ⭐⭐⭐⭐⭐ **【插圖 044・等程式端接】（10-10，Mac 美術）** —— `resources/illustration/044_cecilietorsten.webp`（1024×1536，無時段差分 → 腳本寫 `cg:'044_cecilietorsten', cgNoTime:true`）。
+> · 碎片 02 最後一格「戰鬥結束 → 插圖：主角與賽西莉 → 士兵：那就是……聖約騎士團！」那一拍。
+> · 內容：卡耶爾山谷谷底祭場、兩人背靠背、主角背對鏡頭單手持 Ganymede、賽西莉面向鏡頭冷峻俯視、低角度仰拍、暗沉的硝煙逆光。Ray 已驗收。
+> · 資產盤點：✔ 不欠（Ray 看過、可交件）。
+>
 > ⭐⭐⭐⭐⭐ **【帝國軍：士兵 7 張＋前線指揮官 6 張・等程式端接】（10-10，Mac 美術）** —— 碎片 02（卡耶爾山谷）。制服照 Ray 給的參考圖（深藍雙排扣、金滾邊、筒帽），帶戰地塵土；指揮官與士兵同制服、只差金色流蘇肩章＋軍刀。檔在 `resources/si/npc/`，**還沒寫進 `speakers.js`**。
 > · ⚠⚠ 程式端要決定的兩件：① `SOLDIER` 現在是 `art:null`（沒有立繪）→ 要新開一個 ART 鍵（建議 `imsoldier`）並把 `SOLDIER.art` 指過去；② 既有的 `commander`（`npc_commander_si_front`）是**白色制服**、對不上參考圖 → 建議 `COMMANDER.art` 改指新的 `imcommander`。
 > · 士兵 `imsoldier`（`cm:172`、`side:'R'`、`base` 用 front）：
