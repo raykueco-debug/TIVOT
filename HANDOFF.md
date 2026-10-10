@@ -19,7 +19,7 @@
 >   `laugh:{ src:'resources/si/npc/mage_si_laugh.webp', top:3, bot:1529, fx:0.515 },`（笑，側身仰頭）
 >   `threat:{ src:'resources/si/npc/mage_si_threat.webp', top:6, bot:1527, fx:0.462 },`（得請你們倒在這裡了，手上紫光）
 >   `leave:{ src:'resources/si/npc/mage_si_leave.webp', top:5, bot:1523, fx:0.715 },`（有緣再會吧，半轉身回頭兩指揮別）
-> · ✔ 補交 `hurtsmile:{ src:'resources/si/npc/mage_si_hurtsmile.webp', top:8, bot:1529, fx:0.360 },`（不愧是前第一後補，無血版 —— Ray：不要吐血）
+> · ✔ 補交 `hurtdown:{ src:'resources/si/npc/mage_si_hurtdown.webp', top:35, bot:1517, fx:0.351 },`（咕……／不愧是前第一後補 —— Ray：受創不要破衣、不要髒污、低頭瞇眼無笑容。⚠ 取代先前的 `hurtsmile`，那張已回收、不要接）
 >
 > ⭐⭐⭐⭐⭐ **【新立繪 7 張・等程式端接】（10-10，Mac 美術 session；commit a904d66d）** —— 檔案已在 `resources/si/`，**還沒寫進 `script/speakers.js`**（美術不碰程式，鐵律 11）。
 > · 索菈娜 `ART.sorana.expr` 加：
