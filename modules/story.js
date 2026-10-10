@@ -2163,7 +2163,11 @@ function cgFade(el, src){
   if(!el || !fade){ setImg(el, src); return false; }
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
   const my = ++cgSeq;                      // ver -979：這一次換圖的世代（見 cgSeq）
-  fade.classList.add('on'); fadeOwner='cg';
+  /* ⚠⚠ 黑幕本來就由腳本／讀取頁蓋著（`fadeOwner` 是 'beat'／'gate'）時，換圖**不接手**（ver -2144，Ray：「插畫跑完又是先回場景，
+     然後再放腳步聲走到次日」「跟之前娜塔莉戰後接碼頭一樣」）—— 接手的話換完圖就由這裡掀開，「fadeOut 之後 `cg:null`」那種收尾
+     會露出底下的場景，接著 town.forceGo 看到畫面是亮的就播腳步聲、再淡出一次。黑幕留給腳本自己的 `fadeIn` 掀。 */
+  const keepOwner = fade.classList.contains('on') && fadeOwner && fadeOwner!=='cg';
+  fade.classList.add('on'); if(!keepOwner) fadeOwner='cg';
   cgFinish=()=>{
     cgFinish=null;
     if(my!==cgSeq) return;                 // 已經被下一次換圖／收圖取代
@@ -3423,7 +3427,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2143';
+const KERB_V='?v=2144';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
