@@ -4076,7 +4076,7 @@ export const TOWNS = {
     /* 碎片 02 夢境期間放 Rituale Machina（ver -2162，Ray）。⚠ -2163（Ray：「只有 boss 戰切賽西莉 bgm，中間不換曲」）：
        `lock` ＝路上的戰鬥也不換曲；谷底 Boss 戰前那一拍插 `frag02_boss` 解鎖，Boss 戰照搭檔表放賽西莉的戰鬥曲。 */
     bgmWhen: [ { need:'frag02_go', until:'frag02_boss', bgm:'rituale', lock:true },
-               { need:'frag02_boss', until:'frag02_done', bgm:'rituale' } ],
+               { need:'frag02_boss', until:'frag02_done', bgm:'retroroman' } ],   // Boss 戰的曲子一路放到夢境結束（ver -2165，Ray；卡上 bgmAfter 同一首）
     wilderness: true,
     stepMin: 60,
     /* 小地圖（ver -2073，美術 09-24 交件；座標照抄 resources/map/_spots_canyon.json）。沒寫 mist ⇒ 預設有霧（走過才亮）。 */
