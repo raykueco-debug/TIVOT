@@ -1125,3 +1125,13 @@ when	from	to	reason
 20261010-234228	resources/_originals/illustration/044_cecilietorsten.png	_recycle/resources/_originals/illustration/044_cecilietorsten.png	044 第一版（太亮太鮮、右手與槍不對）
 20261011-000146	resources/ci/layers/anya_nightmarereload/TO_CODE.md	_recycle/resources/ci/layers/anya_nightmarereload/TO_CODE.md	ver -2137 已接（動畫 665f2c5b 的交接便條，內容記在 commit 與 HANDOFF）
 20261011-000146	resources/ci/layers/sorana_supply/TO_CODE.md	_recycle/resources/ci/layers/sorana_supply/TO_CODE.md	ver -2137 已接（動畫 665f2c5b 的交接便條，內容記在 commit 與 HANDOFF）
+20261011-160207	resources/enemy/canyon_swarm/crawler2	_recycle/resources/enemy/canyon_swarm/crawler2	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
+20261011-160207	resources/enemy/canyon_swarm/crawler3	_recycle/resources/enemy/canyon_swarm/crawler3	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
+20261011-160207	resources/enemy/canyon_swarm/bellmite2	_recycle/resources/enemy/canyon_swarm/bellmite2	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
+20261011-160207	resources/enemy/canyon_swarm/bellmite3	_recycle/resources/enemy/canyon_swarm/bellmite3	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
+20261011-160207	resources/enemy/canyon_swarm/chainhound2	_recycle/resources/enemy/canyon_swarm/chainhound2	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
+20261011-160207	resources/enemy/canyon_swarm/chainhound3	_recycle/resources/enemy/canyon_swarm/chainhound3	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
+20261011-160207	resources/enemy/canyon_swarm/lanternimp2	_recycle/resources/enemy/canyon_swarm/lanternimp2	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
+20261011-160207	resources/enemy/canyon_swarm/lanternimp3	_recycle/resources/enemy/canyon_swarm/lanternimp3	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
+20261011-160207	resources/enemy/canyon_swarm/bonecrow2	_recycle/resources/enemy/canyon_swarm/bonecrow2	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
+20261011-160207	resources/enemy/canyon_swarm/bonecrow3	_recycle/resources/enemy/canyon_swarm/bonecrow3	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
