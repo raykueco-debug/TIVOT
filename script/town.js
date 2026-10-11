@@ -4073,6 +4073,7 @@ export const TOWNS = {
     name: '卡耶爾山谷',
     entry: 'entry',
     bgm: 'lostplace',              // 荒廢之地（死谷）
+    bgmWhen: [ { need:'frag02_go', until:'frag02_done', bgm:'rituale' } ],   // 碎片 02 夢境期間放 Rituale Machina（ver -2162，Ray）；戰鬥照舊放賽西莉的戰鬥曲
     wilderness: true,
     stepMin: 60,
     /* 小地圖（ver -2073，美術 09-24 交件；座標照抄 resources/map/_spots_canyon.json）。沒寫 mist ⇒ 預設有霧（走過才亮）。 */
