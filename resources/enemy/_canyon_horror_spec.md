@@ -63,7 +63,7 @@ Ray（經程式 session 轉交）：「卡耶爾的怪跟背景色太近了，�
 
 | 檔名 | 中文 | 類 | 備註 |
 |---|---|---|---|
-| `mon_canyon_colossus_dark` | 崩岩巨像 | 大型 | 石拳朝鏡頭砸下，拳頭擋住頭 |
+| `mon_canyon_colossus_dark` | 崩岩巨像 | **Boss** | 石拳朝鏡頭砸下，拳頭擋住頭。Ray：「選一個當 Boss」→ 美術選它（谷底祭場的女神石像＝被侵蝕的聖像，題材對得上；最碩大、剪影最乾淨），不再進群戰 mix |
 | `mon_canyon_houndbeast` | 餓獸（**新增**） | 大型 | 原本是鎖鏈餓犬的定調稿，Ray 改列大型 |
 | `mon_canyon_hanged_dark` | 崖縫吊屍者 | 大型 | 倒掛，鐵鏈從上緣垂入（上緣切齊是造型） |
 | `mon_canyon_coffinbeetle_dark` | 石棺甲蟲 | 大型 | |
@@ -81,6 +81,7 @@ Ray（經程式 session 轉交）：「卡耶爾的怪跟背景色太近了，�
 | `mon_canyon_lanternimp_dark` | 提燈小鬼 | 群體 | ⚠ 提燈碰右緣 |
 | `mon_canyon_bonecrow_dark` | 骨鴉 | 群體 | |
 
+- Ray：「大小我可以在遊戲調，沒關係」—— 留白不足不必重出。
 - ⚠ 群體 4 隻（crawler／bellmite／lanternimp／bonecrow）GPT 沒照「四邊留 15%」，構圖偏滿 —— 程式端排群戰時要縮小；只有 `chainhound_dark` 是真的緊湊。
 - 原 PNG 在 `_originals/enemy/`（同名 `.png`）。
 - 資產盤點：✔ 不欠（17 張，Ray 點名的都交了；舊 16 張保留不回收，等程式端切換完再決定）。
