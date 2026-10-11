@@ -1,3 +1,9 @@
+> ⭐⭐⭐⭐⭐ **【守城戰港都「溫斯摩爾港」（暫名）・40 格背景】（10-11 夜，Mac 美術；Ray 睡前「開跑別問了」）** —— 規格與交件紀錄全在 `resources/map/_winsmoor_spec.md`。
+> · 拓樸 40 格（7×7 方格、海在南、中央廣場＝防守點、邊緣 20 個進入點、到廣場 3～5 步）＝`resources/map/_layout_winsmoor_siege.png`，Ray 已點頭。
+> · 背景：17 張大圖截成 40 格 `resources/background/winsmoor/ws_<節點>_day.webp`（只有日景），總覽 `resources/background/_winsmoor_nodes_sheet.jpg`。
+> · ⚠ 等 Ray 看：同一張大圖截出的格子很像（窗重疊 2/3）—— 要不要改每格一張。
+> · ⚠⚠ 程式端要接：新城資料（40 節點、出口照拓樸圖、`bg:'ws_<節點>'`、`noTime:true`）＋守城戰規則。
+>
 > ⭐⭐⭐⭐⭐ **【插圖 044・等程式端接】（10-10，Mac 美術）** —— `resources/illustration/044_cecilietorsten.webp`（1024×1536，無時段差分 → 腳本寫 `cg:'044_cecilietorsten', cgNoTime:true`）。
 > · 碎片 02 最後一格「戰鬥結束 → 插圖：主角與賽西莉 → 士兵：那就是……聖約騎士團！」那一拍。
 > · 內容：卡耶爾山谷谷底祭場、兩人背靠背、主角背對鏡頭單手持 Ganymede、賽西莉面向鏡頭冷峻俯視、低角度仰拍、暗沉的硝煙逆光。Ray 已驗收。
