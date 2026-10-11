@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2151';
+export const VERSION = 'ver 2026.09.22-2152';
 
 export const GAME_CONFIG = {
 
@@ -3918,7 +3918,7 @@ export const GAME_CONFIG = {
          ⚠ 安雅的戰鬥曲（`peritunematerial_battlefield4`）同尺量是 −5.89 LUFS
            → 0.637，與表上的 0.636 相符＝**她那一首本來就是對的**，不要跟著調。 */
       peritune_whirlwind:0.842,
-      peritune_deep_frost_calling:0.562, peritunematerial_retroroman_battle:0.623, peritunematerial_retroroman_battle2:0.586 /* ver -2119：audio_scan 比 Battle 大 0.53 dB ⇒ 照它的 0.623 等比換算 */, peritunematerial_world_op2:0.519,   // ver -1888 ebur128（−8.8／−9.7／−8.1 LUFS）
+      peritune_deep_frost_calling:0.562, peritunematerial_retroroman_battle:0.685 /* ver -2152 Ray：「賽西莉 bgm 響度提高 10%」（原 0.623） */, peritunematerial_retroroman_battle2:0.586 /* ver -2119：audio_scan 比 Battle 大 0.53 dB ⇒ 照它的 0.623 等比換算 */, peritunematerial_world_op2:0.571 /* ver -2152 同上（原 0.519） */,   // ver -1888 ebur128（−8.8／−9.7／−8.1 LUFS）
       se_soranacounter:1.47, se_soranacounterhit:1.04,   // 飛刀射出/命中（ver -839 實測；hit 峰值夾）
       se_glasscrack:1.94,   // 裂紋輻射（ver -839 實測 −19.5 LUFS）
       bgm_missionfailed:1.995, bgm_capital_day:1.213, bgm_lunaria:1.230,
