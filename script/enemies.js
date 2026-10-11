@@ -1285,6 +1285,7 @@ export const ENEMIES = {
       assaultEvery:[4,6], assault:{ count:1, gap:0 },
       kind:'harm', riseFx:0, hitSe:null, tier:'B', atype:'D', stageScale:1, stack:1, brBonus:0.5,
       image:'enemy_canyon_colossus', fit:{ mode:'contain', pos:'center bottom' },
+      fit:{ mode:'contain', pos:'50% 100%', shiftY:-0.03 },   // ver -1883 敵立繪編輯面板
       hp:440, attack:17, atkInterval:null, delayPenalty:{ seconds:6 },
       entrance:null, special:[], boardGrids:[9,9,9,16,16],
       hitFx:{ delay:'blunt', wrong:'blood', assault:'blunt' }, loot:[],
