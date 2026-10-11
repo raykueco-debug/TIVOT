@@ -302,6 +302,15 @@ def text_patch(req):
     if len(hits) > 1:
         hits = [h for h in hits if near(h, req.get('prev'), -NEAR, -1) and near(h, req.get('next'), 1, NEAR)]
     if len(hits) != 1:
+        # 退路（ver -2150，Ray 截圖：娜塔莉那段連續好幾句「……」，前後一拍也是「……」⇒ 六行篩不開）：
+        # 改走整拍定位 `_find_beat`（前後各 80 拍的序列比對），只在那一拍的範圍裡換字串。
+        if req.get('before') or req.get('after'):
+            rel2, text2, s0, e0, _beats_, _b = _find_beat(req, BEAT_FILES)
+            seg = text2[s0:e0 + 1]
+            if seg.count(lit) != 1:
+                raise ValueError('那一拍有 %d 處同樣的字串，不猜：%s' % (seg.count(lit), seg.strip()[:80]))
+            _write_text(rel2, text2[:s0] + seg.replace(lit, _js_str(new), 1) + text2[e0 + 1:])
+            return '%s:%d' % (rel2, _line_of(text2, s0) + 1)
         raise ValueError('找到 %d 行有這句（要剛好一行）：%s' % (len(hits), lit))
     rel, i, lines = hits[0]
     if lines[i].count(lit) != 1:
