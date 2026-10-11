@@ -1326,7 +1326,8 @@ function buildGroup(en){
        美術的人物層是去背的、不帶影子；量腳與擺位照舊走 `groundShadow.place`（鐵律 8）。
        影子全部排在人之前（DOM 序＝圖層）：後排的人也該站在前排的影子之上。 */
     /* ⚠ `group.shadow:false` ＝不畫（人站在掩體後面、腳被剪掉了：量到的「腳」是掩體頂端，影子會浮在木桶上）。 */
-    if(shadow){ const sh=document.createElement('div'); sh.className='ground-shadow eg-shadow';
+    /* `group.noShadow:[n…]` ＝這幾層不畫接地影子（飛在空中的，ver -2164：卡耶爾的骨鴉）。 */
+    if(shadow && !(G.noShadow && G.noShadow.includes(n))){ const sh=document.createElement('div'); sh.className='ground-shadow eg-shadow';
       g.insertBefore(sh, g.querySelector('.eg-guard')); im._sh=sh; }
     im.onload=()=>{ buildMask(im); if(im._sh) groundShadow.place(im, im._sh); done(); };
     im.onerror=done;

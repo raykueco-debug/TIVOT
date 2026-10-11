@@ -1136,3 +1136,15 @@ when	from	to	reason
 20261011-160207	resources/enemy/canyon_swarm/bonecrow2	_recycle/resources/enemy/canyon_swarm/bonecrow2	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
 20261011-160207	resources/enemy/canyon_swarm/bonecrow3	_recycle/resources/enemy/canyon_swarm/bonecrow3	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
 20261011-202613	resources/enemy/canyon_swarm/dark1	_recycle/resources/enemy/canyon_swarm/dark1	ver -2160 崩岩巨像改當 Boss，不再進群戰
+20261011-212351	resources/enemy/canyon_swarm/fly1	_recycle/resources/enemy/canyon_swarm/fly1	ver -2164 產生時誤出的 fly1（崩岩巨像已是 Boss，不進群戰）
+20261011-212411	resources/enemy/canyon_swarm/dark2	_recycle/resources/enemy/canyon_swarm/dark2	ver -2164 骨鴉抬高重排，改用 fly2..12
+20261011-212411	resources/enemy/canyon_swarm/dark3	_recycle/resources/enemy/canyon_swarm/dark3	ver -2164 骨鴉抬高重排，改用 fly2..12
+20261011-212411	resources/enemy/canyon_swarm/dark4	_recycle/resources/enemy/canyon_swarm/dark4	ver -2164 骨鴉抬高重排，改用 fly2..12
+20261011-212411	resources/enemy/canyon_swarm/dark5	_recycle/resources/enemy/canyon_swarm/dark5	ver -2164 骨鴉抬高重排，改用 fly2..12
+20261011-212411	resources/enemy/canyon_swarm/dark6	_recycle/resources/enemy/canyon_swarm/dark6	ver -2164 骨鴉抬高重排，改用 fly2..12
+20261011-212411	resources/enemy/canyon_swarm/dark7	_recycle/resources/enemy/canyon_swarm/dark7	ver -2164 骨鴉抬高重排，改用 fly2..12
+20261011-212411	resources/enemy/canyon_swarm/dark8	_recycle/resources/enemy/canyon_swarm/dark8	ver -2164 骨鴉抬高重排，改用 fly2..12
+20261011-212411	resources/enemy/canyon_swarm/dark9	_recycle/resources/enemy/canyon_swarm/dark9	ver -2164 骨鴉抬高重排，改用 fly2..12
+20261011-212411	resources/enemy/canyon_swarm/dark10	_recycle/resources/enemy/canyon_swarm/dark10	ver -2164 骨鴉抬高重排，改用 fly2..12
+20261011-212411	resources/enemy/canyon_swarm/dark11	_recycle/resources/enemy/canyon_swarm/dark11	ver -2164 骨鴉抬高重排，改用 fly2..12
+20261011-212411	resources/enemy/canyon_swarm/dark12	_recycle/resources/enemy/canyon_swarm/dark12	ver -2164 骨鴉抬高重排，改用 fly2..12
