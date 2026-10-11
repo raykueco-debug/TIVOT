@@ -10219,11 +10219,15 @@ export const TOWNS = {
     bgm: 'emeraldhill',      // ver -1765，Ray：「薇拉馮德用 PeriTune_Emerald_Hill_loop」
     mist: 0,                 // 大城不上霧（§6.5.4 ver -913）
     nodes: {
+      /* ══ 拓樸以帝都為原型（ver -2157，Ray：「以帝都為原型，分中央區、上街區、港町三大區，再向外拓樸其他格子，方向位置要一樣」）══
+         圓環廣場＝帝都的攝政王廣場（上＝中央區、左＝港町、右＝上街區）；
+         中央區＝帝都中心區（左市政廳、右大教堂）／港町＝帝都舊街區（左武器店、上碼頭、下公會）／上街區＝帝都上街區（上旅店、下雜貨、右餐飲街）。
+         往外多出來的格子：廣場下＝火車站、中央區上＝林蔭大道、碼頭左右上＝造船廠／燈塔、餐飲街三家店。 */
       harbor:    { bg:'vela_harbor', name:'薇拉馮德　碼頭',
-        exits:{ up:'portmarket', left:'shipyard', down:'lighthouse' },
+        exits:{ down:'portmarket', left:'shipyard', up:'lighthouse' },
         sail:{ dir:'right' } },
-      portmarket:{ bg:'vela_portmarket', name:'薇拉馮德　碼頭市集',
-        exits:{ right:'square', left:'gunstore', up:'guild', down:'harbor' } },
+      portmarket:{ bg:'vela_portmarket', name:'薇拉馮德　港町',
+        exits:{ right:'square', left:'gunstore', up:'harbor', down:'guild' } },
       gunstore:  { bg:'vela_firearm', name:'薇拉馮德　武器店', noTime:true, hours:[8,17], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',
         shop:'vf_gunstore', keeperWho:'GUNSMITH', kind:'gunstore',   // 商店：通用帝都版本、店主暫用帝都（ver -1831，卡在 script/shopcards.js）
         exits:{ back:'portmarket' } },
@@ -10237,7 +10241,7 @@ export const TOWNS = {
         exits:{ up:'midtown', left:'portmarket', right:'uptown', down:'station' } },
       station:   { bg:'vela_station', name:'薇拉馮德　中央火車站',
         exits:{ back:'square' } },
-      midtown:   { bg:'vela_midtown', name:'薇拉馮德　中心區',
+      midtown:   { bg:'vela_midtown', name:'薇拉馮德　中央區',
         exits:{ down:'square', left:'cityhall', right:'cathedral', up:'avenue' } },
       cityhall:  { bg:'vela_cityhall', name:'薇拉馮德　市政廳', hours:[8,17], closed:'窗口都熄了燈。市政廳五點就下班了。',
         exits:{ back:'midtown' } },
