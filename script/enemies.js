@@ -1152,54 +1152,54 @@ export const ENEMIES = {
     },
     /* ══ 卡耶爾山谷的群體小怪（ver -2138，Ray：「卡耶爾的怪一次會出兩到三隻，美術有交件一批，數值套北泊怪」）══
        美術第二批 5 隻（`mon_canyon_<名>`，一張一隻、群體用）由程式排成群戰圖層。⚠ ver -2153（Ray：「怪群最多放五個，大型的站後，同樣的怪不要放超過兩隻，混放，名字一概顯示禍魘大軍」）：
-       改成 8 組混編 `canyon_mix1..8`（3～5 隻、同種最多 2 隻；大型＝鎖鏈餓犬／爬行朝聖者／鐘殼蟲站後排，`resources/enemy/canyon_swarm/mix<n>/`）。舊註：原本是（
+       改成 11 組混編 `canyon_mix1..11`：每組後排一隻第一批的大型（碩大／堅甲 11 隻各一組）＋前面 2～4 隻第二批小型，總數 ≤5、同種 ≤2（`resources/enemy/canyon_swarm/mix<n>/`，guard_1＝大型）。⚠ 暫用：Ray 要 GPT 重生一組跟背景色拉開的怪，到件後換圖。舊註：原本是（
        右邊那隻水平翻轉、三隻時中間那隻在前排；只是排版，沒有重畫）。數值逐格照抄 `np_candletower`（北泊禍魘，C 級 220 血），
        **整群總血 220**（`group.hp`，打掉一份倒一隻）。⚠ 暫用：Ray 給正式數值卡之後整批改。 */
-    canyon_mix1: {   // 爬行朝聖者＋鎖鏈餓犬＋提燈小鬼（後排→前排）
+    canyon_mix1: {   // 崩岩巨像（後排大型）＋爬行朝聖者・爬行朝聖者・提燈小鬼
       name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       assaultEvery:[3,5], assault:{ count:1, gap:0 },
       kind:'harm', riseFx:0, hitSe:null, tier:'C', atype:'P', stageScale:1, stack:0,
-      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix1/', order:[1,2,3], hp:220 },
+      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix1/', order:[1,2,3,4], hp:220 },
       hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
       hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
     },
-    canyon_mix2: {   // 鐘殼蟲＋骨鴉＋骨鴉（後排→前排）
+    canyon_mix2: {   // 石棺甲蟲（後排大型）＋鐘殼蟲・鐘殼蟲・骨鴉
       name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       assaultEvery:[3,5], assault:{ count:1, gap:0 },
       kind:'harm', riseFx:0, hitSe:null, tier:'C', atype:'P', stageScale:1, stack:0,
-      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix2/', order:[1,2,3], hp:220 },
+      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix2/', order:[1,2,3,4], hp:220 },
       hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
       hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
     },
-    canyon_mix3: {   // 鎖鏈餓犬＋鎖鏈餓犬＋提燈小鬼＋骨鴉（後排→前排）
+    canyon_mix3: {   // 骸殼蟹（後排大型）＋鎖鏈餓犬・提燈小鬼
       name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       assaultEvery:[3,5], assault:{ count:1, gap:0 },
       kind:'harm', riseFx:0, hitSe:null, tier:'C', atype:'P', stageScale:1, stack:0,
-      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix3/', order:[1,2,3,4], hp:220 },
+      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix3/', order:[1,2,3], hp:220 },
       hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
       hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
     },
-    canyon_mix4: {   // 爬行朝聖者＋爬行朝聖者＋鐘殼蟲＋提燈小鬼（後排→前排）
+    canyon_mix4: {   // 朝聖者團塊（後排大型）＋爬行朝聖者・提燈小鬼・提燈小鬼・骨鴉
       name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       assaultEvery:[3,5], assault:{ count:1, gap:0 },
       kind:'harm', riseFx:0, hitSe:null, tier:'C', atype:'P', stageScale:1, stack:0,
-      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix4/', order:[1,2,3,4], hp:220 },
+      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix4/', order:[1,2,3,4,5], hp:220 },
       hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
       hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
     },
-    canyon_mix5: {   // 鎖鏈餓犬＋鐘殼蟲＋骨鴉＋提燈小鬼（後排→前排）
+    canyon_mix5: {   // 喪鐘蠕蟲（後排大型）＋鎖鏈餓犬・鎖鏈餓犬・骨鴉
       name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
@@ -1210,18 +1210,18 @@ export const ENEMIES = {
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
       hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
     },
-    canyon_mix6: {   // 爬行朝聖者＋鎖鏈餓犬＋鐘殼蟲＋提燈小鬼＋提燈小鬼（後排→前排）
+    canyon_mix6: {   // 聖面鷲（後排大型）＋骨鴉・骨鴉・爬行朝聖者
       name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       assaultEvery:[3,5], assault:{ count:1, gap:0 },
       kind:'harm', riseFx:0, hitSe:null, tier:'C', atype:'P', stageScale:1, stack:0,
-      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix6/', order:[1,2,3,4,5], hp:220 },
+      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix6/', order:[1,2,3,4], hp:220 },
       hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
       hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
     },
-    canyon_mix7: {   // 鎖鏈餓犬＋鎖鏈餓犬＋爬行朝聖者＋骨鴉＋骨鴉（後排→前排）
+    canyon_mix7: {   // 鐵衣苦修者（後排大型）＋鎖鏈餓犬・爬行朝聖者・提燈小鬼・鐘殼蟲
       name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
@@ -1232,13 +1232,46 @@ export const ENEMIES = {
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
       hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
     },
-    canyon_mix8: {   // 爬行朝聖者＋鐘殼蟲＋鐘殼蟲＋提燈小鬼＋骨鴉（後排→前排）
+    canyon_mix8: {   // 肋籠獸（後排大型）＋鐘殼蟲・鎖鏈餓犬
       name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       assaultEvery:[3,5], assault:{ count:1, gap:0 },
       kind:'harm', riseFx:0, hitSe:null, tier:'C', atype:'P', stageScale:1, stack:0,
-      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix8/', order:[1,2,3,4,5], hp:220 },
+      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix8/', order:[1,2,3], hp:220 },
+      hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
+      entrance:null, special:[], boardGrids:[9,9,9,9,16],
+      hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
+    },
+    canyon_mix9: {   // 高蹺細影（後排大型）＋提燈小鬼・爬行朝聖者・骨鴉
+      name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
+      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[3,5], assault:{ count:1, gap:0 },
+      kind:'harm', riseFx:0, hitSe:null, tier:'C', atype:'P', stageScale:1, stack:0,
+      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix9/', order:[1,2,3,4], hp:220 },
+      hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
+      entrance:null, special:[], boardGrids:[9,9,9,9,16],
+      hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
+    },
+    canyon_mix10: {   // 香爐蠍（後排大型）＋鐘殼蟲・鎖鏈餓犬・鎖鏈餓犬・提燈小鬼
+      name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
+      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[3,5], assault:{ count:1, gap:0 },
+      kind:'harm', riseFx:0, hitSe:null, tier:'C', atype:'P', stageScale:1, stack:0,
+      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix10/', order:[1,2,3,4,5], hp:220 },
+      hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
+      entrance:null, special:[], boardGrids:[9,9,9,9,16],
+      hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
+    },
+    canyon_mix11: {   // 崖縫吊屍者（後排大型）＋爬行朝聖者・骨鴉
+      name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
+      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[3,5], assault:{ count:1, gap:0 },
+      kind:'harm', riseFx:0, hitSe:null, tier:'C', atype:'P', stageScale:1, stack:0,
+      image:null, group:{ dir:'resources/enemy/canyon_swarm/mix11/', order:[1,2,3], hp:220 },
       hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
       hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],

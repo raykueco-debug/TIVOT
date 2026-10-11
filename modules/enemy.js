@@ -1283,7 +1283,7 @@ try{
        ③ 沒有落點（反擊、聖徒化之類）⇒ 最前排還站著的那一個
    ⚠ 倒下只有 `fallGuard()` 一支（Ray：「之後會有倒地動畫，記得預留」）——
      現在演「下沉淡出」（style.css 的 `.eg-down`）；換成逐格動畫時只改這一支。
-   ⚠ 命中的閃縮：`#enemyImg.hit + #enemyGroup` 跟著一起演（style.css），整組是同一個敵人。 */
+   ⚠ 命中的閃縮：只抖被打中的那一個（`groupHitFlash`，ver -2154；以前整組一起抖）。 */
 let groupCard=null, groupMasks={}, lastImpact=null, groupWaitT=0;
 const MASK_W=192;
 function groupEl(){
@@ -1410,6 +1410,15 @@ function pickVictim(alive){
   }
   return alive[alive.length-1];   // ③ 最前排
 }
+/* 群體敵人的受擊抖動（ver -2154，Ray：「震動只發生在受擊的怪身上，沒受擊的怪不要抖動」）——
+   以前是整組一起抖（`#enemyImg.hit + #enemyGroup`）。現在只抖這一發打到的那一個（`pickVictim`，同倒下的判定，鐵律 7）。 */
+export function groupHitFlash(){
+  if(!groupCard) return false;
+  const im=pickVictim(standingGuards()); if(!im) return true;
+  im.classList.remove('eg-hit'); void im.offsetWidth; im.classList.add('eg-hit');
+  clearTimeout(im._hitT); im._hitT=setTimeout(()=>im.classList.remove('eg-hit'), 180);
+  return true;
+}
 /* 倒下：**唯一的一支**（Ray：之後會有倒地動畫 —— 換的時候只改這裡）。 */
 function fallGuard(im){
   const F=im._fall;
@@ -1515,7 +1524,7 @@ export function loadEnemyPortrait(en){
   stopIdleLoop();                                                       // 上一隻的待機循環（ver -2068）
   buildGroup(en);   // 群體敵人的每一層（沒有 group 的怪＝清空，ver -2043）
   /* 群體敵人：`#enemyImg` 不放圖（背景在 #top 的背景層，人在 #enemyGroup）——
-     元素留著當命中閃縮的觸發點（`#enemyImg.hit + #enemyGroup`），但不畫。 */
+     元素留著（命中閃縮改由 `groupHitFlash` 只抖被打中的那一個，ver -2154），但不畫。 */
   if(en && en.group){ eImg.removeAttribute('src'); eImg.style.visibility='hidden'; applyEnemyFit(en.fit); return; }
   eImg.style.visibility='';
   shadowCard = en || null;

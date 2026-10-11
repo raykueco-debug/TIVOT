@@ -1131,6 +1131,7 @@ function floatDmg(txt,left,top,crit,extraClass){
 function enemyHitFlash(){
   const el=$('enemyImg'); if(!el) return;
   el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit');
+  enemy.groupHitFlash();   // 群體敵人：只抖被打中的那一個（ver -2154）
   clearTimeout(enemyHitFlash._t);
   enemyHitFlash._t=setTimeout(()=>el.classList.remove('hit'), 180);
 }

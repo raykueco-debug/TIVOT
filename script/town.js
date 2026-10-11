@@ -1436,7 +1436,7 @@ const FRAG02_OPEN = [
   ims('worry','應該中午就該到了才對……'),
   { speaker:'NARRATION', text:'', se:'se_earthquake', shake:true, auto:900 },      // 轟擊聲
   { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:1100 },          // 咆嘯
-  ims('alarm','南門被攻破了！'),
+  ims('alarm','南門！進來了！'),
   csx('nolook','閃開。'),
   cmd('shock','！！'),
   { battle:'frag02_a', onLose:'frag02_lose' },
@@ -4079,9 +4079,9 @@ export const TOWNS = {
                   bridge:[0.6157,0.4133], altar:[0.1871,0.1723] } },
     /* 隨機遇怪（ver -2138，Ray：「卡耶爾的怪一次會出兩到三隻」）：山谷的群體小怪 5 種 × 2／3 隻（config 的 canyon_w_*）。
        入口與谷底祭場是安全點（`rest`）不刷。 */
-    wildSpawn: { rate:0.5, pool:[ { battle:'canyon_w_mix1' }, { battle:'canyon_w_mix2' }, { battle:'canyon_w_mix3' }, { battle:'canyon_w_mix4' }, { battle:'canyon_w_mix5' }, { battle:'canyon_w_mix6' }, { battle:'canyon_w_mix7' }, { battle:'canyon_w_mix8' } ] },
+    wildSpawn: { rate:0.5, pool:[ { battle:'canyon_w_mix1' }, { battle:'canyon_w_mix2' }, { battle:'canyon_w_mix3' }, { battle:'canyon_w_mix4' }, { battle:'canyon_w_mix5' }, { battle:'canyon_w_mix6' }, { battle:'canyon_w_mix7' }, { battle:'canyon_w_mix8' }, { battle:'canyon_w_mix9' }, { battle:'canyon_w_mix10' }, { battle:'canyon_w_mix11' } ] },
     /* 碎片 02 期間（ver -2141，Ray：「每一格都要有戰鬥」）：每一格必出怪（入口／谷底祭場照舊不刷），而且換用賽西莉當搭檔的那一池。 */
-    wildForce: { need:'frag02_go', until:'frag02_done', pool:[ { battle:'frag02_w_mix1' }, { battle:'frag02_w_mix2' }, { battle:'frag02_w_mix3' }, { battle:'frag02_w_mix4' }, { battle:'frag02_w_mix5' }, { battle:'frag02_w_mix6' }, { battle:'frag02_w_mix7' }, { battle:'frag02_w_mix8' } ] },
+    wildForce: { need:'frag02_go', until:'frag02_done', pool:[ { battle:'frag02_w_mix1' }, { battle:'frag02_w_mix2' }, { battle:'frag02_w_mix3' }, { battle:'frag02_w_mix4' }, { battle:'frag02_w_mix5' }, { battle:'frag02_w_mix6' }, { battle:'frag02_w_mix7' }, { battle:'frag02_w_mix8' }, { battle:'frag02_w_mix9' }, { battle:'frag02_w_mix10' }, { battle:'frag02_w_mix11' } ] },
     /* 碎片 02 期間遇怪打輸＝這一段不演了，直接回北泊（ver -2138，main 的戰敗分流讀 `town.loseGoto()`）。 */
     noGear: { need:'frag02_go', until:'frag02_done', text:'……夢裡沒有整備的餘裕。' },   // 夢境不可入整備頁（ver -2141）
     loseGoto: { need:'frag02_go', until:'frag02_done', to:'@northport:inn', flags:['frag02_done','np_day3'], clockToNext:8, stage:3 },   // 同 FRAG02_WAKE

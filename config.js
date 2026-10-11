@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2153';
+export const VERSION = 'ver 2026.09.22-2154';
 
 export const GAME_CONFIG = {
 
@@ -2802,9 +2802,9 @@ export const GAME_CONFIG = {
     /* ══ 碎片 02・卡耶爾山谷（ver -2134，Ray 的「卡耶爾山谷_碎片02_台詞差分」）══ 北方泊地那一夜之後的回憶：主角與賽西莉。
        ⚠ 暫用：卡耶爾山谷的 16 隻怪還沒有數值卡，先借北方泊地的禍魘（np_harm 那一池）→ ver -2138 改用山谷的群體小怪（數值套北泊禍魘，enemies.js 的 canyon_*）。搭檔賽西莉；
          回憶不評（dream）；打輸＝跳到收尾直接回北泊（allowLose＋腳本的 onLose，ver -2136）。 */
-    frag02_a: { enemy:'canyon_mix6',   partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild' },   // ver -2153：禍魘大軍 mix6（5 隻）
-    frag02_b: { enemy:'canyon_mix7', partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild', sessionEnd:true },   // ver -2139：開場戰＋路上遇怪＋這一場同一局，打完這一隻才結算   // ver -2153：禍魘大軍 mix7（5 隻）
-    /* 卡耶爾山谷的隨機遇怪（ver -2138；-2153 改成 8 組混編「禍魘大軍」canyon_mix1..8，3～5 隻）。同一局（`canyon_wild`），踏進安全點（入口／谷底祭場）才結算。 */
+    frag02_a: { enemy:'canyon_mix7',   partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild' },   // ver -2154：禍魘大軍 mix7（鐵衣苦修者＋4）
+    frag02_b: { enemy:'canyon_mix1', partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild', sessionEnd:true },   // ver -2139：開場戰＋路上遇怪＋這一場同一局，打完這一隻才結算   // ver -2154：禍魘大軍 mix1（崩岩巨像＋3）
+    /* 卡耶爾山谷的隨機遇怪（ver -2138；-2153 改成混編「禍魘大軍」canyon_mix1..11，3～5 隻、後排一隻大型）。同一局（`canyon_wild`），踏進安全點（入口／谷底祭場）才結算。 */
     /* 碎片 02 夢裡的路上遇怪（ver -2141，Ray：「風蝕迴廊也要放戰鬥，每一格都要有戰鬥」）：同一批群怪，但搭檔是賽西莉、夢境戰不評。城上 `wildForce` 換用這一池。 */
     canyon_w_mix1: { enemy:'canyon_mix1', session:'canyon_wild' },
     canyon_w_mix2: { enemy:'canyon_mix2', session:'canyon_wild' },
@@ -2814,6 +2814,9 @@ export const GAME_CONFIG = {
     canyon_w_mix6: { enemy:'canyon_mix6', session:'canyon_wild' },
     canyon_w_mix7: { enemy:'canyon_mix7', session:'canyon_wild' },
     canyon_w_mix8: { enemy:'canyon_mix8', session:'canyon_wild' },
+    canyon_w_mix9: { enemy:'canyon_mix9', session:'canyon_wild' },
+    canyon_w_mix10: { enemy:'canyon_mix10', session:'canyon_wild' },
+    canyon_w_mix11: { enemy:'canyon_mix11', session:'canyon_wild' },
     frag02_w_mix1: { enemy:'canyon_mix1', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
     frag02_w_mix2: { enemy:'canyon_mix2', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
     frag02_w_mix3: { enemy:'canyon_mix3', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
@@ -2822,7 +2825,10 @@ export const GAME_CONFIG = {
     frag02_w_mix6: { enemy:'canyon_mix6', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
     frag02_w_mix7: { enemy:'canyon_mix7', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
     frag02_w_mix8: { enemy:'canyon_mix8', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
-    frag02_mid: { enemy:'canyon_mix8', partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild' },   // 風蝕迴廊那一場（ver -2141）
+    frag02_w_mix9: { enemy:'canyon_mix9', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_mix10: { enemy:'canyon_mix10', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_mix11: { enemy:'canyon_mix11', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_mid: { enemy:'canyon_mix10', partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild' },   // 風蝕迴廊那一場（ver -2141）
     range_trainee: { enemy:'dart_target', record:'range', noReward:true, noEval:true,
                      timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
                                   prizeSec:30, prize:'Shotgun_Dragon' } },
@@ -5871,6 +5877,7 @@ export const ASSET_VER = {
   'east_university_day': 'caaf76f4',
   'east_university_dusk': '7d82df44',
   'east_university_night': 'a4396469',
+  'guard_5': '15c6e7f1',
   'guildcounterca_si_closed': '80cc27b6',
   'guildcounterca_si_half': 'f341b6bb',
   'kidd_ci': 'a4cda953',
