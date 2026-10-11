@@ -1152,7 +1152,7 @@ export const ENEMIES = {
     },
     /* ══ 卡耶爾山谷的群體小怪（ver -2138，Ray：「卡耶爾的怪一次會出兩到三隻，美術有交件一批，數值套北泊怪」）══
        美術第二批 5 隻（`mon_canyon_<名>`，一張一隻、群體用）由程式排成群戰圖層。⚠ ver -2153（Ray：「怪群最多放五個，大型的站後，同樣的怪不要放超過兩隻，混放，名字一概顯示禍魘大軍」）：
-       改成混編 `canyon_mix2..12`：每組後排一隻大型（11 種各一組；崩岩巨像 -2160 起獨立當谷底 Boss `canyon_colossus`，mix1 拿掉）＋前面 2～4 隻第二批小型，總數 ≤5、同種 ≤2（`resources/enemy/canyon_swarm/dark<n>/`，guard_1＝大型；資料夾改名是為了避開同名覆蓋的快取）。ver -2158 起圖層全部換成美術的深色重生版（`mon_canyon_<名>_dark`＋新增的 `mon_canyon_houndbeast` 餓獸）。舊註：原本是（
+       改成混編 `canyon_mix2..12`：每組後排一隻大型（11 種各一組；崩岩巨像 -2160 起獨立當谷底 Boss `canyon_colossus`，mix1 拿掉）＋前面 2～4 隻第二批小型，總數 ≤5、同種 ≤2（`resources/enemy/canyon_swarm/fly<n>/`，guard_1＝大型；ver -2164 骨鴉（飛行）抬到畫面偏上、不畫影子 `noShadow`；資料夾每次改名是為了避開同名覆蓋的快取）。ver -2158 起圖層全部換成美術的深色重生版（`mon_canyon_<名>_dark`＋新增的 `mon_canyon_houndbeast` 餓獸）。舊註：原本是（
        右邊那隻水平翻轉、三隻時中間那隻在前排；只是排版，沒有重畫）。數值逐格照抄 `np_candletower`（北泊禍魘，C 級 220 血），
        **整群總血 220**（`group.hp`，打掉一份倒一隻）。⚠ 暫用：Ray 給正式數值卡之後整批改。 */
     canyon_mix2: {   // 石棺甲蟲（後排大型）＋鐘殼蟲・鐘殼蟲・骨鴉
