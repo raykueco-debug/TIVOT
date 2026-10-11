@@ -1152,20 +1152,9 @@ export const ENEMIES = {
     },
     /* ══ 卡耶爾山谷的群體小怪（ver -2138，Ray：「卡耶爾的怪一次會出兩到三隻，美術有交件一批，數值套北泊怪」）══
        美術第二批 5 隻（`mon_canyon_<名>`，一張一隻、群體用）由程式排成群戰圖層。⚠ ver -2153（Ray：「怪群最多放五個，大型的站後，同樣的怪不要放超過兩隻，混放，名字一概顯示禍魘大軍」）：
-       改成 12 組混編 `canyon_mix1..12`：每組後排一隻大型（12 種各一組）＋前面 2～4 隻第二批小型，總數 ≤5、同種 ≤2（`resources/enemy/canyon_swarm/dark<n>/`，guard_1＝大型；資料夾改名是為了避開同名覆蓋的快取）。ver -2158 起圖層全部換成美術的深色重生版（`mon_canyon_<名>_dark`＋新增的 `mon_canyon_houndbeast` 餓獸）。舊註：原本是（
+       改成混編 `canyon_mix2..12`：每組後排一隻大型（11 種各一組；崩岩巨像 -2160 起獨立當谷底 Boss `canyon_colossus`，mix1 拿掉）＋前面 2～4 隻第二批小型，總數 ≤5、同種 ≤2（`resources/enemy/canyon_swarm/dark<n>/`，guard_1＝大型；資料夾改名是為了避開同名覆蓋的快取）。ver -2158 起圖層全部換成美術的深色重生版（`mon_canyon_<名>_dark`＋新增的 `mon_canyon_houndbeast` 餓獸）。舊註：原本是（
        右邊那隻水平翻轉、三隻時中間那隻在前排；只是排版，沒有重畫）。數值逐格照抄 `np_candletower`（北泊禍魘，C 級 220 血），
        **整群總血 220**（`group.hp`，打掉一份倒一隻）。⚠ 暫用：Ray 給正式數值卡之後整批改。 */
-    canyon_mix1: {   // 崩岩巨像（後排大型）＋爬行朝聖者・爬行朝聖者・提燈小鬼
-      name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
-      weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
-      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
-      assaultEvery:[3,5], assault:{ count:1, gap:0 },
-      kind:'harm', riseFx:0, hitSe:null, tier:'C', atype:'P', stageScale:1, stack:0,
-      image:null, group:{ dir:'resources/enemy/canyon_swarm/dark1/', order:[1,2,3,4], hp:220 },
-      hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
-      entrance:null, special:[], boardGrids:[9,9,9,9,16],
-      hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
-    },
     canyon_mix2: {   // 石棺甲蟲（後排大型）＋鐘殼蟲・鐘殼蟲・骨鴉
       name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
@@ -1286,6 +1275,19 @@ export const ENEMIES = {
       hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
       hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
+    },
+    /* ══ 卡耶爾山谷的 Boss：崩岩巨像（ver -2160，美術轉 Ray：「從深色版選一隻當 Boss → mon_canyon_colossus_dark，谷底祭場那一場用它，它就不再放進群戰」）══
+       ⚠ 數值暫抄北泊教堂 Boss（`np_boss`，B 級 440 血）—— 敵人卡與數值等 Ray；大小他在遊戲裡調（敵人編輯面板的 fit）。 */
+    canyon_colossus: {
+      name:'崩岩巨像', story:1, counterStagger:1, boss:1, Ganymede:0,
+      weaponMod:{ '重機槍':[-0.1,0], '霰彈槍':[-0.5,0], '萊福槍':[0,0] },
+      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[4,6], assault:{ count:1, gap:0 },
+      kind:'harm', riseFx:0, hitSe:null, tier:'B', atype:'D', stageScale:1, stack:1, brBonus:0.5,
+      image:'enemy_canyon_colossus', fit:{ mode:'contain', pos:'center bottom' },
+      hp:440, attack:17, atkInterval:null, delayPenalty:{ seconds:6 },
+      entrance:null, special:[], boardGrids:[9,9,9,16,16],
+      hitFx:{ delay:'blunt', wrong:'blood', assault:'blunt' }, loot:[],
     },
     guild_hunter: {
       name:'賞金獵人',

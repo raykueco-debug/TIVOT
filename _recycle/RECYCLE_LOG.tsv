@@ -1135,3 +1135,4 @@ when	from	to	reason
 20261011-160207	resources/enemy/canyon_swarm/lanternimp3	_recycle/resources/enemy/canyon_swarm/lanternimp3	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
 20261011-160207	resources/enemy/canyon_swarm/bonecrow2	_recycle/resources/enemy/canyon_swarm/bonecrow2	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
 20261011-160207	resources/enemy/canyon_swarm/bonecrow3	_recycle/resources/enemy/canyon_swarm/bonecrow3	ver -2153 卡耶爾群怪改混編 mix1..8，單種 2／3 隻的圖層不用了
+20261011-202613	resources/enemy/canyon_swarm/dark1	_recycle/resources/enemy/canyon_swarm/dark1	ver -2160 崩岩巨像改當 Boss，不再進群戰
