@@ -1509,13 +1509,15 @@ export function groupHp(en){ return (en && en.group) ? (en.group.hp || en.group.
 export function loadEnemyPortrait(en){
   const eImg = $('enemyImg');
   if(!eImg) return;
+  /* 上一隻留下的動畫層先收掉（ver -2149，Ray：「帝都第一戰有米夏的聖徒化殘留」）—— 以前寫在群體敵人的 return 之後，
+     於是「米夏 NI 待機循環 → 下一場是群體敵人（帝都衛士）」那一層就一直留在 #top 上。 */
+  document.querySelectorAll('#top .en-fall').forEach(e=>e.remove());   // 上一隻的倒地動畫（ver -2065）
+  stopIdleLoop();                                                       // 上一隻的待機循環（ver -2068）
   buildGroup(en);   // 群體敵人的每一層（沒有 group 的怪＝清空，ver -2043）
   /* 群體敵人：`#enemyImg` 不放圖（背景在 #top 的背景層，人在 #enemyGroup）——
      元素留著當命中閃縮的觸發點（`#enemyImg.hit + #enemyGroup`），但不畫。 */
   if(en && en.group){ eImg.removeAttribute('src'); eImg.style.visibility='hidden'; applyEnemyFit(en.fit); return; }
   eImg.style.visibility='';
-  document.querySelectorAll('#top .en-fall').forEach(e=>e.remove());   // 上一隻的倒地動畫（ver -2065）
-  stopIdleLoop();                                                       // 上一隻的待機循環（ver -2068）
   shadowCard = en || null;
   groundShadow.hide($('enemyShadow'));     // 換怪：新的腳量好之前不留上一隻的影子
   clearTimeout(riseT); riseT=0;
