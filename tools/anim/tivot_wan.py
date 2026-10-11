@@ -226,7 +226,7 @@ def process(src, args, out_root):
         paths, secs = run_wan(inp, f'tivotwan/{name}_{seed}', length, pos, seed, mode)
     if args.suffix: name += args.suffix; od = os.path.join(out_root, name); os.makedirs(od, exist_ok=True)
     arrs = [np.asarray(Image.open(p).convert('RGB')).astype(np.float32) for p in paths]
-    if mode != 'ci': arrs = deflicker(arrs)   # 去閃以綠底遮罩為準，整張插圖不適用
+    if mode != 'ci' and fg_mask(arrs[0]).sum() > 500: arrs = deflicker(arrs)   # 去閃以綠底遮罩為準，整張插圖不適用；第 0 格沒有人物（空畫面起手）就不做，否則基準是 NaN、整支變白剪影
     idx = pick(len(arrs), mode, frames, fps)
     files, tot = [], 0
     for j, i in enumerate(idx):

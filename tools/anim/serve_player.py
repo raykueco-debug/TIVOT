@@ -4,6 +4,7 @@ import json, os, shutil, subprocess, sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 HERE = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.join(HERE, 'out')
 PORT = 8130
+RES = os.path.join(os.path.dirname(os.path.dirname(HERE)), 'TIVOT', 'resources')   # /gameres/ → 遊戲 resources（唯讀）
 GAME = os.path.join(os.path.dirname(os.path.dirname(HERE)), 'TIVOT', 'resources', 'ci', 'anim')   # /gameanim/ → 遊戲交件
 
 class H(SimpleHTTPRequestHandler):
@@ -12,6 +13,8 @@ class H(SimpleHTTPRequestHandler):
     def translate_path(self, path):
         from urllib.parse import unquote, urlsplit
         p = unquote(urlsplit(path).path)
+        if p.startswith('/gameres/'):
+            return os.path.join(RES, *[x for x in p[len('/gameres/'):].split('/') if x not in ('', '.', '..')])
         if p.startswith('/gameanim/'):
             return os.path.join(GAME, *[x for x in p[len('/gameanim/'):].split('/') if x not in ('', '.', '..')])
         return super().translate_path(path)
@@ -26,7 +29,8 @@ class H(SimpleHTTPRequestHandler):
         try:
             req = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
             d = req['dir']
-            src = os.path.join(GAME, d[len('gameanim/'):]) if d.startswith('gameanim/') else os.path.normpath(os.path.join(OUT, d))
+            src = (os.path.join(RES, d[len('gameres/'):]) if d.startswith('gameres/') else
+                   os.path.join(GAME, d[len('gameanim/'):]) if d.startswith('gameanim/') else os.path.normpath(os.path.join(OUT, d)))
             miss = [f for f in req['frames'] if not os.path.exists(os.path.join(src, f))]
             if miss: raise FileNotFoundError(f'來源資料夾已不存在或被移走（{req["dir"]}，缺 {len(miss)} 格）—— 請重新整理播放器')
             name = ''.join(c for c in req['name'] if c.isalnum() or c in '_-.') or 'export'
@@ -38,7 +42,7 @@ class H(SimpleHTTPRequestHandler):
             os.makedirs(dst)
             for j, f in enumerate(req['frames']):
                 shutil.copy(os.path.join(src, f), os.path.join(dst, f'frame_{j:02d}.webp'))
-            json.dump({'from': req['dir'], 'kept_index': req['keep'], 'fps': req.get('fps')},
+            json.dump({'from': req['dir'], 'kept_index': req['keep'], 'holds': req.get('holds'), 'fps': req.get('fps')},
                       open(os.path.join(dst, 'export.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
             sys.path.insert(0, HERE); import export_preview; export_preview.write(dst, req.get('fps') or 16)
             body = json.dumps({'ok': True, 'path': dst, 'count': len(req['frames'])}, ensure_ascii=False).encode()

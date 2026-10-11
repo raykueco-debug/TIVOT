@@ -82,10 +82,19 @@ def graph(ctrl, mask, length, pos, seed, prefix, a):
     g['12'] = {'class_type': 'WanVaceToVideo', 'inputs': {'positive': ['8', 0], 'negative': ['9', 0], 'vae': ['10', 0],
                'width': tw.W, 'height': tw.H, 'length': length, 'batch_size': 1, 'strength': a.strength,
                'control_video': [cv, 0], 'control_masks': [mk, 0]}}
-    half = a.steps // 2
-    g['13'] = {'class_type': 'KSamplerAdvanced', 'inputs': {'model': ['5', 0], 'add_noise': 'enable', 'noise_seed': seed, 'steps': a.steps, 'cfg': a.cfg,
-               'sampler_name': 'euler', 'scheduler': 'simple', 'positive': ['12', 0], 'negative': ['12', 1], 'latent_image': ['12', 2],
-               'start_at_step': 0, 'end_at_step': half, 'return_with_leftover_noise': 'enable'}}
+    neg_id = '9'
+    if a.neg_extra:   # 追加負面詞（只有 cfg>1 的那幾步看得到）
+        g['19'] = {'class_type': 'CLIPTextEncode', 'inputs': {'clip': ['7', 0], 'text': tw.NEG + '，' + a.neg_extra}}; neg_id = '19'
+        g['12']['inputs']['negative'] = [neg_id, 0]
+    half = a.hi_end if a.hi_end else a.steps // 2
+    if a.pre:   # ⭐ 方案 2：高噪段前 pre 步不掛加速 LoRA、cfg=pre_cfg ⇒ 負面詞真的生效（cfg=1 時負面詞完全無效）
+        g['30'] = {'class_type': 'ModelSamplingSD3', 'inputs': {'model': ['1', 0], 'shift': a.shift}}
+        g['31'] = {'class_type': 'KSamplerAdvanced', 'inputs': {'model': ['30', 0], 'add_noise': 'enable', 'noise_seed': seed, 'steps': a.steps, 'cfg': a.pre_cfg,
+                   'sampler_name': 'euler', 'scheduler': 'simple', 'positive': ['12', 0], 'negative': ['12', 1], 'latent_image': ['12', 2],
+                   'start_at_step': 0, 'end_at_step': a.pre, 'return_with_leftover_noise': 'enable'}}
+    g['13'] = {'class_type': 'KSamplerAdvanced', 'inputs': {'model': ['5', 0], 'add_noise': 'disable' if a.pre else 'enable', 'noise_seed': seed, 'steps': a.steps, 'cfg': a.cfg,
+               'sampler_name': 'euler', 'scheduler': 'simple', 'positive': ['12', 0], 'negative': ['12', 1], 'latent_image': ['31', 0] if a.pre else ['12', 2],
+               'start_at_step': a.pre, 'end_at_step': half, 'return_with_leftover_noise': 'enable'}}
     g['14'] = {'class_type': 'KSamplerAdvanced', 'inputs': {'model': ['6', 0], 'add_noise': 'disable', 'noise_seed': seed, 'steps': a.steps, 'cfg': a.cfg,
                'sampler_name': 'euler', 'scheduler': 'simple', 'positive': ['12', 0], 'negative': ['12', 1], 'latent_image': ['13', 0],
                'start_at_step': half, 'end_at_step': 10000, 'return_with_leftover_noise': 'disable'}}
@@ -120,6 +129,10 @@ def main():
     ap.add_argument('--shift', type=float, default=5.0)
     ap.add_argument('--strength', type=float, default=1.0)
     ap.add_argument('--lora-high'); ap.add_argument('--lora-low')
+    ap.add_argument('--pre', type=int, default=0, help='高噪段前幾步不掛 LoRA、用 --pre-cfg（讓負面詞生效）')
+    ap.add_argument('--pre-cfg', type=float, default=3.0)
+    ap.add_argument('--hi-end', type=int, default=0, help='高噪段結束在第幾步（預設 steps/2）')
+    ap.add_argument('--neg-extra', default='', help='追加負面詞')
     ap.add_argument('--out', default=os.path.join(HERE, 'out', 'vace'))
     a = ap.parse_args()
     if (a.length - 1) % 4: sys.exit('length 必須 4n+1')

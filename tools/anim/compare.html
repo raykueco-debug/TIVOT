@@ -1,0 +1,44 @@
+<!doctype html><meta charset="utf-8"><title>並排比較</title>
+<style>
+body{margin:0;background:#111;color:#ccc;font:14px sans-serif}
+#bar{position:sticky;top:0;background:#1e1d25;padding:8px 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;z-index:2}
+button{padding:5px 12px;font-size:14px}#n{font:bold 15px monospace;color:#fc6}
+#grid{display:flex;gap:8px;padding:10px;flex-wrap:wrap}
+.cell{background:#000;border:2px solid #333;cursor:pointer}.cell.pick{border-color:#fc6}
+.cell div{font:13px monospace;color:#fc6;padding:3px 6px}
+.vp{overflow:hidden;position:relative}
+.vp img{display:block;transform-origin:0 0}
+</style>
+<div id=bar>
+ <button id=pv>◀</button><button id=pp>▶ 播放</button><button id=nx>▶|</button>
+ <label><input type=checkbox id=loop checked> 循環</label>
+ 倍速 <input id=sp type=range min=0.1 max=2 step=0.05 value=1 style="width:140px"> <b id=spv>1.00×</b>（16fps）
+ 放大 <input id=zm type=range min=1 max=4 step=0.25 value=1 style="width:120px"> <b id=zmv>1×</b>
+ <span id=n></span>
+ <small>空白＝播放/暫停・← →＝逐格・放大後在任一格上拖曳＝移動視窗（全部同步）・點一格＝標記你選的</small>
+</div>
+<div id=grid></div>
+<script>
+// 網址參數：?d=資料夾1,資料夾2…&l=標籤1,標籤2…&w=寬
+const q=new URLSearchParams(location.search), D=(q.get('d')||'').split(',').filter(Boolean), L=(q.get('l')||'').split(','), CW=+(q.get('w')||300), CH=CW*1.5;
+let F=[], i=0, t=null, zx=0, zy=0;
+const $=x=>document.getElementById(x);
+async function list(d){const r=await fetch(d+'/');const h=await r.text();return [...h.matchAll(/href="(frame_[^"]+\.webp)"/g)].map(m=>m[1]).sort()}
+(async()=>{
+ F=await Promise.all(D.map(list)); const N=Math.min(...F.map(f=>f.length));
+ D.forEach((d,k)=>{const c=document.createElement('div');c.className='cell';c.innerHTML=`<div>${L[k]||d}</div><div class=vp style="width:${CW}px;height:${CH}px"><img id=im${k} style="width:${CW}px"></div>`;
+  c.onclick=e=>{if(e.target.tagName!=='IMG'){} c.classList.toggle('pick')};$('grid').appendChild(c);F[k].forEach(f=>{new Image().src=d+'/'+f})});
+ window.N=N; show();
+ let drag=null;document.querySelectorAll('.vp').forEach(v=>{v.onpointerdown=e=>{drag=[e.clientX,e.clientY,zx,zy];v.setPointerCapture(e.pointerId)};
+  v.onpointermove=e=>{if(!drag)return;zx=drag[2]+(e.clientX-drag[0]);zy=drag[3]+(e.clientY-drag[1]);show()};v.onpointerup=()=>drag=null});
+})();
+function show(){const z=+$('zm').value;D.forEach((d,k)=>{const im=$('im'+k);im.src=d+'/'+F[k][Math.min(i,F[k].length-1)];im.style.transform=`translate(${zx}px,${zy}px) scale(${z})`});
+ $('n').textContent=`第 ${i} / ${N-1} 格`}
+function stop(){clearInterval(t);t=null;$('pp').textContent='▶ 播放'}
+function play(){stop();$('pp').textContent='⏸ 暫停';t=setInterval(()=>{if(i>=N-1){if($('loop').checked)i=0;else{stop();return}}else i++;show()},1000/(16*$('sp').value))}
+function step(s){stop();i=Math.max(0,Math.min(N-1,i+s));show()}
+$('pp').onclick=()=>t?stop():play();$('pv').onclick=()=>step(-1);$('nx').onclick=()=>step(1);
+$('sp').oninput=()=>{$('spv').textContent=(+$('sp').value).toFixed(2)+'×';if(t)play()};
+$('zm').oninput=()=>{$('zmv').textContent=$('zm').value+'×';show()};
+document.addEventListener('keydown',e=>{if(e.key===' '){e.preventDefault();t?stop():play()}else if(e.key==='ArrowRight')step(1);else if(e.key==='ArrowLeft')step(-1)});
+</script>
