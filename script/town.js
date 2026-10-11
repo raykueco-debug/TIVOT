@@ -1478,7 +1478,7 @@ const FRAG02_LAST = [
   ims('doubt','就你們……兩個人？'),
   cec('command','往後撤，離開火線。被波擊可不負責喔。'),
   { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:900 },           // 咆嘯
-  { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },                       // 上膛音
+  { speaker:'PLAYER', blank:true, se:'se_weapon_reload', flags:['frag02_boss'] },   // 上膛音；插 frag02_boss ＝解開曲子的鎖，Boss 戰放賽西莉的戰鬥曲（ver -2163）
   { battle:'frag02_b', onLose:'frag02_last_end' },
   ims('awe','竟然......只憑兩個人就......'),   // ver -2141：進結尾插畫前士兵的驚訝
   /* 插圖由下往上平移，**跑完才出士兵的對話框**（平移 2.6 秒，style.css 的 storyPanUp）。 */
@@ -4073,7 +4073,10 @@ export const TOWNS = {
     name: '卡耶爾山谷',
     entry: 'entry',
     bgm: 'lostplace',              // 荒廢之地（死谷）
-    bgmWhen: [ { need:'frag02_go', until:'frag02_done', bgm:'rituale' } ],   // 碎片 02 夢境期間放 Rituale Machina（ver -2162，Ray）；戰鬥照舊放賽西莉的戰鬥曲
+    /* 碎片 02 夢境期間放 Rituale Machina（ver -2162，Ray）。⚠ -2163（Ray：「只有 boss 戰切賽西莉 bgm，中間不換曲」）：
+       `lock` ＝路上的戰鬥也不換曲；谷底 Boss 戰前那一拍插 `frag02_boss` 解鎖，Boss 戰照搭檔表放賽西莉的戰鬥曲。 */
+    bgmWhen: [ { need:'frag02_go', until:'frag02_boss', bgm:'rituale', lock:true },
+               { need:'frag02_boss', until:'frag02_done', bgm:'rituale' } ],
     wilderness: true,
     stepMin: 60,
     /* 小地圖（ver -2073，美術 09-24 交件；座標照抄 resources/map/_spots_canyon.json）。沒寫 mist ⇒ 預設有霧（走過才亮）。 */
