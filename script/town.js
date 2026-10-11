@@ -3241,7 +3241,8 @@ export const TOWNS = {
                這一天的第一拍（回捲回來整天重演，語意不變）。 */
             /* ⚠ fadeIn 與那一夜收尾的 fadeOut **成對**（同教堂→娜塔莉的 slowFade 對）：
                黑幕（storyFade）是跨段的持續狀態，沒有這一拍就一路黑到天亮之後。 */
-            { speaker:'NARRATION', card:'翌日', checkpoint:true, fadeIn:3000 },
+            /* ver -2155（Ray：「把夢境後的翌日改成日期時間與地點北方泊地」）：大字地點＋小字完整日期時刻（`dayBreak` 的字卡，黑透罩、點掉才往下）。 */
+            { speaker:'NARRATION', dayBreak:'北方泊地', checkpoint:true, fadeIn:3000 },
             ren('talkwork','薩梅爾的標準語，妳聽得懂的吧？'),
             any('silent','……'),
             /* 無台詞的立繪拍（換表情）：台上有人 → 要點一下才過（ver -628）。 */
