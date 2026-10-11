@@ -2892,12 +2892,11 @@ export const TOWNS = {
                  再三秒亮回、娜塔莉那一拍才上。 */
               { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000,
                 hide:['RENNA','NOUVELLE','ANYA_X'] },
-              nat(null,'……', { bg:'northport_north_bf', bgm:'failed', fadeIn:3000 }),
+              nat(null,'安娜……', { bg:'northport_north_bf', bgm:'failed', fadeIn:3000 }),
               grl('crying','娜塔莉……娜塔莉！'),
-              nat(null,'……'),
+              nat(null,'Простите меня, ваше высочество… Я больше не смогу быть рядом с вами…'),
               grl('desperate','……'),
-              nat(null,'……'),
-              nat(null,'安娜……'),
+              nat(null,'Умоляю вас… живите. Будьте сильной…'),
               /* 斷氣：換成 `dead` 的**演出拍**（沒有台詞）。
                  ⚠ 台上有人 → 要點一下才推進（ver -628 那一條），所以不寫 `auto`。 */
               { speaker:'NATALIA', text:'', portrait:{ char:'NATALIA', expr:'dead', show:true } },
@@ -3208,8 +3207,10 @@ export const TOWNS = {
             ren('think','連「為什麼」都沒去想。'),
             ren('think','理所當然地就好像……在夢中一樣。'),
             { speaker:'PLAYER', blank:true },
-            ren('ask','那就是司祭說的「惡夢」嗎……？'),
-            ren('think','來自『紫月』的少女，跟『惡夢』……如果只是巧合就好了。'),
+            ren('ask','你們......HUND過去所討伐的禍魘，有類似的狀況嗎？'),
+            { speaker:'PLAYER', blank:true },
+            ren('think','果然......過去我們所認知的禍魘都是「永夜」發生的那一天出現的。'),
+            { speaker:'RENNA', text:'像今天一樣，從虛空中出現的話......', portrait:{ char:'RENNA', expr:'think', show:true } },
             { speaker:'PLAYER', blank:true },
             ren('talkwork','我不確定你的層級能否接觸這個情報，還是先打住吧。'),
             ren('stare','別擺出那種表情嘛，我們團長也是很嚴格的。'),
@@ -3219,7 +3220,7 @@ export const TOWNS = {
             { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000,
               hide:['RENNA','NOUVELLE','ANYA'], flags:['frag02_go'] },   // frag02_go：碎片 02 的夢境入口（ver -2136，只有這裡插；卡耶爾那一段只認它）
             /* 睡覺音＋長黑幕（ver -2138，Ray：「進卡耶爾山谷前先放睡覺音樂、長黑幕」）—— 睡覺音約 10 秒，播完才過讀取頁。 */
-            { speaker:'PLAYER', text:'', se:'se_sleep', auto:10500 },
+            { speaker:'PLAYER', text:'', se:'se_sleep', bgm:null, auto:10500 },   // bgm:null：睡覺音一響、當前曲子就淡出（ver -2151）
           ] },
           /* ══ 第三天早上八點（ver -664，Ray 交稿）══════════════════════════
              ⚠ 「如果聽不懂的話也沒關係，先跟我們回聖王廳吧？」是**諾薇兒**
