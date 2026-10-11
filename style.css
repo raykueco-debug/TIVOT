@@ -3294,6 +3294,8 @@
     width:100%;object-fit:cover;display:none;pointer-events:none;
     opacity:1;transition:opacity .22s ease;}
   #storyCg.fading{opacity:0;}
+  /* 插圖轉泛黃（腳本那一拍寫 `cgTone:'sepia'`，ver -2156，Ray：「夢境最後的插圖轉成泛黃再淡入至黑幕」）；換插圖／收圖時拿掉（story.js）。 */
+  #storyCg.cg-sepia{filter:sepia(.9) saturate(.85) brightness(.93);transition:opacity .22s ease, filter 1.8s ease;}
   #storyCg.on{display:block;}
   /* ══⚠⚠ 插圖的**第二層**（ver -628）：`cgSoft` 的差分切換把新圖疊在這裡淡入，
      淡完由 JS 交棒給 `#storyCg`（見 modules/story.js 的 cgCross）══

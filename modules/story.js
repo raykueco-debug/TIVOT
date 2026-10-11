@@ -1949,6 +1949,7 @@ export function clearStageLeftovers(){
   { const st0=$('storyStage'); if(st0){ clearTimeout(st0.__blastT); st0.classList.remove('roarblast'); } }
   clearTimeout(cardAutoT); cardAutoT=null;   // 自動播放的卡自收計時器（ver -940）
   clearSceneFade();                    // 場景區黑幕（ver -881）
+  { const c=$('storyCg'); if(c) c.classList.remove('cg-sepia'); }   // 插圖的泛黃（ver -2156）
   closeHint();                         // 一次性提示遮罩（ver -885）
   /* 跨句的染色（紫紅負片）。⚠ 除了走 `stopTint()`（它只認自己記著的那個名字），
      再**把任何 `story-tint-*` 掃掉** —— 殘留的那一件正是它認不得的（實測踩過）。 */
@@ -2454,6 +2455,9 @@ function applyPersist(line){
      CSS 在管，殘留的 inline 值會把之後每一次換插圖一起拖慢。
      ⚠ 歸還的計時器**不進 fxTimers**（那一組每推一句就被清空，同「跨句的演出
        要另開一個欄位」那條的理由）；用序號擋過期的歸還。 */
+  /* 插圖的色調（ver -2156）：`cgTone:'sepia'` ＝這張插圖慢慢轉泛黃（CSS 的 `.cg-sepia`，1.8 秒）；換插圖或收圖就拿掉。 */
+  if(line.cg!==undefined && !line.cgTone){ const c=$('storyCg'); if(c) c.classList.remove('cg-sepia'); }
+  if(line.cgTone){ const c=$('storyCg'); if(c){ void c.offsetWidth; c.classList.add('cg-'+line.cgTone); } }
   if(line.fadeOut!=null || line.fadeIn!=null){
     const f=$('storyFade');
     if(f){
@@ -3427,7 +3431,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2155';
+const KERB_V='?v=2156';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
