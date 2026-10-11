@@ -49,3 +49,38 @@ Ray：「生一批卡耶爾山谷的怪 扭曲恐怖風格 搭配背景 先來�
 - `mon_canyon_colossus` 換成石拳砸向鏡頭版（舊版在 `_recycle/`，原稿 `_originals/enemy/mon_canyon_colossus_v2.png`）—— ⚠ 同名覆蓋，程式端要 `bust.py --bump`。
 - 群體 5 隻全部交件，總覽 `_canyon_swarm_sheet.jpg`（每種左右各一隻＋前排一隻、一隻水平翻轉，示意同畫面 3 隻）。
 - ⚠ 程式端要接：群體用要比照惡棍群戰（每隻一層、可水平翻轉做變化）；敵人卡與數值等 Ray。
+
+## 第三批：深色重生版 17 隻（2026-10-11，美術）
+
+Ray（經程式 session 轉交）：「卡耶爾的怪跟背景色太近了，讓 gpt 再生一組，更有壓迫感的怪物」。
+先定調 1 大 1 小給 Ray 看 → 「狗怎麼變小型寵物犬了」重畫成魔獸 → 「保留當大型，另外畫一隻小的群體版」→「算新增，用新名字，開始量產」。
+
+**配色規則（取代上面「冷灰／青灰／骨白」那一條）**：主體焦黑／瀝青黑（骨、甲殼、石頭也是燒焦的黑，⛔ 不要骨白與灰白）；
+裂縫、眼睛、口中透出暗橙的餘燼光；點綴深鏽紅朝聖布條與鏽鐵鏈。大型＝低角度仰拍、朝鏡頭壓過來；群體＝撲向鏡頭。
+參考圖只附 `background/canyon/canyon_bones_day`（**不附舊怪** —— 附了會把灰白配色帶回來）。三串對話：大型 5／大型 5／群體 4。
+
+**全部是新檔名，舊的 16 張原封不動**（不必 `bust.py --bump`）。總覽 `_canyon_dark_sheet.jpg`（疊在白骨之地上）。
+
+| 檔名 | 中文 | 類 | 備註 |
+|---|---|---|---|
+| `mon_canyon_colossus_dark` | 崩岩巨像 | 大型 | 石拳朝鏡頭砸下，拳頭擋住頭 |
+| `mon_canyon_houndbeast` | 餓獸（**新增**） | 大型 | 原本是鎖鏈餓犬的定調稿，Ray 改列大型 |
+| `mon_canyon_hanged_dark` | 崖縫吊屍者 | 大型 | 倒掛，鐵鏈從上緣垂入（上緣切齊是造型） |
+| `mon_canyon_coffinbeetle_dark` | 石棺甲蟲 | 大型 | |
+| `mon_canyon_bonecrab_dark` | 骸殼蟹 | 大型 | |
+| `mon_canyon_pilgrimmass_dark` | 朝聖者團塊 | 大型 | |
+| `mon_canyon_bellwyrm_dark` | 喪鐘蠕蟲 | 大型 | 頂上十字貼上緣 |
+| `mon_canyon_saintvulture_dark` | 聖面鷲 | 大型 | ⚠ 翅尖碰左右邊緣 |
+| `mon_canyon_ironpenitent_dark` | 鐵衣苦修者 | 大型 | |
+| `mon_canyon_ribcage_dark` | 肋籠獸 | 大型 | |
+| `mon_canyon_stilt_dark` | 高蹺細影 | 大型 | |
+| `mon_canyon_censer_dark` | 香爐蠍 | 大型 | |
+| `mon_canyon_chainhound_dark` | 鎖鏈餓犬 | 群體 | 餓獸的小型群體版（顱骨也焦黑） |
+| `mon_canyon_crawler_dark` | 爬行朝聖者 | 群體 | |
+| `mon_canyon_bellmite_dark` | 鐘殼蟲 | 群體 | |
+| `mon_canyon_lanternimp_dark` | 提燈小鬼 | 群體 | ⚠ 提燈碰右緣 |
+| `mon_canyon_bonecrow_dark` | 骨鴉 | 群體 | |
+
+- ⚠ 群體 4 隻（crawler／bellmite／lanternimp／bonecrow）GPT 沒照「四邊留 15%」，構圖偏滿 —— 程式端排群戰時要縮小；只有 `chainhound_dark` 是真的緊湊。
+- 原 PNG 在 `_originals/enemy/`（同名 `.png`）。
+- 資產盤點：✔ 不欠（17 張，Ray 點名的都交了；舊 16 張保留不回收，等程式端切換完再決定）。
