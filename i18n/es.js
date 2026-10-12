@@ -87,8 +87,8 @@ export const STRINGS = {
     dualBreak:         'Lluvia de Balas',
     deathGuard:        'Guardia Mortal',
     /* ⚠ 與 modules/saint.js 的 triggerMaxBurst 互指（鐵律 7 的但書）：改回血量要四語一起改。 */
-    mbSub:             'Juicio Adicional · HP restaurado al máximo',
-    nmbSub:            'Juicio Adicional · HP devuelto',
+    mbSub:             'Juicio Adicional',
+    nmbSub:            'Juicio Adicional',
     executeSub:        '{name} · Aniquilado',
     lifeReturnSub:     'Retorno Vital · HP conservado',
     obeSub:            'O.B.E. · HP 1',

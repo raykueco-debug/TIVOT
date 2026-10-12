@@ -3601,6 +3601,8 @@
   /* ⚠ 推上之後就**不能按**了（接下來是戰鬥）：ver -405 是把鈕滑出去，
      現在它是門的一部分不能滑走 —— 改成只鎖住點擊，畫面上它還要繼續轉給人看。 */
   #kerb.rise #storyExit,#kerb.rise #kerbPend{pointer-events:none;}
+  /* 戰鬥地圖（安全點除外）與夢境藏整備吊墜（ver -2175）—— 判定在 town.gearOff，這裡只讀 body.no-gear。 */
+  body.no-gear #kerbPend{display:none !important;}
   /* 偶爾反一下光（同吊墜，Ray：「大尺輪跟吊飾一樣偶爾有閃光」）。 */
   #storyExit .ke-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.8;

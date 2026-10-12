@@ -2183,20 +2183,30 @@ function cardSpawnPool(nodeIdNow){
 /* `mustWild` 那一格的「已經保證過了」旗（ver -1648）。
    ⚠ **旗名由圖＋格推出來**，不要寫死在資料裡：插旗端與查旗端各寫一個字串的話，
      打錯一個字就是「插了但查不到」，而且不會有任何錯誤訊息（同 `safehouseFlag`）。 */
+/* 這張圖**整張**現在出不出野怪（ver -2175 由 `wildActDue` 抽出，鐵律 7）：回「為什麼不出」的那一句，會出就回 null。
+   三條：沒有怪池（城上的 `wildSpawn` ＋ 卡片的出沒地）／插著安全區旗／`wildFrom` 還沒開。
+   ⚠ 逐格的條件（`noWild`、墓主那一格…）不在這裡 —— 那是 `wildActDue` 自己的事。
+   ⚠ 現在兩個人在問：遇怪（`wildActDue`）與吊墜（`gearOff`：戰鬥地圖藏吊墜）。 */
+function wildMapOff(){
+  const T0=TOWNS[townId]||{};
+  if(!T0.wildSpawn && !cardSpawnPool(nodeId).length) return '這張圖沒有怪';
+  if(prog.hasFlag(safehouseFlag())) return '安全區旗';
+  if(T0.wildFrom && !prog.hasFlag(T0.wildFrom)) return 'wildFrom 還沒開';
+  return null;
+}
 function mustWildFlag(id){ return 'mustwild_' + townId + '_' + id; }
 function wildActDue(n){
   const T0=TOWNS[townId]||{};
   wildStat.asked++;
   const cardPool = cardSpawnPool(nodeId);
-  const W=T0.wildSpawn; if((!W && !cardPool.length) || !n) return wildSkip(i18nT('這張圖沒有怪'));
-  if(prog.hasFlag(safehouseFlag())) return wildSkip(i18nT('安全區旗'));
+  const W=T0.wildSpawn; if(!n) return wildSkip(i18nT('這張圖沒有怪'));
+  { const off=wildMapOff(); if(off) return wildSkip(i18nT(off)); }   // 整張圖的三條（ver -2175 抽出，吊墜也問它）
   /* ══⚠⚠ **`wildFrom:'<旗>'` ＝這支旗插上去之前，這張圖一隻野怪都沒有**
      （ver -1399，Ray：「貝利薩爾在王座徘徊者擊敗前沒有野怪」）══
      ⚠ 它與**安全區旗**是兩件事，不要拿其中一個去湊：
        · 安全區旗（`safehouse_<圖>`）＝**會開會關**的狀態，特殊戰還會把它拔掉再插回去
        · `wildFrom` ＝這張圖的**資料**：在那個事件之前它根本還不是一張會出怪的圖
      ⚠ 寫在城上（鐵律 1）；旗名由那一段劇情自己認領（鐵律 9：誰插得出來）。 */
-  if(T0.wildFrom && !prog.hasFlag(T0.wildFrom)) return wildSkip(i18nT('wildFrom 還沒開'));
   /* 墓主倒在這一格 ⇒ 這一格不刷野怪（ver -1704，Ray：「墓主倒地的那一格不刷野怪」）——
      判「倒地」只問追兵那一筆的 `down`（同 `chaseActDue`／`refreshChaseDown`，鐵律 7）。 */
   { const c=chaseSpec() ? chaseGet() : null;
@@ -3631,6 +3641,7 @@ function refreshArrows(){
 /* 導覽的開關。⚠ **羅盤跟著一起開關**（ver -372）：對白播放中箭頭就不該亮、也不該能按 ——
    不然玩家會在讀台詞的時候看到底下有東西在發光晃動，而且按下去會與推進台詞打架。 */
 function showNav(on){
+  syncGearPend();   // ver -2175：戰鬥地圖藏吊墜
   if(layer) layer.classList.toggle('on', !!on);
   document.body.classList.toggle('town-nav', !!on && !!townId);
   /* ⚠ 收的是**打開的那一張地圖**（它是 88% 的暗罩，蓋著就看不到對白），
@@ -3780,14 +3791,36 @@ function wildForceOn(){
 }
 /* 城上 `noGear:{need,until,text}`（ver -2141，Ray：「夢境不可入整備頁」）：這段期間按吊墜只回一句 `text`。
    擋下就說那一句並回 true；放行回 null。gear.open 的唯一守門由 main 注入（gear.setBlocker）。 */
-export function gearBlocked(){
+function dreamNoGear(){
   if(!townId) return null;
   const g=(TOWNS[townId]||{}).noGear; if(!g) return null;
   if(g.need && !needOk(g.need)) return null;
   if(g.until && prog.hasFlag(g.until)) return null;
-  story.flashLine(g.text || '……現在不能整備。', '');   // 走路人單句那一套：再點一下收掉（同 knockClosed）
-  chatterOn=true;
-  return true;
+  return g;
+}
+/* ══⚠⚠ 戰鬥地圖藏整備吊墜（ver -2175，Ray：「戰鬥地圖中除了安全點之外不能整備，把整備吊飾拿掉，
+   只有在安全點才有；夢境戰也沒有整備吊飾」）══ 判定只有這一支（鐵律 8）：
+   · 夢境（城上 `noGear` 那一段）→ **一律藏**，安全點也藏
+   · 戰鬥地圖 ＝ 城鎮戰開著（`siegeOn`）或這張圖會出野怪（`wildMapOff()` 為 null）→ 藏，**安全點那一格（`rest`）除外**
+   ⚠ 人不在城裡（`townLive` 假：主選單／劇情／飛行）不歸這裡管 → 不藏。 */
+function gearOff(){
+  if(!townId || !townLive) return false;
+  if(dreamNoGear()) return true;
+  const n=((TOWNS[townId]||{}).nodes||{})[nodeId];
+  if(n && n.rest) return false;
+  return !!siegeOn() || !wildMapOff();
+}
+/* 把 `gearOff` 的結果掛到 body（CSS 的 `body.no-gear #kerbPend`）。冪等，掛在 `showNav`（每一次抵達、
+   每一段演完都會經過）與離城的兩條路。 */
+function syncGearPend(){ document.body.classList.toggle('no-gear', gearOff()); }
+export function gearBlocked(){
+  const g=dreamNoGear();
+  if(g){
+    story.flashLine(g.text || '……現在不能整備。', '');   // 走路人單句那一套：再點一下收掉（同 knockClosed）
+    chatterOn=true;
+    return true;
+  }
+  return gearOff() ? true : null;   // 吊墜藏著時其他入口（鍵盤）也不放行
 }
 export function loseGoto(){
   const g=(TOWNS[townId]||{}).loseGoto; if(!g) return null;
@@ -5507,6 +5540,7 @@ export function close(){
   /* ⚠ 環境音是**持續狀態**：離開這座城就沒有人收它了（ver -1568）。 */
   try{ story.stopAmb(60); }catch(_){}
   townLive=false;            // 回主選單（ver -1394）
+  syncGearPend();
   if(chaseDownShown){ story.setSceneCgBack(null); chaseDownShown=false; }   // 倒地差分（ver -1701）
   restoreTownPartner();      // 搭檔回到進城前那一位（見 restoreTownPartner）
   const st=story.stageEl(); if(st) st.classList.remove('town-on');
@@ -5554,6 +5588,7 @@ export function suspend(){
   try{ story.stopAmb(60); }catch(_){}
   clearTimeout(arriveT); arriveT=0;
   townLive=false;            // 人上船了：約會那條規則不再套用（ver -1394）
+  syncGearPend();
   restoreTownPartner();      // 搭檔回到進城前那一位（同上）
   endDate();                // 出城鎮＝約會結束（ver -576，Ray 指定）
   /* ⚠⚠ ver -1383：**離開地圖也清掉「今天約過誰」**（Ray：「就算回旅店解除約會也要

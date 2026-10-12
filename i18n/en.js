@@ -77,8 +77,8 @@ export const STRINGS = {
     dualBreak:         'BULLETS RAIN',           // ver -750（Ray：「彈雨傾洩」）
     deathGuard:        'DEATH GUARD',
     /* ⚠⚠ 這個數字是 saint.js 的第二份真相（鐵律 7 的但書）—— 改一邊要改另一邊。 */
-    mbSub:             'ADDITIONAL JUDGMENT · HP FULL',
-    nmbSub:            'ADDITIONAL JUDGMENT · HP RESTORED',
+    mbSub:             'ADDITIONAL JUDGMENT',
+    nmbSub:            'ADDITIONAL JUDGMENT',
     executeSub:        '{name} · ERADICATION',
     lifeReturnSub:     'LIFE RETURN · HP RETAINED',
     obeSub:            'O.B.E. · HP 1',

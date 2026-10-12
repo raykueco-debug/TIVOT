@@ -89,8 +89,8 @@ export const STRINGS = {
 
     deathGuard:        '即死防御',
     /* ⚠⚠ 這個數字是 saint.js 的第二份真相（鐵律 7 的但書）—— 改一邊要改另一邊。 */
-    mbSub:             '追加聖裁 · HP フルリカバー',
-    nmbSub:            '追加聖裁 · HP リストア',
+    mbSub:             '追加聖裁',
+    nmbSub:            '追加聖裁',
     executeSub:        '{name} · 消滅',
     lifeReturnSub:     'ライフリターン · HP維持',
     obeSub:            'O.B.E. · HP 1',

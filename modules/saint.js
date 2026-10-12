@@ -689,18 +689,18 @@ function triggerNiBurst(){
   $('grid').classList.remove('saint','ni'); setSaintBarFx(false);
   if(state.enemyHp<=0){
     /* 「若在 NI 發動期間把敵 hp 清零一樣有 excute」（Ray 指定）。 */
+    /* ══⚠⚠⚠ ver -2175（Ray：「聖徒化處決或 MB 滿血獎勵取消，血量維持在 exe 或 mb 發動的血量，
+         Reload 獎勵也取消，NI 也一樣；要 reload 只能踩安全點或者靠技能或道具」）══
+       推翻 -892 的「處決＝賺回一次 Install」與 -1506／-974 的回血：處決／MB **不回血、不回填**。
+       ⚠ 回填只剩兩條：安全點收局（新的一局本來就是滿槽）、技能／道具（`deferInstallReload` 那一對）。 */
     markExecution();
-    const rlN = state.saintUsedThisBattle ? 'NIGHTMARE RELOAD' : null;   // 空槍才 reload（ver -896）
-    if(rlN) deferInstallReload();   // ver -1775：下一場才生效
-    playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); }, rlN);
+    playSaintCutin('execute', ()=>{ api.onEnemyDefeated(); });
     return;
   }
   markMaxBurst();   // 惡夢化清空殘格＝MB（Ray：「同 SI 的 MB」，ver -675）
   /* ⚠⚠ **這一支是惡夢化**，所以標籤是 NIGHTMARE RELOAD（ver -963 修）：
      -896 把兩支的變數名與標籤**交叉寫錯了** —— 這裡宣告 `rlMB`／印 `SAINT RELOAD`，
      下面卻傳 `rlNMB`（未宣告）。見 triggerMaxBurst 那一支的同一段。 */
-  const rlNMB = state.saintUsedThisBattle ? 'NIGHTMARE RELOAD' : null;   // 空槍才 reload（ver -896）
-  if(rlNMB) deferInstallReload();   // ver -1775：下一場才生效
   /* ⚠⚠ **要播 MB 的全畫面 cut-in**（ver -719，Ray：「NI 的 MB 跟 execute 沒接上」）——
      -675 只做了「算 MB 的傷害＋記旗標」，演出那一步漏了：擊殺那一支有
      `playSaintCutin('execute')`，未擊殺這一支卻直接跳收尾，畫面上只有一行浮字。
@@ -711,10 +711,11 @@ function triggerNiBurst(){
        語意上這才對得起來：夢魘化**抽掉**的那一段是它的代價，清完就是把代價還你，
        不是憑空送一條命（而「前引星」把起點灌滿，所以那顆星的人才會回滿）。
      ⚠ 先抄成區域變數：`finishNightmare` 之後 `state.niFrom` 不保證還在。 */
-  { const back = state.niFrom || state.playerHp;
-    playSaintCutin('niburst', ()=>{
-      finishNightmare(()=>api.setPlayerHpRatio(back / (state.playerMax||1)));
-    }, rlNMB); }
+  /* ══⚠⚠⚠ ver -2175（Ray：「聖徒化處決或 MB 滿血獎勵取消，血量維持在 exe 或 mb 發動的血量，
+         Reload 獎勵也取消，NI 也一樣；要 reload 只能踩安全點或者靠技能或道具」）══
+       推翻 -892 的「處決＝賺回一次 Install」與 -1506／-974 的回血：處決／MB **不回血、不回填**。
+       ⚠ 回填只剩兩條：安全點收局（新的一局本來就是滿槽）、技能／道具（`deferInstallReload` 那一對）。 */
+  playSaintCutin('niburst', ()=>{ finishNightmare(); });
 }
 /* 主動技（上滑）：一次清掉殘格造成相應傷害 —— **沒有 MB、不回血、直接結束，HP 剩 1**。 */
 export function nightmareActive(){
@@ -789,10 +790,12 @@ function niBurstResolve(){
        ⚠ **演出照舊不疊第二張 cut-in**（ver -746，Ray：「夢境破碎讓敵 hp 歸零的話
          不出處決畫面，但是計分時算處決」）—— 粉碎自己的 cut-in 剛演完。
          那一條講的是**畫面**，-1696 講的是**結果**，兩者不衝突。 */
+    /* ══⚠⚠⚠ ver -2175（Ray：「聖徒化處決或 MB 滿血獎勵取消，血量維持在 exe 或 mb 發動的血量，
+         Reload 獎勵也取消，NI 也一樣；要 reload 只能踩安全點或者靠技能或道具」）══
+       推翻 -892 的「處決＝賺回一次 Install」與 -1506／-974 的回血：處決／MB **不回血、不回填**。
+       ⚠ 回填只剩兩條：安全點收局（新的一局本來就是滿槽）、技能／道具（`deferInstallReload` 那一對）。 */
     markExecution();
-    const rlB = state.saintUsedThisBattle ? 'NIGHTMARE RELOAD' : null;   // 空槍才 reload（ver -896）
-    if(rlB) deferInstallReload();   // ver -1775：下一場才生效
-    api.setPlayerHpRatio(1); api.onEnemyDefeated();
+    api.onEnemyDefeated();
     return true;
   }
   /* ══⚠⚠ **粉碎的回血**（ver -888，Ray：「惡夢粉碎發動時可以回復最高 25% hp，
@@ -998,9 +1001,11 @@ function triggerMaxBurst(){
     markExecution();   // sawExecution=true（評價 Execution 加乘）
     /* ⚠ 空槍才 reload（ver -896，Ray：「要空槍才有 reload」）—— 還沒發動過
        聖徒化的話那一槍本來就在膛裡，印 SAINT RELOAD 是報一件沒發生的事。 */
-    const rl = state.saintUsedThisBattle ? 'SAINT RELOAD' : null;
-    if(rl) deferInstallReload();                       // 處決＝賺回一次發動（ver -892）（ver -1775 起下一場生效）
-    playSaintCutin('execute', ()=>{ api.setPlayerHpRatio(1); api.onEnemyDefeated(); }, rl);
+    /* ══⚠⚠⚠ ver -2175（Ray：「聖徒化處決或 MB 滿血獎勵取消，血量維持在 exe 或 mb 發動的血量，
+         Reload 獎勵也取消，NI 也一樣；要 reload 只能踩安全點或者靠技能或道具」）══
+       推翻 -892 的「處決＝賺回一次 Install」與 -1506／-974 的回血：處決／MB **不回血、不回填**。
+       ⚠ 回填只剩兩條：安全點收局（新的一局本來就是滿槽）、技能／道具（`deferInstallReload` 那一對）。 */
+    playSaintCutin('execute', ()=>{ api.onEnemyDefeated(); });
     return;
   }
   markMaxBurst();   // 未擊殺的 MB（ver -675）：評價折 10 秒，見 config.rating.penalty
@@ -1013,8 +1018,6 @@ function triggerMaxBurst(){
        於是畫面上什麼都不剩。**兩支都壞了 66 版**（-896 起），惡夢化那一支同病。
      ⚠ 自檢：這種錯 `jsc -m` 抓不到（未宣告的變數要**執行到那一行**才炸），
        而它就藏在一個只有特定收尾方式才走得到的分支裡。 */
-  const rlMB = state.saintUsedThisBattle ? 'SAINT RELOAD' : null;   // 空槍才 reload（ver -896）
-  if(rlMB) deferInstallReload();   // ver -1775：下一場才生效
   /* 敵人未死 → Maximum Burst 演出後回盤面。
      ══⚠⚠ **回血改成回滿**（ver -1506，Ray：「MB 的回血效果改成回滿」）══
      推翻 2026-08-13 的「擊殺回滿／未擊殺回 50%」—— 兩條路現在一樣是回滿。
@@ -1023,9 +1026,11 @@ function triggerMaxBurst(){
      ⚠ **惡夢化那一支不吃這一條**：它回到「發動夢魘時的血量」（ver -974 Ray 定案，
        見 triggerNiBurst）—— 兩支的回血規則不同，所以 -1506 起**副標也分開**
        （`mbSub` ／ `nmbSub`）。 */
-  playSaintCutin('burst', ()=>{
-    finishSaintMode(()=>api.setPlayerHpRatio(1));
-  }, rlMB);
+  /* ══⚠⚠⚠ ver -2175（Ray：「聖徒化處決或 MB 滿血獎勵取消，血量維持在 exe 或 mb 發動的血量，
+         Reload 獎勵也取消，NI 也一樣；要 reload 只能踩安全點或者靠技能或道具」）══
+       推翻 -892 的「處決＝賺回一次 Install」與 -1506／-974 的回血：處決／MB **不回血、不回填**。
+       ⚠ 回填只剩兩條：安全點收局（新的一局本來就是滿槽）、技能／道具（`deferInstallReload` 那一對）。 */
+  playSaintCutin('burst', ()=>{ finishSaintMode(); });
   if(api.onSaintEnded) api.onSaintEnded('mb');   // 教學終盤掛鉤（cut-in 結束後收尾台詞；非教學 no-op）
 }
 
