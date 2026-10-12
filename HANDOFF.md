@@ -71,6 +71,11 @@
     根目錄 `ART_HANDOVER.md`／幾份 docx／xlsx、`reference/script.docx` 等 —— 要不要接或回收。
 16. Credit 的動畫 LoRA（Bouncing B、Motto Hayaku）上架前要私訊作者確認商用；索菈娜 bounce_test LoRA 的作者標註待確認。
 
+**美術 session 收工時留的（10-12，e0c999d6；其餘幾條程式端已做完）**
+- 賽西莉 `call`／`ready`／`battlecry` 頭髮比 front 長而散、`pant` 左肩露出、`shyhand` 頭頂被裁一點 —— 要不要重畫，等 Ray。
+- ⚠ GPT 原圖 PNG 都在 Mac 的 `resources/_originals/`（gitignore，**另一台沒有**）—— 要重修那幾張就回 Mac，或從 `.webp` 開工。
+- 台詞差分表 `卡耶爾山谷_碎片02_台詞差分.xlsx`（根目錄）已 commit；Ray 改過的版本才是正本，之後只准 `dialogue_xlsx.py --refresh`。
+
 **程式端可做**
 17. `misha_si_ni` 眼效是舊圖座標，要用時重產；茉莉／羅伯特／亞隆立繪還沒接；`se_march` 不存在（主祭壇用 `se_troops` 頂）。
 18. 科爾文 `salute` 我對到 `bow`；卡耶爾地圖圖名卡在夢境以外會報夜間時刻（夢境入口已不報）。
