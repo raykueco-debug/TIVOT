@@ -54,6 +54,7 @@
 - **產法**：front ＝ 以 v2 front 為底「只改髮型」。差分 ＝ 每張一個新對話，上傳 **v3 raw front（髮型臉服裝的標準）＋ v2 舊差分的調色前版本**（`_vela_v2/_eye_before/`，只拿來參考姿勢與表情 —— 用調色前的才不會把藍再疊一次）。
   ⚠ 15 張裡有 8 張第一次回來是**畫上去的棋盤格（RGB）**，同串補一句「100% 保留，只把背景變成真正透明的 Alpha PNG」全部一次過。
 - **後製**（全組同一套）：① 以畫布中心 **×0.98** 縮放（有幾張頭頂貼邊 0~2px，縮完頭頂 ≥15px）② 虹膜調藍：頭部帶內藍色像素（H 180~245°、S>0.15）**S×1.9、V×1.2**（同 v2 的係數）；閉眼的 eyesmile／closedtalk 幾乎無變化。
+- `whisper` 重畫過一次（Ray：「再多傾一點，眼睛是藍色」）：同串以上一版為底只加大側傾；第一版 raw 留在 `_vela_v3/_raw_molly_si_whisper_lean1.png`、webp 進 `_recycle/`。裙襬最尖端貼到右緣（只 4px），不算裁切。
 - 試作與比較圖：`resources/si/npc/_trial/`（`npc_molly_si_v3_front`＝被否決的後梳版、`npc_molly_si_glasses_front`＝被否決的眼鏡版、`_molly_v3_faces.jpg`／`_molly_v3_sheet.jpg`＝定稿 15 張總覽）。
 - ⚠ 程式端：茉莉目前**還沒接進 `speakers.js`**（grep 不到 `molly_si`），所以這次同名覆蓋沒有快取問題；接的時候 `top/bot/fx` 照 v3 量（×0.98 之後的數字）。
 
