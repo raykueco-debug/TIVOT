@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2166';
+export const VERSION = 'ver 2026.09.22-2167';
 
 export const GAME_CONFIG = {
 
@@ -3499,7 +3499,7 @@ export const GAME_CONFIG = {
                 ci_anya_dreambreaker:2813, ci_anya_lucid:1375,   /* ver -2096：清醒夢換 Ray 剪的 v3（片長 1.375 秒） */ cutin_return_nouvelle:2000,   // ver -2078：片長＝CI 長
                 ci_sorana_roar_renna:2000, ci_sorana_roar_anya:2000, ci_sorana_roar_nouvelle:2000,
                 cutin_nireload:2000,   // ver -2137：v4 片長（v3 是 917）
-                cutin_dual_torsten:1000,
+                cutin_dual_torsten:1959,   // ver -2167：BR v7 片長（47 格 24fps；v5 是 1000）
                 cutin_cecilie_guard:1000, cutin_cecilie_return:1042 },   // ver -2103：賽西莉即死防禦／生命歸還（片長＝CI 長）
     /* BR（彈雨傾洩）的進場（ver -2091，Ray：「發動瞬間快速淡入蓋一層 70% 不透明度的黑遮罩當背景，再移入 CI」）：
        `alpha`＝黑遮罩不透明度、`ms`＝淡入多久（淡完才開始滑入 CI）。weapon.activateDual 傳給 playCutin 的 opts.dim。 */
@@ -3569,7 +3569,7 @@ export const GAME_CONFIG = {
                     Ray 的剪輯（tivot_wan/out/export/nr_blue77_cut，32 格 16fps）由程式端轉成 mp4（H.264 480×720 crf22 faststart）。 */
                  cutin_nireload:{ video:'resources/ci/video/cutin_nireload_v4.mp4' },   // ver -2137：動畫 665f2c5b（Ray 剪 nr_A_body_5s_cut，48 格 24fps＝2 秒）；v1～v3 還在   // ver -2097：夢中夢換 Ray 剪的 ni_reload_auto24_cut（22 格 24fps＝0.917 秒，程式端轉 mp4）；v1/v2 還在
                  /* ver -2088（動畫交件，Ray 放行）：本篇破防 CI。VACE 釘關鍵格（Plan A）＋Ray 手剪，16 格 1 秒；靜態圖照舊當底。 */
-                 cutin_dual_torsten:{ video:'resources/ci/video/cutin_dual_torsten_v5.mp4' } },   // ver -2098：BR v5（火星改金色線狀火花、往右上飄；人物同 v4）；-2094 v4（v3 眼睛抖已固定；v2 虹膜糊已修；23 格 24fps＝0.96 秒，cutinDur 仍 1000）
+                 cutin_dual_torsten:{ video:'resources/ci/video/cutin_dual_torsten_v7.mp4' } },   // ver -2167：BR v7（5 秒原片重剪、鎖下半臉、虹膜修正，1.959 秒）；-2098：BR v5（火星改金色線狀火花、往右上飄；人物同 v4）；-2094 v4（v3 眼睛抖已固定；v2 虹膜糊已修；23 格 24fps＝0.96 秒，cutinDur 仍 1000）
 
     voiceChain: {
       eq:   [ ['highpass', 130, 0.707,  0],

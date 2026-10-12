@@ -11,3 +11,5 @@
    - 第 34～80 格下半臉鎖成第 34 格（追蹤頭部位移後貼回，嘴與下巴不再亂動）。
    - 虹膜：`fix_eye_patch.py` 貼回 `torsten_C_nocasing2_alpha.png` 的發光虹膜（同 v5 參數，拿掉 --fixed、改 --track-box 跟頭走），43 格。
    - Ray 在 animechk 剪成 `out/export/br5s_kw2_s7_jawlock_cut`；火星後製參數同 v5（`comp_fgbg_embers.py` 金色線狀、往右上、前後景）。
+
+> ✅ **已接**（程式 ver -2167，10-12）：`cutinAnim` 指 v7、`cutinDur` 1959。v1～v6 未回收（等 Ray）。
