@@ -18,7 +18,7 @@ import cv2
 HERE = os.path.dirname(os.path.abspath(__file__))
 COMFY = os.path.dirname(HERE)
 URL = 'http://127.0.0.1:8188'
-W, H = 480, 720
+W, H = map(int, os.environ.get('TIVOT_GEN', '480x720').split('x'))   # 生成解析度；CI 要運鏡拉近時設 TIVOT_GEN=720x1080
 GREEN = (0, 255, 0)
 
 PROMPT = {
@@ -35,6 +35,9 @@ PROMPT = {
 }
 # idle 的分系提示詞（--style；預設＝上面的 PROMPT['idle']）
 IDLE_STYLE = {
+ 'flyer': ('{desc}在純綠色背景前的空中原地懸停，朝著鏡頭的姿勢與構圖不變：翅膀（或鰭、膜、觸手）以緩慢有力的節奏上下拍動，'
+           '身體隨每一次拍動輕輕上下浮沉，尾巴與觸手跟著緩慢擺動，頭部微微晃動。不要飛走、不要轉身、不要靠近或遠離鏡頭。最後回到開始的姿勢。'
+           '鏡頭完全固定不動，背景始終是純綠色，主體始終在畫面中央、大小不變、肢體數量不變。動漫風格，賽璐珞上色。'),
  'beast': ('{desc}在純綠色背景前的原地，伏低身體、重心壓低、頭垂低，像受傷又戒備的野獸在低聲喘息：'
            '胸腔與肋側隨著沉重的呼吸一下一下鼓起又收縮，肩背跟著起伏，頭隨喘息輕微上下點動，鼻息與嘴角微微顫動。'
            '四肢、爪子穩穩踩在原地不動，不要抬起前肢、不要舉起、不要站起來；毛髮與鬃毛隨喘息輕輕顫動。最後回到開始的姿勢。'
@@ -148,7 +151,7 @@ def to_green(src, mode):
         print(f'  ⚠ {os.path.basename(src)} 沒有透明背景，綠底效果會變差', flush=True)
     else:
         im = im.crop(bb)
-    fit = 0.86 if mode == 'hit' else (0.96 if mode == 'portrait' else 0.92)
+    fit = float(os.environ['TIVOT_FIT']) if os.environ.get('TIVOT_FIT') else (0.86 if mode == 'hit' else (0.96 if mode == 'portrait' else 0.92))   # TIVOT_FIT：振翅會出框的飛行怪縮小一點留空間
     s = min(W * fit / im.width, H * fit / im.height)
     im = im.resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS)
     bg = Image.new('RGBA', (W, H), GREEN + (255,))

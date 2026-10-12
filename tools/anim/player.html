@@ -71,7 +71,7 @@ function durText(){const f=+$('base').value*+$('sp').value,n=A.frames.length,m=k
  const o=outN();$('dur').textContent=`原始 ${n} 格 ${(n/f).toFixed(2)} 秒 → 保留 ${m} 張・停格後 ${o} 格 ${(o/f).toFixed(2)} 秒（${f.toFixed(1)} fps）`}
 function keptText(){durText();const k=kept();const hs=k.filter(x=>H(x)>1).map(x=>`${x}×${H(x)}`).join(', ');$('kept').value=`${k.length} 張・輸出 ${outN()} 格（${(outN()/+$('base').value).toFixed(2)} 秒 @${$('base').value}fps）\n保留：${ranges(k)}\n停格：${hs||'無（全×1）'}\n去掉：${ranges([...off].sort((a,b)=>a-b))||'無'}`}
 function show(){$('im').src=`${A.dir}/${A.frames[i]}`;const fps=+$('base').value*+$('sp').value;
- $('info').textContent=`第 ${i} 格 / 0~${A.frames.length-1}${off.has(i)?'（已勾掉）':''}　停 ×${H(i)}　${fps.toFixed(1)} fps`;mark();
+ $('info').textContent=`${A.dir}　第 ${i} 格 / 0~${A.frames.length-1}${off.has(i)?'（已勾掉）':''}　停 ×${H(i)}　${fps.toFixed(1)} fps`;mark();
  const d=$('t'+i);if(d)d.scrollIntoView({block:'nearest'})}
 function nextIdx(d){const k=kept();if(!k.length)return null;let p=k.findIndex(x=>x>=i);
  if(d>0){const n=k.find(x=>x>i);if(n!==undefined)return n;return $('loop').checked?k[0]:null}

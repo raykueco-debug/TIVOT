@@ -6,13 +6,15 @@ W, H = 480, 720
 src = Image.open(src_img).convert('RGBA')
 bb = src.getchannel('A').point(lambda v: 255 if v > 8 else 0).getbbox()
 w, h = bb[2] - bb[0], bb[3] - bb[1]
-s = min(W * 0.92 / w, H * 0.92 / h); w2, h2 = round(w * s), round(h * s)
+FIT = float(sys.argv[5]) if len(sys.argv) > 5 else 0.92   # 要與生成時的 TIVOT_FIT 一致
+s = min(W * FIT / w, H * FIT / h); w2, h2 = round(w * s), round(h * s)
 ox, oy = (W - w2) // 2, (H - h2) // 2
 L = sorted(glob.glob(os.path.join(frames_dir, 'frame_*.webp')))
+PAD = 600   # 畫布四周留邊：動作（振翅）可以超出原圖，box 允許負數（引擎照 canvas 座標擺）
 canv = []
 for p in L:
     f = Image.open(p).convert('RGBA'); big = f.resize((round(W / s), round(H / s)), Image.LANCZOS)
-    c = Image.new('RGBA', src.size, (0, 0, 0, 0)); c.paste(big, (round(bb[0] - ox / s), round(bb[1] - oy / s)), big); canv.append(c)
+    c = Image.new('RGBA', (src.size[0] + 2 * PAD, src.size[1] + 2 * PAD), (0, 0, 0, 0)); c.paste(big, (PAD + round(bb[0] - ox / s), PAD + round(bb[1] - oy / s)), big); canv.append(c)
 box = None
 for c in canv:
     b = c.getchannel('A').point(lambda v: 255 if v > 8 else 0).getbbox()
@@ -20,6 +22,6 @@ for c in canv:
 os.makedirs(dst, exist_ok=True); tot = 0
 for j, c in enumerate(canv):
     p = os.path.join(dst, f'frame_{j:02d}.webp'); c.crop(box).save(p, 'WEBP', quality=85, alpha_quality=90, method=6); tot += os.path.getsize(p)
-json.dump({'canvas': list(src.size), 'box': [box[0], box[1], box[2] - box[0], box[3] - box[1]], 'frames': len(canv), 'fps': fps, 'loop': True},
+json.dump({'canvas': list(src.size), 'box': [box[0] - PAD, box[1] - PAD, box[2] - box[0], box[3] - box[1]], 'frames': len(canv), 'fps': fps, 'loop': True},
           open(os.path.join(dst, 'anim.json'), 'w'), indent=1)
-print(len(canv), 'frames', box, tot // 1024, 'KB')
+print(len(canv), 'frames', (box[0] - PAD, box[1] - PAD, box[2] - PAD, box[3] - PAD), tot // 1024, 'KB')

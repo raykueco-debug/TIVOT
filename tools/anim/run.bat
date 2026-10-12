@@ -1,4 +1,5 @@
 @echo off
+set PYTHONIOENCODING=utf-8
 chcp 65001 >nul
 :: TIVOT Wan tool: put transparent PNG/WebP into in\  then double-click.
 :: Default mode = hit. For idle: run_idle.bat, or put "mode=idle" in a same-name .txt

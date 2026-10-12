@@ -22,6 +22,7 @@ import numpy as np
 from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+CI_FULL = False   # --ci：整張 CI（含背景）直接餵、輸出不去綠
 import tivot_wan as tw          # 共用 COMFY／URL／W／H／to_green／key／ensure_server／NEG
 
 VACE_HIGH = 'Wan2.2-VACE-Fun-A14B-high-noise-Q4_K_M.gguf'
@@ -39,7 +40,7 @@ def prep_inputs(keys, length, tag):
     for i in range(length):
         if i in keys:
             n = f'vace_{tag}_k{i:02d}.png'
-            tw.to_green(keys[i], 'idle').save(os.path.join(inp, n))   # ⚠ 所有關鍵格同一個 fit（idle 0.92），比例才一致
+            tw.to_green(keys[i], 'ci' if CI_FULL else 'idle').save(os.path.join(inp, n))   # ⚠ 所有關鍵格同一個 fit（idle 0.92），比例才一致
             ctrl.append(n); mask.append(black_n)
         else:
             ctrl.append(gray_n); mask.append(white_n)
@@ -134,7 +135,9 @@ def main():
     ap.add_argument('--hi-end', type=int, default=0, help='高噪段結束在第幾步（預設 steps/2）')
     ap.add_argument('--neg-extra', default='', help='追加負面詞')
     ap.add_argument('--out', default=os.path.join(HERE, 'out', 'vace'))
+    ap.add_argument('--ci', action='store_true', help='整張 CI（含背景）：關鍵格不貼綠底、輸出不去綠')
     a = ap.parse_args()
+    global CI_FULL; CI_FULL = a.ci
     if (a.length - 1) % 4: sys.exit('length 必須 4n+1')
     keys = {}
     for k in a.key:
@@ -149,7 +152,7 @@ def main():
     od = os.path.join(a.out, tag); os.makedirs(od, exist_ok=True)
     files = []
     for j, p in enumerate(paths):
-        im = tw.key(np.asarray(Image.open(p).convert('RGB')).astype(np.float32))
+        im = Image.open(p).convert('RGB') if CI_FULL else tw.key(np.asarray(Image.open(p).convert('RGB')).astype(np.float32))
         fn = f'frame_{j:02d}.webp'; im.save(os.path.join(od, fn), 'WEBP', quality=90); files.append(fn)
     tw_, th = 160, 240; cols = min(len(files), 10); rows = (len(files) + cols - 1) // cols
     sh = Image.new('RGB', (cols * tw_, rows * th), (30, 30, 38))

@@ -1,7 +1,7 @@
-# 動畫 session 交接（現況：2026-10-07 晚）
+# 動畫 session 交接（現況：2026-10-13 00:40，Windows 4070 SUPER 那台收工）
 
-> 開工先讀這份。這份只留**現況＋做法＋原則**；舊版在 `_recycle/resources/_HANDOFF_ANIM.md`。
-> 動畫 session 在 2026-10-06 從美術 session 分出來（Ray：「這個 session 改為『動畫』，跟美術分開，可以協作」）。
+> 開工先讀這份。只留**現況＋做法＋原則**；舊版在 `_recycle/resources/_HANDOFF_ANIM.md.20261013-003836`（git 歷史也有）。
+> 動畫 session 只管把圖做成動畫、交件；**不碰程式**（憲法鐵律 11）—— 要接的寫成 `TO_CODE*.md` 交程式。
 
 ---
 
@@ -9,154 +9,145 @@
 
 | session | 管什麼 |
 |---|---|
-| **動畫** | 把既有的圖（CI、敵人、立繪）用本機 Wan 做成動畫，挑格、轉回原圖座標、交件進 `resources/`、通知程式 |
-| **美術** | 產靜態圖、去背、分層、時段差分。動畫要新圖（A 圖／乾淨背景／去背分層）就**開單給美術** |
-| **程式** | 接線（config、播放器、疊層）。**動畫和美術都不碰程式**（憲法鐵律 11） |
+| **動畫** | 本機 Wan／VACE 生成、運鏡合成、挑格、交件進 `resources/`、寫交件單 |
+| **美術** | 靜態圖（A 圖、去背、分層）。動畫缺圖就**開單**給美術，或 Ray 指名時自己請 GPT 畫 |
+| **程式** | 接線（`config.js` 的 `cutinAnim`／`cutinDur`／`ENEMY_IDLE`、引擎） |
 
-- 跨 session 溝通：`ListAgents` → `SendMessage`。程式 session 名稱常是「版本核對與進度檢查」、美術是「交接美術」（名稱會變，以 `ListAgents` 為準）。
-- Ray 原話：「動畫都歸你管，程式負責接」—— **用什麼格式交（影片／序列）由動畫決定**，程式照接。
+- 用什麼格式交由動畫決定（Ray：「動畫都歸你管，程式負責接」）。
 
 ---
 
-## 二、環境與工具
+## 二、環境（10-12 這台補齊到最新）
 
 ### 本機 Wan（4070 SUPER、16 GB RAM）
-- ComfyUI：`C:\Users\Ray Ku\Desktop\ComfyUI-master\`，專用 venv `ComfyUI-master\.venv`（**不要動系統 Python 那份**）。
-- 模型：Wan2.2 I2V A14B GGUF Q4_K_M（High／Low）＋ LightX2V 4 步 LoRA ＋ umt5 fp8 ＋ wan_2.1_vae。
-- ⚠ 記憶體只有 16 GB：`tivot_wan.py` 會自己用 `--lowvram --disable-smart-memory --cache-none` 啟動 ComfyUI。**跑 Wan 時不要開 SD／其他 ComfyUI**（Ray 忘了關 SD 那次，一步 198 秒）。
-- 實測：一段 Wan **約 90～200 秒**，長度影響不大（大頭是載模型與固定成本）。**不要高估時間**（Ray 指正過）。
-- 動作 LoRA（在 `models/loras/`）：
-  - `zxtp_wan22_bb_high.safetensors`（Bouncing B，只有 High）—— 乳搖最有效，但節奏固定約每 0.6 秒一彈。
-  - `zxtp_wan22_m0tt0_high/low.safetensors`（Motto Hayaku，High＋Low）—— 晃動頻率較慢；強度 1.3 以上會帶入鏡頭晃動。
-  - ⚠ 兩者都來自 HF `zxtopower/loras`，授權只寫「生成內容可自由發佈、不必付費」，**沒寫商用 —— 上架前要私訊作者確認**。
+- ComfyUI：`C:\Users\Ray Ku\Desktop\ComfyUI-master\`，專用 venv `.venv`（**不要動系統 Python**）。
+- 模型（`models/`，全部 SHA-256 對過 HF）：
 
-### 工具資料夾 `ComfyUI-master\tivot_wan\`（⚠ 不在版控；**備份在 `TIVOT/tools/anim/`**，換機器從那裡拷回）
 | 檔 | 用途 |
 |---|---|
-| `tivot_wan.py` | 主工具。`--mode hit\|idle\|portrait\|ci`、`--style`（idle：default/beast/eerie；hit：back）、`--length`（Wan 格數，16fps，**必須 4n+1**）、`--fps`（idle 抽格）、`--frames`（hit 抽格數，**0＝全格**）、`--loop`（首尾鎖同一張）、`--end <圖>`（A→B）、`--lora 檔:強度`（High）、`--lora-low 檔:強度`（Low）、`--prompt "<英文>"`（覆蓋內建）、`--seed`、`--reuse`（沿用上次同 seed 的 Wan 原片只重抽格，不重跑）、`--suffix`、`--out` |
-| `batch_*.py` | 批次（monsters／hit／squad／guards），每支之間歇 30～90 秒讓顯卡休息；`out/*_batch.log` 看進度 |
-| `pick_*.py` | 抽格＋產總覽頁（`out/<x>_pick/index.html`，播一次、空白鍵重播） |
-| `deliver_*.py` | 把 Wan 的格**轉回原圖畫布座標**、裁成全格聯集框、寫 `anim.json`、存進 `resources/` |
-| `serve_player.py`＋`make_player.py`＋`out/player.html` | **播放器**（下方；選單是左側縮圖欄＋篩選框） |
-| `rekey_solid.py` | 綠幕重新去背（**實心版**）：白衣服帶綠反光時原 key 會變半透明 → 輪廓內 alpha=1、只柔化邊緣。白衣角色一律用它 |
-| `rekey_eyes.py` | 綠眼角色走綠幕會被挖掉 → 臉部範圍內「沒連到外圍綠幕」的綠色區塊保留 |
-| `align_bbox.py` | A／B 去背圖外框不同大（A 蜷縮比 B 矮）→ 補幾乎透明的角點讓兩張共用聯集外框，否則 Wan 收到的 A/B 縮放不一致 |
-| `comp_black_embers.py` | 去背人物格放回原畫布 → 純黑底＋同向直飛火星 → 480×720 16fps mp4 |
-| `embers2.py` | 已在黑底的整張格（ci 模式）：邊緣連通的近黑＝背景，火星只畫在背景層 |
-| `fix_magenta.py` | 修 Wan 在低頭→抬頭時頭頂冒出的洋紅色塊（色相拉回髮色） |
-| `compose_roar.py` | 三層合成（火＋Q 版滑入彈抖＋人物） |
-| `blue_eyes.py`／`eye_levels.py` | 安雅夢魘裝填結尾圖的虹膜換藍（手量橢圓，只動虹膜）＋出色階比較圖 |
-| `make_dg*.py`／`make_nr*.py` | 產生批次 .bat 的範本（⚠ Bash 工具裡的反斜線會被吃掉，批次一律用 Python 以 `chr(92)` 產生） |
+| `unet/Wan2.2-I2V-A14B-{High,Low}Noise-Q4_K_M.gguf` | I2V 主模型 |
+| `unet/Wan2.2-VACE-Fun-A14B-{high,low}-noise-Q4_K_M.gguf` | **VACE**（關鍵格釘格號）—— 10-12 下載 |
+| `loras/wan2.2_i2v_lightx2v_4steps_lora_v1_{high,low}_noise` | I2V 4 步 |
+| `loras/wan2.2_t2v_lightx2v_4steps_lora_v1.1_{high,low}_noise` | VACE 用 4 步（`--steps 4 --cfg 1`）—— 10-12 下載 |
+| `loras/bounce_test_{High,Low}Noise-000005.safetensors` | ⭐ **乳搖標準 LoRA**（HF `RunningHubAI/rh-bounce-test-*`，10-12 下載） |
+| `loras/zxtp_wan22_bb_high` Bouncing B | ✘ 不用：彈太多下、甩髮 |
+| `loras/zxtp_wan22_m0tt0_*` Motto Hayaku | ✘ 不用（名字就是「再快一點」） |
+| `loras/wan22_live2d_low` | 米夏測過、看不出效果 |
 
-### 播放器 animechk
-- 桌面 **`animechk.bat`**（備份 `tools/anim/animechk.bat`）：先砍掉舊的 8130 伺服器、再啟動、再開 `http://localhost:8130/player.html`。
-- 功能：選動畫（`[遊戲交件]`／`[輸出]`／`[ci]`／`[hit]`／`[guards]`／`[squad]`／`[monsters]`）、點縮圖勾掉不播（可拖曳多選）、一次／循環、逐格（← →）、倍速 0.1～3×、顯示原始秒數與保留後秒數、**⬇ 輸出**（存到 `out/export/<名字>/`，附 `preview.html` 與 `export.json`）。
-- 網址可帶 `#資料夾`（例：`player.html#guards/hotel_guard_1`）直接定位。
-- ⚠ **開頁面給 Ray 之前先確認伺服器活著**（`netstat … 8130 LISTENING`）。伺服器死掉過兩次。
-- ⚠ **不要在 Ray 用播放器時搬動 `out/` 底下的資料夾**（搬走後他輸出會失敗、留下空資料夾 —— 發生過）。
+- ⚠ 授權：bounce_test 在 HF **沒標授權**、Bouncing B／Motto 只寫「可自由發佈」—— 上架前要確認（HANDOFF 第 16 條）。
+- ⚠ 記憶體 16 GB：**一次只跑一支 Wan**；批次跑著時要插隊，先停批次（批次會跳過已做好的）。
+- 實測：VACE 33 格 130 秒、81 格 ~250 秒；I2V 720×1080 49 格 ~255 秒、1080×720 33 格 ~190 秒。
 
-### 其他
-- ffmpeg：`C:\ffmpeg\bin\ffmpeg.exe`。
-- ChatGPT 去雜物／改圖：Claude in Chrome，`file_upload` 只能上傳**專案資料夾內**的檔（scratchpad 不行 → 先拷到 `resources/_originals/…`）。
+### 工具 `ComfyUI-master\tivot_wan\`（⚠ 不在版控；**備份 `TIVOT/tools/anim/`**，10-12 已同步）
+新增／改動（10-12）：
 
----
+| 檔 | 改了什麼 |
+|---|---|
+| `tivot_wan.py` | `TIVOT_GEN=寬x高`（生成解析度；CI 運鏡拉近用 720x1080、橫幅插畫 1080x720）、`TIVOT_FIT`（去背模式的主體佔比，振翅會出框的飛行怪用 0.62~0.72）、idle 新增 `--style flyer`（原地懸停振翅） |
+| `tivot_vace.py` | `--ci`：整張 CI（含背景）直接餵、輸出不去綠 |
+| **`cam_cut.py`（新）** | ⭐ CI 近→遠運鏡合成（見三-1） |
+| `deliver_idle.py` | 第 5 參數＝生成時的 fit；畫布四周留 600px，**box 可負數**（振翅超出原圖不會被切） |
+| `batch_new_idle.py`／`batch_refit*.py`／`batch_group_idle.py` | 10-12 的批次（見六） |
+| `player.html`（animechk） | 資訊列顯示**資料夾名** |
+| `run.bat`／`run_idle.bat`／桌面 `animechk.bat` | 加 `set PYTHONIOENCODING=utf-8`（這台主控台 cp950，印 ▶✘ 會整支掛掉） |
 
-## 三、Ray 定的原則（最重要）
+- ⚠ 自己用 Bash 跑 `tivot_wan.py` 一律帶 `PYTHONIOENCODING=utf-8`。
+- **animechk**：要從**檔案總管**啟動（`Start-Process explorer.exe animechk.bat`）—— 從我這邊的指令視窗啟動，視窗一結束伺服器就跟著死（10-12 死了兩次）。開頁給 Ray 前先確認 `netstat … 8130 LISTENING`。
+- 批次一律 `Start-Process … -WindowStyle Hidden` 脫離，`-RedirectStandardOutput` 寫 log，再掛 until-loop 等「全部完成」。
 
-1. **不准交叉淡化**（「永遠不要，爛死了」）。後製只准**整格取捨**，不准半透明疊兩張。接點問題從生成端解。
-2. **CI 從推入到撤出全程都要在動，不可停格**。CI 長度逐張由程式的 `cutinDur` 定（Ray 跟程式調），動畫只要「那段時間內看得到的部分」夠長。
-3. **要幾格就生多長**：中槍只要 5 格就生 1 秒（`--length 17`），不要生 3 秒再抽（「目標只有 5f，一開始跑 16f 不就好了」）。但 **8 格（半秒）太短，人來不及倒**（實測只會張嘴），中槍至少 1 秒。
-4. **重交一律開新資料夾**（`_v2`、`_v3`…），不覆蓋已交件的檔。換掉任何已交件的檔**先問 Ray**，並走 `tools/recycle.sh`。
-5. **沒有血、沒有槍火**（遊戲引擎自己有槍火）。提示詞要逐項寫死：no blood stains/drops/spray/red liquid/wounds、no muzzle flash/bullets/sparks/smoke/light effects。
-6. **工不是優先，成品的品質、效率、資源才是**：先找最優解，再談工夫。
-7. 給 Ray 看的預覽頁**不要 loop**：播一次停在最後，可重播。
-8. **一次只跑一支（一個 seed）**（Ray：「每個都嘛差不多，還浪費時間給我看四個一樣的」）。改一處、跑一支、給他看，再改。
-9. **改顏色前先給 Ray 挑**（出幾個色階並排），不要自己決定色值就跑（索拉娜綠眼、安雅藍眼都踩過）。
-10. 背景要「純黑＋火星」時：**火星一律同方向直飛、無尾巴**（`comp_black_embers.py`／`embers2.py`，Ray：「火星要往一個方向飛，不要像精蟲」）。
-11. 動畫格式：**CI（不透明、一次性）→ 影片 mp4**；**敵人（透明、循環／倒地）→ 長期最優是 GPU 壓縮貼圖（KTX2）**（尚未實作；目前交 webp 序列）。
+### 產圖
+- **GPT**（Claude in Chrome）：A 圖、去光版、黑底版都靠它。⚠ 10-12 額度用完。
+  上傳：`find` 找「hidden input accepting image files」→ `file_upload`；送出：`.ProseMirror` 塞字 → 按 aria-label「傳送」的鈕（JS `.click()`）。下載：`fetch(img.src)`→`<a download>`（落 `~/Downloads`）。
+- **Gemini：不用**（Ray：「GEM 是個白癡」）—— 10-12 試畫賽西莉特寫，出來是扁平卡通風；圖也無法程式化下載。
 
 ---
 
-## 四、各類動畫的做法（照抄可用）
+## 三、Ray 定的原則
 
-### A. CI（全畫面 cut-in，不透明）→ 交 mp4
-- 規格：H.264 High、yuv420p、**480×720、16fps**、crf 22、`-movflags +faststart`、無音軌。路徑 `resources/ci/video/<cutinAnim 的鍵>_vN.mp4`。
-  `ffmpeg -framerate 16 -i frame_%02d.webp -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 22 -preset slow -movflags +faststart -an out.mp4`
-- 程式那邊已改成 `<video>` 播（ver -2060）：開演前 fetch 成 blob、第一格出來前顯示靜態圖、撤下時釋放。
-- **一張圖自由動**（崩潰類）：`--mode ci --length 65`（4 秒），首尾不鎖。
-- **A→B 變身**：`--mode ci --end <B圖>`，**一鏡到底**生長一點（4～5 秒）、**剪中間**，丟掉結尾吸附到 B 的那幾格。兩段拼接怎麼修接點都明顯（試過重生起點、淡化、光流、先快後慢抽格，全部被退）。
-- **沒有 A 圖（只有結尾那張）→ 倒推法**：從原圖生「力量散去／手收回／表情放鬆」的反向動作，取最後一格當 A，再正向 A→B。直接倒播成品會變成「先動完才亮光」（Wan 把兩件事排成先後），所以一定要「倒推一格 → 正向重生」。
-- Wan 會**提早往 B 圖的光效靠**（法環、紅光太早出現）。要控時序：分兩段（先生無光效的手部動作 → 末格當 A → A→B）。
-- 圖比例不是 2:3 時，送 Wan 前裁成 2:3（Wan 出 480×720），不然會被壓扁。
+### 0. 舊原則照舊
+不准交叉淡化／CI 全程在動／重交開新資料夾（`_v2`…）、換已交件先問＋`tools/recycle.sh`／沒有血沒有槍火／一次只跑一支 seed／改顏色先給 Ray 挑／預覽不 loop／火星同向直飛無尾巴。
 
-### B. AB 兩段接（例：乳搖只晃一次，後面小晃）
-- A 段掛 LoRA 跑一晃 → **取胸部靜止的那一格**（不是回到原位那格，那時還在高速回彈）當 B 段首格。
-- 兩段的提示詞**除了要改的那句以外一字不差**（風的描述要一樣，不然一進 B 段畫面就慢下來）。
-- B 段首尾鎖同一張會把人定住（Ray 退）；不鎖會慢慢下沉（Ray：沒關係）。
-- 嘴：寫「嘴閉著」沒用，寫「牙齒咬著匕首」才有用；仍不保證 → 抽 seed 挑。**不要蓋原圖的臉**（會「整張掉下來」）。
+### 1. ⭐⭐ CI 一律「機戰式近→遠」（10-12，Ray：「賽西莉這一版是目前最成功的 CI，其他 CI 也用這個模式」）
+範本：`out/ci/cutin_cecilie_saint_cam_full`（Ray 剪成 v2/v3，程式 -2169/-2171 已接）。
 
-### C. 敵人待機（循環）
-- `--mode idle --length 49 --fps 8` → 24 格、3 秒、頭尾同姿勢無縫循環、綠底去背成 alpha。
-- 分系（`--style`）：野獸系 beast＝伏身低喘、不舉手；聖遺物／葬系／守墓者 eerie＝詭異（頭歪斜頓住、軀幹卡帶抽動、器物各自晃，手固定）；其他＝呼吸。
-- 交件：`deliver_idle.py <原圖> <格資料夾> <目的地> <fps>` → 轉回原圖畫布、`anim.json`（canvas／box／frames／fps／loop）。
-- ⚠ 原尺寸 24 格解碼可達 60 MB 以上，交件時提醒程式可縮。
+1. **A**＝貼臉特寫、**發動前**（沒有法環／光效、眼睛還是本色），**背景純黑**。GPT 畫，指名「背景純黑、不要任何建築」。
+2. **B**＝**原版 CI 圖直接裁半身到大腿**（⚠ 不要用 GPT 重畫的 —— 頭髮會亂；Ray 罵過兩次「用原本的 B」）。
+3. **Wan I2V 從 B 原地生 3 秒**（49 格）：`TIVOT_GEN=720x1080 --width 720`，LoRA **bounce_test High/Low 0.8**（⚠ **安雅 0.6**），提示詞寫光效「從第 0 格就在動」。
+4. **`cam_cut.py` 合成**：
+   - A 原構圖**不縮、不平移**、只微推 1.0→1.03（縮或平移都會露圖邊／歪一側被裁 —— 10-12 踩過）。
+   - 換到 Wan 影格那一格，**兩眼位置與臉大小要對齊**：量兩張圖的眼距算 `--zoom`，**放大實量、不要看縮圖**（縮圖會騙人，10-12 誤判過一次）。
+   - 10 格均勻緩出拉到半身 → 接 Wan 其餘影格；取景框夾在圖內，不准露黑邊。
+   - 賽西莉實際參數：`--close-face 635,545 --hold 24 --face 506,256 --zoom 2.5`。
+5. 交 animechk **不裁**，Ray 自己剪。
 
-### D. 中槍倒下（人類敵人）
-- **生 1 秒**：`--mode hit --length 17 --frames 0`（全 16 格）。
-- **倒法**（Ray）：掩體前／無掩體＝往前倒；掩體後＝往後倒；臥射＝垂頭；跪射無掩體＝往前倒。站著無掩體 Ray 沒定，目前預設往後倒（衛士那批 Ray 全過）。
-- **抽格（Ray 最終定案）**：**第 1 格＝遊戲原本的分層（不另交）→ 原片第 7、9、11、13、15 格**（1 起算）。中彈直接跳到大後仰（前快），之後均速倒地（後慢）。
-  （演變：均抽 ✘ → 前段密抽 0/15/33/60/100% ✘ → 3/8/10/13/16 ✘ → 原圖＋7/9/11/13/15 ✔）
-- 群體圖：用美術的分層（全身原稿在 `_originals/…/thug_N.png`、`guard_N.png`）一人一支；交件轉回原圖畫布座標（`deliver_squad.py`／`deliver_guards.py`），每人 `anim.json`（canvas／box／kind）。
-- 往後倒的人在**掩體後**時，程式要讓他倒下時畫到掩體下面（群戰已接）。
+- ⚠ **為什麼不讓 AI 生運鏡**：VACE／Wan 生「特寫→半身」這種大跨度鏡頭，中間必糊、會亂補（換教堂背景、拉成全身、法環散、衣服跑），試了六版全失敗。Ray：「我用 KEYNOTE 都能做得比這好」。
+- ⚠ 提示詞不要用 **step** 這類字（Ray：會產生不需要的效果）；過渡格要給，不然 AI 會亂補。
 
----
+### 2. 待機動畫：**人以外一拍二**（10-12，Ray：「人以外的待機全部 f 數減半 freeze x2 交件」）
+- 怪：**12 格、fps 4**（3 秒）；人：24 格 fps 8 不減半。
+- 引擎是等間隔播 `1000/fps`、沒有單格停留 ⇒ 「每格停兩倍」＝取偶數格＋fps 減半。
+- **無臉巨人 `saint_gt_ci` 照怪的規格**（Ray 10-12）。
 
-## 五、踩過的坑
-
-- **ComfyUI 輸出檔名同名同 seed 會跨輪接著編號**：不能用「第 N 張」去抓某一輪的格（賽西莉 A 圖抓錯過）。一律從 `out/` 該輪資料夾拿。
-- 用 `&&` 串批次時，`tivot_wan.py` 最後寫總覽頁若出錯會回失敗、讓下一步不跑（已修 `m.get`）。長批次一律用 `Start-Process` 脫離，再掛背景監看等 log 出現「全部完成」。
-- 用 `&` 丟背景的指令**收不到完成通知** —— 要另外掛監看（`until grep … ; do sleep 30; done`），不然會漏通知 Ray（發生過）。
-- 提示詞壓不住的：臉（張嘴、眨眼、眼睛變圓）、構圖跑掉（寫「衝刺」就整個重演）、Wan 提早往 B 圖光效靠、LoRA 帶入鏡頭晃動。對策：換 seed、分段、鎖首尾、降 LoRA。
-- 背景頭尾不一致（A 圖有雜物、B 圖沒有）→ 整個畫面會像在晃。A／B 要用同一個乾淨背景。
-- **要結尾沒有的效果（光從無到有）就不要鎖結尾**：B 沒光、鎖了 B 光會在最後消失。只鎖 A。
-- **Wan 生不出密的背景粒子（火星）**：提示詞只撒零星幾顆。改用 `embers2.py` 背景人物分層合成（純黑背景的 CI 適用）。
-- **白衣服走綠幕會變半透明**（白袍帶綠反光被 key 掉）→ 用 `rekey_solid.py`（輪廓內 alpha=1）。
-- **A／B 外框不同大小**（例如 A 蜷縮比 B 矮）→ 工具會各自裁切縮放、A/B 對不上 → 先跑 `align_bbox.py` 讓兩張共用聯集外框。
-- **Bouncing LoRA 0.5～1.0 會讓乳房左右甩**（Ray：「變成左右甩奶」）；不加 LoRA 的強英文提示詞動作最好但沒乳搖。
-- Wan 第一格已經在動（約差 10～20 px），所以中槍改成「第 1 格用遊戲原圖」。
-- **綠眼角色走綠底去背，眼睛會被挖掉**（索拉娜吼叫踩到：原色時眼睛發暗，改鮮綠後整個被挖空、露出後面的火變紅眼）。解法 `rekey_eyes.py`：從 ComfyUI 原始輸出重新去背，臉部範圍內「沒有連到外圍綠幕」的綠色區塊保留。⚠ 臉部範圍是寫死的座標，換角色要改。**不要為了這個去改原圖的眼色**（Ray：太綠；改顏色前要先給他挑）。
+### 3. 插畫動畫（10-12 第一支：017_rennasmile）
+- 只有結尾圖時用**倒推法**：從原圖往回生（手放下、睜眼）→ 取中間一格當 A → 正向 A→原圖。
+- ⚠ **頭尾都鎖原圖 ⇒ 頭髮飄不起來**（提示詞寫多強都沒用，量過：鎖尾 5.8 vs 不鎖 10.7）。要飄就**不鎖結尾**，代價是最後一格不等於原圖。
+- 蕾娜是**綠眼**、睜眼要偏垂半睜（參考 `004_renna_intro`）—— 倒推出來的眼型偏圓萌，要正確得請 GPT 畫睜眼版當 A。
 
 ---
 
-## 六、交件現況
+## 四、資產盤點（憲法 §0.1：不欠的寫「不欠」、有欠才寫「欠」）
 
-| 件 | 位置 | 狀態 |
-|---|---|---|
-| CI 影片 8 支 | `resources/ci/video/*_v1.mp4`（索拉娜共鬥／諾聖徒化／安雅 NI／安雅 OBE／諾 OBE／賽西莉聖徒化／賽西莉 OBE／索拉娜飛刀耗盡） | ✅ 已接（ver -2060） |
-| 惡棍群戰中槍 26 人 | `resources/enemy/anim/<場>_hit_v1/thug_N/`（5 場） | ✅ 已接（ver -2062）。⚠ 這批是舊抽法（3 秒原片、5 格不均抽），未照最終規則重做 |
-| 帝都衛士 16 人＋米夏親衛隊 3 人中槍 | `resources/background/capital/fight_<場>_hit_v1/guard_N/`、`resources/enemy/anim/man_misha_guards_hit_v1/guard_N/` | ✅ 已接（ver -2070）：原圖停 80ms＋5 格各 80ms＋停 0.6 秒淡出 |
-| 米夏夢魘化待機 | `resources/enemy/anim/man_misha_ni_idle_v1/`（24 格 8fps 循環） | ✅ 已接（ver -2069）：程式另存六成尺寸 `man_misha_ni_idle_s60`（約 22 MB） |
-| 單人中槍 18 隻（`man_*`） | `tivot_wan/out/hit/`（未交） | ⚠ 舊規格（3 秒、10 格），Ray 未說交件；要做請用 1 秒＋最終抽法重跑 |
-| 索拉娜吼叫 CI 3 支 | `resources/ci/video/ci_sorana_roar_{anya,nouvelle,renna}_v1.mp4`（480×720、16fps、2 秒） | ⚠ 待程式接。三層：火（Wan）＋Q 版從右滑入彈抖（程式合成，`compose_roar.py`）＋索拉娜（Wan seed 7，原色＋保護眼睛去背） |
-| 安雅 NI（新）＋ 夢境粉碎 | `resources/ci/video/ci_anya_ni_v2.mp4`（新 NI：Ray 剪的 `anya_ni_s7_cut`，30 格 16fps＝1.875 秒，A＝`anya_ni1_start.png`→B＝`anya_ni2.png`）／`ci_anya_dreambreaker_v1.mp4`（＝舊 `ci_anya_ni_v1` 原檔複製，Ray：「原 NI 移去做 Dream Breaker」） | ⚠ 待程式接：NI 改指 v2、夢境粉碎接 dreambreaker_v1；接完 `ci_anya_ni_v1.mp4` 由程式回收（`tools/recycle.sh`） |
-| 安雅 Lucid Dream | `resources/ci/video/ci_anya_luciddream_v1.mp4`（Ray 剪的 `anya_ld_A_ab3_s7_cut`，32 格 16fps＝2 秒） | ⚠ 待程式接 |
-| 諾薇兒生命歸還 | `resources/ci/video/ci_nouvelle_lifereturn_v1.mp4`（Ray 剪的 `nb_open_s7_fx_cut`，32 格 16fps＝2 秒）：A＝`ci_nouvelle_breath_A.png`（收拳）只鎖起手、光由 Wan 從無到有生；火星由 `embers2.py` 另畫在背景層（每格從邊緣找連通黑區＝背景）再疊人物 | ⚠ 待程式接 |
-| 索拉娜補給 | `resources/ci/video/ci_sorana_supply_v1.mp4`（Ray 剪的 `supply_s77_cut`）：美術去背 A（手在腰後握彈匣）→B（往後遞），綠幕 idle 模式＋Bouncing 0.8；`comp_black_embers.py` 放回原畫布、純黑底＋同向直飛火星（無尾巴，Ray：「火星要往一個方向飛」） | ⚠ 待程式接 |
-| 諾薇兒即死防禦 | `resources/ci/video/ci_nouvelle_deathguard_v1.mp4`（Ray 剪的 `dg2n_s7_cut`）：美術去背 A2（低頭蜷縮）→B（吶喊），綠幕 idle、**不用 LoRA**、強英文提示詞；`rekey_solid.py` 實心去背（白袍不半透明）、`fix_magenta.py` 修頭頂洋紅色塊、`comp_black_embers.py` 黑底＋火星 | ⚠ 待程式接（乳搖版另在試，見待辦） |
-| 怪物待機 94 隻 | `tivot_wan/out/monsters/`（未交） | ⚠ 等 Ray 檢查；長期建議 GPU 貼圖 |
+### CI（`resources/ci/video/`）
+| CI | 狀態 |
+|---|---|
+| 賽西莉聖徒化 | ✔ 不欠：近→遠新版 v3（程式 -2171 已接） |
+| 賽西莉 OBE／即死防禦／生命歸還 | ⚠ 欠：要改近→遠。OBE 的 A 我提議**直接裁原圖臉部**（OBE 沒有狀態變化，不必等 GPT），Ray 未答 |
+| 諾薇兒 4 支（聖徒化／OBE／即死防禦／生命歸還） | ✔ 不欠：Ray「諾不用改」 |
+| 索拉娜 補給／OBE／捕食者／吼叫 ×3 | ⚠ 欠：要改近→遠（0.8） |
+| 安雅 NI／OBE／清醒夢／夢境粉碎／夢中夢 | ⚠ 欠：要改近→遠（**0.6**）。夢中夢 v5（v4 接紫光爆散，Ray 剪）程式 -2168 已接 |
+| 托爾斯滕 BR | ⚠ 欠：要改近→遠（男性，不搖） |
+
+### 怪物待機（`resources/enemy/anim/`）
+| 件 | 狀態 |
+|---|---|
+| 87 隻 `mon_*_idle_v1` | ✔ 不欠：已做一拍二 `mon_*_idle_v2`（117→59 MB）；**程式要改指 v2**（`TO_CODE_idle_v2.md`），之後 v1 回收 |
+| 崩岩巨像 `mon_canyon_colossus_dark_idle_v1` | ✔ 不欠（一拍二直接交；程式可馬上接） |
+| 空中戰 8 隻 `mon_sky_*_idle_v1` | ✔ 不欠（一拍二；振翅超出原圖，box 有負數）；等有敵人卡才接 |
+| 鹿主 | ✔ 不欠：出場的是 `deernightmare`（已有）；變異前 `deer` 那張卡 -870 已撤 |
+| 背負祭壇者 `mon_beast_altar` | ✔ 不欠：`out/monsters/` 早就生過；沒有任何卡在用，所以沒交 |
+| 卡耶爾單隻小怪 34 張 | ✔ 不欠：是群戰圖層的素材，群戰改用每一層各自的待機（見下） |
+
+### 人型＋群戰待機（**今晚整夜批次中**，見六）
+| 件 | 狀態 |
+|---|---|
+| 米夏／米夏 NI | ✔ 不欠 |
+| 單人 9：尼莫、賞金獵人 EP、公會賞金獵人、惡棍 6 種 | ⚠ 批次中 |
+| 群戰人 45：惡棍 5 場 26、帝都衛士 4 場 16、米夏親衛隊 3 | ⚠ 批次中（Ray：「群體敵人已經拆分了 可以做」） |
+| 卡耶爾大軍 11 組 44 隻 | ⚠ 批次中（怪 → 交件時減半） |
+| 索拉娜敵對 `man_sorana`／槍之魔女 `gunwitch_boss_ci`／無臉巨人 `saint_gt_ci` | ⚠ 欠：**不透明整張圖**（沒有 alpha），綠幕做不了 → 要試「整張生成＋首尾鎖」循環；先做無臉巨人一支給 Ray 看（照怪的規格） |
+
+### 插畫
+| 件 | 狀態 |
+|---|---|
+| `017_rennasmile` | ⚠ Ray 說「可以」：`out/ci/rennasmile_A13_free7wind`（不鎖結尾、頭髮飄，2 秒 1080×720）。**還沒交件**：要剪哪段、交到哪、程式怎麼播都沒定 |
 
 ---
 
-## 七、進行中／待辦（2026-10-08 收工時）
+## 五、待程式接（交件單都在檔案裡）
+- `resources/enemy/anim/TO_CODE_idle_v2.md`：① `ENEMY_IDLE` 改指 `_v2` ② 崩岩巨像補進去 ③ 空中戰等卡 ④ 群戰待機要改引擎（`idleDirFor` 對 `en.group` 直接回 null；要每一層各播各的、被打倒切倒地）。
+- 群戰待機交件格式：同中槍倒地（`<組>_idle_v1/<人>/frame_*.webp＋anim.json`，座標＝那一層的畫布；分層與美術原稿同畫布，已比對）。
 
-1. **諾薇兒即死防禦 v2（壓胸）**：Wan 怎麼寫胸都「硬得像石頭」→ Ray 親自用 GPT 出 `layers/nouvelle_deathguard/nouvelle_B2.png`（雙手壓胸）。最新一支 `out/ci/dg3j_s7`（A2→B2、seed 7、Bouncing 0.3、提示詞「soft breasts, jelly breasts…hands sink in」），**等 Ray 看**。已交 v1＝`ci_nouvelle_deathguard_v1.mp4`（dg2n_s7_cut，無乳搖）。
-   - 試過無效的：Bouncing 0.5/1.0（左右甩）、Motto 0.4/0.8、強英文提示詞「single vertical bounce」「press into soft breasts」。
-2. **安雅夢魘裝填**（`ci_anya_nightmarereload`）：A＝美術動感版 `anya_A.png`（黑底），B＝原圖紫焰保留、背景壓黑、虹膜換 A 級藍（`in_nr/anya_nr_Bblue.png`），**4 秒**（Ray：延 1 秒）。成品 `out/ci/nr_blue7`／`nr_blue77`，**等 Ray 選 seed／剪**。眼睛在 Wan 中段偏青綠，Ray 說**不用校色**。
-3. **米夏戰鬥立繪待機**：`out/monsters/man_misha_idle_s7k`／`s77k`（24 格 8fps 循環、實心去背），**等 Ray 選**；選好用 `deliver_idle.py`（原圖 `resources/enemy/man_misha.webp`）交到 `resources/enemy/anim/man_misha_idle_v1/`。
-4. Lucid Dream 的眼睛是灰黑（不是藍）—— Ray 說要藍的是夢魘裝填，Lucid Dream 沒要求改，暫不動。
-5. **敵人動畫改 GPU 貼圖（KTX2/Basis）**：最優解，未實作。
-6. 惡棍群戰要不要照最終抽法重做：未問。
+## 六、⚠ 今晚整夜批次（下一個 session 第一件事：收它）
+- `tivot_wan/batch_group_idle.py` → 輸出 `out/idle_group/<組>__<名>/`，log `out/group_idle_batch2.log`（看到「全部完成」）。
+  10-12 23:xx 開跑、00:15 因插隊做蕾娜暫停一次（做到第 23 支），00:37 恢復；98 支，預計清晨跑完。
+- 跑完要做：
+  1. 逐支檢查出框（四邊 alpha）、姿勢／武器跑掉 → 有問題的換 seed 或 `TIVOT_FIT`。
+  2. 交件：人 24 格 8fps、卡耶爾大軍減半（12 格 4fps）；`deliver_idle.py <原稿> <格> <目的地> <fps> 0.92`，原稿＝`_originals/.../thug_N.png`／`guard_N.png`／`canyon_swarm/fly<n>/guard_N.webp`。
+     目的地建議：`resources/enemy/anim/<場>_idle_v1/<人>/`、`resources/background/capital/fight_<場>_idle_v1/<人>/`、`resources/enemy/canyon_swarm/fly<n>_idle_v1/<隻>/`。
+  3. 寫群戰的 `TO_CODE`。
 
-## 八、等 Ray
-- 單人中槍 18 隻、怪物待機 94 隻要不要交。
-- 站著沒掩體的中槍，往後倒還是往前倒（目前預設後倒）。
+## 七、等 Ray
+- 賽西莉 OBE／即死防禦／生命歸還：A 用原圖裁（不畫新圖）還是等 GPT 額度？
+- 骨鯨（`mon_sky_ribwhale`）的翼被 Wan 越張越大，像不像原本的牠。
+- 017 蕾娜：交件方式（最後一格≠原圖，劇情裡停在原圖上會不會跳）。
+- 舊的未決：單人中槍 18 隻（`man_*`，舊規格）要不要交；站著無掩體中槍往哪倒；惡棍群戰要不要照最終抽法重做。

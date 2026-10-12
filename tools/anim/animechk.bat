@@ -1,4 +1,5 @@
 @echo off
+set PYTHONIOENCODING=utf-8
 rem animechk: TIVOT animation checker (server + player)
 cd /d "C:\Users\Ray Ku\Desktop\ComfyUI-master\tivot_wan"
 rem kill any old server on 8130 so the newest code is always used
