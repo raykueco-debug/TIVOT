@@ -1,3 +1,13 @@
+> ⭐⭐⭐⭐⭐⭐ **【Mac 美術 session 收工・換機器】（10-12）** —— 這一輪交的都在下面幾段（各有接法）。**等 Ray 決定的事集中在這裡**：
+> 1. 溫斯摩爾港（暫名）：同一張大圖截出的格子太像 → 要不要改每格一張（約多 23 張）；要不要過 Gemini 統一成平塗；城名；小地圖；時段差分。詳 `resources/map/_winsmoor_spec.md`。
+> 2. 賽西莉 `call`／`ready`／`battlecry` 頭髮比 front 長而散、`pant` 左肩露出、`shyhand` 頭頂被裁一點 —— 要不要重畫。
+> 3. 帝國軍：`SOLDIER` 現在沒立繪、`COMMANDER` 仍指白制服舊圖 → 建議改指 `imsoldier`／`imcommander`（程式端）。
+> 4. 卡耶爾 Boss 崩岩巨像的數值（程式端暫抄北泊教堂 Boss）。
+> · ⚠ 還沒進 `speakers.js` 的立繪（程式端照下面各段的行貼）：索菈娜 3、科爾文 4、愛里歐 7（含 `hurtdown`）、賽西莉 11、士兵 7、指揮官 6；插圖 044 還沒接進碎片 02。
+> · ⚠ GPT 原圖 PNG 都在 Mac 的 `resources/_originals/`（gitignore，**另一台沒有**）—— 要重修那幾張就回 Mac，或從 `.webp` 開工。
+> · 台詞差分表 `卡耶爾山谷_碎片02_台詞差分.xlsx`（根目錄）已一併 commit；Ray 改過的版本才是正本，之後只准 `dialogue_xlsx.py --refresh`。
+> · 工作目錄裡沒提交的 `script/speakers.js`、`resources/ci/nemo_ci_dual.webp`、`_layout_dunmor.pptx`、`si/npc/a69b…png` **不是這個 session 的**，沒動。
+>
 > ⭐⭐⭐⭐⭐ **【守城戰港都「溫斯摩爾港」（暫名）・40 格背景】（10-11 夜，Mac 美術；Ray 睡前「開跑別問了」）** —— 規格與交件紀錄全在 `resources/map/_winsmoor_spec.md`。
 > · 拓樸 40 格（7×7 方格、海在南、中央廣場＝防守點、邊緣 20 個進入點、到廣場 3～5 步）＝`resources/map/_layout_winsmoor_siege.png`，Ray 已點頭。
 > · 背景：17 張大圖截成 40 格 `resources/background/winsmoor/ws_<節點>_day.webp`（只有日景），總覽 `resources/background/_winsmoor_nodes_sheet.jpg`。
