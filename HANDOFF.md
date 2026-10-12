@@ -1,157 +1,92 @@
-> ⭐⭐⭐⭐⭐⭐ **【Mac 美術 session 收工・換機器】（10-12）** —— 這一輪交的都在下面幾段（各有接法）。**等 Ray 決定的事集中在這裡**：
-> 1. 溫斯摩爾港（暫名）：同一張大圖截出的格子太像 → 要不要改每格一張（約多 23 張）；要不要過 Gemini 統一成平塗；城名；小地圖；時段差分。詳 `resources/map/_winsmoor_spec.md`。
-> 2. 賽西莉 `call`／`ready`／`battlecry` 頭髮比 front 長而散、`pant` 左肩露出、`shyhand` 頭頂被裁一點 —— 要不要重畫。
-> 3. 帝國軍：`SOLDIER` 現在沒立繪、`COMMANDER` 仍指白制服舊圖 → 建議改指 `imsoldier`／`imcommander`（程式端）。
-> 4. 卡耶爾 Boss 崩岩巨像的數值（程式端暫抄北泊教堂 Boss）。
-> · ⚠ 還沒進 `speakers.js` 的立繪（程式端照下面各段的行貼）：索菈娜 3、科爾文 4、愛里歐 7（含 `hurtdown`）、賽西莉 11、士兵 7、指揮官 6；插圖 044 還沒接進碎片 02。
-> · ⚠ GPT 原圖 PNG 都在 Mac 的 `resources/_originals/`（gitignore，**另一台沒有**）—— 要重修那幾張就回 Mac，或從 `.webp` 開工。
-> · 台詞差分表 `卡耶爾山谷_碎片02_台詞差分.xlsx`（根目錄）已一併 commit；Ray 改過的版本才是正本，之後只准 `dialogue_xlsx.py --refresh`。
-> · 工作目錄裡沒提交的 `script/speakers.js`、`resources/ci/nemo_ci_dual.webp`、`_layout_dunmor.pptx`、`si/npc/a69b…png` **不是這個 session 的**，沒動。
->
-> ⭐⭐⭐⭐⭐ **【守城戰港都「溫斯摩爾港」（暫名）・40 格背景】（10-11 夜，Mac 美術；Ray 睡前「開跑別問了」）** —— 規格與交件紀錄全在 `resources/map/_winsmoor_spec.md`。
-> · 拓樸 40 格（7×7 方格、海在南、中央廣場＝防守點、邊緣 20 個進入點、到廣場 3～5 步）＝`resources/map/_layout_winsmoor_siege.png`，Ray 已點頭。
-> · 背景：17 張大圖截成 40 格 `resources/background/winsmoor/ws_<節點>_day.webp`（只有日景），總覽 `resources/background/_winsmoor_nodes_sheet.jpg`。
-> · ⚠ 等 Ray 看：同一張大圖截出的格子很像（窗重疊 2/3）—— 要不要改每格一張。
-> · ⚠⚠ 程式端要接：新城資料（40 節點、出口照拓樸圖、`bg:'ws_<節點>'`、`noTime:true`）＋守城戰規則。
->
-> ⭐⭐⭐⭐⭐ **【插圖 044・等程式端接】（10-10，Mac 美術）** —— `resources/illustration/044_cecilietorsten.webp`（1024×1536，無時段差分 → 腳本寫 `cg:'044_cecilietorsten', cgNoTime:true`）。
-> · 碎片 02 最後一格「戰鬥結束 → 插圖：主角與賽西莉 → 士兵：那就是……聖約騎士團！」那一拍。
-> · 內容：卡耶爾山谷谷底祭場、兩人背靠背、主角背對鏡頭單手持 Ganymede、賽西莉面向鏡頭冷峻俯視、低角度仰拍、暗沉的硝煙逆光。Ray 已驗收。
-> · 資產盤點：✔ 不欠（Ray 看過、可交件）。
->
-> ⭐⭐⭐⭐⭐ **【帝國軍：士兵 7 張＋前線指揮官 6 張・等程式端接】（10-10，Mac 美術）** —— 碎片 02（卡耶爾山谷）。制服照 Ray 給的參考圖（深藍雙排扣、金滾邊、筒帽），帶戰地塵土；指揮官與士兵同制服、只差金色流蘇肩章＋軍刀。檔在 `resources/si/npc/`，**還沒寫進 `speakers.js`**。
-> · ⚠⚠ 程式端要決定的兩件：① `SOLDIER` 現在是 `art:null`（沒有立繪）→ 要新開一個 ART 鍵（建議 `imsoldier`）並把 `SOLDIER.art` 指過去；② 既有的 `commander`（`npc_commander_si_front`）是**白色制服**、對不上參考圖 → 建議 `COMMANDER.art` 改指新的 `imcommander`。
-> · 士兵 `imsoldier`（`cm:172`、`side:'R'`、`base` 用 front）：
->   `front:{ src:'resources/si/npc/npc_imsoldier_si_front.webp', top:24, bot:1516, fx:0.493 },`
->   `panic:{ src:'resources/si/npc/npc_imsoldier_si_panic.webp', top:14, bot:1517, fx:0.441 },`（不行了！數量太多！）
->   `worried:{ src:'resources/si/npc/npc_imsoldier_si_worried.webp', top:11, bot:1519, fx:0.592 },`（應該中午就該到了才對……）
->   `alarm:{ src:'resources/si/npc/npc_imsoldier_si_alarm.webp', top:10, bot:1507, fx:0.351 },`（南門被攻破了！）
->   `awe:{ src:'resources/si/npc/npc_imsoldier_si_awe.webp', top:2, bot:1514, fx:0.406 },`（一個人就擋下了禍魘／那就是……聖約騎士團！）
->   `rally:{ src:'resources/si/npc/npc_imsoldier_si_rally.webp', top:18, bot:1512, fx:0.365 },`（撐下去！援軍一定會到的！ 舉槍射擊）
->   `doubt:{ src:'resources/si/npc/npc_imsoldier_si_doubt.webp', top:14, bot:1521, fx:0.647 },`（就你們……兩個人？）
-> · 指揮官 `imcommander`（`cm:180`、`side:'R'`）：
->   `front:{ src:'resources/si/npc/npc_imcommander_si_front.webp', top:8, bot:1523, fx:0.460 },`
->   `urgent:{ src:'resources/si/npc/npc_imcommander_si_urgent.webp', top:4, bot:1518, fx:0.669 },`（援軍呢？還沒有到嗎？ ⚠ 右腳靴尖貼到畫布右緣被裁一點，舞台看不到）
->   `shock:{ src:'resources/si/npc/npc_imcommander_si_shock.webp', top:12, bot:1518, fx:0.699 },`（！！）
->   `surprise:{ src:'resources/si/npc/npc_imcommander_si_surprise.webp', top:4, bot:1521, fx:0.444 },`（聖王廳的援軍……？）
->   `salute:{ src:'resources/si/npc/npc_imcommander_si_salute.webp', top:11, bot:1521, fx:0.452 },`（失禮了。行軍禮）
->   `plead:{ src:'resources/si/npc/npc_imcommander_si_plead.webp', top:8, bot:1515, fx:0.481 },`（出海口方向還有我軍殘部，能否……）
-> · top/bot/fx 是 `measure_si.py` 量的；舉手指人那幾張的 fx 可能被手拉偏，上線看臉再微調。
->
-> ⭐⭐⭐⭐⭐ **【賽西莉差分 11 張・等程式端接】（10-10，Mac 美術）** —— 碎片 02／03 的劇本。她是後勤術師：**沒有戰損**，戰後疲憊只畫流汗喘氣，鼻血＝能力過載（Ray 定）。檔在 `resources/si/`，**還沒寫進 `speakers.js`**：
->   `smirk:{ src:'resources/si/cecilie_si_smirk.webp', top:8, bot:1529, fx:0.520 },`（是『兩個人』吧？）
->   `call:{ src:'resources/si/cecilie_si_call.webp', top:4, bot:1526, fx:0.680 },`（喂！等我一下！）
->   `ready:{ src:'resources/si/cecilie_si_ready.webp', top:10, bot:1509, fx:0.701 },`（數量不少。可以嗎？）
->   `battlecry:{ src:'resources/si/cecilie_si_battlecry.webp', top:46, bot:1528, fx:0.649 },`（驅逐殆盡吧！ ⚠ top/fx 是頭髮量的，alpha 量會被術式光拉到 0／0.528）
->   `command:{ src:'resources/si/cecilie_si_command.webp', top:7, bot:1526, fx:0.375 },`（往後撤，離開火線）
->   `pant:{ src:'resources/si/cecilie_si_pant.webp', top:69, bot:1443, fx:0.626 },`（哈啊……，單膝跪地 ⚠ 非站姿，要用 §6.5 的 cm／standCm 調）
->   `proud:{ src:'resources/si/cecilie_si_proud.webp', top:5, bot:1526, fx:0.550 },`（你以為我是誰？）
->   `nosebleed:{ src:'resources/si/cecilie_si_nosebleed.webp', top:5, bot:1511, fx:0.553 },`（鼻血插分 ！！）
->   `shynose:{ src:'resources/si/cecilie_si_shynose.webp', top:6, bot:1496, fx:0.524 },`（不、不要看！／不是說了不准看嗎 —— 手遮鼻 shy）
->   `shocknose:{ src:'resources/si/cecilie_si_shocknose.webp', top:6, bot:1497, fx:0.401 },`（等一下！很髒的啊！ shock）
->   `shyhand:{ src:'resources/si/cecilie_si_shyhand.webp', top:0, bot:1498, fx:0.559 },`（脫下來。回去我給你洗洗。 ⚠ 頭頂碰到畫布上緣，髮梢被裁一點點）
-> · ⚠ 已知小偏差：`pant` 左肩露出（front 有袖）；`call`／`ready`／`battlecry` 的頭髮比 front 長而散 —— 要不要重畫等 Ray 看過再定。
->
-> ⭐⭐⭐⭐⭐ **【愛里歐（謎之術師 `mage`）差分 6 張・等程式端接】（10-10，Mac 美術）** —— 照碼頭那一段劇本補角度與動作，眼睛一律瞇著。檔在 `resources/si/npc/`，**還沒寫進 `speakers.js`**：
->   `wave:{ src:'resources/si/npc/mage_si_wave.webp', top:7, bot:1532, fx:0.444 },`（嗨！）
->   `talk:{ src:'resources/si/npc/mage_si_talk.webp', top:2, bot:1533, fx:0.431 },`（一般說話）
->   `shrug:{ src:'resources/si/npc/mage_si_shrug.webp', top:9, bot:1530, fx:0.443 },`（藏起爪子／嗅覺很靈敏，攤手）
->   `laugh:{ src:'resources/si/npc/mage_si_laugh.webp', top:3, bot:1529, fx:0.515 },`（笑，側身仰頭）
->   `threat:{ src:'resources/si/npc/mage_si_threat.webp', top:6, bot:1527, fx:0.462 },`（得請你們倒在這裡了，手上紫光）
->   `leave:{ src:'resources/si/npc/mage_si_leave.webp', top:5, bot:1523, fx:0.715 },`（有緣再會吧，半轉身回頭兩指揮別）
-> · ✔ 補交 `hurtdown:{ src:'resources/si/npc/mage_si_hurtdown.webp', top:35, bot:1517, fx:0.351 },`（咕……／不愧是前第一後補 —— Ray：受創不要破衣、不要髒污、低頭瞇眼無笑容。⚠ 取代先前的 `hurtsmile`，那張已回收、不要接）
->
-> ⭐⭐⭐⭐⭐ **【新立繪 7 張・等程式端接】（10-10，Mac 美術 session；commit a904d66d）** —— 檔案已在 `resources/si/`，**還沒寫進 `script/speakers.js`**（美術不碰程式，鐵律 11）。
-> · 索菈娜 `ART.sorana.expr` 加：
->   `guardgrimace:{ fxShift:-0.01, yShift:14, src:'resources/si/sorana_si_guardgrimace.webp', top:9, bot:1527, fx:0.651, cm:150 },`（與 guard 同姿勢，沿用 guard 的值）
->   `runserious:{ src:'resources/si/sorana_si_runserious.webp', top:8, bot:1515, fx:0.509 },`（正面朝鏡頭跑）
->   `runserious_side:{ src:'resources/si/sorana_si_runserious_side.webp', top:23, bot:1507, fx:0.774 },`（側面奔跑，Ray：兩個都留）
-> · 科爾文 `ART.corvin.expr` 加：
->   `bow:{ src:'resources/si/npc/corvin_si_bow.webp', top:15, bot:1522, fx:0.371 },`（向女士致意，戴眼鏡）
->   `hurthold:{ src:'resources/si/npc/corvin_si_hurthold.webp', top:7, bot:1523, fx:0.419 },`
->   `hurttalk:{ src:'resources/si/npc/corvin_si_hurttalk.webp', top:4, bot:1504, fx:0.456 },`
->   `hurtcommand:{ src:'resources/si/npc/corvin_si_hurtcommand.webp', top:6, bot:1522, fx:0.469 },`（Ray 稿寫 hurtcoomand，當成拼錯；三張受傷版都無眼鏡、傷勢一致）
-> · top/bot/fx 都是 `tools/measure_si.py` 量的。眨眼補丁這 7 張都還沒做。
-> · 資產盤點：✔ 不欠＝以上 7 張（Ray 點名的都交了）。
->
-# HANDOFF — 截至 `ver 2026.09.22-2112`（10-09 深夜，iMac 程式 session 收工）
+# HANDOFF — 截至 `ver 2026.09.22-2166`（10-12，iMac 程式 session 收工，換機器）
 
 > ⚠⚠ **交接規則（Ray 10-04 定）**：
 > 1. 開工讀交接 → **逐項清點這一份的「完成／未完成」**，給 Ray 確認。
 > 2. 確認後**生成新交接、回收舊交接**（`tools/recycle.sh`）—— 這個檔**只留一份現況**，不往下疊。
 > 3. 已完成、已定案、Ray 說移除的，**不要再抄進新的一份**。
-> 上一份：`_recycle/HANDOFF.md.*`（-2101，3060 機那一份；git 歷史也有）。
+> 上一份：`_recycle/HANDOFF.md.20261012-151833`（-2112 那一份＋美術在頂端加的交件條；git 歷史也有）。
 
 ## 現況
-- 只有一個分支：`main`。兩台在推：**Windows 3060**（`C:\Users\User`）與 **iMac**（`~/Desktop/TIVOT`，iMac18,3／8 GB，macOS 13）。
-  ⚠ 兩台同時推過一次（-2103 撞號，`e923c854` 合併）—— **開工先 `git pull`，推之前再 pull 一次**。
-- 測試伺服器：Windows 用 `.claude/launch.json` 的 `tivot-claude`（8202）；iMac 用 **`tivot-verify`（8123）**。8200 是 Ray 的，不要碰。
-  iMac 沒有 node：`script_lint.py` 走 macOS 內建 jsc，照樣能跑。
-- ⚠⚠ 西文翻譯暫停（Ray 10-09）—— 改中文時不要動 `i18n/*/es*`。
-- 其他 session：**動畫**（`resources/_HANDOFF_ANIM.md`）、**美術**（`resources/_HANDOFF_ART.md`）。交件由程式接、commit。
-- 不要 commit：`tools/anim/*` 未提交的修改、`resources/ci/layers/**` 中間檔、`resources/si/eyefx/cecilie_si_fluster_te_mask.webp`（來源不明）、
-  Ray 本機的 `docs/EOS_CONTEST.md`／`reference/TIVOT_Glossary_ZH_EN_JA_ES.xlsx` 改動（他自己的）。
+- 只有一個分支：`main`。兩台在推：**Windows 3060**（`C:\Users\User`）與 **iMac**（`~/Desktop/TIVOT`）。**開工先 `git pull`，推之前再 pull 一次**。
+- 測試伺服器：Windows 用 `tivot-claude`（8202）；iMac 用 **`tivot-verify`（8123）**。**8200 是 Ray 的，不要碰**
+  （⚠ 本輪踩過一次：預覽分頁 `seed` 被切到 8200，我對它重整並開了一場 `test_misha` —— 動手前先確認 `location.port`）。
+- iMac 沒有 node：語法檢查用 jsc、`script_lint.py` 照樣能跑。
+- 其他 session：**美術**（本機另一個 session，`resources/_HANDOFF_ART.md`）、**動畫**（另一台，`resources/_HANDOFF_ANIM.md`）。交件由程式接、commit。
+- 不要 commit：`script/speakers.js` 的未提交改動（Ray 本機在調）、`docs/EOS_CONTEST.md`、`reference/TIVOT_Glossary_ZH_EN_JA_ES.xlsx`、根目錄兩張 UUID png 等未追蹤檔（見下「等 Ray」）。
+- 測試開章法（本輪一直在用）：8123 開機點掉讀取頁 → `import('/script/progress.js?v=<版號>')` 往 `CHAPTERS` 前面塞一筆臨時章節（flags／stage／clockHour／town／node）→ 點章節鈕 → 選「演劇情」。
 
-## 本輪做的（-2102～-2112）—— 都推上了
-- **另一台的資源接上**（-2102）：蘿法 `shy/ask/lookdown`、蕾娜 `letter/check/checktalk`、安雅 `cryhard/shysmile`（WebP＋measure_si）；摺信聲 `se_paperfold`（fileGain 3.40）。
-- **返回帝都整段**（-2103～-2110，Ray 稿；`script/town.js` 的 `CAP_RETURN`、`flight/index.html` 的 `crFlightMaybe`）：
-  廢城出航 → 飛行對白＋開大地圖標帝都 → 降落攝政王廣場（`cr_return`，fromStage:17）→ 負片瞬閃（`se_monsterroardeep`、BGM 換 Glass Cradle）
-  → 追到帝都郊外風車荒地（`capital_outskirts_dusk`，BGM Hesitation＝`failed`，`sturm` ambVol 0.4）→ 演完 `goto:'inn'`（我的判讀）。
-  新 speaker 小男孩／母親（`capi_boy`／`capi_mom`）；孩童笑聲 `se_kidlaughter`（fileGain 2.31）；`playAmb` 吃 `ambVol`。
-- **Stage 17**（-2107）：廢城升空完由 16 升 17（`crFlightMaybe`）；章節列表加 Stage 17（從廢城起飛）。
-- **Stage 16 以後無禁航區**（-2108，`noflyOff` 加章節判定）。
-- **蕾娜念的禍魘日期跟遊戲時間掛勾**（-2111／-2112）：事件日期 `tivot_eventdate_v1`（一輪內，存檔帶；鐵律 9：第一次才記、沒人拔）。
-  `np_natalia`＝娜塔莉戰打完那一拍、`valse_serpent`＝羽蛇強制戰打贏（飛行頁自己寫同一把鑰匙，兩邊互指）、`muyak`＝第一次進木雅克神殿（城上 `eventDate`）。
-  台詞寫 `{VD:事件?退路天數+加幾天}`；跳章沒記錄＝開局第 7 天起算（瓦爾士 9、木雅克 10 是我排的）；木雅克之後 +9／+24／+37（累加）。
-- **Credit** 加「Animation LoRA」：Bouncing B、Motto Hayaku（zxtopower）。⚠ 模型卡沒寫商用 —— 上架前要私訊作者確認。
-- 賽西莉即死防禦／生命歸還 CI 影片：另一台（`5626ed7f`）交件並接好，生命歸還 cutinDur 1042。
+## 本輪做的（-2113～-2166）—— 都推上了
+**資源接上**：士兵 `imsoldier`（`worry` 鍵）／指揮官 `imcommander`、賽西莉 11 張（pant 用 cm150／standCm135）、愛里歐（`MAGE`／`MAGE_X`）全套＋hurtdown、
+索菈娜 guardgrimace／runserious×2、科爾文 bow／hurt×3、蕾娜／蘿法／安雅新差分；CI 更新（賽西莉被動 v4、安雅被動等）；插圖 043／044；差分總表重出（NPC 各自一頁、孤兒圖同一頁）。
+
+**帝都 Stage 17～19**：返回帝都（CAP_RETURN）→ Stage 18 旅店夜襲（`clockSet:23` 鎖時間、Nocturnal Bloom → 索「！！」起 Rituale 鎖到愛里歐戰）→
+衛士追擊戰（`siege.route` 單行道、走一步播 `se_steps`）→ 碼頭愛里歐戰（`cap_mage`：400 血、六角護罩只吃清盤傷害、反擊免疫顯示 GUARD、RetroRoman Battle2、專用背景）→ Stage 19 強制出航。章節列表有 17／18／19。
+深夜時段改 22:00 起。群體敵人倒地動畫同時淡出。
+
+**北泊 → 碎片 02（卡耶爾山谷夢境）整段**（-2134～-2165）：
+- 蕾娜夜談 → 睡覺音（BGM 同時淡出）→ 長黑幕 → 讀取頁 → 卡耶爾入口**黑著抵達**（新欄位 `darkStart`：`story.holdSceneFade`，場景曲等腳本 `fadeIn` 才放）→ 黑幕裡戰場聲由遠到近、士兵第一句 → 淡入。
+- 夢境期間：Rituale Machina 上鎖（路上戰鬥不換曲）、每格必出怪（城上 `wildForce`）、搭檔賽西莉、不可入整備頁（城上 `noGear` → `gear.setBlocker` 唯一守門）、不能出航、背景鎖白天、打輸直接回北泊（`loseGoto`）。
+- 入口開場戰 → 風蝕迴廊一場（`frag02_mid`）→ 谷底祭場 Boss **崩岩巨像**（`canyon_colossus`，數值暫抄北泊教堂 Boss）。Boss 戰前解鎖、放賽西莉戰鬥曲一路到夢境結束。
+- 結尾：士兵 awe「竟然……只憑兩個人就……」→ 插圖 044 由下往上平移 →「那就是……聖約騎士團！」→ 轉泛黃（新欄位 `cgTone:'sepia'`）→ 三秒黑（BGM 淡出）→
+  夢醒直接推到隔天 8:00／S3（`FRAG02_WAKE`，打輸三條路同）→ 北泊旅店黑著抵達、字卡大字「北方泊地」＋日期時刻 → 淡入。
+- 群怪「禍魘大軍」：11 組 `canyon_mix2..12`（美術深色重生版；每組後排一隻大型＋前面 2～4 小型、≤5 隻、同種 ≤2；骨鴉飛行抬高、`group.noShadow` 不畫影子）。圖層 `resources/enemy/canyon_swarm/fly<n>/`。
+- 群體敵人受擊只抖被打中的那一個（`enemy.groupHitFlash`）。
+
+**引擎修正**：
+- 換插圖不再搶走腳本蓋的黑幕（`cgFade` 的 `keepOwner`）—— 修「插畫跑完先露出場景再播腳步聲走到次日」（娜塔莉戰後接碼頭同一病）。
+- 拍上 `flip` 改成每人各自記、翻了就一直翻到下台。
+- 換怪先收上一隻的待機動畫（修米夏 NI 殘留到帝都第一戰）。
+- 立繪編輯改台詞：前後一拍篩不開時走整拍序列定位（修娜塔莉連續「……」寫入失敗；`devserver.py` 改了，**Ray 的 8200 要重開才吃得到**）。
+- 北泊聖徒教學戰：劇情三擊之後即死防禦還原（以前被腳本那一擊吃掉）。
+- 約會／巧遇好感 +5；「限時才加」的事件改成去了就加；聖索菲亞約索菈娜 +10。
+
+**其他**：賽西莉兩首 BGM（RetroRoman Battle／World OP2）響度共 +21%；搭檔是賽西莉的戰鬥放 RetroRoman Battle。
+薇拉馮德拓樸照帝都改（圓環廣場：上中央區／左港町／右上街區；港町照舊街區排，碼頭外接造船廠與燈塔）。
+**溫斯摩爾港（守城戰地圖，暫名）**：40 格節點與出口照美術拓樸圖接上（到廣場步數 40 格全對），背景只有日景；入口暫定中央棧橋、出航往下。
 
 ## 未完成
-**等 Ray 確認（這一輪我自己判斷的）**
-1. 返回帝都：「諾：『妳怎麼知道！』」稿上圖是 `Sorana_SI_surprised` ⇒ 我讓索菈娜講；演完走回旅店（`goto:'inn'`）。
-2. 差分取最接近的：蕾 `lookasidetalk→lookawaytalk`、`evalutating→evaluate`、`asksious→askserious`；諾 `raisehand→risehand`、`confuse→surprise`（她沒這張）；
-   索 `smilebig→lauaghbig`、`furious→angry`、`surprised→surprise`；安 `terrifying→terrify`、`sobbing→sob`、`deseprade→desperate`。
-3. 禍魘日期：木雅克之後「9／15／13 天」我當**累加**；跳章退路瓦爾士 9、木雅克 10 天。
-4. 小男孩／母親身高是估的（120／160 cm）。
+**守城戰（溫斯摩爾港）—— 等 Ray 定玩法，規格在 `resources/map/_winsmoor_spec.md`**
+1. 敵人一回合走幾格（建議：玩家走一步＝一回合，每支敵軍沿最短路徑往廣場走一格）；一次幾支、從 20 個進入點哪裡冒、撐幾波。
+2. 截到就打一場？打哪類怪？評價 S／A／B 的回合效果（S 敵停一回合／A 照常／B 以下敵走 2 格）照戰鬥結算等第？
+3. 小地圖（守城戰的主介面，40 格方格＋紅點）要不要做、怎麼畫。
+4. 美術等 Ray 看：同一張大圖截出的格子很像（要不要每格一張，約多 23 張）；畫風半寫實沒過平塗；城名暫名；怎麼進這座城（目前沒有入口）。
+5. 討論過的定位：最後一個大型迷宮＝守城戰（Ray 的想法）；我提過的「雙層翻面」「消耗戰」都被否／備用。
 
-**要實測（還沒實際演過）**
-5. 返回帝都整段：降落廣場之後到風車荒地那一段沒人實際播過（只做了靜態檢查＋飛行段開頭）；羽蛇戰打贏後 `valse_serpent` 有沒有寫進去。
-6. Stage 16/17 進飛行畫面確認沒有紅罩、可飛進羅賽爾那幾國。
-7. 上一份留下的手機實測：首頁 BGM（冷／熱啟動）、BR 進場、群戰倒地與閉棺、米夏 NI 取景、主祭壇自動出航。
+**等 Ray 確認（我自己判斷的）**
+6. 卡耶爾大小型的分法、mix12（餓獸那一組）是我加的；崩岩巨像 Boss 數值暫抄 `np_boss`；群怪整群總血 220（5 隻每隻只 44）要不要依隻數調。
+7. 夢境整備頁擋下的那句「……夢裡沒有整備的餘裕。」是我暫填的。
+8. 薇拉馮德新地名「港町」「中央區」西文翻譯表沒有對應（西文暫停中）；美術 `_verafond_spec.md` 還寫舊名。
+9. 立繪編輯：同一人台上中途要翻回來目前做不到（翻了就到下台）—— 要的話加「這一拍翻回」。
 
-**等 Ray**
-8. 謎之術師數值卡（建卡＋碼頭 Boss）、術師名字定稿。
-9. 其他人類敵人要不要比照米夏補呼吸待機。
-10. 帝都衛士戰四件假設：前三場受擊特效、storyBattle 輸了回檔、守衛名稱、舊街區後城鎮戰結束。
-11. 被刪的 33 張圖要不要還原；廢城 `hallcourt` 碎石重出；插圖 `023`／`024` 沒腳本引用、`032_rennablush` 未交、`042_annadeclare` 已交未引用。
-12. 舊影片回收：BR v1～v4、清醒夢 v1／v2、夢中夢 v1／v2。
-13. 郊外風車荒地只有黃昏一張（硬指定 `capital_outskirts_dusk`）—— 要不要補其他時段（補了就改 `bgBand`）。
-14. iMac 工作區沒進版控、沒人提過的檔：兩張 UUID png（根目錄）、`resources/enemy/phamtoms/*.jpeg`、`resources/enemy/rivon/man_thug_*.webp`、
-    `se_flesh/se_pant/se_page1/se_page2/se_pickup.mp3`、`vo_sorana_miss4.wav`、`resources/ci/nemo_ci_dual.webp`、`npc_ss_lofa_shoot.png`（假透明，已用 cryshoot 頂）、
-    `resources/si/image - 2026-09-26…png`、`resources/map/_layout_dunmor.pptx` —— 要不要接或回收。
+**要實測**
+10. 碎片 02 整段（蕾娜夜談 → 夢醒北泊）Ray 測到 Boss 前後；夢醒那段「黑幕 → 讀取頁 → 北方泊地字卡」修完還沒看過完整一次。
+11. 群體受擊單抖、骨鴉抬高、Boss 曲一路到結束 —— 都沒在遊戲裡看過。
+12. 上一份留下的：返回帝都降落廣場到風車荒地那一段、Stage 16/17 飛行無紅罩、手機實測（首頁 BGM、BR 進場、群戰倒地閉棺、米夏 NI 取景、主祭壇自動出航）。
+
+**等 Ray（上一份延續）**
+13. 其他人類敵人要不要比照米夏補呼吸待機；帝都衛士戰四件假設；被刪的 33 張圖要不要還原；廢城 `hallcourt` 碎石重出；插圖 023／024 沒引用、032 未交、042 未引用。
+14. 舊影片回收：BR v1～v4、清醒夢／夢中夢舊版。郊外風車荒地只有黃昏一張。
+15. iMac 未進版控的檔：兩張 UUID png、`resources/enemy/phamtoms/*.jpeg`、`resources/enemy/rivon/`、`se_flesh/se_pant/se_page1/se_page2/se_pickup`、
+    `vo_sorana_miss4.wav`、`vo/未命名 1.*`、`resources/ci/nemo_ci_dual.webp`、`npc_ss_lofa_shoot.png`、`resources/si/image - …png`、`_layout_dunmor.pptx`、
+    根目錄 `ART_HANDOVER.md`／幾份 docx／xlsx、`reference/script.docx` 等 —— 要不要接或回收。
+16. Credit 的動畫 LoRA（Bouncing B、Motto Hayaku）上架前要私訊作者確認商用；索菈娜 bounce_test LoRA 的作者標註待確認。
 
 **程式端可做**
-15. `misha_si_ni` 眼效是舊圖座標，要用時重產（`tools/eye_fx.py`）。
-16. 茉莉／羅伯特／亞隆的立繪已在 `si/npc/`，還沒接進 `speakers.js`。
-17. 卡耶爾山谷 16 隻怪（`resources/enemy/mon_canyon_*`）—— 敵卡／遭遇表等 Ray 數值。
-18. `se_march` 不存在，主祭壇那一拍用 `se_troops` 頂著。
-
-**眨眼／眼睛（舊單）**
-19. GPT 半閉欠 10 張（`tools/_blink_base/grid_fixh4.png`、`grid_fixh3.png`）；瞳顫框偏大（索拉娜 surprise／furious／readshock、柯文 shock）；
-    `sorana_si_carrynouvelleshock` 欠眨眼；淚光 6 張待修（`tools/tear_reject.txt`）。
+17. `misha_si_ni` 眼效是舊圖座標，要用時重產；茉莉／羅伯特／亞隆立繪還沒接；`se_march` 不存在（主祭壇用 `se_troops` 頂）。
+18. 科爾文 `salute` 我對到 `bow`；卡耶爾地圖圖名卡在夢境以外會報夜間時刻（夢境入口已不報）。
 
 ## 資產盤點（這一輪碰過的；`✔ 不欠`／`⚠ 欠`）
 | 件 | 狀態 |
 |---|---|
-| 聖索菲亞旅店收尾：蘿法 shy/ask/lookdown、蕾娜 letter、摺信聲 | ✔ 不欠（-2102 進庫，lint 0 錯） |
-| 返回帝都稿的立繪差分 | ✔ 不欠 —— 全部有對應（取最接近的見上「等 Ray 確認」2） |
-| 返回帝都稿的音效：kidlaughter／monsterroardeep／steps／walk／highheels／sturm／page3／heartbeat | ✔ 不欠 |
-| 返回帝都稿的 BGM：Glass Cradle、Hesitation | ✔ 不欠 |
-| 帝都郊外風車荒地背景 | ✔ 黃昏一張（Ray 只交這張）；其他時段要不要補 ⇒ 上面 13 |
-| 小男孩／母親立繪 | ✔ 不欠（各一張 front） |
-| 蕾娜 check/checktalk、安雅 cryhard/shysmile | ✔ 不欠（返回帝都已用上） |
-| 賽西莉即死防禦／生命歸還 CI 影片 | ✔ 不欠（另一台 -2103 交件） |
+| 士兵 7／指揮官 6／賽西莉 11／愛里歐 7／索菈娜 3／科爾文 4 差分 | ✔ 不欠（全接進 speakers.js） |
+| 插圖 043_eliointro、044_cecilietorsten | ✔ 不欠 |
+| 碎片 02 音效：se_battlefield（m4a，fileGain 0.84）、se_sleep、se_monsterroardeep、se_weapon_reload | ✔ 不欠 |
+| 碎片 02 BGM：Rituale Machina、RetroRoman Battle | ✔ 不欠 |
+| 卡耶爾怪：深色重生版 17 張（大型 12＋群體 5） | ✔ 不欠（崩岩巨像＝Boss、其餘進 11 組群戰）；舊 16 張留著沒用 |
+| 卡耶爾 Boss／群怪數值卡 | ⚠ 欠（暫抄北泊，等 Ray） |
+| 溫斯摩爾港背景 40 格日景 | ✔ 日景齊；⚠ 時段差分看需求、「格子太像」等 Ray 決定 |
+| 溫斯摩爾港小地圖 | ⚠ 欠（待定畫法） |
 
 ## 已結案（不要再列）
-（-2101 以前的見上一份。）本輪：另一台資源接線、返回帝都整段、Stage 17＋章節、Stage 16 起無禁航、禍魘日期掛事件、Credit LoRA 兩支、
-`se_paperfold`／`se_kidlaughter` 進庫、`se_roarfar` 撤掉（改用既有 `se_monsterroardeep`）。
+（-2112 以前的見上一份。）本輪：上一份頂端美術交件的五條（士兵／指揮官、賽西莉 11、愛里歐、新立繪 7、插圖 044）全接；Stage 17～19 帝都整段；碎片 02 整段；
+卡耶爾群怪三次改版到深色版；cgFade 搶黑幕、flip、米夏 NI 殘留、編輯器寫入失敗、即死防禦被吃；薇拉馮德拓樸；溫斯摩爾港城資料。
