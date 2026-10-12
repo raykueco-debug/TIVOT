@@ -1281,7 +1281,9 @@ export function playCutin(done, label, imgKey, opts){
      每次都要設 —— 上一張的 dim 不能殘留。數字在 config.tuning.brDim。 */
   const dim = opts.dim || null, t0 = Date.now();
   /* `opts.cls`（ver -2093）：這一張 CI 專屬的動畫樣式（例：BR 的 `.br` 從左下滑入）。每次都要換掉上一張的。 */
-  if(c){ if(c.__ciCls) c.classList.remove(c.__ciCls); c.__ciCls = opts.cls || ''; if(opts.cls) c.classList.add(opts.cls); }
+  /*   沒傳就查 `tuning.cutinEnter`（ver -2170：逐張的進場樣式寫在 config）。 */
+  const ciCls = opts.cls || (GAME_CONFIG.tuning.cutinEnter||{})[imgKey] || '';
+  if(c){ if(c.__ciCls) c.classList.remove(c.__ciCls); c.__ciCls = ciCls; if(ciCls) c.classList.add(ciCls); }
   if(c){ c.classList.toggle('dim', !!dim); c.classList.remove('dimpre');
     if(dim){ c.style.setProperty('--ci-dim-a', dim.alpha!=null ? dim.alpha : 0.7);
              c.style.setProperty('--ci-dim-ms', ((dim.ms||0)/1000)+'s');
@@ -1293,7 +1295,9 @@ export function playCutin(done, label, imgKey, opts){
   const ciDur = (GAME_CONFIG.tuning.cutinDur||{})[imgKey] || 1500;
   if(c) c.style.setProperty('--ci-dur', (ciDur/1000)+'s');
   /* 滑入段的長度（ver -2090）：照舊佔 18%，但短於 1.5 秒的 CI 也用 1.5 秒那一份（0.27 秒）—— BR 1 秒時滑入才看得見。 */
-  if(c) c.style.setProperty('--ci-in', (0.18*Math.max(ciDur,1500)/1000).toFixed(3)+'s');
+  /*   ⚠ ver -2170：`br`（左下衝入回彈）一律 0.27 秒 —— 照比例拉長的話（賽西莉 2.25 秒 → 0.405 秒），
+       衝過頭的頂點會停住一拍，讀起來是卡住（Ray：「是你切入卡住」）。 */
+  if(c) c.style.setProperty('--ci-in', (ciCls==='br' ? 0.27 : 0.18*Math.max(ciDur,1500)/1000).toFixed(3)+'s');
   if(label!==undefined) $('cutinText').innerHTML = label;
   const ci=$('cutinImg');
   const src=imgKey ? asset(imgKey) : null;

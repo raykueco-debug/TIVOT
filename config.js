@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2169';
+export const VERSION = 'ver 2026.09.22-2171';
 
 export const GAME_CONFIG = {
 
@@ -3488,12 +3488,16 @@ export const GAME_CONFIG = {
        手機版幾乎全被裁掉」）：獵手戰吼三張縮到 0.62 —— 後方那位 Q 版夥伴才進得了框。 */
     cutinFit: { ci_sorana_supply:0.78,
                 ci_sorana_roar_renna:0.62, ci_sorana_roar_anya:0.62, ci_sorana_roar_nouvelle:0.62 },
+    /* ══ CI 的進場樣式（ver -2170，Ray：「賽西莉聖徒化 左下跳入回彈」）══ 鑰匙＝靜態圖的鍵，值＝ #cutin 上的 class
+       （style.css：`br`＝從左下衝進來、過頭再拉回煞住，同 BR）。沒寫＝一般進場。呼叫端傳 opts.cls 時以呼叫端為準。
+       saint.playCutin 讀（鐵律 1）。 */
+    cutinEnter: { cutin_cecilie_saint:'br' },
     /* ══ CI 的長度（ver -2030，Ray：「諾的 SI CI 改成 2 秒看看」）══ 鑰匙＝靜態圖的鍵，值＝毫秒；
        沒寫＝1.5 秒。推入／停留／撤出的比例照 1.5 秒那一版放大（style.css 的 --ci-dur）。
        ⚠ 與 `cutinAnim` 的播放速度無關：動檔照自己的速度播，CI 時間到就撤。 */
     cutinDur: { cutin_nouvelle_saint:2000, ci_sorana_predator:1125, ci_anya_ni:2875,   // ver -2078：NI 換 v2（1.875 秒）＋Ray「安雅再延 1 秒」（播完停最後一格 1 秒）   // 安雅惡夢化 ver -2036（Ray：「動畫是 NI，DB 另外做」）
                 ci_anya_obe:2000, cutin_obe_nouvelle:2000,
-                cutin_cecilie_saint:2250,   /* ver -2169：v2 片長（Ray 剪 cutin_cecilie_saint_cam_full_cut，54 格 24fps）；v1 是 3125 */ cutin_cecilie_obe:2000,
+                cutin_cecilie_saint:2000,   /* ver -2170：v3 片長（v2 去掉開頭 6 格靜止＝48 格 24fps）；-2169 v2 是 2250、v1 是 3125 */ cutin_cecilie_obe:2000,
                 ci_sorana_obe:1625,
                 cutin_nouvelle_guard:2000, ci_sorana_supply:1917,   /* ver -2137：v2 片長（v1 是 1500） */
                 ci_anya_dreambreaker:2813, ci_anya_lucid:1375,   /* ver -2096：清醒夢換 Ray 剪的 v3（片長 1.375 秒） */ cutin_return_nouvelle:2000,   // ver -2078：片長＝CI 長
@@ -3541,7 +3545,7 @@ export const GAME_CONFIG = {
                  ci_anya_obe:{ video:'resources/ci/video/ci_anya_obe_v1.mp4' },
                  cutin_obe_nouvelle:{ video:'resources/ci/video/cutin_obe_nouvelle_v1.mp4' },
                  /* ver -2040：Ray 的剪輯版（v1 剪 50 格，3.125 秒＝ cutinDur）；-2039 的「去頭 2 秒去尾 1 秒」已由這一版取代。 */
-                 cutin_cecilie_saint:{ video:'resources/ci/video/cutin_cecilie_saint_v2.mp4' },   // ver -2169：Ray 剪的 cutin_cecilie_saint_cam_full_cut（2.25 秒）；v1 還在
+                 cutin_cecilie_saint:{ video:'resources/ci/video/cutin_cecilie_saint_v3.mp4' },   // ver -2170：v2 去掉開頭 6 格幾乎不動的格（Ray：「切入同時就在播」—— 那 0.25 秒正好等於左下切入的長度，看起來像切完才播）；-2169：Ray 剪的 cutin_cecilie_saint_cam_full_cut（2.25 秒）；v1 還在
                  /* ver -2040：賽西莉 OBE（Ray 剪的 _cut_2，32 格 2 秒＝ cutinDur；結局全畫面 CI）。 */
                  cutin_cecilie_obe:{ video:'resources/ci/video/cutin_cecilie_obe_v1.mp4' },
                  /* ver -2102（Ray：「賽西莉的即死防 CI 用 cec_guard_a2_2bounce_1.3_cut」）：**檔案還在動畫那台**，這台沒有 ——
