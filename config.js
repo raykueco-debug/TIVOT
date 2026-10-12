@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2168';
+export const VERSION = 'ver 2026.09.22-2169';
 
 export const GAME_CONFIG = {
 
@@ -3493,7 +3493,7 @@ export const GAME_CONFIG = {
        ⚠ 與 `cutinAnim` 的播放速度無關：動檔照自己的速度播，CI 時間到就撤。 */
     cutinDur: { cutin_nouvelle_saint:2000, ci_sorana_predator:1125, ci_anya_ni:2875,   // ver -2078：NI 換 v2（1.875 秒）＋Ray「安雅再延 1 秒」（播完停最後一格 1 秒）   // 安雅惡夢化 ver -2036（Ray：「動畫是 NI，DB 另外做」）
                 ci_anya_obe:2000, cutin_obe_nouvelle:2000,
-                cutin_cecilie_saint:3125, cutin_cecilie_obe:2000,
+                cutin_cecilie_saint:2250,   /* ver -2169：v2 片長（Ray 剪 cutin_cecilie_saint_cam_full_cut，54 格 24fps）；v1 是 3125 */ cutin_cecilie_obe:2000,
                 ci_sorana_obe:1625,
                 cutin_nouvelle_guard:2000, ci_sorana_supply:1917,   /* ver -2137：v2 片長（v1 是 1500） */
                 ci_anya_dreambreaker:2813, ci_anya_lucid:1375,   /* ver -2096：清醒夢換 Ray 剪的 v3（片長 1.375 秒） */ cutin_return_nouvelle:2000,   // ver -2078：片長＝CI 長
@@ -3541,7 +3541,7 @@ export const GAME_CONFIG = {
                  ci_anya_obe:{ video:'resources/ci/video/ci_anya_obe_v1.mp4' },
                  cutin_obe_nouvelle:{ video:'resources/ci/video/cutin_obe_nouvelle_v1.mp4' },
                  /* ver -2040：Ray 的剪輯版（v1 剪 50 格，3.125 秒＝ cutinDur）；-2039 的「去頭 2 秒去尾 1 秒」已由這一版取代。 */
-                 cutin_cecilie_saint:{ video:'resources/ci/video/cutin_cecilie_saint_v1.mp4' },
+                 cutin_cecilie_saint:{ video:'resources/ci/video/cutin_cecilie_saint_v2.mp4' },   // ver -2169：Ray 剪的 cutin_cecilie_saint_cam_full_cut（2.25 秒）；v1 還在
                  /* ver -2040：賽西莉 OBE（Ray 剪的 _cut_2，32 格 2 秒＝ cutinDur；結局全畫面 CI）。 */
                  cutin_cecilie_obe:{ video:'resources/ci/video/cutin_cecilie_obe_v1.mp4' },
                  /* ver -2102（Ray：「賽西莉的即死防 CI 用 cec_guard_a2_2bounce_1.3_cut」）：**檔案還在動畫那台**，這台沒有 ——
@@ -5991,21 +5991,21 @@ export const ASSET_VER = {
   'misha_si_wound': '3a49219d',
   'misha_si_wound_closed': '7871cec2',
   'misha_si_wound_half': 'd345a384',
-  'molly_si_ask': 'b520de23',
+  'molly_si_ask': '1f0a0416',
   'molly_si_closedtalk': '25e454ad',
   'molly_si_eyesmile': 'b2557878',
-  'molly_si_front': '93a9ea86',
-  'molly_si_gossip': '0f6c121f',
-  'molly_si_lookdown': 'a4380d85',
-  'molly_si_order': 'dfd736c8',
-  'molly_si_serious': 'daa7e86b',
-  'molly_si_softsmile': '91dc16d9',
-  'molly_si_stern': 'a21ab056',
-  'molly_si_superior': '86174186',
-  'molly_si_surprise': '5e3c758e',
-  'molly_si_talk': '28d8aca5',
-  'molly_si_think': '13c9de7f',
-  'molly_si_whisper': 'e45ba6ec',
+  'molly_si_front': '6d2f15f2',
+  'molly_si_gossip': 'ec7d0965',
+  'molly_si_lookdown': 'ab83b79b',
+  'molly_si_order': '3cdf657d',
+  'molly_si_serious': '49dc7e15',
+  'molly_si_softsmile': '86873b9c',
+  'molly_si_stern': '788969f2',
+  'molly_si_superior': '4982ed4e',
+  'molly_si_surprise': 'f3dfda8c',
+  'molly_si_talk': 'e0da83ad',
+  'molly_si_think': '0ceca598',
+  'molly_si_whisper': '54e5d7b3',
   'mon_arch_warden': '69358667',
   'mon_bear_husk': '08453d77',
   'mon_bear_nightmare': '8b9715dd',
@@ -6043,6 +6043,14 @@ export const ASSET_VER = {
   'mon_sea_coralman': '754847d3',
   'mon_shroud_widow': '7cfbfa40',
   'mon_skull_cairn': 'ee510068',
+  'mon_sky_armorcrab': 'b14e80f8',
+  'mon_sky_boneray': '534952bb',
+  'mon_sky_eelswarm': 'be0d5d2f',
+  'mon_sky_eyemoth': '9c313139',
+  'mon_sky_gasjelly': '905c019e',
+  'mon_sky_mawbat': 'ae6570e7',
+  'mon_sky_ribwhale': 'a77e60f0',
+  'mon_sky_twinwyvern': '8b23a136',
   'mon_slab_creeper': 'ae03c6f8',
   'mon_spiral_veil': '2418f6c6',
   'mon_stag_nightmare': 'f0940269',
