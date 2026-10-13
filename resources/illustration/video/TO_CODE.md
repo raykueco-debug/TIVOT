@@ -11,8 +11,10 @@
 - 蕾娜睜著綠色半睜眼看 viewer、拳頭在胸前 → 閉眼笑、肩膀輕顫、拳頭抬到嘴邊；整段晚風吹髮。
 - 開頭圖＝`resources/illustration/_anim/017_rennasmile/rennasmile_A_gem.jpg`（GPT 畫睜眼版、Gemini 修手）。
 
-## 第二支：009_soranadebute（10-13，Ray：「不錯，直接交件」）
-- **`resources/illustration/video/009_soranadebute_v1.mp4`**：**720×1080、16fps、49 格＝3.06 秒**（未剪，全格）、約 2 MB。
+## 第二支：009_soranadebute（10-13）
+- ⭐ **接 `resources/illustration/video/009_soranadebute_v2.mp4`**：**720×1080、16fps、65 格＝4.06 秒**（未剪，全格）、約 2.7 MB。
+  Ray：「做成 4 秒」「嘴不要動」→ 嘴部每格貼回原圖的閉嘴（`tools/anim/mouth_lock.py`）。
+- `_v1.mp4`（3 秒、嘴會動）已被 v2 取代，不要接；回收等 Ray。
 - 內容：人物姿勢與臉不動，只有短髮、白色腰布、流蘇、金鍊被海風吹動，帆微微起伏。
 - 從原圖 `009_soranadebute.webp` 直接生（第一格≒原圖），沒鎖結尾 ⇒ 最後一格不等於原圖；要循環播的話首尾會跳一下，請告訴動畫改做首尾鎖的循環版。
 
