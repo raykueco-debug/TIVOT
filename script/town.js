@@ -712,7 +712,12 @@ export const OUTING = {
      不要再在各段落裡逐一寫 `aff`。一個事件拆成兩段（聖索菲亞索菈娜那一條）時，前半寫 `dateAff:0`。
      ⚠ 依路線給不同值寫成 `dateAff:{ <旗>:<值> }`（第一支插著的旗說了算，都沒插＝這裡的預設）——
        雪都瞭望台：`{ ep_m2_route:5 }`（Ray -1772：M2 +5、其他 +3）。 */
-  dateDoneAff: 5,   // ver -2133（Ray：「約會 +5」；原 3）
+  /* ══ 約會好感（ver -2177，Ray：「每個城市第一個約的女孩 +10，一個城市可以觸發多次約會，但只有第一個會加好感 10，
+       第二個以後都 +3」）══ 每座城（`townId`）第一次約會演完 +`dateFirstAff`，之後 +`dateMoreAff`。
+     ⚠ 算法只有 `modules/town.js` 的 `grantDateAff` 一支；城的「第一次」旗由它插（`date_first_<城>`，一輪內）。
+     ⚠ 特殊約會的**額外**加分寫在那一段上（`dateBonus`），疊在這一份上面。 */
+  dateFirstAff: 10,
+  dateMoreAff: 3,
   /* 巧遇（街上碰到外出的她）：每人每天第一次 +5（ver -2133，modules/town.js 的 meetBonus）。 */
   meetAff: 5,
   /* ══⚠⚠ **出了門就不回來，直到 19:00**（ver -1100，Ray：「角色如果出門，
@@ -762,7 +767,7 @@ export const OUTING = {
                   date:{ lines:[ { speaker:'PLAYER', blank:true },
                                  nou('surprise','咦？你也是嗎？'),
                                  nou('bigsmile','那我們一起吃吧！'),
-                                 nou('shy','……我可以再點一份嗎？', { aff:{ nouvelle:5 } }) ] } } } },   // 約會 +5（ver -2133，原 +1）
+                                 nou('shy','……我可以再點一份嗎？') ] } } } },   // 約會好感走 grantDateAff（ver -2177）
     RENNA:    { from:0, dine:'cafe',       nodes:['cityhall','church','grocery'],
                 nodesBy:{ shinier:['chief'] },
                 line:'寫報告寫累了，出來透透氣。',
@@ -781,7 +786,7 @@ export const OUTING = {
                   date:{ lines:[ { speaker:'PLAYER', blank:true },
                                  ren('arguecute','也不能怪我們啊！從來沒有收到過求救嘛！'),
                                  chf(null,'還不到需要求救的程度啦，魔獸的爪牙價格很好，源源不絕地自己送上門來也很不錯。'),
-                                 ren('shockcalm','我這輩子沒想到能聽到這種話……', { aff:{ renna:5 } }) ] } } } },   // 約會 +5（ver -2133，原 +2）
+                                 ren('shockcalm','我這輩子沒想到能聽到這種話……') ] } } } },   // 約會好感走 grantDateAff（ver -2177）
     ANYA:     { from:3, dine:'dessert',    nodes:['grocery'],
                 nodesBy:{ shinier:['lakeside'] },
                 line:'……嗯。今天的份，還沒吃到。',
@@ -792,7 +797,7 @@ export const OUTING = {
                   date:{ lines:[ any('talk','這個地方，我很喜歡……'),
                                  { speaker:'PLAYER', blank:true },
                                  any('shy',''),
-                                 any('talkshy','好。', { aff:{ anya:5 } }) ] } } } },   // 約會 +5（ver -2133，原 +3）
+                                 any('talkshy','好。') ] } } } },   // 約會好感走 grantDateAff（ver -2177）
     /* ⚠⚠⚠ **索菈娜 S9 才入隊**（ver -1739，Ray：「索則是 stage9 才加入」；-1360 是 S8，
        再之前暫填 5）。安雅同版改 S3（Ray：「安雅在 stage3 才會加入」）。
        `girlsHere()` 依它濾旅店的四扇門 ⇒ S8 之前那一格根本不存在，
@@ -806,7 +811,7 @@ export const OUTING = {
                   lines:[ sor('lauaghbig','好，今天的目標是山豬！') ],
                   date:{ lines:[ sor('smirk','要不要來比賽呀？'),
                                  sor('tease','要是你贏的話……就……'),
-                                 sor('idea','就算你贏啦！', { aff:{ sorana:5 } }) ] } } } },   // 約會 +5（ver -2133；原本沒寫）
+                                 sor('idea','就算你贏啦！') ] } } } },   // 約會好感走 grantDateAff（ver -2177）
   },
 };
 
@@ -2056,7 +2061,7 @@ export const TOWNS = {
           /* 好感度 +1（Ray 指定）。⚠ 走 `aff` 這個欄位，由 modules/town.js 在演到這一拍時記帳；
              ⚠ **只加一次**：`once:true` 的節點對白本來就只播一次，所以不必另外擋。 */
           Object.assign(nou('shy','討厭啦，真會說話。要當神父的人油嘴滑舌可不行喔。'),
-                        { aff:{ nouvelle:2 } }),   // ver -724：全面 ×2（原 1）
+                        { aff:{ nouvelle:5 } }),   // ver -2177 Ray：+2/+3 一律改 +5（-724 是 2）
             {
                         speaker: 'SHOPKEEP', text: '歡迎光臨。最近航道受阻，貨物不那麼齊全，請見諒。',
             portrait:{ char:'SHOPKEEP', show:true } },
@@ -2113,7 +2118,7 @@ export const TOWNS = {
              判定在 `modules/town.js` 的 `armFavor` / `resolveFavor`（鐵律 8）。
            ⚠ 「反之」是**不動**不是扣分（Ray 明寫）：沒帶她去吃飯不是壞事，
              只是沒有那一分。 */
-        nextFavor:{ to:'tavern', aff:{ nouvelle:2 }, flag:'fav_capital_meal' },   // ver -724：×2
+        nextFavor:{ to:'tavern', aff:{ nouvelle:5 }, flag:'fav_capital_meal' },   // ver -2177：+2→+5（Ray）
         /* ⚠ 這一段綁著**第一天**（「剛剛才經歷一場死鬥」）—— 夜一過就作廢，
            不留到隔天重播（ver -460（-893 前用詞），Ray 指定；expire 的機制見 modules/town.js）。 */
         expire:'stage1_open',
@@ -5359,7 +5364,7 @@ export const TOWNS = {
           ren('ask','唉呀，在的話就出個聲啊。', { tierWho:'RENNA', tierMax:2 }),
           ren('think','我有一些想法……得再做些準備。'),
           ren('commandsoft','這邊還要一陣子，你先回旅店吧。'),
-          ren('evaluate','好好養精蓄銳喔。', { aff:{ renna:3 } }),   // ver -1771：去市政廳找她 +3（Ray）
+          ren('evaluate','好好養精蓄銳喔。', { aff:{ renna:5 } }),   // ver -2177：+3→+5（Ray）；-1771 去市政廳找她
         ] } ] },
 
       /* ── 二、舊街區（四向樞紐） ── 左＝武器店、右＝廣場、上＝船塢、下＝公會 */
@@ -5378,7 +5383,7 @@ export const TOWNS = {
           nou('sad','就算在神的名下……就算身負奇蹟之力……'),
           nou('sadnoeye','我們還是……救不了所有人……'),
         ] },
-        { flag:'ss_sor_resolve', need:'ss_slum_sor', until:'ss_inn_merge', withWho:'SORANA', dateAff:10,   /* ver -2133 Ray：「聖索菲亞如果約索拉娜的話好感 +10」 */ goto:'inn', sides:{ SORANA:'L' }, lines:[
+        { flag:'ss_sor_resolve', need:'ss_slum_sor', until:'ss_inn_merge', withWho:'SORANA', dateBonus:10,   /* ver -2177 Ray：「聖索菲亞約索拉娜去貧民窟改成額外 +10」（疊在約會那一份上；-2133 是固定 +10） */ goto:'inn', sides:{ SORANA:'L' }, lines:[
           sor('sad','……'),
           sor('embarrass','說了那麼多漂亮話，其實我……一點辦法也沒有啊……'),
           sor('sad','……'),
@@ -5555,7 +5560,7 @@ export const TOWNS = {
           sor('determine','要請妳們找個新的帆手了。'),
           { speaker:'NARRATION', text:'', se:'se_reload', auto:900 },
           { speaker:'SORANA', text:'', portrait:{ char:'SORANA', expr:'smile', show:true } },
-          sor('readysmile','好......我們走。', { aff:{ sorana:3 } }),   // ver -1793：稿補「走。」＋索好感 +3
+          sor('readysmile','好......我們走。', { aff:{ sorana:5 } }),   // ver -2177：+3→+5（Ray）；-1793 稿補「走。」
           ren('callangry','都給我站住。'),
           sor('cringe',''),
           nou('scare',''),
@@ -6124,7 +6129,7 @@ export const TOWNS = {
              —— 稿上沒給表情，所以一律用底圖那一張。
            ⚠ 收尾分歧：稿上「諾T3以上」多三拍、「諾T2以下」另一句收尾。
              走 `tierMin`／`tierMax`（一拍的屬性），不是 `needTier`（那是擋整段的）。 */
-        acts:[ { flag:'vn_church_nou', withWho:'NOUVELLE', lines:[
+        acts:[ { flag:'vn_church_nou', withWho:'NOUVELLE', dateBonus:10,   /* ver -2177 Ray：雪都約諾去教堂額外 +10 */ lines:[
           arh('surprisejoy','喔！喔喔！這不是小諾微兒嗎？'),
           nou('happy','神父！'),
           { speaker:'PLAYER', blank:true },
@@ -6939,7 +6944,7 @@ export const TOWNS = {
           /* ⚠⚠ 微笑的插圖 `017_rennasmile`（ver -1379 交件）掛在**這一句**：
              整段的情緒落點就在這裡（也正是給好感的那一拍）。 */
           Object.assign(ren(null,'雖然是苦差事，但是很開心呢。'),
-                        { aff:{ renna:3 }, cg:'017_rennasmile', cgNoTime:true }),
+                        { aff:{ renna:5 }, cg:'017_rennasmile', cgNoTime:true }),   // ver -2177：+3→+5（Ray）
         ] } ] },
 
       /* ── 二、舊城區（四向樞紐） ── 左＝武器店、右＝廣場、上＝倉庫碼頭、下＝公會 */
@@ -7286,7 +7291,7 @@ export const TOWNS = {
           nou('hungry',''),
           { speaker:'PLAYER', blank:true },
           nou('concern','嗯……'),
-          nou('bigsmile','好。'),   // ver -1771：原 +2 併進約會統一的 +3（OUTING.dateDoneAff）
+          nou('bigsmile','好。'),   // ver -1771：原 +2 併進約會統一的那一份（ver -2177 起見 OUTING.dateFirstAff／dateMoreAff）
           /* ⚠ `cgPan:'down'` ＝**由上而下**平移（Ray 指定；`'up'` 是由下往上，
              見 story.js 的演出層說明）。台詞也是 Ray 這一版給的。 */
           Object.assign(nou('happy','東海的料理也別有一番風味呢！'),
@@ -7402,7 +7407,7 @@ export const TOWNS = {
                       ren('unbraid','咦？安雅小姐她……'),
                       ren('think','……'),
                       Object.assign(ren('commandsoft','……悄悄跟上去吧。'),
-                                    { flags:['ep_night_renna'], aff:{ renna:3 } }),   // ver -1771：+2→+3（Ray）
+                                    { flags:['ep_night_renna'], aff:{ renna:5 } }),   // ver -2177：+3→+5（Ray）；-1771 是 +2→+3
                     ] },
                     knock:{
           NOUVELLE:{ low:'要有人在這邊等蕾娜小姐才行。',
@@ -11066,7 +11071,7 @@ export const TOWNS = {
             sor('tease','誰要那隻小偷龍偏偏掉水裡呢？'),
             { speaker:'PLAYER', blank:true },
             ren('blush','……'),
-            Object.assign(ren('blush','嗯，謝謝。'), { flags:['renna_t4_ok'], aff:{ renna:3 } }),   // ver -1813 Ray：髮飾事件後 蕾娜好感 +3
+            Object.assign(ren('blush','嗯，謝謝。'), { flags:['renna_t4_ok'], aff:{ renna:10 } }),   // ver -2177 Ray：髮飾事件 +10（-1813 是 +3）
           ] },
           /* ══⚠⚠⚠ **回到東泊的時刻**（ver -1396，Ray：「第一次古城首戰發生後強制
              回到東泊的時間固定在 18:00，若在觸發首戰之前玩家時間已經超過 15:00，

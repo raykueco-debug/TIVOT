@@ -509,6 +509,17 @@ function dateSpentToday(){ dateDayCheck(); return dateSpentDay===clock.dayNo(); 
 function markDateSpent(){ dateDayCheck(); dateSpentDay=clock.dayNo(); }
 function datedToday(who){ dateDayCheck(); return datedSet.has(who); }
 function markDated(who){ dateDayCheck(); datedSet.add(who); }
+/* ══ 約會好感（ver -2177，Ray）══ 每座城第一次約會 +`OUTING.dateFirstAff`(10)，之後 +`dateMoreAff`(3)；
+   `bonus`＝那一段自己的額外加分（雪都教堂諾薇兒、聖索菲亞貧民窟索菈娜）。
+   ⚠ 算法只有這一支（鐵律 8）：約會場景事件（acts 的 `withWho`）與夏爾村的約會派生都叫它。
+   ⚠ 「這座城約過了」是旗（`date_first_<城>`，一輪內、跟存檔走）：插了就不拔，換城自然是另一支旗（鐵律 9）。 */
+function grantDateAff(who, bonus){
+  if(!who || !townId) return;
+  const f='date_first_'+townId, first=!prog.hasFlag(f);
+  const v=(first ? (OUTING.dateFirstAff!=null ? OUTING.dateFirstAff : 10) : (OUTING.dateMoreAff!=null ? OUTING.dateMoreAff : 3)) + (+bonus||0);
+  prog.addAffection(String(who).toLowerCase(), v);
+  if(first) prog.addFlags([f]);
+}
 function metToday(k){ dateDayCheck(); return metSet.has(k); }
 function markMet(k){ dateDayCheck(); metSet.add(k); }
 /* ⚠⚠ **「現在正在跟誰約會」只有這一支**（ver -1102，鐵律 7/8）：敲門那一關、
@@ -4773,14 +4784,9 @@ export function enter(id){
                （分歧內的入帳走 story.js 的逐拍 take/give/money 那一族）。 */
           applyAff(play);
           /* ══ 約會場景事件演完 +3（ver -1771，Ray）══ `withWho` ＝這一段是約會事件；給的是**正在約的那個人**。
-             ⚠ 只在第一次演完給（旗還沒插）；`dateAff:0` ＝這一段只是前半，後半才給。數值在 `OUTING.dateDoneAff`（鐵律 1）。 */
-          if(act.withWho && act.dateAff!==0 && !(act.flag && prog.hasFlag(act.flag))){
-            let v = OUTING.dateDoneAff || 3;
-            if(typeof act.dateAff==='number') v = act.dateAff;
-            else if(act.dateAff && typeof act.dateAff==='object'){   // { 旗:值 }：第一支插著的旗說了算（ver -1772）
-              for(const f in act.dateAff) if(prog.hasFlag(f)){ v = act.dateAff[f]; break; } }
-            prog.addAffection(String(act.withWho).toLowerCase(), v);
-          }
+             ⚠ 只在第一次演完給（旗還沒插）；`dateAff:0` ＝這一段只是前半，後半才給。數值與算法見 `grantDateAff`（ver -2177：城內第一次 +10、之後 +3、`dateBonus` 額外加）。 */
+          if(act.withWho && act.dateAff!==0 && !(act.flag && prog.hasFlag(act.flag)))
+            grantDateAff(act.withWho, act.dateBonus);   // ver -2177：這座城第一次 +10、之後 +3，特殊約會再加 dateBonus
           if(act.flag) prog.addFlags([act.flag]);                 // 主線段落：只演一次
           /* ══ 追逐：打完一場，牠往**玩家進入房間的反方向**跑一格（ver -1421）══
              ⚠ `backDir` 是「回頭路」，**牠要跑的是它的反向**（＝玩家原本前進的方向）。
@@ -5096,7 +5102,8 @@ function afterArrive(n){
     busy=true; showNav(false);
     story.playAdhoc(ms.play, ()=>{ story.clearCast();   // 鐵律 8：離開這一段就清場
       applyAff(ms.play); markMet(ms.key);
-      if(/#m$/.test(ms.key)) meetBonus(ms.key.slice(0,-2));   // 偶遇那一條也算巧遇（ver -2133）；約會那條的好感在 date 的拍上
+      if(/#m$/.test(ms.key)) meetBonus(ms.key.slice(0,-2));   // 偶遇那一條也算巧遇（ver -2133）
+      else grantDateAff(ms.key.slice(0,-2));                  // 約會派生（夏爾村那四格）＝一次約會（ver -2177，同一支）
       busy=false; showNav(true);
       afterArrive2(n, true); });
     return;
