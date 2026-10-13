@@ -38,6 +38,13 @@
 - ✅ **最後一格＝原圖 010**（鎖結尾生成）：播完可以直接切回 `010_anyaheadrubbing.webp`，不會跳。
   第一格是手還沒伸出、兩眼睜開的版本（`_anim/010_anyaheadrubbing/anyaheadrub_A_gpt.png`），不是 010。
 
+## 第六支：016-soranaaim（10-13）
+- ⭐ **`resources/illustration/video/016-soranaaim_v1.mp4`**：**896×816（原圖 1312×1192 等比）、16fps、20 格＝1.25 秒**、約 0.5 MB。
+  Ray 剪的 `out/export/soranaaim_vace_s7_cut`（VACE 原片 65 格：第 0～25 格抽格＋第 61～64 格，全 ×1）。
+- 內容：槍垂在腰前、兩眼睜開微笑 → 舉槍瞄準、側頭靠肩、閉一隻眼、舔唇。
+- ✅ **最後一格＝原圖 016**（VACE 釘關鍵格）：播完可以直接切回 `016-soranaaim.webp`。
+  第一格是持槍未舉的版本（`_anim/016_soranaaim/soranaaim_A_gpt.png`），不是 016。
+
 ## ⚠ 要程式決定／注意的（各支共通）
 1. **插畫目前沒有播影片的路**（`story.js` 的 `cg:` 只吃圖）。CI 那套（ver -2060：開演前 fetch 成 blob、第一格出來前顯示靜態圖、撤下時釋放）可以照搬。
 2. **最後一格≠原圖 017**：生成時沒鎖結尾（鎖了頭髮就飄不起來，Ray 要髮絲飄），最後一格是 Wan 畫的閉眼掩嘴，構圖與 017 接近但不是同一張。
