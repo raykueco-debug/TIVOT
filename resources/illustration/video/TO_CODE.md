@@ -63,9 +63,10 @@
   第一格是舉刀蓄勢的版本（`_anim/038_mishasting/mishasting_A_gpt5.png`），不是 038。
 
 ## 第九支：26_nouvellefaint（10-13）
-- ⭐ **`resources/illustration/video/26_nouvellefaint_v1.mp4`**：**720×1080、16fps、47 格＝2.94 秒**、約 1.5 MB。
-  Ray 剪的 `out/export/nouvellefaint_A_gpt_ab7mfix_rev_cut`（**倒放版**：原片 65 格倒過來，取前 47 格，全 ×1）。
-- 內容：諾薇兒倒在主角懷中 → 身體與頭髮、袖子晃動。
+- ⭐ **接 `resources/illustration/video/26_nouvellefaint_v2.mp4`**：**720×1080、16fps、40 格＝2.5 秒**、約 1.15 MB。
+  Ray 剪的 `out/export/nouvellefaint_A_gpt_ab7mfix_pant_rev_cut`（**倒放版**：喘息版原片 65 格倒過來，取前 40 格，全 ×1）。
+- `_v1.mp4`（47 格，非喘息版）已被 v2 取代，不要接；回收等 Ray。
+- 內容：諾薇兒倒在主角懷中、半睜眼虛弱喘息 → 身體與頭髮、袖子晃動。
 - ✅ **第一格≒原圖 26**（倒放＝從鎖原圖的那一格開始）：可以先顯示 `26_nouvellefaint.png` 再無縫接影片。
   ⚠ **最後一格≠原圖**：播完停在影片最後一格，不要切回原圖。
 
