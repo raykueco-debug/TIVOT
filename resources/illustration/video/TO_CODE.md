@@ -54,6 +54,13 @@
   播完要**停在影片最後一格**，不要切回 `044_soranahug.png`，否則會跳。
   第一格是張手撲來的版本（v2 從第 1 格起）（`_anim/044_soranahug/soranahug_A_final.png`），不是 044。
 
+## 第八支：038_mishasting（10-13）
+- ⭐ **`resources/illustration/video/038_mishasting_v1.mp4`**：**720×1080、16fps、14 格＝0.88 秒**、約 0.9 MB。
+  Ray 剪的 `out/export/mishasting_A_gpt5_ab7mfix_cut`（原片 65 格的第 0～60 格挑 14 格，全 ×1）。
+- 內容：米夏高舉刀蓄勢 → 單手刺向 viewer，刺中瞬間血花朝鏡頭噴濺，收在刀身帶血的構圖。
+- ⚠ **最後一格≠原圖 038**（Ray 剪在第 60 格，鎖原圖的是第 64 格），構圖已很接近，但播完請**停在影片最後一格**，不要切回 `038_mishasting.webp`。
+  第一格是舉刀蓄勢的版本（`_anim/038_mishasting/mishasting_A_gpt5.png`），不是 038。
+
 ## ⚠ 要程式決定／注意的（各支共通）
 1. **插畫目前沒有播影片的路**（`story.js` 的 `cg:` 只吃圖）。CI 那套（ver -2060：開演前 fetch 成 blob、第一格出來前顯示靜態圖、撤下時釋放）可以照搬。
 2. **最後一格≠原圖 017**：生成時沒鎖結尾（鎖了頭髮就飄不起來，Ray 要髮絲飄），最後一格是 Wan 畫的閉眼掩嘴，構圖與 017 接近但不是同一張。
