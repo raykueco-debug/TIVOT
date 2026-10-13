@@ -187,6 +187,7 @@ def pick(n_total, mode, frames, fps):
         if frames <= 0: return list(range(n_total - 1))   # --frames 0＝全格（去掉吸回原圖的最後一格）
         a, z = int(n_total * 0.17), int(n_total * 0.92)
         return [round(a + (z - a) * i / (frames - 1)) for i in range(frames)]
+    if mode == 'ci': return list(range(n_total))   # CI／插畫：全格保留 —— 不准替 Ray 裁片（Ray 10-13：「裁是我的事，沒有我的指示不准裁」）
     step = max(1, round(16 / fps))                 # 待機：Wan 16fps，去掉與首格相同的最後一格
     last = n_total if END_IMG else n_total - 1     # A to B：最後一格就是 B，要留；循環才去掉與首格相同的那格
     return list(range(0, last, step))
