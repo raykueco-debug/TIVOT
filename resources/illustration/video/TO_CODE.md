@@ -46,12 +46,13 @@
   第一格是持槍未舉的版本（`_anim/016_soranaaim/soranaaim_A_gpt.png`），不是 016。
 
 ## 第七支：044_soranahug（10-13）
-- ⭐ **`resources/illustration/video/044_soranahug_v1.mp4`**：**720×1080、16fps、38 格＝2.38 秒**、約 1.6 MB。
-  Ray 剪的 `out/export/soranahug_A_final_ab7mfix_6s_cut`（6 秒版 97 格的第 0～59 格挑 38 格，全 ×1）。
+- ⭐ **接 `resources/illustration/video/044_soranahug_v2.mp4`**：**720×1080、16fps、26 格＝1.63 秒**、約 1.25 MB。
+  Ray 重剪的 `out/export/soranahug_A_final_ab7mfix_6s_cut_2`（6 秒版 97 格的第 1～63 格挑 26 格，全 ×1）。
+- `_v1.mp4`（38 格 2.38 秒）已被 v2 取代，不要接；回收等 Ray。
 - 內容：索菈娜張開雙手從前方撲過來 → 抱住主角的脖子、閉眼大笑，白髮與腰布流蘇甩動。
-- ⚠ **最後一格≠原圖 044**：生成時鎖的結尾是第 96 格，Ray 剪在第 59 格（已經抱上、還在動）。
+- ⚠ **最後一格≠原圖 044**：生成時鎖的結尾是第 96 格，Ray 剪在第 63 格（已經抱上、還在動）。
   播完要**停在影片最後一格**，不要切回 `044_soranahug.png`，否則會跳。
-  第一格是張手撲來的版本（`_anim/044_soranahug/soranahug_A_final.png`），不是 044。
+  第一格是張手撲來的版本（v2 從第 1 格起）（`_anim/044_soranahug/soranahug_A_final.png`），不是 044。
 
 ## ⚠ 要程式決定／注意的（各支共通）
 1. **插畫目前沒有播影片的路**（`story.js` 的 `cg:` 只吃圖）。CI 那套（ver -2060：開演前 fetch 成 blob、第一格出來前顯示靜態圖、撤下時釋放）可以照搬。
