@@ -31,6 +31,13 @@
 - ✅ **最後一格＝原圖 024**（鎖結尾生成）：播完可以直接切回 `024_nouvellesmile.webp`，不會跳。
   第一格是睜眼驚訝版（`_anim/024_nouvellesmile/nouvellesmile_A_gpt.png`），不是 024。
 
+## 第五支：010_anyaheadrubbing（10-13）
+- ⭐ **`resources/illustration/video/010_anyaheadrubbing_v1.mp4`**：**720×1080、16fps、48 格＝3.00 秒**、約 1.3 MB。
+  Ray 剪的 `out/export/anyaheadrub_A_gpt_ab7mfix_cut`（原片 65 格挑 48 格，全 ×1，保留最後一格）。
+- 內容：安雅抬頭看主角 → 主角伸手摸頭 → 摸到的瞬間她閉上一隻眼。
+- ✅ **最後一格＝原圖 010**（鎖結尾生成）：播完可以直接切回 `010_anyaheadrubbing.webp`，不會跳。
+  第一格是手還沒伸出、兩眼睜開的版本（`_anim/010_anyaheadrubbing/anyaheadrub_A_gpt.png`），不是 010。
+
 ## ⚠ 要程式決定／注意的（各支共通）
 1. **插畫目前沒有播影片的路**（`story.js` 的 `cg:` 只吃圖）。CI 那套（ver -2060：開演前 fetch 成 blob、第一格出來前顯示靜態圖、撤下時釋放）可以照搬。
 2. **最後一格≠原圖 017**：生成時沒鎖結尾（鎖了頭髮就飄不起來，Ray 要髮絲飄），最後一格是 Wan 畫的閉眼掩嘴，構圖與 017 接近但不是同一張。
