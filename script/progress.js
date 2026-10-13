@@ -860,7 +860,10 @@ export function applyRankAffection(grade, partnerKey){
        好感+1，D＋3 C+2」）══ 與等第那一格**相加**（D 總共 +4、C +3、其餘 +1）。
        ⚠ 沒寫 `always` 的人（諾薇兒／安雅／蕾娜）行為一個字不變。
        ⚠ 份額（`mul`）照乘：平手均分時保底也一起分（同等第那一份的處理）。 */
-    const d = (tbl.always || 0) + (tbl[grade] || 0);
+    /* Install 有沒有發動（ver -2177）：`inst`＝這一局她發動過幾次（inspector 從 `state.partnerInstalls` 帶進來）。 */
+    const ins = (A.install||{})[k] || {};
+    const used = (one.inst|0) > 0;
+    const d = (tbl.always || 0) + (tbl[grade] || 0) + (used ? (ins.used||0) : (ins.unused||0));
     if(d){ addAffection(k, d * (one.mul!=null ? one.mul : 1)); got.push(k); }
   }
   /* 蕾娜：不看搭檔欄，照她自己那一欄加。

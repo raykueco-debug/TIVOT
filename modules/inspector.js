@@ -166,6 +166,7 @@ export function mergeSessionStats(stats){
 }
 export function clearSessionGain(){ state.sessionStats=null; state.sessionLoot=null;
   state.partnerFights=null;   // 出場帳與這一局同生共死（ver -921，見 state 的說明）
+  state.partnerInstalls=null; // Install 帳同上（ver -2177）
 }
 
 /* ══⚠⚠ **好感給誰：出場數最多的那一位全拿**（ver -921，Ray 定案）══
@@ -187,19 +188,24 @@ export function clearSessionGain(){ state.sessionStats=null; state.sessionLoot=n
    ⚠ 蕾娜不在這裡：她走自己那一欄，`applyRankAffection` 一律加（她不是搭檔）。 */
 function settleAffectionShares(){
   const f = state.partnerFights;
-  if(!f) return state.pickedPartner;                     // 退路：舊行為
+  /* 退路：只有現在這一位（ver -2177 起也帶 Install 帳，不然沒帳的路會把「用過」誤判成「沒用」）。 */
+  const solo = () => state.pickedPartner
+    ? [{ key:state.pickedPartner, mul:1, inst:((state.partnerInstalls||{})[state.pickedPartner]|0) }] : [];
+  if(!f) return solo();
   const keys = Object.keys(f).filter(k=>f[k]>0);
-  if(!keys.length) return state.pickedPartner;
+  if(!keys.length) return solo();
   const out=[];
   /* ① 索菈娜：有出場就自己一桶（她那一欄由 `applyRankAffection` 依 grade 查表 ——
      這一支只決定「誰」與「幾分之幾」，不決定「加多少」，鐵律 7）。 */
-  if(keys.indexOf('sorana')>=0) out.push({ key:'sorana', mul:1 });
+  /* ⚠ ver -2177：每一份帶上「這一局她發動過幾次 Install」（`inst`）—— 加不加那一格由 progress 查表決定。 */
+  const I = state.partnerInstalls || {};
+  if(keys.indexOf('sorana')>=0) out.push({ key:'sorana', mul:1, inst:I.sorana|0 });
   /* ② 其餘的比場數。 */
   const rivals = keys.filter(k=>k!=='sorana');
   if(rivals.length){
     const top = Math.max(...rivals.map(k=>f[k]));
     const win = rivals.filter(k=>f[k]===top);
-    win.forEach(k=>out.push({ key:k, mul:1/win.length }));   // 平手一人一半
+    win.forEach(k=>out.push({ key:k, mul:1/win.length, inst:I[k]|0 }));   // 平手一人一半
   }
   return out;
 }

@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2177';
+export const VERSION = 'ver 2026.09.22-2178';
 
 export const GAME_CONFIG = {
 
@@ -2149,15 +2149,20 @@ export const GAME_CONFIG = {
        ⚠ 錢是 `總HP × 等第比例 × money`，而總HP 已經含那 +20% —— 實拿約 ×2.4。 */
     bossMul: { exp:1.5, money:2, stat:1.2 },
     affection: {
-      partner: { S:2, A:1 },
+      /* ══ ver -2177（Ray：「S 級蕾娜 +1 A 級 +0.5，出戰伙伴基本 +1，安諾 S 級再 +2 A +1，諾有用聖徒化額外 +1，
+         安沒用夢魘化額外 +1，索有共鬥額外 +1，S 額外 +1，D 額外 +3，C 額外 +2」）══
+         · `always`＝出場基本分；等第那一格疊在上面；`installUsed`／`installUnused`＝這一局有／沒有發動過 Install 再加。
+         · 「有沒有發動」看的是 `state.partnerInstalls`（一局一份）。 */
+      partner: { always:1, S:2, A:1 },
+      install: { nouvelle:{ used:1 }, anya:{ unused:1 }, sorana:{ used:1 } },
       /* ══⚠⚠⚠ ver -1024（Ray：「索拉娜只要出場就會好感+1，D＋3 C+2」）══
          · `always` ＝**只要出場就給**（不看等第）—— 她的性格是「打得爛也開心」，
            所以連保底都給；別人沒有這一格（沒寫＝0）。
          · `D`／`C` 是**在那之上再加**：D 總共 +4、C 總共 +3、其餘 +1。
          ⚠ 加總只有 `progress.applyRankAffection` 一支在做（鐵律 7）——
            不要把 `always` 併進每一格（那會變成「同一個保底寫了五份」）。 */
-      sorana:  { always:1, D:3, C:2 },
-      renna:   { S:0.5, A:0.25 },
+      sorana:  { always:1, S:1, D:3, C:2 },   // ver -2177：S +1（D +3、C +2 照舊）
+      renna:   { S:1, A:0.5 },                // ver -2177：S +1／A +0.5（原 0.5／0.25）
     },
     /* ⚠⚠ `counter` 是**每一次完美反擊（紅圈）**折抵的秒數 —— 武器卡上可以覆寫
        （`weapons[].counterSec`，ver -721：狙擊 −3，Ray 指定）。狙擊的黃橘圈都要挨傷、

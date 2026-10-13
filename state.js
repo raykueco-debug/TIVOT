@@ -302,6 +302,10 @@ export const state = {
      ⚠ 不可以在 `combat.startGame` 那排歸零裡清：同一局裡每一場都會走那一支，
        清了就只剩最後一隻的帳（同 sessionStats 的理由）。 */
   partnerFights: null,
+  /* ══ 這一局裡誰發動過 Install（ver -2177，Ray：「諾有用聖徒化額外 +1、安沒用夢魘化額外 +1、索有共鬥額外 +1」）══
+     鑰匙＝搭檔 key、值＝次數。誰寫：`enterSaint`／`enterNightmare`／`enterCoop`（進入模式的唯一管道，鐵律 8）；
+     誰清：`inspector.clearSessionGain()`，與 `partnerFights` 同生共死（一局的帳）。 */
+  partnerInstalls: null,
   sessionLoot: null,     // 連戰中間場記帳的掉落（ver -869，Ray：「戰利品也到結算時給」）；收段結算一起發
 
   pickedPartner: GAME_CONFIG.defaultPartner,   // 玩家實選搭檔（擁有者 partner；選人畫面經 setPickedPartner 寫入）
@@ -395,6 +399,7 @@ export function applyDeathGuard(){
  * 自行標記，時序與 reference 一致（發動即鎖一場一次，cut-in 結束才真正 startSaintMode）。 */
 export function enterSaint(){
   state.saintMode = true;
+  noteInstall();
 }
 
 /* saint.js 專用：離開聖徒化（三結局收尾共用）。 */
@@ -403,10 +408,10 @@ export function exitSaint(){
 }
 
 /* saint.js 專用：進入／離開惡夢化。`niMode` 的唯一寫入管道（同 saintMode 的規矩）。 */
-export function enterNightmare(){ state.niMode = true; }
+export function enterNightmare(){ state.niMode = true; noteInstall(); }
 export function exitNightmare(){ state.niMode = false; }
 /* saint.js 專用：進入／離開共鬥。`coopMode` 的唯一寫入管道（同 saintMode 的規矩）。 */
-export function enterCoop(){ state.coopMode = true; state.coopUses++; }   // ver -958：評價要算次數
+export function enterCoop(){ state.coopMode = true; state.coopUses++; noteInstall(); }   // ver -958：評價要算次數
 export function exitCoop(){ state.coopMode = false; }
 
 /* saint.js 專用：以 Maximum Burst 擊殺 → 標記本場處決（EXSECUTIŌ）。
@@ -479,6 +484,12 @@ export function setPickedPartner(key){
 }
 /* 這一局又多打了一場：記在**當時出場的那一位**頭上（ver -921）。
    ⚠ 呼叫點只有 `enemy.setEnemy` 一處（鐵律 8）：那是「場」的唯一邊界。 */
+/* 這一局有人發動了 Install：記在**當時出場的那一位**頭上（ver -2177）。只由上面三支 enter* 呼叫。 */
+function noteInstall(){
+  const key=state.pickedPartner; if(!key) return;
+  if(!state.partnerInstalls) state.partnerInstalls = {};
+  state.partnerInstalls[key] = (state.partnerInstalls[key]|0) + 1;
+}
 export function addPartnerFight(key){
   if(!key) return;
   if(!state.partnerFights) state.partnerFights = {};
