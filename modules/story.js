@@ -2140,7 +2140,98 @@ function cgCross(el, src){
    `cg:null`，漏寫就卡著（而且新增的每一條路徑都會再漏一次，同 §6.5「清場」那條）。
    ⚠ 收在 `clearCast()` 裡：那一支已經是「這一段講完了」的唯一出口（鐵律 8）。
    ⚠ 連第二層與正在跑的淡入一起收，不然被打斷的那一張會留在最上面。 */
+
+/* ══⚠⚠ 插圖動畫（ver -2179，Ray：「把動畫新交的都接上」）══════════════════════════════
+   表在 `config.tuning.cgAnim[插圖基底名] = { video, loop? }`（鐵律 1）。腳本照樣只寫 `cg:'017_rennasmile'`，
+   有登記的就在那張插圖上**疊一張 canvas 播影片**；沒登記的照舊是靜態圖。
+   作法照 CI 那一套（ver -2063）：影片抓成 blob、`<video>` 藏在畫面外播、逐格畫進 canvas
+   （iPhone 的 `<video>` 是獨立硬體圖層，疊放順序會亂）。
+   ⚠ canvas **每一格照抄 `#storyCg` 的框與取景**（位置、寬高、object-position、transform、filter、opacity）——
+     平移（cgPan）、放大（setCgScale）、泛黃（cgTone）、淡出全部跟著走，不必另寫一套。
+   ⚠ 播完**停在最後一格**（交件說明：多數支的最後一格不是原圖，切回原圖會跳）；`loop:true` 的循環播。
+   ⚠ 黑幕還蓋著時先把**第一格**擺上去（多數支的第一格也不是原圖），等黑幕掀開才開始播。
+   ⚠ 收掉只有 `stopCgAnim` 一支（鐵律 8）：換插圖／收插圖（`clearCg`）都叫它。 */
+let cgAnimOn=null;
+function cgAnimSpec(name){ return name ? (((GAME_CONFIG.tuning||{}).cgAnim||{})[name] || null) : null; }
+function warmCgAnim(name){ const A=cgAnimSpec(name); if(A && A.video){ try{ fetch(A.video).catch(()=>{}); }catch(_){} } }
+function stopCgAnim(){
+  const on=cgAnimOn; cgAnimOn=null;
+  if(!on) return;
+  if(on.vfc && on.v.cancelVideoFrameCallback) try{ on.v.cancelVideoFrameCallback(on.vfc); }catch(_){}
+  cancelAnimationFrame(on.raf); clearTimeout(on.t);
+  try{ on.v.pause(); }catch(_){}
+  on.v.removeAttribute('src'); try{ on.v.load(); }catch(_){}
+  on.v.remove(); on.cv.remove();
+  if(on.url) try{ URL.revokeObjectURL(on.url); }catch(_){}
+}
+/* object-position 的一個分量 → 0..1（只認 % 與 px；cover 下 px 換算成比例）。 */
+function cgPosFrac(tok, free){
+  tok=String(tok||'50%').trim();
+  if(tok.endsWith('%')) return (parseFloat(tok)||0)/100;
+  if(tok.endsWith('px')) return free ? (parseFloat(tok)||0)/free : 0.5;
+  const kw={left:0,top:0,center:0.5,right:1,bottom:1};
+  return (tok in kw) ? kw[tok] : 0.5;
+}
+function cgAnimDraw(on){
+  const v=on.v, cv=on.cv, ctx=on.ctx, img=on.img;
+  if(!v.videoWidth || v.readyState<2) return;
+  const W=img.offsetWidth, H=img.offsetHeight; if(!W||!H) return;
+  const dpr=Math.min(2, window.devicePixelRatio||1);
+  const cw=Math.round(W*dpr), ch=Math.round(H*dpr);
+  if(cv.width!==cw || cv.height!==ch){ cv.width=cw; cv.height=ch; }
+  const cs=getComputedStyle(img);
+  /* 播完之後只在取景真的變了才重畫（平移還在跑時照畫）—— 停著不動就不燒手機（鐵律 12）。 */
+  const sig=[W,H,cs.objectPosition,cs.transform,cs.filter,cs.opacity,img.className,v.currentTime].join('|');
+  if(sig===on.sig) return; on.sig=sig;
+  cv.style.left=img.offsetLeft+'px'; cv.style.top=img.offsetTop+'px';
+  cv.style.width=W+'px'; cv.style.height=H+'px';
+  cv.style.transform=cs.transform==='none'?'':cs.transform; cv.style.transformOrigin=cs.transformOrigin;
+  cv.style.filter=cs.filter==='none'?'':cs.filter; cv.style.opacity=cs.opacity;
+  cv.style.display = img.classList.contains('on') ? 'block' : 'none';
+  /* object-fit:cover：等比放大到蓋滿框，被裁掉的那一截照 object-position 分配。 */
+  const k=Math.max(cw/v.videoWidth, ch/v.videoHeight), dw=v.videoWidth*k, dh=v.videoHeight*k;
+  const pos=(cs.objectPosition||'50% 50%').split(/\s+/);
+  const fx=cgPosFrac(pos[0], (dw-cw)/dpr), fy=cgPosFrac(pos[1], (dh-ch)/dpr);
+  ctx.drawImage(v, (cw-dw)*fx, (ch-dh)*fy, dw, dh);
+  if(!on.shown){ on.shown=true; cv.style.visibility=''; }
+}
+function playCgAnim(name){
+  stopCgAnim();
+  const A=cgAnimSpec(name); if(!A || !A.video) return;
+  const img=$('storyCg'); if(!img || !img.parentNode) return;
+  const v=document.createElement('video');
+  v.muted=true; v.defaultMuted=true; v.playsInline=true; v.preload='auto'; v.loop=!!A.loop;
+  v.setAttribute('muted',''); v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
+  v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1;';
+  const cv=document.createElement('canvas');
+  cv.className='cg-anim'; cv.style.cssText='position:absolute;z-index:2;pointer-events:none;visibility:hidden;';
+  img.after(cv); document.body.appendChild(v);
+  const on={ name:name, v:v, cv:cv, ctx:cv.getContext('2d'), img:img, raf:0, vfc:0, t:0, url:null, shown:false };
+  cgAnimOn=on;
+  const loop=()=>{
+    if(cgAnimOn!==on) return;
+    cgAnimDraw(on);
+    if(v.requestVideoFrameCallback && !v.paused) on.vfc=v.requestVideoFrameCallback(loop);
+    else on.raf=requestAnimationFrame(loop);
+  };
+  /* 黑幕掀開才開始播（`#storyFade` 是插圖轉場的那一片）；在那之前停在第一格。 */
+  const go=()=>{
+    if(cgAnimOn!==on) return;
+    const f=$('storyFade');
+    if(f && f.classList.contains('on')){ on.t=setTimeout(go, 60); return; }
+    const p=v.play(); if(p && p.catch) p.catch(()=>{});
+    loop();
+  };
+  v.onloadeddata=()=>{ if(cgAnimOn===on){ cgAnimDraw(on); go(); } };
+  v.onended=()=>{ if(cgAnimOn===on) cgAnimDraw(on); };   // 停在最後一格
+  fetch(A.video).then(r=>r.ok?r.blob():null).then(b=>{
+    if(cgAnimOn!==on || !b) return;
+    on.url=URL.createObjectURL(b); v.src=on.url;
+    try{ v.currentTime=0; }catch(_){}
+  }).catch(()=>{});
+}
 export function clearCg(){
+  stopCgAnim();   // 插圖動畫跟著收（ver -2179）
   flushCgCross();
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
   cgCrossFinish=null; cgFinish=null;
@@ -2339,6 +2430,7 @@ function applyPersist(line){
     cgFaded = (line.cgSoft && line.cg)
       ? !cgCross($('storyCg'), cgCandidates(line.cg, line.cgNoTime))
       : cgFade($('storyCg'), line.cg ? cgCandidates(line.cg, line.cgNoTime) : '');
+    playCgAnim(line.cg);   // 有登記動畫的插圖疊影片播（ver -2179）；沒登記／收圖＝停掉上一支
   }
   /* ══⚠⚠⚠ **插圖也算轉場，台上的人先下去**（ver -1422，Ray：「轉場立繪還是在，
      **播插圖也算轉場**」）══ -1420 只收了**換背景**那一條路，而插圖是另一條 ——
@@ -3431,7 +3523,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2178';
+const KERB_V='?v=2179';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -5251,6 +5343,7 @@ function preloadStory(startId, onProgress){
      ⚠ 這一步取代了以前「把六個候選整批丟進圖片清單」的作法 —— 那樣不但預載會抓一堆
        必然 404 的名字，**顯示的當下還要再試一輪**，那一輪才是「插圖沒出現」的成因。
      ⚠ 算在圖片那一段（第②段）：它就是圖。 */
+  for(const base of A.cgs.keys()) warmCgAnim(base);   // 插圖動畫的影片先抓進快取（ver -2179）
   const cgJobs = ()=> [...A.cgs.keys()].map(base=>
     resolveCg(base, A.cgs.get(base)).then(src=> src ? new Promise(res=>{
       const im=new Image();
@@ -6449,7 +6542,7 @@ export function playAdhoc(lines, done, opts){
        —— 解完之後只請求那一張。最壞情況（第一句就有插圖、又還沒解完）也不會比
        以前差（顯示端那條路自己也會解析並寫回同一份快取）。
      ⚠ 一段之內同一張只解一次（`resolveCg` 自己有快取）。 */
-  for(const ln of lines){ if(ln && ln.cg) resolveCg(ln.cg, ln.cgNoTime); }
+  for(const ln of lines){ if(ln && ln.cg){ resolveCg(ln.cg, ln.cgNoTime); warmCgAnim(ln.cg); } }
   /* ⚠ 這一段自己寫的 `bg:` 也先暖起來（ver -1910，Ray：「手機上夢境的背景讀不到」）——
      城鎮段落不經過 `collectAssets`，第一次演到才抓；手機上那一張還沒到，黑幕就已經掀了。 */
   for(const ln of lines){ if(ln && typeof ln.bg==='string' && ln.bg){ const im=new Image(); im.src=imgSrc(ln.bg); } }

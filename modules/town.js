@@ -3814,16 +3814,21 @@ function dreamNoGear(){
    · 夢境（城上 `noGear` 那一段）→ **一律藏**，安全點也藏
    · 戰鬥地圖 ＝ 城鎮戰開著（`siegeOn`）或這張圖會出野怪（`wildMapOff()` 為 null）→ 藏，**安全點那一格（`rest`）除外**
    ⚠ 人不在城裡（`townLive` 假：主選單／劇情／飛行）不歸這裡管 → 不藏。 */
+/* ⚠ ver -2179（Ray：「對話劇情中可以有整備」）：回傳**哪一種**藏法 ——
+     'dream' ＝夢境，對白中也藏；'battle' ＝戰鬥地圖，**演對白時放出來**（CSS 讀 `body.story-talking`，
+     那是演出層自己宣告的「對白播放中」，§6.5 的 -385，不另記一份）；null ＝不藏。 */
 function gearOff(){
-  if(!townId || !townLive) return false;
-  if(dreamNoGear()) return true;
+  if(!townId || !townLive) return null;
+  if(dreamNoGear()) return 'dream';
   const n=((TOWNS[townId]||{}).nodes||{})[nodeId];
-  if(n && n.rest) return false;
-  return !!siegeOn() || !wildMapOff();
+  if(n && n.rest) return null;
+  return (!!siegeOn() || !wildMapOff()) ? 'battle' : null;
 }
-/* 把 `gearOff` 的結果掛到 body（CSS 的 `body.no-gear #kerbPend`）。冪等，掛在 `showNav`（每一次抵達、
+/* 把 `gearOff` 的結果掛到 body（CSS 的 `body.no-gear` / `no-gear-all`）。冪等，掛在 `showNav`（每一次抵達、
    每一段演完都會經過）與離城的兩條路。 */
-function syncGearPend(){ document.body.classList.toggle('no-gear', gearOff()); }
+function syncGearPend(){ const g=gearOff();
+  document.body.classList.toggle('no-gear', g==='battle');
+  document.body.classList.toggle('no-gear-all', g==='dream'); }
 export function gearBlocked(){
   const g=dreamNoGear();
   if(g){
@@ -3831,7 +3836,8 @@ export function gearBlocked(){
     chatterOn=true;
     return true;
   }
-  return gearOff() ? true : null;   // 吊墜藏著時其他入口（鍵盤）也不放行
+  /* 吊墜藏著時其他入口（鍵盤）也不放行；戰鬥地圖演對白時吊墜是出來的，照放行（ver -2179）。 */
+  return (gearOff()==='battle' && !document.body.classList.contains('story-talking')) ? true : null;
 }
 export function loseGoto(){
   const g=(TOWNS[townId]||{}).loseGoto; if(!g) return null;

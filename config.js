@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2178';
+export const VERSION = 'ver 2026.09.22-2179';
 
 export const GAME_CONFIG = {
 
@@ -3491,6 +3491,23 @@ export const GAME_CONFIG = {
        1＝照舊；saint.playCutin 讀（鐵律 1）。 */
     /* ver -859（Ray：「被動技圖不要放那麼大，後方的 Q 版角色也要入鏡，
        手機版幾乎全被裁掉」）：獵手戰吼三張縮到 0.62 —— 後方那位 Q 版夥伴才進得了框。 */
+    /* ══ 插圖動畫（ver -2179，動畫 session 10-13／10-14 交件，說明 `resources/illustration/video/TO_CODE.md`）══
+       鑰匙＝腳本裡 `cg:` 的基底名；`video`＝那一支 mp4；`loop`＝循環（只有首尾都鎖原圖的 043）。
+       其餘播完停在最後一格（多數支最後一格≠原圖）。引擎在 story.js 的 `playCgAnim`。 */
+    cgAnim: {
+      '009_soranadebute': { video:'resources/illustration/video/009_soranadebute_v3.mp4' },
+      '010_anyaheadrubbing': { video:'resources/illustration/video/010_anyaheadrubbing_v1.mp4' },
+      '015-anyadessert': { video:'resources/illustration/video/015-anyadessert_v1.mp4' },
+      '016-soranaaim': { video:'resources/illustration/video/016-soranaaim_v1.mp4' },
+      '017_rennasmile': { video:'resources/illustration/video/017_rennasmile_v1.mp4' },
+      '022_soranadrunk': { video:'resources/illustration/video/022_soranadrunk_v1.mp4' },
+      '024_nouvellesmile': { video:'resources/illustration/video/024_nouvellesmile_v1.mp4' },
+      '26_nouvellefaint': { video:'resources/illustration/video/26_nouvellefaint_v2.mp4' },
+      '31-2_rennaprincesshold': { video:'resources/illustration/video/31-2_rennaprincesshold_v1.mp4' },
+      '038_mishasting': { video:'resources/illustration/video/038_mishasting_v2.mp4' },
+      '043_eliointro': { video:'resources/illustration/video/043_eliointro_v1.mp4', loop:true },
+      '044_soranahug': { video:'resources/illustration/video/044_soranahug_v2.mp4' },
+    },
     cutinFit: { ci_sorana_supply:0.78,
                 ci_sorana_roar_renna:0.62, ci_sorana_roar_anya:0.62, ci_sorana_roar_nouvelle:0.62 },
     /* ══ CI 的進場樣式（ver -2170，Ray：「賽西莉聖徒化 左下跳入回彈」）══ 鑰匙＝靜態圖的鍵，值＝ #cutin 上的 class

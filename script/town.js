@@ -3622,7 +3622,7 @@ export const TOWNS = {
           sor('laugh','那、我也一起去吧！'),
           nou('explain','索拉娜小姐也？'),
           sor('hug','總要有個帶路的吧？況且我的身手還算不錯吧？吶？'),
-          { speaker:'PLAYER', blank:true },
+          { speaker:'PLAYER', blank:true, cg:'044_soranahug', cgNoTime:true },   // ver -2179 Ray：插圖 044（動畫版，config.tuning.cgAnim）
           { speaker:'NOUVELLE', text:'',
             portrait:{ char:'NOUVELLE', exprByTier:{ 1:'awkward', 2:'angry' }, show:true } },
           { speaker:'RENNA', text:'唉呀，這個色狼神父。',

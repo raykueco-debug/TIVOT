@@ -3602,7 +3602,8 @@
      現在它是門的一部分不能滑走 —— 改成只鎖住點擊，畫面上它還要繼續轉給人看。 */
   #kerb.rise #storyExit,#kerb.rise #kerbPend{pointer-events:none;}
   /* 戰鬥地圖（安全點除外）與夢境藏整備吊墜（ver -2175）—— 判定在 town.gearOff，這裡只讀 body.no-gear。 */
-  body.no-gear #kerbPend{display:none !important;}
+  /* ver -2179（Ray：「對話劇情中可以有整備」）：戰鬥地圖演對白時放出來；夢境（no-gear-all）照藏。 */
+  body.no-gear:not(.story-talking) #kerbPend, body.no-gear-all #kerbPend{display:none !important;}
   /* 偶爾反一下光（同吊墜，Ray：「大尺輪跟吊飾一樣偶爾有閃光」）。 */
   #storyExit .ke-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.8;
