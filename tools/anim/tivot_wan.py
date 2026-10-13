@@ -20,6 +20,10 @@ COMFY = os.path.dirname(HERE)
 URL = 'http://127.0.0.1:8188'
 W, H = map(int, os.environ.get('TIVOT_GEN', '480x720').split('x'))   # 生成解析度；CI 要運鏡拉近時設 TIVOT_GEN=720x1080
 GREEN = (0, 255, 0)
+# 4 步加速 LoRA：預設原版；TIVOT_LX2V=motionfix 換成 rzgar 的 Slow-Mo Fix（原版會把動作壓成慢動作、頭髮飄不起來，10-13 下載）
+_LX2V = {'': ('wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors', 'wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors'),
+         'motionfix': ('wan2.2_i2v_lightx2v_motion_fix_high.safetensors', 'wan2.2_i2v_lightx2v_motion_fix_low.safetensors')}
+LX2V_HIGH, LX2V_LOW = _LX2V[os.environ.get('TIVOT_LX2V', '')]
 
 PROMPT = {
  'hit': ('{desc}正面面對鏡頭，站在純綠色背景前。他的胸口被子彈擊中，上半身猛然往後仰、頭往後甩，'
@@ -89,8 +93,8 @@ def graph(img_name, prefix, length, pos, seed, mode):
     g = {
      '1': {'class_type': 'UnetLoaderGGUF', 'inputs': {'unet_name': 'Wan2.2-I2V-A14B-HighNoise-Q4_K_M.gguf'}},
      '2': {'class_type': 'UnetLoaderGGUF', 'inputs': {'unet_name': 'Wan2.2-I2V-A14B-LowNoise-Q4_K_M.gguf'}},
-     '3': {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['1', 0], 'lora_name': 'wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors', 'strength_model': 1.0}},
-     '4': {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['2', 0], 'lora_name': 'wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors', 'strength_model': 1.0}},
+     '3': {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['1', 0], 'lora_name': LX2V_HIGH, 'strength_model': 1.0}},
+     '4': {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['2', 0], 'lora_name': LX2V_LOW, 'strength_model': 1.0}},
      '5': {'class_type': 'ModelSamplingSD3', 'inputs': {'model': ['3', 0], 'shift': 5.0}},
      '6': {'class_type': 'ModelSamplingSD3', 'inputs': {'model': ['4', 0], 'shift': 5.0}},
      '7': {'class_type': 'CLIPLoader', 'inputs': {'clip_name': 'umt5_xxl_fp8_e4m3fn_scaled.safetensors', 'type': 'wan', 'device': 'default'}},
