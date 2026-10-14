@@ -2149,7 +2149,7 @@ function cgCross(el, src){
    （iPhone 的 `<video>` 是獨立硬體圖層，疊放順序會亂）。
    ⚠ canvas **每一格照抄 `#storyCg` 的框與取景**（位置、寬高、object-position、transform、filter、opacity）——
      平移（cgPan）、放大（setCgScale）、泛黃（cgTone）、淡出全部跟著走，不必另寫一套。
-   ⚠ 播完**停在最後一格**（交件說明：多數支的最後一格不是原圖，切回原圖會跳）；`loop:true` 的循環播。
+   ⚠ 不停在最後一格：播到尾巴前就把插畫淡出撤下（ver -2182，Ray：「動畫在停止前就要撤下」，見 `withdrawCgAnim`）；`loop:true` 的循環播。
    ⚠ 黑幕還蓋著時先把**第一格**擺上去（多數支的第一格也不是原圖），等黑幕掀開才開始播。
    ⚠ 收掉只有 `stopCgAnim` 一支（鐵律 8）：換插圖／收插圖（`clearCg`）都叫它。 */
 let cgAnimOn=null;
@@ -2200,6 +2200,20 @@ function cgAnimDraw(on){
   ctx.drawImage(v, (cw-dw)*fx, (ch-dh)*fy, dw, dh);
   if(!on.shown){ on.shown=true; cv.style.visibility=''; }
 }
+const CG_ANIM_OUT_S = 0.35;   // 播到剩這麼多秒就開始撤（≥ #storyCg 的淡出 .22s，淡完時影片還沒停）
+function withdrawCgAnim(on){
+  on.leaving = true;
+  const img = on.img;
+  if(!img || !img.classList.contains('on')){ stopCgAnim(); return; }
+  img.classList.add('fading');
+  setTimeout(()=>{
+    if(cgAnimOn!==on) return;            // 被別的換圖接手了
+    stageCg = null;                      // 這一張插圖結束了（下一拍寫 cg:null 也是 no-op）
+    img.classList.remove('on','fading');
+    img.removeAttribute('src');
+    stopCgAnim();
+  }, 240);
+}
 function playCgAnim(name){
   stopCgAnim();
   const A=cgAnimSpec(name); if(!A || !A.video) return;
@@ -2215,6 +2229,10 @@ function playCgAnim(name){
   cgAnimOn=on;
   const loop=()=>{
     if(cgAnimOn!==on) return;
+    /* ⚠⚠ ver -2182（Ray：「所有插畫在動畫跑完前都要撤下」「動畫在停止前就要撤下」）：
+       不循環的那幾支，播到最後 CG_ANIM_OUT_S 秒就把插畫淡出收掉 —— **影片還在動的時候**收，
+       畫面上永遠不會停在一張不動的最後一格。（循環的 043 不會停，不受這一條管。） */
+    if(!v.loop && !on.leaving && v.duration && v.currentTime >= v.duration - CG_ANIM_OUT_S) withdrawCgAnim(on);
     cgAnimDraw(on);
     if(v.requestVideoFrameCallback && !v.paused) on.vfc=v.requestVideoFrameCallback(loop);
     else on.raf=requestAnimationFrame(loop);
@@ -2228,7 +2246,7 @@ function playCgAnim(name){
     loop();
   };
   v.onloadeddata=()=>{ if(cgAnimOn===on){ cgAnimDraw(on); go(); } };
-  v.onended=()=>{ if(cgAnimOn===on) cgAnimDraw(on); };   // 停在最後一格
+  v.onended=()=>{ if(cgAnimOn===on && !on.leaving) withdrawCgAnim(on); };   // 保險：沒趕上尾巴那一刻也收（ver -2182）
   fetch(A.video).then(r=>r.ok?r.blob():null).then(b=>{
     if(cgAnimOn!==on || !b) return;
     on.url=URL.createObjectURL(b); v.src=on.url;
@@ -3528,7 +3546,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2181';
+const KERB_V='?v=2182';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

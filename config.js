@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2181';
+export const VERSION = 'ver 2026.09.22-2182';
 
 export const GAME_CONFIG = {
 
@@ -3496,7 +3496,7 @@ export const GAME_CONFIG = {
        手機版幾乎全被裁掉」）：獵手戰吼三張縮到 0.62 —— 後方那位 Q 版夥伴才進得了框。 */
     /* ══ 插圖動畫（ver -2179，動畫 session 10-13／10-14 交件，說明 `resources/illustration/video/TO_CODE.md`）══
        鑰匙＝腳本裡 `cg:` 的基底名；`video`＝那一支 mp4；`loop`＝循環（只有首尾都鎖原圖的 043）。
-       其餘播完停在最後一格（多數支最後一格≠原圖）。引擎在 story.js 的 `playCgAnim`。 */
+       其餘播到尾巴前就把插畫淡出撤下（ver -2182，Ray：「動畫在停止前就要撤下」）。引擎在 story.js 的 `playCgAnim`。 */
     cgAnim: {
       '009_soranadebute': { video:'resources/illustration/video/009_soranadebute_v3.mp4' },
       '010_anyaheadrubbing': { video:'resources/illustration/video/010_anyaheadrubbing_v1.mp4' },
