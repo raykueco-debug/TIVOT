@@ -43,3 +43,20 @@
 
 - ⚠ **時段差分**：全部只有 day（草稿）。正式版照憲法：街道／室外四差分、旅店四差分、酒館三差分、店舖只有 day。
 - ⚠ **戰鬥版**（現有 `background/winsmoor/` 40 格）不能當戰鬥背景 —— 城鎮版定了再做。
+
+## 時段差分（10-14 起，Gemini 衍生，Ray：「時段差分開始做 給 gem 處理」）
+
+- 產法：Gemini（Flash＋建立圖像），每張都重傳日景原圖，寫死「構圖人物畫風完全不變、只換光與色溫」；夜晚＝銀月光、**不畫月亮本體**（朝向未定）。原輸出 `_gem/_raw_<鍵>_<時段>.png`（不進版控）。
+- 要做的：室外 7 格（square midtown church cityhall oldtown dock uptown）＋旅館 inn → dawn／dusk／night；酒館 bar → dusk／night；其餘店舖只有 day。
+- ⚠ cafe／sweets 憲法表沒點名 → 先照「店舖只有 day」不做，要做再說。
+
+| 鍵 | dawn | dusk | night |
+|---|---|---|---|
+| square | ✔ | ✔ | ✔ |
+| midtown | ✔（1264 寬，偏小，Gemini 只給了半解析） | ✔ | ✔ |
+| church | ⚠ 欠（Gemini 卡住兩次） | ⚠ 欠 | ⚠ 欠 |
+| cityhall／oldtown／dock／uptown／inn | ⚠ 欠 | ⚠ 欠 | ⚠ 欠 |
+| bar | —（不做） | ⚠ 欠 | ⚠ 欠 |
+| gunstore guild restaurant grocery cafe sweets | ✔ 不欠（店舖只有 day） | | |
+
+- ⚠ 10-14 晚 Gemini 做到第 6 張之後：Flash 一直卡在「正在建立」、Pro 回「我只是文字模型」（罵一句也不出），判斷是當天圖片額度用完，剩下的等重置。

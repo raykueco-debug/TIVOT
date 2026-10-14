@@ -79,6 +79,9 @@
 **美術 session 10-12 晚（Windows）—— 接著做的**
 - ✔ **溫斯摩爾港（西泊）城鎮版 15 格正式版日景已交（10-14，第二版，Ray 試稿通過）**：`resources/background/winsmoor_town/ws_town_<鍵>_day.webp`，總覽 `_sheet15.jpg`、產法見 `_spec.md`。
   美術還欠：時段差分（街道／室外四差分、旅館四差分、酒館三差分、店舖只有 day）、戰鬥版。程式端：還沒有任何節點接這批圖（`script/town.js` 還沒有溫斯摩爾），要接時照 `_spec.md` 的拓樸表。
+- ⚠ **西泊城鎮版時段差分（Gemini）做到 6／26 張**（square、midtown 三時段）：Gemini 當天額度用完，其餘等重置；進度表在 `winsmoor_town/_spec.md` 尾段。
+- ✔ **帝都外郊 4 格（只有黃昏，Ray 定）已交**：`resources/background/capital_outer/outer_<鍵>_dusk.webp`（城外→河畔→殘破村落→廢風車＝安雅躲藏處）。程式端：4 格直線、`noTime`；舊的 `capital/capital_outskirts_dusk.webp`（厚塗）要不要換成本批 windmill 由 Ray 決定。
+- ✔ **孤舟島（工匠村落，拓樸照夏爾村 13 格）日景已交**：`resources/background/loneisle/loneisle_<鍵>_day.webp`，鍵對照與出口表在 `loneisle/_spec.md`。美術還欠四時段差分（Gemini）；程式端還沒有節點。
 - 空中戰怪圖第二批剩 5 張（群口之柱／人面花冠／眼之幕／天之裂隙／無面巨首）—— 一律 GPT，方向照已定的三張（`resources/enemy/_sky_battle_spec.md`）。
 - 戰鬥版（現有 40 格不能當戰鬥背景）：城鎮版定了再做。
 
