@@ -77,8 +77,8 @@
 - 台詞差分表 `卡耶爾山谷_碎片02_台詞差分.xlsx`（根目錄）已 commit；Ray 改過的版本才是正本，之後只准 `dialogue_xlsx.py --refresh`。
 
 **美術 session 10-12 晚（Windows）—— 接著做的**
-- ⚠⚠ **溫斯摩爾港（西泊）城鎮版 15 格正式版：GPT 額度重置後（10-13 下午）照草稿出**（Ray：「額度回來就出正式版」）。
-  草稿＋對照表在 `resources/background/winsmoor_town/`（`_spec.md`）；拓樸照帝都 12 格＋餐飲街 4 家；不要輕軌。先出日景，時段差分照憲法。
+- ✔ **溫斯摩爾港（西泊）城鎮版 15 格正式版日景已交（10-14，第二版，Ray 試稿通過）**：`resources/background/winsmoor_town/ws_town_<鍵>_day.webp`，總覽 `_sheet15.jpg`、產法見 `_spec.md`。
+  美術還欠：時段差分（街道／室外四差分、旅館四差分、酒館三差分、店舖只有 day）、戰鬥版。程式端：還沒有任何節點接這批圖（`script/town.js` 還沒有溫斯摩爾），要接時照 `_spec.md` 的拓樸表。
 - 空中戰怪圖第二批剩 5 張（群口之柱／人面花冠／眼之幕／天之裂隙／無面巨首）—— 一律 GPT，方向照已定的三張（`resources/enemy/_sky_battle_spec.md`）。
 - 戰鬥版（現有 40 格不能當戰鬥背景）：城鎮版定了再做。
 
