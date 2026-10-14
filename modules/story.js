@@ -2163,6 +2163,7 @@ function stopCgAnim(){
   try{ on.v.pause(); }catch(_){}
   on.v.removeAttribute('src'); try{ on.v.load(); }catch(_){}
   on.v.remove(); on.cv.remove();
+  if(on.img) on.img.classList.remove('cg-anim-hide');
   if(on.url) try{ URL.revokeObjectURL(on.url); }catch(_){}
 }
 /* object-position 的一個分量 → 0..1（只認 % 與 px；cover 下 px 換算成比例）。 */
@@ -2225,6 +2226,9 @@ function playCgAnim(name){
   const cv=document.createElement('canvas');
   cv.className='cg-anim'; cv.style.cssText='position:absolute;z-index:2;pointer-events:none;visibility:hidden;';
   img.after(cv); document.body.appendChild(v);
+  /* ⚠⚠ ver -2183（Ray：「只要播動畫就不要有底圖，不然撤掉會穿幫」）：靜態圖從開播起就藏（`visibility`，不是 display ——
+     它還得留在版面上讓 canvas 照抄框、取景、平移與淡出）。影片載不到才放回來（退回靜態圖）。 */
+  img.classList.add('cg-anim-hide');
   const on={ name:name, v:v, cv:cv, ctx:cv.getContext('2d'), img:img, raf:0, vfc:0, t:0, url:null, shown:false };
   cgAnimOn=on;
   const loop=()=>{
@@ -2247,11 +2251,14 @@ function playCgAnim(name){
   };
   v.onloadeddata=()=>{ if(cgAnimOn===on){ cgAnimDraw(on); go(); } };
   v.onended=()=>{ if(cgAnimOn===on && !on.leaving) withdrawCgAnim(on); };   // 保險：沒趕上尾巴那一刻也收（ver -2182）
+  const fallback=()=>{ if(cgAnimOn===on) stopCgAnim(); };   // 影片載不到：收掉動畫層，靜態圖放回來
+  v.onerror=fallback;
   fetch(A.video).then(r=>r.ok?r.blob():null).then(b=>{
-    if(cgAnimOn!==on || !b) return;
+    if(cgAnimOn!==on) return;
+    if(!b){ fallback(); return; }
     on.url=URL.createObjectURL(b); v.src=on.url;
     try{ v.currentTime=0; }catch(_){}
-  }).catch(()=>{});
+  }).catch(fallback);
 }
 export function clearCg(){
   stopCgAnim();   // 插圖動畫跟著收（ver -2179）
@@ -3546,7 +3553,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2182';
+const KERB_V='?v=2183';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
