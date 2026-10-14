@@ -19,3 +19,5 @@
 - 第一格≒原圖（從原圖生成）；**沒鎖結尾 ⇒ 最後一格≠原圖**，播完停在最後一格。
 - 靜態圖目前在兩個地方用：`config.js` 的 `cutin_exc_torsten`（CI）與 `script/town.js` 的劇情 cg。
   要不要兩處都換成影片由程式決定；CI 那條可以照其他 `ci_*.mp4` 的接法。
+
+> ✅ **已接**（程式 ver -2187）：`config.tuning.cutinAnim` 登記 v2、`cutinDur` 補片長、靜態佔位換成 v2 首格 webp、`partnerCiKeys` 預熱（本篇每場都暖）。

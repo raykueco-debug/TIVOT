@@ -9,3 +9,5 @@
   ⚠ 原圖 `ci_torsten_mb.webp` 是「開火瞬間」，不是影片首格；CI 若先顯示靜態圖，請用影片第一格。
 - `_v1.mp4`（雙管、頭髮不動）已被 v2 取代，不要接；回收等 Ray。
 - 靜態圖目前在 `config.js` 的 CI 鍵（`ci_torsten_mb.webp`）；接法照其他 `ci_*.mp4`。
+
+> ✅ **已接**（程式 ver -2187）：`config.tuning.cutinAnim` 登記 v2、`cutinDur` 補片長、靜態佔位換成 v2 首格 webp、`partnerCiKeys` 預熱（本篇每場都暖）。

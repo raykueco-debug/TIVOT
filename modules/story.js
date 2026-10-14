@@ -2187,12 +2187,13 @@ function cgAnimDraw(on){
   if(cv.width!==cw || cv.height!==ch){ cv.width=cw; cv.height=ch; }
   const cs=getComputedStyle(img);
   /* 播完之後只在取景真的變了才重畫（平移還在跑時照畫）—— 停著不動就不燒手機（鐵律 12）。 */
-  const sig=[W,H,cs.objectPosition,cs.transform,cs.filter,cs.opacity,img.className,v.currentTime].join('|');
+  const fk=cgAnimFade(on);
+  const sig=[W,H,cs.objectPosition,cs.transform,cs.filter,cs.opacity,img.className,v.currentTime,fk].join('|');
   if(sig===on.sig) return; on.sig=sig;
   cv.style.left=img.offsetLeft+'px'; cv.style.top=img.offsetTop+'px';
   cv.style.width=W+'px'; cv.style.height=H+'px';
   cv.style.transform=cs.transform==='none'?'':cs.transform; cv.style.transformOrigin=cs.transformOrigin;
-  cv.style.filter=cs.filter==='none'?'':cs.filter; cv.style.opacity=cs.opacity;
+  cv.style.filter=cs.filter==='none'?'':cs.filter; cv.style.opacity=String((+cs.opacity||0)*fk);
   cv.style.display = img.classList.contains('on') ? 'block' : 'none';
   /* object-fit:cover：等比放大到蓋滿框，被裁掉的那一截照 object-position 分配。 */
   const k=Math.max(cw/v.videoWidth, ch/v.videoHeight), dw=v.videoWidth*k, dh=v.videoHeight*k;
@@ -2201,20 +2202,21 @@ function cgAnimDraw(on){
   ctx.drawImage(v, (cw-dw)*fx, (ch-dh)*fy, dw, dh);
   if(!on.shown){ on.shown=true; cv.style.visibility=''; }
 }
-const CG_ANIM_OUT_S = 0.35;   // 播到剩這麼多秒就開始撤（≥ #storyCg 的淡出 .22s，淡完時影片還沒停）
-function withdrawCgAnim(on){
-  on.leaving = true;
-  const img = on.img;
-  if(!img || !img.classList.contains('on')){ stopCgAnim(); return; }
-  img.classList.add('fading');
-  setTimeout(()=>{
-    if(cgAnimOn!==on) return;            // 被別的換圖接手了
-    stageCg = null;                      // 這一張插圖結束了（下一拍寫 cg:null 也是 no-op）
-    img.classList.remove('on','fading');
-    img.removeAttribute('src');
-    stopCgAnim();
-  }, 240);
+const CG_ANIM_OUT_S = 0.4;   // 播到剩這麼多秒就開始淡出撤下
+/* ⚠⚠ ver -2186：淡出**跟著影片時間走**（每一格算透明度），收掉也在畫格那一刻做 —— 不靠 setTimeout。
+   計時器在面板收起／手機切背景時會被延到一秒以上，影片就先播完停在最後一格（實測 7 支碰到片尾）。 */
+function cgAnimFade(on){
+  const v=on.v; if(!on.leaving || !v.duration) return 1;
+  return Math.max(0, Math.min(1, (v.duration - v.currentTime) / CG_ANIM_OUT_S));
 }
+function finishCgAnim(on){
+  if(cgAnimOn!==on) return;
+  const img=on.img;
+  stageCg = null;                      // 這一張插圖結束了（下一拍寫 cg:null 也是 no-op）
+  if(img){ img.classList.remove('on','fading'); img.removeAttribute('src'); }
+  stopCgAnim();
+}
+function withdrawCgAnim(on){ on.leaving = true; }
 function playCgAnim(name){
   stopCgAnim();
   const A=cgAnimSpec(name); if(!A || !A.video) return;
@@ -2237,6 +2239,7 @@ function playCgAnim(name){
        不循環的那幾支，播到最後 CG_ANIM_OUT_S 秒就把插畫淡出收掉 —— **影片還在動的時候**收，
        畫面上永遠不會停在一張不動的最後一格。（循環的 043 不會停，不受這一條管。） */
     if(!v.loop && !on.leaving && v.duration && v.currentTime >= v.duration - CG_ANIM_OUT_S) withdrawCgAnim(on);
+    if(on.leaving && (v.ended || v.currentTime >= v.duration - 0.05)){ finishCgAnim(on); return; }
     cgAnimDraw(on);
     if(v.requestVideoFrameCallback && !v.paused) on.vfc=v.requestVideoFrameCallback(loop);
     else on.raf=requestAnimationFrame(loop);
@@ -2250,7 +2253,7 @@ function playCgAnim(name){
     loop();
   };
   v.onloadeddata=()=>{ if(cgAnimOn===on){ cgAnimDraw(on); go(); } };
-  v.onended=()=>{ if(cgAnimOn===on && !on.leaving) withdrawCgAnim(on); };   // 保險：沒趕上尾巴那一刻也收（ver -2182）
+  v.onended=()=>{ if(cgAnimOn===on && !v.loop) finishCgAnim(on); };   // 保險：播完那一刻一定收（ver -2186）
   const fallback=()=>{ if(cgAnimOn===on) stopCgAnim(); };   // 影片載不到：收掉動畫層，靜態圖放回來
   v.onerror=fallback;
   fetch(A.video).then(r=>r.ok?r.blob():null).then(b=>{
@@ -3553,7 +3556,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2183';
+const KERB_V='?v=2187';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2183';
+export const VERSION = 'ver 2026.09.22-2187';
 
 export const GAME_CONFIG = {
 
@@ -3510,6 +3510,13 @@ export const GAME_CONFIG = {
       '038_mishasting': { video:'resources/illustration/video/038_mishasting_v2.mp4' },
       '043_eliointro': { video:'resources/illustration/video/043_eliointro_v1.mp4', loop:true },
       '044_soranahug': { video:'resources/illustration/video/044_soranahug_v2.mp4' },
+      /* ver -2184（動畫 10-14 交件）。35／044 首尾構圖可接 ⇒ 循環（044 那一拍之後還有台詞與轉泛黃，插圖要撐到淡出）。 */
+      '003_lunaria_armed': { video:'resources/illustration/video/003_lunaria_armed_v1.mp4' },
+      '005_cecilieintro': { video:'resources/illustration/video/005_cecilieintro_v1.mp4' },
+      '35_bellinda': { video:'resources/illustration/video/35_bellinda_v1.mp4', loop:true },
+      '044_cecilietorsten': { video:'resources/illustration/video/044_cecilietorsten_v1.mp4', loop:true },
+      /* 劇情裡的「Execute 插圖」寫的是明確路徑（script/town.js），鑰匙就是那串路徑；影片與 CI 共用處決 v2。 */
+      'resources/ci/ci_torsten_execute.png': { video:'resources/ci/video/ci_torsten_execute_v2.mp4' },
     },
     cutinFit: { ci_sorana_supply:0.78,
                 ci_sorana_roar_renna:0.62, ci_sorana_roar_anya:0.62, ci_sorana_roar_nouvelle:0.62 },
@@ -3520,7 +3527,8 @@ export const GAME_CONFIG = {
     /* ══ CI 的長度（ver -2030，Ray：「諾的 SI CI 改成 2 秒看看」）══ 鑰匙＝靜態圖的鍵，值＝毫秒；
        沒寫＝1.5 秒。推入／停留／撤出的比例照 1.5 秒那一版放大（style.css 的 --ci-dur）。
        ⚠ 與 `cutinAnim` 的播放速度無關：動檔照自己的速度播，CI 時間到就撤。 */
-    cutinDur: { cutin_nouvelle_saint:2000, ci_sorana_predator:1125, ci_anya_ni:2875,   // ver -2078：NI 換 v2（1.875 秒）＋Ray「安雅再延 1 秒」（播完停最後一格 1 秒）   // 安雅惡夢化 ver -2036（Ray：「動畫是 NI，DB 另外做」）
+    cutinDur: { cutin_exc_torsten:2440, cutin_mb_torsten:1750,   /* ver -2184：片長＝CI 長（處決 v2 39 格、MB v2 28 格，16fps） */
+                cutin_nouvelle_saint:2000, ci_sorana_predator:1125, ci_anya_ni:2875,   // ver -2078：NI 換 v2（1.875 秒）＋Ray「安雅再延 1 秒」（播完停最後一格 1 秒）   // 安雅惡夢化 ver -2036（Ray：「動畫是 NI，DB 另外做」）
                 ci_anya_obe:2000, cutin_obe_nouvelle:2000,
                 cutin_cecilie_saint:2000,   /* ver -2170：v3 片長（v2 去掉開頭 6 格靜止＝48 格 24fps）；-2169 v2 是 2250、v1 是 3125 */ cutin_cecilie_obe:2000,
                 ci_sorana_obe:1625,
@@ -3559,6 +3567,9 @@ export const GAME_CONFIG = {
        比較頁實測一位搭檔解碼後的記憶體約 87 MB → 36 MB）。長度不變（cutinDur 照舊），撤出時照舊還在播。
        ⚠ 新交的動檔照這個規格做（或交 16 格原片，由程式端抽格縮圖）。 */
     cutinAnim: { ci_sorana_predator:{ video:'resources/ci/video/ci_sorana_predator_v1.mp4' },   // ver -2040：Ray 的剪輯版（v7 剪 18 格，1.125 秒＝ cutinDur）
+                 /* ver -2184：托爾斯坦處決 v2（新底圖＋迦尼米德大槍）、MB v2（單管、爆風吹髮）。 */
+                 cutin_exc_torsten:{ video:'resources/ci/video/ci_torsten_execute_v2.mp4' },
+                 cutin_mb_torsten:{ video:'resources/ci/video/ci_torsten_mb_v2.mp4' },
                  /* ver -2028：56 格平均分到 3.5 秒＝16fps。⚠ CI 長 2 秒（cutinDur，ver -2030），播到第 32 格左右就撤。 */
                  cutin_nouvelle_saint:{ video:'resources/ci/video/cutin_nouvelle_saint_v1.mp4' },
                  /* ver -2041：安雅惡夢化（NI）改用 Ray 剪的 ni3 版（ci_anya_dreambreaker0_ni3_s77_cut，45 格 2.8125 秒＝ cutinDur，撤出時還在播）。
@@ -4709,11 +4720,11 @@ export const ASSETS = {
   /* ══ 本篇的 MB／處決 cut-in（ver -702，Ray 交件）══ 試玩版照舊 Luna（見 cutin_mb／
      cutin_exc）；分流走 `storyMode()`，與破防／生命歸還那兩張同一套（鐵律 8）。
      ⚠ ver -703：檔名的拼字由 `Excute` 更正為 `Execute`（Ray 指定）。 */
-  cutin_mb_torsten:      "resources/ci/ci_torsten_mb.webp?v=ba40bc80",
+  cutin_mb_torsten:      "resources/ci/ci_torsten_mb_v2.webp",   // ver -2184：佔位＝MB v2 影片首格（開槍前），舊的是開火瞬間
   /* ⚠ ver -1698：Ray 把這一張換成 `.png`（原本的 `.webp` 他自己刪了）。
      這條路徑是**寫死的完整字串**、沒有候選鏈 —— 副檔名對不上就是整張不出現，
      而畫面上不會有任何錯誤訊息。轉回 webp 的時候記得把這兩處一起改。 */
-  cutin_exc_torsten:     "resources/ci/ci_torsten_execute.png",
+  cutin_exc_torsten:     "resources/ci/ci_torsten_execute_v2.webp",   // ver -2184：佔位＝處決 v2 新底圖（劇情插圖那一拍仍寫舊路徑，影片走 cgAnim）
   /* ══ 本篇的生命歸還／OBE cut-in（ver -703，Ray 交件）══
      ⚠ 生命歸還原本**借** `Nouvelle_Sturm`（ver -454 的權宜）—— 正牌的來了就換掉。
        那張 Sturm 留著（她自己的招，日後用得到）。
@@ -5342,6 +5353,8 @@ export function partnerCiKeys(pk, story){
   else if(story && pk==='sorana'){ /* 共鬥：卡上的 cutin／coop.endCutin 已由 walk 收進來 */ }
   else { add(installCiKey(pk, story)); add(story ? (pc.obeCutin || 'cutin_obe_nouvelle') : 'cutin_obe'); }
   add(dualCiKey(story));   // 破防 CI 每場都可能出（不分搭檔）；ver -2088 起本篇那張是影片，要暖
+  /* 處決／MB（聖徒化結局那一層）：本篇是托爾斯坦的影片（ver -2184），每場都可能出 —— 一起暖，不然第一次只會播靜態佔位。 */
+  if(story){ add('cutin_exc_torsten'); if(!(pk==='anya' || pk==='sorana')) add('cutin_mb_torsten'); }
   return out;
 }
 /* 這張 CI 的動檔**實際播得到幾格**：CI 只有 `cutinDur` 那麼長，撤出之後的格子永遠不會顯示 ——
@@ -5633,7 +5646,7 @@ export const ASSET_VER = {
   /* ══ BUST:ASSETVER START —— 由 tools/asset_bust.py 產生（同名覆蓋過的背景／插圖，值＝內容雜湊），不要手改 ══ */
   '001_nouvelle_fell': 'e9167e69',
   '002_saintassult': 'fd1c9d19',
-  '003_lunaria_armed': 'f656d515',
+  '003_lunaria_armed': '68fd7dff',
   '004_renna_intro': '7d0c2d39',
   '005-1_kerberos': 'c503a76b',
   '005_kerberos_day': '5926e3f7',
@@ -5656,6 +5669,7 @@ export const ASSET_VER = {
   '_layout_tomb': '1a47bf82',
   '_layout_undercity': '17f71d1b',
   '_layout_verafond': '6d44630f',
+  '_sheet15': '64e14158',
   'anya_a': 'e441af7c',
   'anya_ad_si_front_closed': '4b5278ba',
   'anya_ad_si_front_half': '0c427692',
@@ -6786,6 +6800,21 @@ export const ASSET_VER = {
   'vo_sorana_pack': '417630a9',
   'vo_sorana_pack2': '57c876ef',
   'vo_sorana_roar': '184fbea0',
+  'ws_town_bar_day': '7d6a2e5f',
+  'ws_town_cafe_day': '592a4628',
+  'ws_town_church_day': '84209a59',
+  'ws_town_cityhall_day': '195e428a',
+  'ws_town_dock_day': '9ba687bf',
+  'ws_town_grocery_day': '2f47d801',
+  'ws_town_guild_day': '183d01a8',
+  'ws_town_gunstore_day': 'eede3205',
+  'ws_town_inn_day': '00b29fe5',
+  'ws_town_midtown_day': 'a899e10b',
+  'ws_town_oldtown_day': '875b400b',
+  'ws_town_restaurant_day': 'e2150a57',
+  'ws_town_square_day': '521bfedc',
+  'ws_town_sweets_day': '4cfa37ff',
+  'ws_town_uptown_day': 'c4f53ed0',
   'xanya_si_front_closed': 'd8962805',
   'xanya_si_front_half': '929e8753',
   /* ══ BUST:ASSETVER END ══ */
