@@ -520,12 +520,28 @@ export function activateNightmare(){
      這一招常常是在教學對話裡被觸發的，那時圈早就被 `pauseForDialog` 凍著了，
      由我解凍會變成「對話還開著、圈卻在縮」。 */
   niPausedThreats = !!(api.pauseThreats && api.pauseThreats() === true);
+  /* ⚠ ver -2181（Ray：「夢碎無法立刻發動」）：發動的 cut-in 期間手勢層就打開、上滑先排隊（`niBurstQueued`），
+     夢魘化一開始就粉碎 —— 以前這段 2.8 秒裡上滑兩邊都沒人接（手勢層 cut-in 後才開、戰鬥上半在 cut-in 期間不收手勢）。 */
+  niArming = true; niBurstQueued = false; niBurstLock = false;
+  setReturnSwipe(true);
   playCutin(()=>startNightmareMode(), L.battle.nightmareLabel||'NIGHTMARE INSTALL', 'ci_anya_ni');
   return true;
 }
+/* 夢魘化期間（或它的發動 cut-in 期間）的上滑：唯一入口（main 的手勢層與鍵盤都叫它，鐵律 8）。
+   回傳 true ＝這一下被夢魘化接走了。 */
+let niArming = false, niBurstQueued = false, niBurstLock = false;
+export function niStarting(){ return niArming; }   // 夢魘化的發動 cut-in 期間（ver -2181）
+export function niSwipeUp(){
+  if(state.niMode){ nightmareActive(); return true; }
+  if(niArming){ niBurstQueued = true; return true; }
+  return false;
+}
 function startNightmareMode(){
-  if(state.over) return;
+  niArming = false;
+  if(state.over){ niBurstQueued = false; setReturnSwipe(false); return; }   // 提早開的手勢層要收（ver -2181）
   enterNightmare();
+  /* 發動 cut-in 期間就上滑過 ⇒ 盤面擺好之後立刻粉碎（ver -2181）。⚠ 等這一支同步跑完（盤面換好）才叫。 */
+  if(niBurstQueued){ niBurstQueued = false; setTimeout(()=>{ if(state.niMode) nightmareActive(); }, 0); }
   /* ver -967（Ray：「夢魘發動不清盤面攻擊圈」）：**不** `resetEnemyTimers()`、
      **不**重排 `scheduleAssault()`、**不**清 `enemyAtkSuppressUntil` ——
      只把 cut-in 期間凍住的攻擊圈原樣接回（剩餘時間不變）。理由見 activateNightmare。 */
@@ -720,6 +736,10 @@ function triggerNiBurst(){
 /* 主動技（上滑）：一次清掉殘格造成相應傷害 —— **沒有 MB、不回血、直接結束，HP 剩 1**。 */
 export function nightmareActive(){
   if(!state.niMode) return false;
+  /* ⚠ ver -2181（Ray：「連滑會發動兩次」）：粉碎的 cut-in 演出期間還在夢魘化中 —— 不鎖的話再滑一次就再發一次。
+     鎖到下一次 activateNightmare 才解。 */
+  if(niBurstLock) return false;
+  niBurstLock = true;
   clearSaintReactTimer();
   /* ══ 夢境粉碎（ver -674，Ray 交件 `CI_Anya_Dreambreaker`）══
      ⚠ **先演再結算**：cut-in 是「她發動了」，盤面清空與傷害是它的結果 ——

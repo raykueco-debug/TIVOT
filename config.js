@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.09.22-2180';
+export const VERSION = 'ver 2026.09.22-2181';
 
 export const GAME_CONFIG = {
 
@@ -913,7 +913,10 @@ export const GAME_CONFIG = {
            一條帶 `not` 管「圍城期間強配」、一條不帶 `not` 管「之後仍可選」。
            少了後者她會整個從池子裡消失。 */
     /* 圍城期間：強配索菈娜（排在安雅前面才贏得了）。 */
-    { need:'sv_night_done', not:'safehouse_shinier', key:'sorana' },
+    /* ⚠⚠ ver -2181（Ray：「夏爾村戰索拉娜強制出擊失效」）：force:true ＝這條成立時**池子只剩她** ——
+       以前她只是排第一，而 storyPartnerKey 會先用玩家在整備頁挑過的人（還在池子裡就算），
+       挑過諾薇兒／安雅的人就不是她了。 */
+    { need:'sv_night_done', not:'safehouse_shinier', key:'sorana', force:true },
     /* ══⚠⚠ **古墓分組之後只剩諾薇兒**（ver -1571，Ray：「夥伴只剩諾薇兒」）══
        靠既有的 `not` 把另外兩位從池子裡拿掉 —— 池子空了就落到最底下的預設
        （`storyPartner:'nouvelle'`），所以**不必**再加一條「強配諾薇兒」。

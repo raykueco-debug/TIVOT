@@ -52,7 +52,9 @@
 import { trTree } from '../i18n/scriptTr.js';   // 劇本譯文（只在非中文時就地換字，ver -1908）
 /* 諾薇兒的差分（縮寫，對到 speakers.js 的 expr）。寫成常數只是為了讓下面的稿子好讀。 */
 const N = who => (expr, text, extra) => Object.assign(
-  { speaker:who, text:text||'', portrait:{ char:who, expr:expr||null, show:true } }, extra||{});
+  { speaker:who, text:text||'', portrait:{ char:who, expr:expr||null, show:!(extra && extra.show===false) } }, extra||{});
+/* ⚠ ver -2181：`{ show:false }` 也算「這一句不放立繪」—— 以前只有 `{ portrait:{ show:false } }` 有效，
+   最外層那一個被 portrait.show:true 蓋掉（碎片 02 插圖上士兵那句就這樣冒出立繪、卡住夢醒的黑幕）。 */
 const nou = N('NOUVELLE'), ren = N('RENNA');
 /* 公會那一場的兩位（ver -375（-893 前用詞））。⚠ 兩個都站**右**（見 speakers.js）——
    玩家的同伴在左、對面的人在右，與店主同一個邏輯。 */
@@ -1456,7 +1458,7 @@ const FRAG02_OPEN = [
   cec('call','喂！等我一下！'),
   { goto:'frag02_end' },                                                         // 演完 → 玩家自己往前走
   /* 打輸（onLose 跳過來）：插 `frag02_done`（這一段結束了），段落收尾的 `gotoIf` 看到它就經讀取頁回北泊。 */
-  { speaker:'NARRATION', text:'', label:'frag02_lose', fadeOut:3000, auto:3200, ambStop:1 },
+  { speaker:'NARRATION', text:'', label:'frag02_lose', fadeOut:3000, auto:3200, ambStop:1, hide:'*' },   // hide：轉景前先清場（ver -2181，Ray：「夢醒轉景時賽西莉立繪殘留」）
   Object.assign({ speaker:'NARRATION', text:'', auto:100 }, FRAG02_WAKE),   // 黑透了才推到隔天（推時鐘會換背景，不能在淡出途中）
   { speaker:'NARRATION', text:'', label:'frag02_end', auto:100 },
 ];
@@ -1472,7 +1474,7 @@ const FRAG02_MID = [
   cec('battlecry','那就把他們驅逐殆盡吧！'),
   { battle:'frag02_mid', onLose:'frag02_mid_lose' },
   { goto:'frag02_mid_end' },
-  { speaker:'NARRATION', text:'', label:'frag02_mid_lose', fadeOut:3000, auto:3200, ambStop:1 },   // 打輸＝這一段不演了，回北泊（act 的 gotoIf）
+  { speaker:'NARRATION', text:'', label:'frag02_mid_lose', fadeOut:3000, auto:3200, ambStop:1, hide:'*' },   // 打輸＝這一段不演了，回北泊（act 的 gotoIf）
   Object.assign({ speaker:'NARRATION', text:'', auto:100 }, FRAG02_WAKE),   // 黑透了才推到隔天（推時鐘會換背景，不能在淡出途中）
   { speaker:'NARRATION', text:'', label:'frag02_mid_end', auto:100 },
 ];
@@ -1488,9 +1490,9 @@ const FRAG02_LAST = [
   ims('awe','竟然......只憑兩個人就......'),   // ver -2141：進結尾插畫前士兵的驚訝
   /* 插圖由下往上平移，**跑完才出士兵的對話框**（平移 2.6 秒，style.css 的 storyPanUp）。 */
   { speaker:'NARRATION', text:'', cg:'044_cecilietorsten', cgNoTime:true, cgPan:'up', hide:'*', auto:3000 },
-  ims(null,'那就是……聖約騎士團！', { show:false }),
+  ims(null,'那就是……聖約騎士團！', { portrait:{ show:false } }),
   { speaker:'NARRATION', text:'', cgTone:'sepia', auto:2200 },   // 插圖轉泛黃，再三秒淡入黑幕（ver -2156）
-  { speaker:'NARRATION', text:'', auto:3200, fadeOut:3000, bgm:null, label:'frag02_last_end' },   // bgm:null：插圖收掉、曲子跟著淡出（ver -2145）   // 三秒轉幕（打輸也跳到這裡）
+  { speaker:'NARRATION', text:'', auto:3200, fadeOut:3000, bgm:null, label:'frag02_last_end', hide:'*' },   // bgm:null：插圖收掉、曲子跟著淡出（ver -2145）   // 三秒轉幕（打輸也跳到這裡）
   Object.assign({ speaker:'NARRATION', text:'', cg:null, auto:100 }, FRAG02_WAKE),   // 黑透了才推到隔天（推時鐘會換背景，不能在淡出途中）
 ];
 const atStage = (n, L) => (L||[]).map((l,i)=> i===0 ? Object.assign({}, l, { stage:n }) : l);
@@ -2979,7 +2981,9 @@ export const TOWNS = {
              ⚠ 「（異國語言）」照稿保留括號 —— 那是**唸不出來的話**本身，
                不是舞台指示（§6.5.1 的括號規則不適用）。
              ⚠ 三個純音效拍：台上有安雅 → 要點一下才過（ver -628），這是要的。 */
-          { flag:'np_grave_done', need:'np_day3_done', storyBattle:true, lines:[
+          /* ⚠ ver -2181（Ray：「北泊墓地劇情應該要先去過教堂跟諾薇兒對話才能 trigger」）：
+               加 `np_church_help`（教堂戰地醫院那一段演完才插）—— 沒先去教堂，走到墓地不會開演。 */
+          { flag:'np_grave_done', need:['np_day3_done','np_church_help'], storyBattle:true, lines:[
             any('cry','娜塔莉……'),
             any('sob','Это всё я… Это всё из-за меня…'),
             { speaker:'PLAYER', blank:true },

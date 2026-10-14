@@ -1940,6 +1940,7 @@ function goldMotes(){
   setTimeout(()=>box.remove(), end+120);
 }
 export function clearStageLeftovers(){
+  stopCgAnim();   // 插圖動畫（ver -2181）：換畫面就收
   document.querySelectorAll('#storyStage .story-motes').forEach(e=>e.remove());   // 金光（ver -1910）
   stopDust();     // 揚煙（ver -1639）：換畫面就收，不要飄到下一景去
   killCgRush();   // 放射狀疊影（ver -1562）：換畫面時的第二道保險
@@ -2175,6 +2176,10 @@ function cgPosFrac(tok, free){
 function cgAnimDraw(on){
   const v=on.v, cv=on.cv, ctx=on.ctx, img=on.img;
   if(!v.videoWidth || v.readyState<2) return;
+  /* ⚠⚠ 自我檢查（ver -2181，Ray：「插圖動畫有霸屏不卸的狀況」）：插圖已經不在、或換成別張了 ⇒ 自己收掉。
+     收插圖的路不只 clearCg（飛行頁前直接清、resetStage…），漏一條就是一張 canvas 蓋在畫面上不走 ——
+     與其逐條補，不如讓它看著自己的那張圖（同「暗罩守望」的思路）。 */
+  if(on.shown && (!img.isConnected || !img.classList.contains('on') || (img.getAttribute('src')||'').indexOf(on.name)<0)){ stopCgAnim(); return; }
   const W=img.offsetWidth, H=img.offsetHeight; if(!W||!H) return;
   const dpr=Math.min(2, window.devicePixelRatio||1);
   const cw=Math.round(W*dpr), ch=Math.round(H*dpr);
@@ -3523,7 +3528,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2180';
+const KERB_V='?v=2181';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4463,7 +4468,7 @@ function renderLine(){
        （鐵律 8：一個動作一支實作）。
        ⚠ 不走 `cgFade`：那要 CG_FADE_MS 才收得掉，而下一格畫面就是飛行頁的讀取頁 ——
          直接拿掉最乾淨（Ray：「用加載頁洗掉」）。 */
-    flushCgFade(); stageCg=null; setImg($('storyCg'), '');
+    flushCgFade(); stageCg=null; stopCgAnim(); setImg($('storyCg'), '');
     stageCgBack=null; setImg($('storyCgBack'), '');   // 中景也是持續狀態（ver -870）
     { const el=$('storyCgBack'); if(el){ cgBackBox(el, null); el.classList.remove('enemy-purge'); } }
     groundShadow.hide($('storyCgBackShadow'));

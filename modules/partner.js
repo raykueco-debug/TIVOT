@@ -68,6 +68,8 @@ export function storyPartnerPool(){
        那一條把她留在池子裡＝自由選（Ray：「過了夏爾村圍城夜之後就自由選」）。
        ⚠ 同 `wildSpawn` 的 `not`（ver -919）：語意一致，不要另立一套代號。 */
     if(r && r.not && prog.hasFlag(r.not)) continue;
+    /* force（ver -2181）＝強配：這條成立就**只有她**（玩家挑過誰都不算、整備頁也換不了）。 */
+    if(r && r.force && r.key && (!r.need || prog.hasFlag(r.need)) && GAME_CONFIG.partners[r.key]) return [r.key];
     if(r && r.key && (!r.need || prog.hasFlag(r.need)) && GAME_CONFIG.partners[r.key]
        && out.indexOf(r.key)<0) out.push(r.key);
   }

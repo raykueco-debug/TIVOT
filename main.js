@@ -2663,7 +2663,8 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
          —— 那一段的 talk 裡還排著 niBurst 閘門（tutorial.niBurstPending）時，
          這裡的上滑一律吃掉：等到閘門真的開了，由閘門自己的完成路徑去引爆
          （GATE_ACTIONS.niBurst），這一條也擋不到它。非劇情戰沒有閘門＝照常。 */
-      if(state.niMode){ if(!tutorial.niBurstPending()) saint.nightmareActive(); }
+      /* ver -2181：夢魘化（含它的發動 cut-in 期間）一律交給 saint.niSwipeUp（排隊／防重入都在那一支）。 */
+      if(state.niMode || saint.niStarting()){ if(!tutorial.niBurstPending()) saint.niSwipeUp(); }
       // 下滑觸發主動技（情境＝聖徒化內）。能否發、屬於誰由 partner 判定；換 partner 即此技消失。
       else partner.tryActive('saint');
     }
@@ -2791,7 +2792,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
       if(state.saintMode){ partner.tryActive('saint'); return; }
       /* 夢魘化期間的上滑＝粉碎本體（同觸控那一支）—— ver -1778 起安雅在 board 情境也有主動技，
          不先分流的話鍵盤的上滑會在夢魘化期間發出「非夢魘化那一半」。 */
-      if(state.niMode){ if(!tutorial.niBurstPending()) saint.nightmareActive(); return; }
+      if(state.niMode || saint.niStarting()){ if(!tutorial.niBurstPending()) saint.niSwipeUp(); return; }
       if(state.transitioning) return;                       // board 手勢的額外 guard（轉場中不受理）
       partner.tryActive('board');
     }else{
