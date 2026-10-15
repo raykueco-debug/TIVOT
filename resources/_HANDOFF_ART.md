@@ -1,48 +1,55 @@
-# 美術交接 — 2026-10-09 收工（Windows 4070 SUPER）
+# 美術交接 — 2026-10-15 收工（Windows）
 
 > ⚠ 這個檔**只留一份現況**（交接規則同 `HANDOFF.md`）：開工先逐項清點給 Ray 確認，收工重寫、舊的走 `tools/recycle.sh`。
-> 上一份（09-24～10-08 疊起來的那份）在 `_recycle/resources/_HANDOFF_ART_20260925.md`，git 歷史也有。
+> 上一份（10-09）在 `_recycle/resources/_HANDOFF_ART.md`，git 歷史也有。
 > 美術只管產圖與交件，**一行程式都不碰**（憲法鐵律 11）；交件後寫進那一批的 spec，由程式 session 接。
 
-## 一、這一輪做了什麼（全部已 push）
+## 一、接下來的事項（照順序）
 
-| 件 | 交件 | 程式端 |
-|---|---|---|
-| 返回帝都～薇拉馮德稿：缺的差分 6 張（安雅 sad／shakehead、諾薇兒 runcry、術師 hurt、賽西莉 teary、指揮官 `npc_commander_si_front`） | `si/_capital_return_gap_worklist.md` | ✅ 已接（ver -2099，新 speaker MAGE／COMMANDER） |
-| 諾薇兒 runcry 改「閉眼捂嘴跑」（Ray 改定，同名覆蓋） | 同上 | ⚠ 確認 `?v=` 有跳、取景 top 4／bot 1529 |
-| 插圖 042 安雅王女宣言 | `illustration/042_annadeclare.webp`、單子 `illustration/_capital_return_ill_worklist.md` | ⚠ 還沒有腳本引用 |
-| 卡耶爾山谷（canyon 背景）扭曲恐怖系怪物 **16 隻**：大型 11（吊屍者定風格＋10）＋群體小怪 5 | `enemy/mon_canyon_*.webp`；規格與名單 `enemy/_canyon_horror_spec.md`；總覽 `_canyon_horror_sheet.jpg`／`_canyon_swarm_sheet.jpg` | ⚠ 欠敵人卡＋遭遇表（數值等 Ray）；`colossus` 同名覆蓋要 `bust.py --bump`；群體 5 隻比照惡棍群戰分層 |
+1. **孤舟島時段差分剩 6 張**（Gemini 10-15 額度用完，等重置）：
+   - `wild`（島緣荒地）dawn／dusk／night —— ⚠ 連三次**靜默失敗**（回覆空白、無錯誤訊息），分不出是額度將盡還是這張圖被擋；先試它，再失敗就換串／換措辭。
+   - `inn`（旅舍大廳，室內）dawn／dusk／night —— 室內提示詞已改成「窗外光＋室內油燈」（寫法在 `loneisle/_spec.md`）。
+   - 可選：7 張 Flash 只給 1264 寬的（plaza／north／cliff／chief／lighthouse／slipway 的 dawn、west dusk）若 Ray 嫌軟，用 2528 的重跑。
+2. **西泊（溫斯摩爾港）城鎮版時段差分剩 20 張**：church／cityhall／oldtown／dock／uptown／inn × dawn／dusk／night ＋ bar dusk／night。進度表在 `winsmoor_town/_spec.md` 尾段。
+3. 小地圖：聖索菲亞修正（碼頭→貧民區圖示、補酒吧／餐廳點）、聖索菲亞郊外 `sofiaout`；薇拉馮德等 Ray 說開工（佈局圖已照 v3 重產）。
+4. 西泊戰鬥版：城鎮版定了再做。
 
-## 二、⚠⚠ Ray 這一輪定的規矩（已寫進 memory）
+## 二、等 Ray 決定
 
-1. **插圖（插畫）由 Ray 自己畫**（「插畫還是我來吧 全部不及格」「只有安雅能用」）—— 美術盤點腳本時只**列出**需要哪些插圖給 Ray，不生成。
-2. **怪圖一律要有「朝 viewer 攻擊的態勢」**（崩岩巨像站姿被退）—— 提示詞寫明哪個部位正朝鏡頭打過來＋「不要只是站著」，收件逐隻檢查。
-3. **群體用小怪**＝一張只畫一隻、體型緊湊、四邊留白，讓程式端在同畫面放 3～5 隻（可水平翻轉）。
+- 西泊守城戰 40 格：格子太像要不要每格一張（約 +23 張）／畫風半寫實沒過平塗／城名暫名。
+- 賽西莉 `call`／`ready`／`battlecry` 頭髮長而散、`pant` 左肩露出、`shyhand` 頭頂裁到 —— 要不要重畫。
+- 廢城 `hallcourt`、郊外 `backhall` 要不要重畫；帝都外郊舊圖 `capital_outskirts_dusk`（厚塗）要不要換成本批 windmill。
+- 插圖由 Ray 自己畫（039／040／041／043／032／碎片 01 巨大聖徒）；GPT 不及格版還在 `illustration/` 工作區未入庫，要不要回收。
+- 工作區裡不是我動的：`illustration/003_lunaria_armed.webp` 在 10-14 commit 後又被覆蓋（未提交）、`34_rennacityhall.webp` 刪掉換成 `.png`（回收區無紀錄）—— 是 Ray 自己改的嗎？
+- 各批生成原圖（`_gpt`／`_gem`／`_trial`／`_draft`）沒入版控，要不要移進 `_originals/`。
 
 ## 三、資產盤點（只列這一輪碰過的＋還開著的；`✔ 不欠`／`⚠ 欠`）
 
 | 件 | 狀態 |
 |---|---|
-| 返回帝都～薇拉馮德稿的立繪差分 | ✔ 不欠 —— 逐句對過，其餘全由現有差分頂（對照表在 gap worklist）；**索拉娜一張都不用畫** |
-| 該稿的插圖 039 落淚／040 撲倒／041 賽西莉尼莫／043 船首術師／044 碎片 02 主角與賽西莉／碎片 01 巨大聖徒 | ⚠ 欠 —— **Ray 自己畫**（GPT 版 039/040/041/043 不及格，檔案還在 `illustration/` 工作區**未入庫**，要不要回收等 Ray） |
-| 卡耶爾山谷怪 16 隻 | ✔ 不欠（美術） |
-| 032 蕾娜臉紅插圖 | ⚠ 欠 —— 插圖歸 Ray（參考圖在 `_originals/illustration/_032/`） |
-| 聖索菲亞小地圖修正（碼頭→貧民區圖示、補酒吧／餐廳點） | ⚠ 欠（美術） |
-| 聖索菲亞郊外 sofiaout 小地圖 | ⚠ 欠（美術） |
-| 廢城 `hallcourt` 前廳、郊外 `backhall` 重畫 | ⚠ 欠 —— 等 Ray 說要不要 |
-| 薇拉馮德小地圖 | ⏸ 暫停 —— 拓樸要改，等 Ray |
-| 米夏 NI 眼效 | ⚠ 欠（程式端 `eye_fx.py` 重產，不是美術） |
+| 孤舟島日景 13 張 | ✔ 不欠 |
+| 孤舟島時段差分：plaza north west east cliff chief lighthouse slipway × 三時段（24 張） | ✔ 不欠（逐格與日景並排對過） |
+| 孤舟島時段差分：wild、inn × 三時段 | ⚠ 欠 6 張 |
+| 孤舟島 gunsmith／canteen／store 時段差分 | ✔ 不欠 —— 有營業時間的店舖只有 day（憲法 §5） |
+| 西泊城鎮版日景 15 張 | ✔ 不欠（第二版，Ray 試稿通過） |
+| 西泊城鎮版時段差分 | ⚠ 欠 20 張（square／midtown 已交 6 張；cafe／sweets／店舖只有 day ✔ 不欠） |
+| 帝都外郊 4 格 | ✔ 不欠 —— Ray 定只有黃昏 |
+| 空中戰怪第一批 8／第二批 8 | ✔ 不欠（Ray 10-15 定案） |
+| 聖索菲亞小地圖修正、sofiaout 小地圖 | ⚠ 欠 |
+| 薇拉馮德小地圖 | ⏸ 等 Ray 開工 |
 
-## 四、產線（這一輪學到的，下一個人直接照做）
+## 四、產線（10-15 實測，下一個人直接照做）
 
-- **Chrome**：`list_connected_browsers` 回空時直接 `tabs_context_mcp(createIfEmpty)` 常常就連上了。三個分頁並行、每隻一個新對話。
-- **送出**：`#prompt-textarea` → `execCommand('insertText')` → 等「傳送」鈕可用再 `.click()`；送完看 URL 變成 `/c/…` 才算數。
-- **收圖**：頁面裡 `fetch(img.src)→blob→a.download`，用 blob 大小對號（我上傳的參考圖是 webp、產圖是 png）。分頁在背景時常顯示「回覆完畢」卻沒有圖 → 重新 `navigate` 同一個對話網址就出來了。
-- **真 alpha**：怪物與差分直接要「真正透明背景的 Alpha PNG（不要畫灰白棋盤格）」，這一輪 20 張只有 1 張回棋盤格（同串要「100% 保留，只把棋盤格變真透明」就過）。身體內部 alpha 常是 250~254 → 交件時 ≥245 補成 255。
-- **「詐騙」誤判**：拿動態姿勢圖（諾薇兒 run）或暗底圖當底常被擋 → 換串、改用 `front` 當底、用文字描述姿勢就過。
-- **怪物提示詞模板**：在 `enemy/_canyon_horror_spec.md` 的共同規格；參考圖固定附 `mon_canyon_hanged`（系列畫風）＋ `background/canyon/canyon_corridor_day`（場景）。驗收用「疊在峽谷背景上」的總覽看，不要只看白底。
-- 檢查／交件小工具在 scratchpad（`hcheck.py`／`hdeliver.py`），不入庫；要用就照這兩段重寫。
+- **Claude in Chrome 這台連得上**（`list_connected_browsers` 直接有）。⚠ **Gemini 分頁要在螢幕上看得到**：Chrome 視窗被蓋住／縮小時分頁是 `hidden`，送出鈕、Enter、合成事件**全部送不出去**。
+- **上傳**：先在頁面裡攔 `HTMLInputElement.prototype.click`（遇到 `type=file` 就存起來、不開原生對話框），再點「＋ → 上傳檔案」，用 `find` 找到那個 input 給 `file_upload`。⚠ **沒裝攔截就點上傳 → 會跳出 Windows 選檔視窗**。
+  · `localStorage.__setup` 存了那段（Gemini 頁有 Trusted Types，`eval` 要先 `trustedTypes.createPolicy` 包一層）。
+- **「＋」選單**：剛重載或剛跑過 JS 之後的第一下常常被吃掉 → 每次點完截圖確認選單開了再點選項。
+- **送出**：點送出鈕（JS 量位置）；**等 40~50 秒後重載那個對話網址**才看得到圖（頁面常常不刷新，回覆顯示空白但其實有圖）。
+- **新對話偶爾拿不到網址（一直轉圈）**：中止，改在既有能出圖的串裡送，提示詞開頭加「只看我這次上傳的這張圖」。
+- **Pro 會開始回「我只是語言模型」**（嗆一句也沒用）→ 改用 Flash。兩個模型都可能給 1264 或 2528 寬。
+- **下載**：hover 圖、點右上「下載原尺寸」（真點擊），落在 `~/Downloads`。⚠ **只收點下載之後才出現的檔**（`find -newer marker`）—— Downloads 裡躺著舊的 Gemini 下載，10-15 就因此整批錯位一格。
+- 交件：`_gem/_raw_<鍵>_<時段>.jpg` → LANCZOS 縮成 1536×1024、webp q90；每格做完拼四張並排對一次。
 
 ## 五、工作區裡不是美術的東西（不要動）
 
-`tools/anim/*`、`resources/ci/layers/_cec_guardfx*.mp4`（動畫 session 的）；`resources/si/eyefx/cecilie_si_fluster_te_mask.webp`（程式 session 的）。
+`tools/anim/*`、`resources/ci/layers/*`（動畫 session 的）、`script/speakers.js` 的未提交改動（Ray 本機在調）。
