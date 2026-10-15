@@ -251,7 +251,9 @@ def load(town):
     src = open(os.path.join(ROOT,'script','town.js'), encoding='utf-8').read()
     src = re.sub(r'^\s*(import|export)\s.*$', lambda m: m.group(0)
                  .replace('export ','').replace('import ','//import '), src, flags=re.M)
-    js = src + "\nprint(JSON.stringify(TOWNS[%s]));\n" % json.dumps(town)
+    # 劇本譯文（i18n）在這裡是中文原樣，同 script_lint.py
+    stub = "function trTree(o){ return o; }\nfunction i18nT(s){ return s; }\n"
+    js = stub + src + "\nprint(JSON.stringify(TOWNS[%s]));\n" % json.dumps(town)
     return _jsrun.dump(js, what='地圖資料')
 
 # ══⚠⚠⚠ **彎線的例外清單**（ver -1396）══════════════════════════════════════
