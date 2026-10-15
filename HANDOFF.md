@@ -84,6 +84,8 @@
 - ✔ **孤舟島（工匠村落，拓樸照夏爾村 13 格）日景已交**：`resources/background/loneisle/loneisle_<鍵>_day.webp`，鍵對照與出口表在 `loneisle/_spec.md`。美術還欠四時段差分（Gemini）；程式端還沒有節點。
 - ✔ **空中戰怪圖第二批後 5 張已交（10-15，GPT）**：`resources/enemy/mon_sky2_{mouthpillar,facecrown,eyeveil,rift,maw}.webp`，總覽 `_sky2_sheet.jpg`。Ray 10-15 定案。程式端：還沒有敵人卡（同第一批）。
 - 戰鬥版（現有 40 格不能當戰鬥背景）：城鎮版定了再做。
+- ⚠ **孤舟島時段差分（10-15）還沒開始**：要做 30 張（室外 9 格＋旅舍 × dawn／dusk／night；食堂／材料舖／槍匠工坊只有 day）。卡在 Mac 這台 Claude in Chrome 連不上（重開 Chrome、關掉動畫 session 的分頁組都試過，清單一直是空的）。
+- ⚠ **內建瀏覽器產圖的限制（10-15 實測）**：① **不能上傳檔案** —— 選檔不行、ChatGPT／Gemini 的 CSP 擋掉從頁面 fetch 外站（raw.githubusercontent 也擋）、腳本開新分頁會被擋、給 Gemini 網址它也讀不了 ⇒ **要參考圖的（Gemini 衍生差分）走不通**，純文字的 GPT 新圖可以。② 下載用 `fetch(img.src)→blob→a.download` 可行，**但那個分頁要在最前面**（`tabs_select`），落在 `~/Downloads`。
 
 **程式端可做**
 - ⚠ 美術 10-14 同名覆蓋了插圖 `003_lunaria_armed.webp`（`config.js` 的 `ASSET_VER` 還是舊雜湊 `f656d515`）—— 要跑 `python3 tools/bust.py --bump` 才不會吃到快取的舊圖。`044_soranahug.png` 同理（10-13 覆蓋）。
