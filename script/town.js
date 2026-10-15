@@ -10318,7 +10318,7 @@ export const TOWNS = {
   },
   verafond: {
     name: '薇拉馮德港',
-    entry: 'harbor',
+    entry: 'square',   // ver -2207（Ray：「進場就是圓環廣場，進場下方是出航，配置照雪都」）
     bgm: 'emeraldhill',      // ver -1765，Ray：「薇拉馮德用 PeriTune_Emerald_Hill_loop」
     mist: 0,                 // 大城不上霧（§6.5.4 ver -913）
     nodes: {
@@ -10326,24 +10326,23 @@ export const TOWNS = {
          圓環廣場＝帝都的攝政王廣場（上＝中央區、左＝港町、右＝上街區）；
          中央區＝帝都中心區（左市政廳、右大教堂）／港町＝帝都舊街區（左武器店、上碼頭、下公會）／上街區＝帝都上街區（上旅店、下雜貨、右餐飲街）。
          往外多出來的格子：廣場下＝火車站、中央區上＝林蔭大道、碼頭左右上＝造船廠／燈塔、餐飲街三家店。 */
-      harbor:    { bg:'vela_harbor', name:'薇拉馮德　碼頭',
-        exits:{ down:'portmarket', left:'shipyard', up:'lighthouse' },
-        sail:{ dir:'right' } },
+      /* ══ ver -2207（Ray：「薇拉馮德的拓樸還是錯的，進場下方是出航，進場就是圓環廣場，配置照雪都」）══
+         照雪都瓦恩霍姆：圓環廣場＝港口廣場（進場、下＝出航）；港町＝舊街區（左武器店、下公會、**上火車站**）；
+         中央區＝中心區（左市政廳、右大教堂、上林蔭大道）；上街區照舊。
+         ⚠ 碼頭／造船廠／燈塔三格**先拿掉**（Ray）：背景 `vela_harbor`／`vela_shipyard`／`vela_lighthouse` 還在，
+           要接回來時補節點（lint 不准留走不到的格子）。 */
       portmarket:{ bg:'vela_portmarket', name:'薇拉馮德　港町',
-        exits:{ right:'square', left:'gunstore', up:'harbor', down:'guild' } },
+        exits:{ right:'square', left:'gunstore', up:'station', down:'guild' } },
       gunstore:  { bg:'vela_firearm', name:'薇拉馮德　武器店', noTime:true, hours:[8,17], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',
         shop:'vf_gunstore', keeperWho:'GUNSMITH', kind:'gunstore',   // 商店：通用帝都版本、店主暫用帝都（ver -1831，卡在 script/shopcards.js）
         exits:{ back:'portmarket' } },
       guild:     { bg:'vela_guild', name:'薇拉馮德　賞金獵人公會', noTime:true, hours:[8,17], closed:'大門上了閂。委託要等明天早上八點。',
         exits:{ back:'portmarket' } },
-      shipyard:  { bg:'vela_shipyard', name:'薇拉馮德　造船廠',
-        exits:{ back:'harbor' } },
-      lighthouse:{ bg:'vela_lighthouse', name:'薇拉馮德　燈塔',
-        exits:{ back:'harbor' } },
       square:    { bg:'vela_square', name:'薇拉馮德　圓環廣場',
-        exits:{ up:'midtown', left:'portmarket', right:'uptown', down:'station' } },
+        exits:{ up:'midtown', left:'portmarket', right:'uptown' },
+        sail:{} },   // 出航＝下（預設方向）
       station:   { bg:'vela_station', name:'薇拉馮德　中央火車站',
-        exits:{ back:'square' } },
+        exits:{ back:'portmarket' } },
       midtown:   { bg:'vela_midtown', name:'薇拉馮德　中央區',
         exits:{ down:'square', left:'cityhall', right:'cathedral', up:'avenue' } },
       cityhall:  { bg:'vela_cityhall', name:'薇拉馮德　市政廳', hours:[8,17], closed:'窗口都熄了燈。市政廳五點就下班了。',
