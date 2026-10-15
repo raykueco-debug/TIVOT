@@ -70,6 +70,22 @@ def resolver():
     return art_of, disp, frame
 
 
+# 還沒接進 speakers.js 的 NPC（2026-10-15，薇拉馮德稿）：直接用 `resources/si/npc/<前綴>_si_<差分>.webp`，
+# 沒量過取景 ⇒ thumb() 走 alpha 找頭（unmeasured）。名字欄寫「茉莉」或「？？？（茉莉）」都認得。
+NPC_FILE = {'茉莉': 'molly', '羅伯特': 'robert', '亞隆': 'aaron'}
+
+
+def npc_frame(who, ex):
+    if not ex:
+        return None
+    for zh, pre in NPC_FILE.items():
+        if zh in (who or ''):
+            rel = 'resources/si/npc/%s_si_%s.webp' % (pre, ex)
+            if os.path.exists(os.path.join(ROOT, rel)):
+                return {'src': rel, 'unmeasured': True}
+    return None
+
+
 def style_sheet(ws):
     from openpyxl.styles import Font, PatternFill
     for c in ws[1]:
@@ -113,6 +129,8 @@ def write(rows, path, art_of, disp, frame):
         ws.cell(r, 2, ex)
         ws.cell(r, 4, tx or NOLINE)
         f = frame(key, ex)
+        if not f:
+            f = npc_frame(who, ex)
         if not f:
             miss.append((who, ex))
             continue
