@@ -3557,7 +3557,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2212';
+const KERB_V='?v=2213';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4192,7 +4192,7 @@ function sparkSeam(){
 const KERB_SPIN_MS = 900;   // ＝ style.css `#kerbPlate` 的 transition .9s（改一邊要改另一邊）
 function sparkRing(sweep, dur){
   const dr=$('kerbDoor'), pl=$('kerbPlate'), box=$('kerbSmoke'); if(!dr||!pl||!box) return;
-  dur = dur || (KERB_SPIN_MS + 350);
+  dur = dur || Math.round(KERB_SPIN_MS*0.65);   // ver -2213（Ray：「噴快一點，f 數少一點」）：整段縮短
   const d=dr.getBoundingClientRect(), r=pl.getBoundingClientRect();
   if(!d.width || !r.width) return;
   const DPR=Math.min(2, window.devicePixelRatio||1);
@@ -4210,12 +4210,12 @@ function sparkRing(sweep, dur){
     const p=Math.min(1, t/KERB_SPIN_MS), R=R0*(1+0.11*(1-Math.pow(1-p,3)));   // 跟著團徽浮起放大（scale 1→1.11）
     /* 發射：轉得快的頭段最密，收尾段遞減到 0。 */
     const life=t/dur, rate = life<1 ? (1-life*0.85) : 0;
-    const n=Math.round(rate*46*dt*60);
+    const n=Math.round(rate*60*dt*60);
     for(let i=0;i<n;i++){
       const a=Math.random()*Math.PI*2, ca=Math.cos(a), sa=Math.sin(a);
-      const vt=(220+Math.random()*420)*dir, vr=40+Math.random()*160;
+      const vt=(420+Math.random()*620)*dir, vr=90+Math.random()*260;   // ver -2213：初速約 ×1.6
       P.push({ x:cx+ca*R, y:cy+sa*R, vx:-sa*vt+ca*vr, vy:ca*vt+sa*vr,
-               l:0, L:0.28+Math.random()*0.5, w:0.8+Math.random()*1.6, h:16+Math.random()*24 });
+               l:0, L:0.16+Math.random()*0.28, w:0.8+Math.random()*1.6, h:16+Math.random()*24 });
     }
     g.clearRect(0,0,d.width,d.height);
     g.globalCompositeOperation='lighter';
@@ -4231,7 +4231,7 @@ function sparkRing(sweep, dur){
     for(let i=P.length-1;i>=0;i--){
       const s=P[i]; s.l+=dt;
       if(s.l>=s.L){ P.splice(i,1); continue; }
-      s.vy+=700*dt; s.vx*=0.985; s.vy*=0.985;
+      s.vy+=900*dt; s.vx*=0.985; s.vy*=0.985;
       const ox=s.x, oy=s.y; s.x+=s.vx*dt; s.y+=s.vy*dt;
       const k=1-s.l/s.L;                                  // 1 → 0
       g.strokeStyle='hsla('+s.h+',100%,'+(42+28*k)+'%,'+(k*0.9).toFixed(3)+')';
