@@ -59,8 +59,17 @@ export function storyPartnerless(){
   }
   return false;
 }
+/* 這張地圖上被拿掉的搭檔（`config.partnerMapOff`，ver -2203）。⚠ 注不進地圖時不成立（＝不拿掉）。 */
+function mapOff(key){
+  const rows = GAME_CONFIG.partnerMapOff || []; if(!rows.length) return false;
+  let here=null; try{ here = mapGetter && mapGetter(); }catch(_){}
+  return rows.some(r => r && r.key===key && r.map===here);
+}
 export function storyPartnerPool(){
   if(storyPartnerless()) return [];
+  return storyPartnerPoolRaw().filter(k => !mapOff(k));
+}
+function storyPartnerPoolRaw(){
   const out=[];
   for(const r of (GAME_CONFIG.storyPartnerBy||[])){
     /* `not`（ver -970）＝**這支旗立了這一條就不算**。用途：夏爾村圍城期間強配

@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.15-2202';
+export const VERSION = 'ver 2026.10.15-2203';
 
 export const GAME_CONFIG = {
 
@@ -956,6 +956,12 @@ export const GAME_CONFIG = {
    *    多一支 `tomb_out` 等於多一個「誰來拔」的問題（鐵律 9）。
    *  ⚠ 判定只有 `partner.benchLabel()` 一支（鐵律 7）。
    * ══════════════════════════════════════════════════════════════════════ */
+  /* ══ 這張地圖上**不在池子裡**的搭檔（`partnerMapOff`，ver -2203，Ray：「整個帝都郊外是不可以選安雅的，
+     安雅直接從選人選項中拿掉」）══ 與 `partnerBench`（看得到、確認鈕印字）不同：這裡是頁籤上**根本沒有她**。
+     判定只有 `partner.storyPartnerPool()` 一支（鐵律 7）；人在哪張圖問 `setMapGetter` 注入的那一支。 */
+  partnerMapOff: [
+    { key:'anya', map:'capital_outer' },
+  ],
   partnerBench: [
     { key:'nouvelle', need:'nou_melted', map:'tomb', label:i18nT('熔　斷') },
   ],
