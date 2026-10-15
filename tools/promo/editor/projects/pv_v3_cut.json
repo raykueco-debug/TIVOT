@@ -1,0 +1,52 @@
+{
+ "name": "pv_v3_成片",
+ "w": 1080,
+ "h": 1920,
+ "fps": 60,
+ "loudnorm": false,
+ "tracks": [
+  {
+   "id": "v1",
+   "type": "video",
+   "name": "V1",
+   "clips": [
+    {
+     "id": "c1",
+     "kind": "video",
+     "src": "tools/promo/editor/media/generated/tivot_pv_v3.mp4",
+     "start": 0,
+     "dur": 92.066667,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null
+    }
+   ]
+  },
+  {
+   "id": "a1",
+   "type": "audio",
+   "name": "成片音",
+   "clips": [
+    {
+     "id": "c2",
+     "src": "tools/promo/editor/media/generated/tivot_pv_v3.mp4",
+     "start": 0,
+     "dur": 92.066667,
+     "in": 0,
+     "speed": 1,
+     "vol": 1,
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "link": "c1"
+    }
+   ]
+  }
+ ]
+}

@@ -1415,15 +1415,15 @@ const VF_MANOR = [
   sor('talksmile','當然！'),
   mol('talk','可以。那麼這位神父……'),
   ren('talkserious','他也跟我們一起。'),
-  mol('gossip','唉呀。'),
+  mol('surprise','唉呀。'),
   mol('surprise','好吧。保險起見，還是單獨為他備間房吧。'),
-  sor('tease','我可以跟你一間房沒關係的喔。'),
+  sor('tease','我可以跟他一間房沒關係的喔。'),
   { speaker:'PLAYER', blank:true, bubbleFx:'blush' },   // 稿：主角空白，對話框泛紅
   ren('upsetstare',''),
   nou('stare',''),
-  any('makeface',''),
+  any('dizzy',''),
   aar('confuse','……這什麼情況？'),
-  mol('eyesmile','好像比舞台劇更有意思呢。'),
+  mol('gossip','好像比舞台劇更有意思呢。'),
   { speaker:'NARRATION', text:'', fadeOut:1200, auto:1300, hide:['RENNA','NOUVELLE','SORANA','ANYA','AARON','MOLLY'] },
 ];
 const VF_INN = [
@@ -1445,7 +1445,7 @@ const VF_INN = [
   ren('lookdown','沒錯。拿著父親和弟弟的名字就想來談判的我，實在太天真了。'),
   ren('apologize','對不起啊，沒幫上什麼忙。'),
   any('shakehead',''),
-  any('determine','蕾娜小姐……比我認識的任何一個貴族、都高潔！'),
+  any('answer','蕾娜小姐……比我認識的任何一個貴族、都高潔！'),
   any('talkshy','我、不會說……可是！'),
   ren('smile','謝謝。'),
   ren('smile','我還擔心老是擺貴族架子會惹人嫌呢。'),
@@ -1455,7 +1455,7 @@ const VF_INN = [
   sor('confuse','喔、喔……', { hide:['RENNA'] }),
   { speaker:'NARRATION', text:'', se:'se_dooropen', auto:800 },   // 稿：關門音（沒有檔，暫借開門音）
   sor('lookaway','她那是怎麼啦？家族什麼的，很嚴重嗎？'),
-  nou('think','……被送到修道院的貴族子女，一定背負著什麼過去。'),
+  nou('sad','……被送到修道院的貴族子女，一定背負著什麼過去。'),
   nou('steady','但是……我不認為那樣的蕾娜小姐，會犯什麼需要被流放的錯。'),
   any('silent','……'),
   sor('lookaway','誰知道呢？這種事得她自己願意講。'),

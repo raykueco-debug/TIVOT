@@ -3,7 +3,7 @@
 import json, os, shutil, subprocess, sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 HERE = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.join(HERE, 'out')
-PORT = 8130
+PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8130
 RES = os.path.join(os.path.dirname(os.path.dirname(HERE)), 'TIVOT', 'resources')   # /gameres/ → 遊戲 resources（唯讀）
 GAME = os.path.join(os.path.dirname(os.path.dirname(HERE)), 'TIVOT', 'resources', 'ci', 'anim')   # /gameanim/ → 遊戲交件
 

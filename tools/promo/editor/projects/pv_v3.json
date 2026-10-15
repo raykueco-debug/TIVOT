@@ -1,0 +1,894 @@
+{
+ "name": "pv_v3",
+ "w": 1080,
+ "h": 1920,
+ "fps": 60,
+ "loudnorm": true,
+ "beat": {
+  "clip": "c55"
+ },
+ "tracks": [
+  {
+   "id": "v1",
+   "type": "video",
+   "name": "V1",
+   "clips": [
+    {
+     "id": "c1",
+     "start": 0.0,
+     "dur": 1.5666666666666667,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "resources/ci/video/cutin_dual_torsten_v7.mp4"
+    },
+    {
+     "id": "c4",
+     "start": 1.5666666666666667,
+     "dur": 1.5166666666666666,
+     "in": 0,
+     "speed": 0.75,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": {
+      "type": "white",
+      "dur": 0.16
+     },
+     "kind": "video",
+     "src": "resources/illustration/video/038_mishasting_v2.mp4"
+    },
+    {
+     "id": "c7",
+     "start": 3.0833333333333335,
+     "dur": 4.066666666666666,
+     "in": 0,
+     "speed": 0.8,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": {
+      "type": "white",
+      "dur": 0.16
+     },
+     "kind": "video",
+     "src": "resources/ci/video/ci_anya_dreambreaker_v1.mp4"
+    },
+    {
+     "id": "c9",
+     "start": 7.15,
+     "dur": 10.166666666666666,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "tools/promo/editor/media/generated/pv_logo.mp4"
+    },
+    {
+     "id": "c12",
+     "start": 17.316666666666666,
+     "dur": 3.05,
+     "in": 0.5,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "tools/promo/editor/media/footage/colossus.mp4",
+     "link": "c13"
+    },
+    {
+     "id": "c14",
+     "start": 20.366666666666667,
+     "dur": 4.083333333333333,
+     "in": 41.4,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "tools/promo/editor/media/footage/misha_full.mp4",
+     "link": "c15"
+    },
+    {
+     "id": "c16",
+     "start": 24.45,
+     "dur": 1.0166666666666666,
+     "in": 20.0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": {
+      "type": "white",
+      "dur": 0.12
+     },
+     "kind": "video",
+     "src": "tools/promo/editor/media/footage/misha_full.mp4",
+     "link": "c17"
+    },
+    {
+     "id": "c18",
+     "start": 25.466666666666665,
+     "dur": 1.0166666666666666,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": {
+      "type": "white",
+      "dur": 0.16
+     },
+     "kind": "video",
+     "src": "resources/ci/video/cutin_cecilie_saint_v3.mp4"
+    },
+    {
+     "id": "c19",
+     "start": 26.483333333333334,
+     "dur": 1.0166666666666666,
+     "in": 18.0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "tools/promo/editor/media/footage/colossus.mp4",
+     "link": "c20"
+    },
+    {
+     "id": "c21",
+     "start": 27.5,
+     "dur": 1.0166666666666666,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": {
+      "type": "white",
+      "dur": 0.16
+     },
+     "kind": "video",
+     "src": "resources/ci/video/ci_sorana_supply_v2.mp4"
+    },
+    {
+     "id": "c23",
+     "start": 28.516666666666666,
+     "dur": 4.066666666666666,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": {
+      "type": "white",
+      "dur": 0.16
+     },
+     "kind": "video",
+     "src": "resources/ci/video/cutin_nouvelle_saint_v1.mp4"
+    },
+    {
+     "id": "c25",
+     "start": 32.583333333333336,
+     "dur": 4.066666666666666,
+     "in": 3.0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": {
+      "type": "white",
+      "dur": 0.12
+     },
+     "kind": "video",
+     "src": "tools/promo/editor/media/footage/flight.mp4",
+     "link": "c26"
+    },
+    {
+     "id": "c27",
+     "start": 36.65,
+     "dur": 4.066666666666666,
+     "in": 21.6,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "tools/promo/editor/media/footage/towntalk.mp4",
+     "link": "c28"
+    },
+    {
+     "id": "c29",
+     "start": 40.71666666666667,
+     "dur": 1.0166666666666666,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "resources/illustration/video/017_rennasmile_v1.mp4"
+    },
+    {
+     "id": "c30",
+     "start": 41.733333333333334,
+     "dur": 1.0166666666666666,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "resources/illustration/video/015-anyadessert_v1.mp4"
+    },
+    {
+     "id": "c31",
+     "start": 42.75,
+     "dur": 1.0166666666666666,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "resources/illustration/video/009_soranadebute_v3.mp4"
+    },
+    {
+     "id": "c32",
+     "start": 43.766666666666666,
+     "dur": 1.0166666666666666,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "resources/illustration/video/024_nouvellesmile_v1.mp4"
+    },
+    {
+     "id": "c33",
+     "start": 44.78333333333333,
+     "dur": 4.066666666666666,
+     "in": 0,
+     "speed": 0.5,
+     "fit": "cover",
+     "motion": {
+      "type": "up",
+      "amt": 0.3
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "resources/illustration/video/044_cecilietorsten_v1.mp4"
+    },
+    {
+     "id": "c34",
+     "start": 48.85,
+     "dur": 4.066666666666666,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "lr",
+      "amt": 0.35
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "image",
+     "src": "resources/background/belisar/belisar_exterior_day.webp"
+    },
+    {
+     "id": "c35",
+     "start": 52.916666666666664,
+     "dur": 4.066666666666666,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "rl",
+      "amt": 0.35
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "image",
+     "src": "resources/background/tomb/tomb_gate_day.webp"
+    },
+    {
+     "id": "c36",
+     "start": 56.983333333333334,
+     "dur": 4.066666666666666,
+     "in": 0,
+     "speed": 0.9,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "resources/illustration/video/31-2_rennaprincesshold_v1.mp4"
+    },
+    {
+     "id": "c37",
+     "start": 61.05,
+     "dur": 5.083333333333333,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "tools/promo/editor/media/generated/pv_montage.mp4"
+    },
+    {
+     "id": "c38",
+     "start": 66.13333333333334,
+     "dur": 1.0166666666666666,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": {
+      "type": "white",
+      "dur": 0.16
+     },
+     "kind": "video",
+     "src": "resources/ci/video/ci_torsten_mb_v2.mp4"
+    },
+    {
+     "id": "c41",
+     "start": 67.15,
+     "dur": 4.083333333333333,
+     "in": 10.9,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": {
+      "type": "white",
+      "dur": 0.16
+     },
+     "kind": "video",
+     "src": "tools/promo/editor/media/footage/deer.mp4",
+     "link": "c42"
+    },
+    {
+     "id": "c43",
+     "start": 71.23333333333333,
+     "dur": 4.066666666666666,
+     "in": 13.6,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "tools/promo/editor/media/footage/sorana.mp4",
+     "link": "c44"
+    },
+    {
+     "id": "c45",
+     "start": 75.3,
+     "dur": 4.066666666666666,
+     "in": 8.0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "tools/promo/editor/media/footage/mage.mp4",
+     "link": "c46"
+    },
+    {
+     "id": "c47",
+     "start": 79.36666666666666,
+     "dur": 4.066666666666666,
+     "in": 1.4,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0.2
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null,
+     "kind": "video",
+     "src": "tools/promo/editor/media/footage/guard.mp4",
+     "link": "c48"
+    },
+    {
+     "id": "c49",
+     "start": 83.43333333333334,
+     "dur": 8.633333333333333,
+     "in": 0,
+     "speed": 0.5,
+     "fit": "cover",
+     "motion": {
+      "type": "up",
+      "amt": 0.3
+     },
+     "fadeIn": 0,
+     "fadeOut": 0.6,
+     "trans": {
+      "type": "white",
+      "dur": 0.2
+     },
+     "kind": "video",
+     "src": "resources/ci/video/ci_torsten_execute_v2.mp4"
+    }
+   ]
+  },
+  {
+   "id": "v2",
+   "type": "video",
+   "name": "V2",
+   "clips": [
+    {
+     "id": "c51",
+     "kind": "image",
+     "src": "resources/ci/ci_misha_ni.webp",
+     "start": 85.46666666666667,
+     "dur": 0.05,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null
+    },
+    {
+     "id": "c52",
+     "kind": "image",
+     "src": "resources/ci/ci_misha_ni.webp",
+     "start": 85.6,
+     "dur": 0.05,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null
+    },
+    {
+     "id": "c53",
+     "kind": "image",
+     "src": "resources/ci/ci_misha_ni.webp",
+     "start": 87.5,
+     "dur": 0.05,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null
+    },
+    {
+     "id": "c54",
+     "kind": "image",
+     "src": "resources/ci/ci_misha_ni.webp",
+     "start": 87.63333333333334,
+     "dur": 0.05,
+     "in": 0,
+     "speed": 1,
+     "fit": "cover",
+     "motion": {
+      "type": "none",
+      "amt": 0
+     },
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "trans": null
+    }
+   ]
+  },
+  {
+   "id": "a1",
+   "type": "audio",
+   "name": "BGM",
+   "clips": [
+    {
+     "id": "c55",
+     "src": "resources/audio/bgm/PerituneMaterial_Havoc.mp3",
+     "start": 0,
+     "dur": 92.06666666666666,
+     "in": 0,
+     "speed": 1,
+     "vol": 1,
+     "fadeIn": 0,
+     "fadeOut": 1.2
+    }
+   ]
+  },
+  {
+   "id": "a2",
+   "type": "audio",
+   "name": "實機音",
+   "clips": [
+    {
+     "id": "c13",
+     "src": "tools/promo/editor/media/footage/colossus.mp4",
+     "start": 17.316666666666666,
+     "dur": 3.05,
+     "in": 0.5,
+     "speed": 1,
+     "vol": 1,
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "link": "c12"
+    },
+    {
+     "id": "c15",
+     "src": "tools/promo/editor/media/footage/misha_full.mp4",
+     "start": 20.366666666666667,
+     "dur": 4.083333333333333,
+     "in": 41.4,
+     "speed": 1,
+     "vol": 1,
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "link": "c14"
+    },
+    {
+     "id": "c17",
+     "src": "tools/promo/editor/media/footage/misha_full.mp4",
+     "start": 24.45,
+     "dur": 1.0166666666666666,
+     "in": 20.0,
+     "speed": 1,
+     "vol": 1,
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "link": "c16"
+    },
+    {
+     "id": "c20",
+     "src": "tools/promo/editor/media/footage/colossus.mp4",
+     "start": 26.483333333333334,
+     "dur": 1.0166666666666666,
+     "in": 18.0,
+     "speed": 1,
+     "vol": 1,
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "link": "c19"
+    },
+    {
+     "id": "c26",
+     "src": "tools/promo/editor/media/footage/flight.mp4",
+     "start": 32.583333333333336,
+     "dur": 4.066666666666666,
+     "in": 3.0,
+     "speed": 1,
+     "vol": 1,
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "link": "c25"
+    },
+    {
+     "id": "c28",
+     "src": "tools/promo/editor/media/footage/towntalk.mp4",
+     "start": 36.65,
+     "dur": 4.066666666666666,
+     "in": 21.6,
+     "speed": 1,
+     "vol": 1,
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "link": "c27"
+    },
+    {
+     "id": "c42",
+     "src": "tools/promo/editor/media/footage/deer.mp4",
+     "start": 67.15,
+     "dur": 4.083333333333333,
+     "in": 10.9,
+     "speed": 1,
+     "vol": 1,
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "link": "c41"
+    },
+    {
+     "id": "c44",
+     "src": "tools/promo/editor/media/footage/sorana.mp4",
+     "start": 71.23333333333333,
+     "dur": 4.066666666666666,
+     "in": 13.6,
+     "speed": 1,
+     "vol": 1,
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "link": "c43"
+    },
+    {
+     "id": "c46",
+     "src": "tools/promo/editor/media/footage/mage.mp4",
+     "start": 75.3,
+     "dur": 4.066666666666666,
+     "in": 8.0,
+     "speed": 1,
+     "vol": 1,
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "link": "c45"
+    },
+    {
+     "id": "c48",
+     "src": "tools/promo/editor/media/footage/guard.mp4",
+     "start": 79.36666666666666,
+     "dur": 4.066666666666666,
+     "in": 1.4,
+     "speed": 1,
+     "vol": 1,
+     "fadeIn": 0,
+     "fadeOut": 0,
+     "link": "c47"
+    }
+   ]
+  },
+  {
+   "id": "a3",
+   "type": "audio",
+   "name": "音效語音",
+   "clips": [
+    {
+     "id": "c2",
+     "src": "resources/audio/se/se_weapon_reload.m4a",
+     "start": 0.0,
+     "dur": 1.152,
+     "in": 0,
+     "speed": 1,
+     "vol": 0.75,
+     "fadeIn": 0,
+     "fadeOut": 0
+    },
+    {
+     "id": "c3",
+     "src": "resources/audio/vo/vo_torsten_dualcrush.m4a",
+     "start": 0.25,
+     "dur": 1.045,
+     "in": 0,
+     "speed": 1,
+     "vol": 1.0,
+     "fadeIn": 0,
+     "fadeOut": 0
+    },
+    {
+     "id": "c5",
+     "src": "resources/audio/se/se_slash.m4a",
+     "start": 1.6166666666666667,
+     "dur": 1.195,
+     "in": 0,
+     "speed": 1,
+     "vol": 0.75,
+     "fadeIn": 0,
+     "fadeOut": 0
+    },
+    {
+     "id": "c6",
+     "src": "resources/audio/vo/vo_misha_guard1.m4a",
+     "start": 1.7666666666666666,
+     "dur": 0.627,
+     "in": 0,
+     "speed": 1,
+     "vol": 1.0,
+     "fadeIn": 0,
+     "fadeOut": 0
+    },
+    {
+     "id": "c8",
+     "src": "resources/audio/vo/vo_anya_dreambreaker2.m4a",
+     "start": 3.183333333333333,
+     "dur": 1.811,
+     "in": 0,
+     "speed": 1,
+     "vol": 1.0,
+     "fadeIn": 0,
+     "fadeOut": 0
+    },
+    {
+     "id": "c10",
+     "src": "resources/audio/se/se_kerberos_drop.m4a",
+     "start": 8.166666666666666,
+     "dur": 1.237,
+     "in": 0,
+     "speed": 1,
+     "vol": 0.975,
+     "fadeIn": 0,
+     "fadeOut": 0
+    },
+    {
+     "id": "c11",
+     "src": "resources/audio/se/se_rockimpact.mp3",
+     "start": 8.166666666666666,
+     "dur": 5.4,
+     "in": 0,
+     "speed": 1,
+     "vol": 0.6,
+     "fadeIn": 0,
+     "fadeOut": 0
+    },
+    {
+     "id": "c22",
+     "src": "resources/audio/vo/vo_sorana_supply1.m4a",
+     "start": 27.6,
+     "dur": 1.509,
+     "in": 0,
+     "speed": 1,
+     "vol": 1.0,
+     "fadeIn": 0,
+     "fadeOut": 0
+    },
+    {
+     "id": "c24",
+     "src": "resources/audio/vo/vo_nouvelle_saintinstall.m4a",
+     "start": 28.616666666666667,
+     "dur": 1.927,
+     "in": 0,
+     "speed": 1,
+     "vol": 1.0,
+     "fadeIn": 0,
+     "fadeOut": 0
+    },
+    {
+     "id": "c39",
+     "src": "resources/audio/vo/vo_torsten_mb.m4a",
+     "start": 66.18333333333334,
+     "dur": 1.207,
+     "in": 0,
+     "speed": 1,
+     "vol": 1.0,
+     "fadeIn": 0,
+     "fadeOut": 0
+    },
+    {
+     "id": "c40",
+     "src": "resources/audio/se/se_weapon_shotgun_blast.m4a",
+     "start": 66.63333333333334,
+     "dur": 1.365,
+     "in": 0,
+     "speed": 1,
+     "vol": 1.05,
+     "fadeIn": 0,
+     "fadeOut": 0
+    },
+    {
+     "id": "c50",
+     "src": "resources/audio/vo/vo_torsten_execute.m4a",
+     "start": 83.53333333333333,
+     "dur": 1.254,
+     "in": 0,
+     "speed": 1,
+     "vol": 1.0,
+     "fadeIn": 0,
+     "fadeOut": 0
+    }
+   ]
+  }
+ ]
+}

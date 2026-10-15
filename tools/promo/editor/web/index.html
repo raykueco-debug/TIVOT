@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TIVOT 剪輯器</title>
+<link rel="stylesheet" href="/web/app.css">
+</head>
+<body>
+<header id="bar">
+  <b class="brand">TIVOT 剪輯器</b>
+  <input id="projName" value="pv" title="專案名稱">
+  <button id="btnOpen" title="開啟專案">開啟</button>
+  <button id="btnSave" title="儲存（Ctrl+S）">儲存</button>
+  <span class="sep"></span>
+  <button id="btnUndo" title="復原（Ctrl+Z）">↶</button>
+  <button id="btnRedo" title="重做（Ctrl+Shift+Z）">↷</button>
+  <span class="sep"></span>
+  <label class="tog" title="拖曳時吸附到拍點、片段邊緣、播放頭"><input type="checkbox" id="snap" checked> 吸附</label>
+  <span class="grow"></span>
+  <span id="status"></span>
+  <button id="btnExport" class="primary">輸出 MP4</button>
+</header>
+
+<main>
+  <section id="lib">
+    <div class="libtop">
+      <input id="libSearch" placeholder="搜尋素材…">
+      <label class="upl" title="上傳檔案（也可以直接把檔案拖進這一欄或時間軸）">上傳<input type="file" id="libUpload" multiple hidden></label>
+    </div>
+    <div id="libList"></div>
+  </section>
+
+  <section id="view">
+    <div id="stageWrap"><canvas id="stage" width="1080" height="1920"></canvas></div>
+    <div id="transport">
+      <button id="btnStart" title="回到開頭（Home）">⏮</button>
+      <button id="btnPrev" title="上一格（←）">◀︎</button>
+      <button id="btnPlay" title="播放／暫停（空白）">▶︎</button>
+      <button id="btnNext" title="下一格（→）">▶︎▏</button>
+      <span id="tc">00:00.00</span><span class="dim"> / </span><span id="tcTotal" class="dim">00:00.00</span>
+    </div>
+  </section>
+
+  <section id="insp"></section>
+</main>
+
+<section id="tl">
+  <div id="tlbar">
+    <button id="btnAddV" title="新增影像軌">＋影像軌</button>
+    <button id="btnAddA" title="新增音軌">＋音軌</button>
+    <span class="sep"></span>
+    <button id="btnSplit" title="在播放頭分割選取的片段（S）">分割</button>
+    <button id="btnDel" title="刪除選取（Delete）">刪除</button>
+    <span class="grow"></span>
+    <span class="dim">縮放</span><input id="zoom" type="range" min="10" max="600" value="90">
+  </div>
+  <div id="tlBody">
+    <div id="tlHeads"><div class="rulerHead"></div><div id="heads"></div></div>
+    <div id="tlScroll">
+      <div id="tlInner">
+        <canvas id="ruler" height="26"></canvas>
+        <div id="lanes"></div>
+        <div id="playhead"></div>
+      </div>
+      <canvas id="grid"></canvas>
+    </div>
+  </div>
+</section>
+
+<div id="modal" hidden><div class="box"><div id="modalBody"></div><div class="acts"><button id="modalClose">關閉</button></div></div></div>
+<script src="/web/app.js"></script>
+</body>
+</html>

@@ -41,3 +41,11 @@ tools/_blink_seg/*/
 !tools/_blink_seg/sorana_si_side/
 !tools/_blink_seg/nouvelle_si_front/
 !tools/_blink_seg/misha_si_front/
+
+# 宣傳片錄影：CI 影片拆格的快取（tools/promo/record.py 產）
+tools/promo/_cifr/
+tools/promo/out/
+# 剪輯器：素材、快取、輸出（本機）
+tools/promo/editor/media/
+tools/promo/editor/cache/
+tools/promo/editor/out/

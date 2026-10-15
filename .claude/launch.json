@@ -8,7 +8,7 @@
         "tools/devserver.py"
       ],
       "port": 8200,
-      "autoPort": false
+      "autoPort": true
     },
     {
       "name": "tivot",
@@ -36,6 +36,24 @@
       ],
       "port": 8124,
       "autoPort": true
+    },
+    {
+      "name": "promo-editor",
+      "runtimeExecutable": "py",
+      "runtimeArgs": [
+        "tools/promo/editor/server.py",
+        "8130"
+      ],
+      "port": 8130
+    },
+    {
+      "name": "promo-editor-verify",
+      "runtimeExecutable": "py",
+      "runtimeArgs": [
+        "tools/promo/editor/server.py",
+        "8132"
+      ],
+      "port": 8132
     }
   ]
 }

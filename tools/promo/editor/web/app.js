@@ -1,0 +1,929 @@
+/* TIVOT 剪輯器 —— 前端（時間軸／預覽／屬性面板）。
+ *
+ * 資料只有一份：`project`（存檔、輸出、預覽都讀它）。改它一律走 commit()：先存一份復原用的快照，再重畫。
+ * 轉場與淡化的計算 resolveTrack() 與 render.py 的 resolve_track() 是同一套定義 —— 改一邊要改另一邊。
+ */
+'use strict';
+const $ = id => document.getElementById(id);
+const W = 1080, H = 1920, FPS = 60;
+const HEAD_H = { video: 56, audio: 40 };
+const SNAP_PX = 8;
+
+let project = newProject('pv');
+let sel = null;            // {type:'clip', id} | {type:'junc', id}（id＝轉場「轉進來」的那一段）
+const selIds = new Set();  // 時間軸多選（Ctrl／Shift＋點、Ctrl+A）；只有一個時與 sel 同步
+const libSel = new Set();  // 素材庫多選（素材路徑）
+let libOrder = [], libAnchor = null;
+let lastArea = 'tl';       // Ctrl+A 選哪一區：最後點的是素材庫還是時間軸
+let clipboard = null;      // Ctrl+C／X 的內容：{ items:[{trackId, type, clip}], minStart }
+let playhead = 0, playing = false, playT0 = 0, playP0 = 0;
+let pps = 90;              // 每秒幾像素
+let beatTimes = [];        // 時間軸上的拍點（秒），由 project.beat 算
+let lib = [];
+const undo = [], redo = [];
+const probeCache = {};
+
+function newProject(name){
+  return { name, w:W, h:H, fps:FPS, loudnorm:true, beat:null,
+    tracks:[ {id:uid(), type:'video', name:'V1', clips:[]}, {id:uid(), type:'video', name:'V2', clips:[]},
+             {id:uid(), type:'audio', name:'A1', clips:[]}, {id:uid(), type:'audio', name:'A2', clips:[]} ] };
+}
+function uid(){ return Math.random().toString(36).slice(2, 10); }
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const fmt = t => { t = Math.max(0, t); const m = Math.floor(t / 60), s = t - m * 60; return String(m).padStart(2, '0') + ':' + s.toFixed(2).padStart(5, '0'); };
+const frame = t => Math.round(t * FPS) / FPS;
+function status(s){ $('status').textContent = s || ''; }
+
+/* ═════════════ 資料 ═════════════ */
+function allClips(){ const o = []; project.tracks.forEach(t => t.clips.forEach(c => o.push([t, c]))); return o; }
+function findClip(id){ for(const t of project.tracks){ const c = t.clips.find(c => c.id === id); if(c) return [t, c]; } return [null, null]; }
+function totalDur(){ let m = 0; allClips().forEach(([, c]) => m = Math.max(m, c.start + c.dur)); return m; }
+function snapshot(){ return JSON.stringify(project); }
+function commit(before){
+  undo.push(before); if(undo.length > 200) undo.shift(); redo.length = 0;
+  save_local(); renderAll();
+}
+function save_local(){ try{ localStorage.setItem('tivot_editor_last', snapshot()); }catch(_){} }
+function doUndo(){ if(!undo.length) return; redo.push(snapshot()); project = JSON.parse(undo.pop()); sel = null; selIds.clear(); afterLoad(); }
+function doRedo(){ if(!redo.length) return; undo.push(snapshot()); project = JSON.parse(redo.pop()); sel = null; selIds.clear(); afterLoad(); }
+function afterLoad(){ $('projName').value = project.name || 'pv'; save_local(); loadBeats(); renderAll(); }
+
+async function probe(p){
+  if(probeCache[p]) return probeCache[p];
+  const r = await fetch('/api/probe?p=' + encodeURIComponent(p)).then(r => r.json());
+  return probeCache[p] = r;
+}
+function kindOf(p){
+  const e = p.split('.').pop().toLowerCase();
+  return ['mp4','webm','mov','m4v'].includes(e) ? 'video' : ['webp','png','jpg','jpeg'].includes(e) ? 'image' : ['m4a','mp3','wav','ogg','aac'].includes(e) ? 'audio' : null;
+}
+const baseName = p => p.split('/').pop();
+
+/* 轉場／淡化：與 render.py 的 resolve_track 同一套 */
+function resolveTrack(track){
+  const cs = track.clips.slice().sort((a, b) => a.start - b.start).map(c => ({ c, S:c.start, E:c.start + c.dur, fx:[] }));
+  cs.forEach(r => { if(r.c.fadeIn) r.fx.push(['ain', 0, r.c.fadeIn]); });
+  for(let i = 1; i < cs.length; i++){
+    const a = cs[i - 1], b = cs[i], tr = b.c.trans;
+    if(!tr || !tr.dur) continue;
+    if(Math.abs((a.c.start + a.c.dur) - b.c.start) > 1.5 / FPS) continue;
+    const d = tr.dur, cut = b.c.start;
+    if(tr.type === 'cross'){ a.E = cut + d / 2; b.S = cut - d / 2; b.fx.push(['ain', 0, d]); }
+    else { const col = tr.type === 'white' ? '#fff' : '#000'; a.fx.push(['cout_abs', cut - d / 2, d / 2, col]); b.fx.push(['cin', 0, d / 2, col]); }
+  }
+  cs.forEach(r => { if(r.c.fadeOut) r.fx.push(['aout', (r.E - r.S) - r.c.fadeOut, r.c.fadeOut]); });
+  return cs;
+}
+function adjacentPrev(track, c){
+  let best = null;
+  for(const o of track.clips) if(o !== c && Math.abs(o.start + o.dur - c.start) <= 1.5 / FPS) best = o;
+  return best;
+}
+
+/* ═════════════ 素材庫 ═════════════ */
+async function loadLib(){
+  lib = await fetch('/api/library').then(r => r.json());
+  renderLib();
+}
+function renderLib(){
+  const q = $('libSearch').value.trim().toLowerCase();
+  const host = $('libList'); host.innerHTML = ''; libOrder = [];
+  const closed = JSON.parse(localStorage.getItem('tivot_editor_closed') || '{}');
+  for(const cat of lib){
+    const items = cat.items.filter(i => !q || i.name.toLowerCase().includes(q) || i.p.toLowerCase().includes(q));
+    if(!items.length) continue;
+    const box = document.createElement('div'); box.className = 'cat' + (closed[cat.cat] && !q ? ' closed' : '');
+    const h = document.createElement('h4'); h.innerHTML = cat.cat + '<span class="n">' + items.length + '</span>';
+    h.onclick = () => { box.classList.toggle('closed'); closed[cat.cat] = box.classList.contains('closed'); localStorage.setItem('tivot_editor_closed', JSON.stringify(closed)); };
+    const grid = document.createElement('div'); grid.className = 'items' + (items[0].kind === 'audio' ? ' audio' : '');
+    const shown = items.slice(0, q ? 400 : 240);
+    for(const it of shown){
+      libOrder.push(it);
+      const d = document.createElement('div'); d.className = 'it' + (libSel.has(it.p) ? ' sel' : ''); d.draggable = true; d.title = it.p; d.dataset.p = it.p;
+      const th = document.createElement('div'); th.className = 'th';
+      if(it.kind === 'image') th.style.backgroundImage = 'url("/m/' + encodeURI(it.p) + '")';
+      else if(it.kind === 'video') th.style.backgroundImage = 'url("/api/thumb?p=' + encodeURIComponent(it.p) + '&t=1.5")';
+      d.innerHTML = '<span class="k">' + ({video:'影片', image:'圖', audio:'♪'}[it.kind]) + '</span>';
+      d.prepend(th);
+      const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = it.name; d.appendChild(nm);
+      if(it.kind === 'audio'){
+        const pv = document.createElement('button'); pv.className = 'pv'; pv.textContent = '▶'; pv.title = '試聽';
+        pv.onclick = e => { e.stopPropagation(); audition(it.p, pv); };
+        d.appendChild(pv);
+      }
+      d.addEventListener('click', e => libClick(e, it));
+      d.addEventListener('dragstart', e => {
+        // 拖的是已選取的其中一個 → 整批（照素材庫的順序）一起拖
+        const batch = libSel.has(it.p) && libSel.size > 1 ? libOrder.filter(x => libSel.has(x.p)) : [it];
+        e.dataTransfer.setData('text/tivot', JSON.stringify(batch)); e.dataTransfer.effectAllowed = 'copy';
+      });
+      d.addEventListener('dblclick', () => addAtPlayhead(it));
+      if(it.kind === 'video') lazyThumb(th);
+      grid.appendChild(d);
+    }
+    box.append(h, grid); host.appendChild(box);
+  }
+}
+function libClick(e, it){
+  lastArea = 'lib';
+  if(e.ctrlKey || e.metaKey){ libSel.has(it.p) ? libSel.delete(it.p) : libSel.add(it.p); }
+  else if(e.shiftKey && libAnchor){
+    const a = libOrder.findIndex(x => x.p === libAnchor), b = libOrder.findIndex(x => x.p === it.p);
+    if(a >= 0 && b >= 0){ libSel.clear(); for(let i = Math.min(a, b); i <= Math.max(a, b); i++) libSel.add(libOrder[i].p); }
+  } else { libSel.clear(); libSel.add(it.p); }
+  if(!e.shiftKey) libAnchor = it.p;
+  paintLibSel();
+}
+function paintLibSel(){
+  document.querySelectorAll('#libList .it').forEach(el => el.classList.toggle('sel', libSel.has(el.dataset.p)));
+  if(libSel.size > 1) status('素材庫已選 ' + libSel.size + ' 個（拖其中一個＝整批依序放進時間軸）');
+}
+function lazyThumb(el){
+  // 影片縮圖要伺服器現場抽格：只在捲到時才載
+  const bg = el.style.backgroundImage; el.style.backgroundImage = '';
+  const io = new IntersectionObserver(es => { if(es[0].isIntersecting){ el.style.backgroundImage = bg; io.disconnect(); } }, { root: $('libList') });
+  io.observe(el);
+}
+let audEl = null;
+function audition(p, btn){
+  if(audEl){ audEl.pause(); const same = audEl.dataset.p === p; audEl = null; document.querySelectorAll('.pv').forEach(b => b.textContent = '▶'); if(same) return; }
+  audEl = new Audio('/m/' + p); audEl.dataset.p = p; audEl.play(); btn.textContent = '■';
+  audEl.onended = () => { btn.textContent = '▶'; audEl = null; };
+}
+async function uploadFiles(files){
+  const out = [];
+  for(const f of files){
+    status('上傳 ' + f.name + '…');
+    const r = await fetch('/api/upload', { method:'POST', headers:{ 'X-Name': encodeURIComponent(f.name) }, body:f }).then(r => r.json());
+    if(r.p) out.push(r);
+  }
+  status(out.length ? '已上傳 ' + out.length + ' 個檔案' : '');
+  await loadLib();
+  return out;
+}
+
+/* ═════════════ 新增片段 ═════════════ */
+async function makeClips(it, start, track){
+  const info = await probe(it.p);
+  const out = [];
+  if(it.kind === 'audio'){
+    out.push([track, { id:uid(), src:it.p, start, dur: info.dur || 1, in:0, speed:1, vol:1, fadeIn:0, fadeOut:0 }]);
+    return out;
+  }
+  const c = { id:uid(), kind:it.kind, src:it.p, start, dur: it.kind === 'image' ? 2 : (info.dur || 2), in:0, speed:1, fit:'cover',
+              motion:{type:'none', amt:0.2}, fadeIn:0, fadeOut:0, trans:null };
+  out.push([track, c]);
+  if(it.kind === 'video' && info.audio){
+    // 影片的聲音分到音軌（連結：一起移動、一起變速；可在屬性面板解除連結）
+    const at = freeAudioTrack(start, start + c.dur);
+    const a = { id:uid(), src:it.p, start, dur:c.dur, in:0, speed:1, vol:1, fadeIn:0, fadeOut:0, link:c.id };
+    c.link = a.id;
+    out.push([at, a]);
+  }
+  return out;
+}
+function freeAudioTrack(a, b){
+  for(const t of project.tracks) if(t.type === 'audio' && !t.clips.some(c => c.start < b && c.start + c.dur > a)) return t;
+  const t = { id:uid(), type:'audio', name:'A' + (project.tracks.filter(t => t.type === 'audio').length + 1), clips:[] };
+  project.tracks.push(t); return t;
+}
+async function addAtPlayhead(it){
+  const type = it.kind === 'audio' ? 'audio' : 'video';
+  const track = project.tracks.find(t => t.type === type);
+  const before = snapshot();
+  (await makeClips(it, frame(playhead), track)).forEach(([t, c]) => t.clips.push(c));
+  commit(before);
+}
+
+/* ═════════════ 時間軸 ═════════════ */
+function laneTop(i){ let y = 0; for(let k = 0; k < i; k++) y += HEAD_H[orderedTracks()[k].type]; return y; }
+function orderedTracks(){
+  // 畫面上：影像軌由上往下是 V(高)…V1，再接音軌 A1…
+  const v = project.tracks.filter(t => t.type === 'video').slice().reverse();
+  const a = project.tracks.filter(t => t.type === 'audio');
+  return v.concat(a);
+}
+function renderAll(){ renderHeads(); renderLanes(); drawRuler(); drawGrid(); renderInspector(); updatePlayhead(); drawStage(); }
+
+function renderHeads(){
+  const host = $('heads'); host.innerHTML = '';
+  for(const t of orderedTracks()){
+    const d = document.createElement('div'); d.className = 'head'; d.style.height = HEAD_H[t.type] + 'px';
+    d.innerHTML = '<b>' + t.name + '</b>';
+    const b1 = document.createElement('button');
+    if(t.type === 'video'){ b1.textContent = '隱'; b1.title = '隱藏這一軌'; b1.classList.toggle('on', !!t.hidden); b1.onclick = () => { const s = snapshot(); t.hidden = !t.hidden; commit(s); }; }
+    else { b1.textContent = '靜'; b1.title = '靜音這一軌'; b1.classList.toggle('on', !!t.mute); b1.onclick = () => { const s = snapshot(); t.mute = !t.mute; commit(s); }; }
+    const b2 = document.createElement('button'); b2.textContent = '✕'; b2.title = '刪除這一軌（連同片段）';
+    b2.onclick = () => { if(t.clips.length && !confirm('刪除 ' + t.name + '（含 ' + t.clips.length + ' 個片段）？')) return; const s = snapshot(); project.tracks = project.tracks.filter(x => x !== t); commit(s); };
+    d.append(b1, b2); host.appendChild(d);
+  }
+}
+
+function renderLanes(){
+  const host = $('lanes'); host.innerHTML = '';
+  const width = Math.max(($('tlScroll').clientWidth || 800), (totalDur() + 20) * pps);
+  $('tlInner').style.width = width + 'px';
+  for(const t of orderedTracks()){
+    const lane = document.createElement('div'); lane.className = 'lane ' + (t.type === 'video' ? 'v' : 'a');
+    lane.style.height = HEAD_H[t.type] + 'px'; lane.dataset.track = t.id;
+    lane.addEventListener('dragover', e => { e.preventDefault(); lane.classList.add('drop'); });
+    lane.addEventListener('dragleave', () => lane.classList.remove('drop'));
+    lane.addEventListener('drop', e => onLaneDrop(e, t, lane));
+    lane.addEventListener('pointerdown', e => { if(e.target === lane){ sel = null; selIds.clear(); setPlayhead(xToT(e)); renderAll(); } });
+    for(const c of t.clips) lane.appendChild(clipEl(t, c));
+    if(t.type === 'video'){
+      for(const c of t.clips){
+        const prev = adjacentPrev(t, c); if(!prev) continue;
+        const j = document.createElement('div'); j.className = 'junc' + (c.trans ? ' has' : '') + (sel && sel.type === 'junc' && sel.id === c.id ? ' sel' : '');
+        j.style.left = (c.start * pps) + 'px';
+        j.title = c.trans ? '轉場：' + transName(c.trans.type) + ' ' + c.trans.dur + ' 秒（點選編輯）' : '點一下加入淡入淡出';
+        j.addEventListener('pointerdown', e => {
+          e.stopPropagation();
+          if(!c.trans){ const s = snapshot(); c.trans = { type:'cross', dur:0.25 }; sel = { type:'junc', id:c.id }; commit(s); }
+          else { sel = { type:'junc', id:c.id }; renderAll(); }
+        });
+        lane.appendChild(j);
+      }
+    }
+    host.appendChild(lane);
+  }
+}
+function transName(t){ return { cross:'交叉淡化', black:'經黑', white:'經白' }[t] || t; }
+
+function clipEl(t, c){
+  const d = document.createElement('div');
+  const isA = t.type === 'audio';
+  d.className = 'clip ' + (isA ? 'aud' : c.kind === 'image' ? 'img' : c.kind === 'color' ? 'col' : 'vid') + ((sel && sel.type === 'clip' && sel.id === c.id) || selIds.has(c.id) ? ' sel' : '');
+  d.style.left = (c.start * pps) + 'px'; d.style.width = Math.max(4, c.dur * pps) + 'px';
+  if(!isA && c.kind === 'video') d.style.backgroundImage = 'url("/api/thumb?p=' + encodeURIComponent(c.src) + '&t=' + ((c.in || 0) + 0.3).toFixed(2) + '")';
+  if(!isA && c.kind === 'image') d.style.backgroundImage = 'url("/m/' + encodeURI(c.src) + '")';
+  const lab = document.createElement('div'); lab.className = 'lab'; lab.textContent = (c.link ? '🔗 ' : '') + baseName(c.src || '色塊');
+  const meta = document.createElement('div'); meta.className = 'meta';
+  const bits = [c.dur.toFixed(2) + 's'];
+  if((c.speed || 1) !== 1) bits.push('×' + (+c.speed).toFixed(2));
+  if(c.motion && c.motion.type !== 'none') bits.push({up:'↑', down:'↓', lr:'→', rl:'←', zin:'推近', zout:'拉遠'}[c.motion.type]);
+  if(isA && c.vol !== 1) bits.push('音量 ' + Math.round(c.vol * 100) + '%');
+  meta.textContent = bits.join('  ');
+  d.append(lab, meta);
+  if(c.fadeIn){ const f = document.createElement('div'); f.className = 'fi'; f.style.width = (c.fadeIn * pps) + 'px'; d.appendChild(f); }
+  if(c.fadeOut){ const f = document.createElement('div'); f.className = 'fo'; f.style.width = (c.fadeOut * pps) + 'px'; d.appendChild(f); }
+  const hl = document.createElement('div'); hl.className = 'h l'; const hr = document.createElement('div'); hr.className = 'h r';
+  d.append(hl, hr);
+  // 右上角的小圓點：拉它＝改速度（邊緣是裁切）
+  let sp = null;
+  if(c.kind === 'video' || isA){ sp = document.createElement('div'); sp.className = 'spd'; sp.title = '拖曳改速度：往右＝變慢、往左＝變快'; d.appendChild(sp); }
+  d.addEventListener('pointerdown', e => startDrag(e, t, c, e.target === hl ? 'l' : e.target === hr ? 'r' : (sp && e.target === sp) ? 'spd' : 'move'));
+  return d;
+}
+
+function xToT(e){ const r = $('tlInner').getBoundingClientRect(); return Math.max(0, (e.clientX - r.left) / pps); }
+function trackAtY(clientY){
+  const r = $('lanes').getBoundingClientRect(); let y = clientY - r.top, acc = 0;
+  for(const t of orderedTracks()){ acc += HEAD_H[t.type]; if(y < acc) return t; }
+  return null;
+}
+
+/* 吸附：拍點、其他片段的邊、播放頭、0 */
+function snapPoints(exclude){
+  const pts = [0, playhead];
+  for(const [, c] of allClips()) if(!exclude.has(c.id)){ pts.push(c.start, c.start + c.dur); }
+  return pts.concat(beatTimes);
+}
+function snap(t, pts){
+  if(!$('snap').checked) return frame(t);
+  let best = t, bd = SNAP_PX / pps;
+  for(const p of pts){ const d = Math.abs(p - t); if(d < bd){ bd = d; best = p; } }
+  return frame(best);
+}
+
+function startDrag(e, track, c, mode){
+  if(e.button !== 0) return;
+  e.stopPropagation(); e.preventDefault();
+  lastArea = 'tl';
+  // Ctrl／Shift＋點＝加入或移出多選，不拖
+  if(mode === 'move' && (e.ctrlKey || e.metaKey || e.shiftKey)){
+    if(sel && sel.type === 'clip') selIds.add(sel.id);
+    selIds.has(c.id) ? selIds.delete(c.id) : selIds.add(c.id);
+    sel = selIds.size === 1 ? { type:'clip', id:[...selIds][0] } : null;
+    renderAll(); return;
+  }
+  if(mode === 'move' && selIds.size > 1 && selIds.has(c.id)) return startGroupMove(e, c);
+  sel = { type:'clip', id:c.id }; selIds.clear(); selIds.add(c.id);
+  const before = snapshot();
+  const linked = c.link ? findClip(c.link)[1] : null;
+  const ex = new Set([c.id]); if(linked) ex.add(linked.id);
+  const pts = snapPoints(ex);
+  const x0 = e.clientX;
+  const o = { start:c.start, dur:c.dur, in:c.in || 0, speed:c.speed || 1 };
+  const lo = linked && { start:linked.start, dur:linked.dur, in:linked.in || 0, speed:linked.speed || 1 };
+  const isMedia = c.kind === 'video' || track.type === 'audio';
+  const srcLen = (c.src && probeCache[c.src] && probeCache[c.src].dur) || 0;   // 素材全長（0＝還不知道，不夾）
+  if(c.src && !probeCache[c.src]) probe(c.src);
+  let moved = false;
+  const onMove = ev => {
+    const dt = (ev.clientX - x0) / pps;
+    if(Math.abs(ev.clientX - x0) > 2) moved = true;
+    if(mode === 'move'){
+      // 起點與終點都試著吸附，取比較近的那一個
+      let ns = o.start + dt;
+      const s1 = snap(ns, pts), s2 = snap(ns + o.dur, pts) - o.dur;
+      ns = Math.abs(s1 - ns) <= Math.abs(s2 - ns) ? s1 : s2;
+      c.start = Math.max(0, frame(ns));
+      const tt = trackAtY(ev.clientY);
+      if(tt && tt !== track && tt.type === track.type){ track.clips = track.clips.filter(x => x !== c); tt.clips.push(c); track = tt; }
+      if(linked) linked.start = Math.max(0, c.start + (lo.start - o.start));
+    } else {
+      if(mode === 'spd'){
+        // 改速度：用掉的素材不變，終點移動 → 拉長變慢、縮短變快
+        const srcSpan = o.dur * o.speed;
+        let end = snap(o.start + o.dur + dt, pts); end = Math.max(o.start + 2 / FPS, end);
+        c.speed = clamp(srcSpan / (end - o.start), 0.1, 8); c.dur = srcSpan / c.speed;
+      } else if(mode === 'r'){
+        // 裁切右邊：速度不變，不超過素材結尾
+        let end = snap(o.start + o.dur + dt, pts); end = Math.max(o.start + 2 / FPS, end);
+        if(isMedia && srcLen) end = Math.min(end, Math.max(o.start + o.dur, o.start + (srcLen - o.in) / o.speed));   // 本來就比素材長（停最後一格）的不吃短
+        c.dur = end - o.start;
+      } else {
+        // 裁切左邊：終點不動，素材起點跟著移，不早於素材開頭
+        let st = snap(o.start + dt, pts);
+        const minSt = isMedia ? Math.max(0, o.start - o.in / o.speed) : 0;
+        st = clamp(st, minSt, o.start + o.dur - 2 / FPS);
+        if(isMedia) c.in = Math.max(0, o.in + (st - o.start) * o.speed);
+        c.start = st; c.dur = o.start + o.dur - st;
+      }
+      c.dur = frame(c.dur); c.start = frame(c.start);
+      if(linked){ linked.start = c.start; linked.dur = c.dur; linked.speed = c.speed; linked.in = c.in; }
+    }
+    renderLanes(); renderInspector(); drawStage();
+  };
+  const onUp = () => {
+    window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp);
+    if(moved) commit(before); else renderAll();
+  };
+  window.addEventListener('pointermove', onMove); window.addEventListener('pointerup', onUp);
+}
+
+/* 多選一起移動：以拖的那一段吸附，其餘照同一個位移（連結的聲音也跟著） */
+function startGroupMove(e, c){
+  const before = snapshot();
+  const group = new Map();
+  for(const id of selIds){ const [, x] = findClip(id); if(!x) continue; group.set(x.id, x); if(x.link){ const [, l] = findClip(x.link); if(l) group.set(l.id, l); } }
+  const orig = new Map([...group].map(([id, x]) => [id, x.start]));
+  const minStart = Math.min(...orig.values());
+  const pts = snapPoints(new Set(group.keys()));
+  const x0 = e.clientX, o = c.start; let moved = false;
+  const onMove = ev => {
+    if(Math.abs(ev.clientX - x0) > 2) moved = true;
+    let ns = o + (ev.clientX - x0) / pps;
+    const s1 = snap(ns, pts), s2 = snap(ns + c.dur, pts) - c.dur;
+    ns = Math.abs(s1 - ns) <= Math.abs(s2 - ns) ? s1 : s2;
+    const d = Math.max(frame(ns - o), -minStart);
+    group.forEach((x, id) => x.start = frame(orig.get(id) + d));
+    renderLanes(); drawStage();
+  };
+  const onUp = () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); if(moved) commit(before); else renderAll(); };
+  window.addEventListener('pointermove', onMove); window.addEventListener('pointerup', onUp);
+}
+function selectAll(){
+  if(lastArea === 'lib'){ libSel.clear(); libOrder.forEach(x => libSel.add(x.p)); paintLibSel(); return; }
+  selIds.clear(); allClips().forEach(([, c]) => selIds.add(c.id)); sel = null;
+  status('時間軸已選 ' + selIds.size + ' 個片段'); renderAll();
+}
+/* Shift+↓／↑：以播放頭為界選後段／前段（看片段的開始時間：跨在播放頭上的那段算前段） */
+function selectSide(side){
+  const eps = 0.5 / FPS;
+  selIds.clear();
+  allClips().forEach(([, c]) => { if(side === 'after' ? c.start >= playhead - eps : c.start < playhead - eps) selIds.add(c.id); });
+  sel = selIds.size === 1 ? { type:'clip', id:[...selIds][0] } : null; lastArea = 'tl';
+  status((side === 'after' ? '後段' : '前段') + '已選 ' + selIds.size + ' 個片段（播放頭 ' + fmt(playhead) + '）');
+  renderAll();
+}
+/* 目前選到的片段（含連結的聲音） */
+function selectedClips(){
+  const ids = new Set(selIds); if(sel && sel.type === 'clip') ids.add(sel.id);
+  const out = new Map();
+  for(const id of ids){
+    const [t, c] = findClip(id); if(!c) continue; out.set(c.id, [t, c]);
+    if(c.link){ const [lt, l] = findClip(c.link); if(l) out.set(l.id, [lt, l]); }
+  }
+  return [...out.values()];
+}
+function copySel(){
+  const items = selectedClips(); if(!items.length) return false;
+  clipboard = { items: items.map(([t, c]) => ({ trackId:t.id, type:t.type, clip:JSON.parse(JSON.stringify(c)) })),
+                minStart: Math.min(...items.map(([, c]) => c.start)) };
+  status('已複製 ' + items.length + ' 個片段'); return true;
+}
+function cutSel(){ if(copySel()) delSel(); }
+function pasteClip(){
+  if(!clipboard) return;
+  const s = snapshot(), idMap = {}, made = [];
+  clipboard.items.forEach(it => idMap[it.clip.id] = uid());
+  for(const it of clipboard.items){
+    const t = project.tracks.find(x => x.id === it.trackId) || project.tracks.find(x => x.type === it.type);
+    if(!t) continue;
+    const c = JSON.parse(JSON.stringify(it.clip));
+    c.id = idMap[c.id]; c.link = c.link ? (idMap[c.link] || null) : null;
+    c.start = frame(playhead + (it.clip.start - clipboard.minStart));
+    t.clips.push(c); made.push(c);
+  }
+  selIds.clear(); made.forEach(c => selIds.add(c.id)); sel = made.length === 1 ? { type:'clip', id:made[0].id } : null;
+  commit(s); status('已貼上 ' + made.length + ' 個片段');
+}
+
+async function onLaneDrop(e, track, lane){
+  e.preventDefault(); lane.classList.remove('drop');
+  const t = snap(xToT(e), snapPoints(new Set()));
+  let items = [];
+  const raw = e.dataTransfer.getData('text/tivot');
+  if(raw){ const v = JSON.parse(raw); items = Array.isArray(v) ? v : [v]; }
+  else if(e.dataTransfer.files && e.dataTransfer.files.length) items = await uploadFiles([...e.dataTransfer.files]);
+  const before = snapshot(); let at = t;
+  for(const it of items){
+    const want = it.kind === 'audio' ? 'audio' : 'video';
+    const tr = track.type === want ? track : project.tracks.find(x => x.type === want);
+    const made = await makeClips(it, at, tr);
+    made.forEach(([tt, c]) => tt.clips.push(c));
+    at += made[0][1].dur;
+  }
+  if(items.length){ sel = null; selIds.clear(); commit(before); }
+}
+
+/* 尺規與格線（拍點） */
+function drawRuler(){
+  const cv = $('ruler'), sc = $('tlScroll');
+  const w = sc.clientWidth; cv.width = w; cv.style.width = w + 'px';
+  const g = cv.getContext('2d'); g.clearRect(0, 0, w, 26);
+  const t0 = sc.scrollLeft / pps, t1 = (sc.scrollLeft + w) / pps;
+  const step = pps > 200 ? 0.5 : pps > 60 ? 1 : pps > 25 ? 2 : 5;
+  g.fillStyle = '#8b8a93'; g.strokeStyle = '#3a3a46'; g.font = '10px Consolas';
+  for(let s = Math.floor(t0 / step) * step; s <= t1; s += step){
+    const x = (s - t0) * pps;
+    g.beginPath(); g.moveTo(x + .5, 14); g.lineTo(x + .5, 26); g.stroke();
+    g.fillText(fmt(s).replace(/\.\d+$/, ''), x + 3, 11);
+  }
+  g.fillStyle = '#d8b46a';
+  beatTimes.forEach((b, i) => { if(b < t0 || b > t1) return; const x = (b - t0) * pps; g.fillRect(x, i % 4 === 0 ? 17 : 21, 1, i % 4 === 0 ? 9 : 5); });
+}
+function drawGrid(){
+  const cv = $('grid'), sc = $('tlScroll');
+  const w = sc.clientWidth, h = $('lanes').offsetHeight;
+  cv.width = w; cv.height = h; cv.style.left = sc.scrollLeft + 'px';
+  const g = cv.getContext('2d'); g.clearRect(0, 0, w, h);
+  if(!beatTimes.length) return;
+  const t0 = sc.scrollLeft / pps, t1 = (sc.scrollLeft + w) / pps;
+  beatTimes.forEach((b, i) => {
+    if(b < t0 || b > t1) return; const x = Math.round((b - t0) * pps) + .5;
+    g.strokeStyle = i % 16 === 0 ? '#d8b46a55' : i % 4 === 0 ? '#d8b46a30' : '#ffffff10';
+    g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke();
+  });
+}
+function updatePlayhead(){
+  $('playhead').style.left = (playhead * pps) + 'px';
+  $('tc').textContent = fmt(playhead); $('tcTotal').textContent = fmt(totalDur());
+}
+function setPlayhead(t){ playhead = Math.max(0, t); if(playing){ playT0 = playhead; playP0 = performance.now(); } updatePlayhead(); syncMedia(true); drawStage(); }
+
+/* 拍點：project.beat ＝{clip:<音訊片段 id>}，拍點跟著那一段在時間軸上的位置與速度走 */
+let beatRaw = null, beatFor = null;
+async function loadBeats(){
+  beatTimes = [];
+  const b = project.beat; if(!b) { drawRuler(); drawGrid(); return; }
+  const [, c] = findClip(b.clip); if(!c){ project.beat = null; return; }
+  if(beatFor !== c.src){ status('分析拍點…'); beatRaw = await fetch('/api/beats?p=' + encodeURIComponent(c.src)).then(r => r.json()); beatFor = c.src; status('拍點：' + beatRaw.bpm.toFixed(1) + ' BPM'); }
+  computeBeats();
+}
+function computeBeats(){
+  beatTimes = [];
+  const b = project.beat; if(!b || !beatRaw) return;
+  const [, c] = findClip(b.clip); if(!c) return;
+  const sp = c.speed || 1;
+  for(const s of beatRaw.beats){ const t = c.start + (s - (c.in || 0)) / sp; if(t >= c.start - 1e-6 && t <= c.start + c.dur + 1e-6) beatTimes.push(t); }
+  drawRuler(); drawGrid();
+}
+
+/* ═════════════ 屬性面板 ═════════════ */
+function renderInspector(){
+  const host = $('insp'); host.innerHTML = '';
+  if(selIds.size > 1){
+    host.innerHTML = '<h3>已選 ' + selIds.size + ' 個片段</h3>';
+    const bs = document.createElement('div'); bs.className = 'btns';
+    bs.append(btn('全部刪除', delSel), btn('取消選取', () => { sel = null; selIds.clear(); renderAll(); }));
+    host.append(bs, note('拖其中一段＝整批一起移動。<br><kbd>Ctrl</kbd>／<kbd>Shift</kbd>＋點＝加入或移出選取。<br><kbd>Ctrl+C</kbd>／<kbd>X</kbd>／<kbd>V</kbd> 複製／剪下／貼上（貼在播放頭）。<br><kbd>Esc</kbd> 取消選取。'));
+    return;
+  }
+  if(sel && sel.type === 'junc'){
+    const [, c] = findClip(sel.id); if(!c || !c.trans){ sel = null; selIds.clear(); return renderInspector(); }
+    host.innerHTML = '<h3>轉場（淡入淡出）</h3>';
+    host.append(rowSelect('種類', c.trans.type, [['cross','交叉淡化'],['black','經黑'],['white','經白']], v => edit(() => c.trans.type = v)));
+    host.append(rowNum('長度（秒）', c.trans.dur, 0.02, v => edit(() => c.trans.dur = clamp(v, 1 / FPS, 5))));
+    const bs = document.createElement('div'); bs.className = 'btns';
+    bs.append(btn('移除轉場', () => edit(() => { c.trans = null; sel = null; selIds.clear(); })));
+    host.append(bs, note('交叉淡化：前一段延長、這一段從切點前半段時間就淡進來。<br>經黑／經白：前一段淡到黑（白），這一段再從黑（白）淡回來。'));
+    return;
+  }
+  if(sel && sel.type === 'clip'){
+    const [t, c] = findClip(sel.id); if(!c){ sel = null; selIds.clear(); return renderInspector(); }
+    const isA = t.type === 'audio';
+    host.innerHTML = '<h3>' + (isA ? '聲音片段' : c.kind === 'image' ? '圖片片段' : c.kind === 'color' ? '色塊' : '影片片段') + '</h3>';
+    if(c.src){ const s = document.createElement('div'); s.className = 'src'; s.textContent = c.src; host.append(s); }
+    host.append(rowNum('開始', c.start, 1 / FPS, v => edit(() => moveClip(c, Math.max(0, frame(v))))));
+    host.append(rowNum('長度', c.dur, 1 / FPS, v => edit(() => setDur(c, Math.max(2 / FPS, frame(v)), t))));
+    if(c.kind === 'video' || isA){
+      host.append(rowNum('素材起點', c.in || 0, 0.04, v => edit(() => { c.in = Math.max(0, v); syncLink(c); })));
+      host.append(rowNum('速度', c.speed || 1, 0.05, v => edit(() => setSpeed(c, clamp(v, 0.1, 8)))));
+    }
+    if(!isA){
+      host.append(rowSelect('適配', c.fit || 'cover', [['cover','填滿（裁切）'],['contain','完整（留黑）']], v => edit(() => c.fit = v)));
+      if(c.kind === 'color') host.append(rowColor('顏色', c.color || '#000000', v => edit(() => c.color = v)));
+      host.append(rowSelect('運鏡', (c.motion || {}).type || 'none',
+        [['none','無'],['up','由下往上平移'],['down','由上往下平移'],['lr','由左往右平移'],['rl','由右往左平移'],['zin','慢推（放大）'],['zout','慢拉（縮小）']],
+        v => edit(() => { c.motion = c.motion || {amt:0.2}; c.motion.type = v; })));
+      host.append(rowNum('運鏡幅度', (c.motion || {}).amt ?? 0.2, 0.05, v => edit(() => { c.motion = c.motion || {type:'none'}; c.motion.amt = clamp(v, 0, 2); })));
+    } else {
+      host.append(rowNum('音量 %', Math.round((c.vol ?? 1) * 100), 5, v => edit(() => c.vol = clamp(v, 0, 400) / 100)));
+    }
+    host.append(rowNum('淡入（秒）', c.fadeIn || 0, 0.05, v => edit(() => c.fadeIn = clamp(v, 0, c.dur))));
+    host.append(rowNum('淡出（秒）', c.fadeOut || 0, 0.05, v => edit(() => c.fadeOut = clamp(v, 0, c.dur))));
+    const bs = document.createElement('div'); bs.className = 'btns';
+    if(c.link) bs.append(btn('解除連結', () => edit(() => { const [, o] = findClip(c.link); if(o) o.link = null; c.link = null; })));
+    if(isA) bs.append(btn(project.beat && project.beat.clip === c.id ? '取消拍點' : '以這一段做拍點', () => {
+      const s = snapshot(); project.beat = (project.beat && project.beat.clip === c.id) ? null : { clip:c.id }; commit(s); loadBeats();
+    }));
+    bs.append(btn('分割（S）', splitSel), btn('刪除', delSel));
+    host.append(bs);
+    host.append(note(c.kind === 'video' || isA ? '拉邊緣＝<b>裁切</b>。<br>拉右上角的<b>小圓點</b>＝改速度（往右變慢、往左變快）。' : '拉邊緣＝改長度。'));
+    return;
+  }
+  host.innerHTML = '<h3>專案</h3>';
+  host.append(rowCheck('輸出時響度拉到 −14 LUFS', project.loudnorm !== false, v => edit(() => project.loudnorm = v)));
+  const bs = document.createElement('div'); bs.className = 'btns';
+  bs.append(btn('＋黑色色塊', () => addColor('#000000')), btn('＋白色色塊', () => addColor('#ffffff')));
+  host.append(bs);
+  host.append(note(
+    '素材從左邊拖進時間軸；桌面的檔案也可以直接拖進來。<br>' +
+    '拉邊緣＝裁切；拉右上角小圓點＝改速度。<br>' +
+    '同一軌兩段相鄰時，交界的菱形點一下＝加淡入淡出。<br>' +
+    '點音訊片段→「以這一段做拍點」＝時間軸出現拍點、拖曳會吸附。<br><br>' +
+    '<kbd>空白</kbd> 播放／暫停　<kbd>S</kbd> 分割　<kbd>Delete</kbd> 刪除<br>' +
+    '<kbd>←</kbd><kbd>→</kbd> 一格（加 <kbd>Shift</kbd> 一秒）　<kbd>Ctrl</kbd>+滾輪 縮放<br>' +
+    '<kbd>Ctrl+A</kbd> 全選（看最後點的是素材庫還是時間軸）<br>' +
+    '<kbd>Shift+↓</kbd>／<kbd>Shift+↑</kbd> 選播放頭之後／之前的所有片段<br>' +
+    '<kbd>Ctrl+C</kbd>／<kbd>X</kbd>／<kbd>V</kbd> 複製／剪下／貼上（貼在播放頭）<br>' +
+    '<kbd>Ctrl+Z</kbd> 復原　<kbd>Ctrl+Y</kbd> 重做　<kbd>Ctrl+S</kbd> 儲存'));
+}
+function edit(fn){ const s = snapshot(); fn(); computeBeats(); commit(s); }
+function moveClip(c, st){ const d = st - c.start; c.start = st; if(c.link){ const [, o] = findClip(c.link); if(o) o.start += d; } }
+function setDur(c, d, t){ if(c.kind === 'video' || t.type === 'audio') c.dur = d; else c.dur = d; syncLink(c); }
+function setSpeed(c, sp){ const span = c.dur * (c.speed || 1); c.speed = sp; c.dur = frame(span / sp); syncLink(c); }
+function syncLink(c){ if(!c.link) return; const [, o] = findClip(c.link); if(o){ o.start = c.start; o.dur = c.dur; o.speed = c.speed; o.in = c.in; } }
+function addColor(col){
+  const s = snapshot(); const t = project.tracks.find(t => t.type === 'video');
+  t.clips.push({ id:uid(), kind:'color', color:col, src:'', start:frame(playhead), dur:1, fit:'cover', motion:{type:'none',amt:0}, fadeIn:0, fadeOut:0, trans:null });
+  commit(s);
+}
+function row(label, el){ const d = document.createElement('div'); d.className = 'row'; const l = document.createElement('label'); l.textContent = label; d.append(l, el); return d; }
+function rowNum(label, v, step, on){ const i = document.createElement('input'); i.type = 'number'; i.step = step; i.value = (+v).toFixed(3).replace(/\.?0+$/, '') || '0'; i.onchange = () => on(+i.value); return row(label, i); }
+function rowSelect(label, v, opts, on){ const s = document.createElement('select'); opts.forEach(([k, n]) => { const o = document.createElement('option'); o.value = k; o.textContent = n; s.appendChild(o); }); s.value = v; s.onchange = () => on(s.value); return row(label, s); }
+function rowColor(label, v, on){ const i = document.createElement('input'); i.type = 'color'; i.value = v; i.onchange = () => on(i.value); return row(label, i); }
+function rowCheck(label, v, on){ const i = document.createElement('input'); i.type = 'checkbox'; i.checked = v; i.onchange = () => on(i.checked); return row(label, i); }
+function btn(t, fn){ const b = document.createElement('button'); b.textContent = t; b.onclick = fn; return b; }
+function note(h){ const d = document.createElement('div'); d.className = 'note'; d.innerHTML = h; return d; }
+
+function delSel(){
+  if(selIds.size > 1){
+    const s = snapshot();
+    for(const id of [...selIds]){
+      const [t, c] = findClip(id); if(!c) continue;
+      t.clips = t.clips.filter(x => x !== c);
+      if(c.link){ const [lt, l] = findClip(c.link); if(l) lt.clips = lt.clips.filter(x => x !== l); }
+      if(project.beat && project.beat.clip === c.id) project.beat = null;
+    }
+    sel = null; selIds.clear(); commit(s); loadBeats(); return;
+  }
+  if(!sel) return;
+  const s = snapshot();
+  if(sel.type === 'junc'){ const [, c] = findClip(sel.id); if(c) c.trans = null; }
+  else {
+    const [t, c] = findClip(sel.id); if(!c) return;
+    t.clips = t.clips.filter(x => x !== c);
+    if(c.link){ const [lt, l] = findClip(c.link); if(l) lt.clips = lt.clips.filter(x => x !== l); }
+    if(project.beat && project.beat.clip === c.id) project.beat = null;
+  }
+  sel = null; selIds.clear(); commit(s); loadBeats();
+}
+function splitSel(){
+  if(!sel || sel.type !== 'clip') return;
+  const [t, c] = findClip(sel.id); if(!c) return;
+  const at = frame(playhead); if(at <= c.start + 1 / FPS || at >= c.start + c.dur - 1 / FPS) return;
+  const s = snapshot();
+  const cut = (t, c) => {
+    const left = at - c.start;
+    const b = JSON.parse(JSON.stringify(c)); b.id = uid(); b.start = at; b.dur = frame(c.dur - left); b.trans = null; b.fadeIn = 0;
+    if(c.kind === 'video' || t.type === 'audio') b.in = (c.in || 0) + left * (c.speed || 1);
+    c.dur = frame(left); c.fadeOut = 0;
+    t.clips.push(b); return b;
+  };
+  const b = cut(t, c);
+  if(c.link){ const [lt, l] = findClip(c.link); if(l){ const lb = cut(lt, l); b.link = lb.id; lb.link = b.id; } else b.link = null; }
+  commit(s);
+}
+
+/* ═════════════ 預覽 ═════════════ */
+const stage = $('stage'), g = stage.getContext('2d');
+const vids = new Map(), imgs = new Map(), auds = new Map();
+function vidFor(c){
+  let v = vids.get(c.id);
+  if(!v || v.dataset.src !== c.src){
+    if(v){ v.pause(); v.removeAttribute('src'); v.load(); }
+    v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; v.crossOrigin = 'anonymous';
+    v.dataset.src = c.src; v.src = '/m/' + c.src; v.addEventListener('seeked', () => { if(!playing) drawStage(); });
+    v.addEventListener('loadeddata', () => { if(!playing) drawStage(); });
+    vids.set(c.id, v);
+  }
+  return v;
+}
+function imgFor(src){
+  let i = imgs.get(src);
+  if(!i){ i = new Image(); i.src = '/m/' + src; i.onload = () => { if(!playing) drawStage(); }; imgs.set(src, i); }
+  return i;
+}
+function audFor(c){
+  let a = auds.get(c.id);
+  if(!a || a.dataset.src !== c.src){
+    if(a){ a.pause(); }
+    a = new Audio(); a.preload = 'auto'; a.dataset.src = c.src; a.src = '/m/' + c.src; a.preservesPitch = true;
+    auds.set(c.id, a);
+  }
+  return a;
+}
+function srcTimeOf(r, t){
+  const c = r.c, sp = c.speed || 1;
+  return Math.max(0, (c.in || 0) + (t - c.start) * sp);
+}
+function activeVideo(t){
+  const out = [];
+  for(const tr of project.tracks.filter(x => x.type === 'video')){   // index 0＝最底層
+    if(tr.hidden) continue;
+    for(const r of resolveTrack(tr)) if(t >= r.S && t < r.E) out.push(r);
+  }
+  return out;
+}
+function fxAt(r, t){
+  const local = t - r.S; let a = 1, col = null, ca = 0;
+  for(const [k, st, du, cc] of r.fx){
+    const d = Math.max(1 / FPS, du);
+    if(k === 'ain') a *= clamp((local - st) / d, 0, 1);
+    else if(k === 'aout') a *= 1 - clamp((local - st) / d, 0, 1);
+    else if(k === 'cin'){ const v = 1 - clamp((local - st) / d, 0, 1); if(v > ca){ ca = v; col = cc; } }
+    else if(k === 'cout_abs'){ const v = clamp((t - st) / d, 0, 1); if(v > ca){ ca = v; col = cc; } }
+  }
+  return { a, col, ca };
+}
+function drawSrc(src, sw, sh, c, local, D){
+  const m = c.motion || {}, typ = m.type || 'none', amt = +(m.amt ?? 0.2);
+  if(c.fit === 'contain'){
+    const s = Math.min(W / sw, H / sh), w = sw * s, h = sh * s;
+    g.drawImage(src, (W - w) / 2, (H - h) / 2, w, h); return;
+  }
+  const p = clamp(local / Math.max(1e-3, D), 0, 1);
+  if(['up','down','lr','rl'].includes(typ)){
+    const k = 1 + amt, s = Math.max(W * k / sw, H * k / sh), iw = sw * s, ih = sh * s;
+    let x = (iw - W) / 2, y = (ih - H) / 2;
+    if(typ === 'up') y = (ih - H) * (1 - p); if(typ === 'down') y = (ih - H) * p;
+    if(typ === 'lr') x = (iw - W) * p; if(typ === 'rl') x = (iw - W) * (1 - p);
+    g.drawImage(src, x / s, y / s, W / s, H / s, 0, 0, W, H); return;
+  }
+  let z = 1; if(typ === 'zin') z = 1 + amt * p; if(typ === 'zout') z = 1 + amt * (1 - p);
+  const s = Math.max(W / sw, H / sh) * z, w = W / s, h = H / s;
+  g.drawImage(src, (sw - w) / 2, (sh - h) / 2, w, h, 0, 0, W, H);
+}
+function drawStage(){
+  const t = playhead;
+  g.globalAlpha = 1; g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+  for(const r of activeVideo(t)){
+    const c = r.c, { a, col, ca } = fxAt(r, t); if(a <= 0) continue;
+    g.save(); g.globalAlpha = a;
+    const local = t - r.S, D = r.E - r.S;
+    if(c.kind === 'color'){ g.fillStyle = c.color || '#000'; g.fillRect(0, 0, W, H); }
+    else if(c.kind === 'image'){ const im = imgFor(c.src); if(im.complete && im.naturalWidth) drawSrc(im, im.naturalWidth, im.naturalHeight, c, local, D); }
+    else { const v = vidFor(c); if(v.readyState >= 2 && v.videoWidth) drawSrc(v, v.videoWidth, v.videoHeight, c, local, D); }
+    if(col && ca > 0){ g.globalAlpha = a * ca; g.fillStyle = col; g.fillRect(0, 0, W, H); }
+    g.restore();
+  }
+}
+/* 讓影片／聲音元素對齊播放頭。force＝暫停中被拖動，一律精確跳轉 */
+function syncMedia(force){
+  const t = playhead;
+  const live = new Set();
+  for(const tr of project.tracks.filter(x => x.type === 'video')){
+    if(tr.hidden) continue;
+    for(const r of resolveTrack(tr)){
+      if(r.c.kind !== 'video') continue;
+      const near = t >= r.S - 1.0 && t < r.E;
+      if(!near) continue;
+      const v = vidFor(r.c); live.add(v);
+      const want = srcTimeOf(r, Math.max(t, r.S));
+      const act = t >= r.S && t < r.E;
+      if(playing && act){
+        v.playbackRate = clamp(r.c.speed || 1, 0.0625, 16);
+        if(Math.abs(v.currentTime - want) > 0.15) v.currentTime = want;
+        if(v.paused) v.play().catch(() => {});
+      } else {
+        if(!v.paused) v.pause();
+        if(force || Math.abs(v.currentTime - want) > 0.5 / FPS) { try{ v.currentTime = want; }catch(_){} }
+      }
+    }
+  }
+  vids.forEach(v => { if(!live.has(v) && !v.paused) v.pause(); });
+  // 聲音
+  const liveA = new Set();
+  for(const tr of project.tracks.filter(x => x.type === 'audio')){
+    for(const c of tr.clips){
+      const act = playing && !tr.mute && t >= c.start && t < c.start + c.dur;
+      const a = auds.get(c.id);
+      if(!act){ if(a && !a.paused) a.pause(); continue; }
+      const el = audFor(c); liveA.add(el);
+      const sp = c.speed || 1, want = (c.in || 0) + (t - c.start) * sp;
+      let vol = c.vol ?? 1;
+      if(c.fadeIn) vol *= clamp((t - c.start) / c.fadeIn, 0, 1);
+      if(c.fadeOut) vol *= clamp((c.start + c.dur - t) / c.fadeOut, 0, 1);
+      el.volume = clamp(vol, 0, 1);
+      el.playbackRate = clamp(sp, 0.0625, 16);
+      if(Math.abs(el.currentTime - want) > 0.2) el.currentTime = want;
+      if(el.paused) el.play().catch(() => {});
+    }
+  }
+  auds.forEach(a => { if(!liveA.has(a) && !a.paused) a.pause(); });
+}
+function play(){
+  if(playing){ playing = false; $('btnPlay').textContent = '▶︎'; syncMedia(true); return; }
+  if(playhead >= totalDur() - 1 / FPS) playhead = 0;
+  playing = true; playT0 = playhead; playP0 = performance.now(); $('btnPlay').textContent = '❚❚';
+  syncMedia(true); requestAnimationFrame(tick);
+}
+let lastSync = 0;
+function tick(now){
+  if(!playing) return;
+  playhead = playT0 + (now - playP0) / 1000;
+  if(playhead >= totalDur()){ playhead = totalDur(); play(); updatePlayhead(); drawStage(); return; }
+  if(now - lastSync > 120){ syncMedia(false); lastSync = now; }
+  updatePlayhead(); drawStage(); followPlayhead();
+  requestAnimationFrame(tick);
+}
+function followPlayhead(){
+  const sc = $('tlScroll'), x = playhead * pps;
+  if(x > sc.scrollLeft + sc.clientWidth - 60) sc.scrollLeft = x - 120;
+}
+
+/* ═════════════ 存檔／輸出 ═════════════ */
+async function saveProject(){
+  project.name = $('projName').value.trim() || 'pv';
+  await fetch('/api/project?name=' + encodeURIComponent(project.name), { method:'POST', body:snapshot() });
+  status('已儲存：' + project.name);
+}
+async function openProject(){
+  const names = await fetch('/api/projects').then(r => r.json());
+  showModal('<h3>開啟專案</h3>' + (names.length ? '<ul>' + names.map(n => '<li data-n="' + n + '">' + n + '</li>').join('') + '</ul>' : '<p class="dim">還沒有存過的專案</p>'));
+  $('modalBody').querySelectorAll('li').forEach(li => li.onclick = async () => {
+    const p = await fetch('/api/project?name=' + encodeURIComponent(li.dataset.n)).then(r => r.json());
+    if(p.tracks){ undo.push(snapshot()); project = p; sel = null; selIds.clear(); afterLoad(); hideModal(); status('已開啟：' + p.name); }
+  });
+}
+const OUTDIR_KEY = 'tivot_editor_outdir';
+async function exportMp4(){
+  if(!totalDur()) return status('時間軸是空的');
+  project.name = $('projName').value.trim() || 'pv';
+  const dir = localStorage.getItem(OUTDIR_KEY) || '';
+  const stamp = new Date().toTimeString().slice(0, 8).replace(/:/g, '');
+  showModal('<h3>輸出 MP4</h3>' +
+    '<div class="row2"><label>資料夾</label><input id="exDir" placeholder="（預設：剪輯器的 out 資料夾）"><button id="exPick">選擇…</button></div>' +
+    '<div class="row2"><label>檔名</label><input id="exName"><span class="dim">.mp4</span></div>' +
+    '<div class="acts2"><button id="exGo" class="primary">開始輸出</button></div>' +
+    '<div id="exMsg" class="dim"></div><div class="bar"><i id="exBar"></i></div><div id="exOut"></div>');
+  $('exDir').value = dir; $('exName').value = project.name + '_' + stamp;
+  $('exPick').onclick = () => dirBrowser($('exDir').value.trim(), p => $('exDir').value = p);
+  $('exGo').onclick = () => runExport($('exDir').value.trim(), $('exName').value.trim());
+}
+/* 網頁裡的資料夾瀏覽（不靠系統視窗：那個常常開在瀏覽器後面） */
+async function dirBrowser(start, onPick){
+  let box = $('dirPick');
+  if(!box){ box = document.createElement('div'); box.id = 'dirPick'; $('modalBody').appendChild(box); }
+  const go = async path => {
+    const r = await fetch('/api/ls?path=' + encodeURIComponent(path || '')).then(r => r.json());
+    box.innerHTML = '';
+    const head = document.createElement('div'); head.className = 'dp-head';
+    const up = btn('↑ 上一層', () => go(r.parent || '')); up.disabled = r.path === '';
+    const home = btn('常用位置', () => go(''));
+    const cur = document.createElement('span'); cur.className = 'dp-cur'; cur.textContent = r.path || '常用位置／磁碟機';
+    head.append(up, home, cur); box.appendChild(head);
+    const list = document.createElement('div'); list.className = 'dp-list';
+    (r.places || []).forEach(x => { const d = document.createElement('div'); d.className = 'dp-it place'; d.textContent = '★ ' + x.name + '　' + x.path; d.onclick = () => go(x.path); list.appendChild(d); });
+    r.dirs.forEach(x => { const d = document.createElement('div'); d.className = 'dp-it'; d.textContent = '📁 ' + x.name; d.onclick = () => go(x.path); list.appendChild(d); });
+    if(r.error){ const d = document.createElement('div'); d.className = 'dim'; d.textContent = '讀不到：' + r.error; list.appendChild(d); }
+    if(!r.dirs.length && !(r.places || []).length && !r.error){ const d = document.createElement('div'); d.className = 'dim'; d.textContent = '（沒有子資料夾）'; list.appendChild(d); }
+    box.appendChild(list);
+    const acts = document.createElement('div'); acts.className = 'btns';
+    const ok = btn('選這個資料夾', () => { onPick(r.path); box.remove(); }); ok.className = 'primary'; ok.disabled = !r.path;
+    const mk = btn('＋新增資料夾', async () => {
+      const n = prompt('新資料夾名稱'); if(!n) return;
+      const m = await fetch('/api/mkdir?path=' + encodeURIComponent(r.path) + '&name=' + encodeURIComponent(n), { method:'POST' }).then(r => r.json());
+      if(m.path) go(m.path);
+    }); mk.disabled = !r.path;
+    acts.append(ok, mk, btn('取消', () => box.remove()));
+    box.appendChild(acts);
+  };
+  go(start || '');
+}
+async function runExport(dir, name){
+  try{ localStorage.setItem(OUTDIR_KEY, dir); }catch(_){}
+  $('exGo').disabled = true; $('btnExport').disabled = true;
+  const body = JSON.stringify(Object.assign({}, project, { _outDir: dir, _outName: name }));
+  const job = await fetch('/api/export', { method:'POST', body }).then(r => r.json());
+  if(job.error){ $('exMsg').textContent = '失敗：' + job.error; $('exGo').disabled = false; $('btnExport').disabled = false; return; }
+  const poll = async () => {
+    const j = await fetch('/api/job?id=' + job.id).then(r => r.json());
+    if(!$('exMsg')) { $('btnExport').disabled = false; return; }
+    $('exMsg').textContent = j.msg || ''; $('exBar').style.width = Math.round((j.progress || 0) * 100) + '%';
+    if(j.state === 'running') return setTimeout(poll, 700);
+    $('btnExport').disabled = false; $('exGo').disabled = false;
+    if(j.state === 'done'){
+      $('exOut').innerHTML = '<p>完成：<span class="src"></span></p><div class="btns"><button id="exReveal">開啟資料夾</button></div><video src="/api/out?id=' + j.id + '" controls></video>';
+      $('exOut').querySelector('.src').textContent = j.path;
+      $('exReveal').onclick = () => fetch('/api/reveal?id=' + j.id);
+    } else $('exMsg').textContent = '失敗：' + (j.msg || '');
+  };
+  poll();
+}
+function showModal(html){ $('modalBody').innerHTML = html; $('modal').hidden = false; }
+function hideModal(){ $('modal').hidden = true; $('modalBody').innerHTML = ''; }
+
+/* ═════════════ 繫結 ═════════════ */
+function bind(){
+  $('btnPlay').onclick = play;
+  $('btnStart').onclick = () => setPlayhead(0);
+  $('btnPrev').onclick = () => setPlayhead(frame(playhead - 1 / FPS));
+  $('btnNext').onclick = () => setPlayhead(frame(playhead + 1 / FPS));
+  $('btnUndo').onclick = doUndo; $('btnRedo').onclick = doRedo;
+  $('btnSave').onclick = saveProject; $('btnOpen').onclick = openProject; $('btnExport').onclick = exportMp4;
+  $('btnSplit').onclick = splitSel; $('btnDel').onclick = delSel;
+  $('btnAddV').onclick = () => { const s = snapshot(); const n = project.tracks.filter(t => t.type === 'video').length + 1;
+    const idx = project.tracks.findIndex(t => t.type === 'audio'); project.tracks.splice(idx < 0 ? project.tracks.length : idx, 0, { id:uid(), type:'video', name:'V' + n, clips:[] }); commit(s); };
+  $('btnAddA').onclick = () => { const s = snapshot(); project.tracks.push({ id:uid(), type:'audio', name:'A' + (project.tracks.filter(t => t.type === 'audio').length + 1), clips:[] }); commit(s); };
+  $('modalClose').onclick = hideModal;
+  $('libSearch').oninput = renderLib;
+  $('lib').addEventListener('pointerdown', () => lastArea = 'lib');
+  $('tl').addEventListener('pointerdown', () => lastArea = 'tl');
+  $('libUpload').onchange = e => uploadFiles([...e.target.files]);
+  const libEl = $('lib');
+  libEl.addEventListener('dragover', e => { if(e.dataTransfer.types.includes('Files')){ e.preventDefault(); libEl.classList.add('dropping'); } });
+  libEl.addEventListener('dragleave', () => libEl.classList.remove('dropping'));
+  libEl.addEventListener('drop', e => { e.preventDefault(); libEl.classList.remove('dropping'); if(e.dataTransfer.files.length) uploadFiles([...e.dataTransfer.files]); });
+  $('zoom').oninput = e => setZoom(+e.target.value);
+  const sc = $('tlScroll');
+  sc.addEventListener('scroll', () => { drawRuler(); drawGrid(); $('tlHeads').scrollTop = sc.scrollTop; $('heads').style.marginTop = -sc.scrollTop + 'px'; });
+  sc.addEventListener('wheel', e => {
+    if(!e.ctrlKey) return; e.preventDefault();
+    const r = sc.getBoundingClientRect(), tAt = (e.clientX - r.left + sc.scrollLeft) / pps;
+    setZoom(clamp(pps * (e.deltaY < 0 ? 1.15 : 1 / 1.15), 10, 600));
+    sc.scrollLeft = tAt * pps - (e.clientX - r.left);
+  }, { passive:false });
+  const rulerDrag = e => setPlayhead(frame((e.clientX - $('tlInner').getBoundingClientRect().left) / pps));
+  $('ruler').addEventListener('pointerdown', e => { rulerDrag(e); const mv = ev => rulerDrag(ev); const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); }; window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); });
+  window.addEventListener('resize', () => { drawRuler(); drawGrid(); renderLanes(); });
+  window.addEventListener('keydown', e => {
+    if(e.target.matches('input,select,textarea')) return;
+    const k = e.key.toLowerCase(), mod = e.ctrlKey || e.metaKey;
+    if(e.code === 'Space'){ e.preventDefault(); play(); }
+    else if(mod && k === 'a'){ e.preventDefault(); selectAll(); }
+    else if(e.shiftKey && !mod && (e.key === 'ArrowUp' || e.key === 'ArrowDown')){ e.preventDefault(); selectSide(e.key === 'ArrowDown' ? 'after' : 'before'); }
+    else if(mod && k === 'c'){ e.preventDefault(); copySel(); }
+    else if(mod && k === 'x'){ e.preventDefault(); cutSel(); }
+    else if(mod && k === 'v'){ e.preventDefault(); pasteClip(); }
+    else if(e.key === 'Escape'){ sel = null; selIds.clear(); libSel.clear(); paintLibSel(); renderAll(); }
+    else if(e.key === 'Delete' || e.key === 'Backspace'){ e.preventDefault(); delSel(); }
+    else if(e.key === 's' && !e.ctrlKey){ splitSel(); }
+    else if(e.key === 'ArrowLeft'){ e.preventDefault(); setPlayhead(frame(playhead - (e.shiftKey ? 1 : 1 / FPS))); }
+    else if(e.key === 'ArrowRight'){ e.preventDefault(); setPlayhead(frame(playhead + (e.shiftKey ? 1 : 1 / FPS))); }
+    else if(e.key === 'Home'){ setPlayhead(0); }
+    else if(e.ctrlKey && e.key.toLowerCase() === 'z'){ e.preventDefault(); e.shiftKey ? doRedo() : doUndo(); }
+    else if(e.ctrlKey && e.key.toLowerCase() === 'y'){ e.preventDefault(); doRedo(); }
+    else if(e.ctrlKey && e.key.toLowerCase() === 's'){ e.preventDefault(); saveProject(); }
+  });
+}
+function setZoom(v){ pps = v; $('zoom').value = Math.round(v); renderLanes(); drawRuler(); drawGrid(); updatePlayhead(); }
+
+(async function init(){
+  bind();
+  const qs = new URLSearchParams(location.search);
+  let loaded = false;
+  if(qs.get('project')){
+    const p = await fetch('/api/project?name=' + encodeURIComponent(qs.get('project'))).then(r => r.json());
+    if(p.tracks){ project = p; loaded = true; }
+  }
+  if(!loaded){ try{ const s = localStorage.getItem('tivot_editor_last'); if(s){ project = JSON.parse(s); loaded = true; } }catch(_){} }
+  $('projName').value = project.name || 'pv';
+  await loadLib();
+  await loadBeats();
+  renderAll();
+})();

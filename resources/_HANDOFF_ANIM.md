@@ -1,4 +1,34 @@
-# 動畫 session 交接（現況：2026-10-13 00:40，Windows 4070 SUPER 那台收工）
+# 動畫 session 交接（現況：2026-10-16，Windows 4070 SUPER 那台收工）
+
+## ⭐ 10-14～10-16 新增（先讀這段；下面一～七是 10-13 的現況，四、六兩節**還沒重盤**）
+
+**這兩天交件（全部已推、程式 -2184 已接前幾支）：**
+| 件 | 檔 | 狀態 |
+|---|---|---|
+| CI 托爾斯坦 MB v2 | `resources/ci/video/ci_torsten_mb_v2.mp4` | ✔ 已接（單管、爆風吹髮，28 格） |
+| CI 托爾斯坦 處決 v2 | `ci_torsten_execute_v2.mp4` | ✔ 已接；⚠ 底圖換了（Ray SD 修＋GPT 修背景＋換迦尼米德大槍＝`layers/torsten_execute/exec_gun_gpt.png`），**靜態佔位要換成這張**（見該資料夾 TO_CODE） |
+| CI 米夏 NI v1 | `ci_misha_ni_v1.mp4`（65 格 4.06 秒） | ⚠ 待接：`resources/ci/layers/misha_ni/TO_CODE.md`。Ray：「暫時先這樣」—— 金光是越聚越亮不是爆碎、鏡頭往右下漂，之後可能重做 |
+| 插畫 003／005／35／044_cecilietorsten | `resources/illustration/video/` | ✔ 已接（TO_CODE 第十三～十六支） |
+
+**宣傳片用的全格版**：`tools/promo/editor/out/anim_full/<遊戲檔名>_full.mp4`（38 支，Ray 勾掉的格補回；`.gitignore` 掉了、只在本機）。
+⚠ 4 支這台沒有原片、只是複製遊戲版：`ci_sorana_supply_v2`、`cutin_cecilie_guard_v1`、`cutin_cecilie_return_v1`、`cutin_dual_torsten_v7`。
+
+**這兩天學到的（已進 memory）：**
+- ⛔ 動畫一律 Wan，**不准程式拼**（分層 rig、程式槍火、整格搖晃）；Wan 做不出來就改餵的圖／長度／提示詞。
+- ⛔ 動畫素材要 alpha 一律 GPT 重製，**本機去背沒問不准用**（si_matting 把槍口摳掉過）。
+- 整張要活：頭髮飄＋呼吸全程都在；定格也要 Wan 生，**不准複製靜止格**。每支開 `REQ.md` 逐條對（範例 `layers/torsten_mb/REQ.md`）。
+- 鎖結尾且 A／B 頭髮一樣 ⇒ 頭髮不動；要飄就讓 B 的頭髮先被吹開（GPT 改 B），或不鎖結尾。
+- 「整片頭髮」這種字會生出**髮片**；寫 fine soft strands。
+- 原圖畫成風衣，Wan 就一直長風衣 —— 提示詞擋不住，要先改圖。
+- 給 GPT 改圖一律**送整張**，不要裁局部（Ray：「你自做聰明畫局部幹什麼」）；被擋才用拼屍法。
+- 做不到就直說，不要硬做。
+
+**環境變動：**
+- 螢幕改接主機板 HDMI（UHD 770），4070 閒置 VRAM 0 MB（多出約 1.4 GB）。
+- **8130 現在是宣傳片剪輯器**（`tools/promo/editor/server.py`）；animechk 改跑 **8131**：`python serve_player.py 8131`（`serve_player.py` 已改成可帶 port，預設仍 8130）。
+- `tivot_wan.py` 的 `--lora`／`--lora-low` 可以串多支（逗號分隔）。
+
+**等 Ray：** 米夏 NI 要不要重做；004_renna_intro（silent7 版）沒有回覆；Kling 試作只在離峰才送得出去（素材 `layers/torsten_bulletrain/_kling_test/`）。
 
 > 開工先讀這份。只留**現況＋做法＋原則**；舊版在 `_recycle/resources/_HANDOFF_ANIM.md.20261013-003836`（git 歷史也有）。
 > 動畫 session 只管把圖做成動畫、交件；**不碰程式**（憲法鐵律 11）—— 要接的寫成 `TO_CODE*.md` 交程式。

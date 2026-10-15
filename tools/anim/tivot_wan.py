@@ -119,14 +119,16 @@ def graph(img_name, prefix, length, pos, seed, mode):
     if END_IMG:      # A to B：首尾不同張
         g['21'] = {'class_type': 'LoadImage', 'inputs': {'image': END_IMG}}
         g['12'] = {'class_type': 'WanFirstLastFrameToVideo', 'inputs': {**common, 'start_image': ['11', 0], 'end_image': ['21', 0]}}
+    def chain(lst, base, start_id):   # 多個 LoRA 串接（--lora／--lora-low 可用逗號分隔「檔名:強度,檔名:強度」）
+        cur, nid = base, start_id
+        for nm, st in lst:
+            g[str(nid)] = {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': cur, 'lora_name': nm, 'strength_model': st}}
+            cur = [str(nid), 0]; nid += 1
+        return cur
     if EXTRA_LORA:   # 額外動作 LoRA 只接在 High 段（動作在高噪段決定）
-        nm, st = EXTRA_LORA
-        g['20'] = {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['3', 0], 'lora_name': nm, 'strength_model': st}}
-        g['5']['inputs']['model'] = ['20', 0]
+        g['5']['inputs']['model'] = chain(EXTRA_LORA, ['3', 0], 40)
     if EXTRA_LORA_LOW:
-        nm, st = EXTRA_LORA_LOW
-        g['22'] = {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['4', 0], 'lora_name': nm, 'strength_model': st}}
-        g['6']['inputs']['model'] = ['22', 0]
+        g['6']['inputs']['model'] = chain(EXTRA_LORA_LOW, ['4', 0], 50)
     return g
 
 def run_wan(img_name, prefix, length, pos, seed, mode):
@@ -289,10 +291,10 @@ def main():
         to_green(args.end, 'ci' if args.mode == 'ci' else args.mode).save(os.path.join(COMFY, 'input', END_IMG))
     if args.lora_low:
         global EXTRA_LORA_LOW
-        nm, _, st = args.lora_low.partition(':'); EXTRA_LORA_LOW = (nm, float(st or 1.0))
+        EXTRA_LORA_LOW = [(x.partition(':')[0], float(x.partition(':')[2] or 1.0)) for x in args.lora_low.split(',')]
     if args.lora:
         global EXTRA_LORA
-        nm, _, st = args.lora.partition(':'); EXTRA_LORA = (nm, float(st or 1.0))
+        EXTRA_LORA = [(x.partition(':')[0], float(x.partition(':')[2] or 1.0)) for x in args.lora.split(',')]
     src = args.files or sorted(p for p in glob.glob(os.path.join(HERE, 'in', '*'))
                                if p.lower().endswith(('.png', '.webp', '.jpg', '.jpeg')))
     if args.only: src = [p for p in src if os.path.basename(p).startswith(args.only)]

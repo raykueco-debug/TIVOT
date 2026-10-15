@@ -267,7 +267,7 @@ export const ART = {
                   evaluate:  { src:'resources/si/renna_si_evaluate.webp', top:1, bot:1524, fx:0.491 },
                   evaluateclosemouth:
                                 { src:'resources/si/renna_si_evaluateclosemouth.webp', top:3, bot:1524, fx:0.491 },
-                  argue:        { src:'resources/si/renna_si_argue.webp',     top:9, bot:1524, fx:0.515 },
+                  argue:        { yShift:0, src:'resources/si/renna_si_argue.webp',     top:9, bot:1524, fx:0.515 },
                   arguecute:    { src:'resources/si/renna_si_arguecute.webp', top:6, bot:1516, fx:0.515 },
                   wake:       { src:'resources/si/renna_si_wake.webp',        top:0, bot:1531, fx:0.539 },
                   unbraid:    { src:'resources/si/renna_si_unbraid.webp',     top:6, bot:1528, fx:0.550 },
@@ -388,7 +388,7 @@ export const ART = {
                   scarejump:   { src:'resources/si/renna_si_scarejump.webp',   top:0,  bot:1533, fx:0.632 },
                   scarecute:   { src:'resources/si/renna_si_scarecute.webp',   top:0,  bot:1530, fx:0.537 },
                   blush:     { src:'resources/si/renna_si_blush.webp',     top:8,  bot:1522, fx:0.551 },
-                  lookdown:    { src:'resources/si/renna_si_lookdown.webp',    top:6,  bot:1524, fx:0.548 },
+                  lookdown:    { fxShift:0, src:'resources/si/renna_si_lookdown.webp',    top:6,  bot:1524, fx:0.548 },
                   chase2:      { src:'resources/si/renna_si_chase2.webp',      top:11, bot:1529, fx:0.579 },
                   /* stage2 出航（ver -741，Ray 交稿）。逐張量（measure_si.py）。 */
                   curious:     { src:'resources/si/renna_si_curious.webp',     top:0,  bot:1526, fx:0.529 },
@@ -612,7 +612,7 @@ export const ART = {
                      ⚠ `_originals/SI/` 那張 PNG 實測就是**新圖**，已一併改名成
                        `Nouvelle_SI_furious.png`。**舊 angry 沒有 `_originals` 備份**
                        （-1092 同名覆蓋時就沒了），它現在的來源是 git 歷史。 */
-                  angry:    { src:'resources/si/nouvelle_si_angry.webp?v=f0ab6dac',   top:3,  bot:1535, fx:0.583 },   // ver -842 的舊圖（-1182 放回來）
+                  angry:    { fxShift:0, src:'resources/si/nouvelle_si_angry.webp?v=f0ab6dac',   top:3,  bot:1535, fx:0.583 },   // ver -842 的舊圖（-1182 放回來）
                   furious:  { src:'resources/si/nouvelle_si_furious.webp',     top:8,  bot:1528, fx:0.517 },   // ver -1092 交的那張（-1182 改名）
                   bigsmile: { src:'resources/si/nouvelle_si_bigsmile.webp',  top:4,  bot:1534, fx:0.565 },
                   /* 舊街區／公會那一段新增（ver -375）。取景由 `tools/measure_si.py` 量出來的。 */
@@ -1063,7 +1063,7 @@ export const ART = {
        —— 近景那幾張才要 `cm`／`standCm`（見上面的說明）。 */
     silent:    { fxShift:0, yShift:-2, cm:145, src:'resources/si/anya_si_silent.webp?v=5497fc32',     top:4, bot:1521, fx:0.423 },
     panic:     { src:'resources/si/anya_si_panic.webp?v=960811a2',      top:0, bot:1522, fx:0.434 },   // ver -842
-    dizzy:     { src:'resources/si/anya_si_dizzy.webp', top:62, bot:1527, fx:0.428 },   // ver -2189（top 量頭髮，不含頭上的冒煙與漩渦）
+    dizzy:     { fxShift:0, src:'resources/si/anya_si_dizzy.webp', top:62, bot:1527, fx:0.428 },   // ver -2189（top 量頭髮，不含頭上的冒煙與漩渦）
     /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2` ＋ 取景值重量
        （0.426→0.522：差了將近一成的圖寬，沿用舊值臉會明顯偏左）。 */
     talk:      { cm:140, fxShift:0, yShift:0, src:'resources/si/anya_si_talk.webp?v=d6e12e73',   top:8, bot:1526, fx:0.483 },
@@ -1095,7 +1095,7 @@ export const ART = {
     nightmareinstall:{ src:'resources/si/anya_si_nightmareinstall.webp?v=0ed9e71f',
                        top:215, bot:1528, fx:0.500, rescale:true },
     /* stage2 出航那一段（ver -741，Ray 交稿）。全身站姿，照量（measure_si.py）。 */
-    lookup:    { src:'resources/si/anya_si_lookup.webp?v=b62b187e',     top:5, bot:1527, fx:0.479 },
+    lookup:    { fxShift:0, src:'resources/si/anya_si_lookup.webp?v=b62b187e',     top:5, bot:1527, fx:0.479 },
     nervous:   { src:'resources/si/anya_si_nervous.webp?v=f425f52e',    top:2, bot:1525, fx:0.479 },
     scare2:   { src:'resources/si/anya_si_scare2.webp?v=fb151f9d',    top:4, bot:1519, fx:0.364 },
     /* ver -2099 返回帝都稿缺差分（美術 9086789c）：measure_si 量 top/bot；fx 照臉中心目測校正 */
@@ -1683,23 +1683,23 @@ export const ART = {
             } },
   /* ══ 薇拉馮德莊園三人（ver -2208）══ 取景值全部 `tools/measure_si.py` 量；身高 cm **暫填**（Ray 未定：
      羅伯特 175／亞隆 178／茉莉 166 —— 不准超過 CAST_TALL 現行最高 178，§6.5）。本位右（對手戲是蕾娜，本位左）。 */
-  molly: { cm:166, eye:32, fx:0.454, top:30, bot:1496,
+  molly: { fxShift:0, yShift:7, cm:166, eye:32, fx:0.454, top:30, bot:1496,
             side:'R', alt:null, base:'resources/si/npc/molly_si_front.webp?v=6d2f15f2',
             expr:{
-              ask:        { src:'resources/si/npc/molly_si_ask.webp?v=1f0a0416', top:17, bot:1511, fx:0.445 },
-              closedtalk: { src:'resources/si/npc/molly_si_closedtalk.webp?v=25e454ad', top:21, bot:1507, fx:0.450 },
-              eyesmile:   { src:'resources/si/npc/molly_si_eyesmile.webp?v=b2557878', top:21, bot:1497, fx:0.455 },
-              gossip:     { src:'resources/si/npc/molly_si_gossip.webp?v=ec7d0965', top:15, bot:1506, fx:0.456 },
-              lookdown:   { src:'resources/si/npc/molly_si_lookdown.webp?v=ab83b79b', top:25, bot:1503, fx:0.455 },
-              order:      { src:'resources/si/npc/molly_si_order.webp?v=3cdf657d', top:21, bot:1496, fx:0.451 },
-              serious:    { src:'resources/si/npc/molly_si_serious.webp?v=49dc7e15', top:29, bot:1499, fx:0.459 },
-              softsmile:  { src:'resources/si/npc/molly_si_softsmile.webp?v=86873b9c', top:17, bot:1508, fx:0.453 },
-              stern:      { src:'resources/si/npc/molly_si_stern.webp?v=788969f2', top:21, bot:1501, fx:0.463 },
-              superior:   { src:'resources/si/npc/molly_si_superior.webp?v=4982ed4e', top:17, bot:1507, fx:0.459 },
-              surprise:   { src:'resources/si/npc/molly_si_surprise.webp?v=f3dfda8c', top:22, bot:1503, fx:0.454 },
-              talk:       { src:'resources/si/npc/molly_si_talk.webp?v=e0da83ad', top:19, bot:1505, fx:0.473 },
-              think:      { src:'resources/si/npc/molly_si_think.webp?v=0ceca598', top:22, bot:1503, fx:0.455 },
-              whisper:    { src:'resources/si/npc/molly_si_whisper.webp?v=54e5d7b3', top:30, bot:1502, fx:0.343 },
+              ask:        { fxShift:0, yShift:7, cm:166, src:'resources/si/npc/molly_si_ask.webp?v=1f0a0416', top:17, bot:1511, fx:0.445 },
+              closedtalk: { fxShift:0, yShift:7, cm:166, src:'resources/si/npc/molly_si_closedtalk.webp?v=25e454ad', top:21, bot:1507, fx:0.450 },
+              eyesmile:   { fxShift:0, yShift:7, cm:166, src:'resources/si/npc/molly_si_eyesmile.webp?v=b2557878', top:21, bot:1497, fx:0.455 },
+              gossip:     { fxShift:0, yShift:7, cm:166, src:'resources/si/npc/molly_si_gossip.webp?v=ec7d0965', top:15, bot:1506, fx:0.456 },
+              lookdown:   { fxShift:0, yShift:7, cm:166, src:'resources/si/npc/molly_si_lookdown.webp?v=ab83b79b', top:25, bot:1503, fx:0.455 },
+              order:      { fxShift:0, yShift:7, cm:166, src:'resources/si/npc/molly_si_order.webp?v=3cdf657d', top:21, bot:1496, fx:0.451 },
+              serious:    { fxShift:0, yShift:7, cm:166, src:'resources/si/npc/molly_si_serious.webp?v=49dc7e15', top:29, bot:1499, fx:0.459 },
+              softsmile:  { fxShift:0, yShift:7, cm:166, src:'resources/si/npc/molly_si_softsmile.webp?v=86873b9c', top:17, bot:1508, fx:0.453 },
+              stern:      { fxShift:0, yShift:7, cm:166, src:'resources/si/npc/molly_si_stern.webp?v=788969f2', top:21, bot:1501, fx:0.463 },
+              superior:   { fxShift:0, cm:166, yShift:7, src:'resources/si/npc/molly_si_superior.webp?v=4982ed4e', top:17, bot:1507, fx:0.459 },
+              surprise:   { fxShift:0, yShift:7, cm:166, src:'resources/si/npc/molly_si_surprise.webp?v=f3dfda8c', top:22, bot:1503, fx:0.454 },
+              talk:       { fxShift:0, yShift:7, cm:166, src:'resources/si/npc/molly_si_talk.webp?v=e0da83ad', top:19, bot:1505, fx:0.473 },
+              think:      { fxShift:0, yShift:7, cm:166, src:'resources/si/npc/molly_si_think.webp?v=0ceca598', top:22, bot:1503, fx:0.455 },
+              whisper:    { fxShift:0, yShift:7, cm:166, src:'resources/si/npc/molly_si_whisper.webp?v=54e5d7b3', top:30, bot:1502, fx:0.343 },
             } },
   robert: { cm:175, eye:32, fx:0.501, top:17, bot:1517,
             side:'R', alt:null, base:'resources/si/npc/robert_si_front.webp',
@@ -1715,7 +1715,7 @@ export const ART = {
             side:'R', alt:null, base:'resources/si/npc/aaron_si_front.webp',
             expr:{
               angry:      { src:'resources/si/npc/aaron_si_angry.webp', top:33, bot:1503, fx:0.472 },
-              armscross:  { src:'resources/si/npc/aaron_si_armscross.webp', top:25, bot:1511, fx:0.477 },
+              armscross:  { cm:178, src:'resources/si/npc/aaron_si_armscross.webp', top:25, bot:1511, fx:0.477 },
               attention:  { src:'resources/si/npc/aaron_si_attention.webp', top:25, bot:1511, fx:0.481 },
               blindeye:   { src:'resources/si/npc/aaron_si_blindeye.webp', top:25, bot:1510, fx:0.478 },
               closedsmile:{ src:'resources/si/npc/aaron_si_closedsmile.webp', top:26, bot:1513, fx:0.480 },
