@@ -23,7 +23,7 @@
 | `tavern` | 餐飲街 | ←uptown ↑cafe ↓dessert →restaurant |
 | `cafe` / `dessert` / `restaurant` | 咖啡廳／甜品店／餐廳（端末，店內） | back |
 
-- **小地圖**：要畫的話照這一版。`tools/map_layout.py` 的 `POS` 程式端已更新，但那支工具目前跑不起來，佈局圖 `_layout_verafond.png` **還是 v2 的舊圖** —— 畫小地圖之前要先請程式端修工具、重產佈局圖（鐵律 11：美術不修工具）。
+- **小地圖**：照這一版畫。佈局圖 `_layout_verafond.png` 已由程式端照 v3 重產（b0ba2598，19 格、自檢通過）。⚠ 小地圖本體還沒畫（等 Ray 開工）。
 
 ---
 
