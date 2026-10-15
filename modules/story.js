@@ -3557,8 +3557,14 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2217';
+const KERB_V='?v=2218';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
+/* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
+   Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）
+   以前只在劇情讀取頁預載，城鎮那條路要等畫面用到才抓 —— 小零件早在快取裡先出現，門與楣晚一拍才補上。
+   清單只有這一份（鐵律 7）。 */
+const KERB_IMGS=['kerberos_gate','kerberos_plate','kerberos_arrow','kerberos_rivet','kerberos_pendant','kerberos_gear'];
+const kerbImgUrls=()=>KERB_IMGS.map(kerbUrl);
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
      只要中心擺對，轉幾度都落在該落的地方。 */
@@ -5413,9 +5419,7 @@ const PRELOAD_CAP_MS = 25000;
 function preloadStory(startId, onProgress){
   const A=collectAssets(startId);
   /* ⚠ 門的素材也要預載：它是**進戰鬥那一刻**才動起來的，沒先抓的話升上去是一片空白。 */
-  for(const f of ['kerberos_gate','kerberos_plate','kerberos_arrow','kerberos_rivet',
-                  'kerberos_pendant','kerberos_gear'])
-    A.imgs.push(kerbUrl(f));
+  A.imgs.push(...kerbImgUrls());
   /* ⚠ 門的三支音效也要預載：撞擊音在演出**第 0 毫秒**就要響，
      現抓的話一定遲到（audio.js 的 LATE_PLAY_MS 是 1.5 秒，遲到就乾脆不播）。 */
   for(const k in KERB_SFX) if(KERB_SFX[k]) A.ses.push(KERB_SE_DIR+KERB_SFX[k]+'.'+(KERB_SFX_EXT[k]||'m4a'));
@@ -5615,7 +5619,7 @@ export function loadScene(spec, onReady, onCovered){
      第一次開棺就得現抓，手機上超過 LATE_PLAY_MS 就整聲不響。已經在的不會重抓。 */
   const ses  = [...new Set((spec.ses  || []).map(v => path(v, seSrc)).concat(SFX.residents()))].filter(Boolean);
   const bgms = (spec.bgms || []).map(v => path(v, bgmSrc)).filter(Boolean);
-  const imgs = (spec.imgs || []).filter(Boolean);
+  const imgs = (spec.imgs || []).filter(Boolean).concat(kerbImgUrls());   // 門的圖每一道門都載（ver -2218，見 KERB_IMGS）
   const warm = typeof spec.warm==='function' ? spec.warm : (spec.warm || []).filter(Boolean);
   _sceneAudio = ses.concat(bgms);
   try{ SFX.releaseAudio(ses.concat(bgms)); }catch(e){}      // ① 放掉上一個場景
