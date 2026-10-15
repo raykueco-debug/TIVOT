@@ -17,3 +17,18 @@
 
 - ⚠ 既有 `capital_outskirts_dusk.webp`（劇情硬指定）畫風是厚塗，與本批不同；本批第 4 格出完後要不要取代它由 Ray 決定（程式端接）。
 - ✔ 不欠：時段差分（刻意只有黃昏，Ray 定）。
+
+## ⚠ 程式端要接的（美術 session 10-15 寫，Ray：「把帝都荒野接上，然後開回帝都的劇情給我」）
+
+> 美術 session 依鐵律 11 不動程式；以下交程式 session 照做。
+
+1. **`script/town.js` 新增一張 4 格直線地圖**（建議鍵 `capital_outer`，名「帝都外郊」）：
+   `gate`(up→river／back→帝都) → `river`(up→village) → `village`(up→windmill) → `windmill`(末端，只有 back)。
+   各格 `back` 照通則（`exits:{ up:<下一格>, back:<上一格> }`），出口兩端相反（lint 會驗）。
+   ⚠ **從帝都哪一格出城、是不是用 `@capital_outer` 跨圖出口** —— Ray 未定，接之前問他。
+2. **背景只有黃昏**：每格 `bg:'outer_<鍵>_dusk', noTime:true`（檔在 `resources/background/capital_outer/`）。
+   ⚠ 不寫 `noTime` 的話候選鏈會先試別的時段，而這系列刻意只有黃昏（Ray 定）。
+   ⚠ `script/bg_index.js` 照既有流程登記（若那支是工具產生就重跑工具，不要手打）。
+3. **返回帝都的風車荒地那一拍**（`script/town.js:1141`，`bg:'capital_outskirts_dusk'`）：
+   要不要換成本批的 `outer_windmill_dusk` —— **Ray 決定**（舊圖是厚塗畫風、與本批不一致）。
+4. 驗：`py tools/script_lint.py`；`python3 tools/bust.py --bump`（本批是新檔，不是同名覆蓋）。
