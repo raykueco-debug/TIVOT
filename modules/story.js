@@ -3556,7 +3556,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2201';
+const KERB_V='?v=2202';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4921,7 +4921,8 @@ function renderLine(){
       scheduleAuto();
     }else if(autoPlay){
       clearTimeout(autoT);
-      autoT=setTimeout(()=>{ autoT=null; if(autoPlay||fastMode) advance(); }, blankHold(line));
+      /* ver -2202：跟一般對話一樣 —— 沒寫 `auto` 就停自動播放的間隔（選單的設定）。 */
+      autoT=setTimeout(()=>{ autoT=null; if(autoPlay||fastMode) advance(); }, blankHold(line) || settings.autoDelayMs());
     }
     return;
   }
@@ -6738,9 +6739,12 @@ const BLANK_BEAT = 420;
      —— 那就是同一條規則兩個計算點（鐵律 7）。
    ⚠ 飛行頁是另一個 document，那裡另有一份（`FBLANK_HOLD_MS`）—— 改一邊要改另一邊。
      ⚠ 那一頁**沒有加速模式**，所以沒有這條豁免；戰鬥對白（tutorial.js）同理。 */
-export const BLANK_HOLD = 700;
+/* ⚠⚠⚠ ver -2202（Ray：「主角空白那一拍有 0.7 秒拿掉，讓他跟一般對話一樣」）：**最短停留整個拿掉** ——
+     點一下就推進、SKIP／加速照常衝過去；只有腳本自己寫了 `auto` 才照它的。
+     ⚠ `BLANK_HOLD` 歸 0 而不刪：飛行頁的 `FBLANK_HOLD_MS` 與它互指（一起歸 0）。 */
+export const BLANK_HOLD = 0;
 export function blankHold(line){
-  if(fastMode) return 0;                       // 加速：一路衝過去（ver -1504）
+  if(fastMode || ffRunning) return 0;
   return Math.max(BLANK_HOLD, (line && line.auto>0) ? line.auto : 0);
 }
 /* 空白格的保護期到什麼時候（ver -1503）。⚠ **不共用 `noSkipUntil`**：那一支是
