@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.15-2207';
+export const VERSION = 'ver 2026.10.15-2208';
 
 export const GAME_CONFIG = {
 
@@ -5677,7 +5677,7 @@ export const ASSET_VER = {
   '_layout_sofiaout': '3a2297fe',
   '_layout_tomb': '1a47bf82',
   '_layout_undercity': '17f71d1b',
-  '_layout_verafond': '6d44630f',
+  '_layout_verafond': '9e42a900',
   '_sheet15': '64e14158',
   'anya_a': 'e441af7c',
   'anya_ad_si_front_closed': '4b5278ba',

@@ -59,7 +59,12 @@ export const SPEAKERS = {
   SOLDIER:  { name:'士兵',   art:null },
   RETAINER: { name:'隨從',   art:'retainer' },
   MAGE:      { name:'愛里歐', art:'mage' },          // ver -2099：碼頭 Boss；ver -2117 Ray 的碼頭戰稿定名（第八騎士團副團長）
-  MAGE_X:    { name:'？？？', art:'mage' },          // ver -2117：表明身分前（同 CORVIN_Q 的作法）
+  MAGE_X:    { name:'？？？', art:'mage' },
+  /* ver -2208：薇拉馮德莊園（Ray 的稿＋差分表 `薇拉馮德_台詞差分.xlsx`）。茉莉第一次出場是「？？？」（同 CORVIN_Q）。 */
+  MOLLY:     { name:'茉莉',   art:'molly' },
+  MOLLY_Q:   { name:'？？？', art:'molly' },
+  ROBERT:    { name:'羅伯特', art:'robert' },
+  AARON:     { name:'亞隆',   art:'aaron' },          // ver -2117：表明身分前（同 CORVIN_Q 的作法）
   GUARD_CAP: { name:'衛士',   art:'capguard' },   // ver -2114：帝都教廷衛士（借旅店那一場的拔刀衛兵）
   CAPI_BOY:  { name:'小男孩', art:'capiboy' },     // ver -2102：返回帝都（攝政王廣場的路人母子）
   CAPI_MOM:  { name:'母親',   art:'capimom' },
@@ -326,6 +331,7 @@ export const ART = {
                   reach:    { src:'resources/si/renna_si_reach.webp',      top:2, bot:1528, fx:0.566 },
                   /* 墓地那一幕（ver -671，Ray 交稿）。逐張量（tools/measure_si.py）。 */
                   meltdown:    { src:'resources/si/renna_si_meltdown.webp',    top:0,  bot:1535, fx:0.528 },
+                  meltdownsmile:{ src:'resources/si/renna_si_meltdownsmile.webp', top:1, bot:1535, fx:0.529 },   // ver -2208（PNG→webp，原檔進 _originals/SI/）
                   meltdowncry: { src:'resources/si/renna_si_meltdowncry.webp', top:4,  bot:1532, fx:0.607 },
                   /* ⚠ `snivel`（ver -1671 接線）：圖 -1554 那一批就在庫裡，**從來沒接過**
                      —— 古墓底層那一段（「因為我的報告……」）第一次用到它。
@@ -589,7 +595,7 @@ export const ART = {
                   risehand: { src:'resources/si/nouvelle_si_risehand.webp',  top:124, bot:1529, fx:0.620 },
                   awkwerd:  { src:'resources/si/nouvelle_si_awkwerd.webp',   top:2,  bot:1533, fx:0.468 },
                   /* ⚠ 別名（同上，ver -1186）：Ray 的稿寫 `shock`。 */
-                  shock:    { src:'resources/si/nouvelle_si_shock.webp',   top:3,  bot:1534, fx:0.504 },
+                  shock:    { yShift:0, src:'resources/si/nouvelle_si_shock.webp',   top:3,  bot:1534, fx:0.504 },
                   lookaway: { src:'resources/si/nouvelle_si_lookaway.webp',  top:5,  bot:1529, fx:0.504 },
                   /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2`（§5：不掛
                      cache-buster 的話瀏覽器會抱著舊的那一份），取景值也**重量過**
@@ -1674,6 +1680,48 @@ export const ART = {
               hurthold:    { src:'resources/si/npc/corvin_si_hurthold.webp',    top:7,  bot:1523, fx:0.419 },
               hurttalk:    { src:'resources/si/npc/corvin_si_hurttalk.webp',    top:4,  bot:1504, fx:0.456 },
               hurtcommand: { src:'resources/si/npc/corvin_si_hurtcommand.webp', top:6,  bot:1522, fx:0.469 },
+            } },
+  /* ══ 薇拉馮德莊園三人（ver -2208）══ 取景值全部 `tools/measure_si.py` 量；身高 cm **暫填**（Ray 未定：
+     羅伯特 175／亞隆 178／茉莉 166 —— 不准超過 CAST_TALL 現行最高 178，§6.5）。本位右（對手戲是蕾娜，本位左）。 */
+  molly: { cm:166, eye:32, fx:0.454, top:30, bot:1496,
+            side:'R', alt:null, base:'resources/si/npc/molly_si_front.webp?v=6d2f15f2',
+            expr:{
+              ask:        { src:'resources/si/npc/molly_si_ask.webp?v=1f0a0416', top:17, bot:1511, fx:0.445 },
+              closedtalk: { src:'resources/si/npc/molly_si_closedtalk.webp?v=25e454ad', top:21, bot:1507, fx:0.450 },
+              eyesmile:   { src:'resources/si/npc/molly_si_eyesmile.webp?v=b2557878', top:21, bot:1497, fx:0.455 },
+              gossip:     { src:'resources/si/npc/molly_si_gossip.webp?v=ec7d0965', top:15, bot:1506, fx:0.456 },
+              lookdown:   { src:'resources/si/npc/molly_si_lookdown.webp?v=ab83b79b', top:25, bot:1503, fx:0.455 },
+              order:      { src:'resources/si/npc/molly_si_order.webp?v=3cdf657d', top:21, bot:1496, fx:0.451 },
+              serious:    { src:'resources/si/npc/molly_si_serious.webp?v=49dc7e15', top:29, bot:1499, fx:0.459 },
+              softsmile:  { src:'resources/si/npc/molly_si_softsmile.webp?v=86873b9c', top:17, bot:1508, fx:0.453 },
+              stern:      { src:'resources/si/npc/molly_si_stern.webp?v=788969f2', top:21, bot:1501, fx:0.463 },
+              superior:   { src:'resources/si/npc/molly_si_superior.webp?v=4982ed4e', top:17, bot:1507, fx:0.459 },
+              surprise:   { src:'resources/si/npc/molly_si_surprise.webp?v=f3dfda8c', top:22, bot:1503, fx:0.454 },
+              talk:       { src:'resources/si/npc/molly_si_talk.webp?v=e0da83ad', top:19, bot:1505, fx:0.473 },
+              think:      { src:'resources/si/npc/molly_si_think.webp?v=0ceca598', top:22, bot:1503, fx:0.455 },
+              whisper:    { src:'resources/si/npc/molly_si_whisper.webp?v=54e5d7b3', top:30, bot:1502, fx:0.343 },
+            } },
+  robert: { cm:175, eye:32, fx:0.501, top:17, bot:1517,
+            side:'R', alt:null, base:'resources/si/npc/robert_si_front.webp',
+            expr:{
+              blindeye:   { src:'resources/si/npc/robert_si_blindeye.webp', top:16, bot:1518, fx:0.502 },
+              bow:        { src:'resources/si/npc/robert_si_bow.webp', top:19, bot:1518, fx:0.570 },
+              closedtalk: { src:'resources/si/npc/robert_si_closedtalk.webp', top:15, bot:1519, fx:0.502 },
+              sideeye:    { src:'resources/si/npc/robert_si_sideeye.webp', top:16, bot:1516, fx:0.502 },
+              surprise:   { src:'resources/si/npc/robert_si_surprise.webp', top:16, bot:1519, fx:0.501 },
+              talk:       { src:'resources/si/npc/robert_si_talk.webp', top:17, bot:1517, fx:0.502 },
+            } },
+  aaron: { cm:178, eye:32, fx:0.477, top:25, bot:1511,
+            side:'R', alt:null, base:'resources/si/npc/aaron_si_front.webp',
+            expr:{
+              angry:      { src:'resources/si/npc/aaron_si_angry.webp', top:33, bot:1503, fx:0.472 },
+              armscross:  { src:'resources/si/npc/aaron_si_armscross.webp', top:25, bot:1511, fx:0.477 },
+              attention:  { src:'resources/si/npc/aaron_si_attention.webp', top:25, bot:1511, fx:0.481 },
+              blindeye:   { src:'resources/si/npc/aaron_si_blindeye.webp', top:25, bot:1510, fx:0.478 },
+              closedsmile:{ src:'resources/si/npc/aaron_si_closedsmile.webp', top:26, bot:1513, fx:0.480 },
+              confuse:    { src:'resources/si/npc/aaron_si_confused.webp', top:24, bot:1513, fx:0.478 },
+              draw:       { src:'resources/si/npc/aaron_si_draw.webp', top:30, bot:1495, fx:0.495 },
+              signal:     { src:'resources/si/npc/aaron_si_signal.webp', top:25, bot:1514, fx:0.478 },
             } },
   /* ══ 北方泊地的群眾（ver -741，Ray 交件 NPC_northport_Crowd）══
      碼頭道別那一幕的送行人群 —— 一張圖畫好幾個人，當一個「角色」上台。

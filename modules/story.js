@@ -256,6 +256,7 @@ function tuneCur(side){
 export const BUBBLE_FX = [
   ['fear',i18nT('抖動（害怕）'),'move'], ['hit',i18nT('震動（受擊）'),'move'], ['shout',i18nT('吶喊'),'move'],
   ['whisper',i18nT('低語'),'move'], ['weak',i18nT('虛弱'),'move'], ['rage',i18nT('憤怒'),'move'],
+  ['blush',i18nT('泛紅'),'move'],   // ver -2208（Ray 的薇拉馮德稿：「主角空白，對話框泛紅」）
   ['gloom',i18nT('三條線'),'mark'], ['sweat',i18nT('冷汗'),'mark'], ['vein',i18nT('怒筋'),'mark'],
   ['exclaim',i18nT('驚嘆'),'mark'], ['question',i18nT('疑問'),'mark'], ['heart',i18nT('心動'),'mark'], ['note',i18nT('哼歌'),'mark'],
   ['nervous',i18nT('緊張灑汗'),'mark'],   // ver -1883（Ray：「框加上緊張灑汗的特效」）；-1905 改：驚慌三珠汗（Ray 參考圖）
@@ -3556,7 +3557,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2207';
+const KERB_V='?v=2208';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，

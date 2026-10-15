@@ -3693,6 +3693,8 @@
   #storyBubble.bf-weak{ opacity:.8; animation:bfWeak 2.4s ease-in-out infinite; }
   @keyframes bfWeak{ 0%,100%{translate:0 0;rotate:0deg} 50%{translate:0 3px;rotate:-.6deg} }
   #storyBubble.bf-rage{ border-color:#c0392b; animation:bfRage .9s ease-in-out infinite; }
+  /* 泛紅（ver -2208）：框帶一層紅暈 —— 不動位置，所以空白小氣泡也直接吃得到。 */
+  #storyBubble.bf-blush{ border-color:#e57a8f; box-shadow:inset 0 0 22px rgba(232,90,120,.6),0 0 10px rgba(232,90,120,.45),0 4px 18px rgba(0,0,0,.55); }
   @keyframes bfRage{
     0%,100%{box-shadow:0 0 0 1px rgba(192,57,43,.5),0 4px 18px rgba(0,0,0,.55)}
     50%{box-shadow:0 0 12px 3px rgba(229,80,57,.75),0 4px 18px rgba(0,0,0,.55)}}
