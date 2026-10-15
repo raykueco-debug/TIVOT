@@ -1323,7 +1323,7 @@ const CR_INN_RAID = [
   sor('guard',''),
   sor('guardgrimace','呃！豆芽男！'),
   cor('bow','您還記得我，榮幸之至。'),
-  ren('ask','副團長，您這是……？'),
+  ren('determine','副團長，您這是……？'),
   cor('talk','不用在意。諸君漂亮地完成了任務，從現在起那位大人就由我們接手監管。'),
   nou('shock',''),
   any('steady',''),
@@ -1517,8 +1517,10 @@ export const TOWNS = {
        動線：旅店 → 上街區 → 攝政王廣場（打完結算）→ 舊街區（另一局）。中心區走得到但沒東西。
        ⚠ 安全區旗：城鎮戰期間進城**不插**（modules/town.js 的 `siegeArmed`）；開啟這一段的事件
          要負責把已經插著的 `safehouse_capital` 拔掉（鐵律 9：誰開戰誰拔）。
-       ⚠ `until` 現在是舊街區清掉；船塢 Boss 做好之後改成 Boss 那一格。 */
-    siege: { from:'cap_raid', until:'cap_clear_oldtown', keep:['inn','dock'], bgm:'crisis', stepSe:'se_steps', stepSeUntil:'cr_dock',   // stepSe：追擊戰走一步播跑步聲，到碼頭戰演完為止（ver -2118）
+       ⚠ `until` ＝ `cr_dock`（碼頭愛里歐那一段演完）—— ver -2206 由 `cap_clear_oldtown` 改（Ray：「愛里歐戰為什麼會以
+         沒有伙伴的狀態進入戰鬥？」）：舊街區清完城鎮戰就收了，走到船塢時 `dateParty` 當成平時自由活動
+         「沒約人＝無夥伴」，愛里歐戰就沒有搭檔。 */
+    siege: { from:'cap_raid', until:'cr_dock', keep:['inn','dock'], bgm:'crisis', stepSe:'se_steps', stepSeUntil:'cr_dock',   // stepSe：追擊戰走一步播跑步聲，到碼頭戰演完為止（ver -2118）
              route:['inn','uptown','square','oldtown','dock'] },   // 追擊期間只有這一條路：不能回頭、不能進中心區、不能出航（ver -2129）
     /* ⚠ 四場段落都寫 `fromStage:0`：帝都有章節窗（storyStages:[0,1]），窗外的段落一律不演 ——
        這一段的開關是 `cap_raid` 本身，不看章節（明寫的例外，見 modules/town.js 的 storyOff）。 */
