@@ -82,7 +82,7 @@
 - ⚠ **西泊城鎮版時段差分（Gemini）做到 6／26 張**（square、midtown 三時段）：Gemini 當天額度用完，其餘等重置；進度表在 `winsmoor_town/_spec.md` 尾段。
 - ✔ **帝都外郊 4 格（只有黃昏，Ray 定）已交**：`resources/background/capital_outer/outer_<鍵>_dusk.webp`（城外→河畔→殘破村落→廢風車＝安雅躲藏處）。程式端：4 格直線、`noTime`；舊的 `capital/capital_outskirts_dusk.webp`（厚塗）要不要換成本批 windmill 由 Ray 決定。
 - ✔ **孤舟島（工匠村落，拓樸照夏爾村 13 格）日景已交**：`resources/background/loneisle/loneisle_<鍵>_day.webp`，鍵對照與出口表在 `loneisle/_spec.md`。美術還欠四時段差分（Gemini）；程式端還沒有節點。
-- ✔ **空中戰怪圖第二批後 5 張已交（10-15，GPT）**：`resources/enemy/mon_sky2_{mouthpillar,facecrown,eyeveil,rift,maw}.webp`，總覽 `_sky2_sheet.jpg`。⚠ 這趟沒附參考圖、量體比前三張大，等 Ray 看方向。程式端：還沒有敵人卡（同第一批）。
+- ✔ **空中戰怪圖第二批後 5 張已交（10-15，GPT）**：`resources/enemy/mon_sky2_{mouthpillar,facecrown,eyeveil,rift,maw}.webp`，總覽 `_sky2_sheet.jpg`。Ray 10-15 定案。程式端：還沒有敵人卡（同第一批）。
 - 戰鬥版（現有 40 格不能當戰鬥背景）：城鎮版定了再做。
 
 **程式端可做**
@@ -104,7 +104,7 @@
 | 溫斯摩爾港城鎮版 15 格（帝都拓樸＋餐飲街 4 家） | ⚠ 欠正式版（Gemini 草稿 15 張齊，等 GPT 額度） |
 | 茉莉 v3 立繪 15 張 | ✔ 不欠（無瀏海、保留長捲鬢髮、虹膜 S×2.4；還沒接 speakers.js） |
 | 空中戰怪圖第一批 8 張（`mon_sky_*`） | ✔ 不欠（羽蛇／守墓者風格第三版） |
-| 空中戰怪圖第二批（`mon_sky2_*`） | ✔ 不欠（8 張齊；後 5 張 10-15 交、待 Ray 看方向） |
+| 空中戰怪圖第二批（`mon_sky2_*`） | ✔ 不欠（8 張齊，Ray 10-15 定案） |
 
 ## 已結案（不要再列）
 （-2112 以前的見上一份。）本輪：上一份頂端美術交件的五條（士兵／指揮官、賽西莉 11、愛里歐、新立繪 7、插圖 044）全接；Stage 17～19 帝都整段；碎片 02 整段；
