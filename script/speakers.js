@@ -269,6 +269,8 @@ export const ART = {
                   callangry:  { src:'resources/si/renna_si_callangry.webp',   top:2, bot:1533, fx:0.516 },
                   commandsoft:{ src:'resources/si/renna_si_commandsoft.webp', top:6, bot:1532, fx:0.559 },
                   smile:   { src:'resources/si/renna_si_smile.webp',   top:5, bot:1530, fx:0.518 },
+                  cough:     { src:'resources/si/renna_si_cough.webp',     top:7,  bot:1528, fx:0.508 },   // ver -2190
+                  coughsoft: { src:'resources/si/renna_si_coughsoft.webp', top:10, bot:1526, fx:0.520 },   // ver -2190
                   bow:     { src:'resources/si/renna_si_bow.webp',     top:0, bot:1530, fx:0.507 },
                   awkward: { src:'resources/si/renna_si_awkwerd.webp', top:6, bot:1526, fx:0.519 },
                   /* 帝都廣場那一段新增（ver -359）。`stare`＝直視／半瞇，用在她盯著人講話那幾拍。 */

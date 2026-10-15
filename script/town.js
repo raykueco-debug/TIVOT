@@ -4816,20 +4816,28 @@ export const TOWNS = {
              這張圖的三個安全點之一（前廳／命之泉／這裡）＋進圖時自動落的那一筆。
            ⚠ 旗**演完才記**：打輸回頭再走進來，整段（含 BOSS）重演。 */
         acts:[ { flag:'sr_altar', storyBattle:true, lines:[
+          /* ══ ver -2190 Ray 改稿（虛數之海）══ */
           ren('watch','看起來只是某種祭壇呢。'),
-          nou('decode','是算力集線裝置。'),
+          any('stare','虛數之海的……連接埠。'),
           ren('shockcalm','！！'),
-          ren('shockopen','妳為什麼會知道那種事？'),
-          nou('front','知道什麼？'),
-          ren('lookaway','……沒事。'),
-          ren('ask','安雅小姐在意的，就是這個嗎？'),
-          any('talk','我也不知……'),
-          /* 禍魘咆哮 → 索菈娜警戒 → 開打。 */
+          ren('shockopen','妳剛剛說……虛數之海？'),
+          sor('confuse','那是什麼？'),
+          any('nervous','我、不知道……但是……'),
+          any('lookup','它在呼喚我……'),
+          /* 禍魘咆哮 → 節制者降臨（中景層，同墓主那一套）→ 索菈娜警戒 → 開打。 */
           { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:1600 },
+          { speaker:'NARRATION', text:'', hide:'*',
+            cgBack:'resources/enemy/mon_saint_temperance.webp',
+            cgBackRise:true, cgBackAs:'ruins_saint_temperance', shake:true, auto:1800 },
           sor('guard','！！'),
           { battle:'ruins_saint_temperance' },
-          /* ── 戰後 ── 週遭發光 → 安雅感應 → 祭壇啟動。 */
-          ren('shock','安雅小姐……？'),
+          /* ── 戰後 ── 收掉中景層的節制者 → 安雅聽見聲音 → 感應 → 祭壇啟動。 */
+          Object.assign(nou('shock','那也是……聖徒？'), { cgBack:null }),
+          nou('think','為什麼會在這種地方？'),
+          ren('lookaway','……'),
+          any('lookup','那個聲音……還在……'),
+          any('stare','是要我……喚醒你？'),
+          ren('shock','……安雅小姐？'),
           /* ══ 立繪撤出 → 感應演出（見 story 的 `senseFx`）══════════════════
              ⚠⚠ **ver -1185（Ray 再改）**：「ci 停留時間太短，應該是 CI 不縮放淡入，
                脈動三拍，第四拍白光從她手中圓型擴散到全畫面，用首頁讀取頁那個效果，
@@ -4858,27 +4866,15 @@ export const TOWNS = {
           { speaker:'NARRATION', text:'', flags:['ruins_altar_on'],
             bg:'ruins_shinier_deepaltaractive', auto:1500 },
           nou('shock2','發、發生什麼事了？'),
-          ren('shockcalm','！！'),
-          ren('shock','難道說、安雅小姐妳是……！'),
-          { speaker:'PLAYER', blank:true },
-          /* 插圖：圓盤（Ray 交件 012_thedisk）。 */
-          Object.assign(ren('think','那是……'), { cg:'012_thedisk', cgNoTime:true }),
-          ren('askserious','NIEM？'),
-          /* 收圖回到原背景。 */
-          Object.assign(sor('confuse','那是什麼東西？'), { cg:null }),
-          ren('think','跟剛才諾薇兒習得術式的方式一樣。'),
-          /* ⚠ ver -1186：「通用輸入介面」正名為 **NIEM**（Ray 指定）——
-             同一個東西只有一個名字（鐵律 7 的精神），道具卡上也是這個字。 */
-          ren('think','只是這種介面，非術師也能使用。'),
-          sor('confuse','非術……總覺得，妳們跟我想像中聖王廳的人不一樣耶。'),
-          sor('tease','修女不都是只會『神啊～』之類的嗎？'),
-          ren('front','我們是聖約騎士團。'),
-          nou('bigsmile','聖王廳的最高執行機關喔。'),
-          sor('confuse','……妳們是想這樣糊弄過去嗎？'),
-          ren('die',''),
-          nou('die',''),
-          ren('ask','話說回來，『安娜』大人。'),
-          any('desperate',''),
+          ren('shockcalm','遺蹟……啟動了？'),
+          ren('shock','安雅小姐、妳到底是……！'),
+          any('scare','我、我也不知道……'),
+          sor('confuse','這算是把遺蹟修好了，還是弄壞了？'),
+          ren('think','數百年來聖王廳一直在找尋的復甦之法，竟然這麼簡單就……'),
+          nou('shock','復甦？可是這不是異教的遺蹟嗎？'),
+          ren('lookaway','……'),
+          ren('determine','安雅小姐，剛才說了『虛數之海』對吧？'),
+          any('desperate','我、我不知道……'),
           ren('talkwork','稍晚，得跟妳好好聊聊呢。'),
           /* ══ 獲得 NIEM（ver -1186）══ 每一座遺蹟共用的收尾，見檔頭的 `NIEM_TAIL`。 */
           ...NIEM_TAIL,
