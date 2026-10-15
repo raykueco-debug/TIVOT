@@ -141,13 +141,15 @@ def _dirty_code():
         if f.endswith(CODE_EXT) and not f.startswith('tools/'): names.append(f)
     return names
 def bump():
-    """把 config.js 的尾碼 +1（工具自己讀現值，不必有人打舊號碼）。"""
+    """把 config.js 的尾碼 +1（工具自己讀現值，不必有人打舊號碼），
+       日期那段順手換成今天（ver -2196，Ray：版號一直顯示 2026.09.22，被讀成沒拉到新版）。"""
+    import datetime
     path = os.path.join(ROOT, 'config.js')
     s = open(path, encoding='utf-8').read()
     m = re.search(r"(export const VERSION = 'ver )([^']+)(')", s)
     if not m: sys.exit('config.js 裡找不到 VERSION')
-    head, n = m.group(2).rsplit('-', 1)
-    new = '%s-%d' % (head, int(n) + 1)
+    n = m.group(2).rsplit('-', 1)[1]
+    new = '%s-%d' % (datetime.date.today().strftime('%Y.%m.%d'), int(n) + 1)
     open(path, 'w', encoding='utf-8').write(s[:m.start(2)] + new + s[m.end(2):])
     print('VERSION %s → %s' % (m.group(2), new))
 def guard():
