@@ -1208,7 +1208,7 @@ const CAP_RETURN_WINDMILL = [
   sor('confuse','啥？那不是妳們自己的國家嗎？'),
   { speaker:'PLAYER', blank:true },
   ren('remind','沒錯。一般士兵難以應付禍魘。一旦爆發，帝國就必須向聖王廳的聖約騎士團求援。'),
-  ren('remind','一切，都只是君權與神權間的博奕罷了。'),
+  ren('remind','一切，都只是君權與神權間的博弈罷了。'),
   nou('cringe','好過份……'),
   sor('angry','那個豆芽男也太陰險了吧！'),
   { speaker:'PLAYER', blank:true },
@@ -1312,7 +1312,7 @@ const CR_INN_RAID = [
   sor('back','！！', { bgm:'rituale', flags:['cr_rituale'] }),   // 換 Rituale Machina，鎖到愛里歐戰（城上 bgmWhen）
   sor('ready','喂，蕾娜，我們是在帝都內吧？'),
   ren('curious','這不是當然的嗎？'),
-  sor('battlecrylookaside','那、為什麼我們被包圍了？'),
+  sor('battlecrylookaside','那、為什麼我們被包圍了？', { se:'se_drawknife' }),   // ver -2201（Ray：這一拍加 knifedraw ＝ 既有的 se_drawknife）
   nou('surprise','！！'),
   any('terrify',''),
   ren('lookup','包圍？'),
