@@ -3557,7 +3557,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2210';
+const KERB_V='?v=2211';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4092,7 +4092,7 @@ function playKerberos(onGap, onDone, opts){
   t+=KERB_T.rivet + 90*3;
   /* ④ 圓盤浮起＋旋轉 180°（圓心不動）。齒輪聲跟著轉動起訖 —— 素材 6.9 秒，
      不收的話門都開完了還在轉，所以用 playCue 拿把手，轉完斜降收掉。 */
-  at(t,()=>{ kb.classList.add('lift'); });
+  at(t,()=>{ kb.classList.add('lift'); sparkRing(Math.PI); });   // 轉 180°：沿外緣擦出圓形火花（ver -2211）
   t+=KERB_T.lift;
   at(t,()=>{ if(kerbGear){ kerbGear.stop(220); kerbGear=null; } });
   at(t,()=>{                                             // ⑤ 讓出舞台 → 底下開戰
@@ -4180,6 +4180,34 @@ function sparkSeam(){
   const x=KERB_META.seam*w;
   for(let i=0;i<7;i++) kerbTimers.push(setTimeout(
     ()=>kerbSpark(x, h*(0.18+0.1*i), 5, 20), i*70));
+}
+/* ══ 團徽旋轉時沿外緣擦出圓形火花（ver -2211，Ray：「槍棺的團徽旋轉時要擦出圓形火花」）══
+   轉動期間每 40ms 在外緣**三個等分點**各噴一顆，三個點跟著團徽一起轉（同一條緩動），
+   火花沿**切線**甩出去 —— 一路拖出來就是一圈圓形的火花軌跡，像金屬盤在框上磨。
+   `sweep` ＝這一次轉幾弧度（正＝順時針，與 CSS 的 rotate 同向）；`dur` ＝轉多久（＝CSS 的 .9s）。
+   ⚠ 火花掛在 `#kerbSmoke`（門的子元素，同 kerbSpark）：門在動火花跟著走。 */
+const KERB_SPIN_MS = 900;   // ＝ style.css `#kerbPlate` 的 transition .9s（改一邊要改另一邊）
+function sparkRing(sweep, dur){
+  const dr=$('kerbDoor'), pl=$('kerbPlate'), box=$('kerbSmoke'); if(!dr||!pl||!box) return;
+  dur=dur||KERB_SPIN_MS;
+  const r=pl.getBoundingClientRect(), d=dr.getBoundingClientRect();
+  const cx=r.left-d.left+r.width/2, cy=r.top-d.top+r.height/2, R=r.width*0.5;
+  const dir = sweep>=0 ? 1 : -1, a0 = Math.random()*Math.PI*2;
+  const ease = p => 1-Math.pow(1-p, 3);          // 轉得快的頭段火花密、尾段收斂
+  const step=40, n=Math.ceil(dur/step);
+  for(let i=0;i<n;i++) kerbTimers.push(setTimeout(()=>{
+    const p=i/n, a=a0+sweep*ease(p), heat=1-p*0.7;
+    for(let k=0;k<6;k++){                          // 三個點 × 每點兩顆
+      const ak=a+Math.floor(k/2)*Math.PI*2/3+(Math.random()*2-1)*0.06, px=cx+Math.cos(ak)*R, py=cy+Math.sin(ak)*R;
+      const v=(30+Math.random()*30)*heat;
+      const s=document.createElement('b'); s.className='ring';
+      s.style.left=px+'px'; s.style.top=py+'px';
+      s.style.setProperty('--sx', (-Math.sin(ak)*v*dir + (Math.random()*2-1)*5).toFixed(0)+'px');
+      s.style.setProperty('--sy', ( Math.cos(ak)*v*dir + (Math.random()*2-1)*5).toFixed(0)+'px');
+      box.appendChild(s);
+      kerbTimers.push(setTimeout(()=>s.remove(), 800));
+    }
+  }, i*step));
 }
 /* 圓盤：沿著紋章外緣灑一圈（機構轉回去時的摩擦）。 */
 function sparkPlate(){
@@ -4286,7 +4314,7 @@ export function playKerberosClose(onDone){
   at(t,()=>{                                                              // ② 紋章轉回並縮小
     /* ⚠ `kerb-shut` 與 `lift` 一起拿掉：接下來兩拍（紋章轉回並縮小、箭與鉚釘依次扣回）
        各自該用本來那條帶回彈、帶逐顆延遲的曲線 —— 借門的曲線只到上一拍為止。 */
-    kb.classList.remove('kerb-shut','lift'); se('clip'); sparkPlate();
+    kb.classList.remove('kerb-shut','lift'); se('clip'); sparkPlate(); sparkRing(-Math.PI);   // 轉回去也擦（ver -2211）
     /* ⚠ 副檔名要跟上面那支 `se()` 同一套 —— 寫死 `.mp3` 在 -384 全部轉 m4a 之後就 404 了。 */
     try{ const g=KERB_SE_DIR+KERB_SFX.gear+'.'+(KERB_SFX_EXT.gear||'m4a'); kerbGear=SFX.playCue(g,1); }catch(e){ kerbGear=null; }
   });
