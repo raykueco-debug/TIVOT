@@ -1135,10 +1135,13 @@ const CAP_RETURN = [
   { speaker:'NARRATION', text:'', se:'se_steps', auto:600 },
   ren('command','別管我們，快去！'),
   sor('back','噢！'),
-  /* ══【場景：帝都郊外 廢棄風車荒地】══ 黑幕 → 換背景（只有黃昏一張 ⇒ 硬指定 `capital_outskirts_dusk`；日後補其他時段再改 bgBand）＋荒草風聲小聲循環。
-     BGM：稿上寫 Entangle → Ray 改 result → ver -2109 再改 missionfailed ＝ Hesitation（`failed` 別名，ver -2110 Ray 確認）。 */
-  { speaker:'NARRATION', text:'', fadeOut:900, auto:1000, ambStop:1, hide:['RENNA','NOUVELLE','SORANA','ANYA'] },   // 火車聲跟著黑幕淡出
-  { speaker:'NARRATION', text:'', bg:'capital_outskirts_dusk', bgm:'failed', amb:'sturm', ambVol:0.4, fadeIn:1200, auto:1400 },
+  { speaker:'NARRATION', text:'', se:'se_steps', auto:700, ambStop:1, hide:['RENNA','NOUVELLE','SORANA','ANYA'] },   // 火車聲在這裡淡出
+];
+/* ══【場景：帝都郊外 廢棄風車荒地】══（ver -2197 拆出來：前半在廣場演完 → 廣場往下暫時通帝都外郊 → 走到廢風車那一格演這一段）
+   BGM：稿上寫 Entangle → Ray 改 result → ver -2109 再改 missionfailed ＝ Hesitation（`failed` 別名，ver -2110 Ray 確認）。
+   背景由節點給（`outer_windmill_dusk`），舊的厚塗 `capital_outskirts_dusk` 不再引用。 */
+const CAP_RETURN_WINDMILL = [
+  { speaker:'NARRATION', text:'', bgm:'failed', amb:'sturm', ambVol:0.4, auto:1400 },
   any('sob','哈啊……哈啊……'),
   { speaker:'PLAYER', blank:true, se:'se_walk' },
   any('sob','……別管我'),
@@ -1527,6 +1530,7 @@ export const TOWNS = {
        · Nocturnal Bloom：返回帝都演完（`cr_return`）起 —— 走回旅店那一刻就是它（不會先閃一下帝都的曲子）。 */
     bgmWhen: [
       { need:'cr_rituale', until:'cr_mage_fight', bgm:'rituale', lock:true },
+      { need:'cr_chase',   until:'cr_return',     bgm:'glasscradle' },   // 追安雅出城那一段（ver -2197）：走動時不被打回帝都的曲子
       { need:'cr_return',  until:'cr_rituale',    bgm:'nocturnal' },
     ],
     entry: 'square',
@@ -1666,7 +1670,10 @@ export const TOWNS = {
       /* ══ 攝政王廣場 ══ 上＝中心區、左＝舊街區、右＝上街區（Ray 指定的三個方向） */
       square: {
         bg:'capital_square', name:'帝都　攝政王廣場',
-        exits:{ up:'midtown', left:'oldtown', right:'uptown' },
+        /* ver -2197（Ray：「廣場只在那一拍往下，平時廣場往下是出航」）：追安雅那一段（`cr_chase` 插了、`cr_return` 還沒）
+           下方通帝都外郊；其餘時候 `exitIf` 拿掉這一格，出航照舊補進「下」。 */
+        exits:{ up:'midtown', left:'oldtown', right:'uptown', down:'@capital_outer:gate' },
+        exitIf:{ down:['cr_chase','!cr_return'] },
         acts:[ { flag:'cap_clear_square', need:'cap_raid', fromStage:0, storyBattle:true, sides:CR_RAID_SIDES, lines:[ { battle:'cap_guard_square' },   // 第三場（指揮官，打完結算；ver -2043）
                  /* 攝政王廣場戰後（ver -2114，Ray 的稿）：邊跑邊講 —— `se_steps` 當 amb 從這裡開始、最後一句淡出。
                     差分：安雅沒有 `run` → `runworry`；索 `runserious` 是美術 -2114 交的正面奔跑。 */
@@ -1681,7 +1688,9 @@ export const TOWNS = {
                  Object.assign(nou('runcry',''), { flip:true }),
                  ren('run','別說了！會咬到舌頭的！', { ambStop:1 }) ] },
                /* 返回帝都（ver -2102）：廢城主祭壇之後第一次回到廣場就演（見 CAP_RETURN 的說明）；演完走回旅店。 */
-               { flag:'cr_return', need:'dm_altar_done', fromStage:17, sides:CR_SIDES, goto:'inn', lines:CAP_RETURN } ],
+               /* ver -2197（Ray：「廣場只在那一拍往下，平時廣場往下是出航」）：前半演完插 `cr_chase`，
+                  廣場的下方改通帝都外郊（`exitIf`），後半在外郊的廢風車那一格（`cr_return`）。 */
+               { flag:'cr_chase', need:'dm_altar_done', until:'cr_return', fromStage:17, sides:CR_SIDES, lines:CAP_RETURN } ],
         once:true,
         lines:[ nou('surprise','帝都的攝政王廣場，好壯觀。'),
                 nou('surprise','每次看都覺得很震憾呢。') ],
@@ -10381,6 +10390,22 @@ export const TOWNS = {
      ⚠ ver -1793：Ray 的稿到了 —— 門房／車道／前庭／馬車房／大廳各一場、沙龍是劇情＋馬努收段（同一局 `ss_raid`）。
        後廊、地下囚室、露台稿上沒用到，照舊是空的；`wildSpawn`、小地圖仍沒有。
      ⚠ `bgm:'folkroma2'`（ver -1785 Ray 指定；原本是程式端暫挑的 suspense）。 */
+  /* ══ 帝都外郊（ver -2197，美術 10-15 交：城外→河畔→殘破村落→廢風車＝安雅躲藏處）══
+     只在「返回帝都」追安雅那一段走得到：廣場下方的出口只在 `cr_chase`～`cr_return` 之間開（見 capital.square）。
+     背景只有黃昏（Ray 定）⇒ 每格 `noTime`。沒有 `wildSpawn` ＝不出怪。後半段對白在廢風車那一格演完回帝都旅店。 */
+  capital_outer: {
+    name: '帝都外郊',
+    entry: 'gate',
+    bgm: 'glasscradle',
+    wilderness: true,
+    nodes: {
+      gate:     { bg:'outer_gate_dusk',     noTime:true, name:'帝都外郊　城外', exits:{ up:'river', back:'@capital:square' } },
+      river:    { bg:'outer_river_dusk',    noTime:true, name:'帝都外郊　河畔', exits:{ up:'village', back:'gate' } },
+      village:  { bg:'outer_village_dusk',  noTime:true, name:'帝都外郊　殘破村落', exits:{ up:'windmill', back:'river' } },
+      windmill: { bg:'outer_windmill_dusk', noTime:true, name:'帝都外郊　廢風車', exits:{ back:'village' },
+        acts:[ { flag:'cr_return', need:'cr_chase', fromStage:17, sides:CR_SIDES, goto:'@capital:inn', lines:CAP_RETURN_WINDMILL } ] },
+    },
+  },
   sofiaout: {
     name: '里朋莊園',
     entry: 'road',
