@@ -890,6 +890,10 @@ def main():
             #   實測：ravnsdal 的大教堂缺圖被印成 `ravnsdal.inn`。
             #   這種錯誤特別貴：訊息本身看起來完全正常，照著它去查會查錯格。
             tag = '%s.%s' % (tid, nid)
+            # ⚠ 節點寫 `oneWay:true` ＝**刻意的單向路**（ver -2199，Ray：帝都外郊追安雅「只有一個方向」）——
+            #   明寫的例外；沒寫照舊報錯。
+            if n.get('oneWay'):
+                continue
             for d, to in (n.get('exits') or {}).items():
                 if d == 'back' or not isinstance(to, str) or to.startswith('@'):
                     continue
