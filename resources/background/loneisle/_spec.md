@@ -30,13 +30,20 @@
 ## 時段差分（10-15 起，Gemini 衍生）
 
 - 產法：Gemini「建立圖像」，每張重傳日景原圖，寫死「構圖人物畫風完全不變、只換光與色溫」；**不畫太陽／月亮本體**（朝向未定）；夜晚＝銀月光銀藍、不全黑、窗戶暖黃燈。原輸出 `_gem/_raw_<鍵>_<時段>.jpg`（不進版控），交件縮成 1536×1024 webp。
-- ⚠ Flash 只給 1264×848（放大到 1536 會軟一點）、**3.1 Pro 給 2528×1696**——額度回來後優先用 Pro，plaza dawn 也用 Pro 重跑。
+- ⚠ 解析度不固定：Flash／Pro 都可能給 1264×848 或 2528×1696（同一串也會變）。10-15 晚 Pro 改成一直回「我只是語言模型」，之後全改用 Flash。
+- ⚠ 操作坑：送出後頁面常常不刷新（回覆空白、轉圈），**重載那個對話網址**就看得到圖；新開對話偶爾拿不到網址（卡住），在既有能出圖的串裡送就好（提示詞開頭加「只看我這次上傳的這張圖」）。
+- ⚠ 收圖只認「點下載之後才出現」的檔（Downloads 裡可能躺著舊的 Gemini 下載，10-15 就因此錯位一格）。
 - 要做的：室外 9 格（plaza north west east cliff chief lighthouse wild slipway）＋旅舍 inn → dawn／dusk／night，共 30 張；gunsmith／canteen／store 只有 day（有營業時間的店舖，✔ 不欠）。
 
 | 鍵 | dawn | dusk | night |
 |---|---|---|---|
-| plaza | ✔（Flash 1264，要用 Pro 重跑） | ✔（Pro 2528） | ⚠ 欠 |
-| north west east cliff chief lighthouse wild slipway inn | ⚠ 欠 | ⚠ 欠 | ⚠ 欠 |
+| plaza | ✔（Flash 1264，可用 Pro 重跑） | ✔ | ✔ |
+| north west east cliff chief lighthouse slipway | ✔ | ✔ | ✔ |
+| wild | ⚠ 欠 | ⚠ 欠 | ⚠ 欠 |
+| inn（室內，提示詞改成「窗外光＋室內油燈」） | ⚠ 欠 | ⚠ 欠 | ⚠ 欠 |
+| gunsmith canteen store | ✔ 不欠（有營業時間的店舖只有 day） | | |
 
-- ⚠ 10-15 晚只出兩張就卡：Pro 第三則回「我只是語言模型」（原串嗆一句也不出）、之後 Pro 與 Flash 新串都卡在「正在建立」兩分鐘以上 —— 同 10-14 西泊那次，判斷是當天圖片額度用完，等重置再接。
+- **24/30 已交**（10-15）。部分張是 Flash 的 1264 寬、放大到 1536（north dawn／west dusk／cliff dawn／chief dawn／lighthouse dawn／slipway dawn／plaza dawn），其餘 2528 寬。
+- ⚠ **wild 連三次靜默失敗**（新對話兩次、舊串一次，回覆空白，沒有錯誤訊息）；之後 inn 那一則 Gemini 明講「額度重置後才能再建立圖片」——當天 Gemini 出圖額度用完。剩 6 張等重置。
+
 - 上傳：內建的 Chrome 擴充可以傳；Gemini 的檔案選擇器用「攔 `HTMLInputElement.click` 抓住 file input → `file_upload`」繞過原生對話框。下載要真的滑鼠點「下載原尺寸」（先 hover 圖），落在 `~/Downloads`。
