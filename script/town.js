@@ -10419,7 +10419,10 @@ export const TOWNS = {
           nou('worry','安雅……到哪裡去了？'),
         ] } ] },
       windmill: { bg:'outer_windmill_dusk', noTime:true, name:'帝都外郊　廢風車', exits:{},
-        acts:[ { flag:'cr_return', need:'cr_chase', fromStage:17, sides:CR_SIDES, goto:'@capital:inn', lines:CAP_RETURN_WINDMILL } ] },
+        acts:[ { flag:'cr_return', need:'cr_chase', fromStage:17, sides:CR_SIDES, goto:'@capital:inn', lines:CAP_RETURN_WINDMILL,
+                 /* ver -2205（Ray：「一回到帝都就先把旅店背景換成夜晚，不要從白天換到夜晚」）：
+                    演完先推到 23:00（＝夜襲第一拍的 clockSet:23）再移到旅店 —— `clockToday` 排在 `goto` 之前。 */
+                 clockToday:23 } ] },
     },
   },
   sofiaout: {
