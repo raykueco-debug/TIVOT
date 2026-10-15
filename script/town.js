@@ -1125,8 +1125,9 @@ const CAP_RETURN = [
   nou('surprise','安雅？'),
   { speaker:'NARRATION', text:'', se:'se_steps', hide:['ANYA'], auto:700 },
   sor('surprise','喂！小公主！？'),
-  /* ver -2192（Ray 改稿）：火車經過擋路 —— 音檔約 8 秒，一路蓋到諾薇兒那句之後自己收。 */
-  { speaker:'NARRATION', text:'', se:'se_flight_train', auto:800 },
+  /* ver -2192（Ray 改稿）：火車經過擋路。ver -2193（Ray：「火車音要一直播到這一幕結束」）——
+     走環境音循環（`amb`），收在下面換場那一拍的 `ambStop`（跟著黑幕淡出）。 */
+  { speaker:'NARRATION', text:'', amb:'se_flight_train', auto:800 },
   ren('command','快追！她想往城外跑！'),
   sor('surprise','妳怎麼知道！'),
   nou('angry','火車好礙事！'),
@@ -1136,7 +1137,7 @@ const CAP_RETURN = [
   sor('back','噢！'),
   /* ══【場景：帝都郊外 廢棄風車荒地】══ 黑幕 → 換背景（只有黃昏一張 ⇒ 硬指定 `capital_outskirts_dusk`；日後補其他時段再改 bgBand）＋荒草風聲小聲循環。
      BGM：稿上寫 Entangle → Ray 改 result → ver -2109 再改 missionfailed ＝ Hesitation（`failed` 別名，ver -2110 Ray 確認）。 */
-  { speaker:'NARRATION', text:'', fadeOut:900, auto:1000, hide:['RENNA','NOUVELLE','SORANA','ANYA'] },
+  { speaker:'NARRATION', text:'', fadeOut:900, auto:1000, ambStop:1, hide:['RENNA','NOUVELLE','SORANA','ANYA'] },   // 火車聲跟著黑幕淡出
   { speaker:'NARRATION', text:'', bg:'capital_outskirts_dusk', bgm:'failed', amb:'sturm', ambVol:0.4, fadeIn:1200, auto:1400 },
   any('sob','哈啊……哈啊……'),
   { speaker:'PLAYER', blank:true, se:'se_walk' },
