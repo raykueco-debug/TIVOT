@@ -3557,7 +3557,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2213';
+const KERB_V='?v=2214';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4192,7 +4192,7 @@ function sparkSeam(){
 const KERB_SPIN_MS = 900;   // ＝ style.css `#kerbPlate` 的 transition .9s（改一邊要改另一邊）
 function sparkRing(sweep, dur){
   const dr=$('kerbDoor'), pl=$('kerbPlate'), box=$('kerbSmoke'); if(!dr||!pl||!box) return;
-  dur = dur || Math.round(KERB_SPIN_MS*0.65);   // ver -2213（Ray：「噴快一點，f 數少一點」）：整段縮短
+  dur = dur || 300;   // ver -2214（Ray：「還是太慢，.3 看看」）：整段噴發 0.3 秒（-2213 是 0.6 秒）
   const d=dr.getBoundingClientRect(), r=pl.getBoundingClientRect();
   if(!d.width || !r.width) return;
   const DPR=Math.min(2, window.devicePixelRatio||1);
