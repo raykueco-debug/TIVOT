@@ -1104,11 +1104,11 @@ function syncCastFit(step){
      步首只擺**這一段第一個開口的那一位** —— 全表掃過去會讓字典順序在後的蓋掉
      真正的第一位（同下面那條「只套本段有講話的人」的理由）。之後的換人由
      showLine 的抽牌輪轉接手。 */
-  const firstBySlot = {};
+  const firstBySlot = {}, firstImg = {};
   for(const l of (step && step.lines || [])){
     if(!l || !l.who) continue;
     const sd0 = sideOf(l.who);
-    if(!(sd0 in firstBySlot)) firstBySlot[sd0] = l.who;
+    if(!(sd0 in firstBySlot)){ firstBySlot[sd0] = l.who; firstImg[sd0] = l.img || null; }
   }
   for(const key of Object.keys(cast)){
     if(!used.has(key)) continue;
@@ -1116,7 +1116,12 @@ function syncCastFit(step){
     const c = cast[key], el = portraitEl(c, key);
     if(!el) continue;
     el.dataset.baseKey = c.image;   // 鎖縮放用的基準（見 placePortraitX 的說明）
-    if(el.dataset.castKey!==key){ setPortraitSrc(el, asset(c.image)); el.dataset.castKey = key; el.dataset.imgKey = c.image; }
+    /* ⚠⚠ 步首就換成**這一段她第一句的差分**（ver -2189，Ray：「諾薇兒不知道為什麼有一個無台詞的
+       desperate 差分」）：槽是跨場沿用的 <img>，上一場最後一張（無面巨人教學的 desperate）
+       會留在上面 —— 只看「人有沒有換」的話同一個人不換圖，她滑入那一瞬間是舊差分、
+       新圖載好才換（看起來就是多一拍沒台詞的 desperate）。 */
+    const img0 = firstImg[sideOf(key)] || c.image;
+    if(el.dataset.castKey!==key || el.dataset.imgKey!==img0){ setPortraitSrc(el, asset(img0)); el.dataset.castKey = key; el.dataset.imgKey = img0; }
     const sd = sideOf(key);
     applyMirror(el, key);
     applyPortraitFit(el, c.fit || {}, baseH, soloRun, sd);   // ⚠ 站位吃這一段的覆寫（ver -613）

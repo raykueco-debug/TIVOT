@@ -1055,6 +1055,7 @@ export const ART = {
        —— 近景那幾張才要 `cm`／`standCm`（見上面的說明）。 */
     silent:    { fxShift:0, yShift:-2, cm:145, src:'resources/si/anya_si_silent.webp?v=5497fc32',     top:4, bot:1521, fx:0.423 },
     panic:     { src:'resources/si/anya_si_panic.webp?v=960811a2',      top:0, bot:1522, fx:0.434 },   // ver -842
+    dizzy:     { src:'resources/si/anya_si_dizzy.webp', top:62, bot:1527, fx:0.428 },   // ver -2189（top 量頭髮，不含頭上的冒煙與漩渦）
     /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2` ＋ 取景值重量
        （0.426→0.522：差了將近一成的圖寬，沿用舊值臉會明顯偏左）。 */
     talk:      { cm:140, fxShift:0, yShift:0, src:'resources/si/anya_si_talk.webp?v=d6e12e73',   top:8, bot:1526, fx:0.483 },
