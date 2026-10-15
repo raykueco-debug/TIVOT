@@ -3474,9 +3474,10 @@ export const TOWNS = {
            ⚠⚠ **索菈娜入隊**目前只由這支旗代表（`sv_s9_leave`）—— 飛行段那一串
              （兩個教學＋三系統解鎖）還沒接，接的時候讀它。 */
         onLeave:{ flag:'sv_s9_leave', need:'sv_s9_order', sailOnly:true, lines:[
+          /* ver -2191 Ray 改稿。 */
           nou('front','真是個不錯的村子呢。'),
           ren('watch','是啊。將來有機會的話——'),
-          Object.assign(sor('hug','喂——'), { se:'se_steps' }),   // （跑步聲）
+          Object.assign(sor('wave','喂——'), { se:'se_steps' }),   // （跑步聲）
           nou('surprise','索菈娜小姐？'),
           ren('bow','叨擾那麼久，怎麼還好意思勞您遠送……'),
           sor('side','遠送？我是要跟你們一起走啊！'),
@@ -3486,12 +3487,24 @@ export const TOWNS = {
           ren('shockcalm','本來只是短期任務所以……'),
           sor('smirk','所、以、說，'),
           sor('idea','帶上我吧？森住民可是天生的帆手喔！'),
-          nou('surprise','哇——'),
+          nou('surprise','欸——？'),
           ren('shockcalm','……'),
+          ren('coldstare','妳的動機不純吧？'),
+          sor('laugh','嘿嘿、我也想出去看看嘛！'),
+          sor('smile','跟著你們，好像很好玩。'),
           ren('think','反正本來就要再招募……'),
           ren('invite','那好吧。薪資照三等海員的價格給妳。'),
-          sor('lauaghbig','不用啦，好玩就好了！哈哈哈！'),
-          ren('sighsweat','……總覺得我一定會後悔。'),
+          sor('excite','真的？好耶！'),
+          ren('remind','但是！'),
+          ren('remindsmile','不可以襲擊我們的神父喔。'),
+          sor('lookaway','喔……好吧。'),
+          nou('shock','答應得真爽快耶。'),
+          sor('tease','如果是他來襲擊我就沒問題囉？'),
+          ren('coldstare',''),
+          nou('angry',''),
+          any('scare',''),
+          { speaker:'PLAYER', blank:true },                      // （看我幹嘛？）
+          ren('sighsweat','哈……總覺得我一定會後悔。'),
           { speaker:'PLAYER', text:'', auto:3200, fadeOut:3000,
             hide:['RENNA','NOUVELLE','ANYA','SORANA'] },
         ] } },
