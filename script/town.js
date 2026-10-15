@@ -1125,8 +1125,11 @@ const CAP_RETURN = [
   nou('surprise','安雅？'),
   { speaker:'NARRATION', text:'', se:'se_steps', hide:['ANYA'], auto:700 },
   sor('surprise','喂！小公主！？'),
+  /* ver -2192（Ray 改稿）：火車經過擋路 —— 音檔約 8 秒，一路蓋到諾薇兒那句之後自己收。 */
+  { speaker:'NARRATION', text:'', se:'se_flight_train', auto:800 },
   ren('command','快追！她想往城外跑！'),
   sor('surprise','妳怎麼知道！'),
+  nou('angry','火車好礙事！'),
   { speaker:'PLAYER', blank:true },
   { speaker:'NARRATION', text:'', se:'se_steps', auto:600 },
   ren('command','別管我們，快去！'),
