@@ -1478,6 +1478,19 @@ const BA_CHAPTERS = [
             'dunmor_lit_ossuary','dunmor_lit_cairn','dunmor_lit_kingsbarrow','dunmor_lit_brochtop',
             'dm_altar_done' ],
     enter:'flight', flight:{ town:'dunmor' } },
+  /* ══ Stage 17 帝都廣場（ver -2198，Ray：「要開給我廣場戲」）══ 跳過飛行段，直接在攝政王廣場演返回帝都
+     （`cr_chase` 前半）→ 廣場往下通帝都外郊 → 廢風車演後半（`cr_return`）。旗＝Stage 17 那一份＋`cr_flight_talk`。 */
+  { id:'stage17sq', name:'Stage 17　帝都廣場', sub:i18nT('返回帝都：廣場 → 追安雅出城（帝都外郊）→ 廢風車'),
+    stage:17, clockHour:15, named:true, aff:A_AFF,
+    flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb',
+            's14_flight_talk','ss_arrive','ss_cityhall','ss_4pm','ss_inn_merge',
+            'ss_slum_anya','ss_slum_nou','ss_slum_sor','ss_anya_after','ss_nou_after','ss_sor_resolve',
+            'ss_raid_go','ss_lodge_seen','ss_lodge_done','ss_avenue_done','ss_carriage_done',
+            'ss_forecourt_done','ss_hall_done','ss_raid_done','ss_raid_home','ss_depart',
+            'mapcard_dunmor','dm_arrive','dm_gate_done','dm_cairn_call','dm_altar_first',
+            'dunmor_lit_ossuary','dunmor_lit_cairn','dunmor_lit_kingsbarrow','dunmor_lit_brochtop',
+            'dm_altar_done','cr_flight_talk' ],
+    enter:'town', town:'capital', node:'square' },
   /* ══ Stage 18（ver -2125，Ray：「時間鎖在晚上 11:00，始於安雅偷溜被主角逮到」「加入章節選擇」）══
      起點＝**帝都旅店・安雅偷溜**（`CR_INN_RAID` 第一拍，`stage:18`＋`clockSet:23`）——返回帝都那一段演完、走回旅店那一刻。
      ⚠ 旗＝Stage 17 那一份＋飛行段／返回帝都（`cr_flight_talk`／`cr_return`）＋旅店初見那一組（同下面衛士戰測試入口）。 */
