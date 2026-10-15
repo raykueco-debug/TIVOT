@@ -1,4 +1,33 @@
-# 薇拉馮德港（`verafond`）— 城鎮拓樸 v2 ✅ Ray 定案（2026-09-26；帝都加強版）
+# 薇拉馮德港（`verafond`）— 城鎮拓樸 **v3**（ver -2207，Ray 改：照雪都）
+
+> Ray：「進場就是圓環廣場，進場下方是出航，配置照雪都」；碼頭、造船廠、燈塔三格「先拿掉」。
+> ⚠ **現行拓樸以 `script/town.js` 的 `verafond` 為準**（本節是抄錄，對不上時照程式）。下面 v2 那一版留作紀錄，**不要照它畫小地圖**。
+
+- **19 格**。入城＝**圓環廣場**（`entry:'square'`）；**廣場往下＝出航**（不是一格）。
+- **拿掉的三格**：`harbor` 碼頭／`shipyard` 造船廠／`lighthouse` 燈塔 —— 背景圖留著、沒有節點（之後要不要接回來 Ray 未定，**不要回收那幾張圖**）。
+
+| id | 中文（遊戲內名） | 出口 |
+|---|---|---|
+| `square` | 圓環廣場（入城） | ↑midtown ←portmarket →uptown ↓出航 |
+| `portmarket` | 港町 | →square ←gunstore ↑station ↓guild |
+| `gunstore` | 武器店（端末，店內） | back |
+| `guild` | 賞金獵人公會（端末，店內） | back |
+| `station` | 中央火車站（端末） | back（掛在港町上方） |
+| `midtown` | 中央區 | ↓square ←cityhall →cathedral ↑avenue |
+| `cityhall` | 市政廳（端末） | back |
+| `cathedral` | 大教堂（端末） | back |
+| `avenue` | 林蔭大道 | ↓midtown ←university →opera ↑manor |
+| `university` / `opera` / `manor` | 大學／歌劇院／薇拉馮德莊園（端末） | back |
+| `uptown` | 上街區 | ←square ↑inn ↓grocery →tavern |
+| `inn` / `grocery` | 旅店／雜貨舖（端末） | back |
+| `tavern` | 餐飲街 | ←uptown ↑cafe ↓dessert →restaurant |
+| `cafe` / `dessert` / `restaurant` | 咖啡廳／甜品店／餐廳（端末，店內） | back |
+
+- **小地圖**：要畫的話照這一版。`tools/map_layout.py` 的 `POS` 程式端已更新，但那支工具目前跑不起來，佈局圖 `_layout_verafond.png` **還是 v2 的舊圖** —— 畫小地圖之前要先請程式端修工具、重產佈局圖（鐵律 11：美術不修工具）。
+
+---
+
+# （舊）城鎮拓樸 v2 —— 已被 v3 取代，留作紀錄（原標題：v2 ✅ Ray 定案（2026-09-26；帝都加強版）
 
 > ✅ Ray：「薇拉馮德拓樸 v2 可以，是整個城式義大利風，當世最發達的富庶港都」「1900 年」→ 背景工單 `resources/background/_verafond_spec.md`。
 
@@ -14,7 +43,7 @@
 ## 一、規模與方位
 - **22 格・21 邊・0 環**（帝都 12 格；目前最大的東泊／雪都 16 格）。碼頭→最遠一格 5 步。
 - 方位照 `flight/city/velafonte_plan.webp`：北＝山丘莊園、中＝大教堂所在的中心區、南側是港（碼頭市集往下到碼頭與燈塔）。
-- 入城＝**碼頭**（船水空兩用、著水靠岸；同時是出航口 `sail`）。
+- ~~入城＝**碼頭**~~（v3 改成圓環廣場，碼頭格拿掉）。
 
 ## 二、逐格（對照帝都：同名的格子做同樣的事）
 
