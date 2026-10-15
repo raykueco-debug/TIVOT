@@ -7093,6 +7093,8 @@ export const TOWNS = {
       dock:       { bg:'east_southgate',
         name:'東方泊地　南門驛站',
         exits:{ back:'oldtown', up:'@plainsroad' },
+        /* ver -2195（Ray）：驛站 → 古道 2 小時，出發時刻固定 11:00（只往前推，見 modules/town.js 的 stepCost）。 */
+        walk:{ '@plainsroad':{ min:120, departAt:11 } },
         lock:{ up:{ need:Q_HAIRPIN.flag, until:Q_HAIRPIN.until,
                     lines:[ sor('confuse','喂！開船去比較快啦！') ] } },
         acts:[ { flag:'ep_dock_anya', withWho:'ANYA', lines:[
@@ -8041,11 +8043,13 @@ export const TOWNS = {
        最短 6 步＝3 小時、迷霧下預期 12 步＝6 小時（11:00 出發 → 17:00）。
        ⚠ 那只是「預期」不是保證（直直走就只有 3 小時）—— 真正的保證是
          `belisar` 上那一格 `arriveNotBefore:17`（見那一座城）。兩件事都要有。 */
-    stepMin: 30,
+    /* ⚠ ver -2195（Ray：「古道平原每移動一格增加 1 小時」）：30 → 60。 */
+    stepMin: 60,
     nodes: {
       /* 道口：古道自東泊的丘陵下來，遠處右緣看得到海灣。**只有兩條路**。 */
       entry:  { bg:'plains_entry',  name:'平原古道　道口',   rest:true, noWild:true,
-        exits:{ up:'stone',  down:'@eastport:dock' } },
+        exits:{ up:'stone',  down:'@eastport:dock' },
+        walk:{ '@eastport:dock':{ min:120 } } },   // ver -2195：古道 ⇄ 驛站 2 小時（回程同價）
       /* 里程碑：風化的古代里程碑立在岔口 —— 抉擇點①（正前一條、左邊一條＋身後）。 */
       stone:  { bg:'plains_stone',  name:'平原古道　里程碑',
         exits:{ up:'sea',    left:'beacon', down:'entry' } },
@@ -8141,6 +8145,7 @@ export const TOWNS = {
            所以這一段會先演；何況這一趟還沒打過架，安全區本來就不作動。 */
       gorge:  { bg:'plains_gorge', name:'平原古道　狹窄溪谷',
         exits:{ up:'ravine', down:'windrock' },
+        walk:{ ravine:{ min:120 } },   // ver -2195（Ray）：溪谷 → 城外 2 小時
         acts:[ { flag:'ep_bel_gorge', need:'ep_day2', sides:{ RENNA:'R' }, lines:[
           nou('surprise','好窄喔，難怪不能騎馬來！'),
           nou('awkward','是說我也不會騎就是了。'),
@@ -8174,6 +8179,7 @@ export const TOWNS = {
            —— 她抬頭看，那就是這一段的收尾。 */
       ravine: { bg:'belisar_exterior', name:'平原古道　城外', rest:true, noWild:true,
         exits:{ up:'@belisar', down:'gorge' },
+        walk:{ gorge:{ min:120 } },    // ver -2195：城外 → 溪谷（回程同價）
         acts:[ { flag:'ep_bel_sight', need:'ep_day2', sides:{ RENNA:'L' }, lines:[
           nou('surprise','裡面有燈光！'),
           ren('watch','跟木雅克遺蹟的時候一樣嗎……'),
@@ -11286,7 +11292,7 @@ export const TOWNS = {
                ⚠ 兩端都是**離線合成**出來比對過的，不是調出來的。 */
           Object.assign(ren(null,'啊……'),
             { flags:['renna_hairpin_lost'], cg:'020_rennadrop', cgNoTime:true,
-              cgPan:'down', cgPanK:1.25, cgPanA:'9.5%', cgPanB:'-16%', delay:2750,
+              cgPan:'down', cgPanK:1.25, cgPanA:'9.5%', cgPanB:'-9.5%', delay:2750,   // ver -2195：-16% 超出 k1.25 的餘裕（±10%），底部露背景
               se:'se_dragonbite',
               hide:['SORANA','RENNA','NOUVELLE','ANYA'] }),
           /* ⚠ ver -1413（Ray：「索：『危險！』的時候播破瓦聲」）——

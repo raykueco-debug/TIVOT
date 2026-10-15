@@ -356,8 +356,15 @@ function sleepOpened(){
   if(lateArrival) return true;
   return !!(node && node.sleepFlag && prog.hasFlag(node.sleepFlag));
 }
+/* ══⚠⚠ **劇本有一段「按睡覺才演」到期 ＝ 鈕一定出來**（ver -2195，Ray：「蕾娜髮飾掉了以後回到東泊旅店
+   睡覺鈕不見了 應該要有個『睡覺......？』推到下一個劇情」）══
+   `sleepFirst` 那一段就是劇本明講「這裡要睡」（-1570 的「我說開放的時候開放」），而劇情要靠它往下推 ——
+   再讓它去過 `sleepFlag`／「天黑了沒」那兩道門，等於劇本自己把自己卡死（實例：東泊第一晚天黑後才到、
+   直接睡掉 ⇒ `ep_renna_night` 永遠沒插 ⇒ 髮飾掉了那晚的小睡按不到）。只有任務鎖那一道照舊。 */
+function napDue(){ return !!(host && host.napAct && (host.napAct()||{}).sleepFirst); }
 function canSleep(){
   if(st1 && st1.questLocked && st1.questLocked()) return false;
+  if(napDue()) return true;
   if(!sleepOpened()) return false;
   if(clock.hourF() < eveningHour) return false;
   return true;
@@ -811,11 +818,12 @@ function sleepHere(){
     if(host && host.say) host.say(st1.questSay('sleep') || i18nT('現在不是睡覺的時候。'), '');
     return;
   }
-  if(!sleepOpened()){          // ver -1658：判準只有那一支（含「天黑後才抵達」那一條）
+  const napNow = napDue();     // ver -2195：到期的小睡不吃下面兩道門（見 napDue）
+  if(!napNow && !sleepOpened()){          // ver -1658：判準只有那一支（含「天黑後才抵達」那一條）
     if(host && host.say) host.say((node && node.noSleep) || i18nT('現在不是睡覺的時候。'), '');
     return;
   }
-  if(clock.hourF() < eveningHour){
+  if(!napNow && clock.hourF() < eveningHour){
     const lines = (node && node.innEarly) || [];
     if(lines.length && host && host.play){
       busy = true;

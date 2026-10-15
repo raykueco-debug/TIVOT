@@ -37,6 +37,16 @@ const STEP_MIN = 10;      // 每移動一次花掉的遊戲內分鐘數（城鎮
    比城市還大不合理」—— 神殿 21 格比帝都的 12 格還大，半小時一步全清要 20 小時）、
    不寫＝10。跨圖那一步算**出發那張圖**的價。 */
 const stepMin = ()=> ((TOWNS[townId]||{}).stepMin || STEP_MIN);
+/* ══⚠⚠ **逐條路的耗時**（ver -2195，Ray：「從驛站到古道 2 小時，從溪谷到城外 2 小時，出發時間固定在早上 11 點」）══
+   節點寫 `walk:{ <出口的目標，與 exits 的值同一個字串>: { min:<分鐘>, departAt:<時> } }`。
+   · `min`      ＝這一條路的耗時（取代這張圖的 `stepMin`）
+   · `departAt` ＝出發前時鐘先推到那個時刻（`advanceToHour`：只往前、過了就不動，時鐘不倒轉）
+   ⚠ 兩條移動路徑（同圖一步／跨圖走廊）都只問這一支（鐵律 7）。 */
+function stepCost(to){
+  const w = ((node()||{}).walk||{})[to];
+  if(w && w.departAt!=null) clock.advanceToHour(w.departAt);
+  return (w && w.min>0) ? w.min : stepMin();
+}
 /* 閘門的 `afterMoves` 計數（ver -953）：閘門旗 → 從它可觸發那一刻起走了幾步。
    ⚠ **記憶體變數、不進存檔**：見 stageGate 那一段的說明。`open()` 歸零。 */
 let gateMoves={};
@@ -4273,7 +4283,7 @@ function go(to, dir){
     busy=true; showNav(false);
     document.body.classList.remove('town-nav');
     stepSfx();
-    clock.advance(stepMin());          // 戰鬥探索移動也耗時（ver -815；耗時依圖 ver -871）
+    clock.advance(stepCost(to));       // 戰鬥探索移動也耗時（ver -815；耗時依圖 ver -871；逐條路 ver -2195）
     bumpGateMoves();   // 閘門的 afterMoves 計數（ver -953）：走一步就 +1
     /* 離開這張圖的收尾（ver -928，見 leaveMapRitual）：沒踩到結算怪就在這裡結算，
        沒帳也要先閉棺 —— 閉完才切到下一張圖。 */
@@ -4295,7 +4305,7 @@ function go(to, dir){
   /* ⚠⚠ **戰鬥探索中移動也耗時**（ver -815，Ray；推翻 -584 的「戰鬥地圖不花時間」）：
      「一步 10 分鐘」在城鎮戰一樣記帳 —— 在被禍魘襲擊的城裡跑一趟，時間照樣流逝
      （也讓夏爾村村戰從黃昏 19:00 隨著移動推進到夜景 20:00）。 */
-  clock.advance(stepMin());   // 耗時依圖（ver -871；-917 起：森林 60／遺蹟 10／城村 10）
+  clock.advance(stepCost(to));   // 耗時依圖（ver -871；-917 起：森林 60／遺蹟 10／城村 10）；逐條路 ver -2195
   /* ══ 追逐（ver -1421）：**超過 5 場之後，玩家每走一步牠也走一步**
      （Ray：「此時玩家移動時不論有沒有遭遇，他都會移動，直到停在王座之間」）══
      ⚠ 擺在**移動的那一刻**（`go()`）而不是抵達（`enter()`）：抵達那一支還要判
