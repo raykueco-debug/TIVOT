@@ -44,8 +44,9 @@ tools/_blink_seg/*/
 
 # 宣傳片錄影：CI 影片拆格的快取（tools/promo/record.py 產）
 tools/promo/_cifr/
-tools/promo/out/
+tools/promo/out/_cut3_tmp/
 # 剪輯器：素材、快取、輸出（本機）
 tools/promo/editor/media/
 tools/promo/editor/cache/
 tools/promo/editor/out/
+tools/promo/out/_cut_tmp/
