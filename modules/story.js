@@ -3557,7 +3557,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2218';
+const KERB_V='?v=2219';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）
@@ -3669,9 +3669,17 @@ let kerbForce=null;
 function layoutKerberos(){
   const st=$('storyStage'), kb=$('kerb'), dr=$('kerbDoor'), bd=$('storyBoard');
   if(!st || !kb || !dr || !bd) return;
+  /* ══⚠⚠ ver -2219（Ray：「往上推的時候楣會消失」「讀圖時是由上而下掃出來的」）══
+     `#kerb` 的 clip 掛著 1 秒的過渡（推門時要跟門同速）—— 但**重新排版**時（進城、開棺前的
+     stopKerberos＋layoutKerberos）新的 `--kerb-clip-top` 也會被它慢慢滑過去：
+     那 1 秒裡 clip 線不在楣的上緣，楣就被一路切掉（＝掃出來／推門時消失）。
+     ⇒ 不在演出中的排版一律**瞬間到位**（`kerb-instant`，同 playKerberosClose 擺起始狀態的作法）；
+       演出中（kerbPlaying）照舊，不打斷正在跑的門。 */
   const R=st.getBoundingClientRect(), B=bd.getBoundingClientRect();
   const W=R.width, panelTop=B.top-R.top, panelH=B.height;
   if(!W || !panelH) return;
+  const snap=!kerbPlaying;           // 見函式開頭那段說明（ver -2219）
+  if(snap) kb.classList.add('kerb-instant');
   const AR=KERB_META.h/KERB_META.w;
   const P=KERB_META.plate, cy=P.y+P.h/2;
   const Wd=kerbForce ? kerbForce.Wd : Math.max(W, (panelH/2)/(cy*AR));
@@ -3882,6 +3890,7 @@ function layoutKerberos(){
     for(const k of KERB_ARROWS){ const a=kb.querySelector('.kerb-arrow.'+k); if(a) a.src=kerbUrl('kerberos_arrow'); }
     for(const k of KERB_RIVETS){ const r=kb.querySelector('.kerb-rivet.'+k); if(r) r.src=kerbUrl('kerberos_rivet'); }
   }
+  if(snap){ void kb.offsetWidth; kb.classList.remove('kerb-instant'); }
 }
 
 /* ══ 吊墜被甩一下（ver -411）══════════════════════════════════════════
