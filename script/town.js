@@ -1138,10 +1138,11 @@ const CAP_RETURN = [
   { speaker:'NARRATION', text:'', se:'se_steps', auto:700, ambStop:1, hide:['RENNA','NOUVELLE','SORANA','ANYA'] },   // 火車聲在這裡淡出
 ];
 /* ══【場景：帝都郊外 廢棄風車荒地】══（ver -2197 拆出來：前半在廣場演完 → 直接移到帝都外郊城外（ver -2199）→ 單向走到廢風車那一格演這一段）
-   BGM：稿上寫 Entangle → Ray 改 result → ver -2109 再改 missionfailed ＝ Hesitation（`failed` 別名，ver -2110 Ray 確認）。
+   BGM：稿上寫 Entangle → Ray 改 result → ver -2109 再改 missionfailed ＝ Hesitation（`failed` 別名，ver -2110 Ray 確認）
+   → ver -2200 拿掉換曲（Ray：「同一首播到完」），整段沿用 Glass Cradle。
    背景由節點給（`outer_windmill_dusk`），舊的厚塗 `capital_outskirts_dusk` 不再引用。 */
 const CAP_RETURN_WINDMILL = [
-  { speaker:'NARRATION', text:'', bgm:'failed', amb:'sturm', ambVol:0.4, auto:1400 },
+  { speaker:'NARRATION', text:'', amb:'sturm', ambVol:0.4, auto:1400 },   // ver -2200：不換曲（Ray：同一首播到完），原本這裡換 `failed`
   any('sob','哈啊……哈啊……'),
   { speaker:'PLAYER', blank:true, se:'se_walk' },
   any('sob','……別管我'),
@@ -10393,6 +10394,9 @@ export const TOWNS = {
     name: '帝都外郊',
     entry: 'gate',
     bgm: 'glasscradle',
+    /* ver -2200（Ray：「戰鬥、找到安雅以後都不換 bgm，同一首播到完」）：追安雅這一段鎖住 Glass Cradle ——
+       殘破村落那一場不換戰鬥曲、廢風車那一段也不換（舊的 `failed` 已拿掉），到 `cr_return`（廢風車演完）才解。 */
+    bgmWhen: [ { need:'cr_chase', until:'cr_return', bgm:'glasscradle', lock:true } ],
     wilderness: true,
     nodes: {
       /* ver -2199（Ray：「對話結束後直接移動到城外，只有一個方向，回不了攝政王廣場，廣場也不要連城外」）：
@@ -10407,7 +10411,13 @@ export const TOWNS = {
           { speaker:'NARRATION', text:'', hide:['RENNA','NOUVELLE','SORANA'], auto:400 },
         ] } ] },
       river:    { bg:'outer_river_dusk',    noTime:true, name:'帝都外郊　河畔', oneWay:true, exits:{ up:'village' } },
-      village:  { bg:'outer_village_dusk',  noTime:true, name:'帝都外郊　殘破村落', oneWay:true, exits:{ up:'windmill' } },
+      village:  { bg:'outer_village_dusk',  noTime:true, name:'帝都外郊　殘破村落', oneWay:true, exits:{ up:'windmill' },
+        /* ver -2200：B 級禍魘一場（`cr_outer_wild`，不能帶安雅）→ 諾薇兒一句。打輸回到這一段開頭重打。 */
+        acts:[ { flag:'cr_outer_wild', need:'cr_chase', until:'cr_return', fromStage:17, storyBattle:true, sides:CR_SIDES, lines:[
+          { speaker:'NARRATION', text:'', checkpoint:true, auto:300 },
+          { battle:'cr_outer_wild' },
+          nou('worry','安雅……到哪裡去了？'),
+        ] } ] },
       windmill: { bg:'outer_windmill_dusk', noTime:true, name:'帝都外郊　廢風車', exits:{},
         acts:[ { flag:'cr_return', need:'cr_chase', fromStage:17, sides:CR_SIDES, goto:'@capital:inn', lines:CAP_RETURN_WINDMILL } ] },
     },

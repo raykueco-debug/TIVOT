@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.15-2199';
+export const VERSION = 'ver 2026.10.15-2200';
 
 export const GAME_CONFIG = {
 
@@ -2609,6 +2609,9 @@ export const GAME_CONFIG = {
     cap_guard_square: { enemy:'cap_guard_square', session:'cap_raid', sessionEnd:true },
     cap_guard_oldtown: { enemy:'cap_guard_oldtown' },
     /* 碼頭戰・愛里歐（ver -2117）：數值暫用王座徘徊者（見 enemies.js 的 cap_mage）。 */
+    /* 帝都外郊・殘破村落（ver -2200，Ray：「殘破村落放一隻 B 級怪」「這場戰鬥不能使用安雅，如果預設是安雅就改成索拉娜」）。
+       怪是我挑的 B 級禍魘（熊骸），Ray 可換。曲子不換：外郊的 `bgmWhen` 上鎖（battleBgmOf 看到鎖就不動）。 */
+    cr_outer_wild: { enemy:'sv_bear', partners:['nouvelle','sorana'], partner:'sorana' },
     cap_mage: { enemy:'cap_mage', bgm:'bgm_retroroman2', bg:'capital_dock_battle' },   // bg：碼頭戰專用背景，蓋過城鎮交棒的那一格（ver -2123）   // ver -2119（Ray：「PerituneMaterial_RetroRoman_Battle2 術師戰的音樂接上」）
     sv_altar: { enemy:'sv_reliquary', session:'shinier_siege' },
     sv_wild:  { enemy:'sv_bear', session:'shinier_siege', sessionEnd:true },
