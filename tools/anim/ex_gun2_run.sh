@@ -1,0 +1,7 @@
+cd "/c/Users/Ray Ku/Desktop/ComfyUI-master/tivot_wan"
+P="anime illustration, low angle shot, static locked-off camera, the camera does not move at all, the framing stays exactly the same, a black-haired young man wearing a short waist-length black jacket that ends at his waist and tight black trousers on his legs, his legs in black trousers stay visible, he has no long coat and no coattails, he stands still on a battlefield holding a large pistol pointed down, a strong wind blows from one side, his fine soft black hair strands flutter and flow in the wind, the short jacket ripples slightly at the waist, the loose sash strap at his waist flutters in the wind, he breathes steadily so his shoulders gently rise and fall, several large brass bullet casings in the foreground tumble and fall down slowly through the air out of the frame, soft billowing clouds of gray smoke drift slowly sideways across the background, thin translucent soft haze drifts sideways past the foreground and does not pile up, smoke is soft voluminous clouds"
+for s in 7 11; do
+PYTHONIOENCODING=utf-8 TIVOT_GEN=720x960 TIVOT_LX2V=motionfix python tivot_wan.py --mode ci --files in_ex/ci_torsten_execute_gun.png --length 65 --fps 16 --width 720 --seed $s --out out/ci --suffix _short$s --prompt "$P" 2>&1 | tail -1
+echo '{"fps":16}' > out/ci/ci_torsten_execute_gun_short$s/holds.json
+done
+python make_player.py >/dev/null 2>&1

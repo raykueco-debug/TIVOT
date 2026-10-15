@@ -7,7 +7,7 @@
 |---|---|---|
 | CI 托爾斯坦 MB v2 | `resources/ci/video/ci_torsten_mb_v2.mp4` | ✔ 已接（單管、爆風吹髮，28 格） |
 | CI 托爾斯坦 處決 v2 | `ci_torsten_execute_v2.mp4` | ✔ 已接；⚠ 底圖換了（Ray SD 修＋GPT 修背景＋換迦尼米德大槍＝`layers/torsten_execute/exec_gun_gpt.png`），**靜態佔位要換成這張**（見該資料夾 TO_CODE） |
-| CI 米夏 NI v1 | `ci_misha_ni_v1.mp4`（65 格 4.06 秒） | ⚠ 待接：`resources/ci/layers/misha_ni/TO_CODE.md`。Ray：「暫時先這樣」—— 金光是越聚越亮不是爆碎、鏡頭往右下漂，之後可能重做 |
+| CI 米夏 NI v2 | `ci_misha_ni_v2.mp4`（seed 77，65 格 4.06 秒；v1 已被取代、回收等 Ray） | ⚠ 待接：`resources/ci/layers/misha_ni/TO_CODE.md`。Ray：「暫時先這樣」，之後可能重做 |
 | 插畫 003／005／35／044_cecilietorsten | `resources/illustration/video/` | ✔ 已接（TO_CODE 第十三～十六支） |
 
 **宣傳片用的全格版**：`tools/promo/editor/out/anim_full/<遊戲檔名>_full.mp4`（38 支，Ray 勾掉的格補回；`.gitignore` 掉了、只在本機）。

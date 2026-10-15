@@ -1,0 +1,13 @@
+@echo off
+cd /d "%~dp0"
+set PYTHONIOENCODING=utf-8
+:w
+if not exist out\nr2_done.txt ( timeout /t 15 /nobreak >nul & goto w )
+..\.venv\Scripts\python.exe tivot_wan.py --mode idle --files in_misha\man_misha_idle.webp --out out\monsters --length 49 --fps 8 --loop --seed 7 --suffix _s7 --prompt "Anime illustration, smooth seamless looping animation. A young man with short silver hair in a white military uniform with a long dark cape stands in front of a pure green background in a calm combat-ready stance, holding a drawn saber low in his right hand and the scabbard in his left. He breathes steadily, his chest rising and falling, his weight shifts subtly, the saber blade tip sways slightly as he stays alert. His long cape, coat tails and the gold cords flutter gently in the wind, his silver hair sways softly. His eyes stay open and focused, his face and expression stay the same, his pose and position stay the same. Camera completely static, background always pure green, the figure stays the same size. Anime style, cel shading, clean lineart." > out\misha.log 2>&1
+..\.venv\Scripts\python.exe rekey_solid.py man_misha_idle_7 out\monsters\man_misha_idle_s7k_all >> out\misha.log 2>&1
+..\.venv\Scripts\python.exe pick_even.py out\monsters\man_misha_idle_s7k_all out\monsters\man_misha_idle_s7k >> out\misha.log 2>&1
+..\.venv\Scripts\python.exe tivot_wan.py --mode idle --files in_misha\man_misha_idle.webp --out out\monsters --length 49 --fps 8 --loop --seed 77 --suffix _s77 --prompt "Anime illustration, smooth seamless looping animation. A young man with short silver hair in a white military uniform with a long dark cape stands in front of a pure green background in a calm combat-ready stance, holding a drawn saber low in his right hand and the scabbard in his left. He breathes steadily, his chest rising and falling, his weight shifts subtly, the saber blade tip sways slightly as he stays alert. His long cape, coat tails and the gold cords flutter gently in the wind, his silver hair sways softly. His eyes stay open and focused, his face and expression stay the same, his pose and position stay the same. Camera completely static, background always pure green, the figure stays the same size. Anime style, cel shading, clean lineart." >> out\misha.log 2>&1
+..\.venv\Scripts\python.exe rekey_solid.py man_misha_idle_77 out\monsters\man_misha_idle_s77k_all >> out\misha.log 2>&1
+..\.venv\Scripts\python.exe pick_even.py out\monsters\man_misha_idle_s77k_all out\monsters\man_misha_idle_s77k >> out\misha.log 2>&1
+..\.venv\Scripts\python.exe make_player.py >> out\misha.log 2>&1
+echo ALLDONE > out\misha_done.txt
