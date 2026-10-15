@@ -2808,7 +2808,8 @@
   #kerb.rise #kerbDoor{transform:translateY(calc(var(--kerb-rise) * -1));}
   /* 門的兩半：同一張圖用 background-position 切，不另外出兩個檔。
      ⚠ background-size 給 200% 是因為每一半只有門的一半寬。 */
-  .kerb-half{position:absolute;top:0;bottom:0;width:50%;
+  /* ver -2217：門圖含楣（kerberos_gate），兩扇往上延伸到楣的上緣（--kerb-gate-top，負值，layoutKerberos 發佈）。 */
+  .kerb-half{position:absolute;top:var(--kerb-gate-top,0px);bottom:0;width:50%;
     background-image:var(--kerb-door);background-repeat:no-repeat;background-size:200% 100%;
     transition:transform .9s cubic-bezier(.7,0,.3,1);}
   .kerb-half.l{left:0;background-position:left top;}
@@ -2968,7 +2969,6 @@
   /* 楣：橫跨整個畫面寬，下緣壓在控制列上（位置由 JS 算，見 layoutKerberos）。
      ⚠ 它是 #kerbDoor 的子元素 —— 門往上推時自然跟著走，不必另外做動畫
        （Ray：「與槍棺同一剛體」）。 */
-  #kerbTop{position:absolute;}
   /* 煙：鉚釘彈開處噴出的小煙團（JS 生成，數量與位置在 story.js）。
      ⚠ 顏色要**灰塵**不要白光：亮白的圓在深色門上讀起來是「閃光」不是「冒煙」。 */
   /* 關門的**金屬磨擦火花**（ver -366）。與煙同一個容器但形狀完全不同：
@@ -5458,7 +5458,7 @@
      **玩家的機體**，它不隨場景換 —— 跟著一起黑等於每走一步整台機器都重開一次。
      作法是把 `#kerb` 抬到黑幕之上（21 > 20），不是把黑幕改成只蓋上半：
      黑幕要能吃掉導覽與大廳那些**浮在畫面各處**的鈕，夾成上半就漏掉它們了。
-     ⚠ 楣（`#kerbTop`）與吊墜、齒輪都是 `#kerb` 的子孫 ＝ 同一個剛體，一起留下。
+     ⚠ 楣（ver -2217 起畫在門圖裡）與吊墜、齒輪都是 `#kerb` 的子孫 ＝ 同一個剛體，一起留下。
      ⚠⚠ **抬上去之後要把那兩顆可按的關掉**：齒輪（`#storyExit`）與吊墜（`#kerbPend`）
        自己帶 `pointer-events`，黑幕已經在它們底下擋不住了 —— 不關的話玩家會在
        轉場途中按開選單／整備頁，落在一個正在換的場景上。

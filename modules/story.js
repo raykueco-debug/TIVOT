@@ -3557,7 +3557,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2216';
+const KERB_V='?v=2217';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -3568,6 +3568,10 @@ const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 const KERB_META={"w":853,"h":1844,"seam":0.506,
  "plate":{"x":0.18171,"y":0.05152,"w":0.63892,"h":0.30206},
  "top":{"ar":0.11159,"dip":0.11915},
+ /* ver -2217（Ray：「把楣跟槍棺做成同一張圖，不要再分」）：楣併進門圖 `kerberos_gate.webp`（tools/kerberos_gate.py），
+    楣改成**跟門一樣寬**。`off` ＝門本體在合成圖裡從哪一列開始（÷門高）—— 楣的上緣＝門頂往上 off×門高。
+    ⚠ 與 flight/index.html 的 FKERB.gate 同一個數字（重跑 kerberos_gate.py 之後兩邊都要貼）。 */
+ "gate":{"off":0.04555},
  "arrows":{"n":{"cx":0.50117,"cy":0.09138,"w":0.07737,"h":0.10033,"rot":0,  "ux":0, "uy":-1},
            "e":{"cx":0.73632,"cy":0.20255,"w":0.07737,"h":0.10033,"rot":90, "ux":1, "uy":0},
            "s":{"cx":0.50117,"cy":0.31372,"w":0.07737,"h":0.10033,"rot":180,"ux":0, "uy":1},
@@ -3671,7 +3675,11 @@ function layoutKerberos(){
   dr.style.width=Wd+'px'; dr.style.height=Hd+'px';
   dr.style.left=dx+'px'; dr.style.top=top+'px';
   kb.style.setProperty('--kerb-rise', Math.max(0,top)+'px');
-  kb.style.setProperty('--kerb-door', 'url("'+kerbUrl('kerberos_door')+'")');
+  /* 楣（ver -2217 起是門圖的一部分）：高＝門寬×ar、上緣＝門頂往上 off×門高（門座標，負值）。
+     兩個數字只在這裡算一次（鐵律 7），下面的惰輪閃避、clip、對話框錨點都讀它們。 */
+  const th=Wd*KERB_META.top.ar, tpTop=-KERB_META.gate.off*Hd;
+  kb.style.setProperty('--kerb-door', 'url("'+kerbUrl('kerberos_gate')+'")');
+  kb.style.setProperty('--kerb-gate-top', tpTop+'px');   // 兩扇門往上延伸到楣的上緣
   /* 開門時「左半扇＋圓盤」這個剛體要走多遠：兩者取大的 ——
        ① 左扇自己出畫面：半扇寬 ×1.04
        ② 圓盤的右緣也要出畫面（要算 lift 放大之後的，係數 1.14＝1.11 再留餘裕）
@@ -3769,7 +3777,7 @@ function layoutKerberos(){
       for(const k of KERB_RIVETS){ const b2=KERB_META.rivets[k];
         RV.push([b2.cx*Wd, b2.cy*Hd, Math.max(b2.w*Wd, b2.h*Hd)/2]); }
       const M=Math.max(3, W*0.008), rightX=W-dx;
-      const topY=1 + (W*KERB_META.top.ar)*KERB_META.top.dip;
+      const topY=tpTop+th;                     // 楣的下緣（門座標）
       const D=Math.hypot(gcx-ecx, gcy-ecy), sMin=(D-er-gr)/2;
       let sol=null;
       for(let i=0; i<=140 && !sol; i++){
@@ -3831,16 +3839,9 @@ function layoutKerberos(){
       rg.style.left=((P2.x+P2.w/2)*Wd-d/2)+'px';
       rg.style.top =((P2.y+P2.h/2)*Hd-d/2)+'px'; }
   }
-  /* 楣：橫跨整個畫面寬。⚠ 對齊的是**中段的下緣**不是圖的下緣 ——
-     兩端的鉚接塊比中間的橫桿低（dip＝差多少，佔圖高的比例），照圖的下緣對齊的話
-     中間會露一條縫（Ray：「楣還是有縫…中間不要漏」）。往下壓 dip 之後兩端會
-     壓進控制列裡 —— 楣的圖層在控制列之上（#kerb z2 > #storyBoard z1），看不出來。 */
-  const tp=$('kerbTop');
-  if(tp){
-    const th=W*KERB_META.top.ar;
-    tp.style.width=W+'px'; tp.style.height=th+'px';
-    const tpTop = 1-th+th*KERB_META.top.dip;          // 楣的上緣（門座標）
-    tp.style.left=(-dx)+'px'; tp.style.top=tpTop+'px';
+  /* 楣：ver -2217 起畫在門圖裡（`kerberos_gate`），這裡只**發佈**它的上緣與高度給別人讀。
+     ⚠ 對齊的仍是**中段的下緣**（dip，見 tools/kerberos_gate.py）—— 合成時就壓好了。 */
+  {
     kb.style.setProperty('--kerb-top-h', th+'px');
     /* ⚠⚠ **clip 的起點要用楣的實際上緣**，不能用「面板頂 − 楣高」（ver -364）。
        兩者只有在「門頂剛好等於面板頂」時才相等，而門多高是 layoutKerberos 依實際尺寸
@@ -3861,7 +3862,7 @@ function layoutKerberos(){
   }
   if(!kerbReady){
     kerbReady=true;
-    const src={ kerbPlate:'kerberos_plate', kerbTop:'kerberos_top', kerbPendImg:'kerberos_pendant',
+    const src={ kerbPlate:'kerberos_plate', kerbPendImg:'kerberos_pendant',
                 kerbGearImg:'kerberos_gear' };
     for(const id in src){ const el=$(id); if(el) el.src=kerbUrl(src[id]); }
     const gsi=$('kerbGearSm'), gsimg=gsi && gsi.querySelector('img');
@@ -4205,7 +4206,7 @@ function sparkRing(sweep, dur){
   const dir = sweep>=0 ? 1 : -1;
   /* ⚠ ver -2215（Ray：「現在的問題是 F 太多，要減禎，否則像在噴水而不是火花」）：
      模擬與重畫都只跑 **SPARK_FPS** 格／秒 —— 每一格火星跳一大段、拖一條長尾，讀起來是「迸」不是「流」。 */
-  const SPARK_FPS=24, STEP=1000/SPARK_FPS;   // ver -2216（Ray：「減太多 f 了，降到 24f 看看」）
+  const SPARK_FPS=60, STEP=1000/SPARK_FPS;   // ver -2217（Ray：「24 不夠，先回 60 好了」；-2215 試過 12、-2216 試過 24）
   const P=[]; const t0=performance.now(); let last=t0-STEP;
   const frame=now=>{
     if(!cv.isConnected) return;                       // 被 stopKerberos 清掉了
@@ -5412,7 +5413,7 @@ const PRELOAD_CAP_MS = 25000;
 function preloadStory(startId, onProgress){
   const A=collectAssets(startId);
   /* ⚠ 門的素材也要預載：它是**進戰鬥那一刻**才動起來的，沒先抓的話升上去是一片空白。 */
-  for(const f of ['kerberos_door','kerberos_plate','kerberos_arrow','kerberos_rivet','kerberos_top',
+  for(const f of ['kerberos_gate','kerberos_plate','kerberos_arrow','kerberos_rivet',
                   'kerberos_pendant','kerberos_gear'])
     A.imgs.push(kerbUrl(f));
   /* ⚠ 門的三支音效也要預載：撞擊音在演出**第 0 毫秒**就要響，
