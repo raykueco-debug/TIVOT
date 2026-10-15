@@ -3557,7 +3557,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2214';
+const KERB_V='?v=2215';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 幾何：由 tools/kerberos_cut.py 印出來的（門座標的比例）。**改圖要重跑腳本再貼回來。**
    ⚠ 箭與鉚釘給的是**中心點**與**未旋轉**的尺寸 —— CSS 的 rotate 是繞元素中心轉的，
@@ -4203,19 +4203,23 @@ function sparkRing(sweep, dur){
   const g=cv.getContext('2d'); g.setTransform(DPR,0,0,DPR,0,0);
   const cx=r.left-d.left+r.width/2, cy=r.top-d.top+r.height/2, R0=r.width*0.5;
   const dir = sweep>=0 ? 1 : -1;
-  const P=[]; const t0=performance.now(); let last=t0;
+  /* ⚠ ver -2215（Ray：「現在的問題是 F 太多，要減禎，否則像在噴水而不是火花」）：
+     模擬與重畫都只跑 **SPARK_FPS** 格／秒 —— 每一格火星跳一大段、拖一條長尾，讀起來是「迸」不是「流」。 */
+  const SPARK_FPS=12, STEP=1000/SPARK_FPS;
+  const P=[]; const t0=performance.now(); let last=t0-STEP;
   const frame=now=>{
     if(!cv.isConnected) return;                       // 被 stopKerberos 清掉了
-    const t=now-t0, dt=Math.min(0.05,(now-last)/1000); last=now;
+    if(now-last < STEP-1){ requestAnimationFrame(frame); return; }
+    const t=now-t0, dt=Math.min(0.12,(now-last)/1000); last=now;
     const p=Math.min(1, t/KERB_SPIN_MS), R=R0*(1+0.11*(1-Math.pow(1-p,3)));   // 跟著團徽浮起放大（scale 1→1.11）
     /* 發射：轉得快的頭段最密，收尾段遞減到 0。 */
     const life=t/dur, rate = life<1 ? (1-life*0.85) : 0;
-    const n=Math.round(rate*60*dt*60);
+    const n=Math.round(rate*2400*dt);
     for(let i=0;i<n;i++){
       const a=Math.random()*Math.PI*2, ca=Math.cos(a), sa=Math.sin(a);
-      const vt=(420+Math.random()*620)*dir, vr=90+Math.random()*260;   // ver -2213：初速約 ×1.6
+      const vt=(700+Math.random()*900)*dir, vr=160+Math.random()*420;   // ver -2215：再強再快
       P.push({ x:cx+ca*R, y:cy+sa*R, vx:-sa*vt+ca*vr, vy:ca*vt+sa*vr,
-               l:0, L:0.16+Math.random()*0.28, w:0.8+Math.random()*1.6, h:16+Math.random()*24 });
+               l:0, L:0.14+Math.random()*0.24, w:1.2+Math.random()*2.2, h:18+Math.random()*26 });
     }
     g.clearRect(0,0,d.width,d.height);
     g.globalCompositeOperation='lighter';
@@ -4234,9 +4238,9 @@ function sparkRing(sweep, dur){
       s.vy+=900*dt; s.vx*=0.985; s.vy*=0.985;
       const ox=s.x, oy=s.y; s.x+=s.vx*dt; s.y+=s.vy*dt;
       const k=1-s.l/s.L;                                  // 1 → 0
-      g.strokeStyle='hsla('+s.h+',100%,'+(42+28*k)+'%,'+(k*0.9).toFixed(3)+')';
+      g.strokeStyle='hsla('+s.h+',100%,'+(48+30*k)+'%,'+Math.min(1,k*1.1).toFixed(3)+')';
       g.lineWidth=s.w;
-      g.beginPath(); g.moveTo(ox-(s.vx*0.035), oy-(s.vy*0.035)); g.lineTo(s.x,s.y); g.stroke();
+      g.beginPath(); g.moveTo(ox, oy); g.lineTo(s.x,s.y); g.stroke();   // 尾巴＝這一格跳過的那一段
     }
     g.globalCompositeOperation='source-over';
     if(rate>0 || P.length) requestAnimationFrame(frame); else cv.remove();
