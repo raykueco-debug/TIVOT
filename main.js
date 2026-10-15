@@ -3092,12 +3092,15 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     circleAt=0;
     const on=!document.body.classList.contains('testmode');
     document.body.classList.toggle('testmode', on);
-    if(on) TEL.markAdmin();      // 簽名＝管理員：此裝置停止遙測上報（戰績/點擊不列入統計）
+    if(on){ TEL.markAdmin(); try{ localStorage.setItem('tivot_admin_ui_v1','1'); }catch(_){} }   // 簽名＝管理員：此裝置停止遙測上報；手勢開啟＝介面一起打開（ver -2210）
     else   TEL.clearAdmin();     // 撤銷簽名 → 恢復上報
     SFX.unlock(); SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'));   // SI_01＝開關回饋音
   };
   // 開機還原：簽名還在就直接進管理人模式
-  if(TEL.isAdminStored()) document.body.classList.add('testmode');
+  /* ⚠ ver -2210（Ray：「在選單中加入開啟或關閉管理人介面」）：簽名還在、而且選單沒有把介面關掉
+     （`tivot_admin_ui_v1` 不是 '0'）才進 testmode。簽名本身不動 —— 關掉介面的管理人照樣不上報遙測。 */
+  if(TEL.isAdminStored() && (()=>{ try{ return localStorage.getItem('tivot_admin_ui_v1')!=='0'; }catch(_){ return true; } })())
+    document.body.classList.add('testmode');
   /* 測試金（ver -496，Ray：「測試環境先給我10000元花」）：管理人模式下每一輪
      發一次 10000 G。旗標走一輪內 flags —— `newRun()` 會清掉，新一輪自動再發；
      正式版玩家開不了 testmode，吃不到這一條。 */

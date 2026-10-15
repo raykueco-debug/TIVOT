@@ -113,6 +113,19 @@ export function setHaptics(on){ wr(K.hap, on ? '1' : '0'); }
 
 /* 對話框文字大小（ver -821，Ray：「只有加大跟預設兩種」）。預設**預設**（非加大）。
    ⚠ 只是顯示偏好，跨輪不清（同音量／震動）；套用走 apply() 的 body.dlg-large（鐵律 8）。 */
+/* 管理人介面開關（ver -2210，Ray：「在選單中加入開啟或關閉管理人介面的選單，包括清盤、調整、2 倍船速等鈕都要收掉」）。
+   `tivot_admin_v1`（簽名＝這台是管理人，手勢開關）與這一把（介面顯不顯示）是兩件事：
+   只有簽名在的人看得到這個開關；關掉＝拔 body.testmode（主頁所有管理人鈕跟著收）＋通知飛行頁收它那幾顆。
+   ⚠ 飛行頁另讀同一把鑰匙（flight/index.html 的 ADMIN），改一邊要改另一邊。 */
+const ADMIN_UI_KEY = 'tivot_admin_ui_v1';
+export function isAdminDevice(){ return rd('tivot_admin_v1') === '1'; }
+export function adminUiOn(){ return rd(ADMIN_UI_KEY) !== '0'; }
+export function setAdminUi(on){
+  wr(ADMIN_UI_KEY, on ? '1' : '0');
+  document.body.classList.toggle('testmode', !!on && isAdminDevice());
+  try{ const fw=document.getElementById('flightFrame'); const w=fw && fw.contentWindow;
+       if(w && w.__adminUi) w.__adminUi(!!on); }catch(_){}
+}
 export function bigText(){ return rd(K.text) === '1'; }
 export function setBigText(on){ wr(K.text, on ? '1' : '0'); }
 
@@ -203,6 +216,12 @@ export function open(opts){
       +   '<button class="gm-sw'+(haptics()?' on':'')+'" id="gmHap" type="button">'
       +     '<i></i></button>'
       +   '<b>'+(haptics()?i18nT('開'):i18nT('關'))+'</b></label>'
+      + (isAdminDevice()
+        ? i18nT('<label class="gm-row gm-toggle"><span>管理人介面</span>')
+          +   '<button class="gm-sw'+(adminUiOn()?' on':'')+'" id="gmAdminUi" type="button">'
+          +     '<i></i></button>'
+          +   '<b>'+(adminUiOn()?i18nT('開'):i18nT('關'))+'</b></label>'
+        : '')
       + ((devTools && document.body.classList.contains('testmode'))
         ? i18nT('<div class="gm-sec">管理人</div>')
           + i18nT('<label class="gm-row gm-toggle"><span>凍　結</span>')
@@ -307,6 +326,16 @@ export function open(opts){
         const on=!peaceOn(); wr(PEACE_KEY, on?'1':'0');
         pc.classList.toggle('on', on);
         const lab=pc.parentNode.querySelector('b'); if(lab) lab.textContent = on ? i18nT('跳過所有戰鬥') : i18nT('關');
+        try{ SFX.menuClick(); }catch(_){}
+      }); }
+    { const au=panel.querySelector('#gmAdminUi');
+      if(au) au.addEventListener('click', e=>{ e.stopPropagation();
+        const on=!adminUiOn(); setAdminUi(on);
+        au.classList.toggle('on', on);
+        const lab=au.parentNode.querySelector('b'); if(lab) lab.textContent = on ? i18nT('開') : i18nT('關');
+        /* 面板裡的「管理人」那一區也是看 testmode 畫的 —— 開關一動就把它直接拿掉／提示重開。 */
+        if(!on){ const sec=[...panel.querySelectorAll('.gm-sec')].find(x=>x.textContent.indexOf('管理人')>=0);
+                 if(sec){ let n=sec; while(n){ const nx=n.nextElementSibling; if(n!==sec && n.classList.contains('gm-sec')) break; n.remove(); n=nx; } } }
         try{ SFX.menuClick(); }catch(_){}
       }); }
     const sw=panel.querySelector('#gmHap');
