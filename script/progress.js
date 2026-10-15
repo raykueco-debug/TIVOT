@@ -1523,9 +1523,9 @@ const BA_CHAPTERS = [
             'inn_wait','inn_missed','cap_dream','inn_tip_sit','inn_tip_knock','inn_tip_sleep',
             'cr_inn_raid','cap_raid','cap_clear_inn','cap_clear_uptown','cap_clear_square','cap_clear_oldtown','cr_dock' ],
     enter:'flight', flight:{ town:'capital' } },
-  /* ══ Stage 19 薇拉馮德（ver -2208，Ray：「先接到 206 列」）══ 跳過飛行段，直接進圓環廣場演抵達 →
-     莊園（大門＋大廳）→ 旅店 → 敲蕾娜的門（T2 以下一句／T3 以上夜談）。旗＝Stage 19 那一份。 */
-  { id:'stage19vf', name:'Stage 19　薇拉馮德', sub:i18nT('抵達 → 莊園（亞隆／羅伯特／茉莉）→ 旅店 → 蕾娜夜談'),
+  /* ══ Stage 20 薇拉馮德（ver -2208 接上；-2209 Ray：「薇拉馮德是 stage20」）══ 跳過飛行段，直接進圓環廣場演抵達
+     （那一段插 stage 20）→ 莊園（大門＋大廳）→ 旅店 → 敲蕾娜的門（T2 以下一句／T3 以上夜談）。旗＝Stage 19 那一份。 */
+  { id:'stage20', name:'Stage 20', sub:i18nT('薇拉馮德：抵達 → 莊園（亞隆／羅伯特／茉莉）→ 旅店 → 蕾娜夜談'),
     stage:19, clockHour:10, named:true, aff:A_AFF,
     flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb',
             's14_flight_talk','ss_arrive','ss_cityhall','ss_4pm','ss_inn_merge',

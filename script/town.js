@@ -1276,8 +1276,11 @@ const CAP_RETURN_WINDMILL = [
 const mol = N('MOLLY'), molQ = N('MOLLY_Q'), rob = N('ROBERT'), aar = N('AARON');
 const VF_SIDES = { RENNA:'L', NOUVELLE:'L', SORANA:'L', ANYA:'L', AARON:'R', ROBERT:'R', MOLLY:'R', MOLLY_Q:'R' };
 const VF_ARRIVE = [
-  Object.assign(nou('happy','這就是……薇拉馮德！'), { checkpoint:true }),
-  sor('excite2','好熱鬧！跟帝都的感覺完全不一樣！'),
+  /* ver -2209（Ray）：之前來過（`vf_visited_early`）開頭兩句換掉，其餘相同。 */
+  Object.assign(nou('happy','這就是……薇拉馮德！'), { checkpoint:true, skipIf:'vf_visited_early' }),
+  sor('excite2','好熱鬧！跟帝都的感覺完全不一樣！', { skipIf:'vf_visited_early' }),
+  Object.assign(nou('happy','薇拉馮德總是很熱鬧呢！'), { checkpoint:true, onlyIf:'vf_visited_early' }),
+  sor('excite2','這裡的人不管什麼時候看都一副很忙的樣子呢！', { onlyIf:'vf_visited_early' }),
   ren('remind','這可是連敵對國都承認的『世界中心』啊。'),
   any('scare',''),
   ren('think','情報還被科爾封鎖著。眼下沒有比這裡更安全的地方了。'),
@@ -1285,7 +1288,7 @@ const VF_ARRIVE = [
   ren('remindsmile','說是教區，可是薇拉馮德的人討厭聖王廳喔。'),
   sor('confuse','啊？為啥？'),
   ren('awkward','很多原因啦。'),
-  any('scare',''),
+  any('lookup',''),
   ren('command','不過，我們也沒有時間磨蹭。'),
   ren('determine','直接去敲薇拉馮德莊園的門吧。'),
   ren('lookdown','只是不知道……我這個名字還派不派得上用場……'),
@@ -1293,8 +1296,11 @@ const VF_ARRIVE = [
   nou('worry','對啊。第一次看到蕾娜小姐那麼緊張……'),
 ];
 const VF_MANOR = [
-  /* ── 莊園大門 ── */
-  Object.assign(aar('armscross','妳這麼說，讓我很為難啊。'), { checkpoint:true }),
+  /* ── 莊園大門 ──（ver -2209，Ray：「第一次走進薇拉馮德莊園要長轉景三秒黑幕」「進莊園 bgm 改 result」）
+     act 寫 `darkStart`＝黑著抵達；這裡停三秒再淡入，亞隆第一句換 Result（一路放到旅店那一格才回城的曲子）。 */
+  { speaker:'NARRATION', text:'', auto:3000, checkpoint:true },
+  { speaker:'NARRATION', text:'', fadeIn:1200, auto:1300 },
+  aar('armscross','妳這麼說，讓我很為難啊。', { bgm:'result' }),
   aar(null,'就算妳真是蕾姬娜大人，也不能憑一句話就要見家主。'),
   aar('closedsmile','容我提醒，您可不是薇拉馮德家的人呢。'),
   ren('apologize','那件事……責任在我！但還請通報一下，我有至急之事……'),
@@ -1302,7 +1308,7 @@ const VF_MANOR = [
   sor('whisper','怎麼回事？蕾娜她們家，應該更高貴吧？', { bubbleFx:'whisper' }),
   nou('whisper','單論爵位的話是這樣，但是……', { bubbleFx:'whisper' }),
   aar(null,'不管有什麼事，都請先等著。'),
-  aar('angry','可我話放在前頭，聖王廳的人想進莊園，先讓治安廳開搜查令出來！'),
+  aar('armscross','可我話放在前頭，聖王廳的人想進莊園，先讓治安廳開搜查令出來！'),
   ren('argue','不、我們不是……'),
   rob('talk','什麼事啊？在大門口吵吵嚷嚷的！'),
   aar('attention','父親！'),
@@ -1316,7 +1322,7 @@ const VF_MANOR = [
   aar('armscross','哼，寧可一輩子待在聖王廳嗎？還真是瞧不起人啊。'),
   rob('talk','夠了，亞隆。太失禮了。'),
   aar('confuse',''),
-  rob('bow','十分抱歉。正如您所知道的，我們南境重視契約精神，再加上聖王廳過去與主家的過節……'),
+  Object.assign(rob('bow','十分抱歉。正如您所知道的，我們南境重視契約精神，再加上聖王廳過去與主家的過節……'), { flip:true }),
   ren('talkserious','不瞞您說，正是因為那個『過節』，我才斗膽求見。'),
   ren('determine','我……不是來乞求原諒，而是帶著一筆『交易』來的。'),
   rob('surprise','……交易嗎？'),
@@ -1380,7 +1386,7 @@ const VF_MANOR = [
   mol('surprise','……', { cg:null }),
   mol('ask','安娜殿下，怎會紆尊降貴到這敵陣之中？'),
   ren('command','安娜殿下有著聖王廳垂涎的才能……就像的當年阿奎盧斯大人那樣！'),
-  ren('intense','聖王廳的追捕我自行應對，但請至少為她提供保護！'),
+  ren('argue','聖王廳的追捕我自行應對，但請至少為她提供保護！'),
   mol('think','……'),
   mol('lookdown','第二王女，也不過是……第三順位繼承人吧？'),
   any('answer','……是。我有一個姐姐，和一個……。'),
@@ -1393,7 +1399,7 @@ const VF_MANOR = [
   mol('stern','……'),
   mol('serious','這種事，要被解讀成間諜或叛國行為都不奇怪吧。'),
   nou('shock','！！'),
-  ren('worry','……'),
+  ren('lookdown','……'),
   sor('serious','……'),
   mol('closedtalk','事關重大，我不能馬上決定。'),
   mol('think','不過，也不是完全沒有餘地。'),
@@ -3533,6 +3539,7 @@ export const TOWNS = {
      ══════════════════════════════════════════════════════════════════════ */
   shinier: {
     name: '夏爾村',
+    visitEarly: { flag:'sv_visited_early', beforeStage:4 },   // 主線抵達（S4）之前來過 —— sv_arrive「之前我們好像來過」分歧讀它（ver -858）
     storyStages:[4,9],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     entry: 'plaza',
     /* ⚠ 夏爾村也給 0（ver -913）：Ray 的原話是「大城市 mist 都是 0」，村子他沒點名 ——
@@ -10537,6 +10544,9 @@ export const TOWNS = {
   },
   verafond: {
     name: '薇拉馮德港',
+    /* ver -2209（Ray：「入薇拉馮德要有差分…如果之前已經有到過」）：碼頭戰（`cr_dock`）之前來過就記 `vf_visited_early` ——
+       ⚠ 看旗不看章節：第 19 章正常飛來也是 stage 19，用章節判會把正常抵達算成「早到過」。 */
+    visitEarly: { flag:'vf_visited_early', untilFlag:'cr_dock' },
     entry: 'square',   // ver -2207（Ray：「進場就是圓環廣場，進場下方是出航，配置照雪都」）
     bgm: 'emeraldhill',      // ver -1765，Ray：「薇拉馮德用 PeriTune_Emerald_Hill_loop」
     mist: 0,                 // 大城不上霧（§6.5.4 ver -913）
@@ -10561,7 +10571,7 @@ export const TOWNS = {
         exits:{ up:'midtown', left:'portmarket', right:'uptown' },
         sail:{},   // 出航＝下（預設方向）
         /* ver -2208：抵達（碼頭戰之後第一次進城） */
-        acts:[ { flag:'vf_arrive', need:'cr_dock', sides:CR_SIDES, lines:VF_ARRIVE } ] },
+        acts:[ { flag:'vf_arrive', need:'cr_dock', stage:20, sides:CR_SIDES, lines:VF_ARRIVE } ] },   // ver -2209：薇拉馮德＝Stage 20（Ray）
       station:   { bg:'vela_station', name:'薇拉馮德　中央火車站',
         exits:{ back:'portmarket' } },
       midtown:   { bg:'vela_midtown', name:'薇拉馮德　中央區',
@@ -10578,7 +10588,7 @@ export const TOWNS = {
         exits:{ back:'avenue' } },
       manor:     { bg:'vela_manor', name:'薇拉馮德　薇拉馮德莊園',
         /* ver -2208：莊園大門＋大廳，演完被安排到旅店（傍晚 20:00）。 */
-        acts:[ { flag:'vf_manor', need:'vf_arrive', sides:VF_SIDES, goto:'inn', clockToday:20, lines:VF_MANOR } ],
+        acts:[ { flag:'vf_manor', need:'vf_arrive', darkStart:true, sides:VF_SIDES, goto:'inn', clockToday:20, lines:VF_MANOR } ],   // darkStart：第一次走進莊園＝三秒黑幕長轉景（ver -2209）
         exits:{ back:'avenue' } },
       uptown:    { bg:'vela_uptown', name:'薇拉馮德　上街區',
         exits:{ left:'square', up:'inn', down:'grocery', right:'tavern' } },

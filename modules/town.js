@@ -5471,7 +5471,11 @@ export function open(town, node, opts){
   /* ver -858（Ray：「解除夏爾村的前期進入管制」）：主線抵達（S4）之前來過
      就記一支旗 —— sv_arrive 那一幕的「之前我們好像來過」分歧讀它（鐵律 9：
      插旗＝這一次早訪，沒有人拔）。 */
-  if(townId==='shinier' && prog.getStage()<4) prog.addFlags(['sv_visited_early']);
+  /* ver -2209：改成資料欄位 `visitEarly:{ flag, beforeStage?, untilFlag? }`（城上），夏爾村與薇拉馮德共用 ——
+     章節還沒到 `beforeStage`、或 `untilFlag` 還沒插，就記這一次是「早到過」（插旗、沒有人拔）。 */
+  { const ve=(TOWNS[townId]||{}).visitEarly;
+    if(ve && ve.flag && ((ve.beforeStage!=null && prog.getStage()<ve.beforeStage) ||
+                         (ve.untilFlag && !prog.hasFlag(ve.untilFlag)))) prog.addFlags([ve.flag]); }
   /* ver -858（Ray：「開啟的新地點會標在大地圖上，日後可直接降落」）：
      第一次踏進夏爾森林＝發現 —— 大地圖的名牌與降落點由這支旗開。 */
   if(townId==='shinier_forest') prog.addFlags(['sv_forest_found']);
