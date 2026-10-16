@@ -16,7 +16,9 @@
   <button id="btnUndo" title="復原（Ctrl+Z）">↶</button>
   <button id="btnRedo" title="重做（Ctrl+Shift+Z）">↷</button>
   <span class="sep"></span>
-  <label class="tog" title="拖曳時吸附到拍點、片段邊緣、播放頭"><input type="checkbox" id="snap" checked> 吸附</label>
+  <label class="tog" title="拖曳時吸附到拍點、片段邊緣、播放頭、分鏡格"><input type="checkbox" id="snap" checked> 吸附</label>
+  <span class="sep"></span>
+  <button id="btnBoard" title="匯入分鏡表（tools/promo 底下的 .xlsx）：時間軸上方出現每個 cut 的格子">分鏡</button>
   <span class="grow"></span>
   <span id="status"></span>
   <button id="btnExport" class="primary">輸出 MP4</button>
@@ -52,14 +54,18 @@
     <span class="sep"></span>
     <button id="btnSplit" title="在播放頭分割選取的片段（S）">分割</button>
     <button id="btnDel" title="刪除選取（Delete）">刪除</button>
+    <span class="sep"></span>
+    <button id="btnText" title="在播放頭加一段文字（放在「字」軌，最上層）">＋文字</button>
+    <button id="btnMontage" title="把素材庫選取的多張圖／影片，排成一串快剪">快剪</button>
     <span class="grow"></span>
     <span class="dim">縮放</span><input id="zoom" type="range" min="10" max="600" value="90">
   </div>
   <div id="tlBody">
-    <div id="tlHeads"><div class="rulerHead"></div><div id="heads"></div></div>
+    <div id="tlHeads"><div class="rulerHead"></div><div class="marksHead">分鏡</div><div id="heads"></div></div>
     <div id="tlScroll">
       <div id="tlInner">
         <canvas id="ruler" height="26"></canvas>
+        <div id="marks"></div>
         <div id="lanes"></div>
         <div id="playhead"></div>
       </div>

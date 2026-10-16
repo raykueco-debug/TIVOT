@@ -53,7 +53,7 @@ def footage(src_root):
                              % (k, off, ln, g, t * 1000, t * 1000, k)); labs.append('[s%d]' % k)
             cw = out + '.part%d.wav' % len(chunks); gf = cw + '.txt'
             open(gf, 'w', encoding='utf-8').write(';'.join(parts) + ';%samix=inputs=%d:normalize=0:dropout_transition=0,apad,atrim=duration=%f[a]' % (''.join(labs), len(labs), dur))
-            subprocess.run(['ffmpeg', '-v', 'error', '-y'] + ins + ['-filter_complex_script', gf, '-map', '[a]', '-ar', '48000', cw], check=True)
+            subprocess.run(['ffmpeg', '-v', 'error', '-y'] + ins + load(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'render.py'), 'renderm').graph_file_opt(gf) + ['-map', '[a]', '-ar', '48000', cw], check=True)
             os.remove(gf); chunks.append(cw)
         if chunks:
             ins = sum((['-i', c] for c in chunks), [])

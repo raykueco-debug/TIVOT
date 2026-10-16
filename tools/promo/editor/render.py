@@ -5,7 +5,8 @@
 # 專案格式（前端 app.js 的 project 物件）：
 #   { name, w, h, fps, loudnorm, tracks:[ {id, type:'video'|'audio', mute, hidden, clips:[...]}, ... ] }
 #   影像軌 index 0 ＝最底層。
-#   影像片段：{ id, kind:'video'|'image'|'color', src, color, start, dur, in, speed, fit:'cover'|'contain',
+#   影像片段：{ id, kind:'video'|'image'|'color'|'text', src, color, start, dur, in, speed, fit:'cover'|'contain',
+#              （text：{text, font, size, color, x, y, stroke, strokeColor, glow, spacing, weight}；輸出用前端畫好的 `_png`）
 #              motion:{type:'none'|'up'|'down'|'lr'|'rl'|'zin'|'zout', amt}, fadeIn, fadeOut,
 #              trans:{type:'cross'|'black'|'white', dur} ← 從同一軌前一個相鄰片段轉進來 }
 #   聲音片段：{ id, src, start, dur, in, speed, vol, fadeIn, fadeOut }
@@ -14,6 +15,18 @@
 #   cross：前一段延長到「切點＋d/2」（不透明），這一段從「切點−d/2」開始、alpha 由 0 淡到 1。
 #   black／white：前一段最後 d/2 淡到那個顏色，這一段最前 d/2 由那個顏色淡回來。
 import os, sys, json, re, subprocess
+
+_FF_MAJOR = None
+def graph_file_opt(gf):
+    '''濾鏡圖從檔案讀：ffmpeg 7 起是 `-/filter_complex <檔>`，舊的 `-filter_complex_script` 到 8／9 已拿掉
+       （10-16 Windows 那台裝的是 9.0，輸出整個失敗）。依版本挑，兩代都能跑。make_media.py 也用這一支。'''
+    global _FF_MAJOR
+    if _FF_MAJOR is None:
+        try:
+            out = subprocess.run(['ffmpeg', '-version'], capture_output=True, text=True).stdout
+            m = re.search(r'ffmpeg version n?(\d+)', out); _FF_MAJOR = int(m.group(1)) if m else 0
+        except Exception: _FF_MAJOR = 0
+    return ['-/filter_complex', gf] if _FF_MAJOR >= 7 else ['-filter_complex_script', gf]
 
 def atempo_chain(sp):
     """atempo 只吃 0.5～2：拆成多段相乘。"""
@@ -100,8 +113,11 @@ def build(project, root):
                 chain = ['setpts=(PTS-STARTPTS)/%f' % sp, 'fps=%d' % FPS]
                 if pre > 0: chain.append('tpad=start_mode=clone:start_duration=%f' % pre)
                 chain += ['tpad=stop_mode=clone:stop_duration=%f' % (D + 1), 'trim=duration=%f' % D, 'setpts=PTS-STARTPTS']
-            elif kind == 'image':
-                ins.extend(['-loop', '1', '-framerate', str(FPS), '-t', '%.4f' % (D + 0.2), '-i', P(c['src'])]); n = nid()
+            elif kind in ('image', 'text'):
+                # 文字＝前端畫好的整張透明 PNG（W×H，server 的 stash_text_pngs 換成路徑）：預覽與輸出是同一張圖
+                src = c.get('_png') if kind == 'text' else c['src']
+                if not src: continue
+                ins.extend(['-loop', '1', '-framerate', str(FPS), '-t', '%.4f' % (D + 0.2), '-i', P(src)]); n = nid()
                 chain = ['fps=%d' % FPS, 'trim=duration=%f' % D, 'setpts=PTS-STARTPTS']
             else:   # color
                 ins.extend(['-f', 'lavfi', '-t', '%.4f' % (D + 0.2), '-i', 'color=c=%s:s=%dx%d:r=%d' % (c.get('color', 'black'), W, H, FPS)]); n = nid()
@@ -144,7 +160,7 @@ def render(project, out, root, progress=lambda f, m=None: None):
     gf = out + '.graph.txt'
     open(gf, 'w', encoding='utf-8').write(graph)
     cmd = ['ffmpeg', '-v', 'error', '-y', '-nostats', '-progress', 'pipe:1'] + ins + [
-        '-filter_complex_script', gf, '-map', '[vout]', '-map', '[aout]', '-r', str(FPS),
+        *graph_file_opt(gf), '-map', '[vout]', '-map', '[aout]', '-r', str(FPS),
         '-c:v', 'libx264', '-preset', 'medium', '-crf', '17', '-pix_fmt', 'yuv420p',
         '-c:a', 'aac', '-b:a', '256k', '-ar', '48000', '-movflags', '+faststart', '-t', '%f' % total, out]
     progress(0.0, '輸出中')

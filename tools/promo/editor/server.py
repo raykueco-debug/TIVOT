@@ -9,6 +9,7 @@
 #   GET  /api/probe?p=        長度／尺寸／有沒有聲音（快取）
 #   GET  /api/thumb?p=&t=     影片縮圖（快取）
 #   GET  /api/beats?p=        音樂的拍點（快取）
+#   GET  /api/storyboards     分鏡表清單（tools/promo 底下的 .xlsx）；GET /api/storyboard?p=  讀成 cut 清單
 #   POST /api/upload          上傳（標頭 X-Name；存進 editor/media/uploads/）
 #   GET  /api/projects        專案清單；GET/POST /api/project?name=  讀／存
 #   POST /api/export          開始輸出 mp4；GET /api/job?id= 進度
@@ -102,8 +103,69 @@ def beats(r):
     d = json.load(open(cf))
     return {'bpm': d['bpm'], 'period': d['period'], 'phase': d['phase'], 'beats': d['beats'], 'accent': d['accent']}
 
+def storyboard_files():
+    '''分鏡表：tools/promo 底下的 .xlsx（檔名有「分鏡」或 storyboard 的排前面）。'''
+    fs = [rel(f) for f in glob.glob(os.path.join(ROOT, 'tools', 'promo', '**', '*.xlsx'), recursive=True)
+          if not os.path.basename(f).startswith(('~$', '_'))]
+    return sorted(fs, key=lambda p: (0 if ('分鏡' in p or 'storyboard' in p.lower()) else 1, p))
+
+def storyboard(r):
+    '''讀分鏡表（不靠 openpyxl：xlsx 是 zip＋xml）。第一張工作表、第一列是表頭。
+       認得的欄：cut／秒數始／秒數終／影像／音效／語音／運鏡／備註（沒有的欄就空著）；沒有始終秒數的列略過。'''
+    import zipfile, xml.etree.ElementTree as ET
+    M = '{http://schemas.openxmlformats.org/spreadsheetml/2006/main}'
+    z = zipfile.ZipFile(absp(r))
+    ss = []
+    if 'xl/sharedStrings.xml' in z.namelist():
+        ss = [''.join(t.text or '' for t in si.iter(M + 't')) for si in ET.fromstring(z.read('xl/sharedStrings.xml')).findall(M + 'si')]
+    sheets = sorted(n for n in z.namelist() if re.match(r'xl/worksheets/sheet\d+\.xml$', n))
+    def col_of(ref):
+        c = re.match(r'[A-Z]+', ref).group(0); n = 0
+        for ch in c: n = n * 26 + ord(ch) - 64
+        return n - 1
+    rows = []
+    for row in ET.fromstring(z.read(sheets[0])).iter(M + 'row'):
+        vals = {}
+        for c in row.findall(M + 'c'):
+            v = c.find(M + 'v'); i = c.find(M + 'is')
+            if v is not None: val = ss[int(v.text)] if c.get('t') == 's' else v.text
+            elif i is not None: val = ''.join(t.text or '' for t in i.iter(M + 't'))
+            else: continue
+            vals[col_of(c.get('r'))] = (val or '').strip()
+        rows.append(vals)
+    if not rows: return {'cuts': []}
+    head = rows[0]
+    KEYS = {'cut': ('cut', '鏡'), 'start': ('秒數始', '開始', 'start'), 'end': ('秒數終', '結束', 'end'),
+            'video': ('影像', '畫面'), 'se': ('音效',), 'vo': ('語音', '台詞'), 'cam': ('運鏡',), 'note': ('備註',)}
+    idx = {}
+    for k, names in KEYS.items():
+        for ci, h in head.items():
+            if any(n.lower() in h.lower() for n in names): idx[k] = ci; break
+    cuts = []
+    for vals in rows[1:]:
+        g = lambda k: vals.get(idx.get(k, -1), '')
+        try: s = float(g('start')); e = float(g('end'))
+        except ValueError: continue
+        if e <= s: continue
+        cuts.append({'no': g('cut'), 'start': round(s, 4), 'end': round(e, 4), 'video': g('video'), 'se': g('se'),
+                     'vo': g('vo'), 'cam': g('cam'), 'note': g('note')})
+    return {'path': r, 'cuts': cuts}
+
 JOBS = {}
+def stash_text_pngs(project):
+    '''文字片段：前端把畫好的透明 PNG（data URL）放在 `_png`，這裡寫進 cache、換成路徑交給 render。'''
+    import base64
+    for t in project.get('tracks', []):
+        for c in t.get('clips', []):
+            d = c.get('_png')
+            if c.get('kind') == 'text' and d and d.startswith('data:image/png;base64,'):
+                b = base64.b64decode(d.split(',', 1)[1])
+                f = os.path.join(CACHE, 'text_' + hashlib.md5(b).hexdigest() + '.png')
+                if not os.path.exists(f): open(f, 'wb').write(b)
+                c['_png'] = f
+
 def start_export(project):
+    stash_text_pngs(project)
     jid = uuid.uuid4().hex[:8]
     d = (project.pop('_outDir', '') or '').strip().strip('"')
     nm = (project.pop('_outName', '') or '').strip()
@@ -201,6 +263,8 @@ class H(BaseHTTPRequestHandler):
             if path == '/api/probe': return self.send_json(probe(q['p']))
             if path == '/api/thumb': return self.send_file(thumb(q['p'], float(q.get('t', 0.5))), 'image/jpeg')
             if path == '/api/beats': return self.send_json(beats(q['p']))
+            if path == '/api/storyboards': return self.send_json(storyboard_files())
+            if path == '/api/storyboard': return self.send_json(storyboard(q['p']))
             if path == '/api/projects':
                 return self.send_json(sorted(os.path.basename(f)[:-5] for f in glob.glob(os.path.join(PROJ, '*.json'))))
             if path == '/api/project':

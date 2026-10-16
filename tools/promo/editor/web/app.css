@@ -78,7 +78,7 @@ main{display:grid;grid-template-columns:300px minmax(0,1fr) 300px;min-height:0}
 #tlScroll{flex:1;overflow:auto;position:relative}
 #tlInner{position:relative;min-height:100%}
 #ruler{position:sticky;top:0;left:0;z-index:5;display:block;background:#17171e;border-bottom:1px solid var(--line);cursor:pointer}
-#grid{position:absolute;top:26px;left:0;pointer-events:none;z-index:1}
+#grid{position:absolute;top:50px;left:0;pointer-events:none;z-index:1}
 #lanes{position:relative;z-index:2}
 .lane{position:relative;border-bottom:1px solid var(--line)}
 .lane.v{background:#191920}
@@ -134,3 +134,21 @@ main{display:grid;grid-template-columns:300px minmax(0,1fr) 300px;min-height:0}
 #dirPick .dp-it{padding:4px 8px;border-radius:4px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #dirPick .dp-it:hover{background:var(--panel2)}
 #dirPick .dp-it.place{color:#ffe9b0}
+
+/* ── 分鏡格（ver -2223）：尺規下面一列，跟著橫向捲動、縱向固定 ── */
+.marksHead{height:24px;border-bottom:1px solid var(--line);font-size:11px;color:var(--dim);padding:4px 8px}
+#marks{position:sticky;top:26px;z-index:5;height:24px;background:#15151b;border-bottom:1px solid var(--line)}
+#marks .empty{position:sticky;left:8px;font-size:11px;color:var(--dim);line-height:24px;padding-left:8px}
+#marks .mk{position:absolute;top:2px;bottom:2px;border-radius:4px;background:#2c2a3a;border:1px solid #4a4560;color:#e8e2f5;
+  font-size:11px;line-height:18px;padding:0 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+#marks .mk:nth-child(even){background:#26303a;border-color:#3f5266}
+#marks .mk b{color:var(--gold);margin-right:4px}
+#marks .mk.on{outline:2px solid var(--sel);z-index:2}
+#marks .mk.fill{box-shadow:inset 0 -3px 0 #5fbf7f}
+.clip.txt{background-color:#6a4a2a}
+.row textarea{flex:1;min-height:60px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;color:inherit;font:inherit;padding:4px 6px;resize:vertical}
+.board dl{display:grid;grid-template-columns:52px 1fr;gap:4px 8px;margin:8px 0}
+.board dt{color:var(--dim)} .board dd{margin:0;white-space:pre-wrap}
+.mt-row{display:flex;align-items:center;gap:8px;margin:8px 0}
+.mt-row label{width:96px;color:var(--dim)}
+.mt-row input[type=number]{width:90px}

@@ -203,7 +203,7 @@ function orderedTracks(){
   const a = project.tracks.filter(t => t.type === 'audio');
   return v.concat(a);
 }
-function renderAll(){ renderHeads(); renderLanes(); drawRuler(); drawGrid(); renderInspector(); updatePlayhead(); drawStage(); }
+function renderAll(){ renderHeads(); renderLanes(); renderMarks(); drawRuler(); drawGrid(); renderInspector(); updatePlayhead(); drawStage(); }
 
 function renderHeads(){
   const host = $('heads'); host.innerHTML = '';
@@ -221,7 +221,8 @@ function renderHeads(){
 
 function renderLanes(){
   const host = $('lanes'); host.innerHTML = '';
-  const width = Math.max(($('tlScroll').clientWidth || 800), (totalDur() + 20) * pps);
+  const bEnd = boardCuts().reduce((m, c) => Math.max(m, c.end), 0);
+  const width = Math.max(($('tlScroll').clientWidth || 800), (Math.max(totalDur(), bEnd) + 20) * pps);
   $('tlInner').style.width = width + 'px';
   for(const t of orderedTracks()){
     const lane = document.createElement('div'); lane.className = 'lane ' + (t.type === 'video' ? 'v' : 'a');
@@ -250,14 +251,158 @@ function renderLanes(){
 }
 function transName(t){ return { cross:'交叉淡化', black:'經黑', white:'經白' }[t] || t; }
 
+/* ═════════════ 分鏡格（ver -2223） ═════════════
+   project.board ＝{ path, cuts:[{no,start,end,video,se,vo,cam,note}] }，由「分鏡」鈕從 xlsx 匯入（server 解析）。
+   只是參考格：不輸出、不佔軌；拖曳會吸附它的頭尾，素材單張丟進某一格的時間範圍就自動對齊那一格（dropFit）。 */
+const boardCuts = () => (project.board && project.board.cuts) || [];
+function cutAt(t){ return boardCuts().find(c => t >= c.start - 1e-6 && t < c.end - 1e-6) || null; }
+function renderMarks(){
+  const host = $('marks'); host.innerHTML = '';
+  const cuts = boardCuts();
+  if(!cuts.length){ const e = document.createElement('span'); e.className = 'empty'; e.textContent = '（沒有分鏡 —— 按上面的「分鏡」匯入 xlsx）'; host.appendChild(e); return; }
+  const vt = project.tracks.filter(t => t.type === 'video' && t.name !== '字');   // 「有畫面」不算文字
+  cuts.forEach((c, i) => {
+    const d = document.createElement('div');
+    const filled = vt.some(t => t.clips.some(x => x.start < c.end - 1e-6 && x.start + x.dur > c.start + 1e-6));
+    d.className = 'mk' + (sel && sel.type === 'mark' && sel.i === i ? ' on' : '') + (filled ? ' fill' : '');
+    d.style.left = (c.start * pps) + 'px'; d.style.width = Math.max(4, (c.end - c.start) * pps - 1) + 'px';
+    d.innerHTML = '<b>' + (c.no || i + 1) + '</b>'; d.appendChild(document.createTextNode(c.video || c.note || ''));
+    d.title = '#' + (c.no || i + 1) + '  ' + fmt(c.start) + '–' + fmt(c.end) + '\n' + [c.video, c.se && '音效：' + c.se, c.vo && '語音：' + c.vo, c.cam && '運鏡：' + c.cam, c.note && '備註：' + c.note].filter(Boolean).join('\n');
+    d.addEventListener('pointerdown', e => { e.stopPropagation(); sel = { type:'mark', i }; selIds.clear(); setPlayhead(c.start); renderAll(); });
+    host.appendChild(d);
+  });
+}
+async function importBoard(){
+  const files = await fetch('/api/storyboards').then(r => r.json());
+  showModal('<h3>匯入分鏡表</h3>' + (files.length ? '<p class="dim">選一份（tools/promo 底下的 .xlsx）。重新匯入＝整份換掉，時間軸上的片段不動。</p><ul>' +
+    files.map(f => '<li data-p="' + f.replace(/"/g, '&quot;') + '">' + f + '</li>').join('') + '</ul>' : '<p class="dim">tools/promo 底下沒有 .xlsx</p>') +
+    (project.board ? '<div class="btns"><button id="bdClear">移除目前的分鏡</button></div>' : ''));
+  $('modalBody').querySelectorAll('li').forEach(li => li.onclick = async () => {
+    const r = await fetch('/api/storyboard?p=' + encodeURIComponent(li.dataset.p)).then(r => r.json());
+    if(r.error || !r.cuts){ status('分鏡讀取失敗：' + (r.error || '')); return; }
+    r.cuts.forEach(c => { c.start = frame(c.start); c.end = frame(c.end); });
+    edit(() => project.board = { path:r.path, cuts:r.cuts });
+    hideModal(); status('已匯入分鏡：' + r.cuts.length + ' 格（' + r.path + '）');
+  });
+  const cl = $('bdClear'); if(cl) cl.onclick = () => { edit(() => project.board = null); hideModal(); };
+}
+
+/* ═════════════ 文字片段（ver -2223） ═════════════
+   畫成一張 W×H 的透明圖：預覽拿它 drawSrc（運鏡／淡化照舊），輸出時把同一張轉 PNG 交給 render（所見即所得）。 */
+const TEXT_FONTS = [
+  ['"Noto Serif TC","Songti TC","PMingLiU",serif', '明體（思源宋體）'],
+  ['DFKai-SB,"BiauKai","Kaiti TC",serif', '楷書（標楷體）'],
+  ['"Noto Sans TC","Microsoft JhengHei",sans-serif', '黑體'],
+  ['Georgia,"Times New Roman",serif', '英文襯線'],
+  ['Impact,"Arial Black",sans-serif', 'Impact'],
+];
+const TEXT_DEF = { text:'標題', font:TEXT_FONTS[1][0], size:110, weight:'bold', color:'#ffffff', x:0.5, y:0.5,
+                   stroke:0, strokeColor:'#000000', glow:0, spacing:0, lineH:1.25 };
+const textCache = new Map();
+function textKey(c){ return JSON.stringify(TEXT_KEYS.map(k => c[k])); }
+const TEXT_KEYS = Object.keys(TEXT_DEF);
+function textCanvas(c){
+  const key = textKey(c); let cv = textCache.get(c.id);
+  if(cv && cv._key === key) return cv;
+  cv = cv || document.createElement('canvas'); cv.width = W; cv.height = H; cv._key = key;
+  const x = cv.getContext('2d'); x.clearRect(0, 0, W, H);
+  const o = Object.assign({}, TEXT_DEF, c);
+  x.font = o.weight + ' ' + o.size + 'px ' + o.font; x.textAlign = 'center'; x.textBaseline = 'middle';
+  try{ x.letterSpacing = o.spacing + 'px'; }catch(_){}
+  const lines = String(o.text || '').split('\n'), lh = o.size * o.lineH;
+  const y0 = o.y * H - (lines.length - 1) * lh / 2;
+  lines.forEach((ln, i) => {
+    const px = o.x * W, py = y0 + i * lh;
+    if(o.glow > 0){ x.save(); x.shadowColor = o.color; x.shadowBlur = o.glow; x.fillStyle = o.color; x.fillText(ln, px, py); x.fillText(ln, px, py); x.restore(); }
+    if(o.stroke > 0){ x.lineJoin = 'round'; x.lineWidth = o.stroke * 2; x.strokeStyle = o.strokeColor; x.strokeText(ln, px, py); }
+    x.fillStyle = o.color; x.fillText(ln, px, py);
+  });
+  textCache.set(c.id, cv);
+  return cv;
+}
+// 字型要等載完才畫得對：載完把快取作廢重畫
+document.fonts && document.fonts.ready.then(() => { textCache.forEach(cv => cv._key = null); drawStage(); }).catch(() => {});
+function textTrack(){
+  // 文字放在名叫「字」的影像軌（最上層）；沒有就建一條
+  let t = project.tracks.find(x => x.type === 'video' && x.name === '字');
+  if(!t){ t = { id:uid(), type:'video', name:'字', clips:[] }; const idx = project.tracks.findIndex(x => x.type === 'audio'); project.tracks.splice(idx < 0 ? project.tracks.length : idx, 0, t); }
+  return t;
+}
+function addText(){
+  const s = snapshot(), t = textTrack();
+  const cut = cutAt(playhead);
+  let st = cut ? cut.start : frame(playhead), dur = cut ? frame(cut.end - cut.start) : 2;
+  const free = placeFree(t.clips, dur, st);
+  if(free === null) { status('「字」軌在這裡沒空位'); return; }
+  const c = Object.assign({ id:uid(), kind:'text', src:'', start:frame(free), dur, fit:'cover', motion:{type:'none', amt:0.1}, fadeIn:0.15, fadeOut:0.15, trans:null }, TEXT_DEF);
+  t.clips.push(c); sel = { type:'clip', id:c.id }; selIds.clear(); selIds.add(c.id);
+  commit(s); status('已加入文字（在屬性面板改字）');
+}
+
+/* ═════════════ 快剪（ver -2223） ═════════════
+   素材庫多選的圖／影片 → 從播放頭起，每張固定秒數（或每 N 拍）排成一串。分鏡格裡就預設填滿那一格。 */
+function montage(){
+  const items = libOrder.filter(x => libSel.has(x.p) && (x.kind === 'image' || x.kind === 'video'));
+  if(items.length < 2){ status('先在素材庫選兩張以上的圖或影片（Ctrl／Shift＋點）'); return; }
+  const cut = cutAt(playhead), st0 = cut ? cut.start : frame(playhead);
+  const span0 = cut ? cut.end - cut.start : items.length * 0.2;
+  showModal('<h3>快剪：' + items.length + ' 個素材</h3>' +
+    (cut ? '<p class="dim">播放頭在分鏡 #' + (cut.no || '') + '（' + fmt(cut.start) + '–' + fmt(cut.end) + '）：預設填滿這一格。</p>' : '') +
+    '<div class="mt-row"><label>開始（秒）</label><input id="mtStart" type="number" step="0.01" value="' + st0.toFixed(2) + '"></div>' +
+    '<div class="mt-row"><label>總長（秒）</label><input id="mtSpan" type="number" step="0.1" value="' + span0.toFixed(2) + '"><span class="dim">素材不夠就循環</span></div>' +
+    '<div class="mt-row"><label>切法</label><select id="mtMode"><option value="sec">每張固定秒數</option>' + (beatTimes.length ? '<option value="beat">依拍點</option>' : '') + '</select></div>' +
+    '<div class="mt-row"><label>每張秒數</label><input id="mtSec" type="number" step="0.05" value="0.2"></div>' +
+    '<div class="mt-row"><label>每幾拍換一張</label><input id="mtBeat" type="number" step="1" min="1" value="1"><span class="dim">' + (beatTimes.length ? '' : '（沒有拍點：先在音訊片段按「以這一段做拍點」）') + '</span></div>' +
+    '<div class="mt-row"><label>順序</label><select id="mtOrder"><option value="shuffle">隨機</option><option value="lib">照素材庫順序</option></select></div>' +
+    '<div class="mt-row"><label>影片取哪一段</label><select id="mtFrom"><option value="mid">中段</option><option value="start">開頭</option><option value="rand">隨機</option></select></div>' +
+    '<div class="btns"><button id="mtGo" class="primary">排進時間軸</button></div>');
+  $('mtGo').onclick = async () => {
+    const start = frame(+$('mtStart').value || 0), end = frame(start + Math.max(1 / FPS, +$('mtSpan').value || 0));
+    let cutsT = [];
+    if($('mtMode').value === 'beat' && beatTimes.length){
+      const n = Math.max(1, Math.round(+$('mtBeat').value || 1));
+      const bs = beatTimes.filter(b => b > start + 1e-6 && b < end - 1e-6).filter((_, i) => (i + 1) % n === 0);
+      cutsT = [start, ...bs.map(frame), end];
+    } else {
+      const sec = Math.max(2 / FPS, +$('mtSec').value || 0.2);
+      for(let t = start; t < end - 1e-6; t = frame(t + sec)) cutsT.push(t);
+      cutsT.push(end);
+    }
+    let order = items.slice();
+    const shuffle = a => { for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    if($('mtOrder').value === 'shuffle') shuffle(order);
+    const from = $('mtFrom').value;
+    // 放哪一軌：這段時間完全空著的影像軌（「字」軌除外，由下往上）；都沒有就新開一條
+    const s = snapshot();
+    let tr = project.tracks.find(t => t.type === 'video' && t.name !== '字' && !overlapsAny(t.clips, start, end - start));
+    if(!tr){ tr = { id:uid(), type:'video', name:'V' + (project.tracks.filter(t => t.type === 'video').length + 1), clips:[] };
+             const idx = project.tracks.findIndex(t => t.type === 'audio' || t.name === '字'); project.tracks.splice(idx < 0 ? project.tracks.length : idx, 0, tr); }
+    status('排快剪…');
+    let k = 0;
+    for(let i = 0; i + 1 < cutsT.length; i++){
+      const a = cutsT[i], d = frame(cutsT[i + 1] - a); if(d < 1 / FPS) continue;
+      if(k > 0 && k % order.length === 0 && $('mtOrder').value === 'shuffle'){ const last = order[order.length - 1]; shuffle(order); if(order[0] === last && order.length > 1) order.push(order.shift()); }
+      const it = order[k % order.length]; k++;
+      const c = { id:uid(), kind:it.kind, src:it.p, start:a, dur:d, in:0, speed:1, fit:'cover', motion:{type:'none', amt:0.2}, fadeIn:0, fadeOut:0, trans:null };
+      if(it.kind === 'video'){
+        const len = (await probe(it.p)).dur || 0, room = Math.max(0, len - d);
+        c.in = frame(from === 'start' ? 0 : from === 'rand' ? Math.random() * room : room / 2);
+      }
+      tr.clips.push(c);
+    }
+    sel = null; selIds.clear(); commit(s); hideModal();
+    status('快剪：' + k + ' 段，放在 ' + tr.name + '（' + fmt(start) + '–' + fmt(end) + '）');
+  };
+}
+
 function clipEl(t, c){
   const d = document.createElement('div');
   const isA = t.type === 'audio';
-  d.className = 'clip ' + (isA ? 'aud' : c.kind === 'image' ? 'img' : c.kind === 'color' ? 'col' : 'vid') + ((sel && sel.type === 'clip' && sel.id === c.id) || selIds.has(c.id) ? ' sel' : '');
+  d.className = 'clip ' + (isA ? 'aud' : c.kind === 'image' ? 'img' : c.kind === 'color' ? 'col' : c.kind === 'text' ? 'txt' : 'vid') + ((sel && sel.type === 'clip' && sel.id === c.id) || selIds.has(c.id) ? ' sel' : '');
   d.style.left = (c.start * pps) + 'px'; d.style.width = Math.max(4, c.dur * pps) + 'px';
   if(!isA && c.kind === 'video') d.style.backgroundImage = 'url("/api/thumb?p=' + encodeURIComponent(c.src) + '&t=' + ((c.in || 0) + 0.3).toFixed(2) + '")';
   if(!isA && c.kind === 'image') d.style.backgroundImage = 'url("/m/' + encodeURI(c.src) + '")';
-  const lab = document.createElement('div'); lab.className = 'lab'; lab.textContent = (c.link ? '🔗 ' : '') + baseName(c.src || '色塊');
+  const lab = document.createElement('div'); lab.className = 'lab'; lab.textContent = c.kind === 'text' ? '字　' + String(c.text || '').replace(/\n/g, ' ') : (c.link ? '🔗 ' : '') + baseName(c.src || '色塊');
   const meta = document.createElement('div'); meta.className = 'meta';
   const bits = [c.dur.toFixed(2) + 's'];
   if((c.speed || 1) !== 1) bits.push('×' + (+c.speed).toFixed(2));
@@ -287,6 +432,7 @@ function trackAtY(clientY){
 function snapPoints(exclude){
   const pts = [0, playhead];
   for(const [, c] of allClips()) if(!exclude.has(c.id)){ pts.push(c.start, c.start + c.dur); }
+  for(const c of boardCuts()) pts.push(c.start, c.end);   // 分鏡格的頭尾
   return pts.concat(beatTimes);
 }
 function snap(t, pts){
@@ -294,6 +440,39 @@ function snap(t, pts){
   let best = t, bd = SNAP_PX / pps;
   for(const p of pts){ const d = Math.abs(p - t); if(d < bd){ bd = d; best = p; } }
   return frame(best);
+}
+
+/* 同軌不交疊：拖到別的片段上時，貼到它的頭或尾（無縫接上），取離想去的位置最近、而且放得下的那一個。
+   放不下（夾在兩段之間太窄、或會壓到別段）回 null，呼叫端就停在上一個合法位置。 */
+const OVL_EPS = 0.5 / FPS;
+function overlapsAny(clips, s, dur){ return clips.some(o => s < o.start + o.dur - OVL_EPS && s + dur > o.start + OVL_EPS); }
+function placeFree(clips, dur, want){
+  const ok = s => s >= -OVL_EPS && !overlapsAny(clips, s, dur);
+  if(ok(want)) return Math.max(0, want);
+  let best = null;
+  for(const o of clips) for(const s of [o.start + o.dur, o.start - dur])
+    if(ok(s) && (best === null || Math.abs(s - want) < Math.abs(best - want))) best = Math.max(0, s);
+  return best;
+}
+/* 群組一起移：試「拖的位移」本身，以及讓群組內任一段貼齊任一個外部片段頭尾的位移，取最近而且全部放得下的那一個 */
+function groupFreeDelta(group, orig, want, minD){
+  const outside = new Map();   // trackId → 不在群組內的片段
+  const items = [...group.values()].map(x => { const [t] = findClip(x.id); return { x, t, s0:orig.get(x.id) }; });
+  for(const it of items) if(!outside.has(it.t.id)) outside.set(it.t.id, it.t.clips.filter(o => !group.has(o.id)));
+  const ok = d => d >= minD - OVL_EPS && items.every(it => !overlapsAny(outside.get(it.t.id), it.s0 + d, it.x.dur));
+  if(ok(want)) return want;
+  let best = null;
+  for(const it of items) for(const o of outside.get(it.t.id)) for(const d of [o.start + o.dur - it.s0, o.start - it.x.dur - it.s0])
+    if(ok(d) && (best === null || Math.abs(d - want) < Math.abs(best - want))) best = d;
+  return best;
+}
+/* 裁切的邊界：這一段原本的位置，左邊最近一段的尾、右邊最近一段的頭 */
+function trimBounds(track, ex, s, e){
+  let lo = 0, hi = Infinity;
+  for(const o of track.clips){ if(ex.has(o.id)) continue;
+    if(o.start + o.dur <= s + OVL_EPS) lo = Math.max(lo, o.start + o.dur);
+    else if(o.start >= e - OVL_EPS) hi = Math.min(hi, o.start); }
+  return { lo, hi };
 }
 
 function startDrag(e, track, c, mode){
@@ -319,6 +498,9 @@ function startDrag(e, track, c, mode){
   const isMedia = c.kind === 'video' || track.type === 'audio';
   const srcLen = (c.src && probeCache[c.src] && probeCache[c.src].dur) || 0;   // 素材全長（0＝還不知道，不夾）
   if(c.src && !probeCache[c.src]) probe(c.src);
+  // 裁切的邊界（同軌不交疊）：連結的聲音同步裁切，它那一軌的鄰居也要算進來
+  const tb = trimBounds(track, ex, o.start, o.start + o.dur);
+  if(linked){ const [lt] = findClip(linked.id); const b = trimBounds(lt, ex, o.start, o.start + o.dur); tb.lo = Math.max(tb.lo, b.lo); tb.hi = Math.min(tb.hi, b.hi); }
   let moved = false;
   const onMove = ev => {
     const dt = (ev.clientX - x0) / pps;
@@ -328,25 +510,37 @@ function startDrag(e, track, c, mode){
       let ns = o.start + dt;
       const s1 = snap(ns, pts), s2 = snap(ns + o.dur, pts) - o.dur;
       ns = Math.abs(s1 - ns) <= Math.abs(s2 - ns) ? s1 : s2;
-      c.start = Math.max(0, frame(ns));
-      const tt = trackAtY(ev.clientY);
-      if(tt && tt !== track && tt.type === track.type){ track.clips = track.clips.filter(x => x !== c); tt.clips.push(c); track = tt; }
-      if(linked) linked.start = Math.max(0, c.start + (lo.start - o.start));
+      ns = Math.max(0, frame(ns));
+      const hov = trackAtY(ev.clientY);
+      const tt = (hov && hov.type === track.type) ? hov : track;
+      // 同軌碰到別段 → 貼齊它的頭或尾；連結的聲音在它那一軌也不能壓到別段，放不下就停在原地
+      const off = linked ? lo.start - o.start : 0;
+      const lt = linked ? findClip(linked.id)[0] : null;
+      const cands = [placeFree(tt.clips.filter(x => x !== c), o.dur, ns)];
+      if(linked){ const la = placeFree(lt.clips.filter(x => x !== linked), linked.dur, ns + off); if(la !== null) cands.push(la - off); }
+      const fit = cands.filter(s => s !== null && s >= 0 && !overlapsAny(tt.clips.filter(x => x !== c), s, o.dur) &&
+                                  (!linked || !overlapsAny(lt.clips.filter(x => x !== linked), s + off, linked.dur)))
+                       .sort((a, b) => Math.abs(a - ns) - Math.abs(b - ns))[0];
+      if(fit === undefined) return;
+      c.start = frame(fit);
+      if(tt !== track){ track.clips = track.clips.filter(x => x !== c); tt.clips.push(c); track = tt; }
+      if(linked) linked.start = Math.max(0, frame(c.start + off));
     } else {
       if(mode === 'spd'){
         // 改速度：用掉的素材不變，終點移動 → 拉長變慢、縮短變快
         const srcSpan = o.dur * o.speed;
-        let end = snap(o.start + o.dur + dt, pts); end = Math.max(o.start + 2 / FPS, end);
-        c.speed = clamp(srcSpan / (end - o.start), 0.1, 8); c.dur = srcSpan / c.speed;
+        let end = snap(o.start + o.dur + dt, pts); end = Math.max(o.start + 2 / FPS, Math.min(end, tb.hi));
+        c.speed = clamp(srcSpan / (end - o.start), 0.1, 8); c.dur = Math.min(srcSpan / c.speed, tb.hi - o.start);
       } else if(mode === 'r'){
         // 裁切右邊：速度不變，不超過素材結尾
         let end = snap(o.start + o.dur + dt, pts); end = Math.max(o.start + 2 / FPS, end);
         if(isMedia && srcLen) end = Math.min(end, Math.max(o.start + o.dur, o.start + (srcLen - o.in) / o.speed));   // 本來就比素材長（停最後一格）的不吃短
+        end = Math.min(end, tb.hi);   // 不壓到右邊那一段：碰到就停在它的頭（無縫）
         c.dur = end - o.start;
       } else {
         // 裁切左邊：終點不動，素材起點跟著移，不早於素材開頭
         let st = snap(o.start + dt, pts);
-        const minSt = isMedia ? Math.max(0, o.start - o.in / o.speed) : 0;
+        const minSt = Math.max(tb.lo, isMedia ? Math.max(0, o.start - o.in / o.speed) : 0);   // 不壓到左邊那一段
         st = clamp(st, minSt, o.start + o.dur - 2 / FPS);
         if(isMedia) c.in = Math.max(0, o.in + (st - o.start) * o.speed);
         c.start = st; c.dur = o.start + o.dur - st;
@@ -377,7 +571,9 @@ function startGroupMove(e, c){
     let ns = o + (ev.clientX - x0) / pps;
     const s1 = snap(ns, pts), s2 = snap(ns + c.dur, pts) - c.dur;
     ns = Math.abs(s1 - ns) <= Math.abs(s2 - ns) ? s1 : s2;
-    const d = Math.max(frame(ns - o), -minStart);
+    // 同軌不交疊：碰到群組外的片段就整組貼齊它；放不下就停在上一個合法位置
+    const d = groupFreeDelta(group, orig, Math.max(frame(ns - o), -minStart), -minStart);
+    if(d === null) return;
     group.forEach((x, id) => x.start = frame(orig.get(id) + d));
     renderLanes(); drawStage();
   };
@@ -439,10 +635,15 @@ async function onLaneDrop(e, track, lane){
   if(raw){ const v = JSON.parse(raw); items = Array.isArray(v) ? v : [v]; }
   else if(e.dataTransfer.files && e.dataTransfer.files.length) items = await uploadFiles([...e.dataTransfer.files]);
   const before = snapshot(); let at = t;
+  // 單張圖／影片丟進分鏡格的時間範圍 → 對齊那一格（ver -2223）
+  const cut = (items.length === 1 && items[0].kind !== 'audio' && track.type === 'video' && $('snap').checked) ? cutAt(xToT(e)) : null;
+  if(cut) at = cut.start;
   for(const it of items){
     const want = it.kind === 'audio' ? 'audio' : 'video';
     const tr = track.type === want ? track : project.tracks.find(x => x.type === want);
     const made = await makeClips(it, at, tr);
+    if(cut){ const len = frame(cut.end - cut.start); made.forEach(([, c]) => { c.start = cut.start; c.dur = it.kind === 'image' ? len : Math.min(c.dur, len); });
+             const v = made[0][1]; made.slice(1).forEach(([, c]) => c.dur = v.dur); status('已對齊分鏡 #' + (cut.no || '')); }
     made.forEach(([tt, c]) => tt.clips.push(c));
     at += made[0][1].dur;
   }
@@ -512,6 +713,19 @@ function renderInspector(){
     host.append(bs, note('拖其中一段＝整批一起移動。<br><kbd>Ctrl</kbd>／<kbd>Shift</kbd>＋點＝加入或移出選取。<br><kbd>Ctrl+C</kbd>／<kbd>X</kbd>／<kbd>V</kbd> 複製／剪下／貼上（貼在播放頭）。<br><kbd>Esc</kbd> 取消選取。'));
     return;
   }
+  if(sel && sel.type === 'mark'){
+    const m = boardCuts()[sel.i]; if(!m){ sel = null; return renderInspector(); }
+    host.innerHTML = '<h3>分鏡 #' + (m.no || sel.i + 1) + '</h3>';
+    const b = document.createElement('div'); b.className = 'board';
+    const dl = document.createElement('dl');
+    [['時間', fmt(m.start) + ' – ' + fmt(m.end) + '（' + (m.end - m.start).toFixed(2) + ' 秒）'], ['影像', m.video], ['音效', m.se], ['語音', m.vo], ['運鏡', m.cam], ['備註', m.note]]
+      .forEach(([k, v]) => { if(!v) return; const dt = document.createElement('dt'); dt.textContent = k; const dd = document.createElement('dd'); dd.textContent = v; dl.append(dt, dd); });
+    b.appendChild(dl); host.appendChild(b);
+    const bs = document.createElement('div'); bs.className = 'btns';
+    bs.append(btn('在這一格加文字', addText), btn('快剪填滿這一格', montage));
+    host.append(bs, note('素材庫的圖／影片<b>單張</b>拖進這一格的時間範圍，會自動對齊這一格（開始＝格頭、長度＝格長；影片比格短就用影片長）。<br>格子下緣有綠線＝這一格已經有畫面。'));
+    return;
+  }
   if(sel && sel.type === 'junc'){
     const [, c] = findClip(sel.id); if(!c || !c.trans){ sel = null; selIds.clear(); return renderInspector(); }
     host.innerHTML = '<h3>轉場（淡入淡出）</h3>';
@@ -525,7 +739,8 @@ function renderInspector(){
   if(sel && sel.type === 'clip'){
     const [t, c] = findClip(sel.id); if(!c){ sel = null; selIds.clear(); return renderInspector(); }
     const isA = t.type === 'audio';
-    host.innerHTML = '<h3>' + (isA ? '聲音片段' : c.kind === 'image' ? '圖片片段' : c.kind === 'color' ? '色塊' : '影片片段') + '</h3>';
+    host.innerHTML = '<h3>' + (isA ? '聲音片段' : c.kind === 'image' ? '圖片片段' : c.kind === 'color' ? '色塊' : c.kind === 'text' ? '文字' : '影片片段') + '</h3>';
+    if(c.kind === 'text') textRows(host, c);
     if(c.src){ const s = document.createElement('div'); s.className = 'src'; s.textContent = c.src; host.append(s); }
     host.append(rowNum('開始', c.start, 1 / FPS, v => edit(() => moveClip(c, Math.max(0, frame(v))))));
     host.append(rowNum('長度', c.dur, 1 / FPS, v => edit(() => setDur(c, Math.max(2 / FPS, frame(v)), t))));
@@ -534,7 +749,7 @@ function renderInspector(){
       host.append(rowNum('速度', c.speed || 1, 0.05, v => edit(() => setSpeed(c, clamp(v, 0.1, 8)))));
     }
     if(!isA){
-      host.append(rowSelect('適配', c.fit || 'cover', [['cover','填滿（裁切）'],['contain','完整（留黑）']], v => edit(() => c.fit = v)));
+      if(c.kind !== 'text') host.append(rowSelect('適配', c.fit || 'cover', [['cover','填滿（裁切）'],['contain','完整（留黑）']], v => edit(() => c.fit = v)));
       if(c.kind === 'color') host.append(rowColor('顏色', c.color || '#000000', v => edit(() => c.color = v)));
       host.append(rowSelect('運鏡', (c.motion || {}).type || 'none',
         [['none','無'],['up','由下往上平移'],['down','由上往下平移'],['lr','由左往右平移'],['rl','由右往左平移'],['zin','慢推（放大）'],['zout','慢拉（縮小）']],
@@ -558,7 +773,7 @@ function renderInspector(){
   host.innerHTML = '<h3>專案</h3>';
   host.append(rowCheck('輸出時響度拉到 −14 LUFS', project.loudnorm !== false, v => edit(() => project.loudnorm = v)));
   const bs = document.createElement('div'); bs.className = 'btns';
-  bs.append(btn('＋黑色色塊', () => addColor('#000000')), btn('＋白色色塊', () => addColor('#ffffff')));
+  bs.append(btn('＋黑色色塊', () => addColor('#000000')), btn('＋白色色塊', () => addColor('#ffffff')), btn('＋文字', addText), btn('匯入分鏡', importBoard));
   host.append(bs);
   host.append(note(
     '素材從左邊拖進時間軸；桌面的檔案也可以直接拖進來。<br>' +
@@ -586,6 +801,22 @@ function row(label, el){ const d = document.createElement('div'); d.className = 
 function rowNum(label, v, step, on){ const i = document.createElement('input'); i.type = 'number'; i.step = step; i.value = (+v).toFixed(3).replace(/\.?0+$/, '') || '0'; i.onchange = () => on(+i.value); return row(label, i); }
 function rowSelect(label, v, opts, on){ const s = document.createElement('select'); opts.forEach(([k, n]) => { const o = document.createElement('option'); o.value = k; o.textContent = n; s.appendChild(o); }); s.value = v; s.onchange = () => on(s.value); return row(label, s); }
 function rowColor(label, v, on){ const i = document.createElement('input'); i.type = 'color'; i.value = v; i.onchange = () => on(i.value); return row(label, i); }
+function rowText(label, v, on){ const i = document.createElement('textarea'); i.value = v; i.onchange = () => on(i.value); return row(label, i); }
+function textRows(host, c){
+  const o = Object.assign({}, TEXT_DEF, c);
+  host.append(rowText('文字', o.text, v => edit(() => c.text = v)));
+  host.append(rowSelect('字型', o.font, TEXT_FONTS, v => edit(() => c.font = v)));
+  host.append(rowNum('字級', o.size, 2, v => edit(() => c.size = clamp(v, 8, 600))));
+  host.append(rowSelect('粗細', o.weight, [['normal','一般'],['bold','粗']], v => edit(() => c.weight = v)));
+  host.append(rowColor('顏色', o.color, v => edit(() => c.color = v)));
+  host.append(rowNum('水平位置 %', Math.round(o.x * 100), 1, v => edit(() => c.x = clamp(v, -50, 150) / 100)));
+  host.append(rowNum('垂直位置 %', Math.round(o.y * 100), 1, v => edit(() => c.y = clamp(v, -50, 150) / 100)));
+  host.append(rowNum('字距', o.spacing, 1, v => edit(() => c.spacing = clamp(v, -50, 200))));
+  host.append(rowNum('行高', o.lineH, 0.05, v => edit(() => c.lineH = clamp(v, 0.6, 3))));
+  host.append(rowNum('描邊', o.stroke, 1, v => edit(() => c.stroke = clamp(v, 0, 40))));
+  host.append(rowColor('描邊顏色', o.strokeColor, v => edit(() => c.strokeColor = v)));
+  host.append(rowNum('發光', o.glow, 2, v => edit(() => c.glow = clamp(v, 0, 120))));
+}
 function rowCheck(label, v, on){ const i = document.createElement('input'); i.type = 'checkbox'; i.checked = v; i.onchange = () => on(i.checked); return row(label, i); }
 function btn(t, fn){ const b = document.createElement('button'); b.textContent = t; b.onclick = fn; return b; }
 function note(h){ const d = document.createElement('div'); d.className = 'note'; d.innerHTML = h; return d; }
@@ -706,6 +937,7 @@ function drawStage(){
     g.save(); g.globalAlpha = a;
     const local = t - r.S, D = r.E - r.S;
     if(c.kind === 'color'){ g.fillStyle = c.color || '#000'; g.fillRect(0, 0, W, H); }
+    else if(c.kind === 'text'){ drawSrc(textCanvas(c), W, H, c, local, D); }
     else if(c.kind === 'image'){ const im = imgFor(c.src); if(im.complete && im.naturalWidth) drawSrc(im, im.naturalWidth, im.naturalHeight, c, local, D); }
     else { const v = vidFor(c); if(v.readyState >= 2 && v.videoWidth) drawSrc(v, v.videoWidth, v.videoHeight, c, local, D); }
     if(col && ca > 0){ g.globalAlpha = a * ca; g.fillStyle = col; g.fillRect(0, 0, W, H); }
@@ -838,7 +1070,11 @@ async function dirBrowser(start, onPick){
 async function runExport(dir, name){
   try{ localStorage.setItem(OUTDIR_KEY, dir); }catch(_){}
   $('exGo').disabled = true; $('btnExport').disabled = true;
-  const body = JSON.stringify(Object.assign({}, project, { _outDir: dir, _outName: name }));
+  // 文字片段：把預覽畫的那一張轉成 PNG 一起送過去（輸出＝預覽，ver -2223）
+  try{ await document.fonts.ready; }catch(_){}
+  const pj = JSON.parse(snapshot());
+  pj.tracks.forEach(t => t.clips.forEach(c => { if(c.kind === 'text') c._png = textCanvas(c).toDataURL('image/png'); }));
+  const body = JSON.stringify(Object.assign(pj, { _outDir: dir, _outName: name }));
   const job = await fetch('/api/export', { method:'POST', body }).then(r => r.json());
   if(job.error){ $('exMsg').textContent = '失敗：' + job.error; $('exGo').disabled = false; $('btnExport').disabled = false; return; }
   const poll = async () => {
@@ -867,6 +1103,7 @@ function bind(){
   $('btnUndo').onclick = doUndo; $('btnRedo').onclick = doRedo;
   $('btnSave').onclick = saveProject; $('btnOpen').onclick = openProject; $('btnExport').onclick = exportMp4;
   $('btnSplit').onclick = splitSel; $('btnDel').onclick = delSel;
+  $('btnBoard').onclick = importBoard; $('btnText').onclick = addText; $('btnMontage').onclick = montage;
   $('btnAddV').onclick = () => { const s = snapshot(); const n = project.tracks.filter(t => t.type === 'video').length + 1;
     const idx = project.tracks.findIndex(t => t.type === 'audio'); project.tracks.splice(idx < 0 ? project.tracks.length : idx, 0, { id:uid(), type:'video', name:'V' + n, clips:[] }); commit(s); };
   $('btnAddA').onclick = () => { const s = snapshot(); project.tracks.push({ id:uid(), type:'audio', name:'A' + (project.tracks.filter(t => t.type === 'audio').length + 1), clips:[] }); commit(s); };
@@ -911,7 +1148,7 @@ function bind(){
     else if(e.ctrlKey && e.key.toLowerCase() === 's'){ e.preventDefault(); saveProject(); }
   });
 }
-function setZoom(v){ pps = v; $('zoom').value = Math.round(v); renderLanes(); drawRuler(); drawGrid(); updatePlayhead(); }
+function setZoom(v){ pps = v; $('zoom').value = Math.round(v); renderLanes(); renderMarks(); drawRuler(); drawGrid(); updatePlayhead(); }
 
 (async function init(){
   bind();
