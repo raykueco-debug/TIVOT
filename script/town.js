@@ -1917,7 +1917,7 @@ export const TOWNS = {
                { flag:'cr_chase', need:'dm_altar_done', until:'cr_return', fromStage:17, sides:CR_SIDES, goto:'@capital_outer:gate', lines:CAP_RETURN } ],
         once:true,
         lines:[ nou('surprise','帝都的攝政王廣場，好壯觀。'),
-                nou('surprise','每次看都覺得很震憾呢。') ],
+                nou('surprise','每次看都覺得很震撼呢。') ],
         /* ══ 出航（ver -387，Ray：「預設的城鎮入口下方為『出航』。在到達取得船支的
              劇情前，點擊出航諾薇兒會要求要等蕾娜，船還沒好」）══
            ⚠ 掛在**城鎮入口**這個節點上（`entry`），不是每個節點都有 —— 城裡走到一半
@@ -3889,7 +3889,7 @@ export const TOWNS = {
           nou('awkward','還得去看看那個遺蹟呢……'),
           sor('amaze','嚄——'),
           sor('laugh','那、我也一起去吧！'),
-          nou('explain','索拉娜小姐也？'),
+          nou('explain','索菈娜小姐也？'),
           sor('hug','總要有個帶路的吧？況且我的身手還算不錯吧？吶？'),
           /* 插圖 044（動畫版，config.tuning.cgAnim）：播完自己卸下（finishCgAnim），下一拍才回到對話。 */
           { speaker:'NARRATION', text:'', cg:'044_soranahug', cgNoTime:true, auto:2600 },
@@ -3944,7 +3944,7 @@ export const TOWNS = {
           { end:true },
           Object.assign(jer(null,'可——惜！再挑戰看看？'), { label:'svr_fail1' }),
           { end:true },
-          Object.assign(jer(null,'蕃茄人11號大獲全勝！不干心就再挑戰看看啊？'), { label:'svr_fail2' }),
+          Object.assign(jer(null,'蕃茄人11號大獲全勝！不甘心就再挑戰看看啊？'), { label:'svr_fail2' }),
         ] } ] },
       /* ══ 獵人小屋・謝尼（ver -859 改：Ray「要像賞金獵人公會一樣有表可以看」）══
          走進去＝店主立繪＋「兌換」鈕 → 開兌換表（showExchange，今日配對）。
@@ -4163,7 +4163,7 @@ export const TOWNS = {
           ren('evaluate','恐怕，聖王廳早就已經知道神殿甦醒的事了……'),
           ren('evaluateclosemouth','現在竟然連作戰課都摻和進來。'),
           any('talk','那，我……'),
-          ren('smile','抱歉了，安雅小姐。還得委曲妳和我們同行一段時間，可以嗎？'),
+          ren('smile','抱歉了，安雅小姐。還得委屈妳和我們同行一段時間，可以嗎？'),
           any('shy','好……好！'),
           /* ⚠ 稿上這一句沒有標差分 —— 立繪是**持續狀態**，不寫就是沿用上一張
              （§6.5：不要為了「補一個」而換掉導演沒有要換的表情）。 */
@@ -5382,7 +5382,7 @@ export const TOWNS = {
            ⚠ 新增不是同名覆蓋 ⇒ **不必動 `ASSET_VER`**（§5）。 */
         bgWhen:[ { need:'fallen_altar_on', bg:'fallen_altaractive' } ],
         acts:[ { flag:'fallen_altar', sides:{ RENNA:'L' }, lines:[
-          ren('ask','跟木亞克遺蹟一樣的裝置……安雅小姐？'),
+          ren('ask','跟木雅克遺蹟一樣的裝置……安雅小姐？'),
           any('talk','好。'),
           /* 立繪撤出 → 感應演出 → 在全白之下把祭壇換成啟動版（同木雅克）。 */
           { speaker:'ANYA', text:'', portrait:{ char:'ANYA', show:false },
@@ -6059,7 +6059,7 @@ export const TOWNS = {
         Object.assign(any('argue','對啊。', { skipIf:'ep_m2_route' }), { bubbleFx:'vein' }),
         any('upset','',       { onlyIf:'ep_m2_route' }),
         sor('cringe',''),
-        nou('decode','也不能怪索拉娜啦……'),
+        nou('decode','也不能怪索菈娜啦……'),
         sor('surprise','諾薇兒……！'),
         nou('sadsmile','只能怪我拖後腿，沒辦法像上一個搭檔那樣支援他。'),
         Object.assign(sor('die','……我寧可妳罵我。'), { bubbleFx:'gloom' }),
@@ -6331,7 +6331,7 @@ export const TOWNS = {
              ⚠⚠ 拍上的 `bgm:` 只管**換曲的那一刻**；「撐到隔天」是城上的 `bgmWhen`
                在管（`vn_lib_done` → `vn_day2`）—— 不然走一格就被打回 `taisho2`。
                兩者分工不同，不是抄兩份（同東方泊地那一組的說明）。 */
-          Object.assign(nou('worry','索拉娜小姐！'), { bubbleFx:'shout' }),
+          Object.assign(nou('worry','索菈娜小姐！'), { bubbleFx:'shout' }),
           sor('readhappy','只是些評價而已，沒那麼重要啦！'),
           Object.assign(nou('furious','很重要！'), { bubbleFx:'shout' }),
           sor('cringe',''),
@@ -10780,7 +10780,8 @@ export const TOWNS = {
        ⚠ 聖林祭場原本是安全區＋不出怪，Ray 在那裡放了執劍天使 ⇒ 兩條拿掉，改成戰鬥格
          （`noWild` 會連固定怪一起擋，兩者不能並存）。 */
     wildSpawn: {
-      rate: 0.3,
+      rate: [0.15, 0.20],   // ver -2220 Ray：「降到 15%~20% 浮動看看」（原 0.3）；區間的解讀見 modules/town.js 的 wildRateRoll
+      respawn: 0.15,        // ver -2220 Ray：「重刷率也降到 15%」（池子打完一輪／回到出過怪的格子；原為全域 0.25）
       fixed: {
         /* ⚠ ver -1858：骨龕／積石塚／王塚／圓塔頂**不在這裡了** —— 那四場改成各自那一格的劇情段落
            （Ray 的稿：「ABCD 皆為結算怪；走到任一場景觸發戰鬥，戰後依第幾個跑劇情」），一輪一次。 */

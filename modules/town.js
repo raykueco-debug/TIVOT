@@ -2168,6 +2168,14 @@ export function wildDebug(){
            沒擲的原因: wildStat.skip };
 }
 function wildRoll(n){ const a=wildActDue(n); if(a) chaseOnEncounter(); return a; }
+/* ══ 遇敵率可以寫成浮動區間（ver -2220，Ray：「廢城隨機戰鬥率降到 15%~20% 浮動看看」）══
+   `wildSpawn.rate` 寫數字＝固定機率（舊資料不變）；寫 `[下限, 上限]`＝**每次擲骰**在區間內均勻取一個。
+   ⚠ 解讀只有這一支（鐵律 7）：擲骰那一處問它，不要在別處自己拆陣列。 */
+function wildRateRoll(W){
+  const r = W && W.rate;
+  if(Array.isArray(r)) return r[0] + Math.random()*((r[1]!=null?r[1]:r[0]) - r[0]);
+  return r || 0;
+}
 /* ══⚠⚠⚠ **卡上宣告的出沒地**（ver -1584b，Ray：「指定地點要分整個探索地圖跟房間。
    指定探索地圖的話就是圖中安全區以外的任一格都有機會刷出；指定房間的話就是只有
    該房間才刷出」）══════════════════════════════════════════════════════════
@@ -2307,9 +2315,12 @@ function wildActDue(n){
        ⚠ `wildDone` 的語意沒有變：它管的是**第一輪**同種不重複，不是「永遠只遇一次」。
        ⚠ 必出格（`fixed`）與結算怪不受影響：那兩種本來就是一趟一次。 */
     const repeat = !fresh.length;
+    /* 重刷率可逐圖覆寫：`wildSpawn.respawn`（ver -2220，Ray：「廢城重刷率也降到 15%」）；
+       沒寫＝全域的 `tuning.wildRespawnRate`（預設 0.25）。 */
     let rate = (repeat || wildCleared.has(nodeId))
-      ? ((GAME_CONFIG.tuning||{}).wildRespawnRate!=null ? GAME_CONFIG.tuning.wildRespawnRate : 0.25)
-      : ((W&&W.rate)||(cardPool.length?((GAME_CONFIG.tuning||{}).wildRespawnRate||0.25):0));
+      ? ((W && W.respawn!=null) ? W.respawn
+         : (GAME_CONFIG.tuning||{}).wildRespawnRate!=null ? GAME_CONFIG.tuning.wildRespawnRate : 0.25)
+      : (wildRateRoll(W)||(cardPool.length?((GAME_CONFIG.tuning||{}).wildRespawnRate||0.25):0));
     /* ══⚠⚠⚠ **`mustWild:true` ＝這一格**整輪只保證第一次**必出怪**
        （ver -1616 立；**-1648 由「每一趟」改成「整輪一次」**，Ray：「100% 遇敵格
        也只有剛進去那一次，兩格都遇敵後就解除」）══
