@@ -1547,6 +1547,12 @@ const BA_CHAPTERS = [
     flags:[ 'cap_raid','mapcard_capital','inn_seen_capital_inn','town_capital_inn','town_kind_inn',
             'inn_wait','inn_missed','cap_dream','inn_tip_sit','inn_tip_knock','inn_tip_sleep' ],
     enter:'town', town:'capital', node:'inn' },
+  /* ══ 溫斯摩爾港・城鎮版（ver -2221，Ray：「先把溫斯摩爾港的城鎮接好，開給我進去走走」）══ 測試入口：
+     這座城還沒有劇情，落在中央廣場、早上 10 點（店都開著）。好感照 A 線那一組（不影響這座城）。 */
+  { id:'winsmoortown', name:i18nT('溫斯摩爾港・城鎮'), sub:i18nT('測試：城鎮版 12 格走走看（無劇情）'),
+    stage:16, clockHour:10, named:true, aff:A_AFF,
+    flags:[ 'mapcard_winsmoor','inn_tip_sit','inn_tip_knock','inn_tip_sleep' ],
+    enter:'town', town:'winsmoor', node:'square' },
 ];
 /* 插在 Stage 9 之後，選單才是 9 → 10-A…12-A → 10-B…12-B → 13 → 14 的順序。 */
 CHAPTERS.splice(CHAPTERS.findIndex(c=>c.id==='stage9')+1, 0, ...A_CHAPTERS);

@@ -12,7 +12,8 @@
    - 可選：7 張 Flash 只給 1264 寬的（plaza／north／cliff／chief／lighthouse／slipway 的 dawn、west dusk）若 Ray 嫌軟，用 2528 的重跑。
 2. **西泊（溫斯摩爾港）城鎮版時段差分剩 20 張**：church／cityhall／oldtown／dock／uptown／inn × dawn／dusk／night ＋ bar dusk／night。進度表在 `winsmoor_town/_spec.md` 尾段。
 3. 小地圖：聖索菲亞修正（碼頭→貧民區圖示、補酒吧／餐廳點）、聖索菲亞郊外 `sofiaout`；薇拉馮德等 Ray 說開工（佈局圖已照 v3 重產）。
-4. 西泊戰鬥版：城鎮版定了再做。
+4. 西泊戰鬥版：**可以排了**（10-16 城鎮版已由程式接好）。守城戰 40 格現有的全是遠景、Ray 判定不能用 ⇒ 整批重畫；
+   **標準照帝都戰鬥圖**（Ray：「之前給過一次要求」）—— 規格與樣張寫在 `winsmoor_town/_spec.md` 的「戰鬥版」那一列。時段＝**黃昏**（Ray 10-16 定，全批單張）。
 
 ## 二、等 Ray 決定
 

@@ -10494,8 +10494,13 @@ export const TOWNS = {
      ⚠ 還沒有的：`bgm`（等 Ray）、小地圖（美術另開一單）、酒吧 `vela_bar` 的掛點（工單第 3 點，等 Ray）。 */
   /* ══ 溫斯摩爾港（Winsmoor，暫名）—— 守城戰地圖（ver -2166，美術交件；拓樸 Ray 定案＝resources/map/_layout_winsmoor_siege.png）══
      7×7 方格 40 格、海在南、中央廣場＝防守點；出口照拓樸圖逐條抄（同一條邊兩端相反）。背景只有日景（`noTime`）。
-     ⚠ 守城戰規則（紅點、敵我步數、S／A／B 的回合效果）還沒做 —— 等 Ray 確認玩法細節。入口暫定中央棧橋（海上來），出航往下。 */
-  winsmoor: {
+     ⚠ 守城戰規則（紅點、敵我步數、S／A／B 的回合效果）還沒做 —— 等 Ray 確認玩法細節。入口暫定中央棧橋（海上來），出航往下。
+     ⚠ ver -2221（Ray：「戰地圖是劇情發生才換」「先用一般城鎮圖」）：鍵由 `winsmoor` 改名 `winsmoor_siege` ——
+       `winsmoor` 讓給城鎮版（飛行頁降落 `town:'winsmoor'` 落進城鎮版）。這一張**現在沒有任何入口**，
+       守城戰那一段劇情到了再由那一拍 `goto:'@winsmoor_siege:<節點>'` 換過來。
+     ⚠⚠ 這 40 張背景**全部不能用**（Ray 10-16：「都是遠景，沒辦法做戰鬥背景」）—— 節點與拓樸留著，
+       `bg` 要等美術的**戰鬥版**整批換掉才能上線（`resources/background/winsmoor_town/_spec.md` 那一列）。 */
+  winsmoor_siege: {
     name: '溫斯摩爾港',
     entry: 'jetty',
     mist: 0,
@@ -10540,6 +10545,59 @@ export const TOWNS = {
       westpier:   { bg:'ws_westpier_day', noTime:true, name:'溫斯摩爾港　西碼頭', exits:{ up:'customs', right:'jetty' } },
       jetty:      { bg:'ws_jetty_day', noTime:true, name:'溫斯摩爾港　中央棧橋', sail:{ dir:'down' }, exits:{ up:'harborave', left:'westpier', right:'eastpier' } },
       eastpier:   { bg:'ws_eastpier_day', noTime:true, name:'溫斯摩爾港　東碼頭', exits:{ up:'warehouse', left:'jetty' } },
+    },
+  },
+  /* ══ 溫斯摩爾港（西泊，暫名）—— 城鎮版（ver -2221，美術 10-14 交日景 15 張；規格 `resources/background/winsmoor_town/_spec.md`）══
+     拓樸照帝都（Ray：「拓樸照帝都，畫風照帝都，但是要畫出不一樣的東西」）：中央廣場＝攝政王廣場（進場、下＝出航）、
+     港務大道＝中心區（左市政廳、右港區聖堂）、舊港町＝舊街區（左槍匠店、上碼頭、下公會）、上街區（上旅館、下雜貨、右餐飲街）。
+     · 時段差分：只有 square／midtown 有四張（Gemini 10-14）；其餘室外與旅館**還欠**，先寫完整日景檔名＋`noTime`
+       （不寫的話夜裡候選鏈找不到檔＝空背景）。差分交了就把那一格改成基底名、拿掉 `noTime`。
+     · 餐飲街照帝都的 `dining`：同行女伴／當下誰在那裡決定開哪一家，都沒有＝酒館。
+     ⚠ 先只有「走得到的房間」（同北方泊地當初）：**沒有店主、沒有買賣**（商店卡要走 shops.xlsx 匯入，等 Ray）、
+       **旅館不寫 `inn:true`**（沒有敲門的對白表，寫了會敲到一排空門 —— 東泊／薇拉馮德的先例）、沒有 `bgm`、沒有小地圖、沒有劇情。
+     ⚠ 守城戰的 40 格是另一張（`winsmoor_siege`），劇情發生才換過去。 */
+  winsmoor: {
+    name: '溫斯摩爾港',
+    entry: 'square',
+    mist: 0,   // 大城不上霧（§6.5.4 ver -913）
+    dining:{ node:'tavern', scenes:{
+      cafe:      { bg:'ws_town_cafe_day', noTime:true },
+      restaurant:{ bg:'ws_town_restaurant_day', noTime:true },
+      dessert:   { bg:'ws_town_sweets_day', noTime:true },
+      bar:       { bg:'ws_town_bar_day', noTime:true },
+    } },
+    nodes: {
+      square:   { bg:'ws_town_square', name:'溫斯摩爾港　中央廣場',
+        exits:{ up:'midtown', left:'oldtown', right:'uptown' },
+        sail:{} },   // 出航＝下（預設方向）
+      midtown:  { bg:'ws_town_midtown', name:'溫斯摩爾港　港務大道',
+        exits:{ left:'cityhall', right:'church', down:'square' } },
+      church:   { bg:'ws_town_church_day', noTime:true, name:'溫斯摩爾港　港區聖堂',
+        hours:[8,19], closed:'大門闔上了。晚禱之後不再受理訪客。',
+        exits:{ back:'midtown' } },
+      cityhall: { bg:'ws_town_cityhall_day', noTime:true, name:'溫斯摩爾港　市政廳',
+        hours:[8,17], closed:'窗口都熄了燈。市政廳五點就下班了。',
+        exits:{ back:'midtown' } },
+      oldtown:  { bg:'ws_town_oldtown_day', noTime:true, name:'溫斯摩爾港　舊港町',
+        exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' } },
+      gunstore: { bg:'ws_town_gunstore_day', noTime:true, name:'溫斯摩爾港　槍匠店',
+        hours:[8,17], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',
+        exits:{ back:'oldtown' } },
+      dock:     { bg:'ws_town_dock_day', noTime:true, name:'溫斯摩爾港　碼頭',
+        exits:{ back:'oldtown' } },
+      guild:    { bg:'ws_town_guild_day', noTime:true, name:'溫斯摩爾港　賞金獵人公會',
+        hours:[8,17], closed:'大門上了閂。委託要等明天早上八點。',
+        exits:{ back:'oldtown' } },
+      uptown:   { bg:'ws_town_uptown_day', noTime:true, name:'溫斯摩爾港　上街區',
+        exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
+      inn:      { bg:'ws_town_inn_day', noTime:true, name:'溫斯摩爾港　海景旅館',
+        exits:{ back:'uptown' } },
+      grocery:  { bg:'ws_town_grocery_day', noTime:true, name:'溫斯摩爾港　雜貨舖',
+        hours:[8,17], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',
+        exits:{ back:'uptown' } },
+      tavern:   { bg:'ws_town_bar_day', noTime:true, name:'溫斯摩爾港　餐飲街',
+        hours:[8,24], lateNight:true, closed:'椅子都翻上桌了。今晚的最後一輪早就結束。',
+        exits:{ back:'uptown' } },
     },
   },
   verafond: {
