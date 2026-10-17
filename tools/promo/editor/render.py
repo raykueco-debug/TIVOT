@@ -96,6 +96,10 @@ def build(project, root):
     total = 0.0
     for t in tracks:
         for c in t['clips']: total = max(total, c['start'] + c['dur'])
+    if project.get('_trimVideo'):
+        # 只輸出到最後一個畫面（ver -2223，Ray：「後面的音樂不用輸出」）：長度＝看得見的影像軌最後一段的尾，聲音一起截掉
+        vend = [c['start'] + c['dur'] for t in tracks if t['type'] == 'video' and not t.get('hidden') for c in t['clips']]
+        if vend: total = min(total, max(vend))
     total = max(total, 1.0 / FPS)
     ins, parts = [], []
     cnt = {'n': 0}

@@ -1101,11 +1101,12 @@ async function exportMp4(){
   showModal('<h3>輸出 MP4</h3>' +
     '<div class="row2"><label>資料夾</label><input id="exDir" placeholder="（預設：剪輯器的 out 資料夾）"><button id="exPick">選擇…</button></div>' +
     '<div class="row2"><label>檔名</label><input id="exName"><span class="dim">.mp4</span></div>' +
+    '<div class="row2"><label>長度</label><label class="tog"><input type="checkbox" id="exTrim" checked> 只輸出到最後一個畫面（後面只剩音樂的部分不要）</label></div>' +
     '<div class="acts2"><button id="exGo" class="primary">開始輸出</button></div>' +
     '<div id="exMsg" class="dim"></div><div class="bar"><i id="exBar"></i></div><div id="exOut"></div>');
   $('exDir').value = dir; $('exName').value = project.name + '_' + stamp;
   $('exPick').onclick = () => dirBrowser($('exDir').value.trim(), p => $('exDir').value = p);
-  $('exGo').onclick = () => runExport($('exDir').value.trim(), $('exName').value.trim());
+  $('exGo').onclick = () => runExport($('exDir').value.trim(), $('exName').value.trim(), $('exTrim').checked);
 }
 /* 網頁裡的資料夾瀏覽（不靠系統視窗：那個常常開在瀏覽器後面） */
 async function dirBrowser(start, onPick){
@@ -1137,14 +1138,14 @@ async function dirBrowser(start, onPick){
   };
   go(start || '');
 }
-async function runExport(dir, name){
+async function runExport(dir, name, trim){
   try{ localStorage.setItem(OUTDIR_KEY, dir); }catch(_){}
   $('exGo').disabled = true; $('btnExport').disabled = true;
   // 文字片段：把預覽畫的那一張轉成 PNG 一起送過去（輸出＝預覽，ver -2223）
   try{ await document.fonts.ready; }catch(_){}
   const pj = JSON.parse(snapshot());
   pj.tracks.forEach(t => t.clips.forEach(c => { if(c.kind === 'text') c._png = textCanvas(c).toDataURL('image/png'); }));
-  const body = JSON.stringify(Object.assign(pj, { _outDir: dir, _outName: name }));
+  const body = JSON.stringify(Object.assign(pj, { _outDir: dir, _outName: name, _trimVideo: !!trim }));
   const job = await fetch('/api/export', { method:'POST', body }).then(r => r.json());
   if(job.error){ $('exMsg').textContent = '失敗：' + job.error; $('exGo').disabled = false; $('btnExport').disabled = false; return; }
   const poll = async () => {
