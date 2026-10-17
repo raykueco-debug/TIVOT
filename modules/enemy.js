@@ -1420,10 +1420,38 @@ export function groupHitFlash(){
   clearTimeout(im._hitT); im._hitT=setTimeout(()=>im.classList.remove('eg-hit'), 180);
   return true;
 }
+/* ══ 群體裡的一隻禍魘被淨化（ver -2223，Ray：「禍魘大軍的怪被擊倒要跑淨化」）══
+   死法與單隻同一套（CSS 的 `enemyPurge` 拉長抖動淡出 ＋ `spawnPurgeStars` 白光星芒，鐵律 8）—— 差別只在**對著哪裡**：
+   · 每一層都是整張畫布大小（與背景同尺寸、疊上去就對位），所以 `transform-origin` 不能用 50% 100%（那是畫面底），
+     要換成**這一隻的腳**（遮罩的重心 x、最低的不透明列 y），才會從牠自己腳下往上抽。
+   · 星芒撒在**這一隻的輪廓框**裡，不是畫面正中央。
+   ⚠ 判定照舊是 `isPurify()`（卡上的 kind／purgeFx），不另立欄位（鐵律 7）。 */
+function guardBox(im){
+  const m=groupMasks[im.dataset.n]; if(!m) return null;
+  let u0=1, u1=0, v0=1, v1=0;
+  for(let k=0;k<m.a.length;k++) if(m.a[k]>96){ const u=(k%m.w)/m.w, v=((k/m.w)|0)/m.h; if(u<u0)u0=u; if(u>u1)u1=u; if(v<v0)v0=v; if(v>v1)v1=v; }
+  return u1>u0 ? { u0, u1, v0, v1, cx:m.cx } : null;
+}
+function purgeGuard(im){
+  const g=$('enemyGroup'), b=guardBox(im);
+  if(g && b && im.naturalWidth){
+    const W=g.clientWidth, H=g.clientHeight, iw=im.naturalWidth, ih=im.naturalHeight;
+    const k=Math.max(W/iw, H/ih), dw=iw*k, dh=ih*k;
+    const p=String(getComputedStyle(im).objectPosition||'50% 0%').split(/\s+/).map(v=>parseFloat(v)/100);
+    const ox=(W-dw)*(isNaN(p[0])?0.5:p[0]), oy=(H-dh)*(isNaN(p[1])?0:p[1]);
+    im.style.transformOrigin=(ox+b.cx*dw).toFixed(1)+'px '+(oy+b.v1*dh).toFixed(1)+'px';
+    const a=imageUVToTopPct(b.u0, b.v0, im), z=imageUVToTopPct(b.u1, b.v1, im);
+    if(a && z) spawnPurgeStars({ l:a.l, t:a.t, w:z.l-a.l, h:z.t-a.t, n:10 });
+  }
+  im.style.transition='none';
+  im.classList.add('eg-purge','eg-down');   // eg-down＝其他判定（還站著幾個、BR 瞄準）照舊把牠當成倒下
+  fallUntil=Math.max(fallUntil, Date.now()+450);
+}
 /* 倒下：**唯一的一支**（Ray：之後會有倒地動畫 —— 換的時候只改這裡）。 */
 function fallGuard(im){
   const F=im._fall;
   if(F && F.frames.length && F.frames.every(f=>f.complete && f.naturalWidth)) playFall(im, F);
+  else if(isPurify()) purgeGuard(im);   // 禍魘大軍（ver -2223，Ray：「禍魘大軍的怪被擊倒要跑淨化」）
   else { im.classList.add('eg-down'); fallUntil=Math.max(fallUntil, Date.now()+500); }   // 沒有動畫／還沒載好 → 原本的下沉淡出
   if(im._sh) im._sh.classList.add('eg-down');
   try{ window.dispatchEvent(new CustomEvent('tivot:groupfall')); }catch(_){} }   // weapon 據此清掉落空的 BR 瞄準點
@@ -1690,16 +1718,17 @@ export function loadEnemyPortrait(en){
      錯開才像「一直有東西在飄」。
    ⚠ 生命結束要自己移除（走既有的 `addFx`，它會定時 remove）。 */
 const STAR_N = 18;
-function spawnPurgeStars(){
-  for(let i=0;i<STAR_N;i++){
+function spawnPurgeStars(box){
+  const B=box||{ l:30, t:28, w:40, h:46, n:STAR_N };   // 預設＝立繪站的那一塊；群體淨化傳那一隻的輪廓框（ver -2223）
+  for(let i=0;i<(B.n||STAR_N);i++){
     const d=document.createElement('div');
     d.className='fx fx-star';
     d.appendChild(document.createElement('i'));      // 中心光核
     const size = 14 + Math.random()*30;
     const life = 520 + Math.random()*420;
     const delay = Math.random()*260;
-    d.style.left = (30 + Math.random()*40) + '%';    // 立繪站的那一塊
-    d.style.top  = (28 + Math.random()*46) + '%';
+    d.style.left = (B.l + Math.random()*B.w) + '%';
+    d.style.top  = (B.t + Math.random()*B.h) + '%';
     d.style.setProperty('--s', size.toFixed(0)+'px');
     d.style.setProperty('--r', (Math.random()*90).toFixed(0)+'deg');
     d.style.setProperty('--dx', ((Math.random()*2-1)*70).toFixed(0)+'px');

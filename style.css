@@ -377,6 +377,9 @@
   #enemyGroup .eg-shadow{transition:opacity .5s ease-in;}
   #enemyGroup .eg-shadow.eg-down{opacity:0;}
   #enemyGroup .eg-guard.eg-down{transform:translateY(6%);opacity:0;filter:brightness(.4);}
+  /* 群體裡的禍魘被淨化（ver -2223）：同單隻的 enemyPurge；transform-origin 由 enemy.purgeGuard 設成這一隻的腳 */
+  #enemyGroup .eg-guard.eg-purge{animation:enemyPurge .6s ease-in both;}
+  #enemyGroup .eg-shadow.eg-purge{opacity:0;transition:opacity .4s ease-in;}
   #enemyGroup .eg-guard.eg-hit{animation:enemyHit .15s ease-out;}   /* 只抖被打中的那一個（ver -2154；以前整組 #enemyImg.hit + #enemyGroup 一起抖） */
   /* 待機循環那一層吃同一套受擊反應（ver -2075；.en-idle 緊跟在 #enemyImg 後面） */
   #enemyImg.hit + .en-idle{animation:enemyHit .15s ease-out;}
