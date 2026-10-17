@@ -31,12 +31,14 @@
 - ✅ **最後一格＝原圖 024**（鎖結尾生成）：播完可以直接切回 `024_nouvellesmile.webp`，不會跳。
   第一格是睜眼驚訝版（`_anim/024_nouvellesmile/nouvellesmile_A_gpt.png`），不是 024。
 
-## 第五支：010_anyaheadrubbing（10-13）
-- ⭐ **`resources/illustration/video/010_anyaheadrubbing_v1.mp4`**：**720×1080、16fps、48 格＝3.00 秒**、約 1.3 MB。
-  Ray 剪的 `out/export/anyaheadrub_A_gpt_ab7mfix_cut`（原片 65 格挑 48 格，全 ×1，保留最後一格）。
-- 內容：安雅抬頭看主角 → 主角伸手摸頭 → 摸到的瞬間她閉上一隻眼。
-- ✅ **最後一格＝原圖 010**（鎖結尾生成）：播完可以直接切回 `010_anyaheadrubbing.webp`，不會跳。
-  第一格是手還沒伸出、兩眼睜開的版本（`_anim/010_anyaheadrubbing/anyaheadrub_A_gpt.png`），不是 010。
+## 第五支：010_anyaheadrubbing（10-13；10-17 換 v2）
+- ⭐ **接 `resources/illustration/video/010_anyaheadrubbing_v2.mp4`**：**720×1080、24fps、24 格＝1.00 秒**、約 0.55 MB、無音軌。
+  Ray 把 v1 重剪成 `out/export/010_anyaheadrubbing_v1_cut`（v1 的 48 格挑 19 格：第 0～30 格隔格取、跳到 42/44/46；四格 ×2 停格），改成 24fps。
+- `_v1.mp4`（16fps、48 格＝3.00 秒）已被 v2 取代，不要接；回收等 Ray。
+  ⚠ **v2 的 fps 換了**（24fps；v1 是 16fps）—— 播放速率要讀片子自己的。
+- 內容：安雅抬頭看主角 → 主角伸手摸頭 → 摸到的瞬間她閉上一隻眼（節奏比 v1 快一倍以上）。
+- ✅ **最後一格≒原圖 010**（差 6.1）：播完可以直接切回 `010_anyaheadrubbing.webp`，不會跳。
+  ⚠ 第一格≠原圖（差 10.4，手還沒伸出、兩眼睜開的版本 `_anim/010_anyaheadrubbing/anyaheadrub_A_gpt.png`）。
 
 ## 第六支：016-soranaaim（10-13）
 - ⭐ **`resources/illustration/video/016-soranaaim_v1.mp4`**：**896×816（原圖 1312×1192 等比）、16fps、20 格＝1.25 秒**、約 0.5 MB。
