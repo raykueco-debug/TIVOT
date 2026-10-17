@@ -109,12 +109,14 @@
 - 內容：森林中跪姿持狙擊槍的男子，槍口飄出硝煙、頭髮微動；後方紅辮女性的辮子與披風隨風飄。
 - ✅ **第一格與最後一格都≒原圖 35_bellinda**（首尾鎖原圖生成，Ray 保留了第 0 與第 64 格）：可從原圖無縫接入，也可**循環播放**。
 
-## 第十五支：005_cecilieintro（10-14）
-- ⭐ **`resources/illustration/video/005_cecilieintro_v1.mp4`**：**720×1080、16fps、35 格＝2.19 秒**、約 1 MB。
-  Ray 剪的 `out/export/005_cecilieintro_toB7bounce_cut`（原片 65 格的第 0～64 格挑 34 格，其中一格 ×2）。
-- 內容：第一人稱，賽西莉抓著 viewer 肩膀小幅搖晃、微微搖頭、焦急地說話，髮與袖擺動。
-- ✅ **第一格≒原圖 005**（從原圖開始）：可從 `005_cecilieintro.webp` 無縫接入。
-  ⚠ **最後一格＝B 圖（身體微偏的版本），不是 005**：播完停在影片最後一格。B 圖在 `_anim/005_cecilieintro/cecilieintro_B_gpt.png`。
+## 第十五支：005_cecilieintro（10-14；10-17 換 v2）
+- ⭐ **接 `resources/illustration/video/005_cecilieintro_v2.mp4`**：**720×1080、24fps、39 格＝1.63 秒**、約 0.93 MB、無音軌。
+  Ray 把 v1 重剪成 `out/export/005_cecilieintro_v1_cut`（v1 的 35 格全留，第 4／12／20／28 格 ×2 停格），改成 24fps。
+- `_v1.mp4`（16fps、35 格＝2.19 秒）已被 v2 取代，不要接；回收等 Ray。
+  ⚠ **v2 的 fps 換了**（24fps；v1 是 16fps）—— 播放速率要讀片子自己的。
+- 內容：第一人稱，賽西莉抓著 viewer 肩膀小幅搖晃、微微搖頭、焦急地說話，髮與袖擺動（節奏比 v1 快）。
+- ✅ **第一格≒原圖 005**（差 2.6）：可從 `005_cecilieintro.webp` 無縫接入。
+  ⚠ **最後一格＝B 圖（身體微偏的版本），不是 005**（差 20.4）：播完照共通規則片尾前淡出撤下。B 圖在 `_anim/005_cecilieintro/cecilieintro_B_gpt.png`。
 
 ## 第十六支：003_lunaria_armed（10-14）
 - ⭐ **`resources/illustration/video/003_lunaria_armed_v1.mp4`**：**720×960、16fps、29 格＝1.81 秒**、約 1 MB。
