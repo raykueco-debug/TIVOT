@@ -17,6 +17,7 @@ ap.add_argument('--streak-dir', type=float, default=None, help='streak 大致方
 ap.add_argument('--streak-spread', type=float, default=10); ap.add_argument('--wiggle', type=float, default=0, help='氣流擾動：垂直於飛行方向的擺幅（px），線會彎成小 S')
 ap.add_argument('--streak-gold', action='store_true', help='金色（不是白熱轉橙）')
 ap.add_argument('--emit', type=float, nargs=4, default=[0.15, 0.35, 0.85, 0.85], help='streak 的發射區（0~1 比例 x0 y0 x1 y1）')
+ap.add_argument('--native', action='store_true', help='原尺寸輸出（不縮成 480×720、不重新置中）：畫布＝對位圖尺寸，火星大小／速度依寬度等比放大（尼莫 BR 起用）')
 ap.add_argument('--fg-size', type=float, default=1.0, help='前景火星大小倍數'); ap.add_argument('--fg-gain', type=float, default=1.0, help='前景火星亮度倍數'); ap.add_argument('--fg-speed', type=float, default=1.0, help='前景火星速度倍數')
 a = ap.parse_args()
 HERE = os.path.dirname(os.path.abspath(__file__)); OD = os.path.join(HERE, 'out', 'ci', a.name); os.makedirs(OD, exist_ok=True)
@@ -26,6 +27,8 @@ SPD = 16 / a.fps   # 火星速度以 16fps 校的；24fps（停格版）每格�
 src = Image.open(a.src).convert('RGBA'); CW = src.width; K = W / CW
 bb = src.getchannel('A').point(lambda v: 255 if v > 8 else 0).getbbox(); bw, bh = bb[2] - bb[0], bb[3] - bb[1]
 s = min(W * 0.92 / bw, H * 0.92 / bh); ox, oy = (W - round(bw * s)) // 2, (H - round(bh * s)) // 2
+U = 1.0   # 火星的 px 尺寸／速度倍數（以 480 寬校的）
+if a.native: W, H = src.size; K = 1; bb, s, ox, oy = (0, 0, W, H), 1, 0, 0; U = W / 480
 def despill(f):
     x = np.asarray(f).astype(np.float32); r, g, b, al = x[..., 0], x[..., 1], x[..., 2], x[..., 3]
     semi = (al < 250)[..., None]
@@ -53,7 +56,7 @@ rnd = random.Random(a.seed)
 def mk(n, sp, r):
     return [dict(x=rnd.uniform(-W * .3, W), y=rnd.uniform(0, H * 1.3), sp=rnd.uniform(*sp), r=rnd.uniform(*r),
                  ph=rnd.uniform(0, 6.28), fl=rnd.uniform(0.25, 0.6), cu=rnd.uniform(-0.07, 0.07)) for _ in range(n)]
-BG, FG = mk(a.bg, (6, 9), (0.9, 2.0)), mk(a.fg, (13 * a.fg_speed, 18 * a.fg_speed), (3.2 * a.fg_size, 5.2 * a.fg_size))
+BG, FG = mk(a.bg, (6 * U, 9 * U), (0.9 * U, 2.0 * U)), mk(a.fg, (13 * a.fg_speed * U, 18 * a.fg_speed * U), (3.2 * a.fg_size * U, 5.2 * a.fg_size * U))
 SR = random.Random(a.seed + 1)
 _dir = a.streak_dir is not None
 def make_streaks(n, size, spd, R):
@@ -63,10 +66,10 @@ def make_streaks(n, size, spd, R):
     return [dict(ox=R.uniform(a.emit[0], a.emit[2]) * W, oy=R.uniform(a.emit[1], a.emit[3]) * H, ang=ang(),
                  sp=R.uniform(12, 20) * spd if _dir else R.uniform(14, 30) * spd,
                  life=R.uniform(6, 11) if _dir else R.uniform(6, 13), born=R.uniform(-26, 0),
-                 ln=R.uniform(2.2, 4.0) * size, w=R.uniform(1.0, 2.2) * size,
-                 grav=0.0 if _dir else R.uniform(0.2, 0.9), wf=R.uniform(0.5, 0.9), wp=R.uniform(0, 6.283), wa=R.uniform(0.6, 1.0)) for _ in range(n)]
-STREAKS = make_streaks(a.fg, a.fg_size, a.fg_speed, SR)                                          # ⚠ 前景沿用原本的亂數序列（Ray 已看過的那一版不變）
-BGSTREAKS = make_streaks(a.bg, a.fg_size * 0.6, a.fg_speed * 0.6, random.Random(a.seed + 2))    # 後景：細、慢（景深）
+                 ln=R.uniform(2.2, 4.0) * size / U, w=R.uniform(1.0, 2.2) * size,   # 線長＝速度×ln，速度已含 U，ln 要除回去
+                 grav=0.0 if _dir else R.uniform(0.2, 0.9) * U, wf=R.uniform(0.5, 0.9), wp=R.uniform(0, 6.283), wa=R.uniform(0.6, 1.0)) for _ in range(n)]
+STREAKS = make_streaks(a.fg, a.fg_size * U, a.fg_speed * U, SR)                                          # ⚠ 前景沿用原本的亂數序列（Ray 已看過的那一版不變）
+BGSTREAKS = make_streaks(a.bg, a.fg_size * 0.6 * U, a.fg_speed * 0.6 * U, random.Random(a.seed + 2))    # 後景：細、慢（景深）
 def streak_layer(t, glow, S, gain):
     lay = np.zeros((H * 2, W * 2, 3), np.float32); tt = t * SPD
     for s in S:
@@ -77,7 +80,7 @@ def streak_layer(t, glow, S, gain):
         if a.wiggle:                                                                               # 小 S：沿路徑擺動，畫成一段彎曲的尾跡
             ca, sa = math.cos(s['ang']), math.sin(s['ang'])
             def P(ag):
-                d = s['sp'] * ag; off = a.wiggle * s['wa'] * math.sin(ag * s['wf'] + s['wp'])
+                d = s['sp'] * ag; off = a.wiggle * U * s['wa'] * math.sin(ag * s['wf'] + s['wp'])
                 return (s['ox'] + ca * d - sa * off, s['oy'] + sa * d + ca * off)
             tail = s['ln'] * 0.35 * ((1 - f) if a.streak_gold else 1)
             pts = np.array([P(age - tail * j / 6) for j in range(7)], np.float32) * 2

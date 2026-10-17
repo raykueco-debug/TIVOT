@@ -10,3 +10,9 @@
 3. **觸發點**：尼莫的 Bullet Rain —— 現行敵人卡 `nemo`（`script/enemies.js`）在玩家戰敗時播 `vo_nemo_bulletrain`（2.34 秒）。CI 要不要與這句語音同時起播、還是另有觸發點，**Ray 還沒定**，接之前先問他。
 4. 內容：VACE 關鍵格 0＝A（貓背低頭、雙槍下垂，人物下移一個頭）、32＝B（`resources/si/nemo_si_dual.webp`）；33 格 16fps、704×1056、seed 7、提示詞只用正向關鍵字。Ray 在 animechk 剪成 `out/export/nemo_AB_hd_s7_cut`（原片 6,10~32 全 ×1）。
    - A 圖：`nemo_br_A_alpha.png`（GPT 透明背景）／`nemo_br_A_green.png`（實際餵 Wan 的綠底版，已下移 340px）。
+
+## v2（10-17）：加火星背景 —— 取代 v1
+- **檔案：`resources/ci/video/cutin_dual_nemo_v2.mp4`**：704×1056、**24fps、24 格＝1.000 秒**、H.264 High yuv420p、黑底、無音軌，約 0.39 MB。
+- 人物動作與 v1 完全相同（同一份 Ray 剪的 `out/export/nemo_AB_hd_s7_cut`），只是在黑底上加了火星：
+  `comp_fgbg_embers.py --native`（原尺寸，不縮 480×720）＋托爾斯坦 BR v7 同一套參數（金色線狀、往右上 40°、前後景、--wiggle 6）。
+- 演出、觸發點同 v1（從下方滑入；觸發點 Ray 還沒定）。程式端把 v1 換成 v2 即可。
