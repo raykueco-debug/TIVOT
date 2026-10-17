@@ -230,7 +230,7 @@ function renderLanes(){
     lane.addEventListener('dragover', e => { e.preventDefault(); lane.classList.add('drop'); });
     lane.addEventListener('dragleave', () => lane.classList.remove('drop'));
     lane.addEventListener('drop', e => onLaneDrop(e, t, lane));
-    lane.addEventListener('pointerdown', e => { if(e.target === lane){ sel = null; selIds.clear(); setPlayhead(xToT(e)); renderAll(); } });
+    lane.addEventListener('pointerdown', e => { if(e.target === lane && e.button === 0) startMarquee(e); });
     for(const c of t.clips) lane.appendChild(clipEl(t, c));
     if(t.type === 'video'){
       for(const c of t.clips){
@@ -399,6 +399,7 @@ function clipEl(t, c){
   const d = document.createElement('div');
   const isA = t.type === 'audio';
   d.className = 'clip ' + (isA ? 'aud' : c.kind === 'image' ? 'img' : c.kind === 'color' ? 'col' : c.kind === 'text' ? 'txt' : 'vid') + ((sel && sel.type === 'clip' && sel.id === c.id) || selIds.has(c.id) ? ' sel' : '');
+  d.dataset.id = c.id;
   d.style.left = (c.start * pps) + 'px'; d.style.width = Math.max(4, c.dur * pps) + 'px';
   if(!isA && c.kind === 'video') d.style.backgroundImage = 'url("/api/thumb?p=' + encodeURIComponent(c.src) + '&t=' + ((c.in || 0) + 0.3).toFixed(2) + '")';
   if(!isA && c.kind === 'image') d.style.backgroundImage = 'url("/m/' + encodeURI(c.src) + '")';
@@ -476,6 +477,7 @@ function trimBounds(track, ex, s, e){
 }
 
 function startDrag(e, track, c, mode){
+  if(e.button === 1) return startRipple(e, c);
   if(e.button !== 0) return;
   e.stopPropagation(); e.preventDefault();
   lastArea = 'tl';
@@ -578,6 +580,69 @@ function startGroupMove(e, c){
     renderLanes(); drawStage();
   };
   const onUp = () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); if(moved) commit(before); else renderAll(); };
+  window.addEventListener('pointermove', onMove); window.addEventListener('pointerup', onUp);
+}
+/* ═════════════ 中鍵：連後面一起推（ver -2223，Ray：「平移影格把後面的往後推，按中間鈕」）═════════════
+   中鍵按住拖一段 ＝ 這一段＋所有「開始時間在它之後」的片段（每一軌都算，音效語音才不會跟畫面脫節）一起平移。
+   往左拉最多拉到「前面那一段的尾巴」（同軌不交疊）；BGM 這種從更早就開始的長片段不動。分鏡格不動（它是參考）。 */
+function startRipple(e, c){
+  e.preventDefault(); e.stopPropagation(); lastArea = 'tl';
+  const before = snapshot();
+  const pivot = c.start - 0.5 / FPS;
+  const moving = new Map();
+  for(const [t, x] of allClips()) if(x.start >= pivot) moving.set(x.id, [t, x]);
+  const orig = new Map([...moving].map(([id, [, x]]) => [id, x.start]));
+  // 往左的極限：每一軌「被推的第一段」不能撞到同軌「沒被推、在它前面」的那一段的尾巴
+  let minD = -Infinity;
+  for(const t of project.tracks){
+    const mv = t.clips.filter(x => moving.has(x.id)); if(!mv.length) continue;
+    const first = Math.min(...mv.map(x => x.start));
+    const prevEnd = Math.max(0, ...t.clips.filter(x => !moving.has(x.id) && x.start < first).map(x => x.start + x.dur));
+    minD = Math.max(minD, prevEnd - first);
+  }
+  sel = { type:'clip', id:c.id }; selIds.clear(); moving.forEach((_, id) => selIds.add(id));
+  const pts = snapPoints(new Set(moving.keys()));
+  const x0 = e.clientX, o = c.start; let moved = false;
+  status('中鍵拖曳：連後面 ' + moving.size + ' 段一起移');
+  const onMove = ev => {
+    if(Math.abs(ev.clientX - x0) > 2) moved = true;
+    let ns = snap(o + (ev.clientX - x0) / pps, pts);
+    const d = Math.max(frame(ns - o), minD);
+    moving.forEach(([, x], id) => x.start = frame(orig.get(id) + d));
+    renderLanes(); renderMarks(); drawStage();
+    status('連後面 ' + moving.size + ' 段一起移 ' + (d >= 0 ? '+' : '') + d.toFixed(2) + ' 秒');
+  };
+  const onUp = () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); if(moved) commit(before); else renderAll(); };
+  window.addEventListener('pointermove', onMove); window.addEventListener('pointerup', onUp);
+}
+/* ═════════════ 框選（ver -2223）═════════════
+   時間軸空白處按住拖 ＝ 拉一個框，框到的片段全選（跨軌）；加 Ctrl／Shift ＝ 加進原本的選取。只點一下不拖 ＝ 移播放頭（舊行為）。 */
+function startMarquee(e){
+  lastArea = 'tl';
+  const host = $('lanes'), hr = host.getBoundingClientRect();
+  const x0 = e.clientX, y0 = e.clientY, add = e.ctrlKey || e.metaKey || e.shiftKey;
+  const keep = add ? new Set(selIds) : new Set();
+  if(add && sel && sel.type === 'clip') keep.add(sel.id);
+  let box = null;
+  const onMove = ev => {
+    if(!box){ if(Math.abs(ev.clientX - x0) + Math.abs(ev.clientY - y0) < 5) return; box = document.createElement('div'); box.id = 'marquee'; host.appendChild(box); }
+    const l = Math.min(x0, ev.clientX), r = Math.max(x0, ev.clientX), t = Math.min(y0, ev.clientY), b = Math.max(y0, ev.clientY);
+    Object.assign(box.style, { left:(l - hr.left) + 'px', top:(t - hr.top) + 'px', width:(r - l) + 'px', height:(b - t) + 'px' });
+    selIds.clear(); keep.forEach(id => selIds.add(id));
+    host.querySelectorAll('.clip').forEach(el => {
+      const q = el.getBoundingClientRect();
+      if(q.right > l && q.left < r && q.bottom > t && q.top < b) selIds.add(el.dataset.id);
+      el.classList.toggle('sel', selIds.has(el.dataset.id));
+    });
+  };
+  const onUp = ev => {
+    window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp);
+    if(!box){ sel = null; selIds.clear(); setPlayhead(xToT(ev)); renderAll(); return; }
+    box.remove();
+    sel = selIds.size === 1 ? { type:'clip', id:[...selIds][0] } : null;
+    status(selIds.size ? '框選 ' + selIds.size + ' 個片段（拖其中一段＝整批移動）' : '');
+    renderAll();
+  };
   window.addEventListener('pointermove', onMove); window.addEventListener('pointerup', onUp);
 }
 function selectAll(){
@@ -779,6 +844,8 @@ function renderInspector(){
     '素材從左邊拖進時間軸；桌面的檔案也可以直接拖進來。<br>' +
     '拉邊緣＝裁切；拉右上角小圓點＝改速度。<br>' +
     '同一軌兩段相鄰時，交界的菱形點一下＝加淡入淡出。<br>' +
+    '<b>中鍵</b>拖片段＝連它後面的所有片段（每一軌）一起推。<br>' +
+    '時間軸空白處按住拖＝<b>框選</b>（加 Ctrl／Shift＝加選）；點一下＝移播放頭。<br>' +
     '點音訊片段→「以這一段做拍點」＝時間軸出現拍點、拖曳會吸附。<br><br>' +
     '<kbd>空白</kbd> 播放／暫停　<kbd>S</kbd> 分割　<kbd>Delete</kbd> 刪除<br>' +
     '<kbd>←</kbd><kbd>→</kbd> 一格（加 <kbd>Shift</kbd> 一秒）　<kbd>Ctrl</kbd>+滾輪 縮放<br>' +
@@ -920,9 +987,12 @@ function drawSrc(src, sw, sh, c, local, D){
   const p = clamp(local / Math.max(1e-3, D), 0, 1);
   if(['up','down','lr','rl'].includes(typ)){
     const k = 1 + amt, s = Math.max(W * k / sw, H * k / sh), iw = sw * s, ih = sh * s;
-    let x = (iw - W) / 2, y = (ih - H) / 2;
-    if(typ === 'up') y = (ih - H) * (1 - p); if(typ === 'down') y = (ih - H) * p;
-    if(typ === 'lr') x = (iw - W) * p; if(typ === 'rl') x = (iw - W) * (1 - p);
+    // 行程＝幅度 × 畫面高（上下左右同一個速度，ver -2223，Ray：「橫移要跟上下的速度一樣，不用把整張看完」），
+    // 以圖的中央為中心；圖不夠寬／高就用掉能用的全部。⚠ render.py 的 motion_filters 是同一套，改一邊要改另一邊。
+    const cx = (iw - W) / 2, cy = (ih - H) / 2, Tv = Math.min(ih - H, amt * H), Th = Math.min(iw - W, amt * H);
+    let x = cx, y = cy;
+    if(typ === 'up') y = cy + Tv / 2 - Tv * p; if(typ === 'down') y = cy - Tv / 2 + Tv * p;
+    if(typ === 'lr') x = cx - Th / 2 + Th * p; if(typ === 'rl') x = cx + Th / 2 - Th * p;
     g.drawImage(src, x / s, y / s, W / s, H / s, 0, 0, W, H); return;
   }
   let z = 1; if(typ === 'zin') z = 1 + amt * p; if(typ === 'zout') z = 1 + amt * (1 - p);
@@ -1105,8 +1175,11 @@ function bind(){
   $('btnSplit').onclick = splitSel; $('btnDel').onclick = delSel;
   $('btnBoard').onclick = importBoard; $('btnText').onclick = addText; $('btnMontage').onclick = montage;
   $('btnAddV').onclick = () => { const s = snapshot(); const n = project.tracks.filter(t => t.type === 'video').length + 1;
-    const idx = project.tracks.findIndex(t => t.type === 'audio'); project.tracks.splice(idx < 0 ? project.tracks.length : idx, 0, { id:uid(), type:'video', name:'V' + n, clips:[] }); commit(s); };
-  $('btnAddA').onclick = () => { const s = snapshot(); project.tracks.push({ id:uid(), type:'audio', name:'A' + (project.tracks.filter(t => t.type === 'audio').length + 1), clips:[] }); commit(s); };
+    const t = { id:uid(), type:'video', name:'V' + n, clips:[] };
+    const idx = project.tracks.findIndex(t => t.type === 'audio'); project.tracks.splice(idx < 0 ? project.tracks.length : idx, 0, t); commit(s); revealTrack(t); };
+  $('btnAddA').onclick = () => { const s = snapshot(); const t = { id:uid(), type:'audio', name:'A' + (project.tracks.filter(t => t.type === 'audio').length + 1), clips:[] };
+    project.tracks.push(t); commit(s); revealTrack(t); };
+  bindTlResize();
   $('modalClose').onclick = hideModal;
   $('libSearch').oninput = renderLib;
   $('lib').addEventListener('pointerdown', () => lastArea = 'lib');
@@ -1118,6 +1191,7 @@ function bind(){
   libEl.addEventListener('drop', e => { e.preventDefault(); libEl.classList.remove('dropping'); if(e.dataTransfer.files.length) uploadFiles([...e.dataTransfer.files]); });
   $('zoom').oninput = e => setZoom(+e.target.value);
   const sc = $('tlScroll');
+  sc.addEventListener('mousedown', e => { if(e.button === 1) e.preventDefault(); });   // 中鍵＝連後面一起推，不要瀏覽器的自動捲動
   sc.addEventListener('scroll', () => { drawRuler(); drawGrid(); $('tlHeads').scrollTop = sc.scrollTop; $('heads').style.marginTop = -sc.scrollTop + 'px'; });
   sc.addEventListener('wheel', e => {
     if(!e.ctrlKey) return; e.preventDefault();
@@ -1146,6 +1220,33 @@ function bind(){
     else if(e.ctrlKey && e.key.toLowerCase() === 'z'){ e.preventDefault(); e.shiftKey ? doRedo() : doUndo(); }
     else if(e.ctrlKey && e.key.toLowerCase() === 'y'){ e.preventDefault(); doRedo(); }
     else if(e.ctrlKey && e.key.toLowerCase() === 's'){ e.preventDefault(); saveProject(); }
+  });
+}
+/* 新增的軌捲到看得見的地方、閃一下（ver -2223：時間軸只有 40vh，新軌常常落在下面，看起來像沒加） */
+function revealTrack(t){
+  const i = orderedTracks().indexOf(t); if(i < 0) return;
+  const sc = $('tlScroll'), top = laneTop(i) + 50;   // 50＝尺規＋分鏡列
+  if(top < sc.scrollTop + 50 || top + HEAD_H[t.type] > sc.scrollTop + sc.clientHeight) sc.scrollTop = Math.max(0, top - sc.clientHeight / 2);
+  const lane = document.querySelector('.lane[data-track="' + t.id + '"]'), head = $('heads').children[i];
+  [lane, head].forEach(el => { if(!el) return; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); });
+  status('已新增' + (t.type === 'audio' ? '音軌 ' : '影像軌 ') + t.name + '（素材拖進來就能用）');
+}
+/* 時間軸面板可以拉高（拖面板的上緣），高度記在這個瀏覽器 */
+const TLH_KEY = 'tivot_editor_tlh';
+function applyTlH(h){
+  h = clamp(h, 160, window.innerHeight - 200);
+  document.body.style.gridTemplateRows = '42px minmax(0,1fr) ' + Math.round(h) + 'px';
+  drawRuler(); drawGrid();
+}
+function bindTlResize(){
+  try{ const h = +localStorage.getItem(TLH_KEY); if(h) applyTlH(h); }catch(_){}
+  $('tlResize').addEventListener('pointerdown', e => {
+    e.preventDefault();
+    const y0 = e.clientY, h0 = $('tl').getBoundingClientRect().height;
+    const mv = ev => applyTlH(h0 + (y0 - ev.clientY));
+    const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
+      try{ localStorage.setItem(TLH_KEY, String(Math.round($('tl').getBoundingClientRect().height))); }catch(_){} };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
   });
 }
 function setZoom(v){ pps = v; $('zoom').value = Math.round(v); renderLanes(); renderMarks(); drawRuler(); drawGrid(); updatePlayhead(); }

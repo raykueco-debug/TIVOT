@@ -68,14 +68,19 @@ def motion_filters(c, W, H, D):
         f = ['scale=%d:%d:force_original_aspect_ratio=decrease:flags=lanczos' % (W, H),
              'pad=%d:%d:(ow-iw)/2:(oh-ih)/2:color=black@0' % (W, H)]
         return f
+    # 行程＝幅度 × 畫面高（上下左右同一個速度），以圖的中央為中心；圖不夠就用掉能用的全部。
+    # ⚠ 預覽 app.js 的 drawSrc 是同一套，改一邊要改另一邊（ver -2223）。
+    T = amt * H
     if typ in ('up', 'down'):
         k = 1 + amt
-        y = "(ih-oh)*(1-t/%f)" % D if typ == 'up' else "(ih-oh)*(t/%f)" % D
+        tv = 'min(ih-oh,%f)' % T
+        y = ("(ih-oh)/2+%s/2-%s*t/%f" if typ == 'up' else "(ih-oh)/2-%s/2+%s*t/%f") % (tv, tv, D)
         return ['scale=%d:%d:force_original_aspect_ratio=increase:flags=lanczos' % (round(W * k), round(H * k)),
                 "crop=%d:%d:'(iw-ow)/2':'%s'" % (W, H, y)]
     if typ in ('lr', 'rl'):
         k = 1 + amt
-        x = "(iw-ow)*(t/%f)" % D if typ == 'lr' else "(iw-ow)*(1-t/%f)" % D
+        th = 'min(iw-ow,%f)' % T
+        x = ("(iw-ow)/2-%s/2+%s*t/%f" if typ == 'lr' else "(iw-ow)/2+%s/2-%s*t/%f") % (th, th, D)
         return ['scale=%d:%d:force_original_aspect_ratio=increase:flags=lanczos' % (round(W * k), round(H * k)),
                 "crop=%d:%d:'%s':'(ih-oh)/2'" % (W, H, x)]
     base = ['scale=%d:%d:force_original_aspect_ratio=increase:flags=lanczos' % (W, H), 'crop=%d:%d' % (W, H)]

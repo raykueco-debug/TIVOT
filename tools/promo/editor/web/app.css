@@ -152,3 +152,13 @@ main{display:grid;grid-template-columns:300px minmax(0,1fr) 300px;min-height:0}
 .mt-row{display:flex;align-items:center;gap:8px;margin:8px 0}
 .mt-row label{width:96px;color:var(--dim)}
 .mt-row input[type=number]{width:90px}
+
+/* 框選的框（ver -2223） */
+#marquee{position:absolute;z-index:8;border:1px dashed var(--sel);background:#ffd36a1f;pointer-events:none}
+
+/* 時間軸高度拖曳條＋新軌閃一下（ver -2223） */
+#tl{position:relative}
+#tlResize{position:absolute;top:-4px;left:0;right:0;height:8px;cursor:ns-resize;z-index:20}
+#tlResize:hover{background:#ffd36a44}
+.lane.flash,.head.flash{animation:trkflash 1.2s ease-out}
+@keyframes trkflash{0%{background:#ffd36a55}100%{}}

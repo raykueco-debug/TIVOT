@@ -99,7 +99,8 @@ def beats(r):
     p = absp(r); key = hashlib.md5(('%s|%d' % (r, os.path.getmtime(p))).encode()).hexdigest()
     cf = os.path.join(CACHE, 'beats_' + key + '.json')
     if not os.path.exists(cf):
-        subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'promo', 'beats2.py'), p, cf], capture_output=True)
+        # -X utf8：beats2 會印中文，主控台是 cp1252／cp950 時整支在寫檔前就掛掉（10-17 Windows 實測）
+        subprocess.run([sys.executable, '-X', 'utf8', os.path.join(ROOT, 'tools', 'promo', 'beats2.py'), p, cf], capture_output=True)
     d = json.load(open(cf))
     return {'bpm': d['bpm'], 'period': d['period'], 'phase': d['phase'], 'beats': d['beats'], 'accent': d['accent']}
 
