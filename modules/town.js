@@ -3796,7 +3796,11 @@ function exitsOf(){
      「往下走」與「出航」是同一個動作）。⚠ 那一格的下方已經被別人占著時要寫
      `sail.dir`（木雅克神殿的遺蹟入口：下方是回斷崖邊的路，所以出航掛在**左**）。
      ⚠ 寫在資料上不寫死在程式裡 —— 哪一格的哪一邊是出口，那是那張圖的事。 */
-  if(n && n.sail){ const sd=n.sail.dir||'down'; if(!ex[sd]) ex[sd]=SAIL_ID; }
+  /* ⚠ `sail.fromStage:<章>`（ver -2241，Ray：「木雅克神殿前的出航鈕 要神殿攻略完成才會開 用stage分」）：
+     到那一章之前出航這個方向**不出現**（同上面的 `exitFrom`：看章節、擋在 `exitsOf`，箭頭直接沒有）。
+     ⚠ 與 `sail.flag`（船到手了沒）／`blockFrom`（不可離港的窗口）是三件事，各管各的。 */
+  if(n && n.sail && !(n.sail.fromStage!=null && prog.getStage() < (n.sail.fromStage|0))){
+    const sd=n.sail.dir||'down'; if(!ex[sd]) ex[sd]=SAIL_ID; }
   if(back2){
     /* 首選＝來時方向的反向；那一格已經有別的出口就退回「下」，再不行就找一格空的。 */
     const want = (backDir && !ex[backDir]) ? backDir

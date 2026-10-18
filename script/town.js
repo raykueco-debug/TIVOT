@@ -4585,7 +4585,9 @@ export const TOWNS = {
              而 `exitsOf` 的 `back` 在沒有來時方向時就是退回「下」——
              兩者搶同一格的話，降落進來會**走不回斷崖邊**。
            ⚠ `flag:'got_ship'` 同其他城：船還沒到手就不給（那是一去不回的前置）。 */
-        sail:{ dir:'left', flag:'got_ship' },
+        /* ⚠ `fromStage:8`（ver -2241，Ray：「神殿攻略完成才會開 用stage分」）：神殿收尾（deepaltar 的 sr_altar）演完
+             被帶回夏爾村、`sv_s8_home` 第一拍升 S8 —— 所以 S8 ＝神殿攻略完成。之前這一格沒有出航方向。 */
+        sail:{ dir:'left', flag:'got_ship', fromStage:8 },
         /* ⚠⚠ **這一格不出野怪**（ver -879，Ray：「神殿入口除了鹿主戰之外是安全區，
            不出怪」）——它是神殿的門口／回程的落腳處，不是獵場。
            ⚠ 擋的只有 `wildSpawn` 的 fixed／pool；**指定遭遇（鹿主）照跑** ——
