@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=2236"></script>
+<script src="../orientation.js?v=2237"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。語言判定與 i18n.js 的 LANG 同一套
@@ -11,7 +11,7 @@
 (function(){
   var l=null; try{ l=localStorage.getItem('tivot.lang'); }catch(e){}
   if(!l){ try{ var n=(navigator.languages&&navigator.languages[0])||navigator.language||''; if(String(n).toLowerCase().indexOf('es')===0) l='es'; }catch(e){} }
-  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2236"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2236"><\/script>');
+  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2237"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2237"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=2236');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=2237');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -259,8 +259,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2236");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2236");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2237");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2237");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -280,8 +280,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2236");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2236");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2237");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2237");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -646,23 +646,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2236" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=2237" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2236" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2236" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2236" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2236" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2236" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2236" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2236" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2236" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2236" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2236" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=2237" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2237" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2237" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2237" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2237" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2237" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2237" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2237" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2237" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2237" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=2236" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=2237" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -684,11 +684,11 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=2236"></script>
+<script src="settlement.js?v=2237"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=2236"></script>
+<script src="talks.js?v=2237"></script>
 <script>
 /* 破圖框一律不畫（ver -1881，同主頁 main.js 那一支，這一頁是另一個 document）。 */
 document.addEventListener('error', e=>{ const t=e.target; if(t && t.tagName==='IMG') t.classList.add('img-broken'); }, true);
@@ -764,7 +764,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=b18827be'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -2236';
+const FLIGHT_VER = 'ver -2237';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -15536,6 +15536,7 @@ function ruinSites(){ return PLACES.concat(harborLightSites()); }
    ⚠ 畫在 2D 疊層、走 `clipByTerrainDepth`（同光柱）：山擋得住燈。
    ⚠ 位置：`RUIN_ART[x].lamps`（局部世界座標、h＝燈室離地高），地面高取那一點的 HGT。 */
 const LH_SPIN=0.0009, LH_BEAM=1000, LH_FAR=ZFAR*1.6;
+const LH_VIS={};   // 每一盞燈的可見度（0~1，逐禎平滑；視線被山擋住就往 0 走）
 function drawHarborLights(S,scaleH,horizon,sinp,cosp,now){
   if(!MAPW) return;
   const k=clamp((0.78-S.day)/0.33,0,1);
@@ -15562,8 +15563,15 @@ function drawHarborLights(S,scaleH,horizon,sinp,cosp,now){
       if(c.x<-W||c.x>2*W) continue;
       const ang=now*LH_SPIN+idx*1.7;
       const tcx=cam.x-wx, tcy=cam.y-wy, tl=Math.hypot(tcx,tcy)||1;
+      let vis=1;
+      for(let q=1;q<24;q++){ const t=q/24;
+        const px=cam.x+(wx-cam.x)*t, py=cam.y+(wy-cam.y)*t, pz=cam.alt+(h-cam.alt)*t;
+        const gi=clamp(Math.round(py/MAP_SCALE),0,MAPH-1)*MAPW+clamp(Math.round(px/MAP_SCALE),0,MAPW-1);
+        if(HGT[gi]>pz){ vis=0; break; } }
+      const key='lh'+idx; LH_VIS[key]=(LH_VIS[key]==null?vis:LH_VIS[key]+(vis-LH_VIS[key])*0.2);
+      const vk=LH_VIS[key]; if(vk<=0.01) continue;
       /* ⚠ 光束**不走**逐欄遮擋：它橫跨整個畫面、深度從燈室一路變到鏡頭前，拿燈室那一個深度去切
-         只會切出一條條直紋（第一版就是）。光束是空氣裡的光，淡淡的、蓋在山前也讀得通；遮擋只給光暈。 */
+         只會切出一條條直紋（第一版就是）。光束與光暈都改用上面那一次**視線取樣**的可見度（vk）淡掉。 */
       ctx.save();
       ctx.globalCompositeOperation='lighter';
       let flash=0;
@@ -15576,8 +15584,8 @@ function drawHarborLights(S,scaleH,horizon,sinp,cosp,now){
         const w0=Math.max(1.5, 9*W/(2*c.z)), w1=Math.max(3, 150*W/(2*Math.max(e.z,40)));
         const vx=e.x-c.x, vy=e.y-c.y, vl=Math.hypot(vx,vy)||1, nx=-vy/vl, ny=vx/vl;
         const g=ctx.createLinearGradient(c.x,c.y,e.x,e.y);
-        g.addColorStop(0,'rgba(255,236,180,'+(0.42*k).toFixed(3)+')');
-        g.addColorStop(0.35,'rgba(255,230,170,'+(0.16*k).toFixed(3)+')');
+        g.addColorStop(0,'rgba(255,236,180,'+(0.42*k*vk).toFixed(3)+')');
+        g.addColorStop(0.35,'rgba(255,230,170,'+(0.16*k*vk).toFixed(3)+')');
         g.addColorStop(1,'rgba(255,230,170,0)');
         ctx.fillStyle=g;
         ctx.beginPath();
@@ -15585,14 +15593,17 @@ function drawHarborLights(S,scaleH,horizon,sinp,cosp,now){
         ctx.lineTo(e.x-nx*w1,e.y-ny*w1); ctx.lineTo(c.x-nx*w0,c.y-ny*w0); ctx.closePath(); ctx.fill();
       }
       ctx.restore();
-      /* 光暈：常亮的一顆＋光束對著鏡頭時那一閃。⚠ 這一顆要被山擋（逐欄遮擋）。 */
+      /* 光暈：常亮的一顆＋光束對著鏡頭時那一閃。
+         ⚠⚠ 遮擋**不走逐欄裁切**（ver -2237，Ray 回報光束正對鏡頭時「變這樣 要圓的才對」）：
+           閃光那一下光暈很大，逐欄裁切只裁得到左右幾十欄 ⇒ 光暈被切成一個長方形、下半再被切成直紋。
+           改成**沿視線取樣地形**（鏡頭 → 燈室）：中間有山高過視線就算被擋，逐禎平滑淡入淡出；
+           光暈本身永遠畫成整顆圓的，半徑再設上限。 */
       ctx.save();
-      clipByTerrainDepth(c.z, sxk, syk, clamp(Math.floor(c.x/sxk)-40,0,BW-1), clamp(Math.ceil(c.x/sxk)+40,0,BW-1));
       ctx.globalCompositeOperation='lighter';
-      const r=Math.max(3, (18+70*flash)*W/(2*c.z)*6);
+      const r=Math.min(W*0.22, Math.max(3, (18+70*flash)*W/(2*c.z)*6));
       const gl=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,r);
-      gl.addColorStop(0,'rgba(255,246,214,'+((0.75+0.25*flash)*k).toFixed(3)+')');
-      gl.addColorStop(0.25,'rgba(255,226,160,'+((0.35+0.45*flash)*k).toFixed(3)+')');
+      gl.addColorStop(0,'rgba(255,246,214,'+((0.75+0.25*flash)*k*vk).toFixed(3)+')');
+      gl.addColorStop(0.25,'rgba(255,226,160,'+((0.35+0.45*flash)*k*vk).toFixed(3)+')');
       gl.addColorStop(1,'rgba(255,220,150,0)');
       ctx.fillStyle=gl; ctx.beginPath(); ctx.arc(c.x,c.y,r,0,Math.PI*2); ctx.fill();
       ctx.globalCompositeOperation='source-over';
