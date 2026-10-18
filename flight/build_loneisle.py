@@ -54,6 +54,20 @@ Y0, Y1 = CY - 62, min(1199, CY + 48)
 SW, SH = X1 - X0 + 1, Y1 - Y0 + 1
 SEA_GREY = 44 / 520 * 255.0  # 21.6：雲海線（CLOUD_H / PEAK_SCALE）
 
+# ══ 街道（ver -2233，Ray：「太多了 做一些層次 街道 高低差 那是船匠聚落」）══
+# **世界座標**（原點＝島心、+x 東、+y 南；1 地圖像素＝20），index.html 的 RUIN_ART.loneisle.streets **照抄這一份**（改一邊要改另一邊）——
+# 房子沿著這幾條排，所以兩邊一定要一致（量體是用 tools 外的一次性腳本讀這一份排的）。
+STREETS = {
+    'west':   [(0, 10), (-300, 18), (-560, 25)],                 # 船匠街 → 西岬船台
+    'north':  [(0, -60), (-10, -240), (-30, -420), (-60, -520)],  # 北坡上坡路 → 雲海崖
+    'east':   [(60, 0), (200, -15), (380, -10)],                  # 東坡
+    'eastup': [(210, -20), (225, -150), (240, -260)],             # 東坡往上 → 旅舍
+    'light':  [(240, -260), (380, -330), (464, -384)],            # 往燈塔的小路
+    'south':  [(-30, 60), (-120, 160), (-210, 250)],              # 南巷 → 槍匠
+}
+PLAZA_R = 70        # 廣場半徑（世界單位）
+TERRACE = 10.0      # 階地一階幾個灰階（×2.04 ≈ 20 世界單位；7 從巡航高度看不出來）
+
 
 def vnoise(shape, cell, seed):
     r = np.random.default_rng(seed)
@@ -116,6 +130,21 @@ def build(h, t):
     # 廣場：中央一小塊整平（石鋪廣場要是平的）
     plaza = gauss(u, v, 0, 0, 4.0, 3.5)
     hz = hz * (1 - plaza) + 101 * plaza
+    # ── 街道到每一格的距離（世界單位）＋村子範圍 ──
+    WX, WY = U * 20.0, V * 20.0
+    dst = np.full(U.shape, 1e9)
+    for pts in STREETS.values():
+        for (ax, ay), (bx, by) in zip(pts[:-1], pts[1:]):
+            vx, vy = bx - ax, by - ay; L2 = vx * vx + vy * vy
+            tt = np.clip(((WX - ax) * vx + (WY - ay) * vy) / L2, 0, 1)   # ⚠ 不要叫 t：那是地表色那張圖
+            dst = np.minimum(dst, np.hypot(WX - (ax + vx * tt), WY - (ay + vy * tt)))
+    dpl = np.hypot(WX, WY)
+    vil = np.clip(1.0 - (np.minimum(dst, dpl - PLAZA_R) - 60.0) / 140.0, 0, 1)   # 街道兩側 60 內全算村子，200 外淡出
+    # ── 階地：村子裡的地面一階一階的（高低差），階與階之間短短一段坡 ──
+    tq = hz / TERRACE; fl = np.floor(tq); fr = tq - fl
+    rr = np.clip((fr - 0.74) / 0.26, 0, 1)
+    step = fl + rr * rr * (3 - 2 * rr)   # 一階平台 74%、坡 26%
+    hz = hz * (1 - vil * 0.9) + step * TERRACE * vil * 0.9
     # 崖緣：最外 1.5 px 是崖面（直接落到雲海），往內 2 px 收一點點肩
     edge = np.clip((din - 0.5) / (2.0 * K), 0, 1)
     hz = np.where(isle, 70 + (hz - 70) * (0.82 + 0.18 * edge), 0)
@@ -133,17 +162,12 @@ def build(h, t):
     col = grass * (1 - gn) + grass2 * gn
     en = fbm((SH, SW), 5, 3, 72)[..., None]
     col = col * (1 - 0.35 - 0.3 * en) + earth * (0.35 + 0.3 * en)
-    # 村落：廣場＋西街＋東坡＋北坡，石鋪與屋群混著
-    village = np.clip(1.25 * np.maximum.reduce([
-        gauss(u, v, 0, 0, 7, 6),            # 廣場與一圈工坊
-        gauss(u, v, -10, 1, 7, 3.5),        # 船匠街
-        gauss(u, v, 10, 1, 7, 5),           # 東坡住家／旅舍／食堂
-        gauss(u, v, -1, -8, 3.5, 6),        # 北坡上坡路
-        gauss(u, v, -7, 9, 4, 3.5),         # 槍匠工坊
-    ]), 0, 1)[..., None]
+    # 村子：屋群底下是壓實的土與碎石（暖褐），街道與廣場是石板（亮）
     vn = fbm((SH, SW), 3, 2, 81)[..., None]
-    vcol = pave * (1 - vn) + roofy * vn
-    col = col * (1 - village * 0.85) + vcol * village * 0.85
+    yard = np.array([140, 122, 98], float)
+    col = col * (1 - vil[..., None] * 0.55) + (yard * (0.9 + 0.2 * vn)) * vil[..., None] * 0.55
+    road = np.clip(1.0 - (np.minimum(dst, dpl - PLAZA_R) - 14.0) / 10.0, 0, 1)[..., None]   # 街寬約 28 世界單位
+    col = col * (1 - road * 0.85) + pave * (0.92 + 0.12 * vn) * road * 0.85
     # 荒地與燈塔丘頂：岩多草少
     rk = np.clip(1.4 * gauss(u, v, -15, -13, 6, 5) + 0.9 * gauss(u, v, 13, -13, 3.5, 3), 0, 1)[..., None]
     col = col * (1 - rk * 0.6) + rock * rk * 0.6
