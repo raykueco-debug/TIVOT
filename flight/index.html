@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=2226"></script>
+<script src="../orientation.js?v=2227"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。語言判定與 i18n.js 的 LANG 同一套
@@ -11,7 +11,7 @@
 (function(){
   var l=null; try{ l=localStorage.getItem('tivot.lang'); }catch(e){}
   if(!l){ try{ var n=(navigator.languages&&navigator.languages[0])||navigator.language||''; if(String(n).toLowerCase().indexOf('es')===0) l='es'; }catch(e){} }
-  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2226"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2226"><\/script>');
+  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2227"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2227"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=2226');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=2227');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -259,8 +259,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2226");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2226");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2227");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2227");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -280,8 +280,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2226");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2226");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2227");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2227");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -646,23 +646,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2226" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=2227" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2226" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2226" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2226" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2226" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2226" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2226" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2226" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2226" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2226" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2226" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=2227" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2227" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2227" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2227" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2227" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2227" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2227" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2227" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2227" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2227" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=2226" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=2227" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -684,11 +684,11 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=2226"></script>
+<script src="settlement.js?v=2227"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=2226"></script>
+<script src="talks.js?v=2227"></script>
 <script>
 /* 破圖框一律不畫（ver -1881，同主頁 main.js 那一支，這一頁是另一個 document）。 */
 document.addEventListener('error', e=>{ const t=e.target; if(t && t.tagName==='IMG') t.classList.add('img-broken'); }, true);
@@ -764,7 +764,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=df6ea4f0'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -2226';
+const FLIGHT_VER = 'ver -2227';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -966,6 +966,32 @@ const RIM_DEEP_TAU=4.2;                     // 裙的衰減長度（地圖格）
    · 把深度場整個箱糊（半徑 11，兩趟）：**反而更差**（1.95→3.17 緩衝像素）——
      糊會把陸地那個 0 拉進來，靠岸反而變淺，崖底落在更敏感的斜面上。 */
 const RIM_DEEP_S1=120, RIM_DEEP_S2=45;      // 厚度噪聲的兩個尺度（地圖格）
+/* ══⚠⚠⚠ 崖裙網格（ver -2227，Ray：「陸塊的立面老是有鋸齒」→「做崖裙網格：從海岸線抽輪廓、
+     平滑後往下長成網格取代現在 raymarch 的立面，先在孤舟島試，可以再套全大陸」）══════════
+   上面 -1238～-1242 那一串修的都是**同一個病**：raymarch 的立面是**每一欄各自算的**——
+   崖底停在「這一欄的射線在哪裡撞到（凹下去的）雲海面」，崖頂的輪廓是 20 單位一格的方格，
+   所以每一欄高低不一（刺）、每一欄一條直紋。調步長、加寬槽、糊深度場都只是把它變小。
+   ⇒ 這裡改成**真的幾何**：
+     ① `glBuildSkirts` 從海岸線抽輪廓（marching squares，等高線＝raymarch 判陸海的同一條線），
+        Chaikin 平滑、等距重取樣 ⇒ 一圈平滑的折線
+     ② 往外推一點（`SKIRT_OUT`，蓋住 raymarch 的方格立面）、往下長成幾圈，越往下越往內收
+        （浮島的倒錐形底），頂上一圈石緣（`SKIRT_CAP`）壓住崖頂的方格輪廓
+     ③ 區域內的海面**不挖龍骨**（`SEASURF`＝雲海面），而且**區域內的雲海不寫深度**
+        （地形 shader 的 `uSkirt`）—— 所以網格在雲海面以下的那一截看得到，再由 `fade`
+        漸漸融進雲色：「沒入雲裡」是一條連續的漸層，不是一條被深度切出來的鋸齒線。
+   ⚠ 每一筆是**地圖像素**的圓（x,y,r）：只有輪廓重心落在圈裡的那幾圈海岸線會長裙。
+     要套全大陸就加圈（或日後換成全圖），**程式不必改**。
+   ⚠ 只有 GL 這一路有；CPU 備援（`?gl=0`）照舊是 raymarch 的立面。
+   ⚠ `depth`＝崖裙往雲海面以下長多深（世界單位）；`inset`＝底部往內收的最大量（地圖像素）。 */
+const SKIRT_REGIONS = [
+  { x:2012, y:1150, r:70, depth:320, inset:10 },   // 孤舟島（試點）
+];
+const SKIRT_OUT = 0.65;   // 牆面往海側推出多少（地圖像素）—— 蓋住 raymarch 那一圈方格立面
+const SKIRT_CAP = 0.5;    // 頂上石緣往陸側伸進多少（地圖像素）—— 壓住崖頂的輪廓；寬了會讀成一圈路
+function skirtRegionAt(x,y){
+  for(const R of SKIRT_REGIONS){ const dx=x-R.x, dy=y-R.y; if(dx*dx+dy*dy<=R.r*R.r) return R; }
+  return null;
+}
 let SEASURF=null;                           // 海面高度（Int16；上傳後釋放）
 /* ══⚠⚠⚠ 逐地取消邊緣抬升（ver -1234，Ray：「把 967,861 的台地鏟平了」
      「不是水平鏟平，是把高度鏟平不要有個突起的台地」）══════════════════
@@ -7026,6 +7052,7 @@ async function loadWorld(){
     for(let y=0;y<MAPH;y++) for(let x=0;x<MAPW;x++){
       const i=y*MAPW+x;
       if(HGT[i]>CLOUD_H){ SEASURF[i]=CLOUD_H; continue; }   // 陸：用不到，填個安全值
+      if(skirtRegionAt(x,y)){ SEASURF[i]=CLOUD_H; continue; } // 崖裙區：厚度交給網格（ver -2227）
       const dd=dist[i];
       if(dd>=RIM_DEEP_W){ SEASURF[i]=CLOUD_H; continue; }
       const nz=clamp(kn(x/RIM_DEEP_S1,y/RIM_DEEP_S1)*0.65
@@ -7979,7 +8006,7 @@ async function loadWorld(){
      城的整地、河道與水位全部改過 HGT/COL，早一步上傳就會與畫面上的地形對不起來。 */
   /* ⚠ `gl-on` 那個 class 掛在**這裡**（初始化真的成功之後），不是在 GLON 那一行 ——
      理由見 GLON 的註解：開不起來時掛上去會變成「整片沒有地形」。 */
-  if(GLON){ try{ if(glInit()){ glUploadWorld(); glBuildRuins();
+  if(GLON){ try{ if(glInit()){ glUploadWorld(); glBuildRuins(); glBuildSkirts();
                                document.body.classList.add('gl-on'); } }
             catch(e){ console.warn('[gl] 初始化失敗，維持 CPU 路徑', e); } }
   /* ⚠ -1314 曾經在這裡把起跑檔位設成最低檔；-1315 改成**整條 GL 不開**
@@ -11430,6 +11457,7 @@ uniform vec3 uFog;             // 霧色（地平線色）
 uniform float uCloudLit;
 uniform float uTime;      // 毫秒，瀑布的水流動畫用
 uniform float uStepK;     // 步長倍率（ver -1750，QUALITY[].step）
+uniform vec3 uSkirt[4]; uniform int uSkirtN;   // 崖裙區（地圖像素 x,y,r；ver -2227）
 uniform float uZfar;      // 這一檔的視距（ver -1750，ZFAR×QUALITY[].view；深度換算仍用 ZFAR）
 out vec4 o;
 
@@ -11567,7 +11595,7 @@ void main(){
         float zv = clamp(k/(2.0*curv), z, z2);
         float hMin = min(min(uCam.z-(k-z*curv)*z, uCam.z-(k-z2*curv)*z2),
                          uCam.z-(k-zv*curv)*zv);
-        float blk = texelFetch(uHmax, ivec2(mf)>>L, L).r;
+        float blk = texelFetch(uHmax, min(ivec2(mf)>>L, textureSize(uHmax,L)-1), L).r;   // 夾在範圍內（見 max-mipmap 的建法，ver -2227）
         if(blk < hMin){ z=z2; dz+=(0.0062*uStepK)*kk; jumped=true; break; }
       }
       if(jumped) continue;
@@ -11827,6 +11855,10 @@ void main(){
       c+=vec3(BAY[(by<<2)|bx]*${DITHER}/255.0);
       o=vec4(c,1.0);
       gl_FragDepth=clamp(z/${ZFAR}.0,0.0,1.0);
+      /* 崖裙區的雲海不寫深度（ver -2227）：網格在雲海面以下那一截要看得到，
+         它自己會漸漸融進雲色（見 GL_SKIRT_FS）。 */
+      if(cloud){ for(int q=0;q<4;q++){ if(q>=uSkirtN) break;
+        vec2 dq=mf-uSkirt[q].xy; if(dot(dq,dq)<=uSkirt[q].z*uSkirt[q].z){ gl_FragDepth=1.0; break; } } }
       return;
     }
     /* ⚠ 成長率 ver -1241 由 0.011 收到 (0.0062*uStepK)（Ray：「大陸邊緣還是刺的」）：
@@ -11907,7 +11939,7 @@ function glInit(){
   g.bufferData(g.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),g.STATIC_DRAW);
   const lp=g.getAttribLocation(glProg,'p');
   g.enableVertexAttribArray(lp); g.vertexAttribPointer(lp,2,g.FLOAT,false,0,0);
-  for(const n of ['uH','uHs','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit','uTime','uStepK','uZfar',
+  for(const n of ['uH','uHs','uC','uS','uSky','uMap','uBuf','uCam','uDir','uLdir','uLcol','uLi','uFog','uCloudLit','uTime','uStepK','uZfar','uSkirt[0]','uSkirtN',
                   'uCityA','uCityB','uCityA0','uCityB0','uCityA1','uCityB1','uCityT','uInvS',
                   'uBiome','uMask','uGeo','uRailDir','uRD','uGeoOn','uMot','uSnow','uMaxH','uHmax','uMaxLod'])
     glU[n]=g.getUniformLocation(glProg,n);
@@ -11985,13 +12017,24 @@ function glUploadWorld(){
     g.texImage2D(g.TEXTURE_2D,0,g.R16F,lw,lh,0,g.RED,g.FLOAT,prev);
     TERR_MAXLOD=0;
     for(let L=1; L<=7 && lw>1 && lh>1; L++){
+      /* ⚠⚠⚠ **奇數那一階的最後一列／一行要併進來**（ver -2227）：地圖是 2152×1200，不是 2 的冪 ——
+         `>>1` 在奇數那一階會**丟掉最後一列／一行**（75→37、67→33…），shader 用
+         `ivec2(mf)>>L` 去查，那一帶在粗階就讀到界外（＝0）⇒ 射線以為「這一塊比我低」
+         整段跳過 ⇒ 地形被跳掉一截、後面補成一面帶直紋的假崖。
+         實測受害區：y≥1152（第 6 階）、x≥2048（第 7 階）—— 孤舟島的南半部正好在裡面
+         （Ray：「破圖了」）。
+         ⚠⚠ **尺寸不能改成進位**：WebGL 的 mipmap 每一階必須正好是上一階的 floor(1/2)，
+           否則整張貼圖「不完整」、每一階都讀成 0（試過，整片破成階梯）。
+           所以尺寸照舊捨去，改成**最後一格多吃一列／一行**（取最大值，保守的那一邊），
+           shader 那邊的查表再夾在範圍內（`min(…, textureSize-1)`）。 */
       const w=Math.max(1,lw>>1), h=Math.max(1,lh>>1), cur=new Float32Array(w*h);
       for(let y=0;y<h;y++){
-        const y0=y<<1, y1=Math.min(y0+1,lh-1);
+        const y0=y<<1, y1=(y===h-1)?lh-1:Math.min(y0+1,lh-1);
         for(let x=0;x<w;x++){
-          const x0=x<<1, x1=Math.min(x0+1,lw-1);
-          const a=prev[y0*lw+x0], b=prev[y0*lw+x1], c=prev[y1*lw+x0], d=prev[y1*lw+x1];
-          cur[y*w+x] = Math.max(Math.max(a,b), Math.max(c,d));
+          const x0=x<<1, x1=(x===w-1)?lw-1:Math.min(x0+1,lw-1);
+          let m=0;
+          for(let yy=y0;yy<=y1;yy++) for(let xx=x0;xx<=x1;xx++){ const v=prev[yy*lw+xx]; if(v>m) m=v; }
+          cur[y*w+x] = m;
         }
       }
       g.texImage2D(g.TEXTURE_2D,L,g.R16F,w,h,0,g.RED,g.FLOAT,cur);
@@ -12231,6 +12274,9 @@ function glDrawTerrain(S, sinp, cosp, lx, ly, ambI, sunI, lightR, lightG, lightB
   g.uniform2f(glU.uLi,ambI,sunI);
   g.uniform3f(glU.uFog,fr/255,fg/255,fb/255);
   g.uniform1f(glU.uCloudLit,cloudLit);
+  { const a=new Float32Array(12); const n=Math.min(4,SKIRT_REGIONS.length);
+    for(let q=0;q<n;q++){ const R=SKIRT_REGIONS[q]; a[q*3]=R.x; a[q*3+1]=R.y; a[q*3+2]=R.r; }
+    g.uniform3fv(glU['uSkirt[0]'],a); g.uniform1i(glU.uSkirtN,n); }
   g.uniform1f(glU.uTime, performance.now());
   { const q=Q(); g.uniform1f(glU.uStepK, q.step||1); g.uniform1f(glU.uZfar, ZFAR*(q.view||1)); }   // ver -1750
   g.uniform2f(glU.uRD, RD_W||1, RD_H||1);
@@ -12555,6 +12601,228 @@ function glDrawRuins(sinp,cosp,lx,ly,dayK){
             g.activeTexture(g.TEXTURE0+15); g.bindTexture(g.TEXTURE_2D,tr); }
     g.bindVertexArray(R.vao);
     g.drawArrays(g.TRIANGLES,0,R.n);
+  }
+  g.bindVertexArray(null);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   崖裙網格（ver -2227）—— 說明見 `SKIRT_REGIONS`
+   ══════════════════════════════════════════════════════════════════════
+   ⚠ 頂點用**世界座標**（原點 0、不旋轉），投影與遺蹟同一條式子（只有那幾行，照抄）。
+   ⚠ 一段牆約 0.75 地圖像素（15 世界單位）：深度 vZ 是在螢幕空間線性內插的，
+     大三角形會有深度誤差 —— 切細就沒事。 */
+let glSkirtProg=null, glSkirtU={}, glSkirts=[];
+const GL_SKIRT_VS=`#version 300 es
+in vec3 p; in vec2 nrm; in float sArc; in float fade; in float kind;
+uniform vec2 uBuf; uniform vec3 uCam; uniform vec2 uDir;
+out float vZ; out float vZw; out vec2 vN; out vec2 vW; out float vS; out float vFade; out float vKind; out float vDist;
+void main(){
+  vec2 d=p.xy-uCam.xy;
+  float sinp=uDir.x, cosp=uDir.y;
+  float z=d.x*(-sinp)+d.y*(-cosp);
+  if(z<8.0){ gl_Position=vec4(2.,2.,2.,1.); vZ=1.0; return; }
+  float sv=(d.x*cosp+d.y*(-sinp))/z;
+  float scaleH=uBuf.y*0.62, horizon=uBuf.y*${HORIZON_F};
+  float curv=(1.0+sv*sv)/(2.0*${PLANET_R}.0);
+  float sy=((uCam.z-p.z)/z + z*curv)*scaleH+horizon;
+  gl_Position=vec4(sv, 1.0-2.0*sy/uBuf.y, 0.0, 1.0);
+  vZ=clamp(z/${ZFAR}.0,0.0,1.0); vDist=z;
+  vZw=p.z; vN=nrm; vW=p.xy; vS=sArc; vFade=fade; vKind=kind;
+}`;
+const GL_SKIRT_FS=`#version 300 es
+precision highp float;
+in float vZ; in float vZw; in vec2 vN; in vec2 vW; in float vS; in float vFade; in float vKind; in float vDist;
+uniform vec3 uCam; uniform vec2 uLdir;
+uniform vec3 uLit, uSide, uDark, uTop;   // 岩面色階
+uniform vec3 uAmb; uniform float uAmbA;
+uniform vec3 uCloud; uniform vec3 uFog; uniform float uZfar;
+uniform sampler2D uTex; uniform float uTexOn;
+out vec4 o;
+void main(){
+  vec3 c;
+  if(vKind<0.5){
+    /* 背面不畫：從島的另一側看過來時，網格的內側不該露出來（那裡應該是島的地面或雲）。 */
+    if(dot(vN, uCam.xy-vW) < 0.0) discard;
+    float dl=dot(vN,uLdir);
+    c = dl>0.0 ? mix(uSide,uLit,smoothstep(0.0,0.7,dl)) : mix(uSide,uDark,smoothstep(0.0,0.7,-dl));
+    /* 岩層：水平的淡帶，沿著輪廓慢慢起伏（讀起來是一層一層的岩，不是一面平板）。 */
+    c *= 0.92 + 0.08*sin(vZw*0.105 + sin(vS*0.011)*2.2);
+    if(uTexOn>0.5){ vec3 t=texture(uTex, vec2(vS, vZw)/${(256*0.7).toFixed(1)}).rgb; c *= 0.58 + 0.42*t; }
+  }else{
+    c = uDark*1.15;   // 崖頂石緣：暗一點，讀成崖邊而不是一圈白邊
+  }
+  c = mix(c, uAmb, uAmbA);
+  c = mix(c, uCloud, vFade);                 // 沒入雲海：越往下越接近雲色
+  float fogS=uZfar*${FOG_START};
+  float fog=clamp((vDist-fogS)/(uZfar-fogS),0.0,1.0)*${FOG_MAX};
+  c = mix(c, uFog, fog);                     // 與地形同一條霧（同 GL_FS 那一段）
+  o=vec4(c,1.0);
+  gl_FragDepth=vZ;
+}`;
+
+/* 從海岸線抽輪廓：marching squares，等高線取 raymarch 判陸海的同一個值（`hSurf` 的
+   `ts<=CLOUD_H`；崖裙區的海面是 CLOUD_H，所以就是「陸地格 vs 雲海面」那一條）。
+   ⚠ 取樣點在**格心**（texel i 的中心是 mf=i+0.5，同 GL 的線性取樣）。 */
+function skirtContours(R){
+  const L=CLOUD_H+0.5;
+  const x0=Math.max(0,Math.floor(R.x-R.r)), x1=Math.min(MAPW-2,Math.ceil(R.x+R.r));
+  const y0=Math.max(0,Math.floor(R.y-R.r)), y1=Math.min(MAPH-2,Math.ceil(R.y+R.r));
+  const G=(i,j)=>{ const h=HGT[j*MAPW+i]; return h>CLOUD_H?h:CLOUD_H; };
+  const pt={}, adj={};
+  const ep=(key,x,y)=>{ if(!pt[key]) pt[key]=[x,y]; return key; };
+  const hE=(i,j)=>{ const a=G(i,j), b=G(i+1,j); return ep('h'+i+','+j, i+0.5+(L-a)/(b-a), j+0.5); };
+  const vE=(i,j)=>{ const a=G(i,j), b=G(i,j+1); return ep('v'+i+','+j, i+0.5, j+0.5+(L-a)/(b-a)); };
+  const link=(a,b)=>{ (adj[a]||(adj[a]=[])).push(b); (adj[b]||(adj[b]=[])).push(a); };
+  for(let j=y0;j<y1;j++) for(let i=x0;i<x1;i++){
+    const a=G(i,j)>L, b=G(i+1,j)>L, c=G(i+1,j+1)>L, d=G(i,j+1)>L;
+    const k=(a?1:0)|(b?2:0)|(c?4:0)|(d?8:0);
+    if(k===0||k===15) continue;
+    const T=()=>hE(i,j), Rr=()=>vE(i+1,j), B=()=>hE(i,j+1), Lf=()=>vE(i,j);
+    const ctr=(G(i,j)+G(i+1,j)+G(i+1,j+1)+G(i,j+1))/4>L;
+    switch(k){
+      case 1: case 14: link(Lf(),T()); break;
+      case 2: case 13: link(T(),Rr()); break;
+      case 4: case 11: link(Rr(),B()); break;
+      case 8: case 7:  link(B(),Lf()); break;
+      case 3: case 12: link(Lf(),Rr()); break;
+      case 6: case 9:  link(T(),B()); break;
+      case 5:  if(ctr){ link(T(),Rr()); link(B(),Lf()); } else { link(Lf(),T()); link(Rr(),B()); } break;
+      case 10: if(ctr){ link(Lf(),T()); link(Rr(),B()); } else { link(T(),Rr()); link(B(),Lf()); } break;
+    }
+  }
+  const used=new Set(), loops=[];
+  for(const k0 in adj){
+    if(used.has(k0)) continue;
+    const loop=[]; let prev=null, cur=k0;
+    while(cur && !used.has(cur)){
+      used.add(cur); loop.push(pt[cur]);
+      const nb=adj[cur]; const nx=(nb[0]!==prev)?nb[0]:nb[1];
+      prev=cur; cur=nx;
+    }
+    if(loop.length>=12) loops.push(loop);
+  }
+  return loops.filter(l=>{ let cx=0,cy=0; for(const q of l){cx+=q[0];cy+=q[1];} cx/=l.length; cy/=l.length;
+    return Math.hypot(cx-R.x,cy-R.y)<=R.r; });
+}
+function skirtSmooth(loop){
+  let P=loop;
+  for(let it=0;it<3;it++){                     // Chaikin：每一輪把轉角切掉 1/4
+    const Q=[]; const n=P.length;
+    for(let i=0;i<n;i++){ const a=P[i], b=P[(i+1)%n];
+      Q.push([a[0]*0.75+b[0]*0.25, a[1]*0.75+b[1]*0.25], [a[0]*0.25+b[0]*0.75, a[1]*0.25+b[1]*0.75]); }
+    P=Q;
+  }
+  const n=P.length, cum=[0];                   // 等距重取樣（0.75 地圖像素）
+  for(let i=1;i<=n;i++){ const a=P[i-1], b=P[i%n]; cum.push(cum[i-1]+Math.hypot(b[0]-a[0],b[1]-a[1])); }
+  const tot=cum[n], m=Math.max(12,Math.round(tot/0.75)), out=[]; let k=0;
+  for(let q=0;q<m;q++){ const s=tot*q/m; while(cum[k+1]<s) k++;
+    const a=P[k], b=P[(k+1)%n], f=(s-cum[k])/Math.max(1e-6,cum[k+1]-cum[k]);
+    out.push([a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f]); }
+  return out;
+}
+function glBuildSkirts(){
+  if(!GLX || !SKIRT_REGIONS.length) return;
+  const g=GLX;
+  glSkirtProg=g.createProgram();
+  g.attachShader(glSkirtProg,glSh(g.VERTEX_SHADER,GL_SKIRT_VS));
+  g.attachShader(glSkirtProg,glSh(g.FRAGMENT_SHADER,GL_SKIRT_FS));
+  g.linkProgram(glSkirtProg);
+  if(!g.getProgramParameter(glSkirtProg,g.LINK_STATUS)){
+    console.warn('[gl] 崖裙 shader 連結失敗', g.getProgramInfoLog(glSkirtProg)); glSkirtProg=null; return; }
+  for(const n of ['uBuf','uCam','uDir','uLdir','uLit','uSide','uDark','uTop','uAmb','uAmbA','uCloud','uFog','uZfar','uTex','uTexOn'])
+    glSkirtU[n]=g.getUniformLocation(glSkirtProg,n);
+  const isLand=(x,y)=>{ const i=Math.floor(x), j=Math.floor(y);
+    return i>=0&&j>=0&&i<MAPW&&j<MAPH&&HGT[j*MAPW+i]>CLOUD_H; };
+  const landH=(x,y)=>{                         // 陸側那幾格的平均高（只算陸地格）
+    const i0=Math.floor(x-0.5), j0=Math.floor(y-0.5); let s=0,n=0,mx=0;
+    for(let j=j0-1;j<=j0+2;j++) for(let i=i0-1;i<=i0+2;i++){
+      if(i<0||j<0||i>=MAPW||j>=MAPH) continue; const h=HGT[j*MAPW+i];
+      if(h>CLOUD_H){ s+=h; n++; if(h>mx) mx=h; } }
+    return n ? s/n : CLOUD_H+20; };
+  const n1=(t,sd)=>{ const i=Math.floor(t), f=t-i, w=f*f*(3-2*f); return hash01(i,sd)*(1-w)+hash01(i+1,sd)*w; };
+  for(const R of SKIRT_REGIONS){
+    for(const raw of skirtContours(R)){
+      const P=skirtSmooth(raw), n=P.length;
+      /* 外法線：切線轉 90°，再用「往那邊走一格是不是海」整圈投票定方向。 */
+      const N=[]; let vote=0;
+      for(let i=0;i<n;i++){ const a=P[(i+n-1)%n], b=P[(i+1)%n];
+        let nx=b[1]-a[1], ny=-(b[0]-a[0]); const l=Math.hypot(nx,ny)||1; N.push([nx/l,ny/l]);
+        vote += isLand(P[i][0]+nx/l*1.2, P[i][1]+ny/l*1.2) ? -1 : 1; }
+      if(vote<0) for(const q of N){ q[0]=-q[0]; q[1]=-q[1]; }
+      const V=[]; const S=MAP_SCALE;
+      const push=(x,y,z,nx,ny,s,f,k)=>V.push(x*S,y*S,z,nx,ny,s,f,k);
+      const RINGS=6, cols=[];
+      let arc=0;
+      for(let i=0;i<n;i++){
+        if(i) arc+=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1])*S;
+        const [px,py]=P[i], [nx,ny]=N[i];
+        const top=landH(px-nx*SKIRT_CAP, py-ny*SKIRT_CAP)+1.5;
+        let wIn=0; while(wIn<40 && isLand(px-nx*(wIn+0.5), py-ny*(wIn+0.5))) wIn+=0.5;   // 這一點往內有多寬
+        const inset=Math.min(R.inset*(0.7+0.6*n1(arc/260,7)), wIn*0.45);
+        const bot=CLOUD_H-R.depth*(0.82+0.36*n1(arc/340,11));
+        const ring=[];
+        ring.push({x:px-nx*SKIRT_CAP, y:py-ny*SKIRT_CAP, z:top, cap:true});
+        /* ⚠⚠ 雲海面以上**筆直、不往內收**：raymarch 的那一圈方格斜面就在牆的正後方
+           （陸地格心 → 海格心那一段），牆一往內收它就從牆前面露出來 —— 那正是第一版
+           還有一排暗色鋸齒的原因。過了雲海面（`zKnee`）才開始收成倒錐。 */
+        const zKnee=CLOUD_H-40;
+        const wob=0.35*(n1(arc/180,13)-0.5);
+        for(let r=0;r<=2;r++){ const t=r/2;
+          ring.push({x:px+nx*(SKIRT_OUT+wob*t), y:py+ny*(SKIRT_OUT+wob*t), z:top-(top-zKnee)*t}); }
+        for(let r=1;r<=RINGS;r++){ const t=r/RINGS;
+          const o=SKIRT_OUT+wob - inset*Math.pow(t,1.5);
+          ring.push({x:px+nx*o, y:py+ny*o, z:zKnee-(zKnee-bot)*t}); }
+        cols.push({ring, nx, ny, s:arc});
+      }
+      const fadeOf=z=>clamp((CLOUD_H+25-z)/260,0,1);
+      for(let i=0;i<n;i++){
+        const A=cols[i], B=cols[(i+1)%n], sB=(i+1<n)?B.s:A.s+Math.hypot(P[0][0]-P[i][0],P[0][1]-P[i][1])*S;
+        for(let r=0;r+1<A.ring.length;r++){
+          const a0=A.ring[r], a1=A.ring[r+1], b0=B.ring[r], b1=B.ring[r+1];
+          const k=(r===0)?1:0;                 // 第一段＝頂上的石緣（水平面）
+          const tri=(q,u,w)=>{ for(const [v,s0,nn] of [q,u,w]) push(v.x,v.y,v.z,nn[0],nn[1],s0,fadeOf(v.z),k); };
+          const na=[A.nx,A.ny], nb=[B.nx,B.ny];
+          tri([a0,A.s,na],[b0,sB,nb],[b1,sB,nb]); tri([a0,A.s,na],[b1,sB,nb],[a1,A.s,na]);
+        }
+      }
+      const vao=g.createVertexArray(); g.bindVertexArray(vao);
+      const vb=g.createBuffer(); g.bindBuffer(g.ARRAY_BUFFER,vb);
+      g.bufferData(g.ARRAY_BUFFER,new Float32Array(V),g.STATIC_DRAW);
+      const ST=8*4;
+      const bind=(nm,size,off)=>{ const Lc=g.getAttribLocation(glSkirtProg,nm);
+        if(Lc<0) return; g.enableVertexAttribArray(Lc); g.vertexAttribPointer(Lc,size,g.FLOAT,false,ST,off); };
+      bind('p',3,0); bind('nrm',2,12); bind('sArc',1,20); bind('fade',1,24); bind('kind',1,28);
+      g.bindVertexArray(null);
+      glSkirts.push({ vao, n:V.length/8, cx:R.x*S, cy:R.y*S, r:R.r*S });
+    }
+  }
+  console.log('[gl] 崖裙：'+glSkirts.length+' 圈、'+glSkirts.reduce((a,b)=>a+b.n/3,0)+' 個三角形');
+}
+function glDrawSkirts(sinp,cosp,lx,ly,dayK,cloudLit,fr,fg,fb){
+  if(!glSkirtProg || !glSkirts.length) return;
+  const g=GLX;
+  g.useProgram(glSkirtProg);
+  g.enable(g.DEPTH_TEST); g.depthFunc(g.LEQUAL);
+  g.uniform2f(glSkirtU.uBuf,BW,BH);
+  g.uniform3f(glSkirtU.uCam,cam.x,cam.y,cam.alt);
+  g.uniform2f(glSkirtU.uDir,sinp,cosp);
+  g.uniform2f(glSkirtU.uLdir,lx,ly);
+  /* 色階：沿用遺蹟那一套的「岩」（RUIN_COL 的牆色）—— 不另訂一組灰。 */
+  const C=RUIN_COL;
+  g.uniform3fv(glSkirtU.uLit,glCss3(C.sideLit)); g.uniform3fv(glSkirtU.uSide,glCss3(C.side));
+  g.uniform3fv(glSkirtU.uDark,glCss3(C.dark));   g.uniform3fv(glSkirtU.uTop,glCss3(C.top));
+  const nightK=clamp(1-dayK*1.25,0,1), A=ruinAmb||[128,128,128];
+  g.uniform3f(glSkirtU.uAmb,A[0]/255,A[1]/255,A[2]/255);
+  g.uniform1f(glSkirtU.uAmbA,RUIN_AMB+RUIN_AMB_NIGHT*nightK);
+  g.uniform3f(glSkirtU.uCloud,0.82*cloudLit,0.86*cloudLit,0.92*cloudLit);   // ＝GL_FS 的雲色（同一條式子）
+  g.uniform3f(glSkirtU.uFog,fr/255,fg/255,fb/255);
+  { const q=Q(); g.uniform1f(glSkirtU.uZfar, ZFAR*(q.view||1)); }
+  const tw=glRuinTexture('moss_stone');
+  g.uniform1f(glSkirtU.uTexOn, tw?1:0);
+  if(tw){ g.activeTexture(g.TEXTURE0+6); g.bindTexture(g.TEXTURE_2D,tw); g.uniform1i(glSkirtU.uTex,6); }
+  for(const K of glSkirts){
+    if(Math.hypot(K.cx-cam.x,K.cy-cam.y)-K.r > ZFAR) continue;
+    g.bindVertexArray(K.vao); g.drawArrays(g.TRIANGLES,0,K.n);
   }
   g.bindVertexArray(null);
 }
@@ -13244,6 +13512,7 @@ function render(now){
       /* 遺蹟：與地形**同一顆深度緩衝** ⇒ 遮擋是免費的深度測試，
          不必 `clipByTerrainDepth`，也與數量脫鉤（ver -1199 驗過 841 個物件量不到）。 */
       glDrawRuins(sinp, cosp, lx, ly, S.day);
+      glDrawSkirts(sinp, cosp, lx, ly, S.day, cloudLit, fr, fg, fb);   // 崖裙（ver -2227）
       glLastKey=glKey; glDrewAt=glNow; glDrawCount++;
     }
     ctx.clearRect(0,0,W,VIEWH);
