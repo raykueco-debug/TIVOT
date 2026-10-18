@@ -2569,9 +2569,11 @@ function applyPersist(line){
      `clockToNext:8` ＝推到**下一個** 8:00（過了就是隔天）—— 走城鎮閘門同一支
      `clock.advanceToNextHour`（鐵律 8）。⚠ 在情境卡代換**之前**做：
      卡上要印的常常就是跳完之後的日期。 */
-  if(line.clockToNext!=null && !replaying){ try{ clock.advanceToNextHour(line.clockToNext); }catch(_){} }
+  /* ⚠ 已經在進圖時先套過的那幾拍（`preApplyClock`，ver -2244）不再套一次 —— `clockToNext` 套兩次會跳到隔天。 */
+  const clockDone = clockPreApplied.has(line); if(clockDone) clockPreApplied.delete(line);
+  if(line.clockToNext!=null && !replaying && !clockDone){ try{ clock.advanceToNextHour(line.clockToNext); }catch(_){} }
   /* `clockSet:23` ＝這一拍把時鐘設成**今天的 23:00**（ver -2125；可能倒轉，只給「這一段開場就是幾點」用，見 clock.setHourToday）。 */
-  if(line.clockSet!=null && !replaying){ try{ clock.setHourToday(line.clockSet); }catch(_){} }
+  if(line.clockSet!=null && !replaying && !clockDone){ try{ clock.setHourToday(line.clockSet); }catch(_){} }
   /* `healFull:true` ＝這一拍把主角的體力補滿（ver -1886，帝都第一夜：夢醒＝睡了一整夜，
      同旅店睡覺那一條的「持久 HP 鑰匙清掉＝滿血」，走同一支 `prog.clearHp`）。 */
   if(line.healFull && !replaying){ try{ prog.clearHp(); }catch(_){} }
@@ -3557,7 +3559,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2243';
+const KERB_V='?v=2244';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）
@@ -5584,6 +5586,30 @@ const AL_CLOSE_MS = AL_BLANK_MS + AL_FADE_MS;
    打完回到同一個場景而且不經過讀取頁 —— 戰鬥的門放音訊時要保住這一份（main.enterBattleAssets）。 */
 let _sceneAudio = [];
 export function sceneAudio(){ return _sceneAudio.slice(); }
+/* ══ 進圖前先把時間定好（ver -2244，Ray：「進入地圖後先讀時間再放背景差分 不要進了圖以後再改」）══
+   一段劇情**開頭**（第一句有字的台詞之前）就改時間的拍（`clockSet`／`clockToNext`，例：夜襲開場設成 23:00），
+   以前是演到那一拍才改 —— 而背景在那之前就照舊時間畫上去了，於是一進圖背景就在眼前換一次時段。
+   城鎮畫背景之前先呼叫這一支：把那幾拍的時間先套用、記在 `clockPreApplied`，演到那一拍時跳過不再套。
+   ⚠ 只看**開頭**那幾拍：劇情中途的改時間是演出（「時間過去了」），那一拍換背景是對的。 */
+const clockPreApplied = new WeakSet();
+/* 呼叫端把某一拍複製一份（例：城鎮給第一句加 `delay`）時，標記要跟著過去，不然複製品會被當成沒套過、再推一次時鐘。 */
+export function copyLine(orig, extra){
+  const c=Object.assign({}, orig, extra||{});
+  if(clockPreApplied.has(orig)) clockPreApplied.add(c);
+  return c;
+}
+export function preApplyClock(lines){
+  for(const ln of (lines||[])){
+    if(!ln || typeof ln!=='object') continue;
+    const said = (ln.text!=null && String(ln.text).trim()!=='') || ln.blank;
+    if(ln.clockToNext!=null || ln.clockSet!=null){
+      if(ln.clockToNext!=null){ try{ clock.advanceToNextHour(ln.clockToNext); }catch(_){} }
+      if(ln.clockSet!=null){ try{ clock.setHourToday(ln.clockSet); }catch(_){} }
+      clockPreApplied.add(ln);
+    }
+    if(said || ln.battle || ln.goFlight) break;
+  }
+}
 export function loadScene(spec, onReady, onCovered){
   spec = spec || {};
   const path = (v, f) => (typeof v === 'string' && v.indexOf('/') < 0) ? f(v) : v;

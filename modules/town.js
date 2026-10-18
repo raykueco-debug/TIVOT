@@ -1030,6 +1030,14 @@ function enemyImgsOf(T){
 function warmEnemies(T, my){
   return warmPool(enemyImgsOf(T), u=>new Promise(r=>{ const im=new Image(); im.onload=im.onerror=r; im.src=u; }), my);
 }
+/* ══ 進這張圖之前該是幾點（ver -2244，Ray：「進入地圖後先讀時間再放背景差分 不要進了圖以後再改」）══
+   `arriveNotBefore:<時>` ＝踏進這張圖不會早於那個時刻（ver -1447）。以前只在 `open()` 裡推 ——
+   而讀取頁預載背景（`loadSpec` 的 `pre`）跑在 `open()` **之前**，預載的是舊時段那一張，
+   進了圖才換成新時段 ⇒ 一進圖背景就在眼前換一次。收成這一支，**預載之前、`open()` 裡都先叫**。
+   ⚠ `advanceToHour` 只往前、過了就不動 —— 叫兩次是安全的（鐵律 8：判定只有這一處）。 */
+function settleArrivalClock(town){
+  const T=TOWNS[town]; if(T && T.arriveNotBefore!=null) clock.advanceToHour(T.arriveNotBefore);
+}
 export function loadSpec(town, nodeId){
   const T = TOWNS[town || 'capital']; if(!T) return {};
   const id = nodeId || T.entry;
@@ -1052,7 +1060,7 @@ export function loadSpec(town, nodeId){
 
     ses : [...collectSe(T, new Set(TOWN_SE), 0)],
     bgms: T.bgm ? [T.bgm] : [],
-    pre : n ? (()=> resolveBgOnce(bgCandsOf(n, id), true)) : null,
+    pre : n ? (()=>{ settleArrivalClock(town || 'capital'); return resolveBgOnce(bgCandsOf(n, id), true); }) : null,   // 先定時間再解背景（ver -2244）
     warm,
   };
 }
@@ -4694,6 +4702,8 @@ export function enter(id){
      同曲重播由 `playBgm` 自己擋掉，所以重複呼叫是安全的。 */
   /* 這一段要從全黑開場（`darkStart`，ver -2141）：演出區直接蓋黑；這一格的曲子等腳本的 `fadeIn` 掀開才放（ver -2142）。 */
   { const a0=actDue(n);
+    /* 這一段開頭就改時間的話，**先套用再畫背景**（ver -2244，見 story.preApplyClock）。 */
+    if(a0 && a0.lines) story.preApplyClock(a0.lines);
     if(a0 && a0.darkStart){ const bk=townBgm(); story.holdSceneFade(()=>story.ensureBgm(bk)); }
     else story.ensureBgm(townBgm()); }
   story.setBgFlip(!!n.bgFlip);   // 背景鏡像（ver -877：崩塌走道×2 同圖翻轉）
@@ -4854,7 +4864,7 @@ export function enter(id){
          值就是滑入時間。⚠ 只加在第一句，後面幾句的人已經在台上了。
          ⚠ 不改成全域規則：主線那邊的節奏是 Ray 一句一句調過的，動它會全部走鐘。 */
       const play=lines.map((l,i)=> (i===0 && l && l.delay==null)
-        ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
+        ? story.copyLine(l, { delay:SLIDE_MS }) : l);   // copyLine：進圖時先套過的改時間標記要跟著（ver -2244）
       /* ⚠ 對白演完**把立繪全撤**，只留背景與導覽（Ray 指定）。 */
       /* ⚠ `n.sides`：兩個角色同台要分左右（§6.5）——城鎮這條路徑一樣要吃得到。 */
       /* 特殊戰開演前**拔旗**（ver -634（-893 前用詞），Ray 指定）：這一段真的要打一場，
@@ -5530,7 +5540,7 @@ export function open(town, node, opts){
      ⚠ 走 `advanceToHour`（只往前推、已經過了就不動）—— **時鐘不倒轉**，
        所以夜裡搭船來的那一趟是 no-op（§6.5.4.1 那條「時鐘只能往前」）。
      ⚠ 判定只有這一處（鐵律 8）：日後任何一條進圖的路都自動吃到。 */
-  if(T.arriveNotBefore!=null) clock.advanceToHour(T.arriveNotBefore);
+  settleArrivalClock(townId);
   /* 進帝都＝諾薇兒好感初始化為 5（ver -560，Ray：「預設是全 0，進帝都後諾才 5」）——
      一輪一次（旗標擋重複），直接寫值不走棘輪（這是入隊的起始值，不是獎勵）；
      已經比 5 高就不動（讀檔回城不能倒扣）。 */
