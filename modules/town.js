@@ -490,6 +490,32 @@ function rollOuting(){
     }
   }
 }
+/* ══ 獨自坐坐之後洗牌（ver -2242，Ray：「獨坐後會把旅店待機女伴隨機洗牌」）══
+   旅店「獨自坐坐」坐完（時鐘推完之後）呼叫：**從現在這一刻起**重擲今天的行程 ——
+   每個人照 `OUTING.chance` 擲一次，出門的就從現在出門、待到 `backHour`（19:00）才回房，
+   地點從她自己的區域裡挑（同 `rollOuting` 的規則：同一格同時只放一個人）。
+   ⚠ 只在行程本來就會排的時候洗（同 `rollOuting` 的三道門：還沒開放／劇情探索／第一次進旅店），
+     而且只在出門的時段裡（`hours` 之內、`backHour` 之前）—— 晚上大家本來就在房裡。
+   ⚠ 鑰匙照舊記成這一天：之後 `rollOuting()` 不會再把它蓋回一天開頭那一份。
+   ⚠ 約會的規矩（今天約過人 ⇒ 其他人頭像消失）不受影響：那是 `inRoom` 在判，不看行程。 */
+export function reshuffleOuting(){
+  if(!townId || !st1Active() || storyExploreOn() || innFirstVisit) return false;
+  const H=OUTING.hours||[8,18], back=(OUTING.backHour!=null?OUTING.backHour:19);
+  const hf=clock.hourF();
+  if(hf<H[0] || hf>=Math.min(H[1],back)) return false;
+  const ch=(OUTING.chance!=null?OUTING.chance:0.5);
+  const now=clock.elapsed(), to=midnightMin()+Math.round(back*60);
+  outKey = townId + '#' + clock.dayNo();
+  outPlan=[];
+  for(const who of girlsHere()){
+    const area=areaFor(who); if(!area.length) continue;
+    if(Math.random() >= ch) continue;
+    const free=area.filter(id => !outPlan.some(o=>o.node===id));
+    if(!free.length) continue;
+    outPlan.push({ who, node: free[(Math.random()*free.length)|0], from:now, to });
+  }
+  return true;
+}
 /* ══ 約會（ver -576，Ray：「出城鎮、回旅店以後就要解除約會，一天內同人不能約
    第二次，會拒絕」）══════════════════════════════════════════════════════
    「約會」＝在旅店敲門把人約出來的那種同行（`onInvite`）。
@@ -5399,6 +5425,8 @@ inn.setup({
      推時鐘的地方（獨自坐坐／回房睡覺），所以那兩支推完都要叫這一支（鐵律 8）。
      回傳 true ＝已經接手轉場，呼叫端不要再收尾。 */
   onClock(){ return clockGate(); },
+  /* 獨自坐坐坐完 → 待機的女伴隨機洗牌（ver -2242，見 `reshuffleOuting`）。 */
+  reshuffle(){ return reshuffleOuting(); },
   /* ══⚠⚠⚠ **旅店裡消磨完時間，也要再問一次「這一格現在該演什麼」**（ver -1370，
        Ray：「獨自坐坐到時間蕾娜也沒回來啊」）══════════════════════════════════
      `onClock` 只問**強制轉場**的閘門（會把玩家搬去別的地方那一種）；而東泊

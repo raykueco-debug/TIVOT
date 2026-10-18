@@ -692,6 +692,9 @@ function sitAlone(){
     clock.advance(Math.max(1, mins));
     /* 坐坐也是**手動存檔**（ver -555，Ray：「進旅店手動存檔（坐坐或睡覺）」）——
        與睡覺同一格（save.storySave 的 main），存的是坐完那一刻。 */
+    /* 坐完 → 待機的女伴隨機洗牌（ver -2242，Ray：「獨坐後會把旅店待機女伴隨機洗牌」）。
+       ⚠ 排在存檔之前沒有差別（行程不進存檔），排在 `refresh()` 之前才會讓門燈立刻換。 */
+    if(host && host.reshuffle) host.reshuffle();
     save.storySave();
     /* 時間變了 → **背景換成新時段的差分**（Ray 指定）。走城鎮那一支候選鏈。 */
     if(host && host.refreshBg) host.refreshBg();
