@@ -534,7 +534,7 @@ export const ART = {
                      依 §5 轉 WebP 之後才接；`saintinstall` 的圖早就在，只是沒進表。 */
                   relief:   { src:'resources/si/nouvelle_si_relief.webp',   top:4,  bot:1530, fx:0.540 },
                   /* 娜塔莉那一幕（ver -636）。 */
-                  sad:      { flip:true, src:'resources/si/nouvelle_si_sad.webp',      top:3,  bot:1534, fx:0.481 },
+                  sad:      { fxShift:0, flip:true, src:'resources/si/nouvelle_si_sad.webp',      top:3,  bot:1534, fx:0.481 },
                   /* ⚠⚠ **法環不算在身高裡**（ver -635，Ray：「戰鬥中諾的 saint install
                      立繪太小，因為你把法環也納入總高了，抓臉的大小調整」）。
                      這張圖頭頂上有一圈金色法環，照 alpha 上下緣量會把它算進人物身高
@@ -1077,7 +1077,7 @@ export const ART = {
     die:     { src:'resources/si/anya_si_die.webp?v=6bf8f19e',      top:0, bot:1525, fx:0.439 },
     sleepy:    { src:'resources/si/anya_si_sleepy.webp?v=a3eaadb7',     top:0, bot:1515, fx:0.464 },   // ver -772
     cry:       { src:'resources/si/anya_si_cry.webp?v=9718e366',        top:0, bot:1532, fx:0.458 },
-    cryhard:   { src:'resources/si/anya_si_cryhard.webp',  top:6, bot:1527, fx:0.411 },   // ver -2102 交件，腳本還沒用
+    cryhard:   { fxShift:0, src:'resources/si/anya_si_cryhard.webp',  top:6, bot:1527, fx:0.411 },   // ver -2102 交件，腳本還沒用
     shysmile:  { src:'resources/si/anya_si_shysmile.webp', top:4, bot:1530, fx:0.461 },   // ver -2102 交件，腳本還沒用
     terrify:{ src:'resources/si/anya_si_terrify.webp?v=becb7f82', top:8, bot:1504, fx:0.493 },   // ver -1857：鎖表情重畫定稿
     /* ver -870（森林行 G 稿）——measure_si 量測。 */
@@ -1802,24 +1802,24 @@ export const ART = {
   } },
   /* ══ 帝國軍：士兵＋前線指揮官（ver -2134，美術 6a52066b，碎片 02 卡耶爾山谷）══ 藍制服照 Ray 參考圖、戰地塵土。measure_si 量；
      舉手指人那幾張的 fx 可能被手拉偏（美術註），上線看臉再微調。 */
-  imsoldier: { cm:172, eye:30, fx:0.493, top:24, bot:1516,
+  imsoldier: { fxShift:-0.07, yShift:13, cm:150, eye:30, fx:0.493, top:24, bot:1516,
            side:'R', alt:null, base:'resources/si/npc/npc_imsoldier_si_front.webp', expr:{
-    front:   { src:'resources/si/npc/npc_imsoldier_si_front.webp',   top:24, bot:1516, fx:0.493 },
-    panic:   { src:'resources/si/npc/npc_imsoldier_si_panic.webp',   top:14, bot:1517, fx:0.441 },
-    worry:   { src:'resources/si/npc/npc_imsoldier_si_worried.webp', top:11, bot:1519, fx:0.592 },   // 鍵用無時態（lint，ver -1555）；稿上寫 worried
-    alarm:   { src:'resources/si/npc/npc_imsoldier_si_alarm.webp',   top:10, bot:1507, fx:0.351 },
-    awe:     { src:'resources/si/npc/npc_imsoldier_si_awe.webp',     top:2,  bot:1514, fx:0.406 },
-    rally:   { src:'resources/si/npc/npc_imsoldier_si_rally.webp',   top:18, bot:1512, fx:0.365 },
-    doubt:   { src:'resources/si/npc/npc_imsoldier_si_doubt.webp',   top:14, bot:1521, fx:0.647 },
+    front:   { fxShift:-0.07, yShift:13, cm:150, src:'resources/si/npc/npc_imsoldier_si_front.webp',   top:24, bot:1516, fx:0.493 },
+    panic:   { fxShift:-0.07, yShift:13, cm:150, src:'resources/si/npc/npc_imsoldier_si_panic.webp',   top:14, bot:1517, fx:0.441 },
+    worry:   { fxShift:-0.07, yShift:13, cm:150, src:'resources/si/npc/npc_imsoldier_si_worried.webp', top:11, bot:1519, fx:0.592 },   // 鍵用無時態（lint，ver -1555）；稿上寫 worried
+    alarm:   { fxShift:0.045, yShift:13, cm:150, src:'resources/si/npc/npc_imsoldier_si_alarm.webp',   top:10, bot:1507, fx:0.351 },
+    awe:     { fxShift:0.02, yShift:22, cm:150, src:'resources/si/npc/npc_imsoldier_si_awe.webp',     top:2,  bot:1514, fx:0.406 },
+    rally:   { fxShift:-0.075, yShift:13, cm:150, src:'resources/si/npc/npc_imsoldier_si_rally.webp',   top:18, bot:1512, fx:0.365 },
+    doubt:   { fxShift:-0.07, yShift:13, cm:150, src:'resources/si/npc/npc_imsoldier_si_doubt.webp',   top:14, bot:1521, fx:0.647 },
   } },
-  imcommander: { cm:180, eye:30, fx:0.460, top:8, bot:1523,
+  imcommander: { fxShift:-0.01, yShift:25, cm:150, eye:30, fx:0.460, top:8, bot:1523,
            side:'R', alt:null, base:'resources/si/npc/npc_imcommander_si_front.webp', expr:{
-    front:    { src:'resources/si/npc/npc_imcommander_si_front.webp',    top:8,  bot:1523, fx:0.460 },
-    urgent:   { src:'resources/si/npc/npc_imcommander_si_urgent.webp',   top:4,  bot:1518, fx:0.669 },
-    shock:    { src:'resources/si/npc/npc_imcommander_si_shock.webp',    top:12, bot:1518, fx:0.699 },
-    surprise: { src:'resources/si/npc/npc_imcommander_si_surprise.webp', top:4,  bot:1521, fx:0.444 },
-    salute:   { src:'resources/si/npc/npc_imcommander_si_salute.webp',   top:11, bot:1521, fx:0.452 },
-    plead:    { src:'resources/si/npc/npc_imcommander_si_plead.webp',    top:8,  bot:1515, fx:0.481 },
+    front:    { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_front.webp',    top:8,  bot:1523, fx:0.460 },
+    urgent:   { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_urgent.webp',   top:4,  bot:1518, fx:0.669 },
+    shock:    { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_shock.webp',    top:12, bot:1518, fx:0.699 },
+    surprise: { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_surprise.webp', top:4,  bot:1521, fx:0.444 },
+    salute:   { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_salute.webp',   top:11, bot:1521, fx:0.452 },
+    plead:    { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_plead.webp',    top:8,  bot:1515, fx:0.481 },
   } },
   commander: { cm:180, eye:30, fx:0.53, top:4, bot:1525,
            side:'R', alt:null, base:'resources/si/npc/npc_commander_si_front.webp', expr:{
