@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=2234"></script>
+<script src="../orientation.js?v=2235"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。語言判定與 i18n.js 的 LANG 同一套
@@ -11,7 +11,7 @@
 (function(){
   var l=null; try{ l=localStorage.getItem('tivot.lang'); }catch(e){}
   if(!l){ try{ var n=(navigator.languages&&navigator.languages[0])||navigator.language||''; if(String(n).toLowerCase().indexOf('es')===0) l='es'; }catch(e){} }
-  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2234"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2234"><\/script>');
+  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2235"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2235"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=2234');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=2235');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -259,8 +259,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2234");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2234");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2235");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2235");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -280,8 +280,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2234");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2234");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2235");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2235");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -646,23 +646,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2234" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=2235" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2234" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2234" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2234" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2234" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2234" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2234" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2234" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2234" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2234" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2234" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=2235" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2235" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2235" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2235" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2235" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2235" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2235" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2235" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2235" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2235" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=2234" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=2235" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -684,11 +684,11 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=2234"></script>
+<script src="settlement.js?v=2235"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=2234"></script>
+<script src="talks.js?v=2235"></script>
 <script>
 /* 破圖框一律不畫（ver -1881，同主頁 main.js 那一支，這一頁是另一個 document）。 */
 document.addEventListener('error', e=>{ const t=e.target; if(t && t.tagName==='IMG') t.classList.add('img-broken'); }, true);
@@ -764,7 +764,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=b18827be'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -2234';
+const FLIGHT_VER = 'ver -2235';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -3575,6 +3575,28 @@ const PLACES=[
      斷開的縫隙正是「倒塌」讀得出來的地方。
    ══════════════════════════════════════════════════════════════════════ */
 const RUIN_ART = {
+  /* ══ 港口燈塔（ver -2235，Ray：「所有港口都要有燈塔 並讓燈塔在白天以外的時間亮起轉動」）══
+     一個模型、每個港口一座：位置由 `harborLightSites()` 開機時在港邊自動找岬角（不寫死座標 ——
+     港城的海岸線一改，寫死的燈塔就會站在海裡或城裡）。白塔紅帶、迴廊、燈室、尖頂，腳邊一間守塔人小屋。
+     ⚠ `lamps` 的 h ＝燈室中心離地多高（與下面燈室那一塊同一個數）。 */
+  harborlight: {
+    rot: 0, drape: true, noBase: true,
+    base: { r:40, n:12, jit:0 },
+    lift: 0,
+    pal:'village',
+    lamps:[ {x:0, y:0, h:80} ],
+    parts: [
+      { k:'tower', x:0, y:0, r:15, rTop:15, n:12, h:12, z0:-8, col:'rock' },      // 石砌基座
+      { k:'tower', x:0, y:0, r:11, rTop:8.5, n:12, h:66, z0:4, col:'white' },     // 塔身（白）
+      { k:'tower', x:0, y:0, r:10.2, rTop:9.6, n:12, h:8, z0:24, col:'red' },     // 紅帶
+      { k:'tower', x:0, y:0, r:9.2, rTop:8.8, n:12, h:8, z0:48, col:'red' },      // 紅帶
+      { k:'tower', x:0, y:0, r:11, rTop:11, n:12, h:3, z0:70, col:'rock' },       // 迴廊
+      { k:'tower', x:0, y:0, r:6.5, rTop:6.5, n:10, h:10, z0:73, col:'lamp' },    // 燈室
+      { k:'tower', x:0, y:0, r:8, rTop:0, n:10, h:9, z0:83, mat:'roof' },         // 尖頂
+      { k:'stump', x:24, y:12, w:22, l:18, h:20, z0:-6, shrink:0.97 },            // 守塔人小屋
+      { k:'gable', x:24, y:12, w:26, l:22, h:10, z0:14 },
+    ],
+  },
   /* ══ 孤舟島（ver -2225，Ray：「先定位孤舟島 2012,1150 把整座島依 background 畫村落地形」）══
      雲海中的孤島、工匠村落（`resources/background/loneisle/_spec.md`）。地形由
      `flight/build_loneisle.py` 造（往北抬升的高台、四面懸崖落進雲海）；這裡是地表的房子。
@@ -3594,6 +3616,7 @@ const RUIN_ART = {
     /* ⚠ ver -2226 島放大 1.6 倍（Ray：「破圖了 陸塊可以加大一點」）：下面每一筆的 x/y 是原位置 ×1.6（房子大小不變），
        與 build_loneisle.py 的 K 同一個數字 —— 改一邊要改另一邊。 */
     pal:'village',
+    lamps:[ {x:464, y:-384, h:72} ],   // 燈塔的燈室（ver -2235：夜裡亮起轉動，見 drawHarborLights）
     /* 冒煙的煙囪（局部世界座標、h＝煙囪口離地多高；畫法見 smokeSources）：船廠／鍛冶場的高煙囪＋幾戶人家。 */
     /* 街道（局部世界座標）＝ `flight/build_loneisle.py` 的 STREETS **照抄**（地形那邊用它鋪石板、做階地，
        這邊用它蓋路面遮罩；房子也是沿它排的）——**改一邊要改另一邊**。 */
@@ -4579,6 +4602,7 @@ const RUIN_PAL = {
     door:'#2c241c',
     wood:'#6e5236', hull:'#8a6440', rock:'#8c8577', lamp:'#f2d58a',
     water:'#56788f', brick:'#7a4a38',   // ver -2233：水（池／渠，近河面色）、磚（煙囪）
+    white:'#e6e2d8', red:'#a8473a',     // ver -2235：港口燈塔的白塔紅帶
   }),
   mossgrey: Object.assign({}, RUIN_COL, {
     top:'#6c6861', sideLit:'#79756d', side:'#64615a', dark:'#413f3a',
@@ -13852,6 +13876,7 @@ function render(now){
   if(!(GLON && glRuinReady))
     drawRuins(scaleH,horizon,sinp,cosp);                   // 地表的小型遺蹟（ver -1107，同一層：貼在地上）
   drawRuinBeams(scaleH,horizon,sinp,cosp,now);             // 掃到的遺蹟射出的光柱（ver -1116）
+  drawHarborLights(S,scaleH,horizon,sinp,cosp,now);        // 燈塔的燈（白天以外亮起轉動，ver -2235）
   drawCitySmoke(S,scaleH,horizon,sinp,cosp,now);           // 炊煙蓋在城上（ver -446）
   drawPuffs(S,scaleH,horizon,sinp,cosp,0,Infinity);        // 雲蓋在城與煙上
   drawPlaces(scaleH,horizon,sinp,cosp);
@@ -14588,7 +14613,7 @@ let RZMIN=null;                 // 遺蹟的逐欄最近深度（見 drawRuins �
 function drawRuins(scaleH,horizon,sinp,cosp){
   if(!MAPW) return;
   const sxk=W/BW, syk=VIEWH/BH, dyk=scaleH*syk;
-  for(const P of PLACES){
+  for(const P of ruinSites()){
     const A=P.ruin && RUIN_ART[P.ruin]; if(!A) continue;
     /* ⚠⚠ **掃到才看得見**（ver -1107，Ray 定案）：沒感應到之前地表一點痕跡都沒有
        —— 與隱藏點位 ★ 同一條規矩（沒發現的連問號都不給）。
@@ -15450,6 +15475,112 @@ function drawBeamAt(mx,my,tint,far,scaleH,horizon,sinp,cosp,now){
     ctx.restore();
     return { cx, y0, z };          // 呼叫端要拿它掛讀數（釘選的座標）
 }
+/* ══ 港口燈塔：選址（ver -2235）══
+   每一座臨海的城（SETTLEMENTS 的 `c`）在港邊找一個岬角：從城心沿著向海方位（`sea`）左右各偏
+   0.35／0.7 弧度往外走（只走到平面圖邊緣外 25 格），取「最後一格陸地」—— 四個候選裡挑**伸得最出去**的那一個（岬角，不是港灣裡）。
+   起點是城的平面圖邊緣的六成，燈塔才不會立在城的插畫中間。退一格（往陸側 1.5 格）站穩。
+   ⚠ 要 HGT 算完才算得出來（開機之後第一次被問到才算，之後快取）。 */
+let harborSitesCache=null;
+function harborLightSites(){
+  if(harborSitesCache) return harborSitesCache;
+  if(!MAPW || !HGT) return [];
+  const out=[];
+  const land=(x,y)=>{ const i=Math.round(x), j=Math.round(y);
+    return i>=0&&j>=0&&i<MAPW&&j<MAPH&&HGT[j*MAPW+i]>CLOUD_H; };
+  for(const S of SETTLEMENTS){
+    if(!S.c) continue;
+    const r0=(S.planW||400)*0.5/MAP_SCALE*0.6;
+    let best=null;
+    for(const da of [-0.7,-0.35,0.35,0.7]){
+      const a=(S.sea||0)+da, ux=Math.cos(a), uy=Math.sin(a);
+      let last=null, seaRun=0;
+      const rMax=(S.planW||400)*0.5/MAP_SCALE+25;   // 城的平面圖邊緣外 25 格以內 —— 再遠就是別的海岸了
+      for(let r=r0;r<rMax;r+=0.5){
+        const x=S.x+ux*r, y=S.y+uy*r;
+        if(land(x,y)){ last=r; seaRun=0; } else if(last!=null && ++seaRun>6) break;
+      }
+      if(last==null) continue;
+      if(!best || last>best.r) best={ r:last, x:S.x+ux*(last-1.5), y:S.y+uy*(last-1.5) };
+    }
+    if(best) out.push({ x:Math.round(best.x*10)/10, y:Math.round(best.y*10)/10, ruin:'harborlight', harborOf:S.n });
+  }
+  harborSitesCache=out;
+  return out;
+}
+/* 手寫量體的所有地點：PLACES（有 `ruin` 的）＋港口燈塔。drawRuins（含 GL 的一次性擷取）掃這一份。 */
+function ruinSites(){ return PLACES.concat(harborLightSites()); }
+
+/* ══ 燈塔的燈（ver -2235，Ray：「燈塔在白天以外的時間亮起轉動」）══
+   白天以外（`S.day` 低於 0.78 開始淡入，0.45 以下全亮）：燈室一顆暖白的光暈 ＋ 兩道相對的光束繞著轉
+   （約 7 秒一圈）；光束掃到鏡頭那一下，光暈閃亮（＝遠遠看到燈塔一閃一閃）。
+   ⚠ 畫在 2D 疊層、走 `clipByTerrainDepth`（同光柱）：山擋得住燈。
+   ⚠ 位置：`RUIN_ART[x].lamps`（局部世界座標、h＝燈室離地高），地面高取那一點的 HGT。 */
+const LH_SPIN=0.0009, LH_BEAM=1000, LH_FAR=ZFAR*1.6;
+function drawHarborLights(S,scaleH,horizon,sinp,cosp,now){
+  if(!MAPW) return;
+  const k=clamp((0.78-S.day)/0.33,0,1);
+  if(k<=0.01) return;
+  const sxk=W/BW, syk=VIEWH/BH;
+  const proj=(wx,wy,h)=>{
+    const dx=wx-cam.x, dy=wy-cam.y, z=dx*(-sinp)+dy*(-cosp);
+    if(z<40) return null;
+    const sv=(dx*cosp+dy*(-sinp))/z;
+    return { x:((sv+1)/2*BW)*sxk, y:(((cam.alt-h)/z + z*curvAt(sv))*scaleH+horizon)*syk, z };
+  };
+  let idx=0;
+  for(const P of ruinSites()){
+    const A=P.ruin && RUIN_ART[P.ruin]; if(!A || !A.lamps) continue;
+    if(P.flag && revealK(P.flag)<=0.001) continue;
+    const ca=Math.cos(A.rot||0), sa=Math.sin(A.rot||0);
+    for(const L of A.lamps){
+      idx++;
+      const mx=P.x+(L.x*ca-L.y*sa)/MAP_SCALE, my=P.y+(L.x*sa+L.y*ca)/MAP_SCALE;
+      const wx=mx*MAP_SCALE, wy=my*MAP_SCALE;
+      if(Math.hypot(wx-cam.x,wy-cam.y)>LH_FAR) continue;
+      const h=HGT[clamp(Math.round(my),0,MAPH-1)*MAPW+clamp(Math.round(mx),0,MAPW-1)]+L.h;
+      const c=proj(wx,wy,h); if(!c || c.z>ZFAR*1.5) continue;
+      if(c.x<-W||c.x>2*W) continue;
+      const ang=now*LH_SPIN+idx*1.7;
+      const tcx=cam.x-wx, tcy=cam.y-wy, tl=Math.hypot(tcx,tcy)||1;
+      /* ⚠ 光束**不走**逐欄遮擋：它橫跨整個畫面、深度從燈室一路變到鏡頭前，拿燈室那一個深度去切
+         只會切出一條條直紋（第一版就是）。光束是空氣裡的光，淡淡的、蓋在山前也讀得通；遮擋只給光暈。 */
+      ctx.save();
+      ctx.globalCompositeOperation='lighter';
+      let flash=0;
+      for(const s of [0,Math.PI]){
+        const ux=Math.cos(ang+s), uy=Math.sin(ang+s);
+        flash=Math.max(flash, Math.pow(Math.max(0,(ux*tcx+uy*tcy)/tl),24));
+        /* 光束：從燈室往外一條漸寬漸淡的楔形（兩邊各取一個點撐開寬度）。 */
+        const e=proj(wx+ux*LH_BEAM, wy+uy*LH_BEAM, h);
+        if(!e) continue;
+        const w0=Math.max(1.5, 9*W/(2*c.z)), w1=Math.max(3, 150*W/(2*Math.max(e.z,40)));
+        const vx=e.x-c.x, vy=e.y-c.y, vl=Math.hypot(vx,vy)||1, nx=-vy/vl, ny=vx/vl;
+        const g=ctx.createLinearGradient(c.x,c.y,e.x,e.y);
+        g.addColorStop(0,'rgba(255,236,180,'+(0.42*k).toFixed(3)+')');
+        g.addColorStop(0.35,'rgba(255,230,170,'+(0.16*k).toFixed(3)+')');
+        g.addColorStop(1,'rgba(255,230,170,0)');
+        ctx.fillStyle=g;
+        ctx.beginPath();
+        ctx.moveTo(c.x+nx*w0,c.y+ny*w0); ctx.lineTo(e.x+nx*w1,e.y+ny*w1);
+        ctx.lineTo(e.x-nx*w1,e.y-ny*w1); ctx.lineTo(c.x-nx*w0,c.y-ny*w0); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+      /* 光暈：常亮的一顆＋光束對著鏡頭時那一閃。⚠ 這一顆要被山擋（逐欄遮擋）。 */
+      ctx.save();
+      clipByTerrainDepth(c.z, sxk, syk, clamp(Math.floor(c.x/sxk)-40,0,BW-1), clamp(Math.ceil(c.x/sxk)+40,0,BW-1));
+      ctx.globalCompositeOperation='lighter';
+      const r=Math.max(3, (18+70*flash)*W/(2*c.z)*6);
+      const gl=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,r);
+      gl.addColorStop(0,'rgba(255,246,214,'+((0.75+0.25*flash)*k).toFixed(3)+')');
+      gl.addColorStop(0.25,'rgba(255,226,160,'+((0.35+0.45*flash)*k).toFixed(3)+')');
+      gl.addColorStop(1,'rgba(255,220,150,0)');
+      ctx.fillStyle=gl; ctx.beginPath(); ctx.arc(c.x,c.y,r,0,Math.PI*2); ctx.fill();
+      ctx.globalCompositeOperation='source-over';
+      ctx.restore();
+    }
+  }
+}
+
 /* 掃到的遺蹟射出的光柱（誰要畫）＋**釘選的那一根**（ver -1146）。 */
 function drawRuinBeams(scaleH,horizon,sinp,cosp,now){
   if(!MAPW) return;
