@@ -45,8 +45,13 @@ SNAP_H = os.path.join(HERE, '_src/terrain/loneisle_before_h.png')
 SNAP_T = os.path.join(HERE, '_src/terrain/loneisle_before_t.png')
 
 CX, CY = 2012, 1150          # 島心（＝PLACES 那一筆、RUIN_ART.loneisle 的原點）
-R = 40                       # 這一支能動的方框半徑（地圖像素）
-X0, Y0 = CX - R, CY - R      # 方框左上
+# ver -2226（Ray：「破圖了 陸塊可以加大一點沒關係」）：整座島放大 K 倍 —— 形狀與高度的式子照舊寫在
+#   「K=1 的座標」上（下面一律用 uu=u/K、vv=v/K），量體那邊的位置也乘同一個 K（RUIN_ART.loneisle）。
+K = 1.6
+# 這一支能動的方框（地圖像素）。⚠ 南緣離地圖底只有 50 px，方框不是正方形。
+X0, X1 = CX - 62, CX + 62
+Y0, Y1 = CY - 62, min(1199, CY + 48)
+SW, SH = X1 - X0 + 1, Y1 - Y0 + 1
 SEA_GREY = 44 / 520 * 255.0  # 21.6：雲海線（CLOUD_H / PEAK_SCALE）
 
 
@@ -71,9 +76,10 @@ def gauss(u, v, cx, cy, rx, ry):
 
 
 def build(h, t):
-    S = 2 * R + 1
-    v, u = np.mgrid[0:S, 0:S].astype(np.float64)
-    u -= R; v -= R                         # 局部座標：u 往東、v 往南（地圖像素）
+    v, u = np.mgrid[0:SH, 0:SW].astype(np.float64)
+    u += X0 - CX; v += Y0 - CY             # 局部座標：u 往東、v 往南（地圖像素）
+    U, V = u, v                            # 真正的地圖像素（貼回去、取邊界用）
+    u, v = u / K, v / K                    # 以下的形狀與高度都寫在 K=1 的座標上
 
     # ── 島的輪廓：一顆略扁的主體 ＋ 北尖（雲海崖）＋ 東北燈塔岬 ＋ 西側船台岬 ──
     f = gauss(u, v, 0, 2, 17, 14) \
@@ -83,10 +89,10 @@ def build(h, t):
         + 0.70 * gauss(u, v, -15, -11, 6, 5) \
         + 0.55 * gauss(u, v, 13, 6, 6, 5)
     # 海岸線的碎形感（崖線不是圓規畫的）
-    wx = (fbm((S, S), 12, 3, 41) - 0.5) * 6
-    wy = (fbm((S, S), 12, 3, 42) - 0.5) * 6
-    f = cv2.remap(f.astype(np.float32), np.clip(u + R + wx, 0, S - 1).astype(np.float32),
-                  np.clip(v + R + wy, 0, S - 1).astype(np.float32), cv2.INTER_LINEAR).astype(np.float64)
+    wx = (fbm((SH, SW), 12, 3, 41) - 0.5) * 6
+    wy = (fbm((SH, SW), 12, 3, 42) - 0.5) * 6
+    f = cv2.remap(f.astype(np.float32), np.clip(U - X0 + CX + wx * K, 0, SW - 1).astype(np.float32),
+                  np.clip(V - Y0 + CY + wy * K, 0, SH - 1).astype(np.float32), cv2.INTER_LINEAR).astype(np.float64)
     isle = f > 0.50
     n, lab, st, _ = cv2.connectedComponentsWithStats(isle.astype(np.uint8), connectivity=8)
     if n > 2:
@@ -104,24 +110,29 @@ def build(h, t):
     #   一圈平平的台地圍著島（第一版實測就是這樣，看起來像島外多一塊圓盤）。
     tilt = 100 + np.clip(-v, -20, 22) * 0.9           # 南緣 ~82、北端 ~120
     knoll = 26 * gauss(u, v, 13, -13, 4.5, 4.0)       # 燈塔丘
-    rough = (fbm((S, S), 8, 3, 51) - 0.5) * 6         # 全島微起伏
-    wild = (fbm((S, S), 4, 2, 61) - 0.5) * 14 * gauss(u, v, -15, -13, 6, 5)   # 西北荒地的風蝕岩
+    rough = (fbm((SH, SW), 8, 3, 51) - 0.5) * 6         # 全島微起伏
+    wild = (fbm((SH, SW), 4, 2, 61) - 0.5) * 14 * gauss(u, v, -15, -13, 6, 5)   # 西北荒地的風蝕岩
     hz = tilt + knoll + rough + wild
     # 廣場：中央一小塊整平（石鋪廣場要是平的）
     plaza = gauss(u, v, 0, 0, 4.0, 3.5)
     hz = hz * (1 - plaza) + 101 * plaza
     # 崖緣：最外 1.5 px 是崖面（直接落到雲海），往內 2 px 收一點點肩
-    edge = np.clip((din - 0.5) / 2.0, 0, 1)
+    edge = np.clip((din - 0.5) / (2.0 * K), 0, 1)
     hz = np.where(isle, 70 + (hz - 70) * (0.82 + 0.18 * edge), 0)
 
     # ── 地表色：草坡／石鋪村落／崖面岩／荒地 ──
-    grass = np.array([104, 128, 72], float)
-    grass2 = np.array([128, 140, 82], float)
+    # ver -2226（Ray：「太綠了 不要那麼綠」）：草壓成偏土黃的乾草色，再和石土色對半混 ——
+    #   背景圖上島頂大半是石鋪、碎石坡與矮草，綠只是點綴。
+    grass = np.array([122, 124, 90], float)
+    grass2 = np.array([138, 132, 100], float)
+    earth = np.array([146, 134, 110], float)
     rock = np.array([138, 128, 112], float)
     pave = np.array([170, 152, 120], float)
     roofy = np.array([150, 104, 78], float)           # 屋群（紅瓦＋木屋，從空中看是一片暖褐）
-    gn = fbm((S, S), 6, 3, 71)[..., None]
+    gn = fbm((SH, SW), 6, 3, 71)[..., None]
     col = grass * (1 - gn) + grass2 * gn
+    en = fbm((SH, SW), 5, 3, 72)[..., None]
+    col = col * (1 - 0.35 - 0.3 * en) + earth * (0.35 + 0.3 * en)
     # 村落：廣場＋西街＋東坡＋北坡，石鋪與屋群混著
     village = np.clip(1.25 * np.maximum.reduce([
         gauss(u, v, 0, 0, 7, 6),            # 廣場與一圈工坊
@@ -130,7 +141,7 @@ def build(h, t):
         gauss(u, v, -1, -8, 3.5, 6),        # 北坡上坡路
         gauss(u, v, -7, 9, 4, 3.5),         # 槍匠工坊
     ]), 0, 1)[..., None]
-    vn = fbm((S, S), 3, 2, 81)[..., None]
+    vn = fbm((SH, SW), 3, 2, 81)[..., None]
     vcol = pave * (1 - vn) + roofy * vn
     col = col * (1 - village * 0.85) + vcol * village * 0.85
     # 荒地與燈塔丘頂：岩多草少
@@ -140,12 +151,12 @@ def build(h, t):
     cl = (1 - np.clip((din - 0.5) / 1.5, 0, 1))[..., None]
     col = col * (1 - cl * 0.55) + rock * cl * 0.55
 
-    hb = h[Y0:Y0 + S, X0:X0 + S].astype(np.float64)
-    tb = t[Y0:Y0 + S, X0:X0 + S].astype(np.float64)
+    hb = h[Y0:Y1 + 1, X0:X1 + 1].astype(np.float64)
+    tb = t[Y0:Y1 + 1, X0:X1 + 1].astype(np.float64)
     hb2 = np.where(isle, hz, hb)
     tb2 = np.where(isle[..., None], col, tb)
-    h[Y0:Y0 + S, X0:X0 + S] = np.clip(hb2, 0, 255)
-    t[Y0:Y0 + S, X0:X0 + S] = np.clip(tb2, 0, 255)
+    h[Y0:Y1 + 1, X0:X1 + 1] = np.clip(hb2, 0, 255)
+    t[Y0:Y1 + 1, X0:X1 + 1] = np.clip(tb2, 0, 255)
 
     land = isle
     print('島面積 %d px（約 %d×%d 世界單位）；高度 %d～%d（雲海線 %.1f）'
@@ -177,26 +188,25 @@ def main():
     a = ap.parse_args()
     h = np.asarray(Image.open(OUT_H).convert('L')).copy()
     t = np.asarray(Image.open(OUT_T).convert('RGB')).copy()
-    S = 2 * R + 1
     if not os.path.exists(SNAP_H):
         # ⚠ 安全檢查只在第一次（存原狀時）做：方框裡除了雲海不能有既有陸地 ——
         #   (1990~2020,1150) 原本有一撮 23~24 的殘渣（剛好高出雲線 1~2），那不算陸地。
-        blk = h[Y0:Y0 + S, X0:X0 + S]
+        blk = h[Y0:Y1 + 1, X0:X1 + 1]
         assert (blk > 30).sum() == 0, '方框裡有既有陸地，不能直接蓋！'
         Image.fromarray(blk).save(SNAP_H)
-        Image.fromarray(t[Y0:Y0 + S, X0:X0 + S]).save(SNAP_T)
+        Image.fromarray(t[Y0:Y1 + 1, X0:X1 + 1]).save(SNAP_T)
         print('存原狀 →', os.path.relpath(SNAP_H, HERE))
-    h[Y0:Y0 + S, X0:X0 + S] = np.asarray(Image.open(SNAP_H))
-    t[Y0:Y0 + S, X0:X0 + S] = np.asarray(Image.open(SNAP_T))
+    h[Y0:Y1 + 1, X0:X1 + 1] = np.asarray(Image.open(SNAP_H))
+    t[Y0:Y1 + 1, X0:X1 + 1] = np.asarray(Image.open(SNAP_T))
     if not a.remove:
         h, t = build(h, t)
     Image.fromarray(h.astype(np.uint8), 'L').save(OUT_H)
     Image.fromarray(t.astype(np.uint8), 'RGB').save(OUT_T)
     bump_terrain_v()
     # 預覽（底線開頭，遊戲不載）
-    pv = t[Y0:Y0 + S, X0:X0 + S].copy()
-    pv[h[Y0:Y0 + S, X0:X0 + S] <= SEA_GREY] = [214, 222, 232]
-    Image.fromarray(pv).resize((S * 6, S * 6), Image.NEAREST).save(os.path.join(HERE, '_loneisle_preview.png'))
+    pv = t[Y0:Y1 + 1, X0:X1 + 1].copy()
+    pv[h[Y0:Y1 + 1, X0:X1 + 1] <= SEA_GREY] = [214, 222, 232]
+    Image.fromarray(pv).resize((SW * 5, SH * 5), Image.NEAREST).save(os.path.join(HERE, '_loneisle_preview.png'))
     print('→ 兩張 silvermoon PNG 已更新；預覽 _loneisle_preview.png')
 
 

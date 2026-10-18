@@ -10600,6 +10600,48 @@ export const TOWNS = {
         exits:{ back:'uptown' } },
     },
   },
+  /* ══ 孤舟島（ver -2226，Ray：「接上孤舟島的城鎮節點（照 loneisle/_spec.md 的 13 格拓樸），讓飛行地圖能降落」）══
+     雲海中的孤島、工匠村落（船匠、槍匠）。拓樸照夏爾村 13 格，鍵名照美術 `resources/background/loneisle/_spec.md`：
+       plaza↔lakeside→cliff、altar→lighthouse、workshop→slipway、hunter→gunsmith、sorahome→inn、
+       restaurant→canteen、grocery→store（其餘同名）。
+     · 飛行地圖：`flight/index.html` 的 PLACES 那一筆（2012,1150）帶 `town:'loneisle'` ⇒ 降落鈕；地形 `build_loneisle.py`。
+     · 時段差分：室外 8 格有 dawn／day／dusk／night；**wild、inn 還欠三時段**（等 Gemini）⇒ 先寫完整日景檔名＋`noTime`，
+       交了就改成基底名、拿掉 `noTime`。槍匠／食堂／材料舖照 §5「有營業時間的店只有 day」。
+     · 出島：島心廣場往下＝出航（同所有城）；島緣荒地往上也是出航（spec：「出口通飛行」）。
+     ⚠ 先只有「走得到的房間」（同溫斯摩爾港城鎮版）：沒有店主與買賣（商店卡要走 shops.xlsx）、
+       旅舍不寫 `inn:true`（沒有敲門的對白表）、沒有 `bgm`、沒有小地圖、沒有劇情、沒有遭遇戰。 */
+  loneisle: {
+    name: '孤舟島',
+    entry: 'plaza',
+    mist: 0,   // 同夏爾村：村子一開始就全看得到
+    nodes: {
+      plaza:      { bg:'loneisle_plaza', name:'孤舟島　島心廣場',
+        exits:{ up:'north', left:'west', right:'east' },
+        sail:{} },   // 出航＝下（預設方向）
+      north:      { bg:'loneisle_north', name:'孤舟島　北坡',
+        exits:{ up:'cliff', left:'chief', right:'lighthouse', down:'plaza' } },
+      west:       { bg:'loneisle_west', name:'孤舟島　船匠街',
+        exits:{ up:'wild', left:'slipway', right:'plaza', down:'gunsmith' } },
+      east:       { bg:'loneisle_east', name:'孤舟島　東坡',
+        exits:{ up:'inn', left:'plaza', right:'canteen', down:'store' } },
+      cliff:      { bg:'loneisle_cliff', name:'孤舟島　雲海崖', exits:{ back:'north' } },
+      chief:      { bg:'loneisle_chief', name:'孤舟島　工匠頭領之家', exits:{ back:'north' } },
+      lighthouse: { bg:'loneisle_lighthouse', name:'孤舟島　引航燈塔', exits:{ back:'north' } },
+      wild:       { bg:'loneisle_wild_day', noTime:true, name:'孤舟島　島緣荒地',
+        exits:{ back:'west' }, sail:{ dir:'up' } },
+      slipway:    { bg:'loneisle_slipway', name:'孤舟島　船匠船台', exits:{ back:'west' } },
+      gunsmith:   { bg:'loneisle_gunsmith_day', noTime:true, name:'孤舟島　槍匠工坊',
+        hours:[8,17], closed:'鍛爐熄了。門上掛著「明早八點開爐」。',
+        exits:{ back:'west' } },
+      inn:        { bg:'loneisle_inn_day', noTime:true, name:'孤舟島　工匠旅舍', exits:{ back:'east' } },
+      canteen:    { bg:'loneisle_canteen_day', noTime:true, name:'孤舟島　工匠食堂',
+        hours:[8,17], closed:'長凳都翻上桌了。食堂五點就收了。',
+        exits:{ back:'east' } },
+      store:      { bg:'loneisle_store_day', noTime:true, name:'孤舟島　材料舖',
+        hours:[8,17], closed:'門板上掛著「已打烊」，木料堆用帆布蓋起來了。',
+        exits:{ back:'east' } },
+    },
+  },
   verafond: {
     name: '薇拉馮德港',
     /* ver -2209（Ray：「入薇拉馮德要有差分…如果之前已經有到過」）：碼頭戰（`cr_dock`）之前來過就記 `vf_visited_early` ——
