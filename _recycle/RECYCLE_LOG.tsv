@@ -1222,3 +1222,5 @@ when	from	to	reason
 20261015-235202	resources/_HANDOFF_ART.md	_recycle/resources/_HANDOFF_ART.md	美術交接 10-09 版，換成 10-15 現況
 20261017-023803	resources/illustration/video/torsten_sit_v1.mp4	_recycle/resources/illustration/video/torsten_sit_v1.mp4	torsten_sit_v1 由 pan2（斜 15°）取代，Ray 10-17 指定
 20261017-023803	PV/illustration/torsten_sit_v1.mp4	_recycle/PV/illustration/torsten_sit_v1.mp4	torsten_sit_v1 由 pan2（斜 15°）取代，Ray 10-17 指定
+20261018-200304	flight/silvermoon_heightmap.png	_recycle/flight/silvermoon_heightmap.png.20261018-200304	孤舟島造島前的地形（build_loneisle.py 會覆蓋）
+20261018-200304	flight/silvermoon_terrain.png	_recycle/flight/silvermoon_terrain.png.20261018-200304	孤舟島造島前的地形（build_loneisle.py 會覆蓋）
