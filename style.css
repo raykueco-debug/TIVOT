@@ -2829,7 +2829,7 @@
        所以用 JS 算好的 --kerb-open-x（px），不能寫 % ：% 是相對**圓盤自己**的寬度，
        與門的一半不同，兩者會走不同距離、脫節。 */
   #kerbPlate{position:absolute;transform:scale(1) rotate(0deg);
-    transition:transform .9s cubic-bezier(.34,1.2,.5,1),filter .5s ease;}   /* .9s ＝ story.js 的 KERB_SPIN_MS（團徽噴濺火光，改一邊要改另一邊） */
+    transition:transform .9s cubic-bezier(.34,1.2,.5,1),filter .5s ease;}   /* .9s ＝ story.js 的 KERB_SPIN_MS（團徽火花，改一邊要改另一邊） */
   #kerb.lift #kerbPlate{transform:scale(1.11) rotate(180deg);
     filter:drop-shadow(0 0 26px rgba(201,162,39,.6)) brightness(1.12);}
   #kerb.open #kerbPlate{transform:translateX(calc(var(--kerb-open-x) * -1)) scale(1.11) rotate(180deg);
@@ -2980,6 +2980,10 @@
   #kerbSmoke b{position:absolute;width:3px;height:3px;margin:-1.5px 0 0 -1.5px;border-radius:50%;
     background:#ffe6b0;box-shadow:0 0 6px 1px rgba(255,190,90,.85);
     animation:kerbSpark .5s ease-out forwards;}
+  /* 團徽旋轉的圓形火花（ver -2211；-2224 Ray 退回第一版時放回）：比關門的磨擦火花大、亮、多拖一點 —— 疊在銅色外環上才看得出來。 */
+  #kerbSmoke b.ring{width:4px;height:4px;margin:-2px 0 0 -2px;background:#fff6dc;
+    box-shadow:0 0 6px 2px rgba(255,190,80,.95),0 0 14px 5px rgba(255,120,30,.5);
+    animation-duration:.65s;}
   @keyframes kerbSpark{
     0%  {opacity:1;transform:translate(0,0) scale(1);}
     60% {opacity:.95;transform:translate(var(--sx),var(--sy)) scale(.9);}

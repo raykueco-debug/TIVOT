@@ -3557,7 +3557,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2223';
+const KERB_V='?v=2224';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）
@@ -4197,71 +4197,34 @@ function sparkSeam(){
   for(let i=0;i<7;i++) kerbTimers.push(setTimeout(
     ()=>kerbSpark(x, h*(0.18+0.1*i), 5, 20), i*70));
 }
-/* ══ 團徽旋轉時沿外緣噴濺火光（ver -2211 立、-2212 改寫，Ray：「槍棺的團徽旋轉時要擦出圓形火花」
-   →「不是那樣，是像奇異博士的傳送門那樣噴濺火光」）══
-   ＝**整圈外環**持續噴出大量橘金色火星：沿旋轉方向（切線）甩出、帶一點往外的力、拖著亮尾，
-   再被重力拉下去；外環本身疊一圈閃爍的光暈。粒子畫在一張**只在轉動期間存在**的畫布上
-   （`lighter` 疊加＝越密越亮），轉完收掉畫布（鐵律 10／12：不留在背景燒手機）。
-   `sweep` ＝這一次轉幾弧度（正＝順時針，與 CSS 的 rotate 同向，決定火星往哪邊甩）；
-   `dur` ＝噴多久（預設＝團徽轉動那 .9s ＋ 一點收尾）。
-   ⚠ 畫布掛在 `#kerbSmoke`（門的子元素）：`stopKerberos` 清空它時畫布跟著被拿掉，迴圈看到就自己停。 */
+/* ══ 團徽旋轉時沿外緣擦出圓形火花（ver -2211，Ray：「槍棺的團徽旋轉時要擦出圓形火花」）══
+   ⚠ ver -2224（Ray：「槍棺的團徽火花退回第一板」）：-2212～-2217 的「奇異博士傳送門式噴濺火光」（canvas 粒子）整段撤掉，回到這一版。
+   轉動期間每 40ms 在外緣**三個等分點**各噴一顆，三個點跟著團徽一起轉（同一條緩動），
+   火花沿**切線**甩出去 —— 一路拖出來就是一圈圓形的火花軌跡，像金屬盤在框上磨。
+   `sweep` ＝這一次轉幾弧度（正＝順時針，與 CSS 的 rotate 同向）；`dur` ＝轉多久（＝CSS 的 .9s）。
+   ⚠ 火花掛在 `#kerbSmoke`（門的子元素，同 kerbSpark）：門在動火花跟著走。 */
 const KERB_SPIN_MS = 900;   // ＝ style.css `#kerbPlate` 的 transition .9s（改一邊要改另一邊）
 function sparkRing(sweep, dur){
   const dr=$('kerbDoor'), pl=$('kerbPlate'), box=$('kerbSmoke'); if(!dr||!pl||!box) return;
-  dur = dur || 300;   // ver -2214（Ray：「還是太慢，.3 看看」）：整段噴發 0.3 秒（-2213 是 0.6 秒）
-  const d=dr.getBoundingClientRect(), r=pl.getBoundingClientRect();
-  if(!d.width || !r.width) return;
-  const DPR=Math.min(2, window.devicePixelRatio||1);
-  const cv=document.createElement('canvas');
-  cv.width=Math.round(d.width*DPR); cv.height=Math.round(d.height*DPR);
-  cv.style.cssText='position:absolute;left:0;top:0;width:'+d.width+'px;height:'+d.height+'px;pointer-events:none;';
-  box.appendChild(cv);
-  const g=cv.getContext('2d'); g.setTransform(DPR,0,0,DPR,0,0);
-  const cx=r.left-d.left+r.width/2, cy=r.top-d.top+r.height/2, R0=r.width*0.5;
-  const dir = sweep>=0 ? 1 : -1;
-  /* ⚠ ver -2215（Ray：「現在的問題是 F 太多，要減禎，否則像在噴水而不是火花」）：
-     模擬與重畫都只跑 **SPARK_FPS** 格／秒 —— 每一格火星跳一大段、拖一條長尾，讀起來是「迸」不是「流」。 */
-  const SPARK_FPS=60, STEP=1000/SPARK_FPS;   // ver -2217（Ray：「24 不夠，先回 60 好了」；-2215 試過 12、-2216 試過 24）
-  const P=[]; const t0=performance.now(); let last=t0-STEP;
-  const frame=now=>{
-    if(!cv.isConnected) return;                       // 被 stopKerberos 清掉了
-    if(now-last < STEP-1){ requestAnimationFrame(frame); return; }
-    const t=now-t0, dt=Math.min(0.12,(now-last)/1000); last=now;
-    const p=Math.min(1, t/KERB_SPIN_MS), R=R0*(1+0.11*(1-Math.pow(1-p,3)));   // 跟著團徽浮起放大（scale 1→1.11）
-    /* 發射：轉得快的頭段最密，收尾段遞減到 0。 */
-    const life=t/dur, rate = life<1 ? (1-life*0.85) : 0;
-    const n=Math.round(rate*2400*dt);
-    for(let i=0;i<n;i++){
-      const a=Math.random()*Math.PI*2, ca=Math.cos(a), sa=Math.sin(a);
-      const vt=(700+Math.random()*900)*dir, vr=160+Math.random()*420;   // ver -2215：再強再快
-      P.push({ x:cx+ca*R, y:cy+sa*R, vx:-sa*vt+ca*vr, vy:ca*vt+sa*vr,
-               l:0, L:0.14+Math.random()*0.24, w:1.2+Math.random()*2.2, h:18+Math.random()*26 });
+  dur=dur||KERB_SPIN_MS;
+  const r=pl.getBoundingClientRect(), d=dr.getBoundingClientRect();
+  const cx=r.left-d.left+r.width/2, cy=r.top-d.top+r.height/2, R=r.width*0.5;
+  const dir = sweep>=0 ? 1 : -1, a0 = Math.random()*Math.PI*2;
+  const ease = p => 1-Math.pow(1-p, 3);          // 轉得快的頭段火花密、尾段收斂
+  const step=40, n=Math.ceil(dur/step);
+  for(let i=0;i<n;i++) kerbTimers.push(setTimeout(()=>{
+    const p=i/n, a=a0+sweep*ease(p), heat=1-p*0.7;
+    for(let k=0;k<6;k++){                          // 三個點 × 每點兩顆
+      const ak=a+Math.floor(k/2)*Math.PI*2/3+(Math.random()*2-1)*0.06, px=cx+Math.cos(ak)*R, py=cy+Math.sin(ak)*R;
+      const v=(30+Math.random()*30)*heat;
+      const s=document.createElement('b'); s.className='ring';
+      s.style.left=px+'px'; s.style.top=py+'px';
+      s.style.setProperty('--sx', (-Math.sin(ak)*v*dir + (Math.random()*2-1)*5).toFixed(0)+'px');
+      s.style.setProperty('--sy', ( Math.cos(ak)*v*dir + (Math.random()*2-1)*5).toFixed(0)+'px');
+      box.appendChild(s);
+      kerbTimers.push(setTimeout(()=>s.remove(), 800));
     }
-    g.clearRect(0,0,d.width,d.height);
-    g.globalCompositeOperation='lighter';
-    /* 外環的光暈：一圈閃爍的橘光（跟著發射率一起退）。 */
-    if(rate>0){
-      g.lineWidth=3+Math.random()*2;
-      g.strokeStyle='rgba(255,150,40,'+(0.35*rate+Math.random()*0.15*rate).toFixed(3)+')';
-      g.shadowColor='rgba(255,140,30,.9)'; g.shadowBlur=18;
-      g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2); g.stroke();
-      g.shadowBlur=0;
-    }
-    g.lineCap='round';
-    for(let i=P.length-1;i>=0;i--){
-      const s=P[i]; s.l+=dt;
-      if(s.l>=s.L){ P.splice(i,1); continue; }
-      s.vy+=900*dt; s.vx*=0.985; s.vy*=0.985;
-      const ox=s.x, oy=s.y; s.x+=s.vx*dt; s.y+=s.vy*dt;
-      const k=1-s.l/s.L;                                  // 1 → 0
-      g.strokeStyle='hsla('+s.h+',100%,'+(48+30*k)+'%,'+Math.min(1,k*1.1).toFixed(3)+')';
-      g.lineWidth=s.w;
-      g.beginPath(); g.moveTo(ox, oy); g.lineTo(s.x,s.y); g.stroke();   // 尾巴＝這一格跳過的那一段
-    }
-    g.globalCompositeOperation='source-over';
-    if(rate>0 || P.length) requestAnimationFrame(frame); else cv.remove();
-  };
-  requestAnimationFrame(frame);
+  }, i*step));
 }
 /* 圓盤：沿著紋章外緣灑一圈（機構轉回去時的摩擦）。 */
 function sparkPlate(){

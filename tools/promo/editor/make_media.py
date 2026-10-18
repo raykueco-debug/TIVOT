@@ -13,6 +13,11 @@ PROMO = os.path.join(ROOT, 'tools', 'promo')
 FOOT = os.path.join(HERE, 'media', 'footage'); GEN = os.path.join(HERE, 'media', 'generated'); PROJ = os.path.join(HERE, 'projects')
 for d in (FOOT, GEN, PROJ): os.makedirs(d, exist_ok=True)
 SCENES = ['misha_full', 'misha_ni', 'colossus', 'nou', 'anya', 'sorana', 'deer', 'mage', 'guard', 'town', 'towntalk', 'story', 'flight']
+# ver -2224 選項（環境變數）：PROMO_SCENES＝只做這幾個（逗號分隔）；PROMO_FULL=1＝音效也全音量（不乘 0.7）且不壓縮（只留限幅）；
+#   PROMO_TRIM＝場景:從第幾格開始（逗號分隔，例 flycap:65）—— 讀取頁之類的開頭不要
+if os.environ.get('PROMO_SCENES'): SCENES = os.environ['PROMO_SCENES'].split(',')
+FULL = os.environ.get('PROMO_FULL') == '1'
+TRIM = dict((k, int(v)) for k, v in (x.split(':') for x in os.environ.get('PROMO_TRIM', '').split(',') if ':' in x))
 FPS = 60
 
 def load(path, name):
@@ -29,16 +34,19 @@ def footage(src_root):
         out = os.path.join(FOOT, sc + '.mp4')
         if os.path.exists(out) and os.path.getmtime(out) > os.path.getmtime(os.path.join(d, frames[-1])):
             print('已存在', sc); continue
+        t0f = TRIM.get(sc, 0); frames = frames[t0f:]; t0 = t0f / FPS
         n = len(frames); dur = n / FPS
         aj = os.path.join(d, 'audio.json')
         evs = json.load(open(aj, encoding='utf-8'))['audio'] if os.path.exists(aj) else []
         items = []
         for e in evs:
+            e = dict(e, t=e['t'] - t0)
+            if 'stop' in e: e['stop'] = e['stop'] - t0
             if e['t'] < 0 or e['t'] >= dur: continue
             p = re.sub(r'^.*?/resources/', 'resources/', '/' + e['src'].split('?')[0].replace('\\', '/').lstrip('/'))
             p = os.path.join(ROOT, p); bn = os.path.basename(p)
             if not os.path.exists(p) or bn.startswith('bgm_') or bn.lower().startswith('peritune'): continue
-            g = cut3.gain_of(p) * (1.0 if bn.startswith('vo_') else 0.7)
+            g = cut3.gain_of(p) * (1.0 if (bn.startswith('vo_') or FULL) else 0.7)
             ln = (e['stop'] - e['t']) if 'stop' in e else 8.0
             items.append((p, e['t'], e.get('off', 0), max(0.05, ln), g))
         print('%-10s %d 格（%.1f 秒）、音效 %d 個' % (sc, n, dur, len(items)), flush=True)
@@ -53,17 +61,17 @@ def footage(src_root):
                              % (k, off, ln, g, t * 1000, t * 1000, k)); labs.append('[s%d]' % k)
             cw = out + '.part%d.wav' % len(chunks); gf = cw + '.txt'
             open(gf, 'w', encoding='utf-8').write(';'.join(parts) + ';%samix=inputs=%d:normalize=0:dropout_transition=0,apad,atrim=duration=%f[a]' % (''.join(labs), len(labs), dur))
-            subprocess.run(['ffmpeg', '-v', 'error', '-y'] + ins + load(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'render.py'), 'renderm').graph_file_opt(gf) + ['-map', '[a]', '-ar', '48000', cw], check=True)
+            subprocess.run(['ffmpeg', '-v', 'error', '-y'] + ins + load(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'render.py'), 'renderm').graph_file_opt(gf) + ['-map', '[a]', '-ar', '48000', '-t', '%f' % dur, cw], check=True)   # -t：硬上限（10-18 ffmpeg 9 的 apad 曾經停不下來、寫出 416 GB）
             os.remove(gf); chunks.append(cw)
         if chunks:
             ins = sum((['-i', c] for c in chunks), [])
             mix = ''.join('[%d:a]' % k for k in range(len(chunks)))
-            subprocess.run(['ffmpeg', '-v', 'error', '-y'] + ins + ['-filter_complex', mix + 'amix=inputs=%d:normalize=0:dropout_transition=0,acompressor=threshold=0.18:ratio=4:attack=5:release=120:makeup=1.4,alimiter=limit=0.95[a]' % len(chunks),
-                            '-map', '[a]', '-ar', '48000', wav], check=True)
+            subprocess.run(['ffmpeg', '-v', 'error', '-y'] + ins + ['-filter_complex', mix + ('amix=inputs=%d:normalize=0:dropout_transition=0,alimiter=limit=0.95[a]' if FULL else 'amix=inputs=%d:normalize=0:dropout_transition=0,acompressor=threshold=0.18:ratio=4:attack=5:release=120:makeup=1.4,alimiter=limit=0.95[a]') % len(chunks),
+                            '-map', '[a]', '-ar', '48000', '-t', '%f' % dur, wav], check=True)
             for c in chunks: os.remove(c)
         else:
             subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=stereo', '-t', str(dur), wav], check=True)
-        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-framerate', str(FPS), '-i', os.path.join(d, 'f%05d.jpg'), '-i', wav,
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-framerate', str(FPS), '-start_number', str(int(frames[0][1:6])), '-i', os.path.join(d, 'f%05d.jpg'), '-i', wav,
                         '-c:v', 'libx264', '-preset', 'fast', '-crf', '19', '-pix_fmt', 'yuv420p', '-g', '30',
                         '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out], check=True)
         os.remove(wav)

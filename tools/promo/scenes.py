@@ -11,6 +11,14 @@ P.combat = await import('./modules/combat.js');
 P.saint = await import('./modules/saint.js');
 P.weapon = await import('./modules/weapon.js');
 P.partner = await import('./modules/partner.js');
+P.D = await import('./modules/defense.js');
+P.enemy = await import('./modules/enemy.js');
+// 等第一盤真的擺好（跳過開場的 RELOADING 黑盤面）再開錄
+P.boardReady = async () => { for(let k=0;k<200;k++){ if(document.querySelectorAll('#grid .cell').length && !P.S.transitioning && !P.S.cutinPlaying) return; await P.sleep(50); } };
+// 群體敵人：把血設到「再打一兩發就倒一隻」
+P.nearKnock = each => { P.S.enemyHp = Math.floor((P.S.enemyHp - 1) / each) * each + 4; };
+// 一次丟 n 個圈（照卡上的出招流程 spawnWave，只是臨時改數量／間隔）
+P.rings = (n, gapMs) => { const s=P.S.ASSAULT_SHOTS, g=P.S.ASSAULT_GAP_MS; P.S.ASSAULT_SHOTS=n; P.S.ASSAULT_GAP_MS=gapMs||0; P.D.startCharge(); P.S.ASSAULT_SHOTS=s; P.S.ASSAULT_GAP_MS=g; };
 P.cfgMod = await import('./config.js');
 // 搭檔：寫在這一場的戰鬥卡上（startGame 挑搭檔的第一優先；只改這個瀏覽器裡的記憶體）
 P.withPartner = (battle, who) => { P.cfgMod.GAME_CONFIG.battles[battle].partner = who; };
@@ -118,7 +126,130 @@ FLIGHT_BOT = r"""
 }
 """
 
+# 依格數觸發事件（ver -2224）：P.ev＝[{f:第幾格, when:()=>條件（可省）, fn}]，到格數且條件成立就跑一次，其餘照 BATTLE_BOT 打
+EVENT_BOT = "(i)=>{ const P=window.__promo; for(const e of (P.ev||[])){ if(!e.done && i>=e.f && (!e.when||e.when())){ e.done=1; try{ e.fn(); }catch(err){ return [{err:String(err)}]; } } } return (" + BATTLE_BOT + ")(i); }"
+
+# 飛行：讀取頁點掉 → 升空過場照播 → 升空完：按住 W 往前 lead 格 → 再加按 D（邊前進邊往右轉）turn 格 → 放開、停錄（不加速）
+FLY_RIGHT_BOT = r"""
+(i)=>{
+  const P = window.__promo, cfg = P.cfg || {}, out = [];
+  const f = document.getElementById('flightFrame'), w = f && f.contentWindow, d = w && w.document;
+  if(!d || !d.body) return out;
+  const boot = d.getElementById('boot');
+  const booting = boot && getComputedStyle(boot).display!=='none' && +getComputedStyle(boot).opacity > 0.3;
+  if(booting){ if(i % 45 === 0) out.push({x:216, y:560}); return out; }
+  let tk = true; try{ tk = w.eval('takeoffPlaying'); }catch(_){}
+  if(cfg.debug && !P.wrapped){ try{ const u=w.update; if(typeof u==='function'){ w.__uN=0; w.__uDt=0; w.update=function(dt,now){ w.__uN++; w.__uDt+=dt; return u.apply(this,arguments); }; P.wrapped=1; } }catch(e){ console.error('[dbg] wrap '+e); } }
+  if(cfg.debug && i % 30 === 0){ try{ console.error('[dbg2] i='+i+' updN='+w.__uN+' dtSum='+(w.__uDt||0).toFixed(0)); w.__uN=0; w.__uDt=0; }catch(e){} }
+  if(cfg.debug && i % 30 === 0){ try{ console.error('[dbg] i='+i+' top='+performance.now().toFixed(0)+' fl='+w.performance.now().toFixed(0)+' spd='+w.eval('cam.speed').toFixed(2)+' boost='+w.eval('SPD_BOOST')+' x='+w.eval('cam.x').toFixed(1)+' y='+w.eval('cam.y').toFixed(1)); }catch(e){ console.error('[dbg] '+e); } }
+  // Ray 10-18：升空後不等、馬上前進 —— 升空過場一開始就踩住 w，過場一結束船就走
+  if(tk && !P.wDown){ P.sawTk = 1; P.wDown = 1; try{ f.focus(); w.focus(); }catch(_){} out.push({key:'w', type:'keyDown'}); return out; }
+  if(P.t0 == null){ if(tk) return out; if(!P.sawTk && i < 600) return out; P.t0 = i; if(!P.wDown){ P.wDown = 1; out.push({key:'w', type:'keyDown'}); } return out; }
+  const k = i - P.t0;
+  // 方向盤持續微往右（比例舵量，不是 d 鍵的滿舵＝坦克式原地轉）—— 直接寫飛行頁的拖曳舵量 rgt
+  if(k >= (cfg.lead||0) && k < cfg.run){ try{ w.eval('rgt=' + (cfg.steer||0.2)); }catch(_){} }
+  if(k === cfg.run){ try{ w.eval('rgt=0'); }catch(_){} out.push({key:'w', type:'keyUp'}); }
+  if(k >= cfg.run + 2) out.push({stop:1});
+  return out;
+}
+"""
+
+# 對白：前段（旅店）快點過去；看到 cfg.from 那一句起照字數給閱讀時間再點（Ray 10-18：第一章出航前的港口對話）
+PACED_TALK_BOT = r"""
+(i)=>{
+  const P = window.__promo, cfg = P.cfg || {}, out = [];
+  if(i < (cfg.start || 90)) return out;
+  const b = document.getElementById('storyBubble');
+  const txt = b ? (b.innerText || '').trim() : '';
+  if(!P.on && txt.includes(cfg.from)) { P.on = 1; P.onAt = i; console.error('[promo] from-frame '+i); }
+  if(!P.on){ if(i % 24 === 0) out.push({x:216, y:240}); return out; }
+  if(txt !== P.last){ P.last = txt; P.lineAt = i; P.tapTxt = null; }
+  // 點下去若只是把字補完（同一句還在）→ 隔幾格再點一次才換句
+  if(P.tapTxt != null && txt === P.tapTxt && i - P.tapAt >= 4){ out.push({x:216, y:240}); P.tapAt = i; return out; }
+  const need = (cfg.base || 70) + txt.length * (cfg.perChar || 0);
+  if(P.tapTxt == null && i - P.lineAt >= need){ out.push({x:216, y:240}); P.tapAt = i; P.tapTxt = txt; }
+  return out;
+}
+"""
+
 SCENES = {
+  # 從帝都起飛：升空過場 → 往前 0.5 秒 → 往右前轉彎航行 3 秒（遊戲原速、不加速、免戰）
+  'flycap': {
+    'storage': "localStorage.setItem('tivot_flight_peace_v1','1');" + ("localStorage.setItem('promo_debug','1');" if __import__('os').environ.get('PROMO_DEBUG') else ''),
+    'setup': r"""
+      document.getElementById('flightBtn').click();
+      P.cfg = { lead:0, steer:0.2, run:300, debug: !!localStorage.getItem('promo_debug') };   // Ray 10-18：升空馬上前進，方向盤持續微往右
+    """,
+    'settle': 800, 'bot': FLY_RIGHT_BOT, 'secs': 40,
+  },
+  # ── 10-18 PV 追加（Ray）──────────────────────────────────────────────
+  # 鹿主 10 秒：開頭鹿主攻擊 → 射擊、反擊 → 第 6 秒共鬥（索菈娜「獵手的共鬥」）→ 鹿主丟 6 個圈被共鬥射掉 → 持續攻擊
+  'deer10': {
+    'setup': r"""
+      P.withPartner('sf_deer_nightmare', 'sorana');
+      P.cfg = { gap:9 }; P.tail = 600;
+      P.combat.startScriptBattle('sf_deer_nightmare', {story:true});
+      await P.boardReady(); P.D.resetEnemyTimers(); P.S.energy = 100;
+      P.ev = [
+        { f:2,   fn:()=>P.rings(2, 350) },                                            // 開頭：鹿主攻擊
+        { f:360, fn:()=>P.saint.activateSaint('right') },                             // 第 6 秒：共鬥
+        { f:370, when:()=>P.S.coopMode && !P.S.cutinPlaying, fn:()=>P.rings(6, 70) }, // 共鬥開了、CI 播完 → 丟 6 個圈
+      ];
+    """,
+    'settle': 0, 'bot': EVENT_BOT, 'secs': 10,
+  },
+  # 米夏 10 秒（背景廢都祭壇，諾薇兒）：開頭發動獄門天鎖 → 射擊、反擊 → 第 6 秒聖徒化、持續攻擊 → 第 8 秒魂之歸所
+  'misha10': {
+    'setup': r"""
+      P.withPartner('test_misha', 'nouvelle');
+      P.cfg = { gap:9, saintGap:6 }; P.tail = 600;
+      P.S.battleBg = 'dunmor_altar_lit';   // Ray 10-18：羅賽爾廢城主祭壇（紫紅天空；米夏戰在祭壇點亮之後）
+      P.combat.startScriptBattle('test_misha', {story:true});
+      await P.boardReady();
+      /* Ray 10-18「為什麼 DG 變成靜態圖」：CI 影片是低優先預熱的，開場第 2 格就發動時還沒暖好 → 退回靜態圖。
+         等諾薇兒那幾支動檔都 ready 再開始（最多 12 秒），再重排敵人的出招。 */
+      for(let t=0; t<120; t++){ const k=P.saint.ciWarmState().keys, ks=Object.keys(k).filter(x=>/nouvelle/.test(x));
+        if(ks.length && ks.every(x=>/ready/.test(k[x]))) break; await P.sleep(100); }
+      console.error('[promo] ci '+JSON.stringify(P.saint.ciWarmState().keys));
+      P.D.resetEnemyTimers();
+      P.ev = [
+        { f:2,   fn:()=>{ P.S.playerHp = 1; P.partner.tryDeathGuard(); } },                                  // 開頭：獄門天鎖
+        { f:90,  when:()=>!P.S.cutinPlaying && !P.S.transitioning, fn:()=>P.rings(2, 500) },                // CI 播完：米夏出招（給玩家反擊）
+        { f:300, when:()=>!P.S.cutinPlaying && !P.S.transitioning && !P.S.threats.length, fn:()=>P.rings(2, 500) },   // 中段再出招一次（Ray：不要聖徒化）
+        { f:480, when:()=>!P.S.cutinPlaying && !P.S.transitioning, fn:()=>P.partner.tryActive('board') },  // 結尾：魂之歸所（一般盤面那一半）—— Ray：CI 要播完，超時一點沒關係
+      ];
+    """,
+    'settle': 0, 'bot': EVENT_BOT, 'secs': 12,
+  },
+  # 帝都衛士 2 秒：其間擊倒一隻 → 第 2 秒發動「獵手的智慧」（索菈娜主動技）—— CI 播完多錄一點
+  'guard2': {
+    'setup': r"""
+      P.withPartner('cap_guard_square', 'sorana');   // Ray 10-18：背景選廣場
+      P.cfg = { gap:7 }; P.tail = 600;
+      P.combat.startScriptBattle('cap_guard_square', {story:true});
+      await P.boardReady(); P.D.resetEnemyTimers();
+      P.ev = [
+        { f:30,  fn:()=>P.nearKnock(100) },                // 衛士一人 100 血：再打兩發就倒一個
+        { f:120, when:()=>!P.S.transitioning && !P.S.cutinPlaying && !P.S.threats.length, fn:()=>P.partner.tryActive('board') },    // 第 2 秒（盤面換彈中就等它擺好）：獵手的智慧
+      ];
+    """,
+    'settle': 0, 'bot': EVENT_BOT, 'secs': 4.5,
+  },
+  # 夢境卡耶爾 禍魘大軍 2 秒（後排大型＝石棺甲蟲）：其間擊倒一隻 → 第 2 秒賽西莉聖徒化 —— CI 播完多錄一點
+  'dream2': {
+    'setup': r"""
+      P.cfg = { gap:7 }; P.tail = 600;
+      P.S.battleBg = 'canyon_corridor_day';   // Ray 10-18：背景選卡耶爾山谷（風蝕迴廊）
+      P.combat.startScriptBattle('frag02_w_mix2', {story:true});
+      await P.boardReady(); P.D.resetEnemyTimers();
+      P.ev = [
+        { f:30,  fn:()=>P.nearKnock(55) },                 // 220 血 4 隻：一隻 55
+        { f:120, when:()=>!P.S.transitioning && !P.S.cutinPlaying, fn:()=>P.saint.activateSaint('right') },  // 第 2 秒：賽西莉 SI
+      ];
+    """,
+    'settle': 0, 'bot': EVENT_BOT, 'secs': 5,
+  },
+
   # 米夏戰（賽西莉搭檔）：一般盤面 → 完美反擊 → 聖徒化 → 擊殺
   'misha': {
     'setup': r"""
@@ -237,6 +368,20 @@ SCENES = {
       P.combat.startScriptBattle('test_misha');
     """,
     'settle': 0, 'bot': BATTLE_BOT, 'secs': 20,
+  },
+  # 第一章出航前的港口對話（Ray 10-18）：Stage 1 跳關 → 旅店那段快點過去 → 船塢「28號碼頭…」起照閱讀速度演到出航
+  'harbor': {
+    'setup': r"""
+      await P.chapter('stage1', '演');
+      // Ray 10-18：大字體、一秒一句（只在錄影注入的樣式，遊戲本身不動）
+      const st = document.createElement('style');
+      st.textContent = '#storyBubble{width:94% !important;padding:14px 18px 18px !important}' +
+        '#storyBubble .story-name{font-size:17px !important}' +
+        '#storyBubble .story-text{font-size:24px !important;line-height:1.45 !important}';
+      document.head.appendChild(st);
+      P.cfg = { start:120, from:'28號碼頭', base:60, perChar:0 };
+    """,
+    'settle': 1500, 'bot': PACED_TALK_BOT, 'secs': 30,
   },
   # 城鎮對話：Stage 1 演劇情（帝都旅店 07:00 → 船塢）
   'towntalk': {

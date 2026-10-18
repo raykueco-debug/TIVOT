@@ -27,7 +27,7 @@ for d in (MEDIA, CACHE, PROJ, OUT, os.path.join(MEDIA, 'uploads')): os.makedirs(
 sys.path.insert(0, HERE)
 import render   # noqa: E402
 
-mimetypes.add_type('image/webp', '.webp'); mimetypes.add_type('audio/mp4', '.m4a'); mimetypes.add_type('text/javascript', '.js')
+mimetypes.add_type('image/webp', '.webp'); mimetypes.add_type('video/webm', '.webm'); mimetypes.add_type('audio/mp4', '.m4a'); mimetypes.add_type('text/javascript', '.js')
 
 def rel(p): return os.path.relpath(p, ROOT).replace('\\', '/')
 def absp(r):

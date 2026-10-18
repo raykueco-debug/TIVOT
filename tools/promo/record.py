@@ -125,8 +125,13 @@ HOOK = r"""
 })();
 """
 
-SHELL = os.path.join(os.environ['LOCALAPPDATA'], 'ms-playwright', 'chromium_headless_shell-1243',
-                     'chrome-headless-shell-win64', 'chrome-headless-shell.exe')
+def _find_shell():
+    # 哪一版 chromium_headless_shell 都行（10-18 Windows 3060 那台裝到的是 1248，原本寫死 1243）
+    import glob
+    c = sorted(glob.glob(os.path.join(os.environ['LOCALAPPDATA'], 'ms-playwright', 'chromium_headless_shell-*',
+                                      'chrome-headless-shell-win64', 'chrome-headless-shell.exe')))
+    return c[-1] if c else ''
+SHELL = _find_shell()
 PORT = int(os.environ.get('PROMO_PORT', '9333'))
 BOT_JS = "(i)=>{ try{ return window.__promoBot(i)||[] }catch(e){ return [{err:String(e)}] } }"
 
@@ -153,7 +158,7 @@ async def main(name, out, secs):
                 try: b = await p.chromium.connect_over_cdp(f'http://127.0.0.1:{PORT}'); break
                 except Exception: await asyncio.sleep(0.2)
             ctx = b.contexts[0]
-            await ctx.add_init_script("localStorage.setItem('tivot_admin_v1','1');localStorage.removeItem('tivot_mute_v1');"
+            await ctx.add_init_script("localStorage.setItem('tivot_admin_v1','1');localStorage.setItem('tivot_admin_ui_v1','0');localStorage.removeItem('tivot_mute_v1');"
                                       + sc.get('storage',''))
             await ctx.add_init_script(HOOK)
             bc = await b.new_browser_cdp_session()
@@ -195,6 +200,9 @@ async def main(name, out, secs):
             done = asyncio.Event()
             cdp.on('Emulation.virtualTimeBudgetExpired', lambda e: done.set())
             t_start = await pg.evaluate('performance.now()/1000')
+            # ⚠ 每一格的畫面時間戳記要跟著虛擬時間走（ver -2224）：不給的話 beginFrame 用真實時鐘，
+            #   而一格要截 ~70ms ⇒ 拿 rAF 時間戳算步長的地方（飛行頁 loop 的 dt，上限 40ms）每格都走 40ms ＝ 畫面快 2.4 倍。
+            ft0 = time.monotonic() * 1000 + 1000
             n = int(secs * FPS); t0 = time.time(); last = None; same = 0
             for i in range(n):
                 pend = []
@@ -219,7 +227,7 @@ async def main(name, out, secs):
                 try: await asyncio.wait_for(done.wait(), 20)
                 except asyncio.TimeoutError: print('[stall] budget', i, flush=True); n = i; break
                 r = await asyncio.wait_for(cdp.send('HeadlessExperimental.beginFrame',
-                        {'interval':1000/FPS, 'screenshot':{'format':'jpeg','quality':93}}), 20)
+                        {'interval':1000/FPS, 'frameTimeTicks': ft0 + i * 1000/FPS, 'screenshot':{'format':'jpeg','quality':93}}), 20)
                 if pend:
                     try: await asyncio.wait_for(asyncio.gather(*pend), 10)
                     except asyncio.TimeoutError: print('[input stall] frame', i)

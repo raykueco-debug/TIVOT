@@ -819,6 +819,12 @@ function renderInspector(){
       host.append(rowSelect('運鏡', (c.motion || {}).type || 'none',
         [['none','無'],['up','由下往上平移'],['down','由上往下平移'],['lr','由左往右平移'],['rl','由右往左平移'],['zin','慢推（放大）'],['zout','慢拉（縮小）']],
         v => edit(() => { c.motion = c.motion || {amt:0.2}; c.motion.type = v; })));
+      if(c.kind === 'video' || c.kind === 'image'){
+        // 裁切（素材的 %）：素材自己有黑邊時用（ver -2224）
+        const cr = c.crop || {}, setCr = (k, v) => edit(() => { c.crop = Object.assign({}, c.crop || {}, { [k]: clamp(v, 0, 45) / 100 }); });
+        host.append(rowNum('裁上 %', +((cr.t || 0) * 100).toFixed(2), 0.5, v => setCr('t', v)), rowNum('裁下 %', +((cr.b || 0) * 100).toFixed(2), 0.5, v => setCr('b', v)),
+                    rowNum('裁左 %', +((cr.l || 0) * 100).toFixed(2), 0.5, v => setCr('l', v)), rowNum('裁右 %', +((cr.r || 0) * 100).toFixed(2), 0.5, v => setCr('r', v)));
+      }
       host.append(rowNum('運鏡幅度', (c.motion || {}).amt ?? 0.2, 0.05, v => edit(() => { c.motion = c.motion || {type:'none'}; c.motion.amt = clamp(v, 0, 2); })));
     } else {
       host.append(rowNum('音量 %', Math.round((c.vol ?? 1) * 100), 5, v => edit(() => c.vol = clamp(v, 0, 400) / 100)));
@@ -980,9 +986,13 @@ function fxAt(r, t){
 }
 function drawSrc(src, sw, sh, c, local, D){
   const m = c.motion || {}, typ = m.type || 'none', amt = +(m.amt ?? 0.2);
+  // 裁切（ver -2224，Ray：「尼莫下方沒貼底」—— 素材自己底下有一條黑邊）：c.crop＝{t,b,l,r}（素材的比例），
+  // 先把素材當成裁過的那一塊，後面的適配／運鏡照舊。⚠ render.py 在 motion_filters 前面加 crop，同一套。
+  const cr = c.crop || {}, L0 = (cr.l || 0) * sw, T0 = (cr.t || 0) * sh;
+  sw = sw * (1 - (cr.l || 0) - (cr.r || 0)); sh = sh * (1 - (cr.t || 0) - (cr.b || 0));
   if(c.fit === 'contain'){
     const s = Math.min(W / sw, H / sh), w = sw * s, h = sh * s;
-    g.drawImage(src, (W - w) / 2, (H - h) / 2, w, h); return;
+    g.drawImage(src, L0, T0, sw, sh, (W - w) / 2, (H - h) / 2, w, h); return;
   }
   const p = clamp(local / Math.max(1e-3, D), 0, 1);
   if(['up','down','lr','rl'].includes(typ)){
@@ -993,11 +1003,11 @@ function drawSrc(src, sw, sh, c, local, D){
     let x = cx, y = cy;
     if(typ === 'up') y = cy + Tv / 2 - Tv * p; if(typ === 'down') y = cy - Tv / 2 + Tv * p;
     if(typ === 'lr') x = cx - Th / 2 + Th * p; if(typ === 'rl') x = cx + Th / 2 - Th * p;
-    g.drawImage(src, x / s, y / s, W / s, H / s, 0, 0, W, H); return;
+    g.drawImage(src, L0 + x / s, T0 + y / s, W / s, H / s, 0, 0, W, H); return;
   }
   let z = 1; if(typ === 'zin') z = 1 + amt * p; if(typ === 'zout') z = 1 + amt * (1 - p);
   const s = Math.max(W / sw, H / sh) * z, w = W / s, h = H / s;
-  g.drawImage(src, (sw - w) / 2, (sh - h) / 2, w, h, 0, 0, W, H);
+  g.drawImage(src, L0 + (sw - w) / 2, T0 + (sh - h) / 2, w, h, 0, 0, W, H);
 }
 function drawStage(){
   const t = playhead;

@@ -118,7 +118,9 @@ def build(project, root):
                 src0 = float(c.get('in', 0)) + (S - c['start']) * sp
                 pre = 0.0
                 if src0 < 0: pre = -src0 / sp; src0 = 0.0
-                ins.extend(['-ss', '%.4f' % src0, '-t', '%.4f' % (D * sp + 1.0), '-i', P(c['src'])]); n = nid()
+                # .webm（VP9＋alpha，例如花瓣特效）：要指定 libvpx-vp9 解碼，內建的 vp9 解碼器會把透明丟掉（ver -2224）
+                dec = ['-c:v', 'libvpx-vp9'] if c['src'].lower().endswith('.webm') else []
+                ins.extend(['-ss', '%.4f' % src0, '-t', '%.4f' % (D * sp + 1.0)] + dec + ['-i', P(c['src'])]); n = nid()
                 chain = ['setpts=(PTS-STARTPTS)/%f' % sp, 'fps=%d' % FPS]
                 if pre > 0: chain.append('tpad=start_mode=clone:start_duration=%f' % pre)
                 chain += ['tpad=stop_mode=clone:stop_duration=%f' % (D + 1), 'trim=duration=%f' % D, 'setpts=PTS-STARTPTS']
@@ -131,6 +133,11 @@ def build(project, root):
             else:   # color
                 ins.extend(['-f', 'lavfi', '-t', '%.4f' % (D + 0.2), '-i', 'color=c=%s:s=%dx%d:r=%d' % (c.get('color', 'black'), W, H, FPS)]); n = nid()
                 chain = ['trim=duration=%f' % D, 'setpts=PTS-STARTPTS']
+            cr = c.get('crop') or {}
+            cl, ct, crr, cb = (float(cr.get(k) or 0) for k in ('l', 't', 'r', 'b'))
+            if kind != 'color' and (cl or ct or crr or cb):
+                # 裁切（素材的比例）：先裁再適配／運鏡 —— 預覽 app.js 的 drawSrc 是同一套（ver -2224）
+                chain.append('crop=iw*%f:ih*%f:iw*%f:ih*%f' % (1 - cl - crr, 1 - ct - cb, cl, ct))
             chain += motion_filters(c, W, H, D)
             chain += ['setsar=1', 'format=yuva420p']
             for (typ, st, du, col) in c['fx']:
