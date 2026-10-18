@@ -507,7 +507,16 @@ export function reshuffleOuting(){
   const now=clock.elapsed(), to=midnightMin()+Math.round(back*60);
   outKey = townId + '#' + clock.dayNo();
   outPlan=[];
+  /* ⚠⚠ **只洗「現在可以出門的人」**（ver -2243，Ray：「注意 stage 有些劇情關係會洗不出來或不出門」
+     「除非有劇情 好比蕾娜就常常不在」）：劇情上的狀態一律比洗牌優先 ——
+       · 這一章不在這家旅店名單上的（`innDoors.roster`，已依章節過濾）
+       · 劇情指定不在房裡／睡著的（`innDoors.out`／`asleep`）
+       · 好感不夠、本來就不在的（`knock[WHO].absent`）
+       · 正在同行的
+     這些人**不參與洗牌**：不會被洗成在房裡，也不會被洗到街上去。判斷問同一份資料（`innGate`）。 */
+  const g=innGate(node());
   for(const who of girlsHere()){
+    if(!g.canOut(who)) continue;
     const area=areaFor(who); if(!area.length) continue;
     if(Math.random() >= ch) continue;
     const free=area.filter(id => !outPlan.some(o=>o.node===id));
@@ -515,6 +524,27 @@ export function reshuffleOuting(){
     outPlan.push({ who, node: free[(Math.random()*free.length)|0], from:now, to });
   }
   return true;
+}
+/* 旅店這一格「劇情上誰怎樣」的判斷（ver -2243）：洗牌與進旅店歸位都問它。
+   ⚠ 資料就是門那一套（`innDoorSet` 的 roster／out／asleep、`knock[WHO].absent`）—— 門的狀態仍由
+     `inn.doorState` 算（那裡是唯一畫門的地方），這裡只回答「這個人能不能被行程動到」。 */
+function innGate(n){
+  const d=innDoorSet(n), girls=girlsHere();
+  const roster=(d.roster||girls).filter(w=>girls.indexOf(w)>=0);
+  const absent=who=>{ const kt=((n && n.innStage1||{}).knock||{})[who];
+    return !!(kt && kt.absent) && ((prog.getAffection()||{})[String(who).toLowerCase()]||0) < dateNeed(who); };
+  return { canOut: who => roster.indexOf(who)>=0
+                       && (d.out||[]).indexOf(who)<0 && (d.asleep||[]).indexOf(who)<0
+                       && !absent(who) && who!==escortWho() };
+}
+/* ══ 進旅店＝全員在房裡（ver -2243，Ray：「進旅店預設全都在 除非有劇情」）══
+   走進旅店那一刻，今天的外出行程清空（大家都回來了）；劇情上指定不在／睡著的照舊由門那一套決定。
+   之後要有人出門，就是「獨自坐坐」坐完那一次洗牌（`reshuffleOuting`）。
+   ⚠ 鑰匙照舊記成這一天：之後 `rollOuting()` 不會把一天開頭那一份蓋回來。 */
+function innAllHome(){
+  if(!townId) return;
+  outKey = townId + '#' + clock.dayNo();
+  outPlan=[];
 }
 /* ══ 約會（ver -576，Ray：「出城鎮、回旅店以後就要解除約會，一天內同人不能約
    第二次，會拒絕」）══════════════════════════════════════════════════════
@@ -5178,6 +5208,7 @@ function afterArrive2(n, metDone){
      是關掉的」）：這一格的旅店功能要某支旗立了才開（夏爾村＝`safehouse_shinier`，
      ＝村戰打完、村子安全了才開放休息）；沒寫＝一直開（其他城照舊）。 */
   if(innActive(n)) prog.addFlags([innSeenFlag(nodeId)]);   // 「進過這家旅店了」（ver -1102）
+  if(innActive(n)) innAllHome();                              // 進旅店＝全員在房裡（ver -2243）
   if(innActive(n)) inn.arrive(n, { allSeen: allSeen(),
                                  introFlag: (n.lines && n.lines.length) ? flagOf(n, nodeId) : null,
                                  /* 這是哪一座城的哪個節點（ver -481）：睡覺那一刻要記
