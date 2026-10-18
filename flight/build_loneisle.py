@@ -139,7 +139,7 @@ def build(h, t):
             tt = np.clip(((WX - ax) * vx + (WY - ay) * vy) / L2, 0, 1)   # ⚠ 不要叫 t：那是地表色那張圖
             dst = np.minimum(dst, np.hypot(WX - (ax + vx * tt), WY - (ay + vy * tt)))
     dpl = np.hypot(WX, WY)
-    vil = np.clip(1.0 - (np.minimum(dst, dpl - PLAZA_R) - 60.0) / 140.0, 0, 1)   # 街道兩側 60 內全算村子，200 外淡出
+    vil = np.clip(1.0 - (np.minimum(dst, dpl - PLAZA_R) - 150.0) / 40.0, 0, 1)   # 街道兩側 150 內全算村子（＝index.html 的 streetBand），190 外淡出
     # ── 階地：村子裡的地面一階一階的（高低差），階與階之間短短一段坡 ──
     tq = hz / TERRACE; fl = np.floor(tq); fr = tq - fl
     rr = np.clip((fr - 0.74) / 0.26, 0, 1)
@@ -164,10 +164,13 @@ def build(h, t):
     col = col * (1 - 0.35 - 0.3 * en) + earth * (0.35 + 0.3 * en)
     # 村子：屋群底下是壓實的土與碎石（暖褐），街道與廣場是石板（亮）
     vn = fbm((SH, SW), 3, 2, 81)[..., None]
-    yard = np.array([140, 122, 98], float)
-    col = col * (1 - vil[..., None] * 0.55) + (yard * (0.9 + 0.2 * vn)) * vil[..., None] * 0.55
+    # ver -2234（Ray：「城鎮區是淺棕色的」）：村子範圍整片淺棕（原本只混五成、又被引擎的分級洗灰，看起來是灰褐）。
+    #   ⚠ 引擎還會再壓暗（GRADE_EXPO 0.82）、去飽和（GRADE_SAT 0.68），所以這裡要比目標亮一階、飽和一點。
+    yard = np.array([214, 166, 108], float)
+    col = col * (1 - vil[..., None] * 0.9) + (yard * (0.94 + 0.12 * vn)) * vil[..., None] * 0.9
     road = np.clip(1.0 - (np.minimum(dst, dpl - PLAZA_R) - 14.0) / 10.0, 0, 1)[..., None]   # 街寬約 28 世界單位
-    col = col * (1 - road * 0.85) + pave * (0.92 + 0.12 * vn) * road * 0.85
+    road_c = np.array([184, 178, 164], float)   # 石板：偏灰，跟淺棕的地面分得開
+    col = col * (1 - road * 0.85) + road_c * (0.94 + 0.10 * vn) * road * 0.85
     # 荒地與燈塔丘頂：岩多草少
     rk = np.clip(1.4 * gauss(u, v, -15, -13, 6, 5) + 0.9 * gauss(u, v, 13, -13, 3.5, 3), 0, 1)[..., None]
     col = col * (1 - rk * 0.6) + rock * rk * 0.6
