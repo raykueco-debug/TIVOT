@@ -1,4 +1,44 @@
-# 動畫 session 交接（現況：2026-10-16，Windows 4070 SUPER 那台收工）
+# 動畫 session 交接（最新：2026-10-19，Windows 3060 那台；舊段 10-16 為 4070 那台）
+
+## ⭐⭐ 10-17～10-19（Windows **3060** 那台，動畫 session）—— 先讀這段
+> 下面「10-14～10-16」與一～七是 4070 那台的舊現況，**這次沒有重盤**（Ray 要先推上），下次開工照規矩逐項清點再整份重寫。
+
+**這幾天交件（全部已推；遊戲版在 `resources/illustration/video/`，交件單＝`TO_CODE.md`；PV 版在 `PV/`）：**
+| 件 | 檔 | 備註 |
+|---|---|---|
+| 插畫 torsten_sit | `torsten_sit_v3.mp4`（v1、v2 已被取代） | 天空起手→上帶一點→快速下搖到主角再查膛，手持晃動。第二十支 |
+| 插畫 torsten_sit_gunclose | `torsten_sit_gunclose_v1.mp4` | 純槍機特寫、固定鏡頭（另一個鏡頭，不取代 v3）。第二十二支 |
+| 插畫 deck_long | `deck_long_v1.mp4`（10 秒，Kling 4.0 九關鍵格） | ⚠ PV 已換成 Ray 新剪 6.58 秒版，**遊戲版還是 10 秒**，要不要跟著換等 Ray |
+| 插畫 044_soranahug | `044_soranahug_v3.mp4`（Kling 3.0 單圖） | 抱頭在胸口、主角不回抱。第七支 |
+| 插畫 038_mishasting | `038_mishasting_v3.mp4`（Kling 4.0 只鎖尾格） | 遠方衝刺左右橫跳接突刺，尾格＝原圖。第八支 |
+| 插畫 010_anyaheadrubbing | `010_anyaheadrubbing_v2.mp4` | Ray 重剪 v1 成 24fps。第五支 |
+| 插畫 005_cecilieintro | `005_cecilieintro_v2.mp4` | Ray 重剪 v1 成 24fps。第十五支 |
+| 插畫 28_tordefeat | `28_tordefeat_v1.mp4`（576×864） | Wan 單圖：垂頭垂肩、煙霧。撞牆飛入那段（A/M/B 在 `_anim/28_tordefeat/`）試過不能用。第二十三支 |
+| 插畫 canyon_army | `canyon_army_v1.mp4` | Kling 3.0 直出。第十九支；PV 版 Ray 改用 `magaarmy.mp4` |
+| CI 尼莫 Bullet Rain | `resources/ci/video/cutin_dual_nemo_v2.mp4` | v1 加火星背景（`comp_fgbg_embers.py --native`）。單在 `ci/layers/nemo_bulletrain/TO_CODE.md` |
+| PV 專用 | `PV/illustration/torsten_face_v1.mp4`、`torcam_v1.mp4`、`PV/ci/ci_anya_ni_v4.mp4` | 只進 PV、沒進遊戲 |
+| 眨眼補丁 96 張 | `resources/si/blink/`、`script/blink.js` | 待辦見 `HANDOFF.md`「眨眼補完」 |
+
+**做了但還沒交（都在 `ComfyUI-master/tivot_wan/out/ci/`，chk 看得到）：**
+- `torcam_cut_bite`：torcam 剪輯＋第 96 格接 Wan 咬牙 1 秒（121 格）。Ray 交進 PV 的 `torcam_v1` 是不含咬牙的 `_cut_cut_cut`。
+- `torsten_dualsit_flip_s7`：雙槍坐姿抬槍甩握（Wan 單圖；A＝`_anim/torsten_dualsit/dualsit_A_gpt2.png`）。Kling 版沒送。
+- `cecilienemo_s7`（6 秒）：另一個 session 已交 041 v1（鎖嘴版），這支可回收。
+- `mishasting_wan_s7`、`tordefeat_abc*／mbc_s7`、`gunclose_kling_A1／A2`、`soranahug_kling_AB`：Ray 退件，留著可回收。
+
+**被取代、等 Ray 說才回收：** 插畫 044 v1/v2、038 v1/v2、torsten_sit v1/v2、010 v1、005 v1；CI `cutin_dual_nemo_v1`。
+
+**3060 這台的環境（跟 4070 不同）：**
+- 12 GB VRAM＋16 GB RAM：Wan I2V Q4 576×864，65 格約 7 分、97 格約 12.5 分；**VACE 會 RAM OOM ⇒ 用 I2V 首尾格（FLF）分段**。腳本：`out/ci/torsten_sit/wan_flf_576.py`（首尾格）、`out/ci/torsten_face/wan_i2v_576.py`（單圖）。
+- ComfyUI 開機：`.venv/Scripts/python.exe main.py --lowvram --fp16-vae`（不要 `py -3.11`、不要 `--use-split-cross-attention`）。
+- animechk：`serve_player.py 8131`（**重開機後要自己重起**，開頁給 Ray 前先 `curl` 確認），頁面是 `/player.html`。
+- 後置運鏡腳本（手持晃動、不加模糊）：`out/ci/torsten_sit/cam_gun_ul.py`／`cam_gun_ur.py`／`cam_tilt_down.py`／`cam_gun_static.py` —— ⚠ 在 `out/`，**沒同步進 `tools/anim/`**。
+- Claude in Chrome 同時連著 Mac 和 Windows 兩個瀏覽器，**開工先 `list_connected_browsers` 選 Windows 那個**（10-18 誤送到 Mac 一次）。
+- Kling：上傳先攔 `HTMLInputElement.prototype.click`（aria-label KTARGET）再點槽位→Upload→`file_upload`；面板會自己重置成 Omni reference，送出前截圖核對模式／模型／720p／秒數。**只鎖尾格會自動切 4.0（40 點）**。點數剩 **42**。
+
+**這幾天學到的：**
+- 「從遠處衝進來」「撞上去」這種大動作：**Kling 4.0 只鎖尾格**最好（米夏突刺 Ray：「非常好」）；Wan 首尾格會變成從上面掉下來、很好笑，加中間格也救不了。
+- 拉滑套（槍的機械動作）A/B 圖、單圖都做不好，Ray 放棄；槍的特寫連 GPT 都會畫成雙槍口、變形。
+- 甩槍 Kling／Wan 都只會做成「舉起翻轉握定」，不會真的繞指轉。
 
 ## ⭐ 10-14～10-16 新增（先讀這段；下面一～七是 10-13 的現況，四、六兩節**還沒重盤**）
 
