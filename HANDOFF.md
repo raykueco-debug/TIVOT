@@ -87,6 +87,18 @@
 - ⚠ **孤舟島時段差分做到 24／30（10-15 晚，Windows）**：`loneisle_<鍵>_{dawn,dusk,night}.webp`，剩 `wild`、`inn` 各三張等 Gemini 額度重置。進度表在 `loneisle/_spec.md`，產線細節在 `resources/_HANDOFF_ART.md`。程式端：還沒有節點，接時照 spec 的鍵名。
 - ⚠ **內建瀏覽器產圖的限制（10-15 實測；Windows 這台的 Claude in Chrome 可用，上傳走得通）**：① **不能上傳檔案** —— 選檔不行、ChatGPT／Gemini 的 CSP 擋掉從頁面 fetch 外站（raw.githubusercontent 也擋）、腳本開新分頁會被擋、給 Gemini 網址它也讀不了 ⇒ **要參考圖的（Gemini 衍生差分）走不通**，純文字的 GPT 新圖可以。② 下載用 `fetch(img.src)→blob→a.download` 可行，**但那個分頁要在最前面**（`tabs_select`），落在 `~/Downloads`。
 
+**眨眼補完（10-19 美術，Windows；已接上 `902e936f`，之後回來補完）**
+- 已做：照眨眼 SOP（`face_parse --lite` → `blink_gpt.py grid/merge` 全閉＋半閉 → `blink_build.py --qa`）新增 96 張，`script/blink.js` 329→425。
+  拼圖批名 `d19_1`～`d19_12`（`tools/_blink_base/grid_d19_*`），驗收總覽 `tools/_blink_out/_qa_01～04.png`。
+- ⚠ 待 Ray 判、寫進 `tools/blink_reject.txt`（附理由）再重跑 `blink_build`：
+  · 裁切抓錯：`renna_si_meltdownsmile`（只拍到頭髮）、`robert_si_closedtalk`（只拍到鬍子）。
+  · 只閉一隻眼：`church_guard_si_draw`、`npc_imcommander_si_shock`、`npc_imsoldier_si_awe`。
+  · 耳邊黑／紅點：`aaron_si_armscross／attention／confused／signal`、`church_guard_si_c`。
+  · 原圖本來就閉眼／瞇眼（眨了看不出來）：`aaron_si_closedsmile`、`anya_si_cryhard／shakehead／shysmile`、`capi_mom`、`mage_si_front／laugh／wave／cast`、`molly_si_closedtalk／eyesmile`、`renna_si_cough／coughsoft`、`robert_si_bow`。
+  · 其他：`anya_si_dizzy`（漩渦眼被眨成閉眼，要不要眨）、`npc_imcommander_si_urgent`（幾乎沒變）、`npc_imcommander_si_salute`（帽簷遮眼）。
+- ⚠ 沒產出（找不到臉／眼，建議直接進排除清單）：`anya_si_back`、`nouvelle_si_back`、`torsten_si_back`、`anya_si_wheelback`、`church_guard_si_e`、`nouvelle_si_runcry／sadnoeye／shycover`、`npc_guildhunter_si`、`renna_si_die`、`renna_si_meltdown`、`npc_imsoldier_si_alarm`（全閉對位沒過門檻）、`torsten_si_front`（瀏海遮眼）。
+- ⚠ 賽西莉 9 張（`d19_3`：call／command／nosebleed／pant／proud／ready／shocknose／shyhand／shynose）**半閉** GPT 連三次被審查擋，現用本機補丁推的半閉；全閉是 GPT 版。之後換串重送 `grid_d19_3.png` 半閉、`merge d19_3 … half`、再 `blink_build` 這 9 張。
+
 **程式端可做**
 - ⚠ 美術 10-14 同名覆蓋了插圖 `003_lunaria_armed.webp`（`config.js` 的 `ASSET_VER` 還是舊雜湊 `f656d515`）—— 要跑 `python3 tools/bust.py --bump` 才不會吃到快取的舊圖。`044_soranahug.png` 同理（10-13 覆蓋）。
 17. `misha_si_ni` 眼效是舊圖座標，要用時重產；茉莉／羅伯特／亞隆立繪還沒接；`se_march` 不存在（主祭壇用 `se_troops` 頂）。
@@ -107,6 +119,8 @@
 | 茉莉 v3 立繪 15 張 | ✔ 不欠（無瀏海、保留長捲鬢髮、虹膜 S×2.4；還沒接 speakers.js） |
 | 空中戰怪圖第一批 8 張（`mon_sky_*`） | ✔ 不欠（羽蛇／守墓者風格第三版） |
 | 空中戰怪圖第二批（`mon_sky2_*`） | ✔ 不欠（8 張齊，Ray 10-15 定案） |
+
+| 立繪眨眼補丁（10-19 新增 96 張） | ⚠ 欠：約 30 張待判排除／重做、13 張沒產出、賽西莉 9 張半閉待 GPT 重出（見「未完成」眨眼條） |
 
 ## 已結案（不要再列）
 （-2112 以前的見上一份。）本輪：上一份頂端美術交件的五條（士兵／指揮官、賽西莉 11、愛里歐、新立繪 7、插圖 044）全接；Stage 17～19 帝都整段；碎片 02 整段；
