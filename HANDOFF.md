@@ -1,50 +1,48 @@
-# HANDOFF — 截至 `ver 2026.09.22-2166`（10-12，iMac 程式 session 收工，換機器）
+# HANDOFF — 截至 `ver 2026.10.19-2255`（10-19，Windows 程式 session 收工）
 
 > ⚠⚠ **交接規則（Ray 10-04 定）**：
 > 1. 開工讀交接 → **逐項清點這一份的「完成／未完成」**，給 Ray 確認。
 > 2. 確認後**生成新交接、回收舊交接**（`tools/recycle.sh`）—— 這個檔**只留一份現況**，不往下疊。
 > 3. 已完成、已定案、Ray 說移除的，**不要再抄進新的一份**。
-> 上一份：`_recycle/HANDOFF.md.20261012-151833`（-2112 那一份＋美術在頂端加的交件條；git 歷史也有）。
+> 上一份：`_recycle/HANDOFF.md.*`（-2166 iMac 那一份＋美術 10-19 眨眼條；git 歷史也有）。
+> ⚠ 本輪（PV／試玩版）沒碰上一份的待辦，所以「上一份沿用」那一大段**原樣搬過來、本輪沒有清點** —— 下一輪開工要跟 Ray 逐條確認。
 
 ## 現況
-- 只有一個分支：`main`。兩台在推：**Windows 3060**（`C:\Users\User`）與 **iMac**（`~/Desktop/TIVOT`）。**開工先 `git pull`，推之前再 pull 一次**。
-- 測試伺服器：Windows 用 `tivot-claude`（8202）；iMac 用 **`tivot-verify`（8123）**。**8200 是 Ray 的，不要碰**
-  （⚠ 本輪踩過一次：預覽分頁 `seed` 被切到 8200，我對它重整並開了一場 `test_misha` —— 動手前先確認 `location.port`）。
-- iMac 沒有 node：語法檢查用 jsc、`script_lint.py` 照樣能跑。
-- 其他 session：**美術**（本機另一個 session，`resources/_HANDOFF_ART.md`）、**動畫**（另一台，`resources/_HANDOFF_ANIM.md`）。交件由程式接、commit。
-- 不要 commit：`script/speakers.js` 的未提交改動（Ray 本機在調）、`docs/EOS_CONTEST.md`、`reference/TIVOT_Glossary_ZH_EN_JA_ES.xlsx`、根目錄兩張 UUID png 等未追蹤檔（見下「等 Ray」）。
-- 測試開章法（本輪一直在用）：8123 開機點掉讀取頁 → `import('/script/progress.js?v=<版號>')` 往 `CHAPTERS` 前面塞一筆臨時章節（flags／stage／clockHour／town／node）→ 點章節鈕 → 選「演劇情」。
+- 只有一個分支：`main`。兩台在推：**Windows 3060**（`C:/Users/User/Desktop/TIVOT`）與 **iMac**。**開工先 `git pull`，推之前再 pull 一次**。
+- 測試伺服器（Windows）：遊戲 `tivot-claude` **8202**、試玩版 dist `challenge-dist` **8215**、PV 編輯器 **8130**（Ray 開著的那個）。**8200 是 Ray 的，不要碰**；Ray 測試中的分頁不碰，要測另開。
+- 版本號一律 `py -X utf8 tools/bust.py --bump`；commit 前 `py tools/script_lint.py`（本輪 0 錯誤、61 個既有提醒）。
 
-## 本輪做的（-2113～-2166）—— 都推上了
-**資源接上**：士兵 `imsoldier`（`worry` 鍵）／指揮官 `imcommander`、賽西莉 11 張（pant 用 cm150／standCm135）、愛里歐（`MAGE`／`MAGE_X`）全套＋hurtdown、
-索菈娜 guardgrimace／runserious×2、科爾文 bow／hurt×3、蕾娜／蘿法／安雅新差分；CI 更新（賽西莉被動 v4、安雅被動等）；插圖 043／044；差分總表重出（NPC 各自一頁、孤兒圖同一頁）。
+## 本輪做的（-2167～-2255）—— 都推上了
+**挑戰（首頁「挑戰」＝給玩家試玩）**
+- 拿掉出擊整備：固定蕾妮＋機槍（`weapon.useChallengeLoadout`），遊戲內不可換伙伴。
+- 按挑戰 → 槍棺**由畫面底外**以飛行頁同一條曲線推上來開棺（`story.playKerberosChallenge`、`#kerb.kerb-low/.kerb-lowrise`）→ 打完／打輸都閉棺再結算（`state.kerbChallenge`，combat 勝敗兩條路）。
+- 訓練用聖徒教學：副武器切換鈕放回（試玩版教學不再藏）；反擊教學（defended）最後加蕾妮「依戰況切換副武器吧！」＋ `guide:'wswitch'` 箭頭**由上往下**指切換鈕，該句對話框掛 `.ws-clear` 縮窄左移讓位。
+  ⚠ 教學台詞的真相在 **`i18n/zh.js`／`en.js`／`ja.js`**（`i18n.js` 會整段蓋掉 config 的 steps）—— 改教學台詞要改語系檔。西文 `es.js` 未補（照「西文最後一次整批」）。
 
-**帝都 Stage 17～19**：返回帝都（CAP_RETURN）→ Stage 18 旅店夜襲（`clockSet:23` 鎖時間、Nocturnal Bloom → 索「！！」起 Rituale 鎖到愛里歐戰）→
-衛士追擊戰（`siege.route` 單行道、走一步播 `se_steps`）→ 碼頭愛里歐戰（`cap_mage`：400 血、六角護罩只吃清盤傷害、反擊免疫顯示 GUARD、RetroRoman Battle2、專用背景）→ Stage 19 強制出航。章節列表有 17／18／19。
-深夜時段改 22:00 起。群體敵人倒地動畫同時淡出。
+**挑戰試玩版打包（`tools/challenge_build/`）—— 目前只在 PTT／Penana／巴哈發布**
+- 流程：`build.py trace-html` 產追蹤頁 → 用 `tools/promo` 錄製器跑 `trace_chal`／`trace_tut`（PROMO_DUMP）取得 dump → `build.py build <挑戰dump> <教學dump>` 出 `dist/`。
+  本輪 dump 在 scratchpad，**換機器要重跑追蹤**。esbuild 在 `tools/challenge_build/node_modules`（gitignore，`npm i` 重裝）。
+- 作法：真程式碼照用、資料模組用 overlay 換掉（敵人只留 faceless／facelessgiant／trainee／witch、伙伴只留蕾妮、監察官芙蕾雅＋璐娜、教學以外的劇情樹全砍、戰鬥／料理／商店空表、**道具全空＋敵人 loot 拔掉＝不掉道具**）；town／inn／gear／save 換空殼；管理人手勢關閉；西文劇本動態 import 拔掉；esbuild 單檔（charset utf8）。
+- 劇情 ID 黑名單擋檔案／素材／SE；打包後掃描敏感字串（947 條）＝**命中 0**；殘在程式碼裡的劇情名自動遮成「…」。
+- 實測（8215，手機尺寸）：教學全程（含新的切換箭頭）、挑戰、亂入都跑得完；結算無拾得道具。app.js 約 519 KB、素材 122 個。
+- ⚠ **主 repo `raykueco-debug/TIVOT` 是公開的，GitHub Pages 有完整遊戲** —— 試玩版要藏內容，建議：主 repo 改名（例 TIVOT-dev）設私人、另開公開 repo 只放 dist。**等 Ray 決定**，部署腳本還沒寫。
+- 「不要動到主程式」＝打包流程不准改主程式；試玩的遊戲改動直接改主程式（Ray 10-19 確認）。
 
-**北泊 → 碎片 02（卡耶爾山谷夢境）整段**（-2134～-2165）：
-- 蕾娜夜談 → 睡覺音（BGM 同時淡出）→ 長黑幕 → 讀取頁 → 卡耶爾入口**黑著抵達**（新欄位 `darkStart`：`story.holdSceneFade`，場景曲等腳本 `fadeIn` 才放）→ 黑幕裡戰場聲由遠到近、士兵第一句 → 淡入。
-- 夢境期間：Rituale Machina 上鎖（路上戰鬥不換曲）、每格必出怪（城上 `wildForce`）、搭檔賽西莉、不可入整備頁（城上 `noGear` → `gear.setBlocker` 唯一守門）、不能出航、背景鎖白天、打輸直接回北泊（`loseGoto`）。
-- 入口開場戰 → 風蝕迴廊一場（`frag02_mid`）→ 谷底祭場 Boss **崩岩巨像**（`canyon_colossus`，數值暫抄北泊教堂 Boss）。Boss 戰前解鎖、放賽西莉戰鬥曲一路到夢境結束。
-- 結尾：士兵 awe「竟然……只憑兩個人就……」→ 插圖 044 由下往上平移 →「那就是……聖約騎士團！」→ 轉泛黃（新欄位 `cgTone:'sepia'`）→ 三秒黑（BGM 淡出）→
-  夢醒直接推到隔天 8:00／S3（`FRAG02_WAKE`，打輸三條路同）→ 北泊旅店黑著抵達、字卡大字「北方泊地」＋日期時刻 → 淡入。
-- 群怪「禍魘大軍」：11 組 `canyon_mix2..12`（美術深色重生版；每組後排一隻大型＋前面 2～4 小型、≤5 隻、同種 ≤2；骨鴉飛行抬高、`group.noShadow` 不畫影子）。圖層 `resources/enemy/canyon_swarm/fly<n>/`。
-- 群體敵人受擊只抖被打中的那一個（`enemy.groupHitFlash`）。
+**PV（`tools/promo/editor`，專案 `pv_v4_board`）**
+- 編輯器：clip 旗標 `flicker`（閃**黑**，16 Hz）、`zin/zout` 的焦點 `fx/fy`、音軌**音量包絡線**（拉中段＝響度、拉尾段＝淡出角度）。render.py 與 app.js 預覽同步。
+- 錄製器：場景 `alpha:True`（透明 PNG 序列）、`PROMO_NOSHOT`、`PROMO_DUMP`；新場景 `kerbopen`（開棺 alpha）／`kerbdoor`／`kerbclose`（閉棺 alpha）。
+- 字卡：`end_card.py`（A 款熱光掃＋火星飛散、緩縮：2026.11.27 中文體驗版釋出）、`credit_card.py` 的 `credit_end_v2`（Project E.O.S. logo 並列 PV BGM）、`credit_al_v2`（原作 A.L.）、`credit_eos_v2`（單行 Project E.O.S.，純黑底無光暈）。
+- BGM 尾音實驗：`bgm_havoc_endnote_v1`／`bgm_havoc_echo_v1`（Ray 最後自己換回原版）。
+- ✔ 素材板引用的 media（`tools/promo/editor/media/`，本來 gitignore）**這次強制收進版控**，另一台 pull 後開編輯器 `?project=pv_v4_board` 就有全部素材。
+  ⚠ 之後素材板新增 media 一樣要 `git add -f`，不然另一台缺檔。
+  ⚠ 開編輯器一律帶 `?project=pv_v4_board`、舊分頁先關 —— 本輪踩過舊分頁存檔把改動蓋回去。
 
-**引擎修正**：
-- 換插圖不再搶走腳本蓋的黑幕（`cgFade` 的 `keepOwner`）—— 修「插畫跑完先露出場景再播腳步聲走到次日」（娜塔莉戰後接碼頭同一病）。
-- 拍上 `flip` 改成每人各自記、翻了就一直翻到下台。
-- 換怪先收上一隻的待機動畫（修米夏 NI 殘留到帝都第一戰）。
-- 立繪編輯改台詞：前後一拍篩不開時走整拍序列定位（修娜塔莉連續「……」寫入失敗；`devserver.py` 改了，**Ray 的 8200 要重開才吃得到**）。
-- 北泊聖徒教學戰：劇情三擊之後即死防禦還原（以前被腳本那一擊吃掉）。
-- 約會／巧遇好感 +5；「限時才加」的事件改成去了就加；聖索菲亞約索菈娜 +10。
+## 本輪等 Ray
+1. 試玩版上線方式（上面 repo 私人化那條）。
+2. 試玩版西文：es 教學缺新那一句（西文整批時補）。
 
-**其他**：賽西莉兩首 BGM（RetroRoman Battle／World OP2）響度共 +21%；搭檔是賽西莉的戰鬥放 RetroRoman Battle。
-薇拉馮德拓樸照帝都改（圓環廣場：上中央區／左港町／右上街區；港町照舊街區排，碼頭外接造船廠與燈塔）。
-**溫斯摩爾港（守城戰地圖，暫名）**：40 格節點與出口照美術拓樸圖接上（到廣場步數 40 格全對），背景只有日景；入口暫定中央棧橋、出航往下。
-
-## 未完成
+## 上一份沿用（⚠ 本輪未清點，下一輪開工跟 Ray 確認）
+### 未完成
 **守城戰（溫斯摩爾港）—— 等 Ray 定玩法，規格在 `resources/map/_winsmoor_spec.md`**
 1. 敵人一回合走幾格（建議：玩家走一步＝一回合，每支敵軍沿最短路徑往廣場走一格）；一次幾支、從 20 個進入點哪裡冒、撐幾波。
 2. 截到就打一場？打哪類怪？評價 S／A／B 的回合效果（S 敵停一回合／A 照常／B 以下敵走 2 格）照戰鬥結算等第？
@@ -104,6 +102,7 @@
 17. `misha_si_ni` 眼效是舊圖座標，要用時重產；茉莉／羅伯特／亞隆立繪還沒接；`se_march` 不存在（主祭壇用 `se_troops` 頂）。
 18. 科爾文 `salute` 我對到 `bow`；卡耶爾地圖圖名卡在夢境以外會報夜間時刻（夢境入口已不報）。
 
+## 資產盤點（上一份沿用＋本輪新增）
 ## 資產盤點（這一輪碰過的；`✔ 不欠`／`⚠ 欠`）
 | 件 | 狀態 |
 |---|---|
@@ -121,7 +120,8 @@
 | 空中戰怪圖第二批（`mon_sky2_*`） | ✔ 不欠（8 張齊，Ray 10-15 定案） |
 
 | 立繪眨眼補丁（10-19 新增 96 張） | ⚠ 欠：約 30 張待判排除／重做、13 張沒產出、賽西莉 9 張半閉待 GPT 重出（見「未完成」眨眼條） |
+| PV 字卡 credit_al_v2／credit_eos_v2／credit_end_v2、end_card_v2 | ✔ 不欠（Ray 10-19 定稿進素材板） |
+| PV 開棺 alpha（kerbopen_alpha.webm）／閉棺（kerbclose_alpha.webm） | ✔ 不欠（閉棺 Ray 自己處理） |
 
 ## 已結案（不要再列）
-（-2112 以前的見上一份。）本輪：上一份頂端美術交件的五條（士兵／指揮官、賽西莉 11、愛里歐、新立繪 7、插圖 044）全接；Stage 17～19 帝都整段；碎片 02 整段；
-卡耶爾群怪三次改版到深色版；cgFade 搶黑幕、flip、米夏 NI 殘留、編輯器寫入失敗、即死防禦被吃；薇拉馮德拓樸；溫斯摩爾港城資料。
+（-2166 以前見上一份。）本輪：挑戰出擊整備移除、挑戰推棺閉棺、試玩版打包與不掉道具、教學副武器切換、PV 閃黑／焦點推近／包絡線／字卡／開棺。
