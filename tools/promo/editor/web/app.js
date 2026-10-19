@@ -415,11 +415,51 @@ function clipEl(t, c){
   if(c.fadeOut){ const f = document.createElement('div'); f.className = 'fo'; f.style.width = (c.fadeOut * pps) + 'px'; d.appendChild(f); }
   const hl = document.createElement('div'); hl.className = 'h l'; const hr = document.createElement('div'); hr.className = 'h r';
   d.append(hl, hr);
+  if(isA) envEl(d, c);
   // 右上角的小圓點：拉它＝改速度（邊緣是裁切）
   let sp = null;
   if(c.kind === 'video' || isA){ sp = document.createElement('div'); sp.className = 'spd'; sp.title = '拖曳改速度：往右＝變慢、往左＝變快'; d.appendChild(sp); }
   d.addEventListener('pointerdown', e => startDrag(e, t, c, e.target === hl ? 'l' : e.target === hr ? 'r' : (sp && e.target === sp) ? 'spd' : 'move'));
   return d;
+}
+
+/* ═════════════ 響度調節線（ver -2224，Ray：「加入音源響度調節線，拉中段調整段響度，尾段可拉淡出角度」）═════════════
+   音訊片段上一條線：中段的高度＝音量（正中央 100%、頂 200%、底 0%），頭尾兩條斜線＝淡入／淡出。
+   · 上下拖中段 → c.vol　· 左右拖尾端的點 → c.fadeOut（斜線的角度）　· 頭端的點 → c.fadeIn
+   ⚠ 只是同一組欄位（vol／fadeIn／fadeOut）的另一個入口 —— 輸出（render.py 的 volume／afade）與預覽照舊讀它們。 */
+const ENV_MAX = 2;
+function envEl(d, c){
+  const w = Math.max(4, c.dur * pps), fi = (c.fadeIn || 0) * pps, fo = (c.fadeOut || 0) * pps;
+  const yp = 100 * (1 - clamp(c.vol ?? 1, 0, ENV_MAX) / ENV_MAX);
+  const NS = 'http://www.w3.org/2000/svg', sv = document.createElementNS(NS, 'svg');
+  sv.setAttribute('class', 'env'); sv.setAttribute('viewBox', '0 0 ' + w + ' 100'); sv.setAttribute('preserveAspectRatio', 'none');
+  const pts = '0,100 ' + fi + ',' + yp + ' ' + (w - fo) + ',' + yp + ' ' + w + ',100';
+  const pl = document.createElementNS(NS, 'polyline'); pl.setAttribute('points', pts); pl.setAttribute('class', 'env-line'); sv.appendChild(pl);
+  d.appendChild(sv);
+  const mid = document.createElement('div'); mid.className = 'env-mid'; mid.title = '上下拖：調這一段的音量';
+  mid.style.left = fi + 'px'; mid.style.right = fo + 'px'; mid.style.top = 'calc(' + yp + '% - 5px)';
+  const kin = document.createElement('div'); kin.className = 'env-k'; kin.title = '左右拖：淡入長度'; kin.style.left = (fi - 5) + 'px'; kin.style.top = 'calc(' + yp + '% - 5px)';
+  const kout = document.createElement('div'); kout.className = 'env-k'; kout.title = '左右拖：淡出長度（斜線角度）'; kout.style.left = (w - fo - 5) + 'px'; kout.style.top = 'calc(' + yp + '% - 5px)';
+  d.append(mid, kin, kout);
+  const lab = document.createElement('div'); lab.className = 'env-lab';
+  const go = (e, kind) => {
+    e.stopPropagation(); e.preventDefault(); lastArea = 'tl';
+    sel = { type:'clip', id:c.id }; selIds.clear(); selIds.add(c.id);
+    const before = snapshot(), r = d.getBoundingClientRect(), x0 = e.clientX, o = { vol:c.vol ?? 1, fi:c.fadeIn || 0, fo:c.fadeOut || 0 };
+    let moved = false;
+    const onMove = ev => {
+      moved = true;
+      if(kind === 'mid') c.vol = Math.round(clamp(ENV_MAX * (1 - (ev.clientY - r.top) / r.height), 0, ENV_MAX) * 100) / 100;
+      else if(kind === 'out') c.fadeOut = frame(clamp(o.fo - (ev.clientX - x0) / pps, 0, c.dur - (c.fadeIn || 0)));
+      else c.fadeIn = frame(clamp(o.fi + (ev.clientX - x0) / pps, 0, c.dur - (c.fadeOut || 0)));
+      renderLanes(); renderInspector();
+    };
+    const onUp = () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); if(moved) commit(before); else renderAll(); };
+    window.addEventListener('pointermove', onMove); window.addEventListener('pointerup', onUp);
+  };
+  mid.addEventListener('pointerdown', e => go(e, 'mid'));
+  kin.addEventListener('pointerdown', e => go(e, 'in'));
+  kout.addEventListener('pointerdown', e => go(e, 'out'));
 }
 
 function xToT(e){ const r = $('tlInner').getBoundingClientRect(); return Math.max(0, (e.clientX - r.left) / pps); }
@@ -825,6 +865,12 @@ function renderInspector(){
         host.append(rowNum('裁上 %', +((cr.t || 0) * 100).toFixed(2), 0.5, v => setCr('t', v)), rowNum('裁下 %', +((cr.b || 0) * 100).toFixed(2), 0.5, v => setCr('b', v)),
                     rowNum('裁左 %', +((cr.l || 0) * 100).toFixed(2), 0.5, v => setCr('l', v)), rowNum('裁右 %', +((cr.r || 0) * 100).toFixed(2), 0.5, v => setCr('r', v)));
       }
+      host.append(rowSelect('閃爍', c.flicker ? 'on' : 'off', [['off','無'],['on','閃爍（整段）']], v => edit(() => { if(v === 'on') c.flicker = true; else delete c.flicker; })));
+      if(['zin','zout'].includes((c.motion || {}).type)){
+        const m = c.motion;
+        host.append(rowNum('焦點 X %', Math.round((m.fx ?? 0.5) * 100), 1, v => edit(() => { m.fx = clamp(v, 0, 100) / 100; })),
+                    rowNum('焦點 Y %', Math.round((m.fy ?? 0.5) * 100), 1, v => edit(() => { m.fy = clamp(v, 0, 100) / 100; })));
+      }
       host.append(rowNum('運鏡幅度', (c.motion || {}).amt ?? 0.2, 0.05, v => edit(() => { c.motion = c.motion || {type:'none'}; c.motion.amt = clamp(v, 0, 2); })));
     } else {
       host.append(rowNum('音量 %', Math.round((c.vol ?? 1) * 100), 5, v => edit(() => c.vol = clamp(v, 0, 400) / 100)));
@@ -984,6 +1030,7 @@ function fxAt(r, t){
   }
   return { a, col, ca };
 }
+const FLICKER_HZ = 16, FLICKER_AMT = 1.0;   // 閃爍（ver -2224）⚠ = render.py 的 FLICKER_HZ／FLICKER_AMT，改一邊要改另一邊
 function drawSrc(src, sw, sh, c, local, D){
   const m = c.motion || {}, typ = m.type || 'none', amt = +(m.amt ?? 0.2);
   // 裁切（ver -2224，Ray：「尼莫下方沒貼底」—— 素材自己底下有一條黑邊）：c.crop＝{t,b,l,r}（素材的比例），
@@ -1006,8 +1053,11 @@ function drawSrc(src, sw, sh, c, local, D){
     g.drawImage(src, L0 + x / s, T0 + y / s, W / s, H / s, 0, 0, W, H); return;
   }
   let z = 1; if(typ === 'zin') z = 1 + amt * p; if(typ === 'zout') z = 1 + amt * (1 - p);
-  const s = Math.max(W / sw, H / sh) * z, w = W / s, h = H / s;
-  g.drawImage(src, L0 + (sw - w) / 2, T0 + (sh - h) / 2, w, h, 0, 0, W, H);
+  // 焦點（ver -2224）：m.fx／fy＝畫面上不動的那一點（0~1，預設正中）⚠ render.py 的 motion_filters 是同一套
+  const fx = clamp(m.fx ?? 0.5, 0, 1), fy = clamp(m.fy ?? 0.5, 0, 1);
+  const s0 = Math.max(W / sw, H / sh), w0 = W / s0, h0 = H / s0, x0 = (sw - w0) / 2, y0 = (sh - h0) / 2;
+  const w = w0 / z, h = h0 / z;
+  g.drawImage(src, L0 + x0 + (w0 - w) * fx, T0 + y0 + (h0 - h) * fy, w, h, 0, 0, W, H);
 }
 function drawStage(){
   const t = playhead;
@@ -1020,6 +1070,7 @@ function drawStage(){
     else if(c.kind === 'text'){ drawSrc(textCanvas(c), W, H, c, local, D); }
     else if(c.kind === 'image'){ const im = imgFor(c.src); if(im.complete && im.naturalWidth) drawSrc(im, im.naturalWidth, im.naturalHeight, c, local, D); }
     else { const v = vidFor(c); if(v.readyState >= 2 && v.videoWidth) drawSrc(v, v.videoWidth, v.videoHeight, c, local, D); }
+    if(c.flicker && Math.floor(local * FLICKER_HZ) % 2){ g.globalAlpha = a * FLICKER_AMT; g.fillStyle = '#000'; g.fillRect(0, 0, W, H); }   // 閃黑（Ray：「閃爍是閃黑不是閃白」）
     if(col && ca > 0){ g.globalAlpha = a * ca; g.fillStyle = col; g.fillRect(0, 0, W, H); }
     g.restore();
   }

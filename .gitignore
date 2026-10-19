@@ -50,3 +50,10 @@ tools/promo/editor/media/
 tools/promo/editor/cache/
 tools/promo/editor/out/
 tools/promo/out/_cut_tmp/
+
+# 挑戰試玩版打包（ver -2225）：工具裝的套件、產出、追蹤暫存不進版控
+tools/challenge_build/node_modules/
+tools/challenge_build/package-lock.json
+tools/challenge_build/build/
+tools/challenge_build/dist/
+tools/challenge_build/trace.html

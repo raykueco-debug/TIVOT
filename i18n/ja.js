@@ -247,6 +247,7 @@ export const STRINGS = {
         { who:'partner',   text:'でも、無理にカウンターを狙わないでね。危ないと思ったら、防ぐだけで十分だよ。' },
         { who:'inspector', text:'それでは、私の評価は甘くはなりませんよ。' },
         { who:'inspector', text:'副武装によって効果もカウンターのタイミングも異なる。自分の才能を活かせる武器を選びなさい。' },
+        { who:'partner',   guide:'wswitch', text:'戦況に応じて副武装を切り替えよう！' },
       ],
       strike: [
         { who:'inspector', text:'来る！' },

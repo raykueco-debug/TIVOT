@@ -354,6 +354,7 @@ export const STRINGS = {
         { who:'partner',   text:'不過別勉強反擊，覺得危險的話，防下來就好。' },
         { who:'inspector', text:'那樣的話，我的評價可不會留情。' },
         { who:'inspector', text:'不同副武器的效果與反擊時機各不相同。選擇能發揮自己天賦的武器吧。' },
+        { who:'partner',   guide:'wswitch', text:'依戰況切換副武器吧！' },   // ver -2249 Ray
       ],
       strike: [
         { who:'inspector', text:'小心！' },

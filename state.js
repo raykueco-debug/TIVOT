@@ -308,6 +308,9 @@ export const state = {
   partnerInstalls: null,
   sessionLoot: null,     // 連戰中間場記帳的掉落（ver -869，Ray：「戰利品也到結算時給」）；收段結算一起發
 
+  /* 挑戰（試玩版）走槍棺框（ver -2225，Ray：「挑戰按下去推棺，打完閉棺」）：main.startChallenge 立、combat.goHome 收。
+     ⚠ 只管「結束時關門」；劇情框（storyFramed）的其他規矩（持久 HP、交還劇情）一概不吃。 */
+  kerbChallenge: false,
   pickedPartner: GAME_CONFIG.defaultPartner,   // 玩家實選搭檔（擁有者 partner；選人畫面經 setPickedPartner 寫入）
   lineupIndex: 0,        // 連戰序列游標（局內第幾隻敵，對應 GAME_CONFIG.lineup）
 

@@ -3058,7 +3058,7 @@ function win(){
   /* ⚠ 劇情版教學：**先演「關門」**（進場那一套的倒放）再上結算（ver -366，Ray 指定）。
      進場是門推上來、打開露出戰場；打完就該把門關回去 —— 沒有這一段，畫面會從戰鬥
      硬切到結算頁。關門的最後一步會上黑透遮罩並把劇情層收掉，才輪到結算。 */
-  if(storyFramed() && storyClose) storyClose(toResult);
+  if((storyFramed() || state.kerbChallenge) && storyClose) storyClose(toResult);   // 挑戰也關門（ver -2225）
   else playTransition('finish', toResult);
 }
 /* ══ 敵人的 NI（ver -1964，米夏；Ray：「米夏 hp 被打到 1 就會發動 15 秒的 NI 開始回血，
@@ -3183,6 +3183,8 @@ function lose(){
   setTimeout(()=>{
     if(app) app.classList.remove('death-freeze');
     SFX.playBgm(asset('bgm_lose'), { volume: bgmVol('bgm_lose') });   // 驅逐失敗插入瞬間 → 任務失敗 BGM
+    /* 挑戰：打完閉棺（ver -2225，Ray）—— 輸了也先關門再上結算，不走「驅逐失敗」過渡禎 */
+    if(state.kerbChallenge && storyClose){ storyClose(()=> inspector.settle(null, null, { isLose:true })); return; }
     playTransition('fail', ()=> inspector.settle(null, null, { isLose:true }));
   }, 1000);
 }
@@ -3614,6 +3616,7 @@ export function killBattleFrame(){
 export function goHome(onCovered, opts){
   fadeTransition(()=>{                        // 回主選單：淡出淡入約 3 秒
     state.over=true; stopAll();
+    state.kerbChallenge=false;                 // 挑戰的槍棺框到此為止（ver -2225）
     /* ⚠⚠ **返回首頁＝殺光所有頁面**（ver -494，Ray 指定）：黑幕全蓋的這一刻把
        飛行 iframe／城鎮／劇情層／整備頁／選單全部收掉再回去 —— 藏起來不算，
        背景還活著的頁面（音、計時器、模擬）都要死。

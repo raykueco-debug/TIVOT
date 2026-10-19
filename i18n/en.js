@@ -228,6 +228,7 @@ export const STRINGS = {
         { who:'partner',   text:'But don’t force a counter. If it feels dangerous, just guard.' },
         { who:'inspector', text:'In that case, I will not be lenient with my evaluation.' },
         { who:'inspector', text:'Each Sub-Weapon has different effects and counter timing. Choose the weapon that best suits your talents.' },
+        { who:'partner',   guide:'wswitch', text:'Switch Sub-Weapons to suit the situation!' },
       ],
       strike: [
         { who:'inspector', text:'Careful!' },

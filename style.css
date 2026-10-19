@@ -2670,6 +2670,8 @@
      讓出左側破防計量表——玩家要看著它點（引導箭頭也指著它） */
   #tutBubble.on{display:block;}
   #tutBubble.clasp-clear{width:min(70%,300px);transform:translateX(-38%);}
+  /* 指切換鈕那一句（guide:'wswitch'）：反過來縮窄左移，讓出右側給往下指的箭（ver -2249） */
+  #tutBubble.ws-clear{width:min(70%,300px);transform:translateX(-62%);}
   /* 台詞關鍵字（聖徒化／Saint Install）：金色粗字（i18n.decorateLine 包 .kw-saint） */
   .kw-saint{color:var(--gold);font-weight:bold;}
   #tutBubble .tut-name{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:4px;}
@@ -2728,7 +2730,8 @@
   #tutGuide .tg-label{margin-top:8px;font-size:13px;letter-spacing:3px;color:var(--gold);
     text-shadow:0 0 8px rgba(212,169,74,.75);animation:tgLabel 1s ease-in-out infinite alternate;}
   /* 點擊閘（指向左緣破防計量表）：標示縮字，置中定位時左緣不出畫面（箭頭保持正對計量表） */
-  #tutGuide.g-down .tg-label{font-size:10px;letter-spacing:1px;}
+  #tutGuide.g-down .tg-label, #tutGuide.g-small .tg-label{font-size:10px;letter-spacing:1px;}
+  #tutGuide.g-small .tg-label{white-space:nowrap;}   /* 鈕貼右緣、容器窄（只有箭寬），不擋的話「點擊切換」會折成兩行 */
   @keyframes tgLabel{from{opacity:.55;}to{opacity:1;}}
 
   /* ══════════════════════════════════════════════════════════════════
@@ -2809,6 +2812,11 @@
   #kerbDoor{position:absolute;left:0;top:0;transform:translateY(0);
     transition:transform 1s cubic-bezier(.5,0,.75,0);}   /* 由緩到急＝像被推上來撞到頂；1s ＝ KERB_T.rise */
   #kerb.rise #kerbDoor{transform:translateY(calc(var(--kerb-rise) * -1));}
+  /* 挑戰的推棺起點（ver -2225）：門連楣藏在畫面下緣之外（--kerb-low 由 story.playKerberosChallenge 量） */
+  #kerb.kerb-low #kerbDoor{transform:translateY(var(--kerb-low,100vh));}
+  /* 從畫面外推上來的那一下改用飛行頁遭遇推棺的曲線（起步快、近頂收慢）；劇情那條「由緩到急」從畫面外起推，
+     前 3/4 秒門都還在畫面外，讀起來像停了一下才衝出來。⚠ 時長仍是 1s ＝ KERB_T.rise（撞擊音峰值對齊撞頂） */
+  #kerb.kerb-lowrise #kerbDoor{transition:transform 1s cubic-bezier(.22,.9,.25,1);}
   /* 門的兩半：同一張圖用 background-position 切，不另外出兩個檔。
      ⚠ background-size 給 200% 是因為每一半只有門的一半寬。 */
   /* ver -2217：門圖含楣（kerberos_gate），兩扇往上延伸到楣的上緣（--kerb-gate-top，負值，layoutKerberos 發佈）。 */

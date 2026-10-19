@@ -3559,7 +3559,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2244';
+const KERB_V='?v=2255';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）
@@ -4030,7 +4030,7 @@ function stopKerberos(){
   if(kerbGear){ try{ kerbGear.stop(120); }catch(e){} kerbGear=null; }
   kerbTimers.forEach(clearTimeout); kerbTimers=[];
   const kb=$('kerb'), st=$('storyStage'), sm=$('kerbSmoke');
-  if(kb) kb.classList.remove('rise','full','unlock','lift','open','glow','kerb-shut');
+  if(kb) kb.classList.remove('rise','full','unlock','lift','open','glow','kerb-shut','kerb-low','kerb-lowrise');
   if(sm) sm.innerHTML='';
   /* ⚠⚠⚠ **`kerb-veil` 一定要一起拔**（ver -903，Ray：「變黑那件事還是沒解決」）：
      它是關棺收尾那一串計時器的第 ④ 步掛上的 **72% 全舞台暗罩**（`#storyStage.kerb-veil::after`），
@@ -4050,6 +4050,17 @@ function playKerberos(onGap, onDone, opts){
   const fromRisen = !!(opts && opts.fromRisen);
   if(!fromRisen) kerbNoPend=false;   // 劇情側自己的門：吊墜照掛（ver -485）
   stopKerberos(); layoutKerberos();
+  /* 挑戰（ver -2225）：起點擺在畫面外的底部（連楣一起藏在下緣之外）。⚠ 要在 stopKerberos 之後擺 —— 它會清掉這兩個 class。 */
+  if(opts && opts.fromLow){
+    const dr=$('kerbDoor');
+    if(dr){
+      const gt=parseFloat(getComputedStyle(kb).getPropertyValue('--kerb-gate-top'))||0;
+      kb.style.setProperty('--kerb-low', Math.max(0, window.innerHeight-(dr.getBoundingClientRect().top+gt)+4)+'px');
+    }
+    kb.classList.add('kerb-instant','kerb-low','kerb-lowrise');
+    void kb.offsetWidth;                       // 起點先落地，下面拿掉 kerb-low 時才有過場
+    kb.classList.remove('kerb-instant');
+  }
   kerbPlaying=true;
   /* ⚠ 槍棺一動，對話框就要**先消失**（Ray 指定，且「以後推槍棺都要這樣處理」）——
      門推上來會蓋掉整個畫面，框留著等於一句台詞被門壓在底下。
@@ -4076,6 +4087,7 @@ function playKerberos(onGap, onDone, opts){
   }else{
     /* ① 撞擊音：立刻播，撞擊峰值（1002ms）正好落在門撞頂那一瞬（rise 也是 1000ms）。 */
     se('pop');
+    kb.classList.remove('kerb-low');                       // 挑戰：從畫面外底部起推（playKerberosChallenge 擺的起點）
     kb.classList.add('rise','full');                     // ① 槍棺上推（楣跟著走）
     /* ⚠ ver -1433：這一場宣告了 `bgmOnRise` ＝曲子**從這一刻**起（見 `riseEarly`）。 */
     if(riseEarly()) riseCue();
@@ -4155,6 +4167,24 @@ export function showKerbGate(geom){
   kb.classList.add('rise','full');
   void kb.offsetWidth;
   kb.classList.remove('kerb-instant');
+}
+/* ══ 挑戰（試玩版）的推棺開戰（ver -2225，Ray：「挑戰按下去推棺，打完閉棺」）══
+   首頁沒有槍棺 ⇒ 門擺在**畫面外的底部**（`kerb-low`，連楣一起藏在下緣之外），
+   接著走劇情戰同一套 `playKerberos`（推到頂撞擊 → 解鎖 → 圓盤 → 開門，鐵律 8）。
+   `onGap`＝門縫要露出戰場的那一刻（呼叫端在那裡開戰）；門全開就收掉劇情層並放行降臨
+   （同劇情戰的 `opened`）。⚠ `kerb-gate`：沒有劇情，對話框／離開鈕／跳段鈕都收掉。 */
+export function playKerberosChallenge(onGap){
+  const st=$('storyStage'), kb=$('kerb');
+  if(!st || !kb){ onGap&&onGap(); return; }
+  stopKerberos();
+  st.classList.add('on','kerb-gate');
+  document.body.classList.add('story-on');
+  playKerberos(onGap, ()=>{
+    kb.classList.remove('kerb-lowrise');
+    st.classList.remove('kerb-gate');
+    close({ keepBgm:true });
+    if(gateOpened) try{ gateOpened(); }catch(_){}
+  }, { fromLow:true });
 }
 export function playKerberosFromRisen(onGap, onDone){
   const st=$('storyStage');

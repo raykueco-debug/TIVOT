@@ -1188,6 +1188,7 @@ function openStep(step){
 function syncBubbleShape(step){
   const b=$('tutBubble');
   if(b) b.classList.toggle('clasp-clear', !!(step && step.key==='dualReady'));
+  if(b && !step) b.classList.remove('ws-clear');   // 段落收尾：逐句的讓位一起撤
 }
 
 /* 對話框的底邊：貼在**敵我血條的上方**，不要蓋住它們（ver -337，Ray 指定）。
@@ -1250,6 +1251,9 @@ function showLine(){
      下一句自動收。⚠ 不與閘門（gate）混用：閘門的箭有自己的生命週期。 */
   if(line.guide && !gate){ showGuide(line.guide); lineGuideOn=true; }
   else if(lineGuideOn){ hideGuide(); lineGuideOn=false; }
+  /* 指切換鈕的那一句：對話框縮窄左移，讓出右側那一欄給由上往下指的箭（ver -2249，
+     Ray：「箭頭由上往下指 對話框縮短避讓」；同 dualReady 的 .clasp-clear，方向相反）。 */
+  { const bw=$('tutBubble'); if(bw) bw.classList.toggle('ws-clear', !gate && line.guide==='wswitch'); }
   /* ⚠⚠ **主角的空白對話框**（`blank:true`，ver -429）：框要出、裡面沒字。
      他沒有立繪也沒有配音，但「他確實開口了」這件事要在畫面上有份量（同 story.js §6.5）。
      ⚠ **不動立繪**：台上的人維持原樣（誰亮誰暗都不變）—— 他不在台上，
@@ -1523,7 +1527,7 @@ function stageSides(){
 function showGuide(type, tone){
   const g=$('tutGuide'); if(!g) return;
   const labels = CFG().guideLabels || {};
-  g.classList.remove('g-down','g-right','g-up','g-red');
+  g.classList.remove('g-down','g-right','g-up','g-red','g-small');
   if(tone==='red') g.classList.add('g-red');
   let x=innerWidth/2, y=innerHeight/2, dir='g-right', label='';
   if(type==='click'){
@@ -1533,9 +1537,13 @@ function showGuide(type, tone){
     x = r.left + r.width/2 + 8;
     y = r.top - 52;
   }else if(type==='wswitch'){
-    // 副武器切換鈕（血條右側的槍圖）上方，箭頭向下指（ver -478，切換教學）
+    /* 副武器切換鈕（血條右側的槍圖）上方，箭頭向下指（ver -478，切換教學）。
+       ⚠ 鈕的正上方是對話框（#tutBubble z-8000）—— 這一句對話框會掛 .ws-clear
+         縮窄左移讓出這一欄（ver -2249），不然箭整支被框蓋掉、只露一個尖角。
+       ⚠ 標示縮字＋不換行（g-down 本來就縮字）：鈕貼右緣，置中會溢出或折行。 */
     const r=$('wpSwitch') ? $('wpSwitch').getBoundingClientRect() : {left:innerWidth-80,top:innerHeight/2,width:60};
     dir='g-down'; label = labels.wswitch || i18nT('點擊切換');
+    g.classList.add('g-small');
     x = r.left + r.width/2;
     y = r.top - 52;
   }else if(type==='threat'){
@@ -1618,7 +1626,7 @@ function endTutorial(){
   stepsLeft=[]; queue=[]; pendingGate=null; gate=null;
   hideGuide();
   const sk=$('tutSkipBtn'); if(sk) sk.classList.remove('on');
-  const bb=$('tutBubble'); if(bb) bb.classList.remove('on','clasp-clear','done');   // 對話框保險收乾淨
+  const bb=$('tutBubble'); if(bb) bb.classList.remove('on','clasp-clear','ws-clear','done');   // 對話框保險收乾淨
 }
 
 /* ============================================================================

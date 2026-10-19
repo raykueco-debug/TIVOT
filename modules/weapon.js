@@ -883,23 +883,21 @@ export function resetToFirst(){
    -481 的手繪 SVG 圖示（WS_ICONS）已退場。 */
 /* 卡面：圓鈕＋類別圖示（ver -481（-893 前用詞）；-465 的 Alpha 槍圖已退場 —— Ray 改要圖示）。
    ⚠ 只有一個類別有槍時整顆藏起來：一顆按了不會變的鈕比沒有還糟。
-   ⚠ **試玩版教學戰不出現**：那一場的裝備是**鎖死的**（forceTutorialLoadout 強制換上
-     機槍），教學正是在教機槍那一串反擊 —— 中途換槍會讓引導與手上的槍對不上。
-     **story 帶起來的教學戰（tutorialStoryRun）要出現**（ver -465，Ray 指定）——
-     本篇的裝備是玩家自己的編成，教學照講、槍隨玩家換。 */
+   ⚠ 試玩版教學戰**也出現**（ver -2249，Ray：「訓練用聖徒副武器不見了 放上去」）——
+     -465 起那一場曾經藏起來（裝備鎖機槍），現在開場仍是機槍，但反擊教學那一段
+     會用 guide:'wswitch' 指著它教「點擊切換副武器」（config.tutorial.steps 的 defended）。 */
 function renderSwitch(){
   const b=$('wpSwitch'); if(!b) return;
   const key = pendingWeapon || state.equippedWeapon;
   const w = WEAPONS[key];
   const has = load.activeCats().length>1;
-  const disp = (w && has && (!state.tutorialRun || state.tutorialStoryRun)) ? '' : 'none';
+  const disp = (w && has) ? '' : 'none';
   /* ⚠ 藏起來的時候留一行原因（ver -1067）：三個條件都可能讓它消失，而畫面上
      看起來一模一樣 —— Ray 回報「某次鹿主戰換武器的按鈕不見了」時，沒有任何
      線索分得出是「只有一類武器」還是「查不到這把槍」。 */
   if(disp==='none' && b.style.display!=='none'){
     console.warn('[wpSwitch] 藏起來：'+(!w?('查不到武器 '+key):'')
-                +(!has?('只有 '+load.activeCats().length+' 個類別有槍'):'')
-                +((state.tutorialRun&&!state.tutorialStoryRun)?'試玩版教學戰':''));
+                +(!has?('只有 '+load.activeCats().length+' 個類別有槍'):''));
   }
   if(b.style.display!==disp){
     b.style.display=disp;
@@ -1026,6 +1024,14 @@ export function refreshLoadoutLabels(){
  *  教學戰開場（combat.startGame 教學分支）強制換上；玩家原選擇暫存，
  *  回主選單（combat.goHome）還原。equippedWeapon/pickedPartner 皆本模組擁有（§3.4）。 */
 let _tutLoadoutStash = null;
+/* ══ 挑戰（試玩版）的固定裝備（ver -2225，Ray：「把挑戰的出擊整備選擇拿掉，默認蕾妮、機槍，不可遊戲內切換伙伴」）══
+   挑戰不再經過出擊整備頁：每次出陣都由這一支換上 config 的預設（蕾妮＋MG_Squall），
+   之前在整備頁選過的也一律蓋掉。⚠ 唯一的入口是 main.js 的 `startChallenge`（鐵律 8）。 */
+export function useChallengeLoadout(){
+  state.equippedWeapon = GAME_CONFIG.defaultWeapon;      // 機槍（MG_Squall）
+  setPickedPartner(GAME_CONFIG.defaultPartner);          // 蕾妮（renee）
+  refreshLoadoutLabels();
+}
 /* `partnerKey`：這一場教學該站誰（ver -1127）。null／不傳＝試玩版的預設蕾妮；
    劇情版教學由 `combat` 傳 `partner.storyPartnerKey()`（本篇的搭檔）進來 ——
    ⚠ 判定留在呼叫端：weapon 不可以 import partner（依賴方向，§2）。 */

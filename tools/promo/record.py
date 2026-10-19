@@ -203,6 +203,12 @@ async def main(name, out, secs):
             # ⚠ 每一格的畫面時間戳記要跟著虛擬時間走（ver -2224）：不給的話 beginFrame 用真實時鐘，
             #   而一格要截 ~70ms ⇒ 拿 rAF 時間戳算步長的地方（飛行頁 loop 的 dt，上限 40ms）每格都走 40ms ＝ 畫面快 2.4 倍。
             ft0 = time.monotonic() * 1000 + 1000
+            # 場景寫 'alpha': True ＝透明背景、存 PNG（ver -2224，Ray：「門要 alpha 通道，像遊戲裡那樣」）
+            ALPHA = bool(sc.get('alpha'))
+            if ALPHA: await cdp.send('Emulation.setDefaultBackgroundColorOverride', {'color':{'r':0,'g':0,'b':0,'a':0}})
+            SHOT = {'format':'png'} if ALPHA else {'format':'jpeg','quality':93}
+            NOSHOT = bool(os.environ.get('PROMO_NOSHOT'))   # 追蹤用：不截圖、不存畫格（只跑邏輯，快很多）
+            EXT = 'png' if ALPHA else 'jpg'
             n = int(secs * FPS); t0 = time.time(); last = None; same = 0
             for i in range(n):
                 pend = []
@@ -212,7 +218,7 @@ async def main(name, out, secs):
                     if 'err' in a: print('[bot]', a['err']); continue
                     if a.get('stop'): stop = True; break
                     if 'key' in a:
-                        k = a['key']; vk = ord(k.upper()) if len(k)==1 else {'Enter':13,' ':32}.get(k,0)
+                        k = a['key']; vk = ord(k.upper()) if len(k)==1 else {'Enter':13,' ':32,'ArrowLeft':37,'ArrowUp':38,'ArrowRight':39,'ArrowDown':40}.get(k,0)
                         ev = {'type':a['type'], 'key':k, 'code':('Key'+k.upper()) if len(k)==1 and k.isalpha() else k, 'windowsVirtualKeyCode':vk}
                         if a['type']=='keyDown' and len(k)==1: ev['text'] = k
                         pend.append(asyncio.ensure_future(cdp.send('Input.dispatchKeyEvent', ev)))
@@ -227,16 +233,20 @@ async def main(name, out, secs):
                 try: await asyncio.wait_for(done.wait(), 20)
                 except asyncio.TimeoutError: print('[stall] budget', i, flush=True); n = i; break
                 r = await asyncio.wait_for(cdp.send('HeadlessExperimental.beginFrame',
-                        {'interval':1000/FPS, 'frameTimeTicks': ft0 + i * 1000/FPS, 'screenshot':{'format':'jpeg','quality':93}}), 20)
+                        {'interval':1000/FPS, 'frameTimeTicks': ft0 + i * 1000/FPS, 'screenshot':({'format':'jpeg','quality':1,'optimizeForSpeed':True} if NOSHOT else SHOT)}), 20)   # ⚠ 不要截圖時 beginFrame 會卡住 ⇒ 截最小的、不存
                 if pend:
                     try: await asyncio.wait_for(asyncio.gather(*pend), 10)
                     except asyncio.TimeoutError: print('[input stall] frame', i)
                 data = r.get('screenshotData')
                 if data: last = base64.b64decode(data)
                 else: same += 1
-                if last:
-                    with open(os.path.join(out, 'f%05d.jpg' % i), 'wb') as f: f.write(last)
+                if last and not NOSHOT:
+                    with open(os.path.join(out, 'f%05d.' % i + EXT), 'wb') as f: f.write(last)
                 if i % 300 == 0: print('frame', i, '/', n, '%.0fs' % (time.time()-t0), 'no-damage frames', same, flush=True)
+            # 挑戰試玩版的追蹤（ver -2225）：PROMO_DUMP＝一段 JS 運算式，跑完把結果存成 <輸出>/dump.json
+            if os.environ.get('PROMO_DUMP'):
+                dv = await pg.evaluate(os.environ['PROMO_DUMP'])
+                open(os.path.join(out, 'dump.json'), 'w', encoding='utf-8').write(dv if isinstance(dv, str) else json.dumps(dv, ensure_ascii=False))
             aud = await pg.evaluate('window.__promoAudio')
             for e in aud:
                 e['t'] = round(e['t'] - t_start, 4)

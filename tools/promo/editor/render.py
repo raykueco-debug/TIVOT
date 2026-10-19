@@ -61,6 +61,8 @@ def resolve_track(clips, fps):
         if c.get('fadeOut'): c['fx'].append(('aout', D - c['fadeOut'], c['fadeOut'], None))
     return cs
 
+FLICKER_HZ, FLICKER_AMT = 16.0, 1.0   # ⚠ = app.js 的 FLICKER_HZ／FLICKER_AMT
+
 def motion_filters(c, W, H, D):
     m = c.get('motion') or {}; typ = m.get('type', 'none'); amt = float(m.get('amt', 0.2) or 0.2)
     fit = c.get('fit', 'cover')
@@ -86,8 +88,11 @@ def motion_filters(c, W, H, D):
     base = ['scale=%d:%d:force_original_aspect_ratio=increase:flags=lanczos' % (W, H), 'crop=%d:%d' % (W, H)]
     if typ in ('zin', 'zout'):
         z = "(1+%f*t/%f)" % (amt, D) if typ == 'zin' else "(1+%f*(1-t/%f))" % (amt, D)
+        # 焦點（ver -2224，Ray：「往角色眼睛放大拉近」）：motion.fx／fy＝畫面上的哪一點不動（0~1，預設正中）。
+        # ⚠ 預覽 app.js 的 drawSrc 是同一套
+        fx = min(1, max(0, float(m.get('fx', 0.5)))); fy = min(1, max(0, float(m.get('fy', 0.5))))
         base += ["scale=w='trunc(%d*%s/2)*2':h='trunc(%d*%s/2)*2':eval=frame" % (W, z, H, z),
-                 "crop=%d:%d:'(iw-ow)/2':'(ih-oh)/2'" % (W, H)]
+                 "crop=%d:%d:'(iw-ow)*%f':'(ih-oh)*%f'" % (W, H, fx, fy)]
     return base
 
 def build(project, root):
@@ -139,6 +144,12 @@ def build(project, root):
                 # 裁切（素材的比例）：先裁再適配／運鏡 —— 預覽 app.js 的 drawSrc 是同一套（ver -2224）
                 chain.append('crop=iw*%f:ih*%f:iw*%f:ih*%f' % (1 - cl - crr, 1 - ct - cb, cl, ct))
             chain += motion_filters(c, W, H, D)
+            if c.get('flicker'):
+                # 閃爍（ver -2224，Ray：「1:30 起畫面閃爍到該影格結束」）：每秒 FLICKER_HZ 次切換，亮的那一拍提亮 FLICKER_AMT
+                # ⚠ 預覽 app.js 的 drawStage 是同一套（FLICKER_HZ／FLICKER_AMT），改一邊要改另一邊
+                # 閃黑（Ray：「閃爍是閃黑不是閃白」）：暗的那一拍亮度與彩度一起壓掉 ⇒ 黑畫面
+                on = 'mod(floor(t*%f),2)' % FLICKER_HZ
+                chain.append("eq=brightness='-%f*%s':saturation='1-%f*%s':eval=frame" % (FLICKER_AMT, on, FLICKER_AMT, on))
             chain += ['setsar=1', 'format=yuva420p']
             for (typ, st, du, col) in c['fx']:
                 du = max(1.0 / FPS, du)

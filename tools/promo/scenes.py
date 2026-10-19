@@ -172,6 +172,18 @@ PACED_TALK_BOT = r"""
 }
 """
 
+# 挑戰試玩版追蹤（ver -2225）：BATTLE_BOT ＋ 教學閘門（→／↑ 方向鍵、點計量表）＋ 結算頁的按鈕（迎擊／繼續）
+# ⚠ 對話層 #tutTouch／引導 #tutGuide 是 position:fixed —— offsetParent 一律是 null，P.visible 判不到，改看 'on' class
+TRACE_BOT = "(i)=>{ const P=window.__promo, S=P.S; " + \
+  "const on=id=>{ const e=document.getElementById(id); return e && e.classList.contains('on') ? e : null; }; " + \
+  "const g=on('tutGuide'); if(g && i>(P.gateAt||0)){ P.gateAt=i+90; " + \
+  "  if(g.className.indexOf('g-right')>=0) return [{key:'ArrowRight',type:'keyDown'},{key:'ArrowRight',type:'keyUp'}]; " + \
+  "  if(g.className.indexOf('g-up')>=0) return [{key:'ArrowUp',type:'keyDown'},{key:'ArrowUp',type:'keyUp'}]; " + \
+  "  const c=document.getElementById('energyClasp'); if(c) return [P.center(c)]; } " + \
+  "if(!g && on('tutTouch')){ if(i>=(P.talkTap||0)){ P.talkTap=i+50; return [{x:216,y:520}]; } return []; } " + \
+  "if(S.over){ const b=P.visible('#rematchBtn'); if(b && i>(P.btnAt||0) && (S.resultMode==='intercept'||S.resultMode==='tutorial-home'||S.resultMode==='sentou-offer')){ P.btnAt=i+240; P.overAt=null; return [P.center(b)]; } } " + \
+  "return (" + BATTLE_BOT + ")(i); }"
+
 SCENES = {
   # 從帝都起飛：升空過場 → 往前 0.5 秒 → 往右前轉彎航行 3 秒（遊戲原速、不加速、免戰）
   'flycap': {
@@ -368,6 +380,95 @@ SCENES = {
       P.combat.startScriptBattle('test_misha');
     """,
     'settle': 0, 'bot': BATTLE_BOT, 'secs': 20,
+  },
+  # 推棺＋開棺（Ray 10-19：PV 1:52 用）—— 黑底，音效全入。走劇情那一支完整的推棺（撞頂→鉚釘→圓盤轉→開門），
+  # 底下不開戰（battleHandler 換成空的），舞台與遊戲畫面全部壓成黑。
+  'kerbopen': {
+    'setup': r"""
+      P.story = await import('./modules/story.js');
+      P.story.setBattleHandler(()=>{});
+      const st = document.createElement('style');
+      // 透明底（Ray 10-19：「不要黑底，門要 alpha 通道」）—— 只留槍棺那一層，其他全部藏掉
+      st.textContent = 'html,body{background:transparent !important}' +
+        '#home,#app{visibility:hidden !important}' +
+        '#storyBg,#storyCg,#storyCg2,#storyCast,#storyBubble,#townInfo,#townNav{visibility:hidden !important}' +
+        '#storyStage{background:transparent !important}';
+      document.head.appendChild(st);
+      // 預熱：門的圖第一次用時才載，正式錄之前先完整跑一次（即時），再收掉舞台
+      await new Promise(r=>P.story.playAdhoc([{ speaker:'NARRATION', text:'', battle:'test_misha' }], ()=>{}) || setTimeout(r, 6500));
+      await P.sleep(6500);
+      try{ P.story.close(); }catch(_){}
+      await P.sleep(800);
+    """,
+    'settle': 500,
+    # 先讓舞台與槍棺（控制盤高度）站好一拍，再推棺 —— 舞台開啟跟推棺同一瞬的話，上推的 CSS 過場會被吃掉（直接跳到頂）
+    'bot': "(i)=>{ const P=window.__promo; if(i===20){ P.story.playAdhoc([{ speaker:'NARRATION', text:'', auto:700 }, { speaker:'NARRATION', text:'', battle:'test_misha' }], ()=>{}); } return []; }",
+    'secs': 7, 'alpha': True,
+  },
+  # 閉棺（Ray 10-19：PV 結尾）：遊戲打完仗收棺那一段（兩扇合上→紋章轉回→箭與鉚釘扣回），透明底；黑透遮罩拿掉
+  'kerbclose': {
+    'setup': r"""
+      P.story = await import('./modules/story.js');
+      P.story.setBattleHandler(()=>{});
+      const st = document.createElement('style');
+      // 透明底（Ray 10-19：「不要黑底，門要 alpha 通道」）—— 只留槍棺那一層，其他全部藏掉
+      st.textContent = 'html,body{background:transparent !important}' +
+        '#home,#app{visibility:hidden !important}' +
+        '#storyBg,#storyCg,#storyCg2,#storyCast,#storyBubble,#townInfo,#townNav{visibility:hidden !important}' +
+        '#storyStage{background:transparent !important}' + '#storyStage.kerb-veil::after{display:none !important}';
+      document.head.appendChild(st);
+      // 預熱：門的圖第一次用時才載，正式錄之前先完整跑一次（即時），再收掉舞台
+      await new Promise(r=>P.story.playAdhoc([{ speaker:'NARRATION', text:'', battle:'test_misha' }], ()=>{}) || setTimeout(r, 6500));
+      await P.sleep(6500);
+      try{ P.story.close(); }catch(_){}
+      await P.sleep(800);
+    """,
+    'settle': 500,
+    # 先讓舞台與槍棺（控制盤高度）站好一拍，再推棺 —— 舞台開啟跟推棺同一瞬的話，上推的 CSS 過場會被吃掉（直接跳到頂）
+    'bot': "(i)=>{ const P=window.__promo; if(i===20){ P.story.playKerberosClose(()=>{}); } return []; }",
+    'secs': 4.5, 'alpha': True,
+  },
+  # 同 kerbopen，但把紋章藏起來：拍門板本身（紋章底下的圓形凹槽）給合成開門用
+  'kerbdoor': {
+    'setup': r"""
+      P.story = await import('./modules/story.js');
+      P.story.setBattleHandler(()=>{});
+      const st = document.createElement('style');
+      // 透明底（Ray 10-19：「不要黑底，門要 alpha 通道」）—— 只留槍棺那一層，其他全部藏掉
+      st.textContent = 'html,body{background:transparent !important}' +
+        '#home,#app{visibility:hidden !important}' +
+        '#storyBg,#storyCg,#storyCg2,#storyCast,#storyBubble,#townInfo,#townNav{visibility:hidden !important}' +
+        '#storyStage{background:transparent !important}' + '#kerbPlate,#kerbGlow{visibility:hidden !important}';
+      document.head.appendChild(st);
+      // 預熱：門的圖第一次用時才載，正式錄之前先完整跑一次（即時），再收掉舞台
+      await new Promise(r=>P.story.playAdhoc([{ speaker:'NARRATION', text:'', battle:'test_misha' }], ()=>{}) || setTimeout(r, 6500));
+      await P.sleep(6500);
+      try{ P.story.close(); }catch(_){}
+      await P.sleep(800);
+    """,
+    'settle': 500,
+    # 先讓舞台與槍棺（控制盤高度）站好一拍，再推棺 —— 舞台開啟跟推棺同一瞬的話，上推的 CSS 過場會被吃掉（直接跳到頂）
+    'bot': "(i)=>{ const P=window.__promo; if(i===20){ P.story.playAdhoc([{ speaker:'NARRATION', text:'', auto:700 }, { speaker:'NARRATION', text:'', battle:'test_misha' }], ()=>{}); } return []; }",
+    'secs': 2.6, 'alpha': True,
+  },
+  # 挑戰試玩版追蹤（ver -2225）：trace.html 上實際跑教學／挑戰（含亂入），PROMO_DUMP 取回讀到的 config／素材
+  'trace_tut': {
+    'storage': "localStorage.removeItem('tivot.tutorialSeen.v1');",
+    'setup': r"""
+      for(const id of ['creditBtn','creditClose','originalBtn','originalClose']){ const b=document.getElementById(id); if(b) b.click(); await P.sleep(300); }
+      document.getElementById('startBtn').click();
+      P.cfg = { gap:7 }; P.tail = 400;
+    """,
+    'settle': 1500, 'bot': TRACE_BOT, 'secs': 240,
+  },
+  'trace_chal': {
+    'storage': "localStorage.setItem('tivot.tutorialSeen.v1','1');",
+    'setup': r"""
+      P.cfgMod.GAME_CONFIG.intruder.condition = { maxTime: 99999, noDamage: false };   // 一定觸發亂入（只為了追蹤讀到哪些素材）
+      document.getElementById('startBtn').click();
+      P.cfg = { gap:7, saintAt:0.6, dual:true, activeAt:200 }; P.tail = 400;
+    """,
+    'settle': 1500, 'bot': TRACE_BOT, 'secs': 300,
   },
   # 第一章出航前的港口對話（Ray 10-18）：Stage 1 跳關 → 旅店那段快點過去 → 船塢「28號碼頭…」起照閱讀速度演到出航
   'harbor': {

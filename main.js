@@ -1305,13 +1305,21 @@ function closePrep(){
   clearTimeout(prepCloseTimer);
   prepCloseTimer=setTimeout(()=>{ if(!s.classList.contains('vis')) s.classList.remove('on'); }, 420);
 }
-bindBtn('startBtn', ()=>{
-  // 首次出陣（未看過教學）：跳過整備頁直接進教學——裝備固定預設，整備此時無意義
-  if(tutorial.isFirstRun()){ launchBattle(); return; }
-  openPrep();
-});
-// 教學「跳過」確認按「是」的去向：轉進出擊整備頁（openPrep 內播 SI_01）
-tutorial.setMenuApi({ openPrep });
+/* ══ 挑戰出陣（ver -2225，Ray：「把挑戰的出擊整備選擇拿掉，默認蕾妮、機槍，不可遊戲內切換伙伴」）══
+   不再開出擊整備頁（那一頁是挑戰唯一能換搭檔／副武器的地方）：固定裝備直接開戰。
+   ⚠ 挑戰的出陣只走這一支（首頁「挑戰」、教學「跳過」都叫它，鐵律 8）。
+   ⚠ `openPrep` 留著不刪（`opts.story` 那一支是本篇的整備；現在沒有入口叫它，見那支的說明）。 */
+function startChallenge(){
+  weapon.useChallengeLoadout();
+  /* 推棺開戰（ver -2225，Ray：「挑戰按下去推棺，打完閉棺」）：門從畫面底部推上來，開門那一刻在門後開戰
+     （同劇情戰：`instant` ＝不播櫻花過渡禎）；打完由 combat 看 `kerbChallenge` 關門再結算。
+     首次出陣（未看過教學）照舊進教學 —— 教學那一段自己會換上固定裝備。 */
+  state.kerbChallenge = true;
+  story.playKerberosChallenge(()=> launchBattle({ instant:true }));
+}
+bindBtn('startBtn', startChallenge);
+// 教學「跳過」確認按「是」的去向：原本轉進出擊整備頁，整備頁拿掉後直接開戰（同首頁「挑戰」）
+tutorial.setMenuApi({ openPrep: startChallenge });
 bindBtn('prepBack', closePrep);
 /* ⚠ 本篇的整備頁按下去只是**關掉**（那裡不是出陣口）—— 這一顆是同一個 DOM，
    所以行為要看 `prepStoryMode`，不要另做一顆鈕（鐵律 8）。 */

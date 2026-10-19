@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.19-2244';
+export const VERSION = 'ver 2026.10.19-2255';
 
 export const GAME_CONFIG = {
 
@@ -1983,6 +1983,8 @@ export const GAME_CONFIG = {
         { who:'partner',   text:i18nT('不過別勉強反擊，覺得危險的話，防下來就好。') },
         { who:'inspector', text:i18nT('那樣的話，我的評價可不會留情。') },
         { who:'inspector', text:i18nT('不同副武器的效果與反擊時機各不相同。選擇能發揮自己天賦的武器吧。') },
+        // ver -2249（Ray：「反擊教學加一句指標 以及對白教學 點擊切換副武器」）
+        { who:'partner', guide:'wswitch', text:i18nT('依戰況切換副武器吧！') },
       ]},
       // 第四回合：玩家清滿 strike.afterCells 格後觸發（收段後劇情殺三連擊 → 聖徒化引導）
       { trigger:'strike', lines:[
