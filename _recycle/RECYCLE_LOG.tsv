@@ -1226,3 +1226,4 @@ when	from	to	reason
 20261018-200304	flight/silvermoon_terrain.png	_recycle/flight/silvermoon_terrain.png.20261018-200304	孤舟島造島前的地形（build_loneisle.py 會覆蓋）
 20261018-201220	flight/_src/terrain/loneisle_before_h.png	_recycle/flight/_src/terrain/loneisle_before_h.png	孤舟島放大，舊的 81×81 原狀快照改存更大的範圍
 20261018-201220	flight/_src/terrain/loneisle_before_t.png	_recycle/flight/_src/terrain/loneisle_before_t.png	孤舟島放大，舊的 81×81 原狀快照改存更大的範圍
+20261019-151309	PV/illustration/30_torstandup_cam_v1.mp4	_recycle/PV/illustration/30_torstandup_cam_v1.mp4	Ray 10-19：v1（有血沫）由 v2 取代，回收
