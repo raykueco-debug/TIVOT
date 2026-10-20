@@ -1229,3 +1229,8 @@ when	from	to	reason
 20261019-151309	PV/illustration/30_torstandup_cam_v1.mp4	_recycle/PV/illustration/30_torstandup_cam_v1.mp4	Ray 10-19：v1（有血沫）由 v2 取代，回收
 20261019-223439	PV/illustration/judiaintro_v1.mp4	_recycle/PV/illustration/judiaintro_v1.mp4	Ray 10-19：judiaintro v1（VACE 原片）由 v2 取代，回收
 20261019-223443	HANDOFF.md	_recycle/HANDOFF.md.20261019-223443	交接換新（10-19 收工，舊的 -2166 那一份）
+20261020-104416	sw.js	_recycle/sw.js	ver -2256 已由另一 session 做出同一套離線包，這份重複
+20261020-104416	offline.html	_recycle/offline.html	ver -2256 已由另一 session 做出同一套離線包，這份重複
+20261020-104416	offline.webmanifest	_recycle/offline.webmanifest	ver -2256 已由另一 session 做出同一套離線包，這份重複
+20261020-104416	offline_manifest.json	_recycle/offline_manifest.json	ver -2256 已由另一 session 做出同一套離線包，這份重複
+20261020-104416	tools/offline_manifest.py	_recycle/tools/offline_manifest.py	ver -2256 已由另一 session 做出同一套離線包，這份重複
