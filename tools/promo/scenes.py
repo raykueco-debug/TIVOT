@@ -351,6 +351,30 @@ SCENES = {
     """,
     'settle': 300, 'bot': BATTLE_BOT, 'secs': 30,
   },
+  # 單錄一張 CI（Ray 10-20：「edt 中的 nireload 跟 nouvelle saint v1 換成遊戲中的畫面 要有技能字樣」）
+  #   開打、壓住敵人出手，第 60 格（1 秒）走遊戲本身的觸發：諾薇兒＝聖徒化降臨、安雅＝首次反擊的明晰之夢。
+  'ci_nou': {
+    'setup': r"""
+      P.withPartner('test_misha', 'nouvelle');
+      P.S.battleBg = 'holyseedungeonwhole';
+      P.combat.startScriptBattle('test_misha');
+      await P.boardReady();
+    """,
+    'settle': 300,
+    'bot': "(i)=>{ const P=window.__promo; P.S.enemyAtkSuppressUntil=Date.now()+60000; if(i===60) P.saint.activateSaint('right'); return []; }",
+    'secs': 4.5,
+  },
+  'ci_anya': {
+    'setup': r"""
+      P.withPartner('test_misha', 'anya');
+      P.S.battleBg = 'canyon_bones_dusk';
+      P.combat.startScriptBattle('test_misha');
+      await P.boardReady();
+    """,
+    'settle': 300,
+    'bot': "(i)=>{ const P=window.__promo; P.S.enemyAtkSuppressUntil=Date.now()+60000; if(i===60) P.partner.onCounter(); return []; }",
+    'secs': 4.5,
+  },
   # 鹿主戰（櫻花狂亂）
   'deer': {
     'setup': r"""
