@@ -259,6 +259,13 @@ export function open(opts){
           + i18nT('<div class="gm-note">存檔＝管理人專用的**獨立**一格（與玩家的存檔互不影響），')
           + i18nT('在首頁用「讀檔」讀回來。</div>')
         : '')
+      /* 離線包（ver -2257，Ray：「下載更新都收進選單」）：只有主畫面 App 才有
+         （offline.js 掛 window.__tivotOffline），下載與檢查更新是同一顆鈕。 */
+      + (window.__tivotOffline
+          ? '<div class="gm-sec">離線包</div>'
+            + '<div class="gm-acts"><button class="gm-btn" id="gmOffline" type="button"></button></div>'
+            + '<div class="gm-note">下載後沒網路也能玩。下載中螢幕不要鎖；中斷了再按一次會接著下。</div>'
+          : '')
       + '<div class="gm-acts">'
       +   (o.onHome ? i18nT('<button class="gm-btn gm-home" type="button">回到主選單</button>') : '')
       + '</div>';
@@ -274,6 +281,14 @@ export function open(opts){
       if(layer!=='bgm') el.addEventListener('change', ()=>{ try{ SFX.menuClick(); }catch(_){} });
     };
     bind('gmBgm','bgm'); bind('gmSe','se'); bind('gmVo','vo');
+    { const ob=panel.querySelector('#gmOffline'), OL=window.__tivotOffline;
+      if(ob && OL){
+        ob.textContent = OL.busy() ? '下載中…' : OL.label();
+        ob.addEventListener('click', e=>{ e.stopPropagation();
+          try{ SFX.menuClick(); }catch(_){}
+          OL.run(t=>{ if(ob.isConnected) ob.textContent=t; });
+        });
+      } }
     const mu=panel.querySelector('#gmMute');
     if(mu) mu.addEventListener('click', e=>{ e.stopPropagation();
       const on=muteHook.toggle();                       // 切完回讀真相（鑰匙在 main 那邊）
