@@ -361,7 +361,7 @@ SCENES = {
       await P.boardReady();
     """,
     'settle': 300,
-    'bot': "(i)=>{ const P=window.__promo; P.S.enemyAtkSuppressUntil=Date.now()+60000; if(i===60) P.saint.activateSaint('right'); return []; }",
+    'bot': "(i)=>{ const P=window.__promo; P.S.enemyAtkSuppressUntil=Date.now()+60000; if(i===58) P.S.playerHp=Math.ceil(P.S.playerMax*0.3); if(i===60) P.saint.activateSaint('right'); return []; }",   # 血壓低：滿血發動倒數槽一推就滿＝立刻 OBE
     'secs': 4.5,
   },
   'ci_anya': {
@@ -374,6 +374,23 @@ SCENES = {
     'settle': 300,
     'bot': "(i)=>{ const P=window.__promo; P.S.enemyAtkSuppressUntil=Date.now()+60000; if(i===60) P.partner.onCounter(); return []; }",
     'secs': 4.5,
+  },
+  # 只渲染 CI 的技能字樣（透明底），疊回 CI 動畫原檔用（Ray 10-20：「只要技能動畫跟技能名有出就好」）
+  #   字串從環境變數 PROMO_LABEL 帶（遊戲 playCutin 的 label 同格式：主字<span class="cutin-en">副標</span>）
+  'ci_label': {
+    'setup': r"""
+      const st=document.createElement('style');
+      st.textContent='*{visibility:hidden!important;animation:none!important;transition:none!important}'
+        +'html{background:'+(__BG__)+'!important;visibility:visible!important}body,#app{background:transparent!important}'
+        +'#cutin,#cutin *{visibility:visible!important}'
+        +'#cutin{display:block!important;background:transparent!important;opacity:1!important}'
+        +'#cutin::before,#cutin::after{display:none!important}'
+        +'#cutinImg,#cutin .ci-vid,#cutin canvas,#cutin video,#cutinStreak{display:none!important}'
+        +'#cutinText{opacity:1!important}';
+      document.head.appendChild(st);
+      document.getElementById('cutinText').innerHTML = __LABEL__;
+    """.replace('__LABEL__', __import__('json').dumps(__import__('os').environ.get('PROMO_LABEL', ''))).replace('__BG__', __import__('json').dumps(__import__('os').environ.get('PROMO_BG', '#000'))),   # 黑白各渲一次再反推 alpha（截圖拿不到真透明）
+    'settle': 500, 'secs': 0.1, 'alpha': True,
   },
   # 鹿主戰（櫻花狂亂）
   'deer': {
