@@ -460,6 +460,10 @@ function resolveOne(th, ratio, w){
        但呼叫端的介面不變（`onThreatResolved(grade, realGrade)`）。 */
   const atkStep  = (api.counterAtkStep ? (api.counterAtkStep()|0) : 0);
   const hitForce = !!(api.counterHitForced && api.counterHitForced());
+  /* ══ 索菈娜：任何顏色的圈都反擊、命中 100%（ver -2258，Ray：「索拉娜不論什麼反擊圈色都要出手，100%反擊」）══
+     搭檔卡上的 `counterAll:true`（鐵律 1）。只動「開不開火」與「命中」—— 判定（grade）、減傷（take）照舊，
+     所以**不是**無敵（不走 `hitForce`：那一條會把 take 歸零、還會收安雅的霸王條款費）。 */
+  const counterAll = !!(((GAME_CONFIG.partners||{})[state.pickedPartner])||{}).counterAll;
   /* 這一發反擊要用哪一組數值。`nat` ＝判定那一帶卡上的設定、`natHit` ＝它原本的命中。
      ⚠ **不改變「開不開火」**：呼叫端只在 `bands[帶].counter` 為真時才叫這一支 ——
        萊福槍的黃橘圈卡上沒有 `counter`，抬攻擊力也不會讓它開火（那是那一把槍的
@@ -471,7 +475,7 @@ function resolveOne(th, ratio, w){
      ⚠ 回傳多一格 `opt`（`{crit}`／`{mul}`），交給 `weaponCounter` 的第 5 個參數。 */
   const fireArgs = (nat, natHit, base)=>{
     const lv = Math.min(4, (base|0) + atkStep);
-    const hit = hitForce ? 1 : natHit;
+    const hit = (hitForce || counterAll) ? 1 : natHit;
     if(lv>=2){
       const opt = lv===3 ? { crit:true } : (lv===4 ? { mul:2 } : undefined);
       return { scale:undefined, hit:undefined, roll:undefined, opt };   // 階 2 以上＝紅圈的整組參數（命中 1，同 -974 的階 2）
@@ -575,6 +579,7 @@ function resolveOne(th, ratio, w){
        會反擊就開火（帶這一帶的傷害與命中率），不反擊就照 `take` 決定挨多少。
        ⚠ 反擊那一支的音由 `weaponCounter` 的武器 SE 出聲，這裡不再疊合成重擊音。 */
     const bp = weaponBand(w, 'perfect');
+    if(counterAll) bp.counter = true;
     api.floatDmg(L.battle.perfect,'50%','40%',true);
     let bpFired = false;
     if(bp.counter && canFire()){
@@ -610,6 +615,7 @@ function resolveOne(th, ratio, w){
          saintMode 分支（唯一入口），這裡只把「格擋＝+0.5s」的推進量交給它
          （舊規矩不變：擋下是半格推進，不看 take 折了多少）。 */
       const bb = weaponBand(w, 'block');
+      if(counterAll) bb.counter = true;
       let bbFired = false;
       api.floatDmg(L.battle.block,'50%','42%',false);
       if(bb.counter){

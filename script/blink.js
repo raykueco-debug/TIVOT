@@ -241,7 +241,6 @@ export const BLINK = {
   "npc_imcommander_si_shock": {"half":[620,141,117,103],"closed":[620,141,117,103],"base":"68f41944"},
   "npc_imcommander_si_surprise": {"half":[439,110,99,52],"closed":[440,110,98,52],"base":"07f57f16"},
   "npc_imcommander_si_urgent": {"half":[581,139,91,134],"closed":[582,138,90,135],"base":"c533ba58"},
-  "npc_imsoldier_si_awe": {"half":[388,124,113,103],"closed":[388,124,113,104],"base":"7047dcc2"},
   "npc_imsoldier_si_doubt": {"half":[569,147,138,95],"closed":[569,146,138,96],"base":"5c641f16"},
   "npc_imsoldier_si_front": {"half":[428,134,112,57],"closed":[428,134,112,56],"base":"ee8bd3f0"},
   "npc_imsoldier_si_panic": {"half":[337,132,113,70],"closed":[337,132,113,70],"base":"d16f7af6"},

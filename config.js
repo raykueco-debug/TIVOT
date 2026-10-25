@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.20-2257';
+export const VERSION = 'ver 2026.10.25-2259';
 
 export const GAME_CONFIG = {
 
@@ -734,7 +734,9 @@ export const GAME_CONFIG = {
          「帶她出場要付什麼代價」由劇情或蕾娜的結算評價講。
          ⚠ 所以看到 `install`／`passive`／`active` 的 desc 沒提它**不是漏寫**，
            不要好心補進去。 */
-      counterHit:{ mul:0.5, except:['萊福槍'], bandMul:{ block:0.7, perfect:0.7 } },
+      /* ⚠ ver -2258（Ray：「索拉娜不論什麼反擊圈色都要出手，100%反擊」）：命中減半那條（counterHit）拿掉，
+         改成 `counterAll` —— 黃／橘／紅三帶一律反擊、命中 100%（defense.resolveThreat 讀）。 */
+      counterAll:true,
       /* ══ 難度加成（ver -805 立；**-935 由 Ray 調高**）══ 共鬥的無敵讓她好打，
          評價就要更嚴 —— `inspector.evaluate` 把它加在全域 `timeK` 上（鐵律 1）。
          ⚠⚠ Ray -935：「索拉娜搭檔**評價係數給到 650**」—— 那是**加完之後的值**：
@@ -3520,7 +3522,10 @@ export const GAME_CONFIG = {
       '31-2_rennaprincesshold': { video:'resources/illustration/video/31-2_rennaprincesshold_v1.mp4' },
       '038_mishasting': { video:'resources/illustration/video/038_mishasting_v2.mp4' },
       '043_eliointro': { video:'resources/illustration/video/043_eliointro_v1.mp4', loop:true },
-      '044_soranahug': { video:'resources/illustration/video/044_soranahug_v2.mp4' },
+      '044_soranahug': { video:'resources/illustration/video/044_soranahug_v3.mp4' },   // ver -2258：v2 → v3（Ray：「Soranahug 要接新檔」）
+      /* ver -2258（Ray：「蕾娜 intro 動畫沒接上」「蕾娜抱安雅動畫沒接上」，動畫 10-18 交件）。 */
+      '004_renna_intro': { video:'resources/illustration/video/004_renna_intro_v1.mp4' },
+      '008_rennaholdanya': { video:'resources/illustration/video/008_rennaholdanya_v1.mp4' },
       /* ver -2184（動畫 10-14 交件）。35／044 首尾構圖可接 ⇒ 循環（044 那一拍之後還有台詞與轉泛黃，插圖要撐到淡出）。 */
       '003_lunaria_armed': { video:'resources/illustration/video/003_lunaria_armed_v1.mp4' },
       '005_cecilieintro': { video:'resources/illustration/video/005_cecilieintro_v1.mp4' },
@@ -5352,7 +5357,10 @@ export function installCiKey(pk, story){
    weapon.activateDual 播它、partnerCiKeys 把它排進預熱 —— 只有這一處判定（鐵律 7）。 */
 export function dualCiKey(story){ return story ? 'cutin_dual_torsten' : 'cutin_saint'; }
 export function partnerCiKeys(pk, story){
-  const pc=(GAME_CONFIG.partners||{})[pk]; if(!pc) return [];
+  const pc=(GAME_CONFIG.partners||{})[pk];
+  /* ⚠ 沒有搭檔（solo 戰／諾薇兒不在隊上）也要暖破防 CI（ver -2258，Ray：「無夥伴時 br 不跑動畫是錯的」）——
+     以前這裡直接回空陣列，BR 的影片從來沒被預熱，`playCiAnim` 只好退成靜態圖。 */
+  if(!pc) return story ? [dualCiKey(story), 'cutin_exc_torsten'] : [dualCiKey(story)];
   const out=[], add=k=>{ if(typeof k==='string' && k && out.indexOf(k)<0) out.push(k); };
   const walk=o=>{ if(!o || typeof o!=='object') return;
     for(const f in o){ const v=o[f];
@@ -6558,6 +6566,7 @@ export const ASSET_VER = {
   'rennasorana_si_annoyedc_half': '8b73acc5',
   'rennasorana_si_annoyedd_closed': '8aaead36',
   'rennasorana_si_annoyedd_half': '3a63b8ef',
+  'ruins_shinier_antechamber_day': 'dbc98796',
   'ruins_shinier_deepspring': '20609f66',
   'saint_gt_ci': '2c191ece',
   'saint_tr_ci': '1f885777',

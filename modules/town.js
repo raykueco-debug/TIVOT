@@ -4301,11 +4301,16 @@ function go(to, dir){
      ⚠ 兩種鑰匙**同一支判定**（鐵律 8）：方向優先，沒有才問目的地。
      ⚠ 照舊只認**玩家按方向**（有 `dir`）：`forceGo`／內部轉場不帶 `dir`，不受鎖擋。 */
   const nlk=node();
-  if(dir && nlk && nlk.lock && (nlk.lock[dir] || nlk.lock[to])){
-    const L=nlk.lock[dir] || nlk.lock[to];
+  /* 一個方向可以掛**一串**鎖（陣列，ver -2258）：由上往下取第一個成立的（同 `sail.hold`）——
+     同一扇門在不同時期擋的理由不一樣（東泊驛站：初訪一段、追髮飾那一夜另一段）。 */
+  const lockOn = L => (!L.need || prog.hasFlag(L.need)) && !(L.until && prog.hasFlag(L.until)) && !(L.skipIf && prog.hasFlag(L.skipIf));
+  const lockRaw = dir && nlk && nlk.lock && (nlk.lock[dir] || nlk.lock[to]);
+  const lockHit = lockRaw && (Array.isArray(lockRaw) ? lockRaw.find(lockOn) : (lockOn(lockRaw) ? lockRaw : null));
+  if(lockHit){
+    const L=lockHit;
     /* `skipIf`（ver -1727）＝這支旗立了這道鎖就**不存在**（同 `stageGate` 的 `skipIf`／`QUEST_LOCK` 的 `unless`）：
        鎖的前提被別條路作廢時用它 —— 東泊守夜那道鎖在 AB 順序（`tomb_misha_met`）沒有那一夜。 */
-    if((!L.need || prog.hasFlag(L.need)) && !(L.until && prog.hasFlag(L.until)) && !(L.skipIf && prog.hasFlag(L.skipIf))){
+    {
       /* ⚠⚠ **擋下來的時候可以演一段**（ver -1433，Ray：「把南門驛站出口封起來：
          索：『喂！開船去比較快啦！』confused」）—— 帶 `lines` 就走**同一支**
          `playAdhoc`（立繪取景、明暗、打字機全部沿用，鐵律 8）；沒帶就照舊
@@ -4318,7 +4323,12 @@ function go(to, dir){
         if(chatterOn){ story.hideBubble(); chatterOn=false; }
         const play=L.lines.map((l,i)=> (i===0 && l && l.delay==null)
           ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
-        story.playAdhoc(play, ()=>{ story.clearCast(); busy=false; showNav(true); },
+        /* `goto`（ver -2258，Ray：「諾的餓扁台詞一旦出村就要觸發 強制移轉至餐廳」）＝演完不留在原地，
+           強制移到那一格（`forceGo`，同閘門那一支，鐵律 8）；`flag`＝演完插上（鎖的 `until` 可以指它）。 */
+        story.playAdhoc(play, ()=>{ story.clearCast();
+                          if(L.flag) prog.addFlags([L.flag]);
+                          if(L.goto){ forceGo(L.goto); return; }
+                          busy=false; showNav(true); },
                         { sides:L.sides });
         return;
       }

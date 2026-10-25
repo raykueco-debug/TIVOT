@@ -3416,6 +3416,10 @@ function fireOneShot(line){
      演出本身的長度（白光起點＋長成）取大者 —— 長度的真相在那組常數上，不抄秒數。 */
   if(line.fx==='sense' || line.fx==='senseDud')
     noSkipUntil = Math.max(noSkipUntil, Date.now() + Math.max(line.auto|0, SENSE_BURST_AT + SENSE_BURST_GROW));
+  /* ══ 慢黑幕沒蓋滿之前點擊不推進（ver -2258，Ray：「夢境一要完全黑幕以後才更換背景」）══
+     `fadeOut:3000` 那一拍點一下就跳到下一拍 ⇒ 下一拍的 `bg`／`bgBand` 在半黑的時候就換上去，看得到換圖。
+     規矩寫在引擎（鐵律 8）：任何帶 `fadeOut` 的拍子，保護期＝黑幕的長度（真相是拍上那個毫秒數，鐵律 7）。 */
+  if(line.fadeOut>1) noSkipUntil = Math.max(noSkipUntil, Date.now() + (line.fadeOut|0));
   if(line.checkpoint && !replaying) lineCheckpoint();   // 腳本上的存檔點（ver -653，見 lineCheckpoint）
   if(line.vibrate) hap.shake();
   /* ══⚠⚠ **持續震動**（ver -638，Ray：「蕾娜的！！之前的畫面震動要持續 10 秒，
@@ -3559,7 +3563,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2257';
+const KERB_V='?v=2259';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）

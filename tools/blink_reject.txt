@@ -155,3 +155,4 @@ npc_ss_loti_sad  # 待修E：大眼睛，眼皮拉伸成方塊、睫毛階梯鋸
 misha_si_closeopen  # 不適用：Ray 10-04「不需要做眨眼」
 nemo_si_bye  # 不適用：Ray 10-04「不用眨眼」
 
+npc_imsoldier_si_awe  # 不適用：Ray 10-25「夢二士兵驚訝圖移除眨眼」（只閉一隻眼）

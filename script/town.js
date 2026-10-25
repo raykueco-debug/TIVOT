@@ -2099,7 +2099,7 @@ export const TOWNS = {
           gun(null,'又想活動筋骨了？靶就在那兒。', { portrait:{ char:'GUNSMITH', show:true } }),
           /* ⚠ 同上：三十秒＝`prizeSec`，獎品＝`prize`。獎品只給一次（已持有就不再發，
              見 `modules/inspector.js` 的 `scriptSettle`），所以這一句寫成「還在檯面上」。 */
-          gun(null,'三十秒。破得了，「龍息」歸你。'),
+          gun(null,'三十秒。破得了，「龍息」歸你。', { skipIf:'got_Shotgun_Dragon' }),   // ver -2258：拿過就不再提獎品（Ray：重複挑戰不要有升階提示）
           { battle:'range_trainee', onLose:'retry_lose' },
           gun(null,'漂亮。這才是我想看的手。'),
           { goto:'retry_end' },
@@ -3628,11 +3628,7 @@ export const TOWNS = {
          —— 上面那段註解說的「就再也不成立」是錯的，它只是**沒有地方走六步**。
          -1093 讓科爾文那一段演完就開放自由探索之後，六步湊得出來了，於是它在
          Stage9 又演了一次。飯都吃過了就該退休，這才是它真正的終點。 */
-      { flag:'sv_s8_hungry', need:'sv_s8_home', skipIf:'sv_s8_dine', afterMoves:6,
-        goto:'restaurant', enterAgain:true,
-        lines:[ Object.assign(nou('hungry',''), { se:'se_tummy' }),
-                sor('surprise','哇！別亂逛了，諾薇兒快餓扁啦！'),
-                nou('lookaway','') ] },
+      /* ⚠ ver -2258：「快餓扁啦」改成**一往村外走就觸發**（Ray），搬到野外那一格的 `lock`（見 nodes.wild）。 */
       /* ══ Stage 8：餐廳那一段演完 → 換場到索菈娜家（稿上的「索菈娜家。」）══
          ⚠ 沒有台詞 ＝ 直接淡入淡出搬過去（`forceGo`），第三段的 acts 接手。
          ⚠ `clockGate()` 在**對白演完之後**才判（見 town.js 的 runArrival），
@@ -3657,7 +3653,9 @@ export const TOWNS = {
              （鐵律 9：答得出誰插的才是旗；那一段演完就是它）。
            ⚠ `flag:'shinier_leave_ok'`（修舵那一段立）照舊 —— 窗口內仍然是它說了算，
              日後 Ray 的修舵稿到了就是正規的解法。 */
-        sail:{ flag:'shinier_leave_ok', blockFrom:4, blockUntil:'sr_altar', blocked:[
+        /* ⚠ ver -2258（Ray：「夏爾村任務中不可出航，到柯爾文事件後才可以出航」）：解除點由 `sr_altar` 延到 `sv_s8_corvin`
+           （索菈娜家那一段科爾文來訪演完）。 */
+        sail:{ flag:'shinier_leave_ok', blockFrom:4, blockUntil:'sv_s8_corvin', blocked:[
           { speaker:'NARRATION', text:'（舵還沒修好，現在還離不開夏爾村。）' } ] },
         /* ══ 抵達（ver -772，Ray 交稿）══ 湖上甲板 thenTown 進來的第一段。
            站位：索菈娜／安雅本位右，蕾娜整幕改左（同湖上甲板，§6.5）。
@@ -3803,6 +3801,13 @@ export const TOWNS = {
          往上走就換到 shinier_forest 那張圖（跨地圖出口，modules/town.js 的 @ 語法）。 */
       wild:     { bg:'shinier_wilds',    name:'夏爾村　野外',
         exits:{ back:'west', up:'@shinier_forest' },
+        /* ══ 餓扁（ver -2258，Ray：「諾的餓扁台詞一旦出村就要觸發 強制移轉至餐廳」）══
+           S8 回到夏爾村（`sv_s8_home`）之後、餐廳那一段（`sv_s8_dine`）之前，往森林走就被拉去餐廳。
+           ⚠ 村子另一個出口（廣場出航）這段期間本來就鎖著（`sail.blockUntil:'sv_s8_corvin'`）。 */
+        lock:{ '@shinier_forest':{ need:'sv_s8_home', until:'sv_s8_dine', flag:'sv_s8_hungry', goto:'restaurant',
+          lines:[ Object.assign(nou('hungry',''), { se:'se_tummy' }),
+                  sor('surprise','哇！別亂逛了，諾薇兒快餓扁啦！'),
+                  nou('lookaway','') ] } },
         /* ══ 圍城的**收尾格**（ver -802，Ray：「打到野外為止，野外也開放進入」）══
            `sv_wild`＝熊骸（`sessionEnd`＝打贏它才閉棺、資源回滿、結算）。
            `safehouse:true`＝這一段演完（＝打贏）插上 `safehouse_shinier`，`siegeOn()`
@@ -4587,7 +4592,9 @@ export const TOWNS = {
            ⚠ `flag:'got_ship'` 同其他城：船還沒到手就不給（那是一去不回的前置）。 */
         /* ⚠ `fromStage:8`（ver -2241，Ray：「神殿攻略完成才會開 用stage分」）：神殿收尾（deepaltar 的 sr_altar）演完
              被帶回夏爾村、`sv_s8_home` 第一拍升 S8 —— 所以 S8 ＝神殿攻略完成。之前這一格沒有出航方向。 */
-        sail:{ dir:'left', flag:'got_ship', fromStage:8 },
+        /* ⚠ ver -2258：夏爾村的任務（到科爾文來訪那一段）結束前，從這裡也不能出航（同村子廣場那一條）。 */
+        sail:{ dir:'left', flag:'got_ship', fromStage:8,
+               hold:{ until:'sv_s8_corvin', lines:[ { speaker:'NARRATION', text:'（夏爾村那邊的事還沒處理完。）' } ] } },
         /* ⚠⚠ **這一格不出野怪**（ver -879，Ray：「神殿入口除了鹿主戰之外是安全區，
            不出怪」）——它是神殿的門口／回程的落腳處，不是獵場。
            ⚠ 擋的只有 `wildSpawn` 的 fixed／pool；**指定遭遇（鹿主）照跑** ——
@@ -6429,8 +6436,9 @@ export const TOWNS = {
           arh('smileclose','真的長大了呢。',                { tierMin:3, tierWho:'NOUVELLE' }),
           /* 插圖 `024_nouvellesmile`（ver -1917，Ray：「024 掛在神父那段『真的長大了呢』之後」）—— 掛在後面那一拍（她的笑），
              只有 T3 那一支看得到；下一拍收掉。 */
-          nou('bigsmileclose','',                   { tierMin:3, tierWho:'NOUVELLE', cg:'024_nouvellesmile', cgNoTime:true }),
-          { speaker:'NARRATION', text:'', cg:null, auto:600, noHold:true, tierMin:3, tierWho:'NOUVELLE' },
+          /* ver -2258（Ray：「阿瑞尼斯諾薇兒 t2 就出插畫」）：插圖這兩拍放寬到 T2（前面三句台詞照舊只有 T3）。 */
+          nou('bigsmileclose','',                   { tierMin:2, tierWho:'NOUVELLE', cg:'024_nouvellesmile', cgNoTime:true }),
+          { speaker:'NARRATION', text:'', cg:null, auto:600, noHold:true, tierMin:2, tierWho:'NOUVELLE' },
           arh('smileopen','坐下聊聊吧。說說這幾年都發生了什麼事。', { tierMax:2, tierWho:'NOUVELLE' }),
         ] } ] },
       lookout:  { bg:'varn_lookout',  name:'雪都瓦恩霍姆　瞭望台',  
@@ -7127,8 +7135,9 @@ export const TOWNS = {
         sail:{ hold:[
           { need:'ep_belisar_done', until:'ep_hairpin_hunt', sides:{ RENNA:'L' },
             lines:[ ren('meltdown','休整一下，明天就出發吧。') ] },
-          { need:'ep_arrive', until:'ep_hairpin_hunt', sides:{ RENNA:'L' },
-            lines:[ ren('talkwork','時間有限喔，別再亂跑了，先去貝利薩爾遺址吧。') ] },
+          /* ver -2258（Ray：「東泊初訪的出航鎖不該跳蕾娜」—— 她這時去大學了，不在身邊）：改旁白。 */
+          { need:'ep_arrive', until:'ep_hairpin_hunt',
+            lines:[ { speaker:'NARRATION', text:'（時間有限，先去貝利薩爾遺址吧。）' } ] },
         ] },
         /* ══⚠⚠⚠ 抵達東方泊地（ver -1342，Ray 交稿）══════════════════════════
            飛行頁那一段（貝利薩爾沒有降落點 → 蕾娜指這裡）演完才有這一段 ——
@@ -7270,11 +7279,13 @@ export const TOWNS = {
         challengeLines:[
           gunE(null,'想試試手？靶在那頭，隨便打。', { portrait:{ char:'GUNSMITH_EP', show:true } }),
           gunE(null,'這一區的線是五十秒。港邊的風亂，別拿內陸的數字來比。'),
-          gunE(null,'破得了的話，我把你那對雙槍的擊發再開一階 —— 比塞你一把二手貨實在。'),
+          /* ⚠ ver -2258（Ray：「槍店重複挑戰不要有升階提示」）：升階只給一次（`ep_gun_tuned`）——
+             之前每贏一次就再給一級吞噬者、也每次都講這兩句。重複挑戰兩句都跳過（同北泊 `np_gun_tuned`）。 */
+          gunE(null,'破得了的話，我把你那對雙槍的擊發再開一階 —— 比塞你一把二手貨實在。', { skipIf:'ep_gun_tuned' }),
           { battle:'ep_range', onLose:'ep_retry_lose' },
-          gunE(null,'漂亮。這雙手不是只會拿聖書的嘛。'),
+          gunE(null,'漂亮。這雙手不是只會拿聖書的嘛。', { flags:['ep_range_done'] }),
           Object.assign(gunE(null,'借我一下……嗯，這樣咬得住了。'),
-                        { flags:['ep_range_done'], gunStar:'albali' }),
+                        { skipIf:'ep_gun_tuned', flags:['ep_gun_tuned'], gunStar:'albali' }),
           { goto:'ep_retry_end' },
           Object.assign(gunE(null,'差得遠囉。海風會騙人的，多打幾趟就習慣了。'),
                         { label:'ep_retry_lose', flags:['ep_range_done'] }),
@@ -7331,8 +7342,10 @@ export const TOWNS = {
         exits:{ back:'oldtown', up:'@plainsroad' },
         /* ver -2195（Ray）：驛站 → 古道 2 小時，出發時刻固定 11:00（只往前推，見 modules/town.js 的 stepCost）。 */
         walk:{ '@plainsroad':{ min:120, departAt:11 } },
-        lock:{ up:{ need:Q_HAIRPIN.flag, until:Q_HAIRPIN.until,
-                    lines:[ sor('confuse','喂！開船去比較快啦！') ] } },
+        /* ver -2258（Ray：「初訪時驛站出圖也要上鎖 髮飾事件之後才開放從那裡出去」）：第一列＝初訪到追髮飾那一夜之前。 */
+        lock:{ up:[ { until:Q_HAIRPIN.flag, lines:[ { speaker:'NARRATION', text:'（現在還不是走陸路的時候。）' } ] },
+                    { need:Q_HAIRPIN.flag, until:Q_HAIRPIN.until,
+                      lines:[ sor('confuse','喂！開船去比較快啦！') ] } ] },
         acts:[ { flag:'ep_dock_anya', withWho:'ANYA', lines:[
           any('curious','這就是……尤拉西亞湖？'),
           any('amaze','好壯觀……'),
@@ -8662,7 +8675,10 @@ export const TOWNS = {
       /* ⚠ ver -1715：換成**循環版** `se_waterfall_loop`（Ray：「瀑布底的 se_waterfall 應該要連續
          loop 不要淡入淡出」）—— 舊的那一支 4.9 秒、頭尾各帶一段編碼靜音，每一圈都空一下。 */
       fallbase:   { bg:'lake_fallbase',   name:'鏡湖　瀑布底', amb:'se_waterfall_loop',
-        exits:{ back:'shingle', up:'cave' } },
+        exits:{ back:'shingle', up:'cave' },
+        /* ver -2258（Ray：「在評價事件前瀑布後的路不開放」）：雪都圖書館那一段（`vn_lib_done`，偷看評價紀錄）演完之前，
+           瀑布後面那條路走不進去。⚠ 鏡湖的劇情本來就要等 `vn_brief`（在那一段之後），早來的人照樣進得了湖、只是不演。 */
+        lock:{ up:{ until:'vn_lib_done', lines:[ { speaker:'NARRATION', text:'（水簾後面一片漆黑，現在還不是進去的時候。）' } ] } } },
       /* ⚠ 水蝕洞＝**穿過瀑布的洞**（左側水簾是來路、深處透出天光是去路）。 */
       cave:       { bg:'lake_cave',       name:'鏡湖　水蝕洞', amb:'se_waterfall_loop',
         exits:{ back:'fallbase', up:'grove' } },

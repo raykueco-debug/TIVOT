@@ -674,9 +674,10 @@ function combatStatsRows(){
 function ratingStatsRows(stats, totalTime){
   /* ⚠ 管理人模式限定：這一頁**沒有評價**時，把原因印出來（ver -1050）——
      它不是給玩家看的資料，是給下一次「評價又不見了」的人看的。 */
-  const note = _evalNote ? i18nT('<div class="row"><span>⚠ 無評價</span><b>')+_evalNote+'</b></div>' : '';
+  /* ⚠ ver -2258（Ray：「評價註記不要在管理人頁面之外出現」）：結算頁不再印這一列 —— 原因照舊留在
+     `_evalLast`／console，診斷 HUD 看得到。 */
   _evalNote='';
-  return note + ratingStatsRowsBody(stats, totalTime);
+  return ratingStatsRowsBody(stats, totalTime);
 }
 function ratingStatsRowsBody(stats, totalTime){
   const accPct = Math.round(clamp01(stats.accuracy) * 100);
@@ -1125,12 +1126,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
          —— 只加 class 救不了「動畫沒跑／被誰壓成透明」那幾種（ver -1128）。 */
       bubble.classList.add('show');
       bubble.style.opacity='1'; bubble.style.visibility='visible';
-      const host=$('resultStats');
-      if(host && document.body.classList.contains('testmode')){
-        const d=document.createElement('div'); d.className='row';
-        d.innerHTML=i18nT('<span>⚠ 評價被蓋住</span><b>')+info+'</b>';
-        host.appendChild(d);
-      }
+      /* ver -2258（Ray：「戰鬥結束後『評價被蓋住』訊息移除」）：結算頁不再加那一列；資訊留在 HUD 與 console。 */
     }, 2500);
     setTimeout(()=>{
       bubble.classList.add('show');

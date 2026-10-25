@@ -1234,3 +1234,4 @@ when	from	to	reason
 20261020-104416	offline.webmanifest	_recycle/offline.webmanifest	ver -2256 已由另一 session 做出同一套離線包，這份重複
 20261020-104416	offline_manifest.json	_recycle/offline_manifest.json	ver -2256 已由另一 session 做出同一套離線包，這份重複
 20261020-104416	tools/offline_manifest.py	_recycle/tools/offline_manifest.py	ver -2256 已由另一 session 做出同一套離線包，這份重複
+20261025-210805	resources/background/ruins/ruins_shinier_antechamber_day.webp	_recycle/resources/background/ruins/ruins_shinier_antechamber_day.webp	ver -2258 Ray：木雅克神殿入口差分錯誤 —— 前廳 _day 構圖與 dawn/dusk/night 不同；白天暫退 dawn，等美術從 dawn 衍生新 day

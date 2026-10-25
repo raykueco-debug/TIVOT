@@ -2893,9 +2893,21 @@ export function peekBattleEnemy(id){
   const k = pickBattleEnemy(sb);
   return (typeof k==='string') ? k : null;
 }
+/* ══ B 級以上的怪打贏就自帶結算（ver -2258，Ray：「加入B級以上的怪擊敗自帶結算」）══
+   問**這一隻**的敵人卡等級（`tier`）—— 卡上沒寫 `sessionEnd` 也照樣收段（閉棺、結算、資源回滿）。
+   ⚠ RUSH（卡上用 `enemyTier` 抽怪的試跑台）不吃這一條：它要六場打完才結算。
+   ⚠ 判定只有這一支（鐵律 7）：`midSession` 與 win 的收段都問它。 */
+const SETTLE_TIERS = ['B','A','S'];
+function endsSession(b){
+  if(!b) return false;
+  if(b.sessionEnd) return true;
+  if(b.enemyTier) return false;
+  const c = (GAME_CONFIG.enemies||{})[state.currentEnemyKey];
+  return !!(c && SETTLE_TIERS.indexOf(c.tier) >= 0);
+}
 function midSession(){
   const b = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
-  return !!(b && b.session && !b.sessionEnd);
+  return !!(b && b.session && !endsSession(b));
 }
 /* ══⚠⚠⚠ 持久 HP **只在「局內」帶**（ver -1083，Ray：「空戰不分場，一場就是一局，
    全域不分空陸戰一局結束 hp 會回滿，br 會歸零，就這麼簡單」）══
@@ -3053,7 +3065,7 @@ function win(){
     /* ⚠ 這一場是段落的最後一場（Boss）→ 收段：下一次進戰鬥重新演開棺、資源回滿。
        ⚠ **一定要在 `settle` 之後**：它清帳，而 settle 開頭才把那筆帳領走（ver -621（-893 前用詞））。 */
     { const _es = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
-      if(_es && _es.sessionEnd) endSession(); }
+      if(_es && endsSession(_es)) endSession(); }
   };
   /* ⚠ 劇情版教學：**先演「關門」**（進場那一套的倒放）再上結算（ver -366，Ray 指定）。
      進場是門推上來、打開露出戰場；打完就該把門關回去 —— 沒有這一段，畫面會從戰鬥
@@ -3348,7 +3360,7 @@ export function startGame(){
      先 hold 住佇列，等敵人圖載完才放行；這一位還沒暖的話順手插旗（排在佇列最後）。
      setTimeout 0：這一行跑的時候怪還沒上場（下面才 setEnemy）。 */
   setTimeout(()=>{ saint.holdCiWarm(enemy.visualsReady());
-    if(state.pickedPartner!=null) saint.warmPartnerCi(state.pickedPartner); }, 0);
+    saint.warmPartnerCi(state.pickedPartner); }, 0);   // ver -2258：沒有搭檔（null）也暖 —— 破防 CI 不分搭檔
   /* ══⚠⚠⚠ **這一場的怪，只在這裡上場一次**（ver -1467，Ray：「打空戰怪的圖竟然是
      出地下聖徒？？？？這個東西改過好幾次了怎麼還是會出？？？？」）══
      這一行以前是 `startGame` 最上面那一句無條件的 `enemy.startLineup()` ——
