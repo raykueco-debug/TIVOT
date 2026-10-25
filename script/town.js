@@ -4594,7 +4594,7 @@ export const TOWNS = {
              被帶回夏爾村、`sv_s8_home` 第一拍升 S8 —— 所以 S8 ＝神殿攻略完成。之前這一格沒有出航方向。 */
         /* ⚠ ver -2258：夏爾村的任務（到科爾文來訪那一段）結束前，從這裡也不能出航（同村子廣場那一條）。 */
         sail:{ dir:'left', flag:'got_ship', fromStage:8,
-               hold:{ until:'sv_s8_corvin', lines:[ { speaker:'NARRATION', text:'（夏爾村那邊的事還沒處理完。）' } ] } },
+               hold:{ until:'sv_s8_corvin', lines:[ { speaker:'NARRATION', text:'不能丟下伙伴。' } ] } },   // 台詞 ver -2260（Ray）
         /* ⚠⚠ **這一格不出野怪**（ver -879，Ray：「神殿入口除了鹿主戰之外是安全區，
            不出怪」）——它是神殿的門口／回程的落腳處，不是獵場。
            ⚠ 擋的只有 `wildSpawn` 的 fixed／pool；**指定遭遇（鹿主）照跑** ——
@@ -7137,7 +7137,7 @@ export const TOWNS = {
             lines:[ ren('meltdown','休整一下，明天就出發吧。') ] },
           /* ver -2258（Ray：「東泊初訪的出航鎖不該跳蕾娜」—— 她這時去大學了，不在身邊）：改旁白。 */
           { need:'ep_arrive', until:'ep_hairpin_hunt',
-            lines:[ { speaker:'NARRATION', text:'（時間有限，先去貝利薩爾遺址吧。）' } ] },
+            lines:[ { speaker:'NARRATION', text:'不能丟下伙伴。' } ] },   // 台詞 ver -2260（Ray）
         ] },
         /* ══⚠⚠⚠ 抵達東方泊地（ver -1342，Ray 交稿）══════════════════════════
            飛行頁那一段（貝利薩爾沒有降落點 → 蕾娜指這裡）演完才有這一段 ——
@@ -8678,7 +8678,7 @@ export const TOWNS = {
         exits:{ back:'shingle', up:'cave' },
         /* ver -2258（Ray：「在評價事件前瀑布後的路不開放」）：雪都圖書館那一段（`vn_lib_done`，偷看評價紀錄）演完之前，
            瀑布後面那條路走不進去。⚠ 鏡湖的劇情本來就要等 `vn_brief`（在那一段之後），早來的人照樣進得了湖、只是不演。 */
-        lock:{ up:{ until:'vn_lib_done', lines:[ { speaker:'NARRATION', text:'（水簾後面一片漆黑，現在還不是進去的時候。）' } ] } } },
+        exitIf:{ up:'vn_lib_done' } },   // ver -2260（Ray：「鏡湖瀑布不用提示 不出箭頭就好」）
       /* ⚠ 水蝕洞＝**穿過瀑布的洞**（左側水簾是來路、深處透出天光是去路）。 */
       cave:       { bg:'lake_cave',       name:'鏡湖　水蝕洞', amb:'se_waterfall_loop',
         exits:{ back:'fallbase', up:'grove' } },
