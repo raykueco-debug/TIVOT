@@ -1,5 +1,22 @@
 # 空中戰怪圖 8 張 —— 戰鬥立繪（10-12，Windows 美術 session）
 
+## ⚠⚠ 10-27 Ray 交辦：定案的空中怪全部出「飛行畫面遭遇圖」—— 只做正面
+
+> Ray：「把定案的 18 怪都給美術生飛行畫面的遭遇圖，都用正面就好」
+> （⚠ 磁碟上定案的是 16 隻：第一批 8＋第二批 8 —— 另外 2 隻是誰程式 session 已問 Ray，回覆後補進下表。）
+
+- 規格照憲法 §5「飛行地圖的怪只做正面一張」與已交的三隻（`flight/enemy/flm_{boneray,ribwhale,gasjelly}/view_0.webp`）：
+  頭朝鏡頭迎面飛來、身體往深處透視縮短、**真 alpha**、**四邊各留 12%**（主體只佔中央 76%）、來源 1536×2048 起跳、不畫會閃的眼睛。
+- **只做 `view_0` 一張**，不要六視圖、不要側面。原地游動 loop 這一輪**不做**（Ray 沒交辦）。
+- 交件：`flight/enemy/flm_<鍵>/view_0.webp`（鍵＝去掉 `mon_` 的檔名，例 `flm_sky2_spine`、`flm_twinwyvern`）；交完更新 `flight/enemy/_sky_flight_TO_CODE.md` 的盤點表。
+
+| 批 | 鍵 | 飛行正面圖 |
+|---|---|---|
+| 一 | boneray／ribwhale／gasjelly | ✔ 不欠（10-18 已交） |
+| 一 | twinwyvern／mawbat／eyemoth／eelswarm／armorcrab | ⚠ 欠 |
+| 二 | sky2_spine／sky2_maskbanner／sky2_ringchain／sky2_mouthpillar／sky2_facecrown／sky2_eyeveil／sky2_rift／sky2_maw | ⚠ 欠 |
+| ？ | 另外 2 隻（待 Ray 指名） | ⚠ 待定 |
+
 > Ray：「生成一組空中戰的怪圖 八張」→「先戰鬥立繪，定稿再畫飛行圖」「巨獸、變異的幻想生物」
 > → 中途追加：「**動漫風**」「**要往 viewer 襲來，不要有傳統的幻想生物，類龍還可以，獅鷲不行**」
 
