@@ -11,7 +11,8 @@ W, H = 480, 720
 src = Image.open(src_img).convert('RGBA')
 bb = src.getchannel('A').point(lambda v: 255 if v > 8 else 0).getbbox()
 w, h = bb[2] - bb[0], bb[3] - bb[1]
-s = min(W * 0.92 / w, H * 0.92 / h); w2, h2 = round(w * s), round(h * s)
+FIT = float(os.environ.get('TIVOT_FIT') or 0.92)   # 要與生成時的 TIVOT_FIT 一致（振翅怪縮小留空間時會設）
+s = min(W * FIT / w, H * FIT / h); w2, h2 = round(w * s), round(h * s)
 ox, oy = (W - w2) // 2, (H - h2) // 2
 L = sorted(glob.glob(os.path.join(frames_dir, 'frame_*.webp')))
 fr = [Image.open(p).convert('RGBA') for p in L]

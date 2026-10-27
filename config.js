@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.27-2262';
+export const VERSION = 'ver 2026.10.27-2263';
 
 export const GAME_CONFIG = {
 
@@ -5496,6 +5496,7 @@ export const ENEMY_IDLE = {
   /* 空中怪第二批（10-27，本機 Wan，24 格 12fps ＝ Ray 在 animechk 剪的「每格停 2／24fps」）。同樣**還沒有敵人卡**。 */
   mon_sky2_spine: 'resources/enemy/anim/mon_sky2_spine_idle_v1/',
   mon_sky2_maskbanner: 'resources/enemy/anim/mon_sky2_maskbanner_idle_v1/',
+  mon_sky2_mouthpillar: 'resources/enemy/anim/mon_sky2_mouthpillar_idle_v1/',
 };
 export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ""; }
 
