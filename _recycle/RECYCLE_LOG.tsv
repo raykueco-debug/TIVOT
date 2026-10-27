@@ -1242,3 +1242,4 @@ when	from	to	reason
 20261027-204242	resources/map/_winsmoor_sim/draw3.py	_recycle/resources/map/_winsmoor_sim/draw3.py	守城戰拓樸 v3 作廢（Ray：場上最多 2 隻、清一隻進一隻 ⇒ 內環太鬆），由 v4 取代
 20261027-214133	resources/map/_layout_winsmoor_siege_v4.png	_recycle/resources/map/_layout_winsmoor_siege_v4.png	守城戰拓樸 v4 作廢（目標改市政廳、照城鎮配置、加小路），由 v5 取代
 20261027-214435	resources/map/_layout_winsmoor_siege_v5.png	_recycle/resources/map/_layout_winsmoor_siege_v5.png	守城戰拓樸 v5 作廢（Ray：不要有海上入口），由 v6 取代
+20261027-215431	resources/map/_layout_winsmoor_siege_v6.png	_recycle/resources/map/_layout_winsmoor_siege_v6.png	守城戰拓樸 v6 作廢（Ray：太空太直線，改棋盤），由 v7 取代
