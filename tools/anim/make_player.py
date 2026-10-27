@@ -49,7 +49,49 @@ if os.path.isdir(VID):
         fs = sorted(os.path.basename(f) for f in glob.glob(os.path.join(od, 'frame_*.webp')))
         fps = json.load(open(os.path.join(od, 'meta.json'))).get('fps')
         items.append({'group': '交件・CI', 'name': nm, 'dir': '_gameci/' + nm, 'frames': fs, 'mtime': os.path.getmtime(src), 'fps': fps})
-ORDER = ['交件・CI', '交件・待機', '交件・倒地', '交件・其他', '輸出', '參考']
+# 插畫影片（同 CI 影片的拆格快取）
+IVID = os.path.join(RES, 'illustration', 'video')
+if os.path.isdir(IVID):
+    import cv2
+    for fn in sorted(os.listdir(IVID)):
+        if not fn.endswith('.mp4'): continue
+        src = os.path.join(IVID, fn); nm = fn[:-4]; od = os.path.join(CACHE, 'ill_' + nm); stamp = os.path.join(od, '.src_mtime')
+        mt = str(os.path.getmtime(src))
+        if not (os.path.exists(stamp) and open(stamp).read() == mt):
+            os.makedirs(od, exist_ok=True)
+            for f in glob.glob(os.path.join(od, 'frame_*.webp')): os.remove(f)
+            c = cv2.VideoCapture(src); k = 0
+            while True:
+                ok, fr = c.read()
+                if not ok: break
+                cv2.imwrite(os.path.join(od, f'frame_{k:03d}.webp'), fr, [cv2.IMWRITE_WEBP_QUALITY, 92]); k += 1
+            fps = c.get(cv2.CAP_PROP_FPS) or 16
+            json.dump({'fps': round(fps, 3)}, open(os.path.join(od, 'meta.json'), 'w')); open(stamp, 'w').write(mt)
+        fs = sorted(os.path.basename(f) for f in glob.glob(os.path.join(od, 'frame_*.webp')))
+        fps = json.load(open(os.path.join(od, 'meta.json'))).get('fps')
+        items.append({'group': '交件・插畫', 'name': nm, 'dir': '_gameci/ill_' + nm, 'frames': fs, 'mtime': os.path.getmtime(src), 'fps': fps})
+
+# 大分類（播放器上排的頁籤）：敵／插畫／CI／其他
+import re
+ILL_KEYS = set()
+for d in (IVID, os.path.join(RES, 'illustration')):
+    if os.path.isdir(d):
+        for fn in os.listdir(d):
+            k = re.sub(r'(_v\d+)?\.(mp4|webp|png|jpe?g)$', '', fn.lower())
+            k = re.sub(r'^[\d_-]+', '', k)
+            if len(k) >= 5: ILL_KEYS.add(k)
+ENEMY_ROOTS = ('gameres/enemy/', 'monsters/', 'hit/', 'guards/', 'squad/', 'idle_group/', 'test_guard')
+CI_ROOTS = ('_gameci/', 'gameres/ci/', 'gameanim/', 'ci/', 'ci5s/', 'br/', 'vace/', 'nr_layers/', 'cecilie/', 'cecilie_lora/', 'toon/')
+def cat_of(it):
+    d, n = it['dir'], it['name'].lower()
+    if it['group'] == '交件・插畫': return '插畫'
+    if d.startswith(ENEMY_ROOTS) or 'enemy/' in d or re.match(r'^(man|mon)_', n) or ('fight_' in d and 'hit' in d): return '敵'
+    if re.match(r'^\d', n) or any(k in n or (len(k) >= 10 and k[:10] in n) for k in ILL_KEYS): return '插畫'
+    if re.search(r'(^|[_/])(ci|cutin|br|mb|dg\w*|nr\w*|nb\w*|ld|ni|obe|supply)([_/]|$)', n) or d.startswith(CI_ROOTS): return 'CI'
+    return '其他'
+for it in items: it['cat'] = cat_of(it)
+
+ORDER = ['交件・CI', '交件・插畫', '交件・待機', '交件・倒地', '交件・其他', '輸出', '參考']
 items.sort(key=lambda x: (ORDER.index(x['group']) if x['group'] in ORDER else len(ORDER), x['group'], -x['mtime']))
 open(os.path.join(OUT, 'player_list.js'), 'w', encoding='utf-8').write('window.ANIMS=' + json.dumps(items, ensure_ascii=False) + ';')
 print(len(items), 'folders')
