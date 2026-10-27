@@ -9,12 +9,12 @@ LAND={  # 城鎮版 12 個地點（script/town.js 的 winsmoor 鍵名），相�
  (4,4):'中央廣場',    # square：港務大道的下面
  (2,4):'舊港町',      # oldtown：廣場的左邊
  (6,4):'上街區',      # uptown：廣場的右邊
- (6,3):'海景旅館',    # inn：上街區的上面
+ (6,3):'旅館前',    # inn：上街區的上面
  (8,4):'餐飲街',      # tavern：上街區的右邊
- (6,6):'雜貨舖',      # grocery：上街區的下面
- (0,4):'槍匠店',      # gunstore：舊港町的左邊（中間隔舊城牆）
+ (6,6):'雜貨舖前',      # grocery：上街區的下面
+ (0,4):'槍匠店前',      # gunstore：舊港町的左邊（中間隔舊城牆）
  (2,3):'雲海碼頭',    # dock：舊港町的上面（西臨雲海）
- (2,6):'獵人公會',# guild：舊港町的下面（中間被市政廳街南段路障擋住）
+ (2,6):'公會前',# guild：舊港町的下面（中間被市政廳街南段路障擋住）
 }
 TOWNKEY={(2,2):'cityhall',(4,2):'midtown',(6,2):'church',(4,4):'square',(2,4):'oldtown',(6,4):'uptown',(6,3):'inn',(8,4):'tavern',(6,6):'grocery',(0,4):'gunstore',(2,3):'dock',(2,6):'guild'}
 def name(c):
@@ -65,5 +65,5 @@ for c in g.adj:
     dr.text((cx,cy+14),f'{c[0]},{c[1]}'+f' ·{g.d[c]}'+(' ▼' if c in g.entries else ''),font=f2,fill=(200,40,30) if c in g.entries else (110,95,80),anchor='mm')
 dr.text((24,14),'溫斯摩爾港　守城戰拓樸 v9b（10-27）　街區棋盤・菁英分三路斬首　防衛目標＝市政廳（西北：北河、西雲海）',font=FB,fill=(40,30,20))
 dr.text((24,56),f'{len(g.adj)} 格　背景 {len(g.adj)-len(PAIRS)} 張（淺藍底＝路口＋東邊一段共用一張寬圖，{len(PAIRS)} 組）　紅框＝入口 {len(g.entries)}（只在南、東，到市政廳都是 {R} 步）',font=FM,fill=(40,30,20))
-dr.text((24,88),'金底＝城鎮版 12 地點（方向照城鎮版）　深褐牆＝堤防／舊城牆　橘紅牆＝戰時路障　淺色格＝建築街區　·數字＝到市政廳步數',font=FM,fill=(40,30,20))
+dr.text((24,88),'金底＝城鎮版 12 地點（方向照城鎮版；店舖類＝戰時關門，格子是店門口的街）　深褐牆＝堤防／舊城牆　橘紅牆＝戰時路障　淺色格＝建築街區　·數字＝到市政廳步數',font=FM,fill=(40,30,20))
 im.save(r'C:\Users\Ray Ku\Desktop\TIVOT\resources\map\_layout_winsmoor_siege_v9b.png'); print(im.size,len(PAIRS))
