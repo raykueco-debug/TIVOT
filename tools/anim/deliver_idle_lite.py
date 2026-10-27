@@ -7,15 +7,15 @@ from PIL import Image
 src_img, frames_dir, dst = sys.argv[1], sys.argv[2], sys.argv[3]
 fps = int(sys.argv[4]) if len(sys.argv) > 4 else 8
 SCALE = float(sys.argv[5]) if len(sys.argv) > 5 else 0.75
-W, H = 480, 720
+L = sorted(glob.glob(os.path.join(frames_dir, 'frame_*.webp')))
+fr = [Image.open(p).convert('RGBA') for p in L]
+W, H = fr[0].size   # 生成畫布的比例（寬一律縮成 480；TIVOT_GEN 換成寬畫布時高會變）
 src = Image.open(src_img).convert('RGBA')
 bb = src.getchannel('A').point(lambda v: 255 if v > 8 else 0).getbbox()
 w, h = bb[2] - bb[0], bb[3] - bb[1]
 FIT = float(os.environ.get('TIVOT_FIT') or 0.92)   # 要與生成時的 TIVOT_FIT 一致（振翅怪縮小留空間時會設）
 s = min(W * FIT / w, H * FIT / h); w2, h2 = round(w * s), round(h * s)
-ox, oy = (W - w2) // 2, (H - h2) // 2
-L = sorted(glob.glob(os.path.join(frames_dir, 'frame_*.webp')))
-fr = [Image.open(p).convert('RGBA') for p in L]
+ox, oy = (W - w2) // 2, round((H - h2) * float(os.environ.get('TIVOT_OY') or 0.5))   # 要與生成時的 TIVOT_OY 一致
 fb = None
 for f in fr:
     b = f.getchannel('A').point(lambda v: 255 if v > 8 else 0).getbbox()
@@ -27,6 +27,14 @@ for j, f in enumerate(fr):
     p = os.path.join(dst, f'frame_{j:02d}.webp')
     f.crop(fb).resize((ow, oh), Image.LANCZOS).save(p, 'WEBP', quality=85, alpha_quality=90, method=6); tot += os.path.getsize(p)
 box = [round(bb[0] + (fb[0] - ox) / s), round(bb[1] + (fb[1] - oy) / s), round(cw / s), round(ch / s)]
+if os.environ.get('TIVOT_FITCANVAS'):   # 振翅怪：翼展超出立繪畫布 → 整組等比縮回畫布內（遊戲裡 #top 會把畫布外的翅膀切掉）
+    cw0, ch0 = src.size; f = min(1.0, cw0 * 0.98 / box[2], ch0 * 0.98 / box[3])
+    if f < 1:
+        bx, by = box[0] + box[2] / 2, box[1] + box[3] / 2   # 以動畫範圍的中心縮，再把中心擺回畫布中央（橫向）、上下夾在畫布內
+        nw, nh = box[2] * f, box[3] * f
+        nx = cw0 / 2 - nw / 2; ny = min(max(by - nh / 2, ch0 * 0.01), ch0 * 0.99 - nh)
+        box = [round(nx), round(ny), round(nw), round(nh)]
+        print('fit-canvas ×%.2f' % f)
 json.dump({'canvas': list(src.size), 'box': box, 'frames': len(fr), 'fps': fps, 'loop': True, 'px': [ow, oh]},
           open(os.path.join(dst, 'anim.json'), 'w'), indent=1)
 print(os.path.basename(dst), len(fr), 'frames', ow, 'x', oh, tot // 1024, 'KB', round(len(fr) * ow * oh * 4 / 1048576), 'MB')

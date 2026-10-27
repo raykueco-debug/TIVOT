@@ -161,7 +161,7 @@ def to_green(src, mode):
     s = min(W * fit / im.width, H * fit / im.height)
     im = im.resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS)
     bg = Image.new('RGBA', (W, H), GREEN + (255,))
-    y = H - im.height - int(H * 0.05) if mode == 'hit' else (H - im.height) // 2
+    y = H - im.height - int(H * 0.05) if mode == 'hit' else round((H - im.height) * float(os.environ.get('TIVOT_OY') or 0.5))   # TIVOT_OY：上下留白的分配（0.5＝置中；振翅往上揚的怪設大一點，上方多留空）
     bg.paste(im, ((W - im.width) // 2, y), im)
     return bg.convert('RGB')
 
