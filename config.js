@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.27-2264';
+export const VERSION = 'ver 2026.10.27-2265';
 
 export const GAME_CONFIG = {
 
@@ -5497,7 +5497,7 @@ export const ENEMY_IDLE = {
   mon_sky2_spine: 'resources/enemy/anim/mon_sky2_spine_idle_v1/',
   mon_sky2_maskbanner: 'resources/enemy/anim/mon_sky2_maskbanner_idle_v1/',
   mon_sky2_mouthpillar: 'resources/enemy/anim/mon_sky2_mouthpillar_idle_v1/',
-  mon_sky2_ringchain: 'resources/enemy/anim/mon_sky2_ringchain_idle_v1/',   // 振翅：box 遠大於畫布（翼展 2.9 倍），遊戲內 Ray 手動調取景
+  mon_sky2_ringchain: 'resources/enemy/anim/mon_sky2_ringchain_idle_v1/',   // 振翅：翼展 2.9 倍，交件先整組縮回畫布（×0.34）全部顯示，遊戲內 Ray 手動調裁切
 };
 export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ""; }
 
