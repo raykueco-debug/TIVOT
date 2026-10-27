@@ -90,8 +90,12 @@ def cat_of(it):
     if re.search(r'(^|[_/])(ci|cutin|br|mb|dg\w*|nr\w*|nb\w*|ld|ni|obe|supply)([_/]|$)', n) or d.startswith(CI_ROOTS): return 'CI'
     return '其他'
 for it in items: it['cat'] = cat_of(it)
+# 24 小時內的作業（非交件）頂到最上面，新跑的東西不會被埋在交件底下
+import time as _t
+for it in items:
+    if not it['group'].startswith('交件') and _t.time() - it['mtime'] < 86400: it['group'] = '新作（24 小時內）'
 
-ORDER = ['交件・CI', '交件・插畫', '交件・待機', '交件・倒地', '交件・其他', '輸出', '參考']
+ORDER = ['新作（24 小時內）', '交件・CI', '交件・插畫', '交件・待機', '交件・倒地', '交件・其他', '輸出', '參考']
 items.sort(key=lambda x: (ORDER.index(x['group']) if x['group'] in ORDER else len(ORDER), x['group'], -x['mtime']))
 open(os.path.join(OUT, 'player_list.js'), 'w', encoding='utf-8').write('window.ANIMS=' + json.dumps(items, ensure_ascii=False) + ';')
 print(len(items), 'folders')
