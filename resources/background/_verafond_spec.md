@@ -259,3 +259,16 @@ square:(4,6), station:(4,7), midtown:(4,3), cityhall:(2,3), cathedral:(6,3), ave
    位置：`script/town.js` 薇拉馮德夜談那段（註解寫著「背景暫用旅店那一格（`vela_inn`＝大廳）」）。
 2. 這張**沒有時段差分** → 走候選鏈時要 `noTime`（或直接硬指定 `bg:`），否則會先吃 `_Dawn/_Day/...` 的 404。
 3. 新檔名，不必跳 `ASSET_VER`。
+
+## 追加（2026-10-28，美術 session）：旅店客房・破窗（戰場用）`vela_innroom_broken`
+
+- 檔：`resources/background/verafond/vela_innroom_broken.webp`（1536×1024）。原檔：`resources/_originals/background/verafond/vela_innroom_broken.png`。
+- 內容：040 那間房，落地窗玻璃被打碎、碎玻璃散在地毯上、窗簾被風吹起；深夜（檯燈暖光＋銀藍月光，不畫月亮本體）。
+  **戰場用的寬景**（Ray 10-28：「這邊要做戰場用的 場景要寬一點」）：中央是一大片空地毯給敵人站，正方形 cover 裁切後仍保有破窗與兩側窗簾。
+- 產法：GPT 直接出夜景（Ray：「一開始就畫夜景就好了 這張圖沒有差分」）。
+- ✔ **不欠**：只有夜景這一張，不做其他時段。
+
+### ⚠ 程式端要接的
+1. 換掉兩處佔位：`script/town.js` 的 `VF_ROOM_BG`、`config.js` 的 `battles.vf_raid.bg`（目前借 `vela_innroom_door`）。
+2. 沒有時段差分 → `noTime`（或硬指定）。新檔名，不必跳 `ASSET_VER`。
+3. 亞隆出場前的行軍音（march）：美術這邊**沒有**已知可用的素材來源，維持借 `se_stepsbig`。
