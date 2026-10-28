@@ -319,7 +319,7 @@ export const ART = {
                   worry:    { src:'resources/si/renna_si_worry.webp',      top:6, bot:1527, fx:0.568 },
                   pause:    { yShift:0, src:'resources/si/renna_si_pause.webp',      top:3, bot:1525, fx:0.513 },
                   upsetstare:{src:'resources/si/renna_si_upsetstare.webp', top:0, bot:1524, fx:0.503 },
-                  upset:    { src:'resources/si/renna_si_upset.webp',      top:2, bot:1524, fx:0.507 },   // Stage8（ver -953）
+                  upset:    { fxShift:0, src:'resources/si/renna_si_upset.webp',      top:2, bot:1524, fx:0.507 },   // Stage8（ver -953）
                   chase:    { src:'resources/si/renna_si_chase.webp',      top:4, bot:1532, fx:0.554 },
                   /* 娜塔莉那一幕（ver -636）。 */
                   invite:   { src:'resources/si/renna_si_invite.webp',     top:2, bot:1525, fx:0.537 },
@@ -331,7 +331,7 @@ export const ART = {
                   reach:    { src:'resources/si/renna_si_reach.webp',      top:2, bot:1528, fx:0.566 },
                   /* 墓地那一幕（ver -671，Ray 交稿）。逐張量（tools/measure_si.py）。 */
                   meltdown:    { src:'resources/si/renna_si_meltdown.webp',    top:0,  bot:1535, fx:0.528 },
-                  meltdownbite:{ src:'resources/si/renna_si_meltdownbite.webp', top:0, bot:1535, fx:0.528 },   // ver -2277 美術交件：同 meltdown 姿勢、不笑、輕咬下唇忍淚（取景照抄 meltdown）
+                  meltdownbite:{ fxShift:0, src:'resources/si/renna_si_meltdownbite.webp', top:0, bot:1535, fx:0.528 },   // ver -2277 美術交件：同 meltdown 姿勢、不笑、輕咬下唇忍淚（取景照抄 meltdown）
                   meltdownsmile:{ src:'resources/si/renna_si_meltdownsmile.webp', top:1, bot:1535, fx:0.529 },   // ver -2208（PNG→webp，原檔進 _originals/SI/）
                   meltdowncry: { src:'resources/si/renna_si_meltdowncry.webp', top:4,  bot:1532, fx:0.607 },
                   /* ⚠ `snivel`（ver -1671 接線）：圖 -1554 那一批就在庫裡，**從來沒接過**
@@ -1507,53 +1507,53 @@ export const ART = {
     surprise: { src:'resources/si/nemo_si_surprise.webp', top:8, bot:1524, fx:0.498 },
     happy:    { yShift:0, src:'resources/si/nemo_si_happy.webp',    top:3, bot:1527, fx:0.510 },
     bye:      { src:'resources/si/nemo_si_bye.webp',      top:3, bot:1533, fx:0.499 },
-    bore:    { yShift:0, src:'resources/si/nemo_si_bore.webp',    top:3, bot:1531, fx:0.516 },
+    bore:    { yShift:7, src:'resources/si/nemo_si_bore.webp',    top:3, bot:1531, fx:0.516 },
     /* ⚠ 雙槍那一張還沒有人用（戰鬥立繪走敵人卡的 `enemy_nemo`）—— 先接著。 */
     dual:     { yShift:72, cm:100, src:'resources/si/nemo_si_dual.webp',     top:0, bot:1535, fx:0.408 },
     dryfire:  { src:'resources/si/nemo_si_dryfire.webp',  top:2, bot:1527, fx:0.536 },   // ver -2273 美術交件：雙手舉 M1911、滑套後定、彈盡愣住（薇拉馮德夜襲戰後）
-    dryfirebore:{ src:'resources/si/nemo_si_dryfirebore.webp', top:6, bot:1528, fx:0.537 },   // ver -2277 美術交件：同 dryfire 姿勢、無聊臉
+    dryfirebore:{ yShift:8, src:'resources/si/nemo_si_dryfirebore.webp', top:6, bot:1528, fx:0.537 },   // ver -2277 美術交件：同 dryfire 姿勢、無聊臉
   } },
   /* ver -1916：front 美術重交（同名覆蓋 ?v=2，measure_si 重量 top/bot/fx）；新增 `cringe`。 */
-  cecilie:   { cm:170, eye:32, fx:0.536, top:8, bot:1533,
+  cecilie:   { fxShift:0, yShift:9, cm:164, eye:32, fx:0.536, top:8, bot:1533,
            side:'R', alt:null, base:'resources/si/cecilie_si_front.webp?v=d57dbd14', expr:{
-    cringe:   { yShift:2, src:'resources/si/cecilie_si_cringe.webp',    top:7, bot:1535, fx:0.632 },
-    teary:    { src:'resources/si/cecilie_si_teary.webp',     top:3, bot:1531, fx:0.574 },   // ver -2099 返回帝都稿缺差分（美術 9086789c）：measure_si 量 top/bot；fx 照臉中心目測校正
-    talk:     { src:'resources/si/cecilie_si_talk.webp',      top:7, bot:1527, fx:0.539 },
-    tease:    { src:'resources/si/cecilie_si_tease.webp',     top:4, bot:1529, fx:0.574 },
-    upset:    { src:'resources/si/cecilie_si_upset.webp',     top:2, bot:1526, fx:0.535 },
-    disbelief:{ src:'resources/si/cecilie_si_disbelief.webp', top:6, bot:1506, fx:0.532 },   // ver -2273 美術交件：不可置信（薇拉馮德夜襲戰後）
-    gritteeth:{ src:'resources/si/cecilie_si_gritteeth.webp', top:7, bot:1501, fx:0.534 },   // ver -2273 美術交件：生氣咬牙
-    lookaside:{ src:'resources/si/cecilie_si_lookaside.webp', top:8, bot:1531, fx:0.560 },
-    smile:    { src:'resources/si/cecilie_si_smile.webp',     top:4, bot:1517, fx:0.557 },
+    cringe:   { fxShift:0, cm:164, yShift:9, src:'resources/si/cecilie_si_cringe.webp',    top:7, bot:1535, fx:0.632 },
+    teary:    { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_teary.webp',     top:3, bot:1531, fx:0.574 },   // ver -2099 返回帝都稿缺差分（美術 9086789c）：measure_si 量 top/bot；fx 照臉中心目測校正
+    talk:     { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_talk.webp',      top:7, bot:1527, fx:0.539 },
+    tease:    { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_tease.webp',     top:4, bot:1529, fx:0.574 },
+    upset:    { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_upset.webp',     top:2, bot:1526, fx:0.535 },
+    disbelief:{ cm:164, yShift:9, fxShift:0, src:'resources/si/cecilie_si_disbelief.webp', top:6, bot:1506, fx:0.532 },   // ver -2273 美術交件：不可置信（薇拉馮德夜襲戰後）
+    gritteeth:{ yShift:9, cm:164, fxShift:0, src:'resources/si/cecilie_si_gritteeth.webp', top:7, bot:1501, fx:0.534 },   // ver -2273 美術交件：生氣咬牙
+    lookaside:{ fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_lookaside.webp', top:8, bot:1531, fx:0.560 },
+    smile:    { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_smile.webp',     top:4, bot:1517, fx:0.557 },
     /* ⚠ 背影：`fx` 量到 0.638（她背對鏡頭、重心偏右）—— 照量到的寫。 */
-    sadback:  { src:'resources/si/cecilie_si_sadback.webp',   top:2, bot:1513, fx:0.638 },
+    sadback:  { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_sadback.webp',   top:2, bot:1513, fx:0.638 },
     /* ══ ver -1545 美術交件兩張（Ray 指定用途）══ 取景值走 `tools/measure_si.py` 逐張量，
        **沒有互抄**（`back` 與 `sadback` 都是背影，但 fx 差 0.018 —— 姿勢不同）。 */
-    back:     { src:'resources/si/cecilie_si_back.webp',      top:13, bot:1505, fx:0.656 },
-    spoild:   { yShift:0, src:'resources/si/cecilie_si_spoild.webp',    top:8, bot:1526, fx:0.551 },
-    nolook:   { src:'resources/si/cecilie_si_nolook.webp',    top:1, bot:1531, fx:0.543 },
-    think:    { src:'resources/si/cecilie_si_think.webp',     top:5, bot:1529, fx:0.560 },
+    back:     { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_back.webp',      top:13, bot:1505, fx:0.656 },
+    spoild:   { fxShift:0, cm:164, yShift:9, src:'resources/si/cecilie_si_spoild.webp',    top:8, bot:1526, fx:0.551 },
+    nolook:   { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_nolook.webp',    top:1, bot:1531, fx:0.543 },
+    think:    { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_think.webp',     top:5, bot:1529, fx:0.560 },
     /* ver -1885：美術交件（HANDOFF 37）。`blush` 已同名覆蓋成真正的害羞臉（舊檔與 tease 是同一張），
        帶 ?v=2 防快取；`fluster` 新鍵，取景同 spoild（measure_si 實量相同）。 */
-    blush:    { src:'resources/si/cecilie_si_blush.webp?v=2', top:4, bot:1529, fx:0.574 },
-    fluster:  { flip:true, src:'resources/si/cecilie_si_fluster.webp',   top:8, bot:1526, fx:0.551 },
+    blush:    { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_blush.webp?v=2', top:4, bot:1529, fx:0.574 },
+    fluster:  { fxShift:0, yShift:9, cm:164, flip:true, src:'resources/si/cecilie_si_fluster.webp',   top:8, bot:1526, fx:0.551 },
     /* ver -1886：帝都第一夜的夢境戰（Ray 的稿）。`saintinstall` 美術交件 png→webp、實量。 */
-    saintinstall:{ src:'resources/si/cecilie_si_saintinstall.webp', top:2, bot:1528, fx:0.493 },
+    saintinstall:{ fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_saintinstall.webp', top:2, bot:1528, fx:0.493 },
     /* ══ 碎片 02／03（ver -2116，美術 441ba93c，GPT 真 alpha）══ 後勤術師：沒有戰損，戰後只流汗喘氣，鼻血＝能力過載（Ray 定）。measure_si 量。
        ⚠ `battlecry` 的 top/fx 是頭髮量的（alpha 會被術式光拉到 0／0.528）；`shyhand` 頭頂碰到畫布上緣。
        ⚠ `pant` 單膝跪地、不是站姿：cm／standCm 是估的（§6.5 近景／坐姿那兩個旋鈕），畫面上不對就用管理人的「立繪」調整區調。
        ⚠ 已知小偏差（Ray 看過不重畫）：`pant` 左肩露出；`call`／`ready`／`battlecry` 頭髮比 front 長而散。 */
-    smirk:     { src:'resources/si/cecilie_si_smirk.webp',     top:8,  bot:1529, fx:0.520 },
-    call:      { src:'resources/si/cecilie_si_call.webp',      top:4,  bot:1526, fx:0.680 },
-    ready:     { cm:164, yShift:10, src:'resources/si/cecilie_si_ready.webp',     top:10, bot:1509, fx:0.701 },
-    battlecry: { yShift:9, cm:165, src:'resources/si/cecilie_si_battlecry.webp', top:46, bot:1528, fx:0.649 },
-    command:   { src:'resources/si/cecilie_si_command.webp',   top:7,  bot:1526, fx:0.375 },
-    pant:      { src:'resources/si/cecilie_si_pant.webp',      top:69, bot:1443, fx:0.626, cm:150, standCm:135 },
-    proud:     { yShift:1, src:'resources/si/cecilie_si_proud.webp',     top:5,  bot:1526, fx:0.550 },
-    nosebleed: { src:'resources/si/cecilie_si_nosebleed.webp', top:5,  bot:1511, fx:0.553 },
-    shynose:   { src:'resources/si/cecilie_si_shynose.webp',   top:6,  bot:1496, fx:0.524 },
-    shocknose: { src:'resources/si/cecilie_si_shocknose.webp', top:6,  bot:1497, fx:0.401 },
-    shyhand:   { src:'resources/si/cecilie_si_shyhand.webp',   top:0,  bot:1498, fx:0.559 },
+    smirk:     { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_smirk.webp',     top:8,  bot:1529, fx:0.520 },
+    call:      { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_call.webp',      top:4,  bot:1526, fx:0.680 },
+    ready:     { fxShift:0, cm:164, yShift:9, src:'resources/si/cecilie_si_ready.webp',     top:10, bot:1509, fx:0.701 },
+    battlecry: { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_battlecry.webp', top:46, bot:1528, fx:0.649 },
+    command:   { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_command.webp',   top:7,  bot:1526, fx:0.375 },
+    pant:      { fxShift:0, yShift:9, src:'resources/si/cecilie_si_pant.webp',      top:69, bot:1443, fx:0.626, cm:164, standCm:135 },
+    proud:     { fxShift:0, cm:164, yShift:9, src:'resources/si/cecilie_si_proud.webp',     top:5,  bot:1526, fx:0.550 },
+    nosebleed: { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_nosebleed.webp', top:5,  bot:1511, fx:0.553 },
+    shynose:   { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_shynose.webp',   top:6,  bot:1496, fx:0.524 },
+    shocknose: { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_shocknose.webp', top:6,  bot:1497, fx:0.401 },
+    shyhand:   { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_shyhand.webp',   top:0,  bot:1498, fx:0.559 },
   } },
   /* ⚠⚠ **縮 20%**（ver -1536，Ray：「蘿芮登場那張圖太大了 縮20%」）——
      她的圖是**彎腰前傾**的構圖：像素高佔滿整框，但那是「彎著的 158cm」，
