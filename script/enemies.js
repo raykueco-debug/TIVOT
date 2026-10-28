@@ -1688,6 +1688,559 @@ export const ENEMIES = {
              { id:'azure_feather', n:1, p:0.33 } ],
       /* 金錢：HP 的 50%~70%。 */
     },
+    /* ══ 空中怪 16 隻（ver -2268，Ray：「把怪接上去 進怪卡 數值先用羽蛇」）══════════════
+       ⚠ **數值整組照抄羽蛇（serpent）**，是暫填 —— Ray 給卡之後逐張改。
+       ⚠ 刷新規則在 flight/index.html 的 `SKY_FLIGHT_KINDS`（rarity E／fromStage 2／landOnly，同羽蛇）；
+         戰鬥卡 `flight_<鍵>` 由 config.js 的 `SKY_FLIGHT_KINDS` 生成（三份互指）。
+       ⚠ 與羽蛇**不同**的只有：`story:0`（隨機遭遇）、受擊不用羽蛇吼叫（`serpent_bite`→`bite`）、
+         不寫 `entrance`（羽蛇的叫聲是牠自己的）、`loot` 空（掉落是那張卡的內容，等 Ray）。
+       ⚠ 背景三種雲景輪流排（`sky_cumulus_day`／`sky_towers`／`sky_cirrus_day`）。⚠ 戰鬥上半的背景**不走時段候選鏈**
+         （`enemy.setEnemy` 直接 `bgUrl(基底名)`）—— 寫基底名 `sky_cumulus` 會 404 成黑底，所以寫實際存在的檔名，暫時都是日景。
+       ⚠ 待機動畫走 `ENEMY_IDLE`（鑰匙＝圖檔名），有登記的自動吃到。 */
+    sky_twinwyvern: {
+      name:'雙頭翼龍_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky_twinwyvern',
+      bg:'sky_cumulus_day',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky_boneray: {
+      name:'骨刺飛鰩_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky_boneray',
+      bg:'sky_towers',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky_ribwhale: {
+      name:'浮空骨鯨_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky_ribwhale',
+      bg:'sky_cirrus_day',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky_mawbat: {
+      name:'裂口巨蝠_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky_mawbat',
+      bg:'sky_cumulus_day',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky_eyemoth: {
+      name:'千眼巨蛾_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky_eyemoth',
+      bg:'sky_towers',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky_eelswarm: {
+      name:'飛鰻群_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky_eelswarm',
+      bg:'sky_cirrus_day',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky_gasjelly: {
+      name:'氣囊水母獸_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky_gasjelly',
+      bg:'sky_cumulus_day',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky_armorcrab: {
+      name:'甲殼飛鱟_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky_armorcrab',
+      bg:'sky_towers',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky2_spine: {
+      name:'骨脊長帶_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky2_spine',
+      bg:'sky_cirrus_day',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky2_maskbanner: {
+      name:'面具長幡_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky2_maskbanner',
+      bg:'sky_cumulus_day',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky2_ringchain: {
+      name:'懸環長鏈_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky2_ringchain',
+      bg:'sky_towers',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky2_mouthpillar: {
+      name:'群口之柱_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky2_mouthpillar',
+      bg:'sky_cirrus_day',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky2_facecrown: {
+      name:'人面花冠_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky2_facecrown',
+      bg:'sky_cumulus_day',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky2_eyeveil: {
+      name:'眼之幕_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky2_eyeveil',
+      bg:'sky_towers',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky2_rift: {
+      name:'天之裂隙_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky2_rift',
+      bg:'sky_cirrus_day',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
+    sky2_maw: {
+      name:'無面巨首_A',
+      story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
+      Ganymede:-0.2,   // ＝羽蛇（暫填）
+      weaponMod:{ '重機槍':[1,0.3], '霰彈槍':[1.5,-0.5], '萊福槍':[1,0] },   // ＝羽蛇（暫填）
+      openAssault:[1,2],
+      ult:{ on:1, hp:40, count:4, atk:20, gap:0.4, cd:4 },   // ＝羽蛇（暫填）
+      kind:'aerial',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_sky2_maw',
+      bg:'sky_cumulus_day',
+      fit:{ mode:'contain', pos:'center center' },
+      hp:270,   // ＝羽蛇（暫填）
+      attack:17,   // ＝羽蛇（暫填）
+      atkInterval:4,
+      assaultEvery:[2,4],   // ＝羽蛇（暫填）
+      assault:{ count:1, gap:0 },
+      noStack:true,
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ＝羽蛇（暫填）
+      delayPenalty:{ seconds:5, damage:10 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{
+        delay:'claw1',
+        wrong:'blunt',
+        assault:'bite',
+      },
+      loot:[],
+    },
     /* ══ 空賊船（ver -509，Ray 的敵人卡）══════════════════════════════════
        飛行限定隨機敵（[場景：飛行][區域：**薩梅爾空域外全域**][稀有等級：E]
        [Stage:1 以後才登場]—— 刷新規則在 flight 的 ENEMY_KINDS.pirate：

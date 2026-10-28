@@ -87,7 +87,31 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.27-2267';
+export const VERSION = 'ver 2026.10.28-2268';
+
+/* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
+   內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
+   script/enemies.js 的卡／flight/index.html 的 `SKY_FLIGHT_KINDS`（非 module，import 不到）—— 改一邊要改另外兩邊。 */
+const SKY_FLIGHT_KINDS = [
+  'sky_twinwyvern',
+  'sky_boneray',
+  'sky_ribwhale',
+  'sky_mawbat',
+  'sky_eyemoth',
+  'sky_eelswarm',
+  'sky_gasjelly',
+  'sky_armorcrab',
+  'sky2_spine',
+  'sky2_maskbanner',
+  'sky2_ringchain',
+  'sky2_mouthpillar',
+  'sky2_facecrown',
+  'sky2_eyeveil',
+  'sky2_rift',
+  'sky2_maw'];
+const SHIP_WEAPON_SOUND = { '重機槍':'se_ship_heavygun',
+                            '霰彈槍':{ key:'se_spiltcannon', once:'se_weapon_cannonshell' },
+                            '萊福槍':{ key:'se_weapon_cannon', once:'se_weapon_cannonshell' } };
 
 export const GAME_CONFIG = {
 
@@ -3101,6 +3125,8 @@ export const GAME_CONFIG = {
                            （flight 的 runSerpentIntro：插圖＋對白＋換搭檔教學）。 */
     /* 空賊船（ver -509）。船戰的武器音／連射間隔同前兩場（都是船戰）。
        卡上出場音效／特效／背景＝0 ＝ 沒有開場演出、沒有 talk。 */
+    ...Object.fromEntries(SKY_FLIGHT_KINDS.map(k=>['flight_'+k,
+         { enemy:k, ship:true, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 }])),   // 空中怪 16 隻（ver -2268）
     flight_pirate:    { enemy:'pirate_ship', ship:true,
                         /* ver -741（Ray：「船戰的空賊戰定成這一首」）—— Seven Seas
                            （Alexander Nakarada），出處與授權字樣在 credit（index.html）。 */
@@ -4599,6 +4625,22 @@ export const ASSETS = {
        **對應的圖完全一樣，只是鑰匙分兩支** —— 不要照字面把 sky 改指 flight，
        那會變成兩階都是同一張。 */
   enemy_bl_dragon_front:  "resources/enemy/mon_dragon_v1_flight.webp",
+  enemy_sky_twinwyvern: "resources/enemy/mon_sky_twinwyvern.webp?v=8b23a136",   // 雙頭翼龍（ver -2268）
+  enemy_sky_boneray: "resources/enemy/mon_sky_boneray.webp?v=534952bb",   // 骨刺飛鰩（ver -2268）
+  enemy_sky_ribwhale: "resources/enemy/mon_sky_ribwhale.webp?v=a77e60f0",   // 浮空骨鯨（ver -2268）
+  enemy_sky_mawbat: "resources/enemy/mon_sky_mawbat.webp?v=ae6570e7",   // 裂口巨蝠（ver -2268）
+  enemy_sky_eyemoth: "resources/enemy/mon_sky_eyemoth.webp?v=9c313139",   // 千眼巨蛾（ver -2268）
+  enemy_sky_eelswarm: "resources/enemy/mon_sky_eelswarm.webp?v=be0d5d2f",   // 飛鰻群（ver -2268）
+  enemy_sky_gasjelly: "resources/enemy/mon_sky_gasjelly.webp?v=905c019e",   // 氣囊水母獸（ver -2268）
+  enemy_sky_armorcrab: "resources/enemy/mon_sky_armorcrab.webp?v=b14e80f8",   // 甲殼飛鱟（ver -2268）
+  enemy_sky2_spine: "resources/enemy/mon_sky2_spine.webp",   // 骨脊長帶（ver -2268）
+  enemy_sky2_maskbanner: "resources/enemy/mon_sky2_maskbanner.webp",   // 面具長幡（ver -2268）
+  enemy_sky2_ringchain: "resources/enemy/mon_sky2_ringchain.webp",   // 懸環長鏈（ver -2268）
+  enemy_sky2_mouthpillar: "resources/enemy/mon_sky2_mouthpillar.webp",   // 群口之柱（ver -2268）
+  enemy_sky2_facecrown: "resources/enemy/mon_sky2_facecrown.webp",   // 人面花冠（ver -2268）
+  enemy_sky2_eyeveil: "resources/enemy/mon_sky2_eyeveil.webp",   // 眼之幕（ver -2268）
+  enemy_sky2_rift: "resources/enemy/mon_sky2_rift.webp",   // 天之裂隙（ver -2268）
+  enemy_sky2_maw: "resources/enemy/mon_sky2_maw.webp",   // 無面巨首（ver -2268）
   enemy_bl_dragon_sky:    "resources/enemy/mon_dragon_v1_ascendant.webp?v=d30dd2e3",
   /* 王座徘徊者的放光音（ver -1351，Ray：「音效用 enemy_firebeam」）。
      ⚠⚠ 它**放在 `bgm/` 資料夾而且還是 `.mp3`** —— 那是 SE，照 §6.6 應該是
