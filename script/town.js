@@ -1557,7 +1557,7 @@ const VF_RAID_AFTER = [
   aar('armscross','能說明一下嗎？'),
   ren('intense','那是……！'),
   aar('signal',''),    // 亞隆使眼色
-  ren('determine',''),   // 蕾娜會意
+  ren('realize',''),   // 蕾娜會意（ver -2283，Ray：realize 放在「那是……！」下一拍）
   cec('command','這是聖王廳內部的事，毋須插手。'),
   aar('blindeye','妳這話，我可以當作是聖王廳對薇拉馮德領治安權的挑戰嗎？'),
   cec('gritteeth','還治安權……不過是收保護費的流氓貴族……！'),
