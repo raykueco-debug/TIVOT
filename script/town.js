@@ -1600,7 +1600,7 @@ const VF_RAID_AFTER = [
   { speaker:'NARRATION', text:'', bgBand:'vela_inn', clockToNext:8, bgm:'entangle', auto:400 },
   { speaker:'NARRATION', text:'', auto:300, fadeIn:3000 },
 ];
-/* ══ 薇拉馮德・隔日一日遊 → 快進三天 → 茉莉來訪 → 莊園大門（ver -2285，Ray 的稿；差分照《薇拉馮德_隔日_台詞差分》草稿，Ray 調過再對）══
+/* ══ 薇拉馮德・隔日一日遊 → 快進三天 → 茉莉來訪 → 莊園大門（ver -2285，Ray 的稿；差分照《薇拉馮德_隔日_台詞差分》，ver -2288 已對 Ray 改過的那一份）══
    · 隔日（VF_DAY）：夜襲演完三秒黑跳到隔天 08:00 → 旅店大廳接這一段（acts 的接續）。演完＝全體約會（城上 `groupDate`）＋自由行動。
    · 那一天按睡覺（VF_SKIP，`sleepFirst`）：時鐘推到三天後 08:00 → 莊園（`goto:'manor'`）→ 莊園大廳演茉莉來訪（VF_MOLLY，`darkStart`）。
    · 茉莉演完回林蔭大道（自由活動）→ 再走到莊園大門演 VF_GATE。
@@ -1638,21 +1638,21 @@ const VF_MOLLY = [
   mol('talk','數日不見，各位看來休養得不錯。'),
   sor('smile','好棒的城市！如果第一晚沒被人襲擊就完美了呢。'),
   mol('softsmile','您能喜歡真是太好了。'),
-  sor('sorry','對不起呀，我就是個山裡長大的鄉下人。'),
-  mol('closedtalk','快別這麼說。我們薇拉馮德的主母，也是森住民呢。'),
+  sor('smile','對不起呀，我就是個山裡長大的鄉下人。'),
+  mol('softsmile','快別這麼說。我們薇拉馮德的主母，也是森住民呢。'),
   nou('surprise','欸？是這樣嗎？'),
   ren('think','可是阿奎盧斯大人不是在災厄中……'),
   mol('eyesmile',''),   // 茉莉笑
-  ren('shock','！！'),
-  mol('serious','閒話先放一邊，關於安娜殿下的請求，我的主人已經給出裁示了。'),
+  ren('realize','！！'),
+  mol('talk','閒話先放一邊，關於安娜殿下的請求，我的主人已經給出裁示了。'),
   any('silent',''),
-  mol('talk','我們可以提供地下聯絡管道，最壞的情況下也有可靠的人選將安娜殿下送回祖國。'),
+  mol('serious','我們可以提供地下聯絡管道，最壞的情況下也有可靠的人選將安娜殿下送回祖國。'),
   nou('happy',''),
   mol('stern','但是，有個條件。'),
-  mol('serious','情資顯示，紫月聯合軍已在埃爾王國境內集結。目標……推測是西泊港。'),
-  ren('intense','大陸北方最大的不凍港……'),
+  mol('serious','情資顯示，紫月聯合軍已在埃爾王國外海集結。目標……推測是西泊港。'),
+  ren('pause','大陸北方最大的不凍港……'),
   mol('talk','不錯。埃爾王國並非盟邦，帝國就算想出手相助，也沒有立即出兵的法理。'),
-  ren('talkserious','況且……上議院多半樂見埃爾王國受創吧。'),
+  ren('think','況且……上議院多半樂見埃爾王國受創吧。'),
   mol('superior','……'),   // 茉莉打量
   mol('order','正是如此。先不論埃爾王國，若是西泊被奪，我們的航路勢必出現斷點。'),
   mol('stern','薇拉馮德不想看到這種結果。'),
@@ -1661,11 +1661,11 @@ const VF_MOLLY = [
   any('scare','！！'),
   mol('order','以安娜殿下為人質，拖延敵方進軍直到帝國介入。'),
   sor('angry','可是那個哥哥——！'),
-  ren('stare',''),   // 稿：starecalm（沒有這個鍵，暫填 stare）
+  ren('coldstare',''),   // 稿：starecalm（Ray 差分表：coldstare）
   sor('cringe',''),
   ren('askserious','若是——敵軍不顧及安娜殿下安危的話？'),
   mol('superior','那就把安娜殿下交還，賣謝索洛夫王室一個人情。'),
-  ren('coldstare','不愧是薇拉馮德，怎麼樣都不吃虧……'),
+  ren('lookawaytalk','不愧是薇拉馮德，怎麼樣都不吃虧……'),
   sor('whisper','可是安雅她……', { tiny:true }),   // 耳語
   nou('whisper','先不要講話。', { tiny:true }),     // 耳語
   ren('determine','我知道了。我們立刻出發。'),
@@ -1676,7 +1676,7 @@ const VF_MOLLY = [
   ren('talkserious','只要一離開薩梅爾帝國境，就會被鄰國視為不明船隻攔截，或者……'),
   mol('stern','直接被防空砲擊落。'),
   any('scare',''),
-  sor('talk','不能借我們一艘船嗎？'),
+  sor('confuse','不能借我們一艘船嗎？'),
   ren('coldstare','不行。因為這一切都與薇拉馮德無關，對吧？'),
   mol('eyesmile','您很清楚嘛。蕾姬娜小姐現在真是越看越教人喜歡呢。'),
   ren('lookaway','……'),
@@ -1685,12 +1685,12 @@ const VF_MOLLY = [
   mol('superior','去了就說是『阿爾馬扎的哈達德』介紹的。剩下就看他們，還有你們的膽識了。'),
   { speaker:'PLAYER', blank:true, se:'se_walk' },   // （主角空白）那就別囉唆，走吧。
   mol('softsmile','看來至少膽識沒有問題呢。'),
-  ren('lookaway','他比看起來……要可靠一些啦。'),
+  ren('awkward','他比看起來……要可靠一些啦。'),
   mol('think','……'),
-  mol('whisper','……蕾姬娜小姐，事到如今應該不用我提醒，'),
+  mol('stern','……蕾姬娜小姐，事到如今應該不用我提醒，'),
   mol('stern','咱們兩家之間，還有一個約定等著妳履行呢。'),
   mol('order','這次可千萬別再讓薇拉馮德的家紋蒙灰了。'),
-  ren('meltdown','……'),
+  ren('meltdownbite','……'),
   ren('lookdown','我明白……'),
   { speaker:'NARRATION', text:'', auto:300, hide:'*' },   // 自由活動：演完搬到林蔭大道（act 的 goto 自己淡黑轉景；這裡不寫 fadeOut —— 沒有下一段來掀它，會黑在林蔭大道上）
 ];
@@ -1700,7 +1700,7 @@ const VF_GATE = [
   nou('surprise','明明之前還那麼討厭我們……'),
   { speaker:'PLAYER', blank:true },   // （主角空白）生意人的秉性吧。
   nou('awkward','是、是那樣嗎？'),
-  ren('think','……'),
+  ren('lookaside','……'),
   ren('determine','整備一下，就出發吧。'),
   ren('talkserious','接下來可能沒有辦法好好補給了呢。'),
 ];
