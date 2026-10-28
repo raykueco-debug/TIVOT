@@ -1483,7 +1483,7 @@ const VF_RENNA_NIGHT = [
     ren('smile','好啦，那麼晚了，我要休息了——'),
     { speaker:'PLAYER', blank:true },   // （主角空白）又不是一天兩天的交情了。說來聽聽吧？我「姑且」也是個神父嘛。
     ren('smile','哪有你這種半夜敲淑女門的神父啦。'),
-    ren('meltdown','……'),
+    ren('meltdownbite','……'),
     ren('meltdownsmile','我真的沒事……反正也是沒辦法的事。'),
     ren('lookaside','……你看我的頭髮，是金色的吧？'),
     ren('awkward','可是……我的父親，卻是像墨一樣濃的黑髮。'),
@@ -1531,19 +1531,19 @@ const VF_RAID_AFTER = [
   /* ── 戰鬥結束（兩分支合流）── */
   nou('steady','我才不是學姐的替代品！'),   // 稿：戰勝語音（檔案還沒有，先字幕）
   Object.assign(cec('cringe','比想像中棘手啊……'), { flip:true }),
-  cec('smirk','不過你們已經沒有底牌了。', { onlyIf:'vf_raid_si' }),   // 戰鬥中使用了聖徒化
+  cec('gritteeth','不過你們已經沒有底牌了。', { onlyIf:'vf_raid_si' }),   // 戰鬥中使用了聖徒化
   cec('ready','那就只好，先下手為強！', { skipIf:'vf_raid_si' }),     // 戰鬥中未使用聖徒化
   cec('battlecry','SAINT……INSTALL！'),
   nmo('bore','等一下啦——賽西莉小姐——'),
   cec('disbelief','？？'),        // ver -2273 新差分：不可置信
-  nmo('dryfire','我沒彈藥囉——'),   // ver -2273 新差分：雙槍彈盡、滑套後定
-  cec('gritteeth','哈？你的槍棺呢？'),   // ver -2273 新差分：生氣咬牙
+  nmo('dryfirebore','我沒彈藥囉——'),   // ver -2273 新差分：雙槍彈盡、滑套後定
+  cec('disbelief','哈？你的槍棺呢？'),   // ver -2273 新差分：生氣咬牙
   nmo('happy','寄放在酒店櫃檯了。'),
-  cec('fluster','寄……你在想什麼啊！'),
+  cec('disbelief','寄……你在想什麼啊！'),
   nmo('happy','櫃檯告示寫的嘛——'),
   { speaker:'NARRATION', text:'', se:'se_weapon_reload', auto:700 },
   cec('upset','……'),
-  cec('command','看來你們是鐵了心要和聖王廳開戰了。'),
+  cec('gritteeth','看來你們是鐵了心要和聖王廳開戰了。'),
   ren('talkserious','安娜王女身份特殊，不能讓聖王廳牽扯在內。這只是正確的政治判斷。'),
   ren('command','作戰課的作法，萬一情報外洩就會萬劫不復！'),
   cec('smirk','不愧是監察官，伶牙俐齒的。'),
@@ -1560,7 +1560,7 @@ const VF_RAID_AFTER = [
   ren('determine',''),   // 蕾娜會意
   cec('command','這是聖王廳內部的事，毋須插手。'),
   aar('blindeye','妳這話，我可以當作是聖王廳對薇拉馮德領治安權的挑戰嗎？'),
-  cec('proud','還治安權……不過是收保護費的流氓貴族……！'),
+  cec('gritteeth','還治安權……不過是收保護費的流氓貴族……！'),
   aar('closedsmile','哼，別忘了流氓貴族也有上議會的席次。'),
   aar('closedsmile','要我看，早該把騎士團收編國有。不過……'),
   aar('front','同為神的子民，這次我可以睜一隻眼閉一隻眼。'),
@@ -1576,7 +1576,7 @@ const VF_RAID_AFTER = [
   { speaker:'PLAYER', blank:true },   // （主角空白）「沒有再流鼻血了吧？」
   cec('shynose','笨蛋。'),
   /* ── 賽西莉離開後（依各人好感）── */
-  { speaker:'NARRATION', text:'', auto:400, hide:['CECILIE','NEMO'] },
+  { speaker:'NARRATION', text:'', se:'se_walk', auto:900, hide:['CECILIE','NEMO','LAURIE'] },   // ver -2279（Ray）：「笨蛋」完放 se_walk（她們走掉）
   Object.assign(ren('lookaway','……'), { tierWho:'RENNA', tierMin:3 }),
   Object.assign(nou('sadsmile','……'), { tierWho:'NOUVELLE', tierMin:3 }),
   Object.assign(nou('surprise','學姐……'), { tierWho:'NOUVELLE', tierMax:2 }),
