@@ -167,3 +167,4 @@ aaron_si_confused  # 不適用：Ray 指定亞隆不眨眼
 aaron_si_draw  # 不適用：Ray 指定亞隆不眨眼
 aaron_si_front  # 不適用：Ray 指定亞隆不眨眼
 aaron_si_signal  # 不適用：Ray 指定亞隆不眨眼
+anya_si_shakehead  # 不適用：v2 本來就是閉眼（2026-10-28 換圖）

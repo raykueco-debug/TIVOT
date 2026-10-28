@@ -1247,3 +1247,5 @@ when	from	to	reason
 20261027-231149	resources/map/_layout_winsmoor_siege_v9.png	_recycle/resources/map/_layout_winsmoor_siege_v9.png	v9 佈局圖由 v9b（連動城鎮版 12 地點）取代
 20261028-194211	resources/illustration/_046_refs	_recycle/resources/illustration/_046_refs	046 產圖暫存參考圖（美術 session，已用完）
 20261028-222048	resources/si/anya_si_shakehead.webp	_recycle/resources/si/anya_si_shakehead.webp	安雅搖頭換成動作小的 v2（Ray 10-28），舊圖回收
+20261028-222312	resources/si/blink/anya_si_shakehead_half.webp	_recycle/resources/si/blink/anya_si_shakehead_half.webp	安雅 shakehead 換 v2，舊眨眼補丁對不上（閉眼圖不必眨）
+20261028-222312	resources/si/blink/anya_si_shakehead_closed.webp	_recycle/resources/si/blink/anya_si_shakehead_closed.webp	安雅 shakehead 換 v2，舊眨眼補丁對不上（閉眼圖不必眨）

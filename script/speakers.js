@@ -1106,7 +1106,7 @@ export const ART = {
     scare2:   { src:'resources/si/anya_si_scare2.webp?v=fb151f9d',    top:4, bot:1519, fx:0.364 },
     /* ver -2099 返回帝都稿缺差分（美術 9086789c）：measure_si 量 top/bot；fx 照臉中心目測校正 */
     sad:       { src:'resources/si/anya_si_sad.webp',       top:8, bot:1523, fx:0.465 },
-    shakehead: { src:'resources/si/anya_si_shakehead.webp?v=274438ab', top:5, bot:1521, fx:0.405 },
+    shakehead: { src:'resources/si/anya_si_shakehead.webp?v=274438ab', top:0, bot:1533, fx:0.510 },
     /* ══ 東方泊地・碼頭／甜品店 ＋ 貝利薩爾祭壇（ver -1372）══
        腳本（-1318／-1353）一共有 6 拍在用這兩個名字，圖是 Ray 這一輪才交的 ——
        在那之前一律**靜靜回退成基本立繪**（`script_lint.py` 每次都報，畫面上沒有訊息）。
