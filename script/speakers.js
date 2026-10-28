@@ -331,6 +331,7 @@ export const ART = {
                   reach:    { src:'resources/si/renna_si_reach.webp',      top:2, bot:1528, fx:0.566 },
                   /* 墓地那一幕（ver -671，Ray 交稿）。逐張量（tools/measure_si.py）。 */
                   meltdown:    { src:'resources/si/renna_si_meltdown.webp',    top:0,  bot:1535, fx:0.528 },
+                  meltdownbite:{ src:'resources/si/renna_si_meltdownbite.webp', top:0, bot:1535, fx:0.528 },   // ver -2277 美術交件：同 meltdown 姿勢、不笑、輕咬下唇忍淚（取景照抄 meltdown）
                   meltdownsmile:{ src:'resources/si/renna_si_meltdownsmile.webp', top:1, bot:1535, fx:0.529 },   // ver -2208（PNG→webp，原檔進 _originals/SI/）
                   meltdowncry: { src:'resources/si/renna_si_meltdowncry.webp', top:4,  bot:1532, fx:0.607 },
                   /* ⚠ `snivel`（ver -1671 接線）：圖 -1554 那一批就在庫裡，**從來沒接過**
@@ -1510,6 +1511,7 @@ export const ART = {
     /* ⚠ 雙槍那一張還沒有人用（戰鬥立繪走敵人卡的 `enemy_nemo`）—— 先接著。 */
     dual:     { yShift:72, cm:100, src:'resources/si/nemo_si_dual.webp',     top:0, bot:1535, fx:0.408 },
     dryfire:  { src:'resources/si/nemo_si_dryfire.webp',  top:2, bot:1527, fx:0.536 },   // ver -2273 美術交件：雙手舉 M1911、滑套後定、彈盡愣住（薇拉馮德夜襲戰後）
+    dryfirebore:{ src:'resources/si/nemo_si_dryfirebore.webp', top:6, bot:1528, fx:0.537 },   // ver -2277 美術交件：同 dryfire 姿勢、無聊臉
   } },
   /* ver -1916：front 美術重交（同名覆蓋 ?v=2，measure_si 重量 top/bot/fx）；新增 `cringe`。 */
   cecilie:   { cm:170, eye:32, fx:0.536, top:8, bot:1533,

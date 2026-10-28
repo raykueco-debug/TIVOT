@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.28-2276';
+export const VERSION = 'ver 2026.10.28-2277';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2425,9 +2425,10 @@ export const GAME_CONFIG = {
     lk_nemo: { enemy:'nemo', allowLose:true, bgm:'nemo', bgmAfter:'@town', bgmOnRise:true },
     /* ══ 薇拉馮德夜襲・尼莫（ver -2269，Ray：「戰鬥開始（搭檔限諾薇兒）」）══ 劇情戰（城鎮段落 `storyBattle`，打輸回檔）。
        `saintFlag` ＝打贏時這一場用過聖徒化就插這支旗 —— 戰後賽西莉那一句分兩種說法（combat.win 讀）。 */
-    /* ver -2273（Ray）：曲子＝RetroRoman_Battle，戰後照放同一首；背景＝窗戶破碎的房間。
-       ⚠ 破窗房間的圖還沒有（已交美術）—— 先借走廊房門前那張；換圖時 `script/town.js` 的 `VF_ROOM_BG` 一起改（兩處互指）。 */
-    vf_raid: { enemy:'vf_nemo', partner:'nouvelle', story:1, bgm:'bgm_retroroman', bgmAfter:'retroroman', bg:'vela_innroom_door', saintFlag:'vf_raid_si' },
+    /* ver -2273（Ray）：戰後放 RetroRoman_Battle；背景＝窗戶破碎的房間。
+       ⚠ ver -2277（Ray：「尼莫的戰鬥曲是固定的」）：戰鬥本身照舊是尼莫的 Prairie5（`bgm:'nemo'`）。
+       ⚠ 破窗房間（`vela_innroom_broken`）與 `script/town.js` 的 `VF_ROOM_BG` 是同一張，改一邊要改另一邊。 */
+    vf_raid: { enemy:'vf_nemo', partner:'nouvelle', story:1, bgm:'nemo', bgmAfter:'retroroman', bg:'vela_innroom_broken', saintFlag:'vf_raid_si' },
     /* 米夏戰（ver -1957，測試用；Ray：「開個米夏戰來試試」）。⚠ 還沒有任何腳本用它 ——
        正式的米夏戰（STORY_ROADMAP：第四遺蹟「打不贏」、終戰）要另外開卡、另外決定 allowLose。
        曲子先借尼莫戰那一首。 */

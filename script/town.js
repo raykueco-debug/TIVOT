@@ -1467,9 +1467,9 @@ const VF_INN = [
 /* 敲蕾娜的門（`innStage1.rennaAlt`）：T2 以下只回一句（每次都一樣）；T3 以上演夜談，演完插 `vf_renna_night` 就不再演。
    ⚠ 先接到第 206 列（Ray）——「蕾娜落淚」插圖之後、賽西莉與尼莫那一段還沒接。 */
 /* 夜襲那一段的兩張背景（ver -2273，Ray）：敲門＝走廊房門前；尼莫戰與戰後＝窗戶破碎的房間。
-   ⚠ 破窗房間還沒有圖（已交美術）—— 先借房門前那張；換圖時 `config.js` 的 `battles.vf_raid.bg` 一起改（兩處互指）。 */
+   ⚠ 破窗房間（美術 ver -2277 交件，只有夜景、不帶時段）與 `config.js` 的 `battles.vf_raid.bg` 是同一張，改一邊要改另一邊。 */
 const VF_DOOR_BG = 'vela_innroom_door';
-const VF_ROOM_BG = 'vela_innroom_door';
+const VF_ROOM_BG = 'vela_innroom_broken';
 const VF_RENNA_NIGHT = [
   Object.assign(ren('tire','我累了，明天再談吧。'), { tierWho:'RENNA', tierMax:2 }),
   ...[
@@ -1523,7 +1523,7 @@ const VF_RENNA_NIGHT = [
    ⚠ 「戰勝語音：諾『我才不是學姐的替代品！』」—— 語音檔還沒有，先做成戰後第一句字幕。
    ⚠ 041 是動畫：不循環、由下往上平移（ver -2271）；播完停在最後一格、等對話框出來才開播（cgAnim 的 `hold`／`withText`，ver -2273）——
      留到稿上「插圖撤下」那一拍（`cg:null`）才收。
-   ⚠ 曲子：來襲（分支 1 的「呀！」、分支 2 的上膛那一拍）起換 RetroRoman_Battle，戰鬥與戰後照放同一首（ver -2273，Ray）。
+   ⚠ 曲子：來襲（分支 1 的「呀！」、分支 2 的上膛那一拍）起換 RetroRoman_Battle；尼莫戰本身是他固定的 Prairie5（ver -2277），戰後接回 RetroRoman（ver -2273，Ray）。
    ⚠ 背景：敲門＝`VF_DOOR_BG`；插圖收掉起（戰前對峙、尼莫戰、戰後）＝`VF_ROOM_BG`（窗戶破碎的房間）。 */
 const VF_RAID_SIDES = { RENNA:'L', NOUVELLE:'L', SORANA:'L', ANYA:'L', CECILIE:'R', CECILIE_X:'R', NEMO:'R', AARON:'R' };
 const VF_RAID_AFTER = [
