@@ -10882,7 +10882,7 @@ export const TOWNS = {
         innSpots:{ sit:{ x:0.22, y:0.68 }, sleep:{ x:0.440, y:0.430 } },
         innStage1:{ renna:'早點休息吧。', nightRest:'這麼晚了，早點睡吧。',
                     rennaAlt:{ need:'vf_inn', until:'vf_renna_night', anytime:true, lines:VF_RENNA_NIGHT } },
-        acts:[ { flag:'vf_inn', need:'vf_manor', sides:CR_SIDES, lines:VF_INN },
+        acts:[ { flag:'vf_inn', need:'vf_manor', stage:21, sides:CR_SIDES, lines:VF_INN },   // ver -2270：回到旅店＝Stage 21（Ray：「把章節拆成 stage21 從回到旅店開始」）
                /* 薇拉馮德夜襲（ver -2269）：分支 1＝敲門夜談演完（rennaAlt 最後一拍插 vf_raid_knock，inn 收尾 rerun 接上）；
                   分支 2＝沒敲門直接按睡覺（sleepFirst）。共用 flag，演過一條另一條就不演。 */
                { flag:'vf_raid', need:'vf_raid_knock', storyBattle:true, sides:VF_RAID_SIDES, lines:VF_RAID_KNOCK },
