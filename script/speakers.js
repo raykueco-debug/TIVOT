@@ -337,6 +337,10 @@ export const ART = {
                      —— 古墓底層那一段（「因為我的報告……」）第一次用到它。
                      全身站姿 ⇒ 照既有量法（alpha>16、中央段）逐張量，不必 `cm`/`standCm`。 */
                   snivel:      { src:'resources/si/renna_si_snivel.webp',      top:9,  bot:1525, fx:0.534 },
+                  /* 薇拉馮德夜襲（ver -2269，Ray 的差分表）：閉眼抽泣／淚眼／破涕為笑。PNG→webp，原檔進 _originals/si/；measure_si 量。 */
+                  snivelclose: { src:'resources/si/renna_si_snivelclose.webp', top:9,  bot:1528, fx:0.527 },
+                  sniveleyes:  { src:'resources/si/renna_si_sniveleyes.webp',  top:6,  bot:1527, fx:0.527 },
+                  snivelsmile: { src:'resources/si/renna_si_snivelsmile.webp', top:7,  bot:1526, fx:0.532 },
                   /* ══⚠⚠⚠ **公主抱：托爾斯坦抱著她**（ver -1692，Ray 交件＋交稿）══
                      畫面上是**兩個人**，而且**站著的那一個是主角**（她被橫抱著）——
                      所以三個數字都不能沿用她自己的站姿那一組：

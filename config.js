@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.28-2268';
+export const VERSION = 'ver 2026.10.28-2269';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2423,6 +2423,9 @@ export const GAME_CONFIG = {
            這一場改成**門開始上推那一瞬**就換。走既有的那一格（-1433 追擊戰同一支），
            `story` 那邊只問「要不要早播」，播放點仍然只有 `riseCue` 一個（鐵律 7）。 */
     lk_nemo: { enemy:'nemo', allowLose:true, bgm:'nemo', bgmAfter:'@town', bgmOnRise:true },
+    /* ══ 薇拉馮德夜襲・尼莫（ver -2269，Ray：「戰鬥開始（搭檔限諾薇兒）」）══ 劇情戰（城鎮段落 `storyBattle`，打輸回檔）。
+       `saintFlag` ＝打贏時這一場用過聖徒化就插這支旗 —— 戰後賽西莉那一句分兩種說法（combat.win 讀）。 */
+    vf_raid: { enemy:'vf_nemo', partner:'nouvelle', story:1, bgm:'nemo', bgmAfter:'@town', saintFlag:'vf_raid_si' },
     /* 米夏戰（ver -1957，測試用；Ray：「開個米夏戰來試試」）。⚠ 還沒有任何腳本用它 ——
        正式的米夏戰（STORY_ROADMAP：第四遺蹟「打不贏」、終戰）要另外開卡、另外決定 allowLose。
        曲子先借尼莫戰那一首。 */
@@ -3557,6 +3560,7 @@ export const GAME_CONFIG = {
       '005_cecilieintro': { video:'resources/illustration/video/005_cecilieintro_v1.mp4' },
       '35_bellinda': { video:'resources/illustration/video/35_bellinda_v1.mp4', loop:true },
       '044_cecilietorsten': { video:'resources/illustration/video/044_cecilietorsten_v1.mp4', loop:true },
+      '041_cecilienemo': { video:'resources/illustration/video/041_cecilienemo_v1.mp4', loop:true },   // ver -2269 薇拉馮德夜襲（動畫 10-18 交件）：循環 —— 這張要撐兩句台詞，2.5 秒的單次播放會在第一句出來前就撤下（⚠ 尾格≠首格，接縫會跳一下，待 Ray 判）
       /* 劇情裡的「Execute 插圖」寫的是明確路徑（script/town.js），鑰匙就是那串路徑；影片與 CI 共用處決 v2。 */
       'resources/ci/ci_torsten_execute.png': { video:'resources/ci/video/ci_torsten_execute_v2.mp4' },
     },
@@ -5724,6 +5728,7 @@ export const ASSET_VER = {
   '007_anya_passout': 'f67aba29',
   '008_rennaholdanya': 'a6142239',
   '009_soranadebute': '43cf9606',
+  '039_rennatears': '56d1e454',
   '42452231-c355-429f-ba86-81c0d0c5e369': 'a1997305',
   '_dunmor_altar8_sheet': 'c1938d79',
   '_dunmor_batch3_sheet': '62501d0e',

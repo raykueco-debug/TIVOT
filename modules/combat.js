@@ -2976,6 +2976,9 @@ function win(){
        記了＝這一場的劇情永久結束（隨機再遇同種怪也不播）。憲法 §6.5.2 原則。 */
     const _wsb = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
     if(state.storyBattle && _wsb && _wsb.talkOnce) prog.addFlags([_wsb.talkOnce]);   // 只有劇情戰記（ver -493）
+    /* `saintFlag`（ver -2269）：打贏時**這一場用過聖徒化**就插這支旗 —— 戰後劇情靠 `onlyIf`／`skipIf` 分兩種說法。
+       ⚠ 只在打贏這一刻記（同 talkOnce）：打輸回檔重打，以最後打贏的那一次為準。 */
+    if(_wsb && _wsb.saintFlag && state.saintUsedThisBattle) prog.addFlags([_wsb.saintFlag]);
   }
   enemy.playEndVoice(true);   // 敵人卡的 winVoice（ver -1920）
   state.over=true; clockPause(); stopAll();

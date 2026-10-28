@@ -446,6 +446,47 @@ export const ENEMIES = {
         assault:'witch_revolver',
       },
     },
+    /* ══ 尼莫・薇拉馮德夜襲（ver -2269，Ray 的《薇拉馮德_夜襲_台詞差分》）══
+       `nemo` 那張是初戰「？？？」專用（見那張的註解：日後再上場另開一張），這一張＝**照抄**、只改 `name`。
+       ⚠ 數值暫用初戰那一組（Ray 還沒給這一場的卡）。 */
+    vf_nemo: {
+      name:'尼莫',
+      story:1, counterStagger:1, boss:0,
+      /* 語音（ver -1920，Ray）：開戰 play／玩家受擊三句輪播／玩家戰敗 bulletrain／戰勝 win（播法見 enemy.js 的 playHitVoice）。 */
+      hitVoice:['vo_nemo_slow1','vo_nemo_slow2','vo_nemo_feint'],
+      loseVoice:'vo_nemo_bulletrain', winVoice:'vo_nemo_win',
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0.3], '霰彈槍':[0,0.3], '萊福槍':[0,0.3] },
+      openAssault:[1,2],
+      ult:{ on:1, hp:20, count:4, atk:20, gap:0.4, cd:4 },
+      kind:'human',
+      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
+      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      tier:'B',
+      atype:'S',
+      stageScale:1,
+      stack:1,
+      image:'enemy_nemo',
+      /* ⚠ ver -1565（Ray：「尼莫戰讓他站稍遠一點，應該是圖稍縮 上移 全身入鏡
+         但不要太上面」）：`contain` ＝全身入鏡（預設的 `cover` 會把他裁掉）；
+         `scale` 縮到 86% ＝站遠一點；`shiftY` −0.05 ＝往上挪五分之一格。
+         ⚠ 三個都是**看畫面調的**，不是量出來的 —— 覺得還是太近／太高就動這三個數字。 */
+      fit:{ mode:'contain', pos:'center bottom', scale:0.86, shiftY:-0.05 },
+      hp:270,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      atkInterval:null,
+      assaultEvery:[2,4],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      assault:{ count:2, gap:1 },
+      entrance:'vo_nemo_play',
+      special:[],
+      boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
+      delayPenalty:{ dmgScale:0.5, timeDelta:-1 },
+      hitFx:{
+        delay:'bullet',
+        wrong:'dagger',
+        assault:'witch_revolver',
+      },
+    },
     /* ══ 米夏（ver -1957，Ray 交辦）══════════════════════════════════════════
        > Ray：「用 fight 當初始立繪，攻擊頻率用 nemo，攻擊特效是延時斬、按錯斬、
        >   大招是 Misha attack 像殘影一樣脈動彈出＋斬，S rank，普攻無效，射出的子彈

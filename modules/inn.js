@@ -489,7 +489,10 @@ function playRennaAlt(needAnytime){
          `questLocked`／`onInvite`）都在那裡。寫成 `host.applyAff` 會是 `undefined`，
          而 `if(...)` 會把它靜靜跳過：**演了、旗也插了、好感就是不動**（實測踩到）。 */
     if(st1 && st1.applyAff) st1.applyAff(alt.lines);
-    if(host.lock) host.lock(false); refresh(); });
+    if(host.lock) host.lock(false); refresh();
+    /* ver -2269：敲門那一段插的旗可能讓這一格的段落到期（薇拉馮德夜襲：夜談 → 槍擊）——
+       同坐坐坐完那一條（settle），問城鎮一次「現在該演什麼」，走注入的 `rerun`（鐵律 8）。 */
+    if(host.rerun) host.rerun(); });
   return true;
 }
 
