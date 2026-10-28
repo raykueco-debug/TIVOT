@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.28-2272';
+export const VERSION = 'ver 2026.10.28-2276';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2425,7 +2425,9 @@ export const GAME_CONFIG = {
     lk_nemo: { enemy:'nemo', allowLose:true, bgm:'nemo', bgmAfter:'@town', bgmOnRise:true },
     /* ══ 薇拉馮德夜襲・尼莫（ver -2269，Ray：「戰鬥開始（搭檔限諾薇兒）」）══ 劇情戰（城鎮段落 `storyBattle`，打輸回檔）。
        `saintFlag` ＝打贏時這一場用過聖徒化就插這支旗 —— 戰後賽西莉那一句分兩種說法（combat.win 讀）。 */
-    vf_raid: { enemy:'vf_nemo', partner:'nouvelle', story:1, bgm:'nemo', bgmAfter:'@town', saintFlag:'vf_raid_si' },
+    /* ver -2273（Ray）：曲子＝RetroRoman_Battle，戰後照放同一首；背景＝窗戶破碎的房間。
+       ⚠ 破窗房間的圖還沒有（已交美術）—— 先借走廊房門前那張；換圖時 `script/town.js` 的 `VF_ROOM_BG` 一起改（兩處互指）。 */
+    vf_raid: { enemy:'vf_nemo', partner:'nouvelle', story:1, bgm:'bgm_retroroman', bgmAfter:'retroroman', bg:'vela_innroom_door', saintFlag:'vf_raid_si' },
     /* 米夏戰（ver -1957，測試用；Ray：「開個米夏戰來試試」）。⚠ 還沒有任何腳本用它 ——
        正式的米夏戰（STORY_ROADMAP：第四遺蹟「打不贏」、終戰）要另外開卡、另外決定 allowLose。
        曲子先借尼莫戰那一首。 */
@@ -3560,7 +3562,7 @@ export const GAME_CONFIG = {
       '005_cecilieintro': { video:'resources/illustration/video/005_cecilieintro_v1.mp4' },
       '35_bellinda': { video:'resources/illustration/video/35_bellinda_v1.mp4', loop:true },
       '044_cecilietorsten': { video:'resources/illustration/video/044_cecilietorsten_v1.mp4', loop:true },
-      '041_cecilienemo': { video:'resources/illustration/video/041_cecilienemo_v1.mp4' },   // ver -2271 薇拉馮德夜襲：不循環、由下往上平移（Ray）
+      '041_cecilienemo': { video:'resources/illustration/video/041_cecilienemo_v1.mp4', hold:true, withText:true },   // ver -2271 薇拉馮德夜襲：不循環、由下往上平移；ver -2273（Ray）：不自動消失（停最後一格）、對話框一出來就開播
       /* 劇情裡的「Execute 插圖」寫的是明確路徑（script/town.js），鑰匙就是那串路徑；影片與 CI 共用處決 v2。 */
       'resources/ci/ci_torsten_execute.png': { video:'resources/ci/video/ci_torsten_execute_v2.mp4' },
     },

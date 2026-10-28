@@ -1168,7 +1168,9 @@ function ensureOn(id, expr){
          **舊圖被套上新圖的取景**：娜塔莉 dying→dead 的 `fx` 差 0.23、`top` 差 56，
          畫面上就是「圖還沒換、人先跳走」。
          正解：`slotExpr` 與 `src` **同一刻**更新，然後才 `layout()`。 */
-      const ready=()=>{ im.onload=null; setExpr(); layout(); el.classList.add('on'); blinkBind(side); };
+      /* ⚠ 順手拿掉 `.fading`（ver -2273）：換表情的淡出排了 190ms，那段期間點下一句換成別人上台，
+         換表情那支計時器被取消、`.fading` 就一直留著（opacity 0）—— 新上台的人整個看不見。 */
+      const ready=()=>{ im.onload=null; setExpr(); layout(); el.classList.remove('fading'); el.classList.add('on'); blinkBind(side); };
       im.onload = ready;
       im.setAttribute('src', src);
       el.dataset.who = id;
@@ -1176,6 +1178,7 @@ function ensureOn(id, expr){
     };
     const first = !slot[side];
     if(swapping || first) slidIn = true;
+    clearTimeout(slotT[side]); slotT[side]=0;   // 上一次還沒跑的換圖取消掉（不然它晚一拍把舊的那張蓋回來）
     blinkUnbind(side);   // 開始換圖：舊圖的眼睛補丁先撤（新圖畫上去那一刻再綁，見 ready／back）
     if(swapping){
       /* 同側換人：舊的先滑出，再換新的滑入（CLAUDE.md §6.5 的輪轉換卡，
@@ -2232,14 +2235,19 @@ function playCgAnim(name){
   /* ⚠⚠ ver -2183（Ray：「只要播動畫就不要有底圖，不然撤掉會穿幫」）：靜態圖從開播起就藏（`visibility`，不是 display ——
      它還得留在版面上讓 canvas 照抄框、取景、平移與淡出）。影片載不到才放回來（退回靜態圖）。 */
   img.classList.add('cg-anim-hide');
-  const on={ name:name, v:v, cv:cv, ctx:cv.getContext('2d'), img:img, raf:0, vfc:0, t:0, url:null, shown:false };
+  /* ══ `hold:true`（ver -2273，Ray：「尼莫跟賽西莉的動畫不要自動消失」）══ 不循環、播完**停在最後一格**，
+     插圖留到腳本自己 `cg:null` 才收（上面 -2182「停止前就撤下」那一條的明寫例外）。
+     `withText:true` ＝**對話框與動畫一起開始**（同版：「從一開始動畫就要開始跑對話框」）：
+     那一拍不押「點一下才出框」（-1881 的插圖規矩，renderLine 那一段的明寫例外），
+     影片則等打字機真的開始打字才放（黑幕／reveal 都還沒好時先停在第一格）。 */
+  const on={ name:name, v:v, cv:cv, ctx:cv.getContext('2d'), img:img, raf:0, vfc:0, t:0, url:null, shown:false, hold:!!A.hold };
   cgAnimOn=on;
   const loop=()=>{
     if(cgAnimOn!==on) return;
     /* ⚠⚠ ver -2182（Ray：「所有插畫在動畫跑完前都要撤下」「動畫在停止前就要撤下」）：
        不循環的那幾支，播到最後 CG_ANIM_OUT_S 秒就把插畫淡出收掉 —— **影片還在動的時候**收，
        畫面上永遠不會停在一張不動的最後一格。（循環的 043 不會停，不受這一條管。） */
-    if(!v.loop && !on.leaving && v.duration && v.currentTime >= v.duration - CG_ANIM_OUT_S) withdrawCgAnim(on);
+    if(!v.loop && !on.hold && !on.leaving && v.duration && v.currentTime >= v.duration - CG_ANIM_OUT_S) withdrawCgAnim(on);
     if(on.leaving && (v.ended || v.currentTime >= v.duration - 0.05)){ finishCgAnim(on); return; }
     cgAnimDraw(on);
     if(v.requestVideoFrameCallback && !v.paused) on.vfc=v.requestVideoFrameCallback(loop);
@@ -2250,11 +2258,15 @@ function playCgAnim(name){
     if(cgAnimOn!==on) return;
     const f=$('storyFade');
     if(f && f.classList.contains('on')){ on.t=setTimeout(go, 60); return; }
+    /* 對話框真的開始打字才放（打字機可能還排在立繪／淡入之後）；等不到 3 秒就照放，不卡住。 */
+    if(A.withText && (on.wt=(on.wt||performance.now())) && performance.now()-on.wt<3000){
+      const tx=$('storyText');
+      if(pendingReveal || !(tx && tx.textContent)){ on.t=setTimeout(go, 30); return; } }
     const p=v.play(); if(p && p.catch) p.catch(()=>{});
     loop();
   };
   v.onloadeddata=()=>{ if(cgAnimOn===on){ cgAnimDraw(on); go(); } };
-  v.onended=()=>{ if(cgAnimOn===on && !v.loop) finishCgAnim(on); };   // 保險：播完那一刻一定收（ver -2186）
+  v.onended=()=>{ if(cgAnimOn===on && !v.loop && !on.hold) finishCgAnim(on); };   // 保險：播完那一刻一定收（ver -2186）
   const fallback=()=>{ if(cgAnimOn===on) stopCgAnim(); };   // 影片載不到：收掉動畫層，靜態圖放回來
   v.onerror=fallback;
   fetch(A.video).then(r=>r.ok?r.blob():null).then(b=>{
@@ -3563,7 +3575,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2272';
+const KERB_V='?v=2276';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）
@@ -5063,7 +5075,8 @@ function renderLine(){
      插圖是要先**看**的 —— 框一上來就蓋掉下半張。所以帶 `cg:` 的那一拍先只放圖，
      玩家點一下（`advance` 的 `cgTap`）才出框打字；那一下**不推進**（同 delay／打字的規矩）。
      ⚠ 自動播放／加速照舊直接出框（玩家明講「不要等我」）；回播（`replaying`）也不押。 */
-  if(line.cg && !autoPlay && !fastMode && !replaying){
+  /* ⚠ 例外：插圖動畫登記了 `withText`（ver -2273，Ray：「從一開始動畫就要開始跑對話框」）＝框跟著動畫一起出，不押點擊。 */
+  if(line.cg && !autoPlay && !fastMode && !replaying && !(cgAnimSpec(line.cg)||{}).withText){
     if(bub2) bub2.style.visibility='hidden';
     stopTyping(); if(tx) tx.textContent='';
     cgTap = ()=>{ if(bub2) bub2.style.visibility='';

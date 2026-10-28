@@ -1542,7 +1542,7 @@ const BA_CHAPTERS = [
   /* ══ Stage 21 薇拉馮德旅店（ver -2270，Ray：「把章節拆成 stage21 從回到旅店開始」）══ 莊園演完 `goto:'inn'`＋`clockToday:20` 的那一刻：
      旅店那一段（vf_inn）第一拍插 stage 21 → 敲蕾娜的門（夜談 → 夜襲）或直接睡（夜襲）→ 尼莫戰 → 亞隆收場。旗＝Stage 20 那一份＋抵達／莊園。 */
   { id:'stage21', name:'Stage 21', sub:i18nT('薇拉馮德旅店：蕾娜夜談／直接睡 → 第四課夜襲（尼莫戰）→ 亞隆'),
-    stage:20, clockHour:20, named:true, aff:A_AFF,
+    stage:21, clockHour:20, named:true, aff:A_AFF,   // ver -2273：寫 21（選「跳劇情」時旅店那一段不演，不寫的話會停在 20）
     flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb',
             's14_flight_talk','ss_arrive','ss_cityhall','ss_4pm','ss_inn_merge',
             'ss_slum_anya','ss_slum_nou','ss_slum_sor','ss_anya_after','ss_nou_after','ss_sor_resolve',

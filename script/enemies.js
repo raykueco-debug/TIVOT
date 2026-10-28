@@ -471,7 +471,7 @@ export const ENEMIES = {
          但不要太上面」）：`contain` ＝全身入鏡（預設的 `cover` 會把他裁掉）；
          `scale` 縮到 86% ＝站遠一點；`shiftY` −0.05 ＝往上挪五分之一格。
          ⚠ 三個都是**看畫面調的**，不是量出來的 —— 覺得還是太近／太高就動這三個數字。 */
-      fit:{ mode:'contain', pos:'center bottom', scale:0.86, shiftY:-0.05 },
+      fit:{ mode:'contain', pos:'50% 100%', scale:0.76, shiftY:-0.03 },
       hp:270,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,

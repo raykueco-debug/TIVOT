@@ -1466,9 +1466,16 @@ const VF_INN = [
 ];
 /* 敲蕾娜的門（`innStage1.rennaAlt`）：T2 以下只回一句（每次都一樣）；T3 以上演夜談，演完插 `vf_renna_night` 就不再演。
    ⚠ 先接到第 206 列（Ray）——「蕾娜落淚」插圖之後、賽西莉與尼莫那一段還沒接。 */
+/* 夜襲那一段的兩張背景（ver -2273，Ray）：敲門＝走廊房門前；尼莫戰與戰後＝窗戶破碎的房間。
+   ⚠ 破窗房間還沒有圖（已交美術）—— 先借房門前那張；換圖時 `config.js` 的 `battles.vf_raid.bg` 一起改（兩處互指）。 */
+const VF_DOOR_BG = 'vela_innroom_door';
+const VF_ROOM_BG = 'vela_innroom_door';
 const VF_RENNA_NIGHT = [
   Object.assign(ren('tire','我累了，明天再談吧。'), { tierWho:'RENNA', tierMax:2 }),
   ...[
+    /* 敲門後三秒轉景到房門前（ver -2273，Ray）：淡黑 1.5 秒 → 全黑底下換背景 → 淡回 1.5 秒。 */
+    { speaker:'NARRATION', text:'', fadeOut:1500, auto:1500, show:false },
+    { speaker:'NARRATION', text:'', bg:VF_DOOR_BG, fadeIn:1500, auto:1500 },
     ren('curious','怎麼了？這種時間。'),
     { speaker:'PLAYER', blank:true },   // （主角空白）妳，還好嗎？
     ren('awkward','沒事啦。怎麼你們一個個都這樣啦！'),
@@ -1497,7 +1504,7 @@ const VF_RENNA_NIGHT = [
     ren('sniveleyes','有你這樣安慰人的嗎？'),   // 蕾娜破涕為笑
     ren('snivelsmile','不過，我好受多了。謝謝。'),
     { speaker:'PLAYER', blank:true },   // （主角空白）「那就好。不良神父就不打擾淑女休息啦。晚安。」
-    { speaker:'NARRATION', text:'', se:'se_steps', auto:900 },
+    { speaker:'NARRATION', text:'', se:'se_walk', auto:900 },   // ver -2273（Ray）：walk 不是 step
     ren('reach','等等。'),
     ren('sad','你都沒說過……自己的事呢。'),
     { speaker:'PLAYER', blank:true },   // （主角空白）我哪有什麼事好說的。
@@ -1514,49 +1521,55 @@ const VF_RENNA_NIGHT = [
      （戰後賽西莉那一句分兩種）。劇情戰（`storyBattle`）＝打輸回檔。
    ⚠ 稿上的（臉紅）＝對話框泛紅（`bubbleFx:'blush'`），不進台詞。
    ⚠ 「戰勝語音：諾『我才不是學姐的替代品！』」—— 語音檔還沒有，先做成戰後第一句字幕。
-   ⚠ 041 是動畫：不循環、由下往上平移（ver -2271，Ray）—— 播到尾巴前自己撤下（cgAnim 通則），稿上「插圖撤下」那一拍多半已經收掉了。
-   ⚠ 背景暫用旅店那一格（`vela_inn`＝大廳）：蕾娜／主角的房間還沒有背景圖。 */
+   ⚠ 041 是動畫：不循環、由下往上平移（ver -2271）；播完停在最後一格、等對話框出來才開播（cgAnim 的 `hold`／`withText`，ver -2273）——
+     留到稿上「插圖撤下」那一拍（`cg:null`）才收。
+   ⚠ 曲子：來襲（分支 1 的「呀！」、分支 2 的上膛那一拍）起換 RetroRoman_Battle，戰鬥與戰後照放同一首（ver -2273，Ray）。
+   ⚠ 背景：敲門＝`VF_DOOR_BG`；插圖收掉起（戰前對峙、尼莫戰、戰後）＝`VF_ROOM_BG`（窗戶破碎的房間）。 */
 const VF_RAID_SIDES = { RENNA:'L', NOUVELLE:'L', SORANA:'L', ANYA:'L', CECILIE:'R', CECILIE_X:'R', NEMO:'R', AARON:'R' };
 const VF_RAID_AFTER = [
   { battle:'vf_raid' },
   /* ── 戰鬥結束（兩分支合流）── */
   nou('steady','我才不是學姐的替代品！'),   // 稿：戰勝語音（檔案還沒有，先字幕）
-  cec('pant','比想像中棘手啊……'),
+  Object.assign(cec('cringe','比想像中棘手啊……'), { flip:true }),
   cec('smirk','不過你們已經沒有底牌了。', { onlyIf:'vf_raid_si' }),   // 戰鬥中使用了聖徒化
   cec('ready','那就只好，先下手為強！', { skipIf:'vf_raid_si' }),     // 戰鬥中未使用聖徒化
-  cec('saintinstall','SAINT……INSTALL！'),
-  nmo('surprise','等一下啦——賽西莉小姐——'),
-  cec('think','？？'),
-  nmo('bore','我沒彈藥囉——'),
-  cec('upset','哈？你的槍棺呢？'),
+  cec('battlecry','SAINT……INSTALL！'),
+  nmo('bore','等一下啦——賽西莉小姐——'),
+  cec('disbelief','？？'),        // ver -2273 新差分：不可置信
+  nmo('dryfire','我沒彈藥囉——'),   // ver -2273 新差分：雙槍彈盡、滑套後定
+  cec('gritteeth','哈？你的槍棺呢？'),   // ver -2273 新差分：生氣咬牙
   nmo('happy','寄放在酒店櫃檯了。'),
   cec('fluster','寄……你在想什麼啊！'),
-  nmo('bore','櫃檯告示寫的嘛——'),
+  nmo('happy','櫃檯告示寫的嘛——'),
   { speaker:'NARRATION', text:'', se:'se_weapon_reload', auto:700 },
   cec('upset','……'),
   cec('command','看來你們是鐵了心要和聖王廳開戰了。'),
   ren('talkserious','安娜王女身份特殊，不能讓聖王廳牽扯在內。這只是正確的政治判斷。'),
-  ren('argue','作戰課的作法，萬一情報外洩就會萬劫不復！'),
+  ren('command','作戰課的作法，萬一情報外洩就會萬劫不復！'),
   cec('smirk','不愧是監察官，伶牙俐齒的。'),
-  cec('tease','不過……妳們團長，能接受這個理由嗎？'),
+  cec('spoild','不過……妳們團長，會接受這個理由嗎？'),
   ren('meltdown',''),
   nmo('bore','我累了。我想回去了。'),   // 尼莫打呵欠
-  nou('awkward','好驚人的鬆弛感……'),
+  nou('shock','好驚人的鬆弛感……'),
   sor('amaze','……這傢伙是不是有點有趣？'),
-  { speaker:'NARRATION', text:'', se:'se_steps', auto:900 },
+  { speaker:'NARRATION', text:'', se:'se_stepsbig', auto:900 },   // 稿：march（ver -2273，Ray）—— 沒有行軍音檔，先借 stepsbig
   aar('attention','聖王廳的人為什麼會在領內交火？'),
   aar('armscross','能說明一下嗎？'),
   ren('intense','那是……！'),
   aar('signal',''),    // 亞隆使眼色
-  ren('intense',''),   // 蕾娜會意
+  ren('determine',''),   // 蕾娜會意
   cec('command','這是聖王廳內部的事，毋須插手。'),
   aar('blindeye','妳這話，我可以當作是聖王廳對薇拉馮德領治安權的挑戰嗎？'),
-  cec('upset','還治安權……不過是收保護費的流氓貴族……！'),
-  aar('closedsmile','哼，別忘了流氓貴族也有在上議會投的票。'),
-  aar('closedsmile','要我看，早該把騎士團收編。不過……'),
+  cec('proud','還治安權……不過是收保護費的流氓貴族……！'),
+  aar('closedsmile','哼，別忘了流氓貴族也有上議會的席次。'),
+  aar('closedsmile','要我看，早該把騎士團收編國有。不過……'),
   aar('front','同為神的子民，這次我可以睜一隻眼閉一隻眼。'),
   aar('armscross','馬上離去，我可以當作什麼都沒發生。'),
-  cec('nolook','……嘖。走了。'),
+  { speaker:'NARRATION', text:'', se:'se_steps', auto:900 },   // ver -2273（Ray）：蘿芮出現前
+  { speaker:'LAURIE', text:'好的！我們馬上離開！', portrait:{ char:'LAURIE', expr:'cry', show:true } },
+  { speaker:'CECILIE', text:'喂！虧妳還是監察官......', portrait:{ char:'CECILIE', expr:'talk', show:true } },
+  { speaker:'LAURIE', text:'所以我早就說了不能在薇拉馮德動手嘛！', portrait:{ char:'LAURIE', expr:'lookaside', show:true } },
+  cec('spoild','……嘖。走了。'),
   nmo('bye','學長，下次見囉——'),
   { speaker:'PLAYER', blank:true },   // （主角空白）「賽西莉。」
   cec('back','……！！'),
@@ -1575,25 +1588,27 @@ const VF_RAID_AFTER = [
   ren('coldstare','……您來的時間可真是恰到好處。'),
   aar('closedsmile',''),   // 亞隆笑
   ren('talkserious','如此一來，至少在薇拉馮得的這段時間，聖王廳很難出手了。'),
-  ren('lookdown','……請向茉莉小姐表達我的感激。'),
+  ren('determine','……請向茉莉小姐表達我的感激。'),
   aar('front','您在說什麼我聽不懂。我們只是行使地方治安權而已。'),
   aar('closedsmile','造成的損害，可是要聖王廳買單的。'),
   ren('smilesoft','……謝謝。'),
   aar('attention','無須言謝。總管說了：『無關血緣，家族至上』。還請您謹記。'),
   ren('meltdown','……'),
   { speaker:'NARRATION', text:'', fadeOut:1200, auto:1300, hide:'*' },
+  /* 全黑底下換回旅店大廳＋Stage 21 的旅店曲（同城上 `bgmWhen` 那一列 entangle，改一邊要改另一邊）。 */
+  { speaker:'NARRATION', text:'', bgBand:'vela_inn', bgm:'entangle', auto:400 },
   { speaker:'NARRATION', text:'', auto:300, fadeIn:900 },
 ];
 /* 分支 1：敲門夜談演完接這一段（蕾娜的房間）。 */
 const VF_RAID_KNOCK = [
   { speaker:'NARRATION', text:'', se:'se_weapon_reload', auto:700 },
-  ren('scarejump','呀！'),
+  ren('scarejump','呀！', { bgm:'retroroman' }),   // ver -2273（Ray）：這一拍切 RetroRoman_Battle
   { speaker:'NARRATION', text:'', se:'se_glasscrack', auto:250 },
-  { speaker:'NARRATION', text:'', se:'se_weapon_pistol_01', shake:true, cg:'040_torprotectrenna', cgNoTime:true, hide:'*', auto:2400 },
+  { speaker:'NARRATION', text:'', se:'se_weapon_pistol_01', shake:true, cg:'040_torprotectrenna', cgNoTime:true, cgPan:'up', hide:'*', auto:2400 },   // 救蕾娜插圖由下往上平移（ver -2273）
   ren('','怎、怎麼了？', { show:false, bubbleFx:'blush' }),
   csx('','深夜幽會監察官，我該說你長進了嗎？', { show:false, cg:'041_cecilienemo', cgNoTime:true, cgPan:'up' }),
   ren('','才不是幽會！', { show:false, bubbleFx:'blush' }),
-  cec('lookaside','哼。', { cg:null }),
+  cec('lookaside','哼。', { cg:null, bg:VF_ROOM_BG }),
   nmo('bore','啊——果然閃過了。'),
   nmo('happy','不愧是學長。'),
   ren('shock','你們是……第四課的！'),
@@ -1608,10 +1623,10 @@ const VF_RAID_KNOCK = [
   cec('command','來得正好。勸勸妳的搭檔，投降吧。'),
   nou('shock2','投……'),
   { speaker:'NARRATION', text:'', se:'se_weapon_reload', auto:700 },
-  nmo('dual','不要啦，學長——'),
-  nmo('happy','沒有賽西莉小姐，不可能贏得了我吧——'),
+  nmo('dual','別動喔，學長——'),
+  nmo('dual','沒有賽西莉小姐，不可能贏得了我吧——'),
   cec('smirk','就是。連跟我搭檔的時候都戰敗了，更何況是諾薇兒？'),
-  cec('smirk','難道你忘了我是怎麼從你身邊被搶走的嗎？'),
+  cec('proud','難道你忘了我是怎麼從你身邊被搶走的嗎？'),
   nou('sad','……'),
   { speaker:'NARRATION', text:'', se:'se_weapon_pistol_01', shake:true, auto:600 },
   cec('cringe','！！'),
@@ -1623,11 +1638,11 @@ const VF_RAID_KNOCK = [
 ];
 /* 分支 2：沒敲門，直接按回房睡覺（主角的房間）。 */
 const VF_RAID_SLEEP = [
-  { speaker:'NARRATION', text:'', fadeOut:1, se:'se_weapon_reload', auto:900, show:false },   // 畫面轉黑，上膛音
+  { speaker:'NARRATION', text:'', fadeOut:1, se:'se_weapon_reload', bgm:'retroroman', auto:900, show:false },   // 畫面轉黑，上膛音；尼莫來襲換曲（ver -2273）
   { speaker:'NARRATION', text:'', se:'se_glasscrack', auto:250 },
   { speaker:'NARRATION', text:'', se:'se_weapon_pistol_01', shake:true, auto:700 },
   /* 插圖先在全黑底下換上，下一拍才掀黑幕（同夢境那一段的寫法，不露出背景）。 */
-  { speaker:'NARRATION', text:'', fadeOut:1, cg:'041_cecilienemo', cgNoTime:true, auto:300 },
+  { speaker:'NARRATION', text:'', fadeOut:1, cg:'041_cecilienemo', cgNoTime:true, bg:VF_ROOM_BG, auto:300 },
   nmo('bore','啊——果然閃過了。', { show:false, fadeIn:900, cgPan:'up' }),
   nmo('happy','不愧是學長。', { show:false }),
   cec('talk','又見面了呢。', { cg:null }),
@@ -10832,6 +10847,9 @@ export const TOWNS = {
     visitEarly: { flag:'vf_visited_early', untilFlag:'cr_dock' },
     entry: 'square',   // ver -2207（Ray：「進場就是圓環廣場，進場下方是出航，配置照雪都」）
     bgm: 'emeraldhill',      // ver -1765，Ray：「薇拉馮德用 PeriTune_Emerald_Hill_loop」
+    /* ver -2273（Ray）：Stage 21 的旅店放 Entangle（夜襲戰後收尾那一拍也寫了同一首，改一邊要改另一邊）。
+       ⚠ 看 `vf_manor` 不看章節起點：stage 21 是旅店那一段（vf_inn）演完才插的，走進旅店那一刻還是 20。 */
+    bgmWhen: [ { node:'inn', need:'vf_manor', untilStage:22, bgm:'entangle' } ],
     mist: 0,                 // 大城不上霧（§6.5.4 ver -913）
     nodes: {
       /* ══ 拓樸以帝都為原型（ver -2157，Ray：「以帝都為原型，分中央區、上街區、港町三大區，再向外拓樸其他格子，方向位置要一樣」）══

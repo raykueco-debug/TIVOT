@@ -229,6 +229,8 @@ function bgmWhenRow(T){
     if(w.need && !prog.hasFlag(w.need)) continue;
     if(w.until && prog.hasFlag(w.until)) continue;
     if(w.not && prog.hasFlag(w.not)) continue;   // `not`（ver -1717）：這支旗插著這一列不算（同 bgWhen 的 not）
+    if(w.node && w.node!==nodeId) continue;                        // `node`（ver -2273）：只在這一格放（薇拉馮德旅店 Stage 21）
+    if(w.untilStage!=null && prog.getStage()>=(w.untilStage|0)) continue;   // `untilStage`（ver -2273）：到了這一章就不算
     return w;
   }
   return null;

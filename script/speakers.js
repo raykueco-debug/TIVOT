@@ -258,7 +258,7 @@ export const ART = {
                      ⚠ `front` 的圖早就在庫裡，只是一直沒進表（稿上點名了它）。 */
                   sighsweat:    { yShift:0, src:'resources/si/renna_si_sighsweat.webp', top:2, bot:1525, fx:0.536 },
                   shockopen:  { src:'resources/si/renna_si_shockopen.webp', top:4, bot:1519, fx:0.500 },
-                  sigh:         { src:'resources/si/renna_si_sigh.webp', top:2, bot:1531, fx:0.522 },
+                  sigh:         { cm:169, src:'resources/si/renna_si_sigh.webp', top:2, bot:1531, fx:0.522 },
                   front:        { src:'resources/si/renna_si_front.webp', top:5, bot:1521, fx:0.504 },
                   /* ══ Stage8 後段（ver -1092，Ray 交稿）══ 逐張量（alpha 上下緣＋
                      頭部那一段的水平重心）。⚠ `evalutating`／`evalutatingclosemouth`
@@ -325,7 +325,7 @@ export const ART = {
                   invite:   { src:'resources/si/renna_si_invite.webp',     top:2, bot:1525, fx:0.537 },
                   /* 惡夢戰後那一幕的修正稿（ver -739，Ray 指定 Renna_SI_command）。
                      取景 tools/measure_si.py 量的。 */
-                  command:  { src:'resources/si/renna_si_command.webp',    top:0, bot:1527, fx:0.502 },
+                  command:  { yShift:0, src:'resources/si/renna_si_command.webp',    top:0, bot:1527, fx:0.502 },
                   /* 北方泊地第三天（ver -664，Ray 交稿）。逐張量（tools/measure_si.py）。 */
                   smile:    { src:'resources/si/renna_si_smile.webp',      top:5, bot:1529, fx:0.518 },
                   reach:    { src:'resources/si/renna_si_reach.webp',      top:2, bot:1528, fx:0.566 },
@@ -432,7 +432,7 @@ export const ART = {
     back:      { src:'resources/si/renna_si_back.webp?v=ff6b4da3', top:5, bot:1502, fx:0.504 },
     blushangry:{ src:'resources/si/renna_si_blushangry.webp?v=f9c73fd5', top:7, bot:1506, fx:0.511 },
     coldstare: { src:'resources/si/renna_si_coldstare.webp?v=6c0d2f79', top:8, bot:1501, fx:0.497 },
-    determine:{ src:'resources/si/renna_si_determine.webp?v=3cadfcd7', top:7, bot:1519, fx:0.495 },
+    determine:{ yShift:0, src:'resources/si/renna_si_determine.webp?v=3cadfcd7', top:7, bot:1519, fx:0.495 },
     handout:   { src:'resources/si/renna_si_handout.webp?v=42b42b05', top:5, bot:1519, fx:0.505 },
     holdfile:  { src:'resources/si/renna_si_holdfile.webp?v=d5f548b1', top:4, bot:1505, fx:0.499 },
     laugh:     { src:'resources/si/renna_si_laugh.webp?v=376a90e7', top:5, bot:1520, fx:0.522 },
@@ -522,7 +522,7 @@ export const ART = {
                   sadnoeye: { src:'resources/si/nouvelle_si_sadnoeye.webp',      top:2, bot:1528, fx:0.552 },
                   bigsmileclose:{ src:'resources/si/nouvelle_si_bigsmileclose.webp', top:4, bot:1529, fx:0.568 },
                   die:        { src:'resources/si/nouvelle_si_die.webp', top:4, bot:1524, fx:0.614 },
-                  steady:   { src:'resources/si/nouvelle_si_steady.webp',   top:8,  bot:1529, fx:0.534 },
+                  steady:   { yShift:0, src:'resources/si/nouvelle_si_steady.webp',   top:8,  bot:1529, fx:0.534 },
                   /* ver -870（森林行 G 稿）。front＝基本立繪的別名（稿上點名了它）。 */
                   sleepy:   { src:'resources/si/nouvelle_si_sleepy.webp',   top:5,  bot:1535, fx:0.580 },
                   front:    { src:'resources/si/nouvelle_si_front.webp?v=eb1ad716',    top:3,  bot:1536, fx:0.582 },
@@ -1504,20 +1504,23 @@ export const ART = {
   nemo:      { cm:165, eye:32, fx:0.484, top:3, bot:1524,
            side:'R', alt:null, base:'resources/si/nemo_si_front.webp', expr:{
     surprise: { src:'resources/si/nemo_si_surprise.webp', top:8, bot:1524, fx:0.498 },
-    happy:    { src:'resources/si/nemo_si_happy.webp',    top:3, bot:1527, fx:0.510 },
+    happy:    { yShift:0, src:'resources/si/nemo_si_happy.webp',    top:3, bot:1527, fx:0.510 },
     bye:      { src:'resources/si/nemo_si_bye.webp',      top:3, bot:1533, fx:0.499 },
-    bore:    { src:'resources/si/nemo_si_bore.webp',    top:3, bot:1531, fx:0.516 },
+    bore:    { yShift:0, src:'resources/si/nemo_si_bore.webp',    top:3, bot:1531, fx:0.516 },
     /* ⚠ 雙槍那一張還沒有人用（戰鬥立繪走敵人卡的 `enemy_nemo`）—— 先接著。 */
-    dual:     { src:'resources/si/nemo_si_dual.webp',     top:0, bot:1535, fx:0.408 },
+    dual:     { yShift:72, cm:100, src:'resources/si/nemo_si_dual.webp',     top:0, bot:1535, fx:0.408 },
+    dryfire:  { src:'resources/si/nemo_si_dryfire.webp',  top:2, bot:1527, fx:0.536 },   // ver -2273 美術交件：雙手舉 M1911、滑套後定、彈盡愣住（薇拉馮德夜襲戰後）
   } },
   /* ver -1916：front 美術重交（同名覆蓋 ?v=2，measure_si 重量 top/bot/fx）；新增 `cringe`。 */
   cecilie:   { cm:170, eye:32, fx:0.536, top:8, bot:1533,
            side:'R', alt:null, base:'resources/si/cecilie_si_front.webp?v=d57dbd14', expr:{
-    cringe:   { yShift:0, src:'resources/si/cecilie_si_cringe.webp',    top:7, bot:1535, fx:0.632 },
+    cringe:   { yShift:2, src:'resources/si/cecilie_si_cringe.webp',    top:7, bot:1535, fx:0.632 },
     teary:    { src:'resources/si/cecilie_si_teary.webp',     top:3, bot:1531, fx:0.574 },   // ver -2099 返回帝都稿缺差分（美術 9086789c）：measure_si 量 top/bot；fx 照臉中心目測校正
     talk:     { src:'resources/si/cecilie_si_talk.webp',      top:7, bot:1527, fx:0.539 },
     tease:    { src:'resources/si/cecilie_si_tease.webp',     top:4, bot:1529, fx:0.574 },
     upset:    { src:'resources/si/cecilie_si_upset.webp',     top:2, bot:1526, fx:0.535 },
+    disbelief:{ src:'resources/si/cecilie_si_disbelief.webp', top:6, bot:1506, fx:0.532 },   // ver -2273 美術交件：不可置信（薇拉馮德夜襲戰後）
+    gritteeth:{ src:'resources/si/cecilie_si_gritteeth.webp', top:7, bot:1501, fx:0.534 },   // ver -2273 美術交件：生氣咬牙
     lookaside:{ src:'resources/si/cecilie_si_lookaside.webp', top:8, bot:1531, fx:0.560 },
     smile:    { src:'resources/si/cecilie_si_smile.webp',     top:4, bot:1517, fx:0.557 },
     /* ⚠ 背影：`fx` 量到 0.638（她背對鏡頭、重心偏右）—— 照量到的寫。 */
@@ -1525,7 +1528,7 @@ export const ART = {
     /* ══ ver -1545 美術交件兩張（Ray 指定用途）══ 取景值走 `tools/measure_si.py` 逐張量，
        **沒有互抄**（`back` 與 `sadback` 都是背影，但 fx 差 0.018 —— 姿勢不同）。 */
     back:     { src:'resources/si/cecilie_si_back.webp',      top:13, bot:1505, fx:0.656 },
-    spoild:   { src:'resources/si/cecilie_si_spoild.webp',    top:8, bot:1526, fx:0.551 },
+    spoild:   { yShift:0, src:'resources/si/cecilie_si_spoild.webp',    top:8, bot:1526, fx:0.551 },
     nolook:   { src:'resources/si/cecilie_si_nolook.webp',    top:1, bot:1531, fx:0.543 },
     think:    { src:'resources/si/cecilie_si_think.webp',     top:5, bot:1529, fx:0.560 },
     /* ver -1885：美術交件（HANDOFF 37）。`blush` 已同名覆蓋成真正的害羞臉（舊檔與 tease 是同一張），
@@ -1540,11 +1543,11 @@ export const ART = {
        ⚠ 已知小偏差（Ray 看過不重畫）：`pant` 左肩露出；`call`／`ready`／`battlecry` 頭髮比 front 長而散。 */
     smirk:     { src:'resources/si/cecilie_si_smirk.webp',     top:8,  bot:1529, fx:0.520 },
     call:      { src:'resources/si/cecilie_si_call.webp',      top:4,  bot:1526, fx:0.680 },
-    ready:     { src:'resources/si/cecilie_si_ready.webp',     top:10, bot:1509, fx:0.701 },
-    battlecry: { src:'resources/si/cecilie_si_battlecry.webp', top:46, bot:1528, fx:0.649 },
+    ready:     { cm:164, yShift:10, src:'resources/si/cecilie_si_ready.webp',     top:10, bot:1509, fx:0.701 },
+    battlecry: { yShift:9, cm:165, src:'resources/si/cecilie_si_battlecry.webp', top:46, bot:1528, fx:0.649 },
     command:   { src:'resources/si/cecilie_si_command.webp',   top:7,  bot:1526, fx:0.375 },
     pant:      { src:'resources/si/cecilie_si_pant.webp',      top:69, bot:1443, fx:0.626, cm:150, standCm:135 },
-    proud:     { src:'resources/si/cecilie_si_proud.webp',     top:5,  bot:1526, fx:0.550 },
+    proud:     { yShift:1, src:'resources/si/cecilie_si_proud.webp',     top:5,  bot:1526, fx:0.550 },
     nosebleed: { src:'resources/si/cecilie_si_nosebleed.webp', top:5,  bot:1511, fx:0.553 },
     shynose:   { src:'resources/si/cecilie_si_shynose.webp',   top:6,  bot:1496, fx:0.524 },
     shocknose: { src:'resources/si/cecilie_si_shocknose.webp', top:6,  bot:1497, fx:0.401 },
