@@ -397,7 +397,7 @@ export const ART = {
                   lookdown:    { fxShift:0, src:'resources/si/renna_si_lookdown.webp',    top:6,  bot:1524, fx:0.548 },
                   chase2:      { src:'resources/si/renna_si_chase2.webp',      top:11, bot:1529, fx:0.579 },
                   /* stage2 出航（ver -741，Ray 交稿）。逐張量（measure_si.py）。 */
-                  curious:     { src:'resources/si/renna_si_curious.webp',     top:0,  bot:1526, fx:0.529 },
+                  curious:     { fxShift:0, src:'resources/si/renna_si_curious.webp',     top:0,  bot:1526, fx:0.529 },
                   intense:     { src:'resources/si/renna_si_intense.webp',     top:6,  bot:1526, fx:0.629 },
                   lookup:      { src:'resources/si/renna_si_lookup.webp',      top:5,  bot:1520, fx:0.510 },   // ver -746 交件補量
                   /* 湖上甲板（ver -744，Ray 的 stage5 稿）。逐張量。 */
@@ -434,7 +434,7 @@ export const ART = {
     back:      { src:'resources/si/renna_si_back.webp?v=ff6b4da3', top:5, bot:1502, fx:0.504 },
     blushangry:{ src:'resources/si/renna_si_blushangry.webp?v=f9c73fd5', top:7, bot:1506, fx:0.511 },
     coldstare: { src:'resources/si/renna_si_coldstare.webp?v=6c0d2f79', top:8, bot:1501, fx:0.497 },
-    determine:{ yShift:0, src:'resources/si/renna_si_determine.webp?v=3cadfcd7', top:7, bot:1519, fx:0.495 },
+    determine:{ fxShift:0, yShift:0, src:'resources/si/renna_si_determine.webp?v=3cadfcd7', top:7, bot:1519, fx:0.495 },
     handout:   { src:'resources/si/renna_si_handout.webp?v=42b42b05', top:5, bot:1519, fx:0.505 },
     holdfile:  { src:'resources/si/renna_si_holdfile.webp?v=d5f548b1', top:4, bot:1505, fx:0.499 },
     laugh:     { src:'resources/si/renna_si_laugh.webp?v=376a90e7', top:5, bot:1520, fx:0.522 },
@@ -1068,7 +1068,7 @@ export const ART = {
     /* 北方泊地第三天（ver -664，Ray 交稿）。四張都是**全身站姿**，照量即可
        —— 近景那幾張才要 `cm`／`standCm`（見上面的說明）。 */
     silent:    { fxShift:0, yShift:-2, cm:145, src:'resources/si/anya_si_silent.webp?v=5497fc32',     top:4, bot:1521, fx:0.423 },
-    panic:     { src:'resources/si/anya_si_panic.webp?v=960811a2',      top:0, bot:1522, fx:0.434 },   // ver -842
+    panic:     { fxShift:0, src:'resources/si/anya_si_panic.webp?v=960811a2',      top:0, bot:1522, fx:0.434 },   // ver -842
     dizzy:     { fxShift:0, src:'resources/si/anya_si_dizzy.webp', top:62, bot:1527, fx:0.428 },   // ver -2189（top 量頭髮，不含頭上的冒煙與漩渦）
     /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2` ＋ 取景值重量
        （0.426→0.522：差了將近一成的圖寬，沿用舊值臉會明顯偏左）。 */

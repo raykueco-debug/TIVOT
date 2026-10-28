@@ -1525,7 +1525,9 @@ const VF_RENNA_NIGHT = [
      留到稿上「插圖撤下」那一拍（`cg:null`）才收。
    ⚠ 曲子：來襲（分支 1 的「呀！」、分支 2 的上膛那一拍）起換 RetroRoman_Battle；尼莫戰本身是他固定的 Prairie5（ver -2277），戰後接回 RetroRoman（ver -2273，Ray）。
    ⚠ 背景：敲門＝`VF_DOOR_BG`；插圖收掉起（戰前對峙、尼莫戰、戰後）＝`VF_ROOM_BG`（窗戶破碎的房間）。 */
-const VF_RAID_SIDES = { RENNA:'L', NOUVELLE:'L', SORANA:'L', ANYA:'L', CECILIE:'R', CECILIE_X:'R', NEMO:'R', AARON:'R' };
+/* 站位照四女主原則（§6.5，ver -2292，Ray）：諾薇兒左、索菈娜／安雅右；蕾娜跟第四課對峙（＋有安雅）放左。
+   第四課／亞隆／蘿芮站右 —— 索菈娜與安雅輪到她們講話時同側抽牌輪轉。 */
+const VF_RAID_SIDES = { RENNA:'L', NOUVELLE:'L', SORANA:'R', ANYA:'R', CECILIE:'R', CECILIE_X:'R', NEMO:'R', AARON:'R', LAURIE:'R' };
 const VF_RAID_AFTER = [
   { battle:'vf_raid' },
   /* ── 戰鬥結束（兩分支合流）── */
@@ -1710,8 +1712,8 @@ const VF_GATE = [
 /* 分支 1：敲門夜談演完接這一段（蕾娜的房間）。 */
 const VF_RAID_KNOCK = [
   { speaker:'NARRATION', text:'', se:'se_weapon_reload', auto:700 },
-  ren('scarejump','呀！', { bgm:'retroroman' }),   // ver -2273（Ray）：這一拍切 RetroRoman_Battle
-  { speaker:'NARRATION', text:'', se:'se_glasscrack', auto:250 },
+  ren('scream','呀！', { bgm:'retroroman' }),   // ver -2273（Ray）：這一拍切 RetroRoman_Battle
+  { speaker:'NARRATION', text:'', se:['se_windowbreak','se_doorbreak'], auto:250 },   // 破窗＝windowbreak＋doorbreak 一起播（ver -2292，Ray）
   { speaker:'NARRATION', text:'', se:'se_weapon_pistol_01', shake:true, cg:'040_torprotectrenna', cgNoTime:true, cgPan:'up', hide:'*', auto:2400 },   // 救蕾娜插圖由下往上平移（ver -2273）
   ren('','怎、怎麼了？', { show:false, bubbleFx:'blush' }),
   csx('','深夜幽會監察官，我該說你長進了嗎？', { show:false, cg:'041_cecilienemo', cgNoTime:true, cgPan:'up' }),
@@ -1736,7 +1738,7 @@ const VF_RAID_KNOCK = [
   cec('smirk','就是。連跟我搭檔的時候都戰敗了，更何況是諾薇兒？'),
   cec('proud','難道你忘了我是怎麼從你身邊被搶走的嗎？'),
   nou('sad','……'),
-  { speaker:'NARRATION', text:'', se:'se_weapon_pistol_01', shake:true, auto:600 },
+  { speaker:'NARRATION', text:'', se:['se_weapon_pistol_01', { n:'se_bulletsfly2', delay:60 }], shake:true, auto:700 },   // 槍聲＋子彈飛過（ver -2292，Ray）
   cec('cringe','！！'),
   nou('shock','！！'),
   { speaker:'PLAYER', blank:true },   // （主角空白）「別小看她。我們是最強的搭檔！」
@@ -1747,7 +1749,7 @@ const VF_RAID_KNOCK = [
 /* 分支 2：沒敲門，直接按回房睡覺（主角的房間）。 */
 const VF_RAID_SLEEP = [
   { speaker:'NARRATION', text:'', fadeOut:1, se:'se_weapon_reload', bgm:'retroroman', auto:900, show:false },   // 畫面轉黑，上膛音；尼莫來襲換曲（ver -2273）
-  { speaker:'NARRATION', text:'', se:'se_glasscrack', auto:250 },
+  { speaker:'NARRATION', text:'', se:['se_windowbreak','se_doorbreak'], auto:250 },   // 破窗＝windowbreak＋doorbreak 一起播（ver -2292，Ray）
   { speaker:'NARRATION', text:'', se:'se_weapon_pistol_01', shake:true, auto:700 },
   /* 插圖先在全黑底下換上，下一拍才掀黑幕（同夢境那一段的寫法，不露出背景）。 */
   { speaker:'NARRATION', text:'', fadeOut:1, cg:'041_cecilienemo', cgNoTime:true, bg:VF_ROOM_BG, auto:300 },
@@ -1772,7 +1774,7 @@ const VF_RAID_SLEEP = [
   cec('smirk','就是。連跟我搭檔的時候都戰敗了，更何況是諾薇兒？'),
   cec('tease','難道你忘了我是怎麼從你身邊被搶走的嗎？'),
   nou('sad','……'),
-  { speaker:'NARRATION', text:'', se:'se_weapon_pistol_01', shake:true, auto:600 },
+  { speaker:'NARRATION', text:'', se:['se_weapon_pistol_01', { n:'se_bulletsfly2', delay:60 }], shake:true, auto:700 },   // 槍聲＋子彈飛過（ver -2292，Ray）
   cec('cringe','！！'),
   nou('shock','！！'),
   { speaker:'PLAYER', blank:true },   // （主角空白）

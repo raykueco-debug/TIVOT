@@ -2312,8 +2312,12 @@ function cgFade(el, src){
     const list = Array.isArray(src) ? src : (src ? [src] : []);
     /* 等新圖真的畫上去再收黑幕 —— 沒載完就收，會先看到一格舊圖或空白
        （同 ver -322 立繪、ver -325 背景踩過的那個坑）。 */
+    /* ⚠ 有動畫的插圖（ver -2292，Ray：「已經有動畫的插圖就不要再放底圖」）：靜態圖本來就藏著（cg-anim-hide），
+       黑幕要等**影片第一格真的畫上去**才掀 —— 不然影片還在載的那一段，掀開看到的是插圖底下的場景。等不到 3 秒照掀。 */
+    const t0=performance.now();
     const back=()=>{ el.onload=null; el.onerror=null;
       if(my!==cgSeq) return;               // 黑幕現在是新的那一代的，不要替它掀
+      const A=cgAnimOn; if(A && A.img===el && !A.shown && performance.now()-t0<3000){ cgFadeT.push(setTimeout(back, 50)); return; }
       if(fadeOwner==='cg'){ fade.classList.remove('on'); fadeOwner=null; } };
     /* ⚠ 試出來的結果要**記起來**（ver -433）：下一次演到同一張就只請求那一張。
        鑰匙是 `list[0]`（已經把時段編進去了，見 cgCandidates 的說明）。 */
@@ -2333,7 +2337,7 @@ function cgFade(el, src){
         tryAt(i+1); };
     };
     if(!list.length){ setImg(el, ''); back(); return; }
-    cgFadeT.push(setTimeout(back, 900));    // 保險：候選全都很慢時別把黑幕卡住
+    cgFadeT.push(setTimeout(back, 900));    // 保險：候選全都很慢時別把黑幕卡住（動畫插圖那一支自己再等到第一格，最多 3 秒）
     tryAt(0);
   };
   cgFadeT.push(setTimeout(()=>{ if(cgFinish) cgFinish(); }, CG_FADE_MS));
@@ -2813,6 +2817,7 @@ const SE_FILES=[
   'se_enemy_revolver.m4a', 'se_enemy_shot.m4a', 'se_enemy_slash.m4a', 'se_enemy_smack.m4a',
   'se_land.m4a',   // 著岸（ver -744，湖上甲板）
   'se_woodbreak.m4a',   // 舵斷裂的木裂聲（ver -751，Ray 交件；取代暫代的 se_brickcrush）
+  'se_windowbreak.m4a', 'se_doorbreak.m4a',   // 薇拉馮德夜襲的破窗（ver -2292，Ray 交 mp3，轉 AAC 96k，原檔進 _originals/audio/se；兩支一起播）
   /* 高跟鞋的腳步（ver -1002，Ray：「蕾娜在說科爾文……副團長之前的 se 用 se_highheels」）。
      ⚠⚠ 它是 **.mp3**（規約是 m4a，§6.6）—— 轉檔時**檔名別改**，改了這一行與
        `tuning.fileGain` 都要跟著動。
@@ -3577,7 +3582,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2291';
+const KERB_V='?v=2292';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）

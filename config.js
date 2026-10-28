@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.28-2291';
+export const VERSION = 'ver 2026.10.28-2292';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4121,6 +4121,7 @@ export const GAME_CONFIG = {
       peritune_harbor_morning_loop:0.758,   // ver -753（measure_lufs 實測：平均 −11.4 LUFS）
       se_land:3.143,
       se_woodbreak:0.552,
+      se_windowbreak:0.582, se_doorbreak:1.096,   // ver -2292（ffmpeg ebur128：−9.1／−14.6 LUFS，只量耳機那一次 —— 有空用 audio_scan 補手機模型）
       se_villagealarm:0.880,            // ver -772（measure_lufs 實測 −12.7）
       bgm_warhorn:1.275,                // ver -772（measure_lufs 實測 −15.9）               // ver -751（measure_lufs 實測：平均 −8.6 LUFS）
       peritune_crimson_moon_loop:0.879,
