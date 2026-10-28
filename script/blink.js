@@ -5,15 +5,6 @@
    引擎（modules/blink.js）只認這一張表：表上有的立繪就會眨眼，沒有的不動。
    不上線的在 tools/blink_reject.txt（附理由）。 */
 export const BLINK = {
-  "aaron_si_angry": {"half":[448,177,133,63],"closed":[449,177,132,63],"base":"19640cf0"},
-  "aaron_si_armscross": {"half":[473,87,91,62],"closed":[473,87,91,62],"base":"b578242e"},
-  "aaron_si_attention": {"half":[475,86,90,62],"closed":[476,86,89,62],"base":"ec56189e"},
-  "aaron_si_blindeye": {"half":[423,88,108,74],"closed":[423,88,108,74],"base":"992ce074"},
-  "aaron_si_closedsmile": {"half":[430,89,113,78],"closed":[430,89,112,78],"base":"ead6328d"},
-  "aaron_si_confused": {"half":[472,87,90,63],"closed":[472,86,90,65],"base":"b5957ac4"},
-  "aaron_si_draw": {"half":[480,90,88,63],"closed":[480,91,88,62],"base":"8f17b92f"},
-  "aaron_si_front": {"half":[422,87,110,73],"closed":[422,87,110,73],"base":"3018dc80"},
-  "aaron_si_signal": {"half":[474,88,90,63],"closed":[474,88,90,63],"base":"a1e2a448"},
   "anya_ad_si_front": {"half":[435,106,107,73],"closed":[435,106,108,73],"base":"e977313c"},
   "anya_ad_si_point": {"half":[425,111,106,70],"closed":[425,111,106,72],"base":"cbdbe4b3"},
   "anya_ad_si_scare": {"half":[404,96,129,75],"closed":[404,96,129,75],"base":"aa9587ad"},

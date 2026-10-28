@@ -156,3 +156,14 @@ misha_si_closeopen  # 不適用：Ray 10-04「不需要做眨眼」
 nemo_si_bye  # 不適用：Ray 10-04「不用眨眼」
 
 npc_imsoldier_si_awe  # 不適用：Ray 10-25「夢二士兵驚訝圖移除眨眼」（只閉一隻眼）
+
+# ── 不適用：Ray 指定亞隆不眨眼（2026-10-28）──
+aaron_si_angry  # 不適用：Ray 指定亞隆不眨眼
+aaron_si_armscross  # 不適用：Ray 指定亞隆不眨眼
+aaron_si_attention  # 不適用：Ray 指定亞隆不眨眼
+aaron_si_blindeye  # 不適用：Ray 指定亞隆不眨眼
+aaron_si_closedsmile  # 不適用：Ray 指定亞隆不眨眼
+aaron_si_confused  # 不適用：Ray 指定亞隆不眨眼
+aaron_si_draw  # 不適用：Ray 指定亞隆不眨眼
+aaron_si_front  # 不適用：Ray 指定亞隆不眨眼
+aaron_si_signal  # 不適用：Ray 指定亞隆不眨眼
