@@ -1604,7 +1604,7 @@ const VF_RAID_AFTER = [
    · 隔日（VF_DAY）：夜襲演完三秒黑跳到隔天 08:00 → 旅店大廳接這一段（acts 的接續）。演完＝全體約會（城上 `groupDate`）＋自由行動。
    · 那一天按睡覺（VF_SKIP，`sleepFirst`）：時鐘推到三天後 08:00 → 莊園（`goto:'manor'`）→ 莊園大廳演茉莉來訪（VF_MOLLY，`darkStart`）。
    · 茉莉演完回林蔭大道（自由活動）→ 再走到莊園大門演 VF_GATE。
-   ⚠ 稿上的插圖（蕾娜被拉著走：T2 以下索菈娜 POV／T3 以上主角 POV）已交美術 —— 那一拍先空著，交件再補 `cg`。
+   ⚠ 插圖（蕾娜被拉著走）：T2 以下＝047 索菈娜 POV／T3 以上＝048 主角 POV（ver -2289 接上）。
    ⚠ 安雅 `sneakout` 沒有這張差分 —— 先借 `smilesneaky`；莊園大門的敬禮聲沒有音檔 —— 先不放。 */
 const VF_DAY = [
   ren('ask','諾薇兒？妳要去哪？'),
@@ -1626,8 +1626,9 @@ const VF_DAY = [
   ren('pause','我得在旅店等——'),
   { speaker:'PLAYER', blank:true },   // （主角空白）那妳不就落單了嗎？
   ren('surprise','啊！'),
-  /* 稿：插圖 —— 蕾娜 T2 以下被索菈娜拉著走／T3 以上被主角拉著走（圖未交，先空著）。 */
-  ren('blushangry','真是的！下不為例喔！'),
+  /* 稿：插圖 —— 蕾娜 T2 以下被索菈娜拉著走（047）／T3 以上被主角拉著走（048）（ver -2289 美術交件）。台詞照講在插圖上。 */
+  Object.assign(ren('','真是的！下不為例喔！', { show:false, cg:'047_rennapulled_sorana', cgNoTime:true, hide:'*' }), { tierWho:'RENNA', tierMax:2 }),
+  Object.assign(ren('','真是的！下不為例喔！', { show:false, cg:'048_rennapulled_tor', cgNoTime:true, hide:'*' }), { tierWho:'RENNA', tierMin:3 }),
 ];
 /* 那一天按睡覺：三天後 08:00，直接搬到莊園（黑幕不掀，交給莊園那一段的 `darkStart`＋`fadeIn`）。 */
 const VF_SKIP = [
