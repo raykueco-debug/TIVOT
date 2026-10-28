@@ -245,3 +245,17 @@ square:(4,6), station:(4,7), midtown:(4,3), cityhall:(2,3), cathedral:(6,3), ave
 - **店沒有買賣介面**：`config.shop.shops` 沒有薇拉馮德的店，武器店／雜貨舖現在只是場景。
 - 其餘照 §六；營業時間照帝都（`[8,17]`，大教堂 `[8,19]`）；飛行地圖補了 `town:'verafond'`（降落落在碼頭）；草稿已回收、`POS` 已補。
 - 還等：bgm（Ray）、小地圖（美術）、`vela_bar` 掛點（Ray）。
+
+---
+
+## 追加（2026-10-28，美術 session）：旅店客房走廊・房門前 `vela_innroom_door`
+
+- 檔：`resources/background/verafond/vela_innroom_door.webp`（1536×1024）。原檔：`resources/_originals/background/verafond/vela_innroom_door.jpg`（Gemini 換光的成品）、`vela_innroom_door_day_gpt.png`（GPT 日景底圖）。
+- 產法：GPT 畫日景一張（畫風照 `vela_inn`）→ Gemini 換光成深夜。
+- ✔ **不欠**：**只有夜景這一張，不做其他時段**（Ray 10-28：「這張只有夜色 沒有其他差分」）。所以檔名不帶時段。
+
+### ⚠ 程式端要接的（鐵律 11，美術不動 .js）
+1. **敲蕾娜的門時換成這張背景**（Ray 10-28：「去敲蕾娜門時要換成那張背景」）。
+   位置：`script/town.js` 薇拉馮德夜談那段（註解寫著「背景暫用旅店那一格（`vela_inn`＝大廳）」）。
+2. 這張**沒有時段差分** → 走候選鏈時要 `noTime`（或直接硬指定 `bg:`），否則會先吃 `_Dawn/_Day/...` 的 404。
+3. 新檔名，不必跳 `ASSET_VER`。
