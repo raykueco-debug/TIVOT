@@ -1552,7 +1552,7 @@ const VF_RAID_AFTER = [
   nmo('bore','我累了。我想回去了。'),   // 尼莫打呵欠
   nou('shock','好驚人的鬆弛感……'),
   sor('amaze','……這傢伙是不是有點有趣？'),
-  { speaker:'NARRATION', text:'', se:'se_stepsbig', auto:900 },   // 稿：march（ver -2273，Ray）—— 沒有行軍音檔，先借 stepsbig
+  { speaker:'NARRATION', text:'', amb:'se_troops', ambStop:3000, auto:900 },   // 稿：march（ver -2278，Ray：「米夏就用過」）：同米夏撤收那一拍，troop 三秒淡出
   aar('attention','聖王廳的人為什麼會在領內交火？'),
   aar('armscross','能說明一下嗎？'),
   ren('intense','那是……！'),
