@@ -1493,14 +1493,14 @@ const VF_RENNA_NIGHT = [
     ren('meltdown','父親他……一笑置之，但是母親……'),
     ren('meltdownsmile','搞得我都不確定，自己是不是父親的孩子……'),
     ren('meltdown','很可笑吧？只是因為頭髮的顏色隨了母親，就被當成了污點藏在修道院裡。但是…...'),
-    ren('snivel','他們……明明拋棄了我，等到有利用價值以後又馬上要我……！'),
-    ren('snivel','……'),
-    ren('meltdown','我沒事啦。只是在大家面前被公開這件事，有點沒面子而已。'),
+    /* 落淚插圖（039）從「明明拋棄了我」那一拍上、到「我沒事啦」那一拍收（ver -2291，Ray）。 */
+    ren('snivel','他們……明明拋棄了我，等到有利用價值以後又馬上要我……！', { show:false, cg:'039_rennatears', cgNoTime:true, hide:'*' }),
+    ren('snivel','……', { show:false }),
+    ren('meltdown','我沒事啦。只是在大家面前被公開這件事，有點沒面子而已。', { cg:null }),
     ren('meltdownsmile','哈哈……'),
-    /* ══ 接差分表《薇拉馮德_夜襲_台詞差分》分支 1（ver -2269）══ 插圖 039＝Ray 交的那張（站在門口、指節擦淚）。 */
-    { speaker:'NARRATION', text:'', cg:'039_rennatears', cgNoTime:true, hide:'*', auto:2600 },
+    /* ══ 接差分表《薇拉馮德_夜襲_台詞差分》分支 1（ver -2269）══ */
     { speaker:'PLAYER', blank:true },   // （主角空白）神父說了：乾脆找個黑髮的男人嫁了，生幾個金髮的孩子給他們看看啊。
-    ren('snivelclose','……', { cg:null }),
+    ren('snivelclose','……'),
     ren('sniveleyes','有你這樣安慰人的嗎？'),   // 蕾娜破涕為笑
     ren('snivelsmile','不過，我好受多了。謝謝。'),
     { speaker:'PLAYER', blank:true },   // （主角空白）「那就好。不良神父就不打擾淑女休息啦。晚安。」
