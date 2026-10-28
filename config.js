@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.28-2270';
+export const VERSION = 'ver 2026.10.28-2271';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3560,7 +3560,7 @@ export const GAME_CONFIG = {
       '005_cecilieintro': { video:'resources/illustration/video/005_cecilieintro_v1.mp4' },
       '35_bellinda': { video:'resources/illustration/video/35_bellinda_v1.mp4', loop:true },
       '044_cecilietorsten': { video:'resources/illustration/video/044_cecilietorsten_v1.mp4', loop:true },
-      '041_cecilienemo': { video:'resources/illustration/video/041_cecilienemo_v1.mp4', loop:true },   // ver -2269 薇拉馮德夜襲（動畫 10-18 交件）：循環 —— 這張要撐兩句台詞，2.5 秒的單次播放會在第一句出來前就撤下（⚠ 尾格≠首格，接縫會跳一下，待 Ray 判）
+      '041_cecilienemo': { video:'resources/illustration/video/041_cecilienemo_v1.mp4' },   // ver -2271 薇拉馮德夜襲：不循環、由下往上平移（Ray）
       /* 劇情裡的「Execute 插圖」寫的是明確路徑（script/town.js），鑰匙就是那串路徑；影片與 CI 共用處決 v2。 */
       'resources/ci/ci_torsten_execute.png': { video:'resources/ci/video/ci_torsten_execute_v2.mp4' },
     },

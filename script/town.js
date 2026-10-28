@@ -1472,11 +1472,11 @@ const VF_RENNA_NIGHT = [
     ren('curious','怎麼了？這種時間。'),
     { speaker:'PLAYER', blank:true },   // （主角空白）妳，還好嗎？
     ren('awkward','沒事啦。怎麼你們一個個都這樣啦！'),
-    ren('upset','我有那麼失態嗎？'),
+    ren('sigh','我有那麼失態嗎？'),
     ren('smile','好啦，那麼晚了，我要休息了——'),
     { speaker:'PLAYER', blank:true },   // （主角空白）又不是一天兩天的交情了。說來聽聽吧？我「姑且」也是個神父嘛。
     ren('smile','哪有你這種半夜敲淑女門的神父啦。'),
-    ren('lookdown','……'),
+    ren('meltdown','……'),
     ren('meltdownsmile','我真的沒事……反正也是沒辦法的事。'),
     ren('lookaside','……你看我的頭髮，是金色的吧？'),
     ren('awkward','可是……我的父親，卻是像墨一樣濃的黑髮。'),
@@ -1514,7 +1514,7 @@ const VF_RENNA_NIGHT = [
      （戰後賽西莉那一句分兩種）。劇情戰（`storyBattle`）＝打輸回檔。
    ⚠ 稿上的（臉紅）＝對話框泛紅（`bubbleFx:'blush'`），不進台詞。
    ⚠ 「戰勝語音：諾『我才不是學姐的替代品！』」—— 語音檔還沒有，先做成戰後第一句字幕。
-   ⚠ 041 是動畫（播到尾巴前自己撤下，cgAnim 通則），所以稿上「插圖撤下」那一拍多半已經收掉了。
+   ⚠ 041 是動畫：不循環、由下往上平移（ver -2271，Ray）—— 播到尾巴前自己撤下（cgAnim 通則），稿上「插圖撤下」那一拍多半已經收掉了。
    ⚠ 背景暫用旅店那一格（`vela_inn`＝大廳）：蕾娜／主角的房間還沒有背景圖。 */
 const VF_RAID_SIDES = { RENNA:'L', NOUVELLE:'L', SORANA:'L', ANYA:'L', CECILIE:'R', CECILIE_X:'R', NEMO:'R', AARON:'R' };
 const VF_RAID_AFTER = [
@@ -1591,7 +1591,7 @@ const VF_RAID_KNOCK = [
   { speaker:'NARRATION', text:'', se:'se_glasscrack', auto:250 },
   { speaker:'NARRATION', text:'', se:'se_weapon_pistol_01', shake:true, cg:'040_torprotectrenna', cgNoTime:true, hide:'*', auto:2400 },
   ren('','怎、怎麼了？', { show:false, bubbleFx:'blush' }),
-  csx('','深夜幽會監察官，我該說你長進了嗎？', { show:false, cg:'041_cecilienemo', cgNoTime:true }),
+  csx('','深夜幽會監察官，我該說你長進了嗎？', { show:false, cg:'041_cecilienemo', cgNoTime:true, cgPan:'up' }),
   ren('','才不是幽會！', { show:false, bubbleFx:'blush' }),
   cec('lookaside','哼。', { cg:null }),
   nmo('bore','啊——果然閃過了。'),
@@ -1628,7 +1628,7 @@ const VF_RAID_SLEEP = [
   { speaker:'NARRATION', text:'', se:'se_weapon_pistol_01', shake:true, auto:700 },
   /* 插圖先在全黑底下換上，下一拍才掀黑幕（同夢境那一段的寫法，不露出背景）。 */
   { speaker:'NARRATION', text:'', fadeOut:1, cg:'041_cecilienemo', cgNoTime:true, auto:300 },
-  nmo('bore','啊——果然閃過了。', { show:false, fadeIn:900 }),
+  nmo('bore','啊——果然閃過了。', { show:false, fadeIn:900, cgPan:'up' }),
   nmo('happy','不愧是學長。', { show:false }),
   cec('talk','又見面了呢。', { cg:null }),
   cec('smile','不過，我們不是來敘舊的。'),
