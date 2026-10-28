@@ -34,7 +34,6 @@ export const BLINK = {
   "anya_si_runworry": {"half":[194,132,135,71],"closed":[194,131,135,73],"base":"bbaf10e3"},
   "anya_si_sad": {"half":[400,134,98,68],"closed":[401,134,97,68],"base":"10177a3e"},
   "anya_si_scare": {"half":[403,98,129,74],"closed":[403,97,129,75],"base":"149eca0a"},
-  "anya_si_shakehead": {"half":[312,143,95,58],"closed":[312,143,94,58],"base":"aace4f36"},
   "anya_si_shy": {"half":[368,127,130,87],"closed":[368,126,130,88],"base":"df57ce8f"},
   "anya_si_shysmile": {"half":[436,167,59,50],"closed":[436,167,59,50],"base":"0b4c153a"},
   "anya_si_side": {"half":[345,128,104,97],"closed":[344,127,106,98],"base":"f622852b"},

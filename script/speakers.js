@@ -332,6 +332,7 @@ export const ART = {
                   /* 墓地那一幕（ver -671，Ray 交稿）。逐張量（tools/measure_si.py）。 */
                   meltdown:    { src:'resources/si/renna_si_meltdown.webp',    top:0,  bot:1535, fx:0.528 },
                   meltdownbite:{ fxShift:0, src:'resources/si/renna_si_meltdownbite.webp', top:0, bot:1535, fx:0.528 },   // ver -2277 美術交件：同 meltdown 姿勢、不笑、輕咬下唇忍淚（取景照抄 meltdown）
+                  realize:     { src:'resources/si/renna_si_realize.webp', top:6, bot:1521, fx:0.506 },   // ver -2281 美術交件：隱隱驚覺（measure_si 量）
                   meltdownsmile:{ src:'resources/si/renna_si_meltdownsmile.webp', top:1, bot:1535, fx:0.529 },   // ver -2208（PNG→webp，原檔進 _originals/SI/）
                   meltdowncry: { src:'resources/si/renna_si_meltdowncry.webp', top:4,  bot:1532, fx:0.607 },
                   /* ⚠ `snivel`（ver -1671 接線）：圖 -1554 那一批就在庫裡，**從來沒接過**
@@ -1105,7 +1106,7 @@ export const ART = {
     scare2:   { src:'resources/si/anya_si_scare2.webp?v=fb151f9d',    top:4, bot:1519, fx:0.364 },
     /* ver -2099 返回帝都稿缺差分（美術 9086789c）：measure_si 量 top/bot；fx 照臉中心目測校正 */
     sad:       { src:'resources/si/anya_si_sad.webp',       top:8, bot:1523, fx:0.465 },
-    shakehead: { src:'resources/si/anya_si_shakehead.webp', top:5, bot:1521, fx:0.405 },
+    shakehead: { src:'resources/si/anya_si_shakehead.webp?v=274438ab', top:5, bot:1521, fx:0.405 },
     /* ══ 東方泊地・碼頭／甜品店 ＋ 貝利薩爾祭壇（ver -1372）══
        腳本（-1318／-1353）一共有 6 拍在用這兩個名字，圖是 Ray 這一輪才交的 ——
        在那之前一律**靜靜回退成基本立繪**（`script_lint.py` 每次都報，畫面上沒有訊息）。

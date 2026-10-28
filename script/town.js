@@ -1576,7 +1576,7 @@ const VF_RAID_AFTER = [
   { speaker:'PLAYER', blank:true },   // （主角空白）「沒有再流鼻血了吧？」
   cec('shynose','笨蛋。'),
   /* ── 賽西莉離開後（依各人好感）── */
-  { speaker:'NARRATION', text:'', se:'se_walk', auto:900, hide:['CECILIE','NEMO','LAURIE'] },   // ver -2279（Ray）：「笨蛋」完放 se_walk（她們走掉）
+  { speaker:'NARRATION', text:'', se:'se_highheels', auto:900, hide:['CECILIE','NEMO','LAURIE'] },   // ver -2281（Ray）：「笨蛋」完放高跟鞋聲（賽西莉走掉）
   Object.assign(ren('lookaway','……'), { tierWho:'RENNA', tierMin:3 }),
   Object.assign(nou('sadsmile','……'), { tierWho:'NOUVELLE', tierMin:3 }),
   Object.assign(nou('surprise','學姐……'), { tierWho:'NOUVELLE', tierMax:2 }),
