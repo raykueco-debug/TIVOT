@@ -11,4 +11,12 @@ dryfire: { src:'resources/si/nemo_si_dryfire.webp', top:2, bot:1527, fx:0.536 },
 - 新檔名，不必掛 `?v=`。原 PNG：`resources/_originals/SI/nemo_si_dryfire.png`
 - 取景值：`tools/measure_si.py` 量的（front 是 top:3 bot:1524，身高幾乎相同）。
 - 槍照 Ray 指定畫成 M1911、滑套後定（參考圖：Wikimedia Commons「M1911A1 noBG」）。
-- ⏳ 同姿勢的「bore 臉」版本（`nemo_si_dryfirebore`）產圖中，交件後補在下面。
+
+## 追加：同姿勢的 bore 臉版本（Ray 10-28 定稿）
+
+```js
+dryfirebore: { src:'resources/si/nemo_si_dryfirebore.webp', top:6, bot:1528, fx:0.537 },   // 彈盡＋無聊臉（同 dryfire 姿勢）
+```
+
+- 原 PNG：`resources/_originals/SI/nemo_si_dryfirebore.png`。新檔名，不必掛 `?v=`。
+- 與 `dryfire` 同一個姿勢；取景值是 measure_si 量的，與 dryfire 幾乎相同（依 §5 -649 也可直接沿用 dryfire 那一列）。
