@@ -2584,6 +2584,8 @@ function applyPersist(line){
   /* ⚠ 已經在進圖時先套過的那幾拍（`preApplyClock`，ver -2244）不再套一次 —— `clockToNext` 套兩次會跳到隔天。 */
   const clockDone = clockPreApplied.has(line); if(clockDone) clockPreApplied.delete(line);
   if(line.clockToNext!=null && !replaying && !clockDone){ try{ clock.advanceToNextHour(line.clockToNext); }catch(_){} }
+  /* `clockAddDays:2` ＝再往後推整整 N 天（ver -2285，Ray：「快進三天」）—— 排在 clockToNext 之後：`{ clockToNext:8, clockAddDays:2 }` ＝三天後的 8:00。 */
+  if(line.clockAddDays>0 && !replaying && !clockDone){ try{ clock.advance((line.clockAddDays|0)*1440); }catch(_){} }
   /* `clockSet:23` ＝這一拍把時鐘設成**今天的 23:00**（ver -2125；可能倒轉，只給「這一段開場就是幾點」用，見 clock.setHourToday）。 */
   if(line.clockSet!=null && !replaying && !clockDone){ try{ clock.setHourToday(line.clockSet); }catch(_){} }
   /* `healFull:true` ＝這一拍把主角的體力補滿（ver -1886，帝都第一夜：夢醒＝睡了一整夜，
@@ -3575,7 +3577,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2284';
+const KERB_V='?v=2287';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）
@@ -5649,9 +5651,10 @@ export function preApplyClock(lines){
   for(const ln of (lines||[])){
     if(!ln || typeof ln!=='object') continue;
     const said = (ln.text!=null && String(ln.text).trim()!=='') || ln.blank;
-    if(ln.clockToNext!=null || ln.clockSet!=null){
+    if(ln.clockToNext!=null || ln.clockSet!=null || ln.clockAddDays>0){
       if(ln.clockToNext!=null){ try{ clock.advanceToNextHour(ln.clockToNext); }catch(_){} }
       if(ln.clockSet!=null){ try{ clock.setHourToday(ln.clockSet); }catch(_){} }
+      if(ln.clockAddDays>0){ try{ clock.advance((ln.clockAddDays|0)*1440); }catch(_){} }
       clockPreApplied.add(ln);
     }
     if(said || ln.battle || ln.goFlight) break;

@@ -348,6 +348,13 @@ function storyExploreOn(){
   const T=TOWNS[townId]||{};
   return !!T.storyExplore && !prog.hasFlag(freeExploreFlag());
 }
+/* ══ 全體約會（城上 `groupDate:{need, until}`，ver -2285，Ray：「薇拉馮德一日遊，全體約會狀態」）══
+   四個人都跟著你：不排外出行程（街上碰不到人）、旅店的門全空（節點的 `innDoors` 那一列寫 `out`）、
+   搭檔**不被約會改寫**（Ray：「就算打靶也是看當前搭檔是誰」⇒ `dateParty` 回 null ＝照舊）。 */
+function groupDateOn(){
+  const g=(TOWNS[townId]||{}).groupDate;
+  return !!(g && needOk(g.need) && !(g.until && prog.hasFlag(g.until)));
+}
 /* ══⚠⚠⚠ **自由活動期間：誰陪你約會，誰就是這一場的搭檔**（ver -1380，Ray 定案）══
    > 「約會時誰同行　城鎮內戰鬥　打靶就是誰當夥伴　不可切換」
    > 「沒有約會的話預設無夥伴」
@@ -395,7 +402,7 @@ export function dateParty(){
          所以光問 `isOpen()` 會讓這條規則跟著玩家飛到天上，ver -1394 的實測）
        · `isTownMap()` ＝這張圖是城鎮（有旅店）—— 荒野不套用
        · 劇情探索／城鎮戰期間不套用（見下面兩條的原因） */
-  if(!isOpen() || !townLive || !isTownMap() || storyExploreOn() || siegeOn()) return null;
+  if(!isOpen() || !townLive || !isTownMap() || storyExploreOn() || groupDateOn() || siegeOn()) return null;
   return { who: datingWho() };                                  // null ＝沒約人＝無夥伴
 }
 /* ver -858：`lines` 可以是**函式**（呼叫時現算）—— 獵人的每日兌換那種
@@ -456,7 +463,7 @@ function rollOuting(){
      是白天中途才立得起來的 —— 卡著鑰匙的話那一天整天沒有人出門。 */
   /* ⚠ 劇情探索期間**不排行程**（ver -666）：不是「排了再擋」——排了就會被
      `outingDebug` 印出來、也會被餐飲街的 `whoOutAt` 讀到，那是兩個真相。 */
-  if(!townId || !st1Active() || storyExploreOn()){ outKey=null; outPlan=[]; return; }
+  if(!townId || !st1Active() || storyExploreOn() || groupDateOn()){ outKey=null; outPlan=[]; return; }
   /* 第一次進旅店那一趟：全員在家（ver -1102，見 innSeenFlag）。
      ⚠ 不記鑰匙 —— 走出旅店之後那一天照常再擲一次。 */
   if(innFirstVisit){ outKey=null; outPlan=[]; return; }
@@ -683,6 +690,7 @@ function inRoom(who){
 function innDoorSet(n){
   for(const d of (n && n.innDoors) || []){
     if(d.need && !prog.hasFlag(d.need)) continue;
+    if(d.until && prog.hasFlag(d.until)) continue;   // `until`（ver -2285）：那支旗插了這一列就不算
     return d;
   }
   return {};
@@ -5053,8 +5061,11 @@ export function enter(id){
              第一次進教堂就會在戰地醫院那一段之後立刻補一句「不要催我」。
              ⚠ 這與 -669 的「不可以接上剛剛那一段」是同一族：**接續是給主線用的**，
                常駐句不屬於那條鏈。 */
+          /* ⚠ 這一段演完要**搬走**（`goto`／成立的 `gotoIf`）就不原地接（ver -2285）：「原地接上」的前提是人還在這一格 ——
+             薇拉馮德茉莉那一段演完要回林蔭大道，同一格的「莊園大門」那一段要等玩家**再走進來**才演。 */
+          const leaving = !!(act.goto || (act.gotoIf && prog.hasFlag(act.gotoIf.flag)));
           const nx=actDue(n);
-          if(nx && nx!==act && nx.flag){ story.clearCast(); runArrival(true); return; }
+          if(!leaving && nx && nx!==act && nx.flag){ story.clearCast(); runArrival(true); return; }
           /* `gotoIf:{ flag, to }`（ver -2138，碎片 02）＝演完時**那支旗插著**才改去 `to`（打輸了這一段就結束、回北泊）；沒插就照下一行。 */
           if(act.gotoIf && prog.hasFlag(act.gotoIf.flag)){ forceGo(act.gotoIf.to); return; }
           if(act.goto){ forceGo(act.goto); return; }   // 段落收尾的強制移轉（ver -1353，見上）
