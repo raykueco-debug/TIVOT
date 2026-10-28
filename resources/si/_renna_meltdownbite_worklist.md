@@ -20,3 +20,15 @@ meltdownbite:{ src:'resources/si/renna_si_meltdownbite.webp', top:0, bot:1535, f
 ## 用在哪
 
 薇拉馮德夜談（《薇拉馮德_夜襲_台詞差分.xlsx》）要不要換成這張，由 Ray／腳本決定；美術這邊只交圖。
+
+
+---
+
+## 追加：蕾娜新差分 `realize`（隱隱驚覺，2026-10-28，Ray 修圖後定稿）
+
+```js
+realize: { src:'resources/si/renna_si_realize.webp', top:6, bot:1521, fx:0.506 },   // 隱隱驚覺：指尖輕觸下巴、微啟唇
+```
+
+- 新檔名，不必掛 `?v=`。原 PNG：`resources/_originals/SI/renna_si_realize.png`
+- 取景值是 `tools/measure_si.py` 量的。
