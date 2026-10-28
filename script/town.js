@@ -1594,10 +1594,11 @@ const VF_RAID_AFTER = [
   ren('smilesoft','……謝謝。'),
   aar('attention','無須言謝。總管說了：『無關血緣，家族至上』。還請您謹記。'),
   ren('meltdown','……'),
-  { speaker:'NARRATION', text:'', fadeOut:1200, auto:1300, hide:'*' },
-  /* 全黑底下換回旅店大廳＋Stage 21 的旅店曲（同城上 `bgmWhen` 那一列 entangle，改一邊要改另一邊）。 */
-  { speaker:'NARRATION', text:'', bgBand:'vela_inn', bgm:'entangle', auto:400 },
-  { speaker:'NARRATION', text:'', auto:300, fadeIn:900 },
+  /* 夜襲演完直接三秒跳轉隔天 08:00（ver -2284，Ray）：三秒黑 → 全黑底下換回旅店大廳、時鐘推到下一個 08:00
+     ＋Stage 21 的旅店曲（同城上 `bgmWhen` 那一列 entangle，改一邊要改另一邊）→ 三秒亮回。 */
+  { speaker:'NARRATION', text:'', fadeOut:3000, auto:3200, hide:'*' },
+  { speaker:'NARRATION', text:'', bgBand:'vela_inn', clockToNext:8, bgm:'entangle', auto:400 },
+  { speaker:'NARRATION', text:'', auto:300, fadeIn:3000 },
 ];
 /* 分支 1：敲門夜談演完接這一段（蕾娜的房間）。 */
 const VF_RAID_KNOCK = [
