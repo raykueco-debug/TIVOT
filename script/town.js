@@ -1544,7 +1544,7 @@ const VF_RAID_AFTER = [
   { speaker:'NARRATION', text:'', se:'se_weapon_reload', auto:700 },
   cec('upset','……'),
   cec('gritteeth','看來你們是鐵了心要和聖王廳開戰了。'),
-  ren('talkserious','安娜王女身份特殊，不能讓聖王廳牽扯在內。這只是正確的政治判斷。'),
+  ren('talkserious','安娜王女身份特殊，不能讓聖王廳牽扯在內。這只是正確的判斷。'),
   ren('command','作戰課的作法，萬一情報外洩就會萬劫不復！'),
   cec('smirk','不愧是監察官，伶牙俐齒的。'),
   cec('spoild','不過……妳們團長，會接受這個理由嗎？'),
@@ -1595,15 +1595,15 @@ const VF_RAID_AFTER = [
   aar('attention','無須言謝。總管說了：『無關血緣，家族至上』。還請您謹記。'),
   ren('meltdown','……'),
   /* 夜襲演完直接三秒跳轉隔天 08:00（ver -2284，Ray）：三秒黑 → 全黑底下換回旅店大廳、時鐘推到下一個 08:00
-     ＋Stage 21 的旅店曲（同城上 `bgmWhen` 那一列 entangle，改一邊要改另一邊）→ 三秒亮回。 */
+     ＋隔天起放薇拉馮德的曲子（同城上 `bgm`，改一邊要改另一邊）→ 三秒亮回。 */
   { speaker:'NARRATION', text:'', fadeOut:3000, auto:3200, hide:'*' },
-  { speaker:'NARRATION', text:'', bgBand:'vela_inn', clockToNext:8, bgm:'entangle', auto:400 },
+  { speaker:'NARRATION', text:'', bgBand:'vela_inn', clockToNext:8, bgm:'emeraldhill', auto:400 },   // 隔天＝薇拉馮德的曲子（同城上 bgm，ver -2290）
   { speaker:'NARRATION', text:'', auto:300, fadeIn:3000 },
 ];
 /* ══ 薇拉馮德・隔日一日遊 → 快進三天 → 茉莉來訪 → 莊園大門（ver -2285，Ray 的稿；差分照《薇拉馮德_隔日_台詞差分》，ver -2288 已對 Ray 改過的那一份）══
    · 隔日（VF_DAY）：夜襲演完三秒黑跳到隔天 08:00 → 旅店大廳接這一段（acts 的接續）。演完＝全體約會（城上 `groupDate`）＋自由行動。
    · 那一天按睡覺（VF_SKIP，`sleepFirst`）：時鐘推到三天後 08:00 → 莊園（`goto:'manor'`）→ 莊園大廳演茉莉來訪（VF_MOLLY，`darkStart`）。
-   · 茉莉演完回林蔭大道（自由活動）→ 再走到莊園大門演 VF_GATE。
+   · 茉莉演完走出莊園大廳，原地接莊園大門 VF_GATE（ver -2290）。
    ⚠ 插圖（蕾娜被拉著走）：T2 以下＝047 索菈娜 POV／T3 以上＝048 主角 POV（ver -2289 接上）。
    ⚠ 安雅 `sneakout` 沒有這張差分 —— 先借 `smilesneaky`；莊園大門的敬禮聲沒有音檔 —— 先不放。 */
 const VF_DAY = [
@@ -1615,7 +1615,7 @@ const VF_DAY = [
   sor('smile','有什麼關係嘛！他們應該不敢在這裡動手了吧？'),
   ren('think','話是這麼說……'),
   { speaker:'NARRATION', text:'', se:'se_dooropen', auto:800 },
-  any('smilesneaky',''),   // 稿：sneakout（沒有這張，暫借）
+  any('panic',''),   // 稿：sneakout（沒有這張，暫借）
   ren('stare','……'),
   any('scare',''),
   any('talkshy','那個、我……'),
@@ -1642,7 +1642,7 @@ const VF_MOLLY = [
   sor('smile','對不起呀，我就是個山裡長大的鄉下人。'),
   mol('softsmile','快別這麼說。我們薇拉馮德的主母，也是森住民呢。'),
   nou('surprise','欸？是這樣嗎？'),
-  ren('think','可是阿奎盧斯大人不是在災厄中……'),
+  ren('curious','可是阿奎盧斯大人不是在災厄中……'),
   mol('eyesmile',''),   // 茉莉笑
   ren('realize','！！'),
   mol('talk','閒話先放一邊，關於安娜殿下的請求，我的主人已經給出裁示了。'),
@@ -1692,8 +1692,10 @@ const VF_MOLLY = [
   mol('stern','咱們兩家之間，還有一個約定等著妳履行呢。'),
   mol('order','這次可千萬別再讓薇拉馮德的家紋蒙灰了。'),
   ren('meltdownbite','……'),
-  ren('lookdown','我明白……'),
-  { speaker:'NARRATION', text:'', auto:300, hide:'*' },   // 自由活動：演完搬到林蔭大道（act 的 goto 自己淡黑轉景；這裡不寫 fadeOut —— 沒有下一段來掀它，會黑在林蔭大道上）
+  ren('determine','我明白……'),
+  /* 莊園大廳出來直接接莊園大門那一段（ver -2290，Ray）：全黑底下換回莊園大門那一張。 */
+  { speaker:'NARRATION', text:'', fadeOut:1200, auto:1300, hide:'*' },
+  { speaker:'NARRATION', text:'', bgBand:'vela_manor', fadeIn:900, auto:1000 },
 ];
 const VF_GATE = [
   /* 稿：敬禮聲（沒有音檔，先不放）。 */
@@ -10953,9 +10955,9 @@ export const TOWNS = {
     visitEarly: { flag:'vf_visited_early', untilFlag:'cr_dock' },
     entry: 'square',   // ver -2207（Ray：「進場就是圓環廣場，進場下方是出航，配置照雪都」）
     bgm: 'emeraldhill',      // ver -1765，Ray：「薇拉馮德用 PeriTune_Emerald_Hill_loop」
-    /* ver -2273（Ray）：Stage 21 的旅店放 Entangle（夜襲戰後收尾那一拍也寫了同一首，改一邊要改另一邊）。
+    /* ver -2273（Ray）：Stage 21 那一夜的旅店放 Entangle；夜襲演完（vf_raid）隔天起回到城的曲子（收尾那一拍寫了 emeraldhill，改一邊要改另一邊）。
        ⚠ 看 `vf_manor` 不看章節起點：stage 21 是旅店那一段（vf_inn）演完才插的，走進旅店那一刻還是 20。 */
-    bgmWhen: [ { node:'inn', need:'vf_manor', untilStage:22, bgm:'entangle' } ],
+    bgmWhen: [ { node:'inn', need:'vf_manor', until:'vf_raid', bgm:'entangle' } ],   // ver -2290（Ray）：隔天起旅店回到薇拉馮德的曲子
     /* ver -2285（Ray：「薇拉馮德一日遊，全體約會狀態」）：隔日那一段演完到快進三天之間 —— 四個人都跟著（見 modules/town.js 的 groupDateOn）。 */
     groupDate: { need:'vf_day', until:'vf_3days' },
     mist: 0,                 // 大城不上霧（§6.5.4 ver -913）
@@ -10999,8 +11001,8 @@ export const TOWNS = {
         /* ver -2208：莊園大門＋大廳，演完被安排到旅店（傍晚 20:00）。 */
         acts:[ { flag:'vf_manor', need:'vf_arrive', darkStart:true, sides:VF_SIDES, goto:'inn', clockToday:20, lines:VF_MANOR },
                /* ver -2285：快進三天後在莊園大廳（茉莉來訪）→ 演完回林蔭大道自由活動；之後再走到莊園大門。 */
-               { flag:'vf_molly', need:'vf_3days', darkStart:true, sides:VF_SIDES, goto:'avenue', lines:VF_MOLLY },
-               { flag:'vf_gate', need:'vf_molly', sides:VF_SIDES, lines:VF_GATE } ],   // darkStart：第一次走進莊園＝三秒黑幕長轉景（ver -2209）
+               { flag:'vf_molly', need:'vf_3days', darkStart:true, sides:{ RENNA:'L' }, lines:VF_MOLLY },   // 演完原地接莊園大門（ver -2290，Ray）；站位原則：有安雅 → 蕾娜左
+               { flag:'vf_gate', need:'vf_molly', sides:{ RENNA:'R' }, lines:VF_GATE } ],   // 站位原則：沒有安雅 → 蕾娜右   // darkStart：第一次走進莊園＝三秒黑幕長轉景（ver -2209）
         exits:{ back:'avenue' } },
       uptown:    { bg:'vela_uptown', name:'薇拉馮德　上街區',
         exits:{ left:'square', up:'inn', down:'grocery', right:'tavern' } },
@@ -11018,7 +11020,7 @@ export const TOWNS = {
                { flag:'vf_raid', need:'vf_inn', sleepFirst:{ hours:1, disguise:true, blackAfter:600 },
                  storyBattle:true, sides:VF_RAID_SIDES, lines:VF_RAID_SLEEP },
                /* ver -2285：夜襲演完（三秒黑到隔天 08:00）接隔日那一段；那一天按睡覺＝快進三天搬到莊園。 */
-               { flag:'vf_day', need:'vf_raid', sides:VF_SIDES, lines:VF_DAY },
+               { flag:'vf_day', need:'vf_raid', sides:{ RENNA:'L' }, lines:VF_DAY },   // 四女主站位原則（§6.5）：台上有安雅 → 蕾娜放左，其餘照本位（ver -2290）
                { flag:'vf_3days', need:'vf_day', sleepFirst:{ hours:1, disguise:true, blackAfter:600 }, goto:'manor', lines:VF_SKIP } ],
         /* 全體約會那一天（vf_day 演完～快進三天）：四扇門全空（ver -2285，Ray：「全空」）。 */
         innDoors:[ { need:'vf_day', until:'vf_3days', out:['RENNA','NOUVELLE','SORANA','ANYA'] } ] },
