@@ -1556,6 +1556,24 @@ const BA_CHAPTERS = [
             'cr_inn_raid','cap_raid','cap_clear_inn','cap_clear_uptown','cap_clear_square','cap_clear_oldtown','cr_dock',
             'vf_arrive','vf_manor','mapcard_verafond' ],
     enter:'town', town:'verafond', node:'inn' },
+  /* ══ Stage 22 孤舟島（ver -2303，Ray：「22章沒進章節列表」）══ 跳過飛行段，直接進島心廣場演抵達
+     （那一段插 stage 22）→ 六號船塢 → 自由探索（旅舍敲門：索菈娜房內）。旗＝Stage 21 那一份＋薇拉馮德整段＋出航對話。 */
+  { id:'stage22', name:'Stage 22', sub:i18nT('孤舟島：抵達 → 六號船塢（胡安）→ 自由探索'),
+    stage:21, clockHour:10, named:true, aff:A_AFF,
+    flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb',
+            's14_flight_talk','ss_arrive','ss_cityhall','ss_4pm','ss_inn_merge',
+            'ss_slum_anya','ss_slum_nou','ss_slum_sor','ss_anya_after','ss_nou_after','ss_sor_resolve',
+            'ss_raid_go','ss_lodge_seen','ss_lodge_done','ss_avenue_done','ss_carriage_done',
+            'ss_forecourt_done','ss_hall_done','ss_raid_done','ss_raid_home','ss_depart',
+            'mapcard_dunmor','dm_arrive','dm_gate_done','dm_cairn_call','dm_altar_first',
+            'dunmor_lit_ossuary','dunmor_lit_cairn','dunmor_lit_kingsbarrow','dunmor_lit_brochtop',
+            'dm_altar_done','cr_flight_talk','cr_chase','cr_return',
+            'mapcard_capital','inn_seen_capital_inn','town_capital_inn','town_kind_inn',
+            'inn_wait','inn_missed','cap_dream','inn_tip_sit','inn_tip_knock','inn_tip_sleep',
+            'cr_inn_raid','cap_raid','cap_clear_inn','cap_clear_uptown','cap_clear_square','cap_clear_oldtown','cr_dock',
+            'vf_arrive','vf_manor','mapcard_verafond',
+            'vf_inn','vf_raid','vf_day','vf_3days','vf_molly','vf_gate','li_depart_talk' ],
+    enter:'town', town:'loneisle', node:'plaza' },
   /* ══ 帝都・教廷衛士戰（ver -2043，Ray：「劇情還沒推到，但是先把帝都戰處理一下」）══ 測試入口：
      落在旅店、插 `cap_raid` ⇒ 一進來就打第一場（旅店 → 上街區 → 廣場結算 → 舊街區）。
      旗與好感照 Stage 16（劇情接上之前，這一段在哪一章還沒定）；旅店的初見／夢都當成看過。 */
