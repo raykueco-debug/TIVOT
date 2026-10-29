@@ -1250,3 +1250,5 @@ when	from	to	reason
 20261028-222312	resources/si/blink/anya_si_shakehead_half.webp	_recycle/resources/si/blink/anya_si_shakehead_half.webp	安雅 shakehead 換 v2，舊眨眼補丁對不上（閉眼圖不必眨）
 20261028-222312	resources/si/blink/anya_si_shakehead_closed.webp	_recycle/resources/si/blink/anya_si_shakehead_closed.webp	安雅 shakehead 換 v2，舊眨眼補丁對不上（閉眼圖不必眨）
 20261029-235339	resources/si/_refs_1028	_recycle/resources/si/_refs_1028	10-28／10-29 產圖暫存參考區（孤舟島／薇拉馮德工單全部交件，Ray 指示回收）
+20261030-010244	resources/si/laurie_si_bowsweat.webp	_recycle/resources/si/laurie_si_bowsweat.webp	蘿芮 bowsweat 換成無汗版（Ray 10-30：額頭上的汗拿掉）
+20261030-010252	resources/_originals/SI/laurie_si_bowsweat.png	_recycle/resources/_originals/SI/laurie_si_bowsweat.png	蘿芮 bowsweat 原 PNG（有汗版），換成無汗版

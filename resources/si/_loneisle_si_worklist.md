@@ -100,3 +100,16 @@ faint: { src:'resources/si/sorana_si_faint.webp', top:249, bot:1482, fx:0.380 },
   所以 `top:249` 不是站姿頭頂（measure_si 也警告「縱向只佔 80%」）。**不要寫 `rescale`**：照 §5 預設沿用
   front 的尺，她在畫面上會比站姿小約 12%、頭明顯偏低，那正是「倒下去」的樣子。進遊戲覺得太小再調 `cm`。
 - `fx:0.380` 量到的是往後仰的臉，偏左是對的（頭往後倒到畫面左側）。
+
+## 八、追加（2026-10-30）
+
+### 蘿芮 `disbelief`（新檔，1 張）— `ART.laurie.expr` 加
+```js
+disbelief: { src:'resources/si/laurie_si_disbelief.webp', top:8, bot:1521, fx:0.483 },   // 不可置信的驚訝：瞪眼、手捂嘴、抱書後縮
+```
+- 新檔名，不必 bust。原 PNG：`resources/_originals/SI/laurie_si_disbelief.png`。
+
+### ⚠ 蘿芮 `bowsweat` **同名覆蓋**（Ray：「額頭上的汗拿掉」）
+- `resources/si/laurie_si_bowsweat.webp` 換成**無汗版**（同姿勢、同嚴肅表情，只是沒有汗珠）；舊的有汗版已回收。
+- ⚠⚠ **程式端要跑 `python3 tools/bust.py --bump`**（§5 -1918：同名覆蓋走內容雜湊），不跑的話玩家吃到的還是有汗那一張。
+- 取景值改成 `top:7, bot:1523, fx:0.679`（與舊版只差 1px，不改也行）。
