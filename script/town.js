@@ -1883,13 +1883,13 @@ const LI_REFIT = [
 ];
 const LI_RETURN = [
   jua('grin','漂亮的戰鬥！不愧是聖約騎士團啊！'),
-  ren('stare','……'),
-  nou('think','我們……有提過自己是聖約騎士團嗎？'),
+  ren('pause','……'),
+  nou('shock','我們……有提過自己是聖約騎士團嗎？'),
   jua('talk','沒有啊。但是同伴已經來迎接你們了喔。'),
   sor('confuse','同伴？'),
   any('scare','！！'),
   { speaker:'NARRATION', text:'', se:['se_weapon_pistol_01', { n:'se_bulletguard', delay:120 }], shake:true, auto:800 },   // 槍擊聲　擋彈聲
-  jua('shock','怎、怎麼回事？'),
+  jua('shock','怎、怎麼回事？', { bgm:'cecilie' }),   // ver -2309（Ray）：槍聲之後換賽西莉的戰鬥曲
   nmo('happy','又見面囉，學長。'),
   cec('smirk','這次可是好好帶著槍棺來的喔。'),
   cec('talk','乖乖跟我們回聖王廳，對大家都好。'),
