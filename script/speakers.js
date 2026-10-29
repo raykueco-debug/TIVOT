@@ -313,7 +313,7 @@ export const ART = {
                   talkwork: { src:'resources/si/renna_si_talkwork.webp',   top:3, bot:1519, fx:0.509 },
                   think: { src:'resources/si/renna_si_think.webp',   top:4, bot:1530, fx:0.515 },
                   /* ver -425 交件。`covermouth`＝掩口（驚訝／忍笑）、`cringe`＝尷尬皺眉。 */
-                  covermouth:{src:'resources/si/renna_si_covermouth.webp',top:2, bot:1528, fx:0.512 },
+                  covermouth:{ yShift:0,src:'resources/si/renna_si_covermouth.webp',top:2, bot:1528, fx:0.512 },
                   cringe:   { src:'resources/si/renna_si_cringe.webp',    top:3, bot:1524, fx:0.502 },
                   cutescare:{ src:'resources/si/renna_si_scarecute.webp', top:0, bot:1530, fx:0.537 },
                   die:    { src:'resources/si/renna_si_die.webp',     top:2, bot:1518, fx:0.543 },
@@ -702,7 +702,7 @@ export const ART = {
     covermouthshock: { fxShift:-0.09, src:'resources/si/sorana_si_covermouthshock.webp', top:10, bot:1534, fx:0.716 },
     dizzy:           { fxShift:-0.065, src:'resources/si/sorana_si_dizzy.webp',           top:8,  bot:1526, fx:0.732 },
     sickembarrass:   { fxShift:-0.055, src:'resources/si/sorana_si_sickembarrass.webp',   top:5,  bot:1533, fx:0.676 },
-    sickpout:        { src:'resources/si/sorana_si_sickpout.webp',        top:10, bot:1525, fx:0.619 },
+    sickpout:        { fxShift:-0.035, src:'resources/si/sorana_si_sickpout.webp',        top:10, bot:1525, fx:0.619 },
     vomit:           { fxShift:-0.09, src:'resources/si/sorana_si_vomit.webp',           top:22, bot:1505, fx:0.707 },
     front:        { fxShift:-0.03, yShift:25, cm:150, src:'resources/si/sorana_si_front.webp?v=c4629a3a',     top:5,  bot:1529, fx:0.659 },
     side:         { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_side.webp?v=5e97123e',      top:4,  bot:1526, fx:0.498 },
@@ -1081,7 +1081,7 @@ export const ART = {
     /* 北方泊地第三天（ver -664，Ray 交稿）。四張都是**全身站姿**，照量即可
        —— 近景那幾張才要 `cm`／`standCm`（見上面的說明）。 */
     silent:    { fxShift:0, yShift:-2, cm:145, src:'resources/si/anya_si_silent.webp?v=5497fc32',     top:4, bot:1521, fx:0.423 },
-    panic:     { cm:152, fxShift:0, src:'resources/si/anya_si_panic.webp?v=960811a2',      top:0, bot:1522, fx:0.434 },   // ver -842
+    panic:     { yShift:0, cm:152, fxShift:0, src:'resources/si/anya_si_panic.webp?v=960811a2',      top:0, bot:1522, fx:0.434 },   // ver -842
     dizzy:     { fxShift:0, src:'resources/si/anya_si_dizzy.webp', top:62, bot:1527, fx:0.428 },   // ver -2189（top 量頭髮，不含頭上的冒煙與漩渦）
     /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2` ＋ 取景值重量
        （0.426→0.522：差了將近一成的圖寬，沿用舊值臉會明顯偏左）。 */
