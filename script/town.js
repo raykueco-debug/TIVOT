@@ -11064,6 +11064,7 @@ export const TOWNS = {
   loneisle: {
     name: '孤舟島',
     entry: 'plaza',
+    bgm: 'bustling',   // ver -2298（Ray：「PerituneMaterial_Bustling_Village 孤舟島」）
     mist: 0,   // 同夏爾村：村子一開始就全看得到
     nodes: {
       plaza:      { bg:'loneisle_plaza', name:'孤舟島　島心廣場',

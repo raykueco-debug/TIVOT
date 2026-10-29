@@ -1423,6 +1423,7 @@ const BGM_FILES=[
   'peritune_black_crystal_loop.m4a',   // ver -1294：伊甸古墓（bgm_blackcrystal）
   'peritunematerial_taishoroman_theme2_loop.m4a',   // ver -1294：拉芬斯達爾城（bgm_taisho2）
   'peritune_portside_cafe_loop.m4a',   // ver -1294：東方泊地（bgm_portside）
+  'peritunematerial_bustling_village.m4a',   // ver -2298：孤舟島（bgm_bustling）
   'peritunematerial_prairie4_loop.m4a',   // ver -1408：平原古道（bgm_prairie）
   'peritunematerial_gothic_dark_loop.m4a',   // ver -1421：追擊戰的**主體檔**（-1350 一直只有 7.8 秒的 intro）
   'peritunematerial_prairie5_loop.m4a',   // ver -1508：尼莫戰（bgm_nemo）
@@ -1466,6 +1467,7 @@ const BGM_ALIAS={ crisis:'peritunematerial_crisis_loop', lunaria:'bgm_lunaria',
                   taisho2:'peritunematerial_taishoroman_theme2_loop',   // ver -1294：拉芬斯達爾城
                   hesitation:'peritunematerial_hesitation_loop',   // ver -1564：雪都圖書館之後～隔天
                   portside:'peritune_portside_cafe_loop',   // ver -1294：東方泊地
+                  bustling:'peritunematerial_bustling_village',   // ver -2298：孤舟島
                   /* ⚠ 這兩個短名與檔名對不起來（`glasscradle` vs
                      `peritune_glass_cradle_loop`）—— 那正是 `BGM_ALIAS` 留著的用途
                      （見下面 -1398 那一段）。`ASSETS.bgm_*` 的退路也接得住它們，
@@ -3584,7 +3586,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2297';
+const KERB_V='?v=2298';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）

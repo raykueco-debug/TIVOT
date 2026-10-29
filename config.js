@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.29-2297';
+export const VERSION = 'ver 2026.10.29-2298';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4075,6 +4075,9 @@ export const GAME_CONFIG = {
          ⇒ 0.849×10^(1.40/20)＝0.997。峰值 0.00 dBFS × 0.997 ＝ −0.03 dBFS，未觸頂。
          ⚠ 手機模型低 5.9 dB（中間值）。 */
       peritune_portside_cafe_loop:0.997,
+      /* 孤舟島（ver -2298，Ray：「PerituneMaterial_Bustling_Village 孤舟島」；檔名改小寫）：
+         ffmpeg ebur128 −9.4／手機模型 −12.8 → 平均 −11.1，對 Portside 同一把尺 ⇒ 0.997×10^(−0.66/20)＝0.924。 */
+      peritunematerial_bustling_village:0.924,
       /* 平原古道（ver -1408）：本機 BS.1770 −7.2 LUFS／手機模型 −10.0 ⇒ 平均 **−8.60**，
          比錨（bgm_battle 平均 −9.90）大聲 1.30 dB ⇒ 0.849×10^(−1.30/20)＝0.731。
          峰值 0.0 dBFS × 0.731 ＝ −2.7 dBFS，未觸頂（peakCeilDb +2）。 */
@@ -5133,7 +5136,8 @@ export const ASSETS = {
      所以這一首**現在還沒有人叫它** —— 素材、鑰匙、增益、Credit 先備好，
      `TOWNS.eastport` 建起來的那一刻只要寫 `bgm:'portside'` 就接上。
      ⚠ 先進來是刻意的：等到要用才補，就是 §6.6 那條「加音檔忘了補 fileGain」的溫床。 */
-  bgm_portside:     "resources/audio/bgm/peritune_portside_cafe_loop.m4a",                // 東方泊地（ver -1251，待 TOWNS.eastport）
+  bgm_portside:     "resources/audio/bgm/peritune_portside_cafe_loop.m4a",
+  bgm_bustling:     "resources/audio/bgm/peritunematerial_bustling_village.m4a",          // 孤舟島（ver -2298，Ray 指定）                // 東方泊地（ver -1251，待 TOWNS.eastport）
   /* ══ 貝利薩爾那一段的三首（ver -1350，Ray 交件）══════════════════════════
      · `numina`    古城（`TOWNS.belisar.bgm`）
      · `gothic`    追擊戰開始之後 —— ⚠⚠ **到飛行畫面也要繼續不停**（見下）
