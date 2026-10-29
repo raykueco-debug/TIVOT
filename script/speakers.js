@@ -282,7 +282,7 @@ export const ART = {
                   cough:     { src:'resources/si/renna_si_cough.webp',     top:7,  bot:1528, fx:0.508 },   // ver -2190
                   coughsoft: { src:'resources/si/renna_si_coughsoft.webp', top:10, bot:1526, fx:0.520 },   // ver -2190
                   bow:     { src:'resources/si/renna_si_bow.webp',     top:0, bot:1530, fx:0.507 },
-                  awkward: { src:'resources/si/renna_si_awkwerd.webp', top:6, bot:1526, fx:0.519 },
+                  awkward: { fxShift:0, src:'resources/si/renna_si_awkwerd.webp', top:6, bot:1526, fx:0.519 },
                   /* 帝都廣場那一段新增（ver -359）。`stare`＝直視／半瞇，用在她盯著人講話那幾拍。 */
                   stare:   { src:'resources/si/renna_si_stare.webp',   top:0, bot:1527, fx:0.515 },
                   surprise:{ src:'resources/si/renna_si_surprise.webp',top:8, bot:1524, fx:0.498 },
@@ -396,7 +396,7 @@ export const ART = {
                        照角色層走（不像公主抱那一組，她在那裡被畫小了）。
                      ⚠ ver -1787：美術 09-27 換臉交件 `.webp`（新檔名、不必 `?v=`），取景不動；舊 PNG 已回收。 */
                   holdnouvelle:{ src:'resources/si/renna_si_holdnouvelle.webp',  top:3,  bot:1530, fx:0.394, withChar:['NOUVELLE'] },
-                  scarejump:   { src:'resources/si/renna_si_scarejump.webp',   top:0,  bot:1533, fx:0.632 },
+                  scarejump:   { fxShift:0, src:'resources/si/renna_si_scarejump.webp',   top:0,  bot:1533, fx:0.632 },
                   scarecute:   { src:'resources/si/renna_si_scarecute.webp',   top:0,  bot:1530, fx:0.537 },
                   blush:     { src:'resources/si/renna_si_blush.webp',     top:8,  bot:1522, fx:0.551 },
                   lookdown:    { fxShift:0, src:'resources/si/renna_si_lookdown.webp',    top:6,  bot:1524, fx:0.548 },
@@ -434,7 +434,7 @@ export const ART = {
        取景值是美術用 `tools/measure_si.py` 量的，**程式端逐張複驗過**（72 張全對）。
        ⚠ `sleepdesk` 趴在桌上，**不是全身圖**（縱向只佔 43%）—— `top/bot` 不可當身高用，
          走 `cm`（管大小）＋ `standCm`（管頭擺多高）兩個旋鈕，見檔頭 §5 的說明。 */
-    apologize: { src:'resources/si/renna_si_apologize.webp?v=4f46910b', top:5, bot:1484, fx:0.521 },
+    apologize: { fxShift:0, src:'resources/si/renna_si_apologize.webp?v=4f46910b', top:5, bot:1484, fx:0.521 },
     armcross:  { src:'resources/si/renna_si_armcross.webp?v=ff5aa880', top:2, bot:1522, fx:0.482 },
     back:      { src:'resources/si/renna_si_back.webp?v=ff6b4da3', top:5, bot:1502, fx:0.504 },
     blushangry:{ src:'resources/si/renna_si_blushangry.webp?v=f9c73fd5', top:7, bot:1506, fx:0.511 },
@@ -454,7 +454,7 @@ export const ART = {
     sipdrink:  { src:'resources/si/renna_si_sipdrink.webp?v=97a08595', top:4, bot:1513, fx:0.492 },
     sleepdesk: { src:'resources/si/renna_si_sleepdesk.webp?v=a00b2045', top:436, bot:1098, fx:0.595, cm:52, standCm:135 },   // 座（非全身圖）
     smilesoft: { src:'resources/si/renna_si_smilesoft.webp?v=d679a125', top:6, bot:1520, fx:0.503 },
-    whisper:   { src:'resources/si/renna_si_whisper.webp?v=7f5b08ec', top:7, bot:1519, fx:0.566 },
+    whisper:   { fxShift:0, src:'resources/si/renna_si_whisper.webp?v=7f5b08ec', top:7, bot:1519, fx:0.566 },
     /* ══ 冒險者裝（ver -1863，美術 164d9b9a／HANDOFF 35）══ 聖索菲亞「更衣後」＋里朋莊園那一段用 `ad_<表情>`；新檔不用 ?v=。 */
     ad_bow: { src:'resources/si/renna_ad_si_bow.webp?v=3135fc88', top:5, bot:1510, fx:0.492 },
     ad_command: { src:'resources/si/renna_ad_si_command.webp?v=4e9ddbfa', top:2, bot:1516, fx:0.512 },
@@ -493,13 +493,13 @@ export const ART = {
                      ⚠ 檔名 `expain2` 是交件時的拼字（少一個 l），鍵名照 Ray 的稿寫
                        —— 他的腳本上就是 `Nouvelle_SI_expain2`。
                      ⚠ `think` 與既有的 `thinking` 是**兩張不同的圖**，不要合併。 */
-                  expain2:  { src:'resources/si/nouvelle_si_expain2.webp', top:3, bot:1535, fx:0.579 },
+                  expain2:  { fxShift:0, src:'resources/si/nouvelle_si_expain2.webp', top:3, bot:1535, fx:0.579 },
                   /* ⚠ **同一張圖的別名**（ver -1186）：交件的檔名少一個 l（`expain2`），
                      而 Ray 的稿有時寫 `explain2`（正確拼法）。兩個鍵指同一張、
                      取景值照抄（§6.5：同一個姿勢就直接沿用，不要逐張重量）。
                      ⚠ `shinier_ruins.darkbridge` 那一段本來就在用 `explain2`，
                        之前一直回退基本立繪 —— 這一條順手把它修好。 */
-                  explain2: { src:'resources/si/nouvelle_si_expain2.webp', top:3, bot:1535, fx:0.579 },
+                  explain2: { fxShift:0, src:'resources/si/nouvelle_si_expain2.webp', top:3, bot:1535, fx:0.579 },
                   think:    { src:'resources/si/nouvelle_si_think.webp',   top:5, bot:1525, fx:0.551 },
                   /* 艦鬥教學那幾拍（ver -424，Ray 交件）：她穩住陣腳的姿勢。 */
                   /* ══ stage7・木雅克神殿（ver -922，Ray 交稿）══ 交件是 PNG，依 §5 轉 WebP；
@@ -606,7 +606,7 @@ export const ART = {
                   risehand: { src:'resources/si/nouvelle_si_risehand.webp',  top:124, bot:1529, fx:0.620 },
                   awkwerd:  { src:'resources/si/nouvelle_si_awkwerd.webp',   top:2,  bot:1533, fx:0.468 },
                   /* ⚠ 別名（同上，ver -1186）：Ray 的稿寫 `shock`。 */
-                  shock:    { yShift:0, src:'resources/si/nouvelle_si_shock.webp',   top:3,  bot:1534, fx:0.504 },
+                  shock:    { fxShift:0, yShift:0, src:'resources/si/nouvelle_si_shock.webp',   top:3,  bot:1534, fx:0.504 },
                   lookaway: { src:'resources/si/nouvelle_si_lookaway.webp',  top:5,  bot:1529, fx:0.504 },
                   /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2`（§5：不掛
                      cache-buster 的話瀏覽器會抱著舊的那一份），取景值也**重量過**
@@ -697,13 +697,13 @@ export const ART = {
     /* stage7・木雅克神殿（ver -922，Ray 交稿）。 */
     confuse:      { fxShift:-0.01, yShift:16, cm:160, src:'resources/si/sorana_si_confuse.webp?v=035963ac', top:6, bot:1522, fx:0.510 },
     /* 孤舟島・暈船系列（ver -2297 接，取景值照美術工單 _loneisle_si_worklist.md）。vomit 是背面＋彩虹。 */
-    sick:            { src:'resources/si/sorana_si_sick.webp',            top:5,  bot:1530, fx:0.709 },
-    covermouth:      { src:'resources/si/sorana_si_covermouth.webp',      top:17, bot:1532, fx:0.717 },
-    covermouthshock: { src:'resources/si/sorana_si_covermouthshock.webp', top:10, bot:1534, fx:0.716 },
-    dizzy:           { src:'resources/si/sorana_si_dizzy.webp',           top:8,  bot:1526, fx:0.732 },
-    sickembarrass:   { src:'resources/si/sorana_si_sickembarrass.webp',   top:5,  bot:1533, fx:0.676 },
+    sick:            { fxShift:-0.09, src:'resources/si/sorana_si_sick.webp',            top:5,  bot:1530, fx:0.709 },
+    covermouth:      { fxShift:-0.09, src:'resources/si/sorana_si_covermouth.webp',      top:17, bot:1532, fx:0.717 },
+    covermouthshock: { fxShift:-0.09, src:'resources/si/sorana_si_covermouthshock.webp', top:10, bot:1534, fx:0.716 },
+    dizzy:           { fxShift:-0.065, src:'resources/si/sorana_si_dizzy.webp',           top:8,  bot:1526, fx:0.732 },
+    sickembarrass:   { fxShift:-0.055, src:'resources/si/sorana_si_sickembarrass.webp',   top:5,  bot:1533, fx:0.676 },
     sickpout:        { src:'resources/si/sorana_si_sickpout.webp',        top:10, bot:1525, fx:0.619 },
-    vomit:           { src:'resources/si/sorana_si_vomit.webp',           top:22, bot:1505, fx:0.707 },
+    vomit:           { fxShift:-0.09, src:'resources/si/sorana_si_vomit.webp',           top:22, bot:1505, fx:0.707 },
     front:        { fxShift:-0.03, yShift:25, cm:150, src:'resources/si/sorana_si_front.webp?v=c4629a3a',     top:5,  bot:1529, fx:0.659 },
     side:         { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_side.webp?v=5e97123e',      top:4,  bot:1526, fx:0.498 },
     /* ⚠⚠ ver -1047 交件（「無飛刀」那一張）：目前**只給破防計量表的頭像用**，
@@ -1081,7 +1081,7 @@ export const ART = {
     /* 北方泊地第三天（ver -664，Ray 交稿）。四張都是**全身站姿**，照量即可
        —— 近景那幾張才要 `cm`／`standCm`（見上面的說明）。 */
     silent:    { fxShift:0, yShift:-2, cm:145, src:'resources/si/anya_si_silent.webp?v=5497fc32',     top:4, bot:1521, fx:0.423 },
-    panic:     { fxShift:0, src:'resources/si/anya_si_panic.webp?v=960811a2',      top:0, bot:1522, fx:0.434 },   // ver -842
+    panic:     { cm:152, fxShift:0, src:'resources/si/anya_si_panic.webp?v=960811a2',      top:0, bot:1522, fx:0.434 },   // ver -842
     dizzy:     { fxShift:0, src:'resources/si/anya_si_dizzy.webp', top:62, bot:1527, fx:0.428 },   // ver -2189（top 量頭髮，不含頭上的冒煙與漩渦）
     /* ⚠ ver -1092 Ray **重交了這一張**（同名覆蓋）→ `?v=2` ＋ 取景值重量
        （0.426→0.522：差了將近一成的圖寬，沿用舊值臉會明顯偏左）。 */
@@ -1735,7 +1735,7 @@ export const ART = {
               talk:       { src:'resources/si/npc/robert_si_talk.webp', top:17, bot:1517, fx:0.502 },
             } },
   /* ver -2296：孤舟島另一個船匠（只出一句）。美術量 top:7 是肩上木板的上緣 —— 照 §5「道具超出頭頂會污染 top」改量頭頂 30。 */
-  shipwright_li: { cm:172, fx:0.422, top:30, bot:1517, side:'R', alt:null, base:'resources/si/shipwright_si_front.webp', expr:{} },
+  shipwright_li: { cm:172, fx:0.422, top:30, bot:1517, side:'R', alt:null, flip:true,   /* ver -2304 Ray：「船匠要水平翻轉」 */ base:'resources/si/shipwright_si_front.webp', expr:{} },
   /* ver -2295：胡安（孤舟島六號船塢主任，美術交件 10 張；取景 measure_si 量，cm 美術估 165＝矮胖）。 */
   juan: { cm:165, fx:0.532, top:6, bot:1513, side:'R', alt:null, base:'resources/si/juan_si_front.webp',
           expr:{
@@ -1743,8 +1743,8 @@ export const ART = {
             laugh:   { src:'resources/si/juan_si_laugh.webp',   top:5,  bot:1518, fx:0.546 },
             grin:    { src:'resources/si/juan_si_grin.webp',    top:5,  bot:1493, fx:0.631 },
             shock:   { src:'resources/si/juan_si_shock.webp',   top:18, bot:1516, fx:0.422 },
-            serious: { src:'resources/si/juan_si_serious.webp', top:3,  bot:1515, fx:0.534 },
-            think:   { src:'resources/si/juan_si_think.webp',   top:11, bot:1499, fx:0.545 },
+            serious: { fxShift:0, src:'resources/si/juan_si_serious.webp', top:3,  bot:1515, fx:0.534 },
+            think:   { fxShift:0, src:'resources/si/juan_si_think.webp',   top:11, bot:1499, fx:0.545 },
             smirk:   { src:'resources/si/juan_si_smirk.webp',   top:7,  bot:1514, fx:0.540 },
             worry:   { src:'resources/si/juan_si_worry.webp',   top:13, bot:1497, fx:0.564 },
             sigh:    { src:'resources/si/juan_si_sigh.webp',    top:9,  bot:1496, fx:0.489 },
