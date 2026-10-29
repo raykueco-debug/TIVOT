@@ -89,3 +89,14 @@ shipwright: { src:'resources/si/shipwright_si_front.webp', side:'R', cm:/*美術
 - ⚠ `top:7` 是**肩上那根木板**的上緣，不是頭頂（頭頂約在 30 上下）—— 鎖身高時人會被縮小一點；
   進遊戲覺得偏小就把 `top` 改成頭頂的值（§5「髮飾／持物會污染 top」）。
 - 原 PNG：`resources/_originals/SI/shipwright_si_front.png`
+
+## 七、追加：索菈娜 `faint`（1 張，2026-10-30 交件）
+
+```js
+faint: { src:'resources/si/sorana_si_faint.webp', top:249, bot:1482, fx:0.380 },   // 「一週……！」之後倒地那一拍：眼微上吊、手往前伸、往後仰倒
+```
+- 新檔名，不必 bust。原 PNG：`resources/_originals/SI/sorana_si_faint.png`。
+- ⚠ 這張是**往後仰的斜身**，而且 GPT 原圖左右貼邊，美術在本機**等比縮到 88% 置中**（腳底高度不變）留白 ——
+  所以 `top:249` 不是站姿頭頂（measure_si 也警告「縱向只佔 80%」）。**不要寫 `rescale`**：照 §5 預設沿用
+  front 的尺，她在畫面上會比站姿小約 12%、頭明顯偏低，那正是「倒下去」的樣子。進遊戲覺得太小再調 `cm`。
+- `fx:0.380` 量到的是往後仰的臉，偏左是對的（頭往後倒到畫面左側）。
