@@ -1943,17 +1943,18 @@ const LI_RETURN = [
   cec('teary','什麼嘛什麼嘛！明明不是戰鬥人員！臉皮真厚！'),
   any('angry','蕾娜、是我們的伙伴！'),
   sor('angry','沒錯，才輪不到妳這個外人說三道四的！'),
-  cec('upset','妳連聖王廳的人都不是吧！'),
-  nmo('stumble','好了啦，要走囉——'),           // 跌
+  cec('sulkshout','妳連聖王廳的人都不是吧！'),
+  nmo('bore','好了啦，要走囉——'),           // 跌
+  { speaker:'NEMO', text:'!!', portrait:{ char:'NEMO', expr:'stumble', show:true } },
   cec('supportnemo','真沒用！站都站不穩了！'),     // 扶
   nmo('happy','嘿嘿、學長太強了啦——'),
   { speaker:'PLAYER', blank:true },          // （主角空白）別嬉皮笑臉的，給我自己站好。
   nmo('saluteblush','是！'),                   // 驚　臉紅
-  lau('bow','那麼，保重了，蕾姬娜學姐。'),
+  Object.assign(lau('bow','那麼，保重了，蕾姬娜學姐。'), { flip:true }),
   ren('smilesoft','妳也是啊，真是辛苦妳了呢。'),
   { speaker:'PLAYER', blank:true },          // （主角空白）賽西莉！妳也一樣，別太勉強了。
   cec('blush','……！'),
-  cec('fluster','事到如今不要裝得一副很在乎的樣子啦！'),
+  cec('teary','事到如今不要裝得一副很在乎的樣子啦！'),
   cec('pouttear','哼！'),
   { speaker:'NARRATION', text:'', se:'se_walk', auto:900, hide:['NEMO','CECILIE','LAURIE'] },
   sor('think','結束了……嗎？'),
@@ -1963,7 +1964,7 @@ const LI_RETURN = [
   nou('concern','……很強。單論瞬間輸出效率的話，跟團長不相上下。'),
   any('curious','諾薇兒……也贏不了？'),
   nou('awkward','不可能啦！才能的差距太大了。'),
-  jua('worry','喂、喂！剛才那到底是怎麼回事啊？妳們是通緝犯？'),
+  jua('worry','喂、喂！剛才那到底是怎麼回事啊？妳們是通緝犯不成？'),
   jua('worry','我可不想跟異端管理局扯上關係喔！'),
   { speaker:'NARRATION', text:'', se:'se_weapon_reload', auto:700 },   // 主角上膛聲
   jua('shock','！'),

@@ -1101,7 +1101,7 @@ export const ART = {
     shysmile:  { src:'resources/si/anya_si_shysmile.webp', top:4, bot:1530, fx:0.461 },   // ver -2102 交件，腳本還沒用
     terrify:{ src:'resources/si/anya_si_terrify.webp?v=becb7f82', top:8, bot:1504, fx:0.493 },   // ver -1857：鎖表情重畫定稿
     /* ver -870（森林行 G 稿）——measure_si 量測。 */
-    answer:    { src:'resources/si/anya_si_answer.webp?v=db505ca1',     top:2, bot:1534, fx:0.468 },
+    answer:    { standCm:162, fxShift:0, src:'resources/si/anya_si_answer.webp?v=db505ca1',     top:2, bot:1534, fx:0.468 },
     smileshy:  { src:'resources/si/anya_si_smileshy.webp?v=6c55f102',   top:5, bot:1524, fx:0.452 },
     /* ══ 惡夢化（ver -671）══
        ⚠⚠ **不可以照量 alpha 上下緣**（Ray：「安雅的聖徒化 SI 太低太小了，要抓臉」）：
@@ -1542,6 +1542,7 @@ export const ART = {
     furiouscry:  { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_furiouscry.webp',  top:5,  bot:1531, fx:0.591 },
     coverlaurie: { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_coverlaurie.webp', top:49, bot:1507, fx:0.648 },
     pouttear:    { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_pouttear.webp',    top:7,  bot:1528, fx:0.540 },
+    sulkshout:   { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_sulkshout.webp', top:1,  bot:1484, fx:0.513 },   // ver -2315：雙眼緊閉鬧彆扭大吼（Ray）
     supportnemo: { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_supportnemo.webp', top:8,  bot:1526, fx:0.599 },
     cringe:   { fxShift:0, cm:164, yShift:9, src:'resources/si/cecilie_si_cringe.webp',    top:7, bot:1535, fx:0.632 },
     teary:    { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_teary.webp',     top:3, bot:1531, fx:0.574 },   // ver -2099 返回帝都稿缺差分（美術 9086789c）：measure_si 量 top/bot；fx 照臉中心目測校正
@@ -1596,7 +1597,7 @@ export const ART = {
     command:  { fxShift:0, yShift:8, cm:155, src:'resources/si/laurie_si_command.webp',  top:8,  bot:1529, fx:0.508 },
     scheme:   { fxShift:0, yShift:8, cm:155, src:'resources/si/laurie_si_scheme.webp',   top:6,  bot:1521, fx:0.508 },
     smile:    { fxShift:0, yShift:8, cm:155, src:'resources/si/laurie_si_smile.webp',    top:12, bot:1522, fx:0.563 },
-    bow:      { fxShift:0, yShift:8, cm:155, src:'resources/si/laurie_si_bow.webp',      top:8,  bot:1522, fx:0.680 },
+    bow:      { fxShift:0.08, yShift:8, cm:155, src:'resources/si/laurie_si_bow.webp',      top:8,  bot:1522, fx:0.680 },
     bowsweat: { fxShift:0.09, yShift:8, cm:155, src:'resources/si/laurie_si_bowsweat.webp?v=d9af32d7', top:7,  bot:1523, fx:0.679 },   // ver -2313：同名覆蓋成無汗版（Ray）
     disbelief:{ src:'resources/si/laurie_si_disbelief.webp', top:8,  bot:1521, fx:0.483 },   // ver -2313：不可置信的驚訝
     /* ══⚠⚠ **除了底圖（`front`）之外，四張差分全部水平翻轉**（ver -1545，Ray 指定）══
