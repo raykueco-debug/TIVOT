@@ -64,3 +64,15 @@ supportnemo: { src:'resources/si/cecilie_si_supportnemo.webp', top:8,  bot:1526,
 
 ## 五、還沒做（同一張工單的下一批）
 - 索菈娜暈船系列：vomit（背對、撐牆、打馬賽克）／sick／covermouth／dizzy／sickembarrass／sickbed 或 sickpout ＋ 房內插圖（T3）。
+
+## 六、追加：船匠（`SHIPWRIGHT_LI`，1 張，2026-10-29）
+
+`SHIPWRIGHT_LI` 現在是 `art:null` → 改 `art:'shipwright'`，`ART` 新增：
+
+```js
+shipwright: { src:'resources/si/shipwright_si_front.webp', side:'R', cm:/*美術估 178*/178, top:7, bot:1517, fx:0.422 },
+```
+- 只用一句（「啥？現在這種狀況哪有辦法接那種麻煩事！」），一張 front 就夠。新檔名，不必 bust。
+- ⚠ `top:7` 是**肩上那根木板**的上緣，不是頭頂（頭頂約在 30 上下）—— 鎖身高時人會被縮小一點；
+  進遊戲覺得偏小就把 `top` 改成頭頂的值（§5「髮飾／持物會污染 top」）。
+- 原 PNG：`resources/_originals/SI/shipwright_si_front.png`
