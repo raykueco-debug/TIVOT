@@ -1821,7 +1821,7 @@ const LI_ARRIVE = [
   sor('dizzy','逛……'),
   nou('think','請問，大概要多久時間呢？'),
   jua('talk','五天到一週吧。'),
-  sor('panic','一週……！'),
+  sor('faint','一週……！'),
   sor('faint','', { se:'se_fall' }),   // 倒地音＋faint（ver -2305，留在台上）
   any('panic','索菈娜！'),
   ren('covermouth','……雖然不該這麼說，難得看到她這個樣子也挺有趣的呢。'),
@@ -1833,7 +1833,7 @@ const LI_SOR_ROOM = [
   sor('sick','出門……？'),
   sor('sickpout','我不要。'),
   { speaker:'PLAYER', blank:true },          // （主角空白）不早點習慣的話，接下來幾天會更痛苦喔。
-  sor('angry','我就是不要啦！'),
+  sor('sick','我就是不要啦！'),
   /* 稿：插圖 049（T3 以上派生，ver -2299 接）。插圖期間台詞照講在插圖上、不上立繪（同 047／048 的作法）。 */
   sor('','我不想……再讓你看到難看的樣子嘛！', Object.assign({ show:false, cg:'049_soranaseasick', cgNoTime:true, hide:'*' }, LI_SOR_T3)),
   Object.assign({ speaker:'PLAYER', blank:true }, LI_SOR_T3),   // （主角空白）那有什麼難看的？古墓那次我膽汁都嘔出來了。
@@ -1858,7 +1858,9 @@ const LI_SKIP6 = [
   { speaker:'NARRATION', text:'', clockToNext:8, clockAddDays:5, auto:300 },
 ];
 const LI_REFIT = [
-  { speaker:'NARRATION', text:'', bgBand:'loneisle_slipway', fadeIn:3000, auto:3100 },
+  /* ver -2308（Ray：「睡覺完加一個日期地點的遮罩 標六天後」）：黑幕底下換景出卡，點掉再亮回來。 */
+  { speaker:'NARRATION', text:'', bgBand:'loneisle_slipway', dayBreak:'六天後', dayPlace:'孤舟島　船匠船台' },
+  { speaker:'NARRATION', text:'', fadeIn:3000, auto:3100 },
   jua('smirk','改裝比想像中順利，這艘船的龍骨挺不賴的。'),
   jua('talk','陸浮引擎的出力限制也解除了，木製船的優勢就是垂直起降快。'),
   jua('grin','或許能發揮超出預期的性能。'),
@@ -1874,7 +1876,7 @@ const LI_REFIT = [
   jua('talk','高度升到1200以後，就算你不去找，他們也會自己撲上來的。'),
   any('scare','撲上來……要怎麼辦？'),
   { speaker:'PLAYER', blank:true },          // （主角空白）我們自己先撲上去不就好了？
-  sor('tease','哼——只有這種時候知道要撲上去。', { onlyIf:'li_sor_room' }),   // [索約會派生]
+  sor('lookaway','哼——只有這種時候知道要撲上去。', { onlyIf:'li_sor_room' }),   // [索約會派生]
   ren('talkserious','別太莽撞，那跟一般的大型禍魘不是同一個層級的。'),
   jua('serious','沒錯，我們只會造船，砲再利也拿那些東西沒辦法。'),
   jua('grin','靠你們啦！別讓我血本無歸喔。'),

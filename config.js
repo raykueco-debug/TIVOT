@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.30-2307';
+export const VERSION = 'ver 2026.10.30-2308';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3137,9 +3137,9 @@ export const GAME_CONFIG = {
     ...Object.fromEntries(SKY_FLIGHT_KINDS.map(k=>['flight_'+k,
          { enemy:k, ship:true, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 }])),   // 空中怪 16 隻（ver -2268）
     /* ══ 孤舟島・四個空之主（ver -2307，Ray 的稿）══ 飛行頁 `SCRIPTED_ENCOUNTERS` 的 `battle:'li_lord<N>'`。
-       ⚠ 四隻挑哪四隻是我定的（第二批抽象系：無面巨首／天之裂隙／人面花冠／懸環長鏈），數值照空中怪的卡（暫代＝羽蛇）。
+       ⚠ 四隻是我挑的：前三隻＝已交飛行正面圖＋游動 loop 的浮空骨鯨／骨刺飛鰩／氣囊水母獸（ver -2308），第四隻懸環長鏈的飛行圖還欠，數值照空中怪的卡（暫代＝羽蛇）。
        第一場開場四句是稿上的（「好大！」…「要來了！」）。 */
-    li_lord1: { enemy:'sky2_maw', ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180,
+    li_lord1: { enemy:'sky_ribwhale', ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180,
                 talkOnce:'li_lord1_talk',
                 talk:[ { trigger:'battleStart', lines:[
                   { who:'nouvelle', img:'tut_nouvelle_surprise', text:i18nT('好大！') },
@@ -3147,8 +3147,8 @@ export const GAME_CONFIG = {
                   { who:'sorana',   img:'tut_sorana_ready',      text:i18nT('嘿、這不是很有趣嗎？') },
                   { who:'renna',    img:'tut_renna_shout',       text:i18nT('要來了！') },
                 ]} ] },
-    li_lord2: { enemy:'sky2_rift',       ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 },
-    li_lord3: { enemy:'sky2_facecrown',  ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 },
+    li_lord2: { enemy:'sky_boneray',     ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 },
+    li_lord3: { enemy:'sky_gasjelly',    ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 },
     li_lord4: { enemy:'sky2_ringchain',  ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 },
     flight_pirate:    { enemy:'pirate_ship', ship:true,
                         /* ver -741（Ray：「船戰的空賊戰定成這一首」）—— Seven Seas
