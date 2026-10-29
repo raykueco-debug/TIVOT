@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.28-2292';
+export const VERSION = 'ver 2026.10.29-2293';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5733,6 +5733,7 @@ export const ASSET_VER = {
   '008_rennaholdanya': 'a6142239',
   '009_soranadebute': '43cf9606',
   '039_rennatears': '56d1e454',
+  '040_torprotectrenna': '1e260310',
   '42452231-c355-429f-ba86-81c0d0c5e369': 'a1997305',
   '_dunmor_altar8_sheet': 'c1938d79',
   '_dunmor_batch3_sheet': '62501d0e',
