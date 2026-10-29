@@ -1597,7 +1597,8 @@ export const ART = {
     scheme:   { fxShift:0, yShift:8, cm:155, src:'resources/si/laurie_si_scheme.webp',   top:6,  bot:1521, fx:0.508 },
     smile:    { fxShift:0, yShift:8, cm:155, src:'resources/si/laurie_si_smile.webp',    top:12, bot:1522, fx:0.563 },
     bow:      { fxShift:0, yShift:8, cm:155, src:'resources/si/laurie_si_bow.webp',      top:8,  bot:1522, fx:0.680 },
-    bowsweat: { fxShift:0.09, yShift:8, cm:155, src:'resources/si/laurie_si_bowsweat.webp', top:6,  bot:1522, fx:0.679 },
+    bowsweat: { fxShift:0.09, yShift:8, cm:155, src:'resources/si/laurie_si_bowsweat.webp?v=d9af32d7', top:7,  bot:1523, fx:0.679 },   // ver -2313：同名覆蓋成無汗版（Ray）
+    disbelief:{ src:'resources/si/laurie_si_disbelief.webp', top:8,  bot:1521, fx:0.483 },   // ver -2313：不可置信的驚訝
     /* ══⚠⚠ **除了底圖（`front`）之外，四張差分全部水平翻轉**（ver -1545，Ray 指定）══
        她的底圖朝一邊、四張差分朝另一邊 —— 換個表情人就轉過去了。
        ⚠⚠ 走的是**逐張的 `flip`**（ver -953 瑪麗亞那一支，`frameOf` 會把 expr 蓋在
