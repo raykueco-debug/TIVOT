@@ -1754,7 +1754,7 @@ const LI_ARRIVE = [
   jua('laugh','開玩笑！怎麼可能不行！'),
   ren('surprise','那就是可以囉？'),
   jua('smirk','船可以，你們不行。'),
-  sor('tire','什麼意思？'),
+  sor('sick','什麼意思？'),
   jua('serious','你們現在的平均航行高度是？'),
   { speaker:'PLAYER', blank:true },          // （主角空白）七百。
   jua('talk','防空砲的有效射程大概一千二，理論上超過這個高度，就不會被防空砲擊中。'),
@@ -1815,7 +1815,7 @@ const LI_ARRIVE = [
   ren('blush','……'),
   jua('talk','我先跟幾個船塢長討論一下，馬上就能動工。'),
   jua('grin','妳們就先在島上逛逛吧！'),
-  sor('tire','逛……'),
+  sor('dizzy','逛……'),
   nou('think','請問，大概要多久時間呢？'),
   jua('talk','五天到一週吧。'),
   sor('panic','一週……！'),
@@ -1827,7 +1827,7 @@ const LI_ARRIVE = [
 ];
 /* 自由探索期：敲索菈娜的門＝房內那一段（她不出門）。T3 以上多一段＋插圖 049。 */
 const LI_SOR_ROOM = [
-  sor('tire','出門……？'),
+  sor('sick','出門……？'),
   sor('sickpout','我不要。'),
   { speaker:'PLAYER', blank:true },          // （主角空白）不早點習慣的話，接下來幾天會更痛苦喔。
   sor('angry','我就是不要啦！'),
