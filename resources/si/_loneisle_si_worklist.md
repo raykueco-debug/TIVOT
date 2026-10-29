@@ -113,3 +113,10 @@ disbelief: { src:'resources/si/laurie_si_disbelief.webp', top:8, bot:1521, fx:0.
 - `resources/si/laurie_si_bowsweat.webp` 換成**無汗版**（同姿勢、同嚴肅表情，只是沒有汗珠）；舊的有汗版已回收。
 - ⚠⚠ **程式端要跑 `python3 tools/bust.py --bump`**（§5 -1918：同名覆蓋走內容雜湊），不跑的話玩家吃到的還是有汗那一張。
 - 取景值改成 `top:7, bot:1523, fx:0.679`（與舊版只差 1px，不改也行）。
+
+### 賽西莉 `sulkshout`（新檔，1 張，2026-10-30）— `ART.cecilie.expr` 加
+```js
+sulkshout: { src:'resources/si/cecilie_si_sulkshout.webp', top:1, bot:1484, fx:0.513 },   // 雙眼緊閉鬧彆扭大吼（不是戰吼）、握拳跺腳
+```
+- 新檔名，不必 bust。原 PNG：`resources/_originals/SI/cecilie_si_sulkshout.png`。
+- ⚠ `top:1` 是頭頂的髮髻貼近上緣、`bot:1484` 是跺腳抬起的高跟鞋 —— 照 §5 預設沿用 front 的尺即可。
