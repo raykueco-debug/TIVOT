@@ -696,6 +696,14 @@ export const ART = {
            side:'R', alt:null, base:'resources/si/sorana_si_side.webp?v=5e97123e', expr:{
     /* stage7・木雅克神殿（ver -922，Ray 交稿）。 */
     confuse:      { fxShift:-0.01, yShift:16, cm:160, src:'resources/si/sorana_si_confuse.webp?v=035963ac', top:6, bot:1522, fx:0.510 },
+    /* 孤舟島・暈船系列（ver -2297 接，取景值照美術工單 _loneisle_si_worklist.md）。vomit 是背面＋彩虹。 */
+    sick:            { src:'resources/si/sorana_si_sick.webp',            top:5,  bot:1530, fx:0.709 },
+    covermouth:      { src:'resources/si/sorana_si_covermouth.webp',      top:17, bot:1532, fx:0.717 },
+    covermouthshock: { src:'resources/si/sorana_si_covermouthshock.webp', top:10, bot:1534, fx:0.716 },
+    dizzy:           { src:'resources/si/sorana_si_dizzy.webp',           top:8,  bot:1526, fx:0.732 },
+    sickembarrass:   { src:'resources/si/sorana_si_sickembarrass.webp',   top:5,  bot:1533, fx:0.676 },
+    sickpout:        { src:'resources/si/sorana_si_sickpout.webp',        top:10, bot:1525, fx:0.619 },
+    vomit:           { src:'resources/si/sorana_si_vomit.webp',           top:22, bot:1505, fx:0.707 },
     front:        { fxShift:-0.03, yShift:25, cm:150, src:'resources/si/sorana_si_front.webp?v=c4629a3a',     top:5,  bot:1529, fx:0.659 },
     side:         { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_side.webp?v=5e97123e',      top:4,  bot:1526, fx:0.498 },
     /* ⚠⚠ ver -1047 交件（「無飛刀」那一張）：目前**只給破防計量表的頭像用**，

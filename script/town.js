@@ -1702,28 +1702,27 @@ const VF_MOLLY = [
 /* ══ 孤舟島・抵達 → 六號船塢 → 自由探索（ver -2294，Ray 的稿）══
    · 抵達（LI_ARRIVE）：薇拉馮德莊園大門演完（vf_gate）之後第一次降落 → 島心廣場；中途黑轉景到船台（六號船塢）。
    · 演完 `goto:'slipway'`、自由探索。旅舍可敲門：索菈娜**不出門**（`stay`），敲她的門演房內那一段（T3 以上多一段＋插圖）。
-   ⚠ 胡安立繪 ver -2295 接上；另一個船匠 ver -2296 接上；索菈娜的暈船差分
-     （dizzy／sick／covermouth／vomit／sickembarrass）也還沒交 —— 先借 `tire`／`embarrass`，交件再換。
+   ⚠ 胡安立繪 ver -2295 接上；另一個船匠 ver -2296 接上；索菈娜暈船差分 ver -2297 接上。
    ⚠ 稿上「亂起八糟」照「亂七八糟」改了（錯字）。 */
 const jua = N('JUAN'), juQ = N('JUAN_Q');   // ver -2295 立繪交件
 const swr = (text, extra) => N('SHIPWRIGHT_LI')('front', text, extra);   // ver -2296 立繪交件
 const LI_SOR_T3 = { tierWho:'SORANA', tierMin:3 };
 const LI_ARRIVE = [
   nou('surprise','好誇張的地方。'),
-  sor('tire','噁……我頭好暈……'),            // 稿：dizzy（未交）
+  sor('dizzy','噁……我頭好暈……'),
   any('scare','索菈娜！'),
-  sor('tire','嘔……'),                       // 稿：covermouth（未交）
+  sor('covermouth','嘔……'),
   ren('scarejump',''),
   nou('worry','妳還好嗎？暈船了？'),
-  sor('tire','不是……這地方……'),            // 稿：sick（未交）
-  sor('tire','嘔——'),                       // 稿：vomit（未交）
+  sor('sick','不是……這地方……'),
+  sor('vomit','嘔——'),
   any('scare',''),
   juQ('laugh','哇——森住民就是這樣！'),
   { speaker:'PLAYER', blank:true },          // （主角空白）森住民又怎麼樣了？
   juQ('talk','他們鼻子特別靈，受不了這裡的重油味啦！'),
   juQ('smirk','給她半天大概就沒事了吧。'),
   nou('relief','這樣啊，謝謝您！'),
-  sor('embarrass','呃——不要看我啦！', LI_SOR_T3),   // 索 T3 以上派生（稿：sickembarrass 未交）
+  sor('sickembarrass','呃——不要看我啦！', LI_SOR_T3),   // 索 T3 以上派生
   juQ('serious','你們是聖王廳的人吧？這種舊船現在沒有收購了喔。'),
   ren('ask','不，我們是『阿爾馬扎的哈達德』介紹的……'),
   juQ('shock','妳說……哈達德？'),
@@ -1739,7 +1738,7 @@ const LI_ARRIVE = [
   jua('front','我是胡安，六號船塢主任。'),
   jua('talk','有什麼要求，說來聽聽吧。'),
   ren('pause','就算你說要求……'),
-  sor('tire','嘔——'),                       // 稿：vomit（未交）
+  sor('vomit','嘔——'),
   ren('scarejump',''),
   /* 六號船塢（船匠船台那一張）。 */
   { speaker:'NARRATION', text:'', fadeOut:1200, auto:1300, hide:'*' },
@@ -1782,8 +1781,8 @@ const LI_ARRIVE = [
   { speaker:'NARRATION', text:'', se:'se_heavycursh', shake:true, auto:900 },   // 放下（Ray：heavy crush）
   jua('shock','什麼怪力……我看把你射出去把禍魘痛打一頓效率更好吧！'),
   sor('laugh','啊哈哈哈！'),
-  sor('tire','嗚！'),                        // 稿：covermouth（未交）
-  sor('tire','嘔——'),                       // 稿：vomit（未交）
+  sor('covermouth','嗚！'),
+  sor('vomit','嘔——'),
   ren('callangry','妳到底還有多少東西可以吐啦！'),
   jua('think','……如果你有辦法用肉體緩衝後座力，倒也不是不行。'),
   jua('serious','但是甲板還是要強化。作用力可不會平白無故消失。'),
