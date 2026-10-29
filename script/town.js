@@ -1822,7 +1822,7 @@ const LI_ARRIVE = [
   nou('think','請問，大概要多久時間呢？'),
   jua('talk','五天到一週吧。'),
   sor('panic','一週……！'),
-  { speaker:'NARRATION', text:'', se:'se_fall', auto:900, hide:['SORANA'] },   // 倒地音
+  sor('faint','', { se:'se_fall' }),   // 倒地音＋faint（ver -2305，留在台上）
   any('panic','索菈娜！'),
   ren('covermouth','……雖然不該這麼說，難得看到她這個樣子也挺有趣的呢。'),
   { speaker:'PLAYER', blank:true },          // （主角空白）同感。

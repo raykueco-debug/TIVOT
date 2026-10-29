@@ -704,6 +704,7 @@ export const ART = {
     sickembarrass:   { fxShift:-0.055, src:'resources/si/sorana_si_sickembarrass.webp',   top:5,  bot:1533, fx:0.676 },
     sickpout:        { fxShift:-0.035, src:'resources/si/sorana_si_sickpout.webp',        top:10, bot:1525, fx:0.619 },
     vomit:           { fxShift:-0.09, src:'resources/si/sorana_si_vomit.webp',           top:22, bot:1505, fx:0.707 },
+    faint:           { src:'resources/si/sorana_si_faint.webp',           top:249, bot:1482, fx:0.380 },   // ver -2305：往後仰倒（圖縮 88% 留白，照預設尺＝小一點、頭低＝倒下去）
     front:        { fxShift:-0.03, yShift:25, cm:150, src:'resources/si/sorana_si_front.webp?v=c4629a3a',     top:5,  bot:1529, fx:0.659 },
     side:         { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_side.webp?v=5e97123e',      top:4,  bot:1526, fx:0.498 },
     /* ⚠⚠ ver -1047 交件（「無飛刀」那一張）：目前**只給破防計量表的頭像用**，
