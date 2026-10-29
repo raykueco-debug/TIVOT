@@ -62,8 +62,21 @@ supportnemo: { src:'resources/si/cecilie_si_supportnemo.webp', top:8,  bot:1526,
 - ⚠ `coverlaurie` 的右手指尖貼到圖的右緣、`top:49`（身體大幅側傾）—— 照 §5 預設沿用 front 的尺即可，
   若站右側時指尖被畫面切到，進遊戲看過再調 `fxShift`。
 
-## 五、還沒做（同一張工單的下一批）
-- 索菈娜暈船系列：vomit（背對、撐牆、打馬賽克）／sick／covermouth／dizzy／sickembarrass／sickbed 或 sickpout ＋ 房內插圖（T3）。
+## 五、索菈娜暈船系列（7 張，2026-10-29 交件）— `ART.sorana.expr` 加
+
+```js
+sick:            { src:'resources/si/sorana_si_sick.webp',            top:5,  bot:1530, fx:0.709 },   // 暈船不舒服（手按肚子、微彎）
+covermouth:      { src:'resources/si/sorana_si_covermouth.webp',      top:17, bot:1532, fx:0.717 },   // 雙手摀嘴硬忍（閉眼）
+covermouthshock: { src:'resources/si/sorana_si_covermouthshock.webp', top:10, bot:1534, fx:0.716 },   // 摀嘴＋震驚眼、快忍不住（Ray 追加）
+dizzy:           { src:'resources/si/sorana_si_dizzy.webp',           top:8,  bot:1526, fx:0.732 },   // 漩渦眼、扶額、站不穩
+sickembarrass:   { src:'resources/si/sorana_si_sickembarrass.webp',   top:5,  bot:1533, fx:0.676 },   // 吐完的難為情（搔臉頰）
+sickpout:        { src:'resources/si/sorana_si_sickpout.webp',        top:10, bot:1525, fx:0.619 },   // 病懨懨鬧彆扭（抱手臂）
+vomit:           { src:'resources/si/sorana_si_vomit.webp',           top:22, bot:1505, fx:0.707 },   // 背對撐牆吐彩虹（阿庫亞式，含閃光／彩珠）
+```
+- 全部新檔名，不必 bust。原 PNG：`resources/_originals/SI/<同名>.png`。
+- ⚠ `dizzy` 的 `top:8` 含頭頂的暈眩弧線；`covermouth` 系列 `top` 偏低是因為身體前縮 —— 照 §5 預設沿用 front 的尺即可。
+- ⚠ `vomit` 是**背面**，`fx` 量到的是後腦不是臉；畫面上的彩虹在人物前方往下流到腳邊（彩虹與特效已合進同一張，排在人物後面）。
+- ⏸ **房內插圖 049（索菈娜趴床、臉埋枕頭，T3）候選已出，等 Ray 確認**，還沒交。
 
 ## 六、追加：船匠（`SHIPWRIGHT_LI`，1 張，2026-10-29）
 
