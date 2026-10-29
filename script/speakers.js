@@ -277,7 +277,7 @@ export const ART = {
                   wake:       { src:'resources/si/renna_si_wake.webp',        top:0, bot:1531, fx:0.539 },
                   unbraid:    { src:'resources/si/renna_si_unbraid.webp',     top:6, bot:1528, fx:0.550 },
                   callangry:  { src:'resources/si/renna_si_callangry.webp',   top:2, bot:1533, fx:0.516 },
-                  commandsoft:{ src:'resources/si/renna_si_commandsoft.webp', top:6, bot:1532, fx:0.559 },
+                  commandsoft:{ yShift:1, fxShift:-0.005, src:'resources/si/renna_si_commandsoft.webp', top:6, bot:1532, fx:0.559 },
                   smile:   { src:'resources/si/renna_si_smile.webp',   top:5, bot:1530, fx:0.518 },
                   cough:     { src:'resources/si/renna_si_cough.webp',     top:7,  bot:1528, fx:0.508 },   // ver -2190
                   coughsoft: { src:'resources/si/renna_si_coughsoft.webp', top:10, bot:1526, fx:0.520 },   // ver -2190
@@ -403,7 +403,7 @@ export const ART = {
                   chase2:      { src:'resources/si/renna_si_chase2.webp',      top:11, bot:1529, fx:0.579 },
                   /* stage2 出航（ver -741，Ray 交稿）。逐張量（measure_si.py）。 */
                   curious:     { fxShift:0, src:'resources/si/renna_si_curious.webp',     top:0,  bot:1526, fx:0.529 },
-                  intense:     { src:'resources/si/renna_si_intense.webp',     top:6,  bot:1526, fx:0.629 },
+                  intense:     { yShift:0, src:'resources/si/renna_si_intense.webp',     top:6,  bot:1526, fx:0.629 },
                   lookup:      { src:'resources/si/renna_si_lookup.webp',      top:5,  bot:1520, fx:0.510 },   // ver -746 交件補量
                   /* 湖上甲板（ver -744，Ray 的 stage5 稿）。逐張量。 */
                   intense2:    { src:'resources/si/renna_si_intense2.webp',    top:5,  bot:1520, fx:0.510 },
@@ -528,7 +528,7 @@ export const ART = {
                   sadsmilenoeye:{ yShift:0, src:'resources/si/nouvelle_si_sadsmilenoeye.webp?v=04a5eb59', top:3, bot:1531, fx:0.568 },
                   sadnoeye: { src:'resources/si/nouvelle_si_sadnoeye.webp',      top:2, bot:1528, fx:0.552 },
                   bigsmileclose:{ src:'resources/si/nouvelle_si_bigsmileclose.webp', top:4, bot:1529, fx:0.568 },
-                  die:        { src:'resources/si/nouvelle_si_die.webp', top:4, bot:1524, fx:0.614 },
+                  die:        { cm:165, src:'resources/si/nouvelle_si_die.webp', top:4, bot:1524, fx:0.614 },
                   steady:   { yShift:0, src:'resources/si/nouvelle_si_steady.webp',   top:8,  bot:1529, fx:0.534 },
                   /* ver -870（森林行 G 稿）。front＝基本立繪的別名（稿上點名了它）。 */
                   sleepy:   { src:'resources/si/nouvelle_si_sleepy.webp',   top:5,  bot:1535, fx:0.580 },
@@ -704,7 +704,7 @@ export const ART = {
     sickembarrass:   { fxShift:-0.055, src:'resources/si/sorana_si_sickembarrass.webp',   top:5,  bot:1533, fx:0.676 },
     sickpout:        { fxShift:-0.035, src:'resources/si/sorana_si_sickpout.webp',        top:10, bot:1525, fx:0.619 },
     vomit:           { fxShift:-0.09, src:'resources/si/sorana_si_vomit.webp',           top:22, bot:1505, fx:0.707 },
-    faint:           { src:'resources/si/sorana_si_faint.webp',           top:249, bot:1482, fx:0.380 },   // ver -2305：往後仰倒（圖縮 88% 留白，照預設尺＝小一點、頭低＝倒下去）
+    faint:           { fxShift:0.05, src:'resources/si/sorana_si_faint.webp',           top:249, bot:1482, fx:0.380 },   // ver -2305：往後仰倒（圖縮 88% 留白，照預設尺＝小一點、頭低＝倒下去）
     front:        { fxShift:-0.03, yShift:25, cm:150, src:'resources/si/sorana_si_front.webp?v=c4629a3a',     top:5,  bot:1529, fx:0.659 },
     side:         { fxShift:0.05, yShift:25, cm:150, src:'resources/si/sorana_si_side.webp?v=5e97123e',      top:4,  bot:1526, fx:0.498 },
     /* ⚠⚠ ver -1047 交件（「無飛刀」那一張）：目前**只給破防計量表的頭像用**，
@@ -1574,7 +1574,7 @@ export const ART = {
     call:      { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_call.webp',      top:4,  bot:1526, fx:0.680 },
     ready:     { fxShift:0, cm:164, yShift:9, src:'resources/si/cecilie_si_ready.webp',     top:10, bot:1509, fx:0.701 },
     battlecry: { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_battlecry.webp', top:46, bot:1528, fx:0.649 },
-    command:   { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_command.webp',   top:7,  bot:1526, fx:0.375 },
+    command:   { blink:'off', fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_command.webp',   top:7,  bot:1526, fx:0.375 },
     pant:      { fxShift:0, yShift:9, src:'resources/si/cecilie_si_pant.webp',      top:69, bot:1443, fx:0.626, cm:164, standCm:135 },
     proud:     { fxShift:0, cm:164, yShift:9, src:'resources/si/cecilie_si_proud.webp',     top:5,  bot:1526, fx:0.550 },
     nosebleed: { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_nosebleed.webp', top:5,  bot:1511, fx:0.553 },
@@ -1589,15 +1589,15 @@ export const ART = {
      · `cm:126` ＝ 158×0.8（就是 Ray 要的 20%）
      · `standCm:158` ＝ 頭頂仍照 158 擺 ⇒ **只變小，不下沉**
      ⚠ 只調 `cm` 會連頭一起往下掉（§6.5 明寫「只調 `cm` 一定失敗」）。 */
-  laurie:    { cm:126, standCm:158, eye:32, fx:0.505, top:6, bot:1514,
+  laurie:    { fxShift:0, yShift:8, cm:155, standCm:158, eye:32, fx:0.505, top:6, bot:1514,
            side:'R', alt:null, base:'resources/si/laurie_si_front.webp', expr:{
     /* 孤舟島（ver -2307 接，工單 §二；⚠ 下面那段「差分全部翻轉」是 -1545 那四張的事，這六張美術沒交代要翻）。 */
-    shout:    { src:'resources/si/laurie_si_shout.webp',    top:6,  bot:1535, fx:0.577 },
-    command:  { src:'resources/si/laurie_si_command.webp',  top:8,  bot:1529, fx:0.508 },
-    scheme:   { src:'resources/si/laurie_si_scheme.webp',   top:6,  bot:1521, fx:0.508 },
-    smile:    { src:'resources/si/laurie_si_smile.webp',    top:12, bot:1522, fx:0.563 },
-    bow:      { src:'resources/si/laurie_si_bow.webp',      top:8,  bot:1522, fx:0.680 },
-    bowsweat: { src:'resources/si/laurie_si_bowsweat.webp', top:6,  bot:1522, fx:0.679 },
+    shout:    { fxShift:0, yShift:8, cm:155, src:'resources/si/laurie_si_shout.webp',    top:6,  bot:1535, fx:0.577 },
+    command:  { fxShift:0, yShift:8, cm:155, src:'resources/si/laurie_si_command.webp',  top:8,  bot:1529, fx:0.508 },
+    scheme:   { fxShift:0, yShift:8, cm:155, src:'resources/si/laurie_si_scheme.webp',   top:6,  bot:1521, fx:0.508 },
+    smile:    { fxShift:0, yShift:8, cm:155, src:'resources/si/laurie_si_smile.webp',    top:12, bot:1522, fx:0.563 },
+    bow:      { fxShift:0, yShift:8, cm:155, src:'resources/si/laurie_si_bow.webp',      top:8,  bot:1522, fx:0.680 },
+    bowsweat: { fxShift:0.09, yShift:8, cm:155, src:'resources/si/laurie_si_bowsweat.webp', top:6,  bot:1522, fx:0.679 },
     /* ══⚠⚠ **除了底圖（`front`）之外，四張差分全部水平翻轉**（ver -1545，Ray 指定）══
        她的底圖朝一邊、四張差分朝另一邊 —— 換個表情人就轉過去了。
        ⚠⚠ 走的是**逐張的 `flip`**（ver -953 瑪麗亞那一支，`frameOf` 會把 expr 蓋在
@@ -1606,8 +1606,8 @@ export const ART = {
        ⚠ **不要去翻檔案**：翻圖要同名覆蓋 ＋ 跳 `?v=`，而且 `fx` 得全部重量
          （翻轉之後臉落在 `1-fx`）—— `castLayout` 本來就替你做這件事。
        ⚠ 蘿芮**沒有 `mirror`**，所以這裡的 XOR 就只剩 `flip` 一項，站哪一邊都翻。 */
-    cry:   { src:'resources/si/laurie_si_cry.webp',    top:4, bot:1524, fx:0.594, flip:true },
-    die:    { src:'resources/si/laurie_si_die.webp',     top:6, bot:1523, fx:0.593, flip:true },
+    cry:   { fxShift:0, yShift:8, cm:155, src:'resources/si/laurie_si_cry.webp',    top:4, bot:1524, fx:0.594, flip:true },
+    die:    { fxShift:0, yShift:8, cm:155, src:'resources/si/laurie_si_die.webp',     top:6, bot:1523, fx:0.593, flip:true },
     /* ⚠⚠ **這兩張加大 15%**（ver -1565，Ray：「羅芮的 idea 跟 lookaside 立繪太小，
        加大 15%」）—— 大小的旋鈕是 `cm`（§6.5：`cm`＝這張畫該佔多少公分，管縮放的分子），
        126 × 1.15 ＝ **145**。
@@ -1615,8 +1615,8 @@ export const ART = {
          （量出來的），改了下次重量會把手調一起洗掉。
        ⚠ `standCm` 不動（158）：那管的是**頭頂擺多高**，不是大小。她還是站在
          她該站的高度上，只是人畫得大一點。 */
-    idea:     { src:'resources/si/laurie_si_idea.webp',      top:4, bot:1520, fx:0.543, flip:true, cm:145 },
-    lookaside:{ src:'resources/si/laurie_si_lookaside.webp', top:4, bot:1525, fx:0.540, flip:true, cm:145 },
+    idea:     { fxShift:0, yShift:8, src:'resources/si/laurie_si_idea.webp',      top:4, bot:1520, fx:0.543, flip:true, cm:155 },
+    lookaside:{ yShift:8, fxShift:0, src:'resources/si/laurie_si_lookaside.webp', top:4, bot:1525, fx:0.540, flip:true, cm:155 },
   } },
   /* ══ 米夏（米海爾・約瑟・謝索洛夫）══ ver -1549 接線，Ray：「misha 先接上所有他的對話」
      ⚠⚠⚠ **`cm:176` 是我估的，Ray 還沒給** —— 同尼莫／賽西莉／蘿芮那一批（-1524）。
@@ -1755,7 +1755,7 @@ export const ART = {
               talk:       { src:'resources/si/npc/robert_si_talk.webp', top:17, bot:1517, fx:0.502 },
             } },
   /* ver -2296：孤舟島另一個船匠（只出一句）。美術量 top:7 是肩上木板的上緣 —— 照 §5「道具超出頭頂會污染 top」改量頭頂 30。 */
-  shipwright_li: { cm:172, fx:0.422, top:30, bot:1517, side:'R', alt:null, flip:true,   /* ver -2304 Ray：「船匠要水平翻轉」 */ base:'resources/si/shipwright_si_front.webp', expr:{} },
+  shipwright_li: { fxShift:-0.14, cm:178, fx:0.422, top:30, bot:1517, side:'R', alt:null, flip:true,   /* ver -2304 Ray：「船匠要水平翻轉」 */ base:'resources/si/shipwright_si_front.webp', expr:{} },
   /* ver -2295：胡安（孤舟島六號船塢主任，美術交件 10 張；取景 measure_si 量，cm 美術估 165＝矮胖）。 */
   juan: { cm:165, fx:0.532, top:6, bot:1513, side:'R', alt:null, base:'resources/si/juan_si_front.webp',
           expr:{
