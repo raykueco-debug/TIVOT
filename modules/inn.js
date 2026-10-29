@@ -618,6 +618,12 @@ function knock(i){
         if(host && host.say) host.say(KT.low || i18nT('（她好像沒什麼興趣。）'), KT.low ? nm : '');
         return;
       }
+      /* `stay`（ver -2294，孤舟島：「索菈娜無法出門，約她會觸發房內對話劇情」）：演 `date` 那幾拍但**不出門**（不設同行）。
+         `stayFlag` 立了（那一段演過）之後改回 `stayAgain` 一句。 */
+      if(KT.stay && KT.stayFlag && prog.hasFlag(KT.stayFlag)){
+        if(host && host.say) host.say(KT.stayAgain || KT.low || i18nT('（她好像沒什麼興趣。）'), nm);
+        return;
+      }
       const lines=KT.date||[];
       if(!lines.length || !host || !host.play || busy) return;
       busy=true; if(host.lock) host.lock(true);
@@ -626,6 +632,7 @@ function knock(i){
         /* ⚠ 同 `playRennaAlt`（ver -1511）：`date` 那幾拍若寫了 `aff` 也要記帳 ——
            這個洞兩條路都有。⚠ 掛在 `st1` 上不是 `host`。 */
         if(st1.applyAff) st1.applyAff(lines);
+        if(KT.stay){ if(KT.stayFlag) prog.addFlags([KT.stayFlag]); refresh(); return; }
         /* ⚠ 門燈由 `st1.inRoom()` 現算：`onInvite` 一設同行，下一次 `refresh()`
            就是空房 —— 不必在這裡另外把旗放倒（鐵律 7）。 */
         if(st1.onInvite) st1.onInvite(who);

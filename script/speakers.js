@@ -64,7 +64,12 @@ export const SPEAKERS = {
   MOLLY:     { name:'茉莉',   art:'molly' },
   MOLLY_Q:   { name:'？？？', art:'molly' },
   ROBERT:    { name:'羅伯特', art:'robert' },
-  AARON:     { name:'亞隆',   art:'aaron' },          // ver -2117：表明身分前（同 CORVIN_Q 的作法）
+  AARON:     { name:'亞隆',   art:'aaron' },
+  /* ver -2294：孤舟島（Ray 的稿）。胡安＝六號船塢主任，表明身分前是「？？？」（同 MOLLY_Q）；另一個船匠只出一次。
+     ⚠ 立繪還沒交（美術工單已發）—— 先 `art:null` 只出聲，交件後改成 `art:'juan'`／`'shipwright'` 並補 ART。 */
+  JUAN:      { name:'胡安',   art:null },
+  JUAN_Q:    { name:'？？？', art:null },
+  SHIPWRIGHT_LI: { name:'船匠', art:null },          // ver -2117：表明身分前（同 CORVIN_Q 的作法）
   GUARD_CAP: { name:'衛士',   art:'capguard' },   // ver -2114：帝都教廷衛士（借旅店那一場的拔刀衛兵）
   CAPI_BOY:  { name:'小男孩', art:'capiboy' },     // ver -2102：返回帝都（攝政王廣場的路人母子）
   CAPI_MOM:  { name:'母親',   art:'capimom' },

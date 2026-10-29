@@ -1699,6 +1699,151 @@ const VF_MOLLY = [
   { speaker:'NARRATION', text:'', fadeOut:1200, auto:1300, hide:'*' },
   { speaker:'NARRATION', text:'', bgBand:'vela_manor', fadeIn:900, auto:1000 },
 ];
+/* ══ 孤舟島・抵達 → 六號船塢 → 自由探索（ver -2294，Ray 的稿）══
+   · 抵達（LI_ARRIVE）：薇拉馮德莊園大門演完（vf_gate）之後第一次降落 → 島心廣場；中途黑轉景到船台（六號船塢）。
+   · 演完 `goto:'slipway'`、自由探索。旅舍可敲門：索菈娜**不出門**（`stay`），敲她的門演房內那一段（T3 以上多一段＋插圖）。
+   ⚠ 胡安／另一個船匠的立繪還沒交（`art:null` 只出聲，見 speakers.js）；索菈娜的暈船差分
+     （dizzy／sick／covermouth／vomit／sickembarrass）也還沒交 —— 先借 `tire`／`embarrass`，交件再換。
+   ⚠ 稿上「亂起八糟」照「亂七八糟」改了（錯字）。 */
+const jua = (text, extra) => Object.assign({ speaker:'JUAN', text }, extra||{});     // 立繪未交：只出聲
+const juQ = (text, extra) => Object.assign({ speaker:'JUAN_Q', text }, extra||{});
+const swr = (text, extra) => Object.assign({ speaker:'SHIPWRIGHT_LI', text }, extra||{});
+const LI_SOR_T3 = { tierWho:'SORANA', tierMin:3 };
+const LI_ARRIVE = [
+  nou('surprise','好誇張的地方。'),
+  sor('tire','噁……我頭好暈……'),            // 稿：dizzy（未交）
+  any('scare','索菈娜！'),
+  sor('tire','嘔……'),                       // 稿：covermouth（未交）
+  ren('scarejump',''),
+  nou('worry','妳還好嗎？暈船了？'),
+  sor('tire','不是……這地方……'),            // 稿：sick（未交）
+  sor('tire','嘔——'),                       // 稿：vomit（未交）
+  any('scare',''),
+  juQ('哇——森住民就是這樣！'),
+  { speaker:'PLAYER', blank:true },          // （主角空白）森住民又怎麼樣了？
+  juQ('他們鼻子特別靈，受不了這裡的重油味啦！'),
+  juQ('給她半天大概就沒事了吧。'),
+  nou('relief','這樣啊，謝謝您！'),
+  sor('embarrass','呃——不要看我啦！', LI_SOR_T3),   // 索 T3 以上派生（稿：sickembarrass 未交）
+  juQ('你們是聖王廳的人吧？這種舊船現在沒有收購了喔。'),
+  ren('ask','不，我們是『阿爾馬扎的哈達德』介紹的……'),
+  juQ('妳說……哈達德？'),
+  juQ('哈！事情變得有趣起來了啊！'),
+  any('curious','？？'),
+  juQ('喂——有哈達德介紹的客人喔！'),
+  swr('啥？現在這種狀況哪有辦法接那種麻煩事！'),
+  ren('stare','……'),
+  ren('sighsweat','不好意思，介紹人只交待了這句話，所以我們其實也……'),
+  juQ('啊——沒事沒事。聽到那個名字我們就懂了，'),
+  juQ('一定又是『亂來的委託』。'),
+  nou('think','亂來……？'),
+  jua('我是胡安，六號船塢主任。'),
+  jua('有什麼要求，說來聽聽吧。'),
+  ren('pause','就算你說要求……'),
+  sor('tire','嘔——'),                       // 稿：vomit（未交）
+  ren('scarejump',''),
+  /* 六號船塢（船匠船台那一張）。 */
+  { speaker:'NARRATION', text:'', fadeOut:1200, auto:1300, hide:'*' },
+  { speaker:'NARRATION', text:'', bgBand:'loneisle_slipway', fadeIn:1200, auto:1300 },
+  jua('所以說，妳要這艘舊船能夠穿過國境線。'),
+  ren('determine','是。'),
+  jua('然後還不能被防空砲打到。'),
+  ren('determine','是。'),
+  jua('還要可以從各國的巡邏艦手上溜掉？'),
+  ren('sighsweat','是……'),
+  jua('……'),
+  nou('worry','果然……不行？'),
+  jua('開玩笑！怎麼可能不行！'),
+  ren('surprise','那就是可以囉？'),
+  jua('船可以，你們不行。'),
+  sor('tire','什麼意思？'),
+  jua('你們現在的平均航行高度是？'),
+  { speaker:'PLAYER', blank:true },          // （主角空白）七百。
+  jua('防空砲的有效射程大概一千二，理論上超過這個高度，就不會被防空砲擊中。'),
+  nou('think','那，巡邏艦怎麼辦？'),
+  jua('那個高度，現在沒有人在巡邏了啦。'),
+  ren('shock','沒有人……難道是！'),
+  jua('沒錯。那是『空之主』級別的禍魘的棲息地。'),
+  any('scare','空之……主？'),
+  nou('worry','就是……很大的怪物。'),
+  any('terrify','！！'),
+  ren('talkserious','牠們以其他禍魘為食，所以軍隊不會主動去驅逐……'),
+  jua('新式艦都不一定打得下來，就算提高陸浮引擎的出力，這種木造船馬上會成為餌食吧。'),
+  any('silent','……'),
+  { speaker:'PLAYER', blank:true },          // （主角空白）升級口徑就好了。
+  jua('哈哈哈！想法很浪漫呢。可是不行。'),
+  jua('全部換成大口徑砲安上去，這種船體不用幾發就會散架了。'),
+  jua('木造船承受不了現代縮退砲的後座力呢。'),
+  { speaker:'PLAYER', blank:true },          // （主角空白）一門，我手持發射的話？
+  jua('手持？神父大人哪，你知道一門砲有多重嗎。'),
+  { speaker:'NARRATION', text:'', se:'se_walk', auto:900 },
+  /* 舉起重物＝槍棺的鎖鍊音（Ray：蜈蚣第一戰那一拍＝metalclip，齒輪疊在底下、metalclip 停了齒輪就收）。 */
+  { speaker:'NARRATION', text:'', se:'se_metalclip', seFollow:'se_kerberos_gear', auto:1200 },
+  jua('喂！喂喂喂喂喂！'),
+  { speaker:'NARRATION', text:'', se:'se_heavycursh', shake:true, auto:900 },   // 放下（Ray：heavy crush）
+  jua('什麼怪力……我看把你射出去把禍魘痛打一頓效率更好吧！'),
+  sor('laugh','啊哈哈哈！'),
+  sor('tire','嗚！'),                        // 稿：covermouth（未交）
+  sor('tire','嘔——'),                       // 稿：vomit（未交）
+  ren('callangry','妳到底還有多少東西可以吐啦！'),
+  jua('……如果你有辦法用肉體緩衝後座力，倒也不是不行。'),
+  jua('但是甲板還是要強化。作用力可不會平白無故消失。'),
+  nou('think','那……'),
+  jua('就試試看吧。可是不便宜喔。'),
+  jua('材料費，工錢，火砲升級，彈藥補充……'),
+  nou('worry',''),
+  jua('大概二十萬吧。'),
+  ren('shock','二……！'),
+  jua('已經很便宜了！這還是把你們的舊火砲折舊貼現的！'),
+  nou('worry','怎麼辦？我們有那麼多錢嗎？'),
+  /* 有錢（≥ 二十萬）：主角付錢被蕾娜攔下（不扣錢）；沒錢：直接接下面。 */
+  { speaker:'PLAYER', blank:true, se:'se_coins', moneyMin:200000 },
+  ren('smile','你給我慢著。', { moneyMin:200000 }),
+  ren('talkserious','錢我們給不了那麼多，不過有個更好的方法。'),
+  jua('喔？'),
+  ren('talkserious','空之主的棲地都是固定的吧？如果我們協助掃盪鄰近的空之主……'),
+  jua('……繼續說。'),
+  ren('remind','這個空域的高空區淨空了，你們的造船空間也能打開吧？'),
+  jua('……'),
+  jua('可是……'),
+  ren('remindsmile','『永夜』以來的第一個高 空 港喔。'),
+  jua('！！'),
+  jua('妳這修女也太會拿捏人了。'),
+  ren('smile','那您的意思是？'),
+  jua('這單我接了！要是妳們被空之主吞了就算我看走眼吧！'),
+  nou('happy',''),
+  sor('tease','蕾娜，將來一定是個好老婆呢……'),
+  any('nod',''),
+  ren('blush','……'),
+  jua('我先跟幾個船塢長討論一下，馬上就能動工。'),
+  jua('妳們就先在島上逛逛吧！'),
+  sor('tire','逛……'),
+  nou('think','請問，大概要多久時間呢？'),
+  jua('五天到一週吧。'),
+  sor('panic','一週……！'),
+  { speaker:'NARRATION', text:'', se:'se_fall', auto:900, hide:['SORANA'] },   // 倒地音
+  any('scare','索菈娜！'),
+  ren('smilesoft','……雖然不該這麼說，難得看到她這個樣子也挺有趣的呢。'),
+  { speaker:'PLAYER', blank:true },          // （主角空白）同感。
+  nou('angry','真是的，壞心眼！'),
+];
+/* 自由探索期：敲索菈娜的門＝房內那一段（她不出門）。T3 以上多一段（插圖未交，先空著）。 */
+const LI_SOR_ROOM = [
+  sor('tire','出門……？'),
+  sor('lookaway','我不要。'),
+  { speaker:'PLAYER', blank:true },          // （主角空白）不早點習慣的話，接下來幾天會更痛苦喔。
+  sor('angry','我就是不要啦！'),
+  /* 稿：插圖（T3 以上派生，美術未交）。 */
+  sor('embarrass','我不想……再讓你看到難看的樣子嘛！', LI_SOR_T3),
+  Object.assign({ speaker:'PLAYER', blank:true }, LI_SOR_T3),   // （主角空白）那有什麼難看的？古墓那次我膽汁都嘔出來了。
+  sor('sad','那不一樣啦……', LI_SOR_T3),
+  sor('shy','……', LI_SOR_T3),
+  sor('shy','吶……', LI_SOR_T3),
+  sor('serious','如果我們有了孩子，吐得亂七八糟的，你也不會覺得難看嗎？', LI_SOR_T3),
+  Object.assign({ speaker:'PLAYER', blank:true }, LI_SOR_T3),   // （主角空白）看來是沒事了。還有力氣開玩笑呢。
+  sor('serious','我是認真的喔。', LI_SOR_T3),
+];
+
 const VF_GATE = [
   /* 稿：敬禮聲（沒有音檔，先不放）。 */
   sor('amaze','哇！這是什麼陣仗！'),
@@ -10925,7 +11070,9 @@ export const TOWNS = {
     nodes: {
       plaza:      { bg:'loneisle_plaza', name:'孤舟島　島心廣場',
         exits:{ up:'north', left:'west', right:'east' },
-        sail:{} },   // 出航＝下（預設方向）
+        sail:{},   // 出航＝下（預設方向）
+        /* ver -2294：抵達＋六號船塢（演完搬到船台、自由探索）。站位原則：台上有安雅 → 蕾娜左。 */
+        acts:[ { flag:'li_arrive', need:'vf_gate', sides:{ RENNA:'L' }, goto:'slipway', lines:LI_ARRIVE } ] },
       north:      { bg:'loneisle_north', name:'孤舟島　北坡',
         exits:{ up:'cliff', left:'chief', right:'lighthouse', down:'plaza' } },
       west:       { bg:'loneisle_west', name:'孤舟島　船匠街',
@@ -10941,7 +11088,26 @@ export const TOWNS = {
       gunsmith:   { bg:'loneisle_gunsmith_day', noTime:true, name:'孤舟島　槍匠工坊',
         hours:[8,17], closed:'鍛爐熄了。門上掛著「明早八點開爐」。',
         exits:{ back:'west' } },
-      inn:        { bg:'loneisle_inn_day', noTime:true, name:'孤舟島　工匠旅舍', exits:{ back:'east' } },
+      inn:        { bg:'loneisle_inn_day', noTime:true, name:'孤舟島　工匠旅舍', exits:{ back:'east' },
+        /* ver -2294：自由探索期開旅舍大廳（敲門約人）。innSpots 照薇拉馮德暫填，位置不對再調。
+           ⚠ 諾薇兒／安雅／蕾娜的邀約台詞是我暫代的（稿上只寫索菈娜那一段）。 */
+        inn:true, innNoGuide:true,
+        innSpots:{ sit:{ x:0.22, y:0.68 }, sleep:{ x:0.440, y:0.430 } },
+        sleepFlag:'li_arrive',   // 抵達演完之後，天黑才睡得著（同其他城）
+        innDoors:[ { need:'li_arrive', roster:['RENNA','NOUVELLE','ANYA','SORANA'] } ],
+        innStage1:{ dateBusy:'（已經約好人了，等等再說吧。）',
+                    dateDone:'今天已經聊夠多囉，明天再說吧。',
+                    nightRest:'這麼晚了，早點睡吧。',
+                    knock:{
+          RENNA:{    low:'我在整理文件，等一下喔。',
+                     date:[ ren('smile','逛逛？好啊，正好透透氣。') ] },
+          NOUVELLE:{ low:'我想在房裡整理一下行李呢。',
+                     date:[ nou('front','出去走走？好啊，一起去吧。') ] },
+          ANYA:{     low:'我想一個人待著。',
+                     date:[ any('smileshy','……嗯，一起去。') ] },
+          SORANA:{   stay:true, stayFlag:'li_sor_room', stayAgain:'……不要。',
+                     date:LI_SOR_ROOM },
+        } } },
       canteen:    { bg:'loneisle_canteen_day', noTime:true, name:'孤舟島　工匠食堂',
         hours:[8,17], closed:'長凳都翻上桌了。食堂五點就收了。',
         exits:{ back:'east' } },
