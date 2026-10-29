@@ -67,8 +67,8 @@ export const SPEAKERS = {
   AARON:     { name:'亞隆',   art:'aaron' },
   /* ver -2294：孤舟島（Ray 的稿）。胡安＝六號船塢主任，表明身分前是「？？？」（同 MOLLY_Q）；另一個船匠只出一次。
      ⚠ 立繪還沒交（美術工單已發）—— 先 `art:null` 只出聲，交件後改成 `art:'juan'`／`'shipwright'` 並補 ART。 */
-  JUAN:      { name:'胡安',   art:null },
-  JUAN_Q:    { name:'？？？', art:null },
+  JUAN:      { name:'胡安',   art:'juan' },
+  JUAN_Q:    { name:'？？？', art:'juan' },
   SHIPWRIGHT_LI: { name:'船匠', art:null },          // ver -2117：表明身分前（同 CORVIN_Q 的作法）
   GUARD_CAP: { name:'衛士',   art:'capguard' },   // ver -2114：帝都教廷衛士（借旅店那一場的拔刀衛兵）
   CAPI_BOY:  { name:'小男孩', art:'capiboy' },     // ver -2102：返回帝都（攝政王廣場的路人母子）
@@ -1726,6 +1726,19 @@ export const ART = {
               surprise:   { src:'resources/si/npc/robert_si_surprise.webp', top:16, bot:1519, fx:0.501 },
               talk:       { src:'resources/si/npc/robert_si_talk.webp', top:17, bot:1517, fx:0.502 },
             } },
+  /* ver -2295：胡安（孤舟島六號船塢主任，美術交件 10 張；取景 measure_si 量，cm 美術估 165＝矮胖）。 */
+  juan: { cm:165, fx:0.532, top:6, bot:1513, side:'R', alt:null, base:'resources/si/juan_si_front.webp',
+          expr:{
+            talk:    { src:'resources/si/juan_si_talk.webp',    top:7,  bot:1506, fx:0.557 },
+            laugh:   { src:'resources/si/juan_si_laugh.webp',   top:5,  bot:1518, fx:0.546 },
+            grin:    { src:'resources/si/juan_si_grin.webp',    top:5,  bot:1493, fx:0.631 },
+            shock:   { src:'resources/si/juan_si_shock.webp',   top:18, bot:1516, fx:0.422 },
+            serious: { src:'resources/si/juan_si_serious.webp', top:3,  bot:1515, fx:0.534 },
+            think:   { src:'resources/si/juan_si_think.webp',   top:11, bot:1499, fx:0.545 },
+            smirk:   { src:'resources/si/juan_si_smirk.webp',   top:7,  bot:1514, fx:0.540 },
+            worry:   { src:'resources/si/juan_si_worry.webp',   top:13, bot:1497, fx:0.564 },
+            sigh:    { src:'resources/si/juan_si_sigh.webp',    top:9,  bot:1496, fx:0.489 },
+          } },
   aaron: { cm:178, eye:32, fx:0.477, top:25, bot:1511,
             side:'R', alt:null, base:'resources/si/npc/aaron_si_front.webp',
             expr:{
