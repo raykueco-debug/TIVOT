@@ -1825,21 +1825,21 @@ const LI_ARRIVE = [
   { speaker:'PLAYER', blank:true },          // （主角空白）同感。
   nou('angry','真是的，壞心眼！'),
 ];
-/* 自由探索期：敲索菈娜的門＝房內那一段（她不出門）。T3 以上多一段（插圖未交，先空著）。 */
+/* 自由探索期：敲索菈娜的門＝房內那一段（她不出門）。T3 以上多一段＋插圖 049。 */
 const LI_SOR_ROOM = [
   sor('tire','出門……？'),
   sor('lookaway','我不要。'),
   { speaker:'PLAYER', blank:true },          // （主角空白）不早點習慣的話，接下來幾天會更痛苦喔。
   sor('angry','我就是不要啦！'),
-  /* 稿：插圖（T3 以上派生，美術未交）。 */
-  sor('embarrass','我不想……再讓你看到難看的樣子嘛！', LI_SOR_T3),
+  /* 稿：插圖 049（T3 以上派生，ver -2299 接）。插圖期間台詞照講在插圖上、不上立繪（同 047／048 的作法）。 */
+  sor('','我不想……再讓你看到難看的樣子嘛！', Object.assign({ show:false, cg:'049_soranaseasick', cgNoTime:true, hide:'*' }, LI_SOR_T3)),
   Object.assign({ speaker:'PLAYER', blank:true }, LI_SOR_T3),   // （主角空白）那有什麼難看的？古墓那次我膽汁都嘔出來了。
-  sor('sad','那不一樣啦……', LI_SOR_T3),
-  sor('shy','……', LI_SOR_T3),
-  sor('shy','吶……', LI_SOR_T3),
-  sor('serious','如果我們有了孩子，吐得亂七八糟的，你也不會覺得難看嗎？', LI_SOR_T3),
+  sor('','那不一樣啦……', Object.assign({ show:false }, LI_SOR_T3)),
+  sor('','……', Object.assign({ show:false }, LI_SOR_T3)),
+  sor('','吶……', Object.assign({ show:false }, LI_SOR_T3)),
+  sor('','如果我們有了孩子，吐得亂七八糟的，你也不會覺得難看嗎？', Object.assign({ show:false }, LI_SOR_T3)),
   Object.assign({ speaker:'PLAYER', blank:true }, LI_SOR_T3),   // （主角空白）看來是沒事了。還有力氣開玩笑呢。
-  sor('serious','我是認真的喔。', LI_SOR_T3),
+  sor('','我是認真的喔。', Object.assign({ show:false }, LI_SOR_T3)),
 ];
 
 const VF_GATE = [
