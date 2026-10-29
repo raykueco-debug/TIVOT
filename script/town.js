@@ -1781,7 +1781,7 @@ const LI_ARRIVE = [
   { speaker:'NARRATION', text:'', se:'se_heavycursh', shake:true, auto:900 },   // 放下（Ray：heavy crush）
   jua('shock','什麼怪力……我看把你射出去把禍魘痛打一頓效率更好吧！'),
   sor('laugh','啊哈哈哈！'),
-  sor('covermouth','嗚！'),
+  sor('covermouthshock','嗚！'),
   sor('vomit','嘔——'),
   ren('callangry','妳到底還有多少東西可以吐啦！'),
   jua('think','……如果你有辦法用肉體緩衝後座力，倒也不是不行。'),
