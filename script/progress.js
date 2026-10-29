@@ -890,6 +890,9 @@ export function applyRankAffection(grade, partnerKey){
      那就讓她留在 T4 —— 夾的是新值，不是既有的值（見下面的 `Math.min` 位置）。 */
 const AFF_CAPS = [
   { who:'renna', need:'renna_hairpin_lost', until:'renna_t4_ok', maxTier:3 },
+  /* ver -2307（Ray 的孤舟島稿：「索T4解鎖」）：索菈娜 T4 要等孤舟島房內那一段（`sorana_t4_ok`，script/town.js 的 LI_SOR_ROOM 最後一拍）。
+     ⚠ 已經在 T4 的不會被扣回來（夾的是新值）。 */
+  { who:'sorana', until:'sorana_t4_ok', maxTier:3 },
   /* ver -1719 的「M2 封頂 T4」**ver -1732 拿掉**（Ray：「把蕾娜的 M2 T4 鎖取消，M2 降好感就行」）——
      改成雪都合流 BA・M2 版「扣分。」那一拍直接 `aff:{renna:-10}`（`script/town.js`）。 */
 ];

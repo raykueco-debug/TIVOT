@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.30-2306';
+export const VERSION = 'ver 2026.10.30-2307';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2429,6 +2429,9 @@ export const GAME_CONFIG = {
        ⚠ ver -2277（Ray：「尼莫的戰鬥曲是固定的」）：戰鬥本身照舊是尼莫的 Prairie5（`bgm:'nemo'`）。
        ⚠ 破窗房間（`vela_innroom_broken`）與 `script/town.js` 的 `VF_ROOM_BG` 是同一張，改一邊要改另一邊。 */
     vf_raid: { enemy:'vf_nemo', partner:'nouvelle', story:1, bgm:'nemo', bgmAfter:'retroroman', bg:'vela_innroom_broken', saintFlag:'vf_raid_si' },
+    /* ══ 孤舟島・尼莫戰（ver -2307，Ray 的稿）══ 回島那一段的劇情戰（城鎮段落 `storyBattle`，打輸回檔）。
+       敵人卡沿用薇拉馮德那一隻（`vf_nemo`）；曲子同尼莫（Prairie5），打完接回島上的曲子。 */
+    li_nemo: { enemy:'vf_nemo', story:1, bgm:'nemo', bgmAfter:'@town' },
     /* 米夏戰（ver -1957，測試用；Ray：「開個米夏戰來試試」）。⚠ 還沒有任何腳本用它 ——
        正式的米夏戰（STORY_ROADMAP：第四遺蹟「打不贏」、終戰）要另外開卡、另外決定 allowLose。
        曲子先借尼莫戰那一首。 */
@@ -3133,6 +3136,20 @@ export const GAME_CONFIG = {
        卡上出場音效／特效／背景＝0 ＝ 沒有開場演出、沒有 talk。 */
     ...Object.fromEntries(SKY_FLIGHT_KINDS.map(k=>['flight_'+k,
          { enemy:k, ship:true, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 }])),   // 空中怪 16 隻（ver -2268）
+    /* ══ 孤舟島・四個空之主（ver -2307，Ray 的稿）══ 飛行頁 `SCRIPTED_ENCOUNTERS` 的 `battle:'li_lord<N>'`。
+       ⚠ 四隻挑哪四隻是我定的（第二批抽象系：無面巨首／天之裂隙／人面花冠／懸環長鏈），數值照空中怪的卡（暫代＝羽蛇）。
+       第一場開場四句是稿上的（「好大！」…「要來了！」）。 */
+    li_lord1: { enemy:'sky2_maw', ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180,
+                talkOnce:'li_lord1_talk',
+                talk:[ { trigger:'battleStart', lines:[
+                  { who:'nouvelle', img:'tut_nouvelle_surprise', text:i18nT('好大！') },
+                  { who:'anya',     img:'tut_anya_terrify',      text:i18nT('連太陽……都被遮住了！') },
+                  { who:'sorana',   img:'tut_sorana_ready',      text:i18nT('嘿、這不是很有趣嗎？') },
+                  { who:'renna',    img:'tut_renna_shout',       text:i18nT('要來了！') },
+                ]} ] },
+    li_lord2: { enemy:'sky2_rift',       ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 },
+    li_lord3: { enemy:'sky2_facecrown',  ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 },
+    li_lord4: { enemy:'sky2_ringchain',  ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 },
     flight_pirate:    { enemy:'pirate_ship', ship:true,
                         /* ver -741（Ray：「船戰的空賊戰定成這一首」）—— Seven Seas
                            （Alexander Nakarada），出處與授權字樣在 credit（index.html）。 */

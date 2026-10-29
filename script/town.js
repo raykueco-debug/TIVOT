@@ -1843,6 +1843,134 @@ const LI_SOR_ROOM = [
   sor('','如果我們有了孩子，吐得亂七八糟的，你也不會覺得難看嗎？', Object.assign({ show:false }, LI_SOR_T3)),
   Object.assign({ speaker:'PLAYER', blank:true }, LI_SOR_T3),   // （主角空白）看來是沒事了。還有力氣開玩笑呢。
   sor('','我是認真的喔。', Object.assign({ show:false }, LI_SOR_T3)),
+  /* ver -2307（Ray 的稿）：主角溜走 → 索菈娜 T4 解鎖（`sorana_t4_ok`，progress.js 的 AFF_CAPS）。 */
+  Object.assign({ speaker:'NARRATION', text:'', se:'se_walk', auto:900 }, LI_SOR_T3),
+  sor('','喂、喂！', Object.assign({ show:false }, LI_SOR_T3)),
+  sor('','竟然趁我虛弱逃走了……', Object.assign({ show:false, flags:['sorana_t4_ok'] }, LI_SOR_T3)),
+];
+/* ══ 孤舟島・改裝完成 → 空之主 → 尼莫戰 → 離島（ver -2307，Ray 的稿）══
+   · 抵達演完之後在旅舍睡覺（LI_SKIP6）：時間推到六天後 08:00 → 船台（`goto:'slipway'`）演 LI_REFIT（`darkStart`）。
+   · 改裝完成（`li_refit`）起飛行高度 800（flight 的 `cruiseAlt()`）；起飛對白＋四場空之主在飛行頁（`LI_HUNT_*`）。
+   · 四場打完（`li_lord4`）回島 → 島心廣場演 LI_RETURN（尼莫戰）→ `sailOut` 離島 → 飛行頁 LI_LEAVE。
+   ⚠ [索約會派生] 判成「演過索菈娜房內那一段」（`li_sor_room`）—— 她不出門，那一段就是她的約會。
+   ⚠ 表情是我照語氣配的（Ray：「先全部接上」），跑的時候手動改。 */
+const LI_SKIP6 = [
+  { speaker:'NARRATION', text:'', clockToNext:8, clockAddDays:5, auto:300 },
+];
+const LI_REFIT = [
+  { speaker:'NARRATION', text:'', bgBand:'loneisle_slipway', fadeIn:3000, auto:3100 },
+  jua('smirk','改裝比想像中順利，這艘船的龍骨挺不賴的。'),
+  jua('talk','陸浮引擎的出力限制也解除了，木製船的優勢就是垂直起降快。'),
+  jua('grin','或許能發揮超出預期的性能。'),
+  ren('smile','辛苦了。'),
+  ren('ask','那麼，我們怎麼履約呢？'),
+  jua('serious','就照原來的約定，由你們討伐這片空域的四個空之主。'),
+  sor('tease','你不怕我們就這樣把船開走啊？'),
+  jua('laugh','哈哈哈！真那樣我就去聖王廳要錢！'),
+  nou('whisper','我覺得鐵定要不到。', { tiny:true }),   // 小聲
+  any('die',''),
+  ren('determine','請放心，以神之名，我們一定會履行約定。'),
+  jua('smirk','那就，祝你們武運昌隆。'),
+  jua('talk','高度升到1200以後，就算你不去找，他們也會自己撲上來的。'),
+  any('scare','撲上來……要怎麼辦？'),
+  { speaker:'PLAYER', blank:true },          // （主角空白）我們自己先撲上去不就好了？
+  sor('tease','哼——只有這種時候知道要撲上去。', { onlyIf:'li_sor_room' }),   // [索約會派生]
+  ren('talkserious','別太莽撞，那跟一般的大型禍魘不是同一個層級的。'),
+  jua('serious','沒錯，我們只會造船，砲再利也拿那些東西沒辦法。'),
+  jua('grin','靠你們啦！別讓我血本無歸喔。'),
+];
+const LI_RETURN = [
+  jua('grin','漂亮的戰鬥！不愧是聖約騎士團啊！'),
+  ren('stare','……'),
+  nou('think','我們……有提過自己是聖約騎士團嗎？'),
+  jua('talk','沒有啊。但是同伴已經來迎接你們了喔。'),
+  sor('confuse','同伴？'),
+  any('scare','！！'),
+  { speaker:'NARRATION', text:'', se:['se_weapon_pistol_01', { n:'se_bulletguard', delay:120 }], shake:true, auto:800 },   // 槍擊聲　擋彈聲
+  jua('shock','怎、怎麼回事？'),
+  nmo('happy','又見面囉，學長。'),
+  cec('smirk','這次可是好好帶著槍棺來的喔。'),
+  cec('talk','乖乖跟我們回聖王廳，對大家都好。'),
+  ren('talkserious','明明妳，也是HUND的支援人員，為什麼就不明白呢？'),
+  cec('disbelief','！！'),
+  nou('worry','蕾娜小姐……'),
+  { speaker:'PLAYER', blank:true },          // （主角空白）喂！
+  ren('intense','把無辜的女孩帶回聖王廳，讓她經歷妳們所經歷過的那一切……難道是『神』所允許的嗎？'),
+  lau('shout','蕾姬娜學姐！那是……'),
+  cec('gritteeth','……十三課的，'),
+  cec('upset','HUND跟我們之間的繫絆，妳又懂什麼！'),
+  ren('shock','！！'),
+  cec('command','決定了！我就是綁也要把你們全綁回去！'),
+  cec('call','尼莫！'),
+  nmo('bore','好——啦。就是這樣囉，學長，'),
+  nmo('dryfire','來、玩、吧。'),
+  { battle:'li_nemo' },
+  nmo('hurt','嗚……'),
+  lau('idea','那個尼莫……竟然戰敗了！'),
+  nmo('hurt','學長……變得更強了呢。'),
+  cec('furiouscry','討厭……討厭！一個個都那麼礙事！'),
+  cec('furiouscry','看我把你們碾成塵埃！'),
+  lau('shout','停！停手！'),
+  cec('upset','蘿芮！閃一邊去！'),
+  lau('shout','賽西莉小姐才是！再打下去妳會熔斷的！'),
+  cec('gritteeth','少囉唆！我要讓這些傢伙知道實力差距！'),
+  lau('command','馬上收手！這是十三課監察官的命令！'),
+  nmo('stubborn','我也……還能打。'),
+  lau('lookaside','……'),
+  lau('scheme','那就……怨不得我了。'),
+  lau('scheme','……10月20日，攝政王廣場。尼莫你說了吧？'),
+  lau('scheme','『璐娜莉亞團長的戰鬥方式就像個喝醉的大猩猩』。'),
+  nmo('panic','！！'),
+  nmo('panic','呃——'),
+  cec('upset','什麼嘛！不過是蘿芮，少指手劃腳的——'),
+  lau('scheme','11月5日，雪都餐酒館。'),
+  cec('fluster','等……！'),
+  lau('scheme','喝了點酒的賽西莉哭著抱怨『那個人是不是根本不想把我搶回——'),
+  cec('coverlaurie','哇——哇————！'),
+  lau('scheme','願意聽話了嗎？'),                  // 被賽捂著嘴
+  cec('pouttear','十三課的告狀精……'),             // 賽不甘含淚
+  sor('confuse','這些傢伙怎麼回事？內鬨？'),
+  nou('awkward','我再也不敢在蕾娜小姐面前說話了……'),
+  ren('blushangry','我才不會那樣啦！'),
+  lau('command','總之，蕾姬娜學姐。這次我們就先收兵了。'),
+  lau('bowsweat','希望下次碰上之前，您能夠回心轉意……'),
+  any('silent','……'),
+  ren('lookdown','對不起啊，蘿芮。'),
+  ren('determine','下一次見面，我們也不會輸的。'),
+  lau('smile',''),                             // 蘿：微笑
+  cec('upset','什麼嘛什麼嘛！明明不是戰鬥人員！臉皮真厚！'),
+  any('angry','蕾娜、是我們的伙伴！'),
+  sor('angry','沒錯，才輪不到妳這個外人說三道四的！'),
+  cec('upset','妳連聖王廳的人都不是吧！'),
+  nmo('stumble','好了啦，要走囉——'),           // 跌
+  cec('supportnemo','真沒用！站都站不穩了！'),     // 扶
+  nmo('happy','嘿嘿、學長太強了啦——'),
+  { speaker:'PLAYER', blank:true },          // （主角空白）別嬉皮笑臉的，給我自己站好。
+  nmo('saluteblush','是！'),                   // 驚　臉紅
+  lau('bow','那麼，保重了，蕾姬娜學姐。'),
+  ren('smilesoft','妳也是啊，真是辛苦妳了呢。'),
+  { speaker:'PLAYER', blank:true },          // （主角空白）賽西莉！妳也一樣，別太勉強了。
+  cec('blush','……！'),
+  cec('fluster','事到如今不要裝得一副很在乎的樣子啦！'),
+  cec('pouttear','哼！'),
+  { speaker:'NARRATION', text:'', se:'se_walk', auto:900, hide:['NEMO','CECILIE','LAURIE'] },
+  sor('think','結束了……嗎？'),
+  ren('talkserious','大概沒那麼容易。HUND只要接受命令就一定會追咬到底。'),
+  nou('worry','以賽西莉學姐的個性……一定不會輕易放過我們的。'),
+  sor('confuse','那女人到底是怎麼回事啊？很強嗎？'),
+  nou('concern','……很強。單論瞬間輸出效率的話，跟團長不相上下。'),
+  any('curious','諾薇兒……也贏不了？'),
+  nou('awkward','不可能啦！才能的差距太大了。'),
+  jua('worry','喂、喂！剛才那到底是怎麼回事啊？妳們是通緝犯？'),
+  jua('worry','我可不想跟異端管理局扯上關係喔！'),
+  { speaker:'NARRATION', text:'', se:'se_weapon_reload', auto:700 },   // 主角上膛聲
+  jua('shock','！'),
+  { speaker:'NARRATION', text:'', se:['se_weapon_pistol_01', { n:'se_weapon_pistol_01', delay:220 }, { n:'se_weapon_pistol_01', delay:440 }], shake:true, auto:1200 },   // 槍擊數響
+  jua('shock',''),                            // 胡：驚嚇
+  ren('smile','一點小誤會而已。況且孤舟島也只是受了脅迫才給我們補給吧？'),
+  jua('sigh','……幹都幹了，就當是那樣吧。'),
+  jua('serious','但是，我沒辦法繼續留你們在這。'),
+  ren('determine','我知道。麻煩您了。'),
 ];
 
 const VF_GATE = [
@@ -11074,7 +11202,9 @@ export const TOWNS = {
         exits:{ up:'north', left:'west', right:'east' },
         sail:{},   // 出航＝下（預設方向）
         /* ver -2294：抵達＋六號船塢（演完搬到船台、自由探索）。站位原則：台上有安雅 → 蕾娜左。 */
-        acts:[ { flag:'li_arrive', need:'vf_gate', stage:22, sides:{ RENNA:'L' }, goto:'slipway', lines:LI_ARRIVE } ] },   // ver -2295：孤舟島＝Stage 22（Ray）
+        acts:[ { flag:'li_arrive', need:'vf_gate', stage:22, sides:{ RENNA:'L' }, goto:'slipway', lines:LI_ARRIVE },   // ver -2295：孤舟島＝Stage 22（Ray）
+               /* ver -2307：四場空之主打完回島 → 尼莫戰（劇情戰）→ 離島（`sailOut`）。 */
+               { flag:'li_report', need:'li_lord4', storyBattle:true, sailOut:true, sides:{ RENNA:'L' }, lines:LI_RETURN } ] },
       north:      { bg:'loneisle_north', name:'孤舟島　北坡',
         exits:{ up:'cliff', left:'chief', right:'lighthouse', down:'plaza' } },
       west:       { bg:'loneisle_west', name:'孤舟島　船匠街',
@@ -11086,7 +11216,9 @@ export const TOWNS = {
       lighthouse: { bg:'loneisle_lighthouse', name:'孤舟島　引航燈塔', exits:{ back:'north' } },
       wild:       { bg:'loneisle_wild_day', noTime:true, name:'孤舟島　島緣荒地',
         exits:{ back:'west' }, sail:{ dir:'up' } },
-      slipway:    { bg:'loneisle_slipway', name:'孤舟島　船匠船台', exits:{ back:'west' } },
+      slipway:    { bg:'loneisle_slipway', name:'孤舟島　船匠船台', exits:{ back:'west' },
+        /* ver -2307：六天後改裝完成（旅舍睡覺快進過來，`darkStart`）。演完自由行動（出航＝去打空之主）。 */
+        acts:[ { flag:'li_refit', need:'li_6days', darkStart:true, sides:{ RENNA:'L' }, lines:LI_REFIT } ] },
       gunsmith:   { bg:'loneisle_gunsmith_day', noTime:true, name:'孤舟島　槍匠工坊',
         hours:[8,17], closed:'鍛爐熄了。門上掛著「明早八點開爐」。',
         exits:{ back:'west' } },
@@ -11096,6 +11228,8 @@ export const TOWNS = {
         inn:true, innNoGuide:true,
         innSpots:{ sit:{ x:0.22, y:0.68 }, sleep:{ x:0.440, y:0.430 } },
         sleepFlag:'li_arrive',   // 抵達演完之後，天黑才睡得著（同其他城）
+        /* ver -2307（Ray：「當天睡覺後，時間向後推六天」）：同薇拉馮德 vf_3days 那一支。 */
+        acts:[ { flag:'li_6days', need:'li_arrive', sleepFirst:{ hours:1, disguise:true, blackAfter:600 }, goto:'slipway', lines:LI_SKIP6 } ],
         innDoors:[ { need:'li_arrive', roster:['RENNA','NOUVELLE','ANYA','SORANA'] } ],
         innStage1:{ dateBusy:'（已經約好人了，等等再說吧。）',
                     dateDone:'今天已經聊夠多囉，明天再說吧。',

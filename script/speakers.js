@@ -1519,6 +1519,13 @@ export const ART = {
      —— 與諾薇兒同高。 */
   nemo:      { cm:165, eye:32, fx:0.484, top:3, bot:1524,
            side:'R', alt:null, base:'resources/si/nemo_si_front.webp', expr:{
+    /* 孤舟島（ver -2307 接，取景值照美術工單 _loneisle_si_worklist.md §三）。 */
+    hurt:        { src:'resources/si/nemo_si_hurt.webp',        top:13, bot:1527, fx:0.418 },
+    stubborn:    { src:'resources/si/nemo_si_stubborn.webp',    top:4,  bot:1527, fx:0.459 },
+    panic:       { src:'resources/si/nemo_si_panic.webp',       top:5,  bot:1533, fx:0.606 },
+    stumble:     { src:'resources/si/nemo_si_stumble.webp',     top:15, bot:1520, fx:0.531 },
+    saluteblush: { src:'resources/si/nemo_si_saluteblush.webp', top:4,  bot:1525, fx:0.517 },
+    collar:      { src:'resources/si/nemo_si_collar.webp',      top:4,  bot:1524, fx:0.519 },
     surprise: { src:'resources/si/nemo_si_surprise.webp', top:8, bot:1524, fx:0.498 },
     happy:    { yShift:0, src:'resources/si/nemo_si_happy.webp',    top:3, bot:1527, fx:0.510 },
     bye:      { src:'resources/si/nemo_si_bye.webp',      top:3, bot:1533, fx:0.499 },
@@ -1531,6 +1538,11 @@ export const ART = {
   /* ver -1916：front 美術重交（同名覆蓋 ?v=2，measure_si 重量 top/bot/fx）；新增 `cringe`。 */
   cecilie:   { fxShift:0, yShift:9, cm:164, eye:32, fx:0.536, top:8, bot:1533,
            side:'R', alt:null, base:'resources/si/cecilie_si_front.webp?v=d57dbd14', expr:{
+    /* 孤舟島（ver -2307 接，工單 §四）。 */
+    furiouscry:  { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_furiouscry.webp',  top:5,  bot:1531, fx:0.591 },
+    coverlaurie: { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_coverlaurie.webp', top:49, bot:1507, fx:0.648 },
+    pouttear:    { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_pouttear.webp',    top:7,  bot:1528, fx:0.540 },
+    supportnemo: { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_supportnemo.webp', top:8,  bot:1526, fx:0.599 },
     cringe:   { fxShift:0, cm:164, yShift:9, src:'resources/si/cecilie_si_cringe.webp',    top:7, bot:1535, fx:0.632 },
     teary:    { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_teary.webp',     top:3, bot:1531, fx:0.574 },   // ver -2099 返回帝都稿缺差分（美術 9086789c）：measure_si 量 top/bot；fx 照臉中心目測校正
     talk:     { fxShift:0, yShift:9, cm:164, src:'resources/si/cecilie_si_talk.webp',      top:7, bot:1527, fx:0.539 },
@@ -1579,6 +1591,13 @@ export const ART = {
      ⚠ 只調 `cm` 會連頭一起往下掉（§6.5 明寫「只調 `cm` 一定失敗」）。 */
   laurie:    { cm:126, standCm:158, eye:32, fx:0.505, top:6, bot:1514,
            side:'R', alt:null, base:'resources/si/laurie_si_front.webp', expr:{
+    /* 孤舟島（ver -2307 接，工單 §二；⚠ 下面那段「差分全部翻轉」是 -1545 那四張的事，這六張美術沒交代要翻）。 */
+    shout:    { src:'resources/si/laurie_si_shout.webp',    top:6,  bot:1535, fx:0.577 },
+    command:  { src:'resources/si/laurie_si_command.webp',  top:8,  bot:1529, fx:0.508 },
+    scheme:   { src:'resources/si/laurie_si_scheme.webp',   top:6,  bot:1521, fx:0.508 },
+    smile:    { src:'resources/si/laurie_si_smile.webp',    top:12, bot:1522, fx:0.563 },
+    bow:      { src:'resources/si/laurie_si_bow.webp',      top:8,  bot:1522, fx:0.680 },
+    bowsweat: { src:'resources/si/laurie_si_bowsweat.webp', top:6,  bot:1522, fx:0.679 },
     /* ══⚠⚠ **除了底圖（`front`）之外，四張差分全部水平翻轉**（ver -1545，Ray 指定）══
        她的底圖朝一邊、四張差分朝另一邊 —— 換個表情人就轉過去了。
        ⚠⚠ 走的是**逐張的 `flip`**（ver -953 瑪麗亞那一支，`frameOf` 會把 expr 蓋在
