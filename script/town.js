@@ -1702,11 +1702,11 @@ const VF_MOLLY = [
 /* ══ 孤舟島・抵達 → 六號船塢 → 自由探索（ver -2294，Ray 的稿）══
    · 抵達（LI_ARRIVE）：薇拉馮德莊園大門演完（vf_gate）之後第一次降落 → 島心廣場；中途黑轉景到船台（六號船塢）。
    · 演完 `goto:'slipway'`、自由探索。旅舍可敲門：索菈娜**不出門**（`stay`），敲她的門演房內那一段（T3 以上多一段＋插圖）。
-   ⚠ 胡安立繪 ver -2295 接上；另一個船匠的立繪還沒交（`art:null` 只出聲，見 speakers.js）；索菈娜的暈船差分
+   ⚠ 胡安立繪 ver -2295 接上；另一個船匠 ver -2296 接上；索菈娜的暈船差分
      （dizzy／sick／covermouth／vomit／sickembarrass）也還沒交 —— 先借 `tire`／`embarrass`，交件再換。
    ⚠ 稿上「亂起八糟」照「亂七八糟」改了（錯字）。 */
 const jua = N('JUAN'), juQ = N('JUAN_Q');   // ver -2295 立繪交件
-const swr = (text, extra) => Object.assign({ speaker:'SHIPWRIGHT_LI', text }, extra||{});
+const swr = (text, extra) => N('SHIPWRIGHT_LI')('front', text, extra);   // ver -2296 立繪交件
 const LI_SOR_T3 = { tierWho:'SORANA', tierMin:3 };
 const LI_ARRIVE = [
   nou('surprise','好誇張的地方。'),

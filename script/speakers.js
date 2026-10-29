@@ -69,7 +69,7 @@ export const SPEAKERS = {
      ⚠ 立繪還沒交（美術工單已發）—— 先 `art:null` 只出聲，交件後改成 `art:'juan'`／`'shipwright'` 並補 ART。 */
   JUAN:      { name:'胡安',   art:'juan' },
   JUAN_Q:    { name:'？？？', art:'juan' },
-  SHIPWRIGHT_LI: { name:'船匠', art:null },          // ver -2117：表明身分前（同 CORVIN_Q 的作法）
+  SHIPWRIGHT_LI: { name:'船匠', art:'shipwright_li' },          // ver -2117：表明身分前（同 CORVIN_Q 的作法）
   GUARD_CAP: { name:'衛士',   art:'capguard' },   // ver -2114：帝都教廷衛士（借旅店那一場的拔刀衛兵）
   CAPI_BOY:  { name:'小男孩', art:'capiboy' },     // ver -2102：返回帝都（攝政王廣場的路人母子）
   CAPI_MOM:  { name:'母親',   art:'capimom' },
@@ -1726,6 +1726,8 @@ export const ART = {
               surprise:   { src:'resources/si/npc/robert_si_surprise.webp', top:16, bot:1519, fx:0.501 },
               talk:       { src:'resources/si/npc/robert_si_talk.webp', top:17, bot:1517, fx:0.502 },
             } },
+  /* ver -2296：孤舟島另一個船匠（只出一句）。美術量 top:7 是肩上木板的上緣 —— 照 §5「道具超出頭頂會污染 top」改量頭頂 30。 */
+  shipwright_li: { cm:172, fx:0.422, top:30, bot:1517, side:'R', alt:null, base:'resources/si/shipwright_si_front.webp', expr:{} },
   /* ver -2295：胡安（孤舟島六號船塢主任，美術交件 10 張；取景 measure_si 量，cm 美術估 165＝矮胖）。 */
   juan: { cm:165, fx:0.532, top:6, bot:1513, side:'R', alt:null, base:'resources/si/juan_si_front.webp',
           expr:{
