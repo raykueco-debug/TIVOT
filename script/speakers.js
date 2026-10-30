@@ -1779,7 +1779,18 @@ export const ART = {
           } },
   /* ver -2318：阿什弗德爵士（front Ray 定案）。⚠ `cm` 不超過 178（CAST_TALL，§5）；fx＝兩眼中點（目測）。差分交件後補 expr。 */
   ashford: { cm:178, fx:0.447, top:10, bot:1524, side:'R', alt:null, base:'resources/si/ashford_si_front.webp',
-            expr:{} },
+            /* ⚠ 差分畫得比 front 小一號（人物約 1385px vs 1514px）＝另一把尺 ⇒ 一律 `rescale:true`（§6.5 -635）。
+               bow 是欠身（實際 1281px）：top 寫成「站直時的頭頂」（bot−1385），尺才與其他張一致、頭自然落低。fx＝兩眼中點（目測）。 */
+            expr:{
+              bow:     { rescale:true, src:'resources/si/ashford_si_bow.webp', top:34, bot:1419, fx:0.474 },
+              talk:    { rescale:true, src:'resources/si/ashford_si_talk.webp', top:78, bot:1452, fx:0.486 },
+              serious: { rescale:true, src:'resources/si/ashford_si_serious.webp', top:76, bot:1463, fx:0.486 },
+              smile:   { rescale:true, src:'resources/si/ashford_si_smile.webp', top:73, bot:1462, fx:0.490 },
+              sweat:   { rescale:true, src:'resources/si/ashford_si_sweat.webp', top:80, bot:1437, fx:0.460 },
+              phone:   { rescale:true, src:'resources/si/ashford_si_phone.webp', top:80, bot:1444, fx:0.460 },
+              think:   { rescale:true, src:'resources/si/ashford_si_think.webp', top:78, bot:1451, fx:0.470 },
+              shout:   { rescale:true, src:'resources/si/ashford_si_shout.webp', top:76, bot:1462, fx:0.560 },
+            } },
   aaron: { cm:178, eye:32, fx:0.477, top:25, bot:1511,
             side:'R', alt:null, base:'resources/si/npc/aaron_si_front.webp',
             expr:{
