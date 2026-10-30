@@ -11266,7 +11266,7 @@ export const TOWNS = {
         sail:{ hold:{ need:'ws_arrive', until:'ws_siege_done',
                       lines:[ { speaker:'NARRATION', text:'（現在不是離開的時候。）' } ] } },
         /* ver -2317：南天的霸王打贏之後第一次降落＝遇見阿什弗德爵士，演完自由行動。 */
-        acts:[ { flag:'ws_arrive', need:'li_south', sides:WS_SIDES, lines:WS_ARRIVE } ] },
+        acts:[ { flag:'ws_arrive', need:'li_south', stage:23, sides:WS_SIDES, lines:WS_ARRIVE } ] },   // ver -2320：西泊＝Stage 23（Ray）
       midtown:  { bg:'ws_town_midtown', name:'溫斯摩爾港　港務大道',
         exits:{ left:'cityhall', right:'church', down:'square' } },
       church:   { bg:'ws_town_church_day', noTime:true, name:'溫斯摩爾港　港區聖堂',
