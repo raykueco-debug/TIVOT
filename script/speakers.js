@@ -66,10 +66,10 @@ export const SPEAKERS = {
   ROBERT:    { name:'羅伯特', art:'robert' },
   AARON:     { name:'亞隆',   art:'aaron' },
   /* ver -2317：溫斯摩爾港（西方泊地）。阿什弗德爵士＝埃爾王國防務次官；報上名字之前是「？？？」（同 MOLLY_Q）。
-     ⚠ 立繪還沒交（front 等 Ray 定案）—— 先 `art:null` 只出聲，交件後改成 `art:'ashford'` 並補 ART。
+     front 已接（ver -2318）；其餘差分交件後補 ART 的 expr。
      傳令兵沒有立繪（同 SOLDIER）。 */
-  ASHFORD:   { name:'阿什弗德', art:null },
-  ASHFORD_Q: { name:'？？？',   art:null },
+  ASHFORD:   { name:'阿什弗德', art:'ashford' },
+  ASHFORD_Q: { name:'？？？',   art:'ashford' },
   MESSENGER: { name:'傳令兵',   art:null },
   /* ver -2294：孤舟島（Ray 的稿）。胡安＝六號船塢主任，表明身分前是「？？？」（同 MOLLY_Q）；另一個船匠只出一次。
      ⚠ 立繪還沒交（美術工單已發）—— 先 `art:null` 只出聲，交件後改成 `art:'juan'`／`'shipwright'` 並補 ART。 */
@@ -1777,6 +1777,9 @@ export const ART = {
             worry:   { src:'resources/si/juan_si_worry.webp',   top:13, bot:1497, fx:0.564 },
             sigh:    { src:'resources/si/juan_si_sigh.webp',    top:9,  bot:1496, fx:0.489 },
           } },
+  /* ver -2318：阿什弗德爵士（front Ray 定案）。⚠ `cm` 不超過 178（CAST_TALL，§5）；fx＝兩眼中點（目測）。差分交件後補 expr。 */
+  ashford: { cm:178, fx:0.447, top:10, bot:1524, side:'R', alt:null, base:'resources/si/ashford_si_front.webp',
+            expr:{} },
   aaron: { cm:178, eye:32, fx:0.477, top:25, bot:1511,
             side:'R', alt:null, base:'resources/si/npc/aaron_si_front.webp',
             expr:{
