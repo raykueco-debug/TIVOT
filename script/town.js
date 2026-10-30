@@ -11292,6 +11292,8 @@ export const TOWNS = {
   winsmoor: {
     name: '溫斯摩爾港',
     entry: 'square',
+    /* ver -2322（Ray：「第一次進西泊場景是碼頭」）：抵達那一段演完（`ws_arrive`）之前，降落落在碼頭（同北方泊地 `firstEntry` 的作法）。 */
+    firstEntry: { node:'dock', until:'ws_arrive' },
     mist: 0,   // 大城不上霧（§6.5.4 ver -913）
     /* ver -2317：五點米夏攻城（Ray 的稿：「到五點時米夏攻城，視約會對象不同，會有不同角色跑來通知回市政廳」）。
        `linesByDate` 由 modules/town.js 的 clockGate 依 `datingWho()` 挑（沒約人＝`none`）。
@@ -11309,9 +11311,7 @@ export const TOWNS = {
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
         /* ver -2317：抵達之後不准離港（守城戰還沒定玩法 ⇒ `until` 那支旗現在還沒有人插，同 np_leave_ok 的先例）。 */
         sail:{ hold:{ need:'ws_arrive', until:'ws_siege_done',
-                      lines:[ { speaker:'NARRATION', text:'（現在不是離開的時候。）' } ] } },
-        /* ver -2317：南天的霸王打贏之後第一次降落＝遇見阿什弗德爵士，演完自由行動。 */
-        acts:[ { flag:'ws_arrive', need:'li_south', stage:23, sides:WS_SIDES, lines:WS_ARRIVE } ] },   // ver -2320：西泊＝Stage 23（Ray）
+                      lines:[ { speaker:'NARRATION', text:'（現在不是離開的時候。）' } ] } } },
       midtown:  { bg:'ws_town_midtown', name:'溫斯摩爾港　港務大道',
         exits:{ left:'cityhall', right:'church', down:'square' } },
       church:   { bg:'ws_town_church_day', noTime:true, name:'溫斯摩爾港　港區聖堂',
@@ -11326,7 +11326,10 @@ export const TOWNS = {
         hours:[8,17], closed:'鐵門拉下來了。門邊的牌子寫著「八點開門」。',
         exits:{ back:'oldtown' } },
       dock:     { bg:'ws_town_dock_day', noTime:true, name:'溫斯摩爾港　碼頭',
-        exits:{ back:'oldtown' } },
+        exits:{ back:'oldtown' },
+        /* ver -2317：南天的霸王打贏之後第一次降落＝遇見阿什弗德爵士，演完自由行動（ver -2322 由中央廣場搬來碼頭，見城上 firstEntry）。
+           ver -2320：西泊＝Stage 23（Ray）。 */
+        acts:[ { flag:'ws_arrive', need:'li_south', stage:23, sides:WS_SIDES, lines:WS_ARRIVE } ] },
       guild:    { bg:'ws_town_guild_day', noTime:true, name:'溫斯摩爾港　賞金獵人公會',
         hours:[8,17], closed:'大門上了閂。委託要等明天早上八點。',
         exits:{ back:'oldtown' } },

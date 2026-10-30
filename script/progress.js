@@ -1579,14 +1579,14 @@ const BA_CHAPTERS = [
     stage:21, clockHour:10, named:true, aff:A_AFF,
     flags:CH22_FLAGS,
     enter:'town', town:'loneisle', node:'plaza' },
-  /* ══ Stage 23 溫斯摩爾港（ver -2320，Ray：「開成 stage 23 列入章節列表」）══ 跳過離島與南天的霸王，直接進中央廣場演抵達
+  /* ══ Stage 23 溫斯摩爾港（ver -2320，Ray：「開成 stage 23 列入章節列表」）══ 跳過離島與南天的霸王，直接進碼頭演抵達
      （那一段插 stage 23）→ 自由行動（旅館敲門約人）→ 17:00 依約會對象通知 → 市政廳。旗＝Stage 22 那一份＋孤舟島整段＋離島＋南天的霸王。 */
   { id:'stage23', name:'Stage 23', sub:i18nT('溫斯摩爾港：抵達（阿什弗德）→ 自由行動 → 17:00 米夏攻城'),
     stage:22, clockHour:10, named:true, aff:A_AFF,
     flags:[ ...CH22_FLAGS,
             'li_arrive','li_sor_room','li_6days','li_refit','li_hunt_talk','li_lord1_talk',
             'li_lord1','li_lord2','li_lord3','li_lord4','li_report','sorana_t4_ok','li_leave_talk','li_south' ],
-    enter:'town', town:'winsmoor', node:'square' },
+    enter:'town', town:'winsmoor', node:'dock' },   // ver -2322：抵達在碼頭
   /* ══ 帝都・教廷衛士戰（ver -2043，Ray：「劇情還沒推到，但是先把帝都戰處理一下」）══ 測試入口：
      落在旅店、插 `cap_raid` ⇒ 一進來就打第一場（旅店 → 上街區 → 廣場結算 → 舊街區）。
      旗與好感照 Stage 16（劇情接上之前，這一段在哪一章還沒定）；旅店的初見／夢都當成看過。 */
