@@ -651,7 +651,7 @@ export const ART = {
     armcross:  { src:'resources/si/nouvelle_si_armcross.webp?v=8c2a0c93', top:3, bot:1528, fx:0.571 },
     blush:   { src:'resources/si/nouvelle_si_blush.webp', top:4, bot:1512, fx:0.572 },
     coldstare: { src:'resources/si/nouvelle_si_coldstare.webp?v=b3d25c77', top:4, bot:1512, fx:0.560 },
-    covermouth:{ src:'resources/si/nouvelle_si_covermouth.webp?v=6e81bf5c', top:3, bot:1529, fx:0.567 },
+    covermouth:{ fxShift:0, src:'resources/si/nouvelle_si_covermouth.webp?v=6e81bf5c', top:3, bot:1529, fx:0.567 },
     /* ver -1793：Ray 交件（聖索菲亞更衣後／救人那一段）；measure_si 實量。 */
     shycover:    { src:'resources/si/nouvelle_si_shycover.webp',     top:12, bot:1530, fx:0.578 },
     shycoverpeek:{ src:'resources/si/nouvelle_si_shycoverpeek.webp', top:4,  bot:1531, fx:0.608 },
@@ -1078,7 +1078,7 @@ export const ART = {
        所以 `cm`／`standCm` 的近景修正整組拿掉，回到照量的預設。
        §5：換圖一定要重量取景值，這一組是重量的。 */
     crying:   { src:'resources/si/anya_si_crying.webp?v=8f61a530',    top:2,  bot:1522, fx:0.470 },
-    desperate:{ yShift:-6, src:'resources/si/anya_si_desperate.webp?v=55a4b871', top:6, bot:1534, fx:0.412, cm:100, standCm:162, faceFx:0.465, faceZoomK:0.63 },
+    desperate:{ fxShift:0, yShift:-6, src:'resources/si/anya_si_desperate.webp?v=55a4b871', top:6, bot:1534, fx:0.412, cm:100, standCm:162, faceFx:0.465, faceZoomK:0.63 },
     /* ⚠⚠ `sobbing` 是**裁到膝蓋**的近景，不是全身（§6.5：半身圖照量 alpha 上下緣
        會把人放大好幾倍）。畫面上看得到的大約是「頭頂→膝」＝身高的 75%，
        所以 `cm` 給 162×0.75 ≈ **122** —— 這樣她的**頭**才會與其他立繪一樣大，
@@ -1105,7 +1105,7 @@ export const ART = {
     cry:       { src:'resources/si/anya_si_cry.webp?v=9718e366',        top:0, bot:1532, fx:0.458 },
     cryhard:   { fxShift:0, src:'resources/si/anya_si_cryhard.webp',  top:6, bot:1527, fx:0.411 },   // ver -2102 交件，腳本還沒用
     shysmile:  { src:'resources/si/anya_si_shysmile.webp', top:4, bot:1530, fx:0.461 },   // ver -2102 交件，腳本還沒用
-    terrify:{ src:'resources/si/anya_si_terrify.webp?v=becb7f82', top:8, bot:1504, fx:0.493 },   // ver -1857：鎖表情重畫定稿
+    terrify:{ fxShift:0, src:'resources/si/anya_si_terrify.webp?v=becb7f82', top:8, bot:1504, fx:0.493 },   // ver -1857：鎖表情重畫定稿
     /* ver -870（森林行 G 稿）——measure_si 量測。 */
     answer:    { standCm:162, fxShift:0, src:'resources/si/anya_si_answer.webp?v=db505ca1',     top:2, bot:1534, fx:0.468 },
     smileshy:  { src:'resources/si/anya_si_smileshy.webp?v=6c55f102',   top:5, bot:1524, fx:0.452 },
@@ -1134,7 +1134,7 @@ export const ART = {
        ⚠ 兩張都是**全身站姿**（人物像素身高 1526／1521，與基本立繪的 1531 差 0.3%
          ＝雜訊）⇒ 照量即可，**不加** `cm`／`standCm`／`rescale`
          —— 那三個旋鈕是給近景與坐姿用的（見上面 `sobbing`／`desperate`）。 */
-    amaze:    { src:'resources/si/anya_si_amaze.webp?v=f61132c2',     top:4, bot:1526, fx:0.485 },
+    amaze:    { yShift:0, src:'resources/si/anya_si_amaze.webp?v=f61132c2',     top:4, bot:1526, fx:0.485 },
     /* ══ ver -1711：笑瞇眼幸福微笑（美術 2026-09-23 深夜交件）══ 底圖＝本尊、只換臉、
        alpha 與本尊逐位元相同 ⇒ 取景照抄本尊。 */
     happy:    { src:'resources/si/anya_si_happy.webp?v=76e4bf93',     top:3, bot:1530, fx:0.506 },
@@ -1162,7 +1162,7 @@ export const ART = {
        ⚠ `sleep` 不是全身圖 → `cm` ＋ `standCm`。 */
     angry:     { src:'resources/si/anya_si_angry.webp?v=d59e9bd9', top:3, bot:1525, fx:0.514 },
     armcross:  { src:'resources/si/anya_si_armcross.webp?v=7d786d11', top:0, bot:1529, fx:0.505 },
-    determine:{ src:'resources/si/anya_si_determine.webp?v=c6b1a1a5', top:4, bot:1521, fx:0.506 },
+    determine:{ fxShift:0, src:'resources/si/anya_si_determine.webp?v=c6b1a1a5', top:4, bot:1521, fx:0.506 },
     eat:       { src:'resources/si/anya_si_eat.webp?v=86cf7818', top:3, bot:1531, fx:0.508 },
     hug:       { src:'resources/si/anya_si_hug.webp?v=723fb6dd', top:0, bot:1534, fx:0.470 },
     laugh:     { src:'resources/si/anya_si_laugh.webp?v=3c066055', top:3, bot:1527, fx:0.474 },
@@ -1782,7 +1782,7 @@ export const ART = {
             /* ⚠ 差分畫得比 front 小一號（人物約 1385px vs 1514px）＝另一把尺 ⇒ 一律 `rescale:true`（§6.5 -635）。
                bow 是欠身（實際 1281px）：top 寫成「站直時的頭頂」（bot−1385），尺才與其他張一致、頭自然落低。fx＝兩眼中點（目測）。 */
             expr:{
-              bow:     { rescale:true, src:'resources/si/ashford_si_bow.webp', top:34, bot:1419, fx:0.474 },
+              bow:     { yShift:13, rescale:true, src:'resources/si/ashford_si_bow.webp', top:34, bot:1419, fx:0.474 },
               talk:    { rescale:true, src:'resources/si/ashford_si_talk.webp', top:78, bot:1452, fx:0.486 },
               serious: { rescale:true, src:'resources/si/ashford_si_serious.webp', top:76, bot:1463, fx:0.486 },
               smile:   { rescale:true, src:'resources/si/ashford_si_smile.webp', top:73, bot:1462, fx:0.490 },

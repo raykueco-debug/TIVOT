@@ -1518,6 +1518,25 @@ export const ENEMIES = {
     },
     /* ══ 里朋莊園那兩場（ver -1793）══ 數值同上（Ray：「六人全部走賞金獵人」）。
        `thug_squad`＝大廳那一群（一張圖一群，整群當一隻）；`manu`＝沙龍的馬努（圖借他的 `draw` 立繪）。 */
+    /* ══ 紫月軍一般步兵小隊（ver -2323，Ray 10-30：「生成紫月軍，主要以步槍為武器…一般兵是灰衣較樸素，每一波四到五人」）══
+       溫斯摩爾港守城戰的敵人（7 隊；這是第 1 隊）。群戰分層照里朋一家（`resources/enemy/_purple_spec.md`）：
+       掩體一層＋每人一層，疊放 cover, 3, 2, 1, 4, 5（人只剪掉被掩體擋住的部分，前面的人淡出時後面不破洞）。
+       ⚠ 圖是 1254×1254 方形、四邊留白、平視中景 ⇒ `contain` 置底（不是惡棍那種直式滿版 cover）。
+       ⚠ 數值整組暫抄 `thug_squad`（守城戰玩法與菁英數值 Ray 還沒定）；還沒有 `config.battles` 引用它。 */
+    purple_squad_1: {
+      name:'紫月軍', story:1, counterStagger:1, boss:0, Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1,
+      hitSe:null,
+      image:null, bg:'ws_4_4_dusk', fit:{ mode:'contain', pos:'center bottom' },
+      group:{ cover:'resources/enemy/man_purple_squad_1_layers/cover.webp', dir:'resources/enemy/man_purple_squad_1_layers/', prefix:'soldier_', order:[3,2,1,4,5], hp:250, shadow:false },
+      hp:250, attack:10, atkInterval:null, assaultEvery:[3,6], assault:{ count:3, gap:0 },
+      entrance:null, special:[], boardGrids:[9,9,9,9,9],
+      delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
+      hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
+      loot:[ { id:'brass_casing', n:6 } ],
+    },
     thug_squad: {
       name:'里朋一家', story:1, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },

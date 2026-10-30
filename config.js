@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.30-2322';
+export const VERSION = 'ver 2026.10.30-2323';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2375,6 +2375,8 @@ export const GAME_CONFIG = {
     ss_forecourt: { enemy:'thug_squad_forecourt', session:'ss_raid' },
     ss_carriage:  { enemy:'thug_squad_carriage', session:'ss_raid' },
     ss_hall:      { enemy:'thug_squad',   session:'ss_raid' },
+    /* ver -2323：紫月軍小隊 1（溫斯摩爾港守城戰；守城戰玩法還沒做 ⇒ 先立卡，腳本還沒引用）。 */
+    ws_purple_1:  { enemy:'purple_squad_1' },
     ss_manu:      { enemy:'manu',         session:'ss_raid', sessionEnd:true },
     /* ══ 羅賽爾廢城（ver -1839，Ray 的放怪表）══ 同一個遭遇段落 `dunmor_wild`，收局＝踏進安全區（rest）。
        ⚠ 借來的幾張敵人卡（王座徘徊者／守墓者／鹿主）在原本的地圖是劇情戰，這裡各開自己的戰鬥卡：
