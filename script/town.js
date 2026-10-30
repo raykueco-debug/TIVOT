@@ -1981,7 +1981,7 @@ const LI_RETURN = [
    · WS_ARRIVE：南天的霸王打贏（`li_south`，飛行頁）之後第一次降落 —— 中央廣場遇見阿什弗德爵士。演完自由行動。
    · WS_CALL_*：17:00 的閘門（`TOWNS.winsmoor.gates`）—— 視約會對象換人來通知（Ray：「如約安雅是諾薇兒／
      諾薇兒索菈娜互相／如約蕾娜是阿許弗德」）。⚠ 通知的那一句稿上沒有，是我暫填的；沒約人＝傳令兵（也是我定的）。
-   · WS_SIEGE：強制移到市政廳之後那一段（`cityhall.acts`）。守城戰本身還沒定玩法（resources/map/_winsmoor_spec.md），演完就停在市政廳。
+   · WS_SIEGE：強制移到**戰時地圖**的市政廳之後那一段（`winsmoor_siege.cityhall.acts`，ver -2321）。守城戰本身還沒定玩法（resources/map/_winsmoor_spec.md），演完就停在市政廳。
    ⚠ 阿什弗德的立繪還沒交（front 等 Ray 定案）—— speakers.js 先 `art:null`；這裡寫的表情鍵就是要畫的差分清單。
    ⚠ 台詞一字照稿；其餘人的表情是我配的。 */
 const ash = N('ASHFORD'), ashQ = N('ASHFORD_Q'), msg = N('MESSENGER');
@@ -1991,7 +1991,7 @@ const WS_ARRIVE = [
   { speaker:'PLAYER', blank:true },          // （主角空白）有點無趣啊。
   sor('smirk','對啊，我還以為又要費一番手腳咧。'),
   ren('sigh','你們兩個真是唯恐天下不亂。'),
-  any('happy','薇拉馮德、很厲害！'),
+  any('amaze','薇拉馮德、很厲害！'),
   ren('talkserious','是啊，僅憑一句話就能輕易進出非盟國，已經到了令人恐懼的程度了。'),
   nou('think','可是，城鎮看起來好和平，完全不像要打仗的樣子……'),
   ashQ('front','被表象迷惑可不行喔。'),
@@ -2006,7 +2006,7 @@ const WS_ARRIVE = [
   nou('sad','為什麼好好的，又要打仗呢？'),
   nou('sad','明明『永夜』之後活著都已經很辛苦了……'),
   ash('talk','祭司小姐是帝國民，大概感覺不到吧。'),
-  ash('talk','航路被那些怪物截斷之後，薩梅爾帝國把率先將軍力投入了航線確保。'),
+  ash('talk','航路被那些怪物截斷之後，薩梅爾帝國率先將軍力投入了航線確保。'),
   ash('talk','其他國家反應過來時，戰爭已經從『領土』移轉到『航路』上了。'),
   ren('talkserious','於是帝國與盟國壟斷了所有安全航線。'),
   ash('serious','沒錯。冰天雪地的紫月大陸，現在連糧食自給都有問題。'),
@@ -2025,15 +2025,15 @@ const WS_ARRIVE = [
   sor('angry','到頭來，還是要把小公主當人質嗎？'),
   ash('serious','我無可辯駁。我軍已向紫月艦隊打出『安娜殿下蒞臨此地』的燈號，會怎麼反應就靜觀其變了。'),
   any('determine','索菈娜、我、可以的。'),
-  any('smile','只要、大家沒事、我很樂意！'),
-  nou('worry','安雅……'),
+  any('determine','只要、大家沒事、我很樂意！'),
+  nou('covermouth','安雅……'),
   ren('smile','正如您所看到的，安娜殿下不顧安危也要保護西泊人民周全，可別讓她委屈了。'),
   ash('bow','那是自然。我代表埃爾王國的人民，向您致上最高的謝意。'),
   any('shy',''),
   ren('whisper','有人情就要賣呀。'),     // （小聲）
   ash('smile','還請不要拘束，我已為各位備好行館。'),
   ash('smile','這段期間，不妨好好享受一下西岸風光吧？'),
-  nou('talk','可以，自由行動嗎？'),
+  nou('talk','可以自由行動嗎？'),
   ash('front',''),
   ash('smile','當然了。妳們是瑪莉安小姐的客人啊。'),
   sor('think','……我開始相信那個什麼薇拉馮德的了。'),
@@ -2049,8 +2049,8 @@ const WS_CALL = {
 const WS_SIEGE = [
   ash('sweat','竟然無視安娜殿下的安危強行攻城！'),
   sor('angry','我就說那個哥哥沒安好心！'),
-  any('scare','怎麼會……！'),
-  any('cryhard','他……不要我了……！'),
+  any('terrify','怎麼會……！'),
+  any('desperate','米夏……不要我了……！'),
   sor('sad','小公主……'),
   ren('worry','沒事的……或許是認為安雅不會輕易喪命——'),
   ash('phone','南門陷了？你再說一次！喂！喂！'),
@@ -11181,59 +11181,103 @@ export const TOWNS = {
        · **旅店不寫 `inn:true`**：還沒有敲門的對白表 —— 只寫 `inn:true` 而沒有人應門，玩家會敲到一排空門（東泊／聖索菲亞的先例）。
        · **店沒有買賣介面**：`config.shop.shops` 裡沒有薇拉馮德的店 ⇒ 武器店／雜貨舖現在只是場景。
      ⚠ 還沒有的：`bgm`（等 Ray）、小地圖（美術另開一單）、酒吧 `vela_bar` 的掛點（工單第 3 點，等 Ray）。 */
-  /* ══ 溫斯摩爾港（Winsmoor，暫名）—— 守城戰地圖（ver -2166，美術交件；拓樸 Ray 定案＝resources/map/_layout_winsmoor_siege.png）══
-     7×7 方格 40 格、海在南、中央廣場＝防守點；出口照拓樸圖逐條抄（同一條邊兩端相反）。背景只有日景（`noTime`）。
-     ⚠ 守城戰規則（紅點、敵我步數、S／A／B 的回合效果）還沒做 —— 等 Ray 確認玩法細節。入口暫定中央棧橋（海上來），出航往下。
-     ⚠ ver -2221（Ray：「戰地圖是劇情發生才換」「先用一般城鎮圖」）：鍵由 `winsmoor` 改名 `winsmoor_siege` ——
-       `winsmoor` 讓給城鎮版（飛行頁降落 `town:'winsmoor'` 落進城鎮版）。這一張**現在沒有任何入口**，
-       守城戰那一段劇情到了再由那一拍 `goto:'@winsmoor_siege:<節點>'` 換過來。
-     ⚠⚠ 這 40 張背景**全部不能用**（Ray 10-16：「都是遠景，沒辦法做戰鬥背景」）—— 節點與拓樸留著，
-       `bg` 要等美術的**戰鬥版**整批換掉才能上線（`resources/background/winsmoor_town/_spec.md` 那一列）。 */
+  /* ══ 溫斯摩爾港（Winsmoor，暫名）—— 守城戰（戰時）地圖（ver -2321 換成 v9b，Ray：「五點回到市政廳時就已經要換成戰時地圖了」）══
+     拓樸＝`resources/map/_winsmoor_spec.md` 的「A-定案 v9」（佈局圖 `_layout_winsmoor_siege_v9b.png`），82 格、背景 57 張裁成 82 格
+     （`resources/background/winsmoor_siege/ws_<x>_<y>_dusk.webp`，黃昏單張 ⇒ `noTime`）。節點與出口**照 spec 那張出口表逐列抄**
+     （x,y＝格座標；城鎮版有對應地點的格沿用城鎮版鍵名：cityhall／midtown／church／square／oldtown／uptown／inn／tavern／grocery／gunstore／dock／guild，其餘 `w<x>_<y>`）。
+     · 進來的路：城鎮版 17:00 那道閘門 `goto:'@winsmoor_siege:cityhall'`（跨圖＝一道讀取頁，鐵律 13 第 6 條），市政廳演攻城那一段。
+     · 入口＝市政廳（防衛目標，不放戰鬥）。標「敵人入口」的 10 格是 spec 的入口（守城戰玩法用）。
+     ⚠ 守城戰規則（敵人怎麼走、截到打什麼、S／A／B 的回合效果）還沒做 —— 現在只走得動、沒有戰鬥、不能出航。
+     ⚠ ver -2166 那一版（7×7 40 格、日景遠景，Ray 10-16 判定不能當戰鬥背景）整張換掉；那 40 張圖還在 `resources/background/winsmoor/`，沒有人引用。 */
   winsmoor_siege: {
     name: '溫斯摩爾港',
-    entry: 'jetty',
+    entry: 'cityhall',
     mist: 0,
     nodes: {
-      farm:       { bg:'ws_farm_day', noTime:true, name:'溫斯摩爾港　北郊農莊', exits:{ down:'workhouse', right:'cemetery' } },
-      cemetery:   { bg:'ws_cemetery_day', noTime:true, name:'溫斯摩爾港　北郊墓園', exits:{ down:'terrace', left:'farm', right:'northgate' } },
-      northgate:  { bg:'ws_northgate_day', noTime:true, name:'溫斯摩爾港　北門關卡', exits:{ down:'station', left:'cemetery', right:'windmill' } },
-      windmill:   { bg:'ws_windmill_day', noTime:true, name:'溫斯摩爾港　風車丘', exits:{ down:'railworks', left:'northgate', right:'viaduct' } },
-      viaduct:    { bg:'ws_viaduct_day', noTime:true, name:'溫斯摩爾港　鐵路高架橋', exits:{ down:'freightyard', left:'windmill' } },
-      pasture:    { bg:'ws_pasture_day', noTime:true, name:'溫斯摩爾港　西北牧場', exits:{ down:'westgate', right:'workhouse' } },
-      workhouse:  { bg:'ws_workhouse_day', noTime:true, name:'溫斯摩爾港　濟貧院', exits:{ up:'farm', left:'pasture', right:'terrace' } },
-      terrace:    { bg:'ws_terrace_day', noTime:true, name:'溫斯摩爾港　北區聯排屋', exits:{ up:'cemetery', down:'school', left:'workhouse', right:'station' } },
-      station:    { bg:'ws_station_day', noTime:true, name:'溫斯摩爾港　中央車站', exits:{ up:'northgate', down:'stationave', left:'terrace', right:'railworks' } },
-      railworks:  { bg:'ws_railworks_day', noTime:true, name:'溫斯摩爾港　鐵道機廠', exits:{ up:'windmill', down:'hospital', left:'station', right:'freightyard' } },
-      freightyard:{ bg:'ws_freightyard_day', noTime:true, name:'溫斯摩爾港　貨運調車場', exits:{ up:'viaduct', left:'railworks', right:'watertower' } },
-      watertower: { bg:'ws_watertower_day', noTime:true, name:'溫斯摩爾港　東北水塔', exits:{ down:'eastgate', left:'freightyard' } },
-      westgate:   { bg:'ws_westgate_day', noTime:true, name:'溫斯摩爾港　西門', exits:{ up:'pasture', down:'gasworks' } },
-      school:     { bg:'ws_school_day', noTime:true, name:'溫斯摩爾港　公學校', exits:{ up:'terrace', down:'cityhall', right:'stationave' } },
-      stationave: { bg:'ws_stationave_day', noTime:true, name:'溫斯摩爾港　車站前大道', exits:{ up:'station', down:'square', left:'school', right:'hospital' } },
-      hospital:   { bg:'ws_hospital_day', noTime:true, name:'溫斯摩爾港　市立醫院', exits:{ up:'railworks', down:'cathedral', left:'stationave' } },
-      eastgate:   { bg:'ws_eastgate_day', noTime:true, name:'溫斯摩爾港　東門', exits:{ up:'watertower', down:'brickworks' } },
-      gasworks:   { bg:'ws_gasworks_day', noTime:true, name:'溫斯摩爾港　煤氣廠', exits:{ up:'westgate', down:'canallock', right:'slum' } },
-      slum:       { bg:'ws_slum_day', noTime:true, name:'溫斯摩爾港　貧民窟', exits:{ down:'lodging', left:'gasworks', right:'cityhall' } },
-      cityhall:   { bg:'ws_cityhall_day', noTime:true, name:'溫斯摩爾港　市政廳', exits:{ up:'school', down:'arcade', left:'slum', right:'square' } },
-      square:     { bg:'ws_square_day', noTime:true, name:'溫斯摩爾港　中央廣場', exits:{ up:'stationave', down:'exchange', left:'cityhall', right:'cathedral' } },
-      cathedral:  { bg:'ws_cathedral_day', noTime:true, name:'溫斯摩爾港　大教堂', exits:{ up:'hospital', down:'theatre', left:'square', right:'mill' } },
-      mill:       { bg:'ws_mill_day', noTime:true, name:'溫斯摩爾港　紡織工廠', exits:{ left:'cathedral', right:'brickworks' } },
-      brickworks: { bg:'ws_brickworks_day', noTime:true, name:'溫斯摩爾港　東郊磚窯', exits:{ up:'eastgate', down:'tannery', left:'mill' } },
-      canallock:  { bg:'ws_canallock_day', noTime:true, name:'溫斯摩爾港　運河閘門', exits:{ up:'gasworks', down:'westmole', right:'lodging' } },
-      lodging:    { bg:'ws_lodging_day', noTime:true, name:'溫斯摩爾港　工人宿舍', exits:{ up:'slum', down:'fishmarket', left:'canallock', right:'arcade' } },
-      arcade:     { bg:'ws_arcade_day', noTime:true, name:'溫斯摩爾港　百貨商店街', exits:{ up:'cityhall', down:'customs', left:'lodging', right:'exchange' } },
-      exchange:   { bg:'ws_exchange_day', noTime:true, name:'溫斯摩爾港　交易所', exits:{ up:'square', down:'harborave', left:'arcade', right:'theatre' } },
-      theatre:    { bg:'ws_theatre_day', noTime:true, name:'溫斯摩爾港　劇院', exits:{ up:'cathedral', down:'warehouse', left:'exchange' } },
-      tannery:    { bg:'ws_tannery_day', noTime:true, name:'溫斯摩爾港　製革廠', exits:{ up:'brickworks', down:'lighthouse' } },
-      westmole:   { bg:'ws_westmole_day', noTime:true, name:'溫斯摩爾港　西防波堤', exits:{ up:'canallock', right:'fishmarket' } },
-      fishmarket: { bg:'ws_fishmarket_day', noTime:true, name:'溫斯摩爾港　漁市', exits:{ up:'lodging', left:'westmole', right:'customs' } },
-      customs:    { bg:'ws_customs_day', noTime:true, name:'溫斯摩爾港　海關', exits:{ up:'arcade', down:'westpier', left:'fishmarket', right:'harborave' } },
-      harborave:  { bg:'ws_harborave_day', noTime:true, name:'溫斯摩爾港　港務大道', exits:{ up:'exchange', down:'jetty', left:'customs', right:'warehouse' } },
-      warehouse:  { bg:'ws_warehouse_day', noTime:true, name:'溫斯摩爾港　倉庫街', exits:{ up:'theatre', down:'eastpier', left:'harborave', right:'drydock' } },
-      drydock:    { bg:'ws_drydock_day', noTime:true, name:'溫斯摩爾港　乾船塢', exits:{ left:'warehouse', right:'lighthouse' } },
-      lighthouse: { bg:'ws_lighthouse_day', noTime:true, name:'溫斯摩爾港　東堤燈塔', exits:{ up:'tannery', left:'drydock' } },
-      westpier:   { bg:'ws_westpier_day', noTime:true, name:'溫斯摩爾港　西碼頭', exits:{ up:'customs', right:'jetty' } },
-      jetty:      { bg:'ws_jetty_day', noTime:true, name:'溫斯摩爾港　中央棧橋', sail:{ dir:'down' }, exits:{ up:'harborave', left:'westpier', right:'eastpier' } },
-      eastpier:   { bg:'ws_eastpier_day', noTime:true, name:'溫斯摩爾港　東碼頭', exits:{ up:'warehouse', left:'jetty' } },
+      /* 17:00 閘門強制移來這裡（跨圖）。演完攻城那一段，守城戰本身還沒做。 */
+      cityhall:   { bg:'ws_2_2_dusk', noTime:true, name:'溫斯摩爾港　市政廳', exits:{ left:'w1_2', up:'w2_1', down:'dock', right:'w3_2' },
+        acts:[ { flag:'ws_siege_talk', need:'ws_siege_call', sides:WS_SIDES, lines:WS_SIEGE } ] },
+      w2_1:       { bg:'ws_2_1_dusk', noTime:true, name:'溫斯摩爾港　市政廳街1段', exits:{ up:'w2_0', down:'cityhall' } },
+      w1_2:       { bg:'ws_1_2_dusk', noTime:true, name:'溫斯摩爾港　議會街1段', exits:{ left:'w0_2', right:'cityhall' } },
+      w3_2:       { bg:'ws_3_2_dusk', noTime:true, name:'溫斯摩爾港　議會街2段', exits:{ left:'cityhall', right:'midtown' } },
+      dock:       { bg:'ws_2_3_dusk', noTime:true, name:'溫斯摩爾港　雲海碼頭', exits:{ up:'cityhall', down:'oldtown' } },
+      w2_0:       { bg:'ws_2_0_dusk', noTime:true, name:'溫斯摩爾港　市政×河岸', exits:{ left:'w1_0', down:'w2_1', right:'w3_0' } },
+      w0_2:       { bg:'ws_0_2_dusk', noTime:true, name:'溫斯摩爾港　崖邊×議會', exits:{ up:'w0_1', down:'w0_3', right:'w1_2' } },
+      midtown:    { bg:'ws_4_2_dusk', noTime:true, name:'溫斯摩爾港　港務大道', exits:{ left:'w3_2', down:'w4_3' } },
+      oldtown:    { bg:'ws_2_4_dusk', noTime:true, name:'溫斯摩爾港　舊港町', exits:{ up:'dock', right:'w3_4' } },
+      w1_0:       { bg:'ws_1_0_dusk', noTime:true, name:'溫斯摩爾港　河岸路1段', exits:{ left:'w0_0', right:'w2_0' } },
+      w3_0:       { bg:'ws_3_0_dusk', noTime:true, name:'溫斯摩爾港　河岸路2段', exits:{ left:'w2_0', right:'w4_0' } },
+      w0_1:       { bg:'ws_0_1_dusk', noTime:true, name:'溫斯摩爾港　崖邊路1段', exits:{ up:'w0_0', down:'w0_2' } },
+      w0_3:       { bg:'ws_0_3_dusk', noTime:true, name:'溫斯摩爾港　崖邊路2段', exits:{ up:'w0_2', down:'gunstore' } },
+      w4_3:       { bg:'ws_4_3_dusk', noTime:true, name:'溫斯摩爾港　中央路2段', exits:{ up:'midtown', down:'square' } },
+      w3_4:       { bg:'ws_3_4_dusk', noTime:true, name:'溫斯摩爾港　廣場街2段', exits:{ left:'oldtown', right:'square' } },
+      w0_0:       { bg:'ws_0_0_dusk', noTime:true, name:'溫斯摩爾港　崖邊×河岸', exits:{ down:'w0_1', right:'w1_0' } },
+      w4_0:       { bg:'ws_4_0_dusk', noTime:true, name:'溫斯摩爾港　中央×河岸', exits:{ left:'w3_0', down:'w4_1', right:'w5_0' } },
+      gunstore:   { bg:'ws_0_4_dusk', noTime:true, name:'溫斯摩爾港　槍匠店前', exits:{ up:'w0_3', down:'w0_5', right:'w1_4' } },
+      square:     { bg:'ws_4_4_dusk', noTime:true, name:'溫斯摩爾港　中央廣場', exits:{ left:'w3_4', up:'w4_3', down:'w4_5', right:'w5_4' } },
+      w5_0:       { bg:'ws_5_0_dusk', noTime:true, name:'溫斯摩爾港　河岸路3段', exits:{ left:'w4_0', right:'w6_0' } },
+      w4_1:       { bg:'ws_4_1_dusk', noTime:true, name:'溫斯摩爾港　中央路1段', exits:{ up:'w4_0' } },
+      w1_4:       { bg:'ws_1_4_dusk', noTime:true, name:'溫斯摩爾港　廣場街1段', exits:{ left:'gunstore' } },
+      w5_4:       { bg:'ws_5_4_dusk', noTime:true, name:'溫斯摩爾港　廣場街3段', exits:{ left:'square', right:'uptown' } },
+      w0_5:       { bg:'ws_0_5_dusk', noTime:true, name:'溫斯摩爾港　崖邊路3段', exits:{ up:'gunstore', down:'w0_6' } },
+      w4_5:       { bg:'ws_4_5_dusk', noTime:true, name:'溫斯摩爾港　中央路3段', exits:{ up:'square', down:'w4_6' } },
+      w6_0:       { bg:'ws_6_0_dusk', noTime:true, name:'溫斯摩爾港　聖堂×河岸', exits:{ left:'w5_0', down:'w6_1', right:'w7_0' } },
+      uptown:     { bg:'ws_6_4_dusk', noTime:true, name:'溫斯摩爾港　上街區', exits:{ left:'w5_4', up:'inn', down:'w6_5', right:'w7_4' } },
+      w0_6:       { bg:'ws_0_6_dusk', noTime:true, name:'溫斯摩爾港　崖邊×舊港', exits:{ up:'w0_5', down:'w0_7', right:'w1_6' } },
+      w4_6:       { bg:'ws_4_6_dusk', noTime:true, name:'溫斯摩爾港　中央×舊港', exits:{ left:'w3_6', up:'w4_5', down:'w4_7', right:'w5_6' } },
+      w7_0:       { bg:'ws_7_0_dusk', noTime:true, name:'溫斯摩爾港　河岸路4段', exits:{ left:'w6_0', right:'w8_0' } },
+      w6_1:       { bg:'ws_6_1_dusk', noTime:true, name:'溫斯摩爾港　聖堂街1段', exits:{ up:'w6_0' } },
+      inn:        { bg:'ws_6_3_dusk', noTime:true, name:'溫斯摩爾港　旅館前', exits:{ up:'church', down:'uptown' } },
+      w7_4:       { bg:'ws_7_4_dusk', noTime:true, name:'溫斯摩爾港　廣場街4段', exits:{ left:'uptown', right:'tavern' } },
+      w6_5:       { bg:'ws_6_5_dusk', noTime:true, name:'溫斯摩爾港　聖堂街3段', exits:{ up:'uptown', down:'grocery' } },
+      w1_6:       { bg:'ws_1_6_dusk', noTime:true, name:'溫斯摩爾港　舊港町1段', exits:{ left:'w0_6' } },
+      w3_6:       { bg:'ws_3_6_dusk', noTime:true, name:'溫斯摩爾港　舊港町2段', exits:{ left:'guild', right:'w4_6' } },
+      w5_6:       { bg:'ws_5_6_dusk', noTime:true, name:'溫斯摩爾港　舊港町3段', exits:{ left:'w4_6', right:'grocery' } },
+      w0_7:       { bg:'ws_0_7_dusk', noTime:true, name:'溫斯摩爾港　崖邊路4段', exits:{ up:'w0_6', down:'w0_8' } },
+      w4_7:       { bg:'ws_4_7_dusk', noTime:true, name:'溫斯摩爾港　中央路4段', exits:{ up:'w4_6', down:'w4_8' } },
+      w8_0:       { bg:'ws_8_0_dusk', noTime:true, name:'溫斯摩爾港　磨坊×河岸', exits:{ left:'w7_0', down:'w8_1', right:'w9_0' } },
+      church:     { bg:'ws_6_2_dusk', noTime:true, name:'溫斯摩爾港　港區聖堂', exits:{ left:'w5_2', down:'inn', right:'w7_2' } },
+      tavern:     { bg:'ws_8_4_dusk', noTime:true, name:'溫斯摩爾港　餐飲街', exits:{ left:'w7_4', up:'w8_3', down:'w8_5', right:'w9_4' } },
+      guild:      { bg:'ws_2_6_dusk', noTime:true, name:'溫斯摩爾港　公會前', exits:{ up:'w2_5', down:'w2_7', right:'w3_6' } },
+      grocery:    { bg:'ws_6_6_dusk', noTime:true, name:'溫斯摩爾港　雜貨舖前', exits:{ left:'w5_6', up:'w6_5', down:'w6_7', right:'w7_6' } },
+      w0_8:       { bg:'ws_0_8_dusk', noTime:true, name:'溫斯摩爾港　崖邊×上街', exits:{ up:'w0_7', down:'w0_9', right:'w1_8' } },
+      w4_8:       { bg:'ws_4_8_dusk', noTime:true, name:'溫斯摩爾港　中央×上街', exits:{ left:'w3_8', up:'w4_7', down:'w4_9', right:'w5_8' } },
+      w9_0:       { bg:'ws_9_0_dusk', noTime:true, name:'溫斯摩爾港　河岸路5段', exits:{ left:'w8_0', right:'w10_0' } },
+      w8_1:       { bg:'ws_8_1_dusk', noTime:true, name:'溫斯摩爾港　磨坊街1段', exits:{ up:'w8_0' } },
+      w5_2:       { bg:'ws_5_2_dusk', noTime:true, name:'溫斯摩爾港　議會街3段', exits:{ right:'church' } },
+      w7_2:       { bg:'ws_7_2_dusk', noTime:true, name:'溫斯摩爾港　議會街4段', exits:{ left:'church', right:'w8_2' } },
+      w8_3:       { bg:'ws_8_3_dusk', noTime:true, name:'溫斯摩爾港　磨坊街2段', exits:{ up:'w8_2', down:'tavern' } },
+      w9_4:       { bg:'ws_9_4_dusk', noTime:true, name:'溫斯摩爾港　廣場街5段', exits:{ left:'tavern', right:'w10_4' } },
+      w2_5:       { bg:'ws_2_5_dusk', noTime:true, name:'溫斯摩爾港　市政廳街3段', exits:{ down:'guild' } },
+      w8_5:       { bg:'ws_8_5_dusk', noTime:true, name:'溫斯摩爾港　磨坊街3段', exits:{ up:'tavern', down:'w8_6' } },
+      w7_6:       { bg:'ws_7_6_dusk', noTime:true, name:'溫斯摩爾港　舊港町4段', exits:{ left:'grocery', right:'w8_6' } },
+      w2_7:       { bg:'ws_2_7_dusk', noTime:true, name:'溫斯摩爾港　市政廳街4段', exits:{ up:'guild', down:'w2_8' } },
+      w6_7:       { bg:'ws_6_7_dusk', noTime:true, name:'溫斯摩爾港　聖堂街4段', exits:{ up:'grocery', down:'w6_8' } },
+      w1_8:       { bg:'ws_1_8_dusk', noTime:true, name:'溫斯摩爾港　上街1段', exits:{ left:'w0_8' } },
+      w3_8:       { bg:'ws_3_8_dusk', noTime:true, name:'溫斯摩爾港　上街2段', exits:{ left:'w2_8', right:'w4_8' } },
+      w5_8:       { bg:'ws_5_8_dusk', noTime:true, name:'溫斯摩爾港　上街3段', exits:{ left:'w4_8', right:'w6_8' } },
+      w0_9:       { bg:'ws_0_9_dusk', noTime:true, name:'溫斯摩爾港　崖邊路5段', exits:{ up:'w0_8', down:'w0_10' } },
+      w4_9:       { bg:'ws_4_9_dusk', noTime:true, name:'溫斯摩爾港　中央路5段', exits:{ up:'w4_8', down:'w4_10' } },
+      w10_0:      { bg:'ws_10_0_dusk', noTime:true, name:'溫斯摩爾港　東環×河岸', exits:{ left:'w9_0', down:'w10_1' } },
+      w8_2:       { bg:'ws_8_2_dusk', noTime:true, name:'溫斯摩爾港　磨坊×議會', exits:{ left:'w7_2', down:'w8_3', right:'w9_2' } },
+      w10_4:      { bg:'ws_10_4_dusk', noTime:true, name:'溫斯摩爾港　東環×廣場', exits:{ left:'w9_4', up:'w10_3', down:'w10_5' } },
+      w8_6:       { bg:'ws_8_6_dusk', noTime:true, name:'溫斯摩爾港　磨坊×舊港', exits:{ left:'w7_6', up:'w8_5', down:'w8_7', right:'w9_6' } },
+      w2_8:       { bg:'ws_2_8_dusk', noTime:true, name:'溫斯摩爾港　市政×上街', exits:{ up:'w2_7', down:'w2_9', right:'w3_8' } },
+      w6_8:       { bg:'ws_6_8_dusk', noTime:true, name:'溫斯摩爾港　聖堂×上街', exits:{ left:'w5_8', up:'w6_7', down:'w6_9', right:'w7_8' } },
+      w0_10:      { bg:'ws_0_10_dusk', noTime:true, name:'溫斯摩爾港　崖邊×南環', exits:{ up:'w0_9', right:'w1_10' } },
+      w4_10:      { bg:'ws_4_10_dusk', noTime:true, name:'溫斯摩爾港　中央×南環', exits:{ left:'w3_10', up:'w4_9', right:'w5_10' } },
+      w10_1:      { bg:'ws_10_1_dusk', noTime:true, name:'溫斯摩爾港　東環路1段', exits:{ up:'w10_0' } },   // 敵人入口
+      w9_2:       { bg:'ws_9_2_dusk', noTime:true, name:'溫斯摩爾港　議會街5段', exits:{ left:'w8_2' } },   // 敵人入口
+      w10_3:      { bg:'ws_10_3_dusk', noTime:true, name:'溫斯摩爾港　東環路2段', exits:{ down:'w10_4' } },   // 敵人入口
+      w10_5:      { bg:'ws_10_5_dusk', noTime:true, name:'溫斯摩爾港　東環路3段', exits:{ up:'w10_4' } },   // 敵人入口
+      w9_6:       { bg:'ws_9_6_dusk', noTime:true, name:'溫斯摩爾港　舊港町5段', exits:{ left:'w8_6' } },   // 敵人入口
+      w8_7:       { bg:'ws_8_7_dusk', noTime:true, name:'溫斯摩爾港　磨坊街4段', exits:{ up:'w8_6' } },
+      w7_8:       { bg:'ws_7_8_dusk', noTime:true, name:'溫斯摩爾港　上街4段', exits:{ left:'w6_8' } },
+      w2_9:       { bg:'ws_2_9_dusk', noTime:true, name:'溫斯摩爾港　市政廳街5段', exits:{ up:'w2_8' } },   // 敵人入口
+      w6_9:       { bg:'ws_6_9_dusk', noTime:true, name:'溫斯摩爾港　聖堂街5段', exits:{ up:'w6_8' } },   // 敵人入口
+      w1_10:      { bg:'ws_1_10_dusk', noTime:true, name:'溫斯摩爾港　南環路1段', exits:{ left:'w0_10' } },   // 敵人入口
+      w3_10:      { bg:'ws_3_10_dusk', noTime:true, name:'溫斯摩爾港　南環路2段', exits:{ right:'w4_10' } },   // 敵人入口
+      w5_10:      { bg:'ws_5_10_dusk', noTime:true, name:'溫斯摩爾港　南環路3段', exits:{ left:'w4_10' } },   // 敵人入口
     },
   },
   /* ══ 溫斯摩爾港（西泊，暫名）—— 城鎮版（ver -2221，美術 10-14 交日景 15 張；規格 `resources/background/winsmoor_town/_spec.md`）══
@@ -11244,14 +11288,15 @@ export const TOWNS = {
      · 餐飲街照帝都的 `dining`：同行女伴／當下誰在那裡決定開哪一家，都沒有＝酒館。
      ⚠ 先只有「走得到的房間」（同北方泊地當初）：**沒有店主、沒有買賣**（商店卡要走 shops.xlsx 匯入，等 Ray）、
        **旅館不寫 `inn:true`**（沒有敲門的對白表，寫了會敲到一排空門 —— 東泊／薇拉馮德的先例）、沒有 `bgm`、沒有小地圖、沒有劇情。
-     ⚠ 守城戰的 40 格是另一張（`winsmoor_siege`），劇情發生才換過去。 */
+     ⚠ 守城戰是另一張（`winsmoor_siege`，v9b 82 格），17:00 那道閘門換過去。 */
   winsmoor: {
     name: '溫斯摩爾港',
     entry: 'square',
     mist: 0,   // 大城不上霧（§6.5.4 ver -913）
     /* ver -2317：五點米夏攻城（Ray 的稿：「到五點時米夏攻城，視約會對象不同，會有不同角色跑來通知回市政廳」）。
-       `linesByDate` 由 modules/town.js 的 clockGate 依 `datingWho()` 挑（沒約人＝`none`）。 */
-    gates:[ { flag:'ws_siege_call', need:'ws_arrive', hourOfDay:[17,24], goto:'cityhall', enterAgain:true,
+       `linesByDate` 由 modules/town.js 的 clockGate 依 `datingWho()` 挑（沒約人＝`none`）。
+       ver -2321（Ray：「五點回到市政廳時就已經要換成戰時地圖了」）：goto 跨圖到 `winsmoor_siege` 的市政廳。 */
+    gates:[ { flag:'ws_siege_call', need:'ws_arrive', hourOfDay:[17,24], goto:'@winsmoor_siege:cityhall',
               sides:WS_SIDES, lines:WS_CALL.none, linesByDate:WS_CALL } ],
     dining:{ node:'tavern', scenes:{
       cafe:      { bg:'ws_town_cafe_day', noTime:true },
@@ -11274,9 +11319,7 @@ export const TOWNS = {
         exits:{ back:'midtown' } },
       cityhall: { bg:'ws_town_cityhall_day', noTime:true, name:'溫斯摩爾港　市政廳',
         hours:[8,17], closed:'窗口都熄了燈。市政廳五點就下班了。',
-        exits:{ back:'midtown' },
-        /* ver -2317：五點的閘門強制移來這裡（acts 不看營業時間）。守城戰本身還沒做，演完就停在這裡。 */
-        acts:[ { flag:'ws_siege_talk', need:'ws_siege_call', sides:WS_SIDES, lines:WS_SIEGE } ] },
+        exits:{ back:'midtown' } },
       oldtown:  { bg:'ws_town_oldtown_day', noTime:true, name:'溫斯摩爾港　舊港町',
         exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' } },
       gunstore: { bg:'ws_town_gunstore_day', noTime:true, name:'溫斯摩爾港　槍匠店',
