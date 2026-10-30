@@ -1976,6 +1976,110 @@ const LI_RETURN = [
   ren('determine','我知道。麻煩您了。'),
 ];
 
+
+/* ══ 溫斯摩爾港（西方泊地）抵達 → 自由行動 → 五點米夏攻城（ver -2317，Ray 的稿）══════════════
+   · WS_ARRIVE：南天的霸王打贏（`li_south`，飛行頁）之後第一次降落 —— 中央廣場遇見阿什弗德爵士。演完自由行動。
+   · WS_CALL_*：17:00 的閘門（`TOWNS.winsmoor.gates`）—— 視約會對象換人來通知（Ray：「如約安雅是諾薇兒／
+     諾薇兒索菈娜互相／如約蕾娜是阿許弗德」）。⚠ 通知的那一句稿上沒有，是我暫填的；沒約人＝傳令兵（也是我定的）。
+   · WS_SIEGE：強制移到市政廳之後那一段（`cityhall.acts`）。守城戰本身還沒定玩法（resources/map/_winsmoor_spec.md），演完就停在市政廳。
+   ⚠ 阿什弗德的立繪還沒交（front 等 Ray 定案）—— speakers.js 先 `art:null`；這裡寫的表情鍵就是要畫的差分清單。
+   ⚠ 台詞一字照稿；其餘人的表情是我配的。 */
+const ash = N('ASHFORD'), ashQ = N('ASHFORD_Q'), msg = N('MESSENGER');
+const WS_SIDES = { RENNA:'L' };   // 站位原則：台上有安雅 → 蕾娜左
+const WS_ARRIVE = [
+  nou('surprise','竟然這麼簡單就放行了……'),
+  { speaker:'PLAYER', blank:true },          // （主角空白）有點無趣啊。
+  sor('smirk','對啊，我還以為又要費一番手腳咧。'),
+  ren('sigh','你們兩個真是唯恐天下不亂。'),
+  any('happy','薇拉馮德、很厲害！'),
+  ren('talkserious','是啊，僅憑一句話就能輕易進出非盟國，已經到了令人恐懼的程度了。'),
+  nou('think','可是，城鎮看起來好和平，完全不像要打仗的樣子……'),
+  ashQ('front','被表象迷惑可不行喔。'),
+  ren('surprise','您是……？'),
+  ash('bow','失禮。我是防務次官阿什弗德爵士。這位就是瑪麗安小姐的『客人』吧？'),
+  any('nervous',''),
+  ren('askserious','阿什弗德爵士，您所謂的表象是指什麼呢？'),
+  ash('talk','大約一個月前，西海岸就有不明艦影在岸防砲的射程之外徘徊。'),
+  ash('talk','驅逐艦一逼上去他們就退。神出鬼沒的，到現在有多少兵力、火力都不清楚。'),
+  any('worry',''),
+  ash('serious','但是，目標是我們錯不了。'),
+  nou('sad','為什麼好好的，又要打仗呢？'),
+  nou('sad','明明『永夜』之後活著都已經很辛苦了……'),
+  ash('talk','祭司小姐是帝國民，大概感覺不到吧。'),
+  ash('talk','航路被那些怪物截斷之後，薩梅爾帝國把率先將軍力投入了航線確保。'),
+  ash('talk','其他國家反應過來時，戰爭已經從『領土』移轉到『航路』上了。'),
+  ren('talkserious','於是帝國與盟國壟斷了所有安全航線。'),
+  ash('serious','沒錯。冰天雪地的紫月大陸，現在連糧食自給都有問題。'),
+  any('sad',''),
+  sor('think','所以才鋌而走險嗎……'),
+  ash('talk','我們有西岸最密集的岸防砲陣地，想登陸也沒那麼容易。'),
+  ren('talkserious','畢竟船艦要正面突破岸防砲，可行性不高。'),
+  nou('think','為什麼？'),
+  { speaker:'PLAYER', blank:true },          // （主角空白）岸防砲射程更遠，口徑也更大，打得還準。
+  sor('confuse','還沒進入射程就會先被打沉的意思嗎？'),
+  ash('smile','正是如此。千里迢迢到銀月西岸來當靶子，我不認為紫月軍有那麼傻。'),
+  ash('bow','真有什麼萬一，還請安娜殿下多擔待了。'),
+  ren('askserious','……具體上，爵士您有什麼打算？'),
+  ash('talk','要向帝國求援、還是雇赤月傭兵，議會也還在爭執不休。'),
+  ash('talk','最理想的狀況，就是把軍事衝突降級成政治衝突。只要王女殿下還在此作客，不至於沒有談判就打起來吧。'),
+  sor('angry','到頭來，還是要把小公主當人質嗎？'),
+  ash('serious','我無可辯駁。我軍已向紫月艦隊打出『安娜殿下蒞臨此地』的燈號，會怎麼反應就靜觀其變了。'),
+  any('determine','索菈娜、我、可以的。'),
+  any('smile','只要、大家沒事、我很樂意！'),
+  nou('worry','安雅……'),
+  ren('smile','正如您所看到的，安娜殿下不顧安危也要保護西泊人民周全，可別讓她委屈了。'),
+  ash('bow','那是自然。我代表埃爾王國的人民，向您致上最高的謝意。'),
+  any('shy',''),
+  ren('whisper','有人情就要賣呀。'),     // （小聲）
+  ash('smile','還請不要拘束，我已為各位備好行館。'),
+  ash('smile','這段期間，不妨好好享受一下西岸風光吧？'),
+  nou('talk','可以，自由行動嗎？'),
+  ash('front',''),
+  ash('smile','當然了。妳們是瑪莉安小姐的客人啊。'),
+  sor('think','……我開始相信那個什麼薇拉馮德的了。'),
+];
+/* 五點的通知（暫填，見檔頭）。⚠ 第一拍抖一下＝遠處的砲聲（沒有合適的音檔，先不放）。 */
+const WS_CALL = {
+  ANYA:     [ nou('run','不好了！紫月軍打過來了！阿什弗德爵士要我們馬上回市政廳！', { shake:true }) ],
+  NOUVELLE: [ sor('runserious','找到你們了！紫月軍攻城了，快回市政廳！', { shake:true }) ],
+  SORANA:   [ nou('run','原來你們在這裡！紫月軍攻城了，快回市政廳！', { shake:true }) ],
+  RENNA:    [ ash('sweat','兩位，失禮了！紫月軍開始攻城，請立刻隨我回市政廳！', { shake:true }) ],
+  none:     [ msg('','聖約騎士團的各位！紫月軍攻城了！副座請各位立刻到市政廳！', { shake:true }) ],
+};
+const WS_SIEGE = [
+  ash('sweat','竟然無視安娜殿下的安危強行攻城！'),
+  sor('angry','我就說那個哥哥沒安好心！'),
+  any('scare','怎麼會……！'),
+  any('cryhard','他……不要我了……！'),
+  sor('sad','小公主……'),
+  ren('worry','沒事的……或許是認為安雅不會輕易喪命——'),
+  ash('phone','南門陷了？你再說一次！喂！喂！'),
+  { speaker:'NARRATION', text:'', auto:900 },   // 掛上電話（沒有音檔，先不放）
+  ash('sweat','怎麼可能……從接戰到陷落才不到十分鐘！'),
+  ash('think','不對……有什麼我沒算到的東西被投入戰場了！'),
+  any('terrify','是米夏……！'),
+  msg('','東門！受襲中！', { se:'se_dooropen' }),
+  ash('serious','人數呢？'),
+  msg('','約五十人！'),
+  ash('think','小部隊嗎……到底打什麼算盤……'),
+  msg('','西海岸！艦影！', { se:'se_dooropen' }),
+  ash('sweat','兩邊同時……！'),
+  ash('think','菁英陸襲部隊、海上艦隊……'),
+  ren('askserious','海上的，只是疑兵嗎？'),
+  ash('serious','不，這是斬首戰！'),
+  ash('shout','馬上架起巷道戰防禦工事！敵人的目標……是癱瘓指揮中樞！'),
+  ash('shout','市政廳陷落的話，陸戰隊就有登岸窗口了！不論如何都死守住！'),
+  { speaker:'PLAYER', blank:true },          // （主角空白）來得好。有筆帳還沒算呢。
+  ash('talk','請各位稍安勿躁，我們自能應付！'),
+  ren('talkserious','恐怕沒那麼容易。城門陷落的速度太過異常，敵陣中有某種不講道理的異質。'),
+  ren('determine','而能夠與之一戰的，只有他了。'),
+  msg('','副座！東、東門陷落了！', { se:'se_dooropen' }),
+  ash('sweat','！！'),
+  ash('serious','我能夠……相信你們嗎？'),
+  ren('smile','我們可是聖約騎士團啊。'),
+  nou('awkward','不知道還算不算就是了。'),
+];
+
 const VF_GATE = [
   /* 稿：敬禮聲（沒有音檔，先不放）。 */
   sor('amaze','哇！這是什麼陣仗！'),
@@ -11145,6 +11249,10 @@ export const TOWNS = {
     name: '溫斯摩爾港',
     entry: 'square',
     mist: 0,   // 大城不上霧（§6.5.4 ver -913）
+    /* ver -2317：五點米夏攻城（Ray 的稿：「到五點時米夏攻城，視約會對象不同，會有不同角色跑來通知回市政廳」）。
+       `linesByDate` 由 modules/town.js 的 clockGate 依 `datingWho()` 挑（沒約人＝`none`）。 */
+    gates:[ { flag:'ws_siege_call', need:'ws_arrive', hourOfDay:[17,24], goto:'cityhall', enterAgain:true,
+              sides:WS_SIDES, lines:WS_CALL.none, linesByDate:WS_CALL } ],
     dining:{ node:'tavern', scenes:{
       cafe:      { bg:'ws_town_cafe_day', noTime:true },
       restaurant:{ bg:'ws_town_restaurant_day', noTime:true },
@@ -11154,7 +11262,11 @@ export const TOWNS = {
     nodes: {
       square:   { bg:'ws_town_square', name:'溫斯摩爾港　中央廣場',
         exits:{ up:'midtown', left:'oldtown', right:'uptown' },
-        sail:{} },   // 出航＝下（預設方向）
+        /* ver -2317：抵達之後不准離港（守城戰還沒定玩法 ⇒ `until` 那支旗現在還沒有人插，同 np_leave_ok 的先例）。 */
+        sail:{ hold:{ need:'ws_arrive', until:'ws_siege_done',
+                      lines:[ { speaker:'NARRATION', text:'（現在不是離開的時候。）' } ] } },
+        /* ver -2317：南天的霸王打贏之後第一次降落＝遇見阿什弗德爵士，演完自由行動。 */
+        acts:[ { flag:'ws_arrive', need:'li_south', sides:WS_SIDES, lines:WS_ARRIVE } ] },
       midtown:  { bg:'ws_town_midtown', name:'溫斯摩爾港　港務大道',
         exits:{ left:'cityhall', right:'church', down:'square' } },
       church:   { bg:'ws_town_church_day', noTime:true, name:'溫斯摩爾港　港區聖堂',
@@ -11162,7 +11274,9 @@ export const TOWNS = {
         exits:{ back:'midtown' } },
       cityhall: { bg:'ws_town_cityhall_day', noTime:true, name:'溫斯摩爾港　市政廳',
         hours:[8,17], closed:'窗口都熄了燈。市政廳五點就下班了。',
-        exits:{ back:'midtown' } },
+        exits:{ back:'midtown' },
+        /* ver -2317：五點的閘門強制移來這裡（acts 不看營業時間）。守城戰本身還沒做，演完就停在這裡。 */
+        acts:[ { flag:'ws_siege_talk', need:'ws_siege_call', sides:WS_SIDES, lines:WS_SIEGE } ] },
       oldtown:  { bg:'ws_town_oldtown_day', noTime:true, name:'溫斯摩爾港　舊港町',
         exits:{ left:'gunstore', right:'square', up:'dock', down:'guild' } },
       gunstore: { bg:'ws_town_gunstore_day', noTime:true, name:'溫斯摩爾港　槍匠店',
@@ -11176,7 +11290,25 @@ export const TOWNS = {
       uptown:   { bg:'ws_town_uptown_day', noTime:true, name:'溫斯摩爾港　上街區',
         exits:{ left:'square', right:'tavern', up:'inn', down:'grocery' } },
       inn:      { bg:'ws_town_inn_day', noTime:true, name:'溫斯摩爾港　海景旅館',
-        exits:{ back:'uptown' } },
+        exits:{ back:'uptown' },
+        /* ver -2317：阿什弗德備好的「行館」＝這間旅館。開大廳讓玩家約人（五點的通知看約了誰）。
+           ⚠ 沒寫 `sleepFlag` ＝睡不著（不能一覺睡過五點）。innSpots 照孤舟島暫填、邀約台詞是我暫代的。 */
+        inn:true, innNoGuide:true,
+        innSpots:{ sit:{ x:0.22, y:0.68 }, sleep:{ x:0.440, y:0.430 } },
+        innDoors:[ { need:'ws_arrive', roster:['RENNA','NOUVELLE','ANYA','SORANA'] } ],
+        innStage1:{ dateBusy:'（已經約好人了，等等再說吧。）',
+                    dateDone:'今天已經聊夠多囉，明天再說吧。',
+                    nightRest:'這麼晚了，早點睡吧。',
+                    knock:{
+          RENNA:{    low:'我在整理文件，等一下喔。',
+                     date:[ ren('smile','西岸風光？好啊，就當是考察吧。') ] },
+          NOUVELLE:{ low:'我想在房裡整理一下行李呢。',
+                     date:[ nou('front','出去走走？好啊，一起去吧。') ] },
+          ANYA:{     low:'我想一個人待著。',
+                     date:[ any('smileshy','……嗯，一起去。') ] },
+          SORANA:{   low:'我想睡個午覺。',
+                     date:[ sor('smile','好啊，去逛逛吧。') ] },
+        } } },
       grocery:  { bg:'ws_town_grocery_day', noTime:true, name:'溫斯摩爾港　雜貨舖',
         hours:[8,17], closed:'櫥窗裡的燈熄了，門板上掛著「已打烊」。',
         exits:{ back:'uptown' } },

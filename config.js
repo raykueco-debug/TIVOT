@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.30-2316';
+export const VERSION = 'ver 2026.10.30-2317';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3150,6 +3150,9 @@ export const GAME_CONFIG = {
     li_lord2: { enemy:'sky_boneray',     ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 },
     li_lord3: { enemy:'sky_gasjelly',    ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 },
     li_lord4: { enemy:'sky2_ringchain',  ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 },
+    /* ══ 南天的霸王（ver -2317，Ray 的離島稿）══ 飛行頁 `SCRIPTED_ENCOUNTERS` 的 `battle:'li_south'`（戰前／戰後對白在飛行頁）。
+       ⚠ 我挑的：借無面巨首 `sky2_maw` 的卡（數值暫代＝羽蛇，同其他空中怪）；Ray 定了傳說級的數值再換。 */
+    li_south: { enemy:'sky2_maw', ship:true, story:1, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 },
     flight_pirate:    { enemy:'pirate_ship', ship:true,
                         /* ver -741（Ray：「船戰的空賊戰定成這一首」）—— Seven Seas
                            （Alexander Nakarada），出處與授權字樣在 credit（index.html）。 */

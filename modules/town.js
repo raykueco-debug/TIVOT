@@ -2545,6 +2545,9 @@ function stageGate(){
 function clockGate(){
   const g=stageGate();
   if(!g) return false;
+  /* `linesByDate`（ver -2317，溫斯摩爾港「五點米夏攻城」：「視約會對象不同，會有不同角色跑來通知」）——
+     鍵＝現在約的人（`datingWho()`），`none`＝沒約人；查不到就用 `lines`。 */
+  const gLines = g.linesByDate ? (g.linesByDate[datingWho()||'none'] || g.lines) : g.lines;
   if(g.flag) prog.addFlags([g.flag]);
   if(g.stage!=null) prog.setStage(g.stage);
   /* ⚠ 時鐘在**演台詞之前**推（ver -656）：那一段路不算時間，而下一格的背景
@@ -2593,10 +2596,10 @@ function clockGate(){
        這一條沒有人接 —— 漏了就是「講完話之後箭頭不見、走不動」，而且沒有錯誤訊息。
      ⚠ 旗與時鐘上面已經處理過了（那是「這道閘門用掉了」，與講不講話是兩件事）。 */
   if(!g.goto){
-    if(!(g.lines && g.lines.length)) return false;
+    if(!(gLines && gLines.length)) return false;
     clearTimeout(arriveT); arriveT=0;
     busy=true; showNav(false);
-    const play0=g.lines.map((l,i)=> (i===0 && l && l.delay==null)
+    const play0=gLines.map((l,i)=> (i===0 && l && l.delay==null)
       ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
     story.playAdhoc(play0, ()=>{ story.clearCast(); busy=false; showNav(true); },
                     { sides:g.sides });
@@ -2610,12 +2613,12 @@ function clockGate(){
      ⚠ 亮完再放人：立繪滑入 450ms，黑幕還在淡的時候就上場會從黑裡浮出來（§6.5）。
      ⚠ 第一句給 `delay:SLIDE_MS` —— 對話框要等立繪站定（同 `enter()` 的作法）。
      ⚠ 這一支照樣回傳 true：呼叫端只要知道「我接手了」，不必知道中間演了什麼。 */
-  if(g.lines && g.lines.length){
+  if(gLines && gLines.length){
     clearTimeout(arriveT); arriveT=0;
     busy=true; showNav(false);
     const lit = story.veilOn();
     if(lit) story.veil(false, CUT_MS);
-    const play=g.lines.map((l,i)=> (i===0 && l && l.delay==null)
+    const play=gLines.map((l,i)=> (i===0 && l && l.delay==null)
       ? Object.assign({}, l, { delay:SLIDE_MS }) : l);
     setTimeout(()=>{
       story.playAdhoc(play, ()=>{ story.clearCast(); forceGo(g.goto); }, { sides:g.sides });

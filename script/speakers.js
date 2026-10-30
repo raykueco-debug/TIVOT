@@ -65,6 +65,12 @@ export const SPEAKERS = {
   MOLLY_Q:   { name:'？？？', art:'molly' },
   ROBERT:    { name:'羅伯特', art:'robert' },
   AARON:     { name:'亞隆',   art:'aaron' },
+  /* ver -2317：溫斯摩爾港（西方泊地）。阿什弗德爵士＝埃爾王國防務次官；報上名字之前是「？？？」（同 MOLLY_Q）。
+     ⚠ 立繪還沒交（front 等 Ray 定案）—— 先 `art:null` 只出聲，交件後改成 `art:'ashford'` 並補 ART。
+     傳令兵沒有立繪（同 SOLDIER）。 */
+  ASHFORD:   { name:'阿什弗德', art:null },
+  ASHFORD_Q: { name:'？？？',   art:null },
+  MESSENGER: { name:'傳令兵',   art:null },
   /* ver -2294：孤舟島（Ray 的稿）。胡安＝六號船塢主任，表明身分前是「？？？」（同 MOLLY_Q）；另一個船匠只出一次。
      ⚠ 立繪還沒交（美術工單已發）—— 先 `art:null` 只出聲，交件後改成 `art:'juan'`／`'shipwright'` 並補 ART。 */
   JUAN:      { name:'胡安',   art:'juan' },
