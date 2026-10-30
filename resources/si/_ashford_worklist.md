@@ -7,8 +7,52 @@ Ray：「不要畫成美少年。front 畫好給我定案再繼續。」
 
 | 檔 | 狀態 |
 |---|---|
-| `ashford_si_front.webp` | ✔ 已交（2026-10-30）—— **等 Ray 定案** |
-| 其他差分 | ⚠ 欠 —— **刻意先不畫**，等 front 定案後才開工 |
+| `ashford_si_front.webp` | ✔ 不欠 —— Ray 2026-10-30 定案 |
+| `ashford_si_bow.webp` | ✔ 已交（第 2 版；第 1 版頭頂只留 15px，重出） |
+| `ashford_si_talk.webp` | ✔ 已交 |
+| `ashford_si_serious.webp` | ✔ 已交（第 2 版；第 1 版是畫上去的棋盤格 RGB，作廢） |
+| `ashford_si_smile.webp` | ✔ 已交 —— ⚠ 笑意很淡（八字鬍蓋住嘴角），Ray 看要不要加強 |
+| `ashford_si_sweat.webp` | ✔ 已交（第 2 版；第 1 版沒畫汗滴）—— ⚠ 汗滴在左頰、偏小，Ray 看要不要加大 |
+| `ashford_si_phone.webp` | ✔ 已交（只有聽筒＋一段捲線，沒有整台電話機） |
+| `ashford_si_think.webp` | ✔ 已交 |
+| `ashford_si_shout.webp` | ✔ 已交 |
+| 其他差分 | 還沒點名＝沒盤過，不算欠 |
+
+## 8 張差分（2026-10-30）
+
+同一個 ChatGPT 串，以定案的 front 為底，一張一則、產圖時就要透明背景。
+每一則的共同尾段：
+
+```
+⚠ 以這一串上一張我定案的阿什弗德 front 為底：同一個人、同一張臉（八字鬍、鬢角帶灰、法令紋與眼角細紋）、同一套服裝（卡其軍服、Sam Browne 武裝帶、馬褲、深棕高筒靴）、同樣的身材比例與畫風，完全不變，只改這一張要的動作與表情。不要新增任何原圖沒有的東西。
+構圖：全身入框，⚠ 頭頂上方與靴底下方都要留出明顯空白（各至少 60px，人物整體比上一張再小一點點），不要讓頭或靴子貼近畫布邊緣。人物置中。
+規格：直式 1024×1536，真正透明背景的 Alpha PNG（不要白底、不要畫灰白相間的棋盤格）。
+
+anime style, cel shading, clean lineart，絕不要顆粒感、不要雜訊噪點、不要油畫質感。
+```
+
+（第一則 bow 寫的是「至少 30px」，人物太大，所以第二則起改成 60px。）
+
+驗收（每張都量；alpha 全部是 GPT 產圖端直出，本機沒碰 alpha）：
+
+| 鍵 | mode | 四角 α | 背景 α=0 | 最大 α | 半透明近白 | 頭頂留白 | 靴底留白 |
+|---|---|---|---|---|---|---|---|
+| bow | RGBA | 0 | 78% | 254 | 0% | 138 | 116 |
+| talk | RGBA | 0 | 75% | 254 | 0% | 78 | 83 |
+| serious | RGBA | 0~1 | 74% | 254 | 0% | 76 | 72 |
+| smile | RGBA | 0 | 73% | 254 | 0% | 73 | 73 |
+| sweat | RGBA | 0 | 73% | 254 | 0% | 80 | 98 |
+| phone | RGBA | 0 | 75% | 254 | 0% | 80 | 91 |
+| think | RGBA | 0 | 77% | 254 | 0% | 78 | 84 |
+| shout | RGBA | 0 | 74% | 254 | 0% | 76 | 73 |
+
+（留白＝alpha>16 的外框到畫布邊緣的像素數；webp 的 alpha 與原 PNG 逐像素相同。）
+
+⚠ 尺：差分的人物比 front 小一號（站姿約 1385px 高，front 約 1518px；bow 是欠身所以約 1282px）。
+取景值 `top/bot/fx` 要逐張量，**不可以沿用 front 的數字**（程式端的事）。
+
+丟掉的稿（留在 ~/Downloads，沒交件）：`ashford_si_serious_checker.png`（棋盤格）、
+`ashford_si_bow_v1big.png`（太大）、`ashford_si_sweat_v1nodrop.png`（沒汗滴）。
 
 ## front 交件
 
