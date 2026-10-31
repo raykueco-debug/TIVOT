@@ -306,15 +306,14 @@ const ACTIVE_HANDLERS = {
     return true;
   },
   /* ══ 尼莫「彈幕支援」（ver -2336，Ray：「清掉畫面上所有攻擊圈」「只要破防值滿就 reload」）══
-     上滑發動：場上的攻擊圈全清、下一波重新排（同 BR cut-in 撤下那一套 `resetEnemyTimers`＋`scheduleAssault`）。
+     上滑發動：重機槍由左往右掃射，攻擊圈逐顆被打爆（combat.barrageSweep），收尾下一波重新排。
      ⚠ 插圖（仰角單手提重機槍）還沒有 ⇒ 先不演 cut-in，當場清。reload 在 combat.addEnergy（卡上 `reloadOnFull`）。 */
   barrage(a, act){
     if(state.over || state.saintMode || state.niMode || state.dualWield || state.cutinPlaying || state.transitioning) return false;
     if(state.enemyHp<=0) return false;
-    try{ SFX.play(asset('se_weapon_heavygun'), sfxGain('se_weapon_heavygun')); }catch(_){}
     a.floatDmg(act.name,'50%','40%',true);
-    a.resetEnemyTimers();
-    a.scheduleAssault();
+    if(a.barrageSweep) a.barrageSweep();            // 機槍掃射逐顆打掉（ver -2338）；收尾自己重排下一波
+    else { a.resetEnemyTimers(); a.scheduleAssault(); }
     return true;
   },
   // 未來擴充範例（本輪不實作）：

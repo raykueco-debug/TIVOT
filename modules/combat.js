@@ -236,6 +236,7 @@ export function setup(){
     /* ⚠ `healPlayer` 留著（範例 handler 與日後的回血技會用）—— 生命歸還自
        ver -964 起**不改血**（保留現血量），已經沒有人在這裡叫它。 */
     updateBars, floatDmg, healPlayer,
+    barrageSweep,                             // 尼莫「彈幕支援」的機槍掃射（ver -2338）
     resetEnemyTimers: defense.resetEnemyTimers,
     scheduleAssault: defense.scheduleAssault,
     playCutin: saint.playCutin,
@@ -619,6 +620,44 @@ export function dualShot(x, y){
    ⚠ 敵人已死（overkill）／戰鬥結束／聖徒化中**不掃**：那幾種情況盤面另有歸屬，
      掃掉會在敵人已清空時憑空推進一盤。
    ⚠ 音效只放**一次**（不是逐格）：九格各放一次會疊成一片白噪。 */
+/* ══ 尼莫「彈幕支援」：機槍掃射把攻擊圈逐顆打掉（ver -2338，Ray：「直接用機槍掃射效果掃掉」）══
+   由左往右掃：每顆圈挨三發（槍火＋火線＋彈殼＋重機槍聲）就爆掉；圈與圈之間補幾發空掃，讀起來是一整排掃過去。
+   ⚠ 掃射期間圈凍住（`pauseThreats`，退出確認框那一對）—— 不然掃到一半先縮完的那顆照樣打到你。
+   ⚠ 收尾走 `resetEnemyTimers`＋`scheduleAssault`（BR cut-in 撤下那一套）：一波裡還沒冒出來的那幾顆一起作廢。 */
+function barrageSweep(){
+  defense.pauseThreats();
+  const pos=th=>{ const r=th.el.getBoundingClientRect(); return { x:r.left+r.width/2, y:r.top+r.height/2 }; };
+  const ths=state.threats.filter(t=>t.el).map(t=>({ t, p:pos(t) })).sort((a,b)=>a.p.x-b.p.x);
+  const top=$('top').getBoundingClientRect();
+  const se=asset('se_weapon_heavygun'), g=sfxGain('se_weapon_heavygun');
+  const shots=[];
+  const sweepY=top.top+top.height*0.55;
+  if(!ths.length){ for(let i=0;i<10;i++) shots.push({ x:top.left+top.width*(0.12+i*0.085), y:sweepY+(Math.random()*40-20) }); }
+  let lastX=top.left+top.width*0.08;
+  ths.forEach(({t,p})=>{
+    for(let x=lastX+60; x<p.x-30; x+=70) shots.push({ x, y:p.y+(Math.random()*30-15) });   // 空掃補到下一顆
+    for(let k=0;k<3;k++) shots.push({ x:p.x+(Math.random()*24-12), y:p.y+(Math.random()*24-12), pop:(k===2?t:null) });
+    lastX=p.x;
+  });
+  const GAP=60;
+  hap.burst(shots.length*GAP);
+  shots.forEach((s,i)=>setTimeout(()=>{
+    if(state.over) return;
+    try{ SFX.play(se, g); }catch(_){}
+    muzzleAtPoint(s.x, s.y);
+    enemy.fireTracerAt(s.x, s.y, 'mg');
+    enemy.ejectCounterShell(s.x, s.y, { sc:1, dir:1 });
+    if(s.pop && s.pop.el){ const el=s.pop.el;
+      el.style.transition='transform .18s ease-out, opacity .18s ease-out';
+      el.style.transform=(el.style.transform||'')+' scale(1.6)'; el.style.opacity='0';
+      setTimeout(()=>defense.removeThreat(s.pop), 180); }
+  }, i*GAP));
+  setTimeout(()=>{
+    defense.resumeThreats();
+    if(state.over) return;
+    defense.resetEnemyTimers(); defense.scheduleAssault();
+  }, shots.length*GAP+220);
+}
 /* BR 一發的傷害（唯一的計算點：玩家那一發與尼莫跟的那一發都問它，鐵律 7）。 */
 function brShotDmg(){ return hitDamage()*DMG_DUAL_MULT*(1+prog.girlBonus(state.pickedPartner,'brDmgMul')); }
 /* ══ 尼莫「彈雨風暴」（被動，ver -2336，Ray：「玩家在 br 期間每開一槍的 0.1~0.3 秒後尼莫也會跟著開一槍，
