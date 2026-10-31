@@ -2265,7 +2265,7 @@ function defendNext(u, spec){
 }
 function defendGet(){
   const spec=defendSpec(); if(!spec) return null;
-  if(!defendS){ defendS={ foes:[], next:0, done:0, lost:false, defer:false, said:'' };
+  if(!defendS){ defendS={ foes:[], next:0, done:0, lost:false, defer:false, said:[] };
     for(let i=0;i<(spec.field||2);i++) defendSpawn(spec); }
   return defendS;
 }
@@ -2274,8 +2274,9 @@ function defendSpawn(spec){
   const busy=new Set(S.foes.map(f=>f.node).concat([nodeId]));
   const free=spec.entries.filter(e=>!busy.has(e));
   const pool=free.length?free:spec.entries;
-  S.foes.push({ node:pool[Math.floor(Math.random()*pool.length)], i:S.next++, frz:0, hit:false });
-  S.said='spawn';
+  const at=pool[Math.floor(Math.random()*pool.length)];
+  S.foes.push({ node:at, i:S.next++, frz:0, hit:false });
+  S.said.push(at);   // 這一隊從哪裡入城（廣播用）
 }
 /* 沒凍住的敵人各走一格（凍住的扣一回合）。`to`＝玩家現在站的格。 */
 function defendMove(spec, to){
@@ -2322,17 +2323,25 @@ function defendAfterAct(act){
   if(S.lost || S.foes.some(x=>x.hit && x.node===nodeId)){ story.clearCast(); runArrival(true); return true; }
   return false;
 }
-/* 廣播（Ray 的稿：「戰情中心會廣播敵軍的位置」）：每走一格報一次，點一下收。 */
+/* 廣播＝小地圖上的紅點（ver -2329，Ray：「廣播不用對話框提示」）。這一支只負責「`from` 剛插的那一刻就出兵」——
+   抵達收尾時問一次，紅點才不會等到第一步才出現。 */
+/* ver -2329（Ray：「廣播改成有新敵進入時播報入陣地點」）：只在補進新的一隊時報一次「從哪裡入城」——
+   不是對話框，是演出區上緣的一條字（不擋操作、3 秒自己淡掉）。 */
 function defendBroadcast(){
-  const spec=defendSpec(); const S=spec && defendGet();   // 開打那一刻（`from` 剛插）就出兵並報一次 if(!S || S.lost) return;
-  if(S.foes.some(x=>x.hit && x.node===nodeId)) return;
+  if(!defendSpec()) return;
+  const S=defendGet(); if(!S || S.lost || !S.said.length) return;
   const nm=id=>String(nameOf(id)||'').split('　').pop();
-  const txt=(S.said==='spawn'?i18nT('新的敵軍入城！'):'')
-    + S.foes.map(f=>nm(f.node)+(f.frz>0?i18nT('（停滯）'):'')+i18nT('，距市政廳 ')+defendDistOf(f.node, spec)).join(i18nT('／'))
-    + i18nT('　剩餘 ')+(spec.battles.length-S.done)+i18nT(' 隊');
-  S.said='';
-  story.flashLine(txt, i18nT('戰情中心')); chatterOn=true;
+  defendCast(i18nT('戰情中心：敵軍自')+S.said.map(nm).join(i18nT('、'))+i18nT('入城！'));
+  S.said=[];
 }
+function defendCast(txt){
+  const stage=document.getElementById('storyStage'); if(!stage) return;
+  let el=document.getElementById('defendCast');
+  if(!el){ el=document.createElement('div'); el.id='defendCast'; stage.appendChild(el); }
+  el.textContent=txt; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+  clearTimeout(el.__t); el.__t=setTimeout(()=>el.classList.remove('on'), 3200);
+}
+function defendCastOff(){ const el=document.getElementById('defendCast'); if(el){ clearTimeout(el.__t); el.remove(); } }
 /* 小地圖紅點（同龍那一顆，鐵律 7：與「走到那一格就開打」問同一份狀態）。 */
 function defendAt(id){ const S=defendSpec() && defendS; return !!(S && S.foes.some(f=>f.node===id)); }
 let defendLoser=null;
@@ -3418,7 +3427,8 @@ function renderMap(){
              沒有霧的圖（`mist:0`）走這一條，所以名字要在這裡擋，不能只靠上面那一段。 */
         const nm=(hint && !seenNode(id)) ? ''
                : String((T.nodes[id]||{}).name||'').split('　').pop() + (rest?i18nT('（安全區）'):'');   // ver -1840 Ray：「休息區一律改稱安全區」
-        return '<i class="tm-spot'+(id===nodeId?' here':'')+(rest?' rest':'')
+        const goal = (((T.defend||{}).goal)===id);   // 守城戰的防守標的：黑筆圈起來（ver -2329，同安全區的墨圈）
+        return '<i class="tm-spot'+(id===nodeId?' here':'')+(rest?' rest':'')+(goal?' goal':'')
              + (dragon?' dragon':'')+(hint&&!seenNode(id)?' hint':'')
              + '" style="'+pos+'">'
              + '<b></b><span>'+nm+'</span></i>';
@@ -5778,7 +5788,7 @@ export function open(town, node, opts){
    ⚠ 走回墓門**不歸零**（那是 `idleAt`：只是不推進，牠還在）——「墓門不是安全區
      但是也不出怪也不會追」（Ray），兩件事分得很清楚。 */
   chaseGraph=null;            // 換圖＝換拓樸（追兵那張無向圖的快取，ver -1577）
-  defendS=null; defendDist=null;   // 守城戰（ver -2328）：換圖／回檔都從頭來
+  defendS=null; defendDist=null; defendCastOff();   // 守城戰（ver -2328）：換圖／回檔都從頭來
   wildStat.moves=0; wildStat.asked=0; wildStat.rolled=0; wildStat.hit=0; wildStat.skip={};
   if(T.chase && start===entryNodeId) prog.setChase(null);
   pickEnds(start);            // 這一趟的起點與終點（ver -1026，見 pickEnds）
@@ -5791,6 +5801,7 @@ export function open(town, node, opts){
   if(checkpoint && !state.battleSession) try{ checkpoint(); }catch(_){}
 }
 export function close(){
+  defendCastOff();   // 守城戰的廣播條（ver -2329）
   /* ⚠ 環境音是**持續狀態**：離開這座城就沒有人收它了（ver -1568）。 */
   try{ story.stopAmb(60); }catch(_){}
   townLive=false;            // 回主選單（ver -1394）

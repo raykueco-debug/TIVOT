@@ -4934,11 +4934,14 @@
   /* ══ 安全區：用筆圈起來（ver -913，Ray）══ 手繪地圖上的一個墨圈 ——
      所以是**歪的、不等寬的**（旋轉 −12°、上下邊比左右粗一點），不是一個正圓框。
      ⚠ 畫在 `b`（那顆墨點）上而不是另加一層：圈與點是同一個記號。 */
+  /* 守城戰的防守標的（市政廳）也用同一個墨圈（ver -2329，Ray：「防守標的用黑筆圈起來」）。 */
+  #townMapView .tm-spot.goal b::after,
   #townMapView .tm-spot.rest b::after{content:'';position:absolute;
     left:-7px;top:-6px;right:-7px;bottom:-6px;border-radius:50%;
     border:1.6px solid rgba(42,28,12,.78);border-width:2px 1.4px;
     transform:rotate(-12deg);}
-  #townMapView .tm-spot.rest.here b::after{border-color:rgba(90,53,6,.9);}
+  #townMapView .tm-spot.rest.here b::after,
+  #townMapView .tm-spot.goal.here b::after{border-color:rgba(90,53,6,.9);}
   /* ══⚠⚠ 王座徘徊者的紅點（ver -1390，Ray：「要有一個發光的紅點」）══
      第四戰之後牠退到王座廳那一格，小地圖上就是這一顆。
      ⚠⚠ **它要壓在霧之上**（z-index 3）：那一格多半還沒走到過，霧（z-1）與一般的
@@ -5622,3 +5625,12 @@ body.testmode .beat-edit{display:block;}
 /* ══⚠⚠ 破圖框一律不畫（ver -1881）══ 手機 Safari 替沒有 src／載入失敗的 <img> 畫灰框＋破圖圖示。
    `img-broken` 由 main.js 的全域 error／load 監聽掛上／拿掉（唯一的一處）。 */
 img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
+
+/* 守城戰的廣播（ver -2329，Ray：「有新敵進入時播報入陣地點」「不用對話框」）：演出區上緣一條字，不擋點擊，3 秒淡掉。
+   ⚠ 擁有者 `modules/town.js` 的 `defendCast`；換圖（`open()`）收掉。 */
+#defendCast{position:absolute;left:50%;top:calc(var(--notch-bar-h,0px) + 64px);transform:translateX(-50%);
+  z-index:9;pointer-events:none;white-space:nowrap;padding:6px 14px;border-radius:4px;
+  background:rgba(60,8,6,.78);border:1px solid rgba(255,120,90,.55);color:#ffe2d6;
+  font-size:13px;letter-spacing:1px;font-weight:bold;opacity:0;transition:opacity .4s ease;}
+#defendCast.on{opacity:1;}
+
