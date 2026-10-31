@@ -2061,7 +2061,7 @@ const WS_SIEGE = [
   ren('worry','沒事的……或許是認為安雅不會輕易喪命——'),
   ash('phone','南門陷了？你再說一次！喂！喂！'),
   { speaker:'NARRATION', text:'', auto:900 },   // 掛上電話
-  ash('sweat','從接戰到陷落才不到十分鐘……城防到底發生什麼事了？'),
+  ash('disbelief','從接戰到陷落才不到十分鐘……城防到底發生什麼事了？'),
   ash('think','難道……有什麼我沒算到的東西被投入戰場了？'),
   any('terrify','是……米夏！'),
   msg('','敵軍入城了！', { se:'se_dooropen' }),
@@ -2092,7 +2092,7 @@ const WS_SIEGE = [
   { speaker:'PLAYER', blank:true },          // （主角空白）哈！先拿這些囉嘍開刀！
   sor('smirk','噢！'),
   { battle:'ws_guards' },                    // 第一戰：白衣衛隊
-  ash('sweat','那個謝索洛夫衛隊、竟然這麼簡單就……'),
+  ash('disbelief','那個謝索洛夫衛隊、竟然這麼簡單就……'),
   sor('smirk','我們是聖約騎士團啊。'),
   nou('awkward','妳不是吧……'),
   ash('smile','我打從心底感激有你們這樣的友軍。'),
