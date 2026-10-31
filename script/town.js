@@ -11288,6 +11288,7 @@ export const TOWNS = {
     name: '溫斯摩爾港',
     entry: 'cityhall',
     mist: 0,
+    bgm: 'crisis',   // 戰時地圖的曲子＝北泊城鎮戰那一首（ver -2342，Ray：「戰時音樂用北泊戰那一首」）
     /* 守城戰（ver -2328；規則＝`resources/map/_winsmoor_spec.md`「A-定案 v9」，引擎在 modules/town.js 的 `defend*`）。
        Ray：「前五場是灰衣 第六場是白衣衛隊」「B 不停（停 0 回合）」「輸了回到第一次親衛隊戰前的對話」。
        ⚠ `lostLines`（敵軍踏進市政廳那一句）稿上沒有，是我暫填的。 */
