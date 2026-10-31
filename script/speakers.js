@@ -1786,7 +1786,7 @@ export const ART = {
               talk:    { rescale:true, src:'resources/si/ashford_si_talk.webp', top:78, bot:1452, fx:0.486 },
               serious: { rescale:true, src:'resources/si/ashford_si_serious.webp', top:76, bot:1463, fx:0.486 },
               smile:   { rescale:true, src:'resources/si/ashford_si_smile.webp', top:73, bot:1462, fx:0.490 },
-              sweat:   { rescale:true, src:'resources/si/ashford_si_sweat.webp', top:80, bot:1437, fx:0.460 },
+              sweat:   { rescale:true, src:'resources/si/ashford_si_sweat.webp?v=67142f0d', top:15, bot:1498, fx:0.645 },   // ver -2340：重畫成震驚＋咬牙瞪眼＋握拳冷汗＋身體前傾（Ray），取景重量（臉偏右）
               phone:   { rescale:true, src:'resources/si/ashford_si_phone.webp', top:80, bot:1444, fx:0.460 },
               think:   { rescale:true, src:'resources/si/ashford_si_think.webp', top:78, bot:1451, fx:0.470 },
               shout:   { rescale:true, src:'resources/si/ashford_si_shout.webp', top:76, bot:1462, fx:0.560 },
