@@ -243,6 +243,7 @@ export const state = {
        lose-continue    ver -430（-893 前用詞）：船艦戰戰敗 → 一顆「繼續」，回飛行畫面
        lose-retry       ver -430：劇情場次戰敗 → 兩顆「放棄／再戰」 */
   resultMode: 'rematch',
+  lastBattleGrade: null,   // 上一場插入戰的等第（擁有者 inspector.scriptSettle；ver -2328 守城戰的凍結讀它）
   currentFavor: 0,
 
   /* ── 3.7 亂入/Boss + 連戰序列（擁有者：enemy） ──────────────── */

@@ -1865,6 +1865,8 @@ town.setGearWatch(gear.onceClosed);
    「功能未開的城鎮裡戰死 → 回檔」會退回**上一次讀取頁**，把整段抵達的戲一起退掉。
    ⚠ 走**同一支** `autoSave`（劇情讀取頁的檢查點也是它，鐵律 8）。 */
 town.setCheckpoint(()=>{ saveSys.autoSave(); refreshContinue(); });
+/* 守城戰：敵軍踏進市政廳 ⇒ 回檔（ver -2328；同劇情戰敗北那一條，讀最新快照＝第一戰前那一筆）。 */
+town.setDefendLoser(()=>combat.goHome(()=>{ try{ saveSys.loadLatest(); }catch(_){} }, { noBgm:true }));
 town.setCiWarm(()=>combat.warmStoryPartnerCi());   // 有戰鬥的地圖：背景與怪暖完之後插旗暖 CI（ver -2053）
 /* 整備頁重選搭檔（ver -2053，Ray：「重選人就再預熱」）：旗插著才換人重暖 —— 沒插旗的地方（安全的城）不必暖。 */
 window.addEventListener('tivot:partnerchange', ()=>{ if(saint.ciWarmPartner()!==undefined) combat.warmStoryPartnerCi(); });

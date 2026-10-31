@@ -1280,6 +1280,7 @@ function restSettle(totalTime, stats, sessionLoot, shares, title, expShares){
 function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
   state.sRankUnlocked = false;
   const ev = evaluate(stats);
+  state.lastBattleGrade = ev.grade;   // 這一場的等第（ver -2328：守城戰的「戰後其餘凍 S2／A1／B0」讀它，town 只讀）
   const en = GAME_CONFIG.enemies[state.currentEnemyKey] || {};
   /* ══ 蕾娜的結算評價（ver -432，Ray 交稿）══════════════════════════════
      ⚠ **有人評 → 才有等第**：這一頁本來刻意不給等級（`grade-noRank`，教學那一套），

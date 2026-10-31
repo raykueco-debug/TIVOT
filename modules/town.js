@@ -2226,6 +2226,118 @@ export function chaseDebug(){
     參數: spec || null,
   };
 }
+/* ══════════════════════════════════════════════════════════════════════════
+   守城戰（ver -2328，溫斯摩爾港；規則＝`resources/map/_winsmoor_spec.md` 的「A-定案 v9」）
+   ──────────────────────────────────────────────────────────────────────────
+   資料在城上的 `defend`（鐵律 1）：from／clear 兩支旗、goal（市政廳）、entries（入口）、
+   battles（第幾隊打哪一場）、field（場上同時幾隊）、freeze（評價 → 其餘停幾回合）、lostLines。
+   · 一回合＝玩家走一格（`go()` → `defendStep`）：
+       ① 玩家踩進有敵人的格子 ⇒ 先打（敵人這一回合的移動**延到打完**，凍結才吃得到這一回合）
+       ② 沒踩到 ⇒ 沒凍住的敵人沿最短路走一格（同距離先橫後直）；走到玩家腳下 ⇒ 打
+       ③ 任何一隊踏進 goal ⇒ 輸（玩家站在上面也擋不住）
+   · 打完（`defendAfterAct`）：打掉那一隊 → 其餘照評價凍 S2／A1／B0 → 延後的移動照跑 → 補一隊（新的不凍）。
+     全部打完 ⇒ 插 clear、強制回 goal（那一格的段落接手）。
+   · 打輸＝劇情戰回檔（act 的 `storyBattle`）；這幾場**不落存檔**（`noCheckpoint`）⇒ 一路回到第一戰前。
+   ⚠ 狀態只活在記憶體（同貝利薩爾的龍）：這一段沒有存檔點，回檔一律回到開打之前；
+     `open()` 歸零、`from` 沒插也歸零。
+   ══════════════════════════════════════════════════════════════════════════ */
+let defendS = null;
+function defendSpec(){
+  const d=(TOWNS[townId]||{}).defend;
+  if(!d || !prog.hasFlag(d.from) || prog.hasFlag(d.clear)){ if(!d || !prog.hasFlag(d.from)) defendS=null; return null; }
+  return d;
+}
+/* 到 goal 的距離（無向圖 BFS；同 `mapLinks` 那張圖）。 */
+let defendDist = null;
+function defendDistOf(id, spec){
+  if(!defendDist){ defendDist={ [spec.goal]:0 }; const q=[spec.goal];
+    while(q.length){ const u=q.shift(); for(const v of mapLinks(u)) if(defendDist[v]==null){ defendDist[v]=defendDist[u]+1; q.push(v); } } }
+  return defendDist[id];
+}
+/* 敵人的下一步：距離少 1 的鄰居；同距離**先橫後直**（出口方向 left/right 優先）。 */
+function defendNext(u, spec){
+  const du=defendDistOf(u, spec); if(!du) return null;
+  const ex=(((TOWNS[townId]||{}).nodes||{})[u]||{}).exits||{};
+  const dirOf=v=>{ for(const k in ex) if(ex[k]===v) return k; return null; };
+  const c=mapLinks(u).filter(v=>defendDistOf(v, spec)===du-1);
+  c.sort((a,b)=>{ const h=d=>(d==='left'||d==='right')?0:1; return h(dirOf(a))-h(dirOf(b)); });
+  return c[0]||null;
+}
+function defendGet(){
+  const spec=defendSpec(); if(!spec) return null;
+  if(!defendS){ defendS={ foes:[], next:0, done:0, lost:false, defer:false, said:'' };
+    for(let i=0;i<(spec.field||2);i++) defendSpawn(spec); }
+  return defendS;
+}
+function defendSpawn(spec){
+  const S=defendS; if(S.next>=spec.battles.length) return;
+  const busy=new Set(S.foes.map(f=>f.node).concat([nodeId]));
+  const free=spec.entries.filter(e=>!busy.has(e));
+  const pool=free.length?free:spec.entries;
+  S.foes.push({ node:pool[Math.floor(Math.random()*pool.length)], i:S.next++, frz:0, hit:false });
+  S.said='spawn';
+}
+/* 沒凍住的敵人各走一格（凍住的扣一回合）。`to`＝玩家現在站的格。 */
+function defendMove(spec, to){
+  const S=defendS;
+  for(const f of S.foes){
+    if(f.frz>0){ f.frz--; continue; }
+    const v=defendNext(f.node, spec); if(!v) continue;
+    f.node=v;
+    if(v===spec.goal){ S.lost=true; return; }
+    if(v===to) f.hit=true;
+  }
+}
+function defendStep(to){
+  const spec=defendSpec(); if(!spec) return;
+  const S=defendGet(); if(!S || S.lost) return;
+  const stepIn=S.foes.filter(f=>f.node===to);
+  if(stepIn.length){ stepIn.forEach(f=>f.hit=true); S.defer=true; return; }   // ① 先打，移動延後
+  defendMove(spec, to);                                                       // ②
+}
+/* 抵達：輸了／有敵人在腳下 ⇒ 那一段。 */
+function defendActDue(n){
+  const spec=defendSpec(); const S=spec && defendGet(); if(!S) return null;
+  if(S.lost) return { __defendLost:true, storyBattle:true, noCheckpoint:true, lines:spec.lostLines||[] };
+  const f=S.foes.find(x=>x.hit && x.node===nodeId);
+  if(!f) return null;
+  return { __defend:f, storyBattle:true, noCheckpoint:true, lines:[ { battle:spec.battles[f.i] } ] };
+}
+/* 段落演完：回 true ＝這裡接手了（呼叫端直接 return）。 */
+function defendAfterAct(act){
+  if(!act) return false;
+  if(act.__defendLost){ defendS=null; if(defendLoser) defendLoser(); return true; }
+  const f=act.__defend; if(!f) return false;
+  const spec=(TOWNS[townId]||{}).defend, S=defendS; if(!spec || !S) return false;
+  S.foes=S.foes.filter(x=>x!==f); S.done++;
+  const fz=((spec.freeze||{})[state.lastBattleGrade])|0;
+  S.foes.forEach(x=>{ if(!x.hit) x.frz=Math.max(x.frz, fz); });
+  if(S.defer){ S.defer=false; defendMove(spec, nodeId); }
+  if(!S.lost) while(S.foes.length<(spec.field||2) && S.next<spec.battles.length) defendSpawn(spec);
+  if(!S.foes.length && S.next>=spec.battles.length){
+    prog.addFlags([spec.clear]); defendS=null;
+    if(nodeId===spec.goal){ story.clearCast(); runArrival(true); } else forceGo(spec.goal);
+    return true;
+  }
+  if(S.lost || S.foes.some(x=>x.hit && x.node===nodeId)){ story.clearCast(); runArrival(true); return true; }
+  return false;
+}
+/* 廣播（Ray 的稿：「戰情中心會廣播敵軍的位置」）：每走一格報一次，點一下收。 */
+function defendBroadcast(){
+  const spec=defendSpec(); const S=spec && defendGet();   // 開打那一刻（`from` 剛插）就出兵並報一次 if(!S || S.lost) return;
+  if(S.foes.some(x=>x.hit && x.node===nodeId)) return;
+  const nm=id=>String(nameOf(id)||'').split('　').pop();
+  const txt=(S.said==='spawn'?i18nT('新的敵軍入城！'):'')
+    + S.foes.map(f=>nm(f.node)+(f.frz>0?i18nT('（停滯）'):'')+i18nT('，距市政廳 ')+defendDistOf(f.node, spec)).join(i18nT('／'))
+    + i18nT('　剩餘 ')+(spec.battles.length-S.done)+i18nT(' 隊');
+  S.said='';
+  story.flashLine(txt, i18nT('戰情中心')); chatterOn=true;
+}
+/* 小地圖紅點（同龍那一顆，鐵律 7：與「走到那一格就開打」問同一份狀態）。 */
+function defendAt(id){ const S=defendSpec() && defendS; return !!(S && S.foes.some(f=>f.node===id)); }
+let defendLoser=null;
+export function setDefendLoser(fn){ defendLoser=fn||null; }
+export function defendDebug(){ return { spec:!!defendSpec(), state:defendS }; }
 /* 雜怪那一支的**外衣**（ver -1577）：取到東西＝玩家停下來打了一場 ⇒ 追兵再推進
    `onEncounter` 格。⚠ 包一層而不是散在 `wildActDue` 的每一個 `return`
    （那一支有六個出口，漏一個就是「有時候不推進」而且查不出來，鐵律 8）。 */
@@ -3288,7 +3400,7 @@ function renderMap(){
              就是告訴玩家「牠在那裡」。所以那一格的霧不化開，紅點疊上去（CSS z-3）。
            ⚠ 疊上去的那一顆**不給地名**：霧照樣蓋著那一格的速寫與草書名 ——
              玩家看得到「牠在這個方向」，但那一帶長什麼樣還是要自己走。 */
-        const dragon = (id===dragonAtNode());
+        const dragon = (id===dragonAtNode()) || defendAt(id);   // 守城戰的敵軍也是紅點（ver -2328）
         /* 被指出來的那一格（`mapHint`）：**與紅點同一套做法** —— 浮在霧上、不給地名。 */
         const hint = (id===hintNode());
         /* 沒走到＝那一格還在霧底下：**什麼都不畫**（霧是整片的一層，見 `fogShroud`）。
@@ -4435,6 +4547,7 @@ function go(to, dir){
      ⚠ 與龍是**兩套**（持久性需求相反，見 `chaseStep` 上面那一段）—— 不要合併。 */
   wildStat.moves++;
   chaseStep(to);
+  defendStep(to);   // 守城戰：一步＝一回合（ver -2328）
   bumpGateMoves();   // 閘門的 afterMoves 計數（ver -953）：走一步就 +1
   sceneCut(to);          // 換景走淡入淡出（ver -438，見 sceneCut）
 }
@@ -4817,7 +4930,7 @@ export function enter(id){
        第一次走進去劇情會被雜怪搶走（南壘門的娜塔莉、四座小祭壇都是）。
        ⚠ 只看**有 `flag` 的**段落（＝只演一次的劇情）：每次抵達都演的常駐句不擋野怪。 */
     const storyFirst = (()=>{ const a0=actDue(n); return !!(a0 && a0.flag); })();
-    act = dragonActDue(n) || dragonTalkDue() || chaseActDue(n) || chaseNextAct(n)
+    act = defendActDue(n) || dragonActDue(n) || dragonTalkDue() || chaseActDue(n) || chaseNextAct(n)
         || ((immediate || storyFirst) ? null : wildRoll(n))
         || dateCurfewAct(n) || dateByeAct(n) || actDue(n) || restActDue(n);
     /* 段落裡打的那一場，也算「這一趟這隻打過了」（ver -1858）：同一趟走回來，那一格的固定怪不再攔一次。 */
@@ -4944,6 +5057,7 @@ export function enter(id){
                純對白的段落都會被算成一場，而那不會有任何錯誤訊息。
              ⚠ 排在 `goto` **之前**：歸位看的是「打完的那一刻人在哪一格」。 */
           chaseAfterAct(act, actHasBattle(act));
+          if(defendAfterAct(act)) return;   // 守城戰：打掉一隊／輸了／清完（ver -2328）
           /* 段落自己的章節（ver -742，Ray：「北泊出航插 stage5，插在眾人給諾薇兒
              送行那一段」）—— 與閘門的 `stage` 同一個語意（clockGate 也是直接 set）；
              重播由 `flag` 擋著，不會倒退（讀檔在更後面的章節時 flag 早就立了）。 */
@@ -5113,13 +5227,13 @@ export function enter(id){
            ⚠ 沒接手（回 false）才把導覽放回來 —— 那是原本的行為，一個字沒改。 */
         if(clockGate()) return;
         busy=false; refreshArrows(); showNav(true);
-        afterArrive(n); }, { sides:(act && act.sides) || n.sides });
+        afterArrive(n); defendBroadcast(); }, { sides:(act && act.sides) || n.sides });
     }, immediate ? 0 : ARRIVE_MS);
   }else{
     /* 順序同上（ver -1658）：接手的閘門先問，沒人接手才把導覽放回來。 */
     if(clockGate()) return;
     busy=false; refreshArrows(); showNav(true);
-    afterArrive(n);
+    afterArrive(n); defendBroadcast();   // 守城戰的廣播（ver -2328）
   }
   }   // ← runArrival
 }
@@ -5664,6 +5778,7 @@ export function open(town, node, opts){
    ⚠ 走回墓門**不歸零**（那是 `idleAt`：只是不推進，牠還在）——「墓門不是安全區
      但是也不出怪也不會追」（Ray），兩件事分得很清楚。 */
   chaseGraph=null;            // 換圖＝換拓樸（追兵那張無向圖的快取，ver -1577）
+  defendS=null; defendDist=null;   // 守城戰（ver -2328）：換圖／回檔都從頭來
   wildStat.moves=0; wildStat.asked=0; wildStat.rolled=0; wildStat.hit=0; wildStat.skip={};
   if(T.chase && start===entryNodeId) prog.setChase(null);
   pickEnds(start);            // 這一趟的起點與終點（ver -1026，見 pickEnds）

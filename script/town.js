@@ -11236,6 +11236,14 @@ export const TOWNS = {
     name: '溫斯摩爾港',
     entry: 'cityhall',
     mist: 0,
+    /* 守城戰（ver -2328；規則＝`resources/map/_winsmoor_spec.md`「A-定案 v9」，引擎在 modules/town.js 的 `defend*`）。
+       Ray：「前五場是灰衣 第六場是白衣衛隊」「B 不停（停 0 回合）」「輸了回到第一次親衛隊戰前的對話」。
+       ⚠ `lostLines`（敵軍踏進市政廳那一句）稿上沒有，是我暫填的。 */
+    defend: { from:'ws_defend', clear:'ws_defend_clear', goal:'cityhall', field:2,
+              entries:['w10_1','w9_2','w10_3','w10_5','w9_6','w2_9','w6_9','w1_10','w3_10','w5_10'],
+              battles:['ws_purple_1','ws_purple_2','ws_purple_3','ws_purple_4','ws_purple_5','ws_guards'],
+              freeze:{ S:2, A:1 },
+              lostLines:[ { speaker:'MESSENGER', text:'市、市政廳……被突破了！', shake:true } ] },
     /* 小地圖（ver -2326，Ray：「開無遇敵的戰時圖給我走走看，小地圖附上」）：**臨時版** —— 美術的手繪版還沒交，
        由 `tools/siege_minimap.py` 從這一份資料畫連線、座標＝格子 (x,y)。手繪版交了就換 img 與 spots。 */
     map: { img:'resources/map/map_winsmoor_siege.webp',
