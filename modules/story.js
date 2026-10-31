@@ -2845,6 +2845,7 @@ const SE_FILES=[
   'se_enemy_sakura.m4a',     // 櫻花狂亂的受擊音（ver -899，鹿主的主動攻擊）
   'se_flight_heartbeat.m4a', 'se_flight_idle_loop.mp3', 'se_flight_sail_loop.mp3',
   'se_flight_seagull.m4a', 'se_flight_train.mp3', 'vo_lunamg.m4a', 'se_punch.m4a',
+  'se_pant.m4a',   // 喘息（ver -2335，西泊米夏戰後；Ray 交 mp3 → m4a 96k，原檔在 _originals/audio/se）
   'se_brickcrush.m4a',                                       // 瓦礫崩落（北方泊地教堂，ver -624）
   /* ══ 王座徘徊者那一段（ver -1433，Ray 交辦；-1443 補 `se_dragonbite`）══
      · **`se_dragonbite`**      牠咬下去（蕾娜「啊……」＝吞掉髮飾那一拍，ver -1443 Ray 指定）
@@ -3587,7 +3588,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2334';
+const KERB_V='?v=2335';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）

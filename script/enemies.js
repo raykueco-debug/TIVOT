@@ -5453,3 +5453,11 @@ ENEMIES.ws_guards = Object.assign({}, ENEMIES.misha_guards, {
 ENEMIES.ws_misha = Object.assign({}, ENEMIES.misha, {
   lastStand: Object.assign({}, ENEMIES.misha.lastStand, { noKill:true }),
 });
+/* `ws_misha_ni`（ver -2335，Ray 的稿：「米夏 NI 左後方紫色極光單翼噴出」→「夢魘米夏戰，伙伴為尼莫」）：
+   打得贏的那一場 ⇒ 沒有 lastStand；立繪用 NI 那一張（取景照 NI）。⚠ 數值暫照一般米夏；單翼的圖還沒有。 */
+ENEMIES.ws_misha_ni = Object.assign({}, ENEMIES.misha, {
+  name:'米夏', lastStand:undefined,
+  image: ENEMIES.misha.lastStand.image,
+  fit: ENEMIES.misha.lastStand.fit,
+});
+

@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.31-2334';
+export const VERSION = 'ver 2026.10.31-2335';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2386,6 +2386,8 @@ export const GAME_CONFIG = {
     /* ver -2327（Ray 的稿）：市政廳第一戰＝白衣衛隊；守城戰清完之後的米夏戰（打得贏：NI 回滿後再清一次）。都是劇情戰，打輸回檔到第一戰前的對話。 */
     ws_guards:    { enemy:'ws_guards', story:1 },
     ws_misha:     { enemy:'ws_misha', story:1 },
+    /* ver -2335（Ray 的稿：「夢魘米夏戰，伙伴為尼莫」）：米夏單翼化之後那一場，搭檔強配尼莫；曲子＝尼莫（稿上那一段起就是尼莫 BGM）。 */
+    ws_misha_ni:  { enemy:'ws_misha_ni', partner:'nemo', story:1, bgm:'nemo' },
     ss_manu:      { enemy:'manu',         session:'ss_raid', sessionEnd:true },
     /* ══ 羅賽爾廢城（ver -1839，Ray 的放怪表）══ 同一個遭遇段落 `dunmor_wild`，收局＝踏進安全區（rest）。
        ⚠ 借來的幾張敵人卡（王座徘徊者／守墓者／鹿主）在原本的地圖是劇情戰，這裡各開自己的戰鬥卡：
@@ -4839,6 +4841,8 @@ export const ASSETS = {
   cutin_cecilie_guard:   "resources/ci/ci_cecilie_deathguard.webp",
   cutin_cecilie_return:  "resources/ci/ci_cecilie_lifereturn.webp",
   partner_cecilie:       "resources/si/cecilie_si_front.webp?v=d57dbd14",
+  partner_nemo:          "resources/si/nemo_si_front.webp",   // ver -2335：西泊夢魘米夏戰的搭檔
+  cutin_nemo_dual:       "resources/ci/nemo_ci_dual.webp",
   partner_malzeno: "resources/partner/malzeno_si_01.webp",   // 馬季諾 立繪
   cutin_boss: "resources/enemy/belinda_ci_boss.jpg",   // v18d：Boss（貝琳妲）遭遇 cut-in 專屬圖
   bg_sentou: "resources/background/sentouinstall.webp?v=741f9db5",
@@ -5333,6 +5337,22 @@ export const ASSETS = {
   P.cecilie = C;
   const G = GAME_CONFIG.girls = GAME_CONFIG.girls || {};
   G.proxy = Object.assign({}, G.proxy, { cecilie:{ as:'nouvelle', allStars:true } });
+})();
+
+/* ══ 尼莫的搭檔卡（ver -2335，西泊夢魘米夏戰「伙伴為尼莫」）══
+   ⚠⚠ **能力是暫代**：Ray 還沒給尼莫的搭檔卡 ⇒ 照賽西莉的先例**抄九星滿級的諾薇兒**，只換名字、立繪、cut-in（`nemo_ci_dual` 一張全用）；沒有語音。
+   ⚠ 不在任何搭檔池裡：只有戰鬥卡明寫 `partner:'nemo'` 的那一場會是他。 */
+(function nemoPartner(){
+  const P = GAME_CONFIG.partners, N = P && P.nouvelle; if(!N) return;
+  const C = JSON.parse(JSON.stringify(N));
+  Object.assign(C, { name:i18nT('尼莫'), image:'partner_nemo', cutin:'cutin_nemo_dual',
+    selectVoice:null, levelUpVoice:null, faceSpent:null,
+    saintCutin:'cutin_nemo_dual', saintVoice:null, obeCutin:'cutin_nemo_dual', obeVoice:null, returnCutin:'cutin_nemo_dual' });
+  if(C.passive) Object.assign(C.passive, { cutin:'cutin_nemo_dual', voice:null });
+  if(C.active)  Object.assign(C.active,  { cutin:'cutin_nemo_dual', voice:null });
+  P.nemo = C;
+  const G = GAME_CONFIG.girls = GAME_CONFIG.girls || {};
+  G.proxy = Object.assign({}, G.proxy, { nemo:{ as:'nouvelle', allStars:true } });
 })();
 
 /* ---- 小工具：從 ASSETS 取素材（找不到回傳空字串，不會壞）---- */
