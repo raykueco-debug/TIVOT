@@ -2131,34 +2131,34 @@ const WS_MISHA2 = [
   /* ══ 第一場米夏戰之後（ver -2335，Ray 的稿）══
      ⚠ 稿上沒有素材的：米夏「左後方紫色極光單翼」（先用 NI 立繪 ＋ 閃白震動代）、主角與尼莫背靠背的插圖（先空一拍）。
      ⚠ 「蘿」＝蘿芮（尼莫／賽西莉那一組）。 */
-  mis('wound','咕……'),
+  mis('coverface','咕……'),   // ver -2346：按住整張臉
   nou('desperate','', { se:'se_pant' }),   // 喘
-  sor('tire',''),                          // 喘
-  ren('worry','兩邊、都到極限了……'),
-  any('desperate','米夏！求求你！退兵吧！'),
-  mis('frown','退……兵？'),
-  mis('frown','身為王族，竟說出如此不知廉恥的話！'),
-  mis('order','被父王和姐姐捧在手心裡的妳，簡直無知得令人作嘔！'),
-  any('sad','我……'),
-  { speaker:'NARRATION', text:'', fx:'whiteflash', shake:true, auto:900 },   // 米夏 NI：左後方紫色極光單翼噴出（圖還沒有）
-  mis('ni','連喚出禍魘的力量都沒有的妳，'),
+  sor('exhaust',''),                       // 喘（ver -2346：飛刀掉落、力竭）
+  ren('intense','兩邊、都到極限了……'),
+  any('shout','米夏！求求你！退兵吧！'),   // ver -2346：大喊
+  mis('wound','退……兵？'),
+  mis('wound','身為王族，竟說出如此不知廉恥的話！'),
+  mis('wound','被父王和姐姐捧在手心裡的妳，簡直無知得令人作嘔！'),
+  any('terrify','我……'),
+  Object.assign(mis('coverfaceni',''), { fx:'whiteflash', shake:true }),   // 米夏 NI：指縫紅光、左後方紫色極光單翼噴出（ver -2346 有圖了）
+  mis('coverfaceni','連喚出禍魘的力量都沒有的妳，'),
   mis('ni','沒有價值！'),
   ren('shout','翼化了！危險！'),
   { speaker:'NARRATION', text:'', se:['se_weapon_guard','se_brickcrush'], shake:true, auto:900 },   // 隔擋音、爆碎音
   sor('guardgrimace','這個怪物……'),
-  ren('talkserious','他已經控制不了出力了，撐不了多久的！'),
+  ren('shout','他已經控制不了出力了，撐不了多久的！'),
   nou('desperate','可是、我們也……'),
   { speaker:'NARRATION', text:'', se:'se_fall', show:false, hide:'NOUVELLE', auto:700 },   // 諾 faint ＋倒地音
   any('desperate',''),
   sor('guardgrimace','可惡……'),
   Object.assign(mis('ni','就用你的命，告慰將士之靈吧！'), { se:'se_walk' }),
   { speaker:'NARRATION', text:'', se:'se_sworddraw', auto:600 },   // 拔刀音
-  any('cryhard','不要——！！'),
+  any('shout','不要——！！'),   // ver -2346：大喊
   { speaker:'NARRATION', text:'', se:'se_weapon_pistol_01', shake:true, auto:700 },   // 槍擊音
   mis('ni','！'),
   { speaker:'NARRATION', text:'', se:'se_healing', fx:'goldmotes', auto:1200 },   // 治癒特效
-  nou('surprise','治癒術式……！是誰？'),
-  { speaker:'NARRATION', text:'', bgm:'nemo', show:false, cg:'041_cecilienemo', cgNoTime:true, cgPan:'up', hide:'*', auto:1600 },   // 尼莫 BGM ＋尼莫賽西莉插圖
+  Object.assign(nou('surprise','治癒術式……！是誰？'), { bgm:'nemo' }),   // 這一句一出來就切尼莫戰鬥曲（ver -2346，Ray）
+  { speaker:'NARRATION', text:'', show:false, cg:'050_nemoentrance', cgNoTime:true, cgPan:'up', hide:'*', auto:1600 },   // 尼莫出場插圖：坐在殘垣逆光、雙 M1911、賽西莉昂立身後（ver -2346）
   nmo('','學長好詐喔，自己玩得那麼開心。', { show:false }),
   cec('','不對！你是來抓他的吧！好好工作啊！', { show:false }),
   lau('','一邊哭一邊罵很沒有說服力喔。', { show:false }),
@@ -2166,18 +2166,18 @@ const WS_MISHA2 = [
   nou('surprise','賽西莉學姐……！'),
   cec('sulkshout','別誤會了！只是因為跟你們比起來，那邊那個更麻煩！'),
   { speaker:'NARRATION', text:'', se:[{n:'se_weapon_pistol_01'},{n:'se_weapon_pistol_02',delay:180},{n:'se_weapon_pistol_03',delay:360},{n:'se_weapon_guard',delay:520}], shake:true, auto:1000 },   // 連續槍擊，劈落音
-  nmo('happy','哈哈……！'),   // 興奮笑
+  nmo('dual','哈哈……！'),   // 興奮笑
   lau('','已經單翼化了……趁他還沒失控先撤退吧！'),
-  nmo('stubborn','不行，會被學長罵的！'),
+  nmo('dual','不行，會被學長罵的！'),
   { speaker:'PLAYER', blank:true },          // （主角空白）你很清楚嘛。
-  nmo('happy','畢竟有這麼有趣的傢伙擺在眼前嘛！'),
+  nmo('dual','畢竟有這麼有趣的傢伙擺在眼前嘛！'),
   mis('ni','不過是聖王廳的狗……'),
   cec('lookaside','……去吧。'),
   cec('command','讓他見識見識，狂犬的骨氣！'),
   nmo('dual','要上囉！學長！'),
   { battle:'ws_misha_ni' },                  // 夢魘米夏戰，伙伴為尼莫
   nou('surprise','好厲害……'),
-  sor('amaze','竟然完全把那個怪物壓制住了！'),
+  sor('determine','竟然完全把那個怪物壓制住了！'),
   { speaker:'NARRATION', text:'', hide:'*', auto:1200 },   // 插圖：主角與尼莫背靠背（圖還沒有）
   cec('proud','那就是……最強的兩個HUND！'),
 ];

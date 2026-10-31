@@ -296,7 +296,7 @@ export const ART = {
                      `tools/measure_si.py` 量的，沒有沿用別張。
                      ⚠ 交件是 PNG，依 §5 轉 WebP 之後才接（原 PNG 進 _originals）。 */
                   shockcalm:{src:'resources/si/renna_si_shockcalm.webp',top:4, bot:1516, fx:0.493 },
-                  shout:   { src:'resources/si/renna_si_shout.webp',    top:4, bot:1534, fx:0.549 },
+                  shout:   { fxShift:0, src:'resources/si/renna_si_shout.webp',    top:4, bot:1534, fx:0.549 },
                   write:{ src:'resources/si/renna_si_write.webp', top:4, bot:1524, fx:0.507 },
                   ask:     { src:'resources/si/renna_si_ask.webp',     top:3, bot:1525, fx:0.489 },
                   /* 船塢那一段新增（ver -424，Ray 交件）。取景值是 `tools/measure_si.py`
@@ -730,6 +730,7 @@ export const ART = {
        ⚠ 古墓底層那一拍（索「糟糕！」）稿上標了「注意大小，錨臉」——
          換成全身站姿之後那個顧慮本來就不存在了。 */
     panic:     { fxShift:-0.06, yShift:25, cm:150, src:'resources/si/sorana_si_panic.webp?v=13cf60c2', top:8, bot:1522, fx:0.649 },
+    exhaust:      { yShift:25, cm:150, src:'resources/si/sorana_si_exhaust.webp', top:33, bot:1501, fx:0.537 },   // ver -2346（Ray）：飛刀掉落、低頭喘息、戰到力竭（guard 當底）
     guard:        { fxShift:-0.01, yShift:25, src:'resources/si/sorana_si_guard.webp?v=e18306d1',         top:9,  bot:1527, fx:0.651, cm:150 },
     /* ver -2114（美術 a904d66d；guardgrimace 10-10 Ray 重交 png → 同名覆蓋）：與 guard 同姿勢 ⇒ 位置沿用 guard 的值（§6.5）。 */
     guardgrimace: { fxShift:-0.01, yShift:25, src:'resources/si/sorana_si_guardgrimace.webp?v=0a88b738', top:9, bot:1527, fx:0.651, cm:150 },
@@ -1106,6 +1107,7 @@ export const ART = {
     cryhard:   { fxShift:0, src:'resources/si/anya_si_cryhard.webp',  top:6, bot:1527, fx:0.411 },   // ver -2102 交件，腳本還沒用
     shysmile:  { src:'resources/si/anya_si_shysmile.webp', top:4, bot:1530, fx:0.461 },   // ver -2102 交件，腳本還沒用
     terrify:{ fxShift:0, src:'resources/si/anya_si_terrify.webp?v=becb7f82', top:8, bot:1504, fx:0.493 },   // ver -1857：鎖表情重畫定稿
+    shout:{ src:'resources/si/anya_si_shout.webp', top:8, bot:1508, fx:0.430 },   // ver -2346（Ray）：大喊（terrify 當底）
     /* ver -870（森林行 G 稿）——measure_si 量測。 */
     answer:    { yShift:0, standCm:162, fxShift:0, src:'resources/si/anya_si_answer.webp?v=db505ca1',     top:2, bot:1534, fx:0.468 },
     smileshy:  { src:'resources/si/anya_si_smileshy.webp?v=6c55f102',   top:5, bot:1524, fx:0.452 },
@@ -1537,7 +1539,7 @@ export const ART = {
     bye:      { src:'resources/si/nemo_si_bye.webp',      top:3, bot:1533, fx:0.499 },
     bore:    { yShift:7, src:'resources/si/nemo_si_bore.webp',    top:3, bot:1531, fx:0.516 },
     /* ⚠ 雙槍那一張還沒有人用（戰鬥立繪走敵人卡的 `enemy_nemo`）—— 先接著。 */
-    dual:     { yShift:72, cm:100, src:'resources/si/nemo_si_dual.webp',     top:0, bot:1535, fx:0.408 },
+    dual:     { fxShift:0, yShift:72, cm:100, src:'resources/si/nemo_si_dual.webp',     top:0, bot:1535, fx:0.408 },
     dryfire:  { src:'resources/si/nemo_si_dryfire.webp',  top:2, bot:1527, fx:0.536 },   // ver -2273 美術交件：雙手舉 M1911、滑套後定、彈盡愣住（薇拉馮德夜襲戰後）
     dryfirebore:{ yShift:8, src:'resources/si/nemo_si_dryfirebore.webp', top:6, bot:1528, fx:0.537 },   // ver -2277 美術交件：同 dryfire 姿勢、無聊臉
   } },
@@ -1655,7 +1657,9 @@ export const ART = {
     draw:       { src:'resources/si/misha_si_draw.webp?v=68b1b653', top:6, bot:1534, fx:0.434 },   // ver -1728：Ray 新出的拔刀圖（姿勢換了，取景重量；美術 09-25）
     salute:     { src:'resources/si/misha_si_salute.webp', top:9, bot:1520, fx:0.447 },
     side:       { src:'resources/si/misha_si_side.webp', top:16, bot:1512, fx:0.37 },
-    wound:      { src:'resources/si/misha_si_wound.webp?v=3a49219d', top:34, bot:1499, fx:0.403 },
+    coverfaceni:{ blink:'off', rescale:true, src:'resources/si/misha_si_coverfaceni.webp', top:324, bot:1496, fx:0.322 },   // ver -2346（Ray）：同一張加 NI —— 指縫透出狂氣紅光、左後方紫色極光單翼（人畫小了 ⇒ rescale；top/bot 量的是人不是翼）
+    coverface:  { blink:'off', src:'resources/si/misha_si_coverface.webp', top:46, bot:1503, fx:0.380 },   // ver -2346（Ray）：單手按住整張臉、低頭看不到眼（wound 當底）
+    wound:      { fxShift:0, blink:'off', src:'resources/si/misha_si_wound.webp?v=3a49219d', top:34, bot:1499, fx:0.403 },
     close:      { src:'resources/si/misha_si_close.webp?v=47dd4349', top:14, bot:1509, fx:0.469 },
     back:       { src:'resources/si/misha_si_back.webp', top:12, bot:1496, fx:0.458 },
     /* 表情差分（只換臉、alpha 與底圖逐位元相同）⇒ 取景照抄底圖那一列（§6.5 的 -649）。
