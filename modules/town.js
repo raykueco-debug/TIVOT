@@ -3393,7 +3393,7 @@ function renderMap(){
   const seenN = ids.filter(seenNode).length;
   const pct   = Math.round(exploreRate()*100);
   const fog = fogOn() && seenN < ids.length;
-  v.innerHTML='<div class="tm-frame">'
+  v.innerHTML='<div class="tm-frame'+(T.defend?' tm-defend':'')+'">'   // 守城戰的圖：主角點加深色描邊（ver -2332）
     + '<img class="tm-img" src="'+SH.img+'" alt="">'
     + (fog ? fogShroud(SH, ids) : '')
     + ids.map(id=>{

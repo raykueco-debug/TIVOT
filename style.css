@@ -4934,14 +4934,11 @@
   /* ══ 安全區：用筆圈起來（ver -913，Ray）══ 手繪地圖上的一個墨圈 ——
      所以是**歪的、不等寬的**（旋轉 −12°、上下邊比左右粗一點），不是一個正圓框。
      ⚠ 畫在 `b`（那顆墨點）上而不是另加一層：圈與點是同一個記號。 */
-  /* 守城戰的防守標的（市政廳）也用同一個墨圈（ver -2329，Ray：「防守標的用黑筆圈起來」）。 */
-  #townMapView .tm-spot.goal b::after,
   #townMapView .tm-spot.rest b::after{content:'';position:absolute;
     left:-7px;top:-6px;right:-7px;bottom:-6px;border-radius:50%;
     border:1.6px solid rgba(42,28,12,.78);border-width:2px 1.4px;
     transform:rotate(-12deg);}
-  #townMapView .tm-spot.rest.here b::after,
-  #townMapView .tm-spot.goal.here b::after{border-color:rgba(90,53,6,.9);}
+  #townMapView .tm-spot.rest.here b::after{border-color:rgba(90,53,6,.9);}
   /* ══⚠⚠ 王座徘徊者的紅點（ver -1390，Ray：「要有一個發光的紅點」）══
      第四戰之後牠退到王座廳那一格，小地圖上就是這一顆。
      ⚠⚠ **它要壓在霧之上**（z-index 3）：那一格多半還沒走到過，霧（z-1）與一般的
@@ -5634,3 +5631,20 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   font-size:13px;letter-spacing:1px;font-weight:bold;opacity:0;transition:opacity .4s ease;}
 #defendCast.on{opacity:1;}
 
+/* ══ 守城戰的小地圖（ver -2332，Ray：「畫圈不夠明顯，像用粗鉛筆匆匆圈起；我方位置被圖底色吃掉了」）══
+   · 防守標的：一圈**粗鉛筆、兩圈沒對齊、頭尾出頭**的手圈（SVG 背景，不是 CSS 正圓框）——
+     比安全區的墨圈大一號，擺在墨點與名字的後面（`z-index:-1`），不吃點擊。
+   · 主角點：金色落在羊皮紙上沒有對比 ⇒ 加一圈深墨描邊＋深色外暈，擴散環也改深琥珀。
+     ⚠ 只套在有 `defend` 的圖（`.tm-defend`）；其他地圖的主角點沒動。 */
+#townMapView .tm-spot.goal b::after{content:'';position:absolute;left:50%;top:50%;
+  width:66px;height:48px;margin:-24px 0 0 -33px;pointer-events:none;z-index:-1;
+  transform:rotate(-9deg);background:no-repeat center/100% 100% url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 46'><path d='M17 8 C31 1 53 4 58 17 C63 31 45 42 29 41 C11 40 3 31 6 20 C9 10 24 4 41 6' fill='none' stroke='%2324201a' stroke-width='5' stroke-linecap='round' opacity='.9'/><path d='M12 13 C22 5 46 4 55 13 C62 22 55 37 38 40 C22 43 8 36 7 25' fill='none' stroke='%2324201a' stroke-width='2.6' stroke-linecap='round' opacity='.6'/></svg>");}
+#townMapView .tm-defend .tm-spot.here b{border:2.5px solid #1e1408;
+  box-shadow:0 0 0 2px #fff4d6, 0 0 0 4px rgba(30,20,8,.55);
+  animation:tmBlinkDef 1.1s ease-in-out infinite;}
+@keyframes tmBlinkDef{
+  0%,100%{box-shadow:0 0 0 2px #fff4d6, 0 0 0 4px rgba(30,20,8,.55), 0 0 6px 4px rgba(150,90,10,.35);}
+  50%    {box-shadow:0 0 0 2px #fff4d6, 0 0 0 4px rgba(30,20,8,.75), 0 0 16px 9px rgba(150,90,10,.75);}}
+#townMapView .tm-defend .tm-spot.here b::before{border:2.5px solid rgba(120,62,4,.95);}
+/* 防守標的的名字一律看得到（同所在地那一條；名字收起來的縮放級也留著它）。 */
+#townMapView .tm-frame.tm-names-off .tm-spot.goal span{opacity:1;}
