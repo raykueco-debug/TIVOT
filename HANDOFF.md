@@ -27,6 +27,7 @@
 - **西泊抵達＝Stage 23**：第一次降落在碼頭（`firstEntry` 到 `ws_arrive`），演阿什弗德那一段 → 自由行動（旅館開大廳可約人、不能睡、不能離港）。章節列表有 Stage 23（從碼頭開始；Stage 22 起始旗抽成 `CH22_FLAGS`）。
 - **17:00 米夏攻城**：閘門依約會對象換人通知（閘門新欄位 `linesByDate`；約安雅→諾薇兒、約諾薇兒→索菈娜、約索菈娜→諾薇兒、約蕾娜→阿什弗德、沒約人→傳令兵）→ 讀取頁跨圖進**戰時地圖**市政廳演攻城那一段，演完停在那裡。
 - **戰時地圖 `winsmoor_siege` 換成 v9b 82 格**（照 spec 出口表逐列抄、黃昏戰鬥背景），舊 40 格日景圖已沒有人引用（還沒回收）。
+- **戰時地圖碼頭移位（ver -2325，Ray：「市政廳接雲海碼頭的邏輯很奇怪」）**：碼頭由 (2,3) 移到西緣 (0,3)、(2,3) 改成「市政廳街2段」——**只換名字與背景，連線沒動**。碼頭圖改名 `ws_0_3_dusk`，舊崖邊路2段圖已回收；(2,3) 暫借 `ws_2_1`。城鎮版佈局圖 `resources/map/_layout_winsmoor.png`（`tools/map_layout.py winsmoor`）。
 - **阿什弗德立繪**：front（Ray 定案）＋ bow/talk/serious/smile/sweat/phone/think/shout 已接（`rescale` 逐張量，取景未在遊戲裡看過）。
 - **紫月軍一般步兵小隊**：照里朋一家的群戰分層作法。**小隊 1 定案並拆層**（`resources/enemy/man_purple_squad_1_layers/`，spec `resources/enemy/_purple_spec.md`），敵人卡 `purple_squad_1`、戰鬥卡 `ws_purple_1`（數值暫抄 thug_squad，還沒有腳本引用）。
   **小隊 2~7 群體圖已出、未拆、未 commit**（`resources/_originals/enemy/man_purple_squad_{2..7}.png`，Ray 還沒看）。
@@ -71,6 +72,7 @@
 | 件 | 狀態 |
 |---|---|
 | 守城戰戰鬥背景 57 張（82 格，黃昏） | ✔ 不欠 —— Ray 定單張黃昏 |
+| 守城戰 (2,3) 市政廳街2段 | ⚠ 欠 1 張（-2325 碼頭移走後變普通街，工單 `winsmoor_siege/_worklist.md` #20） |
 | 孤舟島日景 13 張 | ✔ 不欠 |
 | 孤舟島 gunsmith／canteen／store 時段差分 | ✔ 不欠 —— 店舖只有 day（憲法 §5） |
 | 孤舟島 wild／inn 時段差分 | ⚠ 欠 4 張（見上） |
