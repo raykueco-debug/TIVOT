@@ -207,6 +207,7 @@ export function setup(){
     hitDamage, enemyDamage, floatDmg, markNext, setBoard, resetEnergy, setEnergy,
     onEnemyDefeated: finishEnemyOrAdvance,   // 聖徒化擊殺 → 轉下一敵 or（最後一敵）結算（連戰）
     hintCurrentCell,                         // 惡夢化發動時高光第一個該點的號碼（ver -683）
+    autoTap,                                 // 戰犬圍獵替玩家點下一格（ver -2336）
     /* 惡夢化收尾要補判一次被動的門檻（ver -688）：期間不發動，退掉才發動。 */
     checkLowHpBuff: partner.checkLowHpBuff,
     shatterCell: enemy.shatterCell,
@@ -590,12 +591,13 @@ export function dualShot(x, y){
   resetIntervalDeadline();
   /* 索菈娜「地弓星」（Lv1，ver -976）：破防彈雨的攻擊力 ×1.2。
      ⚠ 只有這一支在算（鐵律 7）—— BR 的傷害就這一處。 */
-  const dmg=hitDamage()*DMG_DUAL_MULT*(1+prog.girlBonus(state.pickedPartner,'brDmgMul'));
+  const dmg=brShotDmg();
   SFX.gunshot(true);
   hap.shot();                          // 破防窗口：**每一發**都震（ver -398，Ray 指定）
   enemyDamage(Math.round(dmg), false, false, 'dual');   // 破防窗口的射擊（ver -423：來源別）
   shotHeal();                          // 回血窗（ver -965：BR 的每一發也算）
   updateStatus();
+  brFollow(x, y);                      // 尼莫「彈雨風暴」：跟一槍（ver -2336）
   /* ══ 額度打完就收窗（ver -1338）══ 另一條出路是計時器到期。
      兩條都走 `endDual` → `onDualClosed`，由那一支決定是「掃殘磚」還是
      「收掉這一段 overkill」—— **收尾只有一條路**（鐵律 8）。
@@ -617,6 +619,27 @@ export function dualShot(x, y){
    ⚠ 敵人已死（overkill）／戰鬥結束／聖徒化中**不掃**：那幾種情況盤面另有歸屬，
      掃掉會在敵人已清空時憑空推進一盤。
    ⚠ 音效只放**一次**（不是逐格）：九格各放一次會疊成一片白噪。 */
+/* BR 一發的傷害（唯一的計算點：玩家那一發與尼莫跟的那一發都問它，鐵律 7）。 */
+function brShotDmg(){ return hitDamage()*DMG_DUAL_MULT*(1+prog.girlBonus(state.pickedPartner,'brDmgMul')); }
+/* ══ 尼莫「彈雨風暴」（被動，ver -2336，Ray：「玩家在 br 期間每開一槍的 0.1~0.3 秒後尼莫也會跟著開一槍，
+   等於 br 攻擊頻率翻倍」）══ 搭檔卡 `passive.key==='bulletStorm'`，延遲讀 `passive.delay`。
+   ⚠ 跟的那一槍**不扣額度**、不推閒置計時、不收窗；槍火打在玩家那一槍旁邊一點。 */
+function brFollow(x, y){
+  const p=((GAME_CONFIG.partners||{})[state.pickedPartner]||{}).passive;
+  if(!(p && p.key==='bulletStorm')) return;
+  const [a,b]=p.delay||[0.1,0.3];
+  setTimeout(()=>{
+    if(state.over) return;
+    if(x!=null && y!=null){
+      const fx=x+(Math.random()*40-20), fy=y+(Math.random()*40-20);
+      muzzleAtPoint(fx, fy);
+      const t=$('top').getBoundingClientRect(); enemy.fireTracerSide(fx - t.left, fy - t.top);
+    }
+    SFX.gunshot(true);
+    enemyDamage(Math.round(brShotDmg()), false, false, 'dual');
+    updateStatus();
+  }, (a+Math.random()*(b-a))*1000);
+}
 let brShotN=0, brVoiceOk=false;   // BR 這一窗打到第幾發／這一發要不要出受創語音（見 dualShot）
 function brSweepBoard(){
   if(state.over||state.saintMode||state.niMode||state.enemyHp<=0) return;
@@ -636,6 +659,12 @@ const BR_SWEEP_MS=260;
 /* ============================================================================
  *  點擊判定
  * ========================================================================== */
+/* 替玩家點「下一格」（戰犬圍獵，ver -2336）：走普攻那一支 `tap`（傷害／連擊／清盤只有那一份，鐵律 8）。 */
+function autoTap(){
+  if(state.over||state.transitioning||state.cutinPlaying||state.dualWield) return;
+  const c=state.cells.find(x=>!x.classList.contains('done') && x.textContent.trim()===String(state.expect));
+  if(c) tap(state.expect, c, null);
+}
 function tap(num,cell,e){
   if(state.over||state.transitioning||state.cutinPlaying) return;   // 轉場/cut-in 期間不可點
   clockResume();                    // 盤面可點 → 碼表起算（冪等；overkill 時因 enemyHp<=0 不起算）
@@ -1612,7 +1641,7 @@ function addEnergy(v){
        變身期間還照常累積的話，那兩位都會變成永動機（共鬥 -1005 已經踩過一次）。
      ⇒ 破防計因此是**進場前存好的彈藥**，不是場內的自動循環。
      ⚠ 守門收在這一處（鐵律 8）：點擊、反擊、清盤獎勵所有加值都經過這裡。 */
-  if(state.saintMode || state.niMode) return;
+  if(state.saintMode || state.niMode || state.huntMode) return;   // 戰犬圍獵期間也不累積（ver -2336：燒的正是這一條）
   /* BR 期間不累積破防值（ver -1829，Ray：「BR 期間不要累積 BR 計量」）—— 同變身期間那一條的理由：
      破防計是進場前存好的彈藥，燒它的那一段不能一邊燒一邊補。 */
   if(state.dualWield) return;
@@ -1636,6 +1665,10 @@ function addEnergy(v){
   if(was<100 && state.energy>=100){
     energyFullBurst();               // 滿的瞬間：計量表為中心發一圈光圈
     tutorial.onEnergyFull();         // 教學：滿值瞬間插入雙槍引導（非教學為 no-op）
+    /* 搭檔主動技卡上 `reloadOnFull`（尼莫「彈幕支援」，ver -2336，Ray：「只要破防值滿就 reload」）：破防值滿的瞬間解開主動技。 */
+    { const act=((GAME_CONFIG.partners||{})[state.pickedPartner]||{}).active;
+      if(act && act.reloadOnFull && state.partnerActiveUsed){ state.partnerActiveUsed=false;
+        floatDmg((act.name||'')+' RELOAD','50%','34%',true); } }
   }
 }
 // 破防值滿瞬間演出：以 C 字計量表為中心擴散一圈半透漸層光圈（~0.85s，不擋點擊）。
@@ -1970,7 +2003,7 @@ function claspFaceExpr(who){
   /* ⚠⚠ **發動期間不換**（ver -1048，Ray：「發動期間不要換立繪，發動完畢後才換」）：
      槽是在**發動那一刻**就鎖的，照它換的話，聖徒化／夢魘化／共鬥一開始她就先擺出
      「沒招了」的臉 —— 那一段她正在打，換完才是。 */
-  if(state.saintMode || state.niMode || state.coopMode) return '';
+  if(state.saintMode || state.niMode || state.coopMode || state.huntMode) return '';
   return p.faceSpent;
 }
 function claspFaceCss(who){
@@ -2004,7 +2037,7 @@ export function partnerSwapUnlocked(){
 export function cyclePartner(step){
   if(!partnerSwapUnlocked()) return false;
   if(state.over || state.transitioning || state.cutinPlaying) return false;
-  if(state.saintMode || state.niMode || state.coopMode || state.dualWield) return false;
+  if(state.saintMode || state.niMode || state.coopMode || state.huntMode || state.dualWield) return false;
   const keys=((GAME_CONFIG.tuning||{}).partnerSwap||{}).keys||[];
   const i=keys.indexOf(state.pickedPartner);
   const nx=keys[((i<0?0:i) + (step||1) + keys.length) % keys.length];

@@ -25,7 +25,7 @@
 
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { partnerCiKeys, installCiKey, ciShownFrames, GAME_CONFIG, asset, sfxGain, isVoiceKey } from '../config.js';
-import { state, enterSaint, exitSaint, enterNightmare, exitNightmare, enterCoop, exitCoop, markExecution, markMaxBurst, addInstallDamage, storyMode } from '../state.js';
+import { state, enterSaint, exitSaint, enterNightmare, exitNightmare, enterCoop, exitCoop, enterHunt, exitHunt, markExecution, markMaxBurst, addInstallDamage, storyMode } from '../state.js';
 import { SFX } from '../audio.js';
 import { L, fmt } from '../i18n.js';   // 多語言（cut-in 副標/浮動字）
 import * as prog from '../script/progress.js';   // 九階強化的加成（ver -707；葉節點，無循環）
@@ -93,6 +93,7 @@ export function activateSaint(dir){
     return;
   }
   if(storyMode() && state.pickedPartner==='sorana'){ activateCoop(dir); return; }   // 共鬥（ver -803）
+  if(storyMode() && ((GAME_CONFIG.partners||{})[state.pickedPartner]||{}).hunt){ activateHunt(dir); return; }   // 戰犬圍獵（尼莫，ver -2336）
   if(state.over||state.saintMode||state.cutinPlaying||state.saintUsedThisBattle||state.transitioning||state.dualWield||state.enemyHp<=0) return;
   state.saintUsedThisBattle = true;   // saint 自有欄位：發動即鎖（一場一次），時序同 reference
   SFX.unlock(); SFX.ultCharge();
@@ -265,6 +266,62 @@ function endCoop(){
   }
 }
 export function coopActive(){ return !!state.coopMode; }
+
+/* ══ 戰犬圍獵（尼莫的變身，ver -2336，Ray：「自動逐格打掉數字格，0.2 到 0.4 打一格，消耗破防計，
+   全滿 15 秒，隨時可用，彈盡以後再累積破防同場也可再用」）══════════════════════════════
+   · 時間＝破防計（同共鬥那一套匯率：滿表 100 點 ＝ 卡上 `hunt.sec` 秒），逐拍抽表，見底就收。
+   · 期間每 `hunt.gap`（[0.2,0.4] 秒）替玩家點掉下一格（`api.autoTap` ＝ combat 的普攻那一支，傷害／連擊／清盤全照舊）。
+     玩家自己也照樣能點。
+   · ⚠ **不佔 Install 槽**（不寫 `saintUsedThisBattle`）：彈盡再存滿就能再開。
+   · 期間不累積破防值（combat.addEnergy 的變身守門，同共鬥）。 */
+let huntTimer=null, huntTapT=0, huntLast=0;
+function huntSpec(){ return ((GAME_CONFIG.partners||{})[state.pickedPartner]||{}).hunt || {}; }
+function activateHunt(dir){
+  if(state.over||state.saintMode||state.niMode||state.coopMode||state.huntMode||state.cutinPlaying
+     ||state.transitioning||state.dualWield||state.enemyHp<=0) return;
+  if(state.energy<=0) return;
+  const card=(GAME_CONFIG.partners||{})[state.pickedPartner]||{}, H=huntSpec();
+  SFX.unlock(); SFX.ultCharge();
+  SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'));
+  playSlash(dir);
+  playCutin(()=>{ if(state.over) return; startHunt(); },
+    (H.name||i18nT('戰犬圍獵'))+'<span class="cutin-en">'+(H.en||'HOUND HUNT')+'!!</span>',
+    H.cutin || card.cutin, { noShot:true });
+}
+function startHunt(){
+  if(state.over || state.energy<=0) return;
+  enterHunt();
+  const g=$('grid'); if(g) g.classList.add('hunt');
+  api.floatDmg(huntSpec().name||i18nT('戰犬圍獵'),'50%','20%',true);
+  huntLast=Date.now();
+  clearInterval(huntTimer); huntTimer=setInterval(huntTick, 80);
+  huntQueue();
+}
+function huntTick(){
+  if(!state.huntMode) return;
+  if(state.over){ endHunt(); return; }
+  const now=Date.now(), dt=Math.max(0, now-huntLast); huntLast=now;
+  if(state.cutinPlaying || state.transitioning) return;     // 演出／換盤期間不抽表
+  if(api.setEnergy) api.setEnergy(state.energy - dt/1000*100/(huntSpec().sec||15));
+  if(state.energy<=0) endHunt();
+}
+function huntQueue(){
+  clearTimeout(huntTapT);
+  const [a,b]=huntSpec().gap||[0.2,0.4];
+  huntTapT=setTimeout(()=>{
+    if(!state.huntMode || state.over) return;
+    if(!state.cutinPlaying && !state.transitioning && api.autoTap) api.autoTap();
+    huntQueue();
+  }, (a+Math.random()*(b-a))*1000);
+}
+function endHunt(){
+  if(!state.huntMode) return;
+  clearInterval(huntTimer); huntTimer=null; clearTimeout(huntTapT); huntTapT=0;
+  exitHunt();
+  if(api.setEnergy) api.setEnergy(0);
+  const g=$('grid'); if(g) g.classList.remove('hunt');
+  if(!state.over && api.hintCurrentCell) api.hintCurrentCell();
+}
 /* 重置 Install 槽（ver -837，Ray：「連五場會再發動一次並重置獵手的共鬥」）——
    `saintUsedThisBattle` 的擁有者是 saint（§3.5），跨模組的寫一律走具名 setter：
    partner 的獵手的戰吼經 combat 注入呼叫這一支，不直接改 state。 */
@@ -1499,6 +1556,8 @@ export function reset(){
   niPausedThreats=false;   // ver -967：發動途中被打斷（state.over）也不要把旗留著
   /* 共鬥（ver -803）：清窗口輪詢＋收 coopMode（同 niMode 的重置）；無敵窗歸 partner.reset。 */
   exitCoop(); clearInterval(coopTimer); coopTimer=null; state.coopUntil=0;
+  exitHunt(); clearInterval(huntTimer); huntTimer=null; clearTimeout(huntTapT); huntTapT=0;   // 戰犬圍獵（ver -2336）
+  { const gh=$('grid'); if(gh) gh.classList.remove('hunt'); }
   const gc=$('grid'); if(gc) gc.classList.remove('coop');
   const g0=$('grid'); if(g0) g0.classList.remove('ni');
   stopTimers();

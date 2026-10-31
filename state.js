@@ -189,6 +189,7 @@ export const state = {
      ⚠ **破防計量表就是它的碼表**（ver -1005）：發動**不歸零**破防值，窗開著時
      計量表逐拍往下扣（100 點＝baseSec 秒），扣到 0 就結束；每場一次（同 saintUsedThisBattle）。 */
   coopMode: false,
+  huntMode: false,   // 戰犬圍獵（尼莫的變身，ver -2336）：saint 獨佔寫入（enterHunt／exitHunt）
   coopTimer: null,   // 80ms 抽表：破防值隨時間往下扣，扣到 0 → 收窗（ver -1005）
   /* ⚠⚠ `coopUntil` 是**推出來的**（ver -1005）：共鬥剩餘時間的唯一真相是
      `energy`（剩餘秒數 ＝ 破防值 × baseSec/100），saint 每一拍重算這一格並
@@ -417,6 +418,9 @@ export function exitNightmare(){ state.niMode = false; }
 /* saint.js 專用：進入／離開共鬥。`coopMode` 的唯一寫入管道（同 saintMode 的規矩）。 */
 export function enterCoop(){ state.coopMode = true; state.coopUses++; noteInstall(); }   // ver -958：評價要算次數
 export function exitCoop(){ state.coopMode = false; }
+/* saint.js 專用：戰犬圍獵（ver -2336）。⚠ 不佔 Install 槽、不算次數（Ray：「隨時可用…同場也可再用」）。 */
+export function enterHunt(){ state.huntMode = true; }
+export function exitHunt(){ state.huntMode = false; }
 
 /* saint.js 專用：以 Maximum Burst 擊殺 → 標記本場處決（EXSECUTIŌ）。
  * sawExecution 擁有者為 inspector（3.6，結算讀取加乘）；saint 是唯一使其為真的來源，

@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.31-2335';
+export const VERSION = 'ver 2026.10.31-2337';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5340,7 +5340,7 @@ export const ASSETS = {
 })();
 
 /* ══ 尼莫的搭檔卡（ver -2335，西泊夢魘米夏戰「伙伴為尼莫」）══
-   ⚠⚠ **能力是暫代**：Ray 還沒給尼莫的搭檔卡 ⇒ 照賽西莉的先例**抄九星滿級的諾薇兒**，只換名字、立繪、cut-in（`nemo_ci_dual` 一張全用）；沒有語音。
+   底子照賽西莉的先例抄諾薇兒那張（共用的欄位與九星代理），三招在下面換成尼莫自己的（ver -2336）。
    ⚠ 不在任何搭檔池裡：只有戰鬥卡明寫 `partner:'nemo'` 的那一場會是他。 */
 (function nemoPartner(){
   const P = GAME_CONFIG.partners, N = P && P.nouvelle; if(!N) return;
@@ -5348,8 +5348,18 @@ export const ASSETS = {
   Object.assign(C, { name:i18nT('尼莫'), image:'partner_nemo', cutin:'cutin_nemo_dual',
     selectVoice:null, levelUpVoice:null, faceSpent:null,
     saintCutin:'cutin_nemo_dual', saintVoice:null, obeCutin:'cutin_nemo_dual', obeVoice:null, returnCutin:'cutin_nemo_dual' });
-  if(C.passive) Object.assign(C.passive, { cutin:'cutin_nemo_dual', voice:null });
-  if(C.active)  Object.assign(C.active,  { cutin:'cutin_nemo_dual', voice:null });
+  /* ver -2336（Ray 交卡）：三招換成尼莫自己的。
+     · 變身＝戰犬圍獵（`hunt`，saint.activateHunt：右滑；破防計當時間、滿 15 秒、每 0.2~0.4 秒替玩家點一格、不佔 Install 槽）
+     · 被動＝彈雨風暴（`bulletStorm`，combat.brFollow：BR 每一槍之後 0.1~0.3 秒尼莫跟一槍）—— 插圖已有、之後補上
+     · 主動＝彈幕支援（`barrage`，partner.js：上滑清掉場上所有攻擊圈；破防計滿就 reload）—— 插圖還沒有，先不演 cut-in */
+  C.install = { name:i18nT('戰犬圍獵'), en:'HOUND HUNT',
+    desc:i18nT('發動方式：戰鬥畫面右滑<br>')+i18nT('消耗破防計，尼莫自動逐格擊破數字格。破防計全滿可持續 15 秒，同一場可重複使用。') };
+  C.hunt = { name:i18nT('戰犬圍獵'), en:'HOUND HUNT', sec:15, gap:[0.2,0.4], cutin:'cutin_nemo_dual' };
+  C.passive = { key:'bulletStorm', name:i18nT('彈雨風暴'), en:'Bullet Storm', delay:[0.1,0.3], cutin:null, voice:null,
+    desc:i18nT('彈雨傾洩期間，每開一槍，尼莫也會跟著開一槍。') };
+  C.active = { key:'barrage', name:i18nT('彈幕支援'), en:'Barrage Support', context:'board', reloadOnFull:true, cutin:null, voice:null,
+    desc:i18nT('發動方式：戰鬥畫面上滑。<br>')+i18nT('清除畫面上所有攻擊圈。破防計集滿時可再次使用。') };
+  C.perk = i18nT('彈雨風暴（被動）＋彈幕支援（主動）＋戰犬圍獵（變身）');
   P.nemo = C;
   const G = GAME_CONFIG.girls = GAME_CONFIG.girls || {};
   G.proxy = Object.assign({}, G.proxy, { nemo:{ as:'nouvelle', allStars:true } });

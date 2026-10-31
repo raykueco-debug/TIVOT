@@ -666,7 +666,7 @@ function clearAim(){
   const layer=aimLayer(); if(layer) layer.innerHTML='';
 }
 export function activateDual(){
-  if(state.over||state.dualWield||state.saintMode||state.cutinPlaying||state.transitioning) return;
+  if(state.over||state.dualWield||state.huntMode||state.saintMode||state.cutinPlaying||state.transitioning) return;
   if(state.enemyHp<=0) return;                 // overkill（敵已死）不可發動；雙槍中殺敵觸發 overkill 則照常（見 enterOverkillFx）
   if(state.energy<100) return;                 // 破防值未滿不能發動
   SFX.unlock(); SFX.ultCharge();
