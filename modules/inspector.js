@@ -136,6 +136,7 @@ const SUM_KEYS = ['clearTime','totalHP','wrongTaps','assaultHits','blocks','dela
                   'perfectCounter','counterSec','counterDamage','overkill','hitsTaken','perfectBoards',
                   'coopUses'];   // ver -958：共鬥發動次數也要併（連戰整段算一次）
 export function bankSessionGain(stats){
+  state.lastBattleGrade = evaluate(stats).grade;   // 中間場不上結算頁，等第還是要有（ver -2343：守城戰的凍結讀它）
   const acc = state.sessionStats || {};
   for(const k of SUM_KEYS) acc[k] = (acc[k]||0) + (stats[k]||0);
   acc.maxCombo = Math.max(acc.maxCombo||0, stats.maxCombo||0);   // 連擊取最高，不相加

@@ -302,7 +302,7 @@ export const ART = {
                   /* 船塢那一段新增（ver -424，Ray 交件）。取景值是 `tools/measure_si.py`
                      量的，**每一張各自帶**（差分是不同姿勢，不是換臉，§6.5）。 */
                   watch:    { src:'resources/si/renna_si_watch.webp',    top:7, bot:1530, fx:0.492 },
-                  shock:  { src:'resources/si/renna_si_shock.webp',  top:3, bot:1530, fx:0.492 },
+                  shock:  { fxShift:0, src:'resources/si/renna_si_shock.webp',  top:3, bot:1530, fx:0.492 },
                   run:      { src:'resources/si/renna_si_run.webp',      top:3, bot:1532, fx:0.611 },
                   scare:   { src:'resources/si/renna_si_scare.webp',   top:5, bot:1528, fx:0.498 },
                   surprised:{ src:'resources/si/renna_si_surprised.webp',top:0, bot:1522, fx:0.502 },
@@ -409,10 +409,10 @@ export const ART = {
                   chase2:      { src:'resources/si/renna_si_chase2.webp',      top:11, bot:1529, fx:0.579 },
                   /* stage2 出航（ver -741，Ray 交稿）。逐張量（measure_si.py）。 */
                   curious:     { fxShift:0, src:'resources/si/renna_si_curious.webp',     top:0,  bot:1526, fx:0.529 },
-                  intense:     { yShift:0, src:'resources/si/renna_si_intense.webp',     top:6,  bot:1526, fx:0.629 },
+                  intense:     { fxShift:0, yShift:0, src:'resources/si/renna_si_intense.webp',     top:6,  bot:1526, fx:0.629 },
                   lookup:      { src:'resources/si/renna_si_lookup.webp',      top:5,  bot:1520, fx:0.510 },   // ver -746 交件補量
                   /* 湖上甲板（ver -744，Ray 的 stage5 稿）。逐張量。 */
-                  intense2:    { src:'resources/si/renna_si_intense2.webp',    top:5,  bot:1520, fx:0.510 },
+                  intense2:    { fxShift:0, src:'resources/si/renna_si_intense2.webp',    top:5,  bot:1520, fx:0.510 },
                   /* ══ 伊甸古墓・墓門那一段（ver -1188，Ray 交稿）══ 交件是 PNG，
                      依 §5 轉 WebP；取景值逐張量（`tools/measure_si.py`）。 */
                   sad:         { src:'resources/si/renna_si_sad.webp',         top:5,  bot:1517, fx:0.520 },
@@ -535,7 +535,7 @@ export const ART = {
                   sadnoeye: { src:'resources/si/nouvelle_si_sadnoeye.webp',      top:2, bot:1528, fx:0.552 },
                   bigsmileclose:{ src:'resources/si/nouvelle_si_bigsmileclose.webp', top:4, bot:1529, fx:0.568 },
                   die:        { cm:165, src:'resources/si/nouvelle_si_die.webp', top:4, bot:1524, fx:0.614 },
-                  steady:   { yShift:0, src:'resources/si/nouvelle_si_steady.webp',   top:8,  bot:1529, fx:0.534 },
+                  steady:   { fxShift:0, yShift:0, src:'resources/si/nouvelle_si_steady.webp',   top:8,  bot:1529, fx:0.534 },
                   /* ver -870（森林行 G 稿）。front＝基本立繪的別名（稿上點名了它）。 */
                   sleepy:   { src:'resources/si/nouvelle_si_sleepy.webp',   top:5,  bot:1535, fx:0.580 },
                   front:    { src:'resources/si/nouvelle_si_front.webp?v=eb1ad716',    top:3,  bot:1536, fx:0.582 },
@@ -566,7 +566,7 @@ export const ART = {
                      不是基本立繪的（見 tutorial.placePortraitX 的說明）。 */
                   saintinstall:{src:'resources/si/nouvelle_si_saintinstall.webp',top:76,bot:1519,fx:0.505, rescale:true },
                   run:      { src:'resources/si/nouvelle_si_run.webp',       top:13, bot:1533, fx:0.418 },
-                  cringe:   { src:'resources/si/nouvelle_si_cringe.webp',    top:5,  bot:1533, fx:0.459 },
+                  cringe:   { fxShift:0, src:'resources/si/nouvelle_si_cringe.webp',    top:5,  bot:1533, fx:0.459 },
                   /* ⚠⚠⚠ 這裡**曾經有第二個 `scared:`**（指向舊的 `Nouvelle_SI_Scared.webp`），
                      而本區塊尾巴（湖上甲板 ver -744）又寫了一個 `scared:` 指向重畫版
                      `Nouvelle_SI_Scared2.webp` —— **同一個物件實字裡兩把同名鑰匙，
@@ -1107,7 +1107,7 @@ export const ART = {
     shysmile:  { src:'resources/si/anya_si_shysmile.webp', top:4, bot:1530, fx:0.461 },   // ver -2102 交件，腳本還沒用
     terrify:{ fxShift:0, src:'resources/si/anya_si_terrify.webp?v=becb7f82', top:8, bot:1504, fx:0.493 },   // ver -1857：鎖表情重畫定稿
     /* ver -870（森林行 G 稿）——measure_si 量測。 */
-    answer:    { standCm:162, fxShift:0, src:'resources/si/anya_si_answer.webp?v=db505ca1',     top:2, bot:1534, fx:0.468 },
+    answer:    { yShift:0, standCm:162, fxShift:0, src:'resources/si/anya_si_answer.webp?v=db505ca1',     top:2, bot:1534, fx:0.468 },
     smileshy:  { src:'resources/si/anya_si_smileshy.webp?v=6c55f102',   top:5, bot:1524, fx:0.452 },
     /* ══ 惡夢化（ver -671）══
        ⚠⚠ **不可以照量 alpha 上下緣**（Ray：「安雅的聖徒化 SI 太低太小了，要抓臉」）：
@@ -1664,7 +1664,7 @@ export const ART = {
     frontgrit:  'resources/si/misha_si_frontgrit.webp',
     frontshock: 'resources/si/misha_si_frontshock.webp?v=83fbd0fe',
     closeopen:  { fxShift:-0.04, src:'resources/si/misha_si_closeopen.webp?v=102292c5', top:14, bot:1509, fx:0.469 },   // 照 close
-    drawopen:   { src:'resources/si/misha_si_drawopen.webp?v=9820e0a3', top:6, bot:1534, fx:0.434 },   // 照 draw（-1728 隨 draw 重做）
+    drawopen:   { yShift:0, src:'resources/si/misha_si_drawopen.webp?v=9820e0a3', top:6, bot:1534, fx:0.434 },   // 照 draw（-1728 隨 draw 重做）
     frownopen:  { fxShift:-0.04, src:'resources/si/misha_si_frownopen.webp?v=ed089647', top:11, bot:1526, fx:0.469 },   // 照 frown
     guardopen:  { src:'resources/si/misha_si_guardopen.webp', top:49, bot:1501, fx:0.344 },   // 照 guard
     saluteopen: { src:'resources/si/misha_si_saluteopen.webp', top:9, bot:1520, fx:0.447 },   // 照 salute
@@ -1786,10 +1786,10 @@ export const ART = {
               talk:    { rescale:true, src:'resources/si/ashford_si_talk.webp', top:78, bot:1452, fx:0.486 },
               serious: { rescale:true, src:'resources/si/ashford_si_serious.webp', top:76, bot:1463, fx:0.486 },
               smile:   { rescale:true, src:'resources/si/ashford_si_smile.webp', top:73, bot:1462, fx:0.490 },
-              sweat:   { rescale:true, src:'resources/si/ashford_si_sweat.webp?v=743e8e4c', top:14, bot:1506, fx:0.535 },   // ver -2341：重畫成戰時軍官的咬牙瞪眼握拳冷汗、身體微前傾（Ray，參考安雅 terrify），取景重量
+              sweat:   { yShift:0, fxShift:0, rescale:true, src:'resources/si/ashford_si_sweat.webp?v=743e8e4c', top:14, bot:1506, fx:0.535 },   // ver -2341：重畫成戰時軍官的咬牙瞪眼握拳冷汗、身體微前傾（Ray，參考安雅 terrify），取景重量
               phone:   { rescale:true, src:'resources/si/ashford_si_phone.webp', top:80, bot:1444, fx:0.460 },
               think:   { rescale:true, src:'resources/si/ashford_si_think.webp', top:78, bot:1451, fx:0.470 },
-              disbelief:{ rescale:true, src:'resources/si/ashford_si_disbelief.webp', top:15, bot:1506, fx:0.537 },   // ver -2341（Ray）：不敢置信、憤而握拳身前
+              disbelief:{ yShift:0, rescale:true, src:'resources/si/ashford_si_disbelief.webp', top:15, bot:1506, fx:0.537 },   // ver -2341（Ray）：不敢置信、憤而握拳身前
               shout:   { rescale:true, src:'resources/si/ashford_si_shout.webp', top:76, bot:1462, fx:0.560 },
             } },
   aaron: { cm:178, eye:32, fx:0.477, top:25, bot:1511,

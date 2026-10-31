@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.10.31-2342';
+export const VERSION = 'ver 2026.10.31-2345';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2376,11 +2376,13 @@ export const GAME_CONFIG = {
     ss_carriage:  { enemy:'thug_squad_carriage', session:'ss_raid' },
     ss_hall:      { enemy:'thug_squad',   session:'ss_raid' },
     /* ver -2323／-2324：紫月軍小隊 1～7（溫斯摩爾港守城戰；守城戰玩法還沒做 ⇒ 先立卡，腳本還沒引用）。 */
-    ws_purple_1:  { enemy:'purple_squad_1' },
-    ws_purple_2:  { enemy:'purple_squad_2' },
-    ws_purple_3:  { enemy:'purple_squad_3' },
-    ws_purple_4:  { enemy:'purple_squad_4' },
-    ws_purple_5:  { enemy:'purple_squad_5' },
+    /* ver -2343（Ray：「剩下五場灰衣士兵是一局單獨結算」）：守城戰的五場灰衣＝同一局 `ws_def`；
+       最後打掉的那一場由守城戰換成 `<卡>_end`（收段＝結算），見下面那段自動生成。 */
+    ws_purple_1:  { enemy:'purple_squad_1', session:'ws_def' },
+    ws_purple_2:  { enemy:'purple_squad_2', session:'ws_def' },
+    ws_purple_3:  { enemy:'purple_squad_3', session:'ws_def' },
+    ws_purple_4:  { enemy:'purple_squad_4', session:'ws_def' },
+    ws_purple_5:  { enemy:'purple_squad_5', session:'ws_def' },
     ws_purple_6:  { enemy:'purple_squad_6' },
     ws_purple_7:  { enemy:'purple_squad_7' },
     /* ver -2327（Ray 的稿）：市政廳第一戰＝白衣衛隊；守城戰清完之後的米夏戰（打得贏：NI 回滿後再清一次）。都是劇情戰，打輸回檔到第一戰前的對話。 */
@@ -5337,6 +5339,13 @@ export const ASSETS = {
   P.cecilie = C;
   const G = GAME_CONFIG.girls = GAME_CONFIG.girls || {};
   G.proxy = Object.assign({}, G.proxy, { cecilie:{ as:'nouvelle', allStars:true } });
+})();
+
+/* 守城戰灰衣那一局的收段版（ver -2343）：`ws_purple_N_end` ＝同一張卡＋`sessionEnd`（town 的 defendActDue 挑最後一場用）。
+   ⚠ 用程式抄不手寫第二份（鐵律 7）。 */
+(function wsDefEnd(){
+  const B = GAME_CONFIG.battles; if(!B) return;
+  for(let n=1;n<=5;n++){ const k='ws_purple_'+n; if(B[k]) B[k+'_end'] = Object.assign({}, B[k], { sessionEnd:true }); }
 })();
 
 /* ══ 尼莫的搭檔卡（ver -2335，西泊夢魘米夏戰「伙伴為尼莫」）══

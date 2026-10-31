@@ -2062,23 +2062,23 @@ const WS_SIEGE = [
   ash('phone','南門陷了？你再說一次！喂！喂！'),
   { speaker:'NARRATION', text:'', auto:900 },   // 掛上電話
   ash('disbelief','從接戰到陷落才不到十分鐘……城防到底發生什麼事了？'),
-  ash('think','難道……有什麼我沒算到的東西被投入戰場了？'),
+  ash('sweat','難道……有什麼我沒算到的東西被投入戰場了？'),
   any('terrify','是……米夏！'),
   msg('','敵軍入城了！', { se:'se_dooropen' }),
   ash('serious','人數呢？'),
   msg('','約五十人！'),
-  ash('shout','立刻疏散民眾！會變成游擊戰的！'),
+  ash('shout','立刻疏散民眾！準備應對游擊戰！'),
   msg('','岸防報告進來了！西海岸！艦影！十艘以上！'),
   ash('sweat','！！'),
-  ren('askserious','海上的，不只是疑兵嗎？'),
-  ash('think','不、如果我沒料錯……'),
+  ren('shock','海上的，不只是疑兵嗎？'),
+  ash('sweat','不、如果我沒料錯……'),
   N('SOLDIER')('','呃啊！', { shake:true }),
   msg('','殺、殺進來了！'),
   { speaker:'NARRATION', text:'', se:['se_weapon_pistol_01','se_battlefield'], shake:true, auto:900 },   // 槍響＋戰場音
-  ash('serious','白衣的，是謝索洛夫衛隊吧？'),
+  ash('disbelief','白衣的，是謝索洛夫衛隊吧？'),
   any('terrify','是、米夏直屬的、親衛隊！'),
-  ren('talkserious','逕直殺到市政廳來，難道目標是安雅？'),
-  ash('serious','不、這是斬首戰！敵人的目的……是癱瘓指揮中樞！'),
+  ren('intense2','逕直殺到市政廳來，難道目標是安雅？'),
+  ash('sweat','不、這是斬首戰！敵人的目的……是癱瘓指揮中樞！'),
   ash('shout','這裡陷落的話，陸戰隊就有登岸窗口了！不論如何都死守住！'),
   { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },   // 上膛音 ＋（主角空白）來得好。有筆帳還沒算呢。
   ash('talk','請各位稍安勿躁，這邊交給我們應付！'),
@@ -2087,11 +2087,15 @@ const WS_SIEGE = [
   msg('','副座！東、東門陷落了！', { se:'se_dooropen' }),
   ash('sweat','！！'),
   ash('serious','我能夠……相信你們嗎？'),
-  ren('smile','我們可是聖約騎士團啊。'),
-  nou('awkward','不知道還算不算就是了。'),
+  ren('salute','我們可是聖約騎士團啊。'),
+  Object.assign(nou('awkward','不知道還算不算就是了。'), { bubbleFx:'whisper' }),
   { speaker:'PLAYER', blank:true },          // （主角空白）哈！先拿這些囉嘍開刀！
-  sor('smirk','噢！'),
+  sor('ready','噢！'),
   { battle:'ws_guards' },                    // 第一戰：白衣衛隊
+];
+/* 第一戰打完 → 戰略圖（ver -2343 拆出來）：守城戰打輸回到這一段開頭（Ray：「戰鬥敗北會回到戰鬥前那一幕的對話」）——
+   第一戰那一段演完會自動存檔（有戰鬥的段落），讀回來就是這裡。 */
+const WS_BRIEF = [
   ash('disbelief','那個謝索洛夫衛隊、竟然這麼簡單就……'),
   sor('smirk','我們是聖約騎士團啊。'),
   nou('awkward','妳不是吧……'),
@@ -2104,23 +2108,26 @@ const WS_SIEGE = [
 /* ══ 守城戰清完（第六場白衣衛隊打完、結算）→ 米夏現身 → 米夏戰（ver -2327，Ray 的稿）══
    `ws_defend_clear` 由守城戰插。米夏戰：HP 打到 1 發動 NI、回滿、再清一次就結束（`ws_misha` 卡上的 `noKill`）；之後單翼化 → 尼莫登場 → 夢魘米夏戰（ver -2335）。 */
 const WS_MISHA = [
-  nou('think','廣播……停了？'),
-  ren('askserious','代表敵軍清掃完畢了嗎？還是……'),
-  Object.assign(any('terrify',''), { fx:'stare', fxCi:'ci_mishastare', noSkip:true }),   // 安 terrify ＋米夏 CI
+  Object.assign(nou('cringe','廣播……停了？'), { checkpoint:true }),   // 米夏戰打輸回到這裡（ver -2343）
+  ren('intense','代表敵軍清掃完畢了嗎？還是……'),
+  Object.assign(any('terrify',''), { fx:'stare', fxCi:'ci_mishastare', noSkip:true, bgm:'glasscradle' }),   // 安 terrify ＋米夏 CI；曲子換安雅與米夏那首（ver -2343，Ray）
   mis('stare','果然是妳們嗎？'),
   any('terrify','米夏！'),
-  nou('shock','！！'),
-  ren('intense','米海爾˙謝索洛夫！'),
-  mis('frown','協同外敵攻擊本國的士兵，妳瘋了嗎？'),
+  nou('steady','！！'),
+  ren('intense2','米海爾˙謝索洛夫！'),
+  mis('frown','聯合外敵攻擊本國的士兵，妳瘋了嗎？'),
   sor('angry','你才是！明知道安雅在敵陣——'),
   mis('talk','就是因為知道她在，才不得不出手的啊！'),
-  any('determine','米夏！我已經、不會喚出禍魘了！'),
+  any('answer','米夏！我已經、不會喚出禍魘了！'),
   mis('stare','！'),
   mis('close','是嗎……'),
   Object.assign(mis('draw','稍後再處置妳。在那之前——'), { se:'se_sworddraw' }),   // 拔刀音
   { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },   // 上膛音 ＋（主角空白）欠你的，連本帶利。
-  mis('order','這次可不會再留你一命了。'),
+  mis('drawopen','這次可不會再留你一命了。'),
   { battle:'ws_misha' },
+];
+/* ══ 第一場米夏戰之後（ver -2343 拆成自己一段：夢魘米夏戰打輸回到這一段開頭）══ */
+const WS_MISHA2 = [
   /* ══ 第一場米夏戰之後（ver -2335，Ray 的稿）══
      ⚠ 稿上沒有素材的：米夏「左後方紫色極光單翼」（先用 NI 立繪 ＋ 閃白震動代）、主角與尼莫背靠背的插圖（先空一拍）。
      ⚠ 「蘿」＝蘿芮（尼莫／賽西莉那一組）。 */
@@ -11289,6 +11296,7 @@ export const TOWNS = {
     entry: 'cityhall',
     mist: 0,
     bgm: 'crisis',   // 戰時地圖的曲子＝北泊城鎮戰那一首（ver -2342，Ray：「戰時音樂用北泊戰那一首」）
+    amb: 'se_battlefield', ambVol: 0.35,   // 背景音＝低響度戰場音（ver -2343，Ray）
     /* 守城戰（ver -2328；規則＝`resources/map/_winsmoor_spec.md`「A-定案 v9」，引擎在 modules/town.js 的 `defend*`）。
        Ray：「前五場是灰衣 第六場是白衣衛隊」「B 不停（停 0 回合）」「輸了回到第一次親衛隊戰前的對話」。
        ⚠ `lostLines`（敵軍踏進市政廳那一句）稿上沒有，是我暫填的。 */
@@ -11296,6 +11304,7 @@ export const TOWNS = {
               /* 入口（ver -2331，Ray：「敵軍會固定從東環一段 東環二段 三段 南環二段 南環三段進入」）：補兵從這五格隨機挑。 */
               entries:['w10_1','w10_3','w10_5','w3_10','w5_10'],
               battles:['ws_purple_1','ws_purple_2','ws_purple_3','ws_purple_4','ws_purple_5','ws_guards'],
+              session:['ws_purple_1','ws_purple_2','ws_purple_3','ws_purple_4','ws_purple_5'],   // 灰衣五場一局（ver -2343）；白衣單獨一局
               freeze:{ S:2, A:1 },
               lostLines:[ { speaker:'MESSENGER', text:'市、市政廳……被突破了！', shake:true } ] },
     /* 小地圖（ver -2326，Ray：「開無遇敵的戰時圖給我走走看，小地圖附上」）：**臨時版** —— 美術的手繪版還沒交，
@@ -11305,9 +11314,13 @@ export const TOWNS = {
     nodes: {
       /* 17:00 閘門強制移來這裡（跨圖）。演完攻城那一段，守城戰本身還沒做。 */
       cityhall:   { bg:'ws_2_2_dusk', noTime:true, name:'溫斯摩爾港　市政廳', exits:{ left:'w1_2', up:'w2_1', down:'w2_3', right:'w3_2' },
-        acts:[ { flag:'ws_siege_talk', need:'ws_siege_call', storyBattle:true, noCheckpoint:true, sides:WS_SIDES, lines:WS_SIEGE },
+        /* ver -2343（Ray：「戰鬥敗北會回到戰鬥前那一幕的對話」）：每一場戰鬥自己一段 —— 有戰鬥的段落演完會自動存檔，
+           所以打輸讀回來就是「這一場之前那一段對話」的開頭。守城戰（地圖上那六場）不存檔 ⇒ 打輸回到戰略圖那一段。 */
+        acts:[ { flag:'ws_guard1_done', need:'ws_siege_call', storyBattle:true, sides:WS_SIDES, lines:WS_SIEGE },
+               { flag:'ws_siege_talk', need:'ws_guard1_done', sides:WS_SIDES, lines:WS_BRIEF },
                /* 守城戰清完（`ws_defend_clear`，守城戰插）→ 米夏。 */
-               { flag:'ws_misha_done', need:'ws_defend_clear', storyBattle:true, sides:WS_SIDES, lines:WS_MISHA } ] },   // 米夏戰打輸也回第一段開頭那一筆（lint 那條提醒是刻意的）
+               { flag:'ws_misha1_done', need:'ws_defend_clear', storyBattle:true, sides:WS_SIDES, lines:WS_MISHA },
+               { flag:'ws_misha_done', need:'ws_misha1_done', storyBattle:true, sides:WS_SIDES, lines:WS_MISHA2 } ] },   // 米夏戰打輸也回第一段開頭那一筆（lint 那條提醒是刻意的）
       w2_1:       { bg:'ws_2_1_dusk', noTime:true, name:'溫斯摩爾港　市政廳街1段', exits:{ up:'w2_0', down:'cityhall' } },
       w1_2:       { bg:'ws_1_2_dusk', noTime:true, name:'溫斯摩爾港　議會街1段', exits:{ left:'w0_2', right:'cityhall' } },
       w3_2:       { bg:'ws_3_2_dusk', noTime:true, name:'溫斯摩爾港　議會街2段', exits:{ left:'cityhall', right:'midtown' } },

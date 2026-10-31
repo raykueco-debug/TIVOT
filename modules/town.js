@@ -2271,6 +2271,9 @@ function defendGet(){
 }
 function defendSpawn(spec){
   const S=defendS; if(S.next>=spec.battles.length) return;
+  /* 白衣那一場（不在 `session` 裡）要等灰衣那一局整個打完才出（ver -2343）：不然它可能夾在灰衣那一局中間被打到，結算就切不乾淨。 */
+  const ses=spec.session||[];
+  if(ses.length && ses.indexOf(spec.battles[S.next])<0 && S.foes.some(x=>ses.indexOf(spec.battles[x.i])>=0)) return;
   const busy=new Set(S.foes.map(f=>f.node).concat([nodeId]));
   const free=spec.entries.filter(e=>!busy.has(e));
   const pool=free.length?free:spec.entries;
@@ -2302,7 +2305,15 @@ function defendActDue(n){
   if(S.lost) return { __defendLost:true, storyBattle:true, noCheckpoint:true, lines:spec.lostLines||[] };
   const f=S.foes.find(x=>x.hit && x.node===nodeId);
   if(!f) return null;
-  return { __defend:f, storyBattle:true, noCheckpoint:true, lines:[ { battle:spec.battles[f.i] } ] };
+  /* 一局的切法（ver -2343，Ray：「剩下五場灰衣士兵是一局單獨結算，最後一組白衣衛隊單獨結算」）：
+     `spec.session` 那幾場（灰衣）同一局，**最後打掉的那一場**換成 `<卡>_end`（收段、結算）—— 打掉的順序不一定照編號，所以現算。 */
+  let bid=spec.battles[f.i];
+  if((spec.session||[]).indexOf(bid)>=0){
+    const left=S.foes.filter(x=>spec.session.indexOf(spec.battles[x.i])>=0).length
+             + spec.battles.slice(S.next).filter(b=>spec.session.indexOf(b)>=0).length;
+    if(left<=1) bid=bid+'_end';
+  }
+  return { __defend:f, storyBattle:true, noCheckpoint:true, lines:[ { battle:bid } ] };
 }
 /* 段落演完：回 true ＝這裡接手了（呼叫端直接 return）。 */
 function defendAfterAct(act){
@@ -2314,7 +2325,7 @@ function defendAfterAct(act){
   const fz=((spec.freeze||{})[state.lastBattleGrade])|0;
   S.foes.forEach(x=>{ if(!x.hit) x.frz=Math.max(x.frz, fz); });
   if(S.defer){ S.defer=false; defendMove(spec, nodeId); }
-  if(!S.lost) while(S.foes.length<(spec.field||2) && S.next<spec.battles.length) defendSpawn(spec);
+  if(!S.lost) while(S.foes.length<(spec.field||2) && S.next<spec.battles.length){ const n0=S.next; defendSpawn(spec); if(S.next===n0) break; }   // 白衣還在等灰衣打完 ⇒ 這一輪不補
   if(!S.foes.length && S.next>=spec.battles.length){
     prog.addFlags([spec.clear]); defendS=null;
     if(nodeId===spec.goal){ story.clearCast(); runArrival(true); } else forceGo(spec.goal);
@@ -2336,6 +2347,7 @@ function defendBroadcast(){
 }
 function defendCast(txt){
   const stage=document.getElementById('storyStage'); if(!stage) return;
+  try{ story.playSe('sfx_saint'); }catch(_){}   // 戰情出現時的提示音＝se_saint_install（ASSETS 鍵 sfx_saint；ver -2343，Ray）
   let el=document.getElementById('defendCast');
   if(!el){ el=document.createElement('div'); el.id='defendCast'; stage.appendChild(el); }
   el.textContent=txt; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
@@ -4777,7 +4789,8 @@ export function enter(id){
          走遍全城（§6.5.4 那張檢查表的第一句：「換畫面時誰收它？」）。
      ⚠ 同名不重播（`playAmb` 自己判）：走一步、推一句對白都會再經過這裡。
      ⚠ 一次性的音效仍走拍上的 `se:`（`story.playSe`）—— 兩者是不同的東西。 */
-  try{ story.playAmb(n.amb || null); }catch(_){}
+  /* 城上 `amb`／`ambVol`（ver -2343，西泊戰時地圖「背景音全成低響度戰場音」）＝整張圖的底，節點自己的 `amb` 優先。 */
+  try{ story.playAmb(n.amb || T.amb || null, n.amb ? undefined : T.ambVol); }catch(_){}
   const carried = carriedIn; carriedIn = false;   // 只吃這一次抵達（ver -496）
   storyActNow = false;                           // 換一格就重算（ver -680）
   /* ⚠ 上一個地點開出來的「下一步去哪」在這裡結算（ver -440，見 `resolveFavor`）——
