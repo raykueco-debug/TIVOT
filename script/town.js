@@ -1981,7 +1981,8 @@ const LI_RETURN = [
    · WS_ARRIVE：南天的霸王打贏（`li_south`，飛行頁）之後第一次降落 —— 中央廣場遇見阿什弗德爵士。演完自由行動。
    · WS_CALL_*：17:00 的閘門（`TOWNS.winsmoor.gates`）—— 視約會對象換人來通知（Ray：「如約安雅是諾薇兒／
      諾薇兒索菈娜互相／如約蕾娜是阿許弗德」）。⚠ 通知的那一句稿上沒有，是我暫填的；沒約人＝傳令兵（也是我定的）。
-   · WS_SIEGE：強制移到**戰時地圖**的市政廳之後那一段（`winsmoor_siege.cityhall.acts`，ver -2321）。守城戰本身還沒定玩法（resources/map/_winsmoor_spec.md），演完就停在市政廳。
+   · WS_SIEGE：強制移到**戰時地圖**的市政廳之後那一段（`winsmoor_siege.cityhall.acts`，ver -2321；-2327 Ray 改稿：含第一戰白衣衛隊與戰略圖）。
+   · WS_MISHA：守城戰清完（`ws_defend_clear`）之後的米夏段 ＋ 米夏戰。守城戰本身（`ws_defend` 之後）還沒做。
    ⚠ 阿什弗德的立繪還沒交（front 等 Ray 定案）—— speakers.js 先 `art:null`；這裡寫的表情鍵就是要畫的差分清單。
    ⚠ 台詞一字照稿；其餘人的表情是我配的。 */
 const ash = N('ASHFORD'), ashQ = N('ASHFORD_Q'), msg = N('MESSENGER');
@@ -2039,45 +2040,87 @@ const WS_ARRIVE = [
   sor('think','……我開始相信那個什麼薇拉馮德的了。'),
 ];
 /* 五點的通知（暫填，見檔頭）。⚠ 第一拍抖一下＝遠處的砲聲（沒有合適的音檔，先不放）。 */
+/* 五點的通知（暫填，見檔頭）。第一拍＝遠處的砲聲（ver -2327，Ray 的稿：「砲聲」）。 */
+const WS_BOOM = { se:'se_weapon_cannon', shake:true };
 const WS_CALL = {
-  ANYA:     [ nou('run','不好了！紫月軍打過來了！阿什弗德爵士要我們馬上回市政廳！', { shake:true }) ],
-  NOUVELLE: [ sor('runserious','找到你們了！紫月軍攻城了，快回市政廳！', { shake:true }) ],
-  SORANA:   [ nou('run','原來你們在這裡！紫月軍攻城了，快回市政廳！', { shake:true }) ],
-  RENNA:    [ ash('sweat','兩位，失禮了！紫月軍開始攻城，請立刻隨我回市政廳！', { shake:true }) ],
-  none:     [ msg('','聖約騎士團的各位！紫月軍攻城了！副座請各位立刻到市政廳！', { shake:true }) ],
+  ANYA:     [ nou('run','不好了！紫月軍打過來了！阿什弗德爵士要我們馬上回市政廳！', WS_BOOM) ],
+  NOUVELLE: [ sor('runserious','找到你們了！紫月軍攻城了，快回市政廳！', WS_BOOM) ],
+  SORANA:   [ nou('run','原來你們在這裡！紫月軍攻城了，快回市政廳！', WS_BOOM) ],
+  RENNA:    [ ash('sweat','兩位，失禮了！紫月軍開始攻城，請立刻隨我回市政廳！', WS_BOOM) ],
+  none:     [ msg('','聖約騎士團的各位！紫月軍攻城了！副座請各位立刻到市政廳！', WS_BOOM) ],
 };
+/* ══ 市政廳：攻城 → 第一戰（白衣衛隊）→ 戰略圖（ver -2327，Ray 改稿）══
+   ⚠ 第一拍 `checkpoint` ＝守城戰一路到米夏戰，打輸都回到這裡（Ray：「輸了回到第一次親衛隊戰前的對話」）。
+   ⚠ 掛上電話沒有音檔，先空一拍。 */
 const WS_SIEGE = [
-  ash('sweat','竟然無視安娜殿下的安危強行攻城！'),
+  Object.assign(ash('sweat','竟然無視安娜殿下的安危強行攻城！'), { checkpoint:true }),
   sor('angry','我就說那個哥哥沒安好心！'),
   any('terrify','怎麼會……！'),
   any('desperate','米夏……不要我了……！'),
   sor('sad','小公主……'),
   ren('worry','沒事的……或許是認為安雅不會輕易喪命——'),
   ash('phone','南門陷了？你再說一次！喂！喂！'),
-  { speaker:'NARRATION', text:'', auto:900 },   // 掛上電話（沒有音檔，先不放）
-  ash('sweat','怎麼可能……從接戰到陷落才不到十分鐘！'),
-  ash('think','不對……有什麼我沒算到的東西被投入戰場了！'),
-  any('terrify','是米夏……！'),
-  msg('','東門！受襲中！', { se:'se_dooropen' }),
+  { speaker:'NARRATION', text:'', auto:900 },   // 掛上電話
+  ash('sweat','從接戰到陷落才不到十分鐘……城防到底發生什麼事了？'),
+  ash('think','難道……有什麼我沒算到的東西被投入戰場了？'),
+  any('terrify','是……米夏！'),
+  msg('','敵軍入城了！', { se:'se_dooropen' }),
   ash('serious','人數呢？'),
   msg('','約五十人！'),
-  ash('think','小部隊嗎……到底打什麼算盤……'),
-  msg('','西海岸！艦影！', { se:'se_dooropen' }),
-  ash('sweat','兩邊同時……！'),
-  ash('think','菁英陸襲部隊、海上艦隊……'),
-  ren('askserious','海上的，只是疑兵嗎？'),
-  ash('serious','不，這是斬首戰！'),
-  ash('shout','馬上架起巷道戰防禦工事！敵人的目標……是癱瘓指揮中樞！'),
-  ash('shout','市政廳陷落的話，陸戰隊就有登岸窗口了！不論如何都死守住！'),
-  { speaker:'PLAYER', blank:true },          // （主角空白）來得好。有筆帳還沒算呢。
-  ash('talk','請各位稍安勿躁，我們自能應付！'),
-  ren('talkserious','恐怕沒那麼容易。城門陷落的速度太過異常，敵陣中有某種不講道理的異質。'),
-  ren('determine','而能夠與之一戰的，只有他了。'),
+  ash('shout','立刻疏散民眾！會變成游擊戰的！'),
+  msg('','岸防報告進來了！西海岸！艦影！十艘以上！'),
+  ash('sweat','！！'),
+  ren('askserious','海上的，不只是疑兵嗎？'),
+  ash('think','不、如果我沒料錯……'),
+  N('SOLDIER')('','呃啊！', { shake:true }),
+  msg('','殺、殺進來了！'),
+  { speaker:'NARRATION', text:'', se:['se_weapon_pistol_01','se_battlefield'], shake:true, auto:900 },   // 槍響＋戰場音
+  ash('serious','白衣的，是謝索洛夫衛隊吧？'),
+  any('terrify','是、米夏直屬的、親衛隊！'),
+  ren('talkserious','逕直殺到市政廳來，難道目標是安雅？'),
+  ash('serious','不、這是斬首戰！敵人的目的……是癱瘓指揮中樞！'),
+  ash('shout','這裡陷落的話，陸戰隊就有登岸窗口了！不論如何都死守住！'),
+  { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },   // 上膛音 ＋（主角空白）來得好。有筆帳還沒算呢。
+  ash('talk','請各位稍安勿躁，這邊交給我們應付！'),
+  ren('talkserious','恐怕沒那麼容易。城門陷落得太快，敵陣中有某種不講道理的異質。'),
+  ren('determine','而能夠與之一戰的，只有他了！'),
   msg('','副座！東、東門陷落了！', { se:'se_dooropen' }),
   ash('sweat','！！'),
   ash('serious','我能夠……相信你們嗎？'),
   ren('smile','我們可是聖約騎士團啊。'),
   nou('awkward','不知道還算不算就是了。'),
+  { speaker:'PLAYER', blank:true },          // （主角空白）哈！先拿這些囉嘍開刀！
+  sor('smirk','噢！'),
+  { battle:'ws_guards' },                    // 第一戰：白衣衛隊
+  ash('sweat','那個謝索洛夫衛隊、竟然這麼簡單就……'),
+  sor('smirk','我們是聖約騎士團啊。'),
+  nou('awkward','妳不是吧……'),
+  ash('smile','我打從心底感激有你們這樣的友軍。'),
+  ash('talk','這是城鎮的戰略圖。我方大多軍力都在城防，以敵軍的行進速度，恐怕追不上。'),
+  Object.assign(ash('serious','還請各位截擊來襲的敵軍。若是市政廳被攻入，一切就結束了。'), { map:true }),   // 打開地圖
+  ash('talk','戰情中心會廣播敵軍的位置，若是能快速結束戰鬥，或許有機會比敵人的進擊快上一步吧。'),
+  Object.assign(ren('determine','請交給我們。'), { map:false, flags:['ws_defend'] }),   // 關閉地圖；`ws_defend`＝守城戰開始（守城戰還沒做）
+];
+/* ══ 守城戰清完（第六場白衣衛隊打完、結算）→ 米夏現身 → 米夏戰（ver -2327，Ray 的稿）══
+   `ws_defend_clear` 由守城戰插（還沒做）。米夏戰：HP 打到 1 發動 NI、回滿、再清一次就結束（`ws_misha` 卡上的 `noKill`）。 */
+const WS_MISHA = [
+  nou('think','廣播……停了？'),
+  ren('askserious','代表敵軍清掃完畢了嗎？還是……'),
+  Object.assign(any('terrify',''), { fx:'stare', fxCi:'ci_mishastare', noSkip:true }),   // 安 terrify ＋米夏 CI
+  mis('stare','果然是妳們嗎？'),
+  any('terrify','米夏！'),
+  nou('shock','！！'),
+  ren('intense','米海爾˙謝索洛夫！'),
+  mis('frown','協同外敵攻擊本國的士兵，妳瘋了嗎？'),
+  sor('angry','你才是！明知道安雅在敵陣——'),
+  mis('talk','就是因為知道她在，才不得不出手的啊！'),
+  any('determine','米夏！我已經、不會喚出禍魘了！'),
+  mis('stare','！'),
+  mis('close','是嗎……'),
+  Object.assign(mis('draw','稍後再處置妳。在那之前——'), { se:'se_sworddraw' }),   // 拔刀音
+  { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },   // 上膛音 ＋（主角空白）欠你的，連本帶利。
+  mis('order','這次可不會再留你一命了。'),
+  { battle:'ws_misha' },
 ];
 
 const VF_GATE = [
@@ -11200,7 +11243,9 @@ export const TOWNS = {
     nodes: {
       /* 17:00 閘門強制移來這裡（跨圖）。演完攻城那一段，守城戰本身還沒做。 */
       cityhall:   { bg:'ws_2_2_dusk', noTime:true, name:'溫斯摩爾港　市政廳', exits:{ left:'w1_2', up:'w2_1', down:'w2_3', right:'w3_2' },
-        acts:[ { flag:'ws_siege_talk', need:'ws_siege_call', sides:WS_SIDES, lines:WS_SIEGE } ] },
+        acts:[ { flag:'ws_siege_talk', need:'ws_siege_call', storyBattle:true, noCheckpoint:true, sides:WS_SIDES, lines:WS_SIEGE },
+               /* 守城戰清完（`ws_defend_clear`，守城戰插）→ 米夏。 */
+               { flag:'ws_misha_done', need:'ws_defend_clear', storyBattle:true, sides:WS_SIDES, lines:WS_MISHA } ] },   // 米夏戰打輸也回第一段開頭那一筆（lint 那條提醒是刻意的）
       w2_1:       { bg:'ws_2_1_dusk', noTime:true, name:'溫斯摩爾港　市政廳街1段', exits:{ up:'w2_0', down:'cityhall' } },
       w1_2:       { bg:'ws_1_2_dusk', noTime:true, name:'溫斯摩爾港　議會街1段', exits:{ left:'w0_2', right:'cityhall' } },
       w3_2:       { bg:'ws_3_2_dusk', noTime:true, name:'溫斯摩爾港　議會街2段', exits:{ left:'cityhall', right:'midtown' } },

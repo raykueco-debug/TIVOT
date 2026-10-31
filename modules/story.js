@@ -3486,6 +3486,7 @@ function fireOneShot(line){
      ⚠ 它是**持續狀態**：攤開之後一直在，收在 `clearCast`（那一段講完了）——
        與 `shake` 那種一次性的演出不同族，所以不進 `fxTimers`。 */
   if(line.map) storyMap(true);
+  else if(line.map===false) storyMap(false);   // `map:false`＝這一拍收起來（ver -2327，西泊守城戰「關閉地圖」）
   /* ══⚠ **`shake:'bubble'` ＝只抖對話框**（ver -1564，Ray：「想知道嗎？後面的抖動
      只抖對話框，不要抖全畫面」）══ 全畫面那一種是「世界在震」，而這一拍震的是
      **他的反應** —— 抖整個畫面會把那一下讀成外面出事了。
@@ -3586,7 +3587,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2326';
+const KERB_V='?v=2327';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）

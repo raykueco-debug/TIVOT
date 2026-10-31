@@ -3113,7 +3113,7 @@ function startLastStand(){
       if(state.over){ stopLastStand(); return; }
       if(state.cutinPlaying || state.transitioning || lsKilling) return;
       lsLeft-=0.1; lsRegen(0.1);
-      if(lsLeft <= (L.killLead!=null ? L.killLead : 1)) lastStandKill();
+      lsCheckEnd(L);
     }, 100);
   };
   if(L.ci) saint.playCutin(tick, L.label||'NIGHTMARE INSTALL', L.ci); else tick();
@@ -3122,7 +3122,18 @@ function lastStandTap(){
   const L=lsCard(); if(!L || lsKilling) return;
   const t=(L.tapSpeed!=null ? L.tapSpeed : 0.5);
   lsLeft-=t; lsRegen(t);
+  lsCheckEnd(L);
+}
+/* `noKill`（ver -2327，西泊米夏戰：「HP 打至 1 發動 NI，血慢慢回滿，再清空一次血條結束」）＝
+   回滿就收掉 NI、**不出劇情殺**；之後血照常打得下去（lsUsed 留著 ⇒ 不會再發動一次）。 */
+function lsCheckEnd(L){
+  if(L.noKill){ if(lsLeft<=0) lastStandEnd(); return; }
   if(lsLeft <= (L.killLead!=null ? L.killLead : 1)) lastStandKill();
+}
+function lastStandEnd(){
+  clearInterval(lsTimer); lsTimer=0; lsBarFx(false);
+  lsActive=false; lsKilling=false;
+  state.enemyHp=state.enemyMax; updateBars();
 }
 function lastStandKill(){
   if(lsKilling || state.over) return;

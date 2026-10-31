@@ -5037,7 +5037,9 @@ export function enter(id){
              上一個踩過的安全點或結算點」）—— 安全區走進去就收局，那一刻正是
              「上一個踩過的結算點」。不落的話玩家在遺蹟裡走了半張圖收了一次局，
              死掉卻退回進圖那一筆，中間全白走。 */
-          if(checkpoint && !state.battleSession && (actHasBattle(act) || actHasSettle(act)))
+          /* `noCheckpoint:true`（ver -2327，西泊守城戰）＝這一段演完**不落**：打輸要一路回到這一段開頭的那一筆
+             （Ray：「輸了回到第一次親衛隊戰前的對話」）—— 落了的話守城戰／米夏戰打輸只會退到戰略圖那一刻。 */
+          if(checkpoint && !act.noCheckpoint && !state.battleSession && (actHasBattle(act) || actHasSettle(act)))
             try{ checkpoint(); }catch(_){}
           /* ══ 演完就出航（`sailOut:true`，ver -741，Ray 的 stage2 稿：碼頭道別
              之後「進入飛行畫面」）══ 走與 `setSail` 同一條交棒（suspend →

@@ -5440,3 +5440,16 @@ export const ENEMIES = {
     // 例：新怪
     // giant: { name:'巨人', image:'enemy_giant', imageBase:'giant', hp:150, attack:30, atkInterval:5, sound:{}, special:[] },
 };
+
+/* ══ 溫斯摩爾港守城戰（ver -2327，Ray 的稿）══════════════════════════════
+   · `ws_guards`＝市政廳第一戰／守城戰第六場的「白衣衛隊」（謝索洛夫親衛隊）：照羅賽爾的親衛隊那張，
+     但**不帶 plate**（那張是主祭壇的去人背景）⇒ 背景用市政廳那一格，人層整組置底。
+   · `ws_misha`＝西泊的米夏戰：同米夏那張，NI 改成「回滿就收、不出劇情殺」（`lastStand.noKill`，
+     Ray：「HP 打至 1 發動 NI，血慢慢回滿，再清空一次血條結束」）。 */
+ENEMIES.ws_guards = Object.assign({}, ENEMIES.misha_guards, {
+  group: Object.assign({}, ENEMIES.misha_guards.group, { plate:undefined }),
+  fit: { mode:'contain', pos:'center bottom' },
+});
+ENEMIES.ws_misha = Object.assign({}, ENEMIES.misha, {
+  lastStand: Object.assign({}, ENEMIES.misha.lastStand, { noKill:true }),
+});
