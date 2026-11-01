@@ -2108,7 +2108,7 @@ const WS_BRIEF = [
 /* ══ 守城戰清完（第六場白衣衛隊打完、結算）→ 米夏現身 → 米夏戰（ver -2327，Ray 的稿）══
    `ws_defend_clear` 由守城戰插。米夏戰：HP 打到 1 發動 NI、回滿、再清一次就結束（`ws_misha` 卡上的 `noKill`）；之後單翼化 → 尼莫登場 → 夢魘米夏戰（ver -2335）。 */
 const WS_MISHA = [
-  Object.assign(nou('cringe','廣播……停了？'), { checkpoint:true }),   // 米夏戰打輸回到這裡（ver -2343）
+  Object.assign(nou('cringe','廣播……停了？'), { checkpoint:true, amb:null }),   // amb:null＝戰場音到此停（ver -2361，Ray）   // 米夏戰打輸回到這裡（ver -2343）
   ren('intense','代表敵軍清掃完畢了嗎？還是……'),
   Object.assign(any('terrify',''), { fx:'stare', fxCi:'ci_mishastare', noSkip:true, bgm:'glasscradle' }),   // 安 terrify ＋米夏 CI；曲子換安雅與米夏那首（ver -2343，Ray）
   mis('stare','果然是妳們嗎？'),
@@ -2142,7 +2142,7 @@ const WS_MISHA2 = [
   any('terrify','我……'),
   Object.assign(mis('暴走',''), { fx:'whiteflash', shake:true }),   // 米夏 NI：指縫紅光、左後方紫色極光單翼噴出（ver -2346 有圖了）
   mis('暴走','連喚出禍魘的力量都沒有的妳，'),
-  mis('ni','沒有價值！'),
+  mis('暴走','沒有價值！'),
   ren('shout','翼化了！危險！'),
   { speaker:'NARRATION', text:'', se:['se_weapon_guard','se_brickcrush'], shake:true, auto:900 },   // 隔擋音、爆碎音
   sor('guardgrimace','這個怪物……'),
@@ -2151,11 +2151,11 @@ const WS_MISHA2 = [
   { speaker:'NARRATION', text:'', se:'se_fall', show:false, hide:'NOUVELLE', auto:700 },   // 諾 faint ＋倒地音
   any('desperate',''),
   sor('guardgrimace','可惡……'),
-  Object.assign(mis('ni','就用你的命，告慰將士之靈吧！'), { se:'se_walk' }),
+  Object.assign(mis('暴走','就用你的命，告慰將士之靈吧！'), { se:'se_walk' }),
   { speaker:'NARRATION', text:'', se:'se_sworddraw', auto:600 },   // 拔刀音
   any('shout','不要——！！'),   // ver -2346：大喊
   { speaker:'NARRATION', text:'', se:'se_weapon_pistol_01', shake:true, auto:700 },   // 槍擊音
-  mis('ni','！'),
+  mis('暴走','！'),
   { speaker:'NARRATION', text:'', se:'se_healing', fx:'goldmotes', auto:1200 },   // 治癒特效
   Object.assign(nou('surprise','治癒術式……！是誰？'), { bgm:'nemo' }),   // 這一句一出來就切尼莫戰鬥曲（ver -2346，Ray）
   { speaker:'NARRATION', text:'', show:false, cg:'050_nemoentrance', cgNoTime:true, cgPan:'up', hide:'*', auto:1600 },   // 尼莫出場插圖：坐在殘垣逆光、雙 M1911、賽西莉昂立身後（ver -2346）
@@ -2167,7 +2167,7 @@ const WS_MISHA2 = [
   cec('sulkshout','別誤會了！只是因為跟你們比起來，那邊那個更麻煩！'),
   { speaker:'NARRATION', text:'', se:[{n:'se_weapon_pistol_01'},{n:'se_weapon_pistol_02',delay:180},{n:'se_weapon_pistol_03',delay:360},{n:'se_weapon_guard',delay:520}], shake:true, auto:1000 },   // 連續槍擊，劈落音
   nmo('dual','哈哈……！'),   // 興奮笑
-  lau('','已經單翼化了……趁他還沒失控先撤退吧！'),
+  lau('shout','已經單翼化了……趁他還沒失控先撤退吧！'),
   nmo('dual','不行，會被學長罵的！'),
   { speaker:'PLAYER', blank:true },          // （主角空白）你很清楚嘛。
   nmo('dual','畢竟有這麼有趣的傢伙擺在眼前嘛！'),
@@ -11296,7 +11296,7 @@ export const TOWNS = {
     entry: 'cityhall',
     mist: 0,
     bgm: 'crisis',   // 戰時地圖的曲子＝北泊城鎮戰那一首（ver -2342，Ray：「戰時音樂用北泊戰那一首」）
-    amb: 'se_battlefield', ambVol: 0.35,   // 背景音＝低響度戰場音（ver -2343，Ray）
+    amb: 'se_battlefield', ambVol: 0.35, ambUntil: 'ws_defend_clear',   // 背景音＝低響度戰場音（ver -2343，Ray）；米夏登場起不播（-2361）
     /* 守城戰（ver -2328；規則＝`resources/map/_winsmoor_spec.md`「A-定案 v9」，引擎在 modules/town.js 的 `defend*`）。
        Ray：「前五場是灰衣 第六場是白衣衛隊」「B 不停（停 0 回合）」「輸了回到第一次親衛隊戰前的對話」。
        ⚠ `lostLines`（敵軍踏進市政廳那一句）稿上沒有，是我暫填的。 */

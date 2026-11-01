@@ -216,6 +216,9 @@ def _js_str(s):
     return "'" + str(s).replace('\\', '\\\\').replace("'", "\\'").replace('\n', '\\n') + "'"
 
 
+_NOEXPR = r"""(?:null|''|"")"""   # 「沒寫表情」在腳本裡的三種寫法
+
+
 def _beat_line_ok(line, text, old, field):
     if _js_str(text) not in line:
         return False
@@ -223,8 +226,8 @@ def _beat_line_ok(line, text, old, field):
         return ("img:" + _js_str(old)) in line.replace(' ', '')
     if field == 'who':
         return ("who:" + _js_str(old)) in line.replace(' ', '')
-    if old is None:
-        return bool(re.search(r"\b[a-zA-Z_]\w*\(\s*null\s*,", line) or re.search(r"expr\s*:\s*null", line))
+    if old is None or old == '':   # 沒寫表情：腳本裡可能是 null 也可能是 ''（ver -2361：蘿芮那一拍改不了就是這個）
+        return bool(re.search(r"\b[a-zA-Z_]\w*\(\s*" + _NOEXPR + r"\s*,", line) or re.search(r"expr\s*:\s*" + _NOEXPR, line))
     return bool(re.search(r"expr\s*:\s*" + re.escape(_js_str(old)), line) or
                 re.search(r"\b[a-zA-Z_]\w*\(\s*" + re.escape(_js_str(old)) + r"\s*,", line))
 
@@ -234,7 +237,7 @@ def _beat_replace(line, old, new, field):
         return re.sub(r"img\s*:\s*" + re.escape(_js_str(old)), "img:" + _js_str(new), line, count=1)
     if field == 'who':
         return re.sub(r"who\s*:\s*" + re.escape(_js_str(old)), "who:" + _js_str(new), line, count=1)
-    olit = 'null' if old is None else re.escape(_js_str(old))
+    olit = _NOEXPR if (old is None or old == '') else re.escape(_js_str(old))
     out, n = re.subn(r"expr(\s*):(\s*)" + olit, lambda m: 'expr' + m.group(1) + ':' + m.group(2) + _js_str(new), line, count=1)
     if n:
         return out
@@ -731,7 +734,7 @@ def beat_span_patch(req):
         raise ValueError('只支援 expr')
     old, new = req.get('old'), req.get('new')
     rel, text, s, e, _, _ = _find_beat(req, BEAT_FILES)   # ver -1881：帶 mark／before／after（序列比對）
-    olit = 'null' if old is None else re.escape(_js_str(old))
+    olit = _NOEXPR if (old is None or old == '') else re.escape(_js_str(old))
     seg = text[s:e + 1]
     out, n = re.subn(r"expr(\s*):(\s*)" + olit, lambda m: 'expr' + m.group(1) + ':' + m.group(2) + _js_str(new), seg, count=1)
     if not n:

@@ -4790,7 +4790,9 @@ export function enter(id){
      ⚠ 同名不重播（`playAmb` 自己判）：走一步、推一句對白都會再經過這裡。
      ⚠ 一次性的音效仍走拍上的 `se:`（`story.playSe`）—— 兩者是不同的東西。 */
   /* 城上 `amb`／`ambVol`（ver -2343，西泊戰時地圖「背景音全成低響度戰場音」）＝整張圖的底，節點自己的 `amb` 優先。 */
-  try{ story.playAmb(n.amb || T.amb || null, n.amb ? undefined : T.ambVol); }catch(_){}
+  /* `ambUntil`（ver -2361）＝那支旗插了，城上的 `amb` 就不再鋪（西泊：守城戰清完、米夏登場起不播戰場音）。 */
+  { const tAmb = (T.amb && !(T.ambUntil && prog.hasFlag(T.ambUntil))) ? T.amb : null;
+    try{ story.playAmb(n.amb || tAmb || null, n.amb ? undefined : T.ambVol); }catch(_){} }
   const carried = carriedIn; carriedIn = false;   // 只吃這一次抵達（ver -496）
   storyActNow = false;                           // 換一格就重算（ver -680）
   /* ⚠ 上一個地點開出來的「下一步去哪」在這裡結算（ver -440，見 `resolveFavor`）——
