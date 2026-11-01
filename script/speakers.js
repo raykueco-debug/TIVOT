@@ -1657,8 +1657,8 @@ export const ART = {
     draw:       { src:'resources/si/misha_si_draw.webp?v=68b1b653', top:6, bot:1534, fx:0.434 },   // ver -1728：Ray 新出的拔刀圖（姿勢換了，取景重量；美術 09-25）
     salute:     { src:'resources/si/misha_si_salute.webp', top:9, bot:1520, fx:0.447 },
     side:       { src:'resources/si/misha_si_side.webp', top:16, bot:1512, fx:0.37 },
-    '暴走':     { blink:'off', rescale:true, src:'resources/si/misha_si_coverfaceni.webp?v=70bda315', top:16, bot:1224, fx:0.263 },   // ver -2352（Ray）：抓臉那張＋恨意紅光眼、臉頰裂紋、左後方碎裂紫光翼（方形 1254²）；top/bot 量人不量翼
-    '抓臉':     { blink:'off', src:'resources/si/misha_si_coverface.webp?v=f3fb02f9', top:12, bot:1487, fx:0.361 },   // ver -2352（Ray）：front 為底，美形的瘋狂與破滅 —— 手扣半臉、指縫冷眼、咬牙冷笑、拔刀斜指地面
+    '暴走':     { blink:'off', rescale:true, src:'resources/si/misha_si_coverfaceni.webp?v=ff6889ab', top:14, bot:1212, fx:0.279 },   // ver -2353（Ray）：抓臉那張＋恨意紅光眼、臉頰裂紋、左後方碎裂紫光翼（方形 1254²）；top/bot 量人不量翼
+    '抓臉':     { blink:'off', src:'resources/si/misha_si_coverface.webp?v=da136a10', top:16, bot:1508, fx:0.430 },   // ver -2353（Ray）：front 為底 —— 少年臉照原圖、右手持帶鞘原刀、左手扣半臉、指縫冷眼、咬牙冷笑
     wound:      { fxShift:0, blink:'off', src:'resources/si/misha_si_wound.webp?v=3a49219d', top:34, bot:1499, fx:0.403 },
     close:      { src:'resources/si/misha_si_close.webp?v=47dd4349', top:14, bot:1509, fx:0.469 },
     back:       { src:'resources/si/misha_si_back.webp', top:12, bot:1496, fx:0.458 },
