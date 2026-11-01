@@ -1264,3 +1264,5 @@ when	from	to	reason
 20261101-200056	resources/si/misha_si_coverfaceni.webp	_recycle/resources/si/misha_si_coverfaceni.webp.20261101-200056	ver -2350 Ray：手改正常比例、光翼噴湧加大、畫布改寬（方形）
 20261101-200348	resources/si/misha_si_coverfaceni.webp	_recycle/resources/si/misha_si_coverfaceni.webp.20261101-200348	ver -2351 Ray：暴走手上不要紋、要咬牙
 20261101-200412	resources/si/misha_si_coverface.webp	_recycle/resources/si/misha_si_coverface.webp.20261101-200412	ver -2351 Ray：抓臉要看得出咬牙
+20261101-203131	resources/si/misha_si_coverface.webp	_recycle/resources/si/misha_si_coverface.webp.20261101-203131	ver -2352 Ray：畫風差太多、沒有美形瘋狂破滅感 → 改用 front 為底重畫
+20261101-203240	resources/si/misha_si_coverfaceni.webp	_recycle/resources/si/misha_si_coverfaceni.webp.20261101-203240	ver -2352 Ray：暴走改用 front 為底重畫（美形瘋狂）

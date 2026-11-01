@@ -1657,8 +1657,8 @@ export const ART = {
     draw:       { src:'resources/si/misha_si_draw.webp?v=68b1b653', top:6, bot:1534, fx:0.434 },   // ver -1728：Ray 新出的拔刀圖（姿勢換了，取景重量；美術 09-25）
     salute:     { src:'resources/si/misha_si_salute.webp', top:9, bot:1520, fx:0.447 },
     side:       { src:'resources/si/misha_si_side.webp', top:16, bot:1512, fx:0.37 },
-    '暴走':     { blink:'off', rescale:true, src:'resources/si/misha_si_coverfaceni.webp?v=3909aabc', top:176, bot:1230, fx:0.303 },   // ver -2351（Ray）：方形畫布 1254²（光翼才畫得完整）；正常比例的手（不帶裂紋）、咬牙、恨而銳利的紅光眼、大幅噴湧的碎裂紫光翼；top/bot 量人不量翼
-    '抓臉':     { blink:'off', src:'resources/si/misha_si_coverface.webp?v=b2d1ef48', top:20, bot:1505, fx:0.400 },   // ver -2351（Ray）：手掌蓋住半張臉、指縫露出暴走的眼、咬牙（wound 為底，畫風照原圖）
+    '暴走':     { blink:'off', rescale:true, src:'resources/si/misha_si_coverfaceni.webp?v=70bda315', top:16, bot:1224, fx:0.263 },   // ver -2352（Ray）：抓臉那張＋恨意紅光眼、臉頰裂紋、左後方碎裂紫光翼（方形 1254²）；top/bot 量人不量翼
+    '抓臉':     { blink:'off', src:'resources/si/misha_si_coverface.webp?v=f3fb02f9', top:12, bot:1487, fx:0.361 },   // ver -2352（Ray）：front 為底，美形的瘋狂與破滅 —— 手扣半臉、指縫冷眼、咬牙冷笑、拔刀斜指地面
     wound:      { fxShift:0, blink:'off', src:'resources/si/misha_si_wound.webp?v=3a49219d', top:34, bot:1499, fx:0.403 },
     close:      { src:'resources/si/misha_si_close.webp?v=47dd4349', top:14, bot:1509, fx:0.469 },
     back:       { src:'resources/si/misha_si_back.webp', top:12, bot:1496, fx:0.458 },
