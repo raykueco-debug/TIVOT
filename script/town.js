@@ -2131,7 +2131,7 @@ const WS_MISHA2 = [
   /* ══ 第一場米夏戰之後（ver -2335，Ray 的稿）══
      ⚠ 稿上沒有素材的：米夏「左後方紫色極光單翼」（先用 NI 立繪 ＋ 閃白震動代）、主角與尼莫背靠背的插圖（先空一拍）。
      ⚠ 「蘿」＝蘿芮（尼莫／賽西莉那一組）。 */
-  mis('coverface','咕……'),   // ver -2346：按住整張臉
+  mis('抓臉','咕……'),   // ver -2346：按住整張臉
   nou('desperate','', { se:'se_pant' }),   // 喘
   sor('exhaust',''),                       // 喘（ver -2346：飛刀掉落、力竭）
   ren('intense','兩邊、都到極限了……'),
@@ -2140,8 +2140,8 @@ const WS_MISHA2 = [
   mis('wound','身為王族，竟說出如此不知廉恥的話！'),
   mis('wound','被父王和姐姐捧在手心裡的妳，簡直無知得令人作嘔！'),
   any('terrify','我……'),
-  Object.assign(mis('coverfaceni',''), { fx:'whiteflash', shake:true }),   // 米夏 NI：指縫紅光、左後方紫色極光單翼噴出（ver -2346 有圖了）
-  mis('coverfaceni','連喚出禍魘的力量都沒有的妳，'),
+  Object.assign(mis('暴走',''), { fx:'whiteflash', shake:true }),   // 米夏 NI：指縫紅光、左後方紫色極光單翼噴出（ver -2346 有圖了）
+  mis('暴走','連喚出禍魘的力量都沒有的妳，'),
   mis('ni','沒有價值！'),
   ren('shout','翼化了！危險！'),
   { speaker:'NARRATION', text:'', se:['se_weapon_guard','se_brickcrush'], shake:true, auto:900 },   // 隔擋音、爆碎音

@@ -1657,8 +1657,8 @@ export const ART = {
     draw:       { src:'resources/si/misha_si_draw.webp?v=68b1b653', top:6, bot:1534, fx:0.434 },   // ver -1728：Ray 新出的拔刀圖（姿勢換了，取景重量；美術 09-25）
     salute:     { src:'resources/si/misha_si_salute.webp', top:9, bot:1520, fx:0.447 },
     side:       { src:'resources/si/misha_si_side.webp', top:16, bot:1512, fx:0.37 },
-    coverfaceni:{ blink:'off', rescale:true, src:'resources/si/misha_si_coverfaceni.webp?v=90764d71', top:56, bot:1496, fx:0.342 },   // ver -2347（Ray）：同一張加 NI —— 指縫紅光＋臉上裂紋、左後方碎裂紫色光翼（照參考）；top/bot 量的是人不是翼
-    coverface:  { blink:'off', src:'resources/si/misha_si_coverface.webp?v=61685e1f', top:33, bot:1503, fx:0.370 },   // ver -2347（Ray）：五指張開用力抓臉、指縫露出瘋狂的眼（照真人參考重畫）
+    '暴走':     { blink:'off', rescale:true, src:'resources/si/misha_si_coverfaceni.webp?v=90764d71', top:56, bot:1496, fx:0.342 },   // ver -2347（Ray）：同一張加 NI —— 指縫紅光＋臉上裂紋、左後方碎裂紫色光翼（照參考）；top/bot 量的是人不是翼
+    '抓臉':     { blink:'off', src:'resources/si/misha_si_coverface.webp?v=61685e1f', top:33, bot:1503, fx:0.370 },   // ver -2347（Ray）：五指張開用力抓臉、指縫露出瘋狂的眼（照真人參考重畫）
     wound:      { fxShift:0, blink:'off', src:'resources/si/misha_si_wound.webp?v=3a49219d', top:34, bot:1499, fx:0.403 },
     close:      { src:'resources/si/misha_si_close.webp?v=47dd4349', top:14, bot:1509, fx:0.469 },
     back:       { src:'resources/si/misha_si_back.webp', top:12, bot:1496, fx:0.458 },
