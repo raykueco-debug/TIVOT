@@ -1658,7 +1658,7 @@ export const ART = {
     salute:     { src:'resources/si/misha_si_salute.webp', top:9, bot:1520, fx:0.447 },
     side:       { src:'resources/si/misha_si_side.webp', top:16, bot:1512, fx:0.37 },
     '暴走':     { blink:'off', rescale:true, src:'resources/si/misha_si_coverfaceni.webp?v=ff6889ab', top:14, bot:1212, fx:0.279 },   // ver -2353（Ray）：抓臉那張＋恨意紅光眼、臉頰裂紋、左後方碎裂紫光翼（方形 1254²）；top/bot 量人不量翼
-    '抓臉':     { blink:'off', src:'resources/si/misha_si_coverface.webp?v=0436e610', top:12, bot:1522, fx:0.400 },   // ver -2354（Ray）：刀鞘掛左、右手持出鞘軍刀；左手插進髮裡扣臉、銀髮穿過指縫、含淚的冷眼從指縫露出、咬牙冷笑
+    '抓臉':     { blink:'off', src:'resources/si/misha_si_coverface.webp?v=09b976e3', top:12, bot:1522, fx:0.425 },   // ver -2355（Ray）：頭身比回到原圖；刀鞘掛左、右手持出鞘軍刀；銀髮穿過指縫、含淚冷眼從指縫露出、咬牙冷笑
     wound:      { fxShift:0, blink:'off', src:'resources/si/misha_si_wound.webp?v=3a49219d', top:34, bot:1499, fx:0.403 },
     close:      { src:'resources/si/misha_si_close.webp?v=47dd4349', top:14, bot:1509, fx:0.469 },
     back:       { src:'resources/si/misha_si_back.webp', top:12, bot:1496, fx:0.458 },
