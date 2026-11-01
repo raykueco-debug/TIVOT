@@ -1657,7 +1657,7 @@ export const ART = {
     draw:       { src:'resources/si/misha_si_draw.webp?v=68b1b653', top:6, bot:1534, fx:0.434 },   // ver -1728：Ray 新出的拔刀圖（姿勢換了，取景重量；美術 09-25）
     salute:     { src:'resources/si/misha_si_salute.webp', top:9, bot:1520, fx:0.447 },
     side:       { src:'resources/si/misha_si_side.webp', top:16, bot:1512, fx:0.37 },
-    '暴走':     { blink:'off', rescale:true, src:'resources/si/misha_si_coverfaceni.webp?v=5f4eb9d9', top:66, bot:1230, fx:0.364 },   // ver -2358（Ray）：陰暗抓臉定稿＋金色鏤空法環、左後方碎裂紫光翼、恨意紅光眼、臉頰裂紋（方形 1254²）；top/bot 量人不量翼與法環
+    '暴走':     { blink:'off', rescale:true, src:'resources/si/misha_si_coverfaceni.webp?v=134c251c', top:66, bot:1230, fx:0.364 },   // ver -2358（Ray）：陰暗抓臉定稿＋金色符文法環（-2359 照 NI CI）、左後方碎裂紫光翼、恨意紅光眼、臉頰裂紋（方形 1254²）；top/bot 量人不量翼與法環
     '抓臉閉嘴': { blink:'off', src:'resources/si/misha_si_coverfaceshut.webp?v=58da9959', top:8, bot:1512, fx:0.470 },   // ver -2356（Ray：「咬牙 閉嘴兩張都收」）：同抓臉（-2357 更陰暗），嘴緊閉不露牙
     '抓臉':     { blink:'off', src:'resources/si/misha_si_coverface.webp?v=754856ca', top:8, bot:1512, fx:0.470 },   // ver -2356（Ray）：front 為底；森冷銳利、咬牙、臉上半部壓陰影、冷光眼（-2357 更陰暗）；左手插髮扣臉、銀髮穿過指縫、冷眼從指縫露出；右手持畜生道長刀、長鞘掛左腰
     wound:      { fxShift:0, blink:'off', src:'resources/si/misha_si_wound.webp?v=3a49219d', top:34, bot:1499, fx:0.403 },
