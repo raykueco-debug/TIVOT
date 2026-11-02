@@ -5,7 +5,8 @@
 
 輸出三張（都在 flight/cave/，給 flight/cave.html 讀）：
     cave_hm.png   R＝地面高度 /4、G＝天頂高度 /8（255＝天頂的洞）、B＝發光植物強度
-    cave_aux.png  R＝光柱遮罩（洞的投影、已模糊）、G＝發光植物的溢光（模糊）
+    cave_aux.png  R＝光柱遮罩（洞的投影、已模糊）、G＝發光植物的溢光（模糊）、
+                  B＝地貌類別（飛行頁的 GEO 類別：0 深林／1 淺林／2 灰岩／3 褐岩／4 深礫／8 深水）
     cave_col.png  地面顏色（RGB）
 
 尺度照飛行頁：1 地圖像素＝20 世界單位（MAP_SCALE），船定高 700。
@@ -155,6 +156,14 @@ col = col * (1 - glow[..., None]) + gcol * glow[..., None]
 col[floor >= 999] = rock * 0.8
 col = np.clip(col, 0, 255).astype(np.uint8)
 
+# ── 地貌類別（飛行頁拿它挑地貌貼圖，與大陸同一套 —— 畫風才一致）──────────
+geo = np.where(tone[..., 0] > 0.5, 2, 3).astype(np.uint8)        # 灰岩／褐岩
+geo[mossy[..., 0] > 0.3] = 0                                     # 苔＝深林的貼圖
+geo[lit[..., 0] > 0.5] = 1                                       # 洞口下的草地
+geo[glow > 0.25] = 4                                             # 發光田的底＝深礫
+geo[lake > 0.5] = 8
+geo[floor >= 999] = 2
+
 # ── 輸出 ────────────────────────────────────────────────────────────
 os.makedirs(OUT, exist_ok=True)
 R = np.clip(np.round(floor / FLOOR_SCALE), 0, 255)
@@ -162,7 +171,7 @@ Gc = np.clip(np.round(ceil / CEIL_SCALE), 0, 254)
 Gc[holemask] = HOLE
 B = np.clip(np.round(glow * 255), 0, 255)
 hm = np.stack([R, Gc, B], -1).astype(np.uint8)
-aux = np.stack([np.round(shaft * 255), np.round(spill * 255), np.zeros_like(shaft)], -1).astype(np.uint8)
+aux = np.stack([np.round(shaft * 255), np.round(spill * 255), geo], -1).astype(np.uint8)
 
 paths = {}
 for name, arr in (('cave_hm.png', hm), ('cave_aux.png', aux), ('cave_col.png', col)):
@@ -171,14 +180,36 @@ for name, arr in (('cave_hm.png', hm), ('cave_aux.png', aux), ('cave_col.png', c
     paths[name] = hashlib.md5(open(p, 'rb').read()).hexdigest()[:8]
 
 # 起點：最大洞口西北方約 55 像素的開闊處（cave.html 讀 START）
-start = (210 * 20, 220 * 20, 0.578)   # 面向最大的洞口（256,250），光柱與發光田一進場就在眼前
+# 起點：繞著最大的洞口找一個「到洞口那一路都開闊」的位置，船頭朝洞口（不要一開場就對著石柱）
+import math
+hx, hy, _ = HOLES[0]
+best = None
+for ang in range(0, 360, 5):
+    for rad in (55, 65, 75):
+        sx, sy = hx + rad * math.cos(math.radians(ang)), hy + rad * math.sin(math.radians(ang))
+        if not (20 < sx < N - 20 and 20 < sy < N - 20):
+            continue
+        clear = 1e9
+        for t in np.linspace(0, 1, 40):
+            x, y = int(sx + (hx - sx) * t), int(sy + (hy - sy) * t)
+            for ox in (-3, 0, 3):
+                for oy in (-3, 0, 3):
+                    xx, yy = min(N - 1, max(0, x + ox)), min(N - 1, max(0, y + oy))
+                    c = 1e9 if holemask[yy, xx] else ceil[yy, xx]
+                    clear = min(clear, ALT - floor[yy, xx], c - ALT)
+        if best is None or clear > best[0]:
+            best = (clear, sx, sy)
+_, sx, sy = best
+# 飛行頁的前方是 (-sin a, -cos a)
+start = (int(sx * 20), int(sy * 20), math.atan2(-(hx - sx), -(hy - sy)))
 
 # 把雜湊與起點寫回 cave.html（同名覆蓋要換 ?v=，同 §5 的規矩；起點也是這裡算的，鐵律 7）
-html = os.path.join(HERE, 'cave.html')
-if os.path.exists(html):
+for html in (os.path.join(HERE, 'cave.html'), os.path.join(HERE, 'index.html')):
+  if os.path.exists(html):
     s = open(html, encoding='utf-8').read()
     s = re.sub(r"const CAVE_V = \{[^}]*\};",
                "const CAVE_V = {hm:'%s', aux:'%s', col:'%s'};" % (paths['cave_hm.png'], paths['cave_aux.png'], paths['cave_col.png']), s)
-    s = re.sub(r"const START = \[[^\]]*\];", "const START = [%d, %d, %.4f];" % start, s)
+    key = 'CAVE_START' if html.endswith('index.html') else 'START'   # 飛行頁那一份叫 CAVE_START（別撞到別的 START）
+    s = re.sub(r"const %s = \[[^\]]*\];" % key, "const %s = [%d, %d, %.4f];" % ((key,) + start), s)
     open(html, 'w', encoding='utf-8').write(s)
 print('cave:', N, 'px,', len(PILLARS), 'pillars,', len(HOLES), 'holes, glow %.1f%%' % (100 * (glow > 0.2).mean()), paths)

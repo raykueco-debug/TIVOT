@@ -32,6 +32,15 @@
 - **紫月軍一般步兵小隊**：照里朋一家的群戰分層作法。**小隊 1 定案並拆層**（`resources/enemy/man_purple_squad_1_layers/`，spec `resources/enemy/_purple_spec.md`），敵人卡 `purple_squad_1`、戰鬥卡 `ws_purple_1`（數值暫抄 thug_squad，還沒有腳本引用）。
   **小隊 2~7 群體圖已出、未拆、未 commit**（`resources/_originals/enemy/man_purple_squad_{2..7}.png`，Ray 還沒看）。
 
+## 地底世界／聖王廳路線（11-02，Ray 定案）
+- **路線**：峽谷 → **地底大空洞（開船穿梭）** → 通到**聖王廳 G3**。所以聖王廳地宮只玩 **G3、G4 兩層**（一般拓樸＋追擊者）。
+  可行的理由（劇情上要交代）：**賽西莉入隊**，她精巧的術式控制讓船能在地底空洞行駛。
+- **遺蹟那張大地圖改成地底世界**：地底大空洞、發光植物、天頂孔洞引入地表光。
+- ✔ 原型已接進飛行頁本身：`flight/index.html?world=cave`（同一支 GL 渲染器、同一艘船與面板，只換地圖）。
+  地圖由 `flight/build_cave.py` 產（`flight/cave/` 三張，雜湊與起點會自動寫回）。`flight/cave.html` 是第一版獨立原型，Ray 以「畫風要跟飛行畫面一致」退回，留著當參考。
+  · 只有 GL 路徑畫得出天頂（`?gl=0` 會只有地面）；怪、火車、主線飛行劇情在地底模式一律關掉。
+- 還沒做：峽谷的入口與通往聖王廳 G3 的出口、地底的遭遇戰、CPU 退路、正式的地形（現在是程序生成的 512² 原型）、聖王廳 G3/G4 的拓樸設計。
+
 ## 等 Ray 決定
 1. **試玩版上線方式**：主 repo `raykueco-debug/TIVOT` 是公開的、GitHub Pages 有完整遊戲 —— 建議主 repo 改名設私人、另開公開 repo 只放 `tools/challenge_build/dist`。部署腳本還沒寫。
 2. **守城戰玩法**：⚠ 上一版這一條寫「都沒定」是**錯的** —— 規則在 `resources/map/_winsmoor_spec.md` 的「A-定案 v9」：主角先走、敵人沿最短路走一格；同格／錯身＝戰鬥（不耗回合）；戰後其餘敵凍 S2／A1／B0 回合；場上 2 隻、清一補一、共 7 隻；敵人踏進市政廳＝輸。
