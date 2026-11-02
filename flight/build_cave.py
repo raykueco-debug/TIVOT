@@ -184,6 +184,7 @@ floor = floor_base + (fbm(N, 6, 96, 0.55) - 0.5) * 160 + ridged(5, 40) * 110
 lake = np.zeros((N, N), np.float32)
 glow = np.zeros((N, N), np.float32)
 crystal = np.zeros((N, N), np.float32)
+crys_fp = np.zeros((N, N), np.float32)        # 水晶錐的整個腳印（湖面壓平時要避開它）
 fallm = np.zeros((N, N), bool)
 foam = np.zeros((N, N), np.float32)
 pillar_core = np.zeros((N, N), bool)
@@ -246,7 +247,7 @@ for k, R in ROOMS.items():
 
 
 def add_crystals(cx, cy, count, spread, hmin, hmax):
-    global floor
+    global floor, crys_fp
     for _ in range(count):
         ox, oy = rng.normal(0, spread, 2)
         px, py = cx + ox, cy + oy
@@ -257,6 +258,7 @@ def add_crystals(cx, cy, count, spread, hmin, hmax):
         if h < 40:
             continue
         floor = np.where(d > 0, np.maximum(floor, floor + d ** 0.55 * h), floor)
+        crys_fp = np.maximum(crys_fp, d)
         crystal[d > 0.30] = 1          # 只有錐身算水晶（錐腳的平地照樣是岩，不然地上一片平平的藍色塊）
 
 
@@ -289,7 +291,9 @@ for k, R in ROOMS.items():
         ceil = ceil - flare * rng.uniform(100, 200)
     for px, py in pick(R.get('crystal', 0), 0.8, 16):
         add_crystals(px, py, int(rng.integers(7, 20)), rng.uniform(4, 10), 120, 460)
-floor = floor * (1 - lake * in_room) + np.minimum(floor, 46) * lake * in_room
+# ⚠ 這一次壓平湖面要避開水晶的腳印：壓下去的話水晶變成浮在水面上的一塊平平的藍色
+lk = lake * in_room * (crys_fp < 0.01)
+floor = floor * (1 - lk) + np.minimum(floor, 46) * lk
 
 # 湖岸一圈發光藻、通道裡零星的發光苔
 shore = np.clip(lake * 3, 0, 1) * (1 - np.clip(lake * 3 - 1.2, 0, 1)) * (lake < 0.6)
