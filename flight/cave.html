@@ -34,11 +34,11 @@
 <script>
 'use strict';
 /* ⚠ 與 build_cave.py 的常數同一組（改一邊要改另一邊）。CAVE_V／START 由 build_cave.py 自動回寫。 */
-const CAVE_V = {hm:'e582711c', aux:'f3066a01', col:'5ec4a7fd'};
-const START = [6182, 5284, 1.3090];
+const CAVE_V = {hm:'8fdfaff5', aux:'a6c84e52', col:'4f9fbfad'};
+const START = [1920, 14000, -0.9949];
 const MAP_SCALE = 20;
 const ALT = 700;               // 船的定高（build_cave.py 保證這一層上下各留 80）
-const FLOOR_SCALE = 4, CEIL_SCALE = 8;
+const FLOOR_SCALE = 6, CEIL_SCALE = 8;   // ＝ build_cave.py（改一邊要改另一邊）
 const ZFAR = 3200;
 const HORIZON_F = 0.42;        // 地平線在畫面高度的位置（洞窟上下都有東西，放在中間偏上）
 const TAN_HALF = 0.78;         // 水平半視角的 tan
