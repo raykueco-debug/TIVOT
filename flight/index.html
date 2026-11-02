@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=2365"></script>
+<script src="../orientation.js?v=2366"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。語言判定與 i18n.js 的 LANG 同一套
@@ -11,7 +11,7 @@
 (function(){
   var l=null; try{ l=localStorage.getItem('tivot.lang'); }catch(e){}
   if(!l){ try{ var n=(navigator.languages&&navigator.languages[0])||navigator.language||''; if(String(n).toLowerCase().indexOf('es')===0) l='es'; }catch(e){} }
-  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2365"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2365"><\/script>');
+  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2366"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2366"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=2365');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=2366');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -259,8 +259,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2365");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2365");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2366");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2366");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -280,8 +280,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2365");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2365");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2366");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2366");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -646,23 +646,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2365" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=2366" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2365" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2365" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2365" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2365" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2365" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2365" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2365" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2365" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2365" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2365" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=2366" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2366" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2366" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2366" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2366" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2366" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2366" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2366" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2366" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2366" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=2365" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=2366" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -684,11 +684,11 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=2365"></script>
+<script src="settlement.js?v=2366"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=2365"></script>
+<script src="talks.js?v=2366"></script>
 <script>
 /* 破圖框一律不畫（ver -1881，同主頁 main.js 那一支，這一頁是另一個 document）。 */
 document.addEventListener('error', e=>{ const t=e.target; if(t && t.tagName==='IMG') t.classList.add('img-broken'); }, true);
@@ -764,7 +764,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=b18827be'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -2365';
+const FLIGHT_VER = 'ver -2366';
 const MAP_SCALE  = 20;
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1002,7 +1002,7 @@ const SKIRT_ALL = true;
    著色器裡 `CAVEM` 那幾段多出來的；地面的畫法（色、地貌貼圖、坡度打光、分級、抖色）與大陸完全同一套。
    ⚠ `CAVE_V`／`CAVE_START` 由 build_cave.py 寫回（同名覆蓋換 ?v=，起點也只在那裡算 —— 鐵律 7）。 */
 const CAVE = /[?&]world=cave/.test(location.search);
-const CAVE_V = {hm:'9a0b712c', aux:'a6c84e52', col:'4f9fbfad'};
+const CAVE_V = {hm:'86296614', aux:'f40c4bae', col:'aaef13f0'};
 const CAVE_START = [1920, 14000, -0.9949];
 /* 空腔表（build_cave.py 寫回）：[名字, x, y, 長軸, 短軸, 轉角(度), 是不是終點]，地圖像素。
    進到哪一間就在上方報名字；終點那一間報「終點」。 */
@@ -1373,7 +1373,7 @@ const SETTLEMENTS = [
 const CITY_V='?v=5de18e35';   // ver -1220：ravnsdal_* 同名重跑（城內綠地改積雪色）
 /* ══ 組出來的素材路徑的版本表（ver -1918）══ `geo/`+name、羽蛇插圖、怪的 sprite 這幾條路是**拼字串**的，
    字面路徑的自動版本號吃不到 ⇒ 由 tools/asset_bust.py 把同名覆蓋過的那幾支的內容雜湊寫進下面那一行，`fav()` 查表掛上。 */
-/* BUST:FLIGHTAV START —— 由 tools/asset_bust.py 產生，不要手改 */ const FLIGHT_AV={'../resources/enemy/centipi_day.webp':'c86a074a','../resources/enemy/centipi_dd.webp':'2c254b24','../resources/enemy/centipi_night.webp':'515d5f8b','../resources/enemy/dart_timeattack.webp':'df0a5635','../resources/enemy/kidd_ci.webp':'a4cda953','../resources/enemy/man_misha_guards.webp':'5b0d73a9','../resources/enemy/man_misha_ni.webp':'1d6384ac','../resources/enemy/man_sorana.webp':'11180f49','../resources/enemy/man_thug_shotgun.webp':'504d26bc','../resources/enemy/man_thug_squad.webp':'dfd75032','../resources/enemy/mon_arch_warden.webp':'69358667','../resources/enemy/mon_bear_husk.webp':'08453d77','../resources/enemy/mon_bear_nightmare.webp':'8b9715dd','../resources/enemy/mon_beast_altar.webp':'314d3a60','../resources/enemy/mon_beast_organ.webp':'2cb2855b','../resources/enemy/mon_beast_reliquary.webp':'9e728c27','../resources/enemy/mon_beast_shackle.webp':'3f7e0727','../resources/enemy/mon_bellfounder.webp':'996b6674','../resources/enemy/mon_candelabra_fiend.webp':'bedacbdc','../resources/enemy/mon_canyon_colossus.webp':'20959d9a','../resources/enemy/mon_chain_hanged.webp':'dfaaae52','../resources/enemy/mon_choir_organ.webp':'15a645f4','../resources/enemy/mon_choir_pale.webp':'177e606d','../resources/enemy/mon_crypt_centipede.webp':'d77b735b','../resources/enemy/mon_crypt_hound.webp':'5d511a2d','../resources/enemy/mon_dragon_v1_ascendant.webp':'d30dd2e3','../resources/enemy/mon_dragon_v1_shackled.webp':'19baca48','../resources/enemy/mon_gorge_toad.webp':'fa0dc50f','../resources/enemy/mon_grave_censer.webp':'853df80f','../resources/enemy/mon_gravekeeper_crypt.webp':'9b1652d7','../resources/enemy/mon_gravekeeper_many.webp':'e64d8c82','../resources/enemy/mon_gravekeeper_offset.webp':'46c05edc','../resources/enemy/mon_gravekeeper_seal.webp':'a94669c5','../resources/enemy/mon_iron_maiden.webp':'e0797afd','../resources/enemy/mon_kneeling_penitent.webp':'df4ac8d2','../resources/enemy/mon_natalia.webp':'46dacdbf','../resources/enemy/mon_ossuary_rats.webp':'7117d6e6','../resources/enemy/mon_ossuary_wheel.webp':'afde9cd5','../resources/enemy/mon_pallid_stag.webp':'b0bd8089','../resources/enemy/mon_relic_candlepenitent.webp':'c5142b92','../resources/enemy/mon_relic_candletower.webp':'d3ea7ec1','../resources/enemy/mon_relic_reassembled.webp':'b0329247','../resources/enemy/mon_reliquary_hand.webp':'9216bd5c','../resources/enemy/mon_sarcoph_crawler.webp':'427145a4','../resources/enemy/mon_sea_coralman.webp':'754847d3','../resources/enemy/mon_shroud_widow.webp':'7cfbfa40','../resources/enemy/mon_skull_cairn.webp':'ee510068','../resources/enemy/mon_sky_armorcrab.webp':'b14e80f8','../resources/enemy/mon_sky_boneray.webp':'534952bb','../resources/enemy/mon_sky_eelswarm.webp':'be0d5d2f','../resources/enemy/mon_sky_eyemoth.webp':'9c313139','../resources/enemy/mon_sky_gasjelly.webp':'905c019e','../resources/enemy/mon_sky_mawbat.webp':'ae6570e7','../resources/enemy/mon_sky_ribwhale.webp':'a77e60f0','../resources/enemy/mon_sky_twinwyvern.webp':'8b23a136','../resources/enemy/mon_slab_creeper.webp':'ae03c6f8','../resources/enemy/mon_spiral_veil.webp':'2418f6c6','../resources/enemy/mon_stag_nightmare.webp':'f0940269','../resources/enemy/mon_stag_rot.webp':'5671f64b','../resources/enemy/mon_stone_adder.webp':'e3e8744c','../resources/enemy/mon_tomb_bear.webp':'532d0a28','../resources/enemy/mon_twin_skull_hound.webp':'91ccfda0','../resources/enemy/mon_vault_bat.webp':'34f4b298','../resources/enemy/mon_wolf_pack.webp':'f6f41b90','../resources/enemy/pirateship_day.webp':'052ea83c','../resources/enemy/pirateship_dd.webp':'ba5848b9','../resources/enemy/pirateship_night.webp':'830e4305','../resources/enemy/saint_gt_ci.webp':'2c191ece','../resources/enemy/saint_tr_ci.webp':'1f885777','../resources/enemy/serpent_day.webp':'8b55f618','../resources/enemy/serpent_dd.webp':'7574b2ec','../resources/enemy/serpent_night.webp':'720cc1c8','../resources/enemy/theclaws.webp':'0e70c2c5','base.webp':'791b78e3','cave/cave_aux.png':'a6c84e52','cave/cave_col.png':'4f9fbfad','cave/cave_hm.png':'9a0b712c','enemy/flm_centipi/view_0.webp':'1dcb1399','enemy/flm_dragonthrone/view_0.webp':'54e2fa79','enemy/flm_serpent/view_3.webp':'a2123764','geo/castle_roof.webp':'02a1913e','geo/castle_wall.webp':'96ad0149','geo/moss_stone.webp':'a0e13388','map_reference.png':'622beafb','region_map.png':'03fd1a36','silvermoon_heightmap.png':'27adc1ac','silvermoon_terrain.png':'b18827be','wheel.webp':'f6de2299'}; /* BUST:FLIGHTAV END */
+/* BUST:FLIGHTAV START —— 由 tools/asset_bust.py 產生，不要手改 */ const FLIGHT_AV={'../resources/enemy/centipi_day.webp':'c86a074a','../resources/enemy/centipi_dd.webp':'2c254b24','../resources/enemy/centipi_night.webp':'515d5f8b','../resources/enemy/dart_timeattack.webp':'df0a5635','../resources/enemy/kidd_ci.webp':'a4cda953','../resources/enemy/man_misha_guards.webp':'5b0d73a9','../resources/enemy/man_misha_ni.webp':'1d6384ac','../resources/enemy/man_sorana.webp':'11180f49','../resources/enemy/man_thug_shotgun.webp':'504d26bc','../resources/enemy/man_thug_squad.webp':'dfd75032','../resources/enemy/mon_arch_warden.webp':'69358667','../resources/enemy/mon_bear_husk.webp':'08453d77','../resources/enemy/mon_bear_nightmare.webp':'8b9715dd','../resources/enemy/mon_beast_altar.webp':'314d3a60','../resources/enemy/mon_beast_organ.webp':'2cb2855b','../resources/enemy/mon_beast_reliquary.webp':'9e728c27','../resources/enemy/mon_beast_shackle.webp':'3f7e0727','../resources/enemy/mon_bellfounder.webp':'996b6674','../resources/enemy/mon_candelabra_fiend.webp':'bedacbdc','../resources/enemy/mon_canyon_colossus.webp':'20959d9a','../resources/enemy/mon_chain_hanged.webp':'dfaaae52','../resources/enemy/mon_choir_organ.webp':'15a645f4','../resources/enemy/mon_choir_pale.webp':'177e606d','../resources/enemy/mon_crypt_centipede.webp':'d77b735b','../resources/enemy/mon_crypt_hound.webp':'5d511a2d','../resources/enemy/mon_dragon_v1_ascendant.webp':'d30dd2e3','../resources/enemy/mon_dragon_v1_shackled.webp':'19baca48','../resources/enemy/mon_gorge_toad.webp':'fa0dc50f','../resources/enemy/mon_grave_censer.webp':'853df80f','../resources/enemy/mon_gravekeeper_crypt.webp':'9b1652d7','../resources/enemy/mon_gravekeeper_many.webp':'e64d8c82','../resources/enemy/mon_gravekeeper_offset.webp':'46c05edc','../resources/enemy/mon_gravekeeper_seal.webp':'a94669c5','../resources/enemy/mon_iron_maiden.webp':'e0797afd','../resources/enemy/mon_kneeling_penitent.webp':'df4ac8d2','../resources/enemy/mon_natalia.webp':'46dacdbf','../resources/enemy/mon_ossuary_rats.webp':'7117d6e6','../resources/enemy/mon_ossuary_wheel.webp':'afde9cd5','../resources/enemy/mon_pallid_stag.webp':'b0bd8089','../resources/enemy/mon_relic_candlepenitent.webp':'c5142b92','../resources/enemy/mon_relic_candletower.webp':'d3ea7ec1','../resources/enemy/mon_relic_reassembled.webp':'b0329247','../resources/enemy/mon_reliquary_hand.webp':'9216bd5c','../resources/enemy/mon_sarcoph_crawler.webp':'427145a4','../resources/enemy/mon_sea_coralman.webp':'754847d3','../resources/enemy/mon_shroud_widow.webp':'7cfbfa40','../resources/enemy/mon_skull_cairn.webp':'ee510068','../resources/enemy/mon_sky_armorcrab.webp':'b14e80f8','../resources/enemy/mon_sky_boneray.webp':'534952bb','../resources/enemy/mon_sky_eelswarm.webp':'be0d5d2f','../resources/enemy/mon_sky_eyemoth.webp':'9c313139','../resources/enemy/mon_sky_gasjelly.webp':'905c019e','../resources/enemy/mon_sky_mawbat.webp':'ae6570e7','../resources/enemy/mon_sky_ribwhale.webp':'a77e60f0','../resources/enemy/mon_sky_twinwyvern.webp':'8b23a136','../resources/enemy/mon_slab_creeper.webp':'ae03c6f8','../resources/enemy/mon_spiral_veil.webp':'2418f6c6','../resources/enemy/mon_stag_nightmare.webp':'f0940269','../resources/enemy/mon_stag_rot.webp':'5671f64b','../resources/enemy/mon_stone_adder.webp':'e3e8744c','../resources/enemy/mon_tomb_bear.webp':'532d0a28','../resources/enemy/mon_twin_skull_hound.webp':'91ccfda0','../resources/enemy/mon_vault_bat.webp':'34f4b298','../resources/enemy/mon_wolf_pack.webp':'f6f41b90','../resources/enemy/pirateship_day.webp':'052ea83c','../resources/enemy/pirateship_dd.webp':'ba5848b9','../resources/enemy/pirateship_night.webp':'830e4305','../resources/enemy/saint_gt_ci.webp':'2c191ece','../resources/enemy/saint_tr_ci.webp':'1f885777','../resources/enemy/serpent_day.webp':'8b55f618','../resources/enemy/serpent_dd.webp':'7574b2ec','../resources/enemy/serpent_night.webp':'720cc1c8','../resources/enemy/theclaws.webp':'0e70c2c5','base.webp':'791b78e3','cave/cave_aux.png':'f40c4bae','cave/cave_col.png':'aaef13f0','cave/cave_hm.png':'86296614','enemy/flm_centipi/view_0.webp':'1dcb1399','enemy/flm_dragonthrone/view_0.webp':'54e2fa79','enemy/flm_serpent/view_3.webp':'a2123764','geo/castle_roof.webp':'02a1913e','geo/castle_wall.webp':'96ad0149','geo/moss_stone.webp':'a0e13388','map_reference.png':'622beafb','region_map.png':'03fd1a36','silvermoon_heightmap.png':'27adc1ac','silvermoon_terrain.png':'b18827be','wheel.webp':'f6de2299'}; /* BUST:FLIGHTAV END */
 const fav = p => { const q=String(p); if(q.indexOf('?')>=0) return q; const h=FLIGHT_AV[q.toLowerCase()]; return h ? q+'?v='+h : q; };
 /* ══⚠⚠ 量體的貼材（ver -1117，Ray 交件 `geo/flight_villagewall`／`flight_rooftile`）══
    牆本來是一塊平色（`wallCol`），所以房子讀起來是「立起來的色塊」而不是建築。
@@ -7135,6 +7135,7 @@ async function loadCaveWorld(){
     }
   }
   PLACES.length=0;            // 地底沒有地標（降落點、名牌、地圖標記一律沒有）
+  SETTLEMENTS.length=0;       // 地底沒有城（量體、程序房子、城的取樣遮罩全吃這一張表 —— 清這一處就全收，鐵律 8）
   cam.x=CAVE_START[0]; cam.y=CAVE_START[1]; cam.angle=CAVE_START[2];
   if(GLON){ try{ if(glInit()){ glUploadWorld(); document.body.classList.add('gl-on'); } }
             catch(e){ console.warn('[gl] 初始化失敗', e); } }
@@ -11915,6 +11916,30 @@ float cvShaft(vec2 wp, float h){
   return texture(uMask, b*${INV_SCALE}/uMap).b;
 }
 float cvHash(vec2 q){ return fract(sin(dot(q,vec2(127.1,311.7)))*43758.5453); }
+float cvN(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
+  return mix(mix(cvHash(i),cvHash(i+vec2(1.0,0.0)),f.x), mix(cvHash(i+vec2(0.0,1.0)),cvHash(i+vec2(1.0,1.0)),f.x), f.y); }
+/* 天頂的岩質（ver -2366，Ray：「天頂也要有岩質」）：底下那張天頂圖是平滑的穹頂，
+   這裡往下垂一層鐘乳石的起伏 —— 大塊的岩瘤＋細碎的尖。幅度隨「離船多高」收：
+   隧道頂離航高只有 110，垂太多就是船從石頭裡穿過去（碰撞讀的是 JS 那張沒起伏的圖）。 */
+float cvRough(vec2 wp){
+  float a=cvN(wp*(1.0/210.0)), b=cvN(wp*(1.0/64.0)+17.3), c=cvN(wp*(1.0/23.0)+5.1);
+  return a*0.55 + b*b*0.30 + c*c*c*0.15;
+}
+float cvCeil(vec2 wp, float base){
+  float ra=200.0*clamp((base-${CAVE_ALT}.0-${CAVE_CLEAR}.0)/360.0, 0.15, 1.0);
+  return base - cvRough(wp)*ra;
+}
+/* 船燈（ver -2366，Ray：「船要點燈」）：掛在船頭前下方的一盞暖燈＋往前打的一道光。
+   回傳要乘在表面基色上的光量；n＝表面法線（朝外）。 */
+const vec3 CV_LAMP=vec3(1.0,0.74,0.42);
+vec3 cvLamp(vec3 P, vec3 n, vec2 fwd){
+  vec3 L=vec3(uCam.xy+fwd*40.0, uCam.z-36.0);
+  vec3 d=P-L; float dl=length(d); vec3 dn=d/max(dl,1e-3);
+  float att=1.0/(1.0+dl*dl*(1.0/(250.0*250.0)));
+  float spot=0.35+0.65*smoothstep(0.30,0.85,dot(dn.xy,fwd)/max(length(dn.xy),1e-3))*smoothstep(-0.9,-0.05,dn.z);
+  float lam=clamp(dot(n,-dn),0.0,1.0)*0.75+0.25;
+  return CV_LAMP*(att*spot*lam*0.85);
+}
 
 void main(){
   float px=gl_FragCoord.x, py=uBuf.y-gl_FragCoord.y;   // GL 原點在左下，畫面是左上
@@ -12007,18 +12032,35 @@ void main(){
       float fogK=1.0-clamp((z-fogS)/(uZfar-fogS),0.0,1.0)*${FOG_MAX};
       if(hNeed<C && hNeed>hs){ float sh=cvShaft(wp,hNeed); vol+=sh*sh*dz*0.00007*fogK; }
       vec3 cc=vec3(-1.0);
+      if(!hole && hNeed>=C-200.0) C=cvCeil(wp,C);
       if(outside) cc=uFog;
       else if(!hole && hNeed>=C){
+        /* 命中點二分逼近（同地面那一支的理由：岩瘤是陡的，命中落在步進的哪裡每欄不同 ⇒ 直紋）。 */
+        { float za=max(z-dz,1.0), zb=z;
+          for(int r=0;r<6;r++){
+            float zm=0.5*(za+zb), hN=uCam.z-(k-zm*curv)*zm; vec2 wm=uCam.xy+dir*zm;
+            float Cm=textureLod(uMask, wm*${INV_SCALE}/uMap, 0.0).r*2040.0; Cm=cvCeil(wm,Cm);
+            if(hN>=Cm) zb=zm; else za=zm;
+          }
+          z=zb; wp=uCam.xy+dir*z; mf=wp*${INV_SCALE}; hNeed=uCam.z-(k-z*curv)*z; }
         /* 天頂（鐘乳石）：地面同一套的色與分級，只換光 —— 下面發光植物照上來、洞口邊緣被照亮。 */
         vec2 uv=mf/uMap, ex=vec2(1.0/uMap.x,0.0), ey=vec2(0.0,1.0/uMap.y);
         float gx=(texture(uMask,uv+ex).r-texture(uMask,uv-ex).r)*2040.0;
         float gy=(texture(uMask,uv+ey).r-texture(uMask,uv-ey).r)*2040.0;
-        vec3 n=normalize(vec3(gx,gy,-2.0*${MAP_SCALE}.0));
-        float mot=texture(uMot, uv*3.0).r;
+        float e=6.0;
+        float rx=(cvRough(wp+vec2(e,0.0))-cvRough(wp-vec2(e,0.0)))*200.0*(${MAP_SCALE}.0/e);
+        float ry=(cvRough(wp+vec2(0.0,e))-cvRough(wp-vec2(0.0,e)))*200.0*(${MAP_SCALE}.0/e);
+        vec3 n=normalize(vec3(gx-rx,gy-ry,-2.0*${MAP_SCALE}.0));
+        float mot=textureLod(uMot, uv*3.0, 0.0).r;
         float flod=max(0.5*log2(max((2.0*z/uBuf.x)*(1.0/1.6),1e-4)*max((2.0*z/uBuf.x)*(1.0/1.6),1e-4))+${GEO_LOD_BIAS}+1.0, 0.0);
         vec3 kt=textureLod(uGeo, vec3((wp+vec2(40960.0))*(1.0/1.6)/256.0, 2.0), flod).rgb*(255.0/128.0);
-        vec3 rock=vec3(0.36,0.34,0.38)*(0.75+0.50*mot)*(vec3(1.0)+(kt-vec3(1.0))*0.8);
-        vec3 c3=rock*(uLi.x*0.85+0.22*(-n.z));
+        vec3 rock=vec3(0.50,0.47,0.50)*(0.75+0.50*mot)*(vec3(1.0)+(kt-vec3(1.0))*0.8);
+        float rg=cvRough(wp);
+        float st=0.5+0.5*sin(hNeed*0.05+cvN(wp*(1.0/340.0))*7.0);            // 岩層：橫向的帶
+        rock*=mix(0.78,1.06,st)*mix(0.50,1.0,smoothstep(0.18,0.62,rg));       // 凹處（垂得少的）暗、岩瘤尖受光
+        rock*=0.86+0.28*cvN(wp*(1.0/9.0));                                    // 細顆的石面
+        vec3 c3=rock*(0.34+uLi.x*0.70+0.34*(-n.z));
+        c3+=rock*cvLamp(vec3(wp,hNeed), n, vec2(-sinp,-cosp));
         c3+=rock*vec3(0.30,0.80,0.85)*cvm.a*0.9;
         c3+=rock*CV_SUN*cvm.b*0.7;
         float lm=dot(c3,vec3(0.299,0.587,0.114)); c3=vec3(lm)+(c3-vec3(lm))*${GRADE_SAT};
@@ -12303,6 +12345,9 @@ void main(){
           vec4 cvm=texture(uMask, mf/uMap);
           c+=cBase*CV_SUN*cvShaft(wp,hs)*1.3*clamp(nl,0.35,1.2);
           c+=cBase*vec3(0.25,0.75,0.80)*cvm.a*0.55;
+          vec3 fn=normalize(vec3(-sl*0.06, 1.0));                // 坡度 → 法線（朝上）；牆的 ng 已經大到幾乎水平
+          if(length(ng)>80.0) fn=normalize(vec3(-ng*0.02, 0.3));
+          c+=cBase*cvLamp(vec3(wp,hs), fn, vec2(-sinp,-cosp));
         }
         float lum=dot(c, vec3(0.299,0.587,0.114));
         c=vec3(lum)+(c-vec3(lum))*${GRADE_SAT};   // VP1 分級：往亮度收斂
@@ -12325,7 +12370,20 @@ void main(){
           bool cvWall=(hs-hPrev)>${CLIFF_DH}.0 || length(ng)>80.0;            // sl＝上面打光用的坡度（同一次取樣）
           vec2 ng2=ng;
           float wxN=abs(ng2.x)/(abs(ng2.x)+abs(ng2.y)+1e-3);   // 牆面朝 x ⇒ 用 y 當沿牆座標（三軸投影）
-          if(cvTx==15u){
+          if(cvTx==14u){
+            /* 大型發光植物（ver -2366）：頂面＝菌傘／柱尖，整面自發光；側面＝菌褶，一條一條的暗紋。
+               顏色一株一色（青／紫／淡金），亮度沿高度往上跑一道慢慢的脈動。 */
+            vec2 pc=floor(wp/220.0); float ph=cvHash(pc+1.7);
+            vec3 gc=ph<0.55?vec3(0.32,1.0,0.86):(ph<0.85?vec3(0.70,0.50,1.0):vec3(1.0,0.86,0.46));
+            float pulse=0.80+0.20*sin(hNeed*0.035-uTime*0.0021+ph*30.0);
+            if(cvWall){
+              float gill=0.55+0.45*smoothstep(0.25,0.75,abs(fract(mix(wp.x,wp.y,wxN)/7.0)-0.5)*2.0);
+              c=gc*(0.30+0.40*gill)*pulse + gc*0.10;
+            }else{
+              float spot=1.0-smoothstep(0.18,0.32,length(fract(wp/38.0)-0.5));   // 傘面上的亮斑
+              c=gc*(0.95+0.35*spot)*pulse;
+            }
+          }else if(cvTx==15u){
             /* 水晶：刻面＝坡度方向切成六瓣，每一瓣一個硬邊的亮度（cel 的畫法），再加一點自發光 */
             float ang=atan(sl.y, sl.x)+3.14159265;
             float sec=floor(ang/1.0471976);
@@ -14189,6 +14247,7 @@ function render(now){
   if(!CAVE) drawPuffs(S,scaleH,horizon,sinp,cosp,0,Infinity);        // 雲蓋在城與煙上（地底沒有雲）
   drawPlaces(scaleH,horizon,sinp,cosp);
   drawFlock(scaleH,horizon,sinp,cosp,now);
+  if(CAVE) drawCaveDust(scaleH,horizon,now);                // 地底的浮塵（雪花般，行駛中迎面飄過）
   /* ══⚠⚠ **出怪要淡入**（ver -1433，Ray：「現在看起來是突然出現，出怪要淡入」）══
      包在呼叫端而不是 `drawEnemy3D` 裡面：那一支有好幾個 early return
      （在身後／太遠／貼圖還沒解碼），在裡面 `save()` 要每一條 return 都配一個
@@ -14919,6 +14978,55 @@ const RUIN_AMB=0.08, RUIN_AMB_NIGHT=0.20, RUIN_AMB_EASE=0.08;
    ⚠ 目標不是「夜裡與地形一樣暗」：石頭本來就比林地淺，壓到比地形還暗反而是另一種錯。 */
 let ruinAmb=null;
 let RZMIN=null;                 // 遺蹟的逐欄最近深度（見 drawRuins 的 colSpan）
+/* ══ 地底的浮塵（ver -2366，Ray：「行駛中畫面要有一點雪花般的效果」）══════════════
+   船身周圍一團漂浮的細塵：座標存在**相機空間**（橫向 x、前方深度 d、相對航高 h），
+   船往前開就整團往後退、轉彎就整團跟著轉 —— 所以讀起來是「船穿過塵埃」，不是貼在鏡頭上的雜點。
+   靠近船燈的那幾顆被照成暖色；開得快時拉出一小段迎面的殘影。 */
+let caveDust=null, caveDustCam=null;
+function drawCaveDust(scaleH,horizon,now){
+  const NP=150, DMIN=14, DMAX=420;
+  const R=()=>Math.random();
+  const spawn=(p,far)=>{ p.d=far?DMAX*(0.75+0.25*R()):DMIN+R()*(DMAX-DMIN);
+    p.x=(R()*2-1)*p.d*1.1; p.h=(R()*2-1)*p.d*0.55; p.s=0.6+R()*0.9; p.ph=R()*6.28; return p; };
+  if(!caveDust){ caveDust=[]; for(let i=0;i<NP;i++) caveDust.push(spawn({},false)); }
+  const c0=caveDustCam||{x:cam.x,y:cam.y,a:cam.angle,t:now};
+  const dt=Math.min(now-c0.t,50);
+  /* 這一禎船走了多少（沿船頭方向的分量才算「往前」）、轉了多少 */
+  const fx=-Math.sin(cam.angle), fy=-Math.cos(cam.angle);
+  const fwd=(cam.x-c0.x)*fx+(cam.y-c0.y)*fy;
+  let da=cam.angle-c0.a; if(da>Math.PI) da-=Math.PI*2; if(da<-Math.PI) da+=Math.PI*2;
+  caveDustCam={x:cam.x,y:cam.y,a:cam.angle,t:now};
+  const mov=clamp(Math.abs(cam.speed)/MAX_SPD,0,1);
+  const sxk=W/BW, syk=VIEWH/BH, hz=horizon*syk, sH=scaleH*syk;
+  const ca=Math.cos(da), sa=Math.sin(da);
+  ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.lineCap='round';
+  for(const p of caveDust){
+    const pd=p.d, px=p.x, ph=p.h;
+    /* 轉彎：整團繞船轉（螢幕上往反方向掃過） */
+    const nx=px*ca+pd*sa, nd=-px*sa+pd*ca; p.x=nx; p.d=nd;
+    p.d-=fwd;                                             // 往前開 ⇒ 塵往後退
+    p.h-=dt*0.006*p.s;                                    // 慢慢往下飄（雪）
+    p.x+=Math.sin(now*0.0007+p.ph)*dt*0.004;              // 一點側向的擺
+    if(p.d<DMIN || p.d>DMAX*1.05 || Math.abs(p.x)>p.d*1.3 || Math.abs(p.h)>p.d*0.8){ spawn(p,p.d<DMIN); continue; }
+    const sx=(p.x/p.d+1)*W*0.5, sy=hz-p.h/p.d*sH;
+    if(sx<-8||sx>W+8||sy<-8||sy>VIEWH+8) continue;
+    const near=1-p.d/DMAX;
+    const r=clamp(p.s*240/p.d, 0.7, 4.5);
+    const lamp=clamp(1-Math.hypot(p.x,p.h+30,p.d-40)/150,0,1);   // 船燈照到的那幾顆偏暖、偏亮
+    const a=(0.16+0.64*near*near)*(0.50+0.50*mov)+lamp*0.35;
+    const col=lamp>0.05?`rgba(255,${(214+30*(1-lamp))|0},${(170+70*(1-lamp))|0},${a.toFixed(3)})`
+                       :`rgba(205,225,240,${a.toFixed(3)})`;
+    ctx.strokeStyle=col; ctx.fillStyle=col;
+    const tail=fwd*near*near*0.9;                          // 迎面的殘影：沿著從消失點往外的方向拉
+    ctx.beginPath(); ctx.arc(sx,sy,r,0,6.2832); ctx.fill();
+    if(tail>1.0){                                          // 開快時一小段迎面的殘影（雪片，不是雨絲）
+      const ex=(sx-W*0.5), ey=(sy-hz), el=Math.hypot(ex,ey)||1;
+      ctx.globalAlpha=0.45; ctx.lineWidth=r*1.2; ctx.beginPath(); ctx.moveTo(sx,sy);
+      ctx.lineTo(sx-ex/el*tail*sxk, sy-ey/el*tail*sxk); ctx.stroke(); ctx.globalAlpha=1;
+    }
+  }
+  ctx.restore();
+}
 function drawRuins(scaleH,horizon,sinp,cosp){
   if(!MAPW) return;
   const sxk=W/BW, syk=VIEWH/BH, dyk=scaleH*syk;
@@ -16402,6 +16510,7 @@ function updateFlock(dt,now){
 }
 
 function drawFlock(scaleH,horizon,sinp,cosp,now){
+  if(CAVE) return;                 // 地底沒有鳥
   if(!flock) return;
   const sxk=W/BW, syk=VIEWH/BH;
   const S=sky();
@@ -21876,6 +21985,20 @@ function drawShip(now){
   const dx=Math.round(W/2-R), dy=Math.round(VIEWH*0.76+ship.bob-R);
   ctx.imageSmoothingEnabled=false;
   ctx.drawImage(shipFB,0,0,bw,bh,dx,dy,fw,fh);
+  /* 地底：船頭與船尾的燈（ver -2366，Ray：「船要點燈」）。照亮地形的那一盞在著色器（cvLamp），
+     這裡只畫燈本身看得見的那一團光：暖色的芯＋柔光暈，微微閃。 */
+  if(CAVE){
+    const cy=VIEWH*0.76+ship.bob, fl=0.92+0.08*Math.sin(now*0.013)+0.04*Math.sin(now*0.031);
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    for(const [ox,oy,rr,k] of [[0,-R*0.62,R*0.55,1.0],[0,R*0.42,R*0.30,0.55]]){
+      const gx=W/2+ox, gy=cy+oy, g=ctx.createRadialGradient(gx,gy,0,gx,gy,rr*fl);
+      g.addColorStop(0,`rgba(255,226,170,${(0.85*k).toFixed(3)})`);
+      g.addColorStop(0.12,`rgba(255,180,90,${(0.55*k).toFixed(3)})`);
+      g.addColorStop(1,'rgba(255,140,40,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(gx,gy,rr*fl,0,6.2832); ctx.fill();
+    }
+    ctx.restore();
+  }
   /* ── 探索冷卻完成：船的輪廓閃一下（Ray 指定）──────────────────────
      ⚠ 直接把**剛畫好的船緩衝**再疊一次就好 —— 它已經帶著船的 alpha，
        用 `lighter` 疊出來就是沿著輪廓的一圈光，不必另外做遮罩或描邊。

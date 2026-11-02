@@ -291,6 +291,41 @@ for k, R in ROOMS.items():
         ceil = ceil - flare * rng.uniform(100, 200)
     for px, py in pick(R.get('crystal', 0), 0.8, 16):
         add_crystals(px, py, int(rng.integers(7, 20)), rng.uniform(4, 10), 120, 460)
+# 大型發光植物（ver -2366，Ray：「多一點大型發光植物」）：
+#   柱蕈＝一叢三到六根細高的發光菌柱；傘蕈＝一頂巨大的發光菌傘（高度場畫不出傘下的柄，
+#   所以是一座頂面圓鼓、側面陡直的傘：頂面最亮、側面是菌褶的暗紋，見著色器的 cvTx==14）。
+#   份量跟著那一間的 glow 走，但每一間至少一株（螢光谷、蕈林最多）。
+plant = np.zeros((N, N), np.float32)
+def add_plant(px, py, kind):
+    global floor, crys_fp
+    base = floor[int(np.clip(py, 0, N - 1)), int(np.clip(px, 0, N - 1))]
+    top = ALT - 120 - base
+    if top < 60:
+        return
+    if kind == 'cap':
+        r = rng.uniform(3.2, 6.5)
+        d = disc(px, py, r, 0.12)
+        h = min(rng.uniform(140, 300), top)
+        dome = np.clip(1 - ((1 - disc(px, py, r, 1.0)) ** 2), 0, 1)
+        floor = np.where(d > 0.02, np.maximum(floor, base + h * (0.80 + 0.20 * dome)), floor)
+        plant[d > 0.3] = np.maximum(plant[d > 0.3], 1.0)
+        crys_fp = np.maximum(crys_fp, d)
+    else:
+        for _ in range(int(rng.integers(3, 7))):
+            ox, oy = rng.normal(0, 3.2, 2)
+            d = disc(px + ox, py + oy, rng.uniform(1.0, 2.0), 1.0)
+            h = min(rng.uniform(170, 430), top)
+            floor = np.where(d > 0, np.maximum(floor, base + d ** 0.30 * h), floor)
+            plant[d > 0.25] = np.maximum(plant[d > 0.25], 0.8)
+            crys_fp = np.maximum(crys_fp, d)
+
+for k, R in ROOMS.items():
+    g = R.get('glow', 0)
+    n = 1 + int(round(g * 7))
+    pts = [p for p in inside_pts(k, n * 3, 0.80, 15) if lake[int(p[1]), int(p[0])] < 0.1][:n]
+    for i, (px, py) in enumerate(pts):
+        add_plant(px, py, 'cap' if (i % 2 == 0) else 'spire')
+
 # ⚠ 這一次壓平湖面要避開水晶的腳印：壓下去的話水晶變成浮在水面上的一塊平平的藍色
 lk = lake * in_room * (crys_fp < 0.01)
 floor = floor * (1 - lk) + np.minimum(floor, 46) * lk
@@ -318,9 +353,10 @@ floor[solid] = SOLID
 ceil[solid] = SOLID
 glow[solid] = 0
 crystal[solid] = 0
+plant[solid] = 0
 lake[solid] = 0
 
-spill = cv2.GaussianBlur(np.maximum(glow, crystal * 0.9), (0, 0), 9)
+spill = cv2.GaussianBlur(np.maximum(np.maximum(glow, crystal * 0.9), plant * 2.2), (0, 0), 9)
 spill = spill / (spill.max() + 1e-6)
 shaft = cv2.GaussianBlur(holemask.astype(np.float32), (0, 0), 3.5)
 shaft = shaft / (shaft.max() + 1e-6)
@@ -343,6 +379,8 @@ gcol = np.where((fbm(N, 3, 64, 0.5) > 0.5)[..., None], np.array([60, 230, 210], 
 col = col * (1 - 0.3 * glow[..., None]) + gcol * 0.3 * glow[..., None]   # 只染一點底色，真正的發光在著色器
 col[solid] = rock * 0.8
 col = col * (1 - crystal[..., None]) + np.array([120, 200, 235], np.float32) * crystal[..., None]
+pm = (plant > 0.2)[..., None]
+col = np.where(pm, np.array([90, 210, 190], np.float32), col)
 fm = (np.clip(foam * 1.6, 0, 1) * lake)[..., None]
 col = col * (1 - fm * 0.7) + np.array([200, 225, 235], np.float32) * fm * 0.7
 col[fallm] = np.array([170, 205, 225], np.float32)
@@ -356,6 +394,7 @@ geo[glow > 0.25] = 4
 geo[lake > 0.5] = 8
 geo[solid] = 2
 geo[crystal > 0.5] = 15
+geo[plant > 0.2] = 14
 geo[(foam > 0.3) & (lake > 0.5)] = 9
 geo[fallm] = 9
 
