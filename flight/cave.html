@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>地底大空洞</title>
+<!-- ══ 地底世界・原型（ver -2362，Ray：「遺蹟改成地底世界，地底大空洞，開船在 2.5D 的地底世界穿梭，
+     有一些發光植物跟天頂的孔洞引入地表光」→「先做原型」）══════════════════════════════════
+     ⚠ 這是**獨立一頁**的原型：飛行頁（flight/index.html）的世界載入與大陸那張圖綁得很死
+       （道路／鐵路／河／雪／城全部烘在 loadWorld 裡），在那裡就地換圖會牽動整個地表。
+       先在這裡把「天頂＋光柱＋發光植物」的畫法與手感做對，Ray 點頭之後再搬進飛行頁。
+     地圖由 `flight/build_cave.py` 產（cave/ 底下三張），尺度照飛行頁：1 地圖像素＝20 世界單位、船定高 700。
+     畫法：同飛行頁 GL 路徑的思路 —— 每個像素一條射線往前步進，多一個「撞到天頂」的判定。 -->
+<style>
+  :root{ --bg:#030509; --ink:#cfe6f2; }
+  html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;touch-action:none;
+    -webkit-user-select:none;user-select:none;font-family:"Noto Serif TC",serif;color:var(--ink);}
+  #gl,#ov{position:absolute;left:0;top:0;width:100%;height:100%;}
+  #gl{image-rendering:pixelated;}
+  #hud{position:absolute;left:12px;top:calc(env(safe-area-inset-top) + 10px);font-size:12px;
+    letter-spacing:1px;opacity:.75;pointer-events:none;text-shadow:0 1px 2px #000;}
+  #hint{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 14px);text-align:center;
+    font-size:12px;opacity:.6;pointer-events:none;}
+  #err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:24px;
+    text-align:center;background:#000c;}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<canvas id="ov"></canvas>
+<div id="hud">地底大空洞（原型）</div>
+<div id="hint">按住畫面左／右轉向・上半加速・下半減速（鍵盤：方向鍵／WASD）</div>
+<div id="err"></div>
+<script>
+'use strict';
+/* ⚠ 與 build_cave.py 的常數同一組（改一邊要改另一邊）。CAVE_V／START 由 build_cave.py 自動回寫。 */
+const CAVE_V = {hm:'e582711c', aux:'e26742eb', col:'5ec4a7fd'};
+const START = [4200, 4400, 0.5780];
+const MAP_SCALE = 20;
+const ALT = 700;               // 船的定高（build_cave.py 保證這一層上下各留 80）
+const FLOOR_SCALE = 4, CEIL_SCALE = 8;
+const ZFAR = 3200;
+const HORIZON_F = 0.42;        // 地平線在畫面高度的位置（洞窟上下都有東西，放在中間偏上）
+const TAN_HALF = 0.78;         // 水平半視角的 tan
+const SPEED = 240, SPEED_MIN = 90, SPEED_MAX = 520;   // 世界單位／秒
+const TURN = 1.35;             // 弧度／秒
+const SLAB_TOP = 1500;         // 天頂岩層的上緣：洞口裡射線高過它就是看到地表的天空
+/* 地表光的方向：從洞口斜斜射下來（xy 是水平分量，z 是向下的比例）。 */
+const LIGHT = [0.42, 0.25, 1.0];
+
+const glc = document.getElementById('gl'), ov = document.getElementById('ov'), octx = ov.getContext('2d');
+const gl = glc.getContext('webgl2', {antialias:false, preserveDrawingBuffer:false});
+function fail(m){ const e=document.getElementById('err'); e.style.display='flex'; e.textContent=m; }
+if(!gl) fail('這一台裝置不支援 WebGL2，原型只做了 GL 這一條路。');
+
+const VS = `#version 300 es
+in vec2 p; void main(){ gl_Position=vec4(p,0.,1.); }`;
+const FS = `#version 300 es
+precision highp float;
+uniform sampler2D uHm, uAux, uCol;
+uniform vec3 uCam;      // x, y, alt
+uniform vec2 uFwd;      // 前方（單位向量）
+uniform vec2 uRes;
+uniform float uTime, uTan, uHor, uScale, uMapN;
+out vec4 o;
+const float MS=${MAP_SCALE}.0, FS_=${FLOOR_SCALE}.0*255.0, CS_=${CEIL_SCALE}.0*255.0;
+const float ZF=${ZFAR}.0, SLAB=${SLAB_TOP}.0;
+const vec3 L=normalize(vec3(${LIGHT[0]}, ${LIGHT[1]}, ${LIGHT[2]}));
+const vec3 FOG=vec3(0.035,0.060,0.085);
+const vec3 SUN=vec3(1.0,0.93,0.78);
+vec2 uvOf(vec2 w){ return w/(MS*uMapN); }
+float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+float vnoise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
+  return mix(mix(hash(i),hash(i+vec2(1,0)),f.x), mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x), f.y); }
+// 細節：以世界座標平鋪的高頻（近景不會糊成一片，同飛行頁的 DET_TILE）
+float detail(vec2 w){ return vnoise(w/18.0)*0.55 + vnoise(w/6.0)*0.45; }
+float floorH(vec2 uv){ return texture(uHm,uv).r*FS_; }
+float ceilRaw(vec2 uv){ return texture(uHm,uv).g; }
+bool isHole(float g){ return g>0.985; }
+// 光柱遮罩：從這一點沿光線反推回岩層高度（約 1000），看那裡有沒有洞
+float shaftAt(vec2 w, float h){
+  vec2 back = w - L.xy/L.z*(1050.0-h);
+  return texture(uAux, uvOf(back)).r;
+}
+void main(){
+  vec2 px=gl_FragCoord.xy;
+  float sy = uRes.y - px.y;                          // 由上往下的列
+  float u = (px.x/uRes.x*2.0-1.0)*uTan;
+  vec2 right = vec2(-uFwd.y, uFwd.x);
+  vec2 rd = uFwd + right*u;
+  float slope = (uHor - sy)/uScale;                  // 高度隨深度的斜率
+  float z = 6.0, zp = z;
+  vec3 col = vec3(0.0);
+  float vol = 0.0;                                   // 光柱的體積光累積
+  bool hit=false;
+  for(int k=0;k<320;k++){
+    float dz = 2.0 + z*0.011;
+    z += dz;
+    if(z>ZF) break;
+    vec2 w = uCam.xy + rd*z;
+    vec2 uv = uvOf(w);
+    if(uv.x<0.0||uv.y<0.0||uv.x>1.0||uv.y>1.0){ col=FOG*0.6; hit=true; break; }
+    float h = uCam.z + slope*z;
+    float F = floorH(uv);
+    float g = ceilRaw(uv);
+    bool hole = isHole(g);
+    float C = hole ? 1e6 : g*CS_;
+    float fogK = exp(-z/2300.0);
+    if(h < C && h > F){
+      float s = shaftAt(w,h);
+      vol += s*s*dz*0.00032*fogK;
+    }
+    if(h <= F){
+      // 地面（或石柱側面）
+      float e = 2.0*MS/(MS*uMapN);
+      float hx = floorH(uv+vec2(e,0.0)) - floorH(uv-vec2(e,0.0));
+      float hy = floorH(uv+vec2(0.0,e)) - floorH(uv-vec2(0.0,e));
+      vec3 n = normalize(vec3(-hx, -hy, 4.0*MS));
+      vec3 base = texture(uCol,uv).rgb;
+      vec4 hmv = texture(uHm,uv), aux = texture(uAux,uv);
+      float glow = hmv.b;
+      base *= 0.72 + 0.56*detail(w);
+      float amb = 0.20 + 0.10*n.z;
+      vec3 c = base*amb;
+      // 洞口直射的地表光
+      float sh = shaftAt(w,F);
+      c += base*SUN*sh*max(0.0,dot(n,L))*1.25;
+      // 發光植物的溢光（附近的地面被染成青紫）
+      c += base*vec3(0.25,0.75,0.8)*aux.g*0.55;
+      // 發光植物本身（自發光，緩慢呼吸）
+      float pulse = 0.82+0.18*sin(uTime*1.6 + w.x*0.004 + w.y*0.003);
+      // 一叢一叢的發光體：只有高頻雜訊的峰值才亮（不然近看是一片糊開的顏料）
+      vec2 cell = floor(w/9.0);
+      float pt = hash(cell); vec2 off = fract(w/9.0) - vec2(hash(cell+3.1),hash(cell+7.7));
+      float dot_ = smoothstep(0.30, 0.0, length(off)) * step(0.45, pt);
+      float tw = 0.7+0.3*sin(uTime*2.3 + pt*40.0);
+      vec3 gc = mix(vec3(0.25,1.0,0.9), vec3(0.7,0.5,1.0), step(0.75,pt));
+      c += gc*glow*(0.35 + 1.8*dot_*tw)*pulse;
+      // 地底湖：平而暗、帶一點反光
+      if(F < 60.0){ c = mix(c, vec3(0.03,0.07,0.12)+SUN*sh*0.35, 0.6); }
+      col = mix(FOG, c, fogK);
+      hit=true; break;
+    }
+    if(!hole && h >= C){
+      // 天頂（鐘乳石）
+      float e = 2.0*MS/(MS*uMapN);
+      float cx = ceilRaw(uv+vec2(e,0.0)) - ceilRaw(uv-vec2(e,0.0));
+      float cy = ceilRaw(uv+vec2(0.0,e)) - ceilRaw(uv-vec2(0.0,e));
+      vec3 n = normalize(vec3(cx*CS_, cy*CS_, -4.0*MS));
+      vec3 rock = vec3(0.26,0.24,0.29) * (0.7+0.6*texture(uCol,uv*3.0).r);
+      vec4 aux = texture(uAux,uv);
+      rock *= 0.7 + 0.6*detail(w*1.3);
+      vec3 c = rock*(0.30 + 0.14*(-n.z));
+      c += rock*vec3(0.3,0.8,0.85)*aux.g*0.9;       // 下方發光植物照上來
+      c += rock*SUN*aux.r*0.5;                       // 洞口邊緣被照亮
+      col = mix(FOG, c, fogK);
+      hit=true; break;
+    }
+    if(hole && h >= SLAB){
+      // 從洞口看出去：地表的天空
+      float t = clamp((h-SLAB)/900.0,0.0,1.0);
+      col = mix(vec3(0.95,0.97,1.0), vec3(0.55,0.75,0.98), t);
+      col = mix(FOG, col, max(fogK,0.35));
+      hit=true; break;
+    }
+    zp = z;
+  }
+  if(!hit) col = FOG;
+  col += SUN*(1.0-exp(-vol*1.4))*0.75;   // 體積光：飽和曲線，不讓整片洗白
+  // 微弱的暗角
+  vec2 q = px/uRes - 0.5;
+  col *= 1.0 - dot(q,q)*0.6;
+  o = vec4(pow(col, vec3(0.92)), 1.0);
+}`;
+
+function sh(type, src){ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+let prog, U={};
+function loadImg(src){ return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>rej(new Error('載不到 '+src)); i.src=src; }); }
+function tex(unit, img, filter){
+  const t=gl.createTexture(); gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D,t);
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);
+  gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL,gl.NONE);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA8,gl.RGBA,gl.UNSIGNED_BYTE,img);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,filter); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,filter);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  return t;
+}
+/* 碰撞要用的高度（JS 端）：讀同一張 hm（鐵律 7：與畫面同一份資料）。 */
+let HM=null, N=512;
+function hmAt(x,y){ const i=(Math.min(N-1,Math.max(0,y|0))*N + Math.min(N-1,Math.max(0,x|0)))*4;
+  return { F:HM[i]*FLOOR_SCALE, C:HM[i+1]>=255 ? 1e6 : HM[i+1]*CEIL_SCALE }; }
+function blocked(wx,wy){
+  const mx=wx/MAP_SCALE, my=wy/MAP_SCALE;
+  if(mx<6||my<6||mx>N-6||my>N-6) return true;
+  for(const [dx,dy] of [[0,0],[3,0],[-3,0],[0,3],[0,-3]]){
+    const h=hmAt(mx+dx,my+dy); if(h.F>ALT-60 || h.C<ALT+60) return true; }
+  return false;
+}
+
+/* 船：飛行頁的同一組分層圖（ship/），疊回原樣、船艏朝上。 */
+const SHIP_LAYERS=['hull','prop_l','prop_r','sails_aft','sails_main','sails_fore'];
+let shipImgs=[];
+
+const cam={ x:START[0], y:START[1], a:START[2], speed:SPEED, bank:0 };
+let W=0,H=0;
+function resize(){
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  const cw=innerWidth, ch=innerHeight;
+  const scale = Math.max(1, Math.round(cw/340));     // 內部解析度：寬約 340（像素感，同飛行頁）
+  W=Math.round(cw/scale); H=Math.round(ch/scale);
+  glc.width=W; glc.height=H;
+  ov.width=Math.round(cw*dpr); ov.height=Math.round(ch*dpr);
+  octx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize',resize);
+
+const input={turn:0, thr:0}, keys={};
+addEventListener('keydown',e=>{ keys[e.key.toLowerCase()]=true; });
+addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; });
+let ptr=null;
+addEventListener('pointerdown',e=>{ ptr={x:e.clientX,y:e.clientY}; });
+addEventListener('pointermove',e=>{ if(ptr){ ptr.x=e.clientX; ptr.y=e.clientY; } });
+addEventListener('pointerup',()=>{ ptr=null; }); addEventListener('pointercancel',()=>{ ptr=null; });
+
+let last=performance.now(), fpsT=0, fpsN=0, fps=0;
+function frame(now){
+  const dt=Math.min(0.05,(now-last)/1000); last=now;
+  let t=0, th=0;
+  if(keys['arrowleft']||keys['a']) t-=1; if(keys['arrowright']||keys['d']) t+=1;
+  if(keys['arrowup']||keys['w']) th+=1; if(keys['arrowdown']||keys['s']) th-=1;
+  if(ptr){ const fx=ptr.x/innerWidth-0.5, fy=ptr.y/innerHeight;
+    t += Math.max(-1,Math.min(1,fx*2.6)); if(fy<0.35) th+=1; else if(fy>0.8) th-=1; }
+  input.turn += (t-input.turn)*Math.min(1,dt*6);
+  cam.a += input.turn*TURN*dt;
+  cam.speed = Math.max(SPEED_MIN, Math.min(SPEED_MAX, cam.speed + th*260*dt + (th===0 ? (SPEED-cam.speed)*dt*0.6 : 0)));
+  cam.bank += (input.turn - cam.bank)*Math.min(1,dt*4);
+  const fx=Math.cos(cam.a), fy=Math.sin(cam.a);
+  const nx=cam.x+fx*cam.speed*dt, ny=cam.y+fy*cam.speed*dt;
+  if(HM){
+    if(!blocked(nx,ny)){ cam.x=nx; cam.y=ny; }
+    else if(!blocked(nx,cam.y)){ cam.x=nx; cam.speed*=0.97; }
+    else if(!blocked(cam.x,ny)){ cam.y=ny; cam.speed*=0.97; }
+    else cam.speed=SPEED_MIN;
+  }
+  if(prog){
+    gl.viewport(0,0,W,H);
+    gl.uniform3f(U.uCam,cam.x,cam.y,ALT); gl.uniform2f(U.uFwd,fx,fy);
+    gl.uniform2f(U.uRes,W,H); gl.uniform1f(U.uTime,now/1000);
+    gl.uniform1f(U.uTan,TAN_HALF); gl.uniform1f(U.uHor,H*HORIZON_F); gl.uniform1f(U.uScale,H*0.95);
+    gl.uniform1f(U.uMapN,N);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+  }
+  drawShip(now);
+  fpsN++; fpsT+=dt; if(fpsT>0.5){ fps=Math.round(fpsN/fpsT); fpsN=0; fpsT=0;
+    document.getElementById('hud').textContent='地底大空洞（原型）  '+fps+' fps  ('+(cam.x/MAP_SCALE|0)+','+(cam.y/MAP_SCALE|0)+')'; }
+  requestAnimationFrame(frame);
+}
+function drawShip(now){
+  const cw=innerWidth, ch=innerHeight;
+  octx.clearRect(0,0,cw,ch);
+  if(!shipImgs.length) return;
+  const w=Math.min(cw*0.42, 260), h=w*569/512;
+  const bob=Math.sin(now/700)*3;
+  octx.save();
+  octx.translate(cw/2, ch - h*0.42 + bob);
+  octx.rotate(cam.bank*0.18);
+  for(const im of shipImgs) octx.drawImage(im, -w/2, -h/2, w, h);
+  octx.restore();
+}
+
+(async()=>{
+  if(!gl) return;
+  try{
+    resize();
+    const [hm,aux,col]=await Promise.all([
+      loadImg('cave/cave_hm.png?v='+CAVE_V.hm), loadImg('cave/cave_aux.png?v='+CAVE_V.aux), loadImg('cave/cave_col.png?v='+CAVE_V.col)]);
+    N=hm.naturalWidth;
+    { const c=document.createElement('canvas'); c.width=N; c.height=N; const g=c.getContext('2d',{willReadFrequently:true});
+      g.drawImage(hm,0,0); HM=g.getImageData(0,0,N,N).data; }
+    prog=gl.createProgram(); gl.attachShader(prog,sh(gl.VERTEX_SHADER,VS)); gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,FS));
+    gl.linkProgram(prog); if(!gl.getProgramParameter(prog,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+    gl.useProgram(prog);
+    for(const n of ['uHm','uAux','uCol','uCam','uFwd','uRes','uTime','uTan','uHor','uScale','uMapN']) U[n]=gl.getUniformLocation(prog,n);
+    tex(0,hm,gl.LINEAR); tex(1,aux,gl.LINEAR); tex(2,col,gl.LINEAR);
+    gl.uniform1i(U.uHm,0); gl.uniform1i(U.uAux,1); gl.uniform1i(U.uCol,2);
+    const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+    const loc=gl.getAttribLocation(prog,'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+    shipImgs = await Promise.all(SHIP_LAYERS.map(n=>loadImg('ship/'+n+'.png').catch(()=>null))).then(a=>a.filter(Boolean));
+  }catch(e){ console.error(e); fail(String(e.message||e)); return; }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
