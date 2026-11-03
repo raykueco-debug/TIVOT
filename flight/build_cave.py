@@ -356,7 +356,7 @@ crystal[solid] = 0
 plant[solid] = 0
 lake[solid] = 0
 
-spill = cv2.GaussianBlur(np.maximum(np.maximum(glow, crystal * 0.9), plant * 2.2), (0, 0), 9)
+spill = cv2.GaussianBlur(np.maximum(np.maximum(np.maximum(glow, crystal * 0.9), plant * 2.2), fallm * 1.6), (0, 0), 9)   # 瀑布也是光源（ver -2369）
 spill = spill / (spill.max() + 1e-6)
 shaft = cv2.GaussianBlur(holemask.astype(np.float32), (0, 0), 3.5)
 shaft = shaft / (shaft.max() + 1e-6)
@@ -398,14 +398,48 @@ geo[plant > 0.2] = 14
 geo[(foam > 0.3) & (lake > 0.5)] = 9
 geo[fallm] = 9
 
+# ── 加密（ver -2369，Ray：「多邊形數要高一點」）──────────────────────────
+#  拓樸、空腔、水晶、植物都在 768² 上排好（上面所有像素尺寸都是那一張的），
+#  輸出前整張放大成 SUPER 倍（世界大小不變 ⇒ 飛行頁那邊一格由 20 變 10 世界單位，MAP_SCALE 跟著改），
+#  再在岩壁那一圈與地面加上只有細格子才裝得下的岩面起伏 —— 格子密了，起伏才有地方長。
+SUPER = 2
+N2 = N * SUPER
+def up(a, it=cv2.INTER_CUBIC):
+    return cv2.resize(a.astype(np.float32), (N2, N2), interpolation=it)
+def upn(a):
+    return cv2.resize(a.astype(np.uint8), (N2, N2), interpolation=cv2.INTER_NEAREST)
+tt = np.clip(up(t, cv2.INTER_LINEAR), 0, 1)
+band = np.clip(4 * tt * (1 - tt), 0, 1)                    # 岩壁那一圈（實心與空腔之間）
+fine = fbm(N2, 3, 6, 0.55) - 0.5
+mid = fbm(N2, 3, 22, 0.5) - 0.5
+rough = fine * 80 + mid * 110
+lake2 = up(lake, cv2.INTER_LINEAR); crys2 = up(crystal, cv2.INTER_LINEAR); plant2 = up(plant, cv2.INTER_LINEAR)
+flat = np.clip(1 - lake2 * 2 - crys2 * 2 - plant2 * 2, 0, 1)   # 湖面、水晶、植物不加起伏
+floor2 = up(floor) + band * rough + (1 - band) * fine * 14 * flat * (tt > 0.99)
+ceil2 = up(ceil) - band * rough
+solid2 = upn(solid).astype(bool)
+floor2[solid2] = SOLID; ceil2[solid2] = SOLID
+open2 = ~solid2
+floor2[open2] = np.minimum(floor2[open2], np.maximum(up(floor)[open2], ALT - 90))   # 起伏不准把航道墊高
+ceil2[open2] = np.maximum(ceil2[open2], np.minimum(up(ceil)[open2], ALT + 90))    # 也不准把航道壓低
+holemask2 = upn(holemask).astype(bool)
+glow2 = np.clip(up(glow, cv2.INTER_LINEAR), 0, 1)
+shaft2 = np.clip(up(shaft, cv2.INTER_LINEAR), 0, 1)
+spill2 = np.clip(up(spill, cv2.INTER_LINEAR), 0, 1)
+geo2 = upn(geo)
+col2 = np.clip(up(col), 0, 255)
+shade = 1 + band[..., None] * fine[..., None] * 0.35          # 岩壁上跟著起伏的明暗
+col2 = np.clip(col2 * shade, 0, 255).astype(np.uint8)
+
 # ── 輸出 ────────────────────────────────────────────────────────────
 os.makedirs(OUT, exist_ok=True)
-R_ = np.clip(np.round(floor / FLOOR_SCALE), 0, 255)
-Gc = np.clip(np.round(ceil / CEIL_SCALE), 0, 254)
-Gc[holemask] = HOLE
-B = np.clip(np.round(glow * 255), 0, 255)
+R_ = np.clip(np.round(floor2 / FLOOR_SCALE), 0, 255)
+Gc = np.clip(np.round(ceil2 / CEIL_SCALE), 0, 254)
+Gc[holemask2] = HOLE
+B = np.clip(np.round(glow2 * 255), 0, 255)
 hm = np.stack([R_, Gc, B], -1).astype(np.uint8)
-aux = np.stack([np.round(shaft * 255), np.round(spill * 255), geo], -1).astype(np.uint8)
+aux = np.stack([np.round(shaft2 * 255), np.round(spill2 * 255), geo2], -1).astype(np.uint8)
+col = col2
 
 paths = {}
 for name, arr in (('cave_hm.png', hm), ('cave_aux.png', aux), ('cave_col.png', col)):
@@ -438,6 +472,6 @@ for html in (os.path.join(HERE, 'cave.html'), os.path.join(HERE, 'index.html')):
 core = (dist > WALL_W + 1) & ~solid
 nav = cv2.connectedComponents(core.astype(np.uint8))[1]
 ids = {k: int(nav[int(R['y']), int(R['x'])]) for k, R in ROOMS.items()}
-print('cave:', N, 'px,', len(ROOMS), 'rooms,', len(LINKS), 'links,', len(holes), 'holes,',
+print('cave:', N, '→', N2, 'px,', len(ROOMS), 'rooms,', len(LINKS), 'links,', len(holes), 'holes,',
       'crystal %.1f%%,' % (100 * crystal.mean()), 'falls', int(fallm.sum()), 'px', paths)
 print('航道連通（同一個數字＝連得通；0＝那一格本身被堵住）:', ids)
