@@ -200,6 +200,7 @@ glow = np.zeros((N, N), np.float32)
 crystal = np.zeros((N, N), np.float32)
 crys_fp = np.zeros((N, N), np.float32)        # 水晶錐的整個腳印（湖面壓平時要避開它）
 fallm = np.zeros((N, N), bool)
+FALLS_RAW = []                 # (px, py, 半徑px)：瀑布改由飛行頁畫成 3D 物件（ver -2388），這裡只排位置
 foam = np.zeros((N, N), np.float32)
 pillar_core = np.zeros((N, N), bool)
 holes = []
@@ -311,6 +312,7 @@ for k, R in ROOMS.items():
     for px, py in pick(R.get('falls', 0), 0.6, 18):
         fr = rng.uniform(2.3, 3.4)
         fallm |= disc(px, py, fr, 0.25) > 0.5
+        FALLS_RAW.append((px, py, fr))
         foam = np.maximum(foam, disc(px, py, fr * 3.4, 1.0))
         lake = np.maximum(lake, disc(px, py, fr * 4.5, 0.4))     # 瀑布底下一定有一灘水
     for px, py in pick(R.get('pillars', 0), 0.82, 18):
@@ -510,13 +512,19 @@ t = np.clip(dist / WALL_W, 0, 1)
 t = t * t * (3 - 2 * t)
 floor = SOLID * (1 - t) + floor * t
 ceil = SOLID * (1 - t) + ceil * t
-solid = ~openm | pillar_core | fallm
+# ⚠ 瀑布不再是實心柱（ver -2388，Ray：「瀑布看起來好像 minecraft」）：那一格就是湖面，水柱由飛行頁畫成 3D 物件。
+solid = ~openm | pillar_core
 floor[solid] = SOLID
 ceil[solid] = SOLID
 glow[solid] = 0
 crystal[solid] = 0
 plant[solid] = 0
 lake[solid] = 0
+
+FALLS = []
+for px, py, fr in FALLS_RAW:
+    iy, ix = min(N - 1, int(py)), min(N - 1, int(px))
+    FALLS.append([round(px * 20), round(py * 20), round(fr * 20, 1), round(float(floor[iy, ix])), round(float(ceil[iy, ix]))])
 
 spill = cv2.GaussianBlur(np.maximum(np.maximum(np.maximum(glow * 1.4, crystal * 0.9), plant * 2.2), fallm * 1.6), (0, 0), 9)   # 瀑布也是光源（ver -2369）
 spill = spill / (spill.max() + 1e-6)
@@ -627,6 +635,11 @@ for html in (os.path.join(HERE, 'cave.html'), os.path.join(HERE, 'index.html')):
             s = re.sub(r"const CAVE_ROOMS = \[[^\n]*?\];", lambda m: "const CAVE_ROOMS = %s;" % rooms_js, s, count=1)
             plants_js = json.dumps(PLANTS, separators=(',', ':'))
             crys_js = json.dumps(CRYSTALS, separators=(',', ':'))
+            falls_js = json.dumps(FALLS, separators=(',', ':'))
+            if 'const CAVE_FALLS = ' in s:
+                s = re.sub(r"const CAVE_FALLS = \[[^\n]*?\];", lambda m: "const CAVE_FALLS = %s;" % falls_js, s, count=1)
+            else:
+                s = s.replace('const CAVE_ALT = ', 'const CAVE_FALLS = %s;   // [世界x, 世界y, 半徑, 地面高, 天頂高]（build_cave.py 寫回，ver -2388）\nconst CAVE_ALT = ' % falls_js, 1)
             if 'const CAVE_CRYSTALS = ' in s:
                 s = re.sub(r"const CAVE_CRYSTALS = \[[^\n]*?\];", lambda m: "const CAVE_CRYSTALS = %s;" % crys_js, s, count=1)
             else:
