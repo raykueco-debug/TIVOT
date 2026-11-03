@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.03-2390';
+export const VERSION = 'ver 2026.11.03-2391';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3898,7 +3898,7 @@ export const GAME_CONFIG = {
          **是那個檔案本身放錯了**。從回收區的 wav 重轉回來，量測與 -1015 一字不差
          （−17.02／peak −1.36 → 增益 1.45），可以確認轉回的就是原本那一支。
          ⚠ 真的要換新錄音時重交一次，照 §5／§6.6 走：轉 m4a → 重量 → 升 `?v=`。 */
-      vo_nouvellemiss1:1.45,  vo_nouvellemiss2:1.04,  vo_nouvellemiss3:1.41,
+      vo_nouvellemiss1:1.45,  vo_nouvellemiss2:1.04,  vo_nouvellemiss3:1.41,   // ＝ flight/index.html 的 FILE_GAIN（地底穿瀑布，ver -2391；兩邊互指）
       vo_sorana_miss1:2.77,   vo_sorana_miss2:2.58,   vo_sorana_miss3:2.45,   // miss1 CAP
       /* 第四支（ver -1105，Ray：「wahetta.wav 現在被規到 sorana_miss 系列」）——
          本機 BS.1770 實測 −16.44 LUFS／peak −1.78 dB，**錨在 miss3**（同尺 −21.25

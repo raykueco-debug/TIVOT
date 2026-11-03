@@ -65,6 +65,7 @@ CEIL_SCALE = 8               # G 通道 ×8
 HOLE = 255                   # G＝255 ⇒ 沒有天頂（洞）
 ZOFF = 400                   # ver -2370（Ray：「加入無底深谷，以現在的底部為頂」）：整座地底抬高 400，原本的地面成了「頂」，深谷往下挖
 ALT = 700 + ZOFF             # 船的定高（＝ flight/index.html 的 CAVE_ALT —— 改一邊要改另一邊）
+WATER = 300 + ZOFF           # 地底湖的水面（ver -2391，Ray：「船的高度是 700，湖做個 300 看看」）＝ flight/index.html 的 caveWaterH（CAVE_ALT−400），改一邊要改另一邊
 SOLID = 1900                 # 實心岩層：地面與天頂都填這個（要高過最高的天頂，不然高的空腔看得穿岩壁）
 MIN_R = 40                   # 空腔的短軸下限（像素）：再小船就繞不了身
 
@@ -564,7 +565,7 @@ lit = np.clip(cv2.GaussianBlur(holemask.astype(np.float32), (0, 0), 8)[..., None
 col = col * (1 - lit) + (sand * 0.5 + np.array([90, 120, 60]) * 0.5) * lit
 col = col * (1 - lake[..., None]) + water * lake[..., None]
 gcol = np.where((fbm(N, 3, 64, 0.5) > 0.5)[..., None], np.array([60, 230, 210], np.float32),
-                np.array([150, 110, 255], np.float32))
+                np.array([120, 225, 120], np.float32))   # ver -2391：苔不要紫色（原本 150,110,255），改黃綠
 col = col * (1 - 0.3 * glow[..., None]) + gcol * 0.3 * glow[..., None]   # 只染一點底色，真正的發光在著色器
 col[solid] = rock * 0.8
 fm = (np.clip(foam * 1.6, 0, 1) * lake)[..., None]
@@ -582,6 +583,13 @@ geo[solid] = 2
 geo[(foam > 0.3) & (lake > 0.5)] = 9
 geo[fallm] = 9
 geo[(abyss > 0.5) & ~solid] = 14            # 終點的雲海（飛行頁 cvTx==14）
+# 淹水（ver -2391）：有湖或瀑布的房間，地面低於水面的地方全部算水 —— 飛行頁在這些格子上鋪一層水膜，湖岸＝地形與水面相交的那條線
+flood = np.zeros((N, N), bool)
+for k, R in ROOMS.items():
+    if R.get('end') or not (R.get('lake') or R.get('falls')):
+        continue
+    flood |= (owner == k) & (floor < WATER) & ~solid
+geo[flood & (geo != 9)] = 8
 
 # ── 加密（ver -2369，Ray：「多邊形數要高一點」）──────────────────────────
 #  拓樸、空腔、水晶、植物都在 768² 上排好（上面所有像素尺寸都是那一張的），
