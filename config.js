@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.03-2384';
+export const VERSION = 'ver 2026.11.03-2385';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4003,7 +4003,7 @@ export const GAME_CONFIG = {
          · 瀑布循環版 −17.0 LUFS ⇒ 1.44（峰值 −1.9 dBFS ⇒ +1.3，`peakCeilDb` 之內）
          · 拔刀 −18.6 ⇒ 想要 1.73，峰值 −0.9 dBFS ⇒ 夾到 **1.396**（+2 dBFS）CAP
          · 收刀 −19.1 ⇒ 想要 1.85，峰值 −1.4 dBFS ⇒ 夾到 **1.479**（+2 dBFS）CAP */
-      se_waterfall_loop:1.44,
+      se_waterfall_loop:1.44,   // ＝ flight/index.html 的 FILE_GAIN（地底瀑布，ver -2385；兩邊互指）
       se_sworddraw:1.396,               // CAP
       se_coins:1.549,                   // ver -1769（平均 −22.3 → 想要 2.65，峰值 −1.8 dBFS 被 peakCeilDb +2 夾住）CAP
       se_drawknife:1.928,               // ver -1769（平均 −19.7 → 想要 1.97，峰值 −3.7 dBFS）CAP
@@ -4145,7 +4145,7 @@ export const GAME_CONFIG = {
            夾完 = 10^((2 − 峰值)/20) ⇒ **1.222／1.237**。
            所以這兩支會低於目標 −20 LUFS 約 1.2／2.2 dB，那是母帶的極限（§6.6）。
          ⚠ 校準點：同一支程式量 Prairie5 得 **0.794**，與表上那一列一字不差 ⇒ 量法沒走鐘。 */
-      peritune_glass_cradle_loop:1.222,   // CAP（見上）
+      peritune_glass_cradle_loop:1.222,   // CAP（見上）；＝ flight/index.html 的 FILE_GAIN（地底曲，ver -2385；兩邊互指）
       peritune_echoed_art:1.237,          // CAP（見上）
       /* ⚠ 這兩首的「手機喇叭模型」比原始量測低 6.2／7.5 dB（一般曲子約 4~5）——
          它們的低頻本來就重。增益對的是**兩者的平均**（§6.6：只對其中一邊會讓
