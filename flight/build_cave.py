@@ -217,9 +217,11 @@ for k, R in ROOMS.items():
         # 湖：偏在空腔的一側、形狀不規則（兩三個圓疊起來）
         for (px, py) in inside_pts(k, 3, 0.45, 8):
             lake = np.maximum(lake, disc(px, py, R['b'] * R['lake'] * rng.uniform(0.55, 0.9), 0.35))
-    if R.get('glow'):
-        g = np.clip(best / 30.0, 0, 1) * (owner == k) * np.clip((fbm(N, 5, 16, 0.6) - (0.75 - 0.4 * R['glow'])) * 4, 0, 1)
-        glow = np.maximum(glow, g * R['glow'] ** 0.5)
+    # 地面發光苔（ver -2372，Ray：「有點太暗了，增加地面苔蘚面積讓地表基礎照明多一點」）：
+    #   每一間都有（glow 沒寫的當 0.5），門檻放寬一截 ⇒ 面積約多一倍；亮度下限 0.6
+    gq = max(R.get('glow', 0), 0.5)
+    g = np.clip(best / 24.0, 0, 1) * (owner == k) * np.clip((fbm(N, 5, 16, 0.6) - (0.62 - 0.4 * gq)) * 4, 0, 1)
+    glow = np.maximum(glow, g * max(gq ** 0.5, 0.6))
 lake *= in_room
 floor = floor * (1 - lake) + np.minimum(floor, 46 + ZOFF) * lake
 
@@ -429,7 +431,7 @@ floor = floor * (1 - lk) + np.minimum(floor, 46 + ZOFF) * lk
 # 湖岸一圈發光藻、通道裡零星的發光苔
 shore = np.clip(lake * 3, 0, 1) * (1 - np.clip(lake * 3 - 1.2, 0, 1)) * (lake < 0.6)
 glow = np.maximum(glow, shore * 0.6 * (fbm(N, 4, 8, 0.6) > 0.45))
-glow = np.maximum(glow, (fbm(N, 4, 12, 0.6) > 0.74) * (~in_room) * 0.45)
+glow = np.maximum(glow, (fbm(N, 4, 12, 0.6) > 0.6) * (~in_room) * 0.55)   # 通道的苔也多一截（-2372：0.74→0.6）
 
 # ── 洞口 ────────────────────────────────────────────────────────────
 hole = np.zeros((N, N), np.float32)
@@ -487,7 +489,7 @@ crystal[solid] = 0
 plant[solid] = 0
 lake[solid] = 0
 
-spill = cv2.GaussianBlur(np.maximum(np.maximum(np.maximum(glow, crystal * 0.9), plant * 2.2), fallm * 1.6), (0, 0), 9)   # 瀑布也是光源（ver -2369）
+spill = cv2.GaussianBlur(np.maximum(np.maximum(np.maximum(glow * 1.4, crystal * 0.9), plant * 2.2), fallm * 1.6), (0, 0), 9)   # 瀑布也是光源（ver -2369）
 spill = spill / (spill.max() + 1e-6)
 shaft = cv2.GaussianBlur(holemask.astype(np.float32), (0, 0), 3.5)
 shaft = shaft / (shaft.max() + 1e-6)
