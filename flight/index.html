@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=2385"></script>
+<script src="../orientation.js?v=2386"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。語言判定與 i18n.js 的 LANG 同一套
@@ -11,7 +11,7 @@
 (function(){
   var l=null; try{ l=localStorage.getItem('tivot.lang'); }catch(e){}
   if(!l){ try{ var n=(navigator.languages&&navigator.languages[0])||navigator.language||''; if(String(n).toLowerCase().indexOf('es')===0) l='es'; }catch(e){} }
-  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2385"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2385"><\/script>');
+  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2386"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2386"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=2385');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=2386');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -260,8 +260,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2385");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2385");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2386");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2386");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -281,8 +281,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2385");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2385");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2386");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2386");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -647,23 +647,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2385" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=2386" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2385" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2385" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2385" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2385" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2385" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2385" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2385" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2385" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2385" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2385" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=2386" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2386" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2386" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2386" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2386" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2386" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2386" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2386" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2386" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2386" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=2385" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=2386" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -685,11 +685,11 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=2385"></script>
+<script src="settlement.js?v=2386"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script src="talks.js?v=2385"></script>
+<script src="talks.js?v=2386"></script>
 <script>
 /* 破圖框一律不畫（ver -1881，同主頁 main.js 那一支，這一頁是另一個 document）。 */
 document.addEventListener('error', e=>{ const t=e.target; if(t && t.tagName==='IMG') t.classList.add('img-broken'); }, true);
@@ -765,7 +765,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=b18827be'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -2385';
+const FLIGHT_VER = 'ver -2386';
 const MAP_SCALE  = /[?&]world=cave/.test(location.search) ? 10 : 20;   // 地底的圖加密成 1536²（ver -2369，build_cave.py 的 SUPER）：一格 10 世界單位，世界大小不變
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1054,6 +1054,7 @@ const CAVE_CRYSTALS = [[1989,13918,6.2,46.9,5.63,0.32,2],[1965,13869,6.6,35.5,3.
 const CAVE_ALT = 1100;         // 船的定高 ＝ build_cave.py 的 ALT（改一邊要改另一邊；ver -2370 整座地底抬高 400 好挖無底深谷）
 const CAVE_SLAB = 1700;        // 岩層頂（光柱從這個高度的洞口射下來；著色器同一個數字由 ${} 帶進去）
 const CAVE_PLANT_H = 360;      // 發光植物的基準高度（世界單位；×每株的尺寸，再夾在航高以下）
+const CAVE_SKIP = !/[?&]noskip/.test(location.search);   // 地底的跳空（ver -2386）；網址加 ?noskip 關掉，對照用
 const CAVE_VIEW = 0.55;        // 地底的視距倍率（ZFAR×這個；見 glDrawTerrain 的 uZfar）
 const CAVE_CLEAR = 60;         // 碰撞餘裕：地面／天頂離船身這麼近就擋
 let CAVECEIL=null, CAVEMASK=null;
@@ -12099,11 +12100,15 @@ void main(){
          中間那一段比較低的地方。
        ⚠ 由粗到細：命中前的空曠地帶粗階就過了（一次跳很遠），逼近地形時
          粗階擋下來、換細階，自然收斂。 */
-    if(!CAVEM){                                   // 地底世界不跳空：max-mipmap 只知道地面，不知道天頂
+    /* 地底也跳空（ver -2386）：跳空貼圖的 G＝這一塊天頂的最低點（天井洞口算成岩板頂）。
+       射線整段夾在「地面最高點」與「天頂最低點（扣掉岩瘤會垂下的量）」之間才跳。
+       ⚠ 地底最粗只跳到第 5 階（32 格）：跳過的那一段體積光是用起點的光柱強度補的，跳太長光柱邊緣會起色帶。 */
+    {
       vec2 dm = dir*${INV_SCALE};                 // 每單位 z 在地圖上走幾格
       bool jumped=false;
       for(int L=7; L>=1; L--){
         if(L>uMaxLod) continue;
+        if(CAVEM && (L>5 || ${CAVE_SKIP?'false':'true'})) continue;
         float cs = exp2(float(L));                // 這一階一格涵蓋幾個地圖格
         /* 沿射線離開這一塊還有多遠（DDA，取兩軸的較小值）。 */
         vec2 lo = floor(mf/cs)*cs;
@@ -12122,8 +12127,22 @@ void main(){
         float zv = clamp(k/(2.0*curv), z, z2);
         float hMin = min(min(uCam.z-(k-z*curv)*z, uCam.z-(k-z2*curv)*z2),
                          uCam.z-(k-zv*curv)*zv);
-        float blk = texelFetch(uHmax, min(ivec2(mf)>>L, textureSize(uHmax,L)-1), L).r;   // 夾在範圍內（見 max-mipmap 的建法，ver -2227）
-        if(blk < hMin){ z=z2; dz+=(0.0062*uStepK)*kk; jumped=true; break; }
+        vec2 blkV = texelFetch(uHmax, min(ivec2(mf)>>L, textureSize(uHmax,L)-1), L).rg;   // 夾在範圍內（見 max-mipmap 的建法，ver -2227）
+        float blk = blkV.r;
+        if(CAVEM){
+          /* hNeed 對 z 是下凸的（curv>0）⇒ 區間內的最大值在兩端。 */
+          float hMax = max(uCam.z-(k-z*curv)*z, uCam.z-(k-z2*curv)*z2);
+          /* 岩瘤垂下的量隨天頂高度走（同 cvCeil 的式子，鐵律 7）；base−ra(base) 對 base 遞增，
+             所以拿這一塊的最低天頂代進去算，就是這一塊真正會出現的最低點 —— 不是猜一個固定的餘裕。 */
+          float cMin = blkV.g - 200.0*clamp((blkV.g-${CAVE_ALT}.0-${CAVE_CLEAR}.0)/360.0, 0.15, 1.0);
+          if(blk < hMin && hMax < cMin-2.0){
+            float fogS=uZfar*${FOG_START};
+            float fogK=1.0-clamp((z-fogS)/(uZfar-fogS),0.0,1.0)*${FOG_MAX};
+            float sh=cvShaft(wp,hNeed); vol+=sh*sh*zAdv*0.00007*fogK;
+            z=z2; dz+=(0.0062*uStepK)*kk; jumped=true; break;
+          }
+        }
+        else if(blk < hMin){ z=z2; dz+=(0.0062*uStepK)*kk; jumped=true; break; }
       }
       if(jumped) continue;
     }
@@ -12721,10 +12740,34 @@ function glUploadWorld(){
         hd[y*MAPW+x]=m;
       }
     }
-    let lw=MAPW, lh=MAPH, prev=hd;
+    /* ══⚠⚠ 地底：同一張貼圖的 G 通道存「天頂的最低點」（ver -2386，Ray：「手遊不能做到 intel 內顯跑不動吧」）══
+       地底的射線以前完全不跳空（只知道地面不知道天頂），每像素走滿約 430 步 —— 內顯 74ms／禎。
+       有了「這一塊天頂最低點」，射線夾在地面最高點與天頂最低點之間的整塊就能跳過。
+       ⚠ 底階一樣先做 3×3（取最小值）：天頂在著色器裡是雙線性取樣的（texture(uMask)），理由同上面地面那一圈。
+       ⚠ 天井的洞（R＝255）一律當成岩板頂 CAVE_SLAB：射線過了岩板就要畫洞外的天空，不能被跳過去。
+       ⚠ 大陸那邊 G 不用，填一個用不到的大數（R16F 的上限內）。 */
+    let cdn=null;
+    if(CAVE && CAVEMASK){
+      const cf=new Float32Array(MAPW*MAPH);
+      for(let i=0,n=cf.length;i<n;i++){ const gc=CAVEMASK[i*4]; cf[i]= gc>=255 ? CAVE_SLAB : gc*8; }
+      cdn=new Float32Array(MAPW*MAPH);
+      for(let y=0;y<MAPH;y++){
+        const y0=y>0?y-1:0, y1=y<MAPH-1?y+1:MAPH-1;
+        for(let x=0;x<MAPW;x++){
+          const x0=x>0?x-1:0, x1=x<MAPW-1?x+1:MAPW-1;
+          let m=cf[y*MAPW+x];
+          for(const r of [y0,y,y1]) for(const c of [x0,x,x1]){ const v=cf[r*MAPW+c]; if(v<m) m=v; }
+          cdn[y*MAPW+x]=Math.min(m, CAVE_SLAB);
+        }
+      }
+    }
+    /* 只有地底用雙通道；大陸維持單通道（貼圖大小不變）。 */
+    const HFMT = cdn ? g.RG16F : g.R16F, HCH = cdn ? g.RG : g.RED;
+    const rg=(mx,mn,n)=>{ if(!mn) return mx; const o=new Float32Array(n*2); for(let i=0;i<n;i++){ o[i*2]=mx[i]; o[i*2+1]=mn[i]; } return o; };
+    let lw=MAPW, lh=MAPH, prev=hd, prevC=cdn;
     glTexHmax=g.createTexture(); g.activeTexture(g.TEXTURE0+14);
     g.bindTexture(g.TEXTURE_2D,glTexHmax);
-    g.texImage2D(g.TEXTURE_2D,0,g.R16F,lw,lh,0,g.RED,g.FLOAT,prev);
+    g.texImage2D(g.TEXTURE_2D,0,HFMT,lw,lh,0,HCH,g.FLOAT,rg(prev,prevC,lw*lh));
     TERR_MAXLOD=0;
     for(let L=1; L<=7 && lw>1 && lh>1; L++){
       /* ⚠⚠⚠ **奇數那一階的最後一列／一行要併進來**（ver -2227）：地圖是 2152×1200，不是 2 的冪 ——
@@ -12737,18 +12780,21 @@ function glUploadWorld(){
            否則整張貼圖「不完整」、每一階都讀成 0（試過，整片破成階梯）。
            所以尺寸照舊捨去，改成**最後一格多吃一列／一行**（取最大值，保守的那一邊），
            shader 那邊的查表再夾在範圍內（`min(…, textureSize-1)`）。 */
-      const w=Math.max(1,lw>>1), h=Math.max(1,lh>>1), cur=new Float32Array(w*h);
+      const w=Math.max(1,lw>>1), h=Math.max(1,lh>>1), cur=new Float32Array(w*h), curC=prevC?new Float32Array(w*h):null;
       for(let y=0;y<h;y++){
         const y0=y<<1, y1=(y===h-1)?lh-1:Math.min(y0+1,lh-1);
         for(let x=0;x<w;x++){
           const x0=x<<1, x1=(x===w-1)?lw-1:Math.min(x0+1,lw-1);
-          let m=0;
-          for(let yy=y0;yy<=y1;yy++) for(let xx=x0;xx<=x1;xx++){ const v=prev[yy*lw+xx]; if(v>m) m=v; }
-          cur[y*w+x] = m;
+          let m=0, mc=1e9;
+          for(let yy=y0;yy<=y1;yy++) for(let xx=x0;xx<=x1;xx++){
+            const v=prev[yy*lw+xx]; if(v>m) m=v;
+            if(prevC){ const c=prevC[yy*lw+xx]; if(c<mc) mc=c; }
+          }
+          cur[y*w+x] = m; if(curC) curC[y*w+x]=mc;
         }
       }
-      g.texImage2D(g.TEXTURE_2D,L,g.R16F,w,h,0,g.RED,g.FLOAT,cur);
-      prev=cur; lw=w; lh=h; TERR_MAXLOD=L;
+      g.texImage2D(g.TEXTURE_2D,L,HFMT,w,h,0,HCH,g.FLOAT,rg(cur,curC,w*h));
+      prev=cur; prevC=curC; lw=w; lh=h; TERR_MAXLOD=L;
     }
     g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.NEAREST_MIPMAP_NEAREST);
     g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.NEAREST);
