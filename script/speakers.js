@@ -1657,7 +1657,7 @@ export const ART = {
     draw:       { src:'resources/si/misha_si_draw.webp?v=68b1b653', top:6, bot:1534, fx:0.434 },   // ver -1728：Ray 新出的拔刀圖（姿勢換了，取景重量；美術 09-25）
     salute:     { src:'resources/si/misha_si_salute.webp', top:9, bot:1520, fx:0.447 },
     side:       { src:'resources/si/misha_si_side.webp', top:16, bot:1512, fx:0.37 },
-    '暴走':     { fxShift:0, blink:'off', rescale:true, src:'resources/si/misha_si_coverfaceni.webp?v=66564fc2', top:160, bot:1245, fx:0.482 },   // ver -2380（Ray 11-03：翼是斜上噴湧的紫色電離極光）／ver -2379（Ray 11-03）：以新抓臉為底的暴走聖徒化 —— 短髮因力量升騰（長度畫風照原圖）、臉微仰、虹膜赤紅微光往下看、冷而銳；手用力扣臉；金色符文天使環＋往斜上噴湧的紫色電離極光翼（擴畫成方形 1254²）；top/bot 量人不量翼與法環
+    '暴走':     { fxShift:0, blink:'off', rescale:true, src:'resources/si/misha_si_coverfaceni.webp?v=7d3364fb', top:152, bot:1044, fx:0.516 },   // ver -2381（Ray 11-03）：Ray 自己 SD 修臉的橫幅版（紫色火焰之翼、黃銅 D 形護手軍刀），GPT 只做去背；法環從 -2380 版摘出、縮 0.70 貼在人後（畫布往上加 110 → 1668×1053）；top/bot 量人不量翼與法環
     '抓臉閉嘴': { blink:'off', src:'resources/si/misha_si_coverfaceshut.webp?v=58da9959', top:8, bot:1512, fx:0.470 },   // ver -2356（Ray：「咬牙 閉嘴兩張都收」）：同抓臉（-2357 更陰暗），嘴緊閉不露牙
     '抓臉':     { blink:'off', src:'resources/si/misha_si_coverface.webp?v=bcf9a94c', top:0, bot:1525, fx:0.535 },   // ver -2377（Ray 11-03 交新圖）：左手戴黑手套扣臉、指縫露冷眼、咬牙、右手持軍刀、長鞘掛左；以下為舊版說明 —— ver -2356（Ray）：front 為底；森冷銳利、咬牙、臉上半部壓陰影、冷光眼（-2357 更陰暗）；左手插髮扣臉、銀髮穿過指縫、冷眼從指縫露出；右手持畜生道長刀、長鞘掛左腰
     wound:      { fxShift:0, blink:'off', src:'resources/si/misha_si_wound.webp?v=3a49219d', top:34, bot:1499, fx:0.403 },
