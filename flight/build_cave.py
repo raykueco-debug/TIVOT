@@ -79,9 +79,11 @@ ROOMS = {
     'K': dict(x=420, y=280, a=60, b=52, rot=25,  floor=220, ceil=1050, glow=0.8, pillars=2, name='蕈林'),
     'L': dict(x=580, y=330, a=82, b=56, rot=-35, floor=150, ceil=1240, hole=1, pillars=2, stal=2.0, name='鐘乳廳'),
     'N': dict(x=330, y=110, a=64, b=44, rot=5,   floor=300, ceil=950,  crystal=3, falls=1, lake=0.3, name='晶脈'),
-    'O': dict(x=560, y=150, a=58, b=48, rot=-20, floor=260, ceil=1000, pillars=2, glow=0.3, name='前庭'),
+    'O': dict(x=470, y=160, a=50, b=40, rot=-20, floor=260, ceil=1000, pillars=1, glow=0.3, name='前庭'),   # -2374 往西挪，讓出終點的大空間
     'P': dict(x=700, y=470, a=54, b=48, rot=15,  floor=120, ceil=1150, falls=3, lake=0.6, name='瀑布窟'),
-    'Z': dict(x=690, y=90,  a=62, b=52, rot=10,  floor=280, ceil=1150, hole=1, crystal=2, end=True, name='終點'),
+    # 終點＝無底的大空間（ver -2374，Ray）：半徑 98 像素＝1960 世界單位 ≈ 從入口全速飛五秒到中心（MAX_SPD 6 × 0.06 ＝ 360/秒）。
+    #   沒有地面（壓到 ABYSS_H，飛行頁畫成灰黑雲海）、沒有洞口、水晶、植物、苔 —— 進去伸手不見五指，只有中心那顆星。
+    'Z': dict(x=658, y=118, a=98, b=98, rot=0,   floor=280, ceil=1350, end=True, name='終點'),
 }
 END = 'Z'                    # 終點（往聖王廳 G3）：飛行頁進到這一間就報「終點」
 #  通道：(甲, 乙, 半寬像素)。⚠ 半寬要比岩壁的過渡帶（WALL_W）寬一截，中間才留得出航道。
@@ -217,6 +219,8 @@ for k, R in ROOMS.items():
         # 湖：偏在空腔的一側、形狀不規則（兩三個圓疊起來）
         for (px, py) in inside_pts(k, 3, 0.45, 8):
             lake = np.maximum(lake, disc(px, py, R['b'] * R['lake'] * rng.uniform(0.55, 0.9), 0.35))
+    if R.get('end'):
+        continue                                # 終點的大空間：一點苔都不長
     # 地面發光苔（ver -2372，Ray：「有點太暗了，增加地面苔蘚面積讓地表基礎照明多一點」）：
     #   每一間都有（glow 沒寫的當 0.5），門檻放寬一截 ⇒ 面積約多一倍；亮度下限 0.6
     gq = max(R.get('glow', 0), 0.5)
@@ -279,6 +283,8 @@ def scatter_crystals(k, n):
 
 # 各空腔的內容（份量各自不同；位置隨機，不排整齊）
 for k, R in ROOMS.items():
+    if R.get('end'):
+        continue                                # 終點：沒有洞口、瀑布、石柱、水晶
     taken = []
     def pick(n, margin=0.75, sep=20):
         pts = [p for p in inside_pts(k, n * 3, margin, sep)
@@ -399,6 +405,8 @@ for (ax, ay, mx, my, bx, by) in TUN:
         if q and lake[int(q[1]), int(q[0])] < 0.1:
             add_plant(q[0], q[1], HANG_K if m == CEIL and rng.random() < 0.5 else int(rng.choice(BIG)), mount=m)
 for k, R in ROOMS.items():
+    if R.get('end'):
+        continue                                # 終點：一株植物都沒有
     g = R.get('glow', 0)
     n = 1 + (1 if g >= 0.4 else 0)
     pts = [p for p in inside_pts(k, n * 4, 0.92, 20) if lake[int(p[1]), int(p[0])] < 0.1]
@@ -477,6 +485,18 @@ chasm *= openm * (lake < 0.05) * (foam < 0.05)
 chasm_bottom = 60 + fbm(N, 4, 48, 0.55) * 300
 floor = floor * (1 - chasm) + np.minimum(floor, chasm_bottom) * chasm
 ceil = np.maximum(ceil, ALT + 90)
+# ── 終點的無底大空間（ver -2374）：整間的地面壓到 ABYSS_H —— 飛行頁在那裡畫灰黑的雲海（地貌 14）。
+#    邊緣 5 像素內從原本的地面陡落下去，通道接進來的那一口就是一道崖。
+ABYSS_H = 56                                   # ⚠ 要高過飛行頁 HGT 的下限 CLOUD_H+4（48），不然被墊高
+abyss = np.clip(room_f[END] / 5.0, 0, 1) * (owner == END)
+floor = floor * (1 - abyss) + ABYSS_H * abyss
+glow[abyss > 0] = 0
+plant[abyss > 0] = 0
+crystal[abyss > 0] = 0
+def _out_abyss(L):
+    return [e for e in L if abyss[min(N - 1, int(e[1] / 20)), min(N - 1, int(e[0] / 20))] <= 0]
+PLANTS[:] = _out_abyss(PLANTS)                  # 通道的路燈若落進大空間的範圍也拿掉
+CRYSTALS[:] = _out_abyss(CRYSTALS)
 t = np.clip(dist / WALL_W, 0, 1)
 t = t * t * (3 - 2 * t)
 floor = SOLID * (1 - t) + floor * t
@@ -525,6 +545,7 @@ geo[lake > 0.5] = 8
 geo[solid] = 2
 geo[(foam > 0.3) & (lake > 0.5)] = 9
 geo[fallm] = 9
+geo[(abyss > 0.5) & ~solid] = 14            # 終點的雲海（飛行頁 cvTx==14）
 
 # ── 加密（ver -2369，Ray：「多邊形數要高一點」）──────────────────────────
 #  拓樸、空腔、水晶、植物都在 768² 上排好（上面所有像素尺寸都是那一張的），
