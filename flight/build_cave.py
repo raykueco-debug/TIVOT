@@ -53,11 +53,12 @@ N = 768                      # 地圖像素（＝15360 世界單位見方）
 SEED = 2364
 rng = np.random.default_rng(SEED)
 
-FLOOR_SCALE = 6              # R 通道 ×6（要裝得下 SOLID：255×6＝1530 ＞ 1500）
+FLOOR_SCALE = 8              # R 通道 ×8（要裝得下 SOLID：255×8＝2040 ＞ 1900；ver -2370 由 6 改，整座地底抬高 ZOFF）
 CEIL_SCALE = 8               # G 通道 ×8
 HOLE = 255                   # G＝255 ⇒ 沒有天頂（洞）
-ALT = 700                    # 船的定高（＝ flight/index.html 的 CAVE_ALT —— 改一邊要改另一邊）
-SOLID = 1500                 # 實心岩層：地面與天頂都填這個（要高過最高的天頂，不然高的空腔看得穿岩壁）
+ZOFF = 400                   # ver -2370（Ray：「加入無底深谷，以現在的底部為頂」）：整座地底抬高 400，原本的地面成了「頂」，深谷往下挖
+ALT = 700 + ZOFF             # 船的定高（＝ flight/index.html 的 CAVE_ALT —— 改一邊要改另一邊）
+SOLID = 1900                 # 實心岩層：地面與天頂都填這個（要高過最高的天頂，不然高的空腔看得穿岩壁）
 MIN_R = 40                   # 空腔的短軸下限（像素）：再小船就繞不了身
 
 # ── 拓樸 ────────────────────────────────────────────────────────────
@@ -151,6 +152,7 @@ for k, f in room_f.items():
     best = np.where(m, f, best)
 in_room = best > 0
 tunnel_f = np.full((N, N), -1e9, np.float32)
+TUN = []        # 每一條通道的折線（排路燈似的發光植物用）
 for a, b, hw in LINKS:
     ax, ay, bx, by = ROOMS[a]['x'], ROOMS[a]['y'], ROOMS[b]['x'], ROOMS[b]['y']
     # 通道不走直線：中點往旁邊推一點 → 一個彎
@@ -158,6 +160,7 @@ for a, b, hw in LINKS:
     nx, ny = -(by - ay) / L, (bx - ax) / L
     off = rng.uniform(-0.2, 0.2) * L
     mx, my = (ax + bx) / 2 + nx * off, (ay + by) / 2 + ny * off
+    TUN.append((ax, ay, mx, my, bx, by))
     d = np.minimum(seg_dist(ax, ay, mx, my), seg_dist(mx, my, bx, by))
     tunnel_f = np.maximum(tunnel_f, hw * (1 + 0.30 * wob) - d)
 openm = (best > 0) | (tunnel_f > 0)
@@ -175,8 +178,8 @@ def field(key, default):
     return num / den
 
 
-floor_base = field('floor', 250)
-ceil_top = field('ceil', 1000)
+floor_base = field('floor', 250) + ZOFF
+ceil_top = field('ceil', 1000) + ZOFF
 roomness = np.clip(best / 14.0, 0, 1)                # 空腔邊緣往通道漸變
 
 # ── 地面 ────────────────────────────────────────────────────────────
@@ -218,7 +221,7 @@ for k, R in ROOMS.items():
         g = np.clip(best / 30.0, 0, 1) * (owner == k) * np.clip((fbm(N, 5, 16, 0.6) - (0.75 - 0.4 * R['glow'])) * 4, 0, 1)
         glow = np.maximum(glow, g * R['glow'] ** 0.5)
 lake *= in_room
-floor = floor * (1 - lake) + np.minimum(floor, 46) * lake
+floor = floor * (1 - lake) + np.minimum(floor, 46 + ZOFF) * lake
 
 # 石筍：遍布，但深的空腔多、淺的少
 for _ in range(950):
@@ -246,20 +249,30 @@ for k, R in ROOMS.items():
         ceil -= disc(sx, sy, rng.uniform(4, 11), 1.0) ** 2.0 * rng.uniform(150, 420)
 
 
+CRYSTALS = []   # ver -2370（Ray：「水晶不要鋪在現有地形，另外畫晶狀物，有大有小有密有疏，小的密大的疏」）
+                # [世界x, 世界y, 半徑, 高, 傾向角, 傾斜, 色(0青 1藍 2紫)] —— 飛行頁做成六角尖柱的 3D 網格
 def add_crystals(cx, cy, count, spread, hmin, hmax):
-    global floor, crys_fp
-    for _ in range(count):
+    """一叢：大的 1~3 根疏疏地立在中間，小的一大把密密地圍在四周（小的密、大的疏）"""
+    hue = int(rng.choice([0, 0, 1, 2]))
+    def one(px, py, r, h, tilt):
+        d = disc(px, py, max(1.2, r / 20 * 1.6), 1.0)
+        crystal[d > 0.30] = np.maximum(crystal[d > 0.30], min(1.0, h / 300))   # 只進光的足跡，不改地形
+        CRYSTALS.append([int(px * 20), int(py * 20), round(r, 1), round(h, 1), round(float(rng.uniform(0, 6.283)), 2), round(tilt, 2),
+                         hue if rng.random() < 0.85 else int(rng.integers(0, 3))])
+    for _ in range(int(rng.integers(1, 4))):
+        ox, oy = rng.normal(0, spread * 0.35, 2)
+        one(cx + ox, cy + oy, rng.uniform(28, 60), rng.uniform(hmin * 1.3, hmax), rng.uniform(0.0, 0.35))
+    for _ in range(count * 3):
         ox, oy = rng.normal(0, spread, 2)
-        px, py = cx + ox, cy + oy
-        d = disc(px, py, rng.uniform(1.6, 4.0), 1.0)
-        base = floor[int(np.clip(py, 0, N - 1)), int(np.clip(px, 0, N - 1))]
-        # ⚠ 尖端壓在航道之下：超過的話會被航道保證削成平頂 ⇒ 地上一塊平平的藍色
-        h = min(rng.uniform(hmin, hmax), ALT - 110 - base)
-        if h < 40:
-            continue
-        floor = np.where(d > 0, np.maximum(floor, floor + d ** 0.55 * h), floor)
-        crys_fp = np.maximum(crys_fp, d)
-        crystal[d > 0.30] = 1          # 只有錐身算水晶（錐腳的平地照樣是岩，不然地上一片平平的藍色塊）
+        one(cx + ox, cy + oy, rng.uniform(5, 14), rng.uniform(18, 90), rng.uniform(0.1, 0.7))
+
+def scatter_crystals(k, n):
+    """小晶簇：零星撒在空腔邊上（疏），每一處三五根"""
+    for (px, py) in inside_pts(k, n, 0.9, 10):
+        for _ in range(int(rng.integers(3, 7))):
+            ox, oy = rng.normal(0, 1.8, 2)
+            CRYSTALS.append([int((px + ox) * 20), int((py + oy) * 20), round(float(rng.uniform(4, 10)), 1), round(float(rng.uniform(15, 55)), 1),
+                             round(float(rng.uniform(0, 6.283)), 2), round(float(rng.uniform(0.1, 0.7)), 2), int(rng.integers(0, 3))])
 
 
 # 各空腔的內容（份量各自不同；位置隨機，不排整齊）
@@ -291,31 +304,90 @@ for k, R in ROOMS.items():
         ceil = ceil - flare * rng.uniform(100, 200)
     for px, py in pick(R.get('crystal', 0), 0.8, 16):
         add_crystals(px, py, int(rng.integers(7, 20)), rng.uniform(4, 10), 120, 460)
+    scatter_crystals(k, int(rng.integers(0, 3)) + R.get('crystal', 0))
 # 大型發光植物（ver -2366，Ray：「多一點大型發光植物」）：
 #   柱蕈＝一叢三到六根細高的發光菌柱；傘蕈＝一頂巨大的發光菌傘（高度場畫不出傘下的柄，
 #   所以是一座頂面圓鼓、側面陡直的傘：頂面最亮、側面是菌褶的暗紋，見著色器的 cvTx==14）。
 #   份量跟著那一間的 glow 走，但每一間至少一株（螢光谷、蕈林最多）。
 plant = np.zeros((N, N), np.float32)
 PLANTS = []     # 九宮格的發光植物（ver -2369）：這裡只排位置與種類，形狀是 GPT 設計的那九張、由飛行頁做成十字插片
-def add_plant(px, py, kind):
-    """登記一株（不再改地面高度）；光的足跡照舊進 plant ⇒ 溢光圖裡有它。"""
+# 九格的分工（ver -2370，Ray：「植物有大有小，小的讓他成片出現，看哪些適合」）
+#  大的（路燈）：0 巨蕈、5 珊瑚、7 銀杏扇 —— 剪影寬、一株就照亮一段路
+#  小的（成片）：1 細柱蕈、3 蕨芽、4 燈苞、6 鈴燈花、8 晶管 —— 一叢叢鋪在地上
+#  掛的：2 垂藤 —— 少量掛在天頂
+BIG, SMALL, HANG_K = (0, 5, 7), (1, 3, 4, 6, 8), 2
+def add_plant(px, py, kind, size=None, light=1.0):
+    """登記一株（不改地面高度）；光的足跡進 plant ⇒ 溢光圖裡有它。size＝相對於基準高度（360 世界單位）的倍數。"""
     global crys_fp
-    r = rng.uniform(2.5, 5.0)
+    if size is None:
+        size = rng.uniform(0.85, 1.25)
+    r = 1.5 + 3.5 * min(1.0, size)
     d = disc(px, py, r, 0.12)
-    plant[d > 0.3] = np.maximum(plant[d > 0.3], 1.0)
+    plant[d > 0.3] = np.maximum(plant[d > 0.3], light)
     crys_fp = np.maximum(crys_fp, d)
-    PLANTS.append([int(px * 20), int(py * 20), int(kind), round(float(rng.uniform(0.75, 1.25)), 2), round(float(rng.uniform(0, 6.283)), 2)])
+    PLANTS.append([int(px * 20), int(py * 20), int(kind), round(float(size), 2), round(float(rng.uniform(0, 6.283)), 2)])
 
+def add_patch(px, py, n):
+    """一片小植物：同一種（偶爾混第二種）、半徑 5~10 像素內撒開，中間密邊緣疏"""
+    k1 = int(rng.choice(SMALL)); k2 = int(rng.choice(SMALL)) if rng.random() < 0.35 else k1
+    R = rng.uniform(5, 10)
+    for _ in range(n):
+        a, rr = rng.uniform(0, 6.283), R * math.sqrt(rng.random())
+        x, y = px + math.cos(a) * rr, py + math.sin(a) * rr
+        xi, yi = int(round(x)), int(round(y))
+        if not (0 <= xi < N and 0 <= yi < N) or not openm[yi, xi] or dist[yi, xi] < 2 or lake[yi, xi] > 0.1:
+            continue
+        add_plant(x, y, k2 if rng.random() < 0.3 else k1, size=rng.uniform(0.16, 0.34), light=0.55)
+
+def wall_side(px, py, nx, ny, want=6.0):
+    """從 (px,py) 沿法線往一側走，停在離岩壁約 want 像素的地方（植物貼著路邊長，照亮路面）"""
+    for t in range(0, 60):
+        x, y = px + nx * t, py + ny * t
+        xi, yi = int(round(x)), int(round(y))
+        if not (0 <= xi < N and 0 <= yi < N) or not openm[yi, xi]:
+            return None
+        if dist[yi, xi] <= want:
+            return (x, y) if dist[yi, xi] >= 3 else None
+    return None
+
+# 發光植物＝路燈（ver -2370，Ray：「不要太密集，可以照亮路的分布就好」）：
+#  · 每條通道沿線每 ~60 像素（≈1200 世界單位）一株，左右交替、貼著路邊；
+#  · 每一間空腔只在入口附近與邊上放 1~2 株（glow 高的那幾間多一株）。
+SPACING = 75
+for (ax, ay, mx, my, bx, by) in TUN:
+    segs = [(ax, ay, mx, my), (mx, my, bx, by)]
+    tot = sum(math.hypot(x1 - x0, y1 - y0) for x0, y0, x1, y1 in segs)
+    n = max(1, int(tot // SPACING))
+    for j in range(n):
+        t = (j + 0.5) / n * tot
+        for x0, y0, x1, y1 in segs:
+            L = math.hypot(x1 - x0, y1 - y0)
+            if t <= L:
+                px, py = x0 + (x1 - x0) * t / L, y0 + (y1 - y0) * t / L
+                nx, ny = -(y1 - y0) / L, (x1 - x0) / L
+                break
+            t -= L
+        side = 1 if j % 2 == 0 else -1
+        q = wall_side(px, py, nx * side, ny * side)
+        if q and lake[int(q[1]), int(q[0])] < 0.1:
+            add_plant(q[0], q[1], int(rng.choice(BIG)))
 for k, R in ROOMS.items():
     g = R.get('glow', 0)
-    n = 2 + int(round(g * 10))
-    pts = [p for p in inside_pts(k, n * 3, 0.82, 12) if lake[int(p[1]), int(p[0])] < 0.1][:n]
-    for i, (px, py) in enumerate(pts):
-        add_plant(px, py, int(rng.integers(0, 9)))
+    n = 1 + (1 if g >= 0.4 else 0)
+    pts = [p for p in inside_pts(k, n * 4, 0.92, 20) if lake[int(p[1]), int(p[0])] < 0.1]
+    for (px, py) in pts[:n]:
+        add_plant(px, py, int(rng.choice(BIG)))
+    # 成片的小植物：每間 1~3 片（glow 越高越多），一片 8~16 株
+    for (px, py) in [p for p in inside_pts(k, 12, 0.85, 18) if lake[int(p[1]), int(p[0])] < 0.1][:1 + int(round(g * 2))]:
+        add_patch(px, py, int(rng.integers(8, 17)))
+    # 垂藤：天頂夠高的間偶爾掛一兩串
+    if R.get('ceil', 1000) >= 1000 and rng.random() < 0.6:
+        for (px, py) in pts[n:n + 1 + int(rng.random() < 0.4)]:
+            add_plant(px, py, HANG_K)
 
 # ⚠ 這一次壓平湖面要避開水晶的腳印：壓下去的話水晶變成浮在水面上的一塊平平的藍色
 lk = lake * in_room * (crys_fp < 0.01)
-floor = floor * (1 - lk) + np.minimum(floor, 46) * lk
+floor = floor * (1 - lk) + np.minimum(floor, 46 + ZOFF) * lk
 
 # 湖岸一圈發光藻、通道裡零星的發光苔
 shore = np.clip(lake * 3, 0, 1) * (1 - np.clip(lake * 3 - 1.2, 0, 1)) * (lake < 0.6)
@@ -329,7 +401,42 @@ for hx, hy, hr in holes:
 holemask = (hole > 0.5) & openm
 
 # ── 航道保證、實心岩層、岩壁的弧 ──────────────────────────────────────
-floor = np.clip(floor, 40, ALT - 90)
+floor = np.clip(floor, 40 + ZOFF, ALT - 90)
+# ── 無底深谷（ver -2370）────────────────────────────────────────────
+#  空腔與通道裡挖幾道蜿蜒的裂谷：谷壁陡、谷底高低不一（60~360，比原本的地面低 400~800）。
+#  地底沒有環境光、霧是黑的 ⇒ 看下去就是一片沒有底的黑。湖、瀑布腳下不挖。
+chasm = np.zeros((N, N), np.float32)
+def add_chasm(x0, y0, x1, y1, w):
+    L = math.hypot(x1 - x0, y1 - y0)
+    nx, ny = -(y1 - y0) / L, (x1 - x0) / L
+    bend = rng.uniform(-0.35, 0.35) * L
+    pts = []
+    for i in range(25):
+        t = i / 24
+        b = 4 * t * (1 - t) * bend
+        pts.append((x0 + (x1 - x0) * t + nx * b, y0 + (y1 - y0) * t + ny * b))
+    d = np.full((N, N), 1e9, np.float32)
+    for (ax, ay), (bx, by) in zip(pts, pts[1:]):
+        d = np.minimum(d, seg_dist(ax, ay, bx, by))
+    ww = w * (0.7 + 0.6 * fbm(N, 3, 24, 0.5))          # 寬窄不一
+    return np.clip((ww - d) / (ww * 0.35), 0, 1)       # 谷壁陡：外緣 35% 就從地面落到谷底
+for k, R in ROOMS.items():
+    if R.get('end') or k == 'A':
+        continue
+    for _ in range(int(rng.integers(0, 3))):
+        a0 = rng.uniform(0, 6.283)
+        cx, cy = R['x'], R['y']
+        r0 = max(R['a'], R['b']) * 0.9
+        x0, y0 = cx + math.cos(a0) * r0, cy + math.sin(a0) * r0
+        a1 = a0 + math.pi + rng.uniform(-0.8, 0.8)
+        x1, y1 = cx + math.cos(a1) * r0, cy + math.sin(a1) * r0
+        chasm = np.maximum(chasm, add_chasm(x0, y0, x1, y1, rng.uniform(5, 11)))
+for (ax, ay, mx, my, bx, by) in TUN:                      # 少數通道底下也裂開
+    if rng.random() < 0.3:
+        chasm = np.maximum(chasm, add_chasm(ax, ay, bx, by, rng.uniform(3, 6)))
+chasm *= openm * (lake < 0.05) * (foam < 0.05)
+chasm_bottom = 60 + fbm(N, 4, 48, 0.55) * 300
+floor = floor * (1 - chasm) + np.minimum(floor, chasm_bottom) * chasm
 ceil = np.maximum(ceil, ALT + 90)
 t = np.clip(dist / WALL_W, 0, 1)
 t = t * t * (3 - 2 * t)
@@ -365,7 +472,6 @@ gcol = np.where((fbm(N, 3, 64, 0.5) > 0.5)[..., None], np.array([60, 230, 210], 
                 np.array([150, 110, 255], np.float32))
 col = col * (1 - 0.3 * glow[..., None]) + gcol * 0.3 * glow[..., None]   # 只染一點底色，真正的發光在著色器
 col[solid] = rock * 0.8
-col = col * (1 - crystal[..., None]) + np.array([120, 200, 235], np.float32) * crystal[..., None]
 fm = (np.clip(foam * 1.6, 0, 1) * lake)[..., None]
 col = col * (1 - fm * 0.7) + np.array([200, 225, 235], np.float32) * fm * 0.7
 col[fallm] = np.array([170, 205, 225], np.float32)
@@ -378,7 +484,6 @@ geo[lit[..., 0] > 0.5] = 1
 geo[glow > 0.25] = 4
 geo[lake > 0.5] = 8
 geo[solid] = 2
-geo[crystal > 0.5] = 15
 geo[(foam > 0.3) & (lake > 0.5)] = 9
 geo[fallm] = 9
 
@@ -449,10 +554,16 @@ for html in (os.path.join(HERE, 'cave.html'), os.path.join(HERE, 'index.html')):
         if html.endswith('index.html'):
             rooms_js = json.dumps([[R['name'], R['x'], R['y'], R['a'], R['b'], R['rot'], 1 if k == END else 0]
                                    for k, R in ROOMS.items()], ensure_ascii=False, separators=(',', ':'))
-            s = re.sub(r"const CAVE_ROOMS = \[.*?\];\n", lambda m: "const CAVE_ROOMS = %s;\n" % rooms_js, s, flags=re.S)
+            # ⚠ 一律只換「那一行裡的陣列」，不准跨行（ver -2370：行尾有註解時 .*?\];\n 會一路吃到下一個 ]; 為止，實測刪掉 index.html 39 行）
+            s = re.sub(r"const CAVE_ROOMS = \[[^\n]*?\];", lambda m: "const CAVE_ROOMS = %s;" % rooms_js, s, count=1)
             plants_js = json.dumps(PLANTS, separators=(',', ':'))
+            crys_js = json.dumps(CRYSTALS, separators=(',', ':'))
+            if 'const CAVE_CRYSTALS = ' in s:
+                s = re.sub(r"const CAVE_CRYSTALS = \[[^\n]*?\];", lambda m: "const CAVE_CRYSTALS = %s;" % crys_js, s, count=1)
+            else:
+                s = s.replace('const CAVE_ALT = ', 'const CAVE_CRYSTALS = %s;   // [世界x, 世界y, 半徑, 高, 傾向角, 傾斜, 色]（build_cave.py 寫回）\nconst CAVE_ALT = ' % crys_js, 1)
             if 'const CAVE_PLANTS = ' in s:
-                s = re.sub(r"const CAVE_PLANTS = \[.*?\];\n", lambda m: "const CAVE_PLANTS = %s;\n" % plants_js, s, flags=re.S)
+                s = re.sub(r"const CAVE_PLANTS = \[[^\n]*?\];", lambda m: "const CAVE_PLANTS = %s;" % plants_js, s, count=1)
             else:
                 s = s.replace('const CAVE_ALT = ', 'const CAVE_PLANTS = %s;   // [世界x, 世界y, 種類0~8, 尺寸, 轉角]（build_cave.py 寫回）\nconst CAVE_ALT = ' % plants_js, 1)
         open(html, 'w', encoding='utf-8').write(s)
@@ -460,7 +571,13 @@ for html in (os.path.join(HERE, 'cave.html'), os.path.join(HERE, 'index.html')):
 # 航道自檢：船能走的地方（離岩壁夠遠、不是實心）要把所有空腔連成一塊
 core = (dist > WALL_W + 1) & ~solid
 nav = cv2.connectedComponents(core.astype(np.uint8))[1]
-ids = {k: int(nav[int(R['y']), int(R['x'])]) for k, R in ROOMS.items()}
-print('cave:', N, '→', N2, 'px,', len(PLANTS), 'plants,', len(ROOMS), 'rooms,', len(LINKS), 'links,', len(holes), 'holes,',
+def room_label(R):
+    # 空腔中心可能剛好立著石柱：取空腔裡最多的那一個航道編號，不只看中心一格
+    c, s_ = math.cos(math.radians(R['rot'])), math.sin(math.radians(R['rot']))
+    u = ((XX - R['x']) * c + (YY - R['y']) * s_) / R['a']; v = (-(XX - R['x']) * s_ + (YY - R['y']) * c) / R['b']
+    lab = nav[(u * u + v * v < 0.5) & core]
+    return int(np.bincount(lab).argmax()) if lab.size else 0
+ids = {k: room_label(R) for k, R in ROOMS.items()}
+print('cave:', N, '→', N2, 'px,', len(PLANTS), 'plants,', len(CRYSTALS), 'crystals,', len(ROOMS), 'rooms,', len(LINKS), 'links,', len(holes), 'holes,',
       'crystal %.1f%%,' % (100 * crystal.mean()), 'falls', int(fallm.sum()), 'px', paths)
 print('航道連通（同一個數字＝連得通；0＝那一格本身被堵住）:', ids)
