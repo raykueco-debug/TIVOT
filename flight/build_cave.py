@@ -296,35 +296,22 @@ for k, R in ROOMS.items():
 #   所以是一座頂面圓鼓、側面陡直的傘：頂面最亮、側面是菌褶的暗紋，見著色器的 cvTx==14）。
 #   份量跟著那一間的 glow 走，但每一間至少一株（螢光谷、蕈林最多）。
 plant = np.zeros((N, N), np.float32)
+PLANTS = []     # 九宮格的發光植物（ver -2369）：這裡只排位置與種類，形狀是 GPT 設計的那九張、由飛行頁做成十字插片
 def add_plant(px, py, kind):
-    global floor, crys_fp
-    base = floor[int(np.clip(py, 0, N - 1)), int(np.clip(px, 0, N - 1))]
-    top = ALT - 120 - base
-    if top < 60:
-        return
-    if kind == 'cap':
-        r = rng.uniform(3.2, 6.5)
-        d = disc(px, py, r, 0.12)
-        h = min(rng.uniform(140, 300), top)
-        dome = np.clip(1 - ((1 - disc(px, py, r, 1.0)) ** 2), 0, 1)
-        floor = np.where(d > 0.02, np.maximum(floor, base + h * (0.80 + 0.20 * dome)), floor)
-        plant[d > 0.3] = np.maximum(plant[d > 0.3], 1.0)
-        crys_fp = np.maximum(crys_fp, d)
-    else:
-        for _ in range(int(rng.integers(3, 7))):
-            ox, oy = rng.normal(0, 3.2, 2)
-            d = disc(px + ox, py + oy, rng.uniform(1.0, 2.0), 1.0)
-            h = min(rng.uniform(170, 430), top)
-            floor = np.where(d > 0, np.maximum(floor, base + d ** 0.30 * h), floor)
-            plant[d > 0.25] = np.maximum(plant[d > 0.25], 0.8)
-            crys_fp = np.maximum(crys_fp, d)
+    """登記一株（不再改地面高度）；光的足跡照舊進 plant ⇒ 溢光圖裡有它。"""
+    global crys_fp
+    r = rng.uniform(2.5, 5.0)
+    d = disc(px, py, r, 0.12)
+    plant[d > 0.3] = np.maximum(plant[d > 0.3], 1.0)
+    crys_fp = np.maximum(crys_fp, d)
+    PLANTS.append([int(px * 20), int(py * 20), int(kind), round(float(rng.uniform(0.75, 1.25)), 2), round(float(rng.uniform(0, 6.283)), 2)])
 
 for k, R in ROOMS.items():
     g = R.get('glow', 0)
-    n = 1 + int(round(g * 7))
-    pts = [p for p in inside_pts(k, n * 3, 0.80, 15) if lake[int(p[1]), int(p[0])] < 0.1][:n]
+    n = 2 + int(round(g * 10))
+    pts = [p for p in inside_pts(k, n * 3, 0.82, 12) if lake[int(p[1]), int(p[0])] < 0.1][:n]
     for i, (px, py) in enumerate(pts):
-        add_plant(px, py, 'cap' if (i % 2 == 0) else 'spire')
+        add_plant(px, py, int(rng.integers(0, 9)))
 
 # ⚠ 這一次壓平湖面要避開水晶的腳印：壓下去的話水晶變成浮在水面上的一塊平平的藍色
 lk = lake * in_room * (crys_fp < 0.01)
@@ -379,8 +366,6 @@ gcol = np.where((fbm(N, 3, 64, 0.5) > 0.5)[..., None], np.array([60, 230, 210], 
 col = col * (1 - 0.3 * glow[..., None]) + gcol * 0.3 * glow[..., None]   # 只染一點底色，真正的發光在著色器
 col[solid] = rock * 0.8
 col = col * (1 - crystal[..., None]) + np.array([120, 200, 235], np.float32) * crystal[..., None]
-pm = (plant > 0.2)[..., None]
-col = np.where(pm, np.array([90, 210, 190], np.float32), col)
 fm = (np.clip(foam * 1.6, 0, 1) * lake)[..., None]
 col = col * (1 - fm * 0.7) + np.array([200, 225, 235], np.float32) * fm * 0.7
 col[fallm] = np.array([170, 205, 225], np.float32)
@@ -394,7 +379,6 @@ geo[glow > 0.25] = 4
 geo[lake > 0.5] = 8
 geo[solid] = 2
 geo[crystal > 0.5] = 15
-geo[plant > 0.2] = 14
 geo[(foam > 0.3) & (lake > 0.5)] = 9
 geo[fallm] = 9
 
@@ -466,12 +450,17 @@ for html in (os.path.join(HERE, 'cave.html'), os.path.join(HERE, 'index.html')):
             rooms_js = json.dumps([[R['name'], R['x'], R['y'], R['a'], R['b'], R['rot'], 1 if k == END else 0]
                                    for k, R in ROOMS.items()], ensure_ascii=False, separators=(',', ':'))
             s = re.sub(r"const CAVE_ROOMS = \[.*?\];\n", lambda m: "const CAVE_ROOMS = %s;\n" % rooms_js, s, flags=re.S)
+            plants_js = json.dumps(PLANTS, separators=(',', ':'))
+            if 'const CAVE_PLANTS = ' in s:
+                s = re.sub(r"const CAVE_PLANTS = \[.*?\];\n", lambda m: "const CAVE_PLANTS = %s;\n" % plants_js, s, flags=re.S)
+            else:
+                s = s.replace('const CAVE_ALT = ', 'const CAVE_PLANTS = %s;   // [世界x, 世界y, 種類0~8, 尺寸, 轉角]（build_cave.py 寫回）\nconst CAVE_ALT = ' % plants_js, 1)
         open(html, 'w', encoding='utf-8').write(s)
 
 # 航道自檢：船能走的地方（離岩壁夠遠、不是實心）要把所有空腔連成一塊
 core = (dist > WALL_W + 1) & ~solid
 nav = cv2.connectedComponents(core.astype(np.uint8))[1]
 ids = {k: int(nav[int(R['y']), int(R['x'])]) for k, R in ROOMS.items()}
-print('cave:', N, '→', N2, 'px,', len(ROOMS), 'rooms,', len(LINKS), 'links,', len(holes), 'holes,',
+print('cave:', N, '→', N2, 'px,', len(PLANTS), 'plants,', len(ROOMS), 'rooms,', len(LINKS), 'links,', len(holes), 'holes,',
       'crystal %.1f%%,' % (100 * crystal.mean()), 'falls', int(fallm.sum()), 'px', paths)
 print('航道連通（同一個數字＝連得通；0＝那一格本身被堵住）:', ids)
