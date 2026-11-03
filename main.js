@@ -459,6 +459,7 @@ function flightBgmKey(){
   }
   return null;
 }
+let flightWorld = '';   // '' 地表／'cave' 地底（openFlight 是唯一的寫入點）
 function openFlight(opts){
   if(!(opts && opts.resume) && !openFlight.__veiling){
     openFlight.__veiling = true;
@@ -470,6 +471,11 @@ function openFlight(opts){
   }
   const f=$('flightFrame');
   if(!f){ window.location.href='flight/'; return; }      // 沒有這個框就退回舊的跳頁
+  /* 哪一個世界（ver -2372，Ray：「首頁飛行選單開一個地底選項」）：明講就照講；
+     打完回來（resume）沿用上一趟；其餘一律回地表 —— 漏寫的下場是「回地表」，不是「被留在地底」。 */
+  if(opts && opts.world!==undefined) flightWorld = opts.world || '';
+  else if(!(opts && opts.resume)) flightWorld = '';
+  const src = FLIGHT_SRC + (flightWorld ? '&world='+flightWorld : '');
   /* ⚠⚠ **主遊戲這一頁的 BGM 一定要先收掉**（ver -391，Ray：「BGM 播下一首就停上一首，
      不要重疊」）。飛行頁自 ver -388 起是內嵌 iframe，它**有自己的一套 BGM**
      （另一個 document、另一組 HTMLAudio）—— 跳頁的時代舊頁一走音樂自然沒了，
@@ -537,12 +543,13 @@ function openFlight(opts){
       try{ const j=JSON.parse(localStorage.getItem('tivot_flight_ret_v1')||'null');
            if(j){ j.won = opts.won?1:0; localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(j)); } }catch(_){}
     }
-    f.setAttribute('src', FLIGHT_SRC);
+    f.setAttribute('src', src);
   }
   /* ⚠ **勝負要帶過去**（ver -432（-893 前用詞））：飛行頁那一邊有「第一場艦戰打完」的一段對白，
      輸了聽到「小命保住了」是錯的。活著的舊路保留（萬一哪條路沒殺到）。 */
   else if(opts && opts.resume){ if(w && w.__flightResume) w.__flightResume({ won: !!opts.won }); }
-  else { try{ w.location.reload(); }catch(_){ f.setAttribute('src', FLIGHT_SRC); } }
+  else if(f.getAttribute('src')!==src) f.setAttribute('src', src);   // 換世界＝換網址，reload 換不了
+  else { try{ w.location.reload(); }catch(_){ f.setAttribute('src', src); } }
   f.classList.add('on');
   document.body.classList.add('flight-on');
   /* ⚠⚠⚠ **黑幕在這裡收掉**（ver -906）：-905 之前是「刻意留著不收」——理由是
@@ -1694,7 +1701,21 @@ function buildStatRows(){
      執行走**同一支** `startChapter`（鐵律 8：補給／名字／旗／stage／時鐘不重寫一遍）。
    ⚠⚠ 它與章節跳關一樣**會 `newRun()`** —— 那是既有 dev 梯子的語意，
      而這顆鈕本來就只有 `body.testmode` 看得到（§6.9）。 */
-bindBtn('flightBtn', ()=>startChapter(prog.FLIGHT_TEST));
+/* 試飛選單（ver -2372，Ray：「首頁飛行選單開一個地底選項」）：地表／地底兩條都走同一支 startChapter，
+   差別只有 openFlight 的 world（鐵律 8）。面板借立繪調整區那一套樣式（#tuneSheet）。 */
+function flightHub(){
+  let ov=$('tuneSheet'); if(ov) ov.remove();
+  ov=document.createElement('div'); ov.id='tuneSheet';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.innerHTML=i18nT('<div class="tu-panel"><div class="tu-title">試飛</div>')
+    +i18nT('<button data-go="land">地表</button><button data-go="cave">地底</button>')
+    +i18nT('<button data-go="close" class="tu-dim">關閉</button></div>');
+  ov.querySelector('[data-go="land"]').onclick=()=>{ close(); startChapter(prog.FLIGHT_TEST); };
+  ov.querySelector('[data-go="cave"]').onclick=()=>{ close(); startChapter(prog.FLIGHT_TEST, { world:'cave' }); };
+  ov.querySelector('[data-go="close"]').onclick=close;
+}
+bindBtn('flightBtn', ()=>flightHub());
 /* ⚠ 「腳本測試」（-1551）→ RUSH（-1584）占了它的位子；「巡場」（-1396）與「分歧」（-1708）
    於 ver -1734 拿掉（Ray）—— 巡場的「不演劇情」搬進「章節」第二層的「無劇情」（見 chapterBtn）。
    ⇒ `prog.SCRIPT_TEST` 現在**沒有任何入口用它**，只是落點資料的紀錄；
@@ -2026,7 +2047,7 @@ function startChapter(c, opts){
        ⚠ 走 `openFlight()`（唯一那個入口，鐵律 8）—— 非 resume ＝ iframe 重載，
          所以飛行頁開機那一刻就讀得到剛插上去的旗（`ruin_a_found` 決定瓦努努的
          名牌與降落點出不出得來）。 */
-    openFlight();
+    openFlight(opts && opts.world ? { world: opts.world } : undefined);
   }else{
     story.open(null);
   }

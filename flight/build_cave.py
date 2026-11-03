@@ -316,28 +316,52 @@ PLANTS = []     # 九宮格的發光植物（ver -2369）：這裡只排位置�
 #  小的（成片）：1 細柱蕈、3 蕨芽、4 燈苞、6 鈴燈花、8 晶管 —— 一叢叢鋪在地上
 #  掛的：2 垂藤 —— 少量掛在天頂
 BIG, SMALL, HANG_K = (0, 5, 7), (1, 3, 4, 6, 8), 2
-def add_plant(px, py, kind, size=None, light=1.0):
-    """登記一株（不改地面高度）；光的足跡進 plant ⇒ 溢光圖裡有它。size＝相對於基準高度（360 世界單位）的倍數。"""
+# 尺寸與種的位置（ver -2372，Ray：「發光植物都太大了，都改小且尺寸不一，有的在地上有的掛牆上有的在天頂」）：
+#  · 尺寸＝相對於基準高度 360 的倍數。路燈 0.26~0.6（約 95~215）、成片的 0.05~0.26（約 18~95，偏小的多）。
+#  · mount：0 地上／1 牆上（根貼著岩壁斜斜往外長）／2 天頂（倒掛）。飛行頁照這一欄取根部與生長軸。
+FLOOR, WALL, CEIL = 0, 1, 2
+def lamp_size():
+    return math.exp(rng.uniform(math.log(0.26), math.log(0.6)))
+def small_size():
+    return 0.05 + 0.21 * rng.random() ** 1.6
+def pick_mount(pf, pw):
+    r = rng.random()
+    return FLOOR if r < pf else (WALL if r < pf + pw else CEIL)
+def add_plant(px, py, kind, size=None, light=1.0, mount=FLOOR):
+    """登記一株（不改地面高度）；光的足跡進 plant ⇒ 溢光圖裡有它。"""
     global crys_fp
     if size is None:
-        size = rng.uniform(0.85, 1.25)
-    r = 1.5 + 3.5 * min(1.0, size)
+        size = lamp_size()
+    r = 1.2 + 4.5 * min(1.0, size)
     d = disc(px, py, r, 0.12)
     plant[d > 0.3] = np.maximum(plant[d > 0.3], light)
     crys_fp = np.maximum(crys_fp, d)
-    PLANTS.append([int(px * 20), int(py * 20), int(kind), round(float(size), 2), round(float(rng.uniform(0, 6.283)), 2)])
+    PLANTS.append([int(px * 20), int(py * 20), int(kind), round(float(size), 2), round(float(rng.uniform(0, 6.283)), 2), int(mount)])
 
-def add_patch(px, py, n):
-    """一片小植物：同一種（偶爾混第二種）、半徑 5~10 像素內撒開，中間密邊緣疏"""
+def ok_spot(x, y, mount):
+    xi, yi = int(round(x)), int(round(y))
+    if not (0 <= xi < N and 0 <= yi < N) or not openm[yi, xi] or lake[yi, xi] > 0.1:
+        return False
+    if mount == WALL:
+        return dist[yi, xi] <= 3.5          # 貼著岩壁（飛行頁再往外找真正的牆面）
+    return dist[yi, xi] >= 2
+
+def add_patch(px, py, n, mount):
+    """一片小植物：同一種（偶爾混第二種）、中間密邊緣疏；牆上那片沿著岩壁撒、天頂那片混一點垂藤"""
     k1 = int(rng.choice(SMALL)); k2 = int(rng.choice(SMALL)) if rng.random() < 0.35 else k1
-    R = rng.uniform(5, 10)
-    for _ in range(n):
+    R = rng.uniform(5, 10) if mount != WALL else rng.uniform(6, 12)
+    for _ in range(n * (12 if mount == WALL else 3)):
+        if n <= 0:
+            break
         a, rr = rng.uniform(0, 6.283), R * math.sqrt(rng.random())
         x, y = px + math.cos(a) * rr, py + math.sin(a) * rr
-        xi, yi = int(round(x)), int(round(y))
-        if not (0 <= xi < N and 0 <= yi < N) or not openm[yi, xi] or dist[yi, xi] < 2 or lake[yi, xi] > 0.1:
+        if not ok_spot(x, y, mount):
             continue
-        add_plant(x, y, k2 if rng.random() < 0.3 else k1, size=rng.uniform(0.16, 0.34), light=0.55)
+        k = k2 if rng.random() < 0.3 else k1
+        if mount == CEIL and rng.random() < 0.3:
+            k = HANG_K
+        add_plant(x, y, k, size=small_size(), light=0.5, mount=mount)
+        n -= 1
 
 def wall_side(px, py, nx, ny, want=6.0):
     """從 (px,py) 沿法線往一側走，停在離岩壁約 want 像素的地方（植物貼著路邊長，照亮路面）"""
@@ -347,12 +371,12 @@ def wall_side(px, py, nx, ny, want=6.0):
         if not (0 <= xi < N and 0 <= yi < N) or not openm[yi, xi]:
             return None
         if dist[yi, xi] <= want:
-            return (x, y) if dist[yi, xi] >= 3 else None
+            return (x, y) if dist[yi, xi] >= 1 else None
     return None
 
 # 發光植物＝路燈（ver -2370，Ray：「不要太密集，可以照亮路的分布就好」）：
-#  · 每條通道沿線每 ~60 像素（≈1200 世界單位）一株，左右交替、貼著路邊；
-#  · 每一間空腔只在入口附近與邊上放 1~2 株（glow 高的那幾間多一株）。
+#  · 每條通道沿線每 ~75 像素一株，左右交替；地上、牆上、天頂各有（-2372）。
+#  · 每一間空腔 1~2 株路燈＋1~3 片小植物（地上／牆上／天頂）。
 SPACING = 75
 for (ax, ay, mx, my, bx, by) in TUN:
     segs = [(ax, ay, mx, my), (mx, my, bx, by)]
@@ -368,22 +392,35 @@ for (ax, ay, mx, my, bx, by) in TUN:
                 break
             t -= L
         side = 1 if j % 2 == 0 else -1
-        q = wall_side(px, py, nx * side, ny * side)
+        m = pick_mount(0.45, 0.4)
+        q = wall_side(px, py, nx * side, ny * side, 2.5 if m == WALL else 6.0)
         if q and lake[int(q[1]), int(q[0])] < 0.1:
-            add_plant(q[0], q[1], int(rng.choice(BIG)))
+            add_plant(q[0], q[1], HANG_K if m == CEIL and rng.random() < 0.5 else int(rng.choice(BIG)), mount=m)
 for k, R in ROOMS.items():
     g = R.get('glow', 0)
     n = 1 + (1 if g >= 0.4 else 0)
     pts = [p for p in inside_pts(k, n * 4, 0.92, 20) if lake[int(p[1]), int(p[0])] < 0.1]
     for (px, py) in pts[:n]:
-        add_plant(px, py, int(rng.choice(BIG)))
-    # 成片的小植物：每間 1~3 片（glow 越高越多），一片 8~16 株
-    for (px, py) in [p for p in inside_pts(k, 12, 0.85, 18) if lake[int(p[1]), int(p[0])] < 0.1][:1 + int(round(g * 2))]:
-        add_patch(px, py, int(rng.integers(8, 17)))
+        add_plant(px, py, int(rng.choice(BIG)), mount=FLOOR)
+    # 成片的小植物：每間 1~3 片（glow 越高越多），一片 8~16 株；牆上那片挑靠牆的點起頭
+    cands = [p for p in inside_pts(k, 40, 0.98, 18) if lake[int(p[1]), int(p[0])] < 0.1]
+    for i in range(1 + int(round(g * 2))):
+        m = pick_mount(0.45, 0.3)
+        if not cands:
+            break
+        px, py = cands[int(rng.integers(0, len(cands)))]
+        if m == WALL:                       # 從空腔裡隨便一點往外走到貼牆
+            a = rng.uniform(0, 6.283)
+            for t in range(80):
+                x, y = px + math.cos(a) * t, py + math.sin(a) * t
+                if ok_spot(x, y, WALL):
+                    px, py = x, y
+                    break
+        add_patch(px, py, int(rng.integers(8, 17)), m)
     # 垂藤：天頂夠高的間偶爾掛一兩串
     if R.get('ceil', 1000) >= 1000 and rng.random() < 0.6:
         for (px, py) in pts[n:n + 1 + int(rng.random() < 0.4)]:
-            add_plant(px, py, HANG_K)
+            add_plant(px, py, HANG_K, size=rng.uniform(0.3, 0.7), mount=CEIL)
 
 # ⚠ 這一次壓平湖面要避開水晶的腳印：壓下去的話水晶變成浮在水面上的一塊平平的藍色
 lk = lake * in_room * (crys_fp < 0.01)
