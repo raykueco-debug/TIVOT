@@ -14,17 +14,19 @@ ver -2364 Ray：「要多一點岩窟的質感，有些地圖有水晶 石柱 �
     ver -2383 Ray：「把安雅所在的腔室弄得更難找一些，最好是在地圖中心，可是有一些岔路讓玩家幾乎探索整個地圖才找得到」
     ⇒ 終點搬到正中央、四周實心岩層，只有前庭一條路進去；正確路線逆時針繞全圖一圈。
 
-    M 迴音井 ──────── N 晶脈 ──────── K 蕈林 ──────── L 鐘乳廳
-      │                 │                                 │
-    H 晶洞            E 螢光谷(死路)                       │
-      │                    ╲                              P 瀑布窟
-      │                     （岩）  Z 終點（正中央）         │
-    C 湖窟                         │                      │
-      │                          O 前庭 ─────────────── I 斷層
-      │                D 深淵(死路，貼著終點南邊)
-    B 大廳 ──────────────── F 柱林 ──────────── J 暗河(死路)
-      │
-    A 入口窟
+    （-2384 加兩條支線、全部編號：主線 1～12，支線 13～18；Ray 依編號定各腔的視覺主題）
+
+    5 M 迴音井 ────── 6 N 晶脈 ────── 7 K 蕈林 ────── 8 L 鐘乳廳
+       │                 │               │                 │
+    4 H 晶洞          16 E 螢光谷      17 Q 北岔(死路)      │
+       │                (死路)                          9 P 瀑布窟
+       │      18 S 西岔(死路)  12 Z 終點（正中央）          │
+    3 C 湖窟 ─┘                 │                         │
+       │                     11 O 前庭 ──────────── 10 I 斷層
+       │          15 D 深淵(死路，貼著終點南邊)
+    2 B 大廳 ─────────── 13 F 柱林 ─────────── 14 J 暗河(死路)
+       │
+    1 A 入口窟
     · 正解：入口→大廳→湖窟→晶洞→迴音井→晶脈→蕈林→鐘乳廳→瀑布窟→斷層→前庭→終點（12 間，繞全圖一圈）。
     · 誘餌：大廳往東看起來最近（柱林→暗河／深淵都是死路）；晶脈往南的螢光谷也是死路 ——
       深淵與螢光谷就貼在終點旁邊，隔著岩層。
@@ -71,24 +73,26 @@ MIN_R = 40                   # 空腔的短軸下限（像素）：再小船就�
 #   地面基準：越低越「深」（看下去是一個坑）；天頂：越高越「高」。
 #   內容（可混搭）：hole=洞口數, pillars=石柱數, crystal=水晶叢數, falls=瀑布數, lake=湖的大小(0~1), glow=發光植物(0~1)
 ROOMS = {
-    'A': dict(x=96,  y=700, a=56, b=44, rot=20,  floor=330, ceil=900,  hole=1, glow=0.15, name='入口窟'),
-    'B': dict(x=250, y=600, a=96, b=64, rot=-20, floor=170, ceil=1220, hole=2, pillars=3, crystal=1, glow=0.2, name='大廳'),
-    'C': dict(x=110, y=470, a=70, b=52, rot=60,  floor=90,  ceil=1060, falls=2, lake=0.85, crystal=1, glow=0.35, name='湖窟'),
-    'D': dict(x=380, y=560, a=66, b=58, rot=10,  floor=45,  ceil=1250, falls=1, crystal=3, pillars=1, lake=0.35, name='深淵'),
-    'E': dict(x=240, y=250, a=78, b=46, rot=-10, floor=260, ceil=960,  hole=1, glow=1.0, pillars=1, name='螢光谷'),
-    'F': dict(x=450, y=680, a=64, b=48, rot=35,  floor=380, ceil=880,  pillars=6, glow=0.1, name='柱林'),
-    'H': dict(x=85,  y=290, a=48, b=42, rot=35,  floor=200, ceil=900,  crystal=4, glow=0.2, name='晶洞'),
-    'M': dict(x=120, y=100, a=50, b=44, rot=-15, floor=40,  ceil=1250, hole=1, lake=0.3, name='迴音井'),
-    'I': dict(x=620, y=560, a=74, b=42, rot=70,  floor=420, ceil=900,  crystal=1, pillars=1, name='斷層'),
-    'J': dict(x=660, y=700, a=60, b=46, rot=-10, floor=60,  ceil=1000, falls=1, lake=0.7, glow=0.4, name='暗河'),
-    'K': dict(x=500, y=90, a=60, b=52, rot=25,  floor=220, ceil=1050, glow=0.8, pillars=2, name='蕈林'),
-    'L': dict(x=680, y=170, a=82, b=56, rot=-35, floor=150, ceil=1240, hole=1, pillars=2, stal=2.0, name='鐘乳廳'),
-    'N': dict(x=320, y=90, a=64, b=44, rot=5,   floor=300, ceil=950,  crystal=3, falls=1, lake=0.3, name='晶脈'),
-    'O': dict(x=535, y=490, a=50, b=40, rot=-20, floor=260, ceil=1000, pillars=1, glow=0.3, name='前庭'),   # -2374 往西挪，讓出終點的大空間
-    'P': dict(x=700, y=390, a=54, b=48, rot=15,  floor=120, ceil=1150, falls=3, lake=0.6, name='瀑布窟'),
+    'A': dict(no=1, x=96,  y=700, a=56, b=44, rot=20,  floor=330, ceil=900,  hole=1, glow=0.15, name='入口窟'),
+    'B': dict(no=2, x=250, y=600, a=96, b=64, rot=-20, floor=170, ceil=1220, hole=2, pillars=3, crystal=1, glow=0.2, name='大廳'),
+    'C': dict(no=3, x=110, y=470, a=70, b=52, rot=60,  floor=90,  ceil=1060, falls=2, lake=0.85, crystal=1, glow=0.35, name='湖窟'),
+    'D': dict(no=15, x=380, y=560, a=66, b=58, rot=10,  floor=45,  ceil=1250, falls=1, crystal=3, pillars=1, lake=0.35, name='深淵'),
+    'E': dict(no=16, x=240, y=250, a=78, b=46, rot=-10, floor=260, ceil=960,  hole=1, glow=1.0, pillars=1, name='螢光谷'),
+    'F': dict(no=13, x=450, y=680, a=64, b=48, rot=35,  floor=380, ceil=880,  pillars=6, glow=0.1, name='柱林'),
+    'H': dict(no=4, x=85,  y=290, a=48, b=42, rot=35,  floor=200, ceil=900,  crystal=4, glow=0.2, name='晶洞'),
+    'M': dict(no=5, x=120, y=100, a=50, b=44, rot=-15, floor=40,  ceil=1250, hole=1, lake=0.3, name='迴音井'),
+    'I': dict(no=10, x=620, y=560, a=74, b=42, rot=70,  floor=420, ceil=900,  crystal=1, pillars=1, name='斷層'),
+    'J': dict(no=14, x=660, y=700, a=60, b=46, rot=-10, floor=60,  ceil=1000, falls=1, lake=0.7, glow=0.4, name='暗河'),
+    'K': dict(no=7, x=500, y=90, a=60, b=52, rot=25,  floor=220, ceil=1050, glow=0.8, pillars=2, name='蕈林'),
+    'L': dict(no=8, x=680, y=170, a=82, b=56, rot=-35, floor=150, ceil=1240, hole=1, pillars=2, stal=2.0, name='鐘乳廳'),
+    'N': dict(no=6, x=320, y=90, a=64, b=44, rot=5,   floor=300, ceil=950,  crystal=3, falls=1, lake=0.3, name='晶脈'),
+    'O': dict(no=11, x=535, y=490, a=50, b=40, rot=-20, floor=260, ceil=1000, pillars=1, glow=0.3, name='前庭'),   # -2374 往西挪，讓出終點的大空間
+    'P': dict(no=9, x=700, y=390, a=54, b=48, rot=15,  floor=120, ceil=1150, falls=3, lake=0.6, name='瀑布窟'),
     # 終點＝無底的大空間（ver -2374，Ray）：-2383 搬到地圖正中央、半徑 98→80 像素（1600 世界單位 ≈ 從入口全速四秒半到中心）—— 四周要留岩層給誘餌死路貼著。
     #   沒有地面（壓到 ABYSS_H，飛行頁畫成灰黑雲海）、沒有洞口、水晶、植物、苔 —— 進去伸手不見五指，只有中心那顆星。
-    'Z': dict(x=384, y=384, a=80, b=80, rot=0,   floor=280, ceil=1350, end=True, name='終點'),
+    'Q': dict(no=17, x=545, y=250, a=62, b=46, rot=-30, floor=200, ceil=1100, glow=0.4, name='北岔'),     # -2384 支線：蕈林往南的死路，補北邊的空處
+    'S': dict(no=18, x=215, y=405, a=58, b=48, rot=40,  floor=240, ceil=1000, glow=0.4, name='西岔'),     # -2384 支線：湖窟往東的死路，補西邊的空處
+    'Z': dict(no=12, x=384, y=384, a=80, b=80, rot=0,   floor=280, ceil=1350, end=True, name='終點'),
 }
 END = 'Z'                    # 終點（無底大空間；ver -2378 Ray：這張是西部大熔谷，不是聖王廳那條路）：飛行頁進到這一間就報「終點」
 #  通道：(甲, 乙, 半寬像素)。⚠ 半寬要比岩壁的過渡帶（WALL_W）寬一截，中間才留得出航道。
@@ -97,6 +101,7 @@ LINKS = [
     ('N', 'K', 15), ('K', 'L', 16), ('L', 'P', 14), ('P', 'I', 14), ('I', 'O', 15), ('O', 'Z', 16),
     ('B', 'F', 15), ('F', 'J', 14), ('F', 'D', 15),     # 誘餌：往東最像捷徑，全是死路
     ('N', 'E', 14),                                     # 誘餌：往中心伸過去的死路
+    ('K', 'Q', 14), ('C', 'S', 14),                     # -2384 支線（Ray：「再多兩個支線把空處補起來」）
 ]
 WALL_W = 7                   # 岩壁的過渡帶（像素）：地面往上翻、天頂往下壓成一道弧形的壁
 
@@ -616,7 +621,7 @@ for html in (os.path.join(HERE, 'cave.html'), os.path.join(HERE, 'index.html')):
         key = 'CAVE_START' if html.endswith('index.html') else 'START'   # 飛行頁那一份叫 CAVE_START（別撞到別的 START）
         s = re.sub(r"const %s = \[[^\]]*\];" % key, "const %s = [%d, %d, %.4f];" % ((key,) + start), s)
         if html.endswith('index.html'):
-            rooms_js = json.dumps([[R['name'], R['x'], R['y'], R['a'], R['b'], R['rot'], 1 if k == END else 0]
+            rooms_js = json.dumps([[R['name'], R['x'], R['y'], R['a'], R['b'], R['rot'], 1 if k == END else 0, R['no']]
                                    for k, R in ROOMS.items()], ensure_ascii=False, separators=(',', ':'))
             # ⚠ 一律只換「那一行裡的陣列」，不准跨行（ver -2370：行尾有註解時 .*?\];\n 會一路吃到下一個 ]; 為止，實測刪掉 index.html 39 行）
             s = re.sub(r"const CAVE_ROOMS = \[[^\n]*?\];", lambda m: "const CAVE_ROOMS = %s;" % rooms_js, s, count=1)
