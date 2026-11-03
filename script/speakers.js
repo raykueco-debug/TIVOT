@@ -730,7 +730,7 @@ export const ART = {
        ⚠ 古墓底層那一拍（索「糟糕！」）稿上標了「注意大小，錨臉」——
          換成全身站姿之後那個顧慮本來就不存在了。 */
     panic:     { fxShift:-0.06, yShift:25, cm:150, src:'resources/si/sorana_si_panic.webp?v=13cf60c2', top:8, bot:1522, fx:0.649 },
-    exhaust:      { yShift:25, cm:150, src:'resources/si/sorana_si_exhaust.webp?v=ab70f472', top:51, bot:1522, fx:0.645 },   // ver -2361（Ray）：重畫 —— 屈膝撐膝、握刀低垂、低頭喘息的力竭（guard 當底）
+    exhaust:      { yShift:25, cm:150, src:'resources/si/sorana_si_exhaust.webp?v=6690041f', top:50, bot:1523, fx:0.650 },   // ver -2388（Ray 交件）：再重畫 —— 前傾撐膝、反手握刀低垂、瀏海蓋眼張口喘
     guard:        { fxShift:-0.01, yShift:25, src:'resources/si/sorana_si_guard.webp?v=e18306d1',         top:9,  bot:1527, fx:0.651, cm:150 },
     /* ver -2114（美術 a904d66d；guardgrimace 10-10 Ray 重交 png → 同名覆蓋）：與 guard 同姿勢 ⇒ 位置沿用 guard 的值（§6.5）。 */
     guardgrimace: { fxShift:-0.01, yShift:25, src:'resources/si/sorana_si_guardgrimace.webp?v=0a88b738', top:9, bot:1527, fx:0.651, cm:150 },
