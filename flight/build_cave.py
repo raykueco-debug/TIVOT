@@ -63,6 +63,8 @@ rng = np.random.default_rng(SEED)
 FLOOR_SCALE = 8              # R 通道 ×8（要裝得下 SOLID：255×8＝2040 ＞ 1900；ver -2370 由 6 改，整座地底抬高 ZOFF）
 CEIL_SCALE = 8               # G 通道 ×8
 HOLE = 255                   # G＝255 ⇒ 沒有天頂（洞）
+EXIT_FROM = 'A'              # 進出口在哪一間（ver -2396）
+EXIT = None
 ZOFF = 400                   # ver -2370（Ray：「加入無底深谷，以現在的底部為頂」）：整座地底抬高 400，原本的地面成了「頂」，深谷往下挖
 ALT = 700 + ZOFF             # 船的定高（＝ flight/index.html 的 CAVE_ALT —— 改一邊要改另一邊）
 WATER = 300 + ZOFF           # 地底湖的水面（ver -2391，Ray：「船的高度是 700，湖做個 300 看看」）＝ flight/index.html 的 caveWaterH（CAVE_ALT−400），改一邊要改另一邊
@@ -310,6 +312,12 @@ for k, R in ROOMS.items():
             if len(out) >= n:
                 break
         return out
+    if k == EXIT_FROM:
+        # 西部大熔谷的進出口（ver -2396，Ray：「改成垂直進入…洞內改成天光由上而來…從洞穴離開是垂直升空」）：
+        #   入口窟正中央（＝起點正上方）一個大天井 —— 船從這裡降下來、也從這裡升出去。
+        holes.append((R['x'], R['y'], R['b'] * 0.46))
+        EXIT = [int(R['x'] * 20), int(R['y'] * 20), int(R['b'] * 0.46 * 20)]
+        continue
     for i, (px, py) in enumerate(pick(R.get('hole', 0), 0.6, 26)):
         holes.append((px, py, (R['b'] * 0.32 if i == 0 else R['b'] * 0.16) * rng.uniform(0.8, 1.15)))
     for px, py in pick(R.get('falls', 0), 0.6, 18):
@@ -663,6 +671,8 @@ for html in (os.path.join(HERE, 'cave.html'), os.path.join(HERE, 'index.html')):
             plants_js = json.dumps(PLANTS, separators=(',', ':'))
             crys_js = json.dumps(CRYSTALS, separators=(',', ':'))
             falls_js = json.dumps(FALLS, separators=(',', ':'))
+            if 'const CAVE_EXIT = ' in s:
+                s = re.sub(r"const CAVE_EXIT = \[[^\n]*?\];", lambda m: "const CAVE_EXIT = %s;" % json.dumps(EXIT), s, count=1)
             if 'const CAVE_FALLS = ' in s:
                 s = re.sub(r"const CAVE_FALLS = \[[^\n]*?\];", lambda m: "const CAVE_FALLS = %s;" % falls_js, s, count=1)
             else:
