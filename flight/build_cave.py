@@ -225,10 +225,12 @@ def inside_pts(k, n, margin=0.78, sep=16):
 
 
 for k, R in ROOMS.items():
-    if R.get('lake'):
+    # 有瀑布的房間一定要有地底湖（ver -2389，Ray：「有瀑布的房間都要有地底湖」）：湖的份量至少 0.75
+    lk_amt = max(R.get('lake', 0), 0.75) if R.get('falls') else R.get('lake', 0)
+    if lk_amt:
         # 湖：偏在空腔的一側、形狀不規則（兩三個圓疊起來）
         for (px, py) in inside_pts(k, 3, 0.45, 8):
-            lake = np.maximum(lake, disc(px, py, R['b'] * R['lake'] * rng.uniform(0.55, 0.9), 0.35))
+            lake = np.maximum(lake, disc(px, py, R['b'] * lk_amt * rng.uniform(0.55, 0.9), 0.35))
     if R.get('end'):
         continue                                # 終點的大空間：一點苔都不長
     # 地面發光苔（ver -2372，Ray：「有點太暗了，增加地面苔蘚面積讓地表基礎照明多一點」）：
@@ -446,6 +448,23 @@ for k, R in ROOMS.items():
 # ⚠ 這一次壓平湖面要避開水晶的腳印：壓下去的話水晶變成浮在水面上的一塊平平的藍色
 lk = lake * in_room * (crys_fp < 0.01)
 floor = floor * (1 - lk) + np.minimum(floor, 46 + ZOFF) * lk
+
+# 湖裡的發光植物（ver -2389，Ray：「發光植物一樣在湖裡」）：每一座湖撒一兩片小株，長在湖面上。
+#   ⚠ 放在壓平湖面**之後**：植物的腳印不准擋住湖面壓平（那會在水面上留下一塊塊凸起）。
+for k, R in ROOMS.items():
+    if R.get('end') or not (R.get('lake') or R.get('falls')):
+        continue
+    wet = [p for p in inside_pts(k, 80, 0.98, 6) if lake[int(p[1]), int(p[0])] > 0.6]
+    for _ in range(1 + (1 if R.get('falls') else 0)):
+        if not wet:
+            break
+        cx, cy = wet[int(rng.integers(0, len(wet)))]
+        k1 = int(rng.choice(SMALL))
+        for _ in range(int(rng.integers(6, 13))):
+            a, r = rng.uniform(0, 6.283), rng.uniform(0, 7) ** 0.9
+            x, y = cx + math.cos(a) * r, cy + math.sin(a) * r
+            if 0 <= int(y) < N and 0 <= int(x) < N and lake[int(y), int(x)] > 0.5 and openm[int(y), int(x)]:
+                add_plant(x, y, k1, size=rng.uniform(0.06, 0.2), mount=FLOOR)
 
 # 湖岸一圈發光藻、通道裡零星的發光苔
 shore = np.clip(lake * 3, 0, 1) * (1 - np.clip(lake * 3 - 1.2, 0, 1)) * (lake < 0.6)
