@@ -1962,7 +1962,8 @@ export const ENEMIES = {
       stack:1,
       image:'enemy_tree_dragon_low',
       sky:'undercity',
-      assaultSe:'se_enemy_dragonroar',   // 主動攻擊衝出那一刻吼一聲（ver -2450）
+      assaultSe:'se_enemy_dragonroar',
+      rainSe:['se_bulletsfly1','se_bulletsfly2','se_bulletsfly3','se_bulletsfly4'],   // 鱗片雨擊中的子彈飛行音（隨機挑、變調，ver -2453）   // 主動攻擊衝出那一刻吼一聲（ver -2450）
       hitPlain:true,   // 挨主動攻擊只震畫面（ver -2446，Ray：「不用其他受擊效果」）
       fit:{ mode:'contain', pos:'center center' },
       hp:270,

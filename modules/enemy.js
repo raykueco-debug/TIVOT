@@ -1244,19 +1244,30 @@ export function skyScaleRain(){
   const bx0=r.left-tr.left, bx1=r.right-tr.left, by0=r.top-tr.top, by1=r.bottom-tr.top, P=[], rnd=(a,b)=>a+Math.random()*(b-a);
   for(let i=0;i<70;i++) P.push({ x:rnd(bx0+(bx1-bx0)*0.2, bx1-(bx1-bx0)*0.1), y:rnd(by0+(by1-by0)*0.3, by1-(by1-by0)*0.2),   // ① 噴：從龍身往左後方
     vx:rnd(-1.2,-0.45), vy:rnd(-0.35,0.25), rot:rnd(0,6.28), vr:rnd(-0.02,0.02), s:rnd(4,9), t0:0, life:rnd(300,480) });
-  for(let i=0;i<120;i++) P.push({ x:rnd(W*0.2, W*1.3), y:rnd(-H*0.35, H*0.15), vx:rnd(-1.1,-0.7), vy:rnd(0.9,1.3), rot:rnd(0,6.28), vr:rnd(-0.03,0.03),   // ② 雨：右上往左下斜刮
-    s:rnd(5,12), t0:rnd(SCALE_RAIN_AT-150, SCALE_RAIN_AT+60), life:rnd(600,900) });   // 噴完（≤480）空一拍才刮過來
+  /* ② 鱗片雨（-2453，Ray：「鱗雨要尖銳快速，但不要一整片，是依序落下，有快有慢」）：一片一片陸續落（散在約 0.55 秒裡），
+     每一片自己的速度、尖長的碎片順著飛的方向（不轉），從右上斜刮向左下 */
+  for(let i=0;i<64;i++){ const sp=rnd(1.4,3.2), ang=rnd(2.05,2.35);   // 往左下（約 120～135°）
+    P.push({ shard:true, x:rnd(W*0.15, W*1.25), y:rnd(-H*0.25, H*0.1), vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp, rot:ang, vr:0,
+      s:rnd(9,20), t0:SCALE_RAIN_AT-180+Math.pow(Math.random(),0.8)*560, life:rnd(380,620) }); }
   const t0=performance.now();
   const draw=now=>{ if(!cv.isConnected) return;
     const t=now-t0; cx.clearRect(0,0,W,H); let alive=false;
     for(const p of P){ const u=t-p.t0; if(u<0 || u>p.life){ if(u<0) alive=true; continue; } alive=true;
       const x=p.x+p.vx*u, y=p.y+p.vy*u, a=Math.min(1,u/80)*Math.min(1,(p.life-u)/200);
       cx.save(); cx.translate(x,y); cx.rotate(p.rot+p.vr*u); cx.globalAlpha=a;
+      if(p.shard){   // 雨：尖長的碎片（順著飛的方向），後面拖一小段殘影
+        cx.fillStyle='rgba(225,218,204,.35)'; cx.beginPath(); cx.moveTo(-p.s*1.6,-1); cx.lineTo(-p.s*0.4,0); cx.lineTo(-p.s*1.6,1); cx.closePath(); cx.fill();
+        cx.fillStyle='#ddd3c2'; cx.beginPath(); cx.moveTo(p.s*0.6,0); cx.lineTo(-p.s*0.4,-p.s*0.13); cx.lineTo(-p.s*0.55,0); cx.lineTo(-p.s*0.4,p.s*0.13); cx.closePath(); cx.fill();
+      } else {
       cx.fillStyle='#c9bfae'; cx.beginPath(); cx.moveTo(0,-p.s); cx.lineTo(p.s*0.55,0); cx.lineTo(0,p.s*0.8); cx.lineTo(-p.s*0.55,0); cx.closePath(); cx.fill();   // 一片鱗：菱形、灰白骨色
-      cx.fillStyle='rgba(90,78,64,.8)'; cx.beginPath(); cx.moveTo(0,-p.s*0.35); cx.lineTo(p.s*0.2,0.1*p.s); cx.lineTo(0,p.s*0.5); cx.closePath(); cx.fill();
+      cx.fillStyle='rgba(90,78,64,.8)'; cx.beginPath(); cx.moveTo(0,-p.s*0.35); cx.lineTo(p.s*0.2,0.1*p.s); cx.lineTo(0,p.s*0.5); cx.closePath(); cx.fill(); }
       cx.restore(); }
     if(alive) requestAnimationFrame(draw); else { cv.remove(); if(scaleRainCv===cv) scaleRainCv=null; } };
   requestAnimationFrame(draw);
+  /* 鱗片擊中：一串子彈飛行音，一聲聲錯開、高低不一（-2453，Ray：「噴鱗擊中時用無數的子彈飛行音，做一點高低音變化」） */
+  const WH=(curCard()||{}).rainSe || ['se_bulletsfly1','se_bulletsfly2','se_bulletsfly3','se_bulletsfly4'];   // 卡上 rainSe（戰鬥的音效預載掃得到它）
+  for(let i=0;i<14;i++){ const k=WH[(Math.random()*WH.length)|0], at=SCALE_RAIN_AT-120+Math.pow(Math.random(),0.9)*520;
+    setTimeout(()=>{ try{ SFX.playRate(asset(k), sfxGain(k)*0.55, 0.78+Math.random()*0.6); }catch(_){} }, at); }
   return SCALE_RAIN_AT;
 }
 /* ══ 敵人的台詞語音（ver -1920，Ray：尼莫「玩家受擊用 slow1／slow2／feint 輪播、玩家戰敗播 bulletrain、戰勝播 win」）══

@@ -289,6 +289,7 @@ function playBuffer(c, buf, vol, voice, handle, src){
       const ch = voiceChain(c, vol);
       if(ch){ s.connect(ch.head); ch.tail.connect(busIn(c,'vo')); s.start(); return; }
     }
+    if(handle && handle.rate) s.playbackRate.value = handle.rate;   // 變調（ver -2453：鱗片雨那一串子彈飛行音要有高低）
     const g = c.createGain(); g.gain.value = (vol==null ? 1 : vol);
     s.connect(g); g.connect(busIn(c, layerOf(src, voice)));
     if(handle && handle.loop){
@@ -745,6 +746,8 @@ export const SFX = {
 
   // 播放音檔（src＝已解析路徑）。每次 new source → 可自由重疊、不限制、不打斷前一個。
   play(src, vol){ playSrc(src, vol); },
+  /* 變調播一次（rate＞1 高、＜1 低；ver -2453）。 */
+  playRate(src, vol, rate){ playSrc(src, vol, false, { rate }); },
   /* 播一支**可中止**的音效，回傳把手：`.stop(fadeMs)` 收掉它。
      用途：演出用的機械聲（Kerberos 的齒輪）必須跟著動畫收尾，不能自己響完 ——
      素材 6.9 秒、動畫只有 1.6 秒，不收的話門都開完了齒輪還在轉。
