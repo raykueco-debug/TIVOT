@@ -167,6 +167,8 @@ for k, R in ROOMS.items():
     for px, py in inside(R.get('pores', 0), 0.75, 8):         # 風穴：天頂一堆小孔
         holes.append((px, py, rng.uniform(1.6, 3.0)))
     if R.get('city'):
+        # 神殿頂上長出來的巨樹（ver -2401，Ray）：樹幹在高度圖裡是一根實心柱 —— 船撞得到、不會從樹幹穿過去
+        pillar_core |= disc(R['x'], R['y'], 5.0, 0.3) > 0.5    # ＝樹幹的半徑（95×1.15 單位 ≈ 5 格）
         for px, py in inside(R.get('holes', 0), 0.60, 34):
             holes.append((px, py, rng.uniform(2.5, 10)))   # 大小不一（Ray：「天空有大小的洞」）
         cityflat = np.clip(best / 10.0, 0, 1) * rmask
@@ -232,8 +234,11 @@ for ax in (0, 1):
             ok = rng.random() < 0.35
             h = rng.uniform(150, 200) if ok else rng.uniform(25, 110)
             CITYL.append([round(px * 20), round(py * 20), 26, 26, round(h), round(Rz['rot'], 1), 5, round(float(rng.random()), 3), gfloor])
-for lvl, (w, h) in enumerate([(26, 120), (19, 110), (12, 100), (6, 120)]):   # 中央的階梯神殿：四層往上收
-    CITYL.append([Rz['x'] * 20, Rz['y'] * 20, w * 20, w * 20, h, Rz['rot'], 2, lvl, gfloor + sum(x[1] for x in [(26, 120), (19, 110), (12, 100), (6, 120)][:lvl])])
+TEMPLE = [(26, 120), (19, 110), (12, 100), (6, 120)]
+for lvl, (w, h) in enumerate(TEMPLE):            # 中央的階梯神殿：四層往上收
+    CITYL.append([Rz['x'] * 20, Rz['y'] * 20, w * 20, w * 20, h, Rz['rot'], 2, lvl, gfloor + sum(x[1] for x in TEMPLE[:lvl])])
+# 巨樹（種類 8）：從神殿頂長出來，樹冠撐在航高之上、穹頂之下（樹冠底 ≈1300、頂 ≤1720）；船從樹冠底下飛過
+CITYL.append([Rz["x"] * 20, Rz["y"] * 20, 190, 0, 1720, 0, 8, 0.5, gfloor + sum(x[1] for x in TEMPLE)])
 
 # ── 光：天光的反光、城裡零星的燈（暖色溢光）─────────────────────────────
 shaft = cv2.GaussianBlur(holemask.astype(np.float32), (0, 0), 3.5); shaft /= (shaft.max() + 1e-6)
@@ -257,10 +262,36 @@ street = ((np.abs((lu / CELLP) - np.round(lu / CELLP)) < 0.16) | (np.abs((lv / C
 # 都市地面也是黃土；舊街道只剩一點被踩實的淡痕（不是鋪面）
 road = np.array([172, 140, 96], np.float32)
 col[cityk] = np.where(street[cityk][..., None], col[cityk] * 0.6 + road * 0.4, col[cityk])
+# ver -2401（Ray：「古城的路應該讓野生植物遍布」）：街道上一片一片的野草野灌木，空地與廣場也零星長著
+ovn = fbm(N, 4, 20, 0.55)
+# 「綠植要幾乎布滿道路」：街道上幾乎全綠（只剩零星露出的黃土），街區裡一片一片
+over = (street * np.clip(0.78 + (ovn - 0.5) * 1.2, 0, 1) + (~street) * np.clip((ovn - 0.35) * 2.6, 0, 1)) * cityk
+over = cv2.GaussianBlur(over.astype(np.float32), (0, 0), 0.8)
+grassA = np.array([96, 128, 58], np.float32); grassB = np.array([62, 92, 44], np.float32)
+green = grassB * (1 - tone) + grassA * tone
+col = col * (1 - over[..., None]) + green * over[..., None]
+# 灌木叢（種類 6，飛行頁畫成一團一團的 3D 草叢）：長在野草最密的地方
+ys, xs = np.nonzero((over > 0.5) & street & (best > 10))
+for q in rng.choice(len(xs), size=min(len(xs), 1100), replace=False) if len(xs) else []:
+    px, py = float(xs[q]) + rng.uniform(-0.5, 0.5), float(ys[q]) + rng.uniform(-0.5, 0.5)
+    CITYL.append([round(px * 20), round(py * 20), round(rng.uniform(1.6, 3.6) * 20), 0, round(rng.uniform(26, 72)),
+                  0, 6, round(float(rng.random()), 3), gfloor])
+# 大樹（種類 7）：跟高樓差不多高（260～380；樹頂 < 航高），長在街口與空地上，彼此隔開
+trees = []
+ys, xs = np.nonzero(street & cityk & (best > 14) & (over > 0.3))
+for q in rng.permutation(len(xs))[:4000]:
+    px, py = float(xs[q]), float(ys[q])
+    if math.hypot(px - Rz['x'], py - Rz['y']) < 34: continue          # 神殿那一圈不長
+    if any(math.hypot(px - a_, py - b_) < 42 for a_, b_ in trees): continue
+    trees.append((px, py))
+    CITYL.append([round(px * 20), round(py * 20), round(rng.uniform(5.5, 8.0) * 20), 0, round(rng.uniform(260, 380)),
+                  0, 7, round(float(rng.random()), 3), gfloor])
+    if len(trees) >= 9: break
 col[solid] = sandB * 0.85
 col = np.clip(col, 0, 255).astype(np.uint8)
 geo = np.full((N, N), 6, np.uint8)             # 黃土
 geo[lit[..., 0] > 0.5] = 5                      # 天光落點：淺色碎石
+geo[over > 0.45] = np.where(tone[..., 0][over > 0.45] > 0.5, 1, 0)   # 野草：森林的地貌貼圖
 geo[solid] = 3
 
 # ── 加密（同 build_cave.py）───────────────────────────────────────────
@@ -297,7 +328,7 @@ edge = ((lab != np.roll(lab, 1, 0)) | (lab != np.roll(lab, 1, 1))).astype(np.flo
 edge = cv2.GaussianBlur(edge, (0, 0), 0.6)
 clod = cv2.resize(fbm(N, 3, 6, 0.6), (N2, N2), interpolation=cv2.INTER_LINEAR)
 cell = np.random.default_rng(SEED + 7).uniform(0.88, 1.10, lab.max() + 2)[lab]
-ground = 1 - bandw                                # 牆帶（bandw）不上
+ground = (1 - bandw) * (1 - np.clip(up(over, cv2.INTER_LINEAR) * 1.4, 0, 1))   # 牆帶（bandw）與長草的地方不上（草地上沒有龜裂）
 soil = (cell * (0.86 + 0.24 * clod)) * (1 - 0.38 * np.clip(edge * 1.6, 0, 1))
 col2 = col2 * (1 + (soil[..., None] - 1) * ground[..., None])
 col2 = np.clip(col2, 0, 255).astype(np.uint8)
