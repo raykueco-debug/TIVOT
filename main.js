@@ -213,6 +213,8 @@ settings.setMuteHook({ get: isMuted, toggle: toggleMute });
 { const b=$('muteBtn');
   if(b) b.addEventListener('click', e=>{ e.stopPropagation(); toggleMute(); }); }
 applyMute();
+/* 飛行畫面自己也有一顆靜音鈕（ver -2442）：它是 iframe（另一個 document）寫同一把鑰匙 ⇒ 這一頁收 storage 事件重畫（父頁的 BGM 可能正在放，例如 keepBgm 那一段） */
+window.addEventListener('storage', e=>{ if(e && e.key===MUTE_KEY) applyMute(); });
 
 // 普攻槍聲：固定用 Pistol_SE_03（不隨機）
 SFX.setShots([asset('se_pistol_03')].filter(Boolean), sfxGain('se_pistol_03'));
