@@ -5,7 +5,7 @@ from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(HERE, '..', 'resources', '_originals', 'undercity')
 DST = os.path.join(HERE, 'undercity')
-H = {'tree_a': 640, 'tree_b': 640, 'tree_c': 640, 'tree_giant': 1024}   # 輸出高（像素）：巨樹在畫面上大很多，給高一點
+H = {'tree_a': 640, 'tree_b': 640, 'tree_c': 640}   # 輸出高（像素）；巨樹 ver -2403 拿掉（神殿頂改成藤蔓）
 for n, h in H.items():
     p = os.path.join(SRC, 'uc_' + n + '.png')
     if not os.path.exists(p): print('缺', n); continue
