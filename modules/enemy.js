@@ -1911,7 +1911,7 @@ function spawnPurgeStars(box){
 export function purgeEnemy(){
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
   /* `deathFx:'skyfall'`（ver -2456，樹寄生石龍；Ray：「龍被擊敗是斜下墜出畫面外」）：不淨化，
-     整條龍（照舊播待機動檔，沒動檔就用靜態圖）往右下斜墜、機頭朝下轉，加速掉出畫面。冪等（掛 _falling）。 */
+     整條龍（照舊播待機動檔，沒動檔就用靜態圖）往右下斜墜平移、加速掉出畫面。冪等（掛 _falling）。 */
   if(en && en.deathFx==='skyfall'){
     const el = idleEl || $('enemyImg'); if(!el || el._falling) return;
     el._falling = true; el.style.visibility=''; el.style.opacity='1'; el.style.clipPath='';
@@ -1920,9 +1920,9 @@ export function purgeEnemy(){
     /* ⚠ 不能用 CSS transition：受擊的 `#enemyImg.hit + .en-idle{animation:…}` 那幾條動畫會蓋過 transform，
        動畫一結束就直接跳到終點（ver -2457 實測：一格就到底，沒有墜落的過程）⇒ 先關掉 CSS 動畫、改用 el.animate 跑完停在最後一格 */
     el.style.animation='none'; el.style.transition='none'; el.style.transformOrigin='50% 50%';
-    el._fallAnim = el.animate([{ transform:'none', filter:'brightness(1)' },
-      { transform:`translate(${W*0.55}px, ${H*1.25}px) rotate(38deg) scale(.82)`, filter:'brightness(.55)' }],
-      { duration:1300, easing:'cubic-bezier(.5,0,.9,.6)', fill:'forwards' });
+    /* -2458 Ray：「跟閉棺要同時發生，誰讓你轉暗了」：只斜下平移（不轉、不暗），長度＝兩扇門合上的時間，與閉棺同時演完 */
+    el._fallAnim = el.animate([{ transform:'none' }, { transform:`translate(${W*0.55}px, ${H*1.25}px)` }],
+      { duration:900, easing:'cubic-bezier(.5,0,.9,.6)', fill:'forwards' });   // 900＝story.js 的 KERB_T.open（兩扇合上；story.js 有別人未提交的改動，先不去動它加 export）
     return;
   }
   stopIdleLoop();   // 死亡演出在立繪本體上演（ver -2075）
