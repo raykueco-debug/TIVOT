@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=2408"></script>
+<script src="../orientation.js?v=2409"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。語言判定與 i18n.js 的 LANG 同一套
@@ -11,7 +11,7 @@
 (function(){
   var l=null; try{ l=localStorage.getItem('tivot.lang'); }catch(e){}
   if(!l){ try{ var n=(navigator.languages&&navigator.languages[0])||navigator.language||''; if(String(n).toLowerCase().indexOf('es')===0) l='es'; }catch(e){} }
-  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2408"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2408"><\/script>');
+  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2409"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2409"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=2408');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=2409');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -260,8 +260,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2408");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2408");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2409");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2409");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -281,8 +281,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2408");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2408");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2409");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2409");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -647,23 +647,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2408" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=2409" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2408" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2408" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2408" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2408" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2408" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2408" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2408" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2408" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2408" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2408" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=2409" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2409" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2409" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2409" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2409" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2409" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2409" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2409" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2409" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2409" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=2408" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=2409" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -685,12 +685,12 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=2408"></script>
+<script src="settlement.js?v=2409"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
 <script>if(/[?&]world=undercity/.test(location.search)) document.write('<script src="undercity/world.js?v=d07b0aab"><\/script>');</script>
-<script src="talks.js?v=2408"></script>
+<script src="talks.js?v=2409"></script>
 <script>
 /* 破圖框一律不畫（ver -1881，同主頁 main.js 那一支，這一頁是另一個 document）。 */
 document.addEventListener('error', e=>{ const t=e.target; if(t && t.tagName==='IMG') t.classList.add('img-broken'); }, true);
@@ -766,7 +766,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=b18827be'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -2408';
+const FLIGHT_VER = 'ver -2409';
 const MAP_SCALE  = /[?&]world=(cave|undercity)/.test(location.search) ? 10 : 20;   // 地底的圖加密成 1536²（ver -2369，build_cave.py 的 SUPER）：一格 10 世界單位，世界大小不變
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -14012,21 +14012,25 @@ void main(){
   o=vec4(mix(col,uFog,fog),1.0);
   gl_FragDepth=clamp(vZ/${ZFAR}.0,0.0,1.0);
 }`;
-/* ══ 神殿頂那一束藤的中軸（ver -2405，Ray 給的參考：婆羅洲的絞殺榕 —— 根網往上收、不要整根直的）══
-   網格（glBuildUnderCity）與碰撞（caveSolidAt）讀同一支（鐵律 7）。高度圖裡已經沒有實心柱了（build_undercity -2405）。
-   z1＝天頂大約多高（地下都市 ceil 1650＋ZOFF 400）；藤的尾巴另外讀 CAVECEIL 鑽進岩頂，這裡只決定形狀。 */
-const UC_TRUNK = (()=>{ if(!UNDERCITY) return null;
-  const T=UC_CITY.filter(r=>r[6]===2).sort((p,q)=>p[7]-q[7]); if(!T.length) return null;
-  /* ver -2407（Ray：「要用根部的那些交纏延伸上去，不是另外接上」）：樹幹從第三層的腳（kT）就開始 ——
-     上面兩層包在樹幹裡；爬金字塔的根爬完下面兩層、在平台上往內收，就直接沿著樹幹往上，同一條藤一路到天頂。 */
-  const kT=Math.min(2,T.length-1), B=T[kT];
-  return { x:T[0][0], y:T[0][1], rot:T[0][5], kT, z0:B[8], z1:2050, Rb:B[2]/2+30, Rt:96 }; })();
-function ucTrunkAt(z){
-  const K=UC_TRUNK, f=Math.min(1,Math.max(0,(z-K.z0)/(K.z1-K.z0)));
-  /* ver -2406（Ray：「下寬上收窄，但不要收太窄，不要整個直筒狀，不要歪一邊」）：中軸筆直站在正中；
-     半徑一路線性收（整根都在收 ⇒ 不會變成直筒），頂端仍有底的六成多；腰上加一點起伏，看起來不是車床車出來的錐 */
-  const r=(K.Rt+(K.Rb-K.Rt)*(1-f))*(1+0.06*Math.sin(f*7.0+0.8));
-  return { x:K.x, y:K.y, r, f };
+/* ══ 藤蔓樹的樹幹（ver -2405～-2409）：網格（glBuildUnderCity）與碰撞（caveSolidAt）讀同一份（鐵律 7）══
+   高度圖裡沒有實心柱（build_undercity -2405），碰撞照這裡的中軸判。z1＝天頂大約多高（地下都市 ceil 1650＋ZOFF 400）。
+   · 神殿（Ray 參考婆羅洲的絞殺榕）：樹幹從第三層的腳（kT=2）開始、上面兩層包在裡面；
+   · 高塔（ver -2409，Ray：「整個空間裡的高層建築都長出這樣的樹」）：樹幹從塔頂開始（kT=1），把塔頂與吳哥式收頂包在裡面。
+   形狀（-2406，Ray：「下寬上收窄，但不要收太窄，不要整個直筒狀，不要歪一邊」）：中軸筆直、半徑一路線性收、腰上一點起伏。 */
+const UC_TRUNKS = (()=>{ if(!UNDERCITY) return [];
+  const out=[], T=UC_CITY.filter(r=>r[6]===2).sort((p,q)=>p[7]-q[7]);
+  if(T.length){ const kT=Math.min(2,T.length-1), B=T[kT];
+    out.push({ x:T[0][0], y:T[0][1], rot:T[0][5], kT, z0:B[8], z1:2050, Rb:B[2]/2+30, Rt:96,
+      tiers:T.map(r=>({hu:r[2]/2, hv:r[2]/2, zb:r[8], zt:r[8]+r[4]})),
+      nv:40, rMin:19, rMax:34, spread:250, flare:280, ks:30, step:30, sides:7, code:-0.5 }); }
+  for(const [x,y,w,d,h,rot,kind,sd,gz] of UC_CITY){ if(kind!==1) continue;     // 高塔
+    const hu=w/2, hv=d/2, Rb=Math.max(hu,hv)*1.05+10;
+    out.push({ x, y, rot, kT:1, z0:gz+h, z1:2050, Rb, Rt:Math.max(44,Rb*0.62),
+      tiers:[{hu, hv, zb:gz, zt:gz+h}], nv:9, rMin:12, rMax:22, spread:140, flare:160, ks:18, step:58, sides:5, code:-0.3 }); }
+  return out; })();
+function ucTrunkAt(K,z){
+  const f=Math.min(1,Math.max(0,(z-K.z0)/(K.z1-K.z0)));
+  return { x:K.x, y:K.y, r:(K.Rt+(K.Rb-K.Rt)*(1-f))*(1+0.06*Math.sin(f*7.0+0.8)), f };
 }
 function glBuildUnderCity(){
   const g=GLX;
@@ -14132,15 +14136,13 @@ function glBuildUnderCity(){
       quad(P(-hw*0.8,-hd*0.8,zr),P(hw*0.8,-hd*0.8,zr),P(hw*0.8,hd*0.8,zr),P(-hw*0.8,hd*0.8,zr),[0,0,1],C,w,d);
     }
   }
-  /* ══ 神殿上的藤蔓（ver -2403，Ray：「樹要纏著金字塔，像無數藤蔓爬上金字塔聚合成大樹」—— 選「程式長」）══
-     每一條從神殿外的地面長出來，逐階：貼著平台往內 → 貼著牆往上 → 翻過階緣 → 再往內；
-     爬到頂的那幾十條圍著中心擰成一束，交纏著一路往上鑽進天頂（-2403 Ray：「把巨樹拿掉，直接用藤蔓交纏直通天頂，不用畫葉子」）。
-     ⚠ 束的正中是碰撞用的實心岩柱（build_undercity 的 pillar_core，半徑 70）—— 藤繞在它外面（R≥82），船撞得到、不會從藤束穿過去。
-     藤離石面一個半徑；c.a＝−0.5：植物上色＋跟神殿一樣看得遠（GL_CITY_FS 的 zf）。 */
-  const TPL=UC_CITY.filter(r=>r[6]===2).sort((p,q)=>p[7]-q[7]);
-  if(TPL.length){
-    const tx=TPL[0][0], ty=TPL[0][1], ta=TPL[0][5]*Math.PI/180, tca=Math.cos(ta), tsa=Math.sin(ta);
-    const tiers=TPL.map(r=>({H:r[2]/2, zb:r[8], zt:r[8]+r[4]})), topZ=tiers[tiers.length-1].zt;
+  /* ══ 藤蔓樹（ver -2403～-2409）：神殿與全城的高塔都長一棵 ══════════════════════════════════
+     Ray：「樹要纏著金字塔，像無數藤蔓爬上金字塔聚合成大樹」→「用根部的那些交纏延伸上去，不是另外接上」
+       →「細的不要了，用粗的捲上去」→「把棕色的拿掉，然後讓整個空間裡的高層建築都長出這樣的樹」。
+     每一條藤從建築外的土裡冒出來，逐層：貼著地／平台往內 → 貼著牆往上 → 翻過緣 → 接著沿樹幹（ucTrunkAt）捲上天頂，
+     尾巴在岩頂前攤開。同一條藤從根到天頂，沒有「另外接上去」的樹幹。樹幹的形狀與碰撞讀同一份 UC_TRUNKS（鐵律 7）。
+     c.a：神殿那一棵 −0.5（跟神殿一樣看得遠）、高塔 −0.3（照一般距離）；兩者都吃 GL_CITY_FS 的植物上色＋側緣變暗。 */
+  if(UC_TRUNKS.length){
     /* 管子：平行傳送的座標軸，不會在轉彎處扭成麻花 */
     const tube=(pts,rad,G,K)=>{
       let e1=null;
@@ -14153,8 +14155,8 @@ function glBuildUnderCity(){
         const out=[]; for(let k=0;k<K;k++){ const t=k/K*6.2832, c=Math.cos(t), s=Math.sin(t);
           const N=[e1[0]*c+e2[0]*s, e1[1]*c+e2[1]*s, e1[2]*c+e2[2]*s]; out.push([[p[0]+N[0]*rad[i],p[1]+N[1]*rad[i],p[2]+N[2]*rad[i]],N]); }
         return out; });
-      for(let i=0;i<ring.length-1;i++) for(let k=0;k<K;k++){ const k1=(k+1)%K, A=ring[i][k], B=ring[i][k1], Cc=ring[i+1][k1], D=ring[i+1][k], G0=G(pts[i]), G1=G(pts[i+1]);
-        push(A[0],A[1],G0,[0,0]); push(B[0],B[1],G0,[0,0]); push(Cc[0],Cc[1],G1,[0,0]); push(A[0],A[1],G0,[0,0]); push(Cc[0],Cc[1],G1,[0,0]); push(D[0],D[1],G1,[0,0]); }
+      for(let i=0;i<ring.length-1;i++) for(let k=0;k<K;k++){ const k1=(k+1)%K, A=ring[i][k], B=ring[i][k1], Cc=ring[i+1][k1], D=ring[i+1][k];
+        push(A[0],A[1],G,[0,0]); push(B[0],B[1],G,[0,0]); push(Cc[0],Cc[1],G,[0,0]); push(A[0],A[1],G,[0,0]); push(Cc[0],Cc[1],G,[0,0]); push(D[0],D[1],G,[0,0]); }
     };
     const chaikin=P=>{ const o=[P[0]]; for(let i=0;i<P.length-1;i++){ const a=P[i], b=P[i+1];
       o.push(a.map((q,j)=>q*0.75+b[j]*0.25), a.map((q,j)=>q*0.25+b[j]*0.75)); } o.push(P[P.length-1]); return o; };
@@ -14162,56 +14164,42 @@ function glBuildUnderCity(){
       for(let i=0;i<P.length-1;i++){ const a=P[i], b=P[i+1], L=Math.hypot(b[0]-a[0],b[1]-a[1],b[2]-a[2]);
         let d=step-carry; while(d<L){ const f=d/L; o.push([a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f]); d+=step; } carry=L-(d-step); }
       o.push(P[P.length-1]); return o; };
-    /* 天頂多高：直接讀高度圖（CAVECEIL，飛行碰撞用的同一份），不另抄一個數字（鐵律 7）；讀不到就退回 2050（＝地下都市 ceil 1650＋ZOFF 400） */
-    const ceilAt=(ang,R)=>{ const u=Math.cos(ang)*R, w=Math.sin(ang)*R, cz=(typeof CAVECEIL!=='undefined'&&CAVECEIL) ? CAVECEIL[caveCell(tx+u*tca-w*tsa, ty+u*tsa+w*tca)] : 0;
-      return (cz>topZ+300 && cz<3000) ? cz : 2050; };
-    const NV=40;   // ver -2408（Ray：「細的不要了，用粗的捲上去」）：只剩粗藤
-    for(let v=0; v<NV; v++){
-      const thick=true, mid=false;
-      const r0 = 19+15*hsh(v,1);
-      const kT=UC_TRUNK.kT, full=thick||mid||hsh(v,4)<0.45;
-      const reach = full ? kT : 1+Math.floor(hsh(v,4)*kT);                     // 爬完樹幹以下那幾層；細藤有一半爬到半途就停
-      let t=v/NV*6.2832+0.05*(hsh(v,5)-0.5);
-      const ph=hsh(v,6)*6.28, wob=0.04+0.05*hsh(v,7), o=r0*0.9;
-      const ctrl=[];
-      const at=(s,z)=>{ const ang=t+wob*Math.sin(z*0.014+ph), c=Math.cos(ang), sn=Math.sin(ang), k=s/Math.max(Math.abs(c),Math.abs(sn));   // 方形神殿：沿著方位角那條射線落在第 s 圈的方框上
-        const u=c*k, w=sn*k; ctrl.push([tx+u*tca-w*tsa, ty+u*tsa+w*tca, z]); };
-      at(tiers[0].H+140+260*hsh(v,8), tiers[0].zb-30);                          // 從神殿外的土裡冒出來
-      at(tiers[0].H+40+60*hsh(v,9), tiers[0].zb+o*0.7);
-      for(let i=0;i<reach;i++){ const T=tiers[i];
-        at(T.H+o, T.zb+o);                                                       // 牆腳
-        at(T.H+o, (T.zb+T.zt)/2);
-        at(T.H+o*1.2, T.zt+o*1.2);                                               // 外凸的階緣：控制點放在角外，平滑時才不會切進石頭
-        t+=0.22*(hsh(v,10+i)-0.5);                                              // 每一階斜著爬一點
-      }
-      const rad=[]; let pts;
-      if(full){                                                 // 爬到頂：圍著中心擰成一束，交纏著往上直通天頂
-        /* ver -2405（Ray 的參考：絞殺榕）：束的形狀照 ucTrunkAt（下寬上收、中軸筆直）。股大多直上、只斜斜偏一點，
-           正反兩個方向混著 ⇒ 互相斜交成網，而不是一條條各自繞圈的彈簧（-2404 的毛病）；細股斜得多一點、貼在表面上。
-           到天頂前往外攤開，像根爬滿岩頂。 */
-        const inner=thick||mid;
-        const dirS=hsh(v,21)<0.72?1:-1, turns=(0.65+0.55*hsh(v,23))*6.2832*dirS;   // 捲上去：大多同一個旋向，少數反著捲 ⇒ 交織
-        const flare=150+260*hsh(v,27), endAng=t+turns, KS=30, z0T=UC_TRUNK.z0;
-        const zTop=ceilAt(endAng,90+flare)+30;                                // 尾巴攤在岩頂上（稍微鑽進去，天頂把它蓋住）
+    UC_TRUNKS.forEach((K,ti)=>{
+      const ta=K.rot*Math.PI/180, tca=Math.cos(ta), tsa=Math.sin(ta), W=(u,w,z)=>[K.x+u*tca-w*tsa, K.y+u*tsa+w*tca, z];
+      /* 天頂多高：直接讀高度圖（CAVECEIL，飛行碰撞用的同一份），讀不到就退回 2050（＝地下都市 ceil 1650＋ZOFF 400） */
+      const ceilAt=(ang,R)=>{ const p=W(Math.cos(ang)*R, Math.sin(ang)*R, 0), cz=(typeof CAVECEIL!=='undefined'&&CAVECEIL) ? CAVECEIL[caveCell(p[0],p[1])] : 0;
+        return (cz>K.z0+300 && cz<3000) ? cz : 2050; };
+      const tiers=K.tiers, sd0=ti*7.31;
+      for(let v=0; v<K.nv; v++){
+        const hv=(a)=>hsh(v+sd0,a);
+        const r0=K.rMin+(K.rMax-K.rMin)*hv(1), o=r0*0.9;
+        let t=v/K.nv*6.2832+0.05*(hv(5)-0.5);
+        const ph=hv(6)*6.28, wob=0.04+0.05*hv(7), ctrl=[];
+        const at=(T,off,z)=>{ const ang=t+wob*Math.sin(z*0.014+ph), c=Math.cos(ang), sn=Math.sin(ang), k=1/Math.max(Math.abs(c)/(T.hu+off),Math.abs(sn)/(T.hv+off));   // 方框（可長方）：沿方位角那條射線落在外擴 off 的框上
+          ctrl.push(W(c*k, sn*k, z)); };
+        at(tiers[0], K.spread*(0.55+hv(8)), tiers[0].zb-30);                     // 從建築外的土裡冒出來
+        at(tiers[0], 40+60*hv(9), tiers[0].zb+o*0.7);
+        for(let i=0;i<K.kT;i++){ const T=tiers[i];
+          at(T, o, T.zb+o); at(T, o, (T.zb+T.zt)/2);                             // 牆腳、牆腰
+          at(T, o*1.2, T.zt+o*1.2);                                              // 外凸的緣：控制點放在角外，平滑時才不會切進石頭
+          t+=0.22*(hv(10+i)-0.5); }
+        /* 樹幹：捲上去（大多同一個旋向、少數反著捲 ⇒ 交織），兩層錯開，到天頂前往外攤開 */
+        const dirS=hv(21)<0.72?1:-1, turns=(0.65+0.55*hv(23))*6.2832*dirS;
+        const flare=K.flare*(0.6+0.8*hv(27)), endAng=t+turns, KS=K.ks, z0T=K.z0;
+        const zTop=ceilAt(endAng,K.Rt+flare)+30;
         for(let k=0;k<=KS;k++){ const f=k/KS, z=z0T+o+(zTop-90-z0T-o)*Math.min(1,f/0.88)+(f>0.88 ? 90*Math.sin((f-0.88)/0.12*Math.PI/2) : 0);
-          const q=ucTrunkAt(z), ang=t+turns*(f+0.05*Math.sin(f*4.7+ph));
-          const fl=Math.max(0,(f-0.86)/0.14);
-          const R=q.r*((v%2 ? 0.86 : 0.99)+0.06*Math.sin(f*7+ph))+flare*fl*fl;   // 兩層錯開：一股壓一股
-          const u=Math.cos(ang)*R, w=Math.sin(ang)*R; ctrl.push([q.x+u*tca-w*tsa, q.y+u*tsa+w*tca, z]); }
-      } else {                                                                   // 半途停：在平台上往內收尾
-        const T=tiers[reach-1], nH=tiers[reach].H; at(nH+(T.H-nH)*0.5, T.zt+o*0.7);
+          const q=ucTrunkAt(K,z), ang=t+turns*(f+0.05*Math.sin(f*4.7+ph)), fl=Math.max(0,(f-0.86)/0.14);
+          const R=q.r*((v%2 ? 0.86 : 0.99)+0.06*Math.sin(f*7+ph))+flare*fl*fl;
+          ctrl.push(W(Math.cos(ang)*R, Math.sin(ang)*R, z)); }
+        const pts=resample(chaikin(chaikin(ctrl)), K.step), n=pts.length, rad=[];
+        for(let i=0;i<n;i++){ const up=pts[i][2]>K.z0 ? 0.55+0.45*ucTrunkAt(K,pts[i][2]).r/K.Rb : 1; rad.push(up*r0*(0.55+0.45*Math.min(1,i*K.step/260))); }   // 土裡那段細、往上變細
+        const tn=hv(30);
+        tube(pts, rad, [0.13+0.08*tn, 0.24+0.10*tn, 0.09+0.05*tn, K.code], K.sides);   // 一律綠（Ray：「把棕色的拿掉」），深淺每條不同
       }
-      pts=resample(chaikin(chaikin(ctrl)), thick?26:34);
-      const n=pts.length;
-      for(let i=0;i<n;i++){ const f=i/(n-1); const st=thick?26:34, up=pts[i][2]>UC_TRUNK.z0 ? 0.55+0.45*ucTrunkAt(pts[i][2]).r/UC_TRUNK.Rb : 1; rad.push(up*r0*(0.55+0.45*Math.min(1,i*st/260))*(!full && f>0.88 ? Math.max(0.25,(1-f)/0.12) : 1)); }   // 土裡那段細；半途停的尾端收尖（直通天頂的那幾條尾巴在岩頂裡，不必收）
-      const tn=hsh(v,30);
-      const g0=[0.25+0.12*tn, 0.22+0.07*(1-tn), 0.12+0.03*tn];                    // 綠到褐，每條不同
-      const G=()=>[g0[0], g0[1], g0[2], -0.5];
-      tube(pts, rad, G, 7);
-    }
-    { const cp=[], cr=[], zc=2150; const topZ=UC_TRUNK.z0+40;                                          // 中芯：沿著中軸的一根樹皮色實心管（半徑比束小一圈）
-      for(let z=topZ-60; z<=zc; z+=40){ const q=ucTrunkAt(z); cp.push([q.x,q.y,z]); cr.push(q.r*0.80); }
-      tube(cp, cr, ()=>[0.11,0.09,0.06,-0.5], 10); }   // 很暗：縫裡讀成深處的陰影，藤一股股浮出來（亮了就像另一根樹幹）
+      const cp=[], cr=[];                                                       // 中芯：很暗，股縫裡讀成深處的陰影
+      for(let z=K.z0-20; z<=2150; z+=K.step*1.5){ const q=ucTrunkAt(K,z); cp.push([q.x,q.y,z]); cr.push(q.r*0.80); }
+      tube(cp, cr, [0.05,0.08,0.04,K.code], 8);
+    });
   }
   glCityN=V.length/12;
   glCityVao=g.createVertexArray(); g.bindVertexArray(glCityVao);
@@ -16172,7 +16160,8 @@ function caveFallAt(wx,wy){
   return false;
 }
 function caveSolidAt(wx,wy){
-  if(UC_TRUNK && cam.alt>UC_TRUNK.z0-40){ const q=ucTrunkAt(cam.alt), dx=wx-q.x, dy=wy-q.y; if(dx*dx+dy*dy<(q.r+12)*(q.r+12)) return true; }   // 神殿頂那一束藤（ver -2405）
+  for(const K of UC_TRUNKS){ if(cam.alt<K.z0-40) continue; const dx=wx-K.x, dy=wy-K.y; if(dx*dx+dy*dy>K.Rb*K.Rb*2) continue;   // 藤蔓樹的樹幹（ver -2405／-2409）
+    const q=ucTrunkAt(K,cam.alt); if(dx*dx+dy*dy<(q.r+12)*(q.r+12)) return true; }
   const ii=caveCell(wx,wy);
   if((BIOME[ii]&15)===9) return false;
   return HGT[ii]>cam.alt-CAVE_CLEAR || CAVECEIL[ii]<cam.alt+CAVE_CLEAR;
