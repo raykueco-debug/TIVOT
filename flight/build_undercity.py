@@ -135,7 +135,7 @@ d = np.full((N, N), 1e9, np.float32)
 for (x0, y0), (x1, y1) in zip(MOUTH, MOUTH[1:]):
     d = np.minimum(d, seg_dist(x0, y0, x1, y1))
 tunnel_f = np.maximum(tunnel_f, 18 * (1 + 0.18 * wob + 0.10 * scal) - d)
-outside = (XX < OUTW) & (np.abs(YY - (ay_ + 10)) < 70)   # -2428：只留出口外那一段（出口開在崖面上），不再整條地圖左邊
+outside = (XX < OUTW + 7 * wob + 3 * scal) & (np.abs(YY - (ay_ + 10)) < 70 + 18 * wob)   # -2428：只留出口外那一段；-2436：崖面的邊照風蝕的起伏走（直線的邊從洞裡看出去是一道直角的黑柱＝破圖）
 openm = (best > 0) | (tunnel_f > 0) | outside
 dist = cv2.distanceTransform(openm.astype(np.uint8), cv2.DIST_L2, 5).astype(np.float32)
 
@@ -381,7 +381,7 @@ spill = cv2.GaussianBlur(holemask.astype(np.float32) * 0.8, (0, 0), 9); spill /=
 spill = np.clip(spill * 1.2, 0, 1) * (~solid)
 # 洞外的天光照進出口（-2428：出口一圈的岩壁與天頂不然是全黑的，貼著亮的洞外就是破圖）
 osh = cv2.GaussianBlur(outside.astype(np.float32), (0, 0), 14); osh = np.clip(osh / (osh.max() + 1e-6) * 1.6, 0, 1)
-shaft = np.maximum(shaft, osh); spill = np.maximum(spill, osh * 0.9)
+spill = np.maximum(spill, osh * 1.1)   # -2436：只進溢光（照亮表面），不進光柱 —— 光柱那一格會累積成體積光，整個出口變成一片霧白（Ray：「出口還是有霧白破圖」）
 
 # ── 顏色：砂岩（赭黃～褐），岩層一層一層；都市地面＝鋪石＋街道 ───────────────
 tone = fbm(N, 5, 24, 0.55)[..., None]
