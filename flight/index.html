@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=2445"></script>
+<script src="../orientation.js?v=2446"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。語言判定與 i18n.js 的 LANG 同一套
@@ -11,7 +11,7 @@
 (function(){
   var l=null; try{ l=localStorage.getItem('tivot.lang'); }catch(e){}
   if(!l){ try{ var n=(navigator.languages&&navigator.languages[0])||navigator.language||''; if(String(n).toLowerCase().indexOf('es')===0) l='es'; }catch(e){} }
-  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2445"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2445"><\/script>');
+  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2446"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2446"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=2445');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=2446');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -267,8 +267,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2445");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2445");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2446");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2446");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -288,8 +288,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2445");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2445");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2446");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2446");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -655,23 +655,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2445" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=2446" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2445" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2445" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2445" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2445" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2445" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2445" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2445" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2445" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2445" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2445" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=2446" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2446" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2446" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2446" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2446" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2446" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2446" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2446" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2446" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2446" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=2445" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=2446" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -693,13 +693,13 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=2445"></script>
+<script src="settlement.js?v=2446"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
 <script>if(/[?&]world=undercity/.test(location.search)) document.write('<script src="undercity/world.js?v=29615343"><\/script>');</script>
 <script>if(!/[?&]world=/.test(location.search)) document.write('<script src="undercity/crowns.js?v=6a3ae090"><\/script>');</script>   <!-- 地表上地底樹的樹冠（ver -2412，build_uc_crowns.py 產的） -->
-<script src="talks.js?v=2445"></script>
+<script src="talks.js?v=2446"></script>
 <script>
 /* 破圖框一律不畫（ver -1881，同主頁 main.js 那一支，這一頁是另一個 document）。 */
 document.addEventListener('error', e=>{ const t=e.target; if(t && t.tagName==='IMG') t.classList.add('img-broken'); }, true);
@@ -775,7 +775,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=b18827be'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -2445';
+const FLIGHT_VER = 'ver -2446';
 const MAP_SCALE  = /[?&]world=(cave|undercity)/.test(location.search) ? 10 : 20;   // 地底的圖加密成 1536²（ver -2369，build_cave.py 的 SUPER）：一格 10 世界單位，世界大小不變
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -7241,6 +7241,67 @@ function ucOutTick(now){
     if(!ok) location.href=location.pathname;
   }
 }
+/* ══ 地下古城中央大樹的樹寄生石龍（ver -2446，Ray：「在地下古城那個腔室中央大樹處遭遇，先側飛，玩家一看到他就轉正面朝玩家飛來進戰鬥」）══
+   三段動畫（美術交件 resources/enemy/anim/mon_tree_dragon_enc_{side,turn,front}/，16fps，canvas 共用 960×480、照 box 擺）：
+     ① side：在大樹旁橫著游（頭朝左；往畫面右邊游時水平翻）——走到頭就掉頭
+     ② turn：玩家**看到牠**（在畫面裡、夠近）⇒ 播一次轉正，停最後一格
+     ③ front：正面朝船飛來（loop），碰到 ⇒ 交棒 `uc_treedragon`（打贏記 `done`，之後不再出現；打輸照舊重來）。
+   畫在 2D 層（同風穴的氣流），世界座標投影、跟著距離縮放；牠飛在船的高度附近。船靠近大樹 UC_DRG.load 才載動檔（鐵律 13）。 */
+const UC_DRG={ done:'uc_treedragon_won', battle:'uc_treedragon', dir:'../resources/enemy/anim/mon_tree_dragon_enc_',
+  load:6000, spawnAt:4200, see:3400, canvasW:960, worldW:980, sideSpd:0.20, frontSpd:0.85, hit:320, range:1500, dz:30 };
+let ucDrg=null, ucDrgA=null, ucDrgState=0, ucDrgLast=0;
+function ucDragonLoad(){
+  ucDrgState=1; ucDrgA={}; let left=3;
+  for(const seg of ['side','turn','front']) fetch(UC_DRG.dir+seg+'/anim.json').then(r=>r.json()).then(J=>{
+    const fr=[]; let n=J.frames|0, got=0;
+    for(let i=0;i<n;i++){ const im=new Image(); im.onload=()=>{ if(++got===n){ ucDrgA[seg]={ J, fr }; if(--left===0) ucDrgState=2; } }; im.src=UC_DRG.dir+seg+'/frame_'+String(i).padStart(2,'0')+'.webp'; fr.push(im); }
+  }).catch(e=>{ console.warn('[ucdragon] 動檔載不到',seg,e); ucDrgState=-1; });
+}
+function ucDragonTick(now){
+  const dt=ucDrgLast ? Math.min(now-ucDrgLast,60) : 0; ucDrgLast=now;
+  if(!UNDERCITY || ucOutGone || battleGoing || ucDrgState<0 || flagOn(UC_DRG.done)) return;
+  const T=UC_TRUNKS[0]; if(!T) return;
+  const dT=Math.hypot(cam.x-T.x, cam.y-T.y);
+  if(!ucDrg && dT>UC_DRG.load) return;
+  if(!ucDrgState) ucDragonLoad();
+  if(ucDrgState!==2) return;
+  const sinp=Math.sin(cam.angle), cosp=Math.cos(cam.angle);
+  if(!ucDrg){
+    if(dT>UC_DRG.spawnAt) return;
+    const vx=(T.x-cam.x)/dT, vy=(T.y-cam.y)/dT, sx=-vy, sy=vx;               // 橫越視線的方向
+    ucDrg={ st:'side', x:T.x-sx*UC_DRG.range*0.5+vx*250, y:T.y-sy*UC_DRG.range*0.5+vy*250, z:cam.alt+UC_DRG.dz, vx:sx, vy:sy, trav:0, t0:now, born:now };
+  }
+  const D=ucDrg;
+  if(D.st==='side'){
+    D.x+=D.vx*UC_DRG.sideSpd*dt; D.y+=D.vy*UC_DRG.sideSpd*dt; D.trav+=UC_DRG.sideSpd*dt;
+    if(D.trav>UC_DRG.range){ D.vx=-D.vx; D.vy=-D.vy; D.trav=0; }
+    const dx=D.x-cam.x, dy=D.y-cam.y, z=dx*(-sinp)+dy*(-cosp), lat=dx*cosp+dy*(-sinp);
+    if(z>120 && Math.abs(lat/z)<0.75 && Math.hypot(dx,dy)<UC_DRG.see && now-D.born>600){ D.st='turn'; D.t0=now; }   // 玩家看到牠了
+  }else if(D.st==='turn'){
+    const A=ucDrgA.turn; if(now-D.t0 >= A.J.frames/A.J.fps*1000){ D.st='front'; D.t0=now; }
+  }else{
+    const tx=cam.x-sinp*CAVE_SHIP_AHEAD, ty=cam.y-cosp*CAVE_SHIP_AHEAD, dx=tx-D.x, dy=ty-D.y, d=Math.hypot(dx,dy)||1;
+    D.x+=dx/d*UC_DRG.frontSpd*dt; D.y+=dy/d*UC_DRG.frontSpd*dt; D.z+=(cam.alt-D.z)*Math.min(1,dt*0.002);
+    if(d<UC_DRG.hit){ ucDrg=null; toBattle('tree_dragon', { done:UC_DRG.done, battle:UC_DRG.battle }); }
+  }
+}
+function drawUcDragon(scaleH,horizon,now){
+  const D=ucDrg; if(!D || ucDrgState!==2) return;
+  const A=ucDrgA[D.st]; if(!A) return;
+  const sinp=Math.sin(cam.angle), cosp=Math.cos(cam.angle), syk=VIEWH/BH;
+  const dx=D.x-cam.x, dy=D.y-cam.y, z=dx*(-sinp)+dy*(-cosp); if(z<40) return;
+  const lat=dx*cosp+dy*(-sinp), sx=(lat/z+1)*W*0.5, sy=((cam.alt-D.z)/z*scaleH+horizon)*syk;
+  const k=(UC_DRG.worldW/UC_DRG.canvasW)*(W*0.5/z), J=A.J, b=J.box;
+  const n=J.frames, f=Math.floor((now-D.t0)/1000*J.fps), fi=J.loop ? f%n : Math.min(n-1,f);
+  const im=A.fr[fi]; if(!im || !im.complete) return;
+  /* 頭朝左的兩段（側游、轉正）：往畫面右邊游時水平翻（轉正接著側游的方向翻，才不會轉身那一下換邊） */
+  const vlat=D.vx*cosp+D.vy*(-sinp), flip=(D.st!=='front') && vlat>0;
+  const fade=Math.min(1,(now-D.born)/500);
+  ctx.save(); ctx.globalAlpha=fade;
+  ctx.translate(sx,sy); if(flip) ctx.scale(-1,1);
+  ctx.drawImage(im, (b[0]-J.canvas[0]/2)*k, (b[1]-J.canvas[1]/2)*k, b[2]*k, b[3]*k);
+  ctx.restore();
+}
 function caveRoomTick(){
   const mx=cam.x/20, my=cam.y/20;             // CAVE_ROOMS 是 build_cave.py 排拓樸的那張 768² 的座標（一格 20 世界單位）
   let hit=-1;
@@ -11901,6 +11962,7 @@ function update(dt,now){
   else { cam.x+=fx*mv; cam.y+=fy*mv; }
   if(CAVE) caveRoomTick();
   if(UNDERCITY) ucOutTick(now);   // 從 1 號的出口飛出洞外（ver -2427）
+  if(UNDERCITY) ucDragonTick(now);   // 中央大樹的樹寄生石龍遭遇（ver -2446）
   noflyCheck(now);        // 禁航區的空氣牆（ver -1136）：撞到就退回去並掉頭
   /* 雲海的擴張跟著**實際位移**走（ver -1080）—— 這裡是船真的移動的唯一一行。 */
   skyZoom += mv/SKY_ZOOM_PER;
@@ -16162,6 +16224,7 @@ function render(now){
   if(CAVE) drawCaveDust(scaleH,horizon,now);                // 地底的浮塵（雪花般，行駛中迎面飄過）
   if(UNDERCITY) drawForestLeaves(scaleH,horizon,now);       // 地底城靠近神殿那棵樹飄葉子（ver -2423）
   if(UC_WIND) drawUcUpdraft(scaleH,horizon,now);           // 無底風穴往上吹的氣流（-2434）
+  if(UNDERCITY) drawUcDragon(scaleH,horizon,now);          // 中央大樹的樹寄生石龍（ver -2446）
   /* ══⚠⚠ **出怪要淡入**（ver -1433，Ray：「現在看起來是突然出現，出怪要淡入」）══
      包在呼叫端而不是 `drawEnemy3D` 裡面：那一支有好幾個 early return
      （在身後／太遠／貼圖還沒解碼），在裡面 `save()` 要每一條 return 都配一個

@@ -245,7 +245,13 @@ export function resumeThreats(){
 export function releaseAssault(th){
   removeThreat(th);
   if(state.over||state.cutinPlaying) return;
-  if(api.onAssaultLand) api.onAssaultLand();   // 收圈＝攻擊落下 ⇒ 空戰怪的攻擊演出（ver -2445，Ray：「龍的攻擊是收圈才會發動」）
+  /* 收圈＝攻擊落下 ⇒ 空戰怪的攻擊演出（ver -2445／-2446，Ray：「攻擊圈沒點掉就刷一根近樹，近樹掃過龍就消失，然後龍從左下往右上衝出，玩家受擊」）：
+     演出回傳「還要幾毫秒才撞到玩家」—— 扣血延到那一刻（沒有演出的怪回 0 ＝當場）。 */
+  const wait = api.onAssaultLand ? (api.onAssaultLand()||0) : 0;
+  if(wait>0){ setTimeout(()=>{ if(state.over||state.enemyHp<=0) return; landAssault(th); }, wait); return; }
+  landAssault(th);
+}
+function landAssault(th){
   /* 受擊特效落在**這一顆圈**的位置（ver -766，Ray：「攻擊效果要跟光圈的位置
      一樣」）—— 座標發佈給 state，enemy.spawnBite 讀完即清。 */
   state.lastAssaultPos = { x:th.lp, y:th.tp };
@@ -257,7 +263,7 @@ export function releaseAssault(th){
        —— 一個量一個計算點（鐵律 7），combat 的 fxKind 只讀不算。 */
   state.lastAssaultUlt = !!th.ult;
   api.enemyAttack(ringDamage(th), 'assault');   // 大絕那一波用 ult.atk（見 ringDamage）
-  api.floatDmg(L.battle.hitByAssault,'45%','25%',true);
+  if(!((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).hitPlain) api.floatDmg(L.battle.hitByAssault,'45%','25%',true);   // hitPlain：只震畫面，不浮字（ver -2446）
 }
 // 兼容舊呼叫：結束/清除所有攻擊點
 export function endCharge(){ clearThreat(); }

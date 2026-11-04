@@ -1171,9 +1171,10 @@ function setSkyBattle(key){
     base.style.backgroundPositionX=`${-((t/C.baseSec)%1)*tw}px`;
     mid.style.backgroundPositionX=`${-((t/C.midSec)%1)*tw}px`;
     /* 近景樹：每 nearEvery 秒挑一根，從右往左掃過（攻擊演出期間暫停，結束後重新排） */
+    /* （攻擊演出那一根由 onAssaultLand 直接刷） */
     if(!sky.nearPause && sky.nearT<0 && now>=sky.nearAt){ const im=nearImgs[(Math.random()*nearImgs.length)|0]; near.src=im.src; sky.nearT=now; }
-    if(sky.nearT>=0){ const k=(now-sky.nearT)/(C.nearSweep*1000), nw=H*(C.nearAspect||0.36);
-      near.style.height=H+'px'; near.style.width=nw+'px'; near.style.opacity='1';
+    if(sky.nearT>=0){ const k=(now-sky.nearT)/(C.nearSweep*1000), ns=C.nearScale||1, nh=H*ns, nw=nh*(C.nearAspect||0.36);   // 粗一點＝整根放大（ver -2446），上下超出畫面
+      near.style.height=nh+'px'; near.style.width=nw+'px'; near.style.top=(-(nh-H)/2)+'px'; near.style.opacity='1';
       near.style.transform=`translateX(${W+nw*0.2-(W+nw*1.4)*k}px)`;
       if(k>=1){ sky.nearT=-1; near.style.opacity='0'; sky.nearAt=now+rnd(C.nearEvery[0],C.nearEvery[1])*1000; } }
     /* 落葉／光點：往左下飄（世界往左捲）、慢慢翻 */
@@ -1194,21 +1195,27 @@ function setSkyBattle(key){
      ① 龍（待機層）往右滑出畫面 ② 同一支動畫放大到幾乎遮滿，從左下往右上快速掠過 ③ 回到原位淡入；
      演出期間近景樹暫停、結束後重新排它的節奏。⚠ 只在有 `sky` 的怪上演（其餘怪照舊）。 */
 export function onAssaultLand(){
-  if(!sky || sky.lunge) return;
-  const el=idleEl || $('enemyImg'); if(!el) return;
-  const top=$('top'); const W=top.clientWidth, H=top.clientHeight;
-  sky.nearPause=true; if(sky.nearT>=0){ sky.nearT=-1; sky.els[2].style.opacity='0'; }
-  const ghost=el.cloneNode(); ghost.className='sky-lunge'; ghost.style.cssText=''; top.insertBefore(ghost, sky.els[2]);
-  if(idleEl){ const sync=setInterval(()=>{ if(!idleEl||!ghost.isConnected){ clearInterval(sync); return; } ghost.src=idleEl.src; }, 50); ghost._sync=sync; }
+  if(!sky || sky.lunge) return 0;
+  const el=idleEl || $('enemyImg'); if(!el) return 0;
+  const top=$('top'), W=top.clientWidth, H=top.clientHeight, C=sky.C;
+  /* ① 近樹：馬上刷一根，從右往左掃過；樹幹掃到龍的那一刻龍就不見（龍站在畫面中央 ⇒ 掃過一半的時候） */
+  sky.nearPause=true; sky.nearT=performance.now(); const nimg=sky.els[2]; nimg.src=C.near[(Math.random()*C.near.length)|0];
+  const SW=C.nearSweep*1000, hideAt=SW*0.45, LUNGE=650, hitAt=SW+LUNGE*0.45;
+  const ghost=el.cloneNode(); ghost.className='sky-lunge'; ghost.style.cssText=''; ghost.style.opacity='0'; top.insertBefore(ghost, sky.els[2]);
+  if(idleEl){ ghost._sync=setInterval(()=>{ if(!idleEl||!ghost.isConnected){ clearInterval(ghost._sync); return; } ghost.src=idleEl.src; }, 50); }
   sky.lunge=ghost;
-  el.style.transition='transform .45s cubic-bezier(.5,0,.9,.4), opacity .45s'; el.style.transform=`translateX(${W*1.1}px)`; el.style.opacity='0';
-  const bw=W*2.6;
+  setTimeout(()=>{ el.style.transition='none'; el.style.opacity='0'; }, hideAt);
+  /* ② 從左下往右上衝出，放大到幾乎遮滿畫面（同一支待機 loop）；衝到一半撞到玩家 ⇒ 扣血與震畫面在那一刻（defense 照回傳值延後） */
+  const bw=W*3.0;
   ghost.style.width=bw+'px'; ghost.style.left='0px'; ghost.style.top='0px';
-  ghost.style.transform=`translate(${-bw*0.95}px, ${H*0.9}px) rotate(-14deg)`;
-  setTimeout(()=>{ ghost.style.transition='transform .75s cubic-bezier(.3,.05,.6,1)'; ghost.style.transform=`translate(${W*0.9}px, ${-H*1.2}px) rotate(-14deg)`; }, 480);
+  ghost.style.transform=`translate(${-bw*0.9}px, ${H*0.95}px) rotate(-16deg)`;
+  setTimeout(()=>{ ghost.style.opacity='1'; ghost.style.transition=`transform ${LUNGE}ms cubic-bezier(.35,.05,.65,1)`;
+    ghost.style.transform=`translate(${W*0.7}px, ${-H*1.4}px) rotate(-16deg)`; }, SW);
+  /* ③ 復歸：龍回原位淡入、近樹恢復平常的節奏 */
   setTimeout(()=>{ clearInterval(ghost._sync); ghost.remove(); if(sky) sky.lunge=null;
-    el.style.transition='none'; el.style.transform=''; void el.offsetWidth; el.style.transition='opacity .4s'; el.style.opacity='1';
-    setTimeout(()=>{ el.style.transition=''; if(sky){ sky.nearPause=false; sky.nearAt=performance.now()+2500; } }, 450); }, 1300);
+    el.style.transition='opacity .45s'; el.style.opacity='1';
+    setTimeout(()=>{ el.style.transition=''; if(sky){ sky.nearPause=false; sky.nearAt=performance.now()+(C.nearEvery[0]*1000); } }, 480); }, SW+LUNGE+80);
+  return Math.round(hitAt);
 }
 /* ══ 敵人的台詞語音（ver -1920，Ray：尼莫「玩家受擊用 slow1／slow2／feint 輪播、玩家戰敗播 bulletrain、戰勝播 win」）══
    卡上三格（開戰那一聲照舊走 `entrance`）：

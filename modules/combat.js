@@ -1239,6 +1239,9 @@ function hitFxSe(hf, kind){
   return (HITFX[key] && HITFX[key].se) || null;
 }
 function enemyAttack(dmg, kind, saintAmt){
+  /* 卡上 `hitPlain:true`（ver -2446，樹寄生石龍；Ray：「玩家受擊…畫面震動，不用其他受擊效果」）：
+     主動攻擊（assault／擋一半 block）打到時只震畫面 —— 受擊特效、紅閃、受擊音都不放（龍自己衝過畫面就是那一擊）。 */
+  const _plain = (kind==='assault'||kind==='block') && !!((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).hitPlain;
   saint.resetSaintCombo();   // 受擊／點錯／逾時 → 連擊斷（九階「源泉」，ver -707）
   /* ⚠⚠ **失誤之後指一下正確的格子**（ver -717，Ray 指定）。掛在**這一支**是因為
      大絕／延時／按錯／格擋四條扣血路徑全部經過它 —— 守一次就全吃到（鐵律 8），
@@ -1322,10 +1325,10 @@ function enemyAttack(dmg, kind, saintAmt){
       saint.coopShorten((_c.coop&&_c.coop.wrongShortenSec)||1);
     }
     const sk0  = state.curEnemyHitSe || hitFxSe(state.curEnemyHitFx, fxKind);   // 卡上 hitSe 優先（ver -1881）
-    if(sk0) SFX.play(asset(sk0), sfxGain(sk0));
+    if(sk0 && !_plain) SFX.play(asset(sk0), sfxGain(sk0));
     screenShake();
-    enemy.showHitFx(fxKind);
-    $('redFlash').style.opacity=.35; setTimeout(()=>$('redFlash').style.opacity=0,120);
+    if(!_plain) enemy.showHitFx(fxKind);
+    if(!_plain){ $('redFlash').style.opacity=.35; setTimeout(()=>$('redFlash').style.opacity=0,120); }
     /* ⚠ 反擊已移到**黃圈生成那一刻**（ver -822，Ray：「敵人出黃圈瞬間就反擊」）——
        由 defense.spawnThreat 呼叫 weapon.coopCounter，敵大絕根本發不出來。所以這裡
        只保留**無敵**（不扣血、不記失誤）當保險，不再在攻擊落地時反擊（免得雙重反擊）。 */
@@ -1349,15 +1352,15 @@ function enemyAttack(dmg, kind, saintAmt){
      （HITFX 那張表：type→{base 視覺, se 音效}）。卡上不再有 `sound` 欄位，改 hitFx
      的 type 就連特效帶音一起換（Ray 定案）。block 讀 ult（fxKind 已折）。 */
   const sk  = state.curEnemyHitSe || hitFxSe(state.curEnemyHitFx, fxKind);   // 卡上 hitSe 優先（ver -1881）
-  if(sk) SFX.play(asset(sk), sfxGain(sk));   // 受擊層增益（全域響度階層見 tuning.sfxGain）
+  if(sk && !_plain) SFX.play(asset(sk), sfxGain(sk));   // 受擊層增益（全域響度階層見 tuning.sfxGain）
   if(state.saintMode){
     // 聖徒化期間敵攻擊不扣血：改推進倒數槽（推滿＝OBE）。視覺（震動/受擊特效/紅閃）留在 combat，
     //   倒數槽推進交由 saint.saintAdvance（內部走 HP API healPlayer，滿則觸發 OBE）。
     //   推進量：一般受擊＝playerMax/SAINT_ADVANCE_DIVISOR（≈+1s）；格擋由呼叫端傳 saintAmt（≈+0.5s）。
     const amt=(saintAmt!=null)?saintAmt:(state.playerMax/SAINT_ADVANCE_DIVISOR);
     screenShake();                   // 畫面震一下（ver -593）
-    enemy.showHitFx(fxKind);
-    $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
+    if(!_plain) enemy.showHitFx(fxKind);
+    if(!_plain){ $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120); }
     /* ══ 「終焉星」（諾薇兒 Lv9，ver -971）：**被攻擊不推進倒數槽** ══
        演出（震動／受擊特效／紅閃）與失誤計數照走 —— 只是不推槽。
        ⚠ 只擋**敵人的攻擊**（含格擋那一半，兩者都走這條路）；點錯與反應逾時
@@ -1379,8 +1382,8 @@ function enemyAttack(dmg, kind, saintAmt){
       ? (saintAmt / (state.playerMax/SAINT_PASSIVE_HEAL_SEC))   // 格擋那一半：換算回秒
       : (SAINT_PASSIVE_HEAL_SEC / SAINT_ADVANCE_DIVISOR);
     screenShake();
-    enemy.showHitFx(fxKind);
-    $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
+    if(!_plain) enemy.showHitFx(fxKind);
+    if(!_plain){ $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120); }
     saint.nightmareHit(sec);
     return;
   }
@@ -1405,8 +1408,8 @@ function enemyAttack(dmg, kind, saintAmt){
   if(dmg>0 && !immune && !state.hpLock && kind!=='wrong') enemy.playHitVoice();
   updateBars();
   tutorial.onHpChange();             // 血量觸發（ver -599）：玩家這一側（`php:N`）
-  enemy.showHitFx(fxKind);           // 依 kind 播放該怪對應受擊特效（'block' 讀成 'ult'）
-  $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120);
+  if(!_plain) enemy.showHitFx(fxKind);           // 依 kind 播放該怪對應受擊特效（'block' 讀成 'ult'）
+  if(!_plain){ $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120); }
   screenShake();                     // 畫面震一下（ver -593，取代原本只抖敵人立繪那一版）
   if(state.playerHp<=0){ handlePlayerLethal(kind); }
 }
