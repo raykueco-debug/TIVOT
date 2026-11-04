@@ -1,0 +1,4 @@
+Ultimate Modular Ruins Pack by Quaternius — CC0 1.0 (public domain dedication)
+https://quaternius.com/packs/ultimatemodularruins.html
+Source GLB downloaded from poly.pizza (https://poly.pizza/u/Quaternius).
+ruins.gltf / ruins.bin are a trimmed subset produced by flight/build_ruin_models.py.
