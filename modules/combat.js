@@ -836,9 +836,12 @@ function tap(num,cell,e){
       /* 罰了多少秒要**看得見**，不然玩家只覺得「時間怎麼變慢了」。 */
       floatDmg('+'+pen+'s', '50%', '46%', true);
       if(state.threats.length) defense.clearThreat();
-    }else if(state.threats.length){
+    }else if(state.threats.length && !((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).keepRingsOnMiss){
       defense.clearThreat();          // 攻擊點消失，不能再補救
       enemyAttack(tutAtkDmg(wrongDamage(DMG_HEAVY)), 'wrong');
+    }else if(state.threats.length){
+      /* 卡上 keepRingsOnMiss（ver -2455，樹寄生石龍；Ray：「點錯、延時不重置攻擊圈」）：圈留著照常縮，這一下只算一般點錯 */
+      enemyAttack(tutAtkDmg(wrongDamage(DMG_WRONG)), 'wrong');
     }else{
       SFX.wrong();
       enemyAttack(tutAtkDmg(wrongDamage(DMG_WRONG)), 'wrong');

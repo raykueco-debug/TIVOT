@@ -1215,7 +1215,7 @@ export function onAssaultLand(){
   /* ② 從左下往右上衝出，放大到幾乎遮滿畫面（同一支待機 loop）；衝到一半撞到玩家 ⇒ 扣血與震畫面在那一刻（defense 照回傳值延後） */
   /* -2447（Ray：「龍攻擊時要再放大，龍頭要往上 45 度，同飛的角度」）：寬 4.2 個畫面寬；整條龍轉 −45°（頭朝右上），
      沿著穿過畫面中心的 45° 斜線從左下飛到右上 —— 頭的方向＝飛的方向。中心對位用 translate（圖心先挪到 #top 的左上角）。 */
-  const bw=W*10.5, ar=(el.naturalHeight||180)/(el.naturalWidth||640), bh=bw*ar, reach=W*0.9+bw*0.5;
+  const bw=W*14, ar=   /* -2455 Ray：「龍攻再大一點」10.5→14 */ (el.naturalHeight||180)/(el.naturalWidth||640), bh=bw*ar, reach=W*0.9+bw*0.5;
   ghost.style.width=bw+'px'; ghost.style.height=bh+'px'; ghost.style.left=(-bw/2)+'px'; ghost.style.top=(-bh/2)+'px';
   const at=t=>`translate(${W/2-t}px, ${H/2+t}px) rotate(-45deg)`;   // t＞0 左下、t＜0 右上
   ghost.style.transform=at(reach);

@@ -1964,9 +1964,11 @@ export const ENEMIES = {
       sky:'undercity',
       assaultSe:'se_enemy_dragonroar',
       rainSe:['se_bulletsfly1','se_bulletsfly2','se_bulletsfly3','se_bulletsfly4'],   // 鱗片雨擊中的子彈飛行音（隨機挑、變調，ver -2453）   // 主動攻擊衝出那一刻吼一聲（ver -2450）
-      hitPlain:true,   // 挨主動攻擊只震畫面（ver -2446，Ray：「不用其他受擊效果」）
+      hitPlain:true,
+      keepRingsOnMiss:true,       // 點錯／延時不清攻擊圈（ver -2455）
+      resetRingsOnAssault:true,   // 一發攻擊落下就重置攻擊圈（ver -2455）   // 挨主動攻擊只震畫面（ver -2446，Ray：「不用其他受擊效果」）
       fit:{ mode:'contain', pos:'center center' },
-      hp:270,
+      hp:600,   // ver -2455 Ray：「龍的基本 hp 設 600」
       attack:17,
       atkInterval:4,
       assaultEvery:[3,5],
