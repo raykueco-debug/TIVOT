@@ -46,8 +46,8 @@ CITY = 'Z'
 
 # 鍵 → 位置／大小／地面／天頂／場景
 ROOMS = {
-    'A': dict(no=1, x=90,  y=690, a=46, b=42, rot=0,   floor=330, ceil=950,  name='入口豎井'),
-    'B': dict(no=2, x=240, y=600, a=62, b=48, rot=-20, floor=300, ceil=1050, pillars=11, name='石柱廳'),
+    'A': dict(no=1, x=90,  y=690, a=46, b=42, rot=0,   floor=260, ceil=950,  name='入口豎井'),   # -2427：水往下流 12→3→2→1，地面跟著一路降
+    'B': dict(no=2, x=240, y=600, a=62, b=48, rot=-20, floor=290, ceil=1050, pillars=11, name='石柱廳'),
     'C': dict(no=3, x=105, y=440, a=72, b=42, rot=75,  floor=320, ceil=1150, slit=1, name='天光裂隙'),
     'E': dict(no=4, x=150, y=205, a=60, b=50, rot=10,  floor=200, ceil=1500, strata=1, name='層岩高廳'),
     'F': dict(no=5, x=360, y=110, a=64, b=46, rot=-10, floor=300, ceil=1100, boulders=14, name='崩落廳'),
@@ -60,7 +60,7 @@ ROOMS = {
     # ⚠ 這幾間（NEW）的場景與迴廊**用另一條亂數**（rng2）—— 不然整條亂數序列位移，地下都市的建築／高塔
     #   （連帶地表樹海的樹位，crowns.js）會整個重排。
     'J': dict(no=11, x=470, y=240, a=52, b=40, rot=5,   floor=290, ceil=1150, pillars=6, name='斷柱迴廊'),
-    'K': dict(no=12, x=48,  y=318, a=34, b=40, rot=90,  floor=310, ceil=1100, slit=1, name='裂光側室'),
+    'K': dict(no=12, x=60,  y=318, a=34, b=40, rot=90,  floor=520, ceil=1350, slit=1, name='裂光側室'),   # -2427：地勢高，水源
     'L': dict(no=13, x=70,  y=75,  a=44, b=40, rot=0,   floor=290, ceil=1250, pores=9, name='星孔廳'),
     'M': dict(no=14, x=712, y=560, a=40, b=52, rot=70,  floor=300, ceil=1150, boulders=10, name='落石坡'),
     'N': dict(no=15, x=640, y=712, a=52, b=36, rot=0,   floor=300, ceil=1200, arch=1, name='雙拱廳'),
@@ -68,6 +68,10 @@ ROOMS = {
     'P': dict(no=17, x=712, y=195, a=32, b=40, rot=80,  floor=300, ceil=1200, chasm=1, name='懸崖廊'),
 }
 NEW = {'J', 'K', 'L', 'M', 'N', 'O', 'P'}
+# -2427（Ray：「9 跟 15 不要連結、3 跟 4 不要連結」）：這兩條**亂數照抽、只是不挖** —— 拿掉的話亂數序列位移，地下都市整個重排
+SKIP = {('C', 'E'), ('N', 'I')}
+LPTS = {}                                         # 每條迴廊的中心線（水沿著它流）
+OUTW = 12                                        # 地圖最左邊這一條＝洞外（雲海＋天），出口從 1 號往左挖出去
 rng2 = np.random.default_rng(SEED + 26)
 LINKS = [('A', 'B', 14), ('B', 'C', 13), ('C', 'E', 14), ('E', 'F', 14), ('F', 'D', 15),
          ('D', 'G', 14), ('G', 'Z', 17), ('B', 'I', 12), ('E', 'H', 12)]
@@ -118,11 +122,21 @@ for a, b, hw in LINKS + LINKS_NEW:
         t = i / nseg
         o = math.sin(t * math.pi * R_.uniform(1.6, 2.4) + ph) * amp * math.sin(t * math.pi)
         pts.append((ax + (bx - ax) * t + nx * o, ay + (by - ay) * t + ny * o))
+    LPTS[(a, b)] = pts
+    if (a, b) in SKIP: continue
     d = np.full((N, N), 1e9, np.float32)
     for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
         d = np.minimum(d, seg_dist(x0, y0, x1, y1))
     tunnel_f = np.maximum(tunnel_f, hw * (1 + 0.32 * wob + 0.18 * scal) - d)
-openm = (best > 0) | (tunnel_f > 0)
+# ── 出口（-2427，Ray：「從 1 流到地圖外，出口做成一個開口，外面是雲海」）：1 號往左一條迴廊挖到地圖邊 ──
+ax_, ay_ = ROOMS['A']['x'], ROOMS['A']['y']
+MOUTH = [(ax_, ay_), (ax_ - 30, ay_ + 6), (ax_ - 58, ay_ + 4), (OUTW - 4, ay_ + 10)]
+d = np.full((N, N), 1e9, np.float32)
+for (x0, y0), (x1, y1) in zip(MOUTH, MOUTH[1:]):
+    d = np.minimum(d, seg_dist(x0, y0, x1, y1))
+tunnel_f = np.maximum(tunnel_f, 18 * (1 + 0.18 * wob + 0.10 * scal) - d)
+outside = XX < OUTW
+openm = (best > 0) | (tunnel_f > 0) | outside
 dist = cv2.distanceTransform(openm.astype(np.uint8), cv2.DIST_L2, 5).astype(np.float32)
 
 def field(key, default):
@@ -205,11 +219,37 @@ holemask = (hole > 0.5) & openm
 #   洞只拿來算光柱與落點的亮；天頂上真的開口的只有進出口那一個（要從那裡飛出去）
 ex_x, ex_y, ex_r = holes[0]
 exitmask = (disc(ex_x, ex_y, ex_r * (1 + 0.18 * wob[int(ex_y), int(ex_x)]), 0.15) > 0.5) & openm
+floor[outside] = 40 + ZOFF
+# 水道（-2427，Ray：「12 地勢較高，水流到 3 2 1，然後從 1 流到地圖外」）：中心線 12→3→2→1→出口，
+#   水面高度沿路線性往下（WAYZ），溝底再低 20；水面那一段標成水（geo 8，飛行頁的水膜照 stream 那一份高度鋪）
+def _rev(k): return list(reversed(LPTS[k]))
+WAY = [(_rev(('C', 'K')), 900, 715), (_rev(('B', 'C')), 715, 685), (_rev(('A', 'B')), 685, 655), (MOUTH, 655, 600)]
+stream = []
+for pts_, z0, z1 in WAY:
+    seg = [(pts_[i], pts_[i + 1]) for i in range(len(pts_) - 1)]
+    Ls = [math.hypot(b_[0] - a_[0], b_[1] - a_[1]) for a_, b_ in seg]; Lt = sum(Ls) or 1; acc = 0
+    for (a_, b_), Lk in zip(seg, Ls):
+        n_ = max(1, int(Lk / 1.5))
+        for q in range(n_):
+            f_ = q / n_; x_ = a_[0] + (b_[0] - a_[0]) * f_; y_ = a_[1] + (b_[1] - a_[1]) * f_
+            stream.append((x_, y_, z0 + (z1 - z0) * (acc + Lk * f_) / Lt))
+        acc += Lk
+stream.append((OUTW - 4, ay_ + 10, 600))
+water = np.zeros((N, N), bool); HW = 3.6
+for x_, y_, z_ in stream:
+    x0, x1, y0, y1 = int(x_ - HW - 2), int(x_ + HW + 3), int(y_ - HW - 2), int(y_ + HW + 3)
+    x0, y0 = max(0, x0), max(0, y0); x1, y1 = min(N, x1), min(N, y1)
+    dd = np.sqrt((XX[y0:y1, x0:x1] - x_) ** 2 + (YY[y0:y1, x0:x1] - y_) ** 2)
+    bed = z_ - 20 * np.clip(1 - (dd / (HW + 1.5)) ** 2, 0, 1) + 26 * np.clip(dd / (HW + 1.5) - 1, 0, 1)
+    floor[y0:y1, x0:x1] = np.where(dd < HW + 2.5, np.minimum(floor[y0:y1, x0:x1], bed), floor[y0:y1, x0:x1])
+    water[y0:y1, x0:x1] |= dd < HW
+water &= openm & ~outside
 t = np.clip(dist / WALL_W, 0, 1); t = t * t * (3 - 2 * t)
 floor = SOLID * (1 - t) + floor * t
 ceil = SOLID * (1 - t) + ceil * t
 solid = ~openm | pillar_core
 floor[solid] = SOLID; ceil[solid] = SOLID
+ceil[outside] = SOLID - 1                          # 洞外的天頂：下面 Gc 會換成 HOLE（開成天）
 
 # ── 地下都市：建築清單（飛行頁畫成 3D）＋街道 ─────────────────────────────
 Rz = ROOMS[CITY]
@@ -308,11 +348,15 @@ for q in rng.permutation(len(xs))[:4000]:
                   0, 7, round(float(rng.random()), 3), gfloor])
     if len(trees) >= 9: break
 col[solid] = sandB * 0.85
+col[water] = col[water] * 0.35 + np.array([40, 70, 96], np.float32) * 0.65   # 水底
+col[outside] = np.array([236, 240, 246], np.float32)                           # 雲海（飛行頁另外依時段上色）
 col = np.clip(col, 0, 255).astype(np.uint8)
 geo = np.full((N, N), 6, np.uint8)             # 黃土
 geo[lit[..., 0] > 0.5] = 5                      # 天光落點：淺色碎石
 geo[over > 0.45] = np.where(tone[..., 0][over > 0.45] > 0.5, 1, 0)   # 野草：森林的地貌貼圖
 geo[solid] = 3
+geo[water] = 8                                  # 水（飛行頁的水膜）
+geo[outside] = 10                               # 洞外的雲海（飛行頁依時段上色、不吃洞裡的霧）
 
 # ── 加密（同 build_cave.py）───────────────────────────────────────────
 SUPER = 2; N2 = N * SUPER
@@ -355,7 +399,7 @@ col2 = np.clip(col2, 0, 255).astype(np.uint8)
 
 os.makedirs(OUT, exist_ok=True)
 R_ = np.clip(np.round(floor2 / FLOOR_SCALE), 0, 255)
-Gc = np.clip(np.round(ceil2 / CEIL_SCALE), 0, 254); Gc[upn(exitmask).astype(bool)] = HOLE
+Gc = np.clip(np.round(ceil2 / CEIL_SCALE), 0, 254); Gc[upn(exitmask).astype(bool)] = HOLE; Gc[upn(outside).astype(bool)] = HOLE
 B = np.zeros_like(R_)
 hm = np.stack([R_, Gc, B], -1).astype(np.uint8)
 aux = np.stack([np.round(shaft2 * 255), np.round(spill2 * 255), geo2], -1).astype(np.uint8)
@@ -372,6 +416,9 @@ data = {
     'rooms': [[R['name'], R['x'], R['y'], R['a'], R['b'], R['rot'], 0, R['no']] for k, R in ROOMS.items()],
     'exit': [int(ROOMS['A']['x'] * 20), int(ROOMS['A']['y'] * 20), int(ROOMS['A']['b'] * 0.46 * 20)],
     'city': CITYL,
+    'stream': [[round(x_ * 20), round(y_ * 20), round(z_)] for x_, y_, z_ in stream[::2]],   # 水面（世界座標＋水面高）：飛行頁鋪水膜
+    'streamW': round(HW * 20),
+    'outW': OUTW * 20,                                       # 洞外那一條的寬（世界單位）：船飛進去就開始出洞
 }
 js = 'window.UNDERCITY_DATA=' + json.dumps(data, ensure_ascii=False, separators=(',', ':')) + ';\n'
 open(os.path.join(OUT, 'world.js'), 'w', encoding='utf-8').write(js)
