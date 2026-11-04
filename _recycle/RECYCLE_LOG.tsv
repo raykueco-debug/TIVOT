@@ -1292,3 +1292,7 @@ when	from	to	reason
 20261103-235417	resources/illustration/051_nemobarrage_b.webp	_recycle/resources/illustration/051_nemobarrage_b.webp	051 交錯了：Ray 選的 A 是正常紅眼那張，B 要橫幅重畫
 20261104-003902	resources/illustration/051_nemobarrage_b.webp	_recycle/resources/illustration/051_nemobarrage_b.webp.20261104-003902	051_b 彈鏈改成 f5 樣式（Ray）
 20261104-180207	flight/undercity/tree_giant.webp	_recycle/flight/undercity/tree_giant.webp	ver -2403 巨樹立牌拿掉，神殿頂改成藤蔓交纏直通天頂（Ray）
+20261104-184232	flight/undercity/tree_a.webp	_recycle/flight/undercity/tree_a.webp	ver -2411 舊的樹移除（Ray），古城的樹只剩藤蔓樹
+20261104-184232	flight/undercity/tree_b.webp	_recycle/flight/undercity/tree_b.webp	ver -2411 舊的樹移除（Ray），古城的樹只剩藤蔓樹
+20261104-184232	flight/undercity/tree_c.webp	_recycle/flight/undercity/tree_c.webp	ver -2411 舊的樹移除（Ray），古城的樹只剩藤蔓樹
+20261104-184232	flight/undercity_trees.py	_recycle/flight/undercity_trees.py	ver -2411 舊的樹移除（Ray），古城的樹只剩藤蔓樹

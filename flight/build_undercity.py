@@ -276,7 +276,7 @@ for q in rng.choice(len(xs), size=min(len(xs), 1100), replace=False) if len(xs) 
     px, py = float(xs[q]) + rng.uniform(-0.5, 0.5), float(ys[q]) + rng.uniform(-0.5, 0.5)
     CITYL.append([round(px * 20), round(py * 20), round(rng.uniform(1.6, 3.6) * 20), 0, round(rng.uniform(26, 72)),
                   0, 6, round(float(rng.random()), 3), gfloor])
-# 大樹（種類 7）：跟高樓差不多高（260～380；樹頂 < 航高），長在街口與空地上，彼此隔開
+# 大樹（種類 7）：ver -2411 起飛行頁不畫（Ray：「把舊的樹移除」，樹只剩藤蔓樹）；這幾筆仍留著，因為拿掉會讓亂數序列位移、整城重排。原本：跟高樓差不多高（260～380；樹頂 < 航高），長在街口與空地上，彼此隔開
 trees = []
 ys, xs = np.nonzero(street & cityk & (best > 14) & (over > 0.3))
 for q in rng.permutation(len(xs))[:4000]:
@@ -352,9 +352,6 @@ data = {
     'rooms': [[R['name'], R['x'], R['y'], R['a'], R['b'], R['rot'], 0, R['no']] for k, R in ROOMS.items()],
     'exit': [int(ROOMS['A']['x'] * 20), int(ROOMS['A']['y'] * 20), int(ROOMS['A']['b'] * 0.46 * 20)],
     'city': CITYL,
-    # 樹的立牌（undercity_trees.py 產的 webp）的快取鑰匙：圖換了就換（同名覆蓋，§5）
-    'treeV': hashlib.md5(b''.join(open(os.path.join(OUT, n + '.webp'), 'rb').read() for n in ('tree_a', 'tree_b', 'tree_c')
-                                  if os.path.exists(os.path.join(OUT, n + '.webp')))).hexdigest()[:8],
 }
 js = 'window.UNDERCITY_DATA=' + json.dumps(data, ensure_ascii=False, separators=(',', ':')) + ';\n'
 open(os.path.join(OUT, 'world.js'), 'w', encoding='utf-8').write(js)
