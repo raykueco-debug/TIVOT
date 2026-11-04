@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=2438"></script>
+<script src="../orientation.js?v=2439"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。語言判定與 i18n.js 的 LANG 同一套
@@ -11,7 +11,7 @@
 (function(){
   var l=null; try{ l=localStorage.getItem('tivot.lang'); }catch(e){}
   if(!l){ try{ var n=(navigator.languages&&navigator.languages[0])||navigator.language||''; if(String(n).toLowerCase().indexOf('es')===0) l='es'; }catch(e){} }
-  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2438"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2438"><\/script>');
+  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2439"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2439"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=2438');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=2439');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -260,8 +260,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2438");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2438");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2439");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2439");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -281,8 +281,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2438");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2438");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2439");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2439");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -647,23 +647,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2438" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=2439" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2438" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2438" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2438" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2438" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2438" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2438" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2438" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2438" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2438" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2438" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=2439" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2439" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2439" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2439" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2439" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2439" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2439" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2439" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2439" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2439" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=2438" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=2439" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -685,13 +685,13 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=2438"></script>
+<script src="settlement.js?v=2439"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
 <script>if(/[?&]world=undercity/.test(location.search)) document.write('<script src="undercity/world.js?v=29615343"><\/script>');</script>
 <script>if(!/[?&]world=/.test(location.search)) document.write('<script src="undercity/crowns.js?v=6a3ae090"><\/script>');</script>   <!-- 地表上地底樹的樹冠（ver -2412，build_uc_crowns.py 產的） -->
-<script src="talks.js?v=2438"></script>
+<script src="talks.js?v=2439"></script>
 <script>
 /* 破圖框一律不畫（ver -1881，同主頁 main.js 那一支，這一頁是另一個 document）。 */
 document.addEventListener('error', e=>{ const t=e.target; if(t && t.tagName==='IMG') t.classList.add('img-broken'); }, true);
@@ -767,7 +767,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=b18827be'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -2438';
+const FLIGHT_VER = 'ver -2439';
 const MAP_SCALE  = /[?&]world=(cave|undercity)/.test(location.search) ? 10 : 20;   // 地底的圖加密成 1536²（ver -2369，build_cave.py 的 SUPER）：一格 10 世界單位，世界大小不變
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -14515,7 +14515,7 @@ function glDrawUnderCity(sinp,cosp,fr,fg,fb){
    · 只在船靠近時才載（UC_TREE_LOAD），不進開機那一批（鐵律 13）。葉子 alpha 遮罩：discard、不排序、兩面打光。 */
 const UC_CROWN_SITE={ x:510, y:702 }, UC_CROWN_R=320, UC_TREE_LOAD=9000, UC_TREE_FAR=6500, UC_TREE_HMAX=200, UC_CROWN_HS=1.7;
 /* 樹海現身的距離（-2437 Ray：「不要大老遠就看到，進到一定距離才慢慢現出」）：離每一株 UC_TREE_SHOW_FAR 起開始現、UC_TREE_SHOW_NEAR 以內全現 */
-const UC_TREE_SHOW_FAR=2600, UC_TREE_SHOW_NEAR=1400, UC_TREE_FADE=260;   /* -2438（Ray：「還是大老遠就看得到一坨」→「接近到一定程度才陸續淡入」）：每一株自己的現身距離散在 FAR～NEAR 之間（陸續），各自在 UC_TREE_FADE 這一小段裡淡入 —— 樹本身不動 */
+const UC_TREE_SHOW_FAR=1900, UC_TREE_SHOW_NEAR=1000, UC_TREE_FADE=450;   /* -2438（Ray：「還是大老遠就看得到一坨」→「接近到一定程度才陸續淡入」）：每一株自己的現身距離散在 FAR～NEAR 之間（陸續），各自在 UC_TREE_FADE 這一小段裡淡入 —— 樹本身不動 */
 /* 無樹幹的樹海（ver -2415，Ray：「地表也要有無樹幹的樹海」）：大樹底下與四周鋪一層矮樹冠，大樹從裡面冒出來。
    半徑 UC_SEA_R、間距 UC_SEA_STEP 的抖動格；只鋪平原（比中心地面高不過 UC_SEA_DH、兩格內落差不超過 UC_SEA_SLOPE×2）；樹冠頂離地 35～70。用面數最少的兩個模型。 */
 /* 樹葉下的霧（ver -2422，Ray：「讓森林加一層霧氣」→「霧氣放樹葉下」）：洞裡貼著坑底疊三層半透明的霧，
@@ -14557,8 +14557,6 @@ float ch(vec2 q){ return fract(sin(dot(q,vec2(127.1,311.7)))*43758.5453); }
 float vn(vec2 q){ vec2 i=floor(q), f=fract(q); f=f*f*(3.0-2.0*f);
   return mix(mix(ch(i),ch(i+vec2(1,0)),f.x), mix(ch(i+vec2(0,1)),ch(i+vec2(1,1)),f.x), f.y); }
 void main(){
-  /* 遠處慢慢現出（-2437 Ray：「樹海不要大老遠就看到，進到一定距離才慢慢現出」）：葉子是 alpha 測試、不排序，沒辦法半透明 ⇒ 用點陣淘汰（越遠留越少的像素） */
-  if(uFade<0.999 && fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453)>=uFade) discard;
   /* 葉子取粗兩階的 mip（ver -2415，Ray：「葉子長得跟背景銳度差太多」）：地形是低解析放大的，
      葉卡的細碎鋸齒會比它銳利一大截 —— 取糊一點的層級，葉叢讀成一團團的塊，跟背景同一個銳度 */
   vec4 t=uMask>0.5 ? texture(uTex,vUV,1.5) : texture(uTex,vUV);
@@ -14574,7 +14572,7 @@ void main(){
     vec2 hv=normalize(uCam.xy-vWP.xy+vec2(1e-3)); float hl=length(N.xy);
     float rim=hl>0.05 ? clamp(dot(N.xy/hl,hv),0.0,1.0) : 1.0; col*=0.45+0.70*sqrt(rim);
   }
-  o=vec4(mix(col,uAmb,uAmbA)*(1.0-uDark*0.94),1.0);   /* 地下古城的黑暗區（-2434）：樹也跟著暗 */
+  o=vec4(mix(col,uAmb,uAmbA)*(1.0-uDark*0.94),uFade);   /* 地下古城的黑暗區（-2434）：樹也跟著暗；uFade＝淡入中的不透明度（-2439：真的半透明，不用點陣 —— Ray：「完全不行」） */
   gl_FragDepth=vZ;
 }`;
 function ucTreeLoad(){
@@ -14785,17 +14783,20 @@ function glDrawUcTrees(sinp,cosp,lx,ly,dayK){
   if(showK(dist-UC_SEA_R-100)<=0.001) return;   // 整片（最外圈的樹海離中心 UC_SEA_R）都還在現身距離外
   g.bindTexture(g.TEXTURE_2D,ucWhite); g.uniform1f(ucTreeU.uMask,0); g.uniform1f(ucTreeU.uVine,1); g.uniform1f(ucTreeU.uFade,showAt(dist,(UC_TREE_SHOW_FAR+UC_TREE_SHOW_NEAR)/2));
   g.uniform3f(ucTreeU.uOrigin,0,0,0); g.uniform3f(ucTreeU.uRS,1,0,1); g.uniform1f(ucTreeU.uHS,1);
+  { const tk=showAt(dist,(UC_TREE_SHOW_FAR+UC_TREE_SHOW_NEAR)/2); if(tk<0.999){ g.enable(g.BLEND); g.blendFunc(g.SRC_ALPHA,g.ONE_MINUS_SRC_ALPHA); } }
   g.bindVertexArray(ucTrunkVao); g.drawArrays(g.TRIANGLES,0,ucTrunkN);
   /* 樹冠：模型的葉子 */
   g.uniform1f(ucTreeU.uVine,0);
   for(const T of ucTreeInst){ const M=ucTreeMesh[T.name];
     const fk=showAt(Math.hypot(T.o[0]-cam.x, T.o[1]-cam.y), T.at); if(fk<=0.001) continue;
     g.uniform1f(ucTreeU.uFade,fk);
+    if(fk<0.999){ g.enable(g.BLEND); g.blendFunc(g.SRC_ALPHA,g.ONE_MINUS_SRC_ALPHA); } else g.disable(g.BLEND);   // 淡入中的那幾株半透明疊上去
     g.uniform3f(ucTreeU.uOrigin,T.o[0],T.o[1],T.o[2]);
     g.uniform3f(ucTreeU.uRS,T.rs[0],T.rs[1],T.rs[2]); g.uniform1f(ucTreeU.uHS,T.hs);
     for(const q of M.prims){ const tx=ucTreeTexs[q.mat]; if(!tx) continue;
       g.bindTexture(g.TEXTURE_2D,tx); g.uniform1f(ucTreeU.uMask,q.mask?1:0);
       g.bindVertexArray(q.vao); g.drawElements(g.TRIANGLES,q.n,q.type,0); } }
+  g.disable(g.BLEND);
   /* 樹葉下的霧：畫在樹之後、吃同一顆深度（樹冠擋住的地方自然看不到） */
   if(UC_HOLE) glDrawUcFog(sinp,cosp,dayK,showAt(dist,(UC_TREE_SHOW_FAR+UC_TREE_SHOW_NEAR)/2));
   g.bindVertexArray(null);
