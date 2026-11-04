@@ -1241,7 +1241,10 @@ function hitFxSe(hf, kind){
 function enemyAttack(dmg, kind, saintAmt){
   /* 卡上 `hitPlain:true`（ver -2446，樹寄生石龍；Ray：「玩家受擊…畫面震動，不用其他受擊效果」）：
      主動攻擊（assault／擋一半 block）打到時只震畫面 —— 受擊特效、紅閃、受擊音都不放（龍自己衝過畫面就是那一擊）。 */
-  const _plain = (kind==='assault'||kind==='block') && !!((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).hitPlain;
+  /* -2449（Ray：「我說了攻擊不用另外給受擊效果」「點錯或延時龍會往後噴鱗片，然後鱗片雨刮過受擊，畫面抖動」）：
+     點錯／延時也一樣不放受擊特效 —— 改演龍噴鱗片＋鱗片雨（enemy.skyScaleRain），只留畫面抖動。 */
+  const _plain = !!((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).hitPlain;
+  if(_plain && (kind==='delay'||kind==='wrong')) enemy.skyScaleRain();
   saint.resetSaintCombo();   // 受擊／點錯／逾時 → 連擊斷（九階「源泉」，ver -707）
   /* ⚠⚠ **失誤之後指一下正確的格子**（ver -717，Ray 指定）。掛在**這一支**是因為
      大絕／延時／按錯／格擋四條扣血路徑全部經過它 —— 守一次就全吃到（鐵律 8），

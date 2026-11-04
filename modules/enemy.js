@@ -1226,6 +1226,34 @@ export function onAssaultLand(){
     setTimeout(()=>{ el.style.transition=''; if(sky){ sky.nearPause=false; sky.nearAt=performance.now()+(C.nearEvery[0]*1000); } }, 480); }, SW+LUNGE+80);
   return Math.round(hitAt);
 }
+/* ══ 點錯／延時的懲罰演出（ver -2449，Ray：「點錯或延時龍會往後噴鱗片，然後鱗片雨刮過受擊，畫面抖動」）══
+   ① 龍身往後（龍頭朝右 ⇒ 往左）噴出一把鱗片 ② 鱗片雨從右上斜刮過整個畫面。畫在 #top 的一張畫布上，跑完就拆。
+   ⚠ 只給有 `sky` 的怪（hitPlain 的那幾隻）；扣血與畫面抖動照舊在 combat.enemyAttack 那一刻。 */
+let scaleRainCv=null;
+export function skyScaleRain(){
+  if(!sky) return;
+  const top=$('top'), W=top.clientWidth, H=top.clientHeight;
+  const cv=document.createElement('canvas'); cv.className='sky-scales'; cv.width=W; cv.height=H; top.appendChild(cv);
+  if(scaleRainCv) scaleRainCv.remove(); scaleRainCv=cv;
+  const cx=cv.getContext('2d'), tr=top.getBoundingClientRect();
+  const el=idleEl || $('enemyImg'), r=el ? el.getBoundingClientRect() : { left:tr.left+W*0.2, right:tr.left+W*0.8, top:tr.top+H*0.35, bottom:tr.top+H*0.6 };
+  const bx0=r.left-tr.left, bx1=r.right-tr.left, by0=r.top-tr.top, by1=r.bottom-tr.top, P=[], rnd=(a,b)=>a+Math.random()*(b-a);
+  for(let i=0;i<70;i++) P.push({ x:rnd(bx0+(bx1-bx0)*0.2, bx1-(bx1-bx0)*0.1), y:rnd(by0+(by1-by0)*0.3, by1-(by1-by0)*0.2),   // ① 噴：從龍身往左後方
+    vx:rnd(-1.2,-0.45), vy:rnd(-0.35,0.25), rot:rnd(0,6.28), vr:rnd(-0.02,0.02), s:rnd(4,9), t0:0, life:rnd(500,800) });
+  for(let i=0;i<120;i++) P.push({ x:rnd(W*0.3, W*1.4), y:rnd(-H*0.9, -H*0.05), vx:rnd(-1.1,-0.7), vy:rnd(0.9,1.3), rot:rnd(0,6.28), vr:rnd(-0.03,0.03),   // ② 雨：右上往左下斜刮
+    s:rnd(5,12), t0:rnd(260,520), life:rnd(600,900) });
+  const t0=performance.now();
+  const draw=now=>{ if(!cv.isConnected) return;
+    const t=now-t0; cx.clearRect(0,0,W,H); let alive=false;
+    for(const p of P){ const u=t-p.t0; if(u<0 || u>p.life){ if(u<0) alive=true; continue; } alive=true;
+      const x=p.x+p.vx*u, y=p.y+p.vy*u, a=Math.min(1,u/80)*Math.min(1,(p.life-u)/200);
+      cx.save(); cx.translate(x,y); cx.rotate(p.rot+p.vr*u); cx.globalAlpha=a;
+      cx.fillStyle='#c9bfae'; cx.beginPath(); cx.moveTo(0,-p.s); cx.lineTo(p.s*0.55,0); cx.lineTo(0,p.s*0.8); cx.lineTo(-p.s*0.55,0); cx.closePath(); cx.fill();   // 一片鱗：菱形、灰白骨色
+      cx.fillStyle='rgba(90,78,64,.8)'; cx.beginPath(); cx.moveTo(0,-p.s*0.35); cx.lineTo(p.s*0.2,0.1*p.s); cx.lineTo(0,p.s*0.5); cx.closePath(); cx.fill();
+      cx.restore(); }
+    if(alive) requestAnimationFrame(draw); else { cv.remove(); if(scaleRainCv===cv) scaleRainCv=null; } };
+  requestAnimationFrame(draw);
+}
 /* ══ 敵人的台詞語音（ver -1920，Ray：尼莫「玩家受擊用 slow1／slow2／feint 輪播、玩家戰敗播 bulletrain、戰勝播 win」）══
    卡上三格（開戰那一聲照舊走 `entrance`）：
      `hitVoice:[…]`  玩家**被打到**時輪播（同一隻怪換一句；上一句還在講就不疊，至少隔 `HIT_VO_GAP_MS`）
