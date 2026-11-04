@@ -1706,6 +1706,7 @@ export function loadEnemyPortrait(en){
   risePending=null;
   eImg.onload = null;
   eImg.classList.remove('enemy-rise','enemy-unpurge','enemy-purge','enemy-quake');
+  if(eImg._falling){ eImg._falling=false; eImg.style.transition=''; eImg.style.transform=''; eImg.style.filter=''; }   // 上一隻的斜下墜（deathFx:'skyfall'，ver -2456）
   /* ⚠⚠⚠ **換怪的第一件事是把上一張拔掉**（ver -1467）：`<img>` 在**新圖解碼完成
      之前不會重繪** —— 只設 `src` 的話，慢網下整段空窗畫面上站著的是**上一隻怪**，
      而且沒有任何錯誤訊息（Ray 在空戰看到地下聖徒的那一半就是這個）。
@@ -1908,8 +1909,22 @@ function spawnPurgeStars(box){
    ⚠ 聲音走 `story.playSe`（音效表只有那一份，鐵律 7；它自己擋 brickcrush 疊播）。
    ⚠ 冪等：同 `enemy-purge`，overkill 期間重複叫到不會重播。 */
 export function purgeEnemy(){
-  stopIdleLoop();   // 死亡演出在立繪本體上演（ver -2075）
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
+  /* `deathFx:'skyfall'`（ver -2456，樹寄生石龍；Ray：「龍被擊敗是斜下墜出畫面外」）：不淨化，
+     整條龍（照舊播待機動檔，沒動檔就用靜態圖）往右下斜墜、機頭朝下轉，加速掉出畫面。冪等（掛 _falling）。 */
+  if(en && en.deathFx==='skyfall'){
+    const el = idleEl || $('enemyImg'); if(!el || el._falling) return;
+    el._falling = true; el.style.visibility=''; el.style.opacity='1'; el.style.clipPath='';
+    if(sky && sky.lunge){ clearInterval(sky.lunge._sync); sky.lunge.remove(); sky.lunge=null; sky.vanishEl=null; }
+    const top=$('top'), W=top.clientWidth, H=top.clientHeight;
+    el.style.transition='none'; el.style.transformOrigin='50% 50%';
+    void el.offsetWidth;
+    el.style.transition='transform 1.3s cubic-bezier(.5,0,.9,.6), filter 1.3s ease-in';
+    el.style.transform=`translate(${W*0.55}px, ${H*1.25}px) rotate(38deg) scale(.82)`;
+    el.style.filter='brightness(.55)';
+    return;
+  }
+  stopIdleLoop();   // 死亡演出在立繪本體上演（ver -2075）
   if(en && en.deathFx==='quake'){
     const eImg = $('enemyImg');
     if(!eImg || eImg.classList.contains('enemy-quake')) return;
