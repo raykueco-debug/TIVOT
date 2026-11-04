@@ -1297,3 +1297,4 @@ when	from	to	reason
 20261104-184232	flight/undercity/tree_c.webp	_recycle/flight/undercity/tree_c.webp	ver -2411 舊的樹移除（Ray），古城的樹只剩藤蔓樹
 20261104-184232	flight/undercity_trees.py	_recycle/flight/undercity_trees.py	ver -2411 舊的樹移除（Ray），古城的樹只剩藤蔓樹
 20261104-195822	resources/ci/video/ci_nemo_barrage_v2_hevc.mov	_recycle/resources/ci/video/ci_nemo_barrage_v2_hevc.mov	HEVC alpha 編碼失敗留下的 0 byte 空檔
+20261104-230628	resources/background/_undercity_skybattle/uc_parallax_preview.gif	_recycle/resources/background/_undercity_skybattle/uc_parallax_preview.gif	parallax 預覽 GIF 太大(32MB)，改用 mp4
