@@ -156,6 +156,7 @@ ceil = ceil_top * roomness + (ALT + 230 + (fbm(N, 3, 40, 0.5) - 0.5) * 120) * (1
 ceil = ceil - fbm(N, 4, 24, 0.55) * 90 * roomness
 
 pillar_core = np.zeros((N, N), bool)
+PILLARS = []                                       # 風蝕石柱 [x, y, 半徑]（世界座標）
 holes = []
 chasm = np.zeros((N, N), np.float32)
 chasm_g = np.zeros((N, N), np.float32)            # 斷橋深谷那一間的谷底（樹海）
@@ -185,6 +186,7 @@ for k, R in ROOMS.items():
     for px, py in inside(R.get('pillars', 0), 0.78, 13):     # 風蝕石柱：腰細頭粗的岩柱（高度圖裡是實心柱＋腳下的岩裙）
         r = rng.uniform(3.2, 6.5)
         pillar_core |= disc(px, py, r * (1 + 0.25 * wob[int(py), int(px)]), 0.3) > 0.5
+        PILLARS.append([round(px * 20), round(py * 20), round(r * (1 + 0.25 * wob[int(py), int(px)]) * 20)])   # 飛行頁：撞到石柱的語音（-2435）
         fl = disc(px, py, r * 2.3, 1.0) ** 2
         floor = floor + fl * rng.uniform(60, 140); ceil = ceil - fl * rng.uniform(80, 180)
     if R.get('slit'):                              # 天光裂隙：沿長軸一道細縫
@@ -548,6 +550,7 @@ data = {
     'outW': OUTW * 20,                                       # 洞外那一條的寬（世界單位）：船飛進去就開始出洞
     'wlev': wlev_grid,
     'wflow': wflow_grid,
+    'pillars': PILLARS,                                     # 風蝕石柱（-2435）：撞到它跟撞到樹柱一樣，索菈娜會吐槽
     'forest': FOREST,                                       # 斷橋深谷底下往 10 延伸的樹海：[x, y, 樹冠頂, 黑暗×100]（-2434）
     'wind': [ROOMS['N']['x'] * 20, ROOMS['N']['y'] * 20, round(ROOMS['N']['b'] * 0.62 * 20)],   # 無底風穴：飛進這一圈就被氣流往上送出去（只出不進）                                     # 流向網格（同 wlev 的角點；每點 [dx,dy]×100，往下游）                                       # 水位網格（768² 每 8 格一個角點＝97×97；0＝沒水）：飛行頁的水膜照它鋪
 }
