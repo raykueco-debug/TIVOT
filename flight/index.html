@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=2400"></script>
+<script src="../orientation.js?v=2401"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。語言判定與 i18n.js 的 LANG 同一套
@@ -11,7 +11,7 @@
 (function(){
   var l=null; try{ l=localStorage.getItem('tivot.lang'); }catch(e){}
   if(!l){ try{ var n=(navigator.languages&&navigator.languages[0])||navigator.language||''; if(String(n).toLowerCase().indexOf('es')===0) l='es'; }catch(e){} }
-  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2400"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2400"><\/script>');
+  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2401"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2401"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=2400');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=2401');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -260,8 +260,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2400");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2400");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2401");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2401");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -281,8 +281,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2400");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2400");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2401");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2401");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -647,23 +647,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2400" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=2401" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2400" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2400" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2400" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2400" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2400" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2400" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2400" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2400" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2400" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2400" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=2401" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2401" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2401" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2401" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2401" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2401" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2401" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2401" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2401" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2401" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=2400" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=2401" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -685,12 +685,12 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=2400"></script>
+<script src="settlement.js?v=2401"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
-<script>if(/[?&]world=undercity/.test(location.search)) document.write('<script src="undercity/world.js?v=c38fd38f"><\/script>');</script>
-<script src="talks.js?v=2400"></script>
+<script>if(/[?&]world=undercity/.test(location.search)) document.write('<script src="undercity/world.js?v=63f4ebf0"><\/script>');</script>
+<script src="talks.js?v=2401"></script>
 <script>
 /* 破圖框一律不畫（ver -1881，同主頁 main.js 那一支，這一頁是另一個 document）。 */
 document.addEventListener('error', e=>{ const t=e.target; if(t && t.tagName==='IMG') t.classList.add('img-broken'); }, true);
@@ -766,7 +766,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=b18827be'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -2400';
+const FLIGHT_VER = 'ver -2401';
 const MAP_SCALE  = /[?&]world=(cave|undercity)/.test(location.search) ? 10 : 20;   // 地底的圖加密成 1536²（ver -2369，build_cave.py 的 SUPER）：一格 10 世界單位，世界大小不變
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1439,7 +1439,7 @@ const SETTLEMENTS = [
 const CITY_V='?v=5de18e35';   // ver -1220：ravnsdal_* 同名重跑（城內綠地改積雪色）
 /* ══ 組出來的素材路徑的版本表（ver -1918）══ `geo/`+name、羽蛇插圖、怪的 sprite 這幾條路是**拼字串**的，
    字面路徑的自動版本號吃不到 ⇒ 由 tools/asset_bust.py 把同名覆蓋過的那幾支的內容雜湊寫進下面那一行，`fav()` 查表掛上。 */
-/* BUST:FLIGHTAV START —— 由 tools/asset_bust.py 產生，不要手改 */ const FLIGHT_AV={'../resources/enemy/centipi_day.webp':'c86a074a','../resources/enemy/centipi_dd.webp':'2c254b24','../resources/enemy/centipi_night.webp':'515d5f8b','../resources/enemy/dart_timeattack.webp':'df0a5635','../resources/enemy/kidd_ci.webp':'a4cda953','../resources/enemy/man_misha_guards.webp':'5b0d73a9','../resources/enemy/man_misha_ni.webp':'1d6384ac','../resources/enemy/man_sorana.webp':'11180f49','../resources/enemy/man_thug_shotgun.webp':'504d26bc','../resources/enemy/man_thug_squad.webp':'dfd75032','../resources/enemy/mon_arch_warden.webp':'69358667','../resources/enemy/mon_bear_husk.webp':'08453d77','../resources/enemy/mon_bear_nightmare.webp':'8b9715dd','../resources/enemy/mon_beast_altar.webp':'314d3a60','../resources/enemy/mon_beast_organ.webp':'2cb2855b','../resources/enemy/mon_beast_reliquary.webp':'9e728c27','../resources/enemy/mon_beast_shackle.webp':'3f7e0727','../resources/enemy/mon_bellfounder.webp':'996b6674','../resources/enemy/mon_candelabra_fiend.webp':'bedacbdc','../resources/enemy/mon_canyon_colossus.webp':'20959d9a','../resources/enemy/mon_chain_hanged.webp':'dfaaae52','../resources/enemy/mon_choir_organ.webp':'15a645f4','../resources/enemy/mon_choir_pale.webp':'177e606d','../resources/enemy/mon_crypt_centipede.webp':'d77b735b','../resources/enemy/mon_crypt_hound.webp':'5d511a2d','../resources/enemy/mon_dragon_v1_ascendant.webp':'d30dd2e3','../resources/enemy/mon_dragon_v1_shackled.webp':'19baca48','../resources/enemy/mon_gorge_toad.webp':'fa0dc50f','../resources/enemy/mon_grave_censer.webp':'853df80f','../resources/enemy/mon_gravekeeper_crypt.webp':'9b1652d7','../resources/enemy/mon_gravekeeper_many.webp':'e64d8c82','../resources/enemy/mon_gravekeeper_offset.webp':'46c05edc','../resources/enemy/mon_gravekeeper_seal.webp':'a94669c5','../resources/enemy/mon_iron_maiden.webp':'e0797afd','../resources/enemy/mon_kneeling_penitent.webp':'df4ac8d2','../resources/enemy/mon_natalia.webp':'46dacdbf','../resources/enemy/mon_ossuary_rats.webp':'7117d6e6','../resources/enemy/mon_ossuary_wheel.webp':'afde9cd5','../resources/enemy/mon_pallid_stag.webp':'b0bd8089','../resources/enemy/mon_relic_candlepenitent.webp':'c5142b92','../resources/enemy/mon_relic_candletower.webp':'d3ea7ec1','../resources/enemy/mon_relic_reassembled.webp':'b0329247','../resources/enemy/mon_reliquary_hand.webp':'9216bd5c','../resources/enemy/mon_sarcoph_crawler.webp':'427145a4','../resources/enemy/mon_sea_coralman.webp':'754847d3','../resources/enemy/mon_shroud_widow.webp':'7cfbfa40','../resources/enemy/mon_skull_cairn.webp':'ee510068','../resources/enemy/mon_sky_armorcrab.webp':'b14e80f8','../resources/enemy/mon_sky_boneray.webp':'534952bb','../resources/enemy/mon_sky_eelswarm.webp':'be0d5d2f','../resources/enemy/mon_sky_eyemoth.webp':'9c313139','../resources/enemy/mon_sky_gasjelly.webp':'905c019e','../resources/enemy/mon_sky_mawbat.webp':'ae6570e7','../resources/enemy/mon_sky_ribwhale.webp':'a77e60f0','../resources/enemy/mon_sky_twinwyvern.webp':'8b23a136','../resources/enemy/mon_slab_creeper.webp':'ae03c6f8','../resources/enemy/mon_spiral_veil.webp':'2418f6c6','../resources/enemy/mon_stag_nightmare.webp':'f0940269','../resources/enemy/mon_stag_rot.webp':'5671f64b','../resources/enemy/mon_stone_adder.webp':'e3e8744c','../resources/enemy/mon_tomb_bear.webp':'532d0a28','../resources/enemy/mon_twin_skull_hound.webp':'91ccfda0','../resources/enemy/mon_vault_bat.webp':'34f4b298','../resources/enemy/mon_wolf_pack.webp':'f6f41b90','../resources/enemy/pirateship_day.webp':'052ea83c','../resources/enemy/pirateship_dd.webp':'ba5848b9','../resources/enemy/pirateship_night.webp':'830e4305','../resources/enemy/saint_gt_ci.webp':'2c191ece','../resources/enemy/saint_tr_ci.webp':'1f885777','../resources/enemy/serpent_day.webp':'8b55f618','../resources/enemy/serpent_dd.webp':'7574b2ec','../resources/enemy/serpent_night.webp':'720cc1c8','../resources/enemy/theclaws.webp':'0e70c2c5','base.webp':'791b78e3','cave/cave_aux.png':'d0292903','cave/cave_col.png':'f204b361','cave/cave_hm.png':'4bc8767b','enemy/flm_centipi/view_0.webp':'1dcb1399','enemy/flm_dragonthrone/view_0.webp':'54e2fa79','enemy/flm_serpent/view_3.webp':'a2123764','geo/castle_roof.webp':'02a1913e','geo/castle_wall.webp':'96ad0149','geo/moss_stone.webp':'a0e13388','map_reference.png':'622beafb','region_map.png':'03fd1a36','silvermoon_heightmap.png':'27adc1ac','silvermoon_terrain.png':'b18827be','undercity/cave_aux.png':'2f9cedc3','undercity/cave_col.png':'90236c36','undercity/cave_hm.png':'fdb51e4f','wheel.webp':'f6de2299'}; /* BUST:FLIGHTAV END */
+/* BUST:FLIGHTAV START —— 由 tools/asset_bust.py 產生，不要手改 */ const FLIGHT_AV={'../resources/enemy/centipi_day.webp':'c86a074a','../resources/enemy/centipi_dd.webp':'2c254b24','../resources/enemy/centipi_night.webp':'515d5f8b','../resources/enemy/dart_timeattack.webp':'df0a5635','../resources/enemy/kidd_ci.webp':'a4cda953','../resources/enemy/man_misha_guards.webp':'5b0d73a9','../resources/enemy/man_misha_ni.webp':'1d6384ac','../resources/enemy/man_sorana.webp':'11180f49','../resources/enemy/man_thug_shotgun.webp':'504d26bc','../resources/enemy/man_thug_squad.webp':'dfd75032','../resources/enemy/mon_arch_warden.webp':'69358667','../resources/enemy/mon_bear_husk.webp':'08453d77','../resources/enemy/mon_bear_nightmare.webp':'8b9715dd','../resources/enemy/mon_beast_altar.webp':'314d3a60','../resources/enemy/mon_beast_organ.webp':'2cb2855b','../resources/enemy/mon_beast_reliquary.webp':'9e728c27','../resources/enemy/mon_beast_shackle.webp':'3f7e0727','../resources/enemy/mon_bellfounder.webp':'996b6674','../resources/enemy/mon_candelabra_fiend.webp':'bedacbdc','../resources/enemy/mon_canyon_colossus.webp':'20959d9a','../resources/enemy/mon_chain_hanged.webp':'dfaaae52','../resources/enemy/mon_choir_organ.webp':'15a645f4','../resources/enemy/mon_choir_pale.webp':'177e606d','../resources/enemy/mon_crypt_centipede.webp':'d77b735b','../resources/enemy/mon_crypt_hound.webp':'5d511a2d','../resources/enemy/mon_dragon_v1_ascendant.webp':'d30dd2e3','../resources/enemy/mon_dragon_v1_shackled.webp':'19baca48','../resources/enemy/mon_gorge_toad.webp':'fa0dc50f','../resources/enemy/mon_grave_censer.webp':'853df80f','../resources/enemy/mon_gravekeeper_crypt.webp':'9b1652d7','../resources/enemy/mon_gravekeeper_many.webp':'e64d8c82','../resources/enemy/mon_gravekeeper_offset.webp':'46c05edc','../resources/enemy/mon_gravekeeper_seal.webp':'a94669c5','../resources/enemy/mon_iron_maiden.webp':'e0797afd','../resources/enemy/mon_kneeling_penitent.webp':'df4ac8d2','../resources/enemy/mon_natalia.webp':'46dacdbf','../resources/enemy/mon_ossuary_rats.webp':'7117d6e6','../resources/enemy/mon_ossuary_wheel.webp':'afde9cd5','../resources/enemy/mon_pallid_stag.webp':'b0bd8089','../resources/enemy/mon_relic_candlepenitent.webp':'c5142b92','../resources/enemy/mon_relic_candletower.webp':'d3ea7ec1','../resources/enemy/mon_relic_reassembled.webp':'b0329247','../resources/enemy/mon_reliquary_hand.webp':'9216bd5c','../resources/enemy/mon_sarcoph_crawler.webp':'427145a4','../resources/enemy/mon_sea_coralman.webp':'754847d3','../resources/enemy/mon_shroud_widow.webp':'7cfbfa40','../resources/enemy/mon_skull_cairn.webp':'ee510068','../resources/enemy/mon_sky_armorcrab.webp':'b14e80f8','../resources/enemy/mon_sky_boneray.webp':'534952bb','../resources/enemy/mon_sky_eelswarm.webp':'be0d5d2f','../resources/enemy/mon_sky_eyemoth.webp':'9c313139','../resources/enemy/mon_sky_gasjelly.webp':'905c019e','../resources/enemy/mon_sky_mawbat.webp':'ae6570e7','../resources/enemy/mon_sky_ribwhale.webp':'a77e60f0','../resources/enemy/mon_sky_twinwyvern.webp':'8b23a136','../resources/enemy/mon_slab_creeper.webp':'ae03c6f8','../resources/enemy/mon_spiral_veil.webp':'2418f6c6','../resources/enemy/mon_stag_nightmare.webp':'f0940269','../resources/enemy/mon_stag_rot.webp':'5671f64b','../resources/enemy/mon_stone_adder.webp':'e3e8744c','../resources/enemy/mon_tomb_bear.webp':'532d0a28','../resources/enemy/mon_twin_skull_hound.webp':'91ccfda0','../resources/enemy/mon_vault_bat.webp':'34f4b298','../resources/enemy/mon_wolf_pack.webp':'f6f41b90','../resources/enemy/pirateship_day.webp':'052ea83c','../resources/enemy/pirateship_dd.webp':'ba5848b9','../resources/enemy/pirateship_night.webp':'830e4305','../resources/enemy/saint_gt_ci.webp':'2c191ece','../resources/enemy/saint_tr_ci.webp':'1f885777','../resources/enemy/serpent_day.webp':'8b55f618','../resources/enemy/serpent_dd.webp':'7574b2ec','../resources/enemy/serpent_night.webp':'720cc1c8','../resources/enemy/theclaws.webp':'0e70c2c5','base.webp':'791b78e3','cave/cave_aux.png':'d0292903','cave/cave_col.png':'f204b361','cave/cave_hm.png':'4bc8767b','enemy/flm_centipi/view_0.webp':'1dcb1399','enemy/flm_dragonthrone/view_0.webp':'54e2fa79','enemy/flm_serpent/view_3.webp':'a2123764','geo/castle_roof.webp':'02a1913e','geo/castle_wall.webp':'96ad0149','geo/moss_stone.webp':'a0e13388','map_reference.png':'622beafb','region_map.png':'03fd1a36','silvermoon_heightmap.png':'27adc1ac','silvermoon_terrain.png':'b18827be','undercity/cave_aux.png':'b3f5ae5b','undercity/cave_col.png':'0f324056','undercity/cave_hm.png':'29bb2794','wheel.webp':'f6de2299'}; /* BUST:FLIGHTAV END */
 const fav = p => { const q=String(p); if(q.indexOf('?')>=0) return q; const h=FLIGHT_AV[q.toLowerCase()]; return h ? q+'?v='+h : q; };
 /* ══⚠⚠ 量體的貼材（ver -1117，Ray 交件 `geo/flight_villagewall`／`flight_rooftile`）══
    牆本來是一塊平色（`wallCol`），所以房子讀起來是「立起來的色塊」而不是建築。
@@ -13941,7 +13941,7 @@ function playCaveLeave(){
    · 沒有燈（光只剩洞頂的天光與船燈） */
 let glCityProg=null, glCityU={}, glCityVao=null, glCityN=0;
 const GL_CITY_VS=`#version 300 es
-in vec3 p; in vec3 n; in vec4 c;      // c.rgb 石色、c.a＝1 這一面有拱門洞
+in vec3 p; in vec3 n; in vec4 c;      // c.rgb 石色；c.a：1 有拱門洞／0 沒有／0.5 神殿（看得遠）／−1 植物
 in vec2 f;                             // f：這一面上的座標（世界單位：橫、離地高），排石縫與門洞用
 uniform vec2 uBuf; uniform vec3 uCam; uniform vec2 uDir;
 out vec3 vN; out vec4 vC; out vec2 vF; out float vZ; out vec3 vWP;
@@ -13966,7 +13966,9 @@ float ch(vec2 q){ return fract(sin(dot(q,vec2(127.1,311.7)))*43758.5453); }
 float vn(vec2 q){ vec2 i=floor(q), f=fract(q); f=f*f*(3.0-2.0*f);
   return mix(mix(ch(i),ch(i+vec2(1,0)),f.x), mix(ch(i+vec2(0,1)),ch(i+vec2(1,1)),f.x), f.y); }
 void main(){
-  if(vZ>uZfar) discard;
+  /* 神殿（c.a＝0.5）跟巨樹一起看得遠：不然遠處只剩一棵懸在半空的樹（ver -2402） */
+  float zf=uZfar*(abs(vC.a-0.5)<0.01 ? 1.8 : 1.0);
+  if(vZ>zf) discard;
   vec3 nn=normalize(vN);
   float top=max(nn.z,0.0);
   float side=0.55+0.30*abs(dot(nn.xy,vec2(0.6,0.8)));
@@ -13987,7 +13989,7 @@ void main(){
   float bk=ch(vec2(floor((vF.x+crs*13.0)/30.0),crs)+vWP.xy*0.0007);
   col*=mix(1.0, 0.86+0.22*bk, wall);
   /* 拱門洞（vC.a＞0 的牆才有）：一樓一排門、上面零星幾個窗 */
-  if(vC.a>0.0 && wall>0.5){
+  if(vC.a>0.75 && wall>0.5){
     vec2 g=vF/vec2(46.0,70.0), id=floor(g), fr=fract(g);
     float lx=(fr.x-0.5)*46.0, ly=fr.y*70.0;
     float hole=float((abs(lx)<9.0 && ly<44.0) || length(vec2(lx,ly-44.0))<9.0);
@@ -14001,9 +14003,9 @@ void main(){
   float lumC=dot(col,vec3(0.299,0.587,0.114));
   col=mix(col, vec3(0.42,0.56,0.24)*lumC*1.15, clamp(mAmt*0.85,0.0,0.85));
   }
-  float fogS=uZfar*${FOG_START};
-  float fog=clamp((vZ-fogS)/(uZfar-fogS),0.0,1.0)*${FOG_MAX};
-  fog=max(fog, smoothstep(uZfar*0.85,uZfar,vZ));
+  float fogS=zf*${FOG_START};
+  float fog=clamp((vZ-fogS)/(zf-fogS),0.0,1.0)*${FOG_MAX};
+  fog=max(fog, smoothstep(zf*0.85,zf,vZ));
   o=vec4(mix(col,uFog,fog),1.0);
   gl_FragDepth=clamp(vZ/${ZFAR}.0,0.0,1.0);
 }`;
@@ -14033,13 +14035,14 @@ function glBuildUnderCity(){
     const a=rot*Math.PI/180, ca=Math.cos(a), sa=Math.sin(a), hw=w/2, hd=d/2;
     const P=(u,v,z)=>[x+u*ca-v*sa, y+u*sa+v*ca, z];
     const tone=0.82+0.26*sd;
-    const C=kind===2 ? [0.74*tone,0.66*tone,0.52*tone, 0] : kind>=3 ? [0.60*tone,0.54*tone,0.44*tone, 0] : [0.70*tone,0.62*tone,0.50*tone, 1];
+    const C=kind===2 ? [0.74*tone,0.66*tone,0.52*tone, 0.5] : kind>=3 ? [0.60*tone,0.54*tone,0.44*tone, 0] : [0.70*tone,0.62*tone,0.50*tone, 1];
     const z0=gz, z1=gz+h;
     const cs=[[-hw,-hd],[hw,-hd],[hw,hd],[-hw,hd]];
     /* 殘破程度：神殿與塔大致完整；方屋六成以上沒有屋頂；坍塌／碎石／斷柱整個是殘的 */
     const ruin = kind===2 ? 0.12 : kind===1 ? 0.35 : kind===0 ? 0.25+0.75*hsh(sd,1) : 1.0;
     const roof = kind===2 || kind===5 || (kind===0 && ruin<0.42) || (kind===1 && sd<0.5);
     if(kind===6){ blob(x,y,z0,hw,h,sd,[0.22+0.10*sd, 0.30+0.12*sd, 0.13+0.05*sd, -1]); continue; }   // 野灌木叢（ver -2401）
+    if((kind===7||kind===8) && UC_TREE_ART) continue;           // 大樹／巨樹改用 GPT 畫的立牌（glDrawUnderTrees），程式拼的那一版只當沒圖時的退路
     if(kind===8){                                               // 巨樹（ver -2401，Ray：「中央金字塔中間長出來一顆最大的樹」）：h＝樹冠頂的絕對高度
       const bark=[0.32,0.24,0.16,-1], TR=hw;
       const prism=(A,B,r0,r1)=>{ const K=8, d=[B[0]-A[0],B[1]-A[1],B[2]-A[2]], dl=Math.hypot(...d)||1, w=d.map(q=>q/dl);
@@ -14135,6 +14138,99 @@ function glBuildUnderCity(){
   const vb=g.createBuffer(); g.bindBuffer(g.ARRAY_BUFFER,vb); g.bufferData(g.ARRAY_BUFFER,new Float32Array(V),g.STATIC_DRAW);
   const at=(nm,sz,off)=>{ const l=g.getAttribLocation(glCityProg,nm); if(l<0) return; g.enableVertexAttribArray(l); g.vertexAttribPointer(l,sz,g.FLOAT,false,48,off); };
   at('p',3,0); at('n',3,12); at('c',4,24); at('f',2,40);
+  g.bindVertexArray(null);
+}
+/* ══ 地下古城的大樹與巨樹：GPT 畫的立牌（ver -2402，Ray：「大顆的樹要有未知地底植物的怪誕風格，
+   中央大樹參考長老樹的氣質，程式畫的太醜，發包給 GPT 先畫」）══════════════════════════════
+   一棵樹＝一張永遠面向鏡頭的直立貼片（只繞垂直軸轉，所以樹不會往後倒）；底邊貼在地上（巨樹貼在神殿頂）。
+   與建築同一顆深度緩衝 ⇒ 前後遮擋免費；透明處 discard（不排序也不會有半透明的接縫）。
+   ⚠ 圖只在地下古城載（鐵律 13）。圖的長寬比讀圖本身，高度讀 UC_CITY 那一筆（h）。 */
+const UC_TREE_ART = UNDERCITY ? ['tree_a','tree_b','tree_c','tree_giant'] : null;
+let glTreeProg=null, glTreeU={}, glTreeTex=[], glTreeImg=[], glTreeBuf=null, glTreeVao=null;
+const GL_TREE_VS=`#version 300 es
+in vec3 p; in vec2 t;
+uniform vec2 uBuf; uniform vec3 uCam; uniform vec2 uDir;
+out vec2 vT; out float vZ; out vec3 vWP;
+void main(){
+  float sinp=uDir.x, cosp=uDir.y;
+  vec2 d=p.xy-uCam.xy;
+  float z=d.x*(-sinp)+d.y*(-cosp);
+  float lat=d.x*cosp+d.y*(-sinp);
+  float scaleH=uBuf.y*0.62, horizon=uBuf.y*${HORIZON_F};
+  float sv=lat/max(abs(z),1e-3);
+  float curv=(1.0+sv*sv)/(2.0*${PLANET_R}.0);
+  float yz=z-2.0/uBuf.y*((uCam.z-p.z)*scaleH + z*z*curv*scaleH + horizon*z);
+  gl_Position=vec4(lat, yz, (2.0*z/${ZFAR}.0-1.0)*z, z);
+  vT=t; vZ=z; vWP=p;
+}`;
+const GL_TREE_FS=`#version 300 es
+precision highp float;
+in vec2 vT; in float vZ; in vec3 vWP;
+uniform sampler2D uTex; uniform vec3 uFog; uniform float uZfar; uniform vec3 uCam; uniform vec2 uDir; uniform float uLit;
+out vec4 o;
+void main(){
+  if(vZ>uZfar) discard;
+  vec4 c=texture(uTex, vT);
+  if(c.a<0.5) discard;
+  vec3 col=c.rgb*uLit;
+  /* 船燈（同建築那一支）：近處的樹被暖燈照亮 */
+  vec3 L=vec3(uCam.xy+vec2(-uDir.x,-uDir.y)*40.0, uCam.z-36.0); vec3 dl=vWP-L; float r2=dot(dl,dl);
+  col+=c.rgb*vec3(1.0,0.74,0.42)*(0.6/(1.0+r2/(250.0*250.0)));
+  /* 本來就亮的地方（發光的囊泡）不壓暗 —— 自發光 */
+  float lum=max(c.r,max(c.g,c.b)); col=mix(col, c.rgb*1.15, smoothstep(0.72,0.92,lum));
+  float fogS=uZfar*${FOG_START};
+  float fog=clamp((vZ-fogS)/(uZfar-fogS),0.0,1.0)*${FOG_MAX};
+  fog=max(fog, smoothstep(uZfar*0.85,uZfar,vZ));
+  o=vec4(mix(col,uFog,fog),1.0);
+  gl_FragDepth=clamp(vZ/${ZFAR}.0,0.0,1.0);
+}`;
+function glDrawUnderTrees(sinp,cosp,fr,fg,fb){
+  if(!UC_TREE_ART || !glReady || !UC_CITY.length) return;
+  const g=GLX;
+  if(!glTreeProg){
+    try{
+      const vs=glSh(g.VERTEX_SHADER,GL_TREE_VS), fs=glSh(g.FRAGMENT_SHADER,GL_TREE_FS);
+      glTreeProg=g.createProgram(); g.attachShader(glTreeProg,vs); g.attachShader(glTreeProg,fs); g.linkProgram(glTreeProg);
+      if(!g.getProgramParameter(glTreeProg,g.LINK_STATUS)) throw new Error(g.getProgramInfoLog(glTreeProg));
+    }catch(e){ console.warn('[undercity] 樹的立牌建不起來',e); glTreeProg=-1; return; }
+    for(const k of ['uBuf','uCam','uDir','uFog','uZfar','uTex','uLit']) glTreeU[k]=g.getUniformLocation(glTreeProg,k);
+    UC_TREE_ART.forEach((n,i)=>{ const im=new Image(); im.onload=()=>{
+      const tx=g.createTexture(); g.activeTexture(g.TEXTURE6); g.bindTexture(g.TEXTURE_2D,tx);
+      g.texImage2D(g.TEXTURE_2D,0,g.RGBA,g.RGBA,g.UNSIGNED_BYTE,im); g.generateMipmap(g.TEXTURE_2D);
+      g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR_MIPMAP_LINEAR); g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR);
+      g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_S,g.CLAMP_TO_EDGE); g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_T,g.CLAMP_TO_EDGE);
+      glTreeTex[i]=tx; glTreeImg[i]=im; }; im.src=CAVE_DIR+n+'.webp?v='+(window.UNDERCITY_DATA&&window.UNDERCITY_DATA.treeV||'0'); });
+    glTreeBuf=g.createBuffer(); glTreeVao=g.createVertexArray(); g.bindVertexArray(glTreeVao);
+    g.bindBuffer(g.ARRAY_BUFFER,glTreeBuf);
+    const lp=g.getAttribLocation(glTreeProg,'p'), lt=g.getAttribLocation(glTreeProg,'t');
+    g.enableVertexAttribArray(lp); g.vertexAttribPointer(lp,3,g.FLOAT,false,20,0);
+    g.enableVertexAttribArray(lt); g.vertexAttribPointer(lt,2,g.FLOAT,false,20,12);
+    g.bindVertexArray(null);
+  }
+  if(glTreeProg===-1) return;
+  /* 立牌每禎跟著鏡頭轉 ⇒ 頂點每禎重算（樹只有十棵，便宜） */
+  const rx=cosp, ry=-sinp, groups=[[],[],[],[]];
+  for(const [x,y,w,d,h,rot,kind,sd,gz] of UC_CITY){
+    if(kind!==7 && kind!==8) continue;
+    const ti = kind===8 ? 3 : Math.min(2, Math.floor(sd*3));
+    const im=glTreeImg[ti]; if(!im) continue;
+    const z0 = kind===8 ? gz-200 : gz-6, H = kind===8 ? h-z0 : h, W = H*im.width/im.height;   // 巨樹往下沉 200：根垂在神殿上（立牌穿過神殿，前面的階梯自然擋住根的下段）
+    /* 巨樹的立牌往鏡頭挪 110：樹幹那根碰撞用的實心岩柱（build_undercity 的 pillar_core，半徑 70）要被畫裡的樹幹蓋住，不然露出一根方石柱 */
+    const cx = kind===8 ? x+sinp*110 : x, cy = kind===8 ? y+cosp*110 : y;
+    const A=[cx-rx*W/2, cy-ry*W/2], B=[cx+rx*W/2, cy+ry*W/2], G=groups[ti];
+    G.push(A[0],A[1],z0,0,1, B[0],B[1],z0,1,1, B[0],B[1],z0+H,1,0, A[0],A[1],z0,0,1, B[0],B[1],z0+H,1,0, A[0],A[1],z0+H,0,0);
+  }
+  g.useProgram(glTreeProg);
+  g.uniform2f(glTreeU.uBuf,BW,BH); g.uniform3f(glTreeU.uCam,cam.x,cam.y,cam.alt); g.uniform2f(glTreeU.uDir,sinp,cosp);
+  g.uniform3f(glTreeU.uFog,fr/255,fg/255,fb/255); g.uniform1f(glTreeU.uZfar,ZFAR*((Q().view)||1)*CAVE_VIEW);
+  g.uniform1f(glTreeU.uLit,1.0); g.uniform1i(glTreeU.uTex,6);   // ⚠ 6＝「畫之前自己綁」那一族；14 是地形的 uHmax，借走會撕裂畫面（見 glDrawRuins）
+  g.bindVertexArray(glTreeVao); g.bindBuffer(g.ARRAY_BUFFER,glTreeBuf);
+  g.disable(g.CULL_FACE); g.enable(g.DEPTH_TEST); g.depthFunc(g.LEQUAL); g.depthMask(true); g.disable(g.BLEND);
+  const zf=ZFAR*((Q().view)||1)*CAVE_VIEW;
+  groups.forEach((G,ti)=>{ if(!G.length || !glTreeTex[ti]) return;
+    g.uniform1f(glTreeU.uZfar, ti===3 ? zf*1.8 : zf);         // 巨樹是全城的地標：遠一點也看得到（在霧裡是一個剪影）
+    g.activeTexture(g.TEXTURE6); g.bindTexture(g.TEXTURE_2D,glTreeTex[ti]);
+    g.bufferData(g.ARRAY_BUFFER,new Float32Array(G),g.DYNAMIC_DRAW); g.drawArrays(g.TRIANGLES,0,G.length/5); });
   g.bindVertexArray(null);
 }
 function glDrawUnderCity(sinp,cosp,fr,fg,fb){
@@ -15182,6 +15278,7 @@ function render(now){
       glDrawRuins(sinp, cosp, lx, ly, S.day);
       glDrawSkirts(sinp, cosp, lx, ly, S.day, cloudLit, fr, fg, fb, lightR, lightG, lightB, ambI, sunI);   // 崖裙（ver -2227）
       if(UNDERCITY) glDrawUnderCity(sinp, cosp, fr, fg, fb);   // 地下古城的建築（ver -2399）
+      if(UNDERCITY) glDrawUnderTrees(sinp, cosp, fr, fg, fb);  // 地下古城的大樹與巨樹（GPT 畫的立牌，ver -2402）
       if(CAVE) glDrawCaveCrystals(sinp, cosp, fr, fg, fb);   // 地底的水晶（ver -2370，先畫：植物的光暈要疊在它上面）
       if(CAVE) glDrawCavePlants(sinp, cosp, fr, fg, fb);   // 地底的發光植物（ver -2369）
       if(CAVE) glDrawCaveLake(sinp, cosp, fr, fg, fb);     // 地底湖的水膜（ver -2391，半透明）
