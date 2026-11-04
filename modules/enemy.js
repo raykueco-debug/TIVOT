@@ -1144,12 +1144,20 @@ export function stopSkyBattle(force){
   for(const el of sky.els) el.remove();
   clearTimeout(sky.showT);
   const top=$('top'); if(top) top.classList.remove('sky-on');
-  const eImg=$('enemyImg'); if(eImg) eImg.style.opacity='';
+  const eImg=$('enemyImg'); if(eImg) eImg.style.opacity = sky.defeated ? '0' : '';   // 戰敗收掉時龍維持藏著（ver -2460）
   sky=null;
+}
+/* 空戰玩家戰敗（ver -2460，Ray：「被龍攻擊敗，畫面上不要留龍」）：龍本體藏起來，衝出去的那條照舊飛出畫面，攻擊演出收尾也不再把牠淡回來。
+   combat.lose 呼叫；不是空戰（沒有 sky）就什麼都不做。 */
+export function skyDefeatHide(){
+  if(!sky) return;
+  sky.defeated=true;
+  for(const el of [idleEl, $('enemyImg')]) if(el){ el.style.transition='opacity .3s'; el.style.opacity='0'; }
 }
 export function restoreSkyBattle(){ const en=(GAME_CONFIG.enemies||{})[state.currentEnemyKey]; setSkyBattle(en && en.sky); }
 function setSkyBattle(key){
   stopSkyBattle(true);
+  { const e0=$('enemyImg'); if(e0) e0.style.opacity=''; }   // 上一場空戰戰敗藏起來的龍（skyDefeatHide，ver -2460）；這一場是空戰的話下面會再藏
   const C=key && ((GAME_CONFIG.tuning||{}).skyBattle||{})[key]; if(!C) return;
   const top=$('top'), eImg=$('enemyImg'), vig=$('topVignette'); if(!top || !eImg) return;
   const mk=(cls,before)=>{ const d=document.createElement('div'); d.className='sky-l '+cls; top.insertBefore(d,before); return d; };
@@ -1227,7 +1235,9 @@ export function onAssaultLand(){
     ghost.style.transform=at(-reach); }, SW);
   /* ③ 復歸：龍回原位淡入、近樹恢復平常的節奏 */
   setTimeout(()=>{ clearInterval(ghost._sync); ghost.remove(); if(sky) sky.lunge=null;
-    if(sky) sky.vanishEl=null; el.style.clipPath=''; el.style.transition='opacity .45s'; el.style.opacity='1';
+    if(sky) sky.vanishEl=null; el.style.clipPath='';
+    if(!sky || sky.defeated) return;   // 玩家被這一擊打倒了（skyDefeatHide）⇒ 龍不回來
+    el.style.transition='opacity .45s'; el.style.opacity='1';
     setTimeout(()=>{ el.style.transition=''; if(sky){ sky.nearPause=false; sky.nearAt=performance.now()+(C.nearEvery[0]*1000); } }, 480); }, SW+LUNGE+80);
   return Math.round(hitAt);
 }

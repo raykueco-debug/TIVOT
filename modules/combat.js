@@ -3252,6 +3252,7 @@ function stopLastStand(){
 function lose(){
   if(state.over) return;
   enemy.playEndVoice(false);   // 敵人卡的 loseVoice（ver -1920）——排在 allowLose 分流之前，兩條路都播
+  enemy.skyDefeatHide();       // 空戰：戰敗畫面上不留龍（ver -2460）
   /* ══ 戰敗的去向（ver -376（-893 前用詞），Ray 定案）══
      「**除標明劇情殺／可戰敗之外，戰敗一律接 Game Over 畫面回主選單**」。
      所以這裡只有一個例外：那一場的卡上明寫 `allowLose`（＝劇本要它被打輸，
