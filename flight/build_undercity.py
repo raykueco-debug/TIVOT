@@ -167,8 +167,8 @@ for k, R in ROOMS.items():
     for px, py in inside(R.get('pores', 0), 0.75, 8):         # 風穴：天頂一堆小孔
         holes.append((px, py, rng.uniform(1.6, 3.0)))
     if R.get('city'):
-        # 神殿頂上長出來的巨樹（ver -2401，Ray）：樹幹在高度圖裡是一根實心柱 —— 船撞得到、不會從樹幹穿過去
-        pillar_core |= disc(R['x'], R['y'], 3.5, 0.3) > 0.5    # 半徑 70：藤蔓那一束繞在它外面（R≥82），柱子藏在藤裡
+        # 神殿頂上那一束藤（ver -2405）：高度圖裡**不再**放實心柱 —— 藤束會往上收、會彎，直柱包不住；
+        # 碰撞改由飛行頁照同一條藤束的中軸判（flight/index.html 的 ucTrunkAt，caveSolidAt 裡）。
         for px, py in inside(R.get('holes', 0), 0.60, 34):
             holes.append((px, py, rng.uniform(2.5, 10)))   # 大小不一（Ray：「天空有大小的洞」）
         cityflat = np.clip(best / 10.0, 0, 1) * rmask
@@ -237,7 +237,7 @@ for ax in (0, 1):
 TEMPLE = [(26, 120), (19, 110), (12, 100), (6, 120)]
 for lvl, (w, h) in enumerate(TEMPLE):            # 中央的階梯神殿：四層往上收
     CITYL.append([Rz['x'] * 20, Rz['y'] * 20, w * 20, w * 20, h, Rz['rot'], 2, lvl, gfloor + sum(x[1] for x in TEMPLE[:lvl])])
-# 巨樹（種類 8）：ver -2403 起飛行頁不畫它了 —— 神殿頂改成藤蔓交纏直通天頂（flight/index.html 的 glBuildUnderCity），這一筆只留著當位置標記；碰撞照舊是 pillar_core 那根實心柱
+# 巨樹（種類 8）：ver -2403 起飛行頁不畫它了 —— 神殿頂改成藤蔓交纏直通天頂（flight/index.html 的 glBuildUnderCity），這一筆只留著當位置標記；碰撞由飛行頁的 ucTrunkAt 判
 CITYL.append([Rz["x"] * 20, Rz["y"] * 20, 190, 0, 1900, 0, 8, 0.5, gfloor + sum(x[1] for x in TEMPLE)])
 
 # ── 光：天光的反光、城裡零星的燈（暖色溢光）─────────────────────────────
