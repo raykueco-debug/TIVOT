@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2447';
+export const VERSION = 'ver 2026.11.05-2448';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3372,7 +3372,7 @@ export const GAME_CONFIG = {
       undercity: { base:'resources/background/undercity_skybattle/uc_layer0_base_far.webp',
                    mid:'resources/background/undercity_skybattle/uc_layer2_mid_dark.webp',
                    near:['resources/background/undercity_skybattle/uc_near_trunk_a.webp','resources/background/undercity_skybattle/uc_near_trunk_b.webp'],
-                   aspect:1.5, nearAspect:0.357, nearScale:1.8, baseSec:70, midSec:16, nearEvery:[10,12], nearSweep:0.55, leaves:46 },   // nearScale：近樹整根放大幾倍（ver -2446 Ray：「近樹粗一點」）
+                   aspect:1.5, nearAspect:0.357, nearScale:1.8, baseSec:70, midSec:16, nearEvery:[10,12], nearSweep:1.1, leaves:46 },   // nearScale：近樹整根放大幾倍（ver -2446 Ray：「近樹粗一點」）
     },
     /* 清過的格子再出怪的機率（ver -924，Ray：「已經擊敗敵人的區域，
        再出敵人的機率是 25%」）。⚠ 沒清過的那一格照舊看地圖自己的 `wildSpawn.rate`

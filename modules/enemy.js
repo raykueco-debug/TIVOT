@@ -1175,8 +1175,13 @@ function setSkyBattle(key){
     if(!sky.nearPause && sky.nearT<0 && now>=sky.nearAt){ const im=nearImgs[(Math.random()*nearImgs.length)|0]; near.src=im.src; sky.nearT=now; }
     if(sky.nearT>=0){ const k=(now-sky.nearT)/(C.nearSweep*1000), ns=C.nearScale||1, nh=H*ns, nw=nh*(C.nearAspect||0.36);   // 粗一點＝整根放大（ver -2446），上下超出畫面
       near.style.height=nh+'px'; near.style.width=nw+'px'; near.style.top=(-(nh-H)/2)+'px'; near.style.opacity='1';
-      near.style.transform=`translateX(${W+nw*0.2-(W+nw*1.4)*k}px)`;
-      if(k>=1){ sky.nearT=-1; near.style.opacity='0'; sky.nearAt=now+rnd(C.nearEvery[0],C.nearEvery[1])*1000; } }
+      const nx=W+nw*0.2-(W+nw*1.4)*k; near.style.transform=`translateX(${nx}px)`;
+      /* 攻擊演出那一根：龍「被樹幹掃掉」—— 樹幹中線以右的龍一律不畫（樹幹本身蓋著中線以左那半根），
+         樹幹掃過去的地方龍就不見了，不會露出「龍突然消失」那一瞬（-2448 Ray：「不要露餡」） */
+      if(sky.vanishEl){ const el=sky.vanishEl, tr=top.getBoundingClientRect(), r=el.getBoundingClientRect();
+        const cut=Math.max(0, (r.right-tr.left)-(nx+nw*0.5)); el.style.clipPath=`inset(0 ${Math.min(r.width,cut)}px 0 0)`; }
+      if(k>=1){ sky.nearT=-1; near.style.opacity='0'; sky.nearAt=now+rnd(C.nearEvery[0],C.nearEvery[1])*1000;
+        if(sky.vanishEl){ sky.vanishEl.style.opacity='0'; sky.vanishEl.style.clipPath=''; sky.vanishEl=null; } } }
     /* 落葉／光點：往左下飄（世界往左捲）、慢慢翻 */
     if(lv.width!==W || lv.height!==H){ lv.width=W; lv.height=H; }
     const cx=lv.getContext('2d'); cx.clearRect(0,0,W,H);
@@ -1200,15 +1205,16 @@ export function onAssaultLand(){
   const top=$('top'), W=top.clientWidth, H=top.clientHeight, C=sky.C;
   /* ① 近樹：馬上刷一根，從右往左掃過；樹幹掃到龍的那一刻龍就不見（龍站在畫面中央 ⇒ 掃過一半的時候） */
   sky.nearPause=true; sky.nearT=performance.now(); const nimg=sky.els[2]; nimg.src=C.near[(Math.random()*C.near.length)|0];
-  const SW=C.nearSweep*1000, hideAt=SW*0.45, LUNGE=650, hitAt=SW+LUNGE*0.45;
+  /* -2448（Ray：「要大到花了 1 秒才把整條龍跑完」）：衝過畫面整整 1 秒（頭進來到尾巴出去），撞到玩家在正中那一刻 */
+  const SW=C.nearSweep*1000, LUNGE=1000, hitAt=SW+LUNGE*0.5;
   const ghost=el.cloneNode(); ghost.className='sky-lunge'; ghost.style.cssText=''; ghost.style.opacity='0'; top.insertBefore(ghost, sky.els[2]);
   if(idleEl){ ghost._sync=setInterval(()=>{ if(!idleEl||!ghost.isConnected){ clearInterval(ghost._sync); return; } ghost.src=idleEl.src; }, 50); }
   sky.lunge=ghost;
-  setTimeout(()=>{ el.style.transition='none'; el.style.opacity='0'; }, hideAt);
+  el.style.transition='none'; sky.vanishEl=el;   // 龍被這一根樹幹掃掉（逐禎裁，見 tick）
   /* ② 從左下往右上衝出，放大到幾乎遮滿畫面（同一支待機 loop）；衝到一半撞到玩家 ⇒ 扣血與震畫面在那一刻（defense 照回傳值延後） */
   /* -2447（Ray：「龍攻擊時要再放大，龍頭要往上 45 度，同飛的角度」）：寬 4.2 個畫面寬；整條龍轉 −45°（頭朝右上），
      沿著穿過畫面中心的 45° 斜線從左下飛到右上 —— 頭的方向＝飛的方向。中心對位用 translate（圖心先挪到 #top 的左上角）。 */
-  const bw=W*4.2, ar=(el.naturalHeight||180)/(el.naturalWidth||640), bh=bw*ar, reach=W*0.9+bw*0.5;
+  const bw=W*7.0, ar=(el.naturalHeight||180)/(el.naturalWidth||640), bh=bw*ar, reach=W*0.9+bw*0.5;
   ghost.style.width=bw+'px'; ghost.style.height=bh+'px'; ghost.style.left=(-bw/2)+'px'; ghost.style.top=(-bh/2)+'px';
   const at=t=>`translate(${W/2-t}px, ${H/2+t}px) rotate(-45deg)`;   // t＞0 左下、t＜0 右上
   ghost.style.transform=at(reach);
@@ -1216,7 +1222,7 @@ export function onAssaultLand(){
     ghost.style.transform=at(-reach); }, SW);
   /* ③ 復歸：龍回原位淡入、近樹恢復平常的節奏 */
   setTimeout(()=>{ clearInterval(ghost._sync); ghost.remove(); if(sky) sky.lunge=null;
-    el.style.transition='opacity .45s'; el.style.opacity='1';
+    if(sky) sky.vanishEl=null; el.style.clipPath=''; el.style.transition='opacity .45s'; el.style.opacity='1';
     setTimeout(()=>{ el.style.transition=''; if(sky){ sky.nearPause=false; sky.nearAt=performance.now()+(C.nearEvery[0]*1000); } }, 480); }, SW+LUNGE+80);
   return Math.round(hitAt);
 }
