@@ -1714,10 +1714,11 @@ function flightHub(){
   document.body.appendChild(ov);
   const close=()=>ov.remove();
   ov.innerHTML=i18nT('<div class="tu-panel"><div class="tu-title">試飛</div>')
-    +i18nT('<button data-go="land">地表</button><button data-go="cave">地底</button>')
+    +i18nT('<button data-go="land">地表</button><button data-go="cave">地底</button><button data-go="undercity">地下古城</button>')
     +i18nT('<button data-go="close" class="tu-dim">關閉</button></div>');
   ov.querySelector('[data-go="land"]').onclick=()=>{ close(); startChapter(prog.FLIGHT_TEST); };
   ov.querySelector('[data-go="cave"]').onclick=()=>{ close(); startChapter(prog.FLIGHT_TEST, { world:'cave' }); };
+  ov.querySelector('[data-go="undercity"]').onclick=()=>{ close(); startChapter(prog.FLIGHT_TEST, { world:'undercity' }); };   // ver -2399：地下古城（入口還沒定，先從這裡進）
   ov.querySelector('[data-go="close"]').onclick=close;
 }
 bindBtn('flightBtn', ()=>flightHub());

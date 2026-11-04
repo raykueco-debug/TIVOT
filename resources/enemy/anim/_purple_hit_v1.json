@@ -1,0 +1,560 @@
+{
+ "man_purple_squad_1": {
+  "soldier_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    88,
+    431,
+    457,
+    579
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 370
+  },
+  "soldier_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    554,
+    84,
+    700,
+    970
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 482
+  },
+  "soldier_3": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    31,
+    131,
+    731,
+    758
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 506
+  },
+  "soldier_4": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    394,
+    536,
+    399,
+    514
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 333
+  },
+  "soldier_5": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    639,
+    628,
+    573,
+    533
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 452
+  }
+ },
+ "man_purple_squad_2": {
+  "soldier_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    0,
+    310,
+    496,
+    645
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 458
+  },
+  "soldier_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    199,
+    469,
+    492,
+    757
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 612
+  },
+  "soldier_3": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    432,
+    367,
+    450,
+    581
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 346
+  },
+  "soldier_4": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    601,
+    73,
+    653,
+    900
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 507
+  },
+  "soldier_5": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    629,
+    383,
+    625,
+    780
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 621
+  }
+ },
+ "man_purple_squad_3": {
+  "soldier_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    56,
+    455,
+    453,
+    653
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 595
+  },
+  "soldier_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    25,
+    141,
+    812,
+    797
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 521
+  },
+  "soldier_3": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    480,
+    370,
+    444,
+    678
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 496
+  },
+  "soldier_4": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    611,
+    297,
+    643,
+    699
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 439
+  },
+  "soldier_5": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    648,
+    525,
+    585,
+    571
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 496
+  }
+ },
+ "man_purple_squad_4": {
+  "soldier_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    69,
+    434,
+    408,
+    594
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 404
+  },
+  "soldier_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    277,
+    283,
+    358,
+    456
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 279
+  },
+  "soldier_3": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    648,
+    300,
+    526,
+    543
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 382
+  },
+  "soldier_4": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    432,
+    465,
+    526,
+    695
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 385
+  },
+  "soldier_5": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    850,
+    487,
+    404,
+    551
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 322
+  }
+ },
+ "man_purple_squad_5": {
+  "soldier_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    0,
+    196,
+    744,
+    803
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 558
+  },
+  "soldier_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    80,
+    426,
+    505,
+    760
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 550
+  },
+  "soldier_3": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    474,
+    267,
+    487,
+    655
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 400
+  },
+  "soldier_4": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    413,
+    488,
+    538,
+    648
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 486
+  },
+  "soldier_5": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    667,
+    468,
+    587,
+    637
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 526
+  }
+ },
+ "man_purple_squad_6": {
+  "soldier_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    164,
+    224,
+    545,
+    696
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 424
+  },
+  "soldier_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    222,
+    508,
+    378,
+    535
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 397
+  },
+  "soldier_3": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    522,
+    459,
+    427,
+    517
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 307
+  },
+  "soldier_4": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    739,
+    489,
+    480,
+    438
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 288
+  }
+ },
+ "man_purple_squad_7": {
+  "soldier_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    97,
+    323,
+    467,
+    592
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 316
+  },
+  "soldier_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    331,
+    619,
+    323,
+    493
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 314
+  },
+  "soldier_3": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    446,
+    479,
+    383,
+    519
+   ],
+   "frames": 15,
+   "kind": "forward",
+   "fps": 24,
+   "kb": 277
+  },
+  "soldier_4": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    695,
+    421,
+    457,
+    588
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 340
+  },
+  "soldier_5": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    700,
+    627,
+    554,
+    520
+   ],
+   "frames": 15,
+   "kind": "back",
+   "fps": 24,
+   "kb": 427
+  }
+ }
+}
