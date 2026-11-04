@@ -53,7 +53,7 @@ ROOMS = {
     'G': dict(no=7, x=690, y=320, a=56, b=52, rot=80,  floor=320, ceil=1150, chasm=1, name='斷橋深谷'),
     'H': dict(no=8, x=305, y=330, a=50, b=42, rot=30,  floor=280, ceil=1050, pores=7, name='風穴'),
     'I': dict(no=9, x=430, y=720, a=44, b=40, rot=0,   floor=300, ceil=980,  name='迴廊盡頭'),
-    'Z': dict(no=10, x=470, y=500, a=150, b=128, rot=-8, floor=120, ceil=1650, city=1, holes=3, name='地下都市'),
+    'Z': dict(no=10, x=470, y=500, a=150, b=128, rot=-8, floor=120, ceil=1650, city=1, holes=5, name='地下都市'),
 }
 LINKS = [('A', 'B', 14), ('B', 'C', 13), ('C', 'E', 14), ('E', 'F', 14), ('F', 'D', 15),
          ('D', 'G', 14), ('G', 'Z', 17), ('B', 'I', 12), ('E', 'H', 12)]
@@ -167,8 +167,8 @@ for k, R in ROOMS.items():
     for px, py in inside(R.get('pores', 0), 0.75, 8):         # 風穴：天頂一堆小孔
         holes.append((px, py, rng.uniform(1.6, 3.0)))
     if R.get('city'):
-        for px, py in inside(R.get('holes', 0), 0.55, 40):
-            holes.append((px, py, rng.uniform(5, 9)))
+        for px, py in inside(R.get('holes', 0), 0.60, 34):
+            holes.append((px, py, rng.uniform(2.5, 10)))   # 大小不一（Ray：「天空有大小的洞」）
         cityflat = np.clip(best / 10.0, 0, 1) * rmask
         floor = floor * (1 - cityflat) + (R['floor'] + ZOFF) * cityflat   # 都市的地面是平的（鋪過的）
 
@@ -179,6 +179,10 @@ hole = np.zeros((N, N), np.float32)
 for hx, hy, hr in holes:
     hole = np.maximum(hole, disc(hx, hy, hr * (1 + 0.18 * wob[min(N - 1, int(hy)), min(N - 1, int(hx))]), 0.15))
 holemask = (hole > 0.5) & openm
+# ver -2400（Ray：「天空的洞透入洞外的光，不用畫出，做成束狀光源就好」）：
+#   洞只拿來算光柱與落點的亮；天頂上真的開口的只有進出口那一個（要從那裡飛出去）
+ex_x, ex_y, ex_r = holes[0]
+exitmask = (disc(ex_x, ex_y, ex_r * (1 + 0.18 * wob[int(ex_y), int(ex_x)]), 0.15) > 0.5) & openm
 t = np.clip(dist / WALL_W, 0, 1); t = t * t * (3 - 2 * t)
 floor = SOLID * (1 - t) + floor * t
 ceil = SOLID * (1 - t) + ceil * t
@@ -203,27 +207,44 @@ for i in range(-18, 19):
         if rng.random() < 0.12: continue                                  # 空地
         kind = 0
         rr = rng.random()
-        if rr < 0.07: kind = 1                                            # 塔（少）
-        elif rr < 0.42: kind = 3                                          # 坍塌（古城：殘垣多）
+        if rr < 0.08: kind = 1                                            # 塔（少）
+        elif rr < 0.50: kind = 3                                          # 坍塌（ver -2400：失落的古文明，殘垣過半）
         w = rng.uniform(4.4, 6.8); d = rng.uniform(4.4, 6.8)
         # ⚠ 高度上限：塔＋尖頂（×1.35）要低於船的航高（ALT−60），不然船從塔頂穿過去；古城也不該是摩天樓
         h = {0: rng.uniform(70, 210) * (1.1 - 0.4 * r0), 1: rng.uniform(230, 330), 3: rng.uniform(25, 90)}[kind]
         CITYL.append([round(px * 20), round(py * 20), round(w * 20), round(d * 20), round(h), round(Rz['rot'], 1), kind, round(float(rng.random()), 3), gfloor])
+        if kind == 3:                                                     # 坍塌的旁邊散一地碎石塊（種類 4）
+            for _ in range(rng.integers(2, 5)):
+                a_, r_ = rng.uniform(0, 6.283), rng.uniform(2.6, 5.0)
+                CITYL.append([round((px + r_ * math.cos(a_)) * 20), round((py + r_ * math.sin(a_)) * 20),
+                              round(rng.uniform(0.9, 2.2) * 20), round(rng.uniform(0.9, 2.2) * 20), round(rng.uniform(8, 26)),
+                              round(float(rng.uniform(0, 90)), 1), 4, round(float(rng.random()), 3), gfloor])
+# 十字大道兩側的列柱（種類 5）：一根一根，斷的多、站著的少
+for ax in (0, 1):
+    for tc in np.arange(-15.0, 15.01, 1.6):
+        for side in (-1, 1):
+            lu, lv = (tc * CELLP, side * 1.45) if ax == 0 else (side * 1.45, tc * CELLP)
+            if math.hypot(lu / Rz['a'], lv / Rz['b']) < 0.20: continue
+            px, py = Rz['x'] + lu * cz - lv * sz_, Rz['y'] + lu * sz_ + lv * cz
+            if not (0 <= px < N and 0 <= py < N): continue
+            if owner[int(py), int(px)] != CITY or best[int(py), int(px)] < 14: continue
+            if rng.random() < 0.25: continue                              # 整根倒了不見
+            ok = rng.random() < 0.35
+            h = rng.uniform(150, 200) if ok else rng.uniform(25, 110)
+            CITYL.append([round(px * 20), round(py * 20), 26, 26, round(h), round(Rz['rot'], 1), 5, round(float(rng.random()), 3), gfloor])
 for lvl, (w, h) in enumerate([(26, 120), (19, 110), (12, 100), (6, 120)]):   # 中央的階梯神殿：四層往上收
     CITYL.append([Rz['x'] * 20, Rz['y'] * 20, w * 20, w * 20, h, Rz['rot'], 2, lvl, gfloor + sum(x[1] for x in [(26, 120), (19, 110), (12, 100), (6, 120)][:lvl])])
 
 # ── 光：天光的反光、城裡零星的燈（暖色溢光）─────────────────────────────
 shaft = cv2.GaussianBlur(holemask.astype(np.float32), (0, 0), 3.5); shaft /= (shaft.max() + 1e-6)
-lamps = np.zeros((N, N), np.float32)
-for b in CITYL:
-    if b[6] in (0, 1) and b[7] < 0.22:
-        lamps = np.maximum(lamps, disc(b[0] / 20, b[1] / 20, 7, 1.0))
-spill = cv2.GaussianBlur(holemask.astype(np.float32) * 0.8 + lamps * 0.6, (0, 0), 9); spill /= (spill.max() + 1e-6)
+# ver -2400：遺跡沒有燈（Ray：「非現代」）—— 光只剩天光的反光
+spill = cv2.GaussianBlur(holemask.astype(np.float32) * 0.8, (0, 0), 9); spill /= (spill.max() + 1e-6)
 spill = np.clip(spill * 1.2, 0, 1) * (~solid)
 
 # ── 顏色：砂岩（赭黃～褐），岩層一層一層；都市地面＝鋪石＋街道 ───────────────
 tone = fbm(N, 5, 24, 0.55)[..., None]
-sandA = np.array([176, 140, 100], np.float32); sandB = np.array([132, 100, 74], np.float32)
+# ver -2400（Ray：「地表也要貼黃土材質」）：地面＝黃土，配地貌貼圖 waste_brown（geo 6）
+sandA = np.array([200, 162, 104], np.float32); sandB = np.array([156, 120, 78], np.float32)
 col = sandB * (1 - tone) + sandA * tone
 ripple = (0.5 + 0.5 * np.sin((XX * 0.8 + YY * 0.45) * 1.1))[..., None]
 col = col * (0.92 + 0.08 * ripple)
@@ -233,13 +254,13 @@ cityk = (owner == CITY) & (best > 8)
 lu = (XX - Rz['x']) * cz + (YY - Rz['y']) * sz_; lv = -(XX - Rz['x']) * sz_ + (YY - Rz['y']) * cz
 street = ((np.abs((lu / CELLP) - np.round(lu / CELLP)) < 0.16) | (np.abs((lv / CELLP) - np.round(lv / CELLP)) < 0.16) |
           (np.abs(lu) < 2.2) | (np.abs(lv) < 2.2))
-pave = np.array([150, 132, 110], np.float32); road = np.array([118, 104, 88], np.float32)
-col[cityk] = np.where(street[cityk][..., None], road, pave * (0.9 + 0.2 * tone[cityk]))
+# 都市地面也是黃土；舊街道只剩一點被踩實的淡痕（不是鋪面）
+road = np.array([172, 140, 96], np.float32)
+col[cityk] = np.where(street[cityk][..., None], col[cityk] * 0.6 + road * 0.4, col[cityk])
 col[solid] = sandB * 0.85
 col = np.clip(col, 0, 255).astype(np.uint8)
-geo = np.where(tone[..., 0] > 0.5, 3, 2).astype(np.uint8)
-geo[lit[..., 0] > 0.5] = 1
-geo[cityk] = 2
+geo = np.full((N, N), 6, np.uint8)             # 黃土
+geo[lit[..., 0] > 0.5] = 5                      # 天光落點：淺色碎石
 geo[solid] = 3
 
 # ── 加密（同 build_cave.py）───────────────────────────────────────────
@@ -266,11 +287,24 @@ geo2 = upn(geo)
 col2 = np.clip(up(col), 0, 255)
 strata2 = up(strata_k, cv2.INTER_LINEAR)
 shade = 1 + bandw[..., None] * (fine[..., None] * 0.30 + 0.12 * np.sin(up(ceil) / 40.0)[..., None] * (0.5 + strata2[..., None]))
-col2 = np.clip(col2 * shade, 0, 255).astype(np.uint8)
+col2 = col2 * shade
+# ver -2400（Ray：「地表要有土質紋理」）：黃土的龜裂（Voronoi 的邊）＋大小土塊的深淺，只上在地面（不上牆）
+pts = np.ones((N2, N2), np.uint8)
+for _ in range(9000):
+    pts[rng.integers(0, N2), rng.integers(0, N2)] = 0
+_, lab = cv2.distanceTransformWithLabels(pts, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
+edge = ((lab != np.roll(lab, 1, 0)) | (lab != np.roll(lab, 1, 1))).astype(np.float32)
+edge = cv2.GaussianBlur(edge, (0, 0), 0.6)
+clod = cv2.resize(fbm(N, 3, 6, 0.6), (N2, N2), interpolation=cv2.INTER_LINEAR)
+cell = np.random.default_rng(SEED + 7).uniform(0.88, 1.10, lab.max() + 2)[lab]
+ground = 1 - bandw                                # 牆帶（bandw）不上
+soil = (cell * (0.86 + 0.24 * clod)) * (1 - 0.38 * np.clip(edge * 1.6, 0, 1))
+col2 = col2 * (1 + (soil[..., None] - 1) * ground[..., None])
+col2 = np.clip(col2, 0, 255).astype(np.uint8)
 
 os.makedirs(OUT, exist_ok=True)
 R_ = np.clip(np.round(floor2 / FLOOR_SCALE), 0, 255)
-Gc = np.clip(np.round(ceil2 / CEIL_SCALE), 0, 254); Gc[holemask2] = HOLE
+Gc = np.clip(np.round(ceil2 / CEIL_SCALE), 0, 254); Gc[upn(exitmask).astype(bool)] = HOLE
 B = np.zeros_like(R_)
 hm = np.stack([R_, Gc, B], -1).astype(np.uint8)
 aux = np.stack([np.round(shaft2 * 255), np.round(spill2 * 255), geo2], -1).astype(np.uint8)
