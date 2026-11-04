@@ -19,6 +19,8 @@ Ray：「按照大溶洞的方式做一個地下古城」
        層岩高廳 ── 風穴（死路）
          │
        崩落廳 ── 拱門峽 ── 斷橋深谷 ── 地下都市（巨大腔室）
+    ver -2426 再加 7 間（×1.7）：斷柱迴廊（拱門峽）、裂光側室（天光裂隙）、星孔廳（層岩高廳）、
+    落石坡（斷橋深谷—雙拱廳）、雙拱廳（—迴廊盡頭）、層岩小廳（石柱廳—風穴）、懸崖廊（拱門峽—斷橋深谷）
 
 ⚠ 尺度同大溶谷：768² 排好、輸出前加密成 1536²（飛行頁地底 MAP_SCALE＝10）。
 ⚠ 船的定高、岩層、地面與天頂的編碼與 build_cave.py 相同（改一邊要改另一邊）。
@@ -54,9 +56,23 @@ ROOMS = {
     'H': dict(no=8, x=305, y=330, a=50, b=42, rot=30,  floor=280, ceil=1050, pores=7, name='風穴'),
     'I': dict(no=9, x=430, y=720, a=44, b=40, rot=0,   floor=300, ceil=980,  name='迴廊盡頭'),
     'Z': dict(no=10, x=470, y=500, a=150, b=128, rot=-8, floor=120, ceil=1650, city=1, holes=5, name='地下都市'),
+    # ver -2426（Ray：「把腔室數量 ×1.7」）：10 → 17。擺在既有腔室之間的空地，幾條連成迴圈（不只是死路）。
+    # ⚠ 這幾間（NEW）的場景與迴廊**用另一條亂數**（rng2）—— 不然整條亂數序列位移，地下都市的建築／高塔
+    #   （連帶地表樹海的樹位，crowns.js）會整個重排。
+    'J': dict(no=11, x=470, y=240, a=52, b=40, rot=5,   floor=290, ceil=1150, pillars=6, name='斷柱迴廊'),
+    'K': dict(no=12, x=48,  y=318, a=34, b=40, rot=90,  floor=310, ceil=1100, slit=1, name='裂光側室'),
+    'L': dict(no=13, x=70,  y=75,  a=44, b=40, rot=0,   floor=290, ceil=1250, pores=9, name='星孔廳'),
+    'M': dict(no=14, x=712, y=560, a=40, b=52, rot=70,  floor=300, ceil=1150, boulders=10, name='落石坡'),
+    'N': dict(no=15, x=640, y=712, a=52, b=36, rot=0,   floor=300, ceil=1200, arch=1, name='雙拱廳'),
+    'O': dict(no=16, x=228, y=468, a=40, b=34, rot=20,  floor=290, ceil=1300, strata=1, name='層岩小廳'),
+    'P': dict(no=17, x=712, y=195, a=32, b=40, rot=80,  floor=300, ceil=1200, chasm=1, name='懸崖廊'),
 }
+NEW = {'J', 'K', 'L', 'M', 'N', 'O', 'P'}
+rng2 = np.random.default_rng(SEED + 26)
 LINKS = [('A', 'B', 14), ('B', 'C', 13), ('C', 'E', 14), ('E', 'F', 14), ('F', 'D', 15),
          ('D', 'G', 14), ('G', 'Z', 17), ('B', 'I', 12), ('E', 'H', 12)]
+LINKS_NEW = [('D', 'J', 12), ('C', 'K', 12), ('E', 'L', 12), ('G', 'M', 13), ('M', 'N', 12), ('N', 'I', 12),
+             ('B', 'O', 11), ('O', 'H', 11), ('D', 'P', 12), ('P', 'G', 12)]
 
 YY, XX = np.mgrid[0:N, 0:N].astype(np.float32)
 def fbm(n, octaves=5, base=64, persistence=0.5):
@@ -92,14 +108,15 @@ in_room = best > 0
 
 # ── 風蝕迴廊：蛇行的多段折線，壁面扇貝狀 ─────────────────────────────
 tunnel_f = np.full((N, N), -1e9, np.float32)
-for a, b, hw in LINKS:
+for a, b, hw in LINKS + LINKS_NEW:
+    R_ = rng2 if (a, b, hw) in LINKS_NEW else rng
     ax, ay, bx, by = ROOMS[a]['x'], ROOMS[a]['y'], ROOMS[b]['x'], ROOMS[b]['y']
     L = math.hypot(bx - ax, by - ay); nx, ny = -(by - ay) / L, (bx - ax) / L
-    amp, ph, nseg = rng.uniform(0.06, 0.13) * L, rng.uniform(0, 6.28), 7
+    amp, ph, nseg = R_.uniform(0.06, 0.13) * L, R_.uniform(0, 6.28), 7
     pts = []
     for i in range(nseg + 1):
         t = i / nseg
-        o = math.sin(t * math.pi * rng.uniform(1.6, 2.4) + ph) * amp * math.sin(t * math.pi)
+        o = math.sin(t * math.pi * R_.uniform(1.6, 2.4) + ph) * amp * math.sin(t * math.pi)
         pts.append((ax + (bx - ax) * t + nx * o, ay + (by - ay) * t + ny * o))
     d = np.full((N, N), 1e9, np.float32)
     for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
@@ -128,7 +145,9 @@ pillar_core = np.zeros((N, N), bool)
 holes = []
 chasm = np.zeros((N, N), np.float32)
 strata_k = np.zeros((N, N), np.float32)
+rng_main = rng
 for k, R in ROOMS.items():
+    rng = rng2 if k in NEW else rng_main                # 新腔室走自己那條亂數（見 NEW）
     rmask = owner == k
     u, v = room_uv(R)
     def inside(n, margin=0.8, sep=10):
@@ -174,6 +193,7 @@ for k, R in ROOMS.items():
         cityflat = np.clip(best / 10.0, 0, 1) * rmask
         floor = floor * (1 - cityflat) + (R['floor'] + ZOFF) * cityflat   # 都市的地面是平的（鋪過的）
 
+rng = rng_main
 floor = np.clip(floor, 40 + ZOFF, ALT - 90)
 floor = floor * (1 - chasm) + (60 + fbm(N, 4, 40, 0.5) * 120) * chasm
 ceil = np.maximum(ceil, ALT + 90)
