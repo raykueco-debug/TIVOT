@@ -1233,7 +1233,9 @@ export function onAssaultLand(){
 let scaleRainCv=null;
 const SCALE_RAIN_AT=1150;   /* -2451 Ray：「時間差再多一點」750→1150：噴完到鱗雨中間空約半秒 */   // 鱗片雨刮到玩家那一刻（毫秒；噴鱗在 0～500，中間空一拍）—— combat 照這個回傳值延後扣血
 export function skyScaleRain(){
-  if(!sky) return 0;
+  /* 龍正在衝出（主動攻擊演出中）就不噴（-2452，Ray：「龍攻不用噴鱗，噴鱗只有延時跟點錯會噴」）——
+     演出那一秒多玩家多半沒在點，延時懲罰常常剛好落在裡面；那一擊照樣扣、照樣震，只是不另外噴鱗 */
+  if(!sky || sky.lunge) return 0;
   const top=$('top'), W=top.clientWidth, H=top.clientHeight;
   const cv=document.createElement('canvas'); cv.className='sky-scales'; cv.width=W; cv.height=H; top.appendChild(cv);
   if(scaleRainCv) scaleRainCv.remove(); scaleRainCv=cv;
