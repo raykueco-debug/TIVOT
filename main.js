@@ -767,6 +767,8 @@ window.__tivotFlight = {
   /* 飛進西部大溶谷的洞口（ver -2393，Ray：「把大溶洞的入口接上，座標 240,309」）：
      地表 → 地底＝換一張地圖（鐵律 13），飛行頁整頁用 `world:'cave'` 重開、跑它自己的讀取頁。 */
   cave(){ openFlight({ world:'cave' }); },
+  /* 飛進地下古城的地表入口（ver -2431，Ray：「入口畫在 402 840 的崖壁」）：同大溶谷，飛行頁整頁用 `world:'undercity'` 重開。 */
+  undercity(){ openFlight({ world:'undercity' }); },
   /* 從地底的天光出口飛出去（ver -2394）：回地表。落點由飛行頁先寫進回程鑰匙 `tivot_flight_ret_v1`（洞口前方）。 */
   surface(){ openFlight({ world:'' }); },
   land(id, node){

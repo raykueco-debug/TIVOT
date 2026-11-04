@@ -462,7 +462,8 @@ for gy in range(0, N + 1, WT):
 ax, ay, bx, by = ROOMS['A']['x'], ROOMS['A']['y'], ROOMS['B']['x'], ROOMS['B']['y']
 data = {
     'v': {'hm': paths['cave_hm.png'], 'aux': paths['cave_aux.png'], 'col': paths['cave_col.png']},
-    'start': [int(ax * 20), int(ay * 20), round(math.atan2(-(bx - ax), -(by - ay)), 4)],
+    # 起點（-2431）：從地表崖壁的入口進來 ⇒ 落在出口迴廊裡、面朝 1 號（往東）
+    'start': [int((ax_ - 34) * 20), int((ay_ + 6) * 20), round(-math.pi / 2, 4)],
     'rooms': [[R['name'], R['x'], R['y'], R['a'], R['b'], R['rot'], 0, R['no']] for k, R in ROOMS.items()],
     'exit': [int(ROOMS['A']['x'] * 20), int(ROOMS['A']['y'] * 20), int(ROOMS['A']['b'] * 0.46 * 20)],
     'city': CITYL,
