@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.04-2443';
+export const VERSION = 'ver 2026.11.05-2444';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3151,6 +3151,9 @@ export const GAME_CONFIG = {
        卡上出場音效／特效／背景＝0 ＝ 沒有開場演出、沒有 talk。 */
     ...Object.fromEntries(SKY_FLIGHT_KINDS.map(k=>['flight_'+k,
          { enemy:k, ship:true, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 }])),   // 空中怪 16 隻（ver -2268）
+    /* 地下古城的樹寄生石龍（ver -2444，Ray：「在地下古城那個腔室中央大樹處遭遇，先側飛，玩家一看到他就轉正面朝玩家飛來進戰鬥」）：
+       飛行頁地下古城的遭遇交棒進這一場；背景是四層視差（敵卡的 `sky:'undercity'` → `tuning.skyBattle.undercity`）。 */
+    uc_treedragon: { enemy:'tree_dragon', ship:true, weaponSound:SHIP_WEAPON_SOUND, counterGapMs:180 },
     /* ══ 孤舟島・四個空之主（ver -2307，Ray 的稿）══ 飛行頁 `SCRIPTED_ENCOUNTERS` 的 `battle:'li_lord<N>'`。
        ⚠ 四隻是我挑的：前三隻＝已交飛行正面圖＋游動 loop 的浮空骨鯨／骨刺飛鰩／氣囊水母獸（ver -2308），第四隻懸環長鏈的飛行圖還欠，數值照空中怪的卡（暫代＝羽蛇）。
        第一場開場四句是稿上的（「好大！」…「要來了！」）。 */
@@ -3362,6 +3365,15 @@ export const GAME_CONFIG = {
    *  想調手感就改這裡的數字，改完存檔重開即可。
    * ------------------------------------------------------------------ */
   tuning: {
+    /* ══ 空戰的視差背景（ver -2444，Ray：「我想做出機戰那樣的背景效果」）══ 敵卡寫 `sky:'<鍵>'` 就換成這一套（modules/enemy.js 的 setSkyBattle）。
+       由底至上：base（不透明、無縫、最慢）→ mid（alpha、無縫、較快）→ 敵人 → near（單根近景樹，不循環，每 nearEvery 秒從右往左一閃而過，蓋在敵人之上）＋程式跑的落葉／光點。
+       世界往左捲（龍頭朝右＝往右飛）；`baseSec`／`midSec`＝捲過一整張要幾秒；`nearSweep`＝近景樹掃過畫面幾秒。 */
+    skyBattle: {
+      undercity: { base:'resources/background/undercity_skybattle/uc_layer0_base_far.webp',
+                   mid:'resources/background/undercity_skybattle/uc_layer2_mid_dark.webp',
+                   near:['resources/background/undercity_skybattle/uc_near_trunk_a.webp','resources/background/undercity_skybattle/uc_near_trunk_b.webp'],
+                   aspect:1.5, nearAspect:0.357, baseSec:70, midSec:16, nearEvery:[10,12], nearSweep:0.55, leaves:46 },
+    },
     /* 清過的格子再出怪的機率（ver -924，Ray：「已經擊敗敵人的區域，
        再出敵人的機率是 25%」）。⚠ 沒清過的那一格照舊看地圖自己的 `wildSpawn.rate`
        （神殿是 1＝必出）—— 這一格只管**回頭走**的那一次。 */
@@ -4674,6 +4686,7 @@ export const ASSETS = {
   enemy_sky_twinwyvern: "resources/enemy/mon_sky_twinwyvern.webp?v=8b23a136",   // 雙頭翼龍（ver -2268）
   enemy_sky_boneray: "resources/enemy/mon_sky_boneray.webp?v=534952bb",   // 骨刺飛鰩（ver -2268）
   enemy_sky_ribwhale: "resources/enemy/mon_sky_ribwhale.webp?v=a77e60f0",   // 浮空骨鯨（ver -2268）
+  enemy_tree_dragon_low: "resources/enemy/mon_tree_dragon_low.webp",   // 樹寄生石龍（地下古城空戰，ver -2444）：從下方仰看、頭朝右
   enemy_sky_mawbat: "resources/enemy/mon_sky_mawbat.webp?v=ae6570e7",   // 裂口巨蝠（ver -2268）
   enemy_sky_eyemoth: "resources/enemy/mon_sky_eyemoth.webp?v=9c313139",   // 千眼巨蛾（ver -2268）
   enemy_sky_eelswarm: "resources/enemy/mon_sky_eelswarm.webp?v=be0d5d2f",   // 飛鰻群（ver -2268）
@@ -5612,6 +5625,7 @@ export const ENEMY_IDLE = {
   mon_sky_twinwyvern: 'resources/enemy/anim/mon_sky_twinwyvern_idle_v1/',
   mon_sky_boneray: 'resources/enemy/anim/mon_sky_boneray_idle_v1/',
   mon_sky_ribwhale: 'resources/enemy/anim/mon_sky_ribwhale_idle_v1/',
+  mon_tree_dragon_low: 'resources/enemy/anim/mon_tree_dragon_low_idle/',   // 樹寄生石龍（ver -2444）：48 格 16fps，box 的 x 是 −15
   mon_sky_mawbat: 'resources/enemy/anim/mon_sky_mawbat_idle_v1/',
   mon_sky_eyemoth: 'resources/enemy/anim/mon_sky_eyemoth_idle_v1/',
   mon_sky_eelswarm: 'resources/enemy/anim/mon_sky_eelswarm_idle_v1/',

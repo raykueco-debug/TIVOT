@@ -5648,3 +5648,15 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
 #townMapView .tm-defend .tm-spot.here b::before{border:2.5px solid rgba(120,62,4,.95);}
 /* 防守標的的名字一律看得到（同所在地那一條；名字收起來的縮放級也留著它）。 */
 #townMapView .tm-frame.tm-names-off .tm-spot.goal span{opacity:1;}
+
+/* ══ 空戰的視差背景（ver -2444，modules/enemy.js 的 setSkyBattle）══ 由底至上：base → mid →（敵人）→ 近景樹 → 落葉。
+   位置與捲動由 JS 每禎寫（background-position-x）；這裡只管疊層與鋪法。 */
+#top .sky-l{position:absolute;inset:0;background-repeat:repeat-x;pointer-events:none;}
+#top .sky-base{z-index:0;}
+#top.sky-on #enemyImg, #top.sky-on .en-idle{z-index:2;}
+#top .sky-mid{z-index:1;}
+#top .sky-near{position:absolute;left:0;top:0;z-index:4;opacity:0;pointer-events:none;will-change:transform;}
+#top .sky-leaves{position:absolute;inset:0;z-index:5;pointer-events:none;}
+#top .sky-lunge{position:absolute;z-index:3;pointer-events:none;will-change:transform;}
+/* 暗角與受擊紅框原本是 z:auto（靠 DOM 順序蓋在立繪上）；空戰時立繪升到 z:2，它們要跟著往上（ver -2444） */
+#top.sky-on #topVignette{z-index:5;} #top.sky-on #redFlash{z-index:6;}

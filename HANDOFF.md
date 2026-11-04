@@ -64,6 +64,13 @@
 - ✔ ver -2396：**西部大溶谷改成垂直進出**（Ray 定案，取代 -2393 峭壁洞口與 -2394/-2395 橫向出口）：地表 (267,287) 盆地載入時挖一個坑（`carveCavePit`，坑底 CLOUD_H+8、往中心變暗、坑緣不規則；**不寫 map_edits.json**）；坑上空「進入」鈕 → 降落動畫 → 地底。地底：入口窟正中央大天井（`build_cave.py` 的 `EXIT`），進洞播反向升空（`playCaveArrive`：從天井上方降到航高），天光由上照下；天井正下方「離開」鈕 → 垂直升空淡白（`playCaveLeave`）→ 回地表落在坑口正上方、地表照常演升空。⚠ 驗了：坑挖下去、地表進入鈕、地底編譯；**沒驗完整來回一趟**（Ray 接手在試）。
 - ✔ ver -2397：**大溶谷**（Ray 更正字：「溶」不是「熔」，全改）坑口往上飄的胞子（`drawPitSpores`，青綠～黃綠，白天淡、晚上發光，只畫坑緣以上）；進洞改成**白光當緩衝**：地表降落淡白（`playLanding(done,true)`）→ 地底一開場全白、在洞穴半空中（航高＋170）短短降到航高同時白光淡掉；出洞本來就是淡白。
 - ✔ ver -2398：地底船速 70%（`CAVE_SPD_K`，只乘位移）；進溶谷不論內嵌或單獨開的飛行頁都先演降落（白光）再換頁。
+- ✔ ver -2444：**樹寄生石龍的空戰：視差背景＋攻擊演出**（接美術交接 `resources/enemy/anim/TO_CODE_tree_dragon_undercity.md`；Ray：「在地下古城那個腔室中央大樹處遭遇，先側飛，玩家一看到他就轉正面朝玩家飛來進戰鬥」）。
+  · 敵卡 `tree_dragon`（script/enemies.js，數值暫填＝浮空骨鯨）＋戰鬥卡 `uc_treedragon`（船戰）＋ASSETS `enemy_tree_dragon_low`＋ENEMY_IDLE `mon_tree_dragon_low`（48 格 16fps）。
+  · 視差背景：敵卡 `sky:'undercity'` → `tuning.skyBattle.undercity`；`enemy.setSkyBattle`：base（70 秒捲一張）→ mid（16 秒）→ 敵人 → 近景樹（10～12 秒一根、0.55 秒從右往左掃過）→ 程式跑的落葉＋綠光點。四張圖轉成 webp 放 `resources/background/undercity_skybattle/`（底線資料夾的 png 原件不動）。⚠ `startGame` 是先 setEnemy 再 stopAll ⇒ stopAll 之後補一次 `enemy.restoreSkyBattle()`。
+  · 攻擊演出：defense 的 `spawnWave`（一波開始）→ `api.onAssaultWave` → `enemy.onAssaultWave`：龍往右滑出 → 同一支 loop 放大 2.6 倍從左下往右上掠過 → 回原位；期間近景樹暫停、結束後重排。只有 `sky` 的怪會演。
+  · ⚠ 交接檔的兩個疑問 Ray 沒正面答，我先照「龍自己橫移出畫」「攻擊期間近景樹停、結束後恢復」做。
+  · ⚠ **飛行地圖的遭遇還沒做**：側飛 → 轉正 → 正面飛來的動畫還在 Wan 輸出區，已請美術 session 交件（三個資料夾）。拿到之後在飛行頁地下古城神殿大樹那裡掛劇本遭遇，交棒 `uc_treedragon`。
+  · 驗收：headless Chromium（390×844）實跑 `startScriptBattle('uc_treedragon')`，四層、待機、落葉、攻擊演出都看到。
 - ✔ ver -2443：**入口遺跡換成真的模型**（Ray：「古城遺蹟太粗糙，剛才我們下過畫樹的模型，現在去找畫建築的」→「下載」）。
   · 來源 Quaternius「Ultimate Modular Ruins Pack」（CC0）。⚠ 官網的 Google Drive 那一份**額度爆了**（Quota exceeded），改從 poly.pizza 抓整包 GLB（8 MB、96 件）。
   · `flight/build_ruin_models.py <整包.glb>`：挑 18 件石造零件（拱、殘牆、圓柱、方柱、階梯、鹿像…），把節點的轉向與 ×100 縮放烘進頂點（glTF y-up、公尺），只留純色材質的 primitive ⇒ `flight/models/ruins/ruins.gltf`＋`ruins.bin`（1.2 MB）＋LICENSE.txt。整包原檔沒進版控（在暫存區）。

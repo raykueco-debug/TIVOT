@@ -1128,6 +1128,81 @@ function startIdleLoop(dir){
     });
   }).catch(()=>{});
 }
+/* ══ 空戰的視差背景（ver -2444，Ray：「我想做出機戰那樣的背景效果」）══════════════════════════════
+   敵卡寫 `sky:'<鍵>'` ⇒ #top 裡鋪 `tuning.skyBattle[鍵]` 的四層（由底至上）：
+     base（不透明、水平無縫、最慢）→ mid（alpha、無縫、較快）→【敵人】→ 近景樹（單根，每 10~12 秒從右往左一閃而過，蓋在敵人之上）
+     ＋程式跑的落葉／綠光點（Ray：「葉子另外用程式跑」）。世界往左捲＝龍往右飛（龍頭朝右）。
+   ⚠ 一個 rAF 推全部（捲動、近景樹、落葉），換敵／結束一律走 stopSkyBattle（鐵律 8；combat.stopAll 也叫）。 */
+let sky=null;
+export function stopSkyBattle(){
+  if(!sky) return;
+  cancelAnimationFrame(sky.raf);
+  for(const el of sky.els) el.remove();
+  const top=$('top'); if(top) top.classList.remove('sky-on');
+  sky=null;
+}
+export function restoreSkyBattle(){ const en=(GAME_CONFIG.enemies||{})[state.currentEnemyKey]; setSkyBattle(en && en.sky); }
+function setSkyBattle(key){
+  stopSkyBattle();
+  const C=key && ((GAME_CONFIG.tuning||{}).skyBattle||{})[key]; if(!C) return;
+  const top=$('top'), eImg=$('enemyImg'), vig=$('topVignette'); if(!top || !eImg) return;
+  const mk=(cls,before)=>{ const d=document.createElement('div'); d.className='sky-l '+cls; top.insertBefore(d,before); return d; };
+  const base=mk('sky-base', top.firstChild), mid=mk('sky-mid', $('enemyShadow')||eImg);
+  base.style.backgroundImage=`url("${C.base}")`; mid.style.backgroundImage=`url("${C.mid}")`;
+  const near=document.createElement('img'); near.className='sky-near'; near.alt=''; top.insertBefore(near, vig||null);
+  const lv=document.createElement('canvas'); lv.className='sky-leaves'; top.insertBefore(lv, vig||null);
+  top.classList.add('sky-on');
+  const nearImgs=C.near.map(u=>{ const im=new Image(); im.src=u; return im; });
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  const leaves=Array.from({length:C.leaves||40},()=>({ x:Math.random(), y:Math.random(), z:rnd(0.3,1), r:Math.random()*6.28, w:rnd(-1,1), g:Math.random()<0.25 }));
+  sky={ C, els:[base,mid,near,lv], raf:0, t0:performance.now(), last:performance.now(), nearAt:performance.now()+rnd(3,6)*1000, nearT:-1, nearPause:false, lunge:null };
+  const tick=now=>{
+    if(!sky) return;
+    const dt=Math.min(now-sky.last,60); sky.last=now;
+    const H=top.clientHeight, W=top.clientWidth, tw=H*(C.aspect||1.5), t=(now-sky.t0)/1000;
+    base.style.backgroundSize=`${tw}px ${H}px`; mid.style.backgroundSize=`${tw}px ${H}px`;
+    base.style.backgroundPositionX=`${-((t/C.baseSec)%1)*tw}px`;
+    mid.style.backgroundPositionX=`${-((t/C.midSec)%1)*tw}px`;
+    /* 近景樹：每 nearEvery 秒挑一根，從右往左掃過（攻擊演出期間暫停，結束後重新排） */
+    if(!sky.nearPause && sky.nearT<0 && now>=sky.nearAt){ const im=nearImgs[(Math.random()*nearImgs.length)|0]; near.src=im.src; sky.nearT=now; }
+    if(sky.nearT>=0){ const k=(now-sky.nearT)/(C.nearSweep*1000), nw=H*(C.nearAspect||0.36);
+      near.style.height=H+'px'; near.style.width=nw+'px'; near.style.opacity='1';
+      near.style.transform=`translateX(${W+nw*0.2-(W+nw*1.4)*k}px)`;
+      if(k>=1){ sky.nearT=-1; near.style.opacity='0'; sky.nearAt=now+rnd(C.nearEvery[0],C.nearEvery[1])*1000; } }
+    /* 落葉／光點：往左下飄（世界往左捲）、慢慢翻 */
+    if(lv.width!==W || lv.height!==H){ lv.width=W; lv.height=H; }
+    const cx=lv.getContext('2d'); cx.clearRect(0,0,W,H);
+    for(const l of leaves){ l.x-=dt*0.00010*(0.6+l.z*1.6); l.y+=dt*0.000035*(0.4+l.z); l.r+=dt*0.003*l.w;
+      if(l.x<-0.05){ l.x=1.05; l.y=Math.random()*0.9; } if(l.y>1.05) l.y=-0.05;
+      const px=l.x*W, py=l.y*H+Math.sin(now*0.001+l.r*3)*6;
+      if(l.g){ const a=0.35+0.35*Math.sin(now*0.003+l.r*5); cx.fillStyle=`rgba(170,255,150,${a.toFixed(2)})`; cx.beginPath(); cx.arc(px,py,1.2+l.z*1.6,0,6.283); cx.fill(); }
+      else { cx.save(); cx.translate(px,py); cx.rotate(l.r); cx.fillStyle=`rgba(${(90+40*l.z)|0},${(120+30*l.z)|0},${(40+15*l.z)|0},${(0.55+0.35*l.z).toFixed(2)})`;
+        cx.beginPath(); cx.ellipse(0,0,2+l.z*4,(1+l.z*2)*Math.abs(Math.cos(now*0.004+l.r)),0,0,6.283); cx.fill(); cx.restore(); } }
+    sky.raf=requestAnimationFrame(tick);
+  };
+  sky.raf=requestAnimationFrame(tick);
+}
+/* ══ 空戰怪的攻擊演出（ver -2444，Ray：「讓牠在前景掃過時消失在畫面 → 極近距離竄出：用同一支待機 loop 拉到極近，
+   快速由左下往右上平移 → 然後再近景樹復歸」）══ 主動攻擊那一波開始時（defense 的 spawnWave → combat 轉交）演一次：
+     ① 龍（待機層）往右滑出畫面 ② 同一支動畫放大到幾乎遮滿，從左下往右上快速掠過 ③ 回到原位淡入；
+     演出期間近景樹暫停、結束後重新排它的節奏。⚠ 只在有 `sky` 的怪上演（其餘怪照舊）。 */
+export function onAssaultWave(){
+  if(!sky || sky.lunge) return;
+  const el=idleEl || $('enemyImg'); if(!el) return;
+  const top=$('top'); const W=top.clientWidth, H=top.clientHeight;
+  sky.nearPause=true; if(sky.nearT>=0){ sky.nearT=-1; sky.els[2].style.opacity='0'; }
+  const ghost=el.cloneNode(); ghost.className='sky-lunge'; ghost.style.cssText=''; top.insertBefore(ghost, sky.els[2]);
+  if(idleEl){ const sync=setInterval(()=>{ if(!idleEl||!ghost.isConnected){ clearInterval(sync); return; } ghost.src=idleEl.src; }, 50); ghost._sync=sync; }
+  sky.lunge=ghost;
+  el.style.transition='transform .45s cubic-bezier(.5,0,.9,.4), opacity .45s'; el.style.transform=`translateX(${W*1.1}px)`; el.style.opacity='0';
+  const bw=W*2.6;
+  ghost.style.width=bw+'px'; ghost.style.left='0px'; ghost.style.top='0px';
+  ghost.style.transform=`translate(${-bw*0.95}px, ${H*0.9}px) rotate(-14deg)`;
+  setTimeout(()=>{ ghost.style.transition='transform .75s cubic-bezier(.3,.05,.6,1)'; ghost.style.transform=`translate(${W*0.9}px, ${-H*1.2}px) rotate(-14deg)`; }, 480);
+  setTimeout(()=>{ clearInterval(ghost._sync); ghost.remove(); if(sky) sky.lunge=null;
+    el.style.transition='none'; el.style.transform=''; void el.offsetWidth; el.style.transition='opacity .4s'; el.style.opacity='1';
+    setTimeout(()=>{ el.style.transition=''; if(sky){ sky.nearPause=false; sky.nearAt=performance.now()+2500; } }, 450); }, 1300);
+}
 /* ══ 敵人的台詞語音（ver -1920，Ray：尼莫「玩家受擊用 slow1／slow2／feint 輪播、玩家戰敗播 bulletrain、戰勝播 win」）══
    卡上三格（開戰那一聲照舊走 `entrance`）：
      `hitVoice:[…]`  玩家**被打到**時輪播（同一隻怪換一句；上一句還在講就不疊，至少隔 `HIT_VO_GAP_MS`）
@@ -1909,6 +1984,7 @@ export function setEnemy(key, opts){
   loadSingleFall(en);                           // 單人的倒地動畫（ver -2065）：有寫 `fall` 就先抓
   stopSakura();                                 // 換了一隻怪 → 上一隻的櫻花與 Sturm 一起收（ver -899）
   stopHolyBurst();                              // 同上：放光也是全螢幕的層＋一支還在響的音（ver -1351）
+  setSkyBattle(en.sky);                         // 空戰的視差背景（ver -2444）：沒有 `sky` 的怪＝收掉上一隻的
   rollSmokeDir();                               // 船戰的煙往哪一邊飄：這一場擲一次（ver -1653）
   state.currentEnemyKey = key;                 // 3.7：記住目前怪 key，供 boardGridFor 查每盤格數
   state.enemyHitsTaken = 0;                     // 換了一隻怪 → 「這一隻」的受擊數歸零（九階「方舟」，ver -708）

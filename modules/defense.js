@@ -155,6 +155,7 @@ function spawnWave(count, gapMs, isUlt){
   const n=Math.max(1, count||1), g=Math.max(0, gapMs||0);
   waveIsUlt = !!isUlt;
   spawnThreat();
+  if(api.onAssaultWave) api.onAssaultWave();   // 這一波開始了 ⇒ 空戰怪的攻擊演出（ver -2444；沒有 sky 的怪那一支什麼都不做）
   $('chargeWarn').classList.add('on');
   if(!state.threatTick){ state.threatTick=setInterval(updateThreats,50); }
   for(let s=1;s<n;s++){

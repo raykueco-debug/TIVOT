@@ -80,6 +80,7 @@ export function setup(){
                  /* 重擊那一震（ver -1659）：演出的擁有者是 enemy（`#enemyImg`），
                     「什麼時候該震」的判斷在 defense —— 經此轉交（defense 不 import enemy）。 */
                  slamEnemy: enemy.slamEnemy,
+                 onAssaultWave: enemy.onAssaultWave,   // 空戰怪主動攻擊的演出（ver -2444）：演出歸 enemy，「這一波開始了」歸 defense
                  /* 拉栓冷卻（ver -1009）：這一發開不開得出來由 weapon 回答
                     （鑰匙是那一把槍卡上的 `mag`／`reloadSec`，ver -1781）—— defense 不 import weapon。 */
                  counterReady: weapon.counterReady,
@@ -2383,6 +2384,7 @@ function stopAll(){
   clearLucidFlood(false);   // 明晰之夢的金光（ver -746）：任何結束路徑都收掉，不爆散
   enemy.stopSakura();    // 鹿主的櫻花狂亂（ver -899）：它是全螢幕的層＋一支還在響的音
   enemy.stopHolyBurst(); // 王座徘徊者的放光（ver -1351）：同上
+  enemy.stopSkyBattle(); // 空戰的視差背景（ver -2444）：一個 rAF＋四層 DOM
   enemy.stopEntranceSe(); // 登場音（龍吟／詠唱）在結束時淡出（ver -1881）
   stopLastStand();       // 米夏的 NI 回血計時（ver -1964）
   brShotN=0; brVoiceOk=false;   // BR 受創語音計數（ver -1969）：戰鬥中途收場也歸零
@@ -3484,6 +3486,7 @@ export function startGame(){
     state.counterGapMs = sb.counterGapMs || null;// 這一場的機槍連射間隔（ver -476，船艦戰）
   }
   stopAll();
+  enemy.restoreSkyBattle();   // 空戰的視差背景（ver -2444）：setEnemy 在 stopAll 之前就建好了，stopAll 會把它收掉 ⇒ 照這一隻的卡重鋪一次
   /* ⚠⚠ 棄權鈕的 class **要掛在 `stopAll()` 之後**（ver -730）：`stopAll` 會把它
      清掉（那是所有結束路徑的匯流點，見那一支）—— 掛在前面等於沒掛，
      鈕永遠不出現（實測就是這樣）。同憲法那條「talk 要掛在 stopAll 之後」的坑。
