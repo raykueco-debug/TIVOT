@@ -8,7 +8,10 @@
   合成後的影格：`out/export/ci_nemo_barrage_fl87s_swing_loop_cut_dim60`。
 - 🎯 **觸發點（Ray 定案 11-04）：尼莫「與主角共鬥」的主動技。**
 - 濃淡 Ray 還沒看過實機；要調就只改那一個 60%，重轉一支 v3。
-- iOS 那一條照下面 v1 第 1 點（VP9 alpha 在 iOS Safari 播不了），仍待 Ray 決定。
+- 📱 **iOS 版（Ray 11-04 要的）：`resources/ci/video/ci_nemo_barrage_v2_hevc.mov`** —— 同一份影格、HEVC 帶 alpha（`hvc1`、x265 alpha 層）、960×640、16fps、56 格＝3.500 秒、1.10 MB（1,158,044 bytes）。
+  - 播放端依瀏覽器挑：`<video>` 裡放兩個 `<source>`，**HEVC 的 .mov 排第一**（`type='video/quicktime; codecs="hvc1"'`）、webm 排第二 —— Safari 吃第一個，Chrome／Android 不認 hvc1 會自動退到 webm。
+  - ⚠⚠ **還沒在 iPhone 上實測過**：這一支是在 Windows 用 x265 的 alpha 層編的（不是 Apple VideoToolbox），用 ffmpeg 解回來 alpha 是對的（角落 153＝60% 黑），但 Safari 會不會吃這種 alpha 層要用真機確認。播出來若是**整片不透明**，就要改到 Mac 上用 `hevc_videotoolbox` 重編。
+  - 編碼用的 ffmpeg 是 BtbN 的 master build（系統的 gyan.dev 版 x265 沒開 alpha）。
 
 ## v1（11-04）—— ⚠ 已被 v2 取代，不要接；回收等 Ray
 

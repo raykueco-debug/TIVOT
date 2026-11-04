@@ -1296,3 +1296,4 @@ when	from	to	reason
 20261104-184232	flight/undercity/tree_b.webp	_recycle/flight/undercity/tree_b.webp	ver -2411 舊的樹移除（Ray），古城的樹只剩藤蔓樹
 20261104-184232	flight/undercity/tree_c.webp	_recycle/flight/undercity/tree_c.webp	ver -2411 舊的樹移除（Ray），古城的樹只剩藤蔓樹
 20261104-184232	flight/undercity_trees.py	_recycle/flight/undercity_trees.py	ver -2411 舊的樹移除（Ray），古城的樹只剩藤蔓樹
+20261104-195822	resources/ci/video/ci_nemo_barrage_v2_hevc.mov	_recycle/resources/ci/video/ci_nemo_barrage_v2_hevc.mov	HEVC alpha 編碼失敗留下的 0 byte 空檔
