@@ -135,7 +135,7 @@ d = np.full((N, N), 1e9, np.float32)
 for (x0, y0), (x1, y1) in zip(MOUTH, MOUTH[1:]):
     d = np.minimum(d, seg_dist(x0, y0, x1, y1))
 tunnel_f = np.maximum(tunnel_f, 18 * (1 + 0.18 * wob + 0.10 * scal) - d)
-outside = XX < OUTW
+outside = (XX < OUTW) & (np.abs(YY - (ay_ + 10)) < 70)   # -2428：只留出口外那一段（出口開在崖面上），不再整條地圖左邊
 openm = (best > 0) | (tunnel_f > 0) | outside
 dist = cv2.distanceTransform(openm.astype(np.uint8), cv2.DIST_L2, 5).astype(np.float32)
 
@@ -244,10 +244,30 @@ for x_, y_, z_ in stream:
     floor[y0:y1, x0:x1] = np.where(dd < HW + 2.5, np.minimum(floor[y0:y1, x0:x1], bed), floor[y0:y1, x0:x1])
     water[y0:y1, x0:x1] |= dd < HW
 water &= openm & ~outside
+# 整間的湖：每間一個水面（高的先、一路往下），迴廊的水面沿中心線從上一間的水位降到下一間（照 stream 的線性水位）
+LAKE = {'K': 900, 'C': 715, 'B': 685, 'A': 655}
+lev = np.zeros((N, N), np.float32); lbest = np.full((N, N), 1e9, np.float32)
+fdx = np.zeros((N, N), np.float32); fdy = np.zeros((N, N), np.float32)   # 流向（-2428 Ray：「水要有流向，高至低」）
+for i_, (x_, y_, z_) in enumerate(stream):                  # 迴廊：最近的那一個水道點給水位與流向
+    xn, yn, _ = stream[min(i_ + 1, len(stream) - 1)]; xp, yp, _ = stream[max(i_ - 1, 0)]
+    vx, vy = xn - xp, yn - yp; vl = math.hypot(vx, vy) or 1
+    R_ = 50 if any(abs(x_ - ROOMS[k_]['x']) < ROOMS[k_]['a'] and abs(y_ - ROOMS[k_]['y']) < ROOMS[k_]['a'] for k_ in ('K', 'C', 'B', 'A')) else 20
+    x0, x1, y0, y1 = max(0, int(x_ - R_)), min(N, int(x_ + R_ + 1)), max(0, int(y_ - R_)), min(N, int(y_ + R_ + 1))
+    dd = np.sqrt((XX[y0:y1, x0:x1] - x_) ** 2 + (YY[y0:y1, x0:x1] - y_) ** 2)
+    m = dd < lbest[y0:y1, x0:x1]
+    lbest[y0:y1, x0:x1] = np.where(m, dd, lbest[y0:y1, x0:x1]); lev[y0:y1, x0:x1] = np.where(m, z_, lev[y0:y1, x0:x1])
+    fdx[y0:y1, x0:x1] = np.where(m, vx / vl, fdx[y0:y1, x0:x1]); fdy[y0:y1, x0:x1] = np.where(m, vy / vl, fdy[y0:y1, x0:x1])
+corr = (lbest < 19) & (tunnel_f > 0) & openm & ~outside
+for k_, L_ in LAKE.items():                                 # 湖：整間同一個水面
+    rm = (owner == k_) & (best > 0) & openm
+    lev[rm] = L_; corr |= rm
+water |= corr
+floor = np.where(water, np.minimum(floor, lev - 34), floor)  # 湖底在水面下 34（牆邊的過渡會把岸墊回來）
 t = np.clip(dist / WALL_W, 0, 1); t = t * t * (3 - 2 * t)
 floor = SOLID * (1 - t) + floor * t
 ceil = SOLID * (1 - t) + ceil * t
 solid = ~openm | pillar_core
+floor[outside] = 40 + ZOFF                         # 洞外：牆的過渡會把它墊回去（-2428 抓到：洞外地面一路 800～1800），這裡再壓回雲海面
 floor[solid] = SOLID; ceil[solid] = SOLID
 ceil[outside] = SOLID - 1                          # 洞外的天頂：下面 Gc 會換成 HOLE（開成天）
 
@@ -305,6 +325,9 @@ shaft = cv2.GaussianBlur(holemask.astype(np.float32), (0, 0), 3.5); shaft /= (sh
 # ver -2400：遺跡沒有燈（Ray：「非現代」）—— 光只剩天光的反光
 spill = cv2.GaussianBlur(holemask.astype(np.float32) * 0.8, (0, 0), 9); spill /= (spill.max() + 1e-6)
 spill = np.clip(spill * 1.2, 0, 1) * (~solid)
+# 洞外的天光照進出口（-2428：出口一圈的岩壁與天頂不然是全黑的，貼著亮的洞外就是破圖）
+osh = cv2.GaussianBlur(outside.astype(np.float32), (0, 0), 14); osh = np.clip(osh / (osh.max() + 1e-6) * 1.6, 0, 1)
+shaft = np.maximum(shaft, osh); spill = np.maximum(spill, osh * 0.9)
 
 # ── 顏色：砂岩（赭黃～褐），岩層一層一層；都市地面＝鋪石＋街道 ───────────────
 tone = fbm(N, 5, 24, 0.55)[..., None]
@@ -349,14 +372,16 @@ for q in rng.permutation(len(xs))[:4000]:
     if len(trees) >= 9: break
 col[solid] = sandB * 0.85
 col[water] = col[water] * 0.35 + np.array([40, 70, 96], np.float32) * 0.65   # 水底
-col[outside] = np.array([236, 240, 246], np.float32)                           # 雲海（飛行頁另外依時段上色）
+col[outside] = sandB * 0.85                                                    # 洞外邊上那一圈＝崖壁（雲海那幾格飛行頁另外依時段上色）
 col = np.clip(col, 0, 255).astype(np.uint8)
 geo = np.full((N, N), 6, np.uint8)             # 黃土
 geo[lit[..., 0] > 0.5] = 5                      # 天光落點：淺色碎石
 geo[over > 0.45] = np.where(tone[..., 0][over > 0.45] > 0.5, 1, 0)   # 野草：森林的地貌貼圖
 geo[solid] = 3
-geo[water] = 8                                  # 水（飛行頁的水膜）
-geo[outside] = 10                               # 洞外的雲海（飛行頁依時段上色、不吃洞裡的霧）
+geo[water & ~solid] = 8                                  # 水（飛行頁的水膜）
+outside_in = cv2.erode(outside.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool)
+geo[outside_in] = 10                            # 洞外的雲海（飛行頁依時段上色、不吃洞裡的霧）
+# ⚠ 往內縮兩格（-2428）：牆腳那一圈若標成雲海，牆的下半截就被塗成白的 ⇒ 看起來是一塊懸空的岩板
 
 # ── 加密（同 build_cave.py）───────────────────────────────────────────
 SUPER = 2; N2 = N * SUPER
@@ -373,6 +398,7 @@ floor2 = up(floor) + bandw * rough + (1 - bandw) * fine * 10 * (tt > 0.99) * (~c
 ceil2 = up(ceil) - bandw * rough
 solid2 = upn(solid).astype(bool)
 floor2[solid2] = SOLID; ceil2[solid2] = SOLID
+floor2[upn(outside).astype(bool)] = 40 + ZOFF      # 加密時的粗糙度也不准把洞外墊起來（-2428）
 open2 = ~solid2
 floor2[open2] = np.minimum(floor2[open2], np.maximum(up(floor)[open2], ALT - 90))
 ceil2[open2] = np.maximum(ceil2[open2], np.minimum(up(ceil)[open2], ALT + 90))
@@ -392,14 +418,20 @@ edge = ((lab != np.roll(lab, 1, 0)) | (lab != np.roll(lab, 1, 1))).astype(np.flo
 edge = cv2.GaussianBlur(edge, (0, 0), 0.6)
 clod = cv2.resize(fbm(N, 3, 6, 0.6), (N2, N2), interpolation=cv2.INTER_LINEAR)
 cell = np.random.default_rng(SEED + 7).uniform(0.88, 1.10, lab.max() + 2)[lab]
-ground = (1 - bandw) * (1 - np.clip(up(over, cv2.INTER_LINEAR) * 1.4, 0, 1))   # 牆帶（bandw）與長草的地方不上（草地上沒有龜裂）
+water2 = upn(water).astype(bool)
+ground = (1 - bandw) * (1 - np.clip(up(over, cv2.INTER_LINEAR) * 1.4, 0, 1)) * (~water2)   # 牆帶、長草、水底都不上龜裂（-2428 Ray：「有水就不該是乾裂地」）
 soil = (cell * (0.86 + 0.24 * clod)) * (1 - 0.38 * np.clip(edge * 1.6, 0, 1))
 col2 = col2 * (1 + (soil[..., None] - 1) * ground[..., None])
+# 河床：深青綠的底＋一顆一顆的卵石（借龜裂那張 Voronoi 的格子當石頭，石縫暗、石面各自深淺）
+peb = cell * (0.80 + 0.30 * clod) * (1 - 0.45 * np.clip(edge * 1.8, 0, 1))
+bed = np.array([58, 86, 84], np.float32)[None, None, :] * peb[..., None] * (0.92 + 0.16 * (fine[..., None] + 0.5))
+col2[water2] = bed[water2]
 col2 = np.clip(col2, 0, 255).astype(np.uint8)
 
 os.makedirs(OUT, exist_ok=True)
 R_ = np.clip(np.round(floor2 / FLOOR_SCALE), 0, 255)
-Gc = np.clip(np.round(ceil2 / CEIL_SCALE), 0, 254); Gc[upn(exitmask).astype(bool)] = HOLE; Gc[upn(outside).astype(bool)] = HOLE
+Gc = np.clip(np.round(ceil2 / CEIL_SCALE), 0, 254); Gc[upn(exitmask).astype(bool)] = HOLE
+Gc[cv2.dilate(upn(outside), np.ones((5, 5), np.uint8)).astype(bool)] = HOLE   # 洞外的天往岩石裡多開兩格（-2428：不然天頂雙線性在邊上混出一條懸空的黑岩頂）
 B = np.zeros_like(R_)
 hm = np.stack([R_, Gc, B], -1).astype(np.uint8)
 aux = np.stack([np.round(shaft2 * 255), np.round(spill2 * 255), geo2], -1).astype(np.uint8)
@@ -409,6 +441,16 @@ for name, arr in (('cave_hm.png', hm), ('cave_aux.png', aux), ('cave_col.png', c
     Image.fromarray(arr).save(p, optimize=True)
     paths[name] = hashlib.md5(open(p, 'rb').read()).hexdigest()[:8]
 
+WT = 8; wlev_grid = []; wflow_grid = []
+for gy in range(0, N + 1, WT):
+    for gx in range(0, N + 1, WT):
+        y0, y1, x0, x1 = max(0, gy - WT // 2), min(N, gy + WT // 2 + 1), max(0, gx - WT // 2), min(N, gx + WT // 2 + 1)
+        wm = water[y0:y1, x0:x1]
+        wlev_grid.append(int(round(float(lev[y0:y1, x0:x1][wm].mean()))) if wm.any() else 0)
+        if wm.any():
+            ux, uy = float(fdx[y0:y1, x0:x1][wm].mean()), float(fdy[y0:y1, x0:x1][wm].mean()); ul = math.hypot(ux, uy) or 1
+            wflow_grid += [round(ux / ul * 100), round(uy / ul * 100)]
+        else: wflow_grid += [0, 0]
 ax, ay, bx, by = ROOMS['A']['x'], ROOMS['A']['y'], ROOMS['B']['x'], ROOMS['B']['y']
 data = {
     'v': {'hm': paths['cave_hm.png'], 'aux': paths['cave_aux.png'], 'col': paths['cave_col.png']},
@@ -419,6 +461,8 @@ data = {
     'stream': [[round(x_ * 20), round(y_ * 20), round(z_)] for x_, y_, z_ in stream[::2]],   # 水面（世界座標＋水面高）：飛行頁鋪水膜
     'streamW': round(HW * 20),
     'outW': OUTW * 20,                                       # 洞外那一條的寬（世界單位）：船飛進去就開始出洞
+    'wlev': wlev_grid,
+    'wflow': wflow_grid,                                     # 流向網格（同 wlev 的角點；每點 [dx,dy]×100，往下游）                                       # 水位網格（768² 每 8 格一個角點＝97×97；0＝沒水）：飛行頁的水膜照它鋪
 }
 js = 'window.UNDERCITY_DATA=' + json.dumps(data, ensure_ascii=False, separators=(',', ':')) + ';\n'
 open(os.path.join(OUT, 'world.js'), 'w', encoding='utf-8').write(js)
