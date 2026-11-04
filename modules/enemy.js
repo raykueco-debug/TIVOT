@@ -1706,7 +1706,7 @@ export function loadEnemyPortrait(en){
   risePending=null;
   eImg.onload = null;
   eImg.classList.remove('enemy-rise','enemy-unpurge','enemy-purge','enemy-quake');
-  if(eImg._falling){ eImg._falling=false; eImg.style.transition=''; eImg.style.transform=''; eImg.style.filter=''; }   // 上一隻的斜下墜（deathFx:'skyfall'，ver -2456）
+  if(eImg._falling){ eImg._falling=false; if(eImg._fallAnim){ eImg._fallAnim.cancel(); eImg._fallAnim=null; } eImg.style.animation=''; eImg.style.transition=''; }   // 上一隻的斜下墜（deathFx:'skyfall'，ver -2456）
   /* ⚠⚠⚠ **換怪的第一件事是把上一張拔掉**（ver -1467）：`<img>` 在**新圖解碼完成
      之前不會重繪** —— 只設 `src` 的話，慢網下整段空窗畫面上站著的是**上一隻怪**，
      而且沒有任何錯誤訊息（Ray 在空戰看到地下聖徒的那一半就是這個）。
@@ -1917,11 +1917,12 @@ export function purgeEnemy(){
     el._falling = true; el.style.visibility=''; el.style.opacity='1'; el.style.clipPath='';
     if(sky && sky.lunge){ clearInterval(sky.lunge._sync); sky.lunge.remove(); sky.lunge=null; sky.vanishEl=null; }
     const top=$('top'), W=top.clientWidth, H=top.clientHeight;
-    el.style.transition='none'; el.style.transformOrigin='50% 50%';
-    void el.offsetWidth;
-    el.style.transition='transform 1.3s cubic-bezier(.5,0,.9,.6), filter 1.3s ease-in';
-    el.style.transform=`translate(${W*0.55}px, ${H*1.25}px) rotate(38deg) scale(.82)`;
-    el.style.filter='brightness(.55)';
+    /* ⚠ 不能用 CSS transition：受擊的 `#enemyImg.hit + .en-idle{animation:…}` 那幾條動畫會蓋過 transform，
+       動畫一結束就直接跳到終點（ver -2457 實測：一格就到底，沒有墜落的過程）⇒ 先關掉 CSS 動畫、改用 el.animate 跑完停在最後一格 */
+    el.style.animation='none'; el.style.transition='none'; el.style.transformOrigin='50% 50%';
+    el._fallAnim = el.animate([{ transform:'none', filter:'brightness(1)' },
+      { transform:`translate(${W*0.55}px, ${H*1.25}px) rotate(38deg) scale(.82)`, filter:'brightness(.55)' }],
+      { duration:1300, easing:'cubic-bezier(.5,0,.9,.6)', fill:'forwards' });
     return;
   }
   stopIdleLoop();   // 死亡演出在立繪本體上演（ver -2075）
