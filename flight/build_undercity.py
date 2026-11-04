@@ -63,7 +63,7 @@ ROOMS = {
     'K': dict(no=12, x=60,  y=318, a=34, b=40, rot=90,  floor=520, ceil=1350, slit=1, name='裂光側室'),   # -2427：地勢高，水源
     'L': dict(no=13, x=70,  y=75,  a=44, b=40, rot=0,   floor=290, ceil=1250, pores=9, name='星孔廳'),
     'M': dict(no=14, x=712, y=560, a=40, b=52, rot=70,  floor=300, ceil=1150, boulders=10, name='落石坡'),
-    'N': dict(no=15, x=640, y=712, a=52, b=36, rot=0,   floor=300, ceil=1200, arch=1, name='雙拱廳'),
+    'N': dict(no=15, x=640, y=712, a=52, b=36, rot=0,   floor=300, ceil=1200, wind=1, name='無底風穴'),   # -2434（Ray：「15 刪掉改成風穴，無底，有氣流一直往上吹，頂有外部光源…只出不進」）
     'O': dict(no=16, x=228, y=468, a=40, b=34, rot=20,  floor=290, ceil=1300, strata=1, name='層岩小廳'),
     'P': dict(no=17, x=712, y=195, a=32, b=40, rot=80,  floor=300, ceil=1200, chasm=1, name='懸崖廊'),
 }
@@ -158,6 +158,11 @@ ceil = ceil - fbm(N, 4, 24, 0.55) * 90 * roomness
 pillar_core = np.zeros((N, N), bool)
 holes = []
 chasm = np.zeros((N, N), np.float32)
+chasm_g = np.zeros((N, N), np.float32)            # 斷橋深谷那一間的谷底（樹海）
+bridge_m = np.zeros((N, N), bool); bridge_par = np.zeros((N, N), bool); wind_m = np.zeros((N, N), bool)
+BR_GAP = (0.30, 0.47)                             # 斷口（u）：偏往 14
+BR_Z = 320 + ZOFF                                 # 橋面高 ＝ 斷橋深谷的地面
+FOREST_Z = 470                                    # 谷底（樹海的地面）
 strata_k = np.zeros((N, N), np.float32)
 rng_main = rng
 for k, R in ROOMS.items():
@@ -194,11 +199,23 @@ for k, R in ROOMS.items():
     if R.get('arch'):                              # 天然石拱：一道低垂的岩樑橫過頭頂
         band = np.clip(1 - np.abs(u) / 0.13, 0, 1) * rmask
         ceil = ceil * (1 - band) + np.minimum(ceil, ALT + 110) * band
-    if R.get('chasm'):                             # 斷橋深谷：整間裂開，中間留一道石脊
+    if R.get('chasm') and k == 'G':                # 斷橋深谷（-2434 Ray：「橋改成人造石橋，古舊，在往 14 的方向橋斷，不要斷在正中間，要分長短」）
+        # 橋沿 u 軸（+u 朝 14／南）；斷口在 u∈[BR_GAP]（偏 14 那一頭）⇒ 北段長、南段短；斷口兩端的邊緣參差（崩掉的）
+        jag = wob * 0.05
+        deck = (np.abs(v) < 0.085) & (np.sqrt(u * u + v * v) < 1.02) & ~((u > BR_GAP[0] + jag) & (u < BR_GAP[1] - jag))
+        bridge_m |= deck & rmask
+        bridge_par |= deck & (np.abs(v) > 0.064) & rmask & ((wob * 7.0) % 1.0 > 0.18)   # 欄杆：一段一段，缺了幾塊
+        cm = np.clip((np.sqrt(u * u + v * v) < 0.92) * 1.0, 0, 1) * rmask * (~deck)
+        chasm = np.maximum(chasm, cm); chasm_g = np.maximum(chasm_g, cm)
+    elif R.get('chasm'):                           # 懸崖廊：整間裂開，中間留一道石脊
         cm = np.clip((np.sqrt(u * u + v * v) < 0.92) * 1.0 - np.clip(1 - np.abs(v) / 0.10, 0, 1) * 1.6, 0, 1) * rmask
         chasm = np.maximum(chasm, cm)
+    if R.get('wind'):                              # 無底風穴：腔室中央往下沒底、天頂開一個大口（外面的光照下來）
+        wind_m |= (np.sqrt(u * u + v * v) < 0.86) & rmask
+        holes.append((R['x'], R['y'], R['b'] * 0.55))
     for px, py in inside(R.get('pores', 0), 0.75, 8):         # 風穴：天頂一堆小孔
-        holes.append((px, py, rng.uniform(1.6, 3.0)))
+        r_ = rng.uniform(1.6, 3.0)
+        if k != 'L': holes.append((px, py, r_))      # -2434：13 是全黑的（亂數照抽、只是不開，不然後面的腔室與城會重排）
     if R.get('city'):
         # 神殿頂上那一束藤（ver -2405）：高度圖裡**不再**放實心柱 —— 藤束會往上收、會彎，直柱包不住；
         # 碰撞改由飛行頁照同一條藤束的中軸判（flight/index.html 的 ucTrunkAt，caveSolidAt 裡）。
@@ -209,7 +226,26 @@ for k, R in ROOMS.items():
 
 rng = rng_main
 floor = np.clip(floor, 40 + ZOFF, ALT - 90)
-floor = floor * (1 - chasm) + (60 + fbm(N, 4, 40, 0.5) * 120) * chasm
+chf = 60 + fbm(N, 4, 40, 0.5) * 120              # ⚠ 照抽（亂數序列）
+floor = floor * (1 - chasm) + chf * chasm
+floor = floor * (1 - chasm_g) + (FOREST_Z + (chf - 60) * 0.25) * chasm_g   # 斷橋深谷的谷底＝樹海的地面（-2434）
+floor[bridge_m] = BR_Z; floor[bridge_par] = BR_Z + 26
+def link_dt(key):                                 # 每一格到某條迴廊中心線的距離 d 與沿線位置 t（0＝起點腔室、1＝終點）
+    pts_ = LPTS[key]; Ls = [math.hypot(b_[0] - a_[0], b_[1] - a_[1]) for a_, b_ in zip(pts_, pts_[1:])]; Lt = sum(Ls)
+    dd = np.full((N, N), 1e9, np.float32); tt = np.zeros((N, N), np.float32); acc = 0
+    for (a_, b_), Lk in zip(zip(pts_, pts_[1:]), Ls):
+        vx, vy = b_[0] - a_[0], b_[1] - a_[1]
+        q = np.clip(((XX - a_[0]) * vx + (YY - a_[1]) * vy) / (vx * vx + vy * vy + 1e-9), 0, 1)
+        d_ = np.sqrt((XX - a_[0] - q * vx) ** 2 + (YY - a_[1] - q * vy) ** 2)
+        m_ = d_ < dd; dd = np.where(m_, d_, dd); tt = np.where(m_, (acc + q * Lk) / Lt, tt); acc += Lk
+    return dd, tt
+# 樹海往 10 延伸（-2434 Ray：「橋的下面是樹海往 10 延伸」）：7→10 那條迴廊挖成一道谷，谷底同高，接近 10 時順坡接上都市的地面
+dGZ, tGZ = link_dt(('G', 'Z'))
+ravine = (dGZ < 15 * (1 + 0.25 * wob)) & ~((owner == CITY) & (best > 0))
+rz = FOREST_Z + (ROOMS[CITY]['floor'] + ZOFF - FOREST_Z) * np.clip((tGZ - 0.78) / 0.22, 0, 1)
+floor = np.where(ravine, np.minimum(floor, rz + (chf - 60) * 0.2), floor)
+forest_m = (chasm_g > 0.5) | ravine
+floor[wind_m] = 30                                 # 無底：比雲底還低（飛行頁畫成往下沒底的灰黑雲）
 ceil = np.maximum(ceil, ALT + 90)
 hole = np.zeros((N, N), np.float32)
 for hx, hy, hr in holes:
@@ -261,6 +297,12 @@ for k_, L_ in LAKE.items():                                 # 湖：整間同一
     lev[rm] = L_; corr |= rm
 water |= corr
 floor = np.where(water, np.minimum(floor, lev - 34), floor)  # 湖底在水面下 34（牆邊的過渡會把岸墊回來）
+# 2 與 16、2 與 9 的接點（-2434 Ray：「靠 2 那一側地勢要略高一些」）：出湖那一段墊一道比水面高的坎，往迴廊裡順坡降回去
+for key_ in (('B', 'O'), ('B', 'I')):
+    d_, t_ = link_dt(key_)
+    w_ = (d_ < 14) & ~water & (t_ < 0.5)
+    sill = LAKE['B'] + 30 + 34 * np.clip(1 - t_ / 0.42, 0, 1)
+    floor = np.where(w_, np.maximum(floor, sill * (1 - np.clip((t_ - 0.30) / 0.15, 0, 1)) + floor * np.clip((t_ - 0.30) / 0.15, 0, 1)), floor)
 t = np.clip(dist / WALL_W, 0, 1); t = t * t * (3 - 2 * t)
 floor = SOLID * (1 - t) + floor * t
 ceil = SOLID * (1 - t) + ceil * t
@@ -268,6 +310,18 @@ solid = ~openm | pillar_core
 floor[outside] = 40 + ZOFF                         # 洞外：牆的過渡會把它墊回去（-2428 抓到：洞外地面一路 800～1800），這裡再壓回雲海面
 floor[solid] = SOLID; ceil[solid] = SOLID
 ceil[outside] = SOLID - 1                          # 洞外的天頂：下面 Gc 會換成 HOLE（開成天）
+
+# ── 黑暗（-2434 Ray：「13 從入口開始漸暗到全黑，進到 13 以後也是全黑」「7 往 10 的通道會有一段全暗，進到 10 以後才漸亮起來」）──
+#   0＝照常、1＝全黑（只剩船燈與牆上的光點）。寫進 cave_hm 的 B（飛行頁地下古城把它當黑暗讀；大溶谷那一格是發光植物）
+dark = np.zeros((N, N), np.float32)
+dEL, tEL = link_dt(('E', 'L'))
+dark = np.where((dEL < 26) & (owner != 'E'), np.maximum(dark, np.clip(tEL / 0.85, 0, 1)), dark)
+dark[(owner == 'L') & (best > -WALL_W - 4)] = 1
+pin = next(((x_, y_) for x_, y_ in LPTS[('G', 'Z')] if owner[int(y_), int(x_)] == CITY and best[int(y_), int(x_)] > 0), LPTS[('G', 'Z')][-1])
+dark = np.where((dGZ < 30) & (owner != CITY) & (owner != 'G'), np.maximum(dark, np.clip((tGZ - 0.18) / 0.22, 0, 1)), dark)
+dPin = np.sqrt((XX - pin[0]) ** 2 + (YY - pin[1]) ** 2)
+dark = np.where((owner == CITY), np.maximum(dark, 1 - np.clip(dPin / 75, 0, 1)), dark)
+dark = cv2.GaussianBlur(dark, (0, 0), 2.0)
 
 # ── 地下都市：建築清單（飛行頁畫成 3D）＋街道 ─────────────────────────────
 Rz = ROOMS[CITY]
@@ -368,6 +422,15 @@ for q in rng.permutation(len(xs))[:4000]:
     CITYL.append([round(px * 20), round(py * 20), round(rng.uniform(5.5, 8.0) * 20), 0, round(rng.uniform(300, 420)),
                   0, 7, round(float(rng.random()), 3), gfloor])
     if len(trees) >= 9: break
+col[forest_m & ~solid] = col[forest_m & ~solid] * 0.25 + np.array([52, 70, 40], np.float32) * 0.75   # 樹海的地面（林下的暗綠）
+# 石橋（-2434）：灰石、一塊一塊錯縫（沿 u 每 4 格一道縫）、欄杆亮一階、綠苔一叢一叢
+Rg = ROOMS['G']; ug, vg = room_uv(Rg)
+blk = ((ug * Rg['a'] / 4.0 + np.floor(vg * Rg['b'] / 3.0) * 0.5) % 1.0 < 0.14) | ((vg * Rg['b'] / 3.0) % 1.0 < 0.12)
+stone = np.array([148, 144, 134], np.float32) * (0.86 + 0.24 * tone)
+mossk = np.clip((ovn - 0.48) * 4, 0, 1)[..., None]
+bcol = stone * np.where(blk[..., None], 0.72, 1.0)
+bcol = bcol * (1 - mossk * 0.7) + np.array([88, 112, 56], np.float32) * mossk * 0.7
+col[bridge_m] = bcol[bridge_m]; col[bridge_par] = bcol[bridge_par] * 1.12
 col[solid] = sandB * 0.85
 col[water] = col[water] * 0.35 + np.array([40, 70, 96], np.float32) * 0.65   # 水底
 col[outside] = sandB * 0.85                                                    # 洞外邊上那一圈＝崖壁（雲海那幾格飛行頁另外依時段上色）
@@ -376,6 +439,9 @@ geo = np.full((N, N), 6, np.uint8)             # 黃土
 geo[lit[..., 0] > 0.5] = 5                      # 天光落點：淺色碎石
 geo[over > 0.45] = np.where(tone[..., 0][over > 0.45] > 0.5, 1, 0)   # 野草：森林的地貌貼圖
 geo[solid] = 3
+geo[forest_m & ~solid] = 1                       # 樹海的地面：森林的地貌貼圖
+geo[bridge_m] = 5
+geo[wind_m] = 14                                 # 無底（飛行頁：往下沒底的灰黑雲，頂上的光照得到）
 geo[water & ~solid] = 8                                  # 水（飛行頁的水膜）
 outside_in = cv2.erode(outside.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool)
 geo[outside_in] = 10                            # 洞外的雲海（飛行頁依時段上色、不吃洞裡的霧）
@@ -397,6 +463,7 @@ ceil2 = up(ceil) - bandw * rough
 solid2 = upn(solid).astype(bool)
 floor2[solid2] = SOLID; ceil2[solid2] = SOLID
 floor2[upn(outside).astype(bool)] = 40 + ZOFF      # 加密時的粗糙度也不准把洞外墊起來（-2428）
+floor2[upn(bridge_m).astype(bool)] = up(floor)[upn(bridge_m).astype(bool)]   # 橋面是平的（不吃岩壁的粗糙度）
 open2 = ~solid2
 floor2[open2] = np.minimum(floor2[open2], np.maximum(up(floor)[open2], ALT - 90))
 ceil2[open2] = np.maximum(ceil2[open2], np.minimum(up(ceil)[open2], ALT + 90))
@@ -417,7 +484,7 @@ edge = cv2.GaussianBlur(edge, (0, 0), 0.6)
 clod = cv2.resize(fbm(N, 3, 6, 0.6), (N2, N2), interpolation=cv2.INTER_LINEAR)
 cell = np.random.default_rng(SEED + 7).uniform(0.88, 1.10, lab.max() + 2)[lab]
 water2 = upn(water).astype(bool)
-ground = (1 - bandw) * (1 - np.clip(up(over, cv2.INTER_LINEAR) * 1.4, 0, 1)) * (~water2)   # 牆帶、長草、水底都不上龜裂（-2428 Ray：「有水就不該是乾裂地」）
+ground = (1 - bandw) * (1 - np.clip(up(over, cv2.INTER_LINEAR) * 1.4, 0, 1)) * (~water2) * (~upn(forest_m | bridge_m).astype(bool))   # 樹海的地面、石橋也不上龜裂（-2434）   # 牆帶、長草、水底都不上龜裂（-2428 Ray：「有水就不該是乾裂地」）
 soil = (cell * (0.86 + 0.24 * clod)) * (1 - 0.38 * np.clip(edge * 1.6, 0, 1))
 col2 = col2 * (1 + (soil[..., None] - 1) * ground[..., None])
 # 河床（-2429 Ray：「地下河的地表底圖要換」）：⚠ 不准借龜裂那張 Voronoi —— 格子＋暗縫讀起來就是乾裂的泥。
@@ -437,8 +504,9 @@ col2 = np.clip(col2, 0, 255).astype(np.uint8)
 os.makedirs(OUT, exist_ok=True)
 R_ = np.clip(np.round(floor2 / FLOOR_SCALE), 0, 255)
 Gc = np.clip(np.round(ceil2 / CEIL_SCALE), 0, 254)   # -2432（Ray：舊的 1 號豎井天窗出口「拿掉」）：天頂不再開洞，出入只走 1 號往外那條出口
-Gc[cv2.dilate(upn(outside), np.ones((5, 5), np.uint8)).astype(bool)] = HOLE   # 洞外的天往岩石裡多開兩格（-2428：不然天頂雙線性在邊上混出一條懸空的黑岩頂）
-B = np.zeros_like(R_)
+Gc[cv2.dilate(upn(outside), np.ones((5, 5), np.uint8)).astype(bool)] = HOLE
+RN = ROOMS['N']; Gc[upn(disc(RN['x'], RN['y'], RN['b'] * 0.42, 0.2) > 0.5).astype(bool)] = HOLE   # 無底風穴的天頂開口（外面的光從這裡下來）   # 洞外的天往岩石裡多開兩格（-2428：不然天頂雙線性在邊上混出一條懸空的黑岩頂）
+B = np.clip(np.round(up(dark, cv2.INTER_LINEAR) * 255), 0, 255)   # 地下古城：B＝黑暗（-2434）
 hm = np.stack([R_, Gc, B], -1).astype(np.uint8)
 aux = np.stack([np.round(shaft2 * 255), np.round(spill2 * 255), geo2], -1).astype(np.uint8)
 paths = {}
@@ -457,6 +525,17 @@ for gy in range(0, N + 1, WT):
             ux, uy = float(fdx[y0:y1, x0:x1][wm].mean()), float(fdy[y0:y1, x0:x1][wm].mean()); ul = math.hypot(ux, uy) or 1
             wflow_grid += [round(ux / ul * 100), round(uy / ul * 100)]
         else: wflow_grid += [0, 0]
+# 樹海（-2434）：抖動格，樹冠頂在地面上 80～130（比橋面 720 低一截，橋才浮在樹海上）；第四欄＝那一點有多暗（×100，飛行頁照它壓暗葉子）
+FOREST = []; rf = np.random.default_rng(SEED + 41); FS = 3.6
+for gy in np.arange(0, N, FS):
+    for gx in np.arange(0, N, FS):
+        x_, y_ = gx + rf.uniform(-1.2, 1.2), gy + rf.uniform(-1.2, 1.2); xi, yi = int(x_), int(y_)
+        if not (0 <= xi < N and 0 <= yi < N): continue
+        ok = forest_m[yi, xi] and not solid[yi, xi] and dist[yi, xi] > WALL_W + 1   # 不長在牆腳的坡上（那裡的地面一路墊高到岩頂）
+        nz = owner[yi, xi] == CITY and 0 < best[yi, xi] < 13 and math.hypot(x_ - pin[0], y_ - pin[1]) < 60   # 進 10 的那一圈也長（不碰到建築）
+        if not (ok or nz) or floor[yi, xi] > 760: continue          # 只長在谷底與都市的地面上（牆、岩柱上不長）
+        if bridge_m[max(0, yi - 3):yi + 4, max(0, xi - 3):xi + 4].any(): continue   # 離橋三格（樹冠才不會蓋到橋面上）
+        FOREST.append([round(x_ * 20), round(y_ * 20), round(float(floor[yi, xi]) + rf.uniform(80, 130)), round(float(dark[yi, xi]) * 100)])
 ax, ay, bx, by = ROOMS['A']['x'], ROOMS['A']['y'], ROOMS['B']['x'], ROOMS['B']['y']
 data = {
     'v': {'hm': paths['cave_hm.png'], 'aux': paths['cave_aux.png'], 'col': paths['cave_col.png']},
@@ -468,7 +547,9 @@ data = {
     'streamW': round(HW * 20),
     'outW': OUTW * 20,                                       # 洞外那一條的寬（世界單位）：船飛進去就開始出洞
     'wlev': wlev_grid,
-    'wflow': wflow_grid,                                     # 流向網格（同 wlev 的角點；每點 [dx,dy]×100，往下游）                                       # 水位網格（768² 每 8 格一個角點＝97×97；0＝沒水）：飛行頁的水膜照它鋪
+    'wflow': wflow_grid,
+    'forest': FOREST,                                       # 斷橋深谷底下往 10 延伸的樹海：[x, y, 樹冠頂, 黑暗×100]（-2434）
+    'wind': [ROOMS['N']['x'] * 20, ROOMS['N']['y'] * 20, round(ROOMS['N']['b'] * 0.62 * 20)],   # 無底風穴：飛進這一圈就被氣流往上送出去（只出不進）                                     # 流向網格（同 wlev 的角點；每點 [dx,dy]×100，往下游）                                       # 水位網格（768² 每 8 格一個角點＝97×97；0＝沒水）：飛行頁的水膜照它鋪
 }
 js = 'window.UNDERCITY_DATA=' + json.dumps(data, ensure_ascii=False, separators=(',', ':')) + ';\n'
 open(os.path.join(OUT, 'world.js'), 'w', encoding='utf-8').write(js)
