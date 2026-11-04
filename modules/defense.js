@@ -114,6 +114,9 @@ export function scheduleAssault(firstDelayMs){
        等它被解掉。⚠ 用**重排**不是丟掉 —— 丟掉的話這一隻怪會在玩家慢一拍之後
        整場不再攻擊。 */
     if(state.enemyNoStack && state.threats && state.threats.length){ scheduleAssault(300); return; }
+    if(state.enemyMaxRings && state.threats && state.threats.length >= state.enemyMaxRings){ scheduleAssault(300); return; }   // 卡上 maxRings（ver -2459）
+    /* 卡上 enrage（ver -2459）：血掉到門檻下的第一次排程起，縮圈時間 ×chargeMul（之後每一顆都照新的速度縮） */
+    { const eg=state.enemyEnrage; if(eg && !state.enrageOn && state.enemyHp <= state.enemyMax*(eg.hp/100)){ state.enrageOn=true; const k=(eg.chargeMul||1), now=Date.now(); state.CHARGE_SECONDS *= k; state.threats.forEach(th=>{ th.t0 = now-(now-th.t0)*k; }); } }   // 已經亮著的圈照比例換算，不會一換速度就瞬間收圈
     // cut-in／清盤後緩衝期內敵不發動，等窗口過了再排
     if(Date.now() < state.enemyAtkSuppressUntil){ scheduleAssault(state.enemyAtkSuppressUntil - Date.now() + 50); return; }
     /* ══ 大絕（ver -760，Ray 的敵攻四態定義：延時／攻擊（一般圈）／失誤／大絕）══

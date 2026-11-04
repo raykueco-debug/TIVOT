@@ -1134,8 +1134,12 @@ function startIdleLoop(dir){
      ＋程式跑的落葉／綠光點（Ray：「葉子另外用程式跑」）。世界往左捲＝龍往右飛（龍頭朝右）。
    ⚠ 一個 rAF 推全部（捲動、近景樹、落葉），換敵／結束一律走 stopSkyBattle（鐵律 8；combat.stopAll 也叫）。 */
 let sky=null;
-export function stopSkyBattle(){
+export function stopSkyBattle(force){
   if(!sky) return;
+  /* 龍正在斜墜（deathFx:'skyfall'）時，打贏的 stopAll 不要當場拆背景（ver -2459，Ray：「背景不要黑掉」）——
+     視差背景陪牠一起演到閉棺蓋上才收；換怪／重開（setSkyBattle）一律 force 立刻收。 */
+  if(!force && sky.dying){ if(!sky.dieT) sky.dieT=setTimeout(()=>stopSkyBattle(true), 2600); return; }
+  clearTimeout(sky.dieT);
   cancelAnimationFrame(sky.raf);
   for(const el of sky.els) el.remove();
   clearTimeout(sky.showT);
@@ -1145,7 +1149,7 @@ export function stopSkyBattle(){
 }
 export function restoreSkyBattle(){ const en=(GAME_CONFIG.enemies||{})[state.currentEnemyKey]; setSkyBattle(en && en.sky); }
 function setSkyBattle(key){
-  stopSkyBattle();
+  stopSkyBattle(true);
   const C=key && ((GAME_CONFIG.tuning||{}).skyBattle||{})[key]; if(!C) return;
   const top=$('top'), eImg=$('enemyImg'), vig=$('topVignette'); if(!top || !eImg) return;
   const mk=(cls,before)=>{ const d=document.createElement('div'); d.className='sky-l '+cls; top.insertBefore(d,before); return d; };
@@ -1920,9 +1924,11 @@ export function purgeEnemy(){
     /* ⚠ 不能用 CSS transition：受擊的 `#enemyImg.hit + .en-idle{animation:…}` 那幾條動畫會蓋過 transform，
        動畫一結束就直接跳到終點（ver -2457 實測：一格就到底，沒有墜落的過程）⇒ 先關掉 CSS 動畫、改用 el.animate 跑完停在最後一格 */
     el.style.animation='none'; el.style.transition='none'; el.style.transformOrigin='50% 50%';
-    /* -2458 Ray：「跟閉棺要同時發生，誰讓你轉暗了」：只斜下平移（不轉、不暗），長度＝兩扇門合上的時間，與閉棺同時演完 */
-    el._fallAnim = el.animate([{ transform:'none' }, { transform:`translate(${W*0.55}px, ${H*1.25}px)` }],
-      { duration:900, easing:'cubic-bezier(.5,0,.9,.6)', fill:'forwards' });   // 900＝story.js 的 KERB_T.open（兩扇合上；story.js 有別人未提交的改動，先不去動它加 export）
+    /* -2458 Ray：「跟閉棺要同時發生，誰讓你轉暗了」：只斜下平移（不轉、不暗），與閉棺同時開始。
+       -2459 Ray：「龍緩緩落下，不要像掉下去」：慢慢往右下沉（緩起緩停、不加速），閉棺蓋上時牠還在往下飄 */
+    if(sky) sky.dying=true;
+    el._fallAnim = el.animate([{ transform:'none' }, { transform:`translate(${W*0.4}px, ${H*0.95}px)` }],
+      { duration:2400, easing:'cubic-bezier(.45,.05,.55,.95)', fill:'forwards' });   // 900＝story.js 的 KERB_T.open（兩扇合上；story.js 有別人未提交的改動，先不去動它加 export）
     return;
   }
   stopIdleLoop();   // 死亡演出在立繪本體上演（ver -2075）
@@ -2126,6 +2132,11 @@ export function setEnemy(key, opts){
   /* 疊圈（ver -1582，Ray：「改成疊圈，1 開 0 關，C 以下預設不疊圈」）——
    ⚠ **沒寫＝可疊**（＝ -1582 之前的行為）：漏寫不會改變既有那幾張卡的手感。 */
   state.enemyNoStack   = (en.stack != null) && !en.stack;
+  /* 卡上 maxRings（同時最多幾顆圈）／enrage（血量掉到 hp% 以下縮圈時間 ×chargeMul）（ver -2459，樹寄生石龍；
+     Ray：「半血以後縮圈速度加倍，畫面最多一次兩個圈」）。enrage 由 defense 在排程那一刻判、只套一次（enrageOn）。 */
+  state.enemyMaxRings  = en.maxRings || 0;
+  state.enemyEnrage    = en.enrage || null;
+  state.enrageOn       = false;
   /* ⚠ ver -947 移除 `counterBuff` / `counterStun` / `dualBonus`（Ray 定案）：
      · 反擊後的普攻增益改成**全域一套**（3 秒 ×2，`tuning.atkBuffSeconds`）——
        逐卡再寫一份就是同一個量兩個計算點（鐵律 7），而且卡上的 `mult` 從來沒被讀過。
