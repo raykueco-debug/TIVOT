@@ -1211,6 +1211,7 @@ export function onAssaultLand(){
   if(idleEl){ ghost._sync=setInterval(()=>{ if(!idleEl||!ghost.isConnected){ clearInterval(ghost._sync); return; } ghost.src=idleEl.src; }, 50); }
   sky.lunge=ghost;
   el.style.transition='none'; sky.vanishEl=el;   // 龍被這一根樹幹掃掉（逐禎裁，見 tick）
+  { const en=curCard(); if(en && en.assaultSe) setTimeout(()=>playEntranceSe(en.assaultSe), SW); }   // 衝出那一刻吼一聲（卡上 assaultSe；-2450 Ray：「龍主動攻擊時放 dragonroar」）
   /* ② 從左下往右上衝出，放大到幾乎遮滿畫面（同一支待機 loop）；衝到一半撞到玩家 ⇒ 扣血與震畫面在那一刻（defense 照回傳值延後） */
   /* -2447（Ray：「龍攻擊時要再放大，龍頭要往上 45 度，同飛的角度」）：寬 4.2 個畫面寬；整條龍轉 −45°（頭朝右上），
      沿著穿過畫面中心的 45° 斜線從左下飛到右上 —— 頭的方向＝飛的方向。中心對位用 translate（圖心先挪到 #top 的左上角）。 */
@@ -1230,8 +1231,9 @@ export function onAssaultLand(){
    ① 龍身往後（龍頭朝右 ⇒ 往左）噴出一把鱗片 ② 鱗片雨從右上斜刮過整個畫面。畫在 #top 的一張畫布上，跑完就拆。
    ⚠ 只給有 `sky` 的怪（hitPlain 的那幾隻）；扣血與畫面抖動照舊在 combat.enemyAttack 那一刻。 */
 let scaleRainCv=null;
+const SCALE_RAIN_AT=750;   // 鱗片雨刮到玩家那一刻（毫秒；噴鱗在 0～500，中間空一拍）—— combat 照這個回傳值延後扣血
 export function skyScaleRain(){
-  if(!sky) return;
+  if(!sky) return 0;
   const top=$('top'), W=top.clientWidth, H=top.clientHeight;
   const cv=document.createElement('canvas'); cv.className='sky-scales'; cv.width=W; cv.height=H; top.appendChild(cv);
   if(scaleRainCv) scaleRainCv.remove(); scaleRainCv=cv;
@@ -1239,9 +1241,9 @@ export function skyScaleRain(){
   const el=idleEl || $('enemyImg'), r=el ? el.getBoundingClientRect() : { left:tr.left+W*0.2, right:tr.left+W*0.8, top:tr.top+H*0.35, bottom:tr.top+H*0.6 };
   const bx0=r.left-tr.left, bx1=r.right-tr.left, by0=r.top-tr.top, by1=r.bottom-tr.top, P=[], rnd=(a,b)=>a+Math.random()*(b-a);
   for(let i=0;i<70;i++) P.push({ x:rnd(bx0+(bx1-bx0)*0.2, bx1-(bx1-bx0)*0.1), y:rnd(by0+(by1-by0)*0.3, by1-(by1-by0)*0.2),   // ① 噴：從龍身往左後方
-    vx:rnd(-1.2,-0.45), vy:rnd(-0.35,0.25), rot:rnd(0,6.28), vr:rnd(-0.02,0.02), s:rnd(4,9), t0:0, life:rnd(500,800) });
-  for(let i=0;i<120;i++) P.push({ x:rnd(W*0.3, W*1.4), y:rnd(-H*0.9, -H*0.05), vx:rnd(-1.1,-0.7), vy:rnd(0.9,1.3), rot:rnd(0,6.28), vr:rnd(-0.03,0.03),   // ② 雨：右上往左下斜刮
-    s:rnd(5,12), t0:rnd(260,520), life:rnd(600,900) });
+    vx:rnd(-1.2,-0.45), vy:rnd(-0.35,0.25), rot:rnd(0,6.28), vr:rnd(-0.02,0.02), s:rnd(4,9), t0:0, life:rnd(300,480) });
+  for(let i=0;i<120;i++) P.push({ x:rnd(W*0.2, W*1.3), y:rnd(-H*0.35, H*0.15), vx:rnd(-1.1,-0.7), vy:rnd(0.9,1.3), rot:rnd(0,6.28), vr:rnd(-0.03,0.03),   // ② 雨：右上往左下斜刮
+    s:rnd(5,12), t0:rnd(SCALE_RAIN_AT-150, SCALE_RAIN_AT+60), life:rnd(600,900) });   // 噴完（≤480）空一拍才刮過來
   const t0=performance.now();
   const draw=now=>{ if(!cv.isConnected) return;
     const t=now-t0; cx.clearRect(0,0,W,H); let alive=false;
@@ -1253,6 +1255,7 @@ export function skyScaleRain(){
       cx.restore(); }
     if(alive) requestAnimationFrame(draw); else { cv.remove(); if(scaleRainCv===cv) scaleRainCv=null; } };
   requestAnimationFrame(draw);
+  return SCALE_RAIN_AT;
 }
 /* ══ 敵人的台詞語音（ver -1920，Ray：尼莫「玩家受擊用 slow1／slow2／feint 輪播、玩家戰敗播 bulletrain、戰勝播 win」）══
    卡上三格（開戰那一聲照舊走 `entrance`）：

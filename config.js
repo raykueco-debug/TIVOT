@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2449';
+export const VERSION = 'ver 2026.11.05-2450';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4686,7 +4686,8 @@ export const ASSETS = {
   enemy_sky_twinwyvern: "resources/enemy/mon_sky_twinwyvern.webp?v=8b23a136",   // 雙頭翼龍（ver -2268）
   enemy_sky_boneray: "resources/enemy/mon_sky_boneray.webp?v=534952bb",   // 骨刺飛鰩（ver -2268）
   enemy_sky_ribwhale: "resources/enemy/mon_sky_ribwhale.webp?v=a77e60f0",   // 浮空骨鯨（ver -2268）
-  enemy_tree_dragon_low: "resources/enemy/mon_tree_dragon_low.webp",   // 樹寄生石龍（地下古城空戰，ver -2444）：從下方仰看、頭朝右
+  enemy_tree_dragon_low: "resources/enemy/mon_tree_dragon_low.webp",
+  se_enemy_dragonroar: "resources/audio/se/se_enemy_dragonroar.mp3",   // 樹寄生石龍主動攻擊（衝出那一刻，ver -2450）   // 樹寄生石龍（地下古城空戰，ver -2444）：從下方仰看、頭朝右
   enemy_sky_mawbat: "resources/enemy/mon_sky_mawbat.webp?v=ae6570e7",   // 裂口巨蝠（ver -2268）
   enemy_sky_eyemoth: "resources/enemy/mon_sky_eyemoth.webp?v=9c313139",   // 千眼巨蛾（ver -2268）
   enemy_sky_eelswarm: "resources/enemy/mon_sky_eelswarm.webp?v=be0d5d2f",   // 飛鰻群（ver -2268）

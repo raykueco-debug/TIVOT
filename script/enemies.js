@@ -1962,6 +1962,7 @@ export const ENEMIES = {
       stack:1,
       image:'enemy_tree_dragon_low',
       sky:'undercity',
+      assaultSe:'se_enemy_dragonroar',   // 主動攻擊衝出那一刻吼一聲（ver -2450）
       hitPlain:true,   // 挨主動攻擊只震畫面（ver -2446，Ray：「不用其他受擊效果」）
       fit:{ mode:'contain', pos:'center center' },
       hp:270,
