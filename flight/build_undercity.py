@@ -216,9 +216,7 @@ for hx, hy, hr in holes:
     hole = np.maximum(hole, disc(hx, hy, hr * (1 + 0.18 * wob[min(N - 1, int(hy)), min(N - 1, int(hx))]), 0.15))
 holemask = (hole > 0.5) & openm
 # ver -2400（Ray：「天空的洞透入洞外的光，不用畫出，做成束狀光源就好」）：
-#   洞只拿來算光柱與落點的亮；天頂上真的開口的只有進出口那一個（要從那裡飛出去）
-ex_x, ex_y, ex_r = holes[0]
-exitmask = (disc(ex_x, ex_y, ex_r * (1 + 0.18 * wob[int(ex_y), int(ex_x)]), 0.15) > 0.5) & openm
+#   洞只拿來算光柱與落點的亮；天頂上真的開口的只有進出口那一個（要從那裡飛出去）（-2432 起天頂完全不開口）
 floor[outside] = 40 + ZOFF
 # 水道（-2427，Ray：「12 地勢較高，水流到 3 2 1，然後從 1 流到地圖外」）：中心線 12→3→2→1→出口，
 #   水面高度沿路線性往下（WAYZ），溝底再低 20；水面那一段標成水（geo 8，飛行頁的水膜照 stream 那一份高度鋪）
@@ -438,7 +436,7 @@ col2 = np.clip(col2, 0, 255).astype(np.uint8)
 
 os.makedirs(OUT, exist_ok=True)
 R_ = np.clip(np.round(floor2 / FLOOR_SCALE), 0, 255)
-Gc = np.clip(np.round(ceil2 / CEIL_SCALE), 0, 254); Gc[upn(exitmask).astype(bool)] = HOLE
+Gc = np.clip(np.round(ceil2 / CEIL_SCALE), 0, 254)   # -2432（Ray：舊的 1 號豎井天窗出口「拿掉」）：天頂不再開洞，出入只走 1 號往外那條出口
 Gc[cv2.dilate(upn(outside), np.ones((5, 5), np.uint8)).astype(bool)] = HOLE   # 洞外的天往岩石裡多開兩格（-2428：不然天頂雙線性在邊上混出一條懸空的黑岩頂）
 B = np.zeros_like(R_)
 hm = np.stack([R_, Gc, B], -1).astype(np.uint8)
@@ -465,7 +463,6 @@ data = {
     # 起點（-2431）：從地表崖壁的入口進來 ⇒ 落在出口迴廊裡、面朝 1 號（往東）
     'start': [int((ax_ - 34) * 20), int((ay_ + 6) * 20), round(-math.pi / 2, 4)],
     'rooms': [[R['name'], R['x'], R['y'], R['a'], R['b'], R['rot'], 0, R['no']] for k, R in ROOMS.items()],
-    'exit': [int(ROOMS['A']['x'] * 20), int(ROOMS['A']['y'] * 20), int(ROOMS['A']['b'] * 0.46 * 20)],
     'city': CITYL,
     'stream': [[round(x_ * 20), round(y_ * 20), round(z_)] for x_, y_, z_ in stream[::2]],   # 水面（世界座標＋水面高）：飛行頁鋪水膜
     'streamW': round(HW * 20),
