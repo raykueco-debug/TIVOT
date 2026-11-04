@@ -1246,17 +1246,18 @@ export function skyScaleRain(){
     vx:rnd(-1.2,-0.45), vy:rnd(-0.35,0.25), rot:rnd(0,6.28), vr:rnd(-0.02,0.02), s:rnd(4,9), t0:0, life:rnd(300,480) });
   /* ② 鱗片雨（-2453，Ray：「鱗雨要尖銳快速，但不要一整片，是依序落下，有快有慢」）：一片一片陸續落（散在約 0.55 秒裡），
      每一片自己的速度、尖長的碎片順著飛的方向（不轉），從右上斜刮向左下 */
-  for(let i=0;i<64;i++){ const sp=rnd(1.4,3.2), ang=rnd(2.05,2.35);   // 往左下（約 120～135°）
-    P.push({ shard:true, x:rnd(W*0.15, W*1.25), y:rnd(-H*0.25, H*0.1), vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp, rot:ang, vr:0,
-      s:rnd(9,20), t0:SCALE_RAIN_AT-180+Math.pow(Math.random(),0.8)*560, life:rnd(380,620) }); }
+  /* -2454 Ray：「雨再快一點，像子彈一樣」：速度 ×3（1.4～3.2 → 4.5～8 px/ms）、從畫面右上外面射進來、一閃就穿過畫面，拖一條長曳光 */
+  for(let i=0;i<64;i++){ const sp=rnd(4.5,8), ang=rnd(2.05,2.35);   // 往左下（約 120～135°）
+    P.push({ shard:true, x:rnd(W*0.35, W*1.45), y:rnd(-H*0.45, -H*0.05), vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp, rot:ang, vr:0,
+      s:rnd(9,18), t0:SCALE_RAIN_AT-180+Math.pow(Math.random(),0.8)*560, life:rnd(170,280) }); }
   const t0=performance.now();
   const draw=now=>{ if(!cv.isConnected) return;
     const t=now-t0; cx.clearRect(0,0,W,H); let alive=false;
     for(const p of P){ const u=t-p.t0; if(u<0 || u>p.life){ if(u<0) alive=true; continue; } alive=true;
-      const x=p.x+p.vx*u, y=p.y+p.vy*u, a=Math.min(1,u/80)*Math.min(1,(p.life-u)/200);
+      const x=p.x+p.vx*u, y=p.y+p.vy*u, a=p.shard ? Math.min(1,u/20)*Math.min(1,(p.life-u)/60) : Math.min(1,u/80)*Math.min(1,(p.life-u)/200);   // 雨像子彈：瞬間出現、瞬間沒
       cx.save(); cx.translate(x,y); cx.rotate(p.rot+p.vr*u); cx.globalAlpha=a;
       if(p.shard){   // 雨：尖長的碎片（順著飛的方向），後面拖一小段殘影
-        cx.fillStyle='rgba(225,218,204,.35)'; cx.beginPath(); cx.moveTo(-p.s*1.6,-1); cx.lineTo(-p.s*0.4,0); cx.lineTo(-p.s*1.6,1); cx.closePath(); cx.fill();
+        cx.fillStyle='rgba(225,218,204,.35)'; cx.beginPath(); cx.moveTo(-p.s*4.5,-1); cx.lineTo(-p.s*0.4,0); cx.lineTo(-p.s*4.5,1); cx.closePath(); cx.fill();
         cx.fillStyle='#ddd3c2'; cx.beginPath(); cx.moveTo(p.s*0.6,0); cx.lineTo(-p.s*0.4,-p.s*0.13); cx.lineTo(-p.s*0.55,0); cx.lineTo(-p.s*0.4,p.s*0.13); cx.closePath(); cx.fill();
       } else {
       cx.fillStyle='#c9bfae'; cx.beginPath(); cx.moveTo(0,-p.s); cx.lineTo(p.s*0.55,0); cx.lineTo(0,p.s*0.8); cx.lineTo(-p.s*0.55,0); cx.closePath(); cx.fill();   // 一片鱗：菱形、灰白骨色
