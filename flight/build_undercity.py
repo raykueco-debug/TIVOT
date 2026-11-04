@@ -422,9 +422,17 @@ water2 = upn(water).astype(bool)
 ground = (1 - bandw) * (1 - np.clip(up(over, cv2.INTER_LINEAR) * 1.4, 0, 1)) * (~water2)   # 牆帶、長草、水底都不上龜裂（-2428 Ray：「有水就不該是乾裂地」）
 soil = (cell * (0.86 + 0.24 * clod)) * (1 - 0.38 * np.clip(edge * 1.6, 0, 1))
 col2 = col2 * (1 + (soil[..., None] - 1) * ground[..., None])
-# 河床：深青綠的底＋一顆一顆的卵石（借龜裂那張 Voronoi 的格子當石頭，石縫暗、石面各自深淺）
-peb = cell * (0.80 + 0.30 * clod) * (1 - 0.45 * np.clip(edge * 1.8, 0, 1))
-bed = np.array([58, 86, 84], np.float32)[None, None, :] * peb[..., None] * (0.92 + 0.16 * (fine[..., None] + 0.5))
+# 河床（-2429 Ray：「地下河的地表底圖要換」）：⚠ 不准借龜裂那張 Voronoi —— 格子＋暗縫讀起來就是乾裂的泥。
+#   改成：淤泥色的底＋大小兩層的斑駁（水流沖出來的深淺）＋稀疏的小卵石（亮點，不畫縫）
+rb = np.random.default_rng(SEED + 31)
+mott = cv2.GaussianBlur(rb.random((N2, N2)).astype(np.float32), (0, 0), 9); mott = (mott - mott.mean()) / (mott.std() + 1e-6)
+silt = cv2.GaussianBlur(rb.random((N2, N2)).astype(np.float32), (0, 0), 2.2); silt = (silt - silt.mean()) / (silt.std() + 1e-6)
+peb = np.zeros((N2, N2), np.float32)
+for _ in range(26000):
+    py_, px_ = rb.integers(0, N2), rb.integers(0, N2); peb[py_, px_] = rb.uniform(0.5, 1.0)
+peb = cv2.GaussianBlur(peb, (0, 0), 0.9) * 6
+k_ = np.clip(1 + 0.10 * mott + 0.05 * silt + 0.20 * np.clip(peb, 0, 1), 0.6, 1.5)
+bed = np.array([66, 88, 80], np.float32)[None, None, :] * k_[..., None]
 col2[water2] = bed[water2]
 col2 = np.clip(col2, 0, 255).astype(np.uint8)
 
