@@ -64,6 +64,10 @@
 - ✔ ver -2396：**西部大溶谷改成垂直進出**（Ray 定案，取代 -2393 峭壁洞口與 -2394/-2395 橫向出口）：地表 (267,287) 盆地載入時挖一個坑（`carveCavePit`，坑底 CLOUD_H+8、往中心變暗、坑緣不規則；**不寫 map_edits.json**）；坑上空「進入」鈕 → 降落動畫 → 地底。地底：入口窟正中央大天井（`build_cave.py` 的 `EXIT`），進洞播反向升空（`playCaveArrive`：從天井上方降到航高），天光由上照下；天井正下方「離開」鈕 → 垂直升空淡白（`playCaveLeave`）→ 回地表落在坑口正上方、地表照常演升空。⚠ 驗了：坑挖下去、地表進入鈕、地底編譯；**沒驗完整來回一趟**（Ray 接手在試）。
 - ✔ ver -2397：**大溶谷**（Ray 更正字：「溶」不是「熔」，全改）坑口往上飄的胞子（`drawPitSpores`，青綠～黃綠，白天淡、晚上發光，只畫坑緣以上）；進洞改成**白光當緩衝**：地表降落淡白（`playLanding(done,true)`）→ 地底一開場全白、在洞穴半空中（航高＋170）短短降到航高同時白光淡掉；出洞本來就是淡白。
 - ✔ ver -2398：地底船速 70%（`CAVE_SPD_K`，只乘位移）；進溶谷不論內嵌或單獨開的飛行頁都先演降落（白光）再換頁。
+- ✔ ver -2445：**樹寄生石龍：收圈才演攻擊、不露靜態圖**（Ray：「龍的攻擊是收圈才會發動」「為什麼你是用靜態圖？有動圖啊」）。
+  · 攻擊演出的觸發點由 `spawnWave`（圈出現）移到 `releaseAssault`（收圈、攻擊落下）：defense → combat 轉交 `api.onAssaultLand` → `enemy.onAssaultLand`。⚠ 玩家在收圈前擋下／反擊掉的那一顆不演（攻擊沒落下）。
+  · 待機動畫 48 格要約一秒才載齊，那一秒站的是靜態圖 ⇒ 空戰（有 `sky`）先把靜態圖 opacity 0，待機層一上來就是動圖；4 秒還沒載到才放靜態圖出來。
+  · 飛行頁 `toBattle(kind, scriptOverride)`／`battleIdFor` 吃 `battleScriptOverride`：給不走 enemy 物件的遭遇（地下古城的龍，遭遇本體等美術交件後再接）。
 - ✔ ver -2444：**樹寄生石龍的空戰：視差背景＋攻擊演出**（接美術交接 `resources/enemy/anim/TO_CODE_tree_dragon_undercity.md`；Ray：「在地下古城那個腔室中央大樹處遭遇，先側飛，玩家一看到他就轉正面朝玩家飛來進戰鬥」）。
   · 敵卡 `tree_dragon`（script/enemies.js，數值暫填＝浮空骨鯨）＋戰鬥卡 `uc_treedragon`（船戰）＋ASSETS `enemy_tree_dragon_low`＋ENEMY_IDLE `mon_tree_dragon_low`（48 格 16fps）。
   · 視差背景：敵卡 `sky:'undercity'` → `tuning.skyBattle.undercity`；`enemy.setSkyBattle`：base（70 秒捲一張）→ mid（16 秒）→ 敵人 → 近景樹（10～12 秒一根、0.55 秒從右往左掃過）→ 程式跑的落葉＋綠光點。四張圖轉成 webp 放 `resources/background/undercity_skybattle/`（底線資料夾的 png 原件不動）。⚠ `startGame` 是先 setEnemy 再 stopAll ⇒ stopAll 之後補一次 `enemy.restoreSkyBattle()`。

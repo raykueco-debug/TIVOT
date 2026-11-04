@@ -80,7 +80,7 @@ export function setup(){
                  /* 重擊那一震（ver -1659）：演出的擁有者是 enemy（`#enemyImg`），
                     「什麼時候該震」的判斷在 defense —— 經此轉交（defense 不 import enemy）。 */
                  slamEnemy: enemy.slamEnemy,
-                 onAssaultWave: enemy.onAssaultWave,   // 空戰怪主動攻擊的演出（ver -2444）：演出歸 enemy，「這一波開始了」歸 defense
+                 onAssaultLand: enemy.onAssaultLand,   // 空戰怪主動攻擊的演出（ver -2445：收圈那一刻）：演出歸 enemy，「圈收了」歸 defense
                  /* 拉栓冷卻（ver -1009）：這一發開不開得出來由 weapon 回答
                     （鑰匙是那一把槍卡上的 `mag`／`reloadSec`，ver -1781）—— defense 不 import weapon。 */
                  counterReady: weapon.counterReady,

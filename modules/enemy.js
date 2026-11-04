@@ -1138,7 +1138,9 @@ export function stopSkyBattle(){
   if(!sky) return;
   cancelAnimationFrame(sky.raf);
   for(const el of sky.els) el.remove();
+  clearTimeout(sky.showT);
   const top=$('top'); if(top) top.classList.remove('sky-on');
+  const eImg=$('enemyImg'); if(eImg) eImg.style.opacity='';
   sky=null;
 }
 export function restoreSkyBattle(){ const en=(GAME_CONFIG.enemies||{})[state.currentEnemyKey]; setSkyBattle(en && en.sky); }
@@ -1152,10 +1154,15 @@ function setSkyBattle(key){
   const near=document.createElement('img'); near.className='sky-near'; near.alt=''; top.insertBefore(near, vig||null);
   const lv=document.createElement('canvas'); lv.className='sky-leaves'; top.insertBefore(lv, vig||null);
   top.classList.add('sky-on');
+  /* 靜態立繪不露面（ver -2445，Ray：「為什麼你是用靜態圖？有動圖啊」）：待機動畫 48 格要約一秒才載齊，
+     那一秒畫面上站的是靜態圖 ⇒ 空戰時先藏著，待機層一上來就是它（startIdleLoop 自己會把靜態圖 visibility 收掉）；
+     4 秒還沒載到（抓不到動檔）才把靜態圖放出來，不然畫面上就沒有龍了。 */
+  eImg.style.opacity='0';
+  const showT=setTimeout(()=>{ if(!idleEl && eImg) eImg.style.opacity=''; }, 4000);
   const nearImgs=C.near.map(u=>{ const im=new Image(); im.src=u; return im; });
   const rnd=(a,b)=>a+Math.random()*(b-a);
   const leaves=Array.from({length:C.leaves||40},()=>({ x:Math.random(), y:Math.random(), z:rnd(0.3,1), r:Math.random()*6.28, w:rnd(-1,1), g:Math.random()<0.25 }));
-  sky={ C, els:[base,mid,near,lv], raf:0, t0:performance.now(), last:performance.now(), nearAt:performance.now()+rnd(3,6)*1000, nearT:-1, nearPause:false, lunge:null };
+  sky={ C, showT, els:[base,mid,near,lv], raf:0, t0:performance.now(), last:performance.now(), nearAt:performance.now()+rnd(3,6)*1000, nearT:-1, nearPause:false, lunge:null };
   const tick=now=>{
     if(!sky) return;
     const dt=Math.min(now-sky.last,60); sky.last=now;
@@ -1183,10 +1190,10 @@ function setSkyBattle(key){
   sky.raf=requestAnimationFrame(tick);
 }
 /* ══ 空戰怪的攻擊演出（ver -2444，Ray：「讓牠在前景掃過時消失在畫面 → 極近距離竄出：用同一支待機 loop 拉到極近，
-   快速由左下往右上平移 → 然後再近景樹復歸」）══ 主動攻擊那一波開始時（defense 的 spawnWave → combat 轉交）演一次：
+   快速由左下往右上平移 → 然後再近景樹復歸」）══ **收圈那一刻**（攻擊落下；defense 的 releaseAssault → combat 轉交，ver -2445 Ray：「龍的攻擊是收圈才會發動」）演一次：
      ① 龍（待機層）往右滑出畫面 ② 同一支動畫放大到幾乎遮滿，從左下往右上快速掠過 ③ 回到原位淡入；
      演出期間近景樹暫停、結束後重新排它的節奏。⚠ 只在有 `sky` 的怪上演（其餘怪照舊）。 */
-export function onAssaultWave(){
+export function onAssaultLand(){
   if(!sky || sky.lunge) return;
   const el=idleEl || $('enemyImg'); if(!el) return;
   const top=$('top'); const W=top.clientWidth, H=top.clientHeight;
