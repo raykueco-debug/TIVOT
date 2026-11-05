@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2517';
+export const VERSION = 'ver 2026.11.05-2518';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5710,7 +5710,7 @@ export const ENEMY_ATK = {
   mon_shinierforest_snake_neutral: { dir:'resources/enemy/anim/mon_shinierforest_snake_atk_v1/', hit:13 },   // E066 水蛇（攻擊＝延時同一支，29 格）
   mon_shinierforest_hog_neutral: { dir:'resources/enemy/anim/mon_shinierforest_hog_atk_v1/', hit:13 },       // E067 山豬（攻擊＝延時同一支，29 格）
   mon_shinierforest_lynx_neutral: { dir:'resources/enemy/anim/mon_shinierforest_lynx_atk_v1/', hit:13 },   // E065 山貓 撲擊（29 格，第 13 格打到）
-  mon_shinierforest_tiger_neutral: { dir:'resources/enemy/anim/mon_shinierforest_tiger_atk_v2/', hit:19 },   // E068 獨角虎 撲咬 v2（ver -2494：撲出 20 格＋收勢，共 41 格；咬到＝第 19 格）
+  mon_shinierforest_tiger_neutral: { dir:'resources/enemy/anim/mon_shinierforest_tiger_atk_v3/', hit:13 },   // ver -2518：tiger rule（pounce，biteAB2＋biteBA2）   // E068 獨角虎 撲咬 v2（ver -2494：撲出 20 格＋收勢，共 41 格；咬到＝第 19 格）
   mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_atk_v8/', hit:13, far:0.82, near:1.4, preMul:1.5, retMul:1.8 },   // -2515：v8＝撲出 biteAB2_cut_3_cut（14）＋收回 biteBA2_cut_4（27，Ray 21:29 剪），由 v5 已處理格子組   // -2514：v7＝撲出 biteAB2_cut_3_cut（14）＋收回 biteBA2_cut_3（29，Ray 21:27 剪，新生成那份來源），由 v5 的已處理格子組   // -2513 Ray：撲出改 biteAB2_cut_3_cut（cut_3 前 14 格）＋收回 biteBA2_cut ＝ v6（45 格，由 v4 的格子直接組，咬到第 13 格）   // -2512 Ray「收回加速 前撲也加速」：前撲 1.5 倍、收回 1.8 倍（收回沿用 -2486 的倍率）   // -2511 Ray 定案：撲出 biteAB2_cut_3＋收回 biteBA2_cut（＝v4，逐格驗過），原速播（不加 retMul）；舊註：retMul：咬完收回段以 1.8 倍速播（-2486 Ray「撲咬收回再快一點」）   // -2509：v5＝撲出 biteAB2_cut_3（17 格）＋收回 biteBA2_cut_2（31 格，Ray 指定的新生成那份），咬到第 16 格   // -2484：v3＝biteAB2_cut（16 格）＋biteBA2_cut（31 格，Ray 指定的收回）；咬到＝第 15 格（撲出段最後一格）。-2482 誤把 hit 量成 28（收回段雙爪張開輪廓最大），放大峰值落在收回段 ⇒ Ray 看成「收回被改了」
 };
 export const ENEMY_DELAY = {
@@ -5718,7 +5718,7 @@ export const ENEMY_DELAY = {
   mon_shinierforest_snake_neutral: { dir:'resources/enemy/anim/mon_shinierforest_snake_atk_v1/', hit:13 },   // E066 水蛇（攻擊＝延時同一支，29 格）
   mon_shinierforest_hog_neutral: { dir:'resources/enemy/anim/mon_shinierforest_hog_atk_v1/', hit:13 },       // E067 山豬（攻擊＝延時同一支，29 格）
   mon_shinierforest_lynx_neutral: { dir:'resources/enemy/anim/mon_shinierforest_lynx_delay_v1/', hit:9 },   // E065 山貓 橫向爪擊（32 格，第 9 格打到）
-  mon_shinierforest_tiger_neutral: { dir:'resources/enemy/anim/mon_shinierforest_tiger_delay_v1/', hit:1 },   // E068 獨角虎 橫向爪擊（只有收回段，23 格：開頭就是爪掃到底 ⇒ 第 1 格打到）
+  mon_shinierforest_tiger_neutral: { dir:'resources/enemy/anim/mon_shinierforest_tiger_delay_v2/', hit:9 },   // ver -2518：tiger rule（hswipe，hswipeAB＋hswipeBA）   // E068 獨角虎 橫向爪擊（只有收回段，23 格：開頭就是爪掃到底 ⇒ 第 1 格打到）
   mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_delay_v1/', hit:8, near:1.2 },   // -2476 Ray「DM（delay／miss）都用爪擊」：延時／點錯也演同一支撲擊
   mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_delay_v1/', hit:12 },   // 魘魔 單爪大幅斜劈 30 格（hit 是估的，Ray 看了再調）
 };
