@@ -5655,6 +5655,7 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
 #top .sky-pan{position:absolute;left:0;top:0;height:100%;display:flex;pointer-events:none;will-change:transform;animation:skyPan 90s linear infinite;}
 #top .sky-pan img{height:100%;width:auto;flex:none;display:block;}
 #top .sky-pan img.mir{transform:scaleX(-1);}
+#top .sky-pan.fixed{animation:none;left:50%;transform:translateX(-50%);}
 @keyframes skyPan{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 #top .sky-l{position:absolute;inset:0;background-repeat:repeat-x;pointer-events:none;}
 #top .sky-base{z-index:0;}

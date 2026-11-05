@@ -15,7 +15,7 @@
 
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import * as prog from '../script/progress.js';  // stage 加成要問現在第幾章（ver -1584b）
-import { ENEMY_IDLE, GAME_CONFIG, HITFX, asset, sfxGain } from '../config.js';
+import { ENEMY_IDLE, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
@@ -1136,7 +1136,7 @@ function startIdleLoop(dir){
 /* ══ 戶外空戰的天空：分層橫向 loop 緩平移（ver -2467／-2468，Ray：「把空戰的背景改成橫軸 loop 緩平移」
    「戶外空戰，古城站不用改」「要分層平移，像古城戰那樣」）══
    卡上的 `bg` 是 `sky_*` 那一族、而且卡上沒有 `sky`（古城走自己那一套四層視差＋龍的攻擊演出，不吃這一條）：
-   · `tuning.skyPan[bg名]` 有寫 ⇒ 照它的 `layers`（由底至上；每層 `src`／`sec`＝捲一輪幾秒／`mirror`＝圖本身不無縫時用「原圖＋鏡像」接）
+   · `tuning.skyPan[bg名]` 有寫 ⇒ 照它的 `layers`（由底至上；每層 `src`／`sec`＝捲過一張圖幾秒／`fixed`＝不捲（月亮）／`mirror`＝圖本身不無縫時用「原圖＋鏡像」接）
      分層捲動，**最底一層在敵人後面、`front:true` 的層蓋在敵人前面**。
    · 沒寫（分層圖還沒交）⇒ 退回整張圖「原圖／鏡像」交替、90 秒一輪（-2467）。
    每一層是一條四張的長條往左走一半＝一輪（無縫）。⚠ 每次 setEnemy 都明確設一次（null＝拆掉）。 */
@@ -1147,12 +1147,13 @@ function setSkyPan(nm, url){
   old.forEach(e=>e.remove());
   if(!nm) return;
   const cfg=((GAME_CONFIG.tuning||{}).skyPan||{})[nm.toLowerCase()];
-  const layers=cfg ? cfg.layers : [{ src:url, sec:90, mirror:true }];
+  const layers=cfg ? cfg.layers.map(L=>({ ...L, src:assetVer(L.src) })) : [{ src:url, sec:45, mirror:true }];
   const eImg=$('enemyImg'), vig=$('topVignette');
   layers.forEach((L,li)=>{
-    const el=document.createElement('div'); el.className='sky-pan'+(L.front?' front':''); el.dataset.key=key;
-    el.style.animationDuration=(L.sec||90)+'s';
-    for(let i=0;i<4;i++){ const im=document.createElement('img'); im.alt=''; im.src=L.src; if(L.mirror && i%2) im.className='mir'; el.appendChild(im); }
+    const el=document.createElement('div'); el.className='sky-pan'+(L.front?' front':'')+(L.fixed?' fixed':''); el.dataset.key=key;
+    el.style.animationDuration=((L.sec||45)*2)+'s';   // sec＝捲過一張圖的秒數；長條一輪走兩張
+    if(L.fixed){ const im=document.createElement('img'); im.alt=''; im.src=L.src; el.appendChild(im); }   // 不捲的層（月亮：世界觀固定不動）；對位同原圖的 center/cover
+    else for(let i=0;i<4;i++){ const im=document.createElement('img'); im.alt=''; im.src=L.src; if(L.mirror && i%2) im.className='mir'; el.appendChild(im); }
     if(L.front) top.insertBefore(el, vig||null);
     else top.insertBefore(el, li===0 ? top.firstChild : ($('enemyShadow')||eImg));
   });

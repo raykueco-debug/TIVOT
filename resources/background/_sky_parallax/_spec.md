@@ -42,3 +42,8 @@
   放在 l0 裡會跟著天空跑。疊層順序：**l0 → moon（固定）→ l1 → 敵 → l2**。雲塔捲過去時會擋住它，那是對的。
 - 預覽（本機）：`_work/sky_parallax_preview.mp4`（l0 120 秒／l1 40 秒／l2 12 秒一輪，預覽加速 4 倍）。
 - ⚠ 只做了 spec 指定的三張；`sky_cumulus_*`／`sky_cirrus_*`／`sky_towers_*` 的其他時段差分（dawn/dusk/night/day）**還沒拆**，要的話再交辦。
+
+## ✔ 程式端已接（ver -2469）
+- 成品搬到 `resources/background/sky_parallax/`（底線開頭的資料夾是「不載入」的慣例，交件檔不放這裡；`_work/` 與本單照舊留在這）。
+- `config.tuning.skyPan` 三列：l0 120 秒／l1 40 秒／l2 12 秒（每捲過一張圖）、l2 在敵人前、塔那組月亮 `fixed` 不捲（對位同原圖 center/cover）。
+- 其他時段差分還沒拆 —— 目前空戰卡只用 day 那三張，不急。
