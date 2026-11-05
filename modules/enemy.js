@@ -1361,7 +1361,7 @@ let broadsideCv=null;
    並且會緩近緩遠（不能太遠），戰鬥期間會微幅往八向放大／縮小平移，像真的接舷空戰一樣」）══
    · 判定只有 `isAirBio` 一支：`aerial` ＋ 天空背景（`sky_*`）＋ 沒有 `sky`（古城那一套四層視差另有自己的演出）。
      ⚠ 船（`ship`）不吃 —— Ray 說的是「生物型」。
-   · 空中怪都不走降臨（`isRise` 擋掉 aerial／ship）；生物型的入場＝`enemy-airin`（CSS，由近到遠，門開那一刻演，`airEnter`），演完才起待機、漂移才淡入振幅。
+   · 空中怪都不走降臨（`isRise` 擋掉 aerial／ship）；生物型的入場＝從畫面外由近（大）到遠（小）飛進來（`airEnter`，門開那一刻演），演完才起待機、漂移才淡入振幅。
    · ⚠ 用 CSS 的**獨立 `translate`／`scale` 屬性**，不碰 `transform`（受擊、降臨、斜墜都在 transform 上）；
      `scale` 要乘回卡上的翻轉與站遠（`baseScale`），不然一動就把它們洗掉。
    · 收：換怪（setEnemy）／死亡（purgeEnemy，停在當下那一格不歸位）／stopAll。 */
@@ -1394,7 +1394,7 @@ function startAirDrift(en){
 }
 export function stopAirMotion(){ stopAirDrift(false); }
 /* 入場：門開那一刻演；演完才起待機與漂移。被 suppressRiseOnce 壓掉的那一場直接站好。
-   · 生物型＝由近到遠（CSS `enemy-airin`）
+   · 生物型＝從畫面外由近（大）到遠（小）飛進來定位
    · 空賊船＝從後方追上來、追過頭一點再停下（ver -2500，Ray） */
 function airEnter(en, eImg, play){
   const done=()=>{ eImg.classList.remove('enemy-airin'); eImg.style.opacity=''; startCardIdle(en); if(airDrift) airDrift.t0=performance.now(); };
@@ -1409,8 +1409,15 @@ function airEnter(en, eImg, play){
       { transform:'translate(0px,0px)', offset:1 }], { duration:2600 });
     a.onfinish=done; a.oncancel=done; return;
   }
-  eImg.style.opacity=''; void eImg.offsetWidth; eImg.classList.add('enemy-airin');
-  eImg.addEventListener('animationend', function off(e){ if(e.animationName!=='enemyAirIn') return; eImg.removeEventListener('animationend', off); done(); });
+  /* 生物型（ver -2501，Ray：「牠是從畫面外進來的，不是淡入進去的，由近（大）到遠（小）然後定位開戰」）：
+     不淡入 —— 從機尾那側的畫面外、斜下方、放大三倍（貼著鏡頭）飛進來，一路縮回原尺寸，越過一點再定位。 */
+  { const top=$('top'), W=top.clientWidth, H=top.clientHeight, f=fwdOf(en), K=3;
+    eImg.style.opacity=''; eImg.style.transformOrigin='50% 50%';
+    const a=eImg.animate([
+      { transform:`translate(${-f*W*1.15}px, ${H*0.9}px) scale(${K})`, offset:0, easing:'cubic-bezier(.22,.6,.35,1)' },
+      { transform:`translate(${f*W*0.04}px, ${-H*0.025}px) scale(.97)`, offset:0.8, easing:'cubic-bezier(.45,0,.55,1)' },
+      { transform:'none', offset:1 }], { duration:1900 });
+    a.onfinish=done; a.oncancel=done; }
 }
 let dmgSmoke=null;
 function stopDamageSmoke(){ if(!dmgSmoke) return; cancelAnimationFrame(dmgSmoke.raf); dmgSmoke.cv.remove(); dmgSmoke=null; }
