@@ -470,6 +470,8 @@
   #storyCgBack.enemy-unpurge{animation:enemyPurge .9s ease-in reverse both;transform-origin:50% 100%;}
   /* 劇情這一側的淨化（`cgBackPurge`，ver -1703）—— 與戰鬥那一側同一組 keyframes。 */
   #storyCgBack.enemy-purge{animation:enemyPurge .6s ease-in both;transform-origin:50% 100%;}
+  /* 空戰編隊（ver -2516）：本尊與待機層只當來源，畫面上是 #airFlock 裡的每一隻 */
+  #top.flock-on #enemyImg, #top.flock-on > .en-idle{opacity:0 !important;}
   @keyframes enemyRise{
     0%  {opacity:0;   transform:translateY(-7%) scale(calc(1.16 * var(--rise-k,1)));
          filter:blur(22px) saturate(.15) brightness(.55);}

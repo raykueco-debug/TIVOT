@@ -707,6 +707,7 @@ function maskOf(img){
   impMask.set(src, m); return m;
 }
 function visibleEnemyEl(){
+  if(flock){ const a=flockAlive(); return a.length ? a[(Math.random()*a.length)|0].im : null; }   // 空戰編隊：挑一隻還在飛的
   for(const el of [clipEl, idleEl, $('enemyImg')]){
     if(!el || !el.isConnected || !el.naturalWidth) continue;
     const cs=getComputedStyle(el); if(cs.visibility==='hidden' || cs.display==='none' || +cs.opacity<0.2) continue;
@@ -1392,6 +1393,71 @@ function startFloatBob(en){
     S.raf=requestAnimationFrame(tick); };
   S.raf=requestAnimationFrame(tick);
 }
+/* ══ 空戰群體（卡上 `flock:{min,max}`，ver -2516，Ray：「骨脊長帶 3~4 隻一組、面具長幡 2~3 隻一組，擊落順序跟群戰一樣」）══
+   同一張側面圖（含待機動檔）複製成 n 隻排成編隊（n 在 min～max 之間每場擲一次）；本尊 `#enemyImg`／待機層藏起來只當來源。
+   · 血量照卡上的總血，平均分給每一隻；每掉一份擊落一隻 ——**擊落誰照群戰**：最後一發子彈落點壓在誰身上 → 離落點最近 → 最前排。
+   · 入場、接舷漂移、攻擊劃過都改套在整個編隊容器上（`motionTargets`）；每一隻另有自己的小幅上下浮。
+   · 被擊落＝往機頭斜下方墜出畫面、淡出（同樹寄生龍的斜墜）。 */
+const FLOCK_SLOTS=[ [0.00, 0.06, 0.74], [-0.28,-0.08, 0.58], [0.29,-0.12, 0.54], [0.02,-0.22, 0.44] ];   // [橫, 縱（畫面比例）, 大小]，前→後
+let flock=null;   // { el, ms:[{im,slot,ph,down}], each, t }
+function stopFlock(){
+  if(!flock) return; clearInterval(flock.t); flock.el.remove(); flock=null;
+  const top=$('top'); if(top) top.classList.remove('flock-on');
+}
+function startFlock(en){
+  stopFlock(); if(!en || !en.flock || !isAirBio(en)) return;
+  const top=$('top'), eImg=$('enemyImg'); if(!top || !eImg) return;
+  const lo=en.flock.min||2, hi=Math.max(lo, en.flock.max||lo), n=Math.min(FLOCK_SLOTS.length, lo+Math.floor(Math.random()*(hi-lo+1)));
+  const el=document.createElement('div'); el.id='airFlock';
+  el.style.cssText='position:absolute;inset:0;pointer-events:none;transform-origin:50% 50%;';
+  (idleEl||eImg).after(el);
+  const ms=[];
+  for(let i=n-1;i>=0;i--){   // 後排先放（疊在下面）
+    const im=document.createElement('img'); im.alt=''; im.className='af-m'; im.style.cssText='position:absolute;transform-origin:50% 50%;';
+    el.appendChild(im); ms.push({ im, slot:FLOCK_SLOTS[i], ph:Math.random()*6.283, down:false, front:i });
+  }
+  ms.sort((a,b)=>b.front-a.front);   // ms：後→前（同群戰的 order）
+  top.classList.add('flock-on');
+  const fl=fwdOf(en), sf=(en.fit && en.fit.flip) ? -1 : 1;   // fl＝機頭朝向（擊落往那邊墜）；sf＝圖要不要水平翻
+  flock={ el, ms, n, fl };
+  const sync=()=>{ if(!flock || flock.el!==el) return;
+    const src=(idleEl && idleEl.isConnected && idleEl.getAttribute('src')) ? idleEl : eImg; if(!src.getAttribute('src')) return;
+    const cs=getComputedStyle(src), W=top.clientWidth, H=top.clientHeight, t=performance.now()/1000;
+    for(const m of ms){ const im=m.im;
+      if(im.getAttribute('src')!==src.getAttribute('src')) im.src=src.src;
+      if(src===idleEl){ im.style.left=src.style.left; im.style.top=src.style.top; im.style.width=src.style.width; im.style.height=src.style.height; im.style.objectFit=''; }
+      else { im.style.left='0'; im.style.top='0'; im.style.width='100%'; im.style.height='100%'; im.style.objectFit=cs.objectFit; im.style.objectPosition=cs.objectPosition; }
+      if(m.down) continue;
+      const s=m.slot[2], bob=Math.sin(t*1.7+m.ph)*H*0.012;
+      im.style.translate=(m.slot[0]*W).toFixed(1)+'px '+(m.slot[1]*H+bob).toFixed(1)+'px';
+      im.style.scale=(sf*s).toFixed(3)+' '+s.toFixed(3);
+    } };
+  sync(); flock.t=setInterval(sync, 40);
+}
+function flockAlive(){ return flock ? flock.ms.filter(m=>!m.down && m.im.naturalWidth) : []; }
+function flockVictim(){
+  const alive=flock.ms.filter(m=>!m.down); if(!alive.length) return null;
+  const top=$('top');
+  if(lastImpact && top){ const tr=top.getBoundingClientRect(), x=tr.left+lastImpact.x, y=tr.top+lastImpact.y;
+    for(let i=alive.length-1;i>=0;i--){ const r=alive[i].im.getBoundingClientRect(); if(x>=r.left && x<=r.right && y>=r.top && y<=r.bottom) return alive[i]; }
+    let best=null, bd=1e18; for(const m of alive){ const r=m.im.getBoundingClientRect(), d=((r.left+r.right)/2-x)**2+((r.top+r.bottom)/2-y)**2; if(d<bd){ bd=d; best=m; } }
+    if(best) return best; }
+  return alive[alive.length-1];
+}
+function shootDown(m){
+  m.down=true; const top=$('top'), W=top?top.clientWidth:390, H=top?top.clientHeight:400, f=flock?flock.fl:-1;
+  m.im.animate([{ transform:'none', opacity:1 }, { transform:`translate(${f*W*0.35}px, ${H*0.95}px) rotate(${f*-25}deg)`, opacity:0 }],
+    { duration:1800, easing:'cubic-bezier(.45,.05,.55,.95)', fill:'forwards' });
+}
+function syncFlock(){
+  if(!flock) return;
+  const each=Math.max(1, state.enemyMax/flock.n);
+  const stand=Math.max(0, Math.min(flock.n, Math.ceil(Math.max(0,state.enemyHp)/each)));
+  let alive=flock.ms.filter(m=>!m.down).length;
+  while(alive>stand){ const v=flockVictim(); if(!v) break; shootDown(v); alive--; }
+}
+/* 入場／漂移／攻擊要動的那一個（有編隊＝整個編隊容器）。 */
+function motionTargets(){ return flock ? [flock.el] : [$('enemyImg'), idleEl, clipEl]; }
 function startAirDrift(en){
   stopAirDrift(true);
   if(en && en.float && !isAirBio(en)) return startFloatBob(en);
@@ -1406,8 +1472,8 @@ function startAirDrift(en){
     const k=1 + e*(0.06*Math.sin(u*0.70) - 0.04*(1-Math.cos(u*0.31)) + 0.012*Math.sin(u*1.9));
     const dx=e*W*(0.030*Math.sin(u*0.53) + 0.012*Math.sin(u*1.37+1.1));
     const dy=e*H*(0.022*Math.sin(u*0.61+2.0) + 0.009*Math.sin(u*1.61+0.4));
-    const far=farOf(en), sc=(fl*far*k).toFixed(4)+' '+(far*k).toFixed(4), tr=dx.toFixed(1)+'px '+dy.toFixed(1)+'px';
-    for(const el of [$('enemyImg'), idleEl, clipEl]) if(el){ el.style.scale=sc; el.style.translate=tr; }
+    const far=farOf(en), ff=flock ? 1 : fl, sc=(ff*far*k).toFixed(4)+' '+(far*k).toFixed(4), tr=dx.toFixed(1)+'px '+dy.toFixed(1)+'px';   // 編隊：翻轉已在每一隻身上
+    for(const el of motionTargets()) if(el){ el.style.scale=sc; el.style.translate=tr; }
     S.raf=requestAnimationFrame(tick); };
   S.raf=requestAnimationFrame(tick);
 }
@@ -1431,9 +1497,9 @@ function airEnter(en, eImg, play){
   }
   /* 生物型（ver -2501，Ray：「牠是從畫面外進來的，不是淡入進去的，由近（大）到遠（小）然後定位開戰」）：
      不淡入 —— 從機尾那側的畫面外、斜下方、放大三倍（貼著鏡頭）飛進來，一路縮回原尺寸，越過一點再定位。 */
-  { const top=$('top'), W=top.clientWidth, H=top.clientHeight, f=fwdOf(en), K=3;
-    eImg.style.opacity=''; eImg.style.transformOrigin='50% 50%';
-    const a=eImg.animate([
+  { const top=$('top'), W=top.clientWidth, H=top.clientHeight, f=fwdOf(en), K=3, mv=flock ? flock.el : eImg;
+    eImg.style.opacity=''; mv.style.transformOrigin='50% 50%';
+    const a=mv.animate([
       { transform:`translate(${-f*W*1.15}px, ${H*0.9}px) scale(${K})`, offset:0, easing:'cubic-bezier(.22,.6,.35,1)' },
       { transform:`translate(${f*W*0.04}px, ${-H*0.025}px) scale(.97)`, offset:0.8, easing:'cubic-bezier(.45,0,.55,1)' },
       { transform:'none', offset:1 }], { duration:1900 });
@@ -1505,7 +1571,9 @@ function playBroadside(fx){
 let airAtk=null;
 function airAssault(en){
   if(airAtk) return 0;
-  const el=idleEl || $('enemyImg'), top=$('top'); if(!el || !top) return 0;
+  /* 編隊（ver -2516，Ray：「群體的話攻擊只有其中一隻發動，輪流隨機」）：隨機挑一隻還在飛的去劃過，其他照常漂 */
+  const fa=flock ? flock.ms.filter(m=>!m.down) : null;
+  const el=(fa && fa.length) ? fa[(Math.random()*fa.length)|0].im : (idleEl || $('enemyImg')), top=$('top'); if(!el || !top) return 0;
   const W=top.clientWidth, H=top.clientHeight, tr=top.getBoundingClientRect(), er=el.getBoundingClientRect();
   if(!er.width) return 0;
   const f=fwdOf(en), dive=Math.random()<0.5, K=3.4;
@@ -2018,6 +2086,7 @@ function playFall(im, F){
 }
 /* 依現在的敵血決定該倒幾個（combat.updateBars 每次都叫，冪等）：還沒倒夠就再倒，每一個照落點挑。 */
 export function syncGroup(){
+  syncFlock();   // 空戰編隊（ver -2516）
   const g=$('enemyGroup'); if(!g || !groupCard) return;
   const G=groupCard.group, n=G.order.length, each=groupEach(G);
   const shouldStand=Math.max(0, Math.min(n, Math.ceil(Math.max(0,state.enemyHp)/each)));
@@ -2429,6 +2498,7 @@ export function setEnemy(key, opts){
   stopHolyBurst();                              // 同上：放光也是全螢幕的層＋一支還在響的音（ver -1351）
   setSkyBattle(en.sky);                         // 空戰的視差背景（ver -2444）：沒有 `sky` 的怪＝收掉上一隻的
   startDamageSmoke(en.damageSmoke);             // 受損冒黑煙（ver -2490）：沒寫的怪＝收掉上一隻的
+  startFlock(en);                               // 空戰編隊（ver -2516）：沒寫 flock 的怪＝收掉上一隻的
   startAirDrift(en);                            // 戶外空戰生物型的接舷漂移（ver -2499）：不是的怪＝收掉上一隻的
   rollSmokeDir();                               // 船戰的煙往哪一邊飄：這一場擲一次（ver -1653）
   state.currentEnemyKey = key;                 // 3.7：記住目前怪 key，供 boardGridFor 查每盤格數

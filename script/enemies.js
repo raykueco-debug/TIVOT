@@ -2163,6 +2163,7 @@ export const ENEMIES = {
       loot:[],
     },
     sky2_spine: {
+      flock:{ min:3, max:4 },   // 一組幾隻（ver -2516，Ray）；擊落順序同群戰（enemy.startFlock）
       name:'骨脊長帶_A',
       story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       Ganymede:-0.2,   // ＝羽蛇（暫填）
@@ -2197,6 +2198,7 @@ export const ENEMIES = {
       loot:[],
     },
     sky2_maskbanner: {
+      flock:{ min:2, max:3 },   // 一組幾隻（ver -2516，Ray）；擊落順序同群戰（enemy.startFlock）
       name:'面具長幡_A',
       story:0, counterStagger:1, boss:0,   // 劇情戰／反擊硬直（ver -495，統一欄位，見 enemies 檔頭）
       Ganymede:-0.2,   // ＝羽蛇（暫填）
