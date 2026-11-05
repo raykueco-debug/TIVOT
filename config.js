@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.06-2526';
+export const VERSION = 'ver 2026.11.06-2529';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4557,7 +4557,7 @@ export const ASSETS = {
   enemy_gk_crypt:  "resources/enemy/mon_gravekeeper_crypt.webp?v=9b1652d7",    // 墓室胸腔（決戰）
   enemy_gk_seal_down: "resources/enemy/mon_gravekeeper_seal_down.webp",  // 倒地差分：被擊退、停頓期間殘留在那一格（ver -1701，chase.downArt）
   enemy_facelessgiant: "resources/enemy/saint_gt_ci.webp?v=2c191ece",   // 連戰第二隻：巨型聖徒（GT=giant）
-  enemy_trainee:  "resources/enemy/saint_tr_neutral.webp",   // 教學專用敵：訓練用聖徒（ver -2520 換中立站姿 alpha；舊合成圖 saint_tr_ci 不用了）
+  enemy_trainee:  "resources/enemy/saint_tr_neutral2.webp",   // 教學專用敵：訓練用聖徒（ver -2527 換新架勢；-2520 的直立姿勢 saint_tr_neutral 那一組不用了）
   enemy_dart_target: "resources/enemy/dart_timeattack.webp?v=df0a5635",   // 打靶場：固定立靶（ver -396）
   enemy_dart_counter: "resources/enemy/dart_counter.webp",   // 蕃茄人11號：杰羅的自動人型靶（ver -862，Ray 交件）
   /* 禍魘娜塔莉（ver -671，Ray 交件）＋惡夢化 cut-in。
@@ -5689,7 +5689,7 @@ export const ENEMY_IDLE = {
   /* ver -2472：娜塔莉換中立立繪後的待機（美術 79fb7c7a） */
   mon_natalia_neutral: 'resources/enemy/anim/mon_natalia_idle_v3/',
   mon_np_anyawings: 'resources/enemy/anim/mon_np_anyawings_idle_v1/',   // 安雅光翼 待機（ver -2524）
-  saint_tr_neutral: 'resources/enemy/anim/saint_tr_neutral_idle_v1/',   // 訓練用聖徒 待機（ver -2520，48 格 loop）
+  saint_tr_neutral2: 'resources/enemy/anim/saint_tr_neutral2_idle_v1/',   // 訓練用聖徒 新架勢待機（ver -2527，48 格 loop）
   mon_beast_altar: 'resources/enemy/anim/mon_beast_altar_idle_v1/',   // E019 背負祭壇者 待機（ver -2517，48 格 loop）
   /* 空戰側面待機（ver -2472，美術陸續交件；空戰剪法：48 格 24fps） */
   mon_sky_mawbat_side: 'resources/enemy/anim/mon_sky_mawbat_side_idle_v1/',
@@ -5709,7 +5709,7 @@ export const ENEMY_IDLE = {
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_atk_v1/', hit:48, fx:[{ frame:8, type:'rubble' }, { frame:44, type:'violetFlash' }] },   // A＝振翅接爆炎（64 格）；第 8 格下拍到底噴瓦礫、爆炎時紫白光芒籠罩畫面（ver -2525）
-  saint_tr_neutral: { dir:'resources/enemy/anim/saint_tr_neutral_atk_v2/', hit:9 },   // 訓練用聖徒 攻擊＝延時＝點錯共用（ver -2522 v2：前撲 10 格＋退回待機 20 格）
+  saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7, near:1.35 },   // 訓練用聖徒 新架勢 攻擊（ver -2527，31 格；-2529 Ray「攻擊時要拉近撲前」打到那一格放大到 1.35）
   mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_atk_v1/', hit:13 },   // E019 背負祭壇者 撲撞（ver -2517，29 格）
   mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_atk_v1/', hit:13 },   // E017 魘魔（ver -2503；只有撲出段，結尾停在撲擊姿勢，切回待機蓋在受擊特效下）
   mon_shinierforest_snake_neutral: { dir:'resources/enemy/anim/mon_shinierforest_snake_atk_v1/', hit:13 },   // E066 水蛇（攻擊＝延時同一支，29 格）
@@ -5718,6 +5718,11 @@ export const ENEMY_ATK = {
   mon_shinierforest_tiger_neutral: { dir:'resources/enemy/anim/mon_shinierforest_tiger_atk_v4/', hit:13 },   // ver -2519 Ray：tiger rule（pounce）on biteAB＋biteBA2（不是 biteAB2）；兩段生成空間不同，BA 段照 B 姿勢對位換算   // E068 獨角虎 撲咬 v2（ver -2494：撲出 20 格＋收勢，共 41 格；咬到＝第 19 格）
   mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_atk_v8/', hit:13, far:0.82, near:1.4, preMul:1.5, retMul:1.8 },   // -2515：v8＝撲出 biteAB2_cut_3_cut（14）＋收回 biteBA2_cut_4（27，Ray 21:29 剪），由 v5 已處理格子組   // -2514：v7＝撲出 biteAB2_cut_3_cut（14）＋收回 biteBA2_cut_3（29，Ray 21:27 剪，新生成那份來源），由 v5 的已處理格子組   // -2513 Ray：撲出改 biteAB2_cut_3_cut（cut_3 前 14 格）＋收回 biteBA2_cut ＝ v6（45 格，由 v4 的格子直接組，咬到第 13 格）   // -2512 Ray「收回加速 前撲也加速」：前撲 1.5 倍、收回 1.8 倍（收回沿用 -2486 的倍率）   // -2511 Ray 定案：撲出 biteAB2_cut_3＋收回 biteBA2_cut（＝v4，逐格驗過），原速播（不加 retMul）；舊註：retMul：咬完收回段以 1.8 倍速播（-2486 Ray「撲咬收回再快一點」）   // -2509：v5＝撲出 biteAB2_cut_3（17 格）＋收回 biteBA2_cut_2（31 格，Ray 指定的新生成那份），咬到第 16 格   // -2484：v3＝biteAB2_cut（16 格）＋biteBA2_cut（31 格，Ray 指定的收回）；咬到＝第 15 格（撲出段最後一格）。-2482 誤把 hit 量成 28（收回段雙爪張開輪廓最大），放大峰值落在收回段 ⇒ Ray 看成「收回被改了」
 };
+/* ══ 出場（ver -2527，訓練用聖徒新架勢：從半空落地停在架勢）══ 有寫的怪：不走降臨，門開那一刻播一次出場、播完接待機。
+   鑰匙同 ENEMY_ATK（立繪檔名）。 */
+export const ENEMY_ENTER = {
+  saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_enter_v1/' },
+};
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_MISS = {
@@ -5725,7 +5730,7 @@ export const ENEMY_MISS = {
 };
 export const ENEMY_DELAY = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_burst_v1/', hit:48 },   // D＝爆炎（81 格；ver -2525 Ray 改：爆炎是 D，之後下一發攻擊 200%，見卡上 delayEmpowers）
-  saint_tr_neutral: { dir:'resources/enemy/anim/saint_tr_neutral_atk_v2/', hit:9 },   // 訓練用聖徒 攻擊＝延時＝點錯共用（ver -2522 v2：前撲 10 格＋退回待機 20 格）
+  saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7 },   // 訓練用聖徒 新架勢 攻擊＝延時＝點錯（ver -2527，31 格，最後一格回到架勢）
   mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_delay_v1/', hit:0 },   // E019 背負祭壇者 延時＝吼叫（ver -2507；只有收回段，第 0 格就是吼叫姿勢）
   mon_shinierforest_snake_neutral: { dir:'resources/enemy/anim/mon_shinierforest_snake_atk_v1/', hit:13 },   // E066 水蛇（攻擊＝延時同一支，29 格）
   mon_shinierforest_hog_neutral: { dir:'resources/enemy/anim/mon_shinierforest_hog_atk_v1/', hit:13 },       // E067 山豬（攻擊＝延時同一支，29 格）

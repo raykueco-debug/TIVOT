@@ -15,7 +15,7 @@
 
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import * as prog from '../script/progress.js';  // stage 加成要問現在第幾章（ver -1584b）
-import { ENEMY_IDLE, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
+import { ENEMY_IDLE, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
@@ -1188,9 +1188,10 @@ function loadClip(dir){
   }).catch(()=>{});
 }
 function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; const s=imgStem(en);
-  if(kind==='miss') return ENEMY_MISS[s] || ENEMY_DELAY[s] || null;   // 點錯：有 M 用 M，沒有就借延時那一支（ver -2524）
+  if(kind==='miss') return ENEMY_MISS[s] || ENEMY_DELAY[s] || null;
+  if(kind==='enter') return ENEMY_ENTER[s] || null;   // 點錯：有 M 用 M，沒有就借延時那一支（ver -2524）
   return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[s])||null; }
-function preloadActionClips(en){ for(const k of ['atk','delay','miss']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); } }
+function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); } }
 /* 這隻怪有沒有 M（點錯）動作：點錯播的是延時那一支（ENEMY_DELAY），有它就算有 M（ver -2523）。 */
 export function hasMissClip(){ return !!clipFor('miss'); }
 export function hasActionClips(){ return !!(clipFor('atk') || clipFor('delay')); }   // 這隻怪有攻擊／延時動畫嗎（ver -2496）
@@ -1201,7 +1202,7 @@ const FAR_ORIGIN='50% 78%';
 function farOf(en){ en=en||curCard(); const c=clipFor('atk',en); return (c && c.far) || 1; }
 function applyFar(en){ const k=farOf(en); for(const el of [$('enemyImg'), idleEl, clipEl]) if(el){ el.style.transformOrigin=FAR_ORIGIN; el.style.scale = k===1 ? '' : String(k); } }
 /* 演一次；回傳「還要幾毫秒才打到玩家」（扣血延到那一格），沒演就回 0。 */
-export function playActionClip(kind){
+export function playActionClip(kind, onDone){
   const c=clipFor(kind), L=c && clipCache[c.dir]; if(!L || !L.fr) return 0;
   const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, L.j); if(!r) return 0;
   clearTimeout(clipT); clearInterval(idleT); idleT=0;
@@ -1215,7 +1216,7 @@ export function playActionClip(kind){
   /* 前撲加速（`preMul`，-2512 Ray「收回加速 前撲也加速」）：打到那一格之前（含）以 fps×preMul 播 */
   const rm=c.retMul||1, pm=c.preMul||1, tAt=f=> f<=hitF ? f*1000/(fps*pm) : (hitF*1000/(fps*pm) + (f-hitF)*1000/(fps*rm));
   const T=tAt(N), tHit=tAt(hitF);
-  { const k=farOf(); if(k!==1){   // 攻擊時撲近：打到那一格到最大，收回的路上退回遠處
+  { const k=farOf(); if(k!==1 || (kind==='atk' && c.near)){   // 攻擊時撲近：打到那一格到最大，收回的路上退回遠處（ver -2529：平時不站遠也能撲近）
       el.style.transformOrigin=FAR_ORIGIN;
       const off=t=>Math.max(0,Math.min(1,t/T)), hold=Math.min(T, tHit+60), back=Math.min(T, tHit+Math.max(120,(T-tHit)*0.7));
       const n=String(c.near || 1), kf = (kind==='atk' || c.near) ? [{scale:String(k),offset:0},{scale:n,offset:off(tHit)},{scale:n,offset:off(hold)},{scale:String(k),offset:off(back)},{scale:String(k),offset:1}] : [{scale:String(k)},{scale:String(k)}];
@@ -1228,6 +1229,7 @@ export function playActionClip(kind){
     clipT=0;
     if(idleEl && idleFr){ placeIdle(); runIdle(); }                 // 回待機 loop
     else { if(clipEl){ clipEl.remove(); clipEl=null; } eImg.style.visibility=''; }
+    if(onDone) onDone();
   };
   clipT=setTimeout(step, tAt(1));
   return Math.round(tHit);
@@ -1840,6 +1842,7 @@ function isRise(en){
   riseSuppressedNow = false;
   if(riseOff){ riseOff=false; riseSuppressedNow=riseOffMute; return false; }
   if(en && (en.kind==='aerial' || en.kind==='ship')) return false;   // 空中怪都不走降臨（ver -2499，Ray）
+  if(en && !en.group && ENEMY_ENTER[imgStem(en)]) return false;   // 有出場動畫的怪：出場取代降臨（ver -2527）
   return !!(en && (ENTRANCE_KINDS[en.kind] || en.riseFx));
 }
 function isPurify(){
@@ -2308,8 +2311,19 @@ export function loadEnemyPortrait(en){
          `screenShake`：那是「你被打到了」，這是「衝擊波撞上來」，兩件事。
        ⚠ 龍吟就是卡上的 `entrance`（登場音那一格）—— 不另開欄位。 */
     const air=isAirBio(en) || isAirShip(en);
+    /* 出場動畫（ENEMY_ENTER，ver -2527）：門開那一刻播一次，播完才起待機；動檔還沒載好就直接站好。 */
+    const enterC=clipFor('enter', en);
+    if(enterC) loadClip(enterC.dir);
+    /* 動檔還在載：人先藏著等（最多 2.5 秒），載到就播；等不到才直接站好。 */
+    const enterNow=(play, t0)=>{ if(curCard()!==en) return;
+      const L=clipCache[enterC.dir];
+      if(play && !(L && L.fr) && performance.now()-(t0||performance.now())<2500){ const s0=t0||performance.now(); setTimeout(()=>enterNow(play, s0), 80); return; }
+      eImg.style.opacity='';
+      if(play && L && L.fr){ playActionClip('enter', ()=>{ if(curCard()===en) startCardIdle(en); }); if(clipT) return; }
+      startCardIdle(en); };
     const arrive=()=>{
       if(air) airEnter(en, eImg, true);
+      if(enterC) enterNow(true);
       if(playEntranceVo) playEntranceVo();
       if(en && en.entranceBlast && api.roarBlast) api.roarBlast();
     };
@@ -2324,9 +2338,9 @@ export function loadEnemyPortrait(en){
          只有音與震延到門開的那一刻。
        ⚠ 已經放行了（`riseHeld` 是 false，例如不走門的路徑）就當場發，行為不變。 */
     /* ⚠ 被 `suppressRiseOnce` 壓掉的那一場：登場音與衝擊也不發（見 riseSuppressedNow）。 */
-    const fire=()=>{ if(riseSuppressedNow){ if(air) airEnter(en, eImg, false); return; } if(riseHeld) risePending=arrive; else arrive(); };
-    const shown=()=>{ eImg.onload=null; fire(); if(!air) startCardIdle(en); };   // 空中生物型：待機等入場演完（airEnter）
-    if(air) eImg.style.opacity='0';   // 門開才由近到遠飛進來（門開前那一格不能已經站著）
+    const fire=()=>{ if(riseSuppressedNow){ if(air) airEnter(en, eImg, false); if(enterC) enterNow(false); return; } if(riseHeld) risePending=arrive; else arrive(); };
+    const shown=()=>{ eImg.onload=null; fire(); if(!air && !enterC) startCardIdle(en); };   // 空中生物型／有出場動畫：待機等入場演完
+    if(air || enterC) eImg.style.opacity='0';   // 門開才進場（門開前那一格不能已經站著）   // 門開才由近到遠飛進來（門開前那一格不能已經站著）
     eImg.onload = shown;
     eImg.src = enemyImage(en);
     if(eImg.complete && eImg.naturalWidth) shown();
