@@ -52,3 +52,8 @@
 - 走既有動畫產線（Wan，不准程式拼／交叉淡化；整張要活，見 memory 的動畫規矩）；有翅的照「有翅怪振翅模式」寬畫布。
 - 頭朝左、首尾接得上（loop）、真 alpha、四邊留白。
 - 交件後在這裡列出哪幾隻好了 —— 程式端在 `config.ENEMY_IDLE` 加 `mon_<名>_side` 一列就會播（照檔名查，不必改卡）。
+
+### ✅ 側面待機交件進度（美術）
+| 鍵 | 資料夾 | 格 | fps | 備註 |
+|---|---|---|---|---|
+| `mon_sky_mawbat_side` | `anim/mon_sky_mawbat_side_idle_v1/` | 48 | 24 | Ray 在 animechk 選 `_cut`；振翅寬畫布、FITCANVAS 縮 ×0.73 |
