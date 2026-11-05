@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2492';
+export const VERSION = 'ver 2026.11.05-2493';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4644,7 +4644,7 @@ export const ASSETS = {
   enemy_sf_lynx:      "resources/enemy/mon_shinierforest_lynx.webp",
   enemy_sf_snake:     "resources/enemy/mon_shinierforest_snake.webp",
   enemy_sf_hog:       "resources/enemy/mon_shinierforest_hog.webp",
-  enemy_sf_tiger:     "resources/enemy/mon_shinierforest_tiger.webp",
+  enemy_sf_tiger:     "resources/enemy/mon_shinierforest_tiger_neutral.webp",   // ver -2493：換中立站姿（攻擊／延時動畫都是從它生成的；舊的撲擊姿勢待機 idle_v2 暫時沒有對應）
   enemy_sf_crows:     "resources/enemy/mon_shinierforest_crows.webp",
   enemy_sf_deer:      "resources/enemy/mon_shinierforest_deer.webp",
   enemy_sf_bear_husk: "resources/enemy/mon_bear_husk.webp?v=08453d77",
@@ -5688,9 +5688,11 @@ export const ENEMY_IDLE = {
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
+  mon_shinierforest_tiger_neutral: { dir:'resources/enemy/anim/mon_shinierforest_tiger_atk_v1/', hit:19 },   // E068 獨角虎 撲咬（20 格只有撲出段，咬到＝最後一格）
   mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_atk_v3/', hit:15, far:0.82, near:1.4, retMul:1.8 },   // retMul：咬完收回段以 1.8 倍速播（-2486 Ray「撲咬收回再快一點」）   // -2484：v3＝biteAB2_cut（16 格）＋biteBA2_cut（31 格，Ray 指定的收回）；咬到＝第 15 格（撲出段最後一格）。-2482 誤把 hit 量成 28（收回段雙爪張開輪廓最大），放大峰值落在收回段 ⇒ Ray 看成「收回被改了」
 };
 export const ENEMY_DELAY = {
+  mon_shinierforest_tiger_neutral: { dir:'resources/enemy/anim/mon_shinierforest_tiger_delay_v1/', hit:1 },   // E068 獨角虎 橫向爪擊（只有收回段，23 格：開頭就是爪掃到底 ⇒ 第 1 格打到）
   mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_delay_v1/', hit:8, near:1.2 },   // -2476 Ray「DM（delay／miss）都用爪擊」：延時／點錯也演同一支撲擊
   mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_delay_v1/', hit:12 },   // 魘魔 單爪大幅斜劈 30 格（hit 是估的，Ray 看了再調）
 };
