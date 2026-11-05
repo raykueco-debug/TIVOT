@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2482';
+export const VERSION = 'ver 2026.11.05-2483';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5687,7 +5687,7 @@ export const ENEMY_IDLE = {
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
-  mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_atk_v3/', hit:28, far:0.82, near:1.4 },   // 撲咬 v3（-2482：縮身蓄力→彈射張嘴咬→回彈落回中立，47 格；咬到＝第 28 格，量輪廓最大那幾格）；near 1.4（-2481 Ray「撲咬再放大一點」）；far 0.82（-2475 站近一點）
+  mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_atk_v2/', hit:12, far:0.82, near:1.4 },   // -2483 Ray「撲擊的收回動畫怎麼改了，用上一版的」：退回 v2（16 格只有撲出、咬到第 12 格，收回靠撲近縮放退回）；v3（撲出＋收回 47 格）不用
 };
 export const ENEMY_DELAY = {
   mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_delay_v1/', hit:8, near:1.2 },   // -2476 Ray「DM（delay／miss）都用爪擊」：延時／點錯也演同一支撲擊
