@@ -1109,7 +1109,7 @@ function idleDirFor(en){
   if(typeof en.idle==='string') return en.idle;
   return ENEMY_IDLE[imgStem(en)] || null;
 }
-function startCardIdle(en){ if(portraitOverride) return; const d=idleDirFor(en); if(d) startIdleLoop(d); preloadActionClips(en); }
+function startCardIdle(en){ applyFar(en); if(portraitOverride) return; const d=idleDirFor(en); if(d) startIdleLoop(d); preloadActionClips(en); }
 /* ══ 攻擊／延時動畫（ver -2472）══ 一次性的動檔：從待機切進來、播完切回待機（Ray：「所有攻擊都要回到原本的中立動畫」）。
    動檔在換上這隻怪的那一刻預載（戰鬥內，鐵律 13）；還沒載好就不演（照舊只有受擊特效）。 */
 const clipCache={};
@@ -1123,6 +1123,11 @@ function loadClip(dir){
 function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[imgStem(en)])||null; }
 function preloadActionClips(en){ for(const k of ['atk','delay']){ const c=clipFor(k,en); if(c) loadClip(c.dir); } }
 let clipT=0, clipEl=null;
+/* 平時站遠（ENEMY_ATK 的 `far`，ver -2473）：用 CSS 的獨立 `scale` 屬性縮 —— 不碰 transform，受擊動畫照常疊上去。
+   立繪本體、待機層、攻擊層三個都套（誰在畫面上就是誰）。 */
+const FAR_ORIGIN='50% 78%';
+function farOf(en){ en=en||curCard(); const c=clipFor('atk',en); return (c && c.far) || 1; }
+function applyFar(en){ const k=farOf(en); for(const el of [$('enemyImg'), idleEl, clipEl]) if(el){ el.style.transformOrigin=FAR_ORIGIN; el.style.scale = k===1 ? '' : String(k); } }
 /* 演一次；回傳「還要幾毫秒才打到玩家」（扣血延到那一格），沒演就回 0。 */
 export function playActionClip(kind){
   const c=clipFor(kind), L=c && clipCache[c.dir]; if(!L || !L.fr) return 0;
@@ -1131,16 +1136,20 @@ export function playActionClip(kind){
   let el=idleEl; if(!el){ if(!clipEl){ clipEl=document.createElement('img'); clipEl.className='en-idle'; clipEl.alt=''; eImg.after(clipEl); } el=clipEl; }
   eImg.style.visibility='hidden';
   el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.width=r.width+'px'; el.style.height=r.height+'px';
-  let i=0; el.src=L.fr[0].src;
+  let i=0; el.src=L.fr[0].src; if(el===clipEl) applyFar();
   const fps=L.j.fps||24;
+  const hitF=(c.hit!=null) ? c.hit : Math.floor(L.fr.length*0.4);
+  { const k=(kind==='atk' && c.far) || farOf(); if(k!==1){   // 攻擊時撲近：劈到底那一格到原大，晃回去的路上退回遠處
+      el.style.transformOrigin=FAR_ORIGIN; const T=L.fr.length*1000/fps, h=Math.min(0.9,hitF/L.fr.length);
+      const kf = kind==='atk' ? [{scale:String(k)},{scale:'1',offset:h},{scale:'1',offset:Math.min(0.95,h+0.12)},{scale:String(k)}] : [{scale:String(k)},{scale:String(k)}];
+      el.animate(kf,{duration:T, easing:'ease-in-out'}); } }
   clipT=setInterval(()=>{ i++;
     if(i<L.fr.length){ el.src=L.fr[i].src; return; }
     clearInterval(clipT); clipT=0;
     if(idleEl && idleFr){ placeIdle(); runIdle(); }                 // 回待機 loop
     else { if(clipEl){ clipEl.remove(); clipEl=null; } eImg.style.visibility=''; }
   }, 1000/fps);
-  const hit = (c.hit!=null) ? c.hit : Math.floor(L.fr.length*0.4);
-  return Math.round(hit*1000/fps);
+  return Math.round(hitF*1000/fps);
 }
 let idleFr=null;
 function runIdle(){ clearInterval(idleT); if(!idleEl || !idleFr) return; let i=0; idleEl.src=idleFr[0].src;
@@ -1158,7 +1167,7 @@ function startIdleLoop(dir){
       const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, j); if(!r) return;
       const el=document.createElement('img'); el.className='en-idle'; el.alt='';
       el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.width=r.width+'px'; el.style.height=r.height+'px';
-      el.src=fr[0].src; eImg.after(el); idleEl=el; idleJ=j; idleFr=fr; eImg.style.visibility='hidden';
+      el.src=fr[0].src; eImg.after(el); idleEl=el; idleJ=j; idleFr=fr; eImg.style.visibility='hidden'; applyFar();
       if(!clipT) runIdle();   // 攻擊動畫正在演就等它演完再接（它收尾會叫 runIdle）
     });
   }).catch(()=>{});
@@ -2334,7 +2343,8 @@ export function setEnemy(key, opts){
   /* ⚠ `noArt`：開機那一次不載圖，而且**把 src 整個拔掉** —— 只是不載的話
      上一次留下的那張還掛在 `#enemyImg` 上，空窗一樣會露出來。 */
   if(opts && opts.noArt){ const ei=$('enemyImg'); if(ei) ei.removeAttribute('src'); }
-  else{ loadEnemyPortrait(en);
+  else{ applyFar(en);   // 平時站遠（ver -2473）：降臨那一段就已經在遠處
+        loadEnemyPortrait(en);
         placeEnemyShadow(); }      // 同一張圖不會再 load，但框可能變了（fit／scale）⇒ 影子重擺（ver -1702）
   /* 換了一隻怪（ver -693）：讓搭檔的「每隻怪一次」那一類被動重新上膛。
      ⚠ 這裡是那件事的唯一時刻 —— 開場、連戰換敵、Boss 亂入全部經過 setEnemy。 */

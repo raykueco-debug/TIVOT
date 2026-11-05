@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2472';
+export const VERSION = 'ver 2026.11.05-2473';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5679,11 +5679,12 @@ export const ENEMY_IDLE = {
   mon_sky2_ringchain_side: 'resources/enemy/anim/mon_sky2_ringchain_side_idle_v1/',
 };
 /* ══ 敵人的攻擊／延時動畫（ver -2472，美術 TO_CODE_attack.md；Ray：「娜塔莉攻擊動作交件了，接上進遊戲測」）══
-   鑰匙＝立繪檔名（同 ENEMY_IDLE）。`dir`＝動檔資料夾（anim.json loop:false）、`hit`＝哪一格打到玩家（扣血延到那一格）。
+   鑰匙＝立繪檔名（同 ENEMY_IDLE）。`dir`＝動檔資料夾（anim.json loop:false）、`hit`＝哪一格打到玩家（扣血延到那一格）、
+   `far`（只寫在 ATK）＝平時站多遠（縮放比例），攻擊演出時撲近到原大、演完退回去。
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
-  mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_atk_v1/', hit:8 },   // 撲擊 9 格（0～8 劈到底）＋ 殭屍晃歸位 28 格
+  mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_atk_v1/', hit:8, far:0.7 },   // far：平時站遠一點（縮到 0.7），攻擊時才撲近到原大（ver -2473，Ray：「讓敵站位遠一點，攻擊時才接近」）   // 撲擊 9 格（0～8 劈到底）＋ 殭屍晃歸位 28 格
 };
 export const ENEMY_DELAY = {
   mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_delay_v1/', hit:12 },   // 魘魔 單爪大幅斜劈 30 格（hit 是估的，Ray 看了再調）
