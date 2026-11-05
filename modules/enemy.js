@@ -1293,6 +1293,45 @@ let broadsideCv=null;
 /* ══ 受損冒黑煙（ver -2490，Ray：「空賊船被擊敗跟樹寄生龍一樣向斜下沉沒，但是要冒黑煙，從半血就開始冒煙」）══
    卡上 `damageSmoke:{ hp:0.5, canvas, pts }`：敵血 ≤ hp 起，從 pts（立繪畫布座標）持續噴黑煙，往船尾（右）與上方拖走；
    血越少噴越密。煙源跟著立繪現在的位置走（斜墜時煙一路拖著）。換怪收掉；打贏後跟著墜落再噴 3 秒自己收（不留在背景跑）。 */
+/* ══ 戶外空戰的生物型敵人：接舷空戰的漂移（ver -2499，Ray：「空中戰的生物型敵人入場都是從近到遠進入畫面，
+   並且會緩近緩遠（不能太遠），戰鬥期間會微幅往八向放大／縮小平移，像真的接舷空戰一樣」）══
+   · 判定只有 `isAirBio` 一支：`aerial` ＋ 天空背景（`sky_*`）＋ 沒有 `sky`（古城那一套四層視差另有自己的演出）。
+     ⚠ 船（`ship`）不吃 —— Ray 說的是「生物型」。
+   · 空中怪都不走降臨（`isRise` 擋掉 aerial／ship）；生物型的入場＝`enemy-airin`（CSS，由近到遠，門開那一刻演，`airEnter`），演完才起待機、漂移才淡入振幅。
+   · ⚠ 用 CSS 的**獨立 `translate`／`scale` 屬性**，不碰 `transform`（受擊、降臨、斜墜都在 transform 上）；
+     `scale` 要乘回卡上的翻轉與站遠（`baseScale`），不然一動就把它們洗掉。
+   · 收：換怪（setEnemy）／死亡（purgeEnemy，停在當下那一格不歸位）／stopAll。 */
+function isAirBio(en){ return !!(en && en.kind==='aerial' && !en.sky && /^sky_/i.test(en.bg||'')); }
+let airDrift=null;
+function stopAirDrift(reset){
+  if(airDrift){ cancelAnimationFrame(airDrift.raf); airDrift=null; }
+  if(reset) for(const el of [$('enemyImg'), idleEl, clipEl]) if(el){ el.style.translate=''; }
+}
+function startAirDrift(en){
+  stopAirDrift(true); if(!isAirBio(en)) return;
+  const fl=en.fit && en.fit.flip ? -1 : 1, ph=Math.random()*100;
+  const S={ raf:0, t0:Infinity }; airDrift=S;   // t0＝入場演完那一刻（airArrived 設），之前振幅 0
+  const tick=now=>{ if(airDrift!==S) return;
+    const top=$('top'), W=top?top.clientWidth:390, H=top?top.clientHeight:400;
+    const t=(now-S.t0)/1000, a=Math.max(0,Math.min(1,t/1.8)), e=a*a*(3-2*a);   // 入場演完後 1.8 秒淡入振幅
+    const u=t+ph;
+    /* 緩近緩遠：主週期約 9 秒，0.90～1.06（不能太遠）；八向平移＝兩軸各兩組不可公約的正弦，橫向約 ±4%、縱向約 ±3% */
+    const k=1 + e*(0.06*Math.sin(u*0.70) - 0.04*(1-Math.cos(u*0.31)) + 0.012*Math.sin(u*1.9));
+    const dx=e*W*(0.030*Math.sin(u*0.53) + 0.012*Math.sin(u*1.37+1.1));
+    const dy=e*H*(0.022*Math.sin(u*0.61+2.0) + 0.009*Math.sin(u*1.61+0.4));
+    const far=farOf(en), sc=(fl*far*k).toFixed(4)+' '+(far*k).toFixed(4), tr=dx.toFixed(1)+'px '+dy.toFixed(1)+'px';
+    for(const el of [$('enemyImg'), idleEl, clipEl]) if(el){ el.style.scale=sc; el.style.translate=tr; }
+    S.raf=requestAnimationFrame(tick); };
+  S.raf=requestAnimationFrame(tick);
+}
+export function stopAirMotion(){ stopAirDrift(false); }
+/* 入場（由近到遠）：門開那一刻演；演完才起待機與漂移。被 suppressRiseOnce 壓掉的那一場直接站好。 */
+function airEnter(en, eImg, play){
+  const done=()=>{ eImg.classList.remove('enemy-airin'); eImg.style.opacity=''; startCardIdle(en); if(airDrift) airDrift.t0=performance.now(); };
+  if(!play) return done();
+  eImg.style.opacity=''; void eImg.offsetWidth; eImg.classList.add('enemy-airin');
+  eImg.addEventListener('animationend', function off(e){ if(e.animationName!=='enemyAirIn') return; eImg.removeEventListener('animationend', off); done(); });
+}
 let dmgSmoke=null;
 function stopDamageSmoke(){ if(!dmgSmoke) return; cancelAnimationFrame(dmgSmoke.raf); dmgSmoke.cv.remove(); dmgSmoke=null; }
 function startDamageSmoke(cfg){
@@ -1509,6 +1548,7 @@ let riseSuppressedNow = false;
 function isRise(en){
   riseSuppressedNow = false;
   if(riseOff){ riseOff=false; riseSuppressedNow=riseOffMute; return false; }
+  if(en && (en.kind==='aerial' || en.kind==='ship')) return false;   // 空中怪都不走降臨（ver -2499，Ray）
   return !!(en && (ENTRANCE_KINDS[en.kind] || en.riseFx));
 }
 function isPurify(){
@@ -1551,7 +1591,7 @@ export function holdRise(){
      「開門瞬間不存在」是這一整套的目的，殘影等於沒押。 */
   const eImg=$('enemyImg');
   if(eImg){ eImg.onload=null; eImg.removeAttribute('src');
-            eImg.classList.remove('enemy-rise','enemy-unpurge','enemy-purge','enemy-quake'); }
+            eImg.classList.remove('enemy-rise','enemy-unpurge','enemy-purge','enemy-quake','enemy-airin'); }
   clearTimeout(riseHoldT);
   riseHoldT=setTimeout(()=>{ if(riseHeld) releaseRise(); }, 10000);
 }
@@ -1871,7 +1911,7 @@ export function loadEnemyPortrait(en){
   clearTimeout(landT); landT=0;
   risePending=null;
   eImg.onload = null;
-  eImg.classList.remove('enemy-rise','enemy-unpurge','enemy-purge','enemy-quake');
+  eImg.classList.remove('enemy-rise','enemy-unpurge','enemy-purge','enemy-quake','enemy-airin');
   if(eImg._falling){ eImg._falling=false; if(eImg._fallAnim){ eImg._fallAnim.cancel(); eImg._fallAnim=null; } eImg.style.animation=''; eImg.style.transition=''; }   // 上一隻的斜下墜（deathFx:'skyfall'，ver -2456）
   /* ⚠⚠⚠ **換怪的第一件事是把上一張拔掉**（ver -1467）：`<img>` 在**新圖解碼完成
      之前不會重繪** —— 只設 `src` 的話，慢網下整段空窗畫面上站著的是**上一隻怪**，
@@ -1975,7 +2015,9 @@ export function loadEnemyPortrait(en){
        ⚠ 走 `api.roarBlast`（combat 擁有的那一支，鐵律 8）—— **不要**退回
          `screenShake`：那是「你被打到了」，這是「衝擊波撞上來」，兩件事。
        ⚠ 龍吟就是卡上的 `entrance`（登場音那一格）—— 不另開欄位。 */
+    const air=isAirBio(en);
     const arrive=()=>{
+      if(air) airEnter(en, eImg, true);
       if(playEntranceVo) playEntranceVo();
       if(en && en.entranceBlast && api.roarBlast) api.roarBlast();
     };
@@ -1990,10 +2032,12 @@ export function loadEnemyPortrait(en){
          只有音與震延到門開的那一刻。
        ⚠ 已經放行了（`riseHeld` 是 false，例如不走門的路徑）就當場發，行為不變。 */
     /* ⚠ 被 `suppressRiseOnce` 壓掉的那一場：登場音與衝擊也不發（見 riseSuppressedNow）。 */
-    const fire=()=>{ if(riseSuppressedNow) return; if(riseHeld) risePending=arrive; else arrive(); };
-    eImg.onload = ()=>{ eImg.onload=null; fire(); startCardIdle(en); };
+    const fire=()=>{ if(riseSuppressedNow){ if(air) airEnter(en, eImg, false); return; } if(riseHeld) risePending=arrive; else arrive(); };
+    const shown=()=>{ eImg.onload=null; fire(); if(!air) startCardIdle(en); };   // 空中生物型：待機等入場演完（airEnter）
+    if(air) eImg.style.opacity='0';   // 門開才由近到遠飛進來（門開前那一格不能已經站著）
+    eImg.onload = shown;
     eImg.src = enemyImage(en);
-    if(eImg.complete && eImg.naturalWidth){ eImg.onload=null; fire(); startCardIdle(en); }
+    if(eImg.complete && eImg.naturalWidth) shown();
     return;
   }
   const arm=()=>{ eImg.onload=null; clearTimeout(riseT); riseT=setTimeout(rise, RISE_DELAY_MS);
@@ -2076,6 +2120,7 @@ function spawnPurgeStars(box){
    ⚠ 冪等：同 `enemy-purge`，overkill 期間重複叫到不會重播。 */
 export function purgeEnemy(){
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
+  stopAirDrift(false);   // 死亡就停在當下那一格（ver -2499）
   /* `deathFx:'skyfall'`（ver -2456，樹寄生石龍；Ray：「龍被擊敗是斜下墜出畫面外」）：不淨化，
      整條龍（照舊播待機動檔，沒動檔就用靜態圖）往右下斜墜平移、加速掉出畫面。冪等（掛 _falling）。 */
   if(en && en.deathFx==='skyfall'){
@@ -2238,6 +2283,7 @@ export function setEnemy(key, opts){
   stopHolyBurst();                              // 同上：放光也是全螢幕的層＋一支還在響的音（ver -1351）
   setSkyBattle(en.sky);                         // 空戰的視差背景（ver -2444）：沒有 `sky` 的怪＝收掉上一隻的
   startDamageSmoke(en.damageSmoke);             // 受損冒黑煙（ver -2490）：沒寫的怪＝收掉上一隻的
+  startAirDrift(en);                            // 戶外空戰生物型的接舷漂移（ver -2499）：不是的怪＝收掉上一隻的
   rollSmokeDir();                               // 船戰的煙往哪一邊飄：這一場擲一次（ver -1653）
   state.currentEnemyKey = key;                 // 3.7：記住目前怪 key，供 boardGridFor 查每盤格數
   state.enemyHitsTaken = 0;                     // 換了一隻怪 → 「這一隻」的受擊數歸零（九階「方舟」，ver -708）

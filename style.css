@@ -470,6 +470,14 @@
   #storyCgBack.enemy-unpurge{animation:enemyPurge .9s ease-in reverse both;transform-origin:50% 100%;}
   /* 劇情這一側的淨化（`cgBackPurge`，ver -1703）—— 與戰鬥那一側同一組 keyframes。 */
   #storyCgBack.enemy-purge{animation:enemyPurge .6s ease-in both;transform-origin:50% 100%;}
+  /* 戶外空戰生物型的入場（ver -2499，Ray：「從近到遠進入畫面」）：起手大、貼著鏡頭偏下、失焦，
+     退到定位。長度只寫在這裡（JS 等 animationend）。之後的緩近緩遠在 JS（startAirDrift）。 */
+  #enemyImg.enemy-airin{animation:enemyAirIn 1.6s cubic-bezier(.2,.65,.25,1) both;}
+  @keyframes enemyAirIn{
+    0%  {opacity:0; transform:translateY(14%) scale(2.6); filter:blur(10px) brightness(.8);}
+    18% {opacity:1;}
+    70% {transform:translateY(0) scale(1.04); filter:blur(0) brightness(1.05);}
+    100%{opacity:1; transform:translateY(0) scale(1); filter:blur(0) brightness(1);}}
   @keyframes enemyRise{
     0%  {opacity:0;   transform:translateY(-7%) scale(calc(1.16 * var(--rise-k,1)));
          filter:blur(22px) saturate(.15) brightness(.55);}

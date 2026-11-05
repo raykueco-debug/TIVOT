@@ -2403,6 +2403,7 @@ function stopAll(){
   saint.stopTimers();    // 停聖徒化計時器（saintTimer / saintReactTimer）
   weapon.stopTimers();   // 停雙槍破防計時器（dualTimer）
   clearLucidFlood(false);   // 明晰之夢的金光（ver -746）：任何結束路徑都收掉，不爆散
+  enemy.stopAirMotion();   // 戶外空戰的接舷漂移（ver -2499）
   enemy.stopSakura();    // 鹿主的櫻花狂亂（ver -899）：它是全螢幕的層＋一支還在響的音
   enemy.stopHolyBurst(); // 王座徘徊者的放光（ver -1351）：同上
   enemy.stopSkyBattle(); // 空戰的視差背景（ver -2444）：一個 rAF＋四層 DOM
