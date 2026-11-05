@@ -669,6 +669,7 @@ export const ENEMIES = {
       },
     },
     np_candlepenitent: {
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'罪之魔像',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -701,6 +702,7 @@ export const ENEMIES = {
       },
     },
     np_coralman: {
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'魘魔',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -718,7 +720,7 @@ export const ENEMIES = {
       stack:0,
       image:'enemy_np_coralman',
       bg:'northport_church_bf',
-      fit:{ mode:'contain', pos:'center bottom' },
+      fit:{ mode:'contain', pos:'50% 100%', scale:0.78 },
       hp:120,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
@@ -3114,6 +3116,7 @@ export const ENEMIES = {
       loot:[ { id:'bell_shard', n:1, p:0.10 } ],
     },
     ruins_halo_ring: {
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'王的容器',
       story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -3145,6 +3148,7 @@ export const ENEMIES = {
       loot:[],
     },
     ruins_heartripper: {
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'撕心者',
       story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -3237,6 +3241,7 @@ export const ENEMIES = {
       loot:[ { id:'saint_claw', n:1 } ],          // 100%
     },
     ruins_saint_inspector: {
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'監查者',
       story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -3682,6 +3687,7 @@ export const ENEMIES = {
        ⚠ `bg` 是**單獨叫用時的墊背**（去背立繪的必要配套）：真的上場時會被城鎮／
          地圖那一格的背景蓋掉（ver -592）。先放神殿那一張。 */
     relic_mirrorchoir: {                       // 裂開的高鏡當頭，手從玻璃內側壓出裂紋
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'鏡唱者',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -3714,6 +3720,7 @@ export const ENEMIES = {
       },
     },
     relic_bellows: {                       // 軀幹是管風琴風箱，自己壓著自己呼吸
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'風箱懺者',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -3746,6 +3753,7 @@ export const ENEMIES = {
       },
     },
     relic_confessional: {                       // 身體是木造告解亭，一隻手從格柵裡貼著
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'告解者',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -3778,6 +3786,7 @@ export const ENEMIES = {
       },
     },
     relic_hourglass: {                       // 胸腔嵌著巨大沙漏，落下的是灰不是沙
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'沙漏苦修者',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -3810,6 +3819,7 @@ export const ENEMIES = {
       },
     },
     relic_keyward: {                       // 頭是一團鑰匙，兩臂末端是鎖
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'鑰匙守',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -3842,6 +3852,7 @@ export const ENEMIES = {
       },
     },
     relic_lectern: {                       // 骨盆長出石造讀經台，十幾隻手按住書頁
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'讀經台',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -3873,6 +3884,7 @@ export const ENEMIES = {
       },
     },
     relic_censerlung: {                       // 肋骨外扳，胸腔裡擺盪著香爐
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'香爐肺',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -3905,6 +3917,7 @@ export const ENEMIES = {
       },
     },
     relic_veilhands: {                       // 一整片祭壇帷幕，後面數不清的手往前推
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'帷幕手',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -3937,6 +3950,7 @@ export const ENEMIES = {
       },
     },
     relic_wheelpsalm: {                       // 巨大的祈禱輪，輻條就是人的手臂
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'詩輪',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -3969,6 +3983,7 @@ export const ENEMIES = {
       },
     },
     relic_chalice: {                       // 頭是過大的聖爵，有手從杯口內側往上抓
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'聖爵溺者',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -4002,6 +4017,7 @@ export const ENEMIES = {
     },
 
     bug_mantis: {
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'（待命名）',
       story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -4033,6 +4049,7 @@ export const ENEMIES = {
       loot:[],   // ⚠ 待填
     },
     relic_bellascetic: {
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'（待命名）',
       story:0, counterStagger:1, boss:0,
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
@@ -4458,6 +4475,7 @@ export const ENEMIES = {
       loot:[],
     },
     grave_censer: {
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'墓香爐',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,
@@ -4545,6 +4563,7 @@ export const ENEMIES = {
       loot:[],
     },
     spiral_veil: {
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'螺旋帷幕',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,
@@ -4693,6 +4712,7 @@ export const ENEMIES = {
       loot:[],
     },
     vault_bat: {
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'穹頂蝙蝠',
       story:1, counterStagger:1, boss:0,
       Ganymede:0,
@@ -4962,6 +4982,7 @@ export const ENEMIES = {
          · `kind:'harm'`（禍魘：降臨＋淨化演出、結算「已淨化」）
          · 沒給 `bg`／`spawnAt`：還沒指定出沒在哪張圖 */
     ph_sword_angel: {
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'執劍天使',
       story:0, counterStagger:1, boss:0,
       Ganymede:0,
@@ -4989,6 +5010,7 @@ export const ENEMIES = {
       loot:[],
     },
     ph_mercy_remnant: {
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'慈愛殘像',
       story:0, counterStagger:1, boss:0,
       Ganymede:0,
@@ -5017,6 +5039,7 @@ export const ENEMIES = {
       loot:[],
     },
     ph_gifted: {
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'才能祝福之人',
       story:0, counterStagger:1, boss:0,
       Ganymede:0.20,   // ver -1858 Ray：玩家普攻 +20%
@@ -5071,6 +5094,7 @@ export const ENEMIES = {
       loot:[],
     },
     ph_hairbound: {
+      float:1,   // 飄浮系：微幅上下浮（ver -2506，Ray；enemy.startFloatBob）
       name:'纏髮之人',
       story:0, counterStagger:1, boss:0,
       Ganymede:0,
@@ -5512,5 +5536,6 @@ ENEMIES.ws_misha_ni = Object.assign({}, ENEMIES.misha, {
   name:'米夏', lastStand:undefined,
   image: ENEMIES.misha.lastStand.image,
   fit: ENEMIES.misha.lastStand.fit,
+  float:1,   // 飄浮系：微幅上下浮（ver -2506）
 });
 

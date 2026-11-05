@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2504';
+export const VERSION = 'ver 2026.11.05-2506';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -1589,14 +1589,14 @@ export const GAME_CONFIG = {
    *    存檔存的是 id，改名不會動到存檔。 */
   items: {
     /* ⚠ `charm`（ver -699）＝**強化護符**：掛在主武器兩支槍的掛件槽上（見 `mainGun`）。
-       ⚠⚠ **護符的卡還沒到**（Ray 未給）—— 這一版只做好槽與生效的管線，
-         `defs` 裡一張護符都沒有是**刻意的**：不要自己發明名字與數值
-         （同「改裝服務準備中」的原則）。一張護符長這樣：
-             charm_xxx: { name:'…', cat:'charm', price:…,
-                          charm:{ dmgMul:1.05 },        // 普攻傷害倍率
-                          desc:'…' }
-         `charm.dmgMul` 是目前唯一接上的效果（`combat.mainGunDmgMul`）；
-         要別的效果（暴擊、破防、聖能）就在那一支加，**不要另開第二個計算點**。 */
+       ver -2505 起 C01–C13 十三張已接（見下一段）；效果的計算點只有 combat 的 `charmSum` 那一組，
+       要新效果就在那裡加，**不要另開第二個計算點**。 */
+    /* ══ 迦尼米德雙槍・掛飾（ver -2505，Ray 定的 `掛飾_增益草案.xlsx`）══
+       ⚠ `charm` 裡的數字一律是**增益量**（不是倍率）：0.08＝+8%。全部乘上 `charmScale`（＝表頭的全域係數）。
+       ⚠ 條件與門檻不縮放：`charmTune`、C03 的「不顯示下一格」、C09 的「必爆」。
+       ⚠ 計算點只有 combat 一處（`charmSum`，鐵律 7）。圖示 `icon` 在 resources/item/charm/。 */
+    charmScale: 1,
+    charmTune: { fastSecPerCell: 0.8, streakMax: 5 },   // 快速清盤的基準＝盤格數 × 0.8 秒（閃電徽章／銀色秒針共用）；秒針最多 5 層
     catOrder: ['item','weapon','charm','material','food','treasure','equip','special'],
     catName:  { item:i18nT('道具'), weapon:i18nT('武器'), charm:i18nT('護符'), material:i18nT('素材'), food:i18nT('食材'), treasure:i18nT('寶物'), equip:i18nT('裝備'), special:i18nT('特殊') },
     /* ⚠ `price`＝**市價**（買進的價）。賣出價由 `shop.sellRate` 折算（Ray：買收價為物價 50%）
@@ -1604,6 +1604,20 @@ export const GAME_CONFIG = {
        ⚠ 沒寫 `price` 的道具**不能買也不能賣**（劇情道具、任務物品都該如此）。
        ⚠ `use`＝使用效果（目前只有恢復體力的數值；戰鬥外的使用系統還沒做，先把資料放著）。 */
     defs: {
+      /* 掛飾 C01–C13（ver -2505）：效果文字＝Ray 原文；數值＝增益草案（表頭係數＝`charmScale`）。取得途徑未定。 */
+      charm_C01: { name:'破碎的懷錶', cat:'charm', icon:'resources/item/charm/charm_C01.webp', charm:{ lastHitPerSec:0.04, lastHitCap:0.5 }, desc:'清盤時間越長，該盤最後一擊傷害越高' },
+      charm_C02: { name:'閃電徽章', cat:'charm', icon:'resources/item/charm/charm_C02.webp', charm:{ fastPerSec:0.08, fastCap:0.5 }, desc:'清盤速度越快，該盤最後一擊傷害越高' },
+      charm_C03: { name:'雙槍手徽章', cat:'charm', icon:'resources/item/charm/charm_C03.webp', charm:{ extraShotDmg:0.5 }, desc:'每次點擊額外發射一發隨機射擊；盤面不再顯示下一格提示' },
+      charm_C04: { name:'破甲吊墜', cat:'charm', icon:'resources/item/charm/charm_C04.webp', charm:{ energyMul:0.15 }, desc:'破防值累積速度增加' },
+      charm_C05: { name:'紅寶石耳墜（左）', cat:'charm', icon:'resources/item/charm/charm_C05.webp', charm:{ critRate:0.1 }, desc:'爆擊率增加' },
+      charm_C06: { name:'紅寶石耳墜（右）', cat:'charm', icon:'resources/item/charm/charm_C06.webp', charm:{ critDmg:0.2 }, desc:'爆擊傷害增加' },
+      charm_C07: { name:'黃銅彈吊飾', cat:'charm', icon:'resources/item/charm/charm_C07.webp', charm:{ dmgMul:0.08 }, desc:'普攻攻擊力增加' },
+      charm_C08: { name:'自信家徽章', cat:'charm', icon:'resources/item/charm/charm_C08.webp', charm:{ dmgByEnergy:0.3 }, desc:'破防值越高，普攻傷害越高' },
+      charm_C09: { name:'復仇手鍊', cat:'charm', icon:'resources/item/charm/charm_C09.webp', charm:{ revengeCrit:1, revengeCritDmg:0.1 }, desc:'受到攻擊後，下一次普通攻擊必定爆擊' },
+      charm_C10: { name:'幸運彈殼', cat:'charm', icon:'resources/item/charm/charm_C10.webp', charm:{ critEchoRate:0.2, critEchoDmg:0.5 }, desc:'爆擊時有機率追加一次攻擊' },
+      charm_C11: { name:'褪色軍牌', cat:'charm', icon:'resources/item/charm/charm_C11.webp', charm:{ dmgByLowHp:0.4 }, desc:'生命值越低，普攻傷害越高' },
+      charm_C12: { name:'銀色秒針', cat:'charm', icon:'resources/item/charm/charm_C12.webp', charm:{ streakDmg:0.05 }, desc:'連續快速清盤，逐盤增加攻擊力' },
+      charm_C13: { name:'黑曜石戒指', cat:'charm', icon:'resources/item/charm/charm_C13.webp', charm:{ cleanLastHit:0.4 }, desc:'清盤零失誤時，最後一擊傷害增加' },
       /* ══⚠⚠ **薇拉馮德家的紋章**（ver -661，Ray 指定）══════════════════════
          「讓主角身上永遠有一個，數量無限，賣一次得錢 1000 元」。
          ⚠ `always:true` ＝ 它是道具**定義**的性質，不進道具欄的帳

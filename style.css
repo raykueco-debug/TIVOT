@@ -5268,6 +5268,7 @@
   #gearSheet .gs-charm{flex:none;font-size:10px;color:var(--gold-dim);
     display:flex;align-items:center;gap:4px;}
   #gearSheet .gs-charm.on{color:var(--gold);}
+  #gearSheet .gs-charm-ico{width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-right:3px;}   /* 掛件槽上的掛飾圖示（ver -2505） */
   #gearSheet .gs-charm i{font-style:normal;font-size:8.5px;letter-spacing:1px;
     color:var(--gold-dim);opacity:.8;}
   /* ── 三個順位 ── */

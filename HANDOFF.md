@@ -99,6 +99,8 @@
 - ✔ ver -2501：空戰生物型入場改成不淡入：從機尾那側斜下方的畫面外、放大三倍飛進來，一路縮回原尺寸、越過一點再定位（`airEnter`，1.9 秒）。CSS `enemyAirIn` 已拿掉。
 - ✔ ver -2502：dragon rule 的空戰生物不演受擊特效（`showHitFx` 擋掉；受擊音效照舊，Ray 另外找）；發動攻擊那一刻放 `se_enemy_dragonroar`（卡上 `assaultSe` 優先）。另出 `敵人一覽_空戰_動畫編排.xlsx`（22 隻，根目錄、未入版控）。
 - ✔ ver -2504：E017 魘魔接攻擊動畫 `mon_sea_coralman_atk_v1`（hit 13，只有撲出段）。順修：空戰入場途中換怪，上一隻（如空賊船）入場收尾會把牠的待機掛回新怪身上 —— `airEnter` 收尾先驗是不是同一隻、換怪時取消上一隻的入場動畫。
+- ✔ ver -2505：雙槍掛飾 C01–C13 接上（`items.defs.charm_C01`…，數值＝Ray 改好的 `掛飾_增益草案.xlsx`，全域係數＝`items.charmScale`、條件門檻在 `items.charmTune`）。效果全部在 combat 的 `charmSum` 一組：普攻倍率（C07/C08/C11/C12）、爆擊率／爆傷（C05/C06）、破防累積（C04）、最後一擊（C01/C02/C13）、追加射擊（C03 每點一發＋不顯示下一格、C10 爆擊機率追加）、C09 受擊後下一發必爆。整備頁掛件槽與掛飾清單有圖示，掛著的那一張按下去＝卸下。⚠ 欠：**取得途徑未定**（沒有商店／掉落），目前只有測試能拿到。
+- ✔ ver -2506：飄浮系敵人微幅上下浮（卡上 `float:1`，`enemy.startFloatBob`，振幅畫面高 1.6%、約 3.4 秒一輪）。先標 25 隻（我照立繪判斷的，Ray 確認）：np_coralman／np_candlepenitent／relic 系 11 隻／ruins_halo_ring／ruins_heartripper／ruins_saint_inspector／spiral_veil／grave_censer／ph_sword_angel／ph_mercy_remnant／ph_gifted／ph_hairbound／vault_bat／bug_mantis／ws_misha_ni。
 - ✔ ver -2465：**龍的巡游線移到大樹入口側**（Ray：「龍不要在大樹後方，要靠近大樹但在入口那一側」）。`ucDragonTick` 生成點由「樹後 250」改成「船那一側、樹幹外緣再讓 260」（`-(T.Rb+260)`）；船從入口飛進來，所以船那一側＝入口側。
 - ✔ ver -2464：**地下城的龍會被 3D 掩體擋住**（Ray：「龍隔著 3D 掩體還是可視，修正之」）。原本畫在 2D 層、只吃地形遮擋（而且根本沒裁），樹幹／柱子／建築是 GL 網格擋不住。改成 `glDrawUcDragon`：GL 裡一張面向鏡頭的立牌（借 `GL_PLANT_VS` 的投影），與網格同一顆深度緩衝，只測不寫深度、預乘 alpha 混色、吃霧；幀與翻轉由 `ucDrgFrame` 一支算（2D 退路共用）。2D 版只在 GL 沒畫時才畫，並補上 `clipByTerrainDepth`。
 - ✔ ver -2463：**龍攻完的飛回改成斜下進入、悠揚**（Ray：「要從斜下進入，由大到小，不用那麼快，悠揚感」）。起點在畫面左下角外、放大 1.6 倍，2.3 秒緩緩減速滑進、由大縮小，末段輕輕越過一點（右上 4%／3%）再沉回原位。

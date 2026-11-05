@@ -67,6 +67,7 @@
     align-items:baseline;padding:8px 10px;border:1px solid transparent;
     background:rgba(255,255,255,.03);border-radius:8px;}
   #lootSheet .loot-name{font-size:13px;color:var(--ink);}
+  #lootSheet .loot-ico{width:30px;height:30px;object-fit:contain;flex:none;margin-right:6px;vertical-align:middle;}   /* 道具圖示（ver -2505 掛飾） */
   #lootSheet .loot-n{font-size:13px;color:var(--gold);letter-spacing:1px;}
   /* 說明佔整列（grid 第二行跨兩欄）：名稱與數量對齊，敘述在下面小字。 */
   /* ⚠ `pre-line`（ver -380）：武器的說明是**多行**的（規格一行一條，由

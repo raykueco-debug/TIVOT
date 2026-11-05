@@ -287,6 +287,7 @@ function mainGunHtml(){
     return '<div class="gs-barrel" data-barrel="'+b.id+'">'
          +   '<b>'+b.name+'</b>'
          +   '<span class="gs-charm'+(d?' on':'')+'">'
+         +     (d && d.icon ? '<img class="gs-charm-ico" src="'+d.icon+'" alt="">' : '')
          +     i18nT('<i>掛件</i>')+(d ? (d.name||id) : '—')+'</span>'
          +   '<span class="gs-arrow">›</span>'
          + '</div>';
@@ -728,8 +729,7 @@ function bind(){
 }
 
 /* 點一個掛件槽 → 道具欄的護符類（走 `showBag` 的 equip 模式，與副武器同一支）。
-   ⚠ 目前 `items.defs` 裡一張護符都沒有（Ray 的卡還沒到）—— 清單會是空的，
-     那是**對的**：不要為了讓它看起來有東西就自己發明護符（同「改裝服務準備中」）。 */
+   ⚠ ver -2505 起有 13 張掛飾（C01–C13）；清單只列**持有的**，掛著的那一張按下去＝卸下。 */
 function openCharm(barrel){
   const MG=GAME_CONFIG.mainGun||{};
   try{ SFX.unlock(); SFX.menuClick(); }catch(_){}

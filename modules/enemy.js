@@ -1377,8 +1377,24 @@ function stopAirDrift(reset){
   if(reset && airInAnim){ const a=airInAnim; airInAnim=null; try{ a.cancel(); }catch(_){} }   // 換怪：上一隻還在飛進來
   if(reset) for(const el of [$('enemyImg'), idleEl, clipEl]) if(el){ el.style.translate=''; }
 }
+/* 飄浮系（卡上 `float`，ver -2506，Ray：「飄浮系的敵人要微幅上下飄動」）：只上下浮，不縮放。
+   `float:1`＝預設（振幅畫面高 1.6%、約 3.4 秒一輪）；寫成數字以外的物件 `{amp, sec}` 可逐隻調。
+   ⚠ 用獨立 `translate`（同漂移），不碰 transform；收的路同 stopAirDrift。 */
+function startFloatBob(en){
+  const f=en.float, amp=(f && f.amp!=null) ? f.amp : 0.016, sec=(f && f.sec) ? f.sec : 3.4, ph=Math.random()*6.283;
+  const S={ raf:0, t0:performance.now() }; airDrift=S;
+  const tick=now=>{ if(airDrift!==S) return;
+    const top=$('top'), H=top?top.clientHeight:400, t=(now-S.t0)/1000, e=Math.min(1,t/1.2);
+    const dy=e*H*amp*(Math.sin(t*6.283/sec+ph) + 0.25*Math.sin(t*6.283/sec*2.3+ph*1.7))/1.25;
+    const tr='0px '+dy.toFixed(1)+'px';
+    for(const el of [$('enemyImg'), idleEl, clipEl]) if(el) el.style.translate=tr;
+    S.raf=requestAnimationFrame(tick); };
+  S.raf=requestAnimationFrame(tick);
+}
 function startAirDrift(en){
-  stopAirDrift(true); if(!isAirBio(en)) return;
+  stopAirDrift(true);
+  if(en && en.float && !isAirBio(en)) return startFloatBob(en);
+  if(!isAirBio(en)) return;
   const fl=en.fit && en.fit.flip ? -1 : 1, ph=Math.random()*100;
   const S={ raf:0, t0:Infinity }; airDrift=S;   // t0＝入場演完那一刻（airArrived 設），之前振幅 0
   const tick=now=>{ if(airDrift!==S) return;

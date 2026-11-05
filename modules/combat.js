@@ -451,6 +451,7 @@ function markNext(){
      所以「指引每一格」就是把這一道門讓開（發動那一刻的第一格由 partner 的
      fireBuff 叫 hintCurrentCell 指）。 */
   if(!(BOARDS[state.boardIndex]||BOARDS[BOARDS.length-1]).hint && !hintAlways()) return;
+  if(charmHas('extraShotDmg') && !hintAlways()) return;   // 掛飾 C03 的代價：不顯示下一格提示（ver -2505）
   const c=state.cells.find(c=>+c.dataset.num===state.expect);
   if(c) c.classList.add('next');
 }
@@ -716,7 +717,7 @@ function tap(num,cell,e){
      以前骰子在傷害分支裡才擲，而槍火在這一行就畫了，兩邊無從一致（鐵律 7）。
      ⚠ 只有「依序點中」那一發會真的用到它；點錯照舊被劈落（`pierce` 為 false）。 */
   const critRoll = Math.random();
-  const critHit  = num===state.expect && critRoll < critRateAt(state.critCombo);
+  const critHit  = num===state.expect && (critRoll < critRateAt(state.critCombo) || state.charmRevenge);   // 掛飾 C09：受擊後下一發必爆
   rollShotParry();                  // 劈落的骰子也在這裡擲一次（ver -2043，見 parryNow）
   gunHitOnEnemy(cell, critHit);     // 槍擊特效映射到敵人對應位置
 
@@ -782,11 +783,15 @@ function tap(num,cell,e){
     //   本擊先以「現值」擲骰再 +1（首擊＝base 暴擊率）；命中則跳紅字「暴擊」（交由 enemyDamage 的 isCrit 呈現）。
     let crit=false;
     const cc=state.critCombo;
-    if(critRoll < critRateAt(cc)){   // 骰子是 tap 開頭那一顆（ver -2012：槍火要先知道會不會打穿劈落）
-      crit=true; dmg*=(1 + critDmgAt(cc));
+    if(state.expect===state.N) dmg*=charmLastHitMul();   // 掛飾 C01／C02／C13：這一盤的最後一擊（ver -2505）
+    const rev=state.charmRevenge; state.charmRevenge=false;   // 掛飾 C09：用掉
+    if(critRoll < critRateAt(cc) || rev){   // 骰子是 tap 開頭那一顆（ver -2012：槍火要先知道會不會打穿劈落）
+      crit=true; dmg*=(1 + critDmgAt(cc) + (rev ? charmSum('revengeCritDmg') : 0));
     }
     state.critCombo++;
     enemyDamage(Math.round(dmg),crit,false,'basic');   // 點擊直接扣敵血（crit=true → 敵區跳紅字「暴擊」）
+    { const ex=charmSum('extraShotDmg'); if(ex) charmShot(hitDamage()*ex); }   // 掛飾 C03：每次點擊追加一發
+    if(crit){ const er=charmSum('critEchoRate'); if(er && Math.random()<er) charmShot(hitDamage()*charmSum('critEchoDmg')); }   // 掛飾 C10
     shotHeal();                          // 回血窗（即死防禦免傷／生命歸還吸血，ver -965 三種射擊都算）
     state.expect++;
     tutorial.onBoardProgress(state.expect-1);   // 教學：第四回合清滿 N 格 → 劇情殺（非教學 no-op）
@@ -949,6 +954,9 @@ function clearBoard(opts){
   clearAtkBuff();                   // 攻擊加倍 buff 不跨盤
   const elapsed=(Date.now()-state.boardStartTime)/1000;
   recordBoardTime(elapsed);
+  /* 掛飾 C12 銀色秒針（ver -2505）：清盤時間 ≤ 基準（格數 × 0.8 秒）＝疊一層，慢一盤就歸零 */
+  if(charmHas('streakDmg')) state.charmStreak = elapsed <= state.N*charmTune('fastSecPerCell',0.8)
+    ? Math.min(charmTune('streakMax',5), (state.charmStreak|0)+1) : 0;
   // 清盤 bonus 聖能：僅在本盤全程無出錯、未受擊時給予（依清盤速度）
   if(state.boardClean){
     /* 完美清盤 +1（ver -659，Ray：「完美清盤一次 −1 秒」）。
@@ -1155,23 +1163,51 @@ export function muzzleAtPoint(x, y, k){
    ⚠ 護符要別的效果（暴擊、破防、聖能）就在**這裡**加一支對應的取值函式，
      不要在各處自己乘一次 —— 那正是鐵律 7 反覆踩過的那個坑。
    ⚠ 不快取：旗標與掛件都是**遊戲中途**才變的（同 gunTuneMul 原本的理由）。 */
-function charmDmgMul(){
-  const MG=GAME_CONFIG.mainGun; if(!MG || !MG.barrels) return 1;
+/* ══ 掛飾（ver -2505）══ 兩支槍掛件槽上的護符，欄位逐一加總、乘全域係數 `items.charmScale`。
+   **掛飾的每一個效果都只問這幾支**（鐵律 7）。 */
+function charmList(){
+  const MG=GAME_CONFIG.mainGun; if(!MG || !MG.barrels) return [];
   const defs=(GAME_CONFIG.items||{}).defs||{};
-  let m=1;
-  for(const b of MG.barrels){
-    const d = defs[prog.charmOf(b.id)];
-    const c = d && d.charm;
-    if(c && isFinite(c.dmgMul)) m *= c.dmgMul;
-  }
+  return MG.barrels.map(b=>defs[prog.charmOf(b.id)]).filter(d=>d && d.charm).map(d=>d.charm);
+}
+function charmSum(f){
+  let s=0; for(const c of charmList()) if(isFinite(c[f])) s+=c[f];
+  const k=(GAME_CONFIG.items||{}).charmScale; return s*(k!=null ? k : 1);
+}
+function charmHas(f){ return charmList().some(c=>c[f]!=null); }
+function charmTune(k, d){ const t=(GAME_CONFIG.items||{}).charmTune||{}; return t[k]!=null ? t[k] : d; }
+/* 普攻的掛飾倍率：C07 常駐／C08 破防值越高越痛／C11 血越少越痛／C12 連續快速清盤的層數 */
+function charmDmgMul(){
+  let m=1+charmSum('dmgMul');
+  const e=charmSum('dmgByEnergy'); if(e) m*=1+e*Math.max(0,Math.min(1,state.energy/100));
+  const lh=charmSum('dmgByLowHp'); if(lh && state.playerMax>1) m*=1+lh*(1-Math.max(0,Math.min(1,(state.playerHp-1)/(state.playerMax-1))));
+  const sd=charmSum('streakDmg'); if(sd) m*=1+sd*(state.charmStreak|0);
   return m;
 }
 function mainGunDmgMul(){ return gunTuneMul() * charmDmgMul(); }
+/* 一盤最後一擊的掛飾加傷：C01 越慢越痛／C02 越快越痛（基準＝格數 × 0.8 秒）／C13 完美清盤 */
+function charmLastHitMul(){
+  const el=(Date.now()-state.boardStartTime)/1000; let b=0;
+  const ps=charmSum('lastHitPerSec'); if(ps) b+=Math.min(charmSum('lastHitCap'), ps*el);
+  const fs=charmSum('fastPerSec'); if(fs) b+=Math.min(charmSum('fastCap'), fs*Math.max(0, state.N*charmTune('fastSecPerCell',0.8)-el));
+  if(state.boardClean) b+=charmSum('cleanLastHit');
+  return 1+b;
+}
+/* 掛飾的追加射擊（C03 每次點擊一發／C10 爆擊時機率一發）：隨機打在怪身上，不暴擊、不再觸發追加。 */
+function charmShot(dmg){
+  if(!(dmg>0)) return;
+  setTimeout(()=>{
+    if(state.over || !state.cells || !state.cells.length) return;
+    const cell=state.cells[(Math.random()*state.cells.length)|0];
+    gunHitOnEnemy(cell, false); try{ SFX.gunshot(false); }catch(_){}
+    enemyDamage(Math.round(dmg), false, false, 'basic');
+  }, 70+Math.random()*60);
+}
 /* ══ 普攻暴擊：率與加傷（ver -707）══ 兩處點擊分支（聖徒化／一般）**共用這兩支**
    （鐵律 7）—— 九階強化的「運之王」（率 +10%）與「王之運」（加傷 +20%）
    只加在這裡。 */
-function critRateAt(cc){ return CRIT_BASE_RATE + cc*CRIT_PER_COMBO + prog.bonus('critRate') + partner.installCritRate(); }   // 諾的聖徒化 +30%（ver -2019）
-function critDmgAt(cc){  return CRIT_DMG_BASE  + cc*CRIT_DMG_PER_COMBO + prog.bonus('critDmg'); }
+function critRateAt(cc){ return CRIT_BASE_RATE + cc*CRIT_PER_COMBO + prog.bonus('critRate') + partner.installCritRate() + charmSum('critRate'); }   // 諾的聖徒化 +30%（ver -2019）
+function critDmgAt(cc){  return CRIT_DMG_BASE  + cc*CRIT_DMG_PER_COMBO + prog.bonus('critDmg') + charmSum('critDmg'); }
 /* ver -707：普攻的永久強化＝九階裡的**吞噬者**（可多次，每次 +5%）。
    ⚠ -700 的線性等級已退役，舊存檔由 `progress.gunStars` 自動遷移成吞噬者的次數。 */
 function gunTuneMul(){ return 1 + prog.bonus('dmgMul'); }
@@ -1409,6 +1445,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
   state.boardClean=false;            // 受擊 → 本盤取消清盤破防獎勵
   state.critCombo=0;                 // 受擊中斷：暴擊連擊歸零（延時懲罰/按錯重擊/大絕/格擋掉血皆經此路徑）
   state.hitsTaken++;                 // 評價受擊數（此路徑＝真實掉血；=0 即無傷 gate）
+  if(charmHas('revengeCrit')) state.charmRevenge=true;   // 掛飾 C09 復仇手鍊：受擊上膛（ver -2505）
   state.enemyHitsTaken++;            // 這一隻的受擊數（九階「方舟」，ver -708）
   /* 真實受擊 → 整場無傷旗標取消。⚠ **腳本演出的那幾擊不算**（劇情殺三連擊，
      ver -620（-893 前用詞），Ray：「如果玩家除此之外無傷的話一樣記無傷」）—— 同 `_scriptedHits`
@@ -1688,7 +1725,7 @@ function addEnergy(v){
   }
   /* 九階強化「疾走」：破防值累積加速（ver -707）。⚠ 乘在**入口**這一處 ——
      呼叫端有好幾個（點擊、反擊…），各自乘一次必然漏掉其中一個（鐵律 7/8）。 */
-  let gain = v*svBoost*(1+prog.bonus('energyMul'));
+  let gain = v*svBoost*(1+prog.bonus('energyMul')+charmSum('energyMul'));   // 掛飾 C04 破甲吊墜（ver -2505）
   /* ══⚠⚠⚠ **共鬥期間預設不累積破防值**（ver -1002，Ray：「在索拉娜 lv9 之前，
      共鬥時是不會累計破防值的」）══ 共鬥是**消耗全部破防值**換來的一段，
      期間又照樣累積的話等於一邊燒一邊補。
@@ -3374,7 +3411,7 @@ export function startGame(){
   state.playerHp=state.playerMax;
   state.N=9; state.cols=3;
   state.runStartTime=Date.now(); resetClock();   // 計時碼表歸零（loadBoard 起算）
-  state.boardTimes=[]; state.boardsCompleted=0;
+  state.boardTimes=[]; state.boardsCompleted=0; state.charmStreak=0; state.charmRevenge=false;
   state.flawlessRun=true; state.intruderTriggered=false; state.inIntruderFight=false;
   morphed=false; morphSwapping=false;   // 型態切換一場只做一次（ver -1418）；-1486 加上「換卡中」
   state.overkillClean=false;   // 這一場的 ovk 是否完全清空殘額（ver -1389，追逐讀它）
@@ -3673,7 +3710,7 @@ export function startIntruderFight(){
   state.playerHp=state.playerMax; state.enemyHp=state.enemyMax;
   state.N=9; state.cols=3;
   state.runStartTime=Date.now(); resetClock();   // 新場：計時碼表歸零
-  state.boardTimes=[]; state.boardsCompleted=0;
+  state.boardTimes=[]; state.boardsCompleted=0; state.charmStreak=0; state.charmRevenge=false;
   state.flawlessRun=true; state.deathGuardUsed=false;
   morphed=false; morphSwapping=false;   // 型態切換一場只做一次（ver -1418）；-1486 加上「換卡中」
   state.sRankUnlocked=false; state.resultMode='rematch';

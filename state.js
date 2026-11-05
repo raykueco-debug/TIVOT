@@ -42,6 +42,8 @@ export const state = {
   expect: 1,
   combo: 0,
   enemyBrBonus: 0,      // 防禦型的 BR 增傷（ver -1584，擁有者 enemy）
+  charmRevenge: false,   // 掛飾 C09 復仇手鍊：受擊後上膛、下一發普攻必爆（ver -2505，擁有者 combat）
+  charmStreak: 0,        // 掛飾 C12 銀色秒針：連續快速清盤的層數（ver -2505，擁有者 combat；開局歸零）
   critCombo: 0,          // 暴擊用連擊（普攻）：正確點擊 +1；受擊或清盤歸零。驅動暴擊率/加傷成長。
   // 評價系統（rating）用的整場統計（combat 擁有；startGame/startIntruderFight 歸零）：
   maxCombo: 0,           // 整場最高連擊

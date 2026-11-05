@@ -120,6 +120,8 @@ export function showLoot(list, done, money, opts){
    ⚠ 只有這一支在轉（鐵律 8）：四個印「×n」的地方都問它，漏一個就會出現「×Infinity」。 */
 function qtyText(n){ return (n===Infinity || n===-Infinity || !isFinite(n)) ? '∞' : String(n); }
 
+/* 道具圖示（`defs[].icon`，ver -2505 掛飾起）：有就在名字前面放一顆，沒有就不放。 */
+function icoHtml(id){ const d=inv.defOf(id)||{}; return d.icon ? '<img class="loot-ico" src="'+d.icon+'" alt="">' : ''; }
 export function bagListHtml(catFilter, opts){
   ensureCss();
   const o=opts||{};
@@ -136,7 +138,7 @@ export function bagListHtml(catFilter, opts){
           const u=o.use && ((inv.defOf(r.id)||{}).use||null);
           const useBtn=(u && (u.hp!=null || u.niem))
             ? '<button class="bag-use" data-id="'+r.id+i18nT('" type="button">使　用</button>') : '';
-          return '<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
+          return '<div class="loot-row"><span class="loot-name">'+icoHtml(r.id)+r.name+'</span>'
                + '<span class="loot-n">×'+qtyText(r.n)+'</span>'
                + (r.desc?'<span class="loot-desc">'+r.desc+'</span>':'')
                + useBtn + '</div>';
@@ -161,7 +163,14 @@ export function showBag(opts){
        —— 用它列的話玩家只看得到買來的槍，換不回原本那把。
        持有與否只有一支真相：`inv.hasWeapon()`／`inv.ownedWeapons()`（§6.5.3）。 */
     let groups;
-    if(o.equip && o.cat){
+    const charmCat=((GAME_CONFIG.mainGun||{}).charmCat||'charm');
+    const isCharmView=!!(o.equip && o.cat===charmCat);
+    if(isCharmView){
+      /* 掛飾（ver -2505）：持有的護符，說明＝卡上的 desc。 */
+      const D=(GAME_CONFIG.items||{}).defs||{};
+      const ids=Object.keys(D).filter(k=>D[k].cat===charmCat && inv.count(k)>0);
+      groups=[{ name:i18nT('掛飾'), rows:ids.map(id=>({ id, name:inv.nameOf(id), n:inv.count(id), desc:D[id].desc||'' })) }];
+    }else if(o.equip && o.cat){
       const WP=GAME_CONFIG.weapons||{};
       const ids=inv.ownedWeapons().filter(k=>WP[k] && WP[k].cat===o.cat);
       groups=[{ name:o.cat, rows:ids.map(id=>({ id, name:inv.nameOf(id), n:1,
@@ -175,19 +184,20 @@ export function showBag(opts){
         ? g.rows.map(r=>{
             /* ⚠ 「裝備」只給**武器**：`inv.defOf` 查不到的道具沒有 `cat` 對得上，
                而且裝備的概念只存在於副武器（鐵律 8：不要讓別的道具也長出這顆鈕）。 */
-            const isW = !!(GAME_CONFIG.weapons||{})[r.id];
+            const isW = !!(GAME_CONFIG.weapons||{})[r.id] || isCharmView;   // 掛飾也長「裝備」鈕（ver -2505）
             const cur = o.equip && isW && o.current===r.id;
+            /* 掛飾：已掛上的那一列按下去＝卸下（武器的「使用中」照舊不能按掉，副武器順位不能空） */
             const btn = (o.equip && isW)
-              ? '<button class="bag-eq'+(cur?' cur':'')+'" data-id="'+r.id+'" type="button">'
-                + (cur?i18nT('使用中'):i18nT('裝　備'))+'</button>' : '';
-            return '<div class="loot-row"><span class="loot-name">'+r.name+'</span>'
+              ? '<button class="bag-eq'+(cur?' cur':'')+'" data-id="'+(cur && isCharmView ? '' : r.id)+'" type="button">'
+                + (cur ? (isCharmView ? i18nT('卸　下') : i18nT('使用中')) : i18nT('裝　備'))+'</button>' : '';
+            return '<div class="loot-row"><span class="loot-name">'+icoHtml(r.id)+r.name+'</span>'
                  + (o.equip ? '' : '<span class="loot-n">×'+qtyText(r.n)+'</span>')
                  + (r.desc?'<span class="loot-desc">'+r.desc+'</span>':'')+btn+'</div>';
           }).join('')
         : '<div class="bag-empty">—</div>';
       return '<div class="bag-cat">'+g.name+'</div>'+rows;
     }).join('') || bagListHtml(o.cat);
-    ov.innerHTML='<div class="loot-panel"><div class="loot-title">'+(i18nT(o.cat)||i18nT('道具欄'))+'</div>'
+    ov.innerHTML='<div class="loot-panel"><div class="loot-title">'+(isCharmView ? i18nT('掛飾') : (i18nT(o.cat)||i18nT('道具欄')))+'</div>'
                + '<div class="bag-money">'+inv.moneyName()+'　<b>'+inv.getMoney()+'</b></div>'
                + '<div class="loot-list">'+body+'</div>'
                + i18nT('<button class="loot-ok" type="button">關閉</button></div>');
@@ -196,8 +206,8 @@ export function showBag(opts){
     ov.querySelectorAll('.bag-eq').forEach(b=>b.addEventListener('click', e=>{
       e.stopPropagation();
       try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
-      o.current=b.dataset.id;
-      if(o.onEquip) o.onEquip(b.dataset.id);
+      o.current=b.dataset.id || null;   // 空字串＝卸下（掛飾）
+      if(o.onEquip) o.onEquip(o.current);
       render();                       // 重畫：「使用中」要換到新的那一列
     }));
   };
