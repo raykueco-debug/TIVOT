@@ -1304,7 +1304,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
   if(!_plain && (kind==='delay'||kind==='wrong') && !_rainLanded){
     /* -2496 Ray「攻擊播放時延時先到的話就消掉攻擊圈，所以不會兩動畫衝突」：有動作動畫的怪，延時先到 ⇒ 場上的攻擊圈全消 */
     if(kind==='delay' && enemy.hasActionClips()) defense.clearThreat();
-    const wait=enemy.playActionClip('delay');
+    const wait=enemy.playActionClip(kind==='wrong' ? 'miss' : 'delay');   // 點錯播 M（沒有 M 的怪 clipFor 會借延時那一支，ver -2524）
     if(wait>0){ setTimeout(()=>{ if(state.over) return; enemyAttack(dmg, kind, saintAmt, true); }, wait); return; }
   }
   saint.resetSaintCombo();   // 受擊／點錯／逾時 → 連擊斷（九階「源泉」，ver -707）

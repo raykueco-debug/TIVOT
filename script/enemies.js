@@ -102,6 +102,7 @@ export const ENEMIES = {
       stageScale:1,
       stack:0,
       image:'enemy_trainee',    // → resources/enemy/saint_tr_neutral.webp（ver -2520）
+      fit:{ pos:'50% 0%', scale:0.8 },   // ver -1883 敵立繪編輯面板
       bg:'../enemy/saint_tr_bg',   // 戰鬥背景（ver -2520，美術交的空走廊；檔在 resources/enemy/，走 bgUrl 的根目錄相對路徑）
       hp:100,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:10,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -833,8 +834,9 @@ export const ENEMIES = {
       atype:'P',
       stageScale:1,
       stack:1,
-      image:'enemy_np_claws',
-      bg:'northport_church_bf',
+      image:'enemy_np_claws',   // → mon_np_anyawings.webp（ver -2524：瓦礫中安雅的光翼，Ray）
+      bg:'northport_church_ruin', bgLock:true,   // 教堂殘垣（中央瓦礫堆＝安雅被埋處）；bgLock＝不讓城鎮那一格的背景蓋掉（ver -2524）
+      fit:{ mode:'contain', pos:'center bottom' },   // 橫幅光翼：翼根在下緣中央，從瓦礫堆長出來
       hp:510,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:21,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,

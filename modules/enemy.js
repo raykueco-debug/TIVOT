@@ -15,7 +15,7 @@
 
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import * as prog from '../script/progress.js';  // stage 加成要問現在第幾章（ver -1584b）
-import { ENEMY_IDLE, ENEMY_ATK, ENEMY_DELAY, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
+import { ENEMY_IDLE, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
@@ -1186,10 +1186,12 @@ function loadClip(dir){
     return Promise.all(fr.map(f=>f.decode ? f.decode().catch(()=>{}) : 0)).then(()=>{ if(fr.every(f=>f.naturalWidth)){ c.j=j; c.fr=fr; } });
   }).catch(()=>{});
 }
-function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[imgStem(en)])||null; }
-function preloadActionClips(en){ for(const k of ['atk','delay']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); } }
+function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; const s=imgStem(en);
+  if(kind==='miss') return ENEMY_MISS[s] || ENEMY_DELAY[s] || null;   // 點錯：有 M 用 M，沒有就借延時那一支（ver -2524）
+  return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[s])||null; }
+function preloadActionClips(en){ for(const k of ['atk','delay','miss']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); } }
 /* 這隻怪有沒有 M（點錯）動作：點錯播的是延時那一支（ENEMY_DELAY），有它就算有 M（ver -2523）。 */
-export function hasMissClip(){ return !!clipFor('delay'); }
+export function hasMissClip(){ return !!clipFor('miss'); }
 export function hasActionClips(){ return !!(clipFor('atk') || clipFor('delay')); }   // 這隻怪有攻擊／延時動畫嗎（ver -2496）
 let clipT=0, clipEl=null;
 /* 平時站遠（ENEMY_ATK 的 `far`，ver -2473）：用 CSS 的獨立 `scale` 屬性縮 —— 不碰 transform，受擊動畫照常疊上去。
@@ -1218,7 +1220,9 @@ export function playActionClip(kind){
       const n=String(c.near || 1), kf = (kind==='atk' || c.near) ? [{scale:String(k),offset:0},{scale:n,offset:off(tHit)},{scale:n,offset:off(hold)},{scale:String(k),offset:off(back)},{scale:String(k),offset:1}] : [{scale:String(k)},{scale:String(k)}];
       el.animate(kf.map(q=>({...q, easing:'ease-in-out'})),{duration:T}); } }   /* ease 逐段套，峰值才準準落在 hit 那一格（-2485） */
   const t0=performance.now();
+  const fxAt=new Map((c.fx||[]).map(f=>[f.frame, f]));   // 動作段的程式特效（ver -2524：光翼下拍噴瓦礫）
   const step=()=>{ i++;
+    if(fxAt.has(i)) clipFx(fxAt.get(i));
     if(i<N){ el.src=L.fr[i].src; clipT=setTimeout(step, Math.max(0, t0+tAt(i+1)-performance.now())); return; }
     clipT=0;
     if(idleEl && idleFr){ placeIdle(); runIdle(); }                 // 回待機 loop
@@ -1226,6 +1230,39 @@ export function playActionClip(kind){
   };
   clipT=setTimeout(step, tAt(1));
   return Math.round(tHit);
+}
+/* ══ 動作段掛的程式特效（ver -2524）══ `fx:[{frame,type}]`，播到那一格觸發。
+   · `rubble` ＝ 瓦礫噴襲（Ray：「振翅下拍到底，碎石從瓦礫堆往鏡頭噴」）：畫面下方中央（瓦礫堆）噴出一把碎石，
+     由小變大、往四周散開飛出畫面 —— 讀起來是朝鏡頭砸過來。一張 canvas，約 0.9 秒拆掉。 */
+function clipFx(f){
+  if(!f) return;
+  if(f.type==='rubble') return spawnRubble();
+}
+function spawnRubble(){
+  const top=$('top'); if(!top) return;
+  const W=top.clientWidth, H=top.clientHeight, cv=document.createElement('canvas');
+  cv.width=W; cv.height=H; cv.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5';
+  top.appendChild(cv); const cx=cv.getContext('2d');
+  const ox=W*0.5, oy=H*0.82, rnd=(a,b)=>a+Math.random()*(b-a), rocks=[];
+  for(let i=0;i<26;i++){ const ang=rnd(-Math.PI*0.95,-Math.PI*0.05), sp=rnd(0.35,1.1);
+    rocks.push({ x:ox+rnd(-W*0.08,W*0.08), y:oy+rnd(-H*0.04,H*0.04), vx:Math.cos(ang)*sp*W/900, vy:Math.sin(ang)*sp*H/900,
+      r:rnd(3,9)*W/390, rot:rnd(0,6.28), vr:rnd(-0.02,0.02), g:(60+Math.random()*50)|0, sides:(4+Math.random()*3)|0, d:rnd(0,80) }); }
+  const t0=performance.now(), END=900;
+  const tick=now=>{ const t=now-t0; cx.clearRect(0,0,W,H);
+    /* 一團塵爆墊底 */
+    if(t<500){ const q=t/500, rr=W*(0.12+q*0.35), gr=cx.createRadialGradient(ox,oy,0,ox,oy,rr);
+      gr.addColorStop(0,`rgba(120,105,95,${(0.55*(1-q)).toFixed(3)})`); gr.addColorStop(1,'rgba(120,105,95,0)');
+      cx.fillStyle=gr; cx.beginPath(); cx.arc(ox,oy,rr,0,6.283); cx.fill(); }
+    for(const k of rocks){ const a=t-k.d; if(a<0) continue;
+      const z=1+a/260;                                   // 往鏡頭飛：越飛越大、越散越開
+      const x=ox+(k.x-ox+k.vx*a)*z, y=oy+(k.y-oy+k.vy*a)*z, r=k.r*z*z*0.7;
+      if(x<-r*2||x>W+r*2||y<-r*2||y>H+r*2) continue;
+      cx.save(); cx.translate(x,y); cx.rotate(k.rot+k.vr*a);
+      cx.fillStyle=`rgb(${k.g},${k.g-6},${k.g-12})`; cx.strokeStyle='rgba(20,16,14,.85)'; cx.lineWidth=Math.max(1,r*0.12);
+      cx.beginPath(); for(let s=0;s<k.sides;s++){ const an=s/k.sides*6.283, rr=r*(0.7+0.3*((s*37+k.g)%10)/10); s?cx.lineTo(Math.cos(an)*rr,Math.sin(an)*rr):cx.moveTo(Math.cos(an)*rr,Math.sin(an)*rr); }
+      cx.closePath(); cx.fill(); cx.stroke(); cx.restore(); }
+    if(t<END) requestAnimationFrame(tick); else cv.remove(); };
+  requestAnimationFrame(tick);
 }
 let idleFr=null;
 function runIdle(){ clearInterval(idleT); if(!idleEl || !idleFr) return; let i=0; idleEl.src=idleFr[0].src;
@@ -2668,7 +2705,7 @@ export function setEnemy(key, opts){
      ⚠ `bgUrl` 自己會補副檔名，所以覆寫（含副檔名）與卡上的基底名都丟給它就好。 */
   const topEl = $('top');
   if(topEl){
-    const nm = state.battleBg || en.bg || '';
+    const nm = (en.bgLock && en.bg) || state.battleBg || en.bg || '';   // 卡上 bgLock：這一場一定用自己的背景（ver -2524，安雅光翼的教堂殘垣）
     /* 群體敵人的去人背景（ver -2043）：**它就是這一場的戰鬥背景**，蓋過城鎮那一格的（battleBg）。
        ⚠ 直接寫路徑（四張都叫 plate.webp，走 bgUrl 的資料夾表會撞名）。 */
     const plate = en.group && en.group.plate;
