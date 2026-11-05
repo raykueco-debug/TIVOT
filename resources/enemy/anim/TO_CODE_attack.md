@@ -38,8 +38,11 @@
 | E066 | 淺灘水蛇 `mon_shinierforest_snake` | **攻擊＝延時**（盤身 → 彈出張嘴咬向鏡頭 → 縮回盤姿；表上兩欄都是咬擊，同一支） | `mon_shinierforest_snake_atk_v1/` | 29／24／1.21 秒，loop:false | 0.7 MB | `[-85,9,1105,1526]` |
 | E067 | 巨山豬 `mon_shinierforest_hog` | **攻擊＝延時**（低頭蹬地 → 撞向鏡頭 → 退回站姿；表上兩欄都是撞擊，同一支） | `mon_shinierforest_hog_atk_v1/` | 29／24／1.21 秒，loop:false | 0.4 MB | `[64,-103,1422,1197]` |
 | E019 | 背負祭壇者 `mon_beast_altar` | **延時・點錯**（吼叫：一開場就在仰身張大胸口巨口咆哮 → 收口落回站姿） | `mon_beast_altar_delay_v1/` | 22／24／0.92 秒，loop:false | 0.5 MB | `[-56,21,774,995]`（左右略超出畫布） |
+| E019 | 同上 | **攻擊**（低伏蓄力 → 撲撞向鏡頭、胸口黑洞大口張開雙爪抓來 → 落回四足站姿） | `mon_beast_altar_atk_v1/` | 29／24／1.21 秒，loop:false | 0.6 MB | `[-306,-68,1316,1341]`（撲到最近時四邊超出畫布） |
+| E019 | 同上 | **待機** | `mon_beast_altar_idle_v1/` | 48／24／2.0 秒，loop | 3.5 MB | `[-71,58,780,960]` |
 
-- E019 延時：Ray 剪的 `out/export/mon_beast_altar_B_roar_roarBA_cut`（**只有收回段**，原片 33 格取 19 格、部分 ×2 → 22 格）。⚠ **第 0 格就是吼叫姿勢**（胸口巨口張到最大），從待機切進來那一下會直接跳到吼的那一格 —— 要蓋在受擊特效之下。吼叫的「打到」＝第 0 格。B 圖 `_neutral_refs/mon_beast_altar_B_roar.png`。攻擊（撲撞）與待機還在等 Ray 剪。
+- E019 攻擊：tiger rule 自動剪（`out/export/mon_beast_altar_atk_tiger`＝ramAB＋ramBA），**打到＝第 13 格**，無碰邊。B 圖 `_neutral_refs/mon_beast_altar_B_ram.png`。待機：`out/monsters/mon_beast_altar_idle2` 48 格全留（Ray 未另剪；第一版 idle 左側經幡碰邊、已棄）。
+- E019 延時：Ray 剪的 `out/export/mon_beast_altar_B_roar_roarBA_cut`（**只有收回段**，原片 33 格取 19 格、部分 ×2 → 22 格）。⚠ **第 0 格就是吼叫姿勢**（胸口巨口張到最大），從待機切進來那一下會直接跳到吼的那一格 —— 要蓋在受擊特效之下。吼叫的「打到」＝第 0 格。B 圖 `_neutral_refs/mon_beast_altar_B_roar.png`。
 - E017 攻擊：Ray 剪的 `out/export/mon_sea_coralman_atk_tiger_cut`（tiger rule 自動剪的 29 格只留前 14 格＝撲出段），**打到那一格＝最後一格（第 13 格）**，結尾停在撲擊姿勢、與待機第 0 格差很多 —— 切回待機要蓋在受擊特效之下（同娜塔莉 v2）。720×720 生成、FIT 0.52（撲出時雙爪張到畫布邊，AB 16–41 碰邊，Ray 看過選用）；B 圖 `_neutral_refs/mon_sea_coralman_B_pounce.png`。
 - E017：Ray 剪的 `out/export/mon_sea_coralman_delay2_cut`（原片 48 格取 24 格、部分 ×2 → 30 格）。最後一格與第一格差 8.8（不完全相同，見上方 ⚠）。
 
