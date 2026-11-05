@@ -1370,10 +1370,11 @@ function isAirBio(en){ return !!(en && en.kind==='aerial' && !en.sky && /^sky_/i
 function isAirShip(en){ return !!(en && en.kind==='ship' && !en.sky && /^sky_/i.test(en.bg||'')); }
 /* 機頭朝哪邊：側面飛行圖一律畫成朝左（天空往右捲，-2488）；卡上 fit.flip 就是朝右。−1＝往左飛。 */
 function fwdOf(en){ return (en && en.fit && en.fit.flip) ? 1 : -1; }
-let airDrift=null;
+let airDrift=null, airInAnim=null;
 function stopAirDrift(reset){
   if(airDrift){ cancelAnimationFrame(airDrift.raf); airDrift=null; }
   if(airAtk){ const a=airAtk; airAtk=null; try{ a.cancel(); }catch(_){} }   // 攻擊途中被打死／換怪：歸回原位
+  if(reset && airInAnim){ const a=airInAnim; airInAnim=null; try{ a.cancel(); }catch(_){} }   // 換怪：上一隻還在飛進來
   if(reset) for(const el of [$('enemyImg'), idleEl, clipEl]) if(el){ el.style.translate=''; }
 }
 function startAirDrift(en){
@@ -1398,7 +1399,8 @@ export function stopAirMotion(){ stopAirDrift(false); }
    · 生物型＝從畫面外由近（大）到遠（小）飛進來定位
    · 空賊船＝從後方追上來、追過頭一點再停下（ver -2500，Ray） */
 function airEnter(en, eImg, play){
-  const done=()=>{ eImg.classList.remove('enemy-airin'); eImg.style.opacity=''; startCardIdle(en); if(airDrift) airDrift.t0=performance.now(); };
+  const done=()=>{ if(airInAnim){ airInAnim=null; } if(curCard()!==en) return;   // 入場途中換了怪：上一隻的收尾不准掛回來
+    eImg.classList.remove('enemy-airin'); eImg.style.opacity=''; startCardIdle(en); if(airDrift) airDrift.t0=performance.now(); };
   if(!play) return done();
   if(isAirShip(en)){
     const top=$('top'), W=top.clientWidth, tr=top.getBoundingClientRect(), er=eImg.getBoundingClientRect(), f=fwdOf(en);
@@ -1408,7 +1410,7 @@ function airEnter(en, eImg, play){
       { transform:`translate(${off}px,0px)`, offset:0, easing:'cubic-bezier(.2,.55,.35,1)' },
       { transform:`translate(${f*W*0.06}px,${-W*0.005}px)`, offset:0.72, easing:'cubic-bezier(.45,0,.55,1)' },
       { transform:'translate(0px,0px)', offset:1 }], { duration:2600 });
-    a.onfinish=done; a.oncancel=done; return;
+    airInAnim=a; a.onfinish=done; a.oncancel=done; return;
   }
   /* 生物型（ver -2501，Ray：「牠是從畫面外進來的，不是淡入進去的，由近（大）到遠（小）然後定位開戰」）：
      不淡入 —— 從機尾那側的畫面外、斜下方、放大三倍（貼著鏡頭）飛進來，一路縮回原尺寸，越過一點再定位。 */
@@ -1418,7 +1420,7 @@ function airEnter(en, eImg, play){
       { transform:`translate(${-f*W*1.15}px, ${H*0.9}px) scale(${K})`, offset:0, easing:'cubic-bezier(.22,.6,.35,1)' },
       { transform:`translate(${f*W*0.04}px, ${-H*0.025}px) scale(.97)`, offset:0.8, easing:'cubic-bezier(.45,0,.55,1)' },
       { transform:'none', offset:1 }], { duration:1900 });
-    a.onfinish=done; a.oncancel=done; }
+    airInAnim=a; a.onfinish=done; a.oncancel=done; }
 }
 let dmgSmoke=null;
 function stopDamageSmoke(){ if(!dmgSmoke) return; cancelAnimationFrame(dmgSmoke.raf); dmgSmoke.cv.remove(); dmgSmoke=null; }
