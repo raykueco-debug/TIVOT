@@ -115,7 +115,8 @@
 - ✔ ver -2518：E068 獨角虎改 tiger rule：攻擊 `mon_shinierforest_tiger_atk_v3`（29 格，hit 13）、延時 `mon_shinierforest_tiger_delay_v2`（32 格，hit 9，這次有揮爪段）。
 - ✔ ver -2519：①獨角虎 攻擊 `atk_v4`＝tiger rule（pounce）on **biteAB**＋biteBA2（29 格，hit 13）；爪擊（延時）`delay_v3`＝Ray 剪的 hswipeAB_cut（10）＋tiger rule hswipeBA（共 32，hit 9）。兩支由程式端自己交件（腳本 `%TEMP%/tiger_build.py` 的作法：照生成 FIT/OY 換回立繪畫布座標，攻擊兩段空間不同 → BA 段以 B 姿勢輪廓框對位，換算 ×0.999）。②空戰編隊振翅錯開：每隻待機格錯開幾格。
 - ✔ ver -2520：訓練用聖徒（trainee）換中立立繪 `saint_tr_neutral`、戰鬥背景 `resources/enemy/saint_tr_bg.webp`（卡上 bg 寫 `../enemy/saint_tr_bg`）、待機 `saint_tr_neutral_idle_v1`。攻擊（爪擊，延時共用）等 Ray 剪。
-- ✔ ver -2521：訓練用聖徒接攻擊動畫 `saint_tr_neutral_atk_v1`（攻擊／延時／點錯共用，hit 9）。⚠ 欠：退回待機的 R 段（美術之後補）。
+- ✔ ver -2521：訓練用聖徒接攻擊動畫 `saint_tr_neutral_atk_v1`（攻擊／延時／點錯共用，hit 9）。（R 段已於 -2522 補上）
+- ✔ ver -2522：訓練用聖徒攻擊改 `saint_tr_neutral_atk_v2`（前撲 10＋退回待機 20，hit 9）。
 - ✔ ver -2465：**龍的巡游線移到大樹入口側**（Ray：「龍不要在大樹後方，要靠近大樹但在入口那一側」）。`ucDragonTick` 生成點由「樹後 250」改成「船那一側、樹幹外緣再讓 260」（`-(T.Rb+260)`）；船從入口飛進來，所以船那一側＝入口側。
 - ✔ ver -2464：**地下城的龍會被 3D 掩體擋住**（Ray：「龍隔著 3D 掩體還是可視，修正之」）。原本畫在 2D 層、只吃地形遮擋（而且根本沒裁），樹幹／柱子／建築是 GL 網格擋不住。改成 `glDrawUcDragon`：GL 裡一張面向鏡頭的立牌（借 `GL_PLANT_VS` 的投影），與網格同一顆深度緩衝，只測不寫深度、預乘 alpha 混色、吃霧；幀與翻轉由 `ucDrgFrame` 一支算（2D 退路共用）。2D 版只在 GL 沒畫時才畫，並補上 `clipByTerrainDepth`。
 - ✔ ver -2463：**龍攻完的飛回改成斜下進入、悠揚**（Ray：「要從斜下進入，由大到小，不用那麼快，悠揚感」）。起點在畫面左下角外、放大 1.6 倍，2.3 秒緩緩減速滑進、由大縮小，末段輕輕越過一點（右上 4%／3%）再沉回原位。
