@@ -1414,17 +1414,20 @@ function startFlock(en){
   const ms=[];
   for(let i=n-1;i>=0;i--){   // 後排先放（疊在下面）
     const im=document.createElement('img'); im.alt=''; im.className='af-m'; im.style.cssText='position:absolute;transform-origin:50% 50%;';
-    el.appendChild(im); ms.push({ im, slot:FLOCK_SLOTS[i], ph:Math.random()*6.283, down:false, front:i });
+    el.appendChild(im); ms.push({ im, slot:FLOCK_SLOTS[i], ph:Math.random()*6.283, down:false, front:i, off:0 });
   }
   ms.sort((a,b)=>b.front-a.front);   // ms：後→前（同群戰的 order）
+  ms.forEach((m,j)=>{ m.off = j ? Math.round(j*7 + Math.random()*5) : 0; });   // 振翅錯開（Ray：「空中群戰時振翅頻率要錯開」）：每隻差幾格
   top.classList.add('flock-on');
   const fl=fwdOf(en), sf=(en.fit && en.fit.flip) ? -1 : 1;   // fl＝機頭朝向（擊落往那邊墜）；sf＝圖要不要水平翻
   flock={ el, ms, n, fl };
   const sync=()=>{ if(!flock || flock.el!==el) return;
     const src=(idleEl && idleEl.isConnected && idleEl.getAttribute('src')) ? idleEl : eImg; if(!src.getAttribute('src')) return;
     const cs=getComputedStyle(src), W=top.clientWidth, H=top.clientHeight, t=performance.now()/1000;
+    const fr=(src===idleEl) ? idleFr : null, fi=fr ? fr.findIndex(f=>f.src===src.src) : -1;
     for(const m of ms){ const im=m.im;
-      if(im.getAttribute('src')!==src.getAttribute('src')) im.src=src.src;
+      const want=(fi>=0) ? fr[(fi+m.off)%fr.length].src : src.src;
+      if(im.src!==want) im.src=want;
       if(src===idleEl){ im.style.left=src.style.left; im.style.top=src.style.top; im.style.width=src.style.width; im.style.height=src.style.height; im.style.objectFit=''; }
       else { im.style.left='0'; im.style.top='0'; im.style.width='100%'; im.style.height='100%'; im.style.objectFit=cs.objectFit; im.style.objectPosition=cs.objectPosition; }
       if(m.down) continue;
