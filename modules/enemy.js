@@ -1289,6 +1289,40 @@ function setSkyBattle(key){
 /* ══ 側舷齊射（ver -2489，卡上 assaultFx.type:'broadside'）══ 砲口火光＋往船尾快速飛走的煙。
    一張蓋在 #top 上的畫布，跑完自己拆；位置照立繪畫布換算（canvasBoxInTop，同待機層），所以船怎麼取景都對得上。 */
 let broadsideCv=null;
+/* ══ 受損冒黑煙（ver -2490，Ray：「空賊船被擊敗跟樹寄生龍一樣向斜下沉沒，但是要冒黑煙，從半血就開始冒煙」）══
+   卡上 `damageSmoke:{ hp:0.5, canvas, pts }`：敵血 ≤ hp 起，從 pts（立繪畫布座標）持續噴黑煙，往船尾（右）與上方拖走；
+   血越少噴越密。煙源跟著立繪現在的位置走（斜墜時煙一路拖著）。換怪收掉；打贏後跟著墜落再噴 3 秒自己收（不留在背景跑）。 */
+let dmgSmoke=null;
+function stopDamageSmoke(){ if(!dmgSmoke) return; cancelAnimationFrame(dmgSmoke.raf); dmgSmoke.cv.remove(); dmgSmoke=null; }
+function startDamageSmoke(cfg){
+  stopDamageSmoke(); if(!cfg) return;
+  const top=$('top'); if(!top) return;
+  const cv=document.createElement('canvas'); cv.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3';
+  top.appendChild(cv); const cx=cv.getContext('2d'), puffs=[], rnd=(a,b)=>a+Math.random()*(b-a);
+  const S={ cv, raf:0, last:performance.now(), acc:0, fallAt:0 }; dmgSmoke=S;
+  const tick=now=>{ if(dmgSmoke!==S) return; const dt=Math.min(now-S.last,60); S.last=now;
+    const W=top.clientWidth, H=top.clientHeight; if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+    const eImg=$('enemyImg'), el=(idleEl && idleEl.isConnected) ? idleEl : eImg;
+    const ratio=state.enemyMax ? state.enemyHp/state.enemyMax : 1, falling=!!(el && el._falling);
+    if(falling && !S.fallAt) S.fallAt=now;
+    if(state.over && !falling && !puffs.length){ stopDamageSmoke(); return; }
+    if(S.fallAt && now-S.fallAt>3000 && !puffs.length){ stopDamageSmoke(); return; }
+    const emit = (ratio<=(cfg.hp||0.5) || falling) && !(S.fallAt && now-S.fallAt>2600);
+    if(emit && eImg){ const r=canvasBoxInTop(eImg, { canvas:cfg.canvas, box:[0,0,cfg.canvas[0],cfg.canvas[1]] });
+      if(r){ const tr=top.getBoundingClientRect(), br=el.getBoundingClientRect();   // 立繪被 transform 推走多少（斜墜／受擊抖）
+        const dx=br.left-tr.left-el.offsetLeft, dy=br.top-tr.top-el.offsetTop, k=r.width/cfg.canvas[0];
+        const rate=(cfg.rate||14)*(1+1.6*Math.max(0,(cfg.hp||0.5)-ratio)/(cfg.hp||0.5));   // 每秒幾團，血越少越密
+        S.acc+=dt*rate/1000;
+        while(S.acc>=1){ S.acc-=1; const [px,py]=cfg.pts[(Math.random()*cfg.pts.length)|0];
+          puffs.push({ x:r.left+px*k+dx+rnd(-8,8)*k*3, y:r.top+py*k+dy, vx:rnd(0.10,0.22)*W/390, vy:-rnd(0.03,0.08)*W/390, r0:rnd(5,9)*k*3, life:rnd(1100,1700), a:0, g:rnd(14,40)|0 }); } } }
+    cx.clearRect(0,0,W,H);
+    for(let i=puffs.length-1;i>=0;i--){ const p=puffs[i]; p.a+=dt; if(p.a>p.life){ puffs.splice(i,1); continue; }
+      const q=p.a/p.life, x=p.x+p.vx*p.a, y=p.y+p.vy*p.a, rr=p.r0*(1+q*3.5), al=0.62*(q<0.12?q/0.12:1)*(1-q);
+      const gr=cx.createRadialGradient(x,y,0,x,y,rr); gr.addColorStop(0,`rgba(${p.g},${p.g},${p.g},${al.toFixed(3)})`); gr.addColorStop(1,`rgba(${p.g},${p.g},${p.g},0)`);
+      cx.fillStyle=gr; cx.beginPath(); cx.arc(x,y,rr,0,6.283); cx.fill(); }
+    S.raf=requestAnimationFrame(tick); };
+  S.raf=requestAnimationFrame(tick);
+}
 function playBroadside(fx){
   const top=$('top'), eImg=$('enemyImg'); if(!top || !eImg || !fx || !fx.ports) return;
   const r=canvasBoxInTop(eImg, { canvas:fx.canvas, box:[0,0,fx.canvas[0],fx.canvas[1]] }); if(!r) return;
@@ -2202,6 +2236,7 @@ export function setEnemy(key, opts){
   stopSakura();                                 // 換了一隻怪 → 上一隻的櫻花與 Sturm 一起收（ver -899）
   stopHolyBurst();                              // 同上：放光也是全螢幕的層＋一支還在響的音（ver -1351）
   setSkyBattle(en.sky);                         // 空戰的視差背景（ver -2444）：沒有 `sky` 的怪＝收掉上一隻的
+  startDamageSmoke(en.damageSmoke);             // 受損冒黑煙（ver -2490）：沒寫的怪＝收掉上一隻的
   rollSmokeDir();                               // 船戰的煙往哪一邊飄：這一場擲一次（ver -1653）
   state.currentEnemyKey = key;                 // 3.7：記住目前怪 key，供 boardGridFor 查每盤格數
   state.enemyHitsTaken = 0;                     // 換了一隻怪 → 「這一隻」的受擊數歸零（九階「方舟」，ver -708）
