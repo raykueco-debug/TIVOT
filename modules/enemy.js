@@ -1121,7 +1121,7 @@ function loadClip(dir){
   }).catch(()=>{});
 }
 function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[imgStem(en)])||null; }
-function preloadActionClips(en){ for(const k of ['atk','delay']){ const c=clipFor(k,en); if(c) loadClip(c.dir); } }
+function preloadActionClips(en){ for(const k of ['atk','delay']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); } }
 let clipT=0, clipEl=null;
 /* 平時站遠（ENEMY_ATK 的 `far`，ver -2473）：用 CSS 的獨立 `scale` 屬性縮 —— 不碰 transform，受擊動畫照常疊上去。
    立繪本體、待機層、攻擊層三個都套（誰在畫面上就是誰）。 */

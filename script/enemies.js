@@ -295,7 +295,7 @@ export const ENEMIES = {
       hitFx:{   // -2476 Ray「DM 都用爪擊，受擊特效也是」：三種一律三爪
         delay:'claw',
         wrong:'claw',
-        assault:'claw',
+        assault:'bite',   // -2478：撲咬＝攻擊（爪擊只給延時／點錯）
       },
     },
     /* ══ 羅賽爾廢城・南壘門（ver -1839）══ 數值照 `nightmare_natalia` 整張抄，只換名字與 story:0（固定怪不是劇情戰）。
@@ -328,7 +328,7 @@ export const ENEMIES = {
       hitFx:{   // -2476 Ray「DM 都用爪擊，受擊特效也是」：三種一律三爪
         delay:'claw',
         wrong:'claw',
-        assault:'claw',
+        assault:'bite',   // -2478：撲咬＝攻擊（爪擊只給延時／點錯）
       },
     },
     // 亂入怪（無傷 45 秒內通關才會出現）— 先用同一隻怪測流程，正式再換
