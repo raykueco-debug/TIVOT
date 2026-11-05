@@ -1236,18 +1236,19 @@ export function onAssaultLand(){
   /* ③ 復歸（-2462 Ray：「龍攻完後從畫面左側飛回原位，要飛過頭一點點再定回原位，從畫面出現時較大，然後再縮回原尺寸」）：
      從畫面左緣外、放大 1.35 倍飛進來 → 衝過原位一點（約 6% 畫面寬）→ 拉回定位、縮回原尺寸。近樹恢復平常的節奏。
      ⚠ 用 el.animate 不用 CSS transition：受擊的 `#enemyImg.hit + .en-idle{animation}` 會蓋過 transform（-2457 斜墜踩過）。 */
-  const RET=1100;
+  const RET=2300;   /* -2463 Ray：「要從斜下進入，由大到小，不用那麼快，悠揚感」1100→2300 */
   setTimeout(()=>{ clearInterval(ghost._sync); ghost.remove(); if(sky) sky.lunge=null;
     if(sky) sky.vanishEl=null; el.style.clipPath='';
     if(!sky || sky.defeated) return;   // 玩家被這一擊打倒了（skyDefeatHide）⇒ 龍不回來
-    const tr=top.getBoundingClientRect(), er=el.getBoundingClientRect(), K=1.35;
+    const tr=top.getBoundingClientRect(), er=el.getBoundingClientRect(), K=1.6;
     const offL=-(er.right-tr.left) - er.width*(K-1)/2 - 20;   // 放大之後整條都在畫面左緣外
+    const offD=(tr.bottom-er.top) + er.height*(K-1)/2;         // 從左下角斜著滑進來：起點在畫面下緣外
     el.style.animation='none'; el.style.transition='none'; el.style.transformOrigin='50% 50%'; el.style.opacity='1';
     const a=el.animate([
-      { transform:`translateX(${offL}px) scale(${K})`, offset:0 },
-      { transform:`translateX(${W*0.06}px) scale(1.06)`, offset:0.68, easing:'cubic-bezier(.3,0,.4,1)' },
-      { transform:'translateX(0px) scale(1)', offset:1 }],
-      { duration:RET, easing:'cubic-bezier(.2,.6,.35,1)' });
+      { transform:`translate(${offL}px, ${offD}px) scale(${K})`, offset:0, easing:'cubic-bezier(.25,.1,.3,1)' },
+      { transform:`translate(${W*0.04}px, ${-H*0.03}px) scale(0.98)`, offset:0.78, easing:'cubic-bezier(.45,0,.55,1)' },
+      { transform:'translate(0px, 0px) scale(1)', offset:1 }],
+      { duration:RET });   // 悠揚：前段一路緩緩減速滑進、由大縮小；末段輕輕越過一點再沉回原位
     a.onfinish=()=>{ el.style.animation=''; };
     setTimeout(()=>{ el.style.transition=''; if(sky){ sky.nearPause=false; sky.nearAt=performance.now()+(C.nearEvery[0]*1000); } }, RET); }, SW+LUNGE+80);
   return Math.round(hitAt);
