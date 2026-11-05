@@ -1206,7 +1206,8 @@ export function playActionClip(kind){
   const fps=L.j.fps||24, N=L.fr.length;
   const hitF=Math.min(N-1, (c.hit!=null) ? c.hit : Math.floor(N*0.4));
   /* 收回加速（`retMul`，-2486 Ray「撲咬收回再快一點」）：打到那一格之後的格子以 fps×retMul 播 */
-  const rm=c.retMul||1, tAt=f=> f<=hitF ? f*1000/fps : (hitF*1000/fps + (f-hitF)*1000/(fps*rm));
+  /* 前撲加速（`preMul`，-2512 Ray「收回加速 前撲也加速」）：打到那一格之前（含）以 fps×preMul 播 */
+  const rm=c.retMul||1, pm=c.preMul||1, tAt=f=> f<=hitF ? f*1000/(fps*pm) : (hitF*1000/(fps*pm) + (f-hitF)*1000/(fps*rm));
   const T=tAt(N), tHit=tAt(hitF);
   { const k=farOf(); if(k!==1){   // 攻擊時撲近：打到那一格到最大，收回的路上退回遠處
       el.style.transformOrigin=FAR_ORIGIN;
