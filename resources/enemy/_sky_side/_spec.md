@@ -24,3 +24,21 @@
 
 ## ⚠ 程式端要接的（美術不碰 code）
 交件後列在這裡：哪幾隻交了、尺寸。程式端改 ASSETS 指向＋逐隻重量取景（fit）。
+
+### ✅ 美術交件（2026-11-05）—— 20 隻全交
+
+**全部 1536×1024 橫式、真 alpha（GPT 直出；3 張白底的由 GPT 重製成 alpha）、頭朝左、四邊各留 12%（本機只做裁邊＋等比縮放置中，不動像素）。**
+放在 `resources/enemy/`：
+
+| 新檔 | 對應原檔 |
+|---|---|
+| `mon_sky_twinwyvern_side` / `boneray` / `ribwhale` / `mawbat` / `eyemoth` / `eelswarm` / `gasjelly` / `armorcrab` `_side` | `mon_sky_*` 8 隻 |
+| `mon_sky2_spine` / `maskbanner` / `ringchain` / `mouthpillar` / `facecrown` / `eyeveil` / `rift` / `maw` `_side` | `mon_sky2_*` 8 隻 |
+| `mon_serpent_side` | `serpent_day/dd/night`（原檔是連背景的整張圖；側面版只有怪本身） |
+| `mon_centipi_side` | `centipi_day/dd/night`（同上） |
+| `mon_dragon_v1_flight_side` | `mon_dragon_v1_flight` |
+| `mon_pirateship_side` | `pirateship_day/dd/night`（船頭朝左，同上沒有背景） |
+
+- ⚠ 羽蛇／蜈蚣／空賊船原本是**三個時段各一張（含背景）**，側面版**只交一張中性光的**——背景改由空戰視差層負責。要分時段色調的話再交辦。
+- ⚠ 原圖是正面／俯角，側面是 GPT 依原設計推的：配色材質特徵一致，但細部（翼骨數、腳數）不保證逐根相同。
+- 總覽（本機）：`_work/sky_side_overview.jpg`。程式端改 ASSETS 指向＋逐隻重量取景（fit）。
