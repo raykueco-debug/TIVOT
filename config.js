@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2512';
+export const VERSION = 'ver 2026.11.05-2513';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5709,7 +5709,7 @@ export const ENEMY_ATK = {
   mon_shinierforest_hog_neutral: { dir:'resources/enemy/anim/mon_shinierforest_hog_atk_v1/', hit:13 },       // E067 山豬（攻擊＝延時同一支，29 格）
   mon_shinierforest_lynx_neutral: { dir:'resources/enemy/anim/mon_shinierforest_lynx_atk_v1/', hit:13 },   // E065 山貓 撲擊（29 格，第 13 格打到）
   mon_shinierforest_tiger_neutral: { dir:'resources/enemy/anim/mon_shinierforest_tiger_atk_v2/', hit:19 },   // E068 獨角虎 撲咬 v2（ver -2494：撲出 20 格＋收勢，共 41 格；咬到＝第 19 格）
-  mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_atk_v4/', hit:16, far:0.82, near:1.4, preMul:1.5, retMul:1.8 },   // -2512 Ray「收回加速 前撲也加速」：前撲 1.5 倍、收回 1.8 倍（收回沿用 -2486 的倍率）   // -2511 Ray 定案：撲出 biteAB2_cut_3＋收回 biteBA2_cut（＝v4，逐格驗過），原速播（不加 retMul）；舊註：retMul：咬完收回段以 1.8 倍速播（-2486 Ray「撲咬收回再快一點」）   // -2509：v5＝撲出 biteAB2_cut_3（17 格）＋收回 biteBA2_cut_2（31 格，Ray 指定的新生成那份），咬到第 16 格   // -2484：v3＝biteAB2_cut（16 格）＋biteBA2_cut（31 格，Ray 指定的收回）；咬到＝第 15 格（撲出段最後一格）。-2482 誤把 hit 量成 28（收回段雙爪張開輪廓最大），放大峰值落在收回段 ⇒ Ray 看成「收回被改了」
+  mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_atk_v6/', hit:13, far:0.82, near:1.4, preMul:1.5, retMul:1.8 },   // -2513 Ray：撲出改 biteAB2_cut_3_cut（cut_3 前 14 格）＋收回 biteBA2_cut ＝ v6（45 格，由 v4 的格子直接組，咬到第 13 格）   // -2512 Ray「收回加速 前撲也加速」：前撲 1.5 倍、收回 1.8 倍（收回沿用 -2486 的倍率）   // -2511 Ray 定案：撲出 biteAB2_cut_3＋收回 biteBA2_cut（＝v4，逐格驗過），原速播（不加 retMul）；舊註：retMul：咬完收回段以 1.8 倍速播（-2486 Ray「撲咬收回再快一點」）   // -2509：v5＝撲出 biteAB2_cut_3（17 格）＋收回 biteBA2_cut_2（31 格，Ray 指定的新生成那份），咬到第 16 格   // -2484：v3＝biteAB2_cut（16 格）＋biteBA2_cut（31 格，Ray 指定的收回）；咬到＝第 15 格（撲出段最後一格）。-2482 誤把 hit 量成 28（收回段雙爪張開輪廓最大），放大峰值落在收回段 ⇒ Ray 看成「收回被改了」
 };
 export const ENEMY_DELAY = {
   mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_delay_v1/', hit:0 },   // E019 背負祭壇者 延時＝吼叫（ver -2507；只有收回段，第 0 格就是吼叫姿勢）
