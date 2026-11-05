@@ -30,9 +30,11 @@
 - E007 攻擊 v2（已被 v3 取代）：Ray 剪的 `out/export/mon_natalia_neutral_biteAB2_cut`（A 中立 → B 撲咬，原片 49 格取 13 格、部分 ×2 → 16 格），`edge_check` 無碰邊。B 圖 `resources/enemy/_natalia_bite/mon_natalia_B_bite2.png`（GPT）。⚠ 結尾停在撲咬姿勢，與待機第 0 格差很多 —— 切回待機要蓋在受擊特效之下。
 | E017 | 魘魔 `np_coralman` | 延時・點錯（單爪大幅斜劈） | `mon_sea_coralman_delay_v1/` | 30／24／1.25 秒 | 2.0 MB | `[-44,-46,1113,1574]`（略超出畫布四邊） |
 | E017 | 同上 | **攻擊**（縮身蓄力 → 雙爪張開撲向鏡頭；只有撲出段，停在撲到最近那一格） | `mon_sea_coralman_atk_v1/` | 14／24／0.58 秒，loop:false | 0.5 MB | `[-966,-431,2954,2197]`（撲到最近時雙爪遠超出畫布，大半會被 #top 切掉） |
-| E068 | 獨角虎 `mon_shinierforest_tiger` | **延時・點錯**（右前爪胸前水平橫掃 → 收爪落回低伏；四足爪擊一律橫向） | `mon_shinierforest_tiger_delay_v1/` | 23／24／0.96 秒，loop:false | 0.4 MB | `[38,-91,1455,1108]`（上下超出畫布） |
+| E068 | 獨角虎 `mon_shinierforest_tiger` | **延時・點錯 v2（現行，tiger rule）**（右前爪胸前水平橫掃 → 收爪落回低伏） | `mon_shinierforest_tiger_delay_v2/` | 32／24／1.33 秒，loop:false | 0.6 MB | `[-154,-91,1724,1112]` |
+| E068 | 獨角虎 `mon_shinierforest_tiger` | ~~延時~~ ⚠ **已被 delay_v2 取代**（右前爪胸前水平橫掃 → 收爪落回低伏；四足爪擊一律橫向） | `mon_shinierforest_tiger_delay_v1/` | 23／24／0.96 秒，loop:false | 0.4 MB | `[38,-91,1455,1108]`（上下超出畫布） |
 | E068 | 獨角虎 `mon_shinierforest_tiger` | ~~攻擊~~ ⚠ **已被 v2 取代**（只有撲出段） | `mon_shinierforest_tiger_atk_v1/` | 20／24／0.83 秒，loop:false | 0.3 MB | `[-7,-136,1654,1178]`（四邊略超出畫布） |
-| E068 | 獨角虎 `mon_shinierforest_tiger` | **攻擊**（縮身蓄力 → 撲向鏡頭張嘴咬 → 收勢落回低伏） | `mon_shinierforest_tiger_atk_v2/` | 41／24／1.71 秒，loop:false | 0.7 MB | `[-13,-332,1664,1413]` |
+| E068 | 獨角虎 `mon_shinierforest_tiger` | **攻擊 v3（現行，tiger rule）**（縮身蓄力 → 撲向鏡頭張嘴咬 → 收勢落回低伏） | `mon_shinierforest_tiger_atk_v3/` | 29／24／1.21 秒，loop:false | 0.5 MB | `[-31,-332,1677,1413]` |
+| E068 | 獨角虎 `mon_shinierforest_tiger` | ~~攻擊~~ ⚠ **已被 atk_v3 取代**（縮身蓄力 → 撲向鏡頭張嘴咬 → 收勢落回低伏） | `mon_shinierforest_tiger_atk_v2/` | 41／24／1.71 秒，loop:false | 0.7 MB | `[-13,-332,1664,1413]` |
 | E065 | 森林山貓 `mon_shinierforest_lynx` | **延時・點錯**（右前爪胸前水平橫掃過身體 → 收爪落回低伏） | `mon_shinierforest_lynx_delay_v1/` | 32／24／1.33 秒，loop:false | 0.7 MB | `[-249,20,1268,1352]` |
 | E065 | 同上 | **攻擊**（縮身蓄力 → 撲向鏡頭雙爪抓來 → 落回低伏） | `mon_shinierforest_lynx_atk_v1/` | 29／24／1.21 秒，loop:false | 0.6 MB | `[-265,-230,1556,1887]` |
 | E066 | 淺灘水蛇 `mon_shinierforest_snake` | **攻擊＝延時**（盤身 → 彈出張嘴咬向鏡頭 → 縮回盤姿；表上兩欄都是咬擊，同一支） | `mon_shinierforest_snake_atk_v1/` | 29／24／1.21 秒，loop:false | 0.7 MB | `[-85,9,1105,1526]` |
@@ -41,6 +43,7 @@
 | E019 | 同上 | **攻擊**（低伏蓄力 → 撲撞向鏡頭、胸口黑洞大口張開雙爪抓來 → 落回四足站姿） | `mon_beast_altar_atk_v1/` | 29／24／1.21 秒，loop:false | 0.6 MB | `[-306,-68,1316,1341]`（撲到最近時四邊超出畫布） |
 | E019 | 同上 | **待機** | `mon_beast_altar_idle_v1/` | 48／24／2.0 秒，loop | 3.5 MB | `[-71,58,780,960]` |
 
+- E068 tiger rule 重剪（Ray 指定）：攻擊 v3＝`out/export/mon_shinierforest_tiger_atk_tigerrule`（biteAB2＋biteBA2，pounce 規則，**打到第 13 格**；兩段同一生成空間 720×480／FIT 0.72／OY 0.85，不必換算）；延時 v2＝`mon_shinierforest_tiger_delay_tigerrule`（hswipeAB＋hswipeBA，hswipe 規則，**打到第 9 格**；720×480／FIT 0.78／OY 0.5）。canvas 對 `mon_shinierforest_tiger_neutral.webp`。
 - E019 攻擊：tiger rule 自動剪（`out/export/mon_beast_altar_atk_tiger`＝ramAB＋ramBA），**打到＝第 13 格**，無碰邊。B 圖 `_neutral_refs/mon_beast_altar_B_ram.png`。待機：`out/monsters/mon_beast_altar_idle2` 48 格全留（Ray 未另剪；第一版 idle 左側經幡碰邊、已棄）。
 - E019 延時：Ray 剪的 `out/export/mon_beast_altar_B_roar_roarBA_cut`（**只有收回段**，原片 33 格取 19 格、部分 ×2 → 22 格）。⚠ **第 0 格就是吼叫姿勢**（胸口巨口張到最大），從待機切進來那一下會直接跳到吼的那一格 —— 要蓋在受擊特效之下。吼叫的「打到」＝第 0 格。B 圖 `_neutral_refs/mon_beast_altar_B_roar.png`。
 - E017 攻擊：Ray 剪的 `out/export/mon_sea_coralman_atk_tiger_cut`（tiger rule 自動剪的 29 格只留前 14 格＝撲出段），**打到那一格＝最後一格（第 13 格）**，結尾停在撲擊姿勢、與待機第 0 格差很多 —— 切回待機要蓋在受擊特效之下（同娜塔莉 v2）。720×720 生成、FIT 0.52（撲出時雙爪張到畫布邊，AB 16–41 碰邊，Ray 看過選用）；B 圖 `_neutral_refs/mon_sea_coralman_B_pounce.png`。
