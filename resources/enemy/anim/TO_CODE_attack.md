@@ -17,15 +17,15 @@
 
 | 編號 | 敵人 | 用途 | 資料夾 | 格數／fps／秒 | 大小 | box |
 |---|---|---|---|---|---|---|
-| E007／E008 | 禍魘娜塔莉 `nightmare_natalia`／逝去的守護者 `dm_lost_guardian` | **攻擊**（撲向鏡頭一爪劈下 → 殭屍左右晃歸位） | `mon_natalia_atk_v1/` | 37／24／1.54 秒 | 1.9 MB | `[-33,-19,1091,1536]` |
+| E007／E008 | 禍魘娜塔莉 `nightmare_natalia`／逝去的守護者 `dm_lost_guardian` | **延時・點錯**（撲向鏡頭一爪劈下 → 殭屍左右晃歸位；Ray 11-05：爪＝延時、撲咬＝攻擊，攻擊另交 `mon_natalia_atk_v2/`） | `mon_natalia_delay_v1/` | 37／24／1.54 秒 | 1.9 MB | `[-33,-19,1091,1536]` |
 | E007／E008 | 同上 | **待機（換新）** | `mon_natalia_idle_v3/` | 38／24／1.58 秒，loop | 1.9 MB | `[104,13,820,1502]` |
 | E017 | 魘魔 `np_coralman` | 延時・點錯（單爪大幅斜劈） | `mon_sea_coralman_delay_v1/` | 30／24／1.25 秒 | 2.0 MB | `[-44,-46,1113,1574]`（略超出畫布四邊） |
 
 - E017：Ray 剪的 `out/export/mon_sea_coralman_delay2_cut`（原片 48 格取 24 格、部分 ×2 → 30 格）。最後一格與第一格差 8.8（不完全相同，見上方 ⚠）。
 
 - E007：Ray 定的作法（**所有爪擊照這套**）：GPT 先把原圖改成「中立站姿」(A) 與「爪已劈到底、手背朝鏡頭」(B)；Wan 跑 A→B（撲擊劈下）＋ B→A（歸位過渡），Ray 剪完兩段接成一支。
-  攻擊 = `out/export/mon_natalia_neutral_slashAB_cut`（9 格）＋ `mon_natalia_B_slash_returnBA_cut`（28 格）。
-- ⚠⚠ **娜塔莉換了立繪**：待機與攻擊都是用新的中立站姿生成的，**卡上的立繪要一起換成 `resources/enemy/mon_natalia_neutral.webp`**（1024×1536，舊的 `mon_natalia.webp` 是撲擊姿勢），
+  延時 = `out/export/mon_natalia_neutral_slashAB_cut`（9 格）＋ `mon_natalia_B_slash_returnBA_cut`（28 格）。
+- ⚠⚠ **娜塔莉換了立繪**：待機、延時、攻擊都是用新的中立站姿生成的，**卡上的立繪要一起換成 `resources/enemy/mon_natalia_neutral.webp`**（1024×1536，舊的 `mon_natalia.webp` 是撲擊姿勢），
   `ENEMY_IDLE.mon_natalia` 也要改指 `mon_natalia_idle_v3/`（或新增一把 `mon_natalia_neutral` 的鑰匙 —— 照 ENEMY_IDLE 以立繪檔名當鑰匙的規約，建議後者）。不換的話待機第一格會跟靜態立繪對不上。
 
 ## 程式端要做的（Ray 11-05：「進遊戲測」）
