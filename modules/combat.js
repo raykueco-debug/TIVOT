@@ -80,7 +80,8 @@ export function setup(){
                  /* 重擊那一震（ver -1659）：演出的擁有者是 enemy（`#enemyImg`），
                     「什麼時候該震」的判斷在 defense —— 經此轉交（defense 不 import enemy）。 */
                  slamEnemy: enemy.slamEnemy,
-                 onAssaultLand: enemy.onAssaultLand,   // 空戰怪主動攻擊的演出（ver -2445：收圈那一刻）：演出歸 enemy，「圈收了」歸 defense
+                 onAssaultLand: enemy.onAssaultLand,
+                 hasActionClips: enemy.hasActionClips,   // 有攻擊／延時動畫的怪（ver -2496）：攻擊落下就把延時倒數歸零   // 空戰怪主動攻擊的演出（ver -2445：收圈那一刻）：演出歸 enemy，「圈收了」歸 defense
                  /* 拉栓冷卻（ver -1009）：這一發開不開得出來由 weapon 回答
                     （鑰匙是那一把槍卡上的 `mag`／`reloadSec`，ver -1781）—— defense 不 import weapon。 */
                  counterReady: weapon.counterReady,
@@ -1254,6 +1255,8 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
   }
   /* 延時／點錯的動畫（ver -2472，config.ENEMY_DELAY）：先演、劈到那一格才扣血（同上一段的延後法） */
   if(!_plain && (kind==='delay'||kind==='wrong') && !_rainLanded){
+    /* -2496 Ray「攻擊播放時延時先到的話就消掉攻擊圈，所以不會兩動畫衝突」：有動作動畫的怪，延時先到 ⇒ 場上的攻擊圈全消 */
+    if(kind==='delay' && enemy.hasActionClips()) defense.clearThreat();
     const wait=enemy.playActionClip('delay');
     if(wait>0){ setTimeout(()=>{ if(state.over) return; enemyAttack(dmg, kind, saintAmt, true); }, wait); return; }
   }

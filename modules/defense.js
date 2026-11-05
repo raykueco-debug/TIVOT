@@ -251,6 +251,8 @@ export function releaseAssault(th){
   /* 收圈＝攻擊落下 ⇒ 空戰怪的攻擊演出（ver -2445／-2446，Ray：「攻擊圈沒點掉就刷一根近樹，近樹掃過龍就消失，然後龍從左下往右上衝出，玩家受擊」）：
      演出回傳「還要幾毫秒才撞到玩家」—— 扣血延到那一刻（沒有演出的怪回 0 ＝當場）。 */
   const wait = api.onAssaultLand ? (api.onAssaultLand()||0) : 0;
+  /* -2496 Ray「攻擊圈先到的話延時倒數歸零」：有攻擊／延時動畫的怪，攻擊落下 ⇒ 延時倒數重算（兩支動畫不會疊在一起） */
+  if(api.hasActionClips && api.hasActionClips() && api.resetIntervalDeadline) api.resetIntervalDeadline();
   /* 卡上 resetRingsOnAssault（ver -2455，樹寄生石龍；Ray：「只要發動一次攻擊就重置攻擊圈」）：
      一發攻擊落下 ⇒ 其餘亮著的圈與這一波還沒出的全部作廢，攻擊演出跑完才重新開始算下一次攻擊（holdAssaultFor 那一套） */
   if(((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).resetRingsOnAssault) holdAssaultFor(wait+600);
