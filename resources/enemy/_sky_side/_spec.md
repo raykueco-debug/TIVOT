@@ -62,3 +62,4 @@
 | `mon_sky_mawbat_side` | `anim/mon_sky_mawbat_side_idle_v1/` | 48 | 24 | Ray 在 animechk 選 `_cut`；振翅寬畫布、FITCANVAS 縮 ×0.73 |
 | `mon_sky_ribwhale_side` | `anim/mon_sky_ribwhale_side_idle_v1/` | 48 | 24 | 空戰剪法；振翅寬畫布、FITCANVAS 縮 ×0.79 |
 | `mon_sky_eyemoth_side` | `anim/mon_sky_eyemoth_side_idle_v1/` | 48 | 24 | 空戰剪法；振翅寬畫布、FITCANVAS |
+| `mon_sky2_spine_side` | `anim/mon_sky2_spine_side_idle_v1/` | 48 | 24 | 空戰剪法；振翅寬畫布、FITCANVAS |
