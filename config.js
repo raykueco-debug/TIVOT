@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2479';
+export const VERSION = 'ver 2026.11.05-2480';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5687,7 +5687,7 @@ export const ENEMY_IDLE = {
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
-  mon_natalia_neutral: { dir:null, far:0.82, near:1.2 },   // -2478：撲咬（mon_natalia_atk_v2）還沒交，先只留站位；爪擊那支已改名當延時（美術 4c62991a，Ray：爪＝延時、撲咬＝攻擊）   // -2475 Ray「再站近一點，攻擊時再放大一點」0.7→0.82、撲近到 1.2   // far：平時站遠一點（縮到 0.7），攻擊時才撲近到原大（ver -2473，Ray：「讓敵站位遠一點，攻擊時才接近」）   // 撲擊 9 格（0～8 劈到底）＋ 殭屍晃歸位 28 格
+  mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_atk_v2/', hit:12, far:0.82, near:1.2 },   // -2480 撲咬（16 格，只有撲出去那段、沒有歸位段；hit 12 是估的）   // -2478：撲咬（mon_natalia_atk_v2）還沒交，先只留站位；爪擊那支已改名當延時（美術 4c62991a，Ray：爪＝延時、撲咬＝攻擊）   // -2475 Ray「再站近一點，攻擊時再放大一點」0.7→0.82、撲近到 1.2   // far：平時站遠一點（縮到 0.7），攻擊時才撲近到原大（ver -2473，Ray：「讓敵站位遠一點，攻擊時才接近」）   // 撲擊 9 格（0～8 劈到底）＋ 殭屍晃歸位 28 格
 };
 export const ENEMY_DELAY = {
   mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_delay_v1/', hit:8, near:1.2 },   // -2476 Ray「DM（delay／miss）都用爪擊」：延時／點錯也演同一支撲擊
