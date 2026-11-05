@@ -1303,3 +1303,6 @@ when	from	to	reason
 20261105-161731	tools/anim/battle_preview.html	_recycle/tools/anim/battle_preview.html	Ray：要進遊戲測，不要預覽頁
 20261105-204644	resources/enemy/mon_np_violetflame.webp	_recycle/resources/enemy/mon_np_violetflame.webp	Ray 退：不是紫焰翼爪怪，改成瓦礫中安雅的光翼
 20261105-204644	resources/_originals/enemy/mon_np_violetflame.png	_recycle/resources/_originals/enemy/mon_np_violetflame.png	Ray 退：不是紫焰翼爪怪，改成瓦礫中安雅的光翼
+20261105-210259	resources/enemy/anim/mon_natalia_atk_v4	_recycle/resources/enemy/anim/mon_natalia_atk_v4	Ray 更正：v4 收回段改用 biteBA2_cut_2，重交
+20261105-210455	resources/enemy/mon_np_anyawings.webp	_recycle/resources/enemy/mon_np_anyawings.webp	改成只有翅膀的 B 版
+20261105-210455	resources/_originals/enemy/mon_np_anyawings.png	_recycle/resources/_originals/enemy/mon_np_anyawings.png	改成只有翅膀的 B 版
