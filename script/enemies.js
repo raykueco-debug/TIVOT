@@ -292,10 +292,10 @@ export const ENEMIES = {
       entrance:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      hitFx:{
-        delay:'claw4',
-        wrong:'slash',
-        assault:'bite',
+      hitFx:{   // -2476 Ray「DM 都用爪擊，受擊特效也是」：三種一律三爪
+        delay:'claw',
+        wrong:'claw',
+        assault:'claw',
       },
     },
     /* ══ 羅賽爾廢城・南壘門（ver -1839）══ 數值照 `nightmare_natalia` 整張抄，只換名字與 story:0（固定怪不是劇情戰）。
@@ -325,10 +325,10 @@ export const ENEMIES = {
       entrance:null,                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      hitFx:{
-        delay:'claw4',
-        wrong:'slash',
-        assault:'bite',
+      hitFx:{   // -2476 Ray「DM 都用爪擊，受擊特效也是」：三種一律三爪
+        delay:'claw',
+        wrong:'claw',
+        assault:'claw',
       },
     },
     // 亂入怪（無傷 45 秒內通關才會出現）— 先用同一隻怪測流程，正式再換

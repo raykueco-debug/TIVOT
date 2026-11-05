@@ -1139,9 +1139,9 @@ export function playActionClip(kind){
   let i=0; el.src=L.fr[0].src; if(el===clipEl) applyFar();
   const fps=L.j.fps||24;
   const hitF=(c.hit!=null) ? c.hit : Math.floor(L.fr.length*0.4);
-  { const k=(kind==='atk' && c.far) || farOf(); if(k!==1){   // 攻擊時撲近：劈到底那一格到原大，晃回去的路上退回遠處
+  { const k=farOf(); if(k!==1){   // 攻擊時撲近：劈到底那一格到原大，晃回去的路上退回遠處
       el.style.transformOrigin=FAR_ORIGIN; const T=L.fr.length*1000/fps, h=Math.min(0.9,hitF/L.fr.length);
-      const n=String((kind==='atk' && c.near) || 1), kf = kind==='atk' ? [{scale:String(k)},{scale:n,offset:h},{scale:n,offset:Math.min(0.95,h+0.12)},{scale:String(k)}] : [{scale:String(k)},{scale:String(k)}];
+      const n=String(c.near || 1), kf = (kind==='atk' || c.near) ? [{scale:String(k)},{scale:n,offset:h},{scale:n,offset:Math.min(0.95,h+0.12)},{scale:String(k)}] : [{scale:String(k)},{scale:String(k)}];
       el.animate(kf,{duration:T, easing:'ease-in-out'}); } }
   clipT=setInterval(()=>{ i++;
     if(i<L.fr.length){ el.src=L.fr[i].src; return; }
