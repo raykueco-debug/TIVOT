@@ -2455,6 +2455,10 @@ export const ENEMIES = {
       atype:'P',
       stageScale:1,
       stack:1,
+      /* 主動攻擊落下時的側舷齊射（ver -2489，Ray：「空賊船攻擊時加上砲口火光特效還有向後快速飛走的煙」）：
+         ports＝9 門砲口在立繪畫布（1536×1024）上的位置；由船頭往船尾依序開火，煙往船尾（畫面右）快速拖走 */
+      assaultFx:{ type:'broadside', canvas:[1536,1024], gap:55,
+        ports:[[502,802],[575,802],[648,802],[722,802],[795,802],[868,802],[942,802],[1015,802],[1088,802]] },
       image:'enemy_pirate_side',   // 側面飛行圖（ver -2471）；舊的三時段整張圖含背景，側面版只有怪 ⇒ 補 bg（分層天空）
       bg:'sky_towers', fit:{ mode:'contain', pos:'center center' },
       hp:340,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）

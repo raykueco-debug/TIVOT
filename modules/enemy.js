@@ -1286,8 +1286,37 @@ function setSkyBattle(key){
    快速由左下往右上平移 → 然後再近景樹復歸」）══ **收圈那一刻**（攻擊落下；defense 的 releaseAssault → combat 轉交，ver -2445 Ray：「龍的攻擊是收圈才會發動」）演一次：
      ① 龍（待機層）往右滑出畫面 ② 同一支動畫放大到幾乎遮滿，從左下往右上快速掠過 ③ 回到原位淡入；
      演出期間近景樹暫停、結束後重新排它的節奏。⚠ 只在有 `sky` 的怪上演（其餘怪照舊）。 */
+/* ══ 側舷齊射（ver -2489，卡上 assaultFx.type:'broadside'）══ 砲口火光＋往船尾快速飛走的煙。
+   一張蓋在 #top 上的畫布，跑完自己拆；位置照立繪畫布換算（canvasBoxInTop，同待機層），所以船怎麼取景都對得上。 */
+let broadsideCv=null;
+function playBroadside(fx){
+  const top=$('top'), eImg=$('enemyImg'); if(!top || !eImg || !fx || !fx.ports) return;
+  const r=canvasBoxInTop(eImg, { canvas:fx.canvas, box:[0,0,fx.canvas[0],fx.canvas[1]] }); if(!r) return;
+  if(broadsideCv) broadsideCv.remove();
+  const W=top.clientWidth, H=top.clientHeight, cv=document.createElement('canvas'); broadsideCv=cv;
+  cv.width=W; cv.height=H; cv.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4';
+  top.appendChild(cv); const cx=cv.getContext('2d');
+  const k=r.width/fx.canvas[0], gap=fx.gap||55, rnd=(a,b)=>a+Math.random()*(b-a);
+  const shots=fx.ports.map(([x,y],i)=>({ x:r.left+x*k, y:r.top+y*k, t:i*gap }));
+  const puffs=[]; shots.forEach(s=>{ for(let j=0;j<5;j++) puffs.push({ x:s.x, y:s.y, t:s.t+30+j*25, vx:rnd(0.55,1.1)*W/390, vy:rnd(-0.06,0.03)*W/390, r0:rnd(5,9)*k*3, life:rnd(700,1100), g:rnd(150,200)|0 }); });
+  const t0=performance.now(), END=shots[shots.length-1].t+1300;
+  const tick=now=>{ if(broadsideCv!==cv) return; const t=now-t0; cx.clearRect(0,0,W,H);
+    cx.globalCompositeOperation='source-over';
+    for(const p of puffs){ const a=t-p.t; if(a<0||a>p.life) continue; const q=a/p.life;   // 煙：往右（船尾）快速拖走、越飄越大越淡
+      const x=p.x+p.vx*a, y=p.y+p.vy*a-q*8, rr=p.r0*(1+q*3.2);
+      const gr=cx.createRadialGradient(x,y,0,x,y,rr); gr.addColorStop(0,`rgba(${p.g},${p.g},${p.g-8},${(0.55*(1-q)).toFixed(3)})`); gr.addColorStop(1,`rgba(${p.g},${p.g},${p.g-8},0)`);
+      cx.fillStyle=gr; cx.beginPath(); cx.arc(x,y,rr,0,6.283); cx.fill(); }
+    cx.globalCompositeOperation='lighter';
+    for(const s of shots){ const a=t-s.t; if(a<0||a>170) continue; const q=a/170, rr=(18+40*q)*k*3*(1-q*0.3);   // 火光：朝鏡頭爆開的一團白黃光＋幾道放射焰
+      const gr=cx.createRadialGradient(s.x,s.y,0,s.x,s.y,rr); gr.addColorStop(0,`rgba(255,250,220,${(1-q).toFixed(3)})`); gr.addColorStop(0.35,`rgba(255,190,80,${(0.85*(1-q)).toFixed(3)})`); gr.addColorStop(1,'rgba(255,90,20,0)');
+      cx.fillStyle=gr; cx.beginPath(); cx.arc(s.x,s.y,rr,0,6.283); cx.fill();
+      cx.strokeStyle=`rgba(255,220,140,${(0.9*(1-q)).toFixed(3)})`; cx.lineWidth=Math.max(1,2.2*k*3*(1-q));
+      for(let j=0;j<6;j++){ const ang=j*1.047+s.t, L=rr*1.5; cx.beginPath(); cx.moveTo(s.x,s.y); cx.lineTo(s.x+Math.cos(ang)*L, s.y+Math.sin(ang)*L); cx.stroke(); } }
+    if(t<END) requestAnimationFrame(tick); else { cv.remove(); if(broadsideCv===cv) broadsideCv=null; } };
+  requestAnimationFrame(tick);
+}
 export function onAssaultLand(){
-  if(!sky) return playActionClip('atk');   // 一般怪：有攻擊動畫就演（ver -2472），回傳打到玩家的那一刻
+  if(!sky){ const en=curCard(); if(en && en.assaultFx && en.assaultFx.type==='broadside') playBroadside(en.assaultFx); return playActionClip('atk'); }   // 一般怪：有攻擊動畫就演（ver -2472），回傳打到玩家的那一刻
   if(sky.lunge) return 0;
   const el=idleEl || $('enemyImg'); if(!el) return 0;
   const top=$('top'), W=top.clientWidth, H=top.clientHeight, C=sky.C;
