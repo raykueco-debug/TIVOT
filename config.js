@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2469';
+export const VERSION = 'ver 2026.11.05-2470';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -6755,16 +6755,6 @@ export const ASSET_VER = {
   'shinier_altar_day': '86a8dbcc',
   'shinier_altar_dusk': '17cbdc15',
   'shinier_altar_night': '0862baf9',
-  'sky_cirrus_day_l0_far': '47d7b465',
-  'sky_cirrus_day_l1_mid': '2dc06790',
-  'sky_cirrus_day_l2_near': 'f76d350a',
-  'sky_cumulus_day_l0_far': 'ede4b1e3',
-  'sky_cumulus_day_l1_mid': 'abaaf372',
-  'sky_cumulus_day_l2_near': 'acb43ba4',
-  'sky_towers_l0_far': '149c3eb5',
-  'sky_towers_l1_mid': 'e52a01a6',
-  'sky_towers_l2_near': 'c02ba2ab',
-  'sky_towers_moon': '7eef0ff6',
   'sofia_firearm': 'b15578da',
   'sofia_grocerie': 'ba7299e9',
   'sofia_guild': 'b798355f',

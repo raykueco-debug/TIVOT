@@ -1147,7 +1147,7 @@ function setSkyPan(nm, url){
   old.forEach(e=>e.remove());
   if(!nm) return;
   const cfg=((GAME_CONFIG.tuning||{}).skyPan||{})[nm.toLowerCase()];
-  const layers=cfg ? cfg.layers.map(L=>({ ...L, src:assetVer(L.src) })) : [{ src:url, sec:45, mirror:true }];
+  const layers=cfg ? cfg.layers.map(L=>({ ...L, src:L.src+assetVer(L.src) })) : [{ src:url, sec:45, mirror:true }];
   const eImg=$('enemyImg'), vig=$('topVignette');
   layers.forEach((L,li)=>{
     const el=document.createElement('div'); el.className='sky-pan'+(L.front?' front':'')+(L.fixed?' fixed':''); el.dataset.key=key;
