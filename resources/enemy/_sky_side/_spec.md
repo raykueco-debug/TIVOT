@@ -63,3 +63,4 @@
 | `mon_sky_ribwhale_side` | `anim/mon_sky_ribwhale_side_idle_v1/` | 48 | 24 | 空戰剪法；振翅寬畫布、FITCANVAS 縮 ×0.79 |
 | `mon_sky_eyemoth_side` | `anim/mon_sky_eyemoth_side_idle_v1/` | 48 | 24 | 空戰剪法；振翅寬畫布、FITCANVAS |
 | `mon_sky2_spine_side` | `anim/mon_sky2_spine_side_idle_v1/` | 48 | 24 | 空戰剪法；振翅寬畫布、FITCANVAS |
+| `mon_sky2_ringchain_side` | `anim/mon_sky2_ringchain_side_idle_v1/` | 48 | 24 | 空戰剪法；振翅寬畫布、FITCANVAS |
