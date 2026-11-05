@@ -54,6 +54,10 @@
 - 交件後在這裡列出哪幾隻好了 —— 程式端在 `config.ENEMY_IDLE` 加 `mon_<名>_side` 一列就會播（照檔名查，不必改卡）。
 
 ### ✅ 側面待機交件進度（美術）
+
+> **空戰剪法**（Ray 2026-11-05 定義，範本＝`mon_sky_mawbat_side_idle_cut`）：Wan 生成的 48 格**全留、不停格、24fps**。之後側面空戰待機一律照這個剪法交。
+
 | 鍵 | 資料夾 | 格 | fps | 備註 |
 |---|---|---|---|---|
 | `mon_sky_mawbat_side` | `anim/mon_sky_mawbat_side_idle_v1/` | 48 | 24 | Ray 在 animechk 選 `_cut`；振翅寬畫布、FITCANVAS 縮 ×0.73 |
+| `mon_sky_ribwhale_side` | `anim/mon_sky_ribwhale_side_idle_v1/` | 48 | 24 | 空戰剪法；振翅寬畫布、FITCANVAS 縮 ×0.79 |
