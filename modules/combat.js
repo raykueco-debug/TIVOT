@@ -1252,6 +1252,11 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
     const wait=enemy.skyScaleRain();
     if(wait>0){ setTimeout(()=>{ if(state.over) return; enemyAttack(dmg, kind, saintAmt, true); }, wait); return; }
   }
+  /* 延時／點錯的動畫（ver -2472，config.ENEMY_DELAY）：先演、劈到那一格才扣血（同上一段的延後法） */
+  if(!_plain && (kind==='delay'||kind==='wrong') && !_rainLanded){
+    const wait=enemy.playActionClip('delay');
+    if(wait>0){ setTimeout(()=>{ if(state.over) return; enemyAttack(dmg, kind, saintAmt, true); }, wait); return; }
+  }
   saint.resetSaintCombo();   // 受擊／點錯／逾時 → 連擊斷（九階「源泉」，ver -707）
   /* ⚠⚠ **失誤之後指一下正確的格子**（ver -717，Ray 指定）。掛在**這一支**是因為
      大絕／延時／按錯／格擋四條扣血路徑全部經過它 —— 守一次就全吃到（鐵律 8），

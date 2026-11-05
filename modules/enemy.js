@@ -15,7 +15,7 @@
 
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import * as prog from '../script/progress.js';  // stage 加成要問現在第幾章（ver -1584b）
-import { ENEMY_IDLE, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
+import { ENEMY_IDLE, ENEMY_ATK, ENEMY_DELAY, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
@@ -1103,14 +1103,49 @@ function placeIdle(){ if(!idleEl || !idleJ) return; const r=canvasBoxInTop($('en
   idleEl.style.left=r.left+'px'; idleEl.style.top=r.top+'px'; idleEl.style.width=r.width+'px'; idleEl.style.height=r.height+'px'; }
 try{ window.addEventListener('resize', ()=>placeIdle()); }catch(_){}
 /* 這張卡的待機動檔資料夾：卡上 `idle` 明寫優先（false＝關），否則照立繪檔名查 config 的 ENEMY_IDLE（ver -2075）。群體敵人不吃。 */
+function imgStem(en){ const p=String(asset(en && en.image)||'').split('?')[0]; return p.slice(p.lastIndexOf('/')+1).replace(/\.\w+$/,''); }
 function idleDirFor(en){
   if(!en || en.group || en.idle===false) return null;
   if(typeof en.idle==='string') return en.idle;
-  const p=String(asset(en.image)||'').split('?')[0], b=p.slice(p.lastIndexOf('/')+1).replace(/\.\w+$/,'');
-  return ENEMY_IDLE[b] || null;
+  return ENEMY_IDLE[imgStem(en)] || null;
 }
-function startCardIdle(en){ if(portraitOverride) return; const d=idleDirFor(en); if(d) startIdleLoop(d); }
-function stopIdleLoop(){ clearInterval(idleT); idleT=0; if(idleEl){ idleEl.remove(); idleEl=null; }
+function startCardIdle(en){ if(portraitOverride) return; const d=idleDirFor(en); if(d) startIdleLoop(d); preloadActionClips(en); }
+/* ══ 攻擊／延時動畫（ver -2472）══ 一次性的動檔：從待機切進來、播完切回待機（Ray：「所有攻擊都要回到原本的中立動畫」）。
+   動檔在換上這隻怪的那一刻預載（戰鬥內，鐵律 13）；還沒載好就不演（照舊只有受擊特效）。 */
+const clipCache={};
+function loadClip(dir){
+  if(clipCache[dir]) return; const c={}; clipCache[dir]=c;
+  fetch(dir+'anim.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j) return;
+    const fr=Array.from({length:j.frames||0},(_,i)=>{ const f=new Image(); f.src=dir+'frame_'+String(i).padStart(2,'0')+'.webp'; return f; });
+    return Promise.all(fr.map(f=>f.decode ? f.decode().catch(()=>{}) : 0)).then(()=>{ if(fr.every(f=>f.naturalWidth)){ c.j=j; c.fr=fr; } });
+  }).catch(()=>{});
+}
+function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[imgStem(en)])||null; }
+function preloadActionClips(en){ for(const k of ['atk','delay']){ const c=clipFor(k,en); if(c) loadClip(c.dir); } }
+let clipT=0, clipEl=null;
+/* 演一次；回傳「還要幾毫秒才打到玩家」（扣血延到那一格），沒演就回 0。 */
+export function playActionClip(kind){
+  const c=clipFor(kind), L=c && clipCache[c.dir]; if(!L || !L.fr) return 0;
+  const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, L.j); if(!r) return 0;
+  clearInterval(clipT); clearInterval(idleT); idleT=0;
+  let el=idleEl; if(!el){ if(!clipEl){ clipEl=document.createElement('img'); clipEl.className='en-idle'; clipEl.alt=''; eImg.after(clipEl); } el=clipEl; }
+  eImg.style.visibility='hidden';
+  el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.width=r.width+'px'; el.style.height=r.height+'px';
+  let i=0; el.src=L.fr[0].src;
+  const fps=L.j.fps||24;
+  clipT=setInterval(()=>{ i++;
+    if(i<L.fr.length){ el.src=L.fr[i].src; return; }
+    clearInterval(clipT); clipT=0;
+    if(idleEl && idleFr){ placeIdle(); runIdle(); }                 // 回待機 loop
+    else { if(clipEl){ clipEl.remove(); clipEl=null; } eImg.style.visibility=''; }
+  }, 1000/fps);
+  const hit = (c.hit!=null) ? c.hit : Math.floor(L.fr.length*0.4);
+  return Math.round(hit*1000/fps);
+}
+let idleFr=null;
+function runIdle(){ clearInterval(idleT); if(!idleEl || !idleFr) return; let i=0; idleEl.src=idleFr[0].src;
+  idleT=setInterval(()=>{ i=(i+1)%idleFr.length; idleEl.src=idleFr[i].src; }, 1000/((idleJ&&idleJ.fps)||8)); }
+function stopIdleLoop(){ clearInterval(idleT); idleT=0; clearInterval(clipT); clipT=0; if(clipEl){ clipEl.remove(); clipEl=null; } idleFr=null; if(idleEl){ idleEl.remove(); idleEl=null; }
   const e=$('enemyImg'); if(e && e.style.visibility==='hidden' && !document.querySelector('#top .en-fall')) e.style.visibility=''; }
 function startIdleLoop(dir){
   stopIdleLoop();
@@ -1123,8 +1158,8 @@ function startIdleLoop(dir){
       const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, j); if(!r) return;
       const el=document.createElement('img'); el.className='en-idle'; el.alt='';
       el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.width=r.width+'px'; el.style.height=r.height+'px';
-      el.src=fr[0].src; eImg.after(el); idleEl=el; idleJ=j; eImg.style.visibility='hidden';
-      let i=0; idleT=setInterval(()=>{ i=(i+1)%fr.length; el.src=fr[i].src; }, 1000/(j.fps||8));
+      el.src=fr[0].src; eImg.after(el); idleEl=el; idleJ=j; idleFr=fr; eImg.style.visibility='hidden';
+      if(!clipT) runIdle();   // 攻擊動畫正在演就等它演完再接（它收尾會叫 runIdle）
     });
   }).catch(()=>{});
 }
@@ -1237,7 +1272,8 @@ function setSkyBattle(key){
      ① 龍（待機層）往右滑出畫面 ② 同一支動畫放大到幾乎遮滿，從左下往右上快速掠過 ③ 回到原位淡入；
      演出期間近景樹暫停、結束後重新排它的節奏。⚠ 只在有 `sky` 的怪上演（其餘怪照舊）。 */
 export function onAssaultLand(){
-  if(!sky || sky.lunge) return 0;
+  if(!sky) return playActionClip('atk');   // 一般怪：有攻擊動畫就演（ver -2472），回傳打到玩家的那一刻
+  if(sky.lunge) return 0;
   const el=idleEl || $('enemyImg'); if(!el) return 0;
   const top=$('top'), W=top.clientWidth, H=top.clientHeight, C=sky.C;
   /* ① 近樹：馬上刷一根，從右往左掃過；樹幹掃到龍的那一刻龍就不見（龍站在畫面中央 ⇒ 掃過一半的時候） */

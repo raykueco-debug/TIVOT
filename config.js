@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2471';
+export const VERSION = 'ver 2026.11.05-2472';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4547,7 +4547,7 @@ export const ASSETS = {
   enemy_dart_counter: "resources/enemy/dart_counter.webp",   // 蕃茄人11號：杰羅的自動人型靶（ver -862，Ray 交件）
   /* 禍魘娜塔莉（ver -671，Ray 交件）＋惡夢化 cut-in。
      ⚠ cut-in 住在 `resources/CI/`（Ray 指定；-672 曾誤指 `partner/`）。 */
-  enemy_natalia:  "resources/enemy/mon_natalia.webp?v=46dacdbf",
+  enemy_natalia:  "resources/enemy/mon_natalia_neutral.webp",   // ver -2472：換成中立站姿（攻擊／待機 v3 都是從它生成的；舊的撲擊姿勢 mon_natalia.webp 劇情立繪還在用）
   /* ⚠⚠ `?v=2`：這兩張是**同名覆蓋**的（ver -689，Ray：「這兩個 CI 都有改」）——
      檔名沒變、內容變了，瀏覽器照樣拿舊的那一份（§5 的老坑，娜塔莉那一組踩過
      四版才查出來）。**一組要一起帶**，漏掉哪一張哪一張就被快取住。 */
@@ -5669,7 +5669,26 @@ export const ENEMY_IDLE = {
   mon_sky2_ringchain: 'resources/enemy/anim/mon_sky2_ringchain_idle_v1/',   // 振翅：翼展 2.9 倍，交件先整組縮回畫布（×0.34）全部顯示，遊戲內 Ray 手動調裁切
   mon_sky2_eyeveil: 'resources/enemy/anim/mon_sky2_eyeveil_idle_v1/',
   mon_sky2_maw: 'resources/enemy/anim/mon_sky2_maw_idle_v1/',
+  /* ver -2472：娜塔莉換中立立繪後的待機（美術 79fb7c7a） */
+  mon_natalia_neutral: 'resources/enemy/anim/mon_natalia_idle_v3/',
+  /* 空戰側面待機（ver -2472，美術陸續交件；空戰剪法：48 格 24fps） */
+  mon_sky_mawbat_side: 'resources/enemy/anim/mon_sky_mawbat_side_idle_v1/',
+  mon_sky_ribwhale_side: 'resources/enemy/anim/mon_sky_ribwhale_side_idle_v1/',
+  mon_sky_eyemoth_side: 'resources/enemy/anim/mon_sky_eyemoth_side_idle_v1/',
+  mon_sky2_spine_side: 'resources/enemy/anim/mon_sky2_spine_side_idle_v1/',
+  mon_sky2_ringchain_side: 'resources/enemy/anim/mon_sky2_ringchain_side_idle_v1/',
 };
+/* ══ 敵人的攻擊／延時動畫（ver -2472，美術 TO_CODE_attack.md；Ray：「娜塔莉攻擊動作交件了，接上進遊戲測」）══
+   鑰匙＝立繪檔名（同 ENEMY_IDLE）。`dir`＝動檔資料夾（anim.json loop:false）、`hit`＝哪一格打到玩家（扣血延到那一格）。
+   ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
+   DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
+export const ENEMY_ATK = {
+  mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_atk_v1/', hit:8 },   // 撲擊 9 格（0～8 劈到底）＋ 殭屍晃歸位 28 格
+};
+export const ENEMY_DELAY = {
+  mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_delay_v1/', hit:12 },   // 魘魔 單爪大幅斜劈 30 格（hit 是估的，Ray 看了再調）
+};
+
 export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ""; }
 
 /* ══⚠⚠⚠ 同名覆蓋的圖要換一次快取（ver -905）══════════════════════════════
