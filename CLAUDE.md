@@ -1465,6 +1465,12 @@ document.body.appendChild(a); a.click(); a.remove();            // 直接落進 
 7. ⚠ 動畫 session **不碰程式**（鐵律 11）：要進遊戲測，就把要接的寫進 `TO_CODE_attack.md`，交程式 session 接
    （播放器是 `enemy.playActionClip`，登記表 `ENEMY_ATK`／`ENEMY_DELAY`）。
 
+**⚠⚠⚠ animechk 一律開在 Chrome（2026-11-05，Ray：「chk 一律開 chrome 入憲」）**
+
+給 Ray 剪片的動檔播放器（`ComfyUI-master/tivot_wan/serve_player.py`，`http://localhost:8130/player.html`）
+**一律用 Claude in Chrome 開在他的 Chrome 裡**，不要開在內建瀏覽器窗格。
+開好就把要剪的那一段點出來（網址帶 `#enemy_atk/<資料夾名>` 或在搜尋欄打名字點選），再告訴他碰邊格。
+
 **⚠⚠⚠ 回收區 ＝ 本專案唯一的「刪除」出口(ver -696,Ray：「以後不要刪我的東西,
 在根目錄放一個回收區」)**
 - 任何 session(程式的、美術的)要拿掉或**覆蓋掉**任何檔案,一律走 `tools/recycle.sh`
