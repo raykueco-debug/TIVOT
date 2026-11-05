@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2519';
+export const VERSION = 'ver 2026.11.05-2520';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4556,7 +4556,7 @@ export const ASSETS = {
   enemy_gk_crypt:  "resources/enemy/mon_gravekeeper_crypt.webp?v=9b1652d7",    // 墓室胸腔（決戰）
   enemy_gk_seal_down: "resources/enemy/mon_gravekeeper_seal_down.webp",  // 倒地差分：被擊退、停頓期間殘留在那一格（ver -1701，chase.downArt）
   enemy_facelessgiant: "resources/enemy/saint_gt_ci.webp?v=2c191ece",   // 連戰第二隻：巨型聖徒（GT=giant）
-  enemy_trainee:  "resources/enemy/saint_tr_ci.webp?v=1f885777",   // 教學專用敵：訓練用聖徒
+  enemy_trainee:  "resources/enemy/saint_tr_neutral.webp",   // 教學專用敵：訓練用聖徒（ver -2520 換中立站姿 alpha；舊合成圖 saint_tr_ci 不用了）
   enemy_dart_target: "resources/enemy/dart_timeattack.webp?v=df0a5635",   // 打靶場：固定立靶（ver -396）
   enemy_dart_counter: "resources/enemy/dart_counter.webp",   // 蕃茄人11號：杰羅的自動人型靶（ver -862，Ray 交件）
   /* 禍魘娜塔莉（ver -671，Ray 交件）＋惡夢化 cut-in。
@@ -5687,6 +5687,7 @@ export const ENEMY_IDLE = {
   mon_sky2_maw: 'resources/enemy/anim/mon_sky2_maw_idle_v1/',
   /* ver -2472：娜塔莉換中立立繪後的待機（美術 79fb7c7a） */
   mon_natalia_neutral: 'resources/enemy/anim/mon_natalia_idle_v3/',
+  saint_tr_neutral: 'resources/enemy/anim/saint_tr_neutral_idle_v1/',   // 訓練用聖徒 待機（ver -2520，48 格 loop）
   mon_beast_altar: 'resources/enemy/anim/mon_beast_altar_idle_v1/',   // E019 背負祭壇者 待機（ver -2517，48 格 loop）
   /* 空戰側面待機（ver -2472，美術陸續交件；空戰剪法：48 格 24fps） */
   mon_sky_mawbat_side: 'resources/enemy/anim/mon_sky_mawbat_side_idle_v1/',
