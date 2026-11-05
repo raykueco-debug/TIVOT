@@ -19,6 +19,9 @@
 |---|---|---|---|---|---|---|
 | E007／E008 | 禍魘娜塔莉 `nightmare_natalia`／逝去的守護者 `dm_lost_guardian` | **延時・點錯**（撲向鏡頭一爪劈下 → 殭屍左右晃歸位；Ray 11-05：爪＝延時、撲咬＝攻擊，攻擊另交 `mon_natalia_atk_v2/`） | `mon_natalia_delay_v1/` | 37／24／1.54 秒 | 1.9 MB | `[-33,-19,1091,1536]` |
 | E007／E008 | 同上 | **待機（換新）** | `mon_natalia_idle_v3/` | 38／24／1.58 秒，loop | 1.9 MB | `[104,13,820,1502]` |
+| E007／E008 | 同上 | **攻擊**（縮身蓄力 → 彈射撲向鏡頭張嘴咬、雙爪抓來；⚠ 只有撲出段，停在撲咬姿勢，沒有歸位段） | `mon_natalia_atk_v2/` | 16／24／0.67 秒，loop:false | 0.7 MB | `[-21,4,1041,1511]`（左右略超出畫布） |
+
+- E007 攻擊：Ray 剪的 `out/export/mon_natalia_neutral_biteAB2_cut`（A 中立 → B 撲咬，原片 49 格取 13 格、部分 ×2 → 16 格），`edge_check` 無碰邊。B 圖 `resources/enemy/_natalia_bite/mon_natalia_B_bite2.png`（GPT）。⚠ 結尾停在撲咬姿勢，與待機第 0 格差很多 —— 切回待機要蓋在受擊特效之下。
 | E017 | 魘魔 `np_coralman` | 延時・點錯（單爪大幅斜劈） | `mon_sea_coralman_delay_v1/` | 30／24／1.25 秒 | 2.0 MB | `[-44,-46,1113,1574]`（略超出畫布四邊） |
 
 - E017：Ray 剪的 `out/export/mon_sea_coralman_delay2_cut`（原片 48 格取 24 格、部分 ×2 → 30 格）。最後一格與第一格差 8.8（不完全相同，見上方 ⚠）。
