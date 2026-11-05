@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2470';
+export const VERSION = 'ver 2026.11.05-2471';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4709,6 +4709,28 @@ export const ASSETS = {
   enemy_sky2_eyeveil: "resources/enemy/mon_sky2_eyeveil.webp",   // 眼之幕（ver -2268）
   enemy_sky2_rift: "resources/enemy/mon_sky2_rift.webp",   // 天之裂隙（ver -2268）
   enemy_sky2_maw: "resources/enemy/mon_sky2_maw.webp",   // 無面巨首（ver -2268）
+  /* 空戰側面飛行圖（ver -2471，Ray：「把空中戰的敵人全部畫成側面飛行圖」；美術 6468d3ce，1536×1024 橫式、頭朝左）。
+     ⚠ 另開 *_side 鍵、不改舊鍵：舊檔還有別人在用（飛行頁的王座徘徊者 sprite 就是 enemy_bl_dragon_front 那張）。 */
+  enemy_sky_twinwyvern_side: "resources/enemy/mon_sky_twinwyvern_side.webp",
+  enemy_sky_boneray_side: "resources/enemy/mon_sky_boneray_side.webp",
+  enemy_sky_ribwhale_side: "resources/enemy/mon_sky_ribwhale_side.webp",
+  enemy_sky_mawbat_side: "resources/enemy/mon_sky_mawbat_side.webp",
+  enemy_sky_eyemoth_side: "resources/enemy/mon_sky_eyemoth_side.webp",
+  enemy_sky_eelswarm_side: "resources/enemy/mon_sky_eelswarm_side.webp",
+  enemy_sky_gasjelly_side: "resources/enemy/mon_sky_gasjelly_side.webp",
+  enemy_sky_armorcrab_side: "resources/enemy/mon_sky_armorcrab_side.webp",
+  enemy_sky2_spine_side: "resources/enemy/mon_sky2_spine_side.webp",
+  enemy_sky2_maskbanner_side: "resources/enemy/mon_sky2_maskbanner_side.webp",
+  enemy_sky2_ringchain_side: "resources/enemy/mon_sky2_ringchain_side.webp",
+  enemy_sky2_mouthpillar_side: "resources/enemy/mon_sky2_mouthpillar_side.webp",
+  enemy_sky2_facecrown_side: "resources/enemy/mon_sky2_facecrown_side.webp",
+  enemy_sky2_eyeveil_side: "resources/enemy/mon_sky2_eyeveil_side.webp",
+  enemy_sky2_rift_side: "resources/enemy/mon_sky2_rift_side.webp",
+  enemy_sky2_maw_side: "resources/enemy/mon_sky2_maw_side.webp",
+  enemy_serpent_side: "resources/enemy/mon_serpent_side.webp",
+  enemy_centipi_side: "resources/enemy/mon_centipi_side.webp",
+  enemy_pirate_side: "resources/enemy/mon_pirateship_side.webp",
+  enemy_bl_dragon_front_side: "resources/enemy/mon_dragon_v1_flight_side.webp",
   enemy_bl_dragon_sky:    "resources/enemy/mon_dragon_v1_ascendant.webp?v=d30dd2e3",
   /* 王座徘徊者的放光音（ver -1351，Ray：「音效用 enemy_firebeam」）。
      ⚠⚠ 它**放在 `bgm/` 資料夾而且還是 `.mp3`** —— 那是 SE，照 §6.6 應該是

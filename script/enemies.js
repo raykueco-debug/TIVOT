@@ -1733,7 +1733,8 @@ export const ENEMIES = {
       /* ⚠⚠ **三張時段差分**（Ray：「上午下午用 Centipi_day，晚上用 night，
          黃昏黎明用 Centipi_dd」）。寫成 `{day,dd,night}` 三個槽，時段→槽的對應
          只有一處：`modules/enemy.js` 的 `enemyImage()`（鐵律 7）。 */
-      image:{ day:'enemy_centipi_day', dd:'enemy_centipi_dd', night:'enemy_centipi_night' },
+      image:'enemy_centipi_side',   // 側面飛行圖（ver -2471）；舊的三時段整張圖含背景，側面版只有怪 ⇒ 補 bg（分層天空）
+      bg:'sky_cirrus_day', fit:{ mode:'contain', pos:'center center' },
       /* ⚠⚠ `kind:'aerial'`＝**飛行敵人自成一類**（ver -869，Ray：「把飛行敵人跟
          一般敵人分開就好了，不要跑 harm，擊敗一樣寫淨化」）——
          結算副標照樣「已淨化」（i18n winSubBy.aerial）、降臨/淨化特效照樣吃
@@ -1806,7 +1807,8 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:{ day:'enemy_serpent_day', dd:'enemy_serpent_dd', night:'enemy_serpent_night' },
+      image:'enemy_serpent_side',   // 側面飛行圖（ver -2471）；舊的三時段整張圖含背景，側面版只有怪 ⇒ 補 bg（分層天空）
+      bg:'sky_cumulus_day', fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:4,               // 蓄力窗口 4 秒（固定）
@@ -1856,7 +1858,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky_twinwyvern',
+      image:'enemy_sky_twinwyvern_side',
       bg:'sky_cumulus_day',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -1890,7 +1892,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky_boneray',
+      image:'enemy_sky_boneray_side',
       bg:'sky_towers',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -1924,7 +1926,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky_ribwhale',
+      image:'enemy_sky_ribwhale_side',
       bg:'sky_cirrus_day',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -2002,7 +2004,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky_mawbat',
+      image:'enemy_sky_mawbat_side',
       bg:'sky_cumulus_day',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -2036,7 +2038,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky_eyemoth',
+      image:'enemy_sky_eyemoth_side',
       bg:'sky_towers',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -2070,7 +2072,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky_eelswarm',
+      image:'enemy_sky_eelswarm_side',
       bg:'sky_cirrus_day',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -2104,7 +2106,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky_gasjelly',
+      image:'enemy_sky_gasjelly_side',
       bg:'sky_cumulus_day',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -2138,7 +2140,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky_armorcrab',
+      image:'enemy_sky_armorcrab_side',
       bg:'sky_towers',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -2172,7 +2174,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky2_spine',
+      image:'enemy_sky2_spine_side',
       bg:'sky_cirrus_day',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -2206,7 +2208,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky2_maskbanner',
+      image:'enemy_sky2_maskbanner_side',
       bg:'sky_cumulus_day',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -2240,7 +2242,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky2_ringchain',
+      image:'enemy_sky2_ringchain_side',
       bg:'sky_towers',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -2274,7 +2276,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky2_mouthpillar',
+      image:'enemy_sky2_mouthpillar_side',
       bg:'sky_cirrus_day',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -2308,7 +2310,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky2_facecrown',
+      image:'enemy_sky2_facecrown_side',
       bg:'sky_cumulus_day',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -2342,7 +2344,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky2_eyeveil',
+      image:'enemy_sky2_eyeveil_side',
       bg:'sky_towers',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -2376,7 +2378,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky2_rift',
+      image:'enemy_sky2_rift_side',
       bg:'sky_cirrus_day',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -2410,7 +2412,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_sky2_maw',
+      image:'enemy_sky2_maw_side',
       bg:'sky_cumulus_day',
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
@@ -2453,7 +2455,8 @@ export const ENEMIES = {
       atype:'P',
       stageScale:1,
       stack:1,
-      image:{ day:'enemy_pirate_day', dd:'enemy_pirate_dd', night:'enemy_pirate_night' },
+      image:'enemy_pirate_side',   // 側面飛行圖（ver -2471）；舊的三時段整張圖含背景，側面版只有怪 ⇒ 補 bg（分層天空）
+      bg:'sky_towers', fit:{ mode:'contain', pos:'center center' },
       hp:340,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:4,               // 蓄力窗口 4 秒（固定）
@@ -3551,7 +3554,7 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_bl_dragon_front',
+      image:'enemy_bl_dragon_front_side',
       /* ⚠⚠ **空中戰的背景在天空**（ver -1430，Ray：「空中戰背景，應該在天空」）：
          `Belisar_Exterior` 是**古城外觀**（地面）—— 那一場是從**船上**打的，
          背景該是甲板高速航行那一張（`resources/background/deck/deck_rapidsail.webp`，
