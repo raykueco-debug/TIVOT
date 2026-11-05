@@ -836,7 +836,8 @@ export const ENEMIES = {
       stack:1,
       image:'enemy_np_claws',   // → mon_np_anyawings.webp（ver -2524：瓦礫中安雅的光翼，Ray）
       bg:'northport_church_ruin', bgLock:true,   // 教堂殘垣（中央瓦礫堆＝安雅被埋處）；bgLock＝不讓城鎮那一格的背景蓋掉（ver -2524）
-      fit:{ mode:'contain', pos:'center bottom' },   // 橫幅光翼：翼根在下緣中央，從瓦礫堆長出來
+      delayEmpowers:2,   // 延時（爆炎）之後，下一發主動攻擊傷害 ×2，期間有蓄力光與提示（ver -2525，Ray；combat.enemyAttack／enemy.setEmpowered）
+      fit:{ mode:'contain', pos:'35% 100%', scale:1.48, shiftY:-0.43 },   // 橫幅光翼：翼根在下緣中央，從瓦礫堆長出來
       hp:510,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:21,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:null,
@@ -844,10 +845,10 @@ export const ENEMIES = {
       entrance:'se_brickcrush',                   // 登場音（卡上覆寫）；無則 null
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      hitFx:{
-        delay:'blood',
-        wrong:'slash',
-        assault:'claw',
+      hitFx:{   // ver -2525 Ray：砸石（M 振翅）的受擊只震畫面；A 的效果是紫白光芒（動作段 fx），不疊受擊圖
+        delay:'none',
+        wrong:'none',
+        assault:'none',
       },
     },
     /* ══ 夏爾村村內戰（ver -802，Ray 交稿）══════════════════════════════════

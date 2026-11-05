@@ -1308,6 +1308,10 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
     if(wait>0){ setTimeout(()=>{ if(state.over) return; enemyAttack(dmg, kind, saintAmt, true); }, wait); return; }
   }
   saint.resetSaintCombo();   // 受擊／點錯／逾時 → 連擊斷（九階「源泉」，ver -707）
+  /* 卡上 `delayEmpowers`（ver -2525，安雅光翼：「爆炎是 D，下一發攻擊會 200% 傷害」）：
+     延時落地 → 下一發主動攻擊（含擋一半）傷害 ×N，用掉就歸 1。 */
+  if((kind==='assault' || kind==='block') && state.enemyNextAtkMul>1){ dmg=Math.round(dmg*state.enemyNextAtkMul); state.enemyNextAtkMul=1; enemy.setEmpowered(0); }
+  if(kind==='delay'){ const _ce=(GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}; if(_ce.delayEmpowers>1){ state.enemyNextAtkMul=_ce.delayEmpowers; enemy.setEmpowered(_ce.delayEmpowers); } }
   /* ⚠⚠ **失誤之後指一下正確的格子**（ver -717，Ray 指定）。掛在**這一支**是因為
      大絕／延時／按錯／格擋四條扣血路徑全部經過它 —— 守一次就全吃到（鐵律 8），
      與上面那兩行（震動、連擊歸零）同一個理由。
@@ -3422,7 +3426,7 @@ export function startGame(){
   state.playerHp=state.playerMax;
   state.N=9; state.cols=3;
   state.runStartTime=Date.now(); resetClock();   // 計時碼表歸零（loadBoard 起算）
-  state.boardTimes=[]; state.boardsCompleted=0; state.charmStreak=0; state.charmRevenge=false;
+  state.boardTimes=[]; state.boardsCompleted=0; state.charmStreak=0; state.charmRevenge=false; state.enemyNextAtkMul=1;
   state.flawlessRun=true; state.intruderTriggered=false; state.inIntruderFight=false;
   morphed=false; morphSwapping=false;   // 型態切換一場只做一次（ver -1418）；-1486 加上「換卡中」
   state.overkillClean=false;   // 這一場的 ovk 是否完全清空殘額（ver -1389，追逐讀它）
@@ -3721,7 +3725,7 @@ export function startIntruderFight(){
   state.playerHp=state.playerMax; state.enemyHp=state.enemyMax;
   state.N=9; state.cols=3;
   state.runStartTime=Date.now(); resetClock();   // 新場：計時碼表歸零
-  state.boardTimes=[]; state.boardsCompleted=0; state.charmStreak=0; state.charmRevenge=false;
+  state.boardTimes=[]; state.boardsCompleted=0; state.charmStreak=0; state.charmRevenge=false; state.enemyNextAtkMul=1;
   state.flawlessRun=true; state.deathGuardUsed=false;
   morphed=false; morphSwapping=false;   // 型態切換一場只做一次（ver -1418）；-1486 加上「換卡中」
   state.sRankUnlocked=false; state.resultMode='rematch';

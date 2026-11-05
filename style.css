@@ -309,6 +309,25 @@
   #holyBurst.grow{transform:translate(-50%,-50%) scale(var(--hb-scale,16));}
   #holyBurst.fade{opacity:0;}
   #holyBurst .hb-glow{position:absolute;inset:0;border-radius:50%;background:var(--holy-glow);}
+  /* 紫白光芒（ver -2525，安雅光翼的爆炎）：首頁聖光綻放的同一套層次（白核心實心到 30%、往外羽化），外圈改紫。
+     綻放 .35s、淡出 .4s ＝ enemy.js 的 VF_GROW_MS／VF_FADE_MS（兩邊互指）。 */
+  /* 蓄力（下一發加倍，ver -2525）：敵人身上紫色脈動光暈＋常駐標記＋一次性浮字 */
+  #top.en-empowered #enemyImg, #top.en-empowered > .en-idle{animation:enEmpower 0.9s ease-in-out infinite;}
+  @keyframes enEmpower{0%,100%{filter:drop-shadow(0 0 6px rgba(190,110,255,.55)) brightness(1)}50%{filter:drop-shadow(0 0 22px rgba(205,140,255,.95)) brightness(1.18)}}
+  #enEmpowerTag{position:absolute;left:50%;top:12%;transform:translateX(-50%);z-index:6;pointer-events:none;
+    font-size:12px;letter-spacing:2px;color:#f0dcff;background:rgba(70,20,110,.72);border:1px solid rgba(200,140,255,.8);
+    border-radius:10px;padding:2px 10px;text-shadow:0 0 6px rgba(200,140,255,.9);animation:enEmpowerTag 1s ease-in-out infinite;}
+  @keyframes enEmpowerTag{0%,100%{opacity:.75}50%{opacity:1}}
+  .en-empower-pop{position:absolute;left:50%;top:38%;transform:translate(-50%,0);z-index:7;pointer-events:none;
+    font-size:20px;font-weight:700;letter-spacing:2px;color:#fff;text-shadow:0 0 10px #b46cff,0 0 22px #8a3cff;
+    animation:enEmpowerPop 1.5s ease-out forwards;white-space:nowrap;}
+  @keyframes enEmpowerPop{0%{opacity:0;transform:translate(-50%,10px) scale(.8)}15%{opacity:1;transform:translate(-50%,0) scale(1.08)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-18px) scale(1)}}
+  #violetFlash{position:fixed;z-index:9000;pointer-events:none;transform:translate(-50%,-50%) scale(.85);opacity:1;
+    transition:transform .35s cubic-bezier(.3,.35,.25,1), opacity .4s ease;}
+  #violetFlash.grow{transform:translate(-50%,-50%) scale(var(--vf-scale,16));}
+  #violetFlash.fade{opacity:0;}
+  #violetFlash .vf-glow{position:absolute;inset:0;border-radius:50%;
+    background:radial-gradient(circle,#fff 0%,#fff 30%,rgba(236,214,255,.92) 46%,rgba(186,120,255,.6) 62%,rgba(150,70,240,.28) 80%,rgba(130,50,230,0) 100%);}
   /* 發動那一下的**全螢幕快速抖動**（同上，Ray 指定）。
      ⚠ 與 `hitshake`（玩家受擊那一記，260ms 五拍）是**兩件事**：這一支更短更密
        （180ms 八拍）＝「快速」，而且幅度更大 —— 它是巨龍的吐息不是被揍一拳。

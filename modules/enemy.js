@@ -58,6 +58,7 @@ export function showHitFx(kind){
      門檻波打中會掉回預設的三爪，而那是**沉默的退化**（畫面上看不出是漏寫）。
      ⚠ 只退這一個方向：`assault` 缺了就是真的沒寫，照舊走三爪。 */
   const raw = hf && (hf[kind] || (kind==='ult' ? hf.assault : null));
+  if(raw==='none') return;   // 卡上寫 'none'＝不放受擊圖，只留畫面震動（ver -2525）
   if(!raw){ triggerClaw(); return; }
   /* ══⚠⚠ **卡上寫的是一個名字**（ver -951）：`'claw'`／`'bite'`…
      樣子（爪數、位置、大小、閃色）全部查 `config.HITFX`（鐵律 1）——
@@ -1237,6 +1238,38 @@ export function playActionClip(kind){
 function clipFx(f){
   if(!f) return;
   if(f.type==='rubble') return spawnRubble();
+  if(f.type==='violetFlash') return spawnVioletFlash();
+}
+/* 紫白光芒（ver -2525，Ray：「暴炎時從中心發出紫白光芒快速籠罩畫面後快速淡出，用首頁的光圈特效來改，外圈改紫色」）：
+   首頁那一顆聖光綻放的配方（白核心＋多層羽化），外圈換紫（CSS `--violet-glow`）；從敵人圖的中心發出，
+   0.35 秒蓋滿畫面、0.4 秒淡出。純演出：不清攻擊圈、不擋排程（傷害照動作段的打到那一格）。 */
+/* ══ 蓄力（下一發加倍）的特效與提示（ver -2525，Ray：「下一發攻擊會 200% 傷害要有能力提升特效跟提示」）══
+   `setEmpowered(n)`：n>1＝上 buff（敵人身上紫色脈動光暈＋一行「下一擊威力 ×n」浮字、名牌旁常駐標記）；0＝收掉。
+   擁有者是 combat（state.enemyNextAtkMul），這裡只演。換怪時 setEnemy 收掉。 */
+export function setEmpowered(n){
+  const top=$('top'); if(!top) return;
+  let tag=document.getElementById('enEmpowerTag');
+  if(!(n>1)){ top.classList.remove('en-empowered'); if(tag) tag.remove(); return; }
+  top.classList.add('en-empowered');
+  if(!tag){ tag=document.createElement('div'); tag.id='enEmpowerTag'; top.appendChild(tag); }
+  tag.textContent='▲ 下一擊威力 ×'+n;
+  const pop=document.createElement('div'); pop.className='en-empower-pop'; pop.textContent='威力提升！下一擊 ×'+n;
+  top.appendChild(pop); setTimeout(()=>pop.remove(), 1500);
+}
+const VF_GROW_MS=350, VF_FADE_MS=400;   // ＝ CSS #violetFlash 的 transition（兩邊互指）
+function spawnVioletFlash(){
+  const old=document.getElementById('violetFlash'); if(old) old.remove();
+  const el0=idleEl || clipEl || $('enemyImg'), W=innerWidth, H=innerHeight;
+  let cx=W*0.5, cy=H*0.25;
+  if(el0){ const top=$('top'); const R=drawnRect(el0, {left:0, top:0}); if(R.W>4){ cx=R.L+R.W/2; cy=R.T+R.H*0.55; } }
+  const d=Math.max(90, Math.min(W,H)*0.22), need=2*Math.hypot(Math.max(cx,W-cx), Math.max(cy,H-cy));
+  const el=document.createElement('div'); el.id='violetFlash'; el.innerHTML='<div class="vf-glow"></div>';
+  el.style.left=cx+'px'; el.style.top=cy+'px'; el.style.width=d+'px'; el.style.height=d+'px';
+  el.style.setProperty('--vf-scale', (need/d/0.30).toFixed(2));
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('grow')));
+  setTimeout(()=>el.classList.add('fade'), VF_GROW_MS);
+  setTimeout(()=>{ if(el.parentNode) el.remove(); }, VF_GROW_MS+VF_FADE_MS+50);
 }
 function spawnRubble(){
   const top=$('top'); if(!top) return;
@@ -2541,6 +2574,7 @@ export function setEnemy(key, opts){
   setSkyBattle(en.sky);                         // 空戰的視差背景（ver -2444）：沒有 `sky` 的怪＝收掉上一隻的
   startDamageSmoke(en.damageSmoke);             // 受損冒黑煙（ver -2490）：沒寫的怪＝收掉上一隻的
   startFlock(en);                               // 空戰編隊（ver -2516）：沒寫 flock 的怪＝收掉上一隻的
+  setEmpowered(0);                              // 換怪：上一隻的蓄力光與提示收掉（ver -2525）
   startAirDrift(en);                            // 戶外空戰生物型的接舷漂移（ver -2499）：不是的怪＝收掉上一隻的
   rollSmokeDir();                               // 船戰的煙往哪一邊飄：這一場擲一次（ver -1653）
   state.currentEnemyKey = key;                 // 3.7：記住目前怪 key，供 boardGridFor 查每盤格數
