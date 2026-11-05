@@ -1314,10 +1314,10 @@ function startDamageSmoke(cfg){
         const rate=(cfg.rate||14)*(1+1.6*Math.max(0,(cfg.hp||0.5)-ratio)/(cfg.hp||0.5));   // 每秒幾團，血越少越密
         S.acc+=dt*rate/1000;
         while(S.acc>=1){ S.acc-=1; const [px,py]=cfg.pts[(Math.random()*cfg.pts.length)|0];
-          puffs.push({ x:r.left+px*k+dx+rnd(-8,8)*k*3, y:r.top+py*k+dy, vx:rnd(0.10,0.22)*W/390, vy:-rnd(0.03,0.08)*W/390, r0:rnd(5,9)*k*3, life:rnd(1100,1700), a:0, g:rnd(14,40)|0 }); } } }
+          puffs.push({ x:r.left+px*k+dx+rnd(-8,8)*k*3, y:r.top+py*k+dy, vx:rnd(0.06,0.13)*W/390, vy:-rnd(0.04,0.09)*W/390, r0:rnd(9,15)*k*3, life:rnd(1500,2300), a:0, g:rnd(40,70)|0 });   /* -2490b：深灰、大團、慢一點 —— 純黑在夜空與暗色船身上看不見 */ } } }
     cx.clearRect(0,0,W,H);
     for(let i=puffs.length-1;i>=0;i--){ const p=puffs[i]; p.a+=dt; if(p.a>p.life){ puffs.splice(i,1); continue; }
-      const q=p.a/p.life, x=p.x+p.vx*p.a, y=p.y+p.vy*p.a, rr=p.r0*(1+q*3.5), al=0.62*(q<0.12?q/0.12:1)*(1-q);
+      const q=p.a/p.life, x=p.x+p.vx*p.a, y=p.y+p.vy*p.a, rr=p.r0*(1+q*3.5), al=0.8*(q<0.1?q/0.1:1)*(1-q*q);
       const gr=cx.createRadialGradient(x,y,0,x,y,rr); gr.addColorStop(0,`rgba(${p.g},${p.g},${p.g},${al.toFixed(3)})`); gr.addColorStop(1,`rgba(${p.g},${p.g},${p.g},0)`);
       cx.fillStyle=gr; cx.beginPath(); cx.arc(x,y,rr,0,6.283); cx.fill(); }
     S.raf=requestAnimationFrame(tick); };
