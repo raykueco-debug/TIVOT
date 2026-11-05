@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.06-2529';
+export const VERSION = 'ver 2026.11.06-2530';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5709,7 +5709,7 @@ export const ENEMY_IDLE = {
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_atk_v1/', hit:48, fx:[{ frame:8, type:'rubble' }, { frame:44, type:'violetFlash' }] },   // A＝振翅接爆炎（64 格）；第 8 格下拍到底噴瓦礫、爆炎時紫白光芒籠罩畫面（ver -2525）
-  saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7, near:1.35 },   // 訓練用聖徒 新架勢 攻擊（ver -2527，31 格；-2529 Ray「攻擊時要拉近撲前」打到那一格放大到 1.35）
+  saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7, near:1.35, nearIn:130 },   /* nearIn：拉近只花打到前的這幾毫秒（-2530 Ray「拉近的速度快一點」） */   // 訓練用聖徒 新架勢 攻擊（ver -2527，31 格；-2529 Ray「攻擊時要拉近撲前」打到那一格放大到 1.35）
   mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_atk_v1/', hit:13 },   // E019 背負祭壇者 撲撞（ver -2517，29 格）
   mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_atk_v1/', hit:13 },   // E017 魘魔（ver -2503；只有撲出段，結尾停在撲擊姿勢，切回待機蓋在受擊特效下）
   mon_shinierforest_snake_neutral: { dir:'resources/enemy/anim/mon_shinierforest_snake_atk_v1/', hit:13 },   // E066 水蛇（攻擊＝延時同一支，29 格）

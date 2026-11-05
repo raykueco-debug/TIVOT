@@ -1219,7 +1219,7 @@ export function playActionClip(kind, onDone){
   { const k=farOf(); if(k!==1 || (kind==='atk' && c.near)){   // 攻擊時撲近：打到那一格到最大，收回的路上退回遠處（ver -2529：平時不站遠也能撲近）
       el.style.transformOrigin=FAR_ORIGIN;
       const off=t=>Math.max(0,Math.min(1,t/T)), hold=Math.min(T, tHit+60), back=Math.min(T, tHit+Math.max(120,(T-tHit)*0.7));
-      const n=String(c.near || 1), kf = (kind==='atk' || c.near) ? [{scale:String(k),offset:0},{scale:n,offset:off(tHit)},{scale:n,offset:off(hold)},{scale:String(k),offset:off(back)},{scale:String(k),offset:1}] : [{scale:String(k)},{scale:String(k)}];
+      const n=String(c.near || 1), kf = (kind==='atk' || c.near) ? [{scale:String(k),offset:0}, ...(c.nearIn>0 && tHit>c.nearIn ? [{scale:String(k),offset:off(tHit-c.nearIn)}] : []), {scale:n,offset:off(tHit)},{scale:n,offset:off(hold)},{scale:String(k),offset:off(back)},{scale:String(k),offset:1}] : [{scale:String(k)},{scale:String(k)}];
       el.animate(kf.map(q=>({...q, easing:'ease-in-out'})),{duration:T}); } }   /* ease 逐段套，峰值才準準落在 hit 那一格（-2485） */
   const t0=performance.now();
   const fxAt=new Map((c.fx||[]).map(f=>[f.frame, f]));   // 動作段的程式特效（ver -2524：光翼下拍噴瓦礫）
