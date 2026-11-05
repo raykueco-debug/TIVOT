@@ -51,6 +51,7 @@ export function slamEnemy(){
  *  kind：'delay'（延時懲罰）/'wrong'（按錯懲罰）/'assault'（一般攻擊）/'ult'（門檻波的大絕，ver -932）。
  *  缺設定或未知 kind → 退回既有爪痕。 */
 export function showHitFx(kind){
+  if(isAirBio(curCard())) return;   // dragon rule 的空戰生物不演受擊特效（ver -2502，Ray；音效另外找，照舊在 combat）
   const hf = state.curEnemyHitFx;
   /* ⚠⚠ **缺 `ult` 就退回 `assault`**（ver -932）：受擊分四格是這一版才加的
      （延時／按錯／攻擊／大絕），六十張既有的卡上只有前三格 —— 沒有退路的話
@@ -1508,6 +1509,7 @@ function airAssault(en){
   kf.push({ transform:`translate(${f*W*0.05}px, ${-H*0.02}px) scale(.98)`, opacity:1, offset:o(t+T.ret*0.72), easing:'cubic-bezier(.45,0,.55,1)' });
   kf.push({ transform:'none', opacity:1, offset:1 });
   el.style.transformOrigin='50% 50%';
+  playEntranceSe(en.assaultSe || 'se_enemy_dragonroar');   // 發動攻擊那一刻吼一聲（ver -2502，Ray）
   const a=el.animate(kf, { duration:tot }); airAtk=a;
   const end=()=>{ if(airAtk===a) airAtk=null; };
   a.onfinish=end; a.oncancel=end;
