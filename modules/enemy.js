@@ -1188,6 +1188,8 @@ function loadClip(dir){
 }
 function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[imgStem(en)])||null; }
 function preloadActionClips(en){ for(const k of ['atk','delay']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); } }
+/* 這隻怪有沒有 M（點錯）動作：點錯播的是延時那一支（ENEMY_DELAY），有它就算有 M（ver -2523）。 */
+export function hasMissClip(){ return !!clipFor('delay'); }
 export function hasActionClips(){ return !!(clipFor('atk') || clipFor('delay')); }   // 這隻怪有攻擊／延時動畫嗎（ver -2496）
 let clipT=0, clipEl=null;
 /* 平時站遠（ENEMY_ATK 的 `far`，ver -2473）：用 CSS 的獨立 `scale` 屬性縮 —— 不碰 transform，受擊動畫照常疊上去。

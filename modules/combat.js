@@ -834,6 +834,17 @@ function tap(num,cell,e){
        按錯 → 碼表直接加秒數（`runElapsedMs` 是碼表的累計，加在那裡就等於「多花了那麼久」），
        並播那一場自己的失手音。⚠ 不走 `enemyAttack` —— 那條路上有扣血、受擊特效、
        致死判定，而這一場的靶子根本不會攻擊。 */
+    /* ══ 沒有 M（點錯）動作的敵人：點錯不出手，改成延時倒數提前（ver -2523，Ray：
+       「沒有 m 動作的敵人點錯一次敵人 -0.5 秒 delay」）══ 秒數在 `tuning.missDelaySec`（鐵律 1）。
+       ⚠ 不清攻擊圈、不扣血，也不重設延時倒數（那會把提前的 0.5 秒洗掉）—— 所以這一支自己 return。
+       ⚠ 打靶（timeAttack）照舊走下面那一套：那是加碼表秒數，不是延時。 */
+    if(!state.timeAttack && !state.tutorialActive && !enemy.hasMissClip() && state.intervalDeadline){
+      SFX.wrong();
+      state.intervalDeadline -= Math.round(((GAME_CONFIG.tuning||{}).missDelaySec ?? 0.5)*1000);
+      floatDmg('-'+((GAME_CONFIG.tuning||{}).missDelaySec ?? 0.5)+'s', '50%', '46%', true);
+      updateStatus(); tutorial.onMistake('wrong');
+      return;
+    }
     if(state.timeAttack){
       const pen = state.timeAttack.wrongPenaltySec;
       if(pen>0) state.runElapsedMs += Math.round(pen*1000);

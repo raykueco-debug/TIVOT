@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2522';
+export const VERSION = 'ver 2026.11.05-2523';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3385,6 +3385,7 @@ export const GAME_CONFIG = {
     /* 戶外空戰天空的分層（ver -2468，modules/enemy.js 的 setSkyPan）：鍵＝敵卡 `bg`（小寫）。
        每層 { src, sec:捲一輪幾秒（越遠越慢）, mirror:圖本身不無縫時用鏡像接, front:蓋在敵人前面 }。
        ⚠ 還沒交分層圖的天空不要寫進來 —— 沒寫就退回整張緩移。交件規格見 resources/background/_sky_parallax/_spec.md。 */
+    missDelaySec: 0.5,   // 沒有 M（點錯）動作的敵人：點錯一次＝延時倒數提前這麼多秒、不出手（ver -2523，Ray）
     skyPan: {
       sky_cumulus_day: { layers:[ { src:'resources/background/sky_parallax/sky_cumulus_day_l0_far.webp?v=ede4b1e3', sec:120 }, { src:'resources/background/sky_parallax/sky_cumulus_day_l1_mid.webp?v=abaaf372', sec:40 }, { src:'resources/background/sky_parallax/sky_cumulus_day_l2_near.webp?v=acb43ba4', sec:12, front:true } ] },
       sky_cirrus_day: { layers:[ { src:'resources/background/sky_parallax/sky_cirrus_day_l0_far.webp?v=47d7b465', sec:120 }, { src:'resources/background/sky_parallax/sky_cirrus_day_l1_mid.webp?v=2dc06790', sec:40 }, { src:'resources/background/sky_parallax/sky_cirrus_day_l2_near.webp?v=f76d350a', sec:12, front:true } ] },
