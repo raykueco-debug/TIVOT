@@ -45,3 +45,10 @@
 
 ## ✔ 程式端已接（ver -2471）
 20 隻全部改指向 `enemy_*_side`；羽蛇／蜈蚣／空賊船補上分層天空背景。側面版目前是靜態圖（舊的正面待機動畫不套用），要動畫另交辦。
+
+## ⚠ 第二件：側面版的待機動畫（Ray：「要，轉給美術」，ver -2471 之後）
+20 隻側面圖各做一支**飛行待機 loop**（振翅／游動／漂浮），取代舊的正面 idle。
+- 輸出 `resources/enemy/anim/mon_<名>_side_idle_v1/`：`frame_NN.webp` ＋ `anim.json`（`canvas`／`box`／`frames`／`fps`／`loop:true`），格式照既有的 `mon_sky_*_idle_v1`。
+- 走既有動畫產線（Wan，不准程式拼／交叉淡化；整張要活，見 memory 的動畫規矩）；有翅的照「有翅怪振翅模式」寬畫布。
+- 頭朝左、首尾接得上（loop）、真 alpha、四邊留白。
+- 交件後在這裡列出哪幾隻好了 —— 程式端在 `config.ENEMY_IDLE` 加 `mon_<名>_side` 一列就會播（照檔名查，不必改卡）。
