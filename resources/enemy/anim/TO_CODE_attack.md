@@ -30,10 +30,10 @@
 - E007 攻擊 v2（已被 v3 取代）：Ray 剪的 `out/export/mon_natalia_neutral_biteAB2_cut`（A 中立 → B 撲咬，原片 49 格取 13 格、部分 ×2 → 16 格），`edge_check` 無碰邊。B 圖 `resources/enemy/_natalia_bite/mon_natalia_B_bite2.png`（GPT）。⚠ 結尾停在撲咬姿勢，與待機第 0 格差很多 —— 切回待機要蓋在受擊特效之下。
 | E017 | 魘魔 `np_coralman` | 延時・點錯（單爪大幅斜劈） | `mon_sea_coralman_delay_v1/` | 30／24／1.25 秒 | 2.0 MB | `[-44,-46,1113,1574]`（略超出畫布四邊） |
 | E017 | 同上 | **攻擊**（縮身蓄力 → 雙爪張開撲向鏡頭；只有撲出段，停在撲到最近那一格） | `mon_sea_coralman_atk_v1/` | 14／24／0.58 秒，loop:false | 0.5 MB | `[-966,-431,2954,2197]`（撲到最近時雙爪遠超出畫布，大半會被 #top 切掉） |
-| E068 | 獨角虎 `mon_shinierforest_tiger` | **延時・點錯 v2（現行，tiger rule）**（右前爪胸前水平橫掃 → 收爪落回低伏） | `mon_shinierforest_tiger_delay_v2/` | 32／24／1.33 秒，loop:false | 0.6 MB | `[-154,-91,1724,1112]` |
+| E068 | 獨角虎 `mon_shinierforest_tiger` | ~~延時 v2~~ ⚠ **已被 delay_v3 取代**（程式端 ver -2519 組：Ray 剪的 hswipeAB_cut）（右前爪胸前水平橫掃 → 收爪落回低伏） | `mon_shinierforest_tiger_delay_v2/` | 32／24／1.33 秒，loop:false | 0.6 MB | `[-154,-91,1724,1112]` |
 | E068 | 獨角虎 `mon_shinierforest_tiger` | ~~延時~~ ⚠ **已被 delay_v2 取代**（右前爪胸前水平橫掃 → 收爪落回低伏；四足爪擊一律橫向） | `mon_shinierforest_tiger_delay_v1/` | 23／24／0.96 秒，loop:false | 0.4 MB | `[38,-91,1455,1108]`（上下超出畫布） |
 | E068 | 獨角虎 `mon_shinierforest_tiger` | ~~攻擊~~ ⚠ **已被 v2 取代**（只有撲出段） | `mon_shinierforest_tiger_atk_v1/` | 20／24／0.83 秒，loop:false | 0.3 MB | `[-7,-136,1654,1178]`（四邊略超出畫布） |
-| E068 | 獨角虎 `mon_shinierforest_tiger` | **攻擊 v3（現行，tiger rule）**（縮身蓄力 → 撲向鏡頭張嘴咬 → 收勢落回低伏） | `mon_shinierforest_tiger_atk_v3/` | 29／24／1.21 秒，loop:false | 0.5 MB | `[-31,-332,1677,1413]` |
+| E068 | 獨角虎 `mon_shinierforest_tiger` | ~~攻擊 v3~~ ⚠ **已被 atk_v4 取代**（程式端 ver -2519 組：Ray 指定改用 biteAB）（縮身蓄力 → 撲向鏡頭張嘴咬 → 收勢落回低伏） | `mon_shinierforest_tiger_atk_v3/` | 29／24／1.21 秒，loop:false | 0.5 MB | `[-31,-332,1677,1413]` |
 | E068 | 獨角虎 `mon_shinierforest_tiger` | ~~攻擊~~ ⚠ **已被 atk_v3 取代**（縮身蓄力 → 撲向鏡頭張嘴咬 → 收勢落回低伏） | `mon_shinierforest_tiger_atk_v2/` | 41／24／1.71 秒，loop:false | 0.7 MB | `[-13,-332,1664,1413]` |
 | E065 | 森林山貓 `mon_shinierforest_lynx` | **延時・點錯**（右前爪胸前水平橫掃過身體 → 收爪落回低伏） | `mon_shinierforest_lynx_delay_v1/` | 32／24／1.33 秒，loop:false | 0.7 MB | `[-249,20,1268,1352]` |
 | E065 | 同上 | **攻擊**（縮身蓄力 → 撲向鏡頭雙爪抓來 → 落回低伏） | `mon_shinierforest_lynx_atk_v1/` | 29／24／1.21 秒，loop:false | 0.6 MB | `[-265,-230,1556,1887]` |
