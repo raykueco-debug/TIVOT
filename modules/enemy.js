@@ -1133,18 +1133,29 @@ function startIdleLoop(dir){
      base（不透明、水平無縫、最慢）→ mid（alpha、無縫、較快）→【敵人】→ 近景樹（單根，每 10~12 秒從右往左一閃而過，蓋在敵人之上）
      ＋程式跑的落葉／綠光點（Ray：「葉子另外用程式跑」）。世界往左捲＝龍往右飛（龍頭朝右）。
    ⚠ 一個 rAF 推全部（捲動、近景樹、落葉），換敵／結束一律走 stopSkyBattle（鐵律 8；combat.stopAll 也叫）。 */
-/* ══ 戶外空戰的天空：橫向無縫循環、緩緩平移（ver -2467，Ray：「把空戰的背景改成橫軸 loop 緩平移」「戶外空戰，古城站不用改」）══
-   卡上的 `bg` 是 `sky_*` 那一族（天空塔／積雲／卷雲）⇒ #top 最底下鋪一條「原圖＋水平鏡像」交替的長條，往左慢慢平移；
-   鏡像接鏡像本來就無縫，不必另外做無縫圖。古城那一場（卡上有 `sky`）走自己的四層視差，不吃這一條。
-   ⚠ 每次 setEnemy 都明確設一次（null＝拆掉），同 battleBg 的教訓：靠上一場收乾淨會漏。 */
-function setSkyPan(url){
+/* ══ 戶外空戰的天空：分層橫向 loop 緩平移（ver -2467／-2468，Ray：「把空戰的背景改成橫軸 loop 緩平移」
+   「戶外空戰，古城站不用改」「要分層平移，像古城戰那樣」）══
+   卡上的 `bg` 是 `sky_*` 那一族、而且卡上沒有 `sky`（古城走自己那一套四層視差＋龍的攻擊演出，不吃這一條）：
+   · `tuning.skyPan[bg名]` 有寫 ⇒ 照它的 `layers`（由底至上；每層 `src`／`sec`＝捲一輪幾秒／`mirror`＝圖本身不無縫時用「原圖＋鏡像」接）
+     分層捲動，**最底一層在敵人後面、`front:true` 的層蓋在敵人前面**。
+   · 沒寫（分層圖還沒交）⇒ 退回整張圖「原圖／鏡像」交替、90 秒一輪（-2467）。
+   每一層是一條四張的長條往左走一半＝一輪（無縫）。⚠ 每次 setEnemy 都明確設一次（null＝拆掉）。 */
+function setSkyPan(nm, url){
   const top=$('top'); if(!top) return;
-  let el=top.querySelector(':scope > .sky-pan');
-  if(!url){ if(el) el.remove(); return; }
-  if(el && el.dataset.url===url) return;
-  if(!el){ el=document.createElement('div'); el.className='sky-pan'; top.insertBefore(el, top.firstChild); }
-  el.dataset.url=url; el.innerHTML='';
-  for(let i=0;i<4;i++){ const im=document.createElement('img'); im.alt=''; im.src=url; if(i%2) im.className='mir'; el.appendChild(im); }
+  const old=[...top.querySelectorAll(':scope > .sky-pan')], key=nm ? nm+'|'+url : '';
+  if(old.length && old[0].dataset.key===key) return;
+  old.forEach(e=>e.remove());
+  if(!nm) return;
+  const cfg=((GAME_CONFIG.tuning||{}).skyPan||{})[nm.toLowerCase()];
+  const layers=cfg ? cfg.layers : [{ src:url, sec:90, mirror:true }];
+  const eImg=$('enemyImg'), vig=$('topVignette');
+  layers.forEach((L,li)=>{
+    const el=document.createElement('div'); el.className='sky-pan'+(L.front?' front':''); el.dataset.key=key;
+    el.style.animationDuration=(L.sec||90)+'s';
+    for(let i=0;i<4;i++){ const im=document.createElement('img'); im.alt=''; im.src=L.src; if(L.mirror && i%2) im.className='mir'; el.appendChild(im); }
+    if(L.front) top.insertBefore(el, vig||null);
+    else top.insertBefore(el, li===0 ? top.firstChild : ($('enemyShadow')||eImg));
+  });
 }
 let sky=null;
 export function stopSkyBattle(force){
@@ -2281,7 +2292,7 @@ export function setEnemy(key, opts){
     /* plate 與人層是**同一張原圖拆出來的**：背景要照卡上的 `fit.pos` 對位，人才會落回原位（ver -2066，米夏親衛隊 35%）。
        縮放／上下偏移照舊只套在人那一組（applyEnemyFit）。不是 plate 的背景維持 CSS 原本的對位。 */
     topEl.style.backgroundPosition = plate ? (((en.fit||{}).pos)||'50% 50%') : '';
-    setSkyPan(!plate && !en.sky && /^sky_/i.test(nm) ? story.bgUrl(nm) : null);
+    { const on=!plate && !en.sky && /^sky_/i.test(nm); setSkyPan(on ? nm : null, on ? story.bgUrl(nm) : ''); }
   }
   /* ⚠ `noArt`：開機那一次不載圖，而且**把 src 整個拔掉** —— 只是不載的話
      上一次留下的那張還掛在 `#enemyImg` 上，空窗一樣會露出來。 */

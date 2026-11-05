@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2467';
+export const VERSION = 'ver 2026.11.05-2468';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3368,6 +3368,10 @@ export const GAME_CONFIG = {
     /* ══ 空戰的視差背景（ver -2444，Ray：「我想做出機戰那樣的背景效果」）══ 敵卡寫 `sky:'<鍵>'` 就換成這一套（modules/enemy.js 的 setSkyBattle）。
        由底至上：base（不透明、無縫、最慢）→ mid（alpha、無縫、較快）→ 敵人 → near（單根近景樹，不循環，每 nearEvery 秒從右往左一閃而過，蓋在敵人之上）＋程式跑的落葉／光點。
        世界往左捲（龍頭朝右＝往右飛）；`baseSec`／`midSec`＝捲過一整張要幾秒；`nearSweep`＝近景樹掃過畫面幾秒。 */
+    /* 戶外空戰天空的分層（ver -2468，modules/enemy.js 的 setSkyPan）：鍵＝敵卡 `bg`（小寫）。
+       每層 { src, sec:捲一輪幾秒（越遠越慢）, mirror:圖本身不無縫時用鏡像接, front:蓋在敵人前面 }。
+       ⚠ 還沒交分層圖的天空不要寫進來 —— 沒寫就退回整張緩移。交件規格見 resources/background/_sky_parallax/_spec.md。 */
+    skyPan: {},
     skyBattle: {
       undercity: { base:'resources/background/undercity_skybattle/uc_layer0_base_far.webp',
                    mid:'resources/background/undercity_skybattle/uc_layer2_mid_dark.webp',
