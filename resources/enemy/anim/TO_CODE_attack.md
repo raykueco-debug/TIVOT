@@ -30,6 +30,8 @@
 | E068 | 獨角虎 `mon_shinierforest_tiger` | **攻擊**（縮身蓄力 → 撲向鏡頭張嘴咬 → 收勢落回低伏） | `mon_shinierforest_tiger_atk_v2/` | 41／24／1.71 秒，loop:false | 0.7 MB | `[-13,-332,1664,1413]` |
 | E065 | 森林山貓 `mon_shinierforest_lynx` | **延時・點錯**（右前爪胸前水平橫掃過身體 → 收爪落回低伏） | `mon_shinierforest_lynx_delay_v1/` | 32／24／1.33 秒，loop:false | 0.7 MB | `[-249,20,1268,1352]` |
 | E065 | 同上 | **攻擊**（縮身蓄力 → 撲向鏡頭雙爪抓來 → 落回低伏） | `mon_shinierforest_lynx_atk_v1/` | 29／24／1.21 秒，loop:false | 0.6 MB | `[-265,-230,1556,1887]` |
+| E066 | 淺灘水蛇 `mon_shinierforest_snake` | **攻擊＝延時**（盤身 → 彈出張嘴咬向鏡頭 → 縮回盤姿；表上兩欄都是咬擊，同一支） | `mon_shinierforest_snake_atk_v1/` | 29／24／1.21 秒，loop:false | 0.7 MB | `[-85,9,1105,1526]` |
+| E067 | 巨山豬 `mon_shinierforest_hog` | **攻擊＝延時**（低頭蹬地 → 撞向鏡頭 → 退回站姿；表上兩欄都是撞擊，同一支） | `mon_shinierforest_hog_atk_v1/` | 29／24／1.21 秒，loop:false | 0.4 MB | `[64,-103,1422,1197]` |
 
 - E017：Ray 剪的 `out/export/mon_sea_coralman_delay2_cut`（原片 48 格取 24 格、部分 ×2 → 30 格）。最後一格與第一格差 8.8（不完全相同，見上方 ⚠）。
 
@@ -52,3 +54,5 @@
 - E068 攻擊 **v2**（現行）：撲出 `biteAB_cut`（20 格）＋ 收勢 `biteBA2_cut`（18 格→23 格）。**咬到那一格＝第 19 格（0 起算，撲出段最後一格）**。⚠ 兩段原本不在同一個生成空間（撲出 FIT 0.78／OY 0.5、收勢 FIT 0.72／OY 0.85）：撲出段已用 B 圖的對位**整格等比縮放＋平移**換算到收勢那一個空間（不重畫、不交叉淡化），接點差異 12.9（小於撲出段相鄰格 26.9）。canvas 照收勢空間交（FIT 0.72／OY 0.85）。⚠ `edge_check`：收勢段開頭幾格獨角碰生成畫布上緣。
 
 - E065：延時＝`hswipeAB2_cut`（10 格）＋`hswipeBA2_cut`（22 格），**打到那一格＝第 9 格**；攻擊＝`pounceAB2_cut`（14 格）＋`pounceBA2_cut`（15 格），**打到那一格＝第 13 格**（皆 0 起算＝撲出段最後一格）。兩段同一生成空間（直式、FIT 0.64）。⚠ `edge_check`：攻擊第 9–10 格雙爪碰生成畫布左右邊；延時無碰邊。⚠⚠ **立繪要換成中立站姿 `resources/enemy/mon_shinierforest_lynx_neutral.webp`**（舊的 `mon_shinierforest_lynx.webp` 是撲擊姿勢）。中立待機已生成（`out/enemy_atk/mon_shinierforest_lynx_neutral_idle`），等 Ray 剪。
+
+- E066／E067：tiger rule 自動剪（`tivot_wan/tiger_cut.py pounce`），**打到那一格＝第 13 格**（0 起算），兩支都 29 格、無碰邊。ENEMY_ATK 與 ENEMY_DELAY 都指同一支。⚠⚠ **立繪要換成中立站姿** `mon_shinierforest_snake_neutral.webp`／`mon_shinierforest_hog_neutral.webp`（舊的在咬／在衝）。⚠ 水蛇第 16–19 格頭縮進身體；山豬收回段兩格帶一小團煙塵（Ray 看過說交）。中立待機在 animechk 等 Ray 剪。
