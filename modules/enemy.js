@@ -683,8 +683,72 @@ const ENEMY_CX = 0.50, ENEMY_CY = 0.40;
 const ENEMY_RX = 0.26, ENEMY_RY = 0.28;
 const MIRROR = 0.95;   // 鏡射的強度（1＝完全對稱）
 const SPREAD = 1.45;   // 起點往外推的倍率（只影響看得見那一段的斜度）
+/* ══⚠⚠⚠ **落點貼著「畫面上真的那一格圖」**（ver -2500，Ray：「動畫化以後子彈常常打不到影像上，
+   看起來像一直沒打中」）══ 上面那組常數是「怪大概站在哪」—— 待機／攻擊動檔、站遠（far）、空戰漂移
+   一來，怪就不在那一塊了。現在：
+   ① 找出此刻**看得見的那一個元素**（攻擊動檔 → 待機格 → 立繪本體），用它的 rect（含 scale／translate／transform）
+   ② 立繪本體要再換算 object-fit／object-position，拿到**圖真正畫在哪**
+   ③ 照舊的鏡射＋抖動在那個框裡挑一點，再**吸到最近的不透明像素**（每一張圖縮成 48 格的遮罩，依 src 快取）
+   ⚠ 量不到（沒圖、還沒解碼、透明遮罩取不到）就退回舊的常數，行為不變。 */
+const impMask=new Map();   // src → { w, h, on:Uint8Array, pts:[[gx,gy]…] }
+const IMP_G=48;
+function maskOf(img){
+  const src=img.currentSrc || img.src; if(!src || !img.naturalWidth) return null;
+  let m=impMask.get(src); if(m!==undefined) return m;
+  try{
+    const ar=img.naturalWidth/img.naturalHeight, gw=ar>=1?IMP_G:Math.max(8,Math.round(IMP_G*ar)), gh=ar>=1?Math.max(8,Math.round(IMP_G/ar)):IMP_G;
+    const c=document.createElement('canvas'); c.width=gw; c.height=gh; const x=c.getContext('2d', { willReadFrequently:true });
+    x.drawImage(img,0,0,gw,gh); const d=x.getImageData(0,0,gw,gh).data, pts=[];
+    for(let i=0;i<gw*gh;i++) if(d[i*4+3]>90) pts.push(i);
+    m = pts.length>=6 ? { w:gw, h:gh, pts } : null;
+  }catch(_){ m=null; }
+  if(impMask.size>400) impMask.clear();
+  impMask.set(src, m); return m;
+}
+function visibleEnemyEl(){
+  for(const el of [clipEl, idleEl, $('enemyImg')]){
+    if(!el || !el.isConnected || !el.naturalWidth) continue;
+    const cs=getComputedStyle(el); if(cs.visibility==='hidden' || cs.display==='none' || +cs.opacity<0.2) continue;
+    return el;
+  }
+  return null;
+}
+/* 圖真正畫在哪（#top 相對）：object-fit 只有立繪本體有；動檔格子的 box 就是圖本身。 */
+function drawnRect(el, tr){
+  const r=el.getBoundingClientRect(); let L=r.left-tr.left, T=r.top-tr.top, W=r.width, H=r.height;
+  const cs=getComputedStyle(el), fit=cs.objectFit, iw=el.naturalWidth, ih=el.naturalHeight;
+  if((fit==='cover' || fit==='contain') && iw && ih){
+    const s = fit==='cover' ? Math.max(W/iw, H/ih) : Math.min(W/iw, H/ih), dw=iw*s, dh=ih*s;
+    const pos=(cs.objectPosition||'50% 50%').split(/\s+/), pc=v=> /%$/.test(v) ? parseFloat(v)/100 : (v==='left'||v==='top') ? 0 : (v==='right'||v==='bottom') ? 1 : 0.5;
+    const px=pc(pos[0]||'50%'), py=pc(pos[1]||'50%');
+    L+= (W-dw)*px; T+=(H-dh)*py; W=dw; H=dh;
+  }
+  return { L, T, W, H };
+}
 export function enemyImpact(sx, w, h){
   const j=()=> (Math.random()+Math.random()-1);              // −1~1，中心密
+  try{
+    const el=visibleEnemyEl(), top=$('top');
+    const m=el && maskOf(el);
+    if(el && m && top){
+      const R=drawnRect(el, top.getBoundingClientRect());
+      if(R.W>4 && R.H>4){
+        /* 鏡射＋抖動，換到「圖」的框（不是整個 #top） */
+        const cx=R.L+R.W/2, off=(sx-w*ENEMY_CX)/w, bx=Math.max(-1, Math.min(1, -off*MIRROR/ENEMY_RX));
+        const tx=cx+R.W*0.36*(bx*0.75+j()*0.25), ty=R.T+R.H*(0.45+0.30*j());
+        /* 吸到最近的不透明格（只在 #top 看得到的範圍內） */
+        const fl=parseFloat(String(getComputedStyle(el).scale||'1').split(' ')[0])<0;   // fit.flip／漂移的翻轉：遮罩要鏡射
+        const fx=px=> fl ? m.w-1-px : px;
+        const gx=(tx-R.L)/R.W*m.w, gy=(ty-R.T)/R.H*m.h, cw=R.W/m.w, ch=R.H/m.h;
+        let best=-1, bd=1e18;
+        for(const i of m.pts){ const px=fx(i%m.w), py=(i/m.w)|0, X=R.L+(px+0.5)*cw, Y=R.T+(py+0.5)*ch;
+          if(X<4 || X>w-4 || Y<4 || Y>h-4) continue;
+          const d=(px+0.5-gx)**2+(py+0.5-gy)**2; if(d<bd){ bd=d; best=i; } }
+        if(best>=0){ const px=fx(best%m.w), py=(best/m.w)|0;
+          return { x:R.L+(px+0.5+j()*0.35)*cw, y:R.T+(py+0.5+j()*0.35)*ch }; }
+      }
+    }
+  }catch(_){}
   const off=(sx - w*ENEMY_CX)/w;                             // 起點離中線多遠（比例）
   const bx=Math.max(-1, Math.min(1, -off*MIRROR/ENEMY_RX));  // 鏡射到另一側，夾在框內
   return { x:w*(ENEMY_CX + ENEMY_RX*(bx*0.75 + j()*0.25)),
@@ -1302,9 +1366,13 @@ let broadsideCv=null;
      `scale` 要乘回卡上的翻轉與站遠（`baseScale`），不然一動就把它們洗掉。
    · 收：換怪（setEnemy）／死亡（purgeEnemy，停在當下那一格不歸位）／stopAll。 */
 function isAirBio(en){ return !!(en && en.kind==='aerial' && !en.sky && /^sky_/i.test(en.bg||'')); }
+function isAirShip(en){ return !!(en && en.kind==='ship' && !en.sky && /^sky_/i.test(en.bg||'')); }
+/* 機頭朝哪邊：側面飛行圖一律畫成朝左（天空往右捲，-2488）；卡上 fit.flip 就是朝右。−1＝往左飛。 */
+function fwdOf(en){ return (en && en.fit && en.fit.flip) ? 1 : -1; }
 let airDrift=null;
 function stopAirDrift(reset){
   if(airDrift){ cancelAnimationFrame(airDrift.raf); airDrift=null; }
+  if(airAtk){ const a=airAtk; airAtk=null; try{ a.cancel(); }catch(_){} }   // 攻擊途中被打死／換怪：歸回原位
   if(reset) for(const el of [$('enemyImg'), idleEl, clipEl]) if(el){ el.style.translate=''; }
 }
 function startAirDrift(en){
@@ -1325,10 +1393,22 @@ function startAirDrift(en){
   S.raf=requestAnimationFrame(tick);
 }
 export function stopAirMotion(){ stopAirDrift(false); }
-/* 入場（由近到遠）：門開那一刻演；演完才起待機與漂移。被 suppressRiseOnce 壓掉的那一場直接站好。 */
+/* 入場：門開那一刻演；演完才起待機與漂移。被 suppressRiseOnce 壓掉的那一場直接站好。
+   · 生物型＝由近到遠（CSS `enemy-airin`）
+   · 空賊船＝從後方追上來、追過頭一點再停下（ver -2500，Ray） */
 function airEnter(en, eImg, play){
   const done=()=>{ eImg.classList.remove('enemy-airin'); eImg.style.opacity=''; startCardIdle(en); if(airDrift) airDrift.t0=performance.now(); };
   if(!play) return done();
+  if(isAirShip(en)){
+    const top=$('top'), W=top.clientWidth, tr=top.getBoundingClientRect(), er=eImg.getBoundingClientRect(), f=fwdOf(en);
+    const off = f<0 ? (tr.right-er.left)+20 : -(er.right-tr.left)-20;   // 從機尾那一側的畫面外
+    eImg.style.opacity='';
+    const a=eImg.animate([
+      { transform:`translate(${off}px,0px)`, offset:0, easing:'cubic-bezier(.2,.55,.35,1)' },
+      { transform:`translate(${f*W*0.06}px,${-W*0.005}px)`, offset:0.72, easing:'cubic-bezier(.45,0,.55,1)' },
+      { transform:'translate(0px,0px)', offset:1 }], { duration:2600 });
+    a.onfinish=done; a.oncancel=done; return;
+  }
   eImg.style.opacity=''; void eImg.offsetWidth; eImg.classList.add('enemy-airin');
   eImg.addEventListener('animationend', function off(e){ if(e.animationName!=='enemyAirIn') return; eImg.removeEventListener('animationend', off); done(); });
 }
@@ -1389,8 +1469,46 @@ function playBroadside(fx){
     if(t<END) requestAnimationFrame(tick); else { cv.remove(); if(broadsideCv===cv) broadsideCv=null; } };
   requestAnimationFrame(tick);
 }
+/* ══ 戶外空戰生物型的主動攻擊（ver -2500，Ray：「大部份的空中戰生物都是快速下潛（斜前），像樹生龍一樣
+   從下方往上劃過再從畫面外飛進畫面；或者快速上飛（斜後），然後從斜上方俯衝劃過再從畫面外飛進畫面」）══
+   兩型每一發隨機一種：① 斜前下潛出畫面 → 放大從下方往上劃過（撞到玩家在正中）→ 從機尾那側畫面外飛回、追過頭一點再停
+   ② 斜後上飛出畫面 → 放大從斜上方俯衝劃過 → 同上飛回。
+   ⚠ 全程一支 el.animate（transform）—— 漂移用的是獨立 translate／scale，兩者疊加不打架；
+     受擊的 CSS 動畫蓋不過 WAAPI（-2457 斜墜踩過的同一件事）。回傳撞到玩家的那一刻（defense 照它延後扣血）。 */
+let airAtk=null;
+function airAssault(en){
+  if(airAtk) return 0;
+  const el=idleEl || $('enemyImg'), top=$('top'); if(!el || !top) return 0;
+  const W=top.clientWidth, H=top.clientHeight, tr=top.getBoundingClientRect(), er=el.getBoundingClientRect();
+  if(!er.width) return 0;
+  const f=fwdOf(en), dive=Math.random()<0.5, K=3.4;
+  const cx=er.left-tr.left+er.width/2, cy=er.top-tr.top+er.height/2, bw=er.width*K, bh=er.height*K;
+  const T={ out:380, gap:140, sweep:620, gap2:260, ret:1700 };
+  const tot=T.out+T.gap+T.sweep+T.gap2+T.ret, o=ms=>ms/tot;
+  const exit = dive ? `translate(${f*W*0.35}px, ${(tr.bottom-er.top)+10}px) scale(.9) rotate(${f*20}deg)`
+                    : `translate(${-f*W*0.3}px, ${-(er.bottom-tr.top)-10}px) scale(.85) rotate(${-f*20}deg)`;
+  const p=(x,y,rot)=>`translate(${x-cx}px, ${y-cy}px) scale(${K}) rotate(${rot}deg)`;
+  const s0 = dive ? p(W/2-f*W*0.3, H+bh/2, -f*28) : p(W/2-f*W*0.3, -bh/2, f*28);
+  const s1 = dive ? p(W/2+f*W*0.3, -bh/2, -f*28) : p(W/2+f*W*0.3, H+bh/2, f*28);
+  const back = f<0 ? (tr.right-er.left)+er.width*0.15+20 : -(er.right-tr.left)-er.width*0.15-20;
+  let t=0; const kf=[{ transform:'none', opacity:1, offset:0, easing:'cubic-bezier(.5,0,.9,.6)' }];
+  t+=T.out; kf.push({ transform:exit, opacity:1, offset:o(t) }); kf.push({ transform:exit, opacity:0, offset:o(t)+0.0001 });
+  t+=T.gap; kf.push({ transform:s0, opacity:0, offset:o(t) }); kf.push({ transform:s0, opacity:1, offset:o(t)+0.0001, easing:'cubic-bezier(.3,.1,.7,.9)' });
+  const hitAt=t+T.sweep*0.5;
+  t+=T.sweep; kf.push({ transform:s1, opacity:1, offset:o(t) }); kf.push({ transform:s1, opacity:0, offset:o(t)+0.0001 });
+  t+=T.gap2; kf.push({ transform:`translate(${back}px, ${H*0.06}px) scale(1.25)`, opacity:0, offset:o(t) });
+  kf.push({ transform:`translate(${back}px, ${H*0.06}px) scale(1.25)`, opacity:1, offset:o(t)+0.0001, easing:'cubic-bezier(.2,.55,.35,1)' });
+  kf.push({ transform:`translate(${f*W*0.05}px, ${-H*0.02}px) scale(.98)`, opacity:1, offset:o(t+T.ret*0.72), easing:'cubic-bezier(.45,0,.55,1)' });
+  kf.push({ transform:'none', opacity:1, offset:1 });
+  el.style.transformOrigin='50% 50%';
+  const a=el.animate(kf, { duration:tot }); airAtk=a;
+  const end=()=>{ if(airAtk===a) airAtk=null; };
+  a.onfinish=end; a.oncancel=end;
+  return Math.round(hitAt);
+}
 export function onAssaultLand(){
-  if(!sky){ const en=curCard(); if(en && en.assaultFx && en.assaultFx.type==='broadside') playBroadside(en.assaultFx); return playActionClip('atk'); }   // 一般怪：有攻擊動畫就演（ver -2472），回傳打到玩家的那一刻
+  if(!sky){ const en=curCard(); if(isAirBio(en)) return airAssault(en);
+    if(en && en.assaultFx && en.assaultFx.type==='broadside') playBroadside(en.assaultFx); return playActionClip('atk'); }   // 一般怪：有攻擊動畫就演（ver -2472），回傳打到玩家的那一刻
   if(sky.lunge) return 0;
   const el=idleEl || $('enemyImg'); if(!el) return 0;
   const top=$('top'), W=top.clientWidth, H=top.clientHeight, C=sky.C;
@@ -2015,7 +2133,7 @@ export function loadEnemyPortrait(en){
        ⚠ 走 `api.roarBlast`（combat 擁有的那一支，鐵律 8）—— **不要**退回
          `screenShake`：那是「你被打到了」，這是「衝擊波撞上來」，兩件事。
        ⚠ 龍吟就是卡上的 `entrance`（登場音那一格）—— 不另開欄位。 */
-    const air=isAirBio(en);
+    const air=isAirBio(en) || isAirShip(en);
     const arrive=()=>{
       if(air) airEnter(en, eImg, true);
       if(playEntranceVo) playEntranceVo();
