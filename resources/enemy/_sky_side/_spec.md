@@ -68,3 +68,6 @@
 | `mon_sky2_maskbanner_side` | `anim/mon_sky2_maskbanner_side_idle_v1/` | 48 | 24 | 空戰剪法；漂浮（無翅）960×640、FIT 0.8 |
 | `mon_serpent_side_v2` ⚠新立繪 | `anim/mon_serpent_side_v2_idle_v1/` | 48 | 24 | 空戰剪法。Ray：原圖身體太短像鳥、羽蛇要長尾 ⇒ 立繪重畫成 `mon_serpent_side_v2.webp`（新檔），**程式端請把羽蛇改指 `mon_serpent_side_v2`**；舊的 `mon_serpent_side` 作廢 |
 | `mon_pirateship_side_v2` ⚠新立繪 | `anim/mon_pirateship_side_v2_idle_v1/` | 48 | 24 | 空戰剪法。Ray：原圖沒畫側舷砲 ⇒ 立繪重畫成 `mon_pirateship_side_v2.webp`（新檔，船腹一排 9 門側舷砲），**程式端請把空賊船改指 `mon_pirateship_side_v2`**；舊的 `mon_pirateship_side` 作廢。待機以帆鼓動為主 |
+
+## ⚠ 更正（ver -2488）
+天空的捲動方向改成**往右**（世界往右流），頭朝左＝往前飛，所以既有的頭朝左側面圖都不用改。之後新交的也照舊頭朝左。

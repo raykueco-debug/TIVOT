@@ -5656,7 +5656,8 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
 #top .sky-pan img{height:100%;width:auto;flex:none;display:block;}
 #top .sky-pan img.mir{transform:scaleX(-1);}
 #top .sky-pan.fixed{animation:none;left:50%;transform:translateX(-50%);}
-@keyframes skyPan{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+/* -2488 Ray「空賊船怎麼倒著飛，注意背景跟船的朝向」：側面圖頭一律朝左 ⇒ 天空往右捲（世界往右流＝敵往左飛） */
+@keyframes skyPan{from{transform:translateX(-50%)}to{transform:translateX(0)}}
 #top .sky-l{position:absolute;inset:0;background-repeat:repeat-x;pointer-events:none;}
 #top .sky-base{z-index:0;}
 #top.sky-on #enemyImg, #top.sky-on .en-idle{z-index:2;}
