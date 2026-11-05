@@ -1301,3 +1301,5 @@ when	from	to	reason
 20261105-161555	resources/enemy/mon_natalia_neutral.png	_recycle/resources/enemy/mon_natalia_neutral.png	誤放的 png，正式檔改用同名 webp（原檔在 _neutral_refs）
 20261105-161652	battle_preview.html	_recycle/battle_preview.html	搬到 TIVOT/tools/anim/battle_preview.html（同源才讀得到素材）
 20261105-161731	tools/anim/battle_preview.html	_recycle/tools/anim/battle_preview.html	Ray：要進遊戲測，不要預覽頁
+20261105-204644	resources/enemy/mon_np_violetflame.webp	_recycle/resources/enemy/mon_np_violetflame.webp	Ray 退：不是紫焰翼爪怪，改成瓦礫中安雅的光翼
+20261105-204644	resources/_originals/enemy/mon_np_violetflame.png	_recycle/resources/_originals/enemy/mon_np_violetflame.png	Ray 退：不是紫焰翼爪怪，改成瓦礫中安雅的光翼

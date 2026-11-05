@@ -102,6 +102,7 @@
 - ✔ ver -2505：雙槍掛飾 C01–C13 接上（`items.defs.charm_C01`…，數值＝Ray 改好的 `掛飾_增益草案.xlsx`，全域係數＝`items.charmScale`、條件門檻在 `items.charmTune`）。效果全部在 combat 的 `charmSum` 一組：普攻倍率（C07/C08/C11/C12）、爆擊率／爆傷（C05/C06）、破防累積（C04）、最後一擊（C01/C02/C13）、追加射擊（C03 每點一發＋不顯示下一格、C10 爆擊機率追加）、C09 受擊後下一發必爆。整備頁掛件槽與掛飾清單有圖示，掛著的那一張按下去＝卸下。⚠ 欠：**取得途徑未定**（沒有商店／掉落），目前只有測試能拿到。
 - ✔ ver -2506：飄浮系敵人微幅上下浮（卡上 `float:1`，`enemy.startFloatBob`，振幅畫面高 1.6%、約 3.4 秒一輪）。先標 25 隻（我照立繪判斷的，Ray 確認）：np_coralman／np_candlepenitent／relic 系 11 隻／ruins_halo_ring／ruins_heartripper／ruins_saint_inspector／spiral_veil／grave_censer／ph_sword_angel／ph_mercy_remnant／ph_gifted／ph_hairbound／vault_bat／bug_mantis／ws_misha_ni。
 - ✔ ver -2507：E019 背負祭壇者（np_boss，立繪 `mon_beast_altar`）接延時動畫 `mon_beast_altar_delay_v1`（吼叫，hit 0，只有收回段）。攻擊與待機還沒交。⚠ 沒進瀏覽器實測（窗格被關）。
+- ✔ ver -2508：娜塔莉攻擊改指 `mon_natalia_atk_v4`（撲出段 biteAB2_cut_3，hit 16）。⚠ 欠：v4 的收回段仍是舊的 biteBA2_cut，Ray 要 biteBA2_cut_2（內容不同），已請美術重交 v5。
 - ✔ ver -2465：**龍的巡游線移到大樹入口側**（Ray：「龍不要在大樹後方，要靠近大樹但在入口那一側」）。`ucDragonTick` 生成點由「樹後 250」改成「船那一側、樹幹外緣再讓 260」（`-(T.Rb+260)`）；船從入口飛進來，所以船那一側＝入口側。
 - ✔ ver -2464：**地下城的龍會被 3D 掩體擋住**（Ray：「龍隔著 3D 掩體還是可視，修正之」）。原本畫在 2D 層、只吃地形遮擋（而且根本沒裁），樹幹／柱子／建築是 GL 網格擋不住。改成 `glDrawUcDragon`：GL 裡一張面向鏡頭的立牌（借 `GL_PLANT_VS` 的投影），與網格同一顆深度緩衝，只測不寫深度、預乘 alpha 混色、吃霧；幀與翻轉由 `ucDrgFrame` 一支算（2D 退路共用）。2D 版只在 GL 沒畫時才畫，並補上 `clipByTerrainDepth`。
 - ✔ ver -2463：**龍攻完的飛回改成斜下進入、悠揚**（Ray：「要從斜下進入，由大到小，不用那麼快，悠揚感」）。起點在畫面左下角外、放大 1.6 倍，2.3 秒緩緩減速滑進、由大縮小，末段輕輕越過一點（右上 4%／3%）再沉回原位。
