@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.05-2478';
+export const VERSION = 'ver 2026.11.05-2479';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4727,7 +4727,7 @@ export const ASSETS = {
   enemy_sky2_eyeveil_side: "resources/enemy/mon_sky2_eyeveil_side.webp",
   enemy_sky2_rift_side: "resources/enemy/mon_sky2_rift_side.webp",
   enemy_sky2_maw_side: "resources/enemy/mon_sky2_maw_side.webp",
-  enemy_serpent_side: "resources/enemy/mon_serpent_side.webp",
+  enemy_serpent_side: "resources/enemy/mon_serpent_side_v2.webp",   // ver -2479：重畫長尾版（Ray：原圖身體太短）
   enemy_centipi_side: "resources/enemy/mon_centipi_side.webp",
   enemy_pirate_side: "resources/enemy/mon_pirateship_side.webp",
   enemy_bl_dragon_front_side: "resources/enemy/mon_dragon_v1_flight_side.webp",
@@ -5677,7 +5677,9 @@ export const ENEMY_IDLE = {
   mon_sky_eyemoth_side: 'resources/enemy/anim/mon_sky_eyemoth_side_idle_v1/',
   mon_sky2_spine_side: 'resources/enemy/anim/mon_sky2_spine_side_idle_v1/',
   mon_sky2_ringchain_side: 'resources/enemy/anim/mon_sky2_ringchain_side_idle_v1/',
-  mon_dragon_v1_flight_side: 'resources/enemy/anim/mon_dragon_v1_flight_side_idle_v1/',   // 王座徘徊者空戰階（ver -2474，美術 56ec95c1：Ray 的 _cut 原樣，68 格 24fps）
+  mon_dragon_v1_flight_side: 'resources/enemy/anim/mon_dragon_v1_flight_side_idle_v1/',
+  mon_serpent_side_v2: 'resources/enemy/anim/mon_serpent_side_v2_idle_v1/',   // 羽蛇長尾版（ver -2479）
+  mon_sky2_maskbanner_side: 'resources/enemy/anim/mon_sky2_maskbanner_side_idle_v1/',   // 王座徘徊者空戰階（ver -2474，美術 56ec95c1：Ray 的 _cut 原樣，68 格 24fps）
 };
 /* ══ 敵人的攻擊／延時動畫（ver -2472，美術 TO_CODE_attack.md；Ray：「娜塔莉攻擊動作交件了，接上進遊戲測」）══
    鑰匙＝立繪檔名（同 ENEMY_IDLE）。`dir`＝動檔資料夾（anim.json loop:false）、`hit`＝哪一格打到玩家（扣血延到那一格）、
