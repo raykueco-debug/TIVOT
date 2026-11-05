@@ -25,6 +25,7 @@
 - E007 攻擊 **v3**（現行）：撲出 `biteAB2_cut`（13 格→16）＋ 收回 `biteBA2_cut`（25 格→31）同一個生成空間首尾相接。⚠ `edge_check`：第 25–30 格（收回段開頭、雙爪張開）碰到生成畫布左右邊緣，爪尖會被切一點點。
 - E007 攻擊 v2（已被 v3 取代）：Ray 剪的 `out/export/mon_natalia_neutral_biteAB2_cut`（A 中立 → B 撲咬，原片 49 格取 13 格、部分 ×2 → 16 格），`edge_check` 無碰邊。B 圖 `resources/enemy/_natalia_bite/mon_natalia_B_bite2.png`（GPT）。⚠ 結尾停在撲咬姿勢，與待機第 0 格差很多 —— 切回待機要蓋在受擊特效之下。
 | E017 | 魘魔 `np_coralman` | 延時・點錯（單爪大幅斜劈） | `mon_sea_coralman_delay_v1/` | 30／24／1.25 秒 | 2.0 MB | `[-44,-46,1113,1574]`（略超出畫布四邊） |
+| E068 | 獨角虎 `mon_shinierforest_tiger` | **延時・點錯**（右前爪胸前水平橫掃 → 收爪落回低伏；四足爪擊一律橫向） | `mon_shinierforest_tiger_delay_v1/` | 23／24／0.96 秒，loop:false | 0.4 MB | `[38,-91,1455,1108]`（上下超出畫布） |
 
 - E017：Ray 剪的 `out/export/mon_sea_coralman_delay2_cut`（原片 48 格取 24 格、部分 ×2 → 30 格）。最後一格與第一格差 8.8（不完全相同，見上方 ⚠）。
 
@@ -39,3 +40,5 @@
 2. **登記**：建議 `ENEMY_ATK`／`ENEMY_DELAY` 兩張表（鑰匙＝立繪檔名，同 `ENEMY_IDLE`），沒有登記的敵人照舊只有現有演出。
 3. **讀取**：照鐵律 13，只在那一場戰鬥的門載（`enterBattleAudio` 那一族的圖版），戰後釋放。
 4. 驗收：開 `np_nightmare`（娜塔莉）與北方泊地的魘魔那一場，攻擊／延時各觸發一次，看切換點有沒有跳。
+
+- E068 延時：Ray 剪的 `out/export/mon_shinierforest_tiger_B_hswipe_hswipeBA_cut`（收回段，原片 33 格取 19 格、部分 ×2 → 23 格），`edge_check` 無碰邊。⚠⚠ **立繪要換成中立站姿 `resources/enemy/mon_shinierforest_tiger_neutral.webp`**（舊的 `mon_shinierforest_tiger.webp` 是撲擊姿勢）；canvas 是這一張。B 圖 `_neutral_refs/mon_shinierforest_tiger_B_hswipe.png`。攻擊（撲咬）製作中。
