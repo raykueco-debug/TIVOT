@@ -44,6 +44,7 @@
 | 北泊 | 同上 | **爆炎**（收攏→從翼根炸開紫焰→收回展翼） | `mon_np_anyawings_burst_v1/` | 81／24／3.4 秒，loop:false | 4.6 MB | `[35,12,1719,1161]` |
 | 北泊 | 同上 | **攻擊 A＝振翅接爆炎**（Ray 剪） | `mon_np_anyawings_atk_v1/` | 64／24／2.67 秒，loop:false | 3.3 MB | `[47,25,1696,1166]` |
 | 教學 | 訓練用聖徒（新架勢） | **出場**（從半空落下、屈膝深蹲著地、單手拍地、爪後拉，停在新架勢）——**新種類：開戰時播一次再接待機** | `saint_tr_neutral2_enter_v1/` | 16／24／0.67 秒，loop:false | 0.5 MB | `[-57,187,1067,1211]` |
+| 教學 | 訓練用聖徒（新架勢） | **攻擊＝延時＝點錯（DMA 共用）**：前撲爪擊 → 斜後跳 → 落回架勢（IAR 完整） | `saint_tr_neutral2_atk_v1/` | 31／24／1.29 秒，loop:false | 1.0 MB | `[-57,21,1067,1458]` |
 | 教學 | 訓練用聖徒 `trainee`（ASSETS `enemy_trainee`） | **待機**（身體呼吸、頭以頸為軸木靈式喀喀抽轉兩陣，不眨眼） | `saint_tr_neutral_idle_v1/` | 48／24／2.0 秒，loop | 1.9 MB | `[115,-11,772,1520]` |
 | 教學 | 同上 | **攻擊＝延時＝點錯 v2（現行，DMA 共用）**：前撲爪擊＋退回待機（IAR 完整） | `saint_tr_neutral_atk_v2/` | 30／24／1.25 秒，loop:false | 0.9 MB | `[-193,-3,1260,1669]` |
 | 教學 | 同上 | ~~攻擊 v1~~ ⚠ **已被 v2 取代**（只有 A 段）：前撲爪擊（從待機往鏡頭撲、右爪劈下；只有撲出段，停在劈中那一格） | `saint_tr_neutral_atk_v1/` | 10／24／0.42 秒，loop:false | 0.3 MB | `[-193,9,1214,1657]` |
@@ -57,7 +58,7 @@
   · ⚠⚠ **振翅要程式加「瓦礫噴襲」效果**（Ray 指定）：下拍到底那一格（第 48 格）從瓦礫堆往鏡頭噴碎石。美術沒有做這個效果。
   · 輸出比例 0.5（解碼約 43 MB／支）：81 格全留太重，手機優先。
 - 訓練用聖徒**重畫成新架勢**（Ray 11-06：「站得太筆直沒有救，腿岔開身體壓低單手撐地、爪後拉」）：新立繪 `resources/enemy/saint_tr_neutral2.webp`（1024×1536 alpha）。出場 `saint_tr_neutral2_enter_v1/` 是 Ray 指定（「這個當成出場動畫」，來源 `out/export/saint_tr2_R_hop_land_cut`），最後一格＝新架勢。
-  ⚠ **新架勢的待機與攻擊還沒交**——出場的結尾是新架勢、現行待機（`saint_tr_neutral_idle_v1`）是舊的直立姿勢，接上去會跳。**請等新架勢那一組交齊再一起換**（立繪、出場、待機、攻擊）。
+  ⚠ 新架勢攻擊已交：`saint_tr_neutral2_atk_v1/`＝A `saint_tr2_A_canvas_lunge_cut`（8 格）＋跳開 `saint_tr2_R_start_hop_cut`（7 格）＋落地 `saint_tr2_R_hop_land_cut`（16 格），**打到＝第 7 格**，最後一格＝新架勢。⚠ **新架勢的待機還沒交**——出場的結尾是新架勢、現行待機（`saint_tr_neutral_idle_v1`）是舊的直立姿勢，接上去會跳。**請等新架勢那一組交齊再一起換**（立繪、出場、待機、攻擊）。
 - 訓練用聖徒攻擊 **v2**（現行）：A＝`out/export/saint_tr_neutral_lungeAB_cut`（10 格）＋ R＝`saint_tr_R_start_R_cut`（20 格，由 A 段結尾那一格＝原片第 25 格重跑 Wan 回中立，同一生成空間），**打到＝第 9 格**；第 29 格回到中立，可直接接回待機。
 - 訓練用聖徒（Ray 11-05「把第一個怪 訓練用聖徒跟背景拆開 獨立出來」）：⚠⚠ **立繪要換**：`enemy_trainee` 由合成圖 `saint_tr_ci.webp`（怪＋走廊）改指 **`resources/enemy/saint_tr_neutral.webp`**（中立站姿、alpha 1024×1536，待機與爪擊都用它生成）；戰鬥背景另交 **`resources/enemy/saint_tr_bg.webp`**（1254² 空走廊，同原構圖），卡上 `bg` 請指它。`saint_tr.webp` 是原姿勢（伸手）的去背版，備用。待機頭部抽動是程式旋轉（Ray 同意）、身體是 Wan。攻擊（前撲爪擊，DMA 共用一支）＝`saint_tr_neutral_atk_v1/`：Ray 剪的 `out/export/saint_tr_neutral_lungeAB_cut`（原片 49 格取前段 10 格），**打到＝最後一格（第 9 格）**；結尾停在劈中姿勢、與待機差很多 —— R（退回待機）還沒交，先蓋在受擊特效之下切回待機。
 - E068 tiger rule 重剪（Ray 指定）：攻擊 v3＝`out/export/mon_shinierforest_tiger_atk_tigerrule`（biteAB2＋biteBA2，pounce 規則，**打到第 13 格**；兩段同一生成空間 720×480／FIT 0.72／OY 0.85，不必換算）；延時 v2＝`mon_shinierforest_tiger_delay_tigerrule`（hswipeAB＋hswipeBA，hswipe 規則，**打到第 9 格**；720×480／FIT 0.78／OY 0.5）。canvas 對 `mon_shinierforest_tiger_neutral.webp`。
