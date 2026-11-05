@@ -310,7 +310,7 @@
   #holyBurst.fade{opacity:0;}
   #holyBurst .hb-glow{position:absolute;inset:0;border-radius:50%;background:var(--holy-glow);}
   /* 紫白光芒（ver -2525，安雅光翼的爆炎）：首頁聖光綻放的同一套層次（白核心實心到 30%、往外羽化），外圈改紫。
-     綻放 .35s、淡出 .4s ＝ enemy.js 的 VF_GROW_MS／VF_FADE_MS（兩邊互指）。 */
+     綻放 1s、淡出 .6s ＝ enemy.js 的 VF_GROW_MS／VF_FADE_MS（兩邊互指）。 */
   /* 蓄力（下一發加倍，ver -2525）：敵人身上紫色脈動光暈＋常駐標記＋一次性浮字 */
   #top.en-empowered #enemyImg, #top.en-empowered > .en-idle{animation:enEmpower 0.9s ease-in-out infinite;}
   @keyframes enEmpower{0%,100%{filter:drop-shadow(0 0 6px rgba(190,110,255,.55)) brightness(1)}50%{filter:drop-shadow(0 0 22px rgba(205,140,255,.95)) brightness(1.18)}}
@@ -322,8 +322,8 @@
     font-size:20px;font-weight:700;letter-spacing:2px;color:#fff;text-shadow:0 0 10px #b46cff,0 0 22px #8a3cff;
     animation:enEmpowerPop 1.5s ease-out forwards;white-space:nowrap;}
   @keyframes enEmpowerPop{0%{opacity:0;transform:translate(-50%,10px) scale(.8)}15%{opacity:1;transform:translate(-50%,0) scale(1.08)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-18px) scale(1)}}
-  #violetFlash{position:fixed;z-index:9000;pointer-events:none;transform:translate(-50%,-50%) scale(.85);opacity:1;
-    transition:transform .35s cubic-bezier(.3,.35,.25,1), opacity .4s ease;}
+  #violetFlash{position:absolute;z-index:6;pointer-events:none;transform:translate(-50%,-50%) scale(.85);opacity:1;
+    transition:transform 1s cubic-bezier(.3,.35,.25,1), opacity .6s ease;}   /* ver -2526：放慢、關在 #top 裡（不蓋數字面板）；#top 本身 overflow:hidden */
   #violetFlash.grow{transform:translate(-50%,-50%) scale(var(--vf-scale,16));}
   #violetFlash.fade{opacity:0;}
   #violetFlash .vf-glow{position:absolute;inset:0;border-radius:50%;
