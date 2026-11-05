@@ -5651,6 +5651,11 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
 
 /* ══ 空戰的視差背景（ver -2444，modules/enemy.js 的 setSkyBattle）══ 由底至上：base → mid →（敵人）→ 近景樹 → 落葉。
    位置與捲動由 JS 每禎寫（background-position-x）；這裡只管疊層與鋪法。 */
+/* 戶外空戰的天空平移（ver -2467，modules/enemy.js 的 setSkyPan）：四張「原圖／鏡像」交替，整條往左移兩張＝一輪，無縫 */
+#top .sky-pan{position:absolute;left:0;top:0;height:100%;display:flex;pointer-events:none;will-change:transform;animation:skyPan 90s linear infinite;}
+#top .sky-pan img{height:100%;width:auto;flex:none;display:block;}
+#top .sky-pan img.mir{transform:scaleX(-1);}
+@keyframes skyPan{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 #top .sky-l{position:absolute;inset:0;background-repeat:repeat-x;pointer-events:none;}
 #top .sky-base{z-index:0;}
 #top.sky-on #enemyImg, #top.sky-on .en-idle{z-index:2;}
