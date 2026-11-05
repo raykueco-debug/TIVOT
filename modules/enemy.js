@@ -1132,29 +1132,35 @@ function applyFar(en){ const k=farOf(en); for(const el of [$('enemyImg'), idleEl
 export function playActionClip(kind){
   const c=clipFor(kind), L=c && clipCache[c.dir]; if(!L || !L.fr) return 0;
   const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, L.j); if(!r) return 0;
-  clearInterval(clipT); clearInterval(idleT); idleT=0;
+  clearTimeout(clipT); clearInterval(idleT); idleT=0;
   let el=idleEl; if(!el){ if(!clipEl){ clipEl=document.createElement('img'); clipEl.className='en-idle'; clipEl.alt=''; eImg.after(clipEl); } el=clipEl; }
   eImg.style.visibility='hidden';
   el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.width=r.width+'px'; el.style.height=r.height+'px';
   let i=0; el.src=L.fr[0].src; if(el===clipEl) applyFar();
-  const fps=L.j.fps||24;
-  const hitF=(c.hit!=null) ? c.hit : Math.floor(L.fr.length*0.4);
-  { const k=farOf(); if(k!==1){   // 攻擊時撲近：劈到底那一格到原大，晃回去的路上退回遠處
-      el.style.transformOrigin=FAR_ORIGIN; const T=L.fr.length*1000/fps, h=Math.min(0.9,hitF/L.fr.length);
-      const n=String(c.near || 1), kf = (kind==='atk' || c.near) ? [{scale:String(k)},{scale:n,offset:h},{scale:n,offset:Math.min(0.9,h+0.08)},{scale:String(k),offset:Math.min(0.95,h+0.3)},{scale:String(k)}]   /* -2477 Ray「攻後退回的速度快一點」：劈完 0.08 就退、0.3 內退完（原本拖到動畫結束） */ : [{scale:String(k)},{scale:String(k)}];
-      el.animate(kf.map(k=>({...k, easing:'ease-in-out'})),{duration:T})   /* -2485：ease 逐段套，峰值才會準準落在 hit 那一格（整段套的話峰值往後偏約 4 格） */; } }
-  clipT=setInterval(()=>{ i++;
-    if(i<L.fr.length){ el.src=L.fr[i].src; return; }
-    clearInterval(clipT); clipT=0;
+  const fps=L.j.fps||24, N=L.fr.length;
+  const hitF=Math.min(N-1, (c.hit!=null) ? c.hit : Math.floor(N*0.4));
+  /* 收回加速（`retMul`，-2486 Ray「撲咬收回再快一點」）：打到那一格之後的格子以 fps×retMul 播 */
+  const rm=c.retMul||1, tAt=f=> f<=hitF ? f*1000/fps : (hitF*1000/fps + (f-hitF)*1000/(fps*rm));
+  const T=tAt(N), tHit=tAt(hitF);
+  { const k=farOf(); if(k!==1){   // 攻擊時撲近：打到那一格到最大，收回的路上退回遠處
+      el.style.transformOrigin=FAR_ORIGIN;
+      const off=t=>Math.max(0,Math.min(1,t/T)), hold=Math.min(T, tHit+60), back=Math.min(T, tHit+Math.max(120,(T-tHit)*0.7));
+      const n=String(c.near || 1), kf = (kind==='atk' || c.near) ? [{scale:String(k),offset:0},{scale:n,offset:off(tHit)},{scale:n,offset:off(hold)},{scale:String(k),offset:off(back)},{scale:String(k),offset:1}] : [{scale:String(k)},{scale:String(k)}];
+      el.animate(kf.map(q=>({...q, easing:'ease-in-out'})),{duration:T}); } }   /* ease 逐段套，峰值才準準落在 hit 那一格（-2485） */
+  const t0=performance.now();
+  const step=()=>{ i++;
+    if(i<N){ el.src=L.fr[i].src; clipT=setTimeout(step, Math.max(0, t0+tAt(i+1)-performance.now())); return; }
+    clipT=0;
     if(idleEl && idleFr){ placeIdle(); runIdle(); }                 // 回待機 loop
     else { if(clipEl){ clipEl.remove(); clipEl=null; } eImg.style.visibility=''; }
-  }, 1000/fps);
-  return Math.round(hitF*1000/fps);
+  };
+  clipT=setTimeout(step, tAt(1));
+  return Math.round(tHit);
 }
 let idleFr=null;
 function runIdle(){ clearInterval(idleT); if(!idleEl || !idleFr) return; let i=0; idleEl.src=idleFr[0].src;
   idleT=setInterval(()=>{ i=(i+1)%idleFr.length; idleEl.src=idleFr[i].src; }, 1000/((idleJ&&idleJ.fps)||8)); }
-function stopIdleLoop(){ clearInterval(idleT); idleT=0; clearInterval(clipT); clipT=0; if(clipEl){ clipEl.remove(); clipEl=null; } idleFr=null; if(idleEl){ idleEl.remove(); idleEl=null; }
+function stopIdleLoop(){ clearInterval(idleT); idleT=0; clearTimeout(clipT); clipT=0; if(clipEl){ clipEl.remove(); clipEl=null; } idleFr=null; if(idleEl){ idleEl.remove(); idleEl=null; }
   const e=$('enemyImg'); if(e && e.style.visibility==='hidden' && !document.querySelector('#top .en-fall')) e.style.visibility=''; }
 function startIdleLoop(dir){
   stopIdleLoop();
