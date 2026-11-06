@@ -1,0 +1,20 @@
+{
+ "canvas": [
+  512,
+  768
+ ],
+ "box": [
+  0,
+  0,
+  512,
+  768
+ ],
+ "frames": 48,
+ "fps": 24,
+ "loop": true,
+ "px": [
+  512,
+  768
+ ],
+ "from": "tivot_wan/out/export/mon_centipi_belly_even2_wave_cut"
+}

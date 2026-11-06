@@ -1191,7 +1191,7 @@ function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; c
   if(kind==='miss') return ENEMY_MISS[s] || ENEMY_DELAY[s] || null;
   if(kind==='enter') return ENEMY_ENTER[s] || null;   // 點錯：有 M 用 M，沒有就借延時那一支（ver -2524）
   return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[s])||null; }
-function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); } }
+function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); if(c && c.sweep) loadClip(c.sweep); } }   // sweep＝A 本體（準備動作之後那一支，-2550）
 /* 這隻怪有沒有 M（點錯）動作：點錯播的是延時那一支（ENEMY_DELAY），有它就算有 M（ver -2523）。 */
 export function hasMissClip(){ return !!clipFor('miss'); }
 export function hasActionClips(){ return !!(clipFor('atk') || clipFor('delay')); }   // 這隻怪有攻擊／延時動畫嗎（ver -2496）
@@ -1767,13 +1767,49 @@ function airPrepAssault(en, c, L){
       busy.a.forEach(x=>{ try{ x.cancel(); }catch(_){} }); busy.a=[];
       if(idleEl && idleFr){ placeIdle(); runIdle(); } else { if(clipEl){ clipEl.remove(); clipEl=null; } $('enemyImg').style.visibility=''; }
       airAtk=null; if(e2) e2.style.opacity='';
-      airAssault(en, { noOut:true }); };
+      const S2=c.sweep && clipCache[c.sweep]; if(S2 && S2.fr) airBellySweep(en, S2); else airAssault(en, { noOut:true }); };
     playActionClip('atk', ()=>{ setTimeout(toSweep, PREP_SLIDE_TAIL_MS); }, { hold:true });
   }, PREP_PULL_MS);
-  /* 撞到的時間＝拉到定位＋準備動作＋滑完＋劃過的一半（airAssault 的 noOut 版本） */
-  return Math.round(PREP_PULL_MS+Tclip+PREP_SLIDE_TAIL_MS+AIR_SWEEP_MS*0.5);
+  /* 撞到的時間＝拉到定位＋準備動作＋滑完＋A 本體撞到的那一刻（有 A 動畫＝腹面上衝的一半；沒有＝程式劃過的一半） */
+  const S2=c.sweep && clipCache[c.sweep] && clipCache[c.sweep].fr;
+  return Math.round(PREP_PULL_MS+Tclip+PREP_SLIDE_TAIL_MS+(S2 ? BELLY_SWEEP_MS*BELLY_HIT : AIR_SWEEP_MS*0.5));
 }
 const AIR_SWEEP_MS=620;
+/* ══ A 本體：腹面上衝（ENEMY_ATK 的 `sweep`，ver -2550，Ray：「A 動畫出了 mon_centipi_belly_even2_wave_cut，
+   讓蜈蚣從畫面下方、放大、快速上平移、略斜」）══ 腹面 loop（腳一波一波抽）照 fps 播，同時整張放大從操作盤線底下
+   往上衝出畫面頂端、略往機頭那側斜；衝到 BELLY_HIT 那一刻撞到玩家。衝出去之後待機的那一隻從機尾那側畫面外飛回定位。 */
+const BELLY_SWEEP_MS=640, BELLY_HIT=0.5, BELLY_SIZE=1.55;   // SIZE＝圖高佔上半畫面高的倍數
+function airBellySweep(en, S){
+  const top=$('top'), eImg=$('enemyImg'); if(!top || !eImg) return;
+  const W=top.clientWidth, H=top.clientHeight, f=fwdOf(en);
+  const h=H*BELLY_SIZE, w=h*S.j.canvas[0]/S.j.canvas[1];
+  const im=document.createElement('img'); im.className='en-belly'; im.alt='';
+  im.style.cssText=`position:absolute;left:${(W-w)/2}px;top:${(H-h)/2}px;width:${w}px;height:${h}px;pointer-events:none;z-index:2;`;
+  im.src=S.fr[0].src; eImg.after(im);
+  const idle=idleEl || eImg; idle.style.opacity='0';   // 上衝期間原位那一隻藏起來（牠已經下潛出去了），飛回時才現身
+  const fps=S.j.fps||24, N=S.fr.length, t0=performance.now();
+  const tick=setInterval(()=>{ im.src=S.fr[Math.floor((performance.now()-t0)*fps/1000)%N].src; }, 1000/fps);
+  /* 略斜：由機尾那側的下方往機頭那側的上方，身體順著走的方向傾 */
+  const dx=f*W*0.22, tilt=f*14;
+  const a=im.animate([
+    { transform:`translate(${-dx}px, ${(H+h)/2+4}px) rotate(${tilt}deg)` },
+    { transform:`translate(${dx}px, ${-(H+h)/2-4}px) rotate(${tilt}deg)` }], { duration:BELLY_SWEEP_MS, easing:'cubic-bezier(.3,.05,.7,.95)' });
+  const hold={ cancel(){ clearInterval(tick); im.remove(); idle.style.opacity=''; try{ a.cancel(); }catch(_){} } }; airAtk=hold;
+  a.onfinish=()=>{ clearInterval(tick); im.remove(); if(airAtk!==hold) return; airAtk=null; airReturn(en); };
+}
+/* 衝出去之後飛回定位（同 airAssault 最後那一段）：從機尾那側畫面外、放大一點飛進來，追過頭一點再停 */
+function airReturn(en){
+  const el=idleEl || $('enemyImg'), top=$('top'); if(!el || !top) return;
+  const W=top.clientWidth, H=top.clientHeight, tr=top.getBoundingClientRect(), er=el.getBoundingClientRect(), f=fwdOf(en);
+  const back = f<0 ? (tr.right-er.left)+er.width*0.15+20 : -(er.right-tr.left)-er.width*0.15-20;
+  el.style.transformOrigin='50% 50%';
+  el.style.opacity='';
+  const a=el.animate([
+    { transform:`translate(${back}px, ${H*0.06}px) scale(1.25)`, opacity:1, offset:0, easing:'cubic-bezier(.2,.55,.35,1)' },
+    { transform:`translate(${f*W*0.05}px, ${-H*0.02}px) scale(.98)`, opacity:1, offset:0.72, easing:'cubic-bezier(.45,0,.55,1)' },
+    { transform:'none', opacity:1, offset:1 }], { duration:1700 });
+  airAtk=a; const end=()=>{ if(airAtk===a) airAtk=null; }; a.onfinish=end; a.oncancel=end;
+}
 function airAssault(en, opts){
   if(airAtk) return 0;
   if(!(opts && opts.noOut) && !flock){ const c=clipFor('atk',en), L=c && c.prep && clipCache[c.dir]; if(L && L.fr) return airPrepAssault(en, c, L); }
