@@ -1610,9 +1610,11 @@ export function fireGrapple(g){
       cx.fillStyle=gr; cx.beginPath(); cx.arc(G.fire.x,G.fire.y,rr,0,6.283); cx.fill();
       cx.globalCompositeOperation='source-over'; }
     /* 繩子：船 → 鉤子，中間微微下垂（飛行中拉直） */
-    const sag=k<1 ? 0 : Math.min(28, Math.hypot(rx-a.x,ry-a.y)*0.08);
+    /* 鬆緊跟著船的遠近（-2571 Ray「船遠時緊、船近時鬆」）：遠近＝船身此刻的縮放比射出那一刻（G.fire.k）。
+       比射出時小（遠了）＝拉直；比射出時大（近了）＝往下垂，越近垂越多。 */
+    const near=(a.k && G.fire.k) ? a.k/G.fire.k : 1, sag=k<1 ? 0 : Math.max(0, Math.min(90, (near-0.97)*420));
     cx.lineCap='round';
-    for(const [w,c] of [[4.4,'rgba(92,70,42,.95)'],[2.6,'rgba(196,164,112,1)'],[0.9,'rgba(236,214,170,.9)']]){   // 麻繩：外緣褐、繩身麻黃、中間一道亮（-2554 Ray「繩索是黑的」）
+    for(const [w,c] of [[3.6,'rgba(8,8,10,.95)'],[1.2,'rgba(60,60,66,.8)']]){   // 黑繩，中間一道暗灰讓它有一點厚度（-2571 Ray「繩子換成黑色的」）
       cx.strokeStyle=c; cx.lineWidth=w; cx.beginPath(); cx.moveTo(a.x,a.y); cx.quadraticCurveTo((a.x+rx)/2,(a.y+ry)/2+sag,rx,ry); cx.stroke(); }
     drawHook(hx,hy);
     /* -2557 Ray「不用倒數」：鉤子旁邊不顯示秒數（時限照舊由 combat 計） */
