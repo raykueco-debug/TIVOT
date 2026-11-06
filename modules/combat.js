@@ -3562,6 +3562,7 @@ export function startGame(){
   }
   stopAll();
   enemy.restoreSkyBattle();   // 空戰的視差背景（ver -2444）：setEnemy 在 stopAll 之前就建好了，stopAll 會把它收掉 ⇒ 照這一隻的卡重鋪一次
+  enemy.restoreAirMotion();   // 接舷漂移／飄浮（ver -2532）：同上，stopAll 收掉了 ⇒ 重起
   /* ⚠⚠ 棄權鈕的 class **要掛在 `stopAll()` 之後**（ver -730）：`stopAll` 會把它
      清掉（那是所有結束路徑的匯流點，見那一支）—— 掛在前面等於沒掛，
      鈕永遠不出現（實測就是這樣）。同憲法那條「talk 要掛在 stopAll 之後」的坑。

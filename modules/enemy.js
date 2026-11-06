@@ -1557,6 +1557,9 @@ function startAirDrift(en){
   S.raf=requestAnimationFrame(tick);
 }
 export function stopAirMotion(){ stopAirDrift(false); }
+/* 開場重起漂移（ver -2532，Ray：「怎麼沒有遠近及平面游移？」）：startGame 的 setEnemy 在 stopAll 之前就起了漂移，stopAll 會把它收掉
+   ⇒ 照這一隻的卡重起一次（同 restoreSkyBattle）。入場（airEnter）在門開那一刻才演，t0 照舊由它設。 */
+export function restoreAirMotion(){ startAirDrift(curCard()); }
 /* 入場：門開那一刻演；演完才起待機與漂移。被 suppressRiseOnce 壓掉的那一場直接站好。
    · 生物型＝從畫面外由近（大）到遠（小）飛進來定位
    · 空賊船＝從後方追上來、追過頭一點再停下（ver -2500，Ray） */
