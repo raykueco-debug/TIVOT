@@ -1289,36 +1289,38 @@ function hitFxSe(hf, kind){
   const key = (typeof raw === 'string') ? raw : raw.type;
   return (HITFX[key] && HITFX[key].se) || null;
 }
-/* 毒液污損數字盤（ver -2533；-2535 Ray：「太卡通了…不一定要每格都沾到，三片半透明黏液，大小不一，遮住多少數字是隨機，跟格子無關」）：
-   一次潑三片，位置與大小全隨機、不對齊格子（可以壓在格線上、可以超出盤緣一點），形狀是不規則的黏液＋往下垂的滴。
+/* 毒液污損數字盤（ver -2533；-2535 Ray：「三片半透明黏液，大小不一，遮住多少數字是隨機，跟格子無關」；
+   -2539 Ray：「還是太圓太卡通，要有雨洗的方向性」）：
+   一次潑三片，位置與大小全隨機、不對齊格子（可以壓在格線上、可以超出盤緣一點）。
+   形狀＝毒雨打上來的潑痕：左邊一團濃的著點，往右（雨的方向，略往下）拉出幾條長短不一、逐漸收尖淡掉的拖痕，
+   拖痕前方落幾顆小滴。整片同一層透明度（g opacity）—— 拖痕互相疊的地方不會疊深成一塊塊。
    掛在 #grid 裡（absolute，不佔格位）⇒ 盤面重建（buildGrid 的 innerHTML=''）＝清盤，黏液跟著消失，不必另外收。 */
 function venomBoard(){
   const grid=$('grid'); if(!grid) return;
-  const rnd=(a,b)=>a+Math.random()*(b-a);
+  const rnd=(a,b)=>a+Math.random()*(b-a), f=v=>v.toFixed(1);
   for(let k=0;k<3;k++){
-    const n=11, pts=[], R=[];
-    for(let i=0;i<n;i++) R.push(rnd(30,46));
-    for(let i=0;i<n;i++){ const a=i/n*6.283; pts.push([50+Math.cos(a)*R[i], 50+Math.sin(a)*R[i]*rnd(0.78,0.95)]); }
-    let d='M'+((pts[0][0]+pts[n-1][0])/2).toFixed(1)+' '+((pts[0][1]+pts[n-1][1])/2).toFixed(1);
-    for(let i=0;i<n;i++){ const p=pts[i], q=pts[(i+1)%n]; d+=' Q'+p[0].toFixed(1)+' '+p[1].toFixed(1)+' '+((p[0]+q[0])/2).toFixed(1)+' '+((p[1]+q[1])/2).toFixed(1); }
-    let drips='';   // 往下垂的黏液 0～2 條：短、細、圓頭（不要長尖 —— 長尖讀起來像爪子）
-    for(let j=0, m=(Math.random()*3)|0; j<m; j++){ const x=rnd(30,70), w=rnd(2.2,3.6), h=rnd(5,13), y=rnd(74,82);
-      drips+=`<path d="M${(x-w).toFixed(1)} ${y.toFixed(1)} L${(x-w*0.8).toFixed(1)} ${(y+h).toFixed(1)} L${(x+w*0.8).toFixed(1)} ${(y+h).toFixed(1)} L${(x+w).toFixed(1)} ${y.toFixed(1)} Z"/>`+
-             `<circle cx="${x.toFixed(1)}" cy="${(y+h).toFixed(1)}" r="${(w*1.25).toFixed(1)}"/>`; }
-    for(let j=0, m=2+((Math.random()*3)|0); j<m; j++){ const a=rnd(0,6.283), r=rnd(48,60);   // 飛濺的小滴
-      drips+=`<ellipse cx="${(50+Math.cos(a)*r).toFixed(1)}" cy="${(52+Math.sin(a)*r*0.9).toFixed(1)}" rx="${rnd(2,4.5).toFixed(1)}" ry="${rnd(1.8,3.5).toFixed(1)}"/>`; }
-    const id='vg'+Date.now().toString(36)+k;
+    const hx=rnd(28,38), hy=rnd(36,44), hr=rnd(15,21);   // 著點（viewBox 200×80，雨往 +x）
+    let shapes=`<ellipse cx="${f(hx)}" cy="${f(hy)}" rx="${f(hr*1.35)}" ry="${f(hr*0.8)}"/>`;
+    for(let j=0, m=5+((Math.random()*4)|0); j<m; j++){   // 拖痕：從著點往右拉，寬→尖
+      const y0=hy+rnd(-hr*0.95, hr*0.95), w=rnd(4,11), len=rnd(55,165), x0=hx+rnd(-4,6), x1=Math.min(198, x0+len), y1=y0+rnd(-4,7), bend=rnd(-3,3);
+      shapes+=`<path d="M${f(x0)} ${f(y0-w)} Q${f((x0+x1)/2)} ${f((y0+y1)/2-w*0.55+bend)} ${f(x1)} ${f(y1)} Q${f((x0+x1)/2)} ${f((y0+y1)/2+w*0.55+bend)} ${f(x0)} ${f(y0+w)} Z"/>`;
+      if(Math.random()<0.6){ const dx=x1+rnd(4,16); if(dx<198) shapes+=`<ellipse cx="${f(dx)}" cy="${f(y1+rnd(-1,2))}" rx="${f(rnd(1.6,3.4))}" ry="${f(rnd(1,2))}"/>`; }   // 拖痕前方的小滴
+    }
+    for(let j=0, m=2+((Math.random()*3)|0); j<m; j++)   // 著點旁邊濺開的細點
+      shapes+=`<ellipse cx="${f(hx+rnd(-18,40))}" cy="${f(hy+rnd(-22,22))}" rx="${f(rnd(1.2,2.6))}" ry="${f(rnd(0.8,1.8))}"/>`;
+    const id='vg'+Date.now().toString(36)+k, mk='vm'+Date.now().toString(36)+k;
     const s=document.createElement('div'); s.className='venom-slime';
-    s.innerHTML=`<svg viewBox="0 0 100 130" preserveAspectRatio="none"><defs><radialGradient id="${id}" cx="42%" cy="38%" r="65%">`+
-      `<stop offset="0" stop-color="rgb(150,226,96)" stop-opacity=".72"/><stop offset=".6" stop-color="rgb(92,172,48)" stop-opacity=".64"/>`+
-      `<stop offset="1" stop-color="rgb(52,118,26)" stop-opacity=".52"/></radialGradient></defs>`+
-      `<g fill="url(#${id})" stroke="rgba(30,80,14,.45)" stroke-width="1.2"><path d="${d} Z"/>${drips}</g>`+
-      `<ellipse cx="${rnd(34,46).toFixed(1)}" cy="${rnd(30,40).toFixed(1)}" rx="${rnd(8,14).toFixed(1)}" ry="${rnd(3,5).toFixed(1)}" fill="rgba(235,255,215,.45)" transform="rotate(${rnd(-30,-10).toFixed(0)} 40 35)"/></svg>`;
-    const sz=rnd(34,62);   // 盤寬的 34～62%
-    s.style.width=sz.toFixed(1)+'%';
-    s.style.left=rnd(-8, 100-sz*0.7).toFixed(1)+'%';
-    s.style.top=rnd(-8, 100-sz*0.9).toFixed(1)+'%';
-    s.style.setProperty('--vr', rnd(-25,25).toFixed(0)+'deg');
+    s.innerHTML=`<svg viewBox="0 0 200 80" preserveAspectRatio="none"><defs>`+
+      `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgb(70,150,36)"/><stop offset=".3" stop-color="rgb(110,196,62)"/><stop offset="1" stop-color="rgb(150,226,100)"/></linearGradient>`+
+      `<linearGradient id="${mk}g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity=".25"/></linearGradient>`+
+      `<mask id="${mk}"><rect width="200" height="80" fill="url(#${mk}g)"/></mask></defs>`+
+      `<g opacity=".72" mask="url(#${mk})" fill="url(#${id})">${shapes}</g>`+
+      `<path d="M${f(hx-hr*0.6)} ${f(hy-hr*0.35)} Q${f(hx+20)} ${f(hy-hr*0.55)} ${f(hx+rnd(40,70))} ${f(hy-hr*0.2)}" stroke="rgba(235,255,215,.45)" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>`;   // 一道沿雨向的反光
+    const sz=rnd(58,92);   // 盤寬的 58～92%（長條形，高度只有寬的四成）
+    s.style.width=f(sz)+'%';
+    s.style.left=f(rnd(-12, 100-sz*0.75))+'%';
+    s.style.top=f(rnd(-6, 88))+'%';
+    s.style.setProperty('--vr', f(rnd(8,24))+'deg');   // 跟毒雨同向：往右略下（毒雨 7°～24°）
     s.style.animationDelay=(k*0.09).toFixed(2)+'s';
     grid.appendChild(s);
   }
