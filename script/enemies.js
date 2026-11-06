@@ -2475,7 +2475,7 @@ export const ENEMIES = {
       /* 勾索 → 登艦戰（ver -2545，Ray：「hp 50 以下會射出勾鎖，勾在數字盤上方…勾鎖射出後沒戰勝就進登艦戰」）：
          hp＝觸發門檻（%）、sec＝幾秒內沒擊沉就登艦、to＝登艦戰換上的那張卡（背景寫在那張卡上）。
          hookImg／slideImg＝鉤子與滑索的圖（美術在畫；沒寫＝程式畫的暫代）。 */
-      grapple:{ hp:50, sec:10, to:'sky_pirate_crew', hookImg:'resources/fx/grapple/hook.webp',
+      grapple:{ hp:50, sec:10, to:[1,2,3,4,5,6,7,8].map(n=>'sky_pirate_'+n),   // 登艦戰隨機抽一組空賊群戰（-2575） hookImg:'resources/fx/grapple/hook.webp',
                 canvas:[1536,1024], anchor:[502,802],
                 shadowImg:'resources/fx/grapple/board_shadow.webp',   // 靜態退路
                 /* 會動的落下人影（美術交件，-2565）：每次登艦隨機一支；補交的放同一個資料夾、加進這張表 */
@@ -2538,6 +2538,22 @@ export const ENEMIES = {
       hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
       loot:[ { id:'brass_casing', n:2, p:0.5 } ],
     },
+    /* ══ 空賊群戰 8 組（ver -2575，美術交件：resources/enemy/man_skypirate_N.webp＋_layers/pirate_k.webp，1254×1254 已對位；說明在 _skypirate_spec.md）══
+       登艦戰（空賊船 grapple.to）每次隨機抽一組。沒有掩體層（Ray：只畫人），order＝疊放順序（後→前，照美術交件單）。
+       ⚠ 數值全部暫定（Ray：「先接，數值暫定」）：整組 170 血、攻擊 12，同 sky_pirate_crew；倒地動畫還沒有（中彈直接淡出）。 */
+    ...Object.fromEntries([[1,[1,2,3,4]],[2,[1,2,3,4]],[3,[1,2,3,4]],[4,[1,2,3]],[5,[1,2,3,4]],[6,[1,2,3]],[7,[2,1,4,3]],[8,[1,2]]].map(([n,order])=>['sky_pirate_'+n, {
+      name:'空賊', story:0, counterStagger:1, boss:0, Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1, hitSe:null,
+      image:null, bg:'deck/deck_rapidsail', fit:{ mode:'contain', pos:'center bottom' },
+      group:{ dir:'resources/enemy/man_skypirate_'+n+'_layers/', prefix:'pirate_', order, hp:170 },
+      hp:170, attack:12, atkInterval:null, assaultEvery:[2,4], assault:{ count:order.length>=4?3:2, gap:0 },
+      entrance:null, special:[], boardGrids:[9,9,9,16,16],
+      delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
+      hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
+      loot:[ { id:'brass_casing', n:2, p:0.5 } ],
+    }])),
     /* ══ 夏爾森林的野生怪（ver -862，Ray 交卡的 F 表）══════════════════════
        刷怪規則在 script/town.js 的 `shinier_forest.wildSpawn`（出怪率 25%/地點、
        一趟不重複、必出格），實作只有 modules/town.js 的 `wildActDue` 一支（鐵律 8）。

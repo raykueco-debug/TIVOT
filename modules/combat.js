@@ -2820,14 +2820,16 @@ function maybeGrapple(){
   grappleT=setTimeout(()=>{ grappleT=0; boardShip(g, key); }, (g.sec||10)*1000 + enemy.grappleFlyMs());
 }
 function boardShip(g, key){
-  if(state.over || state.enemyHp<=0 || state.currentEnemyKey!==key || !(GAME_CONFIG.enemies||{})[g.to]){ enemy.clearGrapple(); return; }
+  /* `to` 可以是一張卡或一串卡（隨機抽一張，-2575 空賊群戰 8 組） */
+  const to=Array.isArray(g.to) ? g.to[(Math.random()*g.to.length)|0] : g.to;
+  if(state.over || state.enemyHp<=0 || state.currentEnemyKey!==key || !(GAME_CONFIG.enemies||{})[to]){ enemy.clearGrapple(); return; }
   morphSwapping=true; state.transitioning=true;      // 演出期間鎖點擊、不吃傷害（同換型態）
   stopIntervalTimer();
   defense.resetEnemyTimers();                        // 收掉船的紅點與排程
   clearVenom();
   /* -2559：不閉棺 —— 剪影劃過畫面正中那一刻換卡（甲板背景跟著那張卡），劃完才放手 */
   enemy.boardingRun(g,
-    ()=>{ if(state.over) return; enemy.clearGrapple(); enemy.setEnemy(g.to); state.killTime=0; updateBars(); },
+    ()=>{ if(state.over) return; enemy.clearGrapple(); enemy.setEnemy(to); state.killTime=0; updateBars(); },
     ()=>{ if(state.over) return; morphSwapping=false; state.transitioning=false; loadBoard(0); updateBars(); });
 }
 let morphed=false;
