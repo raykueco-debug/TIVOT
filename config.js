@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.06-2530';
+export const VERSION = 'ver 2026.11.06-2531';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5588,6 +5588,7 @@ export const ENEMY_IDLE = {
   mon_bellfounder: 'resources/enemy/anim/mon_bellfounder_idle_v2/',
   mon_bug_mantis: 'resources/enemy/anim/mon_bug_mantis_idle_v2/',
   mon_candelabra_fiend: 'resources/enemy/anim/mon_candelabra_fiend_idle_v2/',
+  mon_centipi_side: 'resources/enemy/anim/mon_centipi_side_idle_v1/',   // 巨型蜈蚣側面待機（ver -2531，Ray 選 comp_v1：身體扭動＋四翅交替，48 格 24fps）
   mon_chain_hanged: 'resources/enemy/anim/mon_chain_hanged_idle_v2/',
   mon_choir_organ: 'resources/enemy/anim/mon_choir_organ_idle_v2/',
   mon_choir_pale: 'resources/enemy/anim/mon_choir_pale_idle_v2/',
