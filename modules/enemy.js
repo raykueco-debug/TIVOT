@@ -3013,7 +3013,9 @@ export function setEnemy(key, opts){
      ⚠ `bgUrl` 自己會補副檔名，所以覆寫（含副檔名）與卡上的基底名都丟給它就好。 */
   const topEl = $('top');
   if(topEl){
-    const nm = (en.bgLock && en.bg) || state.battleBg || en.bg || '';   // 卡上 bgLock：這一場一定用自己的背景（ver -2524，安雅光翼的教堂殘垣）
+    /* 卡上 `bgBand`（ver -2576，登艦戰甲板四時段）：基底名＋現在的時段（dawn／day／dusk／night，深夜用 night）。 */
+    const bandBg = en.bgBand ? en.bgBand+'_'+({ Dawn:'dawn', Day:'day', Dusk:'dusk', night:'night', midnight:'night' }[clock.band()] || 'day') : '';
+    const nm = (en.bgLock && en.bg) || state.battleBg || bandBg || en.bg || '';   // 卡上 bgLock：這一場一定用自己的背景（ver -2524，安雅光翼的教堂殘垣）
     /* 群體敵人的去人背景（ver -2043）：**它就是這一場的戰鬥背景**，蓋過城鎮那一格的（battleBg）。
        ⚠ 直接寫路徑（四張都叫 plate.webp，走 bgUrl 的資料夾表會撞名）。 */
     const plate = en.group && en.group.plate;

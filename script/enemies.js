@@ -2523,7 +2523,7 @@ export const ENEMIES = {
       atype:null,
       stageScale:1,
       image:'enemy_bounty_ep',           // ⚠ 暫代（空賊船員立繪交件後換）
-      bg:'deck/deck_rapidsail',
+      bgBand:'deck/deck_battle',   // -2576：甲板四時段（舊的 deck_rapidsail 不能當戰鬥背景）
       fit:{ mode:'contain', pos:'center bottom' },
       hp:170,                            // 暫定：空賊船剩下的那一半上下
       attack:12,                         // 暫定
@@ -2546,7 +2546,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1, hitSe:null,
-      image:null, bg:'deck/deck_rapidsail', fit:{ mode:'contain', pos:'center bottom' },
+      image:null, bgBand:'deck/deck_battle', fit:{ mode:'contain', pos:'center bottom' },   // 甲板四時段（-2576 美術交件；舊的 deck_rapidsail Ray 判定不能當戰鬥背景）
       group:{ dir:'resources/enemy/man_skypirate_'+n+'_layers/', prefix:'pirate_', order, hp:170 },
       hp:170, attack:12, atkInterval:null, assaultEvery:[2,4], assault:{ count:order.length>=4?3:2, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,16,16],
