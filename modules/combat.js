@@ -1314,7 +1314,7 @@ function venomBoard(){
       `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgb(70,150,36)"/><stop offset=".3" stop-color="rgb(110,196,62)"/><stop offset="1" stop-color="rgb(150,226,100)"/></linearGradient>`+
       `<linearGradient id="${mk}g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity=".25"/></linearGradient>`+
       `<mask id="${mk}"><rect width="200" height="80" fill="url(#${mk}g)"/></mask></defs>`+
-      `<g opacity=".72" mask="url(#${mk})" fill="url(#${id})">${shapes}</g>`+
+      `<g opacity=".88" mask="url(#${mk})" fill="url(#${id})">${shapes}</g>`+
       `<path d="M${f(hx-hr*0.6)} ${f(hy-hr*0.35)} Q${f(hx+20)} ${f(hy-hr*0.55)} ${f(hx+rnd(40,70))} ${f(hy-hr*0.2)}" stroke="rgba(235,255,215,.45)" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>`;   // 一道沿雨向的反光
     const sz=rnd(58,92);   // 盤寬的 58～92%（長條形，高度只有寬的四成）
     s.style.width=f(sz)+'%';
@@ -1324,6 +1324,10 @@ function venomBoard(){
     s.style.animationDelay=(k*0.09).toFixed(2)+'s';
     grid.appendChild(s);
   }
+}
+/* 盤面上的毒液全部淡掉拿走（被 A 打到時，見 enemyAttack）。清盤那條不必走這裡 —— 盤面重建就一起消失了。 */
+function clearVenom(){
+  document.querySelectorAll('#grid .venom-slime').forEach(e=>{ e.classList.add('venom-off'); setTimeout(()=>e.remove(), 260); });
 }
 function enemyAttack(dmg, kind, saintAmt, _rainLanded){
   /* 卡上 `hitPlain:true`（ver -2446，樹寄生石龍；Ray：「玩家受擊…畫面震動，不用其他受擊效果」）：
@@ -1342,7 +1346,8 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
     const wait=enemy.venomSpit();
     if(wait>0){ setTimeout(()=>{ if(state.over) return; enemyAttack(dmg, kind, saintAmt, true); }, wait); return; }
   }
-  if(_venom) venomBoard();
+  if(_venom){ venomBoard(); dmg=0; }   // -2541 Ray：「毒液不扣 hp」—— 懲罰就是盤面被污損；計數、震動、受擊音照走
+  if(kind==='assault' || kind==='block') clearVenom();   // -2541 Ray：「毒液被 A 攻擊就會消失」—— 主動攻擊打到（含擋一半）那一刻盤面的毒液全清
   /* 延時／點錯的動畫（ver -2472，config.ENEMY_DELAY）：先演、劈到那一格才扣血（同上一段的延後法） */
   if(!_plain && (kind==='delay'||kind==='wrong') && !_rainLanded){
     /* -2496 Ray「攻擊播放時延時先到的話就消掉攻擊圈，所以不會兩動畫衝突」：有動作動畫的怪，延時先到 ⇒ 場上的攻擊圈全消 */
