@@ -11,6 +11,7 @@
 import { i18nT } from './i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain, HOME_IMG, HOME_SFX, HITFX } from './config.js';
 import { L, LANG, applyToConfig, applyToDom, decorateLine } from './i18n.js';   // 多語言＋台詞關鍵字裝飾
+import { UI_LANGS } from './i18n/ui/langs.js';   // 語種清單（i18n_ui.xlsx 的譯文欄，ver -2582）
 import { trTree, trDom } from './i18n/scriptTr.js';   // 劇本譯文（戰鬥卡上的對白 talk 那一族，ver -1908）
 import { state } from './state.js';
 import { SFX } from './audio.js';
@@ -1394,8 +1395,9 @@ bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
  *  中文介面時顯示 En（給英文使用者認）、英文時顯示 日本語、日文時顯示 中文。
  *  選擇存 localStorage('tivot.lang')，按下重載生效（僅首頁可按，無戰局可失）。 */
 (function bindLangBtn(){
-  const LANGS=['zh','en','ja','es'];
-  const NEXT_FACE={ zh:'En', en:i18nT('日本語'), ja:'Es', es:i18nT('中文') };   // 鈕面＝下一個語言的自稱
+  const LANGS=['zh'].concat(UI_LANGS);   // ver -2582：語種＝i18n_ui.xlsx 的譯文欄（tools/i18n_xlsx.py build）
+  const FACE={ zh:i18nT('中文'), en:'En', ja:i18nT('日本語'), es:'Es' };   // 各語言的自稱；沒寫的印代碼大寫
+  const NEXT_FACE={}; LANGS.forEach((l,i)=>{ const nx=LANGS[(i+1)%LANGS.length]; NEXT_FACE[l]=FACE[nx]||nx.toUpperCase(); });   // 鈕面＝下一個語言的自稱
   const KEY='tivot.lang';
   let cur = LANG;                        // 現行語言（含地區偵測結果；手選後 LANG 即讀 localStorage）
   if(LANGS.indexOf(cur)<0) cur='zh';

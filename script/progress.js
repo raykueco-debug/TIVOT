@@ -1497,7 +1497,7 @@ const BA_CHAPTERS = [
     enter:'flight', flight:{ town:'dunmor' } },
   /* ══ Stage 17 帝都廣場（ver -2198，Ray：「要開給我廣場戲」）══ 跳過飛行段，直接在攝政王廣場演返回帝都
      （`cr_chase` 前半）→ 廣場往下通帝都外郊 → 廢風車演後半（`cr_return`）。旗＝Stage 17 那一份＋`cr_flight_talk`。 */
-  { id:'stage17sq', name:'Stage 17　帝都廣場', sub:i18nT('返回帝都：廣場 → 追安雅出城（帝都外郊）→ 廢風車'),
+  { id:'stage17sq', name:i18nT('Stage 17　帝都廣場'), sub:i18nT('返回帝都：廣場 → 追安雅出城（帝都外郊）→ 廢風車'),
     stage:17, clockHour:15, named:true, aff:A_AFF,
     flags:[ ...BA_M1_EXIT, 'tomb_exit_done','tomb_misha_met','tomb_done','vn_after_tomb',
             's14_flight_talk','ss_arrive','ss_cityhall','ss_4pm','ss_inn_merge',

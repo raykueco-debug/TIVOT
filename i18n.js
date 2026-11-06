@@ -1,7 +1,7 @@
 /* ============================================================================
  *  i18n.js — 多語言核心（語言選擇／深層回退／套用到 config 與 DOM）
  *  ---------------------------------------------------------------------------
- *  語言包：i18n/zh.js（母本）＋ en.js／ja.js／es.js（新語言＝在 PACKS 加一行 import）。
+ *  語言包：i18n/zh.js（母本）＋ i18n/ui/pack.<lang>.js（由 i18n_ui.xlsx 產生；新語言＝Excel 加一欄譯文）。
  *  選擇存 localStorage('tivot.lang')，首頁「中/A/あ」鈕切換後整頁重載生效
  *  （切換只在首頁，無戰局可失）。缺包或缺鍵一律深層回退母本 zh。
  *
@@ -13,16 +13,18 @@
  * ========================================================================== */
 
 import { STRINGS as ZH } from './i18n/zh.js';
-import { STRINGS as EN } from './i18n/en.js';
-import { STRINGS as JA } from './i18n/ja.js';
-import { STRINGS as ES } from './i18n/es.js';
+/* ver -2582：譯文的語言包改由 i18n_ui.xlsx 產生（tools/i18n_xlsx.py build → i18n/ui/pack.<lang>.js），
+   Excel 是唯一來源。舊的手寫 i18n/en.js／ja.js／es.js 已不再引用（Ray：留著不動）。
+   中文母本仍是 i18n/zh.js —— 改中文改這裡，再 sync 進 Excel。 */
+import { PACKS as GEN } from './i18n/ui/packs.js';
 
-const PACKS = { zh: ZH, en: EN, ja: JA, es: ES };
+const PACKS = Object.assign({ zh: ZH }, GEN);
 
 /* ---- 語言選擇 ----
  *  優先序：使用者手動選過（localStorage）→ 地區偵測 → 預設中文。
  *  地區偵測：僅日本特判（瀏覽器語系 ja* 或時區 Asia/Tokyo → 日文），其餘一律預設中文。
  *  偵測結果不寫入 localStorage——只有按語言鈕的手動選擇才落地，之後恆以手選為準。 */
+/* ⚠ flight/index.html 開頭有一份照抄的判定（非模組頁，同步載譯文表要先知道語言），改一邊要改另一邊。 */
 export const LANG = (()=>{
   let v=null; try{ v=localStorage.getItem('tivot.lang'); }catch(e){}
   if(v && Object.prototype.hasOwnProperty.call(PACKS, v)) return v;

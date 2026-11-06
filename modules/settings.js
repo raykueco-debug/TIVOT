@@ -262,9 +262,9 @@ export function open(opts){
       /* 離線包（ver -2257，Ray：「下載更新都收進選單」）：只有主畫面 App 才有
          （offline.js 掛 window.__tivotOffline），下載與檢查更新是同一顆鈕。 */
       + (window.__tivotOffline
-          ? '<div class="gm-sec">離線包</div>'
+          ? i18nT('<div class="gm-sec">離線包</div>')
             + '<div class="gm-acts"><button class="gm-btn" id="gmOffline" type="button"></button></div>'
-            + '<div class="gm-note">下載後沒網路也能玩。下載中螢幕不要鎖；中斷了再按一次會接著下。</div>'
+            + i18nT('<div class="gm-note">下載後沒網路也能玩。下載中螢幕不要鎖；中斷了再按一次會接著下。</div>')
           : '')
       + '<div class="gm-acts">'
       +   (o.onHome ? i18nT('<button class="gm-btn gm-home" type="button">回到主選單</button>') : '')
@@ -283,7 +283,7 @@ export function open(opts){
     bind('gmBgm','bgm'); bind('gmSe','se'); bind('gmVo','vo');
     { const ob=panel.querySelector('#gmOffline'), OL=window.__tivotOffline;
       if(ob && OL){
-        ob.textContent = OL.busy() ? '下載中…' : OL.label();
+        ob.textContent = OL.busy() ? i18nT('下載中…') : OL.label();
         ob.addEventListener('click', e=>{ e.stopPropagation();
           try{ SFX.menuClick(); }catch(_){}
           OL.run(t=>{ if(ob.isConnected) ob.textContent=t; });
@@ -349,7 +349,7 @@ export function open(opts){
         au.classList.toggle('on', on);
         const lab=au.parentNode.querySelector('b'); if(lab) lab.textContent = on ? i18nT('開') : i18nT('關');
         /* 面板裡的「管理人」那一區也是看 testmode 畫的 —— 開關一動就把它直接拿掉／提示重開。 */
-        if(!on){ const sec=[...panel.querySelectorAll('.gm-sec')].find(x=>x.textContent.indexOf('管理人')>=0);
+        if(!on){ const sec=[...panel.querySelectorAll('.gm-sec')].find(x=>x.textContent.indexOf(i18nT('管理人'))>=0);
                  if(sec){ let n=sec; while(n){ const nx=n.nextElementSibling; if(n!==sec && n.classList.contains('gm-sec')) break; n.remove(); n=nx; } } }
         try{ SFX.menuClick(); }catch(_){}
       }); }

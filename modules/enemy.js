@@ -13,6 +13,7 @@
  *    受擊特效為純 DOM 輸出，不寫任何狀態。
  * ========================================================================== */
 
+import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import * as prog from '../script/progress.js';  // stage 加成要問現在第幾章（ver -1584b）
 import { ENEMY_IDLE, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
@@ -1255,8 +1256,8 @@ export function setEmpowered(n){
   if(!(n>1)){ top.classList.remove('en-empowered'); if(tag) tag.remove(); return; }
   top.classList.add('en-empowered');
   if(!tag){ tag=document.createElement('div'); tag.id='enEmpowerTag'; top.appendChild(tag); }
-  tag.textContent='▲ 下一擊威力 ×'+n;
-  const pop=document.createElement('div'); pop.className='en-empower-pop'; pop.textContent='威力提升！下一擊 ×'+n;
+  tag.textContent=i18nT('▲ 下一擊威力 ×')+n;
+  const pop=document.createElement('div'); pop.className='en-empower-pop'; pop.textContent=i18nT('威力提升！下一擊 ×')+n;
   top.appendChild(pop); setTimeout(()=>pop.remove(), 1500);
 }
 const VF_GROW_MS=1000, VF_FADE_MS=600;   // ＝ CSS #violetFlash 的 transition（兩邊互指）；ver -2526 Ray「光圈太快了」由 350/400 放慢

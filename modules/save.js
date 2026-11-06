@@ -305,7 +305,7 @@ function render(){
          兩種都問，不然新檔的章數一律印成「?」（ver -430 修）。 */
       const pg=(rec.run && rec.run.progress) || rec.progress;
       const st=pg ? pg.stage : '?';
-      b.textContent = `第 ${st} 章 · ${fmtTime(rec.ts)}`;
+      b.textContent = i18nT('第 {n} 章 · {t}').replace('{n}', st).replace('{t}', fmtTime(rec.ts));
       body.appendChild(a); body.appendChild(b);
     }else{
       const a=document.createElement('span'); a.className='sv-label';
@@ -323,15 +323,15 @@ function pick(n, rec){
   const db=load();
   if(mode==='save'){
     /* ⚠ 覆蓋是不可逆的，一定要先問。 */
-    if(rec && !confirm(`第 ${n} 欄已有存檔：\n${rec.label}\n${fmtTime(rec.ts)}\n\n覆蓋它嗎？`)) return;
+    if(rec && !confirm(i18nT('第 {n} 欄已有存檔：\n{label}\n{t}\n\n覆蓋它嗎？').replace('{n}', n).replace('{label}', rec.label).replace('{t}', fmtTime(rec.ts)))) return;
     db.slots[String(n)] = capture();
     store(db);
-    toast(`已存入第 ${n} 欄`);
+    toast(i18nT('已存入第 {n} 欄').replace('{n}', n));
     close();
   }else{
     if(!rec) return;
     apply(rec);
-    toast(`已讀取第 ${n} 欄`);
+    toast(i18nT('已讀取第 {n} 欄').replace('{n}', n));
     close();
   }
 }

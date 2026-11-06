@@ -53,7 +53,9 @@
     document.head.appendChild(st);
     var el = document.createElement('div');
     el.id = 'rotGuard';
-    el.innerHTML = '<div><i>▯</i><b>請轉回直向</b><span>本作僅支援直向畫面</span></div>';
+    /* 介面字譯文（ver -2582）：classic script，掛上的那一刻才問全域的 i18nT（主頁由 i18n/scriptTr.js 掛、飛行頁是頁首那一支）。 */
+    var T = function (s) { return window.i18nT ? window.i18nT(s) : s; };
+    el.innerHTML = '<div><i>▯</i><b>' + T('請轉回直向') + '</b><span>' + T('本作僅支援直向畫面') + '</span></div>';
     document.body.appendChild(el);
   }
   if (document.body) mount();

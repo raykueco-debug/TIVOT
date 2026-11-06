@@ -17,19 +17,21 @@
   const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
   if(!standalone && !q) return;
 
+  /* 介面字譯文（ver -2582）：classic script 拿不到 i18nT 的 import —— 呼叫當下才問 i18n/scriptTr.js 掛上的全域那一支。 */
+  const T = s => (window.i18nT ? window.i18nT(s) : s);
   const keyOf = p => { const u = new URL(p, location.href); u.search = ''; u.hash = ''; return u.href; };
   let busy = false;
   /* ⚠ ver -2257（Ray：「下載更新都收進選單」）：畫面上不放浮動鈕 —— 入口在選單
      （modules/settings.js 的「離線包」那一段）。這裡只提供 window.__tivotOffline。 */
   function label(){
     let done = null; try{ done = localStorage.getItem(DONE_KEY); }catch(_){}
-    return done ? '✓ 已就緒 · 檢查更新' : '⬇ 下載（約 1.6 GB）';
+    return done ? T('✓ 已就緒 · 檢查更新') : T('⬇ 下載（約 1.6 GB）');
   }
   async function run(say){
     if(busy) return; busy = true;
     try{
       if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
-      say('讀取清單…');
+      say(T('讀取清單…'));
       const list = await (await fetch('offline_list.json?t=' + Date.now(), { cache: 'no-store' })).json();
       const cache = await caches.open(CACHE);
       const files = list.files.slice();
@@ -53,17 +55,17 @@
           }catch(e){ fail++; console.warn('[offline] 失敗', f, e); }
           const n = ok + fail + skip;
           if(n % 10 === 0 || n === files.length)
-            say(`下載中 ${Math.floor(n / files.length * 100)}%（${n}/${files.length}${fail ? '，失敗 ' + fail : ''}）`);
+            say(T('下載中 {p}%（{n}/{all}{fail}）').replace('{p}', Math.floor(n / files.length * 100)).replace('{n}', n).replace('{all}', files.length).replace('{fail}', fail ? T('，失敗 ') + fail : ''));
         }
       };
       await Promise.all(Array.from({ length: 6 }, worker));
-      if(fail) say(`失敗 ${fail} 個 · 點一下重試`);
+      if(fail) say(T('失敗 {n} 個 · 點一下重試').replace('{n}', fail));
       else{
         try{ localStorage.setItem(DONE_KEY, list.version); }catch(_){}
-        say(`✓ 完成（${Math.round((Date.now() - t0) / 1000)} 秒）`);
+        say(T('✓ 完成（{n} 秒）').replace('{n}', Math.round((Date.now() - t0) / 1000)));
       }
     }catch(e){
-      say('下載中斷 · 點一下重試');
+      say(T('下載中斷 · 點一下重試'));
     }finally{ busy = false; }
   }
   window.__tivotOffline = { label, run, busy: () => busy };

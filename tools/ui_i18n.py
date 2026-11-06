@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """tools/ui_i18n.py —— 介面字多語（ver -1909）
 
+⚠ ver -2582 起譯文只在 i18n_ui.xlsx（tools/i18n_xlsx.py）；這一支只剩 extract／wrap 給它用，check／xlsx／js 已停用。
+
 劇本（對白／地名）走 tools/script_i18n.py；**其餘所有玩家看得到的中文**走這一支：
 引擎程式裡寫死的字、資料卡（敵人／武器／道具／商店）、index.html 與飛行頁的介面。
 
@@ -252,6 +254,7 @@ def js(lang):
 if __name__ == '__main__':
     cmd = sys.argv[1] if len(sys.argv) > 1 else 'extract'
     {'extract': extract, 'wrap': wrap}.get(cmd, lambda: None)()
-    if cmd == 'check': sys.exit(check(sys.argv[2]))
-    if cmd == 'xlsx': xlsx(sys.argv[2])
-    if cmd == 'js': js(sys.argv[2])
+    if cmd in ('check', 'xlsx', 'js'):
+        # ver -2582：介面譯文改由 i18n_ui.xlsx 管（唯一來源），i18n/ui/<lang>.json 只剩當初建表的種子。
+        # 這裡再產 i18n/ui/<lang>.js 會把 Excel 的成果蓋掉（鐵律 7：兩份真相）—— 一律改走新工具。
+        sys.exit('已改由 tools/i18n_xlsx.py 管理：sync（補新字）／build（產生遊戲讀的檔）／check')
