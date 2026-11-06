@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=2564"></script>
+<script src="../orientation.js?v=2565"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。語言判定與 i18n.js 的 LANG 同一套
@@ -11,7 +11,7 @@
 (function(){
   var l=null; try{ l=localStorage.getItem('tivot.lang'); }catch(e){}
   if(!l){ try{ var n=(navigator.languages&&navigator.languages[0])||navigator.language||''; if(String(n).toLowerCase().indexOf('es')===0) l='es'; }catch(e){} }
-  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2564"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2564"><\/script>');
+  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2565"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2565"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=2564');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=2565');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -267,8 +267,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2564");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2564");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2565");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2565");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -288,8 +288,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2564");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2564");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2565");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2565");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -655,23 +655,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2564" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=2565" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2564" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2564" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2564" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2564" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2564" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2564" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2564" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2564" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2564" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2564" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=2565" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2565" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2565" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2565" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2565" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2565" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2565" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2565" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2565" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2565" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=2564" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=2565" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -693,13 +693,14 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=2564"></script>
+<script src="settlement.js?v=2565"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
 <script>if(/[?&]world=undercity/.test(location.search)) document.write('<script src="undercity/world.js?v=29615343"><\/script>');</script>
+<script>if(/[?&]world=sanctum/.test(location.search)) document.write('<script src="sanctum/world.js?v=8353a1e4"><\/script>');</script>   <!-- 卡耶爾山谷 → 聖王廳地宮的地底大空洞（ver -2565，build_sanctum.py 產的） -->
 <script>if(!/[?&]world=/.test(location.search)) document.write('<script src="undercity/crowns.js?v=6a3ae090"><\/script>');</script>   <!-- 地表上地底樹的樹冠（ver -2412，build_uc_crowns.py 產的） -->
-<script src="talks.js?v=2564"></script>
+<script src="talks.js?v=2565"></script>
 <script>
 /* 破圖框一律不畫（ver -1881，同主頁 main.js 那一支，這一頁是另一個 document）。 */
 document.addEventListener('error', e=>{ const t=e.target; if(t && t.tagName==='IMG') t.classList.add('img-broken'); }, true);
@@ -775,8 +776,8 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=b18827be'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -2564';
-const MAP_SCALE  = /[?&]world=(cave|undercity)/.test(location.search) ? 10 : 20;   // 地底的圖加密成 1536²（ver -2369，build_cave.py 的 SUPER）：一格 10 世界單位，世界大小不變
+const FLIGHT_VER = 'ver -2565';
+const MAP_SCALE  = /[?&]world=(cave|undercity|sanctum)/.test(location.search) ? 10 : 20;   // 地底的圖加密成 1536²（ver -2369，build_cave.py 的 SUPER）：一格 10 世界單位，世界大小不變
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
 const CLOUD_H    = 44;    // 雲海高度：低於此高度一律是雲（大陸外緣自然沒入雲中）
@@ -1015,9 +1016,12 @@ const SKIRT_ALL = true;
 /* 地底的世界（ver -2399）：cave＝西部大溶谷、undercity＝地下古城 —— 同一支地底引擎，只換地圖與資料。 */
 const WORLD = ((location.search.match(/[?&]world=(\w+)/)||[])[1])||'';
 const UNDERCITY = WORLD==='undercity';
-const CAVE = WORLD==='cave' || UNDERCITY;
-const CAVE_DIR  = UNDERCITY ? 'undercity/' : 'cave/';
-const CAVE_NAME = UNDERCITY ? '地下古城' : '西部大溶谷';
+/* sanctum＝卡耶爾山谷 → 聖王廳地宮的地底大空洞（ver -2565，build_sanctum.py）：同一支地底引擎；
+   第二間起無底、風格由卡耶爾岩 → 灰白石磚 → 聖王廳漸變（cave_hm 的 B＝風格），終點平台後面是地宮（UC_CITY 那一套 3D 建築，聖王廳的種類）。 */
+const SANCTUM = WORLD==='sanctum';
+const CAVE = WORLD==='cave' || UNDERCITY || SANCTUM;
+const CAVE_DIR  = UNDERCITY ? 'undercity/' : SANCTUM ? 'sanctum/' : 'cave/';
+const CAVE_NAME = UNDERCITY ? '地下古城' : SANCTUM ? '地底大空洞' : '西部大溶谷';
 /* 地下古城的地表入口（ver -2431；說明見 carveUcGate）。放在這裡是因為地形與崖裙的著色器要嵌它的位置（石砌那一圈）。
    floor：裂口底的高。-2433 由 CLOUD_H+18 抬到 +62 —— 貼著雲海高度的話整條裂口被雲海的霧洗白，遠看像一片溢出的白牆。 */
 const UC_GATE={ x:402, y:840, dx:-0.49, dy:-0.87, len:14, hw:3.8, rw:2.2, bed:26, floor:CLOUD_H+62, land:420, masonR:9 };   /* -2437：hw 1.9→3.8（兩岸要放得下遺跡）、rw＝河寬 2.2（Ray：「瀑布怎不見了，做寬一點顯眼點」—— 窄的話崖裙的輪廓平滑時把河口那個缺口抹掉，崖邊找不到水就不出瀑布）、bed＝河床再往下挖多深（Ray：「那條河往下挖深一點」） */   // 地圖格；(dx,dy)＝往陸塊裡的方向；masonR＝洞口一圈崖壁石砌的半徑（格）
@@ -1115,7 +1119,15 @@ if(UNDERCITY){   // 地下古城的資料（build_undercity.py 產的 undercity/
   if(D.exit) CAVE_EXIT.splice(0, CAVE_EXIT.length, ...D.exit);
   CAVE_FALLS.length=0; CAVE_PLANTS.length=0; CAVE_CRYSTALS.length=0; CAVE_END=null;
 }
-const UC_CITY = (UNDERCITY && window.UNDERCITY_DATA && window.UNDERCITY_DATA.city) || [];
+if(SANCTUM){     // 地底大空洞（ver -2565）：同上，資料由 sanctum/world.js 蓋過大溶谷那一份
+  const D=window.SANCTUM_DATA||{};
+  if(D.v) Object.assign(CAVE_V, D.v);
+  if(D.start) CAVE_START.splice(0, CAVE_START.length, ...D.start);
+  if(D.rooms) CAVE_ROOMS.splice(0, CAVE_ROOMS.length, ...D.rooms);
+  if(D.exit) CAVE_EXIT.splice(0, CAVE_EXIT.length, ...D.exit);
+  CAVE_FALLS.length=0; CAVE_PLANTS.length=0; CAVE_CRYSTALS.length=0; CAVE_END=null;
+}
+const UC_CITY = (UNDERCITY && window.UNDERCITY_DATA && window.UNDERCITY_DATA.city) || (SANCTUM && window.SANCTUM_DATA && window.SANCTUM_DATA.city) || [];   // 地底大空洞：終點的聖王廳地宮（種類 9～12，見 glBuildUnderCity）
 /* 地下古城的洞外（ver -2427，build_undercity.py 產的）：outW＝地圖最左邊那一條洞外的寬 */
 const UC_OUT_W = (UNDERCITY && window.UNDERCITY_DATA && window.UNDERCITY_DATA.outW) || 0;
 let ucWindK = 0;   // 船在風穴氣流裡的程度 0~1（update 平滑，-2466）
@@ -8419,6 +8431,7 @@ async function loadWorld(){
   carveTreeHollow(raw);   // 樹海的窪地（ver -2417；同上）
   carveUcGate(raw);   // 地下古城的地表入口（ver -2431；同上）
   carveUcShaft(raw);  // 地下古城無底風穴的地表出口（ver -2440；同上）
+  carveSnGate(raw);   // 卡耶爾山谷谷頭的洞口：地底大空洞的入口（ver -2565；同上）
 
   step(0.70);   // 計算坡度…
   for(let y=0;y<MAPH;y++){
@@ -12302,11 +12315,11 @@ ivec2 clampT(ivec2 t){ return clamp(t, ivec2(0), ivec2(uMap)-1); }
 /* ══ 地底世界（ver -2363）：常數開關，大陸那一份編出來的碼一行都不多跑 ══
    uMask 在地底模式裝的是 R 天頂/8（1＝洞）、G 發光植物、B 光柱、A 溢光（見 loadCaveWorld）。 */
 const bool CAVEM=${CAVE?'true':'false'};
-const vec3 CV_SPILL=${UNDERCITY?'vec3(0.95,0.70,0.42)':'vec3(0.25,0.75,0.80)'};   // 溢光的顏色：大溶谷是青色的苔光、地下古城是暖色的天光反光與燈（ver -2399）
-const vec3 CV_AMB=${UNDERCITY?'vec3(0.13,0.11,0.085)':'vec3(0.0)'};            // 天頂的環境光（地下古城才有）
+const vec3 CV_SPILL=${(UNDERCITY||SANCTUM)?'vec3(0.95,0.70,0.42)':'vec3(0.25,0.75,0.80)'};   // 溢光的顏色：大溶谷是青色的苔光、地下古城是暖色的天光反光與燈（ver -2399）
+const vec3 CV_AMB=${UNDERCITY?'vec3(0.13,0.11,0.085)':SANCTUM?'vec3(0.12,0.115,0.11)':'vec3(0.0)'};            // 天頂的環境光（地下古城；地底大空洞淡淡一層，無底的岩壁才讀得出來）
 uniform vec3 uCvSun;                         // 洞外射進來的光：白天陽光、晚上月光（地下古城，ver -2400；大溶谷固定陽光）
 #define CV_SUN uCvSun
-const float CV_VOLK=${UNDERCITY?'9.0':'1.0'};            // 光柱的體積光濃度：地下古城的洞不畫出來，只剩光束，要看得見（ver -2400）
+const float CV_VOLK=${UNDERCITY?'9.0':SANCTUM?'5.0':'1.0'};            // 光柱的體積光濃度：地下古城的洞不畫出來，只剩光束，要看得見（ver -2400）
 const vec3 CV_L=vec3(0.287,0.172,0.958);     // 洞口射進來的地表光方向（正規化過）
 /* 光柱：從這一點沿光線反推回岩層頂，看那裡有沒有洞。 */
 float cvShaft(vec2 wp, float h){
@@ -12326,6 +12339,94 @@ vec3 ucDots(vec2 q, float z){
   vec3 dc=mix(vec3(0.80,0.86,0.98), vec3(1.0,0.82,0.48), d);
   float far=1.0-smoothstep(500.0,1500.0,z);
   return dc*(core*1.2+halo*0.20)*on*tw*mix(0.35,1.0,far);
+}
+/* ══ 地底大空洞的風格（ver -2565）══ s＝cave_hm 的 B（0 卡耶爾岩 → 0.5 灰白石磚 → 1 聖王廳），al＝沿牆座標、h＝世界高。
+   牆：卡耶爾那一段照舊是岩層；0.30 起砌成石磚（一層 22、上下錯縫）；0.70 起換聖王廳的大塊方石，
+   每 150 一道壁柱、柱間一排尖拱壁龕（照聖王廳地宮的背景圖：哥德式的拱、藍灰石、壁上火炬）。 */
+float snN(vec2 q){ vec2 i=floor(q), f=fract(q); f=f*f*(3.0-2.0*f);
+  return mix(mix(cvHash(i),cvHash(i+vec2(1,0)),f.x), mix(cvHash(i+vec2(0,1)),cvHash(i+vec2(1,1)),f.x), f.y); }
+/* rock＝同一格照卡耶爾那一段算的岩壁色（崩落的地方露出它）。
+   ver -2565 Ray：「牆要古舊一點，縫裡有一些綠苔，破損露出岩壁的」⇒ 石塊深淺更不一、雨痕往下流的暗斑；
+   石縫裡一叢一叢的綠苔；一片一片崩掉的地方露出底下的岩壁（邊上一圈暗的斷口，苔也長在斷口邊）。 */
+vec3 snWall(vec3 c, vec3 rock, float s, float al, float h, float z){
+  float kb=smoothstep(0.30,0.44,s), kh=smoothstep(0.70,0.88,s);
+  if(kb<=0.0) return c;
+  float far=1.0-smoothstep(350.0,1300.0,z);
+  /* -2565 Ray：「TILE 太大了，跟浴室似地」⇒ 石塊縮小（一層 11～16）、每層的錯縫位置亂數、寬窄不一、層高也微微起伏、縫寬隨處不同 */
+  float ch=mix(11.0,16.0,kh), bw=mix(24.0,34.0,kh);
+  float hh=h+3.0*sin(al*0.013)+2.0*sin(al*0.051);
+  float crs=floor(hh/ch);
+  float uu=al/bw+cvHash(vec2(crs,3.7))*7.0;
+  float uid=floor(uu), uf=fract(uu);
+  float cut=0.25+0.5*cvHash(vec2(uid,crs+11.0));                      // 一格裡再切一刀（長短石混砌）
+  float sub=step(cut,uf)*step(0.5,cvHash(vec2(uid,crs+23.0)));
+  float bk=cvHash(vec2(uid*2.0+sub,crs));
+  float sw=0.06+0.06*cvHash(vec2(uid,crs+5.0));
+  float vs=max(smoothstep(1.0-sw-0.03,1.0-sw,uf), sub>0.5||cvHash(vec2(uid,crs+23.0))<0.5 ? 0.0 : 0.0);
+  vs=max(vs, step(0.5,cvHash(vec2(uid,crs+23.0)))*(1.0-smoothstep(0.0,0.05,abs(uf-cut))));
+  float seam=max(smoothstep(0.84,0.94,fract(hh/ch))*(0.6+0.4*cvHash(vec2(uid,crs+9.0))), vs)*(1.0-smoothstep(200.0,700.0,z)*0.6);
+  float stain=snN(vec2(al/34.0, h/260.0));                           // 雨痕：沿牆往下拉長的暗斑
+  float lumW=dot(c,vec3(0.299,0.587,0.114));
+  vec3 b=c*(0.74+0.40*bk)*(0.80+0.30*stain)*(1.0-0.55*seam*far);
+  float mN=snN(vec2(al,h)/58.0)*0.6+snN(vec2(al,h)/17.0)*0.4;
+  vec3 moss=vec3(0.40,0.60,0.16)*(lumW*1.7+0.03);
+  b=mix(b, moss, clamp(seam*smoothstep(0.42,0.70,mN)*0.85 + smoothstep(0.70,0.88,mN)*0.30, 0.0, 0.9));   // 縫裡的苔＋零星長到石面上
+  float dN=snN(vec2(al,h)/95.0)*0.62+snN(vec2(al,h)/29.0)*0.38;
+  float dTh=mix(0.64,0.70,kh);                                       // 聖王廳那一段崩得少一點
+  float dmg=smoothstep(dTh,dTh+0.03,dN), rim=smoothstep(dTh-0.035,dTh,dN)*(1.0-dmg);
+  b=mix(b*(1.0-0.30*rim), rock*0.82, dmg);                               // 崩落：露出岩壁；斷口一圈暗
+  b=mix(b, moss, rim*0.60*smoothstep(0.30,0.60,mN));
+  /* 壁龕（-2565 Ray：「牆上窗室的感覺不錯，前半是牆，後面開始有窗室，再後面窗室裡都有祈禱像」）：
+     石磚的前半是素牆；0.60 起出現壁柱與尖拱壁龕；0.84 起每一個壁龕裡都站著一尊祈禱像（披頭巾、雙手合十，淺色石像）。 */
+  float kn=smoothstep(0.58,0.68,s), ks=smoothstep(0.82,0.88,s);
+  if(kn>0.0){
+    float pu=fract(al/150.0), px=(pu-0.5)*150.0;                   // 壁柱之間（px＝離柱間中線）
+    float pil=smoothstep(60.0,64.0,abs(px));                        // 壁柱：亮一階
+    float hb=mod(h,420.0);                                          // 一層 420：壁龕在 80～300、尖拱頂到 360
+    float aw=26.0*clamp(1.0-pow(max(hb-300.0,0.0)/60.0,1.4),0.0,1.0);
+    float niche=step(80.0,hb)*step(hb,360.0)*(1.0-smoothstep(aw-2.0,aw,abs(px)))*(1.0-pil);
+    vec3 g=b*(1.0+0.30*pil)*(1.0-0.78*niche*mix(0.5,1.0,far));
+    if(ks>0.0){
+      /* 祈禱像：台座 84～100、長袍 100～262（下寬上收）、合十的手 205～232 往前一點、頭巾＋頭 262～292 */
+      float ax=abs(px);
+      float robe=step(100.0,hb)*step(hb,262.0)*(1.0-smoothstep(mix(12.5,6.5,(hb-100.0)/162.0)-1.2, mix(12.5,6.5,(hb-100.0)/162.0), ax));
+      float head=1.0-smoothstep(5.5,7.0,length(vec2(px,(hb-272.0)*0.85)));
+      float hood=(1.0-smoothstep(7.5,9.0,length(vec2(px,(hb-268.0)*0.75))))*step(255.0,hb);
+      float hands=(1.0-smoothstep(3.0,4.5,length(vec2(px,(hb-218.0)*0.45))));
+      float base=step(84.0,hb)*step(hb,100.0)*(1.0-smoothstep(15.0,16.5,ax));
+      float fig=clamp(max(max(robe,hood),max(head,base)),0.0,1.0)*niche;
+      float fold=0.88+0.12*sin(px*0.9+hb*0.02)*step(hb,250.0);     // 長袍的直褶
+      vec3 stone=vec3(0.64,0.64,0.68)*(lumW*1.5+0.03)*fold*(1.0-0.40*smoothstep(0.0,12.0,ax));   // 側緣暗下去 ⇒ 讀得出是圓雕
+      stone*=1.0+0.25*hands*niche;
+      g=mix(g, stone, fig*ks);
+    }
+    b=mix(b,g,kn);
+  }
+  return mix(c,b,kb);
+}
+/* 壁上的火炬（石磚那一段起，越接近聖王廳越密）：固定在航高附近一排（h≈1070），一團暖光＋把牆照亮一圈；
+   回傳要加上去的光（c＝這一格牆的顏色，給照亮那一圈用）。 */
+vec3 snTorch(vec3 c, float s, float al, float h, float z){
+  float k=smoothstep(0.40,0.55,s); if(k<=0.0) return vec3(0.0);
+  float P=mix(420.0,150.0,smoothstep(0.70,0.88,s));               // 聖王廳那一段：每一道壁柱一支
+  float id=floor(al/P+0.5), dx=al-id*P, dy=h-1070.0;
+  if(cvHash(vec2(id,7.3))>mix(0.55,1.01,smoothstep(0.62,0.80,s))) return vec3(0.0);
+  float fl=0.80+0.20*sin(uTime*0.011+id*3.7)*sin(uTime*0.0047+id);
+  float r=length(vec2(dx,dy*0.8));
+  float core=1.0-smoothstep(3.0,7.0,length(vec2(dx,(dy-6.0)*0.55)));
+  float wash=exp(-r*r/(95.0*95.0));
+  float far=1.0-smoothstep(700.0,2200.0,z);
+  vec3 tc=vec3(1.0,0.62,0.26);
+  return (tc*core*3.0*mix(0.6,1.0,far) + c*tc*wash*2.6 + tc*wash*0.10)*fl*k;
+}
+/* 天頂：石磚那一段起變亮變灰；聖王廳那一段是藍灰的拱頂，肋拱一格一格（斜 45°） */
+vec3 snCeil(vec3 rock, float s, vec2 wp){
+  float kb=smoothstep(0.30,0.48,s), kh=smoothstep(0.70,0.88,s);
+  vec3 r=mix(rock, vec3(0.62,0.61,0.58)*(0.85+0.3*cvHash(floor(wp/40.0))), kb*0.7);
+  vec2 q=mat2(0.7071,-0.7071,0.7071,0.7071)*wp/220.0;
+  float rib=smoothstep(0.90,0.97,max(abs(fract(q.x)-0.5),abs(fract(q.y)-0.5))*2.0);
+  vec3 hv=vec3(0.40,0.42,0.52)*(0.80+0.45*rib);
+  return mix(r,hv,kh);
 }
 /* 值噪聲（ver -2369 改查表）：原本每次 4 個 sin 雜湊，天頂岩質每步要 3 層 ＝ 12 個 sin，實測吃掉 13ms。
    改成一張 256² 的隨機格點貼圖（REPEAT＋LINEAR），把小數部分先做 smoothstep 再交給硬體內插 —— 結果與原本同一種曲線。 */
@@ -12471,7 +12572,7 @@ void main(){
             float fogS=uZfar*${FOG_START};
             float fogK=1.0-clamp((z-fogS)/(uZfar-fogS),0.0,1.0)*${FOG_MAX};
             float sh=0.0;
-            if(${UNDERCITY?'true':'false'}){   // 地下古城的光束細又稀，跳過的那一段要分四點取，不然整束被跳掉（ver -2400）
+            if(${(UNDERCITY||SANCTUM)?'true':'false'}){   // 地下古城的光束細又稀，跳過的那一段要分四點取，不然整束被跳掉（ver -2400）
               for(int q=0;q<4;q++){ float zq=z+zAdv*(float(q)+0.5)*0.25; float s2=cvShaft(uCam.xy+dir*zq, uCam.z-(k-zq*curv)*zq); sh+=s2*s2*0.25; }
             } else { sh=cvShaft(wp,hNeed); sh*=sh; }
             vol+=sh*zAdv*0.00007*CV_VOLK*fogK;
@@ -12517,6 +12618,7 @@ void main(){
         float st=0.5+0.5*sin(hNeed*0.05+cvN(wp*(1.0/340.0))*7.0);            // 岩層：橫向的帶
         rock*=mix(0.78,1.06,st)*mix(0.50,1.0,smoothstep(0.18,0.62,rg));       // 凹處（垂得少的）暗、岩瘤尖受光
         rock*=0.86+0.28*cvN(wp*(1.0/9.0));                                    // 細顆的石面
+        if(${SANCTUM?'true':'false'}) rock=snCeil(rock, cvm.g, wp);               // 地底大空洞的風格漸變（-2565）
         vec3 c3=vec3(0.0);                                                     // 沒有環境光：天頂只吃下面四種光源
         c3+=rock*cvLamp(vec3(wp,hNeed), n, vec2(-sinp,-cosp));
         float dkC=${UNDERCITY?'cvm.g':'0.0'};                                   // 地下古城的黑暗（-2434）
@@ -12812,6 +12914,7 @@ void main(){
           vec4 cvm=texture(uMask, mf/uMap);
           c+=cBase*CV_SUN*cvShaft(wp,hs)*1.3*clamp(nl,0.35,1.2);
           c+=cBase*CV_SPILL*cvm.a*0.95 + cBase*CV_AMB*2.6;   // 古城的地面也吃天頂的環境光（ver -2401：不然路上的野草暗到看不見）
+          if(${SANCTUM?'true':'false'}) c+=cBase*vec3(0.30,0.28,0.25)*(1.0-smoothstep(0.15,0.55,cvm.g));   // 地底大空洞的前段＝卡耶爾山谷：天光從裂縫漫進來，整片亮一階（往石磚那一段收掉，-2565）
           vec3 fn=normalize(vec3(-sl*0.06, 1.0));                // 坡度 → 法線（朝上）；牆的 ng 已經大到幾乎水平
           if(length(ng)>80.0) fn=normalize(vec3(-ng*0.02, 0.3));
           vec3 lampC=cBase*cvLamp(vec3(wp,hs), fn, vec2(-sinp,-cosp));
@@ -12822,7 +12925,7 @@ void main(){
         c=vec3(lum)+(c-vec3(lum))*${GRADE_SAT};   // VP1 分級：往亮度收斂
         if(CAVEM){
           /* 發光植物本身（自發光，分級之後才加 —— 不被往灰收）。一叢一叢的亮點，遠了淡成一片底光。 */
-          float gw=${UNDERCITY?'0.0':'texture(uMask, mf/uMap).g'};   // 地下古城那一格是黑暗不是發光植物（-2434）
+          float gw=${(UNDERCITY||SANCTUM)?'0.0':'texture(uMask, mf/uMap).g'};   // 地底大空洞那一格是風格（-2565）   // 地下古城那一格是黑暗不是發光植物（-2434）
           if(gw>0.01){
             /* 一株一株的小發光菇：16 單位一格、每格最多一株，芯小而亮、暈很淡。
                ⚠ 前一版（46 單位一格、半徑 0.3）在近處是一大片平平的青色硬邊塊 —— 植物要小，數量交給密度。 */
@@ -12862,7 +12965,7 @@ void main(){
             float dS=length(wp-uStar.xy);
             float lit=uStar.z*exp(-dS*dS/(uStar.w*uStar.w));
             c=vec3(0.030,0.031,0.036)*(0.35+0.9*cl) + vec3(1.0,0.80,0.46)*lit*(0.05+0.20*cl*cl);
-            if(${UNDERCITY?'true':'false'}) c+=CV_SUN*texture(uMask, mf/uMap).b*(0.10+0.28*cl);   // 地下古城的無底風穴：頂上開口的光照在底下的雲上（-2434）
+            if(${(UNDERCITY||SANCTUM)?'true':'false'}) c+=CV_SUN*texture(uMask, mf/uMap).b*(0.10+0.28*cl);   // 地下古城的無底風穴：頂上開口的光照在底下的雲上（-2434）
           }else if(cvTx==15u){
             /* 水晶＝光源（ver -2370，Ray：「水晶是光源，不是單色物件，遠方看很突兀」）：
                刻面本體是暗而透的，光從裡面透出來 —— 刻面的稜線、內部流動的光脈、平頂的晶尖各自發亮；
@@ -12895,7 +12998,13 @@ void main(){
             float xa=floor(wp.x/90.0), xb=floor(wp.y/90.0)+53.0;
             float sta=mix(cvHash(vec2(s0,xa)), cvHash(vec2(s0+1.0,xa)), sf);
             float stb=mix(cvHash(vec2(s0,xb)), cvHash(vec2(s0+1.0,xb)), sf);
-            c*=(0.70+0.36*mix(sta,stb,wxN))*0.86;                   // 岩壁比地面暗一階（洞窟的壁不該比地亮）
+            vec3 cR=c*(0.70+0.36*mix(sta,stb,wxN))*0.86;            // 岩壁比地面暗一階（洞窟的壁不該比地亮）
+            if(${SANCTUM?'true':'false'}){                           // 地底大空洞（-2565）：卡耶爾岩層 → 石磚 → 聖王廳，照 B 的風格漸變
+              float sS=texture(uMask, mf/uMap).g, alS=mix(wp.x,wp.y,wxN);
+              cR=snWall(mix(cR, c*0.86, smoothstep(0.30,0.44,sS)), cR*vec3(0.92,0.88,0.82), sS, alS, hNeed, z);   // 砌牆的那一段不要岩層的橫帶；崩落處露出岩層（cR）
+              cR+=snTorch(cR, sS, alS, hNeed, z);
+            }
+            c=cR;
           }
           if(${UNDERCITY?'true':'false'} && cvWall){ float dkW=texture(uMask, mf/uMap).g; if(dkW>0.05) c+=ucDots(vec2(mix(wp.x,wp.y,wxN), hNeed), z)*dkW*smoothstep(0.18,0.50,abs(dot(normalize(ng2+vec2(1e-3)),dir))); }   /* 斜擦過去的牆面上光點會被拉成橫線 ⇒ 越斜越淡 */
         }
@@ -14422,6 +14531,33 @@ function carveUcGate(raw){
   }
 }
 const UC_GATE_PLACE = { cave:true, uc:true, name:'地下古城' };
+/* ══ 地底大空洞的地表入口（ver -2565，Ray：「入口：卡耶爾山谷，船從那裡駛入洞穴」）══
+   卡耶爾山谷是 -1235～-1237 手刻的那道谷（TERRAIN_VALLEY），谷頭在 (938,712)、往北就是聖王廳 (934,606)。
+   ⇒ 在谷頭往山裡（谷的反方向）挖一道越來越暗、越來越窄的裂口＝洞口；谷頭上空亮「進入 地底大空洞」（長按）。
+   · 載入時挖、不動 map_edits.json（鐵律 14，同 carveCavePit／carveUcGate）。
+   · 出：地底大空洞從入口隧道的盡頭飛出去 → 回到這裡（playCaveLeave 寫回程鑰匙，背對洞口）。 */
+const SN_GATE={ x:938, y:712, dx:-0.42, dy:-0.91, len:16, hw:3.4, land:420 };   // 地圖格；(dx,dy)＝往山裡的方向
+const SN_GATE_PLACE = { cave:true, sn:true, name:'地底大空洞' };
+function carveSnGate(raw){
+  if(CAVE) return;
+  const G=SN_GATE, px=-G.dy, py=G.dx, R=Math.ceil(G.len+G.hw+4);
+  const g0=HGT[G.y*MAPW+G.x];                                         // 谷頭的谷底高：裂口底從這裡往山裡走
+  for(let y=G.y-R; y<=G.y+R; y++) for(let x=G.x-R; x<=G.x+R; x++){
+    if(x<0||y<0||x>=MAPW||y>=MAPH) continue;
+    const ux=x-G.x, uy=y-G.y, a=ux*G.dx+uy*G.dy, c=ux*px+uy*py;
+    if(a<-1 || a>G.len) continue;
+    const hw=G.hw*(1+0.16*Math.sin(a*1.1+0.4))*(a>G.len-4 ? Math.max(0.15,(G.len-a)/4) : 1);   // 盡頭收窄（鑽進黑暗）
+    if(Math.abs(c)>hw+1.4) continue;
+    const i=y*MAPW+x, o=HGT[i];
+    const t=clamp((Math.abs(c)-hw)/1.4,0,1), k=t*t*(3-2*t);           // 牆：一格多內陡起
+    const fl=g0+Math.max(0,a)*0.4;
+    const h=Math.min(o, fl+(o-fl)*k);
+    HGT[i]=Math.round(h); raw[i]=HGT[i]/PEAK_SCALE;
+    const dk=(0.70-0.62*clamp(a/G.len,0,1))*(1-k)+k*(0.55+0.45*clamp(1-a/G.len,0,1));   // 越往裡越暗；兩壁也跟著暗下去
+    const cc=COL[i]; COL[i]=rgb(((cc&255)*dk)|0, (((cc>>8)&255)*dk)|0, (((cc>>16)&255)*dk)|0);
+    if(BIOME) BIOME[i]=G_RG|(BIOME[i]&0xf0);                           // 岩地
+  }
+}
 let caveExit=null;
 function caveExitPoint(){
   if(!CAVE || UNDERCITY) return null;   // 地下古城沒有天井出口（-2432 拿掉），出去只走 1 號那條出口飛進雲海
@@ -14451,8 +14587,11 @@ function playCaveLeave(){
   if(takeoffPlaying || altTween) return;
   takeoffPlaying=true;
   const P=CAVE_PIT;
-  if(!UNDERCITY){ try{ localStorage.setItem('tivot_flight_ret_v1', JSON.stringify({ x:P.x, y:P.y, angle:cam.angle })); }catch(_){} }   // 地下古城的地表入口還沒定（ver -2399）
-  altTween={ from:cam.alt, to:CAVE_SLAB+700, t0:performance.now(), dur:2200, easeIn:true };
+  /* 地底大空洞（-2565）：從入口隧道的盡頭橫著飛出去 ⇒ 回到卡耶爾山谷谷頭的上空、背對洞口（不演垂直升空，白光直接蓋上） */
+  const ret = SANCTUM ? { x:(SN_GATE.x-SN_GATE.dx*9)*20, y:(SN_GATE.y-SN_GATE.dy*9)*20, angle:Math.atan2(SN_GATE.dx, SN_GATE.dy) }
+                      : { x:P.x, y:P.y, angle:cam.angle };
+  if(!UNDERCITY){ try{ localStorage.setItem('tivot_flight_ret_v1', JSON.stringify(ret)); }catch(_){} }   // 地下古城的地表入口還沒定（ver -2399）
+  if(!SANCTUM) altTween={ from:cam.alt, to:CAVE_SLAB+700, t0:performance.now(), dur:2200, easeIn:true };
   const ov=document.createElement('div');
   ov.style.cssText='position:fixed;inset:0;background:#fff;opacity:0;transition:opacity 1500ms ease-in;z-index:99999;pointer-events:none';
   document.body.appendChild(ov); setTimeout(()=>{ ov.style.opacity='1'; }, 600);
@@ -14490,15 +14629,31 @@ void main(){
 const GL_CITY_FS=`#version 300 es
 precision highp float;
 in vec3 vN; in vec4 vC; in vec2 vF; in float vZ; in vec3 vWP;
-uniform vec3 uFog; uniform float uZfar; uniform vec3 uCam; uniform vec2 uDir;
+uniform vec3 uFog; uniform float uZfar; uniform vec3 uCam; uniform vec2 uDir; uniform float uT;
 out vec4 o;
 float ch(vec2 q){ return fract(sin(dot(q,vec2(127.1,311.7)))*43758.5453); }
 float vn(vec2 q){ vec2 i=floor(q), f=fract(q); f=f*f*(3.0-2.0*f);
   return mix(mix(ch(i),ch(i+vec2(1,0)),f.x), mix(ch(i+vec2(0,1)),ch(i+vec2(1,1)),f.x), f.y); }
 void main(){
   /* 神殿（c.a＝0.5）與神殿上的藤（−0.5）跟巨樹一起看得遠：不然遠處只剩一棵懸在半空的樹（ver -2402） */
-  float zf=uZfar*(abs(abs(vC.a)-0.5)<0.01 ? 1.8 : 1.0);   /* 藤蔓 c.a＝−0.5 也算 */
+  float zf=uZfar*((abs(abs(vC.a)-0.5)<0.01 || vC.a>1.5) ? 1.8 : 1.0);   /* 藤蔓 c.a＝−0.5 也算；聖王廳地宮（c.a≥1.6）也看得遠 */
   if(vZ>zf) discard;
+  /* 聖王廳地宮的發光面（地底大空洞，ver -2565）：3＝大門（尖拱形、裡面透出的暖金光）、3.5＝火盆的火。vF＝正規化的 (−1～1 橫, 0～1 高) */
+  if(vC.a>2.75){
+    vec3 e;
+    if(vC.a<3.25){
+      float ax=abs(vF.x), y=vF.y, aw=y<0.66 ? 1.0 : sqrt(max(0.0,1.0-pow((y-0.66)/0.34,2.0)))*0.5+0.5*(1.0-(y-0.66)/0.34);
+      if(ax>aw) discard;
+      float frame=step(aw-0.10,ax)+step(y,0.03);
+      e=mix(vec3(1.0,0.78,0.42)*(0.55+0.45*(1.0-y))*(0.85+0.15*vn(vec2(vF.x*6.0,y*9.0+uT*0.0004))), vec3(0.20,0.17,0.15), clamp(frame,0.0,1.0));
+    } else {
+      float y=vF.y, ax=abs(vF.x), w=(1.0-y)*(0.75+0.25*sin(y*9.0-uT*0.012+vWP.x));
+      if(ax>w) discard;
+      e=mix(vec3(1.0,0.86,0.45), vec3(1.0,0.38,0.10), clamp(ax/max(w,1e-3)*0.8+y*0.6,0.0,1.0))*1.4;
+    }
+    float fgE=clamp((vZ-zf*${FOG_START})/(zf-zf*${FOG_START}),0.0,1.0)*${FOG_MAX}*0.5;
+    o=vec4(mix(e,uFog,fgE),1.0); gl_FragDepth=clamp(vZ/${ZFAR}.0,0.0,1.0); return;
+  }
   vec3 nn=normalize(vN);
   float top=max(nn.z,0.0);
   float side=0.55+0.30*abs(dot(nn.xy,vec2(0.6,0.8)));
@@ -14522,7 +14677,15 @@ void main(){
   float bk=ch(vec2(floor((vF.x+crs*13.0)/30.0),crs)+vWP.xy*0.0007);
   col*=mix(1.0, 0.86+0.22*bk, wall);
   /* 拱門洞（vC.a＞0 的牆才有）：一樓一排門、上面零星幾個窗 */
-  if(vC.a>0.75 && wall>0.5){
+  if(vC.a>1.9 && wall>0.5){                        // 聖王廳地宮的牆（c.a＝2）：一排一排的尖拱窗，裡面點著燈（暖光）
+    vec2 g=vec2(vF.x/96.0, (vF.y-60.0)/280.0), id=floor(g), fr=fract(g);
+    float lx=(fr.x-0.5)*96.0, ly=fr.y*280.0;
+    float aw=15.0*(ly<200.0 ? 1.0 : clamp(1.0-pow((ly-200.0)/48.0,1.3),0.0,1.0));
+    float win=step(30.0,ly)*step(ly,248.0)*(1.0-smoothstep(aw-1.5,aw,abs(lx)))*step(0.0,vF.y-60.0);
+    float on=step(ch(id+vWP.xy*0.0013),0.72);
+    col=mix(col, mix(col*0.15, vec3(1.0,0.70,0.34)*(0.55+0.25*ch(id+3.0)), on), win);
+  }
+  if(vC.a>0.75 && vC.a<1.5 && wall>0.5){
     vec2 g=vF/vec2(46.0,70.0), id=floor(g), fr=fract(g);
     float lx=(fr.x-0.5)*46.0, ly=fr.y*70.0;
     float hole=float((abs(lx)<9.0 && ly<44.0) || length(vec2(lx,ly-44.0))<9.0);
@@ -14534,7 +14697,7 @@ void main(){
   float mn=0.55*vn(mq)+0.30*vn(mq*2.7+7.0)+0.15*vn(mq*6.3+3.0);
   float mAmt=mix(1.0-smoothstep(20.0,200.0,vF.y)*0.75, 0.9, top) * smoothstep(0.36,0.66,mn);
   float lumC=dot(col,vec3(0.299,0.587,0.114));
-  col=mix(col, vec3(0.42,0.56,0.24)*lumC*1.15, clamp(mAmt*0.85,0.0,0.85));
+  if(vC.a<1.5) col=mix(col, vec3(0.42,0.56,0.24)*lumC*1.15, clamp(mAmt*0.85,0.0,0.85));   // 聖王廳地宮沒有苔（完整、有人打理）
   }
   float fogS=zf*${FOG_START};
   float fog=clamp((vZ-fogS)/(zf-fogS),0.0,1.0)*${FOG_MAX};
@@ -14631,7 +14794,7 @@ function glBuildUnderCity(){
   const vs=glSh(g.VERTEX_SHADER,GL_CITY_VS), fs=glSh(g.FRAGMENT_SHADER,GL_CITY_FS);
   glCityProg=g.createProgram(); g.attachShader(glCityProg,vs); g.attachShader(glCityProg,fs); g.linkProgram(glCityProg);
   if(!g.getProgramParameter(glCityProg,g.LINK_STATUS)) throw new Error(g.getProgramInfoLog(glCityProg));
-  for(const k of ['uBuf','uCam','uDir','uFog','uZfar']) glCityU[k]=g.getUniformLocation(glCityProg,k);
+  for(const k of ['uBuf','uCam','uDir','uFog','uZfar','uT']) glCityU[k]=g.getUniformLocation(glCityProg,k);
   const V=[];
   const push=(P,N,C,F)=>V.push(P[0],P[1],P[2],N[0],N[1],N[2],C[0],C[1],C[2],C[3],F[0],F[1]);
   const quad=(A,B,Cc,D,N,C,w,h)=>{ push(A,N,C,[0,0]); push(B,N,C,[w,0]); push(Cc,N,C,[w,h]); push(A,N,C,[0,0]); push(Cc,N,C,[w,h]); push(D,N,C,[0,h]); };
@@ -14648,7 +14811,61 @@ function glBuildUnderCity(){
       push(A,N,G,[0,0]); push(B,N,G,[0,0]); push(D,N,G,[0,0]); };
     for(let k=0;k<K;k++){ const k1=(k+1)%K; tri(ring[k],ring[k1],mid[k]); tri(ring[k1],mid[k1],mid[k]); tri(mid[k],mid[k1],ap); }
   };
+  /* ══ 聖王廳地宮（地底大空洞的終點，ver -2565；build_sanctum.py 排）══ 完整的石造建築：不殘破、沒有苔。
+     種類：9 本殿（正面朝 +x，山牆屋頂）／1 塔（尖頂＋四角小尖塔）／5 列柱／10 楣樑／11 大門（發光）／12 火盆。
+     c.a：2＝有尖拱窗的牆、1.6＝素面石、3＝發光的大門、3.5＝火盆的火（GL_CITY_FS 照它分支）。 */
+  const snPiece=(x,y,w,d,h,rot,kind,sd,gz)=>{
+    const a=rot*Math.PI/180, ca=Math.cos(a), sa=Math.sin(a), hw=w/2, hd=d/2, z0=gz, z1=gz+h;
+    const P=(u,v,z)=>[x+u*ca-v*sa, y+u*sa+v*ca, z], R=(nx,ny,nz)=>[nx*ca-ny*sa, nx*sa+ny*ca, nz];
+    const tn=0.92+0.16*sd, S=[0.56*tn,0.58*tn,0.66*tn], C2=[...S,2], C1=[...S,1.6];
+    const tri=(A,B,D,C)=>{ const e1=[B[0]-A[0],B[1]-A[1],B[2]-A[2]], e2=[D[0]-A[0],D[1]-A[1],D[2]-A[2]];
+      let N=[e1[1]*e2[2]-e1[2]*e2[1], e1[2]*e2[0]-e1[0]*e2[2], e1[0]*e2[1]-e1[1]*e2[0]]; const l=Math.hypot(...N)||1; N=N.map(q=>q/l);
+      push(A,N,C,[0,0]); push(B,N,C,[0,0]); push(D,N,C,[0,0]); };
+    const box=(hu,hv,za,zb,C,top=true)=>{ const cs=[[-hu,-hv],[hu,-hv],[hu,hv],[-hu,hv]];
+      for(let i=0;i<4;i++){ const [u0,v0]=cs[i], [u1,v1]=cs[(i+1)%4], nx=(v1-v0), ny=-(u1-u0), nl=Math.hypot(nx,ny)||1;
+        quad(P(u0,v0,za),P(u1,v1,za),P(u1,v1,zb),P(u0,v0,zb),R(nx/nl,ny/nl,0),C,Math.hypot(u1-u0,v1-v0),zb-za); }
+      if(top) quad(P(-hu,-hv,zb),P(hu,-hv,zb),P(hu,hv,zb),P(-hu,hv,zb),[0,0,1],C,hu*2,hv*2); };
+    const spire=(cu,cv,hu,zb,sh,C)=>{ const ap=P(cu,cv,zb+sh), cs=[[-hu,-hu],[hu,-hu],[hu,hu],[-hu,hu]];
+      for(let i=0;i<4;i++){ const [u0,v0]=cs[i], [u1,v1]=cs[(i+1)%4]; tri(P(cu+u0,cv+v0,zb),P(cu+u1,cv+v1,zb),ap,C); } };
+    const cyl=(r,za,zb,C)=>{ const K=12; for(let k=0;k<K;k++){ const t0=k/K*6.2832, t1=(k+1)/K*6.2832, tm=(t0+t1)/2;
+      quad(P(r*Math.cos(t0),r*Math.sin(t0),za),P(r*Math.cos(t1),r*Math.sin(t1),za),P(r*Math.cos(t1),r*Math.sin(t1),zb),P(r*Math.cos(t0),r*Math.sin(t0),zb),R(Math.cos(tm),Math.sin(tm),0),C,r*0.52,zb-za); } };
+    if(kind===9){                                               // 本殿
+      box(hw+20,hd+20,z0,z0+40,C1);                             // 基座
+      box(hw,hd,z0+40,z1,C2,false);
+      box(hw+12,hd+12,z1-34,z1,C1);                             // 簷口
+      const rh=Math.min(260,hd*0.42), rl=Math.hypot(rh,hd);     // 山牆屋頂：屋脊沿 u（正面朝 +u 看得到三角的山牆）
+      quad(P(-hw,-hd,z1),P(hw,-hd,z1),P(hw,0,z1+rh),P(-hw,0,z1+rh),R(0,-rh/rl,hd/rl),C1,w,hd);
+      quad(P(-hw,hd,z1),P(hw,hd,z1),P(hw,0,z1+rh),P(-hw,0,z1+rh),R(0,rh/rl,hd/rl),C1,w,hd);
+      tri(P(hw,-hd,z1),P(hw,hd,z1),P(hw,0,z1+rh),C1); tri(P(-hw,-hd,z1),P(-hw,hd,z1),P(-hw,0,z1+rh),C1);
+      return;
+    }
+    if(kind===1){                                               // 塔：方身＋女兒牆＋尖頂＋四角小尖塔
+      box(hw+14,hd+14,z0,z0+50,C1);
+      box(hw,hd,z0+50,z1,C2,false);
+      box(hw+10,hd+10,z1-24,z1,C1);
+      spire(0,0,hw*0.86,z1,Math.max(hw,hd)*2.6,C1);
+      for(const [cu,cv] of [[-1,-1],[1,-1],[1,1],[-1,1]]) spire(cu*(hw+4),cv*(hd+4),16,z1,130,C1);
+      return;
+    }
+    if(kind===5){ cyl(hw*1.35,z0,z0+30,C1); cyl(hw,z0+30,z1-34,C1); cyl(hw*1.3,z1-34,z1,C1); return; }   // 列柱：柱礎、柱身、柱頭
+    if(kind===10){ box(hw,hd,z0,z1,C1); return; }               // 楣樑
+    if(kind===11){                                              // 大門：貼在本殿正面（+u）的一片發光的尖拱
+      const G=[1,0.8,0.5,3.0], u=hw, N=R(1,0,0);
+      push(P(u,-hd,z0),N,G,[-1,0]); push(P(u,hd,z0),N,G,[1,0]); push(P(u,hd,z1),N,G,[1,1]);
+      push(P(u,-hd,z0),N,G,[-1,0]); push(P(u,hd,z1),N,G,[1,1]); push(P(u,-hd,z1),N,G,[-1,1]);
+      return;
+    }
+    if(kind===12){                                              // 火盆：台座＋盆＋十字交叉的兩片火
+      box(hw,hd,z0,z1,C1); box(hw*1.5,hd*1.5,z1,z1+14,C1);
+      const F=[1,0.6,0.2,3.5], fz=z1+12, fh=74, fw=hw*1.2;
+      for(const [du,dv] of [[1,0],[0,1]]){ const N=R(dv,-du,0);
+        push(P(-du*fw,-dv*fw,fz),N,F,[-1,0]); push(P(du*fw,dv*fw,fz),N,F,[1,0]); push(P(du*fw,dv*fw,fz+fh),N,F,[1,1]);
+        push(P(-du*fw,-dv*fw,fz),N,F,[-1,0]); push(P(du*fw,dv*fw,fz+fh),N,F,[1,1]); push(P(-du*fw,-dv*fw,fz+fh),N,F,[-1,1]); }
+      return;
+    }
+  };
   for(const [x,y,w,d,h,rot,kind,sd,gz] of UC_CITY){
+    if(SANCTUM){ snPiece(x,y,w,d,h,rot,kind,sd,gz); continue; }
     const a=rot*Math.PI/180, ca=Math.cos(a), sa=Math.sin(a), hw=w/2, hd=d/2;
     const P=(u,v,z)=>[x+u*ca-v*sa, y+u*sa+v*ca, z];
     const dkB=CAVEMASK ? CAVEMASK[caveCell(x,y)*4+1]/255 : 0;   // 這一座在不在黑暗區（-2434：7→10 的出口那一圈）—— 照黑暗壓暗，不然一片黑裡只有房子是亮的
@@ -14754,13 +14971,13 @@ function glBuildUnderCity(){
   g.bindVertexArray(null);
 }
 function glDrawUnderCity(sinp,cosp,fr,fg,fb){
-  if(!UNDERCITY || !glReady || !UC_CITY.length) return;
+  if(!(UNDERCITY||SANCTUM) || !glReady || !UC_CITY.length) return;   // 地底大空洞：終點的聖王廳地宮（-2565）
   const g=GLX;
   if(!glCityProg){ try{ glBuildUnderCity(); }catch(e){ console.warn('[undercity] 建築建不起來',e); glCityProg=-1; return; } }
   if(glCityProg===-1) return;
   g.useProgram(glCityProg);
   g.uniform2f(glCityU.uBuf,BW,BH); g.uniform3f(glCityU.uCam,cam.x,cam.y,cam.alt); g.uniform2f(glCityU.uDir,sinp,cosp);
-  g.uniform3f(glCityU.uFog,fr/255,fg/255,fb/255); g.uniform1f(glCityU.uZfar,ZFAR*((Q().view)||1)*CAVE_VIEW);
+  g.uniform3f(glCityU.uFog,fr/255,fg/255,fb/255); g.uniform1f(glCityU.uZfar,ZFAR*((Q().view)||1)*CAVE_VIEW); g.uniform1f(glCityU.uT,performance.now()%100000);
   g.bindVertexArray(glCityVao);
   g.disable(g.CULL_FACE); g.enable(g.DEPTH_TEST); g.depthFunc(g.LEQUAL); g.depthMask(true); g.disable(g.BLEND);
   g.drawArrays(g.TRIANGLES,0,glCityN);
@@ -16289,7 +16506,7 @@ function render(now){
       glDrawGateRuins(sinp, cosp, lx, ly, S.day);   // 地下古城地表入口的遺跡模型（Quaternius CC0，ver -2443）
       glDrawUcTrees(sinp, cosp, lx, ly, S.day);   // 地表上的地底樹冠（Quaternius CC0 模型，ver -2413）
       glDrawSkirts(sinp, cosp, lx, ly, S.day, cloudLit, fr, fg, fb, lightR, lightG, lightB, ambI, sunI);   // 崖裙（ver -2227）
-      if(UNDERCITY) glDrawUnderCity(sinp, cosp, fr, fg, fb);   // 地下古城的建築（ver -2399）
+      if(UNDERCITY||SANCTUM) glDrawUnderCity(sinp, cosp, fr, fg, fb);   // 地下古城的建築／地底大空洞終點的聖王廳地宮（-2565）   // 地下古城的建築（ver -2399）
       if(UNDERCITY) glDrawUcFog(sinp, cosp, S.day);   // 地底城的貼地薄霧（ver -2423）
       if(CAVE) glDrawCaveCrystals(sinp, cosp, fr, fg, fb);   // 地底的水晶（ver -2370，先畫：植物的光暈要疊在它上面）
       if(CAVE) glDrawCavePlants(sinp, cosp, fr, fg, fb);   // 地底的發光植物（ver -2369）
@@ -23783,6 +24000,8 @@ function nearCaveMouth(){
   if(UNDERCITY){ return (UC_WIND && Math.hypot(cam.x-UC_WIND[0], cam.y-UC_WIND[1]) < UC_WIND[2] && !ucOutForce) ? UC_WIND_PLACE : null; }   // 無底風穴：長按離開（-2466）
   if(CAVE){ const X=caveExitPoint(); return X && Math.hypot(cam.x-X.x, cam.y-X.y) < X.r*0.85 ? CAVE_EXIT_PLACE : null; }
   if(Math.hypot(cam.x-CAVE_PIT.x, cam.y-CAVE_PIT.y) < CAVE_PIT.land) return CAVE_MOUTH_PLACE;
+  { const sx=(SN_GATE.x-SN_GATE.dx*4)*MAP_SCALE, sy=(SN_GATE.y-SN_GATE.dy*4)*MAP_SCALE;   // 卡耶爾山谷谷頭（洞口前方）的上空（-2565）
+    if(Math.hypot(cam.x-sx, cam.y-sy) < SN_GATE.land) return SN_GATE_PLACE; }
   const ex=(UC_GATE.x-UC_GATE.dx*6)*MAP_SCALE, ey=(UC_GATE.y-UC_GATE.dy*6)*MAP_SCALE;   // 洞口前方（雲海上空）
   return Math.hypot(cam.x-ex, cam.y-ey) < UC_GATE.land ? UC_GATE_PLACE : null;
 }
@@ -23820,6 +24039,13 @@ function doLand(){
   /* 進西部大溶谷（ver -2393）：地表 → 地底＝換一張地圖，花一小時、清追兵，俯衝過場淡完才交棒（同進城鎮那一套）。 */
   if(S && S.ucWind){ ucOutForce=true; return; }    // 無底風穴：交給 ucOutTick 起白霧、回地表圓穴（-2466）
   if(S && S.caveExit){ playCaveLeave(); return; }   // 從天井垂直升空出去（ver -2396）
+  if(S && S.sn){                                    // 地底大空洞（ver -2565）：同進大溶谷那一套，換一張圖
+    armEnemySpawn(true); clockAdvance(HOUR);
+    playLanding(()=>{ flightAudio(false);
+      if(embedded()){ try{ window.parent.__tivotFlight.sanctum(); }catch(_){} }
+      else location.href=location.pathname+'?world=sanctum'; }, true);
+    return;
+  }
   if(S && S.uc){                                    // 地下古城（ver -2431）：同進大溶谷那一套，換一張圖
     armEnemySpawn(true); clockAdvance(HOUR);
     playLanding(()=>{ flightAudio(false);

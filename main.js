@@ -771,6 +771,8 @@ window.__tivotFlight = {
   cave(){ openFlight({ world:'cave' }); },
   /* 飛進地下古城的地表入口（ver -2431，Ray：「入口畫在 402 840 的崖壁」）：同大溶谷，飛行頁整頁用 `world:'undercity'` 重開。 */
   undercity(){ openFlight({ world:'undercity' }); },
+  /* 飛進卡耶爾山谷谷頭的洞口（ver -2565）：地底大空洞，同大溶谷，飛行頁整頁用 `world:'sanctum'` 重開。 */
+  sanctum(){ openFlight({ world:'sanctum' }); },
   /* 從地底的天光出口飛出去（ver -2394）：回地表。落點由飛行頁先寫進回程鑰匙 `tivot_flight_ret_v1`（洞口前方）。 */
   surface(){ openFlight({ world:'' }); },
   land(id, node){
@@ -1718,11 +1720,12 @@ function flightHub(){
   document.body.appendChild(ov);
   const close=()=>ov.remove();
   ov.innerHTML=i18nT('<div class="tu-panel"><div class="tu-title">試飛</div>')
-    +i18nT('<button data-go="land">地表</button><button data-go="cave">地底</button><button data-go="undercity">地下古城</button>')
+    +i18nT('<button data-go="land">地表</button><button data-go="cave">地底</button><button data-go="undercity">地下古城</button><button data-go="sanctum">地底大空洞</button>')
     +i18nT('<button data-go="close" class="tu-dim">關閉</button></div>');
   ov.querySelector('[data-go="land"]').onclick=()=>{ close(); startChapter(prog.FLIGHT_TEST); };
   ov.querySelector('[data-go="cave"]').onclick=()=>{ close(); startChapter(prog.FLIGHT_TEST, { world:'cave' }); };
-  ov.querySelector('[data-go="undercity"]').onclick=()=>{ close(); startChapter(prog.FLIGHT_TEST, { world:'undercity' }); };   // ver -2399：地下古城（入口還沒定，先從這裡進）
+  ov.querySelector('[data-go="undercity"]').onclick=()=>{ close(); startChapter(prog.FLIGHT_TEST, { world:'undercity' }); };
+  ov.querySelector('[data-go="sanctum"]').onclick=()=>{ close(); startChapter(prog.FLIGHT_TEST, { world:'sanctum' }); };   // ver -2565：地底大空洞（卡耶爾山谷 → 聖王廳地宮）   // ver -2399：地下古城（入口還沒定，先從這裡進）
   ov.querySelector('[data-go="close"]').onclick=close;
 }
 bindBtn('flightBtn', ()=>flightHub());
