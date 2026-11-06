@@ -1,0 +1,20 @@
+{
+ "canvas": [
+  1536,
+  1024
+ ],
+ "box": [
+  0,
+  0,
+  1536,
+  1024
+ ],
+ "frames": 22,
+ "fps": 24,
+ "loop": false,
+ "px": [
+  640,
+  427
+ ],
+ "from": "tivot_wan/out/export/centipi_dive_joined_v2_cut"
+}

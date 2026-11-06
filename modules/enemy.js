@@ -1202,7 +1202,7 @@ const FAR_ORIGIN='50% 78%';
 function farOf(en){ en=en||curCard(); const c=clipFor('atk',en); return (c && c.far) || 1; }
 function applyFar(en){ const k=farOf(en); for(const el of [$('enemyImg'), idleEl, clipEl]) if(el){ el.style.transformOrigin=FAR_ORIGIN; el.style.scale = k===1 ? '' : String(k); } }
 /* 演一次；回傳「還要幾毫秒才打到玩家」（扣血延到那一格），沒演就回 0。 */
-export function playActionClip(kind, onDone){
+export function playActionClip(kind, onDone, opts){   // opts.hold：播完停在最後一格、不回待機（交給 onDone 收，ver -2546 蜈蚣的 A 準備動作）
   const c=clipFor(kind), L=c && clipCache[c.dir]; if(!L || !L.fr) return 0;
   const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, L.j); if(!r) return 0;
   clearTimeout(clipT); clearInterval(idleT); idleT=0;
@@ -1227,6 +1227,7 @@ export function playActionClip(kind, onDone){
     if(fxAt.has(i)) clipFx(fxAt.get(i));
     if(i<N){ el.src=L.fr[i].src; clipT=setTimeout(step, Math.max(0, t0+tAt(i+1)-performance.now())); return; }
     clipT=0;
+    if(opts && opts.hold){ if(onDone) onDone(el); return; }
     if(idleEl && idleFr){ placeIdle(); runIdle(); }                 // 回待機 loop
     else { if(clipEl){ clipEl.remove(); clipEl=null; } eImg.style.visibility=''; }
     if(onDone) onDone();
@@ -1733,8 +1734,35 @@ function playBroadside(fx){
    ⚠ 全程一支 el.animate（transform）—— 漂移用的是獨立 translate／scale，兩者疊加不打架；
      受擊的 CSS 動畫蓋不過 WAAPI（-2457 斜墜踩過的同一件事）。回傳撞到玩家的那一刻（defense 照它延後扣血）。 */
 let airAtk=null;
-function airAssault(en){
+/* ══ A 的準備動作（ENEMY_ATK 的 `prep:true`，ver -2546，Ray：「centipi_dive_joined_v2_cut 蜈蚣用這個，動畫跑完就平移出畫面」
+   「那是 A 的準備動作，A 等等給你」）══ 有準備動作的空戰生物：先播那一支（側面轉正、下潛），播完停在最後一格往下平移出畫面，
+   再接劃過（A 的動畫還沒到之前沿用程式的劃過）→ 從畫面外飛回。回傳撞到玩家的那一刻（含準備動作的長度）。 */
+const PREP_SLIDE_MS=320;
+function airPrepAssault(en, c, L){
+  const top=$('top'); if(!top) return 0;
+  const N=L.fr.length, fps=L.j.fps||24, Tclip=Math.round(N*1000/fps), H=top.clientHeight;
+  playEntranceSe(en.assaultSe || 'se_enemy_dragonroar');
+  let hitIn=0;
+  const busy={ cancel(){ this.dead=true; } }; airAtk=busy;   // 準備動作期間佔住 airAtk（換怪／打死時 stopAirDrift 會 cancel）
+  playActionClip('atk', el=>{
+    if(busy.dead || airAtk!==busy){ return; }
+    const a=el.animate([{ transform:'none' },{ transform:`translateY(${H*1.1}px)` }], { duration:PREP_SLIDE_MS, easing:'cubic-bezier(.5,0,.9,.5)', fill:'forwards' });
+    busy.cancel=()=>{ busy.dead=true; try{ a.cancel(); }catch(_){} };
+    a.onfinish=()=>{ if(busy.dead || airAtk!==busy) return;
+      el.style.opacity='0'; a.cancel();
+      if(idleEl && idleFr){ placeIdle(); runIdle(); } else { if(clipEl){ clipEl.remove(); clipEl=null; } $('enemyImg').style.visibility=''; }
+      airAtk=null; el.style.opacity='';
+      airAssault(en, { noOut:true });
+    };
+  }, { hold:true });
+  /* 撞到的時間＝準備動作＋平移出畫面＋劃過的一半（airAssault 的 noOut 版本回傳的那個數） */
+  hitIn=Tclip+PREP_SLIDE_MS+AIR_SWEEP_MS*0.5;
+  return Math.round(hitIn);
+}
+const AIR_SWEEP_MS=620;
+function airAssault(en, opts){
   if(airAtk) return 0;
+  if(!(opts && opts.noOut) && !flock){ const c=clipFor('atk',en), L=c && c.prep && clipCache[c.dir]; if(L && L.fr) return airPrepAssault(en, c, L); }
   /* 編隊（ver -2516，Ray：「群體的話攻擊只有其中一隻發動，輪流隨機」）：隨機挑一隻還在飛的去劃過，其他照常漂 */
   const fa=flock ? flock.ms.filter(m=>!m.down) : null;
   const el=(fa && fa.length) ? fa[(Math.random()*fa.length)|0].im : (idleEl || $('enemyImg')), top=$('top'); if(!el || !top) return 0;
@@ -1742,7 +1770,8 @@ function airAssault(en){
   if(!er.width) return 0;
   const f=fwdOf(en), dive=Math.random()<0.5, K=3.4;
   const cx=er.left-tr.left+er.width/2, cy=er.top-tr.top+er.height/2, bw=er.width*K, bh=er.height*K;
-  const T={ out:380, gap:140, sweep:620, gap2:260, ret:1700 };
+  const noOut=!!(opts && opts.noOut);   // 準備動作已經把牠帶出畫面了：直接從劃過開始
+  const T={ out:noOut?0:380, gap:noOut?0:140, sweep:AIR_SWEEP_MS, gap2:260, ret:1700 };
   const tot=T.out+T.gap+T.sweep+T.gap2+T.ret, o=ms=>ms/tot;
   const exit = dive ? `translate(${f*W*0.35}px, ${(tr.bottom-er.top)+10}px) scale(.9) rotate(${f*20}deg)`
                     : `translate(${-f*W*0.3}px, ${-(er.bottom-tr.top)-10}px) scale(.85) rotate(${-f*20}deg)`;
@@ -1750,9 +1779,12 @@ function airAssault(en){
   const s0 = dive ? p(W/2-f*W*0.3, H+bh/2, -f*28) : p(W/2-f*W*0.3, -bh/2, f*28);
   const s1 = dive ? p(W/2+f*W*0.3, -bh/2, -f*28) : p(W/2+f*W*0.3, H+bh/2, f*28);
   const back = f<0 ? (tr.right-er.left)+er.width*0.15+20 : -(er.right-tr.left)-er.width*0.15-20;
-  let t=0; const kf=[{ transform:'none', opacity:1, offset:0, easing:'cubic-bezier(.5,0,.9,.6)' }];
-  t+=T.out; kf.push({ transform:exit, opacity:1, offset:o(t) }); kf.push({ transform:exit, opacity:0, offset:o(t)+0.0001 });
-  t+=T.gap; kf.push({ transform:s0, opacity:0, offset:o(t) }); kf.push({ transform:s0, opacity:1, offset:o(t)+0.0001, easing:'cubic-bezier(.3,.1,.7,.9)' });
+  let t=0; const kf=[];
+  if(noOut) kf.push({ transform:s0, opacity:0, offset:0 }, { transform:s0, opacity:1, offset:0.0001, easing:'cubic-bezier(.3,.1,.7,.9)' });
+  else {
+    kf.push({ transform:'none', opacity:1, offset:0, easing:'cubic-bezier(.5,0,.9,.6)' });
+    t+=T.out; kf.push({ transform:exit, opacity:1, offset:o(t) }); kf.push({ transform:exit, opacity:0, offset:o(t)+0.0001 });
+    t+=T.gap; kf.push({ transform:s0, opacity:0, offset:o(t) }); kf.push({ transform:s0, opacity:1, offset:o(t)+0.0001, easing:'cubic-bezier(.3,.1,.7,.9)' }); }
   const hitAt=t+T.sweep*0.5;
   t+=T.sweep; kf.push({ transform:s1, opacity:1, offset:o(t) }); kf.push({ transform:s1, opacity:0, offset:o(t)+0.0001 });
   t+=T.gap2; kf.push({ transform:`translate(${back}px, ${H*0.06}px) scale(1.25)`, opacity:0, offset:o(t) });
@@ -1760,7 +1792,7 @@ function airAssault(en){
   kf.push({ transform:`translate(${f*W*0.05}px, ${-H*0.02}px) scale(.98)`, opacity:1, offset:o(t+T.ret*0.72), easing:'cubic-bezier(.45,0,.55,1)' });
   kf.push({ transform:'none', opacity:1, offset:1 });
   el.style.transformOrigin='50% 50%';
-  playEntranceSe(en.assaultSe || 'se_enemy_dragonroar');   // 發動攻擊那一刻吼一聲（ver -2502，Ray）
+  if(!noOut) playEntranceSe(en.assaultSe || 'se_enemy_dragonroar');   // 發動攻擊那一刻吼一聲（ver -2502，Ray）；有準備動作的在準備動作開頭吼過了
   const a=el.animate(kf, { duration:tot }); airAtk=a;
   const end=()=>{ if(airAtk===a) airAtk=null; };
   a.onfinish=end; a.oncancel=end;
