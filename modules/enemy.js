@@ -1629,8 +1629,9 @@ function startAirDrift(en){
   const fl=en.fit && en.fit.flip ? -1 : 1, ph=Math.random()*100;
   const S={ raf:0, t0:Infinity }; airDrift=S;   // t0＝入場演完那一刻（airEnter 的 done 設），之前振幅 0
   const tick=now=>{ if(airDrift!==S) return;
-    /* -2545 Ray：「3 4 成群的要分別移動，不要一起移動」⇒ 有編隊時整個容器不動，每一隻在 startFlock 的 sync 裡各自漂（各自的相位） */
-    if(!flock){
+    /* -2545 Ray：「3 4 成群的要分別移動，不要一起移動」⇒ 有編隊時整個容器不動，每一隻在 startFlock 的 sync 裡各自漂（各自的相位）
+       A 的準備動作期間（airAtk.freeze）凍在當下那一格：下潛的位置是對著操作盤線量好的，漂移會把它帶走（-2548） */
+    if(!flock && !(airAtk && airAtk.freeze)){
       const top=$('top'), W=top?top.clientWidth:390, H=top?top.clientHeight:400;
       const d=driftAt((now-S.t0)/1000+ph, driftEnv(now)), far=farOf(en);
       const sc=(fl*far*d.k).toFixed(4)+' '+(far*d.k).toFixed(4), tr=(d.x*W).toFixed(1)+'px '+(d.y*H).toFixed(1)+'px';
@@ -1737,27 +1738,40 @@ let airAtk=null;
 /* ══ A 的準備動作（ENEMY_ATK 的 `prep:true`，ver -2546，Ray：「centipi_dive_joined_v2_cut 蜈蚣用這個，動畫跑完就平移出畫面」
    「那是 A 的準備動作，A 等等給你」）══ 有準備動作的空戰生物：先播那一支（側面轉正、下潛），播完停在最後一格往下平移出畫面，
    再接劃過（A 的動畫還沒到之前沿用程式的劃過）→ 從畫面外飛回。回傳撞到玩家的那一刻（含準備動作的長度）。 */
-const PREP_SLIDE_MS=320;
+const PREP_SLIDE_TAIL_MS=140;   // 動畫播完之後還要再滑多久才完全出畫面
+const PREP_PULL_MS=200;         // 下潛前「快速拉到定位」的長度
+/* -2547 Ray「怎麼留了個尾巴在那裡」：只剩尾巴的那幾格（slideFrom 之後）就邊播邊往下滑出去，不等播完才開始滑。
+   -2548 Ray「下潛動作的消失點一定要在操作盤線以下才不會穿幫，所以在下潛前一定要快速拉到定位再放動畫」：
+   先把牠往下拉，讓動畫畫布的下緣（頭衝出去的那條線）落到 #top 的下緣（＝操作盤線）以下一點（#top 會裁掉），再播。 */
 function airPrepAssault(en, c, L){
-  const top=$('top'); if(!top) return 0;
+  const top=$('top'), el0=idleEl || $('enemyImg'); if(!top || !el0) return 0;
   const N=L.fr.length, fps=L.j.fps||24, Tclip=Math.round(N*1000/fps), H=top.clientHeight;
+  const from=Math.max(0, Math.min(N-1, c.slideFrom!=null ? c.slideFrom : N-4)), tSlide=Math.round(from*1000/fps), slideMs=Tclip-tSlide+PREP_SLIDE_TAIL_MS;
+  /* 拉多少：動畫畫布在畫面上的下緣 → 操作盤線以下 4%（多一點餘裕給漂移的上下浮動） */
+  /* 量法：在動畫畫布會擺的那個框放一個看不見的量尺，套上同一組漂移的 translate／scale，直接量它的下緣（不用推算，-2548 推算差了 36px） */
+  const tr=top.getBoundingClientRect(), box=canvasBoxInTop($('enemyImg'), L.j);
+  let boxBottom=el0.getBoundingClientRect().bottom;
+  if(box){ const pr=document.createElement('div');
+    pr.style.cssText=`position:absolute;left:${box.left}px;top:${box.top}px;width:${box.width}px;height:${box.height}px;visibility:hidden;pointer-events:none;`;
+    pr.style.translate=el0.style.translate; pr.style.scale=el0.style.scale; pr.style.transformOrigin=getComputedStyle(el0).transformOrigin;
+    el0.after(pr); boxBottom=pr.getBoundingClientRect().bottom; pr.remove(); }
+  const dy=Math.max(0, Math.round(tr.bottom - boxBottom + H*0.04));
   playEntranceSe(en.assaultSe || 'se_enemy_dragonroar');
-  let hitIn=0;
-  const busy={ cancel(){ this.dead=true; } }; airAtk=busy;   // 準備動作期間佔住 airAtk（換怪／打死時 stopAirDrift 會 cancel）
-  playActionClip('atk', el=>{
-    if(busy.dead || airAtk!==busy){ return; }
-    const a=el.animate([{ transform:'none' },{ transform:`translateY(${H*1.1}px)` }], { duration:PREP_SLIDE_MS, easing:'cubic-bezier(.5,0,.9,.5)', fill:'forwards' });
-    busy.cancel=()=>{ busy.dead=true; try{ a.cancel(); }catch(_){} };
-    a.onfinish=()=>{ if(busy.dead || airAtk!==busy) return;
-      el.style.opacity='0'; a.cancel();
+  const busy={ dead:false, freeze:true, a:[], cancel(){ this.dead=true; this.a.forEach(x=>{ try{ x.cancel(); }catch(_){} }); } }; airAtk=busy;   // 準備動作期間佔住 airAtk（換怪／打死時 stopAirDrift 會 cancel）
+  busy.a.push(el0.animate([{ transform:'none' },{ transform:`translateY(${dy}px)` }], { duration:PREP_PULL_MS, easing:'cubic-bezier(.2,.7,.3,1)', fill:'forwards' }));
+  setTimeout(()=>{ if(busy.dead || airAtk!==busy) return;
+    setTimeout(()=>{ if(busy.dead || airAtk!==busy) return; const e2=idleEl || clipEl; if(!e2) return;
+      busy.a.push(e2.animate([{ transform:`translateY(${dy}px)` },{ transform:`translateY(${dy+H*1.25}px)` }], { duration:slideMs, easing:'cubic-bezier(.35,0,.9,.55)', fill:'forwards' })); }, tSlide);
+    const toSweep=()=>{ if(busy.dead || airAtk!==busy) return;
+      const e2=idleEl || clipEl; if(e2) e2.style.opacity='0';
+      busy.a.forEach(x=>{ try{ x.cancel(); }catch(_){} }); busy.a=[];
       if(idleEl && idleFr){ placeIdle(); runIdle(); } else { if(clipEl){ clipEl.remove(); clipEl=null; } $('enemyImg').style.visibility=''; }
-      airAtk=null; el.style.opacity='';
-      airAssault(en, { noOut:true });
-    };
-  }, { hold:true });
-  /* 撞到的時間＝準備動作＋平移出畫面＋劃過的一半（airAssault 的 noOut 版本回傳的那個數） */
-  hitIn=Tclip+PREP_SLIDE_MS+AIR_SWEEP_MS*0.5;
-  return Math.round(hitIn);
+      airAtk=null; if(e2) e2.style.opacity='';
+      airAssault(en, { noOut:true }); };
+    playActionClip('atk', ()=>{ setTimeout(toSweep, PREP_SLIDE_TAIL_MS); }, { hold:true });
+  }, PREP_PULL_MS);
+  /* 撞到的時間＝拉到定位＋準備動作＋滑完＋劃過的一半（airAssault 的 noOut 版本） */
+  return Math.round(PREP_PULL_MS+Tclip+PREP_SLIDE_TAIL_MS+AIR_SWEEP_MS*0.5);
 }
 const AIR_SWEEP_MS=620;
 function airAssault(en, opts){
