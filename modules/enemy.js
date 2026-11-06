@@ -1578,7 +1578,7 @@ export function fireGrapple(g){
     /* 繩子：船 → 鉤子，中間微微下垂（飛行中拉直） */
     const sag=k<1 ? 0 : Math.min(28, Math.hypot(hx-a.x,hy-a.y)*0.08);
     cx.lineCap='round';
-    for(const [w,c] of [[4.2,'rgba(40,30,20,.9)'],[2.2,'rgba(150,120,80,.95)']]){
+    for(const [w,c] of [[4.4,'rgba(92,70,42,.95)'],[2.6,'rgba(196,164,112,1)'],[0.9,'rgba(236,214,170,.9)']]){   // 麻繩：外緣褐、繩身麻黃、中間一道亮（-2554 Ray「繩索是黑的」）
       cx.strokeStyle=c; cx.lineWidth=w; cx.beginPath(); cx.moveTo(a.x,a.y); cx.quadraticCurveTo((a.x+hx)/2,(a.y+hy)/2+sag,hx,hy); cx.stroke(); }
     drawHook(hx,hy);
     if(k>=1 && !G.gone){   // 倒數（秒）：鉤子旁邊
