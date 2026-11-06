@@ -2475,7 +2475,8 @@ export const ENEMIES = {
       /* 勾索 → 登艦戰（ver -2545，Ray：「hp 50 以下會射出勾鎖，勾在數字盤上方…勾鎖射出後沒戰勝就進登艦戰」）：
          hp＝觸發門檻（%）、sec＝幾秒內沒擊沉就登艦、to＝登艦戰換上的那張卡（背景寫在那張卡上）。
          hookImg／slideImg＝鉤子與滑索的圖（美術在畫；沒寫＝程式畫的暫代）。 */
-      grapple:{ hp:50, sec:10, to:[1,2,3,4,5,6,7,8].map(n=>'sky_pirate_'+n),   // 登艦戰隨機抽一組空賊群戰（-2575） hookImg:'resources/fx/grapple/hook.webp',
+      grapple:{ hp:50, sec:10, to:[1,2,3,4,5,6,7,8].map(n=>'sky_pirate_'+n),   // 登艦戰隨機抽一組空賊群戰（-2575）
+                hookImg:'resources/fx/grapple/hook.webp',   // -2578 修：-2575 把它寫進了上一行的註解裡，鉤爪退回程式畫的暫代
                 canvas:[1536,1024], anchor:[502,802],
                 shadowImg:'resources/fx/grapple/board_shadow.webp',   // 靜態退路
                 /* 會動的落下人影（美術交件，-2565）：每次登艦隨機一支；補交的放同一個資料夾、加進這張表 */
