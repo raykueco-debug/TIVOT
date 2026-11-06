@@ -1610,14 +1610,28 @@ export function fireGrapple(g){
 export function grappleFlyMs(){ return GRAPPLE_FLY_MS; }
 export function clearGrapple(){ if(!grapple) return; cancelAnimationFrame(grapple.raf); grapple.cv.remove(); (grapple.anims||[]).forEach(a=>{ try{ a.cancel(); }catch(_){} }); grapple=null; }   // 船飛走那一段的 forwards 也要收，不然換上的船員還停在畫面外
 /* 登艦：船往上飛出畫面 → 船員沿繩滑下 → 回呼（combat 接著閉棺、換卡、開棺）。回傳整段長度。 */
-export function boardingRun(g, onDone){
-  if(!grapple){ onDone&&onDone(); return 0; }
+/* 登艦：船往上飛出畫面（繩頭跟著上去）→ 一個人影的剪影全景從上往下劃過 → 劃過畫面正中那一刻換成甲板戰（onSwap）→ 劃完（onDone）。
+   -2559 Ray「不用閉棺了，船升上去以後一個人影全景落下，剪影就好，剪影劃過就換成甲板戰」。
+   剪影＝卡上 `shadowImg`（預先壓黑的單人空賊），沒寫就拿登艦那張卡的立繪壓黑；蓋滿 #app（上下兩半一起），所以換卡那一下被它擋住。 */
+const BOARD_FLY_MS=900, BOARD_DROP_MS=520;
+export function boardingRun(g, onSwap, onDone){
+  if(!grapple){ onSwap&&onSwap(); onDone&&onDone(); return 0; }
   stopAirDrift(false);
-  const top=$('top'), H=top ? top.clientHeight : 400, FLY=900;   // -2556 Ray「人滑過來就不用了」：船飛走（繩頭跟著上去）就接閉棺
-  grapple.anims=[]; for(const el of motionTargets()) if(el) grapple.anims.push(el.animate([{ transform:'none' },{ transform:`translateY(${-H*1.4}px)` }], { duration:FLY, easing:'cubic-bezier(.5,0,.85,.4)', fill:'forwards' }));
-  const total=FLY+120;
-  setTimeout(()=>{ onDone&&onDone(); }, total);
-  return total;
+  const app=$('app'), top=$('top'), H=top ? top.clientHeight : 400;
+  grapple.anims=[]; for(const el of motionTargets()) if(el) grapple.anims.push(el.animate([{ transform:'none' },{ transform:`translateY(${-H*1.4}px)` }], { duration:BOARD_FLY_MS, easing:'cubic-bezier(.5,0,.85,.4)', fill:'forwards' }));
+  const src=(g && g.shadowImg) || asset(((GAME_CONFIG.enemies||{})[g && g.to]||{}).image);   // 卡上 shadowImg＝單人空賊的剪影（-2560 Ray「人影先找個落單的空賊圖」）；沒寫退回登艦那張卡的立繪
+  setTimeout(()=>{
+    if(!app || !src){ onSwap&&onSwap(); onDone&&onDone(); return; }
+    const AH=app.clientHeight, AW=app.clientWidth, h=AH*1.35;
+    const box=document.createElement('div'); box.style.cssText='position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:45;';   // 裁在遊戲框裡（剪影比框寬，桌機會溢到框外）
+    const im=document.createElement('img'); im.className='board-shadow'; im.alt=''; im.src=src;
+    im.style.cssText=`position:absolute;left:50%;top:0;height:${h}px;width:auto;pointer-events:none;`+((g && g.shadowImg) ? '' : 'filter:brightness(0);');   // shadowImg 本來就是黑的，不必再壓
+    box.appendChild(im); app.appendChild(box);
+    const a=im.animate([{ transform:`translate(-50%, ${-h}px) rotate(-4deg)` },{ transform:`translate(-50%, ${AH}px) rotate(3deg)` }], { duration:BOARD_DROP_MS, easing:'linear' });   // 等速：時間的一半＝剪影中心落在畫面正中（換卡藏在它後面）
+    setTimeout(()=>{ onSwap&&onSwap(); }, BOARD_DROP_MS*0.5);   // 剪影蓋住畫面正中那一刻換
+    a.onfinish=()=>{ box.remove(); onDone&&onDone(); };
+  }, BOARD_FLY_MS);
+  return BOARD_FLY_MS+BOARD_DROP_MS;
 }
 /* 接舷漂移的形狀（唯一一份，鐵律 7）：u＝秒（各自加相位）、e＝振幅淡入 0～1 ⇒ { k 縮放倍率, x, y 佔畫面寬高的比例 }。
    緩近緩遠：主週期約 9 秒；八向平移＝兩軸各兩組不可公約的正弦。

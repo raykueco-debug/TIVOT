@@ -2805,7 +2805,7 @@ function finishEnemyOrAdvance(){
 const HOLY_SWAP_MS = 2500;   // ver -1449：與 enemy.js 的 HOLY_GROW_MS 同一個數字（＝首頁那一顆的 2.5s）
 /* ══ 空賊船的勾索 → 登艦戰（卡上 `grapple:{hp,sec,to}`，ver -2545，Ray：「空賊船 hp 50 以下會射出勾鎖…
    勾鎖射出後沒戰勝就進登艦戰」）══ 一局一次：血掉到 hp% 以下 → 射勾索；sec 秒內沒擊沉 → 船飛走、船員滑下、
-   原地閉棺換成 `to` 那張卡（背景寫在那張卡上）再開棺（-2556 起不演船員滑索）。擊沉了就跟著船一起收（clearGrapple）。
+   一個人影的剪影全景落下、劃過時換成 `to` 那張卡（背景寫在那張卡上；-2559 起不閉棺）。擊沉了就跟著船一起收（clearGrapple）。
    判定掛在 updateBars（所有血量變動的匯流點，同 checkLowHpBuff）。 */
 let grappleFired=false, grappleT=0;
 function resetGrapple(){ grappleFired=false; clearTimeout(grappleT); grappleT=0; enemy.clearGrapple(); }
@@ -2825,12 +2825,10 @@ function boardShip(g, key){
   stopIntervalTimer();
   defense.resetEnemyTimers();                        // 收掉船的紅點與排程
   clearVenom();
-  enemy.boardingRun(g, ()=>{
-    if(state.over) return;
-    const swap=()=>{ enemy.clearGrapple(); enemy.setEnemy(g.to); state.killTime=0; updateBars(); };
-    const go=()=>{ if(state.over) return; morphSwapping=false; state.transitioning=false; loadBoard(0); updateBars(); };
-    if(storyReseat) storyReseat(swap, go); else { swap(); go(); }
-  });
+  /* -2559：不閉棺 —— 剪影劃過畫面正中那一刻換卡（甲板背景跟著那張卡），劃完才放手 */
+  enemy.boardingRun(g,
+    ()=>{ if(state.over) return; enemy.clearGrapple(); enemy.setEnemy(g.to); state.killTime=0; updateBars(); },
+    ()=>{ if(state.over) return; morphSwapping=false; state.transitioning=false; loadBoard(0); updateBars(); });
 }
 let morphed=false;
 /* ⚠⚠⚠ **「正在換型態」與「換過了」是兩件事**（ver -1486）：
@@ -2951,9 +2949,6 @@ export function setStoryClose(fn){ storyClose = fn; }
    門在控制盤高度闔上、變回控制板（ver -587）。combat 一樣不 import story。 */
 let storyShut = null;
 export function setStoryShut(fn){ storyShut = fn; }
-/* 戰鬥中途原地閉棺再開棺（`story.playKerberosReseat`，ver -2545 空賊船登艦戰）—— 同上由 main.js 注入。 */
-let storyReseat = null;
-export function setStoryReseat(fn){ storyReseat = fn; }
 /* ⚠⚠ 「殺光所有頁面」（ver -494，Ray：「返回首頁就要 kill 所有的 page 再回去」）。
    由 main.js 注入（combat 不認識飛行 iframe／城鎮／劇情層，§2 依賴方向）——
    goHome 在黑幕全蓋的那一刻呼叫它，把還活著的每一層（飛行 iframe、城鎮、
