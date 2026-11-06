@@ -170,7 +170,7 @@ for _ in range(10):                                           # 土丘（-2575 R
     an_, rr_ = rngm.uniform(0, 6.283), math.sqrt(rngm.uniform(0.05, 1)) * 0.8
     mx_, my_ = RA['x'] + math.cos(an_) * rr_ * RA['a'], RA['y'] + math.sin(an_) * rr_ * RA['b']
     if math.hypot(mx_ - (RA['x'] - 8), my_ - (RA['y'] + 6)) < 22: continue    # 骨骸那一片留平
-    floor_land = floor_land + disc(mx_, my_, rngm.uniform(7, 15), 1.0) ** 1.6 * rngm.uniform(70, 170)
+    floor_land = floor_land + disc(mx_, my_, rngm.uniform(13, 24), 1.0) ** 1.6 * rngm.uniform(50, 120)   # -2583：寬而緩（陡了著色器會逐格判成岩壁，一格一格變暗）
 land_e = cv2.distanceTransform(land.astype(np.uint8), cv2.DIST_L2, 5)
 edge_jag = 2.5 + 2.4 * (fbm(N, 3, 24, 0.5) - 0.5)
 landk = np.clip((land_e - edge_jag) / 1.2, 0, 1)        # 崖邊一格內斷掉（參差）
@@ -365,7 +365,7 @@ coreh2 = cv2.resize(coreh, (N2, N2), interpolation=cv2.INTER_NEAREST)
 cm2 = coreh2 > 0; floor2[cm2] = np.maximum(floor2[cm2], coreh2[cm2])   # 碰撞芯（加密後再墊一次：上面幾行會把地面壓回去）
 shaft2 = np.clip(up(shaft, cv2.INTER_LINEAR), 0, 1); spill2 = np.clip(up(spill, cv2.INTER_LINEAR), 0, 1)
 geo2 = upn(geo)
-geo2[(geo2 == 14) & (floor2 > ABYSS + 40)] = 3               # 加密後牆腳被內插墊高的那幾格也不准是深淵（不然牆腳一排黑齒）
+geo2[(geo2 == 14) & (floor2 > ABYSS + 6)] = 3               # 加密後牆腳被內插墊高的那幾格也不准是深淵（不然牆腳一排黑齒）
 col2 = np.clip(up(col), 0, 255)
 shade = 1 + bandw[..., None] * (fine[..., None] * 0.30 * (1 - smooth2[..., None]))
 col2 = np.clip(col2 * shade, 0, 255).astype(np.uint8)
