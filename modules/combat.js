@@ -1289,6 +1289,24 @@ function hitFxSe(hf, kind){
   const key = (typeof raw === 'string') ? raw : raw.type;
   return (HITFX[key] && HITFX[key].se) || null;
 }
+/* 毒液污損數字盤（ver -2533，蜈蚣的延時）：每一格蓋一攤毒，數字只露出一部分。
+   盤面重建（buildGrid 的 innerHTML=''）＝清盤，毒跟著格子一起消失 —— 不必另外收。已經蓋過的格子不再疊。 */
+function venomBoard(){
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  state.cells.forEach((c,i)=>{
+    if(!c || c.querySelector('.venom-splat')) return;
+    const s=document.createElement('i'); s.className='venom-splat';
+    const col=i%state.cols;   // 浪由左往右：左邊的格子先被潑到
+    s.style.animationDelay=(col*0.06).toFixed(2)+'s';
+    /* 只遮一部分（Ray：「數字部份被遮住」）：毒團的中心偏離格心 22～30%、大小 52～66% ⇒ 數字約蓋掉一半 */
+    const a=rnd(0,6.283), d=rnd(22,30);
+    s.style.setProperty('--vx', (50+Math.cos(a)*d).toFixed(0)+'%');
+    s.style.setProperty('--vy', (50+Math.sin(a)*d).toFixed(0)+'%');
+    s.style.setProperty('--vs', rnd(52,66).toFixed(0)+'%');
+    s.style.setProperty('--vr', rnd(0,360).toFixed(0)+'deg');
+    c.appendChild(s);
+  });
+}
 function enemyAttack(dmg, kind, saintAmt, _rainLanded){
   /* 卡上 `hitPlain:true`（ver -2446，樹寄生石龍；Ray：「玩家受擊…畫面震動，不用其他受擊效果」）：
      主動攻擊（assault／擋一半 block）打到時只震畫面 —— 受擊特效、紅閃、受擊音都不放（龍自己衝過畫面就是那一擊）。 */
@@ -1300,6 +1318,13 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
     const wait=enemy.skyScaleRain();
     if(wait>0){ setTimeout(()=>{ if(state.over) return; enemyAttack(dmg, kind, saintAmt, true); }, wait); return; }
   }
+  /* 卡上 `delayVenom:true`（ver -2533，蜈蚣）：延時＝噴毒 → 一秒後毒液刷過全畫面那一刻才扣血，並污損數字盤（清盤才解除） */
+  const _venom = kind==='delay' && !!((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).delayVenom;
+  if(_venom && !_rainLanded){
+    const wait=enemy.venomSpit();
+    if(wait>0){ setTimeout(()=>{ if(state.over) return; enemyAttack(dmg, kind, saintAmt, true); }, wait); return; }
+  }
+  if(_venom) venomBoard();
   /* 延時／點錯的動畫（ver -2472，config.ENEMY_DELAY）：先演、劈到那一格才扣血（同上一段的延後法） */
   if(!_plain && (kind==='delay'||kind==='wrong') && !_rainLanded){
     /* -2496 Ray「攻擊播放時延時先到的話就消掉攻擊圈，所以不會兩動畫衝突」：有動作動畫的怪，延時先到 ⇒ 場上的攻擊圈全消 */

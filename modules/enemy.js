@@ -1772,6 +1772,48 @@ export function skyScaleRain(){
     setTimeout(()=>{ try{ SFX.playRate(asset(k), sfxGain(k)*0.55, 0.78+Math.random()*0.6); }catch(_){} }, at); }
   return SCALE_RAIN_AT;
 }
+/* ══ 延時＝噴毒（卡上 `delayVenom:true`，ver -2533，Ray：「蜈蚣的延時是往前噴綠色毒液 一秒後綠色毒液由左向右襲向全畫面
+   並污損數字盤使數字部份被遮住 清盤才解除」）══
+   ① 0～600ms 從頭部往機頭方向噴出一股毒液（出畫面）② VENOM_WAVE_AT 起毒液由左往右刷過整個 #app（含控制區）
+   回傳「刷到玩家那一刻」—— combat 照它延後扣血、再污損數字盤（combat.venomBoard）。同 skyScaleRain 的延後法。 */
+const VENOM_WAVE_AT=1000, VENOM_SWEEP_MS=520, VENOM_HIT_AT=VENOM_WAVE_AT+Math.round(VENOM_SWEEP_MS*0.55);
+export function venomSpit(){
+  const app=$('app'), top=$('top'); if(!app || !top) return 0;
+  const ar=app.getBoundingClientRect(), W=ar.width, H=ar.height;
+  const cv=document.createElement('canvas'); cv.className='venom-fx';
+  const dpr=Math.min(2, window.devicePixelRatio||1); cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+  app.appendChild(cv);
+  const cx=cv.getContext('2d'); cx.setTransform(dpr,0,0,dpr,0,0);
+  const en=curCard(), f=fwdOf(en), rnd=(a,b)=>a+Math.random()*(b-a);
+  const el=(idleEl && idleEl.isConnected) ? idleEl : $('enemyImg'), r=el.getBoundingClientRect();
+  const hx=(f<0 ? r.left+r.width*0.12 : r.right-r.width*0.12)-ar.left, hy=r.top+r.height*0.6-ar.top;   // 頭：機頭那一端、身體中段偏下
+  const P=[];
+  for(let i=0;i<46;i++){ const sp=rnd(0.9,1.9), ang=rnd(-0.32,0.22);   // ① 噴：一股往前（機頭方向）的毒液，略往下墜
+    P.push({ x:hx, y:hy, vx:f*Math.cos(ang)*sp, vy:Math.sin(ang)*sp, g:0.0012, s:rnd(3,8), t0:i*11, life:rnd(420,640) }); }
+  /* ② 浪：前緣一排大小不一的毒團，後面拖一片會淡掉的綠 */
+  const lobes=[]; for(let y=-20;y<H+20;y+=rnd(16,30)) lobes.push({ y, r:rnd(18,42), lag:rnd(0,46) });
+  const drops=[]; for(let i=0;i<60;i++) drops.push({ y:rnd(0,H), lead:rnd(10,120), s:rnd(3,9), t:rnd(0,VENOM_SWEEP_MS*0.8) });
+  const t0=performance.now(), END=VENOM_WAVE_AT+VENOM_SWEEP_MS+520;
+  const blob=(x,y,s,col)=>{ cx.fillStyle=col; cx.beginPath(); cx.arc(x,y,s,0,6.283); cx.fill(); };
+  const draw=now=>{ if(!cv.isConnected) return;
+    const t=now-t0; cx.clearRect(0,0,W,H);
+    for(const p of P){ const u=t-p.t0; if(u<0 || u>p.life) continue;
+      const x=p.x+p.vx*u, y=p.y+p.vy*u+p.g*u*u, a=Math.min(1,u/60)*Math.min(1,(p.life-u)/160);
+      cx.globalAlpha=a; blob(x,y,p.s,'#2f7d1a'); blob(x-f*p.s*0.25,y-p.s*0.25,p.s*0.6,'#86e24a'); }
+    const w=t-VENOM_WAVE_AT;
+    if(w>=0){ const k=Math.min(1,w/VENOM_SWEEP_MS), fx=-W*0.15+k*W*1.35;   // 前緣由左外刷到右外
+      const fade=w<VENOM_SWEEP_MS ? 1 : Math.max(0,1-(w-VENOM_SWEEP_MS)/520);
+      const g=cx.createLinearGradient(fx-W*0.9,0,fx,0); g.addColorStop(0,'rgba(60,140,30,0)'); g.addColorStop(0.75,'rgba(70,160,35,.38)'); g.addColorStop(1,'rgba(95,195,50,.62)');
+      cx.globalAlpha=fade; cx.fillStyle=g; cx.fillRect(Math.max(0,fx-W*0.9),0,Math.min(W,fx)-Math.max(0,fx-W*0.9),H);
+      for(const l of lobes){ const x=fx-l.lag; blob(x,l.y,l.r,'rgba(47,125,26,.85)'); blob(x+l.r*0.15,l.y-l.r*0.2,l.r*0.55,'rgba(134,226,74,.75)'); }
+      for(const d of drops){ if(w<d.t) continue; blob(fx+d.lead*(0.6+0.4*Math.sin(d.t)),d.y,d.s,'rgba(110,210,60,.9)'); }
+    }
+    cx.globalAlpha=1;
+    if(t<END) requestAnimationFrame(draw); else cv.remove(); };
+  requestAnimationFrame(draw);
+  try{ SFX.play(asset('se_enemy_centipi'), sfxGain('se_enemy_centipi')*0.7); }catch(_){}
+  return VENOM_HIT_AT;
+}
 /* ══ 敵人的台詞語音（ver -1920，Ray：尼莫「玩家受擊用 slow1／slow2／feint 輪播、玩家戰敗播 bulletrain、戰勝播 win」）══
    卡上三格（開戰那一聲照舊走 `entrance`）：
      `hitVoice:[…]`  玩家**被打到**時輪播（同一隻怪換一句；上一句還在講就不疊，至少隔 `HIT_VO_GAP_MS`）

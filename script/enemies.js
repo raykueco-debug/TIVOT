@@ -1776,6 +1776,7 @@ export const ENEMIES = {
         wrong:'blunt',
         assault:'centipi_claw',   // 專屬：爪痕＋蜈蚣叫聲
       },
+      delayVenom:true,   // 延時＝往前噴毒、一秒後毒液由左往右刷過全畫面，數字盤被毒污損到清盤（ver -2533，Ray）
       /* ⚠⚠ **抗性／弱點／破防增傷**（ver -423 起真的生效，之前只是放著）：
          值是**加減成**，套在 `combat.enemyDamage` 那一個計算點上（鐵律 7）。
            resist.basic   普攻減傷 20%
