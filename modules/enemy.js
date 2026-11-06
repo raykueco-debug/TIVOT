@@ -1778,7 +1778,7 @@ const AIR_SWEEP_MS=620;
 /* ══ A 本體：腹面上衝（ENEMY_ATK 的 `sweep`，ver -2550，Ray：「A 動畫出了 mon_centipi_belly_even2_wave_cut，
    讓蜈蚣從畫面下方、放大、快速上平移、略斜」）══ 腹面 loop（腳一波一波抽）照 fps 播，同時整張放大從操作盤線底下
    往上衝出畫面頂端、略往機頭那側斜；衝到 BELLY_HIT 那一刻撞到玩家。衝出去之後待機的那一隻從機尾那側畫面外飛回定位。 */
-const BELLY_SWEEP_MS=640, BELLY_HIT=0.5, BELLY_SIZE=1.55;   // SIZE＝圖高佔上半畫面高的倍數
+const BELLY_SWEEP_MS=640, BELLY_HIT=0.5, BELLY_SIZE=4.65;   // SIZE＝圖高佔上半畫面高的倍數（-2552 Ray「A 要大一點，大三倍」1.55→4.65）
 function airBellySweep(en, S){
   const top=$('top'), eImg=$('enemyImg'); if(!top || !eImg) return;
   const W=top.clientWidth, H=top.clientHeight, f=fwdOf(en);
