@@ -1289,23 +1289,39 @@ function hitFxSe(hf, kind){
   const key = (typeof raw === 'string') ? raw : raw.type;
   return (HITFX[key] && HITFX[key].se) || null;
 }
-/* 毒液污損數字盤（ver -2533，蜈蚣的延時）：每一格蓋一攤毒，數字只露出一部分。
-   盤面重建（buildGrid 的 innerHTML=''）＝清盤，毒跟著格子一起消失 —— 不必另外收。已經蓋過的格子不再疊。 */
+/* 毒液污損數字盤（ver -2533；-2535 Ray：「太卡通了…不一定要每格都沾到，三片半透明黏液，大小不一，遮住多少數字是隨機，跟格子無關」）：
+   一次潑三片，位置與大小全隨機、不對齊格子（可以壓在格線上、可以超出盤緣一點），形狀是不規則的黏液＋往下垂的滴。
+   掛在 #grid 裡（absolute，不佔格位）⇒ 盤面重建（buildGrid 的 innerHTML=''）＝清盤，黏液跟著消失，不必另外收。 */
 function venomBoard(){
+  const grid=$('grid'); if(!grid) return;
   const rnd=(a,b)=>a+Math.random()*(b-a);
-  state.cells.forEach((c,i)=>{
-    if(!c || c.querySelector('.venom-splat')) return;
-    const s=document.createElement('i'); s.className='venom-splat';
-    const col=i%state.cols;   // 浪由左往右：左邊的格子先被潑到
-    s.style.animationDelay=(col*0.06).toFixed(2)+'s';
-    /* 只遮一部分（Ray：「數字部份被遮住」）：毒團的中心偏離格心 22～30%、大小 52～66% ⇒ 數字約蓋掉一半 */
-    const a=rnd(0,6.283), d=rnd(22,30);
-    s.style.setProperty('--vx', (50+Math.cos(a)*d).toFixed(0)+'%');
-    s.style.setProperty('--vy', (50+Math.sin(a)*d).toFixed(0)+'%');
-    s.style.setProperty('--vs', rnd(52,66).toFixed(0)+'%');
-    s.style.setProperty('--vr', rnd(0,360).toFixed(0)+'deg');
-    c.appendChild(s);
-  });
+  for(let k=0;k<3;k++){
+    const n=11, pts=[], R=[];
+    for(let i=0;i<n;i++) R.push(rnd(30,46));
+    for(let i=0;i<n;i++){ const a=i/n*6.283; pts.push([50+Math.cos(a)*R[i], 50+Math.sin(a)*R[i]*rnd(0.78,0.95)]); }
+    let d='M'+((pts[0][0]+pts[n-1][0])/2).toFixed(1)+' '+((pts[0][1]+pts[n-1][1])/2).toFixed(1);
+    for(let i=0;i<n;i++){ const p=pts[i], q=pts[(i+1)%n]; d+=' Q'+p[0].toFixed(1)+' '+p[1].toFixed(1)+' '+((p[0]+q[0])/2).toFixed(1)+' '+((p[1]+q[1])/2).toFixed(1); }
+    let drips='';   // 往下垂的黏液 0～2 條：短、細、圓頭（不要長尖 —— 長尖讀起來像爪子）
+    for(let j=0, m=(Math.random()*3)|0; j<m; j++){ const x=rnd(30,70), w=rnd(2.2,3.6), h=rnd(5,13), y=rnd(74,82);
+      drips+=`<path d="M${(x-w).toFixed(1)} ${y.toFixed(1)} L${(x-w*0.8).toFixed(1)} ${(y+h).toFixed(1)} L${(x+w*0.8).toFixed(1)} ${(y+h).toFixed(1)} L${(x+w).toFixed(1)} ${y.toFixed(1)} Z"/>`+
+             `<circle cx="${x.toFixed(1)}" cy="${(y+h).toFixed(1)}" r="${(w*1.25).toFixed(1)}"/>`; }
+    for(let j=0, m=2+((Math.random()*3)|0); j<m; j++){ const a=rnd(0,6.283), r=rnd(48,60);   // 飛濺的小滴
+      drips+=`<ellipse cx="${(50+Math.cos(a)*r).toFixed(1)}" cy="${(52+Math.sin(a)*r*0.9).toFixed(1)}" rx="${rnd(2,4.5).toFixed(1)}" ry="${rnd(1.8,3.5).toFixed(1)}"/>`; }
+    const id='vg'+Date.now().toString(36)+k;
+    const s=document.createElement('div'); s.className='venom-slime';
+    s.innerHTML=`<svg viewBox="0 0 100 130" preserveAspectRatio="none"><defs><radialGradient id="${id}" cx="42%" cy="38%" r="65%">`+
+      `<stop offset="0" stop-color="rgb(150,226,96)" stop-opacity=".72"/><stop offset=".6" stop-color="rgb(92,172,48)" stop-opacity=".64"/>`+
+      `<stop offset="1" stop-color="rgb(52,118,26)" stop-opacity=".52"/></radialGradient></defs>`+
+      `<g fill="url(#${id})" stroke="rgba(30,80,14,.45)" stroke-width="1.2"><path d="${d} Z"/>${drips}</g>`+
+      `<ellipse cx="${rnd(34,46).toFixed(1)}" cy="${rnd(30,40).toFixed(1)}" rx="${rnd(8,14).toFixed(1)}" ry="${rnd(3,5).toFixed(1)}" fill="rgba(235,255,215,.45)" transform="rotate(${rnd(-30,-10).toFixed(0)} 40 35)"/></svg>`;
+    const sz=rnd(34,62);   // 盤寬的 34～62%
+    s.style.width=sz.toFixed(1)+'%';
+    s.style.left=rnd(-8, 100-sz*0.7).toFixed(1)+'%';
+    s.style.top=rnd(-8, 100-sz*0.9).toFixed(1)+'%';
+    s.style.setProperty('--vr', rnd(-25,25).toFixed(0)+'deg');
+    s.style.animationDelay=(k*0.09).toFixed(2)+'s';
+    grid.appendChild(s);
+  }
 }
 function enemyAttack(dmg, kind, saintAmt, _rainLanded){
   /* 卡上 `hitPlain:true`（ver -2446，樹寄生石龍；Ray：「玩家受擊…畫面震動，不用其他受擊效果」）：

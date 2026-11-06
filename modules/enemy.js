@@ -1790,28 +1790,33 @@ export function venomSpit(){
   const P=[];
   for(let i=0;i<46;i++){ const sp=rnd(0.9,1.9), ang=rnd(-0.32,0.22);   // ① 噴：一股往前（機頭方向）的毒液，略往下墜
     P.push({ x:hx, y:hy, vx:f*Math.cos(ang)*sp, vy:Math.sin(ang)*sp, g:0.0012, s:rnd(3,8), t0:i*11, life:rnd(420,640) }); }
-  /* ② 浪：前緣一排大小不一的毒團，後面拖一片會淡掉的綠 */
-  const lobes=[]; for(let y=-20;y<H+20;y+=rnd(16,30)) lobes.push({ y, r:rnd(18,42), lag:rnd(0,46) });
-  const drops=[]; for(let i=0;i<60;i++) drops.push({ y:rnd(0,H), lead:rnd(10,120), s:rnd(3,9), t:rnd(0,VENOM_SWEEP_MS*0.8) });
-  const t0=performance.now(), END=VENOM_WAVE_AT+VENOM_SWEEP_MS+520;
-  const blob=(x,y,s,col)=>{ cx.fillStyle=col; cx.beginPath(); cx.arc(x,y,s,0,6.283); cx.fill(); };
+  /* ② 毒雨（-2535，Ray：「太卡通了，參考樹寄龍的鱗雨，綠色毒雨」）：同鱗雨那一套 —— 一滴一滴陸續射進來（散在約 0.55 秒裡）、
+     有快有慢、像子彈，只是方向由左往右、形狀是拉長的黏液滴（半透明，頭亮尾淡） */
+  for(let i=0;i<95;i++){ const sp=rnd(4.2,7.5), ang=rnd(0.12,0.42);   // 往右略下
+    P.push({ rain:true, x:rnd(-W*0.45, -W*0.02), y:rnd(-H*0.15, H*0.95), vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp, rot:ang,
+      s:rnd(10,22), t0:VENOM_WAVE_AT-160+Math.pow(Math.random(),0.8)*VENOM_SWEEP_MS, life:rnd(200,330) }); }
+  const t0=performance.now();
   const draw=now=>{ if(!cv.isConnected) return;
-    const t=now-t0; cx.clearRect(0,0,W,H);
-    for(const p of P){ const u=t-p.t0; if(u<0 || u>p.life) continue;
-      const x=p.x+p.vx*u, y=p.y+p.vy*u+p.g*u*u, a=Math.min(1,u/60)*Math.min(1,(p.life-u)/160);
-      cx.globalAlpha=a; blob(x,y,p.s,'#2f7d1a'); blob(x-f*p.s*0.25,y-p.s*0.25,p.s*0.6,'#86e24a'); }
-    const w=t-VENOM_WAVE_AT;
-    if(w>=0){ const k=Math.min(1,w/VENOM_SWEEP_MS), fx=-W*0.15+k*W*1.35;   // 前緣由左外刷到右外
-      const fade=w<VENOM_SWEEP_MS ? 1 : Math.max(0,1-(w-VENOM_SWEEP_MS)/520);
-      const g=cx.createLinearGradient(fx-W*0.9,0,fx,0); g.addColorStop(0,'rgba(60,140,30,0)'); g.addColorStop(0.75,'rgba(70,160,35,.38)'); g.addColorStop(1,'rgba(95,195,50,.62)');
-      cx.globalAlpha=fade; cx.fillStyle=g; cx.fillRect(Math.max(0,fx-W*0.9),0,Math.min(W,fx)-Math.max(0,fx-W*0.9),H);
-      for(const l of lobes){ const x=fx-l.lag; blob(x,l.y,l.r,'rgba(47,125,26,.85)'); blob(x+l.r*0.15,l.y-l.r*0.2,l.r*0.55,'rgba(134,226,74,.75)'); }
-      for(const d of drops){ if(w<d.t) continue; blob(fx+d.lead*(0.6+0.4*Math.sin(d.t)),d.y,d.s,'rgba(110,210,60,.9)'); }
-    }
-    cx.globalAlpha=1;
-    if(t<END) requestAnimationFrame(draw); else cv.remove(); };
+    const t=now-t0; cx.clearRect(0,0,W,H); let alive=false;
+    for(const p of P){ const u=t-p.t0; if(u<0 || u>p.life){ if(u<0) alive=true; continue; } alive=true;
+      if(p.rain){ const x=p.x+p.vx*u, y=p.y+p.vy*u, a=Math.min(1,u/20)*Math.min(1,(p.life-u)/70);
+        cx.save(); cx.translate(x,y); cx.rotate(p.rot); cx.globalAlpha=a;
+        cx.fillStyle='rgba(120,205,70,.34)'; cx.beginPath(); cx.moveTo(-p.s*4.2,0); cx.quadraticCurveTo(-p.s*1.4,-p.s*0.34,0,-p.s*0.3); cx.lineTo(0,p.s*0.3); cx.quadraticCurveTo(-p.s*1.4,p.s*0.34,-p.s*4.2,0); cx.closePath(); cx.fill();   // 曳尾：由滴的寬度收成尖
+        cx.fillStyle='rgba(118,214,64,.72)'; cx.beginPath(); cx.ellipse(0,0,p.s*0.7,p.s*0.32,0,0,6.283); cx.fill();   // 黏液滴
+        cx.fillStyle='rgba(225,255,200,.7)'; cx.beginPath(); cx.ellipse(p.s*0.2,-p.s*0.1,p.s*0.24,p.s*0.08,0,0,6.283); cx.fill();   // 反光
+        cx.restore(); continue; }
+      const x=p.x+p.vx*u, y=p.y+p.vy*u+p.g*u*u, a=Math.min(1,u/60)*Math.min(1,(p.life-u)/160)*0.8;   // 噴：半透明的黏液滴，順著飛的方向拉長
+      cx.save(); cx.translate(x,y); cx.rotate(Math.atan2(p.vy+2*p.g*u, p.vx)); cx.globalAlpha=a;
+      cx.fillStyle='rgba(96,186,52,.75)'; cx.beginPath(); cx.ellipse(0,0,p.s*1.3,p.s*0.5,0,0,6.283); cx.fill();
+      cx.fillStyle='rgba(225,255,200,.55)'; cx.beginPath(); cx.ellipse(p.s*0.35,-p.s*0.15,p.s*0.35,p.s*0.12,0,0,6.283); cx.fill();
+      cx.restore(); }
+    if(alive) requestAnimationFrame(draw); else cv.remove(); };
   requestAnimationFrame(draw);
   try{ SFX.play(asset('se_enemy_centipi'), sfxGain('se_enemy_centipi')*0.7); }catch(_){}
+  /* 毒雨擊中：同鱗雨的一串子彈飛行音，壓低一點音高（黏液比鱗片鈍） */
+  const WH=(en||{}).rainSe || [];   // 卡上 rainSe（戰鬥的音效預載掃得到它）
+  if(WH.length) for(let i=0;i<14;i++){ const k=WH[(Math.random()*WH.length)|0], at=VENOM_WAVE_AT-100+Math.pow(Math.random(),0.9)*VENOM_SWEEP_MS;
+    setTimeout(()=>{ try{ SFX.playRate(asset(k), sfxGain(k)*0.5, 0.62+Math.random()*0.4); }catch(_){} }, at); }
   return VENOM_HIT_AT;
 }
 /* ══ 敵人的台詞語音（ver -1920，Ray：尼莫「玩家受擊用 slow1／slow2／feint 輪播、玩家戰敗播 bulletrain、戰勝播 win」）══
