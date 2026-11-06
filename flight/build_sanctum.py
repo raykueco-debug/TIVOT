@@ -165,6 +165,12 @@ land = ((owner == 'A') & (best > -WALL_W)) | (ent_d < 22) | ((dAB < 22) & (tAB <
 # 卡耶爾山谷的谷底：棕灰石地＋碎石起伏；崖邊（land 的邊）往下斷成深淵
 dune = np.sin((XX * 0.6 + YY * 0.5) * 0.4 + fbm(N, 3, 32, 0.5) * 6) * 8
 floor_land = RA['floor'] + ZOFF + (fbm(N, 5, 60, 0.5) - 0.5) * 120 + dune
+rngm = np.random.default_rng(SEED + 91)
+for _ in range(10):                                           # 土丘（-2575 Ray：「第一室要有一些自然的土丘起伏」）：大小高低不一的軟丘
+    an_, rr_ = rngm.uniform(0, 6.283), math.sqrt(rngm.uniform(0.05, 1)) * 0.8
+    mx_, my_ = RA['x'] + math.cos(an_) * rr_ * RA['a'], RA['y'] + math.sin(an_) * rr_ * RA['b']
+    if math.hypot(mx_ - (RA['x'] - 8), my_ - (RA['y'] + 6)) < 22: continue    # 骨骸那一片留平
+    floor_land = floor_land + disc(mx_, my_, rngm.uniform(7, 15), 1.0) ** 1.6 * rngm.uniform(70, 170)
 land_e = cv2.distanceTransform(land.astype(np.uint8), cv2.DIST_L2, 5)
 edge_jag = 2.5 + 2.4 * (fbm(N, 3, 24, 0.5) - 0.5)
 landk = np.clip((land_e - edge_jag) / 1.2, 0, 1)        # 崖邊一格內斷掉（參差）
@@ -201,31 +207,81 @@ geo[plat_m | pal_m] = 2                                   # 灰岩（平台的�
 ceil = np.where(pal_m, np.maximum(ceil, RZ['ceil'] + ZOFF), ceil)
 
 # 地宮的建築（飛行頁 glBuildUnderCity 畫；格式同地下古城 [x,y,寬,深,高,轉角,種類,種子,地面高]，世界單位）
-#   種類（聖王廳）：9 本殿（完整、有山牆屋頂）／1 塔（尖頂）／5 列柱／10 楣樑（橫的長石）／11 大門（發光）
+#   -2575 Ray：「地宮是古代遺跡風，不是宮殿風」⇒ 改用地下古城那一套殘破石造（種類 0～5：方屋／塔／階梯神殿／坍塌／碎石／列柱，
+#   飛行頁照舊斷牆、殘頂、綠苔，石色換成灰石）；另加 11 半掩的發光門洞、13 祈禱像（巨大的兩尊立在神殿前）。
 W20 = 20
-CITY = []; core = np.zeros((N, N), bool)
-def blk(cx, cy, w, d, h, kind, gz=PLAT_Z, solid=True, sd=None):
-    CITY.append([round(cx * W20), round(cy * W20), round(w * W20), round(d * W20), round(h), 0, kind,
-                 round(float(rng.random()) if sd is None else sd, 3), gz])
-    if solid:   # 碰撞：高度圖裡往內縮一格半的實心（3D 外殼蓋住它）
-        global core
-        core |= (np.abs(XX - cx) < w / 2 - 1.5) & (np.abs(YY - cy) < d / 2 - 1.5)
+CITY = []; coreh = np.zeros((N, N), np.float32)   # 碰撞芯：那一格的建築頂高（0＝沒有）；高度圖的地面墊到這裡（藏在 3D 外殼裡）
+rngp = np.random.default_rng(SEED + 75)
+def addcore(m, top):
+    global coreh
+    coreh = np.where(m, np.maximum(coreh, top), coreh)
+def blk(cx, cy, w, d, h, kind, gz=PLAT_Z, solid=True, sd=None, rot=0):
+    CITY.append([round(cx * W20), round(cy * W20), round(w * W20), round(d * W20), round(h), rot, kind,
+                 round(float(rngp.random()) if sd is None else sd, 3), gz])
+    if solid: addcore((np.abs(XX - cx) < w / 2 - 1.5) & (np.abs(YY - cy) < d / 2 - 1.5), gz + h)   # 往內縮一格半
 yc = RZ['y']
-blk(PAL_X1 - 20, yc, 40, 64, 720, 9)                        # 本殿：正面寬 64 格（1280）、高 720（屋脊另加）
-blk(PAL_X1 - 14, yc - 44, 16, 16, 860, 1)                   # 左右兩座塔
-blk(PAL_X1 - 14, yc + 44, 16, 16, 860, 1)
-blk(PAL_X1 - 30, yc - 22, 18, 14, 980, 1)                   # 後面兩座更高的塔（從本殿屋頂後面冒出來）
-blk(PAL_X1 - 30, yc + 22, 18, 14, 980, 1)
-for j in range(-3, 4):                                       # 門廊的列柱（正面前一排）
-    if j == 0: continue
-    cx, cy = PAL_X1 + 3, yc + j * 8.5
-    CITY.append([round(cx * W20), round(cy * W20), 48, 48, 560, 0, 5, 0.9, PLAT_Z])
-    core |= (XX - cx) ** 2 + (YY - cy) ** 2 < 1.2 ** 2
-CITY.append([round((PAL_X1 + 3) * W20), round(yc * W20), 120, round(58 * W20), 70, 0, 10, 0.5, PLAT_Z + 560])   # 楣樑
-CITY.append([round(PAL_X1 * W20) + 4, round(yc * W20), 4, 300, 460, 0, 11, 0.5, PLAT_Z])                       # 大門（貼在本殿正面）
-# 平台四角的火盆（種類 12：發光的小台座）
-for cx, cy in ((PLAT['x1'] - 4, PLAT['y0'] + 4), (PLAT['x1'] - 4, PLAT['y1'] - 4), (PLAT['x0'] + 6, PLAT['y0'] + 4), (PLAT['x0'] + 6, PLAT['y1'] - 4)):
-    CITY.append([round(cx * W20), round(cy * W20), 40, 40, 70, 0, 12, 0.5, PLAT_Z])
+TCX = PAL_X1 - 28                                            # 階梯神殿（吳哥／馬雅那種四層收頂），正面朝東
+gz_ = PLAT_Z
+for lvl, (w, h) in enumerate([(40, 170), (31, 150), (22, 140), (13, 160)]):
+    CITY.append([round(TCX * W20), round(yc * W20), w * W20, w * W20, h, 0, 2, lvl, gz_])
+    addcore((np.abs(XX - TCX) < w / 2 - 1.5) & (np.abs(YY - yc) < w / 2 - 1.5), gz_ + h)
+    gz_ += h
+blk(PAL_X1 - 10, yc - 46, 14, 14, 520, 1, sd=0.2)            # 兩座塔（層層收頂）
+blk(PAL_X1 - 10, yc + 46, 14, 14, 470, 1, sd=0.35)
+for cx, cy, w, d in ((PAL_X1 - 36, yc - 50, 18, 10), (PAL_X1 - 38, yc + 52, 14, 12), (PAL_X1 - 6, yc - 26, 6, 9), (PAL_X1 - 6, yc + 30, 7, 8)):
+    blk(cx, cy, w, d, rngp.uniform(90, 220), 3, solid=False)  # 坍塌的殘垣
+for side in (-1, 1):                                          # 平台兩側的列柱：多半斷掉
+    for cx in np.arange(PLAT['x0'] + 4, PLAT['x1'] + 1, 7.0):
+        if rngp.random() < 0.18: continue
+        ok = rngp.random() < 0.35
+        cy = (PLAT['y0'] + 3) if side < 0 else (PLAT['y1'] - 3)
+        CITY.append([round(cx * W20), round(cy * W20), 46, 46, round(rngp.uniform(380, 460) if ok else rngp.uniform(40, 200)), 0, 5, round(float(rngp.random()), 3), PLAT_Z])
+        addcore((XX - cx) ** 2 + (YY - cy) ** 2 < 1.1 ** 2, CITY[-1][8] + CITY[-1][4])
+for _ in range(26):                                           # 平台上散落的碎石塊
+    cx, cy = rngp.uniform(PLAT['x0'] + 2, PLAT['x1'] - 2), rngp.uniform(PLAT['y0'] + 2, PLAT['y1'] - 2)
+    CITY.append([round(cx * W20), round(cy * W20), round(rngp.uniform(18, 50)), round(rngp.uniform(18, 50)), round(rngp.uniform(10, 34)), round(float(rngp.uniform(0, 90)), 1), 4, round(float(rngp.random()), 3), PLAT_Z])
+# 盡頭的門（-2575 Ray：「地宮盡頭的門是哥德式的巨型拱門，門扇偏細長」）：神殿前一面殘破的石砌正面牆，嵌一道細長的尖拱
+#   ＝[正面的 x, 中心 y, 門半寬 150, 0, 0, 0, 11, 種子, 地面]；拱高約 5.7 個半寬（≈860，頂到 1720），牆頂殘破、約 6.6 個半寬
+GATE_X = TCX + 23.5                                          # 門的正面（神殿底層前面一點；門扇退在後面 55）
+CITY.append([round(GATE_X * W20), round(yc * W20), 150, 0, 0, 0, 11, 0.5, PLAT_Z])
+addcore((XX >= GATE_X - 5.6) & (XX <= GATE_X - 4.6) & (np.abs(YY - yc) < 28), PLAT_Z + 960)   # 碰撞芯退到門扇後面（不然岩板與牆面疊在一起，牆被蓋掉）
+for side in (-1, 1):                                          # 門洞兩側兩尊巨大的祈禱像（面朝平台）
+    CITY.append([round((PAL_X1 - 0.5) * W20), round((yc + side * 21) * W20), 0, 0, 560, 0, 13, 0.5, PLAT_Z])
+    addcore((XX - (PAL_X1 - 0.5)) ** 2 + (YY - (yc + side * 21)) ** 2 < 2.0 ** 2, PLAT_Z + 560)
+
+# ══ 各腔室的特點（-2575 Ray）══════════════════════════════════════════════════
+#   1 谷口窟：自然的土丘起伏（地面，見上面 floor_land）＋大型怪物的骨骸（種類 14）
+#   8 灰磚井：中央一座女神像（種類 15，站在從深淵立起的大台座上）
+#   9 拱廊：許多柱子（種類 5，從深淵一路頂到天頂）
+#   10 列柱廳：牆上兩個圓形排水口在排水（高度圖挖圓洞＋種類 17 的石環＋瀑布那一套的水柱）
+#   11 前廳（地宮前一室）：天井垂下無數金色光帶，微微發光（種類 16）
+RA_ = ROOMS['A']
+def floor_at(x, y): return float(floor_land[int(y), int(x)])
+SK = (RA_['x'] - 8, RA_['y'] + 6)
+CITY.append([round(SK[0] * W20), round(SK[1] * W20), 980, 0, 210, -24, 14, 0.4, round(floor_at(*SK))])   # 巨獸的骨骸：脊長 980、肋高 210
+for bx_, by_, ln_, rt_ in ((RA_['x'] + 30, RA_['y'] - 22, 380, 70), (RA_['x'] - 38, RA_['y'] - 18, 300, 150), (RA_['x'] + 26, RA_['y'] + 26, 260, -40)):
+    CITY.append([round(bx_ * W20), round(by_ * W20), ln_, 0, round(ln_ * 0.22), rt_, 14, round(float(rngp.random()), 3), round(floor_at(bx_, by_))])   # 小一點的骨骸
+RH_ = ROOMS['H']                                               # 女神像
+CITY.append([round(RH_['x'] * W20), round(RH_['y'] * W20), 300, 300, 640 - ABYSS, 0, 5, 0.6, ABYSS])     # 台座（從深淵立起的大石柱）
+CITY.append([round(RH_['x'] * W20), round(RH_['y'] * W20), 0, 0, 860, 160, 15, 0.5, 640])               # 女神：面朝 9 號那一側（西）
+addcore((XX - RH_['x']) ** 2 + (YY - RH_['y']) ** 2 < 6.5 ** 2, 640)
+addcore((XX - RH_["x"]) ** 2 + (YY - RH_["y"]) ** 2 < 1.5 ** 2, 640 + 860 * 0.95)
+RI_ = ROOMS['I']                                               # 柱林
+ci, si = math.cos(math.radians(RI_['rot'])), math.sin(math.radians(RI_['rot']))
+for gu in np.arange(-0.8, 0.81, 0.27):
+    for gv in np.arange(-0.75, 0.76, 0.37):
+        ju, jv = gu + rngp.uniform(-0.04, 0.04), gv + rngp.uniform(-0.05, 0.05)
+        if ju * ju + jv * jv > 0.62: continue
+        px_, py_ = RI_['x'] + ju * RI_['a'] * ci - jv * RI_['b'] * si, RI_['y'] + ju * RI_['a'] * si + jv * RI_['b'] * ci
+        top_ = (RI_['ceil'] + ZOFF + 60) if rngp.random() < 0.8 else rngp.uniform(500, 950)   # 八成頂到天頂，其餘斷在半空
+        CITY.append([round(px_ * W20), round(py_ * W20), 120, 120, round(top_ - ABYSS), 0, 5, round(float(rngp.random()), 3), ABYSS])
+        addcore((XX - px_) ** 2 + (YY - py_) ** 2 < 2.4 ** 2, top_)
+RO_ = ROOMS['O']                                               # 金色光帶（天井：光柱從上面打下來）
+holes.append((RO_['x'], RO_['y'], 9.0))
+for _ in range(170):
+    an_, rr_ = rngp.uniform(0, 6.283), math.sqrt(rngp.uniform(0, 1)) * 30
+    px_, py_ = RO_['x'] + math.cos(an_) * rr_, RO_['y'] + math.sin(an_) * rr_ * 0.85
+    CITY.append([round(px_ * W20), round(py_ * W20), round(rngp.uniform(6, 16)), 0, round(rngp.uniform(500, 1150)), round(float(rngp.uniform(0, 180)), 1), 16, round(float(rngp.random()), 3), RO_['ceil'] + ZOFF - 40])
 
 floor = np.clip(floor, ABYSS, ALT - 90)
 ceil = np.maximum(ceil, ALT + 90)
@@ -239,7 +295,7 @@ floor = SOLID * (1 - t) + floor * t
 ceil = SOLID * (1 - t) + ceil * t
 solid = ~openm
 floor[solid] = SOLID; ceil[solid] = SOLID
-floor[core] = SOLID; ceil[core] = SOLID                      # 地宮建築的碰撞芯
+# 建築的碰撞芯只在加密之後墊（下面 coreh2）：在 768 這一層墊的話，三次內插會把它往外抹一兩格，岩板跑到 3D 外殼外面（盡頭的門被蓋掉）
 
 # ── 光：裂縫的天光（光柱）＋溢光（天光反光、終點的火光）──────────────────────────
 shaft = cv2.GaussianBlur(holemask.astype(np.float32), (0, 0), 3.0); shaft /= (shaft.max() + 1e-6)
@@ -287,7 +343,7 @@ rough = rough * np.clip((up(floor) - 700) / 400, 0, 1)          # 深淵那一�
 flat2 = upn(plat_m | pal_m).astype(bool)
 floor2 = up(floor) + bandw * rough
 ceil2 = up(ceil) - bandw * rough
-solid2 = upn(solid | core).astype(bool)
+solid2 = upn(solid).astype(bool)
 floor2[solid2] = SOLID; ceil2[solid2] = SOLID
 floor2[flat2 & ~solid2] = PLAT_Z
 open2 = ~solid2
@@ -295,6 +351,8 @@ floor2[open2] = np.minimum(floor2[open2], np.maximum(up(floor)[open2], ALT - 90)
 ceil2[open2] = np.maximum(ceil2[open2], np.minimum(up(ceil)[open2], ALT + 90))
 abyss2 = upn(geo == 14).astype(bool) & open2 & (up(floor) < ABYSS + 40)
 floor2[abyss2] = ABYSS
+coreh2 = cv2.resize(coreh, (N2, N2), interpolation=cv2.INTER_NEAREST)
+cm2 = coreh2 > 0; floor2[cm2] = np.maximum(floor2[cm2], coreh2[cm2])   # 碰撞芯（加密後再墊一次：上面幾行會把地面壓回去）
 shaft2 = np.clip(up(shaft, cv2.INTER_LINEAR), 0, 1); spill2 = np.clip(up(spill, cv2.INTER_LINEAR), 0, 1)
 geo2 = upn(geo)
 geo2[(geo2 == 14) & (floor2 > ABYSS + 40)] = 3               # 加密後牆腳被內插墊高的那幾格也不准是深淵（不然牆腳一排黑齒）
@@ -302,6 +360,75 @@ col2 = np.clip(up(col), 0, 255)
 shade = 1 + bandw[..., None] * (fine[..., None] * 0.30 * (1 - smooth2[..., None]))
 col2 = np.clip(col2 * shade, 0, 255).astype(np.uint8)
 sty2 = np.clip(up(sty, cv2.INTER_LINEAR), 0, 1)
+
+# ── 壁龕：真的挖進牆裡（-2575 Ray：「窗要真的挖進去，雕像要真的存在」）────────────────
+#   高度圖是「每一格一個地面＋一個天頂」⇒ 挖一個洞：洞口那幾格地面壓到 NZ0、天頂壓到 NZ1（中間高起成尖拱）——
+#   上面是岩石（楣）、下面是岩石（台）、兩側是牆。一排，在航高附近（船看得到的那一段）。
+#   s≥0.60 才有（前半是素牆）；s≥0.84 每一個壁龕裡站一尊祈禱像（3D，飛行頁 glBuildUnderCity 的種類 13）。
+NZ0, NZ1, NARCH = 930, 1190, 100
+NHW, ND, NFRONT, NSTEP = 4.6, 8.0, 4.0, 17.0             # 半寬／往岩裡挖多深／往外吃幾格／間距（1536 格，一格 10 世界單位）
+fsm = cv2.GaussianBlur(floor2.astype(np.float32), (0, 0), 2.0)
+gy2, gx2 = np.gradient(fsm)
+platpal2 = upn(plat_m | pal_m).astype(bool)
+face = open2 & (floor2 > 1000) & (floor2 < 1110) & (sty2 >= 0.60) & ~platpal2
+# 10 號的兩個圓形排水口（-2575 Ray：「有兩圓形排水口，排水」）：南牆、航高附近，圓洞往岩裡挖、水柱從洞口落進深淵
+RJ_ = ROOMS['J']; FALLS = []; DR_ZC, DR_R = 1150, 6.5
+own2 = upn((owner == 'J') | (dist < 14) & (owner == 'J'))
+dface = open2 & (floor2 > DR_ZC - 40) & (floor2 < DR_ZC + 40) & own2.astype(bool)
+dys, dxs = np.nonzero(dface)
+drains = []
+for want in (math.radians(70), math.radians(108)):
+    best_, bd_ = None, 1e9
+    for y_, x_ in zip(dys, dxs):
+        an_ = math.atan2(y_ - RJ_['y'] * 2, x_ - RJ_['x'] * 2)
+        dd_ = abs((an_ - want + math.pi) % (2 * math.pi) - math.pi)
+        if dd_ < bd_: bd_, best_ = dd_, (x_, y_)
+    drains.append(best_)
+for x_, y_ in drains:
+    gl = math.hypot(gx2[y_, x_], gy2[y_, x_]) or 1; nx_, ny_ = gx2[y_, x_] / gl, gy2[y_, x_] / gl; sl_x, sl_y = -ny_, nx_
+    R_ = 16; y0, y1, x0, x1 = y_ - R_, y_ + R_ + 1, x_ - R_, x_ + R_ + 1
+    YYl, XXl = np.mgrid[y0:y1, x0:x1].astype(np.float32)
+    dpt = (XXl - x_) * nx_ + (YYl - y_) * ny_; lat = (XXl - x_) * sl_x + (YYl - y_) * sl_y
+    hh_ = np.sqrt(np.clip(DR_R ** 2 - lat ** 2, 0, None)) * 10                 # 圓的半高（世界單位）
+    m = (np.abs(lat) < DR_R) & (dpt >= -4) & (dpt <= 9) & (floor2[y0:y1, x0:x1] > DR_ZC - hh_)
+    fl_ = floor2[y0:y1, x0:x1]; ce_ = ceil2[y0:y1, x0:x1]
+    fl_[m] = (DR_ZC - hh_)[m]; ce_[m] = np.minimum(ce_[m], (DR_ZC + hh_)[m])
+    cc_ = col2[y0:y1, x0:x1]; cc_[m] = (cc_[m] * 0.35).astype(np.uint8)
+    geo2[y0:y1, x0:x1][m] = 3
+    CITY.append([round(x_ * 10), round(y_ * 10), round(DR_R * 10), 0, DR_ZC, round(math.degrees(math.atan2(-ny_, -nx_)), 1), 17, 0.5, 0])   # 洞口的石環
+    FALLS.append([round((x_ - nx_ * 3.5) * 10), round((y_ - ny_ * 3.5) * 10), 46.0, ABYSS, DR_ZC - 60 - 30])   # 水柱：[x,y,半徑,底,頂−30]（同 CAVE_FALLS 的格式）
+fys, fxs = np.nonzero(face)
+picked = []; bucket = {}
+for x_, y_ in drains: bucket.setdefault((int(x_ // NSTEP), int(y_ // NSTEP)), []).append((x_, y_))   # 壁龕避開排水口
+NICHES = 0
+for y_, x_ in zip(fys, fxs):
+    if x_ < 20 or y_ < 20 or x_ > N2 - 20 or y_ > N2 - 20: continue
+    bx, by = int(x_ // NSTEP), int(y_ // NSTEP)
+    if any(math.hypot(x_ - px, y_ - py) < NSTEP for dx in (-1, 0, 1) for dy in (-1, 0, 1) for px, py in bucket.get((bx + dx, by + dy), [])): continue
+    gl = math.hypot(gx2[y_, x_], gy2[y_, x_])
+    if gl < 20: continue
+    nx_, ny_ = gx2[y_, x_] / gl, gy2[y_, x_] / gl            # 往岩石裡（地面往上翻的方向）
+    bk_x, bk_y = int(round(x_ + nx_ * (ND + 4))), int(round(y_ + ny_ * (ND + 4)))
+    if not solid2[bk_y, bk_x]: continue                       # 牆不夠厚（挖穿到別的空間）就不挖
+    sl_x, sl_y = -ny_, nx_
+    if any(not solid2[int(round(y_ + ny_ * (ND + 2) + sl_y * s_ * (NHW + 2))), int(round(x_ + nx_ * (ND + 2) + sl_x * s_ * (NHW + 2)))] for s_ in (-1, 1)): continue
+    bucket.setdefault((bx, by), []).append((x_, y_))
+    R_ = int(ND + NHW + NFRONT + 3)
+    y0, y1, x0, x1 = y_ - R_, y_ + R_ + 1, x_ - R_, x_ + R_ + 1
+    YYl, XXl = np.mgrid[y0:y1, x0:x1].astype(np.float32)
+    dpt = (XXl - x_) * nx_ + (YYl - y_) * ny_
+    lat = (XXl - x_) * sl_x + (YYl - y_) * sl_y
+    m = (np.abs(lat) <= NHW) & (dpt >= -NFRONT) & (dpt <= ND) & (floor2[y0:y1, x0:x1] > NZ0)
+    arch = NZ1 + NARCH * np.clip(1 - np.abs(lat) / NHW, 0, 1) ** 0.8          # 尖拱：中間最高
+    fl_ = floor2[y0:y1, x0:x1]; ce_ = ceil2[y0:y1, x0:x1]
+    fl_[m] = NZ0; ce_[m] = np.minimum(ce_[m], arch[m])
+    cc_ = col2[y0:y1, x0:x1]; cc_[m] = (cc_[m] * 0.62).astype(np.uint8)        # 洞裡暗一階
+    geo2[y0:y1, x0:x1][m] = 3
+    NICHES += 1
+    if sty2[y_, x_] >= 0.84:                                  # 祈禱像：站在壁龕深處、面朝外
+        sx_, sy_ = x_ + nx_ * (ND - 3.6), y_ + ny_ * (ND - 3.6)
+        CITY.append([round(sx_ * 10), round(sy_ * 10), 0, 0, 230, round(math.degrees(math.atan2(-ny_, -nx_)), 1), 13, round(float(rngp.random()), 3), NZ0])
+print('壁龕', NICHES, '個；祈禱像', sum(1 for c_ in CITY if c_[6] == 13), '尊')
 
 os.makedirs(OUT, exist_ok=True)
 R_ = np.clip(np.round(floor2 / FLOOR_SCALE), 0, 255)
@@ -324,6 +451,7 @@ data = {
     'rooms': [[R['name'], R['x'], R['y'], R['a'], R['b'], R['rot'], 1 if R.get('end') else 0, R['no']] for k, R in ROOMS.items()],
     'city': CITY,
     'plat': [PLAT['x0'] * 20, PLAT['y0'] * 20, PLAT['x1'] * 20, PLAT['y1'] * 20, PLAT_Z],
+    'falls': FALLS,                                          # 10 號排水口的水柱（飛行頁併進 CAVE_FALLS：同一套 3D 水柱與瀑布聲）
 }
 js = 'window.SANCTUM_DATA=' + json.dumps(data, ensure_ascii=False, separators=(',', ':')) + ';\n'
 open(os.path.join(OUT, 'world.js'), 'w', encoding='utf-8').write(js)
@@ -336,7 +464,11 @@ print('sanctum:', N2, 'px,', len(CITY), 'pieces,', len(holes), 'holes,', paths, 
 # 航道自檢：船能走的格子是否連成一塊
 nav = (floor2 < ALT - 60) & (ceil2 > ALT + 60) & open2
 nlab, lab = cv2.connectedComponents(nav.astype(np.uint8))
-ids = {k: int(lab[int(R['y'] * SUPER), int(R['x'] * SUPER)]) for k, R in ROOMS.items()}
+own2_ = cv2.resize(np.vectorize(lambda s_: ord(s_) if s_ else 0)(owner).astype(np.uint8), (N2, N2), interpolation=cv2.INTER_NEAREST)
+def room_lab(k):   # 那一間的航道格裡最多的那一塊（中心可能被柱子／台座佔掉）
+    v_ = lab[(own2_ == ord(k)) & nav]; v_ = v_[v_ > 0]
+    return int(np.bincount(v_).argmax()) if v_.size else 0
+ids = {k: room_lab(k) for k in ROOMS}
 ids['start'] = int(lab[int(SY * SUPER), int(SX * SUPER)])
 print('航道連通（同一個數字＝連得通）:', ids)
 # 腔室有沒有黏在一起（沒有通道卻連通）：每一間只准跟 LINKS 裡的鄰居接觸
@@ -352,7 +484,7 @@ ov = np.zeros((N, N, 3), np.uint8)
 ov[openm] = (col[openm] * 0.7).astype(np.uint8)
 ov[(geo == 14) & openm] = (30, 30, 40)
 ov[openm & (geo == 14)] = (np.array([60, 60, 70]) * 0.5 + col[openm & (geo == 14)] * 0.35).astype(np.uint8)
-ov[core] = (230, 200, 120)
+ov[coreh > 0] = (230, 200, 120)
 im = Image.fromarray(ov)
 from PIL import ImageDraw
 dr = ImageDraw.Draw(im)
