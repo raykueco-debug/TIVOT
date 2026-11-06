@@ -1545,7 +1545,7 @@ function motionTargets(){ return flock ? [flock.el] : [$('enemyImg'), idleEl, cl
    這裡只管畫面：砲響＋煙、鉤子飛出去勾住、繩子每一幀從船身（跟著漂移）連到鉤子、船飛走。
    何時射、何時登艦、換卡由 combat 決定（maybeGrapple／boardShip）。
    卡上 `grapple.hookImg` 有寫就用圖（美術交件 491ab6e0），沒寫用程式畫的暫代。-2556 起不演船員滑索（Ray「人滑過來就不用了」）。 */
-const GRAPPLE_FLY_MS=420;
+const GRAPPLE_FLY_MS=0;   // -2569 Ray「鉤爪射出直接出現帶煙霧，不要飛行」：0＝射出那一刻就扣在盤緣
 function screenShakeLite(){ const app=$('app'); if(!app) return; app.classList.remove('hitshake'); void app.offsetWidth; app.classList.add('hitshake'); setTimeout(()=>app.classList.remove('hitshake'), 280); }   // 砲響那一下震一下（同受擊的 #app.hitshake）
 /* 鉤子圖的對位（美術交件單 491ab6e0）：螢幕寬 HOOK_W；盤面上緣對在圖高 HOOK_LINE；繫繩環在圖的 HOOK_RING（寬、高比例） */
 const HOOK_W=60, HOOK_LINE=0.607, HOOK_RING=[0.5, 20/265];
@@ -1571,8 +1571,9 @@ export function fireGrapple(g){
   const hookRing=(x,y)=>{ if(hookImg && hookImg.naturalWidth){ const h=HOOK_W*hookImg.naturalHeight/hookImg.naturalWidth; return { x:x-HOOK_W/2+HOOK_W*HOOK_RING[0], y:y-h*HOOK_LINE+h*HOOK_RING[1] }; } return { x, y:y-10 }; };
   const a0=shipAnchor(g)||{x:W*0.5,y:H*0.2,k:0.25}, rnd=(p,q)=>p+Math.random()*(q-p);
   /* 射出那一下：砲口火光＋煙往船尾拖走（-2556 Ray「登船索射出時要有砲響跟煙」；畫法同側舷齊射） */
+  const hp=[]; for(let j=0;j<8;j++) hp.push({ t:j*18, vx:rnd(-0.35,0.35)*W/390, vy:rnd(-0.32,-0.06)*W/390, r0:rnd(5,9)*a0.k*3, life:rnd(600,950), g:rnd(170,215)|0 });   // 鉤子落點的煙（-2569）
   const puffs=[]; for(let j=0;j<9;j++) puffs.push({ dx:0, dy:0, t:20+j*22, vx:rnd(0.35,0.9)*W/390*(fwdOf(curCard())<0?1:-1), vy:rnd(-0.08,0.03)*W/390, r0:rnd(6,11)*a0.k*3, life:rnd(800,1300), g:rnd(150,205)|0 });
-  const G={ cv, raf:0, hook, t0:performance.now(), sec:(g && g.sec)||10, from:a0, gone:null, hookImg, g, puffs, fire:{ x:a0.x, y:a0.y, k:a0.k } }; grapple=G;
+  const G={ cv, raf:0, hook, t0:performance.now(), sec:(g && g.sec)||10, from:a0, gone:null, hookImg, g, puffs, hookPuffs:hp, fire:{ x:a0.x, y:a0.y, k:a0.k } }; grapple=G;
   /* 登艦時落下的人影動畫（卡上 `shadowAnims`，-2565 美術交件：黑色剪影、衣服頭髮往上飄，4 格 12fps loop）：
      射勾索這一刻就隨機挑一支先載好（登艦在 sec 秒後，來得及）；沒載好就退回靜態的 shadowImg。 */
   if(g && g.shadowAnims && g.shadowAnims.length){
@@ -1591,13 +1592,17 @@ export function fireGrapple(g){
     cx.restore(); };
   const draw=now=>{ if(grapple!==G) return;
     cx.clearRect(0,0,W,H);
-    const t=now-G.t0, k=Math.min(1,t/GRAPPLE_FLY_MS);
+    const t=now-G.t0, k=GRAPPLE_FLY_MS>0 ? Math.min(1,t/GRAPPLE_FLY_MS) : 1;
     let a=shipAnchor(G.g)||G.from;   // 繩頭釘在船身上（船飛走時跟著一起上去）
     const hx=a.x+(hook.x-a.x)*k, hy=a.y+(hook.y-a.y)*k - Math.sin(k*3.1416)*40;   // 鉤子飛出去：一道弧線
     const rg=hookRing(hx,hy), rx=rg.x, ry=rg.y;   // 繩子接在鉤子頂端的環
     for(const p of G.puffs){ const u=t-p.t; if(u<0 || u>p.life) continue; const q=u/p.life;   // 煙：從砲口往船尾拖走、越飄越大越淡
       const x=G.fire.x+p.vx*u, y=G.fire.y+p.vy*u-q*8, rr=p.r0*(1+q*3.2);
       const gr=cx.createRadialGradient(x,y,0,x,y,rr); gr.addColorStop(0,`rgba(${p.g},${p.g},${p.g-8},${(0.6*(1-q)).toFixed(3)})`); gr.addColorStop(1,`rgba(${p.g},${p.g},${p.g-8},0)`);
+      cx.fillStyle=gr; cx.beginPath(); cx.arc(x,y,rr,0,6.283); cx.fill(); }
+    for(const p of G.hookPuffs){ const u=t-p.t; if(u<0 || u>p.life) continue; const q=u/p.life;   // 鉤子扣上那一下，盤緣冒一團煙往上散
+      const x=G.hook.x+p.vx*u, y=G.hook.y+p.vy*u, rr=p.r0*(1+q*2.6);
+      const gr=cx.createRadialGradient(x,y,0,x,y,rr); gr.addColorStop(0,`rgba(${p.g},${p.g},${p.g-6},${(0.65*(1-q)).toFixed(3)})`); gr.addColorStop(1,`rgba(${p.g},${p.g},${p.g-6},0)`);
       cx.fillStyle=gr; cx.beginPath(); cx.arc(x,y,rr,0,6.283); cx.fill(); }
     if(t<200){ const q=t/200, rr=(20+46*q)*G.fire.k*3*(1-q*0.3);   // 砲口火光
       cx.globalCompositeOperation='lighter';
