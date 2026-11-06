@@ -5700,3 +5700,5 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
 /* 暗角與受擊紅框原本是 z:auto（靠 DOM 順序蓋在立繪上）；空戰時立繪升到 z:2，它們要跟著往上（ver -2444） */
 #top.sky-on #topVignette{z-index:5;} #top.sky-on #redFlash{z-index:6;}
 #top .sky-scales{position:absolute;inset:0;z-index:7;pointer-events:none;}
+  /* 空賊船的勾索（ver -2545）：繩子與鉤子那一層（enemy.fireGrapple，換場／結束時拿掉） */
+  .grapple-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:39;}

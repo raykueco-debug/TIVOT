@@ -2472,6 +2472,10 @@ export const ENEMIES = {
         ports:[[502,802],[575,802],[648,802],[722,802],[795,802],[868,802],[942,802],[1015,802],[1088,802]] },
       deathFx:'skyfall',          // 擊敗＝斜下沉沒（同樹寄生石龍；ver -2490）
       damageSmoke:{ hp:0.5, rate:18, canvas:[1536,1024], pts:[[640,640],[820,600],[960,640],[1150,720],[1220,730]] },   // 半血起冒黑煙（ver -2490，煙源＝甲板與船尾引擎，目測）
+      /* 勾索 → 登艦戰（ver -2545，Ray：「hp 50 以下會射出勾鎖，勾在數字盤上方…勾鎖射出後沒戰勝就進登艦戰」）：
+         hp＝觸發門檻（%）、sec＝幾秒內沒擊沉就登艦、to＝登艦戰換上的那張卡（背景寫在那張卡上）。
+         hookImg／slideImg＝鉤子與滑索的圖（美術在畫；沒寫＝程式畫的暫代）。 */
+      grapple:{ hp:50, sec:10, to:'sky_pirate_crew' },
       image:'enemy_pirate_side',   // 側面飛行圖（ver -2471）；舊的三時段整張圖含背景，側面版只有怪 ⇒ 補 bg（分層天空）
       bg:'sky_towers', fit:{ mode:'contain', pos:'center center' },
       hp:340,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -2496,6 +2500,38 @@ export const ENEMIES = {
          判定在 combat.applyEnemyMods，同羽蛇卡）。 */
       loot:[ { id:'brass_casing', n:1, p:0.33 } ],
       /* 金錢：HP 的 70%~90%。 */
+    },
+    /* ══ 空賊船員：登艦戰（ver -2545，空賊船 grapple.to）══════════════════════
+       ⚠ **暫代卡**：立繪先借賞金獵人 EP 那張（空賊船員的立繪美術在畫）；hp／attack 暫定（Ray 沒給）。
+       背景＝我方船的甲板（resources/background/deck/deck_rapidsail）。打贏＝這一局結束（等於把空賊打退）。 */
+    sky_pirate_crew: {
+      name:'空賊',
+      story:0, counterStagger:1, boss:0,
+      Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
+      openAssault:[1,2],
+      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      kind:'human',                      // 結算副標「已擊敗」
+      riseFx:0,
+      hitSe:null,
+      tier:'E',
+      atype:null,
+      stageScale:1,
+      image:'enemy_bounty_ep',           // ⚠ 暫代（空賊船員立繪交件後換）
+      bg:'deck/deck_rapidsail',
+      fit:{ mode:'contain', pos:'center bottom' },
+      hp:170,                            // 暫定：空賊船剩下的那一半上下
+      attack:12,                         // 暫定
+      atkInterval:null,
+      assaultEvery:[2,4],
+      assault:{ count:1, gap:0 },
+      entrance:null,
+      special:[],
+      boardGrids:[9,9,9,16,16],
+      delayPenalty:{ seconds:5, damage:5 },
+      wrongPenalty:{ damage:5 },
+      hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
+      loot:[ { id:'brass_casing', n:2, p:0.5 } ],
     },
     /* ══ 夏爾森林的野生怪（ver -862，Ray 交卡的 F 表）══════════════════════
        刷怪規則在 script/town.js 的 `shinier_forest.wildSpawn`（出怪率 25%/地點、

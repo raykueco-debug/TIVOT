@@ -2107,7 +2107,8 @@ town.setFlightOpener(from=>sailOut(from));   // 城鎮出航＝「進入」，�
    —— 走**同一支** `enterTown`（鐵律 8）：放掉上一張圖的音訊、只載目標那一張的。 */
 town.setMapEnter((map, node)=> enterTown(map, node));
 combat.setStoryClose(story.playKerberosClose);
-combat.setStoryShut(story.playKerberosShut);   // 城鎮戰：原地閉棺 → 變回控制板（ver -587）
+combat.setStoryShut(story.playKerberosShut);
+combat.setStoryReseat(story.playKerberosReseat);   // 戰鬥中途原地閉棺再開棺（ver -2545，空賊船登艦戰）   // 城鎮戰：原地閉棺 → 變回控制板（ver -587）
 /* 門開期間戰鬥不計時（ver -466）：story 的開門演出押住／放行戰鬥。
    ⚠ 放行要讓位給教學對話：門還在開時教學的第一句可能已經插進來
    （startDelayMs 的計時器）—— 那個暫停歸教學層擁有，由它自己的關閉流程放行

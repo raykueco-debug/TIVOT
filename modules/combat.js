@@ -2505,6 +2505,7 @@ function updateBars(){
   $('playerHp').style.width=(ph/state.playerMax*100)+'%';
   $('playerHpNum').textContent=Math.round(ph)+' / '+state.playerMax;
   updateEnergyClasp();
+  maybeGrapple();             // 空賊船的勾索（ver -2545）：敵血掉到門檻 → 射勾索；時限內擊沉 → 收掉
   partner.checkLowHpBuff();   // 所有 HP 變動的唯一匯流點 → 高裝藥彈門檻判定（partner 內自帶各情境守門）
 }
 function updateStatus(){ /* 狀態列已移出畫面（下半為純數字盤），保留為相容呼叫 */ }
@@ -2539,6 +2540,7 @@ function stopAll(){
   enemy.stopSakura();    // 鹿主的櫻花狂亂（ver -899）：它是全螢幕的層＋一支還在響的音
   enemy.stopHolyBurst(); // 王座徘徊者的放光（ver -1351）：同上
   enemy.stopSkyBattle(); // 空戰的視差背景（ver -2444）：一個 rAF＋四層 DOM
+  clearTimeout(grappleT); grappleT=0; enemy.clearGrapple();   // 勾索（ver -2545）：任何結束路徑都收
   enemy.stopEntranceSe(); // 登場音（龍吟／詠唱）在結束時淡出（ver -1881）
   stopLastStand();       // 米夏的 NI 回血計時（ver -1964）
   brShotN=0; brVoiceOk=false;   // BR 受創語音計數（ver -1969）：戰鬥中途收場也歸零
@@ -2801,6 +2803,35 @@ function finishEnemyOrAdvance(){
    ⚠ 換圖就是要發生在**光最亮、蓋住整個畫面**的那一刻（Ray：「先用光圈特效全蓋，
      光圈散去以後進入第四型態」）—— 等光真的散完才換，玩家會先看到舊型態還站著。 */
 const HOLY_SWAP_MS = 2500;   // ver -1449：與 enemy.js 的 HOLY_GROW_MS 同一個數字（＝首頁那一顆的 2.5s）
+/* ══ 空賊船的勾索 → 登艦戰（卡上 `grapple:{hp,sec,to}`，ver -2545，Ray：「空賊船 hp 50 以下會射出勾鎖…
+   勾鎖射出後沒戰勝就進登艦戰」）══ 一局一次：血掉到 hp% 以下 → 射勾索；sec 秒內沒擊沉 → 船飛走、船員滑下、
+   原地閉棺換成 `to` 那張卡（背景寫在那張卡上）再開棺。擊沉了就跟著船一起收（clearGrapple）。
+   判定掛在 updateBars（所有血量變動的匯流點，同 checkLowHpBuff）。 */
+let grappleFired=false, grappleT=0;
+function resetGrapple(){ grappleFired=false; clearTimeout(grappleT); grappleT=0; enemy.clearGrapple(); }
+function maybeGrapple(){
+  const card=(GAME_CONFIG.enemies||{})[state.currentEnemyKey], g=card && card.grapple;
+  if(grappleFired && grappleT && state.enemyHp<=0){ clearTimeout(grappleT); grappleT=0; enemy.clearGrapple(); return; }   // 時限內擊沉
+  if(!g || grappleFired || state.over || morphSwapping || state.enemyHp<=0) return;
+  if(state.enemyHp > state.enemyMax*((+g.hp||50)/100)) return;
+  grappleFired=true;
+  enemy.fireGrapple(g);
+  const key=state.currentEnemyKey;
+  grappleT=setTimeout(()=>{ grappleT=0; boardShip(g, key); }, (g.sec||10)*1000 + enemy.grappleFlyMs());
+}
+function boardShip(g, key){
+  if(state.over || state.enemyHp<=0 || state.currentEnemyKey!==key || !(GAME_CONFIG.enemies||{})[g.to]){ enemy.clearGrapple(); return; }
+  morphSwapping=true; state.transitioning=true;      // 演出期間鎖點擊、不吃傷害（同換型態）
+  stopIntervalTimer();
+  defense.resetEnemyTimers();                        // 收掉船的紅點與排程
+  clearVenom();
+  enemy.boardingRun(g, ()=>{
+    if(state.over) return;
+    const swap=()=>{ enemy.clearGrapple(); enemy.setEnemy(g.to); state.killTime=0; updateBars(); };
+    const go=()=>{ if(state.over) return; morphSwapping=false; state.transitioning=false; loadBoard(0); updateBars(); };
+    if(storyReseat) storyReseat(swap, go); else { swap(); go(); }
+  });
+}
 let morphed=false;
 /* ⚠⚠⚠ **「正在換型態」與「換過了」是兩件事**（ver -1486）：
    `morphed` ＝這一場換過了（一場只換一次）；`morphSwapping` ＝**換卡的那 2.5 秒空窗**
@@ -2920,6 +2951,9 @@ export function setStoryClose(fn){ storyClose = fn; }
    門在控制盤高度闔上、變回控制板（ver -587）。combat 一樣不 import story。 */
 let storyShut = null;
 export function setStoryShut(fn){ storyShut = fn; }
+/* 戰鬥中途原地閉棺再開棺（`story.playKerberosReseat`，ver -2545 空賊船登艦戰）—— 同上由 main.js 注入。 */
+let storyReseat = null;
+export function setStoryReseat(fn){ storyReseat = fn; }
 /* ⚠⚠ 「殺光所有頁面」（ver -494，Ray：「返回首頁就要 kill 所有的 page 再回去」）。
    由 main.js 注入（combat 不認識飛行 iframe／城鎮／劇情層，§2 依賴方向）——
    goHome 在黑幕全蓋的那一刻呼叫它，把還活著的每一層（飛行 iframe、城鎮、
@@ -3509,6 +3543,7 @@ export function startGame(){
   state.boardTimes=[]; state.boardsCompleted=0; state.charmStreak=0; state.charmRevenge=false; state.enemyNextAtkMul=1;
   state.flawlessRun=true; state.intruderTriggered=false; state.inIntruderFight=false;
   morphed=false; morphSwapping=false;   // 型態切換一場只做一次（ver -1418）；-1486 加上「換卡中」
+  resetGrapple();                        // 勾索一局一次（ver -2545）
   state.overkillClean=false;   // 這一場的 ovk 是否完全清空殘額（ver -1389，追逐讀它）
   state.deathGuardUsed=false; state.sRankUnlocked=false; state.resultMode='rematch';
   TEL.runStart({ partner:state.pickedPartner, weapon:state.equippedWeapon, boss:false });
@@ -3809,6 +3844,7 @@ export function startIntruderFight(){
   state.boardTimes=[]; state.boardsCompleted=0; state.charmStreak=0; state.charmRevenge=false; state.enemyNextAtkMul=1;
   state.flawlessRun=true; state.deathGuardUsed=false;
   morphed=false; morphSwapping=false;   // 型態切換一場只做一次（ver -1418）；-1486 加上「換卡中」
+  resetGrapple();                        // 勾索一局一次（ver -2545）
   state.sRankUnlocked=false; state.resultMode='rematch';
   enemy.setEnemy(GAME_CONFIG.intruder.enemy);   // 載槍之魔女（含 Boss 大絕/懲罰/彈痕 config）
   TEL.runStart({ partner:state.pickedPartner, weapon:state.equippedWeapon, boss:true });

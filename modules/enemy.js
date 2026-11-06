@@ -1490,7 +1490,7 @@ function startFlock(en){
   const ms=[];
   for(let i=n-1;i>=0;i--){   // 後排先放（疊在下面）
     const im=document.createElement('img'); im.alt=''; im.className='af-m'; im.style.cssText='position:absolute;transform-origin:50% 50%;';
-    el.appendChild(im); ms.push({ im, slot:FLOCK_SLOTS[i], ph:Math.random()*6.283, down:false, front:i, off:0 });
+    el.appendChild(im); ms.push({ im, slot:FLOCK_SLOTS[i], ph:Math.random()*6.283, dph:Math.random()*100, down:false, front:i, off:0 });
   }
   ms.sort((a,b)=>b.front-a.front);   // ms：後→前（同群戰的 order）
   ms.forEach((m,j)=>{ m.off = j ? Math.round(j*7 + Math.random()*5) : 0; });   // 振翅錯開（Ray：「空中群戰時振翅頻率要錯開」）：每隻差幾格
@@ -1507,8 +1507,10 @@ function startFlock(en){
       if(src===idleEl){ im.style.left=src.style.left; im.style.top=src.style.top; im.style.width=src.style.width; im.style.height=src.style.height; im.style.objectFit=''; }
       else { im.style.left='0'; im.style.top='0'; im.style.width='100%'; im.style.height='100%'; im.style.objectFit=cs.objectFit; im.style.objectPosition=cs.objectPosition; }
       if(m.down) continue;
-      const s=m.slot[2], bob=Math.sin(t*1.7+m.ph)*H*0.012;
-      im.style.translate=(m.slot[0]*W).toFixed(1)+'px '+(m.slot[1]*H+bob).toFixed(1)+'px';
+      /* 每一隻各自的接舷漂移（-2545）：同一條 driftAt、各自的相位（m.dph），振幅同一個淡入 */
+      const dd=driftAt(t+m.dph, driftEnv(performance.now()));
+      const s=m.slot[2]*dd.k, bob=Math.sin(t*1.7+m.ph)*H*0.012;
+      im.style.translate=(m.slot[0]*W+dd.x*W).toFixed(1)+'px '+(m.slot[1]*H+bob+dd.y*H).toFixed(1)+'px';
       im.style.scale=(sf*s).toFixed(3)+' '+s.toFixed(3);
     } };
   sync(); flock.t=setInterval(sync, 40);
@@ -1537,23 +1539,102 @@ function syncFlock(){
 }
 /* 入場／漂移／攻擊要動的那一個（有編隊＝整個編隊容器）。 */
 function motionTargets(){ return flock ? [flock.el] : [$('enemyImg'), idleEl, clipEl]; }
+/* ══ 空賊船的勾索（卡上 `grapple:{hp,sec,to}`，ver -2545，Ray：「空賊船 hp 50 以下會射出勾鎖，勾在數字盤上方，
+   中間有程式畫的繩索連結；勾索射出後沒戰勝就進登艦戰：敵船往上飛出畫面外、敵人從鉤索滑下、閉棺再開棺、背景是甲板」）══
+   這裡只管畫面：鉤子飛出去勾住、繩子每一幀從船（跟著漂移）連到鉤子、倒數字、船飛走、船員滑下。
+   何時射、何時登艦、換卡由 combat 決定（maybeGrapple／boardShip）。
+   ⚠ 鉤子與滑索的圖美術還在畫 —— 卡上 `grapple.hookImg`／`grapple.slideImg` 有寫就用圖，沒寫用程式畫的暫代。 */
+const GRAPPLE_FLY_MS=420;
+let grapple=null;   // { cv, raf, hook:{x,y}, t0, sec, gone, slide:[] }
+function shipAnchor(){   // 繩子在船上的那一端：船頭下緣（跟著漂移／飛走）
+  const app=$('app'), el=(idleEl && idleEl.isConnected) ? idleEl : $('enemyImg'); if(!app || !el) return null;
+  const ar=app.getBoundingClientRect(), r=el.getBoundingClientRect(), f=fwdOf(curCard());
+  return { x:(f<0 ? r.left+r.width*0.3 : r.right-r.width*0.3)-ar.left, y:r.top+r.height*0.66-ar.top };
+}
+export function fireGrapple(g){
+  clearGrapple();
+  const app=$('app'), gw=$('gridWrap')||$('grid'); if(!app || !gw) return;
+  const ar=app.getBoundingClientRect(), gr=gw.getBoundingClientRect();
+  const W=ar.width, H=ar.height, dpr=Math.min(2, window.devicePixelRatio||1);
+  const cv=document.createElement('canvas'); cv.className='grapple-fx'; cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); app.appendChild(cv);
+  const cx=cv.getContext('2d'); cx.setTransform(dpr,0,0,dpr,0,0);
+  const hook={ x:gr.left-ar.left+gr.width*(0.35+Math.random()*0.3), y:gr.top-ar.top-6 };   // 數字盤上方（盤緣上面一點）
+  let hookImg=null; if(g && g.hookImg){ hookImg=new Image(); hookImg.src=g.hookImg; }
+  const G={ cv, raf:0, hook, t0:performance.now(), sec:(g && g.sec)||10, from:shipAnchor()||{x:W*0.5,y:H*0.2}, gone:null, slide:[], hookImg }; grapple=G;
+  const drawHook=(x,y)=>{
+    if(hookImg && hookImg.naturalWidth){ const w=58, h=w*hookImg.naturalHeight/hookImg.naturalWidth; cx.drawImage(hookImg, x-w/2, y-h*0.25, w, h); return; }
+    cx.save(); cx.translate(x,y); cx.strokeStyle='#3a3530'; cx.fillStyle='#8a8378'; cx.lineWidth=2;   // 暫代：環＋鉤身＋三支鉤爪
+    cx.beginPath(); cx.arc(0,-10,4,0,6.283); cx.stroke();
+    cx.beginPath(); cx.rect(-2.5,-6,5,16); cx.fill(); cx.stroke();
+    for(const s of [-1,0,1]){ cx.beginPath(); cx.moveTo(0,9); cx.quadraticCurveTo(s*14,10,s*12+ (s===0?0:0),24); cx.lineWidth=3.2; cx.strokeStyle='#5a544c'; cx.stroke(); }
+    cx.restore(); };
+  const draw=now=>{ if(grapple!==G) return;
+    cx.clearRect(0,0,W,H);
+    const t=now-G.t0, k=Math.min(1,t/GRAPPLE_FLY_MS);
+    let a=shipAnchor(); if(G.gone){ const u=Math.min(1,(now-G.gone.t)/G.gone.ms); a={ x:G.gone.x, y:G.gone.y-(G.gone.y+H*0.4)*u*u }; }   // 船飛走：繩頭跟著往上拉出畫面
+    if(!a) a=G.from;
+    const hx=a.x+(hook.x-a.x)*k, hy=a.y+(hook.y-a.y)*k - Math.sin(k*3.1416)*40;   // 鉤子飛出去：一道弧線
+    /* 繩子：船 → 鉤子，中間微微下垂（飛行中拉直） */
+    const sag=k<1 ? 0 : Math.min(28, Math.hypot(hx-a.x,hy-a.y)*0.08);
+    cx.lineCap='round';
+    for(const [w,c] of [[4.2,'rgba(40,30,20,.9)'],[2.2,'rgba(150,120,80,.95)']]){
+      cx.strokeStyle=c; cx.lineWidth=w; cx.beginPath(); cx.moveTo(a.x,a.y); cx.quadraticCurveTo((a.x+hx)/2,(a.y+hy)/2+sag,hx,hy); cx.stroke(); }
+    drawHook(hx,hy);
+    if(k>=1 && !G.gone){   // 倒數（秒）：鉤子旁邊
+      const left=Math.max(0, G.sec-(t-GRAPPLE_FLY_MS)/1000);
+      cx.font='bold 18px serif'; cx.textAlign='center'; cx.lineWidth=4; cx.strokeStyle='rgba(0,0,0,.75)'; cx.fillStyle=left<=3?'#ff6a55':'#ffe7b0';
+      cx.strokeText(Math.ceil(left), hx+26, hy+8); cx.fillText(Math.ceil(left), hx+26, hy+8); }
+    for(const s of G.slide){   // 船員沿繩滑下
+      const u=Math.max(0,Math.min(1,(now-s.t)/s.ms)); if(u<=0 || u>=1) continue;
+      const e=u*u, px=a.x+(hx-a.x)*e, py=a.y+(hy-a.y)*e+sag*Math.sin(e*3.1416);
+      if(s.img && s.img.naturalWidth){ const w=s.w, h=w*s.img.naturalHeight/s.img.naturalWidth; cx.drawImage(s.img, px-w*0.5, py-h*0.12, w, h); }
+      else { cx.fillStyle='rgba(30,24,20,.9)'; cx.beginPath(); cx.ellipse(px,py+18,8,16,0,0,6.283); cx.fill(); cx.beginPath(); cx.arc(px,py+2,6,0,6.283); cx.fill(); } }
+    G.raf=requestAnimationFrame(draw); };
+  G.raf=requestAnimationFrame(draw);
+  try{ SFX.play(asset('se_weapon_cannon'), sfxGain('se_weapon_cannon')*0.6); }catch(_){}
+}
+export function grappleFlyMs(){ return GRAPPLE_FLY_MS; }
+export function clearGrapple(){ if(!grapple) return; cancelAnimationFrame(grapple.raf); grapple.cv.remove(); (grapple.anims||[]).forEach(a=>{ try{ a.cancel(); }catch(_){} }); grapple=null; }   // 船飛走那一段的 forwards 也要收，不然換上的船員還停在畫面外
+/* 登艦：船往上飛出畫面 → 船員沿繩滑下 → 回呼（combat 接著閉棺、換卡、開棺）。回傳整段長度。 */
+export function boardingRun(g, onDone){
+  if(!grapple){ onDone&&onDone(); return 0; }
+  stopAirDrift(false);
+  const top=$('top'), H=top ? top.clientHeight : 400, a=shipAnchor()||grapple.from;
+  const FLY=900, SLIDE=760, GAP=260, N=3;
+  grapple.gone={ t:performance.now(), ms:FLY, x:a.x, y:a.y };
+  grapple.anims=[]; for(const el of motionTargets()) if(el) grapple.anims.push(el.animate([{ transform:'none' },{ transform:`translateY(${-H*1.4}px)` }], { duration:FLY, easing:'cubic-bezier(.5,0,.85,.4)', fill:'forwards' }));
+  const src=g && (g.slideImg || asset(((GAME_CONFIG.enemies||{})[g.to]||{}).image));
+  for(let i=0;i<N;i++){ let im=null; if(src){ im=new Image(); im.src=src; }
+    grapple.slide.push({ t:performance.now()+FLY*0.7+i*GAP, ms:SLIDE, img:im, w:g && g.slideImg ? 64 : 46 }); }
+  const total=FLY*0.7+(N-1)*GAP+SLIDE+120;
+  setTimeout(()=>{ onDone&&onDone(); }, total);
+  return total;
+}
+/* 接舷漂移的形狀（唯一一份，鐵律 7）：u＝秒（各自加相位）、e＝振幅淡入 0～1 ⇒ { k 縮放倍率, x, y 佔畫面寬高的比例 }。
+   緩近緩遠：主週期約 9 秒；八向平移＝兩軸各兩組不可公約的正弦。
+   -2544 Ray：「幅度加倍」⇒ 縮放 0.80～1.12、橫向約 ±8%、縱向約 ±6%（-2499 原值的兩倍） */
+function driftAt(u, e){
+  return { k: 1 + e*(0.12*Math.sin(u*0.70) - 0.08*(1-Math.cos(u*0.31)) + 0.024*Math.sin(u*1.9)),
+           x: e*(0.060*Math.sin(u*0.53) + 0.024*Math.sin(u*1.37+1.1)),
+           y: e*(0.044*Math.sin(u*0.61+2.0) + 0.018*Math.sin(u*1.61+0.4)) };
+}
+/* 振幅淡入：入場演完（airDrift.t0）後 1.8 秒淡入；還沒演完＝0。編隊每一隻也讀這一支。 */
+function driftEnv(now){ if(!airDrift) return 0; const t=(now-airDrift.t0)/1000, a=Math.max(0,Math.min(1,t/1.8)); return a*a*(3-2*a); }
 function startAirDrift(en){
   stopAirDrift(true);
   if(en && en.float && !isAirBio(en)) return startFloatBob(en);
-  if(!isAirBio(en)) return;
+  /* -2545 Ray：「船也要走同一套，空戰怎麼可能是站著對射」⇒ 空賊船（isAirShip）也漂 */
+  if(!isAirBio(en) && !isAirShip(en)) return;
   const fl=en.fit && en.fit.flip ? -1 : 1, ph=Math.random()*100;
-  const S={ raf:0, t0:Infinity }; airDrift=S;   // t0＝入場演完那一刻（airArrived 設），之前振幅 0
+  const S={ raf:0, t0:Infinity }; airDrift=S;   // t0＝入場演完那一刻（airEnter 的 done 設），之前振幅 0
   const tick=now=>{ if(airDrift!==S) return;
-    const top=$('top'), W=top?top.clientWidth:390, H=top?top.clientHeight:400;
-    const t=(now-S.t0)/1000, a=Math.max(0,Math.min(1,t/1.8)), e=a*a*(3-2*a);   // 入場演完後 1.8 秒淡入振幅
-    const u=t+ph;
-    /* 緩近緩遠：主週期約 9 秒；八向平移＝兩軸各兩組不可公約的正弦。
-       -2544 Ray：「幅度加倍」⇒ 縮放 0.80～1.12、橫向約 ±8%、縱向約 ±6%（-2499 原值的兩倍） */
-    const k=1 + e*(0.12*Math.sin(u*0.70) - 0.08*(1-Math.cos(u*0.31)) + 0.024*Math.sin(u*1.9));
-    const dx=e*W*(0.060*Math.sin(u*0.53) + 0.024*Math.sin(u*1.37+1.1));
-    const dy=e*H*(0.044*Math.sin(u*0.61+2.0) + 0.018*Math.sin(u*1.61+0.4));
-    const far=farOf(en), ff=flock ? 1 : fl, sc=(ff*far*k).toFixed(4)+' '+(far*k).toFixed(4), tr=dx.toFixed(1)+'px '+dy.toFixed(1)+'px';   // 編隊：翻轉已在每一隻身上
-    for(const el of motionTargets()) if(el){ el.style.scale=sc; el.style.translate=tr; }
+    /* -2545 Ray：「3 4 成群的要分別移動，不要一起移動」⇒ 有編隊時整個容器不動，每一隻在 startFlock 的 sync 裡各自漂（各自的相位） */
+    if(!flock){
+      const top=$('top'), W=top?top.clientWidth:390, H=top?top.clientHeight:400;
+      const d=driftAt((now-S.t0)/1000+ph, driftEnv(now)), far=farOf(en);
+      const sc=(fl*far*d.k).toFixed(4)+' '+(far*d.k).toFixed(4), tr=(d.x*W).toFixed(1)+'px '+(d.y*H).toFixed(1)+'px';
+      for(const el of motionTargets()) if(el){ el.style.scale=sc; el.style.translate=tr; }
+    }
     S.raf=requestAnimationFrame(tick); };
   S.raf=requestAnimationFrame(tick);
 }

@@ -3588,7 +3588,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2544';
+const KERB_V='?v=2545';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）
@@ -4358,6 +4358,30 @@ export function playKerberosShut(onDone){
   });
 }
 
+/* ══ 戰鬥中途：原地閉棺 → 換場 → 原地開棺（ver -2545，空賊船登艦戰：「閉棺 再開棺 背景是甲板」）══
+   門的動作與上面兩支同一套 class（kerb-shut／open）與音效；差別只在**全程留著 `kerb-open`**（底下的戰鬥一直露著上半），
+   關上的那一刻叫 onSwap（換卡、換背景），開完把舞台收掉回到戰鬥（同 playKerberosClose 的收尾）。 */
+export function playKerberosReseat(onSwap, onDone){
+  const st=$('storyStage'), kb=$('kerb');
+  if(!st || !kb){ onSwap&&onSwap(); onDone&&onDone(); return; }
+  stopKerberos();
+  st.classList.add('on','kerb-open');
+  document.body.classList.add('story-on');
+  layoutKerberos();
+  kb.classList.add('kerb-instant'); kb.classList.add('open'); void kb.offsetWidth; kb.classList.remove('kerb-instant');
+  kerbPlaying=true;
+  const at=(ms,fn)=>kerbTimers.push(setTimeout(fn,ms));
+  at(0,()=>{ kb.classList.add('kerb-shut'); kb.classList.remove('open'); kerbPendSwing(15,2.2); kerbSe('clip'); sparkSeam(); });
+  at(KERB_T.open+320, ()=>{ kb.classList.remove('kerb-shut'); onSwap&&onSwap(); });
+  at(KERB_T.open+720, ()=>{ kb.classList.add('open'); kerbPendSwing(15,2.2); kerbSe('open'); });
+  at(KERB_T.open*2+780, ()=>{
+    kerbPlaying=false;
+    st.classList.remove('on','kerb-open','kerb-veil');
+    document.body.classList.remove('story-on');
+    stopKerberos();
+    onDone&&onDone();
+  });
+}
 /* ══ 關門：**進場那一套的倒放**（ver -366，Ray 指定）══════════════════════
    戰鬥打完 → 兩扇從兩邊合上 → 倒置的紋章轉回並縮小 → 箭與鉚釘依次扣回
    → 上一層黑透遮罩 → 交給結算。每一步都有金屬磨擦火花；**沒有蒸氣**。
