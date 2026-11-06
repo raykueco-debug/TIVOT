@@ -2479,7 +2479,8 @@ export const ENEMIES = {
                 canvas:[1536,1024], anchor:[502,802],
                 shadowImg:'resources/fx/grapple/board_shadow.webp',   // 靜態退路
                 /* 會動的落下人影（美術交件，-2565）：每次登艦隨機一支；補交的放同一個資料夾、加進這張表 */
-                shadowAnims:['drop_00','drop_02','drop_03','drop_06','drop_07','drop_09','drop_10','drop_11'].map(k=>'resources/fx/skypirate_drop_anim/'+k+'/') },   // jumpf_01／04／07 不用（-2567 Ray：護目鏡兩團灰白亮點；04、07 同一個人物同一個問題）   // 登艦時全景落下的人影：美術拆層的第一批空賊 pirate_1 壓成剪影（-2560）   // anchor＝繩頭釘在船頭第一門砲口（立繪畫布座標，同 assaultFx.ports[0]）   // 鉤子：美術交件 491ab6e0（扣在盤面上緣）
+                shadowAnims:['drop_00','drop_02','drop_03','drop_06','drop_07','drop_09','drop_10','drop_11','drop_13','jumpf_01','jumpf_04','jumpf_07'].map(k=>'resources/fx/skypirate_drop_anim/'+k+'/'),
+                shadowVer:'2' },   // -2574 美術原地改成純黑剪影（Ray「不要有任何白線」），12 支全用；同名覆蓋 ⇒ 版本號 +1（換一次圖改一次）   // jumpf_01／04／07 不用（-2567 Ray：護目鏡兩團灰白亮點；04、07 同一個人物同一個問題）   // 登艦時全景落下的人影：美術拆層的第一批空賊 pirate_1 壓成剪影（-2560）   // anchor＝繩頭釘在船頭第一門砲口（立繪畫布座標，同 assaultFx.ports[0]）   // 鉤子：美術交件 491ab6e0（扣在盤面上緣）
       image:'enemy_pirate_side',   // 側面飛行圖（ver -2471）；舊的三時段整張圖含背景，側面版只有怪 ⇒ 補 bg（分層天空）
       bg:'sky_towers', fit:{ mode:'contain', pos:'center center' },
       hp:340,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）

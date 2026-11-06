@@ -1578,8 +1578,9 @@ export function fireGrapple(g){
      射勾索這一刻就隨機挑一支先載好（登艦在 sec 秒後，來得及）；沒載好就退回靜態的 shadowImg。 */
   if(g && g.shadowAnims && g.shadowAnims.length){
     const dir=g.shadowAnims[(Math.random()*g.shadowAnims.length)|0], SH={ dir, fr:null, fps:12 }; G.shadow=SH;
-    fetch(dir+'anim.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j) return;
-      const fr=Array.from({length:j.frames||0},(_,i)=>{ const f=new Image(); f.src=dir+'frame_'+String(i).padStart(2,'0')+'.webp'; return f; });
+    const vq=g.shadowVer ? '?v='+g.shadowVer : '';   // 同名覆蓋的快取（檔名都叫 frame_NN，ASSET_VER 的檔名表會撞，所以版本寫在卡上）
+    fetch(dir+'anim.json'+vq).then(r=>r.ok?r.json():null).then(j=>{ if(!j) return;
+      const fr=Array.from({length:j.frames||0},(_,i)=>{ const f=new Image(); f.src=dir+'frame_'+String(i).padStart(2,'0')+'.webp'+vq; return f; });
       return Promise.all(fr.map(f=>f.decode ? f.decode().catch(()=>{}) : 0)).then(()=>{ if(fr.length && fr.every(f=>f.naturalWidth)){ SH.fr=fr; SH.fps=j.fps||12; } });
     }).catch(()=>{});
   }
