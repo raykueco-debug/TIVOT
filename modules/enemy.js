@@ -1547,10 +1547,11 @@ function startAirDrift(en){
     const top=$('top'), W=top?top.clientWidth:390, H=top?top.clientHeight:400;
     const t=(now-S.t0)/1000, a=Math.max(0,Math.min(1,t/1.8)), e=a*a*(3-2*a);   // 入場演完後 1.8 秒淡入振幅
     const u=t+ph;
-    /* 緩近緩遠：主週期約 9 秒，0.90～1.06（不能太遠）；八向平移＝兩軸各兩組不可公約的正弦，橫向約 ±4%、縱向約 ±3% */
-    const k=1 + e*(0.06*Math.sin(u*0.70) - 0.04*(1-Math.cos(u*0.31)) + 0.012*Math.sin(u*1.9));
-    const dx=e*W*(0.030*Math.sin(u*0.53) + 0.012*Math.sin(u*1.37+1.1));
-    const dy=e*H*(0.022*Math.sin(u*0.61+2.0) + 0.009*Math.sin(u*1.61+0.4));
+    /* 緩近緩遠：主週期約 9 秒；八向平移＝兩軸各兩組不可公約的正弦。
+       -2544 Ray：「幅度加倍」⇒ 縮放 0.80～1.12、橫向約 ±8%、縱向約 ±6%（-2499 原值的兩倍） */
+    const k=1 + e*(0.12*Math.sin(u*0.70) - 0.08*(1-Math.cos(u*0.31)) + 0.024*Math.sin(u*1.9));
+    const dx=e*W*(0.060*Math.sin(u*0.53) + 0.024*Math.sin(u*1.37+1.1));
+    const dy=e*H*(0.044*Math.sin(u*0.61+2.0) + 0.018*Math.sin(u*1.61+0.4));
     const far=farOf(en), ff=flock ? 1 : fl, sc=(ff*far*k).toFixed(4)+' '+(far*k).toFixed(4), tr=dx.toFixed(1)+'px '+dy.toFixed(1)+'px';   // 編隊：翻轉已在每一隻身上
     for(const el of motionTargets()) if(el){ el.style.scale=sc; el.style.translate=tr; }
     S.raf=requestAnimationFrame(tick); };
