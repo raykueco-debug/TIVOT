@@ -1777,6 +1777,7 @@ export const ENEMIES = {
         assault:'centipi_claw',   // 專屬：爪痕＋蜈蚣叫聲
       },
       delayVenom:true,   // 延時＝往前噴毒、一秒後綠色毒雨由左往右射過全畫面，數字盤沾上三片黏液到清盤（ver -2533／-2535，Ray）
+      venomSlimes:[0,1,2,3,4,5,6,7,8].map(i=>'resources/fx/venom/venom_'+i+'.webp'),   // 盤面潑痕：GPT 九宮格切的九張，輪用（ver -2543，Ray）
       rainSe:['se_bulletsfly1','se_bulletsfly2','se_bulletsfly3','se_bulletsfly4'],   // 毒雨擊中的子彈飛行音（同樹寄龍的鱗雨；寫在卡上戰鬥的音效預載才掃得到）
       /* ⚠⚠ **抗性／弱點／破防增傷**（ver -423 起真的生效，之前只是放著）：
          值是**加減成**，套在 `combat.enemyDamage` 那一個計算點上（鐵律 7）。

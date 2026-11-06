@@ -1295,9 +1295,40 @@ function hitFxSe(hf, kind){
    形狀＝毒雨打上來的潑痕：左邊一團濃的著點，往右（雨的方向，略往下）拉出幾條長短不一、逐漸收尖淡掉的拖痕，
    拖痕前方落幾顆小滴。整片同一層透明度（g opacity）—— 拖痕互相疊的地方不會疊深成一塊塊。
    掛在 #grid 裡（absolute，不佔格位）⇒ 盤面重建（buildGrid 的 innerHTML=''）＝清盤，黏液跟著消失，不必另外收。 */
+/* ══ GPT 畫的九張潑痕（-2543，Ray：「你畫的實在太醜了，用 gpt 畫九宮格不同樣式輪用」）══
+   卡上 `venomSlimes:[路徑…]`。輪用＝洗牌後依序發，發完再洗（同一輪不重複；三片一次不會撞同一張）。
+   沒有寫或載不到 ⇒ 退回下面程式畫的那一版。 */
+let venomDeck=[], venomWarm=null;
+function venomImgs(){
+  const list=((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).venomSlimes;
+  if(!list || !list.length) return null;
+  if(venomWarm!==list){ venomWarm=list; venomDeck=[]; list.forEach(u=>{ const im=new Image(); im.src=u; }); }
+  return list;
+}
+function nextVenomImg(list){
+  if(!venomDeck.length){ venomDeck=list.slice(); for(let i=venomDeck.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [venomDeck[i],venomDeck[j]]=[venomDeck[j],venomDeck[i]]; } }
+  return venomDeck.pop();
+}
 function venomBoard(){
   const grid=$('grid'); if(!grid) return;
   const rnd=(a,b)=>a+Math.random()*(b-a), f=v=>v.toFixed(1);
+  const imgs=venomImgs();
+  if(imgs){
+    for(let k=0;k<3;k++){
+      const s=document.createElement('div'); s.className='venom-slime venom-img';
+      const im=document.createElement('img'); im.alt=''; im.src=nextVenomImg(imgs);
+      im.onerror=()=>s.remove();
+      s.appendChild(im);
+      const sz=rnd(52,88);   // 盤寬的 52～88%
+      s.style.width=f(sz)+'%';
+      s.style.left=f(rnd(-12, 100-sz*0.75))+'%';
+      s.style.top=f(rnd(-10, 82))+'%';
+      s.style.setProperty('--vr', f(rnd(2,18))+'deg');   // 圖本身已經往右，只再往下壓一點（跟毒雨同向）
+      s.style.animationDelay=(k*0.09).toFixed(2)+'s';
+      grid.appendChild(s);
+    }
+    return;
+  }
   for(let k=0;k<3;k++){
     const hx=rnd(28,38), hy=rnd(36,44), hr=rnd(15,21);   // 著點（viewBox 200×80，雨往 +x）
     let shapes=`<ellipse cx="${f(hx)}" cy="${f(hy)}" rx="${f(hr*1.35)}" ry="${f(hr*0.8)}"/>`;
@@ -1343,6 +1374,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
   /* 卡上 `delayVenom:true`（ver -2533，蜈蚣）：延時＝噴毒 → 一秒後毒液刷過全畫面那一刻才扣血，並污損數字盤（清盤才解除） */
   const _venom = kind==='delay' && !!((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).delayVenom;
   if(_venom && !_rainLanded){
+    venomImgs();   // 先暖九張潑痕圖：毒雨到之前約一秒，圖已經在快取裡
     const wait=enemy.venomSpit();
     if(wait>0){ setTimeout(()=>{ if(state.over) return; enemyAttack(dmg, kind, saintAmt, true); }, wait); return; }
   }

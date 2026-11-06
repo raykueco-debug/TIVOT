@@ -1632,6 +1632,8 @@
   .venom-slime{position:absolute;z-index:5;pointer-events:none;aspect-ratio:200/80;transform:rotate(var(--vr));transform-origin:15% 50%;
     animation:venomSlime .2s ease-out both;}
   .venom-slime>svg{display:block;width:100%;height:100%;overflow:visible;}
+  .venom-slime.venom-img{aspect-ratio:auto;opacity:.9;}
+  .venom-slime.venom-img>img{display:block;width:100%;height:auto;}
   .venom-slime.venom-off{opacity:0;transition:opacity .25s ease-out;animation:none;}
   @keyframes venomSlime{from{transform:rotate(var(--vr)) scaleX(.25);opacity:0}to{transform:rotate(var(--vr)) scaleX(1);opacity:1}}
   .lucid-flood{position:absolute;pointer-events:none;z-index:1;}
