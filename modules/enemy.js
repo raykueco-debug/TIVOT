@@ -1789,11 +1789,12 @@ function airBellySweep(en, S){
   const idle=idleEl || eImg; idle.style.opacity='0';   // 上衝期間原位那一隻藏起來（牠已經下潛出去了），飛回時才現身
   const fps=S.j.fps||24, N=S.fr.length, t0=performance.now();
   const tick=setInterval(()=>{ im.src=S.fr[Math.floor((performance.now()-t0)*fps/1000)%N].src; }, 1000/fps);
-  /* 略斜：由機尾那側的下方往機頭那側的上方，身體順著走的方向傾 */
-  const dx=f*W*0.22, tilt=f*14;
+  /* 略斜：身體傾 tilt，**平移方向＝頭朝的方向**（-2553 Ray「平移角度要跟頭同一角度」）——
+     沿傾角走 D（整隻從操作盤線下走到畫面頂外），路徑中點在畫面正中。 */
+  const tilt=f*14, rad=tilt*Math.PI/180, D=(H+h)/Math.cos(rad)+8, vx=Math.sin(rad)*D/2, vy=Math.cos(rad)*D/2;
   const a=im.animate([
-    { transform:`translate(${-dx}px, ${(H+h)/2+4}px) rotate(${tilt}deg)` },
-    { transform:`translate(${dx}px, ${-(H+h)/2-4}px) rotate(${tilt}deg)` }], { duration:BELLY_SWEEP_MS, easing:'cubic-bezier(.3,.05,.7,.95)' });
+    { transform:`translate(${-vx}px, ${vy}px) rotate(${tilt}deg)` },
+    { transform:`translate(${vx}px, ${-vy}px) rotate(${tilt}deg)` }], { duration:BELLY_SWEEP_MS, easing:'cubic-bezier(.3,.05,.7,.95)' });
   const hold={ cancel(){ clearInterval(tick); im.remove(); idle.style.opacity=''; try{ a.cancel(); }catch(_){} } }; airAtk=hold;
   a.onfinish=()=>{ clearInterval(tick); im.remove(); if(airAtk!==hold) return; airAtk=null; airReturn(en); };
 }
