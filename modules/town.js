@@ -2425,9 +2425,9 @@ function cardSpawnPool(nodeIdNow){
    ⚠ 現在兩個人在問：遇怪（`wildActDue`）與吊墜（`gearOff`：戰鬥地圖藏吊墜）。 */
 function wildMapOff(){
   const T0=TOWNS[townId]||{};
-  if(!T0.wildSpawn && !cardSpawnPool(nodeId).length) return '這張圖沒有怪';
-  if(prog.hasFlag(safehouseFlag())) return '安全區旗';
-  if(T0.wildFrom && !prog.hasFlag(T0.wildFrom)) return 'wildFrom 還沒開';
+  if(!T0.wildSpawn && !cardSpawnPool(nodeId).length) return i18nT('這張圖沒有怪');
+  if(prog.hasFlag(safehouseFlag())) return i18nT('安全區旗');
+  if(T0.wildFrom && !prog.hasFlag(T0.wildFrom)) return i18nT('wildFrom 還沒開');
   return null;
 }
 function mustWildFlag(id){ return 'mustwild_' + townId + '_' + id; }
@@ -3590,7 +3590,12 @@ function shopBtnName(n){
 /* 出航時交給飛行頁的「從哪一座城起飛」（ver -1105，Ray：「要在城正上方升空，
    所有地圖都一樣」）。⚠ **只傳鑰匙不傳座標**：城在地圖上的位置只有飛行頁的
    `SETTLEMENTS` 那一份（鐵律 7）—— -565 的逐城 `sailFrom` 已刪。 */
-export function sailFrom(){ return townId ? { town:townId } : null; }
+export function sailFrom(){
+  if(!townId) return null;
+  /* `sailWorld`（-2582）：這一張探索地圖出航是回地底的哪一張飛行圖（聖王廳地宮 → 地底大空洞）；沒寫＝地表 */
+  const T=TOWNS[townId];
+  return T && T.sailWorld ? { town:townId, world:T.sailWorld } : { town:townId };
+}
 /* ══⚠⚠⚠ **一道都煮不出來就不要開選單**（ver -1659，Ray：「如果身上沒有相應的
    食材，就不觸發選擇畫面…」）══ 回傳 **false** ＝「我沒開」，劇情那一拍據此
    跳到 `noMats` 那一段（見 `story.js` 的 `line.kitchen`）。
@@ -4068,7 +4073,7 @@ function syncGearPend(){ const g=gearOff();
 export function gearBlocked(){
   const g=dreamNoGear();
   if(g){
-    story.flashLine(g.text || '……現在不能整備。', '');   // 走路人單句那一套：再點一下收掉（同 knockClosed）
+    story.flashLine(g.text || i18nT('……現在不能整備。'), '');   // 走路人單句那一套：再點一下收掉（同 knockClosed）
     chatterOn=true;
     return true;
   }

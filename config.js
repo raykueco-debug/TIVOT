@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.06-2581';
+export const VERSION = 'ver 2026.11.06-2582';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -1605,19 +1605,19 @@ export const GAME_CONFIG = {
        ⚠ `use`＝使用效果（目前只有恢復體力的數值；戰鬥外的使用系統還沒做，先把資料放著）。 */
     defs: {
       /* 掛飾 C01–C13（ver -2505）：效果文字＝Ray 原文；數值＝增益草案（表頭係數＝`charmScale`）。取得途徑未定。 */
-      charm_C01: { name:'破碎的懷錶', cat:'charm', icon:'resources/item/charm/charm_C01.webp', charm:{ lastHitPerSec:0.04, lastHitCap:0.5 }, desc:'清盤時間越長，該盤最後一擊傷害越高' },
-      charm_C02: { name:'閃電徽章', cat:'charm', icon:'resources/item/charm/charm_C02.webp', charm:{ fastPerSec:0.08, fastCap:0.5 }, desc:'清盤速度越快，該盤最後一擊傷害越高' },
-      charm_C03: { name:'雙槍手徽章', cat:'charm', icon:'resources/item/charm/charm_C03.webp', charm:{ extraShotDmg:0.5 }, desc:'每次點擊額外發射一發隨機射擊；盤面不再顯示下一格提示' },
-      charm_C04: { name:'破甲吊墜', cat:'charm', icon:'resources/item/charm/charm_C04.webp', charm:{ energyMul:0.15 }, desc:'破防值累積速度增加' },
-      charm_C05: { name:'紅寶石耳墜（左）', cat:'charm', icon:'resources/item/charm/charm_C05.webp', charm:{ critRate:0.1 }, desc:'爆擊率增加' },
-      charm_C06: { name:'紅寶石耳墜（右）', cat:'charm', icon:'resources/item/charm/charm_C06.webp', charm:{ critDmg:0.2 }, desc:'爆擊傷害增加' },
-      charm_C07: { name:'黃銅彈吊飾', cat:'charm', icon:'resources/item/charm/charm_C07.webp', charm:{ dmgMul:0.08 }, desc:'普攻攻擊力增加' },
-      charm_C08: { name:'自信家徽章', cat:'charm', icon:'resources/item/charm/charm_C08.webp', charm:{ dmgByEnergy:0.3 }, desc:'破防值越高，普攻傷害越高' },
-      charm_C09: { name:'復仇手鍊', cat:'charm', icon:'resources/item/charm/charm_C09.webp', charm:{ revengeCrit:1, revengeCritDmg:0.1 }, desc:'受到攻擊後，下一次普通攻擊必定爆擊' },
-      charm_C10: { name:'幸運彈殼', cat:'charm', icon:'resources/item/charm/charm_C10.webp', charm:{ critEchoRate:0.2, critEchoDmg:0.5 }, desc:'爆擊時有機率追加一次攻擊' },
-      charm_C11: { name:'褪色軍牌', cat:'charm', icon:'resources/item/charm/charm_C11.webp', charm:{ dmgByLowHp:0.4 }, desc:'生命值越低，普攻傷害越高' },
-      charm_C12: { name:'銀色秒針', cat:'charm', icon:'resources/item/charm/charm_C12.webp', charm:{ streakDmg:0.05 }, desc:'連續快速清盤，逐盤增加攻擊力' },
-      charm_C13: { name:'黑曜石戒指', cat:'charm', icon:'resources/item/charm/charm_C13.webp', charm:{ cleanLastHit:0.4 }, desc:'清盤零失誤時，最後一擊傷害增加' },
+      charm_C01: { name:i18nT('破碎的懷錶'), cat:'charm', icon:'resources/item/charm/charm_C01.webp', charm:{ lastHitPerSec:0.04, lastHitCap:0.5 }, desc:i18nT('清盤時間越長，該盤最後一擊傷害越高') },
+      charm_C02: { name:i18nT('閃電徽章'), cat:'charm', icon:'resources/item/charm/charm_C02.webp', charm:{ fastPerSec:0.08, fastCap:0.5 }, desc:i18nT('清盤速度越快，該盤最後一擊傷害越高') },
+      charm_C03: { name:i18nT('雙槍手徽章'), cat:'charm', icon:'resources/item/charm/charm_C03.webp', charm:{ extraShotDmg:0.5 }, desc:i18nT('每次點擊額外發射一發隨機射擊；盤面不再顯示下一格提示') },
+      charm_C04: { name:i18nT('破甲吊墜'), cat:'charm', icon:'resources/item/charm/charm_C04.webp', charm:{ energyMul:0.15 }, desc:i18nT('破防值累積速度增加') },
+      charm_C05: { name:i18nT('紅寶石耳墜（左）'), cat:'charm', icon:'resources/item/charm/charm_C05.webp', charm:{ critRate:0.1 }, desc:i18nT('爆擊率增加') },
+      charm_C06: { name:i18nT('紅寶石耳墜（右）'), cat:'charm', icon:'resources/item/charm/charm_C06.webp', charm:{ critDmg:0.2 }, desc:i18nT('爆擊傷害增加') },
+      charm_C07: { name:i18nT('黃銅彈吊飾'), cat:'charm', icon:'resources/item/charm/charm_C07.webp', charm:{ dmgMul:0.08 }, desc:i18nT('普攻攻擊力增加') },
+      charm_C08: { name:i18nT('自信家徽章'), cat:'charm', icon:'resources/item/charm/charm_C08.webp', charm:{ dmgByEnergy:0.3 }, desc:i18nT('破防值越高，普攻傷害越高') },
+      charm_C09: { name:i18nT('復仇手鍊'), cat:'charm', icon:'resources/item/charm/charm_C09.webp', charm:{ revengeCrit:1, revengeCritDmg:0.1 }, desc:i18nT('受到攻擊後，下一次普通攻擊必定爆擊') },
+      charm_C10: { name:i18nT('幸運彈殼'), cat:'charm', icon:'resources/item/charm/charm_C10.webp', charm:{ critEchoRate:0.2, critEchoDmg:0.5 }, desc:i18nT('爆擊時有機率追加一次攻擊') },
+      charm_C11: { name:i18nT('褪色軍牌'), cat:'charm', icon:'resources/item/charm/charm_C11.webp', charm:{ dmgByLowHp:0.4 }, desc:i18nT('生命值越低，普攻傷害越高') },
+      charm_C12: { name:i18nT('銀色秒針'), cat:'charm', icon:'resources/item/charm/charm_C12.webp', charm:{ streakDmg:0.05 }, desc:i18nT('連續快速清盤，逐盤增加攻擊力') },
+      charm_C13: { name:i18nT('黑曜石戒指'), cat:'charm', icon:'resources/item/charm/charm_C13.webp', charm:{ cleanLastHit:0.4 }, desc:i18nT('清盤零失誤時，最後一擊傷害增加') },
       /* ══⚠⚠ **薇拉馮德家的紋章**（ver -661，Ray 指定）══════════════════════
          「讓主角身上永遠有一個，數量無限，賣一次得錢 1000 元」。
          ⚠ `always:true` ＝ 它是道具**定義**的性質，不進道具欄的帳

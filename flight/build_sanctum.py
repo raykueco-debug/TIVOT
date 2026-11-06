@@ -462,7 +462,9 @@ data = {
     'city': CITY,
     'plat': [PLAT['x0'] * 20, PLAT['y0'] * 20, PLAT['x1'] * 20, PLAT['y1'] * 20, PLAT_Z],
     'falls': FALLS,
-    'models': MODELS,                                        # 外部 3D 模型的擺放（-2577）：[檔, 件名, x, y, 底高, 轉向°, 縮放]                                          # 10 號排水口的水柱（飛行頁併進 CAVE_FALLS：同一套 3D 水柱與瀑布聲）
+    'models': MODELS,
+    'gate': [round((PLAT['x0'] + 14) * 20), round(RZ['y'] * 20), 520],   # 盡頭巨門前（-2582）：飛進這一圈亮「降落 聖王廳地宮」
+    'land': [round((PLAT['x1'] - 6) * 20), round(RZ['y'] * 20), round(-math.pi / 2, 4)],   # 從聖王廳地宮出航回來的落點：平台前段、船頭朝東（往回走）                                        # 外部 3D 模型的擺放（-2577）：[檔, 件名, x, y, 底高, 轉向°, 縮放]                                          # 10 號排水口的水柱（飛行頁併進 CAVE_FALLS：同一套 3D 水柱與瀑布聲）
 }
 js = 'window.SANCTUM_DATA=' + json.dumps(data, ensure_ascii=False, separators=(',', ':')) + ';\n'
 open(os.path.join(OUT, 'world.js'), 'w', encoding='utf-8').write(js)

@@ -5173,6 +5173,20 @@ export const TOWNS = {
                            goto:'@northport:inn', lines:FRAG02_LAST } ] },
     },
   },
+  /* ══ 聖王廳地宮（G3）—— 佔位（ver -2582）══ 從地底大空洞（飛行頁 ?world=sanctum）盡頭巨門前「降落 聖王廳地宮」進來。
+     Ray：「聖王廳地宮只玩 G3、G4 兩層（一般拓樸＋追擊者）」—— 那張拓樸還沒定，現在只有一格（大門內），
+     背景借夢境用的那張地宮全景。往下＝出航，回到地底大空洞的平台（`sailWorld`，main 的 sailOut／飛行頁的 loadCaveWorld）。 */
+  holysee_g3: {
+    name: '聖王廳地宮',
+    entry: 'gate',
+    bgm: 'lostplace',
+    wilderness: true,
+    sailWorld: 'sanctum',
+    nodes: {
+      gate: { bg:'holyseedungeonwhole', noTime:true, name:'聖王廳地宮　大門', rest:true, noWild:true,
+              exits:{}, sail:{ dir:'down' } },
+    },
+  },
   shinier_forest: {
     name: '夏爾森林',
     storyStages:[6,7],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）

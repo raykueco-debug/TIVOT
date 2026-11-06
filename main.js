@@ -1380,7 +1380,8 @@ function sailOut(from){
     if(here)
       console.warn('[main] 出航沒帶城鎮鑰匙（'+here+'），會退回帝都出港位');
   }
-  openFlight();
+  /* 出航回地底的圖（-2582）：聖王廳地宮（G3）出來是回地底大空洞 —— 城上 `sailWorld`，town.sailFrom 帶出來 */
+  openFlight(from && from.world ? { world:from.world } : undefined);
 }
 /* ⚠ 劇情的出航拍也要帶**這座城的出港位**（ver -956）：以前這一條沒傳，
    於是從夏爾村走劇情出航會退回帝都出港位（同城鎮那顆「出航」的老毛病）。 */

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=2581"></script>
+<script src="../orientation.js?v=2582"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。語言判定與 i18n.js 的 LANG 同一套
@@ -11,7 +11,7 @@
 (function(){
   var l=null; try{ l=localStorage.getItem('tivot.lang'); }catch(e){}
   if(!l){ try{ var n=(navigator.languages&&navigator.languages[0])||navigator.language||''; if(String(n).toLowerCase().indexOf('es')===0) l='es'; }catch(e){} }
-  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2581"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2581"><\/script>');
+  if(['es'].indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2582"><\/script><script src="../i18n/ui/'+l+'.classic.js?v=2582"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=2581');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=2582');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -267,8 +267,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2581");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2581");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2582");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2582");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -288,8 +288,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2581");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2581");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2582");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2582");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -655,23 +655,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2581" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=2582" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2581" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2581" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2581" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2581" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2581" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2581" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2581" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2581" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2581" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2581" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=2582" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2582" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2582" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2582" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2582" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2582" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2582" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2582" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2582" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2582" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=2581" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=2582" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -693,14 +693,16 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=2581"></script>
+<script src="settlement.js?v=2582"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
 <script>if(/[?&]world=undercity/.test(location.search)) document.write('<script src="undercity/world.js?v=29615343"><\/script>');</script>
-<script>if(/[?&]world=sanctum/.test(location.search)) document.write('<script src="sanctum/world.js?v=3a7312cf"><\/script>');</script>   <!-- 卡耶爾山谷 → 聖王廳地宮的地底大空洞（ver -2565，build_sanctum.py 產的） -->
+<script>if(/[?&]world=sanctum/.test(location.search)) document.write('<script src="sanctum/world.js?v=792ce0fc"><\/script>');</script>   <!-- 卡耶爾山谷 → 聖王廳地宮的地底大空洞（ver -2565，build_sanctum.py 產的） -->
 <script>if(!/[?&]world=/.test(location.search)) document.write('<script src="undercity/crowns.js?v=6a3ae090"><\/script>');</script>   <!-- 地表上地底樹的樹冠（ver -2412，build_uc_crowns.py 產的） -->
-<script src="talks.js?v=2581"></script>
+<script src="talks.js?v=2582"></script>
+<script>if(/[?&]drg3d=/.test(location.search)) document.write('<script src="drg3d.js?v='+Date.now()+'"><\/script>');</script>   <!-- 王座徘徊者 3D 試驗（2026-11-06）：只在網址帶 ?drg3d= 時載入 -->
+
 <script>
 /* 破圖框一律不畫（ver -1881，同主頁 main.js 那一支，這一頁是另一個 document）。 */
 document.addEventListener('error', e=>{ const t=e.target; if(t && t.tagName==='IMG') t.classList.add('img-broken'); }, true);
@@ -776,7 +778,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=b18827be'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -2581';
+const FLIGHT_VER = 'ver -2582';
 const MAP_SCALE  = /[?&]world=(cave|undercity|sanctum)/.test(location.search) ? 10 : 20;   // 地底的圖加密成 1536²（ver -2369，build_cave.py 的 SUPER）：一格 10 世界單位，世界大小不變
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -1021,7 +1023,7 @@ const UNDERCITY = WORLD==='undercity';
 const SANCTUM = WORLD==='sanctum';
 const CAVE = WORLD==='cave' || UNDERCITY || SANCTUM;
 const CAVE_DIR  = UNDERCITY ? 'undercity/' : SANCTUM ? 'sanctum/' : 'cave/';
-const CAVE_NAME = UNDERCITY ? '地下古城' : SANCTUM ? '地底大空洞' : '西部大溶谷';
+const CAVE_NAME = UNDERCITY ? i18nT('地下古城') : SANCTUM ? i18nT('地底大空洞') : i18nT('西部大溶谷');
 /* 地下古城的地表入口（ver -2431；說明見 carveUcGate）。放在這裡是因為地形與崖裙的著色器要嵌它的位置（石砌那一圈）。
    floor：裂口底的高。-2433 由 CLOUD_H+18 抬到 +62 —— 貼著雲海高度的話整條裂口被雲海的霧洗白，遠看像一片溢出的白牆。 */
 const UC_GATE={ x:402, y:840, dx:-0.49, dy:-0.87, len:14, hw:3.8, rw:2.2, bed:26, floor:CLOUD_H+62, land:420, masonR:9 };   /* -2437：hw 1.9→3.8（兩岸要放得下遺跡）、rw＝河寬 2.2（Ray：「瀑布怎不見了，做寬一點顯眼點」—— 窄的話崖裙的輪廓平滑時把河口那個缺口抹掉，崖邊找不到水就不出瀑布）、bed＝河床再往下挖多深（Ray：「那條河往下挖深一點」） */   // 地圖格；(dx,dy)＝往陸塊裡的方向；masonR＝洞口一圈崖壁石砌的半徑（格）
@@ -1065,7 +1067,7 @@ const CAVE_V = {hm:'4bc8767b', aux:'d0292903', col:'f204b361'};
 const CAVE_START = [1920, 14000, -0.9949];
 /* 空腔表（build_cave.py 寫回）：[名字, x, y, 長軸, 短軸, 轉角(度), 是不是終點]，地圖像素。
    進到哪一間就在上方報名字；終點那一間報「終點」。 */
-const CAVE_ROOMS = [["入口窟",96,700,56,44,20,0,1],["大廳",250,600,96,64,-20,0,2],["湖窟",110,470,70,52,60,0,3],["深淵",380,560,66,58,10,0,15],["螢光谷",240,250,78,46,-10,0,16],["柱林",450,680,64,48,35,0,13],["晶洞",85,290,48,42,35,0,4],["迴音井",120,100,50,44,-15,0,5],["斷層",620,560,74,42,70,0,10],["暗河",660,700,60,46,-10,0,14],["蕈林",500,90,60,52,25,0,7],["鐘乳廳",680,170,82,56,-35,0,8],["晶脈",320,90,64,44,5,0,6],["前庭",535,490,50,40,-20,0,11],["瀑布窟",700,390,54,48,15,0,9],["北岔",545,250,62,46,-30,0,17],["西岔",215,405,58,48,40,0,18],["終點",384,384,80,80,0,1,12]];
+const CAVE_ROOMS = [[i18nT("入口窟"),96,700,56,44,20,0,1],[i18nT("大廳"),250,600,96,64,-20,0,2],[i18nT("湖窟"),110,470,70,52,60,0,3],[i18nT("深淵"),380,560,66,58,10,0,15],[i18nT("螢光谷"),240,250,78,46,-10,0,16],[i18nT("柱林"),450,680,64,48,35,0,13],[i18nT("晶洞"),85,290,48,42,35,0,4],[i18nT("迴音井"),120,100,50,44,-15,0,5],[i18nT("斷層"),620,560,74,42,70,0,10],[i18nT("暗河"),660,700,60,46,-10,0,14],[i18nT("蕈林"),500,90,60,52,25,0,7],[i18nT("鐘乳廳"),680,170,82,56,-35,0,8],[i18nT("晶脈"),320,90,64,44,5,0,6],[i18nT("前庭"),535,490,50,40,-20,0,11],[i18nT("瀑布窟"),700,390,54,48,15,0,9],[i18nT("北岔"),545,250,62,46,-30,0,17],[i18nT("西岔"),215,405,58,48,40,0,18],[i18nT("終點"),384,384,80,80,0,1,12]];
 /* 終點的大空間與中心那顆星（ver -2374，Ray）：「進去伸手不見五指，接近中心以後才開始出現點點星光飄在空中，
    正中間是一顆散發淡淡金光的星，比其他星大顆，要星芒出現的範圍內才隱約可見，引導玩家往那個方向飛。」
    位置＝CAVE_ROOMS 裡標了終點的那一間的中心（build_cave.py 排的，這裡只讀，鐵律 7）。 */
@@ -7471,6 +7473,8 @@ async function loadCaveWorld(){
   caveFalls=CAVE_FALLS.map(f=>[f[0],f[1]]);   // ver -2388：瀑布有自己的清單了（build_cave.py 排），不必再從地貌類別 9 收
   SETTLEMENTS.length=0;       // 地底沒有城（量體、程序房子、城的取樣遮罩全吃這一張表 —— 清這一處就全收，鐵律 8）
   cam.x=CAVE_START[0]; cam.y=CAVE_START[1]; cam.angle=CAVE_START[2];
+  /* 從聖王廳地宮出航回來（-2582）：落在平台前段（SANCTUM_DATA.land）；回程鑰匙只帶城的名字（sailedFrom，restoreFlightPos 讀的） */
+  if(SANCTUM && sailedFrom==='holysee_g3'){ const L=(window.SANCTUM_DATA||{}).land; if(L){ cam.x=L[0]; cam.y=L[1]; cam.angle=L[2]; } }
   if(GLON){ try{ if(glInit()){ glUploadWorld(); document.body.classList.add('gl-on'); } }
             catch(e){ console.warn('[gl] 初始化失敗', e); } }
   console.log('[cave] 地底世界 '+MAPW+'×'+MAPH+(glReady?'':'（⚠ GL 沒起來：地底世界只有 GL 路徑畫得出天頂）'));
@@ -11733,7 +11737,7 @@ let muted=(()=>{ try{ return localStorage.getItem(MUTE_KEY)==='1'; }catch(_){ re
    聽 storage 事件同步（另一個 document 寫 key 時這裡會收到；同頁寫入不觸發，
    而本頁已無寫入點，正好）。 */
 const muteBtnEl=document.getElementById('muteBtn');
-const syncMuteBtn=()=>{ if(muteBtnEl){ muteBtnEl.classList.toggle('on',muted); muteBtnEl.setAttribute('aria-label', muted?'取消靜音':'靜音'); } };
+const syncMuteBtn=()=>{ if(muteBtnEl){ muteBtnEl.classList.toggle('on',muted); muteBtnEl.setAttribute('aria-label', muted?i18nT('取消靜音'):i18nT('靜音')); } };
 window.addEventListener('storage', e=>{ if(e && e.key===MUTE_KEY){ muted = (e.newValue==='1'); if(window.__audApplyMute) window.__audApplyMute(); syncMuteBtn(); } });
 /* 靜音鈕（ver -2442）：寫同一把鑰匙；主遊戲那一頁（父頁）會收到 storage 事件自己同步 */
 if(muteBtnEl){ syncMuteBtn();
@@ -14508,14 +14512,22 @@ function carveUcGate(raw){
     }
   }
 }
-const UC_GATE_PLACE = { cave:true, uc:true, name:'地下古城' };
+const UC_GATE_PLACE = { cave:true, uc:true, name:i18nT('地下古城') };
 /* ══ 地底大空洞的地表入口（ver -2565，Ray：「入口：卡耶爾山谷，船從那裡駛入洞穴」）══
    卡耶爾山谷是 -1235～-1237 手刻的那道谷（TERRAIN_VALLEY），谷頭在 (938,712)、往北就是聖王廳 (934,606)。
    ⇒ 在谷頭往山裡（谷的反方向）挖一道越來越暗、越來越窄的裂口＝洞口；谷頭上空亮「進入 地底大空洞」（長按）。
    · 載入時挖、不動 map_edits.json（鐵律 14，同 carveCavePit／carveUcGate）。
    · 出：地底大空洞從入口隧道的盡頭飛出去 → 回到這裡（playCaveLeave 寫回程鑰匙，背對洞口）。 */
 const SN_GATE={ x:938, y:712, dx:-0.42, dy:-0.91, len:16, hw:3.4, land:420 };   // 地圖格；(dx,dy)＝往山裡的方向
-const SN_GATE_PLACE = { cave:true, sn:true, name:'地底大空洞' };
+const SN_GATE_PLACE = { cave:true, sn:true, name:i18nT('地底大空洞') };
+/* 入口的開放條件（-2582，Ray：「賽西莉入隊後」）：旗 `party_cecilie` ＝她入隊了。
+   ⚠ 鐵律 9：**誰插的** ＝賽西莉入隊的那一段劇情（還沒寫，寫的時候在那一段 act 上 `flags:['party_cecilie']`）；沒有人拔。
+   沒跑主線（試飛，章節鑰匙不存在）照 featureOn 的規矩全開，不然開發時進不去。鎖著時洞口照樣在，只是不亮「進入」。 */
+const SN_OPEN_FLAG = 'party_cecilie';
+function snGateOpen(){ return !hasStageKey() || flagOn(SN_OPEN_FLAG); }
+/* 盡頭巨門前的降落點（-2582，Ray：「亮『降落 聖王廳地宮』鈕」）：降進探索地圖 `holysee_g3`（script/town.js；
+   G3 的拓樸還沒定，現在是一格的佔位圖，出航回到這裡 —— 回程的落點 SANCTUM_DATA.land，見 loadCaveWorld）。 */
+const SN_END_PLACE = { town:'holysee_g3', name:i18nT('聖王廳地宮'), n:i18nT('聖王廳地宮') };
 function carveSnGate(raw){
   if(CAVE) return;
   const G=SN_GATE, px=-G.dy, py=G.dx, R=Math.ceil(G.len+G.hw+4);
@@ -19576,12 +19588,12 @@ const ENEMY_KINDS = {
    · `spanW`：圖寬＝420 世界單位（外框與尺都讀它，鐵律 7）。
   · `flapAmp`／`wingRest` 全 0 ＝不做程序拍翅（戰鬥立繪的翅不在固定的鉸鏈上，硬拍會撕開）。 */
 const SKY_FLIGHT_KINDS=[
-  ['sky_twinwyvern','雙頭翼龍'],['sky_boneray','骨刺飛鰩'],['sky_ribwhale','浮空骨鯨'],
-  ['sky_mawbat','裂口巨蝠'],['sky_eyemoth','千眼巨蛾'],['sky_eelswarm','飛鰻群'],
-  ['sky_gasjelly','氣囊水母獸'],['sky_armorcrab','甲殼飛鱟'],
-  ['sky2_spine','骨脊長帶'],['sky2_maskbanner','面具長幡'],['sky2_ringchain','懸環長鏈'],
-  ['sky2_mouthpillar','群口之柱'],['sky2_facecrown','人面花冠'],['sky2_eyeveil','眼之幕'],
-  ['sky2_rift','天之裂隙'],['sky2_maw','無面巨首'],
+  ['sky_twinwyvern',i18nT('雙頭翼龍')],['sky_boneray',i18nT('骨刺飛鰩')],['sky_ribwhale',i18nT('浮空骨鯨')],
+  ['sky_mawbat',i18nT('裂口巨蝠')],['sky_eyemoth',i18nT('千眼巨蛾')],['sky_eelswarm',i18nT('飛鰻群')],
+  ['sky_gasjelly',i18nT('氣囊水母獸')],['sky_armorcrab',i18nT('甲殼飛鱟')],
+  ['sky2_spine',i18nT('骨脊長帶')],['sky2_maskbanner',i18nT('面具長幡')],['sky2_ringchain',i18nT('懸環長鏈')],
+  ['sky2_mouthpillar',i18nT('群口之柱')],['sky2_facecrown',i18nT('人面花冠')],['sky2_eyeveil',i18nT('眼之幕')],
+  ['sky2_rift',i18nT('天之裂隙')],['sky2_maw',i18nT('無面巨首')],
 ];
 /* ══ 已交飛行正面圖＋原地游動 loop 的（ver -2308，Ray：「空之主的飛行圖也要有動畫，不是用圖飄過來」）══
    交件單 `flight/enemy/_sky_flight_TO_CODE.md`：`flm_<鍵>/view_0.webp` ＋ `swim_v1/`（anim.json＋frame_NN.webp）。
@@ -19855,7 +19867,7 @@ const SCRIPTED_ENCOUNTERS = [
   /* ══ 南天的霸王（ver -2317）══ 離島對白演完（`li_leave_talk`）、**飛出孤舟島空域**（`farFrom`／`farR`，同 LI_NAG 那一圈）
      就在正前方刷；撞上那一刻凍住演戰前對白（`intro:'talk'`，見 runTalkIntro），演完開戰。打贏才記 `li_south`。 */
   { flag:'li_leave_talk', done:'li_south', kind:'sky_southlord', battle:'li_south', speedMul:1.6, dist:3200,
-    farFrom:'孤舟島', farR:230, intro:'talk', talk:'LI_SOUTH_A' },
+    farFrom:i18nT('孤舟島'), farR:230, intro:'talk', talk:'LI_SOUTH_A' },
 ];
 /* 這一趟有沒有長按過天空（ver -1416／-1418，`onSkyHold` 用）。
    ⚠ **這一趟**的狀態，不進存檔：重載＝要再按一次，那正合「索敵後必出」的語意。 */
@@ -21761,7 +21773,7 @@ function townMapXY(id){
     const j=JSON.parse(localStorage.getItem('tivot_flight_ret_v1')||'null');
     localStorage.removeItem('tivot_flight_ret_v1');
     if(j && j.town) sailedFrom = j.town;   // 這一趟從哪一座城起飛（ver -1430，S9 教學要綁它）
-    if(j && j.town && !isFinite(j.x)){
+    if(j && j.town && !isFinite(j.x) && !CAVE){   // 地底的圖沒有大陸的城表：落點由 loadCaveWorld 依 sailedFrom 決定（-2582）
       const P=townMapXY(j.town);
       if(P){ cam.x=P.x*MAP_SCALE; cam.y=P.y*MAP_SCALE; }
       else console.warn('[flight] 查不到「'+j.town+'」在地圖上的位置，退回帝都出港位');
@@ -22231,6 +22243,21 @@ function drawEnemy3D(scaleH,horizon,sinp,cosp,now){
   const shade=(r,g,b,a)=>'rgba('+Math.round(clamp(r*lit*warmR*coolR,0,255))+','
                                +Math.round(clamp(g*lit*warmG*coolG,0,255))+','
                                +Math.round(clamp(b*lit*warmB*coolB,0,255))+','+a+')';
+
+  /* ⚠ 王座徘徊者 3D 試驗（2026-11-06，`flight/drg3d.js`，只在網址帶 ?drg3d= 時存在）：
+     =1 由 3D 取代 2D；=side 2D 照舊、3D 擺在右邊並排。試驗結論出來前不要拿它當正式路徑。 */
+  if(enemy.kind==='bldragon' && window.DRG3D && DRG3D.ready()){
+    const dx=enemy.x-cam.x, dy=enemy.y-cam.y, z=dx*(-sinp)+dy*(-cosp);
+    const side=DRG3D.mode==='side', off=side ? (K.sprite.frontSpanW||980)*1.15 : 0;
+    const lat=dx*cosp+dy*(-sinp)+off;
+    const hl=Math.hypot(enemy.hx,enemy.hy)||1, hx=enemy.hx/hl, hy=enemy.hy/hl;
+    const P=project(enemy.x,enemy.y,enemy.alt+bob);
+    DRG3D.draw({ ctx, x:(lat/z+1)*W/2, y:P[1], lat, h:cam.alt-(enemy.alt+bob), z,
+      l:hx*cosp+hy*(-sinp), f:hx*(-sinp)+hy*(-cosp), W, VIEWH, now,
+      lit:[lit*warmR*coolR, lit*warmG*coolG, lit*warmB*coolB],
+      pxScale:1/sxk, clip:()=>clipByTerrainDepth(zc,sxk,syk) });
+    if(!side) return;
+  }
 
   /* ── 剛體怪（plan:'rigid'）─────────────────────────────────────
      不變形、不分節，整隻依「朝向 vs 鏡頭」挑一張方位圖貼上去。
@@ -24128,15 +24155,16 @@ function nearestTown(){
 }
 let landLabel='';
 /* 西部大溶谷的進出口當成降落點（ver -2396）：地表＝坑的上空亮「進入」、地底＝天井正下方亮「離開」。 */
-const CAVE_MOUTH_PLACE = { cave:true, name:'西部大溶谷' };
+const CAVE_MOUTH_PLACE = { cave:true, name:i18nT('西部大溶谷') };
 const CAVE_EXIT_PLACE  = { caveExit:true, name:CAVE_NAME };
 const UC_WIND_PLACE    = { caveExit:true, ucWind:true, name:CAVE_NAME };   // 地下古城的無底風穴：同一顆鈕「離開」，走白霧撲面那一套（ucOutTick）
 function nearCaveMouth(){
   if(UNDERCITY){ return (UC_WIND && Math.hypot(cam.x-UC_WIND[0], cam.y-UC_WIND[1]) < UC_WIND[2] && !ucOutForce) ? UC_WIND_PLACE : null; }   // 無底風穴：長按離開（-2466）
+  if(SANCTUM){ const G=(window.SANCTUM_DATA||{}).gate; if(G && Math.hypot(cam.x-G[0], cam.y-G[1]) < G[2]) return SN_END_PLACE; }   // 盡頭巨門前（-2582）
   if(CAVE){ const X=caveExitPoint(); return X && Math.hypot(cam.x-X.x, cam.y-X.y) < X.r*0.85 ? CAVE_EXIT_PLACE : null; }
   if(Math.hypot(cam.x-CAVE_PIT.x, cam.y-CAVE_PIT.y) < CAVE_PIT.land) return CAVE_MOUTH_PLACE;
   { const sx=(SN_GATE.x-SN_GATE.dx*4)*MAP_SCALE, sy=(SN_GATE.y-SN_GATE.dy*4)*MAP_SCALE;   // 卡耶爾山谷谷頭（洞口前方）的上空（-2565）
-    if(Math.hypot(cam.x-sx, cam.y-sy) < SN_GATE.land) return SN_GATE_PLACE; }
+    if(snGateOpen() && Math.hypot(cam.x-sx, cam.y-sy) < SN_GATE.land) return SN_GATE_PLACE; }   // 賽西莉入隊前不亮（-2582）
   const ex=(UC_GATE.x-UC_GATE.dx*6)*MAP_SCALE, ey=(UC_GATE.y-UC_GATE.dy*6)*MAP_SCALE;   // 洞口前方（雲海上空）
   return Math.hypot(cam.x-ex, cam.y-ey) < UC_GATE.land ? UC_GATE_PLACE : null;
 }
@@ -24151,7 +24179,7 @@ function updateLandBtn(){
                而鈕就浮在畫面正中央 —— 船正在往下鑽的時候不該還能再按一次降落。 */
             || (typeof takeoffPlaying!=='undefined' && takeoffPlaying)
             || (typeof booting!=='undefined' && booting);
-  const S = busy ? null : ((CAVE ? null : nearestTown()) || nearCaveMouth());   // 地底與地面是兩張不相干的圖：地底不查大陸的城
+  const S = busy ? null : ((CAVE ? null : nearestTown()) || nearCaveMouth());   // 地底大空洞的盡頭巨門也從 nearCaveMouth 回（帶 town，走一般的降落）   // 地底與地面是兩張不相干的圖：地底不查大陸的城
   /* 羽蛇登場演出中不給降落（ver -743）：插圖蓋著、對白在跑，點下去會把整段
      序列打斷（town.open 蓋過來）。演出收掉（introArt=null）就恢復。 */
   const want = !!S && !introArt;

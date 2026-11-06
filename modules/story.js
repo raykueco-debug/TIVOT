@@ -525,7 +525,7 @@ function tuneRender(){
         +(c?c.exprs:[]).map(e=>'<option value="'+e+'"'+(e===cur.expr?' selected':'')+'>'+e+(studioHasBlink(c.id,e)?' ●':'')+'</option>').join('')+'</select></div>'; };
     /* 眨眼（Ray 2026-10-03：「整合到首頁的立繪檢查鈕」）：● ＝這張有眨眼補丁（script/blink.js）；
        「眨一下」立刻演一次、「頻繁眨眼」約 1 秒一次 —— 驗補丁對位用。 */
-    const bk=['L','R'].filter(sd=>slot[sd]).map(sd=>(sd==='L'?i18nT('左'):i18nT('右'))+(blink.has((slotImg(sd)||{}).getAttribute?slotImg(sd).getAttribute('src'):'')?i18nT('有'):i18nT('無'))).join(' ／ ');
+    const bk=['L','R'].filter(sd=>slot[sd]).map(sd=>(sd==='L'?i18nT('左'):i18nT('右'))+(blink.has((slotImg(sd)||{}).getAttribute?slotImg(sd).getAttribute('src'):'')?i18nT('有'):i18nT('無'))).join(i18nT(' ／ '));
     studio=row('L')+row('R')
       +'<div class="tn-row"><span>'+i18nT('眨眼')+'</span><span class="tn-path" style="flex:1">'+(bk||'—')+'</span>'
       +'<button data-act="blinknow">'+i18nT('眨一下')+'</button><button data-act="blinkfast" class="'+(blink.isFast()?'on':'')+'">'+i18nT('頻繁眨眼')+'</button></div>'
@@ -737,7 +737,7 @@ function studioZoomApply(){
    · 眨眼：blink.setStep 停掉自動眨眼；「下一格」＝睜 → 半閉 → 全閉 → 睜…（blink.frame），台上兩邊一起。
    · CSS 動畫（呼吸、髮梢）也一起停住，看眼睛時畫面不會動；逐格期間新起的動畫每 0.2 秒掃一次停住。 */
 let studioStepOn=false, studioStepT=0, studioFrame=0;
-const FRAME_NAME={ o:'睜', h:'半', c:'閉' };
+const FRAME_NAME={ o:i18nT('睜'), h:i18nT('半'), c:i18nT('閉') };
 function studioAnims(){ const c=$('storyCast'); return c ? c.getAnimations({subtree:true}) : []; }
 function studioStep(on){
   studioStepOn=!!on; studioFrame=0; blink.setStep(studioStepOn);
@@ -3588,7 +3588,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2581';
+const KERB_V='?v=2582';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）
