@@ -1637,14 +1637,13 @@ export function boardingRun(g, onSwap, onDone){
   const src=SH ? SH.fr[0].src : ((g && g.shadowImg) || asset(((GAME_CONFIG.enemies||{})[g && g.to]||{}).image));   // 卡上 shadowImg＝單人空賊的剪影（-2560 Ray「人影先找個落單的空賊圖」）；沒寫退回登艦那張卡的立繪
   setTimeout(()=>{
     if(!app || !src){ onSwap&&onSwap(); onDone&&onDone(); return; }
-    const AH=app.clientHeight, AW=app.clientWidth, h=AH*1.35;
-    /* -2564 Ray「剪影的圖層在數字盤之下」：掛在 body 上、fixed 對齊遊戲框（#app 的外框），層級 7990（對白框 8000 之下）——
-       放在 #app 裡會被數字盤那幾層壓過去。overflow:hidden＝裁在遊戲框裡（剪影比框寬，桌機會溢到框外）。 */
-    const arr=app.getBoundingClientRect();
-    const box=document.createElement('div'); box.style.cssText=`position:fixed;left:${arr.left}px;top:${arr.top}px;width:${arr.width}px;height:${arr.height}px;overflow:hidden;pointer-events:none;z-index:7990;`;
+    const AH=top.clientHeight, AW=top.clientWidth, h=AH*1.35;   // 以演出區（#top）的高為準
+    /* -2570 Ray「剪影的圖層在數字盤之下」「影子還是蓋到盤面了」：人影只在上半的演出區（#top）裡落下，裁在 #top 內，
+       不蓋到數字盤（-2564 我讀反了，把它抬到最上層蓋過盤面；已改回）。 */
+    const box=document.createElement('div'); box.style.cssText='position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:6;';
     const im=document.createElement('img'); im.className='board-shadow'; im.alt=''; im.src=src;
     im.style.cssText=`position:absolute;left:50%;top:0;height:${h}px;width:auto;pointer-events:none;`+((SH || (g && g.shadowImg)) ? '' : 'filter:brightness(0);');   // 交件的人影本來就是黑的，不必再壓
-    box.appendChild(im); document.body.appendChild(box);
+    box.appendChild(im); top.appendChild(box);
     const a=im.animate([{ transform:`translate(-50%, ${-h}px) rotate(-4deg)` },{ transform:`translate(-50%, ${AH}px) rotate(3deg)` }], { duration:BOARD_DROP_MS, easing:'linear' });   // 等速：時間的一半＝剪影中心落在畫面正中（換卡藏在它後面）
     setTimeout(()=>{ onSwap&&onSwap(); }, BOARD_DROP_MS*0.5);   // 剪影蓋住畫面正中那一刻換
     let ft=0; if(SH){ const t0=performance.now(); ft=setInterval(()=>{ im.src=SH.fr[Math.floor((performance.now()-t0)*SH.fps/1000)%SH.fr.length].src; }, 1000/SH.fps); }
