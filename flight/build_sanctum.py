@@ -230,13 +230,23 @@ blk(PAL_X1 - 10, yc - 46, 14, 14, 520, 1, sd=0.2)            # 兩座塔（層�
 blk(PAL_X1 - 10, yc + 46, 14, 14, 470, 1, sd=0.35)
 for cx, cy, w, d in ((PAL_X1 - 36, yc - 50, 18, 10), (PAL_X1 - 38, yc + 52, 14, 12), (PAL_X1 - 6, yc - 26, 6, 9), (PAL_X1 - 6, yc + 30, 7, 8)):
     blk(cx, cy, w, d, rngp.uniform(90, 220), 3, solid=False)  # 坍塌的殘垣
-for side in (-1, 1):                                          # 平台兩側的列柱：多半斷掉
+# ── 外部 3D 模型的擺放（-2577 Ray：「上網找可商用的 3D 模型」→「Kore＋骨骸＋遺跡包」）──
+#   [檔, 件名, x, y, 底高, 轉向（度：模型的 x 軸轉到這個方位）, 縮放（世界單位／公尺）]；飛行頁 glDrawSnModels 照這一份畫，
+#   檔＝'ruins'（models/ruins，Quaternius Ultimate Modular Ruins，CC0）／'sanctum'（models/sanctum，build_sanctum_models.py）。
+MODELS = []
+def mdl(file, name, x, y, z, rot, sc): MODELS.append([file, name, round(x * W20), round(y * W20), round(z), round(rot, 1), round(sc, 1)])
+for side in (-1, 1):                                          # 平台兩側的列柱（遺跡包的圓柱，4 公尺 ×110 ≈ 440）：多半斷掉
     for cx in np.arange(PLAT['x0'] + 4, PLAT['x1'] + 1, 7.0):
         if rngp.random() < 0.18: continue
         ok = rngp.random() < 0.35
         cy = (PLAT['y0'] + 3) if side < 0 else (PLAT['y1'] - 3)
-        CITY.append([round(cx * W20), round(cy * W20), 46, 46, round(rngp.uniform(380, 460) if ok else rngp.uniform(40, 200)), 0, 5, round(float(rngp.random()), 3), PLAT_Z])
-        addcore((XX - cx) ** 2 + (YY - cy) ** 2 < 1.1 ** 2, CITY[-1][8] + CITY[-1][4])
+        mdl('ruins', 'Column_Round' if ok else 'Column_Round_Short', cx, cy, PLAT_Z, rngp.uniform(0, 90), 110 if ok else rngp.uniform(70, 115))
+        addcore((XX - cx) ** 2 + (YY - cy) ** 2 < 0.9 ** 2, PLAT_Z + (430 if ok else 120))
+mdl('ruins', 'Arch_Gothic', PLAT['x1'] + 2, yc, PLAT_Z, 90, 135)          # 平台前緣一道哥德尖拱（船從底下穿過：拱腳兩根，中間淨高約 1220）
+# 尖拱的拱腳不給碰撞芯：拱腳是方的、又不在整格上，圓的岩柱會從旁邊露出來（船撞上去頂多穿過，拱下的淨高本來就夠）
+for cy_, rt_ in ((PLAT['y0'] + 9, 0), (PLAT['y1'] - 9, 180)):  # 平台兩側殘掉的拱牆
+    mdl('ruins', 'Wall_ArchRound_Broken', PLAT['x0'] + 30, cy_, PLAT_Z, rt_, 95)
+    # 殘拱牆不給碰撞芯：牆是殘的，整面的岩板會從缺口露出來
 for _ in range(26):                                           # 平台上散落的碎石塊
     cx, cy = rngp.uniform(PLAT['x0'] + 2, PLAT['x1'] - 2), rngp.uniform(PLAT['y0'] + 2, PLAT['y1'] - 2)
     CITY.append([round(cx * W20), round(cy * W20), round(rngp.uniform(18, 50)), round(rngp.uniform(18, 50)), round(rngp.uniform(10, 34)), round(float(rngp.uniform(0, 90)), 1), 4, round(float(rngp.random()), 3), PLAT_Z])
@@ -263,7 +273,7 @@ for bx_, by_, ln_, rt_ in ((RA_['x'] + 30, RA_['y'] - 22, 380, 70), (RA_['x'] - 
     CITY.append([round(bx_ * W20), round(by_ * W20), ln_, 0, round(ln_ * 0.22), rt_, 14, round(float(rngp.random()), 3), round(floor_at(bx_, by_))])   # 小一點的骨骸
 RH_ = ROOMS['H']                                               # 女神像
 CITY.append([round(RH_['x'] * W20), round(RH_['y'] * W20), 300, 300, 640 - ABYSS, 0, 5, 0.6, ABYSS])     # 台座（從深淵立起的大石柱）
-CITY.append([round(RH_['x'] * W20), round(RH_['y'] * W20), 0, 0, 860, 160, 15, 0.5, 640])               # 女神：面朝 9 號那一側（西）
+mdl('sanctum', 'Kore', RH_['x'], RH_['y'], 640, 250, 420)   # 女神（-2577：換成 SMK 的 Kore 掃描，2.05 公尺 ×420 ≈ 860）：面朝 9 號那一側（西）
 addcore((XX - RH_['x']) ** 2 + (YY - RH_['y']) ** 2 < 6.5 ** 2, 640)
 addcore((XX - RH_["x"]) ** 2 + (YY - RH_["y"]) ** 2 < 1.5 ** 2, 640 + 860 * 0.95)
 RI_ = ROOMS['I']                                               # 柱林
@@ -451,7 +461,8 @@ data = {
     'rooms': [[R['name'], R['x'], R['y'], R['a'], R['b'], R['rot'], 1 if R.get('end') else 0, R['no']] for k, R in ROOMS.items()],
     'city': CITY,
     'plat': [PLAT['x0'] * 20, PLAT['y0'] * 20, PLAT['x1'] * 20, PLAT['y1'] * 20, PLAT_Z],
-    'falls': FALLS,                                          # 10 號排水口的水柱（飛行頁併進 CAVE_FALLS：同一套 3D 水柱與瀑布聲）
+    'falls': FALLS,
+    'models': MODELS,                                        # 外部 3D 模型的擺放（-2577）：[檔, 件名, x, y, 底高, 轉向°, 縮放]                                          # 10 號排水口的水柱（飛行頁併進 CAVE_FALLS：同一套 3D 水柱與瀑布聲）
 }
 js = 'window.SANCTUM_DATA=' + json.dumps(data, ensure_ascii=False, separators=(',', ':')) + ';\n'
 open(os.path.join(OUT, 'world.js'), 'w', encoding='utf-8').write(js)

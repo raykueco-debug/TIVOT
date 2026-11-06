@@ -1,0 +1,4 @@
+Kore dressed in chiton and cape (epiblema), plaster cast KAS1800 — SMK, National Gallery of Denmark.
+3D scan released into the public domain (Public Domain Mark 1.0 / CC0 on Sketchfab).
+https://open.smk.dk/artwork/image/KAS1800
+Decimated and converted by flight/build_sanctum_models.py.
