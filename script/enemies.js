@@ -2477,7 +2477,9 @@ export const ENEMIES = {
          hookImg／slideImg＝鉤子與滑索的圖（美術在畫；沒寫＝程式畫的暫代）。 */
       grapple:{ hp:50, sec:10, to:'sky_pirate_crew', hookImg:'resources/fx/grapple/hook.webp',
                 canvas:[1536,1024], anchor:[502,802],
-                shadowImg:'resources/fx/grapple/board_shadow.webp' },   // 登艦時全景落下的人影：美術拆層的第一批空賊 pirate_1 壓成剪影（-2560）   // anchor＝繩頭釘在船頭第一門砲口（立繪畫布座標，同 assaultFx.ports[0]）   // 鉤子：美術交件 491ab6e0（扣在盤面上緣）
+                shadowImg:'resources/fx/grapple/board_shadow.webp',   // 靜態退路
+                /* 會動的落下人影（美術交件，-2565）：每次登艦隨機一支；補交的放同一個資料夾、加進這張表 */
+                shadowAnims:['drop_00','drop_02','jumpf_01'].map(k=>'resources/fx/skypirate_drop_anim/'+k+'/') },   // 登艦時全景落下的人影：美術拆層的第一批空賊 pirate_1 壓成剪影（-2560）   // anchor＝繩頭釘在船頭第一門砲口（立繪畫布座標，同 assaultFx.ports[0]）   // 鉤子：美術交件 491ab6e0（扣在盤面上緣）
       image:'enemy_pirate_side',   // 側面飛行圖（ver -2471）；舊的三時段整張圖含背景，側面版只有怪 ⇒ 補 bg（分層天空）
       bg:'sky_towers', fit:{ mode:'contain', pos:'center center' },
       hp:340,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）

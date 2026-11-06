@@ -1573,6 +1573,15 @@ export function fireGrapple(g){
   /* 射出那一下：砲口火光＋煙往船尾拖走（-2556 Ray「登船索射出時要有砲響跟煙」；畫法同側舷齊射） */
   const puffs=[]; for(let j=0;j<9;j++) puffs.push({ dx:0, dy:0, t:20+j*22, vx:rnd(0.35,0.9)*W/390*(fwdOf(curCard())<0?1:-1), vy:rnd(-0.08,0.03)*W/390, r0:rnd(6,11)*a0.k*3, life:rnd(800,1300), g:rnd(150,205)|0 });
   const G={ cv, raf:0, hook, t0:performance.now(), sec:(g && g.sec)||10, from:a0, gone:null, hookImg, g, puffs, fire:{ x:a0.x, y:a0.y, k:a0.k } }; grapple=G;
+  /* 登艦時落下的人影動畫（卡上 `shadowAnims`，-2565 美術交件：黑色剪影、衣服頭髮往上飄，4 格 12fps loop）：
+     射勾索這一刻就隨機挑一支先載好（登艦在 sec 秒後，來得及）；沒載好就退回靜態的 shadowImg。 */
+  if(g && g.shadowAnims && g.shadowAnims.length){
+    const dir=g.shadowAnims[(Math.random()*g.shadowAnims.length)|0], SH={ dir, fr:null, fps:12 }; G.shadow=SH;
+    fetch(dir+'anim.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j) return;
+      const fr=Array.from({length:j.frames||0},(_,i)=>{ const f=new Image(); f.src=dir+'frame_'+String(i).padStart(2,'0')+'.webp'; return f; });
+      return Promise.all(fr.map(f=>f.decode ? f.decode().catch(()=>{}) : 0)).then(()=>{ if(fr.length && fr.every(f=>f.naturalWidth)){ SH.fr=fr; SH.fps=j.fps||12; } });
+    }).catch(()=>{});
+  }
   const drawHook=(x,y)=>{
     if(hookImg && hookImg.naturalWidth){ const w=HOOK_W, h=w*hookImg.naturalHeight/hookImg.naturalWidth; cx.drawImage(hookImg, x-w/2, y-h*HOOK_LINE, w, h); return; }   // 盤緣對在圖高 HOOK_LINE 那條線
     cx.save(); cx.translate(x,y); cx.strokeStyle='#3a3530'; cx.fillStyle='#8a8378'; cx.lineWidth=2;   // 暫代：環＋鉤身＋三支鉤爪
@@ -1619,7 +1628,8 @@ export function boardingRun(g, onSwap, onDone){
   stopAirDrift(false);
   const app=$('app'), top=$('top'), H=top ? top.clientHeight : 400;
   grapple.anims=[]; for(const el of motionTargets()) if(el) grapple.anims.push(el.animate([{ transform:'none' },{ transform:`translateY(${-H*1.4}px)` }], { duration:BOARD_FLY_MS, easing:'cubic-bezier(.5,0,.85,.4)', fill:'forwards' }));
-  const src=(g && g.shadowImg) || asset(((GAME_CONFIG.enemies||{})[g && g.to]||{}).image);   // 卡上 shadowImg＝單人空賊的剪影（-2560 Ray「人影先找個落單的空賊圖」）；沒寫退回登艦那張卡的立繪
+  const SH=grapple.shadow && grapple.shadow.fr ? grapple.shadow : null;   // 會動的人影（載好了才用）
+  const src=SH ? SH.fr[0].src : ((g && g.shadowImg) || asset(((GAME_CONFIG.enemies||{})[g && g.to]||{}).image));   // 卡上 shadowImg＝單人空賊的剪影（-2560 Ray「人影先找個落單的空賊圖」）；沒寫退回登艦那張卡的立繪
   setTimeout(()=>{
     if(!app || !src){ onSwap&&onSwap(); onDone&&onDone(); return; }
     const AH=app.clientHeight, AW=app.clientWidth, h=AH*1.35;
@@ -1628,11 +1638,12 @@ export function boardingRun(g, onSwap, onDone){
     const arr=app.getBoundingClientRect();
     const box=document.createElement('div'); box.style.cssText=`position:fixed;left:${arr.left}px;top:${arr.top}px;width:${arr.width}px;height:${arr.height}px;overflow:hidden;pointer-events:none;z-index:7990;`;
     const im=document.createElement('img'); im.className='board-shadow'; im.alt=''; im.src=src;
-    im.style.cssText=`position:absolute;left:50%;top:0;height:${h}px;width:auto;pointer-events:none;`+((g && g.shadowImg) ? '' : 'filter:brightness(0);');   // shadowImg 本來就是黑的，不必再壓
+    im.style.cssText=`position:absolute;left:50%;top:0;height:${h}px;width:auto;pointer-events:none;`+((SH || (g && g.shadowImg)) ? '' : 'filter:brightness(0);');   // 交件的人影本來就是黑的，不必再壓
     box.appendChild(im); document.body.appendChild(box);
     const a=im.animate([{ transform:`translate(-50%, ${-h}px) rotate(-4deg)` },{ transform:`translate(-50%, ${AH}px) rotate(3deg)` }], { duration:BOARD_DROP_MS, easing:'linear' });   // 等速：時間的一半＝剪影中心落在畫面正中（換卡藏在它後面）
     setTimeout(()=>{ onSwap&&onSwap(); }, BOARD_DROP_MS*0.5);   // 剪影蓋住畫面正中那一刻換
-    a.onfinish=()=>{ box.remove(); onDone&&onDone(); };
+    let ft=0; if(SH){ const t0=performance.now(); ft=setInterval(()=>{ im.src=SH.fr[Math.floor((performance.now()-t0)*SH.fps/1000)%SH.fr.length].src; }, 1000/SH.fps); }
+    a.onfinish=()=>{ clearInterval(ft); box.remove(); onDone&&onDone(); };
   }, BOARD_FLY_MS);
   return BOARD_FLY_MS+BOARD_DROP_MS;
 }
