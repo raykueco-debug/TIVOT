@@ -1623,10 +1623,13 @@ export function boardingRun(g, onSwap, onDone){
   setTimeout(()=>{
     if(!app || !src){ onSwap&&onSwap(); onDone&&onDone(); return; }
     const AH=app.clientHeight, AW=app.clientWidth, h=AH*1.35;
-    const box=document.createElement('div'); box.style.cssText='position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:45;';   // 裁在遊戲框裡（剪影比框寬，桌機會溢到框外）
+    /* -2564 Ray「剪影的圖層在數字盤之下」：掛在 body 上、fixed 對齊遊戲框（#app 的外框），層級 7990（對白框 8000 之下）——
+       放在 #app 裡會被數字盤那幾層壓過去。overflow:hidden＝裁在遊戲框裡（剪影比框寬，桌機會溢到框外）。 */
+    const arr=app.getBoundingClientRect();
+    const box=document.createElement('div'); box.style.cssText=`position:fixed;left:${arr.left}px;top:${arr.top}px;width:${arr.width}px;height:${arr.height}px;overflow:hidden;pointer-events:none;z-index:7990;`;
     const im=document.createElement('img'); im.className='board-shadow'; im.alt=''; im.src=src;
     im.style.cssText=`position:absolute;left:50%;top:0;height:${h}px;width:auto;pointer-events:none;`+((g && g.shadowImg) ? '' : 'filter:brightness(0);');   // shadowImg 本來就是黑的，不必再壓
-    box.appendChild(im); app.appendChild(box);
+    box.appendChild(im); document.body.appendChild(box);
     const a=im.animate([{ transform:`translate(-50%, ${-h}px) rotate(-4deg)` },{ transform:`translate(-50%, ${AH}px) rotate(3deg)` }], { duration:BOARD_DROP_MS, easing:'linear' });   // 等速：時間的一半＝剪影中心落在畫面正中（換卡藏在它後面）
     setTimeout(()=>{ onSwap&&onSwap(); }, BOARD_DROP_MS*0.5);   // 剪影蓋住畫面正中那一刻換
     a.onfinish=()=>{ box.remove(); onDone&&onDone(); };
