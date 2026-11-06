@@ -68,6 +68,7 @@
 | `mon_sky2_maskbanner_side` | `anim/mon_sky2_maskbanner_side_idle_v1/` | 48 | 24 | 空戰剪法；漂浮（無翅）960×640、FIT 0.8 |
 | `mon_serpent_side_v2` ⚠新立繪 | `anim/mon_serpent_side_v2_idle_v1/` | 48 | 24 | 空戰剪法。Ray：原圖身體太短像鳥、羽蛇要長尾 ⇒ 立繪重畫成 `mon_serpent_side_v2.webp`（新檔），**程式端請把羽蛇改指 `mon_serpent_side_v2`**；舊的 `mon_serpent_side` 作廢 |
 | `mon_pirateship_side_v2` ⚠新立繪 | `anim/mon_pirateship_side_v2_idle_v1/` | 48 | 24 | 空戰剪法。Ray：原圖沒畫側舷砲 ⇒ 立繪重畫成 `mon_pirateship_side_v2.webp`（新檔，船腹一排 9 門側舷砲），**程式端請把空賊船改指 `mon_pirateship_side_v2`**；舊的 `mon_pirateship_side` 作廢。待機以帆鼓動為主 |
+| `mon_centipi_side` | `anim/mon_centipi_side_idle_v1/` | 48 | 24 | ⚠ **合成版（Ray 11-06 選 `comp_v1`）**：身體＝GPT 無翅身體跑 Wan（頭胸穩住、後半身與腳扭動）；翅膀＝GPT 四翅三張（上拍／水平／下拍）照「上、中、下、中」每格換一張，逐格追蹤頭胸位置貼上（昆蟲振翅用兩三幀交替，Ray 同意的例外）。零件在 `_originals/enemy/centipi_side_parts/`。box `[163,33,1318,925]` 在畫布內 |
 
 ## ⚠ 更正（ver -2488）
 天空的捲動方向改成**往右**（世界往右流），頭朝左＝往前飛，所以既有的頭朝左側面圖都不用改。之後新交的也照舊頭朝左。
