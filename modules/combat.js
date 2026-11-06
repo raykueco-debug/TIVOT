@@ -2805,7 +2805,7 @@ function finishEnemyOrAdvance(){
 const HOLY_SWAP_MS = 2500;   // ver -1449：與 enemy.js 的 HOLY_GROW_MS 同一個數字（＝首頁那一顆的 2.5s）
 /* ══ 空賊船的勾索 → 登艦戰（卡上 `grapple:{hp,sec,to}`，ver -2545，Ray：「空賊船 hp 50 以下會射出勾鎖…
    勾鎖射出後沒戰勝就進登艦戰」）══ 一局一次：血掉到 hp% 以下 → 射勾索；sec 秒內沒擊沉 → 船飛走、船員滑下、
-   原地閉棺換成 `to` 那張卡（背景寫在那張卡上）再開棺。擊沉了就跟著船一起收（clearGrapple）。
+   原地閉棺換成 `to` 那張卡（背景寫在那張卡上）再開棺（-2556 起不演船員滑索）。擊沉了就跟著船一起收（clearGrapple）。
    判定掛在 updateBars（所有血量變動的匯流點，同 checkLowHpBuff）。 */
 let grappleFired=false, grappleT=0;
 function resetGrapple(){ grappleFired=false; clearTimeout(grappleT); grappleT=0; enemy.clearGrapple(); }

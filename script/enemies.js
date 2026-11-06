@@ -2475,7 +2475,8 @@ export const ENEMIES = {
       /* 勾索 → 登艦戰（ver -2545，Ray：「hp 50 以下會射出勾鎖，勾在數字盤上方…勾鎖射出後沒戰勝就進登艦戰」）：
          hp＝觸發門檻（%）、sec＝幾秒內沒擊沉就登艦、to＝登艦戰換上的那張卡（背景寫在那張卡上）。
          hookImg／slideImg＝鉤子與滑索的圖（美術在畫；沒寫＝程式畫的暫代）。 */
-      grapple:{ hp:50, sec:10, to:'sky_pirate_crew' },
+      grapple:{ hp:50, sec:10, to:'sky_pirate_crew', hookImg:'resources/fx/grapple/hook.webp',
+                canvas:[1536,1024], anchor:[502,802] },   // anchor＝繩頭釘在船頭第一門砲口（立繪畫布座標，同 assaultFx.ports[0]）   // 鉤子：美術交件 491ab6e0（扣在盤面上緣）
       image:'enemy_pirate_side',   // 側面飛行圖（ver -2471）；舊的三時段整張圖含背景，側面版只有怪 ⇒ 補 bg（分層天空）
       bg:'sky_towers', fit:{ mode:'contain', pos:'center center' },
       hp:340,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
