@@ -2547,7 +2547,7 @@ export const ENEMIES = {
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1, hitSe:null,
-      image:null, bgBand:'deck/deck_battle', fit:{ mode:'contain', pos:'center bottom' },   // 甲板四時段（-2576 美術交件；舊的 deck_rapidsail Ray 判定不能當戰鬥背景）
+      image:null, bgBand:'deck/deck_battle', fit:{ mode:'contain', pos:'center bottom', scale:0.68, shiftY:-0.03 },   // 站遠一點（-2579 Ray「槍戰站那麼近幹什麼」）、腳落在血條上方的甲板上（影子才看得到）；甲板四時段（-2576 美術交件；舊的 deck_rapidsail Ray 判定不能當戰鬥背景）
       group:{ dir:'resources/enemy/man_skypirate_'+n+'_layers/', prefix:'pirate_', order, hp:170 },
       hp:170, attack:12, atkInterval:null, assaultEvery:[2,4], assault:{ count:order.length>=4?3:2, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,16,16],
