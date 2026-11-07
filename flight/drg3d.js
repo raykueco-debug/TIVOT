@@ -322,5 +322,5 @@ function holdUi(){
   const k=HOLDLIST[holdIx]; let K=null; try{ K=ENEMY_KINDS[k]; }catch(e){}
   document.getElementById('drg3dLab').textContent=(holdIx+1)+'/'+HOLDLIST.length+'　'+((K&&K.name)||k);
 }
-if(HOLD){ load(HOLDLIST[0]); if(document.body) holdUi(); else addEventListener('DOMContentLoaded',holdUi); }
+if(HOLD){ load(HOLDLIST[0]); if(document.body) holdUi(); else addEventListener('DOMContentLoaded',holdUi); addEventListener('load',()=>setTimeout(holdUi,500)); }   // load 之後再寫一次：ENEMY_KINDS 那時才有中文名
 })();
