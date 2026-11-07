@@ -24,7 +24,51 @@ const DEF={
   sky_ribwhale:{ dir:'enemy/flm_ribwhale/',     file:'mon3d', spanK:0.85,
                  flap:{ cut:[0.22,0.48,0.74], amp:[0.12,0.14,0.16], rest:[0.02,0.03,0.04], lag:0.08, down:0.45 },
                  tail:{ from:-0.10, amp:0.12, waves:1.0 } },
+  // ── 其餘空中怪（ver -2592 起整批）：有翅的拍翅＋尾波；沒翅的只有身體波（flap 全 0）──
+  sky_twinwyvern:{ dir:'enemy/flm_twinwyvern/', file:'mon3d', spanK:0.85,
+                 flap:{ cut:[0.16,0.45,0.72], amp:[0.18,0.20,0.22], rest:[0.02,0.04,0.05], lag:0.08, down:0.42 },
+                 tail:{ from:-0.20, amp:0.10, waves:1.2 } },
+  sky_mawbat:  { dir:'enemy/flm_mawbat/', file:'mon3d', spanK:0.85,
+                 flap:{ cut:[0.14,0.42,0.70], amp:[0.20,0.22,0.24], rest:[0.02,0.04,0.05], lag:0.08, down:0.40 },
+                 tail:{ from:-0.20, amp:0.10, waves:1.2 } },
+  sky_eyemoth: { dir:'enemy/flm_eyemoth/', file:'mon3d', spanK:0.85,
+                 flap:{ cut:[0.12,0.45,0.75], amp:[0.22,0.20,0.16], rest:[0.03,0.04,0.04], lag:0.05, down:0.50 },
+                 tail:{ from:-0.20, amp:0.06, waves:0.8 } },
+  sky_armorcrab:{ dir:'enemy/flm_armorcrab/', file:'mon3d', spanK:0.85,
+                 flap:{ cut:[0.30,0.55,0.80], amp:[0.22,0.20,0.18], rest:[0.03,0.03,0.03], lag:0.03, down:0.50 },
+                 tail:{ from:-0.30, amp:0.05, waves:0.8 } },
+  sky2_spine:  { dir:'enemy/flm_sky2_spine/', file:'mon3d', spanK:0.85,
+                 flap:{ cut:[0.12,0.42,0.72], amp:[0.16,0.18,0.20], rest:[0.02,0.04,0.05], lag:0.08, down:0.42 },
+                 tail:{ from:-0.05, amp:0.14, waves:1.6 } },
+  sky2_ringchain:{ dir:'enemy/flm_sky2_ringchain/', file:'mon3d', spanK:0.85,
+                 flap:{ cut:[0.30,0.55,0.80], amp:[0.12,0.14,0.16], rest:[0.02,0.03,0.04], lag:0.08, down:0.45 },
+                 tail:{ from:-0.30, amp:0.04, waves:0.8 } },
+  sky_eelswarm:{ dir:'enemy/flm_eelswarm/', file:'mon3d', spanK:0.85, fit:'rad',
+                 flap:{ cut:[0.3,0.6,0.9], amp:[0,0,0], rest:[0,0,0], lag:0, down:0.5 },
+                 tail:{ from:0.40, amp:0.10, waves:1.5 } },
+  sky_gasjelly:{ dir:'enemy/flm_gasjelly/', file:'mon3d', spanK:0.85,
+                 flap:{ cut:[0.3,0.6,0.9], amp:[0,0,0], rest:[0,0,0], lag:0, down:0.5 },
+                 tail:{ from:0.30, amp:0.05, waves:0.8 } },
+  sky2_maskbanner:{ dir:'enemy/flm_sky2_maskbanner/', file:'mon3d', spanK:0.85,
+                 flap:{ cut:[0.3,0.6,0.9], amp:[0,0,0], rest:[0,0,0], lag:0, down:0.5 },
+                 tail:{ from:0.20, amp:0.10, waves:1.2 } },
+  sky2_mouthpillar:{ dir:'enemy/flm_sky2_mouthpillar/', file:'mon3d', spanK:0.85, fit:'rad',
+                 flap:{ cut:[0.3,0.6,0.9], amp:[0,0,0], rest:[0,0,0], lag:0, down:0.5 },
+                 tail:{ from:0.40, amp:0.08, waves:1.0 } },
+  sky2_facecrown:{ dir:'enemy/flm_sky2_facecrown/', file:'mon3d', spanK:0.85,
+                 flap:{ cut:[0.3,0.6,0.9], amp:[0,0,0], rest:[0,0,0], lag:0, down:0.5 },
+                 tail:{ from:0.10, amp:0.10, waves:1.2 } },
+  sky2_eyeveil:{ dir:'enemy/flm_sky2_eyeveil/', file:'mon3d', spanK:0.85, fit:'rad',
+                 flap:{ cut:[0.3,0.6,0.9], amp:[0,0,0], rest:[0,0,0], lag:0, down:0.5 },
+                 tail:{ from:0.40, amp:0.08, waves:1.0 } },
+  sky2_rift:   { dir:'enemy/flm_sky2_rift/', file:'mon3d', spanK:0.85,
+                 flap:{ cut:[0.3,0.6,0.9], amp:[0,0,0], rest:[0,0,0], lag:0, down:0.5 },
+                 tail:{ from:-0.10, amp:0.03, waves:0.6 } },
+  sky2_maw:    { dir:'enemy/flm_sky2_maw/', file:'mon3d', spanK:0.85, fit:'rad',
+                 flap:{ cut:[0.3,0.6,0.9], amp:[0,0,0], rest:[0,0,0], lag:0, down:0.5 },
+                 tail:{ from:0.00, amp:0.12, waves:1.2 } },
 };
+DEF.sky_southlord = DEF.sky2_maw;   // 南天的霸王＝無面巨首換名（index.html 的 ENEMY_KINDS 同樣是 Object.assign 抄過去）
 const MAXPX=1024;                       // 畫布上限（裝置像素）：一次配好，每禎只換 viewport
 let cv=null, g=null, prog=null, U={}, initErr='';
 const M={};                              // 鍵 → { state:0 未載/1 載入中/2 好了/-1 壞了, vao, nIdx, idxT, span, hinge, bbMin, bbMax, tex, texOK, zMin, zMax }
@@ -141,8 +185,8 @@ function load(kind){
     const ib=g.createBuffer(); g.bindBuffer(g.ELEMENT_ARRAY_BUFFER,ib); g.bufferData(g.ELEMENT_ARRAY_BUFFER,I.a,g.STATIC_DRAW);
     g.bindVertexArray(null);
     R.nIdx=I.A.count; R.idxT=I.A.componentType;
-    const pos=P.a; let hs=0; for(let i=0;i<pos.length;i+=3) hs=Math.max(hs,Math.abs(pos[i]));
-    R.span=hs; R.bbMin=P.A.min; R.bbMax=P.A.max;
+    const pos=P.a; let hs=0, r2=0; for(let i=0;i<pos.length;i+=3){ hs=Math.max(hs,Math.abs(pos[i])); r2=Math.max(r2,pos[i]*pos[i]+pos[i+1]*pos[i+1]+pos[i+2]*pos[i+2]); }
+    R.span=hs; R.rad=Math.sqrt(r2); R.bbMin=P.A.min; R.bbMax=P.A.max;   // rad：外接球半徑（身體長的怪遠大於翼展，畫布照它開才不會切掉）
     /* 鉸鏈高：切點那一欄頂點的中位高 */
     const cut=flapOf(kind).cut;
     R.hinge=[0,1,2].map(k=>{ const c=cut[k], ys=[];
@@ -178,9 +222,9 @@ function draw(o){
   const t0=performance.now();
   const D=DEF[kind], K=ENEMY_KINDS[kind], SP=K.sprite||{};
   const spanW=(SP.frontSpanW||SP.spanW||980)*D.spanK;
-  const span=R.span, sWorld=spanW/2/span;               // 模型單位 → 世界單位（翼展對齊 2D 那張圖）
+  const span=R.span, sWorld=spanW/2/(D.fit==='rad' ? R.rad : span);   // 模型單位 → 世界單位（翼展對齊 2D 那張圖；管狀的怪 fit:'rad' 改用外接球）
   const fx=o.W/2, fy=0.62*o.VIEWH;
-  const rW=span*sWorld*1.35;                            // 外接半徑（世界；尾巴長的怪多留一點）
+  const rW=Math.max(span*1.35, R.rad*1.12)*sWorld;      // 外接半徑（世界）：翼展＋拍翅餘裕，或整隻的外接球，取大
   const zn=Math.max(o.z-rW, o.z*0.35);
   const half=Math.ceil(fx*rW/zn);                       // 畫布半邊（CSS px）
   const dpr=o.pxScale||Math.min(window.devicePixelRatio||1, 2);   // 與 2D 怪同一個解析度（飛行頁的背景緩衝）
@@ -253,9 +297,30 @@ function bench(n, halfPx, kind){
 }
 
 const HOLD=/[?&]drg3dhold/.test(location.search);
-const HOLDKIND=((location.search.match(/[?&]drg3dkind=(\w+)/)||[])[1])||'bldragon';
-window.DRG3D={ mode:MODE, hold:HOLD, holdKind:HOLDKIND, cad:CAD, bench, off, dbg:DBG, def:DEF, models:M, stat, draw,
+const HOLDARG=((location.search.match(/[?&]drg3dkind=(\w+)/)||[])[1])||'bldragon';
+/* drg3dkind=all：全部空中怪輪流看 —— 畫面上方的「◀ 名字 ▶」或 [ ] 鍵換下一隻（index.html 的掛鉤看到種類變了就收掉重生） */
+const HOLDLIST=HOLDARG==='all' ? Object.keys(DEF).filter(k=>k!=='sky_southlord') : [HOLDARG];
+let holdIx=0;
+window.DRG3D={ mode:MODE, hold:HOLD, get holdKind(){ return HOLDLIST[holdIx]; }, cad:CAD, bench, off, dbg:DBG, def:DEF, models:M, stat, draw,
   has:k=>!!DEF[k],
-  ready:k=>{ k=k||'bldragon'; if(!off.on || !DEF[k]) return false; if(!M[k]) load(k); return M[k].state===2; } };
-if(HOLD) load(HOLDKIND);
+  ready:k=>{ k=k||'bldragon'; if(!off.on || !DEF[k]) return false; if(!M[k]) load(k); return M[k].state===2; },
+  next:d=>{ holdIx=(holdIx+(d||1)+HOLDLIST.length)%HOLDLIST.length; load(HOLDLIST[holdIx]); holdUi(); } };
+function holdUi(){
+  if(HOLDLIST.length<2) return;
+  let bar=document.getElementById('drg3dBar');
+  if(!bar){
+    bar=document.createElement('div'); bar.id='drg3dBar';
+    bar.style.cssText='position:fixed;top:calc(env(safe-area-inset-top) + 52px);left:50%;transform:translateX(-50%);z-index:99999;display:flex;gap:6px;align-items:center;'+
+      'font:600 15px sans-serif;color:#fff;background:rgba(0,0,0,.55);border-radius:20px;padding:4px 6px;user-select:none';
+    const mk=(t,d)=>{ const b=document.createElement('button'); b.textContent=t;
+      b.style.cssText='font:inherit;color:#fff;background:rgba(255,255,255,.18);border:0;border-radius:16px;width:40px;height:34px';
+      b.addEventListener('pointerdown',e=>{ e.stopPropagation(); e.preventDefault(); window.DRG3D.next(d); }); return b; };
+    const lab=document.createElement('span'); lab.id='drg3dLab'; lab.style.cssText='min-width:150px;text-align:center';
+    bar.append(mk('◀',-1),lab,mk('▶',1)); document.body.appendChild(bar);
+    addEventListener('keydown',e=>{ if(e.key===']') window.DRG3D.next(1); else if(e.key==='[') window.DRG3D.next(-1); });
+  }
+  const k=HOLDLIST[holdIx]; let K=null; try{ K=ENEMY_KINDS[k]; }catch(e){}
+  document.getElementById('drg3dLab').textContent=(holdIx+1)+'/'+HOLDLIST.length+'　'+((K&&K.name)||k);
+}
+if(HOLD){ load(HOLDLIST[0]); if(document.body) holdUi(); else addEventListener('DOMContentLoaded',holdUi); }
 })();
