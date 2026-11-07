@@ -81,7 +81,7 @@ function sh(type,src){ const s=g.createShader(type); g.shaderSource(s,src); g.co
 
 function init(){
   cv=document.createElement('canvas'); cv.width=MAXPX; cv.height=MAXPX;
-  g=cv.getContext('webgl2',{ antialias:true, premultipliedAlpha:true, alpha:true, depth:true });
+  g=cv.getContext('webgl2',{ antialias:true, premultipliedAlpha:true, alpha:true, depth:true, preserveDrawingBuffer:true });   // 抽格的那一禎要沿用上一張
   if(!g) throw new Error('沒有 WebGL2');
   prog=g.createProgram(); g.attachShader(prog,sh(g.VERTEX_SHADER,VS)); g.attachShader(prog,sh(g.FRAGMENT_SHADER,FS)); g.linkProgram(prog);
   if(!g.getProgramParameter(prog,g.LINK_STATUS)) throw new Error(g.getProgramInfoLog(prog));
@@ -148,6 +148,16 @@ function draw(o){
   if(dpx<8) return true;
   const hp=dpx/2;                                       // 半邊（裝置像素）
   const sc=hp/half;                                     // CSS px → 裝置像素
+  /* ⚠ 抽格（Ray 11-07：「3D 讓他幀數減少 33%」）：每 3 禎只重算 2 次姿勢，第 3 禎沿用上一張 ——
+     位置與大小照常跟著走（貼的地方是這一禎的），只有動作是頓的，像手繪動畫。
+     `CAD.pat` 是節拍（1＝重畫、0＝沿用），要改節奏只改這一串。 */
+  const keep=!o.noHold && CAD.dpx>0 && !CAD.pat[CAD.n++ % CAD.pat.length];
+  if(keep){
+    const c=o.ctx; c.save(); c.imageSmoothingEnabled=false; if(o.clip) o.clip();
+    c.drawImage(cv, 0, MAXPX-CAD.dpx, CAD.dpx, CAD.dpx, o.x-half, o.y-half, half*2, half*2);
+    c.restore(); stat.held=(stat.held||0)+1; return true;
+  }
+  CAD.dpx=dpx;
   let q=null; if(tq && tqQ.length<4){ q=g.createQuery(); g.beginQuery(tq.TIME_ELAPSED_EXT,q); }
   g.viewport(0,0,dpx,dpx);
   g.enable(g.SCISSOR_TEST); g.scissor(0,0,dpx,dpx);
@@ -185,7 +195,7 @@ function draw(o){
   for(let i=0;i<tqQ.length;i++){ const qq=tqQ[i];
     if(g.getQueryParameter(qq,g.QUERY_RESULT_AVAILABLE) && !g.getParameter(tq.GPU_DISJOINT_EXT)){ gpuMs.push(g.getQueryParameter(qq,g.QUERY_RESULT)/1e6); if(gpuMs.length>240) gpuMs.shift(); g.deleteQuery(qq); tqQ.splice(i--,1); } }
   stat.px=dpx;
-  /* 貼回 2D 畫面（WebGL 畫布要在同一個工作裡讀，不必 preserveDrawingBuffer） */
+  /* 貼回 2D 畫面 */
   const c=o.ctx; c.save(); c.imageSmoothingEnabled=false;
   if(o.clip) o.clip();
   c.drawImage(cv, 0, MAXPX-dpx, dpx, dpx, o.x-half, o.y-half, half*2, half*2);
@@ -195,15 +205,16 @@ function draw(o){
 }
 
 const off={ on:true }, DBG={ yaw:null, noTex:false };
+const CAD={ pat:[1,1,0], n:0, dpx:0 };
 /* 基準測試：同步連畫 n 次，每次讀回 1 像素逼 GPU 跑完 —— 量「多畫一隻 3D 龍」的增量成本（不受分頁可見與否影響） */
 function bench(n, halfPx){
   const cv2=document.createElement('canvas'); cv2.width=cv2.height=halfPx*2; const c2=cv2.getContext('2d');
-  const px=new Uint8Array(4), o={ ctx:c2, x:halfPx, y:halfPx, lat:0, h:60, z:1200, l:0, f:-1, W:375, VIEWH:430, now:0, lit:[1,1,1], pxScale:1 };
+  const px=new Uint8Array(4), o={ noHold:true, ctx:c2, x:halfPx, y:halfPx, lat:0, h:60, z:1200, l:0, f:-1, W:375, VIEWH:430, now:0, lit:[1,1,1], pxScale:1 };
   draw(o); g.readPixels(0,0,1,1,g.RGBA,g.UNSIGNED_BYTE,px);
   const run=k=>{ const t0=performance.now(); for(let i=0;i<k;i++){ o.now=i*16.7; draw(o); } g.readPixels(0,0,1,1,g.RGBA,g.UNSIGNED_BYTE,px); return performance.now()-t0; };
   const a=run(1), b=run(n+1);                                  // 兩次都含一次讀回同步 → 相減就是 n 次繪製
   return { ms:(b-a)/n, px:stat.px, tris:(nIdx/3)|0 };
 }
-window.DRG3D={ mode:MODE, bench, off, dbg:DBG, gpu:()=>gpuMs.length? gpuMs.reduce((a,b)=>a+b,0)/gpuMs.length : null, tris:()=>(nIdx/3)|0, ready:()=>ready&&off.on, err:()=>err, draw, stat, hinge:()=>hinge };
+window.DRG3D={ mode:MODE, hold:/[?&]drg3dhold/.test(location.search), cad:CAD, bench, off, dbg:DBG, gpu:()=>gpuMs.length? gpuMs.reduce((a,b)=>a+b,0)/gpuMs.length : null, tris:()=>(nIdx/3)|0, ready:()=>ready&&off.on, err:()=>err, draw, stat, hinge:()=>hinge };
 load();
 })();
