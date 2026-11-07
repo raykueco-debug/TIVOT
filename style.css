@@ -393,6 +393,12 @@
   #top .en-fall,#top .en-idle{position:absolute;pointer-events:none;}   /* .en-idle：換上的立繪的待機循環（enemy.startIdleLoop，ver -2068） */   /* 單人倒地動畫（enemy.playKillFall，ver -2065） */
   #enemyGroup .eg-fall{position:absolute;pointer-events:none;transition:opacity .4s ease-in;}   /* 倒地動畫（enemy.playFall，ver -2062） */
   #enemyGroup .eg-fall.eg-gone{opacity:0;}
+  /* 群戰逐人的待機／攻擊層（enemy.showMemberAnim，ver -2581）與程式畫的槍口火光 */
+  #enemyGroup .eg-anim{position:absolute;pointer-events:none;}
+  #enemyGroup .eg-muzzle{position:absolute;pointer-events:none;border-radius:50%;mix-blend-mode:screen;
+    background:radial-gradient(circle, rgba(255,250,220,1) 0 18%, rgba(255,190,80,.85) 32%, rgba(255,90,20,0) 70%);
+    animation:egMuzzle .2s ease-out forwards;}
+  @keyframes egMuzzle{from{transform:scale(.5);opacity:1}to{transform:scale(1.25);opacity:0}}
   #enemyGroup .eg-shadow{transition:opacity .5s ease-in;}
   #enemyGroup .eg-shadow.eg-down{opacity:0;}
   #enemyGroup .eg-guard.eg-down{transform:translateY(6%);opacity:0;filter:brightness(.4);}

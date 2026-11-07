@@ -2807,21 +2807,24 @@ const HOLY_SWAP_MS = 2500;   // ver -1449：與 enemy.js 的 HOLY_GROW_MS 同一
    勾鎖射出後沒戰勝就進登艦戰」）══ 一局一次：血掉到 hp% 以下 → 射勾索；sec 秒內沒擊沉 → 船飛走、船員滑下、
    一個人影的剪影全景落下、劃過時換成 `to` 那張卡（背景寫在那張卡上；-2559 起不閉棺）。擊沉了就跟著船一起收（clearGrapple）。
    判定掛在 updateBars（所有血量變動的匯流點，同 checkLowHpBuff）。 */
-let grappleFired=false, grappleT=0;
-function resetGrapple(){ grappleFired=false; clearTimeout(grappleT); grappleT=0; enemy.clearGrapple(); }
+let grappleFired=false, grappleT=0, grappleTo=null;
+function resetGrapple(){ grappleFired=false; grappleTo=null; clearTimeout(grappleT); grappleT=0; enemy.clearGrapple(); }
 function maybeGrapple(){
   const card=(GAME_CONFIG.enemies||{})[state.currentEnemyKey], g=card && card.grapple;
   if(grappleFired && grappleT && state.enemyHp<=0){ clearTimeout(grappleT); grappleT=0; enemy.clearGrapple(); return; }   // 時限內擊沉
   if(!g || grappleFired || state.over || morphSwapping || state.enemyHp<=0) return;
   if(state.enemyHp > state.enemyMax*((+g.hp||50)/100)) return;
   grappleFired=true;
+  /* 要登艦的那一組現在就抽、現在就預載（-2589）：10 秒後換卡時格子多半已經載好，不會先站著不動 */
+  grappleTo=Array.isArray(g.to) ? g.to[(Math.random()*g.to.length)|0] : g.to;
+  enemy.preloadGroupCard(grappleTo);
   enemy.fireGrapple(g);
   const key=state.currentEnemyKey;
   grappleT=setTimeout(()=>{ grappleT=0; boardShip(g, key); }, (g.sec||10)*1000 + enemy.grappleFlyMs());
 }
 function boardShip(g, key){
   /* `to` 可以是一張卡或一串卡（隨機抽一張，-2575 空賊群戰 8 組） */
-  const to=Array.isArray(g.to) ? g.to[(Math.random()*g.to.length)|0] : g.to;
+  const to=grappleTo || (Array.isArray(g.to) ? g.to[(Math.random()*g.to.length)|0] : g.to);
   if(state.over || state.enemyHp<=0 || state.currentEnemyKey!==key || !(GAME_CONFIG.enemies||{})[to]){ enemy.clearGrapple(); return; }
   morphSwapping=true; state.transitioning=true;      // 演出期間鎖點擊、不吃傷害（同換型態）
   stopIntervalTimer();

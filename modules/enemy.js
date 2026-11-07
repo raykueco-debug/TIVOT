@@ -1895,6 +1895,7 @@ function airAssault(en, opts){
 }
 export function onAssaultLand(){
   if(!sky){ const en=curCard(); if(isAirBio(en)) return airAssault(en);
+    if(groupCard && groupCard.group && groupCard.group.atk) return groupAttack();   // 群戰：隨機一人開槍（-2581）
     if(en && en.assaultFx && en.assaultFx.type==='broadside') playBroadside(en.assaultFx); return playActionClip('atk'); }   // 一般怪：有攻擊動畫就演（ver -2472），回傳打到玩家的那一刻
   if(sky.lunge) return 0;
   const el=idleEl || $('enemyImg'); if(!el) return 0;
@@ -2241,27 +2242,115 @@ function buildGroup(en){
         if(!j || groupCard!==en) return;
         im._fall={ j, frames:Array.from({length:j.frames||0},(_,i)=>{ const f=new Image(); f.src=base+'frame_'+String(i).padStart(2,'0')+'.webp'; return f; }) };
       }).catch(()=>{}); }
+    if(G.idle) loadMemberClip(G.idle+pre+n+'/').then(c=>{ if(c && groupCard===en){ im._idle=c; showMemberAnim(im); } });
+    if(G.atk)  loadMemberClip(G.atk+pre+n+'/').then(c=>{ if(c && groupCard===en) im._atk=c; });
     g.appendChild(im);
   }
+  startGroupAnim();
+}
+/* ══ 群戰逐人的待機／攻擊（卡上 `group.idle`／`group.atk`，ver -2581，空賊 8 組 28 人）══
+   每個人一組 `<prefix><n>/frame_XX.webp＋anim.json`（box 是分層畫布座標，同倒地）。
+   畫在分層上面的一張 `.eg-anim`（分層本身留著、只是看不見：落點判定、影子、倒地都照舊用它）。
+   · 待機：一支 setInterval 推全部人（各自的 fps，每人錯開幾格）。
+   · 攻擊（onAssaultLand）：隨機挑一個還站著的人，順放 A（槍口火光由程式畫在 `group.flashFrame` 那一格），
+     再倒放回去（R＝A 倒放，Ray），回待機。回傳開槍那一刻（扣血照它延後）。 */
+const memberClips=new Map();   // 資料夾 → Promise（同一組預載過就不再抓第二次）
+function loadMemberClip(dir){
+  if(memberClips.has(dir)) return memberClips.get(dir);
+  const p=loadMemberClipRaw(dir); memberClips.set(dir, p); p.then(c=>{ if(!c) memberClips.delete(dir); }); return p;
+}
+/* 先把一張群戰卡的逐人 I／A／E 抓下來（ver -2589：空賊船射勾索那一刻就預載要登艦的那一組，10 秒後換卡時多半已經載好） */
+export function preloadGroupCard(key){
+  const en=(GAME_CONFIG.enemies||{})[key], G=en && en.group; if(!G) return;
+  const pre=G.prefix||'guard_';
+  for(const n of G.order){
+    if(G.idle) loadMemberClip(G.idle+pre+n+'/');
+    if(G.atk)  loadMemberClip(G.atk+pre+n+'/');
+    if(G.fall) loadMemberClip(G.fall+pre+n+'/');   // 倒地走 buildGroup 自己的讀法，這裡只是把圖暖進快取
+    { const im=new Image(); im.src=G.dir+pre+n+'.webp'; }
+  }
+}
+function loadMemberClipRaw(dir){
+  return fetch(dir+'anim.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j) return null;
+    const fr=Array.from({length:j.frames||0},(_,i)=>{ const f=new Image(); f.src=dir+'frame_'+String(i).padStart(2,'0')+'.webp'; return f; });
+    return Promise.all(fr.map(f=>f.decode ? f.decode().catch(()=>{}) : 0)).then(()=> (fr.length && fr.every(f=>f.naturalWidth)) ? { j, fr } : null);
+  }).catch(()=>null);
+}
+function showMemberAnim(im){
+  if(im.classList.contains('eg-down') || im.classList.contains('eg-leaving')) return;
+  if(!im._ov){ const ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im.after(ov); im._ov=ov; }
+  placeOnLayer(im._ov, im, im._idle.j); im._ov.src=im._idle.fr[0].src; im.style.opacity='0';
+}
+function dropMemberAnim(im){ if(im._ov){ im._ov.remove(); im._ov=null; } im._acting=false; im.style.opacity=''; }
+let groupAnimT=0;
+function startGroupAnim(){
+  clearInterval(groupAnimT); groupAnimT=0;
+  const G=groupCard && groupCard.group; if(!G || !G.idle) return;
+  const t0=performance.now();
+  groupAnimT=setInterval(()=>{ const g=$('enemyGroup'); if(!g || !groupCard){ clearInterval(groupAnimT); groupAnimT=0; return; }
+    const t=performance.now()-t0;
+    for(const im of g.querySelectorAll('.eg-guard')){ const c=im._idle; if(!c || !im._ov || im._acting) continue;
+      im._ov.src=c.fr[Math.floor(t*(c.j.fps||8)/1000+(+im.dataset.n||0)*3)%c.fr.length].src; }
+  }, 1000/12);
+}
+function groupAttack(){
+  const g=$('enemyGroup'), G=groupCard && groupCard.group; if(!g || !G || !G.atk) return 0;
+  const cand=[...g.querySelectorAll('.eg-guard')].filter(im=>im._atk && im._ov && !im._acting && !im.classList.contains('eg-down') && !im.classList.contains('eg-leaving'));
+  if(!cand.length) return 0;
+  const im=cand[(Math.random()*cand.length)|0], A=im._atk, N=A.fr.length, fps=A.j.fps||16, ff=Math.min(N-1, G.flashFrame!=null ? G.flashFrame : 5);
+  im._acting=true; placeOnLayer(im._ov, im, A.j);
+  let i=0, dir=1; im._ov.src=A.fr[0].src;
+  const t=setInterval(()=>{
+    if(!im._ov || !groupCard){ clearInterval(t); return; }
+    i+=dir;
+    if(dir>0 && i===ff) groupMuzzle(im, A.j);
+    if(i>=N-1) dir=-1;
+    if(i<=0 && dir<0){ clearInterval(t); im._acting=false; if(im._idle) placeOnLayer(im._ov, im, im._idle.j); return; }
+    im._ov.src=A.fr[Math.max(0,Math.min(N-1,i))].src;
+  }, 1000/fps);
+  return Math.round(ff*1000/fps);
+}
+/* 槍口火光（程式畫，Ray：「開槍火光用程式」）：卡上 `group.muzzle[n]`＝那個人槍口在分層畫布上的點；沒寫就畫在 A 那一格框的上半中段（暫代）。 */
+function groupMuzzle(im, j){
+  const g=$('enemyGroup'); if(!g) return;
+  const G=groupCard.group, cv=j.canvas||[1254,1254], m=layerMap(im, cv[0], cv[1]); if(!m) return;
+  const mz=(G.muzzle && G.muzzle[im.dataset.n]) || [j.box[0]+j.box[2]*0.5, j.box[1]+j.box[3]*0.35];
+  const x=m.ox+mz[0]*m.k, y=m.oy+mz[1]*m.k, R=Math.max(14, m.k*90);
+  const f=document.createElement('div'); f.className='eg-muzzle';
+  f.style.cssText=`left:${x-R}px;top:${y-R}px;width:${R*2}px;height:${R*2}px;`;
+  g.appendChild(f); setTimeout(()=>f.remove(), 200);
 }
 /* 取景變了（fit／視窗尺寸）就重擺每個人的影子。 */
 function placeGroupShadows(){
   const g=$('enemyGroup'); if(!g || !groupCard) return;
-  for(const im of g.querySelectorAll('.eg-guard')) if(im._sh) groundShadow.place(im, im._sh);
+  for(const im of g.querySelectorAll('.eg-guard')){ if(im._sh) groundShadow.place(im, im._sh);
+    if(im._ov){ const c=im._acting ? im._atk : im._idle; if(c) placeOnLayer(im._ov, im, c.j); } }   // 待機／攻擊層跟著重擺（-2581）
 }
 try{ window.addEventListener('resize', ()=>placeGroupShadows()); }catch(_){}
 /* 最後一發子彈打在 `#top` 的哪一點（px，#top 相對）。combat 的 gunHitOnEnemy 每一發都記。 */
 export function noteImpact(x, y){ lastImpact = (x!=null && y!=null) ? { x, y } : null; }
 /* `#top` 上的一點 → 圖上的比例座標（照 object-fit:cover ＋ object-position 換算）。 */
+/* ══ 分層畫布 → #enemyGroup 框內的位置（唯一一支，鐵律 7；ver -2581）══
+   照那一層**實際的** object-fit（cover 或 contain，卡上 fit.mode 抄過來的）與 object-position 換算。
+   ⚠ -2581 之前倒地與落點各自寫死 cover（Math.max）—— contain 的卡（紫月軍、空賊）倒地格與落點都會擺錯位置。 */
+function layerMap(im, cw, ch){
+  const g=$('enemyGroup'); if(!g) return null;
+  const W=g.clientWidth, H=g.clientHeight, cs=getComputedStyle(im);
+  const k=(cs.objectFit==='contain') ? Math.min(W/cw, H/ch) : Math.max(W/cw, H/ch), dw=cw*k, dh=ch*k;
+  const p=String(cs.objectPosition||'50% 0%').split(/\s+/).map(v=>parseFloat(v)/100);
+  return { k, dw, dh, ox:(W-dw)*(isNaN(p[0])?0.5:p[0]), oy:(H-dh)*(isNaN(p[1])?0:p[1]) };
+}
+/* anim.json 的 box（分層畫布座標）擺到 el 上 */
+function placeOnLayer(el, im, j){
+  const cw=(j.canvas||[1024,1536])[0], ch=(j.canvas||[1024,1536])[1], b=j.box||[0,0,cw,ch], m=layerMap(im, cw, ch); if(!m) return;
+  el.style.left=(m.ox+b[0]*m.k)+'px'; el.style.top=(m.oy+b[1]*m.k)+'px'; el.style.width=(b[2]*m.k)+'px'; el.style.height=(b[3]*m.k)+'px';
+}
 function toImageUV(x, y, im){
   const g=$('enemyGroup'), top=$('top'); if(!g || !top || !im.naturalWidth) return null;
   const gr=g.getBoundingClientRect(), tr=top.getBoundingClientRect();
   x += tr.left-gr.left; y += tr.top-gr.top;          // 落點是 #top 相對 → 換成這一層的框
-  const W=gr.width, H=gr.height, iw=im.naturalWidth, ih=im.naturalHeight;
-  const k=Math.max(W/iw, H/ih), dw=iw*k, dh=ih*k;
-  const p=String(getComputedStyle(im).objectPosition||'50% 0%').split(/\s+/).map(v=>parseFloat(v)/100);
-  const ox=(W-dw)*(isNaN(p[0])?0.5:p[0]), oy=(H-dh)*(isNaN(p[1])?0:p[1]);
-  return { u:(x-ox)/dw, v:(y-oy)/dh };
+  const m=layerMap(im, im.naturalWidth, im.naturalHeight); if(!m) return null;
+  return { u:(x-m.ox)/m.dw, v:(y-m.oy)/m.dh };
 }
 /* 反方向：圖上的比例座標 → `#top` 的百分比（BR 瞄準點用的座標系）。 */
 function imageUVToTopPct(u, v, im){
@@ -2351,6 +2440,7 @@ function purgeGuard(im){
 }
 /* 倒下：**唯一的一支**（Ray：之後會有倒地動畫 —— 換的時候只改這裡）。 */
 function fallGuard(im){
+  dropMemberAnim(im);   // 待機／攻擊那一層收掉，分層本身交給倒地（ver -2581）
   const F=im._fall;
   if(F && F.frames.length && F.frames.every(f=>f.complete && f.naturalWidth)) playFall(im, F);
   else if(isPurify()) purgeGuard(im);   // 禍魘大軍（ver -2223，Ray：「禍魘大軍的怪被擊倒要跑淨化」）
@@ -2395,13 +2485,9 @@ export function fallPendingMs(){ return Math.max(0, fallUntil-Date.now()); }
    ⚠ 疊層：`back`（掩體後往後倒、往下掉出視線）**改畫在掩體下面**，才會掉到掩體後；forward／prone 照舊在原位（掩體上面）。 */
 function playFall(im, F){
   const g=$('enemyGroup'); if(!g || !groupCard) return;
-  const G=groupCard.group, j=F.j, cw=(j.canvas||[1024,1536])[0], ch=(j.canvas||[1024,1536])[1], b=j.box||[0,0,cw,ch];
-  const W=g.clientWidth, H=g.clientHeight, k=Math.max(W/cw, H/ch), dw=cw*k, dh=ch*k;
-  const p=String(getComputedStyle(im).objectPosition||'50% 0%').split(/\s+/).map(x=>parseFloat(x)/100);
-  const ox=(W-dw)*(isNaN(p[0])?0.5:p[0]), oy=(H-dh)*(isNaN(p[1])?0:p[1]);
+  const G=groupCard.group, j=F.j;
   const el=document.createElement('img'); el.className='eg-fall'; el.alt='';
-  el.style.left=(ox+b[0]*k)+'px'; el.style.top=(oy+b[1]*k)+'px';
-  el.style.width=(b[2]*k)+'px'; el.style.height=(b[3]*k)+'px';
+  placeOnLayer(el, im, j);
   el.src=F.frames[0].src;
   const cover=g.querySelector('.eg-cover');
   /* `group.fallLead`（ver -2070，帝都衛士／米夏親衛隊：「第 1 格就是原本那張分層」）＝中彈後原圖先停這麼久，才換成 5 格。

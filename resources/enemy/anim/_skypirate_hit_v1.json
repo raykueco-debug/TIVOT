@@ -1,0 +1,466 @@
+{
+ "man_skypirate_1": {
+  "pirate_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    0,
+    0,
+    824,
+    1164
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1110
+  },
+  "pirate_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    335,
+    0,
+    877,
+    1127
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1053
+  },
+  "pirate_3": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    0,
+    197,
+    709,
+    1057
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1006
+  },
+  "pirate_4": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    608,
+    230,
+    636,
+    1024
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 923
+  }
+ },
+ "man_skypirate_2": {
+  "pirate_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    23,
+    0,
+    803,
+    1104
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1062
+  },
+  "pirate_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    461,
+    0,
+    793,
+    1151
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1125
+  },
+  "pirate_3": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    0,
+    32,
+    872,
+    1222
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1165
+  },
+  "pirate_4": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    600,
+    238,
+    654,
+    1012
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1038
+  }
+ },
+ "man_skypirate_3": {
+  "pirate_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    22,
+    0,
+    807,
+    1171
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1074
+  },
+  "pirate_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    388,
+    0,
+    797,
+    1113
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 884
+  },
+  "pirate_3": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    0,
+    36,
+    918,
+    1218
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1328
+  },
+  "pirate_4": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    619,
+    297,
+    635,
+    957
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1138
+  }
+ },
+ "man_skypirate_4": {
+  "pirate_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    0,
+    0,
+    856,
+    1163
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1516
+  },
+  "pirate_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    386,
+    18,
+    868,
+    1145
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1529
+  },
+  "pirate_3": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    161,
+    260,
+    913,
+    994
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1378
+  }
+ },
+ "man_skypirate_5": {
+  "pirate_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    0,
+    1,
+    901,
+    1231
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1845
+  },
+  "pirate_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    308,
+    0,
+    946,
+    1254
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1693
+  },
+  "pirate_3": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    8,
+    200,
+    719,
+    1054
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1265
+  },
+  "pirate_4": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    457,
+    25,
+    797,
+    1213
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1311
+  }
+ },
+ "man_skypirate_6": {
+  "pirate_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    128,
+    59,
+    735,
+    1041
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 954
+  },
+  "pirate_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    384,
+    49,
+    767,
+    1092
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 972
+  },
+  "pirate_3": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    274,
+    363,
+    706,
+    796
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 874
+  }
+ },
+ "man_skypirate_7": {
+  "pirate_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    0,
+    9,
+    682,
+    1098
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1020
+  },
+  "pirate_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    323,
+    0,
+    806,
+    1098
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1142
+  },
+  "pirate_3": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    125,
+    55,
+    826,
+    1169
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1374
+  },
+  "pirate_4": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    671,
+    247,
+    583,
+    931
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 1008
+  }
+ },
+ "man_skypirate_8": {
+  "pirate_1": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    55,
+    0,
+    830,
+    1169
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 943
+  },
+  "pirate_2": {
+   "canvas": [
+    1254,
+    1254
+   ],
+   "box": [
+    576,
+    124,
+    531,
+    1010
+   ],
+   "frames": 15,
+   "fps": 24,
+   "loop": false,
+   "kb": 794
+  }
+ }
+}

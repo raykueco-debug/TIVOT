@@ -30,9 +30,9 @@
 | 件 | 路徑 | 狀態 |
 |---|---|---|
 | 勾索鉤爪（扣在數字盤上緣） | `resources/fx/grapple/hook.webp`（256×265，盤面上緣對齊圖高 60.7%） | ✔ 已交、已推（491ab6e0） |
+| 甲板戰鬥背景四時段（以 deck_rapidsail 的船為底重畫：眼高平視、中央 55% 空甲板站人） | `background/deck/deck_battle_{day,dawn,dusk,night}.webp`（1536×1024） | ✔ 已交（Ray 11-06 點頭構圖） |
 | 登艦戰落下人影（純黑剪影＋飄動 4 格） | `resources/fx/skypirate_drop_anim/*/` 12 支 | ✔ 程式已接（f68d7c77，`shadowAnims`） |
 
 ## 三、還沒做
 
 - 空賊頭目單人立繪、從鉤索滑下的空賊（`resources/fx/grapple/slide_*.webp`）。
-- 甲板戰背景四時段（`background/deck/` 已有 `deck_destroied`／`deck_rapidsail`，要不要當底等 Ray）。
