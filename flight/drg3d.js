@@ -357,7 +357,7 @@ function fightUi(){
     box=document.createElement('div'); box.id='drg3dFight';
     box.style.cssText='position:fixed;top:calc(env(safe-area-inset-top) + 92px);left:6px;z-index:99999;'+
       'font:600 12px sans-serif;color:#fff;background:rgba(0,0,0,.5);border-radius:12px;padding:5px 9px;user-select:none;width:250px';
-    let h='<div id="drg3dHead" style="display:flex;justify-content:space-between"><span>現在距離 <span id="drg3dDist"></span></span><span><button id="drg3dSave" style="font:inherit;color:#fff;background:#2e7d32;border:0;border-radius:8px;padding:2px 10px">已儲存 ✓</button> <span id="drg3dFold" style="padding:0 4px">收合 ▲</span></span></div><div id="drg3dBody">';
+    let h='<div id="drg3dHead" style="display:flex;justify-content:space-between"><span>現在距離 <span id="drg3dDist"></span></span><span><button id="drg3dRe" style="font:inherit;color:#fff;background:#555;border:0;border-radius:8px;padding:2px 8px">重刷</button> <button id="drg3dSave" style="font:inherit;color:#fff;background:#2e7d32;border:0;border-radius:8px;padding:2px 10px">已儲存 ✓</button> <span id="drg3dFold" style="padding:0 4px">收合 ▲</span></span></div><div id="drg3dBody">';
     for(const [f,t,mn,mx,st] of SLIDERS) h+='<div style="display:flex;align-items:center;gap:6px"><span style="width:84px">'+t+'</span>'+
       '<input data-f="'+f+'" type="range" min="'+mn+'" max="'+mx+'" step="'+st+'" style="flex:1"><b data-v="'+f+'" style="width:44px;text-align:right"></b></div>';
     h+='<div style="display:flex;align-items:center;gap:6px"><span style="width:84px">出場方式</span><select id="drg3dAp" style="flex:1;font:inherit">'+
@@ -365,6 +365,7 @@ function fightUi(){
     h+='<div id="drg3dSum" style="font-weight:400;font-size:11px;opacity:.85"></div></div><div id="drg3dHit" style="color:#ffd27a;min-height:15px"></div>';
     box.innerHTML=h; document.body.appendChild(box);
     box.querySelector('#drg3dSave').addEventListener('click',tuneWrite);
+    box.querySelector('#drg3dRe').addEventListener('click',()=>{ window.DRG3D.respawn=true; });   // index.html 的掛鉤收掉現在那隻、0.3 秒後重刷
     box.querySelector('#drg3dAp').addEventListener('change',e=>{ const kk=HOLDLIST[holdIx];
       if(e.target.value) TUNE.approach[kk]=e.target.value; else delete TUNE.approach[kk]; tuneSave(); fightUi(); });
     addEventListener('beforeunload',e=>{ if(tuneDirty){ e.preventDefault(); e.returnValue=''; } });
