@@ -299,12 +299,14 @@ function bench(n, halfPx, kind){
 /* 遭遇測試的調整值（大小×、開戰距離）：存在這個瀏覽器，重整不會丟；定案後由 Ray 報數字寫進 DEF／ENEMY_CFG */
 /* 調整值的唯一真相：`flight/enemy/sky3d_tune.json`（遭遇測試面板的「儲存」寫它；開機讀它）。
    滑桿改的是記憶體裡這一份，按「儲存」才寫回檔案（devserver `/__save/` 白名單）。 */
-const TUNE={ size:{}, engage:{}, count:{}, anim:{}, speed:{} };
+const TUNE={ size:{}, engage:{}, count:{}, anim:{}, speed:{}, approach:{}, chase:{}, gone:{} };
 let tuneDirty=false;
 (()=>{ try{ const x=new XMLHttpRequest(); x.open('GET','enemy/sky3d_tune.json?v='+Date.now(),false); x.send();   // 同步：第一幀就要用到
   if(x.status===200){ const t=JSON.parse(x.responseText); for(const k in TUNE) if(t[k] && typeof t[k]==='object') TUNE[k]=t[k]; } }catch(e){} })();
-const TUNE_DEF={ engage:null, size:1, count:1, anim:1, speed:1 };   // null＝沿用 ENEMY_CFG.engage
-const tuneOf=(f,k)=>{ const v=TUNE[f][k]; return v!=null ? v : (f==='engage' ? (()=>{ try{ return ENEMY_CFG.engage; }catch(e){ return 300; } })() : TUNE_DEF[f]); };
+const TUNE_DEF={ engage:null, size:1, count:1, anim:1, speed:1, approach:'', chase:null, gone:3400 };   // null＝沿用 ENEMY_CFG.engage
+const tuneOf=(f,k)=>{ const v=TUNE[f][k]; if(v!=null) return v;
+  try{ if(f==='engage') return ENEMY_CFG.engage; if(f==='chase') return Math.round(ENEMY_CFG.spawnDist*ENEMY_CFG.chaseAt); }catch(e){ return f==='engage'?300:1680; }
+  return TUNE_DEF[f]; };
 function tuneSave(){ tuneDirty=true; const b=document.getElementById('drg3dSave'); if(b){ b.textContent='儲存 *'; b.style.background='#c0392b'; } }
 async function tuneWrite(){
   const b=document.getElementById('drg3dSave');
@@ -346,7 +348,8 @@ function holdUi(){
    index.html 的掛鉤：沒怪就 fightTimer 倒數後 spawnEnemy；到距離就叫 engaged() 而不交棒。 */
 let fightLast=null;
 const SLIDERS=[ ['engage','開戰距離',100,1500,10,0], ['size','大小 ×',0.3,3,0.05,2], ['count','數量',1,8,1,0],
-  ['anim','動作速度 ×',0.2,3,0.05,2], ['speed','接近速度 ×',0.2,4,0.05,2] ];
+  ['anim','動作速度 ×',0.2,3,0.05,2], ['speed','接近速度 ×',0.2,4,0.05,2], ['chase','巡航轉追',300,3000,50,0], ['gone','巡航消失',1000,6000,100,0] ];
+const APPROACH=[['','側面出、立刻追（原本）'],['direct','出怪後直接飛來'],['cruise','側面巡航，靠近才追']];
 function fightUi(){
   let box=document.getElementById('drg3dFight');
   const k=HOLDLIST[holdIx];
@@ -357,9 +360,13 @@ function fightUi(){
     let h='<div id="drg3dHead" style="display:flex;justify-content:space-between"><span>現在距離 <span id="drg3dDist"></span></span><span><button id="drg3dSave" style="font:inherit;color:#fff;background:#2e7d32;border:0;border-radius:8px;padding:2px 10px">已儲存 ✓</button> <span id="drg3dFold" style="padding:0 4px">收合 ▲</span></span></div><div id="drg3dBody">';
     for(const [f,t,mn,mx,st] of SLIDERS) h+='<div style="display:flex;align-items:center;gap:6px"><span style="width:84px">'+t+'</span>'+
       '<input data-f="'+f+'" type="range" min="'+mn+'" max="'+mx+'" step="'+st+'" style="flex:1"><b data-v="'+f+'" style="width:44px;text-align:right"></b></div>';
+    h+='<div style="display:flex;align-items:center;gap:6px"><span style="width:84px">出場方式</span><select id="drg3dAp" style="flex:1;font:inherit">'+
+      APPROACH.map(([v,t])=>'<option value="'+v+'">'+t+'</option>').join('')+'</select></div>';
     h+='<div id="drg3dSum" style="font-weight:400;font-size:11px;opacity:.85"></div></div><div id="drg3dHit" style="color:#ffd27a;min-height:15px"></div>';
     box.innerHTML=h; document.body.appendChild(box);
     box.querySelector('#drg3dSave').addEventListener('click',tuneWrite);
+    box.querySelector('#drg3dAp').addEventListener('change',e=>{ const kk=HOLDLIST[holdIx];
+      if(e.target.value) TUNE.approach[kk]=e.target.value; else delete TUNE.approach[kk]; tuneSave(); fightUi(); });
     addEventListener('beforeunload',e=>{ if(tuneDirty){ e.preventDefault(); e.returnValue=''; } });
     box.querySelector('#drg3dFold').addEventListener('click',()=>{ const b=box.querySelector('#drg3dBody'), f=b.style.display==='none';
       b.style.display=f?'':'none'; box.querySelector('#drg3dFold').textContent=f?'收合 ▲':'展開 ▼'; });
@@ -369,9 +376,10 @@ function fightUi(){
   }
   for(const [f,,,,,dg] of SLIDERS){ const v=tuneOf(f,k);
     box.querySelector('input[data-f="'+f+'"]').value=v; box.querySelector('b[data-v="'+f+'"]').textContent=(+v).toFixed(dg); }
+  box.querySelector('#drg3dAp').value=TUNE.approach[k]||'';
   const nm=x=>{ try{ return ENEMY_KINDS[x].name; }catch(e){ return x; } };
   const kinds=new Set(); for(const f in TUNE) for(const x in TUNE[f]) kinds.add(x);
-  const rows=[...kinds].map(x=>nm(x)+'：'+SLIDERS.filter(([f])=>TUNE[f][x]!=null).map(([f,t,,,,dg])=>t.replace(' ×','')+' '+(+TUNE[f][x]).toFixed(dg)).join('／'));
+  const rows=[...kinds].map(x=>nm(x)+'：'+SLIDERS.filter(([f])=>TUNE[f][x]!=null).map(([f,t,,,,dg])=>t.replace(' ×','')+' '+(+TUNE[f][x]).toFixed(dg)).concat(TUNE.approach[x]?[APPROACH.find(a=>a[0]===TUNE.approach[x])[1]]:[]).join('／'));
   box.querySelector('#drg3dSum').innerHTML=rows.length?('已調：<br>'+rows.join('<br>')):'';
 }
 function fightTick(dist){ const d=document.getElementById('drg3dDist'); if(d) d.textContent=dist!=null?('現在 '+Math.round(dist)):''; }
