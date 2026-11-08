@@ -285,10 +285,17 @@ function draw(o){
   g.uniform3f(U.uMin,R.bbMin[0],R.bbMin[1],R.bbMin[2]); g.uniform3f(U.uMax,R.bbMax[0],R.bbMax[1],R.bbMax[2]);
   g.uniform1f(U.uUseTex,(R.texOK&&!DBG.noTex)?1:0); g.activeTexture(g.TEXTURE0); g.bindTexture(g.TEXTURE_2D,R.tex); g.uniform1i(U.uTex,0);
   /* ① 描邊：背面外擴、深色 */
-  const lineW=Math.max(0.9, 1.3*dpr)/ (fx*sc*sWorld/o.z);   // 約 1.3 裝置像素寬，換回模型單位
-  g.enable(g.CULL_FACE); g.cullFace(g.FRONT);   // 描邊只畫背面（外擴後露在本體外的那一圈）
-  g.uniform1f(U.uOut,lineW); g.uniform1f(U.uLine,1); g.uniform3f(U.uLineC,0.16*o.lit[0],0.11*o.lit[1],0.10*o.lit[2]);
-  g.drawElements(g.TRIANGLES,R.nIdx,R.idxT,0);
+  /* 描邊粗細照畫面上的大小收（Ray：「縮了以後只剩線的顏色」）：怪在畫面上的半徑小於 lineMin（裝置像素）
+     的三倍就開始變細，到 lineMin 以下整條拿掉 —— 細部本身只剩一兩個像素時，1.3 像素的線會把它整個吃掉 */
+  const pxPerUnit=fx*sc*sWorld/o.z, pxR=pxPerUnit*Math.max(span,R.rad), lm=tuneOf('lineMin',kind);
+  const fade=Math.max(0,Math.min(1,(pxR-lm)/(lm*2||1)));
+  const lineW=Math.max(0.9, 1.3*dpr)*tuneOf('line',kind)*fade/pxPerUnit;   // 約 1.3 裝置像素寬，換回模型單位
+  g.enable(g.CULL_FACE);
+  if(lineW>0){
+    g.cullFace(g.FRONT);   // 描邊只畫背面（外擴後露在本體外的那一圈）
+    g.uniform1f(U.uOut,lineW); g.uniform1f(U.uLine,1); g.uniform3f(U.uLineC,0.16*o.lit[0],0.11*o.lit[1],0.10*o.lit[2]);
+    g.drawElements(g.TRIANGLES,R.nIdx,R.idxT,0);
+  }
   /* ② 本體 */
   g.cullFace(g.BACK);
   g.uniform1f(U.uOut,0); g.uniform1f(U.uLine,0);
@@ -319,11 +326,11 @@ function bench(n, halfPx, kind){
 /* 遭遇測試的調整值（大小×、開戰距離）：存在這個瀏覽器，重整不會丟；定案後由 Ray 報數字寫進 DEF／ENEMY_CFG */
 /* 調整值的唯一真相：`flight/enemy/sky3d_tune.json`（遭遇測試面板的「儲存」寫它；開機讀它）。
    滑桿改的是記憶體裡這一份，按「儲存」才寫回檔案（devserver `/__save/` 白名單）。 */
-const TUNE={ size:{}, engage:{}, count:{}, anim:{}, speed:{}, approach:{}, chase:{}, gone:{}, bank:{}, bankT:{}, wave:{}, waveN:{}, tent:{}, tentY:{}, tentN:{} };
+const TUNE={ size:{}, engage:{}, count:{}, anim:{}, speed:{}, approach:{}, chase:{}, gone:{}, bank:{}, bankT:{}, wave:{}, waveN:{}, tent:{}, tentY:{}, tentN:{}, line:{}, lineMin:{} };
 let tuneDirty=false;
 (()=>{ try{ const x=new XMLHttpRequest(); x.open('GET','enemy/sky3d_tune.json?v='+Date.now(),false); x.send();   // 同步：第一幀就要用到
   if(x.status===200){ const t=JSON.parse(x.responseText); for(const k in TUNE) if(t[k] && typeof t[k]==='object') TUNE[k]=t[k]; } }catch(e){} })();
-const TUNE_DEF={ engage:null, size:1, count:1, anim:1, speed:1, approach:'', chase:null, gone:3400, bank:45, bankT:350, wave:0.06, waveN:1.0, tent:0, tentY:0.55, tentN:1.2 };   // null＝沿用 ENEMY_CFG.engage
+const TUNE_DEF={ engage:null, size:1, count:1, anim:1, speed:1, approach:'', chase:null, gone:3400, bank:45, bankT:350, wave:0.06, waveN:1.0, tent:0, tentY:0.55, tentN:1.2, line:1, lineMin:40 };   // null＝沿用 ENEMY_CFG.engage
 const TUNE_KDEF={ sky_gasjelly:{ tent:0.12 } };   // 這一種怪的預設（沒存過才用）
 const tuneOf=(f,k)=>{ const v=TUNE[f][k]; if(v!=null) return v; if(TUNE_KDEF[k] && TUNE_KDEF[k][f]!=null) return TUNE_KDEF[k][f];
   try{ if(f==='engage') return ENEMY_CFG.engage; if(f==='chase') return Math.round(ENEMY_CFG.spawnDist*ENEMY_CFG.chaseAt); }catch(e){ return f==='engage'?300:1680; }
@@ -372,10 +379,11 @@ const SLIDERS=[ ['engage','開戰距離',100,1500,10,0], ['size','大小 ×',0.3
   ['anim','動作速度 ×',0.2,3,0.05,2], ['speed','接近速度 ×',0.2,4,0.05,2], ['chase','巡航轉追',300,3000,50,0], ['gone','巡航消失',1000,6000,100,0],
   ['bank','轉彎傾斜°',0,80,1,0], ['bankT','傾斜快慢ms',80,1200,10,0],
   ['wave','上下扭動',0,0.3,0.005,3], ['waveN','扭動波數',0.2,3,0.05,2],
-  ['tent','觸手蠕動',0,0.4,0.005,3], ['tentY','觸手起點',0,1,0.01,2], ['tentN','觸手波數',0.2,4,0.05,2] ];
+  ['tent','觸手蠕動',0,0.4,0.005,3], ['tentY','觸手起點',0,1,0.01,2], ['tentN','觸手波數',0.2,4,0.05,2],
+  ['line','描邊粗細 ×',0,2,0.05,2], ['lineMin','描邊消失px',0,200,5,0] ];
 /* 面板分組（Ray：「表太長了，加個收合」）：點標題收合／展開，狀態記在這個瀏覽器；預設只開「基本」 */
 const GROUPS=[ ['base','基本',['engage','size','count','anim','speed']], ['app','出場',['chase','gone']], ['bank','轉彎',['bank','bankT']],
-  ['wave','上下扭動',['wave','waveN']], ['tent','觸手',['tent','tentY','tentN']], ['sum','已調清單',[]] ];
+  ['wave','上下扭動',['wave','waveN']], ['tent','觸手',['tent','tentY','tentN']], ['line','描邊',['line','lineMin']], ['sum','已調清單',[]] ];
 const FOLD=(()=>{ try{ return JSON.parse(localStorage.getItem('drg3dFold')||'null')||{ base:true }; }catch(e){ return { base:true }; } })();
 const APPROACH=[['','側面出、立刻追（原本）'],['direct','出怪後直接飛來'],['cruise','側面巡航，靠近才追']];
 function fightUi(){
