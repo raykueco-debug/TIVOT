@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.08-2611';
+export const VERSION = 'ver 2026.11.08-2612';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5735,7 +5735,7 @@ export const ENEMY_MISS = {
 export const ENEMY_DELAY = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_burst_v1/', hit:48 },   // D＝爆炎（81 格；ver -2525 Ray 改：爆炎是 D，之後下一發攻擊 200%，見卡上 delayEmpowers）
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7 },   // 訓練用聖徒 新架勢 攻擊＝延時＝點錯（ver -2527，31 格，最後一格回到架勢）
-  mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_delay_v1/', hit:0 },   // E019 背負祭壇者 延時＝吼叫（ver -2507；只有收回段，第 0 格就是吼叫姿勢）
+  mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_delay_v2/', hit:13 },   // E019 背負祭壇者 延時＝咆哮 v2（ver -2608，取代 delay_v1：中立起手→撲向鏡頭咆哮→收勢回中立；咆哮到位＝第 13 格）
   mon_shinierforest_snake_neutral: { dir:'resources/enemy/anim/mon_shinierforest_snake_atk_v1/', hit:13 },   // E066 水蛇（攻擊＝延時同一支，29 格）
   mon_shinierforest_hog_neutral: { dir:'resources/enemy/anim/mon_shinierforest_hog_atk_v1/', hit:13 },       // E067 山豬（攻擊＝延時同一支，29 格）
   mon_shinierforest_lynx_neutral: { dir:'resources/enemy/anim/mon_shinierforest_lynx_delay_v1/', hit:9 },   // E065 山貓 橫向爪擊（32 格，第 9 格打到）
