@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.08-2606';
+export const VERSION = 'ver 2026.11.08-2607';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -677,7 +677,7 @@ export const GAME_CONFIG = {
       /* ⚠ ver -1778（Ray）：**非夢魘化期間也能發動** ＝ 主動進入明晰之夢那一套增益（反擊必中＋星的威力升階），
          場上的攻擊圈不重置（不演 cut-in、不重排敵人計時）。一局一次（`partnerActiveUsed`）。
          夢魘化期間的上滑照舊是粉碎本體（`saint.nightmareActive`，不經這裡）。 */
-      /* ⚠⚠ ver -2606（Ray：「安雅主動技效果改成敵人的 d 跟 a 速度減半 10 秒」）：非夢魘化那一半**不再是清醒夢增益**，
+      /* ⚠⚠ ver -2606／-2607（Ray：「安雅主動技效果改成敵人的 d 跟 a 速度減半 10 秒」「縮圈變慢，不是頻率變慢」「d 讀秒 x2」）：非夢魘化那一半**不再是清醒夢增益**，
          改成敵人減速（`slowSec`／`slowMul`，partner.startEnemySlow；倍率唯一計算點 state.enemyTimeK）。下面兩段是舊紀錄。 */
       /* ⚠ ver -1779b（Ray）：非夢魘化那一半**固定 5 秒**（`buffSec`），不吃赤足／鐵蹄的延長 ——
          「用來跟 Boss 丟的密集圈對沖，不用太長駐，免得又變永動機」。 */
@@ -687,7 +687,7 @@ export const GAME_CONFIG = {
          沒寫的話 `startLucidDirect` 會退回被動的 `cutin`（夢魘再臨那支）—— -2084 就是錯在這裡。 */
       active:{ key:'dreamBreakInfo', name:i18nT('清醒夢'), en:'Lucid Dream', context:'board', slowSec:10, slowMul:0.5, cutin:'ci_anya_lucid',
                desc:i18nT('發動方式：戰鬥畫面上滑。<br>')
-                   +i18nT('非夢魘化期間發動：敵人的延時與攻擊速度減半，持續 10 秒。<br>')
+                   +i18nT('非夢魘化期間發動：敵人的延時讀秒與攻擊圈縮圈速度減半，持續 10 秒。<br>')
                    +i18nT('夢魘化期間發動（夢境粉碎）：強制中止爆發時間，保留已削減之 HP，並一次性給予敵最大 HP 20% 的傷害。') },
     },
     /* ══ 索菈娜（ver -803，Ray 交稿）══ 夏爾村村內戰一進場就強配（見 config.battles

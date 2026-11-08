@@ -243,6 +243,7 @@ export function setup(){
     scheduleAssault: defense.scheduleAssault,
     playCutin: saint.playCutin,
     hintCurrentCell,   // 即死防禦後標記當前應點格（一次性續命導航）
+    rescaleCharge: defense.rescaleCharge,   // 清醒夢減速：亮著的圈照比例換算（ver -2607）
     stretchIntervalDeadline,   // 清醒夢減速生效那一刻拉長本盤延時（ver -2606）
     lucidFlood,        // 明晰之夢的金光淹漲時限（ver -746；發動端在 partner.fireBuff）
     saintApi: { lifeReturnAbort: saint.lifeReturnAbort },

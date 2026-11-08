@@ -103,7 +103,7 @@ export function scheduleAssault(firstDelayMs){
        的加秒分支（hitPenaltySec）。 */
   if(state.timeAttack && !state.timeAttack.assaultOn) return;
   const delay = (firstDelayMs!=null) ? firstDelayMs
-                                     : (state.ASSAULT_MIN+Math.random()*(state.ASSAULT_MAX-state.ASSAULT_MIN)) * enemyTimeK();   // 清醒夢減速（ver -2606）
+                                     : state.ASSAULT_MIN+Math.random()*(state.ASSAULT_MAX-state.ASSAULT_MIN);
   state.assaultTimer=setTimeout(()=>{
     // overkill/演出/轉場期間不生成；聖徒化期間照常出攻擊點
     if(state.over||state.enemyHp<=0||state.cutinPlaying||state.transitioning){ scheduleAssault(200); return; }
@@ -189,7 +189,7 @@ export function updateThreats(){
   if(state.cutinPlaying) return;
   const threats=state.threats;
   if(!threats.length){ stopThreatTick(); return; }
-  const CHARGE=state.CHARGE_SECONDS;
+  const CHARGE=chargeSec();
   let hot=false;   // 盤面警戒第二段（ver -462）：任一顆已縮過黃圈帶 → 盤面轉紅光
   for(let i=threats.length-1;i>=0;i--){
     const th=threats[i];
@@ -411,8 +411,9 @@ export function resolveThreat(th, chained){
     api.floatDmg((L.battle && L.battle.boltCd) || 'RELOAD','50%','34%',false);
     return;
   }
-  const left=Math.max(0,state.CHARGE_SECONDS-(Date.now()-th.t0)/1000);
-  const ratio=left/state.CHARGE_SECONDS;
+  const CH=chargeSec();
+  const left=Math.max(0,CH-(Date.now()-th.t0)/1000);
+  const ratio=left/CH;
   const w=weaponOf(state.equippedWeapon, storyMode());   // 本篇／試玩版兩套數值（ver -378）
   /* ══⚠⚠ **散射：範圍內的圈一起反擊**（ver -1700，`config.weaponCatSpread`）══
      先在這顆還掛著的時候量出鄰居（中心距 ≤ 黃圈最大直徑 × 倍數），這一顆判完
@@ -697,6 +698,14 @@ export function flashDefense(color){
 
 /* ---------- 清盤/換盤瞬間：重置敵大絕蓄力與排程 ----------
  *  只負責 threat/ult 部分；間隔（點擊延遲）懲罰倒數由 combat 於 loadBoard 重置。 */
+/* 這一刻的縮圈秒數 ＝ 卡上的 CHARGE_SECONDS × 敵人時間倍率（清醒夢減速，ver -2607：Ray「縮圈變慢，不是頻率變慢」）。
+   縮圈進度只准問它（tick 與判定兩處）。 */
+function chargeSec(){ return state.CHARGE_SECONDS * enemyTimeK(); }
+/* 倍率切換那一刻：已亮著的圈照比例換算 t0，進度不跳（同 enrage 那一行的作法）。k＝新秒數／舊秒數。 */
+export function rescaleCharge(k){
+  if(!(k>0) || !state.threats) return;
+  const now=Date.now(); state.threats.forEach(th=>{ th.t0 = now-(now-th.t0)*k; });
+}
 export function resetEnemyTimers(){
   clearThreat(); endCharge(); clearTimeout(state.assaultTimer); clearWaveTimers();
 }

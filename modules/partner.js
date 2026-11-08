@@ -828,15 +828,23 @@ function lucidSeconds(pas){
      撤下之後**不重排敵人計時**（fireBuff 那一支會 resetEnemyTimers）—— 「不重置場上攻擊圈」。
      增益在 cut-in 撤下才起算（同 fireBuff：演出期間盤面鎖著，從發動那一刻起算等於白送）。 */
 /* 清醒夢（ver -2606，Ray：「安雅主動技效果改成敵人的 d 跟 a 速度減半 10 秒」）：
-   敵人的延時（D）與主動攻擊頻率（A）都變成 1/slowMul 倍時間。倍率只由 state.enemyTimeK() 算。 */
+   敵人的延時讀秒（D）與攻擊圈的縮圈（A）都變成 1/slowMul 倍時間
+   （ver -2607，Ray：「縮圈變慢，不是頻率變慢」「d 讀秒 x2」—— 攻擊頻率不動）。倍率只由 state.enemyTimeK() 算。 */
+let slowEndTimer=null;
 function startEnemySlow(pas, act){
   const sec = (act && act.slowSec) || 10, mul = (act && act.slowMul) || 0.5;
   const go = ()=>{
     if(state.over) return;
+    const was = (Date.now() < state.enemySlowUntil);
     state.enemySlowMul = mul;
-    state.enemySlowUntil = Date.now() + sec*1000;
-    if(api.stretchIntervalDeadline) api.stretchIntervalDeadline(1/mul);
-    if(api.scheduleAssault) api.scheduleAssault();   // 排著的那一發照新倍率重排
+    const until = state.enemySlowUntil = Date.now() + sec*1000;
+    if(!was){ if(api.stretchIntervalDeadline) api.stretchIntervalDeadline(1/mul);
+              if(api.rescaleCharge) api.rescaleCharge(1/mul); }   // 已亮著的圈從這一刻起變慢、不跳
+    clearTimeout(slowEndTimer);
+    slowEndTimer = setTimeout(()=>{
+      if(state.enemySlowUntil !== until) return;     // 換場歸零或又續了一次 → 不是這一次的結束
+      if(api.rescaleCharge) api.rescaleCharge(mul);  // 恢復原速：亮著的圈照比例換回
+    }, sec*1000);
   };
   const vk = SFX.pickRot(pas.voice); const vo = asset(vk); if(vo) SFX.playVoice(vo, sfxGain(vk));
   const nm = (act && act.name) || pas.name, en = (act && act.en) || pas.en || '';
