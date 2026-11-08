@@ -373,6 +373,10 @@ const SLIDERS=[ ['engage','開戰距離',100,1500,10,0], ['size','大小 ×',0.3
   ['bank','轉彎傾斜°',0,80,1,0], ['bankT','傾斜快慢ms',80,1200,10,0],
   ['wave','上下扭動',0,0.3,0.005,3], ['waveN','扭動波數',0.2,3,0.05,2],
   ['tent','觸手蠕動',0,0.4,0.005,3], ['tentY','觸手起點',0,1,0.01,2], ['tentN','觸手波數',0.2,4,0.05,2] ];
+/* 面板分組（Ray：「表太長了，加個收合」）：點標題收合／展開，狀態記在這個瀏覽器；預設只開「基本」 */
+const GROUPS=[ ['base','基本',['engage','size','count','anim','speed']], ['app','出場',['chase','gone']], ['bank','轉彎',['bank','bankT']],
+  ['wave','上下扭動',['wave','waveN']], ['tent','觸手',['tent','tentY','tentN']], ['sum','已調清單',[]] ];
+const FOLD=(()=>{ try{ return JSON.parse(localStorage.getItem('drg3dFold')||'null')||{ base:true }; }catch(e){ return { base:true }; } })();
 const APPROACH=[['','側面出、立刻追（原本）'],['direct','出怪後直接飛來'],['cruise','側面巡航，靠近才追']];
 function fightUi(){
   let box=document.getElementById('drg3dFight');
@@ -380,13 +384,18 @@ function fightUi(){
   if(!box){
     box=document.createElement('div'); box.id='drg3dFight';
     box.style.cssText='position:fixed;top:calc(env(safe-area-inset-top) + 92px);left:6px;z-index:99999;'+
-      'font:600 12px sans-serif;color:#fff;background:rgba(0,0,0,.5);border-radius:12px;padding:5px 9px;user-select:none;width:250px';
+      'font:600 12px sans-serif;color:#fff;background:rgba(0,0,0,.5);border-radius:12px;padding:5px 9px;user-select:none;width:250px;max-height:calc(100vh - 150px);overflow:auto';
     let h='<div id="drg3dHead" style="display:flex;justify-content:space-between"><span>現在距離 <span id="drg3dDist"></span></span><span><label style="font-weight:400"><input id="drg3dNoF" type="checkbox">免戰</label> <button id="drg3dStd" style="font:inherit;color:#fff;background:#555;border:0;border-radius:8px;padding:2px 8px">標準化</button> <button id="drg3dRe" style="font:inherit;color:#fff;background:#555;border:0;border-radius:8px;padding:2px 8px">重刷</button> <button id="drg3dSave" style="font:inherit;color:#fff;background:#2e7d32;border:0;border-radius:8px;padding:2px 10px">已儲存 ✓</button> <span id="drg3dFold" style="padding:0 4px">收合 ▲</span></span></div><div id="drg3dBody">';
-    for(const [f,t,mn,mx,st] of SLIDERS) h+='<div style="display:flex;align-items:center;gap:6px"><span style="width:84px">'+t+'</span>'+
-      '<input data-f="'+f+'" type="range" min="'+mn+'" max="'+mx+'" step="'+st+'" style="flex:1"><b data-v="'+f+'" style="width:44px;text-align:right"></b></div>';
-    h+='<div style="display:flex;align-items:center;gap:6px"><span style="width:84px">出場方式</span><select id="drg3dAp" style="flex:1;font:inherit">'+
+    const row=f=>{ const [,t,mn,mx,st]=SLIDERS.find(x=>x[0]===f); return '<div style="display:flex;align-items:center;gap:6px"><span style="width:84px">'+t+'</span>'+
+      '<input data-f="'+f+'" type="range" min="'+mn+'" max="'+mx+'" step="'+st+'" style="flex:1"><b data-v="'+f+'" style="width:44px;text-align:right"></b></div>'; };
+    const apRow='<div style="display:flex;align-items:center;gap:6px"><span style="width:84px">出場方式</span><select id="drg3dAp" style="flex:1;font:inherit">'+
       APPROACH.map(([v,t])=>'<option value="'+v+'">'+t+'</option>').join('')+'</select></div>';
-    h+='<div id="drg3dSum" style="font-weight:400;font-size:11px;opacity:.85"></div></div><div id="drg3dHit" style="color:#ffd27a;min-height:15px"></div>';
+    for(const [id,title,fs] of GROUPS){
+      const open=!!FOLD[id];
+      h+='<div data-g="'+id+'" style="margin-top:3px;padding:2px 0;border-top:1px solid rgba(255,255,255,.18);cursor:pointer;color:#ffd27a">'+(open?'▼ ':'▶ ')+title+'</div>'+
+         '<div data-gb="'+id+'" style="display:'+(open?'':'none')+'">'+(id==='app'?apRow:'')+(id==='sum'?'<div id="drg3dSum" style="font-weight:400;font-size:11px;opacity:.85"></div>':fs.map(row).join(''))+'</div>';
+    }
+    h+='</div><div id="drg3dHit" style="color:#ffd27a;min-height:15px"></div>';
     box.innerHTML=h; document.body.appendChild(box);
     box.querySelector('#drg3dSave').addEventListener('click',tuneWrite);
     const nf=box.querySelector('#drg3dNoF'); nf.checked=window.DRG3D.noFight;
@@ -405,6 +414,8 @@ function fightUi(){
     addEventListener('beforeunload',e=>{ if(tuneDirty){ e.preventDefault(); e.returnValue=''; } });
     box.querySelector('#drg3dFold').addEventListener('click',()=>{ const b=box.querySelector('#drg3dBody'), f=b.style.display==='none';
       b.style.display=f?'':'none'; box.querySelector('#drg3dFold').textContent=f?'收合 ▲':'展開 ▼'; });
+    box.querySelectorAll('[data-g]').forEach(hd=>hd.addEventListener('click',()=>{ const id=hd.dataset.g, b=box.querySelector('[data-gb="'+id+'"]'), o=b.style.display==='none';
+      b.style.display=o?'':'none'; hd.textContent=(o?'▼ ':'▶ ')+GROUPS.find(g=>g[0]===id)[1]; FOLD[id]=o; try{ localStorage.setItem('drg3dFold',JSON.stringify(FOLD)); }catch(e){} }));
     ['pointerdown','touchstart','mousedown','click'].forEach(t=>box.addEventListener(t,e=>e.stopPropagation()));
     box.querySelectorAll('input[data-f]').forEach(r=>r.addEventListener('input',()=>{
       const f=r.dataset.f, kk=HOLDLIST[holdIx]; TUNE[f][kk]=+r.value; tuneSave(); fightUi(); }));
