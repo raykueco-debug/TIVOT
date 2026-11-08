@@ -354,12 +354,30 @@ window.DRG3D={ mode:MODE, hold:HOLD, fight:FIGHT, noFight:(()=>{ try{ return loc
   ready:k=>{ k=k||'bldragon'; if(!off.on || !DEF[k]) return false; if(!M[k]) load(k); return M[k].state===2; },
   next:d=>{ holdIx=(holdIx+(d||1)+HOLDLIST.length)%HOLDLIST.length; load(HOLDLIST[holdIx]); holdUi(); if(FIGHT) fightUi(); }, tune:TUNE, tuneOf,
   spanOf:k=>{ let SP={}; try{ SP=ENEMY_KINDS[k].sprite||{}; }catch(e){} return (SP.frontSpanW||SP.spanW||980)*(DEF[k]?DEF[k].spanK:1)*tuneOf('size',k); } };
+/* 整個面板（選怪列＋調整表）一起收：只留左上一顆小鈕（Ray：「收合的是整個表單，擋在畫面上我看個屁」）。
+   收不收記在這個瀏覽器。 */
+let uiHidden=(()=>{ try{ return localStorage.getItem('drg3dHide')==='1'; }catch(e){ return false; } })();
+function setHidden(h){
+  uiHidden=h; try{ localStorage.setItem('drg3dHide',h?'1':'0'); }catch(e){}
+  for(const id of ['drg3dBar','drg3dFight']){ const el=document.getElementById(id); if(el) el.style.display=h?'none':(id==='drg3dBar'?'flex':''); }
+  const t=document.getElementById('drg3dTog'); if(t) t.textContent=h?'空戰調整 ▼':'收合 ▲';
+}
+function ensureTog(){
+  if(document.getElementById('drg3dTog')) return;
+  const t=document.createElement('button'); t.id='drg3dTog';
+  t.style.cssText='position:fixed;top:calc(env(safe-area-inset-top) + 48px);left:6px;z-index:99999;font:600 13px sans-serif;color:#fff;'+
+    'background:rgba(0,0,0,.55);border:0;border-radius:14px;padding:6px 12px';
+  ['pointerdown','touchstart','mousedown'].forEach(e=>t.addEventListener(e,ev=>ev.stopPropagation()));
+  t.addEventListener('click',ev=>{ ev.stopPropagation(); setHidden(!uiHidden); });
+  document.body.appendChild(t);
+}
 function holdUi(){
   if(HOLDLIST.length<2) return;
+  ensureTog();
   let bar=document.getElementById('drg3dBar');
   if(!bar){
     bar=document.createElement('div'); bar.id='drg3dBar';
-    bar.style.cssText='position:fixed;top:calc(env(safe-area-inset-top) + 48px);left:6px;z-index:99999;display:flex;gap:6px;align-items:center;'+
+    bar.style.cssText='position:fixed;top:calc(env(safe-area-inset-top) + 86px);left:6px;z-index:99999;display:flex;gap:6px;align-items:center;'+
       'font:600 15px sans-serif;color:#fff;background:rgba(0,0,0,.55);border-radius:20px;padding:4px 6px;user-select:none';
     const mk=(t,d)=>{ const b=document.createElement('button'); b.textContent=t;
       b.style.cssText='font:inherit;color:#fff;background:rgba(255,255,255,.18);border:0;border-radius:16px;width:40px;height:34px';
@@ -370,6 +388,7 @@ function holdUi(){
   }
   const k=HOLDLIST[holdIx]; let K=null; try{ K=ENEMY_KINDS[k]; }catch(e){}
   document.getElementById('drg3dLab').textContent=(holdIx+1)+'/'+HOLDLIST.length+'　'+((K&&K.name)||k);
+  setHidden(uiHidden);
 }
 /* ── 遭遇測試（?drg3d=1&drg3dfight[&drg3dkind=all]）──
    開戰距離＝ENEMY_CFG.engage（唯一真相，這裡只改它的值）；滑桿調、即時生效。
@@ -391,7 +410,7 @@ function fightUi(){
   const k=HOLDLIST[holdIx];
   if(!box){
     box=document.createElement('div'); box.id='drg3dFight';
-    box.style.cssText='position:fixed;top:calc(env(safe-area-inset-top) + 92px);left:6px;z-index:99999;'+
+    box.style.cssText='position:fixed;top:calc(env(safe-area-inset-top) + 130px);left:6px;z-index:99999;'+
       'font:600 12px sans-serif;color:#fff;background:rgba(0,0,0,.5);border-radius:12px;padding:5px 9px;user-select:none;width:250px;max-height:calc(100vh - 150px);overflow:auto';
     let h='<div id="drg3dHead" style="display:flex;justify-content:space-between"><span>現在距離 <span id="drg3dDist"></span></span><span><label style="font-weight:400"><input id="drg3dNoF" type="checkbox">免戰</label> <button id="drg3dStd" style="font:inherit;color:#fff;background:#555;border:0;border-radius:8px;padding:2px 8px">標準化</button> <button id="drg3dRe" style="font:inherit;color:#fff;background:#555;border:0;border-radius:8px;padding:2px 8px">重刷</button> <button id="drg3dSave" style="font:inherit;color:#fff;background:#2e7d32;border:0;border-radius:8px;padding:2px 10px">已儲存 ✓</button> <span id="drg3dFold" style="padding:0 4px">收合 ▲</span></span></div><div id="drg3dBody">';
     const row=f=>{ const [,t,mn,mx,st]=SLIDERS.find(x=>x[0]===f); return '<div style="display:flex;align-items:center;gap:6px"><span style="width:84px">'+t+'</span>'+
@@ -420,8 +439,7 @@ function fightUi(){
     box.querySelector('#drg3dAp').addEventListener('change',e=>{ const kk=HOLDLIST[holdIx];
       if(e.target.value) TUNE.approach[kk]=e.target.value; else delete TUNE.approach[kk]; tuneSave(); fightUi(); });
     addEventListener('beforeunload',e=>{ if(tuneDirty){ e.preventDefault(); e.returnValue=''; } });
-    box.querySelector('#drg3dFold').addEventListener('click',()=>{ const b=box.querySelector('#drg3dBody'), f=b.style.display==='none';
-      b.style.display=f?'':'none'; box.querySelector('#drg3dFold').textContent=f?'收合 ▲':'展開 ▼'; });
+    box.querySelector('#drg3dFold').addEventListener('click',()=>setHidden(true));
     box.querySelectorAll('[data-g]').forEach(hd=>hd.addEventListener('click',()=>{ const id=hd.dataset.g, b=box.querySelector('[data-gb="'+id+'"]'), o=b.style.display==='none';
       b.style.display=o?'':'none'; hd.textContent=(o?'▼ ':'▶ ')+GROUPS.find(g=>g[0]===id)[1]; FOLD[id]=o; try{ localStorage.setItem('drg3dFold',JSON.stringify(FOLD)); }catch(e){} }));
     ['pointerdown','touchstart','mousedown','click'].forEach(t=>box.addEventListener(t,e=>e.stopPropagation()));
@@ -435,6 +453,7 @@ function fightUi(){
   const kinds=new Set(); for(const f in TUNE) for(const x in TUNE[f]) kinds.add(x);
   const rows=[...kinds].map(x=>nm(x)+'：'+SLIDERS.filter(([f])=>TUNE[f][x]!=null).map(([f,t,,,,dg])=>t.replace(' ×','')+' '+(+TUNE[f][x]).toFixed(dg)).concat(TUNE.approach[x]?[APPROACH.find(a=>a[0]===TUNE.approach[x])[1]]:[]).join('／'));
   box.querySelector('#drg3dSum').innerHTML=rows.length?('已調：<br>'+rows.join('<br>')):'';
+  ensureTog(); setHidden(uiHidden);
 }
 function fightTick(dist){ const d=document.getElementById('drg3dDist'); if(d) d.textContent=dist!=null?('現在 '+Math.round(dist)):''; }
 function engaged(dist){
