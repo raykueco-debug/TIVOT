@@ -2188,6 +2188,21 @@ try{
      現在演「下沉淡出」（style.css 的 `.eg-down`）；換成逐格動畫時只改這一支。
    ⚠ 命中的閃縮：只抖被打中的那一個（`groupHitFlash`，ver -2154；以前整組一起抖）。 */
 let groupCard=null, groupMasks={}, lastImpact=null, groupWaitT=0;
+/* ══ 閉棺就清一次記憶體（ver -2595，Ray：「背景跟敵人都改為動畫，內存量佔變高，讓每一次閉棺都清一次內存」）══
+   門完全關上那一刻由 combat 叫（每一條閉棺路徑都經過它：結算前關門／城鎮戰中間場原地閉棺／挑戰敗北關門）。
+   放掉的是**持有解碼後圖像的參照**：攻擊／延時／點錯／出場動畫格（clipCache）、群戰逐人 I／A／E（memberClips）、
+   待機格、單人倒地格、群戰分層與疊在上面的動畫層。參照一斷，瀏覽器就能回收；下一場 setEnemy 會照需要重新載。
+   ⚠ 只在門關上之後叫：門還開著時底下的戰鬥畫面還看得到。 */
+export function releaseBattleMemory(){
+  for(const k of Object.keys(clipCache)) delete clipCache[k];
+  memberClips.clear();
+  stopIdleLoop();
+  clearInterval(groupAnimT); groupAnimT=0;
+  singleFall=null;
+  stopFlock();
+  const g=$('enemyGroup'); if(g){ for(const im of g.querySelectorAll('img')) im.removeAttribute('src'); g.innerHTML=''; }
+  groupCard=null; groupMasks={}; lastImpact=null;
+}
 const MASK_W=192;
 function groupEl(){
   let g=$('enemyGroup');

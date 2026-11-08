@@ -3309,7 +3309,7 @@ function win(){
     inspector.bankSessionGain(stats);
     const back = ()=>{ killBattleFrame();   // ver -1024（同上）
                        if(storyReturn) storyReturn({ lost:false, inPlace:true }); };
-    if(storyShut) storyShut(back); else back();
+    if(storyShut) storyShut(()=>{ enemy.releaseBattleMemory(); back(); }); else back();   // 閉棺就清記憶體（-2595）
     return;
   }
   const toResult = ()=>{
@@ -3335,7 +3335,7 @@ function win(){
   /* ⚠ 劇情版教學：**先演「關門」**（進場那一套的倒放）再上結算（ver -366，Ray 指定）。
      進場是門推上來、打開露出戰場；打完就該把門關回去 —— 沒有這一段，畫面會從戰鬥
      硬切到結算頁。關門的最後一步會上黑透遮罩並把劇情層收掉，才輪到結算。 */
-  if((storyFramed() || state.kerbChallenge) && storyClose) storyClose(toResult);   // 挑戰也關門（ver -2225）
+  if((storyFramed() || state.kerbChallenge) && storyClose) storyClose(()=>{ enemy.releaseBattleMemory(); toResult(); });   // 挑戰也關門（ver -2225）；門關上就清記憶體（-2595）
   else playTransition('finish', toResult);
 }
 /* ══ 敵人的 NI（ver -1964，米夏；Ray：「米夏 hp 被打到 1 就會發動 15 秒的 NI 開始回血，
@@ -3473,7 +3473,7 @@ function lose(){
     if(app) app.classList.remove('death-freeze');
     SFX.playBgm(asset('bgm_lose'), { volume: bgmVol('bgm_lose') });   // 驅逐失敗插入瞬間 → 任務失敗 BGM
     /* 挑戰：打完閉棺（ver -2225，Ray）—— 輸了也先關門再上結算，不走「驅逐失敗」過渡禎 */
-    if(state.kerbChallenge && storyClose){ storyClose(()=> inspector.settle(null, null, { isLose:true })); return; }
+    if(state.kerbChallenge && storyClose){ storyClose(()=>{ enemy.releaseBattleMemory(); inspector.settle(null, null, { isLose:true }); }); return; }   // 門關上就清記憶體（-2595）
     playTransition('fail', ()=> inspector.settle(null, null, { isLose:true }));
   }, 1000);
 }
