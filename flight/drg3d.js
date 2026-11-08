@@ -85,6 +85,7 @@ uniform vec3 uCut, uHy, uAng;           // 三節鉸鏈：切點（半幅比例�
 uniform float uHs;                      // 半翼展（模型單位）
 uniform vec4 uTail;                     // 尾波：起點 z、振幅、波數、相位（rad）
 uniform vec2 uZr;                       // 模型 z 範圍（min, max）
+uniform vec3 uWave;                     // 全身上下波（像飛鰩）：幅度（×半翼展）、波數、相位
 uniform float uRoll;                    // 側傾（rad，繞機身前後軸；正＝右翼往下，轉右彎）
 out vec3 vC; out vec3 vN; out vec3 vP; out vec3 vN0;
 vec2 rot(vec2 q, float a){ float s=sin(a), co=cos(a); return vec2(co*q.x-s*q.y, s*q.x+co*q.y); }
@@ -95,6 +96,11 @@ void main(){
     float L=max(uTail.x-uZr.x,1e-3), u=clamp((uTail.x-p.z)/L,0.0,1.0);
     float w=u*u;
     P.y+=sin(uTail.w-u*uTail.z*6.2832)*uTail.y*uHs*w;
+  }
+  /* 全身上下波：頭→尾的行進波，越往尾端越大（頭留三成，不然整隻在原地抖） */
+  if(uWave.x>0.0){
+    float u=clamp((uZr.y-p.z)/max(uZr.y-uZr.x,1e-3),0.0,1.0);
+    P.y+=sin(uWave.z-u*uWave.y*6.2832)*uWave.x*uHs*(0.3+0.7*u);
   }
   float sd=sign(P.x), ax=abs(p.x)/uHs;
   for(int k=2;k>=0;k--){
@@ -153,7 +159,7 @@ function init(){
     if(!g) throw new Error('沒有 WebGL2');
     prog=g.createProgram(); g.attachShader(prog,sh(g.VERTEX_SHADER,VS)); g.attachShader(prog,sh(g.FRAGMENT_SHADER,FS)); g.linkProgram(prog);
     if(!g.getProgramParameter(prog,g.LINK_STATUS)) throw new Error(g.getProgramInfoLog(prog));
-    for(const k of ['uS','uOut','uYaw','uO','uF','uHalf','uR','uCut','uHy','uAng','uHs','uTail','uZr','uRoll','uLit','uLine','uLineC','uTex','uMin','uMax','uUseTex']) U[k]=g.getUniformLocation(prog,k);
+    for(const k of ['uS','uOut','uYaw','uO','uF','uHalf','uR','uCut','uHy','uAng','uHs','uTail','uZr','uRoll','uWave','uLit','uLine','uLineC','uTex','uMin','uMax','uUseTex']) U[k]=g.getUniformLocation(prog,k);
   }catch(e){ initErr=String(e); g=null; console.warn('[mon3d] GL 建不起來',e); }
   return !!g;
 }
@@ -264,6 +270,7 @@ function draw(o){
   g.uniform2f(U.uZr,zr[0],zr[1]);
   if(T) g.uniform4f(U.uTail, zr[0]+(zr[1]-zr[0])*(T.from+1)/2, T.amp, T.waves, tt*6.2832);
   else g.uniform4f(U.uTail,0,0,0,0);
+  g.uniform3f(U.uWave, tuneOf('wave',kind), tuneOf('waveN',kind), tt*6.2832);
   g.uniform3fv(U.uLit,o.lit);
   g.uniform3f(U.uMin,R.bbMin[0],R.bbMin[1],R.bbMin[2]); g.uniform3f(U.uMax,R.bbMax[0],R.bbMax[1],R.bbMax[2]);
   g.uniform1f(U.uUseTex,(R.texOK&&!DBG.noTex)?1:0); g.activeTexture(g.TEXTURE0); g.bindTexture(g.TEXTURE_2D,R.tex); g.uniform1i(U.uTex,0);
@@ -302,11 +309,11 @@ function bench(n, halfPx, kind){
 /* 遭遇測試的調整值（大小×、開戰距離）：存在這個瀏覽器，重整不會丟；定案後由 Ray 報數字寫進 DEF／ENEMY_CFG */
 /* 調整值的唯一真相：`flight/enemy/sky3d_tune.json`（遭遇測試面板的「儲存」寫它；開機讀它）。
    滑桿改的是記憶體裡這一份，按「儲存」才寫回檔案（devserver `/__save/` 白名單）。 */
-const TUNE={ size:{}, engage:{}, count:{}, anim:{}, speed:{}, approach:{}, chase:{}, gone:{}, bank:{}, bankT:{} };
+const TUNE={ size:{}, engage:{}, count:{}, anim:{}, speed:{}, approach:{}, chase:{}, gone:{}, bank:{}, bankT:{}, wave:{}, waveN:{} };
 let tuneDirty=false;
 (()=>{ try{ const x=new XMLHttpRequest(); x.open('GET','enemy/sky3d_tune.json?v='+Date.now(),false); x.send();   // 同步：第一幀就要用到
   if(x.status===200){ const t=JSON.parse(x.responseText); for(const k in TUNE) if(t[k] && typeof t[k]==='object') TUNE[k]=t[k]; } }catch(e){} })();
-const TUNE_DEF={ engage:null, size:1, count:1, anim:1, speed:1, approach:'', chase:null, gone:3400, bank:45, bankT:350 };   // null＝沿用 ENEMY_CFG.engage
+const TUNE_DEF={ engage:null, size:1, count:1, anim:1, speed:1, approach:'', chase:null, gone:3400, bank:45, bankT:350, wave:0.06, waveN:1.0 };   // null＝沿用 ENEMY_CFG.engage
 const tuneOf=(f,k)=>{ const v=TUNE[f][k]; if(v!=null) return v;
   try{ if(f==='engage') return ENEMY_CFG.engage; if(f==='chase') return Math.round(ENEMY_CFG.spawnDist*ENEMY_CFG.chaseAt); }catch(e){ return f==='engage'?300:1680; }
   return TUNE_DEF[f]; };
@@ -352,7 +359,8 @@ function holdUi(){
 let fightLast=null;
 const SLIDERS=[ ['engage','開戰距離',100,1500,10,0], ['size','大小 ×',0.3,3,0.05,2], ['count','數量',1,8,1,0],
   ['anim','動作速度 ×',0.2,3,0.05,2], ['speed','接近速度 ×',0.2,4,0.05,2], ['chase','巡航轉追',300,3000,50,0], ['gone','巡航消失',1000,6000,100,0],
-  ['bank','轉彎傾斜°',0,80,1,0], ['bankT','傾斜快慢ms',80,1200,10,0] ];
+  ['bank','轉彎傾斜°',0,80,1,0], ['bankT','傾斜快慢ms',80,1200,10,0],
+  ['wave','上下扭動',0,0.3,0.005,3], ['waveN','扭動波數',0.2,3,0.05,2] ];
 const APPROACH=[['','側面出、立刻追（原本）'],['direct','出怪後直接飛來'],['cruise','側面巡航，靠近才追']];
 function fightUi(){
   let box=document.getElementById('drg3dFight');
