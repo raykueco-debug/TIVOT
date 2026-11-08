@@ -37,6 +37,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # ⚠ 白名單：**只有這幾個檔**寫得進來。新增之前先想「這個檔被亂寫會怎樣」。
 SAVE_OK = {
     'flight/map_edits.json',      # 地圖編輯的筆畫（見 flight/index.html 的 MAPEDIT）
+    'flight/enemy/sky3d_tune.json',   # 空中怪 3D 的調整值（遭遇測試面板的「儲存」，flight/drg3d.js）
 }
 
 
