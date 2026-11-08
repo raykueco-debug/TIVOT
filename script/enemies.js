@@ -2539,7 +2539,7 @@ export const ENEMIES = {
       hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
       loot:[ { id:'brass_casing', n:2, p:0.5 } ],
     },
-    /* ══ 空賊群戰 8 組（ver -2575，美術交件：resources/enemy/man_skypirate_N.webp＋_layers/pirate_k.webp，1254×1254 已對位；說明在 _skypirate_spec.md）══
+    /* ══ 空賊群戰 8 組（ver -2575，美術交件：resources/enemy/man_skypirate_<組>.webp＋_layers/pirate_<人>.webp，1254×1254 已對位；說明在 _skypirate_spec.md）══
        登艦戰（空賊船 grapple.to）每次隨機抽一組。沒有掩體層（Ray：只畫人），order＝疊放順序（後→前，照美術交件單）。
        ⚠ 數值全部暫定（Ray：「先接，數值暫定」）：整組 170 血、攻擊 12，同 sky_pirate_crew；倒地動畫還沒有（中彈直接淡出）。 */
     ...Object.fromEntries([[1,[1,2,3,4]],[2,[1,2,3,4]],[3,[1,2,3,4]],[4,[1,2,3]],[5,[1,2,3,4]],[6,[1,2,3]],[7,[2,1,4,3]],[8,[1,2]]].map(([n,order])=>['sky_pirate_'+n, {
