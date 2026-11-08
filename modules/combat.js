@@ -15,7 +15,7 @@
 
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, HITFX, asset, bgmVol, sfxGain } from '../config.js';
-import { state, initEnemyHp, setPickedPartner } from '../state.js';
+import { state, initEnemyHp, setPickedPartner, enemyTimeK } from '../state.js';
 import { SFX } from '../audio.js';
 import { TEL } from '../telemetry.js';
 import { L, fmt } from '../i18n.js';   // 多語言（浮動字/RELOADING）   // 遙測（底層純輸出，同 audio 定位；未設定後端時 no-op）
@@ -243,6 +243,7 @@ export function setup(){
     scheduleAssault: defense.scheduleAssault,
     playCutin: saint.playCutin,
     hintCurrentCell,   // 即死防禦後標記當前應點格（一次性續命導航）
+    stretchIntervalDeadline,   // 清醒夢減速生效那一刻拉長本盤延時（ver -2606）
     lucidFlood,        // 明晰之夢的金光淹漲時限（ver -746；發動端在 partner.fireBuff）
     saintApi: { lifeReturnAbort: saint.lifeReturnAbort },
     // 馬季諾：前線補給（cut-in 後直接進雙槍破防窗口，窗口本體歸 weapon）＋高裝藥彈（低血量普攻加倍；lowHpBuff 為 combat 擁有，經此管道寫）
@@ -2487,9 +2488,14 @@ function wrongDamage(base){
 function effIntervalLimit(){
   /* 米夏 NI 期間延時縮短（卡上 `lastStand.delayMul`，Ray：「NI 後延時縮短為 1/2」）。 */
   const ls = lsActive && lsCard();
-  const k = (ls && ls.delayMul>0) ? ls.delayMul : 1;
+  const k = ((ls && ls.delayMul>0) ? ls.delayMul : 1) * enemyTimeK();   // ×敵人減速（清醒夢，ver -2606）
   if(state.DELAY_SECONDS!=null) return Math.max(0.6, state.DELAY_SECONDS*k);
   return Math.max(0.6, (state.intervalLimit + state.DELAY_TIME_DELTA)*k);
+}
+/* 減速剛生效：把這一盤剩下的延時照倍率拉長（之後每次重置自然吃到 effIntervalLimit 的新值）。 */
+function stretchIntervalDeadline(k){
+  if(!state.intervalDeadline || !(k>0)) return;
+  const now=Date.now(); state.intervalDeadline = now + Math.max(0, state.intervalDeadline-now)*k;
 }
 function resetIntervalDeadline(){ state.intervalDeadline=Date.now()+effIntervalLimit()*1000; }
 function stopIntervalTimer(){ clearInterval(state.intervalTimer); stopDelayRing(); }
@@ -3517,7 +3523,7 @@ export function startGame(){
   warmBattleFx();
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
   state.atkBuff=false; state.lowHpBuff=false;
-  state.partnerActiveUsed=false; state.activeUsedBy={};   // 搭檔主動技每場次數重置（逐位，ver -1844）
+  state.partnerActiveUsed=false; state.activeUsedBy={}; state.enemySlowUntil=0;   // 搭檔主動技每場次數重置（逐位，ver -1844）
   /* ⚠ 三個連段（獵手的戰吼／明晰之夢／連續無傷擊殺）在這裡歸零，但**同一局的下一場
      會被 sessionCarry 搬回來**（ver -891/-892，Ray：「可跨場（怪）累積」）——
      同 saintUsed／energy 的作法：在開頭乾淨歸零，接得上同一局的那一場再放回去
@@ -3825,7 +3831,7 @@ export function startScriptBattle(id, opts){
 export function startIntruderFight(){
   state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
   state.atkBuff=false; state.lowHpBuff=false;
-  state.partnerActiveUsed=false; state.activeUsedBy={};   // 新場：搭檔主動技每場次數重置（逐位，ver -1844）
+  state.partnerActiveUsed=false; state.activeUsedBy={}; state.enemySlowUntil=0;   // 新場：搭檔主動技每場次數重置（逐位，ver -1844）
   /* 亂入是**新的一局**（不接上一段），三個連段一律歸零（ver -891/-892；ver -893 用詞）。 */
   state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0; state.installReloadPending=false; state.counterStreak=0;
   saint.reset();

@@ -18,7 +18,7 @@
  * ========================================================================== */
 
 import { GAME_CONFIG, asset, sfxGain, weaponOf, weaponBand } from '../config.js';
-import { state, addPerfect, addPerfectCounter, storyMode } from '../state.js';
+import { state, addPerfect, addPerfectCounter, storyMode, enemyTimeK } from '../state.js';
 import { SFX } from '../audio.js';
 import { seSrc } from './story.js';   // 空槍音的路徑（ver -1807）
 import { L, fmt } from '../i18n.js';   // 多語言（防禦浮動字）
@@ -103,7 +103,7 @@ export function scheduleAssault(firstDelayMs){
        的加秒分支（hitPenaltySec）。 */
   if(state.timeAttack && !state.timeAttack.assaultOn) return;
   const delay = (firstDelayMs!=null) ? firstDelayMs
-                                     : state.ASSAULT_MIN+Math.random()*(state.ASSAULT_MAX-state.ASSAULT_MIN);
+                                     : (state.ASSAULT_MIN+Math.random()*(state.ASSAULT_MAX-state.ASSAULT_MIN)) * enemyTimeK();   // 清醒夢減速（ver -2606）
   state.assaultTimer=setTimeout(()=>{
     // overkill/演出/轉場期間不生成；聖徒化期間照常出攻擊點
     if(state.over||state.enemyHp<=0||state.cutinPlaying||state.transitioning){ scheduleAssault(200); return; }

@@ -202,7 +202,7 @@ const ACTIVE_HANDLERS = {
     if(state.niMode || state.saintMode || state.over) return false;
     const p = currentPartner(), pas = p && p.passive;
     if(!(pas && pas.key==='firstCounter')) return false;
-    startLucidDirect(pas, act);
+    startEnemySlow(pas, act);
     return true;
   },
   /* ══ 生命歸還（ver -740，Ray 定案：「生命歸還只有聖徒化期間可發動，只是原本
@@ -827,16 +827,16 @@ function lucidSeconds(pas){
    ⚠ ver -1779（Ray）：**要演 cut-in**，cut-in 期間整場凍結（`playCutin` 通用規則）；
      撤下之後**不重排敵人計時**（fireBuff 那一支會 resetEnemyTimers）—— 「不重置場上攻擊圈」。
      增益在 cut-in 撤下才起算（同 fireBuff：演出期間盤面鎖著，從發動那一刻起算等於白送）。 */
-function startLucidDirect(pas, act){
-  /* ⚠ 秒數讀**主動技卡**的 `buffSec`（5，Ray：與 Boss 的密集圈對沖用、不長駐）——
-     不走 `lucidSeconds`（那一支會加赤足／鐵蹄的延長）。增益內容（必中＋升階）照舊是同一套。 */
-  const sec = (act && act.buffSec) || 5;
+/* 清醒夢（ver -2606，Ray：「安雅主動技效果改成敵人的 d 跟 a 速度減半 10 秒」）：
+   敵人的延時（D）與主動攻擊頻率（A）都變成 1/slowMul 倍時間。倍率只由 state.enemyTimeK() 算。 */
+function startEnemySlow(pas, act){
+  const sec = (act && act.slowSec) || 10, mul = (act && act.slowMul) || 0.5;
   const go = ()=>{
     if(state.over) return;
-    api.setLowHpBuff(true);
-    clearTimeout(lowHpTimer);
-    lowHpTimer = setTimeout(()=>{ api.setLowHpBuff(false); lowHpTimer=null; }, sec*1000);
-    if(api.lucidFlood) api.lucidFlood(sec);
+    state.enemySlowMul = mul;
+    state.enemySlowUntil = Date.now() + sec*1000;
+    if(api.stretchIntervalDeadline) api.stretchIntervalDeadline(1/mul);
+    if(api.scheduleAssault) api.scheduleAssault();   // 排著的那一發照新倍率重排
   };
   const vk = SFX.pickRot(pas.voice); const vo = asset(vk); if(vo) SFX.playVoice(vo, sfxGain(vk));
   const nm = (act && act.name) || pas.name, en = (act && act.en) || pas.en || '';

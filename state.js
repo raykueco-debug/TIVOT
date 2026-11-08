@@ -268,7 +268,10 @@ export const state = {
      換成諾薇兒／安雅也跟著發不出來（讀起來就像「熔斷連主動技一起鎖了」）。
      ⚠ 變身（聖徒化／夢魘化／共鬥）的槽**照舊全隊共用**（`saintUsedThisBattle`），不受影響。 */
   activeUsedBy: {},
-  partnerActiveUsed: false,   // 搭檔主動技「每場一次」旗標（oncePerBattle 技用；擁有者 partner，combat 於開場歸零）
+  partnerActiveUsed: false,
+  /* 敵人減速（ver -2606，安雅清醒夢：Ray「敵人的 D 跟 A 速度減半 10 秒」）。擁有者 partner；
+     combat 於開場歸零。倍率只由 enemyTimeK() 算（鐵律 7），延時時限與攻擊排程都讀它。 */
+  enemySlowUntil: 0, enemySlowMul: 1,   // 搭檔主動技「每場一次」旗標（oncePerBattle 技用；擁有者 partner，combat 於開場歸零）
   /* ══⚠⚠ 連續戰鬥的「同一場」（ver -585（-893 前用詞），Ray：「戰鬥地圖中移動期間算同一場，
      hp／聖徒化次數／主動技發動次數／破防值算同一場」）══
      城鎮戰那張地圖上的每一格是一次 `startScriptBattle`，但對玩家而言**是同一場** ——
@@ -396,6 +399,10 @@ export const state = {
 /* partner.js 專用：即死防禦攔截 playerHp。
  * 這是 3.2 playerHp 的唯一跨擁有者寫入例外——致死時保留 1 HP。
  * TODO(partner)：插入即死防禦 cut-in、標記 deathGuardUsed 由 partner 流程處理。 */
+/* 敵人時間倍率（≥1）：減速期間＝1/slowMul（0.5 → 2 倍時間＝速度減半），否則 1。唯一計算點。 */
+export function enemyTimeK(){
+  return (Date.now() < state.enemySlowUntil && state.enemySlowMul>0) ? 1/state.enemySlowMul : 1;
+}
 export function applyDeathGuard(){
   state.playerHp = 1;
   state.deathGuardUsed = true;
