@@ -49,7 +49,8 @@
 | 教學 | 訓練用聖徒 `trainee`（ASSETS `enemy_trainee`） | **待機**（身體呼吸、頭以頸為軸木靈式喀喀抽轉兩陣，不眨眼） | `saint_tr_neutral_idle_v1/` | 48／24／2.0 秒，loop | 1.9 MB | `[115,-11,772,1520]` |
 | 教學 | 同上 | **攻擊＝延時＝點錯 v2（現行，DMA 共用）**：前撲爪擊＋退回待機（IAR 完整） | `saint_tr_neutral_atk_v2/` | 30／24／1.25 秒，loop:false | 0.9 MB | `[-193,-3,1260,1669]` |
 | 教學 | 同上 | ~~攻擊 v1~~ ⚠ **已被 v2 取代**（只有 A 段）：前撲爪擊（從待機往鏡頭撲、右爪劈下；只有撲出段，停在劈中那一格） | `saint_tr_neutral_atk_v1/` | 10／24／0.42 秒，loop:false | 0.3 MB | `[-193,9,1214,1657]` |
-| E019 | 背負祭壇者 `mon_beast_altar` | **延時・點錯**（吼叫：一開場就在仰身張大胸口巨口咆哮 → 收口落回站姿） | `mon_beast_altar_delay_v1/` | 22／24／0.92 秒，loop:false | 0.5 MB | `[-56,21,774,995]`（左右略超出畫布） |
+| E019 | 背負祭壇者 `mon_beast_altar` | **延時・點錯 v2（現行）**（咆哮：中立起手 → 上身撲向鏡頭、胸口巨口張到最大咆哮 → 慣性前衝壓低 → 從另一側收回中立站姿） | `mon_beast_altar_delay_v2/` | 42／24／1.75 秒，loop:false | 1.8 MB | `[-19,26,787,1010]`（左右略超出畫布） |
+| E019 | 同上 | ~~延時・點錯~~ ⚠ **已被 delay_v2 取代**（吼叫：一開場就在仰身張大胸口巨口咆哮 → 收口落回站姿） | `mon_beast_altar_delay_v1/` | 22／24／0.92 秒，loop:false | 0.5 MB | `[-56,21,774,995]`（左右略超出畫布） |
 | E019 | 同上 | **攻擊**（低伏蓄力 → 撲撞向鏡頭、胸口黑洞大口張開雙爪抓來 → 落回四足站姿） | `mon_beast_altar_atk_v1/` | 29／24／1.21 秒，loop:false | 0.6 MB | `[-306,-68,1316,1341]`（撲到最近時四邊超出畫布） |
 | E019 | 同上 | **待機** | `mon_beast_altar_idle_v1/` | 48／24／2.0 秒，loop | 3.5 MB | `[-71,58,780,960]` |
 
@@ -64,7 +65,8 @@
 - 訓練用聖徒（Ray 11-05「把第一個怪 訓練用聖徒跟背景拆開 獨立出來」）：⚠⚠ **立繪要換**：`enemy_trainee` 由合成圖 `saint_tr_ci.webp`（怪＋走廊）改指 **`resources/enemy/saint_tr_neutral.webp`**（中立站姿、alpha 1024×1536，待機與爪擊都用它生成）；戰鬥背景另交 **`resources/enemy/saint_tr_bg.webp`**（1254² 空走廊，同原構圖），卡上 `bg` 請指它。`saint_tr.webp` 是原姿勢（伸手）的去背版，備用。待機頭部抽動是程式旋轉（Ray 同意）、身體是 Wan。攻擊（前撲爪擊，DMA 共用一支）＝`saint_tr_neutral_atk_v1/`：Ray 剪的 `out/export/saint_tr_neutral_lungeAB_cut`（原片 49 格取前段 10 格），**打到＝最後一格（第 9 格）**；結尾停在劈中姿勢、與待機差很多 —— R（退回待機）還沒交，先蓋在受擊特效之下切回待機。
 - E068 tiger rule 重剪（Ray 指定）：攻擊 v3＝`out/export/mon_shinierforest_tiger_atk_tigerrule`（biteAB2＋biteBA2，pounce 規則，**打到第 13 格**；兩段同一生成空間 720×480／FIT 0.72／OY 0.85，不必換算）；延時 v2＝`mon_shinierforest_tiger_delay_tigerrule`（hswipeAB＋hswipeBA，hswipe 規則，**打到第 9 格**；720×480／FIT 0.78／OY 0.5）。canvas 對 `mon_shinierforest_tiger_neutral.webp`。
 - E019 攻擊：tiger rule 自動剪（`out/export/mon_beast_altar_atk_tiger`＝ramAB＋ramBA），**打到＝第 13 格**，無碰邊。B 圖 `_neutral_refs/mon_beast_altar_B_ram.png`。待機：`out/monsters/mon_beast_altar_idle2` 48 格全留（Ray 未另剪；第一版 idle 左側經幡碰邊、已棄）。
-- E019 延時：Ray 剪的 `out/export/mon_beast_altar_B_roar_roarBA_cut`（**只有收回段**，原片 33 格取 19 格、部分 ×2 → 22 格）。⚠ **第 0 格就是吼叫姿勢**（胸口巨口張到最大），從待機切進來那一下會直接跳到吼的那一格 —— 要蓋在受擊特效之下。吼叫的「打到」＝第 0 格。B 圖 `_neutral_refs/mon_beast_altar_B_roar.png`。
+- E019 延時 **v2**（11-08，Ray：「把這個當成咆哮交件」）：natali rule 重做 —— 新 B `_neutral_refs/np_kf/cm_altar_B_roar_v2.png`（GPT，加揮動模糊、對色），R＝收勢。三段 tiger rule（撲擊表）初剪直接接：撲出 `np_altar_roarAB2`（14 格）＋ 慣性 `np_altar_roarBF2`（13 張→15 格）＋ 收回 `np_altar_roarFA`（13 張→15 格），接點重複格只留一張，FIT 0.78。**咆哮到位（打到）＝第 13 格**（撲出段最後一格）。從中立起手、回到中立，不必再蓋特效切入。⚠ 第 9 格（原片 #18）右前腳尖碰生成畫布右緣、會被切一點。
+- E019 延時（v1，已被 v2 取代）：Ray 剪的 `out/export/mon_beast_altar_B_roar_roarBA_cut`（**只有收回段**，原片 33 格取 19 格、部分 ×2 → 22 格）。⚠ **第 0 格就是吼叫姿勢**（胸口巨口張到最大），從待機切進來那一下會直接跳到吼的那一格 —— 要蓋在受擊特效之下。吼叫的「打到」＝第 0 格。B 圖 `_neutral_refs/mon_beast_altar_B_roar.png`。
 - E017 攻擊：Ray 剪的 `out/export/mon_sea_coralman_atk_tiger_cut`（tiger rule 自動剪的 29 格只留前 14 格＝撲出段），**打到那一格＝最後一格（第 13 格）**，結尾停在撲擊姿勢、與待機第 0 格差很多 —— 切回待機要蓋在受擊特效之下（同娜塔莉 v2）。720×720 生成、FIT 0.52（撲出時雙爪張到畫布邊，AB 16–41 碰邊，Ray 看過選用）；B 圖 `_neutral_refs/mon_sea_coralman_B_pounce.png`。
 - E017：Ray 剪的 `out/export/mon_sea_coralman_delay2_cut`（原片 48 格取 24 格、部分 ×2 → 30 格）。最後一格與第一格差 8.8（不完全相同，見上方 ⚠）。
 
