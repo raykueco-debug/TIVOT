@@ -342,7 +342,7 @@ const HOLDARG=((location.search.match(/[?&]drg3dkind=(\w+)/)||[])[1])||'bldragon
 /* drg3dkind=all：全部空中怪輪流看 —— 畫面上方的「◀ 名字 ▶」或 [ ] 鍵換下一隻（index.html 的掛鉤看到種類變了就收掉重生） */
 const HOLDLIST=HOLDARG==='all' ? Object.keys(DEF).filter(k=>k!=='sky_southlord') : [HOLDARG];
 let holdIx=0;
-window.DRG3D={ mode:MODE, hold:HOLD, fight:FIGHT, fightTimer:1500, engaged, fightTick, get holdKind(){ return HOLDLIST[holdIx]; }, cad:CAD, bench, off, dbg:DBG, def:DEF, models:M, stat, draw,
+window.DRG3D={ mode:MODE, hold:HOLD, fight:FIGHT, noFight:(()=>{ try{ return localStorage.getItem('drg3dNoFight')!=='0'; }catch(e){ return true; } })(), fightTimer:1500, engaged, fightTick, get holdKind(){ return HOLDLIST[holdIx]; }, cad:CAD, bench, off, dbg:DBG, def:DEF, models:M, stat, draw,
   has:k=>!!DEF[k],
   ready:k=>{ k=k||'bldragon'; if(!off.on || !DEF[k]) return false; if(!M[k]) load(k); return M[k].state===2; },
   next:d=>{ holdIx=(holdIx+(d||1)+HOLDLIST.length)%HOLDLIST.length; load(HOLDLIST[holdIx]); holdUi(); if(FIGHT) fightUi(); }, tune:TUNE, tuneOf,
@@ -381,7 +381,7 @@ function fightUi(){
     box=document.createElement('div'); box.id='drg3dFight';
     box.style.cssText='position:fixed;top:calc(env(safe-area-inset-top) + 92px);left:6px;z-index:99999;'+
       'font:600 12px sans-serif;color:#fff;background:rgba(0,0,0,.5);border-radius:12px;padding:5px 9px;user-select:none;width:250px';
-    let h='<div id="drg3dHead" style="display:flex;justify-content:space-between"><span>現在距離 <span id="drg3dDist"></span></span><span><button id="drg3dRe" style="font:inherit;color:#fff;background:#555;border:0;border-radius:8px;padding:2px 8px">重刷</button> <button id="drg3dSave" style="font:inherit;color:#fff;background:#2e7d32;border:0;border-radius:8px;padding:2px 10px">已儲存 ✓</button> <span id="drg3dFold" style="padding:0 4px">收合 ▲</span></span></div><div id="drg3dBody">';
+    let h='<div id="drg3dHead" style="display:flex;justify-content:space-between"><span>現在距離 <span id="drg3dDist"></span></span><span><label style="font-weight:400"><input id="drg3dNoF" type="checkbox">免戰</label> <button id="drg3dStd" style="font:inherit;color:#fff;background:#555;border:0;border-radius:8px;padding:2px 8px">標準化</button> <button id="drg3dRe" style="font:inherit;color:#fff;background:#555;border:0;border-radius:8px;padding:2px 8px">重刷</button> <button id="drg3dSave" style="font:inherit;color:#fff;background:#2e7d32;border:0;border-radius:8px;padding:2px 10px">已儲存 ✓</button> <span id="drg3dFold" style="padding:0 4px">收合 ▲</span></span></div><div id="drg3dBody">';
     for(const [f,t,mn,mx,st] of SLIDERS) h+='<div style="display:flex;align-items:center;gap:6px"><span style="width:84px">'+t+'</span>'+
       '<input data-f="'+f+'" type="range" min="'+mn+'" max="'+mx+'" step="'+st+'" style="flex:1"><b data-v="'+f+'" style="width:44px;text-align:right"></b></div>';
     h+='<div style="display:flex;align-items:center;gap:6px"><span style="width:84px">出場方式</span><select id="drg3dAp" style="flex:1;font:inherit">'+
@@ -389,6 +389,16 @@ function fightUi(){
     h+='<div id="drg3dSum" style="font-weight:400;font-size:11px;opacity:.85"></div></div><div id="drg3dHit" style="color:#ffd27a;min-height:15px"></div>';
     box.innerHTML=h; document.body.appendChild(box);
     box.querySelector('#drg3dSave').addEventListener('click',tuneWrite);
+    const nf=box.querySelector('#drg3dNoF'); nf.checked=window.DRG3D.noFight;
+    nf.addEventListener('change',()=>{ window.DRG3D.noFight=nf.checked; try{ localStorage.setItem('drg3dNoFight', nf.checked?'1':'0'); }catch(e){} });
+    /* 標準化：把目前這一隻的設定（大小與觸手以外）照抄給全部空戰怪 —— 大小與觸手是那一隻的長相，不抄 */
+    box.querySelector('#drg3dStd').addEventListener('click',()=>{
+      const src=HOLDLIST[holdIx], skip=new Set(['size','tent','tentY','tentN']);
+      let nm=src; try{ nm=ENEMY_KINDS[src].name; }catch(e){}
+      if(!confirm('把「'+nm+'」的設定（大小、觸手以外）套用到全部 '+HOLDLIST.length+' 隻空戰怪？')) return;
+      for(const f in TUNE){ if(skip.has(f)) continue; const v=f==='approach' ? (TUNE.approach[src]||'') : tuneOf(f,src);
+        for(const k of HOLDLIST){ if(f==='approach' && !v) delete TUNE.approach[k]; else TUNE[f][k]=v; } }
+      tuneSave(); fightUi(); });
     box.querySelector('#drg3dRe').addEventListener('click',()=>{ window.DRG3D.respawn=true; });   // index.html 的掛鉤收掉現在那隻、0.3 秒後重刷
     box.querySelector('#drg3dAp').addEventListener('change',e=>{ const kk=HOLDLIST[holdIx];
       if(e.target.value) TUNE.approach[kk]=e.target.value; else delete TUNE.approach[kk]; tuneSave(); fightUi(); });

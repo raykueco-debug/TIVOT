@@ -463,6 +463,7 @@ function flightBgmKey(){
   return null;
 }
 let flightWorld = '';   // '' 地表／'cave' 地底（openFlight 是唯一的寫入點）
+let flightAir = false;  // 空戰調整（首頁「空戰」鈕）：飛行頁帶 drg3d 遭遇測試參數；打完回來（resume）沿用，其餘入口一律關（openFlight 是唯一的寫入點）
 function openFlight(opts){
   if(!(opts && opts.resume) && !openFlight.__veiling){
     openFlight.__veiling = true;
@@ -478,7 +479,9 @@ function openFlight(opts){
      打完回來（resume）沿用上一趟；其餘一律回地表 —— 漏寫的下場是「回地表」，不是「被留在地底」。 */
   if(opts && opts.world!==undefined) flightWorld = opts.world || '';
   else if(!(opts && opts.resume)) flightWorld = '';
-  const src = FLIGHT_SRC + (flightWorld ? '&world='+flightWorld : '');
+  if(opts && opts.air!==undefined) flightAir = !!opts.air;
+  else if(!(opts && opts.resume)) flightAir = false;
+  const src = FLIGHT_SRC + (flightWorld ? '&world='+flightWorld : '') + (flightAir ? '&drg3d=1&drg3dfight&drg3dkind=all' : '');
   /* ⚠⚠ **主遊戲這一頁的 BGM 一定要先收掉**（ver -391，Ray：「BGM 播下一首就停上一首，
      不要重疊」）。飛行頁自 ver -388 起是內嵌 iframe，它**有自己的一套 BGM**
      （另一個 document、另一組 HTMLAudio）—— 跳頁的時代舊頁一走音樂自然沒了，
@@ -1660,7 +1663,7 @@ document.querySelectorAll('#originalSheet .os-link').forEach(a=>{
 // 只作遙測排除，不再於開機時直接顯示後臺鈕；已簽裝置要進後臺，每場重做解鎖手勢即可。
 bindBtn('statsBtn', ()=>{ window.location.href = 'stats.html'; });
 bindBtn('ciBtn', ()=>{ window.location.href = 'tools/ci_review.html'; });
-bindBtn('airBtn', ()=>{ window.location.href = 'flight/index.html?drg3d=1&drg3dfight&drg3dkind=all'; });   // 空戰調整（空中怪 3D 遭遇測試；同 CI 的跳頁作法，管理人限定）   // CI 驗收頁（ver -2026，取代首頁的眨眼鈕；眨眼頁直接開網址）
+bindBtn('airBtn', ()=>startChapter(prog.FLIGHT_TEST, { air:true }));   // 空戰調整：開在遊戲自己的飛行框裡（同「試飛．地表」），不勾免戰時能真的交棒進戰鬥、打完回來   // CI 驗收頁（ver -2026，取代首頁的眨眼鈕；眨眼頁直接開網址）
 /* ══ 讀檔（ver -1023，Ray：「首頁做個讀檔鈕，一對一」）══ 讀**管理人專用的那一格**
    （`save.devLoad`），與系統選單裡的「存檔」一對一。
    ⚠ 與「繼續」是兩件事：那一顆讀玩家的最新存檔（main／auto），這一顆只讀管理人
@@ -2064,7 +2067,7 @@ function startChapter(c, opts){
        ⚠ 走 `openFlight()`（唯一那個入口，鐵律 8）—— 非 resume ＝ iframe 重載，
          所以飛行頁開機那一刻就讀得到剛插上去的旗（`ruin_a_found` 決定瓦努努的
          名牌與降落點出不出得來）。 */
-    openFlight(opts && opts.world ? { world: opts.world } : undefined);
+    openFlight(opts && (opts.world || opts.air) ? { world: opts.world, air: opts.air } : undefined);
   }else{
     story.open(null);
   }
