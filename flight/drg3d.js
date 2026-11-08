@@ -221,7 +221,7 @@ function draw(o){
   if(!R || R.state!==2) return false;
   const t0=performance.now();
   const D=DEF[kind], K=ENEMY_KINDS[kind], SP=K.sprite||{};
-  const spanW=(SP.frontSpanW||SP.spanW||980)*D.spanK;
+  const spanW=(SP.frontSpanW||SP.spanW||980)*D.spanK*(TUNE.size[o.kind]||1);   // TUNE：遭遇測試的大小滑桿（只在測試時有值）
   const span=R.span, sWorld=spanW/2/(D.fit==='rad' ? R.rad : span);   // 模型單位 → 世界單位（翼展對齊 2D 那張圖；管狀的怪 fit:'rad' 改用外接球）
   const fx=o.W/2, fy=0.62*o.VIEWH;
   const rW=Math.max(span*1.35, R.rad*1.12)*sWorld;      // 外接半徑（世界）：翼展＋拍翅餘裕，或整隻的外接球，取大
@@ -296,6 +296,9 @@ function bench(n, halfPx, kind){
   return { ms:(b-a)/n, px:stat.px, tris:(M[kind].nIdx/3)|0 };
 }
 
+/* 遭遇測試的調整值（大小×、開戰距離）：存在這個瀏覽器，重整不會丟；定案後由 Ray 報數字寫進 DEF／ENEMY_CFG */
+const TUNE=(()=>{ try{ const t=JSON.parse(localStorage.getItem('drg3dTune')||'{}'); return { size:t.size||{}, engage:t.engage||null }; }catch(e){ return { size:{}, engage:null }; } })();
+function tuneSave(){ try{ localStorage.setItem('drg3dTune', JSON.stringify(TUNE)); }catch(e){} }
 const HOLD=/[?&]drg3dhold/.test(location.search);
 const FIGHT=/[?&]drg3dfight/.test(location.search);   // 遭遇測試：照常追擊，到開戰距離只閃字不進戰鬥，馬上再刷下一隻（調開戰距離用）
 const HOLDARG=((location.search.match(/[?&]drg3dkind=(\w+)/)||[])[1])||'bldragon';
@@ -305,7 +308,7 @@ let holdIx=0;
 window.DRG3D={ mode:MODE, hold:HOLD, fight:FIGHT, fightTimer:1500, engaged, fightTick, get holdKind(){ return HOLDLIST[holdIx]; }, cad:CAD, bench, off, dbg:DBG, def:DEF, models:M, stat, draw,
   has:k=>!!DEF[k],
   ready:k=>{ k=k||'bldragon'; if(!off.on || !DEF[k]) return false; if(!M[k]) load(k); return M[k].state===2; },
-  next:d=>{ holdIx=(holdIx+(d||1)+HOLDLIST.length)%HOLDLIST.length; load(HOLDLIST[holdIx]); holdUi(); } };
+  next:d=>{ holdIx=(holdIx+(d||1)+HOLDLIST.length)%HOLDLIST.length; load(HOLDLIST[holdIx]); holdUi(); if(FIGHT) fightUi(); }, tune:TUNE };
 function holdUi(){
   if(HOLDLIST.length<2) return;
   let bar=document.getElementById('drg3dBar');
@@ -335,14 +338,26 @@ function fightUi(){
       'font:600 14px sans-serif;color:#fff;background:rgba(0,0,0,.55);border-radius:14px;padding:6px 12px;user-select:none;text-align:center;min-width:260px';
     box.innerHTML='<div>開戰距離 <b id="drg3dEngV"></b>　<span id="drg3dDist" style="opacity:.8"></span></div>'+
       '<input id="drg3dEng" type="range" min="100" max="1200" step="10" style="width:240px">'+
-      '<div id="drg3dHit" style="color:#ffd27a;min-height:18px"></div>';
+      '<div>大小 ×<b id="drg3dSzV"></b></div>'+
+      '<input id="drg3dSz" type="range" min="0.3" max="3" step="0.05" style="width:240px">'+
+      '<div id="drg3dHit" style="color:#ffd27a;min-height:18px"></div>'+
+      '<div id="drg3dSum" style="font-weight:400;font-size:12px;opacity:.85;max-width:300px"></div>';
     document.body.appendChild(box);
     const r=box.querySelector('#drg3dEng');
     ['pointerdown','touchstart','mousedown'].forEach(t=>r.addEventListener(t,e=>e.stopPropagation()));
-    r.addEventListener('input',()=>{ try{ ENEMY_CFG.engage=+r.value; }catch(e){} box.querySelector('#drg3dEngV').textContent=r.value; });
+    r.addEventListener('input',()=>{ try{ ENEMY_CFG.engage=+r.value; }catch(e){} TUNE.engage=+r.value; tuneSave(); fightUi(); });
+    const z=box.querySelector('#drg3dSz');
+    ['pointerdown','touchstart','mousedown'].forEach(t=>z.addEventListener(t,e=>e.stopPropagation()));
+    z.addEventListener('input',()=>{ const k=HOLDLIST[holdIx]; if(+z.value===1) delete TUNE.size[k]; else TUNE.size[k]=+z.value; tuneSave(); fightUi(); });
+    if(TUNE.engage){ try{ ENEMY_CFG.engage=TUNE.engage; }catch(e){} }
   }
   let v=300; try{ v=ENEMY_CFG.engage; }catch(e){}
   box.querySelector('#drg3dEng').value=v; box.querySelector('#drg3dEngV').textContent=v;
+  const k=HOLDLIST[holdIx], sz=TUNE.size[k]||1;
+  box.querySelector('#drg3dSz').value=sz; box.querySelector('#drg3dSzV').textContent=sz.toFixed(2);
+  const nm=x=>{ try{ return ENEMY_KINDS[x].name; }catch(e){ return x; } };
+  const ch=Object.entries(TUNE.size).map(([x,s])=>nm(x)+' ×'+s.toFixed(2));
+  box.querySelector('#drg3dSum').textContent=ch.length?('已調：'+ch.join('、')):'';
 }
 function fightTick(dist){ const d=document.getElementById('drg3dDist'); if(d) d.textContent=dist!=null?('現在 '+Math.round(dist)):''; }
 function engaged(dist){
