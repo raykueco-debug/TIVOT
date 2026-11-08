@@ -228,7 +228,7 @@ const off={ on:true }, DBG={ yaw:null, noTex:false };
 /* ⚠ 抽格（Ray 11-07：「3D 讓他幀數減少 33%」）：每 3 禎只重算 2 次姿勢，第 3 禎沿用上一張 ——
    位置與大小照常跟著走（貼的地方是這一禎的），只有動作是頓的，像手繪動畫。
    `CAD.pat` 是節拍（1＝重畫、0＝沿用），要改節奏只改這一串。 */
-const CAD={ pat:[1,1,0], n:0, dpx:0, kind:'' };
+const CAD={ pat:[1,1,0], n:0, dpx:0, kind:'', slots:[], keepNow:false };
 
 /* 畫一隻：o＝{ kind, ctx, x, y（螢幕 CSS px 的中心）, lat, h, z（中心在鏡頭座標：橫向／鏡頭高−牠高／進深）,
    l, f（航向在鏡頭座標）, W, VIEWH, now, lit:[r,g,b], pxScale, clip:fn } */
@@ -247,8 +247,18 @@ function draw(o){
   const dpx=Math.min(MAXPX, Math.ceil(half*2*dpr));
   if(dpx<8) return true;
   const hp=dpx/2, sc=hp/half;
-  const keep=!o.noHold && CAD.dpx>0 && CAD.kind===kind && !CAD.pat[CAD.n++ % CAD.pat.length];
   const c=o.ctx;
+  /* 同一隻怪畫好幾隻（數量 >1）：每一隻各存一張（o.slot），節拍由 0 號推進一次、整群同進退 */
+  if(o.slot!=null){
+    if(o.slot===0) CAD.keepNow=!CAD.pat[CAD.n++ % CAD.pat.length];
+    const S=CAD.slots[o.slot];
+    if(!o.noHold && CAD.keepNow && S && S.kind===kind){
+      c.save(); c.imageSmoothingEnabled=false; if(o.clip) o.clip();
+      c.drawImage(S.cv, 0, 0, S.dpx, S.dpx, o.x-half, o.y-half, half*2, half*2);
+      c.restore(); stat.held++; return true;
+    }
+  }
+  const keep=o.slot==null && !o.noHold && CAD.dpx>0 && CAD.kind===kind && !CAD.pat[CAD.n++ % CAD.pat.length];
   if(keep){
     c.save(); c.imageSmoothingEnabled=false; if(o.clip) o.clip();
     c.drawImage(cv, 0, MAXPX-CAD.dpx, CAD.dpx, CAD.dpx, o.x-half, o.y-half, half*2, half*2);
@@ -308,6 +318,12 @@ function draw(o){
   if(o.clip) o.clip();
   c.drawImage(cv, 0, MAXPX-dpx, dpx, dpx, o.x-half, o.y-half, half*2, half*2);
   c.restore();
+  if(o.slot!=null){   // 存一張給下一個「沿用」的節拍
+    let S=CAD.slots[o.slot]; if(!S){ S=CAD.slots[o.slot]={ cv:document.createElement('canvas') }; }
+    if(S.cv.width<dpx){ S.cv.width=S.cv.height=dpx; }
+    const sg=S.cv.getContext('2d'); sg.clearRect(0,0,dpx,dpx); sg.drawImage(cv, 0, MAXPX-dpx, dpx, dpx, 0, 0, dpx, dpx);
+    S.dpx=dpx; S.kind=kind;
+  }
   stat.frames++; stat.ms+=performance.now()-t0;
   return true;
 }
@@ -347,7 +363,7 @@ const HOLD=/[?&]drg3dhold/.test(location.search);
 const FIGHT=/[?&]drg3dfight/.test(location.search);   // 遭遇測試：照常追擊，到開戰距離只閃字不進戰鬥，馬上再刷下一隻（調開戰距離用）
 const HOLDARG=((location.search.match(/[?&]drg3dkind=(\w+)/)||[])[1])||'bldragon';
 /* drg3dkind=all：全部空中怪輪流看 —— 畫面上方的「◀ 名字 ▶」或 [ ] 鍵換下一隻（index.html 的掛鉤看到種類變了就收掉重生） */
-const HOLDLIST=HOLDARG==='all' ? Object.keys(DEF).filter(k=>k!=='sky_southlord') : [HOLDARG];
+const HOLDLIST=HOLDARG==='all' ? Object.keys(DEF) : [HOLDARG];   // 南天的霸王也在（借無面巨首的模型，戰鬥卡 li_south）
 let holdIx=0;
 window.DRG3D={ mode:MODE, hold:HOLD, fight:FIGHT, noFight:(()=>{ try{ return localStorage.getItem('drg3dNoFight')!=='0'; }catch(e){ return true; } })(), fightTimer:1500, engaged, fightTick, get holdKind(){ return HOLDLIST[holdIx]; }, cad:CAD, bench, off, dbg:DBG, def:DEF, models:M, stat, draw,
   has:k=>!!DEF[k],
@@ -458,7 +474,13 @@ function fightUi(){
 function fightTick(dist){ const d=document.getElementById('drg3dDist'); if(d) d.textContent=dist!=null?('現在 '+Math.round(dist)):''; }
 function engaged(dist){
   fightLast=Math.round(dist);
-  const h=document.getElementById('drg3dHit'); if(h){ h.textContent='接戰！（觸發時距離 '+fightLast+'）'; clearTimeout(h._t); h._t=setTimeout(()=>{ h.textContent=''; },2500); }
+  /* 浮在畫面上方中央（面板收合時也看得到） */
+  let h=document.getElementById('drg3dFlash');
+  if(!h){ h=document.createElement('div'); h.id='drg3dFlash';
+    h.style.cssText='position:fixed;top:calc(env(safe-area-inset-top) + 48px);left:50%;transform:translateX(-50%);z-index:99999;pointer-events:none;'+
+      'font:700 15px sans-serif;color:#ffd27a;background:rgba(0,0,0,.55);border-radius:12px;padding:5px 12px;display:none';
+    document.body.appendChild(h); }
+  h.textContent='接戰！（觸發時距離 '+fightLast+'）'; h.style.display=''; clearTimeout(h._t); h._t=setTimeout(()=>{ h.style.display='none'; },2500);
   window.DRG3D.fightTimer=1500;
 }
 if(FIGHT){ load(HOLDLIST[0]); const go=()=>{ holdUi(); fightUi(); }; if(document.body) go(); else addEventListener('DOMContentLoaded',go); addEventListener('load',()=>setTimeout(go,500)); }
