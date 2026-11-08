@@ -297,11 +297,12 @@ function bench(n, halfPx, kind){
 }
 
 const HOLD=/[?&]drg3dhold/.test(location.search);
+const FIGHT=/[?&]drg3dfight/.test(location.search);   // 遭遇測試：照常追擊，到開戰距離只閃字不進戰鬥，馬上再刷下一隻（調開戰距離用）
 const HOLDARG=((location.search.match(/[?&]drg3dkind=(\w+)/)||[])[1])||'bldragon';
 /* drg3dkind=all：全部空中怪輪流看 —— 畫面上方的「◀ 名字 ▶」或 [ ] 鍵換下一隻（index.html 的掛鉤看到種類變了就收掉重生） */
 const HOLDLIST=HOLDARG==='all' ? Object.keys(DEF).filter(k=>k!=='sky_southlord') : [HOLDARG];
 let holdIx=0;
-window.DRG3D={ mode:MODE, hold:HOLD, get holdKind(){ return HOLDLIST[holdIx]; }, cad:CAD, bench, off, dbg:DBG, def:DEF, models:M, stat, draw,
+window.DRG3D={ mode:MODE, hold:HOLD, fight:FIGHT, fightTimer:1500, engaged, fightTick, get holdKind(){ return HOLDLIST[holdIx]; }, cad:CAD, bench, off, dbg:DBG, def:DEF, models:M, stat, draw,
   has:k=>!!DEF[k],
   ready:k=>{ k=k||'bldragon'; if(!off.on || !DEF[k]) return false; if(!M[k]) load(k); return M[k].state===2; },
   next:d=>{ holdIx=(holdIx+(d||1)+HOLDLIST.length)%HOLDLIST.length; load(HOLDLIST[holdIx]); holdUi(); } };
@@ -322,5 +323,33 @@ function holdUi(){
   const k=HOLDLIST[holdIx]; let K=null; try{ K=ENEMY_KINDS[k]; }catch(e){}
   document.getElementById('drg3dLab').textContent=(holdIx+1)+'/'+HOLDLIST.length+'　'+((K&&K.name)||k);
 }
+/* ── 遭遇測試（?drg3d=1&drg3dfight[&drg3dkind=all]）──
+   開戰距離＝ENEMY_CFG.engage（唯一真相，這裡只改它的值）；滑桿調、即時生效。
+   index.html 的掛鉤：沒怪就 fightTimer 倒數後 spawnEnemy；到距離就叫 engaged() 而不交棒。 */
+let fightLast=null;
+function fightUi(){
+  let box=document.getElementById('drg3dFight');
+  if(!box){
+    box=document.createElement('div'); box.id='drg3dFight';
+    box.style.cssText='position:fixed;top:calc(env(safe-area-inset-top) + 92px);left:50%;transform:translateX(-50%);z-index:99999;'+
+      'font:600 14px sans-serif;color:#fff;background:rgba(0,0,0,.55);border-radius:14px;padding:6px 12px;user-select:none;text-align:center;min-width:260px';
+    box.innerHTML='<div>開戰距離 <b id="drg3dEngV"></b>　<span id="drg3dDist" style="opacity:.8"></span></div>'+
+      '<input id="drg3dEng" type="range" min="100" max="1200" step="10" style="width:240px">'+
+      '<div id="drg3dHit" style="color:#ffd27a;min-height:18px"></div>';
+    document.body.appendChild(box);
+    const r=box.querySelector('#drg3dEng');
+    ['pointerdown','touchstart','mousedown'].forEach(t=>r.addEventListener(t,e=>e.stopPropagation()));
+    r.addEventListener('input',()=>{ try{ ENEMY_CFG.engage=+r.value; }catch(e){} box.querySelector('#drg3dEngV').textContent=r.value; });
+  }
+  let v=300; try{ v=ENEMY_CFG.engage; }catch(e){}
+  box.querySelector('#drg3dEng').value=v; box.querySelector('#drg3dEngV').textContent=v;
+}
+function fightTick(dist){ const d=document.getElementById('drg3dDist'); if(d) d.textContent=dist!=null?('現在 '+Math.round(dist)):''; }
+function engaged(dist){
+  fightLast=Math.round(dist);
+  const h=document.getElementById('drg3dHit'); if(h){ h.textContent='接戰！（觸發時距離 '+fightLast+'）'; clearTimeout(h._t); h._t=setTimeout(()=>{ h.textContent=''; },2500); }
+  window.DRG3D.fightTimer=1500;
+}
+if(FIGHT){ load(HOLDLIST[0]); const go=()=>{ holdUi(); fightUi(); }; if(document.body) go(); else addEventListener('DOMContentLoaded',go); addEventListener('load',()=>setTimeout(go,500)); }
 if(HOLD){ load(HOLDLIST[0]); if(document.body) holdUi(); else addEventListener('DOMContentLoaded',holdUi); addEventListener('load',()=>setTimeout(holdUi,500)); }   // load 之後再寫一次：ENEMY_KINDS 那時才有中文名
 })();
