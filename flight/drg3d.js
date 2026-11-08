@@ -17,7 +17,7 @@ const LO=/[?&]drg3dlo/.test(location.search);
    flap：沒寫＝讀 2D 那一份（sprite.wingCut／flapAmp／wingRest／flapLag／flapDown，鐵律 7）；寫了＝3D 自己的（2D 那一份是 0 的怪）
    tail：尾巴的波浪 { from：從模型的哪個 z 比例往後算（-1 尾端 … 1 頭），amp：振幅（半翼展的比例），waves：整條尾巴上有幾個波 } */
 const DEF={
-  bldragon:    { dir:'enemy/flm_dragonthrone/', file:'drg3d', spanK:1.0 },
+  bldragon:    { dir:'enemy/flm_dragonthrone/', file:'drg3d', spanK:1.0, battle:'bl_sky' },   // battle：沒有 flight_<鍵> 戰鬥卡的怪（只走劇本那一場）在遭遇測試交棒時用這張
   sky_boneray: { dir:'enemy/flm_boneray/',      file:'mon3d', spanK:0.85,
                  flap:{ cut:[0.18,0.45,0.72], amp:[0.16,0.18,0.20], rest:[0.02,0.04,0.05], lag:0.08, down:0.42 },
                  tail:{ from:-0.15, amp:0.10, waves:1.2 } },
@@ -68,7 +68,7 @@ const DEF={
                  flap:{ cut:[0.3,0.6,0.9], amp:[0,0,0], rest:[0,0,0], lag:0, down:0.5 },
                  tail:{ from:0.00, amp:0.12, waves:1.2 } },
 };
-DEF.sky_southlord = DEF.sky2_maw;   // 南天的霸王＝無面巨首換名（index.html 的 ENEMY_KINDS 同樣是 Object.assign 抄過去）
+DEF.sky_southlord = Object.assign({}, DEF.sky2_maw, { battle:'li_south' });   // 南天的霸王＝無面巨首換名（index.html 的 ENEMY_KINDS 同樣是 Object.assign 抄過去）
 const MAXPX=1024;                       // 畫布上限（裝置像素）：一次配好，每禎只換 viewport
 let cv=null, g=null, prog=null, U={}, initErr='';
 const M={};                              // 鍵 → { state:0 未載/1 載入中/2 好了/-1 壞了, vao, nIdx, idxT, span, hinge, bbMin, bbMax, tex, texOK, zMin, zMax }
