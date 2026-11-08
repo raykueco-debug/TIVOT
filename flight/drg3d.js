@@ -85,6 +85,7 @@ uniform vec3 uCut, uHy, uAng;           // 三節鉸鏈：切點（半幅比例�
 uniform float uHs;                      // 半翼展（模型單位）
 uniform vec4 uTail;                     // 尾波：起點 z、振幅、波數、相位（rad）
 uniform vec2 uZr;                       // 模型 z 範圍（min, max）
+uniform float uRoll;                    // 側傾（rad，繞機身前後軸；正＝右翼往下，轉右彎）
 out vec3 vC; out vec3 vN; out vec3 vP; out vec3 vN0;
 vec2 rot(vec2 q, float a){ float s=sin(a), co=cos(a); return vec2(co*q.x-s*q.y, s*q.x+co*q.y); }
 void main(){
@@ -102,6 +103,7 @@ void main(){
     vec2 h=vec2(sd*uCut[k]*uHs, uHy[k]);
     P.xy=rot(P.xy-h,a)+h; N.xy=rot(N.xy,a);
   }
+  P.xy=rot(P.xy,uRoll); N.xy=rot(N.xy,uRoll);   // 轉彎時壓坡（遭遇的「打斜再鎖定」）
   float l=uYaw.x, f=uYaw.y;
   float lat=-P.x*f+P.z*l, dep=P.x*l+P.z*f;  // 模型 +x＝牠的左、+z＝牠的前
   float nl=-N.x*f+N.z*l, nd=N.x*l+N.z*f;
@@ -151,7 +153,7 @@ function init(){
     if(!g) throw new Error('沒有 WebGL2');
     prog=g.createProgram(); g.attachShader(prog,sh(g.VERTEX_SHADER,VS)); g.attachShader(prog,sh(g.FRAGMENT_SHADER,FS)); g.linkProgram(prog);
     if(!g.getProgramParameter(prog,g.LINK_STATUS)) throw new Error(g.getProgramInfoLog(prog));
-    for(const k of ['uS','uOut','uYaw','uO','uF','uHalf','uR','uCut','uHy','uAng','uHs','uTail','uZr','uLit','uLine','uLineC','uTex','uMin','uMax','uUseTex']) U[k]=g.getUniformLocation(prog,k);
+    for(const k of ['uS','uOut','uYaw','uO','uF','uHalf','uR','uCut','uHy','uAng','uHs','uTail','uZr','uRoll','uLit','uLine','uLineC','uTex','uMin','uMax','uUseTex']) U[k]=g.getUniformLocation(prog,k);
   }catch(e){ initErr=String(e); g=null; console.warn('[mon3d] GL 建不起來',e); }
   return !!g;
 }
@@ -249,6 +251,7 @@ function draw(o){
   g.uniform1f(U.uS,sWorld); g.uniform2f(U.uYaw,yl,yf); g.uniform3f(U.uO,o.lat,o.h,o.z);
   g.uniform2f(U.uF,fx*sc,fy*sc); g.uniform2f(U.uHalf,hp,hp); g.uniform1f(U.uR,rW*1.2);
   g.uniform1f(U.uHs,span);
+  g.uniform1f(U.uRoll,(o.roll||0)*tuneOf('bank',kind)*Math.PI/180);
   g.uniform3f(U.uCut,R.hinge[0][0],R.hinge[1][0],R.hinge[2][0]);
   g.uniform3f(U.uHy,R.hinge[0][1],R.hinge[1][1],R.hinge[2][1]);
   /* 擺角：常駐下壓 REST ＋ 波形 × 幅度，往外逐節落後 LAG */
@@ -299,11 +302,11 @@ function bench(n, halfPx, kind){
 /* 遭遇測試的調整值（大小×、開戰距離）：存在這個瀏覽器，重整不會丟；定案後由 Ray 報數字寫進 DEF／ENEMY_CFG */
 /* 調整值的唯一真相：`flight/enemy/sky3d_tune.json`（遭遇測試面板的「儲存」寫它；開機讀它）。
    滑桿改的是記憶體裡這一份，按「儲存」才寫回檔案（devserver `/__save/` 白名單）。 */
-const TUNE={ size:{}, engage:{}, count:{}, anim:{}, speed:{}, approach:{}, chase:{}, gone:{} };
+const TUNE={ size:{}, engage:{}, count:{}, anim:{}, speed:{}, approach:{}, chase:{}, gone:{}, bank:{}, bankT:{} };
 let tuneDirty=false;
 (()=>{ try{ const x=new XMLHttpRequest(); x.open('GET','enemy/sky3d_tune.json?v='+Date.now(),false); x.send();   // 同步：第一幀就要用到
   if(x.status===200){ const t=JSON.parse(x.responseText); for(const k in TUNE) if(t[k] && typeof t[k]==='object') TUNE[k]=t[k]; } }catch(e){} })();
-const TUNE_DEF={ engage:null, size:1, count:1, anim:1, speed:1, approach:'', chase:null, gone:3400 };   // null＝沿用 ENEMY_CFG.engage
+const TUNE_DEF={ engage:null, size:1, count:1, anim:1, speed:1, approach:'', chase:null, gone:3400, bank:45, bankT:350 };   // null＝沿用 ENEMY_CFG.engage
 const tuneOf=(f,k)=>{ const v=TUNE[f][k]; if(v!=null) return v;
   try{ if(f==='engage') return ENEMY_CFG.engage; if(f==='chase') return Math.round(ENEMY_CFG.spawnDist*ENEMY_CFG.chaseAt); }catch(e){ return f==='engage'?300:1680; }
   return TUNE_DEF[f]; };
@@ -348,7 +351,8 @@ function holdUi(){
    index.html 的掛鉤：沒怪就 fightTimer 倒數後 spawnEnemy；到距離就叫 engaged() 而不交棒。 */
 let fightLast=null;
 const SLIDERS=[ ['engage','開戰距離',100,1500,10,0], ['size','大小 ×',0.3,3,0.05,2], ['count','數量',1,8,1,0],
-  ['anim','動作速度 ×',0.2,3,0.05,2], ['speed','接近速度 ×',0.2,4,0.05,2], ['chase','巡航轉追',300,3000,50,0], ['gone','巡航消失',1000,6000,100,0] ];
+  ['anim','動作速度 ×',0.2,3,0.05,2], ['speed','接近速度 ×',0.2,4,0.05,2], ['chase','巡航轉追',300,3000,50,0], ['gone','巡航消失',1000,6000,100,0],
+  ['bank','轉彎傾斜°',0,80,1,0], ['bankT','傾斜快慢ms',80,1200,10,0] ];
 const APPROACH=[['','側面出、立刻追（原本）'],['direct','出怪後直接飛來'],['cruise','側面巡航，靠近才追']];
 function fightUi(){
   let box=document.getElementById('drg3dFight');
