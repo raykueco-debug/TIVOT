@@ -35,6 +35,15 @@
 
 - 狀態（11-09 晚）：Ray 看過、可交的 25 支已交（他剪的最新 `_cut_N`，停格已展開，格數 5～14 不等）；**6-1 剔除**（資料夾已回收 —— 這個人沒有 A，程式端攻擊抽人時要跳過沒有 `_atk` 的人，現行 `loadMemberClip` 失敗就不會被抽到）；7-2 仍是敵人線先剪的 4 格版（Ray 未表示）。
 
+## ⚠⚠ 11-09 Ray 回報「攻擊時人會縮一下」—— 程式的換框時序，不是素材、也不是遠近縮放
+
+- 實測（車輪戰，逐 30ms 記 `.eg-anim` 的框與 src）：攻擊倒放回到第 0 格那一下，`groupAttack` 先 `placeOnLayer(im._ov, im, im._idle.j)` 把框換成**待機的框**，但 `src` 還是**攻擊那一格**，要等下一個待機 tick（最多 1/12 秒）才換回待機圖 ⇒ 那一瞬間攻擊的整格畫進待機的小框＝人縮一下。
+- v2 的攻擊框是 Wan 整格（480×720 反算），比待機的貼身框大很多，所以比 v1 明顯。
+- 群戰攻擊**沒有**任何遠近縮放（`far`／`near` 只給單隻怪的 `ENEMY_ATK`），原地開槍本來就不縮。
+- 修法（`modules/enemy.js` `groupAttack` 收尾那一行，約 2323）：換框之前先把圖換回待機：
+  `if(im._idle){ im._ov.src=im._idle.fr[0].src; placeOnLayer(im._ov, im, im._idle.j); }`
+  （更嚴謹是等那張圖 `decode()` 完再一起換框，同 §6.5「取景在 onload 那一刻才換」）。
+
 ## ✅ 11-09 第 3、7 組換分層（3-1 拿掉刺刀、7-3 拿掉魚叉，Ray 指定全系列重做）
 
 - 分層 `man_skypirate_3_layers/pirate_1.webp`、`man_skypirate_7_layers/pirate_3.webp` 已換（舊的回收），合成圖 `man_skypirate_3.webp`／`_7.webp` 重組。
