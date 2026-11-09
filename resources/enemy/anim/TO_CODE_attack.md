@@ -3,6 +3,23 @@
 > 動畫 session 不碰程式（憲法鐵律 11），要接的寫在這裡。接完請在 HANDOFF 註記。
 > 來源：Ray 的 `敵人一覽_非空戰_動畫編排.xlsx`（待機 loop／攻擊動畫／延時點錯動畫三欄）。
 
+## ✅ 11-10 KF 第二輪五支（敵人線 4070S；Ray 剪過、車輪戰 8124 注入試跑中）
+
+Ray：「可交件 colossus_A_AB_cut／saint_inspector_A_AB_cut／stag_rot_A_AB_cut／deernightmare_A_AB_cut／bear_nightmare_B_BA_cut，回檔就用同樣剪法」。
+另一段（沒剪的那一半）照 Ray 那一段的取格表套用（`tools/anim/deliver_kf2.py`），同一生成空間首尾相接、接點只留一張，從中立起手回到中立。格式＝待機的程式端版（有 `px`），24fps、loop:false。
+
+| 怪（卡） | 表 | 鑰匙（立繪檔名） | 資料夾 | 格／秒 | 打到 |
+|---|---|---|---|---|---|
+| 崩岩巨像 `canyon_colossus` | ENEMY_ATK（拳砸地） | `mon_canyon_colossus_dark` | `mon_canyon_colossus_dark_atk_v1/` | 36／1.50 | 21 |
+| 監查者 `ruins_saint_inspector` | ENEMY_DELAY（翅膀揮動） | `mon_saint_inspector` | `mon_saint_inspector_delay_v1/` | 39／1.62 | 23 |
+| 腐鹿骸 `sf_stag_rot` | ENEMY_ATK（角頂） | **`mon_stag_rot_neutral`** | `mon_stag_rot_neutral_atk_v1/` | 30／1.25 | 17 |
+| 變異樹靈鹿主 `sf_deer_nightmare` | ENEMY_ATK **與** ENEMY_DELAY 都指這一支（仰天咆哮） | `mon_shinierforest_deernightmare` | `mon_shinierforest_deernightmare_atk_v1/` | 55／2.29 | 32 |
+| 熊骸（夢魘）`sv_bear`（＋同圖那張卡） | ENEMY_MISS（爪擊） | `mon_bear_nightmare` | `mon_bear_nightmare_miss_v1/` | 62／2.58 | 37 |
+
+- ⚠⚠ **腐鹿骸換立繪**：動畫是用新的中立站姿生成的 ⇒ `ASSETS.enemy_sf_stag_rot` 改指 **`resources/enemy/mon_stag_rot_neutral.webp`**（1024×1536）。舊待機 `mon_stag_rot_idle_v2` 是舊立繪的，**新立繪目前沒有待機**（鑰匙不同就不會套上去，靜態立繪＋攻擊）。
+- 鹿主的程式效果（A＝櫻花飛舞、D＝攻擊頻率 +50% 10 秒）、監查者 D 銅色飛刃見 `_KF_第二輪_1109.md` §二。
+- 碰邊：巨像第 17–23、27–28 格（原片）碰生成畫布左緣，監查者翅膀張開左右出框 —— Ray 看過剪過，照交。
+
 ## 規格（全部共通）
 
 - 位置：`resources/enemy/anim/<立繪名>_atk_v<N>/`（攻擊）、`<立繪名>_delay_v<N>/`（延時・點錯）。
