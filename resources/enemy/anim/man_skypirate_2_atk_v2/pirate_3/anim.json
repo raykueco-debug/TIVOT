@@ -9,15 +9,23 @@
   938,
   1407
  ],
- "frames": 4,
+ "frames": 7,
  "fps": 24,
  "loop": false,
- "note": "v2\uff0811-09 Ray\uff09\uff1a\u982d\u5169\u683c\uff0b\u4e2d\u9593\u7121\u69cd\u706b\uff0b\u69cd\u706b\u6700\u5927\uff0c\u69cd\u706b\u756b\u5728\u683c\u5b50\u88e1\uff08\u7a0b\u5f0f\u4e0d\u5fc5\u518d\u756b\uff09\uff1bR\uff1d\u5012\u653e",
- "from": "pirate_atk_v6/sp2_pirate_3_A_L17",
+ "note": "v2\uff0811-09\uff09\uff1a\u526a\u6cd5\u898b from\uff0fkept_index\uff0fholds\uff1b\u69cd\u706b\u756b\u5728\u683c\u5b50\u88e1\uff08\u7a0b\u5f0f\u4e0d\u5fc5\u518d\u756b\uff09\uff1b\u6253\u5230\uff1d\u6700\u5f8c\u4e00\u683c\uff1bR\uff1d\u5012\u653e",
+ "from": "sp2_pirate_3_A_L17_cut_2 \u2190 pirate_atk_v6/sp2_pirate_3_A_L17",
  "kept_index": [
   0,
   1,
+  2,
   3,
   4
+ ],
+ "holds": [
+  1,
+  1,
+  2,
+  1,
+  2
  ]
 }
