@@ -68,7 +68,7 @@ const sz=document.getElementById('size');sz.oninput=()=>{size=+sz.value;document
 const rgbOf=k=>COLORS.find(c=>c[0]===k)[2];
 
 let DONE={},LOOPS={};
-const VARNAME={s101:'A 找循環段',flf:'B 首尾鎖原圖'};
+const VARNAME={s101:'A 找循環段',flf:'B 首尾鎖原圖',cloud:'C 雲程式＋布 Wan(B)'};
 (async()=>{
   const nodes=await (await fetch('nodes.json')).json();
   DONE=await (await fetch('api/done')).json();
