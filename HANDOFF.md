@@ -34,10 +34,15 @@
 - **單隻怪的關鍵格（KF）**：30 隻出完（獸型 tiger 10、其他 natali 20），**都還沒跑 Wan**。對照圖 `resources/enemy/_neutral_refs/s3_kf/_review_第三節_1～6.jpg`；盤點表 `resources/enemy/anim/_ADMIRE_盤點.md`（第二、三批段落）。
 - 飛行怪 swim_v2：`flm_boneray／flm_gasjelly／flm_ribwhale`（已交件進版控，還沒接程式）。
 
-### 背景動畫（副理）
-- 一律拆層跑（憲法 11-08 那一條）。審閱頁 `http://localhost:8130/bg_layer/night_review.html`。
-- 成：光束（s202，擺幅小）、瀑布。要 Ray 看：燭台兩版。卡住：火盆、樹晃、光束 s101。雲＝程式動，有預覽。
-- 成品與中間檔在 `resources/background/anim/`，候選清單 `resources/background/_anim_candidates.md`。
+### 背景動畫（副理，11-09～11-10 在 4070 從頭重做）
+- ⚠ 11-08 那批拆層成品（光束 s202／s101、瀑布、燭台、火盆、樹晃、`night_review.html`）**只在 3060**，從沒進過版控；Ray 11-09 定「從頭開始做、分地圖做、城鎮一律靜態」，4070 重做，那批不再追。
+- **Ray 11-10 定案的做法**：有方向性的（雲）→ **程式分層捲**（遠／中／近三張左右無縫的雲，近快遠慢、只往右）；其他（布、燈籠、樹葉、火、天光）→ **ABA**（A→B＝從原圖 I2V 的開頭到「動得最開」那一格，B→A＝FLF，接成一圈）。只換註記範圍＋布實際掃過的範圍，其餘原圖。
+  - 試過不行的（留紀錄）：Wan 輸出裡找循環段（跳）、FLF／VACE 頭尾鎖原圖（4 步加速鎖不住）、RIFE 補接縫、雲用程式扭曲（「像衛生紙泡在水裡」）、Mobius 潛空間輪轉（4 步加速下整段閃）、雲一起 ABA（「倒車回去」）。
+- **註記板＝bgchk**（`http://localhost:8133/`，開在 Chrome；啟動設定 `bg-annotate`）：Ray 用各色畫筆塗會動的範圍、每色寫怎麼動；成品直接在卡片上播（「▶ F 雲程式分層＋布 ABA」＝遊戲裡的疊法即時預覽）。工具在 `ComfyUI-master/tivot_wan/bg_layer/`，版控副本 `tools/anim/bg_layer/`；註記資料在本機 `bg_layer/notes/`（Ray 自己塗的那幾格另備份在 `resources/background/_anim_notes/`）。
+- **排程 `bg_queue.py` 整夜在跑**：照註記自動跑 ABA，每件先等 GPU 空（別的 session 在用就排隊）；喊停＝在 `bg_layer/` 放 `STOP` 檔；進度看 `bg_layer/bg_queue.log`；`keepawake.py` 防睡到 STOP 或 36 小時。
+- **沒註記的 307 格是我自動判斷的範圍**（綠＝葉草、橙＝火、青＝天空→程式雲；布、旗、水面判不出來），標 `auto:true`、只存檔不提交，**等 Ray 在註記板確認或改**。
+- 成品：卡耶爾山谷 5 格 ABA 樣本＋天空遮罩 `resources/background/anim/canyon/`；雲三層 `resources/background/_sky_layers/`（`canyon_day`、`dusk`、`purple`；藍天地圖借空戰的 `sky_parallax/sky_cumulus_day`；對照表 `_sky_layers/map_sky.json`）。程式交接寫在 `resources/background/anim/TO_CODE_bg_anim.md` 的「11-10 新格式」。
+- 分地圖工作表 `resources/background/_anim_by_map.md`（取代 `_anim_candidates.md`）。11-07／11-08 那 20 支整張版 mp4 已回收（`_recycle/`）。
 
 ### 地圖（副理）
 - 地底大空洞巡檢正常（ver -2576～-2585：壁龕、3D 祈禱像、女神 SMK 模型、入口改成賽西莉入隊後才開、谷頭遺跡包）。
@@ -64,7 +69,7 @@
   - 6-1 後半人縮到 0.76、另有 6 格碰邊；7-4 縮到 0.88。原因是 B 圖本身小，改提示詞救不了。
 - **30 隻怪的 KF**：逐張點頭；無嘴的怪改撲抓／重拳定不定；還缺詩輪、風箱的撲抓，香爐肺的斜劈。
 - **ChatGPT 檔案空間滿了**（Ray 的帳號）：要 Ray 清掉，才能續出 KF。
-- **背景**：燭台兩版選一；火盆、樹晃、光束 s101 怎麼處理。
+- **背景**：卡耶爾山谷「雲程式分層＋布 ABA」樣本點不點頭（ABA 接點仍約一般兩格的 1.5～2.5 倍）；自動判斷的 307 格範圍要 Ray 在 bgchk 確認或改；程式端何時接（交接已寫）。
 - **3D 空戰**：`sky3d_tune.json` 數值定案；天之裂隙膜邊要不要重跑；什麼時候改成預設；手機實機 fps；打贏回飛行那條還沒實測。
 - **地圖**：賽西莉入隊段要插 `party_cecilie` 旗（不然正篇進不去地底大空洞）；聖王廳地宮 G3／G4 拓樸；手機效能；「類似這樣的風格」參考圖要再傳一次。
 - **多語種**：要不要開機翻、先翻哪幾種。
@@ -84,7 +89,7 @@
 | 空賊攻擊 36 支 | ⚠ 欠 Ray 剪片 → 交件 → 程式接 |
 | 單隻怪攻擊／延時 30 隻 | ⚠ 欠 KF 審閱 → Wan → 剪 → 交件；另有約 60 隻 KF 還沒出（清單在 `_ADMIRE_盤點.md`） |
 | 飛行怪 swim_v2 三隻 | ⚠ 欠程式接（資產已在 `flight/enemy/*/swim_v2/`） |
-| 背景動畫 | ⚠ 光束、瀑布已成但**還沒進戰鬥／城鎮**；燭台待選；火盆、樹晃卡住 |
+| 背景動畫 | ⚠ 欠 Ray 看樣本（卡耶爾山谷 5 格）→ 程式接；其餘地圖 ABA 排程整夜在跑（自動範圍待確認）；城鎮 9 張 ✔ 不欠（Ray 11-09：城鎮一律靜態）|
 | 槍口座標、倒地 v2、背景動畫進戰鬥 | ⚠ 等美術 |
 
 ## 七、10-30 那一份還掛著、尚未清點的段落

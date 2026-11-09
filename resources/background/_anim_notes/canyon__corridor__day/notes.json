@@ -1,0 +1,26 @@
+{
+ "key": "canyon__corridor__day",
+ "map": "canyon",
+ "mapName": "卡耶爾山谷",
+ "node": "corridor",
+ "name": "卡耶爾山谷　風蝕迴廊",
+ "band": "day",
+ "file": "canyon/canyon_corridor_day.webp",
+ "general": "",
+ "submitted": false,
+ "time": "2026-11-09T14:23:39.173Z",
+ "colors": [
+  {
+   "name": "red",
+   "rgb": "#ff3b3b",
+   "text": "布微風飄動",
+   "mask": "red.png"
+  },
+  {
+   "name": "cyan",
+   "rgb": "#2fe0e0",
+   "text": "雲湧動",
+   "mask": "cyan.png"
+  }
+ ]
+}

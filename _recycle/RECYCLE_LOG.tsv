@@ -1320,3 +1320,26 @@ when	from	to	reason
 20261109-194140	resources/enemy/man_skypirate_3_layers/pirate_1.webp	_recycle/resources/enemy/man_skypirate_3_layers/pirate_1.webp	Ray 11-09：7-3 拿掉魚叉、3-1 拿掉刺刀，分層換 GPT 重製版
 20261109-194157	resources/enemy/man_skypirate_3.webp	_recycle/resources/enemy/man_skypirate_3.webp	分層換了，合成圖重組
 20261109-194157	resources/enemy/man_skypirate_7.webp	_recycle/resources/enemy/man_skypirate_7.webp	分層換了，合成圖重組
+20261110-014116	resources/background/anim/capital_outer/outer_village_dusk_loop_v1.mp4	_recycle/resources/background/anim/capital_outer/outer_village_dusk_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/dunmor/dunmor_oakgrove_loop_v1	_recycle/resources/background/anim/dunmor/dunmor_oakgrove_loop_v1	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/dunmor/dunmor_oakgrove_loop_v1.mp4	_recycle/resources/background/anim/dunmor/dunmor_oakgrove_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/fallen/fallen_altar_day_loop_v1.mp4	_recycle/resources/background/anim/fallen/fallen_altar_day_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/fallen/fallen_basin_day_loop_v1.mp4	_recycle/resources/background/anim/fallen/fallen_basin_day_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/fallen/fallen_causeway_day_loop_v1.mp4	_recycle/resources/background/anim/fallen/fallen_causeway_day_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/fallen/fallen_entry_day_loop_v1.mp4	_recycle/resources/background/anim/fallen/fallen_entry_day_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/fallen/fallen_fork_day_loop_v1.mp4	_recycle/resources/background/anim/fallen/fallen_fork_day_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/forest/forest_entry_day_loop_v1.mp4	_recycle/resources/background/anim/forest/forest_entry_day_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/forest/forest_glade_day_loop_v1.mp4	_recycle/resources/background/anim/forest/forest_glade_day_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/forest/forest_highland_day_loop_v1.mp4	_recycle/resources/background/anim/forest/forest_highland_day_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/forest/forest_shoal_day_loop_v1.mp4	_recycle/resources/background/anim/forest/forest_shoal_day_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/forest/forest_trail_day_loop_v1	_recycle/resources/background/anim/forest/forest_trail_day_loop_v1	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/forest/forest_trail_day_loop_v1.mp4	_recycle/resources/background/anim/forest/forest_trail_day_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/forest/forest_valley_day_loop_v1	_recycle/resources/background/anim/forest/forest_valley_day_loop_v1	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/forest/forest_valley_day_loop_v1.mp4	_recycle/resources/background/anim/forest/forest_valley_day_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/shinier/shinier_wilds_day_loop_v1.mp4	_recycle/resources/background/anim/shinier/shinier_wilds_day_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/sofia/sofiaout_avenue_loop_v1.mp4	_recycle/resources/background/anim/sofia/sofiaout_avenue_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/sofia/sofiaout_forecourt_loop_v1.mp4	_recycle/resources/background/anim/sofia/sofiaout_forecourt_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/sofia/sofiaout_lodge_loop_v1.mp4	_recycle/resources/background/anim/sofia/sofiaout_lodge_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/sofia/sofiaout_road_loop_v1.mp4	_recycle/resources/background/anim/sofia/sofiaout_road_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/sofia/sofiaout_terrace_loop_v1.mp4	_recycle/resources/background/anim/sofia/sofiaout_terrace_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做
+20261110-014116	resources/background/anim/winsmoor/ws_farm_day_loop_v1.mp4	_recycle/resources/background/anim/winsmoor/ws_farm_day_loop_v1.mp4	Ray 11-10：整張丟 Wan 的舊版（不拆層、循環來回）作廢，改拆層重做

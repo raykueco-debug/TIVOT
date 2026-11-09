@@ -58,6 +58,11 @@ def run(args):
     return r.returncode == 0, r.stdout
 
 
+# 戶外先（風吹的層多、效果明顯），室內火把最後
+ORDER = ['canyon', 'shinier_forest', 'plainsroad', 'lake', 'fallen', 'capital_outer', 'sofiaout', 'dunmor', 'winsmoor_siege',
+         'shinier_ruins', 'holysee_g3', 'tomb', 'belisar']
+
+
 def is_sky(c): return '雲' in (c.get('text') or '')
 
 
@@ -80,9 +85,15 @@ def do_one(key):
     if os.path.exists(done) and os.path.getmtime(done) > os.path.getmtime(os.path.join(HERE, 'notes', key, 'notes.json')):
         return True
     log('■', key, j.get('name'), '｜', '；'.join(c['text'] for c in move))
-    soft = [f"{c['name']}=soft" for c in move if '光' in (c.get('text') or '')]
-    ok, _ = run([PY, 'bg_refine.py', key] + soft)
-    if not ok: return False
+    if j.get('auto'):   # 我自動判斷的遮罩本來就是精確的，不再收斂，只羽化一下
+        rd = os.path.join(HERE, 'notes', key, 'refined'); os.makedirs(rd, exist_ok=True)
+        for c in j['colors']:
+            m = np.array(Image.open(os.path.join(HERE, 'notes', key, c['mask'])).convert('L')).astype(np.float32)
+            import cv2; Image.fromarray(cv2.GaussianBlur(m, (0, 0), 2).clip(0, 255).astype(np.uint8)).save(os.path.join(rd, c['name'] + '.png'))
+    else:
+        soft = [f"{c['name']}=soft" for c in move if '光' in (c.get('text') or '')]
+        ok, _ = run([PY, 'bg_refine.py', key] + soft)
+        if not ok: return False
     inp = os.path.join(COMFY, 'input', f'bg_{base}.png')
     Image.open(still).convert('RGB').resize((768, 512), Image.LANCZOS).save(inp)
     desc = '；'.join(c['text'] for c in move)
@@ -117,7 +128,9 @@ def do_one(key):
 def main():
     log('排程開始（喊停：放 STOP 檔）')
     while not stopped():
-        keys = sorted(os.path.basename(os.path.dirname(p)) for p in glob.glob(os.path.join(HERE, 'notes', '*', 'notes.json')))
+        keys = sorted((os.path.basename(os.path.dirname(p)) for p in glob.glob(os.path.join(HERE, 'notes', '*', 'notes.json'))),
+                      key=lambda k: (0 if not json.load(open(os.path.join(HERE, 'notes', k, 'notes.json'), encoding='utf8')).get('auto') else 1,   # Ray 自己塗的先
+                                     ORDER.index(k.split('__')[0]) if k.split('__')[0] in ORDER else 99, k))
         for key in keys:
             if stopped(): break
             try: do_one(key)
