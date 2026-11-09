@@ -1,0 +1,27 @@
+{
+ "canvas": [
+  1254,
+  1254
+ ],
+ "box": [
+  97,
+  28,
+  895,
+  1408
+ ],
+ "fps": 24,
+ "loop": false,
+ "note": "v2\uff0811-09\uff09\uff1a\u63db\u5206\u5c64\u5f8c\u91cd\u8dd1\uff1b\u539f\u7247\u7b2c 14 \u683c\u8d77\uff08\u524d\u6bb5\u6709\u706b\u5149\uff0f\u6ffa\u8840\u4e0d\u7528\uff09\uff0c\u7d2b\u6708\u8ecd\u6a19\u6e96\u7bc0\u62cd\uff1bv3\uff1a\u5f85\u6a5f\uff0f\u653b\u64ca\uff0f\u5012\u5730\u540c\u4e00\u500b\u6846\uff08man_skypirate_7_hit_v2\uff09",
+ "raw_index": [
+  14,
+  18,
+  22,
+  26,
+  31,
+  35,
+  39,
+  43,
+  45
+ ],
+ "frames": 15
+}

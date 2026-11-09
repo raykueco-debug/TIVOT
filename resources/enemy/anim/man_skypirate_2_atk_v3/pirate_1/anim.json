@@ -1,0 +1,35 @@
+{
+ "canvas": [
+  1254,
+  1254
+ ],
+ "box": [
+  -17,
+  -116,
+  868,
+  1301
+ ],
+ "frames": 7,
+ "fps": 24,
+ "loop": false,
+ "note": "v2\uff0811-09\uff09\uff1a\u526a\u6cd5\u898b from\uff0fkept_index\uff0fholds\uff1b\u69cd\u706b\u756b\u5728\u683c\u5b50\u88e1\uff08\u7a0b\u5f0f\u4e0d\u5fc5\u518d\u756b\uff09\uff1b\u6253\u5230\uff1d\u6700\u5f8c\u4e00\u683c\uff1bR\uff1d\u5012\u653e\uff1bv3\uff1a\u5f85\u6a5f\uff0f\u653b\u64ca\uff0f\u5012\u5730\u540c\u4e00\u500b\u6846\uff08man_skypirate_2_atk_v2\uff09",
+ "from": "sp2_pirate_1_A_L17_cut_2 \u2190 pirate_atk_v6/sp2_pirate_1_A_L17",
+ "kept_index": [
+  0,
+  1,
+  2,
+  3,
+  6,
+  7,
+  11
+ ],
+ "holds": [
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1
+ ]
+}
