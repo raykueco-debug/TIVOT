@@ -10,6 +10,8 @@ PICK={  # 人：(中間無槍火格, 槍火最大格)
  'sp4_pirate_1':(3,6),'sp4_pirate_2':(2,7),'sp4_pirate_3':(3,4),
  'sp5_pirate_1':(6,11),'sp5_pirate_2':(2,4),'sp5_pirate_3':(2,5),'sp5_pirate_4':(6,11),
  'sp6_pirate_1':(2,3),'sp6_pirate_2':(3,5),'sp6_pirate_3':(6,11),
+ 'sp7_pirate_1':(6,11),'sp7_pirate_2':(6,11),'sp7_pirate_3':(6,11),'sp7_pirate_4':(4,7),
+ 'sp8_pirate_1':(4,7),'sp8_pirate_2':(3,5),
 }
 for k,(M,F) in PICK.items():
     n=k+'_A_L17'; d=os.path.join(SRC,n); out=os.path.join(EXP,n+'_cut')
