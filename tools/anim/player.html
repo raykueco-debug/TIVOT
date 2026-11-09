@@ -52,12 +52,12 @@ function save(){try{localStorage.setItem(key(),JSON.stringify([...off]));localSt
 function load(){try{off=new Set(JSON.parse(localStorage.getItem(key())||'[]'))}catch(e){off=new Set()}let sv=null;try{sv=localStorage.getItem(key()+'_hold')}catch(e){}if(sv){try{hold=JSON.parse(sv)}catch(e){hold={}}}else{hold={};(A.holds||[]).forEach((v,k)=>{if(v>1)hold[k]=v})}}
 function setHold(k,v){if(v<=1)delete hold[k];else hold[k]=v;save();mark();keptText()}
 function list(){const q=$('q').value.trim().toLowerCase(),L=$('list');L.innerHTML='';let g=null;
- ANIMS.forEach((a,k)=>{if(q&&!a.name.toLowerCase().includes(q))return;if(CAT==='新作'?!a.new:(CAT!=='全部'&&(a.cat||'其他')!==CAT))return;if(a.group!==g){g=a.group;const h=document.createElement('h4');h.textContent=g;L.appendChild(h)}
+ ANIMS.forEach((a,k)=>{if(q&&!a.name.toLowerCase().includes(q))return;if(CAT==='新作'?!a.new:CAT==='空賊之後'?!a.after:(CAT!=='全部'&&(a.cat||'其他')!==CAT))return;if(a.group!==g){g=a.group;const h=document.createElement('h4');h.textContent=g;L.appendChild(h)}
   const c=document.createElement('div');c.className='c'+(A===a?' cur':'');c.id='c'+k;c.innerHTML=`<img loading=lazy src="${a.dir}/${a.frames[0]}"><div>${a.name}（${a.frames.length}）</div>`;
   c.onclick=()=>{open(k);location.hash=a.dir};L.appendChild(c)})}
 $('q').oninput=list;
 let CAT='全部';try{CAT=localStorage.getItem('tivot_player_cat')||'全部'}catch(e){}
-(function(){const C=$('cats');['全部','新作','KF第二輪','空賊待剪','空賊A','背景','敵','CI','插畫','其他'].forEach(c=>{const b=document.createElement('button');const n=c==='全部'?ANIMS.length:c==='新作'?ANIMS.filter(a=>a.new).length:ANIMS.filter(a=>(a.cat||'其他')===c).length;b.textContent=c+'（'+n+'）';b.dataset.c=c;if(c===CAT)b.classList.add('on');
+(function(){const C=$('cats');['全部','新作','KF第二輪','空賊之後','空賊A','背景','敵','CI','插畫','其他'].forEach(c=>{const b=document.createElement('button');const n=c==='全部'?ANIMS.length:c==='新作'?ANIMS.filter(a=>a.new).length:c==='空賊之後'?ANIMS.filter(a=>a.after).length:ANIMS.filter(a=>(a.cat||'其他')===c).length;b.textContent=c+'（'+n+'）';b.dataset.c=c;if(c===CAT)b.classList.add('on');
  b.onclick=()=>{CAT=c;try{localStorage.setItem('tivot_player_cat',c)}catch(e){}C.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.c===c));list()};C.appendChild(b)})})();
 function open(k){stop();A=ANIMS[k];if(A.fps){const sel=$('base');const v=String(Math.round(A.fps));if(![...sel.options].some(o=>o.value===v)){const o=document.createElement('option');o.textContent=v;sel.appendChild(o)}sel.value=v}load();i=first();build();show();document.querySelectorAll('.c.cur').forEach(x=>x.classList.remove('cur'));const cc=$('c'+k);if(cc){cc.classList.add('cur');cc.scrollIntoView({block:'nearest'})}try{localStorage.setItem('tivot_player_last',A.dir)}catch(e){}}
 function kept(){return A.frames.map((_,k)=>k).filter(k=>!off.has(k))}

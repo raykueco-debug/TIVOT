@@ -88,7 +88,6 @@ BG_ROOTS = ('bg/', 'bg_test/', 'bg_sample/', 'gameres/background/')
 def cat_of(it):
     d, n = it['dir'], it['name'].lower()
     if d.startswith('kf2/'): return 'KF第二輪'   # 11-09 Ray Excel 標注的 8 隻
-    if d.startswith(('pirate_atk_v6/','pirate_fix/')): return '空賊待剪'   # 11-09 Ray：17 格原片自己剪
     if n.endswith('_l17_cut'): return '空賊A'   # 11-09 Ray：空賊攻擊獨立一頁
     if d.startswith(BG_ROOTS): return '背景'
     if it['group'] == '交件・插畫': return '插畫'
@@ -97,6 +96,12 @@ def cat_of(it):
     if re.search(r'(^|[_/])(ci|cutin|br|mb|dg\w*|nr\w*|nb\w*|ld|ni|obe|supply)([_/]|$)', n) or d.startswith(CI_ROOTS): return 'CI'
     return '其他'
 for it in items: it['cat'] = cat_of(it)
+# 11-10 Ray：「把空賊待剪分頁拿掉，把在那之後跑的圖開一頁出來」——
+# 起點＝空賊待剪那一批（pirate_atk_v6／pirate_fix）最後一支的時間；之後跑的（非交件）打 after 旗標，player.html「空賊之後」頁籤只看它
+_pir = [it['mtime'] for it in items if it['dir'].startswith(('pirate_atk_v6/','pirate_fix/'))]
+AFTER_FROM = max(_pir) if _pir else 0
+for it in items:
+    if AFTER_FROM and it['mtime'] > AFTER_FROM and not it['group'].startswith('交件') and not it['dir'].startswith(('gameres/', 'export/')): it['after'] = True   # 交件成品與 Ray 剪好的輸出不算「跑的圖」
 # 24 小時內的作業（非交件）頂到最上面，新跑的東西不會被埋在交件底下
 import time as _t
 _lt = _t.localtime(); NEW_FROM = _t.mktime((_lt.tm_year, _lt.tm_mon, _lt.tm_mday - 1, 0, 0, 0, 0, 0, -1))   # 昨天 00:00
