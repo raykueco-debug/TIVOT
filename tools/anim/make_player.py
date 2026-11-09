@@ -4,7 +4,7 @@ import glob, json, os
 HERE = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.join(HERE, 'out')
 TIVOT = os.path.join(os.path.dirname(os.path.dirname(HERE)), 'TIVOT', 'resources', 'ci', 'anim')
 items = []
-for root, tag in ((os.path.join(OUT, 'auto'), '自動初剪'), (os.path.join(OUT, 'ci5s'), 'ci5s'), (os.path.join(OUT, 'toon'), 'toon'), (os.path.join(OUT, 'nr_layers'), '分層'), (os.path.join(OUT, 'cecilie'), '賽西莉'), (os.path.join(OUT, 'cecilie_lora'), '乳搖比較'), (os.path.join(OUT, 'ref'), '參考'), (os.path.join(OUT, 'vace'), 'vace'), (os.path.join(OUT, 'br'), 'br'), (os.path.join(OUT, 'ci'), 'ci'), (os.path.join(OUT, 'export'), '輸出'), (os.path.join(OUT, 'hit'), 'hit'), (os.path.join(OUT, 'guards'), 'guards'), (os.path.join(OUT, 'squad'), 'squad'), (os.path.join(OUT, 'purple_hit'), '紫月倒地'), (os.path.join(OUT, 'purple_idle'), '紫月待機'), (os.path.join(OUT, 'monsters'), 'monsters'), (os.path.join(OUT, 'enemy_atk'), '敵人攻擊'), (os.path.join(OUT, 'anya'), '安雅'), (os.path.join(OUT, 'bg'), '背景動畫'), (os.path.join(OUT, 'bg_test'), '背景試跑'), (os.path.join(OUT, 'bg_sample'), '背景樣本'), (os.path.join(OUT, 'pirate_atk_v2'), '空賊攻擊v2'), (os.path.join(OUT, 'pirate_atk_v3'), '空賊攻擊v3'), (TIVOT, '遊戲交件')):
+for root, tag in ((os.path.join(OUT, 'auto'), '自動初剪'), (os.path.join(OUT, 'ci5s'), 'ci5s'), (os.path.join(OUT, 'toon'), 'toon'), (os.path.join(OUT, 'nr_layers'), '分層'), (os.path.join(OUT, 'cecilie'), '賽西莉'), (os.path.join(OUT, 'cecilie_lora'), '乳搖比較'), (os.path.join(OUT, 'ref'), '參考'), (os.path.join(OUT, 'vace'), 'vace'), (os.path.join(OUT, 'br'), 'br'), (os.path.join(OUT, 'ci'), 'ci'), (os.path.join(OUT, 'export'), '輸出'), (os.path.join(OUT, 'hit'), 'hit'), (os.path.join(OUT, 'guards'), 'guards'), (os.path.join(OUT, 'squad'), 'squad'), (os.path.join(OUT, 'purple_hit'), '紫月倒地'), (os.path.join(OUT, 'purple_idle'), '紫月待機'), (os.path.join(OUT, 'monsters'), 'monsters'), (os.path.join(OUT, 'enemy_atk'), '敵人攻擊'), (os.path.join(OUT, 'anya'), '安雅'), (os.path.join(OUT, 'bg'), '背景動畫'), (os.path.join(OUT, 'bg_test'), '背景試跑'), (os.path.join(OUT, 'bg_sample'), '背景樣本'), (os.path.join(OUT, 'pirate_atk_v2'), '空賊攻擊v2'), (os.path.join(OUT, 'pirate_atk_v3'), '空賊攻擊v3'), (os.path.join(OUT, 'pirate_atk_v6'), '空賊A v6（11-09 4070）'), (TIVOT, '遊戲交件')):
     for d in sorted(glob.glob(os.path.join(root, '*'))):
         fs = sorted(os.path.basename(f) for f in glob.glob(os.path.join(d, 'frame_*.webp')))
         if not fs: continue
@@ -87,6 +87,7 @@ CI_ROOTS = ('_gameci/', 'gameres/ci/', 'gameanim/', 'ci/', 'ci5s/', 'br/', 'vace
 BG_ROOTS = ('bg/', 'bg_test/', 'bg_sample/', 'gameres/background/')
 def cat_of(it):
     d, n = it['dir'], it['name'].lower()
+    if d.startswith('pirate_atk_v6/'): return '空賊A'   # 11-09 Ray：空賊攻擊獨立一頁
     if d.startswith(BG_ROOTS): return '背景'
     if it['group'] == '交件・插畫': return '插畫'
     if d.startswith(ENEMY_ROOTS) or 'enemy/' in d or re.match(r'^(man|mon)_', n) or ('fight_' in d and 'hit' in d): return '敵'
