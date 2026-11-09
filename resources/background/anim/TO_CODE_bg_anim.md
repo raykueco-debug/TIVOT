@@ -53,3 +53,36 @@
 
 Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同格式的戶外背景 mp4，命名照 `anim/<系列>/<背景名>_loop_v1.mp4`。
 雲海那幾張（森林懸崖、孤舟島懸崖、孤舟島荒野）改走**分層**（背景＋遠雲＋近雲＋前景，雲由程式橫向捲動），格式另議。
+
+---
+
+## 11-10 新格式：拆層（Ray 定案「有方向性的如雲給程式，其他走 ABA」）—— ⚠ 樣本，等 Ray 點頭再全面接
+
+> 上面 11-07／11-08 那 20 支「整張丟 Wan」的 mp4 **作廢**（不拆層、循環是來回），不要接。
+
+每一格背景由下往上疊三樣：
+
+| 層 | 檔案 | 怎麼動 |
+|---|---|---|
+| ① 雲（程式捲） | `resources/background/_sky_layers/<天空組>_l0_far.webp`（不透明）／`_l1_mid.webp`（alpha）／`_l2_near.webp`（alpha） | 三層都**左右無縫**，整張重複排列、**往右**捲；捲過一整張的秒數：l0 **160**／l1 **70**／l2 **32**（遠慢近快）。寬高照背景畫面 cover。**同一張地圖的各格共用一組**（卡耶爾山谷＝`canyon_day`）。與空戰的 `tuning.skyPan`／`setSkyPan` 同一套做法 |
+| ② 場景影片（ABA） | `resources/background/anim/<系列>/<背景名>_aba_v1.mp4` | `<video muted playsinline loop autoplay>`；布、燈籠、天光等在動（A→B→A，接成一圈）；天空以外的部分＝原圖 |
+| ③ 天空挖空遮罩 | `resources/background/anim/<系列>/<背景名>_sky.webp`（白色，**alpha＝天空**） | 把②的天空那一塊挖掉（canvas：畫影片 → `destination-out` 畫這張），讓①透出來 |
+
+- 參考實作（可以直接照抄邏輯）：`tools/anim/bg_layer/annotate.html` 的 `startLive()`（雲三層捲＋影片挖天空，每幀一次）。
+- 影片 1536×1030、16fps、H.264（同既有參數）。靜態背景照常先顯示，影片 `playing` 後再蓋上去。
+- 時段：目前只有 **day**；其他時段照舊靜態。
+- 讀取：由那張探索地圖自己的門載（鐵律 13），離開就收（鐵律 10）。
+- ⚠ 雲在手機上要看效能：三層 1536 寬的圖每幀平移，比影片解碼還輕，但要實機量一次。
+
+### 卡耶爾山谷（canyon，day）樣本
+
+| 格（節點） | 影片 | 格數 | 天空遮罩 |
+|---|---|---|---|
+| entry 峽谷入口 | `anim/canyon/canyon_entry_day_aba_v1.mp4` | 48 | `canyon_entry_day_sky.webp` |
+| corridor 風蝕迴廊 | `anim/canyon/canyon_corridor_day_aba_v1.mp4` | 52 | `canyon_corridor_day_sky.webp` |
+| bones 白骨之地 | `anim/canyon/canyon_bones_day_aba_v1.mp4` | 55 | `canyon_bones_day_sky.webp` |
+| bridge 斷橋 | `anim/canyon/canyon_bridge_day_aba_v1.mp4` | 67 | `canyon_bridge_day_sky.webp` |
+| altar 谷底祭場 | `anim/canyon/canyon_altar_day_aba_v1.mp4` | 80 | `canyon_altar_day_sky.webp` |
+
+雲：`_sky_layers/canyon_day_l0_far.webp`／`canyon_day_l1_mid.webp`／`canyon_day_l2_near.webp`。
+⚠ ABA 兩個接點還比一般兩格大（約 1.5～2.5 倍），等 Ray 看過決定要不要再修。
