@@ -106,7 +106,8 @@ export function setup(){
                  counterAtkStep: partner.counterAtkStep,
                  counterHitForced: partner.counterHitForced,
                  coopCounter: weapon.coopCounter,   // 共鬥：黃圈一出現就打的 3-hit 反擊（ver -822，Ray）
-                 resetIntervalDeadline,   // 反擊硬直：被反擊時延時歸零（ver -495，卡上 counterStagger）
+                 resetIntervalDeadline,
+                 easeIntervalDeadline,   // 反擊硬直：被反擊時延時退回一部分（ver -2618；卡上 counterStagger、成數 tuning.counterStaggerClear）
                  onThreatSpawned: tutorial.onThreatSpawned,
                  /* ⚠ 一次防禦判完 → **固定模式的副武器歸位一順位**（ver -422，Ray 指定）。
                     這裡是唯一的呼叫點（鐵律 8）：defense 不 import weapon，
@@ -2499,6 +2500,13 @@ function stretchIntervalDeadline(k){
   const now=Date.now(); state.intervalDeadline = now + Math.max(0, state.intervalDeadline-now)*k;
 }
 function resetIntervalDeadline(){ state.intervalDeadline=Date.now()+effIntervalLimit()*1000; }
+/* 把延時計時**已經走掉的那一段**退回 frac 成（ver -2618，反擊硬直用；frac=1 ＝ resetIntervalDeadline）。
+   剩餘＝剩餘＋(滿額−剩餘)×frac —— 滿額讀 effIntervalLimit（唯一那一支，鐵律 7）。 */
+function easeIntervalDeadline(frac){
+  if(!state.intervalDeadline) return;
+  const now=Date.now(), full=effIntervalLimit()*1000, left=Math.max(0, state.intervalDeadline-now);
+  state.intervalDeadline = now + Math.min(full, left + Math.max(0, full-left)*Math.min(1, Math.max(0, frac)));
+}
 function stopIntervalTimer(){ clearInterval(state.intervalTimer); stopDelayRing(); }
 
 /* ============================================================================

@@ -390,11 +390,14 @@ export function holdAssaultFor(ms){
 /* 反擊硬直（ver -495，Ray：「被反擊時延時歸零；預設為 1，0 的話就算被反擊
    延時計時也不會歸零」）。「被反擊」＝`weaponCounter` 真的開火的那兩個分支
    （Counter 帶、散彈的 Perfect 改傷帶）—— 免傷不開火的 Perfect 不算。
-   歸零走 combat 注入的 `resetIntervalDeadline`（唯一那一支，鐵律 8）；
+   ver -2618 起不歸零、只退回 `tuning.counterStaggerClear` 成，走 combat 注入的 `easeIntervalDeadline`（唯一那一支，鐵律 8）；
    `enemyCounterStagger` 由 enemy.setEnemy 從卡上載入（沒寫＝1）。 */
 function staggerOnCounter(){
   if(state.enemyCounterStagger===0) return;
-  if(api.resetIntervalDeadline) api.resetIntervalDeadline();
+  /* ver -2618（Ray：「反擊不應該全清延時 應該清1/2」）：不再歸零，只把已經走掉的那一段退回一部分。 */
+  const k = (GAME_CONFIG.tuning||{}).counterStaggerClear;
+  if(api.easeIntervalDeadline) api.easeIntervalDeadline(k==null ? 1 : k);
+  else if(api.resetIntervalDeadline) api.resetIntervalDeadline();
 }
 // 點掉單一攻擊點 → 依剩餘時間判定 Counter / Perfect / Defense
 export function resolveThreat(th, chained){
