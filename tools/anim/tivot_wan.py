@@ -22,8 +22,13 @@ W, H = map(int, os.environ.get('TIVOT_GEN', '480x720').split('x'))   # 生成解
 GREEN = (0, 255, 0)
 # 4 步加速 LoRA：預設原版；TIVOT_LX2V=motionfix 換成 rzgar 的 Slow-Mo Fix（原版會把動作壓成慢動作、頭髮飄不起來，10-13 下載）
 _LX2V = {'': ('wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors', 'wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors'),
-         'motionfix': ('wan2.2_i2v_lightx2v_motion_fix_high.safetensors', 'wan2.2_i2v_lightx2v_motion_fix_low.safetensors')}
-LX2V_HIGH, LX2V_LOW = _LX2V[os.environ.get('TIVOT_LX2V', '')]
+         'motionfix': ('wan2.2_i2v_lightx2v_motion_fix_high.safetensors', 'wan2.2_i2v_lightx2v_motion_fix_low.safetensors'),
+         # enh＝civitai「Lightx2v Enhanced Motions」(zardozai, Apache 2.0) 的配方：Wan2.1 rank128 distill 超頻 High 5.6／Low 2.0、取樣 4＋2 步（11-08 敵人動畫 session 加，試動作幅度）
+         'enh': ('lightx2v_I2V_14B_480p_cfg_step_distill_rank128_bf16.safetensors', 'lightx2v_I2V_14B_480p_cfg_step_distill_rank128_bf16.safetensors')}
+LX2V_MODE = os.environ.get('TIVOT_LX2V', '')
+LX2V_HIGH, LX2V_LOW = _LX2V[LX2V_MODE]
+# (High 強度, Low 強度, 總步數, 換段步) —— 預設 1.0／1.0、4 步在第 2 步換段
+LX2V_STR = {'enh': (float(os.environ.get('TIVOT_ENH_HIGH', 5.6)), float(os.environ.get('TIVOT_ENH_LOW', 2.0)), 6, 4)}.get(LX2V_MODE, (1.0, 1.0, 4, 2))
 
 PROMPT = {
  'hit': ('{desc}正面面對鏡頭，站在純綠色背景前。他的胸口被子彈擊中，上半身猛然往後仰、頭往後甩，'
@@ -65,6 +70,7 @@ DESC_DEFAULT = {'hit': '一名人物', 'idle': '一隻怪物', 'portrait': '一�
 NEG = ('色調艷麗，過曝，靜態，細節模糊不清，字幕，畫作，靜止，整體發灰，最差質量，低質量，JPEG壓縮殘留，醜陋的，殘缺的，'
        '多餘的手指，畫得不好的手部，畫得不好的臉部，畸形的，毀容的，形態畸形的肢體，手指融合，雜亂的背景，背景人很多，'
        '鏡頭移動，鏡頭推拉，背景改變，閃爍，舉手，抬手，揮手，伸手')
+NEG += os.environ.get('TIVOT_NEG_EXTRA', '')  # 背景跑時加「人物、人影」等（Ray 11-07 山洞跑出人）
 
 # ── ComfyUI ─────────────────────────────────────────────────────────────
 def server_up():
@@ -93,8 +99,8 @@ def graph(img_name, prefix, length, pos, seed, mode):
     g = {
      '1': {'class_type': 'UnetLoaderGGUF', 'inputs': {'unet_name': 'Wan2.2-I2V-A14B-HighNoise-Q4_K_M.gguf'}},
      '2': {'class_type': 'UnetLoaderGGUF', 'inputs': {'unet_name': 'Wan2.2-I2V-A14B-LowNoise-Q4_K_M.gguf'}},
-     '3': {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['1', 0], 'lora_name': LX2V_HIGH, 'strength_model': 1.0}},
-     '4': {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['2', 0], 'lora_name': LX2V_LOW, 'strength_model': 1.0}},
+     '3': {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['1', 0], 'lora_name': LX2V_HIGH, 'strength_model': LX2V_STR[0]}},
+     '4': {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['2', 0], 'lora_name': LX2V_LOW, 'strength_model': LX2V_STR[1]}},
      '5': {'class_type': 'ModelSamplingSD3', 'inputs': {'model': ['3', 0], 'shift': 5.0}},
      '6': {'class_type': 'ModelSamplingSD3', 'inputs': {'model': ['4', 0], 'shift': 5.0}},
      '7': {'class_type': 'CLIPLoader', 'inputs': {'clip_name': 'umt5_xxl_fp8_e4m3fn_scaled.safetensors', 'type': 'wan', 'device': 'default'}},
@@ -102,12 +108,12 @@ def graph(img_name, prefix, length, pos, seed, mode):
      '9': {'class_type': 'CLIPTextEncode', 'inputs': {'clip': ['7', 0], 'text': NEG}},
      '10': {'class_type': 'VAELoader', 'inputs': {'vae_name': 'wan_2.1_vae.safetensors'}},
      '11': {'class_type': 'LoadImage', 'inputs': {'image': img_name}},
-     '13': {'class_type': 'KSamplerAdvanced', 'inputs': {'model': ['5', 0], 'add_noise': 'enable', 'noise_seed': seed, 'steps': 4, 'cfg': 1.0,
+     '13': {'class_type': 'KSamplerAdvanced', 'inputs': {'model': ['5', 0], 'add_noise': 'enable', 'noise_seed': seed, 'steps': LX2V_STR[2], 'cfg': 1.0,
             'sampler_name': 'euler', 'scheduler': 'simple', 'positive': ['12', 0], 'negative': ['12', 1], 'latent_image': ['12', 2],
-            'start_at_step': 0, 'end_at_step': 2, 'return_with_leftover_noise': 'enable'}},
-     '14': {'class_type': 'KSamplerAdvanced', 'inputs': {'model': ['6', 0], 'add_noise': 'disable', 'noise_seed': seed, 'steps': 4, 'cfg': 1.0,
+            'start_at_step': 0, 'end_at_step': LX2V_STR[3], 'return_with_leftover_noise': 'enable'}},
+     '14': {'class_type': 'KSamplerAdvanced', 'inputs': {'model': ['6', 0], 'add_noise': 'disable', 'noise_seed': seed, 'steps': LX2V_STR[2], 'cfg': 1.0,
             'sampler_name': 'euler', 'scheduler': 'simple', 'positive': ['12', 0], 'negative': ['12', 1], 'latent_image': ['13', 0],
-            'start_at_step': 2, 'end_at_step': 10000, 'return_with_leftover_noise': 'disable'}},
+            'start_at_step': LX2V_STR[3], 'end_at_step': 10000, 'return_with_leftover_noise': 'disable'}},
      '15': {'class_type': 'VAEDecode', 'inputs': {'samples': ['14', 0], 'vae': ['10', 0]}},
      '16': {'class_type': 'SaveImage', 'inputs': {'images': ['15', 0], 'filename_prefix': prefix}},
     }

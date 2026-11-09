@@ -1,7 +1,35 @@
 {
- "size": {},
- "engage": {},
+ "size": {
+  "bldragon": 0.5,
+  "sky_ribwhale": 0.5,
+  "sky_boneray": 0.5
+ },
+ "engage": {
+  "bldragon": 690,
+  "sky_ribwhale": 800,
+  "sky_boneray": 700,
+  "sky_mawbat": 460
+ },
  "count": {},
  "anim": {},
- "speed": {}
+ "speed": {},
+ "approach": {
+  "bldragon": "direct",
+  "sky_boneray": "cruise",
+  "sky_ribwhale": "cruise"
+ },
+ "chase": {
+  "sky_boneray": 2000,
+  "sky_ribwhale": 2750
+ },
+ "gone": {},
+ "bank": {},
+ "bankT": {},
+ "wave": {},
+ "waveN": {},
+ "tent": {},
+ "tentY": {},
+ "tentN": {},
+ "line": {},
+ "lineMin": {}
 }

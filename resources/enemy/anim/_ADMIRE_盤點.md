@@ -213,3 +213,31 @@ I 欄全部 ✔（已登記 ENEMY_IDLE）。⚠ 照 natali rule §1，原圖太�
 | 腐鹿骸 `mon_stag_rot` | 同上（**原圖太動態 → 新 A 中立**） | 新 A 若過，I 也要用新 A 重做 |
 
 沒做：崩岩巨像（無嘴，攻擊型態要問）、守墓者四張（像飛行骸骨，要先確認是否算空戰）、其餘聖物／聖徒／王座系（攻擊方式非咬非爪，要看表）。
+
+**第二批（11-08 22:00 後，Ray：獸型走 tiger、其他走 natali）** —— `s3_kf/_review_第三節_3.jpg`、`_4.jpg`。無嘴或嘴不明顯的，「撲咬」改畫成**撲向鏡頭的撲抓／重拳**（natali 的撲咬沒辦法照字面做），請 Ray 定。
+
+| 敵人 | 走法 | 待 Ray 看的點 |
+|---|---|---|
+| 崩岩巨像 `mon_canyon_colossus_dark` | natali（原圖揮拳 → 新 A 中立） | 攻擊＝重拳撲向鏡頭（無嘴） |
+| 守墓者 `mon_gravekeeper_seal` | tiger（原圖俯衝 → 新 A 中立，落地） | offset／many／crypt 三張還沒做，看這張的方向再套 |
+| 撕心者 `mon_relic_heartripper` | natali | — |
+| 鳴鐘者 `mon_relic_bellreacher` | natali | 攻擊＝撲抓 |
+| 王的容器 `mon_halo_ring` | natali | 撲抓那張光環變亮（原圖光環是設計） |
+| 喪鐘 `mon_relic_bellwalker` | natali | 攻擊＝撲抓 |
+| 鎖鍊聖徒 `mon_saint_prison` | natali（原圖太動態 → 新 A 中立） | — |
+| 監查者 `mon_saint_inspector` | natali（鐮刃） | 突刺那張只剩一把鐮刀 |
+| 巨型聖徒 `mon_saint_thug` | natali（原圖揮拳 → 新 A 中立） | 攻擊＝重拳撲向鏡頭 |
+
+**第三批（11-08 21:45～22:15，natali，聖物系）** —— `s3_kf/_review_第三節_5.jpg`、`_6.jpg`。
+
+| 敵人 | 待 Ray 看的點 |
+|---|---|
+| 告解者 `mon_relic_confessional`、沙漏苦修者 `hourglass`、鑰匙守 `keyward` | 撲抓／斜劈各一 |
+| 讀經台 `lectern`、香爐肺 `censerlung`、帷幕手 `veilhands` | ⚠ 第一次送出時被 ChatGPT 草稿蓋成「鑰匙守」提示詞，已在同串更正重出；香爐肺斜劈第一張假透明，重出那張姿勢變成撲抓（`_6.jpg` 第一列），等於斜劈還缺 |
+| 詩輪 `wheelpsalm` | 斜劈兩張（殘影畫成一整條長斜線）；**撲抓沒出成**（ChatGPT 空間滿） |
+| 聖爵溺者 `chalice` | 撲抓兩張選一＋斜劈 |
+| 鏡唱者 `mirrorchoir` | 撲抓＋斜劈 |
+| 風箱懺者 `bellows` | 只有斜劈，**撲抓沒出成** |
+
+⛔ **22:15 ChatGPT 顯示「Your file storage is full」—— 不能再上傳參考圖，GPT 出 KF 到此停。** 要清 ChatGPT 的檔案空間（Ray 的帳號，這邊不動）才能續做。
+還沒做（照盤點順序）：節制者、蟲螳螂、鐘苦修者、鉤笑屍、拱廊守衛、石棺爬行者、石板匍匐者、跪拜的懺悔者、鎖鏈吊屍、鐵處女、納骨鼠群、納骨輪、唱詩管風琴、蒼白唱詩者、鑄鐘者、墓香爐、燭台魔、聖匣之手、螺旋帷幕、裹屍寡婦、地穴蜈蚣、地穴獵犬、雙頭骷髏犬、穹頂蝙蝠、顱石堆、抬棺列、墓熊、蒼白牡鹿、深喉蟾、石蝰、王座徘徊者×5、守墓者 offset／many／crypt、聖徒系 10 張（mon_saint_acolyte…prayerhead）。

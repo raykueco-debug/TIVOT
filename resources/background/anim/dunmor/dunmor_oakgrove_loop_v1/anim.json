@@ -1,0 +1,11 @@
+{
+ "bg": "dunmor/dunmor_oakgrove",
+ "size": [
+  768,
+  512
+ ],
+ "frames": 32,
+ "fps": 24,
+ "loop": true,
+ "note": "橡樹林強風；Ray 在 animechk 剪 treew 第0-31格（24fps）交件，11-07"
+}

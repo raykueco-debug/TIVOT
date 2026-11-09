@@ -4,7 +4,7 @@ import glob, json, os
 HERE = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.join(HERE, 'out')
 TIVOT = os.path.join(os.path.dirname(os.path.dirname(HERE)), 'TIVOT', 'resources', 'ci', 'anim')
 items = []
-for root, tag in ((os.path.join(OUT, 'auto'), '自動初剪'), (os.path.join(OUT, 'ci5s'), 'ci5s'), (os.path.join(OUT, 'toon'), 'toon'), (os.path.join(OUT, 'nr_layers'), '分層'), (os.path.join(OUT, 'cecilie'), '賽西莉'), (os.path.join(OUT, 'cecilie_lora'), '乳搖比較'), (os.path.join(OUT, 'ref'), '參考'), (os.path.join(OUT, 'vace'), 'vace'), (os.path.join(OUT, 'br'), 'br'), (os.path.join(OUT, 'ci'), 'ci'), (os.path.join(OUT, 'export'), '輸出'), (os.path.join(OUT, 'hit'), 'hit'), (os.path.join(OUT, 'guards'), 'guards'), (os.path.join(OUT, 'squad'), 'squad'), (os.path.join(OUT, 'purple_hit'), '紫月倒地'), (os.path.join(OUT, 'purple_idle'), '紫月待機'), (os.path.join(OUT, 'monsters'), 'monsters'), (os.path.join(OUT, 'anya'), '安雅'), (TIVOT, '遊戲交件')):
+for root, tag in ((os.path.join(OUT, 'auto'), '自動初剪'), (os.path.join(OUT, 'ci5s'), 'ci5s'), (os.path.join(OUT, 'toon'), 'toon'), (os.path.join(OUT, 'nr_layers'), '分層'), (os.path.join(OUT, 'cecilie'), '賽西莉'), (os.path.join(OUT, 'cecilie_lora'), '乳搖比較'), (os.path.join(OUT, 'ref'), '參考'), (os.path.join(OUT, 'vace'), 'vace'), (os.path.join(OUT, 'br'), 'br'), (os.path.join(OUT, 'ci'), 'ci'), (os.path.join(OUT, 'export'), '輸出'), (os.path.join(OUT, 'hit'), 'hit'), (os.path.join(OUT, 'guards'), 'guards'), (os.path.join(OUT, 'squad'), 'squad'), (os.path.join(OUT, 'monsters'), 'monsters'), (os.path.join(OUT, 'bg'), '背景動畫'), (os.path.join(OUT, 'bg_test'), '背景試跑'), (os.path.join(OUT, 'bg_sample'), '背景樣本'), (os.path.join(OUT, 'pirate_atk_v2'), '空賊攻擊v2'), (os.path.join(OUT, 'pirate_atk_v3'), '空賊攻擊v3'), (TIVOT, '遊戲交件')):
     for d in sorted(glob.glob(os.path.join(root, '*'))):
         fs = sorted(os.path.basename(f) for f in glob.glob(os.path.join(d, 'frame_*.webp')))
         if not fs: continue
@@ -16,6 +16,8 @@ for root, tag in ((os.path.join(OUT, 'auto'), '自動初剪'), (os.path.join(OUT
 RES = os.path.join(os.path.dirname(os.path.dirname(HERE)), 'TIVOT', 'resources')
 def grp_of(rel):
     r = rel.replace(os.sep, '/')
+    if 'skypirate_' in r:   # 空賊 8 組 28 人：獨立一組方便看
+        return '空賊・' + ('待機' if '_idle_' in r else '攻擊' if '_atk_' in r else '倒地' if '_hit_' in r else '其他')
     if 'idle' in r: return '交件・待機'
     if '_hit_' in r or r.endswith('_hit') or '/fight_' in r: return '交件・倒地'
     return '交件・其他'
@@ -80,10 +82,12 @@ for d in (IVID, os.path.join(RES, 'illustration')):
             k = re.sub(r'(_v\d+)?\.(mp4|webp|png|jpe?g)$', '', fn.lower())
             k = re.sub(r'^[\d_-]+', '', k)
             if len(k) >= 5: ILL_KEYS.add(k)
-ENEMY_ROOTS = ('gameres/enemy/', 'monsters/', 'hit/', 'guards/', 'squad/', 'purple_hit/', 'purple_idle/', 'idle_group/', 'test_guard')
+ENEMY_ROOTS = ('pirate_', 'gameres/enemy/', 'monsters/', 'hit/', 'guards/', 'squad/', 'idle_group/', 'test_guard')
 CI_ROOTS = ('_gameci/', 'gameres/ci/', 'gameanim/', 'ci/', 'ci5s/', 'br/', 'vace/', 'nr_layers/', 'cecilie/', 'cecilie_lora/', 'toon/')
+BG_ROOTS = ('bg/', 'bg_test/', 'bg_sample/', 'gameres/background/')
 def cat_of(it):
     d, n = it['dir'], it['name'].lower()
+    if d.startswith(BG_ROOTS): return '背景'
     if it['group'] == '交件・插畫': return '插畫'
     if d.startswith(ENEMY_ROOTS) or 'enemy/' in d or re.match(r'^(man|mon)_', n) or ('fight_' in d and 'hit' in d): return '敵'
     if re.match(r'^\d', n) or any(k in n or (len(k) >= 10 and k[:10] in n) for k in ILL_KEYS): return '插畫'
@@ -92,11 +96,11 @@ def cat_of(it):
 for it in items: it['cat'] = cat_of(it)
 # 24 小時內的作業（非交件）頂到最上面，新跑的東西不會被埋在交件底下
 import time as _t
-# 「新作」是索引不是歸檔處（Ray 11-04：「新作應該是索引，不應該是歸檔處」）：原本那一份留在自己的分組，這裡另外列一份
-items += [dict(it, group='新作（24 小時內）') for it in items
-          if not it['group'].startswith('交件') and _t.time() - it['mtime'] < 86400]
+_lt = _t.localtime(); NEW_FROM = _t.mktime((_lt.tm_year, _lt.tm_mon, _lt.tm_mday - 1, 0, 0, 0, 0, 0, -1))   # 昨天 00:00
+for it in items:
+    if it['mtime'] >= NEW_FROM: it['new'] = True; it['group'] = '新作（昨天起）・' + it['cat']
 
-ORDER = ['新作（24 小時內）', '交件・CI', '交件・插畫', '交件・待機', '交件・倒地', '交件・其他', '輸出', '參考']
+ORDER = ['新作（昨天起）・敵', '新作（昨天起）・背景', '新作（昨天起）・CI', '新作（昨天起）・插畫', '新作（昨天起）・其他', '交件・CI', '交件・插畫', '交件・待機', '交件・倒地', '交件・其他', '輸出', '參考']
 items.sort(key=lambda x: (ORDER.index(x['group']) if x['group'] in ORDER else len(ORDER), x['group'], -x['mtime']))
 open(os.path.join(OUT, 'player_list.js'), 'w', encoding='utf-8').write('window.ANIMS=' + json.dumps(items, ensure_ascii=False) + ';')
 print(len(items), 'folders')

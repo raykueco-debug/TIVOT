@@ -1306,3 +1306,5 @@ when	from	to	reason
 20261105-210259	resources/enemy/anim/mon_natalia_atk_v4	_recycle/resources/enemy/anim/mon_natalia_atk_v4	Ray 更正：v4 收回段改用 biteBA2_cut_2，重交
 20261105-210455	resources/enemy/mon_np_anyawings.webp	_recycle/resources/enemy/mon_np_anyawings.webp	改成只有翅膀的 B 版
 20261105-210455	resources/_originals/enemy/mon_np_anyawings.png	_recycle/resources/_originals/enemy/mon_np_anyawings.png	改成只有翅膀的 B 版
+20261108-152122	tools/anim/tivot_wan.py	_recycle/tools/anim/tivot_wan.py	敵人動畫 session 11-08：tivot_wan.py 加 TIVOT_LX2V=enh（強化動作配方），同步新版前回收舊版
+20261109-110250	HANDOFF.md	_recycle/HANDOFF.md.20261109-110250	11-09 交接換新（Ray：最新進度與處理方式寫進 HANDOFF）；10-30 那一份的未清點項目在新交接最後一段列出
