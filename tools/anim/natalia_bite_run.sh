@@ -1,0 +1,8 @@
+cd "/c/Users/Ray Ku/Desktop/ComfyUI-master/tivot_wan"
+A="C:/Users/Ray Ku/Desktop/TIVOT/resources/enemy/mon_natalia_neutral.webp"
+B="C:/Users/Ray Ku/Desktop/TIVOT/resources/enemy/_natalia_bite/mon_natalia_B_bite_src.png"
+TAIL="her long hair, torn skirt, cloth strips and blue-white ghostly smoke keep flowing and flaring the whole time, her body keeps breathing, never frozen, her eyes stay hidden under her bangs with only a faint blue ghostly glow, never red eyes, no red glowing eyes, the torn skirt keeps its same ragged shape and length, camera completely fixed, plain green background, anime cel shading, clean lineart"
+env TIVOT_LX2V=motionfix PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 tivot_wan.py --files "$A" --end "$B" --mode idle --fps 16 --length 49 --seed 741 --prompt "a hollow zombie maid girl standing limp suddenly crouches and coils for an instant, then explosively springs and pounces straight at the camera, flying forward with her mouth wide open to bite and both clawed hands reaching out at the viewer, springy elastic motion, $TAIL" --suffix _biteAB2 --out out/enemy_atk > out/natalia_bite.log 2>&1
+env TIVOT_LX2V=motionfix PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 tivot_wan.py --files "$B" --end "$A" --mode idle --fps 16 --length 49 --seed 742 --prompt "a zombie maid girl in mid-pounce snaps her jaws shut in a bite at the camera, then recoils and springs back, landing and sagging back into her hollow limp standing pose, springy elastic rebound, $TAIL" --suffix _biteBA2 --out out/enemy_atk >> out/natalia_bite.log 2>&1
+PYTHONIOENCODING=utf-8 python -X utf8 make_player.py > /dev/null 2>&1
+echo ALLDONE >> out/natalia_bite.log

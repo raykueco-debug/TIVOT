@@ -30,3 +30,10 @@ frames=10                                    ← hit：取幾格
 - 記憶體 16 GB 很吃緊：工具用 `--disable-smart-memory --cache-none` 啟動 ComfyUI；仍會掛的話加大分頁檔。
 - 去閃動只修**整體**明暗／色調；局部閃動要換 seed 或加步數。
 - idle 的循環接縫可能輕微跳一下（首尾差較大時換 seed）。
+
+## 兩台的同步（11-09，4070 SUPER 那台的動畫副理）
+- 這裡（`tools/anim/`）是版控那一份，`ComfyUI-master/tivot_wan/` 是實際在跑的那一份；**兩台各自有一份 `tivot_wan/`，會各自分岔**。開工先比對、以內容判斷誰新，舊的走 `tools/recycle.sh`。
+- 11-09 在 4070 比對的結果：`tivot_wan.py`／`tiger_cut.py`／`edge_check.py`／`comp_fgbg_embers.py`／`AUTO_CUT_LOG.md`／`player.html` 是版控這份新（3060 11-08 推上的）→ 蓋回 4070 的 `tivot_wan/`（舊版已回收）。
+  `make_player.py` 兩邊各自改過 → 合併：留 4070 的紫月／敵人攻擊／安雅分組與 Ray 11-04「新作是索引不是歸檔處」，加上 3060 的背景／空賊分組與「新作（昨天起）・分類」。
+  4070 才有的那 31 支（`np_run.sh`、`tiger_*_run.sh`、`treedragon_*`、`aw_*`、`tr_kodama_rig.py`…）收進這裡。
+- ⚠ 3060 那台 11-08 晚上的 `tivot_wan.py`（`TIVOT_STEPS`／`TIVOT_MOBIUS`）與 `custom_nodes/tivot_latent_loop.py` **不在 4070**，要由 3060 那台推進版控。

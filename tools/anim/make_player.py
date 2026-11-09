@@ -4,7 +4,7 @@ import glob, json, os
 HERE = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.join(HERE, 'out')
 TIVOT = os.path.join(os.path.dirname(os.path.dirname(HERE)), 'TIVOT', 'resources', 'ci', 'anim')
 items = []
-for root, tag in ((os.path.join(OUT, 'auto'), '自動初剪'), (os.path.join(OUT, 'ci5s'), 'ci5s'), (os.path.join(OUT, 'toon'), 'toon'), (os.path.join(OUT, 'nr_layers'), '分層'), (os.path.join(OUT, 'cecilie'), '賽西莉'), (os.path.join(OUT, 'cecilie_lora'), '乳搖比較'), (os.path.join(OUT, 'ref'), '參考'), (os.path.join(OUT, 'vace'), 'vace'), (os.path.join(OUT, 'br'), 'br'), (os.path.join(OUT, 'ci'), 'ci'), (os.path.join(OUT, 'export'), '輸出'), (os.path.join(OUT, 'hit'), 'hit'), (os.path.join(OUT, 'guards'), 'guards'), (os.path.join(OUT, 'squad'), 'squad'), (os.path.join(OUT, 'monsters'), 'monsters'), (os.path.join(OUT, 'bg'), '背景動畫'), (os.path.join(OUT, 'bg_test'), '背景試跑'), (os.path.join(OUT, 'bg_sample'), '背景樣本'), (os.path.join(OUT, 'pirate_atk_v2'), '空賊攻擊v2'), (os.path.join(OUT, 'pirate_atk_v3'), '空賊攻擊v3'), (TIVOT, '遊戲交件')):
+for root, tag in ((os.path.join(OUT, 'auto'), '自動初剪'), (os.path.join(OUT, 'ci5s'), 'ci5s'), (os.path.join(OUT, 'toon'), 'toon'), (os.path.join(OUT, 'nr_layers'), '分層'), (os.path.join(OUT, 'cecilie'), '賽西莉'), (os.path.join(OUT, 'cecilie_lora'), '乳搖比較'), (os.path.join(OUT, 'ref'), '參考'), (os.path.join(OUT, 'vace'), 'vace'), (os.path.join(OUT, 'br'), 'br'), (os.path.join(OUT, 'ci'), 'ci'), (os.path.join(OUT, 'export'), '輸出'), (os.path.join(OUT, 'hit'), 'hit'), (os.path.join(OUT, 'guards'), 'guards'), (os.path.join(OUT, 'squad'), 'squad'), (os.path.join(OUT, 'purple_hit'), '紫月倒地'), (os.path.join(OUT, 'purple_idle'), '紫月待機'), (os.path.join(OUT, 'monsters'), 'monsters'), (os.path.join(OUT, 'enemy_atk'), '敵人攻擊'), (os.path.join(OUT, 'anya'), '安雅'), (os.path.join(OUT, 'bg'), '背景動畫'), (os.path.join(OUT, 'bg_test'), '背景試跑'), (os.path.join(OUT, 'bg_sample'), '背景樣本'), (os.path.join(OUT, 'pirate_atk_v2'), '空賊攻擊v2'), (os.path.join(OUT, 'pirate_atk_v3'), '空賊攻擊v3'), (TIVOT, '遊戲交件')):
     for d in sorted(glob.glob(os.path.join(root, '*'))):
         fs = sorted(os.path.basename(f) for f in glob.glob(os.path.join(d, 'frame_*.webp')))
         if not fs: continue
@@ -82,7 +82,7 @@ for d in (IVID, os.path.join(RES, 'illustration')):
             k = re.sub(r'(_v\d+)?\.(mp4|webp|png|jpe?g)$', '', fn.lower())
             k = re.sub(r'^[\d_-]+', '', k)
             if len(k) >= 5: ILL_KEYS.add(k)
-ENEMY_ROOTS = ('pirate_', 'gameres/enemy/', 'monsters/', 'hit/', 'guards/', 'squad/', 'idle_group/', 'test_guard')
+ENEMY_ROOTS = ('pirate_', 'enemy_atk/', 'gameres/enemy/', 'monsters/', 'hit/', 'guards/', 'squad/', 'purple_hit/', 'purple_idle/', 'idle_group/', 'test_guard')
 CI_ROOTS = ('_gameci/', 'gameres/ci/', 'gameanim/', 'ci/', 'ci5s/', 'br/', 'vace/', 'nr_layers/', 'cecilie/', 'cecilie_lora/', 'toon/')
 BG_ROOTS = ('bg/', 'bg_test/', 'bg_sample/', 'gameres/background/')
 def cat_of(it):
@@ -97,8 +97,11 @@ for it in items: it['cat'] = cat_of(it)
 # 24 小時內的作業（非交件）頂到最上面，新跑的東西不會被埋在交件底下
 import time as _t
 _lt = _t.localtime(); NEW_FROM = _t.mktime((_lt.tm_year, _lt.tm_mon, _lt.tm_mday - 1, 0, 0, 0, 0, 0, -1))   # 昨天 00:00
-for it in items:
-    if it['mtime'] >= NEW_FROM: it['new'] = True; it['group'] = '新作（昨天起）・' + it['cat']
+# 「新作」是索引不是歸檔處（Ray 11-04：「新作應該是索引，不應該是歸檔處」）：
+# 原本那一份留在自己的分組，另外複製一份到「新作（昨天起）・分類」頂到最上面；player.html 的「新作」頁籤只看 new 旗標。
+# （11-09 合併：3060 版把原本那一份直接改組＝搬走，4070 版是 24 小時內另列一份；兩台各自分岔，這裡兩邊合一）
+items += [dict(it, new=True, group='新作（昨天起）・' + it['cat']) for it in items
+          if not it['group'].startswith('交件') and it['mtime'] >= NEW_FROM]
 
 ORDER = ['新作（昨天起）・敵', '新作（昨天起）・背景', '新作（昨天起）・CI', '新作（昨天起）・插畫', '新作（昨天起）・其他', '交件・CI', '交件・插畫', '交件・待機', '交件・倒地', '交件・其他', '輸出', '參考']
 items.sort(key=lambda x: (ORDER.index(x['group']) if x['group'] in ORDER else len(ORDER), x['group'], -x['mtime']))

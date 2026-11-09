@@ -1,0 +1,9 @@
+cd "/c/Users/Ray Ku/Desktop/ComfyUI-master/tivot_wan"
+R="C:/Users/Ray Ku/Desktop/TIVOT/resources/enemy/_neutral_refs"
+A="$R/mon_shinierforest_tiger_neutral.png"; B="$R/mon_shinierforest_tiger_B_hswipe.png"
+T="exactly four legs only, never more than four legs, the limb count never changes, its fur, mane and tail keep moving and its body keeps breathing the whole time, never frozen, purely physical claw swipe, no light, no glow, no flash, no sparks, no energy effects, no glowing trails, camera completely fixed, plain green background, anime cel shading, clean lineart"
+env TIVOT_GEN=720x480 TIVOT_FIT=0.78 TIVOT_LX2V=motionfix PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 tivot_wan.py --files "$A" --end "$B" --mode idle --fps 16 --length 49 --seed 6811 --prompt "a crouching white unicorn tiger coils its shoulders for an instant, then explosively lifts its right front paw and sweeps it horizontally sideways across in front of its chest from right to left, a fast flat sideways claw swipe parallel to the ground, the other three paws stay planted, its weight shifts with the swipe, springy elastic motion, $T" --suffix _hswipeAB --out out/enemy_atk > out/tiger_hswipe.log 2>&1
+env TIVOT_GEN=720x480 TIVOT_FIT=0.78 TIVOT_LX2V=motionfix PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 tivot_wan.py --files "$B" --end "$A" --mode idle --fps 16 --length 33 --seed 6812 --prompt "a crouching white unicorn tiger finishes a sideways claw swipe and pulls its right front paw back, planting it on the ground again and settling back into its low snarling crouch, springy rebound, $T" --suffix _hswipeBA --out out/enemy_atk >> out/tiger_hswipe.log 2>&1
+PYTHONIOENCODING=utf-8 python -X utf8 edge_check.py out/enemy_atk/mon_shinierforest_tiger_neutral_hswipeAB out/enemy_atk/mon_shinierforest_tiger_B_hswipe_hswipeBA >> out/tiger_hswipe.log 2>&1
+PYTHONIOENCODING=utf-8 python -X utf8 make_player.py > /dev/null 2>&1
+echo ALLDONE >> out/tiger_hswipe.log

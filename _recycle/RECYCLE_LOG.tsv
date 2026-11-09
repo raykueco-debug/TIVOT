@@ -1308,3 +1308,10 @@ when	from	to	reason
 20261105-210455	resources/_originals/enemy/mon_np_anyawings.png	_recycle/resources/_originals/enemy/mon_np_anyawings.png	改成只有翅膀的 B 版
 20261108-152122	tools/anim/tivot_wan.py	_recycle/tools/anim/tivot_wan.py	敵人動畫 session 11-08：tivot_wan.py 加 TIVOT_LX2V=enh（強化動作配方），同步新版前回收舊版
 20261109-110250	HANDOFF.md	_recycle/HANDOFF.md.20261109-110250	11-09 交接換新（Ray：最新進度與處理方式寫進 HANDOFF）；10-30 那一份的未清點項目在新交接最後一段列出
+20261109-164823	tivot_wan.py	_recycle/tivot_wan.py	11-09 動畫副理同步：ComfyUI-master/tivot_wan/tivot_wan.py（4070 舊版）由 tools/anim 版取代
+20261109-164824	make_player.py	_recycle/make_player.py	11-09 動畫副理同步：ComfyUI-master/tivot_wan/make_player.py（4070 舊版）由 tools/anim 版取代
+20261109-164824	tiger_cut.py	_recycle/tiger_cut.py	11-09 動畫副理同步：ComfyUI-master/tivot_wan/tiger_cut.py（4070 舊版）由 tools/anim 版取代
+20261109-164824	edge_check.py	_recycle/edge_check.py	11-09 動畫副理同步：ComfyUI-master/tivot_wan/edge_check.py（4070 舊版）由 tools/anim 版取代
+20261109-164825	comp_fgbg_embers.py	_recycle/comp_fgbg_embers.py	11-09 動畫副理同步：ComfyUI-master/tivot_wan/comp_fgbg_embers.py（4070 舊版）由 tools/anim 版取代
+20261109-164825	AUTO_CUT_LOG.md	_recycle/AUTO_CUT_LOG.md	11-09 動畫副理同步：ComfyUI-master/tivot_wan/AUTO_CUT_LOG.md（4070 舊版）由 tools/anim 版取代
+20261109-164826	player.html	_recycle/player.html	11-09 動畫副理同步：ComfyUI-master/tivot_wan/out/player.html（10-27 版）由 tools/anim/player.html 取代

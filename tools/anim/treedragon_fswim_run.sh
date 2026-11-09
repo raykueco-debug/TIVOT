@@ -1,0 +1,7 @@
+# 樹寄生石龍：轉身→正面游（A→B）、正面游 loop（16fps 全格）
+cd "/c/Users/Ray Ku/Desktop/ComfyUI-master/tivot_wan"
+D="C:/Users/Ray Ku/Desktop/TIVOT/resources/enemy/_tree_dragon"
+E="TIVOT_GEN=960x480 TIVOT_OY=0.5 TIVOT_FIT=0.86 TIVOT_LX2V=motionfix PYTHONIOENCODING=utf-8"
+env TIVOT_GEN=960x480 TIVOT_OY=0.5 TIVOT_FIT=0.86 TIVOT_LX2V=motionfix PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 tivot_wan.py --files "$D/tree_dragon_turn_src.webp" --end "$D/tree_dragon_front_swim_src.webp" --mode idle --fps 16 --length 49 --width 960 --seed 5201 --prompt "a long serpentine stone dragon wrapped in tree roots finishes turning in mid-air and swims straight toward the viewer, head facing the camera, claws drawn in, body undulating behind it in an S curve, smooth calm motion, anime cel shading, clean lineart, plain green background" --suffix _ab_fswim --out out/monsters
+env TIVOT_GEN=960x480 TIVOT_OY=0.5 TIVOT_FIT=0.86 TIVOT_LX2V=motionfix PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 tivot_wan.py --files "$D/tree_dragon_front_swim_src.webp" --mode idle --fps 16 --length 49 --width 960 --loop --seed 5202 --prompt "a long serpentine stone dragon wrapped in tree roots swimming through the air toward the viewer, facing the camera, its body undulates in an S wave behind it, claws paddle gently, head steady, staying in place, seamless loop, anime cel shading, clean lineart, plain green background" --suffix _fswim_loop --out out/monsters
+echo ALLDONE

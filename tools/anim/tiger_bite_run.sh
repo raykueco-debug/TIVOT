@@ -1,0 +1,9 @@
+cd "/c/Users/Ray Ku/Desktop/ComfyUI-master/tivot_wan"
+R="C:/Users/Ray Ku/Desktop/TIVOT/resources/enemy/_neutral_refs"
+A="$R/mon_shinierforest_tiger_neutral.png"; B="$R/mon_shinierforest_tiger_B_bite.png"
+T="exactly four legs only, never more than four legs, the limb count never changes, its fur, mane and tail keep moving and its body keeps breathing the whole time, never frozen, no light, no glow, no flash, no sparks, no energy effects, camera completely fixed, plain green background, anime cel shading, clean lineart"
+env TIVOT_GEN=720x480 TIVOT_FIT=0.72 TIVOT_OY=0.85 TIVOT_LX2V=motionfix PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 tivot_wan.py --files "$A" --end "$B" --mode idle --fps 16 --length 49 --seed 6821 --prompt "a crouching white unicorn tiger sinks low and coils for an instant, then explosively springs and pounces straight at the camera, front body leaping up, jaws opening wide to bite and both front paws reaching out with claws spread at the viewer, springy elastic motion, $T" --suffix _biteAB2 --out out/enemy_atk > out/tiger_bite.log 2>&1
+env TIVOT_GEN=720x480 TIVOT_FIT=0.72 TIVOT_OY=0.85 TIVOT_LX2V=motionfix PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 tivot_wan.py --files "$B" --end "$A" --mode idle --fps 16 --length 33 --seed 6822 --prompt "a white unicorn tiger in mid-pounce snaps its jaws shut in a bite at the camera, then lands and recoils back, settling into its low snarling crouch, springy rebound, $T" --suffix _biteBA2 --out out/enemy_atk >> out/tiger_bite.log 2>&1
+PYTHONIOENCODING=utf-8 python -X utf8 edge_check.py out/enemy_atk/mon_shinierforest_tiger_neutral_biteAB2 out/enemy_atk/mon_shinierforest_tiger_B_bite_biteBA2 >> out/tiger_bite.log 2>&1
+PYTHONIOENCODING=utf-8 python -X utf8 make_player.py > /dev/null 2>&1
+echo ALLDONE >> out/tiger_bite.log
