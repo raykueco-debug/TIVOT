@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.09-2616';
+export const VERSION = 'ver 2026.11.09-2617';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3616,7 +3616,7 @@ export const GAME_CONFIG = {
        其餘播到尾巴前就把插畫淡出撤下（ver -2182，Ray：「動畫在停止前就要撤下」）。引擎在 story.js 的 `playCgAnim`。 */
     cgAnim: {
       '009_soranadebute': { video:'resources/illustration/video/009_soranadebute_v3.mp4' },
-      '010_anyaheadrubbing': { video:'resources/illustration/video/010_anyaheadrubbing_v1.mp4' },
+      '010_anyaheadrubbing': { video:'resources/illustration/video/010_anyaheadrubbing_v2.mp4' },   // ver -2617：v1 → v2（Ray 重剪，24fps）
       '015-anyadessert': { video:'resources/illustration/video/015-anyadessert_v1.mp4' },
       '016-soranaaim': { video:'resources/illustration/video/016-soranaaim_v1.mp4' },
       '017_rennasmile': { video:'resources/illustration/video/017_rennasmile_v1.mp4' },
@@ -3624,7 +3624,7 @@ export const GAME_CONFIG = {
       '024_nouvellesmile': { video:'resources/illustration/video/024_nouvellesmile_v1.mp4' },
       '26_nouvellefaint': { video:'resources/illustration/video/26_nouvellefaint_v2.mp4' },
       '31-2_rennaprincesshold': { video:'resources/illustration/video/31-2_rennaprincesshold_v1.mp4' },
-      '038_mishasting': { video:'resources/illustration/video/038_mishasting_v2.mp4' },
+      '038_mishasting': { video:'resources/illustration/video/038_mishasting_v3.mp4' },   // ver -2617：v2 → v3（Kling 鎖尾格＝原圖）
       '043_eliointro': { video:'resources/illustration/video/043_eliointro_v1.mp4', loop:true },
       '044_soranahug': { video:'resources/illustration/video/044_soranahug_v3.mp4' },   // ver -2258：v2 → v3（Ray：「Soranahug 要接新檔」）
       /* ver -2258（Ray：「蕾娜 intro 動畫沒接上」「蕾娜抱安雅動畫沒接上」，動畫 10-18 交件）。 */
@@ -3632,11 +3632,17 @@ export const GAME_CONFIG = {
       '008_rennaholdanya': { video:'resources/illustration/video/008_rennaholdanya_v1.mp4' },
       /* ver -2184（動畫 10-14 交件）。35／044 首尾構圖可接 ⇒ 循環（044 那一拍之後還有台詞與轉泛黃，插圖要撐到淡出）。 */
       '003_lunaria_armed': { video:'resources/illustration/video/003_lunaria_armed_v1.mp4' },
-      '005_cecilieintro': { video:'resources/illustration/video/005_cecilieintro_v1.mp4' },
+      '005_cecilieintro': { video:'resources/illustration/video/005_cecilieintro_v2.mp4' },   // ver -2617：v1 → v2（Ray 重剪，24fps）
       '35_bellinda': { video:'resources/illustration/video/35_bellinda_v1.mp4', loop:true },
       '044_cecilietorsten': { video:'resources/illustration/video/044_cecilietorsten_v1.mp4', loop:true },
       '041_cecilienemo': { video:'resources/illustration/video/041_cecilienemo_v1.mp4', hold:true, withText:true },   // ver -2271 薇拉馮德夜襲：不循環、由下往上平移；ver -2273（Ray）：不自動消失（停最後一格）、對話框一出來就開播
       /* 劇情裡的「Execute 插圖」寫的是明確路徑（script/town.js），鑰匙就是那串路徑；影片與 CI 共用處決 v2。 */
+      /* ver -2617（動畫 10-18 交件，`TO_CODE.md` 第二十三／二十五／二十八／二十九支）。013／30 第一格≠原圖，引擎黑幕下先擺第一格；
+         014 交件單寫「停最後一格」，但照 -2186 的通則（不循環一律片尾前淡出撤下）沒加 hold —— 要停格再說。 */
+      '013_corvin_intro': { video:'resources/illustration/video/013_corvin_intro_v1.mp4' },
+      '014-nouvelleeat': { video:'resources/illustration/video/014-nouvelleeat_v1.mp4' },
+      '28_tordefeat': { video:'resources/illustration/video/28_tordefeat_v1.mp4' },
+      '30_torstandup': { video:'resources/illustration/video/30_torstandup_v1.mp4' },
       'resources/ci/ci_torsten_execute.png': { video:'resources/ci/video/ci_torsten_execute_v2.mp4' },
     },
     cutinFit: { ci_sorana_supply:0.78,
@@ -3658,7 +3664,8 @@ export const GAME_CONFIG = {
                 ci_sorana_roar_renna:2000, ci_sorana_roar_anya:2000, ci_sorana_roar_nouvelle:2000,
                 cutin_nireload:2500,   // ver -2168：Ray「播 2.5 秒就要完成淡出」（撤出淡出吃在最後 0.25 秒內）；-2137 v4 是 2000
                 cutin_dual_torsten:1959,   // ver -2167：BR v7 片長（47 格 24fps；v5 是 1000）
-                cutin_cecilie_guard:1000, cutin_cecilie_return:1042 },   // ver -2103：賽西莉即死防禦／生命歸還（片長＝CI 長）
+                cutin_cecilie_guard:1000, cutin_cecilie_return:1042,   // ver -2103：賽西莉即死防禦／生命歸還（片長＝CI 長）
+                ci_misha_ni:4063 },   // ver -2617：米夏 NI v2（65 格 16fps＝片長，照 -2040「撤出時還在播」；同 cutinAnim 那一列）
     /* BR（彈雨傾洩）的進場（ver -2091，Ray：「發動瞬間快速淡入蓋一層 70% 不透明度的黑遮罩當背景，再移入 CI」）：
        `alpha`＝黑遮罩不透明度、`ms`＝淡入多久（淡完才開始滑入 CI）。weapon.activateDual 傳給 playCutin 的 opts.dim。 */
     brDim: { alpha:0.7, ms:120 },   // ver -2088：托爾斯滕彈雨傾洩（Ray：「拉到 1 秒就好」；16 格 16fps＝片長）   // ver -2079：安雅夢魘再臨（Ray 剪 nr_blue77_cut，32 格 2 秒）   // ver -2076：即死防禦／補給影片（片長＝CI 長，撤出時還在播；同 cutinAnim 那兩列）   // 索拉娜飛刀耗盡 ver -2051（26 格 16fps，撤出時還在播；同 cutinAnim 的 ms，兩處互指）
@@ -3695,6 +3702,8 @@ export const GAME_CONFIG = {
                  cutin_nouvelle_saint:{ video:'resources/ci/video/cutin_nouvelle_saint_v1.mp4' },
                  /* ver -2041：安雅惡夢化（NI）改用 Ray 剪的 ni3 版（ci_anya_dreambreaker0_ni3_s77_cut，45 格 2.8125 秒＝ cutinDur，撤出時還在播）。
                     -2034～-2036 那段（ci_anya_dreambreaker_v1 去頭去尾）已由這一版取代、資料夾已回收。DB（夢境粉碎）的動檔另外做。 */
+                 /* ver -2617：米夏 NI 發動（動畫 10-16 交件 v2，`resources/ci/layers/misha_ni/TO_CODE.md`）；片長＝cutinDur 那一格（兩處互指）。 */
+                 ci_misha_ni:{ video:'resources/ci/video/ci_misha_ni_v2.mp4' },
                  ci_anya_ni:{ video:'resources/ci/video/ci_anya_ni_v2.mp4' },   // ver -2078：新 NI（Ray 剪 anya_ni_s7_cut）；舊 v1 改做夢境粉碎
                  /* ver -2037（Ray：「兩個 obe 都可以交件」）：OBE 崩潰兩張，各 64 格 16fps＝4 秒。
                     安雅熔斷走 playCutin、諾薇兒 OBE 走結局全畫面 playSaintCutin，兩張 CI 都 2 秒（cutinDur，ver -2038），播到第 32 格左右。
