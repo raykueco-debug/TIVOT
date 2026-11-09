@@ -71,7 +71,7 @@
 
 ## 五、還沒收乾淨的（這一次推版刻意沒動的）
 
-- ⚠ **`resources/illustration/041_cecilienemo.webp` 在工作區被刪掉、旁邊多一張同名 `.png`（10-18、2.3 MB、沒進過版控）**。不是我刪的、回收區也沒有紀錄 —— 遊戲照樣顯示得出來（候選鏈 `.webp → .png`）。**沒有 commit 這個刪除**，等 Ray 說是不是他換的圖；若是，要轉 webp、原 png 進 `_originals`。
+- ✔ **041_cecilienemo**：11-09 Ray 確認是他換的 png（10-18 版）→ 已轉 webp（q92，ASSET_VER 02bae284，ver -2616）；原 png 存成 `resources/_originals/illustration/041_cecilienemo_20261018.png`（`_originals` 裡 10-09 的舊同名 png 沒動）。
 - ⚠ **`tools/anim/` 的三支比 `ComfyUI-master/tivot_wan/` 舊**：`tivot_wan.py`（缺 `TIVOT_STEPS`／`TIVOT_MOBIUS`）、`make_player.py`、`player.html`（tivot_wan 是 11-08 晚上的版本）。這一次同步被權限擋下沒做；版控裡的是 11-08 下午那一版。下一個動畫 session 開工照 memory `sync-anim-tools-first` 先同步（舊版先回收），順便把 `custom_nodes/tivot_latent_loop.py` 收進 `tools/anim/`。
 - script_lint 的 13 個既有錯誤（charm 大寫檔名）。
 
