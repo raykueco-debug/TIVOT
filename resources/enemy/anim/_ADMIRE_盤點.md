@@ -1,5 +1,7 @@
 # 敵人 ADMIRE 盤點（敵人動畫 session，2026-11-08）
 
+> ⚠ **11-09 4070S 核對與給 Ray 的 KF 審閱清單見 `_敵人線_盤點與審閱_1109.md`**（KF 實數 27 隻；Ray 的編排 xlsx 在 4070 上，有 4 隻 KF 與表上動作對不上）。
+
 > A＝攻擊　D＝延時　M＝點錯　I＝待機　R＝每段收回中立　E＝倒地
 > 狀態只有三種：`✔ 不欠（理由）`／`⚠ 欠<什麼>`／`？ Ray 未定`（規格還沒人說要不要，不是欠，也不是不欠）。
 > 出處：`config.js` 的 `ENEMY_IDLE／ATK／DELAY／MISS／ENTER`、`script/enemies.js` 183 張卡（node 實際載入比對）、`TO_CODE_attack.md`、`TO_CODE_skypirate.md`、`_neutral_refs/_progress.md`。
