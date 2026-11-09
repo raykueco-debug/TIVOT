@@ -20,7 +20,9 @@ ENV = dict(os.environ, PYTHONIOENCODING='utf-8')
 
 def log(*a):
     s = time.strftime('%m-%d %H:%M:%S ') + ' '.join(str(x) for x in a)
-    print(s, flush=True); open(LOG, 'a', encoding='utf8').write(s + '\n')
+    open(LOG, 'a', encoding='utf8').write(s + '\n')
+    try: print(s, flush=True)
+    except Exception: pass   # 主控台是 cp950 時印不出符號，不要讓整個排程死掉（11-10 夜裡踩過）
 
 
 def stopped(): return os.path.exists(os.path.join(HERE, 'STOP'))
