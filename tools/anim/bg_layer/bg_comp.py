@@ -37,15 +37,22 @@ def main():
     ap.add_argument('still'); ap.add_argument('prefix'); ap.add_argument('name')
     ap.add_argument('--minlen', type=int, default=32); ap.add_argument('--maxlen', type=int, default=72)
     ap.add_argument('--fps', type=int, default=16)
+    ap.add_argument('--full', action='store_true', help='FLF 版：整段 0..n-2 就是循環（最後一格＝第一格，丟掉）')
+    ap.add_argument('--maskdir', help='用這個資料夾裡所有 png 的聯集當遮罩（Ray 註記收斂後的 refined/）')
     a = ap.parse_args()
     out = os.path.join(HERE, 'out', a.name); os.makedirs(out, exist_ok=True)
 
     still = np.array(Image.open(a.still).convert('RGB'))
     H, W = still.shape[:2]
+    H, W = H - H % 2, W - W % 2; still = still[:H, :W]   # H.264 yuv420p 要偶數（卡耶爾山谷是 1536×1031）
     files = sorted(glob.glob(os.path.join(COMFY_OUT, a.prefix + '_*.png')))
     assert files, '找不到 Wan 輸出：' + a.prefix
     fr = [cv2.resize(np.array(Image.open(f).convert('RGB')), (W, H), interpolation=cv2.INTER_LANCZOS4).astype(np.float32) for f in files]
-    m = wind_mask(still)
+    if a.maskdir:
+        ms_ = [np.array(Image.open(f).convert('L').resize((W, H))).astype(np.float32) / 255 for f in glob.glob(os.path.join(a.maskdir, '*.png'))]
+        m = np.max(ms_, axis=0)
+    else:
+        m = wind_mask(still)
     Image.fromarray((m * 255).astype(np.uint8)).save(os.path.join(out, 'mask.png'))
     chk = still.astype(np.float32) * 0.45 + np.dstack([m * 255 * 0.55, m * 0, m * 255 * 0.55])
     Image.fromarray(chk.clip(0, 255).astype(np.uint8)).resize((W // 2, H // 2)).save(os.path.join(out, 'mask_check.jpg'), quality=85)
@@ -57,28 +64,40 @@ def main():
         mu = (fr[i] * m3).sum((0, 1)) / wsum
         fr[i] = fr[i] + (ref - mu)
 
-    # 找自然回到原點的一段：遮罩區的低解析差值最小的 (i, j)，j-i 在 [minlen, maxlen]
+    # 找自然回到原點的一段。有分層遮罩時：每一層各自找起點、共用同一個長度 L（各層的循環彼此獨立，接縫只跟自己比）
+    layers = [m]
+    if a.maskdir:
+        layers = [np.array(Image.open(f).convert('L').resize((W, H))).astype(np.float32) / 255 for f in sorted(glob.glob(os.path.join(a.maskdir, '*.png')))]
     small = [cv2.resize(f, (192, 128), interpolation=cv2.INTER_AREA) for f in fr]
-    ms = cv2.resize(m, (192, 128))[..., None]
-    n = len(fr); best = None
-    for i in range(0, n):
-        for j in range(i + a.minlen, min(n, i + a.maxlen + 1)):
-            d = float((np.abs(small[i] - small[j]) * ms).sum() / (ms.sum() * 3 + 1e-6))
-            if best is None or d < best[0]: best = (d, i, j)
-    d, i0, j0 = best
-    # 參考：相鄰格之間的平均差（接縫要接近它才看不出來）
-    step = float(np.mean([(np.abs(small[k] - small[k + 1]) * ms).sum() / (ms.sum() * 3) for k in range(i0, j0)]))
-    seq = list(range(i0, j0))   # 播 i0..j0-1，下一格回到 i0（j0≈i0）
-
+    n = len(fr)
+    lsm = [cv2.resize(l, (192, 128))[..., None] for l in layers]
+    def seam(ms, i, j): return float((np.abs(small[i] - small[j]) * ms).sum() / (ms.sum() * 3 + 1e-6))
+    best = None
+    for L in range(a.minlen, min(a.maxlen, n - 1) + 1):
+        tot = 0; starts = []
+        for ms in lsm:
+            c = min((seam(ms, i, i + L), i) for i in range(0, n - L))
+            tot += c[0] * float(ms.sum()); starts.append(c)
+        tot /= sum(float(ms.sum()) for ms in lsm) + 1e-6
+        if best is None or tot < best[0]: best = (tot, L, starts)
+    d, Lb, starts = best
+    if a.full:
+        Lb = n - 1; starts = [(seam(ms, 0, n - 1), 0) for ms in lsm]; d = sum(x[0] for x in starts) / len(starts)
+    i0 = starts[0][1]; j0 = i0 + Lb
+    step = float(np.mean([(np.abs(small[k] - small[k + 1]) * lsm[0]).sum() / (lsm[0].sum() * 3) for k in range(i0, j0)]))
+    seq = list(range(Lb))
     p = subprocess.Popen(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(a.fps), '-i', '-',
                           '-c:v', 'libx264', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-crf', '22', '-preset', 'slow', '-movflags', '+faststart', '-an',
                           os.path.join(out, 'loop.mp4')], stdin=subprocess.PIPE)
     st = still.astype(np.float32)
-    for k in seq:
-        comp = st * (1 - m3) + fr[k] * m3
+    lm3 = [l[..., None] for l in layers]
+    for t in seq:
+        comp = st.copy()
+        for l3, (_, i_) in zip(lm3, starts):
+            comp = comp * (1 - l3) + fr[i_ + t] * l3
         p.stdin.write(comp.clip(0, 255).astype(np.uint8).tobytes())
     p.stdin.close(); p.wait()
-    meta = dict(still=a.still, prefix=a.prefix, wan_frames=n, loop_from=i0, loop_to=j0, frames=len(seq), fps=a.fps,
+    meta = dict(still=a.still, prefix=a.prefix, wan_frames=n, loop_from=i0, loop_to=j0, layer_starts=[[os.path.basename(f) for f in sorted(glob.glob(os.path.join(a.maskdir, '*.png')))] if a.maskdir else ['auto'], [int(x[1]) for x in starts], [round(x[0], 3) for x in starts]], frames=len(seq), fps=a.fps,
                 seam_diff=round(d, 3), mean_step_diff=round(step, 3), size=[W, H])
     json.dump(meta, open(os.path.join(out, 'meta.json'), 'w'), ensure_ascii=False, indent=1)
     print(json.dumps(meta, ensure_ascii=False))

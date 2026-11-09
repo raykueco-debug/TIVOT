@@ -27,6 +27,9 @@ section.map>h2{font-size:18px;margin:28px 0 8px;padding-bottom:4px;border-bottom
 .stage{position:relative;flex:1 1 560px;max-width:900px;line-height:0;touch-action:none;user-select:none}
 .stage img{width:100%;display:block;border-radius:4px}
 .stage canvas{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:none;border-radius:4px;background:#000}
+.pbtn{background:#2b2e36;color:var(--text);border:1px solid var(--line);border-radius:5px;padding:3px 10px;cursor:pointer}
+.pbtn.on{border-color:var(--gold);color:var(--gold)}
 .side{flex:1 1 280px;min-width:260px;display:flex;flex-direction:column;gap:8px}
 .ttl{font-weight:bold}.ttl small{color:var(--dim);font-weight:normal}
 .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -64,10 +67,12 @@ toolsEl.onclick=e=>{const k=e.target.dataset.k;if(k)setTool(k)};setTool('red');
 const sz=document.getElementById('size');sz.oninput=()=>{size=+sz.value;document.getElementById('sizeV').textContent=size};
 const rgbOf=k=>COLORS.find(c=>c[0]===k)[2];
 
-let DONE={};
+let DONE={},LOOPS={};
+const VARNAME={s101:'A 找循環段',flf:'B 首尾鎖原圖'};
 (async()=>{
   const nodes=await (await fetch('nodes.json')).json();
   DONE=await (await fetch('api/done')).json();
+  LOOPS=await (await fetch('api/loops')).json();
   const maps=[];const byMap={};
   for(const n of nodes){if(!byMap[n.map]){byMap[n.map]=[];maps.push(n)}byMap[n.map].push(n)}
   const idx=document.getElementById('idx'),main=document.getElementById('main');
@@ -92,16 +97,29 @@ const io=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){io
 function makeCard(n){
   const card=document.createElement('div');card.className='card';card.dataset.map=n.map;
   const bandOpts=n.files.map(([b,f],i)=>`<option value="${i}">${b}</option>`).join('');
-  card.innerHTML=`<div class="stage"><img loading="lazy" alt=""><canvas></canvas></div>
+  card.innerHTML=`<div class="stage"><img loading="lazy" alt=""><canvas></canvas><video muted loop playsinline></video></div>
    <div class="side">
      <div class="ttl">${n.name} <small>${n.map}/${n.id}</small></div>
      <div class="row"><span class="hint">時段</span><select class="band">${bandOpts}</select><span class="st"></span></div>
+     <div class="row play"></div>
      <div class="legend"></div>
      <div class="hint">整體備註</div><textarea class="general" placeholder="（選填）整張圖的節奏、風向、要特別注意的地方"></textarea>
      <div class="row"><button class="btn undo">復原</button><button class="btn clear">全部清除</button>
        <button class="btn save">存檔</button><button class="btn sub">提交</button></div>
    </div>`;
-  const img=card.querySelector('img'),cv=card.querySelector('canvas'),ctx=cv.getContext('2d');
+  const img=card.querySelector('img'),cv=card.querySelector('canvas'),ctx=cv.getContext('2d'),vid=card.querySelector('video'),play=card.querySelector('.play');
+  function showMode(v){ // v=null → 註記；否則播那一版的循環
+    play.querySelectorAll('.pbtn').forEach(b=>b.classList.toggle('on',(b.dataset.v||null)===(v?v.dir:null)));
+    if(!v){vid.pause();vid.removeAttribute('src');vid.load();vid.style.display='none';cv.style.display='';return}
+    vid.src=`out/${v.dir}/loop.mp4?t=${v.t}`;vid.style.display='block';cv.style.display='none';vid.play().catch(()=>{});
+  }
+  function renderPlay(){
+    const vs=LOOPS[key()]||[];play.innerHTML='';if(!vs.length)return;
+    const mk=(lab,v,tip)=>{const b=document.createElement('button');b.className='pbtn';b.textContent=lab;if(v)b.dataset.v=v.dir;if(tip)b.title=tip;b.onclick=()=>showMode(v);play.appendChild(b)};
+    mk('註記',null);
+    for(const v of vs)mk('▶ '+(VARNAME[v.var]||v.var),v,`${v.frames} 格 ${v.fps}fps／接縫差 ${v.seam}（相鄰格平均 ${v.step}）`);
+    play.querySelector('.pbtn').classList.add('on');
+  }
   const bandSel=card.querySelector('.band'),st=card.querySelector('.st'),legend=card.querySelector('.legend'),gen=card.querySelector('.general');
   let layers={},texts={},undo=[],W=0,H=0,ready=false,curBand=0;
   const key=()=>`${n.map}__${n.id}__${n.files[curBand][0]}`;
@@ -127,7 +145,7 @@ function makeCard(n){
       for(const c of j.colors){texts[c.name]=c.text||'';const m=new Image();m.src=`notes/${key()}/${c.mask}?t=${Date.now()}`;await m.decode();
         const L=layer(c.name);L.x.drawImage(m,0,0,W,H);const id=L.x.getImageData(0,0,W,H),d=id.data,[r_,g_,b_]=hexRgb(rgbOf(c.name));
         for(let p=0;p<d.length;p+=4){const a=d[p];d[p]=r_;d[p+1]=g_;d[p+2]=b_;d[p+3]=a}L.x.putImageData(id,0,0);L.has=true}}}catch(e){}
-    redraw();renderLegend();mark();ready=true;
+    redraw();renderLegend();mark();renderPlay();showMode(null);ready=true;
   }
   card._init=()=>loadBand(0);
   bandSel.onchange=()=>loadBand(+bandSel.value);

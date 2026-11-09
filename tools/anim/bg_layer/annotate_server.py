@@ -45,6 +45,22 @@ class H(SimpleHTTPRequestHandler):
     def do_GET(self):
         p = urlsplit(self.path).path
         if p == '/': self.path = '/annotate.html'
+        if p == '/api/loops':   # 每一格跑出來的循環：{key: [{var, frames, fps, seam, step}]}
+            nodes = json.load(open(os.path.join(HERE, 'nodes.json'), encoding='utf8'))
+            look = {}
+            for n in nodes:
+                for b, _f in n['files']: look[f"{n['map']}_{n['id']}_{b}"] = f"{n['map']}__{n['id']}__{b}"
+            out = {}
+            od = os.path.join(HERE, 'out')
+            for dname in sorted(os.listdir(od)) if os.path.isdir(od) else []:
+                mp = os.path.join(od, dname, 'meta.json')
+                if not (os.path.isfile(mp) and os.path.isfile(os.path.join(od, dname, 'loop.mp4'))): continue
+                base, _, var = dname.rpartition('_')
+                if base not in look: continue
+                m = json.load(open(mp, encoding='utf8'))
+                out.setdefault(look[base], []).append({'var': var, 'dir': dname, 'frames': m.get('frames'), 'fps': m.get('fps'),
+                    'seam': m.get('seam_diff'), 'step': m.get('mean_step_diff'), 't': int(os.path.getmtime(mp))})
+            return self.send_json(out)
         if p == '/api/done':   # 哪些已經存過
             out = {}
             if os.path.isdir(NOTES):
