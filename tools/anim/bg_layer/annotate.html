@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>背景動畫註記</title>
+<style>
+:root{--bg:#15161a;--panel:#1f2127;--line:#33363f;--text:#e8e6e0;--dim:#9a9890;--gold:#d9b25f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 "Noto Sans TC","Microsoft JhengHei",sans-serif}
+header{position:sticky;top:0;z-index:20;background:#101115ee;backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:8px 16px}
+h1{font-size:16px;margin:0 12px 0 0;display:inline-block;color:var(--gold)}
+.tools{display:inline-flex;flex-wrap:wrap;gap:6px;align-items:center;vertical-align:middle}
+.sw{width:30px;height:30px;border-radius:50%;border:2px solid #0000;cursor:pointer;position:relative}
+.sw.on{border-color:#fff;box-shadow:0 0 0 2px #000}
+.tool{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer}
+.tool.on{border-color:var(--gold);color:var(--gold)}
+.idx{margin-top:6px;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13px}
+.idx a{color:var(--text);text-decoration:none;white-space:nowrap}
+.idx a:hover{color:var(--gold)}
+.idx .cnt{color:var(--dim);font-size:12px}
+main{padding:0 16px 120px}
+section.map{scroll-margin-top:110px}
+section.map>h2{font-size:18px;margin:28px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line);color:var(--gold)}
+.card{display:flex;flex-wrap:wrap;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;margin:10px 0}
+.card.saved{border-color:#5a7a4a}.card.submitted{border-color:var(--gold)}
+.stage{position:relative;flex:1 1 560px;max-width:900px;line-height:0;touch-action:none;user-select:none}
+.stage img{width:100%;display:block;border-radius:4px}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+.side{flex:1 1 280px;min-width:260px;display:flex;flex-direction:column;gap:8px}
+.ttl{font-weight:bold}.ttl small{color:var(--dim);font-weight:normal}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+select,textarea{background:#14151a;color:var(--text);border:1px solid var(--line);border-radius:4px;font:inherit}
+textarea{width:100%;min-height:44px;resize:vertical;padding:4px 6px}
+.cl{display:flex;gap:6px;align-items:flex-start}
+.cl .dot{width:16px;height:16px;border-radius:50%;flex:none;margin-top:6px}
+.st{color:var(--dim);font-size:12px}
+.btn{background:#2b2e36;color:var(--text);border:1px solid var(--line);border-radius:5px;padding:4px 12px;cursor:pointer}
+.btn.save{border-color:#5a7a4a}.btn.sub{border-color:var(--gold);color:var(--gold)}
+.hint{color:var(--dim);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>背景動畫註記</h1>
+  <span class="tools" id="tools"></span>
+  <span class="tools">
+    <label class="hint">筆刷 <input type="range" id="size" min="4" max="160" value="40"></label>
+    <span class="hint" id="sizeV">40</span>
+  </span>
+  <div class="idx" id="idx"></div>
+</header>
+<main id="main"></main>
+<script>
+const COLORS=[['red','紅','#ff3b3b'],['orange','橙','#ff9a1f'],['yellow','黃','#ffe233'],['green','綠','#3ddc5a'],
+              ['cyan','青','#2fe0e0'],['blue','藍','#3b6bff'],['purple','紫','#b04bff'],['pink','粉','#ff5fc8']];
+const ALPHA=0.45;
+let tool='red', size=40;
+const toolsEl=document.getElementById('tools');
+for(const [k,zh,hex] of COLORS){const b=document.createElement('span');b.className='sw';b.style.background=hex;b.title=zh;b.dataset.k=k;toolsEl.appendChild(b)}
+const er=document.createElement('button');er.className='tool';er.textContent='橡皮擦';er.dataset.k='erase';toolsEl.appendChild(er);
+function setTool(k){tool=k;toolsEl.querySelectorAll('[data-k]').forEach(e=>e.classList.toggle('on',e.dataset.k===k))}
+toolsEl.onclick=e=>{const k=e.target.dataset.k;if(k)setTool(k)};setTool('red');
+const sz=document.getElementById('size');sz.oninput=()=>{size=+sz.value;document.getElementById('sizeV').textContent=size};
+const rgbOf=k=>COLORS.find(c=>c[0]===k)[2];
+
+let DONE={};
+(async()=>{
+  const nodes=await (await fetch('nodes.json')).json();
+  DONE=await (await fetch('api/done')).json();
+  const maps=[];const byMap={};
+  for(const n of nodes){if(!byMap[n.map]){byMap[n.map]=[];maps.push(n)}byMap[n.map].push(n)}
+  const idx=document.getElementById('idx'),main=document.getElementById('main');
+  for(const m of maps){
+    const list=byMap[m.map];
+    const a=document.createElement('a');a.href='#m_'+m.map;a.innerHTML=`${m.mapName} <span class="cnt" id="cnt_${m.map}"></span>`;idx.appendChild(a);
+    const sec=document.createElement('section');sec.className='map';sec.id='m_'+m.map;
+    sec.innerHTML=`<h2>${m.mapName}　<small style="color:var(--dim);font-size:13px">${m.map}・${list.length} 格</small></h2>`;
+    main.appendChild(sec);
+    for(const n of list) sec.appendChild(makeCard(n));
+    updCount(m.map);
+  }
+})();
+function updCount(map){
+  const cards=[...document.querySelectorAll(`.card[data-map="${map}"]`)];
+  const s=cards.filter(c=>c.classList.contains('submitted')).length;
+  const el=document.getElementById('cnt_'+map);if(el)el.textContent=`${s}/${cards.length}`;
+}
+
+const io=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){io.unobserve(e.target);e.target._init()}},{rootMargin:'600px'});
+
+function makeCard(n){
+  const card=document.createElement('div');card.className='card';card.dataset.map=n.map;
+  const bandOpts=n.files.map(([b,f],i)=>`<option value="${i}">${b}</option>`).join('');
+  card.innerHTML=`<div class="stage"><img loading="lazy" alt=""><canvas></canvas></div>
+   <div class="side">
+     <div class="ttl">${n.name} <small>${n.map}/${n.id}</small></div>
+     <div class="row"><span class="hint">時段</span><select class="band">${bandOpts}</select><span class="st"></span></div>
+     <div class="legend"></div>
+     <div class="hint">整體備註</div><textarea class="general" placeholder="（選填）整張圖的節奏、風向、要特別注意的地方"></textarea>
+     <div class="row"><button class="btn undo">復原</button><button class="btn clear">全部清除</button>
+       <button class="btn save">存檔</button><button class="btn sub">提交</button></div>
+   </div>`;
+  const img=card.querySelector('img'),cv=card.querySelector('canvas'),ctx=cv.getContext('2d');
+  const bandSel=card.querySelector('.band'),st=card.querySelector('.st'),legend=card.querySelector('.legend'),gen=card.querySelector('.general');
+  let layers={},texts={},undo=[],W=0,H=0,ready=false,curBand=0;
+  const key=()=>`${n.map}__${n.id}__${n.files[curBand][0]}`;
+  function mark(){const d=DONE[key()];card.classList.toggle('saved',!!d);card.classList.toggle('submitted',!!(d&&d.submitted));
+    st.textContent=d?(d.submitted?'已提交':'已存檔'):'';updCount(n.map)}
+  function layer(k){if(!layers[k]){const c=document.createElement('canvas');c.width=W;c.height=H;layers[k]={c,x:c.getContext('2d'),has:false}}return layers[k]}
+  function redraw(){ctx.clearRect(0,0,W,H);ctx.globalAlpha=ALPHA;for(const k in layers)if(layers[k].has)ctx.drawImage(layers[k].c,0,0);ctx.globalAlpha=1}
+  function hasPaint(L){const t=document.createElement('canvas');t.width=96;t.height=64;const tx=t.getContext('2d');tx.drawImage(L.c,0,0,96,64);
+    const d=tx.getImageData(0,0,96,64).data;for(let i=3;i<d.length;i+=4)if(d[i]>8)return true;return false}
+  function renderLegend(){
+    const used=COLORS.filter(([k])=>layers[k]&&layers[k].has);
+    legend.innerHTML=used.length?'':'<div class="hint">用上方的顏色在圖上塗出「會動的那一塊」，每塗一種顏色這裡就會多一格讓你寫它怎麼動。</div>';
+    for(const [k,zh,hex] of used){const w=document.createElement('div');w.className='cl';
+      w.innerHTML=`<span class="dot" style="background:${hex}"></span><textarea placeholder="${zh}色這一塊怎麼動？"></textarea>`;
+      const ta=w.querySelector('textarea');ta.value=texts[k]||'';ta.oninput=()=>texts[k]=ta.value;legend.appendChild(w)}
+  }
+  async function loadBand(i){
+    curBand=i;ready=false;layers={};texts={};undo=[];gen.value='';
+    img.src='bg/'+n.files[i][1];
+    await img.decode().catch(()=>{});
+    W=img.naturalWidth;H=img.naturalHeight;cv.width=W;cv.height=H;
+    try{const r=DONE[key()]?await fetch(`notes/${key()}/notes.json`):null;if(r&&r.ok){const j=await r.json();gen.value=j.general||'';
+      for(const c of j.colors){texts[c.name]=c.text||'';const m=new Image();m.src=`notes/${key()}/${c.mask}?t=${Date.now()}`;await m.decode();
+        const L=layer(c.name);L.x.drawImage(m,0,0,W,H);const id=L.x.getImageData(0,0,W,H),d=id.data,[r_,g_,b_]=hexRgb(rgbOf(c.name));
+        for(let p=0;p<d.length;p+=4){const a=d[p];d[p]=r_;d[p+1]=g_;d[p+2]=b_;d[p+3]=a}L.x.putImageData(id,0,0);L.has=true}}}catch(e){}
+    redraw();renderLegend();mark();ready=true;
+  }
+  card._init=()=>loadBand(0);
+  bandSel.onchange=()=>loadBand(+bandSel.value);
+  // 畫
+  let drawing=false,last=null,touched=null;
+  const pos=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height,W/r.width]};
+  function stroke(a,b,scale){
+    const targets=tool==='erase'?Object.values(layers):[layer(tool)];
+    for(const L of targets){const x=L.x;x.globalCompositeOperation=tool==='erase'?'destination-out':'source-over';
+      x.strokeStyle=x.fillStyle=tool==='erase'?'#000':rgbOf(tool);x.lineWidth=size*scale;x.lineCap=x.lineJoin='round';
+      x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b[0],b[1]);x.stroke();if(tool!=='erase')L.has=true}
+  }
+  cv.addEventListener('pointerdown',e=>{if(!ready)return;cv.setPointerCapture(e.pointerId);drawing=true;
+    const ks=tool==='erase'?Object.keys(layers):[tool];layer(ks[0]||'red');
+    undo.push(ks.filter(k=>layers[k]).map(k=>[k,layers[k].x.getImageData(0,0,W,H),layers[k].has]));if(undo.length>15)undo.shift();
+    const p=pos(e);last=p;stroke(p,p,p[2]);redraw()});
+  cv.addEventListener('pointermove',e=>{if(!drawing)return;const p=pos(e);stroke(last,p,p[2]);last=p;redraw()});
+  const end=()=>{if(!drawing)return;drawing=false;for(const k in layers)layers[k].has=hasPaint(layers[k]);redraw();renderLegend()};
+  cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+  card.querySelector('.undo').onclick=()=>{const s=undo.pop();if(!s)return;for(const [k,d,h] of s){layer(k).x.putImageData(d,0,0);layers[k].has=h}
+    for(const k in layers)layers[k].has=hasPaint(layers[k]);redraw();renderLegend()};
+  card.querySelector('.clear').onclick=()=>{if(!confirm('清除這一張的所有塗色？'))return;layers={};texts={};redraw();renderLegend()};
+  async function save(submitted){
+    const colors=[];
+    for(const [k] of COLORS){const L=layers[k];if(!L||!L.has)continue;
+      const m=document.createElement('canvas');m.width=W;m.height=H;const mx=m.getContext('2d');
+      const t=document.createElement('canvas');t.width=W;t.height=H;const tx=t.getContext('2d');
+      tx.drawImage(L.c,0,0);tx.globalCompositeOperation='source-in';tx.fillStyle='#fff';tx.fillRect(0,0,W,H);
+      mx.fillStyle='#000';mx.fillRect(0,0,W,H);mx.drawImage(t,0,0);
+      colors.push({name:k,rgb:rgbOf(k),text:texts[k]||'',mask:m.toDataURL('image/png')})}
+    if(submitted&&colors.some(c=>!c.text.trim())&&!confirm('有顏色還沒寫怎麼動，照樣提交？'))return;
+    st.textContent='存檔中…';
+    const r=await fetch('api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:key(),map:n.map,mapName:n.mapName,
+      node:n.id,name:n.name,band:n.files[curBand][0],file:n.files[curBand][1],general:gen.value,submitted,time:new Date().toISOString(),colors})});
+    const j=await r.json();if(j.ok){DONE[key()]={n:j.n,submitted};mark()}else st.textContent='存檔失敗：'+j.err;
+  }
+  card.querySelector('.save').onclick=()=>save(false);
+  card.querySelector('.sub').onclick=()=>save(true);
+  io.observe(card);
+  return card;
+}
+function hexRgb(h){return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]}
+</script>
+</body>
+</html>

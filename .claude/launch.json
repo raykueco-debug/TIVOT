@@ -54,6 +54,15 @@
         "8132"
       ],
       "port": 8132
+    },
+    {
+      "name": "bg-annotate",
+      "runtimeExecutable": "py",
+      "runtimeArgs": [
+        "C:/Users/Ray Ku/Desktop/ComfyUI-master/tivot_wan/bg_layer/annotate_server.py",
+        "8133"
+      ],
+      "port": 8133
     }
   ]
 }
