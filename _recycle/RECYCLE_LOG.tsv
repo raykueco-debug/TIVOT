@@ -1316,3 +1316,7 @@ when	from	to	reason
 20261109-164825	AUTO_CUT_LOG.md	_recycle/AUTO_CUT_LOG.md	11-09 動畫副理同步：ComfyUI-master/tivot_wan/AUTO_CUT_LOG.md（4070 舊版）由 tools/anim 版取代
 20261109-164826	player.html	_recycle/player.html	11-09 動畫副理同步：ComfyUI-master/tivot_wan/out/player.html（10-27 版）由 tools/anim/player.html 取代
 20261109-193459	resources/enemy/anim/man_skypirate_6_atk_v2/pirate_1	_recycle/resources/enemy/anim/man_skypirate_6_atk_v2/pirate_1	Ray 11-09：sp6_pirate_1 攻擊剔除
+20261109-194140	resources/enemy/man_skypirate_7_layers/pirate_3.webp	_recycle/resources/enemy/man_skypirate_7_layers/pirate_3.webp	Ray 11-09：7-3 拿掉魚叉、3-1 拿掉刺刀，分層換 GPT 重製版
+20261109-194140	resources/enemy/man_skypirate_3_layers/pirate_1.webp	_recycle/resources/enemy/man_skypirate_3_layers/pirate_1.webp	Ray 11-09：7-3 拿掉魚叉、3-1 拿掉刺刀，分層換 GPT 重製版
+20261109-194157	resources/enemy/man_skypirate_3.webp	_recycle/resources/enemy/man_skypirate_3.webp	分層換了，合成圖重組
+20261109-194157	resources/enemy/man_skypirate_7.webp	_recycle/resources/enemy/man_skypirate_7.webp	分層換了，合成圖重組
