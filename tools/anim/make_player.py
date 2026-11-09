@@ -87,7 +87,8 @@ CI_ROOTS = ('_gameci/', 'gameres/ci/', 'gameanim/', 'ci/', 'ci5s/', 'br/', 'vace
 BG_ROOTS = ('bg/', 'bg_test/', 'bg_sample/', 'gameres/background/')
 def cat_of(it):
     d, n = it['dir'], it['name'].lower()
-    if d.startswith('pirate_atk_v6/') or n.endswith('_l17_cut'): return '空賊A'   # 11-09 Ray：空賊攻擊獨立一頁
+    if d.startswith('pirate_atk_v6/'): return '空賊待剪'   # 11-09 Ray：17 格原片自己剪
+    if n.endswith('_l17_cut'): return '空賊A'   # 11-09 Ray：空賊攻擊獨立一頁
     if d.startswith(BG_ROOTS): return '背景'
     if it['group'] == '交件・插畫': return '插畫'
     if d.startswith(ENEMY_ROOTS) or 'enemy/' in d or re.match(r'^(man|mon)_', n) or ('fight_' in d and 'hit' in d): return '敵'

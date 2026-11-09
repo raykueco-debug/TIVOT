@@ -57,7 +57,7 @@ function list(){const q=$('q').value.trim().toLowerCase(),L=$('list');L.innerHTM
   c.onclick=()=>{open(k);location.hash=a.dir};L.appendChild(c)})}
 $('q').oninput=list;
 let CAT='全部';try{CAT=localStorage.getItem('tivot_player_cat')||'全部'}catch(e){}
-(function(){const C=$('cats');['全部','新作','空賊A','背景','敵','CI','插畫','其他'].forEach(c=>{const b=document.createElement('button');const n=c==='全部'?ANIMS.length:c==='新作'?ANIMS.filter(a=>a.new).length:ANIMS.filter(a=>(a.cat||'其他')===c).length;b.textContent=c+'（'+n+'）';b.dataset.c=c;if(c===CAT)b.classList.add('on');
+(function(){const C=$('cats');['全部','新作','空賊待剪','空賊A','背景','敵','CI','插畫','其他'].forEach(c=>{const b=document.createElement('button');const n=c==='全部'?ANIMS.length:c==='新作'?ANIMS.filter(a=>a.new).length:ANIMS.filter(a=>(a.cat||'其他')===c).length;b.textContent=c+'（'+n+'）';b.dataset.c=c;if(c===CAT)b.classList.add('on');
  b.onclick=()=>{CAT=c;try{localStorage.setItem('tivot_player_cat',c)}catch(e){}C.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.c===c));list()};C.appendChild(b)})})();
 function open(k){stop();A=ANIMS[k];if(A.fps){const sel=$('base');const v=String(Math.round(A.fps));if(![...sel.options].some(o=>o.value===v)){const o=document.createElement('option');o.textContent=v;sel.appendChild(o)}sel.value=v}load();i=first();build();show();document.querySelectorAll('.c.cur').forEach(x=>x.classList.remove('cur'));const cc=$('c'+k);if(cc){cc.classList.add('cur');cc.scrollIntoView({block:'nearest'})}try{localStorage.setItem('tivot_player_last',A.dir)}catch(e){}}
 function kept(){return A.frames.map((_,k)=>k).filter(k=>!off.has(k))}
