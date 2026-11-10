@@ -81,10 +81,10 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | entry 峽谷入口 | `anim/canyon/canyon_entry_day_aba_v1.mp4` | 48 | `canyon_entry_day_sky.webp` |
 | corridor 風蝕迴廊 | `anim/canyon/canyon_corridor_day_aba_v1.mp4` | 52 | `canyon_corridor_day_sky.webp` |
 | bones 白骨之地 | `anim/canyon/canyon_bones_day_aba_v1.mp4` | 55 | `canyon_bones_day_sky.webp` |
-| bridge 斷橋 | `anim/canyon/canyon_bridge_day_aba_v1.mp4` | 67 | `canyon_bridge_day_sky.webp` |
+| bridge 斷橋 | **✔ Ray 11-10 可交**：`anim/canyon/canyon_bridge_day_abcd_v1.mp4`（純 Wan 整張、ABCD 真循環） | 191 | **不用**（雲海就在影片裡，不疊雲層） |
 | altar 谷底祭場 | **✔ Ray 11-10 可交**：`anim/canyon/canyon_altar_day_pure_v1.mp4`（純 Wan 整張，見下） | 61 | **不用**（天空就是原圖，不疊雲層） |
 
-**純 Wan 整張（第四種接法，11-10）**：整張畫面就是那支影片（天空保持原圖、不疊雲層、不挖空），直接 `<video muted playsinline loop autoplay>` 蓋在靜態背景上即可。目前只有谷底祭場。
+**純 Wan 整張（第四種接法，11-10）**：整張畫面就是那支影片（天空保持原圖、不疊雲層、不挖空），直接 `<video muted playsinline loop autoplay>` 蓋在靜態背景上即可。目前有谷底祭場、斷橋。
 
 雲：`_sky_layers/canyon_day_l0_far.webp`／`canyon_day_l1_mid.webp`／`canyon_day_l2_near.webp`。
 ⚠ ABA 兩個接點還比一般兩格大（約 1.5～2.5 倍），等 Ray 看過決定要不要再修。
