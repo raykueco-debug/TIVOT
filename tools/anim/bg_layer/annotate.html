@@ -81,9 +81,18 @@ const cloudModeOf=n=>{try{const v=localStorage.getItem('cloud_'+n.map+'_'+n.id);
   const nodes=await (await fetch('nodes.json')).json();
   DONE=await (await fetch('api/done')).json();
   LOOPS=await (await fetch('api/loops')).json();
+  const idx=document.getElementById('idx'),main=document.getElementById('main');
+  const SET=new URLSearchParams(location.search).get('set');
+  if(SET){ // 檢查頁：只列這一批改過的格子（bgchk?set=…）
+    const st=await (await fetch(`set_${SET}.json?t=${Date.now()}`)).json();document.title=st.title;document.querySelector('h1').textContent=st.title;
+    const byId={};for(const n of nodes)byId[n.map+'/'+n.id]=n;
+    st.sets.forEach((g,gi)=>{const a=document.createElement('a');a.href='#g'+gi;a.textContent=g.title.replace(/（.*/,'');idx.appendChild(a);
+      const sec=document.createElement('section');sec.className='map';sec.id='g'+gi;
+      sec.innerHTML=`<h2>${g.title}</h2><div class="hint" style="font-size:13px">${g.note}</div>`;main.appendChild(sec);
+      for(const id of g.nodes)if(byId[id]){const c=makeCard(byId[id]);const t=c.querySelector('.ttl');t.insertAdjacentHTML('afterbegin',`<span style="color:var(--gold)">${byId[id].mapName}　</span>`);sec.appendChild(c)}});
+    return}
   const maps=[];const byMap={};
   for(const n of nodes){if(!byMap[n.map]){byMap[n.map]=[];maps.push(n)}byMap[n.map].push(n)}
-  const idx=document.getElementById('idx'),main=document.getElementById('main');
   for(const m of maps){
     const list=byMap[m.map];
     const a=document.createElement('a');a.href='#m_'+m.map;a.innerHTML=`${m.mapName} <span class="cnt" id="cnt_${m.map}"></span>`;idx.appendChild(a);
@@ -167,6 +176,7 @@ function makeCard(n){
       const lab=()=>b.textContent='雲：'+(cloudModeOf(n)==='near'?'迎面飄來':'橫移');lab();
       b.onclick=()=>{try{localStorage.setItem('cloud_'+n.map+'_'+n.id,cloudModeOf(n)==='near'?'side':'near')}catch(e){}lab()};play.appendChild(b)}
     play.querySelector('.pbtn').classList.add('on');
+    if(new URLSearchParams(location.search).get('set')&&vs.length){card._auto=vs[0];if(card._vis)setTimeout(()=>showMode(vs[0]),50)}
   }
   const bandSel=card.querySelector('.band'),st=card.querySelector('.st'),legend=card.querySelector('.legend'),gen=card.querySelector('.general');
   let layers={},texts={},undo=[],W=0,H=0,ready=false,curBand=0;
@@ -196,6 +206,9 @@ function makeCard(n){
     redraw();renderLegend();mark();renderPlay();showMode(null);ready=true;
   }
   card._init=()=>loadBand(0);
+  // 檢查頁會自動播：離開畫面就停、回來再播（幾十格一起跑 canvas 會把頁面拖死）
+  new IntersectionObserver(es=>{for(const e of es){card._vis=e.isIntersecting;if(!card._auto)continue;
+    if(e.isIntersecting)showMode(card._auto);else showMode(null)}}).observe(card);
   bandSel.onchange=()=>loadBand(+bandSel.value);
   // 畫
   let drawing=false,last=null,touched=null;
