@@ -78,7 +78,9 @@ const NEAR_PERIOD=36, NEAR_COPIES=4, NEAR_S0=0.35, NEAR_S1=3.2;
 const hash=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))|0;return Math.abs(h)};
 const cloudModeOf=n=>{try{const v=localStorage.getItem('cloud_'+n.map+'_'+n.id);if(v)return v}catch(e){}return hash(n.id)%2?'near':'side'};
 (async()=>{
-  const nodes=await (await fetch('nodes.json')).json();
+  // 已交件的格子不再列出（Ray 11-10：「交件的就撤掉」）
+  const DELIV=await (await fetch('delivered.json?t='+Date.now())).json().catch(()=>({}));
+  const nodes=(await (await fetch('nodes.json')).json()).map(n=>({...n,files:n.files.filter(f=>!DELIV[n.map+'__'+n.id+'__'+f[0]])})).filter(n=>n.files.length);
   DONE=await (await fetch('api/done')).json();
   LOOPS=await (await fetch('api/loops')).json();
   const idx=document.getElementById('idx'),main=document.getElementById('main');
