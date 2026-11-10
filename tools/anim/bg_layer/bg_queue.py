@@ -136,6 +136,7 @@ def _do_one(key, _retry=True):
         # 舊版看到「自然光影／門扇」就整張交出去、範圍外再長 80px，結果固定燈與門全在亂動。
         if gen and not move: o['full'] = True
         elif move: o.setdefault('reach', 0)
+    o['full'] = True; o.pop('reach', None)   # Ray 11-10：「都用全圖跑 ABCD」—— 每一格整張交給 Wan（保護區 protect 照舊）
     if not move and not o.get('full'):
         log('跳過（只有雲，交給程式）', key); return True
     desc = '；'.join([c['text'] for c in move] + ([gen] if gen else [])) + (('，' + o['extra']) if o.get('extra') else '')
