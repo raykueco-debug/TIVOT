@@ -107,6 +107,16 @@ ANTI_DRIFT = '雲與霧只在原地緩緩翻湧起伏，整片不往左右任何
 
 
 def do_one(key, _retry=True):
+    # 同一格只准一支在做（插隊的單跑與排程可能同時碰到同一格）：鎖 2 小時
+    lk = os.path.join(HERE, 'notes', key, '.lock')
+    if _retry and os.path.exists(lk) and time.time() - os.path.getmtime(lk) < 7200: return True
+    if _retry: open(lk, 'w').write(str(os.getpid()))
+    try: return _do_one(key, _retry)
+    finally:
+        if _retry and os.path.exists(lk): os.remove(lk)
+
+
+def _do_one(key, _retry=True):
     """ABCD 真循環（Ray 11-10 定為標準作業）：A→B、B→C、C→D 三段 I2V 往前生（每段 16+1 格，從上一段最後一格接），
     D→A 用 FLF 收回原圖。只換註記範圍（＋布掃過的範圍），保護區一律原圖。
     逐格選項寫在 notes.json 的 opts：full（純 Wan 整張）／protect（遮罩檔名）／reach（布可飄出範圍幾像素）／extra（提示詞補充）。"""
@@ -189,7 +199,7 @@ def do_one(key, _retry=True):
                     p = os.path.join(HERE, 'notes', key, 'notes.json'); jj = json.load(open(p, encoding='utf8'))
                     jj.setdefault('opts', {})['extra'] = ((o.get('extra') + '，') if o.get('extra') else '') + ANTI_DRIFT
                     json.dump(jj, open(p, 'w', encoding='utf8'), ensure_ascii=False, indent=1)
-                    return do_one(key, False)
+                    return _do_one(key, False)
         except Exception as e: log('倒車檢查失敗', key, repr(e)[:120])
     return ok
 
