@@ -122,11 +122,16 @@ def do_one(key, _retry=True):
     if o.get('full'): tail = '地面、岩石、建築都不動，鏡頭完全固定不動。動漫風格，賽璐珞上色。'
     # Ray 11-10：「多塞 prompt 進去讓他沒空自作主張，好比風、葉、自然光影變化」—— 每一句都是畫面裡本來就有的東西在動，
     # 模型的「動態預算」花在這些上面，就比較不會自己長出走路的人。室外（有天空或樹葉）與室內（只有火）各一組。
+    # ⚠ Ray 11-10：「火燄搖只限有燈、燭、火這一類的場景」—— 火的句子只給「註記裡真的有火」的格（橙色＝火，判過焰心＋肉眼複核）
     names = {c['name'] for c in j['colors']}
-    if names & {'green', 'cyan'} or o.get('full'):
-        busy = '微風持續吹拂，枝葉與草叢沙沙晃動，幾片落葉被風捲起，雲影與樹影在地面上緩緩移動，陽光斑點隨枝葉輕輕閃動'
-    else:
-        busy = '火光與燭焰微微跳動，牆上的光影跟著輕輕晃動，空氣中細小的塵埃緩緩飄浮'
+    texts = ''.join(c.get('text') or '' for c in j['colors'])
+    parts = []
+    if names & {'green', 'cyan'} or o.get('full') or any(w in texts for w in ('葉', '草', '布', '旗', '風')):
+        parts.append('微風持續吹拂，枝葉與草叢沙沙晃動，幾片落葉被風捲起，雲影與樹影在地面上緩緩移動，陽光斑點隨枝葉輕輕閃動')
+    if 'orange' in names or any(w in texts for w in ('火', '燭', '燈')):
+        parts.append('燈火與燭焰微微跳動，附近牆上的光影跟著輕輕晃動')
+    if not parts: parts.append('空氣中細小的塵埃緩緩飄浮，光影非常輕微地變化')
+    busy = '；'.join(parts)
     fwd = f'動漫風格的背景。{busy}；{desc}。整個畫面持續自然地往前變化，不要倒退回放。{tail}'
     tag = __import__('hashlib').md5((fwd + str(o.get('full'))).encode('utf8')).hexdigest()[:6]
     pre = {s: f'bgl/{base}_q{tag}_{s}' for s in ('ab', 'bc', 'cd', 'da')}
