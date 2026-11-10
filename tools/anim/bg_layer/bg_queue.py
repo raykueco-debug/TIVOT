@@ -128,6 +128,8 @@ def _do_one(key, _retry=True):
     gen = (j.get('general') or '').strip()
     if gen.startswith('（'): gen = ''   # 我自動寫的那句備註不算
     o = dict(o)
+    # 備註寫「（自動判斷…）」的範圍是我自動畫的，不是 Ray 的（Ray 11-10：「我沒畫大廳，那是你畫的」）
+    if (j.get('general') or '').startswith('（自動'): j['auto'] = True
     if not j.get('auto'):
         # Ray 自己存的：只有整體備註、沒畫任何範圍 ⇒ 整張交給 Wan。
         # 有畫範圍就只動他畫的那幾塊，而且不往外長（reach 0）—— Ray 11-10：「inpaint 一概我來出」；
