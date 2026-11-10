@@ -91,7 +91,22 @@ DELIVERED = {'canyon__bridge__day', 'canyon__altar__day'}   # Ray 已說可交�
 SEG = 17   # Ray 11-10：「每一次用 16+1，這樣出人的機會就小」
 
 
-def do_one(key):
+def drift(pres):
+    # 每段的整體水平漂移（光流，動得明顯的像素平均 dx）。往前三段一個方向、D→A 反過來 ⇒ 看起來就是倒車
+    import cv2
+    g = lambda p: cv2.cvtColor(np.array(Image.open(p).convert('RGB')), cv2.COLOR_RGB2GRAY)
+    r = []
+    for p in pres:
+        fs = wan_out(p); f = cv2.calcOpticalFlowFarneback(g(fs[2]), g(fs[-3]), None, 0.5, 3, 25, 3, 5, 1.2, 0)
+        k = np.linalg.norm(f, axis=2) > 1
+        r.append(float(f[..., 0][k].mean()) if k.mean() > 0.02 else 0.0)
+    return r
+
+
+ANTI_DRIFT = '雲與霧只在原地緩緩翻湧起伏，整片不往左右任何方向漂移'
+
+
+def do_one(key, _retry=True):
     """ABCD 真循環（Ray 11-10 定為標準作業）：A→B、B→C、C→D 三段 I2V 往前生（每段 16+1 格，從上一段最後一格接），
     D→A 用 FLF 收回原圖。只換註記範圍（＋布掃過的範圍），保護區一律原圖。
     逐格選項寫在 notes.json 的 opts：full（純 Wan 整張）／protect（遮罩檔名）／reach（布可飄出範圍幾像素）／extra（提示詞補充）。"""
@@ -144,6 +159,17 @@ def do_one(key):
     if ok:
         log('✔', key, outp.strip()[-200:])
         subprocess.run([PY, 'make_sky_alpha.py'], cwd=HERE, env=ENV, capture_output=True)
+        # 倒車檢查（Ray 11-10：斷崖邊 ABCD「還是往回跑」）：往前段平均往一邊漂、D→A 往另一邊漂得更多 ⇒ 加「原地翻湧」重跑一次
+        try:
+            d = drift([pre[s] for s in ('ab', 'bc', 'cd', 'da')]); fw = sum(d[:3]) / 3
+            if abs(fw) > 0.8 and d[3] * fw < 0 and abs(d[3]) > 1.5:
+                log('⚠ 倒車', key, [round(x, 2) for x in d])
+                if _retry and ANTI_DRIFT not in (o.get('extra') or ''):
+                    p = os.path.join(HERE, 'notes', key, 'notes.json'); jj = json.load(open(p, encoding='utf8'))
+                    jj.setdefault('opts', {})['extra'] = ((o.get('extra') + '，') if o.get('extra') else '') + ANTI_DRIFT
+                    json.dump(jj, open(p, 'w', encoding='utf8'), ensure_ascii=False, indent=1)
+                    return do_one(key, False)
+        except Exception as e: log('倒車檢查失敗', key, repr(e)[:120])
     return ok
 
 
