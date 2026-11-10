@@ -115,9 +115,16 @@ def do_one(key, _retry=True):
     if o.get('skip'): return True   # Ray 說先跳過的格（opts.skip）
     base = key.replace('__', '_'); still = os.path.join(BG, j['file'])
     done = os.path.join(HERE, 'out', base + '_abcd', 'meta.json')
+    gen = (j.get('general') or '').strip()
+    if gen.startswith('（'): gen = ''   # 我自動寫的那句備註不算
+    o = dict(o)
+    if not j.get('auto'):
+        # Ray 自己存的：整體備註、或說明裡寫到整個畫面的東西（自然光影、植物、水、門…）⇒ 整張交給 Wan（他的筆刷只圈了燈）
+        texts = ''.join(c.get('text') or '' for c in move) + gen
+        if (gen and not move) or any(w in texts for w in ('自然光影', '植物', '水', '門扇', '整張', '整個畫面')): o['full'] = True
     if not move and not o.get('full'):
         log('跳過（只有雲，交給程式）', key); return True
-    desc = '；'.join(c['text'] for c in move) + (('，' + o['extra']) if o.get('extra') else '')
+    desc = '；'.join([c['text'] for c in move] + ([gen] if gen else [])) + (('，' + o['extra']) if o.get('extra') else '')
     tail = '鏡頭完全固定不動，除此之外的景物（地面、岩石、建築、樹幹）都完全不動。動漫風格，賽璐珞上色。'
     if o.get('full'): tail = '地面、岩石、建築都不動，鏡頭完全固定不動。動漫風格，賽璐珞上色。'
     # Ray 11-10：「多塞 prompt 進去讓他沒空自作主張，好比風、葉、自然光影變化」—— 每一句都是畫面裡本來就有的東西在動，
@@ -191,7 +198,9 @@ def main():
     log('排程開始（喊停：放 STOP 檔）')
     while not stopped():
         keys = sorted((os.path.basename(os.path.dirname(p)) for p in glob.glob(os.path.join(HERE, 'notes', '*', 'notes.json'))),
-                      key=lambda k: (0 if (json.load(open(os.path.join(HERE, 'notes', k, 'notes.json'), encoding='utf8')).get('opts') or {}).get('skip') is None and json.load(open(os.path.join(HERE, 'notes', k, 'notes.json'), encoding='utf8')).get('opts') else 1,   # Ray 點名修的先
+                      key=lambda k: (0 if (not json.load(open(os.path.join(HERE, 'notes', k, 'notes.json'), encoding='utf8')).get('auto')
+                                           and time.time() - os.path.getmtime(os.path.join(HERE, 'notes', k, 'notes.json')) < 6 * 3600) else 1,   # Ray 剛存的最先
+                                     0 if (json.load(open(os.path.join(HERE, 'notes', k, 'notes.json'), encoding='utf8')).get('opts') or {}).get('skip') is None and json.load(open(os.path.join(HERE, 'notes', k, 'notes.json'), encoding='utf8')).get('opts') else 1,   # Ray 點名修的先
                                      0 if not json.load(open(os.path.join(HERE, 'notes', k, 'notes.json'), encoding='utf8')).get('auto') else 1,   # Ray 自己塗的先
                                      ORDER.index(k.split('__')[0]) if k.split('__')[0] in ORDER else 99, k))
         for key in keys:
