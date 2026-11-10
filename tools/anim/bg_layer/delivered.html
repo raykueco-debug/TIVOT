@@ -1,0 +1,33 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>已交件</title>
+<style>
+:root{--bg:#18181b;--fg:#e8e6e3;--dim:#9a968f;--gold:#e0b45a;--card:#222226}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,"Noto Sans TC",sans-serif}
+header{position:sticky;top:0;background:#111114;padding:10px 16px;border-bottom:1px solid #333;display:flex;gap:16px;align-items:baseline;z-index:2}
+h1{margin:0;font-size:18px;color:var(--gold)} header a{color:var(--dim)}
+h2{margin:24px 16px 8px;font-size:16px;color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:12px;padding:0 16px}
+.c{background:var(--card);border-radius:8px;overflow:hidden}
+.c video{width:100%;display:block;aspect-ratio:3/2;background:#000}
+.c div{padding:6px 10px} .c small{color:var(--dim);display:block}
+</style></head><body>
+<header><h1>已交件</h1><span id="n" style="color:var(--dim)"></span><a href="annotate.html">← 回註記頁</a></header>
+<main id="m"></main>
+<script>
+(async()=>{
+  const D=await (await fetch('delivered.json?t='+Date.now())).json();
+  const nodes=await (await fetch('nodes.json')).json();
+  const by={};for(const n of nodes)by[n.map+'__'+n.id]=n;
+  const groups={};
+  for(const [k,f] of Object.entries(D)){const [map,id,band]=k.split('__');const n=by[map+'__'+id]||{mapName:map,name:id};(groups[n.mapName]??=[]).push({n,band,f,k});}
+  document.getElementById('n').textContent=Object.keys(D).length+' 格';
+  const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting?e.target.play().catch(()=>{}):e.target.pause()),{threshold:.2});
+  for(const [g,list] of Object.entries(groups)){
+    const h=document.createElement('h2');h.textContent=g;m.appendChild(h);
+    const grid=document.createElement('div');grid.className='grid';m.appendChild(grid);
+    for(const x of list){const c=document.createElement('div');c.className='c';
+      c.innerHTML=`<video muted loop playsinline preload="metadata" src="bg/anim/${x.f}"></video><div>${x.n.name}${x.band!=='base'?'　'+x.band:''}<small>${x.f}</small></div>`;
+      grid.appendChild(c);io.observe(c.querySelector('video'));}
+  }
+})();
+</script></body></html>

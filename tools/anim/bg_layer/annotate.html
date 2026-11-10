@@ -83,7 +83,7 @@ const cloudModeOf=n=>{try{const v=localStorage.getItem('cloud_'+n.map+'_'+n.id);
   const nodes=(await (await fetch('nodes.json')).json()).map(n=>({...n,files:n.files.filter(f=>!DELIV[n.map+'__'+n.id+'__'+f[0]])})).filter(n=>n.files.length);
   DONE=await (await fetch('api/done')).json();
   LOOPS=await (await fetch('api/loops')).json();
-  const idx=document.getElementById('idx'),main=document.getElementById('main');
+  const idx=document.getElementById('idx'),main=document.getElementById('main');{const a=document.createElement('a');a.href='delivered.html';a.textContent='▶ 已交件';a.style.color='var(--gold)';idx.appendChild(a)}
   const SET=new URLSearchParams(location.search).get('set');
   if(SET){ // 檢查頁：只列這一批改過的格子（bgchk?set=…）
     const st=await (await fetch(`set_${SET}.json?t=${Date.now()}`)).json();document.title=st.title;document.querySelector('h1').textContent=st.title;
