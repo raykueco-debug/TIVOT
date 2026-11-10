@@ -31,8 +31,8 @@ top_c = np.median(orig[:30, 600:1000].reshape(-1, 3), 0); hor_c = np.median(orig
 g = np.clip(np.linspace(0, 1, H) / 0.42, 0, 1)[:, None, None]
 sky = np.broadcast_to(top_c * (1 - g) + hor_c * g, (H, W, 3)).astype(np.float32)
 
-# 草 ABA：A→B（17 格）＋ B→A（去頭 1 格、去尾 1 格＝A）⇒ 32 格循環
-fr = sorted(glob.glob(OUTD + 'cliffgrass_ab_*.png')) + sorted(glob.glob(OUTD + 'cliffgrass_ba_*.png'))[1:-1]
+# 草 ABA：VACE 一次生 33 格，第 0／16／32 格硬鎖 A／B／A（bg_vace_aba.py），丟最後一格（＝A）⇒ 32 格循環
+fr = sorted(glob.glob(OUTD + 'cliffgrass_vaba_*.png'))[5:30]   # 整格取捨：硬鎖的頭尾那幾格與相鄰生成格有落差，取 5~29 接縫最小（實測 2.2，平均一步 1.0）
 GR = [cv2.resize(np.array(Image.open(f).convert('RGB')), (W, H), interpolation=cv2.INTER_LANCZOS4).astype(np.float32) for f in fr]
 # 原圖解析度的 A：放大的 Wan 格只取「跟 A 差多少」加回 A，靜止處保留原解析度
 A0 = cv2.resize(cv2.resize(near_rgb, (768, 512), interpolation=cv2.INTER_AREA), (W, H), interpolation=cv2.INTER_LANCZOS4)
