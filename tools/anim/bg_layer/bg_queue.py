@@ -139,7 +139,19 @@ def _do_one(key, _retry=True):
     D→A 用 FLF 收回原圖。只換註記範圍（＋布掃過的範圍），保護區一律原圖。
     逐格選項寫在 notes.json 的 opts：full（純 Wan 整張）／protect（遮罩檔名）／reach（布可飄出範圍幾像素）／extra（提示詞補充）。"""
     j, move, sky = plan(key)
-    o = j.get('opts') or {}
+    o = dict(j.get('opts') or {})
+    # Ray 標「不要動／不動」的顏色＝保護區（一律原圖），不是要動的範圍（Ray 11-10 林間空地紅色「不要動」）
+    keep = [c for c in j['colors'] if any(w in (c.get('text') or '') for w in ('不要動', '不動', '別動'))]
+    if keep:
+        move = [c for c in move if c not in keep]; sky = [c for c in sky if c not in keep]
+        km = None
+        for c in keep:
+            m = np.array(Image.open(os.path.join(HERE, 'notes', key, c['mask'])).convert('L')) > 127
+            km = m if km is None else (km | (m if m.shape == km.shape else np.array(Image.fromarray(m).resize(km.shape[::-1])) > 0))
+        pp0 = o.get('protect') or ('protect.png' if os.path.exists(os.path.join(HERE, 'notes', key, 'protect.png')) else '')
+        if pp0:
+            m0 = np.array(Image.open(os.path.join(HERE, 'notes', key, pp0)).convert('L').resize(km.shape[::-1])) > 127; km |= m0
+        Image.fromarray((km * 255).astype(np.uint8)).save(os.path.join(HERE, 'notes', key, 'protect_keep.png')); o['protect'] = 'protect_keep.png'
     if o.get('skip'): return True   # Ray 說先跳過的格（opts.skip）
     base = key.replace('__', '_'); still = os.path.join(BG, j['file'])
     done = os.path.join(HERE, 'out', base + '_abcd', 'meta.json')
