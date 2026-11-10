@@ -105,3 +105,8 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 夏爾森林　岩窟 | `anim/shinier_forest/forest_cave_day_aba_v1.mp4` | 62 | 不用（天空就是原圖） |
 | 夏爾森林　淺灘 | `anim/shinier_forest/forest_shoal_day_aba_v1.mp4` | 48 | 不用（天空就是原圖） |
 | 里朋莊園　莊園門房 | `anim/sofiaout/sofiaout_lodge_aba_v1.mp4` | 53 | 不用（天空就是原圖） |
+| 里朋莊園　噴泉前庭 | `anim/sofiaout/sofiaout_forecourt_abcd_v1.mp4` | 57 | 不用（整張含天空都是影片） |
+| 里朋莊園　地下囚室 | `anim/sofiaout/sofiaout_cellar_abcd_v1.mp4` | 57 | 不用（天空就是原圖） |
+| 里朋莊園　棕櫚車道 | `anim/sofiaout/sofiaout_avenue_abcd_v1.mp4` | 61 | 不用（整張含天空都是影片） |
+
+> 11-10 追加三支（Ray 核可）。這三支取代 11-08 那張表裡 `anim/sofia/` 的 forecourt／avenue 舊版（接新檔即可）。

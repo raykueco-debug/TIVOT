@@ -129,9 +129,11 @@ def _do_one(key, _retry=True):
     if gen.startswith('（'): gen = ''   # 我自動寫的那句備註不算
     o = dict(o)
     if not j.get('auto'):
-        # Ray 自己存的：整體備註、或說明裡寫到整個畫面的東西（自然光影、植物、水、門…）⇒ 整張交給 Wan（他的筆刷只圈了燈）
-        texts = ''.join(c.get('text') or '' for c in move) + gen
-        if (gen and not move) or any(w in texts for w in ('自然光影', '植物', '水', '門扇', '整張', '整個畫面')): o['full'] = True
+        # Ray 自己存的：只有整體備註、沒畫任何範圍 ⇒ 整張交給 Wan。
+        # 有畫範圍就只動他畫的那幾塊，而且不往外長（reach 0）—— Ray 11-10：「inpaint 一概我來出」；
+        # 舊版看到「自然光影／門扇」就整張交出去、範圍外再長 80px，結果固定燈與門全在亂動。
+        if gen and not move: o['full'] = True
+        elif move: o.setdefault('reach', 0)
     if not move and not o.get('full'):
         log('跳過（只有雲，交給程式）', key); return True
     desc = '；'.join([c['text'] for c in move] + ([gen] if gen else [])) + (('，' + o['extra']) if o.get('extra') else '')

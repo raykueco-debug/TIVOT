@@ -1,0 +1,10 @@
+{
+ "title": "里朋莊園 六格（Ray 11-10 註記）",
+ "sets": [
+  {
+   "title": "里朋莊園 ABCD",
+   "note": "照 Ray 剛存的註記跑 ABCD。按「▶ H ABCD 真循環」。馬車房／後廊／林蔭大道的漂移檢查報了倒車（重跑一次仍報），請看是不是真的在回放。",
+   "nodes": ["sofiaout/hall","sofiaout/forecourt","sofiaout/cellar","sofiaout/carriage","sofiaout/backhall","sofiaout/avenue"]
+  }
+ ]
+}
