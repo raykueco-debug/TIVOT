@@ -14,8 +14,8 @@ FOREST = {
     'shinier_forest__entry__day': dict(boxes=[(596, 40, 704, 205)], extra='遠處的樹林樹梢也一起輕輕搖動'),
     'shinier_forest__glade__day': dict(boxes=[]),
     'shinier_forest__nest__day': dict(boxes=[(470, 140, 630, 270)]),
-    'shinier_forest__trail__day': dict(boxes=[(290, 80, 430, 215)]),
-    'shinier_forest__high__day': dict(boxes=[(480, 190, 620, 310)]),
+    'shinier_forest__trail__day': dict(boxes=[(290, 80, 430, 215), (50, 315, 305, 455)]),   # 小徑遠處（會冒人）＋左下的獸夾與鍊子（Ray：獸夾不要動）
+    'shinier_forest__high__day': dict(boxes=[(380, 150, 768, 330)], reach=0),   # 會冒出小紅人：整段山徑原圖，且只換樹葉範圍（不往外擴）
 }
 
 
@@ -53,8 +53,9 @@ def main():
     Q.log('修正單開始')
     for key in PURE:
         base = key.replace('__', '_')
+        pe = ['--protect', os.path.join(HERE, 'notes', key, 'refined', 'cyan.png')] if key == 'canyon__altar__day' else []   # Ray：雲少的不動雲
         aba(key, base, 'pure', '動漫風格的背景。整個畫面隨風輕輕流動：天上的雲緩緩飄移，樹葉草叢與布條隨風擺動，水面微微波動。'
-            '地面、岩石、建築都不動。' + TAIL, 202, dict(name='pure', extra=['--full']))
+            '地面、岩石、建築都不動。' + TAIL, 202, dict(name='pure', extra=['--full'] + pe))
     for key, cfg in FOREST.items():
         base = key.replace('__', '_'); d = os.path.join(HERE, 'notes', key); j = notes(key)
         still = Image.open(os.path.join(BG, j['file'])); W, H = still.size
@@ -77,7 +78,7 @@ def main():
         pp = os.path.join(d, 'protect.png'); Image.fromarray(P).save(pp)
         g = np.array(Image.open(os.path.join(rd, 'green.png')).convert('L').resize((768, 512))).astype(float)[..., None] / 255
         sky = [c['name'] for c in j['colors'] if '雲' in c['text']]
-        extra = ['--protect', pp] + (['--sky', sky[0], '--nosky'] if sky else [])
+        extra = ['--protect', pp] + (['--sky', sky[0], '--nosky'] if sky else []) + (['--reach', str(cfg['reach'])] if 'reach' in cfg else [])
         desc = '樹葉與草叢隨風搖曳' + ('，' + cfg['extra'] if cfg.get('extra') else '')
         aba(key, base, 'fix', f'動漫風格的森林背景。微風吹過：{desc}。只有枝葉在動，樹幹、地面、岩石、小徑、天空都完全不動。' + TAIL, 303,
             dict(name='abacloth', extra=extra, mask=g))

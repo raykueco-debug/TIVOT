@@ -44,6 +44,11 @@ t0 = time.time()
 while True:
     time.sleep(5)
     h = json.load(urllib.request.urlopen(f'{URL}/history/{pid}'))
+    if pid not in h:   # ComfyUI 重開過，這一件已經不在佇列裡 ⇒ 失敗退出，不要永遠等（11-10）
+        q = json.load(urllib.request.urlopen(f'{URL}/queue'))
+        if not any(pid in json.dumps(x) for x in q['queue_running'] + q['queue_pending']):
+            time.sleep(5); h = json.load(urllib.request.urlopen(f'{URL}/history/{pid}'))
+            if pid not in h: print('LOST', pid); sys.exit(2)
     if pid in h:
         st = h[pid].get('status', {})
         if st.get('status_str') == 'error':

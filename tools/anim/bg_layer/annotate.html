@@ -68,7 +68,7 @@ const sz=document.getElementById('size');sz.oninput=()=>{size=+sz.value;document
 const rgbOf=k=>COLORS.find(c=>c[0]===k)[2];
 
 let DONE={},LOOPS={};
-const VARNAME={pure:'G 純 Wan 整張',s101:'A 找循環段',flf:'B 首尾鎖原圖',cloud:'C 雲程式＋布 Wan(B)',sky:'D 雲 Wan 循環（山後）',aba:'E ABA（雲＋布一起）',abacloth:'F 雲程式分層＋布 ABA'};
+const VARNAME={abcd:'H ABCD 真循環',pure:'G 純 Wan 整張',s101:'A 找循環段',flf:'B 首尾鎖原圖',cloud:'C 雲程式＋布 Wan(B)',sky:'D 雲 Wan 循環（山後）',aba:'E ABA（雲＋布一起）',abacloth:'F 雲程式分層＋布 ABA'};
 // 雲層（程式）：sky/<map>/l0_far, l1_mid, l2_near。
 // 兩種動法（Ray 11-10：「雲有時是從遠到近的方向飄來，不是每次都橫移」「幾乎都看不到雲在動」）：
 //  side＝橫移，週期＝捲過一整張的秒數（遠慢近快）
@@ -170,7 +170,7 @@ function makeCard(n){
     const vs=LOOPS[key()]||[];play.innerHTML='';if(!vs.length)return;
     const mk=(lab,v,tip)=>{const b=document.createElement('button');b.className='pbtn';b.textContent=lab;if(v)b.dataset.v=v.dir;if(tip)b.title=tip;b.onclick=()=>showMode(v);play.appendChild(b)};
     mk('註記',null);
-    const order=['pure','abacloth'];vs.sort((a,b)=>(order.indexOf(a.var)<0?9:order.indexOf(a.var))-(order.indexOf(b.var)<0?9:order.indexOf(b.var)));
+    const order=['abcd','pure','abacloth'];vs.sort((a,b)=>(order.indexOf(a.var)<0?9:order.indexOf(a.var))-(order.indexOf(b.var)<0?9:order.indexOf(b.var)));
     for(const v of vs)mk('▶ '+(VARNAME[v.var]||v.var),v,`${v.frames} 格 ${v.fps}fps／接縫差 ${v.seam}（相鄰格平均 ${v.step}）`);
     if(vs.some(v=>v.var==='abacloth')){const b=document.createElement('button');b.className='pbtn';
       const lab=()=>b.textContent='雲：'+(cloudModeOf(n)==='near'?'迎面飄來':'橫移');lab();
