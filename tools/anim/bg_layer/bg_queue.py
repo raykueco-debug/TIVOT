@@ -112,6 +112,7 @@ def do_one(key, _retry=True):
     逐格選項寫在 notes.json 的 opts：full（純 Wan 整張）／protect（遮罩檔名）／reach（布可飄出範圍幾像素）／extra（提示詞補充）。"""
     j, move, sky = plan(key)
     o = j.get('opts') or {}
+    if o.get('skip'): return True   # Ray 說先跳過的格（opts.skip）
     base = key.replace('__', '_'); still = os.path.join(BG, j['file'])
     done = os.path.join(HERE, 'out', base + '_abcd', 'meta.json')
     if not move and not o.get('full'):
@@ -185,7 +186,7 @@ def main():
     log('排程開始（喊停：放 STOP 檔）')
     while not stopped():
         keys = sorted((os.path.basename(os.path.dirname(p)) for p in glob.glob(os.path.join(HERE, 'notes', '*', 'notes.json'))),
-                      key=lambda k: (0 if json.load(open(os.path.join(HERE, 'notes', k, 'notes.json'), encoding='utf8')).get('opts') else 1,   # Ray 點名修的先
+                      key=lambda k: (0 if (json.load(open(os.path.join(HERE, 'notes', k, 'notes.json'), encoding='utf8')).get('opts') or {}).get('skip') is None and json.load(open(os.path.join(HERE, 'notes', k, 'notes.json'), encoding='utf8')).get('opts') else 1,   # Ray 點名修的先
                                      0 if not json.load(open(os.path.join(HERE, 'notes', k, 'notes.json'), encoding='utf8')).get('auto') else 1,   # Ray 自己塗的先
                                      ORDER.index(k.split('__')[0]) if k.split('__')[0] in ORDER else 99, k))
         for key in keys:
