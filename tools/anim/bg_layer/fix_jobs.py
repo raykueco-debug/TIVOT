@@ -50,6 +50,7 @@ def aba(key, base, tag, prompt, seed, comp_args):
 
 
 def main():
+    print('已併進 bg_queue（ABCD 標準作業，選項寫在 notes.json 的 opts），這支不再跑'); return
     Q.log('修正單開始')
     for key in PURE:
         base = key.replace('__', '_')

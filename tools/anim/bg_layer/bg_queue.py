@@ -87,55 +87,59 @@ def first_desc(key):
 def wan_out(prefix): return sorted(glob.glob(os.path.join(COMFY, 'output', prefix + '_*.png')))
 
 
+DELIVERED = {'canyon__bridge__day', 'canyon__altar__day'}   # Ray 已說可交的，不要再動
+SEG = 17   # Ray 11-10：「每一次用 16+1，這樣出人的機會就小」
+
+
 def do_one(key):
+    """ABCD 真循環（Ray 11-10 定為標準作業）：A→B、B→C、C→D 三段 I2V 往前生（每段 16+1 格，從上一段最後一格接），
+    D→A 用 FLF 收回原圖。只換註記範圍（＋布掃過的範圍），保護區一律原圖。
+    逐格選項寫在 notes.json 的 opts：full（純 Wan 整張）／protect（遮罩檔名）／reach（布可飄出範圍幾像素）／extra（提示詞補充）。"""
     j, move, sky = plan(key)
+    o = j.get('opts') or {}
     base = key.replace('__', '_'); still = os.path.join(BG, j['file'])
-    done = os.path.join(HERE, 'out', base + '_abacloth', 'meta.json')
-    if not move:
+    done = os.path.join(HERE, 'out', base + '_abcd', 'meta.json')
+    if not move and not o.get('full'):
         log('跳過（只有雲，交給程式）', key); return True
-    if j.get('fixed_by'): return True   # 由 fix_jobs.py 那張修正單負責（11-10）
     if os.path.exists(done) and os.path.getmtime(done) > os.path.getmtime(os.path.join(HERE, 'notes', key, 'notes.json')):
         return True
-    desc = '；'.join(c['text'] for c in move)
-    old = first_desc(key)
-    tag = '' if old in (None, desc) else '_' + __import__('hashlib').md5(desc.encode('utf8')).hexdigest()[:6]
-    log('■', key, j.get('name'), '｜', desc)
-    if j.get('auto'):   # 我自動判斷的遮罩本來就是精確的，不再收斂，只羽化一下
-        rd = os.path.join(HERE, 'notes', key, 'refined'); os.makedirs(rd, exist_ok=True)
+    desc = '；'.join(c['text'] for c in move) + (('，' + o['extra']) if o.get('extra') else '')
+    log('■', key, j.get('name'), '｜', desc, '｜ABCD')
+    rd = os.path.join(HERE, 'notes', key, 'refined'); os.makedirs(rd, exist_ok=True)
+    if j.get('auto'):   # 自動判斷的遮罩本來就精確，只羽化
+        import cv2
         for c in j['colors']:
             m = np.array(Image.open(os.path.join(HERE, 'notes', key, c['mask'])).convert('L')).astype(np.float32)
-            import cv2; Image.fromarray(cv2.GaussianBlur(m, (0, 0), 2).clip(0, 255).astype(np.uint8)).save(os.path.join(rd, c['name'] + '.png'))
-    else:
+            Image.fromarray(cv2.GaussianBlur(m, (0, 0), 2).clip(0, 255).astype(np.uint8)).save(os.path.join(rd, c['name'] + '.png'))
+    elif move:
         soft = [f"{c['name']}=soft" for c in move if '光' in (c.get('text') or '')]
         ok, _ = run([PY, 'bg_refine.py', key] + soft)
         if not ok: return False
-    inp = os.path.join(COMFY, 'input', f'bg_{base}.png')
-    Image.open(still).convert('RGB').resize((768, 512), Image.LANCZOS).save(inp)
-    tail = '鏡頭完全固定不動，除此之外的景物（地面、岩石、建築、樹幹、天空）都完全不動。動漫風格，賽璐珞上色。'
-    ab = f'bgl/{base}_s101{tag}'
-    if len(wan_out(ab)) < 81:
+    inp = f'bg_{base}.png'
+    Image.open(still).convert('RGB').resize((768, 512), Image.LANCZOS).save(os.path.join(COMFY, 'input', inp))
+    tail = '鏡頭完全固定不動，除此之外的景物（地面、岩石、建築、樹幹）都完全不動。動漫風格，賽璐珞上色。'
+    if o.get('full'): tail = '地面、岩石、建築都不動，鏡頭完全固定不動。動漫風格，賽璐珞上色。'
+    fwd = f'動漫風格的背景。微風吹過：{desc}。持續自然地往前變化，不要倒退回放。{tail}'
+    tag = __import__('hashlib').md5((desc + str(o.get('full'))).encode('utf8')).hexdigest()[:6]
+    pre = {s: f'bgl/{base}_q{tag}_{s}' for s in ('ab', 'bc', 'cd', 'da')}
+    src = inp
+    for s in ('ab', 'bc', 'cd'):
+        if len(wan_out(pre[s])) < SEG:
+            if not wait_gpu(): return False
+            ok, _ = run([PY, 'bg_wan.py', src, pre[s], str(SEG), fwd, '101'])
+            if not ok: return False
+        src = f'bg_{base}_q{tag}_{s}_last.png'
+        Image.open(wan_out(pre[s])[-1]).convert('RGB').save(os.path.join(COMFY, 'input', src))
+    if len(wan_out(pre['da'])) < SEG:
         if not wait_gpu(): return False
-        ok, _ = run([PY, 'bg_wan.py', os.path.basename(inp), ab, '81', f'動漫風格的背景。微風吹過：{desc}。{tail}', '101'])
+        ok, _ = run([PY, 'bg_flf.py', src, inp, pre['da'], str(SEG), fwd.replace('不要倒退回放。', '不要倒退回放，最後回到畫面原本的樣子。'), '101'])
         if not ok: return False
-    # 挑 B：註記範圍內與第 0 格差最大的一格（16～48）
-    fs = wan_out(ab)
-    ms = [np.array(Image.open(p).convert('L').resize((768, 512))).astype(float) / 255
-          for p in glob.glob(os.path.join(HERE, 'notes', key, 'refined', '*.png')) if os.path.basename(p)[:-4] in [c['name'] for c in move]]
-    m = np.max(ms, axis=0)[..., None]
-    a0 = np.array(Image.open(fs[0]).convert('RGB')).astype(float)
-    k = max(range(16, 49), key=lambda i: float((np.abs(np.array(Image.open(fs[i]).convert('RGB')).astype(float) - a0) * m).sum()))
-    Image.open(fs[k]).convert('RGB').save(os.path.join(COMFY, 'input', f'bg_{base}_B.png'))
-    ba = f'bgl/{base}_ba{tag}'
-    if len(wan_out(ba)) < 33:
-        if not wait_gpu(): return False
-        ok, _ = run([PY, 'bg_flf.py', f'bg_{base}_B.png', os.path.basename(inp), ba, '33',
-                     f'{desc}，持續自然地擺動、閃爍，不要倒退回放，最後回到畫面原本的樣子。{tail}', '101'])
-        if not ok: return False
-    args = [PY, 'aba_comp.py', still, key, ab, str(k), ba, base + '_abacloth']
-    skyc = [c['name'] for c in sky]
-    if skyc: args += ['--sky', skyc[0], '--nosky']
-    pp = os.path.join(HERE, 'notes', key, 'protect.png')
-    if os.path.exists(pp): args += ['--protect', pp]
+    args = [PY, 'aba_comp.py', still, key, '-', '0', '-', base + '_abcd', '--chain', ','.join(pre[s] for s in ('ab', 'bc', 'cd', 'da'))]
+    if o.get('full'): args += ['--full']
+    elif sky: args += ['--sky', sky[0]['name'], '--nosky']
+    pp = o.get('protect') or ('protect.png' if os.path.exists(os.path.join(HERE, 'notes', key, 'protect.png')) else '')
+    if pp: args += ['--protect', os.path.join(HERE, 'notes', key, pp)]
+    if 'reach' in o: args += ['--reach', str(o['reach'])]
     ok, outp = run(args)
     if ok:
         log('✔', key, outp.strip()[-200:])
@@ -147,10 +151,12 @@ def main():
     log('排程開始（喊停：放 STOP 檔）')
     while not stopped():
         keys = sorted((os.path.basename(os.path.dirname(p)) for p in glob.glob(os.path.join(HERE, 'notes', '*', 'notes.json'))),
-                      key=lambda k: (0 if not json.load(open(os.path.join(HERE, 'notes', k, 'notes.json'), encoding='utf8')).get('auto') else 1,   # Ray 自己塗的先
+                      key=lambda k: (0 if json.load(open(os.path.join(HERE, 'notes', k, 'notes.json'), encoding='utf8')).get('opts') else 1,   # Ray 點名修的先
+                                     0 if not json.load(open(os.path.join(HERE, 'notes', k, 'notes.json'), encoding='utf8')).get('auto') else 1,   # Ray 自己塗的先
                                      ORDER.index(k.split('__')[0]) if k.split('__')[0] in ORDER else 99, k))
         for key in keys:
             if stopped(): break
+            if key in DELIVERED: continue
             try: do_one(key)
             except Exception as e: log('✘', key, repr(e)[:300])
         for _ in range(8):

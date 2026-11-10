@@ -18,6 +18,7 @@ ap.add_argument('--reach', type=int, default=80, help='布可以飄出 Ray 畫�
 ap.add_argument('--full', action='store_true', help='純 Wan：整張都用 Wan 的像素（Ray 11-10 點名的那幾格）')
 ap.add_argument('--protect', default='', help='這張遮罩白色的地方一律用原圖（圖騰、會冒出人的小徑…）')
 ap.add_argument('--keepflicker', action='store_true', help='不要自動拿掉閃動格')
+ap.add_argument('--chain', default='', help='ABCD 真循環：四段前綴用逗號分開（A→B,B→C,C→D,D→A）；給了就不看 ab/k/ba（Ray 11-10 定為標準作業）')
 a = ap.parse_args()
 out = os.path.join(HERE, 'out', a.name); os.makedirs(out, exist_ok=True)
 still = np.array(Image.open(a.still).convert('RGB')); H, W = still.shape[:2]; H, W = H - H % 2, W - W % 2; still = still[:H, :W].astype(np.float32)
@@ -33,24 +34,35 @@ for p in ([] if a.full else sorted(glob.glob(os.path.join(nd, '*.png')))):
     layers.append(m)
 M0 = np.max(layers, axis=0)
 ld = lambda f: cv2.resize(np.array(Image.open(f).convert('RGB')), (W, H), interpolation=cv2.INTER_LANCZOS4).astype(np.float32)
-ab = sorted(glob.glob(os.path.join(COMFY_OUT, a.ab + '_*.png')))[:a.k + 1]
+if a.chain:
+    P = [sorted(glob.glob(os.path.join(COMFY_OUT, p + '_*.png'))) for p in a.chain.split(',')]
+    sm0 = lambda f: cv2.resize(np.array(Image.open(f).convert('RGB')), (192, 128), interpolation=cv2.INTER_AREA).astype(np.float32)
+    A0 = [sm0(f) for f in P[0][:5]]; DA = [sm0(f) for f in P[-1]]
+    _, S0, E0 = min((float(np.abs(DA[e] - A0[s]).mean()), s, e) for s in range(len(A0)) for e in range(max(1, len(DA) - 6), len(DA) - 1))
+    files = P[0][S0:] + [f for p in P[1:-1] for f in p[1:]] + P[-1][1:E0 + 1]
+    seq = [ld(f) for f in files]
+    a.k = len(P[0]) - 1 - S0; KK = a.k; S0c = (S0, E0)
+    joints = [len(P[0]) - 1 - S0]
+    for p in P[1:-1]: joints.append(joints[-1] + len(p) - 1)
+ab = [] if a.chain else sorted(glob.glob(os.path.join(COMFY_OUT, a.ab + '_*.png')))[:a.k + 1]
 ba = sorted(glob.glob(os.path.join(COMFY_OUT, a.ba + '_*.png')))
 # 接點挑選（只做整格取捨）：每圈接回開頭那一下是最明顯的閃（第 0 格是原圖重建、比 Wan 後面的格銳利）。
 # 在 A→B 的開頭幾格、B→A 的結尾幾格、以及 B 附近各試幾個切點，挑兩個接縫加起來最小的那一組。
 sm0 = lambda f: cv2.resize(np.array(Image.open(f).convert('RGB')), (192, 128), interpolation=cv2.INTER_AREA).astype(np.float32)
-AB = [sm0(f) for f in ab]; BA = [sm0(f) for f in ba]
+AB = [sm0(f) for f in ab]; BA = [sm0(f) for f in ba] if not a.chain else []
 d0 = lambda x, y: float(np.abs(x - y).mean())
 best = None
-for s0 in range(0, 7):
+for s0 in ([] if a.chain else range(0, 7)):
     for e in range(len(BA) - 1, len(BA) - 8, -1):
         for kk in range(a.k, a.k - 4, -1):
             for j in range(1, 5):
                 c = d0(BA[e - 1], AB[s0]) + d0(AB[kk], BA[j])
                 if best is None or c < best[0]: best = (c, s0, e, kk, j)
-_, S0, E0, KK, J0 = best
-ab = ab[S0:KK + 1]; ba_use = ba[J0:E0]
-seq = [ld(f) for f in ab] + [ld(f) for f in ba_use]
-a.k = KK - S0   # 之後的 k＝B 在 seq 裡的位置
+if not a.chain:
+    _, S0, E0, KK, J0 = best
+    ab = ab[S0:KK + 1]; ba_use = ba[J0:E0]
+    seq = [ld(f) for f in ab] + [ld(f) for f in ba_use]
+    a.k = KK - S0   # 之後的 k＝B 在 seq 裡的位置
 # Ray 11-10：「我畫的範圍只是大概，布飄出我畫的範圍會消失」
 # ⇒ 遮罩＝Ray 的範圍 ∪（範圍外 reach 像素內、任何一格跟原圖差得明顯的地方）。只往外長、不往天空與遠處長。
 near = cv2.dilate((M0 > 0.3).astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * a.reach + 1, 2 * a.reach + 1)))
@@ -95,7 +107,7 @@ p = subprocess.Popen(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'rawvideo', '-
 for f in seq:
     p.stdin.write((still * (1 - M) + f * M).clip(0, 255).astype(np.uint8).tobytes())
 p.stdin.close(); p.wait()
-meta = dict(method='aba', full=a.full, key=a.key, ab=a.ab, k=a.k, ba=a.ba, frames=len(seq), fps=a.fps, dropped=sorted(dropped), cut=dict(ab_start=S0, ab_end=KK, ba_start=J0, ba_end=E0),
+meta = dict(method=('abcd' if a.chain else 'aba'), full=a.full, key=a.key, ab=a.ab, k=a.k, ba=a.ba, frames=len(seq), fps=a.fps, dropped=sorted(dropped), cut=(dict(chain=a.chain, start=S0, da_end=E0, joints=joints) if a.chain else dict(ab_start=S0, ab_end=KK, ba_start=J0, ba_end=E0)),
             protect=a.protect, still=a.still, args=[x for x in __import__('sys').argv[1:]], k_src=KK,
             joint_AB_to_BA=round(steps[kpos], 3), joint_BA_to_A=round(steps[-1], 3),
             seam_diff=round(max(steps[kpos], steps[-1]), 3), mean_step_diff=round(float(np.mean(steps)), 3), size=[W, H])
