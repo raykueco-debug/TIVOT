@@ -88,3 +88,20 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 
 雲：`_sky_layers/canyon_day_l0_far.webp`／`canyon_day_l1_mid.webp`／`canyon_day_l2_near.webp`。
 ⚠ ABA 兩個接點還比一般兩格大（約 1.5～2.5 倍），等 Ray 看過決定要不要再修。
+
+
+## 11-10 Ray 看過可交（整張影片，直接蓋）
+
+做法同上面的「純 Wan 整張」接法：**一支 mp4 就是整張畫面**（只有會動的那幾塊是 Wan，其餘、包括天空都是原圖），
+`<video muted playsinline loop autoplay>` 蓋在靜態背景上即可，**不疊雲層、不用天空遮罩**。16fps、1536 寬。
+
+| 格 | 影片 | 格數 | 天空遮罩 |
+|---|---|---|---|
+| 羅賽爾廢城　石棺墓 | `anim/dunmor/dunmor_cistgrave_aba_v1.mp4` | 42 | 不用（天空就是原圖） |
+| 羅賽爾廢城　石首龕 | `anim/dunmor/dunmor_headshrine_aba_v1.mp4` | 50 | 不用（天空就是原圖） |
+| 羅賽爾廢城　內壘門 | `anim/dunmor/dunmor_innergate_aba_v1.mp4` | 71 | 不用（天空就是原圖） |
+| 羅賽爾廢城　王塚 | `anim/dunmor/dunmor_kingsbarrow_aba_v1.mp4` | 55 | 不用（天空就是原圖） |
+| 羅賽爾廢城　王廳廢墟 | `anim/dunmor/dunmor_kingshall_aba_v1.mp4` | 69 | 不用（天空就是原圖） |
+| 夏爾森林　岩窟 | `anim/shinier_forest/forest_cave_day_aba_v1.mp4` | 62 | 不用（天空就是原圖） |
+| 夏爾森林　淺灘 | `anim/shinier_forest/forest_shoal_day_aba_v1.mp4` | 48 | 不用（天空就是原圖） |
+| 里朋莊園　莊園門房 | `anim/sofiaout/sofiaout_lodge_aba_v1.mp4` | 53 | 不用（天空就是原圖） |

@@ -87,7 +87,7 @@ def first_desc(key):
 def wan_out(prefix): return sorted(glob.glob(os.path.join(COMFY, 'output', prefix + '_*.png')))
 
 
-DELIVERED = {'canyon__bridge__day', 'canyon__altar__day'}   # Ray 已說可交的，不要再動
+DELIVERED = set(json.load(open(os.path.join(HERE, 'delivered.json'), encoding='utf8')))   # Ray 已說可交的（delivered.json），不要再動；每一輪重讀
 SEG = 17   # Ray 11-10：「每一次用 16+1，這樣出人的機會就小」
 
 
@@ -191,7 +191,7 @@ def main():
                                      ORDER.index(k.split('__')[0]) if k.split('__')[0] in ORDER else 99, k))
         for key in keys:
             if stopped(): break
-            if key in DELIVERED: continue
+            if key in set(json.load(open(os.path.join(HERE, 'delivered.json'), encoding='utf8'))): continue
             try: do_one(key)
             except Exception as e: log('✘', key, repr(e)[:300])
         for _ in range(8):
