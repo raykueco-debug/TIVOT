@@ -104,6 +104,24 @@ def drift(pres):
 
 
 ANTI_DRIFT = '雲與霧只在原地緩緩翻湧起伏，整片不往左右任何方向漂移'
+ANTI_CAM = '鏡頭是鎖死在三腳架上的固定機位，絕對不推近、不拉遠、不平移、不搖鏡，畫框邊緣的景物始終停在同一個位置'
+
+
+def camshift(mp4):
+    # 鏡位檢查（Ray 11-10：大廳「鏡位怎麼動了」）：每一格對第 0 格做 ECC 仿射，回傳最大縮放偏差與最大位移（原解析度 px）
+    import cv2
+    cap = cv2.VideoCapture(mp4); fr = []
+    while True:
+        ok, f = cap.read()
+        if not ok: break
+        fr.append(cv2.resize(cv2.cvtColor(f, cv2.COLOR_BGR2GRAY), None, fx=.5, fy=.5))
+    sc = mv = 0.0
+    for g in fr[1::3]:
+        w = np.eye(2, 3, dtype=np.float32)
+        try: _, w = cv2.findTransformECC(fr[0], g, w, cv2.MOTION_AFFINE, (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 60, 1e-4), None, 5)
+        except Exception: continue
+        sc = max(sc, abs(np.sqrt(abs(np.linalg.det(w[:2, :2]))) - 1)); mv = max(mv, 2 * float(np.hypot(w[0, 2], w[1, 2])))
+    return sc, mv
 
 
 def do_one(key, _retry=True):
@@ -155,7 +173,8 @@ def _do_one(key, _retry=True):
     if not parts: parts.append('空氣中細小的塵埃緩緩飄浮，光影非常輕微地變化')
     busy = '；'.join(parts)
     fwd = f'動漫風格的背景。{busy}；{desc}。整個畫面持續自然地往前變化，不要倒退回放。{tail}'
-    tag = __import__('hashlib').md5((fwd + str(o.get('full'))).encode('utf8')).hexdigest()[:6]
+    seed = str(o.get('seed', 101))   # 鏡位檢查兩次都過不了才換種子（提示詞壓不住推鏡時）
+    tag = __import__('hashlib').md5((fwd + str(o.get('full')) + ('' if seed == '101' else seed)).encode('utf8')).hexdigest()[:6]
     pre = {s: f'bgl/{base}_q{tag}_{s}' for s in ('ab', 'bc', 'cd', 'da')}
     try:   # 這一版（同一組提示詞）已經合成過、而且比註記新 ⇒ 不重跑
         if f'_q{tag}_' in json.load(open(done, encoding='utf8'))['cut']['chain'] and os.path.getmtime(done) > os.path.getmtime(os.path.join(HERE, 'notes', key, 'notes.json')): return True
@@ -177,13 +196,13 @@ def _do_one(key, _retry=True):
     for s in ('ab', 'bc', 'cd'):
         if len(wan_out(pre[s])) < SEG:
             if not wait_gpu(): return False
-            ok, _ = run([PY, 'bg_wan.py', src, pre[s], str(SEG), fwd, '101'])
+            ok, _ = run([PY, 'bg_wan.py', src, pre[s], str(SEG), fwd, seed])
             if not ok: return False
         src = f'bg_{base}_q{tag}_{s}_last.png'
         Image.open(wan_out(pre[s])[-1]).convert('RGB').save(os.path.join(COMFY, 'input', src))
     if len(wan_out(pre['da'])) < SEG:
         if not wait_gpu(): return False
-        ok, _ = run([PY, 'bg_flf.py', src, inp, pre['da'], str(SEG), fwd.replace('不要倒退回放。', '不要倒退回放，最後回到畫面原本的樣子。'), '101'])
+        ok, _ = run([PY, 'bg_flf.py', src, inp, pre['da'], str(SEG), fwd.replace('不要倒退回放。', '不要倒退回放，最後回到畫面原本的樣子。'), seed])
         if not ok: return False
     args = [PY, 'aba_comp.py', still, key, '-', '0', '-', base + '_abcd', '--chain', ','.join(pre[s] for s in ('ab', 'bc', 'cd', 'da'))]
     if o.get('full'): args += ['--full']
@@ -206,10 +225,28 @@ def _do_one(key, _retry=True):
                     json.dump(jj, open(p, 'w', encoding='utf8'), ensure_ascii=False, indent=1)
                     return _do_one(key, False)
         except Exception as e: log('倒車檢查失敗', key, repr(e)[:120])
+        try:
+            sc, mv = camshift(os.path.join(HERE, 'out', base + '_abcd', 'loop.mp4'))
+            if sc > 0.006 or mv > 6:
+                log('⚠ 鏡位動了', key, f'縮放 {sc*100:.1f}% 位移 {mv:.0f}px')
+                p = os.path.join(HERE, 'notes', key, 'notes.json'); jj = json.load(open(p, encoding='utf8'))
+                if ANTI_CAM not in (o.get('extra') or ''):   # 第一次：加鎖鏡頭句
+                    jj.setdefault('opts', {})['extra'] = ((jj['opts'].get('extra') + '，') if jj['opts'].get('extra') else '') + ANTI_CAM
+                    json.dump(jj, open(p, 'w', encoding='utf8'), ensure_ascii=False, indent=1)
+                    return _do_one(key, _retry)
+                if 'seed' not in o:   # 第二次：句子壓不住（大廳 11-10 加了句子反而推 3.6%）⇒ 換種子
+                    jj.setdefault('opts', {})['seed'] = 202
+                    json.dump(jj, open(p, 'w', encoding='utf8'), ensure_ascii=False, indent=1)
+                    return _do_one(key, False)
+        except Exception as e: log('鏡位檢查失敗', key, repr(e)[:120])
     return ok
 
 
 def main():
+    import msvcrt   # 只准一支排程（11-10 看門狗 26 秒內開了兩支，兩支互搶 GPU、送件失敗）
+    global _LOCKF; _LOCKF = open(os.path.join(HERE, 'bg_queue.lock'), 'a+')
+    try: _LOCKF.seek(0); msvcrt.locking(_LOCKF.fileno(), msvcrt.LK_NBLCK, 1)
+    except OSError: log('已經有一支排程在跑，這一支退出'); return
     log('排程開始（喊停：放 STOP 檔）')
     while not stopped():
         keys = sorted((os.path.basename(os.path.dirname(p)) for p in glob.glob(os.path.join(HERE, 'notes', '*', 'notes.json'))),
