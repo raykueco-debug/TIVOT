@@ -68,9 +68,15 @@ const sz=document.getElementById('size');sz.oninput=()=>{size=+sz.value;document
 const rgbOf=k=>COLORS.find(c=>c[0]===k)[2];
 
 let DONE={},LOOPS={};
-const VARNAME={s101:'A 找循環段',flf:'B 首尾鎖原圖',cloud:'C 雲程式＋布 Wan(B)',sky:'D 雲 Wan 循環（山後）',aba:'E ABA（雲＋布一起）',abacloth:'F 雲程式分層＋布 ABA'};
-// 雲層（程式捲）：sky/<map>/l0_far, l1_mid, l2_near；週期＝捲過一整張的秒數（遠慢近快），往右飄
-const SKY_LAYERS=[['l0_far',160],['l1_mid',70],['l2_near',32]];
+const VARNAME={pure:'G 純 Wan 整張',s101:'A 找循環段',flf:'B 首尾鎖原圖',cloud:'C 雲程式＋布 Wan(B)',sky:'D 雲 Wan 循環（山後）',aba:'E ABA（雲＋布一起）',abacloth:'F 雲程式分層＋布 ABA'};
+// 雲層（程式）：sky/<map>/l0_far, l1_mid, l2_near。
+// 兩種動法（Ray 11-10：「雲有時是從遠到近的方向飄來，不是每次都橫移」「幾乎都看不到雲在動」）：
+//  side＝橫移，週期＝捲過一整張的秒數（遠慢近快）
+//  near＝迎面：遠層照樣慢慢橫移；中近層從地平線的消失點長出來、邊變大邊往上往外飄，飄出畫面前淡掉
+const SKY_LAYERS=[['l0_far',70],['l1_mid',30],['l2_near',14]];
+const NEAR_PERIOD=36, NEAR_COPIES=4, NEAR_S0=0.35, NEAR_S1=3.2;
+const hash=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))|0;return Math.abs(h)};
+const cloudModeOf=n=>{try{const v=localStorage.getItem('cloud_'+n.map+'_'+n.id);if(v)return v}catch(e){}return hash(n.id)%2?'near':'side'};
 (async()=>{
   const nodes=await (await fetch('nodes.json')).json();
   DONE=await (await fetch('api/done')).json();
@@ -112,19 +118,34 @@ function makeCard(n){
   const img=card.querySelector('img'),cv=card.querySelector('canvas'),ctx=cv.getContext('2d'),vid=card.querySelector('video'),play=card.querySelector('.play');
   const live=card.querySelector('canvas.live'),lx=live.getContext('2d');let raf=0;
   async function loadImg(src){const im=new Image();im.src=src;try{await im.decode();return im}catch(e){return null}}
-  async function startLive(v){ // 雲：程式分層捲；其他：ABA 影片，天空那一塊挖掉讓雲透出來（＝遊戲裡的疊法）
-    const sky=[];for(const [nm,per] of SKY_LAYERS){const im=await loadImg(`sky/${n.map}/${nm}.png`);if(im)sky.push([im,per])}
+  async function startLive(v){ // 雲：程式；其他：ABA 影片，天空那一塊挖掉讓雲透出來（＝遊戲裡的疊法）
+    const sky={};for(const [nm,per] of SKY_LAYERS){const im=await loadImg(`sky/${n.map}/${nm}.png`);if(im)sky[nm]=[im,per]}
     const sa=await loadImg(`notes/${key()}/refined/sky_alpha.webp?t=${v.t}`);
+    // 消失點：天空最下緣那一帶（地平線）、畫面正中
+    let vy=0.45;if(sa){const c=document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');x.drawImage(sa,0,0,64,64);
+      const d=x.getImageData(0,0,64,64).data;let rows=[];for(let y=0;y<64;y++){let k=0;for(let i=0;i<64;i++)if(d[(y*64+i)*4+3]>128)k++;if(k>6)rows.push(y)}
+      if(rows.length)vy=(rows[Math.floor(rows.length*0.9)]+1)/64}
     const off=document.createElement('canvas'),ox=off.getContext('2d');
     vid.src=`out/${v.dir}/loop.mp4?t=${v.t}`;vid.play().catch(()=>{});
     live.style.display='block';cv.style.display='none';vid.style.display='none';
     const t0=performance.now();
+    const tile=(im,x,y,w,h,W)=>{if(!(w>4)||!(W>4)||!isFinite(x))return;let x0=((x%w)+w)%w-w;for(let xx=x0;xx<W;xx+=w)lx.drawImage(im,xx,y,w,h)};
     const step=()=>{const r=live.getBoundingClientRect(),w=Math.round(r.width*devicePixelRatio),h=Math.round(r.height*devicePixelRatio);
-      if(live.width!==w){live.width=w;live.height=h;off.width=w;off.height=h}
-      const t=(performance.now()-t0)/1000;lx.clearRect(0,0,w,h);
-      for(const [im,per] of sky){const x=((t/per)%1)*w;lx.drawImage(im,x,0,w,h);lx.drawImage(im,x-w,0,w,h)}
+      if(w<8||h<8){raf=requestAnimationFrame(step);return}if(live.width!==w){live.width=w;live.height=h;off.width=w;off.height=h}
+      const t=(performance.now()-t0)/1000;lx.clearRect(0,0,w,h);const mode=cloudModeOf(n);
+      if(mode==='side'){for(const nm of ['l0_far','l1_mid','l2_near'])if(sky[nm]){const [im,per]=sky[nm];tile(im,(t/per%1)*w,0,w,h,w)}}
+      else{
+        if(sky.l0_far){const [im]=sky.l0_far;tile(im,(t/160%1)*w,0,w,h,w)}
+        const pool=['l1_mid','l2_near'].filter(k=>sky[k]);const VX=w/2,VY=h*vy;
+        // 一層一層錯開相位；排序讓遠的先畫
+        const cs=[];for(let i=0;i<NEAR_COPIES&&pool.length;i++){const ph=((t/NEAR_PERIOD)+i/NEAR_COPIES)%1;cs.push([ph,sky[pool[i%pool.length]][0],i])}
+        cs.sort((a,b)=>a[0]-b[0]);
+        for(const [ph,im,i] of cs){const s=NEAR_S0*Math.pow(NEAR_S1/NEAR_S0,ph);
+          const a=Math.min(1,ph/0.2)*Math.min(1,(1-ph)/0.25);lx.globalAlpha=a;
+          const iw=w*s,ih=h*s;tile(im,VX-VX*s+i*w*0.37*s,VY-VY*s,iw,ih,w)}
+        lx.globalAlpha=1}
       if(vid.readyState>=2){ox.globalCompositeOperation='source-over';ox.clearRect(0,0,w,h);ox.drawImage(vid,0,0,w,h);
-        if(sa&&sky.length){ox.globalCompositeOperation='destination-out';ox.drawImage(sa,0,0,w,h)}
+        if(sa){ox.globalCompositeOperation='destination-out';ox.drawImage(sa,0,0,w,h)}
         lx.drawImage(off,0,0)}
       raf=requestAnimationFrame(step)};
     step();
@@ -140,7 +161,11 @@ function makeCard(n){
     const vs=LOOPS[key()]||[];play.innerHTML='';if(!vs.length)return;
     const mk=(lab,v,tip)=>{const b=document.createElement('button');b.className='pbtn';b.textContent=lab;if(v)b.dataset.v=v.dir;if(tip)b.title=tip;b.onclick=()=>showMode(v);play.appendChild(b)};
     mk('註記',null);
+    const order=['pure','abacloth'];vs.sort((a,b)=>(order.indexOf(a.var)<0?9:order.indexOf(a.var))-(order.indexOf(b.var)<0?9:order.indexOf(b.var)));
     for(const v of vs)mk('▶ '+(VARNAME[v.var]||v.var),v,`${v.frames} 格 ${v.fps}fps／接縫差 ${v.seam}（相鄰格平均 ${v.step}）`);
+    if(vs.some(v=>v.var==='abacloth')){const b=document.createElement('button');b.className='pbtn';
+      const lab=()=>b.textContent='雲：'+(cloudModeOf(n)==='near'?'迎面飄來':'橫移');lab();
+      b.onclick=()=>{try{localStorage.setItem('cloud_'+n.map+'_'+n.id,cloudModeOf(n)==='near'?'side':'near')}catch(e){}lab()};play.appendChild(b)}
     play.querySelector('.pbtn').classList.add('on');
   }
   const bandSel=card.querySelector('.band'),st=card.querySelector('.st'),legend=card.querySelector('.legend'),gen=card.querySelector('.general');

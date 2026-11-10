@@ -34,20 +34,20 @@ def gpu_util():
     except Exception: return 0
 
 
-def queue_busy(port):
+def queue_busy(port, need=False):
     try:
         q = json.load(urllib.request.urlopen(f'http://127.0.0.1:{port}/queue', timeout=3))
         return len(q['queue_running']) + len(q['queue_pending'])
-    except Exception: return 0
+    except Exception: return 99 if need else 0   # 8188 連不上＝ComfyUI 掛了，要等它回來，不是「閒著」（11-10 踩過：整批送件失敗跳過）
 
 
 def wait_gpu():
     calm = 0
     while calm < 4:
         if stopped(): return False
-        if gpu_util() < 10 and queue_busy(8188) == 0 and queue_busy(8189) == 0: calm += 1
+        if gpu_util() < 10 and queue_busy(8188, True) == 0 and queue_busy(8189) == 0: calm += 1
         else:
-            if calm: log('GPU 有人在用，排隊等')
+            if calm: log('GPU 有人在用（或 ComfyUI 沒開），排隊等')
             calm = 0
         time.sleep(15)
     return True
@@ -84,6 +84,7 @@ def do_one(key):
     done = os.path.join(HERE, 'out', base + '_abacloth', 'meta.json')
     if not move:
         log('跳過（只有雲，交給程式）', key); return True
+    if j.get('fixed_by'): return True   # 由 fix_jobs.py 那張修正單負責（11-10）
     if os.path.exists(done) and os.path.getmtime(done) > os.path.getmtime(os.path.join(HERE, 'notes', key, 'notes.json')):
         return True
     log('■', key, j.get('name'), '｜', '；'.join(c['text'] for c in move))
@@ -122,8 +123,12 @@ def do_one(key):
     args = [PY, 'aba_comp.py', still, key, ab, str(k), ba, base + '_abacloth']
     skyc = [c['name'] for c in sky]
     if skyc: args += ['--sky', skyc[0], '--nosky']
+    pp = os.path.join(HERE, 'notes', key, 'protect.png')
+    if os.path.exists(pp): args += ['--protect', pp]
     ok, outp = run(args)
-    if ok: log('✔', key, outp.strip()[-200:])
+    if ok:
+        log('✔', key, outp.strip()[-200:])
+        subprocess.run([PY, 'make_sky_alpha.py'], cwd=HERE, env=ENV, capture_output=True)
     return ok
 
 
