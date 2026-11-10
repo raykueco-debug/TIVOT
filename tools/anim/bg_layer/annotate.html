@@ -142,7 +142,7 @@ function makeCard(n){
     const step=()=>{const r=live.getBoundingClientRect(),w=Math.round(r.width*devicePixelRatio),h=Math.round(r.height*devicePixelRatio);
       if(w<8||h<8){raf=requestAnimationFrame(step);return}if(live.width!==w){live.width=w;live.height=h;off.width=w;off.height=h}
       const t=(performance.now()-t0)/1000;lx.clearRect(0,0,w,h);const mode=cloudModeOf(n);
-      if(mode==='side'){for(const nm of ['l0_far','l1_mid','l2_near'])if(sky[nm]){const [im,per]=sky[nm];tile(im,(t/per%1)*w,0,w,h,w)}}
+      if(!sa){}else if(mode==="side"){for(const nm of ['l0_far','l1_mid','l2_near'])if(sky[nm]){const [im,per]=sky[nm];tile(im,(t/per%1)*w,0,w,h,w)}}
       else{
         if(sky.l0_far){const [im]=sky.l0_far;tile(im,(t/160%1)*w,0,w,h,w)}
         const pool=['l1_mid','l2_near'].filter(k=>sky[k]);const VX=w/2,VY=h*vy;

@@ -75,6 +75,15 @@ def plan(key):
     return j, move, sky
 
 
+def first_desc(key):
+    # 第一次送 Wan 的描述（從 log 撈）；沒尾碼的輸出就是用它生的；提示詞改了就要重跑，不能沿用舊輸出（11-10：拿掉誤判的火之後還在用含火的那一版）
+    try:
+        for ln in open(LOG, encoding='utf8').read().splitlines():   # 第一次送的那一版＝沒有尾碼的那組輸出
+            if f'■ {key} ' in ln and '｜' in ln: return ln.split('｜', 1)[1].strip()
+    except Exception: pass
+    return None
+
+
 def wan_out(prefix): return sorted(glob.glob(os.path.join(COMFY, 'output', prefix + '_*.png')))
 
 
@@ -87,7 +96,10 @@ def do_one(key):
     if j.get('fixed_by'): return True   # 由 fix_jobs.py 那張修正單負責（11-10）
     if os.path.exists(done) and os.path.getmtime(done) > os.path.getmtime(os.path.join(HERE, 'notes', key, 'notes.json')):
         return True
-    log('■', key, j.get('name'), '｜', '；'.join(c['text'] for c in move))
+    desc = '；'.join(c['text'] for c in move)
+    old = first_desc(key)
+    tag = '' if old in (None, desc) else '_' + __import__('hashlib').md5(desc.encode('utf8')).hexdigest()[:6]
+    log('■', key, j.get('name'), '｜', desc)
     if j.get('auto'):   # 我自動判斷的遮罩本來就是精確的，不再收斂，只羽化一下
         rd = os.path.join(HERE, 'notes', key, 'refined'); os.makedirs(rd, exist_ok=True)
         for c in j['colors']:
@@ -99,9 +111,8 @@ def do_one(key):
         if not ok: return False
     inp = os.path.join(COMFY, 'input', f'bg_{base}.png')
     Image.open(still).convert('RGB').resize((768, 512), Image.LANCZOS).save(inp)
-    desc = '；'.join(c['text'] for c in move)
     tail = '鏡頭完全固定不動，除此之外的景物（地面、岩石、建築、樹幹、天空）都完全不動。動漫風格，賽璐珞上色。'
-    ab = f'bgl/{base}_s101'
+    ab = f'bgl/{base}_s101{tag}'
     if len(wan_out(ab)) < 81:
         if not wait_gpu(): return False
         ok, _ = run([PY, 'bg_wan.py', os.path.basename(inp), ab, '81', f'動漫風格的背景。微風吹過：{desc}。{tail}', '101'])
@@ -114,11 +125,11 @@ def do_one(key):
     a0 = np.array(Image.open(fs[0]).convert('RGB')).astype(float)
     k = max(range(16, 49), key=lambda i: float((np.abs(np.array(Image.open(fs[i]).convert('RGB')).astype(float) - a0) * m).sum()))
     Image.open(fs[k]).convert('RGB').save(os.path.join(COMFY, 'input', f'bg_{base}_B.png'))
-    ba = f'bgl/{base}_ba'
+    ba = f'bgl/{base}_ba{tag}'
     if len(wan_out(ba)) < 33:
         if not wait_gpu(): return False
         ok, _ = run([PY, 'bg_flf.py', f'bg_{base}_B.png', os.path.basename(inp), ba, '33',
-                     f'風漸漸停下，{desc}，慢慢回到原本的位置。{tail}', '101'])
+                     f'{desc}，持續自然地擺動、閃爍，不要倒退回放，最後回到畫面原本的樣子。{tail}', '101'])
         if not ok: return False
     args = [PY, 'aba_comp.py', still, key, ab, str(k), ba, base + '_abacloth']
     skyc = [c['name'] for c in sky]

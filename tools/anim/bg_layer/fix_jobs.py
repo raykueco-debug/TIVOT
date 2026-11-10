@@ -42,7 +42,7 @@ def aba(key, base, tag, prompt, seed, comp_args):
     Image.open(fs[k]).convert('RGB').save(os.path.join(COMFY, 'input', f'bg_{base}_{tag}_B.png'))
     if len(Q.wan_out(ba)) < 33:
         if not Q.wait_gpu(): return False
-        ok, _ = Q.run([PY, 'bg_flf.py', f'bg_{base}_{tag}_B.png', os.path.basename(inp), ba, '33', '風漸漸停下，一切慢慢回到原本的樣子。' + TAIL, str(seed)])
+        ok, _ = Q.run([PY, 'bg_flf.py', f'bg_{base}_{tag}_B.png', os.path.basename(inp), ba, '33', '持續自然地擺動，不要倒退回放，最後回到畫面原本的樣子。' + TAIL, str(seed)])
         if not ok: return False
     ok, out = Q.run([PY, 'aba_comp.py', still, key, ab, str(k), ba, f'{base}_{comp_args["name"]}'] + comp_args['extra'])
     if ok: Q.log('✔', key, tag, out.strip()[-160:])
