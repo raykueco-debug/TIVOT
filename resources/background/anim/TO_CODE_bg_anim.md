@@ -115,3 +115,4 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 夏爾森林　森林入口 | `anim/shinier_forest/forest_entry_day_abcd_v1.mp4` | 107 | 不用（天空就是原圖） |
 
 > 11-10 追加三支（Ray 核可）。取代 11-08 表裡 `anim/forest/` 的 valley／trail／entry 舊版（接新檔即可）。
+| 夏爾森林　遺蹟入口 | `anim/shinier_forest/forest_ruins_day_abcd_v1.mp4` | 56 | 不用（整張含天空都是影片）；靜態圖是 `ruins_shinier_entrance_day` |
