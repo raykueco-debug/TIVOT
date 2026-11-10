@@ -31,11 +31,21 @@ top_c = np.median(orig[:30, 600:1000].reshape(-1, 3), 0); hor_c = np.median(orig
 g = np.clip(np.linspace(0, 1, H) / 0.42, 0, 1)[:, None, None]
 sky = np.broadcast_to(top_c * (1 - g) + hor_c * g, (H, W, 3)).astype(np.float32)
 
-# 草 ABA：VACE 一次生 33 格，第 0／16／32 格硬鎖 A／B／A（bg_vace_aba.py），丟最後一格（＝A）⇒ 32 格循環
-fr = sorted(glob.glob(OUTD + 'cliffgrass_vaba_*.png'))[5:30]   # 整格取捨：硬鎖的頭尾那幾格與相鄰生成格有落差，取 5~29 接縫最小（實測 2.2，平均一步 1.0）
+# 樹與草：VACE 循環（頭尾鎖原圖 A）
+fr = sorted(glob.glob(OUTD + 'cliffgrass_vloop_*.png'))[5:46]   # Ray 11-11「樹用 VACE 跑 loop」：bg_vace_loop 頭尾鎖 A；整格取捨 5~45（接縫 2.0，段內最大一步 2.85）
 GR = [cv2.resize(np.array(Image.open(f).convert('RGB')), (W, H), interpolation=cv2.INTER_LANCZOS4).astype(np.float32) for f in fr]
+# 接縫交叉模糊過渡（Ray 11-11：「頭尾接不好就頭尾逐幀找差異最小的，交叉模糊過渡看看」）：
+# 循環的最後 XF 格，逐步換成「開頭之前那 XF 格」（第 1~4 格），權重 0→1；過渡中段加一點模糊把接點抹平。
+XF = 4
+pre = [cv2.resize(np.array(Image.open(f).convert('RGB')), (W, H), interpolation=cv2.INTER_LANCZOS4).astype(np.float32)
+       for f in sorted(glob.glob(OUTD + 'cliffgrass_vloop_*.png'))[5 - XF:5]]
+for k in range(XF):
+    w = (k + 1) / (XF + 1); j = len(GR) - XF + k
+    mix = GR[j] * (1 - w) + pre[k] * w
+    sig = 1.2 * np.sin(np.pi * w)
+    GR[j] = cv2.GaussianBlur(mix, (0, 0), sig) if sig > 0.3 else mix
 # 原圖解析度的 A：放大的 Wan 格只取「跟 A 差多少」加回 A，靜止處保留原解析度
-A0 = cv2.resize(cv2.resize(near_rgb, (768, 512), interpolation=cv2.INTER_AREA), (W, H), interpolation=cv2.INTER_LANCZOS4)
+A0 = np.mean(GR, 0)   # 只疊「每一格偏離整段平均」的動態 ⇒ 靜止處保留原圖清晰度與色調
 print('grass frames', len(GR))
 
 S_far, S_mid, S_near = (CS.cut_grid(DL + f'cloudgrid_{n}.png') for n in ('far', 'mid', 'near'))
