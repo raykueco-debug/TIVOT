@@ -11,5 +11,8 @@
  "sofiaout__lodge__base": "sofiaout/sofiaout_lodge_aba_v1.mp4",
  "sofiaout__forecourt__base": "sofiaout/sofiaout_forecourt_abcd_v1.mp4",
  "sofiaout__cellar__base": "sofiaout/sofiaout_cellar_abcd_v1.mp4",
- "sofiaout__avenue__base": "sofiaout/sofiaout_avenue_abcd_v1.mp4"
+ "sofiaout__avenue__base": "sofiaout/sofiaout_avenue_abcd_v1.mp4",
+ "shinier_forest__valley__day": "shinier_forest/forest_valley_day_abcd_v1.mp4",
+ "shinier_forest__trail__day": "shinier_forest/forest_trail_day_abcd_v1.mp4",
+ "shinier_forest__entry__day": "shinier_forest/forest_entry_day_abcd_v1.mp4"
 }

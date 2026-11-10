@@ -110,3 +110,8 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 里朋莊園　棕櫚車道 | `anim/sofiaout/sofiaout_avenue_abcd_v1.mp4` | 61 | 不用（整張含天空都是影片） |
 
 > 11-10 追加三支（Ray 核可）。這三支取代 11-08 那張表裡 `anim/sofia/` 的 forecourt／avenue 舊版（接新檔即可）。
+| 夏爾森林　河谷 | `anim/shinier_forest/forest_valley_day_abcd_v1.mp4` | 60 | 不用（整張含天空都是影片） |
+| 夏爾森林　舊獵道 | `anim/shinier_forest/forest_trail_day_abcd_v1.mp4` | 57 | 不用（整張含天空都是影片） |
+| 夏爾森林　森林入口 | `anim/shinier_forest/forest_entry_day_abcd_v1.mp4` | 107 | 不用（天空就是原圖） |
+
+> 11-10 追加三支（Ray 核可）。取代 11-08 表裡 `anim/forest/` 的 valley／trail／entry 舊版（接新檔即可）。
