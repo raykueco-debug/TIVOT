@@ -116,3 +116,43 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 
 > 11-10 追加三支（Ray 核可）。取代 11-08 表裡 `anim/forest/` 的 valley／trail／entry 舊版（接新檔即可）。
 | 夏爾森林　遺蹟入口 | `anim/shinier_forest/forest_ruins_day_abcd_v1.mp4` | 56 | 不用（整張含天空都是影片）；靜態圖是 `ruins_shinier_entrance_day` |
+
+> 11-12 第二批（Ray 核可；天空是程式雲合成進影片，整張蓋上去即可）
+| 夏爾森林　高地 | `anim/forest/forest_highland_day_sep_v1.mp4` | 264 | 不用（整張含天空都是影片） |
+| 石製遺蹟　祭壇 | `anim/fallen/fallen_altar_day_sep_v1.mp4` | 399 | 不用（整張含天空都是影片） |
+| 石製遺蹟　沉水石坑 | `anim/fallen/fallen_basin_day_sep_v1.mp4` | 270 | 不用（整張含天空都是影片） |
+| 帝都外郊　河畔 | `anim/capital_outer/outer_river_dusk_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+| 帝都外郊　廢風車 | `anim/capital_outer/outer_windmill_dusk_sep_v1.mp4` | 390 | 不用（整張含天空都是影片） |
+| 帝都外郊　城外 | `anim/capital_outer/outer_gate_dusk_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+| 平原古道　烽燧臺 | `anim/plains/plains_beacon_day_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+
+> 11-12 伊甸古墓（Ray 核可；室內整張照 F 系列跑，只交一圈，整張蓋上去）
+| 伊甸古墓　廢坑道 | `anim/tomb/tomb_adit_sep_v1.mp4` | 94 | 不用（整張含天空都是影片） |
+| 伊甸古墓　側廊 | `anim/tomb/tomb_aislew_sep_v1.mp4` | 96 | 不用（整張含天空都是影片） |
+| 伊甸古墓　繞行廊 | `anim/tomb/tomb_ambulatory_sep_v1.mp4` | 102 | 不用（整張含天空都是影片） |
+| 伊甸古墓　灰坑 | `anim/tomb/tomb_ashpit_sep_v1.mp4` | 96 | 不用（整張含天空都是影片） |
+| 伊甸古墓　骨坑 | `anim/tomb/tomb_bonepit_sep_v1.mp4` | 92 | 不用（整張含天空都是影片） |
+| 伊甸古墓　誦經室 | `anim/tomb/tomb_chantry_sep_v1.mp4` | 81 | 不用（整張含天空都是影片） |
+| 伊甸古墓　禮拜堂 | `anim/tomb/tomb_chapel_sep_v1.mp4` | 83 | 不用（整張含天空都是影片） |
+| 伊甸古墓　藏骨所 | `anim/tomb/tomb_charnel_sep_v1.mp4` | 82 | 不用（整張含天空都是影片） |
+| 伊甸古墓　蓄水池 | `anim/tomb/tomb_cistern_sep_v1.mp4` | 90 | 不用（整張含天空都是影片） |
+| 伊甸古墓　迴廊 | `anim/tomb/tomb_cloister_sep_v1.mp4` | 98 | 不用（整張含天空都是影片） |
+| 伊甸古墓　列柱廊 | `anim/tomb/tomb_colonnade_sep_v1.mp4` | 106 | 不用（整張含天空都是影片） |
+| 伊甸古墓　告解所 | `anim/tomb/tomb_confessio_sep_v1.mp4` | 108 | 不用（整張含天空都是影片） |
+| 伊甸古墓　長廊 | `anim/tomb/tomb_corr2_sep_v1.mp4` | 92 | 不用（整張含天空都是影片） |
+| 伊甸古墓　十字交會 | `anim/tomb/tomb_crossing_sep_v1.mp4` | 86 | 不用（整張含天空都是影片） |
+| 伊甸古墓　十字墓窖 | `anim/tomb/tomb_crossvault_sep_v1.mp4` | 94 | 不用（整張含天空都是影片） |
+| 伊甸古墓　家族墓室 | `anim/tomb/tomb_crypta_sep_v1.mp4` | 106 | 不用（整張含天空都是影片） |
+| 伊甸古墓　石棺主室 | `anim/tomb/tomb_crypt_sep_v1.mp4` | 98 | 不用（整張含天空都是影片） |
+| 伊甸古墓　墓道 | `anim/tomb/tomb_cryptwalk_sep_v1.mp4` | 98 | 不用（整張含天空都是影片） |
+| 伊甸古墓　墓道深處 | `anim/tomb/tomb_deepwalk_sep_v1.mp4` | 96 | 不用（整張含天空都是影片） |
+| 伊甸古墓　玄室前廊 | `anim/tomb/tomb_gallery3_sep_v1.mp4` | 96 | 不用（整張含天空都是影片） |
+| 伊甸古墓　柱廳 | `anim/tomb/tomb_hall2_sep_v1.mp4` | 96 | 不用（整張含天空都是影片） |
+| 伊甸古墓　焚化窯 | `anim/tomb/tomb_kiln_sep_v1.mp4` | 89 | 不用（整張含天空都是影片） |
+| 伊甸古墓　二層梯廳 | `anim/tomb/tomb_landing2_sep_v1.mp4` | 95 | 不用（整張含天空都是影片） |
+| 伊甸古墓　底層梯廳 | `anim/tomb/tomb_landing3_sep_v1.mp4` | 108 | 不用（整張含天空都是影片） |
+| 伊甸古墓　碑廊 | `anim/tomb/tomb_lapidarium_sep_v1.mp4` | 88 | 不用（整張含天空都是影片） |
+| 伊甸古墓　中殿 | `anim/tomb/tomb_nave_sep_v1.mp4` | 100 | 不用（整張含天空都是影片） |
+| 伊甸古墓　骨甕廊 | `anim/tomb/tomb_ossuarya_sep_v1.mp4` | 79 | 不用（整張含天空都是影片） |
+| 伊甸古墓　底層階梯 | `anim/tomb/tomb_stair2_sep_v1.mp4` | 94 | 不用（整張含天空都是影片） |
+| 伊甸古墓　積水坑 | `anim/tomb/tomb_sump_sep_v1.mp4` | 95 | 不用（整張含天空都是影片） |
