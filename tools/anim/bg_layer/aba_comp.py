@@ -17,6 +17,7 @@ ap.add_argument('--nosky', action='store_true', help='天空不走 ABA（雲交�
 ap.add_argument('--reach', type=int, default=80, help='布可以飄出 Ray 畫的範圍多遠（像素）')
 ap.add_argument('--full', action='store_true', help='純 Wan：整張都用 Wan 的像素（Ray 11-10 點名的那幾格）')
 ap.add_argument('--protect', default='', help='這張遮罩白色的地方一律用原圖（圖騰、會冒出人的小徑…）')
+ap.add_argument('--mwarp', default='', help='註記遮罩要先套這個 3×3 對位（原圖座標 → GPT 預處理圖座標，sep_run 用）')
 ap.add_argument('--keepflicker', action='store_true', help='不要自動拿掉閃動格')
 ap.add_argument('--chain', default='', help='ABCD 真循環：四段前綴用逗號分開（A→B,B→C,C→D,D→A）；給了就不看 ab/k/ba（Ray 11-10 定為標準作業）')
 a = ap.parse_args()
@@ -31,6 +32,7 @@ for p in ([] if a.full else sorted(glob.glob(os.path.join(nd, '*.png')))):
         m = cv2.GaussianBlur(hard.astype(np.float32), (0, 0), 1.5)
     else:
         m = m.astype(np.float32) / 255
+    if a.mwarp: m = cv2.warpPerspective(m, np.load(a.mwarp).astype(np.float64), (W, H))
     layers.append(m)
 M0 = np.max(layers, axis=0)
 ld = lambda f: cv2.resize(np.array(Image.open(f).convert('RGB')), (W, H), interpolation=cv2.INTER_LANCZOS4).astype(np.float32)

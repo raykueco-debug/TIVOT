@@ -43,7 +43,7 @@ def cut_grid(png):
 
 
 class Layer:
-    def __init__(self, sprites, seed, surface, depth, n, wmin, wmax, life, drift, haze_col=None, haze=0.0, fog_col=None):
+    def __init__(self, sprites, seed, surface, depth, n, wmin, wmax, life, drift, haze_col=None, haze=0.0, fog_col=None, xr=None, fog=0.92, keep_in=False, opa=1.0):
         rng = np.random.default_rng(seed)
         self.spr = sprites; self.surface, self.depth, self.n = surface, depth, n
         self.ph = (np.arange(n) + rng.random(n) * 0.9) / n
@@ -53,6 +53,7 @@ class Layer:
         self.drift = drift * rng.uniform(0.7, 1.3, n)
         self.sid = rng.integers(0, len(sprites), n); self.flip = rng.random(n) < 0.5
         self.wseed = rng.integers(0, 1 << 30, n)
+        self.xr = xr or (-200, W + 200); self.fogk = fog; self.keep_in = keep_in; self.opa = opa   # keep_in：雲塊整塊留在畫面內不被裁（Ray 11-11）；opa：整體透明度   # xr＝雲塊中心的橫向範圍（窄天空只在那一條裡撒）
         self.haze_col = np.array(haze_col if haze_col is not None else (200, 214, 234), np.float32); self.haze = haze
         self.fog_col = np.array(fog_col if fog_col is not None else (205, 216, 234), np.float32)
 
@@ -75,12 +76,12 @@ class Layer:
         rgb = np.zeros((H, W, 3), np.float32); A = np.zeros((H, W), np.float32)
         ys = np.arange(H, dtype=np.float32)[:, None]
         fog = np.clip((ys - self.surface - self.depth * 0.2) / (self.depth * 0.6), 0, 1)
-        rgb[:] = self.fog_col; A[:] = np.broadcast_to(fog * 0.92, (H, W))   # 雲海深處的霧
+        rgb[:] = self.fog_col; A[:] = np.broadcast_to(fog * self.fogk, (H, W))   # 雲海深處的霧
         age = t / self.life + self.ph; u = age % 1.0; k = np.floor(age)
         rise = np.clip(u / 0.65, 0, 1)
         grow = 0.45 + 0.55 * np.sin(np.clip(u, 0, 1) * np.pi) ** 0.7
         y_bot = self.surface + self.depth * (1 - rise) + 30                   # 雲塊底緣一路往上
-        x = ((self.bx + k * 0.618 + self.k0) % 1.0) * (W + 400) - 200 + self.drift * u * self.life
+        x = ((self.bx + k * 0.618 + self.k0) % 1.0) * (self.xr[1] - self.xr[0]) + self.xr[0] + self.drift * u * self.life
         for i in np.argsort(y_bot):                                            # 上面（遠）的先畫
             s = self.spr[self.sid[i]]
             if self.flip[i]: s = s[:, ::-1]
@@ -93,7 +94,10 @@ class Layer:
             yy = np.linspace(0, 1, hh, dtype=np.float32)[:, None]
             al = sp[..., 3] / 255 * np.clip((1.0 - yy) / 0.45, 0, 1)            # 下半淡進霧裡
             col = sp[..., :3] * (1 - self.haze) + self.haze_col * self.haze
-            x0, y0 = int(x[i] - ww / 2), int(y_bot[i] - hh)
+            al = al * self.opa
+            cx, yb_ = x[i], y_bot[i]
+            if self.keep_in: cx = min(max(cx, ww / 2), W - ww / 2); yb_ = max(yb_, hh)
+            x0, y0 = int(cx - ww / 2), int(yb_ - hh)
             xa, ya, xb, yb = max(0, x0), max(0, y0), min(W, x0 + ww), min(H, y0 + hh)
             if xa >= xb or ya >= yb: continue
             sl = (slice(ya - y0, yb - y0), slice(xa - x0, xb - x0)); a = al[sl][..., None]

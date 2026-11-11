@@ -21,7 +21,7 @@ class Layer:
         self.R = rng.uniform(rmin, rmax, n)
         self.life = life * rng.uniform(0.8, 1.2, n)
         self.drift = drift * rng.uniform(0.7, 1.3, n)
-        self.nb = rng.integers(5, 9, n)                                 # 每堆幾個小雲瓣
+        self.nb = rng.integers(6, 10, n)                                 # 每堆幾個小雲瓣
         self.bseed = rng.random((n, 12, 3))                             # 小雲瓣的角度／大小／外推抖動
         self.col = [np.array(c, np.float32) for c in (lit, mid, deep, line)]
         self.wave_ph = rng.random(3) * 6.28; self.base_wave = base_wave
@@ -35,43 +35,53 @@ class Layer:
         y = self.surface + self.depth * (1 - rise) - R * 0.35 * rise
         return x, y, R
 
+    def heap_mask(self, i, r, pad):
+        """一堆雲的覆蓋：主體＋上半圈雲瓣＋雲瓣上再長小雲瓣（三個尺度 ⇒ 邊緣細碎，像原圖的手繪積雲）。"""
+        m = np.zeros((2 * pad, 2 * pad), np.uint8); c = pad
+        cv2.ellipse(m, (c, c), (int(r * 1.15), int(r * 0.8)), 0, 0, 360, 1, -1)
+        cv2.ellipse(m, (c, c + int(r * 0.6)), (int(r * 1.7), int(r * 0.75)), 0, 0, 360, 1, -1)
+        rs = self.bseed[i]
+        for j in range(self.nb[i]):
+            a = np.pi * (1.02 + 0.96 * (j + 0.5 * rs[j, 0]) / self.nb[i])
+            rr = r * (0.34 + 0.24 * rs[j, 1]); d = r * (0.78 + 0.16 * rs[j, 2])
+            px, py = c + np.cos(a) * d * 1.12, c + np.sin(a) * d * 0.82
+            cv2.circle(m, (int(px), int(py)), int(rr), 1, -1)
+            for q in range(3):                                         # 小雲瓣
+                b = a + (q - 1) * 0.55 + (rs[(j + q) % 12, 0] - 0.5) * 0.3
+                r2 = rr * (0.32 + 0.2 * rs[(j + 3 * q) % 12, 1])
+                cv2.circle(m, (int(px + np.cos(b) * rr * 0.92), int(py + np.sin(b) * rr * 0.86)), max(1, int(r2)), 1, -1)
+        return m
+
     def render(self, t):
         rgb = np.zeros((H, W, 3), np.float32); A = np.zeros((H, W), np.float32)
         xs = np.arange(W, dtype=np.float32)
         top = self.surface + self.base_wave * (np.sin(xs / 230 + self.wave_ph[0] + t * 0.04) + 0.5 * np.sin(xs / 103 + self.wave_ph[1] - t * 0.07))
         ys = np.arange(H, dtype=np.float32)[:, None]
-        base = ys >= top[None, :] + self.depth * 0.25
-        rgb[base] = self.col[1]; A[base] = 1                       # 雲海深處（被雲堆蓋住，偶爾從縫裡看到）
+        hz = np.clip((ys - top[None, :] - self.depth * 0.15) / (self.depth * 0.5), 0, 1)   # 雲海深處的霧：越下面越實
+        rgb[:] = self.col[3]; A[:] = hz * 0.95
         x, y, R = self.heaps(t)
-        # 透視：越下面（越近）越大
         R = R * (0.75 + 0.5 * np.clip((y - self.surface) / max(1, self.depth), 0, 1))
-        for i in np.argsort(y):                                    # 遠（上面）的先畫，近的蓋上去
+        C0, C1, C2, C3 = self.col
+        for i in np.argsort(y):
             r = R[i]
             if r < 3: continue
-            pad = int(r * 2.2) + 4
-            cx, cy = int(x[i]), int(y[i])
-            x0, y0 = cx - pad, cy - pad
-            m = np.zeros((2 * pad, 2 * pad), np.uint8); c = (pad, pad)
-            cv2.ellipse(m, c, (int(r * 1.2), int(r * 0.9)), 0, 0, 360, 1, -1)
-            cv2.ellipse(m, (pad, pad + int(r * 0.7)), (int(r * 1.7), int(r * 0.9)), 0, 0, 360, 1, -1)   # 寬的下半身，往兩側攤開沉進雲海
-            for j in range(self.nb[i]):
-                a = np.pi * (1.05 + 0.9 * (j + 0.5 * self.bseed[i, j, 0]) / self.nb[i])
-                rr = r * (0.36 + 0.26 * self.bseed[i, j, 1]); d = r * (0.8 + 0.18 * self.bseed[i, j, 2])
-                cv2.circle(m, (int(pad + np.cos(a) * d * 1.12), int(pad + np.sin(a) * d * 0.85)), int(rr), 1, -1)
-            mf = m.astype(np.float32); lp = max(3, int(r * 0.22))
+            pad = int(r * 2.4) + 4; cx, cy = int(x[i]), int(y[i]); x0, y0 = cx - pad, cy - pad
+            m = self.heap_mask(i, r, pad); mf = m.astype(np.float32)
+            lp = max(2, int(r * 0.16))
             b = cv2.GaussianBlur(mf, (0, 0), lp)
             toward = np.roll(np.roll(b, lp, 0), lp // 2, 1); away = np.roll(np.roll(b, -lp, 0), -lp // 2, 1)
-            tone = np.where(toward < 0.66, 0, np.where(away < 0.62, 2, 1))
-            # 雲堆下半部本來就在陰影裡（越往下越暗）
-            yy = (np.arange(2 * pad)[:, None] - pad) / r
-            tone = np.where((yy > 0.35) & (tone == 0), 1, tone); tone = np.where(yy > 0.75, 2, tone)
-            col = np.where((tone == 0)[..., None], self.col[0], np.where((tone == 1)[..., None], self.col[1], self.col[2]))
-            edge = cv2.morphologyEx(m, cv2.MORPH_GRADIENT, np.ones((3, 3), np.uint8)) > 0
-            edge &= (np.arange(2 * pad)[:, None] < pad + r * 0.5)   # 下面接雲海的那段不畫線
-            col[edge] = self.col[3]
+            yy = (np.arange(2 * pad, dtype=np.float32)[:, None] - pad) / r
+            # 四階：亮面（左上外緣）／淡面／中間影／陰影（下半、右下）
+            tone = np.where(toward < 0.55, 0, np.where(toward < 0.8, 1, 2))
+            tone = np.where((away < 0.6) & (yy > -0.2), 3, tone)
+            tone = np.where((yy > 0.25) & (tone < 2), 2, tone); tone = np.where(yy > 0.6, 3, tone)
+            col = np.where((tone == 0)[..., None], C0, np.where((tone == 1)[..., None], (C0 + C1) / 2, np.where((tone == 2)[..., None], C1, C2)))
+            # 底部淡進霧裡（不畫線、不硬切）
+            al = mf * np.clip(1.0 - (yy - 0.45) / 0.6, 0, 1)
+            al = cv2.GaussianBlur(al, (0, 0), 0.7)
             xa, ya, xb, yb = max(0, x0), max(0, y0), min(W, x0 + 2 * pad), min(H, y0 + 2 * pad)
             if xa >= xb or ya >= yb: continue
-            sl = (slice(ya - y0, yb - y0), slice(xa - x0, xb - x0)); on = m[sl] > 0
-            rgb[ya:yb, xa:xb][on] = col[sl][on]; A[ya:yb, xa:xb][on] = 1
-        A = cv2.GaussianBlur(A, (0, 0), 0.6)
+            sl = (slice(ya - y0, yb - y0), slice(xa - x0, xb - x0)); a = al[sl][..., None]
+            rgb[ya:yb, xa:xb] = rgb[ya:yb, xa:xb] * (1 - a) + col[sl] * a
+            A[ya:yb, xa:xb] = A[ya:yb, xa:xb] * (1 - a[..., 0]) + a[..., 0]
         return rgb, A

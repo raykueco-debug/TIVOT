@@ -243,7 +243,7 @@ def _do_one(key, _retry=True):
                 log('⚠ 鏡位動了', key, f'縮放 {sc*100:.1f}% 位移 {mv:.0f}px')
                 p = os.path.join(HERE, 'notes', key, 'notes.json'); jj = json.load(open(p, encoding='utf8'))
                 if ANTI_CAM not in (o.get('extra') or ''):   # 第一次：加鎖鏡頭句
-                    jj.setdefault('opts', {})['extra'] = ((jj['opts'].get('extra') + '，') if jj['opts'].get('extra') else '') + ANTI_CAM
+                    jo = jj.get('opts') or {}; jj['opts'] = jo; jo['extra'] = ((jo.get('extra') + '，') if jo.get('extra') else '') + ANTI_CAM
                     json.dump(jj, open(p, 'w', encoding='utf8'), ensure_ascii=False, indent=1)
                     return _do_one(key, _retry)
                 if 'seed' not in o:   # 第二次：句子壓不住（大廳 11-10 加了句子反而推 3.6%）⇒ 換種子

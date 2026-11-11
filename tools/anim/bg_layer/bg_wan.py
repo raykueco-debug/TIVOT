@@ -9,13 +9,14 @@ seed = int(sys.argv[5]) if len(sys.argv) > 5 else random.randint(1, 2**31)
 NEG = ('色調艷麗，過曝，靜態，細節模糊不清，字幕，風格，作品，畫作，畫面，靜止，整體發灰，最差質量，低質量，JPEG壓縮殘留，醜陋的，殘缺的，'
        '多餘的手指，畫得不好的手部，畫得不好的臉部，畸形的，毀容的，形態畸形的肢體，手指融合，雜亂的背景，三條腿，背景人很多，倒著走，'
        '鏡頭移動，鏡頭推拉，背景改變')
+import os as _o; NEG = _o.environ.get('BG_NEG', NEG)   # Ray 11-11：少用 neg，可整串換掉
 import os
 W, H = int(os.environ.get('BG_W',768)), int(os.environ.get('BG_H',512))
 g = {
  '1': {'class_type': 'UnetLoaderGGUF', 'inputs': {'unet_name': 'Wan2.2-I2V-A14B-HighNoise-Q4_K_M.gguf'}},
  '2': {'class_type': 'UnetLoaderGGUF', 'inputs': {'unet_name': 'Wan2.2-I2V-A14B-LowNoise-Q4_K_M.gguf'}},
- '3': {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['1', 0], 'lora_name': 'wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors', 'strength_model': 1.0}},
- '4': {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['2', 0], 'lora_name': 'wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors', 'strength_model': 1.0}},
+ '3': {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['1', 0], 'lora_name': os.environ.get('BG_LORA_HI','wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors'), 'strength_model': 1.0}},
+ '4': {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['2', 0], 'lora_name': os.environ.get('BG_LORA_LO','wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors'), 'strength_model': 1.0}},
  '5': {'class_type': 'ModelSamplingSD3', 'inputs': {'model': ['3', 0], 'shift': 5.0}},
  '6': {'class_type': 'ModelSamplingSD3', 'inputs': {'model': ['4', 0], 'shift': 5.0}},
  '7': {'class_type': 'CLIPLoader', 'inputs': {'clip_name': 'umt5_xxl_fp8_e4m3fn_scaled.safetensors', 'type': 'wan', 'device': 'default'}},

@@ -31,16 +31,25 @@ top_c = np.median(orig[:30, 600:1000].reshape(-1, 3), 0); hor_c = np.median(orig
 g = np.clip(np.linspace(0, 1, H) / 0.42, 0, 1)[:, None, None]
 sky = np.broadcast_to(top_c * (1 - g) + hor_c * g, (H, W, 3)).astype(np.float32)
 
-FAR = C.Layer(3, 410, 140, 150, 14, 34, 46, 5, (232, 240, 250), (205, 218, 237), (178, 195, 222), (158, 176, 210))
-NEAR = C.Layer(5, 580, 380, 90, 55, 125, 36, 9, (250, 252, 255), (216, 228, 244), (180, 197, 224), (146, 166, 204))
+
+# 四層雲海（由遠到近）。顏色取自原圖的雲：亮 247/249/252、淡 232/238/246、中 205/215/232、影 170/182/200；遠的往天空色偏
+def pal(k):   # k＝往天空色混的比例（越遠越大）
+    base = [np.array(c, np.float32) for c in ((247, 249, 252), (210, 220, 236), (172, 184, 202), (150, 166, 190))]
+    return [tuple(c * (1 - k) + hor_c * k) for c in base]
+LAYERS_BACK = [C.Layer(2, 300, 60, 160, 8, 18, 60, 3, *pal(0.55), base_wave=4)]                 # 最遠方：地平線、遠山之間（在遠景層後面）
+LAYERS_MID = [C.Layer(3, 410, 140, 150, 14, 32, 46, 5, *pal(0.35)),                             # 遠景：包住石柱與山腳
+              C.Layer(4, 470, 120, 90, 22, 48, 40, 7, *pal(0.18))]                              # 中景：城堡台地與懸崖之間
+LAYERS_FRONT = [C.Layer(5, 600, 380, 90, 50, 110, 36, 9, *pal(0.0))]                            # 近景：崖下
 
 p = subprocess.Popen(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-',
                       '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '20', '-movflags', '+faststart', out_p], stdin=subprocess.PIPE)
 for fi in range(int(T * FPS)):
     t = 20 + fi / FPS                                                    # 從第 20 秒開始（雲已經湧滿）
     img = sky.copy()
+    for L in LAYERS_BACK:
+        c, a = L.render(t); img = img * (1 - a[..., None]) + c * a[..., None]
     img = img * (1 - af[..., None]) + far * af[..., None]
-    for L in (FAR, NEAR):
+    for L in LAYERS_MID + LAYERS_FRONT:
         c, a = L.render(t); img = img * (1 - a[..., None]) + c * a[..., None]
     img = img * (1 - an[..., None]) + near * an[..., None]
     p.stdin.write(img.clip(0, 255).astype(np.uint8).tobytes())
