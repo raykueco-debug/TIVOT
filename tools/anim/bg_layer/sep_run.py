@@ -99,7 +99,8 @@ def tint(sprs, orig, sky_a):
 def clouds(sky_a, yb_yt, hor_c):
     yt, yb = yb_yt; m = sky_a > 0.5; xs = np.where(m.any(0))[0]
     x0, x1 = (int(xs.min()), int(xs.max())) if len(xs) else (0, W); sw = max(200, x1 - x0); hgt = max(80, yb - yt)
-    S_far, S_mid, S_near = (tint(CS.cut_grid(DL + f'cloudgrid_{n}.png'), ORIG[0], sky_a) for n in ('far', 'mid', 'near'))
+    V2 = tint(CS.cut_grid(DL + 'cloudgrid_v2_a.png') + CS.cut_grid(DL + 'cloudgrid_v2_b.png'), ORIG[0], sky_a)   # Ray 11-11：換成 GPT 新出的兩張灰白雲九宮格
+    S_far = S_mid = S_near = V2
     hi = tint([np.full((2, 2, 4), 255, np.float32)], ORIG[0], sky_a)[0][0, 0, :3]
     fogc = lambda k: tuple(hi * (1 - k) + hor_c * k)
     xr = (x0 - sw * 0.15, x1 + sw * 0.15); k = max(1.0, sw / 500); sz = min(sw, 900)
@@ -153,6 +154,8 @@ def f_fg(key, base, still, inp):
     參數（k、提詞）從那一格 F 版的 meta 與輸出 PNG 讀回來；提詞拿掉雲那一句（天空已摳掉，雲交給程式）。"""
     _, move, sky = Q.plan(key)
     mv = [c for c in move if c.get('text') and '雲' not in c['text']]
+    jauto = json.load(open(os.path.join(HERE, 'notes', key, 'notes.json'), encoding='utf8')).get('auto')
+    rng = [] if jauto else mv   # 自動判斷的不算 Ray 畫的範圍 ⇒ 雲以外全圖
     fmp = os.path.join(HERE, 'out', base + '_abacloth', 'meta.json')
     if os.path.exists(fmp):
         fm = json.load(open(fmp, encoding='utf8'))
@@ -174,7 +177,7 @@ def f_fg(key, base, still, inp):
     if len(Q.wan_out(ba)) < 33:
         if not wait_gpu() or not run([Q.PY, 'bg_flf.py', B, inp, ba, '33', pba, '101']): return False
     args = [Q.PY, 'aba_comp.py', still, key, ab, str(k), ba, base + '_sepfg', '--mwarp', mwarp(key, still)]
-    if not mv: args += ['--full']   # Ray 11-11：沒畫範圍的格子＝雲以外全圖跑（天空已摳掉，雲交給程式）
+    if not rng: args += ['--full']   # Ray 11-11：沒畫範圍的格子＝雲以外全圖跑（天空已摳掉，雲交給程式）
     if sky: args += ['--sky', sky[0]['name'], '--nosky']
     return run(args)
 
@@ -183,6 +186,13 @@ def rev_seam(FR, fgm):
     """Ray 11-11：「前景可以用倒放到最接近的一格再續放」—— 0..N 播完不直接跳回 0，
     先倒放回到「跟第 0 格最像」的那一格 j 再接回 0。j 取倒放最短、而且差異不超過平常一步 1.5 倍的那一格（找不到就取最像的）。
     只對前景（天空以外）算差異；雲不經過這一支（雲照舊只往前）。"""
+    thr = float(os.environ.get('SEP_TRIM', 0) or 0)
+    if thr > 0:   # Ray 11-11：「有一點鏡位偏移，把頭尾縮一下找最接近的 f 接上」—— 從第 0 格起，鏡位偏移超過 thr 像素就截掉後面
+        g = [cv2.cvtColor(cv2.resize(f, (768, 512)).astype(np.uint8), cv2.COLOR_RGB2GRAY).astype(np.float32) for f in FR]
+        hw = cv2.createHanningWindow((768, 512), cv2.CV_32F)
+        sh = [2 * float(np.hypot(*cv2.phaseCorrelate(g[0], x, hw)[0])) for x in g]
+        cut = next((i for i, v in enumerate(sh) if v > thr), len(FR))
+        cut = max(cut, 12); log('鏡位截短', f'{len(FR)} → {cut} 格（門檻 {thr}px）'); FR = FR[:cut]
     sm = cv2.resize(fgm, (192, 128))[..., None]
     q = [cv2.resize(f, (192, 128)) * sm for f in FR]
     step = np.median([np.abs(q[i + 1] - q[i]).mean() for i in range(len(q) - 1)])
@@ -198,7 +208,7 @@ def sky_backdrop(sky, sky_a, yb_yt, hor_c):
     淡進天空色，鋪在動態雲之下。只算一次。"""
     yt, yb = yb_yt; m = sky_a > 0.5; xs = np.where(m.any(0))[0]
     x0, x1 = (int(xs.min()), int(xs.max())) if len(xs) else (0, W); sw = max(200, x1 - x0); hgt = max(80, yb - yt)
-    S_far = tint(CS.cut_grid(DL + 'cloudgrid_far.png'), ORIG[0], sky_a); xr = (x0 - sw * 0.1, x1 + sw * 0.1); k = max(1.0, sw / 400)
+    S_far = tint(CS.cut_grid(DL + 'cloudgrid_v2_a.png') + CS.cut_grid(DL + 'cloudgrid_v2_b.png'), ORIG[0], sky_a); xr = (x0 - sw * 0.1, x1 + sw * 0.1); k = max(1.0, sw / 400)
     img = sky.copy()
     for i, (frac, haze, a) in enumerate(((0.15, 0.55, 0.55), (0.45, 0.45, 0.65), (0.80, 0.35, 0.75))):
         L = CS.Layer(S_far, 40 + i, yt + hgt * frac, hgt * 0.25, int(7 * k), min(sw, 900) * 0.20, min(sw, 900) * 0.42, 60, 0,
@@ -208,11 +218,38 @@ def sky_backdrop(sky, sky_a, yb_yt, hor_c):
     return img
 
 
+# 會轉的扇葉（Ray 11-11：「把車葉拆掉另外給程式跑，讓它有轉不太動的效果」）。座標是 1536×1024 的 GPT 圖。
+BLADES = {'capital_outer__windmill__base': dict(hub=(440, 125), tips=[(290, 0), (540, 0), (645, 330), (300, 370)], w=34, amp=1.6,
+                                                tower=[(262, 100), (470, 100), (535, 505), (200, 505)])}
+
+
+def blades(key, other, sky_a):
+    """扇葉層＝前景裡、離四支葉臂中線 w 像素以內的像素（GPT 圖）。原位的扇葉：落在天空的改畫天空（交給雲層），
+    落在塔身上的留著（晃幅小，殘影只有幾像素）；轉動的那一份疊在最上面。"""
+    b = BLADES.get(key)
+    if not b: return None
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32); hx, hy = b['hub']; m = np.zeros((H, W), np.float32)
+    for tx, ty in b['tips']:
+        dx, dy = tx - hx, ty - hy; L2 = dx * dx + dy * dy
+        t = np.clip(((xx - hx) * dx + (yy - hy) * dy) / L2, 0, 1)
+        d = np.hypot(xx - hx - t * dx, yy - hy - t * dy); m = np.maximum(m, (d < b['w']).astype(np.float32))
+    m = m * (1 - sky_a); m = cv2.GaussianBlur(m, (0, 0), 0.8)
+    tw = np.zeros((H, W), np.uint8); cv2.fillPoly(tw, [np.array(b['tower'], np.int32)], 1)
+    sa = np.maximum(sky_a, m * (1 - tw))
+    log('扇葉', f'{(m > 0.5).sum()} px，晃幅 ±{b["amp"]}°')
+    return dict(rgb=other.astype(np.float32), a=m, hub=(float(hx), float(hy)), amp=b['amp'], sky_a=sa)
+
+
 def do(key):
     base = key.replace('__', '_'); outd = os.path.join(HERE, 'out', base + '_sep' + os.environ.get('SEP_SUFFIX', ''))
     if os.path.exists(os.path.join(outd, 'loop.mp4')) and '--recomp' not in sys.argv: log('已有', key); return True
-    if not gpt_path(key): log('沒有預處理圖', key); return False
-    other, sky_a, sky, yy, hor_c = prep(key)
+    if gpt_path(key):
+        other, sky_a, sky, yy, hor_c = prep(key)
+    elif os.environ.get('SEP_NOSKY'):   # 室內（沒有天空）：不用 GPT，原圖直接跑
+        jn0 = json.load(open(os.path.join(HERE, 'notes', key, 'notes.json'), encoding='utf8'))
+        other = np.array(Image.open(os.path.join(Q.BG, jn0['file'])).convert('RGB').resize((W, H), Image.LANCZOS)).astype(np.float32)
+        sky_a = np.zeros((H, W), np.float32); sky = other.copy(); yy = (0, 0); hor_c = np.array([128, 128, 128], np.float32)
+    else: log('沒有預處理圖', key); return False
     jn = json.load(open(os.path.join(HERE, 'notes', key, 'notes.json'), encoding='utf8'))
     ORIG[0] = np.array(Image.open(os.path.join(Q.BG, jn['file'])).convert('RGB').resize((W, H), Image.LANCZOS)).astype(np.float32)
     os.makedirs(outd, exist_ok=True)
@@ -251,9 +288,13 @@ def do(key):
         ok, f = cap.read()
         if not ok: break
         FR.append(cv2.resize(cv2.cvtColor(f, cv2.COLOR_BGR2RGB), (W, H), interpolation=cv2.INTER_LANCZOS4).astype(np.float32))
-    if os.environ.get('SEP_REV'): FR = rev_seam(FR, 1 - sky_a)
-    if os.environ.get('SEP_BACKDROP', '1') == '1': sky = sky_backdrop(sky, sky_a, yy, hor_c)
-    L = clouds(sky_a, yy, hor_c); fg = 1 - sky_a; FPS = 16; T = max(12.0, len(FR) / FPS * 3)
+    if os.environ.get('SEP_STATIC'): FR = [other.astype(np.float32)]   # Ray 11-11：城外「圖不用動，整張不動就動雲」
+    if os.environ.get('SEP_REV') and len(FR) > 1: FR = rev_seam(FR, 1 - sky_a)
+    BL = blades(key, other, sky_a)
+    if BL: sky_a = BL['sky_a']
+    nosky = sky_a.max() < 0.01
+    if not nosky and os.environ.get('SEP_BACKDROP', '1') == '1': sky = sky_backdrop(sky, sky_a, yy, hor_c)
+    L = [] if nosky else clouds(sky_a, yy, hor_c); fg = 1 - sky_a; FPS = 16; T = max(12.0, len(FR) / FPS * 3)
     outp = os.path.join(outd, 'loop.mp4')
     p = subprocess.Popen(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-',
                           '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '20', '-movflags', '+faststart', outp], stdin=subprocess.PIPE)
@@ -262,6 +303,11 @@ def do(key):
         for Ly in L:
             c, a = Ly.render(30 + fi / FPS); img = img * (1 - a[..., None]) + c * a[..., None]
         img = img * sky_a[..., None] + FR[fi % len(FR)] * fg[..., None]
+        if BL:   # 扇葉：程式繞軸小幅晃（轉不太動）
+            tt = fi / FPS; ang = BL['amp'] * (0.75 * np.sin(2 * np.pi * 3 * tt / T) + 0.25 * np.sin(2 * np.pi * 7 * tt / T + 1.3))
+            Mr = cv2.getRotationMatrix2D(BL['hub'], ang, 1.0)
+            c = cv2.warpAffine(BL['rgb'], Mr, (W, H), flags=cv2.INTER_LINEAR); a = cv2.warpAffine(BL['a'], Mr, (W, H), flags=cv2.INTER_LINEAR)[..., None]
+            img = img * (1 - a) + c * a
         p.stdin.write(img.clip(0, 255).astype(np.uint8).tobytes())
         if fi == 40: Image.fromarray(img.clip(0, 255).astype(np.uint8)).save(os.path.join(outd, 'f40.jpg'))
     p.stdin.close(); p.wait()
