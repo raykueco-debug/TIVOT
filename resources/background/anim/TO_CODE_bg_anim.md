@@ -184,3 +184,13 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 > 11-12 北方泊地（Ray 核可；取代先前同名檔）：東區、西區（GPT 去煙底圖＋程式煙、逐格對齊）
 | 北方泊地　東區 | `anim/northport/northport_east_bf_sep_v1.mp4` | 324 | 不用（整張含天空都是影片） |
 | 北方泊地　西區 | `anim/northport/northport_west_bf_sep_v1.mp4` | 204 | 不用（整張含天空都是影片） |
+
+> 11-12 北方泊地（Ray 核可）：廣場（左邊人框住、逐格對齊）
+| 北方泊地　廣場 | `anim/northport/northport_square_bf_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+
+> 11-12 北方泊地（Ray 核可）：北區（去煙去火底圖）、槍店（只有窗外天空動）
+| 北方泊地　北區 | `anim/northport/northport_north_bf_sep_v1.mp4` | 294 | 不用（整張含天空都是影片） |
+| 北方泊地　槍店 | `anim/northport/northport_gunstore_bf_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+
+> 11-12 伊甸古墓 底層祭壇（Ray 核可；祭壇框住＋程式藍光，藍光不是嚴格循環，交整段）
+| 伊甸古墓　底層祭壇 | `anim/tomb/tomb_lowaltar_sep_v1.mp4` | 249 | 不用（整張含天空都是影片） |

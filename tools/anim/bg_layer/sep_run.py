@@ -364,7 +364,7 @@ def do(key):
         for Ly in L:
             c, a = Ly.render(30 + fi / FPS); img = img * (1 - a[..., None]) + c * a[..., None]
         img = img * sky_a[..., None] + FR[fi % len(FR)] * fg[..., None]
-        if GLW:   # Ray 11-12：底層祭壇「發藍光就好」—— 程式在祭壇上方疊一層緩慢呼吸的藍光（加亮混合）
+        if GLW is not None:   # Ray 11-12：底層祭壇「發藍光就好」—— 程式在祭壇上方疊一層緩慢呼吸的藍光（加亮混合）
             k = 0.55 + 0.45 * np.sin(2 * np.pi * fi / FPS / 3.0)
             img = np.clip(img + GLW * k, 0, 255)
         if SMK:

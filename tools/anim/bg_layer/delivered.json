@@ -62,5 +62,12 @@
  "northport_east_bf": "northport/northport_east_bf_sep_v1.mp4",
  "northport_cityhall_bf": "northport/northport_cityhall_bf_sep_v1.mp4",
  "northport_guild_bf": "northport/northport_guild_bf_sep_v1.mp4",
- "northport_church_ruin": "northport/northport_church_ruin_sep_v1.mp4"
+ "northport_church_ruin": "northport/northport_church_ruin_sep_v1.mp4",
+ "northport_port_bf": "northport/northport_port_bf_sep_v1.mp4",
+ "northport_tavern_bf": "northport/northport_tavern_bf_sep_v1.mp4",
+ "northport_west_bf": "northport/northport_west_bf_sep_v1.mp4",
+ "northport_square_bf": "northport/northport_square_bf_sep_v1.mp4",
+ "northport_north_bf": "northport/northport_north_bf_sep_v1.mp4",
+ "northport_gunstore_bf": "northport/northport_gunstore_bf_sep_v1.mp4",
+ "tomb__lowaltar__base": "tomb/tomb_lowaltar_sep_v1.mp4"
 }
