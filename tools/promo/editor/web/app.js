@@ -330,8 +330,7 @@ function textTrack(){
 }
 function addText(){
   const s = snapshot(), t = textTrack();
-  const cut = cutAt(playhead);
-  let st = cut ? cut.start : frame(playhead), dur = cut ? frame(cut.end - cut.start) : 2;
+  let st = frame(playhead), dur = 2;   // 分鏡欄只負責註記，不決定文字長度（11-12，Ray）
   const free = placeFree(t.clips, dur, st);
   if(free === null) { status('「字」軌在這裡沒空位'); return; }
   const c = Object.assign({ id:uid(), kind:'text', src:'', start:frame(free), dur, fit:'cover', motion:{type:'none', amt:0.1}, fadeIn:0.15, fadeOut:0.15, trans:null }, TEXT_DEF);
@@ -340,14 +339,12 @@ function addText(){
 }
 
 /* ═════════════ 快剪（ver -2223） ═════════════
-   素材庫多選的圖／影片 → 從播放頭起，每張固定秒數（或每 N 拍）排成一串。分鏡格裡就預設填滿那一格。 */
+   素材庫多選的圖／影片 → 從播放頭起，每張固定秒數（或每 N 拍）排成一串。 */
 function montage(){
   const items = libOrder.filter(x => libSel.has(x.p) && (x.kind === 'image' || x.kind === 'video'));
   if(items.length < 2){ status('先在素材庫選兩張以上的圖或影片（Ctrl／Shift＋點）'); return; }
-  const cut = cutAt(playhead), st0 = cut ? cut.start : frame(playhead);
-  const span0 = cut ? cut.end - cut.start : items.length * 0.2;
+  const st0 = frame(playhead), span0 = items.length * 0.2;   // 分鏡欄只負責註記，不決定快剪長度（11-12，Ray）
   showModal('<h3>快剪：' + items.length + ' 個素材</h3>' +
-    (cut ? '<p class="dim">播放頭在分鏡 #' + (cut.no || '') + '（' + fmt(cut.start) + '–' + fmt(cut.end) + '）：預設填滿這一格。</p>' : '') +
     '<div class="mt-row"><label>開始（秒）</label><input id="mtStart" type="number" step="0.01" value="' + st0.toFixed(2) + '"></div>' +
     '<div class="mt-row"><label>總長（秒）</label><input id="mtSpan" type="number" step="0.1" value="' + span0.toFixed(2) + '"><span class="dim">素材不夠就循環</span></div>' +
     '<div class="mt-row"><label>切法</label><select id="mtMode"><option value="sec">每張固定秒數</option>' + (beatTimes.length ? '<option value="beat">依拍點</option>' : '') + '</select></div>' +
@@ -740,15 +737,11 @@ async function onLaneDrop(e, track, lane){
   if(raw){ const v = JSON.parse(raw); items = Array.isArray(v) ? v : [v]; }
   else if(e.dataTransfer.files && e.dataTransfer.files.length) items = await uploadFiles([...e.dataTransfer.files]);
   const before = snapshot(); let at = t;
-  // 單張圖／影片丟進分鏡格的時間範圍 → 對齊那一格（ver -2223）
-  const cut = (items.length === 1 && items[0].kind !== 'audio' && track.type === 'video' && $('snap').checked) ? cutAt(xToT(e)) : null;
-  if(cut) at = cut.start;
+  // 分鏡欄只負責註記，不對齊、不裁片源長度（11-12，Ray）
   for(const it of items){
     const want = it.kind === 'audio' ? 'audio' : 'video';
     const tr = track.type === want ? track : project.tracks.find(x => x.type === want);
     const made = await makeClips(it, at, tr);
-    if(cut){ const len = frame(cut.end - cut.start); made.forEach(([, c]) => { c.start = cut.start; c.dur = it.kind === 'image' ? len : Math.min(c.dur, len); });
-             const v = made[0][1]; made.slice(1).forEach(([, c]) => c.dur = v.dur); status('已對齊分鏡 #' + (cut.no || '')); }
     made.forEach(([tt, c]) => tt.clips.push(c));
     at += made[0][1].dur;
   }
