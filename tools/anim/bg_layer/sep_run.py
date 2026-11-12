@@ -144,6 +144,7 @@ def comp_fg(key, still, prot, pre):
     return run(args)
 
 
+NOREV_KEYS = {'lake__cave__day', 'lake__fallbase__day'}   # 有瀑布／水流的格子
 TRIM_KEYS = {'tomb__censerroom__base': 0.4, 'tomb__lowaltar__base': 0.4}   # Ray 11-12：鏡位動了的格子，截到偏移 0.4px 前
 CUR = ['']
 PROTECT_DARK = {'tomb__stair1__base': 45}   # key → 亮度門檻（0~255）
@@ -175,7 +176,8 @@ def f_fg(key, base, still, inp):
         pab = pba = f'動漫風格的背景。{what}。鏡頭完全固定不動，岩石、山壁、地面、石柱、建築、骨頭與雕像都完全不動。動漫風格，賽璐珞上色。'
         k = 23
     SD = os.environ.get('SEP_SEED', '101')
-    ph = hashlib.md5((pab + pba + ('' if SD == '101' else SD)).encode('utf8')).hexdigest()[:5]   # 提詞改了就是新的一組 Wan 輸出
+    nfx = 'nf' if os.path.exists(os.path.join(Q.BG, '_layers_gpt', 'out', key.split('__')[0], key + '__nofire.png')) else ''
+    ph = hashlib.md5((pab + pba + ('' if SD == '101' else SD) + nfx).encode('utf8')).hexdigest()[:5]   # 提詞改了就是新的一組 Wan 輸出
     ab, ba = f'bgl/{base}_sepF{ph}_ab', f'bgl/{base}_sepF{ph}_ba'
     log('F 提詞', pab)
     if len(Q.wan_out(ab)) < 81:
@@ -227,6 +229,16 @@ def rev_seam(FR, fgm):
         cut = next((i for i, v in enumerate(sh) if v > thr), len(FR))
         cut = max(cut, 12); log('鏡位截短', f'{len(FR)} → {cut} 格（門檻 {thr}px）'); FR = FR[:cut]
     sm = cv2.resize(fgm, (192, 128))[..., None]
+    if CUR[0] in NOREV_KEYS or os.environ.get('SEP_NOREV'):   # Ray 11-12：瀑布要不斷往下流 ⇒ 不倒放，往後找跟第 0 格最像的那一格直接接回
+        q = [cv2.resize(f, (192, 128)) * sm for f in FR]
+        d = [np.abs(q[j] - q[0]).mean() for j in range(len(q))]
+        n = len(q); best = (1e9, 0, n)
+        for a in range(0, max(1, n // 3)):
+            for e in range(a + max(12, n // 3), n):
+                v = np.abs(q[e] - q[a]).mean()
+                if v < best[0]: best = (v, a, e)
+        v, a, e = best
+        log('不倒放接縫', f'播 {a}..{e - 1} 接回 {a}（第 {e} 格跟第 {a} 格差 {v:.2f}）'); return FR[a:e]
     q = [cv2.resize(f, (192, 128)) * sm for f in FR]
     step = np.median([np.abs(q[i + 1] - q[i]).mean() for i in range(len(q) - 1)])
     d = [np.abs(q[j] - q[0]).mean() for j in range(len(q))]
@@ -299,10 +311,16 @@ def do(key):
     if os.path.exists(os.path.join(outd, 'loop.mp4')) and '--recomp' not in sys.argv: log('已有', key); return True
     if gpt_path(key):
         other, sky_a, sky, yy, hor_c = prep(key)
+        nf = os.path.join(Q.BG, '_layers_gpt', 'out', key.split('__')[0], key + '__nofire.png')
+        if os.path.exists(nf):   # Ray 11-12：「不要有火」⇒ GPT 去火版當底圖（天空遮罩照舊）
+            o2 = np.array(Image.open(nf).convert('RGB').resize((W, H), Image.LANCZOS)).astype(np.float32)
+            other = o2 * (1 - sky_a[..., None]) + other * sky_a[..., None]; log('用去火版底圖', key)
     elif os.environ.get('SEP_NOSKY'):   # 室內（沒有天空）：不用 GPT，原圖直接跑
         jn0 = json.load(open(os.path.join(HERE, 'notes', key, 'notes.json'), encoding='utf8'))
         other = np.array(Image.open(os.path.join(Q.BG, jn0['file'])).convert('RGB').resize((W, H), Image.LANCZOS)).astype(np.float32)
         sky_a = np.zeros((H, W), np.float32); sky = other.copy(); yy = (0, 0); hor_c = np.array([128, 128, 128], np.float32)
+        nf = os.path.join(Q.BG, '_layers_gpt', 'out', key.split('__')[0], key + '__nofire.png')
+        if os.path.exists(nf): other = np.array(Image.open(nf).convert('RGB').resize((W, H), Image.LANCZOS)).astype(np.float32); log('用去火版底圖', key)
     else: log('沒有預處理圖', key); return False
     jn = json.load(open(os.path.join(HERE, 'notes', key, 'notes.json'), encoding='utf8'))
     ORIG[0] = np.array(Image.open(os.path.join(Q.BG, jn['file'])).convert('RGB').resize((W, H), Image.LANCZOS)).astype(np.float32)
@@ -354,6 +372,11 @@ def do(key):
     BL = blades(key, other, sky_a)
     if BL: sky_a = BL['sky_a']
     nosky = sky_a.max() < 0.01
+    mn = os.environ.get('SEP_MOON')   # Ray 11-12：月亮放在最後景（天空底色上、雲的後面）：從原圖剪下那一圈貼回去
+    if mn and not nosky:
+        cx, cy, rr = [float(v) for v in mn.split(',')]; o = ORIG[0] if ORIG[0] is not None else other
+        yy_, xx_ = np.mgrid[0:H, 0:W].astype(np.float32); dd = np.hypot(xx_ - cx * W, yy_ - cy * H) / (rr * W)
+        ma = np.clip((1.25 - dd) / 0.25, 0, 1)[..., None]; sky = sky * (1 - ma) + o * ma; log('月亮', mn)
     if not nosky and os.environ.get('SEP_BACKDROP', '1') == '1': sky = sky_backdrop(sky, sky_a, yy, hor_c)
     L = [] if nosky else clouds(sky_a, yy, hor_c); fg = 1 - sky_a; FPS = 16; T = max(12.0, len(FR) / FPS * 3)
     outp = os.path.join(outd, 'loop.mp4')

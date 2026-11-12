@@ -4,7 +4,7 @@ Ray 在背景圖上用各色半透明畫筆圈出「會動的那一塊」，每�
 存檔：bg_layer/notes/<map>__<node>__<時段>/  notes.json ＋ 每色一張遮罩 <色名>.png（原圖解析度，白＝畫到的）
 這些遮罩就是拆層用的遮罩（bg_comp.py 讀它，不再自動猜）。
 """
-import base64, json, os, re, sys
+import time, base64, json, os, re, sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import unquote, urlsplit
 
@@ -61,6 +61,9 @@ class H(SimpleHTTPRequestHandler):
                 out.setdefault(look[base], []).append({'var': var, 'dir': dname, 'frames': m.get('frames'), 'fps': m.get('fps'),
                     'seam': m.get('seam_diff'), 'step': m.get('mean_step_diff'), 't': int(os.path.getmtime(mp))})
             return self.send_json(out)
+        if p == '/api/review':
+            rp = os.path.join(HERE, 'review.json')
+            return self.send_json(json.load(open(rp, encoding='utf8')) if os.path.exists(rp) else {})
         if p == '/api/done':   # 哪些已經存過
             out = {}
             if os.path.isdir(NOTES):
@@ -77,6 +80,13 @@ class H(SimpleHTTPRequestHandler):
     def do_POST(self):
         p = urlsplit(self.path).path
         n = int(self.headers.get('Content-Length', 0)); body = json.loads(self.rfile.read(n) or b'{}')
+        if p == '/api/review':   # Ray 11-12：已出未交頁的修改意見（review.json：{資料夾: 意見}；提交時記時間）
+            rp = os.path.join(HERE, 'review.json')
+            cur = json.load(open(rp, encoding='utf8')) if os.path.exists(rp) else {}
+            for k, v in (body.get('items') or {}).items(): cur[k] = {'text': v, 'time': time.strftime('%m-%d %H:%M')}
+            json.dump(cur, open(rp, 'w', encoding='utf8'), ensure_ascii=False, indent=1)
+            open(os.path.join(HERE, 'review_submitted.txt'), 'a', encoding='utf8').write(time.strftime('%m-%d %H:%M:%S') + ' ' + str(len(body.get('items') or {})) + chr(10))
+            return self.send_json({'ok': True, 'n': len(body.get('items') or {})})
         if p == '/api/save':
             try:
                 d = note_dir(body['key']); os.makedirs(d, exist_ok=True)
