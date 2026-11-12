@@ -5,7 +5,9 @@
  */
 'use strict';
 const $ = id => document.getElementById(id);
-const W = 1080, H = 1920, FPS = 60;
+let W = 1080, H = 1920;   // 畫布尺寸＝project.w／h（11-12：可選比例、可自動偵測），由 applySize() 唯一寫入
+const FPS = 60;
+const ASPECTS = [['9:16',1080,1920],['16:9',1920,1080],['1:1',1080,1080],['4:5',1080,1350],['3:4',1080,1440],['2:3',1024,1536],['3:2',1536,1024]];
 const HEAD_H = { video: 56, audio: 40 };
 const SNAP_PX = 8;
 
@@ -46,7 +48,45 @@ function commit(before){
 function save_local(){ try{ localStorage.setItem('tivot_editor_last', snapshot()); }catch(_){} }
 function doUndo(){ if(!undo.length) return; redo.push(snapshot()); project = JSON.parse(undo.pop()); sel = null; selIds.clear(); afterLoad(); }
 function doRedo(){ if(!redo.length) return; undo.push(snapshot()); project = JSON.parse(redo.pop()); sel = null; selIds.clear(); afterLoad(); }
-function afterLoad(){ $('projName').value = project.name || 'pv'; save_local(); loadBeats(); renderAll(); }
+function afterLoad(){ $('projName').value = project.name || 'pv'; applySize(); save_local(); loadBeats(); renderAll(); }
+
+/* ═════════════ 畫面比例（11-12，Ray） ═════════════
+   project.w／h 是唯一真相（render.py 也讀它）；applySize() 把它套到預覽畫布與 UI。
+   project.autoAspect＝勾「自動比例」：取時間軸上最早出現的那一段圖／影片的原始比例（長邊 1920、偶數）。 */
+function applySize(){
+  W = project.w || 1080; H = project.h || 1920;
+  const st = $('stage'); if(st.width !== W || st.height !== H){ st.width = W; st.height = H; textCache.clear(); }
+  fitStage();
+  const sel_ = $('aspect'), key = W + 'x' + H;
+  if(sel_){
+    let o = [...sel_.options].find(x => x.value === key);
+    sel_.querySelectorAll('option.custom').forEach(x => { if(x.value !== key) x.remove(); });
+    if(!o){ o = document.createElement('option'); o.className = 'custom'; o.value = key; o.textContent = W + '×' + H; sel_.appendChild(o); }
+    sel_.value = key; sel_.disabled = !!project.autoAspect;
+  }
+  const cb = $('autoAspect'); if(cb) cb.checked = !!project.autoAspect;
+}
+function fitStage(){
+  const wrap = $('stageWrap'), st = $('stage'); if(!wrap) return;
+  const aw = wrap.clientWidth - 20, ah = wrap.clientHeight - 20; if(aw <= 0 || ah <= 0) return;
+  const k = Math.min(aw / W, ah / H);
+  st.style.width = Math.floor(W * k) + 'px'; st.style.height = Math.floor(H * k) + 'px';
+}
+function evenRound(v){ return Math.max(2, Math.round(v / 2) * 2); }
+let autoBusy = false;
+async function autoAspect(){
+  if(!project.autoAspect || autoBusy) return;
+  let first = null;
+  for(const t of project.tracks) if(t.type === 'video' && t.name !== '字')
+    for(const c of t.clips) if((c.kind === 'video' || c.kind === 'image') && (!first || c.start < first.start)) first = c;
+  if(!first) return;
+  autoBusy = true;
+  try{
+    const info = await probe(first.src); if(!info || !info.w || !info.h) return;
+    const k = 1920 / Math.max(info.w, info.h), w = evenRound(info.w * k), h = evenRound(info.h * k);
+    if(w !== project.w || h !== project.h){ project.w = w; project.h = h; save_local(); applySize(); drawStage(); status('自動比例：' + w + '×' + h + '（取自 ' + first.src.split('/').pop() + '）'); }
+  } finally { autoBusy = false; }
+}
 
 async function probe(p){
   if(probeCache[p]) return probeCache[p];
@@ -203,7 +243,7 @@ function orderedTracks(){
   const a = project.tracks.filter(t => t.type === 'audio');
   return v.concat(a);
 }
-function renderAll(){ renderHeads(); renderLanes(); renderMarks(); drawRuler(); drawGrid(); renderInspector(); updatePlayhead(); drawStage(); }
+function renderAll(){ renderHeads(); renderLanes(); renderMarks(); drawRuler(); drawGrid(); renderInspector(); updatePlayhead(); drawStage(); autoAspect(); }
 
 function renderHeads(){
   const host = $('heads'); host.innerHTML = '';
@@ -1235,6 +1275,10 @@ function bind(){
   $('btnAddA').onclick = () => { const s = snapshot(); const t = { id:uid(), type:'audio', name:'A' + (project.tracks.filter(t => t.type === 'audio').length + 1), clips:[] };
     project.tracks.push(t); commit(s); revealTrack(t); };
   bindTlResize();
+  $('aspect').innerHTML = ASPECTS.map(([n, w, h]) => '<option value="' + w + 'x' + h + '">' + n + '（' + w + '×' + h + '）</option>').join('');
+  $('aspect').onchange = e => { const [w, h] = e.target.value.split('x').map(Number); edit(() => { project.w = w; project.h = h; project.autoAspect = false; }); applySize(); drawStage(); };
+  $('autoAspect').onchange = e => { edit(() => project.autoAspect = e.target.checked); applySize(); autoAspect(); };
+  new ResizeObserver(fitStage).observe($('stageWrap'));
   $('modalClose').onclick = hideModal;
   $('libSearch').oninput = renderLib;
   $('lib').addEventListener('pointerdown', () => lastArea = 'lib');
@@ -1316,6 +1360,7 @@ function setZoom(v){ pps = v; $('zoom').value = Math.round(v); renderLanes(); re
   }
   if(!loaded){ try{ const s = localStorage.getItem('tivot_editor_last'); if(s){ project = JSON.parse(s); loaded = true; } }catch(_){} }
   $('projName').value = project.name || 'pv';
+  applySize();
   await loadLib();
   await loadBeats();
   renderAll();
