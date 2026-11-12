@@ -11,7 +11,7 @@ for it in items:
     key, suf = (it.split(':') + ['_sep_F'])[:2]
     if it.startswith('war:'):   # 戰地（war_run 的輸出，沒有 notes）：war:<名>:<資料夾>:<顯示名>
         _, nm_, fold, disp = it.split(':'); key = nm_
-        src = os.path.join(HERE, 'out', nm_ + '_war', 'loop.mp4'); j = {'name': disp}; d, stem = fold, nm_
+        src = os.path.join(HERE, 'out', nm_ + '_war' + os.environ.get('WAR_SUFFIX', ''), 'loop.mp4'); j = {'name': disp}; d, stem = fold, nm_
     else:
         src = os.path.join(HERE, 'out', key.replace('__', '_') + suf, 'loop.mp4')
         j = json.load(open(os.path.join(HERE, 'notes', key, 'notes.json'), encoding='utf8'))

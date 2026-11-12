@@ -208,6 +208,17 @@ def rev_seam(FR, fgm):
     """Ray 11-11：「前景可以用倒放到最接近的一格再續放」—— 0..N 播完不直接跳回 0，
     先倒放回到「跟第 0 格最像」的那一格 j 再接回 0。j 取倒放最短、而且差異不超過平常一步 1.5 倍的那一格（找不到就取最像的）。
     只對前景（天空以外）算差異；雲不經過這一支（雲照舊只往前）。"""
+    if os.environ.get('SEP_STAB'):   # Ray 11-12：截短還是移鏡 ⇒ 每格對齊回第 0 格（ECC 平移＋旋轉＋縮放），把鏡頭飄移扣掉
+        g0 = cv2.cvtColor(cv2.resize(FR[0], (480, 320)).astype(np.uint8), cv2.COLOR_RGB2GRAY).astype(np.float32)
+        out = [FR[0]]; hh, ww = FR[0].shape[:2]
+        for f in FR[1:]:
+            g = cv2.cvtColor(cv2.resize(f, (480, 320)).astype(np.uint8), cv2.COLOR_RGB2GRAY).astype(np.float32)
+            M = np.eye(2, 3, dtype=np.float32)
+            try: _, M = cv2.findTransformECC(g0, g, M, cv2.MOTION_AFFINE, (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 60, 1e-5), None, 3)
+            except cv2.error: pass
+            M[:, 2] *= ww / 480
+            out.append(cv2.warpAffine(f, M, (ww, hh), flags=cv2.INTER_LINEAR | cv2.WARP_INVERSE_MAP, borderMode=cv2.BORDER_REFLECT))
+        FR = out; log('穩定', f'{len(FR)} 格對齊回第 0 格')
     thr = float(os.environ.get('SEP_TRIM', 0) or 0) or TRIM_KEYS.get(CUR[0], 0)
     if thr > 0:   # Ray 11-11：「有一點鏡位偏移，把頭尾縮一下找最接近的 f 接上」—— 從第 0 格起，鏡位偏移超過 thr 像素就截掉後面
         g = [cv2.cvtColor(cv2.resize(f, (768, 512)).astype(np.uint8), cv2.COLOR_RGB2GRAY).astype(np.float32) for f in FR]
@@ -322,6 +333,12 @@ def do(key):
         if not wait_gpu() or not run([Q.PY, 'bg_flf.py', src, inp, pre['da'], str(Q.SEG),
                                       fwd.replace('不要倒退回放。', '不要倒退回放，最後回到畫面原本的樣子。'), '101']): return False
     CUR[0] = key; SMK = smoke_layer(key, other)
+    GLW = None; gw = os.environ.get('SEP_GLOW')
+    if gw:
+        cx, cy, rx, ry = [float(v) for v in gw.split(',')]
+        yy_, xx_ = np.mgrid[0:H, 0:W].astype(np.float32)
+        r = ((xx_ / W - cx) / rx) ** 2 + ((yy_ / H - cy) / ry) ** 2
+        GLW = (np.exp(-r * 2.2)[..., None] * np.array([40, 110, 255], np.float32) * 0.55).astype(np.float32)
     if os.environ.get('SEP_F'):   # Ray 11-11：「用 f 系列跑 wan，圖用摳過的」—— F 的段長／提詞／合成照抄，只把輸入換成摳過天空的圖
         if not f_fg(key, base, still, inp): return False
     elif not comp_fg(key, still, prot, pre): return False
@@ -347,6 +364,9 @@ def do(key):
         for Ly in L:
             c, a = Ly.render(30 + fi / FPS); img = img * (1 - a[..., None]) + c * a[..., None]
         img = img * sky_a[..., None] + FR[fi % len(FR)] * fg[..., None]
+        if GLW:   # Ray 11-12：底層祭壇「發藍光就好」—— 程式在祭壇上方疊一層緩慢呼吸的藍光（加亮混合）
+            k = 0.55 + 0.45 * np.sin(2 * np.pi * fi / FPS / 3.0)
+            img = np.clip(img + GLW * k, 0, 255)
         if SMK:
             sr, sa = np.zeros((H, W, 3), np.float32), np.zeros((H, W), np.float32); SMK['SM'].render(30 + fi / FPS, sr, sa)
             img = img * (1 - sa[..., None]) + sr * sa[..., None]

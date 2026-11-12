@@ -101,6 +101,12 @@ class Smoke:
 def do(name):
     global W, H, GW, GH
     cp = cut_path(name); sp = os.path.join(LG, '_src', name + '.png')
+    ns = glob.glob(os.path.join(LG, 'out', '*', name + '__nosmoke.png'))
+    if ns and not os.environ.get('WAR_KEEPSMOKE'): sp = ns[0]; log('用 GPT 去煙版當底圖', os.path.basename(sp))   # Ray 11-12：火保留、煙拿掉，煙交給程式
+    if ns and not os.environ.get('WAR_KEEPSMOKE'):
+        nk = ns[0].replace('__nosmoke.png', '__nssky.png')
+        if os.path.exists(nk): cp = nk; log('天空遮罩改用去煙版自己摳的', os.path.basename(nk))   # 舊的 __cut 連地上的煙一起挖，天空會往下吃
+    else: ns = []
     if not os.path.exists(sp): log('沒有素材', name); return False
     iw, ih = Image.open(sp).size
     if iw > ih: W, H, GW, GH = 1536, 1024, 768, 512        # 北方泊地是橫的
@@ -130,10 +136,11 @@ def do(name):
     else:
       inp = f'war_{name}_other.png'; Image.fromarray(other.clip(0, 255).astype(np.uint8)).resize((GW, GH), Image.LANCZOS).save(os.path.join(Q.COMFY, 'input', inp))
       SEED = os.environ.get('WAR_SEED', '101'); sd = ('' if SEED == '101' else f's{SEED}') + ('' if PROMPT == '有風吹拂' else 'p' + __import__('hashlib').md5(PROMPT.encode()).hexdigest()[:4])   # Ray 11-12：跑出人／馬車／門開 ⇒ 換種子
-      ab, ba = f'bgl/war_{name}_sep{sd}_ab', f'bgl/war_{name}_sep{sd}_ba'; env = dict(BG_W=str(GW), BG_H=str(GH), BG_NEG='')
+      ns_ = ('ns' if ns else '') + ('k' if cp and cp.endswith('__nssky.png') else '')
+      ab, ba = f'bgl/war_{name}_sep{sd}{ns_}_ab', f'bgl/war_{name}_sep{sd}{ns_}_ba'; env = dict(BG_W=str(GW), BG_H=str(GH), BG_NEG='')
       if len(Q.wan_out(ab)) < LAB:
           if not S.wait_gpu() or not run([Q.PY, 'bg_wan.py', inp, ab, str(LAB), PROMPT, SEED], env): return False
-      B = f'war_{name}_sep{sd}_B.png'; Image.open(Q.wan_out(ab)[K]).convert('RGB').save(os.path.join(Q.COMFY, 'input', B))
+      B = f'war_{name}_sep{sd}{ns_}_B.png'; Image.open(Q.wan_out(ab)[K]).convert('RGB').save(os.path.join(Q.COMFY, 'input', B))
       if len(Q.wan_out(ba)) < LBA:
           if not S.wait_gpu() or not run([Q.PY, 'bg_flf.py', B, inp, ba, str(LBA), PROMPT, SEED], env): return False
       seq = Q.wan_out(ab)[:K + 1] + Q.wan_out(ba)[1:-1]
@@ -166,8 +173,19 @@ def do(name):
         hsv = cv2.cvtColor(orig.astype(np.uint8), cv2.COLOR_RGB2HSV)
         sm = (m & (hsv[..., 1] < 110) & (hsv[..., 2] < 120)).astype(np.uint8)
         src_m = sm
+    if ns:   # 去煙版：煙＝原圖跟去煙版差很多、而且原圖那裡又灰（低彩度）的地方；程式煙從每一團的底部冒
+        o0 = np.array(Image.open(os.path.join(LG, '_src', name + '.png')).convert('RGB').resize((W, H), Image.LANCZOS)).astype(np.float32)
+        hs = cv2.cvtColor(o0.astype(np.uint8), cv2.COLOR_RGB2HSV)
+        sm = ((np.abs(o0 - orig).mean(-1) > 22) & (hs[..., 1] < 90)).astype(np.uint8)
+        src_m = cv2.morphologyEx(sm, cv2.MORPH_OPEN, np.ones((7, 7), np.uint8))
+        bot = []
+        n0, lab0, st0, _ = cv2.connectedComponentsWithStats(cv2.dilate(src_m, np.ones((25, 25), np.uint8)))
+        for i in sorted(range(1, n0), key=lambda i: -st0[i, 4])[:6]:
+            x, y, w_, h_, a_ = st0[i]
+            if a_ > 600: bot.append((x + w_ / 2, y + h_ * 0.9, max(30, min(160, w_ * 0.5))))
+        srcs = bot; log('原圖的煙', f'{len(srcs)} 團（程式從底部冒）')
     n, lab, st, cen = cv2.connectedComponentsWithStats(cv2.dilate(src_m, np.ones((15, 15), np.uint8)))
-    for i in sorted(range(1, n), key=lambda i: -st[i, 4])[:5]:
+    for i in ([] if ns else sorted(range(1, n), key=lambda i: -st[i, 4])[:5]):
         x, y, w_, h_, a_ = st[i]
         if a_ < 200: continue
         srcs.append((x + w_ / 2, y + (0 if src_m.sum() < 300 else h_ * 0.2), max(30, min(140, w_ * 0.9))))
@@ -188,8 +206,8 @@ def do(name):
         for Ly in L:
             c, a = Ly.render(t); img = img * (1 - a[..., None]) + c * a[..., None]
         sr, sa = np.zeros((H, W, 3), np.float32), np.zeros((H, W), np.float32); SM.render(t, sr, sa)
-        img = img * (1 - sa[..., None]) + sr * sa[..., None]
         img = img * vis + FR[fi % len(FR)] * (1 - vis)
+        img = img * (1 - sa[..., None]) + sr * sa[..., None]   # 煙疊在最上面（地上的煙也看得到，不只天空）
         p.stdin.write(img.clip(0, 255).astype(np.uint8).tobytes())
         if fi == 40: Image.fromarray(img.clip(0, 255).astype(np.uint8)).save(os.path.join(outd, 'f40.jpg'))
     p.stdin.close(); p.wait()

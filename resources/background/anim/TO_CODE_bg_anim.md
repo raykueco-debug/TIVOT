@@ -167,7 +167,6 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 伊甸古墓　香爐室 | `anim/tomb/tomb_censerroom_sep_v1.mp4` | 303 | 不用（整張含天空都是影片） |
 
 > 11-12 北方泊地 戰損版 4 張（Ray 核可；室外天空／雲／煙是程式合成進影片，整張蓋上去）
-| 北方泊地　東區 | `anim/northport/northport_east_bf_sep_v1.mp4` | 324 | 不用（整張含天空都是影片） |
 | 北方泊地　公會 | `anim/northport/northport_guild_bf_sep_v1.mp4` | 309 | 不用（整張含天空都是影片） |
 
 > 11-12 修正版（Ray 核可；取代先前同名檔）：塌陷的階梯中間人影遮掉
@@ -177,3 +176,11 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 北方泊地　教堂殘垣（紫黑之爪戰） | `anim/northport/northport_church_ruin_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
 | 北方泊地　墓地 | `anim/northport/northport_cemetery_bf_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
 | 北方泊地　市政廳 | `anim/northport/northport_cityhall_bf_sep_v1.mp4` | 318 | 不用（整張含天空都是影片） |
+
+> 11-12 北方泊地（Ray 核可）：港口（只有天空動）、酒館
+| 北方泊地　港口 | `anim/northport/northport_port_bf_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+| 北方泊地　酒館 | `anim/northport/northport_tavern_bf_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+
+> 11-12 北方泊地（Ray 核可；取代先前同名檔）：東區、西區（GPT 去煙底圖＋程式煙、逐格對齊）
+| 北方泊地　東區 | `anim/northport/northport_east_bf_sep_v1.mp4` | 324 | 不用（整張含天空都是影片） |
+| 北方泊地　西區 | `anim/northport/northport_west_bf_sep_v1.mp4` | 204 | 不用（整張含天空都是影片） |
