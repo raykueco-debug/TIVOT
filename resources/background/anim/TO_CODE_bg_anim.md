@@ -194,3 +194,7 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 
 > 11-12 伊甸古墓 底層祭壇（Ray 核可；祭壇框住＋程式藍光，藍光不是嚴格循環，交整段）
 | 伊甸古墓　底層祭壇 | `anim/tomb/tomb_lowaltar_sep_v1.mp4` | 249 | 不用（整張含天空都是影片） |
+
+> 11-12 北方泊地（Ray 核可）：雜貨店、旅館（a world without humans＋窗上木板框住）
+| 北方泊地　雜貨店 | `anim/northport/northport_grocery_bf_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+| 北方泊地　旅館 | `anim/northport/northport_hotel_bf_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
