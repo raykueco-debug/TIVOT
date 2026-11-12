@@ -28,6 +28,27 @@ def graph_file_opt(gf):
         except Exception: _FF_MAJOR = 0
     return ['-/filter_complex', gf] if _FF_MAJOR >= 7 else ['-filter_complex_script', gf]
 
+_VENC = None
+def video_encoder():
+    '''影像編碼器（11-12，Ray：「剪輯器輸出 mp4 為什麼那麼慢」）：有硬體編碼就用硬體。
+       實測 1080×1920@60 一段 4 秒：libx264 medium 5.9 秒 → h264_nvenc 2.4 秒（CPU 編碼佔整體七成以上）。
+       ⚠ 只看 `-encoders` 有列不算數（gyan.dev 版連沒有那張卡的編碼器都列）—— 真的編一格試過才用。
+       順序：NVENC（Windows 4070／3060）→ VideoToolbox（iMac）→ libx264（都沒有時的退路，品質照舊 crf 17）。'''
+    global _VENC
+    if _VENC is not None: return _VENC
+    cands = [
+        ('h264_nvenc', ['-c:v', 'h264_nvenc', '-preset', 'p5', '-tune', 'hq', '-rc', 'vbr', '-cq', '18', '-b:v', '0', '-pix_fmt', 'yuv420p']),
+        ('h264_videotoolbox', ['-c:v', 'h264_videotoolbox', '-q:v', '70', '-pix_fmt', 'yuv420p']),
+    ]
+    for name, args in cands:
+        try:
+            r = subprocess.run(['ffmpeg', '-v', 'error', '-f', 'lavfi', '-i', 'color=c=black:s=256x256:r=30:d=0.2'] + args + ['-f', 'null', '-'],
+                               capture_output=True, timeout=20)
+            if r.returncode == 0: _VENC = args; return _VENC
+        except Exception: pass
+    _VENC = ['-c:v', 'libx264', '-preset', 'medium', '-crf', '17', '-pix_fmt', 'yuv420p']
+    return _VENC
+
 def atempo_chain(sp):
     """atempo 只吃 0.5～2：拆成多段相乘。"""
     out = []
@@ -85,7 +106,11 @@ def motion_filters(c, W, H, D):
         x = ("(iw-ow)/2-%s/2+%s*t/%f" if typ == 'lr' else "(iw-ow)/2+%s/2-%s*t/%f") % (th, th, D)
         return ['scale=%d:%d:force_original_aspect_ratio=increase:flags=lanczos' % (round(W * k), round(H * k)),
                 "crop=%d:%d:'%s':'(ih-oh)/2'" % (W, H, x)]
-    base = ['scale=%d:%d:force_original_aspect_ratio=increase:flags=lanczos' % (W, H), 'crop=%d:%d' % (W, H)]
+    # 填滿（cover）：先從正中裁出畫面比例那一塊、再縮到 W×H（11-12 改；舊版先把整張放大再裁，
+    # 橫式素材進直式畫面會白縮三倍的像素）。幾何與「放大再置中裁」相同，預覽 app.js 的 drawSrc 不必跟著改。
+    # ⚠ `exact=1`：yuv420 素材的裁切起點預設會捨入成偶數，置中裁出來偏 1 像素（放大後約 2 像素）。
+    base = ["crop='min(iw,ih*%d/%d)':'min(ih,iw*%d/%d)':exact=1" % (W, H, H, W),
+            'scale=%d:%d:flags=lanczos' % (W, H)]
     if typ in ('zin', 'zout'):
         z = "(1+%f*t/%f)" % (amt, D) if typ == 'zin' else "(1+%f*(1-t/%f))" % (amt, D)
         # 焦點（ver -2224，Ray：「往角色眼睛放大拉近」）：motion.fx／fy＝畫面上的哪一點不動（0~1，預設正中）。
@@ -188,7 +213,7 @@ def render(project, out, root, progress=lambda f, m=None: None):
     open(gf, 'w', encoding='utf-8').write(graph)
     cmd = ['ffmpeg', '-v', 'error', '-y', '-nostats', '-progress', 'pipe:1'] + ins + [
         *graph_file_opt(gf), '-map', '[vout]', '-map', '[aout]', '-r', str(FPS),
-        '-c:v', 'libx264', '-preset', 'medium', '-crf', '17', '-pix_fmt', 'yuv420p',
+        *video_encoder(),
         '-c:a', 'aac', '-b:a', '256k', '-ar', '48000', '-movflags', '+faststart', '-t', '%f' % total, out]
     progress(0.0, '輸出中')
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8', errors='replace')
