@@ -1347,3 +1347,5 @@ when	from	to	reason
 20261110-114515	resources/background/anim/canyon/canyon_altar_day_sky.webp	_recycle/resources/background/anim/canyon/canyon_altar_day_sky.webp	谷底祭場改交純 Wan 版（Ray 11-10 可交），舊的拆層 ABA 版與天空遮罩作廢
 20261110-122718	resources/background/anim/canyon/canyon_bridge_day_aba_v1.mp4	_recycle/resources/background/anim/canyon/canyon_bridge_day_aba_v1.mp4	斷橋改交 ABCD 真循環（Ray 11-10 可交），舊的拆層 ABA 版與天空遮罩作廢
 20261110-122718	resources/background/anim/canyon/canyon_bridge_day_sky.webp	_recycle/resources/background/anim/canyon/canyon_bridge_day_sky.webp	斷橋改交 ABCD 真循環（Ray 11-10 可交），舊的拆層 ABA 版與天空遮罩作廢
+20261111-232432	resources/background/_layers_gpt/out/lake/lake__cave__day__sky.png	_recycle/resources/background/_layers_gpt/out/lake/lake__cave__day__sky.png	GPT 沒挖出天空（0% 洋紅），重做
+20261112-110702	resources/background/anim/northport/northport_church_bf_sep_v1.mp4	_recycle/resources/background/anim/northport/northport_church_bf_sep_v1.mp4	教堂底圖改用 northport_church_ruin（Ray 11-12）

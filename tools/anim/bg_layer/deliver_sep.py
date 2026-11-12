@@ -9,9 +9,13 @@ dj = os.path.join(HERE, 'delivered.json'); D = json.load(open(dj, encoding='utf8
 rows = []
 for it in items:
     key, suf = (it.split(':') + ['_sep_F'])[:2]
-    src = os.path.join(HERE, 'out', key.replace('__', '_') + suf, 'loop.mp4')
-    j = json.load(open(os.path.join(HERE, 'notes', key, 'notes.json'), encoding='utf8'))
-    d, f = os.path.split(j['file']); stem = os.path.splitext(f)[0]
+    if it.startswith('war:'):   # 戰地（war_run 的輸出，沒有 notes）：war:<名>:<資料夾>:<顯示名>
+        _, nm_, fold, disp = it.split(':'); key = nm_
+        src = os.path.join(HERE, 'out', nm_ + '_war', 'loop.mp4'); j = {'name': disp}; d, stem = fold, nm_
+    else:
+        src = os.path.join(HERE, 'out', key.replace('__', '_') + suf, 'loop.mp4')
+        j = json.load(open(os.path.join(HERE, 'notes', key, 'notes.json'), encoding='utf8'))
+        d, f = os.path.split(j['file']); stem = os.path.splitext(f)[0]
     rel = f'{d}/{stem}_sep_v1.mp4'; dst = os.path.join(A, rel); os.makedirs(os.path.dirname(dst), exist_ok=True)
     vf = []
     if one:   # 沒有程式雲的格子（室內）：影片其實是同一圈重複三次，只交一圈（手機省流量與記憶體）

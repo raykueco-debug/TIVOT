@@ -156,3 +156,19 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 伊甸古墓　骨甕廊 | `anim/tomb/tomb_ossuarya_sep_v1.mp4` | 79 | 不用（整張含天空都是影片） |
 | 伊甸古墓　底層階梯 | `anim/tomb/tomb_stair2_sep_v1.mp4` | 94 | 不用（整張含天空都是影片） |
 | 伊甸古墓　積水坑 | `anim/tomb/tomb_sump_sep_v1.mp4` | 95 | 不用（整張含天空都是影片） |
+
+> 11-12 伊甸古墓 重跑 5 格（Ray 核可；只交一圈）
+| 伊甸古墓　破碎廊道 | `anim/tomb/tomb_brokenhall_sep_v1.mp4` | 90 | 不用（整張含天空都是影片） |
+| 伊甸古墓　排煙井 | `anim/tomb/tomb_chimney_sep_v1.mp4` | 86 | 不用（整張含天空都是影片） |
+| 伊甸古墓　塌陷的階梯 | `anim/tomb/tomb_falsestair_sep_v1.mp4` | 81 | 不用（整張含天空都是影片） |
+| 伊甸古墓　碎石陷落 | `anim/tomb/tomb_graveldrop_sep_v1.mp4` | 96 | 不用（整張含天空都是影片） |
+| 伊甸古墓　表層階梯 | `anim/tomb/tomb_stair1_sep_v1.mp4` | 89 | 不用（整張含天空都是影片） |
+
+> 11-12 伊甸古墓 香爐室（Ray 核可；煙是程式畫的、只往前，交整段，loop 播即可）
+| 伊甸古墓　香爐室 | `anim/tomb/tomb_censerroom_sep_v1.mp4` | 303 | 不用（整張含天空都是影片） |
+
+> 11-12 北方泊地 戰損版 4 張（Ray 核可；室外天空／雲／煙是程式合成進影片，整張蓋上去）
+| 北方泊地　墓地 | `anim/northport/northport_cemetery_bf_sep_v1.mp4` | 324 | 不用（整張含天空都是影片） |
+| 北方泊地　東區 | `anim/northport/northport_east_bf_sep_v1.mp4` | 324 | 不用（整張含天空都是影片） |
+| 北方泊地　市政廳 | `anim/northport/northport_cityhall_bf_sep_v1.mp4` | 318 | 不用（整張含天空都是影片） |
+| 北方泊地　公會 | `anim/northport/northport_guild_bf_sep_v1.mp4` | 309 | 不用（整張含天空都是影片） |

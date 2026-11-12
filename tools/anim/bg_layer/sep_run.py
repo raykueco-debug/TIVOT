@@ -144,6 +144,11 @@ def comp_fg(key, still, prot, pre):
     return run(args)
 
 
+TRIM_KEYS = {'tomb__censerroom__base': 0.4, 'tomb__lowaltar__base': 0.4}   # Ray 11-12：鏡位動了的格子，截到偏移 0.4px 前
+CUR = ['']
+PROTECT_DARK = {'tomb__stair1__base': 45}   # key → 亮度門檻（0~255）
+
+
 def f_prompt(png):
     p = json.loads(Image.open(png).info['prompt'])
     return next(n['inputs']['text'] for k, n in sorted(p.items()) if n['class_type'] == 'CLIPTextEncode')
@@ -162,22 +167,33 @@ def f_fg(key, base, still, inp):
         k = int(fm.get('k_src') or fm['k'])
         fab = Q.wan_out(fm['ab'])[0]; fba = Q.wan_out(fm['ba'])[0]
         cut = lambda t: re.sub(r'[；，]?天空的雲[^。；]*', '', t)
-        pab, pba = cut(f_prompt(fab)), cut(f_prompt(fba))
+        noname = lambda t: re.sub(r'^動漫風格的[^。]*。', '動漫風格的背景。', t)   # Ray 11-12：不要給 Wan 圖名（「塌陷」「碎石陷落」會被演出來）
+        pab, pba = noname(cut(f_prompt(fab))), noname(cut(f_prompt(fba)))
     else:   # Ray 11-11：沒有 F 版的格子「照 F 的寫法」
         name = json.load(open(os.path.join(HERE, 'notes', key, 'notes.json'), encoding='utf8')).get('name', '').replace('　', '')
         what = '；'.join(c['text'] for c in mv) if mv else '微風吹拂，草木輕輕搖曳'
-        pab = pba = f'動漫風格的{name}。{what}。鏡頭完全固定不動，岩石、山壁、地面、石柱、建築、骨頭與雕像都完全不動。動漫風格，賽璐珞上色。'
+        pab = pba = f'動漫風格的背景。{what}。鏡頭完全固定不動，岩石、山壁、地面、石柱、建築、骨頭與雕像都完全不動。動漫風格，賽璐珞上色。'
         k = 23
-    ab, ba = f'bgl/{base}_sepF_ab', f'bgl/{base}_sepF_ba'
+    SD = os.environ.get('SEP_SEED', '101')
+    ph = hashlib.md5((pab + pba + ('' if SD == '101' else SD)).encode('utf8')).hexdigest()[:5]   # 提詞改了就是新的一組 Wan 輸出
+    ab, ba = f'bgl/{base}_sepF{ph}_ab', f'bgl/{base}_sepF{ph}_ba'
     log('F 提詞', pab)
     if len(Q.wan_out(ab)) < 81:
-        if not wait_gpu() or not run([Q.PY, 'bg_wan.py', inp, ab, '81', pab, '101']): return False
-    B = f'bgsep_{base}_F_B.png'
+        if not wait_gpu() or not run([Q.PY, 'bg_wan.py', inp, ab, '81', pab, SD]): return False
+    B = f'bgsep_{base}_F{ph}_B.png'
     Image.open(Q.wan_out(ab)[k]).convert('RGB').save(os.path.join(Q.COMFY, 'input', B))
     if len(Q.wan_out(ba)) < 33:
-        if not wait_gpu() or not run([Q.PY, 'bg_flf.py', B, inp, ba, '33', pba, '101']): return False
+        if not wait_gpu() or not run([Q.PY, 'bg_flf.py', B, inp, ba, '33', pba, SD]): return False
     args = [Q.PY, 'aba_comp.py', still, key, ab, str(k), ba, base + '_sepfg', '--mwarp', mwarp(key, still)]
-    if not rng: args += ['--full']   # Ray 11-11：沒畫範圍的格子＝雲以外全圖跑（天空已摳掉，雲交給程式）
+    if not rng: args += ['--full']
+    spp = os.path.join(HERE, 'out', base + '_smoke_protect.png')
+    if os.path.exists(spp): args += ['--protect', spp]   # 煙那一塊固定原圖
+    dk = PROTECT_DARK.get(key)
+    if dk:   # Ray 11-12：暗處（往下的黑洞）會冒出影子 ⇒ 暗的地方一律用原圖
+        g = cv2.cvtColor(cv2.imread(still), cv2.COLOR_BGR2GRAY)
+        pm = cv2.dilate((g < dk).astype(np.uint8) * 255, np.ones((15, 15), np.uint8))
+        pp = os.path.join(os.path.dirname(still), 'protect_dark.png'); cv2.imwrite(pp, pm); args += ['--protect', pp]
+        log('暗處保護', f'{(pm > 0).mean():.0%}')   # Ray 11-11：沒畫範圍的格子＝雲以外全圖跑（天空已摳掉，雲交給程式）
     if sky: args += ['--sky', sky[0]['name'], '--nosky']
     return run(args)
 
@@ -186,7 +202,7 @@ def rev_seam(FR, fgm):
     """Ray 11-11：「前景可以用倒放到最接近的一格再續放」—— 0..N 播完不直接跳回 0，
     先倒放回到「跟第 0 格最像」的那一格 j 再接回 0。j 取倒放最短、而且差異不超過平常一步 1.5 倍的那一格（找不到就取最像的）。
     只對前景（天空以外）算差異；雲不經過這一支（雲照舊只往前）。"""
-    thr = float(os.environ.get('SEP_TRIM', 0) or 0)
+    thr = float(os.environ.get('SEP_TRIM', 0) or 0) or TRIM_KEYS.get(CUR[0], 0)
     if thr > 0:   # Ray 11-11：「有一點鏡位偏移，把頭尾縮一下找最接近的 f 接上」—— 從第 0 格起，鏡位偏移超過 thr 像素就截掉後面
         g = [cv2.cvtColor(cv2.resize(f, (768, 512)).astype(np.uint8), cv2.COLOR_RGB2GRAY).astype(np.float32) for f in FR]
         hw = cv2.createHanningWindow((768, 512), cv2.CV_32F)
@@ -240,6 +256,27 @@ def blades(key, other, sky_a):
     return dict(rgb=other.astype(np.float32), a=m, hub=(float(hx), float(hy)), amp=b['amp'], sky_a=sa)
 
 
+def smoke_layer(key, other):
+    """Ray 11-12：香爐室「煙要摳掉留給程式跑」—— GPT 把煙塗成洋紅（_layers_gpt/out/<圖>/<key>__smoke.png）。
+    不准補畫煙後面的東西，所以煙那一塊固定用原圖（Wan 不動它），程式煙從那一塊的底部冒上去疊在最上面。"""
+    p = os.path.join(Q.BG, '_layers_gpt', 'out', key.split('__')[0], key + '__smoke.png')
+    if not os.path.exists(p): return None
+    import war_run as WR
+    g = np.array(Image.open(p).convert('RGB').resize((W, H), Image.LANCZOS))
+    _, a = CS.key_magenta(g); m = ((1 - a) > 0.5).astype(np.uint8)
+    M = WR.align(other, g.astype(np.float32), m == 0) if False else np.eye(3)
+    WR.W, WR.H = W, H
+    m = cv2.dilate(m, np.ones((21, 21), np.uint8))
+    n, lab, st, _ = cv2.connectedComponentsWithStats(m); srcs = []
+    for i in sorted(range(1, n), key=lambda i: -st[i, 4])[:3]:
+        x, y, w_, h_, a_ = st[i]
+        if a_ > 300: srcs.append((x + w_ / 2, y + h_ * 0.85, max(24, min(90, w_ * 0.6))))
+    pp = os.path.join(HERE, 'out', key.replace('__', '_') + '_smoke_protect.png'); cv2.imwrite(pp, m * 255)
+    SM = WR.Smoke(srcs, CS.cut_grid(DL + 'cloudgrid_v2_a.png'), (150, 140, 135), seed=11)
+    log('程式煙', f'{len(srcs)} 個源頭')
+    return dict(SM=SM, protect=pp)
+
+
 def do(key):
     base = key.replace('__', '_'); outd = os.path.join(HERE, 'out', base + '_sep' + os.environ.get('SEP_SUFFIX', ''))
     if os.path.exists(os.path.join(outd, 'loop.mp4')) and '--recomp' not in sys.argv: log('已有', key); return True
@@ -278,6 +315,7 @@ def do(key):
     if not os.environ.get('SEP_F') and len(Q.wan_out(pre['da'])) < Q.SEG:
         if not wait_gpu() or not run([Q.PY, 'bg_flf.py', src, inp, pre['da'], str(Q.SEG),
                                       fwd.replace('不要倒退回放。', '不要倒退回放，最後回到畫面原本的樣子。'), '101']): return False
+    CUR[0] = key; SMK = smoke_layer(key, other)
     if os.environ.get('SEP_F'):   # Ray 11-11：「用 f 系列跑 wan，圖用摳過的」—— F 的段長／提詞／合成照抄，只把輸入換成摳過天空的圖
         if not f_fg(key, base, still, inp): return False
     elif not comp_fg(key, still, prot, pre): return False
@@ -303,6 +341,9 @@ def do(key):
         for Ly in L:
             c, a = Ly.render(30 + fi / FPS); img = img * (1 - a[..., None]) + c * a[..., None]
         img = img * sky_a[..., None] + FR[fi % len(FR)] * fg[..., None]
+        if SMK:
+            sr, sa = np.zeros((H, W, 3), np.float32), np.zeros((H, W), np.float32); SMK['SM'].render(30 + fi / FPS, sr, sa)
+            img = img * (1 - sa[..., None]) + sr * sa[..., None]
         if BL:   # 扇葉：程式繞軸小幅晃（轉不太動）
             tt = fi / FPS; ang = BL['amp'] * (0.75 * np.sin(2 * np.pi * 3 * tt / T) + 0.25 * np.sin(2 * np.pi * 7 * tt / T + 1.3))
             Mr = cv2.getRotationMatrix2D(BL['hub'], ang, 1.0)

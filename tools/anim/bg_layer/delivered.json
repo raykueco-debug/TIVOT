@@ -51,5 +51,15 @@
  "capital_outer__river__base": "capital_outer/outer_river_dusk_sep_v1.mp4",
  "capital_outer__windmill__base": "capital_outer/outer_windmill_dusk_sep_v1.mp4",
  "capital_outer__gate__base": "capital_outer/outer_gate_dusk_sep_v1.mp4",
- "plainsroad__beacon__day": "plains/plains_beacon_day_sep_v1.mp4"
+ "plainsroad__beacon__day": "plains/plains_beacon_day_sep_v1.mp4",
+ "tomb__brokenhall__base": "tomb/tomb_brokenhall_sep_v1.mp4",
+ "tomb__chimney__base": "tomb/tomb_chimney_sep_v1.mp4",
+ "tomb__falsestair__base": "tomb/tomb_falsestair_sep_v1.mp4",
+ "tomb__graveldrop__base": "tomb/tomb_graveldrop_sep_v1.mp4",
+ "tomb__stair1__base": "tomb/tomb_stair1_sep_v1.mp4",
+ "tomb__censerroom__base": "tomb/tomb_censerroom_sep_v1.mp4",
+ "northport_cemetery_bf": "northport/northport_cemetery_bf_sep_v1.mp4",
+ "northport_east_bf": "northport/northport_east_bf_sep_v1.mp4",
+ "northport_cityhall_bf": "northport/northport_cityhall_bf_sep_v1.mp4",
+ "northport_guild_bf": "northport/northport_guild_bf_sep_v1.mp4"
 }

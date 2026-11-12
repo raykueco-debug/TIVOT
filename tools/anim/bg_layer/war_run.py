@@ -99,14 +99,21 @@ class Smoke:
 
 
 def do(name):
+    global W, H, GW, GH
     cp = cut_path(name); sp = os.path.join(LG, '_src', name + '.png')
-    if not cp or not os.path.exists(sp): log('沒有素材', name); return False
+    if not os.path.exists(sp): log('沒有素材', name); return False
+    iw, ih = Image.open(sp).size
+    if iw > ih: W, H, GW, GH = 1536, 1024, 768, 512        # 北方泊地是橫的
+    else: W, H, GW, GH = 768, 1024, 528, 704
     outd = os.path.join(HERE, 'out', name + '_war'); os.makedirs(outd, exist_ok=True)
     if os.path.exists(os.path.join(outd, 'loop.mp4')) and '--recomp' not in sys.argv: log('已有', name); return True
     log('■ 戰地', name)
     orig = np.array(Image.open(sp).convert('RGB').resize((W, H), Image.LANCZOS)).astype(np.float32)
-    cutI = np.array(Image.open(cp).convert('RGB').resize((W, H), Image.LANCZOS))
-    crgb, ca = CS.key_magenta(cutI); sky_a = 1 - ca                       # 1＝天空／雲／煙（洋紅）
+    if cp:
+        cutI = np.array(Image.open(cp).convert('RGB').resize((W, H), Image.LANCZOS))
+        crgb, ca = CS.key_magenta(cutI); sky_a = 1 - ca                   # 1＝天空／雲／煙（洋紅）
+    else:                                                                   # 室內：沒有天空，整張交給 Wan
+        crgb = orig.copy(); sky_a = np.zeros((H, W), np.float32)
     # Ray 11-11：「不准 inpaint，只分天空跟天空以外這兩個跑」—— GPT 圖只拿洋紅的範圍當遮罩（搬到原圖座標），
     # 它補畫的建築一律不用；天空以外＝原圖整張交給 Wan，天空交給程式。全部在原圖座標做，沒有任何貼塊。
     Mw = align(orig, crgb.astype(np.float32), sky_a < 0.5)                  # 原圖 → GPT 圖
@@ -118,16 +125,20 @@ def do(name):
     cut_o = cv2.warpPerspective(crgb.astype(np.float32), Mi.astype(np.float64), (W, H))
     fire = fire_mask(orig, cut_o, sky_o).astype(np.float32)               # 只拿來定煙的源頭
     nfire = int(fire.sum()); log('火', f'{nfire} px（只用來定煙的源頭）')
-    inp = f'war_{name}_other.png'; Image.fromarray(other.clip(0, 255).astype(np.uint8)).resize((GW, GH), Image.LANCZOS).save(os.path.join(Q.COMFY, 'input', inp))
-    ab, ba = f'bgl/war_{name}_sep_ab', f'bgl/war_{name}_sep_ba'; env = dict(BG_W=str(GW), BG_H=str(GH), BG_NEG='')
-    if len(Q.wan_out(ab)) < LAB:
-        if not S.wait_gpu() or not run([Q.PY, 'bg_wan.py', inp, ab, str(LAB), PROMPT, '101'], env): return False
-    B = f'war_{name}_sep_B.png'; Image.open(Q.wan_out(ab)[K]).convert('RGB').save(os.path.join(Q.COMFY, 'input', B))
-    if len(Q.wan_out(ba)) < LBA:
-        if not S.wait_gpu() or not run([Q.PY, 'bg_flf.py', B, inp, ba, str(LBA), PROMPT, '101'], env): return False
-    seq = Q.wan_out(ab)[:K + 1] + Q.wan_out(ba)[1:-1]
-    FR = [cv2.resize(np.array(Image.open(f).convert('RGB')), (W, H), interpolation=cv2.INTER_LANCZOS4).astype(np.float32) for f in seq]
-    FR = S.rev_seam(FR, 1 - sky_o)
+    if os.environ.get('WAR_STATIC'):   # Ray 11-12：港口「不用畫動畫，分天空就好」
+        FR = [other]
+    else:
+      inp = f'war_{name}_other.png'; Image.fromarray(other.clip(0, 255).astype(np.uint8)).resize((GW, GH), Image.LANCZOS).save(os.path.join(Q.COMFY, 'input', inp))
+      SEED = os.environ.get('WAR_SEED', '101'); sd = '' if SEED == '101' else f's{SEED}'   # Ray 11-12：跑出人／馬車／門開 ⇒ 換種子
+      ab, ba = f'bgl/war_{name}_sep{sd}_ab', f'bgl/war_{name}_sep{sd}_ba'; env = dict(BG_W=str(GW), BG_H=str(GH), BG_NEG='')
+      if len(Q.wan_out(ab)) < LAB:
+          if not S.wait_gpu() or not run([Q.PY, 'bg_wan.py', inp, ab, str(LAB), PROMPT, SEED], env): return False
+      B = f'war_{name}_sep{sd}_B.png'; Image.open(Q.wan_out(ab)[K]).convert('RGB').save(os.path.join(Q.COMFY, 'input', B))
+      if len(Q.wan_out(ba)) < LBA:
+          if not S.wait_gpu() or not run([Q.PY, 'bg_flf.py', B, inp, ba, str(LBA), PROMPT, SEED], env): return False
+      seq = Q.wan_out(ab)[:K + 1] + Q.wan_out(ba)[1:-1]
+      FR = [cv2.resize(np.array(Image.open(f).convert('RGB')), (W, H), interpolation=cv2.INTER_LANCZOS4).astype(np.float32) for f in seq]
+      FR = S.rev_seam(FR, 1 - sky_o)
     sky_a = sky_o
 
     # ── 天空：原圖天空色漸層＋靜止遠景雲＋程式雲 ──
@@ -138,8 +149,9 @@ def do(name):
     g = np.clip((np.arange(H) - yt) / max(1, yb - yt), 0, 1)[:, None, None]
     sky = np.broadcast_to(top_c * (1 - g) + hor_c * g, (H, W, 3)).astype(np.float32).copy()
     CS.W, CS.H = W, H; S.W, S.H = W, H; S.ORIG[0] = orig
-    sky = S.sky_backdrop(sky, sky_a, (yt, yb), hor_c)
-    L = S.clouds(sky_a, (yt, yb), hor_c)
+    nosky = sky_a.max() < 0.01
+    if not nosky: sky = S.sky_backdrop(sky, sky_a, (yt, yb), hor_c)
+    L = [] if nosky else S.clouds(sky_a, (yt, yb), hor_c)
     # ── 煙：從火冒出（沒有火就從原圖煙柱的底部）──
     srcs = []
     src_m = (fire > 0.5).astype(np.uint8)
@@ -155,6 +167,7 @@ def do(name):
     hsv = cv2.cvtColor(orig.astype(np.uint8), cv2.COLOR_RGB2HSV)
     smk = orig[m & (hsv[..., 1] < 110) & (hsv[..., 2] < 140)]
     scol = np.median(smk, 0) if len(smk) > 200 else np.array([70, 62, 64], np.float32)
+    if nosky: srcs = []
     SM = Smoke(srcs, CS.cut_grid(DL + 'cloudgrid_mid.png'), scol, seed=hash(name) & 0xffff)
     log('煙', f'{len(srcs)} 個源頭，色 {scol.round()}')
 
