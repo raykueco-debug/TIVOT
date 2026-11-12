@@ -17,7 +17,7 @@ DL = r'C:/Users/Ray Ku/Downloads/'
 W, H = 768, 1024                      # 戰地是直式 3:4
 GW, GH = 528, 704                     # Wan 的解析度（16 的倍數、3:4）
 K, LAB, LBA = 23, 81, 33
-PROMPT = '有風吹拂'   # Ray 11-11：空提示詞 Wan 會生出跑過去的士兵 ⇒ 只寫這一句
+PROMPT = os.environ.get('WAR_PROMPT', '有風吹拂')   # Ray 11-11：空提示詞 Wan 會生出跑過去的士兵 ⇒ 只寫這一句
 
 
 def log(*a): S.log(*a)
@@ -105,7 +105,7 @@ def do(name):
     iw, ih = Image.open(sp).size
     if iw > ih: W, H, GW, GH = 1536, 1024, 768, 512        # 北方泊地是橫的
     else: W, H, GW, GH = 768, 1024, 528, 704
-    outd = os.path.join(HERE, 'out', name + '_war'); os.makedirs(outd, exist_ok=True)
+    outd = os.path.join(HERE, 'out', name + '_war' + os.environ.get('WAR_SUFFIX', '')); os.makedirs(outd, exist_ok=True)
     if os.path.exists(os.path.join(outd, 'loop.mp4')) and '--recomp' not in sys.argv: log('已有', name); return True
     log('■ 戰地', name)
     orig = np.array(Image.open(sp).convert('RGB').resize((W, H), Image.LANCZOS)).astype(np.float32)
@@ -129,7 +129,7 @@ def do(name):
         FR = [other]
     else:
       inp = f'war_{name}_other.png'; Image.fromarray(other.clip(0, 255).astype(np.uint8)).resize((GW, GH), Image.LANCZOS).save(os.path.join(Q.COMFY, 'input', inp))
-      SEED = os.environ.get('WAR_SEED', '101'); sd = '' if SEED == '101' else f's{SEED}'   # Ray 11-12：跑出人／馬車／門開 ⇒ 換種子
+      SEED = os.environ.get('WAR_SEED', '101'); sd = ('' if SEED == '101' else f's{SEED}') + ('' if PROMPT == '有風吹拂' else 'p' + __import__('hashlib').md5(PROMPT.encode()).hexdigest()[:4])   # Ray 11-12：跑出人／馬車／門開 ⇒ 換種子
       ab, ba = f'bgl/war_{name}_sep{sd}_ab', f'bgl/war_{name}_sep{sd}_ba'; env = dict(BG_W=str(GW), BG_H=str(GH), BG_NEG='')
       if len(Q.wan_out(ab)) < LAB:
           if not S.wait_gpu() or not run([Q.PY, 'bg_wan.py', inp, ab, str(LAB), PROMPT, SEED], env): return False
@@ -139,6 +139,13 @@ def do(name):
       seq = Q.wan_out(ab)[:K + 1] + Q.wan_out(ba)[1:-1]
       FR = [cv2.resize(np.array(Image.open(f).convert('RGB')), (W, H), interpolation=cv2.INTER_LANCZOS4).astype(np.float32) for f in seq]
       FR = S.rev_seam(FR, 1 - sky_o)
+    pz = os.environ.get('WAR_PROTECT')   # Ray 11-12：人影／雕像那一塊遮掉 ⇒ 框內一律原圖（"x0,y0,x1,y1;…" 0~1 比例）
+    if pz:
+        P = np.zeros((H, W), np.float32)
+        for b in pz.split(';'):
+            x0, y0, x1, y1 = [float(v) for v in b.split(',')]; P[int(y0 * H):int(y1 * H), int(x0 * W):int(x1 * W)] = 1
+        P = cv2.GaussianBlur(P, (0, 0), 6)[..., None]
+        FR = [f * (1 - P) + other * P for f in FR]; log('遮掉', pz)
     sky_a = sky_o
 
     # ── 天空：原圖天空色漸層＋靜止遠景雲＋程式雲 ──

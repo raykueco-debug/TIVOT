@@ -186,6 +186,12 @@ def f_fg(key, base, still, inp):
         if not wait_gpu() or not run([Q.PY, 'bg_flf.py', B, inp, ba, '33', pba, SD]): return False
     args = [Q.PY, 'aba_comp.py', still, key, ab, str(k), ba, base + '_sepfg', '--mwarp', mwarp(key, still)]
     if not rng: args += ['--full']
+    bx = os.environ.get('SEP_PROTECT_BOX')   # Ray 11-12：人影那一塊遮掉 ⇒ 框內一律原圖（"x0,y0,x1,y1;…" 0~1）
+    if bx:
+        pm = np.zeros((H, W), np.uint8)
+        for b in bx.split(';'):
+            x0, y0, x1, y1 = [float(v) for v in b.split(',')]; pm[int(y0 * H):int(y1 * H), int(x0 * W):int(x1 * W)] = 255
+        pp = os.path.join(os.path.dirname(still), 'protect_box.png'); cv2.imwrite(pp, pm); args += ['--protect', pp]; log('遮掉', bx)
     spp = os.path.join(HERE, 'out', base + '_smoke_protect.png')
     if os.path.exists(spp): args += ['--protect', spp]   # 煙那一塊固定原圖
     dk = PROTECT_DARK.get(key)
