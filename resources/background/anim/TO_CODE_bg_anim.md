@@ -305,3 +305,6 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 
 > 11-13 北方泊地（Ray 核可）
 | 北方泊地　教堂 | `anim/northport/northport_church_bf_sep_v1.mp4` | 324 | 不用（整張含天空都是影片） |
+
+> 11-13 夏爾森林 獸巢（Ray 核可 H＝ABCD 真循環）
+| 夏爾森林　獸巢 | `anim/forest/forest_nest_day_sep_v1.mp4` | 56 | 不用（整張含天空都是影片） |
