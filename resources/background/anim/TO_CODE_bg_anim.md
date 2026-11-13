@@ -350,3 +350,7 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 - 動態：①整條光束亮度緩慢呼吸（±15%，週期 4~6 秒）；②光束裡的細小塵埃緩緩往下飄、帶一點左右漂（只出現在梯形內，越靠近邊緣越淡）。
 - 地上的陽光斑點留在底圖裡，不用另外畫。
 - 只有 day 時段有這條光束；其他時段照舊用靜態背景。
+
+> 11-13 Ray 在 animechk 剪（3060）：**天空是原圖的靜態天空，沒有烤程式雲**（短循環烤了雲，接回開頭時雲會跳）。整張蓋上去即可；之後要加程式雲，就用同資料夾的 `*_skymask.png`（白＝天空，邊緣已羽化）當遮罩，把程式雲疊在影片之上、只畫在遮罩範圍內。
+| 鏡湖　瀑布底 | `anim/lake/lake_fallbase_day_sep_v1.mp4`（天空遮罩 `lake_fallbase_day_skymask.png`） | 62 | day 時段；24fps，每格停 2 |
+| 貝利薩爾遺址　排水崖口 | `anim/belisar/belisar_draincliff_day_sep_v1.mp4`（天空遮罩 `belisar_draincliff_day_skymask.png`） | 8 | day 時段；24fps，每格停 2 |
