@@ -191,5 +191,7 @@
  "belisar__dragonrace__base": "belisar/belisar_lionspout_sep_v1.mp4",
  "belisar__crown__base": "belisar/belisar_crownroom_sep_v1.mp4",
  "lake__fallbase__day": "lake/lake_fallbase_day_sep_v1.mp4",
- "belisar__draincliff__day": "belisar/belisar_draincliff_day_sep_v1.mp4"
+ "belisar__draincliff__day": "belisar/belisar_draincliff_day_sep_v1.mp4",
+ "tomb__nitrepit__base": "tomb/tomb_nitrepit_base_nofire.webp（程式煙，見 TO_CODE）",
+ "dunmor__cairn__base": "dunmor/dunmor_cairn_sky.png（只拆天地）"
 }
