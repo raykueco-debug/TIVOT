@@ -188,9 +188,11 @@ def f_fg(key, base, still, inp):
         what = '；'.join(c['text'] for c in mv) if mv else '微風吹拂，草木輕輕搖曳'
         pab = pba = f'動漫風格的背景。{what}。鏡頭完全固定不動，岩石、山壁、地面、石柱、建築、骨頭與雕像都完全不動。動漫風格，賽璐珞上色。'
         k = 23
+    if os.environ.get('SEP_K'): k = int(os.environ['SEP_K'])   # 11-13：瀑布要長一點的順向段才接得順
+    if os.environ.get('SEP_FPROMPT'): pab = pba = os.environ['SEP_FPROMPT']   # 11-13：Ray 指定動作（例：天體球轉一圈）
     SD = os.environ.get('SEP_SEED', '101')
     nfx = 'nf' if os.path.exists(os.path.join(Q.BG, '_layers_gpt', 'out', key.split('__')[0], key + '__nofire.png')) else ''
-    ph = hashlib.md5((pab + pba + ('' if SD == '101' else SD) + nfx).encode('utf8')).hexdigest()[:5]   # 提詞改了就是新的一組 Wan 輸出
+    ph = hashlib.md5((pab + pba + ('' if SD == '101' else SD) + nfx + os.environ.get('SEP_K', '')).encode('utf8')).hexdigest()[:5]   # 提詞改了就是新的一組 Wan 輸出
     ab, ba = f'bgl/{base}_sepF{ph}_ab', f'bgl/{base}_sepF{ph}_ba'
     log('F 提詞', pab)
     if len(Q.wan_out(ab)) < 81:
