@@ -13,6 +13,28 @@
 - 版號一律 `py tools/bust.py --bump`；commit 前 `py tools/script_lint.py`（目前 13 個既有錯誤＝`charm_C01`～`C13` 大寫檔名，不是新壞的）。
 - **工作分五條線**（Ray 定，memory `tivot-five-workstreams`）：程式（主 session，兼 PM）／動畫／敵人／背景／地圖。主 session `git pull` 後當程式，其餘四條各開子 session（副理）。
 
+## 〇、4070 這台 11-09～11-13 的進度（11-13 換機前寫；ver -2618，全部推上）
+
+> 這一段是 4070（`C:/Users/Ray Ku/Desktop/TIVOT`）PM session 與四個副理的收尾。**下面一～七段是 11-09 早上 3060 寫的，仍有效**，這一段只補新進度。
+> ⚠ 11-09 那條「開工先跟 Ray 清點 10-30 那一份」**還沒做**（Ray 直接派了四條線）。
+
+**程式（主 session）**
+- ver -2617：接動畫副理交接 —— `cgAnim` 005 v2／010 v2／038 v3，新接 013／014／28／30；`cutinAnim.ci_misha_ni`（v2，cutinDur 4063）；4 處過期註解（守城戰「還沒做」、地下古城回程）。
+- ver -2618：**反擊硬直改成延時退回一半**（Ray：「反擊不應該全清延時 應該清1/2」）。`tuning.counterStaggerClear:0.5`、`combat.easeIntervalDeadline`；憲法 §6.5.2 同步。⚠ `script/enemies.js` 檔頭那句「延時計時歸零」還沒改。
+- 剪輯器（`tools/promo/editor`，啟動 `run_editor.bat`＝**8140**）：比例選單／自動比例（動畫副理）；**輸出加速**（51320bf1）：硬體編碼 NVENC→VideoToolbox→libx264，填滿改先裁再縮（`exact=1`）。實測長片約 3.5 倍。
+- **不接的**：飛行怪 swim_v2（`flight/enemy/_sky_flight_TO_CODE.md` 寫 Ray 10-18 選 v1）、安雅 NI v3（Ray：先維持 v2）、尼莫彈幕 v2（橫式＋alpha，CI 引擎要改、iPhone 未測）。
+- ⚠ **程式端待接**：`resources/enemy/anim/TO_CODE_skypirate.md` —— 空賊 8 張卡改指 `_v3/`、受擊閃（抖動掛錯在 opacity:0 的分層上）、有倒地動畫的群戰受擊播倒地前兩格再倒放、攻擊收尾縮一下的時序。
+
+**動畫副理**：`tools/anim/` 與 ComfyUI `tivot_wan/` 兩台已同步（版控較新）；`TIVOT_STEPS/MOBIUS` 版 `tivot_wan.py` 與 `tivot_latent_loop.py` 這台沒有，要 3060 推。待 Ray：6 支插畫放哪一幕（32 米夏行軍、grifonback、canyon_army、torsten_sit、槍機特寫、deck_long）、`cutin_dual_nemo`／`anya_curlfloat` 要不要接、舊影片回收。
+
+**敵人副理**：KF 審閱清單 `resources/enemy/anim/_敵人線_盤點與審閱_1109.md`；第二輪 12 隻逐格盤點 `_KF_第二輪_1109.md` §四；空賊 v3（每人三支動作同框）已交。待 Ray：animechk「空賊之後」頁剪片、熊骸 husk 透明版（`_neutral_refs/s3_kf/redo/mon_bear_husk_alpha*.png` 三版待選）。
+
+**背景副理**：大量拆層循環已交件（北泊／伊甸古墓／夏爾森林／羅賽爾／里朋莊園／室內…）。**換機接續看 `resources/background/_layers_gpt/PROGRESS.md` 最後兩段**（剩 19 格各卡在哪一步、哪些檔要放回哪）。
+
+**地圖副理**（只盤點）：`party_cecilie` 沒有任何劇情插（劇本還沒有賽西莉入隊段）→ 正篇進不去地底大空洞；守城戰六隊→米夏段路徑完整但未實測；西部大溶谷／地下古城入口沒有章節鎖；G3/G4 拓樸、大溶谷終點去向待 Ray。
+
+**這次一起推上的未提交檔**：Ray 改的 `script/enemies.js`（訓練用聖徒 `fit.scale` 0.8→0.7）、敵人 KF 重出圖（`_neutral_refs/`）、空戰側面工作檔（`_sky_side/_work/`）、根目錄四份 xlsx（`.tmp.xlsx` 暫存檔除外）。
+
 ## 二、這兩天做了什麼（11-07～11-09，都推上了）
 
 ### 程式（主 session）

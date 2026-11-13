@@ -102,7 +102,7 @@ export const ENEMIES = {
       stageScale:1,
       stack:0,
       image:'enemy_trainee',    // → resources/enemy/saint_tr_neutral.webp（ver -2520）
-      fit:{ pos:'50% 0%', scale:0.8 },   // ver -1883 敵立繪編輯面板
+      fit:{ pos:'50% 0%', scale:0.7 },   // ver -1883 敵立繪編輯面板
       bg:'../enemy/saint_tr_bg',   // 戰鬥背景（ver -2520，美術交的空走廊；檔在 resources/enemy/，走 bgUrl 的根目錄相對路徑）
       hp:100,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:10,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
