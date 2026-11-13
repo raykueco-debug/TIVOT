@@ -319,3 +319,17 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 羅賽爾廢城　德魯伊居所 | `anim/dunmor/dunmor_druidhouse_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
 | 西泊戰地　ws_0_0（黃昏） | `anim/winsmoor_siege/ws_0_0_dusk_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
 | 西泊戰地　ws_0_1（黃昏） | `anim/winsmoor_siege/ws_0_1_dusk_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+
+> 11-13 不倒放 12 格（Ray 在 animechk 剪；斷橋鐵鍊遮掉）。取代同名舊檔
+| 木雅克神殿　命之泉 | `anim/ruins/ruins_shinier_deepspring_sep_v1.mp4` | 29 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
+| 木雅克神殿　深部祭壇 | `anim/ruins/ruins_shinier_deepaltar_sep_v1.mp4` | 54 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
+| 木雅克神殿　黑暗斷橋 | `anim/ruins/ruins_shinier_darkbridge_sep_v1.mp4` | 42 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
+| 木雅克神殿　巨像廳 | `anim/ruins/ruins_shinier_colossus_sep_v1.mp4` | 54 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
+| 木雅克神殿　養息之間 | `anim/ruins/ruins_shinier_brazier_sep_v1.mp4` | 50 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
+| 木雅克神殿　圓井房 | `anim/ruins/ruins_shinier_well_sep_v1.mp4` | 23 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
+| 貝利薩爾遺址　水牢 | `anim/belisar/belisar_waterjail_sep_v1.mp4` | 44 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
+| 貝利薩爾遺址　近衛墓室 | `anim/belisar/belisar_guardtomb_sep_v1.mp4` | 14 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
+| 貝利薩爾遺址　三拱廳 | `anim/belisar/belisar_triarch_sep_v1.mp4` | 13 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
+| 貝利薩爾遺址　聖油室 | `anim/belisar/belisar_chrismroom_sep_v1.mp4` | 10 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
+| 貝利薩爾遺址　獅口水道 | `anim/belisar/belisar_lionspout_sep_v1.mp4` | 16 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
+| 貝利薩爾遺址　寶冠室 | `anim/belisar/belisar_crownroom_sep_v1.mp4` | 47 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
