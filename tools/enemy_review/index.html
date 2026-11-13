@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>敵人動畫審閱</title>
+<style>
+:root{--bg:#121318;--panel:#1c1e26;--line:#2c2f3a;--ink:#e6e3dc;--dim:#8d8f99;--gold:#d8b66a;--ok:#6fbf8a;--warn:#e0a052}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,"Microsoft JhengHei",sans-serif}
+#bar{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:#0d0e12ee;border-bottom:1px solid var(--line)}
+#bar h1{font-size:16px;margin:0 8px 0 0;color:var(--gold)}
+button{background:#2a2d38;color:var(--ink);border:1px solid #3a3e4c;border-radius:6px;padding:5px 12px;cursor:pointer;font:inherit}
+button:hover{border-color:var(--gold)}
+button.pri{background:#5a4a24;border-color:var(--gold)}
+input[type=search]{background:#1a1c23;color:var(--ink);border:1px solid #3a3e4c;border-radius:6px;padding:5px 9px;width:180px}
+#msg{color:var(--ok);font-size:13px}
+table{border-collapse:collapse;margin:0 0 60px}
+th{position:sticky;top:52px;z-index:4;background:#16171d;color:var(--dim);font-weight:600;padding:6px;border-bottom:1px solid var(--line)}
+td{vertical-align:top;padding:8px;border-bottom:1px solid var(--line);border-right:1px solid #20222b}
+td.head{position:sticky;left:0;z-index:3;background:var(--panel);width:190px;min-width:190px}
+td.head .nm{font-size:15px;font-weight:700;color:var(--gold)}
+td.head .meta{color:var(--dim);font-size:12px;word-break:break-all}
+td.head .btns{display:flex;gap:6px;margin:8px 0}
+td.head .st{font-size:12px;color:var(--dim)}
+td.head .st.sub{color:var(--ok)}
+td.head .st.dirty{color:var(--warn)}
+.cell{width:210px}
+.cell.empty{color:#4a4d58;text-align:center;padding-top:60px;font-size:12px}
+.ver{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px}
+.ver span{font-size:11px;padding:1px 6px;border-radius:9px;border:1px solid #3a3e4c;cursor:pointer;color:var(--dim)}
+.ver span.on{border-color:var(--gold);color:var(--gold)}
+canvas{display:block;width:200px;height:300px;border-radius:4px;
+ background:#24262e;background-image:linear-gradient(45deg,#2c2e37 25%,transparent 25%,transparent 75%,#2c2e37 75%),linear-gradient(45deg,#2c2e37 25%,transparent 25%,transparent 75%,#2c2e37 75%);
+ background-size:16px 16px;background-position:0 0,8px 8px;cursor:pointer}
+.info{font-size:11px;color:var(--dim);margin:3px 0}
+textarea{width:200px;min-height:46px;resize:vertical;background:#15161c;color:var(--ink);border:1px solid #33364a;border-radius:5px;padding:5px;font:13px/1.4 inherit}
+textarea:focus{outline:none;border-color:var(--gold)}
+textarea.has{border-color:#7a6a3a}
+td.head textarea{width:100%}
+tr.hide{display:none}
+</style></head><body>
+<div id="bar">
+ <h1>敵人動畫審閱</h1>
+ <input type="search" id="q" placeholder="搜尋名字／編號／檔名">
+ <label><input type="checkbox" id="onlyNote"> 只看有意見的</label>
+ <button id="saveAll">全部儲存</button>
+ <button id="submitAll" class="pri">全部提交</button>
+ <span id="msg"></span>
+</div>
+<table><thead><tr><th>敵人（儲存／提交）</th><th>I 待機</th><th>A 攻擊</th><th>D 延時</th><th>M 點錯</th><th>E 倒地</th><th>其他</th></tr></thead>
+<tbody id="tb"></tbody></table>
+<script>
+const COLS=['I','A','D','M','E','X'];
+const LS='enemy_review_draft_v1', LSS='enemy_review_submitted_v1';
+let DATA, notes={}, submitted={}, players=[];
+const $=s=>document.querySelector(s);
+const msg=t=>{$('#msg').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>$('#msg').textContent='',4000)};
+try{notes=JSON.parse(localStorage.getItem(LS)||'{}');submitted=JSON.parse(localStorage.getItem(LSS)||'{}')}catch(e){}
+
+// ---- 播放器：多個成員（群組）疊在同一個畫布座標上 ----
+class Player{
+ constructor(cv){this.cv=cv;this.ctx=cv.getContext('2d');this.clip=null;this.vis=false;this.t0=0;this.paused=false;
+  cv.onclick=()=>{this.paused=!this.paused;this.t0=performance.now()-this.at}}
+ set(variant){this.clip=variant;this.imgs=variant.members.map(m=>m.frames.map(f=>{const i=new Image();i.decoding='async';i._src='../../'+m.dir+'/'+f;return i}));
+  this.loaded=false;this.t0=performance.now();if(this.vis)this.load();
+  const m=variant.members[0]||{};
+  this.cw=(m.canvas||[1024,1536])[0];this.ch=(m.canvas||[1024,1536])[1];
+  const s=Math.min(400/this.cw,600/this.ch);this.cv.width=Math.round(this.cw*s);this.cv.height=Math.round(this.ch*s);this.s=s;
+  this.cv.style.height=Math.round(200*this.cv.height/this.cv.width)+'px';}
+ load(){if(this.loaded)return;this.loaded=true;this.imgs.flat().forEach(i=>{if(!i.src)i.src=i._src})}
+ draw(now){if(!this.clip||!this.vis)return;if(!this.paused)this.at=now-this.t0;const c=this.ctx;c.clearRect(0,0,this.cv.width,this.cv.height);
+  this.clip.members.forEach((m,k)=>{const n=m.frames.length;if(!n)return;const per=1000/(m.fps||12);
+   let i=Math.floor(this.at/per);
+   if(m.loop)i%=n;else{const cyc=n+Math.ceil(700/per);i%=cyc;if(i>=n)i=n-1}
+   const img=this.imgs[k][i];if(!img||!img.complete||!img.naturalWidth)return;
+   const b=m.box||[0,0,this.cw,this.ch];c.drawImage(img,b[0]*this.s,b[1]*this.s,b[2]*this.s,b[3]*this.s)});}
+}
+const io=new IntersectionObserver(es=>es.forEach(e=>{const p=e.target._p;p.vis=e.isIntersecting;if(p.vis&&p.clip)p.load()}),{rootMargin:'400px'});
+(function loop(t){players.forEach(p=>p.draw(t));requestAnimationFrame(loop)})(0);
+
+function key(base,col){return base+'|'+col}
+function rowNotes(r){const o={};for(const k in notes)if(k.split('|')[0]===r.base&&notes[k].text.trim())o[k]=notes[k];return o}
+function rowStatus(r){const el=document.getElementById('st_'+r.base);if(!el)return;const n=Object.keys(rowNotes(r)).length;
+ const sub=submitted[r.base];const dirty=sub&&JSON.stringify(rowNotes(r))!==sub.sig;
+ el.className='st'+(sub&&!dirty?' sub':dirty?' dirty':'');
+ el.textContent=n?(sub?(dirty?`${n} 則意見・提交後有改動`:`${n} 則意見・已提交 ${sub.at}`):`${n} 則意見・未提交`):(sub?'已提交（現在無意見）':'')}
+
+function note(base,col,ta,variant){const k=key(base,col);
+ ta.value=(notes[k]||{}).text||'';ta.classList.toggle('has',!!ta.value.trim());
+ ta.oninput=()=>{notes[k]={text:ta.value,folder:variant()?.folder||'',at:new Date().toISOString()};ta.classList.toggle('has',!!ta.value.trim());
+  localStorage.setItem(LS,JSON.stringify(notes));rowStatus(DATA.rows.find(r=>r.base===base))}}
+
+function build(){
+ const tb=$('#tb');tb.innerHTML='';players=[];
+ DATA.rows.forEach(r=>{
+  const tr=document.createElement('tr');tr.dataset.s=(r.names.join(' ')+' '+r.ids.join(' ')+' '+r.base+' '+r.keys.join(' ')).toLowerCase();tr._r=r;
+  const h=document.createElement('td');h.className='head';
+  h.innerHTML=`<div class="nm">${r.names.join('／')||r.base}</div><div class="meta">${r.ids.join('、')}${r.ids.length?'<br>':''}${r.base}</div>
+   <div class="btns"><button class="sv">儲存</button><button class="pri sb">提交</button></div>
+   <textarea placeholder="整體意見"></textarea><div class="st" id="st_${r.base}"></div>`;
+  note(r.base,'*',h.querySelector('textarea'),()=>null);
+  h.querySelector('.sv').onclick=()=>save([r]);
+  h.querySelector('.sb').onclick=()=>submit([r]);
+  tr.appendChild(h);
+  COLS.forEach(col=>{const td=document.createElement('td');td.className='cell';const vs=r.cols[col];
+   if(!vs){td.classList.add('empty');td.textContent='—';tr.appendChild(td);return}
+   let cur=vs[0];
+   const ver=document.createElement('div');ver.className='ver';
+   const cv=document.createElement('canvas');const p=new Player(cv);cv._p=p;players.push(p);io.observe(cv);
+   const info=document.createElement('div');info.className='info';
+   const ta=document.createElement('textarea');ta.placeholder=(col==='X'?'其他':'')+'意見';
+   const pick=v=>{cur=v;p.set(v);[...ver.children].forEach(s=>s.classList.toggle('on',s._v===v));
+    const m=v.members;info.textContent=`${v.folder}・${m.length>1?m.length+'人・':''}${m[0]?.frames.length||0}格 ${m[0]?.fps||'?'}fps ${m[0]?.loop?'循環':'單次'}`};
+   vs.forEach(v=>{const s=document.createElement('span');s.textContent=v.label;s._v=v;s.onclick=()=>pick(v);ver.appendChild(s)});
+   pick(cur);
+   note(r.base,col,ta,()=>cur);
+   td.append(ver,cv,info,ta);tr.appendChild(td)});
+  tb.appendChild(tr);rowStatus(r)});
+ filter();
+}
+function filter(){const q=$('#q').value.trim().toLowerCase(),only=$('#onlyNote').checked;
+ [...$('#tb').children].forEach(tr=>tr.classList.toggle('hide',(q&&!tr.dataset.s.includes(q))||(only&&!Object.keys(rowNotes(tr._r)).length)))}
+$('#q').oninput=filter;$('#onlyNote').onchange=filter;
+
+function payload(rows){return{at:new Date().toISOString(),
+ rows:rows.map(r=>({base:r.base,names:r.names,ids:r.ids,notes:Object.fromEntries(Object.entries(rowNotes(r)).map(([k,v])=>[k.split('|')[1]==='*'?'整體':k.split('|')[1],v]))})).filter(x=>Object.keys(x.notes).length)}}
+async function post(url,body){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json()}
+async function save(rows){localStorage.setItem(LS,JSON.stringify(notes));
+ try{const r=await post('/review/save',{at:new Date().toISOString(),notes});msg(r.ok?`已儲存（${rows.length===1?rows[0].names[0]||rows[0].base:'全部'}）`:'儲存失敗：'+r.error)}catch(e){msg('已存在瀏覽器（伺服器沒回應）')}}
+async function submit(rows){const p=payload(rows);if(!p.rows.length){msg('沒有意見可提交');return}
+ await save(rows);
+ try{const r=await post('/review/submit',p);if(!r.ok)throw new Error(r.error);
+  const at=new Date().toLocaleString('zh-TW',{hour12:false});
+  p.rows.forEach(x=>{const row=DATA.rows.find(y=>y.base===x.base);submitted[x.base]={at,sig:JSON.stringify(rowNotes(row))}});
+  localStorage.setItem(LSS,JSON.stringify(submitted));DATA.rows.forEach(rowStatus);msg(`已提交 ${p.rows.length} 隻 → ${r.path}`)}
+ catch(e){msg('提交失敗：'+e.message)}}
+$('#saveAll').onclick=()=>save(DATA.rows);
+$('#submitAll').onclick=()=>submit(DATA.rows);
+
+(async()=>{
+ try{const d=await (await fetch('/review/draft')).json();if(d.notes){for(const k in d.notes)if(!notes[k]||(d.notes[k].at||'')>(notes[k].at||''))notes[k]=d.notes[k]}}catch(e){}
+ DATA=await (await fetch('data.json?'+Date.now())).json();build()})();
+</script></body></html>
