@@ -308,3 +308,14 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 
 > 11-13 夏爾森林 獸巢（Ray 核可 H＝ABCD 真循環）
 | 夏爾森林　獸巢 | `anim/forest/forest_nest_day_sep_v1.mp4` | 56 | 不用（整張含天空都是影片） |
+
+> 11-13 只拆天地（Ray 核可：地面不動、天空程式雲）
+| 羅賽爾廢城　東壘牆 | `anim/dunmor/dunmor_ramparte_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+| 羅賽爾廢城　陶匠巷 | `anim/dunmor/dunmor_potters_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+| 羅賽爾廢城　戰車棚 | `anim/dunmor/dunmor_chariotshed_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+| 羅賽爾廢城　圓塔頂 | `anim/dunmor/dunmor_brochtop_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+| 羅賽爾廢城　野豬石 | `anim/dunmor/dunmor_boarstone_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+| 羅賽爾廢城　祭壇 | `anim/dunmor/dunmor_altar_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+| 羅賽爾廢城　德魯伊居所 | `anim/dunmor/dunmor_druidhouse_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+| 西泊戰地　ws_0_0（黃昏） | `anim/winsmoor_siege/ws_0_0_dusk_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+| 西泊戰地　ws_0_1（黃昏） | `anim/winsmoor_siege/ws_0_1_dusk_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
