@@ -1,0 +1,15 @@
+{
+ "key": "dunmor__kingshall__base",
+ "map": "dunmor",
+ "mapName": "羅賽爾廢城",
+ "node": "kingshall",
+ "name": "羅賽爾廢城　王廳廢墟",
+ "band": "base",
+ "file": "dunmor/dunmor_kingshall.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:47:25",
+ "colors": [],
+ "fire_v2": true
+}

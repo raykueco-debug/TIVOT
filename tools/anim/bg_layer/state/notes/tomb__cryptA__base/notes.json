@@ -1,0 +1,22 @@
+{
+ "key": "tomb__cryptA__base",
+ "map": "tomb",
+ "mapName": "伊甸古墓",
+ "node": "cryptA",
+ "name": "伊甸古墓　家族墓室",
+ "band": "base",
+ "file": "tomb/tomb_crypta.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:46:54",
+ "colors": [
+  {
+   "name": "orange",
+   "rgb": "#ff9a1f",
+   "text": "火焰搖曳閃爍",
+   "mask": "orange.png"
+  }
+ ],
+ "fire_v2": true
+}

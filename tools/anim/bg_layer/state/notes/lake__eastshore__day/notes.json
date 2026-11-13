@@ -1,0 +1,24 @@
+{
+ "key": "lake__eastshore__day",
+ "map": "lake",
+ "mapName": "鏡湖",
+ "node": "eastshore",
+ "name": "鏡湖　東岸",
+ "band": "day",
+ "file": "lake/lake_eastshore_day.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:46:53",
+ "colors": [
+  {
+   "name": "cyan",
+   "rgb": "#2fe0e0",
+   "text": "雲湧動",
+   "mask": "cyan.png"
+  }
+ ],
+ "opts": {
+  "extra": "雲與霧只在原地緩緩翻湧起伏，整片不往左右任何方向漂移"
+ }
+}

@@ -1,0 +1,22 @@
+{
+ "key": "holysee_g3__gate__base",
+ "map": "holysee_g3",
+ "mapName": "聖王廳地宮",
+ "node": "gate",
+ "name": "聖王廳地宮　大門",
+ "band": "base",
+ "file": "holysee/holyseedungeonwhole.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:46:43",
+ "colors": [
+  {
+   "name": "orange",
+   "rgb": "#ff9a1f",
+   "text": "火焰搖曳閃爍",
+   "mask": "orange.png"
+  }
+ ],
+ "fire_v2": true
+}

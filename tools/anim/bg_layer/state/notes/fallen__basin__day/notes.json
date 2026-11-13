@@ -1,0 +1,31 @@
+{
+ "key": "fallen__basin__day",
+ "map": "fallen",
+ "mapName": "石製遺蹟",
+ "node": "basin",
+ "name": "石製遺蹟　沉水石坑",
+ "band": "day",
+ "file": "fallen/fallen_basin_day.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:46:49",
+ "colors": [
+  {
+   "name": "green",
+   "rgb": "#3ddc5a",
+   "text": "樹葉草叢隨風搖曳",
+   "mask": "green.png"
+  },
+  {
+   "name": "cyan",
+   "rgb": "#2fe0e0",
+   "text": "雲湧動",
+   "mask": "cyan.png"
+  }
+ ],
+ "opts": {
+  "prio": 1,
+  "extra": "雲與霧只在原地緩緩翻湧起伏，整片不往左右任何方向漂移"
+ }
+}

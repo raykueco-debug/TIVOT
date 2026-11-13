@@ -1,0 +1,178 @@
+{
+ "belisar_cages_base_sep_F": {
+  "text": "右側黑門內有影子 最黑處蓋起來",
+  "time": "11-12 16:18"
+ },
+ "belisar_antecham_base_sep_F": {
+  "text": "門不要動 燈不要掉落 燈可以左右搖",
+  "time": "11-13 10:50"
+ },
+ "lake_fallbase_day_sep_F": {
+  "text": "瀑布loop接點太明險",
+  "time": "11-13 10:50"
+ },
+ "dunmor_rampartE_base_sep_F": {
+  "text": "跳過 只拆天地",
+  "time": "11-13 10:50"
+ },
+ "dunmor_potters_base_sep_F": {
+  "text": "跳過只拆天地",
+  "time": "11-13 10:50"
+ },
+ "dunmor_lakeshore_base_sep_F": {
+  "text": "左側跑出人影遮掉 水紋不要回放",
+  "time": "11-13 10:50"
+ },
+ "dunmor_gatecourt_base_sep_F": {
+  "text": "火遮掉",
+  "time": "11-13 10:50"
+ },
+ "dunmor_druidhouse_base_sep_F": {
+  "text": "月在最後景 雲在月前面",
+  "time": "11-13 10:50"
+ },
+ "dunmor_ditchW_base_sep_F": {
+  "text": "右邊火把遮掉 遠方火把遮掉",
+  "time": "11-13 10:50"
+ },
+ "dunmor_chariotshed_base_sep_F": {
+  "text": "跳過只拆天地",
+  "time": "11-13 10:50"
+ },
+ "dunmor_cairn_base_sep_F": {
+  "text": "不要有火 只拆天地",
+  "time": "11-13 10:50"
+ },
+ "dunmor_brochtop_base_sep_F": {
+  "text": "跳過只拆天地",
+  "time": "11-13 10:50"
+ },
+ "dunmor_bogoffer_base_sep_F": {
+  "text": "水紋不要回放",
+  "time": "11-13 10:50"
+ },
+ "dunmor_boarstone_base_sep_F": {
+  "text": "跳過只拆天地",
+  "time": "11-13 10:50"
+ },
+ "dunmor_altar_base_sep_F": {
+  "text": "跳過只拆天地",
+  "time": "11-13 10:50"
+ },
+ "belisar_draincliff_day_sep_F": {
+  "text": "遠山直接拿掉",
+  "time": "11-13 10:50"
+ },
+ "plainsroad_cairn_day_sep_F": {
+  "text": "鏡頭移動重跑ㄅ",
+  "time": "11-12 16:18"
+ },
+ "lake_cave_day_sep_F": {
+  "text": "瀑布回放 要做成單向真loop",
+  "time": "11-12 16:18"
+ },
+ "tomb_nitrepit_base_sep_F": {
+  "text": "火拿掉",
+  "time": "11-13 10:50"
+ },
+ "ws_0_1_dusk_war": {
+  "text": "跳過只拆天地",
+  "time": "11-13 10:50"
+ },
+ "ws_0_0_dusk_war": {
+  "text": "跳過只拆天地",
+  "time": "11-13 10:50"
+ },
+ "belisar_offering_day_sep_F": {
+  "text": "微移鏡 把移動的部份剪掉",
+  "time": "11-13 10:50"
+ },
+ "shinier_ruins_corridora_day_sep_F": {
+  "text": "把火拿掉",
+  "time": "11-13 10:50"
+ },
+ "shinier_forest_nest_day_sep_F": {
+  "text": "骨頭不要動 樹洞不要出人 把骨跟樹洞遮住再跑ㄅ",
+  "time": "11-13 10:50"
+ },
+ "shinier_forest_glade_day_sep_F": {
+  "text": "微移鏡 把移動的部份剪掉",
+  "time": "11-13 10:50"
+ },
+ "belisar_throne_day_sep_F": {
+  "text": "上方影子遮掉 注意不要遮到布",
+  "time": "11-13 10:50"
+ },
+ "belisar_stephall_day_sep_F": {
+  "text": "除了燭火跟布飄其他不要動",
+  "time": "11-13 10:50"
+ },
+ "belisar_starroom_day_sep_F": {
+  "text": "移鏡 讓天體球完整轉一圈",
+  "time": "11-13 10:50"
+ },
+ "sofiaout_salon_base_sep_F": {
+  "text": "門扇微開闔就好",
+  "time": "11-13 10:50"
+ },
+ "sofiaout_carriage_base_sep_F": {
+  "text": "重跑 互外的樹吹動就好 室內不動",
+  "time": "11-13 10:50"
+ },
+ "sofiaout_backhall_base_sep_F": {
+  "text": "燈火閃動就好 其他不要動",
+  "time": "11-13 10:50"
+ },
+ "shinier_ruins_well_base_sep_F": {
+  "text": "不要倒放",
+  "time": "11-13 10:50"
+ },
+ "shinier_ruins_deepspring_base_sep_F": {
+  "text": "水紋不要倒放 開anichk給我",
+  "time": "11-13 10:50"
+ },
+ "shinier_ruins_deepaltar_base_sep_F": {
+  "text": "不要倒放 開anichk給我",
+  "time": "11-13 10:50"
+ },
+ "shinier_ruins_darkbridge_base_sep_F": {
+  "text": "不要倒放 開anichk給我",
+  "time": "11-13 10:50"
+ },
+ "shinier_ruins_colossus_base_sep_F": {
+  "text": "不要倒放 開anichk給我",
+  "time": "11-13 10:50"
+ },
+ "shinier_ruins_brazier_base_sep_F": {
+  "text": "不要倒放 開anichk給我",
+  "time": "11-13 10:50"
+ },
+ "belisar_waterjail_base_sep_F": {
+  "text": "開anichk給我",
+  "time": "11-13 10:50"
+ },
+ "belisar_wardtomb_base_sep_F": {
+  "text": "不要倒放 開anichk給我",
+  "time": "11-13 10:50"
+ },
+ "belisar_trihall_base_sep_F": {
+  "text": "不要倒放 開anichk給我",
+  "time": "11-13 10:50"
+ },
+ "belisar_oldtomb_base_sep_F": {
+  "text": "只畫中間的燈就好",
+  "time": "11-13 10:50"
+ },
+ "belisar_incense_base_sep_F": {
+  "text": "不要倒放 開anichk給我",
+  "time": "11-13 10:50"
+ },
+ "belisar_dragonrace_base_sep_F": {
+  "text": "不要倒放 開anichk給我",
+  "time": "11-13 10:50"
+ },
+ "belisar_crown_base_sep_F": {
+  "text": "開anichk給我",
+  "time": "11-13 10:50"
+ }
+}

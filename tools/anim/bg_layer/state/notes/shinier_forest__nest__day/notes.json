@@ -1,0 +1,25 @@
+{
+ "key": "shinier_forest__nest__day",
+ "map": "shinier_forest",
+ "mapName": "夏爾森林",
+ "node": "nest",
+ "name": "夏爾森林　獸巢",
+ "band": "day",
+ "file": "forest/forest_nest_day.webp",
+ "general": "（自動判斷，Ray 11-10 修正：森林沒有火、圖騰與小徑保持原圖）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:46:44",
+ "colors": [
+  {
+   "name": "green",
+   "rgb": "#3ddc5a",
+   "text": "樹葉草叢隨風搖曳",
+   "mask": "green.png"
+  }
+ ],
+ "fixed_by": "fix_jobs",
+ "opts": {
+  "protect": "protect_1110b.png"
+ }
+}

@@ -1,0 +1,24 @@
+{
+ "key": "plainsroad__cairn__day",
+ "map": "plainsroad",
+ "mapName": "平原古道",
+ "node": "cairn",
+ "name": "平原古道　石塚群",
+ "band": "day",
+ "file": "plains/plains_cairn_day.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:46:51",
+ "colors": [
+  {
+   "name": "cyan",
+   "rgb": "#2fe0e0",
+   "text": "雲湧動",
+   "mask": "cyan.png"
+  }
+ ],
+ "opts": {
+  "extra": "鏡頭是鎖死在三腳架上的固定機位，絕對不推近、不拉遠、不平移、不搖鏡，畫框邊緣的景物始終停在同一個位置"
+ }
+}

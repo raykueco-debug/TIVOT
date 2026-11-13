@@ -1,0 +1,21 @@
+{
+ "key": "shinier_ruins__hollow__base",
+ "map": "shinier_ruins",
+ "mapName": "木雅克神殿",
+ "node": "hollow",
+ "name": "木雅克神殿　苔穴岔道",
+ "band": "base",
+ "file": "ruins/ruins_shinier_hollow.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:46:48",
+ "colors": [
+  {
+   "name": "green",
+   "rgb": "#3ddc5a",
+   "text": "樹葉草叢隨風搖曳",
+   "mask": "green.png"
+  }
+ ]
+}

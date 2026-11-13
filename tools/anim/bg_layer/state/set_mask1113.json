@@ -1,0 +1,27 @@
+{
+ "title": "背景 11-13 遮罩檢查",
+ "sets": [
+  {
+   "title": "① 要遮掉的（圈起來的地方不動）",
+   "note": "湖岸左側人影／門庭的火／西壕右邊與遠方火把／王座廳上方影子（別圈到布）／前廳的門。圈完存檔。",
+   "nodes": [
+    "dunmor/lakeshore",
+    "dunmor/gatecourt",
+    "dunmor/ditchW",
+    "belisar/throne",
+    "belisar/antecham"
+   ]
+  },
+  {
+   "title": "② 只動圈起來的",
+   "note": "階梯廳：燭火＋布／後廳：燈火／沙龍：門扇／古墓：中間的燈／馬車房：戶外的樹。其他全部不動。圈完存檔。",
+   "nodes": [
+    "belisar/stephall",
+    "sofiaout/backhall",
+    "sofiaout/salon",
+    "belisar/oldtomb",
+    "sofiaout/carriage"
+   ]
+  }
+ ]
+}

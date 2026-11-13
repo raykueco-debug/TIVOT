@@ -1,0 +1,81 @@
+{
+ "title": "背景 11-10 修正檢查",
+ "sets": [
+  {
+   "title": "① 純 Wan 整張（斷橋／谷底祭場／斷崖邊／遺蹟入口）",
+   "note": "整張交給 Wan，雲也一起動。按「▶ G 純 Wan 整張」。還沒按鈕＝GPU 還在跑。",
+   "nodes": [
+    "canyon/bridge",
+    "canyon/altar",
+    "shinier_forest/cliff",
+    "shinier_forest/ruins"
+   ]
+  },
+  {
+   "title": "② 夏爾森林修正",
+   "note": "拿掉誤判的火、提示詞只寫樹葉；入口的圖騰與木牌、獸巢樹洞、獵道與高地的小徑一律原圖。按「▶ F」。GPU 跑完前播的是舊版。",
+   "nodes": [
+    "shinier_forest/entry",
+    "shinier_forest/glade",
+    "shinier_forest/nest",
+    "shinier_forest/trail",
+    "shinier_forest/high"
+   ]
+  },
+  {
+   "title": "③ 瓦努努（石製遺蹟）的雲",
+   "note": "天空重判、挖空，雲透出來；速度加快。按「雲：橫移／迎面飄來」切換。",
+   "nodes": [
+    "fallen/entry",
+    "fallen/fork",
+    "fallen/basin",
+    "fallen/causeway",
+    "fallen/altar"
+   ]
+  },
+  {
+   "title": "④ 其他：自動挑接點去閃",
+   "note": "每圈接回開頭那一下的閃，改成整格取捨挑接點。",
+   "nodes": [
+    "canyon/bones",
+    "canyon/corridor",
+    "canyon/entry",
+    "capital_outer/river",
+    "capital_outer/windmill",
+    "dunmor/altar",
+    "dunmor/altarcourt",
+    "dunmor/barrowfield",
+    "dunmor/boarstone",
+    "dunmor/bogoffer",
+    "dunmor/brochbase",
+    "dunmor/brochtop",
+    "dunmor/cairn",
+    "dunmor/causeway",
+    "dunmor/chariotshed",
+    "dunmor/cistgrave",
+    "dunmor/ditchE",
+    "dunmor/ditchW",
+    "dunmor/dolmen",
+    "dunmor/druidhouse",
+    "dunmor/gatecourt",
+    "dunmor/granary",
+    "dunmor/headshrine",
+    "dunmor/innergate",
+    "dunmor/kingsbarrow",
+    "dunmor/kingshall",
+    "lake/northshore",
+    "shinier_forest/cave",
+    "shinier_forest/shoal",
+    "sofiaout/avenue",
+    "sofiaout/backhall",
+    "sofiaout/carriage",
+    "sofiaout/cellar",
+    "sofiaout/forecourt",
+    "sofiaout/hall",
+    "sofiaout/lodge",
+    "sofiaout/salon",
+    "sofiaout/terrace"
+   ]
+  }
+ ]
+}

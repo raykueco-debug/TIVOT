@@ -1,0 +1,18 @@
+{
+ "key": "dunmor__nemeton__base",
+ "map": "dunmor",
+ "mapName": "羅賽爾廢城",
+ "node": "nemeton",
+ "name": "羅賽爾廢城　聖林祭場",
+ "band": "base",
+ "file": "dunmor/dunmor_nemeton.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:47:19",
+ "colors": [],
+ "fire_v2": true,
+ "opts": {
+  "extra": "鏡頭是鎖死在三腳架上的固定機位，絕對不推近、不拉遠、不平移、不搖鏡，畫框邊緣的景物始終停在同一個位置"
+ }
+}

@@ -1,0 +1,14 @@
+{
+ "key": "winsmoor_siege__w5_0__base",
+ "map": "winsmoor_siege",
+ "mapName": "溫斯摩爾港",
+ "node": "w5_0",
+ "name": "溫斯摩爾港　河岸路3段",
+ "band": "base",
+ "file": "winsmoor_siege/ws_5_0_dusk.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:47:06",
+ "colors": []
+}

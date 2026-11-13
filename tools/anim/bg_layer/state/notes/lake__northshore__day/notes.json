@@ -1,0 +1,27 @@
+{
+ "key": "lake__northshore__day",
+ "map": "lake",
+ "mapName": "鏡湖",
+ "node": "northshore",
+ "name": "鏡湖　北岸",
+ "band": "day",
+ "file": "lake/lake_northshore_day.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:46:53",
+ "colors": [
+  {
+   "name": "green",
+   "rgb": "#3ddc5a",
+   "text": "樹葉草叢隨風搖曳",
+   "mask": "green.png"
+  },
+  {
+   "name": "cyan",
+   "rgb": "#2fe0e0",
+   "text": "雲湧動",
+   "mask": "cyan.png"
+  }
+ ]
+}

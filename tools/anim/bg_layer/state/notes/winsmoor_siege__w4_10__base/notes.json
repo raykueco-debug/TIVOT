@@ -1,0 +1,14 @@
+{
+ "key": "winsmoor_siege__w4_10__base",
+ "map": "winsmoor_siege",
+ "mapName": "溫斯摩爾港",
+ "node": "w4_10",
+ "name": "溫斯摩爾港　中央×南環",
+ "band": "base",
+ "file": "winsmoor_siege/ws_4_10_dusk.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:47:13",
+ "colors": []
+}
