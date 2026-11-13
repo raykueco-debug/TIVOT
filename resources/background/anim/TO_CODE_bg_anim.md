@@ -395,3 +395,43 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 |---|---|---|---|
 | 羅賽爾廢城　西壕 | 原圖 `dunmor/dunmor_ditchw.webp`（**不跑 Wan，整格靜態**） | `anim/dunmor/dunmor_ditchW_watermask.png` | 天空：`*_sky.png`＋`*_skymask.png`（另交） |
 | 羅賽爾廢城　沼澤獻祭處 | 蘆葦的 Wan 循環（水面已固定成原圖，Ray 在 animechk 剪 `chk1114c`，交件後補檔名） | `anim/dunmor/dunmor_bogoffer_watermask.png` | 同上 |
+
+> 11-14 Ray：「可以，把所有有水的都這樣處理」—— **全部有水的格子都交水面遮罩**（33 格＋西壕、沼澤獻祭處）。
+> 遮罩分兩種（白＝該區域，邊緣已羽化）：`*_watermask.png` ＝**平靜水面**（湖、池、水窪、沼澤、河，用上面「程式水面」的畫法）；`*_flowmask.png` ＝**落下／沖流的水**（瀑布、水柱、噴泉、急流）——⚠ 這一種的程式畫法還沒定（建議：沿下落方向持續捲動的條紋＋底部水花），先交範圍。
+> 已交件的影片會換成「水面那一塊固定成靜態」的版本（Ray 審過對照頁才換，換的時候這裡會更新）。濕地板的反光不算水，不交遮罩。
+
+| 格 | 遮罩 | 影片 |
+|---|---|---|
+| 羅賽爾廢城　湖岸 | `anim/dunmor/dunmor_lakeshore_base_watermask.png`  | （未交件） |
+| 貝利薩爾遺址　獅口水道 | `anim/belisar/belisar_dragonrace_base_watermask.png` ＋ `belisar_dragonrace_base_flowmask.png` | `belisar/belisar_lionspout_sep_v1.mp4`（待換成水面固定版） |
+| 貝利薩爾遺址　排水崖口 | `anim/belisar/belisar_draincliff_day_watermask.png` ＋ `belisar_draincliff_day_flowmask.png` | `belisar/belisar_draincliff_day_sep_v1.mp4`（待換成水面固定版） |
+| 貝利薩爾遺址　靜水池 | `anim/belisar/belisar_mirrorpool_base_watermask.png`  | `belisar/belisar_stillpool_sep_v1.mp4`（待換成水面固定版） |
+| 貝利薩爾遺址　水牢 | `anim/belisar/belisar_waterjail_base_watermask.png`  | `belisar/belisar_waterjail_sep_v1.mp4`（待換成水面固定版） |
+| 貝利薩爾遺址　崩頂坡 | `anim/belisar/belisar_rooffall_day_watermask.png`  | `belisar/belisar_rooffall_day_sep_v1.mp4`（待換成水面固定版） |
+| 貝利薩爾遺址　旋梯井 | `anim/belisar/belisar_stairwell_base_watermask.png`  | `belisar/belisar_spiralwell_sep_v1.mp4`（待換成水面固定版） |
+| 帝都外郊　河畔 | `anim/capital_outer/capital_outer_river_base_watermask.png` ＋ `capital_outer_river_base_flowmask.png` | `capital_outer/outer_river_dusk_sep_v1.mp4`（待換成水面固定版） |
+| 羅賽爾廢城　野豬石 | `anim/dunmor/dunmor_boarstone_base_watermask.png`  | `dunmor/dunmor_boarstone_sep_v1.mp4`（待換成水面固定版）；⚠ 水以外不動，建議改靜態 |
+| 羅賽爾廢城　泥沼小徑 | `anim/dunmor/dunmor_boglane_base_watermask.png`  | `dunmor/dunmor_boglane_sep_v1.mp4`（待換成水面固定版） |
+| 羅賽爾廢城　東壕 | `anim/dunmor/dunmor_ditchE_base_watermask.png`  | `dunmor/dunmor_ditche_sep_v1.mp4`（待換成水面固定版） |
+| 羅賽爾廢城　內壕 | `anim/dunmor/dunmor_innerditch_base_watermask.png`  | `dunmor/dunmor_innerditch_sep_v1.mp4`（待換成水面固定版） |
+| 石製遺蹟　沉水石坑 | `anim/fallen/fallen_basin_day_watermask.png`  | `fallen/fallen_basin_day_sep_v1.mp4`（待換成水面固定版） |
+| 鏡湖　湖心石堤 | `anim/lake/lake_causeway_day_watermask.png`  | `lake/lake_causeway_day_sep_v1.mp4`（待換成水面固定版） |
+| 鏡湖　水蝕洞 | `anim/lake/lake_cave_day_watermask.png` ＋ `lake_cave_day_flowmask.png` | `lake/lake_cave_day_sep_v1.mp4`（待換成水面固定版） |
+| 鏡湖　倒木灣 | `anim/lake/lake_deadfall_day_watermask.png`  | `lake/lake_deadfall_day_sep_v1.mp4`（待換成水面固定版） |
+| 鏡湖　東岸 | `anim/lake/lake_eastshore_day_watermask.png`  | `lake/lake_eastshore_day_sep_v1.mp4`（待換成水面固定版） |
+| 鏡湖　瀑布底 | `anim/lake/lake_fallbase_day_watermask.png` ＋ `lake_fallbase_day_flowmask.png` | `lake/lake_fallbase_day_sep_v1.mp4`（待換成水面固定版） |
+| 鏡湖　山口 | `anim/lake/lake_inlet_day_watermask.png`  | `lake/lake_inlet_day_sep_v1.mp4`（待換成水面固定版） |
+| 鏡湖　北岸 | `anim/lake/lake_northshore_day_watermask.png`  | `lake/lake_northshore_day_sep_v1.mp4`（待換成水面固定版） |
+| 夏爾森林　淺灘 | `anim/shinier_forest/shinier_forest_shoal_day_watermask.png` ＋ `shinier_forest_shoal_day_flowmask.png` | `shinier_forest/forest_shoal_day_aba_v1.mp4`（待換成水面固定版） |
+| 夏爾森林　河谷 | `anim/shinier_forest/shinier_forest_valley_day_watermask.png` ＋ `shinier_forest_valley_day_flowmask.png` | `shinier_forest/forest_valley_day_abcd_v1.mp4`（待換成水面固定版） |
+| 木雅克神殿　黑暗斷橋 | `anim/ruins/shinier_ruins_darkbridge_base_watermask.png` ＋ `shinier_ruins_darkbridge_base_flowmask.png` | `ruins/ruins_shinier_darkbridge_sep_v1.mp4`（待換成水面固定版） |
+| 木雅克神殿　命之泉 | `anim/ruins/shinier_ruins_deepspring_base_watermask.png` ＋ `shinier_ruins_deepspring_base_flowmask.png` | `ruins/ruins_shinier_deepspring_sep_v1.mp4`（待換成水面固定版） |
+| 木雅克神殿　圓井房 | `anim/ruins/shinier_ruins_well_base_watermask.png` ＋ `shinier_ruins_well_base_flowmask.png` | `ruins/ruins_shinier_well_sep_v1.mp4`（待換成水面固定版） |
+| 里朋莊園　噴泉前庭 | `anim/sofiaout/sofiaout_forecourt_base_watermask.png` ＋ `sofiaout_forecourt_base_flowmask.png` | `sofiaout/sofiaout_forecourt_abcd_v1.mp4`（待換成水面固定版） |
+| 伊甸古墓　蓄水池 | `anim/tomb/tomb_cistern_base_watermask.png`  | `tomb/tomb_cistern_sep_v1.mp4`（待換成水面固定版） |
+| 伊甸古墓　淤泥坑 | `anim/tomb/tomb_mudpit_base_watermask.png`  | `tomb/tomb_mudpit_sep_v1.mp4`（待換成水面固定版） |
+| 伊甸古墓　積水坑 | `anim/tomb/tomb_sump_base_watermask.png` ＋ `tomb_sump_base_flowmask.png` | `tomb/tomb_sump_sep_v1.mp4`（待換成水面固定版） |
+| 伊甸古墓　沉陷廳 | `anim/tomb/tomb_sunkhall_base_watermask.png` ＋ `tomb_sunkhall_base_flowmask.png` | `tomb/tomb_sunkhall_sep_v1.mp4`（待換成水面固定版） |
+| 伊甸古墓　汲水階 | `anim/tomb/tomb_waterstair_base_watermask.png` ＋ `tomb_waterstair_base_flowmask.png` | `tomb/tomb_waterstair_sep_v1.mp4`（待換成水面固定版） |
+| 伊甸古墓　墓龕 | `anim/tomb/tomb_tombniche_base_watermask.png`  | `tomb/tomb_tombniche_sep_v1.mp4`（待換成水面固定版） |
+| 伊甸古墓　豎井 | `anim/tomb/tomb_shaft_base_watermask.png` ＋ `tomb_shaft_base_flowmask.png` | `tomb/tomb_shaft_sep_v1.mp4`（待換成水面固定版） |
