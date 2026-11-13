@@ -12,7 +12,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import bg_queue as Q
 import cloud_sprites as CS
 LG = r'C:/Users/Ray Ku/Desktop/TIVOT/resources/background/_layers_gpt/out/'
-DL = r'C:/Users/Ray Ku/Downloads/'
+DL = r'C:/Users/Ray Ku/Desktop/ComfyUI-master/tivot_wan/bg_layer/clouds/'   # 11-13：Downloads 被清空，雲九宮格改放這裡（由 cloudgrid_v2.png 預覽圖切回）
 W, H = CS.W, CS.H
 SEP_LOG = os.path.join(HERE, 'sep_run.log')
 
@@ -27,12 +27,25 @@ def log(*a):
 def stop(): return os.path.exists(os.path.join(HERE, 'SEP_STOP'))
 
 
+def gpu_free():
+    """Ray 11-13：「GPU 空出來」＝ Ray 的 Unity／遊戲沒開，而且 ComfyUI 連得上（Unity 佔著顯存時 Wan 會 OOM、ComfyUI 一直重開）。"""
+    try:
+        out = subprocess.run(['tasklist'], capture_output=True, text=True, errors='replace').stdout.lower()
+        if 'questzombie.exe' in out: return False
+        mem = int(subprocess.run(['nvidia-smi', '--query-gpu=memory.used', '--format=csv,noheader,nounits'], capture_output=True, text=True).stdout.split()[0])
+        if mem > 3500: return False   # Unity 待機就佔 5.6 GB，Wan 會 OOM ⇒ 顯存要真的空
+        import urllib.request; urllib.request.urlopen('http://127.0.0.1:8188/queue', timeout=3)
+        return True
+    except Exception:
+        return False
+
+
 def wait_gpu():
     if os.environ.get('SEP_NOWAIT'): return not stop()   # Ray 11-11：直接跑，不等 GPU 閒
     calm = 0
     while calm < 3:
         if stop(): return False
-        if Q.gpu_util() < 10 and Q.queue_busy(8188, True) == 0: calm += 1
+        if Q.gpu_util() < 10 and Q.queue_busy(8188, True) == 0 and gpu_free(): calm += 1
         else: calm = 0
         time.sleep(10)
     return True

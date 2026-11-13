@@ -270,3 +270,38 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 伊甸古墓　淤泥坑 | `anim/tomb/tomb_mudpit_sep_v1.mp4` | 93 | 不用（整張含天空都是影片） |
 | 伊甸古墓　石工長廳 | `anim/tomb/tomb_masonhall_sep_v1.mp4` | 94 | 不用（整張含天空都是影片） |
 | 伊甸古墓　石工房 | `anim/tomb/tomb_mason_sep_v1.mp4` | 89 | 不用（整張含天空都是影片） |
+
+> 11-13 室內（Ray 核可；無天空，只交一圈）
+| 木雅克神殿　上行石階 | `anim/ruins/ruins_shinier_stairup_sep_v1.mp4` | 92 | 不用（整張含天空都是影片） |
+| 木雅克神殿　下行深階 | `anim/ruins/ruins_shinier_stairdeep_sep_v1.mp4` | 97 | 不用（整張含天空都是影片） |
+| 木雅克神殿　地底裂隙 | `anim/ruins/ruins_shinier_rift_sep_v1.mp4` | 104 | 不用（整張含天空都是影片） |
+| 木雅克神殿　石牢區 | `anim/ruins/ruins_shinier_prison_sep_v1.mp4` | 100 | 不用（整張含天空都是影片） |
+| 木雅克神殿　古代機械 | `anim/ruins/ruins_shinier_machine_sep_v1.mp4` | 95 | 不用（整張含天空都是影片） |
+| 木雅克神殿　苔穴岔道 | `anim/ruins/ruins_shinier_hollow_sep_v1.mp4` | 95 | 不用（整張含天空都是影片） |
+| 木雅克神殿　墓道 | `anim/ruins/ruins_shinier_catacomb_sep_v1.mp4` | 98 | 不用（整張含天空都是影片） |
+| 聖王廳地宮　大門 | `anim/holysee/holyseedungeonwhole_sep_v1.mp4` | 104 | 不用（整張含天空都是影片） |
+| 貝利薩爾遺址　旋梯井 | `anim/belisar/belisar_spiralwell_sep_v1.mp4` | 106 | 不用（整張含天空都是影片） |
+| 貝利薩爾遺址　千柱廳 | `anim/belisar/belisar_cistern_sep_v1.mp4` | 106 | 不用（整張含天空都是影片） |
+| 貝利薩爾遺址　納骨堂 | `anim/belisar/belisar_ossuary_sep_v1.mp4` | 94 | 不用（整張含天空都是影片） |
+| 貝利薩爾遺址　壁畫長廊 | `anim/belisar/belisar_muralgallery_sep_v1.mp4` | 100 | 不用（整張含天空都是影片） |
+| 貝利薩爾遺址　鏡廊 | `anim/belisar/belisar_mirrorwalk_sep_v1.mp4` | 106 | 不用（整張含天空都是影片） |
+| 貝利薩爾遺址　靜水池 | `anim/belisar/belisar_stillpool_sep_v1.mp4` | 102 | 不用（整張含天空都是影片） |
+| 貝利薩爾遺址　枝燈長廊 | `anim/belisar/belisar_chandelierhall_sep_v1.mp4` | 92 | 不用（整張含天空都是影片） |
+| 貝利薩爾遺址　獸欄 | `anim/belisar/belisar_cages_sep_v1.mp4` | 91 | 不用（整張含天空都是影片） |
+| 貝利薩爾遺址　甲冑廊 | `anim/belisar/belisar_armourgallery_sep_v1.mp4` | 94 | 不用（整張含天空都是影片） |
+| 貝利薩爾遺址　獅階 | `anim/belisar/belisar_lionstair_sep_v1.mp4` | 102 | 不用（整張含天空都是影片） |
+| 貝利薩爾遺址　絞盤室 | `anim/belisar/belisar_capstan_sep_v1.mp4` | 90 | 不用（整張含天空都是影片） |
+
+> 11-13 有天空的格子（Ray 核可）
+| 平原古道　石塚群 | `anim/plains/plains_cairn_day_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+| 伊甸古墓　墓門 | `anim/tomb/tomb_gate_day_sep_v1.mp4` | 276 | 不用（整張含天空都是影片） |
+| 木雅克神殿　岔道 | `anim/ruins/ruins_shinier_crossway_day_sep_v1.mp4` | 255 | 不用（整張含天空都是影片） |
+| 木雅克神殿　拱門長廊 | `anim/ruins/ruins_shinier_corridorb_day_sep_v1.mp4` | 291 | 不用（整張含天空都是影片） |
+| 木雅克神殿　崩塌走道 | `anim/ruins/ruins_shinier_collapsed_day_sep_v1.mp4` | 267 | 不用（整張含天空都是影片） |
+| 木雅克神殿　前廳 | `anim/ruins/ruins_shinier_antechamber_day_sep_v1.mp4` | 303 | 不用（整張含天空都是影片） |
+| 貝利薩爾遺址　中央大廳 | `anim/belisar/belisar_greathall_day_sep_v1.mp4` | 285 | 不用（整張含天空都是影片） |
+| 貝利薩爾遺址　兵器工坊 | `anim/belisar/belisar_forge_day_sep_v1.mp4` | 264 | 不用（整張含天空都是影片） |
+| 鏡湖　水蝕洞 | `anim/lake/lake_cave_day_sep_v1.mp4` | 192 | 不用（整張含天空都是影片） |
+
+> 11-13 北方泊地（Ray 核可）
+| 北方泊地　教堂 | `anim/northport/northport_church_bf_sep_v1.mp4` | 324 | 不用（整張含天空都是影片） |

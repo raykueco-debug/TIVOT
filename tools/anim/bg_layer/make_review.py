@@ -1,5 +1,5 @@
 """已出未交的格子＋每格一個修改意見框（存到 review.json，經 annotate_server 的 /api/review）。"""
-import os, json, glob, time
+import os, json, glob, time, re
 HERE = os.path.dirname(os.path.abspath(__file__)); os.chdir(HERE)
 dl = json.load(open('delivered.json', encoding='utf8')); items = []
 for d in glob.glob('out/*_sep_F') + glob.glob('out/*_sep_Frev4'):
@@ -9,7 +9,7 @@ for d in glob.glob('out/*_sep_F') + glob.glob('out/*_sep_Frev4'):
     if not k or k in dl: continue
     n = json.load(open(f'notes/{k}/notes.json', encoding='utf8'))['name'] if os.path.exists(f'notes/{k}/notes.json') else k
     items.append((os.path.getmtime(d + '/loop.mp4'), n, d))
-for d in glob.glob('out/*_war*'):
+for d in [x for x in glob.glob('out/*_war*') if re.search(r'_war(_|$)', os.path.basename(x))]:
     if '_rej' in d or not os.path.exists(d + '/loop.mp4'): continue
     nm = os.path.basename(d).split('_war')[0]
     if nm in dl: continue
