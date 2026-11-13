@@ -1,0 +1,43 @@
+{
+ "method": "abcd",
+ "full": true,
+ "key": "dunmor__bogoffer__base",
+ "ab": "-",
+ "k": 12,
+ "ba": "-",
+ "frames": 56,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "chain": "bgl/dunmor_bogoffer_base_qc3acf1_ab,bgl/dunmor_bogoffer_base_qc3acf1_bc,bgl/dunmor_bogoffer_base_qc3acf1_cd,bgl/dunmor_bogoffer_base_qc3acf1_da",
+  "start": 4,
+  "da_end": 11,
+  "joints": [
+   12,
+   28,
+   44
+  ]
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_bogoffer.webp",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_bogoffer.webp",
+  "dunmor__bogoffer__base",
+  "-",
+  "0",
+  "-",
+  "dunmor_bogoffer_base_abcd",
+  "--chain",
+  "bgl/dunmor_bogoffer_base_qc3acf1_ab,bgl/dunmor_bogoffer_base_qc3acf1_bc,bgl/dunmor_bogoffer_base_qc3acf1_cd,bgl/dunmor_bogoffer_base_qc3acf1_da",
+  "--full"
+ ],
+ "k_src": 12,
+ "joint_AB_to_BA": 1.594,
+ "joint_BA_to_A": 5.001,
+ "seam_diff": 5.001,
+ "mean_step_diff": 1.032,
+ "size": [
+  1536,
+  1024
+ ]
+}

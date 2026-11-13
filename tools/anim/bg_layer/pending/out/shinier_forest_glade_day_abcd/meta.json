@@ -1,0 +1,45 @@
+{
+ "method": "abcd",
+ "full": true,
+ "key": "shinier_forest__glade__day",
+ "ab": "-",
+ "k": 12,
+ "ba": "-",
+ "frames": 57,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "chain": "bgl/shinier_forest_glade_day_qc3acf1_ab,bgl/shinier_forest_glade_day_qc3acf1_bc,bgl/shinier_forest_glade_day_qc3acf1_cd,bgl/shinier_forest_glade_day_qc3acf1_da",
+  "start": 4,
+  "da_end": 12,
+  "joints": [
+   12,
+   28,
+   44
+  ]
+ },
+ "protect": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\notes\\shinier_forest__glade__day\\protect_keep.png",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\forest/forest_glade_day.webp",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\forest/forest_glade_day.webp",
+  "shinier_forest__glade__day",
+  "-",
+  "0",
+  "-",
+  "shinier_forest_glade_day_abcd",
+  "--chain",
+  "bgl/shinier_forest_glade_day_qc3acf1_ab,bgl/shinier_forest_glade_day_qc3acf1_bc,bgl/shinier_forest_glade_day_qc3acf1_cd,bgl/shinier_forest_glade_day_qc3acf1_da",
+  "--full",
+  "--protect",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\notes\\shinier_forest__glade__day\\protect_keep.png"
+ ],
+ "k_src": 12,
+ "joint_AB_to_BA": 2.242,
+ "joint_BA_to_A": 6.478,
+ "seam_diff": 6.478,
+ "mean_step_diff": 1.152,
+ "size": [
+  1536,
+  1024
+ ]
+}

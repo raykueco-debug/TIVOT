@@ -1,0 +1,39 @@
+{
+ "method": "aba",
+ "full": true,
+ "key": "dunmor__cairn__base",
+ "ab": "bgl/dunmor_cairn_base_sepF7bf5a_ab",
+ "k": 28,
+ "ba": "bgl/dunmor_cairn_base_sepF7bf5a_ba",
+ "frames": 55,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 4,
+  "ab_end": 32,
+  "ba_start": 1,
+  "ba_end": 27
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_cairn_base_sep_F\\other.png",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_cairn_base_sep_F\\other.png",
+  "dunmor__cairn__base",
+  "bgl/dunmor_cairn_base_sepF7bf5a_ab",
+  "32",
+  "bgl/dunmor_cairn_base_sepF7bf5a_ba",
+  "dunmor_cairn_base_sepfg",
+  "--mwarp",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_cairn_base_sep_F\\mwarp.npy",
+  "--full"
+ ],
+ "k_src": 32,
+ "joint_AB_to_BA": 1.994,
+ "joint_BA_to_A": 1.99,
+ "seam_diff": 1.994,
+ "mean_step_diff": 0.687,
+ "size": [
+  1536,
+  1024
+ ]
+}

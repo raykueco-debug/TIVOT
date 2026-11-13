@@ -1,0 +1,43 @@
+{
+ "method": "abcd",
+ "full": true,
+ "key": "sofiaout__carriage__base",
+ "ab": "-",
+ "k": 13,
+ "ba": "-",
+ "frames": 57,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "chain": "bgl/sofiaout_carriage_base_qf5e33f_ab,bgl/sofiaout_carriage_base_qf5e33f_bc,bgl/sofiaout_carriage_base_qf5e33f_cd,bgl/sofiaout_carriage_base_qf5e33f_da",
+  "start": 3,
+  "da_end": 11,
+  "joints": [
+   13,
+   29,
+   45
+  ]
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\sofia/sofiaout_carriage.webp",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\sofia/sofiaout_carriage.webp",
+  "sofiaout__carriage__base",
+  "-",
+  "0",
+  "-",
+  "sofiaout_carriage_base_abcd",
+  "--chain",
+  "bgl/sofiaout_carriage_base_qf5e33f_ab,bgl/sofiaout_carriage_base_qf5e33f_bc,bgl/sofiaout_carriage_base_qf5e33f_cd,bgl/sofiaout_carriage_base_qf5e33f_da",
+  "--full"
+ ],
+ "k_src": 13,
+ "joint_AB_to_BA": 1.886,
+ "joint_BA_to_A": 4.915,
+ "seam_diff": 4.915,
+ "mean_step_diff": 0.827,
+ "size": [
+  1536,
+  1024
+ ]
+}

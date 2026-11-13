@@ -1,0 +1,41 @@
+{
+ "method": "aba",
+ "full": true,
+ "key": "dunmor__gatecourt__base",
+ "ab": "bgl/dunmor_gatecourt_base_sepFceaaf_ab",
+ "k": 38,
+ "ba": "bgl/dunmor_gatecourt_base_sepFceaaf_ba",
+ "frames": 70,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 4,
+  "ab_end": 42,
+  "ba_start": 1,
+  "ba_end": 32
+ },
+ "protect": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_gatecourt_base_sep_F\\protect_box.png",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_gatecourt_base_sep_F\\other.png",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_gatecourt_base_sep_F\\other.png",
+  "dunmor__gatecourt__base",
+  "bgl/dunmor_gatecourt_base_sepFceaaf_ab",
+  "42",
+  "bgl/dunmor_gatecourt_base_sepFceaaf_ba",
+  "dunmor_gatecourt_base_sepfg",
+  "--mwarp",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_gatecourt_base_sep_F\\mwarp.npy",
+  "--full",
+  "--protect",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_gatecourt_base_sep_F\\protect_box.png"
+ ],
+ "k_src": 42,
+ "joint_AB_to_BA": 1.838,
+ "joint_BA_to_A": 2.328,
+ "seam_diff": 2.328,
+ "mean_step_diff": 0.466,
+ "size": [
+  1536,
+  1024
+ ]
+}

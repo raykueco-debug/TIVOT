@@ -1,0 +1,39 @@
+{
+ "method": "aba",
+ "full": true,
+ "key": "dunmor__bogoffer__base",
+ "ab": "bgl/dunmor_bogoffer_base_sepF7bf5a_ab",
+ "k": 43,
+ "ba": "bgl/dunmor_bogoffer_base_sepF7bf5a_ba",
+ "frames": 72,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 5,
+  "ab_end": 48,
+  "ba_start": 1,
+  "ba_end": 29
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_bogoffer_base_sep_F\\other.png",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_bogoffer_base_sep_F\\other.png",
+  "dunmor__bogoffer__base",
+  "bgl/dunmor_bogoffer_base_sepF7bf5a_ab",
+  "48",
+  "bgl/dunmor_bogoffer_base_sepF7bf5a_ba",
+  "dunmor_bogoffer_base_sepfg",
+  "--mwarp",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_bogoffer_base_sep_F\\mwarp.npy",
+  "--full"
+ ],
+ "k_src": 48,
+ "joint_AB_to_BA": 2.846,
+ "joint_BA_to_A": 4.931,
+ "seam_diff": 4.931,
+ "mean_step_diff": 1.498,
+ "size": [
+  1536,
+  1024
+ ]
+}

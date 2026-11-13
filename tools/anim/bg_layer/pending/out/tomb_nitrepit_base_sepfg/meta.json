@@ -1,0 +1,39 @@
+{
+ "method": "aba",
+ "full": true,
+ "key": "tomb__nitrepit__base",
+ "ab": "bgl/tomb_nitrepit_base_sepF661ef_ab",
+ "k": 22,
+ "ba": "bgl/tomb_nitrepit_base_sepF661ef_ba",
+ "frames": 54,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 1,
+  "ab_end": 23,
+  "ba_start": 1,
+  "ba_end": 32
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\tomb_nitrepit_base_sep_F\\other.png",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\tomb_nitrepit_base_sep_F\\other.png",
+  "tomb__nitrepit__base",
+  "bgl/tomb_nitrepit_base_sepF661ef_ab",
+  "23",
+  "bgl/tomb_nitrepit_base_sepF661ef_ba",
+  "tomb_nitrepit_base_sepfg",
+  "--mwarp",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\tomb_nitrepit_base_sep_F\\mwarp.npy",
+  "--full"
+ ],
+ "k_src": 23,
+ "joint_AB_to_BA": 1.477,
+ "joint_BA_to_A": 2.6,
+ "seam_diff": 2.6,
+ "mean_step_diff": 0.783,
+ "size": [
+  1536,
+  1024
+ ]
+}

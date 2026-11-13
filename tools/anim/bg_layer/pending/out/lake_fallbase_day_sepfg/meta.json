@@ -1,0 +1,42 @@
+{
+ "method": "aba",
+ "full": true,
+ "key": "lake__fallbase__day",
+ "ab": "bgl/lake_fallbase_day_sepF777b9_ab",
+ "k": 60,
+ "ba": "bgl/lake_fallbase_day_sepF777b9_ba",
+ "frames": 92,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 0,
+  "ab_end": 60,
+  "ba_start": 1,
+  "ba_end": 32
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\lake_fallbase_day_sep_F\\other.png",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\lake_fallbase_day_sep_F\\other.png",
+  "lake__fallbase__day",
+  "bgl/lake_fallbase_day_sepF777b9_ab",
+  "60",
+  "bgl/lake_fallbase_day_sepF777b9_ba",
+  "lake_fallbase_day_sepfg",
+  "--mwarp",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\lake_fallbase_day_sep_F\\mwarp.npy",
+  "--full",
+  "--sky",
+  "cyan",
+  "--nosky"
+ ],
+ "k_src": 60,
+ "joint_AB_to_BA": 3.38,
+ "joint_BA_to_A": 4.931,
+ "seam_diff": 4.931,
+ "mean_step_diff": 1.236,
+ "size": [
+  1536,
+  1024
+ ]
+}

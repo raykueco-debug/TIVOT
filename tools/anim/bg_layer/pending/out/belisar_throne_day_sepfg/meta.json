@@ -1,0 +1,39 @@
+{
+ "method": "aba",
+ "full": true,
+ "key": "belisar__throne__day",
+ "ab": "bgl/belisar_throne_day_sepFb4d7a_ab",
+ "k": 17,
+ "ba": "bgl/belisar_throne_day_sepFb4d7a_ba",
+ "frames": 49,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 5,
+  "ab_end": 22,
+  "ba_start": 1,
+  "ba_end": 32
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_throne_day_sep_F\\other.png",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_throne_day_sep_F\\other.png",
+  "belisar__throne__day",
+  "bgl/belisar_throne_day_sepFb4d7a_ab",
+  "23",
+  "bgl/belisar_throne_day_sepFb4d7a_ba",
+  "belisar_throne_day_sepfg",
+  "--mwarp",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_throne_day_sep_F\\mwarp.npy",
+  "--full"
+ ],
+ "k_src": 22,
+ "joint_AB_to_BA": 2.56,
+ "joint_BA_to_A": 5.026,
+ "seam_diff": 5.026,
+ "mean_step_diff": 1.408,
+ "size": [
+  1536,
+  1024
+ ]
+}

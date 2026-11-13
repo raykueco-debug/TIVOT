@@ -1,0 +1,36 @@
+{
+ "method": "aba",
+ "full": false,
+ "key": "dunmor__gatecourt__base",
+ "ab": "bgl/dunmor_gatecourt_base_s101",
+ "k": 38,
+ "ba": "bgl/dunmor_gatecourt_base_ba",
+ "frames": 70,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 4,
+  "ab_end": 42,
+  "ba_start": 1,
+  "ba_end": 32
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_gatecourt.webp",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_gatecourt.webp",
+  "dunmor__gatecourt__base",
+  "bgl/dunmor_gatecourt_base_s101",
+  "42",
+  "bgl/dunmor_gatecourt_base_ba",
+  "dunmor_gatecourt_base_abacloth"
+ ],
+ "k_src": 42,
+ "joint_AB_to_BA": 2.567,
+ "joint_BA_to_A": 3.133,
+ "seam_diff": 3.133,
+ "mean_step_diff": 0.721,
+ "size": [
+  1536,
+  1024
+ ]
+}

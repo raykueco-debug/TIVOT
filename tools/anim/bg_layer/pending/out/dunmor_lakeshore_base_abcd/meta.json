@@ -1,0 +1,43 @@
+{
+ "method": "abcd",
+ "full": true,
+ "key": "dunmor__lakeshore__base",
+ "ab": "-",
+ "k": 12,
+ "ba": "-",
+ "frames": 59,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "chain": "bgl/dunmor_lakeshore_base_qc3acf1_ab,bgl/dunmor_lakeshore_base_qc3acf1_bc,bgl/dunmor_lakeshore_base_qc3acf1_cd,bgl/dunmor_lakeshore_base_qc3acf1_da",
+  "start": 4,
+  "da_end": 14,
+  "joints": [
+   12,
+   28,
+   44
+  ]
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_lakeshore.webp",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_lakeshore.webp",
+  "dunmor__lakeshore__base",
+  "-",
+  "0",
+  "-",
+  "dunmor_lakeshore_base_abcd",
+  "--chain",
+  "bgl/dunmor_lakeshore_base_qc3acf1_ab,bgl/dunmor_lakeshore_base_qc3acf1_bc,bgl/dunmor_lakeshore_base_qc3acf1_cd,bgl/dunmor_lakeshore_base_qc3acf1_da",
+  "--full"
+ ],
+ "k_src": 12,
+ "joint_AB_to_BA": 1.725,
+ "joint_BA_to_A": 4.709,
+ "seam_diff": 4.709,
+ "mean_step_diff": 0.852,
+ "size": [
+  1536,
+  1024
+ ]
+}

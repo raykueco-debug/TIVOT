@@ -1,0 +1,36 @@
+{
+ "method": "aba",
+ "full": false,
+ "key": "shinier_forest__glade__day",
+ "ab": "bgl/shinier_forest_glade_day_s101",
+ "k": 25,
+ "ba": "bgl/shinier_forest_glade_day_ba",
+ "frames": 52,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 5,
+  "ab_end": 30,
+  "ba_start": 1,
+  "ba_end": 27
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\forest/forest_glade_day.webp",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\forest/forest_glade_day.webp",
+  "shinier_forest__glade__day",
+  "bgl/shinier_forest_glade_day_s101",
+  "30",
+  "bgl/shinier_forest_glade_day_ba",
+  "shinier_forest_glade_day_abacloth"
+ ],
+ "k_src": 30,
+ "joint_AB_to_BA": 5.432,
+ "joint_BA_to_A": 2.56,
+ "seam_diff": 5.432,
+ "mean_step_diff": 3.996,
+ "size": [
+  1536,
+  1024
+ ]
+}

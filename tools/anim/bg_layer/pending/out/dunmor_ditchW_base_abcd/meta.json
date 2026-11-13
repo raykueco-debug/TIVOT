@@ -1,0 +1,43 @@
+{
+ "method": "abcd",
+ "full": true,
+ "key": "dunmor__ditchW__base",
+ "ab": "-",
+ "k": 12,
+ "ba": "-",
+ "frames": 56,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "chain": "bgl/dunmor_ditchW_base_qc3acf1_ab,bgl/dunmor_ditchW_base_qc3acf1_bc,bgl/dunmor_ditchW_base_qc3acf1_cd,bgl/dunmor_ditchW_base_qc3acf1_da",
+  "start": 4,
+  "da_end": 11,
+  "joints": [
+   12,
+   28,
+   44
+  ]
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_ditchw.webp",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_ditchw.webp",
+  "dunmor__ditchW__base",
+  "-",
+  "0",
+  "-",
+  "dunmor_ditchW_base_abcd",
+  "--chain",
+  "bgl/dunmor_ditchW_base_qc3acf1_ab,bgl/dunmor_ditchW_base_qc3acf1_bc,bgl/dunmor_ditchW_base_qc3acf1_cd,bgl/dunmor_ditchW_base_qc3acf1_da",
+  "--full"
+ ],
+ "k_src": 12,
+ "joint_AB_to_BA": 1.143,
+ "joint_BA_to_A": 3.636,
+ "seam_diff": 3.636,
+ "mean_step_diff": 0.55,
+ "size": [
+  1536,
+  1024
+ ]
+}

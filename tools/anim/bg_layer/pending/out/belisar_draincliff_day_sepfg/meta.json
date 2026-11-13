@@ -1,0 +1,44 @@
+{
+ "method": "aba",
+ "full": true,
+ "key": "belisar__draincliff__day",
+ "ab": "bgl/belisar_draincliff_day_sepF2747b_ab",
+ "k": 22,
+ "ba": "bgl/belisar_draincliff_day_sepF2747b_ba",
+ "frames": 54,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 1,
+  "ab_end": 23,
+  "ba_start": 1,
+  "ba_end": 32
+ },
+ "protect": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_draincliff_day_sep_F\\protect_box.png",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_draincliff_day_sep_F\\other.png",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_draincliff_day_sep_F\\other.png",
+  "belisar__draincliff__day",
+  "bgl/belisar_draincliff_day_sepF2747b_ab",
+  "23",
+  "bgl/belisar_draincliff_day_sepF2747b_ba",
+  "belisar_draincliff_day_sepfg",
+  "--mwarp",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_draincliff_day_sep_F\\mwarp.npy",
+  "--full",
+  "--protect",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_draincliff_day_sep_F\\protect_box.png",
+  "--sky",
+  "cyan",
+  "--nosky"
+ ],
+ "k_src": 23,
+ "joint_AB_to_BA": 2.114,
+ "joint_BA_to_A": 5.993,
+ "seam_diff": 5.993,
+ "mean_step_diff": 1.235,
+ "size": [
+  1536,
+  1024
+ ]
+}

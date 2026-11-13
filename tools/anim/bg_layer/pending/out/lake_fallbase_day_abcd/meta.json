@@ -1,0 +1,43 @@
+{
+ "method": "abcd",
+ "full": true,
+ "key": "lake__fallbase__day",
+ "ab": "-",
+ "k": 13,
+ "ba": "-",
+ "frames": 57,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "chain": "bgl/lake_fallbase_day_qc3acf1_ab,bgl/lake_fallbase_day_qc3acf1_bc,bgl/lake_fallbase_day_qc3acf1_cd,bgl/lake_fallbase_day_qc3acf1_da",
+  "start": 3,
+  "da_end": 11,
+  "joints": [
+   13,
+   29,
+   45
+  ]
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\lake/lake_fallbase_day.webp",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\lake/lake_fallbase_day.webp",
+  "lake__fallbase__day",
+  "-",
+  "0",
+  "-",
+  "lake_fallbase_day_abcd",
+  "--chain",
+  "bgl/lake_fallbase_day_qc3acf1_ab,bgl/lake_fallbase_day_qc3acf1_bc,bgl/lake_fallbase_day_qc3acf1_cd,bgl/lake_fallbase_day_qc3acf1_da",
+  "--full"
+ ],
+ "k_src": 13,
+ "joint_AB_to_BA": 2.365,
+ "joint_BA_to_A": 6.977,
+ "seam_diff": 6.977,
+ "mean_step_diff": 1.649,
+ "size": [
+  1536,
+  1024
+ ]
+}

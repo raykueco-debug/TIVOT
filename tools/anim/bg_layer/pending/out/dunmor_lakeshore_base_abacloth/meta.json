@@ -1,0 +1,36 @@
+{
+ "method": "aba",
+ "full": false,
+ "key": "dunmor__lakeshore__base",
+ "ab": "bgl/dunmor_lakeshore_base_s101",
+ "k": 36,
+ "ba": "bgl/dunmor_lakeshore_base_ba",
+ "frames": 68,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 4,
+  "ab_end": 40,
+  "ba_start": 1,
+  "ba_end": 32
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_lakeshore.webp",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_lakeshore.webp",
+  "dunmor__lakeshore__base",
+  "bgl/dunmor_lakeshore_base_s101",
+  "40",
+  "bgl/dunmor_lakeshore_base_ba",
+  "dunmor_lakeshore_base_abacloth"
+ ],
+ "k_src": 40,
+ "joint_AB_to_BA": 2.411,
+ "joint_BA_to_A": 3.241,
+ "seam_diff": 3.241,
+ "mean_step_diff": 0.899,
+ "size": [
+  1536,
+  1024
+ ]
+}

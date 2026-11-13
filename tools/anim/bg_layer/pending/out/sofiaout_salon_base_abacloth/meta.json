@@ -1,0 +1,36 @@
+{
+ "method": "aba",
+ "full": false,
+ "key": "sofiaout__salon__base",
+ "ab": "bgl/sofiaout_salon_base_s101",
+ "k": 47,
+ "ba": "bgl/sofiaout_salon_base_ba",
+ "frames": 79,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 1,
+  "ab_end": 48,
+  "ba_start": 1,
+  "ba_end": 32
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\sofia/sofiaout_salon.webp",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\sofia/sofiaout_salon.webp",
+  "sofiaout__salon__base",
+  "bgl/sofiaout_salon_base_s101",
+  "48",
+  "bgl/sofiaout_salon_base_ba",
+  "sofiaout_salon_base_abacloth"
+ ],
+ "k_src": 48,
+ "joint_AB_to_BA": 4.897,
+ "joint_BA_to_A": 4.673,
+ "seam_diff": 4.897,
+ "mean_step_diff": 1.852,
+ "size": [
+  1536,
+  1024
+ ]
+}

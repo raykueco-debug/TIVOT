@@ -1,0 +1,36 @@
+{
+ "method": "aba",
+ "full": false,
+ "key": "sofiaout__backhall__base",
+ "ab": "bgl/sofiaout_backhall_base_s101",
+ "k": 45,
+ "ba": "bgl/sofiaout_backhall_base_ba",
+ "frames": 77,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 3,
+  "ab_end": 48,
+  "ba_start": 1,
+  "ba_end": 32
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\sofia/sofiaout_backhall.webp",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\sofia/sofiaout_backhall.webp",
+  "sofiaout__backhall__base",
+  "bgl/sofiaout_backhall_base_s101",
+  "48",
+  "bgl/sofiaout_backhall_base_ba",
+  "sofiaout_backhall_base_abacloth"
+ ],
+ "k_src": 48,
+ "joint_AB_to_BA": 4.544,
+ "joint_BA_to_A": 3.647,
+ "seam_diff": 4.544,
+ "mean_step_diff": 2.361,
+ "size": [
+  1536,
+  1024
+ ]
+}

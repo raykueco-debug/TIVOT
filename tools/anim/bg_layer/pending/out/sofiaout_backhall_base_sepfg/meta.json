@@ -1,0 +1,38 @@
+{
+ "method": "aba",
+ "full": false,
+ "key": "sofiaout__backhall__base",
+ "ab": "bgl/sofiaout_backhall_base_sepFceaaf_ab",
+ "k": 45,
+ "ba": "bgl/sofiaout_backhall_base_sepFceaaf_ba",
+ "frames": 77,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 3,
+  "ab_end": 48,
+  "ba_start": 1,
+  "ba_end": 32
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\sofiaout_backhall_base_sep_F\\other.png",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\sofiaout_backhall_base_sep_F\\other.png",
+  "sofiaout__backhall__base",
+  "bgl/sofiaout_backhall_base_sepFceaaf_ab",
+  "48",
+  "bgl/sofiaout_backhall_base_sepFceaaf_ba",
+  "sofiaout_backhall_base_sepfg",
+  "--mwarp",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\sofiaout_backhall_base_sep_F\\mwarp.npy"
+ ],
+ "k_src": 48,
+ "joint_AB_to_BA": 5.93,
+ "joint_BA_to_A": 3.618,
+ "seam_diff": 5.93,
+ "mean_step_diff": 2.516,
+ "size": [
+  1536,
+  1024
+ ]
+}

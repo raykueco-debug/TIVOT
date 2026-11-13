@@ -1,0 +1,41 @@
+{
+ "method": "aba",
+ "full": true,
+ "key": "dunmor__ditchW__base",
+ "ab": "bgl/dunmor_ditchW_base_sepFceaaf_ab",
+ "k": 28,
+ "ba": "bgl/dunmor_ditchW_base_sepFceaaf_ba",
+ "frames": 58,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 5,
+  "ab_end": 33,
+  "ba_start": 1,
+  "ba_end": 30
+ },
+ "protect": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_ditchW_base_sep_F\\protect_box.png",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_ditchW_base_sep_F\\other.png",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_ditchW_base_sep_F\\other.png",
+  "dunmor__ditchW__base",
+  "bgl/dunmor_ditchW_base_sepFceaaf_ab",
+  "33",
+  "bgl/dunmor_ditchW_base_sepFceaaf_ba",
+  "dunmor_ditchW_base_sepfg",
+  "--mwarp",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_ditchW_base_sep_F\\mwarp.npy",
+  "--full",
+  "--protect",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\dunmor_ditchW_base_sep_F\\protect_box.png"
+ ],
+ "k_src": 33,
+ "joint_AB_to_BA": 2.968,
+ "joint_BA_to_A": 2.656,
+ "seam_diff": 2.968,
+ "mean_step_diff": 1.296,
+ "size": [
+  1536,
+  1024
+ ]
+}

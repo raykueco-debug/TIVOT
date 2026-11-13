@@ -1,0 +1,39 @@
+{
+ "method": "aba",
+ "full": true,
+ "key": "shinier_ruins__corridora__day",
+ "ab": "bgl/shinier_ruins_corridora_day_sepF04025_ab",
+ "k": 18,
+ "ba": "bgl/shinier_ruins_corridora_day_sepF04025_ba",
+ "frames": 45,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 5,
+  "ab_end": 23,
+  "ba_start": 1,
+  "ba_end": 27
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\shinier_ruins_corridora_day_sep_F\\other.png",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\shinier_ruins_corridora_day_sep_F\\other.png",
+  "shinier_ruins__corridora__day",
+  "bgl/shinier_ruins_corridora_day_sepF04025_ab",
+  "23",
+  "bgl/shinier_ruins_corridora_day_sepF04025_ba",
+  "shinier_ruins_corridora_day_sepfg",
+  "--mwarp",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\shinier_ruins_corridora_day_sep_F\\mwarp.npy",
+  "--full"
+ ],
+ "k_src": 23,
+ "joint_AB_to_BA": 2.098,
+ "joint_BA_to_A": 2.177,
+ "seam_diff": 2.177,
+ "mean_step_diff": 0.641,
+ "size": [
+  1536,
+  1024
+ ]
+}

@@ -1,0 +1,39 @@
+{
+ "method": "aba",
+ "full": true,
+ "key": "belisar__starroom__day",
+ "ab": "bgl/belisar_starroom_day_sepFabe75_ab",
+ "k": 21,
+ "ba": "bgl/belisar_starroom_day_sepFabe75_ba",
+ "frames": 53,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 1,
+  "ab_end": 22,
+  "ba_start": 1,
+  "ba_end": 32
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_starroom_day_sep_F\\other.png",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_starroom_day_sep_F\\other.png",
+  "belisar__starroom__day",
+  "bgl/belisar_starroom_day_sepFabe75_ab",
+  "23",
+  "bgl/belisar_starroom_day_sepFabe75_ba",
+  "belisar_starroom_day_sepfg",
+  "--mwarp",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_starroom_day_sep_F\\mwarp.npy",
+  "--full"
+ ],
+ "k_src": 22,
+ "joint_AB_to_BA": 2.449,
+ "joint_BA_to_A": 3.87,
+ "seam_diff": 3.87,
+ "mean_step_diff": 1.525,
+ "size": [
+  1536,
+  1024
+ ]
+}

@@ -1,0 +1,36 @@
+{
+ "method": "aba",
+ "full": false,
+ "key": "dunmor__cairn__base",
+ "ab": "bgl/dunmor_cairn_base_s101",
+ "k": 27,
+ "ba": "bgl/dunmor_cairn_base_ba",
+ "frames": 54,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 5,
+  "ab_end": 32,
+  "ba_start": 1,
+  "ba_end": 27
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_cairn.webp",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_cairn.webp",
+  "dunmor__cairn__base",
+  "bgl/dunmor_cairn_base_s101",
+  "32",
+  "bgl/dunmor_cairn_base_ba",
+  "dunmor_cairn_base_abacloth"
+ ],
+ "k_src": 32,
+ "joint_AB_to_BA": 1.959,
+ "joint_BA_to_A": 3.08,
+ "seam_diff": 3.08,
+ "mean_step_diff": 1.086,
+ "size": [
+  1536,
+  1024
+ ]
+}

@@ -1,0 +1,39 @@
+{
+ "method": "aba",
+ "full": true,
+ "key": "belisar__stephall__day",
+ "ab": "bgl/belisar_stephall_day_sepFb4d7a_ab",
+ "k": 20,
+ "ba": "bgl/belisar_stephall_day_sepFb4d7a_ba",
+ "frames": 52,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 3,
+  "ab_end": 23,
+  "ba_start": 1,
+  "ba_end": 32
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_stephall_day_sep_F\\other.png",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_stephall_day_sep_F\\other.png",
+  "belisar__stephall__day",
+  "bgl/belisar_stephall_day_sepFb4d7a_ab",
+  "23",
+  "bgl/belisar_stephall_day_sepFb4d7a_ba",
+  "belisar_stephall_day_sepfg",
+  "--mwarp",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_stephall_day_sep_F\\mwarp.npy",
+  "--full"
+ ],
+ "k_src": 23,
+ "joint_AB_to_BA": 1.79,
+ "joint_BA_to_A": 4.215,
+ "seam_diff": 4.215,
+ "mean_step_diff": 1.254,
+ "size": [
+  1536,
+  1024
+ ]
+}

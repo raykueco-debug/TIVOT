@@ -1,0 +1,39 @@
+{
+ "method": "aba",
+ "full": true,
+ "key": "belisar__offering__day",
+ "ab": "bgl/belisar_offering_day_sepF2747b_ab",
+ "k": 16,
+ "ba": "bgl/belisar_offering_day_sepF2747b_ba",
+ "frames": 81,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 6,
+  "ab_end": 22,
+  "ba_start": 1,
+  "ba_end": 65
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_offering_day_sep_F\\other.png",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_offering_day_sep_F\\other.png",
+  "belisar__offering__day",
+  "bgl/belisar_offering_day_sepF2747b_ab",
+  "23",
+  "bgl/belisar_offering_day_sepF2747b_ba",
+  "belisar_offering_day_sepfg",
+  "--mwarp",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\belisar_offering_day_sep_F\\mwarp.npy",
+  "--full"
+ ],
+ "k_src": 22,
+ "joint_AB_to_BA": 1.957,
+ "joint_BA_to_A": 3.662,
+ "seam_diff": 3.662,
+ "mean_step_diff": 0.879,
+ "size": [
+  1536,
+  1024
+ ]
+}

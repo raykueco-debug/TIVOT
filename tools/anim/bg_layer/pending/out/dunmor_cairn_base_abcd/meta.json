@@ -1,0 +1,43 @@
+{
+ "method": "abcd",
+ "full": true,
+ "key": "dunmor__cairn__base",
+ "ab": "-",
+ "k": 12,
+ "ba": "-",
+ "frames": 56,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "chain": "bgl/dunmor_cairn_base_qa4a713_ab,bgl/dunmor_cairn_base_qa4a713_bc,bgl/dunmor_cairn_base_qa4a713_cd,bgl/dunmor_cairn_base_qa4a713_da",
+  "start": 4,
+  "da_end": 11,
+  "joints": [
+   12,
+   28,
+   44
+  ]
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_cairn.webp",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_cairn.webp",
+  "dunmor__cairn__base",
+  "-",
+  "0",
+  "-",
+  "dunmor_cairn_base_abcd",
+  "--chain",
+  "bgl/dunmor_cairn_base_qa4a713_ab,bgl/dunmor_cairn_base_qa4a713_bc,bgl/dunmor_cairn_base_qa4a713_cd,bgl/dunmor_cairn_base_qa4a713_da",
+  "--full"
+ ],
+ "k_src": 12,
+ "joint_AB_to_BA": 1.33,
+ "joint_BA_to_A": 4.232,
+ "seam_diff": 4.232,
+ "mean_step_diff": 0.678,
+ "size": [
+  1536,
+  1024
+ ]
+}

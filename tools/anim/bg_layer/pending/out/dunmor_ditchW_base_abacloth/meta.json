@@ -1,0 +1,39 @@
+{
+ "method": "aba",
+ "full": false,
+ "key": "dunmor__ditchW__base",
+ "ab": "bgl/dunmor_ditchW_base_s101",
+ "k": 29,
+ "ba": "bgl/dunmor_ditchW_base_ba",
+ "frames": 61,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 4,
+  "ab_end": 33,
+  "ba_start": 1,
+  "ba_end": 32
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_ditchw.webp",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\TIVOT\\resources\\background\\dunmor/dunmor_ditchw.webp",
+  "dunmor__ditchW__base",
+  "bgl/dunmor_ditchW_base_s101",
+  "33",
+  "bgl/dunmor_ditchW_base_ba",
+  "dunmor_ditchW_base_abacloth",
+  "--sky",
+  "cyan",
+  "--nosky"
+ ],
+ "k_src": 33,
+ "joint_AB_to_BA": 2.482,
+ "joint_BA_to_A": 2.789,
+ "seam_diff": 2.789,
+ "mean_step_diff": 0.684,
+ "size": [
+  1536,
+  1024
+ ]
+}

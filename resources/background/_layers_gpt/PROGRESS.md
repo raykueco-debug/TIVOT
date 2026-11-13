@@ -25,3 +25,10 @@
   · 跑中：硝坑、corridora 不提火重跑（fix8b.sh）。
   · 未做：排水崖「遠山拿掉」（要 GPT）、羅賽爾石塚「不要有火只拆天地」。
   · 戰地遠中近雲九宮格（cloudgrid_far/mid/near）已遺失，戰地重開前要 GPT 重出。
+
+### 11-13 待剪／待處理的中間檔（已入庫）
+- `tools/anim/bg_layer/pending/out/`：審閱頁剩下 19 格的 bg_layer/out 成品與中間檔（含 *_sepfg 前景、meta、other.png、f40.jpg），放回 `bg_layer/out/`。
+- `tools/anim/bg_layer/pending/comfy_output_bgl/`：那 19 格最新一組 Wan 輸出（ab 81 格／ba 33 格），存成 webp q95；
+  換機後跑 `python tools/anim/bg_layer/pending/restore_bgl.py` 轉回 PNG 放進 `ComfyUI-master/output/bgl/`，sep_run 的 `--recomp` 才不必重跑 Wan。
+- 審閱頁：`python make_review.py` → `review.html`（意見在 state/review.json）；遮罩檢查頁 `?set=mask1113`（annotate_server 8133）。
+- 11-13 已跑完、還沒給 Ray 看：沼澤獻祭處（不回放）、獻祭處／林間空地（剪掉移鏡）、瀑布底（K=60）、星象室（天體球轉一圈）、硝坑／corridora（不提火）。

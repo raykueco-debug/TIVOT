@@ -1,0 +1,39 @@
+{
+ "method": "aba",
+ "full": true,
+ "key": "sofiaout__salon__base",
+ "ab": "bgl/sofiaout_salon_base_sepFceaaf_ab",
+ "k": 47,
+ "ba": "bgl/sofiaout_salon_base_sepFceaaf_ba",
+ "frames": 79,
+ "fps": 16,
+ "dropped": [],
+ "cut": {
+  "ab_start": 1,
+  "ab_end": 48,
+  "ba_start": 1,
+  "ba_end": 32
+ },
+ "protect": "",
+ "still": "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\sofiaout_salon_base_sep_F\\other.png",
+ "args": [
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\sofiaout_salon_base_sep_F\\other.png",
+  "sofiaout__salon__base",
+  "bgl/sofiaout_salon_base_sepFceaaf_ab",
+  "48",
+  "bgl/sofiaout_salon_base_sepFceaaf_ba",
+  "sofiaout_salon_base_sepfg",
+  "--mwarp",
+  "C:\\Users\\Ray Ku\\Desktop\\ComfyUI-master\\tivot_wan\\bg_layer\\out\\sofiaout_salon_base_sep_F\\mwarp.npy",
+  "--full"
+ ],
+ "k_src": 48,
+ "joint_AB_to_BA": 3.829,
+ "joint_BA_to_A": 3.906,
+ "seam_diff": 3.906,
+ "mean_step_diff": 1.45,
+ "size": [
+  1536,
+  1024
+ ]
+}
