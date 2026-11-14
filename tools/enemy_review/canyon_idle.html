@@ -42,8 +42,8 @@ const SEQ={
  I:(r,md)=>S(md,md.I,'I 待機'),
  A:(r,md,v)=>S(md,md.A[v],'<b>A 攻擊</b>'),
  IA:(r,md,v)=>{const I=S(md,md.I,'I 待機'),A=S(md,md.A[v],'<b>A 攻擊</b>');const Rr=r.R==='reverse'?S(md,[...md.A[v]].reverse(),'<b>R 倒放</b>'):[];return [...I,...I,...A,...Rr,...I]}};
-class P{constructor(cv,ph,get){this.cv=cv;this.ctx=cv.getContext('2d');this.ph=ph;this.get=get;this.paused=false;this.vis=true;cv.onclick=()=>this.paused=!this.paused;this.reset()}
- reset(){this.seq=this.get();this.imgs=this.seq.map(x=>{const i=new Image();i._s=x.src;return i});this.ld=0;this.i=0;this.t=0;if(this.vis)this.load()}
+class P{constructor(cv,ph,get,info){this.info=info;this.cv=cv;this.ctx=cv.getContext('2d');this.ph=ph;this.get=get;this.paused=false;this.vis=true;cv.onclick=()=>this.paused=!this.paused;this.reset()}
+ reset(){this.seq=this.get();if(this.info){const ms=this.seq.reduce((a,x)=>a+x.ms,0),fr=Math.round(ms*24/1000);this.info.textContent=`${mode==='cut'?'快剪':'原片'}：${this.seq.length} 張／${fr} 格（24fps）・${(ms/1000).toFixed(2)} 秒`}this.imgs=this.seq.map(x=>{const i=new Image();i._s=x.src;return i});this.ld=0;this.i=0;this.t=0;if(this.vis)this.load()}
  load(){if(this.ld)return;this.ld=1;this.imgs.forEach(i=>i.src=i._s)}
  tick(dt){if(!this.vis||!this.seq.length)return;if(!this.paused){this.t+=dt;while(this.t>=this.seq[this.i].ms){this.t-=this.seq[this.i].ms;this.i=(this.i+1)%this.seq.length;if(this.i===0)this.t-=500}}
   this.ph.innerHTML=this.seq[this.i].tag;const im=this.imgs[this.i];if(!im.complete||!im.naturalWidth)return;
@@ -61,7 +61,7 @@ function noteUI(id,key,label,v){const f=document.createDocumentFragment(),cur=()
  ta.oninput=()=>{cur().text=ta.value;ta.classList.toggle('has',!!ta.value.trim());touch()};f.append(ta);return f}
 function card(r,key,title,sub,kind,v){const c=document.createElement('div');c.className='card';c.innerHTML=`<div class="t">${title} <small>${sub}</small></div>`;
  const cv=document.createElement('canvas');c.append(cv);const ph=document.createElement('div');ph.className='phase';c.append(ph);
- const p=new P(cv,ph,()=>SEQ[kind](r,r.modes[mode],v));cv._p=p;players.push(p);io.observe(cv);c.append(noteUI(r.id,key,title,true));return c}
+ const info=document.createElement('div');info.className='phase';c.append(info);const p=new P(cv,ph,()=>SEQ[kind](r,r.modes[mode],v),info);cv._p=p;players.push(p);io.observe(cv);c.append(noteUI(r.id,key,title,true));return c}
 function build(){const L=$('#list');L.innerHTML='';players=[];DATA.rows.forEach(r=>{const row=document.createElement('div');row.className='row';const h=document.createElement('div');h.className='head';
  h.innerHTML=`<div class="nm">${r.name}</div><div class="meta">R：${r.R==='reverse'?'倒放':'未定'}</div><div class="btns"><button class="sv">儲存</button><button class="pri sb">提交</button></div><div class="st" id="st_${r.id}"></div>`;
  h.querySelector('.sv').onclick=save;h.querySelector('.sb').onclick=()=>submit([r.id]);h.append(noteUI(r.id,'整體','整體',false));row.append(h);

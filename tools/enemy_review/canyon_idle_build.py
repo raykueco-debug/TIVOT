@@ -15,7 +15,8 @@ NAMES = {'coffin': '石棺甲蟲 A', 'crab': '骸殼蟹 D', 'pilgrim': '朝聖�
          'ribcage': '肋籠獸 A', 'stilt': '高蹺細影 M', 'vulture': '聖面鷲（飛行）', 'crow': '骨鴉（飛行）'}
 R = {'iron': 'reverse'}
 LOCK = {'wyrm', 'pilgrim'}
-FLY = {'vulture': 'mon_canyon_saintvulture_dark', 'crow': 'mon_canyon_bonecrow_dark'}
+FLY = {'vulture': 'mon_canyon_saintvulture_dark_fit60',   # 11-15 Ray：縮小重跑不可出框（FIT 0.60，碰邊 0）
+       'crow': 'mon_canyon_bonecrow_dark'}
 GW, GH, PS = 480, 720, 0.5
 
 
