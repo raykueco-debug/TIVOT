@@ -45,6 +45,7 @@ import * as hap from './haptics.js';        // 震動（ver -398）
 import * as clock from '../script/clock.js';   // 時段（插圖／背景的差分候選鏈，ver -427）
 import * as inv from '../script/inventory.js';  // 選項的挑戰費（ver -655）：葉節點，只依賴 config
 import { bgFolder } from '../script/bg_index.js';  // 背景的區域資料夾（自動產生，ver -1376）：純查表，無相依
+import { BG_ANIM } from '../script/bg_anim.js';     // 背景動畫對照表（自動產生，ver -2620）：純查表，無相依
 
 const $ = id => document.getElementById(id);
 
@@ -2155,7 +2156,7 @@ function cgCross(el, src){
    （iPhone 的 `<video>` 是獨立硬體圖層，疊放順序會亂）。
    ⚠ canvas **每一格照抄 `#storyCg` 的框與取景**（位置、寬高、object-position、transform、filter、opacity）——
      平移（cgPan）、放大（setCgScale）、泛黃（cgTone）、淡出全部跟著走，不必另寫一套。
-   ⚠ 不停在最後一格：播到尾巴前就把插畫淡出撤下（ver -2182，Ray：「動畫在停止前就要撤下」，見 `withdrawCgAnim`）；`loop:true` 的循環播。
+   ⚠ 不循環的**播完停在最後一格、點掉才推進**（ver -2620 推翻 -2182 的「停止前就撤下」，見 `cgAnimGate`）；`loop:true` 的循環播。
    ⚠ 黑幕還蓋著時先把**第一格**擺上去（多數支的第一格也不是原圖），等黑幕掀開才開始播。
    ⚠ 收掉只有 `stopCgAnim` 一支（鐵律 8）：換插圖／收插圖（`clearCg`）都叫它。 */
 let cgAnimOn=null;
@@ -2208,21 +2209,53 @@ function cgAnimDraw(on){
   ctx.drawImage(v, (cw-dw)*fx, (ch-dh)*fy, dw, dh);
   if(!on.shown){ on.shown=true; cv.style.visibility=''; }
 }
-const CG_ANIM_OUT_S = 0.4;   // 播到剩這麼多秒就開始淡出撤下
-/* ⚠⚠ ver -2186：淡出**跟著影片時間走**（每一格算透明度），收掉也在畫格那一刻做 —— 不靠 setTimeout。
-   計時器在面板收起／手機切背景時會被延到一秒以上，影片就先播完停在最後一格（實測 7 支碰到片尾）。 */
+const CG_ANIM_OUT_MS = 400;   // 點掉之後淡出撤下要多久
+/* ══⚠⚠ 過場動畫**播完停在最後一格，點掉才推進**（ver -2620，Ray：「所有過場動畫播完就定在最後一格 點掉才會推進下一幕」）══
+   推翻 -2182／-2186 的「播到片尾前就自己淡出撤下」。現在不循環的每一支都是：
+   ① 播放中點一下 ＝ 跳到最後一格（同「一拍還沒演完，點下去就把這一拍演完」，不推進）；
+   ② 停在最後一格，**等玩家點**（這一拍自己的 `auto` 計時器也押住，不會自己走）；
+   ③ 點下去 ＝ 插圖淡出撤下 ＋ 推進下一句。判定只有 `advance()` 裡的 `cgAnimGate` 一處（鐵律 8）。
+   ⚠ 自動播放：播完自己往下（玩家明講「不要等我」）；加速：直接跳到最後一格。
+   ⚠ `hold:true`（041）是另一件事：插圖撐到腳本自己 `cg:null`，點擊不撤（對白跟著動畫一起跑那種）。
+   ⚠ 淡出照**實際時間**算、收掉也在畫格那一刻做（rAF），不靠 setTimeout（-2186 的教訓：計時器在背景會被延）。 */
 function cgAnimFade(on){
-  const v=on.v; if(!on.leaving || !v.duration) return 1;
-  return Math.max(0, Math.min(1, (v.duration - v.currentTime) / CG_ANIM_OUT_S));
+  if(!on.leaving || !on.leaveAt) return 1;
+  return Math.max(0, Math.min(1, 1 - (performance.now() - on.leaveAt) / CG_ANIM_OUT_MS));
 }
 function finishCgAnim(on){
   if(cgAnimOn!==on) return;
   const img=on.img;
-  stageCg = null;                      // 這一張插圖結束了（下一拍寫 cg:null 也是 no-op）
-  if(img){ img.classList.remove('on','fading'); img.removeAttribute('src'); }
+  /* ⚠ 那張圖已經被換成別張（下一拍自己換了插圖）就不要清它 —— 清的是別人的插圖。 */
+  if(img && (img.getAttribute('src')||'').indexOf(on.name)>=0){
+    stageCg = null;                    // 這一張插圖結束了（下一拍寫 cg:null 也是 no-op）
+    img.classList.remove('on','fading'); img.removeAttribute('src');
+  }
   stopCgAnim();
 }
-function withdrawCgAnim(on){ on.leaving = true; }
+function withdrawCgAnim(on){ if(!on.leaving){ on.leaving = true; on.leaveAt = performance.now(); } kickCgAnim(on); }
+/* 影片停了（播完／跳到尾巴）之後 requestVideoFrameCallback 不會再來 —— 畫格迴圈要改由 rAF 接手，
+   不然停格之後的淡出永遠不會跑（ver -2620 實測）。 */
+function kickCgAnim(on){
+  if(!on || !on.loop) return;
+  if(on.vfc && on.v.cancelVideoFrameCallback) try{ on.v.cancelVideoFrameCallback(on.vfc); }catch(_){}
+  on.vfc=0; cancelAnimationFrame(on.raf); on.raf=requestAnimationFrame(on.loop);
+}
+function cgAnimEnded(on){ const v=on.v; return v.ended || (v.duration>0 && v.currentTime >= v.duration - 0.06); }
+/* 點擊／計時器要推進時先問它。回傳 true ＝這一下被動畫吃掉了（不推進）。 */
+function cgAnimGate(byUser){
+  const on=cgAnimOn;
+  if(!on || on.v.loop || on.keep || on.leaving) return false;
+  if(!cgAnimEnded(on)){
+    if(byUser || fastMode){
+      const v=on.v;
+      if(v.duration>0){ try{ v.pause(); v.currentTime = Math.max(0, v.duration - 0.02); }catch(_){} on.sig=null; kickCgAnim(on); }
+    }else on.afterEnd = autoPlay;      // 自動播放：播完自己推進；手動模式的 auto 計時器：押住等點
+    return true;
+  }
+  if(!byUser && !autoPlay && !fastMode) return true;   // 停在最後一格：手動模式只認玩家的點擊
+  withdrawCgAnim(on);
+  return false;
+}
 function playCgAnim(name){
   stopCgAnim();
   const A=cgAnimSpec(name); if(!A || !A.video) return;
@@ -2242,24 +2275,24 @@ function playCgAnim(name){
      `withText:true` ＝**對話框與動畫一起開始**（同版：「從一開始動畫就要開始跑對話框」）：
      那一拍不押「點一下才出框」（-1881 的插圖規矩，renderLine 那一段的明寫例外），
      影片則等打字機真的開始打字才放（黑幕／reveal 都還沒好時先停在第一格）。 */
-  const on={ name:name, v:v, cv:cv, ctx:cv.getContext('2d'), img:img, raf:0, vfc:0, t:0, url:null, shown:false, hold:!!A.hold };
+  const on={ name:name, v:v, cv:cv, ctx:cv.getContext('2d'), img:img, raf:0, vfc:0, t:0, url:null, shown:false, keep:!!A.hold };
   cgAnimOn=on;
   const loop=()=>{
     if(cgAnimOn!==on) return;
-    /* ⚠⚠ ver -2182（Ray：「所有插畫在動畫跑完前都要撤下」「動畫在停止前就要撤下」）：
-       不循環的那幾支，播到最後 CG_ANIM_OUT_S 秒就把插畫淡出收掉 —— **影片還在動的時候**收，
-       畫面上永遠不會停在一張不動的最後一格。（循環的 043 不會停，不受這一條管。） */
-    if(!v.loop && !on.hold && !on.leaving && v.duration && v.currentTime >= v.duration - CG_ANIM_OUT_S) withdrawCgAnim(on);
-    if(on.leaving && (v.ended || v.currentTime >= v.duration - 0.05)){ finishCgAnim(on); return; }
+    /* 點掉之後的淡出跑完才收（ver -2620，見 cgAnimGate）。 */
+    if(on.leaving && cgAnimFade(on)<=0){ finishCgAnim(on); return; }
     cgAnimDraw(on);
     if(v.requestVideoFrameCallback && !v.paused) on.vfc=v.requestVideoFrameCallback(loop);
     else on.raf=requestAnimationFrame(loop);
   };
+  on.loop=loop;
   /* 黑幕掀開才開始播（`#storyFade` 是插圖轉場的那一片）；在那之前停在第一格。 */
   const go=()=>{
     if(cgAnimOn!==on) return;
     const f=$('storyFade');
-    if(f && f.classList.contains('on')){ on.t=setTimeout(go, 60); return; }
+    /* ⚠ 等黑幕時也要把第一格擺上去（ver -2620 實測）：黑幕那一邊（cgFade 的 back）正是在等「第一格畫上去了沒」才掀，
+       而 onloadeddata 那一次常常畫不上（插圖那時還沒 .on、框是 0）—— 兩邊互等，黑幕要撐到 3 秒保險才放。 */
+    if(f && f.classList.contains('on')){ cgAnimDraw(on); on.t=setTimeout(go, 60); return; }
     /* 對話框真的開始打字才放（打字機可能還排在立繪／淡入之後）；等不到 3 秒就照放，不卡住。 */
     if(A.withText && (on.wt=(on.wt||performance.now())) && performance.now()-on.wt<3000){
       const tx=$('storyText');
@@ -2268,7 +2301,9 @@ function playCgAnim(name){
     loop();
   };
   v.onloadeddata=()=>{ if(cgAnimOn===on){ cgAnimDraw(on); go(); } };
-  v.onended=()=>{ if(cgAnimOn===on && !v.loop && !on.hold) finishCgAnim(on); };   // 保險：播完那一刻一定收（ver -2186）
+  /* 播完停在最後一格（ver -2620）；自動播放中被押住的那一下，播完才放行。 */
+  v.onended=()=>{ if(cgAnimOn!==on || v.loop) return; on.sig=null; kickCgAnim(on);
+    if(on.afterEnd){ on.afterEnd=false; if(active && (autoPlay||fastMode)) advance(); } };
   const fallback=()=>{ if(cgAnimOn===on) stopCgAnim(); };   // 影片載不到：收掉動畫層，靜態圖放回來
   v.onerror=fallback;
   fetch(A.video).then(r=>r.ok?r.blob():null).then(b=>{
@@ -2278,6 +2313,101 @@ function playCgAnim(name){
     try{ v.currentTime=0; }catch(_){}
   }).catch(fallback);
 }
+/* ══⚠⚠ 背景動畫（ver -2620，Ray：「把已交件的都接上」；交件單 resources/background/anim/TO_CODE_bg_anim.md）══
+   表在 `script/bg_anim.js`（`tools/bg_anim_index.py` 掃磁碟產生，鐵律 1）：鑰匙＝**靜態背景的檔名**（含時段），值＝整張影片。
+   ⇒ 時段、分店、重建版、戰損版全部照舊由背景那條候選鏈決定（鐵律 8）—— 畫面上換成哪一張靜態圖，就播那一張的影片；
+     那一張沒有影片（例如只交了 day，現在是黃昏）就照舊靜態。
+   作法同插圖動畫：`<video>` 藏在畫面外播、逐格畫進一張 canvas（iPhone 的 `<video>` 是獨立硬體圖層，疊放會亂）；
+   canvas 緊貼在 `#storyBg` 之後（同一層，在中景／插圖／立繪之下），每格照抄背景的框、取景、transform、filter、opacity
+   （城鎮的去顆粒 blur、負片染色、翻轉全部跟著走）。第一格畫上去之前底下照舊是靜態圖，不會黑一下。
+   ⚠ **收掉只有 `stopBgAnim` 一支**（鐵律 8）。誰來叫它不靠清單：一個 MutationObserver 看著 `#storyBg` 的 src／class
+     與舞台的 class，再加上每一格的自我檢查（同插圖動畫 -2181 的「看著自己那張圖」）——
+     換背景、收舞台、進戰鬥（舞台被蓋住）都會自己停（鐵律 10：被蓋住的層不准在底下跑）。
+   ⚠ 這一版只接「整張影片直接蓋」那一種；交件單裡要程式畫的層（雲、水面、落水、光束、煙、獅口水柱）還沒做。 */
+let bgAnimOn=null;
+function bgStemOf(src){
+  const p=String(src||'').split('?')[0];
+  let f=p.slice(p.lastIndexOf('/')+1); try{ f=decodeURIComponent(f); }catch(_){}
+  return f.replace(/\.\w+$/,'').toLowerCase();
+}
+function bgStageLive(){
+  const st=$('storyStage'), img=$('storyBg');
+  if(!st || !img || !st.classList.contains('on') || !img.classList.contains('on')) return false;
+  if(document.hidden) return false;
+  const cs=getComputedStyle(st);
+  return cs.visibility!=='hidden' && cs.display!=='none';
+}
+function stopBgAnim(){
+  const on=bgAnimOn; bgAnimOn=null;
+  if(!on) return;
+  if(on.vfc && on.v.cancelVideoFrameCallback) try{ on.v.cancelVideoFrameCallback(on.vfc); }catch(_){}
+  cancelAnimationFrame(on.raf);
+  try{ on.v.pause(); }catch(_){}
+  on.v.removeAttribute('src'); try{ on.v.load(); }catch(_){}
+  on.v.remove(); on.cv.remove();
+}
+function bgAnimDraw(on){
+  const v=on.v, cv=on.cv, img=on.img;
+  if(!v.videoWidth || v.readyState<2) return;
+  const W=img.offsetWidth, H=img.offsetHeight; if(!W||!H) return;
+  const dpr=Math.min(2, window.devicePixelRatio||1);
+  const cw=Math.round(W*dpr), ch=Math.round(H*dpr);
+  if(cv.width!==cw || cv.height!==ch){ cv.width=cw; cv.height=ch; }
+  const cs=getComputedStyle(img);
+  cv.style.left=img.offsetLeft+'px'; cv.style.top=img.offsetTop+'px';
+  cv.style.width=W+'px'; cv.style.height=H+'px';
+  cv.style.transform=cs.transform==='none'?'':cs.transform; cv.style.transformOrigin=cs.transformOrigin;
+  cv.style.filter=cs.filter==='none'?'':cs.filter; cv.style.opacity=cs.opacity;
+  const k=Math.max(cw/v.videoWidth, ch/v.videoHeight), dw=v.videoWidth*k, dh=v.videoHeight*k;
+  const pos=(cs.objectPosition||'50% 50%').split(/\s+/);
+  const fx=cgPosFrac(pos[0], (dw-cw)/dpr), fy=cgPosFrac(pos[1], (dh-ch)/dpr);
+  on.ctx.drawImage(v, (cw-dw)*fx, (ch-dh)*fy, dw, dh);
+  if(!on.shown){ on.shown=true; cv.style.visibility=''; }
+}
+function playBgAnim(img, src, video){
+  const v=document.createElement('video');
+  v.muted=true; v.defaultMuted=true; v.playsInline=true; v.loop=true; v.preload='auto';
+  v.setAttribute('muted',''); v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
+  v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1;';
+  const cv=document.createElement('canvas');
+  cv.className='bg-anim'; cv.style.cssText='position:absolute;z-index:0;pointer-events:none;visibility:hidden;';
+  img.after(cv); document.body.appendChild(v);
+  const on={ v, cv, ctx:cv.getContext('2d'), img, src, video, raf:0, vfc:0, shown:false };
+  bgAnimOn=on;
+  const loop=()=>{
+    if(bgAnimOn!==on) return;
+    /* 自我檢查：背景換了／舞台收了／被蓋住了 ⇒ 收掉（不靠呼叫端記得叫）。 */
+    if(img.getAttribute('src')!==src || !bgStageLive()){ stopBgAnim(); return; }
+    bgAnimDraw(on);
+    if(v.requestVideoFrameCallback && !v.paused) on.vfc=v.requestVideoFrameCallback(loop);
+    else on.raf=requestAnimationFrame(loop);
+  };
+  v.onloadeddata=()=>{ if(bgAnimOn!==on) return; const p=v.play(); if(p && p.catch) p.catch(()=>{}); loop(); };
+  v.onerror=()=>{ if(bgAnimOn===on) stopBgAnim(); };   // 載不到：收掉，靜態圖照舊
+  v.src=video;
+}
+/* 唯一的判斷點：現在 `#storyBg` 是哪一張、舞台活不活著 → 該不該播、播哪一支。 */
+function syncBgAnim(){
+  const img=$('storyBg'); const src=img && img.getAttribute('src');
+  const want=(src && bgStageLive()) ? (BG_ANIM[bgStemOf(src)] || null) : null;
+  if(bgAnimOn && want && bgAnimOn.src===src && bgAnimOn.video===want) return;
+  stopBgAnim();
+  if(want) playBgAnim(img, src, want);
+}
+function watchBgAnim(){
+  const img=$('storyBg'), st=$('storyStage'); if(!img || !st) return;
+  let t=0; const kick=()=>{ clearTimeout(t); t=setTimeout(syncBgAnim, 30); };
+  try{
+    const mo=new MutationObserver(kick);
+    mo.observe(img, { attributes:true, attributeFilter:['src','class'] });
+    mo.observe(st, { attributes:true, attributeFilter:['class','style'] });
+  }catch(_){}
+  img.addEventListener('load', kick);
+  document.addEventListener('visibilitychange', kick);
+  /* 被別的畫面層蓋住（戰鬥把舞台 visibility 藏起來）不一定會動到上面那幾個屬性 —— 慢慢巡一下（只讀幾個 class，很便宜）。 */
+  setInterval(()=>{ if(!!bgAnimOn !== !!((img.getAttribute('src')) && bgStageLive() && BG_ANIM[bgStemOf(img.getAttribute('src'))])) syncBgAnim(); }, 1000);
+}
+
 export function clearCg(){
   stopCgAnim();   // 插圖動畫跟著收（ver -2179）
   flushCgCross();
@@ -3588,7 +3718,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2619';
+const KERB_V='?v=2620';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）
@@ -5212,6 +5342,9 @@ function rewindLine(){
 }
 
 /* ══ 推進 ══ */
+/* 這一次推進是不是玩家自己點的（點畫面／空白鍵／管理人的 →）—— 只有過場動畫要分（cgAnimGate）。 */
+let advByUser = false;
+function userAdvance(){ advByUser = true; try{ advance(); } finally { advByUser = false; } }
 function advance(){
   if(studioOn) return;               // 立繪調整工作室：點畫面不推進（ver -1820）
   if(kerbPlaying) return;            // Kerberos 之門演出中：點擊無效（不然會跳過整段演出）
@@ -5288,6 +5421,8 @@ function advance(){
   }
   /* 還在打字 → 這一下先補完，不推進（對話演出通則）。 */
   if(typing && line && tx){ typeFinish(tx, lineText(line)); return; }
+  /* 過場動畫還在播／停在最後一格等點（ver -2620，見 cgAnimGate）。 */
+  if(cgAnimGate(advByUser)) return;
 
   lineIdx++;
   if(lineIdx < cur.lines.length){ renderLine(); return; }
@@ -6942,6 +7077,7 @@ export function init(){
      ⚠ 原本那兩處 `setTimeout` 留著不礙事（同一張圖有快取，第二次是 no-op）。 */
   const bgEl=$('storyBg');
   if(bgEl) bgEl.addEventListener('load', ()=>matchPortraits(toneSrcEl(), $('storyCast')));
+  watchBgAnim();   // 背景動畫（ver -2620）
   const touch=$('storyTouch');
   /* ══ 面盤手勢（ver -367）══
      起點在**面盤**（`--story-top` 之下）才算手勢；起點在上半就是單純的「點一下推一句」。
@@ -6976,7 +7112,7 @@ export function init(){
     /* 點擊推進：⚠ 滑動過就不算點（不然放開手會多推一句）。 */
     touch.addEventListener('click', e=>{ if(!active) return;
       if(mode || (p0 && p0.moved)) return;
-      advance(); });
+      userAdvance(); });
   }
   /* ══ 鍵盤（ver -427，Ray 指定）══════════════════════════════════════════
      空白／Enter ＝**推進**（＝點畫面一下）；**按住**空白＝加速（放開即停）；
@@ -7005,14 +7141,14 @@ export function init(){
     /* ver -1889：A／D 也是回播／推進（Ray 指定，同 ←／→）。 */
     if(isTestmode() && (e.key==='ArrowLeft' || e.key==='ArrowRight' || /^[adAD]$/.test(e.key))){
       e.preventDefault();
-      if(e.key==='ArrowLeft' || e.key==='a' || e.key==='A') rewindLine(); else advance();
+      if(e.key==='ArrowLeft' || e.key==='a' || e.key==='A') rewindLine(); else userAdvance();
       return;
     }
     if(!isGo(e.key)) return;
     e.preventDefault();                 // 空白鍵預設會捲動頁面
     try{ SFX.unlock(); }catch(_){}      // 鍵盤也是使用者手勢
     if(e.repeat){ setFast(true); return; }
-    advance();
+    userAdvance();
   });
   window.addEventListener('keyup', e=>{ if(isGo(e.key)) setFast(false); });
   /* ⚠ 視窗失焦要把加速關掉：按著空白切走的話 keyup 收不到，回來會一路自己播完。 */

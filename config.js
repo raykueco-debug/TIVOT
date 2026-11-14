@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.13-2619';
+export const VERSION = 'ver 2026.11.14-2620';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3639,7 +3639,8 @@ export const GAME_CONFIG = {
       '041_cecilienemo': { video:'resources/illustration/video/041_cecilienemo_v1.mp4', hold:true, withText:true },   // ver -2271 薇拉馮德夜襲：不循環、由下往上平移；ver -2273（Ray）：不自動消失（停最後一格）、對話框一出來就開播
       /* 劇情裡的「Execute 插圖」寫的是明確路徑（script/town.js），鑰匙就是那串路徑；影片與 CI 共用處決 v2。 */
       /* ver -2617（動畫 10-18 交件，`TO_CODE.md` 第二十三／二十五／二十八／二十九支）。013／30 第一格≠原圖，引擎黑幕下先擺第一格；
-         014 交件單寫「停最後一格」，但照 -2186 的通則（不循環一律片尾前淡出撤下）沒加 hold —— 要停格再說。 */
+         ver -2620 起不循環的一律「播完停最後一格、點掉才推進」（story.cgAnimGate），014 不必另寫。
+         `hold:true` 現在的意思是「點擊也不撤，撐到腳本自己 cg:null」（041 那種對白跟著動畫跑的）。 */
       '013_corvin_intro': { video:'resources/illustration/video/013_corvin_intro_v1.mp4' },
       '014-nouvelleeat': { video:'resources/illustration/video/014-nouvelleeat_v1.mp4' },
       '28_tordefeat': { video:'resources/illustration/video/28_tordefeat_v1.mp4' },
@@ -4675,7 +4676,7 @@ export const ASSETS = {
   enemy_sf_crows:     "resources/enemy/mon_shinierforest_crows.webp",
   enemy_sf_deer:      "resources/enemy/mon_shinierforest_deer.webp",
   enemy_sf_bear_husk: "resources/enemy/mon_bear_husk.webp?v=08453d77",
-  enemy_sf_stag_rot:  "resources/enemy/mon_stag_rot.webp?v=5671f64b",
+  enemy_sf_stag_rot:  "resources/enemy/mon_stag_rot_neutral.webp",   // ver -2620：換中立站姿（攻擊動畫是用它生成的；TO_CODE_attack 11-10）。⚠ 這張目前沒有待機
   enemy_sf_deer_nightmare: "resources/enemy/mon_shinierforest_deernightmare.webp",   // 鹿主變異（ver -870，G 稿）
 
   /* ══ 木雅克神殿的怪（ver -919，Ray 交表）══ 圖是 Ray 交的 PNG，這一版轉成 webp
@@ -5724,6 +5725,9 @@ export const ENEMY_ATK = {
   mon_centipi_side: { dir:'resources/enemy/anim/mon_centipi_side_atkprep_v1/', prep:true, slideFrom:16, sweep:'resources/enemy/anim/mon_centipi_side_atk_v1/' },   /* sweep＝A 本體：腹面 loop（Ray 剪的 mon_centipi_belly_even2_wave_cut，48 格），放大從操作盤線下快速斜上衝（-2550） */   // 巨型蜈蚣 A 的準備動作（ver -2546，Ray 剪的 centipi_dive_joined_v2_cut，22 格：側面轉正、下潛）；第 16 格（頭出畫面、只剩身體尾巴）起邊播邊往下滑出畫面（-2547），再接劃過（A 動畫還沒交，先用程式的劃過）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_atk_v1/', hit:48, fx:[{ frame:8, type:'rubble' }, { frame:44, type:'violetFlash' }] },   // A＝振翅接爆炎（64 格）；第 8 格下拍到底噴瓦礫、爆炎時紫白光芒籠罩畫面（ver -2525）
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7, near:1.35, nearIn:130 },   /* nearIn：拉近只花打到前的這幾毫秒（-2530 Ray「拉近的速度快一點」） */   // 訓練用聖徒 新架勢 攻擊（ver -2527，31 格；-2529 Ray「攻擊時要拉近撲前」打到那一格放大到 1.35）
+  mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_atk_v1/', hit:21 },   // 崩岩巨像 拳砸地（ver -2620，KF 第二輪，36 格）
+  mon_stag_rot_neutral: { dir:'resources/enemy/anim/mon_stag_rot_neutral_atk_v1/', hit:17 },   // 腐鹿骸 角頂（ver -2620，KF 第二輪，30 格）
+  mon_shinierforest_deernightmare: { dir:'resources/enemy/anim/mon_shinierforest_deernightmare_atk_v1/', hit:32 },   // 變異樹靈鹿主 仰天咆哮（ver -2620，KF 第二輪，55 格；攻擊＝延時同一支）
   mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_atk_v1/', hit:13 },   // E019 背負祭壇者 撲撞（ver -2517，29 格）
   mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_atk_v1/', hit:13 },   // E017 魘魔（ver -2503；只有撲出段，結尾停在撲擊姿勢，切回待機蓋在受擊特效下）
   mon_shinierforest_snake_neutral: { dir:'resources/enemy/anim/mon_shinierforest_snake_atk_v1/', hit:13 },   // E066 水蛇（攻擊＝延時同一支，29 格）
@@ -5740,11 +5744,14 @@ export const ENEMY_ENTER = {
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_MISS = {
+  mon_bear_nightmare: { dir:'resources/enemy/anim/mon_bear_nightmare_miss_v1/', hit:37 },   // 熊骸（夢魘）點錯＝爪擊（ver -2620，KF 第二輪，62 格）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, fx:[{ frame:48, type:'rubble' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_burst_v1/', hit:48 },   // D＝爆炎（81 格；ver -2525 Ray 改：爆炎是 D，之後下一發攻擊 200%，見卡上 delayEmpowers）
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7 },   // 訓練用聖徒 新架勢 攻擊＝延時＝點錯（ver -2527，31 格，最後一格回到架勢）
+  mon_saint_inspector: { dir:'resources/enemy/anim/mon_saint_inspector_delay_v1/', hit:23 },   // 監查者 翅膀揮動（ver -2620，KF 第二輪，39 格）
+  mon_shinierforest_deernightmare: { dir:'resources/enemy/anim/mon_shinierforest_deernightmare_atk_v1/', hit:32 },   // 變異樹靈鹿主 延時＝攻擊同一支（ver -2620）
   mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_delay_v2/', hit:13 },   // E019 背負祭壇者 延時＝咆哮 v2（ver -2608，取代 delay_v1：中立起手→撲向鏡頭咆哮→收勢回中立；咆哮到位＝第 13 格）
   mon_shinierforest_snake_neutral: { dir:'resources/enemy/anim/mon_shinierforest_snake_atk_v1/', hit:13 },   // E066 水蛇（攻擊＝延時同一支，29 格）
   mon_shinierforest_hog_neutral: { dir:'resources/enemy/anim/mon_shinierforest_hog_atk_v1/', hit:13 },       // E067 山豬（攻擊＝延時同一支，29 格）
@@ -6118,6 +6125,7 @@ export const ASSET_VER = {
   'ashford_si_sweat': '743e8e4c',
   'belisar_bellroom': '78d98957',
   'belisar_cages': 'ec515e6d',
+  'belisar_dragonrace_base_flowmask': '77d18fac',
   'belisar_oldaltar': '6ddfe60d',
   'belisar_ossuary': 'ebf11c9f',
   'belisar_rooffall_dawn': '88f65d14',
@@ -6228,6 +6236,7 @@ export const ASSET_VER = {
   'kidd_ci': 'a4cda953',
   'lake_boathouse_day': 'c13a8f74',
   'lake_causeway_day': '8baece67',
+  'lake_causeway_day_watermask': 'a52ee9ef',
   'lake_cave_day': 'db1e8de5',
   'lake_deadfall_day': '26b33d91',
   'lake_eastshore_day': '923b13c1',

@@ -25,6 +25,12 @@
 - **不接的**：飛行怪 swim_v2（`flight/enemy/_sky_flight_TO_CODE.md` 寫 Ray 10-18 選 v1）、安雅 NI v3（Ray：先維持 v2）、尼莫彈幕 v2（橫式＋alpha，CI 引擎要改、iPhone 未測）。
 - ⚠ **程式端待接**：`resources/enemy/anim/TO_CODE_skypirate.md` —— 空賊 8 張卡改指 `_v3/`、受擊閃（抖動掛錯在 opacity:0 的分層上）、有倒地動畫的群戰受擊播倒地前兩格再倒放、攻擊收尾縮一下的時序。
 
+**程式（3060，11-14，ver -2620）**
+- **過場動畫（`cgAnim`）改成「播完停最後一格、點掉才推進」**（Ray：「所有過場動畫播完就定在最後一格 點掉才會推進下一幕」），推翻 -2182 的片尾前自動撤下。播放中點一下＝跳到最後一格；停格時點＝插圖淡出 0.4 秒＋推進；自動播放＝播完自己走。判定只有 `story.cgAnimGate`。`hold:true`（041）改成「點擊也不撤，撐到 `cg:null`」。順修：插圖動畫開場黑幕要撐 3 秒保險才掀（等第一格的兩邊互等）。
+- **背景動畫接上（整張影片那一種，192 支）**：對照表 `script/bg_anim.js` 由 `py tools/bg_anim_index.py` 掃磁碟產生（鑰匙＝靜態背景檔名，含時段；`_loop_v1` 作廢不收、獅口水道退役）。播放在 `story.js` 的 bgAnim 段（canvas 疊在 `#storyBg` 上，換背景／收舞台自己停）。⚠ **交件後重跑那支工具**（`--check` 會比對）。⚠ **還沒做的程式層**：雲、水面、落水、光束（長廊）、煙（硝坑）、獅口水柱 —— 交件單 `TO_CODE_bg_anim.md` 下半段；獅口水道節點還指舊底圖。
+- **敵人**：KF 第二輪五支接上（巨像 A、監查者 D、腐鹿骸 A＋換中立立繪〔⚠ 沒有待機、fit 沒重調〕、鹿主 A＝D、熊骸 M）；鹿主的櫻花／加速、監查者飛刃等程式效果**還沒做**。空賊 8 組改 `_v3/`、`muzzle:false`、打到＝最後一格、換框前先換圖、受擊閃＋倒地前兩格倒放、開戰那道門預載逐人動檔。
+- 紫黑之翼（`mon_np_anyawings`）待機**有接、有在播**；只是攻擊間隔 3～5 秒、A 動畫 2.7 秒，待機只露一兩秒。
+
 **動畫副理**：`tools/anim/` 與 ComfyUI `tivot_wan/` 兩台已同步（版控較新）；`TIVOT_STEPS/MOBIUS` 版 `tivot_wan.py` 與 `tivot_latent_loop.py` 這台沒有，要 3060 推。待 Ray：6 支插畫放哪一幕（32 米夏行軍、grifonback、canyon_army、torsten_sit、槍機特寫、deck_long）、`cutin_dual_nemo`／`anya_curlfloat` 要不要接、舊影片回收。
 
 **敵人副理**：KF 審閱清單 `resources/enemy/anim/_敵人線_盤點與審閱_1109.md`；第二輪 12 隻逐格盤點 `_KF_第二輪_1109.md` §四；空賊 v3（每人三支動作同框）已交。待 Ray：animechk「空賊之後」頁剪片、熊骸 husk 透明版（`_neutral_refs/s3_kf/redo/mon_bear_husk_alpha*.png` 三版待選）。

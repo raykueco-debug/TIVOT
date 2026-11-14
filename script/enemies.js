@@ -18,7 +18,7 @@ export const ENEMIES = {
                          `state.storyBattle`（§6.5.2，ver -493）。
        `counterStagger`＝ **反擊硬直**（1/0，Ray：「預設為 1，0 的話就算被反擊
                          延時計時也不會歸零」）：被反擊（weaponCounter 真的開火）
-                         時延時懲罰計時歸零。判定在 defense 的 staggerOnCounter。
+                         時延時懲罰計時**退回一半**（ver -2618，Ray：「應該清1/2」；成數 tuning.counterStaggerClear）。判定在 defense 的 staggerOnCounter。
        `boss`          ＝ **這一隻是不是 Boss**（1/0，ver -1024，Ray：「為敵人卡加上
                          boss=1 或 0，boss 經驗 2 倍錢 2.5 倍」）。
                          倍率在 `config.rating.bossMul`（鐵律 1），判定與相乘只有
@@ -2549,9 +2549,10 @@ export const ENEMIES = {
       kind:'human', riseFx:0, tier:'E', atype:null, stageScale:1, hitSe:null,
       image:null, bgBand:'deck/deck_battle', fit:{ mode:'contain', pos:'center bottom', scale:0.68, shiftY:-0.03 },   // 站遠一點（-2579 Ray「槍戰站那麼近幹什麼」）、腳落在血條上方的甲板上（影子才看得到）；甲板四時段（-2576 美術交件；舊的 deck_rapidsail Ray 判定不能當戰鬥背景）
       group:{ dir:'resources/enemy/man_skypirate_'+n+'_layers/', prefix:'pirate_', order, hp:170,
-              /* 逐人 I／A／E（ver -2581，美術交件 TO_CODE_skypirate.md）：A／D／M 共用 atk，R＝atk 倒放，槍口火光程式畫；E 照紫月軍小隊 */
-              idle:'resources/enemy/anim/man_skypirate_'+n+'_idle_v1/', atk:'resources/enemy/anim/man_skypirate_'+n+'_atk_v1/',
-              fall:'resources/enemy/anim/man_skypirate_'+n+'_hit_v1/', fallLead:80, fallMs:625 },
+              /* 逐人 I／A／E（ver -2581，美術交件 TO_CODE_skypirate.md）：A／D／M 共用 atk，R＝atk 倒放；E 照紫月軍小隊。
+                 ver -2620：三支都改指 `_v3/`（每人三支同一個框，換動作不會縮一下）；槍口火光已畫在攻擊格裡 ⇒ `muzzle:false` 不再程式畫，打到＝攻擊最後一格。 */
+              idle:'resources/enemy/anim/man_skypirate_'+n+'_idle_v3/', atk:'resources/enemy/anim/man_skypirate_'+n+'_atk_v3/',
+              fall:'resources/enemy/anim/man_skypirate_'+n+'_hit_v3/', fallLead:80, fallMs:625, muzzle:false },
       hp:170, attack:12, atkInterval:null, assaultEvery:[2,4], assault:{ count:order.length>=4?3:2, gap:0 },
       entrance:null, special:[], boardGrids:[9,9,9,16,16],
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },

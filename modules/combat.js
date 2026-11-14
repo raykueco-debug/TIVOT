@@ -3103,7 +3103,9 @@ export function warmBattleImage(battleId){
     /* 群體敵人的每一層（ver -2043）：開場就要整組站好，不然會先看到空的背景。 */
     if(en && en.group && en.group.plate){ const i=new Image(); i.src=en.group.plate; }   // 背景層（#top）
     if(en && en.group){ const G=en.group; if(G.cover){ const i=new Image(); i.src=G.cover; }
-      for(const n of G.order){ const i=new Image(); i.src=G.dir+(G.prefix||'guard_')+n+'.webp'; } }
+      for(const n of G.order){ const i=new Image(); i.src=G.dir+(G.prefix||'guard_')+n+'.webp'; }
+      /* 逐人的待機／攻擊／倒地動檔也在這道門暖（ver -2620，TO_CODE_skypirate：直接開群戰時沒有預載，開戰十幾秒全組都是靜態） */
+      enemy.preloadGroupCard(B.enemy); }
     /* NI 那一刻要換的立繪與 cut-in（ver -1964，米夏）—— 先暖著，發動時不閃空白。 */
     const ls=en && en.lastStand;
     if(ls) [ls.image, ls.ci].forEach(k=>{ const p=k && asset(k); if(p){ const i=new Image(); i.src=p; } });

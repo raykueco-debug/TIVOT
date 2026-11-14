@@ -2259,6 +2259,8 @@ function buildGroup(en){
       }).catch(()=>{}); }
     if(G.idle) loadMemberClip(G.idle+pre+n+'/').then(c=>{ if(c && groupCard===en){ im._idle=c; showMemberAnim(im); } });
     if(G.atk)  loadMemberClip(G.atk+pre+n+'/').then(c=>{ if(c && groupCard===en) im._atk=c; });
+    /* 受擊播倒地前兩格（ver -2620，見 memberHitFx）：只有疊了待機層的人用得到，同一份快取（preloadGroupCard 已暖過）。 */
+    if(G.fall && G.idle) loadMemberClip(G.fall+pre+n+'/').then(c=>{ if(c && groupCard===en) im._fallc=c; });
     g.appendChild(im);
   }
   startGroupAnim();
@@ -2312,15 +2314,18 @@ function groupAttack(){
   const g=$('enemyGroup'), G=groupCard && groupCard.group; if(!g || !G || !G.atk) return 0;
   const cand=[...g.querySelectorAll('.eg-guard')].filter(im=>im._atk && im._ov && !im._acting && !im.classList.contains('eg-down') && !im.classList.contains('eg-leaving'));
   if(!cand.length) return 0;
-  const im=cand[(Math.random()*cand.length)|0], A=im._atk, N=A.fr.length, fps=A.j.fps||16, ff=Math.min(N-1, G.flashFrame!=null ? G.flashFrame : 5);
+  /* `group.muzzle:false`（ver -2620，空賊 v3）＝火光已畫在格子裡，程式不畫；打到＝攻擊的最後一格（每支格數不一定一樣）。 */
+  const im=cand[(Math.random()*cand.length)|0], A=im._atk, N=A.fr.length, fps=A.j.fps||16,
+        ff = G.muzzle===false ? N-1 : Math.min(N-1, G.flashFrame!=null ? G.flashFrame : 5);
   im._acting=true; placeOnLayer(im._ov, im, A.j);
   let i=0, dir=1; im._ov.src=A.fr[0].src;
   const t=setInterval(()=>{
     if(!im._ov || !groupCard){ clearInterval(t); return; }
     i+=dir;
-    if(dir>0 && i===ff) groupMuzzle(im, A.j);
+    if(dir>0 && i===ff && G.muzzle!==false) groupMuzzle(im, A.j);
     if(i>=N-1) dir=-1;
-    if(i<=0 && dir<0){ clearInterval(t); im._acting=false; if(im._idle) placeOnLayer(im._ov, im, im._idle.j); return; }
+    /* ⚠ 先把圖換回待機再換框（ver -2620，Ray：「攻擊時人會縮一下」）—— 先換框的話攻擊那一格會被畫進待機的小框。 */
+    if(i<=0 && dir<0){ clearInterval(t); im._acting=false; if(im._idle){ im._ov.src=im._idle.fr[0].src; placeOnLayer(im._ov, im, im._idle.j); } return; }
     im._ov.src=A.fr[Math.max(0,Math.min(N-1,i))].src;
   }, 1000/fps);
   return Math.round(ff*1000/fps);
@@ -2424,7 +2429,31 @@ export function groupHitFlash(){
   const im=pickVictim(standingGuards()); if(!im) return true;
   im.classList.remove('eg-hit'); void im.offsetWidth; im.classList.add('eg-hit');
   clearTimeout(im._hitT); im._hitT=setTimeout(()=>im.classList.remove('eg-hit'), 180);
+  memberHitFx(im);
   return true;
+}
+/* ══ 群戰的受擊（ver -2620，Ray：「受擊敵人也要閃動」「有倒地動畫的敵人受擊時都放倒地動畫的前兩格再倒放」）══
+   ⚠ 有待機動檔的人，畫面上看到的是疊在分層上的 `.eg-anim`（`im._ov`），分層本身是 opacity:0 ——
+     所以閃與倒地前兩格都要做在 `_ov` 上（`.eg-hit` 的抖動抖在看不見的那張上）。沒有 `_ov` 的人就閃分層本身。
+   倒地前兩格：fall 的 frame 0 → 1 → 1 → 0（每格 42ms），播完換回待機；正在攻擊的那一個不打斷，只閃。 */
+function memberHitFx(im){
+  const el=im._ov || im;
+  el.style.filter='brightness(2.6) saturate(.4)';
+  clearTimeout(im._flT1); clearTimeout(im._flT2);
+  im._flT1=setTimeout(()=>{ el.style.filter='brightness(1.6)'; }, 60);
+  im._flT2=setTimeout(()=>{ el.style.filter=''; }, 140);
+  const F=im._fallc;
+  if(!im._ov || im._acting || !F || F.fr.length<2) return;
+  im._acting=true;
+  /* 先換圖再換框（同 groupAttack 收尾那一條）。 */
+  im._ov.src=F.fr[0].src; placeOnLayer(im._ov, im, F.j);
+  const seq=[1,1,0]; let k=0;
+  const t=setInterval(()=>{
+    if(!im._ov || !groupCard || im.classList.contains('eg-down')){ clearInterval(t); im._acting=false; return; }
+    if(k<seq.length){ im._ov.src=F.fr[seq[k++]].src; return; }
+    clearInterval(t); im._acting=false;
+    if(im._idle){ im._ov.src=im._idle.fr[0].src; placeOnLayer(im._ov, im, im._idle.j); }
+  }, 42);
 }
 /* ══ 群體裡的一隻禍魘被淨化（ver -2223，Ray：「禍魘大軍的怪被擊倒要跑淨化」）══
    死法與單隻同一套（CSS 的 `enemyPurge` 拉長抖動淡出 ＋ `spawnPurgeStars` 白光星芒，鐵律 8）—— 差別只在**對著哪裡**：
