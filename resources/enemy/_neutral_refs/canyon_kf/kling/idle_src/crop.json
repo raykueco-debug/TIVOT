@@ -1,0 +1,93 @@
+{
+ "coffin": {
+  "video": "kling_coffin_AtoBtoA_4s.mp4",
+  "crop": [
+   44,
+   192,
+   676,
+   1088
+  ],
+  "video_size": [
+   720,
+   1280
+  ]
+ },
+ "crab": {
+  "video": "kling_crab_AB_3s.mp4",
+  "crop": [
+   44,
+   192,
+   678,
+   1068
+  ],
+  "video_size": [
+   720,
+   1280
+  ]
+ },
+ "pilgrim": {
+  "video": "kling_pilgrim_AB_3s.mp4",
+  "crop": [
+   44,
+   190,
+   676,
+   1086
+  ],
+  "video_size": [
+   720,
+   1280
+  ]
+ },
+ "wyrm": {
+  "video": "kling_wyrm_AB_3s.mp4",
+  "crop": [
+   44,
+   178,
+   676,
+   1096
+  ],
+  "video_size": [
+   720,
+   1280
+  ]
+ },
+ "iron": {
+  "video": "kling_iron_AB_3s.mp4",
+  "crop": [
+   48,
+   168,
+   674,
+   1110
+  ],
+  "video_size": [
+   720,
+   1280
+  ]
+ },
+ "ribcage": {
+  "video": "kling_ribcage_AB_3s.mp4",
+  "crop": [
+   44,
+   194,
+   672,
+   1088
+  ],
+  "video_size": [
+   720,
+   1280
+  ]
+ },
+ "stilt": {
+  "video": "kling_stilt_AB_3s.mp4",
+  "crop": [
+   45,
+   170,
+   676,
+   1111
+  ],
+  "video_size": [
+   720,
+   1280
+  ]
+ }
+}
