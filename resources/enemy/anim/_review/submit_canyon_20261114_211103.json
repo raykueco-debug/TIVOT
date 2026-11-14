@@ -1,0 +1,273 @@
+{
+ "at": "2026-11-14T13:11:03.333Z",
+ "page": "卡耶爾山谷",
+ "rows": [
+  {
+   "id": "colossus",
+   "name": "崩岩巨像",
+   "img": "mon_canyon_colossus_dark",
+   "notes": {
+    "A": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:10:08.632Z"
+    },
+    "D": {
+     "text": "向前出拳　打出飛石　已有動畫",
+     "at": "2026-11-14T12:55:31.285Z"
+    },
+    "M": {
+     "text": "咆哮　回血15%",
+     "at": "2026-11-14T12:56:03.281Z"
+    }
+   }
+  },
+  {
+   "id": "coffinbeetle",
+   "name": "石棺甲蟲",
+   "img": "mon_canyon_coffinbeetle_dark",
+   "notes": {
+    "I": {
+     "text": "昆虫型　自然起伏　鉗子交錯夾動",
+     "at": "2026-11-14T12:58:03.759Z"
+    },
+    "A": {
+     "text": "朝玩家撲擊",
+     "at": "2026-11-14T12:58:25.709Z"
+    }
+   }
+  },
+  {
+   "id": "bonecrab",
+   "name": "骸殼蟹",
+   "img": "mon_canyon_bonecrab_dark",
+   "notes": {
+    "I": {
+     "text": "昆虫型　自然起伏　鉗子交錯夾動",
+     "at": "2026-11-14T12:58:35.209Z"
+    },
+    "A": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:10:09.791Z"
+    },
+    "D": {
+     "text": "動畫：雙鉗向兩邊張開\n程式：噴出泡泡　汙染盤面",
+     "at": "2026-11-14T13:02:46.098Z"
+    }
+   }
+  },
+  {
+   "id": "pilgrimmass",
+   "name": "朝聖者團塊",
+   "img": "mon_canyon_pilgrimmass_dark",
+   "notes": {
+    "I": {
+     "text": "多肢型　布自然飄動　",
+     "at": "2026-11-14T12:59:23.417Z"
+    },
+    "A": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:10:11.176Z"
+    },
+    "M": {
+     "text": "動畫：張手　\n程式：震動　震波　盤面數字消失慢慢淡入恢復　",
+     "at": "2026-11-14T13:02:57.299Z"
+    }
+   }
+  },
+  {
+   "id": "bellwyrm",
+   "name": "喪鐘蠕蟲",
+   "img": "mon_canyon_bellwyrm_dark",
+   "notes": {
+    "I": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:02:15.153Z"
+    },
+    "A": {
+     "text": "朝viewer攻擊",
+     "at": "2026-11-14T13:03:19.514Z"
+    }
+   }
+  },
+  {
+   "id": "saintvulture",
+   "name": "聖面鷲",
+   "img": "mon_canyon_saintvulture_dark",
+   "notes": {
+    "I": {
+     "text": "飛行振翅",
+     "at": "2026-11-14T13:03:34.685Z"
+    },
+    "A": {
+     "text": "閃現消失\n一道黑影隨機角度劃過畫面\n閃現復歸",
+     "at": "2026-11-14T13:04:56.095Z"
+    }
+   }
+  },
+  {
+   "id": "ironpenitent",
+   "name": "鐵衣苦修者",
+   "img": "mon_canyon_ironpenitent_dark",
+   "notes": {
+    "I": {
+     "text": "類人型　重畫idle圖　自然呼吸律動",
+     "at": "2026-11-14T13:05:24.361Z"
+    },
+    "A": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:10:12.156Z"
+    },
+    "D": {
+     "text": "法杖朝viewer雜擊　natali rule",
+     "at": "2026-11-14T13:06:00.974Z"
+    }
+   }
+  },
+  {
+   "id": "ribcage",
+   "name": "肋籠獸",
+   "img": "mon_canyon_ribcage_dark",
+   "notes": {
+    "I": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:07:05.797Z"
+    },
+    "A": {
+     "text": "尾部朝viewr噴火　橫向移動",
+     "at": "2026-11-14T13:06:53.479Z"
+    }
+   }
+  },
+  {
+   "id": "stilt",
+   "name": "高蹺細影",
+   "img": "mon_canyon_stilt_dark",
+   "notes": {
+    "I": {
+     "text": "類人型　重畫idle圖　自然呼吸律動",
+     "at": "2026-11-14T13:07:08.223Z"
+    },
+    "A": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:10:14.461Z"
+    },
+    "M": {
+     "text": "爪擊　natali rule",
+     "at": "2026-11-14T13:07:18.621Z"
+    }
+   }
+  },
+  {
+   "id": "censer",
+   "name": "香爐蠍",
+   "img": "mon_canyon_censer_dark",
+   "notes": {
+    "I": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:08:05.332Z"
+    },
+    "A": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:08:57.895Z"
+    }
+   }
+  },
+  {
+   "id": "hanged",
+   "name": "崖縫吊屍者",
+   "img": "mon_canyon_hanged_dark",
+   "notes": {
+    "I": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:08:06.409Z"
+    },
+    "A": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:08:55.447Z"
+    }
+   }
+  },
+  {
+   "id": "houndbeast",
+   "name": "餓獸",
+   "img": "mon_canyon_houndbeast",
+   "notes": {
+    "A": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:08:50.508Z"
+    }
+   }
+  },
+  {
+   "id": "bellmite",
+   "name": "鐘殼蟲",
+   "img": "mon_canyon_bellmite_dark",
+   "notes": {
+    "I": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:08:12.468Z"
+    },
+    "A": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:10:17.267Z"
+    }
+   }
+  },
+  {
+   "id": "chainhound",
+   "name": "鎖鏈餓犬",
+   "img": "mon_canyon_chainhound_dark",
+   "notes": {
+    "A": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:10:17.888Z"
+    }
+   }
+  },
+  {
+   "id": "lanternimp",
+   "name": "提燈小鬼",
+   "img": "mon_canyon_lanternimp_dark",
+   "notes": {
+    "I": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:08:17.406Z"
+    },
+    "A": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:10:19.673Z"
+    }
+   }
+  },
+  {
+   "id": "crawler",
+   "name": "爬行朝聖者",
+   "img": "mon_canyon_crawler_dark",
+   "notes": {
+    "I": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:08:18.589Z"
+    },
+    "A": {
+     "text": "交給wan自由發揮",
+     "at": "2026-11-14T13:08:41.474Z"
+    }
+   }
+  },
+  {
+   "id": "bonecrow",
+   "name": "骨鴉",
+   "img": "mon_canyon_bonecrow_dark",
+   "notes": {
+    "I": {
+     "text": "振翅型",
+     "at": "2026-11-14T13:08:25.206Z"
+    },
+    "A": {
+     "text": "閃現消失\n一道黑影隨機角度劃過畫面\n閃現復歸",
+     "at": "2026-11-14T13:10:40.938Z"
+    }
+   }
+  }
+ ]
+}
