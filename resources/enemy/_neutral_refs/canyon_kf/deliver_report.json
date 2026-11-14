@@ -1,0 +1,56 @@
+{
+ "coffin": {
+  "A": null,
+  "I": null
+ },
+ "crab": {
+  "A": null,
+  "I": null
+ },
+ "pilgrim": {
+  "A": null,
+  "I": null
+ },
+ "wyrm": {
+  "A": null,
+  "I": null
+ },
+ "iron": {
+  "A": {
+   "name": "mon_canyon_ironpenitent_neutral_delay_v1",
+   "frames": 74,
+   "peak": 40,
+   "kb": 4368
+  },
+  "I": {
+   "name": "mon_canyon_ironpenitent_neutral_idle_v1",
+   "frames": 48,
+   "peak": 1,
+   "kb": 2576
+  }
+ },
+ "ribcage": {
+  "A": null,
+  "I": null
+ },
+ "stilt": {
+  "A": {
+   "name": "mon_canyon_stilt_neutral_miss_v1",
+   "frames": 74,
+   "peak": 31,
+   "kb": 3698
+  },
+  "I": {
+   "name": "mon_canyon_stilt_neutral_idle_v1",
+   "frames": 48,
+   "peak": 2,
+   "kb": 2083
+  }
+ },
+ "vulture": {
+  "I": null
+ },
+ "crow": {
+  "I": null
+ }
+}

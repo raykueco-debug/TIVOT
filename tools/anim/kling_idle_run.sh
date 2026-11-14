@@ -22,5 +22,15 @@ E2="C:/Users/User/Desktop/TIVOT/resources/enemy"
 F(){ env TIVOT_GEN=480x720 TIVOT_FIT=0.80 PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 tivot_wan.py --files "$E2/$1.webp" --mode idle --style flyer --length 49 --fps 16 --seed $2 --out out/kling_idle >> $LOG 2>&1; echo "done $1" >> $LOG; }
 want vulture && F mon_canyon_saintvulture_dark 9171
 want crow    && F mon_canyon_bonecrow_dark 9181
+
+# 11-15 Ray：「剩下的 idle 都跑完」—— 編排頁寫「交給wan自由發揮」或空白的 7 隻；不給提示詞＝tivot_wan 內建（獸型用 beast）；FIT 0.85 留空間
+G(){ env TIVOT_GEN=480x720 TIVOT_FIT=0.85 PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 tivot_wan.py --files "$E2/$1.webp" --mode idle --style $3 --length 49 --fps 16 --seed $2 --out out/kling_idle >> $LOG 2>&1; echo "done $1" >> $LOG; }
+want censer     && G mon_canyon_censer_dark     9201 default
+want hanged     && G mon_canyon_hanged_dark     9211 eerie
+want houndbeast && G mon_canyon_houndbeast      9221 beast
+want bellmite   && G mon_canyon_bellmite_dark   9231 default
+want chainhound && G mon_canyon_chainhound_dark 9241 beast
+want lanternimp && G mon_canyon_lanternimp_dark 9251 default
+want crawler    && G mon_canyon_crawler_dark    9261 default
 PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 edge_check.py out/kling_idle/* >> $LOG 2>&1
 echo ALLDONE >> $LOG
