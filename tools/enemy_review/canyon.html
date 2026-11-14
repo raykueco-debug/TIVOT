@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>卡耶爾山谷動畫編排</title>
+<style>
+:root{--bg:#121318;--panel:#1c1e26;--line:#2c2f3a;--ink:#e6e3dc;--dim:#8d8f99;--gold:#d8b66a;--ok:#6fbf8a;--warn:#e0a052}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,"Microsoft JhengHei",sans-serif}
+#bar{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:#0d0e12ee;border-bottom:1px solid var(--line)}
+#bar h1{font-size:16px;margin:0 8px 0 0;color:var(--gold)}
+#bar .sub{color:var(--dim);font-size:12px}
+button{background:#2a2d38;color:var(--ink);border:1px solid #3a3e4c;border-radius:6px;padding:5px 12px;cursor:pointer;font:inherit}
+button:hover{border-color:var(--gold)}
+button.pri{background:#5a4a24;border-color:var(--gold)}
+#msg{color:var(--ok);font-size:13px}
+table{border-collapse:collapse;margin:0 0 60px}
+th{position:sticky;top:52px;z-index:4;background:#16171d;color:var(--dim);font-weight:600;padding:6px;border-bottom:1px solid var(--line)}
+td{vertical-align:top;padding:8px;border-bottom:1px solid var(--line);border-right:1px solid #20222b}
+td.head{position:sticky;left:0;z-index:3;background:var(--panel);width:230px;min-width:230px}
+.nm{font-size:15px;font-weight:700;color:var(--gold)}
+.meta{color:var(--dim);font-size:12px;word-break:break-all}
+.tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:8px;border:1px solid #4a4d58;color:var(--dim);margin-right:4px}
+.tag.boss{border-color:#b05050;color:#e08a8a}.tag.big{border-color:#7a6a3a;color:var(--gold)}
+.btns{display:flex;gap:6px;margin:8px 0}
+.st{font-size:12px;color:var(--dim)}.st.sub{color:var(--ok)}.st.dirty{color:var(--warn)}
+.pic{width:170px;height:255px;object-fit:contain;border-radius:4px;margin-top:6px;
+ background:#24262e;background-image:linear-gradient(45deg,#2c2e37 25%,transparent 25%,transparent 75%,#2c2e37 75%),linear-gradient(45deg,#2c2e37 25%,transparent 25%,transparent 75%,#2c2e37 75%);
+ background-size:16px 16px;background-position:0 0,8px 8px}
+td.cell textarea{width:230px;height:272px;resize:vertical;background:#15161c;color:var(--ink);border:1px solid #33364a;border-radius:5px;padding:6px;font:13px/1.45 inherit}
+textarea:focus{outline:none;border-color:var(--gold)}
+textarea.has{border-color:#7a6a3a}
+.have{font-size:11px;color:var(--ok);margin-bottom:4px}
+</style></head><body>
+<div id="bar">
+ <h1>卡耶爾山谷・夢境碎片 02 的怪</h1>
+ <span class="sub">I 待機／A 攻擊／D 延時／M 點錯，各寫一格；沒寫＝照預設</span>
+ <button id="saveAll">全部儲存</button>
+ <button id="submitAll" class="pri">全部提交</button>
+ <span id="msg"></span>
+</div>
+<table><thead><tr><th>敵人（儲存／提交）</th><th>I 待機</th><th>A 攻擊</th><th>D 延時</th><th>M 點錯</th></tr></thead>
+<tbody id="tb"></tbody></table>
+<script>
+// 遊戲裡用的是深色版（_dark；餓獸只有一版）。用在哪幾組＝script/enemies.js 的 canyon_mix2..12。
+const R='../../resources/enemy/';
+const ROWS=[
+ ['colossus','崩岩巨像','boss','mon_canyon_colossus_dark','谷底 Boss（frag02_b）',{I:'已有 idle_v1',A:'已有 atk_v1（拳砸地）'}],
+ ['coffinbeetle','石棺甲蟲','big','mon_canyon_coffinbeetle_dark','mix2 後排'],
+ ['bonecrab','骸殼蟹','big','mon_canyon_bonecrab_dark','mix3 後排'],
+ ['pilgrimmass','朝聖者團塊','big','mon_canyon_pilgrimmass_dark','mix4 後排'],
+ ['bellwyrm','喪鐘蠕蟲','big','mon_canyon_bellwyrm_dark','mix5 後排'],
+ ['saintvulture','聖面鷲','big','mon_canyon_saintvulture_dark','mix6 後排'],
+ ['ironpenitent','鐵衣苦修者','big','mon_canyon_ironpenitent_dark','mix7 後排（開場戰 frag02_a）'],
+ ['ribcage','肋籠獸','big','mon_canyon_ribcage_dark','mix8 後排'],
+ ['stilt','高蹺細影','big','mon_canyon_stilt_dark','mix9 後排'],
+ ['censer','香爐蠍','big','mon_canyon_censer_dark','mix10 後排（風蝕迴廊 frag02_mid）'],
+ ['hanged','崖縫吊屍者','big','mon_canyon_hanged_dark','mix11 後排'],
+ ['houndbeast','餓獸','big','mon_canyon_houndbeast','mix12 後排'],
+ ['bellmite','鐘殼蟲','small','mon_canyon_bellmite_dark','mix2、7、8、10 前排'],
+ ['chainhound','鎖鏈餓犬','small','mon_canyon_chainhound_dark','mix3、5、7、8、10、12 前排'],
+ ['lanternimp','提燈小鬼','small','mon_canyon_lanternimp_dark','mix3、4、7、9、10、12 前排'],
+ ['crawler','爬行朝聖者','small','mon_canyon_crawler_dark','mix4、6、7、9、11 前排'],
+ ['bonecrow','骨鴉','small','mon_canyon_bonecrow_dark','mix2、4、5、6、9、11、12 前排（飛行）'],
+];
+const COLS=['I','A','D','M'], LS='canyon_review_draft_v1', LSS='canyon_review_submitted_v1', PG='?page=canyon';
+let notes={},submitted={};
+const $=s=>document.querySelector(s);
+const msg=t=>{$('#msg').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>$('#msg').textContent='',5000)};
+try{notes=JSON.parse(localStorage.getItem(LS)||'{}');submitted=JSON.parse(localStorage.getItem(LSS)||'{}')}catch(e){}
+const rowNotes=id=>Object.fromEntries(COLS.map(c=>[c,notes[id+'|'+c]]).filter(([,v])=>v&&v.text.trim()));
+function status(id){const el=document.getElementById('st_'+id),n=Object.keys(rowNotes(id)).length,s=submitted[id];
+ const dirty=s&&JSON.stringify(rowNotes(id))!==s.sig;el.className='st'+(s&&!dirty?' sub':dirty?' dirty':'');
+ el.textContent=n?(s?(dirty?`${n} 格・提交後有改動`:`${n} 格・已提交 ${s.at}`):`${n} 格・未提交`):(s?'已提交（現在無意見）':'')}
+function build(){const tb=$('#tb');
+ ROWS.forEach(([id,name,kind,img,where,have])=>{const tr=document.createElement('tr');
+  const h=document.createElement('td');h.className='head';
+  h.innerHTML=`<div class="nm">${name}</div><div><span class="tag ${kind}">${kind==='boss'?'Boss':kind==='big'?'大型（後排）':'群體小型'}</span></div>
+   <div class="meta">${where}<br>${img}</div><div class="btns"><button class="sv">儲存</button><button class="pri sb">提交</button></div>
+   <div class="st" id="st_${id}"></div><img class="pic" loading="lazy" src="${R}${img}.webp">`;
+  h.querySelector('.sv').onclick=()=>save([id]);h.querySelector('.sb').onclick=()=>submit([id]);tr.appendChild(h);
+  COLS.forEach(c=>{const td=document.createElement('td');td.className='cell';
+   if(have&&have[c])td.innerHTML=`<div class="have">✔ ${have[c]}</div>`;
+   const ta=document.createElement('textarea');ta.placeholder=`${name}・${c}`;const k=id+'|'+c;
+   ta.value=(notes[k]||{}).text||'';ta.classList.toggle('has',!!ta.value.trim());
+   ta.oninput=()=>{notes[k]={text:ta.value,at:new Date().toISOString()};ta.classList.toggle('has',!!ta.value.trim());localStorage.setItem(LS,JSON.stringify(notes));status(id)};
+   td.appendChild(ta);tr.appendChild(td)});
+  tb.appendChild(tr);status(id)})}
+async function post(u,b){return (await fetch(u+PG,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)})).json()}
+async function save(ids){localStorage.setItem(LS,JSON.stringify(notes));
+ try{const r=await post('/review/save',{at:new Date().toISOString(),notes});msg(r.ok?'已儲存':'儲存失敗：'+r.error)}catch(e){msg('已存在瀏覽器（伺服器沒回應）')}}
+async function submit(ids){const rows=ids.map(id=>{const x=ROWS.find(r=>r[0]===id);return{id,name:x[1],img:x[3],notes:rowNotes(id)}}).filter(r=>Object.keys(r.notes).length);
+ if(!rows.length){msg('沒有意見可提交');return}
+ await save(ids);
+ try{const r=await post('/review/submit',{at:new Date().toISOString(),page:'卡耶爾山谷',rows});if(!r.ok)throw new Error(r.error);
+  const at=new Date().toLocaleString('zh-TW',{hour12:false});rows.forEach(x=>submitted[x.id]={at,sig:JSON.stringify(rowNotes(x.id))});
+  localStorage.setItem(LSS,JSON.stringify(submitted));ROWS.forEach(r=>status(r[0]));msg(`已提交 ${rows.length} 隻 → ${r.path}`)}
+ catch(e){msg('提交失敗：'+e.message)}}
+$('#saveAll').onclick=()=>save(ROWS.map(r=>r[0]));
+$('#submitAll').onclick=()=>submit(ROWS.map(r=>r[0]));
+(async()=>{try{const d=await (await fetch('/review/draft'+PG)).json();if(d.notes)for(const k in d.notes)if(!notes[k]||(d.notes[k].at||'')>(notes[k].at||''))notes[k]=d.notes[k]}catch(e){}build()})();
+</script></body></html>

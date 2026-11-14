@@ -24,9 +24,16 @@ class H(SimpleHTTPRequestHandler):
         if self.path.split('?')[0] == '/tools/enemy_review/data.json':
             build.build()
         elif self.path.split('?')[0] == '/review/draft':
-            p = os.path.join(OUT, 'draft.json')
+            p = os.path.join(OUT, f'draft{self.page()}.json')
             return self.reply(json.load(open(p, encoding='utf-8')) if os.path.exists(p) else {})
         return super().do_GET()
+
+    def page(self):
+        """?page=canyon → '_canyon'（各審閱頁的草稿與提交分開存）。"""
+        from urllib.parse import urlsplit, parse_qs
+        v = parse_qs(urlsplit(self.path).query).get('page', [''])[0]
+        v = ''.join(c for c in v if c.isalnum() or c in '_-')
+        return '_' + v if v else ''
 
     def reply(self, obj):
         body = json.dumps(obj, ensure_ascii=False).encode()
@@ -37,10 +44,11 @@ class H(SimpleHTTPRequestHandler):
         try:
             data = json.loads(self.rfile.read(int(self.headers['Content-Length'])).decode('utf-8'))
             os.makedirs(OUT, exist_ok=True)
-            if self.path == '/review/save':
-                p = os.path.join(OUT, 'draft.json')
-            elif self.path == '/review/submit':
-                p = os.path.join(OUT, time.strftime('submit_%Y%m%d_%H%M%S.json'))
+            route = self.path.split('?')[0]
+            if route == '/review/save':
+                p = os.path.join(OUT, f'draft{self.page()}.json')
+            elif route == '/review/submit':
+                p = os.path.join(OUT, time.strftime(f'submit{self.page()}_%Y%m%d_%H%M%S.json'))
                 n = 2
                 while os.path.exists(p):
                     p = p[:-5] + f'_{n}.json'; n += 1
