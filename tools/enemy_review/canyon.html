@@ -26,14 +26,17 @@ td.head{position:sticky;left:0;z-index:3;background:var(--panel);width:230px;min
 .pic{width:170px;height:255px;object-fit:contain;border-radius:4px;margin-top:6px;
  background:#24262e;background-image:linear-gradient(45deg,#2c2e37 25%,transparent 25%,transparent 75%,#2c2e37 75%),linear-gradient(45deg,#2c2e37 25%,transparent 25%,transparent 75%,#2c2e37 75%);
  background-size:16px 16px;background-position:0 0,8px 8px}
-td.cell textarea{width:230px;height:272px;resize:vertical;background:#15161c;color:var(--ink);border:1px solid #33364a;border-radius:5px;padding:6px;font:13px/1.45 inherit}
+td.cell textarea{display:block;width:230px;height:272px;resize:vertical;background:#15161c;color:var(--ink);border:1px solid #33364a;border-radius:5px;padding:6px;font:13px/1.45 inherit}
 textarea:focus{outline:none;border-color:var(--gold)}
 textarea.has{border-color:#7a6a3a}
+select.share{display:block;width:230px;margin-bottom:4px;background:#1a1c23;color:var(--ink);border:1px solid #3a3e4c;border-radius:5px;padding:3px}
+select.share.on{border-color:var(--gold);color:var(--gold)}
+textarea:disabled{opacity:.35}
 .have{font-size:11px;color:var(--ok);margin-bottom:4px}
 </style></head><body>
 <div id="bar">
  <h1>卡耶爾山谷・夢境碎片 02 的怪</h1>
- <span class="sub">I 待機／A 攻擊／D 延時／M 點錯，各寫一格；沒寫＝照預設</span>
+ <span class="sub">I 待機／A 攻擊／D 延時／M 點錯。<b>沒寫＝給 Wan 自由發揮</b>；D、M 可以選「同 A／同另一格」共用一支</span>
  <button id="saveAll">全部儲存</button>
  <button id="submitAll" class="pri">全部提交</button>
  <span id="msg"></span>
@@ -67,7 +70,8 @@ let notes={},submitted={};
 const $=s=>document.querySelector(s);
 const msg=t=>{$('#msg').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>$('#msg').textContent='',5000)};
 try{notes=JSON.parse(localStorage.getItem(LS)||'{}');submitted=JSON.parse(localStorage.getItem(LSS)||'{}')}catch(e){}
-const rowNotes=id=>Object.fromEntries(COLS.map(c=>[c,notes[id+'|'+c]]).filter(([,v])=>v&&v.text.trim()));
+const SHARE={D:['A','M'],M:['A','D']};
+const rowNotes=id=>Object.fromEntries(COLS.map(c=>[c,notes[id+'|'+c]]).filter(([,v])=>v&&(v.text.trim()||v.share)));
 function status(id){const el=document.getElementById('st_'+id),n=Object.keys(rowNotes(id)).length,s=submitted[id];
  const dirty=s&&JSON.stringify(rowNotes(id))!==s.sig;el.className='st'+(s&&!dirty?' sub':dirty?' dirty':'');
  el.textContent=n?(s?(dirty?`${n} 格・提交後有改動`:`${n} 格・已提交 ${s.at}`):`${n} 格・未提交`):(s?'已提交（現在無意見）':'')}
@@ -80,9 +84,19 @@ function build(){const tb=$('#tb');
   h.querySelector('.sv').onclick=()=>save([id]);h.querySelector('.sb').onclick=()=>submit([id]);tr.appendChild(h);
   COLS.forEach(c=>{const td=document.createElement('td');td.className='cell';
    if(have&&have[c])td.innerHTML=`<div class="have">✔ ${have[c]}</div>`;
-   const ta=document.createElement('textarea');ta.placeholder=`${name}・${c}`;const k=id+'|'+c;
-   ta.value=(notes[k]||{}).text||'';ta.classList.toggle('has',!!ta.value.trim());
-   ta.oninput=()=>{notes[k]={text:ta.value,at:new Date().toISOString()};ta.classList.toggle('has',!!ta.value.trim());localStorage.setItem(LS,JSON.stringify(notes));status(id)};
+   const ta=document.createElement('textarea');ta.placeholder=`${name}・${c}（空白＝Wan 自由發揮）`;const k=id+'|'+c;
+   const cur=()=>notes[k]||(notes[k]={text:'',share:''});
+   ta.value=cur().text||'';ta.classList.toggle('has',!!ta.value.trim());
+   const touch=()=>{cur().at=new Date().toISOString();localStorage.setItem(LS,JSON.stringify(notes));status(id)};
+   ta.oninput=()=>{cur().text=ta.value;ta.classList.toggle('has',!!ta.value.trim());touch()};
+   if(SHARE[c]){const sel=document.createElement('select');sel.className='share';
+    sel.innerHTML=`<option value="">自己一支</option>`+SHARE[c].map(o=>`<option value="${o}">同 ${o}（共用那一支）</option>`).join('');
+    const sync=()=>{const v=cur().share||'';sel.value=v;sel.classList.toggle('on',!!v);ta.disabled=!!v;
+     ta.placeholder=v?`跟 ${v} 共用同一支，不另做`:`${name}・${c}（空白＝Wan 自由發揮）`};
+    sel.onchange=()=>{const v=sel.value;
+     if(v&&v!=='A'&&(notes[id+'|'+v]||{}).share===c){msg(`${v} 已經設成同 ${c}，不能互指`);sel.value=cur().share||'';return}
+     cur().share=v;sync();touch()};
+    sync();td.appendChild(sel)}
    td.appendChild(ta);tr.appendChild(td)});
   tb.appendChild(tr);status(id)})}
 async function post(u,b){return (await fetch(u+PG,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)})).json()}
@@ -91,7 +105,7 @@ async function save(ids){localStorage.setItem(LS,JSON.stringify(notes));
 async function submit(ids){const rows=ids.map(id=>{const x=ROWS.find(r=>r[0]===id);return{id,name:x[1],img:x[3],notes:rowNotes(id)}}).filter(r=>Object.keys(r.notes).length);
  if(!rows.length){msg('沒有意見可提交');return}
  await save(ids);
- try{const r=await post('/review/submit',{at:new Date().toISOString(),page:'卡耶爾山谷',rows});if(!r.ok)throw new Error(r.error);
+ try{const r=await post('/review/submit',{at:new Date().toISOString(),page:'卡耶爾山谷',rule:'沒寫＝給 Wan 自由發揮；share＝跟那一格共用同一支',rows});if(!r.ok)throw new Error(r.error);
   const at=new Date().toLocaleString('zh-TW',{hour12:false});rows.forEach(x=>submitted[x.id]={at,sig:JSON.stringify(rowNotes(x.id))});
   localStorage.setItem(LSS,JSON.stringify(submitted));ROWS.forEach(r=>status(r[0]));msg(`已提交 ${rows.length} 隻 → ${r.path}`)}
  catch(e){msg('提交失敗：'+e.message)}}
