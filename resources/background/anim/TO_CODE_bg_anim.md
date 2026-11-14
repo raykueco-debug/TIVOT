@@ -331,7 +331,7 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 貝利薩爾遺址　近衛墓室 | `anim/belisar/belisar_guardtomb_sep_v1.mp4` | 14 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
 | 貝利薩爾遺址　三拱廳 | `anim/belisar/belisar_triarch_sep_v1.mp4` | 13 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
 | 貝利薩爾遺址　聖油室 | `anim/belisar/belisar_chrismroom_sep_v1.mp4` | 10 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
-| 貝利薩爾遺址　獅口水道 | `anim/belisar/belisar_lionspout_sep_v1.mp4` | 16 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
+| 貝利薩爾遺址　獅口水道 | ~~`anim/belisar/belisar_lionspout_sep_v1.mp4`~~（11-14 退役，改靜態底圖＋程式水柱，見下方「獅口水道特例」） | — | — |
 | 貝利薩爾遺址　寶冠室 | `anim/belisar/belisar_crownroom_sep_v1.mp4` | 47 | 不用（室內無天空；不倒放，Ray 在 animechk 剪） |
 
 > 11-13 **新 SOP：有光束的格子，光束交給遊戲程式畫**（Ray：「這種有光束的都讓 gpt 把光束拿掉，然後換程式跑光束，先用這張試作」→「交給遊戲程式」）
@@ -399,12 +399,17 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 > 11-14 Ray：「可以，把所有有水的都這樣處理」→ 審過成品頁後依意見修正（11-14 17:27）。**有水的格子：影片裡的水面固定成靜態，水由程式畫。**
 > 遮罩（白＝該區域，邊緣已羽化）：`*_watermask.png` ＝**平靜水面**（用上面「程式水面」的畫法）；`*_flowmask.png` ＝**落下／沖流的水**。
 > **落水的程式畫法**（預覽頁那一套）：遮罩內的畫面本體不動，疊一層白色細長亮條（長 20~80px、寬約 1px）沿下落方向捲動（約 220 px/s，以 768 寬計），**每秒 12 格跳格**（Ray：太滑順太慢），`lighter` 疊加、強度約 0.55。
-> **獅口水道特例**（Ray：「獅口水瀑水花移除改用程式低幀跑」）：影片裡的水柱與水花已拿掉（用 `belisar_dragonrace_base_nospout.webp` 補底），程式改畫 `belisar_dragonrace_base_spout.png`（RGBA，原圖的水柱＋水花，alpha＝範圍）：每 1/8 秒跳一格（8fps），圖本身往下位移 0~24px 循環並交叉淡化，再疊上面那層亮條。
+> **獅口水道特例**（11-14 Ray 定案）：**不用影片，整格靜態**——底圖 `belisar_dragonrace_base_nospout.webp`（GPT 重繪的無水柱版，鏡位固定）。水柱由程式畫，照鏡湖瀑布的畫法：
+>   ① 把 `belisar_dragonrace_base_spout.png`（RGBA，原圖的水柱＋水花，alpha＝範圍）**逐列**貼上，每一列水平位移 `1.4·sin(u·0.11 − t·7.5) + 0.7·sin(u·0.29 − t·13 + 1.3)` px（u＝沿中心線的弧長，768 寬計；水柱本體有擺動，不然像流在鋼板上）；
+>   ② 同一層再以 `lighter`、強度 0.45 疊一次，每列透明度 `max(0, sin(u·0.07 − t·5.5))² × 0.5`（往下滑的亮帶）；
+>   ③ 白色細亮條沿中心線往下捲動（約 300 px/s，每一列照中心線水平偏移，亮條才會跟著弧線彎），`lighter`、0.55，用 flowmask 裁；
+>   ④ 落點水霧同鏡湖水蝕洞。①～④ 一律 **12fps 跳格**（t 取整到 1/12 秒）。
+>   中心線在 `belisar_dragonrace_base_spout_path.json`（畫面比例；`splash_y` 以下是落點與台階細流，直直往下，不走弧線）。水道裡的水照平靜水面那一套（`belisar_dragonrace_base_watermask.png`）。
 > ⛔ 這幾格**沒有水**，不交遮罩、影片維持原交件：崩頂坡、旋梯井、暗橋、圓井房、墓龕（Ray：「此景無水／不用水」）。排水崖口、水蝕洞**地面沒有水**，只交瀑布的 `flowmask`。
 
 | 格 | 遮罩 | 影片 |
 |---|---|---|
-| 貝利薩爾遺址　獅口水道 | `anim/belisar/` `belisar_dragonrace_base_watermask.png`＋`belisar_dragonrace_base_flowmask.png` | `belisar/belisar_lionspout_sep_v1.mp4`（水面固定版，⏳ Ray 審閱中） |
+| 貝利薩爾遺址　獅口水道 | `anim/belisar/` `belisar_dragonrace_base_watermask.png`＋`belisar_dragonrace_base_flowmask.png` | **靜態** `belisar/belisar_dragonrace_base_nospout.webp`（影片退役；✔ 已交） |
 | 貝利薩爾遺址　排水崖口 | `anim/belisar/` `belisar_draincliff_day_flowmask.png` | `belisar/belisar_draincliff_day_sep_v1.mp4`（水面固定版，✔ 已換） |
 | 貝利薩爾遺址　靜水池 | `anim/belisar/` `belisar_mirrorpool_base_watermask.png` | `belisar/belisar_stillpool_sep_v1.mp4`（水面固定版，✔ 已換） |
 | 貝利薩爾遺址　水牢 | `anim/belisar/` `belisar_waterjail_base_watermask.png` | `belisar/belisar_waterjail_sep_v1.mp4`（水面固定版，✔ 已換） |
