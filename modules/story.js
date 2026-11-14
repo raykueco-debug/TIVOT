@@ -46,6 +46,8 @@ import * as clock from '../script/clock.js';   // 時段（插圖／背景的差
 import * as inv from '../script/inventory.js';  // 選項的挑戰費（ver -655）：葉節點，只依賴 config
 import { bgFolder } from '../script/bg_index.js';  // 背景的區域資料夾（自動產生，ver -1376）：純查表，無相依
 import { BG_ANIM } from '../script/bg_anim.js';     // 背景動畫對照表（自動產生，ver -2620）：純查表，無相依
+import { BG_FX } from '../script/bg_fx.js';         // 背景的程式層（水面／落水／光束／煙／水柱／雲，ver -2621）：純資料
+import { prepFx, drawFx } from './bgfx.js';         // 程式層的畫法（只畫一格，播放與收掉照舊在這支）
 
 const $ = id => document.getElementById(id);
 
@@ -2323,8 +2325,11 @@ function playCgAnim(name){
    ⚠ **收掉只有 `stopBgAnim` 一支**（鐵律 8）。誰來叫它不靠清單：一個 MutationObserver 看著 `#storyBg` 的 src／class
      與舞台的 class，再加上每一格的自我檢查（同插圖動畫 -2181 的「看著自己那張圖」）——
      換背景、收舞台、進戰鬥（舞台被蓋住）都會自己停（鐵律 10：被蓋住的層不准在底下跑）。
-   ⚠ 這一版只接「整張影片直接蓋」那一種；交件單裡要程式畫的層（雲、水面、落水、光束、煙、獅口水柱）還沒做。 */
+   ⚠⚠ **程式層（ver -2621）走同一個播放器**：`script/bg_fx.js` 有那一張的鑰匙，就在影片（或靜態圖、或程式層自己的底圖）
+     上面再疊水面／落水／水霧／光束／煙／獅口水柱／天空雲，畫法在 `modules/bgfx.js`。有程式層時改用 rAF（上限每秒 30 格），
+     因為沒有新的影片格時水也要動；只有影片時照舊跟著影片的格。程式層載不到就退回「只播影片」，兩樣都沒有就收掉。 */
 let bgAnimOn=null;
+const BG_FX_FRAME_MS=33;   // 程式層的格率上限（手機發熱，鐵律 12）
 function bgStemOf(src){
   const p=String(src||'').split('?')[0];
   let f=p.slice(p.lastIndexOf('/')+1); try{ f=decodeURIComponent(f); }catch(_){}
@@ -2340,15 +2345,28 @@ function bgStageLive(){
 function stopBgAnim(){
   const on=bgAnimOn; bgAnimOn=null;
   if(!on) return;
-  if(on.vfc && on.v.cancelVideoFrameCallback) try{ on.v.cancelVideoFrameCallback(on.vfc); }catch(_){}
+  if(on.v){
+    if(on.vfc && on.v.cancelVideoFrameCallback) try{ on.v.cancelVideoFrameCallback(on.vfc); }catch(_){}
+    try{ on.v.pause(); }catch(_){}
+    on.v.removeAttribute('src'); try{ on.v.load(); }catch(_){}
+    on.v.remove();
+  }
   cancelAnimationFrame(on.raf);
-  try{ on.v.pause(); }catch(_){}
-  on.v.removeAttribute('src'); try{ on.v.load(); }catch(_){}
-  on.v.remove(); on.cv.remove();
+  if(on.hid) on.img.style.visibility='';
+  on.cv.remove();
 }
-function bgAnimDraw(on){
+function bgAnimDraw(on, now){
   const v=on.v, cv=on.cv, img=on.img;
-  if(!v.videoWidth || v.readyState<2) return;
+  /* 來源：影片的這一格 → 程式層自己的底圖 → 畫面上那張靜態圖。 */
+  let src=null, sw=0, sh=0, live=false;
+  if(v && v.videoWidth && v.readyState>=2){ src=v; sw=v.videoWidth; sh=v.videoHeight; live=true; }
+  else if(on.fx && on.fx.ready){
+    const b=on.fx.img.base || (img.complete && img.naturalWidth ? img : null);
+    if(b){ src=b; sw=b.naturalWidth; sh=b.naturalHeight; }
+  }
+  if(!src) return;
+  if(on.fx && on.fx.ready){ src=drawFx(on.fx, src, sw, sh, ((now||performance.now())-on.t0)/1000, live); sw=src.width; sh=src.height; }
+  else if(!v) return;
   const W=img.offsetWidth, H=img.offsetHeight; if(!W||!H) return;
   const dpr=Math.min(2, window.devicePixelRatio||1);
   const cw=Math.round(W*dpr), ch=Math.round(H*dpr);
@@ -2358,41 +2376,64 @@ function bgAnimDraw(on){
   cv.style.width=W+'px'; cv.style.height=H+'px';
   cv.style.transform=cs.transform==='none'?'':cs.transform; cv.style.transformOrigin=cs.transformOrigin;
   cv.style.filter=cs.filter==='none'?'':cs.filter; cv.style.opacity=cs.opacity;
-  const k=Math.max(cw/v.videoWidth, ch/v.videoHeight), dw=v.videoWidth*k, dh=v.videoHeight*k;
+  const k=Math.max(cw/sw, ch/sh), dw=sw*k, dh=sh*k;
   const pos=(cs.objectPosition||'50% 50%').split(/\s+/);
   const fx=cgPosFrac(pos[0], (dw-cw)/dpr), fy=cgPosFrac(pos[1], (dh-ch)/dpr);
-  on.ctx.drawImage(v, (cw-dw)*fx, (ch-dh)*fy, dw, dh);
+  on.ctx.drawImage(src, (cw-dw)*fx, (ch-dh)*fy, dw, dh);
   if(!on.shown){ on.shown=true; cv.style.visibility=''; }
 }
-function playBgAnim(img, src, video){
-  const v=document.createElement('video');
-  v.muted=true; v.defaultMuted=true; v.playsInline=true; v.loop=true; v.preload='auto';
-  v.setAttribute('muted',''); v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
-  v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1;';
+function playBgAnim(img, src, video, fxSpec){
   const cv=document.createElement('canvas');
   cv.className='bg-anim'; cv.style.cssText='position:absolute;z-index:0;pointer-events:none;visibility:hidden;';
-  img.after(cv); document.body.appendChild(v);
-  const on={ v, cv, ctx:cv.getContext('2d'), img, src, video, raf:0, vfc:0, shown:false };
+  img.after(cv);
+  const on={ v:null, cv, ctx:cv.getContext('2d'), img, src, video, fxSpec, fx:fxSpec?prepFx(fxSpec):null,
+             raf:0, vfc:0, shown:false, t0:performance.now(), last:0, hid:false };
   bgAnimOn=on;
-  const loop=()=>{
+  /* 靜態圖與程式層的構圖不一樣（獅口水道）：程式層畫上去之前先藏起來，不然會先閃一張別的構圖。 */
+  if(fxSpec && fxSpec.hideStatic){ on.hid=true; img.style.visibility='hidden'; }
+  const loop=(now)=>{
     if(bgAnimOn!==on) return;
     /* 自我檢查：背景換了／舞台收了／被蓋住了 ⇒ 收掉（不靠呼叫端記得叫）。 */
     if(img.getAttribute('src')!==src || !bgStageLive()){ stopBgAnim(); return; }
+    if(on.fx && on.fx.failed){
+      on.fx=null; if(on.hid){ on.hid=false; img.style.visibility=''; }
+      if(!on.v){ stopBgAnim(); return; }   // 只有程式層而它載不到：收掉，靜態圖照舊
+    }
+    if(on.fx){
+      on.raf=requestAnimationFrame(loop);
+      now=now||performance.now();
+      if(now-on.last>=BG_FX_FRAME_MS){ on.last=now; bgAnimDraw(on, now); }
+      return;
+    }
     bgAnimDraw(on);
-    if(v.requestVideoFrameCallback && !v.paused) on.vfc=v.requestVideoFrameCallback(loop);
+    if(on.v && on.v.requestVideoFrameCallback && !on.v.paused) on.vfc=on.v.requestVideoFrameCallback(()=>loop());
     else on.raf=requestAnimationFrame(loop);
   };
-  v.onloadeddata=()=>{ if(bgAnimOn!==on) return; const p=v.play(); if(p && p.catch) p.catch(()=>{}); loop(); };
-  v.onerror=()=>{ if(bgAnimOn===on) stopBgAnim(); };   // 載不到：收掉，靜態圖照舊
-  v.src=video;
+  if(video){
+    const v=document.createElement('video'); on.v=v;
+    v.muted=true; v.defaultMuted=true; v.playsInline=true; v.loop=true; v.preload='auto';
+    v.setAttribute('muted',''); v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
+    v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1;';
+    document.body.appendChild(v);
+    let started=false;
+    v.onloadeddata=()=>{ if(bgAnimOn!==on) return; const p=v.play(); if(p && p.catch) p.catch(()=>{}); if(!started && !on.fx){ started=true; loop(); } };
+    v.onerror=()=>{ if(bgAnimOn!==on) return; try{ v.remove(); }catch(_){} on.v=null; if(!on.fx) stopBgAnim(); };   // 載不到：只剩程式層（或收掉）
+    v.src=video;
+  }
+  if(on.fx) loop();
 }
-/* 唯一的判斷點：現在 `#storyBg` 是哪一張、舞台活不活著 → 該不該播、播哪一支。 */
+/* 唯一的判斷點：現在 `#storyBg` 是哪一張、舞台活不活著 → 該不該播、播哪一支、疊哪些程式層。 */
+function bgWant(img){
+  const src=img && img.getAttribute('src');
+  if(!src || !bgStageLive()) return null;
+  const stem=bgStemOf(src), video=BG_ANIM[stem]||null, fx=BG_FX[stem]||null;
+  return (video||fx) ? { src, video, fx } : null;
+}
 function syncBgAnim(){
-  const img=$('storyBg'); const src=img && img.getAttribute('src');
-  const want=(src && bgStageLive()) ? (BG_ANIM[bgStemOf(src)] || null) : null;
-  if(bgAnimOn && want && bgAnimOn.src===src && bgAnimOn.video===want) return;
+  const img=$('storyBg'), w=bgWant(img);
+  if(bgAnimOn && w && bgAnimOn.src===w.src && bgAnimOn.video===w.video && bgAnimOn.fxSpec===w.fx) return;
   stopBgAnim();
-  if(want) playBgAnim(img, src, want);
+  if(w) playBgAnim(img, w.src, w.video, w.fx);
 }
 function watchBgAnim(){
   const img=$('storyBg'), st=$('storyStage'); if(!img || !st) return;
@@ -2405,7 +2446,7 @@ function watchBgAnim(){
   img.addEventListener('load', kick);
   document.addEventListener('visibilitychange', kick);
   /* 被別的畫面層蓋住（戰鬥把舞台 visibility 藏起來）不一定會動到上面那幾個屬性 —— 慢慢巡一下（只讀幾個 class，很便宜）。 */
-  setInterval(()=>{ if(!!bgAnimOn !== !!((img.getAttribute('src')) && bgStageLive() && BG_ANIM[bgStemOf(img.getAttribute('src'))])) syncBgAnim(); }, 1000);
+  setInterval(()=>{ if(!!bgAnimOn !== !!bgWant(img)) syncBgAnim(); }, 1000);
 }
 
 export function clearCg(){
@@ -3718,7 +3759,7 @@ const KERB_DIR='resources/vfx/';
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
    「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
    飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2620';
+const KERB_V='?v=2621';
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）

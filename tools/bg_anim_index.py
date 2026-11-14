@@ -31,6 +31,31 @@ def norm(p):
     return p.replace(os.sep, '/')
 
 
+def check_fx(statics):
+    """script/bg_fx.js（手寫的程式層表，ver -2621）：每一個鑰匙要對得到靜態圖、每一個路徑要在磁碟上。"""
+    p = os.path.join(ROOT, 'script', 'bg_fx.js')
+    if not os.path.exists(p):
+        return 0
+    src = open(p, encoding='utf-8').read()
+    consts = dict(re.findall(r"const (\w+) = '([^']+)';", src))
+    bad = 0
+    body = src[src.index('export const BG_FX'):]
+    for k in re.findall(r'^\s{2}(\w+):', body, re.M):
+        if k.lower() not in statics:
+            print('✘ bg_fx：鑰匙 %s 找不到靜態圖' % k); bad += 1
+    paths = set(re.findall(r"'(resources/[^']+)'", src))
+    a = consts.get('A', '')
+    for m in re.findall(r"(?:A \+ |[WF]\()'([^']+)'", src):
+        paths.add(a + m)
+    for t in re.findall(r"beam\('(\w+)'", src):
+        paths.add(a + 'ruins/ruins_shinier_corridora_' + t + '_nobeam.webp')
+    for q in sorted(x for x in paths if not x.endswith('_')):
+        if not os.path.exists(os.path.join(ROOT, q)):
+            print('✘ bg_fx：檔案不在 %s' % q); bad += 1
+    print(('✔' if not bad else '✘') + ' bg_fx 程式層 %d 個路徑' % len(paths))
+    return bad
+
+
 def main(check=False):
     statics = {}
     for dp, dn, fn in os.walk(BG):
@@ -70,11 +95,12 @@ def main(check=False):
     text = '\n'.join(lines) + '\n'
     for why, f in miss:
         print('⚠ %s：%s' % (why, f))
+    bad = check_fx(statics)
     if check:
         cur = open(OUT, encoding='utf-8').read() if os.path.exists(OUT) else ''
         if cur != text:
             print('✘ script/bg_anim.js 與磁碟上的影片不同步 —— 跑 py tools/bg_anim_index.py'); return 1
-        print('✔ bg_anim 同步（%d 支）' % len(best)); return 0
+        print('✔ bg_anim 同步（%d 支）' % len(best)); return 1 if bad else 0
     open(OUT, 'w', encoding='utf-8', newline='\n').write(text)
     print('寫入 %s：%d 支' % (norm(os.path.relpath(OUT, ROOT)), len(best)))
     return 0
