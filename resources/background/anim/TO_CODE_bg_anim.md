@@ -398,14 +398,14 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 
 > 11-14 Ray：「可以，把所有有水的都這樣處理」→ 審過成品頁後依意見修正（11-14 17:27）。**有水的格子：影片裡的水面固定成靜態，水由程式畫。**
 > 遮罩（白＝該區域，邊緣已羽化）：`*_watermask.png` ＝**平靜水面**（用上面「程式水面」的畫法）；`*_flowmask.png` ＝**落下／沖流的水**。
-> **落水的程式畫法**（預覽頁那一套）：遮罩內的畫面本體不動，疊一層白色細長亮條（長 20~80px、寬約 1px）沿下落方向捲動（約 90 px/s，以 768 寬計），`lighter` 疊加、強度約 0.55。
+> **落水的程式畫法**（預覽頁那一套）：遮罩內的畫面本體不動，疊一層白色細長亮條（長 20~80px、寬約 1px）沿下落方向捲動（約 220 px/s，以 768 寬計），**每秒 12 格跳格**（Ray：太滑順太慢），`lighter` 疊加、強度約 0.55。
 > **獅口水道特例**（Ray：「獅口水瀑水花移除改用程式低幀跑」）：影片裡的水柱與水花已拿掉（用 `belisar_dragonrace_base_nospout.webp` 補底），程式改畫 `belisar_dragonrace_base_spout.png`（RGBA，原圖的水柱＋水花，alpha＝範圍）：每 1/8 秒跳一格（8fps），圖本身往下位移 0~24px 循環並交叉淡化，再疊上面那層亮條。
 > ⛔ 這幾格**沒有水**，不交遮罩、影片維持原交件：崩頂坡、旋梯井、暗橋、圓井房、墓龕（Ray：「此景無水／不用水」）。排水崖口、水蝕洞**地面沒有水**，只交瀑布的 `flowmask`。
 
 | 格 | 遮罩 | 影片 |
 |---|---|---|
 | 貝利薩爾遺址　獅口水道 | `anim/belisar/` `belisar_dragonrace_base_watermask.png`＋`belisar_dragonrace_base_flowmask.png` | `belisar/belisar_lionspout_sep_v1.mp4`（水面固定版，⏳ Ray 審閱中） |
-| 貝利薩爾遺址　排水崖口 | `anim/belisar/` `belisar_draincliff_day_flowmask.png` | `belisar/belisar_draincliff_day_sep_v1.mp4`（水面固定版，⏳ Ray 審閱中） |
+| 貝利薩爾遺址　排水崖口 | `anim/belisar/` `belisar_draincliff_day_flowmask.png` | `belisar/belisar_draincliff_day_sep_v1.mp4`（水面固定版，✔ 已換） |
 | 貝利薩爾遺址　靜水池 | `anim/belisar/` `belisar_mirrorpool_base_watermask.png` | `belisar/belisar_stillpool_sep_v1.mp4`（水面固定版，✔ 已換） |
 | 貝利薩爾遺址　水牢 | `anim/belisar/` `belisar_waterjail_base_watermask.png` | `belisar/belisar_waterjail_sep_v1.mp4`（水面固定版，✔ 已換） |
 | 帝都外郊　河畔 | `anim/capital_outer/` `capital_outer_river_base_watermask.png`＋`capital_outer_river_base_flowmask.png` | `capital_outer/outer_river_dusk_sep_v1.mp4`（水面固定版，✔ 已換） |
@@ -414,7 +414,7 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 羅賽爾廢城　東壕 | `anim/dunmor/` `dunmor_ditchE_base_watermask.png` | `dunmor/dunmor_ditche_sep_v1.mp4`（水面固定版，✔ 已換） |
 | 羅賽爾廢城　內壕 | `anim/dunmor/` `dunmor_innerditch_base_watermask.png` | `dunmor/dunmor_innerditch_sep_v1.mp4`（水面固定版，✔ 已換） |
 | 石製遺蹟　沉水石坑 | `anim/fallen/` `fallen_basin_day_watermask.png` | `fallen/fallen_basin_day_sep_v1.mp4`（水面固定版，✔ 已換） |
-| 鏡湖　湖心石堤 | `anim/lake/` `lake_causeway_day_watermask.png` | `lake/lake_causeway_day_sep_v1.mp4`（水面固定版，⏳ Ray 審閱中） |
+| 鏡湖　湖心石堤 | `anim/lake/` `lake_causeway_day_watermask.png` | `lake/lake_causeway_day_sep_v1.mp4`（水面固定版，✔ 已換）；⚠ 這格的程式水面**遠近擺幅要拉大**：`amp 0.5`、`persp 5`（最近處約最遠處的 6 倍，Ray：「看起來沒有距離感」） |
 | 鏡湖　水蝕洞 | `anim/lake/` `lake_cave_day_flowmask.png` | `lake/lake_cave_day_sep_v1.mp4`（水面固定版，⏳ Ray 審閱中） |
 | 鏡湖　倒木灣 | `anim/lake/` `lake_deadfall_day_watermask.png` | `lake/lake_deadfall_day_sep_v1.mp4`（水面固定版，✔ 已換） |
 | 鏡湖　東岸 | `anim/lake/` `lake_eastshore_day_watermask.png` | `lake/lake_eastshore_day_sep_v1.mp4`（水面固定版，✔ 已換） |
