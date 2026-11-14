@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.15-2622';
+export const VERSION = 'ver 2026.11.15-2623';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5684,6 +5684,16 @@ export const ENEMY_IDLE = {
   /* 新交（ver -2176，動畫 10-12；直接就是一拍二 12 格 4fps）。空中怪 8 隻**還沒有敵人卡** ——
      先登記，卡用到那張立繪就自動吃到（沒人用就不載）。⚠ 飛行怪的 box 有負數／比 canvas 寬（翼展），格式同 v1。 */
   mon_canyon_colossus_dark: 'resources/enemy/anim/mon_canyon_colossus_dark_idle_v1/',   // 卡耶爾谷底 Boss（canyon_colossus）
+  /* 卡耶爾群戰成員（ver -2623，TO_CODE_canyon 11-15 交件，Wan、快剪 24fps）：群戰卡由 script/group_members.js 查到 stem 再來這裡拿 */
+  mon_canyon_coffinbeetle_dark: 'resources/enemy/anim/mon_canyon_coffinbeetle_dark_idle_v1/',
+  mon_canyon_bonecrab_dark: 'resources/enemy/anim/mon_canyon_bonecrab_dark_idle_v1/',
+  mon_canyon_pilgrimmass_dark: 'resources/enemy/anim/mon_canyon_pilgrimmass_dark_idle_v1/',
+  mon_canyon_bellwyrm_dark: 'resources/enemy/anim/mon_canyon_bellwyrm_dark_idle_v1/',
+  mon_canyon_ironpenitent_neutral: 'resources/enemy/anim/mon_canyon_ironpenitent_neutral_idle_v1/',
+  mon_canyon_ribcage_dark: 'resources/enemy/anim/mon_canyon_ribcage_dark_idle_v1/',
+  mon_canyon_stilt_neutral: 'resources/enemy/anim/mon_canyon_stilt_neutral_idle_v1/',
+  mon_canyon_saintvulture_dark: 'resources/enemy/anim/mon_canyon_saintvulture_dark_idle_v1/',
+  mon_canyon_bonecrow_dark: 'resources/enemy/anim/mon_canyon_bonecrow_dark_idle_v1/',
   mon_sky_twinwyvern: 'resources/enemy/anim/mon_sky_twinwyvern_idle_v1/',
   mon_sky_boneray: 'resources/enemy/anim/mon_sky_boneray_idle_v1/',
   mon_sky_ribwhale: 'resources/enemy/anim/mon_sky_ribwhale_idle_v1/',
@@ -5725,7 +5735,11 @@ export const ENEMY_ATK = {
   mon_centipi_side: { dir:'resources/enemy/anim/mon_centipi_side_atkprep_v1/', prep:true, slideFrom:16, sweep:'resources/enemy/anim/mon_centipi_side_atk_v1/' },   /* sweep＝A 本體：腹面 loop（Ray 剪的 mon_centipi_belly_even2_wave_cut，48 格），放大從操作盤線下快速斜上衝（-2550） */   // 巨型蜈蚣 A 的準備動作（ver -2546，Ray 剪的 centipi_dive_joined_v2_cut，22 格：側面轉正、下潛）；第 16 格（頭出畫面、只剩身體尾巴）起邊播邊往下滑出畫面（-2547），再接劃過（A 動畫還沒交，先用程式的劃過）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_atk_v1/', hit:48, fx:[{ frame:8, type:'rubble' }, { frame:44, type:'violetFlash' }] },   // A＝振翅接爆炎（64 格）；第 8 格下拍到底噴瓦礫、爆炎時紫白光芒籠罩畫面（ver -2525）
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7, near:1.35, nearIn:130 },   /* nearIn：拉近只花打到前的這幾毫秒（-2530 Ray「拉近的速度快一點」） */   // 訓練用聖徒 新架勢 攻擊（ver -2527，31 格；-2529 Ray「攻擊時要拉近撲前」打到那一格放大到 1.35）
-  mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_atk_v1/', hit:21 },   // 崩岩巨像 拳砸地（ver -2620，KF 第二輪，36 格）
+  mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_atk_v1/', hit:21 },
+  /* 卡耶爾群戰成員（ver -2623，Kling、快剪 24fps；片尾 B 停格約 1 秒）。hit＝主體最大那一格（交件單）。 */
+  mon_canyon_coffinbeetle_dark: { dir:'resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v2/', hit:29 },   // 一支到底（片尾回中立）
+  mon_canyon_bellwyrm_dark: { dir:'resources/enemy/anim/mon_canyon_bellwyrm_dark_atk_v1/', hit:50 },
+  mon_canyon_ribcage_dark: { dir:'resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1/', hit:17 },   // 噴火交程式（數值待 Ray，還沒做）   // 崩岩巨像 拳砸地（ver -2620，KF 第二輪，36 格）
   mon_stag_rot_neutral: { dir:'resources/enemy/anim/mon_stag_rot_neutral_atk_v1/', hit:17 },   // 腐鹿骸 角頂（ver -2620，KF 第二輪，30 格）
   mon_shinierforest_deernightmare: { dir:'resources/enemy/anim/mon_shinierforest_deernightmare_atk_v1/', hit:32 },   // 變異樹靈鹿主 仰天咆哮（ver -2620，KF 第二輪，55 格；攻擊＝延時同一支）
   mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_atk_v1/', hit:13 },   // E019 背負祭壇者 撲撞（ver -2517，29 格）
@@ -5744,10 +5758,14 @@ export const ENEMY_ENTER = {
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_MISS = {
+  mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20 },   // 卡耶爾群戰（ver -2623）
+  mon_canyon_stilt_neutral: { dir:'resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1/', hit:31 },
   mon_bear_nightmare: { dir:'resources/enemy/anim/mon_bear_nightmare_miss_v1/', hit:37 },   // 熊骸（夢魘）點錯＝爪擊（ver -2620，KF 第二輪，62 格）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, fx:[{ frame:48, type:'rubble' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
+  mon_canyon_bonecrab_dark: { dir:'resources/enemy/anim/mon_canyon_bonecrab_dark_delay_v1/', hit:16 },   // 卡耶爾群戰（ver -2623）
+  mon_canyon_ironpenitent_neutral: { dir:'resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1/', hit:40, rev:true },   // rev＝播完倒放回中立（Ray 11-15「鐵衣 R＝倒放」；目前只有群戰讀）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_burst_v1/', hit:48 },   // D＝爆炎（81 格；ver -2525 Ray 改：爆炎是 D，之後下一發攻擊 200%，見卡上 delayEmpowers）
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7 },   // 訓練用聖徒 新架勢 攻擊＝延時＝點錯（ver -2527，31 格，最後一格回到架勢）
   mon_saint_inspector: { dir:'resources/enemy/anim/mon_saint_inspector_delay_v1/', hit:23 },   // 監查者 翅膀揮動（ver -2620，KF 第二輪，39 格）

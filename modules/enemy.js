@@ -20,6 +20,7 @@ import { ENEMY_IDLE, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, GAME_CONFI
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
+import { GROUP_MEMBERS } from '../script/group_members.js';   // 群戰分層 → 原立繪的對位（自動產生，ver -2623）
 import * as groundShadow from './groundShadow.js';   // 接地陰影（ver -1702，葉節點）
 import { sakuraBurst } from './sakura.js';   // 鹿主的櫻花狂亂（ver -899）——同一支花瓣引擎，見 spawnSakura
 
@@ -1194,8 +1195,8 @@ function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; c
   return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[s])||null; }
 function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); if(c && c.sweep) loadClip(c.sweep); } }   // sweep＝A 本體（準備動作之後那一支，-2550）
 /* 這隻怪有沒有 M（點錯）動作：點錯播的是延時那一支（ENEMY_DELAY），有它就算有 M（ver -2523）。 */
-export function hasMissClip(){ return !!clipFor('miss'); }
-export function hasActionClips(){ return !!(clipFor('atk') || clipFor('delay')); }   // 這隻怪有攻擊／延時動畫嗎（ver -2496）
+export function hasMissClip(){ return groupCard ? groupHas('miss') : !!clipFor('miss'); }
+export function hasActionClips(){ return groupCard ? (groupHas('atk') || groupHas('delay')) : !!(clipFor('atk') || clipFor('delay')); }   // 這隻怪有攻擊／延時動畫嗎（ver -2496）
 let clipT=0, clipEl=null;
 /* 平時站遠（ENEMY_ATK 的 `far`，ver -2473）：用 CSS 的獨立 `scale` 屬性縮 —— 不碰 transform，受擊動畫照常疊上去。
    立繪本體、待機層、攻擊層三個都套（誰在畫面上就是誰）。 */
@@ -1204,6 +1205,7 @@ function farOf(en){ en=en||curCard(); const c=clipFor('atk',en); return (c && c.
 function applyFar(en){ const k=farOf(en); for(const el of [$('enemyImg'), idleEl, clipEl]) if(el){ el.style.transformOrigin=FAR_ORIGIN; el.style.scale = k===1 ? '' : String(k); } }
 /* 演一次；回傳「還要幾毫秒才打到玩家」（扣血延到那一格），沒演就回 0。 */
 export function playActionClip(kind, onDone, opts){   // opts.hold：播完停在最後一格、不回待機（交給 onDone 收，ver -2546 蜈蚣的 A 準備動作）
+  if(groupCard && groupCard.group && (kind==='delay' || kind==='miss')) return groupAction(kind);   // 群戰：逐人的 D／M（ver -2623）
   const c=clipFor(kind), L=c && clipCache[c.dir]; if(!L || !L.fr) return 0;
   const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, L.j); if(!r) return 0;
   clearTimeout(clipT); clearInterval(idleT); idleT=0;
@@ -1895,7 +1897,7 @@ function airAssault(en, opts){
 }
 export function onAssaultLand(){
   if(!sky){ const en=curCard(); if(isAirBio(en)) return airAssault(en);
-    if(groupCard && groupCard.group && (groupCard.group.atk || groupCard.group.acts)) return groupAttack();   // 群戰：隨機一人開槍（-2581）／逐人另交的動作（-2622）
+    if(groupCard && groupCard.group) return groupAttack();   // 群戰：隨機一人開槍（-2581）／照原立繪生成的逐人動作（-2623）
     if(en && en.assaultFx && en.assaultFx.type==='broadside') playBroadside(en.assaultFx); return playActionClip('atk'); }   // 一般怪：有攻擊動畫就演（ver -2472），回傳打到玩家的那一刻
   if(sky.lunge) return 0;
   const el=idleEl || $('enemyImg'); if(!el) return 0;
@@ -2261,9 +2263,12 @@ function buildGroup(en){
     if(G.atk)  loadMemberClip(G.atk+pre+n+'/').then(c=>{ if(c && groupCard===en) im._atk=c; });
     /* 受擊播倒地前兩格（ver -2620，見 memberHitFx）：只有疊了待機層的人用得到，同一份快取（preloadGroupCard 已暖過）。 */
     if(G.fall && G.idle) loadMemberClip(G.fall+pre+n+'/').then(c=>{ if(c && groupCard===en) im._fallc=c; });
-    /* 逐人另交的動作（`group.acts[n]`，ver -2622）：見 groupAttack 的「一次播完」那一支。 */
-    const act=G.acts && G.acts[n];
-    if(act && act.atk) loadMemberClip(act.atk.dir).then(c=>{ if(c && groupCard===en){ im._atk=c; im._act=act; } });
+    /* 照原立繪生成的逐人動畫（ver -2623，見 memberOf）：待機／攻擊／延時／點錯照 stem 查 config 的 ENEMY_* 表（鐵律 7：同一張表）。 */
+    const M=memberOf(G, n);
+    if(M){ im._mem=M;
+      const di=ENEMY_IDLE[M.stem]; if(di) loadMemberClip(di).then(c=>{ if(c && groupCard===en){ im._idle=mapClip(c, M); showMemberAnim(im); } });
+      for(const [key, tab] of MEMBER_ACTS){ const a=tab[M.stem]; if(a && a.dir) loadMemberClip(a.dir).then(c=>{ if(c && groupCard===en) im[key]=Object.assign(mapClip(c, M), { spec:a }); }); }
+    }
     g.appendChild(im);
   }
   startGroupAnim();
@@ -2287,7 +2292,7 @@ export function preloadGroupCard(key){
     if(G.idle) loadMemberClip(G.idle+pre+n+'/');
     if(G.atk)  loadMemberClip(G.atk+pre+n+'/');
     if(G.fall) loadMemberClip(G.fall+pre+n+'/');   // 倒地走 buildGroup 自己的讀法，這裡只是把圖暖進快取
-    if(G.acts && G.acts[n] && G.acts[n].atk) loadMemberClip(G.acts[n].atk.dir);
+    { const M=memberOf(G, n); if(M){ const di=ENEMY_IDLE[M.stem]; if(di) loadMemberClip(di); for(const [, tab] of MEMBER_ACTS){ const a=tab[M.stem]; if(a && a.dir) loadMemberClip(a.dir); } } }
     { const im=new Image(); im.src=G.dir+pre+n+'.webp'; }
   }
 }
@@ -2300,13 +2305,13 @@ function loadMemberClipRaw(dir){
 function showMemberAnim(im){
   if(im.classList.contains('eg-down') || im.classList.contains('eg-leaving')) return;
   if(!im._ov){ const ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im.after(ov); im._ov=ov; }
-  placeOnLayer(im._ov, im, im._idle.j); im._ov.src=im._idle.fr[0].src; im.style.opacity='0';
+  placeOnLayer(im._ov, im, im._idle.j); im._ov.style.scale=im._idle.flip?'-1 1':''; im._ov.src=im._idle.fr[0].src; im.style.opacity='0';
 }
 function dropMemberAnim(im){ if(im._ov){ im._ov.remove(); im._ov=null; } im._acting=false; im.style.opacity=''; }
 let groupAnimT=0;
 function startGroupAnim(){
   clearInterval(groupAnimT); groupAnimT=0;
-  const G=groupCard && groupCard.group; if(!G || !G.idle) return;
+  const G=groupCard && groupCard.group; if(!G || !(G.idle || GROUP_MEMBERS[G.dir])) return;
   const t0=performance.now();
   groupAnimT=setInterval(()=>{ const g=$('enemyGroup'); if(!g || !groupCard){ clearInterval(groupAnimT); groupAnimT=0; return; }
     const t=performance.now()-t0;
@@ -2314,37 +2319,56 @@ function startGroupAnim(){
       im._ov.src=c.fr[Math.floor(t*(c.j.fps||8)/1000+(+im.dataset.n||0)*3)%c.fr.length].src; }
   }, 1000/12);
 }
-/* ══ 逐人另交的動作（卡上 `group.acts[n]={ atk:{dir, hit}, map:[k,ox,oy] }`，ver -2622；卡耶爾石棺甲蟲第一支）══
-   動畫是用**原立繪**生成的（box 是立繪畫布座標），群戰的分層是排版縮放過的同一張 ⇒ `map` ＝立繪→分層畫布的縮放與位移
-   （量法：兩張的 alpha 外框對齊，誤差 <1%；數字是資料，寫在卡上，鐵律 1）。
-   跟空賊那一套不同的地方：一支到底（中立→撲擊→中立，不倒放）、這個人可以沒有待機（播的時候才疊一張、播完拿掉）、
-   疊在**整組最上面**（撲向鏡頭時要蓋過前排的人）。打到＝`hit` 那一格。 */
-function actJ(im){
-  const j=im._atk.j, m=im._act.map||[1,0,0], b=j.box||[0,0,(j.canvas||[1024,1536])[0],(j.canvas||[1024,1536])[1]];
-  return Object.assign({}, j, { canvas:[im.naturalWidth||1536, im.naturalHeight||1024], box:[b[0]*m[0]+m[1], b[1]*m[0]+m[2], b[2]*m[0], b[3]*m[0]] });
+/* ══ 照原立繪生成的逐人動畫（ver -2623，卡耶爾；-2622 的 `group.acts` 併進來）══
+   群戰的分層是「某一隻怪的立繪縮放、位移（可能左右翻）排上去的」，而逐隻的動畫是用**原立繪**生成的（box 是立繪畫布座標）。
+   `script/group_members.js`（`tools/group_member_map.py` 比 alpha 量出來的，鐵律 7：一處算）告訴我們每一層是誰（stem）、
+   怎麼換到分層畫布（map:[k,ox,oy,flip]）—— 載進來的那一刻就把 box 換好（mapClip），之後跟空賊那一套走同一條播放路。
+   動作（A／D／M）一支到底：疊到**整組最上層**（撲向鏡頭時蓋過前排）、打到＝表上的 `hit`、播完切回待機
+   （沒有待機的人播的時候才疊一張、播完拿掉）。表上 `rev:true` ＝播到底停一秒後倒放回中立（Ray 11-15「鐵衣 R＝倒放」）。
+   ⚠ 點錯沒有 M 的人借 D（同單人的 clipFor）。 */
+const MEMBER_ACTS=[['_atk', ENEMY_ATK], ['_dly', ENEMY_DELAY], ['_mis', ENEMY_MISS]];
+const REV_HOLD_SEC=1;   // 交件單：片尾 B 有快剪補的停格約 1 秒 —— 倒放從停格之前那一格起算
+function memberOf(G, n){ const t=GROUP_MEMBERS[G && G.dir]; return (t && t[n]) || null; }
+function mapClip(c, M){
+  const j=c.j, cv=j.canvas||[1024,1536], b=j.box||[0,0,cv[0],cv[1]], m=M.map, x=m[3] ? cv[0]-(b[0]+b[2]) : b[0];
+  return { fr:c.fr, flip:!!m[3], j:Object.assign({}, j, { canvas:M.canvas, box:[x*m[0]+m[1], b[1]*m[0]+m[2], b[2]*m[0], b[3]*m[0]] }) };
 }
-function groupActOnce(g, im){
-  const A=im._atk, J=actJ(im), N=A.fr.length, fps=A.j.fps||24;
-  const hit=Math.max(0, Math.min(N-1, im._act.atk.hit!=null ? im._act.atk.hit : N-1));
+function memberActOnce(g, im, A){
+  const J=A.j, N=A.fr.length, fps=J.fps||24, sp=A.spec||{};
+  const hit=Math.max(0, Math.min(N-1, sp.hit!=null ? sp.hit : N-1));
   const own=!im._ov; let ov=im._ov;
   if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=ov; }
   g.appendChild(ov);                                   // 最上層
-  im._acting=true; im._actJ=J; placeOnLayer(ov, im, J); ov.src=A.fr[0].src; im.style.opacity='0';
-  let i=0;
+  im._acting=true; im._actJ=J; placeOnLayer(ov, im, J); ov.style.scale=A.flip?'-1 1':''; ov.src=A.fr[0].src; im.style.opacity='0';
+  let i=0, dir=1;
+  const end=()=>{ clearInterval(t); im._acting=false; im._actJ=null;
+    if(own){ ov.remove(); im._ov=null; im.style.opacity=''; }
+    else { im.after(ov); ov.style.scale=im._idle.flip?'-1 1':''; ov.src=im._idle.fr[0].src; placeOnLayer(ov, im, im._idle.j); } };
   const t=setInterval(()=>{
     if(im._ov!==ov || !groupCard || im.classList.contains('eg-down')){ clearInterval(t); return; }
-    if(++i<N){ ov.src=A.fr[i].src; return; }
-    clearInterval(t); im._acting=false; im._actJ=null;
-    if(own){ ov.remove(); im._ov=null; im.style.opacity=''; }
-    else { im.after(ov); ov.src=im._idle.fr[0].src; placeOnLayer(ov, im, im._idle.j); }
+    if(dir>0){ if(++i<N){ ov.src=A.fr[i].src; return; }
+      if(!sp.rev){ end(); return; }
+      dir=-1; i=Math.max(0, N-1-Math.round(REV_HOLD_SEC*fps)); }
+    if(--i>=0){ ov.src=A.fr[i].src; return; }
+    end();
   }, 1000/fps);
   return Math.round(hit*1000/fps);
 }
-function groupAttack(){
-  const g=$('enemyGroup'), G=groupCard && groupCard.group; if(!g || !G || !(G.atk || G.acts)) return 0;
-  const cand=[...g.querySelectorAll('.eg-guard')].filter(im=>im._atk && (im._ov || im._act) && !im._acting && !im.classList.contains('eg-down') && !im.classList.contains('eg-leaving'));
+const memberLive=im=>!im._acting && !im.classList.contains('eg-down') && !im.classList.contains('eg-leaving');
+const memberClipOf=(im, kind)=> kind==='atk' ? im._atk : kind==='miss' ? (im._mis || im._dly) : im._dly;
+function groupHas(kind){ const g=$('enemyGroup'); return !!(g && [...g.querySelectorAll('.eg-guard')].some(im=>{ const c=memberClipOf(im, kind); return !!(c && c.spec); })); }   // 只算照原立繪生成的那幾支（空賊那一套照舊不算，行為不變）
+/* 延時／點錯（playActionClip 從這裡分流給群戰，ver -2623）：隨機挑一個有那一支的人演。 */
+function groupAction(kind){
+  const g=$('enemyGroup'); if(!g || !groupCard) return 0;
+  const cand=[...g.querySelectorAll('.eg-guard')].filter(im=>memberLive(im) && memberClipOf(im, kind) && memberClipOf(im, kind).spec);
   if(!cand.length) return 0;
-  const pick=cand[(Math.random()*cand.length)|0]; if(pick._act) return groupActOnce(g, pick);
+  const im=cand[(Math.random()*cand.length)|0]; return memberActOnce(g, im, memberClipOf(im, kind));
+}
+function groupAttack(){
+  const g=$('enemyGroup'), G=groupCard && groupCard.group; if(!g || !G) return 0;
+  const cand=[...g.querySelectorAll('.eg-guard')].filter(im=>im._atk && (im._ov || im._atk.spec) && memberLive(im));
+  if(!cand.length) return 0;
+  const pick=cand[(Math.random()*cand.length)|0]; if(pick._atk.spec) return memberActOnce(g, pick, pick._atk);
   /* `group.muzzle:false`（ver -2620，空賊 v3）＝火光已畫在格子裡，程式不畫；打到＝攻擊的最後一格（每支格數不一定一樣）。 */
   const im=pick, A=im._atk, N=A.fr.length, fps=A.j.fps||16,
         ff = G.muzzle===false ? N-1 : Math.min(N-1, G.flashFrame!=null ? G.flashFrame : 5);
