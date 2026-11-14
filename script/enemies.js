@@ -1208,7 +1208,10 @@ export const ENEMIES = {
       openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       assaultEvery:[3,5], assault:{ count:1, gap:0 },
       kind:'harm', riseFx:0, hitSe:null, tier:'C', atype:'P', stageScale:1, stack:0,
-      image:null, group:{ dir:'resources/enemy/canyon_swarm/fly2/', noShadow:[4], order:[1,2,3,4], hp:220 },
+      image:null, group:{ dir:'resources/enemy/canyon_swarm/fly2/', noShadow:[4], order:[1,2,3,4], hp:220,
+        /* 石棺甲蟲撲擊（ver -2622，TO_CODE_canyon 已交件：Kling，97 格 24fps，中立→撲擊→中立一支到底，第 44 格打到）。
+           map＝原立繪 1024×1536 → guard_1 分層的縮放與位移（兩張 alpha 外框對齊量的，誤差 <1%）。 */
+        acts:{ 1:{ atk:{ dir:'resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v1/', hit:44 }, map:[0.535, 489.4, 51.3] } } },
       hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
       hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],

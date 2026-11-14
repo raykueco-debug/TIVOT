@@ -1895,7 +1895,7 @@ function airAssault(en, opts){
 }
 export function onAssaultLand(){
   if(!sky){ const en=curCard(); if(isAirBio(en)) return airAssault(en);
-    if(groupCard && groupCard.group && groupCard.group.atk) return groupAttack();   // 群戰：隨機一人開槍（-2581）
+    if(groupCard && groupCard.group && (groupCard.group.atk || groupCard.group.acts)) return groupAttack();   // 群戰：隨機一人開槍（-2581）／逐人另交的動作（-2622）
     if(en && en.assaultFx && en.assaultFx.type==='broadside') playBroadside(en.assaultFx); return playActionClip('atk'); }   // 一般怪：有攻擊動畫就演（ver -2472），回傳打到玩家的那一刻
   if(sky.lunge) return 0;
   const el=idleEl || $('enemyImg'); if(!el) return 0;
@@ -2261,6 +2261,9 @@ function buildGroup(en){
     if(G.atk)  loadMemberClip(G.atk+pre+n+'/').then(c=>{ if(c && groupCard===en) im._atk=c; });
     /* 受擊播倒地前兩格（ver -2620，見 memberHitFx）：只有疊了待機層的人用得到，同一份快取（preloadGroupCard 已暖過）。 */
     if(G.fall && G.idle) loadMemberClip(G.fall+pre+n+'/').then(c=>{ if(c && groupCard===en) im._fallc=c; });
+    /* 逐人另交的動作（`group.acts[n]`，ver -2622）：見 groupAttack 的「一次播完」那一支。 */
+    const act=G.acts && G.acts[n];
+    if(act && act.atk) loadMemberClip(act.atk.dir).then(c=>{ if(c && groupCard===en){ im._atk=c; im._act=act; } });
     g.appendChild(im);
   }
   startGroupAnim();
@@ -2284,6 +2287,7 @@ export function preloadGroupCard(key){
     if(G.idle) loadMemberClip(G.idle+pre+n+'/');
     if(G.atk)  loadMemberClip(G.atk+pre+n+'/');
     if(G.fall) loadMemberClip(G.fall+pre+n+'/');   // 倒地走 buildGroup 自己的讀法，這裡只是把圖暖進快取
+    if(G.acts && G.acts[n] && G.acts[n].atk) loadMemberClip(G.acts[n].atk.dir);
     { const im=new Image(); im.src=G.dir+pre+n+'.webp'; }
   }
 }
@@ -2310,12 +2314,39 @@ function startGroupAnim(){
       im._ov.src=c.fr[Math.floor(t*(c.j.fps||8)/1000+(+im.dataset.n||0)*3)%c.fr.length].src; }
   }, 1000/12);
 }
+/* ══ 逐人另交的動作（卡上 `group.acts[n]={ atk:{dir, hit}, map:[k,ox,oy] }`，ver -2622；卡耶爾石棺甲蟲第一支）══
+   動畫是用**原立繪**生成的（box 是立繪畫布座標），群戰的分層是排版縮放過的同一張 ⇒ `map` ＝立繪→分層畫布的縮放與位移
+   （量法：兩張的 alpha 外框對齊，誤差 <1%；數字是資料，寫在卡上，鐵律 1）。
+   跟空賊那一套不同的地方：一支到底（中立→撲擊→中立，不倒放）、這個人可以沒有待機（播的時候才疊一張、播完拿掉）、
+   疊在**整組最上面**（撲向鏡頭時要蓋過前排的人）。打到＝`hit` 那一格。 */
+function actJ(im){
+  const j=im._atk.j, m=im._act.map||[1,0,0], b=j.box||[0,0,(j.canvas||[1024,1536])[0],(j.canvas||[1024,1536])[1]];
+  return Object.assign({}, j, { canvas:[im.naturalWidth||1536, im.naturalHeight||1024], box:[b[0]*m[0]+m[1], b[1]*m[0]+m[2], b[2]*m[0], b[3]*m[0]] });
+}
+function groupActOnce(g, im){
+  const A=im._atk, J=actJ(im), N=A.fr.length, fps=A.j.fps||24;
+  const hit=Math.max(0, Math.min(N-1, im._act.atk.hit!=null ? im._act.atk.hit : N-1));
+  const own=!im._ov; let ov=im._ov;
+  if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=ov; }
+  g.appendChild(ov);                                   // 最上層
+  im._acting=true; im._actJ=J; placeOnLayer(ov, im, J); ov.src=A.fr[0].src; im.style.opacity='0';
+  let i=0;
+  const t=setInterval(()=>{
+    if(im._ov!==ov || !groupCard || im.classList.contains('eg-down')){ clearInterval(t); return; }
+    if(++i<N){ ov.src=A.fr[i].src; return; }
+    clearInterval(t); im._acting=false; im._actJ=null;
+    if(own){ ov.remove(); im._ov=null; im.style.opacity=''; }
+    else { im.after(ov); ov.src=im._idle.fr[0].src; placeOnLayer(ov, im, im._idle.j); }
+  }, 1000/fps);
+  return Math.round(hit*1000/fps);
+}
 function groupAttack(){
-  const g=$('enemyGroup'), G=groupCard && groupCard.group; if(!g || !G || !G.atk) return 0;
-  const cand=[...g.querySelectorAll('.eg-guard')].filter(im=>im._atk && im._ov && !im._acting && !im.classList.contains('eg-down') && !im.classList.contains('eg-leaving'));
+  const g=$('enemyGroup'), G=groupCard && groupCard.group; if(!g || !G || !(G.atk || G.acts)) return 0;
+  const cand=[...g.querySelectorAll('.eg-guard')].filter(im=>im._atk && (im._ov || im._act) && !im._acting && !im.classList.contains('eg-down') && !im.classList.contains('eg-leaving'));
   if(!cand.length) return 0;
+  const pick=cand[(Math.random()*cand.length)|0]; if(pick._act) return groupActOnce(g, pick);
   /* `group.muzzle:false`（ver -2620，空賊 v3）＝火光已畫在格子裡，程式不畫；打到＝攻擊的最後一格（每支格數不一定一樣）。 */
-  const im=cand[(Math.random()*cand.length)|0], A=im._atk, N=A.fr.length, fps=A.j.fps||16,
+  const im=pick, A=im._atk, N=A.fr.length, fps=A.j.fps||16,
         ff = G.muzzle===false ? N-1 : Math.min(N-1, G.flashFrame!=null ? G.flashFrame : 5);
   im._acting=true; placeOnLayer(im._ov, im, A.j);
   let i=0, dir=1; im._ov.src=A.fr[0].src;
@@ -2344,7 +2375,7 @@ function groupMuzzle(im, j){
 function placeGroupShadows(){
   const g=$('enemyGroup'); if(!g || !groupCard) return;
   for(const im of g.querySelectorAll('.eg-guard')){ if(im._sh) groundShadow.place(im, im._sh);
-    if(im._ov){ const c=im._acting ? im._atk : im._idle; if(c) placeOnLayer(im._ov, im, c.j); } }   // 待機／攻擊層跟著重擺（-2581）
+    if(im._ov){ const j=im._acting ? (im._actJ || (im._atk && im._atk.j)) : (im._idle && im._idle.j); if(j) placeOnLayer(im._ov, im, j); } }   // 待機／攻擊層跟著重擺（-2581）
 }
 try{ window.addEventListener('resize', ()=>placeGroupShadows()); }catch(_){}
 /* 最後一發子彈打在 `#top` 的哪一點（px，#top 相對）。combat 的 gunHitOnEnemy 每一發都記。 */

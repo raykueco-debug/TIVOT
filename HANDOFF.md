@@ -37,6 +37,11 @@
 - ✔ 8202 實測：獅口水道、蓄水池（影片＋水面）、硝坑在遊戲裡有畫；離格會收、靜態圖會放回來；進戰鬥會停。光束／雲／水蝕洞離線出圖比對過。⚠ **手機沒測**（桌機一格 0.1～12 ms，瀑布底那種影片＋水面＋落水＋雲最重）。
 - ⚠ 交件只有 day 的格子，其他時段照舊靜態（例如黃昏的鏡湖沒有水面動態）。⚠ 沼澤獻祭處、湖岸的影片還沒交，先在靜態圖上跑水。西壕的天空層還沒交。
 
+**程式（3060，11-15，ver -2622）**
+- **卡耶爾石棺甲蟲撲擊接上**（`TO_CODE_canyon` 唯一標「已交件」的那支）：群戰卡新欄位 `group.acts[n]={ atk:{dir,hit}, map:[k,ox,oy] }` —— 動畫是原立繪座標，`map` 換到群戰分層（甲蟲 0.535／489.4／51.3，alpha 外框對齊量的）。播法：一支到底不倒放、沒有待機的人播的時候才疊一張、**疊在整組最上面**（撲向鏡頭蓋過前排）、第 44 格打到、播完拿掉。實作 `enemy.groupActOnce`。✔ 8202 手機尺寸實測：會播、會蓋在最上面、播完分層換回。⚠ 手機沒測、97 格 5.6 MB。
+- ⚠ 工作區裡另外有卡耶爾 bellwyrm／bonecrab／coffinbeetle v2／pilgrimmass 等資料夾，**沒進版控、交件單也沒寫已交** —— 敵人副理還在做，沒接。
+- 盤過：其他 `resources/enemy/anim/` 的資料夾都已接上或已被新版取代；背景影片表與程式層表 `--check` 同步。
+
 **動畫副理**：`tools/anim/` 與 ComfyUI `tivot_wan/` 兩台已同步（版控較新）；`TIVOT_STEPS/MOBIUS` 版 `tivot_wan.py` 與 `tivot_latent_loop.py` 這台沒有，要 3060 推。待 Ray：6 支插畫放哪一幕（32 米夏行軍、grifonback、canyon_army、torsten_sit、槍機特寫、deck_long）、`cutin_dual_nemo`／`anya_curlfloat` 要不要接、舊影片回收。
 
 **敵人副理**：KF 審閱清單 `resources/enemy/anim/_敵人線_盤點與審閱_1109.md`；第二輪 12 隻逐格盤點 `_KF_第二輪_1109.md` §四；空賊 v3（每人三支動作同框）已交。待 Ray：animechk「空賊之後」頁剪片、熊骸 husk 透明版（`_neutral_refs/s3_kf/redo/mon_bear_husk_alpha*.png` 三版待選）。
