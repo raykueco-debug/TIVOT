@@ -34,3 +34,8 @@ alpha：GPT 直接出圖只有甲蟲、朝聖者團塊、鐵衣中立是真 alph
 | 高蹺細影 I | 「站太直了 沒有戰鬥感」 | GPT 重出前傾備戰 → `kf_canyon_stilt_I_neutral2_alpha.png` | `stilt_N` |
 
 Wan：`tools/anim/canyon_kf_run.sh`（FLF，480x720，FIT 0.78，一個種子；這台沒有 motionfix LoRA，用預設 4 步），輸出 ComfyUI `out/canyon_kf/`。
+
+## 11-14 深夜：Wan 跑完（17 段）
+- 原片 ComfyUI `out/canyon_kf/`，自動初剪 `out/auto/canyon_<段>/`（animechk 篩「canyon_」）。
+- 碰邊：`iron_D_DN` 7 格、`ribcage_A_AB` 2 格；其餘 0。
+- 等 Ray 剪 → 交件。程式效果另寫在 `resources/enemy/anim/TO_CODE_canyon.md`。
