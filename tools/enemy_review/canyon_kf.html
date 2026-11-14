@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>卡耶爾 KF 審閱</title>
+<style>
+:root{--bg:#121318;--panel:#1c1e26;--line:#2c2f3a;--ink:#e6e3dc;--dim:#8d8f99;--gold:#d8b66a;--ok:#6fbf8a;--warn:#e0a052;--bad:#e07a7a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,"Microsoft JhengHei",sans-serif}
+#bar{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:#0d0e12ee;border-bottom:1px solid var(--line)}
+#bar h1{font-size:16px;margin:0 8px 0 0;color:var(--gold)}
+#bar .sub{color:var(--dim);font-size:12px}
+button{background:#2a2d38;color:var(--ink);border:1px solid #3a3e4c;border-radius:6px;padding:5px 12px;cursor:pointer;font:inherit}
+button:hover{border-color:var(--gold)}button.pri{background:#5a4a24;border-color:var(--gold)}
+#msg{color:var(--ok);font-size:13px}
+.row{display:flex;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);align-items:flex-start}
+.head{width:200px;min-width:200px;position:sticky;left:0}
+.nm{font-size:15px;font-weight:700;color:var(--gold)}
+.meta{color:var(--dim);font-size:12px;margin-top:4px}
+.btns{display:flex;gap:6px;margin:8px 0}
+.st{font-size:12px;color:var(--dim)}.st.sub{color:var(--ok)}.st.dirty{color:var(--warn)}
+.card{width:260px}
+.card .t{font-size:13px;color:var(--dim);margin-bottom:4px}
+.card .t b{color:var(--ink)}
+.pic{width:260px;height:390px;object-fit:contain;border-radius:4px;display:block;cursor:zoom-in;background:#2c2e38}
+.pic.light{background:#e8e8e8}
+.verdict{display:flex;gap:4px;margin:6px 0 4px}
+.verdict label{font-size:12px;padding:2px 8px;border:1px solid #3a3e4c;border-radius:10px;cursor:pointer;color:var(--dim)}
+.verdict input{display:none}
+.verdict input:checked+span{color:#fff}
+.verdict label:has(input[value=ok]:checked){border-color:var(--ok);background:#1f3a2a}
+.verdict label:has(input[value=redo]:checked){border-color:var(--bad);background:#3a1f22}
+.verdict label:has(input[value=tweak]:checked){border-color:var(--warn);background:#3a2f1f}
+.note{font-size:12px;color:var(--warn);margin:2px 0 4px}
+textarea{width:260px;height:80px;resize:vertical;background:#15161c;color:var(--ink);border:1px solid #33364a;border-radius:5px;padding:6px;font:13px/1.45 inherit}
+textarea:focus{outline:none;border-color:var(--gold)}textarea.has{border-color:#7a6a3a}
+#zoom{position:fixed;inset:0;background:#000d;display:none;z-index:20;align-items:center;justify-content:center;cursor:zoom-out}
+#zoom img{max-width:96vw;max-height:96vh}
+</style></head><body>
+<div id="bar">
+ <h1>卡耶爾山谷 KF 審閱</h1>
+ <span class="sub">每張選「過／小修／重出」＋寫意見；點圖放大；「淺底」切換底色看邊緣</span>
+ <button id="bgBtn">淺底</button>
+ <button id="saveAll">全部儲存</button>
+ <button id="submitAll" class="pri">全部提交</button>
+ <span id="msg"></span>
+</div>
+<div id="list"></div>
+<div id="zoom"><img></div>
+<script>
+const K='../../resources/enemy/_neutral_refs/canyon_kf/';
+const ROWS=[
+ ['colossus','崩岩巨像','ref_colossus_dark.png',[['M','咆哮','kf_canyon_colossus_M_roar_alpha.png','人比原圖小一圈']]],
+ ['coffinbeetle','石棺甲蟲','ref_coffinbeetle_dark.png',[['A','撲擊','kf_canyon_coffinbeetle_A_pounce.png','鉗的模糊離左右邊 9px']]],
+ ['bonecrab','骸殼蟹','ref_bonecrab_dark.png',[['D','雙鉗張開','kf_canyon_bonecrab_D_spread_alpha2.png','鉗的模糊貼左右邊']]],
+ ['pilgrimmass','朝聖者團塊','ref_pilgrimmass_dark.png',[['M','張手','kf_canyon_pilgrimmass_M_spread.png','']]],
+ ['bellwyrm','喪鐘蠕蟲','ref_bellwyrm_dark.png',[['A','朝鏡頭攻擊','kf_canyon_bellwyrm_A_strike_alpha.png','鐘口模糊貼右邊']]],
+ ['ironpenitent','鐵衣苦修者','ref_ironpenitent_dark.png',[['I','新中立（重畫 idle）','kf_canyon_ironpenitent_I_neutral.png','過了待機要用它重做'],['D','法杖砸擊','kf_canyon_ironpenitent_D_smash_alpha.png','錘頭離下緣 15px']]],
+ ['ribcage','肋籠獸','ref_ribcage_dark.png',[['A','噴火＋側移','kf_canyon_ribcage_A_tailfire_alpha.png','噴火的是長頸末端的嘴；火是平塗色塊；頸部模糊邊有淡白殘邊']]],
+ ['stilt','高蹺細影','ref_stilt_dark.png',[['I','新中立（重畫 idle）','kf_canyon_stilt_I_neutral_alpha.png','頂尖離上緣 11px'],['M','爪擊','kf_canyon_stilt_M_claw_alpha2.png','揮爪模糊邊有白色殘邊']]],
+];
+const LS='canyonkf_review_v1',LSS='canyonkf_submitted_v1',PG='?page=canyonkf';
+let notes={},submitted={};
+const $=s=>document.querySelector(s);
+const msg=t=>{$('#msg').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>$('#msg').textContent='',5000)};
+try{notes=JSON.parse(localStorage.getItem(LS)||'{}');submitted=JSON.parse(localStorage.getItem(LSS)||'{}')}catch(e){}
+const rowNotes=id=>Object.fromEntries(Object.entries(notes).filter(([k,v])=>k.split('|')[0]===id&&(v.text?.trim()||v.verdict)));
+function status(id){const el=document.getElementById('st_'+id),n=Object.keys(rowNotes(id)).length,s=submitted[id];
+ const dirty=s&&JSON.stringify(rowNotes(id))!==s.sig;el.className='st'+(s&&!dirty?' sub':dirty?' dirty':'');
+ el.textContent=n?(s?(dirty?`${n} 則・提交後有改動`:`${n} 則・已提交 ${s.at}`):`${n} 則・未提交`):(s?'已提交':'')}
+const touch=id=>{localStorage.setItem(LS,JSON.stringify(notes));status(id)};
+function card(id,k,title,src,warn){const c=document.createElement('div');c.className='card';
+ c.innerHTML=`<div class="t"><b>${title}</b></div><img class="pic" loading="lazy" src="${K}${src}">`+(warn?`<div class="note">⚠ ${warn}</div>`:'');
+ c.querySelector('img').onclick=e=>{$('#zoom img').src=e.target.src;$('#zoom').style.display='flex'};
+ if(k){const key=id+'|'+k,cur=()=>notes[key]||(notes[key]={text:'',verdict:'',file:src});
+  const v=document.createElement('div');v.className='verdict';
+  v.innerHTML=[['ok','過'],['tweak','小修'],['redo','重出']].map(([val,lab])=>`<label><input type="radio" name="${key}" value="${val}"><span>${lab}</span></label>`).join('');
+  const sel=(notes[key]||{}).verdict;if(sel)v.querySelector(`input[value=${sel}]`).checked=true;
+  v.onchange=e=>{cur().verdict=e.target.value;cur().at=new Date().toISOString();touch(id)};
+  const ta=document.createElement('textarea');ta.placeholder=`${title}・意見`;ta.value=(notes[key]||{}).text||'';ta.classList.toggle('has',!!ta.value.trim());
+  ta.oninput=()=>{cur().text=ta.value;cur().at=new Date().toISOString();ta.classList.toggle('has',!!ta.value.trim());touch(id)};
+  c.append(v,ta)}
+ return c}
+function build(){const L=$('#list');
+ ROWS.forEach(([id,name,ref,kfs])=>{const r=document.createElement('div');r.className='row';
+  const h=document.createElement('div');h.className='head';
+  h.innerHTML=`<div class="nm">${name}</div><div class="meta">${kfs.map(k=>k[0]+' '+k[1]).join('<br>')}</div><div class="btns"><button class="sv">儲存</button><button class="pri sb">提交</button></div><div class="st" id="st_${id}"></div>`;
+  h.querySelector('.sv').onclick=()=>save();h.querySelector('.sb').onclick=()=>submit([id]);
+  r.append(h,card(id,null,'原圖',ref,''));kfs.forEach(([k,t,f,w])=>r.append(card(id,k,`${k}・${t}`,f,w)));
+  L.appendChild(r);status(id)})}
+async function post(u,b){return (await fetch(u+PG,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)})).json()}
+async function save(){localStorage.setItem(LS,JSON.stringify(notes));try{const r=await post('/review/save',{at:new Date().toISOString(),notes});msg(r.ok?'已儲存':'儲存失敗：'+r.error)}catch(e){msg('已存在瀏覽器（伺服器沒回應）')}}
+async function submit(ids){const rows=ids.map(id=>{const x=ROWS.find(r=>r[0]===id);return{id,name:x[1],notes:rowNotes(id)}}).filter(r=>Object.keys(r.notes).length);
+ if(!rows.length){msg('沒有意見可提交');return}await save();
+ try{const r=await post('/review/submit',{at:new Date().toISOString(),page:'卡耶爾 KF',rows});if(!r.ok)throw new Error(r.error);
+  const at=new Date().toLocaleString('zh-TW',{hour12:false});rows.forEach(x=>submitted[x.id]={at,sig:JSON.stringify(rowNotes(x.id))});
+  localStorage.setItem(LSS,JSON.stringify(submitted));ROWS.forEach(r=>status(r[0]));msg(`已提交 ${rows.length} 隻 → ${r.path}`)}catch(e){msg('提交失敗：'+e.message)}}
+$('#saveAll').onclick=save;$('#submitAll').onclick=()=>submit(ROWS.map(r=>r[0]));
+$('#bgBtn').onclick=()=>{const on=!document.querySelector('.pic.light');document.querySelectorAll('.pic').forEach(i=>i.classList.toggle('light',on));$('#bgBtn').textContent=on?'深底':'淺底'};
+$('#zoom').onclick=()=>$('#zoom').style.display='none';
+(async()=>{try{const d=await (await fetch('/review/draft'+PG)).json();if(d.notes)for(const k in d.notes)if(!notes[k]||(d.notes[k].at||'')>(notes[k].at||''))notes[k]=d.notes[k]}catch(e){}build()})();
+</script></body></html>
