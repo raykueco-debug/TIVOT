@@ -1352,3 +1352,35 @@ when	from	to	reason
 20261112-133314	resources/background/_layers_gpt/out/northport/northport_square_bf__nosmoke.png	_recycle/resources/background/_layers_gpt/out/northport/northport_square_bf__nosmoke.png	左方煙沒去掉，重做
 20261112-143139	resources/background/_layers_gpt/out/northport/northport_north_bf__nosmoke.png	_recycle/resources/background/_layers_gpt/out/northport/northport_north_bf__nosmoke.png	北區火要拿掉，換成去煙＋去火版
 20261114-003731	resources/background/_layers_gpt/out/dunmor/dunmor__bogoffer__base__sky.png	_recycle/resources/background/_layers_gpt/out/dunmor/dunmor__bogoffer__base__sky.png	11-14 bogoffer GPT 天空層放錯場景（棧道圖），重出
+20261114-173121	resources/background/anim/belisar/belisar_rooffall_day_watermask.png	_recycle/resources/background/anim/belisar/belisar_rooffall_day_watermask.png	11-14 Ray：此景無水／地面無水，拿掉水面遮罩
+20261114-173121	resources/background/anim/belisar/belisar_stairwell_base_watermask.png	_recycle/resources/background/anim/belisar/belisar_stairwell_base_watermask.png	11-14 Ray：此景無水／地面無水，拿掉水面遮罩
+20261114-173121	resources/background/anim/ruins/shinier_ruins_darkbridge_base_watermask.png	_recycle/resources/background/anim/ruins/shinier_ruins_darkbridge_base_watermask.png	11-14 Ray：此景無水／地面無水，拿掉水面遮罩
+20261114-173121	resources/background/anim/ruins/shinier_ruins_darkbridge_base_flowmask.png	_recycle/resources/background/anim/ruins/shinier_ruins_darkbridge_base_flowmask.png	11-14 Ray：此景無水／地面無水，拿掉水面遮罩
+20261114-173121	resources/background/anim/tomb/tomb_tombniche_base_watermask.png	_recycle/resources/background/anim/tomb/tomb_tombniche_base_watermask.png	11-14 Ray：此景無水／地面無水，拿掉水面遮罩
+20261114-173121	resources/background/anim/ruins/shinier_ruins_well_base_watermask.png	_recycle/resources/background/anim/ruins/shinier_ruins_well_base_watermask.png	11-14 Ray：此景無水／地面無水，拿掉水面遮罩
+20261114-173121	resources/background/anim/ruins/shinier_ruins_well_base_flowmask.png	_recycle/resources/background/anim/ruins/shinier_ruins_well_base_flowmask.png	11-14 Ray：此景無水／地面無水，拿掉水面遮罩
+20261114-173121	resources/background/anim/belisar/belisar_draincliff_day_watermask.png	_recycle/resources/background/anim/belisar/belisar_draincliff_day_watermask.png	11-14 Ray：此景無水／地面無水，拿掉水面遮罩
+20261114-173121	resources/background/anim/lake/lake_cave_day_watermask.png	_recycle/resources/background/anim/lake/lake_cave_day_watermask.png	11-14 Ray：此景無水／地面無水，拿掉水面遮罩
+20261114-173641	resources/background/anim/belisar/belisar_stillpool_sep_v1.mp4	_recycle/resources/background/anim/belisar/belisar_stillpool_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173642	resources/background/anim/belisar/belisar_waterjail_sep_v1.mp4	_recycle/resources/background/anim/belisar/belisar_waterjail_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173642	resources/background/anim/capital_outer/outer_river_dusk_sep_v1.mp4	_recycle/resources/background/anim/capital_outer/outer_river_dusk_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173642	resources/background/anim/dunmor/dunmor_boarstone_sep_v1.mp4	_recycle/resources/background/anim/dunmor/dunmor_boarstone_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173643	resources/background/anim/dunmor/dunmor_boglane_sep_v1.mp4	_recycle/resources/background/anim/dunmor/dunmor_boglane_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173643	resources/background/anim/dunmor/dunmor_ditche_sep_v1.mp4	_recycle/resources/background/anim/dunmor/dunmor_ditche_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173643	resources/background/anim/dunmor/dunmor_innerditch_sep_v1.mp4	_recycle/resources/background/anim/dunmor/dunmor_innerditch_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173644	resources/background/anim/fallen/fallen_basin_day_sep_v1.mp4	_recycle/resources/background/anim/fallen/fallen_basin_day_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173644	resources/background/anim/lake/lake_deadfall_day_sep_v1.mp4	_recycle/resources/background/anim/lake/lake_deadfall_day_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173644	resources/background/anim/lake/lake_eastshore_day_sep_v1.mp4	_recycle/resources/background/anim/lake/lake_eastshore_day_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173645	resources/background/anim/lake/lake_fallbase_day_sep_v1.mp4	_recycle/resources/background/anim/lake/lake_fallbase_day_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173645	resources/background/anim/lake/lake_inlet_day_sep_v1.mp4	_recycle/resources/background/anim/lake/lake_inlet_day_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173645	resources/background/anim/lake/lake_northshore_day_sep_v1.mp4	_recycle/resources/background/anim/lake/lake_northshore_day_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173645	resources/background/anim/shinier_forest/forest_shoal_day_aba_v1.mp4	_recycle/resources/background/anim/shinier_forest/forest_shoal_day_aba_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173646	resources/background/anim/shinier_forest/forest_valley_day_abcd_v1.mp4	_recycle/resources/background/anim/shinier_forest/forest_valley_day_abcd_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173646	resources/background/anim/ruins/ruins_shinier_deepspring_sep_v1.mp4	_recycle/resources/background/anim/ruins/ruins_shinier_deepspring_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173646	resources/background/anim/sofiaout/sofiaout_forecourt_abcd_v1.mp4	_recycle/resources/background/anim/sofiaout/sofiaout_forecourt_abcd_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173647	resources/background/anim/tomb/tomb_cistern_sep_v1.mp4	_recycle/resources/background/anim/tomb/tomb_cistern_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173647	resources/background/anim/tomb/tomb_mudpit_sep_v1.mp4	_recycle/resources/background/anim/tomb/tomb_mudpit_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173647	resources/background/anim/tomb/tomb_sump_sep_v1.mp4	_recycle/resources/background/anim/tomb/tomb_sump_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173647	resources/background/anim/tomb/tomb_sunkhall_sep_v1.mp4	_recycle/resources/background/anim/tomb/tomb_sunkhall_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173648	resources/background/anim/tomb/tomb_waterstair_sep_v1.mp4	_recycle/resources/background/anim/tomb/tomb_waterstair_sep_v1.mp4	11-14 水面改程式：換成水面固定版
+20261114-173659	resources/background/anim/tomb/tomb_shaft_sep_v1.mp4	_recycle/resources/background/anim/tomb/tomb_shaft_sep_v1.mp4	11-14 水面改程式：換成水面固定版
