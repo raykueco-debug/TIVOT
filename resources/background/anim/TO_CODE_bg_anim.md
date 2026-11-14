@@ -415,7 +415,7 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 羅賽爾廢城　內壕 | `anim/dunmor/` `dunmor_innerditch_base_watermask.png` | `dunmor/dunmor_innerditch_sep_v1.mp4`（水面固定版，✔ 已換） |
 | 石製遺蹟　沉水石坑 | `anim/fallen/` `fallen_basin_day_watermask.png` | `fallen/fallen_basin_day_sep_v1.mp4`（水面固定版，✔ 已換） |
 | 鏡湖　湖心石堤 | `anim/lake/` `lake_causeway_day_watermask.png` | `lake/lake_causeway_day_sep_v1.mp4`（水面固定版，✔ 已換）；⚠ 這格的程式水面**遠近擺幅要拉大**：`amp 0.5`、`persp 5`（最近處約最遠處的 6 倍，Ray：「看起來沒有距離感」） |
-| 鏡湖　水蝕洞 | `anim/lake/` `lake_cave_day_flowmask.png` | `lake/lake_cave_day_sep_v1.mp4`（水面固定版，⏳ Ray 審閱中） |
+| 鏡湖　水蝕洞 | `anim/lake/` `lake_cave_day_flowmask.png` | `lake/lake_cave_day_sep_v1.mp4`（水面固定版，✔ 已換）；⚠ 這格瀑布**再快一倍**（亮條約 420 px/s，仍 12fps），落點加**水霧**：從 flowmask 每一欄的最下緣隨機取點，同時約 46 團柔邊白霧（RGB 235,242,248，中心不透明→邊緣透明的圓形漸層），每團壽命 6 秒：半徑 14→60px、往外 ±70px、往上 55px、透明度 0→0.16→0（sin 曲線），`screen` 疊加（Ray：「水花霧狀緩慢飄開就好」） |
 | 鏡湖　倒木灣 | `anim/lake/` `lake_deadfall_day_watermask.png` | `lake/lake_deadfall_day_sep_v1.mp4`（水面固定版，✔ 已換） |
 | 鏡湖　東岸 | `anim/lake/` `lake_eastshore_day_watermask.png` | `lake/lake_eastshore_day_sep_v1.mp4`（水面固定版，✔ 已換） |
 | 鏡湖　瀑布底 | `anim/lake/` `lake_fallbase_day_watermask.png`＋`lake_fallbase_day_flowmask.png` | `lake/lake_fallbase_day_sep_v1.mp4`（水面固定版，✔ 已換） |
