@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>卡耶爾 Wan 審閱</title>
+<style>
+:root{--bg:#121318;--panel:#1c1e26;--line:#2c2f3a;--ink:#e6e3dc;--dim:#8d8f99;--gold:#d8b66a;--ok:#6fbf8a;--warn:#e0a052;--bad:#e07a7a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,"Microsoft JhengHei",sans-serif}
+#bar{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:#0d0e12ee;border-bottom:1px solid var(--line)}
+#bar h1{font-size:16px;margin:0 8px 0 0;color:var(--gold)}
+#bar .sub{color:var(--dim);font-size:12px}
+button{background:#2a2d38;color:var(--ink);border:1px solid #3a3e4c;border-radius:6px;padding:5px 12px;cursor:pointer;font:inherit}
+button:hover{border-color:var(--gold)}button.pri{background:#5a4a24;border-color:var(--gold)}button.on{border-color:var(--gold);color:var(--gold)}
+#msg{color:var(--ok);font-size:13px}
+.row{display:flex;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);align-items:flex-start}
+.head{width:210px;min-width:210px}
+.nm{font-size:15px;font-weight:700;color:var(--gold)}
+.meta{color:var(--dim);font-size:12px;margin-top:4px}
+.btns{display:flex;gap:6px;margin:8px 0}
+.st{font-size:12px;color:var(--dim)}.st.sub{color:var(--ok)}.st.dirty{color:var(--warn)}
+.card{width:240px}
+.card.full{width:260px}
+.card .t{font-size:13px;margin-bottom:4px;color:var(--ink)}
+.card .t small{color:var(--dim)}
+canvas{display:block;width:100%;border-radius:4px;background:#2c2e38;cursor:pointer}
+canvas.light{background:#e8e8e8}
+.verdict{display:flex;gap:4px;margin:6px 0 4px}
+.verdict label{font-size:12px;padding:2px 8px;border:1px solid #3a3e4c;border-radius:10px;cursor:pointer;color:var(--dim)}
+.verdict input{display:none}
+.verdict label:has(input[value=ok]:checked){border-color:var(--ok);background:#1f3a2a;color:#fff}
+.verdict label:has(input[value=tweak]:checked){border-color:var(--warn);background:#3a2f1f;color:#fff}
+.verdict label:has(input[value=redo]:checked){border-color:var(--bad);background:#3a1f22;color:#fff}
+textarea{width:100%;height:70px;resize:vertical;background:#15161c;color:var(--ink);border:1px solid #33364a;border-radius:5px;padding:6px;font:13px/1.45 inherit}
+textarea:focus{outline:none;border-color:var(--gold)}textarea.has{border-color:#7a6a3a}
+.fi{font-size:11px;color:var(--dim);margin-top:2px}
+</style></head><body>
+<div id="bar">
+ <h1>卡耶爾 Wan 審閱</h1>
+ <span class="sub">每列第一格＝整支連播；後面是各段。點畫面暫停／繼續。</span>
+ <button id="modeBtn" class="on">自動初剪</button>
+ <button id="bgBtn">淺底</button>
+ <button id="saveAll">全部儲存</button>
+ <button id="submitAll" class="pri">全部提交</button>
+ <span id="msg"></span>
+</div>
+<div id="list"></div>
+<script>
+const SRV='http://localhost:8130/';
+const LS='canyonwan_review_v1',LSS='canyonwan_submitted_v1',PG='?page=canyonwan';
+let notes={},submitted={},DATA,mode='auto',players=[];
+const $=s=>document.querySelector(s);
+const msg=t=>{$('#msg').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>$('#msg').textContent='',5000)};
+try{notes=JSON.parse(localStorage.getItem(LS)||'{}');submitted=JSON.parse(localStorage.getItem(LSS)||'{}')}catch(e){}
+// 一段 → 播放序列 [{src, ms}]
+function seq(s){
+ if(mode==='auto'&&s.autoFrames.length){const h=s.holds||s.autoFrames.map(()=>1),per=1000/(s.fps||24);
+  return s.autoFrames.map((f,i)=>({src:SRV+s.auto+'/'+f,ms:(h[i]||1)*per}))}
+ return s.rawFrames.map(f=>({src:SRV+s.raw+'/'+f,ms:1000/16}))}
+class P{constructor(cv,getSeq){this.cv=cv;this.ctx=cv.getContext('2d');this.get=getSeq;this.paused=false;this.vis=false;cv.onclick=()=>this.paused=!this.paused;this.reset()}
+ reset(){this.seq=this.get();this.imgs=this.seq.map(x=>{const i=new Image();i._s=x.src;return i});this.loaded=false;this.i=0;this.t=0;if(this.vis)this.load()}
+ load(){if(this.loaded)return;this.loaded=true;this.imgs.forEach(i=>i.src=i._s)}
+ tick(dt){if(!this.vis||!this.seq.length)return;if(!this.paused){this.t+=dt;while(this.t>=this.seq[this.i].ms){this.t-=this.seq[this.i].ms;this.i=(this.i+1)%this.seq.length;if(this.i===0)this.t-=500}}
+  const im=this.imgs[this.i];if(!im.complete||!im.naturalWidth)return;
+  if(this.cv.width!==im.naturalWidth){this.cv.width=im.naturalWidth;this.cv.height=im.naturalHeight}
+  this.ctx.clearRect(0,0,this.cv.width,this.cv.height);this.ctx.drawImage(im,0,0)}}
+const io=new IntersectionObserver(es=>es.forEach(e=>{const p=e.target._p;p.vis=e.isIntersecting;if(p.vis)p.load()}),{rootMargin:'300px'});
+let last=performance.now();(function loop(t){const dt=Math.min(100,t-last);last=t;players.forEach(p=>p.tick(dt));requestAnimationFrame(loop)})(last);
+const rowNotes=id=>Object.fromEntries(Object.entries(notes).filter(([k,v])=>k.split('|')[0]===id&&(v.text?.trim()||v.verdict)));
+function status(id){const el=document.getElementById('st_'+id),n=Object.keys(rowNotes(id)).length,s=submitted[id];
+ const dirty=s&&JSON.stringify(rowNotes(id))!==s.sig;el.className='st'+(s&&!dirty?' sub':dirty?' dirty':'');
+ el.textContent=n?(s?(dirty?`${n} 則・提交後有改動`:`${n} 則・已提交 ${s.at}`):`${n} 則・未提交`):(s?'已提交':'')}
+function noteUI(id,key,label,withVerdict){const box=document.createDocumentFragment();const cur=()=>notes[id+'|'+key]||(notes[id+'|'+key]={text:'',verdict:''});
+ const touch=()=>{cur().at=new Date().toISOString();localStorage.setItem(LS,JSON.stringify(notes));status(id)};
+ if(withVerdict){const v=document.createElement('div');v.className='verdict';
+  v.innerHTML=[['ok','過'],['tweak','剪片可救'],['redo','重跑']].map(([val,lab])=>`<label><input type="radio" name="${id}|${key}" value="${val}">${lab}</label>`).join('');
+  const sel=(notes[id+'|'+key]||{}).verdict;if(sel)v.querySelector(`input[value=${sel}]`).checked=true;
+  v.onchange=e=>{cur().verdict=e.target.value;touch()};box.append(v)}
+ const ta=document.createElement('textarea');ta.placeholder=label+'・註記';ta.value=(notes[id+'|'+key]||{}).text||'';ta.classList.toggle('has',!!ta.value.trim());
+ ta.oninput=()=>{cur().text=ta.value;ta.classList.toggle('has',!!ta.value.trim());touch()};box.append(ta);return box}
+function card(id,key,title,sub,getSeq,full){const c=document.createElement('div');c.className='card'+(full?' full':'');
+ c.innerHTML=`<div class="t">${title} <small>${sub}</small></div>`;const cv=document.createElement('canvas');c.append(cv);
+ const p=new P(cv,getSeq);cv._p=p;players.push(p);io.observe(cv);
+ const fi=document.createElement('div');fi.className='fi';c.append(fi);p.info=fi;
+ c.append(noteUI(id,key,title,true));return c}
+function build(){const L=$('#list');L.innerHTML='';players=[];
+ DATA.rows.forEach(r=>{const row=document.createElement('div');row.className='row';
+  const h=document.createElement('div');h.className='head';
+  h.innerHTML=`<div class="nm">${r.name}</div><div class="meta">${r.act}</div><div class="btns"><button class="sv">儲存</button><button class="pri sb">提交</button></div><div class="st" id="st_${r.id}"></div>`;
+  h.querySelector('.sv').onclick=save;h.querySelector('.sb').onclick=()=>submit([r.id]);
+  h.append(noteUI(r.id,'整體','整體',false));row.append(h);
+  row.append(card(r.id,'整支','整支連播',r.segs.map(s=>s.name.split('_').pop()).join('→'),()=>r.segs.flatMap(seq),true));
+  r.segs.forEach(s=>row.append(card(r.id,s.name,s.name.split('_').pop(),`${s.rawFrames.length} 格原片`,()=>seq(s))));
+  L.append(row);status(r.id)})}
+async function post(u,b){return (await fetch(u+PG,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)})).json()}
+async function save(){localStorage.setItem(LS,JSON.stringify(notes));try{const r=await post('/review/save',{at:new Date().toISOString(),notes});msg(r.ok?'已儲存':'儲存失敗：'+r.error)}catch(e){msg('已存在瀏覽器（伺服器沒回應）')}}
+async function submit(ids){const rows=ids.map(id=>{const x=DATA.rows.find(r=>r.id===id);return{id,name:x.name,notes:rowNotes(id)}}).filter(r=>Object.keys(r.notes).length);
+ if(!rows.length){msg('沒有註記可提交');return}await save();
+ try{const r=await post('/review/submit',{at:new Date().toISOString(),page:'卡耶爾 Wan',mode,rows});if(!r.ok)throw new Error(r.error);
+  const at=new Date().toLocaleString('zh-TW',{hour12:false});rows.forEach(x=>submitted[x.id]={at,sig:JSON.stringify(rowNotes(x.id))});
+  localStorage.setItem(LSS,JSON.stringify(submitted));DATA.rows.forEach(r=>status(r.id));msg(`已提交 ${rows.length} 隻 → ${r.path}`)}catch(e){msg('提交失敗：'+e.message)}}
+$('#saveAll').onclick=save;$('#submitAll').onclick=()=>submit(DATA.rows.map(r=>r.id));
+$('#modeBtn').onclick=()=>{mode=mode==='auto'?'raw':'auto';$('#modeBtn').textContent=mode==='auto'?'自動初剪':'Wan 原片 16fps';players.forEach(p=>p.reset())};
+$('#bgBtn').onclick=()=>{const on=!document.querySelector('canvas.light');document.querySelectorAll('canvas').forEach(c=>c.classList.toggle('light',on));$('#bgBtn').textContent=on?'深底':'淺底'};
+(async()=>{try{const d=await (await fetch('/review/draft'+PG)).json();if(d.notes)for(const k in d.notes)if(!notes[k]||(d.notes[k].at||'')>(notes[k].at||''))notes[k]=d.notes[k]}catch(e){}
+ DATA=await (await fetch('canyon_wan_data.json?'+Date.now())).json();build()})();
+</script></body></html>
