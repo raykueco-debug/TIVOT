@@ -26,7 +26,9 @@ Ray 11-15 規則：**待機 I 一律 Wan、攻擊依 Ray 分配走 Kling**；所
 - ⚠ **R 未定的**：動作停在 B（攻擊姿勢），播完回待機前要怎麼收（倒放／收勢／撤步）Ray 還沒指定 —— 先照現行通則（播完切回待機），等 Ray。
 - ⚠ 片尾（B）有快剪補足總長的停格約 1 秒（24 格）；「打到」用主體最大那一格。
 - ⚠ 容量偏大：攻擊每支 3.7～8.3 MB（Kling 720p 去背、撲到鏡頭前主體很大），待機每支 1.2～3.3 MB。要減格請告訴美術。
-- 待機 I 的另 7 隻（香爐蠍、崖縫吊屍者、餓獸、鐘殼蟲、鎖鏈餓犬、提燈小鬼、爬行朝聖者）Wan 跑中，跑完補交在這裡。
+- ✅ **11-15 補交：另 7 隻待機**（Ray 編排寫「交給 wan 自由發揮」或空白；Wan 從原深色立繪直接生，FIT 0.85，碰邊全 0，快剪 2 秒 48 格 24fps loop）：
+  `mon_canyon_censer_dark_idle_v1`／`mon_canyon_hanged_dark_idle_v1`／`mon_canyon_houndbeast_idle_v1`／`mon_canyon_bellmite_dark_idle_v1`／`mon_canyon_chainhound_dark_idle_v1`／`mon_canyon_lanternimp_dark_idle_v1`／`mon_canyon_crawler_dark_idle_v1`
+  ⇒ 程式端：`config.js` 的 `ENEMY_IDLE` 各加一行（鑰匙＝立繪檔名）即可；立繪與分層都沒換，**不必**重跑 group_member_map。
 
 ## （11-14）已交件 —— ⚠ 已被上面的 `atk_v2` 取代
 

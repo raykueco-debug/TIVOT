@@ -73,7 +73,9 @@ for n, por, wan, act, cutdir in KL:
         X, Y, sc = v2p(vx, vy); return X, Y, sc / s
     r['I'] = write(expand(os.path.join(OUT, 'auto', f'kling_{n}_idle')), P, i2p, f'{por}_idle_v1', True)
     report[n] = r
-for n, por, fit in [('vulture', 'mon_canyon_saintvulture_dark', 0.60), ('crow', 'mon_canyon_bonecrow_dark', 0.80)]:
+PORT_IDLE = [('vulture', 'mon_canyon_saintvulture_dark', 0.60), ('crow', 'mon_canyon_bonecrow_dark', 0.80)] +             [(p.split('_')[2], p, 0.85) for p in ('mon_canyon_censer_dark', 'mon_canyon_hanged_dark', 'mon_canyon_houndbeast', 'mon_canyon_bellmite_dark',
+                                                   'mon_canyon_chainhound_dark', 'mon_canyon_lanternimp_dark', 'mon_canyon_crawler_dark')]   # 11-15 剩下 7 隻（FIT 0.85）
+for n, por, fit in PORT_IDLE:
     print(n)
     d = os.path.join(OUT, 'auto', f'{por}_fit60_idle' if n == 'vulture' else f'{por}_idle')
     P = os.path.join(EN, por + '.webp'); cx, cy, s, px, py = to_green_xf(Image.open(P).convert('RGBA'), fit)
