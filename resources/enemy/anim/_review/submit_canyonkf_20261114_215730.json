@@ -1,0 +1,60 @@
+{
+ "at": "2026-11-14T13:57:30.037Z",
+ "page": "卡耶爾 KF",
+ "rows": [
+  {
+   "id": "colossus",
+   "name": "崩岩巨像",
+   "notes": {
+    "colossus|M": {
+     "text": "",
+     "verdict": "tweak",
+     "file": "kf_canyon_colossus_M_roar_alpha.png",
+     "at": "2026-11-14T13:55:47.888Z"
+    }
+   }
+  },
+  {
+   "id": "ironpenitent",
+   "name": "鐵衣苦修者",
+   "notes": {
+    "ironpenitent|D": {
+     "text": "可以讓原中立當過渡幀",
+     "verdict": "",
+     "file": "kf_canyon_ironpenitent_D_smash_alpha.png",
+     "at": "2026-11-14T13:56:19.988Z"
+    }
+   }
+  },
+  {
+   "id": "ribcage",
+   "name": "肋籠獸",
+   "notes": {
+    "ribcage|A": {
+     "text": "火太卡通了　不如拿掉火給程式跑看看",
+     "verdict": "",
+     "file": "kf_canyon_ribcage_A_tailfire_alpha.png",
+     "at": "2026-11-14T13:56:52.364Z"
+    }
+   }
+  },
+  {
+   "id": "stilt",
+   "name": "高蹺細影",
+   "notes": {
+    "stilt|M": {
+     "text": "用原圖當爪擊",
+     "verdict": "",
+     "file": "kf_canyon_stilt_M_claw_alpha2.png",
+     "at": "2026-11-14T13:57:09.392Z"
+    },
+    "stilt|I": {
+     "text": "站太直了　沒有戰鬥感",
+     "verdict": "",
+     "file": "kf_canyon_stilt_I_neutral_alpha.png",
+     "at": "2026-11-14T13:57:22.198Z"
+    }
+   }
+  }
+ ]
+}

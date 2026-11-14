@@ -20,3 +20,17 @@
 不出 KF 的（照規則）：聖面鷲、骨鴉的 A（閃現消失／黑影劃過／閃現復歸 —— 程式演出，不需 KF）；其餘寫「交給 wan 自由發揮」的格；崩岩巨像 D（Ray：已有動畫）。
 
 alpha：GPT 直接出圖只有甲蟲、朝聖者團塊、鐵衣中立是真 alpha；其餘先出白底或畫上去的棋盤格，另開新串請 GPT 轉真透明（它用程式去背），收件逐張量過：主體不透明 ≥95%、四角 alpha 0。
+
+## 11-14 晚：Ray 審閱結果（`submit_canyonkf_20261114_215730.json`）與處理
+
+| 敵人 | Ray | 處理 | Wan 輸入（`wan/`） |
+|---|---|---|---|
+| 石棺甲蟲 A／骸殼蟹 D／朝聖者團塊 M／喪鐘蠕蟲 A | 未標＝過 | 照用 | `coffin_*`／`crab_*`／`pilgrim_*`／`wyrm_*` |
+| 崩岩巨像 M | 小修（沒寫字） | 讀成「人比原圖小」：對齊時等比放回（bbox 法受寬度限制，只放大到 1.013） | `colossus_*` |
+| 鐵衣苦修者 I | 未標＝過 | 新中立當 A | `iron_N` |
+| 鐵衣苦修者 D | 「可以讓原中立當過渡幀」 | 三段：新中立→原圖（蓄力）→砸擊→新中立 | `iron_N`→`iron_W`→`iron_D`→`iron_N` |
+| 肋籠獸 A | 「火太卡通了 不如拿掉火給程式跑」 | GPT 去火重畫（嘴照張、口內發光）→ `kf_canyon_ribcage_A_nofire_alpha.png`；**火交程式** | `ribcage_*` |
+| 高蹺細影 M | 「用原圖當爪擊」 | B＝原圖 `ref_stilt_dark` | `stilt_M` |
+| 高蹺細影 I | 「站太直了 沒有戰鬥感」 | GPT 重出前傾備戰 → `kf_canyon_stilt_I_neutral2_alpha.png` | `stilt_N` |
+
+Wan：`tools/anim/canyon_kf_run.sh`（FLF，480x720，FIT 0.78，一個種子；這台沒有 motionfix LoRA，用預設 4 步），輸出 ComfyUI `out/canyon_kf/`。
