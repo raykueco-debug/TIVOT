@@ -14,5 +14,13 @@ want wyrm    && I wyrm    9131 "a bell wyrm monster idles in place, its segmente
 want iron    && I iron    9141 "a hulking armored iron penitent idles in place, natural slow breathing, shoulders rising and falling, cloth and chains swaying"
 want ribcage && I ribcage 9151 "a ribcage beast idles in place, its long segmented neck slowly swaying, the glow inside its ribcage pulsing, cloth swaying"
 want stilt   && I stilt   9161 "a thin stilt shade monster idles in its crouched ready stance, natural slow breathing, claws twitching, cloth strips swaying"
+
+
+
+# 11-15 Ray：「再把兩個飛行型的idle跑完」—— 聖面鷲、骨鴉（攻擊是程式的閃現黑影，沒有 Kling 片 ⇒ 直接用深色版立繪）；用 tivot_wan 內建 flyer 提示詞
+E2="C:/Users/User/Desktop/TIVOT/resources/enemy"
+F(){ env TIVOT_GEN=480x720 TIVOT_FIT=0.80 PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 tivot_wan.py --files "$E2/$1.webp" --mode idle --style flyer --length 49 --fps 16 --seed $2 --out out/kling_idle >> $LOG 2>&1; echo "done $1" >> $LOG; }
+want vulture && F mon_canyon_saintvulture_dark 9171
+want crow    && F mon_canyon_bonecrow_dark 9181
 PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 edge_check.py out/kling_idle/* >> $LOG 2>&1
 echo ALLDONE >> $LOG
