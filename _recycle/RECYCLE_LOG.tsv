@@ -1392,3 +1392,4 @@ when	from	to	reason
 20261115-012552	resources/enemy/anim/mon_canyon_ironpenitent_dark_idle_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_dark_idle_v1	卡耶爾交件座標錯（新中立不是原立繪），改掛新立繪 _neutral 重交
 20261115-012552	resources/enemy/anim/mon_canyon_stilt_dark_miss_v1	_recycle/resources/enemy/anim/mon_canyon_stilt_dark_miss_v1	卡耶爾交件座標錯（新中立不是原立繪），改掛新立繪 _neutral 重交
 20261115-012552	resources/enemy/anim/mon_canyon_stilt_dark_idle_v1	_recycle/resources/enemy/anim/mon_canyon_stilt_dark_idle_v1	卡耶爾交件座標錯（新中立不是原立繪），改掛新立繪 _neutral 重交
+20261115-224842	resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v2	_recycle/resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v2	Ray 的 cut 取代（export/kling_coffin_ABA_16x9_3s_cut）

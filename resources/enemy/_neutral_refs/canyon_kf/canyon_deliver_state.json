@@ -1,8 +1,11 @@
 {
  "mon_canyon_coffinbeetle_dark_atk_v2": {
-  "source": "auto/kling_coffin_atk",
-  "kind": "快剪（auto_cut）",
-  "at": null
+  "source": "export/kling_coffin_ABA_16x9_3s_cut",
+  "kind": "Ray 的 cut",
+  "at": "11-15 22:48",
+  "mtime": 1794754115.3030207,
+  "frames": 27,
+  "peak": 19
  },
  "mon_canyon_coffinbeetle_dark_idle_v1": {
   "source": "auto/kling_coffin_idle",
