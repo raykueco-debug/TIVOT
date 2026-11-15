@@ -83,6 +83,11 @@ def build_items():
         if n == 'coffin':   # 11-15 Ray：單圖重跑／AB 重跑（A＝主體 55% 那張、B＝GPT 不出框版）→ 去綠幕放 monsters/kling_coffin_*，Ray 在 chk 剪
             sk2 = min(1080 * 0.55 / wim.width, 1920 * 0.55 / wim.height); ox2, oy2 = (1080 - round(wim.width * sk2)) // 2, (1920 - round(wim.height * sk2)) // 2
             alts['monsters/kling_coffin_single_3s'] = alts['monsters/kling_coffin_AB_inframe_3s'] = lambda x, y, tx=tx, ty=ty, sk=sk2, oxk=ox2, oyk=oy2, k=k: ((x / k - oxk) / sk - tx, (y / k - oyk) / sk - ty, 1 / (k * sk))
+            # 16:9 版（Ray：「用橫比例就不會超出了」）：直式 1080×1920 綠底畫布整張 ×s16 貼進 1920×1080，偏移 (960-540·s16, 540-cy·s16)
+            s16 = 1080 * 0.62 / 991; offx, offy = round(960 - 540 * s16), round(540 - 959.5 * s16); f55 = alts['monsters/kling_coffin_single_3s']
+            def h2p(x, y, s16=s16, offx=offx, offy=offy, f55=f55, k=k):
+                X, Y, sc = f55((x / k - offx) / s16 * k, (y / k - offy) / s16 * k); return X, Y, sc / s16
+            alts['monsters/kling_coffin_AB_16x9_3s'] = h2p
         items[f'{por}_{act}'] = {'alts': alts, 'name': f'{por}_{act}', 'zh': f'{zh}・{act.split("_")[0].upper().replace("ATK","A").replace("DELAY","D").replace("MISS","M")}',
                                 'portrait': P, 'to_portrait': v2p, 'loop': False, 'raw': f'{rawroot}/{n}', 'auto': f'auto/{cutdir}'}
         m = crop[n]; src = Image.open(os.path.join(KF, 'kling', 'idle_src', f'{n}_kling0.png')).convert('RGBA')
