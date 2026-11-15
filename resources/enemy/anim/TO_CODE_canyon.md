@@ -11,7 +11,7 @@ Ray 11-15 規則：**待機 I 一律 Wan、攻擊依 Ray 分配走 Kling**；所
 
 | 敵人 | 表 | 鑰匙（立繪檔名） | 待機 I（loop:true） | 動作（loop:false） | 動作格／秒 | 打到（主體最大格） | R |
 |---|---|---|---|---|---|---|---|
-| 石棺甲蟲 | ENEMY_ATK | `mon_canyon_coffinbeetle_dark` | `…_idle_v1/` 48 格 | `…_atk_v2/`（中立→撲→中立，一支到底） | 98／4.08 | 29 | 已含（片尾回中立） |
+| 石棺甲蟲 | ENEMY_ATK | `mon_canyon_coffinbeetle_dark` | `…_idle_v1/` 48 格 | `…_atk_v2/`（中立→撲→收爪回中立；**11-15 換成 Ray 剪的 16:9 ABA 版**，box 超出立繪畫布是撲到鏡頭前的設計） | 27／1.12 | 19 | 已含（片尾收爪回中立） |
 | 骸殼蟹 | ENEMY_DELAY | `mon_canyon_bonecrab_dark` | `…_idle_v1/` | `…_delay_v1/`（雙鉗張開） | 74／3.08 | 16 | 未定 |
 | 朝聖者團塊 | ENEMY_MISS | `mon_canyon_pilgrimmass_dark` | `…_idle_v1/` | `…_miss_v1/`（張手；**程式鎖體積版**） | 74／3.08 | 20 | 未定 |
 | 喪鐘蠕蟲 | ENEMY_ATK | `mon_canyon_bellwyrm_dark` | `…_idle_v1/` | `…_atk_v1/`（鐘口撲向鏡頭；**程式鎖體積版**） | 74／3.08 | 50 | 未定 |
