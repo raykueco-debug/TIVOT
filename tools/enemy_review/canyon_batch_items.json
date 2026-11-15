@@ -196,7 +196,7 @@
   "zh": "聖面鷲・A",
   "loop": false,
   "raw": "monsters/canyon_raw_mon_canyon_saintvulture_dark_atk_v1",
-  "auto": "auto/mon_canyon_saintvulture_dark_wanA",
+  "auto": "auto/mon_canyon_saintvulture_dark_wanA_blink",
   "game": "gameres/enemy/anim/mon_canyon_saintvulture_dark_atk_v1"
  },
  {
@@ -204,7 +204,55 @@
   "zh": "骨鴉・A",
   "loop": false,
   "raw": "monsters/canyon_raw_mon_canyon_bonecrow_dark_atk_v1",
-  "auto": "auto/mon_canyon_bonecrow_dark_wanA",
+  "auto": "auto/mon_canyon_bonecrow_dark_wanA_blink",
   "game": "gameres/enemy/anim/mon_canyon_bonecrow_dark_atk_v1"
+ },
+ {
+  "key": "mon_canyon_censer_dark_atk_v1",
+  "zh": "香爐蠍・A",
+  "loop": false,
+  "raw": "monsters/canyon_raw_mon_canyon_censer_dark_atk_v1",
+  "auto": "auto/kling_censer_atk_16x9",
+  "game": "gameres/enemy/anim/mon_canyon_censer_dark_atk_v1"
+ },
+ {
+  "key": "mon_canyon_houndbeast_atk_v1",
+  "zh": "餓獸・A",
+  "loop": false,
+  "raw": "monsters/canyon_raw_mon_canyon_houndbeast_atk_v1",
+  "auto": "auto/kling_hound_atk_16x9",
+  "game": "gameres/enemy/anim/mon_canyon_houndbeast_atk_v1"
+ },
+ {
+  "key": "mon_canyon_bellmite_dark_atk_v1",
+  "zh": "鐘殼蟲・A",
+  "loop": false,
+  "raw": "monsters/canyon_raw_mon_canyon_bellmite_dark_atk_v1",
+  "auto": "auto/kling_bellmite_atk_16x9",
+  "game": "gameres/enemy/anim/mon_canyon_bellmite_dark_atk_v1"
+ },
+ {
+  "key": "mon_canyon_chainhound_dark_atk_v1",
+  "zh": "鎖鏈餓犬・A",
+  "loop": false,
+  "raw": "monsters/canyon_raw_mon_canyon_chainhound_dark_atk_v1",
+  "auto": "auto/kling_chainhound_atk_16x9",
+  "game": "gameres/enemy/anim/mon_canyon_chainhound_dark_atk_v1"
+ },
+ {
+  "key": "mon_canyon_lanternimp_dark_atk_v1",
+  "zh": "提燈小鬼・A",
+  "loop": false,
+  "raw": "monsters/canyon_raw_mon_canyon_lanternimp_dark_atk_v1",
+  "auto": "auto/kling_lantern_atk_16x9",
+  "game": "gameres/enemy/anim/mon_canyon_lanternimp_dark_atk_v1"
+ },
+ {
+  "key": "mon_canyon_crawler_dark_atk_v1",
+  "zh": "爬行朝聖者・A",
+  "loop": false,
+  "raw": "monsters/canyon_raw_mon_canyon_crawler_dark_atk_v1",
+  "auto": "auto/kling_crawler_atk_16x9",
+  "game": "gameres/enemy/anim/mon_canyon_crawler_dark_atk_v1"
  }
 ]

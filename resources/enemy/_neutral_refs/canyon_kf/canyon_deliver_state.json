@@ -167,5 +167,53 @@
   "mtime": 1794759916.288913,
   "frames": 69,
   "peak": 2
+ },
+ "mon_canyon_censer_dark_atk_v1": {
+  "source": "auto/kling_censer_atk_16x9",
+  "kind": "快剪（auto_cut）",
+  "at": "11-16 00:46",
+  "mtime": 1794761178.5851343,
+  "frames": 145,
+  "peak": 60
+ },
+ "mon_canyon_houndbeast_atk_v1": {
+  "source": "auto/kling_hound_atk_16x9",
+  "kind": "快剪（auto_cut）",
+  "at": "11-16 00:46",
+  "mtime": 1794761191.6244469,
+  "frames": 145,
+  "peak": 50
+ },
+ "mon_canyon_bellmite_dark_atk_v1": {
+  "source": "auto/kling_bellmite_atk_16x9",
+  "kind": "快剪（auto_cut）",
+  "at": "11-16 00:46",
+  "mtime": 1794761201.7437522,
+  "frames": 145,
+  "peak": 53
+ },
+ "mon_canyon_chainhound_dark_atk_v1": {
+  "source": "auto/kling_chainhound_atk_16x9",
+  "kind": "快剪（auto_cut）",
+  "at": "11-16 00:46",
+  "mtime": 1794761215.3678472,
+  "frames": 145,
+  "peak": 55
+ },
+ "mon_canyon_lanternimp_dark_atk_v1": {
+  "source": "auto/kling_lantern_atk_16x9",
+  "kind": "快剪（auto_cut）",
+  "at": "11-16 00:47",
+  "mtime": 1794761229.5888083,
+  "frames": 145,
+  "peak": 52
+ },
+ "mon_canyon_crawler_dark_atk_v1": {
+  "source": "auto/kling_crawler_atk_16x9",
+  "kind": "快剪（auto_cut）",
+  "at": "11-16 00:47",
+  "mtime": 1794761239.333117,
+  "frames": 145,
+  "peak": 35
  }
 }
