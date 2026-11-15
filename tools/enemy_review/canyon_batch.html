@@ -18,7 +18,7 @@ td.head{position:sticky;left:0;z-index:3;background:var(--panel);width:180px;min
 td.head .nm{font-size:15px;font-weight:700;color:var(--gold)}td.head .meta{color:var(--dim);font-size:11px;word-break:break-all}
 td.head .btns{display:flex;gap:6px;margin:8px 0}td.head .st{font-size:12px;color:var(--dim)}
 td.head .st.sub{color:var(--ok)}td.head .st.dirty{color:var(--warn)}
-.cell{width:210px}.cell.chain{width:250px}.cell.empty{color:#4a4d58;text-align:center;padding-top:60px;font-size:12px}
+.cell{width:auto;min-width:210px}.cell.chain{min-width:250px}.cell.empty{color:#4a4d58;text-align:center;padding-top:60px;font-size:12px}
 canvas{display:block;width:200px;border-radius:4px;background:#2c2e38;cursor:pointer}.chain canvas{width:240px}
 body.light canvas{background:#e8e8e8}
 .info{font-size:11px;color:var(--dim);margin:3px 0}
@@ -55,15 +55,15 @@ async function clip(k,v){const id=k+'?'+v;if(clips[id])return clips[id];
  return clips[id]=j}
 class P{ // seq：[{clip, once}]；單一動作時 seq 只有一段
  constructor(cv){this.cv=cv;this.ctx=cv.getContext('2d');this.seq=[];this.si=0;this.i=0;this.t=0;this.paused=false;cv.onclick=()=>this.paused=!this.paused}
- set(seq){this.seq=seq;this.si=0;this.i=0;this.t=0;const c=seq[0]?.clip;if(!c)return;
-  const s=Math.min(400/c.canvas[0],600/c.canvas[1]);this.s=s;this.cv.width=Math.round(c.canvas[0]*s);this.cv.height=Math.round(c.canvas[1]*s)}
+ set(seq,view){this.seq=seq;this.si=0;this.i=0;this.t=0;const c=seq[0]?.clip;if(!c)return;
+  const v=view||[0,0,c.canvas[0],c.canvas[1]];this.v=v;const s=Math.min(480/v[2],600/v[3]);this.s=s;this.cv.width=Math.round(v[2]*s);this.cv.height=Math.round(v[3]*s);this.cv.style.width=v[2]>v[3]*1.2?'340px':''}
  tick(dt){const sg=this.seq[this.si];if(!sg)return;const c=sg.clip;
   if(!this.paused){this.t+=dt;const per=1000/c.fps;
    while(this.t>=per){this.t-=per;this.i++;
     if(this.i>=c.frames){if(this.seq.length>1){this.i=0;this.si=(this.si+1)%this.seq.length;break}
      this.i=0;if(!c.loop)this.t-=600}}}
   const cc=this.seq[this.si].clip,im=cc.imgs[Math.min(this.i,cc.frames-1)];if(!im.complete||!im.naturalWidth)return;
-  const x=this.ctx,b=cc.box;x.clearRect(0,0,this.cv.width,this.cv.height);x.drawImage(im,b[0]*this.s,b[1]*this.s,b[2]*this.s,b[3]*this.s)}}
+  const x=this.ctx,b=cc.box;x.clearRect(0,0,this.cv.width,this.cv.height);x.drawImage(im,(b[0]-this.v[0])*this.s,(b[1]-this.v[1])*this.s,b[2]*this.s,b[3]*this.s)}}
 let last=performance.now();(function loop(){const t=performance.now(),dt=Math.min(100,t-last);last=t;players.forEach(p=>p.tick(dt));requestAnimationFrame(loop)})();
 
 function group(){const m={};ITEMS.forEach(it=>{let col='X',base=it.key;
@@ -79,15 +79,19 @@ function note(r,col,ta){const k=r.base+'|'+col;ta.value=(notes[k]||{}).text||'';
   localStorage.setItem(LS,JSON.stringify(notes));rowStatus(r)}}
 const stHtml=k=>{const s=STATE[k]||{};return s.kind==='Ray 的 cut'?`<span class="stc ray">✔ Ray 的 cut（${s.source.replace('export/','')}，${s.at}）</span>`:`<span class="stc auto">快剪（還沒換成你的 cut）</span>`};
 
-async function loadRow(r){ // 依 STATE 版號（mtime）載各格，再組串播
- const got={};for(const c of COLS){const it=r.cols[c];if(!it)continue;const v=(STATE[it.key]||{}).mtime||0;
-  got[c]=await clip(it.key,v);const td=r.td[c];td.classList.toggle('ray',(STATE[it.key]||{}).kind==='Ray 的 cut');
+async function loadRow(r){ // 依 STATE 版號（mtime）載各格，再組串播；視窗＝這隻怪所有片段的聯集（橫版撲擊整個看得到）
+ const got={};for(const c of COLS){const it=r.cols[c];if(!it)continue;got[c]=await clip(it.key,(STATE[it.key]||{}).mtime||0)}
+ const all=Object.values(got);let x0=0,y0=0,x1=all[0]?.canvas[0]||1024,y1=all[0]?.canvas[1]||1536;
+ all.forEach(j=>{x0=Math.min(x0,j.box[0]);y0=Math.min(y0,j.box[1]);x1=Math.max(x1,j.box[0]+j.box[2]);y1=Math.max(y1,j.box[1]+j.box[3])});const view=[x0,y0,x1-x0,y1-y0];
+ for(const c of COLS){const it=r.cols[c];if(!it)continue;const td=r.td[c],st=STATE[it.key]||{};td.classList.toggle('ray',(STATE[it.key]||{}).kind==='Ray 的 cut');
   td.querySelector('.stw').innerHTML=stHtml(it.key);
   td.querySelector('.info').textContent=`${got[c].frames} 格・${(got[c].frames/got[c].fps).toFixed(2)} 秒・${got[c].loop?'循環':'單次'}`;
-  td._p.set([{clip:got[c]}])}
+  td._p.set([{clip:got[c]}],view);
+  const L=td.querySelector('.links');L.innerHTML=`<a href="${CHK}${st.from||it.raw}" target="_blank">chk 原片${st.from?'（'+st.from.split('/').pop()+'）':''}</a>`+
+   (st.kind==='Ray 的 cut'?`<a href="${CHK}${st.source}" target="_blank">chk 你的 cut</a>`:`<a href="${CHK}${it.auto}" target="_blank">chk 快剪</a>`)+`<a href="${CHK}${it.game}" target="_blank">chk 已交件</a>`}
  const seq=[],I=got.I;
  ['A','D','M','R','E'].forEach(c=>{if(got[c]){if(I)seq.push({clip:I});seq.push({clip:got[c]})}});if(I)seq.push({clip:I});
- r.chain._p.set(seq.length?seq:[]);
+ r.chain._p.set(seq.length?seq:[],view);
  r.chain.querySelector('.info').textContent=seq.length?seq.map(s=>Object.keys(got).find(c=>got[c]===s.clip)).join('→'):'—'}
 
 function build(){const tb=$('#tb');ROWS.forEach(r=>{const tr=document.createElement('tr');r.td={};

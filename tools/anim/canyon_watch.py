@@ -44,7 +44,7 @@ def scan(state):
         if os.path.exists(old):
             subprocess.run(['bash', os.path.join(d.ROOT, 'tools', 'recycle.sh'), '-m', f'Ray 的 cut 取代（{rel}）', old], cwd=d.ROOT, capture_output=True)
         r = d.write(frames, item, fps=fps, overwrite=True)
-        state[k] = {'source': rel, 'kind': 'Ray 的 cut', 'at': time.strftime('%m-%d %H:%M'), 'mtime': mt, 'frames': r['frames'], 'peak': r['peak']}
+        state[k] = {'source': rel, 'from': src, 'kind': 'Ray 的 cut', 'at': time.strftime('%m-%d %H:%M'), 'mtime': mt, 'frames': r['frames'], 'peak': r['peak']}
         changed.append((k, rel, r))
     return changed
 
