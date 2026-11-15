@@ -89,9 +89,12 @@
   "at": null
  },
  "mon_canyon_stilt_neutral_idle_v1": {
-  "source": "auto/kling_stilt_idle",
+  "source": "auto/kling_stilt_idle_fit74",
   "kind": "快剪（auto_cut）",
-  "at": null
+  "at": "11-15 23:49",
+  "mtime": 1794757791.311161,
+  "frames": 72,
+  "peak": 1
  },
  "mon_canyon_saintvulture_dark_idle_v1": {
   "source": "auto/mon_canyon_saintvulture_dark_fit60_idle",
@@ -104,9 +107,12 @@
   "at": null
  },
  "mon_canyon_censer_dark_idle_v1": {
-  "source": "auto/mon_canyon_censer_dark_idle",
+  "source": "auto/mon_canyon_censer_dark_breath_idle",
   "kind": "快剪（auto_cut）",
-  "at": null
+  "at": "11-15 23:49",
+  "mtime": 1794757795.1322868,
+  "frames": 72,
+  "peak": 3
  },
  "mon_canyon_hanged_dark_idle_v1": {
   "source": "auto/mon_canyon_hanged_dark_idle",
@@ -137,5 +143,29 @@
   "source": "auto/mon_canyon_crawler_dark_idle",
   "kind": "快剪（auto_cut）",
   "at": null
+ },
+ "mon_canyon_hanged_dark_atk_v1": {
+  "source": "auto/mon_canyon_hanged_dark_wanA",
+  "kind": "快剪（auto_cut）",
+  "at": "11-15 23:49",
+  "mtime": 1794757798.914828,
+  "frames": 99,
+  "peak": 1
+ },
+ "mon_canyon_saintvulture_dark_atk_v1": {
+  "source": "auto/mon_canyon_saintvulture_dark_wanA",
+  "kind": "快剪（auto_cut）",
+  "at": "11-15 23:50",
+  "mtime": 1794757802.0811603,
+  "frames": 72,
+  "peak": 18
+ },
+ "mon_canyon_bonecrow_dark_atk_v1": {
+  "source": "auto/mon_canyon_bonecrow_dark_wanA",
+  "kind": "快剪（auto_cut）",
+  "at": "11-15 23:50",
+  "mtime": 1794757805.22635,
+  "frames": 72,
+  "peak": 14
  }
 }

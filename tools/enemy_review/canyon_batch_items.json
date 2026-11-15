@@ -108,7 +108,7 @@
   "zh": "高蹺細影・I",
   "loop": true,
   "raw": "monsters/canyon_raw_mon_canyon_stilt_neutral_idle_v1",
-  "auto": "auto/kling_stilt_idle",
+  "auto": "auto/kling_stilt_idle_fit74",
   "game": "gameres/enemy/anim/mon_canyon_stilt_neutral_idle_v1"
  },
  {
@@ -132,7 +132,7 @@
   "zh": "香爐蠍・I",
   "loop": true,
   "raw": "monsters/canyon_raw_mon_canyon_censer_dark_idle_v1",
-  "auto": "auto/mon_canyon_censer_dark_idle",
+  "auto": "auto/mon_canyon_censer_dark_breath_idle",
   "game": "gameres/enemy/anim/mon_canyon_censer_dark_idle_v1"
  },
  {
@@ -182,5 +182,29 @@
   "raw": "monsters/canyon_raw_mon_canyon_crawler_dark_idle_v1",
   "auto": "auto/mon_canyon_crawler_dark_idle",
   "game": "gameres/enemy/anim/mon_canyon_crawler_dark_idle_v1"
+ },
+ {
+  "key": "mon_canyon_hanged_dark_atk_v1",
+  "zh": "崖縫吊屍者・A",
+  "loop": false,
+  "raw": "monsters/canyon_raw_mon_canyon_hanged_dark_atk_v1",
+  "auto": "auto/mon_canyon_hanged_dark_wanA",
+  "game": "gameres/enemy/anim/mon_canyon_hanged_dark_atk_v1"
+ },
+ {
+  "key": "mon_canyon_saintvulture_dark_atk_v1",
+  "zh": "聖面鷲・A",
+  "loop": false,
+  "raw": "monsters/canyon_raw_mon_canyon_saintvulture_dark_atk_v1",
+  "auto": "auto/mon_canyon_saintvulture_dark_wanA",
+  "game": "gameres/enemy/anim/mon_canyon_saintvulture_dark_atk_v1"
+ },
+ {
+  "key": "mon_canyon_bonecrow_dark_atk_v1",
+  "zh": "骨鴉・A",
+  "loop": false,
+  "raw": "monsters/canyon_raw_mon_canyon_bonecrow_dark_atk_v1",
+  "auto": "auto/mon_canyon_bonecrow_dark_wanA",
+  "game": "gameres/enemy/anim/mon_canyon_bonecrow_dark_atk_v1"
  }
 ]

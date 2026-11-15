@@ -1399,3 +1399,5 @@ when	from	to	reason
 20261115-232311	resources/enemy/anim/mon_canyon_bellwyrm_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_bellwyrm_dark_atk_v1	R 倒放接上（Ray 11-15），舊版無 R
 20261115-232321	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	R 倒放接上（Ray 11-15），舊版無 R
 20261115-232331	resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1	R 倒放接上（Ray 11-15），舊版無 R
+20261115-234948	resources/enemy/anim/mon_canyon_stilt_neutral_idle_v1	_recycle/resources/enemy/anim/mon_canyon_stilt_neutral_idle_v1	Ray 11-15 檢怪頁意見重跑
+20261115-234951	resources/enemy/anim/mon_canyon_censer_dark_idle_v1	_recycle/resources/enemy/anim/mon_canyon_censer_dark_idle_v1	Ray 11-15 檢怪頁意見重跑

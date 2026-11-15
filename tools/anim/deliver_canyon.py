@@ -94,13 +94,14 @@ def build_items():
         items[f'{por}_{act}'] = {'rev': n in ('crab', 'pilgrim', 'wyrm', 'iron', 'ribcage'), 'alts': alts, 'name': f'{por}_{act}', 'zh': f'{zh}・{act.split("_")[0].upper().replace("ATK","A").replace("DELAY","D").replace("MISS","M")}',
                                 'portrait': P, 'to_portrait': v2p, 'loop': False, 'raw': f'{rawroot}/{n}', 'auto': f'auto/{cutdir}'}
         m = crop[n]; src = Image.open(os.path.join(KF, 'kling', 'idle_src', f'{n}_kling0.png')).convert('RGBA')
-        cx, cy, s, px, py = to_green_xf(src, 0.92)
+        ifit, isuf = (0.74, '_fit74') if n == 'stilt' else (0.92, '')   # 11-15 Ray：高蹺細影 I 出框 → 縮到 0.74 重跑
+        cx, cy, s, px, py = to_green_xf(src, ifit)
         def i2p(x, y, cx=cx, cy=cy, s=s, px=px, py=py, c0=m['crop'][0], c1=m['crop'][1], v2p=v2p):
             X, Y, sc = v2p((x - px) / s + cx + c0, (y - py) / s + cy + c1); return X, Y, sc / s
         items[f'{por}_idle_v1'] = {'name': f'{por}_idle_v1', 'zh': f'{zh}・I', 'portrait': P, 'to_portrait': i2p, 'loop': True,
-                                   'raw': f'kling_idle/{n}_kling0', 'auto': f'auto/kling_{n}_idle'}
+                                   'raw': f'kling_idle/{n}_kling0{isuf}', 'auto': f'auto/kling_{n}_idle{isuf}'}
     PI = [('聖面鷲', 'mon_canyon_saintvulture_dark', 0.60, 'mon_canyon_saintvulture_dark_fit60'), ('骨鴉', 'mon_canyon_bonecrow_dark', 0.80, None),
-          ('香爐蠍', 'mon_canyon_censer_dark', 0.85, None), ('崖縫吊屍者', 'mon_canyon_hanged_dark', 0.85, None), ('餓獸', 'mon_canyon_houndbeast', 0.85, None),
+          ('香爐蠍', 'mon_canyon_censer_dark', 0.82, 'mon_canyon_censer_dark_breath'), ('崖縫吊屍者', 'mon_canyon_hanged_dark', 0.85, None), ('餓獸', 'mon_canyon_houndbeast', 0.85, None),
           ('鐘殼蟲', 'mon_canyon_bellmite_dark', 0.85, None), ('鎖鏈餓犬', 'mon_canyon_chainhound_dark', 0.85, None),
           ('提燈小鬼', 'mon_canyon_lanternimp_dark', 0.85, None), ('爬行朝聖者', 'mon_canyon_crawler_dark', 0.85, None)]
     for zh, por, fit, gen in PI:
@@ -109,6 +110,12 @@ def build_items():
         items[f'{por}_idle_v1'] = {'name': f'{por}_idle_v1', 'zh': f'{zh}・I', 'portrait': P, 'loop': True,
                                    'to_portrait': lambda x, y, cx=cx, cy=cy, s=s, px=px, py=py: ((x - px) / s + cx, (y - py) / s + cy, 1 / s),
                                    'raw': f'kling_idle/{gen}', 'auto': f'auto/{gen}_idle'}
+    # 11-15 Ray：攻擊 A 用 Wan（崖縫吊屍者 張手咆哮／聖面鷲、骨鴉 閃現消失）→ out/canyon_wanA/<立繪名>，R 倒放
+    for zh, por, fit in [('崖縫吊屍者', 'mon_canyon_hanged_dark', 0.72), ('聖面鷲', 'mon_canyon_saintvulture_dark', 0.60), ('骨鴉', 'mon_canyon_bonecrow_dark', 0.70)]:
+        P = os.path.join(EN, por + '.webp'); cx, cy, s, px, py = to_green_xf(Image.open(P).convert('RGBA'), fit)
+        items[f'{por}_atk_v1'] = {'name': f'{por}_atk_v1', 'zh': f'{zh}・A', 'portrait': P, 'loop': False,
+                                  'to_portrait': lambda x, y, cx=cx, cy=cy, s=s, px=px, py=py: ((x - px) / s + cx, (y - py) / s + cy, 1 / s),
+                                  'raw': f'canyon_wanA/{por}', 'auto': f'auto/{por}_wanA', 'rev': por == 'mon_canyon_hanged_dark'}
     return items
 
 
