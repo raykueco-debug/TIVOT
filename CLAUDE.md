@@ -1504,6 +1504,14 @@ document.body.appendChild(a); a.click(); a.remove();            // 直接落進 
 **一律用 Claude in Chrome 開在他的 Chrome 裡**，不要開在內建瀏覽器窗格。
 開好就把要剪的那一段點出來（網址帶 `#enemy_atk/<資料夾名>` 或在搜尋欄打名字點選），再告訴他碰邊格。
 
+**⚠⚠⚠ 除了遊戲本體，Ray 要看的頁面一律開在 Chrome（2026-11-15，Ray：「除了遊戲程式 所有我要求的頁面都要開在chrome 寫在憲法」）**
+
+animechk 那一條的**通則版**：審閱頁（`tools/enemy_review/*.html`、檢怪頁、KF 頁）、工具頁、報表、交件預覽……
+**凡是 Ray 要求開給他看的頁面，一律用 Claude in Chrome 開在他的 Chrome 裡**，不開在內建瀏覽器窗格。
+- **例外只有遊戲程式本身**（`index.html`／`flight/index.html` 的試玩與驗收）—— 那一條照 §6「驗收流程」第 5、6 條走內建瀏覽器前景分頁。
+- 開在**新分頁**（`tabs_create_mcp`），不要蓋掉他已經開著的那一頁（同第 5 條「不准動 Ray 測試中的窗」）。
+- 開好要驗一次頁面真的載入了（標題、內容數量），再告訴他網址。
+
 **⚠⚠⚠ 回收區 ＝ 本專案唯一的「刪除」出口(ver -696,Ray：「以後不要刪我的東西,
 在根目錄放一個回收區」)**
 - 任何 session(程式的、美術的)要拿掉或**覆蓋掉**任何檔案,一律走 `tools/recycle.sh`
@@ -1630,7 +1638,7 @@ document.body.appendChild(a); a.click(); a.remove();            // 直接落進 
 6. ⚠⚠⚠ **不准開背景瀏覽器**（ver -2454，Ray：「開在背景我連關都關不掉，不准再開背景，寫入憲法」）。
    · **禁止**：headless 的 Playwright／Puppeteer 腳本、`tabs_create` 不帶 `foreground:true` 開出來的
      背景分頁、任何 Ray 看不到也關不掉的瀏覽器實例。
-   · **唯一的作法**：開在**內建瀏覽器窗格的前景**（`preview_start {url}`，或 `tabs_create {foreground:true}`）
+   · **唯一的作法**（遊戲程式本身；其餘頁面見 §5「除了遊戲本體…一律開在 Chrome」）：開在**內建瀏覽器窗格的前景**（`preview_start {url}`，或 `tabs_create {foreground:true}`）
      —— Ray 看得到、點得到、關得掉。要給他測就開在那裡，自己驗收也一樣（另開前景分頁，不碰他的窗，見第 5 條）。
    · 理由兩條：① 他看不到的結果他不信（「不要在背景跑，你拿得準嗎？跑給我看啊」）；
      ② 背景程序在吃他機器的資源，而他**沒有任何介面可以把它關掉**。
