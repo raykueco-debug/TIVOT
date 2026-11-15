@@ -43,6 +43,9 @@ def expand_export(d):
 def write(frames, item, fps=FPS, overwrite=False):
     od = os.path.join(DST, item['name'])
     if os.path.exists(od) and not overwrite: print(f'  ⚠ {item["name"]} 已存在，跳過'); return None
+    if item.get('rev'):   # R＝倒放（Ray 11-15）：片尾的停格收成一張，再把動作段倒過來接回中立
+        while len(frames) > 1 and frames[-1] == frames[-2]: frames = frames[:-1]
+        frames = list(frames) + list(reversed(frames[:-1]))
     os.makedirs(od, exist_ok=True)
     for f in glob.glob(os.path.join(od, 'frame_*.webp')): os.remove(f)
     ims = [Image.open(f).convert('RGBA') for f in frames]
@@ -88,7 +91,7 @@ def build_items():
             def h2p(x, y, s16=s16, offx=offx, offy=offy, f55=f55, k=k):
                 X, Y, sc = f55((x / k - offx) / s16 * k, (y / k - offy) / s16 * k); return X, Y, sc / s16
             alts['monsters/kling_coffin_AB_16x9_3s'] = alts['monsters/kling_coffin_ABA_16x9_3s'] = h2p
-        items[f'{por}_{act}'] = {'alts': alts, 'name': f'{por}_{act}', 'zh': f'{zh}・{act.split("_")[0].upper().replace("ATK","A").replace("DELAY","D").replace("MISS","M")}',
+        items[f'{por}_{act}'] = {'rev': n in ('crab', 'pilgrim', 'wyrm', 'iron', 'ribcage'), 'alts': alts, 'name': f'{por}_{act}', 'zh': f'{zh}・{act.split("_")[0].upper().replace("ATK","A").replace("DELAY","D").replace("MISS","M")}',
                                 'portrait': P, 'to_portrait': v2p, 'loop': False, 'raw': f'{rawroot}/{n}', 'auto': f'auto/{cutdir}'}
         m = crop[n]; src = Image.open(os.path.join(KF, 'kling', 'idle_src', f'{n}_kling0.png')).convert('RGBA')
         cx, cy, s, px, py = to_green_xf(src, 0.92)

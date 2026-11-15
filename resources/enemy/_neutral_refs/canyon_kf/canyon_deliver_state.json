@@ -16,7 +16,11 @@
  "mon_canyon_bonecrab_dark_delay_v1": {
   "source": "auto/kling_crab_atk",
   "kind": "快剪（auto_cut）",
-  "at": null
+  "at": null,
+  "mtime": 1794756179.6884866,
+  "frames": 101,
+  "peak": 16,
+  "rev": true
  },
  "mon_canyon_bonecrab_dark_idle_v1": {
   "source": "auto/kling_crab_idle",
@@ -26,7 +30,11 @@
  "mon_canyon_pilgrimmass_dark_miss_v1": {
   "source": "auto/kling_pilgrim_atklock",
   "kind": "快剪（auto_cut）",
-  "at": null
+  "at": null,
+  "mtime": 1794756190.9958377,
+  "frames": 101,
+  "peak": 20,
+  "rev": true
  },
  "mon_canyon_pilgrimmass_dark_idle_v1": {
   "source": "auto/kling_pilgrim_idle",
@@ -36,7 +44,11 @@
  "mon_canyon_bellwyrm_dark_atk_v1": {
   "source": "auto/kling_wyrm_atklock",
   "kind": "快剪（auto_cut）",
-  "at": null
+  "at": null,
+  "mtime": 1794756201.3845427,
+  "frames": 101,
+  "peak": 50,
+  "rev": true
  },
  "mon_canyon_bellwyrm_dark_idle_v1": {
   "source": "auto/kling_wyrm_idle",
@@ -46,7 +58,11 @@
  "mon_canyon_ironpenitent_neutral_delay_v1": {
   "source": "auto/kling_iron_atk",
   "kind": "快剪（auto_cut）",
-  "at": null
+  "at": null,
+  "mtime": 1794756211.4063241,
+  "frames": 101,
+  "peak": 40,
+  "rev": true
  },
  "mon_canyon_ironpenitent_neutral_idle_v1": {
   "source": "auto/kling_iron_idle",
@@ -56,7 +72,11 @@
  "mon_canyon_ribcage_dark_atk_v1": {
   "source": "auto/kling_ribcage_atk",
   "kind": "快剪（auto_cut）",
-  "at": null
+  "at": null,
+  "mtime": 1794756220.150219,
+  "frames": 101,
+  "peak": 17,
+  "rev": true
  },
  "mon_canyon_ribcage_dark_idle_v1": {
   "source": "auto/kling_ribcage_idle",
