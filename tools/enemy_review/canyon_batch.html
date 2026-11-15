@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>卡耶爾交件批</title>
+<style>
+:root{--bg:#121318;--panel:#1c1e26;--line:#2c2f3a;--ink:#e6e3dc;--dim:#8d8f99;--gold:#d8b66a;--ok:#6fbf8a;--warn:#e0a052}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,"Microsoft JhengHei",sans-serif}
+#bar{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:#0d0e12ee;border-bottom:1px solid var(--line)}
+#bar h1{font-size:16px;margin:0 8px 0 0;color:var(--gold)}#bar .sub{color:var(--dim);font-size:12px}
+button{background:#2a2d38;color:var(--ink);border:1px solid #3a3e4c;border-radius:6px;padding:4px 10px;cursor:pointer;font:inherit}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;padding:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px}
+.card.ray{border-color:var(--ok)}
+.nm{font-weight:700;color:var(--gold)}.key{font-size:11px;color:var(--dim);word-break:break-all}
+canvas{display:block;width:100%;margin:6px 0;border-radius:4px;background:#2c2e38;cursor:pointer}canvas.light{background:#e8e8e8}
+.st{font-size:12px}.st.ray{color:var(--ok)}.st.auto{color:var(--warn)}
+.info{font-size:11px;color:var(--dim)}
+.links{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.links a{font-size:12px;color:var(--ink);text-decoration:none;border:1px solid #3a3e4c;border-radius:10px;padding:1px 8px}
+.links a:hover{border-color:var(--gold);color:var(--gold)}
+</style></head><body>
+<div id="bar">
+ <h1>卡耶爾交件批（23 支）</h1>
+ <span class="sub">畫面＝遊戲裡現在用的那一份。點「chk」到 animechk 剪 → 按「⬇ 輸出」後約 10 秒，這裡自動換成你的 cut（舊的進回收區、自動 commit＋push）。綠框＝已是你的 cut。</span>
+ <button id="bgBtn">淺底</button><span id="msg" class="sub"></span>
+</div>
+<div id="grid"></div>
+<script>
+const CHK='http://localhost:8130/player.html#';let ITEMS,STATE={},players={};
+const $=s=>document.querySelector(s);
+class P{constructor(cv){this.cv=cv;this.ctx=cv.getContext('2d');this.i=0;this.t=0;this.paused=false;this.imgs=[];cv.onclick=()=>this.paused=!this.paused}
+ set(k,v){fetch(`../../resources/enemy/anim/${k}/anim.json?${v}`).then(r=>r.json()).then(j=>{this.fps=j.fps;this.loop=j.loop;
+  this.imgs=[...Array(j.frames)].map((_,i)=>{const im=new Image();im.src=`../../resources/enemy/anim/${k}/frame_${String(i).padStart(2,'0')}.webp?${v}`;return im});this.i=0;this.t=0;this.j=j})}
+ tick(dt){if(!this.imgs.length)return;if(!this.paused){this.t+=dt;const per=1000/this.fps;while(this.t>=per){this.t-=per;this.i++;if(this.i>=this.imgs.length){this.i=0;if(!this.loop)this.t-=600}}}
+  const im=this.imgs[this.i];if(!im.complete||!im.naturalWidth)return;if(this.cv.width!==im.naturalWidth){this.cv.width=im.naturalWidth;this.cv.height=im.naturalHeight}
+  this.ctx.clearRect(0,0,this.cv.width,this.cv.height);this.ctx.drawImage(im,0,0)}}
+let last=performance.now();setInterval(()=>{const t=performance.now(),dt=Math.min(100,t-last);last=t;Object.values(players).forEach(p=>p.tick(dt))},16);
+function stLine(k){const s=STATE[k]||{};return s.kind==='Ray 的 cut'?`<span class="st ray">✔ Ray 的 cut（${s.source.replace('export/','')}，${s.at}）</span>`:`<span class="st auto">快剪（auto_cut）—— 還沒換成你的 cut</span>`}
+function build(){const G=$('#grid');ITEMS.forEach(it=>{const c=document.createElement('div');c.className='card';c.id='c_'+it.key;
+ c.innerHTML=`<div class="nm">${it.zh}</div><div class="key">${it.key}</div><canvas></canvas><div class="info"></div><div class="stw"></div>
+  <div class="links"><a href="${CHK}${it.raw}" target="_blank">chk 原片</a><a href="${CHK}${it.auto}" target="_blank">chk 快剪</a><a href="${CHK}${it.game}" target="_blank">chk 已交件</a></div>`;
+ G.append(c);const p=new P(c.querySelector('canvas'));players[it.key]=p;refresh(it.key,true)})}
+function refresh(k,first){const c=$('#c_'+k),s=STATE[k]||{};c.classList.toggle('ray',s.kind==='Ray 的 cut');c.querySelector('.stw').innerHTML=stLine(k);
+ const v=s.mtime||0;const p=players[k];if(first||p.v!==v){p.v=v;p.set(k,v);setTimeout(()=>{if(p.j)c.querySelector('.info').textContent=`${p.j.frames} 格・${(p.j.frames/p.j.fps).toFixed(2)} 秒・${p.j.loop?'循環':'單次'}`},800)}}
+async function poll(){try{const s=await (await fetch('../../resources/enemy/_neutral_refs/canyon_kf/canyon_deliver_state.json?'+Date.now())).json();
+ const changed=Object.keys(s).filter(k=>(s[k].mtime||0)!==((STATE[k]||{}).mtime||0));STATE=s;changed.forEach(k=>players[k]&&refresh(k));if(changed.length&&ITEMS)$('#msg').textContent=`已換上：${changed.map(k=>ITEMS.find(i=>i.key===k)?.zh).join('、')}`}catch(e){}}
+$('#bgBtn').onclick=()=>{const on=!document.querySelector('canvas.light');document.querySelectorAll('canvas').forEach(c=>c.classList.toggle('light',on));$('#bgBtn').textContent=on?'深底':'淺底'};
+(async()=>{ITEMS=await (await fetch('canyon_batch_items.json?'+Date.now())).json();STATE=await (await fetch('../../resources/enemy/_neutral_refs/canyon_kf/canyon_deliver_state.json?'+Date.now())).json();build();setInterval(poll,8000)})();
+</script></body></html>
