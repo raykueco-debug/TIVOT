@@ -437,3 +437,16 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 伊甸古墓　汲水階 | `anim/tomb/` `tomb_waterstair_base_watermask.png`＋`tomb_waterstair_base_flowmask.png` | `tomb/tomb_waterstair_sep_v1.mp4`（水面固定版，✔ 已換） |
 | 伊甸古墓　豎井 | `anim/tomb/` `tomb_shaft_base_watermask.png`＋`tomb_shaft_base_flowmask.png` | `tomb/tomb_shaft_sep_v1.mp4`（水面固定版，✔ 已換） |
 | 羅賽爾廢城　湖岸 | `anim/dunmor/dunmor_lakeshore_base_watermask.png` | （未交件） |
+
+
+> 11-16 **靜態交件**（Ray：「放棄，做靜態圖」「拆天地，地做靜態圖」「先交靜態的」）——這幾格**不跑影片**，畫面本體就是原圖。
+> 有天空的照石塚那一套疊：① `*_sky.png`（只有天空，RGBA）② 程式雲 ③ 原圖，用 `*_skymask.png` 挖掉天空（白＝天空，邊緣已羽化）。還沒做程式雲之前直接用原圖即可。
+> 有水的再疊程式水面（見上方「程式水面的畫法」）。
+
+| 格 | 原圖（畫面本體，靜態） | 天空 | 水 |
+|---|---|---|---|
+| 里朋莊園　後廳 | `sofia/sofiaout_backhall.webp` | 無（室內） | 無 |
+| 里朋莊園　馬車房 | `sofia/sofiaout_carriage.webp` | 無（拱門外那一小塊天空照原圖，不另拆） | 無 |
+| 羅賽爾廢城　門庭 | `dunmor/dunmor_gatecourt.webp` | `anim/dunmor/dunmor_gatecourt_sky.png`＋`_skymask.png` | 無 |
+| 羅賽爾廢城　西壕 | `dunmor/dunmor_ditchw.webp` | `anim/dunmor/dunmor_ditchW_sky.png`＋`_skymask.png` | `anim/dunmor/dunmor_ditchW_watermask.png` |
+| 羅賽爾廢城　湖岸 | `dunmor/dunmor_lakeshore.webp` | `anim/dunmor/dunmor_lakeshore_sky.png`＋`_skymask.png` | `anim/dunmor/dunmor_lakeshore_base_watermask.png` |

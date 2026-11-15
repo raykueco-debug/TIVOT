@@ -193,5 +193,10 @@
  "lake__fallbase__day": "lake/lake_fallbase_day_sep_v1.mp4",
  "belisar__draincliff__day": "belisar/belisar_draincliff_day_sep_v1.mp4",
  "tomb__nitrepit__base": "tomb/tomb_nitrepit_base_nofire.webp（程式煙，見 TO_CODE）",
- "dunmor__cairn__base": "dunmor/dunmor_cairn_sky.png（只拆天地）"
+ "dunmor__cairn__base": "dunmor/dunmor_cairn_sky.png（只拆天地）",
+ "sofiaout__backhall__base": "static:sofia/sofiaout_backhall.webp",
+ "sofiaout__carriage__base": "static:sofia/sofiaout_carriage.webp",
+ "dunmor__gatecourt__base": "static:dunmor/dunmor_gatecourt.webp",
+ "dunmor__ditchW__base": "static:dunmor/dunmor_ditchw.webp",
+ "dunmor__lakeshore__base": "static:dunmor/dunmor_lakeshore.webp"
 }
