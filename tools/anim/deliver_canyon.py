@@ -79,7 +79,11 @@ def build_items():
         sk = min(1080 * 0.78 / wim.width, 1920 * 0.78 / wim.height); iwk, ihk = round(wim.width * sk), round(wim.height * sk)
         oxk, oyk = (1080 - iwk) // 2, (1920 - ihk) // 2; k = 720 / 1080
         v2p = lambda x, y, tx=tx, ty=ty, sk=sk, oxk=oxk, oyk=oyk, k=k: ((x / k - oxk) / sk - tx, (y / k - oyk) / sk - ty, 1 / (k * sk))
-        items[f'{por}_{act}'] = {'name': f'{por}_{act}', 'zh': f'{zh}・{act.split("_")[0].upper().replace("ATK","A").replace("DELAY","D").replace("MISS","M")}',
+        alts = {}
+        if n == 'coffin':   # 11-15 Ray：單圖重跑（輸入圖主體縮到 55%）→ 去綠幕放 monsters/kling_coffin_single_3s，Ray 在 chk 剪掉出框段
+            sk2 = min(1080 * 0.55 / wim.width, 1920 * 0.55 / wim.height); ox2, oy2 = (1080 - round(wim.width * sk2)) // 2, (1920 - round(wim.height * sk2)) // 2
+            alts['monsters/kling_coffin_single_3s'] = lambda x, y, tx=tx, ty=ty, sk=sk2, oxk=ox2, oyk=oy2, k=k: ((x / k - oxk) / sk - tx, (y / k - oyk) / sk - ty, 1 / (k * sk))
+        items[f'{por}_{act}'] = {'alts': alts, 'name': f'{por}_{act}', 'zh': f'{zh}・{act.split("_")[0].upper().replace("ATK","A").replace("DELAY","D").replace("MISS","M")}',
                                 'portrait': P, 'to_portrait': v2p, 'loop': False, 'raw': f'{rawroot}/{n}', 'auto': f'auto/{cutdir}'}
         m = crop[n]; src = Image.open(os.path.join(KF, 'kling', 'idle_src', f'{n}_kling0.png')).convert('RGBA')
         cx, cy, s, px, py = to_green_xf(src, 0.92)

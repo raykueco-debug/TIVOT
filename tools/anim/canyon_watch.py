@@ -14,6 +14,7 @@ SRC2ITEM = {}
 for k, it in ITEMS.items():
     SRC2ITEM['monsters/canyon_raw_' + k] = k
     SRC2ITEM[it['auto']] = k
+    for src in it.get('alts', {}): SRC2ITEM[src] = k
 
 
 def load_state():
@@ -37,10 +38,12 @@ def scan(state):
         if st.get('source') == rel and st.get('mtime', 0) >= mt: continue
         if st.get('mtime', 0) >= mt: continue
         frames, fps = d.expand_export(exdir)
+        src = (e.get('from') or '').replace(chr(92), '/'); item = dict(ITEMS[k])
+        if src in item.get('alts', {}): item['to_portrait'] = item['alts'][src]   # 另一條輸入鏈（例：單圖重跑）
         old = os.path.join(d.DST, k)
         if os.path.exists(old):
             subprocess.run(['bash', os.path.join(d.ROOT, 'tools', 'recycle.sh'), '-m', f'Ray 的 cut 取代（{rel}）', old], cwd=d.ROOT, capture_output=True)
-        r = d.write(frames, ITEMS[k], fps=fps, overwrite=True)
+        r = d.write(frames, item, fps=fps, overwrite=True)
         state[k] = {'source': rel, 'kind': 'Ray 的 cut', 'at': time.strftime('%m-%d %H:%M'), 'mtime': mt, 'frames': r['frames'], 'peak': r['peak']}
         changed.append((k, rel, r))
     return changed
