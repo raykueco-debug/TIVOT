@@ -1401,3 +1401,7 @@ when	from	to	reason
 20261115-232331	resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1	R 倒放接上（Ray 11-15），舊版無 R
 20261115-234948	resources/enemy/anim/mon_canyon_stilt_neutral_idle_v1	_recycle/resources/enemy/anim/mon_canyon_stilt_neutral_idle_v1	Ray 11-15 檢怪頁意見重跑
 20261115-234951	resources/enemy/anim/mon_canyon_censer_dark_idle_v1	_recycle/resources/enemy/anim/mon_canyon_censer_dark_idle_v1	Ray 11-15 檢怪頁意見重跑
+20261116-000250	resources/enemy/_neutral_refs/canyon_kf/kf_canyon_censer_A_tailslam.png	_recycle/resources/enemy/_neutral_refs/canyon_kf/kf_canyon_censer_A_tailslam.png	Ray 11-15 退：去背不全／變色／方向錯，重畫
+20261116-000250	resources/enemy/_neutral_refs/canyon_kf/kf_canyon_chainhound_A_bite.png	_recycle/resources/enemy/_neutral_refs/canyon_kf/kf_canyon_chainhound_A_bite.png	Ray 11-15 退：去背不全／變色／方向錯，重畫
+20261116-000250	resources/enemy/_neutral_refs/canyon_kf/kf_canyon_crawler_A_claw.png	_recycle/resources/enemy/_neutral_refs/canyon_kf/kf_canyon_crawler_A_claw.png	Ray 11-15 退：去背不全／變色／方向錯，重畫
+20261116-000250	resources/enemy/_neutral_refs/canyon_kf/kf_canyon_bellmite_A_pincer.png	_recycle/resources/enemy/_neutral_refs/canyon_kf/kf_canyon_bellmite_A_pincer.png	Ray 11-15 退：去背不全／變色／方向錯，重畫
