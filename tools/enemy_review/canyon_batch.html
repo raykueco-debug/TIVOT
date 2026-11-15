@@ -56,15 +56,20 @@ async function clip(k,v){const id=k+'?'+v;if(clips[id])return clips[id];
 class P{ // seq：[{clip, once}]；單一動作時 seq 只有一段
  constructor(cv){this.cv=cv;this.ctx=cv.getContext('2d');this.seq=[];this.si=0;this.i=0;this.t=0;this.paused=false;cv.onclick=()=>this.paused=!this.paused}
  set(seq,view){this.seq=seq;this.si=0;this.i=0;this.t=0;const c=seq[0]?.clip;if(!c)return;
-  const v=view||[0,0,c.canvas[0],c.canvas[1]];this.v=v;const s=Math.min(480/v[2],600/v[3]);this.s=s;this.cv.width=Math.round(v[2]*s);this.cv.height=Math.round(v[3]*s);this.cv.style.width=v[2]>v[3]*1.2?'340px':''}
+  const v=view||[0,0,c.canvas[0],c.canvas[1]];this.v=v;const s=Math.min(480/v[2],600/v[3]);this.s=s;seq.forEach(g=>prescale(g.clip,s));this.cv.width=Math.round(v[2]*s);this.cv.height=Math.round(v[3]*s);this.cv.style.width=v[2]>v[3]*1.2?'340px':''}
  tick(dt){const sg=this.seq[this.si];if(!sg)return;const c=sg.clip;
   if(!this.paused){this.t+=dt;const per=1000/c.fps;
    while(this.t>=per){this.t-=per;this.i++;
     if(this.i>=c.frames){if(this.seq.length>1){this.i=0;this.si=(this.si+1)%this.seq.length;break}
      this.i=0;if(!c.loop)this.t-=600}}}
-  const cc=this.seq[this.si].clip,im=cc.imgs[Math.min(this.i,cc.frames-1)];if(!im.complete||!im.naturalWidth)return;
+  if(!this.vis)return;const cc=this.seq[this.si].clip,fi=Math.min(this.i,cc.frames-1),im=(cc.bms&&cc.bms[fi])||cc.imgs[fi];if(!im.width&&!im.naturalWidth)return;
   const x=this.ctx,b=cc.box;x.clearRect(0,0,this.cv.width,this.cv.height);x.drawImage(im,(b[0]-this.v[0])*this.s,(b[1]-this.v[1])*this.s,b[2]*this.s,b[3]*this.s)}}
-let last=performance.now();(function loop(){const t=performance.now(),dt=Math.min(100,t-last);last=t;players.forEach(p=>p.tick(dt));requestAnimationFrame(loop)})();
+// 每一格先縮到畫布大小解碼一次（ImageBitmap）：直接每禎畫 1210×720 的 webp 會讓整頁掉到每秒 2 禎
+function prescale(c,s){if(c.bmS===s)return;c.bmS=s;c.bms=[];const w=Math.max(1,Math.round(c.box[2]*s*1.5)),h=Math.max(1,Math.round(c.box[3]*s*1.5));
+ c.imgs.forEach((im,i)=>im.decode().then(()=>createImageBitmap(im,{resizeWidth:w,resizeHeight:h,resizeQuality:'high'})).then(b=>{if(c.bmS===s)c.bms[i]=b}).catch(()=>{}))}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.target._p)e.target._p.vis=e.isIntersecting}),{rootMargin:'300px'});
+// 用 setInterval 不用 rAF：視窗被遮住時 rAF 會被 Chrome 降到每秒 2~5 次（實測），播放就變慢變卡；dt 不夾，慢了照實際時間追格
+let last=performance.now();setInterval(()=>{const t=performance.now(),dt=Math.min(2000,t-last);last=t;players.forEach(p=>p.tick(dt))},16);
 
 function group(){const m={};ITEMS.forEach(it=>{let col='X',base=it.key;
   for(const[re,c]of ACT)if(re.test(it.key)){col=c;base=it.key.replace(re,'');break}
@@ -98,7 +103,7 @@ function build(){const tb=$('#tb');ROWS.forEach(r=>{const tr=document.createElem
   const h=document.createElement('td');h.className='head';
   h.innerHTML=`<div class="nm">${r.zh}</div><div class="meta">${r.base}</div><div class="btns"><button class="sv">儲存</button><button class="pri sb">提交</button></div><textarea placeholder="整體意見"></textarea><div class="st" id="st_${r.base}"></div>`;
   note(r,'*',h.querySelector('textarea'));h.querySelector('.sv').onclick=()=>save([r]);h.querySelector('.sb').onclick=()=>submit([r]);tr.appendChild(h);
-  const mk=(cls,col,links)=>{const td=document.createElement('td');td.className='cell '+cls;const cv=document.createElement('canvas');const p=new P(cv);td._p=p;players.push(p);
+  const mk=(cls,col,links)=>{const td=document.createElement('td');td.className='cell '+cls;const cv=document.createElement('canvas');const p=new P(cv);td._p=p;cv._p=p;players.push(p);io.observe(cv);
    td.innerHTML='';td.append(cv);td.insertAdjacentHTML('beforeend',`<div class="info"></div><div class="stw"></div><div class="links">${links||''}</div>`);
    const ta=document.createElement('textarea');ta.placeholder=(col==='串'?'串起來看的':col+' ')+'意見';note(r,col,ta);td.append(ta);tr.appendChild(td);return td};
   r.chain=mk('chain','串');
