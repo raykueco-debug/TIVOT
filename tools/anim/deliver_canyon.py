@@ -111,11 +111,21 @@ def build_items():
                                    'to_portrait': lambda x, y, cx=cx, cy=cy, s=s, px=px, py=py: ((x - px) / s + cx, (y - py) / s + cy, 1 / s),
                                    'raw': f'kling_idle/{gen}', 'auto': f'auto/{gen}_idle'}
     # 11-15 Ray：攻擊 A 用 Wan（崖縫吊屍者 張手咆哮／聖面鷲、骨鴉 閃現消失）→ out/canyon_wanA/<立繪名>，R 倒放
+    # 11-16 Ray：飛行兩隻改成「七龍珠瞬移」消失 —— A→B（GPT 畫的橫向殘影）由 Wan 跑，倒放接回現形；對齊圖＝wan/<立繪名>_blinkA.png
     for zh, por, fit in [('崖縫吊屍者', 'mon_canyon_hanged_dark', 0.72), ('聖面鷲', 'mon_canyon_saintvulture_dark', 0.60), ('骨鴉', 'mon_canyon_bonecrow_dark', 0.70)]:
-        P = os.path.join(EN, por + '.webp'); cx, cy, s, px, py = to_green_xf(Image.open(P).convert('RGBA'), fit)
-        items[f'{por}_atk_v1'] = {'name': f'{por}_atk_v1', 'zh': f'{zh}・A', 'portrait': P, 'loop': False,
+        P = os.path.join(EN, por + '.webp'); blink = por != 'mon_canyon_hanged_dark'
+        src = os.path.join(KF, 'wan', por + '_blinkA.png') if blink else P
+        cx, cy, s, px, py = to_green_xf(Image.open(src).convert('RGBA'), fit)
+        items[f'{por}_atk_v1'] = {'name': f'{por}_atk_v1', 'zh': f'{zh}・A', 'portrait': P, 'loop': False, 'rev': True,
                                   'to_portrait': lambda x, y, cx=cx, cy=cy, s=s, px=px, py=py: ((x - px) / s + cx, (y - py) / s + cy, 1 / s),
-                                  'raw': f'canyon_wanA/{por}', 'auto': f'auto/{por}_wanA', 'rev': por == 'mon_canyon_hanged_dark'}
+                                  'raw': f'canyon_wanA/{por}' + ('_blinkA' if blink else ''), 'auto': f'auto/{por}_wanA' + ('_blink' if blink else '')}
+    # 11-16 Ray：6 隻攻擊 A 走 Kling（橫式 16:9、AB、3 秒；R 倒放）。輸入：立繪與 B 用同一個變換貼進 1920×1080 綠底（xf_16x9_1116.json）
+    xf = json.load(open(os.path.join(KF, 'kling', 'xf_16x9_1116.json'), encoding='utf-8')); k = 720 / 1080
+    for n, zh in [('censer', '香爐蠍'), ('hound', '餓獸'), ('bellmite', '鐘殼蟲'), ('chainhound', '鎖鏈餓犬'), ('lantern', '提燈小鬼'), ('crawler', '爬行朝聖者')]:
+        por, s, ox, oy = xf[n]['portrait'], xf[n]['s'], xf[n]['ox'], xf[n]['oy']; P = os.path.join(EN, por + '.webp')
+        items[f'{por}_atk_v1'] = {'name': f'{por}_atk_v1', 'zh': f'{zh}・A', 'portrait': P, 'loop': False, 'rev': True,
+                                  'to_portrait': lambda x, y, s=s, ox=ox, oy=oy, k=k: ((x / k - ox) / s, (y / k - oy) / s, 1 / (k * s)),
+                                  'raw': f'monsters/kling_{n}_atk_16x9_3s', 'auto': f'auto/kling_{n}_atk_16x9'}
     return items
 
 

@@ -1405,3 +1405,5 @@ when	from	to	reason
 20261116-000250	resources/enemy/_neutral_refs/canyon_kf/kf_canyon_chainhound_A_bite.png	_recycle/resources/enemy/_neutral_refs/canyon_kf/kf_canyon_chainhound_A_bite.png	Ray 11-15 退：去背不全／變色／方向錯，重畫
 20261116-000250	resources/enemy/_neutral_refs/canyon_kf/kf_canyon_crawler_A_claw.png	_recycle/resources/enemy/_neutral_refs/canyon_kf/kf_canyon_crawler_A_claw.png	Ray 11-15 退：去背不全／變色／方向錯，重畫
 20261116-000250	resources/enemy/_neutral_refs/canyon_kf/kf_canyon_bellmite_A_pincer.png	_recycle/resources/enemy/_neutral_refs/canyon_kf/kf_canyon_bellmite_A_pincer.png	Ray 11-15 退：去背不全／變色／方向錯，重畫
+20261116-002511	resources/enemy/anim/mon_canyon_saintvulture_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_saintvulture_dark_atk_v1	Ray 11-16：改成瞬移消失
+20261116-002513	resources/enemy/anim/mon_canyon_bonecrow_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_bonecrow_dark_atk_v1	Ray 11-16：改成瞬移消失

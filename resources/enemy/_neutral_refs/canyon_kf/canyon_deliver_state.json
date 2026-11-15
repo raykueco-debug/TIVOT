@@ -153,19 +153,19 @@
   "peak": 1
  },
  "mon_canyon_saintvulture_dark_atk_v1": {
-  "source": "auto/mon_canyon_saintvulture_dark_wanA",
+  "source": "auto/mon_canyon_saintvulture_dark_wanA_blink",
   "kind": "快剪（auto_cut）",
-  "at": "11-15 23:50",
-  "mtime": 1794757802.0811603,
-  "frames": 72,
-  "peak": 18
+  "at": "11-16 00:25",
+  "mtime": 1794759913.671427,
+  "frames": 69,
+  "peak": 1
  },
  "mon_canyon_bonecrow_dark_atk_v1": {
-  "source": "auto/mon_canyon_bonecrow_dark_wanA",
+  "source": "auto/mon_canyon_bonecrow_dark_wanA_blink",
   "kind": "快剪（auto_cut）",
-  "at": "11-15 23:50",
-  "mtime": 1794757805.22635,
-  "frames": 72,
-  "peak": 14
+  "at": "11-16 00:25",
+  "mtime": 1794759916.288913,
+  "frames": 69,
+  "peak": 2
  }
 }

@@ -1,0 +1,38 @@
+{
+ "censer": {
+  "portrait": "mon_canyon_censer_dark",
+  "s": 0.42744063324538256,
+  "ox": 741,
+  "oy": 211
+ },
+ "hound": {
+  "portrait": "mon_canyon_houndbeast",
+  "s": 0.43373493975903615,
+  "ox": 737,
+  "oy": 206
+ },
+ "bellmite": {
+  "portrait": "mon_canyon_bellmite_dark",
+  "s": 0.50625,
+  "ox": 700,
+  "oy": 147
+ },
+ "chainhound": {
+  "portrait": "mon_canyon_chainhound_dark",
+  "s": 0.5729442970822282,
+  "ox": 666,
+  "oy": 75
+ },
+ "lantern": {
+  "portrait": "mon_canyon_lanternimp_dark",
+  "s": 0.42463958060288337,
+  "ox": 741,
+  "oy": 213
+ },
+ "crawler": {
+  "portrait": "mon_canyon_crawler_dark",
+  "s": 0.5196471531676022,
+  "ox": 694,
+  "oy": 128
+ }
+}
