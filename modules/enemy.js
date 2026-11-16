@@ -2409,8 +2409,8 @@ function memberActOnce(g, im, A){
    ② 一條刀斬的光線以隨機角度穿過敵人區中心，一閃就消失 —— 光線閃到滿的那一刻＝打到（回傳值，扣血照它延後）
       （-2643，Ray：「攻擊是一條光線閃過消失 像被刀斬」「線要一閃就消失 角度隨機 不要黑影 不要有其他的受擊特效」）
       ⇒ 這一擊打到時不放受擊特效／紅閃／受擊音，只留畫面震動（combat 問 `takeBlinkHit()`，同卡上的 `hitPlain`）。
-   ③ 從光線離開的那一側、畫面外快速飛回 —— 衝過原位一點再拉回（Ray：「要快速飛回 過頭 拉回」），飛的時候翅膀照拍（待機加速播）。 */
-const BLINK_GAP_MS=110, BLINK_SLASH_MS=170, BLINK_SLASH_IN=0.2, BLINK_BACK_MS=520, BLINK_OVER=0.22, BLINK_FLAP=2, BLINK_HIT_WIN=400;
+   ③ 一律從畫面上方略斜著快速飛回（-2645，Ray：「統一從上面略斜飛回」；斜的角度左右隨機 BLINK_TILT 內） —— 衝過原位一點再拉回（Ray：「要快速飛回 過頭 拉回」），飛的時候翅膀照拍（待機加速播）。 */
+const BLINK_GAP_MS=110, BLINK_SLASH_MS=170, BLINK_SLASH_IN=0.2, BLINK_BACK_MS=520, BLINK_OVER=0.22, BLINK_FLAP=2, BLINK_TILT=[0.17, 0.42], BLINK_HIT_WIN=400;
 let blinkHitAt=0;
 /* 這一擊是不是殘影瞬移的那一刀（打到那一刻 ±BLINK_HIT_WIN 毫秒內，問一次就用掉）—— 被完美防禦掉的話窗口自己過期 */
 export function takeBlinkHit(){ const ok=blinkHitAt && Math.abs(performance.now()-blinkHitAt)<BLINK_HIT_WIN; if(ok) blinkHitAt=0; return !!ok; }
@@ -2428,7 +2428,7 @@ function memberBlinkAttack(g, im, A){
     if(++i<N){ ov.src=A.fr[i].src; return; }
     clearInterval(t); ov.style.visibility='hidden';
     setTimeout(()=>{ if(alive()) blinkSlash(g, ang); }, BLINK_GAP_MS);
-    setTimeout(()=>{ if(alive()) blinkReturn(g, im, ov, own, A, dir); }, BLINK_GAP_MS+BLINK_SLASH_MS);
+    setTimeout(()=>{ if(alive()) blinkReturn(g, im, ov, own, A); }, BLINK_GAP_MS+BLINK_SLASH_MS);
   }, 1000/fps);
   const hit=Math.round(tOut+BLINK_GAP_MS+BLINK_SLASH_MS*BLINK_SLASH_IN);   // 光線閃到滿的那一刻＝打到
   blinkHitAt=performance.now()+hit;
@@ -2446,7 +2446,9 @@ function blinkSlash(g, ang){
     { transform:'scaleX(1) scaleY(0.15)', opacity:0, offset:1 }], { duration:BLINK_SLASH_MS, easing:'ease-out', fill:'both' });
   a.onfinish=()=>w.remove(); setTimeout(()=>w.remove(), BLINK_SLASH_MS+200);
 }
-function blinkReturn(g, im, ov, own, A, dir){
+function blinkReturn(g, im, ov, own, A){
+  /* 回程的起點方向（原位 → 起點）：正上方往左或往右偏 BLINK_TILT 弧度 */
+  const tilt=(BLINK_TILT[0]+Math.random()*(BLINK_TILT[1]-BLINK_TILT[0]))*(Math.random()<0.5?-1:1), dir={ x:Math.sin(tilt), y:-Math.cos(tilt) };
   const gr=g.getBoundingClientRect();
   let flapT=0;
   const end=()=>{ clearInterval(flapT); im._acting=false; im._actJ=null;
@@ -2456,7 +2458,7 @@ function blinkReturn(g, im, ov, own, A, dir){
   else ov.src=A.fr[0].src;
   ov.style.visibility='';
   if(!ov.animate || !gr.width){ end(); return; }
-  /* 從光線離開的那一側飛回來：起點＝原位沿劃過方向推到畫面外；衝過原位（往飛行方向再多 BLINK_OVER 個身長）再拉回 */
+  /* 從上方略斜飛回來：起點＝原位沿 dir 推到畫面外；衝過原位（往飛行方向再多 BLINK_OVER 個身長）再拉回 */
   const br=ov.getBoundingClientRect(), D=Math.hypot(gr.width, gr.height)/2+Math.max(br.width, br.height), O=Math.max(br.width, br.height)*BLINK_OVER;
   const fx=String(ov.style.scale||'').trim().startsWith('-') ? -1 : 1;
   /* 翅膀照拍：待機那一支加速播（BLINK_FLAP 倍） */
