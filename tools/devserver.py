@@ -850,6 +850,7 @@ def gcomp_patch(req):
         mm = {'stem': stem, 'k': round(k, 4), 'x': round(float(m.get('x') or 0), 1), 'y': round(float(m.get('y') or 0), 1)}
         if m.get('flip'): mm['flip'] = 1
         if m.get('air'): mm['air'] = 1
+        if m.get('focus'): mm['focus'] = 1   # 攻擊拉到中間；沒寫＝原地（ver -2640，Ray：「全部預設不跑中」）
         members.append(mm)
     
     path = os.path.join(ROOT, GCOMP_FILE)

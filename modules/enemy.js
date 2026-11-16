@@ -2274,7 +2274,7 @@ function buildGroup(en){
   for(const n of order){
     const im=document.createElement('img'); im.className='eg-guard'; im.dataset.n=n; im.alt='';
     const cm=comp && comp.members[n-1];
-    if(cm){ im._pm={ k:cm.k, ox:cm.x, oy:cm.y, cv:comp.canvas||[1536,1024] }; im._flip=!!cm.flip; }
+    if(cm){ im._pm={ k:cm.k, ox:cm.x, oy:cm.y, cv:comp.canvas||[1536,1024], focus:!!cm.focus }; im._flip=!!cm.flip; }
     /* 接地陰影：每個人一顆（ver -2045，Ray：「他們是不是沒給影子啊」）——
        美術的人物層是去背的、不帶影子；量腳與擺位照舊走 `groundShadow.place`（鐵律 8）。
        影子全部排在人之前（DOM 序＝圖層）：後排的人也該站在前排的影子之上。 */
@@ -2386,7 +2386,9 @@ function memberActOnce(g, im, A){
   if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=ov; }
   g.appendChild(ov);                                   // 最上層
   im._acting=true; im._actJ=J; placeOnLayer(ov, im, J); ov.style.scale=A.flip?'-1 1':''; ov.src=A.fr[0].src; im.style.opacity='0';
-  const fill = (A===im._atk) ? attackFocusAnim(g, ov, N*1000/fps, hit*1000/fps, !!sp.fillFrame, A.body) : null;   // 只有攻擊 A 拉到中間（D／M 原地演）
+  /* 編組成員（`_pm`）預設攻擊**原地演**，勾了「攻擊時拉到中間」（`focus`）才拉（ver -2640，Ray：「全部預設不跑中」）；
+     舊的分層群組（沒有 `_pm`）照舊一律拉。 */
+  const fill = (A===im._atk && (!im._pm || im._pm.focus)) ? attackFocusAnim(g, ov, N*1000/fps, hit*1000/fps, !!sp.fillFrame, A.body) : null;   // 只有攻擊 A 拉到中間（D／M 原地演）
   let i=0, dir=1;
   const end=()=>{ clearInterval(t); im._acting=false; im._actJ=null; if(fill) fill.cancel();
     if(own){ ov.remove(); im._ov=null; im.style.opacity=''; }

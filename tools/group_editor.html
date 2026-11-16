@@ -45,7 +45,6 @@ main{display:grid;grid-template-columns:200px 1fr 230px;gap:10px;padding:10px;al
   <span class="hint">時段</span><select id="bg"></select>
   <button id="addBtn" class="on">＋ 新增怪</button>
   <button id="idleBtn">全員待機</button>
-  <label class="hint"><input type="checkbox" id="focus" checked> 攻擊照遊戲拉到中間</label>
   <button id="save">存檔</button>
   <button id="revert">還原</button>
   <span id="msg"></span>
@@ -57,6 +56,7 @@ main{display:grid;grid-template-columns:200px 1fr 230px;gap:10px;padding:10px;al
   <div id="side">
     <div><b id="selName">（沒選）</b></div>
     <div class="row"><button id="flip">左右翻</button><button id="air">飛行（不畫影子）</button></div>
+    <div class="row"><label><input type="checkbox" id="focus"> 攻擊時拉到中間</label></div>
     <div class="row"><button id="back">往後一層</button><button id="front">往前一層</button><button id="del">刪除</button></div>
     <div class="row"><button data-play="atk">▶ 攻擊</button><button data-play="delay">▶ 延時</button><button data-play="miss">▶ 點錯</button></div>
     <div class="hint" id="info"></div>
@@ -142,11 +142,12 @@ async function render(){
 function side(){
   const m=comp.members[sel];
   $('selName').textContent = m ? (sel+1)+'．'+nameOf(m.stem) : '（沒選）';
-  ['flip','air','back','front','del'].forEach(id=>$(id).disabled=!m);
+  ['flip','air','back','front','del','focus'].forEach(id=>$(id).disabled=!m);
+  $('focus').checked = !!(m && m.focus);   // 每隻各自的設定（ver -2640，Ray：「全部預設不跑中」）：勾了（focus）才拉到中間
   document.querySelectorAll('[data-play]').forEach(b=>{ const t=ACTS[b.dataset.play]; b.disabled=!(m && ((t[m.stem]&&t[m.stem].dir) || (b.dataset.play==='miss' && ENEMY_DELAY[m.stem]))); });
   $('flip').classList.toggle('on', !!(m&&m.flip)); $('air').classList.toggle('on', !!(m&&m.air));
   $('info').textContent = m ? `位置 ${Math.round(m.x)}, ${Math.round(m.y)}　縮放 ${(m.k*100).toFixed(1)}%` : '';
-  $('list').innerHTML = comp.members.map((x,i)=>`<div data-i="${i}" class="${i===sel?'sel':''}">${i+1}．${nameOf(x.stem)}${x.flip?'（翻）':''}${x.air?' ✈':''}</div>`).join('');
+  $('list').innerHTML = comp.members.map((x,i)=>`<div data-i="${i}" class="${i===sel?'sel':''}">${i+1}．${nameOf(x.stem)}${x.flip?'（翻）':''}${x.air?' ✈':''}${x.focus?' ⇢中':''}</div>`).join('');
   const dirty=JSON.stringify(comp)!==saved; $('save').classList.toggle('on', dirty);
 }
 /* ── 選取／拖移／縮放 ── */
@@ -184,6 +185,7 @@ document.addEventListener('keydown', e=>{
   e.preventDefault(); posOne(sel); side(); });
 $('list').addEventListener('click', e=>{ const d=e.target.closest('[data-i]'); if(!d) return; sel=+d.dataset.i; render(); });
 $('flip').onclick=()=>{ snap(); const m=comp.members[sel]; m.flip=m.flip?0:1; if(!m.flip) delete m.flip; render(); };
+$('focus').onchange=()=>{ snap(); const m=comp.members[sel]; if($('focus').checked) m.focus=1; else delete m.focus; $('focus').blur(); render(); };
 $('air').onclick=()=>{ snap(); const m=comp.members[sel]; if(m.air) delete m.air; else m.air=1; render(); };
 $('back').onclick=()=>{ snap(); if(sel>0){ const a=comp.members; [a[sel-1],a[sel]]=[a[sel],a[sel-1]]; sel--; render(); } };
 $('front').onclick=()=>{ snap(); const a=comp.members; if(sel<a.length-1){ [a[sel+1],a[sel]]=[a[sel],a[sel+1]]; sel++; render(); } };
@@ -246,7 +248,7 @@ async function play(kind){
   wrap.appendChild(el);
   const N=c.fr.length, fps=c.j.fps||24, T=N*1000/fps, hit=Math.min(N-1, spec.hit!=null?spec.hit:N-1);
   /* 遊戲裡的「攻擊拉到中間」（enemy.attackFocusAnim 同一條式子）：怪本體中心移到手機框中心，fillFrame 的再放大蓋滿 */
-  if(kind==='atk' && $('focus').checked){
+  if(kind==='atk' && m.focus){   // 這一隻勾了「拉到中間」（m.focus）才拉，同遊戲
     const [CW,CH]=comp.canvas, kk=Math.max(375/CW, 406/CH), vw=375/kk, vh=406/kk;
     const F={ l:(CW-vw)/2, t:0, r:(CW+vw)/2, b:vh }, Fc={ x:(F.l+F.r)/2, y:(F.t+F.b)/2 };
     const [w0,h0]=sizeOf(m.stem), P={ x:m.x+w0*m.k/2, y:m.y+h0*m.k/2 };
