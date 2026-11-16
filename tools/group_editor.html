@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>群戰編組編輯器</title>
+<style>
+:root{--bg:#121016;--panel:#1c1922;--fg:#ece5d8;--mut:#9a9387;--acc:#e0b35c;--line:#3a3442}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:13px system-ui,"Microsoft JhengHei",sans-serif}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line)}
+h1{font-size:15px;margin:0 10px 0 0}
+button,select{background:#2a2630;color:var(--fg);border:1px solid #4a4452;border-radius:6px;padding:5px 10px;cursor:pointer;font:inherit}
+button.on{background:var(--acc);color:#1a1408;border-color:var(--acc)}
+button:disabled{opacity:.4;cursor:default}
+#msg{color:var(--mut)}
+main{display:grid;grid-template-columns:200px 1fr 230px;gap:10px;padding:10px;align-items:start}
+#pal{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:calc(100vh - 70px);overflow:auto}
+.pi{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px;cursor:pointer;text-align:center;font-size:11px;color:var(--mut)}
+.pi:hover{border-color:var(--acc);color:var(--fg)}
+.pi img{width:100%;aspect-ratio:2/3;object-fit:contain;display:block}
+#wrap{position:relative;overflow:hidden;border-radius:6px;background:#000;user-select:none;touch-action:none}
+#bgimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.75}
+.mem{position:absolute;cursor:move}
+.mem img{width:100%;height:100%;display:block;pointer-events:none}
+.mem.sel{outline:2px solid var(--acc);outline-offset:-2px}
+.mem .tag{position:absolute;left:0;top:0;background:rgba(0,0,0,.6);color:var(--acc);font-size:11px;padding:1px 5px;border-radius:0 0 6px 0;pointer-events:none}
+.anim{position:absolute;pointer-events:none;z-index:50}
+.guide{position:absolute;border:2px dashed rgba(255,211,106,.8);pointer-events:none;z-index:60}
+.guide span{position:absolute;right:4px;top:2px;color:rgba(255,211,106,.9);font-size:11px}
+#side{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px}
+#side .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+#side b{color:var(--acc)}
+#list div{padding:3px 6px;border-radius:4px;cursor:pointer}
+#list div.sel{background:#3a3020;color:var(--acc)}
+.hint{color:var(--mut);font-size:12px;line-height:1.6}
+</style></head><body>
+<header>
+  <h1>群戰編組編輯器</h1>
+  <select id="comp"></select>
+  <select id="bg"></select>
+  <button id="idleBtn">全員待機</button>
+  <label class="hint"><input type="checkbox" id="focus" checked> 攻擊照遊戲拉到中間</label>
+  <button id="save">存檔</button>
+  <button id="revert">還原</button>
+  <span id="msg"></span>
+</header>
+<main>
+  <div id="pal"></div>
+  <div><div id="wrap"><img id="bgimg" alt=""></div>
+    <div class="hint">點一隻選取 → 拖移；滾輪縮放（以游標為中心）；方向鍵微調、Delete 刪除。虛線框＝手機上看得到的範圍。左邊點一隻怪＝加進這一組（放在最前排）。</div></div>
+  <div id="side">
+    <div><b id="selName">（沒選）</b></div>
+    <div class="row"><button id="flip">左右翻</button><button id="air">飛行（不畫影子）</button></div>
+    <div class="row"><button id="back">往後一層</button><button id="front">往前一層</button><button id="del">刪除</button></div>
+    <div class="row"><button data-play="atk">▶ 攻擊</button><button data-play="delay">▶ 延時</button><button data-play="miss">▶ 點錯</button></div>
+    <div class="hint" id="info"></div>
+    <div><b>由後往前</b></div>
+    <div id="list"></div>
+  </div>
+</main>
+<script type="module">
+import { ENEMY_IDLE, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS } from '../config.js';
+import { GROUP_COMPS } from '../script/group_comps.js';
+
+const $=id=>document.getElementById(id);
+const PW=1024, PH=1536;
+const ACTS={ atk:ENEMY_ATK, delay:ENEMY_DELAY, miss:ENEMY_MISS };
+const NAME={ coffinbeetle:'石棺甲蟲', bellmite:'鐘殼蟲', bonecrow:'骨鴉', bonecrab:'骸殼蟹', chainhound:'鎖鏈餓犬', lanternimp:'提燈小鬼',
+  pilgrimmass:'朝聖者團塊', crawler:'爬行朝聖者', bellwyrm:'喪鐘蠕蟲', saintvulture:'聖面鷲', ironpenitent:'鐵衣苦修者', ribcage:'肋籠獸',
+  stilt:'高蹺細影', censer:'香爐蠍', hanged:'崖縫吊屍者', houndbeast:'餓獸', colossus:'崩岩巨像' };
+const nameOf=stem=>{ const k=stem.replace('mon_canyon_','').replace(/_(dark|neutral)$/,''); return NAME[k]||k; };
+const STEMS=Object.keys(ENEMY_IDLE).filter(k=>k.startsWith('mon_canyon_'));
+const BGS=['canyon_entry_day','canyon_corridor_day','canyon_bones_day','canyon_bridge_day','canyon_altar_day'];
+
+let key=null, comp=null, saved=null, sel=-1, sc=1, idleOn=false, idleT=0;
+const clips={};   // dir → Promise<{j, fr}>
+function loadClip(dir){
+  if(clips[dir]) return clips[dir];
+  return clips[dir]=fetch('../'+dir+'anim.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j) return null;
+    const fr=Array.from({length:j.frames||0},(_,i)=>{ const f=new Image(); f.src='../'+dir+'frame_'+String(i).padStart(2,'0')+'.webp'; return f; });
+    return Promise.all(fr.map(f=>f.decode().catch(()=>{}))).then(()=>({ j, fr }));
+  }).catch(()=>null);
+}
+/* 點選用的 alpha：每張立繪縮成 128 寬存一份 */
+const alphaCache={};
+function alphaOf(stem){
+  if(alphaCache[stem]) return alphaCache[stem];
+  return alphaCache[stem]=new Promise(res=>{ const i=new Image(); i.onload=()=>{ const w=128, h=Math.round(128*i.naturalHeight/i.naturalWidth);
+    const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d'); x.drawImage(i,0,0,w,h);
+    const d=x.getImageData(0,0,w,h).data, a=new Uint8Array(w*h); for(let k=0;k<w*h;k++) a[k]=d[k*4+3]; res({w,h,a}); }; i.src='../resources/enemy/'+stem+'.webp'; });
+}
+
+/* ── 版面 ── */
+const wrap=$('wrap');
+function layout(){
+  const W=Math.min(wrap.parentElement.clientWidth, 1100); sc=W/comp.canvas[0];
+  wrap.style.width=W+'px'; wrap.style.height=(comp.canvas[1]*sc)+'px';
+}
+function guide(){
+  wrap.querySelectorAll('.guide').forEach(e=>e.remove());
+  /* 手機的敵人區（約 375×406，cover、置頂置中）在畫布上看得到的範圍 —— 遊戲的取景照卡的 fit，禍魘大軍是 cover。 */
+  const [CW,CH]=comp.canvas, k=Math.max(375/CW, 406/CH), vw=375/k, vh=406/k;
+  const g=document.createElement('div'); g.className='guide'; g.innerHTML='<span>手機</span>';
+  Object.assign(g.style,{ left:((CW-vw)/2*sc)+'px', top:'0px', width:(vw*sc)+'px', height:(vh*sc)+'px' });
+  wrap.appendChild(g);
+}
+function render(){
+  layout();
+  wrap.querySelectorAll('.mem').forEach(e=>e.remove());
+  comp.members.forEach((m,i)=>{
+    const d=document.createElement('div'); d.className='mem'+(i===sel?' sel':''); d.dataset.i=i;
+    Object.assign(d.style,{ left:(m.x*sc)+'px', top:(m.y*sc)+'px', width:(PW*m.k*sc)+'px', height:(PH*m.k*sc)+'px', zIndex:10+i });
+    const im=document.createElement('img'); im.src='../resources/enemy/'+m.stem+'.webp'; if(m.flip) im.style.transform='scaleX(-1)';
+    d.appendChild(im);
+    const t=document.createElement('div'); t.className='tag'; t.textContent=(i+1)+' '+nameOf(m.stem)+(m.air?' ✈':''); d.appendChild(t);
+    wrap.appendChild(d);
+  });
+  guide(); side();
+  if(idleOn) startIdle();
+}
+function side(){
+  const m=comp.members[sel];
+  $('selName').textContent = m ? (sel+1)+'．'+nameOf(m.stem) : '（沒選）';
+  ['flip','air','back','front','del'].forEach(id=>$(id).disabled=!m);
+  document.querySelectorAll('[data-play]').forEach(b=>{ const t=ACTS[b.dataset.play]; b.disabled=!(m && ((t[m.stem]&&t[m.stem].dir) || (b.dataset.play==='miss' && ENEMY_DELAY[m.stem]))); });
+  $('flip').classList.toggle('on', !!(m&&m.flip)); $('air').classList.toggle('on', !!(m&&m.air));
+  $('info').textContent = m ? `位置 ${Math.round(m.x)}, ${Math.round(m.y)}　縮放 ${(m.k*100).toFixed(1)}%` : '';
+  $('list').innerHTML = comp.members.map((x,i)=>`<div data-i="${i}" class="${i===sel?'sel':''}">${i+1}．${nameOf(x.stem)}${x.flip?'（翻）':''}${x.air?' ✈':''}</div>`).join('');
+  const dirty=JSON.stringify(comp)!==saved; $('save').classList.toggle('on', dirty);
+}
+/* ── 選取／拖移／縮放 ── */
+function toCanvas(e){ const r=wrap.getBoundingClientRect(); return { x:(e.clientX-r.left)/sc, y:(e.clientY-r.top)/sc }; }
+async function pick(p){
+  for(let i=comp.members.length-1;i>=0;i--){ const m=comp.members[i];
+    let u=(p.x-m.x)/(PW*m.k), v=(p.y-m.y)/(PH*m.k); if(u<0||u>1||v<0||v>1) continue; if(m.flip) u=1-u;
+    const A=await alphaOf(m.stem); if(A.a[Math.min(A.h-1,(v*A.h)|0)*A.w+Math.min(A.w-1,(u*A.w)|0)]>60) return i; }
+  return -1;
+}
+let drag=null;
+wrap.addEventListener('pointerdown', async e=>{
+  const p=toCanvas(e); const i=await pick(p);
+  sel=i; render(); if(i<0) return;
+  const m=comp.members[i]; drag={ p, x:m.x, y:m.y }; wrap.setPointerCapture(e.pointerId);
+});
+wrap.addEventListener('pointermove', e=>{ if(!drag) return; const p=toCanvas(e), m=comp.members[sel];
+  m.x=+(drag.x+p.x-drag.p.x).toFixed(1); m.y=+(drag.y+p.y-drag.p.y).toFixed(1); posOne(sel); side(); });
+let idleRe=0; const reIdle=()=>{ if(!idleOn) return; clearTimeout(idleRe); idleRe=setTimeout(startIdle, 250); };
+wrap.addEventListener('pointerup', ()=>{ if(drag) reIdle(); drag=null; });
+wrap.addEventListener('wheel', e=>{ e.preventDefault(); const m=comp.members[sel]; if(!m) return;
+  const p=toCanvas(e), f=e.deltaY<0?1.04:1/1.04, k2=Math.max(0.03, Math.min(3, m.k*f)), r=k2/m.k;
+  m.x=+(p.x-(p.x-m.x)*r).toFixed(1); m.y=+(p.y-(p.y-m.y)*r).toFixed(1); m.k=+k2.toFixed(4); posOne(sel); side(); reIdle(); }, { passive:false });
+function posOne(i){ const m=comp.members[i], d=wrap.querySelector('.mem[data-i="'+i+'"]'); if(!d) return;
+  Object.assign(d.style,{ left:(m.x*sc)+'px', top:(m.y*sc)+'px', width:(PW*m.k*sc)+'px', height:(PH*m.k*sc)+'px' }); }
+document.addEventListener('keydown', e=>{ const m=comp.members[sel]; if(!m || e.target.tagName==='SELECT') return;
+  const st=e.shiftKey?10:2;
+  if(e.key==='ArrowLeft') m.x-=st; else if(e.key==='ArrowRight') m.x+=st; else if(e.key==='ArrowUp') m.y-=st; else if(e.key==='ArrowDown') m.y+=st;
+  else if(e.key==='Delete' || e.key==='Backspace'){ comp.members.splice(sel,1); sel=-1; render(); return; } else return;
+  e.preventDefault(); posOne(sel); side(); });
+$('list').addEventListener('click', e=>{ const d=e.target.closest('[data-i]'); if(!d) return; sel=+d.dataset.i; render(); });
+$('flip').onclick=()=>{ const m=comp.members[sel]; m.flip=m.flip?0:1; if(!m.flip) delete m.flip; render(); };
+$('air').onclick=()=>{ const m=comp.members[sel]; if(m.air) delete m.air; else m.air=1; render(); };
+$('back').onclick=()=>{ if(sel>0){ const a=comp.members; [a[sel-1],a[sel]]=[a[sel],a[sel-1]]; sel--; render(); } };
+$('front').onclick=()=>{ const a=comp.members; if(sel<a.length-1){ [a[sel+1],a[sel]]=[a[sel],a[sel+1]]; sel++; render(); } };
+$('del').onclick=()=>{ comp.members.splice(sel,1); sel=-1; render(); };
+
+/* ── 調色盤：點一隻加進來（最前排，放在手機框中間偏下） ── */
+const pal=$('pal');
+pal.innerHTML=STEMS.map(s=>`<div class="pi" data-s="${s}"><img src="../resources/enemy/${s}.webp" loading="lazy" alt="">${nameOf(s)}</div>`).join('');
+pal.addEventListener('click', e=>{ const d=e.target.closest('[data-s]'); if(!d) return;
+  const k=0.35, [CW,CH]=comp.canvas; comp.members.push({ stem:d.dataset.s, k, x:+((CW-PW*k)/2).toFixed(1), y:+(CH-PH*k-40).toFixed(1) });
+  sel=comp.members.length-1; render(); });
+
+/* ── 播動畫 ── */
+function boxOf(m, j){ const cv=j.canvas||[PW,PH], b=j.box||[0,0,cv[0],cv[1]], x=m.flip ? cv[0]-(b[0]+b[2]) : b[0];
+  return { l:m.x+x*m.k, t:m.y+b[1]*m.k, w:b[2]*m.k, h:b[3]*m.k, bx:x, b }; }
+async function play(kind){
+  const m=comp.members[sel]; if(!m) return; const i=sel;
+  let spec=ACTS[kind][m.stem]; if(!spec && kind==='miss') spec=ENEMY_DELAY[m.stem]; if(!spec) return;
+  stopIdle();
+  const c=await loadClip(spec.dir); if(!c) return;
+  const d=wrap.querySelector('.mem[data-i="'+i+'"]'); if(d) d.style.visibility='hidden';
+  const B=boxOf(m, c.j), el=document.createElement('img'); el.className='anim';
+  Object.assign(el.style,{ left:(B.l*sc)+'px', top:(B.t*sc)+'px', width:(B.w*sc)+'px', height:(B.h*sc)+'px', zIndex:40 });
+  if(m.flip) el.style.scale='-1 1';
+  wrap.appendChild(el);
+  const N=c.fr.length, fps=c.j.fps||24, T=N*1000/fps, hit=Math.min(N-1, spec.hit!=null?spec.hit:N-1);
+  /* 遊戲裡的「攻擊拉到中間」（enemy.attackFocusAnim 同一條式子）：怪本體中心移到手機框中心，fillFrame 的再放大蓋滿 */
+  if(kind==='atk' && $('focus').checked){
+    const [CW,CH]=comp.canvas, kk=Math.max(375/CW, 406/CH), vw=375/kk, vh=406/kk;
+    const F={ l:(CW-vw)/2, t:0, r:(CW+vw)/2, b:vh }, Fc={ x:(F.l+F.r)/2, y:(F.t+F.b)/2 };
+    const P={ x:m.x+PW*m.k/2, y:m.y+PH*m.k/2 };
+    const need=(f,o,b)=> (o-b)===0 ? 1 : (f-o)/(b-o);
+    const k = spec.fillFrame ? Math.max(1, need(F.l-Fc.x+P.x, P.x, B.l), need(F.r-Fc.x+P.x, P.x, B.l+B.w), need(F.t-Fc.y+P.y, P.y, B.t), need(F.b-Fc.y+P.y, P.y, B.t+B.h)) : 1;
+    const cx=B.l+B.w/2, cy=B.t+B.h/2;
+    const dx=(Fc.x-cx-k*(P.x-cx))*(m.flip?-1:1)*sc, dy=(Fc.y-cy-k*(P.y-cy))*sc;
+    const inAt=Math.min(0.45, Math.min(260, hit*1000/fps*0.5)/T), outAt=Math.max(inAt+0.01, 1-260/T);
+    const Z=`translate(${dx}px, ${dy}px) scale(${k})`;
+    el.animate([{transform:'none',offset:0,easing:'ease-out'},{transform:Z,offset:inAt},{transform:Z,offset:outAt,easing:'ease-in-out'},{transform:'none',offset:1}],{duration:T});
+  }
+  let f=0, rev=false; el.src=c.fr[0].src;
+  const t=setInterval(()=>{
+    if(!rev){ if(++f<N){ el.src=c.fr[f].src; if(f===hit) $('msg').textContent='打到（第 '+hit+' 格）'; return; }
+      if(spec.rev){ rev=true; f=Math.max(0, N-1-Math.round(fps)); } }
+    if(rev && --f>=0){ el.src=c.fr[f].src; return; }
+    clearInterval(t); el.remove(); if(d) d.style.visibility=''; $('msg').textContent=''; if(idleOn) startIdle();
+  }, 1000/fps);
+}
+document.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>play(b.dataset.play));
+
+/* ── 全員待機 ── */
+function stopIdle(){ clearInterval(idleT); idleT=0; wrap.querySelectorAll('.anim.idle').forEach(e=>e.remove()); wrap.querySelectorAll('.mem').forEach(d=>d.style.visibility=''); }
+async function startIdle(){
+  stopIdle();
+  const els=[];
+  for(const [i,m] of comp.members.entries()){ const dir=ENEMY_IDLE[m.stem]; if(!dir) continue; const c=await loadClip(dir); if(!c || !idleOn) continue;
+    const B=boxOf(m, c.j), el=document.createElement('img'); el.className='anim idle';
+    Object.assign(el.style,{ left:(B.l*sc)+'px', top:(B.t*sc)+'px', width:(B.w*sc)+'px', height:(B.h*sc)+'px', zIndex:10+i });
+    if(m.flip) el.style.scale='-1 1';
+    wrap.appendChild(el); const d=wrap.querySelector('.mem[data-i="'+i+'"]'); if(d){ d.style.visibility='hidden'; }
+    els.push({ el, c, i }); }
+  if(!idleOn) return;
+  const t0=performance.now();
+  idleT=setInterval(()=>{ const t=performance.now()-t0; for(const o of els){ const fps=o.c.j.fps||24; o.el.src=o.c.fr[Math.floor(t*fps/1000+o.i*3)%o.c.fr.length].src; } }, 1000/24);
+}
+/* 待機中仍然要能點選拖移：選取看的是 .mem（藏起來但還在），所以拖完重畫 */
+$('idleBtn').onclick=()=>{ idleOn=!idleOn; $('idleBtn').classList.toggle('on', idleOn); if(idleOn) startIdle(); else stopIdle(); };
+
+/* ── 組／背景／存檔 ── */
+const compSel=$('comp');
+compSel.innerHTML=Object.keys(GROUP_COMPS).map(k=>`<option value="${k}">${k}（${GROUP_COMPS[k].members.map(m=>nameOf(m.stem)).join('・')}）</option>`).join('');
+compSel.onchange=()=>{ if(JSON.stringify(comp)!==saved && !confirm('這一組還沒存檔，確定要換組？')){ compSel.value=key; return; } load(compSel.value); };
+$('bg').innerHTML=BGS.map(b=>`<option>${b}</option>`).join('');
+$('bg').onchange=()=>{ $('bgimg').src='../resources/background/canyon/'+$('bg').value+'.webp'; };
+$('bg').onchange();
+function load(k){ key=k; comp=JSON.parse(JSON.stringify(GROUP_COMPS[k])); saved=JSON.stringify(comp); sel=-1; render(); $('msg').textContent=''; }
+$('revert').onclick=()=>load(key);
+$('save').onclick=()=>{
+  $('msg').textContent='寫入中…';
+  fetch('../__gcomp',{ method:'POST', body:JSON.stringify({ key, comp }) }).then(r=>r.text().then(x=>({ok:r.ok,x}))).then(r=>{
+    $('msg').textContent = r.ok ? '已存檔（'+r.x+'）—— 遊戲重新整理就吃得到' : '存檔失敗：'+r.x;
+    if(r.ok){ GROUP_COMPS[key]=JSON.parse(JSON.stringify(comp)); saved=JSON.stringify(comp); side();
+      compSel.querySelector('option[value="'+key+'"]').textContent=key+'（'+comp.members.map(m=>nameOf(m.stem)).join('・')+'）'; }
+  }).catch(e=>{ $('msg').textContent='存檔失敗：'+e; });
+};
+window.addEventListener('resize', ()=>render());
+window.addEventListener('beforeunload', e=>{ if(comp && JSON.stringify(comp)!==saved){ e.preventDefault(); e.returnValue=''; } });
+load(Object.keys(GROUP_COMPS)[0]);
+</script>
+</body></html>

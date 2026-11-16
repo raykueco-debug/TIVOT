@@ -825,6 +825,44 @@ def glayout_patch(req):
     _write_text(GLAYOUT_FILE, text[:a] + body + text[b:])
     return '%s %s %s' % (GLAYOUT_FILE, d, json.dumps(clean))
 
+
+# ══ 群戰編組（ver -2635，tools/group_editor.html）══
+# `POST /__gcomp`，body＝`{"key":"canyon_mix2", "comp":{"canvas":[1536,1024], "members":[{stem,k,x,y,flip?,air?},…]}}`
+# 只改 `script/group_comps.js` 裡 `/*GCOMP*/ … /*END*/` 那一段 JSON 的那一組（其他組原樣），整段重寫。
+GCOMP_FILE = 'script/group_comps.js'
+
+
+def gcomp_patch(req):
+    key, comp = req.get('key') or '', req.get('comp') or {}
+    if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', key):
+        raise ValueError('編組鑰匙不合法：' + key)
+    cv = comp.get('canvas') or [1536, 1024]
+    members = []
+    for m in comp.get('members') or []:
+        stem = str(m.get('stem') or '')
+        if not re.match(r'^[A-Za-z0-9_]+$', stem):
+            raise ValueError('立繪檔名不合法：' + stem)
+        if not os.path.exists(os.path.join(ROOT, 'resources', 'enemy', stem + '.webp')):
+            raise ValueError('找不到立繪：resources/enemy/%s.webp' % stem)
+        k = float(m.get('k') or 0)
+        if not (0.02 <= k <= 5):
+            raise ValueError('縮放超出範圍：%s' % k)
+        mm = {'stem': stem, 'k': round(k, 4), 'x': round(float(m.get('x') or 0), 1), 'y': round(float(m.get('y') or 0), 1)}
+        if m.get('flip'): mm['flip'] = 1
+        if m.get('air'): mm['air'] = 1
+        members.append(mm)
+    if not members:
+        raise ValueError('這一組一隻都沒有')
+    path = os.path.join(ROOT, GCOMP_FILE)
+    with open(path, 'r', encoding='utf-8', newline='') as f:
+        text = f.read()
+    a, b = text.index('/*GCOMP*/') + len('/*GCOMP*/'), text.index('/*END*/')
+    data = json.loads(text[a:b] or '{}')
+    data[key] = {'canvas': [int(cv[0]), int(cv[1])], 'members': members}
+    body = json.dumps(data, ensure_ascii=False, indent=1)
+    _write_text(GCOMP_FILE, text[:a] + body + text[b:])
+    return '%s %s：%d 隻' % (GCOMP_FILE, key, len(members))
+
 class Handler(http.server.SimpleHTTPRequestHandler):
     def _fail(self, code, msg):
         body = msg.encode('utf-8')
@@ -874,6 +912,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 req = json.loads(self.rfile.read(n).decode('utf-8'))
                 sys.stderr.write('[devserver] glayout %s\n' % json.dumps(req, ensure_ascii=False))
                 where = glayout_patch(req)
+            except ValueError as e:
+                return self._fail(409, str(e))
+            except Exception as e:                        # noqa: BLE001
+                return self._fail(500, '寫檔失敗：%s' % e)
+            return self._fail(200, 'ok ' + where)
+        if self.path.split('?')[0] == '/__gcomp':
+            try:
+                n = int(self.headers.get('Content-Length') or 0)
+                req = json.loads(self.rfile.read(n).decode('utf-8'))
+                sys.stderr.write('[devserver] gcomp %s\n' % req.get('key'))
+                where = gcomp_patch(req)
             except ValueError as e:
                 return self._fail(409, str(e))
             except Exception as e:                        # noqa: BLE001

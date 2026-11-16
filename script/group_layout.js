@@ -2,4 +2,22 @@
    鑰匙＝群戰卡的 `group.dir`；每一層 `<n>: [左右, 上下, 縮放]`（左右／上下＝分層畫布的像素，縮放以分層畫布原點為準；沒寫＝原位 [0,0,1]）。
    由戰鬥中的「敵立繪編輯 → 群戰」分頁存檔寫回（devserver 的 `/__glayout`，整段 JSON 重寫）；要手改也可以，格式照下面。
    ⚠ 只改這一份就好：命中判定、影子、待機／攻擊動畫、倒下淨化全部經過 `enemy.layerMap` 讀它（鐵律 7）。 */
-export const GROUP_LAYOUT = /*GLAYOUT*/{}/*END*/;
+export const GROUP_LAYOUT = /*GLAYOUT*/{
+ "resources/enemy/canyon_swarm/fly2/": {
+  "1": [
+   0.0,
+   138.4,
+   1.0
+  ],
+  "2": [
+   18.5,
+   52.2,
+   1.0
+  ],
+  "4": [
+   274.4,
+   -266.8,
+   1.0
+  ]
+ }
+}/*END*/;

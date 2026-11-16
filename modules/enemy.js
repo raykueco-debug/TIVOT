@@ -21,7 +21,8 @@ import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
 import { GROUP_MEMBERS } from '../script/group_members.js';
-import { GROUP_LAYOUT } from '../script/group_layout.js';   // 群戰成員的位置與大小（ver -2632，編輯器存檔寫回）   // 群戰分層 → 原立繪的對位（自動產生，ver -2623）
+import { GROUP_LAYOUT } from '../script/group_layout.js';
+import { GROUP_COMPS } from '../script/group_comps.js';   // 群戰編組：立繪＋位置（ver -2635，tools/group_editor.html 存檔寫回）   // 群戰成員的位置與大小（ver -2632，編輯器存檔寫回）   // 群戰分層 → 原立繪的對位（自動產生，ver -2623）
 import * as groundShadow from './groundShadow.js';   // 接地陰影（ver -1702，葉節點）
 import { sakuraBurst } from './sakura.js';   // 鹿主的櫻花狂亂（ver -899）——同一支花瓣引擎，見 spawnSakura
 
@@ -2226,6 +2227,27 @@ function buildMask(im){
     groupMasks[im.dataset.n]={ w, h, a, pts, cx:cnt?sx/cnt/w:0.5, cy:cnt?sy/cnt/h:0.5 };
   }catch(_){}
 }
+/* ══ 群戰編組（卡上 `group:{ comp:'<鑰匙>' }`，ver -2635，Ray：「做一個編輯器 可以點選放山谷的所有怪進去 然後調整大小跟位置」）══
+   資料在 `script/group_comps.js`：每一隻＝一張**原立繪**（resources/enemy/<stem>.webp）＋它在畫布上的縮放與位置（＋翻面／飛行）。
+   跟分層圖那一套（`group.dir`＋guard_N）並存：分層圖是「美術排好的整張」，這一套是「照編輯器擺的立繪」——
+   每一隻的圖框直接擺成那個矩形（layerMap 一支算，鐵律 7），命中、影子、待機／攻擊動畫全部讀同一份；
+   動畫用的就是立繪座標（box 不必再換算）。翻面的那一隻先鏡成一張圖（遮罩跟著鏡），動畫層用 scale -1 1。 */
+function compOf(G){ return (G && G.comp && GROUP_COMPS[G.comp]) || null; }
+export function groupOrder(G){ const c=compOf(G); return c ? c.members.map((_,i)=>i+1) : (G && G.order) || []; }
+function compSrc(m){ const u='resources/enemy/'+m.stem+'.webp'; return u+assetVer(u); }
+export function groupWarmSrcs(G){ const c=compOf(G); return c ? c.members.map(compSrc) : groupOrder(G).map(n=>G.dir+(G.prefix||'guard_')+n+'.webp'); }
+const mirrorCache=new Map();
+function mirroredSrc(url){
+  if(mirrorCache.has(url)) return mirrorCache.get(url);
+  const p=new Promise(res=>{ const i=new Image(); i.onload=()=>{ try{ const c=document.createElement('canvas'); c.width=i.naturalWidth; c.height=i.naturalHeight;
+      const x=c.getContext('2d'); x.translate(c.width,0); x.scale(-1,1); x.drawImage(i,0,0); c.toBlob(b=>res(b?URL.createObjectURL(b):url), 'image/webp', 0.92); }catch(_){ res(url); } };
+    i.onerror=()=>res(url); i.src=url; });
+  mirrorCache.set(url, p); return p;
+}
+function portraitClip(c, flip){
+  const j=c.j, cv=j.canvas||[1024,1536], b=j.box||[0,0,cv[0],cv[1]], x=flip ? cv[0]-(b[0]+b[2]) : b[0];
+  return { fr:c.fr, flip:!!flip, body:[(cv[0]/2-x)/b[2], (cv[1]/2-b[1])/b[3]], j:Object.assign({}, j, { box:[x, b[1], b[2], b[3]] }) };
+}
 function buildGroup(en){
   const g=groupEl(); if(!g) return;
   groupCard = (en && en.group) ? en : null;
@@ -2234,24 +2256,33 @@ function buildGroup(en){
   const G=en.group;
   /* 整組一起出場（ver -2047）：冷快取時一個一個冒出來很難看 —— 全部載到才掀（保險 4 秒）。 */
   g.classList.add('eg-wait');
-  let left=G.order.length+(G.cover?1:0); const done=()=>{ if(--left<=0) g.classList.remove('eg-wait'); };
+  const comp=compOf(G), order=groupOrder(G);
+  let left=order.length+(G.cover?1:0); const done=()=>{ if(--left<=0) g.classList.remove('eg-wait'); };
   clearTimeout(groupWaitT); groupWaitT=setTimeout(()=>g.classList.remove('eg-wait'), 4000);
   /* 掩體（ver -2061，聖索菲亞惡棍群戰）：`group.cover` ＝一層**最底下**的掩體（木桶／石柱／馬車…），
      不算人頭、打不到、不會倒；戰鬥背景照舊是城鎮那一張。人層已依原圖剪掉被擋的部分，疊在它上面。 */
   if(G.cover){ const cv=document.createElement('img'); cv.className='eg-cover'; cv.alt='';
     cv.onload=cv.onerror=done; cv.src=G.cover; g.appendChild(cv); }
   const pre=G.prefix||'guard_', shadow=G.shadow!==false;
-  for(const n of G.order){
+  for(const n of order){
     const im=document.createElement('img'); im.className='eg-guard'; im.dataset.n=n; im.alt='';
+    const cm=comp && comp.members[n-1];
+    if(cm){ im._pm={ k:cm.k, ox:cm.x, oy:cm.y, cv:comp.canvas||[1536,1024] }; im._flip=!!cm.flip; }
     /* 接地陰影：每個人一顆（ver -2045，Ray：「他們是不是沒給影子啊」）——
        美術的人物層是去背的、不帶影子；量腳與擺位照舊走 `groundShadow.place`（鐵律 8）。
        影子全部排在人之前（DOM 序＝圖層）：後排的人也該站在前排的影子之上。 */
     /* ⚠ `group.shadow:false` ＝不畫（人站在掩體後面、腳被剪掉了：量到的「腳」是掩體頂端，影子會浮在木桶上）。 */
     /* `group.noShadow:[n…]` ＝這幾層不畫接地影子（飛在空中的，ver -2164：卡耶爾的骨鴉）。 */
-    if(shadow && !(G.noShadow && G.noShadow.includes(n))){ const sh=document.createElement('div'); sh.className='ground-shadow eg-shadow';
+    if(shadow && !(cm ? cm.air : (G.noShadow && G.noShadow.includes(n)))){ const sh=document.createElement('div'); sh.className='ground-shadow eg-shadow';
       g.insertBefore(sh, g.querySelector('.eg-guard')); im._sh=sh; }
     im.onload=()=>{ syncMemberFit(im); placeMember(im); buildMask(im); if(im._sh) groundShadow.place(im, im._sh); done(); };
     im.onerror=done;
+    if(cm){ const u=compSrc(cm); if(cm.flip) mirroredSrc(u).then(v=>{ if(groupCard===en) im.src=v; }); else im.src=u;
+      /* 動畫照立繪檔名查 ENEMY_* 表（同單隻怪，鐵律 7），box 本來就是立繪座標 */
+      im._mem={ stem:cm.stem };
+      const di=ENEMY_IDLE[cm.stem]; if(di) loadMemberClip(di).then(c=>{ if(c && groupCard===en){ im._idle=portraitClip(c, cm.flip); showMemberAnim(im); } });
+      for(const [key, tab] of MEMBER_ACTS){ const a=tab[cm.stem]; if(a && a.dir) loadMemberClip(a.dir).then(c=>{ if(c && groupCard===en) im[key]=Object.assign(portraitClip(c, cm.flip), { spec:a }); }); }
+      g.appendChild(im); continue; }
     im.src=G.dir+pre+n+'.webp';
     /* 中槍倒下（ver -2062，動畫交件 56d17af4）：`group.fall` ＝倒地動畫的資料夾，每人一組 `<prefix><n>/frame_00..` ＋ anim.json
        （canvas＝分層畫布、box＝這人 5 格在畫布上的位置、kind＝back／forward／prone）。開場就抓（每場只有幾個人、一人 5 格）。 */
@@ -2289,6 +2320,10 @@ function loadMemberClip(dir){
 export function preloadGroupCard(key){
   const en=(GAME_CONFIG.enemies||{})[key], G=en && en.group; if(!G) return;
   const pre=G.prefix||'guard_';
+  const comp=compOf(G);
+  if(comp){ for(const m of comp.members){ const u=compSrc(m); if(m.flip) mirroredSrc(u); else { const im=new Image(); im.src=u; }
+      const di=ENEMY_IDLE[m.stem]; if(di) loadMemberClip(di); for(const [, tab] of MEMBER_ACTS){ const a=tab[m.stem]; if(a && a.dir) loadMemberClip(a.dir); } }
+    return; }
   for(const n of G.order){
     if(G.idle) loadMemberClip(G.idle+pre+n+'/');
     if(G.atk)  loadMemberClip(G.atk+pre+n+'/');
@@ -2312,7 +2347,7 @@ function dropMemberAnim(im){ if(im._ov){ im._ov.remove(); im._ov=null; } im._act
 let groupAnimT=0;
 function startGroupAnim(){
   clearInterval(groupAnimT); groupAnimT=0;
-  const G=groupCard && groupCard.group; if(!G || !(G.idle || GROUP_MEMBERS[G.dir])) return;
+  const G=groupCard && groupCard.group; if(!G || !(G.idle || GROUP_MEMBERS[G.dir] || compOf(G))) return;
   const t0=performance.now();
   groupAnimT=setInterval(()=>{ const g=$('enemyGroup'); if(!g || !groupCard){ clearInterval(groupAnimT); groupAnimT=0; return; }
     const t=performance.now()-t0;
@@ -2432,7 +2467,7 @@ function placeGroupShadows(){
 try{ window.addEventListener('resize', ()=>placeGroupShadows()); }catch(_){}
 /* ══ 群戰編輯器用（ver -2632，main.js 的「敵立繪編輯 → 群戰」分頁）══ */
 export function groupEditInfo(){
-  const g=$('enemyGroup'), G=groupCard && groupCard.group; if(!g || !G) return null;
+  const g=$('enemyGroup'), G=groupCard && groupCard.group; if(!g || !G || compOf(G)) return null;   // 編組的群戰改用 tools/group_editor.html
   const t=GROUP_LAYOUT[G.dir]||{};
   return { dir:G.dir, members:[...g.querySelectorAll('.eg-guard')].map(im=>({ n:im.dataset.n, stem:(memberOf(G, im.dataset.n)||{}).stem||'', v:(im._placeLive||t[im.dataset.n]||[0,0,1]).slice() })) };
 }
@@ -2470,6 +2505,13 @@ function layerMap(im, cw, ch){
   const W=g.clientWidth, H=g.clientHeight, cs=getComputedStyle(im);
   /* 卡的取景（fit.mode／pos）記在 dataset（syncMemberFit）—— 被移過的那一層 object-fit 是 fill，不能讀它的 computed。 */
   const fit=im.dataset.fit || cs.objectFit, pos=im.dataset.pos || cs.objectPosition;
+  if(im._pm){   // 編組的成員：畫布照卡的取景鋪進來，立繪再照它在畫布上的縮放與位置（ver -2635）
+    const C=im._pm.cv, L=(fit==='contain') ? Math.min(W/C[0], H/C[1]) : Math.max(W/C[0], H/C[1]);
+    const KW0={ center:0.5, top:0, left:0, bottom:1, right:1 };
+    const q=String(pos||'50% 0%').split(/\s+/).map(v=>(v in KW0) ? KW0[v] : parseFloat(v)/100);
+    const lox=(W-C[0]*L)*(isNaN(q[0])?0.5:q[0]), loy=(H-C[1]*L)*(isNaN(q[1])?0:q[1]), pk=L*im._pm.k;
+    return { k:pk, dw:cw*pk, dh:ch*pk, ox:lox+im._pm.ox*L, oy:loy+im._pm.oy*L, base:L };
+  }
   const k=(fit==='contain') ? Math.min(W/cw, H/ch) : Math.max(W/cw, H/ch), dw=cw*k, dh=ch*k;
   const KW={ center:0.5, top:0, left:0, bottom:1, right:1 };
   const p=String(pos||'50% 0%').split(/\s+/).map(v=>(v in KW) ? KW[v] : parseFloat(v)/100);
@@ -2484,6 +2526,7 @@ function layerMap(im, cw, ch){
    （不用 transform —— 倒下的 translateY、淨化的 transform-origin 照舊作用在這個框上）；layerMap 讀同一份，所以命中、影子、
    待機／攻擊層全部跟著走（鐵律 7）。`im._placeLive` ＝編輯器拖的當下（還沒存檔）。 */
 function memberPlaceOf(im){
+  if(im._pm) return null;   // 編組的成員位置在 GROUP_COMPS，不吃這一份
   if(im._placeLive) return im._placeLive;
   const G=groupCard && groupCard.group, t=G && GROUP_LAYOUT[G.dir], v=t && t[im.dataset.n];
   return (v && (v[0] || v[1] || (v[2] && v[2]!==1))) ? v : null;
@@ -2496,7 +2539,7 @@ function syncMemberFit(im){
 function placeMember(im){
   if(!im.naturalWidth) return;
   if(!im.dataset.fit) syncMemberFit(im);
-  if(!memberPlaceOf(im)){ im.style.left=im.style.top=im.style.width=im.style.height=''; im.style.objectFit=im.dataset.fit; im.style.objectPosition=im.dataset.pos; return; }
+  if(!im._pm && !memberPlaceOf(im)){ im.style.left=im.style.top=im.style.width=im.style.height=''; im.style.objectFit=im.dataset.fit; im.style.objectPosition=im.dataset.pos; return; }
   const m=layerMap(im, im.naturalWidth, im.naturalHeight); if(!m) return;
   im.style.left=m.ox+'px'; im.style.top=m.oy+'px'; im.style.width=m.dw+'px'; im.style.height=m.dh+'px'; im.style.objectFit='fill';
 }
@@ -2692,7 +2735,7 @@ function playFall(im, F){
 export function syncGroup(){
   syncFlock();   // 空戰編隊（ver -2516）
   const g=$('enemyGroup'); if(!g || !groupCard) return;
-  const G=groupCard.group, n=G.order.length, each=groupEach(G);
+  const G=groupCard.group, n=groupOrder(G).length, each=groupEach(G);
   const shouldStand=Math.max(0, Math.min(n, Math.ceil(Math.max(0,state.enemyHp)/each)));
   let alive=[...g.querySelectorAll('.eg-guard')].filter(im=>!im.classList.contains('eg-down') && !im.classList.contains('eg-leaving'));
   while(alive.length>shouldStand){ const v=pickVictim(alive); if(!v) break; fallGuard(v); alive=alive.filter(x=>x!==v); }
@@ -2710,8 +2753,8 @@ export function visualsReady(maxMs){
   });
 }
 /* 每個人幾血：`hpEach`（帝都衛士：一人 100）；或寫整群的 `hp`、平均分（惡棍群戰沿用原卡的總血，ver -2061）。 */
-function groupEach(G){ return G.hpEach || ((G.hp||0)/(G.order.length||1)) || 100; }
-export function groupHp(en){ return (en && en.group) ? (en.group.hp || en.group.order.length*groupEach(en.group)) : 0; }
+function groupEach(G){ return G.hpEach || ((G.hp||0)/(groupOrder(G).length||1)) || 100; }
+export function groupHp(en){ return (en && en.group) ? (en.group.hp || groupOrder(en.group).length*groupEach(en.group)) : 0; }
 export function loadEnemyPortrait(en){
   const eImg = $('enemyImg');
   if(!eImg) return;
