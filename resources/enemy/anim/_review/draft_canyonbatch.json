@@ -1,0 +1,95 @@
+{
+ "at": "2026-11-15T15:11:53.460Z",
+ "notes": {
+  "mon_canyon_bonecrab_dark|串": {
+   "text": "沒有r",
+   "key": "",
+   "at": "2026-11-15T15:08:49.048Z"
+  },
+  "mon_canyon_bonecrab_dark|D": {
+   "text": "沒有r",
+   "key": "mon_canyon_bonecrab_dark_delay_v1",
+   "at": "2026-11-15T15:08:55.228Z"
+  },
+  "mon_canyon_pilgrimmass_dark|串": {
+   "text": "沒有r",
+   "key": "",
+   "at": "2026-11-15T15:08:58.881Z"
+  },
+  "mon_canyon_bellwyrm_dark|串": {
+   "text": "沒有r",
+   "key": "",
+   "at": "2026-11-15T15:09:12.196Z"
+  },
+  "mon_canyon_ironpenitent_neutral|串": {
+   "text": "沒有r",
+   "key": "",
+   "at": "2026-11-15T15:09:19.024Z"
+  },
+  "mon_canyon_ribcage_dark|串": {
+   "text": "沒有r",
+   "key": "",
+   "at": "2026-11-15T15:09:25.979Z"
+  },
+  "mon_canyon_stilt_neutral|串": {
+   "text": "",
+   "key": "",
+   "at": "2026-11-15T15:09:35.932Z"
+  },
+  "mon_canyon_stilt_neutral|I": {
+   "text": "出框了",
+   "key": "mon_canyon_stilt_neutral_idle_v1",
+   "at": "2026-11-15T15:09:42.249Z"
+  },
+  "mon_canyon_saintvulture_dark|A": {
+   "text": "閃現消失",
+   "key": "",
+   "at": "2026-11-15T15:09:55.474Z"
+  },
+  "mon_canyon_bonecrow_dark|A": {
+   "text": "閃現消失",
+   "key": "",
+   "at": "2026-11-15T15:09:58.012Z"
+  },
+  "mon_canyon_censer_dark|A": {
+   "text": "尾鎚攻擊 ",
+   "key": "",
+   "at": "2026-11-15T15:10:20.106Z"
+  },
+  "mon_canyon_censer_dark|I": {
+   "text": "沒有呼吸感",
+   "key": "mon_canyon_censer_dark_idle_v1",
+   "at": "2026-11-15T15:10:32.066Z"
+  },
+  "mon_canyon_hanged_dark|A": {
+   "text": "張手咆哮",
+   "key": "",
+   "at": "2026-11-15T15:10:57.221Z"
+  },
+  "mon_canyon_houndbeast|A": {
+   "text": "撲咬",
+   "key": "",
+   "at": "2026-11-15T15:11:04.321Z"
+  },
+  "mon_canyon_bellmite_dark|A": {
+   "text": "雙鉗撲擊",
+   "key": "",
+   "at": "2026-11-15T15:11:22.206Z"
+  },
+  "mon_canyon_chainhound_dark|A": {
+   "text": "撲咬",
+   "key": "",
+   "at": "2026-11-15T15:11:26.877Z"
+  },
+  "mon_canyon_lanternimp_dark|A": {
+   "text": "砸燈",
+   "key": "",
+   "at": "2026-11-15T15:11:40.187Z"
+  },
+  "mon_canyon_crawler_dark|A": {
+   "text": "撲爪",
+   "key": "",
+   "at": "2026-11-15T15:11:47.345Z"
+  }
+ }
+}

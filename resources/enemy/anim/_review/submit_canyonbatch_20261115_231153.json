@@ -1,0 +1,180 @@
+{
+ "at": "2026-11-15T15:11:53.460Z",
+ "rows": [
+  {
+   "base": "mon_canyon_bonecrab_dark",
+   "zh": "骸殼蟹",
+   "notes": {
+    "串播": {
+     "text": "沒有r",
+     "key": "",
+     "at": "2026-11-15T15:08:49.048Z"
+    },
+    "D": {
+     "text": "沒有r",
+     "key": "mon_canyon_bonecrab_dark_delay_v1",
+     "at": "2026-11-15T15:08:55.228Z"
+    }
+   }
+  },
+  {
+   "base": "mon_canyon_pilgrimmass_dark",
+   "zh": "朝聖者團塊",
+   "notes": {
+    "串播": {
+     "text": "沒有r",
+     "key": "",
+     "at": "2026-11-15T15:08:58.881Z"
+    }
+   }
+  },
+  {
+   "base": "mon_canyon_bellwyrm_dark",
+   "zh": "喪鐘蠕蟲",
+   "notes": {
+    "串播": {
+     "text": "沒有r",
+     "key": "",
+     "at": "2026-11-15T15:09:12.196Z"
+    }
+   }
+  },
+  {
+   "base": "mon_canyon_ironpenitent_neutral",
+   "zh": "鐵衣苦修者",
+   "notes": {
+    "串播": {
+     "text": "沒有r",
+     "key": "",
+     "at": "2026-11-15T15:09:19.024Z"
+    }
+   }
+  },
+  {
+   "base": "mon_canyon_ribcage_dark",
+   "zh": "肋籠獸",
+   "notes": {
+    "串播": {
+     "text": "沒有r",
+     "key": "",
+     "at": "2026-11-15T15:09:25.979Z"
+    }
+   }
+  },
+  {
+   "base": "mon_canyon_stilt_neutral",
+   "zh": "高蹺細影",
+   "notes": {
+    "I": {
+     "text": "出框了",
+     "key": "mon_canyon_stilt_neutral_idle_v1",
+     "at": "2026-11-15T15:09:42.249Z"
+    }
+   }
+  },
+  {
+   "base": "mon_canyon_saintvulture_dark",
+   "zh": "聖面鷲",
+   "notes": {
+    "A": {
+     "text": "閃現消失",
+     "key": "",
+     "at": "2026-11-15T15:09:55.474Z"
+    }
+   }
+  },
+  {
+   "base": "mon_canyon_bonecrow_dark",
+   "zh": "骨鴉",
+   "notes": {
+    "A": {
+     "text": "閃現消失",
+     "key": "",
+     "at": "2026-11-15T15:09:58.012Z"
+    }
+   }
+  },
+  {
+   "base": "mon_canyon_censer_dark",
+   "zh": "香爐蠍",
+   "notes": {
+    "A": {
+     "text": "尾鎚攻擊 ",
+     "key": "",
+     "at": "2026-11-15T15:10:20.106Z"
+    },
+    "I": {
+     "text": "沒有呼吸感",
+     "key": "mon_canyon_censer_dark_idle_v1",
+     "at": "2026-11-15T15:10:32.066Z"
+    }
+   }
+  },
+  {
+   "base": "mon_canyon_hanged_dark",
+   "zh": "崖縫吊屍者",
+   "notes": {
+    "A": {
+     "text": "張手咆哮",
+     "key": "",
+     "at": "2026-11-15T15:10:57.221Z"
+    }
+   }
+  },
+  {
+   "base": "mon_canyon_houndbeast",
+   "zh": "餓獸",
+   "notes": {
+    "A": {
+     "text": "撲咬",
+     "key": "",
+     "at": "2026-11-15T15:11:04.321Z"
+    }
+   }
+  },
+  {
+   "base": "mon_canyon_bellmite_dark",
+   "zh": "鐘殼蟲",
+   "notes": {
+    "A": {
+     "text": "雙鉗撲擊",
+     "key": "",
+     "at": "2026-11-15T15:11:22.206Z"
+    }
+   }
+  },
+  {
+   "base": "mon_canyon_chainhound_dark",
+   "zh": "鎖鏈餓犬",
+   "notes": {
+    "A": {
+     "text": "撲咬",
+     "key": "",
+     "at": "2026-11-15T15:11:26.877Z"
+    }
+   }
+  },
+  {
+   "base": "mon_canyon_lanternimp_dark",
+   "zh": "提燈小鬼",
+   "notes": {
+    "A": {
+     "text": "砸燈",
+     "key": "",
+     "at": "2026-11-15T15:11:40.187Z"
+    }
+   }
+  },
+  {
+   "base": "mon_canyon_crawler_dark",
+   "zh": "爬行朝聖者",
+   "notes": {
+    "A": {
+     "text": "撲爪",
+     "key": "",
+     "at": "2026-11-15T15:11:47.345Z"
+    }
+   }
+  }
+ ]
+}

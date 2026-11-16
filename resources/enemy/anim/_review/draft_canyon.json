@@ -1,0 +1,277 @@
+{
+ "at": "2026-11-14T13:17:03.374Z",
+ "notes": {
+  "colossus|D": {
+   "text": "向前出拳　打出飛石　已有動畫",
+   "at": "2026-11-14T12:55:31.285Z"
+  },
+  "colossus|M": {
+   "text": "咆哮　回血15%",
+   "at": "2026-11-14T12:56:03.281Z"
+  },
+  "coffinbeetle|I": {
+   "text": "昆虫型　自然起伏　鉗子交錯夾動",
+   "at": "2026-11-14T12:58:03.759Z"
+  },
+  "coffinbeetle|A": {
+   "text": "朝玩家撲擊",
+   "at": "2026-11-14T12:58:25.709Z"
+  },
+  "bonecrab|I": {
+   "text": "昆虫型　自然起伏　鉗子交錯夾動",
+   "at": "2026-11-14T12:58:35.209Z"
+  },
+  "bonecrab|A": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:10:09.791Z"
+  },
+  "bonecrab|M": {
+   "text": "",
+   "at": "2026-11-14T13:09:49.029Z"
+  },
+  "pilgrimmass|I": {
+   "text": "多肢型　布自然飄動　",
+   "at": "2026-11-14T12:59:23.417Z"
+  },
+  "pilgrimmass|A": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:10:11.176Z"
+  },
+  "bellwyrm|I": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:02:15.153Z"
+  },
+  "coffinbeetle|D": {
+   "text": "",
+   "at": "2026-11-14T13:09:45.955Z"
+  },
+  "coffinbeetle|M": {
+   "text": "",
+   "at": "2026-11-14T13:09:46.643Z"
+  },
+  "bonecrab|D": {
+   "text": "動畫：雙鉗向兩邊張開\n程式：噴出泡泡　汙染盤面",
+   "at": "2026-11-14T13:02:46.098Z"
+  },
+  "pilgrimmass|M": {
+   "text": "動畫：張手　\n程式：震動　震波　盤面數字消失慢慢淡入恢復　",
+   "at": "2026-11-14T13:02:57.299Z"
+  },
+  "bellwyrm|A": {
+   "text": "朝viewer攻擊",
+   "at": "2026-11-14T13:03:19.514Z"
+  },
+  "bellwyrm|D": {
+   "text": "",
+   "at": "2026-11-14T13:09:53.177Z"
+  },
+  "bellwyrm|M": {
+   "text": "",
+   "at": "2026-11-14T13:09:51.717Z"
+  },
+  "saintvulture|I": {
+   "text": "飛行振翅",
+   "at": "2026-11-14T13:03:34.685Z"
+  },
+  "saintvulture|A": {
+   "text": "閃現消失\n一道黑影隨機角度劃過畫面\n閃現復歸",
+   "at": "2026-11-14T13:04:56.095Z"
+  },
+  "ironpenitent|I": {
+   "text": "類人型　重畫idle圖　自然呼吸律動",
+   "at": "2026-11-14T13:05:24.361Z"
+  },
+  "ironpenitent|A": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:10:12.156Z"
+  },
+  "ribcage|D": {
+   "text": "",
+   "at": "2026-11-14T13:06:03.022Z"
+  },
+  "ironpenitent|D": {
+   "text": "法杖朝viewer雜擊　natali rule",
+   "at": "2026-11-14T13:06:00.974Z"
+  },
+  "ribcage|A": {
+   "text": "尾部朝viewr噴火　橫向移動",
+   "at": "2026-11-14T13:06:53.479Z"
+  },
+  "ribcage|I": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:07:05.797Z"
+  },
+  "stilt|I": {
+   "text": "類人型　重畫idle圖　自然呼吸律動",
+   "at": "2026-11-14T13:07:08.223Z"
+  },
+  "stilt|M": {
+   "text": "爪擊　natali rule",
+   "at": "2026-11-14T13:07:18.621Z"
+  },
+  "censer|I": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:08:05.332Z"
+  },
+  "hanged|I": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:08:06.409Z"
+  },
+  "bellmite|I": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:08:12.468Z"
+  },
+  "lanternimp|I": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:08:17.406Z"
+  },
+  "crawler|I": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:08:18.589Z"
+  },
+  "bonecrow|I": {
+   "text": "振翅型",
+   "at": "2026-11-14T13:08:25.206Z"
+  },
+  "bonecrow|D": {
+   "text": "",
+   "at": "2026-11-14T13:10:40.025Z"
+  },
+  "crawler|A": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:08:41.474Z"
+  },
+  "lanternimp|M": {
+   "text": "",
+   "at": "2026-11-14T13:10:33.447Z"
+  },
+  "chainhound|D": {
+   "text": "",
+   "at": "2026-11-14T13:10:46.277Z"
+  },
+  "houndbeast|A": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:08:50.508Z"
+  },
+  "bellmite|D": {
+   "text": "",
+   "at": "2026-11-14T13:10:46.980Z"
+  },
+  "hanged|A": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:08:55.447Z"
+  },
+  "censer|A": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:08:57.895Z"
+  },
+  "colossus|A": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:10:08.632Z"
+  },
+  "stilt|A": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:10:14.461Z"
+  },
+  "bellmite|A": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:10:17.267Z"
+  },
+  "chainhound|A": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:10:17.888Z"
+  },
+  "lanternimp|A": {
+   "text": "交給wan自由發揮",
+   "at": "2026-11-14T13:10:19.673Z"
+  },
+  "bonecrow|A": {
+   "text": "閃現消失\n一道黑影隨機角度劃過畫面\n閃現復歸",
+   "at": "2026-11-14T13:10:40.938Z"
+  },
+  "colossus|I": {
+   "text": "",
+   "share": ""
+  },
+  "pilgrimmass|D": {
+   "text": "",
+   "share": ""
+  },
+  "saintvulture|D": {
+   "text": "",
+   "share": ""
+  },
+  "saintvulture|M": {
+   "text": "",
+   "share": ""
+  },
+  "ironpenitent|M": {
+   "text": "",
+   "share": ""
+  },
+  "ribcage|M": {
+   "text": "",
+   "share": ""
+  },
+  "stilt|D": {
+   "text": "",
+   "share": ""
+  },
+  "censer|D": {
+   "text": "",
+   "share": ""
+  },
+  "censer|M": {
+   "text": "",
+   "share": ""
+  },
+  "hanged|D": {
+   "text": "",
+   "share": ""
+  },
+  "hanged|M": {
+   "text": "",
+   "share": ""
+  },
+  "houndbeast|I": {
+   "text": "",
+   "share": ""
+  },
+  "houndbeast|D": {
+   "text": "",
+   "share": ""
+  },
+  "houndbeast|M": {
+   "text": "",
+   "share": ""
+  },
+  "bellmite|M": {
+   "text": "",
+   "share": ""
+  },
+  "chainhound|I": {
+   "text": "",
+   "share": ""
+  },
+  "chainhound|M": {
+   "text": "",
+   "share": ""
+  },
+  "lanternimp|D": {
+   "text": "",
+   "share": ""
+  },
+  "crawler|D": {
+   "text": "",
+   "share": ""
+  },
+  "crawler|M": {
+   "text": "",
+   "share": ""
+  },
+  "bonecrow|M": {
+   "text": "",
+   "share": ""
+  }
+ }
+}

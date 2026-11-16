@@ -16,41 +16,77 @@
   "I": null
  },
  "iron": {
-  "A": {
-   "name": "mon_canyon_ironpenitent_neutral_delay_v1",
-   "frames": 74,
-   "peak": 40,
-   "kb": 4368
-  },
-  "I": {
-   "name": "mon_canyon_ironpenitent_neutral_idle_v1",
-   "frames": 48,
-   "peak": 1,
-   "kb": 2576
-  }
+  "A": null,
+  "I": null
  },
  "ribcage": {
   "A": null,
   "I": null
  },
  "stilt": {
-  "A": {
-   "name": "mon_canyon_stilt_neutral_miss_v1",
-   "frames": 74,
-   "peak": 31,
-   "kb": 3698
-  },
-  "I": {
-   "name": "mon_canyon_stilt_neutral_idle_v1",
-   "frames": 48,
-   "peak": 2,
-   "kb": 2083
-  }
+  "A": null,
+  "I": null
  },
  "vulture": {
   "I": null
  },
  "crow": {
   "I": null
+ },
+ "censer": {
+  "I": {
+   "name": "mon_canyon_censer_dark_idle_v1",
+   "frames": 48,
+   "peak": 1,
+   "kb": 3116
+  }
+ },
+ "hanged": {
+  "I": {
+   "name": "mon_canyon_hanged_dark_idle_v1",
+   "frames": 48,
+   "peak": 1,
+   "kb": 2282
+  }
+ },
+ "houndbeast": {
+  "I": {
+   "name": "mon_canyon_houndbeast_idle_v1",
+   "frames": 48,
+   "peak": 30,
+   "kb": 2527
+  }
+ },
+ "bellmite": {
+  "I": {
+   "name": "mon_canyon_bellmite_dark_idle_v1",
+   "frames": 48,
+   "peak": 1,
+   "kb": 1871
+  }
+ },
+ "chainhound": {
+  "I": {
+   "name": "mon_canyon_chainhound_dark_idle_v1",
+   "frames": 48,
+   "peak": 1,
+   "kb": 1850
+  }
+ },
+ "lanternimp": {
+  "I": {
+   "name": "mon_canyon_lanternimp_dark_idle_v1",
+   "frames": 48,
+   "peak": 19,
+   "kb": 2351
+  }
+ },
+ "crawler": {
+  "I": {
+   "name": "mon_canyon_crawler_dark_idle_v1",
+   "frames": 48,
+   "peak": 1,
+   "kb": 1821
+  }
  }
 }
