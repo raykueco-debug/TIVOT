@@ -287,9 +287,9 @@ $('idleBtn').onclick=()=>{ idleOn=!idleOn; $('idleBtn').classList.toggle('on', i
 /* ── 組／背景／存檔 ── */
 const compSel=$('comp');
 compSel.innerHTML=Object.keys(GROUP_COMPS).map(k=>`<option value="${k}">${k}（${GROUP_COMPS[k].members.map(m=>nameOf(m.stem)).join('・')}）</option>`).join('');
-compSel.onchange=()=>{ if(JSON.stringify(comp)!==saved && !confirm('這一組還沒存檔，確定要換組？')){ compSel.value=key; return; } load(compSel.value); };
+compSel.onchange=()=>{ compSel.blur(); if(JSON.stringify(comp)!==saved && !confirm('這一組還沒存檔，確定要換組？')){ compSel.value=key; return; } load(compSel.value); };
 $('bg').innerHTML=BGS.map(b=>`<option>${b}</option>`).join('');
-$('bg').onchange=()=>{ $('bgimg').src='../resources/background/canyon/'+$('bg').value+'.webp'; };
+$('bg').onchange=()=>{ $('bgimg').src='../resources/background/canyon/'+$('bg').value+'.webp'; $('bg').blur(); };   // 選完就放掉焦點，之後的按鍵回到畫布
 $('bg').onchange();
 function load(k){ key=k; comp=JSON.parse(JSON.stringify(GROUP_COMPS[k])); saved=JSON.stringify(comp); undo.length=0; lastSnap=saved; sel=-1; render(); $('msg').textContent=''; }
 $('revert').onclick=()=>load(key);
