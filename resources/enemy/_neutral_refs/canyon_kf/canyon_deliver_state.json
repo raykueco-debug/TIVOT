@@ -168,11 +168,11 @@
   "r_dir": "canyon_R/mon_canyon_saintvulture_dark_atk_v1_R"
  },
  "mon_canyon_bonecrow_dark_atk_v1": {
-  "source": "export/canyon_ai_mon_canyon_bonecrow_dark_cut",
+  "source": "export/canyon_ai_mon_canyon_bonecrow_dark_cut_2",
   "from": "monsters/canyon_ai_mon_canyon_bonecrow_dark",
   "kind": "Ray 的 cut",
   "at": "11-16 20:22",
-  "mtime": 1794831738.0128038,
+  "mtime": 1794831750.455603,
   "frames": 19,
   "peak": 0,
   "r_dir": "canyon_R/mon_canyon_bonecrow_dark_atk_v1_R"
