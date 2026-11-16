@@ -1481,7 +1481,9 @@ function eeArtTarget(src){
   }
   return null;
 }
-function openEnemyEdit(){
+/* 群戰編輯器「換組」那一排：卡耶爾的禍魘大軍（mix10 只剩一隻、不在遇怪池，不列） */
+const GROUP_EDIT_BATTLES=['canyon_w_mix2','canyon_w_mix3','canyon_w_mix4','canyon_w_mix5','canyon_w_mix6','canyon_w_mix7','canyon_w_mix8','canyon_w_mix9','canyon_w_mix11','canyon_w_mix12'];
+function openEnemyEdit(opt){
   const key = state.currentEnemyKey, en = key && GAME_CONFIG.enemies[key];
   if(!en || document.getElementById('enemyEdit')) return;
   const pausedHere = !state.over && !state.tutorialDialog;
@@ -1549,6 +1551,7 @@ function openEnemyEdit(){
     (document.getElementById('app')||document.body).appendChild(gcap);
     enemyMod.markMember(gsel);
   };
+  if(opt && opt.tab==='group' && grp) tab='group';
   const box = document.createElement('div'); box.id='enemyEdit';
   let msg='';
   const fitOf = ()=>({ mode: cur.mode==='contain' ? 'contain' : undefined,
@@ -1570,7 +1573,8 @@ function openEnemyEdit(){
       const v=gv[gsel]||[0,0,1];
       body = i18nT('<div class="ee-hd">群戰配置　')+grp.dir.replace('resources/enemy/','')+'</div>'
         + '<div class="ee-row">'+grp.members.map(m=>'<button data-gsel="'+m.n+'" class="'+(m.n===gsel?'on':'')+'">'+gName(m.n)+'</button>').join('')+'</div>'
-        + '<div class="ee-msg">'+i18nT('在敵人區點一隻選取 → 拖移；滾輪縮放')+'</div>'
+        + '<div class="ee-row"><span>'+i18nT('換組')+'</span>'+GROUP_EDIT_BATTLES.map(b=>'<button data-gbat="'+b+'" class="'+(state.currentEnemyKey===b.replace('canyon_w_','canyon_')?'on':'')+'">'+b.replace('canyon_w_mix','')+'</button>').join('')+'</div>'
+        + '<div class="ee-msg">'+i18nT('在敵人區點一隻選取 → 拖移；滾輪縮放（換組前先存檔）')+'</div>'
         + row(i18nT('左右'), Math.round(v[0]), 'gx', 10, 'data-gk')
         + row(i18nT('上下'), Math.round(v[1]), 'gy', 10, 'data-gk')
         + row(i18nT('縮放'), Math.round(v[2]*100)+'%', 'gs', 0.02, 'data-gk');
@@ -1616,6 +1620,15 @@ function openEnemyEdit(){
     const t=e.target.closest('button'); if(!t) return;
     try{ SFX.menuClick(); }catch(_){}
     if(t.dataset.tab){ tab=t.dataset.tab; msg=''; gCapture(tab==='group'); render(); return; }
+    if(t.dataset.gbat){   // 換一組來編（ver -2632）：沒存的放回、關面板、開那一場，載好再打開群戰分頁
+      for(const n in gv) enemyMod.setMemberPlace(n, null); gCapture(false); box.remove();
+      combat.startScriptBattle(t.dataset.gbat);
+      const want=t.dataset.gbat.replace('canyon_w_','canyon_'); let tries=0;
+      const wait=()=>{ const i=enemyMod.groupEditInfo && enemyMod.groupEditInfo();
+        if(state.currentEnemyKey===want && i && i.members.length && document.querySelector('#enemyGroup .eg-guard')){ setTimeout(()=>openEnemyEdit({ tab:'group' }), 600); return; }
+        if(++tries<60) setTimeout(wait, 250); };
+      setTimeout(wait, 800); return;
+    }
     if(t.dataset.gsel){ gsel=t.dataset.gsel; enemyMod.markMember(gsel); render(); return; }
     if(t.dataset.gk){ const v=gv[gsel], d=+t.dataset.d, i={gx:0,gy:1,gs:2}[t.dataset.gk];
       v[i]=+(v[i]+d).toFixed(4); if(i===2) v[2]=Math.max(0.1, Math.min(8, v[2])); gApply(gsel); render(); return; }
@@ -1695,8 +1708,10 @@ function openEnemyEdit(){
   ['pointerdown','touchstart'].forEach(ev=>box.addEventListener(ev, e=>e.stopPropagation(), { passive:true }));
   (document.getElementById('app')||document.body).appendChild(box);
   render(); preview();
+  if(tab==='group') gCapture(true);   // 直接開在群戰分頁時，拖移層也要一起開
 }
-bindBtn('enemyEditBtn', openEnemyEdit);
+bindBtn('enemyEditBtn', ()=>openEnemyEdit());
+try{ window.__groupEdit = b=>{ combat.startScriptBattle(b||'canyon_w_mix2'); const want=(b||'canyon_w_mix2').replace('canyon_w_','canyon_'); let n=0; const w=()=>{ if(state.currentEnemyKey===want && document.querySelector('#enemyGroup .eg-guard')){ setTimeout(()=>openEnemyEdit({ tab:'group' }), 800); return; } if(++n<80) setTimeout(w, 250); }; setTimeout(w, 800); }; }catch(_){}   // 開發用：直接開群戰編輯（ver -2632）
 /* ⚠ 「道具」（bagBtn）與「城鎮」（townBtn）兩顆首頁鈕已於 ver -376 移除（Ray 指定）。
    `loot.showBag` 與 `town.open` 都還在（前者暫時沒有入口、後者由劇情的 `thenTown` 叫起來），
    不要因為「沒人叫」就把它們刪掉。 */
