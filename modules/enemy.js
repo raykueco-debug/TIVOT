@@ -2514,7 +2514,10 @@ function groupHas(kind){ const g=$('enemyGroup'); return !!(g && [...g.querySele
    · 本職還有人站著、只是都在演別的 ⇒ 這一次不演（不搶別人的工作）。
    · 本職**全倒**了 ⇒ 遞補：剩下還站著的怪裡隨機一隻，演牠手上最接近的那一支（ISSEN_SUB 的順序）。
      ⚠ 一閃（issen）的片只在沒有別人可遞補時才拿來代演 D／M —— 它的「打到不放受擊特效」只認攻擊那一刀。
-   ⚠ 只管照原立繪生成的那幾支（`spec`）；空賊那一套（分層＋程式火光）照舊。 */
+   · 攻擊不連抽同一隻（ver -2650，Ray）：上一次出手攻擊的那隻，下一次攻擊先排除；只剩牠能出手時照樣由牠。
+   ⚠ 只管照原立繪生成的那幾支（`spec`）；空賊那一套（分層＋程式火光）照舊（不連抽那一條兩邊都吃）。 */
+let lastAtkIm=null;
+const notLast=(arr, kind)=>{ if(kind!=='atk' || arr.length<2) return arr; const r=arr.filter(im=>im!==lastAtkIm); return r.length ? r : arr; };
 const SUB_ORDER={ atk:['_atk','_dly','_mis'], delay:['_dly','_mis','_atk'], miss:['_mis','_dly','_atk'] };
 const memberStanding=im=>!im.classList.contains('eg-down') && !im.classList.contains('eg-leaving');
 function memberSubClip(im, kind){ for(const k of SUB_ORDER[kind]){ const c=im[k]; if(c && c.spec) return c; } return null; }
@@ -2522,9 +2525,9 @@ function pickGroupActor(g, kind){
   const all=[...g.querySelectorAll('.eg-guard')].filter(memberStanding), own=im=>{ const c=memberClipOf(im, kind); return !!(c && c.spec); };
   const owners=all.filter(own);
   if(owners.length){ const free=owners.filter(memberLive); if(!free.length) return null;
-    const im=free[(Math.random()*free.length)|0]; return { im, clip:memberClipOf(im, kind) }; }
+    const pool=notLast(free, kind), im=pool[(Math.random()*pool.length)|0]; return { im, clip:memberClipOf(im, kind) }; }
   const subs=all.filter(im=>memberLive(im) && memberSubClip(im, kind)); if(!subs.length) return null;
-  const plain=subs.filter(im=>!memberSubClip(im, kind).spec.issen), pool=(kind!=='atk' && plain.length) ? plain : subs;
+  const plain=subs.filter(im=>!memberSubClip(im, kind).spec.issen), pool=notLast((kind!=='atk' && plain.length) ? plain : subs, kind);
   const im=pool[(Math.random()*pool.length)|0]; return { im, clip:memberSubClip(im, kind) };
 }
 /* 延時／點錯（playActionClip 從這裡分流給群戰，ver -2623） */
@@ -2534,10 +2537,10 @@ function groupAction(kind){
 }
 function groupAttack(){
   const g=$('enemyGroup'), G=groupCard && groupCard.group; if(!g || !G) return 0;
-  if([...g.querySelectorAll('.eg-guard')].some(im=>memberSubClip(im, 'atk'))){ const p=pickGroupActor(g, 'atk'); return p ? memberActOnce(g, p.im, p.clip) : 0; }
-  const cand=[...g.querySelectorAll('.eg-guard')].filter(im=>im._atk && im._ov && memberLive(im));
+  if([...g.querySelectorAll('.eg-guard')].some(im=>memberSubClip(im, 'atk'))){ const p=pickGroupActor(g, 'atk'); if(!p) return 0; lastAtkIm=p.im; return memberActOnce(g, p.im, p.clip); }
+  const cand=notLast([...g.querySelectorAll('.eg-guard')].filter(im=>im._atk && im._ov && memberLive(im)), 'atk');
   if(!cand.length) return 0;
-  const pick=cand[(Math.random()*cand.length)|0];
+  const pick=cand[(Math.random()*cand.length)|0]; lastAtkIm=pick;
   /* `group.muzzle:false`（ver -2620，空賊 v3）＝火光已畫在格子裡，程式不畫；打到＝攻擊的最後一格（每支格數不一定一樣）。 */
   const im=pick, A=im._atk, N=A.fr.length, fps=A.j.fps||16,
         ff = G.muzzle===false ? N-1 : Math.min(N-1, G.flashFrame!=null ? G.flashFrame : 5);
