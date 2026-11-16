@@ -1418,3 +1418,4 @@ when	from	to	reason
 20261116-211641	resources/enemy/anim/mon_canyon_saintvulture_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_saintvulture_dark_atk_v1.20261116-211641	聖面鷲改交殘影瞬移（照骨鴉剪法）
 20261116-211819	resources/enemy/anim/mon_canyon_bonecrow_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_bonecrow_dark_atk_v1.20261116-211819	拿掉倒放（Ray 11-16：程式讓他飛回來）
 20261116-211820	resources/enemy/anim/mon_canyon_saintvulture_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_saintvulture_dark_atk_v1.20261116-211820	拿掉倒放（Ray 11-16：程式讓他飛回來）
+20261116-231848	tools/anim/tivot_wan.py	_recycle/tools/anim/tivot_wan.py.20261116-231848	換機前：以 3060 的 tivot_wan.py（純新增 Mobius 參數）取代

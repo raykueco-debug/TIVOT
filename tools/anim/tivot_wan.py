@@ -29,6 +29,8 @@ LX2V_MODE = os.environ.get('TIVOT_LX2V', '')
 LX2V_HIGH, LX2V_LOW = _LX2V[LX2V_MODE]
 # (High 強度, Low 強度, 總步數, 換段步) —— 預設 1.0／1.0、4 步在第 2 步換段
 LX2V_STR = {'enh': (float(os.environ.get('TIVOT_ENH_HIGH', 5.6)), float(os.environ.get('TIVOT_ENH_LOW', 2.0)), 6, 4)}.get(LX2V_MODE, (1.0, 1.0, 4, 2))
+if os.environ.get('TIVOT_STEPS'):   # 11-08 美術：Mobius 循環要多幾步才轉得夠（4 步只轉 4 次）
+    _st = int(os.environ['TIVOT_STEPS']); LX2V_STR = (LX2V_STR[0], LX2V_STR[1], _st, _st // 2)
 
 PROMPT = {
  'hit': ('{desc}正面面對鏡頭，站在純綠色背景前。他的胸口被子彈擊中，上半身猛然往後仰、頭往後甩，'
@@ -135,6 +137,11 @@ def graph(img_name, prefix, length, pos, seed, mode):
         g['5']['inputs']['model'] = chain(EXTRA_LORA, ['3', 0], 40)
     if EXTRA_LORA_LOW:
         g['6']['inputs']['model'] = chain(EXTRA_LORA_LOW, ['4', 0], 50)
+    if os.environ.get('TIVOT_MOBIUS'):   # 11-08：Mobius 潛空間輪轉循環（custom_nodes/tivot_latent_loop.py）；值＝每步輪轉幾格潛空間
+        sk = int(os.environ['TIVOT_MOBIUS'])
+        g['60'] = {'class_type': 'TivotLatentShiftLoop', 'inputs': {'model': g['13']['inputs']['model'], 'shift_skip': sk, 'offset': int(os.environ.get('TIVOT_MOBIUS_OFF', 0))}}
+        g['61'] = {'class_type': 'TivotLatentShiftLoop', 'inputs': {'model': g['14']['inputs']['model'], 'shift_skip': sk, 'offset': int(os.environ.get('TIVOT_MOBIUS_OFF', 0)) + sk * LX2V_STR[3]}}
+        g['13']['inputs']['model'] = ['60', 0]; g['14']['inputs']['model'] = ['61', 0]
     return g
 
 def run_wan(img_name, prefix, length, pos, seed, mode):
