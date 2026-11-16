@@ -32,11 +32,18 @@ main{display:grid;grid-template-columns:200px 1fr 230px;gap:10px;padding:10px;al
 #list div{padding:3px 6px;border-radius:4px;cursor:pointer}
 #list div.sel{background:#3a3020;color:var(--acc)}
 .hint{color:var(--mut);font-size:12px;line-height:1.6}
+#pick{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;z-index:999;align-items:center;justify-content:center}
+#pick.on{display:flex}
+#pickBox{background:var(--panel);border:1px solid var(--line);border-radius:10px;width:min(980px,94vw);height:min(720px,90vh);display:flex;flex-direction:column;padding:12px;gap:8px}
+#pickQ{background:#111;color:var(--fg);border:1px solid #4a4452;border-radius:6px;padding:7px 10px;font:inherit}
+#pickGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;overflow:auto;flex:1}
+#pickGrid .pi{font-size:11px;word-break:break-all}
 </style></head><body>
 <header>
   <h1>群戰編組編輯器</h1>
   <select id="comp"></select>
   <select id="bg"></select>
+  <button id="addBtn" class="on">＋ 新增怪</button>
   <button id="idleBtn">全員待機</button>
   <label class="hint"><input type="checkbox" id="focus" checked> 攻擊照遊戲拉到中間</label>
   <button id="save">存檔</button>
@@ -57,12 +64,23 @@ main{display:grid;grid-template-columns:200px 1fr 230px;gap:10px;padding:10px;al
     <div id="list"></div>
   </div>
 </main>
+<div id="pick"><div id="pickBox">
+  <div class="row" style="display:flex;gap:8px;align-items:center"><b style="color:var(--acc)">選一隻加進這一組</b>
+    <input id="pickQ" placeholder="搜尋（中文名或檔名，例：甲蟲、bone、saint）" style="flex:1">
+    <label class="hint"><input type="checkbox" id="pickAnim" checked> 只列有動畫的</label>
+    <button id="pickClose">關閉</button></div>
+  <div id="pickGrid"></div>
+</div></div>
 <script type="module">
 import { ENEMY_IDLE, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS } from '../config.js';
 import { GROUP_COMPS } from '../script/group_comps.js';
 
 const $=id=>document.getElementById(id);
-const PW=1024, PH=1536;
+const PW=1024, PH=1536;   // 預設立繪尺寸；實際每張讀自己的（sizeOf）
+const SIZE={};
+function sizeOf(stem){ return SIZE[stem] || [PW, PH]; }
+function loadSize(stem){ if(SIZE[stem]) return Promise.resolve(SIZE[stem]);
+  return new Promise(res=>{ const i=new Image(); i.onload=()=>{ SIZE[stem]=[i.naturalWidth, i.naturalHeight]; res(SIZE[stem]); }; i.onerror=()=>res([PW,PH]); i.src='../resources/enemy/'+stem+'.webp'; }); }
 const ACTS={ atk:ENEMY_ATK, delay:ENEMY_DELAY, miss:ENEMY_MISS };
 const NAME={ coffinbeetle:'石棺甲蟲', bellmite:'鐘殼蟲', bonecrow:'骨鴉', bonecrab:'骸殼蟹', chainhound:'鎖鏈餓犬', lanternimp:'提燈小鬼',
   pilgrimmass:'朝聖者團塊', crawler:'爬行朝聖者', bellwyrm:'喪鐘蠕蟲', saintvulture:'聖面鷲', ironpenitent:'鐵衣苦修者', ribcage:'肋籠獸',
@@ -103,12 +121,14 @@ function guide(){
   Object.assign(g.style,{ left:((CW-vw)/2*sc)+'px', top:'0px', width:(vw*sc)+'px', height:(vh*sc)+'px' });
   wrap.appendChild(g);
 }
-function render(){
+async function render(){
+  await Promise.all(comp.members.map(m=>loadSize(m.stem)));
   layout();
   wrap.querySelectorAll('.mem').forEach(e=>e.remove());
   comp.members.forEach((m,i)=>{
     const d=document.createElement('div'); d.className='mem'+(i===sel?' sel':''); d.dataset.i=i;
-    Object.assign(d.style,{ left:(m.x*sc)+'px', top:(m.y*sc)+'px', width:(PW*m.k*sc)+'px', height:(PH*m.k*sc)+'px', zIndex:10+i });
+    const [w,h]=sizeOf(m.stem);
+    Object.assign(d.style,{ left:(m.x*sc)+'px', top:(m.y*sc)+'px', width:(w*m.k*sc)+'px', height:(h*m.k*sc)+'px', zIndex:10+i });
     const im=document.createElement('img'); im.src='../resources/enemy/'+m.stem+'.webp'; if(m.flip) im.style.transform='scaleX(-1)';
     d.appendChild(im);
     const t=document.createElement('div'); t.className='tag'; t.textContent=(i+1)+' '+nameOf(m.stem)+(m.air?' ✈':''); d.appendChild(t);
@@ -131,7 +151,7 @@ function side(){
 function toCanvas(e){ const r=wrap.getBoundingClientRect(); return { x:(e.clientX-r.left)/sc, y:(e.clientY-r.top)/sc }; }
 async function pick(p){
   for(let i=comp.members.length-1;i>=0;i--){ const m=comp.members[i];
-    let u=(p.x-m.x)/(PW*m.k), v=(p.y-m.y)/(PH*m.k); if(u<0||u>1||v<0||v>1) continue; if(m.flip) u=1-u;
+    const [w,h]=sizeOf(m.stem); let u=(p.x-m.x)/(w*m.k), v=(p.y-m.y)/(h*m.k); if(u<0||u>1||v<0||v>1) continue; if(m.flip) u=1-u;
     const A=await alphaOf(m.stem); if(A.a[Math.min(A.h-1,(v*A.h)|0)*A.w+Math.min(A.w-1,(u*A.w)|0)]>60) return i; }
   return -1;
 }
@@ -148,9 +168,9 @@ wrap.addEventListener('pointerup', ()=>{ if(drag) reIdle(); drag=null; });
 wrap.addEventListener('wheel', e=>{ e.preventDefault(); const m=comp.members[sel]; if(!m) return;
   const p=toCanvas(e), f=e.deltaY<0?1.04:1/1.04, k2=Math.max(0.03, Math.min(3, m.k*f)), r=k2/m.k;
   m.x=+(p.x-(p.x-m.x)*r).toFixed(1); m.y=+(p.y-(p.y-m.y)*r).toFixed(1); m.k=+k2.toFixed(4); posOne(sel); side(); reIdle(); }, { passive:false });
-function posOne(i){ const m=comp.members[i], d=wrap.querySelector('.mem[data-i="'+i+'"]'); if(!d) return;
-  Object.assign(d.style,{ left:(m.x*sc)+'px', top:(m.y*sc)+'px', width:(PW*m.k*sc)+'px', height:(PH*m.k*sc)+'px' }); }
-document.addEventListener('keydown', e=>{ const m=comp.members[sel]; if(!m || e.target.tagName==='SELECT') return;
+function posOne(i){ const m=comp.members[i], d=wrap.querySelector('.mem[data-i="'+i+'"]'); if(!d) return; const [w,h]=sizeOf(m.stem);
+  Object.assign(d.style,{ left:(m.x*sc)+'px', top:(m.y*sc)+'px', width:(w*m.k*sc)+'px', height:(h*m.k*sc)+'px' }); }
+document.addEventListener('keydown', e=>{ const m=comp.members[sel]; if(!m || e.target.tagName==='SELECT' || e.target.tagName==='INPUT' || $('pick').classList.contains('on')) return;
   const st=e.shiftKey?10:2;
   if(e.key==='ArrowLeft') m.x-=st; else if(e.key==='ArrowRight') m.x+=st; else if(e.key==='ArrowUp') m.y-=st; else if(e.key==='ArrowDown') m.y+=st;
   else if(e.key==='Delete' || e.key==='Backspace'){ comp.members.splice(sel,1); sel=-1; render(); return; } else return;
@@ -165,12 +185,46 @@ $('del').onclick=()=>{ comp.members.splice(sel,1); sel=-1; render(); };
 /* ── 調色盤：點一隻加進來（最前排，放在手機框中間偏下） ── */
 const pal=$('pal');
 pal.innerHTML=STEMS.map(s=>`<div class="pi" data-s="${s}"><img src="../resources/enemy/${s}.webp" loading="lazy" alt="">${nameOf(s)}</div>`).join('');
-pal.addEventListener('click', e=>{ const d=e.target.closest('[data-s]'); if(!d) return;
-  const k=0.35, [CW,CH]=comp.canvas; comp.members.push({ stem:d.dataset.s, k, x:+((CW-PW*k)/2).toFixed(1), y:+(CH-PH*k-40).toFixed(1) });
-  sel=comp.members.length-1; render(); });
+async function addMember(stem){
+  const [w,h]=await loadSize(stem), [CW,CH]=comp.canvas, k=+Math.min(0.35, CH*0.5/h, CW*0.4/w).toFixed(4);
+  comp.members.push({ stem, k, x:+((CW-w*k)/2).toFixed(1), y:+(CH-h*k-40).toFixed(1) });
+  sel=comp.members.length-1; render(); $('msg').textContent='已加入：'+nameOf(stem)+'（放在最前排、畫面中下）';
+}
+pal.addEventListener('click', e=>{ const d=e.target.closest('[data-s]'); if(!d) return; addMember(d.dataset.s); });
+
+/* ── ＋新增怪：所有怪（不限山谷），可搜尋 ── */
+const ALL=[...new Set([...Object.keys(ENEMY_IDLE), ...Object.keys(ENEMY_ATK), ...Object.keys(ENEMY_DELAY), ...Object.keys(ENEMY_MISS)])]
+  .filter(k=>/^mon_|^man_|^saint_/.test(k)).sort((a,b)=>(b.startsWith('mon_canyon_')-a.startsWith('mon_canyon_'))||a.localeCompare(b));
+const CARD_NAMES={};
+try{ const en=(await import('../config.js')).GAME_CONFIG.enemies||{}; const A=(await import('../config.js')).ASSETS||{};
+  for(const c of Object.values(en)){ const p=String(A[c.image]||'').split('?')[0]; const st=p.slice(p.lastIndexOf('/')+1).replace(/\.\w+$/,''); if(st && c.name && !CARD_NAMES[st]) CARD_NAMES[st]=c.name; } }catch(_){}
+const label=stem=>{ const n=nameOf(stem); return (CARD_NAMES[stem] && !NAME[stem.replace('mon_canyon_','').replace(/_(dark|neutral)$/,'')]) ? CARD_NAMES[stem] : n; };
+async function listAll(){
+  const resp=await fetch('../resources/enemy/').then(r=>r.ok?r.text():'').catch(()=>'');
+  const files=[...resp.matchAll(/href="([^"?]+)\.webp"/g)].map(m=>decodeURIComponent(m[1]).split('/').pop());
+  return [...new Set([...ALL, ...files.filter(f=>/^mon_|^man_|^saint_/.test(f))])];
+}
+let ALLLIST=null;
+async function openPick(){
+  if(!ALLLIST) ALLLIST=await listAll();
+  $('pick').classList.add('on'); $('pickQ').value=''; drawPick(); setTimeout(()=>$('pickQ').focus(), 50);
+}
+function drawPick(){
+  const q=$('pickQ').value.trim().toLowerCase(), onlyAnim=$('pickAnim').checked;
+  const has=new Set(ALL);
+  const list=ALLLIST.filter(s=>(!onlyAnim || has.has(s)) && (!q || s.toLowerCase().includes(q) || label(s).includes(q)));
+  $('pickGrid').innerHTML=list.slice(0,400).map(s=>`<div class="pi" data-s="${s}" title="${s}"><img src="../resources/enemy/${s}.webp" loading="lazy" alt="">${label(s)}${has.has(s)?'':'（無動畫）'}<br><span style="opacity:.6">${s.replace(/^mon_/,'')}</span></div>`).join('')
+    + (list.length>400 ? '<div class="hint">…還有 '+(list.length-400)+' 隻，請用搜尋縮小</div>' : '');
+}
+$('addBtn').onclick=openPick;
+$('pickClose').onclick=()=>$('pick').classList.remove('on');
+$('pick').addEventListener('click', e=>{ if(e.target.id==='pick') $('pick').classList.remove('on'); });
+$('pickQ').addEventListener('input', drawPick); $('pickAnim').addEventListener('change', drawPick);
+$('pickGrid').addEventListener('click', e=>{ const d=e.target.closest('[data-s]'); if(!d) return; $('pick').classList.remove('on'); addMember(d.dataset.s); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') $('pick').classList.remove('on'); });
 
 /* ── 播動畫 ── */
-function boxOf(m, j){ const cv=j.canvas||[PW,PH], b=j.box||[0,0,cv[0],cv[1]], x=m.flip ? cv[0]-(b[0]+b[2]) : b[0];
+function boxOf(m, j){ const cv=j.canvas||sizeOf(m.stem), b=j.box||[0,0,cv[0],cv[1]], x=m.flip ? cv[0]-(b[0]+b[2]) : b[0];
   return { l:m.x+x*m.k, t:m.y+b[1]*m.k, w:b[2]*m.k, h:b[3]*m.k, bx:x, b }; }
 async function play(kind){
   const m=comp.members[sel]; if(!m) return; const i=sel;
@@ -187,7 +241,7 @@ async function play(kind){
   if(kind==='atk' && $('focus').checked){
     const [CW,CH]=comp.canvas, kk=Math.max(375/CW, 406/CH), vw=375/kk, vh=406/kk;
     const F={ l:(CW-vw)/2, t:0, r:(CW+vw)/2, b:vh }, Fc={ x:(F.l+F.r)/2, y:(F.t+F.b)/2 };
-    const P={ x:m.x+PW*m.k/2, y:m.y+PH*m.k/2 };
+    const [w0,h0]=sizeOf(m.stem), P={ x:m.x+w0*m.k/2, y:m.y+h0*m.k/2 };
     const need=(f,o,b)=> (o-b)===0 ? 1 : (f-o)/(b-o);
     const k = spec.fillFrame ? Math.max(1, need(F.l-Fc.x+P.x, P.x, B.l), need(F.r-Fc.x+P.x, P.x, B.l+B.w), need(F.t-Fc.y+P.y, P.y, B.t), need(F.b-Fc.y+P.y, P.y, B.t+B.h)) : 1;
     const cx=B.l+B.w/2, cy=B.t+B.h/2;
