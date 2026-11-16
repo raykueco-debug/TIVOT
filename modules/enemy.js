@@ -59,7 +59,7 @@ export function slamEnemy(){
    `strikes:[格…]` ＝片子裡每一下打擊的格：最後一格＝扣血（取代 `hit`），前面每一格各補一道同款特效＋音效 —— 節奏跟著片子走。
    落地那一刻怎麼認：成員出手時記「哪一款、預計幾點打到」，combat 扣血時在 ±ACT_FX_WIN 內就認（同一閃的 takeIssenHit）。 */
 const ACT_FX_WIN=400;
-let actFx=null;
+let actFx=null, lastActIm=null;   // lastActIm＝最近一次出手的群戰成員（聲波從牠身上擴出）
 function actFxLive(kind){ return (kind==='assault' || kind==='ult') && actFx && Math.abs(performance.now()-actFx.at)<ACT_FX_WIN ? actFx : null; }
 export function actHitSe(kind){ const a=actFxLive(kind); return a ? ((HITFX[a.key]||{}).se || null) : null; }
 /* ══ 聲波（`hitFx:'sonic'`，ver -2652，Ray：「他是聲波攻擊 聲波用程式跑 模糊 效果是讓盤面數字迅速淡出消失 再慢慢淡入回來」）══
@@ -131,6 +131,7 @@ function spawnFxNamed(key, fx){
     case 'blood': spawnBlood(true); break;
     case 'bite':  spawnBite(); break;
     case 'bullet':spawnBullets(fx.count||1, fx.pos==='random', fx.scale); break;
+    case 'sonic': sonicHit(lastActIm); break;   // 聲波（ver -2655）：從剛出手的那一隻身上擴出
     case 'slash': spawnSlash(); break;
     /* 鈍器受擊（ver -375）：不見血的悶擊 —— 一圈迅速擴散的衝擊環＋畫面一沉。
        ⚠ 與 `bullet`（玻璃碎裂）刻意不同：那一隻獵人是拿槍托招呼你，不是開槍。 */
@@ -2421,6 +2422,7 @@ function memberActOnce(g, im, A){
   const J=A.j, N=A.fr.length, fps=J.fps||24, sp=A.spec||{};
   if(sp.issen && A===im._atk) return memberIssen(g, im, A);
   const hit=Math.max(0, Math.min(N-1, sp.strikes ? Math.max(...sp.strikes) : sp.hit!=null ? sp.hit : N-1));
+  lastActIm=im;
   const own=!im._ov; let ov=im._ov;
   if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=bobOv(im, ov); }
   g.appendChild(ov);                                   // 最上層
@@ -2731,8 +2733,11 @@ export function onStandingBody(l, t){
     return m && uv && uv.u>=0 && uv.u<=1 && uv.v>=0 && uv.v<=1
       && m.a[Math.min(m.h-1,(uv.v*m.h)|0)*m.w + Math.min(m.w-1,(uv.u*m.w)|0)] > 96; });
 }
-function pickVictim(alive){
-  if(!alive.length) return null;
+/* 留到最後才倒（ENEMY_ATK 的 `last:true`，ver -2655，Ray：「那隻怪留到最後死」）：還有別人站著就不挑牠。 */
+const lastFaller=im=>!!(im._mem && (ENEMY_ATK[im._mem.stem]||{}).last);
+function pickVictim(all){
+  if(!all.length) return null;
+  const alive = all.length>1 && all.some(im=>!lastFaller(im)) ? all.filter(im=>!lastFaller(im)) : all;
   if(lastImpact){
     /* ① 壓在誰身上：前排先問（order 是後→前，所以倒著找） */
     for(let i=alive.length-1;i>=0;i--){

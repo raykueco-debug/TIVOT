@@ -57,6 +57,7 @@ export const HITFX = {
      兩秒再淡出」的**演出**，長度只有 `enemy.spawnSakura` 知道（走 `SFX.playCue`
      的把手）。寫在這裡會被 combat 當一次性受擊音直接放到底，變成兩份聲音（鐵律 7）。 */
   sakura: { base:'sakura' },
+  sonic:  { base:'sonic' },   // 聲波（ver -2652／-2655，enemy.sonicHit）：模糊聲波環＋盤面數字淡出淡回；從剛出手的那一隻身上擴出
   bullet:     { base:'bullet', se:'em_shot', count:1, pos:'random' },              // 彈孔
   bullet_big: { base:'bullet', se:'em_shot', count:1, pos:'random', scale:1.8 },  // 大彈孔
   dagger: { base:'slash',  se:'em_dagger' },   // 匕首（貝琳妲語彙）：slash 視覺＋匕首音
@@ -87,7 +88,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.16-2654';
+export const VERSION = 'ver 2026.11.16-2655';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5794,8 +5795,8 @@ export const ENEMY_ATK = {
   mon_canyon_bellmite_dark: { dir:'resources/enemy/anim/mon_canyon_bellmite_dark_atk_v1/', strikes:[31,37,39], hitFx:'claw1', fillFrame:true },   // 鐘殼蟲：三下揮鉗（第 31／37／39 格，-2651 照片子量），每下一道單爪痕，最後一下扣血（Ray：「鉗類的受擊用單爪痕 要跟著打擊節奏」）
   mon_canyon_chainhound_dark: { dir:'resources/enemy/anim/mon_canyon_chainhound_dark_atk_v1/', hit:45, fillFrame:true },   // 鎖鏈餓犬
   mon_canyon_lanternimp_dark: { dir:'resources/enemy/anim/mon_canyon_lanternimp_dark_atk_v1/', hit:24, fillFrame:true },   // 提燈小鬼
-  /* 朝聖者團塊（ver -2652，Ray：「他是聲波攻擊 聲波用程式跑」「優先讓他先攻」）：A 借牠的點錯片（張手，打到＝第 20 格）演，打到時程式放聲波（`hitFx:'sonic'`：模糊聲波環＋盤面數字快速淡出再慢慢淡回）；`first`＝這一組的第一擊優先由牠。 */
-  mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20, hitFx:'sonic', first:true },
+  /* 朝聖者團塊（ver -2652，Ray：「他是聲波攻擊 聲波用程式跑」「優先讓他先攻」）：A 借牠的點錯片（張手，打到＝第 20 格）演，打到時程式放聲波（`hitFx:'sonic'`：模糊聲波環＋盤面數字快速淡出再慢慢淡回）；`first`＝這一組的第一擊優先由牠；`last`＝這一組最後才倒（-2655，Ray：「那隻怪留到最後死」）。 */
+  mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20, hitFx:'sonic', first:true, last:true },
   mon_canyon_crawler_dark: { dir:'resources/enemy/anim/mon_canyon_crawler_dark_atk_v1/', hit:45, fillFrame:true },   // 爬行朝聖者   // 噴火交程式（數值待 Ray，還沒做）   // 崩岩巨像 拳砸地（ver -2620，KF 第二輪，36 格）
   mon_stag_rot_neutral: { dir:'resources/enemy/anim/mon_stag_rot_neutral_atk_v1/', hit:17 },   // 腐鹿骸 角頂（ver -2620，KF 第二輪，30 格）
   mon_shinierforest_deernightmare: { dir:'resources/enemy/anim/mon_shinierforest_deernightmare_atk_v1/', hit:32 },   // 變異樹靈鹿主 仰天咆哮（ver -2620，KF 第二輪，55 格；攻擊＝延時同一支）
@@ -5821,6 +5822,7 @@ export const ENEMY_MISS = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, fx:[{ frame:48, type:'rubble' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
+  mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20 },   // 朝聖者團塊＝D 的本職（ver -2655，Ray：「D 一定出聲波」；聲波本身在卡上 hitFx.delay:'sonic'）
   mon_canyon_bonecrab_dark: { dir:'resources/enemy/anim/mon_canyon_bonecrab_dark_delay_v1/', hit:16 },   // 卡耶爾群戰（ver -2623）
   mon_canyon_ironpenitent_neutral: { dir:'resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1/', hit:40, rev:true },   // rev＝播完倒放回中立（Ray 11-15「鐵衣 R＝倒放」；目前只有群戰讀）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_burst_v1/', hit:48 },   // D＝爆炎（81 格；ver -2525 Ray 改：爆炎是 D，之後下一發攻擊 200%，見卡上 delayEmpowers）

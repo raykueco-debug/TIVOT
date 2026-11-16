@@ -1209,9 +1209,9 @@ export const ENEMIES = {
       assaultEvery:[3,5], assault:{ count:1, gap:0 },
       kind:'harm', riseFx:0, hitSe:null, tier:'C', atype:'P', stageScale:1, stack:0,
       image:null, group:{ comp:'@bg', hp:220 },
-      hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
+      hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:3, damage:3 },   // -2655 Ray：「D 減半」＝延時時限 6→3 秒、「傷害小」（預設 8 → 3）
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
-      hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
+      hitFx:{ delay:'sonic', wrong:'slash', assault:'blunt' }, loot:[],   // delay＝聲波（-2655，Ray：「D 一定出聲波」）
     },
     canyon_mix2: {   // 石棺甲蟲（後排大型）＋鐘殼蟲・鐘殼蟲・骨鴉
       name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
