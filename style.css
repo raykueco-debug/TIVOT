@@ -395,6 +395,9 @@
   #enemyGroup .eg-fall.eg-gone{opacity:0;}
   /* 群戰逐人的待機／攻擊層（enemy.showMemberAnim，ver -2581）與程式畫的槍口火光 */
   #enemyGroup .eg-anim{position:absolute;pointer-events:none;}
+  /* 飛行怪上下晃（enemy.bobOn，ver -2647）：幅度 1.1vh（約敵人區高的 2%）、週期 2.4 秒；分層與動畫層同一個 delay ⇒ 同相位 */
+  #enemyGroup .eg-bob{animation:egBob 2.4s ease-in-out var(--bob-d,0s) infinite;}
+  @keyframes egBob{0%,100%{translate:0 0}50%{translate:0 -1.1vh}}
   #enemyGroup .eg-slash{position:absolute;inset:0;transform-origin:0 50%;border-radius:50%;
     background:linear-gradient(90deg,rgba(255,255,255,0),#fff 12%,#fff 88%,rgba(255,255,255,0));
     box-shadow:0 0 6px #fff,0 0 16px rgba(255,244,226,.85);}   /* 一閃的刀斬光線（enemy.issenSlash，ver -2643） */

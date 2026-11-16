@@ -16,7 +16,7 @@
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import * as prog from '../script/progress.js';  // stage 加成要問現在第幾章（ver -1584b）
-import { ENEMY_IDLE, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
+import { ENEMY_IDLE, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
@@ -2274,7 +2274,8 @@ function buildGroup(en){
   for(const n of order){
     const im=document.createElement('img'); im.className='eg-guard'; im.dataset.n=n; im.alt='';
     const cm=comp && comp.members[n-1];
-    if(cm){ im._pm={ k:cm.k, ox:cm.x, oy:cm.y, cv:comp.canvas||[1536,1024], focus:!!cm.focus }; im._flip=!!cm.flip; }
+    if(cm){ im._pm={ k:cm.k, ox:cm.x, oy:cm.y, cv:comp.canvas||[1536,1024], focus:!!cm.focus }; im._flip=!!cm.flip;
+      if(cm.air || ENEMY_FLY.includes(cm.stem)) bobOn(im); }
     /* 接地陰影：每個人一顆（ver -2045，Ray：「他們是不是沒給影子啊」）——
        美術的人物層是去背的、不帶影子；量腳與擺位照舊走 `groundShadow.place`（鐵律 8）。
        影子全部排在人之前（DOM 序＝圖層）：後排的人也該站在前排的影子之上。 */
@@ -2345,9 +2346,14 @@ function loadMemberClipRaw(dir){
     return Promise.all(fr.map(f=>f.decode ? f.decode().catch(()=>{}) : 0)).then(()=> (fr.length && fr.every(f=>f.naturalWidth)) ? { j, fr } : null);
   }).catch(()=>null);
 }
+/* 飛行怪上下晃（ver -2647）：分層與疊在上面的動畫層（`_ov`）都掛 `.eg-bob`、同一個相位 —— 用 CSS 的獨立 `translate` 屬性晃，
+   不碰 transform（攻擊拉到中間、一閃的歸位都用 transform，疊得起來）。每隻相位錯開。 */
+/* ⚠ 相位走 CSS 變數 `--bob-d`，不寫 inline 的 animation-delay —— 那會一起套到受擊抖動／淨化消失（.eg-hit／.eg-purge）上，負的 delay 會讓它們一開始就播完。 */
+function bobOn(im){ im._bob=-(Math.random()*2.4).toFixed(2)+'s'; im.classList.add('eg-bob'); im.style.setProperty('--bob-d', im._bob); }
+function bobOv(im, ov){ if(im._bob){ ov.classList.add('eg-bob'); ov.style.setProperty('--bob-d', im._bob); } return ov; }
 function showMemberAnim(im){
   if(im.classList.contains('eg-down') || im.classList.contains('eg-leaving')) return;
-  if(!im._ov){ const ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im.after(ov); im._ov=ov; }
+  if(!im._ov){ const ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im.after(ov); im._ov=bobOv(im, ov); }
   placeOnLayer(im._ov, im, im._idle.j); im._ov.style.scale=im._idle.flip?'-1 1':''; im._ov.src=im._idle.fr[0].src; im.style.opacity='0';
 }
 function dropMemberAnim(im){ if(im._ov){ im._ov.remove(); im._ov=null; } im._acting=false; im.style.opacity=''; }
@@ -2384,7 +2390,7 @@ function memberActOnce(g, im, A){
   if(sp.issen && A===im._atk) return memberIssen(g, im, A);
   const hit=Math.max(0, Math.min(N-1, sp.hit!=null ? sp.hit : N-1));
   const own=!im._ov; let ov=im._ov;
-  if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=ov; }
+  if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=bobOv(im, ov); }
   g.appendChild(ov);                                   // 最上層
   im._acting=true; im._actJ=J; placeOnLayer(ov, im, J); ov.style.scale=A.flip?'-1 1':''; ov.src=A.fr[0].src; im.style.opacity='0';
   /* 編組成員（`_pm`）預設攻擊**原地演**，勾了「攻擊時拉到中間」（`focus`）才拉（ver -2640，Ray：「全部預設不跑中」）；
@@ -2420,7 +2426,7 @@ export function takeIssenHit(){ const ok=issenHitAt && Math.abs(performance.now(
 function memberIssen(g, im, A){
   const J=A.j, N=A.fr.length, fps=J.fps||24;
   const own=!im._ov; let ov=im._ov;
-  if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=ov; }
+  if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=bobOv(im, ov); }
   g.appendChild(ov);
   im._acting=true; im._actJ=J; placeOnLayer(ov, im, J); ov.style.scale=A.flip?'-1 1':''; ov.src=A.fr[0].src; im.style.opacity='0';
   const tOut=N*1000/fps, ang=Math.random()*Math.PI*2, dir={ x:Math.cos(ang), y:Math.sin(ang) };

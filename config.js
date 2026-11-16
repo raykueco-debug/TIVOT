@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.16-2646';
+export const VERSION = 'ver 2026.11.16-2648';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5614,6 +5614,9 @@ export function ciShownFrames(key){
    由 tools/anim/deliver_idle_lite.py 轉檔（動畫產線 tivot_wan/out/monsters，24 格 3 秒 8fps 循環；格子維持產出解析度的 3/4，解碼約 14 MB／隻）。
    enemy.idleDirFor 查這張表：卡上 `image` 指到的那張圖有登記就自動播（不必逐張改卡）；卡上寫 `idle:false` ＝個案關掉。
    ⚠ mon_beast_altar 沒收：動畫去背把身體吃掉一半（交件時剔除）。 */
+/* 飛行怪（ver -2647，Ray：「中間那隻也是飛行怪 飛行的都要上下晃動」）：怪種（立繪檔名）層級 —— 群戰裡的這幾種一律上下晃。
+   編組成員在編輯器勾了「飛行」（✈，`air`）的也晃（那一格同時管不畫影子）。實作只有 enemy 的 `bobOn`／`.eg-bob`。 */
+export const ENEMY_FLY = ['mon_canyon_bonecrow_dark', 'mon_canyon_saintvulture_dark', 'mon_canyon_pilgrimmass_dark'];
 export const ENEMY_IDLE = {
   /* ⚠ ver -2176（Ray：「人以外的待機全部 f 數減半 freeze x2 交件」→「把敵待機全接上」）：
      怪一律改指 `_idle_v2`（v1 的偶數格，12 格 4fps，總長仍 3 秒）；**人類不改**（米夏照舊 24 格 8fps）。
