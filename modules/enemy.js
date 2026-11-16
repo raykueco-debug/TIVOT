@@ -2381,7 +2381,7 @@ function mapClip(c, M){
 }
 function memberActOnce(g, im, A){
   const J=A.j, N=A.fr.length, fps=J.fps||24, sp=A.spec||{};
-  if(sp.blink && A===im._atk) return memberBlinkAttack(g, im, A);
+  if(sp.issen && A===im._atk) return memberIssen(g, im, A);
   const hit=Math.max(0, Math.min(N-1, sp.hit!=null ? sp.hit : N-1));
   const own=!im._ov; let ov=im._ov;
   if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=ov; }
@@ -2404,17 +2404,20 @@ function memberActOnce(g, im, A){
   }, 1000/fps);
   return Math.round(hit*1000/fps);
 }
-/* ══ 殘影瞬移攻擊（ENEMY_ATK 的 `blink:true`，ver -2641，憲法 natali rule 第 13 條）══
-   ① 原地播片（殘影消失，最後幾格主體全空）→ 這一層藏起來
+/* ══ 一閃（ENEMY_ATK 的 `issen:true`；ver -2641 起，-2646 Ray 命名：「以後這個攻擊模式就叫一閃」「歸位另算」）══
+   一閃＝攻擊本身：① 原地播片（殘影消失，最後幾格主體全空）→ 這一層藏起來
    ② 一條刀斬的光線以隨機角度穿過敵人區中心，一閃就消失 —— 光線閃到滿的那一刻＝打到（回傳值，扣血照它延後）
-      （-2643，Ray：「攻擊是一條光線閃過消失 像被刀斬」「線要一閃就消失 角度隨機 不要黑影 不要有其他的受擊特效」）
-      ⇒ 這一擊打到時不放受擊特效／紅閃／受擊音，只留畫面震動（combat 問 `takeBlinkHit()`，同卡上的 `hitPlain`）。
-   ③ 一律從畫面上方略斜著快速飛回（-2645，Ray：「統一從上面略斜飛回」；斜的角度左右隨機 BLINK_TILT 內） —— 衝過原位一點再拉回（Ray：「要快速飛回 過頭 拉回」），飛的時候翅膀照拍（待機加速播）。 */
-const BLINK_GAP_MS=110, BLINK_SLASH_MS=170, BLINK_SLASH_IN=0.2, BLINK_BACK_MS=520, BLINK_OVER=0.22, BLINK_FLAP=2, BLINK_TILT=[0.17, 0.42], BLINK_HIT_WIN=400;
-let blinkHitAt=0;
-/* 這一擊是不是殘影瞬移的那一刀（打到那一刻 ±BLINK_HIT_WIN 毫秒內，問一次就用掉）—— 被完美防禦掉的話窗口自己過期 */
-export function takeBlinkHit(){ const ok=blinkHitAt && Math.abs(performance.now()-blinkHitAt)<BLINK_HIT_WIN; if(ok) blinkHitAt=0; return !!ok; }
-function memberBlinkAttack(g, im, A){
+      （Ray：「攻擊是一條光線閃過消失 像被刀斬」「線要一閃就消失 角度隨機 不要黑影 不要有其他的受擊特效」）
+      ⇒ 這一擊打到時不放受擊特效／紅閃／受擊音，只留畫面震動（combat 問 `takeIssenHit()`，同卡上的 `hitPlain`）。
+   **歸位另算**：一閃之後怎麼回到原位，看同一列的 `home`（表在 ISSEN_HOME；沒寫＝原地淡回）。
+   · `home:'dive'` ＝ 從畫面上方略斜快速飛回、衝過原位一點再拉回，飛的時候翅膀照拍（待機加速播）
+     （Ray：「要快速飛回 過頭 拉回」「飛回時翅膀也要拍」「統一從上面略斜飛回」）。 */
+const ISSEN_GAP_MS=110, ISSEN_SLASH_MS=170, ISSEN_SLASH_IN=0.2, ISSEN_HIT_WIN=400;
+const HOME_DIVE_MS=520, HOME_DIVE_OVER=0.22, HOME_FLAP=2, HOME_DIVE_TILT=[0.17, 0.42], HOME_FADE_MS=220;
+let issenHitAt=0;
+/* 這一擊是不是殘影瞬移的那一刀（打到那一刻 ±ISSEN_HIT_WIN 毫秒內，問一次就用掉）—— 被完美防禦掉的話窗口自己過期 */
+export function takeIssenHit(){ const ok=issenHitAt && Math.abs(performance.now()-issenHitAt)<ISSEN_HIT_WIN; if(ok) issenHitAt=0; return !!ok; }
+function memberIssen(g, im, A){
   const J=A.j, N=A.fr.length, fps=J.fps||24;
   const own=!im._ov; let ov=im._ov;
   if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=ov; }
@@ -2427,29 +2430,28 @@ function memberBlinkAttack(g, im, A){
     if(!alive()){ clearInterval(t); return; }
     if(++i<N){ ov.src=A.fr[i].src; return; }
     clearInterval(t); ov.style.visibility='hidden';
-    setTimeout(()=>{ if(alive()) blinkSlash(g, ang); }, BLINK_GAP_MS);
-    setTimeout(()=>{ if(alive()) blinkReturn(g, im, ov, own, A); }, BLINK_GAP_MS+BLINK_SLASH_MS);
+    setTimeout(()=>{ if(alive()) issenSlash(g, ang); }, ISSEN_GAP_MS);
+    setTimeout(()=>{ if(alive()) issenHome(g, im, ov, own, A); }, ISSEN_GAP_MS+ISSEN_SLASH_MS);
   }, 1000/fps);
-  const hit=Math.round(tOut+BLINK_GAP_MS+BLINK_SLASH_MS*BLINK_SLASH_IN);   // 光線閃到滿的那一刻＝打到
-  blinkHitAt=performance.now()+hit;
+  const hit=Math.round(tOut+ISSEN_GAP_MS+ISSEN_SLASH_MS*ISSEN_SLASH_IN);   // 光線閃到滿的那一刻＝打到
+  issenHitAt=performance.now()+hit;
   return hit;
 }
 /* 刀斬的光線：一條細亮線穿過畫面中心從入口那一端閃到出口那一端，滿了就變細、淡掉。
    外層繞畫面中心轉到那個角度，內層從入口端（左端）伸長 —— 兩件事分兩層才不會互相帶偏。 */
-function blinkSlash(g, ang){
+function issenSlash(g, ang){
   const gr=g.getBoundingClientRect(); if(!gr.width) return;
   const L=Math.hypot(gr.width, gr.height)*1.1, th=Math.max(3, gr.width*0.012);
-  const w=document.createElement('div'); w.className='eg-anim eg-blink';
+  const w=document.createElement('div'); w.className='eg-anim eg-issen';
   w.style.cssText=`left:${gr.width/2-L/2}px;top:${gr.height/2-th/2}px;width:${L}px;height:${th}px;transform:rotate(${ang}rad);`;
   const ln=document.createElement('div'); ln.className='eg-slash'; w.appendChild(ln); g.appendChild(w);
-  const a=ln.animate([{ transform:'scaleX(0) scaleY(1)', opacity:1, offset:0 }, { transform:'scaleX(1) scaleY(1)', opacity:1, offset:BLINK_SLASH_IN },
-    { transform:'scaleX(1) scaleY(0.15)', opacity:0, offset:1 }], { duration:BLINK_SLASH_MS, easing:'ease-out', fill:'both' });
-  a.onfinish=()=>w.remove(); setTimeout(()=>w.remove(), BLINK_SLASH_MS+200);
+  const a=ln.animate([{ transform:'scaleX(0) scaleY(1)', opacity:1, offset:0 }, { transform:'scaleX(1) scaleY(1)', opacity:1, offset:ISSEN_SLASH_IN },
+    { transform:'scaleX(1) scaleY(0.15)', opacity:0, offset:1 }], { duration:ISSEN_SLASH_MS, easing:'ease-out', fill:'both' });
+  a.onfinish=()=>w.remove(); setTimeout(()=>w.remove(), ISSEN_SLASH_MS+200);
 }
-function blinkReturn(g, im, ov, own, A){
-  /* 回程的起點方向（原位 → 起點）：正上方往左或往右偏 BLINK_TILT 弧度 */
-  const tilt=(BLINK_TILT[0]+Math.random()*(BLINK_TILT[1]-BLINK_TILT[0]))*(Math.random()<0.5?-1:1), dir={ x:Math.sin(tilt), y:-Math.cos(tilt) };
-  const gr=g.getBoundingClientRect();
+/* 歸位：先把這一層換回待機的樣子放回原位（看得見），再照 `home` 演進場；演完接回待機。 */
+const ISSEN_HOME={ dive:homeDive, fade:homeFade };
+function issenHome(g, im, ov, own, A){
   let flapT=0;
   const end=()=>{ clearInterval(flapT); im._acting=false; im._actJ=null;
     if(own){ ov.remove(); im._ov=null; im.style.opacity=''; }
@@ -2457,17 +2459,23 @@ function blinkReturn(g, im, ov, own, A){
   if(im._idle){ ov.src=im._idle.fr[0].src; placeOnLayer(ov, im, im._idle.j); ov.style.scale=im._idle.flip?'-1 1':''; }
   else ov.src=A.fr[0].src;
   ov.style.visibility='';
+  const gr=g.getBoundingClientRect();
   if(!ov.animate || !gr.width){ end(); return; }
-  /* 從上方略斜飛回來：起點＝原位沿 dir 推到畫面外；衝過原位（往飛行方向再多 BLINK_OVER 個身長）再拉回 */
-  const br=ov.getBoundingClientRect(), D=Math.hypot(gr.width, gr.height)/2+Math.max(br.width, br.height), O=Math.max(br.width, br.height)*BLINK_OVER;
+  const a=(ISSEN_HOME[(A.spec||{}).home] || homeFade)(g, im, ov, gr, id=>{ flapT=id; });
+  a.onfinish=a.oncancel=end;
+}
+function homeFade(g, im, ov){ return ov.animate([{ opacity:0 }, { opacity:1 }], { duration:HOME_FADE_MS }); }
+/* dive：從上方略斜飛回 —— 起點＝原位沿 dir（正上方往左或往右偏 HOME_DIVE_TILT 弧度）推到畫面外；衝過原位 HOME_DIVE_OVER 個身長再拉回 */
+function homeDive(g, im, ov, gr, setFlap){
+  const tilt=(HOME_DIVE_TILT[0]+Math.random()*(HOME_DIVE_TILT[1]-HOME_DIVE_TILT[0]))*(Math.random()<0.5?-1:1), dir={ x:Math.sin(tilt), y:-Math.cos(tilt) };
+  const br=ov.getBoundingClientRect(), D=Math.hypot(gr.width, gr.height)/2+Math.max(br.width, br.height), O=Math.max(br.width, br.height)*HOME_DIVE_OVER;
   const fx=String(ov.style.scale||'').trim().startsWith('-') ? -1 : 1;
-  /* 翅膀照拍：待機那一支加速播（BLINK_FLAP 倍） */
-  if(im._idle){ const c=im._idle; let f=0; flapT=setInterval(()=>{ f=(f+1)%c.fr.length; ov.src=c.fr[f].src; }, 1000/((c.j.fps||24)*BLINK_FLAP)); }
-  const a=ov.animate([
+  /* 翅膀照拍：待機那一支加速播（HOME_FLAP 倍） */
+  if(im._idle){ const c=im._idle; let f=0; setFlap(setInterval(()=>{ f=(f+1)%c.fr.length; ov.src=c.fr[f].src; }, 1000/((c.j.fps||24)*HOME_FLAP))); }
+  return ov.animate([
     { transform:`translate(${dir.x*D*fx}px, ${dir.y*D}px) scale(1.25)`, opacity:0.7, offset:0, easing:'cubic-bezier(.25,.8,.45,1)' },
     { transform:`translate(${-dir.x*O*fx}px, ${-dir.y*O}px) scale(0.97)`, opacity:1, offset:0.55, easing:'ease-in-out' },
-    { transform:'none', opacity:1, offset:1 }], { duration:BLINK_BACK_MS });
-  a.onfinish=a.oncancel=end;
+    { transform:'none', opacity:1, offset:1 }], { duration:HOME_DIVE_MS });
 }
 /* ══ 攻擊時拉到畫面中間（ver -2625，Ray：「攻擊的怪要往畫面中間拉近」）＋放大到貼框（`fillFrame:true`，Ray：「出框的就讓敵在攻時放大到貼框」）══
    群戰成員演 A 的期間：把這一層的片框（box）中心移到敵人區（#top）的中心；表上寫 `fillFrame` 的，再放大到片框蓋滿敵人區

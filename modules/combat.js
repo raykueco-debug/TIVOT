@@ -1369,7 +1369,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
   /* -2449（Ray：「我說了攻擊不用另外給受擊效果」「點錯或延時龍會往後噴鱗片，然後鱗片雨刮過受擊，畫面抖動」）：
      點錯／延時也一樣不放受擊特效 —— 改演龍噴鱗片＋鱗片雨（enemy.skyScaleRain），只留畫面抖動。 */
   const _plain = !!((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).hitPlain
-    || ((kind==='assault'||kind==='block') && enemy.takeBlinkHit());   // 殘影瞬移那一刀（-2643，Ray：「不要有其他的受擊特效」）：同 hitPlain，只留震動
+    || ((kind==='assault'||kind==='block') && enemy.takeIssenHit());   // 一閃那一刀（-2643，Ray：「不要有其他的受擊特效」）：同 hitPlain，只留震動
   /* -2450（Ray：「噴鱗跟鱗雨要有一點時間差，鱗雨時才受擊」）：先噴、隔一拍鱗雨刮過，這一擊（扣血、計數、畫面抖動）延到鱗雨那一刻 */
   if(_plain && (kind==='delay'||kind==='wrong') && !_rainLanded){
     const wait=enemy.skyScaleRain();

@@ -397,7 +397,7 @@
   #enemyGroup .eg-anim{position:absolute;pointer-events:none;}
   #enemyGroup .eg-slash{position:absolute;inset:0;transform-origin:0 50%;border-radius:50%;
     background:linear-gradient(90deg,rgba(255,255,255,0),#fff 12%,#fff 88%,rgba(255,255,255,0));
-    box-shadow:0 0 6px #fff,0 0 16px rgba(255,244,226,.85);}   /* 殘影瞬移的刀斬光線（enemy.blinkSlash，ver -2643） */
+    box-shadow:0 0 6px #fff,0 0 16px rgba(255,244,226,.85);}   /* 一閃的刀斬光線（enemy.issenSlash，ver -2643） */
   #enemyGroup .eg-muzzle{position:absolute;pointer-events:none;border-radius:50%;mix-blend-mode:screen;
     background:radial-gradient(circle, rgba(255,250,220,1) 0 18%, rgba(255,190,80,.85) 32%, rgba(255,90,20,0) 70%);
     animation:egMuzzle .2s ease-out forwards;}
