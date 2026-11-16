@@ -5135,7 +5135,7 @@ export const TOWNS = {
           spots:{ entry:[0.1871,0.8952], corridor:[0.1871,0.6542], bones:[0.1871,0.4133],
                   bridge:[0.6157,0.4133], altar:[0.1871,0.1723] } },
     /* 隨機遇怪（ver -2138，Ray：「卡耶爾的怪一次會出兩到三隻」）：山谷的群體小怪 5 種 × 2／3 隻（config 的 canyon_w_*）。
-       谷底祭場是安全點（`rest`）不刷；入口自 ver -2638 起**走進來會遇怪**（`wildWalkIn`，Ray：「入口也遇怪」）。 */
+       谷底祭場自 ver -2639 起也會遇怪（`rest` 照留）；入口自 ver -2638 起**走進來會遇怪**（`wildWalkIn`，Ray：「入口也遇怪」）。 */
     wildSpawn: { rate:0.5, bgComp:'canyon_w_bg_', pool:[ { battle:'canyon_w_mix2' }, { battle:'canyon_w_mix3' }, { battle:'canyon_w_mix4' }, { battle:'canyon_w_mix5' }, { battle:'canyon_w_mix6' }, { battle:'canyon_w_mix7' }, { battle:'canyon_w_mix8' }, { battle:'canyon_w_mix9' }, { battle:'canyon_w_solo_censer' }, { battle:'canyon_w_solo_houndbeast' }, { battle:'canyon_w_solo_bellmite' }, { battle:'canyon_w_solo_chainhound' }, { battle:'canyon_w_solo_lanternimp' }, { battle:'canyon_w_solo_crawler' }, { battle:'canyon_w_mix11' }, { battle:'canyon_w_mix12' } ] },
     /* 碎片 02 期間（ver -2141，Ray：「每一格都要有戰鬥」）：每一格必出怪（入口／谷底祭場照舊不刷），而且換用賽西莉當搭檔的那一池。 */
     wildForce: { need:'frag02_go', until:'frag02_done', bgComp:'frag02_w_bg_', pool:[ { battle:'frag02_w_mix2' }, { battle:'frag02_w_mix3' }, { battle:'frag02_w_mix4' }, { battle:'frag02_w_mix5' }, { battle:'frag02_w_mix6' }, { battle:'frag02_w_mix7' }, { battle:'frag02_w_mix8' }, { battle:'frag02_w_mix9' }, { battle:'frag02_w_solo_censer' }, { battle:'frag02_w_solo_houndbeast' }, { battle:'frag02_w_solo_bellmite' }, { battle:'frag02_w_solo_chainhound' }, { battle:'frag02_w_solo_lanternimp' }, { battle:'frag02_w_solo_crawler' }, { battle:'frag02_w_mix11' }, { battle:'frag02_w_mix12' } ] },
@@ -5166,7 +5166,9 @@ export const TOWNS = {
       bridge:   { bg:'canyon_bridge',   name:'卡耶爾山谷　斷橋',
                   bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_bridge_day', noTime:true }],
                   exits:{ left:'bones' } },                    // 岔出去的死路
-      altar:    { bg:'canyon_altar',    name:'卡耶爾山谷　谷底祭場', rest:true, noWild:true,
+      /* ver -2639：拿掉 `noWild`（Ray：「祭場也遇怪」）—— 只出這一格背景存的編組（巨像）。`rest` 照留：揹著帳走進來先結算、那一次不擲；
+         碎片 02 那一段（有 `flag` 的劇情）還沒演之前不擲（`storyFirst`）。 */
+      altar:    { bg:'canyon_altar',    name:'卡耶爾山谷　谷底祭場', rest:true,
                   restOff:{ need:'frag02_go', until:'frag02_done' },
                   bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_altar_day', noTime:true }],
                   exits:{ down:'bones' },                      // 谷底盡頭（Boss 場）
