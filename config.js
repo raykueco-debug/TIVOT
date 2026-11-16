@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.16-2630';
+export const VERSION = 'ver 2026.11.16-2631';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2899,7 +2899,13 @@ export const GAME_CONFIG = {
     canyon_w_mix7: { enemy:'canyon_mix7', session:'canyon_wild' },
     canyon_w_mix8: { enemy:'canyon_mix8', session:'canyon_wild' },
     canyon_w_mix9: { enemy:'canyon_mix9', session:'canyon_wild' },
-    canyon_w_mix10: { enemy:'canyon_mix10', session:'canyon_wild' },
+    /* canyon_w_mix10 拿掉（ver -2631：香爐蠍組的成員全改單獨出怪，整組空了）。單隻 6 場： */
+    canyon_w_solo_censer: { enemy:'canyon_solo_censer', session:'canyon_wild' },
+    canyon_w_solo_houndbeast: { enemy:'canyon_solo_houndbeast', session:'canyon_wild' },
+    canyon_w_solo_bellmite: { enemy:'canyon_solo_bellmite', session:'canyon_wild' },
+    canyon_w_solo_chainhound: { enemy:'canyon_solo_chainhound', session:'canyon_wild' },
+    canyon_w_solo_lanternimp: { enemy:'canyon_solo_lanternimp', session:'canyon_wild' },
+    canyon_w_solo_crawler: { enemy:'canyon_solo_crawler', session:'canyon_wild' },
     canyon_w_mix11: { enemy:'canyon_mix11', session:'canyon_wild' },
     canyon_w_mix12: { enemy:'canyon_mix12', session:'canyon_wild' },
     frag02_w_mix2: { enemy:'canyon_mix2', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
@@ -2910,10 +2916,15 @@ export const GAME_CONFIG = {
     frag02_w_mix7: { enemy:'canyon_mix7', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
     frag02_w_mix8: { enemy:'canyon_mix8', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
     frag02_w_mix9: { enemy:'canyon_mix9', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
-    frag02_w_mix10: { enemy:'canyon_mix10', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_solo_censer: { enemy:'canyon_solo_censer', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_solo_houndbeast: { enemy:'canyon_solo_houndbeast', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_solo_bellmite: { enemy:'canyon_solo_bellmite', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_solo_chainhound: { enemy:'canyon_solo_chainhound', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_solo_lanternimp: { enemy:'canyon_solo_lanternimp', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
+    frag02_w_solo_crawler: { enemy:'canyon_solo_crawler', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
     frag02_w_mix11: { enemy:'canyon_mix11', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
     frag02_w_mix12: { enemy:'canyon_mix12', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
-    frag02_mid: { enemy:'canyon_mix10', partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild' },   // 風蝕迴廊那一場（ver -2141）
+    frag02_mid: { enemy:'canyon_solo_censer',   /* ver -2631：原 mix10（香爐蠍組）整組改單獨出怪 → 同一隻主角的單隻版 */ partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild' },   // 風蝕迴廊那一場（ver -2141）
     range_trainee: { enemy:'dart_target', record:'range', noReward:true, noEval:true,
                      timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
                                   prizeSec:30, prize:'Shotgun_Dragon' } },
@@ -4653,6 +4664,12 @@ export const ASSETS = {
      已從 git（fc0ba3a2）原樣放回 `mon_beast_altar.webp`。聖匣熊照舊給 `enemy_sv_reliquary`。 */
   enemy_np_boss: "resources/enemy/mon_beast_altar.webp?v=314d3a60",
   enemy_canyon_colossus: "resources/enemy/mon_canyon_colossus_dark.webp",   // 卡耶爾谷底 Boss（ver -2160）
+  enemy_canyon_censer: "resources/enemy/mon_canyon_censer_dark.webp",   // 卡耶爾 香爐蠍 單隻（ver -2631）
+  enemy_canyon_houndbeast: "resources/enemy/mon_canyon_houndbeast.webp",   // 卡耶爾 餓獸 單隻（ver -2631）
+  enemy_canyon_bellmite: "resources/enemy/mon_canyon_bellmite_dark.webp",   // 卡耶爾 鐘殼蟲 單隻（ver -2631）
+  enemy_canyon_chainhound: "resources/enemy/mon_canyon_chainhound_dark.webp",   // 卡耶爾 鎖鏈餓犬 單隻（ver -2631）
+  enemy_canyon_lanternimp: "resources/enemy/mon_canyon_lanternimp_dark.webp",   // 卡耶爾 提燈小鬼 單隻（ver -2631）
+  enemy_canyon_crawler: "resources/enemy/mon_canyon_crawler_dark.webp",   // 卡耶爾 爬行朝聖者 單隻（ver -2631）
   /* 教堂那一場之後的真 BOSS：**瓦礫中生出的紫黑之爪**（ver -595（-893 前用詞），Ray：「boss 圖為
      TheClaws」）。⚠ 這一張是**連背景一起畫的整張戰鬥圖**（規格見
      `resources/background/_boss_claw_spec.md`）—— 所以敵人卡**不給 `bg`、不給
