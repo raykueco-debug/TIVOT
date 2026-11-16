@@ -1415,3 +1415,4 @@ when	from	to	reason
 20261116-154445	resources/enemy/anim/mon_canyon_crawler_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_crawler_dark_atk_v1	改交 Kling ABA 原片（Ray 11-16：先交件）
 20261116-202219	resources/enemy/anim/mon_canyon_bonecrow_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_bonecrow_dark_atk_v1.20261116-202219	Ray 的 cut 取代（export/canyon_ai_mon_canyon_bonecrow_dark_cut）
 20261116-202254	resources/enemy/anim/mon_canyon_bonecrow_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_bonecrow_dark_atk_v1.20261116-202254	Ray 的 cut 取代（export/canyon_ai_mon_canyon_bonecrow_dark_cut_2）
+20261116-211641	resources/enemy/anim/mon_canyon_saintvulture_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_saintvulture_dark_atk_v1.20261116-211641	聖面鷲改交殘影瞬移（照骨鴉剪法）

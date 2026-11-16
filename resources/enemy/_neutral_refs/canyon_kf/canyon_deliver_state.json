@@ -159,12 +159,13 @@
   "r_dir": "canyon_R/mon_canyon_hanged_dark_atk_v1_R"
  },
  "mon_canyon_saintvulture_dark_atk_v1": {
-  "source": "auto/mon_canyon_saintvulture_dark_wanA_blink",
-  "kind": "快剪（auto_cut）",
-  "at": "11-16 00:25",
-  "mtime": 1794759913.671427,
-  "frames": 69,
-  "peak": 1,
+  "source": "monsters/canyon_ai_mon_canyon_saintvulture_dark",
+  "from": "monsters/canyon_ai_mon_canyon_saintvulture_dark",
+  "kind": "照骨鴉 cut（kept／holds 同）",
+  "at": "11-16 21:16",
+  "mtime": 1794835003.027733,
+  "frames": 19,
+  "peak": 0,
   "r_dir": "canyon_R/mon_canyon_saintvulture_dark_atk_v1_R"
  },
  "mon_canyon_bonecrow_dark_atk_v1": {
