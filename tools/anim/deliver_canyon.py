@@ -151,8 +151,10 @@ def build_items():
     xf = json.load(open(os.path.join(KF, 'kling', 'xf_16x9_1116.json'), encoding='utf-8')); k = 720 / 1080
     for n, zh in [('censer', '香爐蠍'), ('hound', '餓獸'), ('bellmite', '鐘殼蟲'), ('chainhound', '鎖鏈餓犬'), ('lantern', '提燈小鬼'), ('crawler', '爬行朝聖者')]:
         por, s, ox, oy = xf[n]['portrait'], xf[n]['s'], xf[n]['ox'], xf[n]['oy']; P = os.path.join(EN, por + '.webp')
+        f16 = lambda x, y, s=s, ox=ox, oy=oy, k=k: ((x / k - ox) / s, (y / k - oy) / s, 1 / (k * s))
+        aba = f'monsters/kling_{n}_ABA_16x9_3s'   # 11-16 Ray：「含歸位跑一次」—— A→B→A 三張關鍵格 3 秒，自帶歸位 ⇒ 不再接倒放
         items[f'{por}_atk_v1'] = {'name': f'{por}_atk_v1', 'zh': f'{zh}・A', 'portrait': P, 'loop': False, 'rev': True,
-                                  'to_portrait': lambda x, y, s=s, ox=ox, oy=oy, k=k: ((x / k - ox) / s, (y / k - oy) / s, 1 / (k * s)),
+                                  'to_portrait': f16, 'alts': {aba: f16}, 'norev': {aba},
                                   'raw': f'monsters/kling_{n}_atk_16x9_3s', 'auto': f'auto/kling_{n}_atk_16x9'}
     return items
 

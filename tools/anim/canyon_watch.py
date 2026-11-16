@@ -40,6 +40,7 @@ def scan(state):
         if max(st.get('mtime', 0), st.get('r_mtime', 0)) >= mt: continue
         if st.get('r_source') == rel: continue
         src = (e.get('from') or '').replace(chr(92), '/'); item = dict(ITEMS[k]); isR = src.startswith('canyon_R/')
+        if isR and (st.get('from') or '') in item.get('norev', ()): continue   # 動作段已是 ABA，R 不再用
         if isR:   # 只換 R：動作段照現行那一份，後面接 Ray 剪的 R
             rf, _ = d.expand_export(exdir); frames, fps = d.src_frames(st.get('source') or item['auto'])
             src0 = st.get('from') or ''
@@ -47,6 +48,7 @@ def scan(state):
         else:
             frames, fps = d.expand_export(exdir); rf = None
             if src in item.get('alts', {}): item['to_portrait'] = item['alts'][src]   # 另一條輸入鏈（例：單圖重跑）
+            if src in item.get('norev', ()): item['rev'] = False   # 自帶歸位（ABA）的片：不接倒放
         old = os.path.join(d.DST, k)
         if os.path.exists(old):
             subprocess.run(['bash', os.path.join(d.ROOT, 'tools', 'recycle.sh'), '-m', f'Ray 的 cut 取代（{rel}）', old], cwd=d.ROOT, capture_output=True)
