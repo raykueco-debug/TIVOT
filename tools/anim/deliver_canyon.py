@@ -149,6 +149,9 @@ def build_items():
                                   'raw': f'canyon_wanA/{por}' + ('_blinkA' if blink else ''), 'auto': f'auto/{por}_wanA' + ('_blink' if blink else '')}
         if blink:   # 11-16 Ray：通用瞬移四格接在 Wan 閃現後面（monsters/canyon_tpcut_<立繪名>，與 Wan 原片同座標）；倒放＝從空白經瞬移格現形
             tf = items[f'{por}_atk_v1']['to_portrait']; items[f'{por}_atk_v1']['alts'] = {f'monsters/canyon_tpcut_{por}': tf}
+            # 11-16 Ray：「不是魔法瞬移 是殘影瞬移」—— 待機＋GPT 殘影四格（monsters/canyon_ai_<立繪名>，座標＝待機 box 的 0.5 倍）
+            bx = json.load(open(os.path.join(DST, por + '_idle_v1', 'anim.json')))['box']
+            items[f'{por}_atk_v1']['alts'][f'monsters/canyon_ai_{por}'] = lambda x, y, bx=bx: (x / 0.5 + bx[0], y / 0.5 + bx[1], 2.0)
     # 11-16 Ray：6 隻攻擊 A 走 Kling（橫式 16:9、AB、3 秒；R 倒放）。輸入：立繪與 B 用同一個變換貼進 1920×1080 綠底（xf_16x9_1116.json）
     xf = json.load(open(os.path.join(KF, 'kling', 'xf_16x9_1116.json'), encoding='utf-8')); k = 720 / 1080
     for n, zh in [('censer', '香爐蠍'), ('hound', '餓獸'), ('bellmite', '鐘殼蟲'), ('chainhound', '鎖鏈餓犬'), ('lantern', '提燈小鬼'), ('crawler', '爬行朝聖者')]:
