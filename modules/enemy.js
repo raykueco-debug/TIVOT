@@ -2381,6 +2381,7 @@ function mapClip(c, M){
 }
 function memberActOnce(g, im, A){
   const J=A.j, N=A.fr.length, fps=J.fps||24, sp=A.spec||{};
+  if(sp.blink && A===im._atk) return memberBlinkAttack(g, im, A);
   const hit=Math.max(0, Math.min(N-1, sp.hit!=null ? sp.hit : N-1));
   const own=!im._ov; let ov=im._ov;
   if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=ov; }
@@ -2402,6 +2403,63 @@ function memberActOnce(g, im, A){
     end();
   }, 1000/fps);
   return Math.round(hit*1000/fps);
+}
+/* ══ 殘影瞬移攻擊（ENEMY_ATK 的 `blink:true`，ver -2641，憲法 natali rule 第 13 條；Ray：「一道黑影快速畫過畫面 畫過時攻擊判定」
+   「不用倒放 讓程式讓他從畫面飛回來就好」）══
+   ① 原地播片（殘影消失，最後幾格主體全空）→ 這一層藏起來
+   ② 一道黑影（牠自己的剪影塗黑＋拖尾）以隨機角度穿過敵人區中心 —— 穿過中心那一刻＝打到（回傳值，扣血照它延後）
+   ③ 從黑影離開的那一側、畫面外飛回原位，接回待機。
+   ⚠ 黑影的大小取這一層在畫面上的大小 ×BLINK_SIL_K（劃過鏡頭前，比站位大一圈）；位置與方向現算，不寫死。 */
+const BLINK_GAP_MS=110, BLINK_STREAK_MS=240, BLINK_BACK_MS=460, BLINK_SIL_K=2.2, BLINK_TRAIL=4, BLINK_TRAIL_MS=24;
+function memberBlinkAttack(g, im, A){
+  const J=A.j, N=A.fr.length, fps=J.fps||24;
+  const own=!im._ov; let ov=im._ov;
+  if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=ov; }
+  g.appendChild(ov);
+  im._acting=true; im._actJ=J; placeOnLayer(ov, im, J); ov.style.scale=A.flip?'-1 1':''; ov.src=A.fr[0].src; im.style.opacity='0';
+  /* 黑影用的剪影：待機第 0 格（本體完整、沒有殘影）；沒有待機就用片子第 0 格 */
+  const silSrc=(im._idle && im._idle.fr[0].src) || A.fr[0].src, silFlip=im._idle ? im._idle.flip : A.flip;
+  const tOut=N*1000/fps, ang=Math.random()*Math.PI*2, dir={ x:Math.cos(ang), y:Math.sin(ang) };
+  const alive=()=> im._ov===ov && groupCard && !im.classList.contains('eg-down');
+  let i=0;
+  const t=setInterval(()=>{
+    if(!alive()){ clearInterval(t); return; }
+    if(++i<N){ ov.src=A.fr[i].src; return; }
+    clearInterval(t); ov.style.visibility='hidden';
+    setTimeout(()=>{ if(alive()) blinkStreak(g, ov, silSrc, silFlip, dir); }, BLINK_GAP_MS);
+    setTimeout(()=>{ if(alive()) blinkReturn(g, im, ov, own, A, dir); }, BLINK_GAP_MS+BLINK_STREAK_MS);
+  }, 1000/fps);
+  return Math.round(tOut+BLINK_GAP_MS+BLINK_STREAK_MS/2);
+}
+function blinkStreak(g, ov, src, flip, dir){
+  const gr=g.getBoundingClientRect(); if(!gr.width) return;
+  const w=(parseFloat(ov.style.width)||gr.width*0.3)*BLINK_SIL_K, h=(parseFloat(ov.style.height)||gr.height*0.4)*BLINK_SIL_K;
+  const cx=gr.width/2, cy=gr.height/2, D=Math.hypot(gr.width, gr.height)/2+Math.max(w, h);   // 起訖點都在畫面外
+  for(let k=BLINK_TRAIL; k>=0; k--){   // k=0 是本體，其餘是拖尾（晚一點出發、越後面越淡）
+    const s=document.createElement('img'); s.className='eg-anim eg-blink'; s.alt=''; s.src=src;
+    s.style.cssText=`left:${cx-w/2}px;top:${cy-h/2}px;width:${w}px;height:${h}px;opacity:${k?0.5*(1-k/(BLINK_TRAIL+1)):0.92};`
+      +`filter:brightness(0) blur(${k?3+k:1.5}px);`+(flip?'scale:-1 1;':'');
+    g.appendChild(s);
+    const fx=flip?-1:1, from=`translate(${-dir.x*D*fx}px, ${-dir.y*D}px)`, to=`translate(${dir.x*D*fx}px, ${dir.y*D}px)`;
+    const a=s.animate([{ transform:from }, { transform:to }], { duration:BLINK_STREAK_MS, delay:k*BLINK_TRAIL_MS, easing:'linear', fill:'both' });
+    a.onfinish=()=>s.remove(); setTimeout(()=>s.remove(), BLINK_STREAK_MS+k*BLINK_TRAIL_MS+200);
+  }
+}
+function blinkReturn(g, im, ov, own, A, dir){
+  const gr=g.getBoundingClientRect();
+  const end=()=>{ im._acting=false; im._actJ=null;
+    if(own){ ov.remove(); im._ov=null; im.style.opacity=''; }
+    else { im.after(ov); ov.style.scale=im._idle.flip?'-1 1':''; ov.src=im._idle.fr[0].src; placeOnLayer(ov, im, im._idle.j); } };
+  if(im._idle){ ov.src=im._idle.fr[0].src; placeOnLayer(ov, im, im._idle.j); ov.style.scale=im._idle.flip?'-1 1':''; }
+  else ov.src=A.fr[0].src;
+  ov.style.visibility='';
+  if(!ov.animate || !gr.width){ end(); return; }
+  /* 從黑影離開的那一側飛回來：起點＝原位沿劃過方向推到畫面外 */
+  const br=ov.getBoundingClientRect(), D=Math.hypot(gr.width, gr.height)/2+Math.max(br.width, br.height);
+  const flip=String(ov.style.scale||'').trim().startsWith('-');
+  const a=ov.animate([{ transform:`translate(${dir.x*D*(flip?-1:1)}px, ${dir.y*D}px) scale(1.25)`, opacity:0.6 }, { transform:'none', opacity:1 }],
+    { duration:BLINK_BACK_MS, easing:'cubic-bezier(.15,.7,.3,1)' });
+  a.onfinish=a.oncancel=end;
 }
 /* ══ 攻擊時拉到畫面中間（ver -2625，Ray：「攻擊的怪要往畫面中間拉近」）＋放大到貼框（`fillFrame:true`，Ray：「出框的就讓敵在攻時放大到貼框」）══
    群戰成員演 A 的期間：把這一層的片框（box）中心移到敵人區（#top）的中心；表上寫 `fillFrame` 的，再放大到片框蓋滿敵人區
