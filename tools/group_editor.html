@@ -53,7 +53,7 @@ main{display:grid;grid-template-columns:200px 1fr 230px;gap:10px;padding:10px;al
 <main>
   <div id="pal"></div>
   <div><div id="wrap"><img id="bgimg" alt=""></div>
-    <div class="hint">點一隻選取 → 拖移；滾輪縮放（以游標為中心）；方向鍵微調、Delete 刪除。虛線框＝手機上看得到的範圍。左邊點一隻怪＝加進這一組（放在最前排）。</div></div>
+    <div class="hint">點一隻選取 → 拖移；滾輪縮放（以游標為中心）；方向鍵微調、Delete 刪除、Ctrl+Z 復原。虛線框＝手機上看得到的範圍。左邊點一隻怪＝加進這一組（放在最前排）。</div></div>
   <div id="side">
     <div><b id="selName">（沒選）</b></div>
     <div class="row"><button id="flip">左右翻</button><button id="air">飛行（不畫影子）</button></div>
@@ -159,7 +159,7 @@ let drag=null;
 wrap.addEventListener('pointerdown', async e=>{
   const p=toCanvas(e); const i=await pick(p);
   sel=i; render(); if(i<0) return;
-  const m=comp.members[i]; drag={ p, x:m.x, y:m.y }; wrap.setPointerCapture(e.pointerId);
+  const m=comp.members[i]; snap(); drag={ p, x:m.x, y:m.y }; wrap.setPointerCapture(e.pointerId);
 });
 wrap.addEventListener('pointermove', e=>{ if(!drag) return; const p=toCanvas(e), m=comp.members[sel];
   m.x=+(drag.x+p.x-drag.p.x).toFixed(1); m.y=+(drag.y+p.y-drag.p.y).toFixed(1); posOne(sel); side(); });
@@ -170,22 +170,28 @@ wrap.addEventListener('wheel', e=>{ e.preventDefault(); const m=comp.members[sel
   m.x=+(p.x-(p.x-m.x)*r).toFixed(1); m.y=+(p.y-(p.y-m.y)*r).toFixed(1); m.k=+k2.toFixed(4); posOne(sel); side(); reIdle(); }, { passive:false });
 function posOne(i){ const m=comp.members[i], d=wrap.querySelector('.mem[data-i="'+i+'"]'); if(!d) return; const [w,h]=sizeOf(m.stem);
   Object.assign(d.style,{ left:(m.x*sc)+'px', top:(m.y*sc)+'px', width:(w*m.k*sc)+'px', height:(h*m.k*sc)+'px' }); }
-document.addEventListener('keydown', e=>{ const m=comp.members[sel]; if(!m || e.target.tagName==='SELECT' || e.target.tagName==='INPUT' || $('pick').classList.contains('on')) return;
+/* 復原（Ctrl+Z）：每一次「改了」之前存一份（加／刪／翻／換層／拖完／縮放停手） */
+const undo=[]; let lastSnap='';
+function snap(){ const j=JSON.stringify(comp); if(j!==lastSnap){ undo.push(lastSnap||j); if(undo.length>60) undo.shift(); } lastSnap=j; }
+document.addEventListener('keydown', e=>{
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='z' && e.target.tagName!=='INPUT'){ e.preventDefault(); const j=undo.pop(); if(j){ comp=JSON.parse(j); lastSnap=j; sel=-1; render(); $('msg').textContent='已復原一步'; } return; }
+  const m=comp.members[sel]; if(!m || e.target.tagName==='SELECT' || e.target.tagName==='INPUT' || $('pick').classList.contains('on')) return;
   const st=e.shiftKey?10:2;
   if(e.key==='ArrowLeft') m.x-=st; else if(e.key==='ArrowRight') m.x+=st; else if(e.key==='ArrowUp') m.y-=st; else if(e.key==='ArrowDown') m.y+=st;
-  else if(e.key==='Delete' || e.key==='Backspace'){ comp.members.splice(sel,1); sel=-1; render(); return; } else return;
+  else if(e.key==='Delete'){ snap(); comp.members.splice(sel,1); sel=-1; render(); snap(); return; } else return;   // ⚠ Backspace 不刪（Ray：「存檔以後切回地圖就空了」）
   e.preventDefault(); posOne(sel); side(); });
 $('list').addEventListener('click', e=>{ const d=e.target.closest('[data-i]'); if(!d) return; sel=+d.dataset.i; render(); });
-$('flip').onclick=()=>{ const m=comp.members[sel]; m.flip=m.flip?0:1; if(!m.flip) delete m.flip; render(); };
-$('air').onclick=()=>{ const m=comp.members[sel]; if(m.air) delete m.air; else m.air=1; render(); };
-$('back').onclick=()=>{ if(sel>0){ const a=comp.members; [a[sel-1],a[sel]]=[a[sel],a[sel-1]]; sel--; render(); } };
-$('front').onclick=()=>{ const a=comp.members; if(sel<a.length-1){ [a[sel+1],a[sel]]=[a[sel],a[sel+1]]; sel++; render(); } };
-$('del').onclick=()=>{ comp.members.splice(sel,1); sel=-1; render(); };
+$('flip').onclick=()=>{ snap(); const m=comp.members[sel]; m.flip=m.flip?0:1; if(!m.flip) delete m.flip; render(); };
+$('air').onclick=()=>{ snap(); const m=comp.members[sel]; if(m.air) delete m.air; else m.air=1; render(); };
+$('back').onclick=()=>{ snap(); if(sel>0){ const a=comp.members; [a[sel-1],a[sel]]=[a[sel],a[sel-1]]; sel--; render(); } };
+$('front').onclick=()=>{ snap(); const a=comp.members; if(sel<a.length-1){ [a[sel+1],a[sel]]=[a[sel],a[sel+1]]; sel++; render(); } };
+$('del').onclick=()=>{ snap(); comp.members.splice(sel,1); sel=-1; render(); };
 
 /* ── 調色盤：點一隻加進來（最前排，放在手機框中間偏下） ── */
 const pal=$('pal');
 pal.innerHTML=STEMS.map(s=>`<div class="pi" data-s="${s}"><img src="../resources/enemy/${s}.webp" loading="lazy" alt="">${nameOf(s)}</div>`).join('');
 async function addMember(stem){
+  snap();
   const [w,h]=await loadSize(stem), [CW,CH]=comp.canvas, k=+Math.min(0.35, CH*0.5/h, CW*0.4/w).toFixed(4);
   comp.members.push({ stem, k, x:+((CW-w*k)/2).toFixed(1), y:+(CH-h*k-40).toFixed(1) });
   sel=comp.members.length-1; render(); $('msg').textContent='已加入：'+nameOf(stem)+'（放在最前排、畫面中下）';
@@ -285,7 +291,7 @@ compSel.onchange=()=>{ if(JSON.stringify(comp)!==saved && !confirm('這一組還
 $('bg').innerHTML=BGS.map(b=>`<option>${b}</option>`).join('');
 $('bg').onchange=()=>{ $('bgimg').src='../resources/background/canyon/'+$('bg').value+'.webp'; };
 $('bg').onchange();
-function load(k){ key=k; comp=JSON.parse(JSON.stringify(GROUP_COMPS[k])); saved=JSON.stringify(comp); sel=-1; render(); $('msg').textContent=''; }
+function load(k){ key=k; comp=JSON.parse(JSON.stringify(GROUP_COMPS[k])); saved=JSON.stringify(comp); undo.length=0; lastSnap=saved; sel=-1; render(); $('msg').textContent=''; }
 $('revert').onclick=()=>load(key);
 $('save').onclick=()=>{
   $('msg').textContent='寫入中…';

@@ -12,23 +12,22 @@ export const GROUP_COMPS = /*GCOMP*/{
   ],
   "members": [
    {
-    "stem": "mon_canyon_coffinbeetle_dark",
-    "k": 0.5352,
-    "x": 489.2,
-    "y": 189.7
+    "stem": "mon_canyon_houndbeast",
+    "k": 0.5335,
+    "x": 521.4,
+    "y": 293.2
    },
    {
-    "stem": "mon_canyon_bellmite_dark",
-    "k": 0.3565,
-    "x": 249.6,
-    "y": 467.4
+    "stem": "mon_canyon_lanternimp_dark",
+    "k": 0.3333,
+    "x": 895.9,
+    "y": 538.4
    },
    {
-    "stem": "mon_canyon_bonecrow_dark",
-    "k": 0.334,
-    "x": 871.0,
-    "y": -40.8,
-    "air": 1
+    "stem": "mon_canyon_hanged_dark",
+    "k": 0.3333,
+    "x": 295.5,
+    "y": 2.6
    }
   ]
  },
