@@ -161,22 +161,20 @@
  "mon_canyon_saintvulture_dark_atk_v1": {
   "source": "monsters/canyon_ai_mon_canyon_saintvulture_dark",
   "from": "monsters/canyon_ai_mon_canyon_saintvulture_dark",
-  "kind": "照骨鴉 cut（kept／holds 同）",
-  "at": "11-16 21:16",
-  "mtime": 1794835003.027733,
-  "frames": 19,
-  "peak": 0,
-  "r_dir": "canyon_R/mon_canyon_saintvulture_dark_atk_v1_R"
+  "kind": "照骨鴉 cut（只有消失段，不倒放）",
+  "at": "11-16 21:18",
+  "mtime": 1794835101.7698596,
+  "frames": 10,
+  "peak": 0
  },
  "mon_canyon_bonecrow_dark_atk_v1": {
   "source": "export/canyon_ai_mon_canyon_bonecrow_dark_cut_2",
   "from": "monsters/canyon_ai_mon_canyon_bonecrow_dark",
-  "kind": "Ray 的 cut",
-  "at": "11-16 20:22",
-  "mtime": 1794831750.455603,
-  "frames": 19,
-  "peak": 0,
-  "r_dir": "canyon_R/mon_canyon_bonecrow_dark_atk_v1_R"
+  "kind": "Ray 的 cut（只有消失段，不倒放）",
+  "at": "11-16 21:18",
+  "mtime": 1794835100.8225276,
+  "frames": 10,
+  "peak": 0
  },
  "mon_canyon_censer_dark_atk_v1": {
   "source": "monsters/kling_censer_ABA_16x9_3s",
