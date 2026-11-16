@@ -41,8 +41,8 @@ main{display:grid;grid-template-columns:200px 1fr 230px;gap:10px;padding:10px;al
 </style></head><body>
 <header>
   <h1>群戰編組編輯器</h1>
-  <select id="comp"></select>
-  <select id="bg"></select>
+  <span class="hint">編哪一組</span><select id="comp"></select>
+  <span class="hint">時段</span><select id="bg"></select>
   <button id="addBtn" class="on">＋ 新增怪</button>
   <button id="idleBtn">全員待機</button>
   <label class="hint"><input type="checkbox" id="focus" checked> 攻擊照遊戲拉到中間</label>
@@ -87,7 +87,9 @@ const NAME={ coffinbeetle:'石棺甲蟲', bellmite:'鐘殼蟲', bonecrow:'骨鴉
   stilt:'高蹺細影', censer:'香爐蠍', hanged:'崖縫吊屍者', houndbeast:'餓獸', colossus:'崩岩巨像' };
 const nameOf=stem=>{ const k=stem.replace('mon_canyon_','').replace(/_(dark|neutral)$/,''); return NAME[k]||k; };
 const STEMS=Object.keys(ENEMY_IDLE).filter(k=>k.startsWith('mon_canyon_'));
-const BGS=['canyon_entry_day','canyon_corridor_day','canyon_bones_day','canyon_bridge_day','canyon_altar_day'];
+/* 場景＝地圖上的一格（背景基底名）。每一格一組：鑰匙 bg_<基底名>，沒存過＝空的（遊戲裡那一格照舊抽遇怪池）。 */
+const SCENES=[['canyon_entry','入口（安全點，不遇怪）'],['canyon_corridor','風蝕迴廊'],['canyon_bones','白骨之地'],['canyon_bridge','斷橋'],['canyon_altar','谷底祭場（安全點，不遇怪）']];
+const BANDS=[['day','白天'],['dusk','黃昏'],['night','夜晚']];
 
 let key=null, comp=null, saved=null, sel=-1, sc=1, idleOn=false, idleT=0;
 const clips={};   // dir → Promise<{j, fr}>
@@ -286,23 +288,34 @@ $('idleBtn').onclick=()=>{ idleOn=!idleOn; $('idleBtn').classList.toggle('on', i
 
 /* ── 組／背景／存檔 ── */
 const compSel=$('comp');
-compSel.innerHTML=Object.keys(GROUP_COMPS).map(k=>`<option value="${k}">${k}（${GROUP_COMPS[k].members.map(m=>nameOf(m.stem)).join('・')}）</option>`).join('');
+const optLabel=k=>{ const c=GROUP_COMPS[k], who=c && c.members.length ? c.members.map(m=>nameOf(m.stem)).join('・') : '空的';
+  const sc=SCENES.find(x=>'bg_'+x[0]===k); return (sc ? '場景：'+sc[1] : '舊群組 '+k)+'（'+who+'）'; };
+function fillComps(){
+  const cur=compSel.value;
+  compSel.innerHTML='<optgroup label="場景（地圖上的一格）">'+SCENES.map(([b])=>`<option value="bg_${b}">${optLabel('bg_'+b)}</option>`).join('')+'</optgroup>'
+    +'<optgroup label="舊的禍魘大軍（mix）">'+Object.keys(GROUP_COMPS).filter(k=>!k.startsWith('bg_')).map(k=>`<option value="${k}">${optLabel(k)}</option>`).join('')+'</optgroup>';
+  if(cur) compSel.value=cur;
+}
+fillComps();
 compSel.onchange=()=>{ compSel.blur(); if(JSON.stringify(comp)!==saved && !confirm('這一組還沒存檔，確定要換組？')){ compSel.value=key; return; } load(compSel.value); };
-$('bg').innerHTML=BGS.map(b=>`<option>${b}</option>`).join('');
-$('bg').onchange=()=>{ $('bgimg').src='../resources/background/canyon/'+$('bg').value+'.webp'; $('bg').blur(); };   // 選完就放掉焦點，之後的按鍵回到畫布
-$('bg').onchange();
-function load(k){ key=k; comp=JSON.parse(JSON.stringify(GROUP_COMPS[k])); saved=JSON.stringify(comp); undo.length=0; lastSnap=saved; sel=-1; render(); $('msg').textContent=''; }
+/* 背景圖：場景那一組就顯示那一格；舊群組沿用上一次的場景。第二個選單只換時段。 */
+let sceneBg='canyon_entry';
+$('bg').innerHTML=BANDS.map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
+const showBg=()=>{ $('bgimg').src='../resources/background/canyon/'+sceneBg+'_'+$('bg').value+'.webp'; };
+$('bg').onchange=()=>{ showBg(); $('bg').blur(); };   // 選完就放掉焦點，之後的按鍵回到畫布
+function load(k){ key=k; if(k.startsWith('bg_')){ sceneBg=k.slice(3); showBg(); }
+  comp=JSON.parse(JSON.stringify(GROUP_COMPS[k] || { canvas:[1536,1024], members:[] })); saved=JSON.stringify(comp); undo.length=0; lastSnap=saved; sel=-1; render(); $('msg').textContent=''; }
 $('revert').onclick=()=>load(key);
 $('save').onclick=()=>{
   $('msg').textContent='寫入中…';
   fetch('../__gcomp',{ method:'POST', body:JSON.stringify({ key, comp }) }).then(r=>r.text().then(x=>({ok:r.ok,x}))).then(r=>{
-    $('msg').textContent = r.ok ? '已存檔（'+r.x+'）—— 遊戲重新整理就吃得到' : '存檔失敗：'+r.x;
-    if(r.ok){ GROUP_COMPS[key]=JSON.parse(JSON.stringify(comp)); saved=JSON.stringify(comp); side();
-      compSel.querySelector('option[value="'+key+'"]').textContent=key+'（'+comp.members.map(m=>nameOf(m.stem)).join('・')+'）'; }
+    $('msg').textContent = r.ok ? (comp.members.length ? '已存檔（'+r.x+'）—— 遊戲重新整理就吃得到' : '已清空這一組（那一格回到照舊抽遇怪池）') : '存檔失敗：'+r.x;
+    if(r.ok){ if(comp.members.length) GROUP_COMPS[key]=JSON.parse(JSON.stringify(comp)); else delete GROUP_COMPS[key];
+      saved=JSON.stringify(comp); side(); fillComps(); }
   }).catch(e=>{ $('msg').textContent='存檔失敗：'+e; });
 };
 window.addEventListener('resize', ()=>render());
 window.addEventListener('beforeunload', e=>{ if(comp && JSON.stringify(comp)!==saved){ e.preventDefault(); e.returnValue=''; } });
-load(Object.keys(GROUP_COMPS)[0]);
+compSel.value='bg_canyon_corridor'; load('bg_canyon_corridor');
 </script>
 </body></html>

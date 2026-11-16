@@ -851,14 +851,16 @@ def gcomp_patch(req):
         if m.get('flip'): mm['flip'] = 1
         if m.get('air'): mm['air'] = 1
         members.append(mm)
-    if not members:
-        raise ValueError('這一組一隻都沒有')
+    
     path = os.path.join(ROOT, GCOMP_FILE)
     with open(path, 'r', encoding='utf-8', newline='') as f:
         text = f.read()
     a, b = text.index('/*GCOMP*/') + len('/*GCOMP*/'), text.index('/*END*/')
     data = json.loads(text[a:b] or '{}')
-    data[key] = {'canvas': [int(cv[0]), int(cv[1])], 'members': members}
+    if members:
+        data[key] = {'canvas': [int(cv[0]), int(cv[1])], 'members': members}
+    else:
+        data.pop(key, None)   # 一隻都沒有＝這一組拿掉（背景編組回到「照舊抽池子」）
     body = json.dumps(data, ensure_ascii=False, indent=1)
     _write_text(GCOMP_FILE, text[:a] + body + text[b:])
     return '%s %s：%d 隻' % (GCOMP_FILE, key, len(members))

@@ -12,6 +12,7 @@
 
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, fileGain, asset } from '../config.js';   // asset＝鍵→路徑（warmEnemies 用）
+import { GROUP_COMPS } from '../script/group_comps.js';   // 背景的群戰編組（ver -2639，tools/group_editor.html）
 import { TOWNS, OUTING, DINE, DRAGON_LINES, QUEST_LOCK} from '../script/town.js';
 import * as clock from '../script/clock.js';
 import * as prog from '../script/progress.js';
@@ -2509,7 +2510,11 @@ function wildActDue(n){
        ⚠ 卡上那一批沒有 `where` 限制（牠自己已經說了住哪），所以直接包成同樣的形狀。 */
     /* 城上 `wildForce:{need,until,pool}`（ver -2141，碎片 02）＝這段期間**每一格必出怪**，而且換用它自己那一池。 */
     const force = wildForceOn();
-    const pool0 = force ? force.pool : ((W&&W.pool)||[]).concat(cardPool.map(k=>({ battle:k })));
+    let pool0 = force ? force.pool : ((W&&W.pool)||[]).concat(cardPool.map(k=>({ battle:k })));
+    /* 這一格的背景在編輯器存過編組（tools/group_editor.html，ver -2639）⇒ 這一格只出那一組；沒存過照舊抽池子。
+       戰鬥 id ＝城上 `bgComp`（碎片 02 期間讀 wildForce 的）＋格名 —— 每格一個 id，「一趟同種不重複」才分得開。 */
+    { const pre = force ? force.bgComp : (W && W.bgComp), base=String(n.bg||'').toLowerCase().replace(/_(dawn|day|dusk|night|midnight)$/,'');
+      if(pre && base && GROUP_COMPS['bg_'+base] && (GAME_CONFIG.battles||{})[pre+nodeId]) pool0=[{ battle:pre+nodeId }]; }
     const fresh=pool0.filter(p=> okHere(p) && !wildDone.has(wildSpecies(p.battle)));
     /* ══⚠⚠ **池子清空之後要能重刷**（ver -958，Ray：「重複攻略神殿時路上要有 25%
        機率遇怪，好像打完中 boss 走到休息點就幾乎碰不到怪了」）══

@@ -2232,7 +2232,14 @@ function buildMask(im){
    跟分層圖那一套（`group.dir`＋guard_N）並存：分層圖是「美術排好的整張」，這一套是「照編輯器擺的立繪」——
    每一隻的圖框直接擺成那個矩形（layerMap 一支算，鐵律 7），命中、影子、待機／攻擊動畫全部讀同一份；
    動畫用的就是立繪座標（box 不必再換算）。翻面的那一隻先鏡成一張圖（遮罩跟著鏡），動畫層用 scale -1 1。 */
-function compOf(G){ return (G && G.comp && GROUP_COMPS[G.comp]) || null; }
+/* `comp:'@bg'` ＝照**現在這一格的背景**取編組（ver -2639，Ray：「換一個背景應該是空的 直到我把該背景的怪存入」）：
+   鑰匙 `bg_<背景基底名>`（去掉時段，例 bg_canyon_corridor）。背景讀 #storyBg（戰鬥中舞台藏著，但那一張還在）。 */
+export function bgCompKey(){
+  const e=$('storyBg'), p=String((e && e.getAttribute('src'))||'').split('?')[0];
+  const f=p.slice(p.lastIndexOf('/')+1).replace(/\.\w+$/,'').toLowerCase().replace(/_(dawn|day|dusk|night|midnight)$/,'');
+  return f ? 'bg_'+f : '';
+}
+function compOf(G){ if(!G || !G.comp) return null; return GROUP_COMPS[G.comp==='@bg' ? bgCompKey() : G.comp] || null; }
 export function groupOrder(G){ const c=compOf(G); return c ? c.members.map((_,i)=>i+1) : (G && G.order) || []; }
 function compSrc(m){ const u='resources/enemy/'+m.stem+'.webp'; return u+assetVer(u); }
 export function groupWarmSrcs(G){ const c=compOf(G); return c ? c.members.map(compSrc) : groupOrder(G).map(n=>G.dir+(G.prefix||'guard_')+n+'.webp'); }

@@ -1202,6 +1202,17 @@ export const ENEMIES = {
        改成混編 `canyon_mix2..12`：每組後排一隻大型（11 種各一組；崩岩巨像 -2160 起獨立當谷底 Boss `canyon_colossus`，mix1 拿掉）＋前面 2～4 隻第二批小型，總數 ≤5、同種 ≤2（`resources/enemy/canyon_swarm/fly<n>/`，guard_1＝大型；ver -2164 骨鴉（飛行）抬到畫面偏上、不畫影子 `noShadow`；資料夾每次改名是為了避開同名覆蓋的快取）。ver -2158 起圖層全部換成美術的深色重生版（`mon_canyon_<名>_dark`＋新增的 `mon_canyon_houndbeast` 餓獸）。舊註：原本是（
        右邊那隻水平翻轉、三隻時中間那隻在前排；只是排版，沒有重畫）。數值逐格照抄 `np_candletower`（北泊禍魘，C 級 220 血），
        **整群總血 220**（`group.hp`，打掉一份倒一隻）。⚠ 暫用：Ray 給正式數值卡之後整批改。 */
+    canyon_bgcomp: {   // 背景編組（ver -2639）：照現在這一格的背景取 tools/group_editor.html 存的那一組（數值同禍魘大軍，待 Ray 調）
+      name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
+      weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
+      openAssault:[1,2], ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
+      assaultEvery:[3,5], assault:{ count:1, gap:0 },
+      kind:'harm', riseFx:0, hitSe:null, tier:'C', atype:'P', stageScale:1, stack:0,
+      image:null, group:{ comp:'@bg', hp:220 },
+      hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
+      entrance:null, special:[], boardGrids:[9,9,9,9,16],
+      hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
+    },
     canyon_mix2: {   // 石棺甲蟲（後排大型）＋鐘殼蟲・鐘殼蟲・骨鴉
       name:'禍魘大軍', story:0, counterStagger:1, boss:0, Ganymede:0,
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[-0.5,0], '萊福槍':[0.5,0] },
