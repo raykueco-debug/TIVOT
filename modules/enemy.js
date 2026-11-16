@@ -2404,21 +2404,22 @@ function memberActOnce(g, im, A){
   }, 1000/fps);
   return Math.round(hit*1000/fps);
 }
-/* ══ 殘影瞬移攻擊（ENEMY_ATK 的 `blink:true`，ver -2641，憲法 natali rule 第 13 條；Ray：「一道黑影快速畫過畫面 畫過時攻擊判定」
-   「不用倒放 讓程式讓他從畫面飛回來就好」）══
+/* ══ 殘影瞬移攻擊（ENEMY_ATK 的 `blink:true`，ver -2641，憲法 natali rule 第 13 條）══
    ① 原地播片（殘影消失，最後幾格主體全空）→ 這一層藏起來
-   ② 一道黑影（牠自己的剪影塗黑＋拖尾）以隨機角度穿過敵人區中心 —— 穿過中心那一刻＝打到（回傳值，扣血照它延後）
-   ③ 從黑影離開的那一側、畫面外飛回原位，接回待機。
-   ⚠ 黑影的大小取這一層在畫面上的大小 ×BLINK_SIL_K（劃過鏡頭前，比站位大一圈）；位置與方向現算，不寫死。 */
-const BLINK_GAP_MS=110, BLINK_STREAK_MS=240, BLINK_BACK_MS=460, BLINK_SIL_K=2.2, BLINK_TRAIL=4, BLINK_TRAIL_MS=24;
+   ② 一條刀斬的光線以隨機角度穿過敵人區中心，一閃就消失 —— 光線閃到滿的那一刻＝打到（回傳值，扣血照它延後）
+      （-2643，Ray：「攻擊是一條光線閃過消失 像被刀斬」「線要一閃就消失 角度隨機 不要黑影 不要有其他的受擊特效」）
+      ⇒ 這一擊打到時不放受擊特效／紅閃／受擊音，只留畫面震動（combat 問 `takeBlinkHit()`，同卡上的 `hitPlain`）。
+   ③ 從光線離開的那一側、畫面外快速飛回 —— 衝過原位一點再拉回（Ray：「要快速飛回 過頭 拉回」），飛的時候翅膀照拍（待機加速播）。 */
+const BLINK_GAP_MS=110, BLINK_SLASH_MS=170, BLINK_SLASH_IN=0.2, BLINK_BACK_MS=520, BLINK_OVER=0.22, BLINK_FLAP=2, BLINK_HIT_WIN=400;
+let blinkHitAt=0;
+/* 這一擊是不是殘影瞬移的那一刀（打到那一刻 ±BLINK_HIT_WIN 毫秒內，問一次就用掉）—— 被完美防禦掉的話窗口自己過期 */
+export function takeBlinkHit(){ const ok=blinkHitAt && Math.abs(performance.now()-blinkHitAt)<BLINK_HIT_WIN; if(ok) blinkHitAt=0; return !!ok; }
 function memberBlinkAttack(g, im, A){
   const J=A.j, N=A.fr.length, fps=J.fps||24;
   const own=!im._ov; let ov=im._ov;
   if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=ov; }
   g.appendChild(ov);
   im._acting=true; im._actJ=J; placeOnLayer(ov, im, J); ov.style.scale=A.flip?'-1 1':''; ov.src=A.fr[0].src; im.style.opacity='0';
-  /* 黑影用的剪影：待機第 0 格（本體完整、沒有殘影）；沒有待機就用片子第 0 格 */
-  const silSrc=(im._idle && im._idle.fr[0].src) || A.fr[0].src, silFlip=im._idle ? im._idle.flip : A.flip;
   const tOut=N*1000/fps, ang=Math.random()*Math.PI*2, dir={ x:Math.cos(ang), y:Math.sin(ang) };
   const alive=()=> im._ov===ov && groupCard && !im.classList.contains('eg-down');
   let i=0;
@@ -2426,39 +2427,44 @@ function memberBlinkAttack(g, im, A){
     if(!alive()){ clearInterval(t); return; }
     if(++i<N){ ov.src=A.fr[i].src; return; }
     clearInterval(t); ov.style.visibility='hidden';
-    setTimeout(()=>{ if(alive()) blinkStreak(g, ov, silSrc, silFlip, dir); }, BLINK_GAP_MS);
-    setTimeout(()=>{ if(alive()) blinkReturn(g, im, ov, own, A, dir); }, BLINK_GAP_MS+BLINK_STREAK_MS);
+    setTimeout(()=>{ if(alive()) blinkSlash(g, ang); }, BLINK_GAP_MS);
+    setTimeout(()=>{ if(alive()) blinkReturn(g, im, ov, own, A, dir); }, BLINK_GAP_MS+BLINK_SLASH_MS);
   }, 1000/fps);
-  return Math.round(tOut+BLINK_GAP_MS+BLINK_STREAK_MS/2);
+  const hit=Math.round(tOut+BLINK_GAP_MS+BLINK_SLASH_MS*BLINK_SLASH_IN);   // 光線閃到滿的那一刻＝打到
+  blinkHitAt=performance.now()+hit;
+  return hit;
 }
-function blinkStreak(g, ov, src, flip, dir){
+/* 刀斬的光線：一條細亮線穿過畫面中心從入口那一端閃到出口那一端，滿了就變細、淡掉。
+   外層繞畫面中心轉到那個角度，內層從入口端（左端）伸長 —— 兩件事分兩層才不會互相帶偏。 */
+function blinkSlash(g, ang){
   const gr=g.getBoundingClientRect(); if(!gr.width) return;
-  const w=(parseFloat(ov.style.width)||gr.width*0.3)*BLINK_SIL_K, h=(parseFloat(ov.style.height)||gr.height*0.4)*BLINK_SIL_K;
-  const cx=gr.width/2, cy=gr.height/2, D=Math.hypot(gr.width, gr.height)/2+Math.max(w, h);   // 起訖點都在畫面外
-  for(let k=BLINK_TRAIL; k>=0; k--){   // k=0 是本體，其餘是拖尾（晚一點出發、越後面越淡）
-    const s=document.createElement('img'); s.className='eg-anim eg-blink'; s.alt=''; s.src=src;
-    s.style.cssText=`left:${cx-w/2}px;top:${cy-h/2}px;width:${w}px;height:${h}px;opacity:${k?0.5*(1-k/(BLINK_TRAIL+1)):0.92};`
-      +`filter:brightness(0) blur(${k?3+k:1.5}px);`+(flip?'scale:-1 1;':'');
-    g.appendChild(s);
-    const fx=flip?-1:1, from=`translate(${-dir.x*D*fx}px, ${-dir.y*D}px)`, to=`translate(${dir.x*D*fx}px, ${dir.y*D}px)`;
-    const a=s.animate([{ transform:from }, { transform:to }], { duration:BLINK_STREAK_MS, delay:k*BLINK_TRAIL_MS, easing:'linear', fill:'both' });
-    a.onfinish=()=>s.remove(); setTimeout(()=>s.remove(), BLINK_STREAK_MS+k*BLINK_TRAIL_MS+200);
-  }
+  const L=Math.hypot(gr.width, gr.height)*1.1, th=Math.max(3, gr.width*0.012);
+  const w=document.createElement('div'); w.className='eg-anim eg-blink';
+  w.style.cssText=`left:${gr.width/2-L/2}px;top:${gr.height/2-th/2}px;width:${L}px;height:${th}px;transform:rotate(${ang}rad);`;
+  const ln=document.createElement('div'); ln.className='eg-slash'; w.appendChild(ln); g.appendChild(w);
+  const a=ln.animate([{ transform:'scaleX(0) scaleY(1)', opacity:1, offset:0 }, { transform:'scaleX(1) scaleY(1)', opacity:1, offset:BLINK_SLASH_IN },
+    { transform:'scaleX(1) scaleY(0.15)', opacity:0, offset:1 }], { duration:BLINK_SLASH_MS, easing:'ease-out', fill:'both' });
+  a.onfinish=()=>w.remove(); setTimeout(()=>w.remove(), BLINK_SLASH_MS+200);
 }
 function blinkReturn(g, im, ov, own, A, dir){
   const gr=g.getBoundingClientRect();
-  const end=()=>{ im._acting=false; im._actJ=null;
+  let flapT=0;
+  const end=()=>{ clearInterval(flapT); im._acting=false; im._actJ=null;
     if(own){ ov.remove(); im._ov=null; im.style.opacity=''; }
     else { im.after(ov); ov.style.scale=im._idle.flip?'-1 1':''; ov.src=im._idle.fr[0].src; placeOnLayer(ov, im, im._idle.j); } };
   if(im._idle){ ov.src=im._idle.fr[0].src; placeOnLayer(ov, im, im._idle.j); ov.style.scale=im._idle.flip?'-1 1':''; }
   else ov.src=A.fr[0].src;
   ov.style.visibility='';
   if(!ov.animate || !gr.width){ end(); return; }
-  /* 從黑影離開的那一側飛回來：起點＝原位沿劃過方向推到畫面外 */
-  const br=ov.getBoundingClientRect(), D=Math.hypot(gr.width, gr.height)/2+Math.max(br.width, br.height);
-  const flip=String(ov.style.scale||'').trim().startsWith('-');
-  const a=ov.animate([{ transform:`translate(${dir.x*D*(flip?-1:1)}px, ${dir.y*D}px) scale(1.25)`, opacity:0.6 }, { transform:'none', opacity:1 }],
-    { duration:BLINK_BACK_MS, easing:'cubic-bezier(.15,.7,.3,1)' });
+  /* 從光線離開的那一側飛回來：起點＝原位沿劃過方向推到畫面外；衝過原位（往飛行方向再多 BLINK_OVER 個身長）再拉回 */
+  const br=ov.getBoundingClientRect(), D=Math.hypot(gr.width, gr.height)/2+Math.max(br.width, br.height), O=Math.max(br.width, br.height)*BLINK_OVER;
+  const fx=String(ov.style.scale||'').trim().startsWith('-') ? -1 : 1;
+  /* 翅膀照拍：待機那一支加速播（BLINK_FLAP 倍） */
+  if(im._idle){ const c=im._idle; let f=0; flapT=setInterval(()=>{ f=(f+1)%c.fr.length; ov.src=c.fr[f].src; }, 1000/((c.j.fps||24)*BLINK_FLAP)); }
+  const a=ov.animate([
+    { transform:`translate(${dir.x*D*fx}px, ${dir.y*D}px) scale(1.25)`, opacity:0.7, offset:0, easing:'cubic-bezier(.25,.8,.45,1)' },
+    { transform:`translate(${-dir.x*O*fx}px, ${-dir.y*O}px) scale(0.97)`, opacity:1, offset:0.55, easing:'ease-in-out' },
+    { transform:'none', opacity:1, offset:1 }], { duration:BLINK_BACK_MS });
   a.onfinish=a.oncancel=end;
 }
 /* ══ 攻擊時拉到畫面中間（ver -2625，Ray：「攻擊的怪要往畫面中間拉近」）＋放大到貼框（`fillFrame:true`，Ray：「出框的就讓敵在攻時放大到貼框」）══
