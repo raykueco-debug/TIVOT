@@ -1477,7 +1477,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
       const _c=(GAME_CONFIG.partners&&GAME_CONFIG.partners[state.pickedPartner])||{};
       saint.coopShorten((_c.coop&&_c.coop.wrongShortenSec)||1);
     }
-    const sk0  = state.curEnemyHitSe || hitFxSe(state.curEnemyHitFx, fxKind);   // 卡上 hitSe 優先（ver -1881）
+    const sk0  = enemy.actHitSe(fxKind) || state.curEnemyHitSe || hitFxSe(state.curEnemyHitFx, fxKind);   // 群戰成員自己的受擊音優先（-2651）   // 卡上 hitSe 優先（ver -1881）
     if(sk0 && !_plain) SFX.play(asset(sk0), sfxGain(sk0));
     screenShake();
     if(!_plain) enemy.showHitFx(fxKind);
@@ -1504,7 +1504,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
   /* 敵攻擊音（ver -800）：**綁在 hitFx 的 type 上**——同一格的受擊特效與音效是一組
      （HITFX 那張表：type→{base 視覺, se 音效}）。卡上不再有 `sound` 欄位，改 hitFx
      的 type 就連特效帶音一起換（Ray 定案）。block 讀 ult（fxKind 已折）。 */
-  const sk  = state.curEnemyHitSe || hitFxSe(state.curEnemyHitFx, fxKind);   // 卡上 hitSe 優先（ver -1881）
+  const sk  = enemy.actHitSe(fxKind) || state.curEnemyHitSe || hitFxSe(state.curEnemyHitFx, fxKind);   // 群戰成員自己的受擊音優先（-2651）   // 卡上 hitSe 優先（ver -1881）
   if(sk && !_plain) SFX.play(asset(sk), sfxGain(sk));   // 受擊層增益（全域響度階層見 tuning.sfxGain）
   if(state.saintMode){
     // 聖徒化期間敵攻擊不扣血：改推進倒數槽（推滿＝OBE）。視覺（震動/受擊特效/紅閃）留在 combat，
@@ -3522,6 +3522,7 @@ function warmPartnerCutins(){
      （這是 CSS 與 JS 各一份的例外，鐵律 7 的但書：兩邊註解互指）。 */
 const BATTLE_FX_IMGS=[
   'resources/effects/ef_claws.webp',   // #claw.on
+  'resources/effects/ef_claw1.webp',   // #claw.on.one（單爪，ver -2652）
   'resources/effects/ef_slash.webp',   // .fx-slash
   'resources/effects/ef_bite2.webp',   // .fx-bitei i
 ];

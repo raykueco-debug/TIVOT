@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.16-2650';
+export const VERSION = 'ver 2026.11.16-2654';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5791,9 +5791,11 @@ export const ENEMY_ATK = {
      `fillFrame:true`＝攻擊時拉到畫面中間之後再放大到片框（box）蓋滿敵人區，裁切的硬邊落到畫面外（Ray：「出框的就讓敵在攻時放大到貼框」）；倍率現算，只有群戰逐人那一條讀（enemy.attackFocusAnim）。 */
   mon_canyon_censer_dark: { dir:'resources/enemy/anim/mon_canyon_censer_dark_atk_v1/', hit:50, fillFrame:true },   // 香爐蠍
   mon_canyon_houndbeast: { dir:'resources/enemy/anim/mon_canyon_houndbeast_atk_v1/', hit:42, fillFrame:true },   // 餓獸
-  mon_canyon_bellmite_dark: { dir:'resources/enemy/anim/mon_canyon_bellmite_dark_atk_v1/', hit:45, fillFrame:true },   // 鐘殼蟲
+  mon_canyon_bellmite_dark: { dir:'resources/enemy/anim/mon_canyon_bellmite_dark_atk_v1/', strikes:[31,37,39], hitFx:'claw1', fillFrame:true },   // 鐘殼蟲：三下揮鉗（第 31／37／39 格，-2651 照片子量），每下一道單爪痕，最後一下扣血（Ray：「鉗類的受擊用單爪痕 要跟著打擊節奏」）
   mon_canyon_chainhound_dark: { dir:'resources/enemy/anim/mon_canyon_chainhound_dark_atk_v1/', hit:45, fillFrame:true },   // 鎖鏈餓犬
   mon_canyon_lanternimp_dark: { dir:'resources/enemy/anim/mon_canyon_lanternimp_dark_atk_v1/', hit:24, fillFrame:true },   // 提燈小鬼
+  /* 朝聖者團塊（ver -2652，Ray：「他是聲波攻擊 聲波用程式跑」「優先讓他先攻」）：A 借牠的點錯片（張手，打到＝第 20 格）演，打到時程式放聲波（`hitFx:'sonic'`：模糊聲波環＋盤面數字快速淡出再慢慢淡回）；`first`＝這一組的第一擊優先由牠。 */
+  mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20, hitFx:'sonic', first:true },
   mon_canyon_crawler_dark: { dir:'resources/enemy/anim/mon_canyon_crawler_dark_atk_v1/', hit:45, fillFrame:true },   // 爬行朝聖者   // 噴火交程式（數值待 Ray，還沒做）   // 崩岩巨像 拳砸地（ver -2620，KF 第二輪，36 格）
   mon_stag_rot_neutral: { dir:'resources/enemy/anim/mon_stag_rot_neutral_atk_v1/', hit:17 },   // 腐鹿骸 角頂（ver -2620，KF 第二輪，30 格）
   mon_shinierforest_deernightmare: { dir:'resources/enemy/anim/mon_shinierforest_deernightmare_atk_v1/', hit:32 },   // 變異樹靈鹿主 仰天咆哮（ver -2620，KF 第二輪，55 格；攻擊＝延時同一支）

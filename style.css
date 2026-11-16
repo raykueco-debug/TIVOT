@@ -398,6 +398,9 @@
   /* 飛行怪上下晃（enemy.bobOn，ver -2647）：幅度 1.1vh（約敵人區高的 2%）、週期 2.4 秒；分層與動畫層同一個 delay ⇒ 同相位 */
   #enemyGroup .eg-bob{animation:egBob 2.4s ease-in-out var(--bob-d,0s) infinite;}
   @keyframes egBob{0%,100%{translate:0 0}50%{translate:0 -1.1vh}}
+  /* 朝聖者團塊的聲波環（enemy.sonicHit，ver -2652）：模糊的同心環，從牠身上擴出 */
+  #enemyGroup .eg-sonic{position:absolute;pointer-events:none;border-radius:50%;border:10px solid rgba(255,236,214,.55);
+    box-shadow:0 0 24px rgba(255,236,214,.45), inset 0 0 24px rgba(255,236,214,.35);filter:blur(5px);}
   #enemyGroup .eg-slash{position:absolute;inset:0;transform-origin:0 50%;border-radius:50%;
     background:linear-gradient(90deg,rgba(255,255,255,0),#fff 12%,#fff 88%,rgba(255,255,255,0));
     box-shadow:0 0 6px #fff,0 0 16px rgba(255,244,226,.85);}   /* 一閃的刀斬光線（enemy.issenSlash，ver -2643） */
@@ -1080,6 +1083,7 @@
      ⚠ 第一次挨爪不會空白：`combat.warmBattleFx()` 在開打時 rIC 預熱它。 */
   #claw.on{background:url('resources/effects/ef_claws.webp') center/contain no-repeat;
     animation:clawFlash .42s ease-out;}
+  #claw.on.one{background-image:url('resources/effects/ef_claw1.webp');}   /* 單爪（enemy.triggerClaw count 1，ver -2652）；同樣掛在 .on 上，開機不抓 */
   /* 一記劃過：滿亮登場（不淡入，那是「被抓到」不是「浮現」）→ 收得快一點。
      ⚠ 不加 scale 的 keyframe：那會蓋掉 `triggerClaw` 寫在 inline 的整體旋轉。 */
   @keyframes clawFlash{0%{opacity:0}8%{opacity:1}45%{opacity:.9}100%{opacity:0}}

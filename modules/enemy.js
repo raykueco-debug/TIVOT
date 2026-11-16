@@ -54,8 +54,39 @@ export function slamEnemy(){
  *  依當前怪 curEnemyHitFx[kind] 播放對應特效。
  *  kind：'delay'（延時懲罰）/'wrong'（按錯懲罰）/'assault'（一般攻擊）/'ult'（門檻波的大絕，ver -932）。
  *  缺設定或未知 kind → 退回既有爪痕。 */
+/* ══ 群戰成員自己的受擊特效（ENEMY_ATK 的 `hitFx`／`strikes`，ver -2651，Ray：「鉗類的受擊用單爪痕 要跟著打擊節奏」）══
+   群戰卡只有一組 hitFx（整組共用）；成員的攻擊片上寫了 `hitFx` 的，牠那一擊落地時改用牠自己的（特效與音效）。
+   `strikes:[格…]` ＝片子裡每一下打擊的格：最後一格＝扣血（取代 `hit`），前面每一格各補一道同款特效＋音效 —— 節奏跟著片子走。
+   落地那一刻怎麼認：成員出手時記「哪一款、預計幾點打到」，combat 扣血時在 ±ACT_FX_WIN 內就認（同一閃的 takeIssenHit）。 */
+const ACT_FX_WIN=400;
+let actFx=null;
+function actFxLive(kind){ return (kind==='assault' || kind==='ult') && actFx && Math.abs(performance.now()-actFx.at)<ACT_FX_WIN ? actFx : null; }
+export function actHitSe(kind){ const a=actFxLive(kind); return a ? ((HITFX[a.key]||{}).se || null) : null; }
+/* ══ 聲波（`hitFx:'sonic'`，ver -2652，Ray：「他是聲波攻擊 聲波用程式跑 模糊 效果是讓盤面數字迅速淡出消失 再慢慢淡入回來」）══
+   打到那一刻：從這隻的本體中心擴出幾圈模糊的聲波環（蓋過敵人區）；盤面每一格的數字快速淡出、停一下、再慢慢淡回。
+   ⚠ 只淡數字（格內那個 span），格子本身、點擊判定都照舊 —— 玩家還是點得到，只是一時看不見號碼。 */
+const SONIC_RINGS=3, SONIC_RING_MS=620, SONIC_RING_GAP=110, SONIC_FADE_MS=2600, SONIC_OUT=0.06, SONIC_HOLD=0.28;
+function sonicHit(im){
+  const g=$('enemyGroup'), gr=g && g.getBoundingClientRect();
+  if(gr && gr.width){
+    const o=(im && im._ov && im._ov.getBoundingClientRect()) || null;
+    const cx=o && o.width ? (o.left+o.width/2-gr.left) : gr.width/2, cy=o && o.height ? (o.top+o.height*0.45-gr.top) : gr.height/2;
+    const R=Math.hypot(gr.width, gr.height)*0.75;
+    for(let k=0;k<SONIC_RINGS;k++){
+      const r=document.createElement('div'); r.className='eg-sonic';
+      r.style.cssText=`left:${cx-R}px;top:${cy-R}px;width:${R*2}px;height:${R*2}px;`;
+      g.appendChild(r);
+      const a=r.animate([{ transform:'scale(0.08)', opacity:0.9 }, { transform:'scale(1)', opacity:0 }], { duration:SONIC_RING_MS, delay:k*SONIC_RING_GAP, easing:'cubic-bezier(.2,.6,.4,1)', fill:'both' });
+      a.onfinish=()=>r.remove(); setTimeout(()=>r.remove(), SONIC_RING_MS+k*SONIC_RING_GAP+200);
+    }
+  }
+  for(const sp of document.querySelectorAll('#grid .cell > span'))
+    if(sp.animate) sp.animate([{ opacity:1, offset:0 }, { opacity:0, offset:SONIC_OUT }, { opacity:0, offset:SONIC_HOLD, easing:'ease-in' }, { opacity:1, offset:1 }], { duration:SONIC_FADE_MS });
+}
+function strikeFx(key){ spawnFxNamed(key, Object.assign({}, HITFX[key]||{})); const se=(HITFX[key]||{}).se; if(se) SFX.play(asset(se), sfxGain(se)); }
 export function showHitFx(kind){
   if(isAirBio(curCard())) return;   // dragon rule 的空戰生物不演受擊特效（ver -2502，Ray；音效另外找，照舊在 combat）
+  { const a=actFxLive(kind); if(a){ actFx=null; if(a.key==='sonic') sonicHit(a.im); else spawnFxNamed(a.key, Object.assign({}, HITFX[a.key]||{})); rotVoice('assaultVoice'); return; } }
   const hf = state.curEnemyHitFx;
   /* ⚠⚠ **缺 `ult` 就退回 `assault`**（ver -932）：受擊分四格是這一版才加的
      （延時／按錯／攻擊／大絕），六十張既有的卡上只有前三格 —— 沒有退路的話
@@ -311,6 +342,7 @@ export function triggerClaw(count, randomAngle){
   const claw=$('claw');
   if(randomAngle){ claw.style.transform = 'rotate('+((Math.random()*60)-30).toFixed(1)+'deg)'; }
   else { claw.style.transform=''; }
+  claw.classList.toggle('one', count===1);   // 單爪（`HITFX.claw1`，ver -2652）：換 ef_claw1（從 ef_claws 裁出中間那一道）；其餘照舊三爪圖
   claw.classList.remove('on'); void claw.offsetWidth; claw.classList.add('on');
 }
 /* ══ 櫻花狂亂（ver -899，Ray：「鹿主的攻擊特效為櫻花狂亂飛舞，萬幸我們已經有櫻花了，
@@ -2262,7 +2294,7 @@ function buildGroup(en){
   if(!groupCard) return;
   const G=en.group;
   /* 整組一起出場（ver -2047）：冷快取時一個一個冒出來很難看 —— 全部載到才掀（保險 4 秒）。 */
-  g.classList.add('eg-wait');
+  g.classList.add('eg-wait'); lastAtkIm=null;   // 換一組：不連抽／先攻重新算
   const comp=compOf(G), order=groupOrder(G);
   let left=order.length+(G.cover?1:0); const done=()=>{ if(--left<=0) g.classList.remove('eg-wait'); };
   clearTimeout(groupWaitT); groupWaitT=setTimeout(()=>g.classList.remove('eg-wait'), 4000);
@@ -2388,7 +2420,7 @@ function mapClip(c, M){
 function memberActOnce(g, im, A){
   const J=A.j, N=A.fr.length, fps=J.fps||24, sp=A.spec||{};
   if(sp.issen && A===im._atk) return memberIssen(g, im, A);
-  const hit=Math.max(0, Math.min(N-1, sp.hit!=null ? sp.hit : N-1));
+  const hit=Math.max(0, Math.min(N-1, sp.strikes ? Math.max(...sp.strikes) : sp.hit!=null ? sp.hit : N-1));
   const own=!im._ov; let ov=im._ov;
   if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=bobOv(im, ov); }
   g.appendChild(ov);                                   // 最上層
@@ -2396,6 +2428,8 @@ function memberActOnce(g, im, A){
   /* 編組成員（`_pm`）預設攻擊**原地演**，勾了「攻擊時拉到中間」（`focus`）才拉（ver -2640，Ray：「全部預設不跑中」）；
      舊的分層群組（沒有 `_pm`）照舊一律拉。 */
   const fill = (A===im._atk && (!im._pm || im._pm.focus)) ? attackFocusAnim(g, ov, N*1000/fps, hit*1000/fps, !!sp.fillFrame, A.body) : null;   // 只有攻擊 A 拉到中間（D／M 原地演）
+  if(A===im._atk && sp.hitFx){ actFx={ key:sp.hitFx, im, at:performance.now()+hit*1000/fps };   // 這一擊用牠自己的受擊特效（見 showHitFx 上面）
+    for(const f of (sp.strikes||[])) if(f<hit) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) strikeFx(sp.hitFx); }, f*1000/fps); }
   let i=0, dir=1;
   const end=()=>{ clearInterval(t); im._acting=false; im._actJ=null; if(fill) fill.cancel();
     if(own){ ov.remove(); im._ov=null; im.style.opacity=''; }
@@ -2515,9 +2549,12 @@ function groupHas(kind){ const g=$('enemyGroup'); return !!(g && [...g.querySele
    · 本職**全倒**了 ⇒ 遞補：剩下還站著的怪裡隨機一隻，演牠手上最接近的那一支（ISSEN_SUB 的順序）。
      ⚠ 一閃（issen）的片只在沒有別人可遞補時才拿來代演 D／M —— 它的「打到不放受擊特效」只認攻擊那一刀。
    · 攻擊不連抽同一隻（ver -2650，Ray）：上一次出手攻擊的那隻，下一次攻擊先排除；只剩牠能出手時照樣由牠。
+   · 先攻（ENEMY_ATK 的 `first:true`，ver -2652，Ray：「優先讓他先攻」）：這一組的**第一擊**優先由寫了 `first` 的本職出手（站著、空著的話）。
    ⚠ 只管照原立繪生成的那幾支（`spec`）；空賊那一套（分層＋程式火光）照舊（不連抽那一條兩邊都吃）。 */
 let lastAtkIm=null;
-const notLast=(arr, kind)=>{ if(kind!=='atk' || arr.length<2) return arr; const r=arr.filter(im=>im!==lastAtkIm); return r.length ? r : arr; };
+const notLast=(arr, kind)=>{ if(kind!=='atk' || arr.length<2) return arr;
+  if(!lastAtkIm){ const f=arr.filter(im=>{ const c=memberClipOf(im, 'atk'); return c && c.spec && c.spec.first; }); if(f.length) return f; }   // 這一組還沒有人攻擊過 ⇒ 先攻
+  const r=arr.filter(im=>im!==lastAtkIm); return r.length ? r : arr; };
 const SUB_ORDER={ atk:['_atk','_dly','_mis'], delay:['_dly','_mis','_atk'], miss:['_mis','_dly','_atk'] };
 const memberStanding=im=>!im.classList.contains('eg-down') && !im.classList.contains('eg-leaving');
 function memberSubClip(im, kind){ for(const k of SUB_ORDER[kind]){ const c=im[k]; if(c && c.spec) return c; } return null; }
