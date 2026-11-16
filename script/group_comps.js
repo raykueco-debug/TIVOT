@@ -14,8 +14,8 @@ export const GROUP_COMPS = /*GCOMP*/{
    {
     "stem": "mon_canyon_houndbeast",
     "k": 0.5335,
-    "x": 521.4,
-    "y": 293.2
+    "x": 776.3,
+    "y": -282.9
    },
    {
     "stem": "mon_canyon_lanternimp_dark",
@@ -268,6 +268,133 @@ export const GROUP_COMPS = /*GCOMP*/{
     "x": 596.6,
     "y": 226.0,
     "air": 1
+   }
+  ]
+ },
+ "bg_canyon_corridor": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_coffinbeetle_dark",
+    "k": 0.4561,
+    "x": 660.5,
+    "y": 375.9
+   },
+   {
+    "stem": "mon_canyon_hanged_dark",
+    "k": 0.3333,
+    "x": 292.0,
+    "y": -6.2
+   },
+   {
+    "stem": "mon_canyon_lanternimp_dark",
+    "k": 0.3333,
+    "x": 323.3,
+    "y": 517.5,
+    "flip": 1
+   }
+  ]
+ },
+ "bg_canyon_entry": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_pilgrimmass_dark",
+    "k": 0.4386,
+    "x": 529.4,
+    "y": 85.3
+   },
+   {
+    "stem": "mon_canyon_bellmite_dark",
+    "k": 0.3899,
+    "x": 760.0,
+    "y": 538.7
+   },
+   {
+    "stem": "mon_canyon_bellmite_dark",
+    "k": 0.3333,
+    "x": 361.8,
+    "y": 479.1,
+    "flip": 1
+   }
+  ]
+ },
+ "bg_canyon_bones": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_houndbeast",
+    "k": 0.4386,
+    "x": 613.5,
+    "y": 287.8
+   },
+   {
+    "stem": "mon_canyon_censer_dark",
+    "k": 0.3333,
+    "x": 319.9,
+    "y": 494.8
+   },
+   {
+    "stem": "mon_canyon_bonecrab_dark",
+    "k": 0.2436,
+    "x": 993.8,
+    "y": 511.1
+   },
+   {
+    "stem": "mon_canyon_stilt_neutral",
+    "k": 0.3333,
+    "x": 604.4,
+    "y": 578.6
+   },
+   {
+    "stem": "mon_canyon_bonecrow_dark",
+    "k": 0.3333,
+    "x": 414.2,
+    "y": 51.6
+   }
+  ]
+ },
+ "bg_canyon_bridge": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_ironpenitent_neutral",
+    "k": 0.577,
+    "x": 314.0,
+    "y": 6.5
+   },
+   {
+    "stem": "mon_canyon_bellwyrm_dark",
+    "k": 0.3333,
+    "x": 885.5,
+    "y": 508.8,
+    "flip": 1
+   },
+   {
+    "stem": "mon_canyon_saintvulture_dark",
+    "k": 0.2082,
+    "x": 1008.6,
+    "y": 1.9,
+    "flip": 1
+   },
+   {
+    "stem": "mon_canyon_saintvulture_dark",
+    "k": 0.2533,
+    "x": 878.9,
+    "y": 67.4,
+    "flip": 1
    }
   ]
  }
