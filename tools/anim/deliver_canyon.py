@@ -40,12 +40,40 @@ def expand_export(d):
     return [f for f, k in zip(fs, hs) for _ in range(k)], e.get('fps') or FPS
 
 
-def write(frames, item, fps=FPS, overwrite=False):
+def collapse(frames):
+    """片尾的停格收成一張"""
+    frames = list(frames)
+    while len(frames) > 1 and frames[-1] == frames[-2]: frames = frames[:-1]
+    return frames
+
+
+def src_frames(rel):
+    """state 的 source（auto/… 或 export/…）→ 逐格路徑, fps"""
+    d = os.path.join(OUT, rel)
+    if os.path.exists(os.path.join(d, 'export.json')): return expand_export(d)
+    return expand_auto(d), FPS
+
+
+R_DIR = os.path.join(OUT, 'canyon_R')   # 11-16 Ray：「把倒放的獨立出來一個chk頁面讓我剪」→ R 段單獨放這裡，chk 網址 player.html?cat=倒放R
+
+
+def make_R(key, frames):
+    """把動作段倒過來（不含 B 那一格）寫成 out/canyon_R/<交件名>_R/，給 Ray 在 chk 剪；回傳資料夾相對路徑"""
+    import shutil
+    fr = collapse(frames); r = list(reversed(fr[:-1]))
+    od = os.path.join(R_DIR, key + '_R'); os.makedirs(od, exist_ok=True)
+    for f in glob.glob(os.path.join(od, 'frame_*.webp')): os.remove(f)
+    for i, f in enumerate(r): shutil.copy(f, os.path.join(od, f'frame_{i:03d}.webp'))
+    json.dump({'holds': [1] * len(r), 'fps': FPS}, open(os.path.join(od, 'holds.json'), 'w'))
+    return 'canyon_R/' + key + '_R'
+
+
+def write(frames, item, fps=FPS, overwrite=False, r_frames=None):
     od = os.path.join(DST, item['name'])
     if os.path.exists(od) and not overwrite: print(f'  ⚠ {item["name"]} 已存在，跳過'); return None
-    if item.get('rev'):   # R＝倒放（Ray 11-15）：片尾的停格收成一張，再把動作段倒過來接回中立
-        while len(frames) > 1 and frames[-1] == frames[-2]: frames = frames[:-1]
-        frames = list(frames) + list(reversed(frames[:-1]))
+    if item.get('rev'):   # R＝倒放（Ray 11-15）：片尾的停格收成一張，再把動作段倒過來接回中立；Ray 剪過的 R（r_frames）優先
+        frames = collapse(frames)
+        frames = frames + (list(r_frames) if r_frames is not None else list(reversed(frames[:-1])))
     os.makedirs(od, exist_ok=True)
     for f in glob.glob(os.path.join(od, 'frame_*.webp')): os.remove(f)
     ims = [Image.open(f).convert('RGBA') for f in frames]

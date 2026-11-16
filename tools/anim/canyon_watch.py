@@ -15,6 +15,7 @@ for k, it in ITEMS.items():
     SRC2ITEM['monsters/canyon_raw_' + k] = k
     SRC2ITEM[it['auto']] = k
     for src in it.get('alts', {}): SRC2ITEM[src] = k
+    if it.get('rev'): SRC2ITEM['canyon_R/' + k + '_R'] = k   # 11-16：R 段單獨剪（out/canyon_R/）
 
 
 def load_state():
@@ -36,15 +37,25 @@ def scan(state):
         exdir = os.path.dirname(ex); rel = 'export/' + os.path.basename(exdir); mt = os.path.getmtime(ex)
         st = state.get(k) or {}
         if st.get('source') == rel and st.get('mtime', 0) >= mt: continue
-        if st.get('mtime', 0) >= mt: continue
-        frames, fps = d.expand_export(exdir)
-        src = (e.get('from') or '').replace(chr(92), '/'); item = dict(ITEMS[k])
-        if src in item.get('alts', {}): item['to_portrait'] = item['alts'][src]   # 另一條輸入鏈（例：單圖重跑）
+        if max(st.get('mtime', 0), st.get('r_mtime', 0)) >= mt: continue
+        if st.get('r_source') == rel: continue
+        src = (e.get('from') or '').replace(chr(92), '/'); item = dict(ITEMS[k]); isR = src.startswith('canyon_R/')
+        if isR:   # 只換 R：動作段照現行那一份，後面接 Ray 剪的 R
+            rf, _ = d.expand_export(exdir); frames, fps = d.src_frames(st.get('source') or item['auto'])
+            src0 = st.get('from') or ''
+            if src0 in item.get('alts', {}): item['to_portrait'] = item['alts'][src0]
+        else:
+            frames, fps = d.expand_export(exdir); rf = None
+            if src in item.get('alts', {}): item['to_portrait'] = item['alts'][src]   # 另一條輸入鏈（例：單圖重跑）
         old = os.path.join(d.DST, k)
         if os.path.exists(old):
             subprocess.run(['bash', os.path.join(d.ROOT, 'tools', 'recycle.sh'), '-m', f'Ray 的 cut 取代（{rel}）', old], cwd=d.ROOT, capture_output=True)
-        r = d.write(frames, item, fps=fps, overwrite=True)
-        state[k] = {'source': rel, 'from': src, 'kind': 'Ray 的 cut', 'at': time.strftime('%m-%d %H:%M'), 'mtime': mt, 'frames': r['frames'], 'peak': r['peak']}
+        r = d.write(frames, item, fps=fps, overwrite=True, r_frames=rf)
+        if isR:
+            st.update({'r_source': rel, 'r_mtime': mt, 'at': time.strftime('%m-%d %H:%M'), 'frames': r['frames'], 'peak': r['peak']}); state[k] = st
+        else:
+            state[k] = {'source': rel, 'from': src, 'kind': 'Ray 的 cut', 'at': time.strftime('%m-%d %H:%M'), 'mtime': mt, 'frames': r['frames'], 'peak': r['peak']}
+            if item.get('rev'): state[k]['r_dir'] = d.make_R(k, frames)   # 動作換了 ⇒ 舊的 R cut 作廢，R 段重產
         changed.append((k, rel, r))
     return changed
 

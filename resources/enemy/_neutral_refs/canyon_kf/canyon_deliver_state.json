@@ -20,7 +20,8 @@
   "mtime": 1794756179.6884866,
   "frames": 101,
   "peak": 16,
-  "rev": true
+  "rev": true,
+  "r_dir": "canyon_R/mon_canyon_bonecrab_dark_delay_v1_R"
  },
  "mon_canyon_bonecrab_dark_idle_v1": {
   "source": "auto/kling_crab_idle",
@@ -34,7 +35,8 @@
   "mtime": 1794756190.9958377,
   "frames": 101,
   "peak": 20,
-  "rev": true
+  "rev": true,
+  "r_dir": "canyon_R/mon_canyon_pilgrimmass_dark_miss_v1_R"
  },
  "mon_canyon_pilgrimmass_dark_idle_v1": {
   "source": "auto/kling_pilgrim_idle",
@@ -48,7 +50,8 @@
   "mtime": 1794756201.3845427,
   "frames": 101,
   "peak": 50,
-  "rev": true
+  "rev": true,
+  "r_dir": "canyon_R/mon_canyon_bellwyrm_dark_atk_v1_R"
  },
  "mon_canyon_bellwyrm_dark_idle_v1": {
   "source": "auto/kling_wyrm_idle",
@@ -62,7 +65,8 @@
   "mtime": 1794756211.4063241,
   "frames": 101,
   "peak": 40,
-  "rev": true
+  "rev": true,
+  "r_dir": "canyon_R/mon_canyon_ironpenitent_neutral_delay_v1_R"
  },
  "mon_canyon_ironpenitent_neutral_idle_v1": {
   "source": "auto/kling_iron_idle",
@@ -76,7 +80,8 @@
   "mtime": 1794756220.150219,
   "frames": 101,
   "peak": 17,
-  "rev": true
+  "rev": true,
+  "r_dir": "canyon_R/mon_canyon_ribcage_dark_atk_v1_R"
  },
  "mon_canyon_ribcage_dark_idle_v1": {
   "source": "auto/kling_ribcage_idle",
@@ -150,7 +155,8 @@
   "at": "11-15 23:49",
   "mtime": 1794757798.914828,
   "frames": 99,
-  "peak": 1
+  "peak": 1,
+  "r_dir": "canyon_R/mon_canyon_hanged_dark_atk_v1_R"
  },
  "mon_canyon_saintvulture_dark_atk_v1": {
   "source": "auto/mon_canyon_saintvulture_dark_wanA_blink",
@@ -158,7 +164,8 @@
   "at": "11-16 00:25",
   "mtime": 1794759913.671427,
   "frames": 69,
-  "peak": 1
+  "peak": 1,
+  "r_dir": "canyon_R/mon_canyon_saintvulture_dark_atk_v1_R"
  },
  "mon_canyon_bonecrow_dark_atk_v1": {
   "source": "auto/mon_canyon_bonecrow_dark_wanA_blink",
@@ -166,7 +173,8 @@
   "at": "11-16 00:25",
   "mtime": 1794759916.288913,
   "frames": 69,
-  "peak": 2
+  "peak": 2,
+  "r_dir": "canyon_R/mon_canyon_bonecrow_dark_atk_v1_R"
  },
  "mon_canyon_censer_dark_atk_v1": {
   "source": "auto/kling_censer_atk_16x9",
@@ -174,7 +182,8 @@
   "at": "11-16 00:46",
   "mtime": 1794761178.5851343,
   "frames": 145,
-  "peak": 60
+  "peak": 60,
+  "r_dir": "canyon_R/mon_canyon_censer_dark_atk_v1_R"
  },
  "mon_canyon_houndbeast_atk_v1": {
   "source": "auto/kling_hound_atk_16x9",
@@ -182,7 +191,8 @@
   "at": "11-16 00:46",
   "mtime": 1794761191.6244469,
   "frames": 145,
-  "peak": 50
+  "peak": 50,
+  "r_dir": "canyon_R/mon_canyon_houndbeast_atk_v1_R"
  },
  "mon_canyon_bellmite_dark_atk_v1": {
   "source": "auto/kling_bellmite_atk_16x9",
@@ -190,7 +200,8 @@
   "at": "11-16 00:46",
   "mtime": 1794761201.7437522,
   "frames": 145,
-  "peak": 53
+  "peak": 53,
+  "r_dir": "canyon_R/mon_canyon_bellmite_dark_atk_v1_R"
  },
  "mon_canyon_chainhound_dark_atk_v1": {
   "source": "auto/kling_chainhound_atk_16x9",
@@ -198,7 +209,8 @@
   "at": "11-16 00:46",
   "mtime": 1794761215.3678472,
   "frames": 145,
-  "peak": 55
+  "peak": 55,
+  "r_dir": "canyon_R/mon_canyon_chainhound_dark_atk_v1_R"
  },
  "mon_canyon_lanternimp_dark_atk_v1": {
   "source": "auto/kling_lantern_atk_16x9",
@@ -206,7 +218,8 @@
   "at": "11-16 00:47",
   "mtime": 1794761229.5888083,
   "frames": 145,
-  "peak": 52
+  "peak": 52,
+  "r_dir": "canyon_R/mon_canyon_lanternimp_dark_atk_v1_R"
  },
  "mon_canyon_crawler_dark_atk_v1": {
   "source": "auto/kling_crawler_atk_16x9",
@@ -214,6 +227,7 @@
   "at": "11-16 00:47",
   "mtime": 1794761239.333117,
   "frames": 145,
-  "peak": 35
+  "peak": 35,
+  "r_dir": "canyon_R/mon_canyon_crawler_dark_atk_v1_R"
  }
 }
