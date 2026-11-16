@@ -2331,7 +2331,10 @@ const REV_HOLD_SEC=1;   // 交件單：片尾 B 有快剪補的停格約 1 秒 �
 function memberOf(G, n){ const t=GROUP_MEMBERS[G && G.dir]; return (t && t[n]) || null; }
 function mapClip(c, M){
   const j=c.j, cv=j.canvas||[1024,1536], b=j.box||[0,0,cv[0],cv[1]], m=M.map, x=m[3] ? cv[0]-(b[0]+b[2]) : b[0];
-  return { fr:c.fr, flip:!!m[3], j:Object.assign({}, j, { canvas:M.canvas, box:[x*m[0]+m[1], b[1]*m[0]+m[2], b[2]*m[0], b[3]*m[0]] }) };
+  const B=[x*m[0]+m[1], b[1]*m[0]+m[2], b[2]*m[0], b[3]*m[0]];
+  /* body＝怪本體（原立繪畫布那一塊）的中心在片框裡的比例（畫面上看到的位置，翻面已算進 B）—— 攻擊時拉到畫面中間用 */
+  const body=[(m[1]+cv[0]*m[0]/2-B[0])/B[2], (m[2]+cv[1]*m[0]/2-B[1])/B[3]];
+  return { fr:c.fr, flip:!!m[3], body, j:Object.assign({}, j, { canvas:M.canvas, box:B }) };
 }
 function memberActOnce(g, im, A){
   const J=A.j, N=A.fr.length, fps=J.fps||24, sp=A.spec||{};
@@ -2340,8 +2343,9 @@ function memberActOnce(g, im, A){
   if(own){ ov=document.createElement('img'); ov.className='eg-anim'; ov.alt=''; im._ov=ov; }
   g.appendChild(ov);                                   // 最上層
   im._acting=true; im._actJ=J; placeOnLayer(ov, im, J); ov.style.scale=A.flip?'-1 1':''; ov.src=A.fr[0].src; im.style.opacity='0';
+  const fill = (A===im._atk) ? attackFocusAnim(g, ov, N*1000/fps, hit*1000/fps, !!sp.fillFrame, A.body) : null;   // 只有攻擊 A 拉到中間（D／M 原地演）
   let i=0, dir=1;
-  const end=()=>{ clearInterval(t); im._acting=false; im._actJ=null;
+  const end=()=>{ clearInterval(t); im._acting=false; im._actJ=null; if(fill) fill.cancel();
     if(own){ ov.remove(); im._ov=null; im.style.opacity=''; }
     else { im.after(ov); ov.style.scale=im._idle.flip?'-1 1':''; ov.src=im._idle.fr[0].src; placeOnLayer(ov, im, im._idle.j); } };
   const t=setInterval(()=>{
@@ -2353,6 +2357,29 @@ function memberActOnce(g, im, A){
     end();
   }, 1000/fps);
   return Math.round(hit*1000/fps);
+}
+/* ══ 攻擊時拉到畫面中間（ver -2625，Ray：「攻擊的怪要往畫面中間拉近」）＋放大到貼框（`fillFrame:true`，Ray：「出框的就讓敵在攻時放大到貼框」）══
+   群戰成員演 A 的期間：把這一層的片框（box）中心移到敵人區（#top）的中心；表上寫 `fillFrame` 的，再放大到片框蓋滿敵人區
+   （Kling 16:9 的片撲到鏡頭前會被片框切掉 ⇒ 硬邊落到畫面外；本來就蓋滿＝不放大）。位移與倍率都現算（鐵律 7）。
+   時間：一開始就快速移過去（FOCUS_IN_MS），撐到片尾前 FOCUS_OUT_MS 再快速退回原位 —— 片頭片尾是中立，跟待機接得上。
+   ⚠ 翻面用的 `scale` 屬性是在 transform 之後繞中心翻的 ⇒ 翻面那一層的水平位移要取反。 */
+const FOCUS_IN_MS=260, FOCUS_OUT_MS=260;
+function attackFocusAnim(g, ov, T, tHit, fill, body){
+  const top=$('top'); if(!top || !T || !ov.animate) return null;
+  const tr=top.getBoundingClientRect(), br=ov.getBoundingClientRect(); if(!br.width || !br.height) return null;
+  /* 把「怪本體的中心」P 移到畫面中心 F：畫面上的映射 v → F + k(v−P)。fill 時 k 取「片框四邊都蓋過畫面邊」的最小值。 */
+  const P={ x:br.left+br.width*(body?body[0]:0.5), y:br.top+br.height*(body?body[1]:0.5) }, F={ x:(tr.left+tr.right)/2, y:(tr.top+tr.bottom)/2 };
+  const need=(f,o,b)=> (o-b)===0 ? 1 : (f-o)/(b-o);   // 要讓 F+k(b−P) 越過畫面邊 f
+  const k = fill ? Math.max(1, need(tr.left-F.x+P.x, P.x, br.left), need(tr.right-F.x+P.x, P.x, br.right), need(tr.top-F.y+P.y, P.y, br.top), need(tr.bottom-F.y+P.y, P.y, br.bottom)) : 1;
+  /* 換成繞元素中心 c 的 transform：d ＝ F − c − k(P − c) */
+  const cx=(br.left+br.right)/2, cy=(br.top+br.bottom)/2, flip=String(ov.style.scale||'').trim().startsWith('-');
+  const dx=(F.x-cx-k*(P.x-cx))*(flip?-1:1), dy=F.y-cy-k*(P.y-cy);
+  if(Math.abs(dx)<1 && Math.abs(dy)<1 && k<1.001) return null;
+  const Z=`translate(${dx}px, ${dy}px) scale(${k})`;
+  ov.style.transformOrigin='50% 50%';
+  /* 移過去、退回來都要快（Ray：「讓怪置中跟回退都加速」）：各 FOCUS_IN_MS／FOCUS_OUT_MS，移過去最慢也在打到那一格的一半到位 */
+  const inAt=Math.min(0.45, Math.min(FOCUS_IN_MS, tHit*0.5)/T), outAt=Math.max(inAt+0.01, 1-FOCUS_OUT_MS/T);
+  return ov.animate([{ transform:'none', offset:0, easing:'ease-out' }, { transform:Z, offset:inAt }, { transform:Z, offset:outAt, easing:'ease-in-out' }, { transform:'none', offset:1 }], { duration:T, fill:'none' });
 }
 const memberLive=im=>!im._acting && !im.classList.contains('eg-down') && !im.classList.contains('eg-leaving');
 const memberClipOf=(im, kind)=> kind==='atk' ? im._atk : kind==='miss' ? (im._mis || im._dly) : im._dly;
