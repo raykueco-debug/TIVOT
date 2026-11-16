@@ -278,6 +278,13 @@ export const GROUP_COMPS = /*GCOMP*/{
   ],
   "members": [
    {
+    "stem": "mon_canyon_hanged_dark",
+    "k": 0.3333,
+    "x": 932.6,
+    "y": 0.9,
+    "flip": 1
+   },
+   {
     "stem": "mon_canyon_coffinbeetle_dark",
     "k": 0.4561,
     "x": 660.5,
@@ -286,8 +293,8 @@ export const GROUP_COMPS = /*GCOMP*/{
    {
     "stem": "mon_canyon_hanged_dark",
     "k": 0.3333,
-    "x": 292.0,
-    "y": -6.2
+    "x": 312.9,
+    "y": -14.9
    },
    {
     "stem": "mon_canyon_lanternimp_dark",
@@ -319,9 +326,21 @@ export const GROUP_COMPS = /*GCOMP*/{
    {
     "stem": "mon_canyon_bellmite_dark",
     "k": 0.3333,
-    "x": 361.8,
+    "x": 377.5,
     "y": 479.1,
     "flip": 1
+   },
+   {
+    "stem": "mon_canyon_saintvulture_dark",
+    "k": 0.2165,
+    "x": 299.8,
+    "y": 6.3
+   },
+   {
+    "stem": "mon_canyon_bonecrow_dark",
+    "k": 0.2533,
+    "x": 954.5,
+    "y": -20.1
    }
   ]
  },
@@ -358,8 +377,15 @@ export const GROUP_COMPS = /*GCOMP*/{
    {
     "stem": "mon_canyon_bonecrow_dark",
     "k": 0.3333,
-    "x": 414.2,
-    "y": 51.6
+    "x": 367.1,
+    "y": 35.9
+   },
+   {
+    "stem": "mon_canyon_saintvulture_dark",
+    "k": 0.2252,
+    "x": 993.4,
+    "y": -7.7,
+    "flip": 1
    }
   ]
  },
@@ -371,16 +397,9 @@ export const GROUP_COMPS = /*GCOMP*/{
   "members": [
    {
     "stem": "mon_canyon_ironpenitent_neutral",
-    "k": 0.577,
-    "x": 314.0,
-    "y": 6.5
-   },
-   {
-    "stem": "mon_canyon_bellwyrm_dark",
-    "k": 0.3333,
-    "x": 885.5,
-    "y": 508.8,
-    "flip": 1
+    "k": 0.6241,
+    "x": 252.8,
+    "y": -116.0
    },
    {
     "stem": "mon_canyon_saintvulture_dark",
@@ -392,9 +411,30 @@ export const GROUP_COMPS = /*GCOMP*/{
    {
     "stem": "mon_canyon_saintvulture_dark",
     "k": 0.2533,
-    "x": 878.9,
-    "y": 67.4,
+    "x": 868.4,
+    "y": 27.2,
     "flip": 1
+   },
+   {
+    "stem": "mon_canyon_bellwyrm_dark",
+    "k": 0.4561,
+    "x": 653.6,
+    "y": 317.1,
+    "flip": 1
+   }
+  ]
+ },
+ "bg_canyon_altar": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_colossus_dark",
+    "k": 0.5548,
+    "x": 458.1,
+    "y": -21.7
    }
   ]
  }
