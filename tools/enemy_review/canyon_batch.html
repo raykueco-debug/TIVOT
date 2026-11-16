@@ -39,8 +39,9 @@ textarea:focus{outline:none;border-color:var(--gold)}textarea.has{border-color:#
 <table><thead><tr><th>敵人</th><th>全部串播</th><th>I 待機</th><th>A 攻擊</th><th>D 延時</th><th>M 點錯</th><th>R 退回</th><th>E 倒地</th></tr></thead>
 <tbody id="tb"></tbody></table>
 <script>
-const CHK='http://localhost:8130/player.html#',PAGE='canyonbatch',COLS=['I','A','D','M','R','E'];
-const LS='canyon_batch_draft_v1',LSS='canyon_batch_submitted_v1';
+const ABA=new URLSearchParams(location.search).has('aba');   // 11-16 Ray：「我只要看aba」→ 只列 Kling ABA（含歸位）那 6 隻，A 格換成 ABA 原片（_aba_preview/，遊戲不讀）
+const CHK='http://localhost:8130/player.html#',PAGE=ABA?'canyonaba':'canyonbatch',COLS=ABA?['I','A']:['I','A','D','M','R','E'];
+const LS=ABA?'canyon_aba_draft_v1':'canyon_batch_draft_v1',LSS=ABA?'canyon_aba_submitted_v1':'canyon_batch_submitted_v1';
 const ACT=[[/_idle_v\d+$/,'I'],[/_atk_v\d+$/,'A'],[/_delay_v\d+$/,'D'],[/_miss_v\d+$/,'M'],[/_(r|ret|back)_v\d+$/,'R'],[/_(e|dead|down)_v\d+$/,'E']];
 let ITEMS,STATE={},ROWS=[],notes={},submitted={},players=[];
 const $=s=>document.querySelector(s);
@@ -82,7 +83,7 @@ function rowStatus(r){const el=document.getElementById('st_'+r.base);if(!el)retu
 function note(r,col,ta){const k=r.base+'|'+col;ta.value=(notes[k]||{}).text||'';ta.classList.toggle('has',!!ta.value.trim());
  ta.oninput=()=>{notes[k]={text:ta.value,key:(r.cols[col]||{}).key||'',at:new Date().toISOString()};ta.classList.toggle('has',!!ta.value.trim());
   localStorage.setItem(LS,JSON.stringify(notes));rowStatus(r)}}
-const stHtml=k=>{const s=STATE[k]||{};return s.kind==='Ray 的 cut'?`<span class="stc ray">✔ Ray 的 cut（${s.source.replace('export/','')}，${s.at}）</span>`:`<span class="stc auto">快剪（還沒換成你的 cut）</span>`};
+const stHtml=k=>{if(k.startsWith('_aba_preview/'))return '<span class="stc auto">ABA 原片（3 秒含歸位，未剪）</span>';const s=STATE[k]||{};return s.kind==='Ray 的 cut'?`<span class="stc ray">✔ Ray 的 cut（${s.source.replace('export/','')}，${s.at}）</span>`:`<span class="stc auto">快剪（還沒換成你的 cut）</span>`};
 
 async function loadRow(r){ // 依 STATE 版號（mtime）載各格，再組串播；視窗＝這隻怪所有片段的聯集（橫版撲擊整個看得到）
  const got={};for(const c of COLS){const it=r.cols[c];if(!it)continue;got[c]=await clip(it.key,(STATE[it.key]||{}).mtime||0)}
@@ -132,5 +133,10 @@ $('#bgBtn').onclick=()=>{const on=document.body.classList.toggle('light');$('#bg
 (async()=>{try{const d=await (await fetch('/review/draft?page='+PAGE)).json();if(d.notes)for(const k in d.notes)if(!notes[k]||(d.notes[k].at||'')>(notes[k].at||''))notes[k]=d.notes[k]}catch(e){}
  ITEMS=await (await fetch('canyon_batch_items.json?'+Date.now())).json();
  STATE=await (await fetch('../../resources/enemy/_neutral_refs/canyon_kf/canyon_deliver_state.json?'+Date.now())).json();
- ROWS=group();build();setInterval(poll,8000)})();
+ ROWS=group();
+ if(ABA){const M=await (await fetch('canyon_aba_map.json?'+Date.now())).json();
+  ROWS=ROWS.filter(r=>r.cols.A&&M[r.cols.A.key]).map(r=>{const a=r.cols.A,src=M[a.key];
+   r.cols={I:r.cols.I,A:{...a,key:'_aba_preview/'+a.key,raw:src,auto:src,game:'gameres/enemy/anim/_aba_preview/'+a.key}};return r});
+  document.title='卡耶爾檢怪・ABA';const h=document.querySelector('h1');if(h)h.textContent='卡耶爾檢怪・Kling ABA（3 秒含歸位）';document.querySelector('#bar .sub').textContent='只列 Kling ABA 那 6 隻：串播＝I→A(ABA)→I，A 是 3 秒原片還沒剪。點畫面暫停。要用哪一支就在 chk 剪完按「⬇ 輸出」，約 10 秒自動交件（不接倒放）。';document.querySelector('thead tr').innerHTML='<th>敵人</th><th>全部串播</th><th>I 待機</th><th>A 攻擊（ABA 原片）</th>'}
+ build();setInterval(poll,8000)})();
 </script></body></html>
