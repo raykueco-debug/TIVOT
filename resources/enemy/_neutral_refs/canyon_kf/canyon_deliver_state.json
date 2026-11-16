@@ -177,57 +177,57 @@
   "r_dir": "canyon_R/mon_canyon_bonecrow_dark_atk_v1_R"
  },
  "mon_canyon_censer_dark_atk_v1": {
-  "source": "auto/kling_censer_atk_16x9",
-  "kind": "快剪（auto_cut）",
-  "at": "11-16 00:46",
-  "mtime": 1794761178.5851343,
-  "frames": 145,
-  "peak": 60,
-  "r_dir": "canyon_R/mon_canyon_censer_dark_atk_v1_R"
+  "source": "monsters/kling_censer_ABA_16x9_3s",
+  "from": "monsters/kling_censer_ABA_16x9_3s",
+  "kind": "ABA 原片（未剪）",
+  "at": "11-16 15:44",
+  "mtime": 1794815060.8232706,
+  "frames": 73,
+  "peak": 50
  },
  "mon_canyon_houndbeast_atk_v1": {
-  "source": "auto/kling_hound_atk_16x9",
-  "kind": "快剪（auto_cut）",
-  "at": "11-16 00:46",
-  "mtime": 1794761191.6244469,
-  "frames": 145,
-  "peak": 50,
-  "r_dir": "canyon_R/mon_canyon_houndbeast_atk_v1_R"
+  "source": "monsters/kling_hound_ABA_16x9_3s",
+  "from": "monsters/kling_hound_ABA_16x9_3s",
+  "kind": "ABA 原片（未剪）",
+  "at": "11-16 15:44",
+  "mtime": 1794815067.3571198,
+  "frames": 73,
+  "peak": 42
  },
  "mon_canyon_bellmite_dark_atk_v1": {
-  "source": "auto/kling_bellmite_atk_16x9",
-  "kind": "快剪（auto_cut）",
-  "at": "11-16 00:46",
-  "mtime": 1794761201.7437522,
-  "frames": 145,
-  "peak": 53,
-  "r_dir": "canyon_R/mon_canyon_bellmite_dark_atk_v1_R"
+  "source": "monsters/kling_bellmite_ABA_16x9_3s",
+  "from": "monsters/kling_bellmite_ABA_16x9_3s",
+  "kind": "ABA 原片（未剪）",
+  "at": "11-16 15:44",
+  "mtime": 1794815073.3941114,
+  "frames": 73,
+  "peak": 45
  },
  "mon_canyon_chainhound_dark_atk_v1": {
-  "source": "auto/kling_chainhound_atk_16x9",
-  "kind": "快剪（auto_cut）",
-  "at": "11-16 00:46",
-  "mtime": 1794761215.3678472,
-  "frames": 145,
-  "peak": 55,
-  "r_dir": "canyon_R/mon_canyon_chainhound_dark_atk_v1_R"
+  "source": "monsters/kling_chainhound_ABA_16x9_3s",
+  "from": "monsters/kling_chainhound_ABA_16x9_3s",
+  "kind": "ABA 原片（未剪）",
+  "at": "11-16 15:44",
+  "mtime": 1794815080.3479133,
+  "frames": 73,
+  "peak": 45
  },
  "mon_canyon_lanternimp_dark_atk_v1": {
-  "source": "auto/kling_lantern_atk_16x9",
-  "kind": "快剪（auto_cut）",
-  "at": "11-16 00:47",
-  "mtime": 1794761229.5888083,
-  "frames": 145,
-  "peak": 52,
-  "r_dir": "canyon_R/mon_canyon_lanternimp_dark_atk_v1_R"
+  "source": "monsters/kling_lantern_ABA_16x9_3s",
+  "from": "monsters/kling_lantern_ABA_16x9_3s",
+  "kind": "ABA 原片（未剪）",
+  "at": "11-16 15:44",
+  "mtime": 1794815085.0435126,
+  "frames": 73,
+  "peak": 24
  },
  "mon_canyon_crawler_dark_atk_v1": {
-  "source": "auto/kling_crawler_atk_16x9",
-  "kind": "快剪（auto_cut）",
-  "at": "11-16 00:47",
-  "mtime": 1794761239.333117,
-  "frames": 145,
-  "peak": 35,
-  "r_dir": "canyon_R/mon_canyon_crawler_dark_atk_v1_R"
+  "source": "monsters/kling_crawler_ABA_16x9_3s",
+  "from": "monsters/kling_crawler_ABA_16x9_3s",
+  "kind": "ABA 原片（未剪）",
+  "at": "11-16 15:44",
+  "mtime": 1794815091.2272186,
+  "frames": 73,
+  "peak": 45
  }
 }
