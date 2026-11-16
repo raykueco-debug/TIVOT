@@ -5135,7 +5135,7 @@ export const TOWNS = {
           spots:{ entry:[0.1871,0.8952], corridor:[0.1871,0.6542], bones:[0.1871,0.4133],
                   bridge:[0.6157,0.4133], altar:[0.1871,0.1723] } },
     /* 隨機遇怪（ver -2138，Ray：「卡耶爾的怪一次會出兩到三隻」）：山谷的群體小怪 5 種 × 2／3 隻（config 的 canyon_w_*）。
-       入口與谷底祭場是安全點（`rest`）不刷。 */
+       谷底祭場是安全點（`rest`）不刷；入口自 ver -2638 起**走進來會遇怪**（`wildWalkIn`，Ray：「入口也遇怪」）。 */
     wildSpawn: { rate:0.5, bgComp:'canyon_w_bg_', pool:[ { battle:'canyon_w_mix2' }, { battle:'canyon_w_mix3' }, { battle:'canyon_w_mix4' }, { battle:'canyon_w_mix5' }, { battle:'canyon_w_mix6' }, { battle:'canyon_w_mix7' }, { battle:'canyon_w_mix8' }, { battle:'canyon_w_mix9' }, { battle:'canyon_w_solo_censer' }, { battle:'canyon_w_solo_houndbeast' }, { battle:'canyon_w_solo_bellmite' }, { battle:'canyon_w_solo_chainhound' }, { battle:'canyon_w_solo_lanternimp' }, { battle:'canyon_w_solo_crawler' }, { battle:'canyon_w_mix11' }, { battle:'canyon_w_mix12' } ] },
     /* 碎片 02 期間（ver -2141，Ray：「每一格都要有戰鬥」）：每一格必出怪（入口／谷底祭場照舊不刷），而且換用賽西莉當搭檔的那一池。 */
     wildForce: { need:'frag02_go', until:'frag02_done', bgComp:'frag02_w_bg_', pool:[ { battle:'frag02_w_mix2' }, { battle:'frag02_w_mix3' }, { battle:'frag02_w_mix4' }, { battle:'frag02_w_mix5' }, { battle:'frag02_w_mix6' }, { battle:'frag02_w_mix7' }, { battle:'frag02_w_mix8' }, { battle:'frag02_w_mix9' }, { battle:'frag02_w_solo_censer' }, { battle:'frag02_w_solo_houndbeast' }, { battle:'frag02_w_solo_bellmite' }, { battle:'frag02_w_solo_chainhound' }, { battle:'frag02_w_solo_lanternimp' }, { battle:'frag02_w_solo_crawler' }, { battle:'frag02_w_mix11' }, { battle:'frag02_w_mix12' } ] },
@@ -5146,7 +5146,9 @@ export const TOWNS = {
       /* 入口＝復活點、安全點。往下＝出航離開這張圖 —— 玩家是從天上降落進來的，這裡沒有相鄰的城可以走回去。
          ⚠ 碎片 02 的開場在這裡（Ray：「從入口登場」），裡面有一場戲裡的戰鬥（入口不刷野怪的規則照舊）。
          碎片期間不能出航（`sail.hold`）、背景鎖白天（`bgWhen`）。 */
-      entry:    { bg:'canyon_entry',    name:'卡耶爾山谷　峽谷入口', rest:true, noWild:true,
+      /* ver -2638：拿掉 `noWild`、加 `wildWalkIn` —— 從迴廊走回入口會遇怪（只出這一格背景存的編組）；
+         降落與戰敗復活在這一格照舊不出。`rest` 照留：揹著帳走進來先結算，那一次不擲。 */
+      entry:    { bg:'canyon_entry',    name:'卡耶爾山谷　峽谷入口', rest:true, wildWalkIn:true,
                   restOff:{ need:'frag02_go', until:'frag02_done' },   // 碎片期間不結算：打到最後一隻（frag02_b）才結算（ver -2139）
                   bgWhen:[{ need:'frag02_go', not:'frag02_done', bg:'canyon_entry_day', noTime:true }],
                   exits:{ up:'corridor' },

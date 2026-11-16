@@ -87,7 +87,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.16-2637';
+export const VERSION = 'ver 2026.11.16-2638';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2892,6 +2892,8 @@ export const GAME_CONFIG = {
     /* 卡耶爾山谷的隨機遇怪（ver -2138；-2153 改成混編「禍魘大軍」canyon_mix1..12，3～5 隻、後排一隻大型）。同一局（`canyon_wild`），踏進安全點（入口／谷底祭場）才結算。 */
     /* 碎片 02 夢裡的路上遇怪（ver -2141，Ray：「風蝕迴廊也要放戰鬥，每一格都要有戰鬥」）：同一批群怪，但搭檔是賽西莉、夢境戰不評。城上 `wildForce` 換用這一池。 */
     /* 背景編組的遭遇（ver -2639）：那一格的背景存過編組才會抽到（modules/town.js 的 wildActDue），敵人卡 canyon_bgcomp 照背景取編組。 */
+    canyon_w_bg_entry: { enemy:'canyon_bgcomp', session:'canyon_wild' },
+    frag02_w_bg_entry: { enemy:'canyon_bgcomp', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
     canyon_w_bg_corridor: { enemy:'canyon_bgcomp', session:'canyon_wild' },
     canyon_w_bg_bones: { enemy:'canyon_bgcomp', session:'canyon_wild' },
     canyon_w_bg_bridge: { enemy:'canyon_bgcomp', session:'canyon_wild' },

@@ -2459,8 +2459,11 @@ function wildActDue(n){
   /* **起點必不出怪**（ver -1026）：這一趟真的走進來的那一格 —— 它同時是遭遇戰的
      復活點。⚠ 與 `entryNodeId`（資料上的入口）**兩個都擋**：讀檔／跳關可以落在
      中間任何一格，那時 `cameNodeId` 是入口，兩者重合；從另一頭走進來時才分家。 */
-  if(cameNodeId && nodeId===cameNodeId) return wildSkip(i18nT('這一趟的起點格'));
-  if(nodeId===entryNodeId) return wildSkip(i18nT('入口（復活點）'));
+  /* ⚠ `wildWalkIn:true`（節點，ver -2638，Ray：「入口也遇怪」）＝**走進來**的那一次照常擲；
+     降落／戰敗復活／讀檔（沒有按方向 ⇒ `backDir` 空）照舊不出 —— 復活點仍然不會「醒來就再打一場」。 */
+  const walkIn = !!(n.wildWalkIn && backDir);
+  if(!walkIn && cameNodeId && nodeId===cameNodeId) return wildSkip(i18nT('這一趟的起點格'));
+  if(!walkIn && nodeId===entryNodeId) return wildSkip(i18nT('入口（復活點）'));
   /* ══⚠⚠ **`noWildFirst:true` ＝這一趟第一次踏進這一格不出怪**（ver -1618，Ray：
      「門廳第一次進去不出怪」）══ 走出去再走回來就照常擲。
      ⚠ 與 `noWild`（永遠不出）、`mustWild`（這一趟第一次必出）是同一族的三個旋鈕，
