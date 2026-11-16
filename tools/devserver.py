@@ -791,6 +791,40 @@ def efit_patch(req):
     return '%s:%s %s' % (EFIT_FILE, key, lit)
 
 
+
+# ══ 群戰成員的位置與大小（ver -2632，Ray：「讓各怪可以被滑鼠點選拖移縮放」）══
+# `POST /__glayout`，body＝`{"dir":群戰卡的 group.dir, "layout":{"<n>":[左右, 上下, 縮放], …}}`
+# 只改 `script/group_layout.js` 裡 `/*GLAYOUT*/ … /*END*/` 那一段 JSON（整段重寫、鑰匙排序），其他字不碰。
+GLAYOUT_FILE = 'script/group_layout.js'
+
+
+def glayout_patch(req):
+    d, lay = req.get('dir') or '', req.get('layout') or {}
+    if not re.match(r'^resources/[A-Za-z0-9_/.\-]+/$', d):
+        raise ValueError('group.dir 不合法：' + d)
+    clean = {}
+    for n, v in lay.items():
+        if not re.match(r'^[0-9]+$', str(n)) or not isinstance(v, list) or len(v) != 3:
+            raise ValueError('成員格式不合法：%s %r' % (n, v))
+        x, y, k = float(v[0]), float(v[1]), float(v[2])
+        if not (0.05 <= k <= 20):
+            raise ValueError('縮放超出範圍：%s' % k)
+        if abs(x) < 0.05 and abs(y) < 0.05 and abs(k - 1) < 0.0005:
+            continue   # 原位：不寫
+        clean[str(int(n))] = [round(x, 1), round(y, 1), round(k, 4)]
+    path = os.path.join(ROOT, GLAYOUT_FILE)
+    with open(path, 'r', encoding='utf-8', newline='') as f:
+        text = f.read()
+    a, b = text.index('/*GLAYOUT*/') + len('/*GLAYOUT*/'), text.index('/*END*/')
+    data = json.loads(text[a:b] or '{}')
+    if clean:
+        data[d] = clean
+    else:
+        data.pop(d, None)
+    body = json.dumps(data, ensure_ascii=False, sort_keys=True, indent=1)
+    _write_text(GLAYOUT_FILE, text[:a] + body + text[b:])
+    return '%s %s %s' % (GLAYOUT_FILE, d, json.dumps(clean))
+
 class Handler(http.server.SimpleHTTPRequestHandler):
     def _fail(self, code, msg):
         body = msg.encode('utf-8')
@@ -829,6 +863,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 req = json.loads(self.rfile.read(n).decode('utf-8'))
                 sys.stderr.write('[devserver] efit %s\n' % json.dumps(req, ensure_ascii=False))
                 where = efit_patch(req)
+            except ValueError as e:
+                return self._fail(409, str(e))
+            except Exception as e:                        # noqa: BLE001
+                return self._fail(500, '寫檔失敗：%s' % e)
+            return self._fail(200, 'ok ' + where)
+        if self.path.split('?')[0] == '/__glayout':
+            try:
+                n = int(self.headers.get('Content-Length') or 0)
+                req = json.loads(self.rfile.read(n).decode('utf-8'))
+                sys.stderr.write('[devserver] glayout %s\n' % json.dumps(req, ensure_ascii=False))
+                where = glayout_patch(req)
             except ValueError as e:
                 return self._fail(409, str(e))
             except Exception as e:                        # noqa: BLE001

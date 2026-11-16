@@ -20,7 +20,8 @@ import { ENEMY_IDLE, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, GAME_CONFI
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
-import { GROUP_MEMBERS } from '../script/group_members.js';   // 群戰分層 → 原立繪的對位（自動產生，ver -2623）
+import { GROUP_MEMBERS } from '../script/group_members.js';
+import { GROUP_LAYOUT } from '../script/group_layout.js';   // 群戰成員的位置與大小（ver -2632，編輯器存檔寫回）   // 群戰分層 → 原立繪的對位（自動產生，ver -2623）
 import * as groundShadow from './groundShadow.js';   // 接地陰影（ver -1702，葉節點）
 import { sakuraBurst } from './sakura.js';   // 鹿主的櫻花狂亂（ver -899）——同一支花瓣引擎，見 spawnSakura
 
@@ -1060,7 +1061,7 @@ export function applyEnemyFit(fit){
        框（inset／寬高）照抄 #enemyImg，每一層的 object-position／object-fit 也照抄。 */
     { const g=$('enemyGroup');
       if(g){ for(const k of ['left','right','top','bottom','width','height']) g.style[k]=eImg.style[k];
-             for(const im of g.querySelectorAll('.eg-guard,.eg-cover')){ im.style.objectPosition=eImg.style.objectPosition; im.style.objectFit=eImg.style.objectFit; }
+             for(const im of g.querySelectorAll('.eg-guard,.eg-cover')){ im.style.objectPosition=eImg.style.objectPosition; im.style.objectFit=eImg.style.objectFit; if(im.classList.contains('eg-guard')){ syncMemberFit(im); placeMember(im); } }
              placeGroupShadows(); } }
 }
 export function stopEntranceSe(ms){
@@ -2249,7 +2250,7 @@ function buildGroup(en){
     /* `group.noShadow:[n…]` ＝這幾層不畫接地影子（飛在空中的，ver -2164：卡耶爾的骨鴉）。 */
     if(shadow && !(G.noShadow && G.noShadow.includes(n))){ const sh=document.createElement('div'); sh.className='ground-shadow eg-shadow';
       g.insertBefore(sh, g.querySelector('.eg-guard')); im._sh=sh; }
-    im.onload=()=>{ buildMask(im); if(im._sh) groundShadow.place(im, im._sh); done(); };
+    im.onload=()=>{ syncMemberFit(im); placeMember(im); buildMask(im); if(im._sh) groundShadow.place(im, im._sh); done(); };
     im.onerror=done;
     im.src=G.dir+pre+n+'.webp';
     /* 中槍倒下（ver -2062，動畫交件 56d17af4）：`group.fall` ＝倒地動畫的資料夾，每人一組 `<prefix><n>/frame_00..` ＋ anim.json
@@ -2425,10 +2426,39 @@ function groupMuzzle(im, j){
 /* 取景變了（fit／視窗尺寸）就重擺每個人的影子。 */
 function placeGroupShadows(){
   const g=$('enemyGroup'); if(!g || !groupCard) return;
-  for(const im of g.querySelectorAll('.eg-guard')){ if(im._sh) groundShadow.place(im, im._sh);
+  for(const im of g.querySelectorAll('.eg-guard')){ placeMember(im); if(im._sh) groundShadow.place(im, im._sh);
     if(im._ov){ const j=im._acting ? (im._actJ || (im._atk && im._atk.j)) : (im._idle && im._idle.j); if(j) placeOnLayer(im._ov, im, j); } }   // 待機／攻擊層跟著重擺（-2581）
 }
 try{ window.addEventListener('resize', ()=>placeGroupShadows()); }catch(_){}
+/* ══ 群戰編輯器用（ver -2632，main.js 的「敵立繪編輯 → 群戰」分頁）══ */
+export function groupEditInfo(){
+  const g=$('enemyGroup'), G=groupCard && groupCard.group; if(!g || !G) return null;
+  const t=GROUP_LAYOUT[G.dir]||{};
+  return { dir:G.dir, members:[...g.querySelectorAll('.eg-guard')].map(im=>({ n:im.dataset.n, stem:(memberOf(G, im.dataset.n)||{}).stem||'', v:(im._placeLive||t[im.dataset.n]||[0,0,1]).slice() })) };
+}
+/* 螢幕上這一點（client 座標）壓在哪一層上：前排先問（同 pickVictim 的順序）。 */
+export function groupMemberAt(cx, cy){
+  const top=$('top'), g=$('enemyGroup'); if(!top || !g || !groupCard) return null;
+  const tr=top.getBoundingClientRect(), x=cx-tr.left, y=cy-tr.top;
+  const ims=[...g.querySelectorAll('.eg-guard')];
+  for(let i=ims.length-1;i>=0;i--){ const im=ims[i], m=groupMasks[im.dataset.n], uv=toImageUV(x, y, im);
+    if(m && uv && uv.u>=0 && uv.u<=1 && uv.v>=0 && uv.v<=1 && m.a[Math.min(m.h-1,(uv.v*m.h)|0)*m.w + Math.min(m.w-1,(uv.u*m.w)|0)] > 96) return im.dataset.n; }
+  return null;
+}
+/* 拖的當下：v＝[左右, 上下, 縮放]（null＝放回存檔的值）。回傳這一層「螢幕 1px ＝ 畫布幾 px」。 */
+export function setMemberPlace(n, v){
+  const g=$('enemyGroup'); if(!g) return 1;
+  const im=g.querySelector('.eg-guard[data-n="'+n+'"]'); if(!im) return 1;
+  im._placeLive = v ? v.slice() : null;
+  placeGroupShadows();
+  const m=layerMap(im, im.naturalWidth||1536, im.naturalHeight||1024);
+  return m ? 1/m.base : 1;
+}
+/* 編輯器選中的那一隻描金邊（null＝全部取消）。 */
+export function markMember(n){ const g=$('enemyGroup'); if(!g) return;
+  for(const im of g.querySelectorAll('.eg-guard')){ const el=im._ov||im; el.style.filter = (n!=null && im.dataset.n===String(n)) ? 'drop-shadow(0 0 3px #ffd36a) drop-shadow(0 0 1px #ffd36a)' : ''; } }
+/* 存檔成功後：寫回記憶體裡那一份，拖的暫存清掉。 */
+export function commitGroupLayout(dir, layout){ GROUP_LAYOUT[dir]=layout; const g=$('enemyGroup'); if(g) for(const im of g.querySelectorAll('.eg-guard')) im._placeLive=null; placeGroupShadows(); }
 /* 最後一發子彈打在 `#top` 的哪一點（px，#top 相對）。combat 的 gunHitOnEnemy 每一發都記。 */
 export function noteImpact(x, y){ lastImpact = (x!=null && y!=null) ? { x, y } : null; }
 /* `#top` 上的一點 → 圖上的比例座標（照 object-fit:cover ＋ object-position 換算）。 */
@@ -2438,9 +2468,37 @@ export function noteImpact(x, y){ lastImpact = (x!=null && y!=null) ? { x, y } :
 function layerMap(im, cw, ch){
   const g=$('enemyGroup'); if(!g) return null;
   const W=g.clientWidth, H=g.clientHeight, cs=getComputedStyle(im);
-  const k=(cs.objectFit==='contain') ? Math.min(W/cw, H/ch) : Math.max(W/cw, H/ch), dw=cw*k, dh=ch*k;
-  const p=String(cs.objectPosition||'50% 0%').split(/\s+/).map(v=>parseFloat(v)/100);
-  return { k, dw, dh, ox:(W-dw)*(isNaN(p[0])?0.5:p[0]), oy:(H-dh)*(isNaN(p[1])?0:p[1]) };
+  /* 卡的取景（fit.mode／pos）記在 dataset（syncMemberFit）—— 被移過的那一層 object-fit 是 fill，不能讀它的 computed。 */
+  const fit=im.dataset.fit || cs.objectFit, pos=im.dataset.pos || cs.objectPosition;
+  const k=(fit==='contain') ? Math.min(W/cw, H/ch) : Math.max(W/cw, H/ch), dw=cw*k, dh=ch*k;
+  const KW={ center:0.5, top:0, left:0, bottom:1, right:1 };
+  const p=String(pos||'50% 0%').split(/\s+/).map(v=>(v in KW) ? KW[v] : parseFloat(v)/100);
+  const ox=(W-dw)*(isNaN(p[0])?0.5:p[0]), oy=(H-dh)*(isNaN(p[1])?0:p[1]);
+  /* 編輯器擺的位置（GROUP_LAYOUT，ver -2632）：畫布上的點 p → 原點 + (p·s + d)·k */
+  const P=memberPlaceOf(im);
+  if(P){ const sc=P[2]||1; return { k:k*sc, dw:dw*sc, dh:dh*sc, ox:ox+P[0]*k, oy:oy+P[1]*k, base:k }; }
+  return { k, dw, dh, ox, oy, base:k };
+}
+/* ══ 群戰成員的位置與大小（ver -2632，Ray：「讓各怪可以被滑鼠點選拖移縮放」）══
+   資料在 `script/group_layout.js`（`[左右, 上下, 縮放]`，分層畫布像素）。被移過的那一層：圖框直接改成移動後的矩形、object-fit:fill
+   （不用 transform —— 倒下的 translateY、淨化的 transform-origin 照舊作用在這個框上）；layerMap 讀同一份，所以命中、影子、
+   待機／攻擊層全部跟著走（鐵律 7）。`im._placeLive` ＝編輯器拖的當下（還沒存檔）。 */
+function memberPlaceOf(im){
+  if(im._placeLive) return im._placeLive;
+  const G=groupCard && groupCard.group, t=G && GROUP_LAYOUT[G.dir], v=t && t[im.dataset.n];
+  return (v && (v[0] || v[1] || (v[2] && v[2]!==1))) ? v : null;
+}
+function syncMemberFit(im){
+  const e=$('enemyImg');
+  im.dataset.fit=(e && e.style.objectFit) || 'cover';
+  im.dataset.pos=(e && e.style.objectPosition) || 'center top';
+}
+function placeMember(im){
+  if(!im.naturalWidth) return;
+  if(!im.dataset.fit) syncMemberFit(im);
+  if(!memberPlaceOf(im)){ im.style.left=im.style.top=im.style.width=im.style.height=''; im.style.objectFit=im.dataset.fit; im.style.objectPosition=im.dataset.pos; return; }
+  const m=layerMap(im, im.naturalWidth, im.naturalHeight); if(!m) return;
+  im.style.left=m.ox+'px'; im.style.top=m.oy+'px'; im.style.width=m.dw+'px'; im.style.height=m.dh+'px'; im.style.objectFit='fill';
 }
 /* anim.json 的 box（分層畫布座標）擺到 el 上 */
 function placeOnLayer(el, im, j){
@@ -2458,11 +2516,8 @@ function toImageUV(x, y, im){
 function imageUVToTopPct(u, v, im){
   const g=$('enemyGroup'), top=$('top'); if(!g || !top || !im.naturalWidth) return null;
   const gr=g.getBoundingClientRect(), tr=top.getBoundingClientRect();
-  const W=gr.width, H=gr.height, iw=im.naturalWidth, ih=im.naturalHeight;
-  const k=Math.max(W/iw, H/ih), dw=iw*k, dh=ih*k;
-  const p=String(getComputedStyle(im).objectPosition||'50% 0%').split(/\s+/).map(x=>parseFloat(x)/100);
-  const ox=(W-dw)*(isNaN(p[0])?0.5:p[0]), oy=(H-dh)*(isNaN(p[1])?0:p[1]);
-  const x=gr.left-tr.left+ox+u*dw, y=gr.top-tr.top+oy+v*dh;
+  const m=layerMap(im, im.naturalWidth, im.naturalHeight); if(!m) return null;   // ver -2632：讀唯一那一支（以前這裡自己算一次 cover，contain 的卡與被移過的成員都會偏）
+  const x=gr.left-tr.left+m.ox+u*m.dw, y=gr.top-tr.top+m.oy+v*m.dh;
   if(x<0 || y<0 || x>tr.width || y>tr.height) return null;
   return { l:x/tr.width*100, t:y/tr.height*100 };
 }
@@ -2552,11 +2607,9 @@ function guardBox(im){
 function purgeGuard(im){
   const g=$('enemyGroup'), b=guardBox(im);
   if(g && b && im.naturalWidth){
-    const W=g.clientWidth, H=g.clientHeight, iw=im.naturalWidth, ih=im.naturalHeight;
-    const k=Math.max(W/iw, H/ih), dw=iw*k, dh=ih*k;
-    const p=String(getComputedStyle(im).objectPosition||'50% 0%').split(/\s+/).map(v=>parseFloat(v)/100);
-    const ox=(W-dw)*(isNaN(p[0])?0.5:p[0]), oy=(H-dh)*(isNaN(p[1])?0:p[1]);
-    im.style.transformOrigin=(ox+b.cx*dw).toFixed(1)+'px '+(oy+b.v1*dh).toFixed(1)+'px';
+    const m=layerMap(im, im.naturalWidth, im.naturalHeight);   // ver -2632：同上，讀唯一那一支
+    /* transform-origin 是元素內座標：被移過的那一層，元素框就是移過的畫布矩形 */
+    if(m) im.style.transformOrigin=(m.ox-im.offsetLeft+b.cx*m.dw).toFixed(1)+'px '+(m.oy-im.offsetTop+b.v1*m.dh).toFixed(1)+'px';
     const a=imageUVToTopPct(b.u0, b.v0, im), z=imageUVToTopPct(b.u1, b.v1, im);
     if(a && z) spawnPurgeStars({ l:a.l, t:a.t, w:z.l-a.l, h:z.t-a.t, n:10 });
   }

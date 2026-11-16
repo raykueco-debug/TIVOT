@@ -1511,6 +1511,44 @@ function openEnemyEdit(){
   };
   buildTalk();
   let tab='enemy';
+  /* ══ 群戰分頁（ver -2632，Ray：「讓各怪可以被滑鼠點選拖移縮放」）══
+     在敵人區直接點選一隻、拖移、滾輪縮放（面板上也有微調鈕）；存檔走 devserver 的 `/__glayout` 寫回
+     `script/group_layout.js`。拖的當下只是預覽（enemy.setMemberPlace），關閉沒存就放回原位。 */
+  const grp = enemyMod.groupEditInfo ? enemyMod.groupEditInfo() : null;
+  const gv = {};  let gsel = grp && grp.members.length ? grp.members[0].n : null;
+  if(grp) for(const m of grp.members) gv[m.n]=m.v.slice();
+  const g0 = JSON.parse(JSON.stringify(gv));
+  let gcap = null;
+  const gApply = n=>enemyMod.setMemberPlace(n, gv[n]);
+  const gName = n=>{ const m=grp.members.find(x=>x.n===n); return n+(m && m.stem ? ' '+m.stem.replace('mon_canyon_','').replace(/_dark|_neutral/,'') : ''); };
+  const gCapture = on=>{
+    if(!on){ if(gcap){ gcap.remove(); gcap=null; } enemyMod.markMember(null); return; }
+    if(gcap) return;
+    const top=document.getElementById('top'); if(!top) return;
+    const r=top.getBoundingClientRect();
+    gcap=document.createElement('div'); gcap.id='groupEditCap';
+    gcap.style.cssText='position:fixed;left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;z-index:8990;cursor:move;touch-action:none;';
+    let drag=null;
+    gcap.addEventListener('pointerdown', e=>{
+      e.preventDefault(); e.stopPropagation();
+      const hit=enemyMod.groupMemberAt(e.clientX, e.clientY); if(hit!=null){ gsel=hit; render(); }
+      if(gsel==null) return;
+      const ratio=gApply(gsel);
+      drag={ x:e.clientX, y:e.clientY, v:gv[gsel].slice(), ratio };
+      try{ gcap.setPointerCapture(e.pointerId); }catch(_){}
+      enemyMod.markMember(gsel);
+    });
+    gcap.addEventListener('pointermove', e=>{ if(!drag) return;
+      gv[gsel][0]=+(drag.v[0]+(e.clientX-drag.x)*drag.ratio).toFixed(1);
+      gv[gsel][1]=+(drag.v[1]+(e.clientY-drag.y)*drag.ratio).toFixed(1);
+      gApply(gsel); });
+    const up=()=>{ if(drag){ drag=null; render(); } };
+    gcap.addEventListener('pointerup', up); gcap.addEventListener('pointercancel', up);
+    gcap.addEventListener('wheel', e=>{ e.preventDefault(); if(gsel==null) return;
+      gv[gsel][2]=+Math.max(0.1, Math.min(8, gv[gsel][2]*(e.deltaY<0?1.04:1/1.04))).toFixed(4); gApply(gsel); render(); }, { passive:false });
+    (document.getElementById('app')||document.body).appendChild(gcap);
+    enemyMod.markMember(gsel);
+  };
   const box = document.createElement('div'); box.id='enemyEdit';
   let msg='';
   const fitOf = ()=>({ mode: cur.mode==='contain' ? 'contain' : undefined,
@@ -1521,13 +1559,22 @@ function openEnemyEdit(){
     +'<button '+(attr||'data-k')+'="'+k+'" data-d="'+d+i18nT('">＋</button></div>');
   const tabs = ()=>{
     const list=[['enemy',i18nT('敵人')]];
+    if(grp) list.push(['group',i18nT('群戰')]);
     if(talk.left)  list.push(['left',i18nT('對話・左')]);
     if(talk.right) list.push(['right',i18nT('對話・右')]);
     return list.length<2 ? '' : '<div class="ee-row">'+list.map(([k,n])=>'<button data-tab="'+k+'" class="'+(tab===k?'on':'')+'">'+n+'</button>').join('')+'</div>';
   };
   const render = ()=>{
     let body;
-    if(tab==='enemy'){
+    if(tab==='group'){
+      const v=gv[gsel]||[0,0,1];
+      body = i18nT('<div class="ee-hd">群戰配置　')+grp.dir.replace('resources/enemy/','')+'</div>'
+        + '<div class="ee-row">'+grp.members.map(m=>'<button data-gsel="'+m.n+'" class="'+(m.n===gsel?'on':'')+'">'+gName(m.n)+'</button>').join('')+'</div>'
+        + '<div class="ee-msg">'+i18nT('在敵人區點一隻選取 → 拖移；滾輪縮放')+'</div>'
+        + row(i18nT('左右'), Math.round(v[0]), 'gx', 10, 'data-gk')
+        + row(i18nT('上下'), Math.round(v[1]), 'gy', 10, 'data-gk')
+        + row(i18nT('縮放'), Math.round(v[2]*100)+'%', 'gs', 0.02, 'data-gk');
+    }else if(tab==='enemy'){
       body = i18nT('<div class="ee-hd">敵立繪　')+(en.name||key)+i18nT('（')+key+i18nT('）</div>')
         + i18nT('<div class="ee-row"><span>模式</span>')
         +   '<button data-mode="cover" class="'+(cur.mode!=='contain'?'on':'')+i18nT('">填滿</button>')
@@ -1568,7 +1615,22 @@ function openEnemyEdit(){
     e.stopPropagation();
     const t=e.target.closest('button'); if(!t) return;
     try{ SFX.menuClick(); }catch(_){}
-    if(t.dataset.tab){ tab=t.dataset.tab; msg=''; render(); return; }
+    if(t.dataset.tab){ tab=t.dataset.tab; msg=''; gCapture(tab==='group'); render(); return; }
+    if(t.dataset.gsel){ gsel=t.dataset.gsel; enemyMod.markMember(gsel); render(); return; }
+    if(t.dataset.gk){ const v=gv[gsel], d=+t.dataset.d, i={gx:0,gy:1,gs:2}[t.dataset.gk];
+      v[i]=+(v[i]+d).toFixed(4); if(i===2) v[2]=Math.max(0.1, Math.min(8, v[2])); gApply(gsel); render(); return; }
+    if(tab==='group' && t.dataset.act==='reset'){ for(const n in gv){ gv[n]=g0[n].slice(); gApply(n); } msg=i18nT('已還原'); render(); return; }
+    if(tab==='group' && t.dataset.act==='save'){
+      const layout={}; for(const n in gv) layout[n]=gv[n];
+      msg=i18nT('寫入中…'); render();
+      fetch(new URL('__glayout', location.href).pathname, { method:'POST', body:JSON.stringify({ dir:grp.dir, layout }) })
+        .then(r=>r.text().then(x=>({ok:r.ok, x})))
+        .then(r=>{ if(r.ok){ const keep={}; for(const n in gv){ const v=gv[n]; if(Math.abs(v[0])>=0.05||Math.abs(v[1])>=0.05||Math.abs(v[2]-1)>=0.0005) keep[n]=v.slice(); g0[n]=v.slice(); }
+                              enemyMod.commitGroupLayout(grp.dir, keep); enemyMod.markMember(gsel); }
+                   msg = r.ok ? i18nT('已存檔（')+r.x+i18nT('）') : i18nT('存檔失敗：')+r.x; render(); })
+        .catch(err=>{ msg=i18nT('存檔失敗：')+err; render(); });
+      return;
+    }
     if(t.dataset.blink){ const T=talk[tab]; if(!T) return; T.v.blink=t.dataset.blink; tutorial.tuneBlink(tab, T.v.blink); render(); return; }
     if(t.dataset.side){
       const T=talk[tab], to=t.dataset.side; if(!T || to===tab) return;
@@ -1598,6 +1660,7 @@ function openEnemyEdit(){
     else if(t.dataset.act==='close'){
       enemyMod.applyEnemyFit(en.fit);       // 沒存就回到卡上的樣子
       revertTalk();
+      if(grp){ for(const n in gv) enemyMod.setMemberPlace(n, null); gCapture(false); }   // 群戰：沒存的拖移放回去
       box.remove();
       if(pausedHere && !state.over && !state.tutorialDialog) combat.resumeFromDialog();
       return;
