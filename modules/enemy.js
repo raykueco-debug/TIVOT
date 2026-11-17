@@ -90,7 +90,7 @@ function windupSe(key, ms, alive){ if(!key) return; const go=()=>{ if(!alive || 
 function strikeFx(key){ spawnFxNamed(key, Object.assign({}, HITFX[key]||{})); const se=(HITFX[key]||{}).se; if(se) SFX.play(asset(se), sfxGain(se)); }
 export function showHitFx(kind){
   if(isAirBio(curCard())) return;   // dragon rule 的空戰生物不演受擊特效（ver -2502，Ray；音效另外找，照舊在 combat）
-  { const a=actFxLive(kind); if(a){ actFx=null; if(a.key==='sonic') sonicHit(a.im); else spawnFxNamed(a.key, Object.assign({}, HITFX[a.key]||{})); rotVoice('assaultVoice'); return; } }
+  { const a=actFxLive(kind); if(a){ actFx=null; if(a.key==='sonic' || (HITFX[a.key]||{}).base==='sonic') sonicHit(a.im); else spawnFxNamed(a.key, Object.assign({}, HITFX[a.key]||{})); rotVoice('assaultVoice'); return; } }
   const hf = state.curEnemyHitFx;
   /* ⚠⚠ **缺 `ult` 就退回 `assault`**（ver -932）：受擊分四格是這一版才加的
      （延時／按錯／攻擊／大絕），六十張既有的卡上只有前三格 —— 沒有退路的話

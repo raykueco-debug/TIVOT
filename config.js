@@ -43,6 +43,7 @@ export const HITFX = {
   chain_maul:   { base:'claw', se:'em_slash', count:3, scale:1.35, flip:true, angle:-12 },   // 鎖鏈餓犬撲咬（ver -2668／-2669，Ray：「受擊特效用爪痕跟 slash」「爪痕大一點 要跟揮爪速度一樣」）：三道爪痕放大 1.35、由左往右 250ms 劃出（片子第 39→45 格那一揮）＋揮砍音；吼聲另由 ENEMY_ATK `windupSe` 從轉正那一格放
   crawler_hit:  { base:'blunt', se:'em_slash' },   // 爬行朝聖者（ver -2671，Ray：「用 slash 音效」）：鈍擊特效照舊、音效換揮砍音
   beetle_claw:  { base:'claw', se:'em_slash', count:1, angle:26 },   // 石棺甲蟲（ver -2674，Ray：「固定橫痕 slash 在最大時出」）：單爪痕轉成水平（原圖那一道往右上斜 26°）＋揮砍音
+  pilgrim_sonic:{ base:'sonic', se:'se_enemy_squeal_echo' },   // 朝聖者團塊聲波（ver -2676，Ray：「se_enemy_squeal 尾音迴音」）：聲波環＋數字淡出，配加了迴音尾的尖嘯
   /* 放光（ver -1351，王座徘徊者）。⚠ **刻意沒有 `se`**：那一支 6.7 秒、有頭有尾，
      由 `enemy.spawnHolyBurst` 用 `playCue` 的把手播（收得掉）—— 掛在這裡的話
      combat 會直接播到底，換敵／離場都停不下來（同 `HITFX.sakura` 的理由）。 */
@@ -94,7 +95,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.17-2675';
+export const VERSION = 'ver 2026.11.17-2676';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4110,7 +4111,7 @@ export const GAME_CONFIG = {
          沒有手機模型那一次）：chant −32.1／magic −16.7／beastgrowl −13.1／beastgrowl2 −28.2／
          squeal −14.9／squeal2 −14.3 LUFS，峰值都沒觸頂。 */
       se_enemy_chant:8.219, se_enemy_magic:1.396, se_enemy_beastgrowl:0.922,
-      se_enemy_beastgrowl2:5.246, se_enemy_squeal:1.134, se_enemy_squeal2:1.059,
+      se_enemy_beastgrowl2:5.246, se_enemy_squeal:1.134, se_enemy_squeal2:1.059, se_enemy_squeal_echo:2.343,
       /* ── 飛行頁（那一頁用 HTMLAudio，讀同一張表，見 flight/index.html）── */
       se_flight_heartbeat:5.064, se_flight_idle_loop:2.848,
       se_flight_sail_loop:7.928, se_flight_seagull:3.353, se_flight_train:5.059,
@@ -5059,6 +5060,7 @@ export const ASSETS = {
   se_enemy_beastgrowl2: "resources/audio/se/se_enemy_beastgrowl2.m4a",
   se_enemy_squeal:      "resources/audio/se/se_enemy_squeal.m4a",
   se_enemy_squeal2:     "resources/audio/se/se_enemy_squeal2.m4a",
+  se_enemy_squeal_echo: "resources/audio/se/se_enemy_squeal_echo.m4a",   // squeal 加迴音尾（ffmpeg aecho 220/440/700ms），朝聖者團塊聲波（ver -2676）
   se_brickcrush:        "resources/audio/se/se_brickcrush.m4a",   // 黑爪登場（原本只在 story 的 SE_FILES）
   se_mg_squall:      "resources/audio/se/se_weapon_mg_squall.m4a",       // 重機槍 反擊（連續感：整支播一次）
   se_shotgun_blast:  "resources/audio/se/se_weapon_shotgun_blast.m4a",   // 散彈槍 反擊（一次一發）
@@ -5818,7 +5820,7 @@ export const ENEMY_ATK = {
   mon_canyon_chainhound_dark: { dir:'resources/enemy/anim/mon_canyon_chainhound_dark_atk_v1/', hit:45, hitFx:'chain_maul', windupSe:'se_enemy_beast04', windupMs:958, fillFrame:true },   // 吼聲從第 23 格轉正面那一刻放（23/24 秒，ver -2667，Ray：「從轉正開始放」）   // 鎖鏈餓犬
   mon_canyon_lanternimp_dark: { dir:'resources/enemy/anim/mon_canyon_lanternimp_dark_atk_v1/', hit:24, fillFrame:true },   // 提燈小鬼
   /* 朝聖者團塊（ver -2652，Ray：「他是聲波攻擊 聲波用程式跑」「優先讓他先攻」）：A 借牠的點錯片（張手，打到＝第 20 格）演，打到時程式放聲波（`hitFx:'sonic'`：模糊聲波環＋盤面數字快速淡出再慢慢淡回）；`first`＝這一組的第一擊優先由牠；`last`＝這一組最後才倒（-2655，Ray：「那隻怪留到最後死」）。 */
-  mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20, hitFx:'sonic', first:true, last:true },
+  mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20, hitFx:'pilgrim_sonic', first:true, last:true },
   mon_canyon_crawler_dark: { dir:'resources/enemy/anim/mon_canyon_crawler_dark_atk_v1/', hit:45, hitFx:'crawler_hit', fillFrame:true },   // 爬行朝聖者   // 噴火交程式（數值待 Ray，還沒做）   // 崩岩巨像 拳砸地（ver -2620，KF 第二輪，36 格）
   mon_stag_rot_neutral: { dir:'resources/enemy/anim/mon_stag_rot_neutral_atk_v1/', hit:17 },   // 腐鹿骸 角頂（ver -2620，KF 第二輪，30 格）
   mon_shinierforest_deernightmare: { dir:'resources/enemy/anim/mon_shinierforest_deernightmare_atk_v1/', hit:32 },   // 變異樹靈鹿主 仰天咆哮（ver -2620，KF 第二輪，55 格；攻擊＝延時同一支）
