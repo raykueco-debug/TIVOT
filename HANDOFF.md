@@ -37,6 +37,7 @@
 
 ### 其他
 - `tools/anim/` 已同步 3060 的 `tivot_wan.py`（Mobius）、`batch_canyon_*.py`、`custom_nodes/tivot_latent_loop.py`。⚠ `make_player.py`／`player.html` 兩台各有新增，3060 版放在 `tools/anim/_3060_1116/` **待合併**。
+- 背景線：3060 `tivot_wan/bg_layer/` 的 bgchk 註記 `notes/`（947 檔）、審閱頁、水面批次、`delivered.json` 已收進 `tools/anim/bg_layer/`（03ac57ac）。新機跑 bgchk 前先把它們抄回 `ComfyUI-master/tivot_wan/bg_layer/`。
 - 敵人線未進版控的檔（石棺甲蟲 Kling 拆格 51 MB、ABA 預覽 13 MB、審閱草稿）已推。
 - 這一次一併推上：`resources/audio/se/` 新增 9 支（`se_crush_jars／objects`、`se_enemy_beast03`、`se_enemy_bug00／02～05`、`se_step_deepfar`，**目前沒有程式引用**，是車輪戰挑音效時下載的候選）、`.claude/launch.json`（tivot-win 加 `-X utf8`）。
 
