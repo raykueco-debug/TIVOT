@@ -128,6 +128,8 @@ def build_items():
             X, Y, sc = v2p((x - px) / s + cx + c0, (y - py) / s + cy + c1); return X, Y, sc / s
         items[f'{por}_idle_v1'] = {'name': f'{por}_idle_v1', 'zh': f'{zh}・I', 'portrait': P, 'to_portrait': i2p, 'loop': True,
                                    'raw': f'kling_idle/{n}_kling0{isuf}', 'auto': f'auto/kling_{n}_idle{isuf}'}
+        if n == 'ribcage':   # 11-17 Ray：「只跑肋籠獸」—— 待機動作太小，Wan 加大動態重跑（同一張來源、同一個 fit ⇒ 同一條座標鏈）
+            items[f'{por}_idle_v1']['alts'] = {'kling_idle/ribcage_kling0_move': i2p}
     PI = [('聖面鷲', 'mon_canyon_saintvulture_dark', 0.60, 'mon_canyon_saintvulture_dark_fit60'), ('骨鴉', 'mon_canyon_bonecrow_dark', 0.80, None),
           ('香爐蠍', 'mon_canyon_censer_dark', 0.82, 'mon_canyon_censer_dark_breath'), ('崖縫吊屍者', 'mon_canyon_hanged_dark', 0.85, None), ('餓獸', 'mon_canyon_houndbeast', 0.85, None),
           ('鐘殼蟲', 'mon_canyon_bellmite_dark', 0.85, None), ('鎖鏈餓犬', 'mon_canyon_chainhound_dark', 0.85, None),
