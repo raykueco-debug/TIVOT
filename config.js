@@ -40,7 +40,7 @@ export const HITFX = {
   censer_crash: { base:'blunt', se:'se_crash_rocks' },
   hound_maul:   { base:'blunt' },   // 餓獸撲咬（ver -2661）：⚠ 刻意沒有 `se` —— 聲音只有 ENEMY_ATK 的 `windupSe` 吼聲（起手放、拉長版），打擊格不另響（Ray：「原本的打擊音拿掉 過」）
   bell_claw:    { base:'claw', se:'em_slash', count:1 },   // 鐘殼蟲揮鉗（ver -2663，Ray：「slash 保留 跟隨動作三下」）：單爪痕＋揮砍音，跟著 strikes 三下各一次；嘶鳴另走 ENEMY_ATK 的 `windupSe`
-  chain_maul:   { base:'blunt', se:'em_smack' },   // 鎖鏈餓犬撲咬（ver -2665，Ray：「拉太長了聲音都變了 最後一下用原本的受擊音接上」）：吼聲 se_enemy_beast01 原速從起手放（ENEMY_ATK `windupSe`），打擊格接原本的鈍擊音
+  chain_maul:   { base:'blunt' },   // 鎖鏈餓犬撲咬（ver -2666，Ray：「se_enemy_beast04 換成這個不接受擊」）：無 `se`，吼聲 se_enemy_beast04 原速從起手放（ENEMY_ATK `windupSe`）
   /* 放光（ver -1351，王座徘徊者）。⚠ **刻意沒有 `se`**：那一支 6.7 秒、有頭有尾，
      由 `enemy.spawnHolyBurst` 用 `playCue` 的把手播（收得掉）—— 掛在這裡的話
      combat 會直接播到底，換敵／離場都停不下來（同 `HITFX.sakura` 的理由）。 */
@@ -92,7 +92,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.17-2665';
+export const VERSION = 'ver 2026.11.17-2666';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4012,7 +4012,7 @@ export const GAME_CONFIG = {
       /* se_weapon_heavygun ver -476 換新檔重量：平均（耳機/手機模型）−13.2 LUFS → 0.738 */
       se_weapon_sniper:0.839, se_weapon_heavygun:0.738,
       /* ── 敵人 ── */
-      se_enemy_slash:0.602, se_enemy_smack:1.173, se_crash_rocks:1.258, se_enemy_beast02:1.884, se_enemy_bug01:1.379, se_enemy_beast01:1.530, se_enemy_shot:0.854,
+      se_enemy_slash:0.602, se_enemy_smack:1.173, se_crash_rocks:1.258, se_enemy_beast02:1.884, se_enemy_bug01:1.379, se_enemy_beast01:1.530, se_enemy_beast04:1.584, se_enemy_shot:0.854,
       /* 劈落（ver -1957，米夏）：實測 −16.2 LUFS、峰值 0 dBFS —— 照目標要 ×1.57，
          被 `peakCeilDb`（+2 dB）夾在 1.259。⚠ 鄰居對照量的，不是 audio_scan 那一套；要精修就跑一次。 */
       se_bulletguard:1.259,
@@ -5233,6 +5233,7 @@ export const ASSETS = {
   se_enemy_beast02:  "resources/audio/se/se_enemy_beast02.m4a?v=1ca22f42",  // 餓獸撲咬（ver -2657）
   se_enemy_bug01:    "resources/audio/se/se_enemy_bug01.m4a",    // 鐘殼蟲揮鉗（ver -2662）
   se_enemy_beast01:  "resources/audio/se/se_enemy_beast01.m4a?v=fa664115",  // 鎖鏈餓犬撲咬（ver -2664）
+  se_enemy_beast04:  "resources/audio/se/se_enemy_beast04.m4a",  // 鎖鏈餓犬撲咬（ver -2666）
   em_shot:           "resources/audio/se/se_enemy_shot.m4a",     // Boss：延時懲罰
   em_revolver:       "resources/audio/se/se_enemy_revolver.m4a", // Boss：大絕/不完美防禦（左輪）
   em_dagger:         "resources/audio/se/se_enemy_dagger.m4a?v=608c768c", // Boss：按錯（ver -899 換新音，同名覆蓋 → ?v）
@@ -5801,7 +5802,7 @@ export const ENEMY_ATK = {
   mon_canyon_censer_dark: { dir:'resources/enemy/anim/mon_canyon_censer_dark_atk_v1/', hit:32, hitFx:'censer_crash', fillFrame:true },   // 香爐蠍（ver -2656：打到＝尾槌砸地那一格、砸地音 se_crash_rocks，Ray）
   mon_canyon_houndbeast: { dir:'resources/enemy/anim/mon_canyon_houndbeast_atk_v1/', hit:42, hitFx:'hound_maul', windupSe:'se_enemy_beast02', fillFrame:true },   // 餓獸
   mon_canyon_bellmite_dark: { dir:'resources/enemy/anim/mon_canyon_bellmite_dark_atk_v1/', strikes:[31,37,39], hitFx:'bell_claw', windupSe:'se_enemy_bug01', windupMs:240, fillFrame:true },   // 鐘殼蟲：三下揮鉗（第 31／37／39 格，-2651 照片子量），每下一道單爪痕，最後一下扣血（Ray：「鉗類的受擊用單爪痕 要跟著打擊節奏」）
-  mon_canyon_chainhound_dark: { dir:'resources/enemy/anim/mon_canyon_chainhound_dark_atk_v1/', hit:45, hitFx:'chain_maul', windupSe:'se_enemy_beast01', fillFrame:true },   // 鎖鏈餓犬
+  mon_canyon_chainhound_dark: { dir:'resources/enemy/anim/mon_canyon_chainhound_dark_atk_v1/', hit:45, hitFx:'chain_maul', windupSe:'se_enemy_beast04', fillFrame:true },   // 鎖鏈餓犬
   mon_canyon_lanternimp_dark: { dir:'resources/enemy/anim/mon_canyon_lanternimp_dark_atk_v1/', hit:24, fillFrame:true },   // 提燈小鬼
   /* 朝聖者團塊（ver -2652，Ray：「他是聲波攻擊 聲波用程式跑」「優先讓他先攻」）：A 借牠的點錯片（張手，打到＝第 20 格）演，打到時程式放聲波（`hitFx:'sonic'`：模糊聲波環＋盤面數字快速淡出再慢慢淡回）；`first`＝這一組的第一擊優先由牠；`last`＝這一組最後才倒（-2655，Ray：「那隻怪留到最後死」）。 */
   mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20, hitFx:'sonic', first:true, last:true },
