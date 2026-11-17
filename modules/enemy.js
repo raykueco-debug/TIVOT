@@ -1253,7 +1253,7 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
   el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.width=r.width+'px'; el.style.height=r.height+'px';
   let i=0; el.src=L.fr[0].src; if(el===clipEl) applyFar();
   const fps=L.j.fps||24, N=L.fr.length;
-  const hitF=Math.min(N-1, (c.hit!=null) ? c.hit : Math.floor(N*0.4));
+  const hitF=Math.min(N-1, (c.strikes && c.strikes.length) ? Math.max(...c.strikes) : (c.hit!=null) ? c.hit : Math.floor(N*0.4));   // `strikes` 的最後一下＝扣血（同群戰成員，ver -2663）
   /* 收回加速（`retMul`，-2486 Ray「撲咬收回再快一點」）：打到那一格之後的格子以 fps×retMul 播 */
   /* 前撲加速（`preMul`，-2512 Ray「收回加速 前撲也加速」）：打到那一格之前（含）以 fps×preMul 播 */
   const rm=c.retMul||1, pm=c.preMul||1, tAt=f=> f<=hitF ? f*1000/(fps*pm) : (hitF*1000/(fps*pm) + (f-hitF)*1000/(fps*rm));
@@ -1268,6 +1268,7 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
   const fxAt=new Map((c.fx||[]).map(f=>[f.frame, f]));   // 動作段的程式特效（ver -2524：光翼下拍噴瓦礫）
   const step=()=>{ i++;
     if(fxAt.has(i)) clipFx(fxAt.get(i));
+    if(c.hitFx && c.strikes && i<hitF && c.strikes.indexOf(i)>=0) strikeFx(c.hitFx);   // 前面幾下各補一道特效＋音效（單隻也跟著片子的打擊節奏，ver -2663）
     if(i<N){ el.src=L.fr[i].src; clipT=setTimeout(step, Math.max(0, t0+tAt(i+1)-performance.now())); return; }
     clipT=0;
     if(opts && opts.hold){ if(onDone) onDone(el); return; }
