@@ -1,0 +1,21 @@
+{
+ "key": "plainsroad__windrock__day",
+ "map": "plainsroad",
+ "mapName": "平原古道",
+ "node": "windrock",
+ "name": "平原古道　風蝕岩",
+ "band": "day",
+ "file": "plains/plains_windrock_day.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:46:51",
+ "colors": [
+  {
+   "name": "cyan",
+   "rgb": "#2fe0e0",
+   "text": "雲湧動",
+   "mask": "cyan.png"
+  }
+ ]
+}

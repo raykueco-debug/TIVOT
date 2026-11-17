@@ -1,0 +1,25 @@
+{
+ "key": "sofiaout__salon__base",
+ "map": "sofiaout",
+ "mapName": "里朋莊園",
+ "node": "salon",
+ "name": "里朋莊園　沙龍",
+ "band": "base",
+ "file": "sofia/sofiaout_salon.webp",
+ "general": "Ray 11-13：只動圈的（inpaint）",
+ "submitted": false,
+ "auto": false,
+ "time": "2026-11-10T01:47:16",
+ "colors": [
+  {
+   "name": "green",
+   "rgb": "#3ddc5a",
+   "text": "敞開的落地門扇隨風輕輕前後擺動",
+   "mask": "green.png"
+  }
+ ],
+ "fire_v2": true,
+ "opts": {
+  "extra": "雲與霧只在原地緩緩翻湧起伏，整片不往左右任何方向漂移"
+ }
+}

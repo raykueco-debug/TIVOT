@@ -1,0 +1,22 @@
+{
+ "key": "belisar__starroom__day",
+ "map": "belisar",
+ "mapName": "貝利薩爾遺址",
+ "node": "starroom",
+ "name": "貝利薩爾遺址　星象室",
+ "band": "day",
+ "file": "belisar/belisar_orrery_day.webp",
+ "general": "Ray 11-13：只動圈的（inpaint）",
+ "submitted": false,
+ "auto": false,
+ "time": "2026-11-10T01:47:29",
+ "colors": [
+  {
+   "name": "green",
+   "rgb": "#3ddc5a",
+   "text": "天體儀的球體與圓環緩緩旋轉",
+   "mask": "green.png"
+  }
+ ],
+ "fire_v2": true
+}

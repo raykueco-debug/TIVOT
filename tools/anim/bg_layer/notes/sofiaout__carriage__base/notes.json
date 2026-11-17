@@ -1,0 +1,24 @@
+{
+ "key": "sofiaout__carriage__base",
+ "map": "sofiaout",
+ "mapName": "里朋莊園",
+ "node": "carriage",
+ "name": "里朋莊園　馬車房",
+ "band": "base",
+ "file": "sofia/sofiaout_carriage.webp",
+ "general": "Ray 11-13：只動圈的（inpaint）",
+ "submitted": false,
+ "time": "2026-11-10T05:43:49.553Z",
+ "colors": [
+  {
+   "name": "green",
+   "rgb": "#3ddc5a",
+   "text": "拱門外的棕櫚樹與花草隨風搖曳",
+   "mask": "green.png"
+  }
+ ],
+ "opts": {
+  "extra": "雲與霧只在原地緩緩翻湧起伏，整片不往左右任何方向漂移"
+ },
+ "auto": false
+}

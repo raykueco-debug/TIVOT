@@ -1,0 +1,14 @@
+{
+ "key": "capital_outer__gate__base",
+ "map": "capital_outer",
+ "mapName": "帝都外郊",
+ "node": "gate",
+ "name": "帝都外郊　城外",
+ "band": "base",
+ "file": "capital_outer/outer_gate_dusk.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:47:15",
+ "colors": []
+}

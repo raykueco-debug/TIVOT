@@ -1,0 +1,22 @@
+{
+ "key": "belisar__stephall__day",
+ "map": "belisar",
+ "mapName": "貝利薩爾遺址",
+ "node": "stephall",
+ "name": "貝利薩爾遺址　階梯大廳",
+ "band": "day",
+ "file": "belisar/belisar_stairhall_day.webp",
+ "general": "Ray 11-13：只動圈的（inpaint）",
+ "submitted": false,
+ "auto": false,
+ "time": "2026-11-10T01:47:34",
+ "colors": [
+  {
+   "name": "green",
+   "rgb": "#3ddc5a",
+   "text": "燭火搖曳閃動，垂掛的旗幟與破布隨風輕輕飄動",
+   "mask": "green.png"
+  }
+ ],
+ "fire_v2": true
+}

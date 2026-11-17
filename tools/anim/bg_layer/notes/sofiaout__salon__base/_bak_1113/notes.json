@@ -1,0 +1,25 @@
+{
+ "key": "sofiaout__salon__base",
+ "map": "sofiaout",
+ "mapName": "里朋莊園",
+ "node": "salon",
+ "name": "里朋莊園　沙龍",
+ "band": "base",
+ "file": "sofia/sofiaout_salon.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:47:16",
+ "colors": [
+  {
+   "name": "orange",
+   "rgb": "#ff9a1f",
+   "text": "火焰搖曳閃爍",
+   "mask": "orange.png"
+  }
+ ],
+ "fire_v2": true,
+ "opts": {
+  "extra": "雲與霧只在原地緩緩翻湧起伏，整片不往左右任何方向漂移"
+ }
+}

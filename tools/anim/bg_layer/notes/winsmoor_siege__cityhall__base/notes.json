@@ -1,0 +1,14 @@
+{
+ "key": "winsmoor_siege__cityhall__base",
+ "map": "winsmoor_siege",
+ "mapName": "溫斯摩爾港",
+ "node": "cityhall",
+ "name": "溫斯摩爾港　市政廳",
+ "band": "base",
+ "file": "winsmoor_siege/ws_2_2_dusk.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:47:04",
+ "colors": []
+}

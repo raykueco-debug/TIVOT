@@ -1,0 +1,22 @@
+{
+ "key": "dunmor__ditchW__base",
+ "map": "dunmor",
+ "mapName": "羅賽爾廢城",
+ "node": "ditchW",
+ "name": "羅賽爾廢城　西壕",
+ "band": "base",
+ "file": "dunmor/dunmor_ditchw.webp",
+ "general": "Ray 11-13：只動圈的（inpaint）",
+ "submitted": false,
+ "auto": false,
+ "time": "2026-11-10T01:47:27",
+ "colors": [
+  {
+   "name": "green",
+   "rgb": "#3ddc5a",
+   "text": "地上水窪的水面泛起細微的波紋",
+   "mask": "green.png"
+  }
+ ],
+ "fire_v2": true
+}

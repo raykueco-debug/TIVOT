@@ -1,0 +1,21 @@
+{
+ "key": "capital_outer__windmill__base",
+ "map": "capital_outer",
+ "mapName": "帝都外郊",
+ "node": "windmill",
+ "name": "帝都外郊　廢風車",
+ "band": "base",
+ "file": "capital_outer/outer_windmill_dusk.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:47:15",
+ "colors": [
+  {
+   "name": "green",
+   "rgb": "#3ddc5a",
+   "text": "樹葉草叢隨風搖曳",
+   "mask": "green.png"
+  }
+ ]
+}

@@ -1,0 +1,21 @@
+{
+ "key": "lake__fallbase__day",
+ "map": "lake",
+ "mapName": "鏡湖",
+ "node": "fallbase",
+ "name": "鏡湖　瀑布底",
+ "band": "day",
+ "file": "lake/lake_fallbase_day.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:46:52",
+ "colors": [
+  {
+   "name": "cyan",
+   "rgb": "#2fe0e0",
+   "text": "雲湧動",
+   "mask": "cyan.png"
+  }
+ ]
+}

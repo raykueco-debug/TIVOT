@@ -1,0 +1,72 @@
+<!doctype html><meta charset=utf-8><title>程式水面 成品審閱</title><style>body{background:#141418;color:#ddd;font:14px sans-serif;margin:0}.bar{position:sticky;top:0;z-index:5;background:#1b1b22;padding:10px 12px;display:flex;gap:12px;align-items:center;border-bottom:1px solid #333}h1{font-size:17px;color:#e8c46a;margin:0}button{background:#e8c46a;color:#111;border:0;border-radius:6px;padding:8px 18px;font-size:15px;cursor:pointer}#st{color:#9c9}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:10px;padding:12px}.c{background:#1e1e24;border-radius:6px;overflow:hidden}video{width:100%;display:block;aspect-ratio:3/2;background:#000}.t{padding:5px 8px}small{color:#888}textarea{width:calc(100% - 16px);margin:0 8px 8px;min-height:44px;background:#111;color:#eee;border:1px solid #444;border-radius:4px;padding:6px;font-size:14px;box-sizing:border-box}</style><style>canvas{width:100%;display:block;aspect-ratio:3/2;background:#000}</style><div class=bar><h1>程式水面：剩獅口水道 1 格（其餘已交件）</h1><button onclick="save()">儲存提交</button><span id=st></span></div><div class=g><div class=c data-k="belisar__dragonrace__base" data-static="1" data-fps="12" data-spd="300" data-splash="1" data-v="water/out/belisar__belisar_lionspout_sep_v1.mp4?t=1794648867" data-flow="1" data-wm="1" data-spout="1"><canvas width=768 height=512></canvas><div class=t>貝利薩爾遺址　獅口水道<small>　鏡湖畫法＋水柱本體沿弧線擺動、明暗起伏</small></div><textarea data-id="water3:belisar__dragonrace__base" placeholder="修改意見（空白＝可交）"></textarea></div></div><script>
+fetch('/api/review').then(r=>r.json()).then(d=>{document.querySelectorAll('textarea').forEach(t=>{if(d[t.dataset.id])t.value=d[t.dataset.id].text})});
+async function save(){const items={};document.querySelectorAll('textarea').forEach(t=>{if(t.value.trim())items[t.dataset.id]=t.value.trim()});
+ const r=await (await fetch('/api/review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items})})).json();
+ document.getElementById('st').textContent=r.ok?('已提交 '+r.n+' 則　'+new Date().toLocaleTimeString()):'提交失敗';}
+// 程式水面（與 TO_CODE 規格同一套）：平靜水面＝逐列橫向扭動＋飄移反光；落水＝沿下落方向捲動＋亮條
+const W=768,H=512,P={amp:1.1,wave:13,speed:1.0,persp:1.6,glint:0.35,flowSpd:220};
+const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
+const load=s=>new Promise((r,j)=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=s;});
+function maskCanvas(img){const c=mk(W,H),x=c.getContext('2d');x.drawImage(img,0,0,W,H);const d=x.getImageData(0,0,W,H);let y0=H,y1=0;
+ for(let i=0;i<W*H;i++){const a=d.data[i*4];d.data[i*4+3]=a;d.data[i*4]=d.data[i*4+1]=d.data[i*4+2]=255;if(a>5){const y=(i/W)|0;if(y<y0)y0=y;if(y>y1)y1=y;}}
+ x.putImageData(d,0,0);c.rows=[y0,y1];return c;}
+function layer(still,mask){const c=mk(W,H),x=c.getContext('2d');x.drawImage(still,0,0,W,H);x.globalCompositeOperation='destination-in';x.drawImage(mask,0,0);return c;}
+const glintT=(()=>{const c=mk(256,128),g=c.getContext('2d');let s=7;const R=()=>(s=(s*16807)%2147483647)/2147483647;
+ for(let i=0;i<130;i++){const x=R()*256,y=R()*128,l=3+R()*13,a=.25+R()*.75,gr=g.createLinearGradient(x-l,0,x+l,0);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.5,`rgba(255,255,255,${a})`);gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(x-l,y,l*2,1);}return c;})();
+const streakT=(()=>{const c=mk(64,128),g=c.getContext('2d');let s=11;const R=()=>(s=(s*16807)%2147483647)/2147483647;
+ for(let i=0;i<40;i++){const x=R()*64,y=R()*128,l=10+R()*40,a=.2+R()*.6,gr=g.createLinearGradient(0,y-l,0,y+l);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.5,`rgba(255,255,255,${a})`);gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(x,y-l,1.2,l*2);}return c;})();
+const mistT=(()=>{const c=mk(64,64),g=c.getContext('2d'),gr=g.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(235,242,248,1)');gr.addColorStop(.5,'rgba(235,242,248,.45)');gr.addColorStop(1,'rgba(235,242,248,0)');g.fillStyle=gr;g.fillRect(0,0,64,64);return c;})();
+const cards=[...document.querySelectorAll('.c')];
+async function init(c){if(c.st)return;c.st='loading';const k=c.dataset.k;
+ const [still,wm,fm,sp]=await Promise.all([load('water/still/'+k+(c.dataset.static?'__base':'')+'.png'),c.dataset.wm==='1'?load('water/still/'+k+'__watermask.png'):null,c.dataset.flow==='1'?load('water/still/'+k+'__flowmask.png'):null,c.dataset.spout==='1'?load('water/still/'+k+'__spout.png'):null]);
+ const v=document.createElement('video');if(!c.dataset.static)v.src=c.dataset.v;v.muted=true;v.loop=true;v.playsInline=true;v.play().catch(()=>{});
+ c.o={v,still,ctx:c.querySelector('canvas').getContext('2d'),tmp:mk(W,H),persp:+(c.dataset.persp||P.persp),amp:+(c.dataset.amp||P.amp),fps:c.dataset.fps!==undefined?+c.dataset.fps:12,spd:+(c.dataset.spd||P.flowSpd),splash:!!c.dataset.splash};
+ if(wm){c.o.wm=maskCanvas(wm);c.o.wl=layer(still,c.o.wm);}
+ if(fm){c.o.fm=maskCanvas(fm);{const d=c.o.fm.getContext('2d').getImageData(0,0,W,H).data;const bot=[];for(let x=0;x<W;x+=3){for(let y=H-1;y>=0;y--){if(d[(y*W+x)*4+3]>128){bot.push([x,y]);break;}}}c.o.bot=bot;}c.o.fl=sp?(()=>{const q=mk(W,H);q.getContext('2d').drawImage(sp,0,0,W,H);return q;})():layer(still,c.o.fm);c.o.lowfps=!!sp;
+ if(sp){const d=c.o.fm.getContext('2d').getImageData(0,0,W,H).data;const cx=new Float32Array(H).fill(NaN),wd=new Float32Array(H);let y0=-1,y1=-1;
+  for(let y=0;y<H;y++){let sw=0,sx=0,mn=W,mx=-1;for(let x=0;x<W;x++){const a=d[(y*W+x)*4+3];if(a>100){sw+=a;sx+=a*x;if(x<mn)mn=x;if(x>mx)mx=x;}}if(sw>0){cx[y]=sx/sw;wd[y]=mx-mn;if(y0<0)y0=y;y1=y;}}
+  // 水柱段＝從獅口往下、寬度還沒散開成水花之前；以下是落點與台階上的細流
+  let ys=y0+10;while(ys<y1&&wd[ys]<wd[y0+10]*1.8)ys++;
+  for(let y=y0;y<=y1;y++)if(isNaN(cx[y]))cx[y]=cx[y-1];
+  const sm=new Float32Array(H);for(let y=y0;y<ys;y++){let a=0,n=0;for(let k=-5;k<=5;k++){const q=Math.min(ys-1,Math.max(y0,y+k));a+=cx[q];n++;}sm[y]=a/n;}
+  const al=new Float32Array(H);for(let y=y0+1;y<ys;y++)al[y]=al[y-1]+Math.hypot(1,sm[y]-sm[y-1]);
+  c.o.arc={y0,y1,ys,cx:sm,al};}}
+ c.st='ok';}
+function draw(c,s){const o=c.o,ctx=o.ctx;ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+ if(c.dataset.static)ctx.drawImage(o.still,0,0,W,H);else if(o.v.readyState>=2)ctx.drawImage(o.v,0,0,W,H);
+ if(o.wl){const [y0,y1]=o.wm.rows,span=Math.max(1,y1-y0);
+  for(let y=y0;y<=y1;y+=2){const k=1+o.persp*(y-y0)/span;const off=o.amp*k*(Math.sin(y/(P.wave*k)*6.283-s*P.speed*3)+.5*Math.sin(y/(P.wave*k*.37)*6.283+s*P.speed*4.1));ctx.drawImage(o.wl,0,y,W,2,off,y,W,2);}
+  const t=o.tmp.getContext('2d');t.globalCompositeOperation='source-over';t.clearRect(0,0,W,H);const ox=(s*14)%256,oy=(s*2)%128;
+  for(let gy=-128;gy<H+128;gy+=128)for(let gx=-256;gx<W+256;gx+=256)t.drawImage(glintT,gx+ox,gy+oy);
+  t.globalCompositeOperation='destination-in';t.drawImage(o.wm,0,0);ctx.globalCompositeOperation='lighter';ctx.globalAlpha=P.glint*(.75+.25*Math.sin(s*1.3));ctx.drawImage(o.tmp,0,0);}
+ if(o.fl){const sf=o.fps?Math.floor(s*o.fps)/o.fps:s;ctx.globalCompositeOperation='source-over';
+  if(o.arc){const A=o.arc;ctx.globalAlpha=1;
+   // 水柱本體也要有變化：沿弧線往下傳的左右擺動＋粗細起伏，每一段各自不同（12fps 跟亮條同步）
+   for(let y=A.y0;y<=A.y1;y++){const u=y<A.ys?A.al[y]:A.al[A.ys-1]+(y-A.ys);
+    const wob=1.4*Math.sin(u*0.11-sf*7.5)+0.7*Math.sin(u*0.29-sf*13+1.3);ctx.drawImage(o.fl,0,y,W,1,wob,y,W,1);}
+   // 明暗起伏：一層亮帶沿弧線往下滑
+   const t3=o.tmp.getContext('2d');t3.globalCompositeOperation='source-over';t3.clearRect(0,0,W,H);
+   for(let y=A.y0;y<=A.y1;y++){const u=y<A.ys?A.al[y]:A.al[A.ys-1]+(y-A.ys);const v=Math.max(0,Math.sin(u*0.07-sf*5.5));t3.globalAlpha=v*v*.5;t3.drawImage(o.fl,0,y,W,1,0,y,W,1);}
+   t3.globalAlpha=1;ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.45;ctx.drawImage(o.tmp,0,0);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;}
+  else{ctx.globalAlpha=1;ctx.drawImage(o.fl,0,0);}
+  if(o.arc){const A=o.arc,t2=o.tmp.getContext('2d');t2.globalCompositeOperation='source-over';t2.clearRect(0,0,W,H);
+   const sc=(sf*o.spd)%128;
+   for(let y=A.y0;y<=A.y1;y++){const dx=(y<A.ys?A.cx[y]:A.cx[A.ys-1])-A.cx[A.y0];const sy=((y-sc)%128+128)%128;
+    for(let gx=0;gx<W;gx+=64)t2.drawImage(streakT,0,sy,64,1,gx+dx,y,64,1);}
+   t2.globalCompositeOperation='destination-in';t2.drawImage(o.fm,0,0);ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.55;ctx.drawImage(o.tmp,0,0);ctx.globalCompositeOperation='source-over';}
+  if(!o.lowfps){
+  const t=o.tmp.getContext('2d');t.globalCompositeOperation='source-over';t.clearRect(0,0,W,H);
+  for(let gy=-128+(((o.fps?Math.floor(s*o.fps)/o.fps:s)*o.spd)%128);gy<H;gy+=128)for(let gx=0;gx<W;gx+=64)t.drawImage(streakT,gx,gy);
+  t.globalCompositeOperation='destination-in';t.drawImage(o.fm,0,0);ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.55;ctx.drawImage(o.tmp,0,0);}}
+ if(o.splash&&o.bot&&o.bot.length){ctx.globalCompositeOperation='screen';const N=46,LIFE=6;
+  for(let i=0;i<N;i++){const h=Math.sin(i*12.9898)*43758.5453,r0=h-Math.floor(h),h2=Math.sin(i*78.233)*12345.678,r1=h2-Math.floor(h2);
+   const ph=((s/LIFE)+r0)%1;const [bx,by]=o.bot[Math.floor(r1*o.bot.length)];
+   const dir=(r1-.5)*2;const x=bx+dir*ph*70+Math.sin(s*.4+i)*6,y=by-8-ph*55;const rad=14+ph*46;
+   const a=Math.sin(ph*Math.PI)*.16;ctx.globalAlpha=a;ctx.drawImage(mistT,x-rad,y-rad,rad*2,rad*2);}}
+ ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;}
+const vis=new Set();
+const io=new IntersectionObserver(es=>es.forEach(e=>{const c=e.target;if(e.isIntersecting){vis.add(c);init(c);c.o&&c.o.v.play().catch(()=>{});}else{vis.delete(c);c.o&&c.o.v.pause();}}),{rootMargin:'50px'});
+cards.forEach(c=>io.observe(c));
+function loop(now){const s=now/1000;vis.forEach(c=>{if(c.st==='ok'){if(c.o.v.paused)c.o.v.play().catch(()=>{});draw(c,s);}});requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>

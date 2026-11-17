@@ -1,0 +1,15 @@
+{
+ "key": "sofiaout__lodge__base",
+ "map": "sofiaout",
+ "mapName": "里朋莊園",
+ "node": "lodge",
+ "name": "里朋莊園　莊園門房",
+ "band": "base",
+ "file": "sofia/sofiaout_lodge.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:47:17",
+ "colors": [],
+ "fire_v2": true
+}

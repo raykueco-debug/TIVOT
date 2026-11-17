@@ -1,0 +1,26 @@
+{
+ "key": "shinier_forest__glade__day",
+ "map": "shinier_forest",
+ "mapName": "夏爾森林",
+ "node": "glade",
+ "name": "夏爾森林　林間空地",
+ "band": "day",
+ "file": "forest/forest_glade_day.webp",
+ "general": "（自動判斷，Ray 11-10 修正：森林沒有火、圖騰與小徑保持原圖）",
+ "submitted": true,
+ "time": "2026-11-10T13:34:18.618Z",
+ "colors": [
+  {
+   "name": "red",
+   "rgb": "#ff3b3b",
+   "text": "不要動",
+   "mask": "red.png"
+  },
+  {
+   "name": "green",
+   "rgb": "#3ddc5a",
+   "text": "",
+   "mask": "green.png"
+  }
+ ]
+}

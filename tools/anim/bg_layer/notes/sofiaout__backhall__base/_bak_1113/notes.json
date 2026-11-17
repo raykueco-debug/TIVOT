@@ -1,0 +1,23 @@
+{
+ "key": "sofiaout__backhall__base",
+ "map": "sofiaout",
+ "mapName": "里朋莊園",
+ "node": "backhall",
+ "name": "里朋莊園　後廊",
+ "band": "base",
+ "file": "sofia/sofiaout_backhall.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "time": "2026-11-10T05:44:10.869Z",
+ "colors": [
+  {
+   "name": "orange",
+   "rgb": "#ff9a1f",
+   "text": "燈火搖曳閃爍 門扇風動 自然光影",
+   "mask": "orange.png"
+  }
+ ],
+ "opts": {
+  "extra": "雲與霧只在原地緩緩翻湧起伏，整片不往左右任何方向漂移"
+ }
+}

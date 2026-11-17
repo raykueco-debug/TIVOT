@@ -1,0 +1,32 @@
+{
+ "key": "canyon__altar__day",
+ "map": "canyon",
+ "mapName": "卡耶爾山谷",
+ "node": "altar",
+ "name": "卡耶爾山谷　谷底祭場",
+ "band": "day",
+ "file": "canyon/canyon_altar_day.webp",
+ "general": "",
+ "submitted": false,
+ "time": "2026-11-09T14:25:07.120Z",
+ "colors": [
+  {
+   "name": "red",
+   "rgb": "#ff3b3b",
+   "text": "布微風飄動",
+   "mask": "red.png"
+  },
+  {
+   "name": "yellow",
+   "rgb": "#ffe233",
+   "text": "天光變動",
+   "mask": "yellow.png"
+  },
+  {
+   "name": "cyan",
+   "rgb": "#2fe0e0",
+   "text": "雲湧動",
+   "mask": "cyan.png"
+  }
+ ]
+}

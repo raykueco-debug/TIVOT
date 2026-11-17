@@ -1,0 +1,22 @@
+{
+ "key": "belisar__oldtomb__base",
+ "map": "belisar",
+ "mapName": "貝利薩爾遺址",
+ "node": "oldtomb",
+ "name": "貝利薩爾遺址　地下墓道",
+ "band": "base",
+ "file": "belisar/belisar_catacomb.webp",
+ "general": "Ray 11-13：只動圈的（inpaint）",
+ "submitted": false,
+ "auto": false,
+ "time": "2026-11-10T01:47:33",
+ "colors": [
+  {
+   "name": "green",
+   "rgb": "#3ddc5a",
+   "text": "中間吊燈的燈火搖曳閃動",
+   "mask": "green.png"
+  }
+ ],
+ "fire_v2": true
+}

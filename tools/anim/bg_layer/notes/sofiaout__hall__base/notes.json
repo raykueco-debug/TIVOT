@@ -1,0 +1,26 @@
+{
+ "key": "sofiaout__hall__base",
+ "map": "sofiaout",
+ "mapName": "里朋莊園",
+ "node": "hall",
+ "name": "里朋莊園　大廳",
+ "band": "base",
+ "file": "sofia/sofiaout_hall.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "time": "2026-11-10T05:42:49.371Z",
+ "colors": [
+  {
+   "name": "orange",
+   "rgb": "#ff9a1f",
+   "text": "吊燈晃動",
+   "mask": "orange.png"
+  }
+ ],
+ "opts": {
+  "full": true,
+  "extra": "鏡頭是鎖死在三腳架上的固定機位，絕對不推近、不拉遠、不平移、不搖鏡，畫框邊緣的景物始終停在同一個位置",
+  "seed": 202,
+  "skip": true
+ }
+}

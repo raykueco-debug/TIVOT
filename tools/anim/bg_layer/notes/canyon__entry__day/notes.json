@@ -1,0 +1,26 @@
+{
+ "key": "canyon__entry__day",
+ "map": "canyon",
+ "mapName": "卡耶爾山谷",
+ "node": "entry",
+ "name": "卡耶爾山谷　峽谷入口",
+ "band": "day",
+ "file": "canyon/canyon_entry_day.webp",
+ "general": "",
+ "submitted": false,
+ "time": "2026-11-09T14:23:30.914Z",
+ "colors": [
+  {
+   "name": "red",
+   "rgb": "#ff3b3b",
+   "text": "布微風飄動",
+   "mask": "red.png"
+  },
+  {
+   "name": "cyan",
+   "rgb": "#2fe0e0",
+   "text": "雲湧動",
+   "mask": "cyan.png"
+  }
+ ]
+}

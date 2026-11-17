@@ -1,0 +1,22 @@
+{
+ "key": "dunmor__altar__base",
+ "map": "dunmor",
+ "mapName": "羅賽爾廢城",
+ "node": "altar",
+ "name": "羅賽爾廢城　祭壇",
+ "band": "base",
+ "file": "dunmor/dunmor_altar.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:47:18",
+ "colors": [
+  {
+   "name": "orange",
+   "rgb": "#ff9a1f",
+   "text": "火焰搖曳閃爍",
+   "mask": "orange.png"
+  }
+ ],
+ "fire_v2": true
+}

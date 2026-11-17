@@ -1,0 +1,24 @@
+{
+ "key": "dunmor__kilnyard__base",
+ "map": "dunmor",
+ "mapName": "羅賽爾廢城",
+ "node": "kilnyard",
+ "name": "羅賽爾廢城　陶窯場",
+ "band": "base",
+ "file": "dunmor/dunmor_kilnyard.webp",
+ "general": "（自動判斷，待 Ray 確認）",
+ "submitted": false,
+ "auto": true,
+ "time": "2026-11-10T01:47:26",
+ "colors": [
+  {
+   "name": "cyan",
+   "rgb": "#2fe0e0",
+   "text": "雲湧動",
+   "mask": "cyan.png"
+  }
+ ],
+ "opts": {
+  "extra": "雲與霧只在原地緩緩翻湧起伏，整片不往左右任何方向漂移"
+ }
+}
