@@ -2461,7 +2461,7 @@ function memberActOnce(g, im, A){
     if(im._ov!==ov || !groupCard || im.classList.contains('eg-down')){ clearInterval(t); return; }
     if(dir>0){ if(++i<N){ ov.src=A.fr[i].src; return; }
       if(!sp.rev){ end(); return; }
-      dir=-1; i=Math.max(0, N-1-Math.round(REV_HOLD_SEC*fps)); }
+      dir=-1; i=Math.max(0, N-1-Math.round(REV_HOLD_SEC*fps)); windupSe(sp.retractSe); }   // 收回音（`retractSe`，ver -2680）：倒放收回那一刻放
     if(--i>=0){ ov.src=A.fr[i].src; return; }
     end();
   }, 1000/fps);

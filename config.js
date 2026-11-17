@@ -45,6 +45,7 @@ export const HITFX = {
   beetle_claw:  { base:'claw', se:'em_slash', count:1, angle:26 },   // 石棺甲蟲（ver -2674，Ray：「固定橫痕 slash 在最大時出」）：單爪痕轉成水平（原圖那一道往右上斜 26°）＋揮砍音
   pilgrim_sonic:{ base:'sonic', se:'se_enemy_squeal_echo' },   // 朝聖者團塊聲波（ver -2676，Ray：「se_enemy_squeal 尾音迴音」）：聲波環＋數字淡出，配加了迴音尾的尖嘯
   wyrm_bite:    { base:'blunt', se:'se_enemy_bite' },   // 喪鐘蠕蟲鐘口咬下（ver -2677，Ray：「se_enemy_bite」）：音檔裁掉前段 0.48 秒空白，咬聲＝打擊格
+  iron_smash:   { base:'blunt', se:'se_crush_deepmetal' },   // 鐵衣苦修者錘砸（ver -2680，Ray：「擊中 heavymetal」）
   /* 放光（ver -1351，王座徘徊者）。⚠ **刻意沒有 `se`**：那一支 6.7 秒、有頭有尾，
      由 `enemy.spawnHolyBurst` 用 `playCue` 的把手播（收得掉）—— 掛在這裡的話
      combat 會直接播到底，換敵／離場都停不下來（同 `HITFX.sakura` 的理由）。 */
@@ -96,7 +97,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.17-2677';
+export const VERSION = 'ver 2026.11.17-2680';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4112,7 +4113,7 @@ export const GAME_CONFIG = {
          沒有手機模型那一次）：chant −32.1／magic −16.7／beastgrowl −13.1／beastgrowl2 −28.2／
          squeal −14.9／squeal2 −14.3 LUFS，峰值都沒觸頂。 */
       se_enemy_chant:8.219, se_enemy_magic:1.396, se_enemy_beastgrowl:0.922,
-      se_enemy_beastgrowl2:5.246, se_enemy_squeal:1.134, se_enemy_squeal2:1.059, se_enemy_squeal_echo:2.343, se_enemy_bite:1.698,
+      se_enemy_beastgrowl2:5.246, se_enemy_squeal:1.134, se_enemy_squeal2:1.059, se_enemy_squeal_echo:2.343, se_enemy_bite:1.698, se_chain_heavy:0.631, se_crush_deepmetal:1.747,
       /* ── 飛行頁（那一頁用 HTMLAudio，讀同一張表，見 flight/index.html）── */
       se_flight_heartbeat:5.064, se_flight_idle_loop:2.848,
       se_flight_sail_loop:7.928, se_flight_seagull:3.353, se_flight_train:5.059,
@@ -5063,6 +5064,8 @@ export const ASSETS = {
   se_enemy_squeal2:     "resources/audio/se/se_enemy_squeal2.m4a",
   se_enemy_squeal_echo: "resources/audio/se/se_enemy_squeal_echo.m4a",   // squeal 加迴音尾（ffmpeg aecho 220/440/700ms），朝聖者團塊聲波（ver -2676）
   se_enemy_bite:      "resources/audio/se/se_enemy_bite.m4a",   // 喪鐘蠕蟲咬下（ver -2677）
+  se_chain_heavy:     "resources/audio/se/se_chain_heavy.m4a",       // 鐵衣苦修者出手／收回的鐵鏈聲（ver -2680）
+  se_crush_deepmetal: "resources/audio/se/se_crush_deepmetal.m4a",   // 鐵衣苦修者錘砸中（ver -2680）
   se_brickcrush:        "resources/audio/se/se_brickcrush.m4a",   // 黑爪登場（原本只在 story 的 SE_FILES）
   se_mg_squall:      "resources/audio/se/se_weapon_mg_squall.m4a",       // 重機槍 反擊（連續感：整支播一次）
   se_shotgun_blast:  "resources/audio/se/se_weapon_shotgun_blast.m4a",   // 散彈槍 反擊（一次一發）
@@ -5850,7 +5853,7 @@ export const ENEMY_MISS = {
 export const ENEMY_DELAY = {
   mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20 },   // 朝聖者團塊＝D 的本職（ver -2655，Ray：「D 一定出聲波」；聲波本身在卡上 hitFx.delay:'sonic'）
   mon_canyon_bonecrab_dark: { dir:'resources/enemy/anim/mon_canyon_bonecrab_dark_delay_v1/', hit:16 },   // 卡耶爾群戰（ver -2623）
-  mon_canyon_ironpenitent_neutral: { dir:'resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1/', hit:40, rev:true },   // rev＝播完倒放回中立（Ray 11-15「鐵衣 R＝倒放」；目前只有群戰讀）
+  mon_canyon_ironpenitent_neutral: { dir:'resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1/', hit:40, rev:true, hitFx:'iron_smash', windupSe:'se_chain_heavy', retractSe:'se_chain_heavy' },   // ver -2680（Ray：「動作開始 se_chain_heavy／擊中 heavymetal／收回 se_chain_heavy」）   // rev＝播完倒放回中立（Ray 11-15「鐵衣 R＝倒放」；目前只有群戰讀）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_burst_v1/', hit:48 },   // D＝爆炎（81 格；ver -2525 Ray 改：爆炎是 D，之後下一發攻擊 200%，見卡上 delayEmpowers）
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7 },   // 訓練用聖徒 新架勢 攻擊＝延時＝點錯（ver -2527，31 格，最後一格回到架勢）
   mon_saint_inspector: { dir:'resources/enemy/anim/mon_saint_inspector_delay_v1/', hit:23 },   // 監查者 翅膀揮動（ver -2620，KF 第二輪，39 格）
