@@ -9,7 +9,7 @@
  * ========================================================================== */
 
 import { i18nT } from './i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
-import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain, HOME_IMG, HOME_SFX, HITFX } from './config.js';
+import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain, HOME_IMG, HOME_SFX, HITFX, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS } from './config.js';
 import { L, LANG, applyToConfig, applyToDom, decorateLine } from './i18n.js';   // 多語言＋台詞關鍵字裝飾
 import { UI_LANGS } from './i18n/ui/langs.js';   // 語種清單（i18n_ui.xlsx 的譯文欄，ver -2582）
 import { trTree, trDom } from './i18n/scriptTr.js';   // 劇本譯文（戰鬥卡上的對白 talk 那一族，ver -1908）
@@ -333,6 +333,8 @@ function battleAudioSet(battleId){
      只載「現在裝著的」會在切槍那一刻沒聲音。 */
   for(const k of Object.keys(C.weapons||{})) scanAudioNames(C.weapons[k], names, 0);
   for(const k of Object.keys(C.partners||{})) scanAudioNames(C.partners[k], names, 0);
+  /* 動作片的起手音（`windupSe`，ver -2657）：群戰成員是哪幾隻要開打才知道，所以整張表的起手音都收（每支只有幾十 KB）。 */
+  for(const T of [ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS]) for(const k of Object.keys(T||{})) if(T[k] && T[k].windupSe) names.push(T[k].windupSe);
   /* 戰鬥共用的那幾支（UI／升級／回復／碎裂）＋ 這一場的曲子。 */
   names.push('se_general_click','se_lvup','se_healing','se_bulletpiece','se_glasscrack','sfx_saint',
              'se_ginclick');   // 空槍點圈（ver -1807）

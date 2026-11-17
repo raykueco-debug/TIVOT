@@ -38,7 +38,7 @@ export const HITFX = {
   blood:  { base:'blood',  se:'em_smack'  },
   blunt:  { base:'blunt',  se:'em_smack'  },
   censer_crash: { base:'blunt', se:'se_crash_rocks' },
-  hound_maul:   { base:'blunt', se:'se_enemy_beast02' },   // 餓獸撲咬（ver -2657，Ray：「se_enemy_beast02 音效用這個 打擊音對齊」；音檔已裁掉前段 0.25 秒空白，吼聲起點＝打擊格）   // 香爐蠍尾槌砸地（ver -2656，Ray：「攻擊音效改成 se_crash_rocks」）
+  hound_maul:   { base:'blunt' },   // 餓獸撲咬（ver -2657）：⚠ 刻意沒有 `se` —— 吼聲是 ENEMY_ATK 的 `windupSe`，從起手播到咬下那一格收尾（Ray：「吼聲從攻擊開始，咬下那一格應該是最後」）
   /* 放光（ver -1351，王座徘徊者）。⚠ **刻意沒有 `se`**：那一支 6.7 秒、有頭有尾，
      由 `enemy.spawnHolyBurst` 用 `playCue` 的把手播（收得掉）—— 掛在這裡的話
      combat 會直接播到底，換敵／離場都停不下來（同 `HITFX.sakura` 的理由）。 */
@@ -90,7 +90,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.17-2657';
+export const VERSION = 'ver 2026.11.17-2658';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4010,7 +4010,7 @@ export const GAME_CONFIG = {
       /* se_weapon_heavygun ver -476 換新檔重量：平均（耳機/手機模型）−13.2 LUFS → 0.738 */
       se_weapon_sniper:0.839, se_weapon_heavygun:0.738,
       /* ── 敵人 ── */
-      se_enemy_slash:0.602, se_enemy_smack:1.173, se_crash_rocks:1.258, se_enemy_beast02:1.818, se_enemy_shot:0.854,
+      se_enemy_slash:0.602, se_enemy_smack:1.173, se_crash_rocks:1.258, se_enemy_beast02:1.884, se_enemy_shot:0.854,
       /* 劈落（ver -1957，米夏）：實測 −16.2 LUFS、峰值 0 dBFS —— 照目標要 ×1.57，
          被 `peakCeilDb`（+2 dB）夾在 1.259。⚠ 鄰居對照量的，不是 audio_scan 那一套；要精修就跑一次。 */
       se_bulletguard:1.259,
@@ -5228,7 +5228,7 @@ export const ASSETS = {
   se_slash:          "resources/audio/se/se_slash.m4a?v=1f6783d5",   // 米夏突刺（劇情 038）＋NI 劇情殺那一刀（ver -2019 由 story 的 SE_FILES 搬來：戰鬥那一邊只查 ASSETS）
   em_smack:          "resources/audio/se/se_enemy_smack.m4a",    // 聖徒：延時懲罰
   se_crash_rocks:    "resources/audio/se/se_crash_rocks.m4a",    // 香爐蠍尾槌砸地（ver -2656）
-  se_enemy_beast02:  "resources/audio/se/se_enemy_beast02.m4a",  // 餓獸撲咬（ver -2657）
+  se_enemy_beast02:  "resources/audio/se/se_enemy_beast02.m4a?v=4a06f7af",  // 餓獸撲咬（ver -2657）
   em_shot:           "resources/audio/se/se_enemy_shot.m4a",     // Boss：延時懲罰
   em_revolver:       "resources/audio/se/se_enemy_revolver.m4a", // Boss：大絕/不完美防禦（左輪）
   em_dagger:         "resources/audio/se/se_enemy_dagger.m4a?v=608c768c", // Boss：按錯（ver -899 換新音，同名覆蓋 → ?v）
@@ -5795,7 +5795,7 @@ export const ENEMY_ATK = {
   /* 卡耶爾群戰小怪 A（ver -2625，TO_CODE_canyon 11-16：Kling 16:9 ABA 原片 73 格、片尾自帶歸位）。
      `fillFrame:true`＝攻擊時拉到畫面中間之後再放大到片框（box）蓋滿敵人區，裁切的硬邊落到畫面外（Ray：「出框的就讓敵在攻時放大到貼框」）；倍率現算，只有群戰逐人那一條讀（enemy.attackFocusAnim）。 */
   mon_canyon_censer_dark: { dir:'resources/enemy/anim/mon_canyon_censer_dark_atk_v1/', hit:32, hitFx:'censer_crash', fillFrame:true },   // 香爐蠍（ver -2656：打到＝尾槌砸地那一格、砸地音 se_crash_rocks，Ray）
-  mon_canyon_houndbeast: { dir:'resources/enemy/anim/mon_canyon_houndbeast_atk_v1/', hit:42, hitFx:'hound_maul', fillFrame:true },   // 餓獸
+  mon_canyon_houndbeast: { dir:'resources/enemy/anim/mon_canyon_houndbeast_atk_v1/', hit:42, hitFx:'hound_maul', windupSe:'se_enemy_beast02', fillFrame:true },   // 餓獸
   mon_canyon_bellmite_dark: { dir:'resources/enemy/anim/mon_canyon_bellmite_dark_atk_v1/', strikes:[31,37,39], hitFx:'claw1', fillFrame:true },   // 鐘殼蟲：三下揮鉗（第 31／37／39 格，-2651 照片子量），每下一道單爪痕，最後一下扣血（Ray：「鉗類的受擊用單爪痕 要跟著打擊節奏」）
   mon_canyon_chainhound_dark: { dir:'resources/enemy/anim/mon_canyon_chainhound_dark_atk_v1/', hit:45, fillFrame:true },   // 鎖鏈餓犬
   mon_canyon_lanternimp_dark: { dir:'resources/enemy/anim/mon_canyon_lanternimp_dark_atk_v1/', hit:24, fillFrame:true },   // 提燈小鬼
@@ -6941,6 +6941,7 @@ export const ASSET_VER = {
   'se_bulletsfly2': '0cf50f26',
   'se_bulletsfly3': '2cb3b08e',
   'se_bulletsfly4': '22517956',
+  'se_enemy_beast02': '4a06f7af',
   'se_enemy_dagger': '608c768c',
   'se_rockimpact': 'd2a1f043',
   'se_steps': 'd271dff8',
