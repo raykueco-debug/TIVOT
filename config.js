@@ -38,7 +38,7 @@ export const HITFX = {
   blood:  { base:'blood',  se:'em_smack'  },
   blunt:  { base:'blunt',  se:'em_smack'  },
   censer_crash: { base:'blunt', se:'se_crash_rocks' },
-  hound_maul:   { base:'blunt' },   // 餓獸撲咬（ver -2657）：⚠ 刻意沒有 `se` —— 吼聲是 ENEMY_ATK 的 `windupSe`，從起手播到咬下那一格收尾（Ray：「吼聲從攻擊開始，咬下那一格應該是最後」）
+  hound_maul:   { base:'blunt', se:'em_smack' },   // 餓獸撲咬（ver -2660）：吼聲是 ENEMY_ATK 的 `windupSe`（起手就放），打擊格另響原本的鈍擊音（Ray：「擊中音應該是要跟擊中格相符」）
   /* 放光（ver -1351，王座徘徊者）。⚠ **刻意沒有 `se`**：那一支 6.7 秒、有頭有尾，
      由 `enemy.spawnHolyBurst` 用 `playCue` 的把手播（收得掉）—— 掛在這裡的話
      combat 會直接播到底，換敵／離場都停不下來（同 `HITFX.sakura` 的理由）。 */
@@ -90,7 +90,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.17-2659';
+export const VERSION = 'ver 2026.11.17-2660';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
