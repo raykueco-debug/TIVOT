@@ -2607,13 +2607,21 @@ function pickGroupActor(g, kind){
   const im=pool[(Math.random()*pool.length)|0]; return { im, clip:memberSubClip(im, kind) };
 }
 /* 延時／點錯（playActionClip 從這裡分流給群戰，ver -2623） */
+/* 這一下沒有人能演（本職都在演別的）：受擊照樣用本職那一隻的那一套（ver -2682，Ray：「一體適用啊」）——
+   不然就掉回群戰卡的通用受擊（鈍擊／em_smack），聽起來像換了一隻怪。打到＝現在（combat 收到 0 就立刻扣）。 */
+function busyOwnerFx(g, kind){
+  const all=[...g.querySelectorAll('.eg-guard')].filter(memberStanding);
+  for(const im of all){ const c=memberClipOf(im, kind) || memberSubClip(im, kind); if(!c || !c.spec) continue;
+    const key=c.spec.hitFx || (c===im._atk ? cardAssaultKey() : null); if(key){ actFx={ key, im, at:performance.now() }; lastActIm=im; return; } }
+}
 function groupAction(kind){
   const g=$('enemyGroup'); if(!g || !groupCard) return 0;
-  const p=pickGroupActor(g, kind); return p ? memberActOnce(g, p.im, p.clip) : 0;
+  const p=pickGroupActor(g, kind); if(p) return memberActOnce(g, p.im, p.clip);
+  busyOwnerFx(g, kind); return 0;
 }
 function groupAttack(){
   const g=$('enemyGroup'), G=groupCard && groupCard.group; if(!g || !G) return 0;
-  if([...g.querySelectorAll('.eg-guard')].some(im=>memberSubClip(im, 'atk'))){ const p=pickGroupActor(g, 'atk'); if(!p) return 0; lastAtkIm=p.im; return memberActOnce(g, p.im, p.clip); }
+  if([...g.querySelectorAll('.eg-guard')].some(im=>memberSubClip(im, 'atk'))){ const p=pickGroupActor(g, 'atk'); if(!p){ busyOwnerFx(g, 'atk'); return 0; } lastAtkIm=p.im; return memberActOnce(g, p.im, p.clip); }
   const cand=notLast([...g.querySelectorAll('.eg-guard')].filter(im=>im._atk && im._ov && memberLive(im)), 'atk');
   if(!cand.length) return 0;
   const pick=cand[(Math.random()*cand.length)|0]; lastAtkIm=pick;
