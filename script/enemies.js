@@ -1358,7 +1358,7 @@ export const ENEMIES = {
       image:'enemy_canyon_houndbeast', fit:{ mode:'contain', pos:'50% 100%' },
       hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
-      hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
+      hitFx:{ delay:'blood', wrong:'slash', assault:'hound_maul' }, loot:[],
     },
     canyon_solo_bellmite: {   // 鐘殼蟲（單隻）
       name:'鐘殼蟲', story:0, counterStagger:1, boss:0, Ganymede:0,
