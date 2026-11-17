@@ -97,15 +97,27 @@ function spawnFlame(srcEl, spec, fps, alive){
     if(alive && !alive()) return; if(performance.now()-t0>n0) return;
     const hr=host.getBoundingClientRect(), r=srcEl.getBoundingClientRect(); if(!r.width){ setTimeout(emit, step); return; }
     const x=r.left-hr.left + spec.at[0]*r.width, y=r.top-hr.top + spec.at[1]*r.height;
-    for(let k=0;k<2;k++){
-      const b=document.createElement('i'); b.className='fx-flame';
-      const sz=40+Math.random()*30; b.style.cssText=`left:${x-sz/2}px;top:${y-sz/2}px;width:${sz}px;height:${sz}px;`;
+    /* ver -2684（Ray：「橘紅白煙霧 要像火燄 掃過之處還有黑煙冒起」）：
+       火＝一團團不規則的煙霧狀火舌（白熱／橘／紅三種色，拉長、旋轉、邊走邊翻滾），
+       每一團燒完的地方冒一縷黑煙，往上飄、慢慢散。 */
+    for(let k=0;k<3;k++){
+      const b=document.createElement('i'); b.className='fx-flame f'+((Math.random()*3)|0);
+      const sz=46+Math.random()*40; b.style.cssText=`left:${x-sz/2}px;top:${y-sz/2}px;width:${sz}px;height:${sz*(0.7+Math.random()*0.6)}px;`;
       host.appendChild(b);
-      const tx=(Math.random()*2-1)*hr.width*0.28, ty=hr.height*(0.30+Math.random()*0.35), life=480+Math.random()*260;
-      const a=b.animate([{ transform:'translate(0,0) scale(.35)', opacity:1 },
-                         { transform:`translate(${tx*0.5}px,${ty*0.45}px) scale(2.2)`, opacity:.95, offset:.35 },
-                         { transform:`translate(${tx}px,${ty}px) scale(4.6)`, opacity:0 }], { duration:life, easing:'cubic-bezier(.3,.6,.5,1)' });
+      const tx=(Math.random()*2-1)*hr.width*0.32, ty=hr.height*(0.28+Math.random()*0.40), life=520+Math.random()*300;
+      const r0=(Math.random()*360)|0, r1=r0+(Math.random()*160-80);
+      const a=b.animate([{ transform:`translate(0,0) rotate(${r0}deg) scale(.35,.3)`, opacity:1 },
+                         { transform:`translate(${tx*0.5}px,${ty*0.45}px) rotate(${(r0+r1)/2}deg) scale(2.4,1.7)`, opacity:.95, offset:.35 },
+                         { transform:`translate(${tx}px,${ty}px) rotate(${r1}deg) scale(4.4,3.4)`, opacity:0 }], { duration:life, easing:'cubic-bezier(.3,.6,.5,1)' });
       a.onfinish=()=>b.remove(); setTimeout(()=>b.remove(), life+200);
+      if(Math.random()<0.55) setTimeout(()=>{   // 燒過的地方冒黑煙
+        const s=document.createElement('i'); s.className='fx-smoke'; const ss=60+Math.random()*70, sx=x+tx*0.85, sy=y+ty*0.85;
+        s.style.cssText=`left:${sx-ss/2}px;top:${sy-ss/2}px;width:${ss}px;height:${ss}px;`; host.appendChild(s);
+        const sl=1400+Math.random()*900, dx=Math.random()*60-30;
+        const sa=s.animate([{ transform:'translate(0,0) scale(.5)', opacity:0 }, { transform:`translate(${dx*0.3}px,-20px) scale(1)`, opacity:.75, offset:.2 },
+                            { transform:`translate(${dx}px,-${120+Math.random()*120}px) scale(2.2)`, opacity:0 }], { duration:sl, easing:'ease-out' });
+        sa.onfinish=()=>s.remove(); setTimeout(()=>s.remove(), sl+200);
+      }, life*0.6);
     }
     setTimeout(emit, step);
   };

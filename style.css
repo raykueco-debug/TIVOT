@@ -400,8 +400,12 @@
   @keyframes egBob{0%,100%{translate:0 0}50%{translate:0 -1.1vh}}
   /* 朝聖者團塊的聲波環（enemy.sonicHit，ver -2652）：模糊的同心環，從牠身上擴出 */
   /* 噴火（enemy.spawnFlame，ver -2683）：白熱核心→橘→紅→透明，加亮混合疊在敵人區上 */
-  .fx-flame{position:absolute;pointer-events:none;z-index:9;border-radius:50%;mix-blend-mode:screen;filter:blur(3px);
-    background:radial-gradient(circle,rgba(255,250,215,.95) 0%,rgba(255,196,80,.85) 28%,rgba(240,96,24,.6) 55%,rgba(170,30,10,0) 75%);}
+  .fx-flame{position:absolute;pointer-events:none;z-index:9;border-radius:46% 54% 40% 60% / 55% 42% 58% 45%;mix-blend-mode:screen;filter:blur(5px);
+    background:radial-gradient(ellipse at 45% 55%,rgba(255,250,225,.95) 0%,rgba(255,200,90,.85) 26%,rgba(244,110,30,.65) 52%,rgba(180,36,12,0) 74%);}
+  .fx-flame.f1{background:radial-gradient(ellipse at 55% 45%,rgba(255,170,60,.9) 0%,rgba(236,90,24,.75) 40%,rgba(160,26,8,0) 72%);}   /* 橘紅 */
+  .fx-flame.f2{background:radial-gradient(ellipse at 50% 50%,rgba(255,240,220,.85) 0%,rgba(255,150,70,.55) 35%,rgba(200,60,20,0) 70%);filter:blur(8px);}   /* 白煙狀的熱氣 */
+  .fx-smoke{position:absolute;pointer-events:none;z-index:9;border-radius:50%;filter:blur(7px);
+    background:radial-gradient(circle,rgba(26,22,20,.85) 0%,rgba(40,34,30,.55) 45%,rgba(40,34,30,0) 72%);}
   #enemyGroup .eg-sonic{position:absolute;pointer-events:none;border-radius:50%;border:10px solid rgba(255,236,214,.55);
     box-shadow:0 0 24px rgba(255,236,214,.45), inset 0 0 24px rgba(255,236,214,.35);filter:blur(5px);}
   #enemyGroup .eg-slash{position:absolute;inset:0;transform-origin:0 50%;border-radius:50%;
