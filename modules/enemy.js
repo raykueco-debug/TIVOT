@@ -86,7 +86,7 @@ function sonicHit(im){
 /* ══ 起手音（ENEMY_ATK／DELAY／MISS 的 `windupSe`，ver -2657，Ray：「吼聲從攻擊開始…咬下那一格應該是最後，適當伸縮音效讓他跟畫面對齊」）══
    動作片第 0 格起播；音檔本身已伸縮成「起手→打擊格」那一段長度，所以吼聲收在打擊格上。
    單隻（playActionClip）與群戰成員（memberActOnce）都走這一支（鐵律 8）。 */
-function windupSe(key){ if(key) SFX.play(asset(key), sfxGain(key)); }
+function windupSe(key, ms, alive){ if(!key) return; const go=()=>{ if(!alive || alive()) SFX.play(asset(key), sfxGain(key)); }; if(ms>0) setTimeout(go, ms); else go(); }   // ms＝起手後幾毫秒才放（`windupMs`，ver -2659）；alive＝那時這一擊還在演嗎
 function strikeFx(key){ spawnFxNamed(key, Object.assign({}, HITFX[key]||{})); const se=(HITFX[key]||{}).se; if(se) SFX.play(asset(se), sfxGain(se)); }
 export function showHitFx(kind){
   if(isAirBio(curCard())) return;   // dragon rule 的空戰生物不演受擊特效（ver -2502，Ray；音效另外找，照舊在 combat）
@@ -1264,7 +1264,7 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
       const n=String(c.near || 1), kf = (kind==='atk' || c.near) ? [{scale:String(k),offset:0}, ...(c.nearIn>0 && tHit>c.nearIn ? [{scale:String(k),offset:off(tHit-c.nearIn)}] : []), {scale:n,offset:off(tHit)},{scale:n,offset:off(hold)},{scale:String(k),offset:off(back)},{scale:String(k),offset:1}] : [{scale:String(k)},{scale:String(k)}];
       el.animate(kf.map(q=>({...q, easing:'ease-in-out'})),{duration:T}); } }   /* ease 逐段套，峰值才準準落在 hit 那一格（-2485） */
   const t0=performance.now();
-  windupSe(c.windupSe);
+  windupSe(c.windupSe, c.windupMs, ()=>clipT || i<N);
   const fxAt=new Map((c.fx||[]).map(f=>[f.frame, f]));   // 動作段的程式特效（ver -2524：光翼下拍噴瓦礫）
   const step=()=>{ i++;
     if(fxAt.has(i)) clipFx(fxAt.get(i));
@@ -2435,7 +2435,7 @@ function memberActOnce(g, im, A){
   /* 編組成員（`_pm`）預設攻擊**原地演**，勾了「攻擊時拉到中間」（`focus`）才拉（ver -2640，Ray：「全部預設不跑中」）；
      舊的分層群組（沒有 `_pm`）照舊一律拉。 */
   const fill = (A===im._atk && (!im._pm || im._pm.focus)) ? attackFocusAnim(g, ov, N*1000/fps, hit*1000/fps, !!sp.fillFrame, A.body) : null;   // 只有攻擊 A 拉到中間（D／M 原地演）
-  windupSe(sp.windupSe);
+  windupSe(sp.windupSe, sp.windupMs, ()=>groupCard && !im.classList.contains('eg-down'));
   if(A===im._atk && sp.hitFx){ actFx={ key:sp.hitFx, im, at:performance.now()+hit*1000/fps };   // 這一擊用牠自己的受擊特效（見 showHitFx 上面）
     for(const f of (sp.strikes||[])) if(f<hit) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) strikeFx(sp.hitFx); }, f*1000/fps); }
   let i=0, dir=1;

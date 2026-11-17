@@ -90,7 +90,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.17-2658';
+export const VERSION = 'ver 2026.11.17-2659';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5228,7 +5228,7 @@ export const ASSETS = {
   se_slash:          "resources/audio/se/se_slash.m4a?v=1f6783d5",   // 米夏突刺（劇情 038）＋NI 劇情殺那一刀（ver -2019 由 story 的 SE_FILES 搬來：戰鬥那一邊只查 ASSETS）
   em_smack:          "resources/audio/se/se_enemy_smack.m4a",    // 聖徒：延時懲罰
   se_crash_rocks:    "resources/audio/se/se_crash_rocks.m4a",    // 香爐蠍尾槌砸地（ver -2656）
-  se_enemy_beast02:  "resources/audio/se/se_enemy_beast02.m4a?v=4a06f7af",  // 餓獸撲咬（ver -2657）
+  se_enemy_beast02:  "resources/audio/se/se_enemy_beast02.m4a?v=1ca22f42",  // 餓獸撲咬（ver -2657）
   em_shot:           "resources/audio/se/se_enemy_shot.m4a",     // Boss：延時懲罰
   em_revolver:       "resources/audio/se/se_enemy_revolver.m4a", // Boss：大絕/不完美防禦（左輪）
   em_dagger:         "resources/audio/se/se_enemy_dagger.m4a?v=608c768c", // Boss：按錯（ver -899 換新音，同名覆蓋 → ?v）
@@ -6941,7 +6941,7 @@ export const ASSET_VER = {
   'se_bulletsfly2': '0cf50f26',
   'se_bulletsfly3': '2cb3b08e',
   'se_bulletsfly4': '22517956',
-  'se_enemy_beast02': '4a06f7af',
+  'se_enemy_beast02': '1ca22f42',
   'se_enemy_dagger': '608c768c',
   'se_rockimpact': 'd2a1f043',
   'se_steps': 'd271dff8',
