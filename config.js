@@ -93,7 +93,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.17-2672';
+export const VERSION = 'ver 2026.11.17-2673';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5798,7 +5798,7 @@ export const ENEMY_ATK = {
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7, near:1.35, nearIn:130 },   /* nearIn：拉近只花打到前的這幾毫秒（-2530 Ray「拉近的速度快一點」） */   // 訓練用聖徒 新架勢 攻擊（ver -2527，31 格；-2529 Ray「攻擊時要拉近撲前」打到那一格放大到 1.35）
   mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_atk_v1/', hit:21 },
   /* 卡耶爾群戰成員（ver -2623，Kling、快剪 24fps；片尾 B 停格約 1 秒）。hit＝主體最大那一格（交件單）。 */
-  mon_canyon_coffinbeetle_dark: { dir:'resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v2/', hit:29 },   // 一支到底（片尾回中立）
+  mon_canyon_coffinbeetle_dark: { dir:'resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v2/', hit:29, hitFx:'claw1', windupSe:'se_enemy_bug01', windupMs:158 },   // 一支到底（片尾回中立）；ver -2673（Ray：「se_enemy_bug01 + slash 跟單爪痕」）：嘶鳴起手後 158ms 放＝第二段落在打擊格 29，打到＝單爪痕＋揮砍音
   mon_canyon_bellwyrm_dark: { dir:'resources/enemy/anim/mon_canyon_bellwyrm_dark_atk_v1/', hit:50 },
   mon_canyon_ribcage_dark: { dir:'resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1/', hit:17 },
   /* 卡耶爾 Wan 攻擊（ver -2637，敵人副理 f13d457f／ce7379fe；Ray：「有一些 WAN 的動畫也要接上」）。交件單沒寫打到格 ⇒ 取「與第 0 格差最多」那一格（動作最大的一刻）。
