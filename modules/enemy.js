@@ -87,6 +87,30 @@ function sonicHit(im){
    動作片第 0 格起播；音檔本身已伸縮成「起手→打擊格」那一段長度，所以吼聲收在打擊格上。
    單隻（playActionClip）與群戰成員（memberActOnce）都走這一支（鐵律 8）。 */
 function windupSe(key, ms, alive){ if(!key) return; const go=()=>{ if(!alive || alive()) SFX.play(asset(key), sfxGain(key)); }; if(ms>0) setTimeout(go, ms); else go(); }   // ms＝起手後幾毫秒才放（`windupMs`，ver -2659）；alive＝那時這一擊還在演嗎
+/* ══ 噴火（ENEMY_ATK 的 `flame:{from,to,at:[u,v]}`，ver -2683，Ray：「換成從尾部噴射火燄的特效」）══
+   from～to 格之間，從片子上 (u,v)（那一格畫面的比例座標，肋籠獸＝長頸末端的嘴）往鏡頭噴：
+   一團團火焰由噴口冒出、邊長大邊往畫面下方（玩家這一側）撲過來、淡掉。掛在 #fxTop 的上層，每一團自己收。 */
+function spawnFlame(srcEl, spec, fps, alive){
+  const host=$('top'); if(!host || !srcEl) return;
+  const n0=(spec.to-spec.from)*1000/fps, step=45, t0=performance.now();
+  const emit=()=>{
+    if(alive && !alive()) return; if(performance.now()-t0>n0) return;
+    const hr=host.getBoundingClientRect(), r=srcEl.getBoundingClientRect(); if(!r.width){ setTimeout(emit, step); return; }
+    const x=r.left-hr.left + spec.at[0]*r.width, y=r.top-hr.top + spec.at[1]*r.height;
+    for(let k=0;k<2;k++){
+      const b=document.createElement('i'); b.className='fx-flame';
+      const sz=40+Math.random()*30; b.style.cssText=`left:${x-sz/2}px;top:${y-sz/2}px;width:${sz}px;height:${sz}px;`;
+      host.appendChild(b);
+      const tx=(Math.random()*2-1)*hr.width*0.28, ty=hr.height*(0.30+Math.random()*0.35), life=480+Math.random()*260;
+      const a=b.animate([{ transform:'translate(0,0) scale(.35)', opacity:1 },
+                         { transform:`translate(${tx*0.5}px,${ty*0.45}px) scale(2.2)`, opacity:.95, offset:.35 },
+                         { transform:`translate(${tx}px,${ty}px) scale(4.6)`, opacity:0 }], { duration:life, easing:'cubic-bezier(.3,.6,.5,1)' });
+      a.onfinish=()=>b.remove(); setTimeout(()=>b.remove(), life+200);
+    }
+    setTimeout(emit, step);
+  };
+  emit();
+}
 function strikeFx(key){ spawnFxNamed(key, Object.assign({}, HITFX[key]||{})); const se=(HITFX[key]||{}).se; if(se) SFX.play(asset(se), sfxGain(se)); }
 export function showHitFx(kind){
   if(isAirBio(curCard())) return;   // dragon rule 的空戰生物不演受擊特效（ver -2502，Ray；音效另外找，照舊在 combat）
@@ -1282,6 +1306,7 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
   const fxAt=new Map((c.fx||[]).map(f=>[f.frame, f]));   // 動作段的程式特效（ver -2524：光翼下拍噴瓦礫）
   const step=()=>{ i++;
     if(fxAt.has(i)) clipFx(fxAt.get(i));
+    if(c.flame && i===c.flame.from) spawnFlame(el, c.flame, fps, ()=>!!clipT);
     if(c.hitFx && c.strikes && i<hitF && c.strikes.indexOf(i)>=0) strikeFx(c.hitFx);   // 前面幾下各補一道特效＋音效（單隻也跟著片子的打擊節奏，ver -2663）
     if(i<N){ el.src=L.fr[i].src; clipT=setTimeout(step, Math.max(0, t0+tAt(i+1)-performance.now())); return; }
     clipT=0;
@@ -2466,6 +2491,7 @@ function memberActOnce(g, im, A){
      舊的分層群組（沒有 `_pm`）照舊一律拉。 */
   const fill = (A===im._atk && (!im._pm || im._pm.focus)) ? attackFocusAnim(g, ov, N*1000/fps, hit*1000/fps, !!sp.fillFrame, A.body) : null;   // 只有攻擊 A 拉到中間（D／M 原地演）
   windupSe(sp.windupSe, sp.windupMs, ()=>groupCard && !im.classList.contains('eg-down'));
+  if(sp.flame) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) spawnFlame(ov, sp.flame, fps, ()=>im._ov===ov && !!groupCard); }, sp.flame.from*1000/fps);
   const fxKey = sp.hitFx || (A===im._atk ? cardAssaultKey() : null);   // 攻擊片（含代演 D／M）＝攻擊那一套受擊（ver -2678）
   if(fxKey){ actFx={ key:fxKey, im, at:performance.now()+hit*1000/fps };   // 這一擊用牠自己的受擊特效（見 showHitFx 上面）
     for(const f of (sp.strikes||[])) if(f<hit) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) strikeFx(fxKey); }, f*1000/fps); }
