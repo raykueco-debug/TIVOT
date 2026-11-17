@@ -437,5 +437,147 @@ export const GROUP_COMPS = /*GCOMP*/{
     "y": -21.7
    }
   ]
+ },
+ "canyon_test_coffinbeetle": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_coffinbeetle_dark",
+    "k": 0.62,
+    "x": 450.6,
+    "y": 61.7
+   }
+  ]
+ },
+ "canyon_test_bonecrab": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_bonecrab_dark",
+    "k": 0.62,
+    "x": 450.6,
+    "y": 61.7
+   }
+  ]
+ },
+ "canyon_test_pilgrimmass": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_pilgrimmass_dark",
+    "k": 0.62,
+    "x": 450.6,
+    "y": 61.7
+   }
+  ]
+ },
+ "canyon_test_bellwyrm": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_bellwyrm_dark",
+    "k": 0.62,
+    "x": 450.6,
+    "y": 61.7
+   }
+  ]
+ },
+ "canyon_test_ironpenitent": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_ironpenitent_neutral",
+    "k": 0.62,
+    "x": 450.6,
+    "y": 61.7
+   }
+  ]
+ },
+ "canyon_test_ribcage": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_ribcage_dark",
+    "k": 0.62,
+    "x": 450.6,
+    "y": 61.7
+   }
+  ]
+ },
+ "canyon_test_stilt": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_stilt_neutral",
+    "k": 0.62,
+    "x": 450.6,
+    "y": 61.7
+   }
+  ]
+ },
+ "canyon_test_hanged": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_hanged_dark",
+    "k": 0.62,
+    "x": 450.6,
+    "y": 61.7
+   }
+  ]
+ },
+ "canyon_test_saintvulture": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_saintvulture_dark",
+    "k": 0.62,
+    "x": 450.6,
+    "y": 35.8,
+    "air": 1
+   }
+  ]
+ },
+ "canyon_test_bonecrow": {
+  "canvas": [
+   1536,
+   1024
+  ],
+  "members": [
+   {
+    "stem": "mon_canyon_bonecrow_dark",
+    "k": 0.62,
+    "x": 450.6,
+    "y": 35.8,
+    "air": 1
+   }
+  ]
  }
 }/*END*/;

@@ -93,7 +93,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.17-2671';
+export const VERSION = 'ver 2026.11.17-2672';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2923,6 +2923,17 @@ export const GAME_CONFIG = {
     canyon_w_solo_chainhound: { enemy:'canyon_solo_chainhound', session:'canyon_wild' },
     canyon_w_solo_lanternimp: { enemy:'canyon_solo_lanternimp', session:'canyon_wild' },
     canyon_w_solo_crawler: { enemy:'canyon_solo_crawler', session:'canyon_wild' },
+    canyon_w_test_coffinbeetle: { enemy:'canyon_test_coffinbeetle', session:'canyon_wild' },   // 單隻測試（ver -2672）
+    canyon_w_test_bonecrab: { enemy:'canyon_test_bonecrab', session:'canyon_wild' },   // 單隻測試（ver -2672）
+    canyon_w_test_pilgrimmass: { enemy:'canyon_test_pilgrimmass', session:'canyon_wild' },   // 單隻測試（ver -2672）
+    canyon_w_test_bellwyrm: { enemy:'canyon_test_bellwyrm', session:'canyon_wild' },   // 單隻測試（ver -2672）
+    canyon_w_test_ironpenitent: { enemy:'canyon_test_ironpenitent', session:'canyon_wild' },   // 單隻測試（ver -2672）
+    canyon_w_test_ribcage: { enemy:'canyon_test_ribcage', session:'canyon_wild' },   // 單隻測試（ver -2672）
+    canyon_w_test_stilt: { enemy:'canyon_test_stilt', session:'canyon_wild' },   // 單隻測試（ver -2672）
+    canyon_w_test_hanged: { enemy:'canyon_test_hanged', session:'canyon_wild' },   // 單隻測試（ver -2672）
+    canyon_w_test_saintvulture: { enemy:'canyon_test_saintvulture', session:'canyon_wild' },   // 單隻測試（ver -2672）
+    canyon_w_test_bonecrow: { enemy:'canyon_test_bonecrow', session:'canyon_wild' },   // 單隻測試（ver -2672）
+    canyon_w_test_colossus: { enemy:'canyon_colossus', session:'canyon_wild' },   // 單隻測試（ver -2672）
     canyon_w_mix11: { enemy:'canyon_mix11', session:'canyon_wild' },
     canyon_w_mix12: { enemy:'canyon_mix12', session:'canyon_wild' },
     frag02_w_mix2: { enemy:'canyon_mix2', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
