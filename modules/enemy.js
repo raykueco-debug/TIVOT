@@ -135,7 +135,8 @@ function spawnFxNamed(key, fx){
     case 'blood': spawnBlood(true); break;
     case 'bite':  spawnBite(); break;
     case 'bullet':spawnBullets(fx.count||1, fx.pos==='random', fx.scale); break;
-    case 'sonic': sonicHit(lastActIm); break;   // 聲波（ver -2655）：從剛出手的那一隻身上擴出
+    case 'sonic': sonicHit(lastActIm); break;
+    case 'dust':  spawnGroundDust(); break;   // 地面揚塵（ver -2681，鐵衣苦修者錘砸）   // 聲波（ver -2655）：從剛出手的那一隻身上擴出
     case 'slash': spawnSlash(); break;
     /* 鈍器受擊（ver -375）：不見血的悶擊 —— 一圈迅速擴散的衝擊環＋畫面一沉。
        ⚠ 與 `bullet`（玻璃碎裂）刻意不同：那一隻獵人是拿槍托招呼你，不是開槍。 */
@@ -1332,6 +1333,21 @@ function spawnVioletFlash(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('grow')));
   setTimeout(()=>el.classList.add('fade'), VF_GROW_MS);
   setTimeout(()=>{ if(el.parentNode) el.remove(); }, VF_GROW_MS+VF_FADE_MS+50);
+}
+/* ══ 地面揚塵（HITFX base 'dust'，ver -2681，Ray：「受擊效果是地面揚塵」）══
+   沿敵人區底緣揚起一叢土灰（樣子借劇情揚煙那一顆 `.dustpuff`，同一份漸層與動畫）。每一顆自己收。 */
+function spawnGroundDust(){
+  const host=hitLayer(); if(!host) return;
+  for(let i=0;i<14;i++){
+    const el=document.createElement('i'); el.className='dustpuff';
+    el.style.setProperty('--x',  (18 + Math.random()*64).toFixed(1)+'%');
+    el.style.setProperty('--sz', (70 + Math.random()*130).toFixed(0)+'px');
+    el.style.setProperty('--dx', (Math.random()*120-60).toFixed(0)+'px');
+    el.style.setProperty('--dy', (-60 - Math.random()*140).toFixed(0)+'px');
+    el.style.setProperty('--d',  (Math.random()*160).toFixed(0)+'ms');
+    const t=900 + Math.random()*700; el.style.setProperty('--t', t.toFixed(0)+'ms');
+    host.appendChild(el); setTimeout(()=>el.remove(), t+400);
+  }
 }
 function spawnRubble(){
   const top=$('top'); if(!top) return;
