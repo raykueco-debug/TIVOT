@@ -40,7 +40,7 @@ export const HITFX = {
   censer_crash: { base:'blunt', se:'se_crash_rocks' },
   hound_maul:   { base:'blunt' },   // 餓獸撲咬（ver -2661）：⚠ 刻意沒有 `se` —— 聲音只有 ENEMY_ATK 的 `windupSe` 吼聲（起手放、拉長版），打擊格不另響（Ray：「原本的打擊音拿掉 過」）
   bell_claw:    { base:'claw', se:'em_slash', count:1 },   // 鐘殼蟲揮鉗（ver -2663，Ray：「slash 保留 跟隨動作三下」）：單爪痕＋揮砍音，跟著 strikes 三下各一次；嘶鳴另走 ENEMY_ATK 的 `windupSe`
-  chain_maul:   { base:'claw', se:'em_slash', count:3 },   // 鎖鏈餓犬撲咬（ver -2668，Ray：「受擊特效用爪痕跟 slash」）：打擊格三道爪痕＋揮砍音；吼聲 se_enemy_beast04 另由 ENEMY_ATK `windupSe` 從轉正那一格放
+  chain_maul:   { base:'claw', se:'em_slash', count:3, scale:1.35, drawMs:250, flip:true, angle:-12 },   // 鎖鏈餓犬撲咬（ver -2668／-2669，Ray：「受擊特效用爪痕跟 slash」「爪痕大一點 要跟揮爪速度一樣」）：三道爪痕放大 1.35、由左往右 250ms 劃出（片子第 39→45 格那一揮）＋揮砍音；吼聲另由 ENEMY_ATK `windupSe` 從轉正那一格放
   /* 放光（ver -1351，王座徘徊者）。⚠ **刻意沒有 `se`**：那一支 6.7 秒、有頭有尾，
      由 `enemy.spawnHolyBurst` 用 `playCue` 的把手播（收得掉）—— 掛在這裡的話
      combat 會直接播到底，換敵／離場都停不下來（同 `HITFX.sakura` 的理由）。 */
@@ -92,7 +92,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.17-2668';
+export const VERSION = 'ver 2026.11.17-2669';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／

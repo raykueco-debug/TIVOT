@@ -1083,7 +1083,13 @@
      ⚠ 第一次挨爪不會空白：`combat.warmBattleFx()` 在開打時 rIC 預熱它。 */
   #claw.on{background:url('resources/effects/ef_claws.webp') center/contain no-repeat;
     animation:clawFlash .42s ease-out;}
-  #claw.on.one{background-image:url('resources/effects/ef_claw1.webp');}   /* 單爪（enemy.triggerClaw count 1，ver -2652）；同樣掛在 .on 上，開機不抓 */
+  #claw.on.one{background-image:url('resources/effects/ef_claw1.webp');}
+  /* 劃出來（HITFX 的 `drawMs`，ver -2669）：由左往右揭開，速度＝那一隻的揮爪；透明度那一條照舊、拉長一點讓劃完還看得到 */
+  #claw.on.draw{animation:clawDraw var(--claw-draw,0ms) linear both, clawFlash calc(var(--claw-draw,0ms) + .42s) ease-out;}
+  @keyframes clawDraw{0%{clip-path:inset(0 100% 0 0)}100%{clip-path:inset(0 0 0 0)}}
+  /* 翻過來的爪痕：clip-path 在元素自己的座標裡，左右翻了之後要從另一邊揭，畫面上才仍是由左往右 */
+  #claw.on.draw.flip{animation-name:clawDrawR, clawFlash;}
+  @keyframes clawDrawR{0%{clip-path:inset(0 0 0 100%)}100%{clip-path:inset(0 0 0 0)}}   /* 單爪（enemy.triggerClaw count 1，ver -2652）；同樣掛在 .on 上，開機不抓 */
   /* 一記劃過：滿亮登場（不淡入，那是「被抓到」不是「浮現」）→ 收得快一點。
      ⚠ 不加 scale 的 keyframe：那會蓋掉 `triggerClaw` 寫在 inline 的整體旋轉。 */
   @keyframes clawFlash{0%{opacity:0}8%{opacity:1}45%{opacity:.9}100%{opacity:0}}

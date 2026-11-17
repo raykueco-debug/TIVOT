@@ -131,7 +131,7 @@ const warnedFx = new Set();
 function spawnFxNamed(key, fx){
   const base = (HITFX[key] && HITFX[key].base) || key;
   switch(base){
-    case 'claw':  triggerClaw(fx.count||3, true); break;
+    case 'claw':  triggerClaw(fx.count||3, true, fx); break;
     case 'blood': spawnBlood(true); break;
     case 'bite':  spawnBite(); break;
     case 'bullet':spawnBullets(fx.count||1, fx.pos==='random', fx.scale); break;
@@ -343,10 +343,18 @@ export function spawnSlash(){
   }
 }
 // 既有三爪：可指定 count 與是否隨機整體角度（透過父層旋轉）
-export function triggerClaw(count, randomAngle){
-  const claw=$('claw');
-  if(randomAngle){ claw.style.transform = 'rotate('+((Math.random()*60)-30).toFixed(1)+'deg)'; }
-  else { claw.style.transform=''; }
+export function triggerClaw(count, randomAngle, fx){
+  const claw=$('claw'), sc=(fx && fx.scale>0) ? fx.scale : 1;
+  /* `scale`／`drawMs`（HITFX 的欄位，ver -2669，Ray：「爪痕大一點 要跟揮爪速度一樣」）：
+     scale＝整張放大；drawMs＝爪痕由左往右「劃出來」花多久（照那一隻揮爪的格數換算），沒寫＝舊的一閃即現。 */
+  /* `angle`／`flip`（ver -2669，Ray：「跟揮爪角度一樣才對」）：寫了就照那一隻的揮爪方向擺，不再隨機。
+     原圖的三道是「左下→右上」；flip＝左右翻成「左上→右下」，angle 再微調（度，順時針為正）。 */
+  const fixed = fx && fx.angle!=null;
+  const rot = fixed ? fx.angle : (randomAngle ? (Math.random()*60)-30 : 0);
+  claw.style.transform = 'rotate('+Number(rot).toFixed(1)+'deg)' + (sc!==1 || (fx && fx.flip) ? ' scale('+((fx && fx.flip) ? -sc : sc)+','+sc+')' : '');
+  claw.classList.toggle('flip', !!(fx && fx.flip));
+  claw.style.setProperty('--claw-draw', (fx && fx.drawMs>0 ? fx.drawMs : 0)+'ms');
+  claw.classList.toggle('draw', !!(fx && fx.drawMs>0));
   claw.classList.toggle('one', count===1);   // 單爪（`HITFX.claw1`，ver -2652）：換 ef_claw1（從 ef_claws 裁出中間那一道）；其餘照舊三爪圖
   claw.classList.remove('on'); void claw.offsetWidth; claw.classList.add('on');
 }
