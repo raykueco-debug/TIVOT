@@ -84,9 +84,13 @@
   "r_dir": "canyon_R/mon_canyon_ribcage_dark_atk_v1_R"
  },
  "mon_canyon_ribcage_dark_idle_v1": {
-  "source": "auto/kling_ribcage_idle",
-  "kind": "快剪（auto_cut）",
-  "at": null
+  "source": "kling_idle/ribcage_kling0_move",
+  "from": "kling_idle/ribcage_kling0_move",
+  "kind": "Wan 重跑原片（加大動態）",
+  "at": "11-17 22:35",
+  "mtime": 1794926119.2998304,
+  "frames": 48,
+  "peak": 1
  },
  "mon_canyon_stilt_neutral_miss_v1": {
   "source": "auto/kling_stilt_atk",
