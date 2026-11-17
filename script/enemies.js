@@ -1380,7 +1380,7 @@ export const ENEMIES = {
       image:'enemy_canyon_chainhound', fit:{ mode:'contain', pos:'50% 100%' },
       hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
-      hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
+      hitFx:{ delay:'blood', wrong:'slash', assault:'chain_maul' }, loot:[],
     },
     canyon_solo_lanternimp: {   // 提燈小鬼（單隻）
       name:'提燈小鬼', story:0, counterStagger:1, boss:0, Ganymede:0,
