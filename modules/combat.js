@@ -1464,7 +1464,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
        它發佈的 `state.lastAssaultUlt`；擋一半（block）也是同一顆圈，所以一起吃。
      ⚠ 卡上沒寫 `hitFx.ult` ＝ **退回 assault**（見 enemy.showHitFx）——
        六十張卡不必為了這一版全部補一格。 */
-  const fxKind = (kind==='delay' || kind==='wrong') ? kind
+  const fxKind = (kind==='delay' || kind==='wrong') ? (enemy.singleAttackAnim() ? 'assault' : kind)   // 只有一支攻擊動畫的怪：延時／點錯照攻擊那一套（ver -2678）
                : (state.lastAssaultUlt ? 'ult' : 'assault');
   /* ══ 共鬥（Predator's Pack，ver -803）══ 無敵：不扣血、不記失誤、無延時懲罰；
      敵攻擊自動完美反擊（全額）。點錯（kind==='wrong'）只吃「不受擊」，不反擊

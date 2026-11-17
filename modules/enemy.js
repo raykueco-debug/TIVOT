@@ -1242,6 +1242,11 @@ function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; c
   return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[s])||null; }
 function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); if(c && c.sweep) loadClip(c.sweep); } }   // sweep＝A 本體（準備動作之後那一支，-2550）
 /* 這隻怪有沒有 M（點錯）動作：點錯播的是延時那一支（ENEMY_DELAY），有它就算有 M（ver -2523）。 */
+/* ══ 只有一支攻擊動畫的怪：延時／點錯一律照攻擊的受擊特效與音效（ver -2678，Ray：「蠕蟲全攻擊受擊跟音效都一樣」「都要一樣」「只有單一攻擊動畫的怪一體適用」）══
+   單隻：有 ENEMY_ATK、沒有延時片（點錯沒有自己的片時借的也是延時片）⇒ combat 的 fxKind 把 delay／wrong 讀成 assault（判定只有這一支）。
+   群戰：那一隻拿攻擊片代演 D／M 時，memberActOnce 記的 actFx 用牠攻擊那一套（片上 hitFx，沒寫就是群戰卡的 assault）。 */
+export function singleAttackAnim(){ return !groupCard && !!clipFor('atk') && !clipFor('delay'); }
+function cardAssaultKey(){ const h=groupCard && groupCard.hitFx && groupCard.hitFx.assault; return typeof h==='string' ? h : (h && h.type) || null; }
 export function hasMissClip(){ return groupCard ? groupHas('miss') : !!clipFor('miss'); }
 export function hasActionClips(){ return groupCard ? (groupHas('atk') || groupHas('delay')) : !!(clipFor('atk') || clipFor('delay')); }   // 這隻怪有攻擊／延時動畫嗎（ver -2496）
 let clipT=0, clipEl=null;
@@ -2445,8 +2450,9 @@ function memberActOnce(g, im, A){
      舊的分層群組（沒有 `_pm`）照舊一律拉。 */
   const fill = (A===im._atk && (!im._pm || im._pm.focus)) ? attackFocusAnim(g, ov, N*1000/fps, hit*1000/fps, !!sp.fillFrame, A.body) : null;   // 只有攻擊 A 拉到中間（D／M 原地演）
   windupSe(sp.windupSe, sp.windupMs, ()=>groupCard && !im.classList.contains('eg-down'));
-  if(sp.hitFx){ actFx={ key:sp.hitFx, im, at:performance.now()+hit*1000/fps };   // 這一擊用牠自己的受擊特效（見 showHitFx 上面）
-    for(const f of (sp.strikes||[])) if(f<hit) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) strikeFx(sp.hitFx); }, f*1000/fps); }
+  const fxKey = sp.hitFx || (A===im._atk ? cardAssaultKey() : null);   // 攻擊片（含代演 D／M）＝攻擊那一套受擊（ver -2678）
+  if(fxKey){ actFx={ key:fxKey, im, at:performance.now()+hit*1000/fps };   // 這一擊用牠自己的受擊特效（見 showHitFx 上面）
+    for(const f of (sp.strikes||[])) if(f<hit) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) strikeFx(fxKey); }, f*1000/fps); }
   let i=0, dir=1;
   const end=()=>{ clearInterval(t); im._acting=false; im._actJ=null; if(fill) fill.cancel();
     if(own){ ov.remove(); im._ov=null; im.style.opacity=''; }
