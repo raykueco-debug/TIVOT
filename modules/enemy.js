@@ -172,7 +172,8 @@ function spawnFxNamed(key, fx){
     case 'bite':  spawnBite(); break;
     case 'bullet':spawnBullets(fx.count||1, fx.pos==='random', fx.scale); break;
     case 'sonic': sonicHit(lastActIm); break;
-    case 'dust':  spawnGroundDust(); break;   // 地面揚塵（ver -2681，鐵衣苦修者錘砸）   // 聲波（ver -2655）：從剛出手的那一隻身上擴出
+    case 'dust':  spawnGroundDust(); break;
+    case 'none':  break;   // 只要音效、不要受擊圖（ver -2686，肋籠獸噴火：畫面交給 spawnFlame）   // 地面揚塵（ver -2681，鐵衣苦修者錘砸）   // 聲波（ver -2655）：從剛出手的那一隻身上擴出
     case 'slash': spawnSlash(); break;
     /* 鈍器受擊（ver -375）：不見血的悶擊 —— 一圈迅速擴散的衝擊環＋畫面一沉。
        ⚠ 與 `bullet`（玻璃碎裂）刻意不同：那一隻獵人是拿槍托招呼你，不是開槍。 */

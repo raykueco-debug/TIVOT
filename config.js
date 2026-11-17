@@ -46,6 +46,7 @@ export const HITFX = {
   pilgrim_sonic:{ base:'sonic', se:'se_enemy_squeal_echo' },   // 朝聖者團塊聲波（ver -2676，Ray：「se_enemy_squeal 尾音迴音」）：聲波環＋數字淡出，配加了迴音尾的尖嘯
   wyrm_bite:    { base:'blunt', se:'se_enemy_bite' },   // 喪鐘蠕蟲鐘口咬下（ver -2677，Ray：「se_enemy_bite」）：音檔裁掉前段 0.48 秒空白，咬聲＝打擊格
   iron_smash:   { base:'dust', se:'se_crush_deepmetal' },   // 鐵衣苦修者錘砸（ver -2680／-2681，Ray：「擊中 heavymetal」「受擊效果是地面揚塵」）
+  rib_fire:     { base:'none', se:'se_enemy_breathfire' },   // 肋籠獸噴火（ver -2686，Ray：「se_enemy_breathfire 音效用這個 不要其他受擊效果」）：不放受擊圖，畫面只有程式噴火
   /* 放光（ver -1351，王座徘徊者）。⚠ **刻意沒有 `se`**：那一支 6.7 秒、有頭有尾，
      由 `enemy.spawnHolyBurst` 用 `playCue` 的把手播（收得掉）—— 掛在這裡的話
      combat 會直接播到底，換敵／離場都停不下來（同 `HITFX.sakura` 的理由）。 */
@@ -97,7 +98,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.17-2685';
+export const VERSION = 'ver 2026.11.17-2686';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4113,7 +4114,7 @@ export const GAME_CONFIG = {
          沒有手機模型那一次）：chant −32.1／magic −16.7／beastgrowl −13.1／beastgrowl2 −28.2／
          squeal −14.9／squeal2 −14.3 LUFS，峰值都沒觸頂。 */
       se_enemy_chant:8.219, se_enemy_magic:1.396, se_enemy_beastgrowl:0.922,
-      se_enemy_beastgrowl2:5.246, se_enemy_squeal:1.134, se_enemy_squeal2:1.059, se_enemy_squeal_echo:2.343, se_enemy_bite:1.698, se_chain_heavy:0.631, se_crush_deepmetal:1.747,
+      se_enemy_beastgrowl2:5.246, se_enemy_squeal:1.134, se_enemy_squeal2:1.059, se_enemy_squeal_echo:2.343, se_enemy_bite:1.698, se_chain_heavy:0.631, se_crush_deepmetal:1.747, se_enemy_breathfire:3.09,
       /* ── 飛行頁（那一頁用 HTMLAudio，讀同一張表，見 flight/index.html）── */
       se_flight_heartbeat:5.064, se_flight_idle_loop:2.848,
       se_flight_sail_loop:7.928, se_flight_seagull:3.353, se_flight_train:5.059,
@@ -5066,6 +5067,7 @@ export const ASSETS = {
   se_enemy_bite:      "resources/audio/se/se_enemy_bite.m4a",   // 喪鐘蠕蟲咬下（ver -2677）
   se_chain_heavy:     "resources/audio/se/se_chain_heavy.m4a",       // 鐵衣苦修者出手／收回的鐵鏈聲（ver -2680）
   se_crush_deepmetal: "resources/audio/se/se_crush_deepmetal.m4a",   // 鐵衣苦修者錘砸中（ver -2680）
+  se_enemy_breathfire: "resources/audio/se/se_enemy_breathfire.m4a",   // 肋籠獸噴火（ver -2686，取原檔 0.5～2.3 秒）
   se_brickcrush:        "resources/audio/se/se_brickcrush.m4a",   // 黑爪登場（原本只在 story 的 SE_FILES）
   se_mg_squall:      "resources/audio/se/se_weapon_mg_squall.m4a",       // 重機槍 反擊（連續感：整支播一次）
   se_shotgun_blast:  "resources/audio/se/se_weapon_shotgun_blast.m4a",   // 散彈槍 反擊（一次一發）
@@ -5808,7 +5810,7 @@ export const ENEMY_ATK = {
   /* 卡耶爾群戰成員（ver -2623，Kling、快剪 24fps；片尾 B 停格約 1 秒）。hit＝主體最大那一格（交件單）。 */
   mon_canyon_coffinbeetle_dark: { dir:'resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v2/', hit:16, hitFx:'beetle_claw', windupSe:'se_enemy_bug01' },   // 一支到底（片尾回中立）；ver -2675：打到＝巨大化的第一格 16（主體面積由 129k 跳到 201k、之後撐到 21 格；Ray：「巨大化的第一幀就要放效果」），水平單爪痕＋揮砍音；嘶鳴起手放（Ray：「se_enemy_bug01 + slash 跟單爪痕」「固定橫痕 slash 在最大時出」）
   mon_canyon_bellwyrm_dark: { dir:'resources/enemy/anim/mon_canyon_bellwyrm_dark_atk_v1/', hit:50, hitFx:'wyrm_bite' },
-  mon_canyon_ribcage_dark: { dir:'resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1/', hit:30, flame:{ from:28, to:42, at:[0.687,0.51] }, skip:[42,58] },   // ver -2683（Ray：「換成從尾部噴射火燄的特效」）：長頸末端的嘴第 28～70 格朝鏡頭噴火（嘴的位置逐格量過，28～74 格穩在 0.687／0.51），打到＝火噴到第 2 格
+  mon_canyon_ribcage_dark: { dir:'resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1/', hit:30, hitFx:'rib_fire', flame:{ from:28, to:42, at:[0.687,0.51] }, skip:[42,58] },   // ver -2683（Ray：「換成從尾部噴射火燄的特效」）：長頸末端的嘴第 28～70 格朝鏡頭噴火（嘴的位置逐格量過，28～74 格穩在 0.687／0.51），打到＝火噴到第 2 格
   /* 卡耶爾 Wan 攻擊（ver -2637，敵人副理 f13d457f／ce7379fe；Ray：「有一些 WAN 的動畫也要接上」）。交件單沒寫打到格 ⇒ 取「與第 0 格差最多」那一格（動作最大的一刻）。
      （聖面鷲／骨鴉 -2641 起改成「一閃」，見下面 `issen` 那兩列。） */
   mon_canyon_hanged_dark: { dir:'resources/enemy/anim/mon_canyon_hanged_dark_atk_v1/', hit:19 },   // 崖縫吊屍者 張手咆哮（99 格，片尾已接 R 倒放）
