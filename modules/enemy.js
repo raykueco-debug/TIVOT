@@ -2513,7 +2513,7 @@ function memberActOnce(g, im, A){
     else { im.after(ov); ov.style.scale=im._idle.flip?'-1 1':''; ov.src=im._idle.fr[0].src; placeOnLayer(ov, im, im._idle.j); } };
   const t=setInterval(()=>{
     if(im._ov!==ov || !groupCard || im.classList.contains('eg-down')){ clearInterval(t); return; }
-    if(dir>0){ if(++i<N){ ov.src=A.fr[i].src; return; }
+    if(dir>0){ if(++i<N){ if(sp.skip && i===sp.skip[0]) i=sp.skip[1]; ov.src=A.fr[i].src; return; }   // `skip:[a,b]`＝播到 a 直接跳 b（剪掉片中段的定格，ver -2685）
       if(!sp.rev){ end(); return; }
       dir=-1; i=Math.max(0, N-1-Math.round(REV_HOLD_SEC*fps)); windupSe(sp.retractSe); }   // 收回音（`retractSe`，ver -2680）：倒放收回那一刻放
     if(--i>=0){ ov.src=A.fr[i].src; return; }
