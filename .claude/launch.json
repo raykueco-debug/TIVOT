@@ -32,6 +32,8 @@
       "name": "tivot-win",
       "runtimeExecutable": "py",
       "runtimeArgs": [
+        "-X",
+        "utf8",
         "tools/devserver.py"
       ],
       "port": 8124,

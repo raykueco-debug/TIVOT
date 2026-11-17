@@ -1420,3 +1420,4 @@ when	from	to	reason
 20261116-211820	resources/enemy/anim/mon_canyon_saintvulture_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_saintvulture_dark_atk_v1.20261116-211820	拿掉倒放（Ray 11-16：程式讓他飛回來）
 20261116-231848	tools/anim/tivot_wan.py	_recycle/tools/anim/tivot_wan.py.20261116-231848	換機前：以 3060 的 tivot_wan.py（純新增 Mobius 參數）取代
 20261117-223516	resources/enemy/anim/mon_canyon_ribcage_dark_idle_v1	_recycle/resources/enemy/anim/mon_canyon_ribcage_dark_idle_v1	肋籠獸待機換成加大動態的重跑版（Ray 11-17：「可以 接上 交件」）
+20261117-223942	HANDOFF.md	_recycle/HANDOFF.md.20261117-223942	交接改寫（Ray 11-17：全推上 交接）；舊版內容已併入新版
