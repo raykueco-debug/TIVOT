@@ -3,7 +3,7 @@
 > 出處：Ray 在 `tools/enemy_review/canyon.html` 提交的編排（`_review/submit_canyon_20261114_211703.json`）與 KF 審閱（`_review/submit_canyonkf_20261114_215730.json`）。
 > 美術 session 不碰程式（鐵律 11），只寫在這裡。11-15 起動畫已交件（見下）；「程式效果」那一節是動畫之外要程式做的。
 
-## ⚠ 11-17 待程式接：香爐蠍打擊點改第 32 格（Ray：「香爐蠍的打擊點在槌下那一瞬」）
+## ✅ 11-17 已接（ver -2656，敵人線自己接；Ray：「你負責敵人的一切」）：香爐蠍打擊點改第 32 格（Ray：「香爐蠍的打擊點在槌下那一瞬」）＋攻擊音效改 `se_crash_rocks`（新 `HITFX.censer_crash`，單隻卡與群戰成員都吃）
 
 - `config.js` 的 `ENEMY_ATK.mon_canyon_censer_dark`：`hit:50` → **`hit:32`**。
 - 第 32 格＝尾槌砸到地面、冒出第一道火花的那一格（31 還在半空揮下、33 起是塵爆擴散）。

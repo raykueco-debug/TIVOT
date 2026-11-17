@@ -1347,7 +1347,7 @@ export const ENEMIES = {
       image:'enemy_canyon_censer', fit:{ mode:'contain', pos:'50% 100%' },
       hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
-      hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
+      hitFx:{ delay:'blood', wrong:'slash', assault:'censer_crash' }, loot:[],
     },
     canyon_solo_houndbeast: {   // 餓獸（單隻）
       name:'餓獸', story:0, counterStagger:1, boss:0, Ganymede:0,
