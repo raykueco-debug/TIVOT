@@ -41,6 +41,7 @@ export const HITFX = {
   hound_maul:   { base:'blunt' },   // 餓獸撲咬（ver -2661）：⚠ 刻意沒有 `se` —— 聲音只有 ENEMY_ATK 的 `windupSe` 吼聲（起手放、拉長版），打擊格不另響（Ray：「原本的打擊音拿掉 過」）
   bell_claw:    { base:'claw', se:'em_slash', count:1 },   // 鐘殼蟲揮鉗（ver -2663，Ray：「slash 保留 跟隨動作三下」）：單爪痕＋揮砍音，跟著 strikes 三下各一次；嘶鳴另走 ENEMY_ATK 的 `windupSe`
   chain_maul:   { base:'claw', se:'em_slash', count:3, scale:1.35, flip:true, angle:-12 },   // 鎖鏈餓犬撲咬（ver -2668／-2669，Ray：「受擊特效用爪痕跟 slash」「爪痕大一點 要跟揮爪速度一樣」）：三道爪痕放大 1.35、由左往右 250ms 劃出（片子第 39→45 格那一揮）＋揮砍音；吼聲另由 ENEMY_ATK `windupSe` 從轉正那一格放
+  crawler_hit:  { base:'blunt', se:'em_slash' },   // 爬行朝聖者（ver -2671，Ray：「用 slash 音效」）：鈍擊特效照舊、音效換揮砍音
   /* 放光（ver -1351，王座徘徊者）。⚠ **刻意沒有 `se`**：那一支 6.7 秒、有頭有尾，
      由 `enemy.spawnHolyBurst` 用 `playCue` 的把手播（收得掉）—— 掛在這裡的話
      combat 會直接播到底，換敵／離場都停不下來（同 `HITFX.sakura` 的理由）。 */
@@ -92,7 +93,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.17-2670';
+export const VERSION = 'ver 2026.11.17-2671';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5806,7 +5807,7 @@ export const ENEMY_ATK = {
   mon_canyon_lanternimp_dark: { dir:'resources/enemy/anim/mon_canyon_lanternimp_dark_atk_v1/', hit:24, fillFrame:true },   // 提燈小鬼
   /* 朝聖者團塊（ver -2652，Ray：「他是聲波攻擊 聲波用程式跑」「優先讓他先攻」）：A 借牠的點錯片（張手，打到＝第 20 格）演，打到時程式放聲波（`hitFx:'sonic'`：模糊聲波環＋盤面數字快速淡出再慢慢淡回）；`first`＝這一組的第一擊優先由牠；`last`＝這一組最後才倒（-2655，Ray：「那隻怪留到最後死」）。 */
   mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20, hitFx:'sonic', first:true, last:true },
-  mon_canyon_crawler_dark: { dir:'resources/enemy/anim/mon_canyon_crawler_dark_atk_v1/', hit:45, fillFrame:true },   // 爬行朝聖者   // 噴火交程式（數值待 Ray，還沒做）   // 崩岩巨像 拳砸地（ver -2620，KF 第二輪，36 格）
+  mon_canyon_crawler_dark: { dir:'resources/enemy/anim/mon_canyon_crawler_dark_atk_v1/', hit:45, hitFx:'crawler_hit', fillFrame:true },   // 爬行朝聖者   // 噴火交程式（數值待 Ray，還沒做）   // 崩岩巨像 拳砸地（ver -2620，KF 第二輪，36 格）
   mon_stag_rot_neutral: { dir:'resources/enemy/anim/mon_stag_rot_neutral_atk_v1/', hit:17 },   // 腐鹿骸 角頂（ver -2620，KF 第二輪，30 格）
   mon_shinierforest_deernightmare: { dir:'resources/enemy/anim/mon_shinierforest_deernightmare_atk_v1/', hit:32 },   // 變異樹靈鹿主 仰天咆哮（ver -2620，KF 第二輪，55 格；攻擊＝延時同一支）
   mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_atk_v1/', hit:13 },   // E019 背負祭壇者 撲撞（ver -2517，29 格）

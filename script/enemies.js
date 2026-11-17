@@ -1402,7 +1402,7 @@ export const ENEMIES = {
       image:'enemy_canyon_crawler', fit:{ mode:'contain', pos:'50% 100%' },
       hp:220, attack:14, atkInterval:null, delayPenalty:{ seconds:6 },
       entrance:null, special:[], boardGrids:[9,9,9,9,16],
-      hitFx:{ delay:'blood', wrong:'slash', assault:'blunt' }, loot:[],
+      hitFx:{ delay:'blood', wrong:'slash', assault:'crawler_hit' }, loot:[],
     },
     canyon_colossus: {
       name:'崩岩巨像', story:1, counterStagger:1, boss:1, Ganymede:0,
