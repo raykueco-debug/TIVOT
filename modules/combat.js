@@ -14,7 +14,7 @@
  * ========================================================================== */
 
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
-import { GAME_CONFIG, HITFX, asset, bgmVol, sfxGain } from '../config.js';
+import { GAME_CONFIG, HITFX, SE_PLAY, asset, bgmVol, sfxGain } from '../config.js';
 import { state, initEnemyHp, setPickedPartner, enemyTimeK } from '../state.js';
 import { SFX } from '../audio.js';
 import { TEL } from '../telemetry.js';
@@ -1268,14 +1268,15 @@ function enemyHitFlash(){
    剩下的格子作廢、直接換下一盤 —— 不走 clearBoard（那是「玩家清完」：清盤獎勵、紀錄、護罩結算都不給），也不扣敵血。
    聖徒化／惡夢化的盤、正在轉場的不動。 */
 /* 抽掉一個數字（ver -2763，Ray：心魘的攻擊「讓盤面上的數字隨機被抽掉一個」；取代 -2759 的重組）：
-   從還沒點掉的格子裡隨機拿走一格，那一格等於點掉了（不給傷害、不算連擊）；順序游標推過它，免得卡在一個不存在的號碼上。
+   從還沒點掉的格子裡隨機拿走一格（當場消失、留空位），那一格等於點掉了（不給傷害、不算連擊），而且這一盤沒有清盤獎勵；順序游標推過它，免得卡在一個不存在的號碼上。
    ⚠ 只剩一格時不抽：抽掉等於幫玩家清盤。 */
 function plunderCell(){
   if(state.over) return;
   const live=state.cells.filter(c=>!c.classList.contains('done'));
   if(live.length<2) return;
   const c=live[(Math.random()*live.length)|0];
-  c.classList.add('done','plunder'); c.classList.remove('next'); setTimeout(()=>c.classList.remove('plunder'), 650);
+  c.classList.add('done','gone'); c.classList.remove('next');   // 直接消失、留空位（ver -2765，Ray：「被抽掉的格子要直接消失」）
+  state.boardClean=false;   // 這一盤沒有清盤獎勵（同上）—— 完美清盤的折秒／破防值／連續完美清盤都掛在 boardClean 上
   advanceExpectPastCleared(); markNext(); updateStatus();
 }
 function wipeBoard(){
@@ -1322,7 +1323,7 @@ function roarBlast(){
    ⚠ 沒有這一支的話字串寫法會走 `_hf.type` → undefined → **敵攻擊音整個消失**，
      而畫面上完全看不出來（同 -932 那個「沉默的退化」）。 */
 /* 受擊音：`HITFX[].se` 可以是陣列＝同一拍一起放（ver -2689，崩岩巨像）。播放只走這一支（鐵律 8）。 */
-function playHitSe(sk){ for(const k of [].concat(sk)) if(k) SFX.play(asset(k), sfxGain(k)); }
+function playHitSe(sk){ for(const k of [].concat(sk)) if(k){ if(SE_PLAY[k]) SFX.playMod(asset(k), sfxGain(k), SE_PLAY[k]); else SFX.play(asset(k), sfxGain(k)); } }   // SE_PLAY：變調／失真（ver -2765）
 function hitFxSe(hf, kind){
   const raw = hf && (hf[kind] || (kind==='ult' ? hf.assault : null));
   if(!raw) return null;

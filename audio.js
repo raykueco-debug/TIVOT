@@ -761,6 +761,20 @@ export const SFX = {
   play(src, vol){ playSrc(src, vol); },
   /* 變調播一次（rate＞1 高、＜1 低；ver -2453）。 */
   playRate(src, vol, rate){ playSrc(src, vol, false, { rate }); },
+  /* 變調＋失真播一次（ver -2765，Ray：心魘的 warpmagig「pitch 壓低一點帶點扭曲」）：
+     drive＞0 時先把波形過一道 tanh 軟削波（算一次、依 (src,drive) 快取，原檔 buffer 不動），再照 rate 變調。 */
+  playMod(src, vol, mod){
+    if(!src || !ctx()) return;
+    const rate=(mod&&mod.rate)||1, drive=(mod&&mod.drive)||0;
+    if(!drive){ playSrc(src, vol, false, { rate }); return; }
+    const k=src+'|drive|'+drive, c=ctx();
+    const go=b=>{ if(!b) return; let o=_fitCache[k];
+      if(!o){ try{ o=c.createBuffer(b.numberOfChannels, b.length, b.sampleRate); const n=Math.tanh(drive);
+        for(let q=0;q<b.numberOfChannels;q++){ const a=b.getChannelData(q), d=o.getChannelData(q); for(let i=0;i<a.length;i++) d[i]=Math.tanh(a[i]*drive)/n; }
+        _fitCache[k]=o; }catch(_){ o=null; } }
+      if(o) playWhenRunning(o, vol, Date.now(), false, { rate }, src); };
+    const buf=_buffers[src]; if(buf) go(buf); else load(src).then(go);
+  },
   /* ══ 保持音高的時間伸縮（ver -2692，Ray：「音效用 dragonroar 時間壓縮到吼叫那幾格 pitch 保持低沉」
      「不要改原音效 個別怪播放時用原 se 進行的調整而已」）══
      取原檔 [from,to] 秒那一段，伸縮成 dur 秒播出：疊接法（OLA，60ms Hann 窗、輸出 50% 重疊），

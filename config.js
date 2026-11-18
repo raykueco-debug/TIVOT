@@ -28,6 +28,12 @@ import { SHOP_CARDS } from './script/shopcards.js';   // 商店卡抽成獨立�
    ⚠ 所以爪數不同的就**各給一個名字**（`claw1`／`claw`／`claw4`）：名字要能在
      Excel 的下拉選單裡讀得懂，那是 Ray 挑特效的唯一介面。
    ⚠ `angle` 一律 random，表上不再出現（`showHitFx` 的預設）。 */
+/* 音效的播放調整（ver -2765，Ray：「se_enemy_warpmagig 心魘用這個 pitch 壓低一點帶點扭曲」）：
+   鍵＝音效名，rate＝變調倍率（＜1 低）、drive＝失真強度（0＝不失真）。原檔不動，播放時才調（同 windupFit 那條原則）。
+   ⚠ 目前只有受擊音（combat.playHitSe）會查這張表。 */
+export const SE_PLAY = {
+  se_enemy_warpmagig: { rate:0.8, drive:2.5 },   // 心魘
+};
 export const HITFX = {
   // ── 通用 ──
   claw1:  { base:'claw',   se:'em_slash', count:1 },   // 一道爪痕
@@ -48,7 +54,7 @@ export const HITFX = {
   pilgrim_sonic:{ base:'sonic', se:'se_enemy_squeal_echo' },   // 朝聖者團塊聲波（ver -2676，Ray：「se_enemy_squeal 尾音迴音」）：聲波環＋數字淡出，配加了迴音尾的尖嘯
   wyrm_bite:    { base:'blunt', se:'se_enemy_bite' },   // 喪鐘蠕蟲鐘口咬下（ver -2677，Ray：「se_enemy_bite」）：音檔裁掉前段 0.48 秒空白，咬聲＝打擊格
   iron_smash:   { base:'dust', se:'se_crush_deepmetal' },
-  reassembled_wave:{ base:'wave', tone:'orange', at:[0.50,0.23], plunder:true, se:'se_enemy_holyburst' },   // 心魘（ver -2759，Ray：「跟紫黑之翼一樣的光波…從心臟為中心發出 偏橘 效果是盤面剩餘數字隨機重組」；-2763 改成「隨機被抽掉一個」）
+  reassembled_wave:{ base:'wave', tone:'orange', at:[0.50,0.23], plunder:true, se:'se_enemy_warpmagig' },   // 心魘（ver -2759，Ray：「跟紫黑之翼一樣的光波…從心臟為中心發出 偏橘 效果是盤面剩餘數字隨機重組」；-2763 改成「隨機被抽掉一個」）
   colossus_smash:{ base:'dust', se:['se_rockimpact','se_crush_deepmetal'] },   // 崩岩巨像拳砸地（ver -2689，Ray：「擊點是拳頭落地那一瞬 地面揚塵 播 se_rockimpact 跟 se_crush_deepmetal」）：`se` 寫成陣列＝同一拍一起放   // 鐵衣苦修者錘砸（ver -2680／-2681，Ray：「擊中 heavymetal」「受擊效果是地面揚塵」）
   rib_fire:     { base:'none', se:'se_enemy_breathfire' },   // 肋籠獸噴火（ver -2686，Ray：「se_enemy_breathfire 音效用這個 不要其他受擊效果」）：不放受擊圖，畫面只有程式噴火
   /* 放光（ver -1351，王座徘徊者）。⚠ **刻意沒有 `se`**：那一支 6.7 秒、有頭有尾，
@@ -102,7 +108,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2764';
+export const VERSION = 'ver 2026.11.18-2766';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4073,7 +4079,7 @@ export const GAME_CONFIG = {
       se_dart_fail:2.792,
       /* ── 劇情／城鎮（這一批以前完全沒有增益，見上面的說明）── */
       se_lightup:1.34,   // ver -1859：本機量 −16.1 LUFS（耳機−15.2／手機−17.0 平均），以 se_steps 校正 +0.25 dB
-      se_steps:4.92, se_flame:0.66 /* ver -2755 實測 −10.2 LUFS */, se_clickstep:5.9 /* ver -2724 實測 −28.8 LUFS、峰值 −5.2 dBFS（被 peakCeilDb 夾住）CAP */, se_stepsbig:6.96,   /* ver -1915：stepsbig 換新（Ray 交 wav，4.3 秒，原檔進 _originals，?v=4）；audio_scan 建議 7.84 × 校準比 7.198／8.11 */   /* ver -1914（Ray：「se_steps 改了，城鎮、室外都用這個；se_stepsbig 只用在遺跡內、地宮內的跑步聲」）：se_steps 換新（3.8 秒，原 mp3 在 se/_raw/，?v=3）；增益照 audio_scan 建議值 5.54 × 舊檔校準比（7.198／8.11）＝4.92 */   // ver -1871：se_steps 換新（ffmpeg ebur128 耳機−23.9／手機−24.8，以舊檔 7.198 校正 −6.8 dB）；se_stepsbig＝舊的那支原檔
+      se_steps:4.92, se_flame:0.66 /* ver -2755 實測 −10.2 LUFS */, se_enemy_warpmagig:1.1 /* ver -2765 實測 −16.7 LUFS；播放時加失真會變大聲，比公式值 1.40 收一點 */, se_clickstep:5.9 /* ver -2724 實測 −28.8 LUFS、峰值 −5.2 dBFS（被 peakCeilDb 夾住）CAP */, se_stepsbig:6.96,   /* ver -1915：stepsbig 換新（Ray 交 wav，4.3 秒，原檔進 _originals，?v=4）；audio_scan 建議 7.84 × 校準比 7.198／8.11 */   /* ver -1914（Ray：「se_steps 改了，城鎮、室外都用這個；se_stepsbig 只用在遺跡內、地宮內的跑步聲」）：se_steps 換新（3.8 秒，原 mp3 在 se/_raw/，?v=3）；增益照 audio_scan 建議值 5.54 × 舊檔校準比（7.198／8.11）＝4.92 */   // ver -1871：se_steps 換新（ffmpeg ebur128 耳機−23.9／手機−24.8，以舊檔 7.198 校正 −6.8 dB）；se_stepsbig＝舊的那支原檔
       se_walk:4.481, se_fall:3.724, se_punch:1.596,
       se_tummy:8.268, se_sailorshout:2.048, se_sleep:1.708,
       se_kerberos_open:1.558, se_kerberos_pop:1.479, se_kerberos_steam:1.301,
@@ -5079,6 +5085,7 @@ export const ASSETS = {
   se_crush_deepmetal: "resources/audio/se/se_crush_deepmetal.m4a",
   se_clickstep: "resources/audio/se/se_clickstep.mp3",
   se_brickcrush: "resources/audio/se/se_brickcrush.m4a",   // 崩岩巨像咆哮清盤的碎瓦聲（ver -2728，Ray：「miss 音配碎瓦」；劇情那邊走 story.SE_FILES，同一支檔）   // 肋籠獸爪子踩地（ver -2724，Ray 找的）
+  se_enemy_warpmagig: "resources/audio/se/se_enemy_warpmagig.mp3?v=e1723b23",   // 心魘的光波（ver -2765，Ray）
   se_flame: "resources/audio/se/se_flame.mp3",   // 紫黑之爪每一個動作的起手（ver -2755，Ray）
   se_rockimpact: "resources/audio/se/se_rockimpact.mp3?v=d2a1f043",   // 崩岩巨像拳砸地（ver -2689；劇情那邊走 story.SE_FILES，同一支檔）   // 鐵衣苦修者錘砸中（ver -2680）
   se_enemy_breathfire: "resources/audio/se/se_enemy_breathfire.m4a",   // 肋籠獸噴火（ver -2686，取原檔 0.5～2.3 秒）
@@ -7023,6 +7030,7 @@ export const ASSET_VER = {
   'se_enemy_beast01': 'fa664115',
   'se_enemy_beast02': '1ca22f42',
   'se_enemy_dagger': '608c768c',
+  'se_enemy_warpmagig': 'e1723b23',
   'se_rockimpact': 'd2a1f043',
   'se_steps': 'd271dff8',
   'se_stepsbig': 'c1670181',
