@@ -57,7 +57,8 @@ function list(){const q=$('q').value.trim().toLowerCase(),L=$('list');L.innerHTM
   c.onclick=()=>{open(k);location.hash=a.dir};L.appendChild(c)})}
 $('q').oninput=list;
 let CAT='全部';try{CAT=localStorage.getItem('tivot_player_cat')||'全部'}catch(e){}
-(function(){const C=$('cats');['全部','新作','KF第二輪','空賊之後','空賊A','背景','敵','CI','插畫','其他'].forEach(c=>{const b=document.createElement('button');const n=c==='全部'?ANIMS.length:c==='新作'?ANIMS.filter(a=>a.new).length:c==='空賊之後'?ANIMS.filter(a=>a.after).length:ANIMS.filter(a=>(a.cat||'其他')===c).length;b.textContent=c+'（'+n+'）';b.dataset.c=c;if(c===CAT)b.classList.add('on');
+const QCAT=new URLSearchParams(location.search).get('cat');if(QCAT)CAT=QCAT;const QQ=new URLSearchParams(location.search).get('q');if(QQ){$('q').value=QQ;CAT='全部'}
+(function(){const C=$('cats');['全部','新作','倒放R','KF第二輪','空賊之後','空賊A','背景','敵','CI','插畫','其他'].forEach(c=>{const b=document.createElement('button');const n=c==='全部'?ANIMS.length:c==='新作'?ANIMS.filter(a=>a.new).length:c==='空賊之後'?ANIMS.filter(a=>a.after).length:ANIMS.filter(a=>(a.cat||'其他')===c).length;b.textContent=c+'（'+n+'）';b.dataset.c=c;if(c===CAT)b.classList.add('on');
  b.onclick=()=>{CAT=c;try{localStorage.setItem('tivot_player_cat',c)}catch(e){}C.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.c===c));list()};C.appendChild(b)})})();
 function open(k){stop();A=ANIMS[k];if(A.fps){const sel=$('base');const v=String(Math.round(A.fps));if(![...sel.options].some(o=>o.value===v)){const o=document.createElement('option');o.textContent=v;sel.appendChild(o)}sel.value=v}load();i=first();build();show();document.querySelectorAll('.c.cur').forEach(x=>x.classList.remove('cur'));const cc=$('c'+k);if(cc){cc.classList.add('cur');cc.scrollIntoView({block:'nearest'})}try{localStorage.setItem('tivot_player_last',A.dir)}catch(e){}}
 function kept(){return A.frames.map((_,k)=>k).filter(k=>!off.has(k))}
@@ -121,6 +122,7 @@ try{const bs=localStorage.getItem('tivot_player_base');if(bs)$('base').value=bs}
 $('base').addEventListener('change',()=>{try{localStorage.setItem('tivot_player_base',$('base').value)}catch(e){}});
 $('spv').textContent='1.00×';
 let last=null;try{last=localStorage.getItem('tivot_player_last')}catch(e){}
+if(QCAT){const f=ANIMS.find(a=>(a.cat||'其他')===QCAT);const l=ANIMS.find(a=>a.dir===last);if(f&&(!l||(l.cat||'其他')!==QCAT))last=f.dir}
 const h=decodeURIComponent(location.hash.slice(1)).replace(/^dir=/,'');if(h)last=h;
 list();const k0=Math.max(0,ANIMS.findIndex(a=>a.dir===last));open(k0);
 </script>
