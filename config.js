@@ -101,7 +101,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2757';
+export const VERSION = 'ver 2026.11.18-2758';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5717,7 +5717,7 @@ export const ENEMY_IDLE = {
   mon_relic_keyward: 'resources/enemy/anim/mon_relic_keyward_idle_v2/',
   mon_relic_lectern: 'resources/enemy/anim/mon_relic_lectern_idle_v2/',
   mon_relic_mirrorchoir: 'resources/enemy/anim/mon_relic_mirrorchoir_idle_v2/',
-  mon_relic_reassembled: 'resources/enemy/anim/mon_relic_reassembled_idle_v2/',
+  mon_relic_reassembled: 'resources/enemy/anim/mon_relic_reassembled_idle_v3/',   // ver -2758：新立繪的呼吸＋心跳待機（Ray 剪的 np_reassembled_breath_cut）
   mon_relic_veilhands: 'resources/enemy/anim/mon_relic_veilhands_idle_v2/',
   mon_relic_wheelpsalm: 'resources/enemy/anim/mon_relic_wheelpsalm_idle_v2/',
   mon_reliquary_hand: 'resources/enemy/anim/mon_reliquary_hand_idle_v2/',
