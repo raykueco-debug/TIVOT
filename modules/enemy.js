@@ -2586,7 +2586,7 @@ function memberIssen(g, im, A){
     if(!alive()){ clearInterval(t); return; }
     if(++i<N){ ov.src=A.fr[i].src; return; }
     clearInterval(t); ov.style.visibility='hidden';
-    setTimeout(()=>{ if(alive()) issenSlash(g, ang); }, ISSEN_GAP_MS);
+    setTimeout(()=>{ if(alive()){ issenSlash(g, ang); const se=(A.spec||{}).issenSe; if(se) SFX.play(asset(se), sfxGain(se)); } }, ISSEN_GAP_MS);   // `issenSe`＝刀光閃過那一刻的音（ver -2726，聖面鷲爪擊音）
     setTimeout(()=>{ if(alive()) issenHome(g, im, ov, own, A); }, ISSEN_GAP_MS+ISSEN_SLASH_MS);
   }, 1000/fps);
   const hit=Math.round(tOut+ISSEN_GAP_MS+ISSEN_SLASH_MS*ISSEN_SLASH_IN);   // 光線閃到滿的那一刻＝打到

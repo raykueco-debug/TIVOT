@@ -100,7 +100,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2725';
+export const VERSION = 'ver 2026.11.18-2727';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5821,8 +5821,8 @@ export const ENEMY_ATK = {
   /* 一閃（ver -2641，-2646 Ray 命名；憲法 natali rule 第 13 條）：`issen:true` ＝片子只演「殘影消失」（10 格），播完程式接一條刀斬光線隨機角度一閃
      （閃到滿那一刻＝打到、不放受擊特效）。`home` ＝之後怎麼歸位（Ray：「歸位另算」）：'dive'＝從上方略斜飛回、衝過頭拉回、拍翅；沒寫＝原地淡回。
      實作只有 enemy.memberIssen／issenHome 兩支。 */
-  mon_canyon_bonecrow_dark: { dir:'resources/enemy/anim/mon_canyon_bonecrow_dark_atk_v1/', issen:true, home:'dive' },   // 骨鴉
-  mon_canyon_saintvulture_dark: { dir:'resources/enemy/anim/mon_canyon_saintvulture_dark_atk_v1/', issen:true, home:'dive' },   // 聖面鷲
+  mon_canyon_bonecrow_dark: { dir:'resources/enemy/anim/mon_canyon_bonecrow_dark_atk_v1/', issen:true, home:'dive', issenSe:'em_slash' },   // 骨鴉（ver -2727：同聖面鷲，刀光閃過放揮砍音）
+  mon_canyon_saintvulture_dark: { dir:'resources/enemy/anim/mon_canyon_saintvulture_dark_atk_v1/', issen:true, home:'dive', issenSe:'em_slash' },   // 聖面鷲（ver -2726，Ray：「爪擊音」：刀光閃過那一刻放揮砍音）
   /* 卡耶爾群戰小怪 A（ver -2625，TO_CODE_canyon 11-16：Kling 16:9 ABA 原片 73 格、片尾自帶歸位）。
      `fillFrame:true`＝攻擊時拉到畫面中間之後再放大到片框（box）蓋滿敵人區，裁切的硬邊落到畫面外（Ray：「出框的就讓敵在攻時放大到貼框」）；倍率現算，只有群戰逐人那一條讀（enemy.attackFocusAnim）。 */
   mon_canyon_censer_dark: { dir:'resources/enemy/anim/mon_canyon_censer_dark_atk_v1/', hit:32, hitFx:'censer_crash', fillFrame:true },   // 香爐蠍（ver -2656：打到＝尾槌砸地那一格、砸地音 se_crash_rocks，Ray）
