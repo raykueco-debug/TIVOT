@@ -110,7 +110,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.19-2776';
+export const VERSION = 'ver 2026.11.19-2777';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5874,6 +5874,7 @@ export const ENEMY_ENTER = {
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_MISS = {
+  mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_roar_v1/', hit:9 },   // ver -2777：新立繪的仰頭咆哮（Wan，Ray 剪的 np_altar_roar_cut 31 格 24fps），延時與點錯共用
   mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_atk_v1/', hit:12, hitFx:'reassembled_wave' },   // 心魘 DM（ver -2773）：三手張開放光（偏橘光波＋抽掉一個數字）
   /* 崩岩巨像 M＝仰天咆哮（ver -2692，Ray 剪的 cut＋鎖雙腳：21 格 16fps）：第 12／14／17 格（原片 36／42／43）震畫面，第 12 格敵回血 10%＋盤面全清換下一盤、不傷敵（ver -2694，Ray：「咆效果是把盤面全清 但是不會對他造成傷害」）（Ray：「36 42 43 格播放時畫面震動 怪回血 10%」）；
      吼聲 se_enemy_dragonroar 取有聲的 0.1～3.5 秒、保持音高壓到第 9 格起到片尾（0.75 秒）（Ray：「時間壓縮到吼叫那幾格 pitch 保持低沉」「不要改原音效」）。R＝倒回（Ray：「咆的 r 用倒回」）：第 21 格起把第 16→0 格倒著接回中立（共 38 格），已烘進片裡。 */
@@ -5899,7 +5900,7 @@ export const ENEMY_DELAY = {
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7 },   // 訓練用聖徒 新架勢 攻擊＝延時＝點錯（ver -2527，31 格，最後一格回到架勢）
   mon_saint_inspector: { dir:'resources/enemy/anim/mon_saint_inspector_delay_v1/', hit:23 },   // 監查者 翅膀揮動（ver -2620，KF 第二輪，39 格）
   mon_shinierforest_deernightmare: { dir:'resources/enemy/anim/mon_shinierforest_deernightmare_atk_v1/', hit:32 },   // 變異樹靈鹿主 延時＝攻擊同一支（ver -2620）
-  mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_delay_v2/', hit:13 },   // E019 背負祭壇者 延時＝咆哮 v2（ver -2608，取代 delay_v1：中立起手→撲向鏡頭咆哮→收勢回中立；咆哮到位＝第 13 格）
+  mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_roar_v1/', hit:9 },   // ver -2777：新立繪的仰頭咆哮（Wan，Ray 剪的 np_altar_roar_cut 31 格 24fps），延時與點錯共用
   mon_shinierforest_snake_neutral: { dir:'resources/enemy/anim/mon_shinierforest_snake_atk_v1/', hit:13 },   // E066 水蛇（攻擊＝延時同一支，29 格）
   mon_shinierforest_hog_neutral: { dir:'resources/enemy/anim/mon_shinierforest_hog_atk_v1/', hit:13 },       // E067 山豬（攻擊＝延時同一支，29 格）
   mon_shinierforest_lynx_neutral: { dir:'resources/enemy/anim/mon_shinierforest_lynx_delay_v1/', hit:9 },   // E065 山貓 橫向爪擊（32 格，第 9 格打到）
