@@ -1414,6 +1414,12 @@ function clipFx(f, el){
     return spawnRubble(o, f.n, f.speed); }
   if(f.type==='violetFlash') return spawnVioletFlash();
   if(f.type==='dust'){ const n=f.n||1; for(let k=0;k<n;k++) setTimeout(spawnGroundDust, k*120); return; }   // 地面煙塵（ver -2782，Ray：「用特效加煙塵遮」攻擊接回待機那一下）
+  /* 咆哮音波（ver -2784，Ray：背負祭壇者吼叫「要有音波效果，震掉所有格子不計傷」）：從嘴（`at`＝這一格畫面上的比例座標）放出一圈圈音波＋龍吟的衝擊模糊；`wipe`＝震掉整盤換下一盤（同崩岩巨像，不傷敵）。 */
+  if(f.type==='roar'){ let o=null;
+    if(f.at && el){ const top=$('top'), hr=top && top.getBoundingClientRect(), r=el.getBoundingClientRect();
+      if(hr && r.width) o={ x:r.left-hr.left+f.at[0]*r.width, y:r.top-hr.top+f.at[1]*r.height }; }
+    spawnSoundwave(o, f.n||4); if(api.roarBlast) api.roarBlast();
+    if(f.wipe && api.wipeBoard) setTimeout(()=>api.wipeBoard(), 160); return; }
   if(f.type==='shake'){ if(api.screenShake) api.screenShake(); if(f.heal>0 && api.healEnemyPct) api.healEnemyPct(f.heal); if(f.wipe && api.wipeBoard) api.wipeBoard(); return; }   // wipe＝震掉整盤換下一盤（ver -2694）   // 震畫面＋（可選）敵回血 heal＝最大 HP 比例（ver -2692 崩岩巨像咆哮）
 }
 /* 紫白光芒（ver -2525，Ray：「暴炎時從中心發出紫白光芒快速籠罩畫面後快速淡出，用首頁的光圈特效來改，外圈改紫色」）：
@@ -1453,6 +1459,15 @@ function spawnVioletFlash(o){   // o.tone＝色調 class（'orange'）、o.at＝
 }
 /* ══ 地面揚塵（HITFX base 'dust'，ver -2681，Ray：「受擊效果是地面揚塵」）══
    沿敵人區底緣揚起一叢土灰（樣子借劇情揚煙那一顆 `.dustpuff`，同一份漸層與動畫）。每一顆自己收。 */
+function spawnSoundwave(o, n){
+  const top=$('top'); if(!top) return;
+  const x=o?o.x:top.clientWidth*0.5, y=o?o.y:top.clientHeight*0.3;
+  for(let i=0;i<n;i++){
+    const el=document.createElement('i'); el.className='soundwave';
+    el.style.left=x+'px'; el.style.top=y+'px'; el.style.animationDelay=(i*110)+'ms';
+    top.appendChild(el); setTimeout(()=>el.remove(), 1000+i*110);
+  }
+}
 function spawnGroundDust(){
   const host=hitLayer(); if(!host) return;
   for(let i=0;i<14;i++){

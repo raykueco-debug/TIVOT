@@ -792,7 +792,7 @@ export const ENEMIES = {
       stack:1,
       brBonus:0.5,
       image:'enemy_np_boss',
-      bg:'northport_church_bf',
+      bg:'northport_church_ruin', bgLock:true,   // ver -2784 Ray：背景換成跟紫黑之爪同一張（教堂殘垣）
       fit:{ mode:'contain', pos:'center bottom' },
       hp:440,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -802,8 +802,8 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
-        delay:'blunt',
-        wrong:'blood',
+        delay:'none',   // ver -2784：延時／點錯＝仰頭咆哮，效果是音波震掉整盤（動作段 fx），不疊受擊圖
+        wrong:'none',
         assault:'blunt',
       },
     },

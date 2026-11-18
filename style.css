@@ -5755,3 +5755,9 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
 
 /* 多組爪痕（enemy.clawSets，ver -2772）：同 #claw.on 那張三爪圖，各自定位、轉角度；動態生成，開機不抓圖 */
 #top .claw-set{position:absolute;pointer-events:none;z-index:8;opacity:0;background:url('resources/effects/ef_claws.webp') center/contain no-repeat;animation:clawFlash .42s ease-out;}
+
+/* 咆哮音波（ver -2784，enemy.spawnSoundwave）：從嘴擴散的一圈圈音波環，疊加混合，0.9 秒擴出畫面 */
+#top .soundwave{position:absolute;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;pointer-events:none;z-index:6;
+  border:6px solid rgba(255,236,210,.85);box-shadow:0 0 18px rgba(255,220,180,.7),inset 0 0 14px rgba(255,220,180,.5);
+  mix-blend-mode:screen;opacity:0;animation:soundwaveRing .9s cubic-bezier(.2,.7,.3,1) forwards;}
+@keyframes soundwaveRing{0%{transform:scale(.3);opacity:.95;border-width:8px}100%{transform:scale(22);opacity:0;border-width:1px}}
