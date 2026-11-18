@@ -3633,7 +3633,7 @@ export function setEnemy(key, opts){
     { const on=!plate && !en.sky && /^sky_/i.test(nm); setSkyPan(on ? nm : null, on ? story.bgUrl(nm) : ''); }
     /* 前景切塊（卡上 `fgCut`，ver -2756，Ray：「取原背景的一部份疊上去…照地上殘磚的紋路切」）：
        同一張背景切出來的透明圖、跟背景一樣 center/cover ⇒ 自動對齊，疊在敵人上面（紫黑之爪：磚堆擋住黑翼根部） */
-    { let fg=$('enFgCut'); if(en.fgCut){ if(!fg){ fg=document.createElement('div'); fg.id='enFgCut'; topEl.appendChild(fg); }
+    { let fg=$('enFgCut'); if(en.fgCut){ if(!fg){ fg=document.createElement('div'); fg.id='enFgCut'; const vg=$('topVignette'); if(vg) topEl.insertBefore(fg, vg); else topEl.appendChild(fg); }   // 插在暗角之前：跟後景一起被壓暗，色調才一樣
         fg.style.backgroundImage='url("'+en.fgCut+'")'; } else if(fg) fg.remove(); }
   }
   /* ⚠ `noArt`：開機那一次不載圖，而且**把 src 整個拔掉** —— 只是不載的話

@@ -5746,4 +5746,4 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   filter:drop-shadow(0 0 4px rgba(110,255,160,.95));}
 
 /* 前景切塊（enemy.setEnemy 的 `fgCut`，ver -2756）：與 #top 背景同一張圖切出來、同樣 center/cover ⇒ 對齊；疊在敵人（#enemyImg／.en-idle）之上 */
-#enFgCut{position:absolute;inset:0;pointer-events:none;z-index:3;background:center/cover no-repeat;}
+#enFgCut{position:absolute;inset:0;pointer-events:none;background:center/cover no-repeat;}   /* 不給 z-index：照 DOM 順序疊在敵人之上、#topVignette 之下 */
