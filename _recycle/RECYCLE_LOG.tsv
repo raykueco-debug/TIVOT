@@ -1441,3 +1441,4 @@ when	from	to	reason
 20261118-181653	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-181653	鐵衣苦修者 D 未平滑版（ver -2721）
 20261118-182322	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-182322	鐵衣苦修者 D 平滑版（ver -2722 改照對位頁 96 格原值）
 20261118-185112	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-185112	鐵衣苦修者 D 對位頁版（ver -2723 換成 Ray 在 chk 調好的 cut）
+20261118-200331	resources/enemy/anim/mon_canyon_bonecrab_dark_delay_v1	_recycle/resources/enemy/anim/mon_canyon_bonecrab_dark_delay_v1	骸殼蟹 D 舊的出框版（ver -2736 換成橫框 Wan＋Ray 剪＋往前推）

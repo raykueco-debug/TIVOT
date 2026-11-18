@@ -42,6 +42,7 @@ export const HITFX = {
   bell_claw:    { base:'claw', se:'em_slash', count:1 },   // 鐘殼蟲揮鉗（ver -2663，Ray：「slash 保留 跟隨動作三下」）：單爪痕＋揮砍音，跟著 strikes 三下各一次；嘶鳴另走 ENEMY_ATK 的 `windupSe`
   chain_maul:   { base:'claw', se:'em_slash', count:3, scale:1.35, flip:true, angle:-12 },   // 鎖鏈餓犬撲咬（ver -2668／-2669，Ray：「受擊特效用爪痕跟 slash」「爪痕大一點 要跟揮爪速度一樣」）：三道爪痕放大 1.35、由左往右 250ms 劃出（片子第 39→45 格那一揮）＋揮砍音；吼聲另由 ENEMY_ATK `windupSe` 從轉正那一格放
   stilt_claw:   { base:'claw', se:'em_slash', count:3, scale:1.3, flip:true, angle:12 },   // 高蹺細影斜劈（ver -2706，Ray：「音效用 slash 受擊用跟揮擊角度一樣的爪痕」）：片子是左上→右下的斜劈 ⇒ flip（左上→右下）再往下壓 12°
+  candletower_claw: { base:'claw', se:'em_slash', count:3, scale:1.3, flip:true, angle:20 },   // 禍魘祭司爪擊（ver -2734，Ray：「角度爪痕跟爪擊音」）：片子是左上→右下的大斜劈 ⇒ flip 再往下壓 20°＋揮砍音
   crawler_hit:  { base:'claw', se:'em_slash', count:1, angle:16 },   // 爬行朝聖者（ver -2708，Ray：「單爪受擊特效 同角度」）：單爪痕＋揮砍音；片子那一揮是右上→左下、接近水平的弧 ⇒ 原圖（左下→右上約 26°）轉 16° 壓成約 10° 的斜線。原 -2671：鈍擊＋揮砍音
   beetle_claw:  { base:'claw', se:'em_slash', count:1, angle:26 },   // 石棺甲蟲（ver -2674，Ray：「固定橫痕 slash 在最大時出」）：單爪痕轉成水平（原圖那一道往右上斜 26°）＋揮砍音
   pilgrim_sonic:{ base:'sonic', se:'se_enemy_squeal_echo' },   // 朝聖者團塊聲波（ver -2676，Ray：「se_enemy_squeal 尾音迴音」）：聲波環＋數字淡出，配加了迴音尾的尖嘯
@@ -100,7 +101,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2733';
+export const VERSION = 'ver 2026.11.18-2736';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5814,7 +5815,7 @@ export const ENEMY_IDLE = {
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
-  mon_relic_candletower: { dir:'resources/enemy/anim/mon_relic_candletower_atk_v1/', hit:9 },   // 禍魘祭司（北泊）A：tiger rule 爪擊 AB＋BA（32 格），打到＝AB 最後一格（ver -2732）
+  mon_relic_candletower: { dir:'resources/enemy/anim/mon_relic_candletower_atk_v1/', hit:9, hitFx:'candletower_claw' },   // 禍魘祭司（北泊）A：tiger rule 爪擊 AB＋BA（32 格），打到＝AB 最後一格（ver -2732）
   mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_atk_v1/', hit:13 },   // 罪之魔像（北泊）A：tiger rule 撲擊 AB＋BA（29 格），打到＝AB 最後一格（ver -2732）
   mon_centipi_side: { dir:'resources/enemy/anim/mon_centipi_side_atkprep_v1/', prep:true, slideFrom:16, sweep:'resources/enemy/anim/mon_centipi_side_atk_v1/' },   /* sweep＝A 本體：腹面 loop（Ray 剪的 mon_centipi_belly_even2_wave_cut，48 格），放大從操作盤線下快速斜上衝（-2550） */   // 巨型蜈蚣 A 的準備動作（ver -2546，Ray 剪的 centipi_dive_joined_v2_cut，22 格：側面轉正、下潛）；第 16 格（頭出畫面、只剩身體尾巴）起邊播邊往下滑出畫面（-2547），再接劃過（A 動畫還沒交，先用程式的劃過）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_atk_v1/', hit:48, fx:[{ frame:8, type:'rubble' }, { frame:44, type:'violetFlash' }] },   // A＝振翅接爆炎（64 格）；第 8 格下拍到底噴瓦礫、爆炎時紫白光芒籠罩畫面（ver -2525）
@@ -5877,7 +5878,7 @@ export const ENEMY_DELAY = {
   mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_delay_v1/', hit:5,
     fx:[{ frame:5, type:'rubble', at:[0.22,0.30], n:30, speed:1.8, se:'se_rockimpact' }] },   // ver -2701（Ray：「飛石快一點 石頭音用搥地的石頭音」）：1.8 倍速、音效換攻擊拳砸地那支
   mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20 },   // 朝聖者團塊＝D 的本職（ver -2655，Ray：「D 一定出聲波」；聲波本身在卡上 hitFx.delay:'sonic'）
-  mon_canyon_bonecrab_dark: { dir:'resources/enemy/anim/mon_canyon_bonecrab_dark_delay_v1/', hit:16 },   // 卡耶爾群戰（ver -2623）
+  mon_canyon_bonecrab_dark: { dir:'resources/enemy/anim/mon_canyon_bonecrab_dark_delay_v1/', hit:4 },   // 卡耶爾群戰（ver -2623）；ver -2736：換成橫框 Wan（主體 52%，不出框）＋Ray 剪的 canyon_crab_wide2_cut（21 格），身體不縮、張鉗那幾格往鏡頭推 1.25；打到＝張最開的第 4 格
   mon_canyon_ironpenitent_neutral: { dir:'resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1/', hit:38, hitFx:'iron_smash', windupSe:'se_chain_heavy', retractSe:'se_chain_heavy', retractAt:53 },   // ver -2723：換成 Ray 在 chk 逐格調好大小位置的 cut（iron_delay_orig_cut，98 格；打到＝原第 40 格＝第 38 格，收回音＝原第 56 格＝第 53 格）   // ver -2720（Ray：「關掉倒放」）：片子本身已含收回，拿掉 rev（群戰會整支再倒放一次＝砸兩次）；收回的鐵鏈聲改在第 51 格（retractAt）放   // ver -2680（Ray：「動作開始 se_chain_heavy／擊中 heavymetal／收回 se_chain_heavy」）   // rev＝播完倒放回中立（Ray 11-15「鐵衣 R＝倒放」；目前只有群戰讀）   // ver -2719：Ray 在對位頁逐格手調（resources/enemy/anim/_iron_delay_anchor.json），刪第 11、12、53～55 格（96 格），打到 40→38
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_burst_v1/', hit:48 },   // D＝爆炎（81 格；ver -2525 Ray 改：爆炎是 D，之後下一發攻擊 200%，見卡上 delayEmpowers）
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7 },   // 訓練用聖徒 新架勢 攻擊＝延時＝點錯（ver -2527，31 格，最後一格回到架勢）

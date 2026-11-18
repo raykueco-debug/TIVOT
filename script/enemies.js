@@ -667,7 +667,7 @@ export const ENEMIES = {
       hitFx:{
         delay:'blood',
         wrong:'slash',
-        assault:'blunt',
+        assault:'candletower_claw',   // ver -2734（Ray：「角度爪痕跟爪擊音」）
       },
     },
     np_candlepenitent: {
