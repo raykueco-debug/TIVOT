@@ -1444,3 +1444,4 @@ when	from	to	reason
 20261118-200331	resources/enemy/anim/mon_canyon_bonecrab_dark_delay_v1	_recycle/resources/enemy/anim/mon_canyon_bonecrab_dark_delay_v1	骸殼蟹 D 舊的出框版（ver -2736 換成橫框 Wan＋Ray 剪＋往前推）
 20261118-213051	resources/enemy/mon_beast_altar.webp	_recycle/resources/enemy/mon_beast_altar.webp	背負祭壇者立繪去背失誤，換 GPT 重製真 alpha 版（Ray：用新色）
 20261118-214000	resources/enemy/mon_relic_reassembled.webp	_recycle/resources/enemy/mon_relic_reassembled.webp	心魘立繪去背失誤，換 GPT 重製真 alpha 版並調暗（Ray）
+20261118-223551	resources/enemy/anim/mon_beast_altar_idle_v2	_recycle/resources/enemy/anim/mon_beast_altar_idle_v2	改用 breath2（breath 那一組布幡被畫面切到）

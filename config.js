@@ -102,7 +102,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2759';
+export const VERSION = 'ver 2026.11.18-2761';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5799,7 +5799,7 @@ export const ENEMY_IDLE = {
   mon_natalia_neutral: 'resources/enemy/anim/mon_natalia_idle_v3/',
   mon_np_anyawings: 'resources/enemy/anim/mon_np_anyawings_idle_v1/',   // 安雅光翼 待機（ver -2524）
   saint_tr_neutral2: 'resources/enemy/anim/saint_tr_neutral2_idle_v1/',   // 訓練用聖徒 新架勢待機（ver -2527，48 格 loop）
-  mon_beast_altar: 'resources/enemy/anim/mon_beast_altar_idle_v1/',   // E019 背負祭壇者 待機（ver -2517，48 格 loop）
+  mon_beast_altar: 'resources/enemy/anim/mon_beast_altar_idle_v2/',   // ver -2760：新立繪的布幡飄動＋呼吸待機（Ray 剪的 np_altar_breath_cut 的格子套在沒出框的 breath2 上）   // E019 背負祭壇者 待機（ver -2517，48 格 loop）
   /* 空戰側面待機（ver -2472，美術陸續交件；空戰剪法：48 格 24fps） */
   mon_sky_mawbat_side: 'resources/enemy/anim/mon_sky_mawbat_side_idle_v1/',
   mon_sky_ribwhale_side: 'resources/enemy/anim/mon_sky_ribwhale_side_idle_v1/',
