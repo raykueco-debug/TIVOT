@@ -101,7 +101,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2754';
+export const VERSION = 'ver 2026.11.18-2756';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4072,7 +4072,7 @@ export const GAME_CONFIG = {
       se_dart_fail:2.792,
       /* ── 劇情／城鎮（這一批以前完全沒有增益，見上面的說明）── */
       se_lightup:1.34,   // ver -1859：本機量 −16.1 LUFS（耳機−15.2／手機−17.0 平均），以 se_steps 校正 +0.25 dB
-      se_steps:4.92, se_clickstep:5.9 /* ver -2724 實測 −28.8 LUFS、峰值 −5.2 dBFS（被 peakCeilDb 夾住）CAP */, se_stepsbig:6.96,   /* ver -1915：stepsbig 換新（Ray 交 wav，4.3 秒，原檔進 _originals，?v=4）；audio_scan 建議 7.84 × 校準比 7.198／8.11 */   /* ver -1914（Ray：「se_steps 改了，城鎮、室外都用這個；se_stepsbig 只用在遺跡內、地宮內的跑步聲」）：se_steps 換新（3.8 秒，原 mp3 在 se/_raw/，?v=3）；增益照 audio_scan 建議值 5.54 × 舊檔校準比（7.198／8.11）＝4.92 */   // ver -1871：se_steps 換新（ffmpeg ebur128 耳機−23.9／手機−24.8，以舊檔 7.198 校正 −6.8 dB）；se_stepsbig＝舊的那支原檔
+      se_steps:4.92, se_flame:0.66 /* ver -2755 實測 −10.2 LUFS */, se_clickstep:5.9 /* ver -2724 實測 −28.8 LUFS、峰值 −5.2 dBFS（被 peakCeilDb 夾住）CAP */, se_stepsbig:6.96,   /* ver -1915：stepsbig 換新（Ray 交 wav，4.3 秒，原檔進 _originals，?v=4）；audio_scan 建議 7.84 × 校準比 7.198／8.11 */   /* ver -1914（Ray：「se_steps 改了，城鎮、室外都用這個；se_stepsbig 只用在遺跡內、地宮內的跑步聲」）：se_steps 換新（3.8 秒，原 mp3 在 se/_raw/，?v=3）；增益照 audio_scan 建議值 5.54 × 舊檔校準比（7.198／8.11）＝4.92 */   // ver -1871：se_steps 換新（ffmpeg ebur128 耳機−23.9／手機−24.8，以舊檔 7.198 校正 −6.8 dB）；se_stepsbig＝舊的那支原檔
       se_walk:4.481, se_fall:3.724, se_punch:1.596,
       se_tummy:8.268, se_sailorshout:2.048, se_sleep:1.708,
       se_kerberos_open:1.558, se_kerberos_pop:1.479, se_kerberos_steam:1.301,
@@ -4696,7 +4696,7 @@ export const ASSETS = {
   enemy_np_candletower:    "resources/enemy/mon_relic_candletower.webp?v=d3ea7ec1",
   enemy_np_candlepenitent: "resources/enemy/mon_relic_candlepenitent.webp?v=c5142b92",
   enemy_np_coralman:       "resources/enemy/mon_sea_coralman.webp?v=754847d3",
-  enemy_np_reassembled:    "resources/enemy/mon_relic_reassembled.webp?v=b0329247",
+  enemy_np_reassembled:    "resources/enemy/mon_relic_reassembled.webp?v=442fb824",
   /* ⚠ 美術把 `mon_beast_altar` 更名成 `mon_beast_reliquary`（ver -928 才發現）——
      舊檔名一直指著一個不存在的檔案＝北泊教堂 Boss 沒有立繪，而**畫面上不會有錯誤訊息**。
      自檢：把 config 裡所有 resources 路徑抓出來逐個 `test -f`（同 §5 的同名覆蓋自檢）。 */
@@ -5078,6 +5078,7 @@ export const ASSETS = {
   se_crush_deepmetal: "resources/audio/se/se_crush_deepmetal.m4a",
   se_clickstep: "resources/audio/se/se_clickstep.mp3",
   se_brickcrush: "resources/audio/se/se_brickcrush.m4a",   // 崩岩巨像咆哮清盤的碎瓦聲（ver -2728，Ray：「miss 音配碎瓦」；劇情那邊走 story.SE_FILES，同一支檔）   // 肋籠獸爪子踩地（ver -2724，Ray 找的）
+  se_flame: "resources/audio/se/se_flame.mp3",   // 紫黑之爪每一個動作的起手（ver -2755，Ray）
   se_rockimpact: "resources/audio/se/se_rockimpact.mp3?v=d2a1f043",   // 崩岩巨像拳砸地（ver -2689；劇情那邊走 story.SE_FILES，同一支檔）   // 鐵衣苦修者錘砸中（ver -2680）
   se_enemy_breathfire: "resources/audio/se/se_enemy_breathfire.m4a",   // 肋籠獸噴火（ver -2686，取原檔 0.5～2.3 秒）
   se_brickcrush:        "resources/audio/se/se_brickcrush.m4a",   // 黑爪登場（原本只在 story 的 SE_FILES）
@@ -5818,7 +5819,7 @@ export const ENEMY_ATK = {
   mon_relic_candletower: { dir:'resources/enemy/anim/mon_relic_candletower_atk_v1/', hit:9, hitFx:'candletower_claw' },   // 禍魘祭司（北泊）A：tiger rule 爪擊 AB＋BA（32 格），打到＝AB 最後一格（ver -2732）
   mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_atk_v1/', hit:13 },   // 罪之魔像（北泊）A：tiger rule 撲擊 AB＋BA（29 格），打到＝AB 最後一格（ver -2732）
   mon_centipi_side: { dir:'resources/enemy/anim/mon_centipi_side_atkprep_v1/', prep:true, slideFrom:16, sweep:'resources/enemy/anim/mon_centipi_side_atk_v1/' },   /* sweep＝A 本體：腹面 loop（Ray 剪的 mon_centipi_belly_even2_wave_cut，48 格），放大從操作盤線下快速斜上衝（-2550） */   // 巨型蜈蚣 A 的準備動作（ver -2546，Ray 剪的 centipi_dive_joined_v2_cut，22 格：側面轉正、下潛）；第 16 格（頭出畫面、只剩身體尾巴）起邊播邊往下滑出畫面（-2547），再接劃過（A 動畫還沒交，先用程式的劃過）
-  mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_atk_v1/', hit:48, fx:[{ frame:8, type:'rubble' }, { frame:44, type:'violetFlash' }] },   // A＝振翅接爆炎（64 格）；第 8 格下拍到底噴瓦礫、爆炎時紫白光芒籠罩畫面（ver -2525）
+  mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_atk_v1/', hit:48, windupSe:'se_flame', fx:[{ frame:8, type:'rubble', se:'se_rockimpact' }, { frame:44, type:'violetFlash', se:'se_enemy_holyburst' }] },   // ver -2755 Ray：每個動作 se_flame、振石配 rock、放光配 holyburst   // A＝振翅接爆炎（64 格）；第 8 格下拍到底噴瓦礫、爆炎時紫白光芒籠罩畫面（ver -2525）
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7, near:1.35, nearIn:130 },   /* nearIn：拉近只花打到前的這幾毫秒（-2530 Ray「拉近的速度快一點」） */   // 訓練用聖徒 新架勢 攻擊（ver -2527，31 格；-2529 Ray「攻擊時要拉近撲前」打到那一格放大到 1.35）
   mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_atk_v1/', hit:7, hitFx:'colossus_smash' },   // ver -2689：打擊＝拳頭落地第 7 格（原 21 是拳停在鏡頭前），地面揚塵＋落石＋重金屬
   /* 卡耶爾群戰成員（ver -2623，Kling、快剪 24fps；片尾 B 停格約 1 秒）。hit＝主體最大那一格（交件單）。 */
@@ -5869,7 +5870,7 @@ export const ENEMY_MISS = {
   mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20 },   // 卡耶爾群戰（ver -2623）
   mon_canyon_stilt_neutral: { dir:'resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1/', hit:7, hitFx:'stilt_claw' },   // ver -2705：Ray 剪的 cut（18 格，原片 0,1,7,8,28,29,35,42,49,70…98），打到＝斜劈第 7 格（原 42）。ver -2704：換成 GPT 四宮格 1→2→3 ＋回中立 I 的橫框 Wan（99 格、未剪，先接上）；打到暫定斜劈中段第 55 格
   mon_bear_nightmare: { dir:'resources/enemy/anim/mon_bear_nightmare_miss_v1/', hit:37 },   // 熊骸（夢魘）點錯＝爪擊（ver -2620，KF 第二輪，62 格）
-  mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, fx:[{ frame:48, type:'rubble' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
+  mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, windupSe:'se_flame', fx:[{ frame:48, type:'rubble', se:'se_rockimpact' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
   mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_delay_v1/', hit:6 },   // 罪之魔像（北泊）D：Ray 剪的 delay_cut_2（24 格），打到暫定主體最大第 6 格（ver -2732）
@@ -5880,7 +5881,7 @@ export const ENEMY_DELAY = {
   mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20 },   // 朝聖者團塊＝D 的本職（ver -2655，Ray：「D 一定出聲波」；聲波本身在卡上 hitFx.delay:'sonic'）
   mon_canyon_bonecrab_dark: { dir:'resources/enemy/anim/mon_canyon_bonecrab_dark_delay_v1/', hit:4 },   // 卡耶爾群戰（ver -2623）；ver -2736：換成橫框 Wan（主體 52%，不出框）＋Ray 剪的 canyon_crab_wide2_cut（21 格），身體不縮、張鉗那幾格往鏡頭推 1.25；打到＝張最開的第 4 格
   mon_canyon_ironpenitent_neutral: { dir:'resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1/', hit:38, hitFx:'iron_smash', windupSe:'se_chain_heavy', retractSe:'se_chain_heavy', retractAt:53 },   // ver -2723：換成 Ray 在 chk 逐格調好大小位置的 cut（iron_delay_orig_cut，98 格；打到＝原第 40 格＝第 38 格，收回音＝原第 56 格＝第 53 格）   // ver -2720（Ray：「關掉倒放」）：片子本身已含收回，拿掉 rev（群戰會整支再倒放一次＝砸兩次）；收回的鐵鏈聲改在第 51 格（retractAt）放   // ver -2680（Ray：「動作開始 se_chain_heavy／擊中 heavymetal／收回 se_chain_heavy」）   // rev＝播完倒放回中立（Ray 11-15「鐵衣 R＝倒放」；目前只有群戰讀）   // ver -2719：Ray 在對位頁逐格手調（resources/enemy/anim/_iron_delay_anchor.json），刪第 11、12、53～55 格（96 格），打到 40→38
-  mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_burst_v1/', hit:48 },   // D＝爆炎（81 格；ver -2525 Ray 改：爆炎是 D，之後下一發攻擊 200%，見卡上 delayEmpowers）
+  mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_burst_v1/', hit:48, windupSe:'se_flame' },   // D＝爆炎（81 格；ver -2525 Ray 改：爆炎是 D，之後下一發攻擊 200%，見卡上 delayEmpowers）
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7 },   // 訓練用聖徒 新架勢 攻擊＝延時＝點錯（ver -2527，31 格，最後一格回到架勢）
   mon_saint_inspector: { dir:'resources/enemy/anim/mon_saint_inspector_delay_v1/', hit:23 },   // 監查者 翅膀揮動（ver -2620，KF 第二輪，39 格）
   mon_shinierforest_deernightmare: { dir:'resources/enemy/anim/mon_shinierforest_deernightmare_atk_v1/', hit:32 },   // 變異樹靈鹿主 延時＝攻擊同一支（ver -2620）
@@ -6553,7 +6554,7 @@ export const ASSET_VER = {
   'mon_pallid_stag': 'b0bd8089',
   'mon_relic_candlepenitent': 'c5142b92',
   'mon_relic_candletower': 'd3ea7ec1',
-  'mon_relic_reassembled': 'b0329247',
+  'mon_relic_reassembled': '442fb824',
   'mon_reliquary_hand': '9216bd5c',
   'mon_sarcoph_crawler': '427145a4',
   'mon_sea_coralman': '754847d3',

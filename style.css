@@ -5744,3 +5744,6 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   linear-gradient(to right, transparent 38%, rgba(220,255,230,.95) 38% 62%, transparent 62%),
   linear-gradient(to bottom, transparent 38%, rgba(220,255,230,.95) 38% 62%, transparent 62%);
   filter:drop-shadow(0 0 4px rgba(110,255,160,.95));}
+
+/* 前景切塊（enemy.setEnemy 的 `fgCut`，ver -2756）：與 #top 背景同一張圖切出來、同樣 center/cover ⇒ 對齊；疊在敵人（#enemyImg／.en-idle）之上 */
+#enFgCut{position:absolute;inset:0;pointer-events:none;z-index:3;background:center/cover no-repeat;}

@@ -3631,6 +3631,10 @@ export function setEnemy(key, opts){
        縮放／上下偏移照舊只套在人那一組（applyEnemyFit）。不是 plate 的背景維持 CSS 原本的對位。 */
     topEl.style.backgroundPosition = plate ? (((en.fit||{}).pos)||'50% 50%') : '';
     { const on=!plate && !en.sky && /^sky_/i.test(nm); setSkyPan(on ? nm : null, on ? story.bgUrl(nm) : ''); }
+    /* 前景切塊（卡上 `fgCut`，ver -2756，Ray：「取原背景的一部份疊上去…照地上殘磚的紋路切」）：
+       同一張背景切出來的透明圖、跟背景一樣 center/cover ⇒ 自動對齊，疊在敵人上面（紫黑之爪：磚堆擋住黑翼根部） */
+    { let fg=$('enFgCut'); if(en.fgCut){ if(!fg){ fg=document.createElement('div'); fg.id='enFgCut'; topEl.appendChild(fg); }
+        fg.style.backgroundImage='url("'+en.fgCut+'")'; } else if(fg) fg.remove(); }
   }
   /* ⚠ `noArt`：開機那一次不載圖，而且**把 src 整個拔掉** —— 只是不載的話
      上一次留下的那張還掛在 `#enemyImg` 上，空窗一樣會露出來。 */
