@@ -763,9 +763,9 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
-        delay:'reassembled_claw',
-        wrong:'reassembled_claw',
-        assault:'reassembled_wave',
+        delay:'reassembled_wave',
+        wrong:'reassembled_wave',
+        assault:'reassembled_claw',
       },
     },
     /* ══ 教堂的 Boss（ver -586，Ray：「B2G01，教堂 boss 用這一隻，跟其他怪數值
