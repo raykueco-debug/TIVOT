@@ -98,7 +98,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.17-2686';
+export const VERSION = 'ver 2026.11.18-2688';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5813,7 +5813,7 @@ export const ENEMY_ATK = {
   mon_canyon_ribcage_dark: { dir:'resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1/', hit:30, hitFx:'rib_fire', flame:{ from:28, to:42, at:[0.687,0.51] }, skip:[42,58] },   // ver -2683（Ray：「換成從尾部噴射火燄的特效」）：長頸末端的嘴第 28～70 格朝鏡頭噴火（嘴的位置逐格量過，28～74 格穩在 0.687／0.51），打到＝火噴到第 2 格
   /* 卡耶爾 Wan 攻擊（ver -2637，敵人副理 f13d457f／ce7379fe；Ray：「有一些 WAN 的動畫也要接上」）。交件單沒寫打到格 ⇒ 取「與第 0 格差最多」那一格（動作最大的一刻）。
      （聖面鷲／骨鴉 -2641 起改成「一閃」，見下面 `issen` 那兩列。） */
-  mon_canyon_hanged_dark: { dir:'resources/enemy/anim/mon_canyon_hanged_dark_atk_v1/', hit:19 },   // 崖縫吊屍者 張手咆哮（99 格，片尾已接 R 倒放）
+  mon_canyon_hanged_dark: { dir:'resources/enemy/anim/mon_canyon_hanged_dark_atk_v1/', hit:19, hitFx:'pilgrim_sonic' },   // 崖縫吊屍者 張手咆哮（99 格，片尾已接 R 倒放）；打到時放音爆＝與朝聖者團塊同一組（聲波環＋數字淡出＋se_enemy_squeal_echo，ver -2688；-2687 先接，Ray：「崖縫吊屍者加入音爆效果」）
   /* 一閃（ver -2641，-2646 Ray 命名；憲法 natali rule 第 13 條）：`issen:true` ＝片子只演「殘影消失」（10 格），播完程式接一條刀斬光線隨機角度一閃
      （閃到滿那一刻＝打到、不放受擊特效）。`home` ＝之後怎麼歸位（Ray：「歸位另算」）：'dive'＝從上方略斜飛回、衝過頭拉回、拍翅；沒寫＝原地淡回。
      實作只有 enemy.memberIssen／issenHome 兩支。 */
