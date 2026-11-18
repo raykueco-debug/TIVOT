@@ -101,7 +101,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2736';
+export const VERSION = 'ver 2026.11.18-2754';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4704,7 +4704,7 @@ export const ASSETS = {
      **不是改名，是兩隻不同的怪** —— `mon_beast_altar`（背上扛著教堂的祭壇獸＝背負祭壇者）在
      ver -919（58533b9d）被刪掉，-928 把它誤判成「更名為 reliquary」，於是背負祭壇者一直借聖匣熊的圖。
      已從 git（fc0ba3a2）原樣放回 `mon_beast_altar.webp`。聖匣熊照舊給 `enemy_sv_reliquary`。 */
-  enemy_np_boss: "resources/enemy/mon_beast_altar.webp?v=314d3a60",
+  enemy_np_boss: "resources/enemy/mon_beast_altar.webp?v=2e3ff58b",
   enemy_canyon_colossus: "resources/enemy/mon_canyon_colossus_dark.webp",   // 卡耶爾谷底 Boss（ver -2160）
   enemy_canyon_censer: "resources/enemy/mon_canyon_censer_dark.webp",   // 卡耶爾 香爐蠍 單隻（ver -2631）
   enemy_canyon_houndbeast: "resources/enemy/mon_canyon_houndbeast.webp",   // 卡耶爾 餓獸 單隻（ver -2631）
@@ -6525,7 +6525,7 @@ export const ASSET_VER = {
   'mon_arch_warden': '69358667',
   'mon_bear_husk': '08453d77',
   'mon_bear_nightmare': '8b9715dd',
-  'mon_beast_altar': '314d3a60',
+  'mon_beast_altar': '2e3ff58b',
   'mon_beast_organ': '2cb2855b',
   'mon_beast_reliquary': '9e728c27',
   'mon_beast_shackle': '3f7e0727',
