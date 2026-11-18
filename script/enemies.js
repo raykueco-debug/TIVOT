@@ -1524,7 +1524,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'50% 100%', shiftY:-0.03 },   // ver -1883 敵立繪編輯面板
       hp:440, attack:17, atkInterval:null, delayPenalty:{ seconds:6 },
       entrance:null, special:[], boardGrids:[9,9,9,16,16],
-      hitFx:{ delay:'blunt', wrong:'blood', assault:'blunt' }, loot:[],
+      hitFx:{ delay:'blunt', wrong:'blood', assault:'colossus_smash' }, loot:[],
     },
     guild_hunter: {
       name:'賞金獵人',

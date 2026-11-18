@@ -336,6 +336,19 @@ function playWhenRunning(buf, vol, t0, voice, handle, src){
 }
 
 // 播放音檔（src＝已解析路徑）。已解碼→立即播；未解碼→限時補播（逾時放棄）。null/空→靜默略過。
+const _fitCache = {};
+function fitBuffer(c, buf, from, to, dur){
+  try{
+    const sr=buf.sampleRate, ch=buf.numberOfChannels, a0=Math.max(0,Math.round(from*sr)), a1=Math.min(buf.length, Math.round(to*sr));
+    const N=Math.max(1, Math.round(dur*sr)), G=Math.round(0.06*sr), hopO=G>>1, ratio=(a1-a0)/N, hopI=hopO*ratio;
+    const out=c.createBuffer(ch, N, sr), win=new Float32Array(G);
+    for(let i=0;i<G;i++) win[i]=0.5-0.5*Math.cos(2*Math.PI*i/G);
+    for(let q=0;q<ch;q++){ const src=buf.getChannelData(q), dst=out.getChannelData(q);
+      for(let k=0;k*hopO<N;k++){ const ip=Math.round(a0+k*hopI), op=k*hopO;
+        for(let i=0;i<G && op+i<N;i++){ const j=ip+i; if(j>=a1) break; dst[op+i]+=src[j]*win[i]; } } }
+    return out;
+  }catch(_){ return null; }
+}
 function playSrc(src, vol, voice, handle){
   if(!src) return;
   if(!ctx()) return;
@@ -748,6 +761,18 @@ export const SFX = {
   play(src, vol){ playSrc(src, vol); },
   /* 變調播一次（rate＞1 高、＜1 低；ver -2453）。 */
   playRate(src, vol, rate){ playSrc(src, vol, false, { rate }); },
+  /* ══ 保持音高的時間伸縮（ver -2692，Ray：「音效用 dragonroar 時間壓縮到吼叫那幾格 pitch 保持低沉」
+     「不要改原音效 個別怪播放時用原 se 進行的調整而已」）══
+     取原檔 [from,to] 秒那一段，伸縮成 dur 秒播出：疊接法（OLA，60ms Hann 窗、輸出 50% 重疊），
+     音高不變（playbackRate 會連音高一起拉高，所以不用它）。結果依 (src,from,to,dur) 快取，原檔的 buffer 不動。 */
+  playFit(src, vol, fit){
+    if(!src || !fit || !ctx()) return;
+    const k=src+'|'+fit.from+'|'+fit.to+'|'+fit.dur, c=ctx();
+    const go=b=>{ if(!b) return; let o=_fitCache[k];
+      if(!o){ o=_fitCache[k]=fitBuffer(c, b, +fit.from||0, (fit.to!=null ? +fit.to : b.duration), +fit.dur); }
+      if(o) playWhenRunning(o, vol, Date.now(), false, null, src); };
+    const buf=_buffers[src]; if(buf) go(buf); else load(src).then(go);
+  },
   /* 播一支**可中止**的音效，回傳把手：`.stop(fadeMs)` 收掉它。
      用途：演出用的機械聲（Kerberos 的齒輪）必須跟著動畫收尾，不能自己響完 ——
      素材 6.9 秒、動畫只有 1.6 秒，不收的話門都開完了齒輪還在轉。

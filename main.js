@@ -314,7 +314,7 @@ function scanAudioNames(obj, out, depth, inAudio){
     /* `hitFx` 的值是 HITFX 的鍵 —— 再查一層才是音效名。 */
     if(k==='hitFx' && v){
       const fxs = (typeof v==='string') ? [v] : Object.keys(v).map(x=>v[x]);
-      for(const f of fxs){ const row = HITFX[f]; if(row && row.se) out.push(row.se); }
+      for(const f of fxs){ const row = HITFX[f]; if(row && row.se) out.push(...[].concat(row.se)); }
       continue;
     }
     const aud = inAudio || AUDIO_KEY.test(k);

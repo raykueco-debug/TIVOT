@@ -45,7 +45,8 @@ export const HITFX = {
   beetle_claw:  { base:'claw', se:'em_slash', count:1, angle:26 },   // 石棺甲蟲（ver -2674，Ray：「固定橫痕 slash 在最大時出」）：單爪痕轉成水平（原圖那一道往右上斜 26°）＋揮砍音
   pilgrim_sonic:{ base:'sonic', se:'se_enemy_squeal_echo' },   // 朝聖者團塊聲波（ver -2676，Ray：「se_enemy_squeal 尾音迴音」）：聲波環＋數字淡出，配加了迴音尾的尖嘯
   wyrm_bite:    { base:'blunt', se:'se_enemy_bite' },   // 喪鐘蠕蟲鐘口咬下（ver -2677，Ray：「se_enemy_bite」）：音檔裁掉前段 0.48 秒空白，咬聲＝打擊格
-  iron_smash:   { base:'dust', se:'se_crush_deepmetal' },   // 鐵衣苦修者錘砸（ver -2680／-2681，Ray：「擊中 heavymetal」「受擊效果是地面揚塵」）
+  iron_smash:   { base:'dust', se:'se_crush_deepmetal' },
+  colossus_smash:{ base:'dust', se:['se_rockimpact','se_crush_deepmetal'] },   // 崩岩巨像拳砸地（ver -2689，Ray：「擊點是拳頭落地那一瞬 地面揚塵 播 se_rockimpact 跟 se_crush_deepmetal」）：`se` 寫成陣列＝同一拍一起放   // 鐵衣苦修者錘砸（ver -2680／-2681，Ray：「擊中 heavymetal」「受擊效果是地面揚塵」）
   rib_fire:     { base:'none', se:'se_enemy_breathfire' },   // 肋籠獸噴火（ver -2686，Ray：「se_enemy_breathfire 音效用這個 不要其他受擊效果」）：不放受擊圖，畫面只有程式噴火
   /* 放光（ver -1351，王座徘徊者）。⚠ **刻意沒有 `se`**：那一支 6.7 秒、有頭有尾，
      由 `enemy.spawnHolyBurst` 用 `playCue` 的把手播（收得掉）—— 掛在這裡的話
@@ -98,7 +99,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2688';
+export const VERSION = 'ver 2026.11.18-2701';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5066,7 +5067,8 @@ export const ASSETS = {
   se_enemy_squeal_echo: "resources/audio/se/se_enemy_squeal_echo.m4a",   // squeal 加迴音尾（ffmpeg aecho 220/440/700ms），朝聖者團塊聲波（ver -2676）
   se_enemy_bite:      "resources/audio/se/se_enemy_bite.m4a",   // 喪鐘蠕蟲咬下（ver -2677）
   se_chain_heavy:     "resources/audio/se/se_chain_heavy.m4a",       // 鐵衣苦修者出手／收回的鐵鏈聲（ver -2680）
-  se_crush_deepmetal: "resources/audio/se/se_crush_deepmetal.m4a",   // 鐵衣苦修者錘砸中（ver -2680）
+  se_crush_deepmetal: "resources/audio/se/se_crush_deepmetal.m4a",
+  se_rockimpact: "resources/audio/se/se_rockimpact.mp3?v=d2a1f043",   // 崩岩巨像拳砸地（ver -2689；劇情那邊走 story.SE_FILES，同一支檔）   // 鐵衣苦修者錘砸中（ver -2680）
   se_enemy_breathfire: "resources/audio/se/se_enemy_breathfire.m4a",   // 肋籠獸噴火（ver -2686，取原檔 0.5～2.3 秒）
   se_brickcrush:        "resources/audio/se/se_brickcrush.m4a",   // 黑爪登場（原本只在 story 的 SE_FILES）
   se_mg_squall:      "resources/audio/se/se_weapon_mg_squall.m4a",       // 重機槍 反擊（連續感：整支播一次）
@@ -5806,7 +5808,7 @@ export const ENEMY_ATK = {
   mon_centipi_side: { dir:'resources/enemy/anim/mon_centipi_side_atkprep_v1/', prep:true, slideFrom:16, sweep:'resources/enemy/anim/mon_centipi_side_atk_v1/' },   /* sweep＝A 本體：腹面 loop（Ray 剪的 mon_centipi_belly_even2_wave_cut，48 格），放大從操作盤線下快速斜上衝（-2550） */   // 巨型蜈蚣 A 的準備動作（ver -2546，Ray 剪的 centipi_dive_joined_v2_cut，22 格：側面轉正、下潛）；第 16 格（頭出畫面、只剩身體尾巴）起邊播邊往下滑出畫面（-2547），再接劃過（A 動畫還沒交，先用程式的劃過）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_atk_v1/', hit:48, fx:[{ frame:8, type:'rubble' }, { frame:44, type:'violetFlash' }] },   // A＝振翅接爆炎（64 格）；第 8 格下拍到底噴瓦礫、爆炎時紫白光芒籠罩畫面（ver -2525）
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7, near:1.35, nearIn:130 },   /* nearIn：拉近只花打到前的這幾毫秒（-2530 Ray「拉近的速度快一點」） */   // 訓練用聖徒 新架勢 攻擊（ver -2527，31 格；-2529 Ray「攻擊時要拉近撲前」打到那一格放大到 1.35）
-  mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_atk_v1/', hit:21 },
+  mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_atk_v1/', hit:7, hitFx:'colossus_smash' },   // ver -2689：打擊＝拳頭落地第 7 格（原 21 是拳停在鏡頭前），地面揚塵＋落石＋重金屬
   /* 卡耶爾群戰成員（ver -2623，Kling、快剪 24fps；片尾 B 停格約 1 秒）。hit＝主體最大那一格（交件單）。 */
   mon_canyon_coffinbeetle_dark: { dir:'resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v2/', hit:16, hitFx:'beetle_claw', windupSe:'se_enemy_bug01' },   // 一支到底（片尾回中立）；ver -2675：打到＝巨大化的第一格 16（主體面積由 129k 跳到 201k、之後撐到 21 格；Ray：「巨大化的第一幀就要放效果」），水平單爪痕＋揮砍音；嘶鳴起手放（Ray：「se_enemy_bug01 + slash 跟單爪痕」「固定橫痕 slash 在最大時出」）
   mon_canyon_bellwyrm_dark: { dir:'resources/enemy/anim/mon_canyon_bellwyrm_dark_atk_v1/', hit:50, hitFx:'wyrm_bite' },
@@ -5847,12 +5849,21 @@ export const ENEMY_ENTER = {
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_MISS = {
+  /* 崩岩巨像 M＝仰天咆哮（ver -2692，Ray 剪的 cut＋鎖雙腳：21 格 16fps）：第 12／14／17 格（原片 36／42／43）震畫面，第 12 格敵回血 10%＋盤面全清換下一盤、不傷敵（ver -2694，Ray：「咆效果是把盤面全清 但是不會對他造成傷害」）（Ray：「36 42 43 格播放時畫面震動 怪回血 10%」）；
+     吼聲 se_enemy_dragonroar 取有聲的 0.1～3.5 秒、保持音高壓到第 9 格起到片尾（0.75 秒）（Ray：「時間壓縮到吼叫那幾格 pitch 保持低沉」「不要改原音效」）。R＝倒回（Ray：「咆的 r 用倒回」）：第 21 格起把第 16→0 格倒著接回中立（共 38 格），已烘進片裡。 */
+  mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_miss_v1/', hit:12,
+    fx:[{ frame:12, type:'shake', heal:0.10, wipe:true }, { frame:14, type:'shake' }, { frame:17, type:'shake' }],
+    windupSe:'se_enemy_dragonroar', windupMs:563, windupFit:{ from:0.1, to:3.5, dur:0.75 } },
   mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20 },   // 卡耶爾群戰（ver -2623）
   mon_canyon_stilt_neutral: { dir:'resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1/', hit:31 },
   mon_bear_nightmare: { dir:'resources/enemy/anim/mon_bear_nightmare_miss_v1/', hit:37 },   // 熊骸（夢魘）點錯＝爪擊（ver -2620，KF 第二輪，62 格）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, fx:[{ frame:48, type:'rubble' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
+  /* 崩岩巨像 D＝正面出拳（ver -2700，Ray 剪的 cut：15 格 16fps，打到＝拳最大的第 5 格）：
+     打到那一格從拳頭（畫面約 22%,30%）噴飛石朝鏡頭飛來＋石塊音 se_crash_rocks（Ray：「加入飛石朝 viewer 飛來特效 用石塊音效」）。 */
+  mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_delay_v1/', hit:5,
+    fx:[{ frame:5, type:'rubble', at:[0.22,0.30], n:30, speed:1.8, se:'se_rockimpact' }] },   // ver -2701（Ray：「飛石快一點 石頭音用搥地的石頭音」）：1.8 倍速、音效換攻擊拳砸地那支
   mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20 },   // 朝聖者團塊＝D 的本職（ver -2655，Ray：「D 一定出聲波」；聲波本身在卡上 hitFx.delay:'sonic'）
   mon_canyon_bonecrab_dark: { dir:'resources/enemy/anim/mon_canyon_bonecrab_dark_delay_v1/', hit:16 },   // 卡耶爾群戰（ver -2623）
   mon_canyon_ironpenitent_neutral: { dir:'resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1/', hit:40, rev:true, hitFx:'iron_smash', windupSe:'se_chain_heavy', retractSe:'se_chain_heavy' },   // ver -2680（Ray：「動作開始 se_chain_heavy／擊中 heavymetal／收回 se_chain_heavy」）   // rev＝播完倒放回中立（Ray 11-15「鐵衣 R＝倒放」；目前只有群戰讀）

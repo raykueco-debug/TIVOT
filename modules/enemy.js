@@ -86,7 +86,8 @@ function sonicHit(im){
 /* ══ 起手音（ENEMY_ATK／DELAY／MISS 的 `windupSe`，ver -2657，Ray：「吼聲從攻擊開始…咬下那一格應該是最後，適當伸縮音效讓他跟畫面對齊」）══
    動作片第 0 格起播；音檔本身已伸縮成「起手→打擊格」那一段長度，所以吼聲收在打擊格上。
    單隻（playActionClip）與群戰成員（memberActOnce）都走這一支（鐵律 8）。 */
-function windupSe(key, ms, alive){ if(!key) return; const go=()=>{ if(!alive || alive()) SFX.play(asset(key), sfxGain(key)); }; if(ms>0) setTimeout(go, ms); else go(); }   // ms＝起手後幾毫秒才放（`windupMs`，ver -2659）；alive＝那時這一擊還在演嗎
+function windupSe(key, ms, alive, fit){ if(!key) return; const go=()=>{ if(!alive || alive()){ if(fit) SFX.playFit(asset(key), sfxGain(key), fit); else SFX.play(asset(key), sfxGain(key)); } };   // fit＝保持音高的時間伸縮 {from,to,dur}（`windupFit`，ver -2692）
+ if(ms>0) setTimeout(go, ms); else go(); }   // ms＝起手後幾毫秒才放（`windupMs`，ver -2659）；alive＝那時這一擊還在演嗎
 /* ══ 噴火（ENEMY_ATK 的 `flame:{from,to,at:[u,v]}`，ver -2683，Ray：「換成從尾部噴射火燄的特效」）══
    from～to 格之間，從片子上 (u,v)（那一格畫面的比例座標，肋籠獸＝長頸末端的嘴）往鏡頭噴：
    一團團火焰由噴口冒出、邊長大邊往畫面下方（玩家這一側）撲過來、淡掉。掛在 #fxTop 的上層，每一團自己收。 */
@@ -123,7 +124,7 @@ function spawnFlame(srcEl, spec, fps, alive){
   };
   emit();
 }
-function strikeFx(key){ spawnFxNamed(key, Object.assign({}, HITFX[key]||{})); const se=(HITFX[key]||{}).se; if(se) SFX.play(asset(se), sfxGain(se)); }
+function strikeFx(key){ spawnFxNamed(key, Object.assign({}, HITFX[key]||{})); for(const se of [].concat((HITFX[key]||{}).se||[])) SFX.play(asset(se), sfxGain(se)); }   // se 可為陣列（ver -2689）
 export function showHitFx(kind){
   if(isAirBio(curCard())) return;   // dragon rule 的空戰生物不演受擊特效（ver -2502，Ray；音效另外找，照舊在 combat）
   { const a=actFxLive(kind); if(a){ actFx=null; if(a.key==='sonic' || (HITFX[a.key]||{}).base==='sonic') sonicHit(a.im); else spawnFxNamed(a.key, Object.assign({}, HITFX[a.key]||{})); rotVoice('assaultVoice'); return; } }
@@ -327,6 +328,28 @@ export function spawnHexShield(px, py){
 /* ⚠ ver -2129（Ray：「防壁要真的破碎四散的效果，現在是莫名出現一個大六角磚」）：
    護罩先**整片亮一下**（罩在牠身上的那一圈六角格），隨即**裂成一片片小六角形**往外噴、旋轉、往下掉、淡出。
    每一片是獨立的元素（位置＝蜂巢格的格心），飛行向量由「離中心的方向」＋隨機量決定 —— 讀起來是從牠身上炸開。 */
+/* ══ 敵回血特效（ver -2696，Ray：「敵回血要有 rpg 那樣的補血特效」）══
+   RPG 的治癒術：敵人腳下升起一道綠色光柱、一圈光環往外擴，十幾顆綠白光點（十字與圓點）從身上往上飄散。
+   掛在 #top（只在上半），每一顆自己收；combat 的回血（healEnemyPct／healOnFault）都叫這一支（鐵律 8）。 */
+export function spawnHealFx(){
+  const host=$('top'); if(!host) return;
+  const hr=host.getBoundingClientRect(); const src=(clipEl && clipEl.style.visibility!=='hidden' && clipEl.isConnected ? clipEl : null) || idleEl || $('enemyImg');
+  const r=src && src.getBoundingClientRect && src.getBoundingClientRect();
+  const cx=r && r.width ? r.left-hr.left+r.width/2 : hr.width/2, top=r && r.height ? Math.max(0,r.top-hr.top) : hr.height*0.1, bot=r && r.height ? Math.min(hr.height, r.bottom-hr.top) : hr.height*0.95;
+  const w=Math.min(hr.width*0.7, (r && r.width ? r.width*0.75 : hr.width*0.5));
+  const col=document.createElement('i'); col.className='fx-heal-col'; col.style.cssText=`left:${cx-w/2}px;top:${top}px;width:${w}px;height:${bot-top}px;`; host.appendChild(col);
+  const ca=col.animate([{opacity:0,transform:'scaleY(.2)'},{opacity:1,transform:'scaleY(1)',offset:.25},{opacity:.85,offset:.6},{opacity:0,transform:'scaleY(1.05)'}],{duration:1100,easing:'ease-out'}); ca.onfinish=()=>col.remove(); setTimeout(()=>col.remove(),1300);
+  const ring=document.createElement('i'); ring.className='fx-heal-ring'; const rw=w*1.1; ring.style.cssText=`left:${cx-rw/2}px;top:${bot-rw*0.18}px;width:${rw}px;height:${rw*0.36}px;`; host.appendChild(ring);
+  const ra=ring.animate([{opacity:.95,transform:'scale(.3)'},{opacity:0,transform:'scale(1.4)'}],{duration:900,easing:'cubic-bezier(.2,.6,.4,1)'}); ra.onfinish=()=>ring.remove(); setTimeout(()=>ring.remove(),1100);
+  for(let k=0;k<16;k++){
+    const p=document.createElement('i'); p.className='fx-heal-p'+(k%3===0?' x':''); const sz=k%3===0 ? 16+Math.random()*10 : 6+Math.random()*7;
+    const x=cx+(Math.random()*2-1)*w*0.45, y=bot-(bot-top)*(0.05+Math.random()*0.55);
+    p.style.cssText=`left:${x-sz/2}px;top:${y-sz/2}px;width:${sz}px;height:${sz}px;`; host.appendChild(p);
+    const life=900+Math.random()*700, rise=(bot-top)*(0.35+Math.random()*0.35), dl=Math.random()*350;
+    const a=p.animate([{opacity:0,transform:'translateY(0) scale(.4)'},{opacity:1,transform:`translateY(${-rise*0.3}px) scale(1)`,offset:.25},{opacity:0,transform:`translateY(${-rise}px) scale(.7)`}],{duration:life,delay:dl,easing:'ease-out',fill:'both'});
+    a.onfinish=()=>p.remove(); setTimeout(()=>p.remove(),life+dl+200);
+  }
+}
 export function breakHexShield(){
   const host=$('fxTop'); if(!host) return;
   const hb=host.getBoundingClientRect();
@@ -1315,10 +1338,10 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
       const n=String(c.near || 1), kf = (kind==='atk' || c.near) ? [{scale:String(k),offset:0}, ...(c.nearIn>0 && tHit>c.nearIn ? [{scale:String(k),offset:off(tHit-c.nearIn)}] : []), {scale:n,offset:off(tHit)},{scale:n,offset:off(hold)},{scale:String(k),offset:off(back)},{scale:String(k),offset:1}] : [{scale:String(k)},{scale:String(k)}];
       el.animate(kf.map(q=>({...q, easing:'ease-in-out'})),{duration:T}); } }   /* ease 逐段套，峰值才準準落在 hit 那一格（-2485） */
   const t0=performance.now();
-  windupSe(c.windupSe, c.windupMs, ()=>clipT || i<N);
+  windupSe(c.windupSe, c.windupMs, ()=>clipT || i<N, c.windupFit);
   const fxAt=new Map((c.fx||[]).map(f=>[f.frame, f]));   // 動作段的程式特效（ver -2524：光翼下拍噴瓦礫）
   const step=()=>{ i++;
-    if(fxAt.has(i)) clipFx(fxAt.get(i));
+    if(fxAt.has(i)) clipFx(fxAt.get(i), el);
     if(c.flame && i===c.flame.from) spawnFlame(el, c.flame, fps, ()=>!!clipT);
     if(c.hitFx && c.strikes && i<hitF && c.strikes.indexOf(i)>=0) strikeFx(c.hitFx);   // 前面幾下各補一道特效＋音效（單隻也跟著片子的打擊節奏，ver -2663）
     if(i<N){ el.src=L.fr[i].src; clipT=setTimeout(step, Math.max(0, t0+tAt(i+1)-performance.now())); return; }
@@ -1334,10 +1357,16 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
 /* ══ 動作段掛的程式特效（ver -2524）══ `fx:[{frame,type}]`，播到那一格觸發。
    · `rubble` ＝ 瓦礫噴襲（Ray：「振翅下拍到底，碎石從瓦礫堆往鏡頭噴」）：畫面下方中央（瓦礫堆）噴出一把碎石，
      由小變大、往四周散開飛出畫面 —— 讀起來是朝鏡頭砸過來。一張 canvas，約 0.9 秒拆掉。 */
-function clipFx(f){
+function clipFx(f, el){
   if(!f) return;
-  if(f.type==='rubble') return spawnRubble();
+  if(f.se) SFX.play(asset(f.se), sfxGain(f.se));   // 這一格順手放一支音效（ver -2700，巨像飛石：石塊音）
+  /* `at:[u,v]`＝噴口在這一格畫面上的比例座標（ver -2700，巨像正拳：飛石從拳頭朝鏡頭飛來）；沒寫＝畫面下方中央的瓦礫堆（-2524 原行為） */
+  if(f.type==='rubble'){ let o=null;
+    if(f.at && el){ const top=$('top'), hr=top && top.getBoundingClientRect(), r=el.getBoundingClientRect();
+      if(hr && r.width) o={ x:r.left-hr.left+f.at[0]*r.width, y:r.top-hr.top+f.at[1]*r.height }; }
+    return spawnRubble(o, f.n, f.speed); }
   if(f.type==='violetFlash') return spawnVioletFlash();
+  if(f.type==='shake'){ if(api.screenShake) api.screenShake(); if(f.heal>0 && api.healEnemyPct) api.healEnemyPct(f.heal); if(f.wipe && api.wipeBoard) api.wipeBoard(); return; }   // wipe＝震掉整盤換下一盤（ver -2694）   // 震畫面＋（可選）敵回血 heal＝最大 HP 比例（ver -2692 崩岩巨像咆哮）
 }
 /* 紫白光芒（ver -2525，Ray：「暴炎時從中心發出紫白光芒快速籠罩畫面後快速淡出，用首頁的光圈特效來改，外圈改紫色」）：
    首頁那一顆聖光綻放的配方（白核心＋多層羽化），外圈換紫（CSS `--violet-glow`）；從敵人圖的中心發出，
@@ -1387,17 +1416,17 @@ function spawnGroundDust(){
     host.appendChild(el); setTimeout(()=>el.remove(), t+400);
   }
 }
-function spawnRubble(){
+function spawnRubble(o, n, speed){
   const top=$('top'); if(!top) return;
   const W=top.clientWidth, H=top.clientHeight, cv=document.createElement('canvas');
   cv.width=W; cv.height=H; cv.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5';
   top.appendChild(cv); const cx=cv.getContext('2d');
-  const ox=W*0.5, oy=H*0.82, rnd=(a,b)=>a+Math.random()*(b-a), rocks=[];
-  for(let i=0;i<26;i++){ const ang=rnd(-Math.PI*0.95,-Math.PI*0.05), sp=rnd(0.35,1.1);
+  const ox=o?o.x:W*0.5, oy=o?o.y:H*0.82, rnd=(a,b)=>a+Math.random()*(b-a), rocks=[];
+  for(let i=0;i<(n||26);i++){ const ang=o ? rnd(-Math.PI,Math.PI) : rnd(-Math.PI*0.95,-Math.PI*0.05), sp=rnd(0.35,1.1);   // 有噴口＝四面散開（拳頭朝鏡頭撞來，碎石往四周炸開）
     rocks.push({ x:ox+rnd(-W*0.08,W*0.08), y:oy+rnd(-H*0.04,H*0.04), vx:Math.cos(ang)*sp*W/900, vy:Math.sin(ang)*sp*H/900,
       r:rnd(3,9)*W/390, rot:rnd(0,6.28), vr:rnd(-0.02,0.02), g:(60+Math.random()*50)|0, sides:(4+Math.random()*3)|0, d:rnd(0,80) }); }
   const t0=performance.now(), END=900;
-  const tick=now=>{ const t=now-t0; cx.clearRect(0,0,W,H);
+  const tick=now=>{ const t=(now-t0)*(speed||1); cx.clearRect(0,0,W,H);   // speed＝整段加速（ver -2701，巨像飛石 Ray：「快一點」）
     /* 一團塵爆墊底 */
     if(t<500){ const q=t/500, rr=W*(0.12+q*0.35), gr=cx.createRadialGradient(ox,oy,0,ox,oy,rr);
       gr.addColorStop(0,`rgba(120,105,95,${(0.55*(1-q)).toFixed(3)})`); gr.addColorStop(1,'rgba(120,105,95,0)');
@@ -2503,7 +2532,7 @@ function memberActOnce(g, im, A){
   /* 編組成員（`_pm`）預設攻擊**原地演**，勾了「攻擊時拉到中間」（`focus`）才拉（ver -2640，Ray：「全部預設不跑中」）；
      舊的分層群組（沒有 `_pm`）照舊一律拉。 */
   const fill = (A===im._atk && (!im._pm || im._pm.focus)) ? attackFocusAnim(g, ov, N*1000/fps, hit*1000/fps, !!sp.fillFrame, A.body) : null;   // 只有攻擊 A 拉到中間（D／M 原地演）
-  windupSe(sp.windupSe, sp.windupMs, ()=>groupCard && !im.classList.contains('eg-down'));
+  windupSe(sp.windupSe, sp.windupMs, ()=>groupCard && !im.classList.contains('eg-down'), sp.windupFit);
   if(sp.flame) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) spawnFlame(ov, sp.flame, fps, ()=>im._ov===ov && !!groupCard); }, sp.flame.from*1000/fps);
   const fxKey = sp.hitFx || (A===im._atk ? cardAssaultKey() : null);   // 攻擊片（含代演 D／M）＝攻擊那一套受擊（ver -2678）
   if(fxKey){ actFx={ key:fxKey, im, at:performance.now()+hit*1000/fps };   // 這一擊用牠自己的受擊特效（見 showHitFx 上面）

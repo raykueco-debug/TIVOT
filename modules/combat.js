@@ -272,7 +272,7 @@ export function setup(){
   // 敵人：Boss 亂入的戰鬥重置（startIntruderFight，combat 擁有）+ 換敵刷血條（updateBars）注入。
   /* ⚠ `screenShake` 給「降臨」的著地那一拍用（ver -640）——
      震動的實作只有 combat 這一支（鐵律 8），enemy 不自己加 class。 */
-  enemy.init({ startIntruderFight, updateBars, screenShake, roarBlast,
+  enemy.init({ startIntruderFight, updateBars, screenShake, roarBlast, healEnemyPct, wipeBoard,
     /* ══ 放光（光砲）那一段的整套處理（ver -1449 清圈；-1666 補齊）══
        清畫面上的圈 ＋ 取消這一波還沒出的 ＋ 光退了才從頭算下一次攻擊 ——
        **三件事在 defense 那一支裡**（它才擁有 threats 與排程，鐵律 7/8），
@@ -1262,6 +1262,29 @@ function enemyHitFlash(){
    ⚠ 掛在 `#app`（＝鏡頭）不是 `#enemyImg`：背景與怪一起動才讀得出「你被打到了」。
    ⚠ 只有這一支在做（鐵律 8）—— `enemyAttack` 是所有扣血路徑的唯一入口，
      兩個分支（聖徒化／一般）都叫它。 */
+/* 敵回血（最大 HP 的比例）：動作片上的程式特效叫它（ver -2692，崩岩巨像咆哮 +10%）。浮字與血條同 healOnFault。 */
+/* 震掉整盤（ver -2694，崩岩巨像咆哮，Ray：「咆效果是把盤面全清 但是不會對他造成傷害」）：
+   剩下的格子作廢、直接換下一盤 —— 不走 clearBoard（那是「玩家清完」：清盤獎勵、紀錄、護罩結算都不給），也不扣敵血。
+   聖徒化／惡夢化的盤、正在轉場的不動。 */
+function wipeBoard(){
+  if(state.over || state.transitioning || state.saintMode || state.niMode) return;
+  state.transitioning=true; stopIntervalTimer();   // 碎裂期間鎖點擊（goNextBoard 會再接手）
+  /* 碎掉特效（Ray：「全清格要有碎掉特效」）：同 overkill 的連環爆 —— 殘留格 40ms 錯開逐一碎裂＋玻璃碎片 */
+  let k=0;
+  state.cells.forEach(c=>{
+    if(c.classList.contains('done')) return;
+    setTimeout(()=>{ c.classList.add('done'); c.classList.remove('next'); enemy.shatterCell(c); glassShards(c); }, (k++)*40);
+  });
+  SFX.heavyHit();
+  setTimeout(()=>{ state.transitioning=false; goNextBoard(); }, k*40+450);
+}
+function healEnemyPct(p){
+  if(state.over || !(state.enemyHp>0) || state.enemyHp>=state.enemyMax) return;
+  const add=Math.max(1, Math.round(state.enemyMax*p));
+  state.enemyHp=Math.min(state.enemyMax, state.enemyHp+add);
+  floatDmg('+'+add, '50%', '22%', false, 'heal'); updateBars();
+  enemy.spawnHealFx();
+}
 function screenShake(){
   const el=$('app'); if(!el) return;
   el.classList.remove('hitshake'); void el.offsetWidth; el.classList.add('hitshake');
@@ -1286,6 +1309,8 @@ function roarBlast(){
    也仍吃得下舊的物件寫法 —— 兩種都收在這一支（鐵律 7/8：查表只有一處）。
    ⚠ 沒有這一支的話字串寫法會走 `_hf.type` → undefined → **敵攻擊音整個消失**，
      而畫面上完全看不出來（同 -932 那個「沉默的退化」）。 */
+/* 受擊音：`HITFX[].se` 可以是陣列＝同一拍一起放（ver -2689，崩岩巨像）。播放只走這一支（鐵律 8）。 */
+function playHitSe(sk){ for(const k of [].concat(sk)) if(k) SFX.play(asset(k), sfxGain(k)); }
 function hitFxSe(hf, kind){
   const raw = hf && (hf[kind] || (kind==='ult' ? hf.assault : null));
   if(!raw) return null;
@@ -1447,6 +1472,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
     state.enemyHp=Math.min(state.enemyMax, state.enemyHp+add);
     floatDmg('+'+add, '50%', '22%', false, 'heal');
     updateBars();
+    enemy.spawnHealFx();   // RPG 補血特效（ver -2696）
   }
   /* ══⚠⚠ `kind` 有**兩個用途**，ver -600 之後不再是同一個值（ver -619 修）══
      · **計數**（評價的失誤秒數）要分得出「打中了」與「擋下一半」→ 'assault' / 'block'
@@ -1478,7 +1504,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
       saint.coopShorten((_c.coop&&_c.coop.wrongShortenSec)||1);
     }
     const sk0  = enemy.actHitSe(fxKind) || state.curEnemyHitSe || hitFxSe(state.curEnemyHitFx, fxKind);   // 群戰成員自己的受擊音優先（-2651）   // 卡上 hitSe 優先（ver -1881）
-    if(sk0 && !_plain) SFX.play(asset(sk0), sfxGain(sk0));
+    if(sk0 && !_plain) playHitSe(sk0);
     screenShake();
     if(!_plain) enemy.showHitFx(fxKind);
     if(!_plain){ $('redFlash').style.opacity=.35; setTimeout(()=>$('redFlash').style.opacity=0,120); }
@@ -1505,7 +1531,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
      （HITFX 那張表：type→{base 視覺, se 音效}）。卡上不再有 `sound` 欄位，改 hitFx
      的 type 就連特效帶音一起換（Ray 定案）。block 讀 ult（fxKind 已折）。 */
   const sk  = enemy.actHitSe(fxKind) || state.curEnemyHitSe || hitFxSe(state.curEnemyHitFx, fxKind);   // 群戰成員自己的受擊音優先（-2651）   // 卡上 hitSe 優先（ver -1881）
-  if(sk && !_plain) SFX.play(asset(sk), sfxGain(sk));   // 受擊層增益（全域響度階層見 tuning.sfxGain）
+  if(sk && !_plain) playHitSe(sk);   // 受擊層增益（全域響度階層見 tuning.sfxGain）
   if(state.saintMode){
     // 聖徒化期間敵攻擊不扣血：改推進倒數槽（推滿＝OBE）。視覺（震動/受擊特效/紅閃）留在 combat，
     //   倒數槽推進交由 saint.saintAdvance（內部走 HP API healPlayer，滿則觸發 OBE）。

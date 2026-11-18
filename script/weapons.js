@@ -63,8 +63,11 @@ export const WEAPONS = {
                         ⚠ 起因：安雅的「赤足／蹄鐵星」抬的是**攻擊力**，而萊福槍的
                           黃橘圈卡上沒有 `counter` ＝根本不開火，那兩顆星對狙擊手
                           等於沒有效果（ver -974 我回報的第三個連帶後果）。 */
-                     bands:{ block:{ counter:true, take:0.5,  dmgScale:0.5 },
-                             perfect:{ counter:true, take:0.25, dmgScale:0.5 } }, counterSec:-3,
+                     /* ⚠⚠ ver -2698（Ray：「步槍改成正常狀況紅圈以外都是 miss 但是不扣自己的血，安雅的必中技能除外」
+                        「miss 開火」「全部都改」）：黃橘圈照樣開火（槍聲、拉栓照吃）但命中 0＝一律 MISS，`take:0` 不挨打。
+                        安雅的必中（`hitForce`）把命中壓成 1 時照常打中（−50% 攻擊力）。本篇、船戰高爆砲、試玩版共用這份 bands。 */
+                     bands:{ block:{ counter:true, take:0, dmgScale:0.5, hit:0 },
+                             perfect:{ counter:true, take:0, dmgScale:0.5, hit:0 } }, counterSec:-3,
                      flavor:'賭上一切的單發重擊',
                      /* 本篇用的數值（ver -378，Ray 的「初始萊福槍」卡）：紅圈 1發56。
                         ══⚠⚠⚠ 拉栓（ver -1781 起寫成 `mag:1, reloadSec:5`，原欄位 `counterCdSec`）＝ **這把槍幾秒才能再開一發**
@@ -113,8 +116,11 @@ export const WEAPONS = {
                      counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
                      counterWipe:true,   // 重擊：同「嗜心者」（ver -1659，說明見那一張卡）
                      // ver -975：同「嗜心者」（黃橘圈也反擊、攻擊力 −50%），見那張卡的說明。
-                     bands:{ block:{ counter:true, take:0.5,  dmgScale:0.5 },
-                             perfect:{ counter:true, take:0.25, dmgScale:0.5 } }, counterSec:-3,
+                     /* ⚠⚠ ver -2698（Ray：「步槍改成正常狀況紅圈以外都是 miss 但是不扣自己的血，安雅的必中技能除外」
+                        「miss 開火」「全部都改」）：黃橘圈照樣開火（槍聲、拉栓照吃）但命中 0＝一律 MISS，`take:0` 不挨打。
+                        安雅的必中（`hitForce`）把命中壓成 1 時照常打中（−50% 攻擊力）。本篇、船戰高爆砲、試玩版共用這份 bands。 */
+                     bands:{ block:{ counter:true, take:0, dmgScale:0.5, hit:0 },
+                             perfect:{ counter:true, take:0, dmgScale:0.5, hit:0 } }, counterSec:-3,
                      flavor:'栓動、遠距、一擊定生死',
                      /* 拉栓時間同「嗜心者」（ver -1009；-1010 由 3 改 5）—— 說明見那一張卡。
                         ⚠ `flavor` 也在 `story` 覆寫：試玩版沒有這個冷卻，那邊照舊那一句。 */

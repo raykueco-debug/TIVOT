@@ -1422,3 +1422,5 @@ when	from	to	reason
 20261117-223516	resources/enemy/anim/mon_canyon_ribcage_dark_idle_v1	_recycle/resources/enemy/anim/mon_canyon_ribcage_dark_idle_v1	肋籠獸待機換成加大動態的重跑版（Ray 11-17：「可以 接上 交件」）
 20261117-223942	HANDOFF.md	_recycle/HANDOFF.md.20261117-223942	交接改寫（Ray 11-17：全推上 交接）；舊版內容已併入新版
 20261117-224150	tools/anim/bg_layer/delivered.json	_recycle/tools/anim/bg_layer/delivered.json	換機前：以 3060 背景線較新的 delivered.json 取代
+20261118-162046	resources/enemy/anim/mon_canyon_colossus_dark_miss_v1	_recycle/resources/enemy/anim/mon_canyon_colossus_dark_miss_v1	巨像咆哮換成 Ray 剪的 cut＋鎖雙腳（ver -2692）
+20261118-164712	resources/enemy/anim/mon_canyon_colossus_dark_delay_v1	_recycle/resources/enemy/anim/mon_canyon_colossus_dark_delay_v1	巨像正拳換成 Ray 剪的 cut（ver -2700）
