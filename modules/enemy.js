@@ -86,6 +86,11 @@ function sonicHit(im){
 /* ══ 起手音（ENEMY_ATK／DELAY／MISS 的 `windupSe`，ver -2657，Ray：「吼聲從攻擊開始…咬下那一格應該是最後，適當伸縮音效讓他跟畫面對齊」）══
    動作片第 0 格起播；音檔本身已伸縮成「起手→打擊格」那一段長度，所以吼聲收在打擊格上。
    單隻（playActionClip）與群戰成員（memberActOnce）都走這一支（鐵律 8）。 */
+/* 腳步音（ENEMY_ATK／DELAY／MISS 的 `stepSe:{ se, at:[格…] }`，ver -2724，Ray：「配合腳部給他爪在地上走的聲音」）：
+   片子播到那幾格各放一聲；`skip:[a,b]` 跳掉的那一段會照實扣掉時間。單隻與群戰成員共用（鐵律 8）。 */
+function clipFrameMs(sp, f, fps){ const sk=sp.skip; const g=(sk && f>sk[0]) ? (f>=sk[1] ? f-(sk[1]-sk[0]) : sk[0]) : f; return g*1000/fps; }
+function stepSes(sp, fps, alive){ const st=sp && sp.stepSe; if(!st || !st.se) return;
+  for(const f of (st.at||[])) setTimeout(()=>{ if(!alive || alive()) SFX.play(asset(st.se), sfxGain(st.se)); }, clipFrameMs(sp, f, fps)); }
 function windupSe(key, ms, alive, fit){ if(!key) return; const go=()=>{ if(!alive || alive()){ if(fit) SFX.playFit(asset(key), sfxGain(key), fit); else SFX.play(asset(key), sfxGain(key)); } };   // fit＝保持音高的時間伸縮 {from,to,dur}（`windupFit`，ver -2692）
  if(ms>0) setTimeout(go, ms); else go(); }   // ms＝起手後幾毫秒才放（`windupMs`，ver -2659）；alive＝那時這一擊還在演嗎
 /* ══ 噴火（ENEMY_ATK 的 `flame:{from,to,at:[u,v]}`，ver -2683，Ray：「換成從尾部噴射火燄的特效」）══
@@ -1339,6 +1344,7 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
       el.animate(kf.map(q=>({...q, easing:'ease-in-out'})),{duration:T}); } }   /* ease 逐段套，峰值才準準落在 hit 那一格（-2485） */
   const t0=performance.now();
   windupSe(c.windupSe, c.windupMs, ()=>clipT || i<N, c.windupFit);
+  stepSes(c, fps, ()=>!!clipT);
   if(c.retractSe && c.retractAt!=null) windupSe(c.retractSe, c.retractAt*1000/fps, ()=>clipT && i<N);   // 單隻：收回音（ver -2720）
   const fxAt=new Map((c.fx||[]).map(f=>[f.frame, f]));   // 動作段的程式特效（ver -2524：光翼下拍噴瓦礫）
   const step=()=>{ i++;
@@ -2534,6 +2540,7 @@ function memberActOnce(g, im, A){
      舊的分層群組（沒有 `_pm`）照舊一律拉。 */
   const fill = (A===im._atk && (!im._pm || im._pm.focus)) ? attackFocusAnim(g, ov, N*1000/fps, hit*1000/fps, !!sp.fillFrame, A.body) : null;   // 只有攻擊 A 拉到中間（D／M 原地演）
   windupSe(sp.windupSe, sp.windupMs, ()=>groupCard && !im.classList.contains('eg-down'), sp.windupFit);
+  stepSes(sp, fps, ()=>im._ov===ov && !!groupCard && !im.classList.contains('eg-down'));
   if(sp.retractSe && sp.retractAt!=null && !sp.rev) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) windupSe(sp.retractSe); }, sp.retractAt*1000/fps);   // 片子自帶收回：收回音在那一格放（`retractAt`，ver -2720）
   if(sp.flame) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) spawnFlame(ov, sp.flame, fps, ()=>im._ov===ov && !!groupCard); }, sp.flame.from*1000/fps);
   const fxKey = sp.hitFx || (A===im._atk ? cardAssaultKey() : null);   // 攻擊片（含代演 D／M）＝攻擊那一套受擊（ver -2678）

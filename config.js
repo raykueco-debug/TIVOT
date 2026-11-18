@@ -100,7 +100,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2723';
+export const VERSION = 'ver 2026.11.18-2725';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4065,7 +4065,7 @@ export const GAME_CONFIG = {
       se_dart_fail:2.792,
       /* ── 劇情／城鎮（這一批以前完全沒有增益，見上面的說明）── */
       se_lightup:1.34,   // ver -1859：本機量 −16.1 LUFS（耳機−15.2／手機−17.0 平均），以 se_steps 校正 +0.25 dB
-      se_steps:4.92, se_stepsbig:6.96,   /* ver -1915：stepsbig 換新（Ray 交 wav，4.3 秒，原檔進 _originals，?v=4）；audio_scan 建議 7.84 × 校準比 7.198／8.11 */   /* ver -1914（Ray：「se_steps 改了，城鎮、室外都用這個；se_stepsbig 只用在遺跡內、地宮內的跑步聲」）：se_steps 換新（3.8 秒，原 mp3 在 se/_raw/，?v=3）；增益照 audio_scan 建議值 5.54 × 舊檔校準比（7.198／8.11）＝4.92 */   // ver -1871：se_steps 換新（ffmpeg ebur128 耳機−23.9／手機−24.8，以舊檔 7.198 校正 −6.8 dB）；se_stepsbig＝舊的那支原檔
+      se_steps:4.92, se_clickstep:5.9 /* ver -2724 實測 −28.8 LUFS、峰值 −5.2 dBFS（被 peakCeilDb 夾住）CAP */, se_stepsbig:6.96,   /* ver -1915：stepsbig 換新（Ray 交 wav，4.3 秒，原檔進 _originals，?v=4）；audio_scan 建議 7.84 × 校準比 7.198／8.11 */   /* ver -1914（Ray：「se_steps 改了，城鎮、室外都用這個；se_stepsbig 只用在遺跡內、地宮內的跑步聲」）：se_steps 換新（3.8 秒，原 mp3 在 se/_raw/，?v=3）；增益照 audio_scan 建議值 5.54 × 舊檔校準比（7.198／8.11）＝4.92 */   // ver -1871：se_steps 換新（ffmpeg ebur128 耳機−23.9／手機−24.8，以舊檔 7.198 校正 −6.8 dB）；se_stepsbig＝舊的那支原檔
       se_walk:4.481, se_fall:3.724, se_punch:1.596,
       se_tummy:8.268, se_sailorshout:2.048, se_sleep:1.708,
       se_kerberos_open:1.558, se_kerberos_pop:1.479, se_kerberos_steam:1.301,
@@ -5069,6 +5069,7 @@ export const ASSETS = {
   se_enemy_bite:      "resources/audio/se/se_enemy_bite.m4a",   // 喪鐘蠕蟲咬下（ver -2677）
   se_chain_heavy:     "resources/audio/se/se_chain_heavy.m4a",       // 鐵衣苦修者出手／收回的鐵鏈聲（ver -2680）
   se_crush_deepmetal: "resources/audio/se/se_crush_deepmetal.m4a",
+  se_clickstep: "resources/audio/se/se_clickstep.mp3",   // 肋籠獸爪子踩地（ver -2724，Ray 找的）
   se_rockimpact: "resources/audio/se/se_rockimpact.mp3?v=d2a1f043",   // 崩岩巨像拳砸地（ver -2689；劇情那邊走 story.SE_FILES，同一支檔）   // 鐵衣苦修者錘砸中（ver -2680）
   se_enemy_breathfire: "resources/audio/se/se_enemy_breathfire.m4a",   // 肋籠獸噴火（ver -2686，取原檔 0.5～2.3 秒）
   se_brickcrush:        "resources/audio/se/se_brickcrush.m4a",   // 黑爪登場（原本只在 story 的 SE_FILES）
@@ -5813,7 +5814,7 @@ export const ENEMY_ATK = {
   /* 卡耶爾群戰成員（ver -2623，Kling、快剪 24fps；片尾 B 停格約 1 秒）。hit＝主體最大那一格（交件單）。 */
   mon_canyon_coffinbeetle_dark: { dir:'resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v2/', hit:16, hitFx:'beetle_claw', windupSe:'se_enemy_bug01' },   // 一支到底（片尾回中立）；ver -2675：打到＝巨大化的第一格 16（主體面積由 129k 跳到 201k、之後撐到 21 格；Ray：「巨大化的第一幀就要放效果」），水平單爪痕＋揮砍音；嘶鳴起手放（Ray：「se_enemy_bug01 + slash 跟單爪痕」「固定橫痕 slash 在最大時出」）
   mon_canyon_bellwyrm_dark: { dir:'resources/enemy/anim/mon_canyon_bellwyrm_dark_atk_v1/', hit:19, hitFx:'wyrm_bite' },   // ver -2709：Ray 剪的 cut（35 格）＋鎖尾部大小位置（tools/anim/lock_region.py）；打到＝原第 50 格＝剪後第 19 格
-  mon_canyon_ribcage_dark: { dir:'resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1/', hit:30, hitFx:'rib_fire', flame:{ from:28, to:42, at:[0.687,0.51] }, skip:[42,58] },   // ver -2683（Ray：「換成從尾部噴射火燄的特效」）：長頸末端的嘴第 28～70 格朝鏡頭噴火（嘴的位置逐格量過，28～74 格穩在 0.687／0.51），打到＝火噴到第 2 格
+  mon_canyon_ribcage_dark: { dir:'resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1/', hit:30, hitFx:'rib_fire', flame:{ from:28, to:42, at:[0.687,0.51] }, skip:[42,58], stepSe:{ se:'se_clickstep', at:[11,17,87,93] } },   /* ver -2724（Ray：「配合腳部給他爪在地上走的聲音」）：轉身側移與轉回收回各兩聲（Ray：「腳步兩聲就好」） */   // ver -2683（Ray：「換成從尾部噴射火燄的特效」）：長頸末端的嘴第 28～70 格朝鏡頭噴火（嘴的位置逐格量過，28～74 格穩在 0.687／0.51），打到＝火噴到第 2 格
   /* 卡耶爾 Wan 攻擊（ver -2637，敵人副理 f13d457f／ce7379fe；Ray：「有一些 WAN 的動畫也要接上」）。交件單沒寫打到格 ⇒ 取「與第 0 格差最多」那一格（動作最大的一刻）。
      （聖面鷲／骨鴉 -2641 起改成「一閃」，見下面 `issen` 那兩列。） */
   mon_canyon_hanged_dark: { dir:'resources/enemy/anim/mon_canyon_hanged_dark_atk_v1/', hit:19, hitFx:'pilgrim_sonic' },   // 崖縫吊屍者 張手咆哮（99 格，片尾已接 R 倒放）；打到時放音爆＝與朝聖者團塊同一組（聲波環＋數字淡出＋se_enemy_squeal_echo，ver -2688；-2687 先接，Ray：「崖縫吊屍者加入音爆效果」）
