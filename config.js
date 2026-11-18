@@ -100,7 +100,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2731';
+export const VERSION = 'ver 2026.11.18-2733';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2941,6 +2941,12 @@ export const GAME_CONFIG = {
     canyon_w_test_saintvulture: { enemy:'canyon_test_saintvulture', session:'canyon_wild' },   // 單隻測試（ver -2672）
     canyon_w_test_bonecrow: { enemy:'canyon_test_bonecrow', session:'canyon_wild' },   // 單隻測試（ver -2672）
     canyon_w_test_colossus: { enemy:'canyon_colossus', session:'canyon_wild' },   // 單隻測試（ver -2672）
+    np_test_candletower:    { enemy:'np_candletower' },      // 北泊單隻測試（ver -2732，車輪戰用）
+    np_test_candlepenitent: { enemy:'np_candlepenitent' },
+    np_test_coralman:       { enemy:'np_coralman' },
+    np_test_reassembled:    { enemy:'np_reassembled' },
+    np_test_boss:           { enemy:'np_boss' },
+    np_test_claws:          { enemy:'np_claws' },
     canyon_w_mix11: { enemy:'canyon_mix11', session:'canyon_wild' },
     canyon_w_mix12: { enemy:'canyon_mix12', session:'canyon_wild' },
     frag02_w_mix2: { enemy:'canyon_mix2', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
@@ -5808,6 +5814,8 @@ export const ENEMY_IDLE = {
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
+  mon_relic_candletower: { dir:'resources/enemy/anim/mon_relic_candletower_atk_v1/', hit:9 },   // 禍魘祭司（北泊）A：tiger rule 爪擊 AB＋BA（32 格），打到＝AB 最後一格（ver -2732）
+  mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_atk_v1/', hit:13 },   // 罪之魔像（北泊）A：tiger rule 撲擊 AB＋BA（29 格），打到＝AB 最後一格（ver -2732）
   mon_centipi_side: { dir:'resources/enemy/anim/mon_centipi_side_atkprep_v1/', prep:true, slideFrom:16, sweep:'resources/enemy/anim/mon_centipi_side_atk_v1/' },   /* sweep＝A 本體：腹面 loop（Ray 剪的 mon_centipi_belly_even2_wave_cut，48 格），放大從操作盤線下快速斜上衝（-2550） */   // 巨型蜈蚣 A 的準備動作（ver -2546，Ray 剪的 centipi_dive_joined_v2_cut，22 格：側面轉正、下潛）；第 16 格（頭出畫面、只剩身體尾巴）起邊播邊往下滑出畫面（-2547），再接劃過（A 動畫還沒交，先用程式的劃過）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_atk_v1/', hit:48, fx:[{ frame:8, type:'rubble' }, { frame:44, type:'violetFlash' }] },   // A＝振翅接爆炎（64 格）；第 8 格下拍到底噴瓦礫、爆炎時紫白光芒籠罩畫面（ver -2525）
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7, near:1.35, nearIn:130 },   /* nearIn：拉近只花打到前的這幾毫秒（-2530 Ray「拉近的速度快一點」） */   // 訓練用聖徒 新架勢 攻擊（ver -2527，31 格；-2529 Ray「攻擊時要拉近撲前」打到那一格放大到 1.35）
@@ -5863,6 +5871,7 @@ export const ENEMY_MISS = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, fx:[{ frame:48, type:'rubble' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
+  mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_delay_v1/', hit:6 },   // 罪之魔像（北泊）D：Ray 剪的 delay_cut_2（24 格），打到暫定主體最大第 6 格（ver -2732）
   /* 崩岩巨像 D＝正面出拳（ver -2700，Ray 剪的 cut：15 格 16fps，打到＝拳最大的第 5 格）：
      打到那一格從拳頭（畫面約 22%,30%）噴飛石朝鏡頭飛來＋石塊音 se_crash_rocks（Ray：「加入飛石朝 viewer 飛來特效 用石塊音效」）。 */
   mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_delay_v1/', hit:5,
