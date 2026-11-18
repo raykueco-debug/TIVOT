@@ -214,6 +214,8 @@ function spawnFxNamed(key, fx){
     /* 王座徘徊者的放光（ver -1351）。⚠ **冷卻中就退回三爪**（ver -1666）：
        那一發照樣打中、照樣扣血，只是不再放光 —— 打中卻什麼都不演比放光太多還糟。 */
     case 'holyburst': if(!spawnHolyBurst(fx)) triggerClaw(); break;
+    /* 光波（ver -2759 心魘）：紫黑之爪那一道放光，換色＋換起點；`scramble`＝打中時盤面剩餘數字重組 */
+    case 'wave':  spawnVioletFlash(fx); if(fx.scramble && api.scrambleBoard) setTimeout(()=>api.scrambleBoard(), 250); break;
     /* ⚠ 名字打錯時才走到這裡（`HITFX` 沒有它、也不是上面任何一個 base）。
        ⚠ 留一行 console：靜靜變成爪就是 -1455 那個查了很久的 bug。 */
     default:
@@ -1416,15 +1418,17 @@ export function setEmpowered(n){
   top.appendChild(pop); setTimeout(()=>pop.remove(), 1500);
 }
 const VF_GROW_MS=1000, VF_FADE_MS=600;   // ＝ CSS #violetFlash 的 transition（兩邊互指）；ver -2526 Ray「光圈太快了」由 350/400 放慢
-function spawnVioletFlash(){
+function spawnVioletFlash(o){   // o.tone＝色調 class（'orange'）、o.at＝起點在立繪上的比例座標（ver -2759 心魘：從心臟發出）
   const old=document.getElementById('violetFlash'); if(old) old.remove();
   /* ver -2526 Ray「不要遮到數字面板」：關在 #top（上半）裡，座標換成 #top 相對 */
   const top=$('top'); if(!top) return;
   const tr=top.getBoundingClientRect(), el0=idleEl || clipEl || $('enemyImg'), W=tr.width, H=tr.height;
   let cx=W*0.5, cy=H*0.55;
-  if(el0){ const R=drawnRect(el0, tr); if(R.W>4){ cx=R.L+R.W/2; cy=R.T+R.H*0.55; } }
+  const at=(o&&o.at)||[0.5,0.55];
+  if(el0){ const R=drawnRect(el0, tr); if(R.W>4){ cx=R.L+R.W*at[0]; cy=R.T+R.H*at[1]; } }
   const d=Math.max(90, Math.min(W,H)*0.22), need=2*Math.hypot(Math.max(cx,W-cx), Math.max(cy,H-cy));
   const el=document.createElement('div'); el.id='violetFlash'; el.innerHTML='<div class="vf-glow"></div>';
+  if(o && o.tone) el.classList.add(o.tone);
   el.style.left=cx+'px'; el.style.top=cy+'px'; el.style.width=d+'px'; el.style.height=d+'px';
   el.style.setProperty('--vf-scale', (need/d/0.30).toFixed(2));
   top.appendChild(el);

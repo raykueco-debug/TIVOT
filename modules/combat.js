@@ -272,7 +272,7 @@ export function setup(){
   // 敵人：Boss 亂入的戰鬥重置（startIntruderFight，combat 擁有）+ 換敵刷血條（updateBars）注入。
   /* ⚠ `screenShake` 給「降臨」的著地那一拍用（ver -640）——
      震動的實作只有 combat 這一支（鐵律 8），enemy 不自己加 class。 */
-  enemy.init({ startIntruderFight, updateBars, screenShake, roarBlast, healEnemyPct, wipeBoard,
+  enemy.init({ startIntruderFight, updateBars, screenShake, roarBlast, healEnemyPct, wipeBoard, scrambleBoard,
     /* ══ 放光（光砲）那一段的整套處理（ver -1449 清圈；-1666 補齊）══
        清畫面上的圈 ＋ 取消這一波還沒出的 ＋ 光退了才從頭算下一次攻擊 ——
        **三件事在 defense 那一支裡**（它才擁有 threats 與排程，鐵律 7/8），
@@ -1266,6 +1266,20 @@ function enemyHitFlash(){
 /* 震掉整盤（ver -2694，崩岩巨像咆哮，Ray：「咆效果是把盤面全清 但是不會對他造成傷害」）：
    剩下的格子作廢、直接換下一盤 —— 不走 clearBoard（那是「玩家清完」：清盤獎勵、紀錄、護罩結算都不給），也不扣敵血。
    聖徒化／惡夢化的盤、正在轉場的不動。 */
+/* 盤面剩餘數字隨機重組（ver -2759，Ray：心魘的光波「效果是盤面剩餘數字隨機重組」）：
+   還沒點掉的格子在**它們自己佔的位置之間**互換（已點的格子原地不動），下一個要點的數字不變。
+   ⚠ 只換 DOM 的位置：每一格的點擊處理綁在那一格自己身上（閉包裡有它的數字），所以搬格子不會錯號。 */
+function scrambleBoard(){
+  const grid=$('grid'); if(!grid || state.over) return;
+  const kids=[...grid.children], slots=[], live=[];
+  kids.forEach((c,i)=>{ if(c.classList.contains('cell') && !c.classList.contains('done')){ slots.push(i); live.push(c); } });
+  if(live.length<2) return;
+  const perm=shuffle(live.slice()); const out=kids.slice(); slots.forEach((i,k)=>{ out[i]=perm[k]; });
+  out.forEach(c=>grid.appendChild(c));
+  out.forEach((c,i)=>{ c.style.setProperty('--col', i%state.cols); c.style.setProperty('--row', (i/state.cols)|0); });
+  live.forEach(c=>{ c.classList.remove('scramble'); void c.offsetWidth; c.classList.add('scramble'); setTimeout(()=>c.classList.remove('scramble'),450); });
+  markNext();
+}
 function wipeBoard(){
   if(state.over || state.transitioning || state.saintMode || state.niMode) return;
   state.transitioning=true; stopIntervalTimer();   // 碎裂期間鎖點擊（goNextBoard 會再接手）

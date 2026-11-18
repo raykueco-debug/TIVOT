@@ -765,7 +765,7 @@ export const ENEMIES = {
       hitFx:{
         delay:'blood',
         wrong:'slash',
-        assault:'claw',
+        assault:'reassembled_wave',
       },
     },
     /* ══ 教堂的 Boss（ver -586，Ray：「B2G01，教堂 boss 用這一隻，跟其他怪數值
@@ -820,7 +820,7 @@ export const ENEMIES = {
          與教學的節奏由腳本那一側管，不是靠數值。 */
     np_claws: {
       name:'紫黑之爪',
-      fgCut:'resources/background/northport/northport_church_ruin_fg.webp',   // ver -2756：磚堆前景，擋住黑翼根部
+      fgCut:'resources/background/northport/northport_church_ruin_fg.webp?v=2099f759',   // ver -2756：磚堆前景，擋住黑翼根部
       story:1, counterStagger:1, boss:1,   // ← 紫黑之爪（真 BOSS，Ray 點名）
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0], '萊福槍':[0,0] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]

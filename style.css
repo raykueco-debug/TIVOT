@@ -5747,3 +5747,8 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
 
 /* 前景切塊（enemy.setEnemy 的 `fgCut`，ver -2756）：與 #top 背景同一張圖切出來、同樣 center/cover ⇒ 對齊；疊在敵人（#enemyImg／.en-idle）之上 */
 #enFgCut{position:absolute;inset:0;pointer-events:none;background:center/cover no-repeat;}   /* 不給 z-index：照 DOM 順序疊在敵人之上、#topVignette 之下 */
+
+/* 心魘的光波（ver -2759）：紫黑之爪那一道放光的偏橘版；盤面重組時被換位的格子閃一下 */
+#violetFlash.orange .vf-glow{background:radial-gradient(circle,#fff 0%,#fff 28%,rgba(255,226,180,.92) 46%,rgba(255,160,70,.6) 62%,rgba(240,110,30,.28) 80%,rgba(220,80,20,0) 100%);}
+#grid .cell.scramble{animation:cellScramble .45s ease-out;}
+@keyframes cellScramble{0%{filter:brightness(2.2) sepia(.6) saturate(3) hue-rotate(-20deg);transform:scale(.86)}100%{filter:none;transform:none}}
