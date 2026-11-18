@@ -1974,7 +1974,7 @@ function airPrepAssault(en, c, L){
     pr.style.translate=el0.style.translate; pr.style.scale=el0.style.scale; pr.style.transformOrigin=getComputedStyle(el0).transformOrigin;
     el0.after(pr); boxBottom=pr.getBoundingClientRect().bottom; pr.remove(); }
   const dy=Math.max(0, Math.round(tr.bottom - boxBottom + H*0.04));
-  playEntranceSe(en.assaultSe || 'se_enemy_dragonroar');
+  [].concat(en.assaultSe || 'se_enemy_dragonroar').forEach(k=>playEntranceSe(k));   // assaultSe 可寫陣列（ver -2768，羽蛇：叫聲＋劃破空氣）
   const busy={ dead:false, freeze:true, a:[], cancel(){ this.dead=true; this.a.forEach(x=>{ try{ x.cancel(); }catch(_){} }); } }; airAtk=busy;   // 準備動作期間佔住 airAtk（換怪／打死時 stopAirDrift 會 cancel）
   busy.a.push(el0.animate([{ transform:'none' },{ transform:`translateY(${dy}px)` }], { duration:PREP_PULL_MS, easing:'cubic-bezier(.2,.7,.3,1)', fill:'forwards' }));
   setTimeout(()=>{ if(busy.dead || airAtk!==busy) return;
@@ -2061,7 +2061,7 @@ function airAssault(en, opts){
   kf.push({ transform:`translate(${f*W*0.05}px, ${-H*0.02}px) scale(.98)`, opacity:1, offset:o(t+T.ret*0.72), easing:'cubic-bezier(.45,0,.55,1)' });
   kf.push({ transform:'none', opacity:1, offset:1 });
   el.style.transformOrigin='50% 50%';
-  if(!noOut) playEntranceSe(en.assaultSe || 'se_enemy_dragonroar');   // 發動攻擊那一刻吼一聲（ver -2502，Ray）；有準備動作的在準備動作開頭吼過了
+  if(!noOut) [].concat(en.assaultSe || 'se_enemy_dragonroar').forEach(k=>playEntranceSe(k));   // 發動攻擊那一刻吼一聲（ver -2502，Ray）；有準備動作的在準備動作開頭吼過了
   const a=el.animate(kf, { duration:tot }); airAtk=a;
   const end=()=>{ if(airAtk===a) airAtk=null; };
   a.onfinish=end; a.oncancel=end;
@@ -2082,7 +2082,7 @@ export function onAssaultLand(){
   if(idleEl){ ghost._sync=setInterval(()=>{ if(!idleEl||!ghost.isConnected){ clearInterval(ghost._sync); return; } ghost.src=idleEl.src; }, 50); }
   sky.lunge=ghost;
   el.style.transition='none'; sky.vanishEl=el;   // 龍被這一根樹幹掃掉（逐禎裁，見 tick）
-  { const en=curCard(); if(en && en.assaultSe) setTimeout(()=>playEntranceSe(en.assaultSe), SW); }   // 衝出那一刻吼一聲（卡上 assaultSe；-2450 Ray：「龍主動攻擊時放 dragonroar」）
+  { const en=curCard(); if(en && en.assaultSe) setTimeout(()=>[].concat(en.assaultSe).forEach(k=>playEntranceSe(k)), SW); }   // 衝出那一刻吼一聲（卡上 assaultSe；-2450 Ray：「龍主動攻擊時放 dragonroar」）
   /* ② 從左下往右上衝出，放大到幾乎遮滿畫面（同一支待機 loop）；衝到一半撞到玩家 ⇒ 扣血與震畫面在那一刻（defense 照回傳值延後） */
   /* -2447（Ray：「龍攻擊時要再放大，龍頭要往上 45 度，同飛的角度」）：寬 4.2 個畫面寬；整條龍轉 −45°（頭朝右上），
      沿著穿過畫面中心的 45° 斜線從左下飛到右上 —— 頭的方向＝飛的方向。中心對位用 translate（圖心先挪到 #top 的左上角）。 */
