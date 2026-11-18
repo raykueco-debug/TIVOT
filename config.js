@@ -102,7 +102,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2761';
+export const VERSION = 'ver 2026.11.18-2762';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5817,6 +5817,7 @@ export const ENEMY_IDLE = {
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
+  mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_atk_v1/', hit:12, hitFx:'reassembled_wave' },   // 心魘（ver -2762）：三手張開快速抖動（Ray 剪的 atkAB_cut 13 格＋atkBA_cut 10 格）；打點＝張開段最後一格 → 心臟光波＋盤面重組
   mon_relic_candletower: { dir:'resources/enemy/anim/mon_relic_candletower_atk_v1/', hit:9, hitFx:'candletower_claw' },   // 禍魘祭司（北泊）A：tiger rule 爪擊 AB＋BA（32 格），打到＝AB 最後一格（ver -2732）
   mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_atk_v1/', hit:13 },   // 罪之魔像（北泊）A：tiger rule 撲擊 AB＋BA（29 格），打到＝AB 最後一格（ver -2732）
   mon_centipi_side: { dir:'resources/enemy/anim/mon_centipi_side_atkprep_v1/', prep:true, slideFrom:16, sweep:'resources/enemy/anim/mon_centipi_side_atk_v1/' },   /* sweep＝A 本體：腹面 loop（Ray 剪的 mon_centipi_belly_even2_wave_cut，48 格），放大從操作盤線下快速斜上衝（-2550） */   // 巨型蜈蚣 A 的準備動作（ver -2546，Ray 剪的 centipi_dive_joined_v2_cut，22 格：側面轉正、下潛）；第 16 格（頭出畫面、只剩身體尾巴）起邊播邊往下滑出畫面（-2547），再接劃過（A 動畫還沒交，先用程式的劃過）
