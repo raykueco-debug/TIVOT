@@ -100,7 +100,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2727';
+export const VERSION = 'ver 2026.11.18-2728';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5069,7 +5069,8 @@ export const ASSETS = {
   se_enemy_bite:      "resources/audio/se/se_enemy_bite.m4a",   // 喪鐘蠕蟲咬下（ver -2677）
   se_chain_heavy:     "resources/audio/se/se_chain_heavy.m4a",       // 鐵衣苦修者出手／收回的鐵鏈聲（ver -2680）
   se_crush_deepmetal: "resources/audio/se/se_crush_deepmetal.m4a",
-  se_clickstep: "resources/audio/se/se_clickstep.mp3",   // 肋籠獸爪子踩地（ver -2724，Ray 找的）
+  se_clickstep: "resources/audio/se/se_clickstep.mp3",
+  se_brickcrush: "resources/audio/se/se_brickcrush.m4a",   // 崩岩巨像咆哮清盤的碎瓦聲（ver -2728，Ray：「miss 音配碎瓦」；劇情那邊走 story.SE_FILES，同一支檔）   // 肋籠獸爪子踩地（ver -2724，Ray 找的）
   se_rockimpact: "resources/audio/se/se_rockimpact.mp3?v=d2a1f043",   // 崩岩巨像拳砸地（ver -2689；劇情那邊走 story.SE_FILES，同一支檔）   // 鐵衣苦修者錘砸中（ver -2680）
   se_enemy_breathfire: "resources/audio/se/se_enemy_breathfire.m4a",   // 肋籠獸噴火（ver -2686，取原檔 0.5～2.3 秒）
   se_brickcrush:        "resources/audio/se/se_brickcrush.m4a",   // 黑爪登場（原本只在 story 的 SE_FILES）
@@ -5854,7 +5855,7 @@ export const ENEMY_MISS = {
   /* 崩岩巨像 M＝仰天咆哮（ver -2692，Ray 剪的 cut＋鎖雙腳：21 格 16fps）：第 12／14／17 格（原片 36／42／43）震畫面，第 12 格敵回血 10%＋盤面全清換下一盤、不傷敵（ver -2694，Ray：「咆效果是把盤面全清 但是不會對他造成傷害」）（Ray：「36 42 43 格播放時畫面震動 怪回血 10%」）；
      吼聲 se_enemy_dragonroar 取有聲的 0.1～3.5 秒、保持音高壓到第 9 格起到片尾（0.75 秒）（Ray：「時間壓縮到吼叫那幾格 pitch 保持低沉」「不要改原音效」）。R＝倒回（Ray：「咆的 r 用倒回」）：第 21 格起把第 16→0 格倒著接回中立（共 38 格），已烘進片裡。 */
   mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_miss_v1/', hit:12,
-    fx:[{ frame:12, type:'shake', heal:0.10, wipe:true }, { frame:14, type:'shake' }, { frame:17, type:'shake' }],
+    fx:[{ frame:12, type:'shake', heal:0.10, wipe:true, se:'se_brickcrush' }, { frame:14, type:'shake' }, { frame:17, type:'shake' }],
     windupSe:'se_enemy_dragonroar', windupMs:563, windupFit:{ from:0.1, to:3.5, dur:0.75 } },
   mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20 },   // 卡耶爾群戰（ver -2623）
   mon_canyon_stilt_neutral: { dir:'resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1/', hit:7, hitFx:'stilt_claw' },   // ver -2705：Ray 剪的 cut（18 格，原片 0,1,7,8,28,29,35,42,49,70…98），打到＝斜劈第 7 格（原 42）。ver -2704：換成 GPT 四宮格 1→2→3 ＋回中立 I 的橫框 Wan（99 格、未剪，先接上）；打到暫定斜劈中段第 55 格
