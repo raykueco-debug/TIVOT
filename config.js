@@ -55,7 +55,7 @@ export const HITFX = {
   pilgrim_sonic:{ base:'sonic', se:'se_enemy_squeal_echo' },   // 朝聖者團塊聲波（ver -2676，Ray：「se_enemy_squeal 尾音迴音」）：聲波環＋數字淡出，配加了迴音尾的尖嘯
   wyrm_bite:    { base:'blunt', se:'se_enemy_bite' },   // 喪鐘蠕蟲鐘口咬下（ver -2677，Ray：「se_enemy_bite」）：音檔裁掉前段 0.48 秒空白，咬聲＝打擊格
   iron_smash:   { base:'dust', se:'se_crush_deepmetal' },
-  reassembled_claw:{ base:'claw', se:'em_slash', count:1, scale:1.4, flip:true, angle:-10 },   // 心魘撲擊（A）：單爪，角度配合撲擊（ver -2773，Ray：「張三手是放光攻擊 單爪才是爪擊」）
+  reassembled_claw:{ base:'claw', se:'em_slash', count:3, sets:[ { at:[0.78,0.56], w:0.55, angle:-25, flip:true } ] },   // ver -2775（Ray：「是一排的那個 且要在伸手的那一側 角度也要對」）：三道一排、落在右下伸手那一側、沿主爪伸出方向（約往下 20 度）   // 心魘撲擊（A）：單爪，角度配合撲擊（ver -2773，Ray：「張三手是放光攻擊 單爪才是爪擊」）
   reassembled_wave:{ base:'wave', tone:'orange', at:[0.50,0.23], plunder:true, se:'se_enemy_warpmagig' },   // 心魘（ver -2759，Ray：「跟紫黑之翼一樣的光波…從心臟為中心發出 偏橘 效果是盤面剩餘數字隨機重組」；-2763 改成「隨機被抽掉一個」）
   colossus_smash:{ base:'dust', se:['se_rockimpact','se_crush_deepmetal'] },   // 崩岩巨像拳砸地（ver -2689，Ray：「擊點是拳頭落地那一瞬 地面揚塵 播 se_rockimpact 跟 se_crush_deepmetal」）：`se` 寫成陣列＝同一拍一起放   // 鐵衣苦修者錘砸（ver -2680／-2681，Ray：「擊中 heavymetal」「受擊效果是地面揚塵」）
   rib_fire:     { base:'none', se:'se_enemy_breathfire' },   // 肋籠獸噴火（ver -2686，Ray：「se_enemy_breathfire 音效用這個 不要其他受擊效果」）：不放受擊圖，畫面只有程式噴火
@@ -110,7 +110,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2774';
+export const VERSION = 'ver 2026.11.19-2775';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
