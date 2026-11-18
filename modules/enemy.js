@@ -1413,6 +1413,7 @@ function clipFx(f, el){
       if(hr && r.width) o={ x:r.left-hr.left+f.at[0]*r.width, y:r.top-hr.top+f.at[1]*r.height }; }
     return spawnRubble(o, f.n, f.speed); }
   if(f.type==='violetFlash') return spawnVioletFlash();
+  if(f.type==='dust'){ const n=f.n||1; for(let k=0;k<n;k++) setTimeout(spawnGroundDust, k*120); return; }   // 地面煙塵（ver -2782，Ray：「用特效加煙塵遮」攻擊接回待機那一下）
   if(f.type==='shake'){ if(api.screenShake) api.screenShake(); if(f.heal>0 && api.healEnemyPct) api.healEnemyPct(f.heal); if(f.wipe && api.wipeBoard) api.wipeBoard(); return; }   // wipe＝震掉整盤換下一盤（ver -2694）   // 震畫面＋（可選）敵回血 heal＝最大 HP 比例（ver -2692 崩岩巨像咆哮）
 }
 /* 紫白光芒（ver -2525，Ray：「暴炎時從中心發出紫白光芒快速籠罩畫面後快速淡出，用首頁的光圈特效來改，外圈改紫色」）：

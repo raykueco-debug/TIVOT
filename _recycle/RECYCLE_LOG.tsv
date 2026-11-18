@@ -1448,3 +1448,4 @@ when	from	to	reason
 20261119-005246	resources/enemy/anim/mon_beast_altar_atk_v2	_recycle/resources/enemy/anim/mon_beast_altar_atk_v2	改用 4x-UltraSharp 放大版重新交件（Ray：kling 太模糊）
 20261119-005417	resources/enemy/anim/mon_beast_altar_idle_v2	_recycle/resources/enemy/anim/mon_beast_altar_idle_v2.20261119-005417	待機改用 4x-UltraSharp 放大 2 倍版（Ray：把 idle 的畫質拉平）
 20261119-005520	resources/enemy/anim/mon_beast_altar_roar_v1	_recycle/resources/enemy/anim/mon_beast_altar_roar_v1	咆哮改用 4x-UltraSharp 放大 2 倍版（畫質跟攻擊、待機拉平）
+20261119-010534	resources/enemy/anim/mon_beast_altar_idle_v2	_recycle/resources/enemy/anim/mon_beast_altar_idle_v2.20261119-010534	待機清晰度降到跟攻擊一樣前的版本（Ray：把 I 的模糊度改成跟 A 一樣看看）
