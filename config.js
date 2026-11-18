@@ -33,6 +33,7 @@ import { SHOP_CARDS } from './script/shopcards.js';   // 商店卡抽成獨立�
    ⚠ 目前只有受擊音（combat.playHitSe）會查這張表。 */
 export const SE_PLAY = {
   se_enemy_warpmagig: { rate:0.8, drive:2.5 },   // 心魘
+  se_enemy_snake:     { rate:1.25 },             // 羽蛇攻擊（ver -2767）
 };
 export const HITFX = {
   // ── 通用 ──
@@ -85,7 +86,7 @@ export const HITFX = {
      一拍一拍彈出，最後一斬（`enemy.spawnAfterimage`）。音效照 slash 那一支（斬的那一下）。 */
   misha_attack: { base:'afterimage', se:'em_slash', img:'misha_attack' },
   // ── 特殊怪的簽名（視覺沿用 base、音效專屬）──
-  serpent_bite:      { base:'bite',   se:'se_enemy_serpent' },   // 羽蛇：牙印＋吼叫
+  serpent_bite:      { base:'bite',   se:'se_enemy_snake' },   // 羽蛇：牙印＋蛇嘶（ver -2767，Ray：攻擊音改 enemy_snake、pitch 拉高 → SE_PLAY）
   centipi_claw:      { base:'claw',   se:'se_enemy_centipi' },   // 蜈蚣：爪痕＋叫聲
   witch_revolver:    { base:'bullet', se:'em_revolver',      count:1, pos:'random', scale:1.6 },  // 魔女大絕：彈痕＋左輪
   pirate_cannon:     { base:'bullet', se:'se_weapon_cannon', count:1, pos:'random', scale:2.4, flash:'red' },  // 空賊船大絕：艦砲＋畫面閃紅
@@ -108,7 +109,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2766';
+export const VERSION = 'ver 2026.11.18-2767';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4079,7 +4080,7 @@ export const GAME_CONFIG = {
       se_dart_fail:2.792,
       /* ── 劇情／城鎮（這一批以前完全沒有增益，見上面的說明）── */
       se_lightup:1.34,   // ver -1859：本機量 −16.1 LUFS（耳機−15.2／手機−17.0 平均），以 se_steps 校正 +0.25 dB
-      se_steps:4.92, se_flame:0.66 /* ver -2755 實測 −10.2 LUFS */, se_enemy_warpmagig:1.1 /* ver -2765 實測 −16.7 LUFS；播放時加失真會變大聲，比公式值 1.40 收一點 */, se_clickstep:5.9 /* ver -2724 實測 −28.8 LUFS、峰值 −5.2 dBFS（被 peakCeilDb 夾住）CAP */, se_stepsbig:6.96,   /* ver -1915：stepsbig 換新（Ray 交 wav，4.3 秒，原檔進 _originals，?v=4）；audio_scan 建議 7.84 × 校準比 7.198／8.11 */   /* ver -1914（Ray：「se_steps 改了，城鎮、室外都用這個；se_stepsbig 只用在遺跡內、地宮內的跑步聲」）：se_steps 換新（3.8 秒，原 mp3 在 se/_raw/，?v=3）；增益照 audio_scan 建議值 5.54 × 舊檔校準比（7.198／8.11）＝4.92 */   // ver -1871：se_steps 換新（ffmpeg ebur128 耳機−23.9／手機−24.8，以舊檔 7.198 校正 −6.8 dB）；se_stepsbig＝舊的那支原檔
+      se_steps:4.92, se_flame:0.66 /* ver -2755 實測 −10.2 LUFS */, se_enemy_snake:1.78 /* ver -2767 實測 −18.8 LUFS */, se_enemy_warpmagig:1.1 /* ver -2765 實測 −16.7 LUFS；播放時加失真會變大聲，比公式值 1.40 收一點 */, se_clickstep:5.9 /* ver -2724 實測 −28.8 LUFS、峰值 −5.2 dBFS（被 peakCeilDb 夾住）CAP */, se_stepsbig:6.96,   /* ver -1915：stepsbig 換新（Ray 交 wav，4.3 秒，原檔進 _originals，?v=4）；audio_scan 建議 7.84 × 校準比 7.198／8.11 */   /* ver -1914（Ray：「se_steps 改了，城鎮、室外都用這個；se_stepsbig 只用在遺跡內、地宮內的跑步聲」）：se_steps 換新（3.8 秒，原 mp3 在 se/_raw/，?v=3）；增益照 audio_scan 建議值 5.54 × 舊檔校準比（7.198／8.11）＝4.92 */   // ver -1871：se_steps 換新（ffmpeg ebur128 耳機−23.9／手機−24.8，以舊檔 7.198 校正 −6.8 dB）；se_stepsbig＝舊的那支原檔
       se_walk:4.481, se_fall:3.724, se_punch:1.596,
       se_tummy:8.268, se_sailorshout:2.048, se_sleep:1.708,
       se_kerberos_open:1.558, se_kerberos_pop:1.479, se_kerberos_steam:1.301,
@@ -5085,6 +5086,7 @@ export const ASSETS = {
   se_crush_deepmetal: "resources/audio/se/se_crush_deepmetal.m4a",
   se_clickstep: "resources/audio/se/se_clickstep.mp3",
   se_brickcrush: "resources/audio/se/se_brickcrush.m4a",   // 崩岩巨像咆哮清盤的碎瓦聲（ver -2728，Ray：「miss 音配碎瓦」；劇情那邊走 story.SE_FILES，同一支檔）   // 肋籠獸爪子踩地（ver -2724，Ray 找的）
+  se_enemy_snake: "resources/audio/se/enemy_snake.mp3",   // 羽蛇攻擊（ver -2767，Ray）
   se_enemy_warpmagig: "resources/audio/se/se_enemy_warpmagig.mp3?v=e1723b23",   // 心魘的光波（ver -2765，Ray）
   se_flame: "resources/audio/se/se_flame.mp3",   // 紫黑之爪每一個動作的起手（ver -2755，Ray）
   se_rockimpact: "resources/audio/se/se_rockimpact.mp3?v=d2a1f043",   // 崩岩巨像拳砸地（ver -2689；劇情那邊走 story.SE_FILES，同一支檔）   // 鐵衣苦修者錘砸中（ver -2680）
@@ -7030,7 +7032,6 @@ export const ASSET_VER = {
   'se_enemy_beast01': 'fa664115',
   'se_enemy_beast02': '1ca22f42',
   'se_enemy_dagger': '608c768c',
-  'se_enemy_warpmagig': 'e1723b23',
   'se_rockimpact': 'd2a1f043',
   'se_steps': 'd271dff8',
   'se_stepsbig': 'c1670181',
