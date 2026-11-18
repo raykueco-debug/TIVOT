@@ -1427,3 +1427,17 @@ when	from	to	reason
 20261118-165707	resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1	_recycle/resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1	高蹺細影 M 換成四宮格 Wan 版（ver -2704，先接上未剪）
 20261118-170105	resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1	_recycle/resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1.20261118-170105	高蹺細影 M 換成 Ray 剪的 cut（ver -2705）
 20261118-170151	resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1	_recycle/resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1.20261118-170151	高蹺細影 M 統一色調前的版本（ver -2705）
+20261118-171604	resources/enemy/anim/mon_canyon_bellwyrm_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_bellwyrm_dark_atk_v1	喪鐘蠕蟲 A 換成 Ray 剪的 cut＋鎖尾部（ver -2709）
+20261118-171913	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	鐵衣苦修者 D 鎖腳前的版本（ver -2710）
+20261118-172246	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-172246	鐵衣苦修者 D 自動鎖腳版（被 Ray 退，ver -2711 改用錨點）
+20261118-172508	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-172508	鐵衣苦修者 D 只移位置的錨點版（ver -2712 改大小）
+20261118-172634	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-172634	鐵衣苦修者 D 錨點第二版（ver -2713 改大小 1.24）
+20261118-173007	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-173007	鐵衣苦修者 D 錨點平移版（Ray：為何位移，ver -2715 改只縮放）
+20261118-173206	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-173206	鐵衣苦修者 D 只縮放版（ver -2716 再鎖腳底高度）
+20261118-173405	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-173405	鐵衣苦修者 D 鎖腳底高度版（ver -2717 改鎖左腳位置）
+20261118-173720	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-173720	鐵衣苦修者 D 鎖左腳版（ver -2718 改用 Ray 對 idle 調的高度）
+20261118-181126	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-181126	鐵衣苦修者 D 位移版（ver -2719 改 Ray 逐格手調）
+20261118-181508	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-181508	鐵衣苦修者 D 61 格後未補版（ver -2720）
+20261118-181653	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-181653	鐵衣苦修者 D 未平滑版（ver -2721）
+20261118-182322	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-182322	鐵衣苦修者 D 平滑版（ver -2722 改照對位頁 96 格原值）
+20261118-185112	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261118-185112	鐵衣苦修者 D 對位頁版（ver -2723 換成 Ray 在 chk 調好的 cut）

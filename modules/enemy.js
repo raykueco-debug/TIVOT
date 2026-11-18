@@ -1339,6 +1339,7 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
       el.animate(kf.map(q=>({...q, easing:'ease-in-out'})),{duration:T}); } }   /* ease 逐段套，峰值才準準落在 hit 那一格（-2485） */
   const t0=performance.now();
   windupSe(c.windupSe, c.windupMs, ()=>clipT || i<N, c.windupFit);
+  if(c.retractSe && c.retractAt!=null) windupSe(c.retractSe, c.retractAt*1000/fps, ()=>clipT && i<N);   // 單隻：收回音（ver -2720）
   const fxAt=new Map((c.fx||[]).map(f=>[f.frame, f]));   // 動作段的程式特效（ver -2524：光翼下拍噴瓦礫）
   const step=()=>{ i++;
     if(fxAt.has(i)) clipFx(fxAt.get(i), el);
@@ -2533,6 +2534,7 @@ function memberActOnce(g, im, A){
      舊的分層群組（沒有 `_pm`）照舊一律拉。 */
   const fill = (A===im._atk && (!im._pm || im._pm.focus)) ? attackFocusAnim(g, ov, N*1000/fps, hit*1000/fps, !!sp.fillFrame, A.body) : null;   // 只有攻擊 A 拉到中間（D／M 原地演）
   windupSe(sp.windupSe, sp.windupMs, ()=>groupCard && !im.classList.contains('eg-down'), sp.windupFit);
+  if(sp.retractSe && sp.retractAt!=null && !sp.rev) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) windupSe(sp.retractSe); }, sp.retractAt*1000/fps);   // 片子自帶收回：收回音在那一格放（`retractAt`，ver -2720）
   if(sp.flame) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) spawnFlame(ov, sp.flame, fps, ()=>im._ov===ov && !!groupCard); }, sp.flame.from*1000/fps);
   const fxKey = sp.hitFx || (A===im._atk ? cardAssaultKey() : null);   // 攻擊片（含代演 D／M）＝攻擊那一套受擊（ver -2678）
   if(fxKey){ actFx={ key:fxKey, im, at:performance.now()+hit*1000/fps };   // 這一擊用牠自己的受擊特效（見 showHitFx 上面）

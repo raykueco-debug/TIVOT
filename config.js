@@ -38,11 +38,11 @@ export const HITFX = {
   blood:  { base:'blood',  se:'em_smack'  },
   blunt:  { base:'blunt',  se:'em_smack'  },
   censer_crash: { base:'blunt', se:'se_crash_rocks' },
-  hound_maul:   { base:'blunt' },   // 餓獸撲咬（ver -2661）：⚠ 刻意沒有 `se` —— 聲音只有 ENEMY_ATK 的 `windupSe` 吼聲（起手放、拉長版），打擊格不另響（Ray：「原本的打擊音拿掉 過」）
+  hound_maul:   { base:'claw', se:'em_slash', count:3, scale:1.35 },   // 餓獸撲咬（ver -2707，Ray：「爪痕跟爪擊音呢」：打擊格放三道爪痕＋揮砍音；起手吼 windupSe 照舊）。-2661 的「打擊格不另響」已推翻
   bell_claw:    { base:'claw', se:'em_slash', count:1 },   // 鐘殼蟲揮鉗（ver -2663，Ray：「slash 保留 跟隨動作三下」）：單爪痕＋揮砍音，跟著 strikes 三下各一次；嘶鳴另走 ENEMY_ATK 的 `windupSe`
   chain_maul:   { base:'claw', se:'em_slash', count:3, scale:1.35, flip:true, angle:-12 },   // 鎖鏈餓犬撲咬（ver -2668／-2669，Ray：「受擊特效用爪痕跟 slash」「爪痕大一點 要跟揮爪速度一樣」）：三道爪痕放大 1.35、由左往右 250ms 劃出（片子第 39→45 格那一揮）＋揮砍音；吼聲另由 ENEMY_ATK `windupSe` 從轉正那一格放
   stilt_claw:   { base:'claw', se:'em_slash', count:3, scale:1.3, flip:true, angle:12 },   // 高蹺細影斜劈（ver -2706，Ray：「音效用 slash 受擊用跟揮擊角度一樣的爪痕」）：片子是左上→右下的斜劈 ⇒ flip（左上→右下）再往下壓 12°
-  crawler_hit:  { base:'blunt', se:'em_slash' },   // 爬行朝聖者（ver -2671，Ray：「用 slash 音效」）：鈍擊特效照舊、音效換揮砍音
+  crawler_hit:  { base:'claw', se:'em_slash', count:1, angle:16 },   // 爬行朝聖者（ver -2708，Ray：「單爪受擊特效 同角度」）：單爪痕＋揮砍音；片子那一揮是右上→左下、接近水平的弧 ⇒ 原圖（左下→右上約 26°）轉 16° 壓成約 10° 的斜線。原 -2671：鈍擊＋揮砍音
   beetle_claw:  { base:'claw', se:'em_slash', count:1, angle:26 },   // 石棺甲蟲（ver -2674，Ray：「固定橫痕 slash 在最大時出」）：單爪痕轉成水平（原圖那一道往右上斜 26°）＋揮砍音
   pilgrim_sonic:{ base:'sonic', se:'se_enemy_squeal_echo' },   // 朝聖者團塊聲波（ver -2676，Ray：「se_enemy_squeal 尾音迴音」）：聲波環＋數字淡出，配加了迴音尾的尖嘯
   wyrm_bite:    { base:'blunt', se:'se_enemy_bite' },   // 喪鐘蠕蟲鐘口咬下（ver -2677，Ray：「se_enemy_bite」）：音檔裁掉前段 0.48 秒空白，咬聲＝打擊格
@@ -100,7 +100,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2706';
+export const VERSION = 'ver 2026.11.18-2723';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5812,7 +5812,7 @@ export const ENEMY_ATK = {
   mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_atk_v1/', hit:7, hitFx:'colossus_smash' },   // ver -2689：打擊＝拳頭落地第 7 格（原 21 是拳停在鏡頭前），地面揚塵＋落石＋重金屬
   /* 卡耶爾群戰成員（ver -2623，Kling、快剪 24fps；片尾 B 停格約 1 秒）。hit＝主體最大那一格（交件單）。 */
   mon_canyon_coffinbeetle_dark: { dir:'resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v2/', hit:16, hitFx:'beetle_claw', windupSe:'se_enemy_bug01' },   // 一支到底（片尾回中立）；ver -2675：打到＝巨大化的第一格 16（主體面積由 129k 跳到 201k、之後撐到 21 格；Ray：「巨大化的第一幀就要放效果」），水平單爪痕＋揮砍音；嘶鳴起手放（Ray：「se_enemy_bug01 + slash 跟單爪痕」「固定橫痕 slash 在最大時出」）
-  mon_canyon_bellwyrm_dark: { dir:'resources/enemy/anim/mon_canyon_bellwyrm_dark_atk_v1/', hit:50, hitFx:'wyrm_bite' },
+  mon_canyon_bellwyrm_dark: { dir:'resources/enemy/anim/mon_canyon_bellwyrm_dark_atk_v1/', hit:19, hitFx:'wyrm_bite' },   // ver -2709：Ray 剪的 cut（35 格）＋鎖尾部大小位置（tools/anim/lock_region.py）；打到＝原第 50 格＝剪後第 19 格
   mon_canyon_ribcage_dark: { dir:'resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1/', hit:30, hitFx:'rib_fire', flame:{ from:28, to:42, at:[0.687,0.51] }, skip:[42,58] },   // ver -2683（Ray：「換成從尾部噴射火燄的特效」）：長頸末端的嘴第 28～70 格朝鏡頭噴火（嘴的位置逐格量過，28～74 格穩在 0.687／0.51），打到＝火噴到第 2 格
   /* 卡耶爾 Wan 攻擊（ver -2637，敵人副理 f13d457f／ce7379fe；Ray：「有一些 WAN 的動畫也要接上」）。交件單沒寫打到格 ⇒ 取「與第 0 格差最多」那一格（動作最大的一刻）。
      （聖面鷲／骨鴉 -2641 起改成「一閃」，見下面 `issen` 那兩列。） */
@@ -5867,7 +5867,7 @@ export const ENEMY_DELAY = {
     fx:[{ frame:5, type:'rubble', at:[0.22,0.30], n:30, speed:1.8, se:'se_rockimpact' }] },   // ver -2701（Ray：「飛石快一點 石頭音用搥地的石頭音」）：1.8 倍速、音效換攻擊拳砸地那支
   mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20 },   // 朝聖者團塊＝D 的本職（ver -2655，Ray：「D 一定出聲波」；聲波本身在卡上 hitFx.delay:'sonic'）
   mon_canyon_bonecrab_dark: { dir:'resources/enemy/anim/mon_canyon_bonecrab_dark_delay_v1/', hit:16 },   // 卡耶爾群戰（ver -2623）
-  mon_canyon_ironpenitent_neutral: { dir:'resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1/', hit:40, rev:true, hitFx:'iron_smash', windupSe:'se_chain_heavy', retractSe:'se_chain_heavy' },   // ver -2680（Ray：「動作開始 se_chain_heavy／擊中 heavymetal／收回 se_chain_heavy」）   // rev＝播完倒放回中立（Ray 11-15「鐵衣 R＝倒放」；目前只有群戰讀）
+  mon_canyon_ironpenitent_neutral: { dir:'resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1/', hit:38, hitFx:'iron_smash', windupSe:'se_chain_heavy', retractSe:'se_chain_heavy', retractAt:53 },   // ver -2723：換成 Ray 在 chk 逐格調好大小位置的 cut（iron_delay_orig_cut，98 格；打到＝原第 40 格＝第 38 格，收回音＝原第 56 格＝第 53 格）   // ver -2720（Ray：「關掉倒放」）：片子本身已含收回，拿掉 rev（群戰會整支再倒放一次＝砸兩次）；收回的鐵鏈聲改在第 51 格（retractAt）放   // ver -2680（Ray：「動作開始 se_chain_heavy／擊中 heavymetal／收回 se_chain_heavy」）   // rev＝播完倒放回中立（Ray 11-15「鐵衣 R＝倒放」；目前只有群戰讀）   // ver -2719：Ray 在對位頁逐格手調（resources/enemy/anim/_iron_delay_anchor.json），刪第 11、12、53～55 格（96 格），打到 40→38
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_burst_v1/', hit:48 },   // D＝爆炎（81 格；ver -2525 Ray 改：爆炎是 D，之後下一發攻擊 200%，見卡上 delayEmpowers）
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7 },   // 訓練用聖徒 新架勢 攻擊＝延時＝點錯（ver -2527，31 格，最後一格回到架勢）
   mon_saint_inspector: { dir:'resources/enemy/anim/mon_saint_inspector_delay_v1/', hit:23 },   // 監查者 翅膀揮動（ver -2620，KF 第二輪，39 格）
@@ -6351,6 +6351,30 @@ export const ASSET_VER = {
   'east_university_day': 'caaf76f4',
   'east_university_dusk': '7d82df44',
   'east_university_night': 'a4396469',
+  'frame_74': 'fe3fa4d3',
+  'frame_75': 'e02ab507',
+  'frame_76': '26affd33',
+  'frame_77': 'd7efeb36',
+  'frame_78': '2ca09bee',
+  'frame_79': '1cc0990c',
+  'frame_80': '445cdc3b',
+  'frame_81': '1ce0680f',
+  'frame_82': '7e744ae0',
+  'frame_83': 'a7e285ac',
+  'frame_84': '7fa3b10a',
+  'frame_85': '7fa3b10a',
+  'frame_86': '26fd20da',
+  'frame_87': '26fd20da',
+  'frame_88': 'c9ec8b44',
+  'frame_89': '425359eb',
+  'frame_90': '043005e3',
+  'frame_91': '0ec6184a',
+  'frame_92': 'ac240671',
+  'frame_93': '27654565',
+  'frame_94': '2ba08297',
+  'frame_95': 'f60857b9',
+  'frame_96': '91f0c279',
+  'frame_97': '4e308ca2',
   'guildcounterca_si_closed': '80cc27b6',
   'guildcounterca_si_half': 'f341b6bb',
   'kidd_ci': 'a4cda953',

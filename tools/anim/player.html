@@ -11,7 +11,7 @@ select{max-width:420px;font-size:14px}button{padding:5px 12px;font-size:14px}
 .c{width:112px;cursor:pointer;border:3px solid transparent;background:#222}.c.cur{border-color:#fc6}
 .c img{width:112px;height:150px;object-fit:cover;display:block;background:#2a2730}
 .c div{font:11px monospace;color:#bbb;padding:2px 3px;word-break:break-all;line-height:1.25}
-#view{flex:0 0 420px;display:flex;flex-direction:column;min-height:0;text-align:center}#im{flex:1 1 auto;min-height:0;width:420px;max-height:630px;object-fit:contain;background:#2a2730;display:block}
+#view{flex:0 0 420px;display:flex;flex-direction:column;min-height:0;text-align:center}#vw{position:relative;flex:1 1 auto;min-height:0;width:420px;max-height:630px;height:630px;background:#2a2730;overflow:hidden}#vw{cursor:move;touch-action:none}#vw img{position:absolute;transform-origin:50% 100%;pointer-events:none;-webkit-user-drag:none}#gh{opacity:.4;pointer-events:none}#xfbar{font:12px monospace;color:#8cf;margin:4px 0}
 #info{font:15px monospace;color:#fc6;margin:6px 0}
 #strip{flex:1;display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start;overflow:auto}
 .t{position:relative;width:120px;cursor:pointer;user-select:none;touch-action:none;border:3px solid transparent}
@@ -37,19 +37,26 @@ small{color:#888}
  <small>Enter＝播放/暫停・← →＝逐格・空白（或 X）＝勾/取消目前格・點縮圖＝勾掉／取消，按住拖過去＝一次勾多格（勾掉的格不播）・<b style="color:#9f9">停格：數字 1～9＝目前格凍結幾格（1＝不停），右鍵縮圖＝×1→×2→×3→×4 輪換</b></small>
 </div>
 <div id=main><div id=list></div>
- <div id=view><img id=im><div id=info></div>
+ <div id=view><div id=vw><img id=gh><img id=im></div><div id=info></div>
+  <div id=xfbar><label><input type=checkbox id=bmode> 底圖參照（選中幀半透明）</label> 底圖＝第 <b id=refv>第一幀</b> <button id=refset title="B">目前格當底圖</button><button id=refclr>回到第一幀</button>　<label><input type=checkbox id=ghon checked> 疊參考格</label> 第 <input id=ghk type=number value=0 style="width:48px"> 格　<span id=xfv></span><br><small>調大小位置（以腳底中心為支點）：預覽框拖曳＝移動、滾輪＝縮放（Shift 細調）・W A S D＝上左下右 1px（Shift 10px）・Q／E＝縮小／放大・R＝這一格歸零・C＝套用前一個調過的格・B＝目前格當底圖・Ctrl+Z 復原／Ctrl+Y 重做・輸出時會照調好的值輸出</small></div>
   <div style="width:420px"><small>保留的格（給程式用）：</small><textarea id=kept rows=4 readonly></textarea></div></div>
  <div id=strip></div>
 </div>
 <script src="player_list.js"></script>
 <script>
 const $=id=>document.getElementById(id);
-let A=null,off=new Set(),hold={},i=0,timer=null,playing=false,drag=null,left=0;
+let refK=null;
+let A=null,off=new Set(),hold={},xf={},i=0,timer=null,playing=false,drag=null,left=0;
+const XF=k=>xf[k]||{s:1,dx:0,dy:0};
 const H=k=>hold[k]||1;
 document.addEventListener('pointerup',()=>{drag=null});
 const key=()=>'tivot_player_off_'+A.dir;
-function save(){try{localStorage.setItem(key(),JSON.stringify([...off]));localStorage.setItem(key()+'_hold',JSON.stringify(hold))}catch(e){}}
-function load(){try{off=new Set(JSON.parse(localStorage.getItem(key())||'[]'))}catch(e){off=new Set()}let sv=null;try{sv=localStorage.getItem(key()+'_hold')}catch(e){}if(sv){try{hold=JSON.parse(sv)}catch(e){hold={}}}else{hold={};(A.holds||[]).forEach((v,k)=>{if(v>1)hold[k]=v})}}
+/* 復原（Ctrl+Z）／重做（Ctrl+Y、Ctrl+Shift+Z）：每次存檔前把上一個狀態推進堆疊（勾格、停格、大小位置都算） */
+let undoS=[],redoS=[],lastSt=null;const snap=()=>JSON.stringify({off:[...off],hold,xf});
+function restore(js){const o=JSON.parse(js);off=new Set(o.off);hold=o.hold;xf=o.xf;lastSt=js;persist();mark();keptText();show()}
+function save(){const now=snap();if(lastSt!==null&&lastSt!==now){undoS.push(lastSt);if(undoS.length>300)undoS.shift();redoS=[]}lastSt=now;persist()}
+function persist(){try{localStorage.setItem(key(),JSON.stringify([...off]));localStorage.setItem(key()+'_hold',JSON.stringify(hold));localStorage.setItem(key()+'_xf',JSON.stringify(xf))}catch(e){}}
+function load(){undoS=[];redoS=[];lastSt=null;try{xf=JSON.parse(localStorage.getItem(key()+'_xf')||'{}')}catch(e){xf={}}try{off=new Set(JSON.parse(localStorage.getItem(key())||'[]'))}catch(e){off=new Set()}let sv=null;try{sv=localStorage.getItem(key()+'_hold')}catch(e){}if(sv){try{hold=JSON.parse(sv)}catch(e){hold={}}}else{hold={};(A.holds||[]).forEach((v,k)=>{if(v>1)hold[k]=v})}lastSt=snap()}
 function setHold(k,v){if(v<=1)delete hold[k];else hold[k]=v;save();mark();keptText()}
 function list(){const q=$('q').value.trim().toLowerCase(),L=$('list');L.innerHTML='';let g=null;
  ANIMS.forEach((a,k)=>{if(q&&!a.name.toLowerCase().includes(q))return;if(CAT==='新作'?!a.new:CAT==='空賊之後'?!a.after:(CAT!=='全部'&&(a.cat||'其他')!==CAT))return;if(a.group!==g){g=a.group;const h=document.createElement('h4');h.textContent=g;L.appendChild(h)}
@@ -60,7 +67,7 @@ let CAT='全部';try{CAT=localStorage.getItem('tivot_player_cat')||'全部'}catc
 const QCAT=new URLSearchParams(location.search).get('cat');if(QCAT)CAT=QCAT;const QQ=new URLSearchParams(location.search).get('q');if(QQ){$('q').value=QQ;CAT='全部'}
 (function(){const C=$('cats');['全部','新作','倒放R','KF第二輪','空賊之後','空賊A','背景','敵','CI','插畫','其他'].forEach(c=>{const b=document.createElement('button');const n=c==='全部'?ANIMS.length:c==='新作'?ANIMS.filter(a=>a.new).length:c==='空賊之後'?ANIMS.filter(a=>a.after).length:ANIMS.filter(a=>(a.cat||'其他')===c).length;b.textContent=c+'（'+n+'）';b.dataset.c=c;if(c===CAT)b.classList.add('on');
  b.onclick=()=>{CAT=c;try{localStorage.setItem('tivot_player_cat',c)}catch(e){}C.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.c===c));list()};C.appendChild(b)})})();
-function open(k){stop();A=ANIMS[k];if(A.fps){const sel=$('base');const v=String(Math.round(A.fps));if(![...sel.options].some(o=>o.value===v)){const o=document.createElement('option');o.textContent=v;sel.appendChild(o)}sel.value=v}load();i=first();build();show();document.querySelectorAll('.c.cur').forEach(x=>x.classList.remove('cur'));const cc=$('c'+k);if(cc){cc.classList.add('cur');cc.scrollIntoView({block:'nearest'})}try{localStorage.setItem('tivot_player_last',A.dir)}catch(e){}}
+function open(k){stop();refK=null;A=ANIMS[k];if(A.fps){const sel=$('base');const v=String(Math.round(A.fps));if(![...sel.options].some(o=>o.value===v)){const o=document.createElement('option');o.textContent=v;sel.appendChild(o)}sel.value=v}load();i=first();build();show();document.querySelectorAll('.c.cur').forEach(x=>x.classList.remove('cur'));const cc=$('c'+k);if(cc){cc.classList.add('cur');cc.scrollIntoView({block:'nearest'})}try{localStorage.setItem('tivot_player_last',A.dir)}catch(e){}}
 function kept(){return A.frames.map((_,k)=>k).filter(k=>!off.has(k))}
 function first(){return kept()[0]??0}
 function build(){const s=$('strip');s.innerHTML='';A.frames.forEach((f,k)=>{const d=document.createElement('div');d.className='t';d.id='t'+k;
@@ -76,7 +83,11 @@ function ranges(a){const r=[];for(const k of a){if(r.length&&r[r.length-1][1]===
 function durText(){const f=+$('base').value*+$('sp').value,n=A.frames.length,m=kept().length;
  const o=outN();$('dur').textContent=`原始 ${n} 格 ${(n/f).toFixed(2)} 秒 → 保留 ${m} 張・停格後 ${o} 格 ${(o/f).toFixed(2)} 秒（${f.toFixed(1)} fps）`}
 function keptText(){durText();const k=kept();const hs=k.filter(x=>H(x)>1).map(x=>`${x}×${H(x)}`).join(', ');$('kept').value=`${k.length} 張・輸出 ${outN()} 格（${(outN()/+$('base').value).toFixed(2)} 秒 @${$('base').value}fps）\n保留：${ranges(k)}\n停格：${hs||'無（全×1）'}\n去掉：${ranges([...off].sort((a,b)=>a-b))||'無'}`}
-function show(){$('im').src=`${A.dir}/${A.frames[i]}`;const fps=+$('base').value*+$('sp').value;
+function place(el,src,t){el.onload=()=>{const W=el.naturalWidth,H=el.naturalHeight,bw=$('vw').clientWidth,bh=$('vw').clientHeight,r=Math.min(bw/W,bh/H);
+ el.style.width=W*r+'px';el.style.height=H*r+'px';el.style.left=(bw-W*r)/2+'px';el.style.top=(bh-H*r)/2+'px';el.dataset.r=r;tf(el,t)};if(el.getAttribute('src')!==src)el.src=src;else if(el.complete)el.onload()}
+function tf(el,t){const r=+el.dataset.r||1;el.style.transform=`translate(${t.dx*r}px,${t.dy*r}px) scale(${t.s})`}
+function drawXf(){tf($('im'),XF(i));const t=XF(i);$('xfv').textContent=`這一格：大小 ${t.s.toFixed(3)}　X ${t.dx}　Y ${t.dy}`+(xf[i]?'':'（原樣）')}
+function show(){place($('im'),`${A.dir}/${A.frames[i]}`,XF(i));const bm=$('bmode').checked,gk=bm?(refK!==null&&A.frames[refK]?refK:first()):+$('ghk').value;$('refv').textContent=refK!==null?refK:'第一幀';$('gh').style.display=(bm||$('ghon').checked)&&A.frames[gk]?'':'none';$('gh').style.opacity=bm?1:.4;$('im').style.opacity=bm?.5:1;if(A.frames[gk])place($('gh'),`${A.dir}/${A.frames[gk]}`,XF(gk));drawXf();const fps=+$('base').value*+$('sp').value;
  $('info').textContent=`${A.dir}　第 ${i} 格 / 0~${A.frames.length-1}${off.has(i)?'（已勾掉）':''}　停 ×${H(i)}　${fps.toFixed(1)} fps`;mark();
  const d=$('t'+i);if(d)d.scrollIntoView({block:'nearest'})}
 function nextIdx(d){const k=kept();if(!k.length)return null;let p=k.findIndex(x=>x>=i);
@@ -99,18 +110,32 @@ $('base').onchange=()=>{show();keptText();if(playing)play()};
 $('exp').onclick=async()=>{const k=kept();if(!k.length){alert('沒有保留的格');return}
  const name=prompt(`輸出 ${k.length} 張（停格後 ${outN()} 格），資料夾名稱：`,A.name+'_cut');if(!name)return;
  const ex=k.flatMap(x=>Array(H(x)).fill(x));
- const body={dir:A.dir,name,keep:k,holds:k.map(H),frames:ex.map(x=>A.frames[x]),fps:+$('base').value*+$('sp').value};
+ const body={dir:A.dir,name,keep:k,holds:k.map(H),frames:ex.map(x=>A.frames[x]),xf:ex.map(x=>xf[x]||null),fps:+$('base').value*+$('sp').value};
  if(location.protocol==='file:'){const b=new Blob([JSON.stringify(body,null,1)],{type:'application/json'});const a=document.createElement('a');
   a.href=URL.createObjectURL(b);a.download=name+'.json';a.click();alert('目前是直接開檔，只能下載清單 json。\n要直接輸出成資料夾，請用 http://localhost:8130/player.html 開');return}
  try{const r=await (await fetch('/export',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
   alert(r.ok?`已輸出 ${r.count} 格：\n${r.path}`:'輸出失敗：'+r.error)}catch(e){alert('輸出失敗：'+e)}};
 $('clr').onclick=()=>{off.clear();save();mark()};
-document.addEventListener('keydown',e=>{if(e.target.tagName==='SELECT'||e.target.tagName==='INPUT')return;
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&(e.key==='z'||e.key==='Z'||e.key==='y'||e.key==='Y')){e.preventDefault();
+  const redo=e.key==='y'||e.key==='Y'||e.shiftKey;const from=redo?redoS:undoS,to=redo?undoS:redoS;if(!from.length)return;to.push(snap());restore(from.pop());return}
+ if(e.target.tagName==='SELECT'||e.target.tagName==='INPUT')return;
  if(e.key==='Enter'){e.preventDefault();playing?stop():play()}
  else if(e.key===' '||e.key==='x'||e.key==='X'){e.preventDefault();tog(i,!off.has(i));show()}
  else if(e.key==='ArrowRight'){e.preventDefault();step(1)}
  else if(e.key==='ArrowLeft'){e.preventDefault();step(-1)}
- else if(/^[1-9]$/.test(e.key)){setHold(i,+e.key);show()}});
+ else if(/^[1-9]$/.test(e.key)){setHold(i,+e.key);show()}
+ else if(e.key==='b'||e.key==='B'){refK=i;$('bmode').checked=true;show()}
+ else if('wasdqerc'.includes(e.key.toLowerCase())&&!e.ctrlKey&&!e.metaKey){e.preventDefault();const st=e.shiftKey?10:1,t={...XF(i)},c=e.key.toLowerCase();
+  if(c==='w')t.dy-=st;else if(c==='s')t.dy+=st;else if(c==='a')t.dx-=st;else if(c==='d')t.dx+=st;else if(c==='q')t.s=+(t.s/(1+0.004*st)).toFixed(4);else if(c==='e')t.s=+(t.s*(1+0.004*st)).toFixed(4);
+  else if(c==='r'){delete xf[i];save();drawXf();return}else if(c==='c'){const p=Object.keys(xf).map(Number).filter(k=>k<i).sort((a,b)=>b-a)[0];if(p===undefined)return;Object.assign(t,xf[p])}
+  xf[i]=t;save();drawXf()}});
+$('ghon').onchange=()=>show();
+/* 滑鼠：在預覽框拖曳＝移動這一格、滾輪＝縮放（以腳底中心為支點）；Shift＋滾輪＝細調 */
+let vd=null;
+$('vw').addEventListener('pointerdown',e=>{if(!A)return;stop();e.preventDefault();$('vw').setPointerCapture(e.pointerId);const t=XF(i);vd={x:e.clientX,y:e.clientY,dx:t.dx,dy:t.dy,s:t.s}});
+$('vw').addEventListener('pointermove',e=>{if(!vd)return;const r=+$('im').dataset.r||1;xf[i]={s:vd.s,dx:Math.round(vd.dx+(e.clientX-vd.x)/r),dy:Math.round(vd.dy+(e.clientY-vd.y)/r)};drawXf()});
+$('vw').addEventListener('pointerup',()=>{if(vd){vd=null;save()}});
+$('vw').addEventListener('wheel',e=>{if(!A)return;e.preventDefault();const t={...XF(i)},k=e.shiftKey?0.002:0.01;t.s=+(t.s*(e.deltaY<0?1+k:1/(1+k))).toFixed(4);xf[i]=t;save();drawXf()},{passive:false});$('refset').onclick=()=>{refK=i;$('bmode').checked=true;show()};$('refclr').onclick=()=>{refK=null;show()};$('bmode').onchange=()=>{try{localStorage.setItem('tivot_player_bmode',$('bmode').checked?'1':'')}catch(e){}show()};try{$('bmode').checked=!!localStorage.getItem('tivot_player_bmode')}catch(e){}$('ghk').onchange=()=>show();
 document.querySelectorAll('.ha').forEach(b=>b.onclick=()=>{const v=+b.dataset.h;hold={};if(v>1)kept().forEach(k=>hold[k]=v);save();mark();keptText()});
 // ⚡ 一鍵快剪（Ray 的剪法，2026-10-18，照 out/export/cecilienemo_s7_mouthlock2_cut 歸納）：
 //   原片隔一抽一（0,2,4…，留最後一格），每 4 張裡第 3 張停 ×2（停格 1,1,2,1 循環），基準切到 24fps。

@@ -40,9 +40,17 @@ class H(SimpleHTTPRequestHandler):
                 while os.path.exists(f'{dst}_{n}'): n += 1
                 dst = f'{dst}_{n}'
             os.makedirs(dst)
+            xfs = req.get('xf') or []
             for j, f in enumerate(req['frames']):
-                shutil.copy(os.path.join(src, f), os.path.join(dst, f'frame_{j:02d}.webp'))
-            json.dump({'from': req['dir'], 'kept_index': req['keep'], 'holds': req.get('holds'), 'fps': req.get('fps')},
+                t = xfs[j] if j < len(xfs) else None
+                if t and (t.get('s', 1) != 1 or t.get('dx') or t.get('dy')):   # chk 裡調的大小位置（以腳底中心為支點），輸出時烘進格子
+                    from PIL import Image
+                    im = Image.open(os.path.join(src, f)).convert('RGBA'); W, Hh = im.size; sc = float(t.get('s', 1))
+                    cx, cy = W / 2, Hh; ox, oy = cx + t.get('dx', 0) - sc * cx, cy + t.get('dy', 0) - sc * cy
+                    im.transform((W, Hh), Image.AFFINE, (1 / sc, 0, -ox / sc, 0, 1 / sc, -oy / sc), resample=Image.BICUBIC).save(os.path.join(dst, f'frame_{j:02d}.webp'), 'WEBP', quality=88)
+                else:
+                    shutil.copy(os.path.join(src, f), os.path.join(dst, f'frame_{j:02d}.webp'))
+            json.dump({'from': req['dir'], 'kept_index': req['keep'], 'holds': req.get('holds'), 'fps': req.get('fps'), 'xf': req.get('xf')},
                       open(os.path.join(dst, 'export.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
             sys.path.insert(0, HERE); import export_preview; export_preview.write(dst, req.get('fps') or 16)
             body = json.dumps({'ok': True, 'path': dst, 'count': len(req['frames'])}, ensure_ascii=False).encode()
