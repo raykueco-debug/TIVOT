@@ -48,7 +48,7 @@ export const HITFX = {
   pilgrim_sonic:{ base:'sonic', se:'se_enemy_squeal_echo' },   // 朝聖者團塊聲波（ver -2676，Ray：「se_enemy_squeal 尾音迴音」）：聲波環＋數字淡出，配加了迴音尾的尖嘯
   wyrm_bite:    { base:'blunt', se:'se_enemy_bite' },   // 喪鐘蠕蟲鐘口咬下（ver -2677，Ray：「se_enemy_bite」）：音檔裁掉前段 0.48 秒空白，咬聲＝打擊格
   iron_smash:   { base:'dust', se:'se_crush_deepmetal' },
-  reassembled_wave:{ base:'wave', tone:'orange', at:[0.50,0.23], scramble:true, se:'se_enemy_holyburst' },   // 心魘（ver -2759，Ray：「跟紫黑之翼一樣的光波…從心臟為中心發出 偏橘 效果是盤面剩餘數字隨機重組」）
+  reassembled_wave:{ base:'wave', tone:'orange', at:[0.50,0.23], plunder:true, se:'se_enemy_holyburst' },   // 心魘（ver -2759，Ray：「跟紫黑之翼一樣的光波…從心臟為中心發出 偏橘 效果是盤面剩餘數字隨機重組」；-2763 改成「隨機被抽掉一個」）
   colossus_smash:{ base:'dust', se:['se_rockimpact','se_crush_deepmetal'] },   // 崩岩巨像拳砸地（ver -2689，Ray：「擊點是拳頭落地那一瞬 地面揚塵 播 se_rockimpact 跟 se_crush_deepmetal」）：`se` 寫成陣列＝同一拍一起放   // 鐵衣苦修者錘砸（ver -2680／-2681，Ray：「擊中 heavymetal」「受擊效果是地面揚塵」）
   rib_fire:     { base:'none', se:'se_enemy_breathfire' },   // 肋籠獸噴火（ver -2686，Ray：「se_enemy_breathfire 音效用這個 不要其他受擊效果」）：不放受擊圖，畫面只有程式噴火
   /* 放光（ver -1351，王座徘徊者）。⚠ **刻意沒有 `se`**：那一支 6.7 秒、有頭有尾，
@@ -102,7 +102,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2762';
+export const VERSION = 'ver 2026.11.18-2764';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5817,7 +5817,7 @@ export const ENEMY_IDLE = {
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
-  mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_atk_v1/', hit:12, hitFx:'reassembled_wave' },   // 心魘（ver -2762）：三手張開快速抖動（Ray 剪的 atkAB_cut 13 格＋atkBA_cut 10 格）；打點＝張開段最後一格 → 心臟光波＋盤面重組
+  mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_atk_v1/', hit:12, hitFx:'reassembled_wave' },   // 心魘（ver -2762）：三手張開快速抖動（Ray 剪的 atkAB_cut 13 格＋atkBA_cut 10 格）；打點＝張開段最後一格 → 心臟光波＋抽掉一個數字
   mon_relic_candletower: { dir:'resources/enemy/anim/mon_relic_candletower_atk_v1/', hit:9, hitFx:'candletower_claw' },   // 禍魘祭司（北泊）A：tiger rule 爪擊 AB＋BA（32 格），打到＝AB 最後一格（ver -2732）
   mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_atk_v1/', hit:13 },   // 罪之魔像（北泊）A：tiger rule 撲擊 AB＋BA（29 格），打到＝AB 最後一格（ver -2732）
   mon_centipi_side: { dir:'resources/enemy/anim/mon_centipi_side_atkprep_v1/', prep:true, slideFrom:16, sweep:'resources/enemy/anim/mon_centipi_side_atk_v1/' },   /* sweep＝A 本體：腹面 loop（Ray 剪的 mon_centipi_belly_even2_wave_cut，48 格），放大從操作盤線下快速斜上衝（-2550） */   // 巨型蜈蚣 A 的準備動作（ver -2546，Ray 剪的 centipi_dive_joined_v2_cut，22 格：側面轉正、下潛）；第 16 格（頭出畫面、只剩身體尾巴）起邊播邊往下滑出畫面（-2547），再接劃過（A 動畫還沒交，先用程式的劃過）

@@ -214,8 +214,8 @@ function spawnFxNamed(key, fx){
     /* 王座徘徊者的放光（ver -1351）。⚠ **冷卻中就退回三爪**（ver -1666）：
        那一發照樣打中、照樣扣血，只是不再放光 —— 打中卻什麼都不演比放光太多還糟。 */
     case 'holyburst': if(!spawnHolyBurst(fx)) triggerClaw(); break;
-    /* 光波（ver -2759 心魘）：紫黑之爪那一道放光，換色＋換起點；`scramble`＝打中時盤面剩餘數字重組 */
-    case 'wave':  spawnVioletFlash(fx); if(fx.scramble && api.scrambleBoard) setTimeout(()=>api.scrambleBoard(), 250); break;
+    /* 光波（ver -2759 心魘）：紫黑之爪那一道放光，換色＋換起點；`plunder`＝打中時從盤面抽掉一個數字（ver -2763） */
+    case 'wave':  spawnVioletFlash(fx); if(fx.plunder && api.plunderCell) setTimeout(()=>api.plunderCell(), 250); break;
     /* ⚠ 名字打錯時才走到這裡（`HITFX` 沒有它、也不是上面任何一個 base）。
        ⚠ 留一行 console：靜靜變成爪就是 -1455 那個查了很久的 bug。 */
     default:
