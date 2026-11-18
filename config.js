@@ -41,6 +41,7 @@ export const HITFX = {
   hound_maul:   { base:'blunt' },   // 餓獸撲咬（ver -2661）：⚠ 刻意沒有 `se` —— 聲音只有 ENEMY_ATK 的 `windupSe` 吼聲（起手放、拉長版），打擊格不另響（Ray：「原本的打擊音拿掉 過」）
   bell_claw:    { base:'claw', se:'em_slash', count:1 },   // 鐘殼蟲揮鉗（ver -2663，Ray：「slash 保留 跟隨動作三下」）：單爪痕＋揮砍音，跟著 strikes 三下各一次；嘶鳴另走 ENEMY_ATK 的 `windupSe`
   chain_maul:   { base:'claw', se:'em_slash', count:3, scale:1.35, flip:true, angle:-12 },   // 鎖鏈餓犬撲咬（ver -2668／-2669，Ray：「受擊特效用爪痕跟 slash」「爪痕大一點 要跟揮爪速度一樣」）：三道爪痕放大 1.35、由左往右 250ms 劃出（片子第 39→45 格那一揮）＋揮砍音；吼聲另由 ENEMY_ATK `windupSe` 從轉正那一格放
+  stilt_claw:   { base:'claw', se:'em_slash', count:3, scale:1.3, flip:true, angle:12 },   // 高蹺細影斜劈（ver -2706，Ray：「音效用 slash 受擊用跟揮擊角度一樣的爪痕」）：片子是左上→右下的斜劈 ⇒ flip（左上→右下）再往下壓 12°
   crawler_hit:  { base:'blunt', se:'em_slash' },   // 爬行朝聖者（ver -2671，Ray：「用 slash 音效」）：鈍擊特效照舊、音效換揮砍音
   beetle_claw:  { base:'claw', se:'em_slash', count:1, angle:26 },   // 石棺甲蟲（ver -2674，Ray：「固定橫痕 slash 在最大時出」）：單爪痕轉成水平（原圖那一道往右上斜 26°）＋揮砍音
   pilgrim_sonic:{ base:'sonic', se:'se_enemy_squeal_echo' },   // 朝聖者團塊聲波（ver -2676，Ray：「se_enemy_squeal 尾音迴音」）：聲波環＋數字淡出，配加了迴音尾的尖嘯
@@ -99,7 +100,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2703';
+export const VERSION = 'ver 2026.11.18-2706';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5855,7 +5856,7 @@ export const ENEMY_MISS = {
     fx:[{ frame:12, type:'shake', heal:0.10, wipe:true }, { frame:14, type:'shake' }, { frame:17, type:'shake' }],
     windupSe:'se_enemy_dragonroar', windupMs:563, windupFit:{ from:0.1, to:3.5, dur:0.75 } },
   mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20 },   // 卡耶爾群戰（ver -2623）
-  mon_canyon_stilt_neutral: { dir:'resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1/', hit:31 },
+  mon_canyon_stilt_neutral: { dir:'resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1/', hit:7, hitFx:'stilt_claw' },   // ver -2705：Ray 剪的 cut（18 格，原片 0,1,7,8,28,29,35,42,49,70…98），打到＝斜劈第 7 格（原 42）。ver -2704：換成 GPT 四宮格 1→2→3 ＋回中立 I 的橫框 Wan（99 格、未剪，先接上）；打到暫定斜劈中段第 55 格
   mon_bear_nightmare: { dir:'resources/enemy/anim/mon_bear_nightmare_miss_v1/', hit:37 },   // 熊骸（夢魘）點錯＝爪擊（ver -2620，KF 第二輪，62 格）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, fx:[{ frame:48, type:'rubble' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };

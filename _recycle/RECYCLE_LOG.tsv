@@ -1424,3 +1424,6 @@ when	from	to	reason
 20261117-224150	tools/anim/bg_layer/delivered.json	_recycle/tools/anim/bg_layer/delivered.json	換機前：以 3060 背景線較新的 delivered.json 取代
 20261118-162046	resources/enemy/anim/mon_canyon_colossus_dark_miss_v1	_recycle/resources/enemy/anim/mon_canyon_colossus_dark_miss_v1	巨像咆哮換成 Ray 剪的 cut＋鎖雙腳（ver -2692）
 20261118-164712	resources/enemy/anim/mon_canyon_colossus_dark_delay_v1	_recycle/resources/enemy/anim/mon_canyon_colossus_dark_delay_v1	巨像正拳換成 Ray 剪的 cut（ver -2700）
+20261118-165707	resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1	_recycle/resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1	高蹺細影 M 換成四宮格 Wan 版（ver -2704，先接上未剪）
+20261118-170105	resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1	_recycle/resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1.20261118-170105	高蹺細影 M 換成 Ray 剪的 cut（ver -2705）
+20261118-170151	resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1	_recycle/resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1.20261118-170151	高蹺細影 M 統一色調前的版本（ver -2705）
