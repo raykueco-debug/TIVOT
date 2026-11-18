@@ -99,7 +99,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2701';
+export const VERSION = 'ver 2026.11.18-2703';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3592,7 +3592,7 @@ export const GAME_CONFIG = {
     dmgWrong:            10,    // 普通按錯受擊
     dmgHeavy:            18,    // 紅字期間按錯的重擊
     dmgDelay:            8,     // v17：延時（太慢）懲罰基礎傷害（一般怪；Boss 以 delayPenalty.dmgScale 縮放）
-    counterStaggerClear: 0.5,   // 反擊硬直：被反擊時延時計時**已經走掉的那一段**清掉幾成（ver -2618，Ray：「反擊不應該全清延時 應該清1/2」；1＝舊的全清）。只有 defense.staggerOnCounter 讀
+    counterStaggerClear: { block:0.25, perfect:1/3, counter:0.5 },   // ver -2702（Ray：「黃圈反擊只減 1/4 delay，橘圈 1/3，紅圈 1/2」）；舊值一律 0.5 ——   // 反擊硬直：被反擊時延時計時**已經走掉的那一段**清掉幾成（ver -2618，Ray：「反擊不應該全清延時 應該清1/2」；1＝舊的全清）。只有 defense.staggerOnCounter 讀
 
     // 聖能與大絕蓄力
     energyPerHit:        2,     // 每次正確點擊給的聖能

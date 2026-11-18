@@ -392,10 +392,12 @@ export function holdAssaultFor(ms){
    （Counter 帶、散彈的 Perfect 改傷帶）—— 免傷不開火的 Perfect 不算。
    ver -2618 起不歸零、只退回 `tuning.counterStaggerClear` 成，走 combat 注入的 `easeIntervalDeadline`（唯一那一支，鐵律 8）；
    `enemyCounterStagger` 由 enemy.setEnemy 從卡上載入（沒寫＝1）。 */
-function staggerOnCounter(){
+function staggerOnCounter(grade){
   if(state.enemyCounterStagger===0) return;
-  /* ver -2618（Ray：「反擊不應該全清延時 應該清1/2」）：不再歸零，只把已經走掉的那一段退回一部分。 */
-  const k = (GAME_CONFIG.tuning||{}).counterStaggerClear;
+  /* ver -2618（Ray：「反擊不應該全清延時 應該清1/2」）：不再歸零，只把已經走掉的那一段退回一部分。
+     ver -2702（Ray：「黃圈反擊只減 1/4 delay，橘圈 1/3，紅圈 1/2」）：依帶分；表在 tuning.counterStaggerClear。 */
+  const t = (GAME_CONFIG.tuning||{}).counterStaggerClear;
+  const k = (t && typeof t==='object') ? t[grade||'counter'] : t;
   if(api.easeIntervalDeadline) api.easeIntervalDeadline(k==null ? 1 : k);
   else if(api.resetIntervalDeadline) api.resetIntervalDeadline();
 }
@@ -565,7 +567,7 @@ function resolveOne(th, ratio, w){
       firedAny=true;
       { const fa = fireArgs(null, 1, 2);   // ver -1778：紅圈也吃升階（全暴擊／兩倍）
         api.weaponCounter(undefined, undefined, undefined, 'counter', fa.opt); }   // ver -970：帶名交給 weapon 查 bandMul
-      staggerOnCounter();
+      staggerOnCounter('counter');
       /* ══⚠⚠⚠ **重擊：劇烈一震 ＋ 清掉所有攻擊圈**（ver -1659，Ray：「步槍跟高爆彈
          在紅圈命中時敵人都要劇烈一震，像遭到重擊，且命中可以清掉所有攻擊圈」）══
          ⚠ **只有紅圈**（這一整段就是紅圈那一帶）——黃橘圈自 -706 起也會開火，
@@ -605,7 +607,8 @@ function resolveOne(th, ratio, w){
       const fa = fireArgs(bp, bp.hit, 1);       // ver -974／-1778：橘圈（階 1）＋升階
       const _d0 = state.counterDamage||0;
       api.weaponCounter(fa.scale, fa.hit, fa.roll, 'perfect', fa.opt);
-      staggerOnCounter();
+      if(fa.hit!==0) staggerOnCounter('perfect');   // ver -2703（Ray：「MISS 不退延時」）：命中 0（步槍黃橘圈）不退
+      if(w && w.counterWipe) clearThreat();     // ver -2702（Ray：「步槍維持一槍清圈…但只有紅圈才打得中」）：黃橘圈開火也清掉畫面上的圈（不打中、不震）
       billForced(_d0);                          // ver -1012／-1024：橘圈靠霸王條款命中 → 依傷害收費
       bpFired = true; firedAny=true;
     }else if(bp.counter){
@@ -664,7 +667,8 @@ function resolveOne(th, ratio, w){
           const fa = fireArgs(bb, hit, 0);      // ver -1778：黃圈（階 0）＋升階
           const _d0 = state.counterDamage||0;
           api.weaponCounter(fa.scale, fa.hit, fa.roll, 'block', fa.opt);
-          staggerOnCounter();
+          if(fa.hit!==0) staggerOnCounter('block');   // ver -2703：MISS 不退延時
+          if(w && w.counterWipe) clearThreat();   // ver -2702：步槍黃圈開火也清圈（見橘圈那一行）
           billForced(_d0);                      // ver -1012／-1024：黃圈靠霸王條款命中 → 依傷害收費
           bbFired = true; firedAny=true;
         }else boltFloat();                // ver -1009：拉栓中，這一發開不出來
