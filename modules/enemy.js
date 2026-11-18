@@ -19,7 +19,8 @@ import * as prog from '../script/progress.js';  // stage 加成要問現在第�
 import { ENEMY_IDLE, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
-import * as story from './story.js';   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
+import * as story from './story.js';
+import { BG_ANIM } from '../script/bg_anim.js';   // 戰鬥背景也用動態背景（ver -2729）   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
 import { GROUP_MEMBERS } from '../script/group_members.js';
 import { GROUP_LAYOUT } from '../script/group_layout.js';
 import { GROUP_COMPS } from '../script/group_comps.js';   // 群戰編組：立繪＋位置（ver -2635，tools/group_editor.html 存檔寫回）   // 群戰成員的位置與大小（ver -2632，編輯器存檔寫回）   // 群戰分層 → 原立繪的對位（自動產生，ver -2623）
@@ -91,6 +92,29 @@ function sonicHit(im){
 function clipFrameMs(sp, f, fps){ const sk=sp.skip; const g=(sk && f>sk[0]) ? (f>=sk[1] ? f-(sk[1]-sk[0]) : sk[0]) : f; return g*1000/fps; }
 function stepSes(sp, fps, alive){ const st=sp && sp.stepSe; if(!st || !st.se) return;
   for(const f of (st.at||[])) setTimeout(()=>{ if(!alive || alive()) SFX.play(asset(st.se), sfxGain(st.se)); }, clipFrameMs(sp, f, fps)); }
+/* ══ 戰鬥的動態背景（ver -2729，Ray：「戰鬥時要用動態背景」）══
+   背景名（例 canyon_bones_day）查 `BG_ANIM`（城鎮舞台用的同一張表），有就在 #top 最底層放一支靜音循環影片，
+   靜態圖照舊墊在底下（影片沒載到也不會黑）。換怪換背景就換片、結束戰鬥（combat.stopAll）就收掉，不在背景偷跑（鐵律 10）。 */
+let battleVid=null, battleVidName='';
+export function resumeBattleBgVideo(){ setBattleBgVideo(battleVidName); }   // startGame 的 stopAll 在換敵之後 ⇒ 開打時再接回來
+export function stopBattleBgVideo(){ if(battleVid){ try{ battleVid.pause(); battleVid.removeAttribute('src'); battleVid.load(); battleVid.remove(); }catch(_){} battleVid=null; } }
+function setBattleBgVideo(nm){
+  battleVidName=nm||'';
+  const stem=String(nm||'').split('?')[0].replace(/^.*\//,'').replace(/\.\w+$/,'').toLowerCase(), src=stem && BG_ANIM[stem];
+  if(!src){ stopBattleBgVideo(); return; }
+  const top=$('top'); if(!top) return;
+  if(battleVid && battleVid.dataset.src===src && battleVid.isConnected) return;
+  stopBattleBgVideo();
+  const v=document.createElement('video'); battleVid=v; v.dataset.src=src;
+  v.muted=true; v.defaultMuted=true; v.playsInline=true; v.loop=true; v.preload='auto';
+  v.setAttribute('muted',''); v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
+  v.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:-1;pointer-events:none;opacity:0;transition:opacity .3s';
+  top.style.isolation='isolate';   // 讓 z-index:-1 的影片落在 #top 的底圖之上、所有內容之下
+  top.prepend(v);
+  v.onloadeddata=()=>{ if(battleVid!==v) return; v.style.opacity='1'; const p=v.play(); if(p && p.catch) p.catch(()=>{}); };
+  v.onerror=()=>{ if(battleVid===v) stopBattleBgVideo(); };
+  v.src=src;
+}
 function windupSe(key, ms, alive, fit){ if(!key) return; const go=()=>{ if(!alive || alive()){ if(fit) SFX.playFit(asset(key), sfxGain(key), fit); else SFX.play(asset(key), sfxGain(key)); } };   // fit＝保持音高的時間伸縮 {from,to,dur}（`windupFit`，ver -2692）
  if(ms>0) setTimeout(go, ms); else go(); }   // ms＝起手後幾毫秒才放（`windupMs`，ver -2659）；alive＝那時這一擊還在演嗎
 /* ══ 噴火（ENEMY_ATK 的 `flame:{from,to,at:[u,v]}`，ver -2683，Ray：「換成從尾部噴射火燄的特效」）══
@@ -3602,6 +3626,7 @@ export function setEnemy(key, opts){
        ⚠ 直接寫路徑（四張都叫 plate.webp，走 bgUrl 的資料夾表會撞名）。 */
     const plate = en.group && en.group.plate;
     topEl.style.backgroundImage = plate ? ('url("'+plate+'")') : nm ? ('url("'+story.bgUrl(nm)+'")') : '';
+    setBattleBgVideo(plate ? '' : nm);   // 動態背景（ver -2729，Ray：「戰鬥時要用動態背景」）：有對應影片就疊在靜態圖上播，沒有照舊
     /* plate 與人層是**同一張原圖拆出來的**：背景要照卡上的 `fit.pos` 對位，人才會落回原位（ver -2066，米夏親衛隊 35%）。
        縮放／上下偏移照舊只套在人那一組（applyEnemyFit）。不是 plate 的背景維持 CSS 原本的對位。 */
     topEl.style.backgroundPosition = plate ? (((en.fit||{}).pos)||'50% 50%') : '';

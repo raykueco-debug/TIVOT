@@ -2579,6 +2579,7 @@ function stopAll(){
   weapon.stopTimers();   // 停雙槍破防計時器（dualTimer）
   clearLucidFlood(false);   // 明晰之夢的金光（ver -746）：任何結束路徑都收掉，不爆散
   enemy.stopAirMotion();   // 戶外空戰的接舷漂移（ver -2499）
+  enemy.stopBattleBgVideo();   // 戰鬥動態背景（ver -2729）
   enemy.stopSakura();    // 鹿主的櫻花狂亂（ver -899）：它是全螢幕的層＋一支還在響的音
   enemy.stopHolyBurst(); // 王座徘徊者的放光（ver -1351）：同上
   enemy.stopSkyBattle(); // 空戰的視差背景（ver -2444）：一個 rAF＋四層 DOM
@@ -3723,6 +3724,7 @@ export function startGame(){
   stopAll();
   enemy.restoreSkyBattle();   // 空戰的視差背景（ver -2444）：setEnemy 在 stopAll 之前就建好了，stopAll 會把它收掉 ⇒ 照這一隻的卡重鋪一次
   enemy.restoreAirMotion();   // 接舷漂移／飄浮（ver -2532）：同上，stopAll 收掉了 ⇒ 重起
+  enemy.resumeBattleBgVideo();   // 戰鬥動態背景（ver -2729）：同上，stopAll 收掉了 ⇒ 照這一場的背景重放
   /* ⚠⚠ 棄權鈕的 class **要掛在 `stopAll()` 之後**（ver -730）：`stopAll` 會把它
      清掉（那是所有結束路徑的匯流點，見那一支）—— 掛在前面等於沒掛，
      鈕永遠不出現（實測就是這樣）。同憲法那條「talk 要掛在 stopAll 之後」的坑。
@@ -3898,7 +3900,7 @@ export function startIntruderFight(){
   $('transition').classList.remove('on');
   $('grid').classList.remove('saint'); $('grid').classList.remove('buffed'); $('grid').classList.remove('alert','hot');
   state.cutinPlaying=false;
-  stopAll();
+  stopAll(); enemy.resumeBattleBgVideo();   // 戰鬥動態背景（ver -2729）
   loadBoard(0); updateBars();   // loadBoard 內含 scheduleOpeningAssault → 重啟敵大絕排程
 }
 // 全螢幕黑幕過場：淡出（轉黑）→ 全黑時執行 mid() 切畫面 → 淡入（浮現）。約 2×half ms。
