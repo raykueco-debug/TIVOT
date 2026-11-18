@@ -5752,3 +5752,6 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
 #violetFlash.orange .vf-glow{background:radial-gradient(circle,#fff 0%,#fff 28%,rgba(255,226,180,.92) 46%,rgba(255,160,70,.6) 62%,rgba(240,110,30,.28) 80%,rgba(220,80,20,0) 100%);}
 /* 被心魘抽掉的那一格（ver -2765，Ray：「要直接消失」）：整格不見、留空位 */
 #grid .cell.gone{visibility:hidden !important;}
+
+/* 多組爪痕（enemy.clawSets，ver -2772）：同 #claw.on 那張三爪圖，各自定位、轉角度；動態生成，開機不抓圖 */
+#top .claw-set{position:absolute;pointer-events:none;z-index:8;opacity:0;background:url('resources/effects/ef_claws.webp') center/contain no-repeat;animation:clawFlash .42s ease-out;}

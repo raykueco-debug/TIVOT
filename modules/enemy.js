@@ -197,7 +197,7 @@ const warnedFx = new Set();
 function spawnFxNamed(key, fx){
   const base = (HITFX[key] && HITFX[key].base) || key;
   switch(base){
-    case 'claw':  triggerClaw(fx.count||3, true, fx); break;
+    case 'claw':  if(fx.sets) clawSets(fx); else triggerClaw(fx.count||3, true, fx); break;
     case 'blood': spawnBlood(true); break;
     case 'bite':  spawnBite(); break;
     case 'bullet':spawnBullets(fx.count||1, fx.pos==='random', fx.scale); break;
@@ -435,6 +435,20 @@ export function spawnSlash(){
   }
 }
 // 既有三爪：可指定 count 與是否隨機整體角度（透過父層旋轉）
+/* 多組爪痕（HITFX 的 `sets`，ver -2772，Ray：心魘「爪痕不是單爪 要配合動畫角度」）：
+   每一組＝一張三爪圖，擺在敵人畫面上的 `at:[u,v]`（比例座標，以敵人實際畫出來的框為準）、寬 `w`（框寬的比例）、
+   轉 `angle` 度（順時針為正）、`flip` 左右翻（原圖是左下→右上，翻了是左上→右下）。每組錯開 `gap` 毫秒，自己收。 */
+function clawSets(fx){
+  const top=$('top'); if(!top) return;
+  const tr=top.getBoundingClientRect(), el0=idleEl || clipEl || $('enemyImg');
+  let R={L:0,T:0,W:tr.width,H:tr.height}; if(el0){ const r=drawnRect(el0, tr); if(r.W>4) R=r; }
+  fx.sets.forEach((st,k)=>setTimeout(()=>{
+    const w=R.W*(st.w||0.4), x=R.L+R.W*st.at[0], y=R.T+R.H*st.at[1];
+    const e=document.createElement('div'); e.className='claw-set';
+    e.style.cssText=`left:${x-w/2}px;top:${y-w/2}px;width:${w}px;height:${w}px;transform:rotate(${st.angle||0}deg)${st.flip?' scaleX(-1)':''};`;
+    top.appendChild(e); setTimeout(()=>e.remove(), 600);
+  }, k*(fx.gap||40)));
+}
 export function triggerClaw(count, randomAngle, fx){
   const claw=$('claw'), sc=(fx && fx.scale>0) ? fx.scale : 1;
   /* `scale`／`drawMs`（HITFX 的欄位，ver -2669，Ray：「爪痕大一點 要跟揮爪速度一樣」）：
