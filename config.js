@@ -55,6 +55,7 @@ export const HITFX = {
   pilgrim_sonic:{ base:'sonic', se:'se_enemy_squeal_echo' },   // 朝聖者團塊聲波（ver -2676，Ray：「se_enemy_squeal 尾音迴音」）：聲波環＋數字淡出，配加了迴音尾的尖嘯
   wyrm_bite:    { base:'blunt', se:'se_enemy_bite' },   // 喪鐘蠕蟲鐘口咬下（ver -2677，Ray：「se_enemy_bite」）：音檔裁掉前段 0.48 秒空白，咬聲＝打擊格
   iron_smash:   { base:'dust', se:'se_crush_deepmetal' },
+  reassembled_claw:{ base:'claw', se:'em_slash', count:3 },   // 心魘撲擊（延時／點錯，ver -2770，Ray：「特效跟音效用爪擊」）
   reassembled_wave:{ base:'wave', tone:'orange', at:[0.50,0.23], plunder:true, se:'se_enemy_warpmagig' },   // 心魘（ver -2759，Ray：「跟紫黑之翼一樣的光波…從心臟為中心發出 偏橘 效果是盤面剩餘數字隨機重組」；-2763 改成「隨機被抽掉一個」）
   colossus_smash:{ base:'dust', se:['se_rockimpact','se_crush_deepmetal'] },   // 崩岩巨像拳砸地（ver -2689，Ray：「擊點是拳頭落地那一瞬 地面揚塵 播 se_rockimpact 跟 se_crush_deepmetal」）：`se` 寫成陣列＝同一拍一起放   // 鐵衣苦修者錘砸（ver -2680／-2681，Ray：「擊中 heavymetal」「受擊效果是地面揚塵」）
   rib_fire:     { base:'none', se:'se_enemy_breathfire' },   // 肋籠獸噴火（ver -2686，Ray：「se_enemy_breathfire 音效用這個 不要其他受擊效果」）：不放受擊圖，畫面只有程式噴火
@@ -109,7 +110,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2769';
+export const VERSION = 'ver 2026.11.18-2770';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5873,7 +5874,7 @@ export const ENEMY_ENTER = {
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_MISS = {
-  mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_pounce_v1/', hit:7 },   // 心魘（ver -2769）：撲擊（Ray 剪的 pounceAB_cut 8 格＋pounceBA_cut 15 格），延時與點錯共用
+  mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_pounce_v1/', hit:7, hitFx:'reassembled_claw' },   // 心魘（ver -2769）：撲擊（Ray 剪的 pounceAB_cut 8 格＋pounceBA_cut 15 格），延時與點錯共用
   /* 崩岩巨像 M＝仰天咆哮（ver -2692，Ray 剪的 cut＋鎖雙腳：21 格 16fps）：第 12／14／17 格（原片 36／42／43）震畫面，第 12 格敵回血 10%＋盤面全清換下一盤、不傷敵（ver -2694，Ray：「咆效果是把盤面全清 但是不會對他造成傷害」）（Ray：「36 42 43 格播放時畫面震動 怪回血 10%」）；
      吼聲 se_enemy_dragonroar 取有聲的 0.1～3.5 秒、保持音高壓到第 9 格起到片尾（0.75 秒）（Ray：「時間壓縮到吼叫那幾格 pitch 保持低沉」「不要改原音效」）。R＝倒回（Ray：「咆的 r 用倒回」）：第 21 格起把第 16→0 格倒著接回中立（共 38 格），已烘進片裡。 */
   mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_miss_v1/', hit:12,
@@ -5885,7 +5886,7 @@ export const ENEMY_MISS = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, windupSe:'se_flame', fx:[{ frame:48, type:'rubble', se:'se_rockimpact' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
-  mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_pounce_v1/', hit:7 },   // 心魘（ver -2769）：撲擊（Ray 剪的 pounceAB_cut 8 格＋pounceBA_cut 15 格），延時與點錯共用
+  mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_pounce_v1/', hit:7, hitFx:'reassembled_claw' },   // 心魘（ver -2769）：撲擊（Ray 剪的 pounceAB_cut 8 格＋pounceBA_cut 15 格），延時與點錯共用
   mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_delay_v1/', hit:6 },   // 罪之魔像（北泊）D：Ray 剪的 delay_cut_2（24 格），打到暫定主體最大第 6 格（ver -2732）
   /* 崩岩巨像 D＝正面出拳（ver -2700，Ray 剪的 cut：15 格 16fps，打到＝拳最大的第 5 格）：
      打到那一格從拳頭（畫面約 22%,30%）噴飛石朝鏡頭飛來＋石塊音 se_crash_rocks（Ray：「加入飛石朝 viewer 飛來特效 用石塊音效」）。 */

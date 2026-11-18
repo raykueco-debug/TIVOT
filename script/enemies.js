@@ -763,8 +763,8 @@ export const ENEMIES = {
       special:[],
       boardGrids:[9,9,9,9,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       hitFx:{
-        delay:'blood',
-        wrong:'slash',
+        delay:'reassembled_claw',
+        wrong:'reassembled_claw',
         assault:'reassembled_wave',
       },
     },
