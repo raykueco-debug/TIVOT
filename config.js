@@ -109,7 +109,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.18-2768';
+export const VERSION = 'ver 2026.11.18-2769';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5873,6 +5873,7 @@ export const ENEMY_ENTER = {
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_MISS = {
+  mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_pounce_v1/', hit:7 },   // 心魘（ver -2769）：撲擊（Ray 剪的 pounceAB_cut 8 格＋pounceBA_cut 15 格），延時與點錯共用
   /* 崩岩巨像 M＝仰天咆哮（ver -2692，Ray 剪的 cut＋鎖雙腳：21 格 16fps）：第 12／14／17 格（原片 36／42／43）震畫面，第 12 格敵回血 10%＋盤面全清換下一盤、不傷敵（ver -2694，Ray：「咆效果是把盤面全清 但是不會對他造成傷害」）（Ray：「36 42 43 格播放時畫面震動 怪回血 10%」）；
      吼聲 se_enemy_dragonroar 取有聲的 0.1～3.5 秒、保持音高壓到第 9 格起到片尾（0.75 秒）（Ray：「時間壓縮到吼叫那幾格 pitch 保持低沉」「不要改原音效」）。R＝倒回（Ray：「咆的 r 用倒回」）：第 21 格起把第 16→0 格倒著接回中立（共 38 格），已烘進片裡。 */
   mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_miss_v1/', hit:12,
@@ -5884,6 +5885,7 @@ export const ENEMY_MISS = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, windupSe:'se_flame', fx:[{ frame:48, type:'rubble', se:'se_rockimpact' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
+  mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_pounce_v1/', hit:7 },   // 心魘（ver -2769）：撲擊（Ray 剪的 pounceAB_cut 8 格＋pounceBA_cut 15 格），延時與點錯共用
   mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_delay_v1/', hit:6 },   // 罪之魔像（北泊）D：Ray 剪的 delay_cut_2（24 格），打到暫定主體最大第 6 格（ver -2732）
   /* 崩岩巨像 D＝正面出拳（ver -2700，Ray 剪的 cut：15 格 16fps，打到＝拳最大的第 5 格）：
      打到那一格從拳頭（畫面約 22%,30%）噴飛石朝鏡頭飛來＋石塊音 se_crash_rocks（Ray：「加入飛石朝 viewer 飛來特效 用石塊音效」）。 */
