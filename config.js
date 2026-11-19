@@ -110,7 +110,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.19-2802';
+export const VERSION = 'ver 2026.11.19-2803';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5718,7 +5718,7 @@ export const ENEMY_IDLE = {
   mon_relic_bellows: 'resources/enemy/anim/mon_relic_bellows_idle_v2/',
   mon_relic_bellreacher: 'resources/enemy/anim/mon_relic_bellreacher_idle_v2/',
   mon_relic_bellwalker: 'resources/enemy/anim/mon_relic_bellwalker_idle_v2/',
-  mon_relic_candlepenitent: 'resources/enemy/anim/mon_relic_candlepenitent_idle_v2/',
+  mon_relic_candlepenitent: 'resources/enemy/anim/mon_relic_candlepenitent_idle_v3/',   // ver -2803：720×1080 motionfix 重跑（全身飄＋呼吸、頭不抬；48 格 24fps）
   mon_relic_candletower: 'resources/enemy/anim/mon_relic_candletower_idle_v3/',   // ver -2796：Wan 重跑（GPT 補真 alpha 的立繪＋motionfix，全身呼吸、頭不仰；48 格 24fps）
   mon_relic_censerlung: 'resources/enemy/anim/mon_relic_censerlung_idle_v2/',
   mon_relic_chalice: 'resources/enemy/anim/mon_relic_chalice_idle_v2/',
@@ -5829,7 +5829,7 @@ export const ENEMY_IDLE = {
 export const ENEMY_ATK = {
   mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_pounce_v1/', hit:7, hitFx:'reassembled_claw' },   // 心魘 A（ver -2773）：撲擊＋單爪
   mon_relic_candletower: { dir:'resources/enemy/anim/mon_relic_candletower_atk_v5/', hit:9, hitFx:'candletower_claw' },   // 禍魘祭司（北泊）A：tiger rule 爪擊 AB＋BA（32 格），打到＝AB 最後一格（ver -2732）；v2（ver -2797，Ray：「A的最後一格破圖換掉、色調調成跟I一樣」）：逐格 LAB 對齊待機第 0 格，最後一格換成待機第 0 格；v3（ver -2798）：第 0 格也換成待機第 0 格、刪原第 30 格；v4（ver -2799，Ray：「A最後再抽一格」）：再刪倒數第二格；v5（ver -2800，Ray：「攻擊動畫會糊」→「交件」）：用補好 alpha 的立繪 864×864 重跑 AB＋BA、tiger 剪法、逐格對齊第 0 格色調
-  mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_atk_v1/', hit:13 },   // 罪之魔像（北泊）A：tiger rule 撲擊 AB＋BA（29 格），打到＝AB 最後一格（ver -2732）
+  mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_atk_v2/', hit:13 },   // v2（ver -2803）：864×864 重跑 AB＋BA、tiger 撲擊 29 格、逐格對齊第 0 格色調； 罪之魔像（北泊）A：tiger rule 撲擊 AB＋BA（29 格），打到＝AB 最後一格（ver -2732）
   mon_serpent_side_v2: { dir:'resources/enemy/anim/mon_serpent_side_v2_atkprep_v1/', prep:true, slideFrom:2, slide:{ rise:0.07, riseMs:320, dx:0.6, dy:1.1, scale:1.3, tail:260 }, sweepImg:'resources/enemy/mon_serpent_topdown_v3.webp' },   /* -2787/-2788 Ray：先往下潛的反方向上浮一點再轉身下潛；A 本體＝Ray 定稿的俯視圖（頭朝左）帶殘影快速劃過 */   // 羽蛇 A 的準備動作（ver -2786，Ray 剪的 serpent_pA_rollinB_cut，11 格：側身滾轉下降）；第 2 格起往機頭那側斜下平移出畫面、略拉近，再接程式的劃過
   mon_centipi_side: { dir:'resources/enemy/anim/mon_centipi_side_atkprep_v1/', prep:true, slideFrom:16, sweep:'resources/enemy/anim/mon_centipi_side_atk_v1/' },   /* sweep＝A 本體：腹面 loop（Ray 剪的 mon_centipi_belly_even2_wave_cut，48 格），放大從操作盤線下快速斜上衝（-2550） */   // 巨型蜈蚣 A 的準備動作（ver -2546，Ray 剪的 centipi_dive_joined_v2_cut，22 格：側面轉正、下潛）；第 16 格（頭出畫面、只剩身體尾巴）起邊播邊往下滑出畫面（-2547），再接劃過（A 動畫還沒交，先用程式的劃過）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_atk_v1/', hit:48, windupSe:'se_flame', fx:[{ frame:8, type:'rubble', se:'se_rockimpact' }, { frame:44, type:'violetFlash', se:'se_enemy_holyburst' }] },   // ver -2755 Ray：每個動作 se_flame、振石配 rock、放光配 holyburst   // A＝振翅接爆炎（64 格）；第 8 格下拍到底噴瓦礫、爆炎時紫白光芒籠罩畫面（ver -2525）
@@ -5890,7 +5890,7 @@ export const ENEMY_MISS = {
 export const ENEMY_DELAY = {
   mon_relic_candletower: { dir:'resources/enemy/anim/mon_relic_candletower_atk_v5/', hit:9, hitFx:'candletower_claw', noMiss:true },   // 禍魘祭司 D＝同 A（ver -2801，Ray：「點錯扣秒就好 延時同A」）—— noMiss：點錯不借這一支
   mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_atk_v1/', hit:12, hitFx:'reassembled_wave' },   // 心魘 DM（ver -2773）：三手張開放光（偏橘光波＋抽掉一個數字）
-  mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_atk_v1/', hit:13, noMiss:true },   // 罪之魔像 D＝同 A、點錯只扣秒（ver -2802，Ray：「罪之魔像的動畫時機跟這隻（禍魘祭司）一樣」；原 delay_v1 不用）
+  mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_atk_v2/', hit:13, noMiss:true },   // 罪之魔像 D＝同 A、點錯只扣秒（ver -2802，Ray：「罪之魔像的動畫時機跟這隻（禍魘祭司）一樣」；原 delay_v1 不用）
   /* 崩岩巨像 D＝正面出拳（ver -2700，Ray 剪的 cut：15 格 16fps，打到＝拳最大的第 5 格）：
      打到那一格從拳頭（畫面約 22%,30%）噴飛石朝鏡頭飛來＋石塊音 se_crash_rocks（Ray：「加入飛石朝 viewer 飛來特效 用石塊音效」）。 */
   mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_delay_v1/', hit:5,
