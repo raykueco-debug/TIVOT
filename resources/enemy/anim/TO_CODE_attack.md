@@ -117,3 +117,9 @@ Ray：「可交件 colossus_A_AB_cut／saint_inspector_A_AB_cut／stag_rot_A_AB_
     **玩家沒有持續攻擊 → 播那一支的歸位回待機；持續攻擊 → 直接換另一個閃避動作的閃出**（不先歸位）。
   ✔ **ver -2805 已接**（`config.ENEMY_DODGE` → `enemy.enemyEvade`，測試戰 `np_test_sorana`）：右閃／下閃／格擋也已交（`sorana_guard_{dodgeR,dodgeD,parry}_{out,back}_v1`，照左閃的剪法），八段同一個 box。目前**每一槍都閃**，格擋的觸發時機待 Ray 定。原本的說明：Ray 的設計前提——**玩家開槍（點盤面）時她播閃避**（左閃／右閃／下閃三選一），**打中時改播匕首格擋**；A＝撲斬、D／M＝飛刀（飛刀由程式畫，GPT 圖已去掉刀）。
   其餘五支（右閃、下閃、格擋、撲斬、飛刀）的關鍵格與過渡模糊格已交（`resources/_originals/enemy/sorana_kf/`），待 Wan。待機（guard 呼吸）還沒跑。
+  ✔✔ **ver -2831 整組定版**（Ray：「索菈娜整組定版」），已套到正式卡 `man_sorana`（測試卡 `test_sorana` 只是換名字的複本）：
+  · 待機 `sorana_guard_idle_v1/`（`np_sorana_idle_wan7_cut` 22 格 24fps 循環）
+  · A＝撲斬 `sorana_guard_atk_v1/`（16fps，打到那一格前撲 1.35）；刀痕 `HITFX.sorana_slash`（固定左上往右下斜）
+  · D／M＝擲飛刀 `sorana_guard_throw_v1/`（第 2 格出手；程式飛刀平飛、90ms、由小變大；音效同共鬥；受擊 `HITFX.sorana_knife` 不放刀痕）
+  · 閃避三種＋格擋 `ENEMY_DODGE.sorana_si_guard`（`dodgeL_v4`／`dodgeR_v3`／`dodgeD_v3`／`parry_v2`，無程式位移）；普攻與反擊有效率 30%（`parryBasic:0.7`），BR 也演閃避／格擋（只演出、照舊打穿）；格擋音＝米夏劈落 `se_bulletguard`
+  · 背景 `resources/enemy/sorana_battle_bg_v3.webp`（湖上甲板，`bgLock`）＋程式水面／雲（`script/bg_fx.js` 的 `sorana_battle_bg_v3`）

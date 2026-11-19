@@ -242,9 +242,11 @@ export const ENEMIES = {
       atype:'S',
       stageScale:1,
       stack:1,
-      image:'enemy_man_sorana',
+      image:'enemy_sorana_guard',   // ver -2831 定版（Ray：「索菈娜整組定版」）：待機／撲斬／飛刀／三閃避／格擋都是這張 guard 立繪的動畫（config.ENEMY_IDLE／ATK／DELAY／DODGE 的 sorana_si_guard）
       entrance:'vo_sorana_pack',   // 敵立繪一出現就播（ver -818，Ray）——她是 human 不吃降臨，另掛登場音
-      fit:{ pos:'50% 30%' },   // ver -745 換上專用戰鬥圖；構圖不對再調這格
+      fit:{ mode:'contain', pos:'center bottom' },   // ver -2831：guard 立繪全身入框
+      parryBasic:0.7,   // 普攻有效率 30%（Ray 11-19）：擋下的 70% 演閃避（MISS）、有效的演格擋；反擊同率（ver -2817）
+      bg:'../enemy/sorana_battle_bg_v3', bgLock:true,   // 湖上甲板（ver -2822 GPT 重畫＋背景副理程式水面／雲）
       hp:270,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       atkInterval:3.33,
@@ -258,11 +260,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:4 },    // 快一秒（巨型聖徒是 5）
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      hitFx:{
-        delay:'dagger',     // 貝琳妲的 dagger（slash 視覺＋匕首音，見 config.HITFX）
-        wrong:'slash',
-        assault:'claw4',
-      },
+      hitFx:{ delay:'sorana_knife', wrong:'sorana_knife', assault:'sorana_slash' },   // ver -2831 定版：DM＝飛刀（不放刀痕，音效同共鬥）、A＝撲斬刀痕（跟動畫同斜角）
     },
     /* ══ 禍魘娜塔莉（ver -671，Ray 交稿）══════════════════════════════════
        「數值與模式同巨型聖徒，攻擊力減半，HP900。」
@@ -5804,11 +5802,4 @@ ENEMIES.ws_misha_ni = Object.assign({}, ENEMIES.misha, {
 
 /* `test_sorana`（ver -2805，敵人線測試卡）：索菈娜的閃避／格擋動畫試演。數值照森住民（man_sorana），
    立繪換成 Ray 指定的待機底圖 sorana guard（真 alpha；ENEMY_DODGE 的鑰匙就是它的檔名）。 */
-ENEMIES.test_sorana = Object.assign({}, ENEMIES.man_sorana, {
-  name:'索菈娜',
-  image:'enemy_sorana_guard',
-  parryBasic:0.7,
-  hitFx:{ delay:'sorana_knife', wrong:'sorana_knife', assault:'sorana_slash' },   // A＝撲斬：匕首刀光＋匕首音（ver -2818）
-  bg:'../enemy/sorana_battle_bg_v3', bgLock:true,   // 原本索拉娜戰（man_sorana）那張圖請 GPT 拿掉人物、只留甲板背景（ver -2820）   // 普攻有效率 30%（Ray 11-19）：擋下的 70% 演閃避、有效的演格擋
-  fit:{ mode:'contain', pos:'center bottom' },
-});
+ENEMIES.test_sorana = Object.assign({}, ENEMIES.man_sorana, { name:'索菈娜' });   // ver -2831 起正式卡（man_sorana）已定版，測試卡只換名字
