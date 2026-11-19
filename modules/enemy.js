@@ -1366,7 +1366,8 @@ function applyFar(en){ const k=farOf(en); for(const el of [$('enemyImg'), idleEl
 export function playActionClip(kind, onDone, opts){   // opts.hold：播完停在最後一格、不回待機（交給 onDone 收，ver -2546 蜈蚣的 A 準備動作）
   if(groupCard && groupCard.group && (kind==='delay' || kind==='miss')) return groupAction(kind);   // 群戰：逐人的 D／M（ver -2623）
   const c=clipFor(kind), L=c && clipCache[c.dir]; if(!L || !L.fr) return 0;
-  dodgeCur=null; dodgeBusy=false; dodgePend=null;   // 攻擊片接手：閃避狀態作廢（從待機重新起）
+  if(dodgePlaying==='parry') return 0;   // 格擋播完之前不切別的動畫（傷害照常、不演）
+  dodgeCur=null; dodgeBusy=false; dodgePend=null; dodgePlaying=null;   // 攻擊片接手：閃避狀態作廢（從待機重新起）
   const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, L.j); if(!r) return 0;
   clearTimeout(clipT); clearInterval(idleT); idleT=0;
   let el=idleEl; if(!el){ if(!clipEl){ clipEl=document.createElement('img'); clipEl.className='en-idle'; clipEl.alt=''; eImg.after(clipEl); } el=clipEl; }
@@ -1409,7 +1410,7 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
    · 閃出播完立刻接：途中有開槍 → 下一個閃避，沒有 → 歸位（ver -2806 取消停留）。
    · 還停在某個閃避姿勢時又開槍 → 換另一個閃避，從它的過渡格（`chainFrom`，跳過開頭的站姿格）直接接上，不先歸位。
    · 攻擊／延時片接手時（playActionClip）整個狀態作廢。 */
-let dodgeCur=null, dodgeBusy=false;
+let dodgeCur=null, dodgeBusy=false, dodgePlaying=null;
 function dodgeSpec(en){ en=en||curCard(); return (en && !en.group) ? (ENEMY_DODGE[imgStem(en)]||null) : null; }
 function playDodgeDir(dir, from, hold, onDone){
   const L=clipCache[dir]; if(!L || !L.fr) return false;
@@ -1444,11 +1445,19 @@ function startEvade(S, kind){
   if(kind==='parry'){ key='parry'; seg=S.parry; }
   else { const ks=Object.keys(S.dodge||{}).filter(k=>k!==dodgeCur); if(!ks.length) return false; key=ks[(Math.random()*ks.length)|0]; seg=S.dodge[key]; }
   if(!seg) return false;
-  return playDodgeDir(seg.out, dodgeCur ? (seg.chainFrom!=null ? seg.chainFrom : (S.chainFrom||3)) : 0, true, ()=>{ dodgeCur=key; dodgeNext(S); });
+  dodgePlaying=key;
+  const ok=playDodgeDir(seg.out, dodgeCur ? (seg.chainFrom!=null ? seg.chainFrom : (S.chainFrom||3)) : 0, true, ()=>{ dodgePlaying=null; dodgeCur=key; dodgeNext(S); });
+  if(!ok) dodgePlaying=null;
+  return ok;
 }
+/* 這隻怪有沒有閃避／格擋表（combat 用來決定「被擋下的那一發」演閃避而不是刀光）。 */
+export function hasEvade(){ return !!dodgeSpec(); }
+/* 格擋正在播嗎（ver -2810，Ray：「格擋動畫要播完期間不觸發其他動畫且攻擊有效」）——combat 讀它讓這段期間每一發都有效。 */
+export function parryPlaying(){ return dodgePlaying==='parry'; }
 /* kind：'dodge'（三種閃避擇一，不重複上一個）／'parry'（格擋）。回傳有沒有演。 */
 export function enemyEvade(kind){
   const S=dodgeSpec(); if(!S || state.over) return false;
+  if(dodgePlaying==='parry') return false;                       // 格擋播完之前不觸發任何其他動畫（ver -2810）
   if(dodgeBusy){ dodgePend=kind; return false; }                 // 閃出／歸位途中：記一筆，播完立刻接
   if(clipT) return false;                                        // 攻擊／延時片正在播：不搶
   dodgeCur=null; dodgePend=null;

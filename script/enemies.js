@@ -5807,5 +5807,6 @@ ENEMIES.ws_misha_ni = Object.assign({}, ENEMIES.misha, {
 ENEMIES.test_sorana = Object.assign({}, ENEMIES.man_sorana, {
   name:'索菈娜',
   image:'enemy_sorana_guard',
+  parryBasic:0.7,   // 普攻有效率 30%（Ray 11-19）：擋下的 70% 演閃避、有效的演格擋
   fit:{ mode:'contain', pos:'center bottom' },
 });

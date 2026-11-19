@@ -722,6 +722,15 @@ function tap(num,cell,e){
   const critRoll = Math.random();
   const critHit  = num===state.expect && (critRoll < critRateAt(state.critCombo) || state.charmRevenge);   // 掛飾 C09：受擊後下一發必爆
   rollShotParry();                  // 劈落的骰子也在這裡擲一次（ver -2043，見 parryNow）
+  /* ══ 閃避／格擋型的敵人（ver -2810，Ray 索菈娜：「攻擊有效（扣血）率為 30%，有效時就放格擋動畫，
+     格擋動畫要播完，期間不觸發其他動畫且攻擊有效」）══ 有效率＝1−卡上 parryBasic（擋下＝閃掉）。
+     · 擋下（沒扣血）→ 閃避動畫；有效 → 格擋動畫；點錯 → 閃避。
+     · 格擋播放中：這一發強制有效（不擲擋），也不演別的動畫。 */
+  if(enemy.hasEvade()){
+    if(enemy.parryPlaying()) shotParry=false;
+    else if(state.enemyHp>0 && !state.saintMode && !state.niMode && !state.dualWield)
+      enemy.enemyEvade((num===state.expect && (critHit || !parryNow())) ? 'parry' : 'dodge');
+  }
   gunHitOnEnemy(cell, critHit);     // 槍擊特效映射到敵人對應位置
 
   // 聖徒化：依序點擊 16 格、受擊推進倒數槽（combat 於期間讓出主迴圈，交由 saint 驅動盤面游標）。
@@ -1028,7 +1037,6 @@ function recordBoardTime(sec){
  * ========================================================================== */
 // 槍擊命中敵人：從點到的那一格射一條火線過去，**火花就炸在火線的落點**（ver -1627）
 function gunHitOnEnemy(cell, pierce){
-  enemy.enemyEvade('dodge');   // 有閃避表的敵人（ENEMY_DODGE）：玩家開槍就閃（ver -2805 試演；格擋的觸發時機待 Ray 定）
   const fxTop=$('fxTop');
   const cr=cell.getBoundingClientRect();
   const top=$('top').getBoundingClientRect();
@@ -1050,7 +1058,7 @@ function gunHitOnEnemy(cell, pierce){
      ⚠ 條件與 `enemyDamage` 擋普攻那一條同一組（`parryNow`，鐵律 7）。 */
   if(!pierce && parryNow()){
     enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, imp.x, imp.y);
-    enemy.spawnParry(imp.x, imp.y);
+    if(!enemy.hasEvade()) enemy.spawnParry(imp.x, imp.y);   // 閃避型（索菈娜）：子彈打空，不演刀光（她閃開了）
     return;
   }
   /* 六角護罩（ver -2120）：子彈打在那一點的護罩上 —— 不噴槍火，閃一片六角形。暴擊也打不穿（防禦率 100%）。 */
@@ -1767,7 +1775,7 @@ function enemyDamage(dmg,isCrit,silent,src){
      那是「打中了但被擋下」，不是「沒點到」；破防值照累積，BR 才開得出來。 */
   if((src||'basic')==='basic' && lsActive) lastStandTap();   // NI 期間每一發普攻都催它回血（ver -1964）
   if((src||'basic')==='basic' && !isCrit && parryNow()){   // 暴擊打穿（ver -2012）
-    if(!silent) floatDmg('GUARD', (30+Math.random()*40)+'%', '35%', false, 'guardnum');
+    if(!silent) floatDmg(enemy.hasEvade() ? 'MISS' : 'GUARD', (30+Math.random()*40)+'%', '35%', false, 'guardnum');   // 閃避型：閃掉＝MISS
     return;
   }
   /* ══⚠⚠⚠ **換型態的空窗裡不吃傷害**（ver -1486，Ray：「我剛剛好像是用反擊殺的」）══
