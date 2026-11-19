@@ -1478,3 +1478,5 @@ when	from	to	reason
 20261119-221322	resources/enemy/anim/sorana_guard_dodgeD_back_v2	_recycle/resources/enemy/anim/sorana_guard_dodgeD_back_v2	閃避歸位抽掉第一格（v3）
 20261119-222028	resources/enemy/anim/sorana_guard_dodgeD_out_v2	_recycle/resources/enemy/anim/sorana_guard_dodgeD_out_v2	下閃換 Ray 剪的一段到底版（v3）
 20261119-222028	resources/enemy/anim/sorana_guard_dodgeD_back_v3	_recycle/resources/enemy/anim/sorana_guard_dodgeD_back_v3	下閃換 Ray 剪的一段到底版（v3）
+20261119-222504	resources/enemy/anim/sorana_guard_dodgeL_out_v1	_recycle/resources/enemy/anim/sorana_guard_dodgeL_out_v1.20261119-222504	左閃換 Ray 剪的一段到底版（v3）
+20261119-222504	resources/enemy/anim/sorana_guard_dodgeL_back_v3	_recycle/resources/enemy/anim/sorana_guard_dodgeL_back_v3	左閃換 Ray 剪的一段到底版（v3）

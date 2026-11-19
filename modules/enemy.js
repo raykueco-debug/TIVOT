@@ -1420,7 +1420,11 @@ function playDodgeDir(dir, from, hold, onDone, shift){   // shift：這一段播
   eImg.style.visibility='hidden';
   el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.width=r.width+'px'; el.style.height=r.height+'px';
   const N=L.fr.length, dt=1000/(L.j.fps||24); let i=Math.min(from|0, N-1); el.src=L.fr[i].src; if(el===clipEl) applyFar();
-  if(shift!=null){   // 左右閃的位移（ver -2811，Ray：「左右閃要有位移」）：整段播放期間平滑滑到目標位置
+  if(shift && typeof shift==='object'){   // 一段到底的左右閃（ver -2812）：第 peak 格滑到最遠、播完回原位
+    const top=$('top'), px=(top ? top.clientWidth : 0)*shift.to, n=Math.max(1,N-i), pk=Math.max(1,Math.min(n-1,(shift.peak|0)-i));
+    el.style.transition=''; el.style.translate='';
+    el.animate([{translate:'0px 0px'},{translate:px.toFixed(1)+'px 0px',offset:pk/n,easing:'ease-in-out'},{translate:'0px 0px'}],{duration:n*dt,easing:'linear'});
+  } else if(shift!=null){   // 左右閃的位移（ver -2811，Ray：「左右閃要有位移」）：整段播放期間平滑滑到目標位置
     const top=$('top'), px=(top ? top.clientWidth : 0)*shift, dur=Math.max(1,(N-i))*dt;
     el.style.transition='translate '+Math.round(dur)+'ms cubic-bezier(.2,.8,.3,1)'; el.style.translate=px.toFixed(1)+'px 0'; }
   dodgeBusy=true;
@@ -1450,7 +1454,7 @@ function startEvade(S, kind){
   else { const ks=Object.keys(S.dodge||{}).filter(k=>k!==dodgeCur); if(!ks.length) return false; key=ks[(Math.random()*ks.length)|0]; seg=S.dodge[key]; }
   if(!seg) return false;
   dodgePlaying=key;
-  const ok=playDodgeDir(seg.out, dodgeCur ? (seg.chainFrom!=null ? seg.chainFrom : (S.chainFrom||3)) : 0, true, ()=>{ dodgePlaying=null; dodgeCur=key; dodgeNext(S); }, seg.shift||0);
+  const ok=playDodgeDir(seg.out, dodgeCur ? (seg.chainFrom!=null ? seg.chainFrom : (S.chainFrom||3)) : 0, true, ()=>{ dodgePlaying=null; dodgeCur=key; dodgeNext(S); }, (seg.shift && !seg.back) ? { to:seg.shift, peak:seg.shiftPeak||1 } : (seg.shift||0));
   if(!ok) dodgePlaying=null;
   return ok;
 }
