@@ -1493,6 +1493,7 @@ function startEvade(S, kind){
   dodgePlaying=key;
   const ok=playDodgeDir(seg.out, dodgeCur ? (seg.chainFrom!=null ? seg.chainFrom : (S.chainFrom||3)) : 0, true, ()=>{ dodgePlaying=null; dodgeCur=key; dodgeNext(S); }, (seg.shift && !seg.back) ? { to:seg.shift, peak:seg.shiftPeak||1 } : (seg.shift||0));
   if(!ok) dodgePlaying=null;
+  else if(key==='parry'){ const se=asset(S.parrySe||'se_bulletguard'); if(se) SFX.play(se, sfxGain(S.parrySe||'se_bulletguard')); }   // 格擋音＝米夏的劈落音（ver -2827，Ray：「防禦用米夏的劈落音」）
   return ok;
 }
 /* 這隻怪有沒有閃避／格擋表（combat 用來決定「被擋下的那一發」演閃避而不是刀光）。 */
