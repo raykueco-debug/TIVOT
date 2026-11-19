@@ -1478,7 +1478,7 @@ function spawnKnives(o, n){
   const top=$('top'); if(!top) return; const tr=top.getBoundingClientRect();
   const x0=tr.left+(o ? o.x : tr.width*0.7), y0=tr.top+(o ? o.y : tr.height*0.2);
   for(let k=0;k<n;k++){
-    const spread=k-(n-1)/2, x1=tr.left+tr.width*(0.5+spread*0.34), y1=tr.top+tr.height*(0.62+Math.abs(spread)*0.05);   // 朝 viewer 飛來（ver -2822，Ray：「刀要往viewer飛來 不是往地上掉」）：落點在畫面中段、由小變大
+    const spread=k-(n-1)/2, x1=tr.left+tr.width*(0.5+spread*0.34), y1=y0+tr.height*(0.03+Math.abs(spread)*0.02);   // 平飛（ver -2823，Ray：「角度還是太低 要平飛」）：落點與出手同高   // 朝 viewer 飛來（ver -2822，Ray：「刀要往viewer飛來 不是往地上掉」）：落點在畫面中段、由小變大
     const rot=Math.atan2(y1-y0, x1-x0)*180/Math.PI-90, wob=Math.random()*16-8;
     const el=document.createElement('img'); el.src=asset('vfx_dagger'); el.className='dagger-fly'; el.alt='';
     document.body.appendChild(el);
