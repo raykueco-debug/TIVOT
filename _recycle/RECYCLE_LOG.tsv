@@ -1466,3 +1466,4 @@ when	from	to	reason
 20261119-211908	resources/enemy/anim/sorana_guard_dodgeL_v1	_recycle/resources/enemy/anim/sorana_guard_dodgeL_v1	改成 out／back 兩段（Ray：左閃歸位另剪）
 20261119-212925	resources/enemy/anim/sorana_guard_dodgeL_out_v1	_recycle/resources/enemy/anim/sorana_guard_dodgeL_out_v1	改成四動作同空間重交（ver -2805）
 20261119-212925	resources/enemy/anim/sorana_guard_dodgeL_back_v1	_recycle/resources/enemy/anim/sorana_guard_dodgeL_back_v1	改成四動作同空間重交（ver -2805）
+20261119-213819	resources/enemy/anim/sorana_guard_dodgeL_back_v1	_recycle/resources/enemy/anim/sorana_guard_dodgeL_back_v1.20261119-213819	左閃歸位換 Ray 的 cut_2（v2）
