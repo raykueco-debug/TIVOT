@@ -1471,23 +1471,24 @@ export function enemyEvade(kind){
   dodgeCur=null; dodgePend=null;
   return startEvade(S, kind);
 }
-/* 飛刀：一把細長的鋼刃（SVG），從手的位置朝鏡頭飛 —— 縮放 0.3→2.4、往畫面中下方散開、最後淡出（約 0.38 秒）。 */
-const KNIFE_SVG='<svg viewBox="0 0 20 100" width="100%" height="100%"><path d="M10 0 L16 62 L10 70 L4 62 Z" fill="#dfe6ee" stroke="#3a3f48" stroke-width="1.6"/><path d="M10 4 L10 66" stroke="#9aa6b4" stroke-width="1.4"/><rect x="5" y="70" width="10" height="5" rx="1" fill="#b48a3c" stroke="#3a2a10" stroke-width="1.2"/><rect x="7.5" y="75" width="5" height="22" rx="2" fill="#2a1e14" stroke="#120c08" stroke-width="1.2"/></svg>';
+/* 飛刀（ver -2820，Ray：「飛刀用共鬥的那個效果」）：同索菈娜共鬥的那把（`vfx_dagger`＋`.dagger-fly`，screen 混合），
+   從這一格的手朝鏡頭擲出 n 把 —— 由小變大、扇形散開，命中點閃一圈 `.dagger-hit`（同共鬥）。座標一律換成視窗座標（.dagger-fly 是 fixed）。 */
 function spawnKnives(o, n){
-  const top=$('top'); if(!top) return; const W=top.clientWidth, H=top.clientHeight;
-  const x0=o ? o.x : W*0.7, y0=o ? o.y : H*0.2;
+  const top=$('top'); if(!top) return; const tr=top.getBoundingClientRect();
+  const x0=tr.left+(o ? o.x : tr.width*0.7), y0=tr.top+(o ? o.y : tr.height*0.2);
   for(let k=0;k<n;k++){
-    const d=document.createElement('div'); d.className='fx-knife'; d.innerHTML=KNIFE_SVG;
-    const w=Math.max(10, W*0.035), h=w*5;
-    d.style.cssText='position:absolute;left:'+(x0-w/2)+'px;top:'+(y0-h/2)+'px;width:'+w+'px;height:'+h+'px;z-index:12;pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));';
-    top.appendChild(d);
-    const spread=(k-(n-1)/2), tx=W*0.5+spread*W*0.22-x0, ty=H*0.62+Math.abs(spread)*H*0.05-y0;
-    const ang=Math.atan2(ty,tx)*180/Math.PI+90;   // 刀尖朝飛行方向
-    d.animate([{transform:'translate(0,0) rotate('+ang+'deg) scale(.3)',opacity:1},
-               {transform:'translate('+(tx*0.55)+'px,'+(ty*0.55)+'px) rotate('+ang+'deg) scale(1.2)',opacity:1,offset:.55},
-               {transform:'translate('+(tx*1.15)+'px,'+(ty*1.15)+'px) rotate('+ang+'deg) scale(2.4)',opacity:0}],
-              {duration:380, delay:k*45, easing:'cubic-bezier(.3,.1,.6,1)', fill:'forwards'}).onfinish=()=>d.remove();
-    setTimeout(()=>d.remove(), 900);
+    const spread=k-(n-1)/2, x1=tr.left+tr.width*(0.5+spread*0.22), y1=tr.top+tr.height*(0.88+Math.abs(spread)*0.03);
+    const rot=Math.atan2(y1-y0, x1-x0)*180/Math.PI-90, wob=Math.random()*16-8;
+    const el=document.createElement('img'); el.src=asset('vfx_dagger'); el.className='dagger-fly'; el.alt='';
+    document.body.appendChild(el);
+    const dur=DAGGER_MS+90, delay=k*55;
+    try{ el.animate([
+      { transform:'translate('+x0+'px,'+y0+'px) rotate('+(rot+wob)+'deg) scale(0.45)', opacity:0.9 },
+      { transform:'translate('+x1+'px,'+y1+'px) rotate('+(rot+wob*0.3)+'deg) scale(1.7)', opacity:1 },
+    ], { duration:dur, delay, easing:'cubic-bezier(.4,0,.9,.6)', fill:'both' }); }catch(_){}
+    setTimeout(()=>{ if(el.parentNode) el.remove();
+      const hit=document.createElement('div'); hit.className='dagger-hit'; hit.style.left=x1+'px'; hit.style.top=y1+'px';
+      document.body.appendChild(hit); setTimeout(()=>{ if(hit.parentNode) hit.remove(); }, 320); }, dur+delay);
   }
 }
 /* ══ 動作段掛的程式特效（ver -2524）══ `fx:[{frame,type}]`，播到那一格觸發。
