@@ -204,7 +204,7 @@ function spawnFxNamed(key, fx){
     case 'sonic': sonicHit(lastActIm); break;
     case 'dust':  spawnGroundDust(); break;
     case 'none':  break;   // 只要音效、不要受擊圖（ver -2686，肋籠獸噴火：畫面交給 spawnFlame）   // 地面揚塵（ver -2681，鐵衣苦修者錘砸）   // 聲波（ver -2655）：從剛出手的那一隻身上擴出
-    case 'slash': spawnSlash(); break;
+    case 'slash': spawnSlash(fx); break;
     /* 鈍器受擊（ver -375）：不見血的悶擊 —— 一圈迅速擴散的衝擊環＋畫面一沉。
        ⚠ 與 `bullet`（玻璃碎裂）刻意不同：那一隻獵人是拿槍托招呼你，不是開槍。 */
     case 'blunt': spawnBlunt(fx.scale); break;
@@ -412,10 +412,11 @@ export function breakHexShield(){
 }
 // 紅刀痕濺血：一條斜向亮紅刀痕 + 數顆散開的小血滴（按錯懲罰用）。
 //   ⚠ 不沿用 spawnBlood（那是延時懲罰的寬血痕，會誤看成兩個特效同時出現）；改自帶小血滴區隔。
-export function spawnSlash(){
+export function spawnSlash(fx){
   const d=document.createElement('div');
   d.className='fx fx-slash';
-  const deg=(Math.random()<0.5?-1:1)*(20+Math.random()*35);   // 斜角 ±(20~55)°
+  /* `deg`（HITFX 可帶，ver -2824，Ray：「A的刀痕要跟動畫一致」）＝固定斜角、只抖幾度；沒帶＝照舊隨機 ±(20~55)°。 */
+  const deg=(fx && fx.deg!=null) ? fx.deg+(Math.random()*8-4) : (Math.random()<0.5?-1:1)*(20+Math.random()*35);
   d.style.setProperty('--deg', deg.toFixed(1)+'deg');
   addFx(d,480);
   // 濺血：數顆小血滴自中心沿刀痕方向散開，短促淡出
