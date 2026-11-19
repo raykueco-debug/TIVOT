@@ -1451,3 +1451,4 @@ when	from	to	reason
 20261119-010534	resources/enemy/anim/mon_beast_altar_idle_v2	_recycle/resources/enemy/anim/mon_beast_altar_idle_v2.20261119-010534	待機清晰度降到跟攻擊一樣前的版本（Ray：把 I 的模糊度改成跟 A 一樣看看）
 20261119-141528	resources/enemy/mon_serpent_topdown.webp	_recycle/resources/enemy/mon_serpent_topdown.webp	ver -2788 換成 Ray 昨天定稿的羽蛇俯視圖（這張是飛行地圖舊圖借用）
 20261119-152701	resources/enemy/mon_serpent_topdown_v2.webp	_recycle/resources/enemy/mon_serpent_topdown_v2.webp	羽蛇俯視換成 Ray 指定的 v3（真正俯視）
+20261119-155518	resources/enemy/fx/serpent_feathers	_recycle/resources/enemy/fx/serpent_feathers	羽蛇羽毛 v1 太卡通（Ray），換 v2

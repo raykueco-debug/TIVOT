@@ -2232,7 +2232,7 @@ function loadFeathers(card){
   featherDir=fb.dir; featherSet=[];
   for(let i=0;i<(fb.count||16);i++){ const im=new Image(); const o={ im, a:null };
     im.onload=()=>{ try{ const c=document.createElement('canvas'); c.width=im.naturalWidth; c.height=im.naturalHeight; const x=c.getContext('2d'); x.drawImage(im,0,0); o.a=x.getImageData(0,0,c.width,c.height).data; }catch(_){} };
-    im.src=fb.dir+'feather_'+String(i).padStart(2,'0')+'.webp'; featherSet.push(o); }
+    im.src=fb.dir+'feather_'+String(i).padStart(2,'0')+'.webp'+(fb.v ? '?v='+fb.v : ''); featherSet.push(o); }   // v＝同名覆蓋時跳號（快取）
   return featherSet;
 }
 function readyFeathers(){ const S=loadFeathers(); return S ? S.filter(o=>o.im.complete && o.im.naturalWidth) : []; }

@@ -110,7 +110,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.19-2793';
+export const VERSION = 'ver 2026.11.19-2794';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -6380,6 +6380,22 @@ export const ASSET_VER = {
   'east_university_day': 'caaf76f4',
   'east_university_dusk': '7d82df44',
   'east_university_night': 'a4396469',
+  'feather_00': '64589d6a',
+  'feather_01': '7db3d12e',
+  'feather_02': '2ff3a275',
+  'feather_03': '6a4c1fbd',
+  'feather_04': 'f88c7518',
+  'feather_05': 'e2941028',
+  'feather_06': '572ec540',
+  'feather_07': 'a9f1d185',
+  'feather_08': 'dfbf802f',
+  'feather_09': '4758b8f7',
+  'feather_10': 'e3cb5f2d',
+  'feather_11': 'aa4e73e2',
+  'feather_12': '08d7d730',
+  'feather_13': '2e3d161e',
+  'feather_14': '5338e633',
+  'feather_15': '7432cc5d',
   'frame_74': 'fe3fa4d3',
   'frame_75': 'e02ab507',
   'frame_76': '26affd33',
