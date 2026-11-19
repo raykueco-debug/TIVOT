@@ -109,6 +109,11 @@ Ray：「可交件 colossus_A_AB_cut／saint_inspector_A_AB_cut／stag_rot_A_AB_
 
 - E066／E067：tiger rule 自動剪（`tivot_wan/tiger_cut.py pounce`），**打到那一格＝第 13 格**（0 起算），兩支都 29 格、無碰邊。ENEMY_ATK 與 ENEMY_DELAY 都指同一支。⚠⚠ **立繪要換成中立站姿** `mon_shinierforest_snake_neutral.webp`／`mon_shinierforest_hog_neutral.webp`（舊的在咬／在衝）。⚠ 水蛇第 16–19 格頭縮進身體；山豬收回段兩格帶一小團煙塵（Ray 看過說交）。中立待機在 animechk 等 Ray 剪。
 
-- 索菈娜（敵人）**左閃**（11-19，Ray 剪的 `out/export/np_sorana_dodgeL_test_cut` 6 格＋**倒放**回站姿 → 11 格 24fps，`loop:false`）：`resources/enemy/anim/sorana_guard_dodgeL_v1/`。canvas＝`resources/si/sorana_si_guard.webp`（1024×1535，Ray 指定的待機底圖）。
+- 索菈娜（敵人）**左閃**（11-19，Ray 剪）：兩段，**同一個 box/px**，可直接接著播不跳：
+  · 閃出 （ 6 格：站姿→過渡模糊格→左閃姿勢）
+  · 歸位 （ 7 格：左閃姿勢→倒放→站姿）
+  canvas＝（1024×1535，Ray 指定的待機底圖），24fps，。
+  ⚠⚠ **切換邏輯（Ray 11-19）**：玩家開槍 → 播一支閃出（左／右／下三選一）並停在閃避姿勢；
+    **玩家沒有持續攻擊 → 播那一支的歸位回待機；持續攻擊 → 直接換另一個閃避動作的閃出**（不先歸位）。
   ⚠⚠ **這是新機制，程式端還沒有**：Ray 的設計前提——**玩家開槍（點盤面）時她播閃避**（左閃／右閃／下閃三選一），**打中時改播匕首格擋**；A＝撲斬、D／M＝飛刀（飛刀由程式畫，GPT 圖已去掉刀）。
   其餘五支（右閃、下閃、格擋、撲斬、飛刀）的關鍵格與過渡模糊格已交（`resources/_originals/enemy/sorana_kf/`），待 Wan。待機（guard 呼吸）還沒跑。
