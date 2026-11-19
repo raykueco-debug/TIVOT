@@ -2230,7 +2230,8 @@ function loadFeathers(card){
   const fb=(card||curCard()||{}).featherBlock; if(!fb || !fb.dir) return null;
   if(featherSet && featherDir===fb.dir) return featherSet;
   featherDir=fb.dir; featherSet=[];
-  for(let i=0;i<(fb.count||16);i++){ const im=new Image(); const o={ im, a:null };
+  for(let i=0;i<(fb.count||16);i++){ if(fb.skip && fb.skip.indexOf(i)>=0) continue;   // skip＝不用的那幾根（ver -2795，Ray：「破洞的黑色不要用」）
+    const im=new Image(); const o={ im, a:null };
     im.onload=()=>{ try{ const c=document.createElement('canvas'); c.width=im.naturalWidth; c.height=im.naturalHeight; const x=c.getContext('2d'); x.drawImage(im,0,0); o.a=x.getImageData(0,0,c.width,c.height).data; }catch(_){} };
     im.src=fb.dir+'feather_'+String(i).padStart(2,'0')+'.webp'+(fb.v ? '?v='+fb.v : ''); featherSet.push(o); }   // v＝同名覆蓋時跳號（快取）
   return featherSet;
@@ -2277,8 +2278,12 @@ function stickFeathers(n){
     const im=document.createElement('img'); im.className='feather-block'; im.alt=''; im.src=F.im.src; im.draggable=false;
     im.style.cssText=`left:${(cxp-w/2).toFixed(1)}px;top:${(cyp-h/2).toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;--fr:${rot.toFixed(1)}deg;`;
     top.appendChild(im); featherEls.push({ el:im, F, cx:cxp, cy:cyp, w, h, rot });
-    im.animate([{ transform:`rotate(${rot}deg) scale(1.9)`, opacity:0 },{ transform:`rotate(${rot}deg) scale(0.94)`, opacity:1, offset:0.75 },{ transform:`rotate(${rot}deg) scale(1)`, opacity:1 }],
-      { duration:200, delay:i*70, easing:'cubic-bezier(.2,.7,.3,1)', fill:'backwards' });
+    /* 從左邊刮進畫面（ver -2795，Ray：「羽毛從左到右刮到畫面上」）：由畫面左外側高速掃到落點，邊掃邊轉正，到位時略過衝再收 */
+    const dx=-(cxp+w*0.9), r0=rot-35;
+    im.animate([{ transform:`translate(${dx.toFixed(0)}px, ${(H*0.06).toFixed(0)}px) rotate(${r0}deg)`, opacity:0.9 },
+                { transform:`translate(${(w*0.06).toFixed(0)}px, 0px) rotate(${rot+4}deg)`, opacity:1, offset:0.82 },
+                { transform:`translate(0px, 0px) rotate(${rot}deg)`, opacity:1 }],
+      { duration:260, delay:i*80, easing:'cubic-bezier(.15,.75,.3,1)', fill:'backwards' });
   });
   bindFeatherGuard(top);
 }
