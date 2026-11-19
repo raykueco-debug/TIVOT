@@ -1353,7 +1353,7 @@ function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter']){
    群戰：那一隻拿攻擊片代演 D／M 時，memberActOnce 記的 actFx 用牠攻擊那一套（片上 hitFx，沒寫就是群戰卡的 assault）。 */
 export function singleAttackAnim(){ return !groupCard && !!clipFor('atk') && !clipFor('delay'); }
 function cardAssaultKey(){ const h=groupCard && groupCard.hitFx && groupCard.hitFx.assault; return typeof h==='string' ? h : (h && h.type) || null; }
-export function hasMissClip(){ return groupCard ? groupHas('miss') : !!clipFor('miss'); }
+export function hasMissClip(){ return groupCard ? groupHas('miss') : (!!clipFor('miss') || !!(curCard()||{}).featherBlock); }   // 羽蛇的 M＝羽毛封窗（程式特效，沒有動檔，ver -2792）
 export function hasActionClips(){ return groupCard ? (groupHas('atk') || groupHas('delay')) : !!(clipFor('atk') || clipFor('delay')); }   // 這隻怪有攻擊／延時動畫嗎（ver -2496）
 let clipT=0, clipEl=null;
 /* 平時站遠（ENEMY_ATK 的 `far`，ver -2473）：用 CSS 的獨立 `scale` 屬性縮 —— 不碰 transform，受擊動畫照常疊上去。
@@ -2214,6 +2214,106 @@ export function skyScaleRain(){
   for(let i=0;i<14;i++){ const k=WH[(Math.random()*WH.length)|0], at=SCALE_RAIN_AT-120+Math.pow(Math.random(),0.9)*520;
     setTimeout(()=>{ try{ SFX.playRate(asset(k), sfxGain(k)*0.55, 0.78+Math.random()*0.6); }catch(_){} }, at); }
   return SCALE_RAIN_AT;
+}
+/* ══ 延時／點錯＝羽毛封窗（卡上 `featherBlock`，ver -2792，Ray：「給羽蛇一個特效攻擊 快速向後噴出大量羽毛 然後數個羽毛擋住敵人窗
+   清盤或被攻擊才會被吹走 檔住的部份看不到攻擊圈也點不到 用來做D跟m」）══
+   ① 0～520ms 從身體往後（機頭的反方向）噴出一大把羽毛（畫布，跑完就拆）
+   ② FEATHER_STICK_AT 起 n 根大羽毛「啪」地貼上上半畫面（DOM，z 在攻擊圈之上、吃掉點擊）—— combat 照回傳值延後扣血
+   ③ 清盤（combat.clearBoard）或玩家被主動攻擊打到（assault／block）→ clearFeathers() 吹走；換怪／收場直接拆。
+   ⚠ 擋點擊兩條路都要擋：攻擊圈自己的 DOM 監聽（羽毛蓋在上面自然吃掉）＋聖徒化手勢層的座標判定（main.hitThreatAt 問 featherAt）。 */
+const FEATHER_STICK_AT=640, FEATHER_MAX=6;
+let featherCv=null, featherTok=0, featherSet=null, featherDir='';
+const featherEls=[];
+/* 羽毛圖（ver -2792 第二版，Ray：「羽毛太醜了 給gpt畫16格不同樣子的羽毛 同色系」）：卡上 featherBlock.dir 底下 feather_00..NN.webp。
+   每張另存一份 alpha（點擊判定照羽毛的實際形狀，不是整個方框）。 */
+function loadFeathers(card){
+  const fb=(card||curCard()||{}).featherBlock; if(!fb || !fb.dir) return null;
+  if(featherSet && featherDir===fb.dir) return featherSet;
+  featherDir=fb.dir; featherSet=[];
+  for(let i=0;i<(fb.count||16);i++){ const im=new Image(); const o={ im, a:null };
+    im.onload=()=>{ try{ const c=document.createElement('canvas'); c.width=im.naturalWidth; c.height=im.naturalHeight; const x=c.getContext('2d'); x.drawImage(im,0,0); o.a=x.getImageData(0,0,c.width,c.height).data; }catch(_){} };
+    im.src=fb.dir+'feather_'+String(i).padStart(2,'0')+'.webp'; featherSet.push(o); }
+  return featherSet;
+}
+function readyFeathers(){ const S=loadFeathers(); return S ? S.filter(o=>o.im.complete && o.im.naturalWidth) : []; }
+export function featherBurst(){
+  const top=$('top'); if(!top) return 0;
+  const S=readyFeathers(); if(!S.length) return 0;
+  const W=top.clientWidth, H=top.clientHeight, tr=top.getBoundingClientRect();
+  const cv=document.createElement('canvas'); cv.className='feather-burst';
+  const dpr=Math.min(2, window.devicePixelRatio||1); cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); top.appendChild(cv);
+  if(featherCv) featherCv.remove(); featherCv=cv;
+  const cx=cv.getContext('2d'); cx.setTransform(dpr,0,0,dpr,0,0);
+  const f=fwdOf(curCard()), rnd=(a,b)=>a+Math.random()*(b-a);
+  const el=(idleEl && idleEl.isConnected) ? idleEl : $('enemyImg'), r=el ? el.getBoundingClientRect() : null;
+  const bx=r && r.width ? r.left-tr.left+r.width*0.5 : W*0.5, by=r && r.height ? r.top-tr.top+r.height*0.5 : H*0.45, bw=r && r.width ? r.width*0.3 : W*0.2;
+  const P=[];
+  for(let i=0;i<80;i++){ const sp=rnd(0.9,2.4), ang=rnd(-0.65,0.65);   // 往後（-f）噴，扇形散開
+    P.push({ img:S[(Math.random()*S.length)|0].im, x:bx+rnd(-bw,bw), y:by+rnd(-bw*0.5,bw*0.5), vx:-f*Math.cos(ang)*sp, vy:Math.sin(ang)*sp-0.15, rot:rnd(0,6.28), vr:rnd(-0.03,0.03),
+      s:H*rnd(0.07,0.17), t0:Math.pow(Math.random(),1.6)*260, life:rnd(380,620) }); }
+  const t0=performance.now();
+  const draw=now=>{ if(!cv.isConnected) return;
+    const t=now-t0; cx.clearRect(0,0,W,H); let alive=false;
+    for(const p of P){ const u=t-p.t0; if(u<0){ alive=true; continue; } if(u>p.life) continue; alive=true;
+      const k=1-Math.exp(-u/260), x=p.x+p.vx*260*k, y=p.y+p.vy*260*k+0.00018*u*u;   // 噴出去之後被空氣拖慢、略往下飄
+      const iw=p.img.naturalWidth, ih=p.img.naturalHeight, sc=p.s/Math.max(iw,ih);
+      cx.save(); cx.translate(x,y); cx.rotate(p.rot+p.vr*u); cx.globalAlpha=Math.min(1,u/40)*Math.min(1,(p.life-u)/160);
+      cx.drawImage(p.img, -iw*sc/2, -ih*sc/2, iw*sc, ih*sc); cx.restore(); }
+    if(alive) requestAnimationFrame(draw); else { cv.remove(); if(featherCv===cv) featherCv=null; } };
+  requestAnimationFrame(draw);
+  const n=Math.max(1, (((curCard()||{}).featherBlock||{}).n|0) || 3+((Math.random()*2)|0));
+  const tok=++featherTok; setTimeout(()=>{ if(tok===featherTok && !state.over) stickFeathers(n); }, FEATHER_STICK_AT-160);
+  return FEATHER_STICK_AT;
+}
+function stickFeathers(n){
+  const top=$('top'); if(!top) return;
+  const W=top.clientWidth, H=top.clientHeight, rnd=(a,b)=>a+Math.random()*(b-a);
+  const S=readyFeathers().slice().sort(()=>Math.random()-0.5); if(!S.length) return;
+  const cols=Array.from({length:n},(_,i)=>(i+0.5)/n).sort(()=>Math.random()-0.5);   // 橫向大致分散，不全疊在同一處
+  cols.forEach((u,i)=>{
+    while(featherEls.length>=FEATHER_MAX){ const o=featherEls.shift(); o.el.remove(); }
+    const F=S[i%S.length], iw=F.im.naturalWidth, ih=F.im.naturalHeight, d=H*rnd(0.62,0.85), sc=d/Math.max(iw,ih), w=iw*sc, h=ih*sc;
+    const cxp=W*(0.1+u*0.8)+rnd(-W*0.06,W*0.06), cyp=H*rnd(0.3,0.66), rot=rnd(-80,80);
+    const im=document.createElement('img'); im.className='feather-block'; im.alt=''; im.src=F.im.src; im.draggable=false;
+    im.style.cssText=`left:${(cxp-w/2).toFixed(1)}px;top:${(cyp-h/2).toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;--fr:${rot.toFixed(1)}deg;`;
+    top.appendChild(im); featherEls.push({ el:im, F, cx:cxp, cy:cyp, w, h, rot });
+    im.animate([{ transform:`rotate(${rot}deg) scale(1.9)`, opacity:0 },{ transform:`rotate(${rot}deg) scale(0.94)`, opacity:1, offset:0.75 },{ transform:`rotate(${rot}deg) scale(1)`, opacity:1 }],
+      { duration:200, delay:i*70, easing:'cubic-bezier(.2,.7,.3,1)', fill:'backwards' });
+  });
+  bindFeatherGuard(top);
+}
+/* 座標（client）上有沒有羽毛擋著 —— 照羽毛圖的 alpha 判（方框的透明角落不擋）。
+   兩條點擊路都問它：#top 上的 capture 監聽（攻擊圈自己的 DOM 點擊）＋聖徒化手勢層（main.hitThreatAt 之前）。 */
+export function featherAt(x,y){
+  if(!featherEls.length) return false;
+  const top=$('top'); if(!top) return false; const tr=top.getBoundingClientRect(), px=x-tr.left, py=y-tr.top;
+  for(const o of featherEls){
+    const rad=-o.rot*Math.PI/180, dx=px-o.cx, dy=py-o.cy, lx=dx*Math.cos(rad)-dy*Math.sin(rad)+o.w/2, ly=dx*Math.sin(rad)+dy*Math.cos(rad)+o.h/2;
+    if(lx<0||ly<0||lx>=o.w||ly>=o.h) continue;
+    const A=o.F.a; if(!A) return true;
+    const iw=o.F.im.naturalWidth, ix=Math.floor(lx/o.w*iw), iy=Math.floor(ly/o.h*o.F.im.naturalHeight);
+    if(A[(iy*iw+ix)*4+3]>40) return true;
+  }
+  return false;
+}
+let featherGuard=false;
+function bindFeatherGuard(top){
+  if(featherGuard) return; featherGuard=true;
+  const eat=e=>{ if(!featherEls.length) return; const t=(e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
+    if(featherAt(t.clientX, t.clientY)){ e.stopPropagation(); if(e.cancelable) e.preventDefault(); } };   // 點到羽毛＝什麼都沒點到（不穿透給攻擊圈）
+  for(const t of ['pointerdown','pointerup','click','touchstart','touchend','mousedown','mouseup']) top.addEventListener(t, eat, { capture:true, passive:false });
+}
+/* 吹走（清盤／被主動攻擊打到）；instant＝換怪／收場直接拆 */
+export function clearFeathers(instant){
+  if(instant){ featherTok++; if(featherCv){ featherCv.remove(); featherCv=null; } }
+  const list=featherEls.splice(0);
+  for(const o of list){ const im=o.el;
+    if(instant){ im.remove(); continue; }
+    const rot=o.rot, a=Math.random()*Math.PI*2, d=(im.parentNode ? im.parentNode.clientWidth : 400)*1.2;
+    const an=im.animate([{ transform:`rotate(${rot}deg)`, opacity:1 },{ transform:`translate(${(Math.cos(a)*d).toFixed(0)}px, ${(Math.sin(a)*d-80).toFixed(0)}px) rotate(${(rot+(Math.random()<0.5?-1:1)*(180+Math.random()*200)).toFixed(0)}deg)`, opacity:0 }],
+      { duration:420+Math.random()*160, easing:'cubic-bezier(.5,0,.8,.6)', fill:'forwards' });
+    an.onfinish=()=>im.remove(); setTimeout(()=>im.remove(), 900);
+  }
 }
 /* ══ 延時＝噴毒（卡上 `delayVenom:true`，ver -2533，Ray：「蜈蚣的延時是往前噴綠色毒液 一秒後綠色毒液由左向右襲向全畫面
    並污損數字盤使數字部份被遮住 清盤才解除」）══
@@ -3515,6 +3615,8 @@ export function randomBodyPoint(){
 export function setEnemy(key, opts){
   const en = GAME_CONFIG.enemies[key];
   if(!en) return;
+  clearFeathers(true);                          // 羽蛇的封窗羽毛不帶到下一隻（ver -2792）
+  if(en && en.featherBlock) loadFeathers(en);    // 羽毛圖在這一場開打時就抓（16 張小圖）
   portraitOverride=null;                        // 換了一隻（或重開一場）→ NI 鎖住的立繪放掉（ver -1965）
   loadSingleFall(en);                           // 單人的倒地動畫（ver -2065）：有寫 `fall` 就先抓
   stopSakura();                                 // 換了一隻怪 → 上一隻的櫻花與 Sturm 一起收（ver -899）

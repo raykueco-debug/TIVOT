@@ -956,6 +956,7 @@ function clearLucidFlood(burst){
 function clearBoard(opts){
   const brClear = !!(opts && opts.br);
   SFX.clear();                      // 清盤：神聖鈴響
+  enemy.clearFeathers();            // 羽蛇封窗的羽毛：清盤吹走（ver -2792）
   /* 六角護罩（ver -2120～-2122）：清盤那一刻護罩碎掉，把**這一盤擋下的傷害（`shieldBank`）全部**打進去
      （Ray -2122：「25% 拿掉，清盤就給全傷」；卡上 `shieldClearPct` 可以打折，沒寫＝1）。
      ⚠ 先放下護罩再結算 —— 那一下要真的打進血條、而且擊殺照常走下面的 enemyHp<=0。 */
@@ -1406,11 +1407,12 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
      主動攻擊（assault／擋一半 block）打到時只震畫面 —— 受擊特效、紅閃、受擊音都不放（龍自己衝過畫面就是那一擊）。 */
   /* -2449（Ray：「我說了攻擊不用另外給受擊效果」「點錯或延時龍會往後噴鱗片，然後鱗片雨刮過受擊，畫面抖動」）：
      點錯／延時也一樣不放受擊特效 —— 改演龍噴鱗片＋鱗片雨（enemy.skyScaleRain），只留畫面抖動。 */
-  const _plain = !!((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).hitPlain
+  const _feather = (kind==='delay'||kind==='wrong') && !!((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).featherBlock;   // 羽蛇 D／M＝羽毛封窗（ver -2792）：同鱗雨，不放受擊特效、延到羽毛貼上那一刻扣血
+  const _plain = !!((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).hitPlain || _feather
     || ((kind==='assault'||kind==='block') && enemy.takeIssenHit());   // 一閃那一刀（-2643，Ray：「不要有其他的受擊特效」）：同 hitPlain，只留震動
   /* -2450（Ray：「噴鱗跟鱗雨要有一點時間差，鱗雨時才受擊」）：先噴、隔一拍鱗雨刮過，這一擊（扣血、計數、畫面抖動）延到鱗雨那一刻 */
   if(_plain && (kind==='delay'||kind==='wrong') && !_rainLanded){
-    const wait=enemy.skyScaleRain();
+    const wait=_feather ? enemy.featherBurst() : enemy.skyScaleRain();
     if(wait>0){ setTimeout(()=>{ if(state.over) return; enemyAttack(dmg, kind, saintAmt, true); }, wait); return; }
   }
   /* 卡上 `delayVenom:true`（ver -2533，蜈蚣）：延時＝噴毒 → 一秒後毒液刷過全畫面那一刻才扣血，並污損數字盤（清盤才解除） */
@@ -1421,7 +1423,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
     if(wait>0){ setTimeout(()=>{ if(state.over) return; enemyAttack(dmg, kind, saintAmt, true); }, wait); return; }
   }
   if(_venom){ venomBoard(); dmg=0; }   // -2541 Ray：「毒液不扣 hp」—— 懲罰就是盤面被污損；計數、震動、受擊音照走
-  if(kind==='assault' || kind==='block') clearVenom();   // -2541 Ray：「毒液被 A 攻擊就會消失」—— 主動攻擊打到（含擋一半）那一刻盤面的毒液全清
+  if(kind==='assault' || kind==='block'){ clearVenom(); enemy.clearFeathers(); }   // -2792 Ray：羽毛「被攻擊才會被吹走」（同毒液）   // -2541 Ray：「毒液被 A 攻擊就會消失」—— 主動攻擊打到（含擋一半）那一刻盤面的毒液全清
   /* 延時／點錯的動畫（ver -2472，config.ENEMY_DELAY）：先演、劈到那一格才扣血（同上一段的延後法） */
   if(!_plain && (kind==='delay'||kind==='wrong') && !_rainLanded){
     /* -2496 Ray「攻擊播放時延時先到的話就消掉攻擊圈，所以不會兩動畫衝突」：有動作動畫的怪，延時先到 ⇒ 場上的攻擊圈全消 */
@@ -2588,6 +2590,7 @@ function stopAll(){
   endOverkillFx();       // 中途退出/結算時清 overkill 限時與藍光
   tutorial.abort();      // 教學中途收場（goHome/勝負/重開場）：只撤 UI，不記已看
   defense.stopAll();
+  enemy.clearFeathers(true);   // 羽蛇封窗的羽毛（ver -2792）
   saint.stopTimers();    // 停聖徒化計時器（saintTimer / saintReactTimer）
   weapon.stopTimers();   // 停雙槍破防計時器（dualTimer）
   clearLucidFlood(false);   // 明晰之夢的金光（ver -746）：任何結束路徑都收掉，不爆散

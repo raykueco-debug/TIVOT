@@ -2809,6 +2809,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
          判定與行為都在 weapon（`hitSwitchAt`），這裡只把座標交過去。
          ⚠ 排在紅點之前：鈕的範圍小而且明確，重疊時以鈕優先。 */
       if(weapon.hitSwitchAt(x, y)) return;
+      if(enemyMod.featherAt(x, y)) return;   // 羽蛇封窗的羽毛擋著＝點不到（ver -2792）
       const th = hitThreatAt(x, y);
       if(th) defense.resolveThreat(th);   // 聖徒化期間照常點紅點防禦
     }

@@ -2017,6 +2017,7 @@ export const ENEMIES = {
       /* 降臨著地音（ver -745，Ray：「se 不放 se_saintintall 而是放羽蛇叫聲」）——
          禍魘的著地預設是 sfx_saint，這張卡覆寫成牠自己的吼叫（enemy.js 讀）。 */
       entrance:'se_enemy_serpent',
+      featherBlock:{ n:0, dir:'resources/enemy/fx/serpent_feathers/', count:16 },   // ver -2792（羽毛圖＝GPT 畫的 16 根，dir 底下 feather_00..15）：延時／點錯＝往後噴羽毛＋數根大羽毛封住上半畫面（擋攻擊圈、點不到），清盤或被主動攻擊打到才吹走；n＝貼幾根（0＝隨機 3～4）
       assaultSe:['se_enemy_serpent'],   // ver -2768（Ray：「要拿掉的是 dragonroar」）：發動攻擊放羽蛇自己的叫聲；劃破空氣的音效待 Ray 給檔後加進這個陣列
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
