@@ -20,6 +20,8 @@ import { ENEMY_IDLE, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER,
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';
+import { BG_FX } from '../script/bg_fx.js';   // 戰鬥背景的程式層（水面／雲，ver -2826）
+import { prepFx, drawFx } from './bgfx.js';
 import { BG_ANIM } from '../script/bg_anim.js';   // 戰鬥背景也用動態背景（ver -2729）   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
 import { GROUP_MEMBERS } from '../script/group_members.js';
 import { GROUP_LAYOUT } from '../script/group_layout.js';
@@ -97,11 +99,44 @@ function stepSes(sp, fps, alive){ const st=sp && sp.stepSe; if(!st || !st.se) re
    靜態圖照舊墊在底下（影片沒載到也不會黑）。換怪換背景就換片、結束戰鬥（combat.stopAll）就收掉，不在背景偷跑（鐵律 10）。 */
 let battleVid=null, battleVidName='';
 export function resumeBattleBgVideo(){ setBattleBgVideo(battleVidName); }   // startGame 的 stopAll 在換敵之後 ⇒ 開打時再接回來
-export function stopBattleBgVideo(){ if(battleVid){ try{ battleVid.pause(); battleVid.removeAttribute('src'); battleVid.load(); battleVid.remove(); }catch(_){} battleVid=null; } }
+export function stopBattleBgVideo(){ stopBattleBgFx(); if(battleVid){ try{ battleVid.pause(); battleVid.removeAttribute('src'); battleVid.load(); battleVid.remove(); }catch(_){} battleVid=null; } }
+/* ══ 戰鬥背景的程式層（ver -2826，索菈娜湖上甲板：Ray「走動水摳雲規則」）══
+   背景名查 `BG_FX`（城鎮舞台用的同一張表、同一支 `bgfx.drawFx`，鐵律 8）：有就在 #top 最底層放一張 canvas，
+   底圖＝那張靜態背景，照 #top 的 center/cover 貼；每秒最多 30 格（同 story 的 BG_FX_FRAME_MS），分頁藏起來就不畫。
+   收場跟影片同一支 stopBattleBgVideo（combat.stopAll）—— 戰鬥結束不在背景偷跑（鐵律 10）。 */
+let battleFx=null;
+function stopBattleBgFx(){ const o=battleFx; battleFx=null; if(!o) return; cancelAnimationFrame(o.raf); try{ o.cv.remove(); }catch(_){} }
+function startBattleBgFx(stem, url){
+  const spec=BG_FX[stem]; const top=$('top');
+  if(!spec || !top){ stopBattleBgFx(); return false; }
+  if(battleFx && battleFx.url===url && battleFx.cv.isConnected) return true;
+  stopBattleBgFx();
+  const cv=document.createElement('canvas'); cv.className='battle-bgfx';
+  cv.style.cssText='position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:0;transition:opacity .3s';
+  top.style.isolation='isolate'; top.prepend(cv);
+  const img=new Image(); img.decoding='async'; img.src=url;
+  const o={ cv, ctx:cv.getContext('2d'), img, url, fx:prepFx(spec), raf:0, last:0, t0:performance.now() }; battleFx=o;
+  const loop=now=>{
+    if(battleFx!==o || !cv.isConnected) return;
+    o.raf=requestAnimationFrame(loop);
+    if(document.hidden || now-o.last<33) return; o.last=now;
+    if(o.fx.failed){ stopBattleBgFx(); return; }
+    if(!o.fx.ready || !img.complete || !img.naturalWidth) return;
+    const sw=img.naturalWidth, sh=img.naturalHeight, src=drawFx(o.fx, img, sw, sh, (now-o.t0)/1000, false);
+    const W=top.clientWidth, H=top.clientHeight; if(!W||!H) return;
+    const dpr=Math.min(2, window.devicePixelRatio||1), cw=Math.round(W*dpr), ch=Math.round(H*dpr);
+    if(cv.width!==cw || cv.height!==ch){ cv.width=cw; cv.height=ch; }
+    const k=Math.max(cw/sw, ch/sh), dw=sw*k, dh=sh*k;
+    o.ctx.drawImage(src, (cw-dw)/2, (ch-dh)/2, dw, dh);
+    cv.style.opacity='1';
+  };
+  o.raf=requestAnimationFrame(loop);
+  return true;
+}
 function setBattleBgVideo(nm){
   battleVidName=nm||'';
   const stem=String(nm||'').split('?')[0].replace(/^.*\//,'').replace(/\.\w+$/,'').toLowerCase(), src=stem && BG_ANIM[stem];
-  if(!src){ stopBattleBgVideo(); return; }
+  if(!src){ stopBattleBgVideo(); if(stem && BG_FX[stem]) startBattleBgFx(stem, story.bgUrl(nm)); return; }
   const top=$('top'); if(!top) return;
   if(battleVid && battleVid.dataset.src===src && battleVid.isConnected) return;
   stopBattleBgVideo();

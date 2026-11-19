@@ -66,6 +66,9 @@ export const BG_FX = {
   ruins_shinier_corridora_day: beam('day', [255, 221, 186], 106),
   ruins_shinier_corridora_dusk: beam('dusk', [255, 169, 124], 119),
   ruins_shinier_corridora_night: beam('night', [230, 227, 255], 79),
+  /* ── 戰鬥背景：索菈娜（湖上甲板，11-20 背景副理交件）── 水由程式畫＋天空拆層、雲由程式動；戰鬥上半由 enemy.setBattleBgVideo 播（同一個 drawFx） */
+  sorana_battle_bg_v3: { water: W('enemy/sorana_battle_bg_v3_watermask.png'),
+    sky: { img: A + 'enemy/sorana_battle_bg_v3_sky.png', mask: A + 'enemy/sorana_battle_bg_v3_skymask.png', clouds: CUMULUS } },
   /* ── 伊甸古墓　硝坑：坑底的煙（底圖是火把熄掉的那一張）── */
   tomb_nitrepit: { base: A + 'tomb/tomb_nitrepit_base_nofire.webp', smoke: true },
 };

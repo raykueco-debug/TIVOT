@@ -40,8 +40,11 @@ def check_fx(statics):
     consts = dict(re.findall(r"const (\w+) = '([^']+)';", src))
     bad = 0
     body = src[src.index('export const BG_FX'):]
+    # 戰鬥背景住在 resources/enemy/（ver -2826，索菈娜湖上甲板走同一支 drawFx）
+    ed = os.path.join(ROOT, 'resources', 'enemy')
+    battle = {os.path.splitext(f)[0].lower() for f in os.listdir(ed) if re.search(r'\.(webp|png|jpe?g)$', f, re.I)} if os.path.isdir(ed) else set()
     for k in re.findall(r'^\s{2}(\w+):', body, re.M):
-        if k.lower() not in statics:
+        if k.lower() not in statics and k.lower() not in battle:
             print('✘ bg_fx：鑰匙 %s 找不到靜態圖' % k); bad += 1
     paths = set(re.findall(r"'(resources/[^']+)'", src))
     a = consts.get('A', '')
