@@ -110,7 +110,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.19-2815';
+export const VERSION = 'ver 2026.11.19-2816';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5879,8 +5879,8 @@ export const ENEMY_ENTER = {
 export const ENEMY_DODGE = {
   sorana_si_guard: { chainFrom:3,
     dodge:{
-      L:{ out:'resources/enemy/anim/sorana_guard_dodgeL_v4/', chainFrom:0, shift:-0.22, shiftPeak:1 },   // Ray 剪的 np_sorana_dodgeL_full_cut_2：一段到底；位移在第 shiftPeak 格（閃避姿勢）到最遠、播完滑回原位
-      R:{ out:'resources/enemy/anim/sorana_guard_dodgeR_v3/', chainFrom:0, shift:0.22, shiftPeak:1 },   // Ray 剪的 np_sorana_dodgeR_full_cut：一段到底
+      L:{ out:'resources/enemy/anim/sorana_guard_dodgeL_v4/', chainFrom:0},   // Ray 剪的 np_sorana_dodgeL_full_cut_2：一段到底
+      R:{ out:'resources/enemy/anim/sorana_guard_dodgeR_v3/', chainFrom:0},   // Ray 剪的 np_sorana_dodgeR_full_cut：一段到底
       D:{ out:'resources/enemy/anim/sorana_guard_dodgeD_v3/', chainFrom:0 },   // Ray 剪的 np_sorana_dodgeD2_full_cut：一段到底（過渡格→半劈腿→回站姿），沒有 back
     },
     parry:{ out:'resources/enemy/anim/sorana_guard_parry_v2/', chainFrom:0 },   // Ray 剪的 np_sorana_parry2_test_cut：一段到底（過渡格→刀被震開→回站姿），沒有 back
