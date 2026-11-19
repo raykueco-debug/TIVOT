@@ -459,3 +459,4 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 戰鬥　索菈娜（湖上甲板） | `resources/enemy/sorana_battle_bg_v3.webp`（靜態） | `anim/enemy/sorana_battle_bg_v3_sky.png`（只有天空，RGBA）＋`anim/enemy/sorana_battle_bg_v3_skymask.png`（白＝天空，已羽化） | `anim/enemy/sorana_battle_bg_v3_watermask.png`（白＝湖面，含欄杆縫裡的水；用上面「程式水面」畫法） |
 
 疊法：① 天空層 ② 程式雲 ③ 底圖用 skymask 挖掉天空 ④ 程式水面（watermask 範圍內）。程式雲還沒做之前，①～③ 等於原圖，可以只先接 ④。
+> 11-20 補：`sorana_battle_bg_v3_sky.png` 換成**沒有雲的乾淨天色**（Ray：「遠景不要有不動的雲」）—— 雲全部由程式畫；同名覆蓋，要跳快取版本。

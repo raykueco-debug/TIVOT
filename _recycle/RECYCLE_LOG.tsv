@@ -1484,3 +1484,4 @@ when	from	to	reason
 20261119-222928	resources/enemy/anim/sorana_guard_dodgeR_out_v2	_recycle/resources/enemy/anim/sorana_guard_dodgeR_out_v2	右閃換 Ray 剪的一段到底版（v3）
 20261119-222928	resources/enemy/anim/sorana_guard_dodgeR_back_v3	_recycle/resources/enemy/anim/sorana_guard_dodgeR_back_v3	右閃換 Ray 剪的一段到底版（v3）
 20261120-003132	resources/enemy/sorana_battle_bg_v2.webp	_recycle/resources/enemy/sorana_battle_bg_v2.webp	索菈娜背景 v2（海）被 v3（湖＋山）取代
+20261120-004545	resources/background/anim/enemy/sorana_battle_bg_v3_sky.png	_recycle/resources/background/anim/enemy/sorana_battle_bg_v3_sky.png	索菈娜戰鬥背景天空層含原圖靜止雲，Ray：遠景不要有不動的雲 → 換成無雲天色
