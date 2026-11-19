@@ -753,6 +753,7 @@ function shellFrom(left, top, side){
    onHit —— 傷害與命中音的時刻由這裡唯一決定（鐵律 7），呼叫端不自己抓秒數。
    ⚠ 素材是黑底光暈圖，CSS 走 mix-blend-mode:screen（黑自然消失，同星芒那條）。 */
 const DAGGER_MS = 150;   // 飛行時間（毫秒）
+const KNIFE_MS = 90;     // 索菈娜飛刀（ver -2822，Ray：「飛刀要再快一點」；共鬥那把照舊 DAGGER_MS）
 export function throwDagger(x, y, onHit){
   const W=window.innerWidth||390;
   const el=document.createElement('img');
@@ -767,7 +768,7 @@ export function throwDagger(x, y, onHit){
   document.body.appendChild(el);
   try{
     el.animate([
-      { transform:'translate('+sx+'px,'+sy+'px) rotate('+(rot+wob)+'deg) scale('+scl+')', opacity:0.85 },
+      { transform:'translate('+sx+'px,'+sy+'px) rotate('+(rot+wob)+'deg) scale('+s0+')', opacity:0.85 },
       { transform:'translate('+x+'px,'+y+'px) rotate('+(rot+wob*0.25)+'deg) scale('+scl+')', opacity:1 },
     ], { duration:DAGGER_MS, easing:'linear', fill:'forwards' });
   }catch(_){ el.style.transform='translate('+x+'px,'+y+'px) rotate('+rot+'deg)'; }
@@ -1477,13 +1478,13 @@ function spawnKnives(o, n){
   const top=$('top'); if(!top) return; const tr=top.getBoundingClientRect();
   const x0=tr.left+(o ? o.x : tr.width*0.7), y0=tr.top+(o ? o.y : tr.height*0.2);
   for(let k=0;k<n;k++){
-    const spread=k-(n-1)/2, x1=tr.left+tr.width*(0.5+spread*0.22), y1=tr.top+tr.height*(0.88+Math.abs(spread)*0.03);
+    const spread=k-(n-1)/2, x1=tr.left+tr.width*(0.5+spread*0.34), y1=tr.top+tr.height*(0.62+Math.abs(spread)*0.05);   // 朝 viewer 飛來（ver -2822，Ray：「刀要往viewer飛來 不是往地上掉」）：落點在畫面中段、由小變大
     const rot=Math.atan2(y1-y0, x1-x0)*180/Math.PI-90, wob=Math.random()*16-8;
     const el=document.createElement('img'); el.src=asset('vfx_dagger'); el.className='dagger-fly'; el.alt='';
     document.body.appendChild(el);
-    const dur=DAGGER_MS, delay=k*60, scl=(0.85+Math.random()*0.35).toFixed(2);   // 同共鬥：直線等速、尺寸不變、150ms 一閃（ver -2821，Ray：「像共鬥那樣」）
+    const dur=KNIFE_MS, delay=k*35, s0=(0.3+Math.random()*0.1).toFixed(2), scl=(2.2+Math.random()*0.6).toFixed(2);   // 直線等速一閃；起手小、到眼前放大＝朝鏡頭飛來
     try{ el.animate([
-      { transform:'translate('+x0+'px,'+y0+'px) rotate('+(rot+wob)+'deg) scale('+scl+')', opacity:0.85 },
+      { transform:'translate('+x0+'px,'+y0+'px) rotate('+(rot+wob)+'deg) scale('+s0+')', opacity:0.85 },
       { transform:'translate('+x1+'px,'+y1+'px) rotate('+(rot+wob*0.25)+'deg) scale('+scl+')', opacity:1 },
     ], { duration:dur, delay, easing:'linear', fill:'both' }); }catch(_){}
     setTimeout(()=>{ if(el.parentNode) el.remove();
