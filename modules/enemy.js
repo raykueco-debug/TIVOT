@@ -1366,7 +1366,7 @@ function applyFar(en){ const k=farOf(en); for(const el of [$('enemyImg'), idleEl
 export function playActionClip(kind, onDone, opts){   // opts.hold：播完停在最後一格、不回待機（交給 onDone 收，ver -2546 蜈蚣的 A 準備動作）
   if(groupCard && groupCard.group && (kind==='delay' || kind==='miss')) return groupAction(kind);   // 群戰：逐人的 D／M（ver -2623）
   const c=clipFor(kind), L=c && clipCache[c.dir]; if(!L || !L.fr) return 0;
-  clearTimeout(dodgeT); dodgeT=0; dodgeCur=null; dodgeBusy=false;   // 攻擊片接手：閃避狀態作廢（從待機重新起）
+  dodgeCur=null; dodgeBusy=false; dodgePend=null;   // 攻擊片接手：閃避狀態作廢（從待機重新起）
   const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, L.j); if(!r) return 0;
   clearTimeout(clipT); clearInterval(idleT); idleT=0;
   let el=idleEl; if(!el){ if(!clipEl){ clipEl=document.createElement('img'); clipEl.className='en-idle'; clipEl.alt=''; eImg.after(clipEl); } el=clipEl; }
@@ -1406,10 +1406,10 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
 /* ══ 閃避／格擋（ver -2805，Ray 11-19 索菈娜：「閃避圖是玩家開槍時播放 打中時則是用刀防禦」
    「如果玩家沒有持續攻擊就歸位 有持續攻擊就換另一個閃避動作」）══
    表在 config.ENEMY_DODGE（鑰匙＝立繪檔名）：每個動作兩段 out（站姿→過渡格→姿勢，停在姿勢）＋ back（姿勢→站姿）。
-   · 閃出後停在姿勢；`gap` 毫秒內沒有下一槍 → 播 back 回待機。
+   · 閃出播完立刻接：途中有開槍 → 下一個閃避，沒有 → 歸位（ver -2806 取消停留）。
    · 還停在某個閃避姿勢時又開槍 → 換另一個閃避，從它的過渡格（`chainFrom`，跳過開頭的站姿格）直接接上，不先歸位。
    · 攻擊／延時片接手時（playActionClip）整個狀態作廢。 */
-let dodgeCur=null, dodgeT=0, dodgeBusy=false;
+let dodgeCur=null, dodgeBusy=false;
 function dodgeSpec(en){ en=en||curCard(); return (en && !en.group) ? (ENEMY_DODGE[imgStem(en)]||null) : null; }
 function playDodgeDir(dir, from, hold, onDone){
   const L=clipCache[dir]; if(!L || !L.fr) return false;
@@ -1428,25 +1428,29 @@ function playDodgeDir(dir, from, hold, onDone){
   clipT=setTimeout(step, dt);
   return true;
 }
-function armDodgeBack(S){
-  clearTimeout(dodgeT);
-  dodgeT=setTimeout(()=>{ dodgeT=0; if(dodgeBusy || !dodgeCur) return;
-    const seg=dodgeCur==='parry' ? S.parry : (S.dodge||{})[dodgeCur]; dodgeCur=null;
-    if(seg) playDodgeDir(seg.back, 0, false, null); }, S.gap||700);
+/* ver -2806（Ray：「閃完不要停 立刻歸位或換下一個動作」）：閃出播完**不停在姿勢**——
+   閃出途中又開了槍 → 立刻接下一個閃避（從它的過渡格接）；沒有 → 立刻播歸位。 */
+let dodgePend=null;
+function dodgeNext(S){
+  const k=dodgePend; dodgePend=null;
+  if(k){ if(startEvade(S, k)) return; }
+  const seg=dodgeCur==='parry' ? S.parry : (S.dodge||{})[dodgeCur]; dodgeCur=null;
+  if(seg) playDodgeDir(seg.back, 0, false, ()=>{ if(dodgePend){ const k=dodgePend; dodgePend=null; startEvade(S, k); } });   // 歸位途中又開槍：歸位播完立刻再閃
 }
-/* kind：'dodge'（三種閃避擇一，不重複上一個）／'parry'（格擋）。回傳有沒有演。 */
-export function enemyEvade(kind){
-  const S=dodgeSpec(); if(!S || state.over) return false;
-  if(clipT && !dodgeBusy && !dodgeCur) return false;          // 攻擊／延時片正在播：不搶
-  if(dodgeBusy){ if(dodgeCur) armDodgeBack(S); return false; } // 還在閃出的路上：只延長停留
+function startEvade(S, kind){
   let key, seg;
   if(kind==='parry'){ key='parry'; seg=S.parry; }
   else { const ks=Object.keys(S.dodge||{}).filter(k=>k!==dodgeCur); if(!ks.length) return false; key=ks[(Math.random()*ks.length)|0]; seg=S.dodge[key]; }
   if(!seg) return false;
-  if(key===dodgeCur){ armDodgeBack(S); return false; }        // 同一個格擋姿勢連續挨打：停著就好
-  clearTimeout(dodgeT); dodgeT=0;
-  const ok=playDodgeDir(seg.out, dodgeCur ? (S.chainFrom||3) : 0, true, ()=>{ dodgeCur=key; armDodgeBack(S); });
-  return ok;
+  return playDodgeDir(seg.out, dodgeCur ? (S.chainFrom||3) : 0, true, ()=>{ dodgeCur=key; dodgeNext(S); });
+}
+/* kind：'dodge'（三種閃避擇一，不重複上一個）／'parry'（格擋）。回傳有沒有演。 */
+export function enemyEvade(kind){
+  const S=dodgeSpec(); if(!S || state.over) return false;
+  if(dodgeBusy){ dodgePend=kind; return false; }                 // 閃出／歸位途中：記一筆，播完立刻接
+  if(clipT) return false;                                        // 攻擊／延時片正在播：不搶
+  dodgeCur=null; dodgePend=null;
+  return startEvade(S, kind);
 }
 /* ══ 動作段掛的程式特效（ver -2524）══ `fx:[{frame,type}]`，播到那一格觸發。
    · `rubble` ＝ 瓦礫噴襲（Ray：「振翅下拍到底，碎石從瓦礫堆往鏡頭噴」）：畫面下方中央（瓦礫堆）噴出一把碎石，

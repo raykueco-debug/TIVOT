@@ -110,7 +110,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.19-2805';
+export const VERSION = 'ver 2026.11.19-2806';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5875,9 +5875,9 @@ export const ENEMY_ENTER = {
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_enter_v1/' },
 };
 /* ══ 閃避／格擋（ver -2805，Ray 11-19 索菈娜）══ 鑰匙＝立繪檔名。每個動作 out（站姿→過渡模糊格→姿勢）＋ back（姿勢→站姿），
-   同一個生成空間（box/px 相同，接著播不跳）。播放器 enemy.enemyEvade；gap＝停手多久就歸位（毫秒）；chainFrom＝連續換閃避時從 out 的第幾格接（跳過開頭的站姿格）。 */
+   同一個生成空間（box/px 相同，接著播不跳）。播放器 enemy.enemyEvade（閃出播完立刻接下一個或歸位，不停留，ver -2806）；chainFrom＝連續換閃避時從 out 的第幾格接（跳過開頭的站姿格）。 */
 export const ENEMY_DODGE = {
-  sorana_si_guard: { gap:700, chainFrom:3,
+  sorana_si_guard: { chainFrom:3,
     dodge:{
       L:{ out:'resources/enemy/anim/sorana_guard_dodgeL_out_v1/', back:'resources/enemy/anim/sorana_guard_dodgeL_back_v1/' },
       R:{ out:'resources/enemy/anim/sorana_guard_dodgeR_out_v1/', back:'resources/enemy/anim/sorana_guard_dodgeR_back_v1/' },
