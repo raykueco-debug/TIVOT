@@ -16,7 +16,7 @@
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import * as prog from '../script/progress.js';  // stage 加成要問現在第幾章（ver -1584b）
-import { ENEMY_IDLE, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
+import { ENEMY_IDLE, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, ENEMY_DODGE, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';
@@ -1331,7 +1331,7 @@ function idleDirFor(en){
   if(typeof en.idle==='string') return en.idle;
   return ENEMY_IDLE[imgStem(en)] || null;
 }
-function startCardIdle(en){ applyFar(en); if(portraitOverride) return; const d=idleDirFor(en); if(d) startIdleLoop(d); preloadActionClips(en); }
+function startCardIdle(en){ applyFar(en); if(portraitOverride) return; const d=idleDirFor(en); if(d) startIdleLoop(d); preloadActionClips(en); preloadDodge(en); }
 /* ══ 攻擊／延時動畫（ver -2472）══ 一次性的動檔：從待機切進來、播完切回待機（Ray：「所有攻擊都要回到原本的中立動畫」）。
    動檔在換上這隻怪的那一刻預載（戰鬥內，鐵律 13）；還沒載好就不演（照舊只有受擊特效）。 */
 const clipCache={};
@@ -1346,7 +1346,8 @@ function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; c
   if(kind==='miss'){ if(ENEMY_MISS[s]) return ENEMY_MISS[s]; const d=ENEMY_DELAY[s]; return (d && !d.noMiss) ? d : null; }   // 延時片寫 noMiss＝點錯不借它（只扣秒，ver -2801）
   if(kind==='enter') return ENEMY_ENTER[s] || null;   // 點錯：有 M 用 M，沒有就借延時那一支（ver -2524）
   return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[s])||null; }
-function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); if(c && c.sweep) loadClip(c.sweep); if(c && c.sweepImg) (new Image()).src=c.sweepImg; } }   // sweep＝A 本體（準備動作之後那一支，-2550）
+function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); if(c && c.sweep) loadClip(c.sweep); if(c && c.sweepImg) (new Image()).src=c.sweepImg; } }
+function preloadDodge(en){ const S=dodgeSpec(en); if(!S) return; for(const seg of [...Object.values(S.dodge||{}), S.parry]) if(seg){ loadClip(seg.out); loadClip(seg.back); } }   // sweep＝A 本體（準備動作之後那一支，-2550）
 /* 這隻怪有沒有 M（點錯）動作：點錯播的是延時那一支（ENEMY_DELAY），有它就算有 M（ver -2523）。 */
 /* ══ 只有一支攻擊動畫的怪：延時／點錯一律照攻擊的受擊特效與音效（ver -2678，Ray：「蠕蟲全攻擊受擊跟音效都一樣」「都要一樣」「只有單一攻擊動畫的怪一體適用」）══
    單隻：有 ENEMY_ATK、沒有延時片（點錯沒有自己的片時借的也是延時片）⇒ combat 的 fxKind 把 delay／wrong 讀成 assault（判定只有這一支）。
@@ -1365,6 +1366,7 @@ function applyFar(en){ const k=farOf(en); for(const el of [$('enemyImg'), idleEl
 export function playActionClip(kind, onDone, opts){   // opts.hold：播完停在最後一格、不回待機（交給 onDone 收，ver -2546 蜈蚣的 A 準備動作）
   if(groupCard && groupCard.group && (kind==='delay' || kind==='miss')) return groupAction(kind);   // 群戰：逐人的 D／M（ver -2623）
   const c=clipFor(kind), L=c && clipCache[c.dir]; if(!L || !L.fr) return 0;
+  clearTimeout(dodgeT); dodgeT=0; dodgeCur=null; dodgeBusy=false;   // 攻擊片接手：閃避狀態作廢（從待機重新起）
   const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, L.j); if(!r) return 0;
   clearTimeout(clipT); clearInterval(idleT); idleT=0;
   let el=idleEl; if(!el){ if(!clipEl){ clipEl=document.createElement('img'); clipEl.className='en-idle'; clipEl.alt=''; eImg.after(clipEl); } el=clipEl; }
@@ -1400,6 +1402,51 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
   };
   clipT=setTimeout(step, tAt(1));
   return Math.round(tHit);
+}
+/* ══ 閃避／格擋（ver -2805，Ray 11-19 索菈娜：「閃避圖是玩家開槍時播放 打中時則是用刀防禦」
+   「如果玩家沒有持續攻擊就歸位 有持續攻擊就換另一個閃避動作」）══
+   表在 config.ENEMY_DODGE（鑰匙＝立繪檔名）：每個動作兩段 out（站姿→過渡格→姿勢，停在姿勢）＋ back（姿勢→站姿）。
+   · 閃出後停在姿勢；`gap` 毫秒內沒有下一槍 → 播 back 回待機。
+   · 還停在某個閃避姿勢時又開槍 → 換另一個閃避，從它的過渡格（`chainFrom`，跳過開頭的站姿格）直接接上，不先歸位。
+   · 攻擊／延時片接手時（playActionClip）整個狀態作廢。 */
+let dodgeCur=null, dodgeT=0, dodgeBusy=false;
+function dodgeSpec(en){ en=en||curCard(); return (en && !en.group) ? (ENEMY_DODGE[imgStem(en)]||null) : null; }
+function playDodgeDir(dir, from, hold, onDone){
+  const L=clipCache[dir]; if(!L || !L.fr) return false;
+  const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, L.j); if(!r) return false;
+  clearTimeout(clipT); clearInterval(idleT); idleT=0;
+  let el=idleEl; if(!el){ if(!clipEl){ clipEl=document.createElement('img'); clipEl.className='en-idle'; clipEl.alt=''; eImg.after(clipEl); } el=clipEl; }
+  eImg.style.visibility='hidden';
+  el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.width=r.width+'px'; el.style.height=r.height+'px';
+  const N=L.fr.length, dt=1000/(L.j.fps||24); let i=Math.min(from|0, N-1); el.src=L.fr[i].src; if(el===clipEl) applyFar();
+  dodgeBusy=true;
+  const step=()=>{ i++;
+    if(i<N){ el.src=L.fr[i].src; clipT=setTimeout(step, dt); return; }
+    clipT=0; dodgeBusy=false;
+    if(!hold){ if(idleEl && idleFr){ placeIdle(); runIdle(); } else { if(clipEl){ clipEl.remove(); clipEl=null; } eImg.style.visibility=''; } }
+    if(onDone) onDone(); };
+  clipT=setTimeout(step, dt);
+  return true;
+}
+function armDodgeBack(S){
+  clearTimeout(dodgeT);
+  dodgeT=setTimeout(()=>{ dodgeT=0; if(dodgeBusy || !dodgeCur) return;
+    const seg=dodgeCur==='parry' ? S.parry : (S.dodge||{})[dodgeCur]; dodgeCur=null;
+    if(seg) playDodgeDir(seg.back, 0, false, null); }, S.gap||700);
+}
+/* kind：'dodge'（三種閃避擇一，不重複上一個）／'parry'（格擋）。回傳有沒有演。 */
+export function enemyEvade(kind){
+  const S=dodgeSpec(); if(!S || state.over) return false;
+  if(clipT && !dodgeBusy && !dodgeCur) return false;          // 攻擊／延時片正在播：不搶
+  if(dodgeBusy){ if(dodgeCur) armDodgeBack(S); return false; } // 還在閃出的路上：只延長停留
+  let key, seg;
+  if(kind==='parry'){ key='parry'; seg=S.parry; }
+  else { const ks=Object.keys(S.dodge||{}).filter(k=>k!==dodgeCur); if(!ks.length) return false; key=ks[(Math.random()*ks.length)|0]; seg=S.dodge[key]; }
+  if(!seg) return false;
+  if(key===dodgeCur){ armDodgeBack(S); return false; }        // 同一個格擋姿勢連續挨打：停著就好
+  clearTimeout(dodgeT); dodgeT=0;
+  const ok=playDodgeDir(seg.out, dodgeCur ? (S.chainFrom||3) : 0, true, ()=>{ dodgeCur=key; armDodgeBack(S); });
+  return ok;
 }
 /* ══ 動作段掛的程式特效（ver -2524）══ `fx:[{frame,type}]`，播到那一格觸發。
    · `rubble` ＝ 瓦礫噴襲（Ray：「振翅下拍到底，碎石從瓦礫堆往鏡頭噴」）：畫面下方中央（瓦礫堆）噴出一把碎石，

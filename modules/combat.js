@@ -1028,6 +1028,7 @@ function recordBoardTime(sec){
  * ========================================================================== */
 // 槍擊命中敵人：從點到的那一格射一條火線過去，**火花就炸在火線的落點**（ver -1627）
 function gunHitOnEnemy(cell, pierce){
+  enemy.enemyEvade('dodge');   // 有閃避表的敵人（ENEMY_DODGE）：玩家開槍就閃（ver -2805 試演；格擋的觸發時機待 Ray 定）
   const fxTop=$('fxTop');
   const cr=cell.getBoundingClientRect();
   const top=$('top').getBoundingClientRect();

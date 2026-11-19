@@ -1464,3 +1464,5 @@ when	from	to	reason
 20261119-201522	resources/enemy/anim/mon_sea_coralman_idle_v2	_recycle/resources/enemy/anim/mon_sea_coralman_idle_v2	魘魔換 idle_v3／atk_v2（ver -2804）
 20261119-201522	resources/enemy/anim/mon_sea_coralman_atk_v1	_recycle/resources/enemy/anim/mon_sea_coralman_atk_v1	魘魔換 idle_v3／atk_v2（ver -2804）
 20261119-211908	resources/enemy/anim/sorana_guard_dodgeL_v1	_recycle/resources/enemy/anim/sorana_guard_dodgeL_v1	改成 out／back 兩段（Ray：左閃歸位另剪）
+20261119-212925	resources/enemy/anim/sorana_guard_dodgeL_out_v1	_recycle/resources/enemy/anim/sorana_guard_dodgeL_out_v1	改成四動作同空間重交（ver -2805）
+20261119-212925	resources/enemy/anim/sorana_guard_dodgeL_back_v1	_recycle/resources/enemy/anim/sorana_guard_dodgeL_back_v1	改成四動作同空間重交（ver -2805）

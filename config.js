@@ -110,7 +110,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.19-2804';
+export const VERSION = 'ver 2026.11.19-2805';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2957,6 +2957,7 @@ export const GAME_CONFIG = {
     np_test_reassembled:    { enemy:'np_reassembled' },
     np_test_boss:           { enemy:'np_boss' },
     np_test_claws:          { enemy:'np_claws' },
+    np_test_sorana:         { enemy:'test_sorana' },      // 索菈娜閃避／格擋試演（ver -2805）
     canyon_w_mix11: { enemy:'canyon_mix11', session:'canyon_wild' },
     canyon_w_mix12: { enemy:'canyon_mix12', session:'canyon_wild' },
     frag02_w_mix2: { enemy:'canyon_mix2', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
@@ -5388,6 +5389,7 @@ export const ASSETS = {
   bgm_whistling:    "resources/audio/bgm/peritune_whistling_winds_loop.m4a",
   /* ver -745：Ray 交專用戰鬥圖（man_sorana.jpg → webp，原檔入 _originals）。 */
   enemy_man_sorana: "resources/enemy/man_sorana.webp?v=11180f49",
+  enemy_sorana_guard: "resources/si/sorana_si_guard.webp?v=e18306d1",   // ver -2805：索菈娜敵人（閃避／格擋試演）的待機底圖
   bgm_crimson:    "resources/audio/bgm/peritune_crimson_moon_loop.m4a",
   /* 帝都第一夜的夢（ver -1888）。 */
   bgm_deepfrost:  "resources/audio/bgm/peritune_deep_frost_calling.m4a",
@@ -5871,6 +5873,18 @@ export const ENEMY_ATK = {
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_ENTER = {
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_enter_v1/' },
+};
+/* ══ 閃避／格擋（ver -2805，Ray 11-19 索菈娜）══ 鑰匙＝立繪檔名。每個動作 out（站姿→過渡模糊格→姿勢）＋ back（姿勢→站姿），
+   同一個生成空間（box/px 相同，接著播不跳）。播放器 enemy.enemyEvade；gap＝停手多久就歸位（毫秒）；chainFrom＝連續換閃避時從 out 的第幾格接（跳過開頭的站姿格）。 */
+export const ENEMY_DODGE = {
+  sorana_si_guard: { gap:700, chainFrom:3,
+    dodge:{
+      L:{ out:'resources/enemy/anim/sorana_guard_dodgeL_out_v1/', back:'resources/enemy/anim/sorana_guard_dodgeL_back_v1/' },
+      R:{ out:'resources/enemy/anim/sorana_guard_dodgeR_out_v1/', back:'resources/enemy/anim/sorana_guard_dodgeR_back_v1/' },
+      D:{ out:'resources/enemy/anim/sorana_guard_dodgeD_out_v1/', back:'resources/enemy/anim/sorana_guard_dodgeD_back_v1/' },
+    },
+    parry:{ out:'resources/enemy/anim/sorana_guard_parry_out_v1/', back:'resources/enemy/anim/sorana_guard_parry_back_v1/' },
+  },
 };
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */

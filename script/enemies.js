@@ -5802,3 +5802,10 @@ ENEMIES.ws_misha_ni = Object.assign({}, ENEMIES.misha, {
   float:1,   // 飄浮系：微幅上下浮（ver -2506）
 });
 
+/* `test_sorana`（ver -2805，敵人線測試卡）：索菈娜的閃避／格擋動畫試演。數值照森住民（man_sorana），
+   立繪換成 Ray 指定的待機底圖 sorana guard（真 alpha；ENEMY_DODGE 的鑰匙就是它的檔名）。 */
+ENEMIES.test_sorana = Object.assign({}, ENEMIES.man_sorana, {
+  name:'索菈娜',
+  image:'enemy_sorana_guard',
+  fit:{ mode:'contain', pos:'center bottom' },
+});
