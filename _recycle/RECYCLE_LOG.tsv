@@ -1457,3 +1457,5 @@ when	from	to	reason
 20261119-190024	resources/enemy/anim/mon_relic_candletower_atk_v2	_recycle/resources/enemy/anim/mon_relic_candletower_atk_v2	祭司攻擊換 v3（ver -2798）
 20261119-190117	resources/enemy/anim/mon_relic_candletower_atk_v3	_recycle/resources/enemy/anim/mon_relic_candletower_atk_v3	祭司攻擊換 v4（ver -2799）
 20261119-192134	resources/enemy/anim/mon_relic_candletower_atk_v4	_recycle/resources/enemy/anim/mon_relic_candletower_atk_v4	祭司攻擊換 v5（ver -2800）
+20261119-193116	resources/enemy/anim/mon_relic_candlepenitent_delay_v1	_recycle/resources/enemy/anim/mon_relic_candlepenitent_delay_v1	D 改用 A（ver -2802）
+20261119-193116	resources/enemy/anim/mon_sea_coralman_delay_v1	_recycle/resources/enemy/anim/mon_sea_coralman_delay_v1	D 改用 A（ver -2802）

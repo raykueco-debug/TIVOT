@@ -110,7 +110,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.19-2801';
+export const VERSION = 'ver 2026.11.19-2802';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5890,7 +5890,7 @@ export const ENEMY_MISS = {
 export const ENEMY_DELAY = {
   mon_relic_candletower: { dir:'resources/enemy/anim/mon_relic_candletower_atk_v5/', hit:9, hitFx:'candletower_claw', noMiss:true },   // 禍魘祭司 D＝同 A（ver -2801，Ray：「點錯扣秒就好 延時同A」）—— noMiss：點錯不借這一支
   mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_atk_v1/', hit:12, hitFx:'reassembled_wave' },   // 心魘 DM（ver -2773）：三手張開放光（偏橘光波＋抽掉一個數字）
-  mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_delay_v1/', hit:6 },   // 罪之魔像（北泊）D：Ray 剪的 delay_cut_2（24 格），打到暫定主體最大第 6 格（ver -2732）
+  mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_atk_v1/', hit:13, noMiss:true },   // 罪之魔像 D＝同 A、點錯只扣秒（ver -2802，Ray：「罪之魔像的動畫時機跟這隻（禍魘祭司）一樣」；原 delay_v1 不用）
   /* 崩岩巨像 D＝正面出拳（ver -2700，Ray 剪的 cut：15 格 16fps，打到＝拳最大的第 5 格）：
      打到那一格從拳頭（畫面約 22%,30%）噴飛石朝鏡頭飛來＋石塊音 se_crash_rocks（Ray：「加入飛石朝 viewer 飛來特效 用石塊音效」）。 */
   mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_delay_v1/', hit:5,
@@ -5908,7 +5908,7 @@ export const ENEMY_DELAY = {
   mon_shinierforest_lynx_neutral: { dir:'resources/enemy/anim/mon_shinierforest_lynx_delay_v1/', hit:9 },   // E065 山貓 橫向爪擊（32 格，第 9 格打到）
   mon_shinierforest_tiger_neutral: { dir:'resources/enemy/anim/mon_shinierforest_tiger_delay_v3/', hit:9 },   // ver -2519 Ray：爪擊撲出＝他剪的 hswipeAB_cut（10 格）＋ tiger rule 的 hswipeBA   // E068 獨角虎 橫向爪擊（只有收回段，23 格：開頭就是爪掃到底 ⇒ 第 1 格打到）
   mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_delay_v1/', hit:8, near:1.2 },   // -2476 Ray「DM（delay／miss）都用爪擊」：延時／點錯也演同一支撲擊
-  mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_delay_v1/', hit:12 },   // 魘魔 單爪大幅斜劈 30 格（hit 是估的，Ray 看了再調）
+  mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_atk_v1/', hit:13, noMiss:true },   // 魘魔 D＝同 A、點錯只扣秒（ver -2802，Ray：「魘魔也是」；原 delay_v1 不用）
 };
 
 export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ""; }
