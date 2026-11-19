@@ -573,6 +573,9 @@ export function dualShot(x, y){
   /* 受創語音在 BR 只給第一發與最後一發（ver -1969，Ray：「米夏如果是被 BR 打中，vo damage
      只播第一發跟最後一發」）。計數在收窗（`onDualClosed`）歸零。 */
   brShotN++;
+  /* 閃避／格擋型的怪（索菈娜）BR 也會閃（ver -2828，Ray：「BR她也會閃」）：只是演出 —— BR 照舊打穿（parryOpen 排除 dualWield，同米夏），
+     比例照普攻那條：有效率（1−parryBasic）演格擋、其餘演閃避；格擋播完之前不搶（enemyEvade 自己擋）。 */
+  if(enemy.hasEvade() && state.enemyHp>0) enemy.enemyEvade(Math.random() < (state.enemyParry||0) ? 'dodge' : 'parry');
   brVoiceOk = (brShotN===1 || state.dualShotsLeft<=0);
   weapon.pokeDual();          // 閒置逾時往後推（ver -1434）：還在打就不收窗
   /* ══⚠⚠ 拋彈殼與槍火：**與普攻同一份特效**（ver -1335）══ 普攻那一支（`tap`）是
