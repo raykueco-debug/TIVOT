@@ -1478,6 +1478,7 @@ export function enemyEvade(kind){
 function spawnKnives(o, n){
   const top=$('top'); if(!top) return; const tr=top.getBoundingClientRect();
   const x0=tr.left+(o ? o.x : tr.width*0.7), y0=tr.top+(o ? o.y : tr.height*0.2);
+  try{ SFX.play(asset('se_soranacounter'), sfxGain('se_soranacounter')); }catch(_){}   // 音效同共鬥那版（ver -2825，Ray）：擲出一聲、每把命中各一聲
   for(let k=0;k<n;k++){
     const spread=k-(n-1)/2, x1=tr.left+tr.width*(0.5+spread*0.34), y1=y0+tr.height*(0.03+Math.abs(spread)*0.02);   // 平飛（ver -2823，Ray：「角度還是太低 要平飛」）：落點與出手同高   // 朝 viewer 飛來（ver -2822，Ray：「刀要往viewer飛來 不是往地上掉」）：落點在畫面中段、由小變大
     const rot=Math.atan2(y1-y0, x1-x0)*180/Math.PI-90, wob=Math.random()*16-8;
@@ -1489,6 +1490,7 @@ function spawnKnives(o, n){
       { transform:'translate('+x1+'px,'+y1+'px) rotate('+(rot+wob*0.25)+'deg) scale('+scl+')', opacity:1 },
     ], { duration:dur, delay, easing:'linear', fill:'both' }); }catch(_){}
     setTimeout(()=>{ if(el.parentNode) el.remove();
+      try{ SFX.play(asset('se_soranacounterhit'), sfxGain('se_soranacounterhit')); }catch(_){}
       const hit=document.createElement('div'); hit.className='dagger-hit'; hit.style.left=x1+'px'; hit.style.top=y1+'px';
       document.body.appendChild(hit); setTimeout(()=>{ if(hit.parentNode) hit.remove(); }, 320); }, dur+delay);
   }

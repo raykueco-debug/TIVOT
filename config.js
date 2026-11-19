@@ -84,7 +84,7 @@ export const HITFX = {
   bullet_big: { base:'bullet', se:'em_shot', count:1, pos:'random', scale:1.8 },  // 大彈孔
   dagger: { base:'slash',  se:'em_dagger' },   // 匕首（貝琳妲語彙）：slash 視覺＋匕首音
   sorana_slash: { base:'slash', se:'em_dagger', deg:60 },   // 索菈娜撲斬（ver -2824，Ray：「A的刀痕要跟動畫一致」）：她從左上往右下斬，ef_slash 原圖約 -20°，轉 60° 落在約 40° 的右下斜
-  sorana_knife: { base:'none',  se:'em_dagger' },          // 索菈娜飛刀（ver -2824，Ray：「飛刀不用刀痕受擊效果」）：畫面只有程式飛刀與命中閃光
+  sorana_knife: { base:'none' },          // 索菈娜飛刀（ver -2824，Ray：「飛刀不用刀痕受擊效果」）：畫面只有程式飛刀與命中閃光；音效同共鬥（ver -2825），由 enemy.spawnKnives 自己放
   /* 米夏的大絕（ver -1957，Ray：「像殘影一樣脈動彈出＋斬」）：`img` 那張攻擊圖疊三層殘影
      一拍一拍彈出，最後一斬（`enemy.spawnAfterimage`）。音效照 slash 那一支（斬的那一下）。 */
   misha_attack: { base:'afterimage', se:'em_slash', img:'misha_attack' },
@@ -112,7 +112,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.20-2824';
+export const VERSION = 'ver 2026.11.20-2825';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
