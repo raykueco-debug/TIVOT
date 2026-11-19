@@ -1346,7 +1346,7 @@ function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; c
   if(kind==='miss') return ENEMY_MISS[s] || ENEMY_DELAY[s] || null;
   if(kind==='enter') return ENEMY_ENTER[s] || null;   // 點錯：有 M 用 M，沒有就借延時那一支（ver -2524）
   return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[s])||null; }
-function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); if(c && c.sweep) loadClip(c.sweep); } }   // sweep＝A 本體（準備動作之後那一支，-2550）
+function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); if(c && c.sweep) loadClip(c.sweep); if(c && c.sweepImg) (new Image()).src=c.sweepImg; } }   // sweep＝A 本體（準備動作之後那一支，-2550）
 /* 這隻怪有沒有 M（點錯）動作：點錯播的是延時那一支（ENEMY_DELAY），有它就算有 M（ver -2523）。 */
 /* ══ 只有一支攻擊動畫的怪：延時／點錯一律照攻擊的受擊特效與音效（ver -2678，Ray：「蠕蟲全攻擊受擊跟音效都一樣」「都要一樣」「只有單一攻擊動畫的怪一體適用」）══
    單隻：有 ENEMY_ATK、沒有延時片（點錯沒有自己的片時借的也是延時片）⇒ combat 的 fxKind 把 delay／wrong 讀成 assault（判定只有這一支）。
@@ -2008,23 +2008,44 @@ function airPrepAssault(en, c, L){
   const dy=sl ? 0 : Math.max(0, Math.round(tr.bottom - boxBottom + H*0.04));
   [].concat(en.assaultSe || 'se_enemy_dragonroar').forEach(k=>playEntranceSe(k));   // assaultSe 可寫陣列（ver -2768，羽蛇：叫聲＋劃破空氣）
   const busy={ dead:false, freeze:true, a:[], cancel(){ this.dead=true; this.a.forEach(x=>{ try{ x.cancel(); }catch(_){} }); } }; airAtk=busy;   // 準備動作期間佔住 airAtk（換怪／打死時 stopAirDrift 會 cancel）
-  busy.a.push(el0.animate([{ transform:'none' },{ transform:`translateY(${dy}px)` }], { duration:PREP_PULL_MS, easing:'cubic-bezier(.2,.7,.3,1)', fill:'forwards' }));
+  const ry=sl && sl.rise ? -Math.round(H*sl.rise) : 0, pullMs=sl && sl.rise ? (sl.riseMs||320) : PREP_PULL_MS;   /* `slide.rise`（ver -2787，Ray：「先往上升一點點再轉身下潛」）：先往上浮 H×rise 再播 */
+  busy.a.push(el0.animate([{ transform:'none' },{ transform:`translateY(${dy+ry}px)` }], { duration:pullMs, easing:'cubic-bezier(.2,.7,.3,1)', fill:'forwards' }));
   setTimeout(()=>{ if(busy.dead || airAtk!==busy) return;
     setTimeout(()=>{ if(busy.dead || airAtk!==busy) return; const e2=idleEl || clipEl; if(!e2) return;
       if(sl){ const f=fwdOf(en), W=top.clientWidth; e2.style.transformOrigin='50% 50%';
-        busy.a.push(e2.animate([{ transform:'none' },{ transform:`translate(${f*W*(sl.dx||0.6)}px, ${H*(sl.dy||1.1)}px) scale(${sl.scale||1.3})` }], { duration:slideMs, easing:'cubic-bezier(.4,0,.85,.6)', fill:'forwards' })); return; }
+        busy.a.push(e2.animate([{ transform:`translateY(${ry}px)` },{ transform:`translate(${f*W*(sl.dx||0.6)}px, ${ry+H*(sl.dy||1.1)}px) scale(${sl.scale||1.3})` }], { duration:slideMs, easing:'cubic-bezier(.4,0,.85,.6)', fill:'forwards' })); return; }
       busy.a.push(e2.animate([{ transform:`translateY(${dy}px)` },{ transform:`translateY(${dy+H*1.25}px)` }], { duration:slideMs, easing:'cubic-bezier(.35,0,.9,.55)', fill:'forwards' })); }, tSlide);
     const toSweep=()=>{ if(busy.dead || airAtk!==busy) return;
       const e2=idleEl || clipEl; if(e2) e2.style.opacity='0';
       busy.a.forEach(x=>{ try{ x.cancel(); }catch(_){} }); busy.a=[];
       if(idleEl && idleFr){ placeIdle(); runIdle(); } else { if(clipEl){ clipEl.remove(); clipEl=null; } $('enemyImg').style.visibility=''; }
       airAtk=null; if(e2) e2.style.opacity='';
-      const S2=c.sweep && clipCache[c.sweep]; if(S2 && S2.fr) airBellySweep(en, S2); else airAssault(en, { noOut:true }); };
+      const S2=c.sweep && clipCache[c.sweep]; if(c.sweepImg) airTopSweep(en, c.sweepImg); else if(S2 && S2.fr) airBellySweep(en, S2); else airAssault(en, { noOut:true }); };
     playActionClip('atk', ()=>{ setTimeout(toSweep, tail); }, { hold:true });
-  }, PREP_PULL_MS);
+  }, pullMs);
   /* 撞到的時間＝拉到定位＋準備動作＋滑完＋A 本體撞到的那一刻（有 A 動畫＝腹面上衝的一半；沒有＝程式劃過的一半） */
   const S2=c.sweep && clipCache[c.sweep] && clipCache[c.sweep].fr;
-  return Math.round(PREP_PULL_MS+Tclip+tail+(S2 ? BELLY_SWEEP_MS*BELLY_HIT : AIR_SWEEP_MS*0.5));
+  return Math.round(pullMs+Tclip+tail+(c.sweepImg ? TOP_SWEEP_MS*0.5 : S2 ? BELLY_SWEEP_MS*BELLY_HIT : AIR_SWEEP_MS*0.5));
+}
+/* ══ A 本體：俯視圖快速劃過（ENEMY_ATK 的 `sweepImg`，ver -2787，Ray：「攻擊用 topdown view 那張快速劃過 用程式給點殘影」）══
+   一張靜態俯視圖（頭朝上）從操作盤線底下往上斜衝出畫面頂端（略往機頭那側斜，頭朝行進方向）；後面拖幾張同樣路徑、
+   延遲幾十毫秒、越來越淡的分身＝殘影。衝到一半那一刻撞到玩家，衝出去之後待機那一隻從畫面外飛回（同腹面上衝）。 */
+const TOP_SWEEP_MS=420, TOP_SIZE=1.7, TOP_GHOSTS=[[40,.5],[80,.32],[120,.2],[165,.11]];   // SIZE＝圖高佔上半畫面高的倍數；GHOSTS＝[延遲 ms, 不透明度]
+function airTopSweep(en, src){
+  const top=$('top'), eImg=$('enemyImg'); if(!top || !eImg) return;
+  const W=top.clientWidth, H=top.clientHeight, f=fwdOf(en), h=H*TOP_SIZE;
+  const idle=idleEl || eImg; idle.style.opacity='0';
+  const tilt=f*18, rad=tilt*Math.PI/180, D=(H+h)/Math.cos(rad)+8, vx=Math.sin(rad)*D/2, vy=Math.cos(rad)*D/2;
+  const kf=[{ transform:`translate(${-vx}px, ${vy}px) rotate(${tilt}deg)` },{ transform:`translate(${vx}px, ${-vy}px) rotate(${tilt}deg)` }];
+  const mk=(op)=>{ const im=document.createElement('img'); im.className='en-belly'; im.alt=''; im.src=src;
+    im.style.cssText=`position:absolute;left:50%;top:${(H-h)/2}px;height:${h}px;width:auto;translate:-50% 0;pointer-events:none;z-index:2;opacity:${op};`; eImg.after(im); return im; };
+  const ims=[], as=[];
+  TOP_GHOSTS.slice().reverse().forEach(([d,op])=>{ const g=mk(op); g.style.filter='blur(1.5px)'; ims.push(g); as.push(g.animate(kf, { duration:TOP_SWEEP_MS, delay:d, easing:'cubic-bezier(.3,.05,.7,.95)', fill:'both' })); });
+  const im=mk(1); ims.push(im); const a=im.animate(kf, { duration:TOP_SWEEP_MS, easing:'cubic-bezier(.3,.05,.7,.95)' }); as.push(a);
+  const clean=()=>{ ims.forEach(x=>x.remove()); };
+  const hold={ cancel(){ clean(); idle.style.opacity=''; as.forEach(x=>{ try{ x.cancel(); }catch(_){} }); } }; airAtk=hold;
+  const last=TOP_GHOSTS[TOP_GHOSTS.length-1][0];
+  setTimeout(()=>{ if(airAtk!==hold) return; clean(); airAtk=null; airReturn(en); }, TOP_SWEEP_MS+last);
 }
 const AIR_SWEEP_MS=620;
 /* ══ A 本體：腹面上衝（ENEMY_ATK 的 `sweep`，ver -2550，Ray：「A 動畫出了 mon_centipi_belly_even2_wave_cut，
