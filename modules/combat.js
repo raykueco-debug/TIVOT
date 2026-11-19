@@ -1774,6 +1774,12 @@ function enemyDamage(dmg,isCrit,silent,src){
      浮一個 GUARD。⚠ 連擊／破防值／清盤照常（`tap` 那一支在這之外記帳）——
      那是「打中了但被擋下」，不是「沒點到」；破防值照累積，BR 才開得出來。 */
   if((src||'basic')==='basic' && lsActive) lastStandTap();   // NI 期間每一發普攻都催它回血（ver -1964）
+  /* 閃避型的敵人：反擊也只有 30% 有效（ver -2817，Ray：「反擊也要一樣30%」）——率同卡上 parryBasic；
+     擋下的那一發演閃避＋浮 MISS，有效的演格擋；格擋播放中每一發都有效。 */
+  if(src==='counter' && enemy.hasEvade() && !enemy.parryPlaying() && state.enemyHp>0){
+    if(Math.random() < state.enemyParry){ enemy.enemyEvade('dodge'); if(!silent) floatDmg('MISS', (30+Math.random()*40)+'%', '35%', false, 'guardnum'); return; }
+    enemy.enemyEvade('parry');
+  }
   if((src||'basic')==='basic' && !isCrit && parryNow()){   // 暴擊打穿（ver -2012）
     if(!silent) floatDmg(enemy.hasEvade() ? 'MISS' : 'GUARD', (30+Math.random()*40)+'%', '35%', false, 'guardnum');   // 閃避型：閃掉＝MISS
     return;
