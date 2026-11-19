@@ -1471,6 +1471,25 @@ export function enemyEvade(kind){
   dodgeCur=null; dodgePend=null;
   return startEvade(S, kind);
 }
+/* 飛刀：一把細長的鋼刃（SVG），從手的位置朝鏡頭飛 —— 縮放 0.3→2.4、往畫面中下方散開、最後淡出（約 0.38 秒）。 */
+const KNIFE_SVG='<svg viewBox="0 0 20 100" width="100%" height="100%"><path d="M10 0 L16 62 L10 70 L4 62 Z" fill="#dfe6ee" stroke="#3a3f48" stroke-width="1.6"/><path d="M10 4 L10 66" stroke="#9aa6b4" stroke-width="1.4"/><rect x="5" y="70" width="10" height="5" rx="1" fill="#b48a3c" stroke="#3a2a10" stroke-width="1.2"/><rect x="7.5" y="75" width="5" height="22" rx="2" fill="#2a1e14" stroke="#120c08" stroke-width="1.2"/></svg>';
+function spawnKnives(o, n){
+  const top=$('top'); if(!top) return; const W=top.clientWidth, H=top.clientHeight;
+  const x0=o ? o.x : W*0.7, y0=o ? o.y : H*0.2;
+  for(let k=0;k<n;k++){
+    const d=document.createElement('div'); d.className='fx-knife'; d.innerHTML=KNIFE_SVG;
+    const w=Math.max(10, W*0.035), h=w*5;
+    d.style.cssText='position:absolute;left:'+(x0-w/2)+'px;top:'+(y0-h/2)+'px;width:'+w+'px;height:'+h+'px;z-index:12;pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));';
+    top.appendChild(d);
+    const spread=(k-(n-1)/2), tx=W*0.5+spread*W*0.22-x0, ty=H*0.62+Math.abs(spread)*H*0.05-y0;
+    const ang=Math.atan2(ty,tx)*180/Math.PI+90;   // 刀尖朝飛行方向
+    d.animate([{transform:'translate(0,0) rotate('+ang+'deg) scale(.3)',opacity:1},
+               {transform:'translate('+(tx*0.55)+'px,'+(ty*0.55)+'px) rotate('+ang+'deg) scale(1.2)',opacity:1,offset:.55},
+               {transform:'translate('+(tx*1.15)+'px,'+(ty*1.15)+'px) rotate('+ang+'deg) scale(2.4)',opacity:0}],
+              {duration:380, delay:k*45, easing:'cubic-bezier(.3,.1,.6,1)', fill:'forwards'}).onfinish=()=>d.remove();
+    setTimeout(()=>d.remove(), 900);
+  }
+}
 /* ══ 動作段掛的程式特效（ver -2524）══ `fx:[{frame,type}]`，播到那一格觸發。
    · `rubble` ＝ 瓦礫噴襲（Ray：「振翅下拍到底，碎石從瓦礫堆往鏡頭噴」）：畫面下方中央（瓦礫堆）噴出一把碎石，
      由小變大、往四周散開飛出畫面 —— 讀起來是朝鏡頭砸過來。一張 canvas，約 0.9 秒拆掉。 */
@@ -1483,6 +1502,11 @@ function clipFx(f, el){
       if(hr && r.width) o={ x:r.left-hr.left+f.at[0]*r.width, y:r.top-hr.top+f.at[1]*r.height }; }
     return spawnRubble(o, f.n, f.speed); }
   if(f.type==='violetFlash') return spawnVioletFlash();
+  /* 飛刀（ver -2819，Ray 索菈娜 DM：「飛刀用程式畫」）：從這一格的手（`at`）朝鏡頭擲出 n 把，由小變大、扇形散開、飛出畫面。 */
+  if(f.type==='knives'){ let o=null;
+    if(f.at && el){ const top=$('top'), hr=top && top.getBoundingClientRect(), r=el.getBoundingClientRect();
+      if(hr && r.width) o={ x:r.left-hr.left+f.at[0]*r.width, y:r.top-hr.top+f.at[1]*r.height }; }
+    return spawnKnives(o, f.n||3); }
   if(f.type==='dust'){ const n=f.n||1; for(let k=0;k<n;k++) setTimeout(spawnGroundDust, k*120); return; }   // 地面煙塵（ver -2782，Ray：「用特效加煙塵遮」攻擊接回待機那一下）
   /* 咆哮音波（ver -2784，Ray：背負祭壇者吼叫「要有音波效果，震掉所有格子不計傷」）：從嘴（`at`＝這一格畫面上的比例座標）放出一圈圈音波＋龍吟的衝擊模糊；`wipe`＝震掉整盤換下一盤（同崩岩巨像，不傷敵）。 */
   if(f.type==='roar'){ let o=null;

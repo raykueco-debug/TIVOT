@@ -110,7 +110,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.19-2818';
+export const VERSION = 'ver 2026.11.20-2819';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5903,6 +5903,7 @@ export const ENEMY_MISS = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, windupSe:'se_flame', fx:[{ frame:48, type:'rubble', se:'se_rockimpact' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
+  sorana_si_guard: { dir:'resources/enemy/anim/sorana_guard_throw_v1/', hit:5, fx:[{ frame:5, type:'knives', at:[0.80,0.07], n:3 }] },   // 索菈娜 DM＝擲飛刀（ver -2819，Ray 剪的 np_sorana_throw3_full_cut 12 格，第 5 格加一點揮動殘影；飛刀程式畫）
   mon_relic_candletower: { dir:'resources/enemy/anim/mon_relic_candletower_atk_v5/', hit:9, hitFx:'candletower_claw', noMiss:true },   // 禍魘祭司 D＝同 A（ver -2801，Ray：「點錯扣秒就好 延時同A」）—— noMiss：點錯不借這一支
   mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_atk_v1/', hit:12, hitFx:'reassembled_wave' },   // 心魘 DM（ver -2773）：三手張開放光（偏橘光波＋抽掉一個數字）
   mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_atk_v2/', hit:13, noMiss:true },   // 罪之魔像 D＝同 A、點錯只扣秒（ver -2802，Ray：「罪之魔像的動畫時機跟這隻（禍魘祭司）一樣」；原 delay_v1 不用）
