@@ -460,3 +460,6 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 
 疊法：① 天空層 ② 程式雲 ③ 底圖用 skymask 挖掉天空 ④ 程式水面（watermask 範圍內）。程式雲還沒做之前，①～③ 等於原圖，可以只先接 ④。
 > 11-20 補：`sorana_battle_bg_v3_sky.png` 換成**沒有雲的乾淨天色**（Ray：「遠景不要有不動的雲」）—— 雲全部由程式畫；同名覆蓋，要跳快取版本。
+> 11-20 補：**帆微動**（Ray 點頭交件）—— `anim/enemy/sorana_battle_bg_v3_sail_v1.mp4`（1254×1254、16fps、55 格循環，只有四片帆在動，其餘＝原圖）。
+> 戰鬥上半改成**播這支影片當底圖**（取代靜態的 `sorana_battle_bg_v3.webp`），天空遮罩／天空層／程式雲／程式水面照舊疊（影片裡的天空與水是原圖靜止的，會被遮罩挖掉、被程式水面蓋過）。
+> 參考：帆的範圍 `anim/enemy/sorana_battle_bg_v3_sailmask.png`（白＝帆，不必接）；產生腳本 `tools/anim/bg_layer/sorana_sail.py`。
