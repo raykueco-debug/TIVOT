@@ -110,7 +110,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.19-2795';
+export const VERSION = 'ver 2026.11.19-2796';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5719,7 +5719,7 @@ export const ENEMY_IDLE = {
   mon_relic_bellreacher: 'resources/enemy/anim/mon_relic_bellreacher_idle_v2/',
   mon_relic_bellwalker: 'resources/enemy/anim/mon_relic_bellwalker_idle_v2/',
   mon_relic_candlepenitent: 'resources/enemy/anim/mon_relic_candlepenitent_idle_v2/',
-  mon_relic_candletower: 'resources/enemy/anim/mon_relic_candletower_idle_v2/',
+  mon_relic_candletower: 'resources/enemy/anim/mon_relic_candletower_idle_v3/',   // ver -2796：Wan 重跑（GPT 補真 alpha 的立繪＋motionfix，全身呼吸、頭不仰；48 格 24fps）
   mon_relic_censerlung: 'resources/enemy/anim/mon_relic_censerlung_idle_v2/',
   mon_relic_chalice: 'resources/enemy/anim/mon_relic_chalice_idle_v2/',
   mon_relic_confessional: 'resources/enemy/anim/mon_relic_confessional_idle_v2/',
