@@ -1453,3 +1453,4 @@ when	from	to	reason
 20261119-152701	resources/enemy/mon_serpent_topdown_v2.webp	_recycle/resources/enemy/mon_serpent_topdown_v2.webp	羽蛇俯視換成 Ray 指定的 v3（真正俯視）
 20261119-155518	resources/enemy/fx/serpent_feathers	_recycle/resources/enemy/fx/serpent_feathers	羽蛇羽毛 v1 太卡通（Ray），換 v2
 20261119-185343	resources/enemy/anim/mon_relic_candletower_idle_v2	_recycle/resources/enemy/anim/mon_relic_candletower_idle_v2	祭司待機換 v3（ver -2796）
+20261119-185911	resources/enemy/anim/mon_relic_candletower_atk_v1	_recycle/resources/enemy/anim/mon_relic_candletower_atk_v1	祭司攻擊換 v2（ver -2797）
