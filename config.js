@@ -110,7 +110,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.19-2803';
+export const VERSION = 'ver 2026.11.19-2804';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5748,7 +5748,7 @@ export const ENEMY_IDLE = {
   mon_saint_temperance: 'resources/enemy/anim/mon_saint_temperance_idle_v2/',
   mon_saint_thug: 'resources/enemy/anim/mon_saint_thug_idle_v2/',
   mon_sarcoph_crawler: 'resources/enemy/anim/mon_sarcoph_crawler_idle_v2/',
-  mon_sea_coralman: 'resources/enemy/anim/mon_sea_coralman_idle_v2/',
+  mon_sea_coralman: 'resources/enemy/anim/mon_sea_coralman_idle_v3/',   // ver -2804：720×1080 motionfix 重跑（全身飄＋呼吸、頭不抬；48 格 24fps）
   mon_shinierforest_crows: 'resources/enemy/anim/mon_shinierforest_crows_idle_v2/',
   mon_shinierforest_deernightmare: 'resources/enemy/anim/mon_shinierforest_deernightmare_idle_v2/',
   mon_shinierforest_hog: 'resources/enemy/anim/mon_shinierforest_hog_idle_v2/',
@@ -5860,7 +5860,7 @@ export const ENEMY_ATK = {
   mon_stag_rot_neutral: { dir:'resources/enemy/anim/mon_stag_rot_neutral_atk_v1/', hit:17 },   // 腐鹿骸 角頂（ver -2620，KF 第二輪，30 格）
   mon_shinierforest_deernightmare: { dir:'resources/enemy/anim/mon_shinierforest_deernightmare_atk_v1/', hit:32 },   // 變異樹靈鹿主 仰天咆哮（ver -2620，KF 第二輪，55 格；攻擊＝延時同一支）
   mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_atk_v2/', hit:20, fx:[{ frame:29, type:'dust', n:4 }, { frame:40, type:'dust', n:3 }, { frame:48, type:'dust', n:3 }] },   // ver -2776：新立繪的撲撞（Kling 5s，Ray 剪的 kling_altar_lunge_5s_cut 55 格；第一格對齊立繪大小，第 20 格撲到最近）   // E019 背負祭壇者 撲撞（ver -2517，29 格）
-  mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_atk_v1/', hit:13 },   // E017 魘魔（ver -2503；只有撲出段，結尾停在撲擊姿勢，切回待機蓋在受擊特效下）
+  mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_atk_v2/', hit:13 },   // v2（ver -2804）：864×864 重跑 AB＋BA（補上收回段）、tiger 撲擊 29 格、逐格對齊第 0 格色調； E017 魘魔（ver -2503；只有撲出段，結尾停在撲擊姿勢，切回待機蓋在受擊特效下）
   mon_shinierforest_snake_neutral: { dir:'resources/enemy/anim/mon_shinierforest_snake_atk_v1/', hit:13 },   // E066 水蛇（攻擊＝延時同一支，29 格）
   mon_shinierforest_hog_neutral: { dir:'resources/enemy/anim/mon_shinierforest_hog_atk_v1/', hit:13 },       // E067 山豬（攻擊＝延時同一支，29 格）
   mon_shinierforest_lynx_neutral: { dir:'resources/enemy/anim/mon_shinierforest_lynx_atk_v1/', hit:13 },   // E065 山貓 撲擊（29 格，第 13 格打到）
@@ -5908,7 +5908,7 @@ export const ENEMY_DELAY = {
   mon_shinierforest_lynx_neutral: { dir:'resources/enemy/anim/mon_shinierforest_lynx_delay_v1/', hit:9 },   // E065 山貓 橫向爪擊（32 格，第 9 格打到）
   mon_shinierforest_tiger_neutral: { dir:'resources/enemy/anim/mon_shinierforest_tiger_delay_v3/', hit:9 },   // ver -2519 Ray：爪擊撲出＝他剪的 hswipeAB_cut（10 格）＋ tiger rule 的 hswipeBA   // E068 獨角虎 橫向爪擊（只有收回段，23 格：開頭就是爪掃到底 ⇒ 第 1 格打到）
   mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_delay_v1/', hit:8, near:1.2 },   // -2476 Ray「DM（delay／miss）都用爪擊」：延時／點錯也演同一支撲擊
-  mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_atk_v1/', hit:13, noMiss:true },   // 魘魔 D＝同 A、點錯只扣秒（ver -2802，Ray：「魘魔也是」；原 delay_v1 不用）
+  mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_atk_v2/', hit:13, noMiss:true },   // 魘魔 D＝同 A、點錯只扣秒（ver -2802，Ray：「魘魔也是」；原 delay_v1 不用）
 };
 
 export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ""; }
