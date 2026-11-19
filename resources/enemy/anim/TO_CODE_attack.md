@@ -108,3 +108,7 @@ Ray：「可交件 colossus_A_AB_cut／saint_inspector_A_AB_cut／stag_rot_A_AB_
 - E065：延時＝`hswipeAB2_cut`（10 格）＋`hswipeBA2_cut`（22 格），**打到那一格＝第 9 格**；攻擊＝`pounceAB2_cut`（14 格）＋`pounceBA2_cut`（15 格），**打到那一格＝第 13 格**（皆 0 起算＝撲出段最後一格）。兩段同一生成空間（直式、FIT 0.64）。⚠ `edge_check`：攻擊第 9–10 格雙爪碰生成畫布左右邊；延時無碰邊。⚠⚠ **立繪要換成中立站姿 `resources/enemy/mon_shinierforest_lynx_neutral.webp`**（舊的 `mon_shinierforest_lynx.webp` 是撲擊姿勢）。中立待機已生成（`out/enemy_atk/mon_shinierforest_lynx_neutral_idle`），等 Ray 剪。
 
 - E066／E067：tiger rule 自動剪（`tivot_wan/tiger_cut.py pounce`），**打到那一格＝第 13 格**（0 起算），兩支都 29 格、無碰邊。ENEMY_ATK 與 ENEMY_DELAY 都指同一支。⚠⚠ **立繪要換成中立站姿** `mon_shinierforest_snake_neutral.webp`／`mon_shinierforest_hog_neutral.webp`（舊的在咬／在衝）。⚠ 水蛇第 16–19 格頭縮進身體；山豬收回段兩格帶一小團煙塵（Ray 看過說交）。中立待機在 animechk 等 Ray 剪。
+
+- 索菈娜（敵人）**左閃**（11-19，Ray 剪的 `out/export/np_sorana_dodgeL_test_cut` 6 格＋**倒放**回站姿 → 11 格 24fps，`loop:false`）：`resources/enemy/anim/sorana_guard_dodgeL_v1/`。canvas＝`resources/si/sorana_si_guard.webp`（1024×1535，Ray 指定的待機底圖）。
+  ⚠⚠ **這是新機制，程式端還沒有**：Ray 的設計前提——**玩家開槍（點盤面）時她播閃避**（左閃／右閃／下閃三選一），**打中時改播匕首格擋**；A＝撲斬、D／M＝飛刀（飛刀由程式畫，GPT 圖已去掉刀）。
+  其餘五支（右閃、下閃、格擋、撲斬、飛刀）的關鍵格與過渡模糊格已交（`resources/_originals/enemy/sorana_kf/`），待 Wan。待機（guard 呼吸）還沒跑。
