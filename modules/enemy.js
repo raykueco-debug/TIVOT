@@ -105,7 +105,8 @@ export function stopBattleBgVideo(){ stopBattleBgFx(); if(battleVid){ try{ battl
    底圖＝那張靜態背景，照 #top 的 center/cover 貼；每秒最多 30 格（同 story 的 BG_FX_FRAME_MS），分頁藏起來就不畫。
    收場跟影片同一支 stopBattleBgVideo（combat.stopAll）—— 戰鬥結束不在背景偷跑（鐵律 10）。 */
 let battleFx=null;
-function stopBattleBgFx(){ const o=battleFx; battleFx=null; if(!o) return; cancelAnimationFrame(o.raf); try{ o.cv.remove(); }catch(_){} }
+function stopBattleBgFx(){ const o=battleFx; battleFx=null; if(!o) return; cancelAnimationFrame(o.raf); try{ o.cv.remove(); }catch(_){}
+  if(o.v){ try{ o.v.pause(); o.v.removeAttribute('src'); o.v.load(); o.v.remove(); }catch(_){} } }
 function startBattleBgFx(stem, url){
   const spec=BG_FX[stem]; const top=$('top');
   if(!spec || !top){ stopBattleBgFx(); return false; }
@@ -116,13 +117,24 @@ function startBattleBgFx(stem, url){
   top.style.isolation='isolate'; top.prepend(cv);
   const img=new Image(); img.decoding='async'; img.src=url;
   const o={ cv, ctx:cv.getContext('2d'), img, url, fx:prepFx(spec), raf:0, last:0, t0:performance.now() }; battleFx=o;
+  /* 底圖可以是影片（spec.video，ver -2832 索菈娜帆微動）：有畫面就用影片的這一格當來源（live），還沒載到先用靜態圖。 */
+  if(spec.video){ const v=document.createElement('video'); o.v=v;
+    v.muted=true; v.defaultMuted=true; v.playsInline=true; v.loop=true; v.preload='auto';
+    v.setAttribute('muted',''); v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
+    v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1;';
+    document.body.appendChild(v);
+    v.onloadeddata=()=>{ if(battleFx!==o) return; const p=v.play(); if(p && p.catch) p.catch(()=>{}); };
+    v.onerror=()=>{ if(battleFx!==o) return; try{ v.remove(); }catch(_){} o.v=null; };
+    v.src=spec.video+assetVer(spec.video); }
   const loop=now=>{
     if(battleFx!==o || !cv.isConnected) return;
     o.raf=requestAnimationFrame(loop);
     if(document.hidden || now-o.last<33) return; o.last=now;
     if(o.fx.failed){ stopBattleBgFx(); return; }
-    if(!o.fx.ready || !img.complete || !img.naturalWidth) return;
-    const sw=img.naturalWidth, sh=img.naturalHeight, src=drawFx(o.fx, img, sw, sh, (now-o.t0)/1000, false);
+    if(!o.fx.ready) return;
+    const vd=o.v && o.v.videoWidth && o.v.readyState>=2 ? o.v : null;
+    if(!vd && (!img.complete || !img.naturalWidth)) return;
+    const sw=vd ? vd.videoWidth : img.naturalWidth, sh=vd ? vd.videoHeight : img.naturalHeight, src=drawFx(o.fx, vd||img, sw, sh, (now-o.t0)/1000, !!vd);
     const W=top.clientWidth, H=top.clientHeight; if(!W||!H) return;
     const dpr=Math.min(2, window.devicePixelRatio||1), cw=Math.round(W*dpr), ch=Math.round(H*dpr);
     if(cv.width!==cw || cv.height!==ch){ cv.width=cw; cv.height=ch; }

@@ -72,6 +72,8 @@ def main(check=False):
                 statics.setdefault(m.group(1).lower(), m.group(1))
     best, miss = {}, []
     for dp, dn, fn in os.walk(os.path.join(BG, 'anim')):
+        if norm(dp).rstrip('/').endswith('anim/enemy'):
+            continue   # 戰鬥背景的影片由 script/bg_fx.js 的 video 欄位直接指（ver -2832），不走 bg_anim 的檔名規則
         for f in fn:
             if not f.endswith('.mp4'):
                 continue
