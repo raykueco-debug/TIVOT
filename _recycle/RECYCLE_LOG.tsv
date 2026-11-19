@@ -1469,3 +1469,7 @@ when	from	to	reason
 20261119-213819	resources/enemy/anim/sorana_guard_dodgeL_back_v1	_recycle/resources/enemy/anim/sorana_guard_dodgeL_back_v1.20261119-213819	左閃歸位換 Ray 的 cut_2（v2）
 20261119-214122	resources/enemy/anim/sorana_guard_dodgeR_out_v1	_recycle/resources/enemy/anim/sorana_guard_dodgeR_out_v1	右閃換 Ray 剪的版本（v2）
 20261119-214122	resources/enemy/anim/sorana_guard_dodgeR_back_v1	_recycle/resources/enemy/anim/sorana_guard_dodgeR_back_v1	右閃換 Ray 剪的版本（v2）
+20261119-220949	resources/enemy/anim/sorana_guard_parry_out_v1	_recycle/resources/enemy/anim/sorana_guard_parry_out_v1	格擋換 Ray 剪的單段版（v2）
+20261119-220949	resources/enemy/anim/sorana_guard_parry_back_v1	_recycle/resources/enemy/anim/sorana_guard_parry_back_v1	格擋換 Ray 剪的單段版（v2）
+20261119-221043	resources/enemy/anim/sorana_guard_dodgeD_out_v1	_recycle/resources/enemy/anim/sorana_guard_dodgeD_out_v1	下閃換新 B（半劈腿）Ray 剪的版本（v2）
+20261119-221043	resources/enemy/anim/sorana_guard_dodgeD_back_v1	_recycle/resources/enemy/anim/sorana_guard_dodgeD_back_v1	下閃換新 B（半劈腿）Ray 剪的版本（v2）

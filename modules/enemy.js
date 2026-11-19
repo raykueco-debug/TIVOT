@@ -1347,7 +1347,7 @@ function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; c
   if(kind==='enter') return ENEMY_ENTER[s] || null;   // 點錯：有 M 用 M，沒有就借延時那一支（ver -2524）
   return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[s])||null; }
 function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); if(c && c.sweep) loadClip(c.sweep); if(c && c.sweepImg) (new Image()).src=c.sweepImg; } }
-function preloadDodge(en){ const S=dodgeSpec(en); if(!S) return; for(const seg of [...Object.values(S.dodge||{}), S.parry]) if(seg){ loadClip(seg.out); loadClip(seg.back); } }   // sweep＝A 本體（準備動作之後那一支，-2550）
+function preloadDodge(en){ const S=dodgeSpec(en); if(!S) return; for(const seg of [...Object.values(S.dodge||{}), S.parry]) if(seg){ loadClip(seg.out); if(seg.back) loadClip(seg.back); } }   // sweep＝A 本體（準備動作之後那一支，-2550）
 /* 這隻怪有沒有 M（點錯）動作：點錯播的是延時那一支（ENEMY_DELAY），有它就算有 M（ver -2523）。 */
 /* ══ 只有一支攻擊動畫的怪：延時／點錯一律照攻擊的受擊特效與音效（ver -2678，Ray：「蠕蟲全攻擊受擊跟音效都一樣」「都要一樣」「只有單一攻擊動畫的怪一體適用」）══
    單隻：有 ENEMY_ATK、沒有延時片（點錯沒有自己的片時借的也是延時片）⇒ combat 的 fxKind 把 delay／wrong 讀成 assault（判定只有這一支）。
@@ -1435,8 +1435,10 @@ function dodgeNext(S){
   const k=dodgePend; dodgePend=null;
   if(k){ if(startEvade(S, k)) return; }
   const seg=dodgeCur==='parry' ? S.parry : (S.dodge||{})[dodgeCur]; dodgeCur=null;
-  if(seg) playDodgeDir(seg.back, 0, false, ()=>{ if(dodgePend){ const k=dodgePend; dodgePend=null; startEvade(S, k); } });   // 歸位途中又開槍：歸位播完立刻再閃
+  if(seg && seg.back) playDodgeDir(seg.back, 0, false, ()=>{ if(dodgePend){ const k=dodgePend; dodgePend=null; startEvade(S, k); } });   // 歸位途中又開槍：歸位播完立刻再閃
+  else idleBack();   // 這個動作沒有 back（一段到底，例：格擋 v2）：直接回待機
 }
+function idleBack(){ const eImg=$('enemyImg'); if(idleEl && idleFr){ placeIdle(); runIdle(); } else { if(clipEl){ clipEl.remove(); clipEl=null; } if(eImg) eImg.style.visibility=''; } }
 function startEvade(S, kind){
   let key, seg;
   if(kind==='parry'){ key='parry'; seg=S.parry; }
