@@ -110,7 +110,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.19-2817';
+export const VERSION = 'ver 2026.11.19-2818';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5829,6 +5829,7 @@ export const ENEMY_IDLE = {
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
+  sorana_si_guard: { dir:'resources/enemy/anim/sorana_guard_atk_v1/', hit:1, near:1.35, nearIn:120 },   // 索菈娜 A＝撲斬（ver -2818，Ray 剪的 np_sorana_slash_full_cut 10 格；「要前撲位移 幀不要太高」→ 16fps、打到那一格撲近到 1.35）
   mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_pounce_v1/', hit:7, hitFx:'reassembled_claw' },   // 心魘 A（ver -2773）：撲擊＋單爪
   mon_relic_candletower: { dir:'resources/enemy/anim/mon_relic_candletower_atk_v5/', hit:9, hitFx:'candletower_claw' },   // 禍魘祭司（北泊）A：tiger rule 爪擊 AB＋BA（32 格），打到＝AB 最後一格（ver -2732）；v2（ver -2797，Ray：「A的最後一格破圖換掉、色調調成跟I一樣」）：逐格 LAB 對齊待機第 0 格，最後一格換成待機第 0 格；v3（ver -2798）：第 0 格也換成待機第 0 格、刪原第 30 格；v4（ver -2799，Ray：「A最後再抽一格」）：再刪倒數第二格；v5（ver -2800，Ray：「攻擊動畫會糊」→「交件」）：用補好 alpha 的立繪 864×864 重跑 AB＋BA、tiger 剪法、逐格對齊第 0 格色調
   mon_relic_candlepenitent: { dir:'resources/enemy/anim/mon_relic_candlepenitent_atk_v2/', hit:13 },   // v2（ver -2803）：864×864 重跑 AB＋BA、tiger 撲擊 29 格、逐格對齊第 0 格色調； 罪之魔像（北泊）A：tiger rule 撲擊 AB＋BA（29 格），打到＝AB 最後一格（ver -2732）
