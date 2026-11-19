@@ -115,5 +115,5 @@ Ray：「可交件 colossus_A_AB_cut／saint_inspector_A_AB_cut／stag_rot_A_AB_
   canvas＝`resources/si/sorana_si_guard.webp`（1024×1535，Ray 指定的待機底圖），24fps，`loop:false`。
   ⚠⚠ **切換邏輯（Ray 11-19）**：玩家開槍 → 播一支閃出（左／右／下三選一）並停在閃避姿勢；
     **玩家沒有持續攻擊 → 播那一支的歸位回待機；持續攻擊 → 直接換另一個閃避動作的閃出**（不先歸位）。
-  ✔ **ver -2805 已接**（→，測試戰 ）：右閃／下閃／格擋也已交（，照左閃的剪法），八段同一個 box。目前**每一槍都閃**，格擋的觸發時機待 Ray 定。原本的說明：Ray 的設計前提——**玩家開槍（點盤面）時她播閃避**（左閃／右閃／下閃三選一），**打中時改播匕首格擋**；A＝撲斬、D／M＝飛刀（飛刀由程式畫，GPT 圖已去掉刀）。
+  ✔ **ver -2805 已接**（`config.ENEMY_DODGE` → `enemy.enemyEvade`，測試戰 `np_test_sorana`）：右閃／下閃／格擋也已交（`sorana_guard_{dodgeR,dodgeD,parry}_{out,back}_v1`，照左閃的剪法），八段同一個 box。目前**每一槍都閃**，格擋的觸發時機待 Ray 定。原本的說明：Ray 的設計前提——**玩家開槍（點盤面）時她播閃避**（左閃／右閃／下閃三選一），**打中時改播匕首格擋**；A＝撲斬、D／M＝飛刀（飛刀由程式畫，GPT 圖已去掉刀）。
   其餘五支（右閃、下閃、格擋、撲斬、飛刀）的關鍵格與過渡模糊格已交（`resources/_originals/enemy/sorana_kf/`），待 Wan。待機（guard 呼吸）還沒跑。
