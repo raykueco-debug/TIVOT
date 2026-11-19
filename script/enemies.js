@@ -5809,6 +5809,6 @@ ENEMIES.test_sorana = Object.assign({}, ENEMIES.man_sorana, {
   image:'enemy_sorana_guard',
   parryBasic:0.7,
   hitFx:{ delay:'dagger', wrong:'dagger', assault:'dagger' },   // A＝撲斬：匕首刀光＋匕首音（ver -2818）
-  bg:'../enemy/sorana_battle_bg', bgLock:true,   // 原本索拉娜戰（man_sorana）那張圖請 GPT 拿掉人物、只留甲板背景（ver -2820）   // 普攻有效率 30%（Ray 11-19）：擋下的 70% 演閃避、有效的演格擋
+  bg:'../enemy/sorana_battle_bg_v2', bgLock:true,   // 原本索拉娜戰（man_sorana）那張圖請 GPT 拿掉人物、只留甲板背景（ver -2820）   // 普攻有效率 30%（Ray 11-19）：擋下的 70% 演閃避、有效的演格擋
   fit:{ mode:'contain', pos:'center bottom' },
 });

@@ -1481,11 +1481,11 @@ function spawnKnives(o, n){
     const rot=Math.atan2(y1-y0, x1-x0)*180/Math.PI-90, wob=Math.random()*16-8;
     const el=document.createElement('img'); el.src=asset('vfx_dagger'); el.className='dagger-fly'; el.alt='';
     document.body.appendChild(el);
-    const dur=DAGGER_MS+90, delay=k*55;
+    const dur=DAGGER_MS, delay=k*60, scl=(0.85+Math.random()*0.35).toFixed(2);   // 同共鬥：直線等速、尺寸不變、150ms 一閃（ver -2821，Ray：「像共鬥那樣」）
     try{ el.animate([
-      { transform:'translate('+x0+'px,'+y0+'px) rotate('+(rot+wob)+'deg) scale(0.45)', opacity:0.9 },
-      { transform:'translate('+x1+'px,'+y1+'px) rotate('+(rot+wob*0.3)+'deg) scale(1.7)', opacity:1 },
-    ], { duration:dur, delay, easing:'cubic-bezier(.4,0,.9,.6)', fill:'both' }); }catch(_){}
+      { transform:'translate('+x0+'px,'+y0+'px) rotate('+(rot+wob)+'deg) scale('+scl+')', opacity:0.85 },
+      { transform:'translate('+x1+'px,'+y1+'px) rotate('+(rot+wob*0.25)+'deg) scale('+scl+')', opacity:1 },
+    ], { duration:dur, delay, easing:'linear', fill:'both' }); }catch(_){}
     setTimeout(()=>{ if(el.parentNode) el.remove();
       const hit=document.createElement('div'); hit.className='dagger-hit'; hit.style.left=x1+'px'; hit.style.top=y1+'px';
       document.body.appendChild(hit); setTimeout(()=>{ if(hit.parentNode) hit.remove(); }, 320); }, dur+delay);
