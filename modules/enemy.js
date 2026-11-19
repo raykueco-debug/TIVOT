@@ -2032,14 +2032,14 @@ function airPrepAssault(en, c, L){
 /* ══ A 本體：俯視圖快速劃過（ENEMY_ATK 的 `sweepImg`，ver -2787／-2788，Ray：「攻擊用 topdown view 那張快速劃過 用程式給點殘影」）══
    一張靜態俯視圖（頭朝機頭那側＝跟側面立繪同向）從操作盤線底下、機尾那側斜衝到畫面另一側上方出去，圖轉到頭對準行進方向；
    後面拖幾張同路徑、延遲幾十毫秒、越來越淡的分身＝殘影。衝到一半撞到玩家，衝出去之後待機那一隻從畫面外飛回（同腹面上衝）。 */
-const TOP_SWEEP_MS=420, TOP_SIZE=1.25, TOP_ANG=28, TOP_GHOSTS=[[40,.5],[80,.32],[120,.2],[165,.11]];   // SIZE＝圖寬佔上半畫面寬的倍數；ANG＝行進方向往上仰幾度；GHOSTS＝[延遲 ms, 不透明度]
+const TOP_SWEEP_MS=420, TOP_SIZE=1.25, TOP_GHOSTS=[[40,.5],[80,.32],[120,.2],[165,.11]];   // SIZE＝圖寬佔上半畫面寬的倍數；GHOSTS＝[延遲 ms, 不透明度]
 function airTopSweep(en, src){
   const top=$('top'), eImg=$('enemyImg'); if(!top || !eImg) return;
-  const W=top.clientWidth, H=top.clientHeight, f=fwdOf(en), w=W*TOP_SIZE;
+  const W=top.clientWidth, H=top.clientHeight, w=W*TOP_SIZE;
   const idle=idleEl || eImg; idle.style.opacity='0';
-  const rad=TOP_ANG*Math.PI/180, ux=f*Math.cos(rad), uy=-Math.sin(rad);   // 行進方向（頭朝的那側、往上仰）
+  const ang=Math.random()*360, rad=ang*Math.PI/180, ux=Math.cos(rad), uy=Math.sin(rad);   // -2791 Ray：「劃過的角度隨機」—— 每一次隨機一個行進方向（全 360°）
   const D=Math.hypot(W,H)+w*1.3, sx=W/2-ux*D/2, sy=H/2-uy*D/2+H*0.15, ex=W/2+ux*D/2, ey=H/2+uy*D/2+H*0.15;
-  const rot=-f*TOP_ANG, flip=f<0 ? 1 : -1;   // 原圖頭朝左：f=-1 順時針仰 ANG；f=+1 先鏡射
+  const rot=ang-180, flip=1;   // 原圖頭朝左（＝180°）：轉到頭對準行進方向；俯視圖左右對稱，不必鏡射
   const pos=(x,y)=>`translate(${x-W/2}px, ${y-H/2}px) rotate(${rot}deg) scaleX(${flip})`;
   const kf=[{ transform:pos(sx,sy) },{ transform:pos(ex,ey) }];
   const mk=(op)=>{ const im=document.createElement('img'); im.className='en-belly'; im.alt=''; im.src=src;
