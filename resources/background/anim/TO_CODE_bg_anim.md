@@ -450,3 +450,12 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 羅賽爾廢城　門庭 | `dunmor/dunmor_gatecourt.webp` | `anim/dunmor/dunmor_gatecourt_sky.png`＋`_skymask.png` | 無 |
 | 羅賽爾廢城　西壕 | `dunmor/dunmor_ditchw.webp` | `anim/dunmor/dunmor_ditchW_sky.png`＋`_skymask.png` | `anim/dunmor/dunmor_ditchW_watermask.png` |
 | 羅賽爾廢城　湖岸 | `dunmor/dunmor_lakeshore.webp` | `anim/dunmor/dunmor_lakeshore_sky.png`＋`_skymask.png` | `anim/dunmor/dunmor_lakeshore_base_watermask.png` |
+
+> 11-20 **戰鬥背景：索菈娜（`test_sorana` 的 `bg:'../enemy/sorana_battle_bg_v3'`）**—— 照「水由程式畫＋天空拆層、雲由程式動」，**沒有影片層**（船、甲板、帆照原圖不動；帆要不要微動等 Ray）。
+> 三張都與底圖同尺寸（1254×1254），**跟底圖用同一個 cover／裁切變換貼**，不然遮罩會對不上。中央甲板（索菈娜站的地方）兩張遮罩都沒碰到。
+
+| 格 | 底圖 | 天空 | 水面遮罩 |
+|---|---|---|---|
+| 戰鬥　索菈娜（湖上甲板） | `resources/enemy/sorana_battle_bg_v3.webp`（靜態） | `anim/enemy/sorana_battle_bg_v3_sky.png`（只有天空，RGBA）＋`anim/enemy/sorana_battle_bg_v3_skymask.png`（白＝天空，已羽化） | `anim/enemy/sorana_battle_bg_v3_watermask.png`（白＝湖面，含欄杆縫裡的水；用上面「程式水面」畫法） |
+
+疊法：① 天空層 ② 程式雲 ③ 底圖用 skymask 挖掉天空 ④ 程式水面（watermask 範圍內）。程式雲還沒做之前，①～③ 等於原圖，可以只先接 ④。
