@@ -1367,7 +1367,7 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
   if(groupCard && groupCard.group && (kind==='delay' || kind==='miss')) return groupAction(kind);   // 群戰：逐人的 D／M（ver -2623）
   const c=clipFor(kind), L=c && clipCache[c.dir]; if(!L || !L.fr) return 0;
   if(dodgePlaying==='parry') return 0;   // 格擋播完之前不切別的動畫（傷害照常、不演）
-  dodgeCur=null; dodgeBusy=false; dodgePend=null; dodgePlaying=null;   // 攻擊片接手：閃避狀態作廢（從待機重新起）
+  if(dodgePlaying||dodgeCur) resetShift(); dodgeCur=null; dodgeBusy=false; dodgePend=null; dodgePlaying=null;   // 攻擊片接手：閃避狀態作廢（從待機重新起）
   const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, L.j); if(!r) return 0;
   clearTimeout(clipT); clearInterval(idleT); idleT=0;
   let el=idleEl; if(!el){ if(!clipEl){ clipEl=document.createElement('img'); clipEl.className='en-idle'; clipEl.alt=''; eImg.after(clipEl); } el=clipEl; }
@@ -1412,7 +1412,7 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
    · 攻擊／延時片接手時（playActionClip）整個狀態作廢。 */
 let dodgeCur=null, dodgeBusy=false, dodgePlaying=null;
 function dodgeSpec(en){ en=en||curCard(); return (en && !en.group) ? (ENEMY_DODGE[imgStem(en)]||null) : null; }
-function playDodgeDir(dir, from, hold, onDone){
+function playDodgeDir(dir, from, hold, onDone, shift){   // shift：這一段播完時人要在的橫向位移（#top 寬的比例；左負右正，0＝回原位）
   const L=clipCache[dir]; if(!L || !L.fr) return false;
   const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, L.j); if(!r) return false;
   clearTimeout(clipT); clearInterval(idleT); idleT=0;
@@ -1420,6 +1420,9 @@ function playDodgeDir(dir, from, hold, onDone){
   eImg.style.visibility='hidden';
   el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.width=r.width+'px'; el.style.height=r.height+'px';
   const N=L.fr.length, dt=1000/(L.j.fps||24); let i=Math.min(from|0, N-1); el.src=L.fr[i].src; if(el===clipEl) applyFar();
+  if(shift!=null){   // 左右閃的位移（ver -2811，Ray：「左右閃要有位移」）：整段播放期間平滑滑到目標位置
+    const top=$('top'), px=(top ? top.clientWidth : 0)*shift, dur=Math.max(1,(N-i))*dt;
+    el.style.transition='translate '+Math.round(dur)+'ms cubic-bezier(.2,.8,.3,1)'; el.style.translate=px.toFixed(1)+'px 0'; }
   dodgeBusy=true;
   const step=()=>{ i++;
     if(i<N){ el.src=L.fr[i].src; clipT=setTimeout(step, dt); return; }
@@ -1436,9 +1439,10 @@ function dodgeNext(S){
   const k=dodgePend; dodgePend=null;
   if(k){ if(startEvade(S, k)) return; }
   const seg=dodgeCur==='parry' ? S.parry : (S.dodge||{})[dodgeCur]; dodgeCur=null;
-  if(seg && seg.back) playDodgeDir(seg.back, 0, false, ()=>{ if(dodgePend){ const k=dodgePend; dodgePend=null; startEvade(S, k); } });   // 歸位途中又開槍：歸位播完立刻再閃
-  else idleBack();   // 這個動作沒有 back（一段到底，例：格擋 v2）：直接回待機
+  if(seg && seg.back) playDodgeDir(seg.back, 0, false, ()=>{ if(dodgePend){ const k=dodgePend; dodgePend=null; startEvade(S, k); } }, 0);   // 歸位途中又開槍：歸位播完立刻再閃
+  else { idleBack(); resetShift(); }   // 這個動作沒有 back（一段到底，例：格擋 v2）：直接回待機
 }
+function resetShift(){ for(const e of [idleEl, clipEl]) if(e){ e.style.transition='translate 200ms ease-out'; e.style.translate=''; } }
 function idleBack(){ const eImg=$('enemyImg'); if(idleEl && idleFr){ placeIdle(); runIdle(); } else { if(clipEl){ clipEl.remove(); clipEl=null; } if(eImg) eImg.style.visibility=''; } }
 function startEvade(S, kind){
   let key, seg;
@@ -1446,7 +1450,7 @@ function startEvade(S, kind){
   else { const ks=Object.keys(S.dodge||{}).filter(k=>k!==dodgeCur); if(!ks.length) return false; key=ks[(Math.random()*ks.length)|0]; seg=S.dodge[key]; }
   if(!seg) return false;
   dodgePlaying=key;
-  const ok=playDodgeDir(seg.out, dodgeCur ? (seg.chainFrom!=null ? seg.chainFrom : (S.chainFrom||3)) : 0, true, ()=>{ dodgePlaying=null; dodgeCur=key; dodgeNext(S); });
+  const ok=playDodgeDir(seg.out, dodgeCur ? (seg.chainFrom!=null ? seg.chainFrom : (S.chainFrom||3)) : 0, true, ()=>{ dodgePlaying=null; dodgeCur=key; dodgeNext(S); }, seg.shift||0);
   if(!ok) dodgePlaying=null;
   return ok;
 }
