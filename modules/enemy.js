@@ -1442,7 +1442,7 @@ function startEvade(S, kind){
   if(kind==='parry'){ key='parry'; seg=S.parry; }
   else { const ks=Object.keys(S.dodge||{}).filter(k=>k!==dodgeCur); if(!ks.length) return false; key=ks[(Math.random()*ks.length)|0]; seg=S.dodge[key]; }
   if(!seg) return false;
-  return playDodgeDir(seg.out, dodgeCur ? (S.chainFrom||3) : 0, true, ()=>{ dodgeCur=key; dodgeNext(S); });
+  return playDodgeDir(seg.out, dodgeCur ? (seg.chainFrom!=null ? seg.chainFrom : (S.chainFrom||3)) : 0, true, ()=>{ dodgeCur=key; dodgeNext(S); });
 }
 /* kind：'dodge'（三種閃避擇一，不重複上一個）／'parry'（格擋）。回傳有沒有演。 */
 export function enemyEvade(kind){
