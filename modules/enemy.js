@@ -2732,14 +2732,19 @@ const notLast=(arr, kind)=>{ if(kind!=='atk' || arr.length<2) return arr;
 const SUB_ORDER={ atk:['_atk','_dly','_mis'], delay:['_dly','_mis','_atk'], miss:['_mis','_dly','_atk'] };
 const memberStanding=im=>!im.classList.contains('eg-down') && !im.classList.contains('eg-leaving');
 function memberSubClip(im, kind){ for(const k of SUB_ORDER[kind]){ const c=im[k]; if(c && c.spec) return c; } return null; }
+/* ══ 輪流出手（ver -2785，Ray：「群戰怪不分 ADM 全部輪流攻擊」）══ 取代 -2649 的「本職優先、遞補」：
+   不管這一下是攻擊、延時還是點錯，都照**隊伍順序輪下一隻**（還站著的），由牠演自己手上那一個動作的片
+   （沒有那一支就演最接近的，SUB_ORDER）。輪到的那隻正在演別的 ⇒ 往後找下一隻空著的；全都在忙 ⇒ 這一下不演（受擊照舊，busyOwnerFx）。
+   · 這一組的第一擊仍由寫了 `first:true` 的那隻先出手（-2652）；`lastAtkIm` 現在記的是「上一個出手的」（不分動作）。 */
 function pickGroupActor(g, kind){
-  const all=[...g.querySelectorAll('.eg-guard')].filter(memberStanding), own=im=>{ const c=memberClipOf(im, kind); return !!(c && c.spec); };
-  const owners=all.filter(own);
-  if(owners.length){ const free=owners.filter(memberLive); if(!free.length) return null;
-    const pool=notLast(free, kind), im=pool[(Math.random()*pool.length)|0]; return { im, clip:memberClipOf(im, kind) }; }
-  const subs=all.filter(im=>memberLive(im) && memberSubClip(im, kind)); if(!subs.length) return null;
-  const plain=subs.filter(im=>!memberSubClip(im, kind).spec.issen), pool=notLast((kind!=='atk' && plain.length) ? plain : subs, kind);
-  const im=pool[(Math.random()*pool.length)|0]; return { im, clip:memberSubClip(im, kind) };
+  const all=[...g.querySelectorAll('.eg-guard')].filter(memberStanding), able=im=>!!memberSubClip(im, kind);
+  const clipOf=im=>{ const c=memberClipOf(im, kind); return (c && c.spec) ? c : memberSubClip(im, kind); };
+  if(!all.some(able)) return null;
+  if(!lastAtkIm){ const f=all.find(im=>memberLive(im) && im._atk && im._atk.spec && im._atk.spec.first && able(im)); if(f) return { im:f, clip:clipOf(f) }; }
+  const i0=lastAtkIm ? all.indexOf(lastAtkIm) : -1;
+  for(let k=1;k<=all.length;k++){ const im=all[(Math.max(i0,-1)+k+all.length)%all.length];
+    if(able(im) && memberLive(im)) return { im, clip:clipOf(im) }; }
+  return null;
 }
 /* 延時／點錯（playActionClip 從這裡分流給群戰，ver -2623） */
 /* 這一下沒有人能演（本職都在演別的）：受擊照樣用本職那一隻的那一套（ver -2682，Ray：「一體適用啊」）——
@@ -2751,7 +2756,7 @@ function busyOwnerFx(g, kind){
 }
 function groupAction(kind){
   const g=$('enemyGroup'); if(!g || !groupCard) return 0;
-  const p=pickGroupActor(g, kind); if(p) return memberActOnce(g, p.im, p.clip);
+  const p=pickGroupActor(g, kind); if(p){ lastAtkIm=p.im; return memberActOnce(g, p.im, p.clip); }
   busyOwnerFx(g, kind); return 0;
 }
 function groupAttack(){
