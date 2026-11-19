@@ -1449,3 +1449,4 @@ when	from	to	reason
 20261119-005417	resources/enemy/anim/mon_beast_altar_idle_v2	_recycle/resources/enemy/anim/mon_beast_altar_idle_v2.20261119-005417	待機改用 4x-UltraSharp 放大 2 倍版（Ray：把 idle 的畫質拉平）
 20261119-005520	resources/enemy/anim/mon_beast_altar_roar_v1	_recycle/resources/enemy/anim/mon_beast_altar_roar_v1	咆哮改用 4x-UltraSharp 放大 2 倍版（畫質跟攻擊、待機拉平）
 20261119-010534	resources/enemy/anim/mon_beast_altar_idle_v2	_recycle/resources/enemy/anim/mon_beast_altar_idle_v2.20261119-010534	待機清晰度降到跟攻擊一樣前的版本（Ray：把 I 的模糊度改成跟 A 一樣看看）
+20261119-141528	resources/enemy/mon_serpent_topdown.webp	_recycle/resources/enemy/mon_serpent_topdown.webp	ver -2788 換成 Ray 昨天定稿的羽蛇俯視圖（這張是飛行地圖舊圖借用）

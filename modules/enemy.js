@@ -2008,12 +2008,14 @@ function airPrepAssault(en, c, L){
   const dy=sl ? 0 : Math.max(0, Math.round(tr.bottom - boxBottom + H*0.04));
   [].concat(en.assaultSe || 'se_enemy_dragonroar').forEach(k=>playEntranceSe(k));   // assaultSe 可寫陣列（ver -2768，羽蛇：叫聲＋劃破空氣）
   const busy={ dead:false, freeze:true, a:[], cancel(){ this.dead=true; this.a.forEach(x=>{ try{ x.cancel(); }catch(_){} }); } }; airAtk=busy;   // 準備動作期間佔住 airAtk（換怪／打死時 stopAirDrift 會 cancel）
-  const ry=sl && sl.rise ? -Math.round(H*sl.rise) : 0, pullMs=sl && sl.rise ? (sl.riseMs||320) : PREP_PULL_MS;   /* `slide.rise`（ver -2787，Ray：「先往上升一點點再轉身下潛」）：先往上浮 H×rise 再播 */
-  busy.a.push(el0.animate([{ transform:'none' },{ transform:`translateY(${dy+ry}px)` }], { duration:pullMs, easing:'cubic-bezier(.2,.7,.3,1)', fill:'forwards' }));
+  /* 上浮方向＝下潛的反方向（ver -2788，Ray：「上拉要跟下降反方向」）：沿下潛向量倒退 H×rise 的距離 */
+  const dvx=sl ? fwdOf(en)*top.clientWidth*(sl.dx||0.6) : 0, dvy=sl ? H*(sl.dy||1.1) : 1, dl=Math.hypot(dvx,dvy)||1;
+  const rr=sl && sl.rise ? H*sl.rise : 0, rx=-Math.round(dvx/dl*rr), ry=-Math.round(dvy/dl*rr), pullMs=sl && sl.rise ? (sl.riseMs||320) : PREP_PULL_MS;   /* `slide.rise`（ver -2787，Ray：「先往上升一點點再轉身下潛」）：先往上浮 H×rise 再播 */
+  busy.a.push(el0.animate([{ transform:'none' },{ transform:`translate(${rx}px, ${dy+ry}px)` }], { duration:pullMs, easing:'cubic-bezier(.2,.7,.3,1)', fill:'forwards' }));
   setTimeout(()=>{ if(busy.dead || airAtk!==busy) return;
     setTimeout(()=>{ if(busy.dead || airAtk!==busy) return; const e2=idleEl || clipEl; if(!e2) return;
       if(sl){ const f=fwdOf(en), W=top.clientWidth; e2.style.transformOrigin='50% 50%';
-        busy.a.push(e2.animate([{ transform:`translateY(${ry}px)` },{ transform:`translate(${f*W*(sl.dx||0.6)}px, ${ry+H*(sl.dy||1.1)}px) scale(${sl.scale||1.3})` }], { duration:slideMs, easing:'cubic-bezier(.4,0,.85,.6)', fill:'forwards' })); return; }
+        busy.a.push(e2.animate([{ transform:`translate(${rx}px, ${ry}px)` },{ transform:`translate(${rx+f*W*(sl.dx||0.6)}px, ${ry+H*(sl.dy||1.1)}px) scale(${sl.scale||1.3})` }], { duration:slideMs, easing:'cubic-bezier(.4,0,.85,.6)', fill:'forwards' })); return; }
       busy.a.push(e2.animate([{ transform:`translateY(${dy}px)` },{ transform:`translateY(${dy+H*1.25}px)` }], { duration:slideMs, easing:'cubic-bezier(.35,0,.9,.55)', fill:'forwards' })); }, tSlide);
     const toSweep=()=>{ if(busy.dead || airAtk!==busy) return;
       const e2=idleEl || clipEl; if(e2) e2.style.opacity='0';
@@ -2027,27 +2029,29 @@ function airPrepAssault(en, c, L){
   const S2=c.sweep && clipCache[c.sweep] && clipCache[c.sweep].fr;
   return Math.round(pullMs+Tclip+tail+(c.sweepImg ? TOP_SWEEP_MS*0.5 : S2 ? BELLY_SWEEP_MS*BELLY_HIT : AIR_SWEEP_MS*0.5));
 }
-/* ══ A 本體：俯視圖快速劃過（ENEMY_ATK 的 `sweepImg`，ver -2787，Ray：「攻擊用 topdown view 那張快速劃過 用程式給點殘影」）══
-   一張靜態俯視圖（頭朝上）從操作盤線底下往上斜衝出畫面頂端（略往機頭那側斜，頭朝行進方向）；後面拖幾張同樣路徑、
-   延遲幾十毫秒、越來越淡的分身＝殘影。衝到一半那一刻撞到玩家，衝出去之後待機那一隻從畫面外飛回（同腹面上衝）。 */
-const TOP_SWEEP_MS=420, TOP_SIZE=1.7, TOP_GHOSTS=[[40,.5],[80,.32],[120,.2],[165,.11]];   // SIZE＝圖高佔上半畫面高的倍數；GHOSTS＝[延遲 ms, 不透明度]
+/* ══ A 本體：俯視圖快速劃過（ENEMY_ATK 的 `sweepImg`，ver -2787／-2788，Ray：「攻擊用 topdown view 那張快速劃過 用程式給點殘影」）══
+   一張靜態俯視圖（頭朝機頭那側＝跟側面立繪同向）從操作盤線底下、機尾那側斜衝到畫面另一側上方出去，圖轉到頭對準行進方向；
+   後面拖幾張同路徑、延遲幾十毫秒、越來越淡的分身＝殘影。衝到一半撞到玩家，衝出去之後待機那一隻從畫面外飛回（同腹面上衝）。 */
+const TOP_SWEEP_MS=420, TOP_SIZE=1.25, TOP_ANG=28, TOP_GHOSTS=[[40,.5],[80,.32],[120,.2],[165,.11]];   // SIZE＝圖寬佔上半畫面寬的倍數；ANG＝行進方向往上仰幾度；GHOSTS＝[延遲 ms, 不透明度]
 function airTopSweep(en, src){
   const top=$('top'), eImg=$('enemyImg'); if(!top || !eImg) return;
-  const W=top.clientWidth, H=top.clientHeight, f=fwdOf(en), h=H*TOP_SIZE;
+  const W=top.clientWidth, H=top.clientHeight, f=fwdOf(en), w=W*TOP_SIZE;
   const idle=idleEl || eImg; idle.style.opacity='0';
-  const tilt=f*18, rad=tilt*Math.PI/180, D=(H+h)/Math.cos(rad)+8, vx=Math.sin(rad)*D/2, vy=Math.cos(rad)*D/2;
-  const kf=[{ transform:`translate(${-vx}px, ${vy}px) rotate(${tilt}deg)` },{ transform:`translate(${vx}px, ${-vy}px) rotate(${tilt}deg)` }];
+  const rad=TOP_ANG*Math.PI/180, ux=f*Math.cos(rad), uy=-Math.sin(rad);   // 行進方向（頭朝的那側、往上仰）
+  const D=Math.hypot(W,H)+w*1.3, sx=W/2-ux*D/2, sy=H/2-uy*D/2+H*0.15, ex=W/2+ux*D/2, ey=H/2+uy*D/2+H*0.15;
+  const rot=-f*TOP_ANG, flip=f<0 ? 1 : -1;   // 原圖頭朝左：f=-1 順時針仰 ANG；f=+1 先鏡射
+  const pos=(x,y)=>`translate(${x-W/2}px, ${y-H/2}px) rotate(${rot}deg) scaleX(${flip})`;
+  const kf=[{ transform:pos(sx,sy) },{ transform:pos(ex,ey) }];
   const mk=(op)=>{ const im=document.createElement('img'); im.className='en-belly'; im.alt=''; im.src=src;
-    im.style.cssText=`position:absolute;left:50%;top:${(H-h)/2}px;height:${h}px;width:auto;translate:-50% 0;pointer-events:none;z-index:2;opacity:${op};`; eImg.after(im); return im; };
-  const ims=[], as=[];
-  TOP_GHOSTS.slice().reverse().forEach(([d,op])=>{ const g=mk(op); g.style.filter='blur(1.5px)'; ims.push(g); as.push(g.animate(kf, { duration:TOP_SWEEP_MS, delay:d, easing:'cubic-bezier(.3,.05,.7,.95)', fill:'both' })); });
-  const im=mk(1); ims.push(im); const a=im.animate(kf, { duration:TOP_SWEEP_MS, easing:'cubic-bezier(.3,.05,.7,.95)' }); as.push(a);
+    im.style.cssText=`position:absolute;left:${(W-w)/2}px;top:0;width:${w}px;height:auto;translate:0 ${H/2}px;margin-top:${-w*0.32}px;pointer-events:none;z-index:${op<1?2:3};opacity:${op};`; eImg.after(im); return im; };
+  const ims=[], as=[], ease='cubic-bezier(.3,.05,.7,.95)';
+  TOP_GHOSTS.slice().reverse().forEach(([d,op])=>{ const g=mk(op); g.style.filter='blur(1.5px)'; ims.push(g); as.push(g.animate(kf, { duration:TOP_SWEEP_MS, delay:d, easing:ease, fill:'both' })); });
+  const im=mk(1); ims.push(im); as.push(im.animate(kf, { duration:TOP_SWEEP_MS, easing:ease, fill:'both' }));
   const clean=()=>{ ims.forEach(x=>x.remove()); };
   const hold={ cancel(){ clean(); idle.style.opacity=''; as.forEach(x=>{ try{ x.cancel(); }catch(_){} }); } }; airAtk=hold;
   const last=TOP_GHOSTS[TOP_GHOSTS.length-1][0];
   setTimeout(()=>{ if(airAtk!==hold) return; clean(); airAtk=null; airReturn(en); }, TOP_SWEEP_MS+last);
 }
-const AIR_SWEEP_MS=620;
 /* ══ A 本體：腹面上衝（ENEMY_ATK 的 `sweep`，ver -2550，Ray：「A 動畫出了 mon_centipi_belly_even2_wave_cut，
    讓蜈蚣從畫面下方、放大、快速上平移、略斜」）══ 腹面 loop（腳一波一波抽）照 fps 播，同時整張放大從操作盤線底下
    往上衝出畫面頂端、略往機頭那側斜；衝到 BELLY_HIT 那一刻撞到玩家。衝出去之後待機的那一隻從機尾那側畫面外飛回定位。 */
