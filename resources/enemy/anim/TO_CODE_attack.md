@@ -18,7 +18,7 @@ KF Ray：「都過」；剪片 Ray 給的 6 支 `faceless_{atk,miss,delay}_{A_AB
   舊的 `saint_ug_ci.jpg` 是 CI 構圖（沒有 alpha），**亂入者 `intruderEnemy` 也指它** —— 亂入者要不要跟著換請問 Ray，這一條只換 `faceless`。
 - 打到＝AB 段最後一格（爪劈到底／拳到頂／拳到鏡頭前）。受擊特效建議：A＝斜劈爪痕（左上→右下）、M／D＝拳擊，音效未定（請照現有拳擊／爪擊那一套，或等 Ray）。
 - R 沒另做：BA 段就是收回（收回中立）。
-- 待機：`faceless_A_idle`（48 格，原版 lightx2v，這台沒有 motionfix）還沒給 Ray 看過，**還沒交件** —— 先靜態立繪＋三支動作。
+- ✅ 待機（11-20 補交，Ray 剪的 `faceless_idle2_cut`：重呼吸＋雙手反覆握拳鬆開）：待機表加 `saint_ug_giant: 'resources/enemy/anim/saint_ug_giant_idle_v1/'`（28 格 24fps，loop:true）。第一版 `faceless_idle` Ray 退了（「沒有呼吸感」）。
 - 碰邊：爪撲原片 AB 第 24–28、BA 第 15–20 格碰生成畫布左緣，Ray 剪過照交。
 - 數值、名字（仍「地下聖徒_A」）都沒動。KF 原圖在 `resources/_originals/enemy/faceless_kf/`，Wan 入料在 `resources/enemy/_neutral_refs/faceless_kf/wan/`。
 
