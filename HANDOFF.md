@@ -14,6 +14,32 @@
 - 工作分五條線：程式（主 session 兼 PM）／動畫／敵人／背景／地圖，其餘四條各開副理 session。
 - **換機注意：git 帶不走的**（要自己複製）：`resources/_originals/`（1.4 GB）、`_recycle/`（314 MB，只有 `RECYCLE_LOG.tsv` 在版控）、`_ext/`、`ComfyUI-master/tivot_wan/` 的 `in*/`・`out/`（Wan 素材與拆格）、`.venv-matting`／`.venv-face`（照憲法 §5 重建，不必複製）。
 
+## 〇、敵人線 11-18～11-20（ver -2805～-2841，敵人副理換機前補；全部推上）
+
+> 這一段是敵人副理寫的增補，不是 PM 重寫的整份 —— 其餘各段仍是 11-17 的狀態，開工照第 3 行的規則跟 Ray 清點。
+
+**北泊（Ray：「可以了 北泊還有誰」→ 全過）**
+- 禍魘祭司（`mon_relic_candletower`）：待機 `idle_v3`、攻擊 `atk_v5`（HD 重跑＋逐格 LAB 統一色調）、延時同 A、點錯只扣秒（`noMiss`）。
+- 罪之魔像（`candlepenitent`）、魘魔（`sea_coralman`）：動畫時機照祭司，`idle_v3`／`atk_v2` hit 13，延時同 A、點錯扣秒。娜塔莉 Ray 已過。
+
+**索菈娜整組定版（ver -2831，Ray：「索菈娜整組定版」）—— 已套到正式卡 `man_sorana`（森住民戰），`test_sorana`＝換名字的複本**
+- 立繪 `resources/si/sorana_si_guard.webp`；待機 `sorana_guard_idle_v1`（`np_sorana_idle_wan7_cut`）；A＝撲斬 `atk_v1`（16fps、打到撲近 1.35，刀痕 `HITFX.sorana_slash` 固定左上往右下）；D／M＝擲飛刀 `throw_v1`（第 2 格出手，程式飛刀平飛 90ms、由小變大，音效同共鬥 `se_soranacounter`／`hit`，受擊 `sorana_knife` 不放刀痕）。
+- 閃避三種＋格擋：`config.ENEMY_DODGE.sorana_si_guard`（`dodgeL_v4`／`dodgeR_v3`／`dodgeD_v3`／`parry_v2`，**無程式位移**）。普攻與反擊有效率 30%（`parryBasic:0.7`：擋下的演閃避＋MISS、有效的演格擋，格擋播完前每發有效）；BR 也演閃避／格擋但**只是演出、照舊打穿**；格擋音＝米夏劈落 `se_bulletguard`。
+- 普攻清延時條 50%（`tapDelayClear:0.5`）。名字仍「森住民」、hp 270／攻 17／40% 以下連發大絕都沒動。
+- 背景 `resources/enemy/sorana_battle_bg_v3.webp`（湖上甲板、四周環山，`bgLock`）＋背景副理的程式層：無雲天空層＋程式雲＋程式水面＋帆微動影片（`script/bg_fx.js` 的 `sorana_battle_bg_v3`，新欄位 `video`）。**戰鬥上半現在也吃 `bg_fx`**（`enemy.startBattleBgFx`，同城鎮那支 `bgfx.drawFx`）。
+- KF／過渡格原圖在 `resources/_originals/enemy/sorana_kf/`；`TO_CODE_attack.md` 已寫定版內容。
+
+**敵影改程式投影（ver -2841，Ray：「很好 以後敵影都這樣做」）**
+- 全體單隻敵人：畫面上那一格的剪影塗黑、壓扁 0.3、斜 −38° 倒在地上，從腳底接著原圖（`groundShadow.castOnFrame`，`#enemyCast`），跟著每一格動畫／降臨／撲近；每秒最多 30 次。
+- 例外照舊：`noShadow`、飛行與船、群體敵人、卡上 `shadowFollow:0`（不投影）／`1`（腳底橢圓跟格）。卡上 `castShadow:{squash,skew}` 可調。
+
+**待 Ray 確認**
+- ⚠ 投影只有索菈娜實際看過畫面；趴著／飄著／身體垂地的怪原點可能抓錯（抓剪影最下緣）。要逐隻看。
+- 用程式直接 `startScriptBattle` 開戰時戰鬥曲不會自己換（劇情正常進場由戰鬥卡放曲）；測試時要先 `stopBgm` 再 `playBgm`。
+- 掛 `bounce_test` 乳搖 LoRA 的待機 `np_sorana_idle_wan8_bounce` 跑完沒用（Ray 用了 wan7），在 `ComfyUI-master/tivot_wan/out/monsters/`。
+
+**規矩新增**：Wan 提示詞**不寫否定、不點名要它別動的部位**（寫「腰不要扭」反而一直扭），身分寫 fighter 不寫 dancer（已記 memory）。
+
 ## 二、11-16～11-17 做了什麼（全部推上）
 
 ### 程式：卡耶爾群戰（11-16，ver -2630～-2655）
