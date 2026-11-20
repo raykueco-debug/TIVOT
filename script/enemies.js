@@ -19,6 +19,9 @@ export const ENEMIES = {
        `counterStagger`＝ **反擊硬直**（1/0，Ray：「預設為 1，0 的話就算被反擊
                          延時計時也不會歸零」）：被反擊（weaponCounter 真的開火）
                          時延時懲罰計時**退回一半**（ver -2618，Ray：「應該清1/2」；成數 tuning.counterStaggerClear）。判定在 defense 的 staggerOnCounter。
+       `tapDelayClear` ＝ **普攻減延時**（0~1，ver -2834，Ray：「1 是全清，0.8 是清當前延時條的
+                         80%，以此類推，預設都先用 0.8」）：每點對一格，延時計時**已經走掉的那一段**
+                         退回這個成數。卡上沒寫＝ `tuning.tapDelayClear`。判定在 combat 的 `tapEaseDelay`。
        `boss`          ＝ **這一隻是不是 Boss**（1/0，ver -1024，Ray：「為敵人卡加上
                          boss=1 或 0，boss 經驗 2 倍錢 2.5 倍」）。
                          倍率在 `config.rating.bossMul`（鐵律 1），判定與相乘只有

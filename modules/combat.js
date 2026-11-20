@@ -765,7 +765,7 @@ function tap(num,cell,e){
     state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
     state.correctTaps++;
     partner.armMissGuard();              // 「點擊正確就重置」（引路星，ver -1014）
-    resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
+    tapEaseDelay(); addEnergy(ENERGY_PER_HIT);
     let okDmg=hitDamage()+comboKeepDmg(); if(state.atkBuff) okDmg*=2;   // 連擊延續（ver -971）
     if(inOrder){
       okDmg*=OVERKILL_ORDER_MULT;
@@ -792,7 +792,7 @@ function tap(num,cell,e){
     state.combo++; if(state.combo>state.maxCombo) state.maxCombo=state.combo;
     state.correctTaps++;                 // 命中率分子（依序正確點擊）
     partner.armMissGuard();              // 「點擊正確就重置」（引路星，ver -1014）
-    resetIntervalDeadline(); addEnergy(ENERGY_PER_HIT);
+    tapEaseDelay(); addEnergy(ENERGY_PER_HIT);
     let dmg=hitDamage()+comboKeepDmg(); if(state.atkBuff||state.lowHpBuff) dmg*=2;   // 計時型（Counter）或低血量（高裝藥彈）皆加倍，不疊乘；連擊延續見 comboKeepDmg（ver -971）
     // 暴擊（普攻）：此分支必為普攻（雙槍破防走上面獨立分支，本輪 saintMode 亦 return），暴擊率/加傷隨 critCombo 成長。
     //   本擊先以「現值」擲骰再 +1（首擊＝base 暴擊率）；命中則跳紅字「暴擊」（交由 enemyDamage 的 isCrit 呈現）。
@@ -2566,6 +2566,14 @@ function easeIntervalDeadline(frac){
   if(!state.intervalDeadline) return;
   const now=Date.now(), full=effIntervalLimit()*1000, left=Math.max(0, state.intervalDeadline-now);
   state.intervalDeadline = now + Math.min(full, left + Math.max(0, full-left)*Math.min(1, Math.max(0, frac)));
+}
+/* 普攻減延時（ver -2834，Ray：「1 是全清，0.8 是清當前延時條的 80%」）：點對一格時延時退回
+   `state.enemyTapDelayClear` 成（逐隻，由 enemy.setEnemy 寫）。以前這裡是 resetIntervalDeadline 全清。
+   計時沒在跑（deadline 0）時照舊整條重開 —— 第一下點擊要把計時立起來。 */
+function tapEaseDelay(){
+  const f = state.enemyTapDelayClear;
+  if(!state.intervalDeadline || !(f<1)) resetIntervalDeadline();
+  else easeIntervalDeadline(f);
 }
 function stopIntervalTimer(){ clearInterval(state.intervalTimer); stopDelayRing(); }
 

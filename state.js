@@ -149,6 +149,7 @@ export const state = {
      攻擊 assault／大絕 ult）。擁有者＝defense（只有它分得出那一顆圈是誰生的），
      combat 的 fxKind 只讀（鐵律 7）。⚠ 不進存檔：它只活到那一擊演完。 */
   lastAssaultUlt: false,
+  enemyTapDelayClear: 0.8,  // 普攻減延時（ver -2834）：點對一格時延時退回的成數。擁有者 enemy.setEnemy（卡上 tapDelayClear，沒寫＝tuning.tapDelayClear）；combat.tapEaseDelay 讀
   enemyCounterStagger: 1,   // 反擊硬直（ver -495）：1＝被反擊時延時計時歸零、0＝不歸零。卡上沒寫＝1
   /* 「這一場」的武器音覆寫（ver -423（-893 前用詞），船艦戰）：`{武器鑰匙: 'se_key' | {key,times}}`。
      ⚠ 覆寫的是**場次**不是武器 —— 同一把槍在陸戰還是原本的聲音（擁有者：combat）。 */
