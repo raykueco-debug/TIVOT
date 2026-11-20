@@ -463,3 +463,10 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 > 11-20 補：**帆微動**（Ray 點頭交件）—— `anim/enemy/sorana_battle_bg_v3_sail_v1.mp4`（1254×1254、16fps、55 格循環，只有四片帆在動，其餘＝原圖）。
 > 戰鬥上半改成**播這支影片當底圖**（取代靜態的 `sorana_battle_bg_v3.webp`），天空遮罩／天空層／程式雲／程式水面照舊疊（影片裡的天空與水是原圖靜止的，會被遮罩挖掉、被程式水面蓋過）。
 > 參考：帆的範圍 `anim/enemy/sorana_battle_bg_v3_sailmask.png`（白＝帆，不必接）；產生腳本 `tools/anim/bg_layer/sorana_sail.py`。
+
+> 11-20 **戰鬥背景：夢境戰 `cap_dream`（地下聖徒／巨型聖徒）**（Ray：「背景可以 交件」）—— 聖座地宮中殿的戰鬥用版本（GPT，參考 `holysee/holyseedungeonwhole.webp`），平視、中央地板空給敵人、無人物；**靜態**，不做動態（要不要拆層另問 Ray）。
+> 接法：地下聖徒卡上 `bg:'../enemy/cap_dream_battle_bg'`＋`bgLock`（同索菈娜）。原圖 `resources/_originals/enemy/cap_dream_battle_bg.png`。
+
+| 格 | 底圖 | 天空 | 水 |
+|---|---|---|---|
+| 戰鬥　夢境戰（聖座地宮） | `resources/enemy/cap_dream_battle_bg.webp`（1254×1254，靜態） | 無（室內） | 無 |
