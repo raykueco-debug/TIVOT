@@ -3,6 +3,25 @@
 > 動畫 session 不碰程式（憲法鐵律 11），要接的寫在這裡。接完請在 HANDOFF 註記。
 > 來源：Ray 的 `敵人一覽_非空戰_動畫編排.xlsx`（待機 loop／攻擊動畫／延時點錯動畫三欄）。
 
+## ⚠ 11-20 待程式接：地下聖徒 `faceless`（夢境戰 cap_dream）新立繪＋A／M／D（敵人線 3060）
+
+Ray 改設定（「改畫成巨型聖徒 身上有被掙脫的宗教風枷具 頭是鐵面具 鐵處女那種感覺 頸部粗狀」「聖徒一類原則上都是白膚 無五官的類人怪物」），
+KF Ray：「都過」；剪片 Ray 給的 6 支 `faceless_{atk,miss,delay}_{A_AB,B_BA}_cut`。AB＋BA 同一生成空間首尾相接、**接點只留一張**，24fps、loop:false，從中立起手回到中立。
+
+| 動作 | 表 | 鑰匙（立繪檔名） | 資料夾 | 格／秒 | 打到 |
+|---|---|---|---|---|---|
+| A 爪撲（右爪斜劈到底） | ENEMY_ATK | `saint_ug_giant` | `saint_ug_giant_atk_v1/` | 17／0.71 | 7 |
+| M 上勾拳 | ENEMY_MISS | `saint_ug_giant` | `saint_ug_giant_miss_v1/` | 14／0.58 | 5 |
+| D 直拳（朝鏡頭） | ENEMY_DELAY | `saint_ug_giant` | `saint_ug_giant_delay_v1/` | 13／0.54 | 4 |
+
+- ⚠⚠ **換立繪**：`ASSETS.enemy_faceless` 改指 **`resources/enemy/saint_ug_giant.webp`**（1024×1536，GPT 真 alpha，本機縮排補白）。
+  舊的 `saint_ug_ci.jpg` 是 CI 構圖（沒有 alpha），**亂入者 `intruderEnemy` 也指它** —— 亂入者要不要跟著換請問 Ray，這一條只換 `faceless`。
+- 打到＝AB 段最後一格（爪劈到底／拳到頂／拳到鏡頭前）。受擊特效建議：A＝斜劈爪痕（左上→右下）、M／D＝拳擊，音效未定（請照現有拳擊／爪擊那一套，或等 Ray）。
+- R 沒另做：BA 段就是收回（收回中立）。
+- 待機：`faceless_A_idle`（48 格，原版 lightx2v，這台沒有 motionfix）還沒給 Ray 看過，**還沒交件** —— 先靜態立繪＋三支動作。
+- 碰邊：爪撲原片 AB 第 24–28、BA 第 15–20 格碰生成畫布左緣，Ray 剪過照交。
+- 數值、名字（仍「地下聖徒_A」）都沒動。KF 原圖在 `resources/_originals/enemy/faceless_kf/`，Wan 入料在 `resources/enemy/_neutral_refs/faceless_kf/wan/`。
+
 ## ✅ 11-10 KF 第二輪五支（敵人線 4070S；Ray 剪過、車輪戰 8124 注入試跑中）
 
 Ray：「可交件 colossus_A_AB_cut／saint_inspector_A_AB_cut／stag_rot_A_AB_cut／deernightmare_A_AB_cut／bear_nightmare_B_BA_cut，回檔就用同樣剪法」。
