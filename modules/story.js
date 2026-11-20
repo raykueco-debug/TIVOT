@@ -25,7 +25,7 @@
    ══════════════════════════════════════════════════════════════════════ */
 
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
-import { GAME_CONFIG, fileGain, assetVer, asset } from '../config.js';   // 舞台幾何常數（castStage）與逐支音量（fileGain）：鐵律 7 的單一真相；asset＝料理演出的鍋子與成品圖（ver -953）
+import { GAME_CONFIG, fileGain, assetVer, asset, VERSION } from '../config.js';   // 舞台幾何常數（castStage）與逐支音量（fileGain）：鐵律 7 的單一真相；asset＝料理演出的鍋子與成品圖（ver -953）
 import { MAIN_SCRIPT, MAIN_ENTRY } from '../script/mainScript.js';
 import { SPEAKERS, ART, CAST_TALL, nameOf, artOf, exprSrc, frameOf } from '../script/speakers.js';
 import * as blink from './blink.js';
@@ -3757,9 +3757,10 @@ function fireOneShot(line){
 const KERB_DIR='resources/vfx/';
 /* ⚠⚠ 門的素材是**會被同名覆蓋**的（ver -1215 削掉了 alpha 底噪），所以一定要帶
    cache-buster（§5：檔名沒變、內容變了，瀏覽器照樣拿舊的那一份，而症狀只是
-   「看起來沒變」）。版本號由 `tools/bust.py` 同步，路徑只由 `kerbUrl()` 組（鐵律 8）——
-   飛行頁那一半是另一個 document，各有一份，改一邊要改另一邊。 */
-const KERB_V='?v=2832';
+   「看起來沒變」）。版本號**直接讀 `config.js` 的 `VERSION`**（ver -2833：以前是 `bust.py`
+   每版改寫一個字面值，而改版的人只 add 自己的檔，連漏三版 —— 副本不要存在，鐵律 7），
+   路徑只由 `kerbUrl()` 組（鐵律 8）。飛行頁那一半是另一個 document，由 `bust.py` 蓋版號。 */
+const KERB_V='?v='+VERSION.split('-').pop();
 const kerbUrl=n=>KERB_DIR+n+'.webp'+KERB_V;
 /* 門的圖（ver -2218）：**每一道門都要先載完**（劇情讀取頁 `preloadStory`、城鎮那道 `loadScene`）——
    Ray：「讀圖的時候先跑槍棺出來才讀楣」「往上推的時候楣會消失」：合成後的 `kerberos_gate`（門＋楣）

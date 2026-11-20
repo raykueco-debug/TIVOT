@@ -81,11 +81,9 @@ def run(check=False):
     ], v)
     if s != s0: dirty.append(('flight/index.html', p, s))
 
-    # ③ modules/story.js：門的素材路徑由 kerbUrl() 一支組，版本號就一個常數
-    p, s0, s = patch('modules/story.js', [
-        (r"const KERB_V='\?v=[^']*';", "const KERB_V='?v=<V>';"),
-    ], v)
-    if s != s0: dirty.append(('modules/story.js', p, s))
+    # ③ （ver -2833 拿掉）modules/story.js 的 KERB_V 以前在這裡改寫成字面值 ——
+    #   改版的人只 add 自己的檔，那一行連漏三版沒進 commit。現在 story.js 直接讀
+    #   config.js 的 VERSION，沒有副本可以漏（鐵律 7）。
 
     # ④ 素材：同名覆蓋過的那一批，版本號＝內容雜湊（ver -1918，見 tools/asset_bust.py）。
     #   前幾步已經改過的那幾支以記憶體裡的內容為底，結果取代原本那一筆。
