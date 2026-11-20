@@ -278,23 +278,16 @@ export const GROUP_COMPS = /*GCOMP*/{
   ],
   "members": [
    {
-    "stem": "mon_canyon_hanged_dark",
-    "k": 0.3333,
-    "x": 932.6,
-    "y": 0.9,
-    "flip": 1
+    "stem": "mon_canyon_stilt_neutral",
+    "k": 0.5548,
+    "x": 478.4,
+    "y": 41.0
    },
    {
     "stem": "mon_canyon_coffinbeetle_dark",
     "k": 0.4561,
-    "x": 660.5,
-    "y": 375.9
-   },
-   {
-    "stem": "mon_canyon_hanged_dark",
-    "k": 0.3333,
-    "x": 312.9,
-    "y": -14.9
+    "x": 662.2,
+    "y": 358.4
    },
    {
     "stem": "mon_canyon_lanternimp_dark",
@@ -364,15 +357,10 @@ export const GROUP_COMPS = /*GCOMP*/{
    },
    {
     "stem": "mon_canyon_bonecrab_dark",
-    "k": 0.2436,
-    "x": 993.8,
-    "y": 511.1
-   },
-   {
-    "stem": "mon_canyon_stilt_neutral",
-    "k": 0.3333,
-    "x": 604.4,
-    "y": 578.6
+    "k": 0.3205,
+    "x": 910.2,
+    "y": 534.5,
+    "flip": 1
    },
    {
     "stem": "mon_canyon_bonecrow_dark",

@@ -3,6 +3,12 @@
 > 出處：Ray 在 `tools/enemy_review/canyon.html` 提交的編排（`_review/submit_canyon_20261114_211703.json`）與 KF 審閱（`_review/submit_canyonkf_20261114_215730.json`）。
 > 美術 session 不碰程式（鐵律 11），只寫在這裡。11-15 起動畫已交件（見下）；「程式效果」那一節是動畫之外要程式做的。
 
+## ✅ 11-20 群戰編組交件（Ray：「團戰交件」）—— 程式不用接，`script/group_comps.js` 直接讀
+- Ray 在 `tools/group_editor.html` 改了兩格背景的遇怪編組：
+  · `bg_canyon_corridor`：兩隻崖縫吊屍者 → 換成一隻高蹺細影（k 0.5548）；石棺甲蟲微調位置。
+  · `bg_canyon_bones`：骸殼蟹放大（k 0.2436→0.3205）並左右翻；拿掉那一隻高蹺細影。
+- 群戰（mix2～12）整批交件。
+
 ## ✅ 11-17 已接（ver -2656，敵人線自己接；Ray：「你負責敵人的一切」）：香爐蠍打擊點改第 32 格（Ray：「香爐蠍的打擊點在槌下那一瞬」）＋攻擊音效改 `se_crash_rocks`（新 `HITFX.censer_crash`，單隻卡與群戰成員都吃）
 
 - `config.js` 的 `ENEMY_ATK.mon_canyon_censer_dark`：`hit:50` → **`hit:32`**。
