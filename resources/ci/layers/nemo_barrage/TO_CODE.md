@@ -1,5 +1,9 @@
 # 給程式 session：尼莫「彈幕支援」CI v1 待接（動畫 session 2026-11-04 交件）
 
+## ⭐ 11-20 Ray 定案：要接（接 v2）
+- Ray 清點時說「兩支都接」：接 **`ci_nemo_barrage_v2.webm`**＋iOS 版 **`ci_nemo_barrage_v2_hevc.mov`**（兩個 `<source>`，HEVC 排第一）。v1 已回收進 `_recycle/`。
+- 觸發點：尼莫「與主角共鬥」的主動技（11-04 已定）。iOS 那支仍未經 iPhone 實測。
+
 > 動畫 session 不碰程式（憲法鐵律 11），要接的寫在這裡。接完請在交接裡註記。
 
 ## v2（11-04）：加黑色半透明遮罩背景 —— 取代 v1

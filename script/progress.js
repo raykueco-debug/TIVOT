@@ -1027,6 +1027,19 @@ export const CHAPTERS = [
     flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
            'set_sail','got_ship','dock_day2'],
     enter:'town', town:'northport' },
+  /* ══ 山谷夢境（ver -2843，Ray：「把夢境章節放到合適位置」；敵人副理在 8203 實測過這一筆）══
+     北方泊地那一夜（旅店）→ 演完經讀取頁去卡耶爾演碎片 02（`np_night_done` 那一段的
+     `goto:'@canyon:entry'`）→ 回旅店時閘門推到隔天 8:00、升 S3（＝下一章 Stage 3 的起點）。
+     ⚠ `np_night` 要給（閘門已用掉）、`np_night_done` **不給**（那一幕＋goto 正是要演的）、`np_day3` 不給。
+     ⚠ `clockHour:22` ＝ `firstHourAt(22)` ＝ 6/13 22:00。正常玩是第二天晚上，但章節工具的
+       Stage 2 本來就落在 6/13 13:00、Stage 3 在 6/14 08:00 —— 這一筆夾在中間，日期前後自洽。 */
+  { id:'canyon_dream', name:i18nT('山谷夢境'), sub:i18nT('北方泊地・那一夜（旅店） → 卡耶爾碎片 02'),
+    stage:2, clockHour:22, named:true,
+    flags:['dungeon_cleared','hq_briefed','renna_named','stage1_open',
+           'set_sail','got_ship','dock_day2',
+           'np_port_arrive','np_clear_church','np_claws_done','safehouse_northport',
+           'np_burial','np_burial_done','np_night'],
+    enter:'town', town:'northport', node:'inn' },
   /* ══ Stage 3（原 -677 的 Stage 4）══ 北方泊地**第二天早上在旅店醒來**。
      ⚠ `np_day3` 要給、`np_day3_done` **不要給**：那是「閘門已經用掉了」與
        「早上那一幕演過了」的分別 —— 給了前者才不會一進去又被閘門抓一次，

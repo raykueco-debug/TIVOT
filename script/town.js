@@ -2446,20 +2446,24 @@ const FRAG02_OPEN = [
   { speaker:'NARRATION', text:'', auto:900, shake:true, hide:'*' },
   { speaker:'NARRATION', text:'', auto:1500, fadeIn:1500 },                              // 淡入背景
   cmd('urgent','援軍呢？還沒有到嗎？'),
-  ims('worry','應該中午就該到了才對……'),
+  ims('worry','帝都回電，讓我們等西南戰區艦隊支援......'),
+  { speaker:'COMMANDER', text:'開什麼玩笑！為什麼不從帝都直接支援？', portrait:{ char:'COMMANDER', expr:'shock', show:true } },
+  { speaker:'IM_SOLDIER', text:'首都防空圈正與大型禍魘交戰中，分身乏術......', portrait:{ char:'IM_SOLDIER', expr:'worry', show:true } },
   { speaker:'NARRATION', text:'', se:'se_earthquake', shake:true, auto:900 },      // 轟擊聲
   { speaker:'NARRATION', text:'', se:'se_monsterroardeep', auto:1100 },          // 咆嘯
   ims('alarm','南門！進來了！'),
   csx('nolook','閃開。'),
   cmd('shock','！！'),
   { battle:'frag02_a', onLose:'frag02_lose' },
-  cmd('surprise','聖王廳的援軍……？', { ambStop:1 }),   // 打完第一場：戰場聲淡出（ver -2140）
-  ims('awe','竟然，一個人就擋下了禍魘……'),
+  cmd('surprise','援軍……你們是聖王廳的人？', { ambStop:1 }),   // 打完第一場：戰場聲淡出（ver -2140）
+  ims('awe','竟然一個人就擋下了那種數量的禍魘……'),
   cec('smirk','是『兩個人』吧？', { hide:['CECILIE_X'] }),
   cmd('salute','失禮了。'),
+  { speaker:'COMMANDER', text:'不過，兩位是怎麼穿過防空砲......', portrait:{ char:'COMMANDER', expr:'plead', show:true } },
+  { speaker:'CECILIE', text:'這你不用管。有還沒撤退的人嗎？', portrait:{ char:'CECILIE', expr:'lookaside', show:true } },
   cmd('plead','出海口方向還有我軍殘部，能否……'),
   { speaker:'PLAYER', blank:true, se:'se_weapon_reload' },                       // 上膛音
-  cec('tease','就是為了這個來的喔。'),
+  cec('talk','就是為了這個來的喔。'),
   { speaker:'NARRATION', text:'', se:'se_steps', auto:800 },                      // 跑步音
   cec('call','喂！等我一下！'),
   { goto:'frag02_end' },                                                         // 演完 → 玩家自己往前走

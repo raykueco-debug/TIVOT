@@ -1485,3 +1485,39 @@ when	from	to	reason
 20261119-222928	resources/enemy/anim/sorana_guard_dodgeR_back_v3	_recycle/resources/enemy/anim/sorana_guard_dodgeR_back_v3	右閃換 Ray 剪的一段到底版（v3）
 20261120-003132	resources/enemy/sorana_battle_bg_v2.webp	_recycle/resources/enemy/sorana_battle_bg_v2.webp	索菈娜背景 v2（海）被 v3（湖＋山）取代
 20261120-004545	resources/background/anim/enemy/sorana_battle_bg_v3_sky.png	_recycle/resources/background/anim/enemy/sorana_battle_bg_v3_sky.png	索菈娜戰鬥背景天空層含原圖靜止雲，Ray：遠景不要有不動的雲 → 換成無雲天色
+20261120-203902	resources/illustration/video/044_soranahug_v1.mp4	_recycle/resources/illustration/video/044_soranahug_v1.mp4	動畫線清點 11-20：被新版取代（Ray：全部回收）
+20261120-203902	resources/illustration/video/044_soranahug_v2.mp4	_recycle/resources/illustration/video/044_soranahug_v2.mp4	動畫線清點 11-20：被新版取代（Ray：全部回收）
+20261120-203902	resources/illustration/video/038_mishasting_v1.mp4	_recycle/resources/illustration/video/038_mishasting_v1.mp4	動畫線清點 11-20：被新版取代（Ray：全部回收）
+20261120-203902	resources/illustration/video/038_mishasting_v2.mp4	_recycle/resources/illustration/video/038_mishasting_v2.mp4	動畫線清點 11-20：被新版取代（Ray：全部回收）
+20261120-203902	resources/illustration/video/torsten_sit_v1.mp4	_recycle/resources/illustration/video/torsten_sit_v1.mp4.20261120-203902	動畫線清點 11-20：被新版取代（Ray：全部回收）
+20261120-203902	resources/illustration/video/torsten_sit_v2.mp4	_recycle/resources/illustration/video/torsten_sit_v2.mp4	動畫線清點 11-20：被新版取代（Ray：全部回收）
+20261120-203902	resources/illustration/video/010_anyaheadrubbing_v1.mp4	_recycle/resources/illustration/video/010_anyaheadrubbing_v1.mp4	動畫線清點 11-20：被新版取代（Ray：全部回收）
+20261120-203902	resources/illustration/video/005_cecilieintro_v1.mp4	_recycle/resources/illustration/video/005_cecilieintro_v1.mp4	動畫線清點 11-20：被新版取代（Ray：全部回收）
+20261120-203902	resources/ci/video/cutin_dual_nemo_v1.mp4	_recycle/resources/ci/video/cutin_dual_nemo_v1.mp4	動畫線清點 11-20：被新版取代（Ray：全部回收）
+20261120-203902	resources/ci/video/ci_nemo_barrage_v1.webm	_recycle/resources/ci/video/ci_nemo_barrage_v1.webm	動畫線清點 11-20：被新版取代（Ray：全部回收）
+20261120-203902	resources/ci/video/ci_misha_ni_v1.mp4	_recycle/resources/ci/video/ci_misha_ni_v1.mp4	動畫線清點 11-20：被新版取代（Ray：全部回收）
+20261120-203903	mishasting_wan_s7	_recycle/mishasting_wan_s7	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	mishasting_wan_s7_sheet.jpg	_recycle/mishasting_wan_s7_sheet.jpg	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	tordefeat_abc_s7	_recycle/tordefeat_abc_s7	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	tordefeat_abc2_s7	_recycle/tordefeat_abc2_s7	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	tordefeat_mbc_s7	_recycle/tordefeat_mbc_s7	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	tordefeat_mbc_s7_sheet.jpg	_recycle/tordefeat_mbc_s7_sheet.jpg	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	gunclose_kling_A1	_recycle/gunclose_kling_A1	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	gunclose_kling_A1.mp4	_recycle/gunclose_kling_A1.mp4	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	gunclose_kling_A1_sheet.jpg	_recycle/gunclose_kling_A1_sheet.jpg	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	gunclose_kling_A2	_recycle/gunclose_kling_A2	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	gunclose_kling_A2.mp4	_recycle/gunclose_kling_A2.mp4	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	gunclose_kling_A2_sheet.jpg	_recycle/gunclose_kling_A2_sheet.jpg	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	soranahug_kling_A2	_recycle/soranahug_kling_A2	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	soranahug_kling_A2.mp4	_recycle/soranahug_kling_A2.mp4	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	soranahug_kling_A2_sheet.jpg	_recycle/soranahug_kling_A2_sheet.jpg	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	soranahug_kling_AB	_recycle/soranahug_kling_AB	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	soranahug_kling_AB.mp4	_recycle/soranahug_kling_AB.mp4	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	soranahug_kling_AB_sheet.jpg	_recycle/soranahug_kling_AB_sheet.jpg	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	cecilienemo_s7	_recycle/cecilienemo_s7	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	cecilienemo_s7_mouthlock2	_recycle/cecilienemo_s7_mouthlock2	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-203903	cecilienemo_s7_sheet.jpg	_recycle/cecilienemo_s7_sheet.jpg	動畫線清點 11-20：Ray 退件的實驗片（Ray：全部回收）；原位 ComfyUI-master/tivot_wan/out/ci/
+20261120-211100	enemies.xlsx	_recycle/enemies.xlsx	敵人 Excel 重新匯出前的舊版（10-16），Ray：「數值先照舊 進敵EXCEL」
+20261120-221431	resources/enemy/anim/saint_ug_giant_atk_v1	_recycle/resources/enemy/anim/saint_ug_giant_atk_v1	敵人線：地下聖徒剛交的接點重複一張（B 格出現兩次），照 TO_CODE 規格接點只留一張重交
+20261120-221431	resources/enemy/anim/saint_ug_giant_miss_v1	_recycle/resources/enemy/anim/saint_ug_giant_miss_v1	敵人線：地下聖徒剛交的接點重複一張（B 格出現兩次），照 TO_CODE 規格接點只留一張重交
+20261120-221431	resources/enemy/anim/saint_ug_giant_delay_v1	_recycle/resources/enemy/anim/saint_ug_giant_delay_v1	敵人線：地下聖徒剛交的接點重複一張（B 格出現兩次），照 TO_CODE 規格接點只留一張重交

@@ -80,10 +80,13 @@ export const ENEMIES = {
       // v17.2：受擊特效三件套（delay＝延時懲罰／wrong＝按錯懲罰／ult＝大絕）。逐怪可各自設定。
       //   type 可用：'claw'（爪痕，可設 count 幾道）／'blood'（血痕）／'bite'（齒痕）／
       //             'bullet'（彈痕/玻璃碎裂）／'slash'（紅刀痕濺血）。
+      /* ver -2847：換成巨型聖徒造型＋A 爪撲／M 上勾拳／D 直拳三支動作片（敵人線 -2845 交件），受擊跟著動作走
+         （Ray：「拳頭受擊用 impact 效果 透明那個」＝迎面衝擊模糊、「爪擊用多道爪」）。
+         舊的 delay 血痕／wrong 刀痕／assault 牙印（-762）是沒有動作片時的配法。 */
       hitFx:{
-        delay:'blood',   // 延時懲罰 → 一道血痕、角度隨機
-        wrong:'slash',                    // 按錯懲罰 → 一條紅刀痕濺血
-        assault:'bite',   // 攻擊（一般圈）→ 牙印（ver -762，Ray：「地下聖徒跟巨型聖徒的攻擊都換成牙印」）
+        delay:'ugsaint_punch',    // 延時＝直拳朝鏡頭 → 迎面衝擊模糊
+        wrong:'ugsaint_punch',    // 點錯＝上勾拳 → 迎面衝擊模糊
+        assault:'ugsaint_claw',   // 攻擊＝爪撲 → 四道斜劈爪痕
       },
     },
     // ── 教學專用敵：訓練用聖徒（僅教學戰載入，不進 lineup）──

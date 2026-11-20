@@ -255,6 +255,9 @@ function spawnFxNamed(key, fx){
     /* 鈍器受擊（ver -375）：不見血的悶擊 —— 一圈迅速擴散的衝擊環＋畫面一沉。
        ⚠ 與 `bullet`（玻璃碎裂）刻意不同：那一隻獵人是拿槍托招呼你，不是開槍。 */
     case 'blunt': spawnBlunt(fx.scale); break;
+    /* 迎面衝擊模糊（ver -2846，Ray：地下聖徒「拳頭受擊用 impact 效果 透明那個」→ 選了龍吟那一個）：
+       沒有受擊圖，整個鏡頭被撞一下。走 combat 擁有的 `roarBlast`（鐵律 8，同咆哮音波／龍吟）。 */
+    case 'blast': if(api.roarBlast) api.roarBlast(); break;
     case 'sakura':spawnSakura(); break;
     /* 米夏的大絕（ver -1957）：殘影脈動彈出＋最後一斬。 */
     case 'afterimage': spawnAfterimage(fx); break;
@@ -1429,9 +1432,9 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
   /* 前撲加速（`preMul`，-2512 Ray「收回加速 前撲也加速」）：打到那一格之前（含）以 fps×preMul 播 */
   const rm=c.retMul||1, pm=c.preMul||1, tAt=f=> f<=hitF ? f*1000/(fps*pm) : (hitF*1000/(fps*pm) + (f-hitF)*1000/(fps*rm));
   const T=tAt(N), tHit=tAt(hitF);
-  { const k=farOf(); if(k!==1 || (kind==='atk' && c.near)){   // 攻擊時撲近：打到那一格到最大，收回的路上退回遠處（ver -2529：平時不站遠也能撲近）
+  { const k=farOf(); if(k!==1 || c.near){   // 攻擊時撲近：打到那一格到最大，收回的路上退回遠處（ver -2529：平時不站遠也能撲近）；ver -2846：任何一支寫了 `near` 的動作片都吃（地下聖徒的 D／M 揮拳）
       el.style.transformOrigin=FAR_ORIGIN;
-      const off=t=>Math.max(0,Math.min(1,t/T)), hold=Math.min(T, tHit+60), back=Math.min(T, tHit+Math.max(120,(T-tHit)*0.7));
+      const off=t=>Math.max(0,Math.min(1,t/T)), hold=Math.min(T, tHit+60), back=Math.min(T, c.nearOut>0 ? hold+c.nearOut : tHit+Math.max(120,(T-tHit)*0.7));   // `nearOut`＝打到停留之後幾毫秒退回原位（ver -2846，Ray：「位移不要太多幀」）；不寫＝照舊跟著收回段慢慢退
       const n=String(c.near || 1), kf = (kind==='atk' || c.near) ? [{scale:String(k),offset:0}, ...(c.nearIn>0 && tHit>c.nearIn ? [{scale:String(k),offset:off(tHit-c.nearIn)}] : []), {scale:n,offset:off(tHit)},{scale:n,offset:off(hold)},{scale:String(k),offset:off(back)},{scale:String(k),offset:1}] : [{scale:String(k)},{scale:String(k)}];
       el.animate(kf.map(q=>({...q, easing:'ease-in-out'})),{duration:T}); } }   /* ease 逐段套，峰值才準準落在 hit 那一格（-2485） */
   const t0=performance.now();

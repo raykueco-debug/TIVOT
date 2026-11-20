@@ -259,7 +259,7 @@ export function open(opts){
           + i18nT('<div class="gm-note">存檔＝管理人專用的**獨立**一格（與玩家的存檔互不影響），')
           + i18nT('在首頁用「讀檔」讀回來。</div>')
         : '')
-      /* 離線包（ver -2257，Ray：「下載更新都收進選單」）：只有主畫面 App 才有
+      /* 離線包（ver -2257，Ray：「下載更新都收進選單」；ver -2842 起首頁也有一顆，兩顆同一支 click）：
          （offline.js 掛 window.__tivotOffline），下載與檢查更新是同一顆鈕。 */
       + (window.__tivotOffline
           ? i18nT('<div class="gm-sec">離線包</div>')
@@ -286,7 +286,7 @@ export function open(opts){
         ob.textContent = OL.busy() ? i18nT('下載中…') : OL.label();
         ob.addEventListener('click', e=>{ e.stopPropagation();
           try{ SFX.menuClick(); }catch(_){}
-          OL.run(t=>{ if(ob.isConnected) ob.textContent=t; });
+          OL.click(t=>{ if(ob.isConnected) ob.textContent=t; });   // 與首頁那顆同一支（ver -2842）
         });
       } }
     const mu=panel.querySelector('#gmMute');

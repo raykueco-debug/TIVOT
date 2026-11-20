@@ -2614,7 +2614,11 @@
      ⚠ `:not(#id)` 的權重等同一個 id，所以這一條的權重遠高過各鈕自己的規則，
        壓得住 `#continueBtn.on{display:block}`，不必動 `main.js`。
      ⚠ 商店是**管理人模式限定的臨時入口**（ver -368）：正式入口是城鎮的雜貨舖節點。 */
-  body:not(.testmode) #home button:not(#startBtn):not(#tutorialBtn):not(#creditBtn):not(#originalBtn):not(#langBtn){display:none;}
+  body:not(.testmode) #home button:not(#startBtn):not(#tutorialBtn):not(#creditBtn):not(#originalBtn):not(#langBtn):not(#offlineBtn){display:none;}
+  /* 離線下載（ver -2842）：白名單放行，但**預設不出現** —— 只有 offline.js 真的掛上了
+     （有 SW、不是 App、不是 localhost）main.js 才加 .on。 */
+  #home #offlineBtn{display:none;}
+  #home #offlineBtn.on{display:block;}
   /* 管理人模式下這幾顆要真的出來（它們自己沒有別的 display 規則）。
      testmode 於開機時由 localStorage 還原（見 main.js adminMode），手勢可再次關閉。 */
   #home #statsBtn, #home #flightBtn, #home #chapterBtn{display:none;}

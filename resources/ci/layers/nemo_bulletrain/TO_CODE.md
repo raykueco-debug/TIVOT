@@ -1,4 +1,9 @@
-# 給程式 session：尼莫 Bullet Rain CI v1 待接（動畫 session 2026-10-16 交件）
+# 給程式 session：尼莫 Bullet Rain CI 待接（動畫 session 2026-10-16 交件）
+
+## ⭐ 11-20 Ray 定案：要接（接 v2）
+- Ray 清點時說「兩支都接」：接 **`cutin_dual_nemo_v2.mp4`**（v1 已回收進 `_recycle/`，不要接 v1）。
+- 演出照上面：從畫面下方滑入、片長 1000 ms。
+- ⚠ **觸發點仍待 Ray 一句話**：預設是與 `vo_nemo_bulletrain` 同時起播（敵人卡 `nemo` 玩家戰敗那一刻）；動畫副理已在 11-20 回報裡問他，主 session 接之前看一下他的回覆。
 
 > 動畫 session 不碰程式（憲法鐵律 11），要接的寫在這裡。接完請在交接裡註記。
 

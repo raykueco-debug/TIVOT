@@ -1733,6 +1733,13 @@ bindBtn('creditClose',()=>{ const s=$('creditSheet'); if(s) s.classList.remove('
 // 原作：點下 → 選巴哈 / Penana（新分頁開）；外連點擊上報（統計哪個平台被點）
 bindBtn('originalBtn',  ()=>{ const s=$('originalSheet'); if(s) s.classList.add('on'); });
 bindBtn('originalClose',()=>{ const s=$('originalSheet'); if(s) s.classList.remove('on'); });
+// 離線下載（ver -2842）：offline.js 有掛上才出現；按一下報大小、再按一下開始（與選單那顆同一支 click）
+{ const ob=$('offlineBtn'), OL=window.__tivotOffline;
+  if(ob && OL){
+    ob.textContent = OL.busy() ? i18nT('下載中…') : OL.label();
+    ob.classList.add('on');
+    bindBtn('offlineBtn', ()=>OL.click(t=>{ ob.textContent=t; }));
+  } }
 document.querySelectorAll('#originalSheet .os-link').forEach(a=>{
   a.addEventListener('click', ()=>TEL.originalClick(a.textContent.trim()));
 });

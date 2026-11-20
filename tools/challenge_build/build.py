@@ -272,6 +272,12 @@ const overlay = { name:'overlay', setup(b){
 }};
 await esbuild.build({ entryPoints:[path.join(ROOT,'main.js')], bundle:true, format:'esm', minify:true, legalComments:'none',
   sourcemap:false, target:'es2020', charset:'utf8', outfile: path.join(OUT,'app.js'), plugins:[overlay], logLevel:'warning' });
+// 離線下載（ver -2842）：index.html 以 <script src> 直接載 offline.js、它再註冊 sw.js —— 兩支都不進 app.js，
+// 各自壓縮一份（拿掉註解：試玩版不給看開發筆記）
+for(const js of ['offline.js','sw.js']){
+  const r = await esbuild.build({ entryPoints:[path.join(ROOT,js)], bundle:false, minify:true, legalComments:'none', charset:'utf8', write:false });
+  fs.writeFileSync(path.join(OUT,js), r.outputFiles[0].text);
+}
 for(const css of ['style.css','css/lootsheet.css']){
   const r = await esbuild.build({ entryPoints:[path.join(ROOT,css)], bundle:false, minify:true, legalComments:'none', charset:'utf8', write:false, loader:{'.css':'css'} });
   fs.mkdirSync(path.dirname(path.join(OUT,css)), { recursive:true });
@@ -376,6 +382,22 @@ def redact(sents):
     io.open(p, 'w', encoding='utf-8').write(t)
     print('程式碼內遮掉的劇情字串：', '、'.join(log) if log else '（無）')
 
+def offline_list(dist=DIST):
+    """首頁「離線下載」的清單（ver -2842，Ray：「正式版不用網路直接一包，試玩版才有網頁下載問題」）：
+    **dist 裡實際有什麼就列什麼**（不是主程式那份 3 GB 的）。⚠ 要在 redact 之後產 —— 大小以最終的檔為準。"""
+    sys.path.insert(0, os.path.join(ROOT, 'tools'))
+    import offline_list as OL
+    files, total = [], 0
+    for dp, _, fs in os.walk(dist):
+        for f in fs:
+            rel = os.path.relpath(os.path.join(dp, f), dist).replace(os.sep, '/')
+            if rel == 'offline_list.json': continue
+            files.append(rel); total += os.path.getsize(os.path.join(dp, f))
+    files.sort()
+    ver = re.search(r"export const VERSION = '([^']+)'", rd('config.js')).group(1)
+    OL.dump(os.path.join(dist, 'offline_list.json'), {'version': ver, 'bytes': total, 'files': files})
+    print('離線包清單 %d 檔 %.1f MB' % (len(files), total / 1e6))
+
 # ───────────────────────── 主流程 ─────────────────────────
 def build(dumps):
     out, errs = browser_eval(ROOT, 'tools/challenge_build/blank.html', DUMP_JS)
@@ -396,6 +418,7 @@ def build(dumps):
     kept |= {'renee'}
     kept |= ALLOW
     redact(sentinels(D, kept))
+    offline_list()
     sents, hits = scan(D, kept, BL)
     print('敏感字串 %d 條，命中 %d 處' % (len(sents), len(hits)))
     for rel, s in hits[:80]: print('  ✗', rel, '：', s[:40])

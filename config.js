@@ -49,6 +49,8 @@ export const HITFX = {
   bell_claw:    { base:'claw', se:'em_slash', count:1 },   // 鐘殼蟲揮鉗（ver -2663，Ray：「slash 保留 跟隨動作三下」）：單爪痕＋揮砍音，跟著 strikes 三下各一次；嘶鳴另走 ENEMY_ATK 的 `windupSe`
   chain_maul:   { base:'claw', se:'em_slash', count:3, scale:1.35, flip:true, angle:-12 },   // 鎖鏈餓犬撲咬（ver -2668／-2669，Ray：「受擊特效用爪痕跟 slash」「爪痕大一點 要跟揮爪速度一樣」）：三道爪痕放大 1.35、由左往右 250ms 劃出（片子第 39→45 格那一揮）＋揮砍音；吼聲另由 ENEMY_ATK `windupSe` 從轉正那一格放
   stilt_claw:   { base:'claw', se:'em_slash', count:3, scale:1.3, flip:true, angle:12 },   // 高蹺細影斜劈（ver -2706，Ray：「音效用 slash 受擊用跟揮擊角度一樣的爪痕」）：片子是左上→右下的斜劈 ⇒ flip（左上→右下）再往下壓 12°
+  ugsaint_claw: { base:'claw', se:'em_slash', gap:60, sets:[ { at:[0.40,0.38], w:0.62, angle:20, flip:true }, { at:[0.58,0.56], w:0.62, angle:20, flip:true } ] },   // 地下聖徒爪撲（ver -2845，敵人線 TO_CODE：右爪左上→右下斜劈到底）：照禍魘祭司那一組斜劈角度；ver -2848（Ray：「爪擊用多道爪」）：兩組三爪沿斜劈方向錯開 60ms 疊上＝六道（`count` 只分單爪／三爪圖，寫 4 沒有效果）
+  ugsaint_punch: { base:'blast', se:'em_smack' },   // 地下聖徒拳頭（ver -2846，Ray：「拳頭受擊用 impact 效果 透明那個」＝迎面衝擊模糊）；音效先沿用鈍器的 em_smack
   candletower_claw: { base:'claw', se:'em_slash', count:3, scale:1.3, flip:true, angle:20 },   // 禍魘祭司爪擊（ver -2734，Ray：「角度爪痕跟爪擊音」）：片子是左上→右下的大斜劈 ⇒ flip 再往下壓 20°＋揮砍音
   crawler_hit:  { base:'claw', se:'em_slash', count:1, angle:16 },   // 爬行朝聖者（ver -2708，Ray：「單爪受擊特效 同角度」）：單爪痕＋揮砍音；片子那一揮是右上→左下、接近水平的弧 ⇒ 原圖（左下→右上約 26°）轉 16° 壓成約 10° 的斜線。原 -2671：鈍擊＋揮砍音
   beetle_claw:  { base:'claw', se:'em_slash', count:1, angle:26 },   // 石棺甲蟲（ver -2674，Ray：「固定橫痕 slash 在最大時出」）：單爪痕轉成水平（原圖那一道往右上斜 26°）＋揮砍音
@@ -112,7 +114,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.20-2841';
+export const VERSION = 'ver 2026.11.20-2850';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2912,7 +2914,7 @@ export const GAME_CONFIG = {
     /* ══ 碎片 02・卡耶爾山谷（ver -2134，Ray 的「卡耶爾山谷_碎片02_台詞差分」）══ 北方泊地那一夜之後的回憶：主角與賽西莉。
        ⚠ 暫用：卡耶爾山谷的 16 隻怪還沒有數值卡，先借北方泊地的禍魘（np_harm 那一池）→ ver -2138 改用山谷的群體小怪（數值套北泊禍魘，enemies.js 的 canyon_*）。搭檔賽西莉；
          回憶不評（dream）；打輸＝跳到收尾直接回北泊（allowLose＋腳本的 onLose，ver -2136）。 */
-    frag02_a: { enemy:'canyon_mix7',   partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild' },   // ver -2154：禍魘大軍 mix7（鐵衣苦修者＋4）
+    frag02_a: { enemy:'canyon_bgcomp',   partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild' },   // ver -2844（Ray：「改成讀背景編組」）：讀編輯器存的 bg_canyon_entry（canyon_bgcomp＝comp:'@bg'，照這一格背景取，同路上遇怪）；-2154 是寫死 mix7
     frag02_b: { enemy:'canyon_colossus', bgmAfter:'retroroman', partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild', sessionEnd:true },   // ver -2139：開場戰＋路上遇怪＋這一場同一局，打完這一隻才結算   // ver -2160：Boss 崩岩巨像（單隻）
     /* 卡耶爾山谷的隨機遇怪（ver -2138；-2153 改成混編「禍魘大軍」canyon_mix1..12，3～5 隻、後排一隻大型）。同一局（`canyon_wild`），踏進安全點（入口／谷底祭場）才結算。 */
     /* 碎片 02 夢裡的路上遇怪（ver -2141，Ray：「風蝕迴廊也要放戰鬥，每一格都要有戰鬥」）：同一批群怪，但搭檔是賽西莉、夢境戰不評。城上 `wildForce` 換用這一池。 */
@@ -2978,7 +2980,7 @@ export const GAME_CONFIG = {
     frag02_w_solo_crawler: { enemy:'canyon_solo_crawler', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
     frag02_w_mix11: { enemy:'canyon_mix11', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
     frag02_w_mix12: { enemy:'canyon_mix12', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
-    frag02_mid: { enemy:'canyon_solo_censer',   /* ver -2631：原 mix10（香爐蠍組）整組改單獨出怪 → 同一隻主角的單隻版 */ partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild' },   // 風蝕迴廊那一場（ver -2141）
+    frag02_mid: { enemy:'canyon_bgcomp',   /* ver -2844（Ray：「改成讀背景編組」）：讀 tools/group_editor.html 存的 bg_canyon_corridor；-2631 是 canyon_solo_censer */ partner:'cecilie', story:1, allowLose:true, noEval:true, dream:true, session:'canyon_wild' },   // 風蝕迴廊那一場（ver -2141）
     range_trainee: { enemy:'dart_target', record:'range', noReward:true, noEval:true,
                      timeAttack:{ wrongPenaltySec:3, se:'se_dart_fail', parSec:50,
                                   prizeSec:30, prize:'Shotgun_Dragon' } },
@@ -4605,7 +4607,7 @@ export const ASSETS = {
      ⚠ `index.html` 的 `apple-touch-icon` **照舊指 `.png`** —— iOS 的觸控圖示
        吃不了 webp，所以那張 PNG 是**還在用的**，不要收進 `_originals`。 */
   home_emblem:    "resources/background/tivot_emblem.webp",   // 主畫面徽記（含 THE IV ORDER OF TESTAMENT 弧字）
-  enemy_faceless: "resources/enemy/saint_ug_ci.jpg",   // 地下聖徒（UG=underground）
+  enemy_faceless: "resources/enemy/saint_ug_giant.webp",   // 地下聖徒（UG=underground）；ver -2845（Ray 改設定成巨型聖徒：掙脫的宗教枷具＋鐵處女鐵面具＋粗頸）換 GPT 真 alpha 立繪。⚠ 亂入者 intruderEnemy 仍指舊的 saint_ug_ci.jpg（要不要跟著換待 Ray）
   cutin_saint:    "resources/partner/luna_ci_saint.jpg",   // 聖徒化 cut-in 暫代圖
   inspector_freya: "resources/inspector/freya_si_01.webp",
   /* Boss 戰（挑戰的槍之魔女）勝利結算評價者：璐娜莉亞（ver -471，Ray 交稿）——
@@ -5682,6 +5684,7 @@ export const ENEMY_IDLE = {
   /* ⚠ ver -2176（Ray：「人以外的待機全部 f 數減半 freeze x2 交件」→「把敵待機全接上」）：
      怪一律改指 `_idle_v2`（v1 的偶數格，12 格 4fps，總長仍 3 秒）；**人類不改**（米夏照舊 24 格 8fps）。
      v1 資料夾留著，Ray 確認後走 tools/recycle.sh 回收。 */
+  saint_ug_giant: 'resources/enemy/anim/saint_ug_giant_idle_v1/',   // 地下聖徒待機（ver -2850，Ray 剪的 faceless_idle2_cut：重呼吸＋反覆握拳，28 格 24fps loop）
   sorana_si_guard: 'resources/enemy/anim/sorana_guard_idle_v1/',   // 索菈娜待機（ver -2830，Ray 剪的 np_sorana_idle_wan7_cut 22 格 24fps：呼吸上下起伏＋乳搖）
   man_misha: 'resources/enemy/anim/man_misha_idle_v1/',   // ver -2079：人類用「明顯深呼吸」提示詞、不掛 LoRA（Live2D LoRA 兩輪測不出效果）
   mon_arch_warden: 'resources/enemy/anim/mon_arch_warden_idle_v2/',
@@ -5833,6 +5836,7 @@ export const ENEMY_IDLE = {
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
+  saint_ug_giant: { dir:'resources/enemy/anim/saint_ug_giant_atk_v1/', hit:7 },   // 地下聖徒 A＝爪撲（ver -2845，Ray 剪的 AB＋BA，17 格 24fps，打到＝AB 最後一格）；受擊寫在卡上（script/enemies.js faceless.hitFx）
   sorana_si_guard: { dir:'resources/enemy/anim/sorana_guard_atk_v1/', hit:1, near:1.35, nearIn:120 },   // 索菈娜 A＝撲斬（ver -2818，Ray 剪的 np_sorana_slash_full_cut 10 格；「要前撲位移 幀不要太高」→ 16fps、打到那一格撲近到 1.35）
   mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_pounce_v1/', hit:7, hitFx:'reassembled_claw' },   // 心魘 A（ver -2773）：撲擊＋單爪
   mon_relic_candletower: { dir:'resources/enemy/anim/mon_relic_candletower_atk_v5/', hit:9, hitFx:'candletower_claw' },   // 禍魘祭司（北泊）A：tiger rule 爪擊 AB＋BA（32 格），打到＝AB 最後一格（ver -2732）；v2（ver -2797，Ray：「A的最後一格破圖換掉、色調調成跟I一樣」）：逐格 LAB 對齊待機第 0 格，最後一格換成待機第 0 格；v3（ver -2798）：第 0 格也換成待機第 0 格、刪原第 30 格；v4（ver -2799，Ray：「A最後再抽一格」）：再刪倒數第二格；v5（ver -2800，Ray：「攻擊動畫會糊」→「交件」）：用補好 alpha 的立繪 864×864 重跑 AB＋BA、tiger 剪法、逐格對齊第 0 格色調
@@ -5894,6 +5898,7 @@ export const ENEMY_DODGE = {
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_MISS = {
+  saint_ug_giant: { dir:'resources/enemy/anim/saint_ug_giant_miss_v1/', hit:5, near:1.2, nearIn:100, nearOut:120 },   // 地下聖徒 M＝上勾拳（ver -2845，14 格，打到 5）；受擊＝迎面衝擊模糊；揮拳往鏡頭逼近 1.2 倍，前 100ms 衝上、打到後 120ms 退回（-2846，Ray：「揮拳時要帶一點位移 往viewer逼近 但位移不要太多幀」）
   mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_roar_v1/', hit:9, windupSe:'se_enemy_beast02', fx:[{ frame:9, type:'roar', at:[0.53,0.25], wipe:true }] },   // ver -2777：新立繪的仰頭咆哮（Wan，Ray 剪的 np_altar_roar_cut 31 格 24fps），延時與點錯共用
   mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_atk_v1/', hit:12, hitFx:'reassembled_wave' },   // 心魘 DM（ver -2773）：三手張開放光（偏橘光波＋抽掉一個數字）
   /* 崩岩巨像 M＝仰天咆哮（ver -2692，Ray 剪的 cut＋鎖雙腳：21 格 16fps）：第 12／14／17 格（原片 36／42／43）震畫面，第 12 格敵回血 10%＋盤面全清換下一盤、不傷敵（ver -2694，Ray：「咆效果是把盤面全清 但是不會對他造成傷害」）（Ray：「36 42 43 格播放時畫面震動 怪回血 10%」）；
@@ -5907,6 +5912,7 @@ export const ENEMY_MISS = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, windupSe:'se_flame', fx:[{ frame:48, type:'rubble', se:'se_rockimpact' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
+  saint_ug_giant: { dir:'resources/enemy/anim/saint_ug_giant_delay_v1/', hit:4, near:1.2, nearIn:100, nearOut:120 },   // 地下聖徒 D＝直拳朝鏡頭（ver -2845，13 格，打到 4）；受擊＝迎面衝擊模糊；揮拳往鏡頭逼近 1.2 倍，前 100ms 衝上、打到後 120ms 退回（-2846，Ray：「揮拳時要帶一點位移 往viewer逼近 但位移不要太多幀」）
   sorana_si_guard: { dir:'resources/enemy/anim/sorana_guard_throw_v1/', hit:2, fx:[{ frame:2, type:'knives', at:[0.78,0.36], n:3 }] },   // 索菈娜 DM＝擲飛刀（ver -2819，Ray 剪的 np_sorana_throw3_full_cut 12 格，第 5 格加一點揮動殘影；飛刀程式畫；ver -2822 Ray：「出刀點提早 在47格出刀」＝原始第 47 格＝交件第 2 格）
   mon_relic_candletower: { dir:'resources/enemy/anim/mon_relic_candletower_atk_v5/', hit:9, hitFx:'candletower_claw', noMiss:true },   // 禍魘祭司 D＝同 A（ver -2801，Ray：「點錯扣秒就好 延時同A」）—— noMiss：點錯不借這一支
   mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_atk_v1/', hit:12, hitFx:'reassembled_wave' },   // 心魘 DM（ver -2773）：三手張開放光（偏橘光波＋抽掉一個數字）

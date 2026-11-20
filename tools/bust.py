@@ -102,6 +102,10 @@ def run(check=False):
     for name, path, s in dirty:
         open(path, 'w', encoding='utf-8').write(s); print('已更新', name)
     if not dirty: print('本來就是最新的')
+    # ⑤ 離線包清單（ver -2842）：首頁「離線下載」照它抓，每版跟著重產（見 tools/offline_list.py）
+    import offline_list
+    ol = offline_list.write(ROOT)
+    print('離線包清單 %d 檔 %.2f GB' % (len(ol['files']), ol['bytes'] / 1e9))
     print('v=' + v + '　模組 ' + str(len(modules())) + ' 支')
     return 0
 

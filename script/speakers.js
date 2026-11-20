@@ -1901,11 +1901,11 @@ export const ART = {
   imcommander: { fxShift:-0.01, yShift:25, cm:150, eye:30, fx:0.460, top:8, bot:1523,
            side:'R', alt:null, base:'resources/si/npc/npc_imcommander_si_front.webp', expr:{
     front:    { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_front.webp',    top:8,  bot:1523, fx:0.460 },
-    urgent:   { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_urgent.webp',   top:4,  bot:1518, fx:0.669 },
-    shock:    { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_shock.webp',    top:12, bot:1518, fx:0.699 },
+    urgent:   { blink:'off', fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_urgent.webp',   top:4,  bot:1518, fx:0.669 },
+    shock:    { blink:'off', fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_shock.webp',    top:12, bot:1518, fx:0.699 },
     surprise: { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_surprise.webp', top:4,  bot:1521, fx:0.444 },
     salute:   { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_salute.webp',   top:11, bot:1521, fx:0.452 },
-    plead:    { fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_plead.webp',    top:8,  bot:1515, fx:0.481 },
+    plead:    { blink:'off', fxShift:-0.01, yShift:25, cm:150, src:'resources/si/npc/npc_imcommander_si_plead.webp',    top:8,  bot:1515, fx:0.481 },
   } },
   commander: { cm:180, eye:30, fx:0.53, top:4, bot:1525,
            side:'R', alt:null, base:'resources/si/npc/npc_commander_si_front.webp', expr:{
