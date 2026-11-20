@@ -93,4 +93,69 @@ export function place(img, shadow, xf, opt){
   shadow.classList.add('on');
   return true;
 }
+/* 雙腳量測（ver -2839，Ray：「後腳也要踩在影子上否則看起來浮在空中」「影子要鎖雙腳」）：
+   只看**膚色**的像素（深膚：R 高、B/R 約 0.33~0.6、G/R 約 0.5~0.78）—— 金鈴、流蘇的 B 幾乎是 0，白裙沒有彩度，都不會被當成腳。
+   最低的膚色點＝前腳底；離它水平夠遠（≥ 圖寬 12%）的最低膚色點＝後腳底。每張圖只量一次。 */
+const FW = 64, FH = 96;
+const feetCache = new Map();
+function measureFeet(img){
+  const src = img.currentSrc || img.src || '';
+  if(!src) return null;
+  if(feetCache.has(src)) return feetCache.get(src);
+  if(!img.complete || !img.naturalWidth) return undefined;
+  let out = null;
+  try{
+    const c = document.createElement('canvas'); c.width = FW; c.height = FH;
+    const g = c.getContext('2d', { willReadFrequently:true });
+    g.drawImage(img, 0, 0, FW, FH);
+    const d = g.getImageData(0, 0, FW, FH).data;
+    const skin = [];
+    for(let y=0; y<FH; y++) for(let x=0; x<FW; x++){
+      const k=(y*FW+x)*4, r=d[k], gg=d[k+1], b=d[k+2], a=d[k+3];
+      if(a<160 || r<110) continue;
+      const br=b/r, gr=gg/r;
+      if(br>0.3 && br<0.62 && gr>0.48 && gr<0.8) skin.push([x,y]);
+    }
+    if(skin.length){
+      let f = skin[0]; for(const p of skin) if(p[1]>f[1]) f=p;
+      let bk = null; for(const p of skin) if(Math.abs(p[0]-f[0])>=FW*0.12 && (!bk || p[1]>bk[1])) bk=p;
+      const fy=(f[1]+1)/FH, fx=(f[0]+0.5)/FW;
+      /* 腳掌寬：前腳底往上 6% 那一段的膚色左右界 */
+      let l=FW, r=-1; for(const p of skin) if(p[1]>=f[1]-FH*0.06 && Math.abs(p[0]-f[0])<FW*0.12){ if(p[0]<l) l=p[0]; if(p[0]>r) r=p[0]; }
+      const fw=Math.max(2,(r-l+1))/FW;
+      out = { fx, fy, fw, bx: bk ? (bk[0]+0.5)/FW : null, by: bk ? (bk[1]+1)/FH : null };
+      if(bk && out.by < fy - 0.25) { out.bx=null; out.by=null; }   // 後腳離地太高（抬腳）＝不算踩地
+    }
+  }catch(_){ out = null; }
+  feetCache.set(src, out);
+  return out;
+}
+
+/* 跟著動畫格擺（ver -2837／-2839）：動畫格是 object-fit:fill 的 <img>，可能帶 transform（撲近放大）——
+   直接用**畫面上的外框**（getBoundingClientRect，含 transform）換算到宿主（#top）座標。
+   影子＝一顆旋轉的橢圓，**長軸連起前後兩腳**（兩隻腳都踩在上面），寬度＝兩腳距離＋一個腳掌；只有一隻腳著地時退回單腳。
+   `opt.vary`＝跟第一格比，腳掌那一段的大小只准變 ±多少（「一點大小變化」）。回傳影子長度（擺好了）。 */
+export function placeOnFrame(img, shadow, host, opt){
+  if(!img || !shadow || !host) return false;
+  const m = measureFeet(img);
+  if(!m) return false;
+  const r = img.getBoundingClientRect(), hr = host.getBoundingClientRect();
+  if(!r.width || !r.height) return false;
+  const P = (u,v)=>[ r.left - hr.left + u*r.width, r.top - hr.top + v*r.height ];
+  const [x1,y1] = P(m.fx, m.fy);
+  const [x2,y2] = m.bx!=null ? P(m.bx, m.by) : [x1,y1];
+  let foot = Math.max(24, m.fw*r.width) * 1.6;
+  const base = opt && opt.base, vary = (opt && opt.vary!=null) ? opt.vary : 0.15;
+  if(base) foot = Math.min(base*(1+vary), Math.max(base*(1-vary), foot));
+  const dist = Math.hypot(x2-x1, y2-y1), ang = Math.atan2(y2-y1, x2-x1)*180/Math.PI;
+  const w = dist + foot, h = foot * 0.42;
+  const cx = (x1+x2)/2, cy = (y1+y2)/2;
+  shadow.style.left   = (cx - w/2) + 'px';
+  shadow.style.top    = (cy - h/2) + 'px';
+  shadow.style.width  = w + 'px';
+  shadow.style.height = h + 'px';
+  shadow.style.transform = 'rotate(' + (((ang+90)%180+180)%180-90).toFixed(1) + 'deg)';
+  shadow.classList.add('on');
+  return foot;
+}
 export function hide(shadow){ if(shadow) shadow.classList.remove('on'); }

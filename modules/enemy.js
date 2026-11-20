@@ -2654,6 +2654,24 @@ export function placeEnemyShadow(){
   if(!en || en.noShadow || NO_SHADOW_KINDS[en.kind] || !eImg.getAttribute('src')){ groundShadow.hide(sh); return; }
   groundShadow.place(eImg, sh);
 }
+/* 卡上 `shadowFollow:1`（ver -2837，索菈娜）：影子跟著**畫面上那一格動畫**走（待機／攻擊／閃避／格擋都是 .en-idle 那一層換 src），
+   腳寬與位置逐格量（groundShadow.placeOnFrame）—— 姿勢一變影子就跟著大小變、閃避與撲近的位移也跟著走。
+   每一幀只在那一格的 src 換掉時才擺一次（rAF 裡比對 src，沒換就什麼都不做）；換怪／收場時 shadowCard 沒有這一格就停。 */
+let shadowFollowRaf=0, shadowFollowSrc='', shadowBase=null;
+function shadowFollowTick(){
+  shadowFollowRaf=0;
+  const en=shadowCard; if(!en || !en.shadowFollow || state.over) { shadowFollowSrc=''; const s0=$('enemyShadow'); if(s0){ s0.style.transition=''; s0.style.transform=''; } return; }
+  shadowFollowRaf=requestAnimationFrame(shadowFollowTick);
+  const top=$('top'), sh=$('enemyShadow'); if(!top || !sh) return;
+  const im=[...top.querySelectorAll(':scope > img.en-idle')].reverse().find(x=>x.offsetWidth && x.getAttribute('src') && getComputedStyle(x).visibility!=='hidden' && +getComputedStyle(x).opacity>0.05);
+  if(!im) return;
+  const key=im.getAttribute('src')+'|'+im.style.transform+'|'+im.style.left+'|'+im.style.top;
+  if(key===shadowFollowSrc) return;
+  const w=groundShadow.placeOnFrame(im, sh, top, shadowBase || undefined);
+  if(w){ shadowFollowSrc=key; if(!shadowBase) shadowBase={ base:w, vary:0.15 }; }   // 第一格（站姿）的腳掌大小當基準，之後只准 ±15%   // 第一格（站姿）的寬當基準；撲近時外框變大，影子照比例一起變大
+  sh.style.transition='left .08s linear, top .08s linear, width .08s linear, height .08s linear, transform .08s linear';
+}
+export function startShadowFollow(){ shadowBase=null; if(!shadowFollowRaf){ shadowFollowSrc=''; shadowFollowRaf=requestAnimationFrame(shadowFollowTick); } }
 try{
   const eImg0=document.getElementById('enemyImg');
   if(eImg0) eImg0.addEventListener('load', ()=>placeEnemyShadow());
@@ -3385,6 +3403,7 @@ export function loadEnemyPortrait(en){
   if(en && en.group){ eImg.removeAttribute('src'); eImg.style.visibility='hidden'; applyEnemyFit(en.fit); return; }
   eImg.style.visibility='';
   shadowCard = en || null;
+  if(en && en.shadowFollow) startShadowFollow();
   groundShadow.hide($('enemyShadow'));     // 換怪：新的腳量好之前不留上一隻的影子
   clearTimeout(riseT); riseT=0;
   clearTimeout(landT); landT=0;

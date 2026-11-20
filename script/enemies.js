@@ -232,6 +232,7 @@ export const ENEMIES = {
     man_sorana: {
       name:'森住民',
       story:1, counterStagger:1, boss:0,
+      shadowFollow:1,   // 影子跟著動畫格走（大小隨姿勢、跟著閃避／撲近位移；ver -2837，Ray）
       tapDelayClear:0.5,   // 普攻（點對一格）只清當前延時條的 50%（ver -2836，Ray：「把她的延時清條改成50%」「是普攻那個」）
       Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
       weaponMod:{ '重機槍':[0,0], '霰彈槍':[0,0.3], '萊福槍':[0,0.5] },   // 每把＝[傷害, 迴避]：傷害 正=增傷/負=抗性減傷；迴避＝額外 miss 率(0~1)。都加法(0.1＝+10%)，預設 [0,0]
@@ -248,7 +249,7 @@ export const ENEMIES = {
       stack:1,
       image:'enemy_sorana_guard',   // ver -2831 定版（Ray：「索菈娜整組定版」）：待機／撲斬／飛刀／三閃避／格擋都是這張 guard 立繪的動畫（config.ENEMY_IDLE／ATK／DELAY／DODGE 的 sorana_si_guard）
       entrance:'vo_sorana_pack',   // 敵立繪一出現就播（ver -818，Ray）——她是 human 不吃降臨，另掛登場音
-      fit:{ mode:'contain', pos:'center bottom' },   // ver -2831：guard 立繪全身入框
+      fit:{ mode:'contain', pos:'50% 100%', scale:0.84, shiftY:-0.05 },   // ver -2831：guard 立繪全身入框
       parryBasic:0.7,   // 普攻有效率 30%（Ray 11-19）：擋下的 70% 演閃避（MISS）、有效的演格擋；反擊同率（ver -2817）
       bg:'../enemy/sorana_battle_bg_v3', bgLock:true,   // 湖上甲板（ver -2822 GPT 重畫＋背景副理程式水面／雲）
       hp:270,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
