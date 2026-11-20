@@ -397,7 +397,8 @@ function staggerOnCounter(grade){
   /* ver -2618（Ray：「反擊不應該全清延時 應該清1/2」）：不再歸零，只把已經走掉的那一段退回一部分。
      ver -2702（Ray：「黃圈反擊只減 1/4 delay，橘圈 1/3，紅圈 1/2」）：依帶分；表在 tuning.counterStaggerClear。 */
   const t = (GAME_CONFIG.tuning||{}).counterStaggerClear;
-  const k = (t && typeof t==='object') ? t[grade||'counter'] : t;
+  const k = state.enemyStaggerClear!=null ? state.enemyStaggerClear   // 卡上 counterStaggerClear 優先（ver -2835，Ray：「把她的延時清條改成50%」）
+          : (t && typeof t==='object') ? t[grade||'counter'] : t;
   if(api.easeIntervalDeadline) api.easeIntervalDeadline(k==null ? 1 : k);
   else if(api.resetIntervalDeadline) api.resetIntervalDeadline();
 }

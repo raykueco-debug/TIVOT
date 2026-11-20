@@ -3850,6 +3850,7 @@ export function setEnemy(key, opts){
   /* 反擊硬直（ver -495，Ray：「被反擊時延時歸零；預設為 1，0 的話就算被反擊
      延時計時也不會歸零」）。卡上沒寫＝1（會硬直）。判定在 defense 的反擊分支。 */
   state.enemyCounterStagger = (en.counterStagger!=null) ? en.counterStagger : 1;
+  state.enemyStaggerClear = (en.counterStaggerClear!=null) ? en.counterStaggerClear : null;   // 卡上逐怪覆寫反擊清條成數（ver -2835，索菈娜一律 0.5）；沒寫＝照 tuning 的分帶表
   /* 普攻減延時（ver -2834，Ray：「1 是全清，0.8 是清當前延時條的 80%，預設都先用 0.8」）：
      卡上 tapDelayClear 優先，沒寫＝ tuning.tapDelayClear（預設只住在那裡，鐵律 7）。 */
   { const td = (en.tapDelayClear!=null) ? en.tapDelayClear : (GAME_CONFIG.tuning||{}).tapDelayClear;
