@@ -158,4 +158,35 @@ export function placeOnFrame(img, shadow, host, opt){
   shadow.classList.add('on');
   return foot;
 }
+/* 程式投影（ver -2840，Ray：「用程式投影做得出來嗎 跟原圖連著的黑影」）：
+   拿畫面上那一格動畫的剪影（同一張圖、塗黑），以**前腳底那一條線**為原點壓扁＋斜推，倒在地上 —— 腳底接著原圖。
+   `castEl` 是一張 <img>（CSS `.enemy-cast`：塗黑、半透明、柔邊、往上漸淡），這裡只負責 src、外框與變形。
+   ⚠ 外框用 getBoundingClientRect（含撲近的放大），所以投影跟著位移與縮放走。回 true＝擺好了。 */
+export function castOnFrame(img, castEl, host, opt){
+  if(!img || !castEl || !host) return false;
+  const f = measureFeet(img), m = measure(img);
+  if(f===undefined || m===undefined) return false;
+  const fy = f ? f.fy : (m ? m.bot : 1);
+  const r = img.getBoundingClientRect(), hr = host.getBoundingClientRect();
+  if(!r.width || !r.height) return false;
+  const src = img.getAttribute('src');
+  if(castEl.getAttribute('src')!==src) castEl.setAttribute('src', src);
+  /* 非 fill 的立繪（#enemyImg 的 contain／cover）：照抄 object-fit／position，腳底那條線換算成元素內的比例 */
+  const cs = getComputedStyle(img);
+  castEl.style.objectFit = cs.objectFit; castEl.style.objectPosition = cs.objectPosition;
+  let oy = fy;
+  if(cs.objectFit && cs.objectFit!=='fill'){
+    const box = { x:0, y:0, w:img.offsetWidth, h:img.offsetHeight };
+    if(box.w && box.h){ oy = mapFit(img, box)(0.5, fy)[1] / box.h; }
+  }
+  castEl.style.opacity = String(0.42 * Math.min(1, +cs.opacity || 0));
+  castEl.style.left = (r.left - hr.left) + 'px'; castEl.style.top = (r.top - hr.top) + 'px';
+  castEl.style.width = r.width + 'px'; castEl.style.height = r.height + 'px';
+  const sy = (opt && opt.squash) || 0.3, sk = (opt && opt.skew!=null) ? opt.skew : -38;
+  castEl.style.transformOrigin = '50% ' + (oy*100).toFixed(2) + '%';
+  castEl.style.transform = 'skewX(' + sk + 'deg) scaleY(' + sy + ')';
+  castEl.style.setProperty('--cast-foot', (oy*100).toFixed(2) + '%');
+  castEl.classList.add('on');
+  return true;
+}
 export function hide(shadow){ if(shadow) shadow.classList.remove('on'); }

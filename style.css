@@ -364,6 +364,12 @@
     transition:opacity .35s ease;}
   .ground-shadow.on{display:block;opacity:1;}
   #enemyShadow{z-index:0;}
+  /* 程式投影（ver -2840，enemy 的 shadowFollow:'cast'／groundShadow.castOnFrame）：同一格剪影塗黑、壓扁斜倒在地上，腳底接著原圖，往遠處漸淡 */
+  #top .enemy-cast{position:absolute;pointer-events:none;display:none;z-index:0;object-fit:fill;
+    filter:brightness(0) blur(1.5px);opacity:.42;
+    -webkit-mask-image:linear-gradient(to top, transparent 0, #000 calc(100% - var(--cast-foot,100%)), rgba(0,0,0,.15) 100%);
+            mask-image:linear-gradient(to top, transparent 0, #000 calc(100% - var(--cast-foot,100%)), rgba(0,0,0,.15) 100%);}
+  #top .enemy-cast.on{display:block;}
   #top:has(#enemyImg.enemy-purge) #enemyShadow,
   #top:has(#enemyImg.enemy-leave) #enemyShadow{opacity:0;}
   #top:has(#enemyImg.enemy-rise) #enemyShadow,

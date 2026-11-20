@@ -2652,21 +2652,35 @@ export function placeEnemyShadow(){
   if(!sh || !eImg) return;
   const en=shadowCard;
   if(!en || en.noShadow || NO_SHADOW_KINDS[en.kind] || !eImg.getAttribute('src')){ groundShadow.hide(sh); return; }
+  if(castMode(en)){ groundShadow.hide(sh); startShadowFollow(); shadowFollowSrc=''; return; }   // 程式投影接手（ver -2841 起全體預設）
   groundShadow.place(eImg, sh);
 }
 /* 卡上 `shadowFollow:1`（ver -2837，索菈娜）：影子跟著**畫面上那一格動畫**走（待機／攻擊／閃避／格擋都是 .en-idle 那一層換 src），
    腳寬與位置逐格量（groundShadow.placeOnFrame）—— 姿勢一變影子就跟著大小變、閃避與撲近的位移也跟著走。
    每一幀只在那一格的 src 換掉時才擺一次（rAF 裡比對 src，沒換就什麼都不做）；換怪／收場時 shadowCard 沒有這一格就停。 */
 let shadowFollowRaf=0, shadowFollowSrc='', shadowBase=null;
-function shadowFollowTick(){
+/* ⚠⚠ **敵影預設＝程式投影**（ver -2841，Ray：「很好 以後敵影都這樣做」）：剪影塗黑、壓扁斜倒在地上、腳底接著原圖，跟著每一格動畫走。
+   例外照舊走腳底橢圓／不畫：卡上 `noShadow`、飛行與船（NO_SHADOW_KINDS）、群體敵人（各人自己的影子）、卡上 `shadowFollow:0`（明寫不要投影）或 `shadowFollow:1`（腳底橢圓跟格）。
+   卡上 `castShadow:{squash, skew}` 調壓扁幾成與斜的角度（預設 0.3／-38°）。 */
+function castMode(en){ return !!en && !en.noShadow && !NO_SHADOW_KINDS[en.kind] && !en.group && en.shadowFollow!==0 && en.shadowFollow!==1; }
+let shadowFollowLast=0;
+function shadowFollowTick(now){
   shadowFollowRaf=0;
-  const en=shadowCard; if(!en || !en.shadowFollow || state.over) { shadowFollowSrc=''; const s0=$('enemyShadow'); if(s0){ s0.style.transition=''; s0.style.transform=''; } return; }
+  const en=shadowCard; if(!en || !(castMode(en) || en.shadowFollow===1) || state.over) { shadowFollowSrc=''; const s0=$('enemyShadow'); if(s0){ s0.style.transition=''; s0.style.transform=''; } const c0=$('enemyCast'); if(c0) c0.remove(); return; }
   shadowFollowRaf=requestAnimationFrame(shadowFollowTick);
+  if(document.hidden || (now||0)-shadowFollowLast<33) return; shadowFollowLast=now||0;   // 上限每秒 30 次（手機發熱，鐵律 12）
   const top=$('top'), sh=$('enemyShadow'); if(!top || !sh) return;
-  const im=[...top.querySelectorAll(':scope > img.en-idle')].reverse().find(x=>x.offsetWidth && x.getAttribute('src') && getComputedStyle(x).visibility!=='hidden' && +getComputedStyle(x).opacity>0.05);
-  if(!im) return;
-  const key=im.getAttribute('src')+'|'+im.style.transform+'|'+im.style.left+'|'+im.style.top;
+  let im=[...top.querySelectorAll(':scope > img.en-idle')].reverse().find(x=>x.offsetWidth && x.getAttribute('src') && getComputedStyle(x).visibility!=='hidden' && +getComputedStyle(x).opacity>0.05);
+  if(!im && castMode(en)){ const e0=$('enemyImg'); if(e0 && e0.offsetWidth && e0.getAttribute('src') && getComputedStyle(e0).visibility!=='hidden') im=e0; }   // 沒有動畫格（靜態立繪）就投 #enemyImg
+  if(!im){ const c0=$('enemyCast'); if(c0) c0.classList.remove('on'); return; }
+  const b0=im.getBoundingClientRect(), key=im.getAttribute('src')+'|'+Math.round(b0.left)+'|'+Math.round(b0.top)+'|'+Math.round(b0.width)+'|'+Math.round(b0.height)+'|'+getComputedStyle(im).opacity;   // 外框（含降臨／撲近的 transform）與透明度變了也要重擺
   if(key===shadowFollowSrc) return;
+  if(castMode(en)){   // 程式投影（ver -2840）：塗黑的剪影倒在地上、腳底接著原圖；橢圓影子收起來
+    let ce=$('enemyCast'); if(!ce){ ce=document.createElement('img'); ce.id='enemyCast'; ce.className='enemy-cast'; ce.alt=''; const e0=$('enemyImg'); if(e0) top.insertBefore(ce, e0); else top.prepend(ce); }
+    groundShadow.hide(sh);
+    if(groundShadow.castOnFrame(im, ce, top, en.castShadow)) shadowFollowSrc=key;
+    return;
+  }
   const w=groundShadow.placeOnFrame(im, sh, top, shadowBase || undefined);
   if(w){ shadowFollowSrc=key; if(!shadowBase) shadowBase={ base:w, vary:0.15 }; }   // 第一格（站姿）的腳掌大小當基準，之後只准 ±15%   // 第一格（站姿）的寬當基準；撲近時外框變大，影子照比例一起變大
   sh.style.transition='left .08s linear, top .08s linear, width .08s linear, height .08s linear, transform .08s linear';
@@ -3403,7 +3417,7 @@ export function loadEnemyPortrait(en){
   if(en && en.group){ eImg.removeAttribute('src'); eImg.style.visibility='hidden'; applyEnemyFit(en.fit); return; }
   eImg.style.visibility='';
   shadowCard = en || null;
-  if(en && en.shadowFollow) startShadowFollow();
+  if(en && (castMode(en) || en.shadowFollow===1)) startShadowFollow();
   groundShadow.hide($('enemyShadow'));     // 換怪：新的腳量好之前不留上一隻的影子
   clearTimeout(riseT); riseT=0;
   clearTimeout(landT); landT=0;
