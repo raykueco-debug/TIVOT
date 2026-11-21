@@ -13,7 +13,7 @@
      sky       天空層：{img, mask, clouds:[中景, 近景]}（影片的天空挖掉，透出靜態天空＋程式雲）
    ⚠ 檔案都在不會被同名覆蓋的 anim/ 底下；交新的就重跑 `py tools/bg_anim_index.py --check`（會驗這裡的路徑都在）。 */
 const A = 'resources/background/anim/';
-const CUMULUS = ['resources/background/sky_parallax/sky_cumulus_day_l1_mid.webp', 'resources/background/sky_parallax/sky_cumulus_day_l2_near.webp'];
+const CUMULUS = ['resources/background/sky_parallax/sky_cumulus_day_l1_mid.webp?v=138d532a', 'resources/background/sky_parallax/sky_cumulus_day_l2_near.webp?v=4ee9b4ce'];
 const PURPLE = ['resources/background/_sky_layers/purple_l1_mid.webp', 'resources/background/_sky_layers/purple_l2_near.webp'];
 const W = (mask, o) => Object.assign({ mask: A + mask }, o || {});
 const F = (mask, o) => Object.assign({ mask: A + mask }, o || {});

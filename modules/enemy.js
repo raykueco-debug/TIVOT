@@ -3983,7 +3983,10 @@ export function setEnemy(key, opts){
   if(topEl){
     /* 卡上 `bgBand`（ver -2576，登艦戰甲板四時段）：基底名＋現在的時段（dawn／day／dusk／night，深夜用 night）。 */
     const bandBg = en.bgBand ? en.bgBand+'_'+({ Dawn:'dawn', Day:'day', Dusk:'dusk', night:'night', midnight:'night' }[clock.band()] || 'day') : '';
-    const nm = (en.bgLock && en.bg) || state.battleBg || bandBg || en.bg || '';   // 卡上 bgLock：這一場一定用自己的背景（ver -2524，安雅光翼的教堂殘垣）
+    /* 戰鬥卡的 `bg`（ver -2851，夢境戰 cap_dream 的專用背景）：**這一場**一定用它，蓋過敵人卡與城鎮那一格 ——
+       寫在戰鬥卡不寫在敵人卡，因為同一張敵人卡（faceless）也是挑戰模式的第一隻，那邊不該跟著換。 */
+    const sbBg = (state.scriptRun && state.scriptBattleId && ((GAME_CONFIG.battles||{})[state.scriptBattleId]||{}).bg) || '';
+    const nm = sbBg || (en.bgLock && en.bg) || state.battleBg || bandBg || en.bg || '';   // 卡上 bgLock：這一場一定用自己的背景（ver -2524，安雅光翼的教堂殘垣）
     /* 群體敵人的去人背景（ver -2043）：**它就是這一場的戰鬥背景**，蓋過城鎮那一格的（battleBg）。
        ⚠ 直接寫路徑（四張都叫 plate.webp，走 bgUrl 的資料夾表會撞名）。 */
     const plate = en.group && en.group.plate;
