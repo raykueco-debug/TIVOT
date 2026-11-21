@@ -3078,3 +3078,18 @@ when	from	to	reason
 20261121-150931	resources/background/anim/tomb/tomb_waterstair_sep_v1.mp4	_recycle/resources/background/anim/tomb/tomb_waterstair_sep_v1.mp4.20261121-150931	背景瘦身 11-21（Ray：「照這個跑」）：背景影片重壓成 1152 寬 crf30
 20261121-150931	resources/background/anim/winsmoor_siege/ws_0_0_dusk_sep_v1.mp4	_recycle/resources/background/anim/winsmoor_siege/ws_0_0_dusk_sep_v1.mp4	背景瘦身 11-21（Ray：「照這個跑」）：背景影片重壓成 1152 寬 crf30
 20261121-150931	resources/background/anim/winsmoor_siege/ws_0_1_dusk_sep_v1.mp4	_recycle/resources/background/anim/winsmoor_siege/ws_0_1_dusk_sep_v1.mp4	背景瘦身 11-21（Ray：「照這個跑」）：背景影片重壓成 1152 寬 crf30
+20261121-163635	flight/enemy/flm_serpent/mon3d.glb	_recycle/flight/enemy/flm_serpent/mon3d.glb	空戰3D：羽蛇 v1（翅膀做成垂直牆），Ray 11-21 通過 v3 後回收
+20261121-163635	flight/enemy/flm_serpent/mon3d_lo.glb	_recycle/flight/enemy/flm_serpent/mon3d_lo.glb	空戰3D：羽蛇 v1（翅膀做成垂直牆），Ray 11-21 通過 v3 後回收
+20261121-163635	flight/enemy/flm_serpent/mon3d_atlas.webp	_recycle/flight/enemy/flm_serpent/mon3d_atlas.webp	空戰3D：羽蛇 v1（翅膀做成垂直牆），Ray 11-21 通過 v3 後回收
+20261121-163636	flight/enemy/flm_centipi/mon3d.glb	_recycle/flight/enemy/flm_centipi/mon3d.glb	空戰3D：蜈蚣 v1（翅膀紋路太多），Ray 11-21 通過 v2 後回收
+20261121-163636	flight/enemy/flm_centipi/mon3d_lo.glb	_recycle/flight/enemy/flm_centipi/mon3d_lo.glb	空戰3D：蜈蚣 v1（翅膀紋路太多），Ray 11-21 通過 v2 後回收
+20261121-163636	flight/enemy/flm_centipi/mon3d_atlas.webp	_recycle/flight/enemy/flm_centipi/mon3d_atlas.webp	空戰3D：蜈蚣 v1（翅膀紋路太多），Ray 11-21 通過 v2 後回收
+20261121-163636	resources/_originals/flight/mon3d/_test_mawbat_4view_std.png	_recycle/resources/_originals/flight/mon3d/_test_mawbat_4view_std.png	空戰3D：工具測試與淡紋路試做的中間檔，Ray 11-21 同意回收
+20261121-163636	resources/_originals/flight/mon3d/_test_mawbat_cells	_recycle/resources/_originals/flight/mon3d/_test_mawbat_cells	空戰3D：工具測試與淡紋路試做的中間檔，Ray 11-21 同意回收
+20261121-163636	resources/_originals/flight/mon3d/sky_centipi_cells_vein3_100	_recycle/resources/_originals/flight/mon3d/sky_centipi_cells_vein3_100	空戰3D：工具測試與淡紋路試做的中間檔，Ray 11-21 同意回收
+20261121-163636	resources/_originals/flight/mon3d/sky_centipi_cells_vein5	_recycle/resources/_originals/flight/mon3d/sky_centipi_cells_vein5	空戰3D：工具測試與淡紋路試做的中間檔，Ray 11-21 同意回收
+20261121-163636	resources/_originals/flight/mon3d/sky_centipi_cells_vein9	_recycle/resources/_originals/flight/mon3d/sky_centipi_cells_vein9	空戰3D：工具測試與淡紋路試做的中間檔，Ray 11-21 同意回收
+20261121-163636	_test_mawbat_back.png	_recycle/_test_mawbat_back.png	空戰3D：工具測試與淡紋路試做的中間檔，Ray 11-21 同意回收
+20261121-163636	_test_mawbat_front.png	_recycle/_test_mawbat_front.png	空戰3D：工具測試與淡紋路試做的中間檔，Ray 11-21 同意回收
+20261121-163636	_test_mawbat_side.png	_recycle/_test_mawbat_side.png	空戰3D：工具測試與淡紋路試做的中間檔，Ray 11-21 同意回收
+20261121-163636	_test_mawbat_side_m.png	_recycle/_test_mawbat_side_m.png	空戰3D：工具測試與淡紋路試做的中間檔，Ray 11-21 同意回收

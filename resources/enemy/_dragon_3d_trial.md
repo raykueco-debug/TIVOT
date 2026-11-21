@@ -39,6 +39,21 @@
 - 接戰之後牠**照原方向繼續飛**（推棺那段時間不消失、不停住）。
 - 數量 >1：斜後隊形、相位錯開；33% 抽格每隻各存一張（不再整群關掉抽格）。
 
+## 羽蛇／巨型蜈蚣補做（2026-11-21，空戰 3D 怪副理）
+- 這兩隻是舊六視圖的 2D 怪（`ENEMY_KINDS` 鍵 `serpent`／`centipede`），11-07 那批沒做；現在 `DEF` 有了，`drg3dkind=all` 輪流清單裡也有。
+- 四視圖：`resources/_originals/flight/mon3d/mon3d_sky_serpent_4view_v3.png`／`mon3d_sky_centipi_4view_v2.png`（GPT 各一個新對話，上傳戰鬥立繪 `mon_serpent_side_v2`／`mon_centipi_side`）。
+  ⚠ GPT 第一版的正面／背面會把身體畫成「往下垂」（其實是俯視圖的畫法）→ 要明講「身體水平往後，正面看會被頭擋住」。
+  ⚠ 羽蛇 v2 的側面把翅膀畫成高舉，與正面／俯視的平展矛盾 → Hunyuan 把翅膀做成一整面垂直的牆。v3 要求「側面看翅膀是側邊、薄薄一片」才對。
+  ⇒ **四張的翅膀姿勢必須一致**，送 Hunyuan 前先用眼睛對一次。
+- Ray 11-21 兩隻都通過。羽蛇用 v3、蜈蚣用翅膀紋路淡化版（`tools/sky3d/wing_veins.py sky_centipi 5 0.6` → `bake.py --cells _cells_vein5_60`，Ray：「翅膀紋路少一點」）；兩隻的 v1 已回收（`_recycle/flight/enemy/`）。
+- 大小：2D 沒有 `spanW`，`spanK` 對齊俯視圖量到的翼展（羽蛇 ≈256、蜈蚣 ≈164 世界單位）。
+
+## 製作工具（2026-11-21 重寫進版控，舊的在 scratchpad 已遺失）
+- `tools/sky3d/prep4.py <四視圖> <鍵>`：找空白分隔線切格（左右欄各找各的橫線、清 GPT 畫的格線）→ 同一比例尺 → ComfyUI input 四張＋`_cells/` 四塊。
+- `tools/sky3d/run_hy.py <鍵>`：送 ComfyUI 的 Hunyuan3D-2mv（工作流是從 11-07 成品 glb 裡 SaveGLB 存的 prompt 撈回來的）。
+- `tools/sky3d/bake.py <鍵> <原始.glb> <輸出資料夾> [--crop …] [--planez z,容差]`：刪碎塊 → 格點聚類減面（3 萬／1.7 萬面）→ 頂點色＋2×2 圖集。
+- Hunyuan 輸出的軸就是遊戲的軸（+z 頭、+y 上），不必轉。
+
 ## ⚠ 早上待 Ray 決定
 - `sky3d_tune.json` 的數值定案（他還在調）。
 - 天之裂隙：清平板時膜邊被削成鏤空，要不要重跑 Hunyuan。

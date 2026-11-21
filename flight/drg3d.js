@@ -1,7 +1,7 @@
 /* 空中怪 3D（2026-11-06 起；王座徘徊者試驗 → 11-07 Ray：「3D 方案可行，做下去」「其他空中怪也跟進」）
    網址加 ?drg3d=1 → 3D 取代 2D；?drg3d=side → 2D 照舊、3D 擺在右邊並排。
    &drg3dhold → 觀察模式：自動叫出一隻（&drg3dkind=<鍵>，預設王座徘徊者）停在原地，不追、撞到不開戰。
-   · 產線：GPT 簡化四視圖 → Hunyuan3D-2mv → 減面＋四視圖投影貼圖（scratchpad 的 bake.py／atlas.py；紀錄 resources/enemy/_dragon_3d_trial.md）
+   · 產線：GPT 簡化四視圖 → Hunyuan3D-2mv → 減面＋四視圖投影貼圖（tools/sky3d/ 的 prep4.py → run_hy.py → bake.py；紀錄 resources/enemy/_dragon_3d_trial.md）
    · 動態（頂點著色器）：翼／鰭＝三節鉸鏈拍動；尾＝往後傳的波浪
    · 畫在自己的小 WebGL 畫布，再 drawImage 貼進飛行頁的 2D 畫面（地形遮擋沿用 clipByTerrainDepth）
      —— 不畫進主 GL：地形是「有變化才重畫」，怪每禎都動，畫進去等於逼地形每禎重算。 */
@@ -67,6 +67,15 @@ const DEF={
   sky2_maw:    { dir:'enemy/flm_sky2_maw/', file:'mon3d', spanK:1.6, fit:'rad',
                  flap:{ cut:[0.3,0.6,0.9], amp:[0,0,0], rest:[0,0,0], lag:0, down:0.5 },
                  tail:{ from:0.00, amp:0.12, waves:1.2 } },
+  /* ── 羽蛇／巨型蜈蚣（11-21 補做；舊的六視圖 2D 怪，ENEMY_KINDS 鍵 serpent／centipede）──
+     2D 沒有 spanW（是俯視長條那一族）：spanK 對齊 2D 那張俯視圖量到的翼展（羽蛇 ≈256、蜈蚣 ≈164 世界單位，÷980）。
+     蜈蚣的 2D wingHz 是蟲翅的 0.055（一拍 114ms），3D 照讀 —— 太快就用面板的「動作速度」壓。 */
+  serpent:     { dir:'enemy/flm_serpent/', file:'mon3d', spanK:0.26,
+                 flap:{ cut:[0.14,0.45,0.74], amp:[0.16,0.18,0.20], rest:[0.02,0.04,0.05], lag:0.08, down:0.42 },
+                 tail:{ from:0.45, amp:0.12, waves:1.4 } },
+  centipede:   { dir:'enemy/flm_centipi/', file:'mon3d', spanK:0.17,
+                 flap:{ cut:[0.12,0.45,0.75], amp:[0.20,0.18,0.14], rest:[0.03,0.04,0.04], lag:0.05, down:0.50 },
+                 tail:{ from:0.30, amp:0.04, waves:1.2 } },
 };
 DEF.sky_southlord = Object.assign({}, DEF.sky2_maw, { battle:'li_south' });   // 南天的霸王＝無面巨首換名（index.html 的 ENEMY_KINDS 同樣是 Object.assign 抄過去）
 const MAXPX=1024;                       // 畫布上限（裝置像素）：一次配好，每禎只換 viewport
