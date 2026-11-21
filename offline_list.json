@@ -1,5 +1,5 @@
-{"version": "ver 2026.11.21-2881",
-"bytes": 1564279376,
+{"version": "ver 2026.11.21-2882",
+"bytes": 1563277679,
 "files": [
 "audio.js",
 "config.js",
@@ -864,7 +864,6 @@
 "resources/background/anim/lake/lake_northshore_day_sep_v1.mp4",
 "resources/background/anim/lake/lake_northshore_day_watermask.png",
 "resources/background/anim/northport/northport_cemetery_bf_sep_v1.mp4",
-"resources/background/anim/northport/northport_church_bf_sep_v1.mp4",
 "resources/background/anim/northport/northport_church_ruin_sep_v1.mp4",
 "resources/background/anim/northport/northport_cityhall_bf_sep_v1.mp4",
 "resources/background/anim/northport/northport_east_bf_sep_v1.mp4",
@@ -1564,7 +1563,6 @@
 "resources/background/northport/northport_cemetery_day.webp",
 "resources/background/northport/northport_cemetery_dusk.webp",
 "resources/background/northport/northport_cemetery_night.webp",
-"resources/background/northport/northport_church_bf.webp",
 "resources/background/northport/northport_church_dawn.webp",
 "resources/background/northport/northport_church_day.webp",
 "resources/background/northport/northport_church_dusk.webp",

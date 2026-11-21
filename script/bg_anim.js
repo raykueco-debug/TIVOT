@@ -87,7 +87,6 @@ export const BG_ANIM = {
   "lake_inlet_day": "resources/background/anim/lake/lake_inlet_day_sep_v1.mp4",
   "lake_northshore_day": "resources/background/anim/lake/lake_northshore_day_sep_v1.mp4",
   "northport_cemetery_bf": "resources/background/anim/northport/northport_cemetery_bf_sep_v1.mp4",
-  "northport_church_bf": "resources/background/anim/northport/northport_church_bf_sep_v1.mp4",
   "northport_church_ruin": "resources/background/anim/northport/northport_church_ruin_sep_v1.mp4",
   "northport_cityhall_bf": "resources/background/anim/northport/northport_cityhall_bf_sep_v1.mp4",
   "northport_east_bf": "resources/background/anim/northport/northport_east_bf_sep_v1.mp4",
