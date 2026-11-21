@@ -3264,3 +3264,13 @@ when	from	to	reason
 20261121-185703	resources/enemy/anim/mon_pirateship_n8_side_idle_v3enh/frame_31.webp	_recycle/resources/enemy/anim/mon_pirateship_n8_side_idle_v3enh/frame_31.webp	空戰動畫：螺旋槳 VACE 重畫版換入（Ray 11-21「換進去」），舊格回收
 20261121-185703	resources/enemy/anim/mon_pirateship_n8_side_idle_v3enh/frame_32.webp	_recycle/resources/enemy/anim/mon_pirateship_n8_side_idle_v3enh/frame_32.webp	空戰動畫：螺旋槳 VACE 重畫版換入（Ray 11-21「換進去」），舊格回收
 20261121-185703	resources/enemy/anim/mon_pirateship_n8_side_idle_v3enh/anim.json	_recycle/resources/enemy/anim/mon_pirateship_n8_side_idle_v3enh/anim.json	空戰動畫：螺旋槳 VACE 重畫版換入（Ray 11-21「換進去」），舊格回收
+20261121-224856	resources/enemy/mon_pirateship_n7_side.webp	_recycle/resources/enemy/mon_pirateship_n7_side.webp	11-21 Ray：空賊船 7 號整個拔掉 → 回收
+20261121-224856	resources/_originals/enemy/pirateship_variants/cells/ship7_cell.png	_recycle/resources/_originals/enemy/pirateship_variants/cells/ship7_cell.png	11-21 Ray：空賊船 7 號整個拔掉 → 回收
+20261121-224856	resources/_originals/enemy/pirateship_variants/raw/ps_s07_try2.png	_recycle/resources/_originals/enemy/pirateship_variants/raw/ps_s07_try2.png	11-21 Ray：空賊船 7 號整個拔掉 → 回收
+20261121-224856	resources/_originals/enemy/pirateship_variants/raw/ps_s07_try3.png	_recycle/resources/_originals/enemy/pirateship_variants/raw/ps_s07_try3.png	11-21 Ray：空賊船 7 號整個拔掉 → 回收
+20261121-224856	resources/_originals/enemy/pirateship_variants/raw/ps_s07_try4.png	_recycle/resources/_originals/enemy/pirateship_variants/raw/ps_s07_try4.png	11-21 Ray：空賊船 7 號整個拔掉 → 回收
+20261121-224856	resources/_originals/enemy/pirateship_variants/raw/ps_s07_try5.png	_recycle/resources/_originals/enemy/pirateship_variants/raw/ps_s07_try5.png	11-21 Ray：空賊船 7 號整個拔掉 → 回收
+20261121-224856	resources/_originals/enemy/pirateship_variants/raw/ps_s07_try6.png	_recycle/resources/_originals/enemy/pirateship_variants/raw/ps_s07_try6.png	11-21 Ray：空賊船 7 號整個拔掉 → 回收
+20261121-224856	mon_pirateship_n7_side	_recycle/mon_pirateship_n7_side	11-21 Ray：空賊船 7 號整個拔掉 → 回收
+20261121-224856	mon_pirateship_n7_side_v3enh	_recycle/mon_pirateship_n7_side_v3enh	11-21 Ray：空賊船 7 號整個拔掉 → 回收
+20261121-224856	mon_pirateship_n7_side_v6airship	_recycle/mon_pirateship_n7_side_v6airship	11-21 Ray：空賊船 7 號整個拔掉 → 回收

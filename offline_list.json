@@ -1,5 +1,5 @@
-{"version": "ver 2026.11.21-2876",
-"bytes": 1562344400,
+{"version": "ver 2026.11.21-2877",
+"bytes": 1562153362,
 "files": [
 "audio.js",
 "config.js",
@@ -11930,7 +11930,6 @@
 "resources/enemy/mon_pirateship_n4_side.webp",
 "resources/enemy/mon_pirateship_n5_side.webp",
 "resources/enemy/mon_pirateship_n6_side.webp",
-"resources/enemy/mon_pirateship_n7_side.webp",
 "resources/enemy/mon_pirateship_n8_side.webp",
 "resources/enemy/mon_pirateship_side.webp",
 "resources/enemy/mon_pirateship_side_v2.webp",
