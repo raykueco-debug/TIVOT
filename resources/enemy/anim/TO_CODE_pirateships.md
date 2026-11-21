@@ -28,6 +28,9 @@
 4. 待機：Wan 在跑（`ComfyUI-master/tivot_wan/out/sky_ships/`），Ray 剪完交件後補在下面，屆時 `config.ENEMY_IDLE` 加 `mon_pirateship_nN_side` 一列即可。
 
 ## 待機交件進度
-| 鍵 | 狀態 |
-|---|---|
-| n1～n8 | ⏳ Wan 生成中（720×480、49 格、帆鼓動＋船身浮沉＋螺旋槳；7、8 號加煙囪冒煙、7 號明輪轉）→ auto_cut → Ray 在 animechk 剪 |
+| 鍵 | 資料夾 | 格 | fps | 狀態 |
+|---|---|---|---|---|
+| `mon_pirateship_n1_side` | `anim/mon_pirateship_n1_side_idle_v1/` | 30 | 24 | ✅ 交件（11-21，Ray 剪的 `mon_pirateship_n1_side_v3enh_cut`；box 在畫布內、碰邊 0）→ **`config.ENEMY_IDLE` 加一列即可** |
+| n2～n8 | —— | | | ⏳ Wan 生成中（同 n1 的 v3enh 設定）→ Ray 剪 |
+
+- 生成：Wan 720×480、49 格、強風帆提示詞＋`TIVOT_LX2V=enh`（Ray：「帆沒動啊」—— 第一版只寫帆鼓動，帆幾乎不動）。交件 `deliver_idle_lite.py`（`TIVOT_FIT=0.86`、scale 1.0）。
