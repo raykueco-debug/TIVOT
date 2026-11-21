@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.21-2886';
+export const VERSION = 'ver 2026.11.21-2888';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -8452,3 +8452,5 @@ trTree(GAME_CONFIG);
 /* ══ 空賊船新船測試戰（ver -2859，Ray：「要在遊戲裡測程式雲浪」）══ 照 flight_pirate 整張抄、只換敵人卡（script/enemies.js 的 test_pirate_nN）。
    正式要各開一張卡還是同卡隨機抽外觀 Ray 未定 —— 定了之後這幾張測試戰拿掉。 */
 for(const n of [1,2,3,4,5,6,8,9,10]) GAME_CONFIG.battles['test_pirate_n'+n] = Object.assign({}, GAME_CONFIG.battles.flight_pirate, { enemy:'test_pirate_n'+n });
+/* 瓦爾士的空賊（ver -2881）：flight 劇本遭遇 `battle:'valse_pirate'` 的戰鬥卡 —— 照 flight_pirate（BGM／武器音），只換敵人卡（script/enemies.js 的 valse_pirate）。 */
+GAME_CONFIG.battles.valse_pirate = Object.assign({}, GAME_CONFIG.battles.flight_pirate, { enemy:'valse_pirate' });

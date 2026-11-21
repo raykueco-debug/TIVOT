@@ -1,5 +1,5 @@
-{"version": "ver 2026.11.21-2886",
-"bytes": 1563271827,
+{"version": "ver 2026.11.21-2888",
+"bytes": 1563275518,
 "files": [
 "audio.js",
 "config.js",
@@ -15836,6 +15836,7 @@
 "script/loadout.js",
 "script/mainScript.js",
 "script/progress.js",
+"script/quests.classic.js",
 "script/shopcards.js",
 "script/shopstock.js",
 "script/speakers.js",

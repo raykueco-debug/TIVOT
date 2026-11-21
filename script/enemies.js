@@ -5813,3 +5813,8 @@ ENEMIES.ws_misha_ni = Object.assign({}, ENEMIES.misha, {
 ENEMIES.test_sorana = Object.assign({}, ENEMIES.man_sorana, { name:'索菈娜' });
 /* 空賊船新船測試卡（ver -2859）：數值照 pirate_ship，只換立繪（config.js 尾端的 test_pirate_nN 測試戰用）。 */
 for(const n of [1,2,3,4,5,6,8,9,10]) ENEMIES['test_pirate_n'+n] = Object.assign({}, ENEMIES.pirate_ship, { name:'空賊船_n'+n, image:'enemy_pirate_n'+n+'_side' });   // ver -2831 起正式卡（man_sorana）已定版，測試卡只換名字
+/* ══ 瓦爾士的空賊（ver -2881，Ray 11-21：「船一開進瓦爾士就刷一台空賊船」；flight 的劇本遭遇 → 戰鬥卡 valse_pirate）══
+   數值照 pirate_ship（暫填）；登艦戰的空賊群**不抽寒帶那一組**（sky_pirate_5，羊皮飛行夾克，_skypirate_spec.md）。
+   ⚠ 名號／懸賞／台詞由劇情程式副理（tivot-story）定 —— 卡的 key（valse_pirate）與旗標（valse_pirate_sunk）以它定的為準。 */
+ENEMIES.valse_pirate = Object.assign({}, ENEMIES.pirate_ship, { name:'空賊船', story:1,
+  grapple: Object.assign({}, ENEMIES.pirate_ship.grapple, { to:[1,2,3,4,6,7,8].map(n=>'sky_pirate_'+n) }) });
