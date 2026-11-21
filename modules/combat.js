@@ -1839,7 +1839,8 @@ function enemyDamage(dmg,isCrit,silent,src){
          NI 一發動就由 NI 語音接手（必播），這一擊不再疊受創那一句。 */
       if(lsTrigger) startLastStand();
       else if(dmg>0){ enemy.checkHpVoice(state.enemyHp/state.enemyMax*100);
-                      if(src!=='dual' || brVoiceOk) enemy.playDamageVoice(); }
+                      if(src!=='dual' || brVoiceOk) enemy.playDamageVoice();
+                      if(state.enemyHp>0) enemy.playHurt(); }   // 受擊片（ver -2895）
       tutorial.onEnemyHp(state.enemyHp/state.enemyMax);   // 教學：削血保底觸發（非教學為 no-op）
       const morphing = maybeMorph();    // 型態切換（ver -1418 空中戰；-1433 起也吃 onDeath）
       if(!silent) floatDmg((isCrit?L.battle.crit:'')+dmg, (30+Math.random()*40)+'%','35%',isCrit);

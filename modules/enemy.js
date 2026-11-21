@@ -16,7 +16,7 @@
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import * as prog from '../script/progress.js';  // stage 加成要問現在第幾章（ver -1584b）
-import { ENEMY_IDLE, SHIP_TRAIL, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, ENEMY_DOWN, ENEMY_DODGE, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
+import { ENEMY_IDLE, SHIP_TRAIL, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, ENEMY_DOWN, ENEMY_HURT, ENEMY_DODGE, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';
@@ -1399,9 +1399,10 @@ function loadClip(dir){
 function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; const s=imgStem(en);
   if(kind==='miss'){ if(ENEMY_MISS[s]) return ENEMY_MISS[s]; const d=ENEMY_DELAY[s]; return (d && !d.noMiss) ? d : null; }   // 延時片寫 noMiss＝點錯不借它（只扣秒，ver -2801）
   if(kind==='enter') return ENEMY_ENTER[s] || null;
+  if(kind==='hurt') return ENEMY_HURT[s] || null;   // 受擊（ver -2895）
   if(kind==='down') return ENEMY_DOWN[s] || null;   // 倒地（ver -2858）   // 點錯：有 M 用 M，沒有就借延時那一支（ver -2524）
   return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[s])||null; }
-function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter','down']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); if(c && c.sweep) loadClip(c.sweep); if(c && c.sweepImg) (new Image()).src=c.sweepImg; } }
+function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter','down','hurt']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); if(c && c.sweep) loadClip(c.sweep); if(c && c.sweepImg) (new Image()).src=c.sweepImg; } }
 function preloadDodge(en){ const S=dodgeSpec(en); if(!S) return; for(const seg of [...Object.values(S.dodge||{}), S.parry]) if(seg){ loadClip(seg.out); if(seg.back) loadClip(seg.back); } }   // sweep＝A 本體（準備動作之後那一支，-2550）
 /* 這隻怪有沒有 M（點錯）動作：點錯播的是延時那一支（ENEMY_DELAY），有它就算有 M（ver -2523）。 */
 /* ══ 只有一支攻擊動畫的怪：延時／點錯一律照攻擊的受擊特效與音效（ver -2678，Ray：「蠕蟲全攻擊受擊跟音效都一樣」「都要一樣」「只有單一攻擊動畫的怪一體適用」）══
@@ -1459,6 +1460,10 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
   clipT=setTimeout(step, tAt(1));
   return Math.round(tHit);
 }
+/* 受擊（ver -2895）：玩家的傷害真的扣到血時由 combat.enemyDamage 叫（唯一入口）。
+   有任何動作片在播（clipT：攻擊／延時／點錯／登場／受擊自己）就不演 —— 受擊不打斷別人、也不重播；
+   攻擊片接手時 playActionClip 自己會蓋掉受擊。閃避型（索菈娜）有自己那一套，不吃。 */
+export function playHurt(){ if(clipT || state.enemyHp<=0 || dodgeSpec() || !clipFor('hurt')) return; playActionClip('hurt'); }
 /* ══ 閃避／格擋（ver -2805，Ray 11-19 索菈娜：「閃避圖是玩家開槍時播放 打中時則是用刀防禦」
    「如果玩家沒有持續攻擊就歸位 有持續攻擊就換另一個閃避動作」）══
    表在 config.ENEMY_DODGE（鑰匙＝立繪檔名）：每個動作兩段 out（站姿→過渡格→姿勢，停在姿勢）＋ back（姿勢→站姿）。
