@@ -856,11 +856,15 @@ export function applyRankAffection(grade, partnerKey){
   /* ⚠ 表在 config（`rating.affection`，鐵律 1）——這一支只負責照表加。 */
   const A=((GAME_CONFIG.rating||{}).affection)||{};
   const share = Array.isArray(partnerKey) ? partnerKey
-              : (CHARS.indexOf(partnerKey)>=0 ? [{ key:partnerKey, mul:1 }] : []);
+              : (CHARS.indexOf(partnerKey)>=0 ? [{ key:partnerKey, dmg:0 }] : []);
+  /* ══ ver -2890：伙伴的好感＝她這一局實際打掉的血 ÷ perDamage × 等第倍率 ＋ Install（見 config.rating.affection）══
+     `one.dmg` 由 inspector 從 `state.partnerDamage` 帶進來；`one.mul`（舊的份額）已不用。 */
+  const per = +A.perDamage || 600;
+  const GM = A.gradeMul || {};
   for(const one of share){
     const k=one && one.key; if(CHARS.indexOf(k)<0) continue;
-    /* 索菈娜的方向與別人相反（評價越爛越加）；其餘搭檔照 `partner` 那一欄。 */
-    const tbl = (k==='sorana') ? (A.sorana||{}) : (A.partner||{});
+    const gm = ((GM[k] || GM._ || {})[grade]);
+    const base = (+one.dmg||0) / per * (gm!=null ? gm : 1);
     /* ══ `always` ＝**只要出場就給的保底**（ver -1024，Ray：「索拉娜只要出場就會
        好感+1，D＋3 C+2」）══ 與等第那一格**相加**（D 總共 +4、C +3、其餘 +1）。
        ⚠ 沒寫 `always` 的人（諾薇兒／安雅／蕾娜）行為一個字不變。
@@ -868,8 +872,8 @@ export function applyRankAffection(grade, partnerKey){
     /* Install 有沒有發動（ver -2177）：`inst`＝這一局她發動過幾次（inspector 從 `state.partnerInstalls` 帶進來）。 */
     const ins = (A.install||{})[k] || {};
     const used = (one.inst|0) > 0;
-    const d = (tbl.always || 0) + (tbl[grade] || 0) + (used ? (ins.used||0) : (ins.unused||0));
-    if(d){ addAffection(k, d * (one.mul!=null ? one.mul : 1)); got.push(k); }
+    const d = base + (used ? (ins.used||0) : (ins.unused||0));
+    if(d){ addAffection(k, d); got.push(k); }
   }
   /* 蕾娜：不看搭檔欄，照她自己那一欄加。
      ⚠ ver -724 起**直接給小數**（S +0.5／A +0.25）—— 兩個都對得上 `addAffection`

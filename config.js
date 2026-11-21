@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.21-2889';
+export const VERSION = 'ver 2026.11.21-2890';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2234,7 +2234,16 @@ export const GAME_CONFIG = {
          安沒用夢魘化額外 +1，索有共鬥額外 +1，S 額外 +1，D 額外 +3，C 額外 +2」）══
          · `always`＝出場基本分；等第那一格疊在上面；`installUsed`／`installUnused`＝這一局有／沒有發動過 Install 再加。
          · 「有沒有發動」看的是 `state.partnerInstalls`（一局一份）。 */
-      partner: { always:1, S:2, A:1 },
+      /* ══⚠⚠⚠ ver -2890（Ray：「女主好感改成以該女主為伙伴時戰鬥造成的傷害計算」「不加防刷上限，本來就有事件鎖」）══
+         每局結算、每位伙伴：她當伙伴那幾場**實際扣到敵人的血量**（overkill 不算）÷ `perDamage` × 等第倍率（`gradeMul`），
+         再疊 `install`。對齊 1/4 由 `progress.addAffection` 做；事件鎖（`progress.AFF_CAPS`）照舊夾。
+         取代 -921「出場數最多全拿／平手均分」與 -2177 的 `partner`／`sorana` 等第定額（那兩欄已拿掉）。
+         ⚠ 算式只有 `progress.applyRankAffection` 一支（鐵律 7）；這裡只放數字（鐵律 1）。 */
+      perDamage: 600,
+      gradeMul: {
+        _:      { S:1.5, A:1.2, B:1, C:0.8, D:0.8 },   // 安雅／諾薇兒（＝沒有自己那一列的伙伴）
+        sorana: { S:1,   A:1,   B:1, C:1.2, D:1.5 },   // 索菈娜方向相反
+      },
       install: { nouvelle:{ used:1 }, anya:{ unused:1 }, sorana:{ used:1 } },
       /* ══⚠⚠⚠ ver -1024（Ray：「索拉娜只要出場就會好感+1，D＋3 C+2」）══
          · `always` ＝**只要出場就給**（不看等第）—— 她的性格是「打得爛也開心」，
@@ -2242,7 +2251,6 @@ export const GAME_CONFIG = {
          · `D`／`C` 是**在那之上再加**：D 總共 +4、C 總共 +3、其餘 +1。
          ⚠ 加總只有 `progress.applyRankAffection` 一支在做（鐵律 7）——
            不要把 `always` 併進每一格（那會變成「同一個保底寫了五份」）。 */
-      sorana:  { always:1, S:1, D:3, C:2 },   // ver -2177：S +1（D +3、C +2 照舊）
       renna:   { S:1, A:0.5 },                // ver -2177：S +1／A +0.5（原 0.5／0.25）
     },
     /* ⚠⚠ `counter` 是**每一次完美反擊（紅圈）**折抵的秒數 —— 武器卡上可以覆寫

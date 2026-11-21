@@ -15,7 +15,7 @@
 
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, HITFX, SE_PLAY, asset, bgmVol, sfxGain } from '../config.js';
-import { state, initEnemyHp, setPickedPartner, enemyTimeK } from '../state.js';
+import { state, initEnemyHp, setPickedPartner, enemyTimeK, addPartnerDamage } from '../state.js';
 import { SFX } from '../audio.js';
 import { TEL } from '../telemetry.js';
 import { L, fmt } from '../i18n.js';   // 多語言（浮動字/RELOADING）   // 遙測（底層純輸出，同 audio 定位；未設定後端時 no-op）
@@ -1831,6 +1831,7 @@ function enemyDamage(dmg,isCrit,silent,src){
         after=1; dmg=state.enemyHp-1; lsTrigger=!lsActive;
       }
       if(after<0 && !noOverkill()) state.overkill+=(-after);
+      addPartnerDamage(state.enemyHp - Math.max(0,after));   // 好感的帳（ver -2890）：實際扣掉的血，overkill 不算
       state.enemyHp=Math.max(0,after);
       tutorial.onHpChange();          // 血量觸發的 talk 步驟（ver -599）
       updateBars();

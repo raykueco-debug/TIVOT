@@ -315,6 +315,10 @@ export const state = {
      鑰匙＝搭檔 key、值＝次數。誰寫：`enterSaint`／`enterNightmare`／`enterCoop`（進入模式的唯一管道，鐵律 8）；
      誰清：`inspector.clearSessionGain()`，與 `partnerFights` 同生共死（一局的帳）。 */
   partnerInstalls: null,
+  /* ══ 這一局裡每位伙伴**實際扣到敵人的血量**（ver -2890，Ray：「女主好感改成以該女主為伙伴時戰鬥造成的傷害計算」）══
+     鑰匙＝搭檔 key、值＝血量（overkill 不算）。誰寫：`combat.enemyDamage` 扣血那一行（唯一的入口，鐵律 8），記在**當時的伙伴**頭上；
+     誰清：`inspector.clearSessionGain()`，與 `partnerFights` 同生共死（一局的帳）。 */
+  partnerDamage: null,
   sessionLoot: null,     // 連戰中間場記帳的掉落（ver -869，Ray：「戰利品也到結算時給」）；收段結算一起發
 
   /* 挑戰（試玩版）走槍棺框（ver -2225，Ray：「挑戰按下去推棺，打完閉棺」）：main.startChallenge 立、combat.goHome 收。
@@ -508,6 +512,11 @@ function noteInstall(){
   const key=state.pickedPartner; if(!key) return;
   if(!state.partnerInstalls) state.partnerInstalls = {};
   state.partnerInstalls[key] = (state.partnerInstalls[key]|0) + 1;
+}
+export function addPartnerDamage(n){
+  const key=state.pickedPartner; if(!key || !(n>0)) return;
+  if(!state.partnerDamage) state.partnerDamage = {};
+  state.partnerDamage[key] = (state.partnerDamage[key]||0) + n;
 }
 export function addPartnerFight(key){
   if(!key) return;

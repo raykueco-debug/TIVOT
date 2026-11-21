@@ -168,6 +168,7 @@ export function mergeSessionStats(stats){
 export function clearSessionGain(){ state.sessionStats=null; state.sessionLoot=null;
   state.partnerFights=null;   // 出場帳與這一局同生共死（ver -921，見 state 的說明）
   state.partnerInstalls=null; // Install 帳同上（ver -2177）
+  state.partnerDamage=null;   // 傷害帳同上（ver -2890）
 }
 
 /* ══⚠⚠ **好感給誰：出場數最多的那一位全拿**（ver -921，Ray 定案）══
@@ -187,28 +188,15 @@ export function clearSessionGain(){ state.sessionStats=null; state.sessionLoot=n
      記，這裡只讀。
    ⚠ 沒有帳（舊存檔／完全沒打過架）就退回舊行為：算在現在這一位頭上。
    ⚠ 蕾娜不在這裡：她走自己那一欄，`applyRankAffection` 一律加（她不是搭檔）。 */
+/* ══⚠⚠⚠ ver -2890 起（Ray：「女主好感改成以該女主為伙伴時戰鬥造成的傷害計算」）：**每位出過力的伙伴各算各的**——
+   帶上她這一局實際扣掉的血（`state.partnerDamage`）與 Install 次數，加多少由 `progress.applyRankAffection` 查表算。
+   上面那段 -921「全拿／平手均分」的規則已退休（舊實作已拿掉，git 歷史有）。 */
 function settleAffectionShares(){
-  const f = state.partnerFights;
-  /* 退路：只有現在這一位（ver -2177 起也帶 Install 帳，不然沒帳的路會把「用過」誤判成「沒用」）。 */
-  const solo = () => state.pickedPartner
-    ? [{ key:state.pickedPartner, mul:1, inst:((state.partnerInstalls||{})[state.pickedPartner]|0) }] : [];
-  if(!f) return solo();
-  const keys = Object.keys(f).filter(k=>f[k]>0);
-  if(!keys.length) return solo();
-  const out=[];
-  /* ① 索菈娜：有出場就自己一桶（她那一欄由 `applyRankAffection` 依 grade 查表 ——
-     這一支只決定「誰」與「幾分之幾」，不決定「加多少」，鐵律 7）。 */
-  /* ⚠ ver -2177：每一份帶上「這一局她發動過幾次 Install」（`inst`）—— 加不加那一格由 progress 查表決定。 */
-  const I = state.partnerInstalls || {};
-  if(keys.indexOf('sorana')>=0) out.push({ key:'sorana', mul:1, inst:I.sorana|0 });
-  /* ② 其餘的比場數。 */
-  const rivals = keys.filter(k=>k!=='sorana');
-  if(rivals.length){
-    const top = Math.max(...rivals.map(k=>f[k]));
-    const win = rivals.filter(k=>f[k]===top);
-    win.forEach(k=>out.push({ key:k, mul:1/win.length, inst:I[k]|0 }));   // 平手一人一半
-  }
-  return out;
+  const D = state.partnerDamage || {}, I = state.partnerInstalls || {}, f = state.partnerFights || {};
+  const keys = [...new Set([...Object.keys(D), ...Object.keys(I), ...Object.keys(f)])]
+                 .filter(k => (D[k]||0)>0 || (I[k]|0)>0 || (f[k]|0)>0);
+  if(!keys.length && state.pickedPartner) keys.push(state.pickedPartner);
+  return keys.map(k=>({ key:k, dmg:D[k]||0, inst:I[k]|0 }));
 }
 
 /* ══⚠⚠⚠ **EXP 給誰：單局出場數最多的那一位**（ver -970，Ray 定案）══
