@@ -2000,7 +2000,7 @@ export function clearGrapple(){ if(!grapple) return; cancelAnimationFrame(grappl
 /* 登艦：船往上飛出畫面（繩頭跟著上去）→ 一個人影的剪影全景從上往下劃過 → 劃過畫面正中那一刻換成甲板戰（onSwap）→ 劃完（onDone）。
    -2559 Ray「不用閉棺了，船升上去以後一個人影全景落下，剪影就好，剪影劃過就換成甲板戰」。
    剪影＝卡上 `shadowImg`（預先壓黑的單人空賊），沒寫就拿登艦那張卡的立繪壓黑；蓋滿 #app（上下兩半一起），所以換卡那一下被它擋住。 */
-const BOARD_FLY_MS=900, BOARD_DROP_MS=330;   // -2868 Ray「落下的人影速度再快一點」：520 → 330
+const BOARD_FLY_MS=900, BOARD_DROP_MS=220;   // -2868 Ray「落下的人影速度再快一點」：520 → 330；-2875「再快 1.5」：330 → 220
 /* 對艦戰那張天空是哪個時段（登艦戰的甲板跟著它，-2868）：檔名尾巴 _dawn/_day/_dusk/_night；沒有尾巴的那幾張照表（sky_towers 原圖＝夜，量過與 _night 同色）。 */
 let boardBand=null;
 const PLAIN_SKY_BAND={ sky_towers:'night' };
