@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.21-2895';
+export const VERSION = 'ver 2026.11.22-2896';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5938,7 +5938,7 @@ export const ENEMY_DOWN = {
 /* 受擊（ver -2895，Ray 11-21：「賞金獵人的受擊也要放」）：玩家的傷害真的扣到血那一刻插播一次，播完回待機。
    攻擊／延時／點錯／倒地片優先（它們一接手就蓋掉受擊）；受擊播放中再被打到不重播。閃避型（ENEMY_DODGE）不吃。鑰匙＝立繪檔名。 */
 export const ENEMY_HURT = {
-  npc_guildhunter_neutral: { dir:'resources/enemy/anim/npc_guildhunter_neutral_hurt_v1/' },   // 賞金獵人：胸口中彈後仰（Ray 剪的 hunter_hurtk_A_AB_cut，5 格 24fps）
+  npc_guildhunter_neutral: { dir:'resources/enemy/anim/npc_guildhunter_neutral_hurt_v2/' },   // 賞金獵人：中彈縮一下（Ray 剪的 hunter_hurtk_A_AB_cut 5 格＋去頭尾倒放 3 格＝8 格 24fps，ver -2896 Ray：「剪首尾幀倒放就好」）
 };
 export const ENEMY_ENTER = {
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_enter_v1/' },
