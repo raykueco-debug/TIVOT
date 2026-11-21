@@ -1,5 +1,5 @@
-{"version": "ver 2026.11.22-2897",
-"bytes": 1564615180,
+{"version": "ver 2026.11.22-2898",
+"bytes": 1564694463,
 "files": [
 "audio.js",
 "config.js",
@@ -11351,6 +11351,10 @@
 "resources/enemy/anim/npc_guildhunter_neutral_hurt_v3/frame_01.webp",
 "resources/enemy/anim/npc_guildhunter_neutral_hurt_v3/frame_02.webp",
 "resources/enemy/anim/npc_guildhunter_neutral_hurt_v3/frame_03.webp",
+"resources/enemy/anim/npc_guildhunter_neutral_hurt_v4/anim.json",
+"resources/enemy/anim/npc_guildhunter_neutral_hurt_v4/frame_00.webp",
+"resources/enemy/anim/npc_guildhunter_neutral_hurt_v4/frame_01.webp",
+"resources/enemy/anim/npc_guildhunter_neutral_hurt_v4/frame_02.webp",
 "resources/enemy/anim/npc_guildhunter_neutral_idle_v1/anim.json",
 "resources/enemy/anim/npc_guildhunter_neutral_idle_v1/frame_00.webp",
 "resources/enemy/anim/npc_guildhunter_neutral_idle_v1/frame_01.webp",
