@@ -2144,7 +2144,8 @@ function startShipAir(en){
   /* 預設色（背景還沒取到）：灰白 */
   const S={ cv, raf:0, last:performance.now(), mists:[], nextMist:performance.now()+rnd(1200,2600),
             lit:[236,240,246], sh:[170,182,200], fwd:fwdOf(en) }; shipAir=S;
-  S.trailPts=SHIP_TRAIL[imgStem(en)] || [[1330,640],[1330,790]]; S.trails=S.trailPts.map(()=>[]);
+  { const c=SHIP_TRAIL[imgStem(en)] || [1336,715];   // 螺旋槳中心；兩條＝遠（細淡、略高）／近（粗亮、略低）——前後關係不是上下關係（-2867）
+    S.trailPts=[[c[0],c[1]-9],[c[0],c[1]+9]]; S.trailSty=[{ al:0.30, w:0.55, ph:0 },{ al:0.60, w:1, ph:2.1 }]; S.trails=S.trailPts.map(()=>[]); }
   const bgm=/url\("?([^")]+)"?\)/.exec(top.style.backgroundImage||'');
   skyTone(bgm && bgm[1]).then(t=>{ if(shipAir!==S || !t) return;
     S.lit=mixc(t.hi,[255,255,255],0.35); S.sh=mixc(t.mid,t.hi,0.45); });
@@ -2172,13 +2173,13 @@ function startShipAir(en){
         if(r){ const k=r.width/1536; m={ x:c=> r.left+(S.fwd>0 ? 1536-c : c)*k, y:c=> r.top+c*k, k }; } }
       if(m && live) S.trailPts.forEach((p,i)=>S.trails[i].push({ x:m.x(p[0]), y:m.y(p[1]), a:0, w:m.k }));
       const sp=back*0.16*W/390;
-      for(const tl of S.trails){
-        for(const q of tl){ q.a+=dt; q.x+=sp*dt; q.y+=Math.sin((q.a+q.x)/260)*0.02*dt*W/390; }
+      S.trails.forEach((tl,ti)=>{ const st=S.trailSty[ti];
+        for(const q of tl){ q.a+=dt; q.x+=sp*dt; q.y+=Math.sin((q.a+q.x)/260+st.ph)*0.02*dt*W/390; }
         while(tl.length && tl[0].a>1500) tl.shift();
         for(let i=1;i<tl.length;i++){ const q0=tl[i-1], q1=tl[i], f=q1.a/1500;
-          cx.strokeStyle=`rgba(${S.lit[0]|0},${S.lit[1]|0},${S.lit[2]|0},${(0.55*(1-f)*(1-f)).toFixed(3)})`;
-          cx.lineWidth=Math.max(0.8, (4+10*f)*q1.w); cx.lineCap='round';
-          cx.beginPath(); cx.moveTo(q0.x,q0.y); cx.lineTo(q1.x,q1.y); cx.stroke(); } } }
+          cx.strokeStyle=`rgba(${S.lit[0]|0},${S.lit[1]|0},${S.lit[2]|0},${(st.al*(1-f)*(1-f)).toFixed(3)})`;
+          cx.lineWidth=Math.max(0.6, (4+10*f)*q1.w*st.w); cx.lineCap='round';
+          cx.beginPath(); cx.moveTo(q0.x,q0.y); cx.lineTo(q1.x,q1.y); cx.stroke(); } }); }
     /* ② 前景雲霧：機頭那一側的畫面外進、船尾那一側出；一片＝一串軟團，橫跨 0.6~1.1 個畫面寬 */
     if(live && now>=S.nextMist){ S.nextMist=now+rnd(5200,9000);
       const span=W*rnd(0.6,1.1), n=7+((Math.random()*4)|0), y0=H*rnd(0.18,0.85), lobes=[];
