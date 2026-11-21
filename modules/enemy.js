@@ -2140,7 +2140,7 @@ function skyTone(url){
       res({ hi:avg(0, Math.ceil(px.length*0.12)), mid:avg(Math.floor(px.length*0.35), Math.floor(px.length*0.65)) }); }catch(_){ res(null); } };
     im.onerror=()=>res(null); im.src=url; });
 }
-function stopShipAir(){ if(!shipAir) return; cancelAnimationFrame(shipAir.raf); shipAir.cv.remove(); shipAir=null; }
+function stopShipAir(){ if(!shipAir) return; cancelAnimationFrame(shipAir.raf); shipAir.cv.remove(); if(shipAir.pitch) for(const t of [idleEl, $('enemyImg')]) if(t) t.style.rotate=''; shipAir=null; }
 function startShipAir(en){
   stopShipAir(); if(!isAirShip(en)) return;
   const top=$('top'); if(!top) return;
@@ -2150,7 +2150,7 @@ function startShipAir(en){
   /* 預設色（背景還沒取到）：灰白 */
   const S={ cv, raf:0, last:performance.now(), mists:[], nextMist:performance.now()+rnd(1200,2600),
             lit:[236,240,246], sh:[170,182,200], fwd:fwdOf(en) }; shipAir=S;
-  { const T=SHIP_TRAIL[imgStem(en)] || {}, c=T.prop || [1336,715], bw=T.bow || [417,810];
+  { const T=SHIP_TRAIL[imgStem(en)] || {}, c=T.prop || [1336,715], bw=T.bow || [417,810]; S.pitch=T.pitch||0;
     /* 螺旋槳中心兩條＝遠（細淡、略高）／近（粗亮、略低）——前後關係不是上下關係（-2867）；
        船首下緣一條雲線（-2870，Ray「船首下緣也拉雲線」）：較粗、較淡、往下微沉，沿船底往後拖。 */
     S.trailPts=[[c[0],c[1]-9],[c[0],c[1]+9],bw];
@@ -2174,6 +2174,9 @@ function startShipAir(en){
     cx.setTransform(dpr,0,0,dpr,0,0); cx.clearRect(0,0,W,H);
     const el=(idleEl && idleEl.isConnected) ? idleEl : null, falling=!!((el||$('enemyImg'))||{})._falling;
     const live=!state.over && !falling, back=-S.fwd;   // back＝船尾方向（畫面 x 的正負）
+    /* 船首起伏（SHIP_TRAIL.pitch 度，-2871）：獨立 `rotate` 屬性（不碰 transform／scale／translate），船頭朝左 ⇒ 正角＝船首往下點 */
+    if(S.pitch){ const d=live ? (S.pitch*(Math.sin(now/1100*Math.PI)*0.8+Math.sin(now/470)*0.2)*-S.fwd).toFixed(3)+'deg' : '';
+      for(const t of [idleEl, $('enemyImg')]) if(t) t.style.rotate=d; }
     /* ⓪ 船尾兩條細煙（ver -2866，Ray：「用程式給船拉兩條細煙尾巴」）：SHIP_TRAIL[立繪名]＝兩個畫布點（沒寫＝船尾預設兩點）。
        每幀在點上落一個節點，節點往船尾流走、變淡、略變粗 ⇒ 船漂移時尾巴自然拉出弧線。 */
     { const tr=top.getBoundingClientRect(); let m=null;
@@ -2181,12 +2184,13 @@ function startShipAir(en){
         m={ x:c=> br.left-tr.left + (S.fwd>0 ? (b[0]+b[2]-c) : (c-b[0]))*kx, y:c=> br.top-tr.top + (c-b[1])*ky, k:kx }; }
       else { const eI=$('enemyImg'), r=eI && eI.getAttribute('src') && canvasBoxInTop(eI, { canvas:[1536,1024], box:[0,0,1536,1024] });
         if(r){ const k=r.width/1536; m={ x:c=> r.left+(S.fwd>0 ? 1536-c : c)*k, y:c=> r.top+c*k, k }; } }
-      if(m && live) S.trailPts.forEach((p,i)=>S.trails[i].push({ x:m.x(p[0]), y:m.y(p[1]), a:0, w:m.k }));
+      if(m && live) S.trailPts.forEach((p,i)=>S.trails[i].push({ x:m.x(p[0]), x0:m.x(p[0]), y:m.y(p[1]), a:0, w:m.k }));
       const sp=back*0.16*W/390;
       S.trails.forEach((tl,ti)=>{ const st=S.trailSty[ti];
         for(const q of tl){ q.a+=dt; q.x+=sp*dt; q.y+=(Math.sin((q.a+q.x)/260+st.ph)*0.02+(st.sink||0))*dt*W/390; }
-        while(tl.length && tl[0].a>1500) tl.shift();
-        for(let i=1;i<tl.length;i++){ const q0=tl[i-1], q1=tl[i], f=q1.a/1500;
+        /* -2871 Ray「雲線要一路拉到畫面外」：不再按時間收，節點流出畫面才丟；f＝從噴口到畫面邊走了幾成（淡化與變粗跟著它） */
+        while(tl.length && (back>0 ? tl[0].x>W+40 : tl[0].x<-40)) tl.shift();
+        for(let i=1;i<tl.length;i++){ const q0=tl[i-1], q1=tl[i], span=Math.max(40, back>0 ? W-q1.x0 : q1.x0), f=Math.min(1, Math.abs(q1.x-q1.x0)/span)*0.85;
           cx.strokeStyle=`rgba(${S.lit[0]|0},${S.lit[1]|0},${S.lit[2]|0},${(st.al*(1-f)*(1-f)).toFixed(3)})`;
           cx.lineWidth=Math.max(0.6, (4+10*f)*q1.w*st.w); cx.lineCap='round';
           cx.beginPath(); cx.moveTo(q0.x,q0.y); cx.lineTo(q1.x,q1.y); cx.stroke(); } }); }

@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.21-2870';
+export const VERSION = 'ver 2026.11.21-2871';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5698,6 +5698,7 @@ export const ENEMY_IDLE = {
   npc_guildhunter_neutral: 'resources/enemy/anim/npc_guildhunter_neutral_idle_v1/',   // 賞金獵人待機（ver -2855，Ray 剪的 hunter_hunter_A_idle_cut，13 格 24fps loop）
   mon_pirateship_n1_side: 'resources/enemy/anim/mon_pirateship_n1_side_idle_v6airship/',   // 空賊船 1 號待機（ver -2868，Ray 剪的 v6airship_cut，32 格 24fps；「飛空船」提示詞重跑，取代 idle_v1）
   mon_pirateship_n2_side: 'resources/enemy/anim/mon_pirateship_n2_side_idle_v6airship/',   // 空賊船 2 號待機（ver -2869，Ray 剪的 v6airship_cut，32 格 24fps）
+  mon_pirateship_n3_side: 'resources/enemy/anim/mon_pirateship_n3_side_idle_v6airship/',   // 空賊船 3 號待機（ver -2871，Ray 剪的 v6airship_cut，31 格 24fps）；船身在片子裡不動 ⇒ 程式加船首起伏（SHIP_TRAIL.pitch）
   mon_pirateship_n4_side: 'resources/enemy/anim/mon_pirateship_n4_side_idle_v6airship/',   // 4 號待機（ver -2865，Ray 剪的 v6airship_cut，35 格 24fps）：提示詞加「飛空船」重跑 ⇒ 船底沒有浪花、船首完整；取代 -2863 的兩版 _fade 陣列
   mon_pirateship_n5_side: 'resources/enemy/anim/mon_pirateship_n5_side_idle_v6airship/',   // 5 號待機（ver -2866，Ray 剪的 v6airship_cut，33 格 24fps）：同 4 號，「飛空船」提示詞、無浪
   mon_pirateship_n8_side: 'resources/enemy/anim/mon_pirateship_n8_side_idle_v3enh/',   // 8 號（無浪花，煙囪冒煙）
@@ -5849,10 +5850,11 @@ export const ENEMY_IDLE = {
 /* ══ 空戰船的煙／雲線（ver -2866～-2870，空戰副理）══ 鍵＝立繪檔名；畫布座標 1536×1024，船頭朝左。實作 enemy.startShipAir。
    prop＝螺旋槳中心（Ray：「兩條細煙…前後關係…以旋槳為中心」；量自各船最右 40px 那段的上下緣中點）→ 遠細淡／近粗亮兩條。
    bow ＝船首下緣（Ray：「船首下緣也拉雲線」；量自船首弧線往下彎到底之前那一點）→ 一條較粗的雲線沿船底往後拖。
+   pitch＝船首起伏（度；-2871 Ray：「船首要有一點顛 像前面幾艘船一樣」——那幾艘的起伏是 Wan 片子自帶的，3 號片子裡船身不動才補）。
    沒寫的船用預設點。 */
 export const SHIP_TRAIL = {
   mon_pirateship_n1_side: { prop:[1336,738], bow:[417,812] }, mon_pirateship_n2_side: { prop:[1336,672], bow:[418,742] },
-  mon_pirateship_n3_side: { prop:[1336,699], bow:[371,815] }, mon_pirateship_n4_side: { prop:[1336,716], bow:[417,804] },
+  mon_pirateship_n3_side: { prop:[1336,699], bow:[371,815], pitch:1.4 }, mon_pirateship_n4_side: { prop:[1336,716], bow:[417,804] },
   mon_pirateship_n5_side: { prop:[1336,716], bow:[417,806] }, mon_pirateship_n6_side: { prop:[1336,706], bow:[371,815] },
   mon_pirateship_n7_side: { prop:[1336,714], bow:[418,813] }, mon_pirateship_n8_side: { prop:[1336,684], bow:[418,809] },
 };
