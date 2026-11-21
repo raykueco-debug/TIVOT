@@ -5812,4 +5812,4 @@ ENEMIES.ws_misha_ni = Object.assign({}, ENEMIES.misha, {
    立繪換成 Ray 指定的待機底圖 sorana guard（真 alpha；ENEMY_DODGE 的鑰匙就是它的檔名）。 */
 ENEMIES.test_sorana = Object.assign({}, ENEMIES.man_sorana, { name:'索菈娜' });
 /* 空賊船新船測試卡（ver -2859）：數值照 pirate_ship，只換立繪（config.js 尾端的 test_pirate_nN 測試戰用）。 */
-for(const n of [1,4,5,8]) ENEMIES['test_pirate_n'+n] = Object.assign({}, ENEMIES.pirate_ship, { name:'空賊船_n'+n, image:'enemy_pirate_n'+n+'_side' });   // ver -2831 起正式卡（man_sorana）已定版，測試卡只換名字
+for(const n of [1,2,3,4,5,6,7,8]) ENEMIES['test_pirate_n'+n] = Object.assign({}, ENEMIES.pirate_ship, { name:'空賊船_n'+n, image:'enemy_pirate_n'+n+'_side' });   // ver -2831 起正式卡（man_sorana）已定版，測試卡只換名字
