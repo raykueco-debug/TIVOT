@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.21-2869';
+export const VERSION = 'ver 2026.11.21-2870';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5846,12 +5846,15 @@ export const ENEMY_IDLE = {
   mon_pirateship_side_v2: 'resources/enemy/anim/mon_pirateship_side_v2_idle_v1/',   // 空賊船側舷砲版（ver -2487）
   mon_sky2_maskbanner_side: 'resources/enemy/anim/mon_sky2_maskbanner_side_idle_v1/',   // 王座徘徊者空戰階（ver -2474，美術 56ec95c1：Ray 的 _cut 原樣，68 格 24fps）
 };
-/* ══ 空戰船的船尾兩條細煙（ver -2866／-2867，Ray：「用程式給船拉兩條細煙尾巴」→「靠近一點 畫面上應該是前後關係不是上下關係 以旋槳為中心」）══
-   鍵＝立繪檔名；值＝螺旋槳中心（畫布座標 1536×1024，船頭朝左；量自各船最右 40px 那段的上下緣中點）。
-   兩條都從這一點出：遠的那條細、淡、略高，近的那條粗、亮、略低（enemy.startShipAir）。沒寫的船用預設點。 */
+/* ══ 空戰船的煙／雲線（ver -2866～-2870，空戰副理）══ 鍵＝立繪檔名；畫布座標 1536×1024，船頭朝左。實作 enemy.startShipAir。
+   prop＝螺旋槳中心（Ray：「兩條細煙…前後關係…以旋槳為中心」；量自各船最右 40px 那段的上下緣中點）→ 遠細淡／近粗亮兩條。
+   bow ＝船首下緣（Ray：「船首下緣也拉雲線」；量自船首弧線往下彎到底之前那一點）→ 一條較粗的雲線沿船底往後拖。
+   沒寫的船用預設點。 */
 export const SHIP_TRAIL = {
-  mon_pirateship_n1_side: [1336,738], mon_pirateship_n2_side: [1336,672], mon_pirateship_n3_side: [1336,699], mon_pirateship_n4_side: [1336,716],
-  mon_pirateship_n5_side: [1336,716], mon_pirateship_n6_side: [1336,706], mon_pirateship_n7_side: [1336,714], mon_pirateship_n8_side: [1336,684],
+  mon_pirateship_n1_side: { prop:[1336,738], bow:[417,812] }, mon_pirateship_n2_side: { prop:[1336,672], bow:[418,742] },
+  mon_pirateship_n3_side: { prop:[1336,699], bow:[371,815] }, mon_pirateship_n4_side: { prop:[1336,716], bow:[417,804] },
+  mon_pirateship_n5_side: { prop:[1336,716], bow:[417,806] }, mon_pirateship_n6_side: { prop:[1336,706], bow:[371,815] },
+  mon_pirateship_n7_side: { prop:[1336,714], bow:[418,813] }, mon_pirateship_n8_side: { prop:[1336,684], bow:[418,809] },
 };
 /* ══ 敵人的攻擊／延時動畫（ver -2472，美術 TO_CODE_attack.md；Ray：「娜塔莉攻擊動作交件了，接上進遊戲測」）══
    鑰匙＝立繪檔名（同 ENEMY_IDLE）。`dir`＝動檔資料夾（anim.json loop:false）、`hit`＝哪一格打到玩家（扣血延到那一格）、

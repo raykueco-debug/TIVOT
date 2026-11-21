@@ -2123,7 +2123,7 @@ function startDamageSmoke(cfg){
 }
 /* ══ 空賊船的雲與煙（ver -2865／-2866，空戰副理；Ray 11-21：「前景要有雲霧飄過」「用程式給船拉兩條細煙尾巴」）══
    一張畫布兩件事，只在空戰的船（isAirShip）上跑：
-   ⓪ 船尾兩條細煙（`SHIP_TRAIL[立繪名]`，config）：跟著待機層的框走（漂移／縮放／翻轉），往船尾流走變淡。
+   ⓪ 船尾兩條細煙＋船首下緣一條雲線（`SHIP_TRAIL[立繪名]`，config）：跟著待機層的框走（漂移／縮放／翻轉），往船尾流走變淡。
    ② 前景雲霧：每隔幾秒一大片半透明的霧從機頭那一側的畫面外飄進來、橫過船前、往船尾出去（世界往船尾流）。
    顏色一律取**這一場的戰鬥背景**（亮部＋暗部兩色）⇒ 清晨／白天／黃昏／夜晚自然各一版。
    ⚠ -2865 的「船底雲浪＋墊原圖船底」（補浪花羽化掉的船首下緣）已撤（-2866）：4、5 號改用「飛空船」提示詞重跑，本來就沒有浪。
@@ -2150,8 +2150,12 @@ function startShipAir(en){
   /* 預設色（背景還沒取到）：灰白 */
   const S={ cv, raf:0, last:performance.now(), mists:[], nextMist:performance.now()+rnd(1200,2600),
             lit:[236,240,246], sh:[170,182,200], fwd:fwdOf(en) }; shipAir=S;
-  { const c=SHIP_TRAIL[imgStem(en)] || [1336,715];   // 螺旋槳中心；兩條＝遠（細淡、略高）／近（粗亮、略低）——前後關係不是上下關係（-2867）
-    S.trailPts=[[c[0],c[1]-9],[c[0],c[1]+9]]; S.trailSty=[{ al:0.30, w:0.55, ph:0 },{ al:0.60, w:1, ph:2.1 }]; S.trails=S.trailPts.map(()=>[]); }
+  { const T=SHIP_TRAIL[imgStem(en)] || {}, c=T.prop || [1336,715], bw=T.bow || [417,810];
+    /* 螺旋槳中心兩條＝遠（細淡、略高）／近（粗亮、略低）——前後關係不是上下關係（-2867）；
+       船首下緣一條雲線（-2870，Ray「船首下緣也拉雲線」）：較粗、較淡、往下微沉，沿船底往後拖。 */
+    S.trailPts=[[c[0],c[1]-9],[c[0],c[1]+9],bw];
+    S.trailSty=[{ al:0.30, w:0.55, ph:0 },{ al:0.60, w:1, ph:2.1 },{ al:0.42, w:2.4, ph:4.2, sink:0.012 }];
+    S.trails=S.trailPts.map(()=>[]); }
   const bgm=/url\("?([^")]+)"?\)/.exec(top.style.backgroundImage||'');
   skyTone(bgm && bgm[1]).then(t=>{ if(shipAir!==S || !t) return;
     S.lit=mixc(t.hi,[255,255,255],0.35); S.sh=mixc(t.mid,t.hi,0.45); });
@@ -2180,7 +2184,7 @@ function startShipAir(en){
       if(m && live) S.trailPts.forEach((p,i)=>S.trails[i].push({ x:m.x(p[0]), y:m.y(p[1]), a:0, w:m.k }));
       const sp=back*0.16*W/390;
       S.trails.forEach((tl,ti)=>{ const st=S.trailSty[ti];
-        for(const q of tl){ q.a+=dt; q.x+=sp*dt; q.y+=Math.sin((q.a+q.x)/260+st.ph)*0.02*dt*W/390; }
+        for(const q of tl){ q.a+=dt; q.x+=sp*dt; q.y+=(Math.sin((q.a+q.x)/260+st.ph)*0.02+(st.sink||0))*dt*W/390; }
         while(tl.length && tl[0].a>1500) tl.shift();
         for(let i=1;i<tl.length;i++){ const q0=tl[i-1], q1=tl[i], f=q1.a/1500;
           cx.strokeStyle=`rgba(${S.lit[0]|0},${S.lit[1]|0},${S.lit[2]|0},${(st.al*(1-f)*(1-f)).toFixed(3)})`;
