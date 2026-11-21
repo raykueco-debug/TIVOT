@@ -1,5 +1,5 @@
-{"version": "ver 2026.11.21-2879",
-"bytes": 1563033198,
+{"version": "ver 2026.11.21-2880",
+"bytes": 1563572930,
 "files": [
 "audio.js",
 "config.js",
@@ -11954,6 +11954,7 @@
 "resources/enemy/mon_ossuary_wheel.webp",
 "resources/enemy/mon_pall_bearers.webp",
 "resources/enemy/mon_pallid_stag.webp",
+"resources/enemy/mon_pirateship_n10_side.webp",
 "resources/enemy/mon_pirateship_n1_side.webp",
 "resources/enemy/mon_pirateship_n2_side.webp",
 "resources/enemy/mon_pirateship_n3_side.webp",
@@ -11961,6 +11962,7 @@
 "resources/enemy/mon_pirateship_n5_side.webp",
 "resources/enemy/mon_pirateship_n6_side.webp",
 "resources/enemy/mon_pirateship_n8_side.webp",
+"resources/enemy/mon_pirateship_n9_side.webp",
 "resources/enemy/mon_pirateship_side.webp",
 "resources/enemy/mon_pirateship_side_v2.webp",
 "resources/enemy/mon_relic_bellascetic.webp",
