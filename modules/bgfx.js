@@ -27,7 +27,11 @@ export function prepFx(spec) {
     want('spout', spec.spout.img); want('spoutFlow', spec.spout.flow);
     jobs.push(fetch(url(spec.spout.path)).then(r => { if (!r.ok) throw spec.spout.path; return r.json(); }).then(j => { fx.json = j; }));
   }
-  if (spec.sky) { want('sky', spec.sky.img); want('skyMask', spec.sky.mask); (spec.sky.clouds || []).forEach((p, i) => want('cloud' + i, p)); }
+  if (spec.sky) {
+    want('sky', spec.sky.img); want('skyMask', spec.sky.mask); (spec.sky.clouds || []).forEach((p, i) => want('cloud' + i, p));
+    (spec.sky.layers || []).forEach((L, i) => want('layer' + i, L.img));
+    if (spec.sky.moon) want('moon', spec.sky.moon);
+  }
   Promise.all(jobs).then(() => { fx.ready = true; }, e => { fx.failed = true; console.warn('[bgfx] 載不到', e); });
   return fx;
 }
@@ -137,6 +141,13 @@ function build(fx, W, H) {
   if (S.beam) { B.beam = buildBeam(W, H, S.beam.col, S.beam.amp); B.dust = blob(S.beam.col.map(v => Math.round(v + (255 - v) * 0.5)).join(','), 32); }
   if (S.smoke) B.smoke = blob('150,140,135', 128);
   if (S.sky) { B.skyMask = maskOf(fx.img.skyMask, W, H); B.cut = mk(W, H); B.cx = B.cut.getContext('2d'); }
+  /* 原圖自己的雲（town_sky.py 拆的遠／中／近）：每一層鋪成「原圖｜鏡像｜原圖」三寬，往右捲到 2 寬就接回，邊界處左右對稱所以沒有接縫 */
+  if (S.sky && S.sky.layers) B.layers = S.sky.layers.map((L, i) => {
+    const img = fx.img['layer' + i], c = mk(W * 3, H), g = c.getContext('2d');
+    g.drawImage(img, 0, 0, W, H); g.drawImage(img, W * 2, 0, W, H);
+    g.save(); g.translate(W * 2, 0); g.scale(-1, 1); g.drawImage(img, 0, 0, W, H); g.restore();
+    return { c, o: L };
+  });
   fx.B = B;
 }
 
@@ -164,6 +175,27 @@ function drawMist(B, x, pts, q) {
   x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1;
 }
 
+/* 程式雲（城鎮天空，11-21）：每一層往右捲（遠慢近快，speed 以 1536 寬計 px/s），而且不是水平直走 ——
+   雲沿著以焦點為中心的弧線走（arc：離焦點左右越遠越往上，＝廣角畫面裡天空的弧），近景另加形變（def：逐條上下伸縮、wob：上下起伏）。
+   切成細直條各自位移：t=0、還沒捲動時每一條的位移都是 0 ⇒ 第一格就是原圖。只往前捲，不倒放不來回。 */
+function drawLayers(B, x, sky, t) {
+  const { W, H, s } = B, fxp = (sky.focus || [0.5, 0.4])[0] * W, yb = (sky.bottom || 0.4) * H, N = 64, sw = W / N;
+  const arcY = X => { const u = (X - fxp) / W; return -u * u; };
+  for (const { c, o } of B.layers) {
+    const off = (t * (o.speed || 6) * s) % (W * 2), arc = (o.arc || 0) * yb, def = o.def || 0, wob = (o.wob || 0) * s;
+    const yc = (o.yc != null ? o.yc : 0.5) * yb;
+    for (let i = 0; i < N; i++) {
+      const X = i * sw, sx = ((X - off) % (W * 2) + W * 2) % (W * 2);
+      const orig = sx < W ? sx : W * 2 - sx;                     // 鏡像那一段：原本在 2W−sx 的位置
+      let dy = arc * (arcY(X + sw / 2) - arcY(orig + sw / 2));
+      let k = 1;
+      if (def) k = 1 + def * Math.sin(X / W * 9.4 - t * 0.21 + (o.seed || 0));
+      if (wob) dy += wob * Math.sin(X / W * 5.3 + t * 0.13 + (o.seed || 0) * 1.7);
+      x.drawImage(c, sx + W * 0.0, 0, sw + 0.6, H, X, dy + yc * (1 - k), sw + 0.6, H * k);
+    }
+  }
+}
+
 /* 畫一格：src＝這一格的來源（影片／靜態圖），live＝來源每一格都在變（影片）。回傳畫好的 canvas。 */
 export function drawFx(fx, src, W, H, t, live) {
   if (!fx.B || fx.B.W !== W || fx.B.H !== H) build(fx, W, H);
@@ -172,7 +204,9 @@ export function drawFx(fx, src, W, H, t, live) {
   /* ── 天空：靜態天空 → 程式雲（往右捲，中景 70 秒、近景 32 秒捲過一整張）→ 來源挖掉天空那一塊 ── */
   if (S.sky) {
     x.clearRect(0, 0, W, H); x.drawImage(fx.img.sky, 0, 0, W, H);
-    [70, 32].forEach((sec, i) => { const c = fx.img['cloud' + i]; if (!c) return; const off = (t / sec % 1) * W; x.drawImage(c, off - W, 0, W, H); x.drawImage(c, off, 0, W, H); });
+    if (fx.img.moon) x.drawImage(fx.img.moon, 0, 0, W, H);   // 銀月固定不動（西邊低空那一輪），雲從它前面過
+    if (B.layers) drawLayers(B, x, S.sky, t);
+    else [70, 32].forEach((sec, i) => { const c = fx.img['cloud' + i]; if (!c) return; const off = (t / sec % 1) * W; x.drawImage(c, off - W, 0, W, H); x.drawImage(c, off, 0, W, H); });
     const c = B.cx; c.globalCompositeOperation = 'source-over'; c.clearRect(0, 0, W, H); c.drawImage(src, 0, 0, W, H);
     c.globalCompositeOperation = 'destination-out'; c.drawImage(B.skyMask.c, 0, 0);
     x.drawImage(B.cut, 0, 0);

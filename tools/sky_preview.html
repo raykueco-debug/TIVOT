@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>城鎮天空 程式雲樣本</title>
+<style>
+  body{margin:0;background:#15131c;color:#ddd;font:14px/1.5 sans-serif}
+  .wrap{max-width:1180px;margin:0 auto;padding:12px 16px}
+  canvas{width:100%;height:auto;display:block;background:#000}
+  .row{display:flex;flex-wrap:wrap;gap:10px 22px;margin:10px 0}
+  label{display:flex;gap:8px;align-items:center}
+  input[type=range]{width:160px}
+  .note{color:#aaa;font-size:13px}
+  button{background:#2b2838;color:#eee;border:1px solid #555;border-radius:6px;padding:4px 12px;cursor:pointer}
+  button.on{background:#5a4a8a}
+</style></head>
+<body><div class="wrap">
+<h3 style="margin:4px 0">城鎮天空：拆層＋程式雲（樣本：帝都 攝政王廣場 day）</h3>
+<div class="row">
+  <button id="bOrig">原圖</button><button id="bFx" class="on">程式雲</button>
+  <label>播放倍速 <input id="spd" type="range" min="1" max="20" value="1"><span id="spdv">×1</span></label>
+</div>
+<canvas id="cv" width="1152" height="768"></canvas>
+<div class="row" id="knobs"></div>
+<p class="note">雲是原圖自己的雲拆成遠／中／近三層：遠慢近快、沿著以廣場中心為焦點的弧線走、近景上下伸縮形變。只往前捲，不倒放不來回。倍速只是預覽用，遊戲裡是 ×1。</p>
+</div>
+<script type="module">
+import { prepFx, drawFx } from '../modules/bgfx.js';
+const A = '../resources/background/anim/capital/capital_square_day_';
+const spec = { sky: { img: A + 'sky.webp', mask: A + 'skymask.png', focus: [0.5, 0.4], bottom: 0.392,
+  layers: [
+    { img: A + 'cloud_far.webp',  speed: 3,  arc: 0.10, yc: 0.85 },
+    { img: A + 'cloud_mid.webp',  speed: 6,  arc: 0.18, yc: 0.55, wob: 1.5, seed: 1 },
+    { img: A + 'cloud_near.webp', speed: 11, arc: 0.28, yc: 0.25, wob: 3, def: 0.05, seed: 2 },
+  ] } };
+const orig = new Image(); orig.src = '../resources/background/capital/capital_square_day.webp';
+const fx = prepFx(spec), cv = document.getElementById('cv'), g = cv.getContext('2d');
+let showFx = true, mul = 1, T = 0, last = performance.now();
+const knobs = document.getElementById('knobs');
+spec.sky.layers.forEach((L, i) => {
+  const nm = ['遠', '中', '近'][i];
+  for (const [k, max, step] of [['speed', 40, 1], ['arc', 0.6, 0.02], ['def', 0.15, 0.01], ['wob', 8, 0.5]]) {
+    const l = document.createElement('label'), v = L[k] || 0;
+    l.innerHTML = `${nm}·${k} <input type=range min=0 max=${max} step=${step} value=${v}><span>${v}</span>`;
+    const r = l.querySelector('input'), s = l.querySelector('span');
+    r.oninput = () => { L[k] = +r.value; s.textContent = r.value; };
+    knobs.appendChild(l);
+  }
+});
+document.getElementById('bOrig').onclick = e => { showFx = false; e.target.classList.add('on'); document.getElementById('bFx').classList.remove('on'); };
+document.getElementById('bFx').onclick = e => { showFx = true; e.target.classList.add('on'); document.getElementById('bOrig').classList.remove('on'); };
+const sp = document.getElementById('spd'); sp.oninput = () => { mul = +sp.value; document.getElementById('spdv').textContent = '×' + mul; };
+function loop(now) {
+  T += (now - last) / 1000 * mul; last = now;
+  if (orig.complete && orig.naturalWidth) {
+    if (showFx && fx.ready) g.drawImage(drawFx(fx, orig, 1152, 768, T, false), 0, 0);
+    else g.drawImage(orig, 0, 0, 1152, 768);
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body></html>
