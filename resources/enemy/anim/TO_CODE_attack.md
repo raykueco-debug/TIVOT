@@ -16,6 +16,8 @@ Ray：中立「要已經掏槍」「槍要已經指著 viewer」；B「只要開
 - 片子本身就是一個完整來回：第 0 格瞄準 → 第 1 格開槍（後座開始）→ 第 3～5 格槍口仰到最高 → 第 8～9 格回到瞄準。所以**不用接 R**，播完切回待機（靜態立繪）。
 - 打到＝第 1 格（槍口剛被後座頂起那一瞬）。**槍口火光／煙／子彈請程式做**（片子裡刻意沒畫），位置在槍口（第 1 格大約在畫面左上、主體外框 x≈0～15%、y≈15～25%）。受擊特效建議用槍擊那一套（彈孔／子彈），音效用左輪槍聲。
 - 碰邊：原片第 9–11 格槍口碰生成畫布上緣，Ray 剪過照交。
+- ⚠ **E 倒地（11-21 補交，Ray：「E也要跑」→ 選「單膝跪地」，剪片 `hunter_down_A_AB_cut`）**：`resources/enemy/anim/npc_guildhunter_neutral_down_v1/`（9 格 24fps，loop:false，停在最後一格＝單膝跪地、槍撐地）。
+  程式端目前**沒有倒地表**（ENEMY_IDLE／ATK／MISS／DELAY／DODGE／ENTER 都不是）——請新開一個（例如 `ENEMY_DOWN`，鑰匙＝立繪檔名），擊敗時播一次、**停在最後一格**接結算，不切回待機。只跑了 A→B，沒有 R。
 - ✅ 待機（11-21 補交，Ray 剪的 `hunter_hunter_A_idle_cut`）：待機表加 `npc_guildhunter_neutral: 'resources/enemy/anim/npc_guildhunter_neutral_idle_v1/'`（13 格 24fps，loop:true）。數值、名字都沒動。
 
 ## ⚠ 11-20 待程式接：地下聖徒 `faceless`（夢境戰 cap_dream）新立繪＋A／M／D（敵人線 3060）
