@@ -76,6 +76,13 @@ const DEF={
   centipede:   { dir:'enemy/flm_centipi/', file:'mon3d', spanK:0.17,
                  flap:{ cut:[0.12,0.45,0.75], amp:[0.20,0.18,0.14], rest:[0.03,0.04,0.04], lag:0.05, down:0.50 },
                  tail:{ from:0.30, amp:0.04, waves:1.2 } },
+  /* ── 空賊船（11-22，Ray：「空賊船也全部做成3D吧」）── 剛體：不拍不扭，只有整體轉向與壓坡。
+     飛行頁只有一種 `pirate`，戰鬥那邊有十艘（本船＋n1~n6／n8／n9／n10）→ 模型掛在 `vars`，
+     現在由網址 `&drg3dvar=<n2…>`（或 DRG3D.dbg.variant）挑；遭遇時挑哪一艘要等戰鬥卡那一邊定（未接）。
+     fit:'rad'：船是長條，照外接球（≈半船長）對齊 2D 的船長 300（bodyLen）。 */
+  pirate:      { dir:'enemy/flh_pirate/', file:'mon3d', spanK:0.31, fit:'rad',
+                 flap:{ cut:[0.3,0.6,0.9], amp:[0,0,0], rest:[0,0,0], lag:0, down:0.5 },
+                 vars:{ n2:{ dir:'enemy/flh_pirate_n2/' } } },
 };
 DEF.sky_southlord = Object.assign({}, DEF.sky2_maw, { battle:'li_south' });   // 南天的霸王＝無面巨首換名（index.html 的 ENEMY_KINDS 同樣是 Object.assign 抄過去）
 const MAXPX=1024;                       // 畫布上限（裝置像素）：一次配好，每禎只換 viewport
@@ -189,9 +196,13 @@ function flapOf(kind){
            lag:(SP.flapLag!=null)?SP.flapLag:0.07, down:(SP.flapDown!=null)?SP.flapDown:0.38 };
 }
 
+/* 同一種怪有好幾個模型（`vars`，空賊船）：目前挑哪一個由 DBG.variant 決定；M 的鑰匙是「種類#款」 */
+function varOf(kind){ const D=DEF[kind], v=DBG.variant; return (D && D.vars && v && D.vars[v]) ? v : ''; }
+function mkey(kind){ const v=varOf(kind); return v ? kind+'#'+v : kind; }
+function defOf(kind){ const v=varOf(kind); return v ? Object.assign({}, DEF[kind], DEF[kind].vars[v]) : DEF[kind]; }
 function load(kind){
-  const D=DEF[kind]; if(!D || M[kind]) return;
-  const R=M[kind]={ state:1 };
+  const key=mkey(kind), D=defOf(kind); if(!D || M[key]) return;
+  const R=M[key]={ state:1 };
   if(!init()){ R.state=-1; return; }
   const base=D.dir+D.file;
   fetch(base+(LO?'_lo':'')+'.glb').then(r=>{ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); }).then(buf=>{
@@ -222,7 +233,7 @@ function load(kind){
       g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR_MIPMAP_LINEAR); g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR); R.texOK=true; };
     im.src=base+'_atlas.webp';
     R.state=2;
-    console.log('[mon3d]', kind, (R.nIdx/3)|0, '面', '鉸鏈', R.hinge.map(h=>h.map(v=>+v.toFixed(3))));
+    console.log('[mon3d]', key, (R.nIdx/3)|0, '面', '鉸鏈', R.hinge.map(h=>h.map(v=>+v.toFixed(3))));
   }).catch(e=>{ R.state=-1; R.err=String(e); console.warn('[mon3d] 載不到', kind, e); });
 }
 
@@ -233,7 +244,7 @@ function flapWave(t,DOWN){
   const u=(t-DOWN)/(1-DOWN), e=u*u*(3-2*u); return -1+2*e;
 }
 
-const off={ on:true }, DBG={ yaw:null, noTex:false };
+const off={ on:true }, DBG={ yaw:null, noTex:false, variant:((location.search.match(/[?&]drg3dvar=(\w+)/)||[])[1])||null };
 /* ⚠ 抽格（Ray 11-07：「3D 讓他幀數減少 33%」）：每 3 禎只重算 2 次姿勢，第 3 禎沿用上一張 ——
    位置與大小照常跟著走（貼的地方是這一禎的），只有動作是頓的，像手繪動畫。
    `CAD.pat` 是節拍（1＝重畫、0＝沿用），要改節奏只改這一串。 */
@@ -242,10 +253,10 @@ const CAD={ pat:[1,1,0], n:0, dpx:0, kind:'', slots:[], keepNow:false };
 /* 畫一隻：o＝{ kind, ctx, x, y（螢幕 CSS px 的中心）, lat, h, z（中心在鏡頭座標：橫向／鏡頭高−牠高／進深）,
    l, f（航向在鏡頭座標）, W, VIEWH, now, lit:[r,g,b], pxScale, clip:fn } */
 function draw(o){
-  const kind=o.kind||'bldragon', R=M[kind];
+  const kind=o.kind||'bldragon', key=mkey(kind), R=M[key];
   if(!R || R.state!==2) return false;
   const t0=performance.now();
-  const D=DEF[kind], K=ENEMY_KINDS[kind], SP=K.sprite||{};
+  const D=defOf(kind), K=ENEMY_KINDS[kind], SP=K.sprite||{};
   const spanW=(SP.frontSpanW||SP.spanW||980)*D.spanK*tuneOf('size',o.kind);   // TUNE：遭遇測試的大小滑桿（只在測試時有值）
   const span=R.span, sWorld=spanW/2/(D.fit==='rad' ? R.rad : span);   // 模型單位 → 世界單位（翼展對齊 2D 那張圖；管狀的怪 fit:'rad' 改用外接球）
   const fx=o.W/2, fy=0.62*o.VIEWH;
@@ -261,19 +272,19 @@ function draw(o){
   if(o.slot!=null){
     if(o.slot===0) CAD.keepNow=!CAD.pat[CAD.n++ % CAD.pat.length];
     const S=CAD.slots[o.slot];
-    if(!o.noHold && CAD.keepNow && S && S.kind===kind){
+    if(!o.noHold && CAD.keepNow && S && S.kind===key){
       c.save(); c.imageSmoothingEnabled=false; if(o.clip) o.clip();
       c.drawImage(S.cv, 0, 0, S.dpx, S.dpx, o.x-half, o.y-half, half*2, half*2);
       c.restore(); stat.held++; return true;
     }
   }
-  const keep=o.slot==null && !o.noHold && CAD.dpx>0 && CAD.kind===kind && !CAD.pat[CAD.n++ % CAD.pat.length];
+  const keep=o.slot==null && !o.noHold && CAD.dpx>0 && CAD.kind===key && !CAD.pat[CAD.n++ % CAD.pat.length];
   if(keep){
     c.save(); c.imageSmoothingEnabled=false; if(o.clip) o.clip();
     c.drawImage(cv, 0, MAXPX-CAD.dpx, CAD.dpx, CAD.dpx, o.x-half, o.y-half, half*2, half*2);
     c.restore(); stat.held++; return true;
   }
-  CAD.dpx=dpx; CAD.kind=kind;
+  CAD.dpx=dpx; CAD.kind=key;
   g.viewport(0,0,dpx,dpx);
   g.enable(g.SCISSOR_TEST); g.scissor(0,0,dpx,dpx);
   g.clearColor(0,0,0,0); g.clear(g.COLOR_BUFFER_BIT|g.DEPTH_BUFFER_BIT);
@@ -289,7 +300,7 @@ function draw(o){
   g.uniform3f(U.uHy,R.hinge[0][1],R.hinge[1][1],R.hinge[2][1]);
   /* 擺角：常駐下壓 REST ＋ 波形 × 幅度，往外逐節落後 LAG */
   const F=flapOf(kind);
-  const tt=((o.now*tuneOf('anim',kind)*K.wingHz)/(2*Math.PI))%1;   // 動作速度：遭遇測試的滑桿（預設 1）
+  const tt=((o.now*tuneOf('anim',kind)*(K.wingHz||0.004))/(2*Math.PI))%1;   // 剛體（空賊船）沒有 wingHz：給個慢的，只推尾波／全身波的相位   // 動作速度：遭遇測試的滑桿（預設 1）
   const A3=[0,1,2].map(k=>F.rest[k]-F.amp[k]*flapWave(((tt-F.lag*k)%1+1)%1,F.down));
   g.uniform3f(U.uAng,A3[0],A3[1],A3[2]);
   /* 尾波：與拍翅同一個週期，相位跟著拍 */
@@ -331,7 +342,7 @@ function draw(o){
     let S=CAD.slots[o.slot]; if(!S){ S=CAD.slots[o.slot]={ cv:document.createElement('canvas') }; }
     if(S.cv.width<dpx){ S.cv.width=S.cv.height=dpx; }
     const sg=S.cv.getContext('2d'); sg.clearRect(0,0,dpx,dpx); sg.drawImage(cv, 0, MAXPX-dpx, dpx, dpx, 0, 0, dpx, dpx);
-    S.dpx=dpx; S.kind=kind;
+    S.dpx=dpx; S.kind=key;
   }
   stat.frames++; stat.ms+=performance.now()-t0;
   return true;
@@ -356,7 +367,7 @@ let tuneDirty=false;
 (()=>{ try{ const x=new XMLHttpRequest(); x.open('GET','enemy/sky3d_tune.json?v='+Date.now(),false); x.send();   // 同步：第一幀就要用到
   if(x.status===200){ const t=JSON.parse(x.responseText); for(const k in TUNE) if(t[k] && typeof t[k]==='object') TUNE[k]=t[k]; } }catch(e){} })();
 const TUNE_DEF={ engage:null, size:1, count:1, anim:1, speed:1, approach:'', chase:null, gone:3400, bank:45, bankT:350, wave:0.06, waveN:1.0, tent:0, tentY:0.55, tentN:1.2, line:1, lineMin:40 };   // null＝沿用 ENEMY_CFG.engage
-const TUNE_KDEF={ sky_gasjelly:{ tent:0.12 } };   // 這一種怪的預設（沒存過才用）
+const TUNE_KDEF={ sky_gasjelly:{ tent:0.12 }, pirate:{ wave:0, bank:12 } };   // 空賊船：不扭、轉彎只微傾   // 這一種怪的預設（沒存過才用）
 const tuneOf=(f,k)=>{ const v=TUNE[f][k]; if(v!=null) return v; if(TUNE_KDEF[k] && TUNE_KDEF[k][f]!=null) return TUNE_KDEF[k][f];
   try{ if(f==='engage') return ENEMY_CFG.engage; if(f==='chase') return Math.round(ENEMY_CFG.spawnDist*ENEMY_CFG.chaseAt); }catch(e){ return f==='engage'?300:1680; }
   return TUNE_DEF[f]; };
@@ -376,7 +387,7 @@ const HOLDLIST=HOLDARG==='all' ? Object.keys(DEF) : [HOLDARG];   // 南天的霸
 let holdIx=0;
 window.DRG3D={ mode:MODE, hold:HOLD, fight:FIGHT, noFight:(()=>{ try{ return localStorage.getItem('drg3dNoFight')!=='0'; }catch(e){ return true; } })(), fightTimer:1500, engaged, fightTick, get holdKind(){ return HOLDLIST[holdIx]; }, cad:CAD, bench, off, dbg:DBG, def:DEF, models:M, stat, draw,
   has:k=>!!DEF[k],
-  ready:k=>{ k=k||'bldragon'; if(!off.on || !DEF[k]) return false; if(!M[k]) load(k); return M[k].state===2; },
+  ready:k=>{ k=k||'bldragon'; if(!off.on || !DEF[k]) return false; const key=mkey(k); if(!M[key]) load(k); return M[key].state===2; },
   next:d=>{ holdIx=(holdIx+(d||1)+HOLDLIST.length)%HOLDLIST.length; load(HOLDLIST[holdIx]); holdUi(); if(FIGHT) fightUi(); }, tune:TUNE, tuneOf,
   spanOf:k=>{ let SP={}; try{ SP=ENEMY_KINDS[k].sprite||{}; }catch(e){} return (SP.frontSpanW||SP.spanW||980)*(DEF[k]?DEF[k].spanK:1)*tuneOf('size',k); } };
 /* 整個面板（選怪列＋調整表）一起收：只留左上一顆小鈕（Ray：「收合的是整個表單，擋在畫面上我看個屁」）。

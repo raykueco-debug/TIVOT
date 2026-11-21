@@ -12,6 +12,7 @@
 ⚠ GPU 與其他副理共用：送之前先看佇列（/queue）有沒有人在跑。
 """
 import sys, json, time, urllib.request
+sys.stdout.reconfigure(encoding='utf-8')
 
 API = 'http://127.0.0.1:8188'
 
