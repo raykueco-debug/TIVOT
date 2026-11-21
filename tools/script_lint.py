@@ -654,7 +654,7 @@ def main():
             if ln.get('settle'):
                 continue
             if ln.get('load'):
-                if ln['load'] not in script:
+                if ln['load'] is not True and ln['load'] not in script:   # `load:true`＝這一段自己的讀取頁（ver -2884）
                     err('%s：load 指到不存在的場景 %s' % (tag, ln['load']))
                 continue                      # 閘門，不是演出拍：沒有 speaker 也正常
             if ln.get('battle'):
@@ -780,7 +780,7 @@ def main():
             if ln.get('ci') and not exists(SI_DIR + ln['ci'] + '.webp'):
                 err('%s：沒有這張 CI %s' % (tag, ln['ci']))
 
-            if ln.get('bgm') and not audio_ok(ln['bgm'], bgm_map, bgm_alias, 'bgm_'):
+            if ln.get('bgm') and ln['bgm'] != '@town' and not audio_ok(ln['bgm'], bgm_map, bgm_alias, 'bgm_'):
                 err('%s：沒有這首 BGM %s' % (tag, ln['bgm']))
             spec = ln.get('se')
             for one in ([] if spec is None else (spec if isinstance(spec, list) else [spec])):

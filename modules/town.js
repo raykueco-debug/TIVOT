@@ -4878,8 +4878,10 @@ export function enter(id){
   { const a0=actDue(n);
     /* 這一段開頭就改時間的話，**先套用再畫背景**（ver -2244，見 story.preApplyClock）。 */
     if(a0 && a0.lines) story.preApplyClock(a0.lines);
-    if(a0 && a0.darkStart){ const bk=townBgm(); story.holdSceneFade(()=>story.ensureBgm(bk)); }
-    else story.ensureBgm(townBgm()); }
+    /* 這一段開頭自己換曲的話，抵達就直接放那一首（ver -2884，北泊送行的 flight）——不先放這張圖的曲子再換。 */
+    const bk=(a0 && a0.lines && story.openingBgm(a0.lines)) || townBgm();
+    if(a0 && a0.darkStart){ story.holdSceneFade(()=>story.ensureBgm(bk)); }
+    else story.ensureBgm(bk); }
   story.setBgFlip(!!n.bgFlip);   // 背景鏡像（ver -877：崩塌走道×2 同圖翻轉）
   _bandShown=clock.band();   // 這一格是照這個時段畫的（給 tivot:clock 比對，ver -2082）
   bgFor(bgCandsOf(n, id), needReveal ? reveal : null);

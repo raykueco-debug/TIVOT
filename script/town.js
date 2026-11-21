@@ -3197,6 +3197,9 @@ export const TOWNS = {
           { flag:'cap_clear_inn', need:'cap_raid', fromStage:0, storyBattle:true, lines:[ { battle:'cap_guard_inn' } ] },
           { flag:'cap_dream', need:'inn_seen_capital_inn', until:'stage1_open', sleepFirst:{ hours:1, disguise:true, blackAfter:3000 },   /* 睡覺音播完再黑三秒才入夢（ver -1893，Ray） */
             storyBattle:true, lines:[
+            /* 入夢與出夢各過一道讀取頁（ver -2884，Ray：「第一場夢境開始與結束都要跑預讀頁」）：門前的背景／立繪／BGM 全收，
+               門後那幾拍的素材載完才演（`load:true`＝這一段自己的讀取頁，見 story.runLoadGate）。 */
+            { load:true },
             { speaker:'NARRATION', text:'', auto:700, fadeOut:1, bg:'holyseedungeonwhole', bgm:'deepfrost', show:false },   // 場景曲（ver -1888，Ray 指定）
             { speaker:'NARRATION', text:'', auto:900, se:'se_stomp_far', shake:true },
             { speaker:'NARRATION', text:'', auto:900, se:'se_stomp_far', shake:true },
@@ -3244,8 +3247,10 @@ export const TOWNS = {
                `noHold`：她還站在台上，不寫的話這一拍會停下來等點擊（台上有人的無台詞拍），黑畫面就卡住。 */
             { speaker:'NARRATION', text:'', label:'cap_dream_end', auto:3300, fadeOut:3000, noHold:true,
               clockToNext:7, healFull:true, flags:['inn_missed'] },
-            /* 隔天清晨：旅店（時段候選鏈挑清晨那張）淡回來，接著 07:00 閘門（蕾娜「好囉，該出發囉」）。 */
-            { speaker:'NARRATION', text:'', auto:1300, bgBand:'capital_hotel', fadeIn:1000 },
+            { load:true },   // 出夢的讀取頁（ver -2884）：夢的背景與 deepfrost 在門前收掉
+            /* 隔天清晨：旅店（時段候選鏈挑清晨那張）淡回來，接著 07:00 閘門（蕾娜「好囉，該出發囉」）。
+               `bgm:'@town'`＝帝都此刻的曲子（門把 deepfrost 收了，這一拍放回來）。 */
+            { speaker:'NARRATION', text:'', auto:1300, bgBand:'capital_hotel', bgm:'@town', fadeIn:1000 },
           ] },
         ],
         /* 初訪那一幕。⚠ 中間三拍是**演出**不是台詞：
@@ -3469,7 +3474,9 @@ export const TOWNS = {
        ⚠⚠ **司祭那兩句是我寫的**（Ray 只寫了「祭司會出現，找你去協助安葬死者」，
          沒給台詞）—— 要換直接改這裡。 */
     gates: [
-      { flag:'np_burial', need:'np_claws_done', onMove:true,
+      /* ⚠ ver -2884 拿掉 `onMove`（Ray：「娜塔莉死亡劇情跑完，祭司請主角幫忙埋葬的劇情要直接接上，不用移動」）——
+         同 ④ np_depart 的 -979：`clockGate()` 本來就在 act 演完當下跑，`onMove` 才是要玩家先抬腳的原因。 */
+      { flag:'np_burial', need:'np_claws_done',
         goto:'cemetery', clockTo:14,
         lines:[ pri(null,'……那位騎士。'),
                 pri(null,'死者還躺在瓦礫裡。方便的話，能請你幫忙送他們最後一程嗎？') ] },

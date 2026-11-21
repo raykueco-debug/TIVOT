@@ -2012,10 +2012,15 @@ export function clearSceneFade(){
   const f=$('storyFade');
   if(f){ f.classList.remove('on'); f.style.transitionDuration=''; }
 }
+/* 插圖黑幕在等動畫第一格（cgFade 的 back 輪詢中）。 */
+let cgBackPoll=null;
 function flushCgFade(){
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
+  const poll=cgBackPoll; cgBackPoll=null;
   if(cgFinish) cgFinish();
   flushCgCross();
+  /* 被清掉的輪詢接回去（ver -2884，Ray：「插圖連點會卡」）：它自己有 3 秒上限，接回去不會卡；不接就是黑幕永遠不掀。 */
+  if(poll && !cgBackPoll) cgFadeT.push(setTimeout(poll, 50));
 }
 /* ══⚠⚠ **淡入中的第二層要能被「立刻做完」**（ver -643，Ray：「有時按太快會卡插畫」）══
    `cgCross`（`cgSoft` 的疊上去淡入，ver -628）把交棒排在 `CG_FADE_MS` 之後，
@@ -2251,6 +2256,9 @@ function cgAnimGate(byUser){
     if(byUser || fastMode){
       const v=on.v;
       if(v.duration>0){ try{ v.pause(); v.currentTime = Math.max(0, v.duration - 0.02); }catch(_){} on.sig=null; kickCgAnim(on); }
+      /* ⚠⚠ 影片還沒載好（長度未知）就點了（ver -2884，Ray：「插圖連點會卡」）：以前這裡什麼都不做卻吃掉這一下 ——
+         慢網路下每一下都被吞，插圖不換也不收。改成**這一拍演完**＝放棄動畫、靜態插圖放回來（同載不到的退路），不推進。 */
+      else stopCgAnim();
     }else on.afterEnd = autoPlay;      // 自動播放：播完自己推進；手動模式的 auto 計時器：押住等點
     return true;
   }
@@ -2453,9 +2461,12 @@ export function clearCg(){
   stopCgAnim();   // 插圖動畫跟著收（ver -2179）
   flushCgCross();
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
-  cgCrossFinish=null; cgFinish=null;
+  cgCrossFinish=null; cgFinish=null; cgBackPoll=null;
   cgSeq++;                       // ver -979：讓還在試候選的舊鏈收手（見 cgSeq 的說明）
   stageCg=null;
+  /* ⚠ 插圖自己蓋的黑幕（`fadeOwner==='cg'`）跟著收（ver -2884）：上面把會掀它的回呼都丟了 ——
+     一段在插圖黑幕還沒掀時被點完（clearCast → 這裡），那片黑就留著沒人掀。腳本／讀取頁蓋的不動。 */
+  { const f=$('storyFade'); if(f && fadeOwner==='cg'){ f.classList.remove('on'); fadeOwner=null; } }
   const top=$('storyCg2'); if(top){ top.classList.remove('on'); setImg(top,''); }
   const cg=$('storyCg');
   /* ⚠⚠⚠ **`pan-v` 一定要一起拔**（ver -1449，Ray：「蕾娜跌倒插圖不知道為什麼
@@ -2489,8 +2500,10 @@ function cgFade(el, src){
        黑幕要等**影片第一格真的畫上去**才掀 —— 不然影片還在載的那一段，掀開看到的是插圖底下的場景。等不到 3 秒照掀。 */
     const t0=performance.now();
     const back=()=>{ el.onload=null; el.onerror=null;
-      if(my!==cgSeq) return;               // 黑幕現在是新的那一代的，不要替它掀
-      const A=cgAnimOn; if(A && A.img===el && !A.shown && performance.now()-t0<3000){ cgFadeT.push(setTimeout(back, 50)); return; }
+      if(my!==cgSeq){ cgBackPoll=null; return; }   // 黑幕現在是新的那一代的，不要替它掀
+      /* ⚠ 等動畫第一格的輪詢記在 `cgBackPoll`（ver -2884）：`flushCgFade` 會清掉 cgFadeT，以前連這個輪詢一起清 ⇒ 黑幕沒人掀。 */
+      const A=cgAnimOn; if(A && A.img===el && !A.shown && performance.now()-t0<3000){ cgBackPoll=back; cgFadeT.push(setTimeout(back, 50)); return; }
+      cgBackPoll=null;
       if(fadeOwner==='cg'){ fade.classList.remove('on'); fadeOwner=null; } };
     /* ⚠ 試出來的結果要**記起來**（ver -433）：下一次演到同一張就只請求那一張。
        鑰匙是 `list[0]`（已經把時段編進去了，見 cgCandidates 的說明）。 */
@@ -2803,18 +2816,19 @@ function applyPersist(line){
   if(bub) bub.style.display = line.card ? 'none' : '';
   /* BGM：⚠ 同一首重複指定不會重播（playBgm 自己擋掉），所以每一句都寫也無妨；
      但照「只寫變化」的規矩，正常只在換曲那一句寫。 */
-  if(line.bgm!==undefined && line.bgm!==stageBgm){
-    stageBgm=line.bgm;
+  const _bgmK = line.bgm===undefined ? undefined : lineBgmKey(line);
+  if(_bgmK!==undefined && _bgmK!==stageBgm){
+    stageBgm=_bgmK;
     try{
-      if(line.bgm){ const src=bgmSrc(line.bgm);
+      if(_bgmK){ const src=bgmSrc(_bgmK);
         /* ⚠⚠ 音量**問 config**（ver -441）：以前這裡寫死 0.62，於是**每一首**
            劇情曲都用同一個數字播 —— 母帶差 6 dB 的兩首曲子就差 6 dB。
            現在逐曲的增益只有 `tuning.fileGain` 那一份（鐵律 7），
            而且與別處起播同一首時算出來的值一定相同（playBgm 對同曲直接 return，
            誰先起播誰的音量就定了 —— 兩邊不一致就會「看是誰起播的」而大小聲）。 */
         if(src) SFX.playBgm(src, {fadeInMs:800, volume:fileGain(src)});
-        else { const tag='bgm/'+line.bgm;
-          if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 沒有這首 BGM：', line.bgm); } }
+        else { const tag='bgm/'+_bgmK;
+          if(!missingExpr.has(tag)){ missingExpr.add(tag); console.info('[story] 沒有這首 BGM：', _bgmK); } }
       }else SFX.stopBgm(900);
     }catch(_){}
   }
@@ -5596,15 +5610,24 @@ function collectAssets(startId){
        這正是 `load` 存在的意義：把一條長鏈切成幾段各自載。 */
     let gated=false;
     for(const ln of (sc.lines||[])) if(ln.load && ln.load===sc.next) gated=true;
-    for(const ln of (sc.lines||[])){
+    collectLines(sc.lines||[], imgs, bgms, ses, cgs);
+    id = gated ? null : sc.next;
+  }
+  return { imgs:[...imgs], bgms:[...bgms], ses:[...ses], cgs };
+}
+/* 一串拍要用到的素材（`collectAssets` 與城鎮段落的 `load:true` 共用，鐵律 8）。 */
+function collectLines(lines, imgs, bgms, ses, cgs){
+    for(const ln of (lines||[])){
+      if(!ln || typeof ln!=='object') continue;
       if(ln.bg) imgs.add(imgSrc(ln.bg));
+      /* `bgBand`：時段候選鏈 → 整串當一筆（預載端依序試、中一張就停）。 */
+      if(ln.bgBand) imgs.add(bandNames(ln.bgBand, ln.bgNoTime).map(n=>imgSrc(n)));
       /* 插圖有時段差分（ver -427）。⚠⚠ ver -433 起**不再把候選整批丟進圖片清單** ——
          那樣預載會抓一堆必然 404 的名字，而且**顯示的當下還要再試一次**（那一輪
          404 才是「插圖沒出現」的成因，見 `resolveCg`）。改成收基底名，
          預載時解析**一次**，之後顯示只請求解出來的那一張。 */
       if(ln.cg && !cgs.has(ln.cg)) cgs.set(ln.cg, !!ln.cgNoTime);
       if(ln.ci) imgs.add(SI_DIR+ln.ci+'.webp'+assetVer(ln.ci));
-      if(ln.bgm && bgmSrc(ln.bgm)) bgms.add(bgmSrc(ln.bgm));
       for(const n of [].concat(ln.se||[])){ const k=(typeof n==='string')?n:n.n;
         if(seSrc(k)) ses.add(seSrc(k)); }
       /* 立繪：說話者與被指定的角色都要（含表情差分）。 */
@@ -5615,10 +5638,9 @@ function collectAssets(startId){
         const es=exprSrc(art, ln.portrait&&ln.portrait.expr);
         if(es) imgs.add(es);
       }
+      const bk = lineBgmKey(ln);
+      if(bk && bgmSrc(bk)) bgms.add(bgmSrc(bk));
     }
-    id = gated ? null : sc.next;
-  }
-  return { imgs:[...imgs], bgms:[...bgms], ses:[...ses], cgs };
 }
 /* 預載：整條 scene 鏈要用到的圖／音效／音樂，**載完（且解碼完）才開演**。
    ⚠⚠ 圖要 `decode()` 不能只等 `onload`（ver -327（-893 前用詞））。`onload` 只代表**下載完**，
@@ -5631,8 +5653,8 @@ function collectAssets(startId){
      預載頁 —— 所以保留上限，只是拉到不會誤觸的長度。
    ⚠ 每一張圖的 promise 都不會 reject（onerror 也 resolve）：**缺一張圖不該擋住整場**。 */
 const PRELOAD_CAP_MS = 25000;
-function preloadStory(startId, onProgress){
-  const A=collectAssets(startId);
+function preloadStory(startId, onProgress, pre){
+  const A=pre || collectAssets(startId);
   /* ⚠ 門的素材也要預載：它是**進戰鬥那一刻**才動起來的，沒先抓的話升上去是一片空白。 */
   A.imgs.push(...kerbImgUrls());
   /* ⚠ 門的三支音效也要預載：撞擊音在演出**第 0 毫秒**就要響，
@@ -5651,14 +5673,21 @@ function preloadStory(startId, onProgress){
      先搶到連線、先畫上去；立繪晚一拍淡進來無妨（同 §6.6「圖沒載完最多晚一拍、
      音效沒載完直接不響」的失敗代價不對等）。門的素材（KERB_*）是戰鬥那一刻才用，
      一併排到背景之後。 */
-  A.imgs.sort((a,b)=>(a.startsWith(BG_DIR)?0:1)-(b.startsWith(BG_DIR)?0:1));
+  const isBg = v => String(Array.isArray(v) ? v[0] : v).startsWith(BG_DIR);
+  A.imgs.sort((a,b)=>(isBg(a)?0:1)-(isBg(b)?0:1));
   const AUDIO_FIRST_MS = 6000;
+  /* 一筆可以是候選鏈（`bgBand` 那一串）：依序試、中一張就停（同 `loadScene` 的 group）。 */
   const imgJobs = ()=> A.imgs.map(src=>new Promise(res=>{
-    const im=new Image();
-    const fin=()=>res();
-    im.onerror=fin;
-    im.onload=()=>{ (im.decode ? im.decode() : Promise.resolve()).then(fin, fin); };
-    im.src=src;
+    const list = Array.isArray(src) ? src : [src];
+    let i=0;
+    const next=()=>{
+      if(i>=list.length){ res(); return; }
+      const im=new Image();
+      im.onerror=next;
+      im.onload=()=>{ (im.decode ? im.decode() : Promise.resolve()).then(()=>res(), ()=>res()); };
+      im.src=list[i++];
+    };
+    next();
   }));
   /* 插圖：**先解析出哪一個候選真的存在**，解出來的那一張就是這一次要載的（ver -433）。
      ⚠ 這一步取代了以前「把六個候選整批丟進圖片清單」的作法 —— 那樣不但預載會抓一堆
@@ -5864,6 +5893,9 @@ export function loadScene(spec, onReady, onCovered){
   _sceneAudio = ses.concat(bgms);
   try{ SFX.releaseAudio(ses.concat(bgms)); }catch(e){}      // ① 放掉上一個場景
   const ui = showLoader(spec.dest || 'story');
+  /* ⚠⚠ 過門＝門前的曲子收掉（ver -2884，Ray：「只要有預讀頁，前面的東西全部清掉」）—— 門後由 onReady
+     （`town.open`／`resumeFrom`）放這一張圖／這一段的曲子；同一首也是重新起播。戰鬥那一道門由戰鬥自己放曲。 */
+  if(spec.dest!=='battle') ui.covered.then(()=>{ stageBgm=null; try{ SFX.stopBgm(0); }catch(_){} });
   if(typeof onCovered==='function') ui.covered.then(()=>{ try{ onCovered(); }catch(e){ console.warn('[load] onCovered', e); } });
   const t0 = Date.now();
   const total = ses.length + imgs.length + bgms.length + (typeof spec.pre==='function'?1:0) + 1;
@@ -5929,26 +5961,63 @@ function warmUp(list){
   for(let k=0; k<3; k++) next();
 }
 
+/* ══⚠⚠⚠ `{ load:true }` ＝**這一段自己的讀取頁**（ver -2884，Ray：「只要有預讀頁，前面的東西全部清掉，
+   不然網路版會有劇情推進但背景或音樂沒換的狀況」）══
+   城鎮／旅店的臨時段落不是 `MAIN_SCRIPT` 的一場，`load:'sceneId'` 用不上 —— `true` ＝收**這一拍之後、
+   到下一個 `load` 為止**那幾拍要用的素材（`collectLines`，同一支）。門開在 `'town'`（人還在這座城裡，
+   城鎮介面不 suspend）；主線那一種照舊 `'story'`。
+   ⚠⚠ 讀取頁**全黑蓋滿那一刻**把門前的舞台全收（`wipeForGate`）：背景／插圖／中景／立繪／對白框／BGM／
+     story 自己的循環音效。門後第一拍等素材**全部載完**才演，所以它寫的 `bg:`／`bgm:` 一定換得上。 */
+function wipeForGate(){
+  clearCast();
+  clearCg();
+  clearStageLeftovers();                 // ⚠ 會收 #storyFade —— 下面重新蓋回去（讀取頁收掉前它要在）
+  stageBg=null; stageCi=null;
+  for(const id of ['storyBg','storyCi']){ const el=$(id); if(el){ el.classList.remove('on','fading','pan-up'); el.removeAttribute('src'); } }
+  const fx=$('storyFx'); if(fx) fx.innerHTML='';
+  const card=$('storyCard'); if(card) card.classList.remove('on');
+  const b=$('storyBubble'); if(b) b.style.visibility='hidden';
+  stopTyping(); { const tx=$('storyText'); if(tx) tx.textContent=''; }
+  stageBgm=null; try{ SFX.stopBgm(0); }catch(_){}
+  try{ stopFx(); }catch(_){}
+  const fade=$('storyFade');
+  if(fade){ fade.style.transitionDuration='0ms'; fade.classList.add('on'); void fade.offsetWidth; fade.style.transitionDuration=''; fadeOwner='gate'; }
+}
 function runLoadGate(sceneId){
   const fade=$('storyFade');
   if(fade){ fade.classList.add('on'); fadeOwner='gate'; }   // 這一塊不給 flushCgFade 收
+  const here = sceneId===true;
+  let A=null;
+  if(here){
+    const imgs=new Set(), bgms=new Set(), ses=new Set(), cgs=new Map();
+    const rest=[];
+    for(let i=lineIdx+1; i<cur.lines.length; i++){ const ln=cur.lines[i]; if(ln && ln.load) break; rest.push(ln); }
+    collectLines(rest, imgs, bgms, ses, cgs);
+    A={ imgs:[...imgs], bgms:[...bgms], ses:[...ses], cgs };
+  }
   /* 上一個場景的音訊放掉（ver -1297，同 `loadScene` 的①）。⚠ `collectAssets` 收的是
      **這一段**要用的，所以 keep 就是它 —— 正在播的那一首由 releaseAudio 自己保住。 */
-  try{ const A=collectAssets(sceneId); _sceneAudio=A.ses.concat(A.bgms.map(b=>bgmSrc(b)||b)); SFX.releaseAudio(_sceneAudio); }catch(e){}
-  const ui=showLoader('story');
+  try{ const A2=A||collectAssets(sceneId); _sceneAudio=A2.ses.concat(A2.bgms.map(b=>bgmSrc(b)||b)); SFX.releaseAudio(_sceneAudio); }catch(e){}
+  const ui=showLoader(here ? 'town' : 'story');
+  ui.covered.then(()=>{ try{ wipeForGate(); }catch(e){ console.warn('[load] wipe', e); } });
   const t0=Date.now();
-  preloadStory(sceneId, p=>ui.set(p)).then(()=>{
+  const gateCur=cur;
+  Promise.all([ui.covered, preloadStory(sceneId, p=>ui.set(p), A)]).then(()=>{
+    if(cur!==gateCur) return;                    // 這一段已經被別的畫面接手了
     ui.set(1);
     setTimeout(()=>{
       ui.close();                                  // 讀取頁開始淡出（ver -433）
+      noSkipUntil=0; blankUntil=0;                 // 門前那一拍的保護期不准擋住門後第一拍（擋了就沒人再推）
       advance();                                   // 在黑幕底下把新場景的第一拍演出來
       /* 讀取頁檢查點（ver -555，Ray：「沒有旅店手動存檔就以上一次讀取頁之後的
          那一幕開始銜接」）：新場景第一拍已演出來 → 此刻的位置寫進 auto 格
          （main.js 掛 save.autoSave 進來，story 不 import 存檔系統——會循環）。 */
-      if(checkpointHook) try{ checkpointHook(); }catch(e){}
+      /* ⚠ 城鎮段落自己的讀取頁（`load:true`）不落點：那是一段戲的中間（夢境），存在這裡＝記錄點落在鏈子中間（同 inn 小睡不存檔）。 */
+      if(checkpointHook && !here) try{ checkpointHook(); }catch(e){}
       /* ⚠ 黑幕要等**讀取頁淡完**才掀（ver -433）：以前 120ms 就掀，那時讀取頁還沒
          淡走 —— 現在它是淡的，先掀黑幕會看到「讀取頁疊在新場景上一起變淡」。 */
-      setTimeout(()=>{ if(fade){ fade.classList.remove('on'); fadeOwner=null; } }, AL_CLOSE_MS+120);
+      /* ⚠ 只掀**自己**蓋的那一塊：新場景第一拍若是 `fadeOut`（夢境開場那種），黑幕已經交給那一拍了。 */
+      setTimeout(()=>{ if(fade && fadeOwner==='gate'){ fade.classList.remove('on'); fadeOwner=null; } }, AL_CLOSE_MS+120);
     }, Math.max(0, 600-(Date.now()-t0)));
   });
 }
@@ -5998,8 +6067,9 @@ export function open(pos, done){
      不再用劇情自己那一顆簡版（#storyLoad 已停用，DOM 與 CSS 先留著）。
      ⚠ 最短顯示 600ms：快取全中的時候只要一百多毫秒，閃一下讀起來像破圖。 */
   const ui=showLoader('story');
+  ui.covered.then(()=>{ stageBgm=null; try{ SFX.stopBgm(0); }catch(_){} });   // 過門＝門前的曲子收掉（ver -2884，同 loadScene）
   const t0=Date.now();
-  preloadStory(id, p=>ui.set(p)).then(()=>{
+  Promise.all([ui.covered, preloadStory(id, p=>ui.set(p))]).then(()=>{
     ui.set(1);
     /* 開場那一頁也是讀取頁（ver -555）：第一拍演出來就落一次檢查點 ——
        玩家在第一個 {load} 閘門之前退出，「繼續」也接得回這一幕。 */
@@ -6019,6 +6089,24 @@ export function setBattleHandler(fn){ battleHandler = fn || null; }
      `resumeFrom` 自己退回「戰前那一首」。 */
 let townBgmFn = null;
 export function setTownBgm(fn){ townBgmFn = fn || null; }
+/* 這一拍的 `bgm:` 解成曲名。`bgm:'@town'` ＝這張圖現在的曲子（同 `bgmAfter:'@town'`，真相在 `TOWNS[].bgm`／`bgmWhen`）；
+   問不到（不在城裡）回 undefined ＝這一拍不動曲子。 */
+/* 一段戲**開頭**（第一句台詞／戰鬥為止）就換的曲子（ver -2884，Ray：「北泊送行那一段 BGM 一開始就是航行用的那一首」）——
+   城鎮抵達時拿它取代這張圖的曲子，不要先放舊曲再換。沒有就回 null。 */
+export function openingBgm(lines){
+  for(const ln of (lines||[])){
+    if(!ln || typeof ln!=='object') continue;
+    const k=lineBgmKey(ln); if(k) return k;
+    const said = (ln.text!=null && String(ln.text).trim()!=='') || ln.blank;
+    if(said || ln.battle || ln.goFlight || ln.load) break;
+  }
+  return null;
+}
+function lineBgmKey(ln){
+  if(!ln || ln.bgm===undefined) return undefined;
+  if(ln.bgm==='@town'){ const k = townBgmFn ? townBgmFn() : null; return k || undefined; }
+  return ln.bgm;
+}
 /* ══⚠⚠⚠ **腳本攤得開小地圖**（`map:true`，ver -1397）══ 由 main 注入
    （`town.showMapForStory`；story 不 import town，方向不可以反過來）。
    ⚠⚠ **只收自己開的那一次**（`mapByLine`）：玩家可能是自己按鈕把它攤開的，
