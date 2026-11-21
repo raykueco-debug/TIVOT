@@ -8,6 +8,28 @@ import json, os, re, subprocess, sys
 ROOTS = ('resources/', 'flight/', 'modules/', 'script/', 'i18n/', 'css/')
 ROOT_FILES = {'index.html', 'style.css', 'manifest.webmanifest', 'audio.js', 'config.js', 'i18n.js',
               'main.js', 'orientation.js', 'state.js', 'telemetry.js', 'offline.js', 'sw.js'}
+# 留在 repo、不進遊戲包的工作素材（ver -2853 之後，Ray：「收掉留著 不要進遊戲包」）：
+#   resources/ci/layers/ ＝做 CI 影片用的 GPT 圖層／修補片／Wan 輸出／對位資料（365 MB），遊戲播的是 resources/ci/video/ 的成品，執行時一張都不讀。
+SKIP_DIRS = ('resources/ci/layers/',)
+# 零星的工作檔（Ray：「排除零星垃圾檔」）：檔名底線開頭（審閱拼圖、參考圖、預覽 gif…）／「未命名」／resources/si/old/ ——
+#   **只有程式沒引用的才排除**（地圖的 _spots_／_layout_、飛行頁的 _rooms_map 這些底線檔是真的在讀的）。
+#   判準：檔名（含或不含副檔名）與路徑都不出現在執行時的程式裡；config.js 裡版號工具自動產生的雜湊表那幾行不算引用。
+STRAY = lambda f: os.path.basename(f).startswith('_') or '未命名' in f or f.startswith('resources/si/old/')
+def _runtime_code(root):
+    import glob
+    out = []
+    pats = ['config.js', 'main.js', 'index.html', 'style.css', 'modules/*.js', 'script/**/*.js', 'flight/*.js', 'flight/*.html', 'i18n/**/*.js']
+    for pat in pats:
+        for p in glob.glob(os.path.join(root, pat), recursive=True):
+            t = open(p, encoding='utf-8', errors='ignore').read()
+            if os.path.basename(p) == 'config.js' and os.path.dirname(p) == root:
+                t = '\n'.join(l for l in t.split('\n') if not re.match(r"\s*'[^']+':\s*'[0-9a-f]{8}',?\s*$", l))
+            out.append(t)
+    return '\n'.join(out)
+def _referenced(f, code):
+    if f.startswith('resources/si/old/'): return 'si/old' in code
+    b = os.path.basename(f)
+    return b in code or os.path.splitext(b)[0] in code or f in code
 SKIP_EXT = {'.md', '.py', '.xlsx', '.docx', '.pptx', '.psd', '.tsv', '.txt', '.sh', '.bat', '.log', '.kra', '.blend'}
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -15,13 +37,18 @@ def build(root=ROOT):
     files = subprocess.run(['git', 'ls-files', '-z'], cwd=root, capture_output=True).stdout.decode('utf-8').split('\0')
     lfs = set(subprocess.run(['git', 'lfs', 'ls-files', '-n'], cwd=root, capture_output=True).stdout.decode('utf-8').split('\n'))
     out, total = [], 0
+    code = None
     for f in files:
         if not f or f in lfs: continue
         if not (f in ROOT_FILES or f.startswith(ROOTS)): continue
+        if f.startswith(SKIP_DIRS): continue
         if any(seg.startswith('_') or seg == 'reference' for seg in f.split('/')[:-1]): continue
         if os.path.splitext(f)[1].lower() in SKIP_EXT: continue
         p = os.path.join(root, f)
         if not os.path.isfile(p): continue
+        if STRAY(f):
+            if code is None: code = _runtime_code(root)
+            if not _referenced(f, code): continue
         out.append(f); total += os.path.getsize(p)
     s = open(os.path.join(root, 'config.js'), encoding='utf-8').read()
     ver = re.search(r"export const VERSION = '([^']+)'", s).group(1)
