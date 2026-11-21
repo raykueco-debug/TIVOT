@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.21-2867';
+export const VERSION = 'ver 2026.11.21-2868';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5696,7 +5696,7 @@ export const ENEMY_IDLE = {
      v1 資料夾留著，Ray 確認後走 tools/recycle.sh 回收。 */
   saint_ug_giant: 'resources/enemy/anim/saint_ug_giant_idle_v1/',   // 地下聖徒待機（ver -2850，Ray 剪的 faceless_idle2_cut：重呼吸＋反覆握拳，28 格 24fps loop）
   npc_guildhunter_neutral: 'resources/enemy/anim/npc_guildhunter_neutral_idle_v1/',   // 賞金獵人待機（ver -2855，Ray 剪的 hunter_hunter_A_idle_cut，13 格 24fps loop）
-  mon_pirateship_n1_side: 'resources/enemy/anim/mon_pirateship_n1_side_idle_v1/',   // 空賊船 1 號待機（ver -2859，Ray 剪的 v3enh_cut，30 格）
+  mon_pirateship_n1_side: 'resources/enemy/anim/mon_pirateship_n1_side_idle_v6airship/',   // 空賊船 1 號待機（ver -2868，Ray 剪的 v6airship_cut，32 格 24fps；「飛空船」提示詞重跑，取代 idle_v1）
   mon_pirateship_n4_side: 'resources/enemy/anim/mon_pirateship_n4_side_idle_v6airship/',   // 4 號待機（ver -2865，Ray 剪的 v6airship_cut，35 格 24fps）：提示詞加「飛空船」重跑 ⇒ 船底沒有浪花、船首完整；取代 -2863 的兩版 _fade 陣列
   mon_pirateship_n5_side: 'resources/enemy/anim/mon_pirateship_n5_side_idle_v6airship/',   // 5 號待機（ver -2866，Ray 剪的 v6airship_cut，33 格 24fps）：同 4 號，「飛空船」提示詞、無浪
   mon_pirateship_n8_side: 'resources/enemy/anim/mon_pirateship_n8_side_idle_v3enh/',   // 8 號（無浪花，煙囪冒煙）

@@ -2000,12 +2000,18 @@ export function clearGrapple(){ if(!grapple) return; cancelAnimationFrame(grappl
 /* 登艦：船往上飛出畫面（繩頭跟著上去）→ 一個人影的剪影全景從上往下劃過 → 劃過畫面正中那一刻換成甲板戰（onSwap）→ 劃完（onDone）。
    -2559 Ray「不用閉棺了，船升上去以後一個人影全景落下，剪影就好，剪影劃過就換成甲板戰」。
    剪影＝卡上 `shadowImg`（預先壓黑的單人空賊），沒寫就拿登艦那張卡的立繪壓黑；蓋滿 #app（上下兩半一起），所以換卡那一下被它擋住。 */
-const BOARD_FLY_MS=900, BOARD_DROP_MS=520;
+const BOARD_FLY_MS=900, BOARD_DROP_MS=330;   // -2868 Ray「落下的人影速度再快一點」：520 → 330
+/* 對艦戰那張天空是哪個時段（登艦戰的甲板跟著它，-2868）：檔名尾巴 _dawn/_day/_dusk/_night；沒有尾巴的那幾張照表（sky_towers 原圖＝夜，量過與 _night 同色）。 */
+let boardBand=null;
+const PLAIN_SKY_BAND={ sky_towers:'night' };
+function skyBandNow(){ const top=$('top'), m=/\/([^\/"?]+?)\.(?:webp|png|jpe?g)/i.exec((top && top.style.backgroundImage)||''); if(!m) return null;
+  const t=/_(dawn|day|dusk|night)$/i.exec(m[1]); return t ? t[1].toLowerCase() : (PLAIN_SKY_BAND[m[1].toLowerCase()] || null); }
 export function boardingRun(g, onSwap, onDone){
   if(!grapple){ onSwap&&onSwap(); onDone&&onDone(); return 0; }
   stopAirDrift(false);
   const app=$('app'), top=$('top'), H=top ? top.clientHeight : 400;
   grapple.anims=[]; for(const el of motionTargets()) if(el) grapple.anims.push(el.animate([{ transform:'none' },{ transform:`translateY(${-H*1.4}px)` }], { duration:BOARD_FLY_MS, easing:'cubic-bezier(.5,0,.85,.4)', fill:'forwards' }));
+  boardBand=skyBandNow();   // 換卡前記下對艦戰的天色（setEnemy 的 bandBg 讀它）
   const SH=grapple.shadow && grapple.shadow.fr ? grapple.shadow : null;   // 會動的人影（載好了才用）
   const src=SH ? SH.fr[0].src : ((g && g.shadowImg) || asset(((GAME_CONFIG.enemies||{})[g && g.to]||{}).image));   // 卡上 shadowImg＝單人空賊的剪影（-2560 Ray「人影先找個落單的空賊圖」）；沒寫退回登艦那張卡的立繪
   setTimeout(()=>{
@@ -2020,7 +2026,7 @@ export function boardingRun(g, onSwap, onDone){
     const a=im.animate([{ transform:`translate(-50%, ${-h}px) rotate(-4deg)` },{ transform:`translate(-50%, ${AH}px) rotate(3deg)` }], { duration:BOARD_DROP_MS, easing:'linear' });   // 等速：時間的一半＝剪影中心落在畫面正中（換卡藏在它後面）
     setTimeout(()=>{ onSwap&&onSwap(); }, BOARD_DROP_MS*0.5);   // 剪影蓋住畫面正中那一刻換
     let ft=0; if(SH){ const t0=performance.now(); ft=setInterval(()=>{ im.src=SH.fr[Math.floor((performance.now()-t0)*SH.fps/1000)%SH.fr.length].src; }, 1000/SH.fps); }
-    a.onfinish=()=>{ clearInterval(ft); box.remove(); onDone&&onDone(); };
+    a.onfinish=()=>{ clearInterval(ft); box.remove(); if(api.screenShake) api.screenShake(); onDone&&onDone(); };   // 落地＝震一下（-2868 Ray「落地時畫面震動」；鏡頭震動走 combat 的那一支，鐵律 8）
   }, BOARD_FLY_MS);
   return BOARD_FLY_MS+BOARD_DROP_MS;
 }
@@ -4081,7 +4087,9 @@ export function setEnemy(key, opts){
   const topEl = $('top');
   if(topEl){
     /* 卡上 `bgBand`（ver -2576，登艦戰甲板四時段）：基底名＋現在的時段（dawn／day／dusk／night，深夜用 night）。 */
-    const bandBg = en.bgBand ? en.bgBand+'_'+({ Dawn:'dawn', Day:'day', Dusk:'dusk', night:'night', midnight:'night' }[clock.band()] || 'day') : '';
+    /* 登艦戰（ver -2868，Ray：「登艦戰的背景天色要跟對艦戰的時候一樣」）：boardingRun 換卡前記下對艦戰那張天空的時段（boardBand），這一次換上的卡吃它、用完即丟。 */
+    const bb=boardBand; boardBand=null;
+    const bandBg = en.bgBand ? en.bgBand+'_'+(bb || ({ Dawn:'dawn', Day:'day', Dusk:'dusk', night:'night', midnight:'night' }[clock.band()] || 'day')) : '';
     /* 戰鬥卡的 `bg`（ver -2851，夢境戰 cap_dream 的專用背景）：**這一場**一定用它，蓋過敵人卡與城鎮那一格 ——
        寫在戰鬥卡不寫在敵人卡，因為同一張敵人卡（faceless）也是挑戰模式的第一隻，那邊不該跟著換。 */
     const sbBg = (state.scriptRun && state.scriptBattleId && ((GAME_CONFIG.battles||{})[state.scriptBattleId]||{}).bg) || '';
