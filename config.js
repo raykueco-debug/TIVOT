@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.21-2873';
+export const VERSION = 'ver 2026.11.21-2874';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5854,7 +5854,7 @@ export const ENEMY_IDLE = {
    pitch＝船首起伏（度；-2871 Ray：「船首要有一點顛 像前面幾艘船一樣」——那幾艘的起伏是 Wan 片子自帶的，3 號片子裡船身不動才補）。
    沒寫的船用預設點。 */
 export const SHIP_TRAIL = {
-  mon_pirateship_n1_side: { prop:[1336,738], bow:[417,812] }, mon_pirateship_n2_side: { prop:[1336,672], bow:[418,742] },
+  mon_pirateship_n1_side: { prop:[1336,738], bow:[417,812] }, mon_pirateship_n2_side: { prop:[1336,672], bow:[418,742], pitch:1.2 },
   mon_pirateship_n3_side: { prop:[1336,699], bow:[371,815], pitch:1.4 }, mon_pirateship_n4_side: { prop:[1336,716], bow:[417,804] },
   mon_pirateship_n5_side: { prop:[1336,716], bow:[417,806] }, mon_pirateship_n6_side: { prop:[1336,706], bow:[371,815], pitch:1.1 },
   mon_pirateship_n7_side: { prop:[1336,714], bow:[418,813] }, mon_pirateship_n8_side: { prop:[1336,684], bow:[418,809] },
