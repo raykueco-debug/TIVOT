@@ -59,3 +59,9 @@ Wan 在 4、5 號船底自己長出了浪花（白藍色）。白天的雲景上
 - 預覽（美術用，非遊戲）：`ComfyUI-master/tivot_wan/out/skyship_preview.html`（:8130），12 張空戰背景同時疊船。
 
 - 生成：Wan 720×480、49 格、強風帆提示詞＋`TIVOT_LX2V=enh`（Ray：「帆沒動啊」—— 第一版只寫帆鼓動，帆幾乎不動）。交件 `deliver_idle_lite.py`（`TIVOT_FIT=0.86`、scale 1.0）。
+
+## ✅ 11-21 晚：改「飛空船」提示詞重跑（v6airship）＋程式雲霧／細煙（空戰副理自己接，Ray：空戰敵程式歸這邊）
+- Ray：「inpaint 走不通 在 prompt 加入飛空船 這樣就不會出水」⇒ `batch_skyships_v6_1121.py`（v3enh 那句的開頭換成 `Flying airship floating in mid-air, steampunk sky ship`）。
+- 4 號 `anim/mon_pirateship_n4_side_idle_v6airship/`（35 格）、5 號 `…n5_side_idle_v6airship/`（33 格）已交件並接上 `ENEMY_IDLE`（取代 `_fade` 兩版陣列）。上面「浪花→程式雲浪」那一節作廢。
+- 1、2、3、6、7、8 號照同一句重跑中（7、8 加煙囪煙），Ray 一艘一艘剪。
+- 程式（`enemy.startShipAir`）：所有空戰船都有**前景雲霧**（色取戰鬥背景）＋**船尾兩條細煙**（`config.SHIP_TRAIL`，噴口量自各船螺旋槳上下緣）。

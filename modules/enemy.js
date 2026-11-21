@@ -16,7 +16,7 @@
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import * as prog from '../script/progress.js';  // stage 加成要問現在第幾章（ver -1584b）
-import { ENEMY_IDLE, SHIP_WAKE, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, ENEMY_DOWN, ENEMY_DODGE, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
+import { ENEMY_IDLE, SHIP_TRAIL, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, ENEMY_DOWN, ENEMY_DODGE, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';
@@ -2115,12 +2115,12 @@ function startDamageSmoke(cfg){
     S.raf=requestAnimationFrame(tick); };
   S.raf=requestAnimationFrame(tick);
 }
-/* ══ 空賊船的雲（ver -2865，空戰副理；Ray 11-21：「船頭的下方浪花要再加 因為現在看起來船頭下緣不見了」「前景要有雲霧飄過」）══
+/* ══ 空賊船的雲與煙（ver -2865／-2866，空戰副理；Ray 11-21：「前景要有雲霧飄過」「用程式給船拉兩條細煙尾巴」）══
    一張畫布兩件事，只在空戰的船（isAirShip）上跑：
-   ① 船底雲浪（`SHIP_WAKE[立繪名]`，config）：沿船底那幾個點持續噴雲團，往船尾拖走、變大、變淡 ——
-      蓋住浪花羽化後消失的船頭下緣，讀起來是「船頭壓在雲層裡」。點位是畫布座標（anim.json 的 canvas），跟著待機層的框走（漂移／縮放／翻轉）。
-   ② 前景雲霧：所有空戰船都有。每隔幾秒一大片半透明的霧從機頭那一側的畫面外飄進來、橫過船前、往船尾出去（世界往船尾流）。
+   ⓪ 船尾兩條細煙（`SHIP_TRAIL[立繪名]`，config）：跟著待機層的框走（漂移／縮放／翻轉），往船尾流走變淡。
+   ② 前景雲霧：每隔幾秒一大片半透明的霧從機頭那一側的畫面外飄進來、橫過船前、往船尾出去（世界往船尾流）。
    顏色一律取**這一場的戰鬥背景**（亮部＋暗部兩色）⇒ 清晨／白天／黃昏／夜晚自然各一版。
+   ⚠ -2865 的「船底雲浪＋墊原圖船底」（補浪花羽化掉的船首下緣）已撤（-2866）：4、5 號改用「飛空船」提示詞重跑，本來就沒有浪。
    收：換怪（setEnemy 重叫）／打完（state.over：不再噴，剩下的散完自己拆）。 */
 let shipAir=null;
 const skyToneCache={};
@@ -2134,33 +2134,17 @@ function skyTone(url){
       res({ hi:avg(0, Math.ceil(px.length*0.12)), mid:avg(Math.floor(px.length*0.35), Math.floor(px.length*0.65)) }); }catch(_){ res(null); } };
     im.onerror=()=>res(null); im.src=url; });
 }
-function stopShipAir(){ if(!shipAir) return; cancelAnimationFrame(shipAir.raf); shipAir.cv.remove(); if(shipAir.under) shipAir.under.remove(); shipAir=null; }
-/* 墊原圖船底（SHIP_WAKE.under）：一張原立繪貼在待機層**底下**（DOM 緊貼在它前面），框照待機層現在的框換算（含漂移、翻轉），
-   只露 under 那一塊 —— 待機格不透明的地方蓋住它，浪花羽化成透明的地方就露出原圖的船底。待機層沒在顯示（斜墜、攻擊片）就藏起來。 */
-function placeShipUnder(S, el, top){
-  const u=S.under, cfg=S.wake; if(!u) return;
-  const ok=el && idleJ && el.isConnected && !el._falling && el.style.visibility!=='hidden' && el.style.display!=='none';
-  if(!ok){ u.style.display='none'; return; }
-  const es=($('enemyImg')||{}).src; if(es && u.src!==es) u.src=es;   // 同一張圖（已在快取）
-  if(u.nextSibling!==el) el.before(u);
-  const br=el.getBoundingClientRect(), tr=top.getBoundingClientRect(), b=idleJ.box, c=idleJ.canvas||[1536,1024];
-  const kx=br.width/b[2], ky=br.height/b[3], flip=S.fwd>0;
-  const left=br.left-tr.left-(flip ? (c[0]-b[0]-b[2]) : b[0])*kx, topY=br.top-tr.top-b[1]*ky;
-  const R=cfg.under, cl=flip ? [ (c[0]-R[2])/c[0], R[1]/c[1], (R[0])/c[0], 1-R[3]/c[1] ] : [ R[0]/c[0], R[1]/c[1], 1-R[2]/c[0], 1-R[3]/c[1] ];
-  u.style.cssText=`position:absolute;pointer-events:none;left:${left.toFixed(1)}px;top:${topY.toFixed(1)}px;width:${(c[0]*kx).toFixed(1)}px;height:${(c[1]*ky).toFixed(1)}px;`+
-    `transform:${flip?'scaleX(-1)':'none'};clip-path:inset(${(cl[1]*100).toFixed(2)}% ${(cl[2]*100).toFixed(2)}% ${(cl[3]*100).toFixed(2)}% ${(cl[0]*100).toFixed(2)}%);opacity:${getComputedStyle(el).opacity};`;
-}
+function stopShipAir(){ if(!shipAir) return; cancelAnimationFrame(shipAir.raf); shipAir.cv.remove(); shipAir=null; }
 function startShipAir(en){
   stopShipAir(); if(!isAirShip(en)) return;
   const top=$('top'); if(!top) return;
-  const wake=SHIP_WAKE[imgStem(en)]||null;
   const cv=document.createElement('canvas'); cv.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3';
   top.appendChild(cv); const cx=cv.getContext('2d'), rnd=(a,b)=>a+Math.random()*(b-a);
   const mixc=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
   /* 預設色（背景還沒取到）：灰白 */
-  const S={ cv, raf:0, last:performance.now(), acc:0, puffs:[], mists:[], nextMist:performance.now()+rnd(1200,2600),
-            lit:[236,240,246], sh:[170,182,200], fwd:fwdOf(en), wake, under:null }; shipAir=S;
-  if(wake && wake.under){ const u=document.createElement('img'); u.alt=''; u.className='ship-under'; u.style.display='none'; S.under=u; }
+  const S={ cv, raf:0, last:performance.now(), mists:[], nextMist:performance.now()+rnd(1200,2600),
+            lit:[236,240,246], sh:[170,182,200], fwd:fwdOf(en) }; shipAir=S;
+  S.trailPts=SHIP_TRAIL[imgStem(en)] || [[1330,640],[1330,790]]; S.trails=S.trailPts.map(()=>[]);
   const bgm=/url\("?([^")]+)"?\)/.exec(top.style.backgroundImage||'');
   skyTone(bgm && bgm[1]).then(t=>{ if(shipAir!==S || !t) return;
     S.lit=mixc(t.hi,[255,255,255],0.35); S.sh=mixc(t.mid,t.hi,0.45); });
@@ -2179,19 +2163,22 @@ function startShipAir(en){
     cx.setTransform(dpr,0,0,dpr,0,0); cx.clearRect(0,0,W,H);
     const el=(idleEl && idleEl.isConnected) ? idleEl : null, falling=!!((el||$('enemyImg'))||{})._falling;
     const live=!state.over && !falling, back=-S.fwd;   // back＝船尾方向（畫面 x 的正負）
-    placeShipUnder(S, el, top);
-    /* ① 船底雲浪：跟著待機層現在的框（含漂移的 translate／scale） */
-    if(wake && el && idleJ && live){
-      const br=el.getBoundingClientRect(), tr=top.getBoundingClientRect(), b=idleJ.box, kx=br.width/b[2], ky=br.height/b[3];
-      const toX=c=> br.left-tr.left + (S.fwd>0 ? (b[0]+b[2]-c) : (c-b[0]))*kx, toY=c=> br.top-tr.top + (c-b[1])*ky;
-      S.acc+=dt*(wake.rate||22)/1000;
-      while(S.acc>=1){ S.acc-=1; const i=(Math.random()*wake.pts.length)|0, p=wake.pts[i], w=(wake.w&&wake.w[i])||1;
-        S.puffs.push({ x:toX(p[0])+rnd(-14,14)*kx, y:toY(p[1])+rnd(-6,14)*ky, r0:(wake.r||70)*kx*rnd(0.7,1.25)*w,
-          vx:back*rnd(0.05,0.11)*W/390, vy:rnd(-0.004,0.012)*W/390, life:rnd(1300,2100), a:0 }); }
-    }
-    for(let i=S.puffs.length-1;i>=0;i--){ const p=S.puffs[i]; p.a+=dt; if(p.a>p.life){ S.puffs.splice(i,1); continue; }
-      const q=p.a/p.life, al=0.9*(q<0.12?q/0.12:1)*(1-q)*(1-q);
-      puff(p.x+p.vx*p.a, p.y+p.vy*p.a, p.r0*(1+q*1.6), al, 1); }
+    /* ⓪ 船尾兩條細煙（ver -2866，Ray：「用程式給船拉兩條細煙尾巴」）：SHIP_TRAIL[立繪名]＝兩個畫布點（沒寫＝船尾預設兩點）。
+       每幀在點上落一個節點，節點往船尾流走、變淡、略變粗 ⇒ 船漂移時尾巴自然拉出弧線。 */
+    { const tr=top.getBoundingClientRect(); let m=null;
+      if(el && idleJ){ const br=el.getBoundingClientRect(), b=idleJ.box, kx=br.width/b[2], ky=br.height/b[3];
+        m={ x:c=> br.left-tr.left + (S.fwd>0 ? (b[0]+b[2]-c) : (c-b[0]))*kx, y:c=> br.top-tr.top + (c-b[1])*ky, k:kx }; }
+      else { const eI=$('enemyImg'), r=eI && eI.getAttribute('src') && canvasBoxInTop(eI, { canvas:[1536,1024], box:[0,0,1536,1024] });
+        if(r){ const k=r.width/1536; m={ x:c=> r.left+(S.fwd>0 ? 1536-c : c)*k, y:c=> r.top+c*k, k }; } }
+      if(m && live) S.trailPts.forEach((p,i)=>S.trails[i].push({ x:m.x(p[0]), y:m.y(p[1]), a:0, w:m.k }));
+      const sp=back*0.16*W/390;
+      for(const tl of S.trails){
+        for(const q of tl){ q.a+=dt; q.x+=sp*dt; q.y+=Math.sin((q.a+q.x)/260)*0.02*dt*W/390; }
+        while(tl.length && tl[0].a>1500) tl.shift();
+        for(let i=1;i<tl.length;i++){ const q0=tl[i-1], q1=tl[i], f=q1.a/1500;
+          cx.strokeStyle=`rgba(${S.lit[0]|0},${S.lit[1]|0},${S.lit[2]|0},${(0.55*(1-f)*(1-f)).toFixed(3)})`;
+          cx.lineWidth=Math.max(0.8, (4+10*f)*q1.w); cx.lineCap='round';
+          cx.beginPath(); cx.moveTo(q0.x,q0.y); cx.lineTo(q1.x,q1.y); cx.stroke(); } } }
     /* ② 前景雲霧：機頭那一側的畫面外進、船尾那一側出；一片＝一串軟團，橫跨 0.6~1.1 個畫面寬 */
     if(live && now>=S.nextMist){ S.nextMist=now+rnd(5200,9000);
       const span=W*rnd(0.6,1.1), n=7+((Math.random()*4)|0), y0=H*rnd(0.18,0.85), lobes=[];
@@ -2202,7 +2189,7 @@ function startShipAir(en){
       const from=-back*(W/2+m.span/2+H*0.3), to=back*(W/2+m.span/2+H*0.3), cxm=W/2+from+(to-from)*q;   // 機頭側 → 船尾側
       const al=m.peak*Math.sin(Math.PI*Math.min(1,Math.max(0,q)));
       for(const l of m.lobes) puff(cxm+l.dx, m.y0+l.dy+Math.sin(m.t/900+l.ph)*H*0.01, l.r*(1+0.08*Math.sin(m.t/700+l.ph)), al*0.55, 1.2); }
-    if(!live && !S.puffs.length && !S.mists.length){ stopShipAir(); return; }
+    if(!live && !S.mists.length && !S.trails.some(t=>t.length)){ stopShipAir(); return; }
     S.raf=requestAnimationFrame(tick); };
   S.raf=requestAnimationFrame(tick);
 }

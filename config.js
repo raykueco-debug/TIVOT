@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.21-2865';
+export const VERSION = 'ver 2026.11.21-2866';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5698,7 +5698,7 @@ export const ENEMY_IDLE = {
   npc_guildhunter_neutral: 'resources/enemy/anim/npc_guildhunter_neutral_idle_v1/',   // 賞金獵人待機（ver -2855，Ray 剪的 hunter_hunter_A_idle_cut，13 格 24fps loop）
   mon_pirateship_n1_side: 'resources/enemy/anim/mon_pirateship_n1_side_idle_v1/',   // 空賊船 1 號待機（ver -2859，Ray 剪的 v3enh_cut，30 格）
   mon_pirateship_n4_side: 'resources/enemy/anim/mon_pirateship_n4_side_idle_v6airship/',   // 4 號待機（ver -2865，Ray 剪的 v6airship_cut，35 格 24fps）：提示詞加「飛空船」重跑 ⇒ 船底沒有浪花、船首完整；取代 -2863 的兩版 _fade 陣列
-  mon_pirateship_n5_side: ['resources/enemy/anim/mon_pirateship_n5_side_idle_v3enh_fade/', 'resources/enemy/anim/mon_pirateship_n5_side_idle_v4air_fade/'],   // 5 號同上
+  mon_pirateship_n5_side: 'resources/enemy/anim/mon_pirateship_n5_side_idle_v6airship/',   // 5 號待機（ver -2866，Ray 剪的 v6airship_cut，33 格 24fps）：同 4 號，「飛空船」提示詞、無浪
   mon_pirateship_n8_side: 'resources/enemy/anim/mon_pirateship_n8_side_idle_v3enh/',   // 8 號（無浪花，煙囪冒煙）
   sorana_si_guard: 'resources/enemy/anim/sorana_guard_idle_v1/',   // 索菈娜待機（ver -2830，Ray 剪的 np_sorana_idle_wan7_cut 22 格 24fps：呼吸上下起伏＋乳搖）
   man_misha: 'resources/enemy/anim/man_misha_idle_v1/',   // ver -2079：人類用「明顯深呼吸」提示詞、不掛 LoRA（Live2D LoRA 兩輪測不出效果）
@@ -5845,12 +5845,13 @@ export const ENEMY_IDLE = {
   mon_pirateship_side_v2: 'resources/enemy/anim/mon_pirateship_side_v2_idle_v1/',   // 空賊船側舷砲版（ver -2487）
   mon_sky2_maskbanner_side: 'resources/enemy/anim/mon_sky2_maskbanner_side_idle_v1/',   // 王座徘徊者空戰階（ver -2474，美術 56ec95c1：Ray 的 _cut 原樣，68 格 24fps）
 };
-/* ══ 空戰船的船底雲浪（ver -2865，空戰副理；Ray：「船頭的下方浪花要再加 因為現在看起來船頭下緣不見了」）══ 鍵＝立繪檔名（同 ENEMY_IDLE）。
-   under＝在待機層底下墊原本的靜態立繪、只露這一塊（畫布矩形 x0,y0,x1,y1）——浪花羽化掉的船首下緣照原圖補回來（Ray 11-21 選「墊原圖船底」；待機只有帆在動、船身不動，原圖與待機格對得上）。
-   pts＝噴雲的點（立繪畫布座標，anim.json 的 canvas 1536×1024；量自 _fade 那幾支的船底輪廓）、w＝各點雲團大小倍率、r＝基準半徑、rate＝每秒幾團。
-   實作只有 enemy.startShipAir 一支。沒寫的船＝只有前景雲霧、不噴船底雲。 */
-export const SHIP_WAKE = {
-  mon_pirateship_n5_side: { under:[180,700,1150,1024], r:72, rate:26, pts:[[230,735],[300,790],[370,825],[450,840],[540,842],[640,842],[740,842]], w:[1.1,1.2,1.2,1.1,1,0.9,0.8] },
+/* ══ 空戰船的船尾兩條細煙（ver -2866，Ray：「用程式給船拉兩條細煙尾巴」）══ 鍵＝立繪檔名；值＝兩個噴口（畫布座標 1536×1024，船頭朝左）。
+   量自各船螺旋槳那一段的上下緣（往內收兩成）。沒寫的船用 enemy.startShipAir 的預設兩點。 */
+export const SHIP_TRAIL = {
+  mon_pirateship_n1_side: [[1325,673],[1325,806]], mon_pirateship_n2_side: [[1325,590],[1325,762]],
+  mon_pirateship_n3_side: [[1325,640],[1325,755]], mon_pirateship_n4_side: [[1325,660],[1325,772]],
+  mon_pirateship_n5_side: [[1325,573],[1325,746]], mon_pirateship_n6_side: [[1325,632],[1325,754]],
+  mon_pirateship_n7_side: [[1325,623],[1325,753]], mon_pirateship_n8_side: [[1325,602],[1325,735]],
 };
 /* ══ 敵人的攻擊／延時動畫（ver -2472，美術 TO_CODE_attack.md；Ray：「娜塔莉攻擊動作交件了，接上進遊戲測」）══
    鑰匙＝立繪檔名（同 ENEMY_IDLE）。`dir`＝動檔資料夾（anim.json loop:false）、`hit`＝哪一格打到玩家（扣血延到那一格）、
