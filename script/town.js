@@ -3782,7 +3782,7 @@ export const TOWNS = {
         hours:[8,17], closed:'窗口都熄了燈。市鎮中心五點就下班了。' },   // ver -864，Ray：「行政類都5點關門」
       /* ⚠ **城鎮戰期間唯一走得進去的末端**（Ray 指定，見城上的 `siege.keep`）——
          因為 Boss 在這裡（司祭：「守軍把禍魘吸引到城鎮中心去了」）。 */
-      church:   { bg:'northport_church_bf', name:'北方泊地　教堂',       exits:{ back:'north' },
+      church:   { bg:'northport_church_ruin', name:'北方泊地　教堂',       exits:{ back:'north' },   // 11-21 Ray：教堂背景換成新的殘垣（church_ruin）；重建後（rebuild）照舊吃時段差分
         hours:[8,19], closed:'大門闔上了。晚禱之後不再受理訪客。',   // ver -864，Ray 確認教堂打烊
         /* ⚠ 城鎮戰（siege）期間這一格是 Boss 房 —— 打烊擋的是 go()，而 siege 的
            路線管制走 exitsOf 的 keep 白名單，兩者不衝突；夜戰若被擋到要回報 Ray。 */

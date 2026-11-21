@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.21-2880';
+export const VERSION = 'ver 2026.11.21-2881';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3040,7 +3040,8 @@ export const GAME_CONFIG = {
        ⚠ 與 `noPartner` 是兩件事：那一格是「有人但不准用主動技」，擋不住被動
          （-681 之後墓地第一場仍然會被諾薇兒接住一次，那就是這一版修掉的）。
          兩格都留著：`solo` 已經涵蓋 `noPartner`，但寫出來才讀得出意圖。 */
-    np_cemetery: { enemy:'np_boss', solo:true, noSaint:true, noPartner:true },
+    /* `bg`（11-21 Ray：「北泊二戰是在墓地打」）：敵人卡 np_boss 的 bg 是教堂殘垣＋bgLock，這一場用戰鬥卡的 bg 蓋過去（enemy.js 的 sbBg）；教堂那一場（np_boss 戰鬥卡）照舊。 */
+    np_cemetery: { enemy:'np_boss', solo:true, noSaint:true, noPartner:true, bg:'northport_cemetery_bf' },
     /* ══ 禍魘娜塔莉戰（ver -671（-893 前用詞），Ray 交稿）══════════════════════════════════
        敵 HP 50% 以下 → 劇情殺（**一擊**打到剩 1）→ 安雅接手惡夢化。
        ⚠ 與聖徒化教學那一場的三連擊是**兩種劇情殺**：那一套要走即死防禦

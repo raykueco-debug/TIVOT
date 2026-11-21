@@ -661,7 +661,7 @@ export const ENEMIES = {
       stageScale:1,
       stack:0,
       image:'enemy_np_candletower',
-      bg:'northport_church_bf',
+      bg:'northport_church_ruin',   // 11-21 Ray：舊教堂（church_bf）一律換成新的殘垣那張
       fit:{ mode:'contain', pos:'center bottom' },
       hp:220,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:14,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -694,7 +694,7 @@ export const ENEMIES = {
       stageScale:1,
       stack:0,
       image:'enemy_np_candlepenitent',
-      bg:'northport_church_bf',
+      bg:'northport_church_ruin',   // 11-21 Ray：舊教堂（church_bf）一律換成新的殘垣那張
       fit:{ mode:'contain', pos:'center bottom' },
       hp:120,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -727,7 +727,7 @@ export const ENEMIES = {
       stageScale:1,
       stack:0,
       image:'enemy_np_coralman',
-      bg:'northport_church_bf',
+      bg:'northport_church_ruin',   // 11-21 Ray：舊教堂（church_bf）一律換成新的殘垣那張
       fit:{ mode:'contain', pos:'50% 100%', scale:0.78 },
       hp:120,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
@@ -759,7 +759,7 @@ export const ENEMIES = {
       stageScale:1,
       stack:0,
       image:'enemy_np_reassembled',
-      bg:'northport_church_bf',
+      bg:'northport_church_ruin',   // 11-21 Ray：舊教堂（church_bf）一律換成新的殘垣那張
       fit:{ mode:'contain', pos:'center bottom' },
       hp:220,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:14,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
