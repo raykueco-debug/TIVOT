@@ -25,6 +25,7 @@ ap.add_argument('--out', default=os.path.join(HERE, 'out', 'ci5s'))
 ap.add_argument('--dry', action='store_true', help='只出遮罩檢查圖，不跑')
 ap.add_argument('--pre', type=int, default=0, help='高噪段前幾步不掛加速 LoRA、用 --pre-cfg（負面詞才生效）'); ap.add_argument('--pre-cfg', type=float, default=3.0)
 ap.add_argument('--neg-extra', default='', help='追加負面詞（cfg>1 才看得到）')
+ap.add_argument('--maskimg', help='固定遮罩圖（白＝重畫，會縮到生成尺寸；11-21 空賊船只動帆跟槳）——給了就不用 --box／自動追黑塊')
 ap.add_argument('--box', help='固定矩形遮罩 x0,y0,x1,y1（0~1 比例；11-21 空賊船螺旋槳）——給了就不用自動追黑塊')
 ap.add_argument('--rgba', action='store_true', help='輸入是去背的 RGBA 格：先墊回綠底')
 ap.add_argument('--keep0', action='store_true', help='第 0 格也重畫（預設第 0 格整格照抄）')
@@ -52,7 +53,10 @@ def _load(p):
         im = im.convert('RGBA').resize((tw.W, tw.H), Image.LANCZOS); bg = Image.new('RGBA', im.size, tw.GREEN + (255,)); bg.alpha_composite(im); return np.asarray(bg.convert('RGB'))
     return np.asarray(im.convert('RGB').resize((tw.W, tw.H)))
 frames = [_load(p) for p in fs]
-if a.box:
+if a.maskimg:
+    bm = np.asarray(Image.open(a.maskimg).convert('L').resize((tw.W, tw.H), Image.NEAREST)) > 127
+    masks = [bm.copy() for f in frames]
+elif a.box:
     x0, y0, x1, y1 = [float(v) for v in a.box.split(',')]; bm = np.zeros((tw.H, tw.W), bool); bm[round(y0 * tw.H):round(y1 * tw.H), round(x0 * tw.W):round(x1 * tw.W)] = True
     masks = [bm.copy() for f in frames]
 else:

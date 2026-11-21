@@ -16,7 +16,7 @@
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import * as prog from '../script/progress.js';  // stage 加成要問現在第幾章（ver -1584b）
-import { ENEMY_IDLE, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, ENEMY_DOWN, ENEMY_DODGE, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
+import { ENEMY_IDLE, SHIP_WAKE, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, ENEMY_DOWN, ENEMY_DODGE, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';
@@ -2115,6 +2115,97 @@ function startDamageSmoke(cfg){
     S.raf=requestAnimationFrame(tick); };
   S.raf=requestAnimationFrame(tick);
 }
+/* ══ 空賊船的雲（ver -2865，空戰副理；Ray 11-21：「船頭的下方浪花要再加 因為現在看起來船頭下緣不見了」「前景要有雲霧飄過」）══
+   一張畫布兩件事，只在空戰的船（isAirShip）上跑：
+   ① 船底雲浪（`SHIP_WAKE[立繪名]`，config）：沿船底那幾個點持續噴雲團，往船尾拖走、變大、變淡 ——
+      蓋住浪花羽化後消失的船頭下緣，讀起來是「船頭壓在雲層裡」。點位是畫布座標（anim.json 的 canvas），跟著待機層的框走（漂移／縮放／翻轉）。
+   ② 前景雲霧：所有空戰船都有。每隔幾秒一大片半透明的霧從機頭那一側的畫面外飄進來、橫過船前、往船尾出去（世界往船尾流）。
+   顏色一律取**這一場的戰鬥背景**（亮部＋暗部兩色）⇒ 清晨／白天／黃昏／夜晚自然各一版。
+   收：換怪（setEnemy 重叫）／打完（state.over：不再噴，剩下的散完自己拆）。 */
+let shipAir=null;
+const skyToneCache={};
+function skyTone(url){
+  if(!url) return Promise.resolve(null);
+  if(skyToneCache[url]) return skyToneCache[url];
+  return skyToneCache[url]=new Promise(res=>{ const im=new Image();
+    im.onload=()=>{ try{ const c=document.createElement('canvas'); c.width=24; c.height=24; const x=c.getContext('2d'); x.drawImage(im,0,0,24,24);
+      const d=x.getImageData(0,0,24,24).data, px=[]; for(let i=0;i<d.length;i+=4) px.push([d[i],d[i+1],d[i+2], d[i]*0.3+d[i+1]*0.59+d[i+2]*0.11]);
+      px.sort((a,b)=>b[3]-a[3]); const avg=(a,b)=>{ const s=[0,0,0]; for(let i=a;i<b;i++) for(let k=0;k<3;k++) s[k]+=px[i][k]; return s.map(v=>v/(b-a)); };
+      res({ hi:avg(0, Math.ceil(px.length*0.12)), mid:avg(Math.floor(px.length*0.35), Math.floor(px.length*0.65)) }); }catch(_){ res(null); } };
+    im.onerror=()=>res(null); im.src=url; });
+}
+function stopShipAir(){ if(!shipAir) return; cancelAnimationFrame(shipAir.raf); shipAir.cv.remove(); if(shipAir.under) shipAir.under.remove(); shipAir=null; }
+/* 墊原圖船底（SHIP_WAKE.under）：一張原立繪貼在待機層**底下**（DOM 緊貼在它前面），框照待機層現在的框換算（含漂移、翻轉），
+   只露 under 那一塊 —— 待機格不透明的地方蓋住它，浪花羽化成透明的地方就露出原圖的船底。待機層沒在顯示（斜墜、攻擊片）就藏起來。 */
+function placeShipUnder(S, el, top){
+  const u=S.under, cfg=S.wake; if(!u) return;
+  const ok=el && idleJ && el.isConnected && !el._falling && el.style.visibility!=='hidden' && el.style.display!=='none';
+  if(!ok){ u.style.display='none'; return; }
+  const es=($('enemyImg')||{}).src; if(es && u.src!==es) u.src=es;   // 同一張圖（已在快取）
+  if(u.nextSibling!==el) el.before(u);
+  const br=el.getBoundingClientRect(), tr=top.getBoundingClientRect(), b=idleJ.box, c=idleJ.canvas||[1536,1024];
+  const kx=br.width/b[2], ky=br.height/b[3], flip=S.fwd>0;
+  const left=br.left-tr.left-(flip ? (c[0]-b[0]-b[2]) : b[0])*kx, topY=br.top-tr.top-b[1]*ky;
+  const R=cfg.under, cl=flip ? [ (c[0]-R[2])/c[0], R[1]/c[1], (R[0])/c[0], 1-R[3]/c[1] ] : [ R[0]/c[0], R[1]/c[1], 1-R[2]/c[0], 1-R[3]/c[1] ];
+  u.style.cssText=`position:absolute;pointer-events:none;left:${left.toFixed(1)}px;top:${topY.toFixed(1)}px;width:${(c[0]*kx).toFixed(1)}px;height:${(c[1]*ky).toFixed(1)}px;`+
+    `transform:${flip?'scaleX(-1)':'none'};clip-path:inset(${(cl[1]*100).toFixed(2)}% ${(cl[2]*100).toFixed(2)}% ${(cl[3]*100).toFixed(2)}% ${(cl[0]*100).toFixed(2)}%);opacity:${getComputedStyle(el).opacity};`;
+}
+function startShipAir(en){
+  stopShipAir(); if(!isAirShip(en)) return;
+  const top=$('top'); if(!top) return;
+  const wake=SHIP_WAKE[imgStem(en)]||null;
+  const cv=document.createElement('canvas'); cv.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3';
+  top.appendChild(cv); const cx=cv.getContext('2d'), rnd=(a,b)=>a+Math.random()*(b-a);
+  const mixc=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
+  /* 預設色（背景還沒取到）：灰白 */
+  const S={ cv, raf:0, last:performance.now(), acc:0, puffs:[], mists:[], nextMist:performance.now()+rnd(1200,2600),
+            lit:[236,240,246], sh:[170,182,200], fwd:fwdOf(en), wake, under:null }; shipAir=S;
+  if(wake && wake.under){ const u=document.createElement('img'); u.alt=''; u.className='ship-under'; u.style.display='none'; S.under=u; }
+  const bgm=/url\("?([^")]+)"?\)/.exec(top.style.backgroundImage||'');
+  skyTone(bgm && bgm[1]).then(t=>{ if(shipAir!==S || !t) return;
+    S.lit=mixc(t.hi,[255,255,255],0.35); S.sh=mixc(t.mid,t.hi,0.45); });
+  /* 一團雲：三顆重疊的軟球（亮部在上、暗部壓底），比單一漸層圓像雲 */
+  const puff=(x,y,r,al,k)=>{ if(al<=0.004) return;
+    const L=S.lit, D=S.sh;
+    for(const [ox,oy,s,c] of [[0,0.18,1,D],[-0.35,-0.05,0.72,L],[0.32,0.02,0.66,L]]){
+      const px=x+ox*r*k, py=y+oy*r, rr=r*s, g=cx.createRadialGradient(px,py,0,px,py,rr);
+      g.addColorStop(0,`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${al.toFixed(3)})`); g.addColorStop(0.55,`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${(al*0.6).toFixed(3)})`); g.addColorStop(1,`rgba(${c[0]|0},${c[1]|0},${c[2]|0},0)`);
+      cx.fillStyle=g; cx.beginPath(); cx.arc(px,py,rr,0,6.283); cx.fill(); } };
+  const tick=now=>{ if(shipAir!==S) return;
+    if(curCard()!==en || !cv.isConnected){ stopShipAir(); return; }
+    const dt=Math.min(now-S.last,60); S.last=now;
+    const W=top.clientWidth, H=top.clientHeight, dpr=Math.min(2, window.devicePixelRatio||1);
+    if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
+    cx.setTransform(dpr,0,0,dpr,0,0); cx.clearRect(0,0,W,H);
+    const el=(idleEl && idleEl.isConnected) ? idleEl : null, falling=!!((el||$('enemyImg'))||{})._falling;
+    const live=!state.over && !falling, back=-S.fwd;   // back＝船尾方向（畫面 x 的正負）
+    placeShipUnder(S, el, top);
+    /* ① 船底雲浪：跟著待機層現在的框（含漂移的 translate／scale） */
+    if(wake && el && idleJ && live){
+      const br=el.getBoundingClientRect(), tr=top.getBoundingClientRect(), b=idleJ.box, kx=br.width/b[2], ky=br.height/b[3];
+      const toX=c=> br.left-tr.left + (S.fwd>0 ? (b[0]+b[2]-c) : (c-b[0]))*kx, toY=c=> br.top-tr.top + (c-b[1])*ky;
+      S.acc+=dt*(wake.rate||22)/1000;
+      while(S.acc>=1){ S.acc-=1; const i=(Math.random()*wake.pts.length)|0, p=wake.pts[i], w=(wake.w&&wake.w[i])||1;
+        S.puffs.push({ x:toX(p[0])+rnd(-14,14)*kx, y:toY(p[1])+rnd(-6,14)*ky, r0:(wake.r||70)*kx*rnd(0.7,1.25)*w,
+          vx:back*rnd(0.05,0.11)*W/390, vy:rnd(-0.004,0.012)*W/390, life:rnd(1300,2100), a:0 }); }
+    }
+    for(let i=S.puffs.length-1;i>=0;i--){ const p=S.puffs[i]; p.a+=dt; if(p.a>p.life){ S.puffs.splice(i,1); continue; }
+      const q=p.a/p.life, al=0.9*(q<0.12?q/0.12:1)*(1-q)*(1-q);
+      puff(p.x+p.vx*p.a, p.y+p.vy*p.a, p.r0*(1+q*1.6), al, 1); }
+    /* ② 前景雲霧：機頭那一側的畫面外進、船尾那一側出；一片＝一串軟團，橫跨 0.6~1.1 個畫面寬 */
+    if(live && now>=S.nextMist){ S.nextMist=now+rnd(5200,9000);
+      const span=W*rnd(0.6,1.1), n=7+((Math.random()*4)|0), y0=H*rnd(0.18,0.85), lobes=[];
+      for(let k=0;k<n;k++) lobes.push({ dx:(k/(n-1)-0.5)*span, dy:rnd(-0.07,0.07)*H, r:H*rnd(0.16,0.28), ph:Math.random()*6.283 });
+      const dur=rnd(3600,5200);
+      S.mists.push({ lobes, y0, span, dur, t:0, peak:rnd(0.42,0.62) }); }
+    for(let i=S.mists.length-1;i>=0;i--){ const m=S.mists[i]; m.t+=dt; const q=m.t/m.dur; if(q>=1){ S.mists.splice(i,1); continue; }
+      const from=-back*(W/2+m.span/2+H*0.3), to=back*(W/2+m.span/2+H*0.3), cxm=W/2+from+(to-from)*q;   // 機頭側 → 船尾側
+      const al=m.peak*Math.sin(Math.PI*Math.min(1,Math.max(0,q)));
+      for(const l of m.lobes) puff(cxm+l.dx, m.y0+l.dy+Math.sin(m.t/900+l.ph)*H*0.01, l.r*(1+0.08*Math.sin(m.t/700+l.ph)), al*0.55, 1.2); }
+    if(!live && !S.puffs.length && !S.mists.length){ stopShipAir(); return; }
+    S.raf=requestAnimationFrame(tick); };
+  S.raf=requestAnimationFrame(tick);
+}
 function playBroadside(fx){
   const top=$('top'), eImg=$('enemyImg'); if(!top || !eImg || !fx || !fx.ports) return;
   const r=canvasBoxInTop(eImg, { canvas:fx.canvas, box:[0,0,fx.canvas[0],fx.canvas[1]] }); if(!r) return;
@@ -3830,6 +3921,7 @@ export function setEnemy(key, opts){
   stopHolyBurst();                              // 同上：放光也是全螢幕的層＋一支還在響的音（ver -1351）
   setSkyBattle(en.sky);                         // 空戰的視差背景（ver -2444）：沒有 `sky` 的怪＝收掉上一隻的
   startDamageSmoke(en.damageSmoke);             // 受損冒黑煙（ver -2490）：沒寫的怪＝收掉上一隻的
+  startShipAir(en);                             // 空戰船的船底雲浪＋前景雲霧（ver -2865）：不是空戰船＝收掉上一隻的
   startFlock(en);                               // 空戰編隊（ver -2516）：沒寫 flock 的怪＝收掉上一隻的
   setEmpowered(0);                              // 換怪：上一隻的蓄力光與提示收掉（ver -2525）
   startAirDrift(en);                            // 戶外空戰生物型的接舷漂移（ver -2499）：不是的怪＝收掉上一隻的
