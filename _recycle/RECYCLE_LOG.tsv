@@ -3276,3 +3276,6 @@ when	from	to	reason
 20261121-224856	mon_pirateship_n7_side_v6airship	_recycle/mon_pirateship_n7_side_v6airship	11-21 Ray：空賊船 7 號整個拔掉 → 回收
 20261121-232138	resources/background/northport/northport_church_bf.webp	_recycle/resources/background/northport/northport_church_bf.webp.20261121-232138	11-21 Ray：北泊教堂換新殘垣（church_ruin），舊 church_bf 不再使用（推上＋回收）
 20261121-232138	resources/background/anim/northport/northport_church_bf_sep_v1.mp4	_recycle/resources/background/anim/northport/northport_church_bf_sep_v1.mp4.20261121-232138	11-21 Ray：北泊教堂換新殘垣（church_ruin），舊 church_bf 不再使用（推上＋回收）
+20261122-000830	resources/enemy/anim/npc_guildhunter_neutral_hurt_v1	_recycle/resources/enemy/anim/npc_guildhunter_neutral_hurt_v1	賞金獵人受擊舊版，已由 hurt_v4 取代（Ray 11-22：舊版回收）
+20261122-000830	resources/enemy/anim/npc_guildhunter_neutral_hurt_v2	_recycle/resources/enemy/anim/npc_guildhunter_neutral_hurt_v2	賞金獵人受擊舊版，已由 hurt_v4 取代（Ray 11-22：舊版回收）
+20261122-000830	resources/enemy/anim/npc_guildhunter_neutral_hurt_v3	_recycle/resources/enemy/anim/npc_guildhunter_neutral_hurt_v3	賞金獵人受擊舊版，已由 hurt_v4 取代（Ray 11-22：舊版回收）
