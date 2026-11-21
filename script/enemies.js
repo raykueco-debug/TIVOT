@@ -5816,5 +5816,5 @@ for(const n of [1,2,3,4,5,6,8,9,10]) ENEMIES['test_pirate_n'+n] = Object.assign(
 /* ══ 瓦爾士的空賊（ver -2881，Ray 11-21：「船一開進瓦爾士就刷一台空賊船」；flight 的劇本遭遇 → 戰鬥卡 valse_pirate）══
    數值照 pirate_ship（暫填）；登艦戰的空賊群**不抽寒帶那一組**（sky_pirate_5，羊皮飛行夾克，_skypirate_spec.md）。
    ⚠ 名號／懸賞／台詞由劇情程式副理（tivot-story）定 —— 卡的 key（valse_pirate）與旗標（valse_pirate_sunk）以它定的為準。 */
-ENEMIES.valse_pirate = Object.assign({}, ENEMIES.pirate_ship, { name:'空賊船', story:1,
+ENEMIES.valse_pirate = Object.assign({}, ENEMIES.pirate_ship, { name:'黑船洛爾夫', story:1,   // 名號 ver -2892（Ray 點頭的草稿）
   grapple: Object.assign({}, ENEMIES.pirate_ship.grapple, { to:[1,2,3,4,6,7,8].map(n=>'sky_pirate_'+n) }) });

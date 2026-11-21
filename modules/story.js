@@ -2582,6 +2582,8 @@ function applyPersist(line){
   if(line.take) for(const k in line.take) inv.remove(k, line.take[k]);
   if(line.give) for(const k in line.give) inv.add(k, line.give[k]);
   if(line.money) inv.addMoney(line.money);
+  /* `bounty:'<鍵>'`（ver -2892）＝領那一筆懸賞：金額照 `config.bounties[鍵].reward`（鐵律 7，台本不抄數字）。 */
+  if(line.bounty){ const b=(GAME_CONFIG.bounties||{})[line.bounty]; if(b && b.reward) inv.addMoney(b.reward); }
   }   // !replaying
   persistFaded=false;
   let bgChanged=false;

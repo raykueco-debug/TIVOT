@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=2891"></script>
-<script src="../script/quests.classic.js?v=2891"></script>   <!-- 任務提示（ver -2886）：與主程式同一份 -->
-<script src="../i18n/ui/langs.classic.js?v=2891"></script>
+<script src="../orientation.js?v=2892"></script>
+<script src="../script/quests.classic.js?v=2892"></script>   <!-- 任務提示（ver -2886）：與主程式同一份 -->
+<script src="../i18n/ui/langs.classic.js?v=2892"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。
@@ -20,8 +20,8 @@
     if(ls.some(function(x){ return String(x).toLowerCase().indexOf('ja')===0; }) || tz==='Asia/Tokyo') l='ja';
     else if(String(ls[0]||'').toLowerCase().indexOf('es')===0) l='es';
   }catch(e){} }
-  if(G.script.indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2891"><\/script>');
-  if(G.ui.indexOf(l)>=0) document.write('<script src="../i18n/ui/'+l+'.classic.js?v=2891"><\/script>');
+  if(G.script.indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2892"><\/script>');
+  if(G.ui.indexOf(l)>=0) document.write('<script src="../i18n/ui/'+l+'.classic.js?v=2892"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=2891');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=2892');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -277,8 +277,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2891");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2891");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2892");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2892");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -298,8 +298,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2891");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2891");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2892");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2892");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -675,23 +675,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2891" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=2892" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2891" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2891" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2891" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2891" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2891" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2891" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2891" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2891" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2891" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2891" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=2892" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2892" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2892" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2892" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2892" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2892" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2892" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2892" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2892" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2892" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=2891" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=2892" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -713,14 +713,14 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=2891"></script>
+<script src="settlement.js?v=2892"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
 <script>if(/[?&]world=undercity/.test(location.search)) document.write('<script src="undercity/world.js?v=29615343"><\/script>');</script>
 <script>if(/[?&]world=sanctum/.test(location.search)) document.write('<script src="sanctum/world.js?v=0b4855bb"><\/script>');</script>   <!-- 卡耶爾山谷 → 聖王廳地宮的地底大空洞（ver -2565，build_sanctum.py 產的） -->
 <script>if(!/[?&]world=/.test(location.search)) document.write('<script src="undercity/crowns.js?v=6a3ae090"><\/script>');</script>   <!-- 地表上地底樹的樹冠（ver -2412，build_uc_crowns.py 產的） -->
-<script src="talks.js?v=2891"></script>
+<script src="talks.js?v=2892"></script>
 <script>if(/[?&]drg3d=/.test(location.search)) document.write('<script src="drg3d.js?v='+Date.now()+'"><\/script>');</script>   <!-- 王座徘徊者 3D 試驗（2026-11-06）：只在網址帶 ?drg3d= 時載入 -->
 
 <script>
@@ -798,7 +798,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=b18827be'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -2891';
+const FLIGHT_VER = 'ver -2892';
 const MAP_SCALE  = /[?&]world=(cave|undercity|sanctum)/.test(location.search) ? 10 : 20;   // 地底的圖加密成 1536²（ver -2369，build_cave.py 的 SUPER）：一格 10 世界單位，世界大小不變
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -19903,7 +19903,8 @@ const SCRIPTED_ENCOUNTERS = [
      戰鬥卡 `valse_pirate`（config.js）／敵人卡 `valse_pirate`（script/enemies.js；登艦戰不抽寒帶那一組 sky_pirate_5）。
      ⚠ 名號／懸賞／台詞由劇情程式副理（tivot-story）定，key 與旗標名以它定的為準。 */
   { flag:'flight_centipede_met', unless:'np_port_arrive', done:'valse_pirate_sunk', intoRegion:2, holdSec:1, stages:[1,2],
-    kind:'pirate', battle:'valse_pirate', speedMul:1.5, dist:1800 },
+    kind:'pirate', battle:'valse_pirate', speedMul:1.5, dist:1800,
+    intro:'talk', talk:'VALSE_PIRATE_A', sides:{ renna:'L', nouvelle:'R' } },   // 撞上那一刻演開戰前兩句（ver -2892，劇情副理；Ray 點頭的草稿）
   /* ══ stage2 回程的羽蛇（ver -741；-743 依 Ray 更正：「進薩梅爾才遇見羽蛇會
      太晚，只要一出瓦爾士就生羽蛇，兩倍速正面殺來」）══
      `outOf:2`＝一離開瓦爾士（同蜈蚣出薩梅爾的機制）；`intro:'serpent'`＝
@@ -21485,7 +21486,17 @@ const LI_SOUTH_A=[
   { who:'player',             text:'' },   // （主角空白）那就用火藥與鉛好好供養吧！
   { who:'anya/steady',        text:'' },
 ];
-const TALK_INTROS={ LI_SOUTH_A };
+/* ══ 瓦爾士空賊：黑船洛爾夫一夥（ver -2892，Ray 點頭的草稿；帝都懸賞榜那一筆）══
+   開戰前（撞上那一刻，`intro:'talk'`）＋打贏後（`afterBattleReturn` 的 `valse_pirate_sunk`）。領獎在北泊公會（script/town.js）。 */
+const VALSE_PIRATE_A=[
+  { who:'renna/surprised',   text:i18nT('那艘黑色的船……是帝都懸賞榜上那一艘？') },
+  { who:'nouvelle/shock2',   text:i18nT('黑船洛爾夫！他們衝過來了！') },
+];
+const VALSE_PIRATE_WIN=[
+  { who:'nouvelle/steady',   text:i18nT('船都打沉了……放信號彈吧，讓治安廳的人來收網。') },
+  { who:'renna/talkwork',    text:i18nT('也好。懸賞的事，到了北方泊地的公會再領吧。') },
+];
+const TALK_INTROS={ LI_SOUTH_A, VALSE_PIRATE_A };
 const LI_SOUTH_WIN=[
   { who:'sorana/confuse',     text:i18nT('打跑了嗎……？') },
   { who:'nouvelle/scare',     text:i18nT('嚇、嚇死我了！') },
@@ -21830,6 +21841,9 @@ function afterBattleReturn(won, wasScripted, doneKey, scriptS){
     const T = doneKey==='li_lord1' ? LI_HUNT_WIN1 : LI_HUNT_END;
     setTimeout(()=>{ if(!sayQueue) say(T, performance.now(), { sides:LI_SIDES }); }, 900);
     return;
+  }
+  if(doneKey==='valse_pirate_sunk'){
+    setTimeout(()=>{ if(!sayQueue) say(VALSE_PIRATE_WIN, performance.now(), { sides:{ renna:'L', nouvelle:'R' } }); }, 900);
   }
   if(doneKey==='li_south'){
     enemy=null;

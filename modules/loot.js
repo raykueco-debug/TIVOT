@@ -954,7 +954,9 @@ export function showBounty(city, opts){
   ensureCss();
   const o=opts||{};
   const all=GAME_CONFIG.bounties||{};
-  const list=Object.keys(all).filter(k=> !city || all[k].city===city).map(k=>all[k]);
+  /* `need`／`until`（ver -2892）：這一筆什麼時候掛在榜上（黑船洛爾夫：擊沉前在帝都、擊沉後到領獎前在北泊）。 */
+  const listed = b => (!b.need || prog.hasFlag(b.need)) && !(b.until && prog.hasFlag(b.until));
+  const list=Object.keys(all).filter(k=> (!city || all[k].city===city) && listed(all[k])).map(k=>all[k]);
   const unit=(GAME_CONFIG.items&&GAME_CONFIG.items.moneyName)||'G';
   const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag','bounty');
   if(o.dock) ov.classList.add('dock-'+o.dock);

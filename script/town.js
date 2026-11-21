@@ -3782,7 +3782,19 @@ export const TOWNS = {
         /* ver -858（Ray 交稿）：櫃台小姐上任（COUNTER_NP）——安葬後的自由探索
            就見得到（原本 need np_day3_done 的沉默一句取代掉）。懸賞單照舊走
            `board`（阿拉德那一筆在 config.bounties，賞金 -858 改 2000）。 */
-        acts:[ { flag:'np_guild_seen', need:'np_burial_done', lines:[
+        acts:[
+          /* ══ 黑船洛爾夫的懸賞領獎（ver -2892，Ray 點頭的草稿）══ 飛行中擊沉（`valse_pirate_sunk`）之後、安葬完第一次走進來就演。
+             金額照 config.bounties.rolf（`bounty:'rolf'`）；收尾一併插 `np_guild_seen`（＝公會看過了，「人都跑光了」那一句不再演、
+             「該回去看看了」的條件照樣成立）。排在 np_guild_seen 那一段**之前**，由上往下取第一個成立的。 */
+          { flag:'valse_pirate_paid', need:['valse_pirate_sunk','np_burial_done'], lines:[
+            { speaker:'COUNTER_NP', text:'黑船洛爾夫？瓦爾士治安廳的通報今早剛到……真的是你們擊沉的？',
+              portrait:{ char:'COUNTER_NP', show:true } },
+            { speaker:'PLAYER', blank:true },
+            { speaker:'COUNTER_NP', text:'好吧，懸賞金一千五百。殺禍魘沒賞金領，打空賊倒是有。',
+              portrait:{ char:'COUNTER_NP', show:true }, bounty:'rolf' },
+            nou('relief','這樣補給的錢就有著落了！', { flags:['np_guild_seen'] }),
+          ] },
+          { flag:'np_guild_seen', need:'np_burial_done', lines:[
           { speaker:'COUNTER_NP', text:'殺禍魘沒賞金領，人都跑光了。你隨意看看吧。',
             portrait:{ char:'COUNTER_NP', show:true } },
         ] } ] },

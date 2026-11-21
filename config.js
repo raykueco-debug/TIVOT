@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.21-2891';
+export const VERSION = 'ver 2026.11.21-2892';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3282,8 +3282,15 @@ export const GAME_CONFIG = {
      ⚠ `city` ＝ 在哪一座城的公會看得到（櫃台：「各個城市的委託也會不同」）。
      ⚠ `reward` 的單位同金錢（G，見 items.moneyName）—— 不要在文案裡再寫一次單位。 */
   bounties: {
-    rolf: { name:i18nT('黑船洛爾夫'), city:'capital', reward:500,
-            desc:i18nT('在瓦爾士大公國與法爾登王國交界出沒的空賊。') },
+    /* ══ 瓦爾士空賊：黑船洛爾夫一夥（ver -2892，Ray 點頭的草稿；500G → 1500G）══
+       飛行劇本遭遇 `valse_pirate` 打贏插 `valse_pirate_sunk` → 帝都榜上拿掉、北泊榜上出「待兌付」那一筆；
+       北泊公會領獎那一段（script/town.js，拍上 `bounty:'rolf'` 照這裡的 reward 入帳）插 `valse_pirate_paid` → 那一筆也拿掉。
+       `need`／`until`＝這一筆什麼時候掛在榜上（loot.showBounty 讀）。 */
+    rolf: { name:i18nT('黑船洛爾夫一夥'), city:'capital', reward:1500, until:'valse_pirate_sunk',
+            desc:i18nT('在瓦爾士大公國上空劫掠商船的空賊，船身漆黑。擊沉後通報治安廳，各地公會皆可兌付。') },
+    rolf_claim: { name:i18nT('黑船洛爾夫一夥（已擊沉・待兌付）'), city:'northport', reward:1500,
+            need:'valse_pirate_sunk', until:'valse_pirate_paid',
+            desc:i18nT('瓦爾士治安廳已確認擊沉。請洽櫃台。') },
     /* 北方泊地（ver -664，Ray 交稿）。 */
     arad: { name:i18nT('北海暴徒阿拉德'), city:'northport', reward:2000,   /* ver -858：Ray 改 2000G */
             desc:i18nT('出沒地：東北空域。') },
