@@ -36,7 +36,8 @@
 | `mon_pirateship_n8_side` | `anim/mon_pirateship_n8_side_idle_v3enh/` | 33 | 24 | ✅ 交件（無浪花，煙囪冒煙）|
 | n2、n3、n6、n7 | —— | | | ⏳ Wan 跑好（`out/sky_ships/*_v3enh`），等 Ray 剪 |
 
-⚠ 螺旋槳：Ray 11-21「螺旋槳的部份 inpaint 重跑」—— VACE 重畫中，好了會**同名換掉**上面這幾支的格（換之前先問 Ray），屆時再更新這一段。
+✅ 螺旋槳（11-21）：Ray「螺旋槳的部份 inpaint 重跑」→「換進去」—— n4／n5 兩版、n8 共 5 支，VACE 只重畫螺旋槳那一框、貼回 Ray 原剪法（框外像素不動），**同名覆蓋**（舊格已回收）。
+⚠⚠ **同名覆蓋 ⇒ 程式端 commit 前跑 `py -X utf8 tools/bust.py --bump`**（asset_bust 會換 `?v=`，不然瀏覽器吃舊快取）。格數不變；`px` 差幾像素，`splash.json`／`splash_mask.webp` 已對新格重算。n1 沒重畫。
 
 ## ⚠⚠ 程式要做：浪花 → 程式雲浪（Ray 11-21）
 > Ray：「有浪花讓程式碰到那幾格就跑雲出來，看能不能自然變成雲浪」「浪花要有背景色差分」「讓程式配合浪花時機與形狀顏色飄雲過來」
