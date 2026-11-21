@@ -82,7 +82,7 @@ const DEF={
      fit:'rad'：船是長條，照外接球（≈半船長）對齊 2D 的船長 300（bodyLen）。 */
   pirate:      { dir:'enemy/flh_pirate/', file:'mon3d', spanK:0.31, fit:'rad',
                  flap:{ cut:[0.3,0.6,0.9], amp:[0,0,0], rest:[0,0,0], lag:0, down:0.5 },
-                 vars:{ n2:{ dir:'enemy/flh_pirate_n2/' } } },
+                 vars:{ n1:{ dir:'enemy/flh_pirate_n1/' }, n2:{ dir:'enemy/flh_pirate_n2/' }, n3:{ dir:'enemy/flh_pirate_n3/' }, n4:{ dir:'enemy/flh_pirate_n4/' }, n5:{ dir:'enemy/flh_pirate_n5/' }, n6:{ dir:'enemy/flh_pirate_n6/' }, n8:{ dir:'enemy/flh_pirate_n8/' }, n9:{ dir:'enemy/flh_pirate_n9/' }, n10:{ dir:'enemy/flh_pirate_n10/' } } },
 };
 DEF.sky_southlord = Object.assign({}, DEF.sky2_maw, { battle:'li_south' });   // 南天的霸王＝無面巨首換名（index.html 的 ENEMY_KINDS 同樣是 Object.assign 抄過去）
 const MAXPX=1024;                       // 畫布上限（裝置像素）：一次配好，每禎只換 viewport

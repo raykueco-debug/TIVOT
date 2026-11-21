@@ -4,6 +4,8 @@
   --hi 30000 --lo 17000     目標面數（格點聚類減面，自動找格距）
   --crop "x0,y0,z0,x1,y1,z1;…"   刪掉重心落在這些方塊裡的面（Hunyuan 多長的桿子／平板）
   --planez "z,容差"          刪掉 z≈那一層、法線朝 z 的面（背後多一片平板那種）
+  --cropn "x0,y0,z0,x1,y1,z1,軸;…"  方塊裡、而且法線朝那一軸（0/1/2＝x/y/z，|n|>0.85）的面才刪 —— 桅杆穿過也不會被切掉
+                            （空賊船 n5：船尾上方多一片中線縱向薄板）
   --keep 0.02               連通塊小於最大塊這個比例的丟掉（飄在旁邊的碎片）
 讀 resources/_originals/flight/mon3d/<鍵>_cells/{front,side,back,top}.png（prep4.py 產的）
 
@@ -137,12 +139,17 @@ def atlas(cells, out):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('key'); ap.add_argument('raw'); ap.add_argument('outdir')
     ap.add_argument('--hi', type=int, default=30000); ap.add_argument('--lo', type=int, default=17000)
-    ap.add_argument('--crop', default=''); ap.add_argument('--planez', default=''); ap.add_argument('--keep', type=float, default=0.02); ap.add_argument('--cells', default='_cells')   # 例：_cells_vein5_60（wing_veins.py 產的）
+    ap.add_argument('--crop', default=''); ap.add_argument('--planez', default=''); ap.add_argument('--cropn', default=''); ap.add_argument('--keep', type=float, default=0.02); ap.add_argument('--cells', default='_cells')   # 例：_cells_vein5_60（wing_veins.py 產的）
     a = ap.parse_args()
     P, I = load_glb(a.raw); print('raw', len(P), 'v', len(I), 'f')
     C = P[I].mean(1); drop = np.zeros(len(I), bool)
     for box in filter(None, a.crop.split(';')):
         b = np.array([float(x) for x in box.split(',')]); drop |= np.all((C >= b[:3]) & (C <= b[3:]), 1)
+    if a.cropn:
+        fnn = face_normals(P, I); fnn /= np.maximum(np.linalg.norm(fnn, axis=1, keepdims=True), 1e-12)
+        for box in filter(None, a.cropn.split(';')):
+            b = [float(x) for x in box.split(',')]; lo, hi, ax = np.array(b[:3]), np.array(b[3:6]), int(b[6])
+            drop |= np.all((C >= lo) & (C <= hi), 1) & (np.abs(fnn[:, ax]) > 0.85)
     if a.planez:
         z0, tol = (float(x) for x in a.planez.split(','))
         fn = face_normals(P, I); fn /= np.maximum(np.linalg.norm(fn, axis=1, keepdims=True), 1e-12)

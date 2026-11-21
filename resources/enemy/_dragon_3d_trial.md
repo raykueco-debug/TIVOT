@@ -48,6 +48,15 @@
 - Ray 11-21 兩隻都通過。羽蛇用 v3、蜈蚣用翅膀紋路淡化版（`tools/sky3d/wing_veins.py sky_centipi 5 0.6` → `bake.py --cells _cells_vein5_60`，Ray：「翅膀紋路少一點」）；兩隻的 v1 已回收（`_recycle/flight/enemy/`）。
 - 大小：2D 沒有 `spanW`，`spanK` 對齊俯視圖量到的翼展（羽蛇 ≈256、蜈蚣 ≈164 世界單位）。
 
+## 空賊船十艘（2026-11-22，Ray：「空賊船也全部做成3D吧」）
+- 本船＋n1～n6／n8／n9／n10，模型在 `flight/enemy/flh_pirate/`（本船）與 `flh_pirate_n<N>/`；四視圖 `mon3d_pirate[_nN]_4view_v1.png`（每艘一個新 GPT 對話，上傳戰鬥側面圖）。
+- `drg3d.js`：`DEF.pirate` 是剛體（flap／tail 全 0、`TUNE_KDEF` 不扭、傾斜 12°），`fit:'rad'` 對齊 2D 船長 300；十艘掛在 `vars`。
+  ⚠ **遭遇時挑哪一艘還沒接**：飛行只有一種 `pirate`，現在一律畫本船；網址 `&drg3dvar=n5` 或 `DRG3D.dbg.variant='n5'` 換看。要接得先定「哪一場用哪一艘」，戰鬥卡那一邊也要對上。
+- 提示詞重點：桅杆垂直、帆是實心平板、**不要纜繩／旗／煙**（細線 Hunyuan 做不出來，只會長成平板）。
+- Hunyuan 壞法：**中線縱向薄板**（x≈0 一片，從側面看是一大塊長方形）—— n5 船尾、n6 整條。
+  修法：`bake.py --cropn=x0,y0,z0,x1,y1,z1,0`（只刪方塊內、法線朝 x 的面），太薄的帶（|x|<0.01）整條刪不會傷到桅杆；
+  ⚠ 負號開頭的參數要寫成 `--cropn=-0.06,…`（argparse 會把 `-0.06` 當成旗標）。
+
 ## 製作工具（2026-11-21 重寫進版控，舊的在 scratchpad 已遺失）
 - `tools/sky3d/prep4.py <四視圖> <鍵>`：找空白分隔線切格（左右欄各找各的橫線、清 GPT 畫的格線）→ 同一比例尺 → ComfyUI input 四張＋`_cells/` 四塊。
 - `tools/sky3d/run_hy.py <鍵>`：送 ComfyUI 的 Hunyuan3D-2mv（工作流是從 11-07 成品 glb 裡 SaveGLB 存的 prompt 撈回來的）。
