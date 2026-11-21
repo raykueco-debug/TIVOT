@@ -470,3 +470,11 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 格 | 底圖 | 天空 | 水 |
 |---|---|---|---|
 | 戰鬥　夢境戰（聖座地宮） | `resources/enemy/cap_dream_battle_bg.webp`（1254×1254，靜態） | 無（室內） | 無 |
+
+> 11-21 **戰鬥背景：賞金獵人公會 `guild_hunter`**（Ray：「可以」，第二版：色調照原圖壓暗、兩側桌旁與二樓迴廊有吆喝的觀眾，中央地板空給敵人）—— 帝都公會大廳的戰鬥用版本（GPT，參考 `capital/captal_guild_day.webp`）。
+> 接法：卡上 `bg:'../enemy/guild_hunter_battle_bg'`＋`bgLock`（取代現在的 `captal_guild_day`；若這張卡也被挑戰模式或其他場共用，照夢境戰那次改掛在戰鬥卡上）。原圖 `resources/_originals/enemy/guild_hunter_battle_bg.png`。
+> ⚠ 觀眾動態（Wan，只動觀眾）Ray 已叫跑，交件後補影片檔名；在那之前先用靜態圖。
+
+| 格 | 底圖 | 天空 | 水 |
+|---|---|---|---|
+| 戰鬥　賞金獵人公會 | `resources/enemy/guild_hunter_battle_bg.webp`（1254×1254，靜態） | 無（室內） | 無 |
