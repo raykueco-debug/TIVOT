@@ -16,7 +16,7 @@
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import * as prog from '../script/progress.js';  // stage 加成要問現在第幾章（ver -1584b）
-import { ENEMY_IDLE, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, ENEMY_DODGE, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
+import { ENEMY_IDLE, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, ENEMY_DOWN, ENEMY_DODGE, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';
@@ -1381,8 +1381,10 @@ function imgStem(en){ const p=String(asset(en && en.image)||'').split('?')[0]; r
 function idleDirFor(en){
   if(!en || en.group || en.idle===false) return null;
   if(typeof en.idle==='string') return en.idle;
-  return ENEMY_IDLE[imgStem(en)] || null;
+  return idleDirOf(ENEMY_IDLE[imgStem(en)]);
 }
+/* 待機表的值可以是**陣列**（ver -2859，空賊船 4／5 號 Ray：「兩版都要」）＝每次登場隨機抽一版。讀 ENEMY_IDLE 一律過這一支（鐵律 8）。 */
+export function idleDirOf(v){ return Array.isArray(v) ? (v.length ? v[(Math.random()*v.length)|0] : null) : (v || null); }
 function startCardIdle(en){ applyFar(en); if(portraitOverride) return; const d=idleDirFor(en); if(d) startIdleLoop(d); preloadActionClips(en); preloadDodge(en); }
 /* ══ 攻擊／延時動畫（ver -2472）══ 一次性的動檔：從待機切進來、播完切回待機（Ray：「所有攻擊都要回到原本的中立動畫」）。
    動檔在換上這隻怪的那一刻預載（戰鬥內，鐵律 13）；還沒載好就不演（照舊只有受擊特效）。 */
@@ -1396,9 +1398,10 @@ function loadClip(dir){
 }
 function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; const s=imgStem(en);
   if(kind==='miss'){ if(ENEMY_MISS[s]) return ENEMY_MISS[s]; const d=ENEMY_DELAY[s]; return (d && !d.noMiss) ? d : null; }   // 延時片寫 noMiss＝點錯不借它（只扣秒，ver -2801）
-  if(kind==='enter') return ENEMY_ENTER[s] || null;   // 點錯：有 M 用 M，沒有就借延時那一支（ver -2524）
+  if(kind==='enter') return ENEMY_ENTER[s] || null;
+  if(kind==='down') return ENEMY_DOWN[s] || null;   // 倒地（ver -2858）   // 點錯：有 M 用 M，沒有就借延時那一支（ver -2524）
   return ((kind==='atk'?ENEMY_ATK:ENEMY_DELAY)[s])||null; }
-function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); if(c && c.sweep) loadClip(c.sweep); if(c && c.sweepImg) (new Image()).src=c.sweepImg; } }
+function preloadActionClips(en){ for(const k of ['atk','delay','miss','enter','down']){ const c=clipFor(k,en); if(c && c.dir) loadClip(c.dir); if(c && c.sweep) loadClip(c.sweep); if(c && c.sweepImg) (new Image()).src=c.sweepImg; } }
 function preloadDodge(en){ const S=dodgeSpec(en); if(!S) return; for(const seg of [...Object.values(S.dodge||{}), S.parry]) if(seg){ loadClip(seg.out); if(seg.back) loadClip(seg.back); } }   // sweep＝A 本體（準備動作之後那一支，-2550）
 /* 這隻怪有沒有 M（點錯）動作：點錯播的是延時那一支（ENEMY_DELAY），有它就算有 M（ver -2523）。 */
 /* ══ 只有一支攻擊動畫的怪：延時／點錯一律照攻擊的受擊特效與音效（ver -2678，Ray：「蠕蟲全攻擊受擊跟音效都一樣」「都要一樣」「只有單一攻擊動畫的怪一體適用」）══
@@ -1408,7 +1411,7 @@ export function singleAttackAnim(){ return !groupCard && !!clipFor('atk') && !cl
 function cardAssaultKey(){ const h=groupCard && groupCard.hitFx && groupCard.hitFx.assault; return typeof h==='string' ? h : (h && h.type) || null; }
 export function hasMissClip(){ return groupCard ? groupHas('miss') : (!!clipFor('miss') || !!(curCard()||{}).featherBlock); }   // 羽蛇的 M＝羽毛封窗（程式特效，沒有動檔，ver -2792）
 export function hasActionClips(){ return groupCard ? (groupHas('atk') || groupHas('delay')) : !!(clipFor('atk') || clipFor('delay')); }   // 這隻怪有攻擊／延時動畫嗎（ver -2496）
-let clipT=0, clipEl=null;
+let clipT=0, clipEl=null, downFor=null;   // downFor：這一隻的倒地片已經播了（purgeEnemy 冪等用）
 /* 平時站遠（ENEMY_ATK 的 `far`，ver -2473）：用 CSS 的獨立 `scale` 屬性縮 —— 不碰 transform，受擊動畫照常疊上去。
    立繪本體、待機層、攻擊層三個都套（誰在畫面上就是誰）。 */
 const FAR_ORIGIN='50% 78%';
@@ -1558,6 +1561,14 @@ function clipFx(f, el){
       if(hr && r.width) o={ x:r.left-hr.left+f.at[0]*r.width, y:r.top-hr.top+f.at[1]*r.height }; }
     return spawnRubble(o, f.n, f.speed); }
   if(f.type==='violetFlash') return spawnVioletFlash();
+  /* 槍口火光（ver -2854，賞金獵人：片子沒畫火光，Ray 交代程式補）：`at`＝這一格畫面上槍口的比例座標，`r`＝半徑（框寬的比例）。
+     樣子沿用空賊群戰那一顆（`.eg-muzzle`，鐵律 7：火光只有一份配方）。 */
+  if(f.type==='muzzle'){ const top=$('top'); if(!top || !el || !f.at) return;
+    const hr=top.getBoundingClientRect(), r=el.getBoundingClientRect(); if(!r.width) return;
+    const x=r.left-hr.left+f.at[0]*r.width, y=r.top-hr.top+f.at[1]*r.height, R=Math.max(18, r.width*(f.r||0.13));
+    const d=document.createElement('div'); d.className='eg-muzzle';
+    d.style.cssText=`left:${x-R}px;top:${y-R}px;width:${R*2}px;height:${R*2}px;z-index:6;`;
+    top.appendChild(d); setTimeout(()=>d.remove(), 220); return; }
   /* 飛刀（ver -2819，Ray 索菈娜 DM：「飛刀用程式畫」）：從這一格的手（`at`）朝鏡頭擲出 n 把，由小變大、扇形散開、飛出畫面。 */
   if(f.type==='knives'){ let o=null;
     if(f.at && el){ const top=$('top'), hr=top && top.getBoundingClientRect(), r=el.getBoundingClientRect();
@@ -1660,7 +1671,7 @@ function spawnRubble(o, n, speed){
 let idleFr=null;
 function runIdle(){ clearInterval(idleT); if(!idleEl || !idleFr) return; let i=0; idleEl.src=idleFr[0].src;
   idleT=setInterval(()=>{ i=(i+1)%idleFr.length; idleEl.src=idleFr[i].src; }, 1000/((idleJ&&idleJ.fps)||8)); }
-function stopIdleLoop(){ clearInterval(idleT); idleT=0; clearTimeout(clipT); clipT=0; if(clipEl){ clipEl.remove(); clipEl=null; } idleFr=null; if(idleEl){ idleEl.remove(); idleEl=null; }
+function stopIdleLoop(){ downFor=null; clearInterval(idleT); idleT=0; clearTimeout(clipT); clipT=0; if(clipEl){ clipEl.remove(); clipEl=null; } idleFr=null; if(idleEl){ idleEl.remove(); idleEl=null; }
   const e=$('enemyImg'); if(e && e.style.visibility==='hidden' && !document.querySelector('#top .en-fall')) e.style.visibility=''; }
 function startIdleLoop(dir){
   stopIdleLoop();
@@ -1678,6 +1689,10 @@ function startIdleLoop(dir){
     });
   }).catch(()=>{});
 }
+/* ══ 浪花雲浪（ver -2859～-2862）已撤（ver -2863，Ray：「浪花太密 造成程式雲一直出」「浪可以有 但是不能有裁切線」）══
+   改成素材端處理：空賊船 4／5 號待機的浪花底部（生成畫框切出的水平直線）只在浪花遮罩上羽化 14px，交 `…_idle_*_fade/`。
+   splash.json／splash_mask.webp 留在原資料夾（動畫線的資料），程式不再讀。 */
+
 /* ══ 空戰的視差背景（ver -2444，Ray：「我想做出機戰那樣的背景效果」）══════════════════════════════
    敵卡寫 `sky:'<鍵>'` ⇒ #top 裡鋪 `tuning.skyBattle[鍵]` 的四層（由底至上）：
      base（不透明、水平無縫、最慢）→ mid（alpha、無縫、較快）→【敵人】→ 近景樹（單根，每 10~12 秒從右往左一閃而過，蓋在敵人之上）
@@ -2804,7 +2819,7 @@ function buildGroup(en){
     if(cm){ const u=compSrc(cm); if(cm.flip) mirroredSrc(u).then(v=>{ if(groupCard===en) im.src=v; }); else im.src=u;
       /* 動畫照立繪檔名查 ENEMY_* 表（同單隻怪，鐵律 7），box 本來就是立繪座標 */
       im._mem={ stem:cm.stem };
-      const di=ENEMY_IDLE[cm.stem]; if(di) loadMemberClip(di).then(c=>{ if(c && groupCard===en){ im._idle=portraitClip(c, cm.flip); showMemberAnim(im); } });
+      const di=idleDirOf(ENEMY_IDLE[cm.stem]); if(di) loadMemberClip(di).then(c=>{ if(c && groupCard===en){ im._idle=portraitClip(c, cm.flip); showMemberAnim(im); } });
       for(const [key, tab] of MEMBER_ACTS){ const a=tab[cm.stem]; if(a && a.dir) loadMemberClip(a.dir).then(c=>{ if(c && groupCard===en) im[key]=Object.assign(portraitClip(c, cm.flip), { spec:a }); }); }
       g.appendChild(im); continue; }
     im.src=G.dir+pre+n+'.webp';
@@ -2822,7 +2837,7 @@ function buildGroup(en){
     /* 照原立繪生成的逐人動畫（ver -2623，見 memberOf）：待機／攻擊／延時／點錯照 stem 查 config 的 ENEMY_* 表（鐵律 7：同一張表）。 */
     const M=memberOf(G, n);
     if(M){ im._mem=M;
-      const di=ENEMY_IDLE[M.stem]; if(di) loadMemberClip(di).then(c=>{ if(c && groupCard===en){ im._idle=mapClip(c, M); showMemberAnim(im); } });
+      const di=idleDirOf(ENEMY_IDLE[M.stem]); if(di) loadMemberClip(di).then(c=>{ if(c && groupCard===en){ im._idle=mapClip(c, M); showMemberAnim(im); } });
       for(const [key, tab] of MEMBER_ACTS){ const a=tab[M.stem]; if(a && a.dir) loadMemberClip(a.dir).then(c=>{ if(c && groupCard===en) im[key]=Object.assign(mapClip(c, M), { spec:a }); }); }
     }
     g.appendChild(im);
@@ -2846,13 +2861,13 @@ export function preloadGroupCard(key){
   const pre=G.prefix||'guard_';
   const comp=compOf(G);
   if(comp){ for(const m of comp.members){ const u=compSrc(m); if(m.flip) mirroredSrc(u); else { const im=new Image(); im.src=u; }
-      const di=ENEMY_IDLE[m.stem]; if(di) loadMemberClip(di); for(const [, tab] of MEMBER_ACTS){ const a=tab[m.stem]; if(a && a.dir) loadMemberClip(a.dir); } }
+      const di=idleDirOf(ENEMY_IDLE[m.stem]); if(di) loadMemberClip(di); for(const [, tab] of MEMBER_ACTS){ const a=tab[m.stem]; if(a && a.dir) loadMemberClip(a.dir); } }
     return; }
   for(const n of G.order){
     if(G.idle) loadMemberClip(G.idle+pre+n+'/');
     if(G.atk)  loadMemberClip(G.atk+pre+n+'/');
     if(G.fall) loadMemberClip(G.fall+pre+n+'/');   // 倒地走 buildGroup 自己的讀法，這裡只是把圖暖進快取
-    { const M=memberOf(G, n); if(M){ const di=ENEMY_IDLE[M.stem]; if(di) loadMemberClip(di); for(const [, tab] of MEMBER_ACTS){ const a=tab[M.stem]; if(a && a.dir) loadMemberClip(a.dir); } } }
+    { const M=memberOf(G, n); if(M){ const di=idleDirOf(ENEMY_IDLE[M.stem]); if(di) loadMemberClip(di); for(const [, tab] of MEMBER_ACTS){ const a=tab[M.stem]; if(a && a.dir) loadMemberClip(a.dir); } } }
     { const im=new Image(); im.src=G.dir+pre+n+'.webp'; }
   }
 }
@@ -3647,6 +3662,10 @@ function spawnPurgeStars(box){
 export function purgeEnemy(){
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
   stopAirDrift(false);   // 死亡就停在當下那一格（ver -2499）
+  /* 倒地片（ENEMY_DOWN，ver -2858）：播一次、停在最後一格（opts.hold），不淨化、不回待機；換下一隻怪時 stopIdleLoop 收掉。
+     冪等：overkill 期間重複叫到不重播。片子還沒載好（回 0）就退回原本的死法。 */
+  if(clipFor('down', en)){ if(downFor===state.currentEnemyKey) return;
+    if(playActionClip('down', null, { hold:true })){ downFor=state.currentEnemyKey; return; } }
   /* `deathFx:'skyfall'`（ver -2456，樹寄生石龍；Ray：「龍被擊敗是斜下墜出畫面外」）：不淨化，
      整條龍（照舊播待機動檔，沒動檔就用靜態圖）往右下斜墜平移、加速掉出畫面。冪等（掛 _falling）。 */
   if(en && en.deathFx==='skyfall'){

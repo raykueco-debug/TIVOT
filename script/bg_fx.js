@@ -70,6 +70,8 @@ export const BG_FX = {
   sorana_battle_bg_v3: { video: A + 'enemy/sorana_battle_bg_v3_sail_v1.mp4',   // 帆微動（11-20 背景副理 b2b824bb）：影片當底圖，天空／雲／水照舊疊；欄位 video 只有戰鬥上半在讀（enemy.startBattleBgFx）
     water: W('enemy/sorana_battle_bg_v3_watermask.png'),
     sky: { img: A + 'enemy/sorana_battle_bg_v3_sky.png', mask: A + 'enemy/sorana_battle_bg_v3_skymask.png', clouds: CUMULUS } },
+  /* ── 戰鬥背景：賞金獵人公會（11-21 背景副理交件，Ray 在 animechk 剪過）── 只有觀眾在動（Wan，16fps 11 格循環）；室內，不疊其他程式層 */
+  guild_hunter_battle_bg: { video: A + 'enemy/guild_hunter_battle_bg_crowd_v1.mp4' },
   /* ── 伊甸古墓　硝坑：坑底的煙（底圖是火把熄掉的那一張）── */
   tomb_nitrepit: { base: A + 'tomb/tomb_nitrepit_base_nofire.webp', smoke: true },
 };

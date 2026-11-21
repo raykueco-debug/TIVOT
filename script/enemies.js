@@ -1570,9 +1570,9 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5, damage:5 },
       wrongPenalty:{ damage:5 },         // 點錯懲罰：傷害 5、鈍器受擊特效
       hitFx:{
-        delay:'bullet',          // 彈孔
-        wrong:'blunt',                                   // 鈍器
-        assault:'bullet_big',// 大彈孔
+        delay:'hunter_shot',     // ver -2854：A／D／M 都是同一支開槍片 ⇒ 受擊一律彈孔＋左輪（舊：彈孔／鈍器／大彈孔）
+        wrong:'hunter_shot',
+        assault:'hunter_shot',
       },
       /* ⚠ 抗性／弱點武器：**卡上有、程式還沒實作**。資料先照卡放著。 */
       /* 掉落物（固定掉，不擲骰）：黃銅彈殼 ×6。 */
@@ -5810,4 +5810,6 @@ ENEMIES.ws_misha_ni = Object.assign({}, ENEMIES.misha, {
 
 /* `test_sorana`（ver -2805，敵人線測試卡）：索菈娜的閃避／格擋動畫試演。數值照森住民（man_sorana），
    立繪換成 Ray 指定的待機底圖 sorana guard（真 alpha；ENEMY_DODGE 的鑰匙就是它的檔名）。 */
-ENEMIES.test_sorana = Object.assign({}, ENEMIES.man_sorana, { name:'索菈娜' });   // ver -2831 起正式卡（man_sorana）已定版，測試卡只換名字
+ENEMIES.test_sorana = Object.assign({}, ENEMIES.man_sorana, { name:'索菈娜' });
+/* 空賊船新船測試卡（ver -2859）：數值照 pirate_ship，只換立繪（config.js 尾端的 test_pirate_nN 測試戰用）。 */
+for(const n of [1,4,5,8]) ENEMIES['test_pirate_n'+n] = Object.assign({}, ENEMIES.pirate_ship, { name:'空賊船_n'+n, image:'enemy_pirate_n'+n+'_side' });   // ver -2831 起正式卡（man_sorana）已定版，測試卡只換名字

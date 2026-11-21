@@ -83,7 +83,8 @@ export const HITFX = {
   sakura: { base:'sakura' },
   sonic:  { base:'sonic' },   // 聲波（ver -2652／-2655，enemy.sonicHit）：模糊聲波環＋盤面數字淡出淡回；從剛出手的那一隻身上擴出
   bullet:     { base:'bullet', se:'em_shot', count:1, pos:'random' },              // 彈孔
-  bullet_big: { base:'bullet', se:'em_shot', count:1, pos:'random', scale:1.8 },  // 大彈孔
+  bullet_big: { base:'bullet', se:'em_shot', count:1, pos:'random', scale:1.8 },
+  hunter_shot: { base:'bullet', se:'em_revolver', count:1, pos:'random', scale:1.6 },   // 賞金獵人開槍（ver -2854，敵人線 TO_CODE：「受擊用槍擊那一套、左輪槍聲」）—— A／D／M 同一支開槍片，三格都用它  // 大彈孔
   dagger: { base:'slash',  se:'em_dagger' },   // 匕首（貝琳妲語彙）：slash 視覺＋匕首音
   sorana_slash: { base:'slash', se:'em_dagger', deg:60 },   // 索菈娜撲斬（ver -2824，Ray：「A的刀痕要跟動畫一致」）：她從左上往右下斬，ef_slash 原圖約 -20°，轉 60° 落在約 40° 的右下斜
   sorana_knife: { base:'none' },          // 索菈娜飛刀（ver -2824，Ray：「飛刀不用刀痕受擊效果」）：畫面只有程式飛刀與命中閃光；音效同共鬥（ver -2825），由 enemy.spawnKnives 自己放
@@ -114,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.21-2853';
+export const VERSION = 'ver 2026.11.21-2864';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2397,7 +2398,7 @@ export const GAME_CONFIG = {
        打靶則是卡上的 `noEval`。兩層加起來就是 Ray 那一句話。
        （-1129 曾在這裡填 `noEvalBeforeStage:2`，那會讓 stage1 也不評，與他的話相反。
          欄位機制留著給日後某一場真的要特例時用，目前沒有卡在用。） */
-    guild_hunter: { enemy:'guild_hunter', special:true, noSaint:true, noPartner:true },
+    guild_hunter: { enemy:'guild_hunter', bg:'../enemy/guild_hunter_battle_bg', special:true, noSaint:true, noPartner:true },   // bg（ver -2856）：專用戰鬥背景（背景副理 5506d021，Ray：「可以」；觀眾 Wan 動態待交，先靜態）—— 戰鬥卡的 bg 蓋過敵人卡的 captal_guild_day
     /* ══⚠⚠ 東方泊地・公會的賞金獵人（ver -1346，Ray 交稿：「先用帝都的賞金獵人圖
        敵卡也是」「（戰鬥結束）（無評價）」）══
        ⚠⚠ **另開一張卡、不直接借 `guild_hunter`**：`enemy` 是同一隻沒錯，但這一場
@@ -4688,7 +4689,7 @@ export const ASSETS = {
        敵人立繪），那邊 -955 已經改對了，只有 ASSETS 這一份留在舊路徑。
      ⚠ 自檢法：把 config 裡所有 `"resources/…"` 字串抓出來逐個 `test -f` ——
        這一次全檔只有這一條是壞的。 */
-  enemy_guild_hunter: "resources/si/npc/npc_guildhunter_si_attack.webp",
+  enemy_guild_hunter: "resources/enemy/npc_guildhunter_neutral.webp",   // ver -2854：戰鬥用中立立繪（敵人線 11-21：GPT 真 alpha，左輪已瞄準鏡頭）；劇情立繪 resources/si/npc/npc_guildhunter_si*.webp 不動
   /* 東方泊地的賞金獵人（ver -1375 交件）。⚠ 與帝都那一隻不同：那一張是把**對話立繪**
      借來當戰鬥圖，這一張是**專門畫的敵人圖**，所以它與 `NPC_ep_SI_bounty`（對話用）
      是兩張不同的圖 —— 不要互相借。 */
@@ -4832,7 +4833,15 @@ export const ASSETS = {
   enemy_sky2_maw_side: "resources/enemy/mon_sky2_maw_side.webp",
   enemy_serpent_side: "resources/enemy/mon_serpent_side_v2.webp",   // ver -2479：重畫長尾版（Ray：原圖身體太短）
   enemy_centipi_side: "resources/enemy/mon_centipi_side.webp",
-  enemy_pirate_side: "resources/enemy/mon_pirateship_side_v2.webp",   // ver -2487：重畫加 9 門側舷砲（Ray：原圖沒畫側舷砲）
+  enemy_pirate_side: "resources/enemy/mon_pirateship_side_v2.webp",
+  enemy_pirate_n1_side: "resources/enemy/mon_pirateship_n1_side.webp",   // ver -2859：空賊船 8 艘（空戰動畫副理 TO_CODE_pirateships.md，Ray 11-21「除了9都可以用」）；各開一張卡還是同卡隨機抽外觀 Ray 未定
+  enemy_pirate_n2_side: "resources/enemy/mon_pirateship_n2_side.webp",
+  enemy_pirate_n3_side: "resources/enemy/mon_pirateship_n3_side.webp",
+  enemy_pirate_n4_side: "resources/enemy/mon_pirateship_n4_side.webp",
+  enemy_pirate_n5_side: "resources/enemy/mon_pirateship_n5_side.webp",
+  enemy_pirate_n6_side: "resources/enemy/mon_pirateship_n6_side.webp",
+  enemy_pirate_n7_side: "resources/enemy/mon_pirateship_n7_side.webp",
+  enemy_pirate_n8_side: "resources/enemy/mon_pirateship_n8_side.webp",   // ver -2487：重畫加 9 門側舷砲（Ray：原圖沒畫側舷砲）
   enemy_bl_dragon_front_side: "resources/enemy/mon_dragon_v1_flight_side.webp",
   enemy_bl_dragon_sky:    "resources/enemy/mon_dragon_v1_ascendant.webp?v=d30dd2e3",
   /* 王座徘徊者的放光音（ver -1351，Ray：「音效用 enemy_firebeam」）。
@@ -5686,6 +5695,11 @@ export const ENEMY_IDLE = {
      怪一律改指 `_idle_v2`（v1 的偶數格，12 格 4fps，總長仍 3 秒）；**人類不改**（米夏照舊 24 格 8fps）。
      v1 資料夾留著，Ray 確認後走 tools/recycle.sh 回收。 */
   saint_ug_giant: 'resources/enemy/anim/saint_ug_giant_idle_v1/',   // 地下聖徒待機（ver -2850，Ray 剪的 faceless_idle2_cut：重呼吸＋反覆握拳，28 格 24fps loop）
+  npc_guildhunter_neutral: 'resources/enemy/anim/npc_guildhunter_neutral_idle_v1/',   // 賞金獵人待機（ver -2855，Ray 剪的 hunter_hunter_A_idle_cut，13 格 24fps loop）
+  mon_pirateship_n1_side: 'resources/enemy/anim/mon_pirateship_n1_side_idle_v1/',   // 空賊船 1 號待機（ver -2859，Ray 剪的 v3enh_cut，30 格）
+  mon_pirateship_n4_side: ['resources/enemy/anim/mon_pirateship_n4_side_idle_v3enh_fade/', 'resources/enemy/anim/mon_pirateship_n4_side_idle_v4air_fade/'],   // 4 號兩版都要（Ray）⇒ 陣列＝每次登場隨機抽一版（enemy.idleDirOf）。_fade＝浪花底部的生成裁切線羽化 14px（ver -2863，Ray：「浪可以有 但是不能有裁切線」；程式雲浪撤掉）
+  mon_pirateship_n5_side: ['resources/enemy/anim/mon_pirateship_n5_side_idle_v3enh_fade/', 'resources/enemy/anim/mon_pirateship_n5_side_idle_v4air_fade/'],   // 5 號同上
+  mon_pirateship_n8_side: 'resources/enemy/anim/mon_pirateship_n8_side_idle_v3enh/',   // 8 號（無浪花，煙囪冒煙）
   sorana_si_guard: 'resources/enemy/anim/sorana_guard_idle_v1/',   // 索菈娜待機（ver -2830，Ray 剪的 np_sorana_idle_wan7_cut 22 格 24fps：呼吸上下起伏＋乳搖）
   man_misha: 'resources/enemy/anim/man_misha_idle_v1/',   // ver -2079：人類用「明顯深呼吸」提示詞、不掛 LoRA（Live2D LoRA 兩輪測不出效果）
   mon_arch_warden: 'resources/enemy/anim/mon_arch_warden_idle_v2/',
@@ -5837,6 +5851,7 @@ export const ENEMY_IDLE = {
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
+  npc_guildhunter_neutral: { dir:'resources/enemy/anim/npc_guildhunter_neutral_atk_v1/', hit:1, fx:[{ frame:1, type:'muzzle', at:[0.35,0.21] }] },   // 賞金獵人開槍（ver -2854，Ray 剪的 hunter_fire_A_AB_cut，10 格 24fps，打到第 1 格；Ray：「用這個當 ADM」）；片子沒畫火光 ⇒ 程式在槍口補（fx muzzle）
   saint_ug_giant: { dir:'resources/enemy/anim/saint_ug_giant_atk_v1/', hit:7 },   // 地下聖徒 A＝爪撲（ver -2845，Ray 剪的 AB＋BA，17 格 24fps，打到＝AB 最後一格）；受擊寫在卡上（script/enemies.js faceless.hitFx）
   sorana_si_guard: { dir:'resources/enemy/anim/sorana_guard_atk_v1/', hit:1, near:1.35, nearIn:120 },   // 索菈娜 A＝撲斬（ver -2818，Ray 剪的 np_sorana_slash_full_cut 10 格；「要前撲位移 幀不要太高」→ 16fps、打到那一格撲近到 1.35）
   mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_pounce_v1/', hit:7, hitFx:'reassembled_claw' },   // 心魘 A（ver -2773）：撲擊＋單爪
@@ -5881,6 +5896,11 @@ export const ENEMY_ATK = {
 };
 /* ══ 出場（ver -2527，訓練用聖徒新架勢：從半空落地停在架勢）══ 有寫的怪：不走降臨，門開那一刻播一次出場、播完接待機。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
+/* ══ 倒地（E，ver -2858，敵人線 TO_CODE：賞金獵人「E也要跑」）══ 鑰匙＝立繪檔名（同其他動畫表）。
+   擊敗時（enemy.purgeEnemy，「一隻怪倒下」的唯一入口）播一次、**停在最後一格**接結算，不切回待機；有這一支就不走淨化／其他死法。 */
+export const ENEMY_DOWN = {
+  npc_guildhunter_neutral: { dir:'resources/enemy/anim/npc_guildhunter_neutral_down_v1/' },   // 賞金獵人：單膝跪地、槍撐地（Ray 剪的 hunter_down_A_AB_cut，9 格 24fps）
+};
 export const ENEMY_ENTER = {
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_enter_v1/' },
 };
@@ -5899,6 +5919,7 @@ export const ENEMY_DODGE = {
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_MISS = {
+  npc_guildhunter_neutral: { dir:'resources/enemy/anim/npc_guildhunter_neutral_atk_v1/', hit:1, fx:[{ frame:1, type:'muzzle', at:[0.35,0.21] }] },   // 賞金獵人點錯＝同一支開槍（ADM 共用）
   saint_ug_giant: { dir:'resources/enemy/anim/saint_ug_giant_miss_v1/', hit:5, near:1.2, nearIn:100, nearOut:120 },   // 地下聖徒 M＝上勾拳（ver -2845，14 格，打到 5）；受擊＝迎面衝擊模糊；揮拳往鏡頭逼近 1.2 倍，前 100ms 衝上、打到後 120ms 退回（-2846，Ray：「揮拳時要帶一點位移 往viewer逼近 但位移不要太多幀」）
   mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_roar_v1/', hit:9, windupSe:'se_enemy_beast02', fx:[{ frame:9, type:'roar', at:[0.53,0.25], wipe:true }] },   // ver -2777：新立繪的仰頭咆哮（Wan，Ray 剪的 np_altar_roar_cut 31 格 24fps），延時與點錯共用
   mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_atk_v1/', hit:12, hitFx:'reassembled_wave' },   // 心魘 DM（ver -2773）：三手張開放光（偏橘光波＋抽掉一個數字）
@@ -5913,6 +5934,7 @@ export const ENEMY_MISS = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, windupSe:'se_flame', fx:[{ frame:48, type:'rubble', se:'se_rockimpact' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
+  npc_guildhunter_neutral: { dir:'resources/enemy/anim/npc_guildhunter_neutral_atk_v1/', hit:1, fx:[{ frame:1, type:'muzzle', at:[0.35,0.21] }] },   // 賞金獵人延時＝同一支開槍（ADM 共用）
   saint_ug_giant: { dir:'resources/enemy/anim/saint_ug_giant_delay_v1/', hit:4, near:1.2, nearIn:100, nearOut:120 },   // 地下聖徒 D＝直拳朝鏡頭（ver -2845，13 格，打到 4）；受擊＝迎面衝擊模糊；揮拳往鏡頭逼近 1.2 倍，前 100ms 衝上、打到後 120ms 退回（-2846，Ray：「揮拳時要帶一點位移 往viewer逼近 但位移不要太多幀」）
   sorana_si_guard: { dir:'resources/enemy/anim/sorana_guard_throw_v1/', hit:2, fx:[{ frame:2, type:'knives', at:[0.78,0.36], n:3 }] },   // 索菈娜 DM＝擲飛刀（ver -2819，Ray 剪的 np_sorana_throw3_full_cut 12 格，第 5 格加一點揮動殘影；飛刀程式畫；ver -2822 Ray：「出刀點提早 在47格出刀」＝原始第 47 格＝交件第 2 格）
   mon_relic_candletower: { dir:'resources/enemy/anim/mon_relic_candletower_atk_v5/', hit:9, hitFx:'candletower_claw', noMiss:true },   // 禍魘祭司 D＝同 A（ver -2801，Ray：「點錯扣秒就好 延時同A」）—— noMiss：點錯不借這一支
@@ -8409,3 +8431,7 @@ export const TELEMETRY = {
 
 /* 純資料卡（敵人／武器／商店，script/*.js，不 import 任何東西）的中文由這裡換（ver -1909；中文時什麼都不做）。 */
 trTree(GAME_CONFIG);
+
+/* ══ 空賊船新船測試戰（ver -2859，Ray：「要在遊戲裡測程式雲浪」）══ 照 flight_pirate 整張抄、只換敵人卡（script/enemies.js 的 test_pirate_nN）。
+   正式要各開一張卡還是同卡隨機抽外觀 Ray 未定 —— 定了之後這幾張測試戰拿掉。 */
+for(const n of [1,4,5,8]) GAME_CONFIG.battles['test_pirate_n'+n] = Object.assign({}, GAME_CONFIG.battles.flight_pirate, { enemy:'test_pirate_n'+n });

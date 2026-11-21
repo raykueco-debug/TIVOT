@@ -53,7 +53,7 @@ def check_fx(statics):
     for t in re.findall(r"beam\('(\w+)'", src):
         paths.add(a + 'ruins/ruins_shinier_corridora_' + t + '_nobeam.webp')
     for q in sorted(x for x in paths if not x.endswith('_')):
-        if not os.path.exists(os.path.join(ROOT, q)):
+        if not os.path.exists(os.path.join(ROOT, q.split('?')[0])):   # bust.py 會在同名覆蓋的檔後面掛 ?v=雜湊（ver -2853 背景瘦身後雲層就是），查檔前先拿掉
             print('✘ bg_fx：檔案不在 %s' % q); bad += 1
     print(('✔' if not bad else '✘') + ' bg_fx 程式層 %d 個路徑' % len(paths))
     return bad
