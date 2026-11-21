@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=2884"></script>
-<script src="../i18n/ui/langs.classic.js?v=2884"></script>
+<script src="../orientation.js?v=2886"></script>
+<script src="../script/quests.classic.js?v=2886"></script>   <!-- 任務提示（ver -2886）：與主程式同一份 -->
+<script src="../i18n/ui/langs.classic.js?v=2886"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。
@@ -19,8 +20,8 @@
     if(ls.some(function(x){ return String(x).toLowerCase().indexOf('ja')===0; }) || tz==='Asia/Tokyo') l='ja';
     else if(String(ls[0]||'').toLowerCase().indexOf('es')===0) l='es';
   }catch(e){} }
-  if(G.script.indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2884"><\/script>');
-  if(G.ui.indexOf(l)>=0) document.write('<script src="../i18n/ui/'+l+'.classic.js?v=2884"><\/script>');
+  if(G.script.indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2886"><\/script>');
+  if(G.ui.indexOf(l)>=0) document.write('<script src="../i18n/ui/'+l+'.classic.js?v=2886"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -253,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=2884');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=2886');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -276,8 +277,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2884");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2884");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2886");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2886");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -297,8 +298,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2884");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2884");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2886");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2886");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -353,6 +354,14 @@ document.addEventListener('DOMContentLoaded', function(){
   #starTgl[hidden]{display:none;}
   #mapClose{position:absolute;top:calc(env(safe-area-inset-top) + 10px);right:10px;z-index:2;
     min-width:64px;min-height:40px;}
+  /* 任務提示（ver -2886）：大地圖頂端置中（左上星號鈕、右上關閉鈕）。可點的那一條（有 pin）帶一顆小針。 */
+  #mapQuest{position:absolute;top:calc(env(safe-area-inset-top) + 58px);left:50%;transform:translateX(-50%);z-index:2;
+    max-width:72vw;padding:6px 14px;border-radius:8px;background:rgba(10,8,14,.82);
+    border:1px solid var(--gold-dim);color:var(--gold);font-family:inherit;font-size:13px;letter-spacing:1px;
+    line-height:1.35;text-align:center;pointer-events:none;}
+  #mapQuest[hidden]{display:none;}
+  #mapQuest.pin{pointer-events:auto;cursor:pointer;}
+  #mapQuest i{display:block;font-style:normal;font-size:10px;letter-spacing:3px;color:var(--gold-dim);}
   /* ══ 載入畫面 ══
      排版與主程式的啟動讀取畫面（style.css 的 #assetLoader）**逐項對齊**：
      圈徑/位置、立繪舞台高度、對話框寬度與錨點、底部訊息位置、字級與字距、
@@ -575,6 +584,8 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="mapWrap">
     <canvas id="mapCv"></canvas>
     <button id="mapClose">✕ 關閉</button>
+    <!-- 任務提示（ver -2886）：資料與判定在 script/quests.classic.js（與主程式同一份）；有 pin 的那一條點了就釘選。 -->
+    <button id="mapQuest" type="button" hidden></button>
     <!-- 星號顯示開關：管理人限定，由 ADMIN 區塊解除 display:none -->
     <button id="starTgl" hidden>★ 已發現</button>
     <!-- ══ 地圖編輯的入口（ver -1292，Ray：「把地圖編輯鈕放進大地圖頁面裡」）══
@@ -664,23 +675,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2884" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=2886" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2884" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2884" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2884" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2884" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2884" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2884" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2884" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2884" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2884" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2884" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=2886" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2886" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2886" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2886" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2886" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2886" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2886" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2886" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2886" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2886" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=2884" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=2886" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -702,14 +713,14 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=2884"></script>
+<script src="settlement.js?v=2886"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
 <script>if(/[?&]world=undercity/.test(location.search)) document.write('<script src="undercity/world.js?v=29615343"><\/script>');</script>
 <script>if(/[?&]world=sanctum/.test(location.search)) document.write('<script src="sanctum/world.js?v=0b4855bb"><\/script>');</script>   <!-- 卡耶爾山谷 → 聖王廳地宮的地底大空洞（ver -2565，build_sanctum.py 產的） -->
 <script>if(!/[?&]world=/.test(location.search)) document.write('<script src="undercity/crowns.js?v=6a3ae090"><\/script>');</script>   <!-- 地表上地底樹的樹冠（ver -2412，build_uc_crowns.py 產的） -->
-<script src="talks.js?v=2884"></script>
+<script src="talks.js?v=2886"></script>
 <script>if(/[?&]drg3d=/.test(location.search)) document.write('<script src="drg3d.js?v='+Date.now()+'"><\/script>');</script>   <!-- 王座徘徊者 3D 試驗（2026-11-06）：只在網址帶 ?drg3d= 時載入 -->
 
 <script>
@@ -787,7 +798,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=b18827be'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -2884';
+const FLIGHT_VER = 'ver -2886';
 const MAP_SCALE  = /[?&]world=(cave|undercity|sanctum)/.test(location.search) ? 10 : 20;   // 地底的圖加密成 1536²（ver -2369，build_cave.py 的 SUPER）：一格 10 世界單位，世界大小不變
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -6706,7 +6717,6 @@ function nearestFoundStar(){
 }
 function drawBearingLights(CR, cbx, bw2, deg){
   const y=CR.y-BEAR_GAP-BEAR_H;
-  const st=nearestFoundStar();
   /* ⚠⚠ **一次只亮一束**（ver -1075，Ray：「飛行指示一次只會亮一個 敵>標>感應」）：
      三束疊在一起會互相加亮成一片白，而且讀不出是哪一種。順位由上往下取。
      ⚠ 取的是**第一個真的落在帶子上的**：最高順位那個在背後（超過 ±`BEAR_CUT`）
@@ -6716,7 +6726,7 @@ function drawBearingLights(CR, cbx, bw2, deg){
     /* 敵（索敵系統，ver -1104）：解鎖之前這一束不亮 —— 順位讓給「標」與「感應」。 */
     ['255,90,74',  (enemy && featureOn('scan')) ? [enemy.x, enemy.y] : null],  // 敵
     ['255,214,96', MV.pin ? [MV.pin[0]*MAP_SCALE, MV.pin[1]*MAP_SCALE] : null], // 標（大地圖釘選）
-    ['95,224,230', st ? [st.x*MAP_SCALE, st.y*MAP_SCALE] : null],            // 感應（最近的已探索點）
+    /* 感應（cyan，最近的已探索遺蹟）ver -2886 拿掉（Ray：「把遺蹟的羅盤指示光都拿掉」）。`nearestFoundStar` 留著不叫。 */
   ];
   ctx.save();
   /* 裁在帶子的寬度內：貼邊那一束不准溢出方向計的兩端。 */
@@ -10000,6 +10010,7 @@ function openMapView(){
      面板還在 display:none 時量到 0，會退回預設值 900 與長寬比推得的高度，
      算出來的 zoom 就永遠是 1（實測就是這個症狀）。 */
   mapOpen=true; mapView.classList.add('on');
+  refreshMapQuest();
   const F=mapFit();
   MV.zoom=Math.max(1,(F.h/R.h)/F.base);
   /* 打開地圖就對準玩家 —— 開在大陸正中央的話，每次都要自己拖回來找船。
@@ -10012,6 +10023,32 @@ function openMapView(){
   drawMap();
 }
 document.getElementById('mapBtn').addEventListener('click',openMapView);
+/* ══ 任務提示（ver -2886，Ray：「劇情推進用的任務提示放在地圖頁；點任務 → 釘選釘在目的地」）══
+   哪一條、什麼時候換：`script/quests.classic.js`（`window.TIVOT_QUESTS`，與主程式同一份）。這裡只畫、只釘。
+   ⚠ 釘的是**同一根釘子**（`MV.pin`，鐵律 7）：方向計那束黃光、大地圖上那根針跟著走；座標用 `markOf` 現查。
+   ⚠ 地底（`CAVE`）不顯示：那裡的地圖不畫大陸上的東西（同目的地標記與釘選）。 */
+const mapQuestEl=document.getElementById('mapQuest');
+function mapQuestNow(){ try{ return (window.TIVOT_QUESTS && !CAVE) ? window.TIVOT_QUESTS.current(flagOn, hasStageKey() ? gameStage() : -1) : null; }catch(_){ return null; } }
+function refreshMapQuest(){
+  if(!mapQuestEl) return;
+  const q=mapQuestNow();
+  if(!q){ mapQuestEl.hidden=true; mapQuestEl.textContent=''; return; }
+  const pinOk = !!(q.pin && markOf(i18nT(q.pin)));
+  mapQuestEl.innerHTML='<i>'+i18nT('任務')+(pinOk?' 📍':'')+'</i>'+i18nT(q.text);
+  mapQuestEl.classList.toggle('pin', pinOk);
+  mapQuestEl.hidden=false;
+}
+if(mapQuestEl){
+  ['pointerdown','pointerup'].forEach(t=>mapQuestEl.addEventListener(t, e=>e.stopPropagation()));
+  mapQuestEl.addEventListener('click', e=>{
+    e.stopPropagation();
+    const q=mapQuestNow(); const m = q && q.pin ? markOf(i18nT(q.pin)) : null;
+    if(!m) return;
+    MV.pin=[m[0], m[1]];
+    mapPanTo(m[0], m[1], 700);
+    drawMap();
+  });
+}
 let mapClosedCb=null;   // 地圖關掉那一刻要做的事（ver -741：出航對白收尾）
 function closeMapView(){
   mapOpen=false; mapView.classList.remove('on');

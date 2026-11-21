@@ -362,7 +362,11 @@ function sleepOpened(){
    再讓它去過 `sleepFlag`／「天黑了沒」那兩道門，等於劇本自己把自己卡死（實例：東泊第一晚天黑後才到、
    直接睡掉 ⇒ `ep_renna_night` 永遠沒插 ⇒ 髮飾掉了那晚的小睡按不到）。只有任務鎖那一道照舊。 */
 function napDue(){ return !!(host && host.napAct && (host.napAct()||{}).sleepFirst); }
+/* ══ 任務還沒完成，旅店不出「獨自坐坐」與「回房睡覺」（ver -2886，Ray：「陪諾薇兒逛逛帝都完成後，旅店才顯示獨坐跟睡覺」）══
+   哪一條任務會押住旅店寫在任務資料上（`script/quests.classic.js` 的 `innHold`），這裡只問。 */
+function innHeld(){ const q=prog.currentQuest(); return !!(q && q.innHold); }
 function canSleep(){
+  if(innHeld()) return false;
   if(st1 && st1.questLocked && st1.questLocked()) return false;
   if(napDue()) return true;
   if(!sleepOpened()) return false;
@@ -388,7 +392,7 @@ function refresh(){
      照 -1570 藏著。`sleepHere()` 的第一道門本來就會回 `questSay('sleep')`，鈕出來它就接得住。 */
   { const sb = layer.querySelector('.inn-btn[data-act="sleep"]');
     const qlk = !!(st1 && st1.questLocked && st1.questLocked());
-    if(sb) sb.style.display = (canSleep() || qlk) ? '' : 'none'; }
+    if(sb) sb.style.display = ((canSleep() || qlk) && !innHeld()) ? '' : 'none'; }
   const st = stage();
   layer.querySelectorAll('.inn-door').forEach(b=>{
     const who = DOORS[+b.dataset.i];
@@ -406,8 +410,8 @@ function refresh(){
        「在旅店坐到店開門」是玩家真的需要的一步。
      ⚠ 「還不能做」一律**不是靠藏起鈕**擋，而是按下去由角色擋回來（見 sleepHere 的
        諾薇兒）—— 鈕不見了玩家只會以為壞了。 */
-  wantSit   = introDone();
-  wantSleep = introDone();
+  wantSit   = introDone() && !innHeld();
+  wantSleep = introDone() && !innHeld();
   relayout();
   /* 教學提示（Ray 稿上的兩句舞台指示）。⚠ 只在該做那件事的時候出現，不常駐。 */
   const hint = layer.querySelector('.inn-hint');

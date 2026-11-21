@@ -3457,6 +3457,8 @@ function renderMap(){
     /* ⚠ 探索率擺在 `.tm-frame` **外面**（同 `.tm-save` 那一條的理由）：框裡的尺寸
        都是「地圖的百分比」，字塞進去會跟著圖縮放，小螢幕上讀不出來。 */
     + i18nT('<div class="tm-pct">探索率<b>')+pct+'%</b><i>'+seenN+i18nT(' ／ ')+ids.length+i18nT(' 處</i></div>')
+    /* 任務提示（ver -2886，Ray：「劇情推進用的任務提示，放在地圖頁」）：資料與判定在 `script/quests.classic.js`，這裡只畫。 */
+    + (()=>{ const q=prog.currentQuest(); return q ? '<div class="tm-quest"><i>'+i18nT('任務')+'</i>'+i18nT(q.text)+'</div>' : ''; })()
     /* 縮放鈕（ver -1449）：手機主要走兩指捏合，這三顆是給滑鼠與不捏合的人用的。
        ⚠ 演出模式（`.map-story`）整層不吃點擊，所以它們那時自然是死的 —— 那是對的。 */
     + '<div class="tm-zoom">'

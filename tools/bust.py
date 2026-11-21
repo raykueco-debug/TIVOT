@@ -61,6 +61,8 @@ def run(check=False):
         # ⚠ 入口那兩支是 <script src>，**吃不到 importmap**（那張表只管模組裡面的
         #   import 指定字串）—— 所以 src 自己要帶版本號。
         (r'src="(main|orientation)\.js(\?v=[^"]*)?"', r'src="\1.js?v=<V>"'),
+        # 任務提示（ver -2886）：經典腳本，飛行頁也載同一份
+        (r'src="script/quests\.classic\.js(\?v=[^"]*)?"', 'src="script/quests.classic.js?v=<V>"'),
     ], v)
     if s != s0: dirty.append(('index.html', p, s))
 

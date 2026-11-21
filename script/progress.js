@@ -187,6 +187,11 @@ export function addFlags(list){
   const out=[...s]; setFlags(out); return out;
 }
 export function hasFlag(f){ return getFlags().indexOf(f)>=0; }
+/* 現在的任務提示（ver -2886）：資料與判定在 `script/quests.classic.js`（經典腳本，飛行頁也載同一份），這裡只是主程式的門面。 */
+export function currentQuest(){
+  const Q = (typeof window!=='undefined') && window.TIVOT_QUESTS;
+  try{ return Q ? Q.current(hasFlag, getStage()) : null; }catch(_){ return null; }
+}
 /* ══ 本篇的持久 HP（ver -481）══ null＝滿血（鑰匙不存在）。
    讀寫點：combat.startGame（讀）、combat.storyBattleEnd（勝場寫回殘量）、
    inn.sleepHere（睡覺 clear＝滿血）、日後的補血道具（用時 setHp）。 */
@@ -997,7 +1002,8 @@ export const CHAPTERS = [
     stage:0, clockHour:21, named:true,
     flags:['dungeon_cleared','hq_briefed','renna_named','mapcard_capital',
            'inn_seen_capital_inn','town_capital_inn','town_kind_inn','inn_wait','inn_missed',
-           'inn_tip_sit','inn_tip_knock','inn_tip_sleep'],
+           'inn_tip_sit','inn_tip_knock','inn_tip_sleep',
+           'town_evening_nudge'],   // ver -2886：「陪諾薇兒逛逛帝都」算完成 —— 不給的話旅店不出睡覺鈕（quests.classic.js 的 innHold）
     enter:'town', town:'capital', node:'inn' },
   /* ⚠ Stage 1 從**夢結束後的那一幕**開始（ver -1904，Ray：「stage1 切點改成夢結束後開始，
      從『不過……我不討厭就是了。』之後的那一幕開始」）：隔天 07:00 的帝都旅店 ——

@@ -4545,6 +4545,13 @@
     background:rgba(10,8,14,.82);border:1px solid var(--gold-dim);
     font-size:11px;letter-spacing:2px;color:var(--gold-dim);
     pointer-events:none;}
+  /* 任務提示（ver -2886）：與探索率同一款小藥丸，擺右上、縮放鈕之下（左上是探索率）。只是告示，不吃點擊（同 .tm-pct 的理由）。 */
+  #townMapView .tm-quest{position:absolute;z-index:3;right:8px;top:calc(var(--tap-top) + 40px);
+    max-width:58%;padding:5px 10px;border-radius:8px;
+    background:rgba(10,8,14,.82);border:1px solid var(--gold-dim);
+    font-size:13px;letter-spacing:1px;line-height:1.35;color:var(--gold);text-align:right;
+    pointer-events:none;}
+  #townMapView .tm-quest i{display:block;font-style:normal;font-size:10px;letter-spacing:3px;color:var(--gold-dim);}
   #townMapView .tm-pct b{font-size:16px;letter-spacing:1px;color:var(--gold);margin-left:8px;}
   #townMapView .tm-pct i{display:block;font-style:normal;font-size:10px;letter-spacing:2px;
     color:var(--gold-dim);opacity:.8;margin-top:2px;}
