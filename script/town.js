@@ -3791,8 +3791,7 @@ export const TOWNS = {
               portrait:{ char:'COUNTER_NP', show:true } },
             { speaker:'PLAYER', blank:true },
             { speaker:'COUNTER_NP', text:'好吧，懸賞金一千五百。殺禍魘沒賞金領，打空賊倒是有。',
-              portrait:{ char:'COUNTER_NP', show:true }, bounty:'rolf' },
-            nou('relief','這樣補給的錢就有著落了！', { flags:['np_guild_seen'] }),
+              portrait:{ char:'COUNTER_NP', show:true }, bounty:'rolf', flags:['np_guild_seen'] },   // 諾薇兒那一句拿掉（Ray：「她當時不在」）
           ] },
           { flag:'np_guild_seen', need:'np_burial_done', lines:[
           { speaker:'COUNTER_NP', text:'殺禍魘沒賞金領，人都跑光了。你隨意看看吧。',
