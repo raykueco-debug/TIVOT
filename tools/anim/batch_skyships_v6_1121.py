@@ -9,7 +9,7 @@ PY = os.path.join(HERE, '..', '.venv', 'Scripts', 'python.exe')
 PROMPT = ('Flying airship floating in mid-air, steampunk sky ship, pure green background, side view, bow facing left. Strong wind. '
           'Black sails flapping hard, sail cloth billowing out and slackening again and again, big ripples running across every sail, '
           'sail edges whipping, ropes swaying, propeller spinning{extra}. Static camera, ship centered, same size, smooth loop. Anime style, cel shading.')
-EXTRA = {'7': ', smoke streaming from the funnel', '8': ', smoke streaming from the funnels'}   # 同 v3enh
+EXTRA = {'7': ', smoke streaming from the funnel', '8': ', smoke streaming from the funnels', '10': ', smoke streaming from the funnel'}   # 同 v3enh
 env = {**os.environ, 'PYTHONIOENCODING': 'utf-8', 'TIVOT_GEN': '720x480', 'TIVOT_FIT': '0.86', 'TIVOT_LX2V': 'enh'}
 for n in sys.argv[1:]:
     name = f'mon_pirateship_n{n}_side'

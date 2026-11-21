@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.21-2878';
+export const VERSION = 'ver 2026.11.21-2879';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4841,6 +4841,8 @@ export const ASSETS = {
   enemy_pirate_n5_side: "resources/enemy/mon_pirateship_n5_side.webp",
   enemy_pirate_n6_side: "resources/enemy/mon_pirateship_n6_side.webp",
   enemy_pirate_n8_side: "resources/enemy/mon_pirateship_n8_side.webp",   // ver -2487：重畫加 9 門側舷砲（Ray：原圖沒畫側舷砲）
+  enemy_pirate_n9_side: "resources/enemy/mon_pirateship_n9_side.webp",    // ver -2879 新四宮格 3 號：細長快船（銅殼、三斜桅、雙螺旋槳）
+  enemy_pirate_n10_side: "resources/enemy/mon_pirateship_n10_side.webp",  // ver -2879 新四宮格 4 號：鐵甲蒸汽巡防艦（單煙囪、兩排砲門）
   enemy_bl_dragon_front_side: "resources/enemy/mon_dragon_v1_flight_side.webp",
   enemy_bl_dragon_sky:    "resources/enemy/mon_dragon_v1_ascendant.webp?v=d30dd2e3",
   /* 王座徘徊者的放光音（ver -1351，Ray：「音效用 enemy_firebeam」）。
@@ -5857,6 +5859,7 @@ export const SHIP_TRAIL = {
   mon_pirateship_n3_side: { prop:[1336,699], bow:[371,815], pitch:1.4 }, mon_pirateship_n4_side: { prop:[1336,716], bow:[417,804] },
   mon_pirateship_n5_side: { prop:[1336,716], bow:[417,806] }, mon_pirateship_n6_side: { prop:[1336,706], bow:[371,815], pitch:1.1 },
   mon_pirateship_n8_side: { prop:[1336,684], bow:[418,809] },
+  mon_pirateship_n9_side: { prop:[1336,678], bow:[417,756] }, mon_pirateship_n10_side: { prop:[1336,702], bow:[417,829] },
 };
 /* ══ 敵人的攻擊／延時動畫（ver -2472，美術 TO_CODE_attack.md；Ray：「娜塔莉攻擊動作交件了，接上進遊戲測」）══
    鑰匙＝立繪檔名（同 ENEMY_IDLE）。`dir`＝動檔資料夾（anim.json loop:false）、`hit`＝哪一格打到玩家（扣血延到那一格）、
@@ -8447,4 +8450,4 @@ trTree(GAME_CONFIG);
 
 /* ══ 空賊船新船測試戰（ver -2859，Ray：「要在遊戲裡測程式雲浪」）══ 照 flight_pirate 整張抄、只換敵人卡（script/enemies.js 的 test_pirate_nN）。
    正式要各開一張卡還是同卡隨機抽外觀 Ray 未定 —— 定了之後這幾張測試戰拿掉。 */
-for(const n of [1,2,3,4,5,6,8]) GAME_CONFIG.battles['test_pirate_n'+n] = Object.assign({}, GAME_CONFIG.battles.flight_pirate, { enemy:'test_pirate_n'+n });
+for(const n of [1,2,3,4,5,6,8,9,10]) GAME_CONFIG.battles['test_pirate_n'+n] = Object.assign({}, GAME_CONFIG.battles.flight_pirate, { enemy:'test_pirate_n'+n });
