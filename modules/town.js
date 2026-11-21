@@ -5608,6 +5608,9 @@ function chatter(){
   }
   /* ⚠ 分店有自己的路人語就用它（ver -578）：咖啡廳／餐廳／甜品店各一組；
      酒吧沒寫 → 回去用節點自己那一組市井線（`tavern.chatter`）。 */
+  /* 城上 `noChatter:true`（ver -2891，Ray：「帝都的路人閒聊都拿掉」）＝這座城整座不出路人單句（含餐飲街分店）。
+     ⚠ 打烊那一句（上面）不是路人語，照出。台詞資料留著，要放回來只拿掉那一欄。 */
+  if((TOWNS[townId]||{}).noChatter) return;
   const sc=dineSceneOf(nodeId);
   const list=(sc && sc.chatter && sc.chatter.length) ? sc.chatter : (n && n.chatter);
   if(!list || !list.length) return;

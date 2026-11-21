@@ -2527,6 +2527,7 @@ export const TOWNS = {
     /* ⚠ 四場段落都寫 `fromStage:0`：帝都有章節窗（storyStages:[0,1]），窗外的段落一律不演 ——
        這一段的開關是 `cap_raid` 本身，不看章節（明寫的例外，見 modules/town.js 的 storyOff）。 */
     name: '帝都',
+    noChatter: true,   // ver -2891（Ray：「帝都的路人閒聊都拿掉」）：整座城不出路人單句（modules/town.js 的 chatter）
     storyStages:[0,1],   // ver -1739 章節窗：窗外這座城的劇情一律不觸發（modules/town.js 的 storyWindow）
     /* ══ Stage 18 的曲子（ver -2126，Ray：「stage 18 開場音樂改成 Peritune_Nocturnal_Bloom_loop，到主角空白、索『！！』時
        改成 Rituale Machina，直到愛里歐戰」）══ 由上往下取第一個成立的（modules/town.js 的 bgmWhenRow）：
