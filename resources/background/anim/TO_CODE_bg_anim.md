@@ -478,3 +478,5 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 格 | 底圖 | 天空 | 水 |
 |---|---|---|---|
 | 戰鬥　賞金獵人公會 | `resources/enemy/guild_hunter_battle_bg.webp`（1254×1254，靜態） | 無（室內） | 無 |
+> 11-21 補：**觀眾吆喝影片**（Ray 在 animechk 剪 `guild_hunter_crowd_chk1121_cut`，交件）—— `anim/enemy/guild_hunter_battle_bg_crowd_v1.mp4`（1254×1254、16fps、11 格循環，只有兩側與二樓的觀眾在動，其餘＝原圖）。
+> 戰鬥上半**播這支影片當底圖**（取代靜態的 `guild_hunter_battle_bg.webp`，同索菈娜帆那一套的 `video` 欄位）；室內，沒有天空／水，不疊其他程式層。產生腳本 `tools/anim/bg_layer/guild_crowd.py`。
