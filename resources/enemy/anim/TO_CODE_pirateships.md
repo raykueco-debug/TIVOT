@@ -31,6 +31,30 @@
 | 鍵 | 資料夾 | 格 | fps | 狀態 |
 |---|---|---|---|---|
 | `mon_pirateship_n1_side` | `anim/mon_pirateship_n1_side_idle_v1/` | 30 | 24 | ✅ 交件（11-21，Ray 剪的 `mon_pirateship_n1_side_v3enh_cut`；box 在畫布內、碰邊 0）→ **`config.ENEMY_IDLE` 加一列即可** |
-| n2～n8 | —— | | | ⏳ Wan 生成中（同 n1 的 v3enh 設定）→ Ray 剪 |
+| `mon_pirateship_n4_side` | `anim/mon_pirateship_n4_side_idle_v3enh/` ／ `_idle_v4air/` | 34 ／ 27 | 24 | ✅ 交件（11-21，Ray 剪的兩版都要；**有浪花**，見下）|
+| `mon_pirateship_n5_side` | `anim/mon_pirateship_n5_side_idle_v3enh/` ／ `_idle_v4air/` | 33 ／ 35 | 24 | ✅ 交件（同上，**有浪花**）|
+| `mon_pirateship_n8_side` | `anim/mon_pirateship_n8_side_idle_v3enh/` | 33 | 24 | ✅ 交件（無浪花，煙囪冒煙）|
+| n2、n3、n6、n7 | —— | | | ⏳ Wan 跑好（`out/sky_ships/*_v3enh`），等 Ray 剪 |
+
+⚠ 螺旋槳：Ray 11-21「螺旋槳的部份 inpaint 重跑」—— VACE 重畫中，好了會**同名換掉**上面這幾支的格（換之前先問 Ray），屆時再更新這一段。
+
+## ⚠⚠ 程式要做：浪花 → 程式雲浪（Ray 11-21）
+> Ray：「有浪花讓程式碰到那幾格就跑雲出來，看能不能自然變成雲浪」「浪花要有背景色差分」「讓程式配合浪花時機與形狀顏色飄雲過來」
+
+Wan 在 4、5 號船底自己長出了浪花（白藍色）。白天的雲景上還算像雲，**黃昏／夜晚的背景上很突兀**。Ray 要的是：**程式在浪花出現的那幾格，照浪花的時機、形狀、位置飄雲過來蓋住它，雲的顏色跟著當下背景**。
+
+資料（美術已交，逐格）：有浪花的那四支資料夾裡各有
+- `splash.json`：`splash[i] = { f:格號, k:強度0~1, box:[x0,y0,x1,y1], rgb:[r,g,b] }`
+  · `k`＝該格浪花面積 ÷ 這支最大那格（0＝沒有浪花，不必出雲）
+  · `box`＝浪花範圍，**比例座標，相對於格子本身**（＝ `anim.json` 的 `box` 那一塊）
+  · `rgb`＝原片浪花的平均色（參考用；實際顏色要取背景的）
+- `splash_mask.webp`：逐格遮罩**橫排**（每格同格子大小 `px`，白＝浪花），要做形狀貼合時用
+
+建議做法（細節程式定）：
+1. 播待機時讀當格的 `k`／`box`：`k>0` 就在 `box` 那一帶生程式雲（同 `bg_fx` 的程式雲那一套），雲量／不透明度跟 `k` 走，`k` 降回 0 雲就飄走散掉（不要瞬間消失）。
+2. 雲色**取當下戰鬥背景**（亮部＋暗部兩色，同 `bg_fx` 對雲層的取色），所以白天／清晨／黃昏／夜晚自然各有一版 ——這就是 Ray 說的「背景色差分」。
+3. 雲要**蓋在浪花上面**（浪花本身留在格子裡，被雲吃掉）；雲往船尾方向飄（世界往右流）。
+4. ⚠ 1 號、8 號**沒有浪花**（不必掛）。2、3、6、7 號還沒剪。
+- 預覽（美術用，非遊戲）：`ComfyUI-master/tivot_wan/out/skyship_preview.html`（:8130），12 張空戰背景同時疊船。
 
 - 生成：Wan 720×480、49 格、強風帆提示詞＋`TIVOT_LX2V=enh`（Ray：「帆沒動啊」—— 第一版只寫帆鼓動，帆幾乎不動）。交件 `deliver_idle_lite.py`（`TIVOT_FIT=0.86`、scale 1.0）。
