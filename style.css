@@ -5402,8 +5402,9 @@
      :active 那條自然不套（disabled 不會觸發）。 */
   #gearSheet .gs-pconfirm.gs-paired{color:var(--gold-dim);border-color:var(--gold-dim);
     background:rgba(212,169,74,.08);cursor:default;}
+  /* ver -2888（Ray：「整備頁的伙伴立繪縮小」）：框的上限 40vh → 28vh（手機那一條 38vh → 27vh），多出的高度歸技能說明。 */
   #gearSheet .gs-pcard{position:relative;flex:0 0 auto;aspect-ratio:3/4;
-    max-height:40vh;min-height:120px;overflow:hidden;
+    max-height:28vh;min-height:110px;overflow:hidden;
     border:1px solid var(--gold-dim);border-radius:10px;background:rgba(10,8,14,.6);}
   /* 取景與出擊整備那一張同一套：以高度貼合、頭頂對齊框頂再依 siFit 微調。 */
   #gearSheet .gs-pimg{position:absolute;left:50%;top:var(--gp-top,0%);
@@ -5512,7 +5513,7 @@
     #gearSheet .gs-slot{padding:5px 7px;gap:6px;}
     #gearSheet .gs-hint{font-size:9px;margin-top:4px;}
     #gearSheet .gs-perk{margin-top:6px;font-size:9.5px;line-height:1.55;}
-    #gearSheet .gs-pcard{min-height:180px;max-height:38vh;}
+    #gearSheet .gs-pcard{min-height:130px;max-height:27vh;}   /* ver -2888 縮小（原 180px／38vh） */
   }
   /* 道具欄裡的「裝　備」（ver -422）：整備頁點一格進來時才有。 */
   #lootSheet .bag-eq{position:absolute;right:8px;bottom:6px;padding:3px 10px;

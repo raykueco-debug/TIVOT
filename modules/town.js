@@ -4068,12 +4068,12 @@ function dreamNoGear(){
 /* ⚠ ver -2179（Ray：「對話劇情中可以有整備」）：回傳**哪一種**藏法 ——
      'dream' ＝夢境，對白中也藏；'battle' ＝戰鬥地圖，**演對白時放出來**（CSS 讀 `body.story-talking`，
      那是演出層自己宣告的「對白播放中」，§6.5 的 -385，不另記一份）；null ＝不藏。 */
+/* ⚠⚠ ver -2888（Ray：「整備頁改成不在戰鬥移動中隱藏」）：戰鬥地圖走動時**不再藏**（-2175 的 'battle' 那一種撤掉），
+     只剩夢境照藏。`'battle'` 的 CSS／gearBlocked 分支留著不會再被走到，日後要改回來只動這一支。 */
 function gearOff(){
   if(!townId || !townLive) return null;
   if(dreamNoGear()) return 'dream';
-  const n=((TOWNS[townId]||{}).nodes||{})[nodeId];
-  if(n && n.rest) return null;
-  return (!!siegeOn() || !wildMapOff()) ? 'battle' : null;
+  return null;
 }
 /* 把 `gearOff` 的結果掛到 body（CSS 的 `body.no-gear` / `no-gear-all`）。冪等，掛在 `showNav`（每一次抵達、
    每一段演完都會經過）與離城的兩條路。 */
