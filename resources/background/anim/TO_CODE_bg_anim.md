@@ -480,3 +480,9 @@ Ray 11-07：「戶外樹葉背景都用這個方式」—— 後續陸續交同�
 | 戰鬥　賞金獵人公會 | `resources/enemy/guild_hunter_battle_bg.webp`（1254×1254，靜態） | 無（室內） | 無 |
 > 11-21 補：**觀眾吆喝影片**（Ray 在 animechk 剪 `guild_hunter_crowd_chk1121_cut`，交件）—— `anim/enemy/guild_hunter_battle_bg_crowd_v1.mp4`（1254×1254、16fps、11 格循環，只有兩側與二樓的觀眾在動，其餘＝原圖）。
 > 戰鬥上半**播這支影片當底圖**（取代靜態的 `guild_hunter_battle_bg.webp`，同索菈娜帆那一套的 `video` 欄位）；室內，沒有天空／水，不疊其他程式層。產生腳本 `tools/anim/bg_layer/guild_crowd.py`。
+
+> 11-22 **溫斯摩爾港守城戰：遊戲內即時跑**（Ray：「改遊戲內即時跑」「可以，推其餘格」）—— 不出影片。地面＝靜態圖 `winsmoor_siege/ws_X_Y_dusk.webp` 不動；
+> 天空（底色＋三層雲遠慢近快沿焦點弧線走）、太陽（畫在雲之上）、煙柱（從建築後面冒、越高越散、遠慢近快）、河面（北岸幾格）全由 `modules/bgfx.js` 即時畫 —— 沒有循環，所以沒有循環縫。
+> 已由背景副理接好（11-21 Ray：背景相關程式歸背景副理）：`script/bg_fx.js` 的 `⟨ws-live⟩` 那一段（自動產生）＋ `bgfx.js` 新增的 `plumes`／`sky.sun`。素材在 `anim/winsmoor_siege/ws_X_Y_dusk_{sky,skymask,cloud_far,cloud_mid,cloud_near,sun,smoke,water}.*`。
+> 產生：`tools/anim/bg_layer/war_live_batch.py`（格子表 `war_live_cells.json`：煙源＝自動找＋人工修、河面框）→ `--emit` 寫回 `bg_fx.js`。預覽：`tools/war_preview.html?cell=ws_9_0_dusk`（同一支 bgfx，←→ 換格）。
+> ⚠ 不在這批：**ws_2_0**（GPT 天空遮罩對不上原圖，建築與太陽會被吃掉，要重出遮罩）；**ws_0_0／ws_0_1** 仍播 11-12 交的影片（換成即時版要 Ray 點頭）；天空太少的幾格（ws_2_6、4_8、8_4…）不登記。

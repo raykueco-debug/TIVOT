@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><base href="../"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>守城戰 即時程式層</title>
+<style>
+  body{margin:0;background:#15131c;color:#ddd;font:14px/1.6 sans-serif}
+  .wrap{max-width:1200px;margin:0 auto;padding:12px 16px}
+  .row{display:flex;flex-wrap:wrap;gap:12px}.c{flex:1;min-width:300px}
+  canvas,img{width:100%;height:auto;display:block;background:#000}
+  button{background:#2b2838;color:#eee;border:1px solid #555;border-radius:6px;padding:4px 12px;cursor:pointer}
+  .note{color:#aaa;font-size:13px}
+</style></head>
+<body><div class="wrap">
+<h3 style="margin:4px 0">溫斯摩爾港守城戰 —— 遊戲內即時跑（<span id="nm"></span>）</h3>
+<p><button id="prev">◀ 上一格</button> <select id="sel"></select> <button id="next">下一格 ▶</button>　<span class="note">（← → 鍵也可以換格）</span></p>
+<p class="note">這一頁用的是遊戲本身那一支 <code>modules/bgfx.js</code> 與 <code>script/bg_fx.js</code> 的資料，畫法和進遊戲一模一樣。
+地面＝靜態圖不動；天空、三層雲（遠慢近快）、太陽、煙柱、河面全部即時算 —— 沒有影片，也就沒有循環縫。<span id="st"></span></p>
+<div class="row"><div class="c">原圖<img id="orig"></div><div class="c">即時程式層<canvas id="cv" width="768" height="1024"></canvas></div></div>
+</div>
+<script type="module">
+import { prepFx, drawFx } from './modules/bgfx.js';
+import { BG_FX } from './script/bg_fx.js';
+const name = new URLSearchParams(location.search).get('cell') || 'ws_9_0_dusk';
+const keys = Object.keys(BG_FX).filter(k => /^ws_\d+_\d+_dusk$/.test(k)), sel = document.getElementById('sel'), at = keys.indexOf(name);
+keys.forEach(k => sel.add(new Option(k, k, false, k === name)));
+const go = k => { if (k) location.search = '?cell=' + k; };
+sel.onchange = () => go(sel.value);
+document.getElementById('prev').onclick = () => go(keys[(at - 1 + keys.length) % keys.length]);
+document.getElementById('next').onclick = () => go(keys[(at + 1) % keys.length]);
+addEventListener('keydown', e => { if (e.key === 'ArrowLeft') go(keys[(at - 1 + keys.length) % keys.length]); if (e.key === 'ArrowRight') go(keys[(at + 1) % keys.length]); });
+document.getElementById('nm').textContent = name;
+const spec = BG_FX[name];
+const img = new Image(); img.src = 'resources/background/winsmoor_siege/' + name + '.webp';
+document.getElementById('orig').src = img.src;
+const fx = prepFx(spec), cv = document.getElementById('cv'), g = cv.getContext('2d');
+const t0 = performance.now(); let n = 0, tf = performance.now();
+function loop(now) {
+  if (img.complete && img.naturalWidth && fx.ready) {
+    g.drawImage(drawFx(fx, img, 768, 1024, (now - t0) / 1000, false), 0, 0);
+    if (++n % 60 === 0) { document.getElementById('st').textContent = `（${(60000 / (now - tf)).toFixed(0)} fps）`; tf = now; }
+  } else if (fx.failed) document.getElementById('st').textContent = '素材載不到';
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body></html>

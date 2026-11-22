@@ -31,7 +31,9 @@ export function prepFx(spec) {
     want('sky', spec.sky.img); want('skyMask', spec.sky.mask); (spec.sky.clouds || []).forEach((p, i) => want('cloud' + i, p));
     (spec.sky.layers || []).forEach((L, i) => want('layer' + i, L.img));
     if (spec.sky.moon) want('moon', spec.sky.moon);
+    if (spec.sky.sun) want('sun', spec.sky.sun);
   }
+  if (spec.plumes) want('plumes', spec.plumes.atlas);
   Promise.all(jobs).then(() => { fx.ready = true; }, e => { fx.failed = true; console.warn('[bgfx] 載不到', e); });
   return fx;
 }
@@ -196,6 +198,41 @@ function drawLayers(B, x, sky, t) {
   }
 }
 
+/* 煙柱（守城戰，11-22 Ray：「改遊戲內即時跑」）：每個源頭不停冒出煙團（圖集裡已上好色與明暗），
+   往上升、越高越大越往兩側散、越淡；遠的（源頭窄）升得慢。煙團的一切都由「第幾團」算出來（hash），不存狀態、時間只往前 ——
+   遊戲裡即時跑沒有循環，就沒有循環縫。座標：src＝[x, y, 寬]（畫面寬高的比例）、wind＝畫面寬的比例／秒。
+   數值照 tivot_wan/bg_layer/war_run.py 的 Smoke（Ray 選定的 v6 那一版）。 */
+function drawPlumes(B, x, P, atlas, t) {
+  if (!atlas) return;
+  const { W, H } = B, cells = P.cells, wind = (P.wind || 0) * W, items = [];
+  P.src.forEach(([fxp, fyp, fwp], si) => {
+    const sx = fxp * W, sy = fyp * H, sw = fwp * W, kd = Math.min(1.15, Math.max(0.55, fwp * 768 / 60));
+    const ev = 0.22 + 0.08 * hash(si, 901), ph = hash(si, 902), LIFE = 8;
+    const k0 = Math.floor((t - LIFE * 1.2) / ev) - 2, k1 = Math.floor(t / ev) + 1;
+    for (let k = k0; k <= k1; k++) {
+      const r = j => hash(si * 7919 + j, k);
+      if (r(1) < 0.12) continue;                                     // 偶爾斷一下 → 不規則
+      const age = t - (k + ph + (r(2) - 0.5) * 0.9) * ev, life = LIFE * (0.7 + 0.45 * r(3));
+      if (age < 0 || age > life) continue;
+      const u = age / life, ci = Math.floor(r(4) * cells.length), [cw, ch] = cells[ci];
+      const ww = sw * (0.9 + 3.0 * Math.pow(u, 1.2)) * (0.8 + 0.45 * r(7)), hh = ww * ch / cw * (0.75 + 0.45 * r(8));
+      const g = Math.sqrt(-2 * Math.log(Math.max(1e-6, r(9)))) * Math.cos(6.2832 * r(10));
+      const lat = g * sw * (0.08 + 0.6 * Math.pow(u, 1.6));
+      const cx = sx + wind * kd * age * (1 + u) * (0.85 + 0.3 * r(12)) + lat;
+      const cy = sy - age * H * 0.045 * kd * (0.9 + 0.2 * r(11)) * (1 + 0.4 * u);
+      const a = Math.min(1, age / 0.5) * Math.pow(1 - u, 1.5) * 0.85 * (0.8 + 0.2 * r(13));
+      if (a > 0.004 && ww > 4) items.push([age, ci, cw, ch, cx, cy, ww, hh, a, r(5) < 0.5, r(6) < 0.3]);
+    }
+  });
+  items.sort((p, q) => q[0] - p[0]);                                // 老的（高的）先畫，新的蓋上去
+  for (const [, ci, cw, ch, cx, cy, ww, hh, a, fh, fv] of items) {
+    x.globalAlpha = Math.min(1, a);
+    if (fh || fv) { x.save(); x.translate(cx, cy); x.scale(fh ? -1 : 1, fv ? -1 : 1); x.drawImage(atlas, ci * 256, 0, cw, ch, -ww / 2, -hh / 2, ww, hh); x.restore(); }
+    else x.drawImage(atlas, ci * 256, 0, cw, ch, cx - ww / 2, cy - hh / 2, ww, hh);
+  }
+  x.globalAlpha = 1;
+}
+
 /* 畫一格：src＝這一格的來源（影片／靜態圖），live＝來源每一格都在變（影片）。回傳畫好的 canvas。 */
 export function drawFx(fx, src, W, H, t, live) {
   if (!fx.B || fx.B.W !== W || fx.B.H !== H) build(fx, W, H);
@@ -206,7 +243,9 @@ export function drawFx(fx, src, W, H, t, live) {
     x.clearRect(0, 0, W, H); x.drawImage(fx.img.sky, 0, 0, W, H);
     if (fx.img.moon) x.drawImage(fx.img.moon, 0, 0, W, H);   // 銀月固定不動（西邊低空那一輪），雲從它前面過
     if (B.layers) drawLayers(B, x, S.sky, t);
-    else [70, 32].forEach((sec, i) => { const c = fx.img['cloud' + i]; if (!c) return; const off = (t / sec % 1) * W; x.drawImage(c, off - W, 0, W, H); x.drawImage(c, off, 0, W, H); });
+    else if (S.sky.clouds) [70, 32].forEach((sec, i) => { const c = fx.img['cloud' + i]; if (!c) return; const off = (t / sec % 1) * W; x.drawImage(c, off - W, 0, W, H); x.drawImage(c, off, 0, W, H); });
+    if (fx.img.sun) x.drawImage(fx.img.sun, 0, 0, W, H);   // 太陽畫在雲之上（守城戰，11-22 Ray：「太陽前面那一團是怎麼回事」）
+    if (S.plumes) drawPlumes(B, x, S.plumes, fx.img.plumes, t);   // 煙柱在天空這一層：下一步蓋上地面 ⇒ 一律在建築後面
     const c = B.cx; c.globalCompositeOperation = 'source-over'; c.clearRect(0, 0, W, H); c.drawImage(src, 0, 0, W, H);
     c.globalCompositeOperation = 'destination-out'; c.drawImage(B.skyMask.c, 0, 0);
     x.drawImage(B.cut, 0, 0);
