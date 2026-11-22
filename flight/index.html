@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=2905"></script>
-<script src="../script/quests.classic.js?v=2905"></script>   <!-- 任務提示（ver -2886）：與主程式同一份 -->
-<script src="../i18n/ui/langs.classic.js?v=2905"></script>
+<script src="../orientation.js?v=2907"></script>
+<script src="../script/quests.classic.js?v=2907"></script>   <!-- 任務提示（ver -2886）：與主程式同一份 -->
+<script src="../i18n/ui/langs.classic.js?v=2907"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。
@@ -20,8 +20,8 @@
     if(ls.some(function(x){ return String(x).toLowerCase().indexOf('ja')===0; }) || tz==='Asia/Tokyo') l='ja';
     else if(String(ls[0]||'').toLowerCase().indexOf('es')===0) l='es';
   }catch(e){} }
-  if(G.script.indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2905"><\/script>');
-  if(G.ui.indexOf(l)>=0) document.write('<script src="../i18n/ui/'+l+'.classic.js?v=2905"><\/script>');
+  if(G.script.indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=2907"><\/script>');
+  if(G.ui.indexOf(l)>=0) document.write('<script src="../i18n/ui/'+l+'.classic.js?v=2907"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=2905');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=2907');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -277,8 +277,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2905");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2905");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=2907");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=2907");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -298,8 +298,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2905");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2905");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2907");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=2907");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -675,23 +675,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2905" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=2907" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=2905" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2905" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2905" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2905" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2905" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2905" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2905" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2905" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2905" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2905" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=2907" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=2907" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=2907" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=2907" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=2907" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=2907" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=2907" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=2907" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=2907" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=2907" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=2905" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=2907" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -713,14 +713,14 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=2905"></script>
+<script src="settlement.js?v=2907"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
 <script>if(/[?&]world=undercity/.test(location.search)) document.write('<script src="undercity/world.js?v=29615343"><\/script>');</script>
 <script>if(/[?&]world=sanctum/.test(location.search)) document.write('<script src="sanctum/world.js?v=0b4855bb"><\/script>');</script>   <!-- 卡耶爾山谷 → 聖王廳地宮的地底大空洞（ver -2565，build_sanctum.py 產的） -->
 <script>if(!/[?&]world=/.test(location.search)) document.write('<script src="undercity/crowns.js?v=6a3ae090"><\/script>');</script>   <!-- 地表上地底樹的樹冠（ver -2412，build_uc_crowns.py 產的） -->
-<script src="talks.js?v=2905"></script>
+<script src="talks.js?v=2907"></script>
 <script>if(/[?&]drg3d=/.test(location.search)) document.write('<script src="drg3d.js?v='+Date.now()+'"><\/script>');</script>   <!-- 王座徘徊者 3D 試驗（2026-11-06）：只在網址帶 ?drg3d= 時載入 -->
 
 <script>
@@ -836,7 +836,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=b18827be'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -2905';
+const FLIGHT_VER = 'ver -2907';
 const MAP_SCALE  = /[?&]world=(cave|undercity|sanctum)/.test(location.search) ? 10 : 20;   // 地底的圖加密成 1536²（ver -2369，build_cave.py 的 SUPER）：一格 10 世界單位，世界大小不變
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -15613,7 +15613,7 @@ function ucRuinInstances(){
     out.push({ name, x:wx, y:wy, o:[wx-sc*(cx*cs-cz*sn), wy-sc*(cx*sn+cz*cs), gz-sc*M.mn[1]], rs:[cs,sn,sc] }); } }
   return out;
 }
-function glDrawGateRuins(sinp,cosp,lx,ly,dayK){
+function glDrawGateRuins(sinp,cosp,lx,ly,dayK,fr,fg,fb){
   if(CAVE || !glReady || ucRuinState<0) return;
   const dist=Math.min(...ruinGates().map(({G})=>Math.hypot(cam.x-G.x*MAP_SCALE, cam.y-G.y*MAP_SCALE)));   // 最近的那一處入口
   if(dist>UC_RUIN_LOAD) return;
@@ -15630,10 +15630,26 @@ function glDrawGateRuins(sinp,cosp,lx,ly,dayK){
   g.uniform1i(ucTreeU.uTex,6); g.activeTexture(g.TEXTURE6); g.bindTexture(g.TEXTURE_2D,ucWhite);
   const lc=g.getAttribLocation(ucTreeProg,'c'), lu=g.getAttribLocation(ucTreeProg,'uv');
   if(lu>=0) g.vertexAttrib2f(lu,0.5,0.5);
+  /* ⚠ 逐件照距離裁（11-22，Ray：「地下都市遺跡的大地圖3d物件還是會穿過地形大老遠就看到」）：
+     地形的深度是 z/ZFAR、超過 ZFAR 一律夾成 1.0，而這裡 LEQUAL ⇒ 比 ZFAR 遠的模型**永遠贏過地形**，穿山露出來。
+     以前只看「最近那一處入口」夠不夠近，兩處入口的模型就一起畫 —— 靠近地下古城時，十公里外谷頭那組哥德拱門照樣浮在山脊上。
+     現在每一件自己量距離，跟一般遺跡（glDrawRuins）同一組 RUIN_FAR／RUIN_FADE：遠端淡出、過了就不畫。
+     ⚠ 也要吃地形同一條霧（地形 FS 的 fogK：FOG_START～uZfar、上限 FOG_MAX）—— 不吃的話遠處地形全泡在霧裡，
+       只有它是一塊深色剪影，一眼就從老遠被認出來。著色器只有一個 mix(col,uAmb,uAmbA)，
+       把「先混環境光 a、再混霧 f」合成一次：mix(mix(col,A,a),F,f) ＝ mix(col, X, Y)，Y＝1−(1−a)(1−f)，X＝(A·a·(1−f)+F·f)/Y。 */
+  const zf=ZFAR*((Q().view)||1), fogS=zf*FOG_START, ambA=RUIN_AMB+RUIN_AMB_NIGHT*nightK, A=[amb[0]/255,amb[1]/255,amb[2]/255], F=[fr/255,fg/255,fb/255];
+  let blendOn=false;
   for(const T of ucRuinInst){ const M=ucRuinMesh[T.name];
+    const dist=Math.hypot(T.x-cam.x, T.y-cam.y); if(dist>RUIN_FAR) continue;
+    const fk=clamp((RUIN_FAR-dist)/RUIN_FADE,0,1), fade=fk*fk*(3-2*fk); if(fade<=0.02) continue;
+    if((fade<1)!==blendOn){ blendOn=fade<1; if(blendOn){ g.enable(g.BLEND); g.blendFunc(g.SRC_ALPHA,g.ONE_MINUS_SRC_ALPHA); } else g.disable(g.BLEND); }
+    g.uniform1f(ucTreeU.uFade,fade);
+    const f=clamp((dist-fogS)/(zf-fogS),0,1)*FOG_MAX, Y=1-(1-ambA)*(1-f), w=Y>1e-4?1/Y:0;
+    g.uniform3f(ucTreeU.uAmb,(A[0]*ambA*(1-f)+F[0]*f)*w,(A[1]*ambA*(1-f)+F[1]*f)*w,(A[2]*ambA*(1-f)+F[2]*f)*w); g.uniform1f(ucTreeU.uAmbA,Y);
     g.uniform3f(ucTreeU.uOrigin,T.o[0],T.o[1],T.o[2]); g.uniform3f(ucTreeU.uRS,T.rs[0],T.rs[1],T.rs[2]);
     for(const q of M.prims){ if(lc>=0) g.vertexAttrib4f(lc,q.col[0],q.col[1],q.col[2],1);
       g.bindVertexArray(q.vao); g.drawElements(g.TRIANGLES,q.n,q.type,0); } }
+  g.disable(g.BLEND); g.uniform1f(ucTreeU.uFade,1);
   g.bindVertexArray(null);
 }
 /* 霧層（地表樹海的洞／地底城共用一支）：不寫深度、半透明疊上去 */
@@ -16785,7 +16801,7 @@ function render(now){
       /* 遺蹟：與地形**同一顆深度緩衝** ⇒ 遮擋是免費的深度測試，
          不必 `clipByTerrainDepth`，也與數量脫鉤（ver -1199 驗過 841 個物件量不到）。 */
       glDrawRuins(sinp, cosp, lx, ly, S.day);
-      glDrawGateRuins(sinp, cosp, lx, ly, S.day);   // 地下古城地表入口的遺跡模型（Quaternius CC0，ver -2443）
+      glDrawGateRuins(sinp, cosp, lx, ly, S.day, fr, fg, fb);   // 地下古城地表入口的遺跡模型（Quaternius CC0，ver -2443）
       glDrawUcTrees(sinp, cosp, lx, ly, S.day);   // 地表上的地底樹冠（Quaternius CC0 模型，ver -2413）
       glDrawSkirts(sinp, cosp, lx, ly, S.day, cloudLit, fr, fg, fb, lightR, lightG, lightB, ambI, sunI);   // 崖裙（ver -2227）
       if(UNDERCITY||SANCTUM) glDrawUnderCity(sinp, cosp, fr, fg, fb);   // 地下古城的建築／地底大空洞終點的聖王廳地宮（-2565）
