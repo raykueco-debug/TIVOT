@@ -1554,6 +1554,45 @@ function spawnKnives(o, n){
       document.body.appendChild(hit); setTimeout(()=>{ if(hit.parentNode) hit.remove(); }, 320); }, dur+delay);
   }
 }
+/* 裹屍布（ver -2917，Ray：裹屍寡婦「攻擊會在數字盤蒙上一條裹屍布 角度隨機 遮住數字 伸手時向 VIEWER 射出布 布讓 GPT 出」）：
+   從手（`o`）射出一條布、由小變大朝鏡頭飛到數字盤上，落成一條隨機角度的布蓋住幾個數字。
+   布掛在 #grid 裡：換盤（buildGrid 的 innerHTML=''）自然清掉；pointer-events:none ＝ 只遮視線、點擊照樣穿過去。 */
+function spawnShroud(o){
+  const top=$('top'), grid=$('grid'); if(!top || !grid) return;
+  const tr=top.getBoundingClientRect(), gr=grid.getBoundingClientRect(); if(!gr.width) return;
+  const x0=tr.left+(o ? o.x : tr.width*0.5), y0=tr.top+(o ? o.y : tr.height*0.45);
+  const ang=Math.random()*140-70, cx=gr.left+gr.width*(0.25+Math.random()*0.5), cy=gr.top+gr.height*(0.25+Math.random()*0.5);
+  const w=gr.width*1.35, h=w*303/1529, src=asset('vfx_shroud_strip');
+  const fly=document.createElement('img'); fly.src=src; fly.alt=''; fly.className='shroud-fly';
+  fly.style.cssText=`position:fixed;left:0;top:0;width:${w}px;height:${h}px;pointer-events:none;z-index:60;`;
+  document.body.appendChild(fly);
+  const T=(x,y,r,s)=>`translate(${x-w/2}px,${y-h/2}px) rotate(${r}deg) scale(${s})`;
+  try{ fly.animate([{transform:T(x0,y0,ang*0.3,0.15),opacity:0.9},{transform:T(cx,cy,ang,1.25),opacity:1,offset:0.8},{transform:T(cx,cy,ang,1),opacity:1}],
+    {duration:300, easing:'ease-in', fill:'both'}); }catch(_){}
+  setTimeout(()=>{ fly.remove(); if(!grid.isConnected) return;
+    const g2=grid.getBoundingClientRect(), s=document.createElement('img'); s.src=src; s.alt=''; s.className='shroud-strip';
+    s.style.cssText=`position:absolute;left:${cx-g2.left-w/2}px;top:${cy-g2.top-h/2}px;width:${w}px;height:${h}px;transform:rotate(${ang}deg);pointer-events:none;z-index:5;`;
+    grid.appendChild(s); }, 300);
+}
+/* 散骨（ver -2917，Ray 骷髏塚：「攻擊時是散骨高速飛向 VIEWER」；素材＝GPT 同畫風 17 個骨頭 vfx_bone_00～16）：
+   從身上（`o`）噴出 n 個，邊轉邊由小變大、朝四周散開飛出畫面 —— 讀起來是朝鏡頭砸過來。 */
+function spawnBones(o, n){
+  const top=$('top'); if(!top) return; const tr=top.getBoundingClientRect(), vw=innerWidth, vh=innerHeight;
+  const x0=tr.left+(o ? o.x : tr.width*0.5), y0=tr.top+(o ? o.y : tr.height*0.45);
+  const pool=[...Array(17).keys()].sort(()=>Math.random()-0.5);
+  for(let k=0;k<n;k++){
+    const a=Math.random()*Math.PI*2, R=Math.hypot(vw,vh)*(0.55+Math.random()*0.25);
+    const x1=x0+Math.cos(a)*R, y1=y0+Math.sin(a)*R*0.8, sz=tr.width*(0.16+Math.random()*0.08);
+    const el=document.createElement('img'); el.src=asset('vfx_bone_'+String(pool[k%17]).padStart(2,'0')); el.alt='';
+    el.style.cssText=`position:fixed;left:0;top:0;width:${sz}px;height:auto;pointer-events:none;z-index:60;`;
+    document.body.appendChild(el);
+    const r0=Math.random()*360, r1=r0+(Math.random()<0.5?-1:1)*(360+Math.random()*360), dur=420+Math.random()*160, delay=k*22;
+    try{ el.animate([{transform:`translate(${x0-sz/2}px,${y0-sz/2}px) rotate(${r0}deg) scale(0.25)`,opacity:1},
+                     {transform:`translate(${x1-sz/2}px,${y1-sz/2}px) rotate(${r1}deg) scale(${(2.4+Math.random()*1.2).toFixed(2)})`,opacity:1}],
+                    {duration:dur, delay, easing:'cubic-bezier(.5,0,1,1)', fill:'both'}); }catch(_){}
+    setTimeout(()=>el.remove(), dur+delay+30);
+  }
+}
 /* ══ 動作段掛的程式特效（ver -2524）══ `fx:[{frame,type}]`，播到那一格觸發。
    · `rubble` ＝ 瓦礫噴襲（Ray：「振翅下拍到底，碎石從瓦礫堆往鏡頭噴」）：畫面下方中央（瓦礫堆）噴出一把碎石，
      由小變大、往四周散開飛出畫面 —— 讀起來是朝鏡頭砸過來。一張 canvas，約 0.9 秒拆掉。 */
@@ -1579,6 +1618,14 @@ function clipFx(f, el){
     if(f.at && el){ const top=$('top'), hr=top && top.getBoundingClientRect(), r=el.getBoundingClientRect();
       if(hr && r.width) o={ x:r.left-hr.left+f.at[0]*r.width, y:r.top-hr.top+f.at[1]*r.height }; }
     return spawnKnives(o, f.n||3); }
+  if(f.type==='bones'){ let o=null;   // 散骨（ver -2917）
+    if(f.at && el){ const top=$('top'), hr=top && top.getBoundingClientRect(), r=el.getBoundingClientRect();
+      if(hr && r.width) o={ x:r.left-hr.left+f.at[0]*r.width, y:r.top-hr.top+f.at[1]*r.height }; }
+    return spawnBones(o, f.n||12); }
+  if(f.type==='shroud'){ let o=null;   // 裹屍布（ver -2917）
+    if(f.at && el){ const top=$('top'), hr=top && top.getBoundingClientRect(), r=el.getBoundingClientRect();
+      if(hr && r.width) o={ x:r.left-hr.left+f.at[0]*r.width, y:r.top-hr.top+f.at[1]*r.height }; }
+    return spawnShroud(o); }
   if(f.type==='dust'){ const n=f.n||1; for(let k=0;k<n;k++) setTimeout(spawnGroundDust, k*120); return; }   // 地面煙塵（ver -2782，Ray：「用特效加煙塵遮」攻擊接回待機那一下）
   /* 咆哮音波（ver -2784，Ray：背負祭壇者吼叫「要有音波效果，震掉所有格子不計傷」）：從嘴（`at`＝這一格畫面上的比例座標）放出一圈圈音波＋龍吟的衝擊模糊；`wipe`＝震掉整盤換下一盤（同崩岩巨像，不傷敵）。 */
   if(f.type==='roar'){ let o=null;
