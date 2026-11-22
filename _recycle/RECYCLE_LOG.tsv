@@ -3362,3 +3362,4 @@ when	from	to	reason
 20261122-214616	resources/enemy/_neutral_refs/tomb_kf/tb_grave_censer_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_grave_censer_B.png.20261122-214616	Ray 11-22 甩的 B 不夠攻擊性 → 強透視重出
 20261122-214617	resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png.20261122-214617	Ray 11-22 拱門守衛 B 用的是去背失敗的 → GPT 重繪去背
 20261122-214805	resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png.20261122-214805	Ray 11-22 拱門內黑色挖空（本機）
+20261122-215139	resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png.20261122-215139	Ray 11-22 拱門守衛 B 改強透視（拱門不動）
