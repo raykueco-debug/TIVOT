@@ -1586,9 +1586,11 @@ function spawnShroudShot(pts){
     el.style.cssText=`position:fixed;left:0;top:0;width:${L}px;height:${h}px;transform-origin:0 50%;pointer-events:none;z-index:60;`;
     document.body.appendChild(el);
     const T=(x,y,sx,sy)=>`translate(${x}px,${y-h/2}px) rotate(${ang}deg) scale(${sx},${sy})`;
-    try{ el.animate([{transform:T(x0,y0,0.05,0.35),opacity:1},{transform:T(x0,y0,1,1),opacity:1,offset:0.5},{transform:T(x0+(x1-x0)*0.6,y0+(y1-y0)*0.6,1.5,1.9),opacity:0}],
-      {duration:380, delay:k*40, easing:'ease-in', fill:'both'}); }catch(_){}
-    setTimeout(()=>el.remove(), 380+k*40+30);
+    /* -2920 Ray：「射出後直接消失 速度再快一點 不要被看到尾段消失」→ 不淡出：整條（連袖口那頭）衝出畫面外才拿掉 */
+    const D=230, x2=x0+(x1-x0)*1.25, y2=y0+(y1-y0)*1.25;
+    try{ el.animate([{transform:T(x0,y0,0.05,0.35)},{transform:T(x0,y0,1,1),offset:0.4},{transform:T(x2,y2,1.6,1.9)}],
+      {duration:D, delay:k*30, easing:'ease-in', fill:'both'}); }catch(_){}
+    setTimeout(()=>el.remove(), D+k*30+20);
   });
 }
 /* 散骨（ver -2917，Ray 骷髏塚：「攻擊時是散骨高速飛向 VIEWER」；素材＝GPT 同畫風 17 個骨頭 vfx_bone_00～16）：
