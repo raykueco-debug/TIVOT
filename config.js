@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.22-2919';
+export const VERSION = 'ver 2026.11.22-2924';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4696,6 +4696,15 @@ export const ASSETS = {
      mix-blend-mode:screen（黑自然消失，同星芒那條的理由）。刀尖朝下＝畫的 +90°。 */
   vfx_dagger:         "resources/weapon/dagger.webp",
   vfx_shroud_strip:   "resources/enemy/fx/shroud_strip.webp?v=7ae507bf",   // 裹屍寡婦的裹屍布（ver -2917，GPT 出）
+  vfx_bind_00:        "resources/enemy/fx/shroud_bind/bind_00.webp",   // 纏布（繃緊，GPT 九宮格，ver -2924）
+  vfx_bind_01:        "resources/enemy/fx/shroud_bind/bind_01.webp",
+  vfx_bind_02:        "resources/enemy/fx/shroud_bind/bind_02.webp",
+  vfx_bind_03:        "resources/enemy/fx/shroud_bind/bind_03.webp",
+  vfx_bind_04:        "resources/enemy/fx/shroud_bind/bind_04.webp",
+  vfx_bind_05:        "resources/enemy/fx/shroud_bind/bind_05.webp",
+  vfx_bind_06:        "resources/enemy/fx/shroud_bind/bind_06.webp",
+  vfx_bind_07:        "resources/enemy/fx/shroud_bind/bind_07.webp",
+  vfx_bind_08:        "resources/enemy/fx/shroud_bind/bind_08.webp",
   vfx_bone_00:        "resources/enemy/fx/skull_cairn_bones/bone_00.webp",
   vfx_bone_01:        "resources/enemy/fx/skull_cairn_bones/bone_01.webp",
   vfx_bone_02:        "resources/enemy/fx/skull_cairn_bones/bone_02.webp",
@@ -5998,7 +6007,7 @@ export const ENEMY_MISS = {
   mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v3/', hit:7 },
   mon_candelabra_fiend: { dir:'resources/enemy/anim/mon_candelabra_fiend_atk_v3/', hit:4 },
   mon_crypt_centipede: { dir:'resources/enemy/anim/mon_crypt_centipede_atk_v3/', hit:9 },
-  mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v3/', hit:4 },
+  mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v3/', hit:4, fx:[{ frame:4, type:'shroudShot', at:[[0.35,0.40],[0.72,0.33]] }, { frame:4, type:'shroudCover', at:[0.5,0.4] }] },   // ver -2922 Ray：「m 會附加纏布效果」＝射布＋纏布蓋數字盤
   mon_slab_creeper: { dir:'resources/enemy/anim/mon_slab_creeper_atk_v3/', hit:3, near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2 },   // ver -2916 Ray：「匍伏者也要放大到 1.45 倍」（同雙頭骷髏犬）
   mon_tomb_bear: { dir:'resources/enemy/anim/mon_tomb_bear_atk_v3/', hit:5 },
   mon_twin_skull_hound: { dir:'resources/enemy/anim/mon_twin_skull_hound_atk_v3/', hit:6, near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2 },   // ver -2913 Ray：「播 a 時稍微移近到 viewer 要快 少幀」「是位移少幀」→ 快速拉近、位移每段只跳 2 格
@@ -6022,7 +6031,7 @@ export const ENEMY_DELAY = {
   mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v3/', hit:7 },
   mon_candelabra_fiend: { dir:'resources/enemy/anim/mon_candelabra_fiend_atk_v3/', hit:4 },
   mon_crypt_centipede: { dir:'resources/enemy/anim/mon_crypt_centipede_atk_v3/', hit:9 },
-  mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v3/', hit:4 },
+  mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v3/', hit:4, fx:[{ frame:4, type:'shroudShot', at:[[0.35,0.40],[0.72,0.33]] }] },   // ver -2922 Ray：「da 是一般攻擊」＝同 A 射布
   mon_slab_creeper: { dir:'resources/enemy/anim/mon_slab_creeper_atk_v3/', hit:3, near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2 },   // ver -2916 Ray：「匍伏者也要放大到 1.45 倍」（同雙頭骷髏犬）
   mon_tomb_bear: { dir:'resources/enemy/anim/mon_tomb_bear_atk_v3/', hit:5 },
   mon_twin_skull_hound: { dir:'resources/enemy/anim/mon_twin_skull_hound_atk_v3/', hit:6, near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2 },   // ver -2913 Ray：「播 a 時稍微移近到 viewer 要快 少幀」「是位移少幀」→ 快速拉近、位移每段只跳 2 格

@@ -1445,9 +1445,9 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
   windupSe(c.windupSe, c.windupMs, ()=>clipT || i<N, c.windupFit);
   stepSes(c, fps, ()=>!!clipT);
   if(c.retractSe && c.retractAt!=null) windupSe(c.retractSe, c.retractAt*1000/fps, ()=>clipT && i<N);   // 單隻：收回音（ver -2720）
-  const fxAt=new Map((c.fx||[]).map(f=>[f.frame, f]));   // 動作段的程式特效（ver -2524：光翼下拍噴瓦礫）
+  const fxAt=new Map(); (c.fx||[]).forEach(f=>{ if(!fxAt.has(f.frame)) fxAt.set(f.frame,[]); fxAt.get(f.frame).push(f); });   // 動作段的程式特效（ver -2524：光翼下拍噴瓦礫）；-2922：同一格可掛多個（寡婦 M＝射布＋纏布）
   const step=()=>{ i++;
-    if(fxAt.has(i)) clipFx(fxAt.get(i), el);
+    if(fxAt.has(i)) fxAt.get(i).forEach(f=>clipFx(f, el));
     if(c.flame && i===c.flame.from) spawnFlame(el, c.flame, fps, ()=>!!clipT);
     if(c.hitFx && c.strikes && i<hitF && c.strikes.indexOf(i)>=0) strikeFx(c.hitFx);   // 前面幾下各補一道特效＋音效（單隻也跟著片子的打擊節奏，ver -2663）
     if(i<N){ el.src=L.fr[i].src; clipT=setTimeout(step, Math.max(0, t0+tAt(i+1)-performance.now())); return; }
@@ -1554,30 +1554,38 @@ function spawnKnives(o, n){
       document.body.appendChild(hit); setTimeout(()=>{ if(hit.parentNode) hit.remove(); }, 320); }, dur+delay);
   }
 }
-/* 裹屍布蓋數字盤（ver -2917；-2919 Ray：「遮數字盤的是另一件事」—— 從攻擊拆出來，**觸發時機待 Ray 定，目前沒有人呼叫**）：
+/* 裹屍布蓋數字盤＝「纏布」（ver -2917；-2922 Ray：「m 會附加纏布效果」→ 點錯（ENEMY_MISS）的 fx `shroudCover`）：
    從 `o` 射出一條布、由小變大飛到數字盤上，落成一條隨機角度的布蓋住幾個數字。
    布掛在 #grid 裡：換盤（buildGrid 的 innerHTML=''）自然清掉；pointer-events:none ＝ 只遮視線、點擊照樣穿過去。 */
 export function coverBoardShroud(o){
+  /* -2923 Ray：「遮布要頭尾貫穿數字盤 要有綁的緊繃感」→ 布條一律貫穿整盤（兩端超出盤緣、裁在盤內，看起來是綁在盤上），
+     落下時先被拉長、回彈繃緊（緊繃感）。素材＝GPT 九宮格的 9 條繃緊布（vfx_bind_00～08，隨機挑一條，整條拉長貼）。 */
   const top=$('top'), grid=$('grid'); if(!top || !grid) return;
   const tr=top.getBoundingClientRect(), gr=grid.getBoundingClientRect(); if(!gr.width) return;
   const x0=tr.left+(o ? o.x : tr.width*0.5), y0=tr.top+(o ? o.y : tr.height*0.45);
-  const ang=Math.random()*140-70, cx=gr.left+gr.width*(0.25+Math.random()*0.5), cy=gr.top+gr.height*(0.25+Math.random()*0.5);
-  const w=gr.width*1.35, h=w*433/2172, src=asset('vfx_shroud_strip');
-  const fly=document.createElement('img'); fly.src=src; fly.alt=''; fly.className='shroud-fly';
-  fly.style.cssText=`position:fixed;left:0;top:0;width:${w}px;height:${h}px;pointer-events:none;z-index:60;`;
+  const ang=(Math.random()<0.5?-1:1)*(8+Math.random()*37), cx=gr.width*(0.3+Math.random()*0.4), cy=gr.height*(0.3+Math.random()*0.4);
+  const L=Math.hypot(gr.width,gr.height)*1.3, H=gr.height*0.24, key='vfx_bind_'+String(Math.floor(Math.random()*BIND_N)).padStart(2,'0');
+  const src=asset(key) || asset('vfx_shroud_strip'), bg=`url("${src}") no-repeat 0 0/100% 100%`;   // 整條拉長貼滿（兩端毛邊落在盤外、被裁掉）
+  const fly=document.createElement('div'); fly.className='shroud-fly';
+  fly.style.cssText=`position:fixed;left:0;top:0;width:${L*0.5}px;height:${H}px;background:${bg};pointer-events:none;z-index:60;`;
   document.body.appendChild(fly);
-  const T=(x,y,r,s)=>`translate(${x-w/2}px,${y-h/2}px) rotate(${r}deg) scale(${s})`;
-  try{ fly.animate([{transform:T(x0,y0,ang*0.3,0.15),opacity:0.9},{transform:T(cx,cy,ang,1.25),opacity:1,offset:0.8},{transform:T(cx,cy,ang,1),opacity:1}],
-    {duration:300, easing:'ease-in', fill:'both'}); }catch(_){}
+  const gx=gr.left+cx, gy=gr.top+cy, T=(x,y,r,s)=>`translate(${x-L*0.25}px,${y-H/2}px) rotate(${r}deg) scale(${s})`;
+  try{ fly.animate([{transform:T(x0,y0,ang*0.3,0.2)},{transform:T(gx,gy,ang,1.2)}],{duration:200, easing:'ease-in', fill:'both'}); }catch(_){}
   setTimeout(()=>{ fly.remove(); if(!grid.isConnected) return;
-    const g2=grid.getBoundingClientRect(), s=document.createElement('img'); s.src=src; s.alt=''; s.className='shroud-strip';
-    s.style.cssText=`position:absolute;left:${cx-g2.left-w/2}px;top:${cy-g2.top-h/2}px;width:${w}px;height:${h}px;transform:rotate(${ang}deg);pointer-events:none;z-index:5;`;
-    grid.appendChild(s); }, 300);
+    let wrap=grid.querySelector('.shroud-wrap');
+    if(!wrap){ wrap=document.createElement('div'); wrap.className='shroud-wrap'; wrap.style.cssText='position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:5;'; grid.appendChild(wrap); }
+    const b=document.createElement('div'); b.className='shroud-strip';
+    b.style.cssText=`position:absolute;left:${cx-L/2}px;top:${cy-H/2}px;width:${L}px;height:${H}px;background:${bg};transform:rotate(${ang}deg);`;
+    wrap.appendChild(b);
+    const R=s=>`rotate(${ang}deg) scale(${s})`;
+    try{ b.animate([{transform:R('1.12,0.82')},{transform:R('0.97,1.06'),offset:0.45},{transform:R('1.01,0.98'),offset:0.75},{transform:R('1,1')}],{duration:260, easing:'ease-out'}); }catch(_){}
+  }, 200);
 }
+const BIND_N=9;
 /* 袖口射布（ver -2919，Ray 裹屍寡婦：「攻擊效果是從袖子射出兩束布」）。
    -2921 Ray：「不要像子彈射出 要像雷射射不完的樣子」→ 一道從袖口接出去的**連續布流**：袖口那端一直接著，
    一瞬間伸到畫面外（近鏡頭那端較寬＝透視），布面不停往鏡頭流（背景捲動），射完由粗收細消失 —— 尾端從頭到尾都在畫面外。 */
-const SHROUD_BEAM_MS=520;
+const SHROUD_BEAM_MS=360, FEATHER='linear-gradient(90deg,transparent 0,#000 9%,#000 88%,transparent 100%)';   // -2922 Ray：「速度快一點」
 function spawnShroudShot(pts){
   const top=$('top'); if(!top) return; const tr=top.getBoundingClientRect(), vh=innerHeight, cxTop=tr.left+tr.width/2, src=asset('vfx_shroud_strip');
   (pts||[null]).forEach((o,k)=>{
@@ -1587,12 +1595,13 @@ function spawnShroudShot(pts){
     const el=document.createElement('div'); el.className='shroud-shot';
     el.style.cssText=`position:fixed;left:0;top:0;width:${L}px;height:${H}px;transform-origin:0 50%;pointer-events:none;z-index:60;`
       +`background:url("${src}") repeat-x 0 50%/${tile}px ${H}px;clip-path:polygon(0 44%,100% 0,100% 100%,0 56%);`
+      +`-webkit-mask-image:${FEATHER};mask-image:${FEATHER};`   /* -2922 Ray：「頭尾不要切平裁切線 做點羽化」 */
       +`transform:translate(${x0}px,${y0-H/2}px) rotate(${ang}deg) scale(0,1);`;
     document.body.appendChild(el);
     const T=(sx,sy)=>`translate(${x0}px,${y0-H/2}px) rotate(${ang}deg) scale(${sx},${sy})`, D=SHROUD_BEAM_MS, d=k*30;
     try{ el.animate([{transform:T(0,0.6)},{transform:T(1,1),offset:0.15},{transform:T(1,1),offset:0.82},{transform:T(1,0)}],
       {duration:D, delay:d, easing:'linear', fill:'both'});
-      el.animate([{backgroundPositionX:'0px'},{backgroundPositionX:(tile*2.2)+'px'}], {duration:D, delay:d, easing:'linear', fill:'both'}); }catch(_){}
+      el.animate([{backgroundPositionX:'0px'},{backgroundPositionX:(tile*2.4)+'px'}], {duration:D, delay:d, easing:'linear', fill:'both'}); }catch(_){}
     setTimeout(()=>el.remove(), D+d+20);
   });
 }
@@ -1644,6 +1653,10 @@ function clipFx(f, el){
     if(f.at && el){ const top=$('top'), hr=top && top.getBoundingClientRect(), r=el.getBoundingClientRect();
       if(hr && r.width) o={ x:r.left-hr.left+f.at[0]*r.width, y:r.top-hr.top+f.at[1]*r.height }; }
     return spawnBones(o, f.n||12); }
+  if(f.type==='shroudCover'){ let o=null;   // 纏布：蓋數字盤（ver -2922，Ray：「m 會附加纏布效果」）
+    if(f.at && el){ const top=$('top'), hr=top && top.getBoundingClientRect(), r=el.getBoundingClientRect();
+      if(hr && r.width) o={ x:r.left-hr.left+f.at[0]*r.width, y:r.top-hr.top+f.at[1]*r.height }; }
+    return coverBoardShroud(o); }
   if(f.type==='shroudShot'){   // 袖口射布（ver -2919）：`at`＝[[u,v],…] 每個袖口一條
     const top=$('top'), hr=top && top.getBoundingClientRect(), r=el && el.getBoundingClientRect();
     const pts=(f.at||[]).map(a=> (hr && r && r.width) ? { x:r.left-hr.left+a[0]*r.width, y:r.top-hr.top+a[1]*r.height } : null);
