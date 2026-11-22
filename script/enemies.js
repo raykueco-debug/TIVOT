@@ -4755,7 +4755,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },
       kind:'multi',
       riseFx:1,   // ver -1669，Ray：「古墓都用降臨」—— kind:'multi' 兩張表都不進，這一格只開降臨（淨化仍不給，同守墓者 gk_*）
-      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
+      hitSe:'em_smack',   // ver -2932 Ray：「受擊音選鈍器音」（同 HITFX.blunt 的音）
       tier:'C',
       atype:'P',
       stageScale:1,
