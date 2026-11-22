@@ -19,6 +19,7 @@ Ray：「交件 並將交件的頭尾去掉倒放成 r」。每一支＝**Ray �
 | 骷髏塚（傾倒骨手抓） | `mon_skull_cairn` | `mon_skull_cairn_atk_v3/` | 20／0.83 | 5 | 6 |
 | ⚠ 雙頭骨犬（雙頭撲咬） | `mon_twin_skull_hound` | `mon_twin_skull_hound_atk_v3/` | 30／1.25 | **6** | 6 |
 | 聖匣之手（往前倒、爪觸地）（11-22 晚補） | `mon_reliquary_hand` | `mon_reliquary_hand_atk_v1/` | 41／1.71 | 16 | 17 |
+| 墓香爐（強透視甩香爐砸鏡頭）（11-22 晚補） | `mon_grave_censer` | `mon_grave_censer_atk_v1/` | 15／0.63 | 4 | 5 |
 
 - ✅ 已接（敵人副理 ver -2909～-2914）：ADM 三表都指 `_atk_v3`；雙頭骨犬受擊＝咬擊（卡上 hitFx 三格都 bite）、`near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2`（Ray：「位移少幀」；-2915「看不出來」→ 加大、停久一點）；石板匍匐者同一組撲近（-2916）。
 - 打到＝A→B 最後一格（撲到最近／劈到底），**雙頭骨犬例外**：Ray「r 時第一格才出咬擊判定」⇒ 打到＝第 6 格（R 的第一格）。
@@ -26,7 +27,8 @@ Ray：「交件 並將交件的頭尾去掉倒放成 r」。每一支＝**Ray �
 - ✅ 已接（ver -2925）**骷髏塚攻擊扣破防值**：Ray「攻擊會減 15% 破防值 HP 也會扣」→ ENEMY_ATK 第 5 格 `fx type:'drainBR', pct:15`（滿表的 15%，走 combat 的 setEnergy；HP 照一般攻擊扣）。
 - ✅ 已接（ver -2917，敵人副理：`fx type:'bones'`、ENEMY_ATK 第 5 格 12 顆）**骷髏塚的攻擊特效（Ray 11-22：「攻擊時是散骨高速飛向 VIEWER」）**：打到那一格（第 5 格）起，程式從骷髏塚身上噴出**散骨，高速朝鏡頭飛來**（由小變大、帶旋轉、越過鏡頭消失）。
   素材＝`resources/enemy/fx/skull_cairn_bones/bone_00～16.webp`（17 個：頭骨 8、下顎、腿骨 2、肋骨 1＋1 對、脊椎、骨盆、指骨、碎頭骨；GPT 同畫風、真 alpha、無動態模糊——速度感請程式加）。整張表 `skull_cairn_bones16.webp` 只是原檔。
-- 碰邊：Ray 在 animechk 剪過，照交。
+- 碰邊：Ray 在 animechk 剪過，照交（Ray 11-22：「出框沒關係 不是群戰怪」）。
+- 墓香爐的剪片從原片第 27 格起（不是中立）；交件時用原片第 0 格（中立）當對齊基準，所以 box 與立繪對得上，但**第 0 格不是中立姿勢**，從待機切進來會跳一下，切換點請蓋在受擊特效下。
 
 - ✅ 已接（ver -2919）**裹屍寡婦的攻擊＝袖口射布**（Ray 11-22：「攻擊效果是從袖子射出兩束布」「裹布髒一點」）：ENEMY_ATK 第 4 格 `fx type:'shroudShot'`，左右袖口各接出一道連續的裹屍布流（像雷射：袖口端一直接著、布面往鏡頭流、約 0.5 秒後收細消失，-2921）。素材 `resources/enemy/fx/shroud_strip.webp`（GPT 髒版、平塗污漬、真 alpha）。
 - ✅ 已接（ver -2922～-2924）**DA＝一般攻擊（射布）、M＝射布＋纏布**（Ray：「da 是一般攻擊 m 會附加纏布效果」）。纏布＝一條繃緊的布貫穿整個數字盤（兩端裁在盤緣、落下回彈繃緊；Ray：「頭尾貫穿數字盤 要有綁的緊繃感」），遮數字、點擊穿得過、換盤清掉、會疊。素材 `resources/enemy/fx/shroud_bind/bind_00～08.webp`（GPT 九宮格，隨機挑）。布流兩端羽化（-2922）。
