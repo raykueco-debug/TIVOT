@@ -5633,12 +5633,21 @@ function chatter(){
 /* 時鐘動過了：城鎮正在畫面上、而且時段換了 → 照新時段重選這一格的背景（ver -2082）。
    ⚠ 只比「時段」：同一個時段內走路推了 10 分鐘不必重畫。 */
 let _bandShown=null;
-try{ window.addEventListener('tivot:clock', ()=>{
+/* ══⚠⚠⚠ **劇情段落演著的時候，城鎮不准依時段換背景**（ver -2904，Ray：「第一場夢的賽西莉最後一句講完，背景會被切成旅店。
+   夢境跟現實是不同場景切換，預載頁就應該把前面的都清掉」）══
+   根因：段落裡推時鐘的拍（夢收尾的 `clockToNext:7`、墓地翌日卡的 `clockToNext:8`…）一推過時段，這一支就把**這一格的城鎮背景**
+   貼回來 —— 而那時畫面是劇情的（夢境），讀取頁還沒到。背景在段落裡歸**腳本**管（`bg:`／`bgBand:`／讀取頁），不歸城鎮。
+   ⇒ 段落演著（`story.isPlaying()`）就延後，演完才補一次（那時畫面才又是城鎮的）。 */
+let _bandT=0;
+function syncBandBg(){
+  clearTimeout(_bandT); _bandT=0;
   if(!townLive || !townId) return;
+  if(story.isPlaying()){ _bandT=setTimeout(syncBandBg, 400); return; }
   const b=clock.band(); if(b===_bandShown) return;
   _bandShown=b;
   const n=node(); if(n) bgFor(bgCandsOf(n, nodeId));
-}); }catch(_){}
+}
+try{ window.addEventListener('tivot:clock', syncBandBg); }catch(_){}
 inn.setup({
   say(text, name){ story.flashLine(text, name||''); chatterOn=true; },
   lock(on){ busy=!!on; showNav(!on); },
