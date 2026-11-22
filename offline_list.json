@@ -1,5 +1,5 @@
-{"version": "ver 2026.11.22-2917",
-"bytes": 1600727718,
+{"version": "ver 2026.11.22-2918",
+"bytes": 1601159000,
 "files": [
 "audio.js",
 "config.js",
@@ -12539,6 +12539,7 @@
 "resources/enemy/fx/serpent_feathers/feather_13.webp",
 "resources/enemy/fx/serpent_feathers/feather_14.webp",
 "resources/enemy/fx/serpent_feathers/feather_15.webp",
+"resources/enemy/fx/shroud_strip.webp",
 "resources/enemy/fx/skull_cairn_bones/bone_00.webp",
 "resources/enemy/fx/skull_cairn_bones/bone_01.webp",
 "resources/enemy/fx/skull_cairn_bones/bone_02.webp",

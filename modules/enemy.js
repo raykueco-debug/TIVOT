@@ -1586,7 +1586,7 @@ function spawnBones(o, n){
     const el=document.createElement('img'); el.src=asset('vfx_bone_'+String(pool[k%17]).padStart(2,'0')); el.alt='';
     el.style.cssText=`position:fixed;left:0;top:0;width:${sz}px;height:auto;pointer-events:none;z-index:60;`;
     document.body.appendChild(el);
-    const r0=Math.random()*360, r1=r0+(Math.random()<0.5?-1:1)*(360+Math.random()*360), dur=420+Math.random()*160, delay=k*22;
+    const r0=Math.random()*360, r1=r0+(Math.random()<0.5?-1:1)*(360+Math.random()*360), dur=240+Math.random()*90, delay=k*12;   /* -2918 Ray：「骨飛快一點」 */
     try{ el.animate([{transform:`translate(${x0-sz/2}px,${y0-sz/2}px) rotate(${r0}deg) scale(0.25)`,opacity:1},
                      {transform:`translate(${x1-sz/2}px,${y1-sz/2}px) rotate(${r1}deg) scale(${(2.4+Math.random()*1.2).toFixed(2)})`,opacity:1}],
                     {duration:dur, delay, easing:'cubic-bezier(.5,0,1,1)', fill:'both'}); }catch(_){}

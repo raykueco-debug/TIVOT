@@ -5036,7 +5036,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       special:[],
       boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
+      hitFx:{ delay:'none', wrong:'none', assault:'none' },   // ver -2918 Ray：「受擊用畫面震動就好」（攻擊的散骨由 fx bones 演）
       loot:[],
     },
     pall_bearers: {
