@@ -4977,7 +4977,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       special:[],
       boardGrids:[9,9,9,9,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
+      hitFx:{ delay:'bite', wrong:'bite', assault:'bite' },   // ver -2912 Ray：「骷髏犬是咬擊特效」
       loot:[],
     },
     vault_bat: {
