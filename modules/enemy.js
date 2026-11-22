@@ -258,6 +258,9 @@ function spawnFxNamed(key, fx){
     /* 迎面衝擊模糊（ver -2846，Ray：地下聖徒「拳頭受擊用 impact 效果 透明那個」→ 選了龍吟那一個）：
        沒有受擊圖，整個鏡頭被撞一下。走 combat 擁有的 `roarBlast`（鐵律 8，同咆哮音波／龍吟）。 */
     case 'blast': if(api.roarBlast) api.roarBlast(); break;
+    /* 墓香爐受擊（ver -2931，Ray：「香爐受擊畫面用透明氣圈 然後畫面有煙霧殘留 會遮攻擊圈」）：
+       透明衝擊（同 blast）＋一團香爐煙停在攻擊圈（#redDots z9）之上、幾秒後散掉。煙只擋視線，點擊照樣穿過。 */
+    case 'censer': if(api.roarBlast) api.roarBlast(); spawnCenserSmoke(fx); break;
     case 'sakura':spawnSakura(); break;
     /* 米夏的大絕（ver -1957）：殘影脈動彈出＋最後一斬。 */
     case 'afterimage': spawnAfterimage(fx); break;
@@ -1716,6 +1719,22 @@ function spawnSoundwave(o, n){
     const el=document.createElement('i'); el.className='soundwave';
     el.style.left=x+'px'; el.style.top=y+'px'; el.style.animationDelay=(i*110)+'ms';
     top.appendChild(el); setTimeout(()=>el.remove(), 1000+i*110);
+  }
+}
+/* 香爐煙（ver -2931）：疊在攻擊圈之上（z10），淡入→停留→慢慢擴散淡出；`fx.ms`＝總長（預設 5000）、`fx.n`＝幾團。 */
+function spawnCenserSmoke(fx){
+  const dots=$('redDots'), host=dots && dots.parentNode; if(!host) return;
+  const T=(fx && fx.ms) || 5000, n=(fx && fx.n) || 9;
+  for(let i=0;i<n;i++){
+    const el=document.createElement('i'); el.className='censer-smoke';
+    const sz=34+Math.random()*30, x=Math.random()*100, y=10+Math.random()*75, d=Math.random()*180;
+    el.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${sz}%;aspect-ratio:1;margin:-${sz/2}% 0 0 -${sz/2}%;z-index:10;pointer-events:none;border-radius:50%;`
+      +`background:radial-gradient(circle, rgba(205,200,190,.92) 0%, rgba(180,175,165,.75) 35%, rgba(160,155,148,.35) 60%, transparent 72%);filter:blur(5px);`;
+    host.appendChild(el);
+    const dx=(Math.random()*40-20).toFixed(0), dy=(-20-Math.random()*30).toFixed(0);
+    try{ el.animate([{opacity:0,transform:'scale(.6)'},{opacity:1,transform:'scale(1)',offset:.08},{opacity:.95,transform:`translate(${dx*0.5}px,${dy*0.5}px) scale(1.1)`,offset:.7},{opacity:0,transform:`translate(${dx}px,${dy}px) scale(1.35)`}],
+      {duration:T, delay:d, easing:'ease-out', fill:'both'}); }catch(_){}
+    setTimeout(()=>el.remove(), T+d+30);
   }
 }
 function spawnGroundDust(){

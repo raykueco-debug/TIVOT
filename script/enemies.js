@@ -4770,7 +4770,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       special:[],
       boardGrids:[9,9,9,9,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
+      hitFx:{ delay:'censer', wrong:'censer', assault:'censer' },   // ver -2931 Ray：「香爐受擊畫面用透明氣圈 然後畫面有煙霧殘留 會遮攻擊圈」
       loot:[],
     },
     candelabra_fiend: {
