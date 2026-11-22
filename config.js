@@ -5923,7 +5923,7 @@ export const SHIP_TRAIL = {
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
-  mon_grave_censer: { dir:'resources/enemy/anim/mon_grave_censer_atk_v1/', hit:4 },   // ver -2928 Ray 剪的 tomb3_grave_censer_A_AB_cut（5 格，從原片第 27 格起）＋ R 全格倒放抽半（10 格），打到＝AB 最後一格
+  mon_grave_censer: { dir:'resources/enemy/anim/mon_grave_censer_atk_v1/', hit:4 },   // ver -2929 Ray 剪的 tomb3_grave_censer_A_AB_cut（5 格，從原片第 27 格起）＋ R 全格倒放抽半（10 格），打到＝AB 最後一格
   mon_reliquary_hand: { dir:'resources/enemy/anim/mon_reliquary_hand_atk_v1/', hit:16 },   // ver -2926 Ray 剪的 tomb2_reliquary_hand_A_AB_cut（17 格）＋ R 全格倒放抽半（24 格），打到＝AB 最後一格
   /* 伊甸古墓（ver -2909，敵人線 3060）：Ray 剪的 A→B ＋ R（原片全格倒放、去頭尾、抽半＝v3，ver -2914 Ray：「R 用 v3 抽半版」），一支到底；ADM 先共用。twin_skull_hound 打到＝R 第一格（Ray：「r 時第一格才出咬擊判定」） */
   mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v3/', hit:7 },
@@ -6007,7 +6007,7 @@ export const ENEMY_DODGE = {
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_MISS = {
-  mon_grave_censer: { dir:'resources/enemy/anim/mon_grave_censer_atk_v1/', hit:4 },   // ver -2928 Ray 剪的 tomb3_grave_censer_A_AB_cut（5 格，從原片第 27 格起）＋ R 全格倒放抽半（10 格），打到＝AB 最後一格
+  mon_grave_censer: { dir:'resources/enemy/anim/mon_grave_censer_atk_v1/', hit:4 },   // ver -2929 Ray 剪的 tomb3_grave_censer_A_AB_cut（5 格，從原片第 27 格起）＋ R 全格倒放抽半（10 格），打到＝AB 最後一格
   mon_reliquary_hand: { dir:'resources/enemy/anim/mon_reliquary_hand_atk_v1/', hit:16 },   // ver -2926 Ray 剪的 tomb2_reliquary_hand_A_AB_cut（17 格）＋ R 全格倒放抽半（24 格），打到＝AB 最後一格
   /* 伊甸古墓（ver -2909，敵人線 3060）：Ray 剪的 A→B ＋ R（原片全格倒放、去頭尾、抽半＝v3，ver -2914 Ray：「R 用 v3 抽半版」），一支到底；ADM 先共用。twin_skull_hound 打到＝R 第一格（Ray：「r 時第一格才出咬擊判定」） */
   mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v3/', hit:7 },
@@ -6033,7 +6033,7 @@ export const ENEMY_MISS = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, windupSe:'se_flame', fx:[{ frame:48, type:'rubble', se:'se_rockimpact' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
-  mon_grave_censer: { dir:'resources/enemy/anim/mon_grave_censer_atk_v1/', hit:4 },   // ver -2928 Ray 剪的 tomb3_grave_censer_A_AB_cut（5 格，從原片第 27 格起）＋ R 全格倒放抽半（10 格），打到＝AB 最後一格
+  mon_grave_censer: { dir:'resources/enemy/anim/mon_grave_censer_atk_v1/', hit:4 },   // ver -2929 Ray 剪的 tomb3_grave_censer_A_AB_cut（5 格，從原片第 27 格起）＋ R 全格倒放抽半（10 格），打到＝AB 最後一格
   mon_reliquary_hand: { dir:'resources/enemy/anim/mon_reliquary_hand_atk_v1/', hit:16 },   // ver -2926 Ray 剪的 tomb2_reliquary_hand_A_AB_cut（17 格）＋ R 全格倒放抽半（24 格），打到＝AB 最後一格
   /* 伊甸古墓（ver -2909，敵人線 3060）：Ray 剪的 A→B ＋ R（原片全格倒放、去頭尾、抽半＝v3，ver -2914 Ray：「R 用 v3 抽半版」），一支到底；ADM 先共用。twin_skull_hound 打到＝R 第一格（Ray：「r 時第一格才出咬擊判定」） */
   mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v3/', hit:7 },
