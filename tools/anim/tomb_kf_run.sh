@@ -28,6 +28,15 @@ R vault_bat        "the vault bat dives at the camera and rakes with its claws, 
 R skull_cairn      "the skull cairn topples forward and its bony hands grab at the camera" "the skull cairn rocks back and settles into its pile"
 R pall_bearers     "the pall bearers charge forward with the coffin at the camera, the lid flying open" "the pall bearers slow down, the lid falls shut, they settle back"
 R tomb_bear        "the tomb bear rears up and pounces at the camera" "the tomb bear drops back down onto all fours into its stance"
+# 11-22 Ray 審過重出的 B（詩班兩張先拿掉音波再跑，音波後期由程式加）
+R ossuary_wheel     "the bone wheel turns toward the camera and rolls straight at it, crashing forward" "the bone wheel rolls back and turns to settle in its place"
+R sarcoph_crawler   "the sarcophagus lid bursts open and the corpse inside lunges out grabbing at the camera, $NG" "the corpse sinks back into the sarcophagus and the lid closes"
+R iron_maiden       "the iron maiden slams its doors shut and blood splatters out" "the iron maiden doors open again and it settles into its stance"
+R kneeling_penitent "the kneeling penitent raises its head showing its sewn eyes and lunges with both claws at the camera, $NG" "the kneeling penitent lowers its head and kneels back into its stance"
+R bellfounder       "the bellfounder lowers its shoulders and charges straight at the camera" "the bellfounder slows down, straightens up and settles into its stance"
+R pallid_stag       "the pallid stag lowers its head and charges with its antlers at the camera" "the pallid stag lifts its head and steps back into its stance"
+R choir_organ       "the choir organ opens its mouths wide and chants loudly, pipes trembling" "the choir organ closes its mouths and the chant fades"
+R choir_pale        "the three pale nuns open their mouths wide and chant together" "the pale nuns close their mouths and the chant fades"
 PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 edge_check.py out/tomb_kf/* >> $LOG 2>&1
 for d in out/tomb_kf/*_AB out/tomb_kf/*_BA; do n=tomb_$(basename "$d"); [ -d "out/enemy_atk/$n" ] || cp -r "$d" "out/enemy_atk/$n"; done
 PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 make_player.py >/dev/null 2>&1

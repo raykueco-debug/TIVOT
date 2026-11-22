@@ -3306,3 +3306,5 @@ when	from	to	reason
 20261122-174156	resources/enemy/_neutral_refs/tomb_kf/tb_bellfounder_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_bellfounder_B.png	Ray 11-22：鑄鐘者改衝撞重出；蒼白牡鹿方框霧重轉透明，舊版換下
 20261122-174156	resources/enemy/_neutral_refs/tomb_kf/tb_pallid_stag_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_pallid_stag_B.png	Ray 11-22：鑄鐘者改衝撞重出；蒼白牡鹿方框霧重轉透明，舊版換下
 20261122-174517	resources/enemy/_neutral_refs/tomb_kf/tb_iron_maiden_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_iron_maiden_B.png	Ray 11-22：鐵處女改閉棺濺血重出，舊版換下
+20261122-194200	resources/enemy/_neutral_refs/tomb_kf/tb_choir_pale_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_choir_pale_B.png.20261122-194200	Ray 11-22 音波拿掉（後期程式加），換無音波版
+20261122-194505	resources/enemy/_neutral_refs/tomb_kf/tb_choir_organ_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_choir_organ_B.png.20261122-194505	Ray 11-22 音波拿掉（後期程式加），換無音波版
