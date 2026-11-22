@@ -13,10 +13,10 @@ ONLY="$*"; S=9700
 R(){ n=$1; S=$((S+2)); want $n || return 0
   W --files "$D/${n}_A.png" --end "$D/${n}_B.png" --length 49 --seed $S --prompt "$2, $T" --suffix _AB
   W --files "$D/${n}_B.png" --end "$D/${n}_A.png" --length 33 --seed $((S+1)) --prompt "$3, $T" --suffix _BA; }
-R arch_warden    "a gaunt skeletal monster bursts out of the dark shadow inside the stone arch and lunges at the camera with its claws, $NG" "the skeletal monster retreats back into the shadow of the arch and disappears"
+R arch_warden    "a skeletal monster bursts out of the dark arch and thrusts one huge claw straight at the camera, jaws gaping, the stone arch stays still, $NG" "the skeletal monster pulls its claw back and sinks back into the dark arch, the stone arch stays still"
 R crypt_hound    "the crypt hound smoothly lunges forward at the camera and bites down, its paws staying planted, jaws snapping toward the viewer" "the crypt hound pulls back and crouches into its stance"
 R chain_hanged   "the hanged corpse swings forward on its chains toward the camera, coming closer, and rakes both claws down at the viewer, $NG" "the hanged corpse swings back on its chains and hangs ready"
-R grave_censer   "the grave censer swings both censers on their chains in a wide arc out at the camera" "the censers swing back on their chains and settle, swaying"
+R grave_censer   "the grave censer lunges at the camera and swings a heavy censer on its chain straight into the lens" "the censer swings back on its chain and she straightens up into her stance"
 R reliquary_hand "the giant reliquary hand bends forward and slams down toward the camera, its claws raking into the ground in front" "the giant hand lifts its claws off the ground and rises back upright into its stance"
 PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 edge_check.py out/tomb_kf3/* >> $LOG 2>&1
 for d in out/tomb_kf3/*_AB out/tomb_kf3/*_BA; do n=tomb3_$(basename "$d"); [ -d "out/enemy_atk/$n" ] || cp -r "$d" "out/enemy_atk/$n"; done
