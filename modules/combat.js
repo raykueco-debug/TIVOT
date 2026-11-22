@@ -3067,6 +3067,9 @@ function partnerKeyOf(who){
 /* 開發者跳關（ver -366，Ray：「教學戰也寫個 skip 鈕，跳到下一幕」）。
    ⚠ 不演關門、不上結算、不給掉落 —— 這是**開發用的梯子**，目的只是快點回到劇情往下看。
    ⚠ 走 `storyBattleEnd()` 那條既有的「不結算直接交還劇情」路徑，不要另寫一份收尾。 */
+/* 開發用（ver -2905）：直接打一發到玩家身上，走唯一的扣血入口 `enemyAttack`（tools/tests/deathguard_burst.js 用）。
+   ⚠ 明寫的開發梯子（同 devSkipBattle），正規的傷害一律由敵人／防禦流程呼叫 enemyAttack。 */
+export function devEnemyAttack(dmg, kind){ enemyAttack(dmg, kind||'assault'); }
 export function devSkipBattle(){
   if(state.over) return;
   if(storyFramed()){ storyBattleEnd(state.defeated); return; }

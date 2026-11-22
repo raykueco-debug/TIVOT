@@ -147,6 +147,13 @@ export function tryDeathGuard(){
   if(!pas || pas.key!=='deathGuard') return false;
   if(pas.oncePerBattle && state.deathGuardUsed) return false;   // 一次性且已用掉 → 不再擋
   applyDeathGuard();          // 鎖 1 HP + 標記 deathGuardUsed（D3 契約例外的唯一入口）
+  /* ══⚠⚠⚠ **發動那一刻就開免傷，撐到 cut-in 撤下接上 10 秒的窗**（ver -2905，Ray：「獄門天鎖發動時碰到高密度攻擊有機率直接被打死」）══
+     根因：免傷窗原本**等 cut-in 撤下才開**（下面 playCutin 的回呼），而 HP 在這一行已經是 1、`deathGuardUsed` 也記掉了 ——
+     同一幀裡排好的連發（大絕連射、群體怪的連擊、延時懲罰）與 cut-in 演出那一段的傷害照樣走 `enemyAttack` 扣血，
+     下一發把 1 HP 打掉、第二次致死已經沒有防禦可接 ⇒ 直接戰敗。
+     ⇒ 這一扇「演出中」的窗**同步**掛上（同一幀後面的傷害就吃得到），cut-in 回呼收掉、換成那 10 秒；回呼沒來的保險是 15 秒。
+     ⚠ 只給有免傷窗的卡（`immuneSeconds`，諾薇兒）：挑戰那一套（蕾妮）照舊不動（ver -694）。 */
+  if(pas.immuneSeconds) guardHoldUntil = Date.now() + GUARD_HOLD_CAP_MS;
   api.updateBars();           // applyDeathGuard 不碰 DOM，於此刷新血條（對齊 reference）
   const vo = asset(pas.voice); if(vo) SFX.playVoice(vo, sfxGain(pas.voice));   // SE 與 cut-in 同步（→ vo_death_guard；增益見 tuning.fileGain）
   /* ══⚠⚠ **名字讀卡，不讀 i18n**（ver -985）══ 那兩條 i18n 字串是**蕾妮與諾薇兒
@@ -158,7 +165,7 @@ export function tryDeathGuard(){
   const label = (pas.name || L.cutins.deathGuard)
               + '<span class="cutin-en">'+(pas.en || 'Death Guard')+'</span>';
   api.playCutin(()=>{
-    if(state.over||state.saintMode) return;
+    if(state.over||state.saintMode){ guardHoldUntil = 0; return; }
     // 即死防禦後：cut-in 撤下瞬間重置敵大絕與延時（間隔）懲罰倒數，避免剛保命就被連段擊殺
     api.resetEnemyTimers();
     api.scheduleAssault();        // 重新排程敵大絕
@@ -167,6 +174,7 @@ export function tryDeathGuard(){
        蕾妮的卡沒寫＝沒有這扇窗（挑戰那一套不動，ver -694）。 */
     if(pas.immuneSeconds){
       startImmune(pas.immuneSeconds);
+      guardHoldUntil = 0;      // 演出中的窗交棒給 10 秒那一扇（上一行已經接上，沒有空檔）
       /* ══⚠⚠⚠ **回血窗改成「到本盤清盤為止」**（ver -1014，Ray：「獄門天鎖改為
          同機制」＝跟魂之歸所一樣以盤面為單位；⚠ **免傷那 10 秒不動**（Ray 選 B：
          「10 秒不是為了增加保命窗口，是有時候瀕死救活結果按太快直接點錯死在那」）
@@ -428,6 +436,9 @@ let lowHpTimer = null;    // 10 秒 buff 計時器
    鐵律 9：誰插的＝tryDeathGuard／lifeReturn；誰拔的＝時間到（唯一事件）；
    `reset()` 開場歸零。 */
 let immuneUntil = 0;
+/* 獄門天鎖「演出中」的免傷（ver -2905，見 tryDeathGuard）：發動那一刻 → cut-in 撤下。保險上限 GUARD_HOLD_CAP_MS。 */
+let guardHoldUntil = 0;
+const GUARD_HOLD_CAP_MS = 15000;
 /* ══⚠⚠ **盤面窗**（ver -1014，Ray：「限定在一個盤面內有效，不算秒數，清盤就結束」）══
    兩扇回血窗都改成以**盤**為單位（§0.5 的「盤」＝一次清盤）：
      · `guardHealBoard` ＝獄門天鎖的免傷回血（Lv4 堅殼星）
@@ -448,7 +459,7 @@ let vampBoard = false;
    `reset()` 開場歸零（不跨場）。 */
 let vampUntil = 0;
 function startImmune(sec){ if(sec>0) immuneUntil = Math.max(immuneUntil, Date.now()+sec*1000); }
-export function immuneActive(){ return Date.now() < immuneUntil; }
+export function immuneActive(){ const t=Date.now(); return t < immuneUntil || t < guardHoldUntil; }
 /* ══ 共鬥（ver -803）：無敵窗由 saint 的 coop **直接設定**結束時刻 ══
    （不是延長 —— 點錯要把它往前縮，所以一支 setter 管到底，鐵律 8）。
    共用 `immuneUntil`＝`combat.enemyAttack` 的免傷判定（免傷仍算受擊、只是不扣血），
@@ -940,7 +951,7 @@ export function reset(){
      那裡才知道這一場接不接得上上一格（鐵律 9：一個狀態一個擁有事件）。 */
   clearTimeout(lowHpTimer); lowHpTimer=null;
   lowHpArmed = true;
-  immuneUntil = 0; guardHealBoard = false;    // 免傷窗不跨場（ver -740）；回血窗改盤面制（-1014）
+  immuneUntil = 0; guardHoldUntil = 0; guardHealBoard = false;    // 免傷窗不跨場（ver -740）；回血窗改盤面制（-1014）
   vampUntil = 0; vampBoard = false;           // 吸血窗不跨場（ver -964／-1014）
   missGuardArmed = true;                      // 容錯（引路星）開場上膛（ver -1014）
   burstBuffUntil = 0;                         // 夢境破碎的反擊增益窗不跨場（ver -974）
