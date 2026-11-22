@@ -1574,23 +1574,26 @@ export function coverBoardShroud(o){
     s.style.cssText=`position:absolute;left:${cx-g2.left-w/2}px;top:${cy-g2.top-h/2}px;width:${w}px;height:${h}px;transform:rotate(${ang}deg);pointer-events:none;z-index:5;`;
     grid.appendChild(s); }, 300);
 }
-/* 袖口射布（ver -2919，Ray 裹屍寡婦：「攻擊效果是從袖子射出兩束布」）：每個袖口（`pts`）各射出一條裹屍布，
-   從袖口伸長、朝鏡頭（往外、往下）飛來放大，衝過鏡頭消失。 */
+/* 袖口射布（ver -2919，Ray 裹屍寡婦：「攻擊效果是從袖子射出兩束布」）。
+   -2921 Ray：「不要像子彈射出 要像雷射射不完的樣子」→ 一道從袖口接出去的**連續布流**：袖口那端一直接著，
+   一瞬間伸到畫面外（近鏡頭那端較寬＝透視），布面不停往鏡頭流（背景捲動），射完由粗收細消失 —— 尾端從頭到尾都在畫面外。 */
+const SHROUD_BEAM_MS=520;
 function spawnShroudShot(pts){
   const top=$('top'); if(!top) return; const tr=top.getBoundingClientRect(), vh=innerHeight, cxTop=tr.left+tr.width/2, src=asset('vfx_shroud_strip');
   (pts||[null]).forEach((o,k)=>{
     const x0=tr.left+(o ? o.x : tr.width*0.5), y0=tr.top+(o ? o.y : tr.height*0.45);
     const x1=x0+(x0-cxTop)*1.6+(x0<cxTop?-1:1)*tr.width*0.15, y1=vh*1.05;
-    const L=Math.hypot(x1-x0,y1-y0), h=L*433/2172*0.55, ang=Math.atan2(y1-y0,x1-x0)*180/Math.PI;
-    const el=document.createElement('img'); el.src=src; el.alt=''; el.className='shroud-shot';
-    el.style.cssText=`position:fixed;left:0;top:0;width:${L}px;height:${h}px;transform-origin:0 50%;pointer-events:none;z-index:60;`;
+    const L=Math.hypot(x1-x0,y1-y0)*1.35, H=tr.width*0.42, ang=Math.atan2(y1-y0,x1-x0)*180/Math.PI, tile=H*2172/433;
+    const el=document.createElement('div'); el.className='shroud-shot';
+    el.style.cssText=`position:fixed;left:0;top:0;width:${L}px;height:${H}px;transform-origin:0 50%;pointer-events:none;z-index:60;`
+      +`background:url("${src}") repeat-x 0 50%/${tile}px ${H}px;clip-path:polygon(0 44%,100% 0,100% 100%,0 56%);`
+      +`transform:translate(${x0}px,${y0-H/2}px) rotate(${ang}deg) scale(0,1);`;
     document.body.appendChild(el);
-    const T=(x,y,sx,sy)=>`translate(${x}px,${y-h/2}px) rotate(${ang}deg) scale(${sx},${sy})`;
-    /* -2920 Ray：「射出後直接消失 速度再快一點 不要被看到尾段消失」→ 不淡出：整條（連袖口那頭）衝出畫面外才拿掉 */
-    const D=230, x2=x0+(x1-x0)*1.25, y2=y0+(y1-y0)*1.25;
-    try{ el.animate([{transform:T(x0,y0,0.05,0.35)},{transform:T(x0,y0,1,1),offset:0.4},{transform:T(x2,y2,1.6,1.9)}],
-      {duration:D, delay:k*30, easing:'ease-in', fill:'both'}); }catch(_){}
-    setTimeout(()=>el.remove(), D+k*30+20);
+    const T=(sx,sy)=>`translate(${x0}px,${y0-H/2}px) rotate(${ang}deg) scale(${sx},${sy})`, D=SHROUD_BEAM_MS, d=k*30;
+    try{ el.animate([{transform:T(0,0.6)},{transform:T(1,1),offset:0.15},{transform:T(1,1),offset:0.82},{transform:T(1,0)}],
+      {duration:D, delay:d, easing:'linear', fill:'both'});
+      el.animate([{backgroundPositionX:'0px'},{backgroundPositionX:(tile*2.2)+'px'}], {duration:D, delay:d, easing:'linear', fill:'both'}); }catch(_){}
+    setTimeout(()=>el.remove(), D+d+20);
   });
 }
 /* 散骨（ver -2917，Ray 骷髏塚：「攻擊時是散骨高速飛向 VIEWER」；素材＝GPT 同畫風 17 個骨頭 vfx_bone_00～16）：

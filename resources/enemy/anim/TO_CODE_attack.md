@@ -26,7 +26,7 @@ Ray：「交件 並將交件的頭尾去掉倒放成 r」。每一支＝**Ray �
   素材＝`resources/enemy/fx/skull_cairn_bones/bone_00～16.webp`（17 個：頭骨 8、下顎、腿骨 2、肋骨 1＋1 對、脊椎、骨盆、指骨、碎頭骨；GPT 同畫風、真 alpha、無動態模糊——速度感請程式加）。整張表 `skull_cairn_bones16.webp` 只是原檔。
 - 碰邊：Ray 在 animechk 剪過，照交。
 
-- ✅ 已接（ver -2919）**裹屍寡婦的攻擊＝袖口射布**（Ray 11-22：「攻擊效果是從袖子射出兩束布」「裹布髒一點」）：ENEMY_ATK 第 4 格 `fx type:'shroudShot'`，左右袖口各射出一條裹屍布朝鏡頭衝過來。素材 `resources/enemy/fx/shroud_strip.webp`（GPT 髒版、平塗污漬、真 alpha）。
+- ✅ 已接（ver -2919）**裹屍寡婦的攻擊＝袖口射布**（Ray 11-22：「攻擊效果是從袖子射出兩束布」「裹布髒一點」）：ENEMY_ATK 第 4 格 `fx type:'shroudShot'`，左右袖口各接出一道連續的裹屍布流（像雷射：袖口端一直接著、布面往鏡頭流、約 0.5 秒後收細消失，-2921）。素材 `resources/enemy/fx/shroud_strip.webp`（GPT 髒版、平塗污漬、真 alpha）。
 - ⚠ **裹屍布蓋數字盤**（隨機角度、遮住數字、點擊穿得過、換盤清掉）Ray 說「是另一件事」：程式在 `enemy.coverBoardShroud()`，**目前沒有人呼叫**，等 Ray 定什麼時候觸發。
 
 ### ⚠⚠ 螺旋紗 `mon_spiral_veil`：特規（Ray 11-22）
