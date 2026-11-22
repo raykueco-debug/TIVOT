@@ -18,6 +18,7 @@ Ray：「交件 並將交件的頭尾去掉倒放成 r」。每一支＝**Ray �
 | 墓熊（撲擊） | `mon_tomb_bear` | `mon_tomb_bear_atk_v3/` | 30／1.25 | 5 | 6 |
 | 骷髏塚（傾倒骨手抓） | `mon_skull_cairn` | `mon_skull_cairn_atk_v3/` | 20／0.83 | 5 | 6 |
 | ⚠ 雙頭骨犬（雙頭撲咬） | `mon_twin_skull_hound` | `mon_twin_skull_hound_atk_v3/` | 30／1.25 | **6** | 6 |
+| 聖匣之手（往前倒、爪觸地）（11-22 晚補） | `mon_reliquary_hand` | `mon_reliquary_hand_atk_v1/` | 41／1.71 | 16 | 17 |
 
 - ✅ 已接（敵人副理 ver -2909～-2914）：ADM 三表都指 `_atk_v3`；雙頭骨犬受擊＝咬擊（卡上 hitFx 三格都 bite）、`near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2`（Ray：「位移少幀」；-2915「看不出來」→ 加大、停久一點）；石板匍匐者同一組撲近（-2916）。
 - 打到＝A→B 最後一格（撲到最近／劈到底），**雙頭骨犬例外**：Ray「r 時第一格才出咬擊判定」⇒ 打到＝第 6 格（R 的第一格）。
