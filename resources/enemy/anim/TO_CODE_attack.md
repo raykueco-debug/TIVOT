@@ -5,20 +5,21 @@
 
 ## ⚠ 11-22 待程式接：伊甸古墓 9 隻攻擊（敵人線 3060）
 
-Ray：「交件 並將交件的頭尾去掉倒放成 r」。每一支＝**Ray 剪的 A→B ＋ 同一段去掉頭尾倒放（R，倒放類）**，首尾相接成一支，24fps、loop:false，從中立起手回到中立。
+Ray：「交件 並將交件的頭尾去掉倒放成 r」。每一支＝**Ray 剪的 A→B ＋ R：原片全格倒放、去頭尾、抽半（倒放類）**——⚠ 11-22 Ray 定用 **`_atk_v3`**（v1＝剪片倒放、v2＝全格不抽，留作紀錄，不要接），首尾相接成一支，24fps、loop:false，從中立起手回到中立。
 攻擊、延時、點錯先共用這一支（`ENEMY_ATK`／`ENEMY_DELAY`／`ENEMY_MISS` 都指它）。鑰匙＝立繪檔名，立繪不換（`resources/enemy/mon_<名>.webp`）。
 
 | 怪 | 鑰匙 | 資料夾 | 格／秒 | 打到 | R 從第幾格起 |
 |---|---|---|---|---|---|
-| 拱門守衛（雙石拳砸） | `mon_arch_warden` | `mon_arch_warden_atk_v1/` | 14／0.58 | 7 | 8 |
-| 燭台魔（斜劈爪擊） | `mon_candelabra_fiend` | `mon_candelabra_fiend_atk_v1/` | 8／0.33 | 4 | 5 |
-| 墓穴蜈蚣（大顎下擊） | `mon_crypt_centipede` | `mon_crypt_centipede_atk_v1/` | 18／0.75 | 9 | 10 |
-| 裹屍寡婦（雙爪前抓） | `mon_shroud_widow` | `mon_shroud_widow_atk_v1/` | 8／0.33 | 4 | 5 |
-| 碑背爬行者（骷髏顎撲咬） | `mon_slab_creeper` | `mon_slab_creeper_atk_v1/` | 6／0.25 | 3 | 4 |
-| 墓熊（撲擊） | `mon_tomb_bear` | `mon_tomb_bear_atk_v1/` | 10／0.42 | 5 | 6 |
-| 骷髏塚（傾倒骨手抓） | `mon_skull_cairn` | `mon_skull_cairn_atk_v1/` | 10／0.42 | 5 | 6 |
-| ⚠ 雙頭骨犬（雙頭撲咬） | `mon_twin_skull_hound` | `mon_twin_skull_hound_atk_v1/` | 10／0.42 | **6** | 6 |
+| 拱門守衛（雙石拳砸） | `mon_arch_warden` | `mon_arch_warden_atk_v3/` | 32／1.33 | 7 | 8 |
+| 燭台魔（斜劈爪擊） | `mon_candelabra_fiend` | `mon_candelabra_fiend_atk_v3/` | 24／1.00 | 4 | 5 |
+| 墓穴蜈蚣（大顎下擊） | `mon_crypt_centipede` | `mon_crypt_centipede_atk_v3/` | 30／1.25 | 9 | 10 |
+| 裹屍寡婦（雙爪前抓） | `mon_shroud_widow` | `mon_shroud_widow_atk_v3/` | 22／0.92 | 4 | 5 |
+| 碑背爬行者（骷髏顎撲咬） | `mon_slab_creeper` | `mon_slab_creeper_atk_v3/` | 28／1.17 | 3 | 4 |
+| 墓熊（撲擊） | `mon_tomb_bear` | `mon_tomb_bear_atk_v3/` | 30／1.25 | 5 | 6 |
+| 骷髏塚（傾倒骨手抓） | `mon_skull_cairn` | `mon_skull_cairn_atk_v3/` | 20／0.83 | 5 | 6 |
+| ⚠ 雙頭骨犬（雙頭撲咬） | `mon_twin_skull_hound` | `mon_twin_skull_hound_atk_v3/` | 30／1.25 | **6** | 6 |
 
+- ✅ 已接（敵人副理 ver -2909～-2914）：ADM 三表都指 `_atk_v3`；雙頭骨犬受擊＝咬擊（卡上 hitFx 三格都 bite）、`near:1.2, nearIn:120, nearOut:100, nearSteps:2`（Ray：「位移少幀」）。
 - 打到＝A→B 最後一格（撲到最近／劈到底），**雙頭骨犬例外**：Ray「r 時第一格才出咬擊判定」⇒ 打到＝第 6 格（R 的第一格）。
 - 骷髏塚：Ray「r 時把周圍掉落的頭骨摳掉」—— R 段（第 6–9 格）脫離主體的碎塊已摳掉；第 5 格（打到）飛散的頭骨是攻擊演出，留著。
 - ⚠⚠ **骷髏塚的攻擊特效（Ray 11-22：「攻擊時是散骨高速飛向 VIEWER」）**：打到那一格（第 5 格）起，程式從骷髏塚身上噴出**散骨，高速朝鏡頭飛來**（由小變大、帶旋轉、越過鏡頭消失）。

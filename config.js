@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.22-2913';
+export const VERSION = 'ver 2026.11.22-2914';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5894,15 +5894,15 @@ export const SHIP_TRAIL = {
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
-  /* 伊甸古墓（ver -2909，敵人線 3060）：Ray 剪的 A→B ＋ 同段去頭尾倒放 R，一支到底；ADM 先共用。twin_skull_hound 打到＝R 第一格（Ray：「r 時第一格才出咬擊判定」） */
-  mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v1/', hit:7 },
-  mon_candelabra_fiend: { dir:'resources/enemy/anim/mon_candelabra_fiend_atk_v1/', hit:4 },
-  mon_crypt_centipede: { dir:'resources/enemy/anim/mon_crypt_centipede_atk_v1/', hit:9 },
-  mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v1/', hit:4 },
-  mon_slab_creeper: { dir:'resources/enemy/anim/mon_slab_creeper_atk_v1/', hit:3 },
-  mon_tomb_bear: { dir:'resources/enemy/anim/mon_tomb_bear_atk_v1/', hit:5 },
-  mon_twin_skull_hound: { dir:'resources/enemy/anim/mon_twin_skull_hound_atk_v1/', hit:6, near:1.2, nearIn:120, nearOut:100, nearSteps:2 },   // ver -2913 Ray：「播 a 時稍微移近到 viewer 要快 少幀」「是位移少幀」→ 快速拉近、位移每段只跳 2 格
-  mon_skull_cairn: { dir:'resources/enemy/anim/mon_skull_cairn_atk_v1/', hit:5 },
+  /* 伊甸古墓（ver -2909，敵人線 3060）：Ray 剪的 A→B ＋ R（原片全格倒放、去頭尾、抽半＝v3，ver -2914 Ray：「R 用 v3 抽半版」），一支到底；ADM 先共用。twin_skull_hound 打到＝R 第一格（Ray：「r 時第一格才出咬擊判定」） */
+  mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v3/', hit:7 },
+  mon_candelabra_fiend: { dir:'resources/enemy/anim/mon_candelabra_fiend_atk_v3/', hit:4 },
+  mon_crypt_centipede: { dir:'resources/enemy/anim/mon_crypt_centipede_atk_v3/', hit:9 },
+  mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v3/', hit:4 },
+  mon_slab_creeper: { dir:'resources/enemy/anim/mon_slab_creeper_atk_v3/', hit:3 },
+  mon_tomb_bear: { dir:'resources/enemy/anim/mon_tomb_bear_atk_v3/', hit:5 },
+  mon_twin_skull_hound: { dir:'resources/enemy/anim/mon_twin_skull_hound_atk_v3/', hit:6, near:1.2, nearIn:120, nearOut:100, nearSteps:2 },   // ver -2913 Ray：「播 a 時稍微移近到 viewer 要快 少幀」「是位移少幀」→ 快速拉近、位移每段只跳 2 格
+  mon_skull_cairn: { dir:'resources/enemy/anim/mon_skull_cairn_atk_v3/', hit:5 },
   npc_guildhunter_neutral: { dir:'resources/enemy/anim/npc_guildhunter_neutral_atk_v1/', hit:1, fx:[{ frame:1, type:'muzzle', at:[0.35,0.21] }] },   // 賞金獵人開槍（ver -2854，Ray 剪的 hunter_fire_A_AB_cut，10 格 24fps，打到第 1 格；Ray：「用這個當 ADM」）；片子沒畫火光 ⇒ 程式在槍口補（fx muzzle）
   saint_ug_giant: { dir:'resources/enemy/anim/saint_ug_giant_atk_v1/', hit:7 },   // 地下聖徒 A＝爪撲（ver -2845，Ray 剪的 AB＋BA，17 格 24fps，打到＝AB 最後一格）；受擊寫在卡上（script/enemies.js faceless.hitFx）
   sorana_si_guard: { dir:'resources/enemy/anim/sorana_guard_atk_v1/', hit:1, near:1.35, nearIn:120 },   // 索菈娜 A＝撲斬（ver -2818，Ray 剪的 np_sorana_slash_full_cut 10 格；「要前撲位移 幀不要太高」→ 16fps、打到那一格撲近到 1.35）
@@ -5976,15 +5976,15 @@ export const ENEMY_DODGE = {
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_MISS = {
-  /* 伊甸古墓（ver -2909，敵人線 3060）：Ray 剪的 A→B ＋ 同段去頭尾倒放 R，一支到底；ADM 先共用。twin_skull_hound 打到＝R 第一格（Ray：「r 時第一格才出咬擊判定」） */
-  mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v1/', hit:7 },
-  mon_candelabra_fiend: { dir:'resources/enemy/anim/mon_candelabra_fiend_atk_v1/', hit:4 },
-  mon_crypt_centipede: { dir:'resources/enemy/anim/mon_crypt_centipede_atk_v1/', hit:9 },
-  mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v1/', hit:4 },
-  mon_slab_creeper: { dir:'resources/enemy/anim/mon_slab_creeper_atk_v1/', hit:3 },
-  mon_tomb_bear: { dir:'resources/enemy/anim/mon_tomb_bear_atk_v1/', hit:5 },
-  mon_twin_skull_hound: { dir:'resources/enemy/anim/mon_twin_skull_hound_atk_v1/', hit:6, near:1.2, nearIn:120, nearOut:100, nearSteps:2 },   // ver -2913 Ray：「播 a 時稍微移近到 viewer 要快 少幀」「是位移少幀」→ 快速拉近、位移每段只跳 2 格
-  mon_skull_cairn: { dir:'resources/enemy/anim/mon_skull_cairn_atk_v1/', hit:5 },
+  /* 伊甸古墓（ver -2909，敵人線 3060）：Ray 剪的 A→B ＋ R（原片全格倒放、去頭尾、抽半＝v3，ver -2914 Ray：「R 用 v3 抽半版」），一支到底；ADM 先共用。twin_skull_hound 打到＝R 第一格（Ray：「r 時第一格才出咬擊判定」） */
+  mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v3/', hit:7 },
+  mon_candelabra_fiend: { dir:'resources/enemy/anim/mon_candelabra_fiend_atk_v3/', hit:4 },
+  mon_crypt_centipede: { dir:'resources/enemy/anim/mon_crypt_centipede_atk_v3/', hit:9 },
+  mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v3/', hit:4 },
+  mon_slab_creeper: { dir:'resources/enemy/anim/mon_slab_creeper_atk_v3/', hit:3 },
+  mon_tomb_bear: { dir:'resources/enemy/anim/mon_tomb_bear_atk_v3/', hit:5 },
+  mon_twin_skull_hound: { dir:'resources/enemy/anim/mon_twin_skull_hound_atk_v3/', hit:6, near:1.2, nearIn:120, nearOut:100, nearSteps:2 },   // ver -2913 Ray：「播 a 時稍微移近到 viewer 要快 少幀」「是位移少幀」→ 快速拉近、位移每段只跳 2 格
+  mon_skull_cairn: { dir:'resources/enemy/anim/mon_skull_cairn_atk_v3/', hit:5 },
   npc_guildhunter_neutral: { dir:'resources/enemy/anim/npc_guildhunter_neutral_atk_v1/', hit:1, fx:[{ frame:1, type:'muzzle', at:[0.35,0.21] }] },   // 賞金獵人點錯＝同一支開槍（ADM 共用）
   saint_ug_giant: { dir:'resources/enemy/anim/saint_ug_giant_miss_v1/', hit:5, near:1.2, nearIn:100, nearOut:120 },   // 地下聖徒 M＝上勾拳（ver -2845，14 格，打到 5）；受擊＝迎面衝擊模糊；揮拳往鏡頭逼近 1.2 倍，前 100ms 衝上、打到後 120ms 退回（-2846，Ray：「揮拳時要帶一點位移 往viewer逼近 但位移不要太多幀」）
   mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_roar_v1/', hit:9, windupSe:'se_enemy_beast02', fx:[{ frame:9, type:'roar', at:[0.53,0.25], wipe:true }] },   // ver -2777：新立繪的仰頭咆哮（Wan，Ray 剪的 np_altar_roar_cut 31 格 24fps），延時與點錯共用
@@ -6000,15 +6000,15 @@ export const ENEMY_MISS = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, windupSe:'se_flame', fx:[{ frame:48, type:'rubble', se:'se_rockimpact' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
-  /* 伊甸古墓（ver -2909，敵人線 3060）：Ray 剪的 A→B ＋ 同段去頭尾倒放 R，一支到底；ADM 先共用。twin_skull_hound 打到＝R 第一格（Ray：「r 時第一格才出咬擊判定」） */
-  mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v1/', hit:7 },
-  mon_candelabra_fiend: { dir:'resources/enemy/anim/mon_candelabra_fiend_atk_v1/', hit:4 },
-  mon_crypt_centipede: { dir:'resources/enemy/anim/mon_crypt_centipede_atk_v1/', hit:9 },
-  mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v1/', hit:4 },
-  mon_slab_creeper: { dir:'resources/enemy/anim/mon_slab_creeper_atk_v1/', hit:3 },
-  mon_tomb_bear: { dir:'resources/enemy/anim/mon_tomb_bear_atk_v1/', hit:5 },
-  mon_twin_skull_hound: { dir:'resources/enemy/anim/mon_twin_skull_hound_atk_v1/', hit:6, near:1.2, nearIn:120, nearOut:100, nearSteps:2 },   // ver -2913 Ray：「播 a 時稍微移近到 viewer 要快 少幀」「是位移少幀」→ 快速拉近、位移每段只跳 2 格
-  mon_skull_cairn: { dir:'resources/enemy/anim/mon_skull_cairn_atk_v1/', hit:5 },
+  /* 伊甸古墓（ver -2909，敵人線 3060）：Ray 剪的 A→B ＋ R（原片全格倒放、去頭尾、抽半＝v3，ver -2914 Ray：「R 用 v3 抽半版」），一支到底；ADM 先共用。twin_skull_hound 打到＝R 第一格（Ray：「r 時第一格才出咬擊判定」） */
+  mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v3/', hit:7 },
+  mon_candelabra_fiend: { dir:'resources/enemy/anim/mon_candelabra_fiend_atk_v3/', hit:4 },
+  mon_crypt_centipede: { dir:'resources/enemy/anim/mon_crypt_centipede_atk_v3/', hit:9 },
+  mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v3/', hit:4 },
+  mon_slab_creeper: { dir:'resources/enemy/anim/mon_slab_creeper_atk_v3/', hit:3 },
+  mon_tomb_bear: { dir:'resources/enemy/anim/mon_tomb_bear_atk_v3/', hit:5 },
+  mon_twin_skull_hound: { dir:'resources/enemy/anim/mon_twin_skull_hound_atk_v3/', hit:6, near:1.2, nearIn:120, nearOut:100, nearSteps:2 },   // ver -2913 Ray：「播 a 時稍微移近到 viewer 要快 少幀」「是位移少幀」→ 快速拉近、位移每段只跳 2 格
+  mon_skull_cairn: { dir:'resources/enemy/anim/mon_skull_cairn_atk_v3/', hit:5 },
   npc_guildhunter_neutral: { dir:'resources/enemy/anim/npc_guildhunter_neutral_atk_v1/', hit:1, fx:[{ frame:1, type:'muzzle', at:[0.35,0.21] }] },   // 賞金獵人延時＝同一支開槍（ADM 共用）
   saint_ug_giant: { dir:'resources/enemy/anim/saint_ug_giant_delay_v1/', hit:4, near:1.2, nearIn:100, nearOut:120 },   // 地下聖徒 D＝直拳朝鏡頭（ver -2845，13 格，打到 4）；受擊＝迎面衝擊模糊；揮拳往鏡頭逼近 1.2 倍，前 100ms 衝上、打到後 120ms 退回（-2846，Ray：「揮拳時要帶一點位移 往viewer逼近 但位移不要太多幀」）
   sorana_si_guard: { dir:'resources/enemy/anim/sorana_guard_throw_v1/', hit:2, fx:[{ frame:2, type:'knives', at:[0.78,0.36], n:3 }] },   // 索菈娜 DM＝擲飛刀（ver -2819，Ray 剪的 np_sorana_throw3_full_cut 12 格，第 5 格加一點揮動殘影；飛刀程式畫；ver -2822 Ray：「出刀點提早 在47格出刀」＝原始第 47 格＝交件第 2 格）
