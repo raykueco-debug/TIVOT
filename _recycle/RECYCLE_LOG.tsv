@@ -3363,3 +3363,22 @@ when	from	to	reason
 20261122-214617	resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png.20261122-214617	Ray 11-22 拱門守衛 B 用的是去背失敗的 → GPT 重繪去背
 20261122-214805	resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png.20261122-214805	Ray 11-22 拱門內黑色挖空（本機）
 20261122-215139	resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png.20261122-215139	Ray 11-22 拱門守衛 B 改強透視（拱門不動）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_0_1_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_0_1_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_0_2_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_0_2_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_0_8_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_0_8_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_10_0_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_10_0_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_1_8_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_1_8_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_2_9_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_2_9_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_3_10_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_3_10_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_3_2_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_3_2_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_3_6_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_3_6_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_3_8_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_3_8_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_4_3_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_4_3_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_5_4_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_5_4_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_5_6_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_5_6_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_6_7_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_6_7_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_6_9_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_6_9_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_7_2_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_7_2_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_7_4_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_7_4_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_7_6_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_7_6_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
+20261122-215800	resources/background/anim/winsmoor_siege/ws_8_3_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_8_3_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
