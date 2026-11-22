@@ -17,7 +17,7 @@ h1{font-size:18px;margin:12px 16px}
 #zoom{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;cursor:zoom-out}
 #zoom img{max-width:96vw;max-height:96vh}
 </style></head><body>
-<h1>伊甸古墓：重出的攻擊 B（抬棺列已回收）（11-22）</h1>
+<h1>伊甸古墓：第三輪：待審的 B（11-22）</h1>
 <div class="note">左＝原圖 A（中立）、右＝新 B（GPT 真透明）。點圖放大。點頭才跑 Wan。</div>
 <div class="grid" id="g"></div>
 <h1>骷髏塚：散骨（攻擊時程式讓它們高速飛向鏡頭）</h1>
@@ -26,11 +26,8 @@ h1{font-size:18px;margin:12px 16px}
 <script>
 const R='../../resources/enemy/_neutral_refs/tomb_kf/';
 const L=[
- ['arch_warden','拱門守衛','拱門陰影裡鑽出怪物，雙爪撲向鏡頭'],
- ['crypt_hound','墓犬','正面撲向鏡頭（⚠ 嘴是齜牙，沒張口咬下）'],
- ['chain_hanged','吊鍊屍','盪過來、雙爪往鏡頭耙；比原圖大（去背重做：GPT 重繪）'],
- ['reliquary_hand','聖匣之手','11-22 第三版：整隻手往前倒、爪尖觸地（五指、原色）；其他 4 張已在跑 Wan'],
- ['grave_censer','墓香爐','雙香爐用鏈條甩向鏡頭（11-22 改：用甩的）'],
+ ['grave_censer','墓香爐','11-22 晚：強透視重出，香爐砸向鏡頭（甩的 B 不夠攻擊性）'],
+ ['arch_warden','拱門守衛','11-22 晚：同一張 B 改 GPT 重繪去背（舊的是去背失敗的）'],
 ];
 const g=document.getElementById('g');
 for(const [n,t,d] of L){

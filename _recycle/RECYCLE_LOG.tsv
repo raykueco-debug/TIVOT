@@ -3359,3 +3359,5 @@ when	from	to	reason
 20261122-203742	resources/enemy/_neutral_refs/tomb_kf/tb_reliquary_hand_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_reliquary_hand_B.png.20261122-203742	Ray 11-22 數量跟顏色不對（6 指、偏粉紅）
 20261122-204306	resources/enemy/_neutral_refs/tomb_kf/tb_reliquary_hand_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_reliquary_hand_B.png.20261122-204306	Ray 11-22 幅度不夠、爪要觸地
 20261122-211643	resources/enemy/fx/shroud_strip.webp	_recycle/resources/enemy/fx/shroud_strip.webp	Ray 11-22 裹布髒一點，換髒版
+20261122-214616	resources/enemy/_neutral_refs/tomb_kf/tb_grave_censer_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_grave_censer_B.png.20261122-214616	Ray 11-22 甩的 B 不夠攻擊性 → 強透視重出
+20261122-214617	resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png.20261122-214617	Ray 11-22 拱門守衛 B 用的是去背失敗的 → GPT 重繪去背
