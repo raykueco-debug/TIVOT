@@ -1,0 +1,23 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>空賊船十艘</title>
+<!-- 檢查用：十艘空賊船（drg3d 的 pirate 本船＋九個 vars）一頁並排。只給檢查用，遊戲不讀。 -->
+<style>
+  html,body{margin:0;background:#111;color:#ddd;font:13px sans-serif}
+  .g{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:4px;height:100vh;box-sizing:border-box;grid-auto-rows:1fr}
+  .c{position:relative;border:1px solid #333;overflow:hidden}
+  .c iframe{width:100%;height:100%;border:0;display:block}
+  .c b{position:absolute;left:6px;top:4px;z-index:2;background:#000a;padding:1px 6px;border-radius:3px}
+</style>
+<div class="g" id="g"></div>
+<script>
+  const V = ['', 'n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n8', 'n9', 'n10'];
+  const g = document.getElementById('g');
+  for (const v of V) {
+    const d = document.createElement('div'); d.className = 'c';
+    d.innerHTML = `<b>${v || '本船'}</b>`;
+    const f = document.createElement('iframe');
+    f.src = '../../flight/index.html?drg3d=1&drg3dfight&drg3dkind=pirate' + (v ? '&drg3dvar=' + v : '');
+    d.appendChild(f); g.appendChild(d);
+  }
+</script>

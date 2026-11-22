@@ -16,7 +16,8 @@
  "approach": {
   "bldragon": "direct",
   "sky_boneray": "cruise",
-  "sky_ribwhale": "cruise"
+  "sky_ribwhale": "cruise",
+  "pirate": "direct"
  },
  "chase": {
   "sky_boneray": 2000,
