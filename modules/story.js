@@ -2217,6 +2217,7 @@ function cgAnimDraw(on){
   if(!on.shown){ on.shown=true; cv.style.visibility=''; }
 }
 const CG_ANIM_OUT_MS = 400;   // 點掉之後淡出撤下要多久
+const CG_ANIM_LOAD_MS = 5000; // 影片幾秒畫不出第一格就退回靜態圖（ver -2908）
 /* ══⚠⚠ 過場動畫**播完停在最後一格，點掉才推進**（ver -2620，Ray：「所有過場動畫播完就定在最後一格 點掉才會推進下一幕」）══
    推翻 -2182／-2186 的「播到片尾前就自己淡出撤下」。現在不循環的每一支都是：
    ① 播放中點一下 ＝ 跳到最後一格（同「一拍還沒演完，點下去就把這一拍演完」，不推進）；
@@ -2255,10 +2256,9 @@ function cgAnimGate(byUser){
   if(!cgAnimEnded(on)){
     if(byUser || fastMode){
       const v=on.v;
-      if(v.duration>0){ try{ v.pause(); v.currentTime = Math.max(0, v.duration - 0.02); }catch(_){} on.sig=null; kickCgAnim(on); }
-      /* ⚠⚠ 影片還沒載好（長度未知）就點了（ver -2884，Ray：「插圖連點會卡」）：以前這裡什麼都不做卻吃掉這一下 ——
-         慢網路下每一下都被吞，插圖不換也不收。改成**這一拍演完**＝放棄動畫、靜態插圖放回來（同載不到的退路），不推進。 */
-      else stopCgAnim();
+      /* ver -2908（Ray：「插圖不要被立刻點掉」）：玩家的點擊在影片播完前已經被 advance 的 cgBeatBusy 擋掉了 ——
+         走到這裡的只剩加速。影片還沒載好就等它（載不到的退路在 playCgAnim：5 秒沒有第一格就退回靜態圖）。 */
+      if(v.duration>0 && fastMode){ try{ v.pause(); v.currentTime = Math.max(0, v.duration - 0.02); }catch(_){} on.sig=null; kickCgAnim(on); }
     }else on.afterEnd = autoPlay;      // 自動播放：播完自己推進；手動模式的 auto 計時器：押住等點
     return true;
   }
@@ -2316,6 +2316,8 @@ function playCgAnim(name){
     if(on.afterEnd){ on.afterEnd=false; if(active && (autoPlay||fastMode)) advance(); } };
   const fallback=()=>{ if(cgAnimOn===on) stopCgAnim(); };   // 影片載不到：收掉動畫層，靜態圖放回來
   v.onerror=fallback;
+  /* 5 秒還沒畫出第一格＝當作載不到（ver -2908）：退回靜態圖，這一拍才放得掉（點擊在影片播完前是被擋的）。 */
+  setTimeout(()=>{ if(cgAnimOn===on && !on.shown) fallback(); }, CG_ANIM_LOAD_MS);
   fetch(A.video).then(r=>r.ok?r.blob():null).then(b=>{
     if(cgAnimOn!==on) return;
     if(!b){ fallback(); return; }
@@ -4631,6 +4633,7 @@ function renderLine(){
      規矩是「**這一拍開始了，上一句就不准再往框裡打字**」，所以收在**唯一的入口**
      （鐵律 8）：有台詞的那一拍照樣會被 `typeOut` 重設，這一行對它是冪等的。 */
   stopTyping();
+  if(line.cg) cgBeatAt = Date.now();   // 插圖拍的起點（cgBeatBusy 的保險用，ver -2908）
   stopFx();       // 上一拍的演出（掃射／持續抖動）到此為止，別讓它蓋到這一句上
   flushCgFade();  // 上一拍的黑幕若還沒收，**立刻做完**（見 cgFade 的說明），不要取消
   /* ⚠ 上一拍**還沒演的立繪指令**要先補完（ver -430）：`stopFx()` 只是把計時器清掉，
@@ -5400,6 +5403,25 @@ function rewindLine(){
 }
 
 /* ══ 推進 ══ */
+/* 插圖那一拍是不是還在演（ver -2908，見 advance）。問**畫面**正在跑的動畫（`getAnimations`：黑幕的淡入淡出、平移、第二層淡入），
+   不抄一份秒數（鐵律 7）；再加上還沒收的延後工作（黑幕底下的 reveal、換圖回呼、等點出框之前的 delay、打字）與影片。 */
+let cgBeatAt = 0;           // 這一拍開始的時刻（renderLine 記）；保險：超過 CG_BEAT_CAP_MS 一律放行
+const CG_BEAT_CAP_MS = 20000;
+function cgBeatBusy(line){
+  if(!line || !line.cg) return false;                       // 收圖（cg:null）與沒有插圖的拍不管
+  if(Date.now() - cgBeatAt > CG_BEAT_CAP_MS) return false;
+  if(pendingReveal || cgFinish || cgCrossFinish || cgBackPoll || waitT || typing) return true;
+  if(fadeOwner==='cg' && ($('storyFade')||{classList:{contains:()=>false}}).classList.contains('on')) return true;
+  for(const id of ['storyCg','storyCg2','storyFade']){
+    const el=$(id);
+    /* ⚠ 無限循環的動畫（持續震動 shakeHold 疊在平移上那一種）不算「還在演」—— 它不會自己停。 */
+    try{ if(el && el.getAnimations && el.getAnimations().some(a=>a.playState==='running'
+            && !(a.effect && a.effect.getComputedTiming && a.effect.getComputedTiming().endTime===Infinity))) return true; }catch(_){}
+  }
+  const on=cgAnimOn;
+  if(on && !on.v.loop && !on.keep && !on.leaving && !cgAnimEnded(on)) return true;   // 影片播完才放（載不到的退路在 playCgAnim）
+  return false;
+}
 /* 這一次推進是不是玩家自己點的（點畫面／空白鍵／管理人的 →）—— 只有過場動畫要分（cgAnimGate）。 */
 let advByUser = false;
 function userAdvance(){ advByUser = true; try{ advance(); } finally { advByUser = false; } }
@@ -5459,6 +5481,12 @@ function advance(){
   if(cookWaitTap){ const f=cookWaitTap; cookWaitTap=null; try{ f(); }catch(_){} return; }
   const line = cur && cur.lines[lineIdx];
   const tx = $('storyText');
+  /* ══⚠⚠⚠ **插圖那一拍演完之前，玩家的點擊一律無效**（ver -2908，Ray：「插圖不要被立刻點掉」）══
+     帶插圖（`cg:`／`cgSoft`／動畫插圖／`cgPan`）的那一拍：黑幕／淡入、平移、影片、等點出框、打字 —— 全部演完才收點擊，
+     **不推進、也不補完**（取代 -430 那條「點下去先把這一拍演完」在插圖拍上的用法）。
+     ⚠ 只擋**玩家的點擊**（`advByUser`）：自動播放／加速、這一拍自己的 `auto` 計時器照走，所以不會卡死；另有 20 秒保險。
+     ⚠ 判定只有 `cgBeatBusy()` 一支（鐵律 8）。 */
+  if(advByUser && !autoPlay && !fastMode && cgBeatBusy(line)) return;
   clearTimeout(autoT); autoT=null;   // 玩家點了 → 演出拍提前收，別讓計時器再推一次
   /* ⚠⚠ 這一拍還在黑幕底下沒演完 → **先把它演完，不推進**（ver -430，Ray：「對話點擊
      太快（或者點到箭頭）會有立繪殘留」）。
