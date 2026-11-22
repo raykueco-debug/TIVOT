@@ -272,7 +272,7 @@ export function setup(){
   // 敵人：Boss 亂入的戰鬥重置（startIntruderFight，combat 擁有）+ 換敵刷血條（updateBars）注入。
   /* ⚠ `screenShake` 給「降臨」的著地那一拍用（ver -640）——
      震動的實作只有 combat 這一支（鐵律 8），enemy 不自己加 class。 */
-  enemy.init({ startIntruderFight, updateBars, screenShake, roarBlast, healEnemyPct, wipeBoard, plunderCell,
+  enemy.init({ startIntruderFight, updateBars, screenShake, roarBlast, healEnemyPct, wipeBoard, plunderCell, setEnergy,   /* setEnergy：-2925 顱石堆攻擊扣破防值 */
     /* ══ 放光（光砲）那一段的整套處理（ver -1449 清圈；-1666 補齊）══
        清畫面上的圈 ＋ 取消這一波還沒出的 ＋ 光退了才從頭算下一次攻擊 ——
        **三件事在 defense 那一支裡**（它才擁有 threats 與排程，鐵律 7/8），

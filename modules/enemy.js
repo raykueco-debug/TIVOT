@@ -1649,6 +1649,8 @@ function clipFx(f, el){
     if(f.at && el){ const top=$('top'), hr=top && top.getBoundingClientRect(), r=el.getBoundingClientRect();
       if(hr && r.width) o={ x:r.left-hr.left+f.at[0]*r.width, y:r.top-hr.top+f.at[1]*r.height }; }
     return spawnKnives(o, f.n||3); }
+  /* 扣破防值（ver -2925，Ray 顱石堆：「攻擊會減 15% 破防值 HP 也會扣」）：`pct`＝扣掉滿表的幾 %；HP 照一般攻擊扣（不在這裡）。破防值的擁有者是 combat，走它的 setEnergy。 */
+  if(f.type==='drainBR'){ if(api.setEnergy) api.setEnergy((state.energy||0) - (f.pct||15)); return; }
   if(f.type==='bones'){ let o=null;   // 散骨（ver -2917）
     if(f.at && el){ const top=$('top'), hr=top && top.getBoundingClientRect(), r=el.getBoundingClientRect();
       if(hr && r.width) o={ x:r.left-hr.left+f.at[0]*r.width, y:r.top-hr.top+f.at[1]*r.height }; }
