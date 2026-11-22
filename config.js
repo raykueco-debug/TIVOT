@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.22-2915';
+export const VERSION = 'ver 2026.11.22-2916';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5899,7 +5899,7 @@ export const ENEMY_ATK = {
   mon_candelabra_fiend: { dir:'resources/enemy/anim/mon_candelabra_fiend_atk_v3/', hit:4 },
   mon_crypt_centipede: { dir:'resources/enemy/anim/mon_crypt_centipede_atk_v3/', hit:9 },
   mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v3/', hit:4 },
-  mon_slab_creeper: { dir:'resources/enemy/anim/mon_slab_creeper_atk_v3/', hit:3 },
+  mon_slab_creeper: { dir:'resources/enemy/anim/mon_slab_creeper_atk_v3/', hit:3, near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2 },   // ver -2916 Ray：「匍伏者也要放大到 1.45 倍」（同雙頭骷髏犬）
   mon_tomb_bear: { dir:'resources/enemy/anim/mon_tomb_bear_atk_v3/', hit:5 },
   mon_twin_skull_hound: { dir:'resources/enemy/anim/mon_twin_skull_hound_atk_v3/', hit:6, near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2 },   // ver -2913 Ray：「播 a 時稍微移近到 viewer 要快 少幀」「是位移少幀」→ 快速拉近、位移每段只跳 2 格
   mon_skull_cairn: { dir:'resources/enemy/anim/mon_skull_cairn_atk_v3/', hit:5 },
@@ -5981,7 +5981,7 @@ export const ENEMY_MISS = {
   mon_candelabra_fiend: { dir:'resources/enemy/anim/mon_candelabra_fiend_atk_v3/', hit:4 },
   mon_crypt_centipede: { dir:'resources/enemy/anim/mon_crypt_centipede_atk_v3/', hit:9 },
   mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v3/', hit:4 },
-  mon_slab_creeper: { dir:'resources/enemy/anim/mon_slab_creeper_atk_v3/', hit:3 },
+  mon_slab_creeper: { dir:'resources/enemy/anim/mon_slab_creeper_atk_v3/', hit:3, near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2 },   // ver -2916 Ray：「匍伏者也要放大到 1.45 倍」（同雙頭骷髏犬）
   mon_tomb_bear: { dir:'resources/enemy/anim/mon_tomb_bear_atk_v3/', hit:5 },
   mon_twin_skull_hound: { dir:'resources/enemy/anim/mon_twin_skull_hound_atk_v3/', hit:6, near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2 },   // ver -2913 Ray：「播 a 時稍微移近到 viewer 要快 少幀」「是位移少幀」→ 快速拉近、位移每段只跳 2 格
   mon_skull_cairn: { dir:'resources/enemy/anim/mon_skull_cairn_atk_v3/', hit:5 },
@@ -6005,7 +6005,7 @@ export const ENEMY_DELAY = {
   mon_candelabra_fiend: { dir:'resources/enemy/anim/mon_candelabra_fiend_atk_v3/', hit:4 },
   mon_crypt_centipede: { dir:'resources/enemy/anim/mon_crypt_centipede_atk_v3/', hit:9 },
   mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v3/', hit:4 },
-  mon_slab_creeper: { dir:'resources/enemy/anim/mon_slab_creeper_atk_v3/', hit:3 },
+  mon_slab_creeper: { dir:'resources/enemy/anim/mon_slab_creeper_atk_v3/', hit:3, near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2 },   // ver -2916 Ray：「匍伏者也要放大到 1.45 倍」（同雙頭骷髏犬）
   mon_tomb_bear: { dir:'resources/enemy/anim/mon_tomb_bear_atk_v3/', hit:5 },
   mon_twin_skull_hound: { dir:'resources/enemy/anim/mon_twin_skull_hound_atk_v3/', hit:6, near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2 },   // ver -2913 Ray：「播 a 時稍微移近到 viewer 要快 少幀」「是位移少幀」→ 快速拉近、位移每段只跳 2 格
   mon_skull_cairn: { dir:'resources/enemy/anim/mon_skull_cairn_atk_v3/', hit:5 },
