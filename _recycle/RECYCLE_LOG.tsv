@@ -3313,3 +3313,9 @@ when	from	to	reason
 20261122-195813	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/enemy_atk/tomb_reliquary_hand_A_AB	_recycle/tomb_reliquary_hand_A_AB	Ray 11-22 廢棄
 20261122-195813	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/enemy_atk/tomb_grave_censer_A_AB	_recycle/tomb_grave_censer_A_AB	Ray 11-22 廢棄：沒有對 viewer 的攻擊性
 20261122-195813	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/enemy_atk/tomb_pall_bearers_A_AB	_recycle/tomb_pall_bearers_A_AB	Ray 11-22 廢棄：往後跳了
+20261122-201700	resources/enemy/_neutral_refs/tomb_kf/tb_crypt_hound_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_crypt_hound_B.png	Ray 11-22 廢棄重出（沒有對 viewer 前撲咬下）
+20261122-201700	resources/enemy/_neutral_refs/tomb_kf/tb_chain_hanged_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_chain_hanged_B.png	Ray 11-22 廢棄重出（尺寸縮小了）
+20261122-201700	resources/enemy/_neutral_refs/tomb_kf/tb_grave_censer_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_grave_censer_B.png	Ray 11-22 廢棄重出（沒有對 viewer 的攻擊性）
+20261122-202142	resources/enemy/_neutral_refs/tomb_kf/tb_reliquary_hand_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_reliquary_hand_B.png	Ray 11-22 廢棄重出
+20261122-202142	resources/enemy/_neutral_refs/tomb_kf/tb_pall_bearers_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_pall_bearers_B.png	Ray 11-22 廢棄重出（往後跳了）
+20261122-202142	resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png	Ray 11-22 重跑 B：拱門陰影鑽出怪物攻向 viewer
