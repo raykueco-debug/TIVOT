@@ -1438,7 +1438,7 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
   const T=tAt(N), tHit=tAt(hitF);
   { const k=farOf(); if(k!==1 || c.near){   // 攻擊時撲近：打到那一格到最大，收回的路上退回遠處（ver -2529：平時不站遠也能撲近）；ver -2846：任何一支寫了 `near` 的動作片都吃（地下聖徒的 D／M 揮拳）
       el.style.transformOrigin=FAR_ORIGIN;
-      const off=t=>Math.max(0,Math.min(1,t/T)), hold=Math.min(T, tHit+60), back=Math.min(T, c.nearOut>0 ? hold+c.nearOut : tHit+Math.max(120,(T-tHit)*0.7));   // `nearOut`＝打到停留之後幾毫秒退回原位（ver -2846，Ray：「位移不要太多幀」）；不寫＝照舊跟著收回段慢慢退
+      const off=t=>Math.max(0,Math.min(1,t/T)), hold=Math.min(T, tHit+(c.nearHold>0?c.nearHold:60)),   /* `nearHold`＝撲到最近停多久（ms，預設 60；ver -2915） */ back=Math.min(T, c.nearOut>0 ? hold+c.nearOut : tHit+Math.max(120,(T-tHit)*0.7));   // `nearOut`＝打到停留之後幾毫秒退回原位（ver -2846，Ray：「位移不要太多幀」）；不寫＝照舊跟著收回段慢慢退
       const n=String(c.near || 1), kf = (kind==='atk' || c.near) ? [{scale:String(k),offset:0}, ...(c.nearIn>0 && tHit>c.nearIn ? [{scale:String(k),offset:off(tHit-c.nearIn)}] : []), {scale:n,offset:off(tHit)},{scale:n,offset:off(hold)},{scale:String(k),offset:off(back)},{scale:String(k),offset:1}] : [{scale:String(k)},{scale:String(k)}];
       el.animate(kf.map(q=>({...q, easing: c.nearSteps>0 ? `steps(${c.nearSteps},end)` : 'ease-in-out'})),{duration:T}); } }   /* `nearSteps`＝位移每一段只跳這幾格（ver -2913，Ray：「位移少幀」——像手繪抽格，不平滑補間） */   /* ease 逐段套，峰值才準準落在 hit 那一格（-2485） */
   const t0=performance.now();
