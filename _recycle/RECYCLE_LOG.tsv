@@ -3296,3 +3296,13 @@ when	from	to	reason
 20261122-111942	hurtk_A_AB	_recycle/hurtk_A_AB	賞金獵人受擊 Wan／剪片中間檔，已交 hurt_v4（Ray 11-22：一起回收）；原位 ComfyUI-master/tivot_wan/out/
 20261122-111942	hurtk_B	_recycle/hurtk_B	賞金獵人受擊 Wan／剪片中間檔，已交 hurt_v4（Ray 11-22：一起回收）；原位 ComfyUI-master/tivot_wan/out/
 20261122-111942	hurtk_B_BA	_recycle/hurtk_B_BA	賞金獵人受擊 Wan／剪片中間檔，已交 hurt_v4（Ray 11-22：一起回收）；原位 ComfyUI-master/tivot_wan/out/
+20261122-173240	resources/enemy/_neutral_refs/tomb_kf/tb_ossuary_rats_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_ossuary_rats_B.png	Ray 11-22：老鼠刪掉（骨堂鼠群不做攻擊 B）
+20261122-173240	resources/enemy/_neutral_refs/tomb_kf/src/mon_ossuary_rats.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/src/mon_ossuary_rats.png	Ray 11-22：老鼠刪掉（骨堂鼠群不做攻擊 B）
+20261122-174051	resources/enemy/_neutral_refs/tomb_kf/tb_ossuary_wheel_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_ossuary_wheel_B.png	Ray 11-22 改動作重出 B（車輪轉向撞來／詠唱／石棺開櫃／跪罪者抬頭縫眼），舊版換下
+20261122-174051	resources/enemy/_neutral_refs/tomb_kf/tb_choir_organ_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_choir_organ_B.png	Ray 11-22 改動作重出 B（車輪轉向撞來／詠唱／石棺開櫃／跪罪者抬頭縫眼），舊版換下
+20261122-174051	resources/enemy/_neutral_refs/tomb_kf/tb_choir_pale_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_choir_pale_B.png	Ray 11-22 改動作重出 B（車輪轉向撞來／詠唱／石棺開櫃／跪罪者抬頭縫眼），舊版換下
+20261122-174051	resources/enemy/_neutral_refs/tomb_kf/tb_sarcoph_crawler_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_sarcoph_crawler_B.png	Ray 11-22 改動作重出 B（車輪轉向撞來／詠唱／石棺開櫃／跪罪者抬頭縫眼），舊版換下
+20261122-174051	resources/enemy/_neutral_refs/tomb_kf/tb_kneeling_penitent_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_kneeling_penitent_B.png	Ray 11-22 改動作重出 B（車輪轉向撞來／詠唱／石棺開櫃／跪罪者抬頭縫眼），舊版換下
+20261122-174156	resources/enemy/_neutral_refs/tomb_kf/tb_bellfounder_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_bellfounder_B.png	Ray 11-22：鑄鐘者改衝撞重出；蒼白牡鹿方框霧重轉透明，舊版換下
+20261122-174156	resources/enemy/_neutral_refs/tomb_kf/tb_pallid_stag_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_pallid_stag_B.png	Ray 11-22：鑄鐘者改衝撞重出；蒼白牡鹿方框霧重轉透明，舊版換下
+20261122-174517	resources/enemy/_neutral_refs/tomb_kf/tb_iron_maiden_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_iron_maiden_B.png	Ray 11-22：鐵處女改閉棺濺血重出，舊版換下

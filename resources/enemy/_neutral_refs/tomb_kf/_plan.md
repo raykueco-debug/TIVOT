@@ -2,21 +2,22 @@
 
 > 原圖都已是站姿（A 沿用原圖）、都有待機 `_idle_v2`；只缺攻擊 B。每隻一張攻擊 B（D／M 先共用，Ray 要分再補）。
 > 動作全是我擬的（Excel 沒寫），對照圖 `_review_tomb_1.jpg`／`_2.jpg`（每格左＝原圖 A、右＝B）。**Ray 點頭才跑 Wan**。
+> **11-22 Ray 審過：其餘 15 隻「先跑 WAN」（`tools/anim/tomb_kf_run.sh`，`out/tomb_kf`）；上面標「改動作重出」的 7 隻＋牡鹿另審。**
 > 檔名 `tb_<名>_B.png`（GPT 原檔，未對色對齊）。
 
 | 怪 | B 擬的動作 | 備註 |
 |---|---|---|
 | arch_warden 拱門守衛 | 雙石拳砸向鏡頭 | |
-| sarcoph_crawler 石棺爬行者 | 巨手拍下 | |
+| sarcoph_crawler 石棺爬行者 | 石棺打開、裡面的屍骸撲出來抓 | 11-22 Ray 改動作重出 |
 | slab_creeper 碑背爬行者 | 骷髏顎撲咬 | |
-| kneeling_penitent 跪罪者 | 起身雙爪前抓 | |
+| kneeling_penitent 跪罪者 | 抬頭（眼睛被縫起）雙爪前撲 | 11-22 Ray 改動作重出 |
 | chain_hanged 吊鍊屍 | 盪過來爪耙 | |
-| iron_maiden 鐵處女 | 雙門大開、內刺朝前 | |
-| ossuary_rats 骨堂鼠群 | 群撲咬 | |
-| ossuary_wheel 骨輪 | 傾斜滾來、旋轉模糊 | |
-| choir_organ 唱詩管風琴 | 骷髏顎撲咬 | ⚠ 背景有極淡霧（角落 alpha 2~7） |
-| choir_pale 蒼白詩班 | 三修女伸手抓 | |
-| bellfounder 鑄鐘者 | 鐘殼衝撞 | |
+| iron_maiden 鐵處女 | 閉棺濺血 | 11-22 Ray 改動作重出（GPT 擋兩次「暴力」，第三次換串換措辭才過） |
+| ~~ossuary_rats 骨堂鼠群~~ | **刪**（Ray 11-22「老鼠刪掉」；B 與 src 已回收） | |
+| ossuary_wheel 骨輪 | 轉向 viewer 滾來衝撞 | 11-22 Ray 改動作重出 |
+| choir_organ 唱詩管風琴 | 詠唱（張口高歌＋聲波環） | 11-22 Ray 改動作重出 |
+| choir_pale 蒼白詩班 | 三修女詠唱（張口＋聲波環） | 11-22 Ray 改動作重出 |
+| bellfounder 鑄鐘者 | 正面衝撞 | 11-22 Ray 改動作重出 |
 | grave_censer 墓香爐 | 雙香爐甩來 | |
 | candelabra_fiend 燭台魔 | 斜劈爪擊 | |
 | reliquary_hand 聖匣之手 | 五指抓下 | 手指張開但朝前感偏弱 |
@@ -29,4 +30,4 @@
 | skull_cairn 骷髏塚 | 傾倒、骨手抓 | |
 | pall_bearers 抬棺列 | 棺材衝撞、蓋子掀開 | |
 | tomb_bear 墓熊 | 撲擊 | |
-| pallid_stag 蒼白牡鹿 | 低頭角衝 | ⚠ 背景有方框霧，要重轉透明 |
+| pallid_stag 蒼白牡鹿 | 低頭角衝 | 11-22 重轉透明：霧去掉了但鹿角揮動模糊也沒了（叫它補模糊，霧又回來，不收） |
