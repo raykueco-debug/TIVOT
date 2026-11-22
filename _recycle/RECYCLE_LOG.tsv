@@ -3308,3 +3308,8 @@ when	from	to	reason
 20261122-174517	resources/enemy/_neutral_refs/tomb_kf/tb_iron_maiden_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_iron_maiden_B.png	Ray 11-22：鐵處女改閉棺濺血重出，舊版換下
 20261122-194200	resources/enemy/_neutral_refs/tomb_kf/tb_choir_pale_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_choir_pale_B.png.20261122-194200	Ray 11-22 音波拿掉（後期程式加），換無音波版
 20261122-194505	resources/enemy/_neutral_refs/tomb_kf/tb_choir_organ_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_choir_organ_B.png.20261122-194505	Ray 11-22 音波拿掉（後期程式加），換無音波版
+20261122-195813	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/enemy_atk/tomb_crypt_hound_A_AB	_recycle/tomb_crypt_hound_A_AB	Ray 11-22 廢棄：沒有對 viewer 前撲咬下動作
+20261122-195813	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/enemy_atk/tomb_chain_hanged_A_AB	_recycle/tomb_chain_hanged_A_AB	Ray 11-22 廢棄：尺寸縮小了
+20261122-195813	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/enemy_atk/tomb_reliquary_hand_A_AB	_recycle/tomb_reliquary_hand_A_AB	Ray 11-22 廢棄
+20261122-195813	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/enemy_atk/tomb_grave_censer_A_AB	_recycle/tomb_grave_censer_A_AB	Ray 11-22 廢棄：沒有對 viewer 的攻擊性
+20261122-195813	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/enemy_atk/tomb_pall_bearers_A_AB	_recycle/tomb_pall_bearers_A_AB	Ray 11-22 廢棄：往後跳了
