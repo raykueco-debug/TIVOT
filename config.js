@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.22-2929';
+export const VERSION = 'ver 2026.11.22-2930';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5926,7 +5926,7 @@ export const ENEMY_ATK = {
   mon_grave_censer: { dir:'resources/enemy/anim/mon_grave_censer_atk_v1/', hit:4 },   // ver -2929 Ray 剪的 tomb3_grave_censer_A_AB_cut（5 格，從原片第 27 格起）＋ R 全格倒放抽半（10 格），打到＝AB 最後一格
   mon_reliquary_hand: { dir:'resources/enemy/anim/mon_reliquary_hand_atk_v1/', hit:16 },   // ver -2926 Ray 剪的 tomb2_reliquary_hand_A_AB_cut（17 格）＋ R 全格倒放抽半（24 格），打到＝AB 最後一格
   /* 伊甸古墓（ver -2909，敵人線 3060）：Ray 剪的 A→B ＋ R（原片全格倒放、去頭尾、抽半＝v3，ver -2914 Ray：「R 用 v3 抽半版」），一支到底；ADM 先共用。twin_skull_hound 打到＝R 第一格（Ray：「r 時第一格才出咬擊判定」） */
-  mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v3/', hit:7 },
+  mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v4/', hit:5 },   // ver -2930 新 B（強透視、拱門內挖空）：Ray 剪的 tomb3_arch_warden_A_AB_cut（6 格）＋ R 全格倒放抽半（19 格）
   mon_candelabra_fiend: { dir:'resources/enemy/anim/mon_candelabra_fiend_atk_v3/', hit:4 },
   mon_crypt_centipede: { dir:'resources/enemy/anim/mon_crypt_centipede_atk_v3/', hit:9 },
   mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v3/', hit:4, fx:[{ frame:4, type:'shroudShot', at:[[0.35,0.40],[0.72,0.33]] }] },   // ver -2919 Ray：「攻擊效果是從袖子射出兩束布」（蓋數字盤是另一件事，待定）
@@ -6010,7 +6010,7 @@ export const ENEMY_MISS = {
   mon_grave_censer: { dir:'resources/enemy/anim/mon_grave_censer_atk_v1/', hit:4 },   // ver -2929 Ray 剪的 tomb3_grave_censer_A_AB_cut（5 格，從原片第 27 格起）＋ R 全格倒放抽半（10 格），打到＝AB 最後一格
   mon_reliquary_hand: { dir:'resources/enemy/anim/mon_reliquary_hand_atk_v1/', hit:16 },   // ver -2926 Ray 剪的 tomb2_reliquary_hand_A_AB_cut（17 格）＋ R 全格倒放抽半（24 格），打到＝AB 最後一格
   /* 伊甸古墓（ver -2909，敵人線 3060）：Ray 剪的 A→B ＋ R（原片全格倒放、去頭尾、抽半＝v3，ver -2914 Ray：「R 用 v3 抽半版」），一支到底；ADM 先共用。twin_skull_hound 打到＝R 第一格（Ray：「r 時第一格才出咬擊判定」） */
-  mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v3/', hit:7 },
+  mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v4/', hit:5 },   // ver -2930 新 B（強透視、拱門內挖空）：Ray 剪的 tomb3_arch_warden_A_AB_cut（6 格）＋ R 全格倒放抽半（19 格）
   mon_candelabra_fiend: { dir:'resources/enemy/anim/mon_candelabra_fiend_atk_v3/', hit:4 },
   mon_crypt_centipede: { dir:'resources/enemy/anim/mon_crypt_centipede_atk_v3/', hit:9 },
   mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v3/', hit:4, fx:[{ frame:4, type:'shroudShot', at:[[0.35,0.40],[0.72,0.33]] }, { frame:4, type:'shroudCover', at:[0.5,0.4] }] },   // ver -2922 Ray：「m 會附加纏布效果」＝射布＋纏布蓋數字盤
@@ -6036,7 +6036,7 @@ export const ENEMY_DELAY = {
   mon_grave_censer: { dir:'resources/enemy/anim/mon_grave_censer_atk_v1/', hit:4 },   // ver -2929 Ray 剪的 tomb3_grave_censer_A_AB_cut（5 格，從原片第 27 格起）＋ R 全格倒放抽半（10 格），打到＝AB 最後一格
   mon_reliquary_hand: { dir:'resources/enemy/anim/mon_reliquary_hand_atk_v1/', hit:16 },   // ver -2926 Ray 剪的 tomb2_reliquary_hand_A_AB_cut（17 格）＋ R 全格倒放抽半（24 格），打到＝AB 最後一格
   /* 伊甸古墓（ver -2909，敵人線 3060）：Ray 剪的 A→B ＋ R（原片全格倒放、去頭尾、抽半＝v3，ver -2914 Ray：「R 用 v3 抽半版」），一支到底；ADM 先共用。twin_skull_hound 打到＝R 第一格（Ray：「r 時第一格才出咬擊判定」） */
-  mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v3/', hit:7 },
+  mon_arch_warden: { dir:'resources/enemy/anim/mon_arch_warden_atk_v4/', hit:5 },   // ver -2930 新 B（強透視、拱門內挖空）：Ray 剪的 tomb3_arch_warden_A_AB_cut（6 格）＋ R 全格倒放抽半（19 格）
   mon_candelabra_fiend: { dir:'resources/enemy/anim/mon_candelabra_fiend_atk_v3/', hit:4 },
   mon_crypt_centipede: { dir:'resources/enemy/anim/mon_crypt_centipede_atk_v3/', hit:9 },
   mon_shroud_widow: { dir:'resources/enemy/anim/mon_shroud_widow_atk_v3/', hit:4, fx:[{ frame:4, type:'shroudShot', at:[[0.35,0.40],[0.72,0.33]] }] },   // ver -2922 Ray：「da 是一般攻擊」＝同 A 射布
