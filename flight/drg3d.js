@@ -269,7 +269,10 @@ function draw(o){
   const fx=o.W/2, fy=0.62*o.VIEWH;
   const rW=Math.max(span*1.35, R.rad*1.12)*sWorld;      // 外接半徑（世界）：翼展＋拍翅餘裕，或整隻的外接球，取大
   const zn=Math.max(o.z-rW, o.z*0.35);
-  const half=Math.ceil(fx*rW/zn);                       // 畫布半邊（CSS px）
+  /* 畫布半邊（CSS px）：離畫面中央越遠，近端被透視往外拉得越多 —— 只算 rW/zn 會把近端切掉，
+     切口是一條直邊，看起來像一圈方框（Ray 11-22：「中近距離、尤其最右邊那艘，一閃即逝的方型外框」） */
+  const skew=Math.max(fx*(1+Math.abs(o.lat)/o.z), fy*(1+Math.abs(o.h)/o.z));
+  const half=Math.ceil(skew*rW/zn);
   const dpr=o.pxScale||Math.min(window.devicePixelRatio||1, 2);   // 與 2D 怪同一個解析度（飛行頁的背景緩衝）
   const dpx=Math.min(MAXPX, Math.ceil(half*2*dpr));
   if(dpx<8) return true;
