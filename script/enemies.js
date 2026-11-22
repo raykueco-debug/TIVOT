@@ -4504,7 +4504,7 @@ export const ENEMIES = {
       delayPenalty:{ seconds:5 },
       special:[],
       boardGrids:[9,9,9,9,9],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      hitFx:{ delay:'claw1', wrong:'bite', assault:'claw' },
+      hitFx:{ delay:'bite', wrong:'bite', assault:'bite' },   // ver -2927 Ray：「匍伏者用咬痕」
       loot:[],
     },
     kneeling_penitent: {
