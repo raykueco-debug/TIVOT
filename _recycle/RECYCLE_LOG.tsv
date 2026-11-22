@@ -3319,3 +3319,40 @@ when	from	to	reason
 20261122-202142	resources/enemy/_neutral_refs/tomb_kf/tb_reliquary_hand_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_reliquary_hand_B.png	Ray 11-22 廢棄重出
 20261122-202142	resources/enemy/_neutral_refs/tomb_kf/tb_pall_bearers_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_pall_bearers_B.png	Ray 11-22 廢棄重出（往後跳了）
 20261122-202142	resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_arch_warden_B.png	Ray 11-22 重跑 B：拱門陰影鑽出怪物攻向 viewer
+20261122-202608	flight/enemy/flh_pirate/mon3d.glb	_recycle/flight/enemy/flh_pirate/mon3d.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate/mon3d_lo.glb	_recycle/flight/enemy/flh_pirate/mon3d_lo.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate/mon3d_atlas.webp	_recycle/flight/enemy/flh_pirate/mon3d_atlas.webp	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n1/mon3d.glb	_recycle/flight/enemy/flh_pirate_n1/mon3d.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n1/mon3d_lo.glb	_recycle/flight/enemy/flh_pirate_n1/mon3d_lo.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n1/mon3d_atlas.webp	_recycle/flight/enemy/flh_pirate_n1/mon3d_atlas.webp	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n2/mon3d.glb	_recycle/flight/enemy/flh_pirate_n2/mon3d.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n2/mon3d_lo.glb	_recycle/flight/enemy/flh_pirate_n2/mon3d_lo.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n2/mon3d_atlas.webp	_recycle/flight/enemy/flh_pirate_n2/mon3d_atlas.webp	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n3/mon3d.glb	_recycle/flight/enemy/flh_pirate_n3/mon3d.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202611	resources/enemy/_neutral_refs/tomb_kf/tb_pall_bearers_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_pall_bearers_B.png.20261122-202611	Ray 11-22 抬棺列先回收
+20261122-202608	flight/enemy/flh_pirate_n3/mon3d_lo.glb	_recycle/flight/enemy/flh_pirate_n3/mon3d_lo.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n3/mon3d_atlas.webp	_recycle/flight/enemy/flh_pirate_n3/mon3d_atlas.webp	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n4/mon3d.glb	_recycle/flight/enemy/flh_pirate_n4/mon3d.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n4/mon3d_lo.glb	_recycle/flight/enemy/flh_pirate_n4/mon3d_lo.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n4/mon3d_atlas.webp	_recycle/flight/enemy/flh_pirate_n4/mon3d_atlas.webp	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n5/mon3d.glb	_recycle/flight/enemy/flh_pirate_n5/mon3d.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n5/mon3d_lo.glb	_recycle/flight/enemy/flh_pirate_n5/mon3d_lo.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n5/mon3d_atlas.webp	_recycle/flight/enemy/flh_pirate_n5/mon3d_atlas.webp	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n6/mon3d.glb	_recycle/flight/enemy/flh_pirate_n6/mon3d.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n6/mon3d_lo.glb	_recycle/flight/enemy/flh_pirate_n6/mon3d_lo.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n6/mon3d_atlas.webp	_recycle/flight/enemy/flh_pirate_n6/mon3d_atlas.webp	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n8/mon3d.glb	_recycle/flight/enemy/flh_pirate_n8/mon3d.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n8/mon3d_lo.glb	_recycle/flight/enemy/flh_pirate_n8/mon3d_lo.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n8/mon3d_atlas.webp	_recycle/flight/enemy/flh_pirate_n8/mon3d_atlas.webp	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n9/mon3d.glb	_recycle/flight/enemy/flh_pirate_n9/mon3d.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n9/mon3d_lo.glb	_recycle/flight/enemy/flh_pirate_n9/mon3d_lo.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n9/mon3d_atlas.webp	_recycle/flight/enemy/flh_pirate_n9/mon3d_atlas.webp	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n10/mon3d.glb	_recycle/flight/enemy/flh_pirate_n10/mon3d.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n10/mon3d_lo.glb	_recycle/flight/enemy/flh_pirate_n10/mon3d_lo.glb	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202608	flight/enemy/flh_pirate_n10/mon3d_atlas.webp	_recycle/flight/enemy/flh_pirate_n10/mon3d_atlas.webp	空賊船十艘重烘：帆單色＋船底平滑（Ray 11-22 核可）
+20261122-202629	flight/enemy/_sailtest_base	_recycle/flight/enemy/_sailtest_base	帆單色／船底拉弧的比較樣本（定案後不再用）
+20261122-202629	flight/enemy/_sailtest_n9	_recycle/flight/enemy/_sailtest_n9	帆單色／船底拉弧的比較樣本（定案後不再用）
+20261122-202629	flight/enemy/_sailtest_n5	_recycle/flight/enemy/_sailtest_n5	帆單色／船底拉弧的比較樣本（定案後不再用）
+20261122-202914	resources/enemy/_neutral_refs/tomb_kf/tb_chain_hanged_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_chain_hanged_B.png.20261122-202914	Ray 11-22 去背壞（GPT Python 去背），改重繪版
+20261122-202914	resources/enemy/_neutral_refs/tomb_kf/tb_reliquary_hand_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_reliquary_hand_B.png.20261122-202914	Ray 11-22 去背壞（GPT Python 去背），改重繪版
+20261122-202914	resources/enemy/_neutral_refs/tomb_kf/tb_grave_censer_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_grave_censer_B.png.20261122-202914	Ray 11-22 香爐要用甩的
