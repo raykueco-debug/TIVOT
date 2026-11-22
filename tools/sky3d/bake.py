@@ -18,7 +18,7 @@
 import sys, os, json, struct, argparse
 sys.stdout.reconfigure(encoding='utf-8')
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 CELLS = os.path.join(ROOT, 'resources', '_originals', 'flight', 'mon3d')
@@ -111,7 +111,75 @@ def sample(img, u, v):
     return img[y, x]
 
 
-def vcolors(P, N, cells):
+def sail_mask(side, low=0.8, minarea=0.002):
+    """空賊船的帆（Ray 11-22：「帆都用單色就好不要有其他紋」）：側面圖裡低彩度的灰塊、而且整塊在船身之上。
+    回 (mask[H,W] bool, 帆色 rgb 0~1)。船身也常常是灰的 —— 用「這一塊的底緣在 low 以上」把它排掉。"""
+    rgb, a = side[..., :3], side[..., 3] > 0.5
+    mx, mn = rgb.max(-1), rgb.min(-1); lum = rgb.mean(-1)
+    g = a & (mx - mn < 0.11) & (lum > 0.10) & (lum < 0.50)
+    H, W = g.shape; s = max(1, W // 320)                     # 降解析度做連通塊（純 python 走訪）
+    gs = g[::s, ::s]; h, w = gs.shape
+    lab = -np.ones((h, w), np.int64); keep = np.zeros((h, w), bool); n = 0
+    for y0, x0 in zip(*np.nonzero(gs)):
+        if lab[y0, x0] >= 0: continue
+        st = [(y0, x0)]; lab[y0, x0] = n; pts = []
+        while st:
+            y, x = st.pop(); pts.append((y, x))
+            for yy, xx in ((y+1, x), (y-1, x), (y, x+1), (y, x-1)):
+                if 0 <= yy < h and 0 <= xx < w and gs[yy, xx] and lab[yy, xx] < 0:
+                    lab[yy, xx] = n; st.append((yy, xx))
+        ys = np.array([p[0] for p in pts]); xs = np.array([p[1] for p in pts])
+        flat = (np.ptp(xs) + 1) > 4 * (np.ptp(ys) + 1)          # 又扁又長＝船舷那一條灰帶，不是帆
+        if ys.max() < low * h and len(pts) > minarea * h * w and not flat:
+            keep[tuple(np.array(pts).T)] = True
+        n += 1
+    m = Image.fromarray((keep * 255).astype(np.uint8)).resize((W, H), Image.NEAREST)
+    m = m.filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.MinFilter(3))   # 補帆面上的縫線／描邊，邊緣多吃一點
+    m = np.asarray(m) > 127
+    col = np.median(rgb[g & m], 0) if (g & m).any() else np.array([0.25, 0.25, 0.25])
+    return m & a, col
+
+
+def keel_arc(P, band=0.12, deg=2, nb=160, cut=0.30, lift=0.5, sm=0.0):
+    """空賊船船底拉成乾淨的弧（Ray 11-22：「有些船底在側面變波浪狀了，要拉成乾淨的弧型」）。
+    側面（z–y）的船底線＝每一段 z 的最低點；船身那一段用 deg 次多項式擬合成平滑弧，
+    再把船底往上 band×全高 以內的頂點等比拉過去（上緣不動，所以船舷與甲板不受影響）。
+    船身段＝最低點低於 底＋cut×全高 的那幾段（船首斜桅、舵槳那種高高懸著的不算）。"""
+    y0, y1 = P[:, 1].min(), P[:, 1].max(); Hh = y1 - y0
+    z0, z1 = P[:, 2].min(), P[:, 2].max()
+    b = np.clip(((P[:, 2] - z0) / (z1 - z0) * nb).astype(int), 0, nb - 1)
+    mn = np.full(nb, np.inf); np.minimum.at(mn, b, P[:, 1])
+    zc = z0 + (np.arange(nb) + 0.5) / nb * (z1 - z0)
+    ok = np.isfinite(mn) & (mn < y0 + cut * Hh)
+    idx = np.nonzero(ok)[0]
+    if len(idx) < deg + 3: print('keel: 找不到船身段'); return P
+    a0, a1 = idx[0], idx[-1]; seg = np.arange(a0, a1 + 1); seg = seg[ok[seg]]
+    if sm > 0:   # 沿原本的船底線做寬幅高斯平滑：保留平的中段與上翹的頭尾，只抹掉波浪（Ray：本船「再調」）
+        line = np.interp(zc, zc[seg], mn[seg]); sig = max(1.0, sm * (a1 - a0 + 1))
+        h = max(1, int(0.05 * (a1 - a0 + 1)))   # 先中位數濾掉尖刺（船尾螺旋槳的葉片會把船底線往下拉）
+        line[a0:a1 + 1] = [np.median(line[max(a0, i - h):min(a1, i + h) + 1]) for i in range(a0, a1 + 1)]
+        kk = np.arange(-int(3 * sig), int(3 * sig) + 1); ker = np.exp(-0.5 * (kk / sig) ** 2); ker /= ker.sum()
+        pad = np.pad(line[a0:a1 + 1], len(kk) // 2, mode='reflect')
+        fit = line.copy(); fit[a0:a1 + 1] = np.convolve(pad, ker, 'valid')
+    else:
+        co = np.polyfit(zc[seg], mn[seg], deg); fit = np.polyval(co, zc)
+        # 不准比原本鼓得更深：最低點對齊船底的中位高度往下 lift×(中位−最低)
+        med, lo_ = np.median(mn[seg]), mn[seg].min(); floor = med - lift * (med - lo_)
+        fit = fit + max(0.0, floor - fit[seg].min())
+    raw = np.where(ok, mn, fit)
+    w = np.zeros(nb); span = a1 - a0 + 1; ramp = max(2, span // 12)   # 兩端漸入，船首船尾不會折一下
+    for k in range(a0, a1 + 1): w[k] = min(1, (k - a0 + 1) / ramp, (a1 - k + 1) / ramp)
+    tgt = raw + w * (fit - raw)
+    rawv, tgtv = np.interp(P[:, 2], zc, raw), np.interp(P[:, 2], zc, tgt)
+    ref = np.maximum(rawv, tgtv) + band * Hh
+    m = P[:, 1] < ref
+    k = (ref - tgtv) / np.maximum(ref - rawv, 1e-9)
+    Q = P.copy(); Q[m, 1] = ref[m] - (ref[m] - P[m, 1]) * k[m]
+    print('keel: 船身段 z', round(zc[a0], 3), '~', round(zc[a1], 3), '最大位移', round(float(np.abs(Q[:, 1] - P[:, 1]).max() / Hh), 3), '×全高')
+    return Q
+
+
+def vcolors(P, N, cells, sail=None):
     lo, hi = P.min(0), P.max(0); q = (P - lo) / (hi - lo)
     side_u = np.where(N[:, 0] > 0, 1 - q[:, 2], q[:, 2])
     S = [(cells['front'], q[:, 0], 1 - q[:, 1], np.maximum(N[:, 2], 0)),
@@ -125,7 +193,13 @@ def vcolors(P, N, cells):
     allpix = np.concatenate([c[c[:, :, 3] > 0.5][:, :3] for c in cells.values()])
     med = np.median(allpix, 0)
     col = np.where(W[:, None] > 1e-6, acc / np.maximum(W, 1e-6)[:, None], med)
-    return np.concatenate([(col * 255).round(), np.full((len(P), 1), 255)], 1)
+    alpha = np.full((len(P), 1), 255.0)
+    if sail is not None:                                     # 帆：單色，alpha 0＝drg3d.js 的著色器不吃貼圖
+        m, sc = sail; h, w = m.shape
+        x = np.clip((side_u * (w - 1)).round().astype(int), 0, w - 1); y = np.clip(((1 - q[:, 1]) * (h - 1)).round().astype(int), 0, h - 1)
+        hit = m[y, x]; col[hit] = sc; alpha[hit] = 0
+        print('帆頂點', int(hit.sum()), '/', len(P), '帆色', (sc * 255).round().astype(int).tolist())
+    return np.concatenate([(col * 255).round(), alpha], 1)
 
 
 def atlas(cells, out):
@@ -140,6 +214,8 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument('key'); ap.add_argument('raw'); ap.add_argument('outdir')
     ap.add_argument('--hi', type=int, default=30000); ap.add_argument('--lo', type=int, default=17000)
     ap.add_argument('--crop', default=''); ap.add_argument('--planez', default=''); ap.add_argument('--cropn', default=''); ap.add_argument('--keep', type=float, default=0.02); ap.add_argument('--cells', default='_cells')   # 例：_cells_vein5_60（wing_veins.py 產的）
+    ap.add_argument('--sail', action='store_true')   # 空賊船：帆塗單色、不吃貼圖（sail_mask）
+    ap.add_argument('--keel', action='store_true'); ap.add_argument('--keeldeg', type=int, default=2); ap.add_argument('--keellift', type=float, default=0.5); ap.add_argument('--keelsm', type=float, default=0.0)   # >0＝改用平滑（σ＝船身長的比例），不用多項式   # 空賊船：船底拉成平滑弧（keel_arc）
     a = ap.parse_args()
     P, I = load_glb(a.raw); print('raw', len(P), 'v', len(I), 'f')
     C = P[I].mean(1); drop = np.zeros(len(I), bool)
@@ -159,12 +235,16 @@ def main():
     keep = ids[cnt >= cnt.max() * a.keep]; I = I[np.isin(comp, keep)]
     print('components', len(ids), 'kept', len(keep), 'faces', len(I))
     used = np.unique(I); rm = -np.ones(len(P), np.int64); rm[used] = np.arange(len(used)); P = P[used]; I = rm[I]
+    if a.keel: P = keel_arc(P, deg=a.keeldeg, lift=a.keellift, sm=a.keelsm)
     cells = load_cells(a.key, a.cells); os.makedirs(a.outdir, exist_ok=True)
+    sail = sail_mask(cells['side']) if a.sail else None
+    if sail is not None:
+        Image.fromarray((sail[0] * 255).astype(np.uint8)).save(os.path.join(CELLS, a.key + '_sailmask.png'))   # 給人檢查
     for tag, tgt in [('', a.hi), ('_lo', a.lo)]:
         Q, F = decimate(P, I, tgt)
         vol = np.einsum('ij,ij->i', Q[F[:, 0]], np.cross(Q[F[:, 1]], Q[F[:, 2]])).sum()
         if vol < 0: F = F[:, [0, 2, 1]]
-        N = vnormals(Q, F); Cv = vcolors(Q, N, cells)
+        N = vnormals(Q, F); Cv = vcolors(Q, N, cells, sail)
         f = os.path.join(a.outdir, f'mon3d{tag}.glb'); save_glb(f, Q, N, Cv, F)
         print(f, len(Q), 'v', len(F), 'f', os.path.getsize(f) // 1024, 'KB', 'vol', round(vol, 3))
     atlas(cells, os.path.join(a.outdir, 'mon3d_atlas.webp')); print('atlas ok')

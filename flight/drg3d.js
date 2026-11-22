@@ -80,7 +80,7 @@ const DEF={
      飛行頁只有一種 `pirate`，戰鬥那邊有十艘（本船＋n1~n6／n8／n9／n10）→ 模型掛在 `vars`，
      現在由網址 `&drg3dvar=<n2…>`（或 DRG3D.dbg.variant）挑；遭遇時挑哪一艘要等戰鬥卡那一邊定（未接）。
      fit:'rad'：船是長條，照外接球（≈半船長）對齊 2D 的船長 300（bodyLen）。 */
-  pirate:      { dir:'enemy/flh_pirate/', file:'mon3d', spanK:0.31, fit:'rad',
+  pirate:      { dir:'enemy/flh_pirate/', file:'mon3d', spanK:0.31, fit:'rad', twoSide:true,
                  flap:{ cut:[0.3,0.6,0.9], amp:[0,0,0], rest:[0,0,0], lag:0, down:0.5 },
                  vars:{ n1:{ dir:'enemy/flh_pirate_n1/' }, n2:{ dir:'enemy/flh_pirate_n2/' }, n3:{ dir:'enemy/flh_pirate_n3/' }, n4:{ dir:'enemy/flh_pirate_n4/' }, n5:{ dir:'enemy/flh_pirate_n5/' }, n6:{ dir:'enemy/flh_pirate_n6/' }, n8:{ dir:'enemy/flh_pirate_n8/' }, n9:{ dir:'enemy/flh_pirate_n9/' }, n10:{ dir:'enemy/flh_pirate_n10/' } } },
 };
@@ -105,7 +105,7 @@ uniform vec4 uTent;                     // 觸手蠕動：起點 y、幅度（×
 uniform float uYmin;
 uniform vec3 uWave;                     // 全身上下波（像飛鰩）：幅度（×半翼展）、波數、相位
 uniform float uRoll;                    // 側傾（rad，繞機身前後軸；正＝右翼往下，轉右彎）
-out vec3 vC; out vec3 vN; out vec3 vP; out vec3 vN0;
+out vec3 vC; out vec3 vN; out vec3 vP; out vec3 vN0; out float vA;   // vA＜0.5＝這個頂點不吃貼圖（空賊船的帆：bake.py --sail）
 vec2 rot(vec2 q, float a){ float s=sin(a), co=cos(a); return vec2(co*q.x-s*q.y, s*q.x+co*q.y); }
 void main(){
   vec3 P=p+n*uOut, N=n;
@@ -142,21 +142,22 @@ void main(){
                    -(uF.y*Y-uF.y*uO.y/uO.z*Z)/uHalf.y,
                    (Z-uO.z)/uR*Z, Z);
   vP=p; vN0=n;
-  vC=c.rgb; vN=vec3(nl,N.y,-nd);       // 鏡頭空間：x 右、y 上、z 朝鏡頭
+  vC=c.rgb; vA=c.a; vN=vec3(nl,N.y,-nd);       // 鏡頭空間：x 右、y 上、z 朝鏡頭
 }`;
 const FS=`#version 300 es
 precision mediump float;
-in vec3 vC; in vec3 vN; in vec3 vP; in vec3 vN0;
+in vec3 vC; in vec3 vN; in vec3 vP; in vec3 vN0; in float vA;
 uniform vec3 uLit; uniform float uLine; uniform vec3 uLineC;
 uniform sampler2D uTex; uniform vec3 uMin, uMax; uniform float uUseTex;
 out vec4 o;
 /* 四視圖投影：模型外框線性對到圖集的四格（正／背／側／俯），依原始法線混合 */
 vec4 cell(vec2 uv, float i){ uv=clamp(uv,0.004,0.996); return texture(uTex, (uv+vec2(mod(i,2.0), floor(i/2.0)))*0.5); }
 void main(){
-  if(uLine>0.5){ o=vec4(uLineC,1.0); return; }
+  if(uLine>0.5){ if(vA<0.5) discard; o=vec4(uLineC,1.0); return; }   // 帆不描邊：薄帆破洞會透出一點一點的深色（Ray 11-22「帆單色不要有紋」）
+  if(vA<0.5){ o=vec4(vC*0.92*uLit,1.0); return; }                     // 帆：單色、不分明暗、不吃貼圖
   vec3 R=uMax-uMin, q=(vP-uMin)/R;
   vec3 col=vC;
-  if(uUseTex>0.5){
+  if(uUseTex>0.5 && vA>0.5){
     vec3 n=normalize(vN0);
     float wf=pow(max(n.z,0.0),8.0), wb=pow(max(-n.z,0.0),8.0), ws=pow(abs(n.x),8.0), wt=pow(abs(n.y),8.0);   // 指數大＝每個面只吃最對得上的那一張，不疊成水彩
     vec4 tf=cell(vec2(q.x,1.0-q.y),0.0), tb=cell(vec2(1.0-q.x,1.0-q.y),1.0),
@@ -197,11 +198,17 @@ function flapOf(kind){
 }
 
 /* 同一種怪有好幾個模型（`vars`，空賊船）：目前挑哪一個由 DBG.variant 決定；M 的鑰匙是「種類#款」 */
-function varOf(kind){ const D=DEF[kind], v=DBG.variant; return (D && D.vars && v && D.vars[v]) ? v : ''; }
-function mkey(kind){ const v=varOf(kind); return v ? kind+'#'+v : kind; }
-function defOf(kind){ const v=varOf(kind); return v ? Object.assign({}, DEF[kind], DEF[kind].vars[v]) : DEF[kind]; }
-function load(kind){
-  const key=mkey(kind), D=defOf(kind); if(!D || M[key]) return;
+/* `drg3dvar=all`（檢查用，Ray 11-22：「一次開十艘在同一個遊戲裡」）：數量自動＝款數，第 i 隻用第 i 款（0＝本船） */
+function varList(kind){ const D=DEF[kind]; return (D && D.vars) ? [''].concat(Object.keys(D.vars)) : ['']; }
+const varAll=kind=>DBG.variant==='all' && !!(DEF[kind] && DEF[kind].vars);
+function varOf(kind,slot){ const D=DEF[kind], v=DBG.variant;
+  if(varAll(kind)){ const L=varList(kind); return L[(slot||0)%L.length]; }
+  return (D && D.vars && v && D.vars[v]) ? v : ''; }
+function mkey(kind,slot){ const v=varOf(kind,slot); return v ? kind+'#'+v : kind; }
+function defOf(kind,slot){ const v=varOf(kind,slot); return v ? Object.assign({}, DEF[kind], DEF[kind].vars[v]) : DEF[kind]; }
+function load(kind,slot){
+  if(slot==null && varAll(kind)){ varList(kind).forEach((_,i)=>load(kind,i)); return; }
+  const key=mkey(kind,slot), D=defOf(kind,slot); if(!D || M[key]) return;
   const R=M[key]={ state:1 };
   if(!init()){ R.state=-1; return; }
   const base=D.dir+D.file;
@@ -253,10 +260,10 @@ const CAD={ pat:[1,1,0], n:0, dpx:0, kind:'', slots:[], keepNow:false };
 /* 畫一隻：o＝{ kind, ctx, x, y（螢幕 CSS px 的中心）, lat, h, z（中心在鏡頭座標：橫向／鏡頭高−牠高／進深）,
    l, f（航向在鏡頭座標）, W, VIEWH, now, lit:[r,g,b], pxScale, clip:fn } */
 function draw(o){
-  const kind=o.kind||'bldragon', key=mkey(kind), R=M[key];
+  const kind=o.kind||'bldragon', key=mkey(kind,o.slot), R=M[key];
   if(!R || R.state!==2) return false;
   const t0=performance.now();
-  const D=defOf(kind), K=ENEMY_KINDS[kind], SP=K.sprite||{};
+  const D=defOf(kind,o.slot), K=ENEMY_KINDS[kind], SP=K.sprite||{};
   const spanW=(SP.frontSpanW||SP.spanW||980)*D.spanK*tuneOf('size',o.kind);   // TUNE：遭遇測試的大小滑桿（只在測試時有值）
   const span=R.span, sWorld=spanW/2/(D.fit==='rad' ? R.rad : span);   // 模型單位 → 世界單位（翼展對齊 2D 那張圖；管狀的怪 fit:'rad' 改用外接球）
   const fx=o.W/2, fy=0.62*o.VIEWH;
@@ -328,6 +335,7 @@ function draw(o){
   }
   /* ② 本體 */
   g.cullFace(g.BACK);
+  if(D.twoSide) g.disable(g.CULL_FACE);   // 空賊船：薄帆的面向不一致，單面畫會破洞
   g.uniform1f(U.uOut,0); g.uniform1f(U.uLine,0);
   g.drawElements(g.TRIANGLES,R.nIdx,R.idxT,0);
   g.disable(g.CULL_FACE);
@@ -368,7 +376,8 @@ let tuneDirty=false;
   if(x.status===200){ const t=JSON.parse(x.responseText); for(const k in TUNE) if(t[k] && typeof t[k]==='object') TUNE[k]=t[k]; } }catch(e){} })();
 const TUNE_DEF={ engage:null, size:1, count:1, anim:1, speed:1, approach:'', chase:null, gone:3400, bank:45, bankT:350, wave:0.06, waveN:1.0, tent:0, tentY:0.55, tentN:1.2, line:1, lineMin:40 };   // null＝沿用 ENEMY_CFG.engage
 const TUNE_KDEF={ sky_gasjelly:{ tent:0.12 }, pirate:{ wave:0, bank:12 } };   // 空賊船：不扭、轉彎只微傾   // 這一種怪的預設（沒存過才用）
-const tuneOf=(f,k)=>{ const v=TUNE[f][k]; if(v!=null) return v; if(TUNE_KDEF[k] && TUNE_KDEF[k][f]!=null) return TUNE_KDEF[k][f];
+const tuneOf=(f,k)=>{ if(f==='count' && varAll(k)) return varList(k).length;   // 十艘並排檢查：不動 Ray 存的數量
+  const v=TUNE[f][k]; if(v!=null) return v; if(TUNE_KDEF[k] && TUNE_KDEF[k][f]!=null) return TUNE_KDEF[k][f];
   try{ if(f==='engage') return ENEMY_CFG.engage; if(f==='chase') return Math.round(ENEMY_CFG.spawnDist*ENEMY_CFG.chaseAt); }catch(e){ return f==='engage'?300:1680; }
   return TUNE_DEF[f]; };
 function tuneSave(){ tuneDirty=true; const b=document.getElementById('drg3dSave'); if(b){ b.textContent='儲存 *'; b.style.background='#c0392b'; } }
@@ -387,7 +396,8 @@ const HOLDLIST=HOLDARG==='all' ? Object.keys(DEF) : [HOLDARG];   // 南天的霸
 let holdIx=0;
 window.DRG3D={ mode:MODE, hold:HOLD, fight:FIGHT, noFight:(()=>{ try{ return localStorage.getItem('drg3dNoFight')!=='0'; }catch(e){ return true; } })(), fightTimer:1500, engaged, fightTick, get holdKind(){ return HOLDLIST[holdIx]; }, cad:CAD, bench, off, dbg:DBG, def:DEF, models:M, stat, draw,
   has:k=>!!DEF[k],
-  ready:k=>{ k=k||'bldragon'; if(!off.on || !DEF[k]) return false; const key=mkey(k); if(!M[key]) load(k); return M[key].state===2; },
+  ready:k=>{ k=k||'bldragon'; if(!off.on || !DEF[k]) return false; if(varAll(k)){ load(k); return varList(k).every((_,i)=>M[mkey(k,i)] && M[mkey(k,i)].state===2); }
+    const key=mkey(k); if(!M[key]) load(k); return M[key].state===2; },
   next:d=>{ holdIx=(holdIx+(d||1)+HOLDLIST.length)%HOLDLIST.length; load(HOLDLIST[holdIx]); holdUi(); if(FIGHT) fightUi(); }, tune:TUNE, tuneOf,
   spanOf:k=>{ let SP={}; try{ SP=ENEMY_KINDS[k].sprite||{}; }catch(e){} return (SP.frontSpanW||SP.spanW||980)*(DEF[k]?DEF[k].spanK:1)*tuneOf('size',k); } };
 /* 整個面板（選怪列＋調整表）一起收：只留左上一顆小鈕（Ray：「收合的是整個表單，擋在畫面上我看個屁」）。
