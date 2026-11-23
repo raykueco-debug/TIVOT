@@ -3189,6 +3189,7 @@ function memberActOnce(g, im, A){
   stepSes(sp, fps, ()=>im._ov===ov && !!groupCard && !im.classList.contains('eg-down'));
   if(sp.retractSe && sp.retractAt!=null && !sp.rev) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) windupSe(sp.retractSe); }, sp.retractAt*1000/fps);   // 片子自帶收回：收回音在那一格放（`retractAt`，ver -2720）
   if(sp.flame) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) spawnFlame(ov, sp.flame, fps, ()=>im._ov===ov && !!groupCard); }, sp.flame.from*1000/fps);
+  for(const f of (sp.fx||[])) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) clipFx(f, ov); }, f.frame*1000/fps);   // 動作段的程式特效（`fx`，單隻那條已有；ver -2953 群戰也吃：鐵衣苦修者落地震動＋擊地煙）
   const fxKey = sp.hitFx || (A===im._atk ? cardAssaultKey() : null);   // 攻擊片（含代演 D／M）＝攻擊那一套受擊（ver -2678）
   if(fxKey){ actFx={ key:fxKey, im, at:performance.now()+hit*1000/fps };   // 這一擊用牠自己的受擊特效（見 showHitFx 上面）
     for(const f of (sp.strikes||[])) if(f<hit) setTimeout(()=>{ if(im._ov===ov && groupCard && !im.classList.contains('eg-down')) strikeFx(fxKey); }, f*1000/fps); }

@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2952';
+export const VERSION = 'ver 2026.11.24-2953';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5979,10 +5979,10 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   /* 卡耶爾群戰成員（ver -2623，Kling、快剪 24fps；片尾 B 停格約 1 秒）。hit＝主體最大那一格（交件單）。 */
   mon_canyon_coffinbeetle_dark: { dir:'resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v2/', hit:16, hitFx:'beetle_claw', windupSe:'se_enemy_bug01' },   // 一支到底（片尾回中立）；ver -2675：打到＝巨大化的第一格 16（主體面積由 129k 跳到 201k、之後撐到 21 格；Ray：「巨大化的第一幀就要放效果」），水平單爪痕＋揮砍音；嘶鳴起手放（Ray：「se_enemy_bug01 + slash 跟單爪痕」「固定橫痕 slash 在最大時出」）
   mon_canyon_bellwyrm_dark: { dir:'resources/enemy/anim/mon_canyon_bellwyrm_dark_atk_v1/', hit:19, hitFx:'wyrm_bite' },   // ver -2709：Ray 剪的 cut（35 格）＋鎖尾部大小位置（tools/anim/lock_region.py）；打到＝原第 50 格＝剪後第 19 格
-  mon_canyon_ribcage_dark: { dir:'resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1/', hit:30, hitFx:'rib_fire', flame:{ from:28, to:42, at:[0.687,0.51] }, skip:[42,58], stepSe:{ se:'se_clickstep', at:[11,17,87,93] } },   /* ver -2724（Ray：「配合腳部給他爪在地上走的聲音」）：轉身側移與轉回收回各兩聲（Ray：「腳步兩聲就好」） */   // ver -2683（Ray：「換成從尾部噴射火燄的特效」）：長頸末端的嘴第 28～70 格朝鏡頭噴火（嘴的位置逐格量過，28～74 格穩在 0.687／0.51），打到＝火噴到第 2 格
+  mon_canyon_ribcage_dark: { dir:'resources/enemy/anim/mon_canyon_ribcage_dark_atk_v2/', hit:10, hitFx:'rib_fire', flame:{ from:10, to:17, at:[0.687,0.51] }, stepSe:{ se:'se_clickstep', at:[5,8,22,24] } },   /* ver -2953 效能副理：Ray 剪幀 101→28 格（297→82 MB）；照 kept_index 換算：打到 30→10、噴火 原 28～70→10～17、腳步 11/17/87/93→5/8/22/24；skip 拿掉（中段定格已剪掉） */   /* ver -2724（Ray：「配合腳部給他爪在地上走的聲音」）：轉身側移與轉回收回各兩聲（Ray：「腳步兩聲就好」） */   // ver -2683（Ray：「換成從尾部噴射火燄的特效」）：長頸末端的嘴第 28～70 格朝鏡頭噴火（嘴的位置逐格量過，28～74 格穩在 0.687／0.51），打到＝火噴到第 2 格
   /* 卡耶爾 Wan 攻擊（ver -2637，敵人副理 f13d457f／ce7379fe；Ray：「有一些 WAN 的動畫也要接上」）。交件單沒寫打到格 ⇒ 取「與第 0 格差最多」那一格（動作最大的一刻）。
      （聖面鷲／骨鴉 -2641 起改成「一閃」，見下面 `issen` 那兩列。） */
-  mon_canyon_hanged_dark: { dir:'resources/enemy/anim/mon_canyon_hanged_dark_atk_v1/', hit:19, hitFx:'pilgrim_sonic' },   // 崖縫吊屍者 張手咆哮（99 格，片尾已接 R 倒放）；打到時放音爆＝與朝聖者團塊同一組（聲波環＋數字淡出＋se_enemy_squeal_echo，ver -2688；-2687 先接，Ray：「崖縫吊屍者加入音爆效果」）
+  mon_canyon_hanged_dark: { dir:'resources/enemy/anim/mon_canyon_hanged_dark_atk_v2/', hit:10, hitFx:'pilgrim_sonic' },   // ver -2953 效能副理：Ray 剪幀 99→22 格（93→21 MB），打到 19→10   // 崖縫吊屍者 張手咆哮（99 格，片尾已接 R 倒放）；打到時放音爆＝與朝聖者團塊同一組（聲波環＋數字淡出＋se_enemy_squeal_echo，ver -2688；-2687 先接，Ray：「崖縫吊屍者加入音爆效果」）
   /* 一閃（ver -2641，-2646 Ray 命名；憲法 natali rule 第 13 條）：`issen:true` ＝片子只演「殘影消失」（10 格），播完程式接一條刀斬光線隨機角度一閃
      （閃到滿那一刻＝打到、不放受擊特效）。`home` ＝之後怎麼歸位（Ray：「歸位另算」）：'dive'＝從上方略斜飛回、衝過頭拉回、拍翅；沒寫＝原地淡回。
      實作只有 enemy.memberIssen／issenHome 兩支。 */
@@ -5996,7 +5996,7 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   mon_canyon_chainhound_dark: { dir:'resources/enemy/anim/mon_canyon_chainhound_dark_atk_v1/', hit:45, hitFx:'chain_maul', windupSe:'se_enemy_beast04', windupMs:958, fillFrame:true },   // 吼聲從第 23 格轉正面那一刻放（23/24 秒，ver -2667，Ray：「從轉正開始放」）   // 鎖鏈餓犬
   mon_canyon_lanternimp_dark: { dir:'resources/enemy/anim/mon_canyon_lanternimp_dark_atk_v1/', hit:24, fillFrame:true },   // 提燈小鬼
   /* 朝聖者團塊（ver -2652，Ray：「他是聲波攻擊 聲波用程式跑」「優先讓他先攻」）：A 借牠的點錯片（張手，打到＝第 20 格）演，打到時程式放聲波（`hitFx:'sonic'`：模糊聲波環＋盤面數字快速淡出再慢慢淡回）；`first`＝這一組的第一擊優先由牠；`last`＝這一組最後才倒（-2655，Ray：「那隻怪留到最後死」）。 */
-  mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20, hitFx:'pilgrim_sonic', first:true, last:true },
+  mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v2/', hit:5, hitFx:'pilgrim_sonic', first:true, last:true },   // ver -2953 效能副理：Ray 剪幀 101→30 格（318→94 MB），打到 原第 20 格→第 5 格（原 23）
   mon_canyon_crawler_dark: { dir:'resources/enemy/anim/mon_canyon_crawler_dark_atk_v1/', hit:45, hitFx:'crawler_hit', fillFrame:true },   // 爬行朝聖者   // 噴火交程式（數值待 Ray，還沒做）   // 崩岩巨像 拳砸地（ver -2620，KF 第二輪，36 格）
   mon_stag_rot_neutral: { dir:'resources/enemy/anim/mon_stag_rot_neutral_atk_v1/', hit:17 },   // 腐鹿骸 角頂（ver -2620，KF 第二輪，30 格）
   mon_shinierforest_deernightmare: { dir:'resources/enemy/anim/mon_shinierforest_deernightmare_atk_v1/', hit:32 },   // 變異樹靈鹿主 仰天咆哮（ver -2620，KF 第二輪，55 格；攻擊＝延時同一支）
@@ -6067,7 +6067,7 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_miss_v1/', hit:12,
     fx:[{ frame:12, type:'shake', heal:0.10, wipe:true, se:'se_brickcrush' }, { frame:14, type:'shake' }, { frame:17, type:'shake' }],
     windupSe:'se_enemy_dragonroar', windupMs:563, windupFit:{ from:0.1, to:3.5, dur:0.75 } },
-  mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20 },   // 卡耶爾群戰（ver -2623）
+  mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v2/', hit:5 },   // 卡耶爾群戰（ver -2623）
   mon_canyon_stilt_neutral: { dir:'resources/enemy/anim/mon_canyon_stilt_neutral_miss_v1/', hit:7, hitFx:'stilt_claw' },   // ver -2705：Ray 剪的 cut（18 格，原片 0,1,7,8,28,29,35,42,49,70…98），打到＝斜劈第 7 格（原 42）。ver -2704：換成 GPT 四宮格 1→2→3 ＋回中立 I 的橫框 Wan（99 格、未剪，先接上）；打到暫定斜劈中段第 55 格
   mon_bear_nightmare: { dir:'resources/enemy/anim/mon_bear_nightmare_miss_v1/', hit:37 },   // 熊骸（夢魘）點錯＝爪擊（ver -2620，KF 第二輪，62 格）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, windupSe:'se_flame', fx:[{ frame:48, type:'rubble', se:'se_rockimpact' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
@@ -6103,9 +6103,9 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
      打到那一格從拳頭（畫面約 22%,30%）噴飛石朝鏡頭飛來＋石塊音 se_crash_rocks（Ray：「加入飛石朝 viewer 飛來特效 用石塊音效」）。 */
   mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_delay_v1/', hit:5,
     fx:[{ frame:5, type:'rubble', at:[0.22,0.30], n:30, speed:1.8, se:'se_rockimpact' }] },   // ver -2701（Ray：「飛石快一點 石頭音用搥地的石頭音」）：1.8 倍速、音效換攻擊拳砸地那支
-  mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1/', hit:20 },   // 朝聖者團塊＝D 的本職（ver -2655，Ray：「D 一定出聲波」；聲波本身在卡上 hitFx.delay:'sonic'）
+  mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v2/', hit:5 },   // 朝聖者團塊＝D 的本職（ver -2655，Ray：「D 一定出聲波」；聲波本身在卡上 hitFx.delay:'sonic'）
   mon_canyon_bonecrab_dark: { dir:'resources/enemy/anim/mon_canyon_bonecrab_dark_delay_v1/', hit:4 },   // 卡耶爾群戰（ver -2623）；ver -2736：換成橫框 Wan（主體 52%，不出框）＋Ray 剪的 canyon_crab_wide2_cut（21 格），身體不縮、張鉗那幾格往鏡頭推 1.25；打到＝張最開的第 4 格
-  mon_canyon_ironpenitent_neutral: { dir:'resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1/', hit:38, hitFx:'iron_smash', windupSe:'se_chain_heavy', retractSe:'se_chain_heavy', retractAt:53 },   // ver -2723：換成 Ray 在 chk 逐格調好大小位置的 cut（iron_delay_orig_cut，98 格；打到＝原第 40 格＝第 38 格，收回音＝原第 56 格＝第 53 格）   // ver -2720（Ray：「關掉倒放」）：片子本身已含收回，拿掉 rev（群戰會整支再倒放一次＝砸兩次）；收回的鐵鏈聲改在第 51 格（retractAt）放   // ver -2680（Ray：「動作開始 se_chain_heavy／擊中 heavymetal／收回 se_chain_heavy」）   // rev＝播完倒放回中立（Ray 11-15「鐵衣 R＝倒放」；目前只有群戰讀）   // ver -2719：Ray 在對位頁逐格手調（resources/enemy/anim/_iron_delay_anchor.json），刪第 11、12、53～55 格（96 格），打到 40→38
+  mon_canyon_ironpenitent_neutral: { dir:'resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v2/', hit:17, hitFx:'iron_smash', windupSe:'se_chain_heavy', retractSe:'se_chain_heavy', retractAt:21, fx:[{ frame:17, type:'shake' }, { frame:17, type:'dust', n:2 }] },   // ver -2953 效能副理：Ray 剪幀 98→41 格（334→140 MB）；Ray：「第 46 格要有畫面震動跟擊地煙」⇒ 打到＝原第 46 格＝第 17 格（停 ×2），震動＋擊地煙掛同一格（不論有沒有打到玩家都演）；收回音 原 53→第 21 格（原 59）   // ver -2723：換成 Ray 在 chk 逐格調好大小位置的 cut（iron_delay_orig_cut，98 格；打到＝原第 40 格＝第 38 格，收回音＝原第 56 格＝第 53 格）   // ver -2720（Ray：「關掉倒放」）：片子本身已含收回，拿掉 rev（群戰會整支再倒放一次＝砸兩次）；收回的鐵鏈聲改在第 51 格（retractAt）放   // ver -2680（Ray：「動作開始 se_chain_heavy／擊中 heavymetal／收回 se_chain_heavy」）   // rev＝播完倒放回中立（Ray 11-15「鐵衣 R＝倒放」；目前只有群戰讀）   // ver -2719：Ray 在對位頁逐格手調（resources/enemy/anim/_iron_delay_anchor.json），刪第 11、12、53～55 格（96 格），打到 40→38
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_burst_v1/', hit:48, windupSe:'se_flame' },   // D＝爆炎（81 格；ver -2525 Ray 改：爆炎是 D，之後下一發攻擊 200%，見卡上 delayEmpowers）
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7 },   // 訓練用聖徒 新架勢 攻擊＝延時＝點錯（ver -2527，31 格，最後一格回到架勢）
   mon_saint_inspector: { dir:'resources/enemy/anim/mon_saint_inspector_delay_v1/', hit:23 },   // 監查者 翅膀揮動（ver -2620，KF 第二輪，39 格）
@@ -6933,30 +6933,6 @@ export const ASSET_VER = {
   'forest_valley_day': '0568f4fc',
   'forest_valley_dusk': '5f1c4cf2',
   'forest_valley_night': '56ddc754',
-  'frame_74': 'fe3fa4d3',
-  'frame_75': 'e02ab507',
-  'frame_76': '26affd33',
-  'frame_77': 'd7efeb36',
-  'frame_78': '2ca09bee',
-  'frame_79': '1cc0990c',
-  'frame_80': '445cdc3b',
-  'frame_81': '1ce0680f',
-  'frame_82': '7e744ae0',
-  'frame_83': 'a7e285ac',
-  'frame_84': '7fa3b10a',
-  'frame_85': '7fa3b10a',
-  'frame_86': '26fd20da',
-  'frame_87': '26fd20da',
-  'frame_88': 'c9ec8b44',
-  'frame_89': '425359eb',
-  'frame_90': '043005e3',
-  'frame_91': '0ec6184a',
-  'frame_92': 'ac240671',
-  'frame_93': '27654565',
-  'frame_94': '2ba08297',
-  'frame_95': 'f60857b9',
-  'frame_96': '91f0c279',
-  'frame_97': '4e308ca2',
   'guard_5': '3c00ac54',
   'guildcounterca_si_closed': '80cc27b6',
   'guildcounterca_si_half': 'f341b6bb',

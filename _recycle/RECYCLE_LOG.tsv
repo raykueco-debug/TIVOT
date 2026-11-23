@@ -3427,3 +3427,7 @@ when	from	to	reason
 20261124-001023	resources/enemy/_neutral_refs/s4_kf/s4_wolf_B_bite_gpt.png	_recycle/resources/enemy/_neutral_refs/s4_kf/s4_wolf_B_bite_gpt.png	Ray 11-24：狼骸群回收
 20261124-001023	resources/enemy/_neutral_refs/s4_kf/s4_wolf_B_claw_gpt.png	_recycle/resources/enemy/_neutral_refs/s4_kf/s4_wolf_B_claw_gpt.png	Ray 11-24：狼骸群回收
 20261124-001023	resources/enemy/_neutral_refs/s4_kf/src/mon_wolf_pack.png	_recycle/resources/enemy/_neutral_refs/s4_kf/src/mon_wolf_pack.png	Ray 11-24：狼骸群回收
+20261124-003200	resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1	_recycle/resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v1	ver -2953 效能副理：Ray 剪幀換 _v2（舊 v1 全格）
+20261124-003200	resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1	ver -2953 效能副理：Ray 剪幀換 _v2（舊 v1 全格）
+20261124-003200	resources/enemy/anim/mon_canyon_hanged_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_hanged_dark_atk_v1	ver -2953 效能副理：Ray 剪幀換 _v2（舊 v1 全格）
+20261124-003200	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261124-003200	ver -2953 效能副理：Ray 剪幀換 _v2（舊 v1 全格）
