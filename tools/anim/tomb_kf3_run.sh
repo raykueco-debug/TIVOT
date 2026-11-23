@@ -21,6 +21,8 @@ R reliquary_hand "the giant reliquary hand bends forward and slams down toward t
 R ossuary_wheel   "the bone wheel rolls straight at the camera and slams into the lens" "the bone wheel rolls back and settles in its place"
 R choir_organ     "the organ beast lunges at the camera with its gaping fanged jaws screaming into the lens" "the organ beast pulls back and closes its jaws, settling into its stance"
 R vault_bat       "the vault bat dives straight at the camera, claws and fangs thrust at the lens, $NG" "the vault bat flaps back up and hovers in its stance"
+R pallid_stag     "the pallid stag lowers its head and rams the camera with the top of its head, charging into the lens" "the pallid stag lifts its head and steps back into its stance"
+R bellfounder     "the bellfounder ducks and rams the camera with the crown of its bell head, charging into the lens" "the bellfounder straightens up and steps back into its stance"
 PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 edge_check.py out/tomb_kf3/* >> $LOG 2>&1
 for d in out/tomb_kf3/*_AB out/tomb_kf3/*_BA; do n=tomb3_$(basename "$d"); [ -d "out/enemy_atk/$n" ] || cp -r "$d" "out/enemy_atk/$n"; done
 PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 make_player.py >/dev/null 2>&1
