@@ -2624,6 +2624,7 @@ story.setSettleHandler((resume, title)=>{
   storyResume = resume; flightBack = false;
   combat.restSettle(title);   // 大標由那一拍給（ver -928：安全區／撤離）
 });
+story.setSettleDue(()=> combat.hasSessionBank());   // 沒帳就不關棺（ver -2947，見 story.setSettleDue）
 /* 料理那一拍的**帳**（ver -953，Stage8 的瑪麗亞）：扣食材＋記「吃過了」。
    ⚠ 與廚房介面那顆「煮」走**同一支** `loot.cookDish`（鐵律 8）——
      兩邊各記一次帳必然走鐘（一邊扣了沒記、一邊記了沒扣）。

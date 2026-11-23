@@ -4910,6 +4910,7 @@ function renderLine(){
       console.info('[story] 沒有註冊結算發動器，跳過 settle');
       return advance();
     }
+    if(settleDue && !settleDue()){ console.info('[story] 沒有帳可結（上一場已自帶結算），跳過 settle'); return advance(); }
     const rsm = cur.__adhoc
       ? { adhoc: cur.lines, line: lineIdx+1, done: cur.__done, sides: sideOverride, bgm: stageBgm }
       : { scene: cur.sceneId, line: lineIdx+1, bgm: stageBgm };
@@ -6173,6 +6174,14 @@ function storyMap(on){
      `state.sessionStats`）—— 這裡只負責交棒。 */
 let settleHandler = null;
 export function setSettleHandler(fn){ settleHandler = fn || null; }
+/* ══⚠⚠ **腳本那一拍也要先問「有沒有帳」**（ver -2947，Ray：「古墓戰強制安雅那一場打完會卡住
+   會多閉一次棺然後卡在那裡」）══
+   城鎮的 `restActDue` 會先問帳，但**腳本寫死的 `{ settle:true }` 沒有人問**。
+   -2258 起 B 級以上的怪打贏就自帶閉棺結算（並清帳）—— 緊接著的 `settle` 拍再關一次棺，
+   `restSettle` 發現沒帳回 false，劇情就沒人接回來（古墓 `tomb_low_ni` 的 gk_offset 是 B 級）。
+   ⇒ 由 main 注入 `combat.hasSessionBank`；沒帳＝**連關棺都不演**，直接下一拍（同免戰那條）。 */
+let settleDue = null;
+export function setSettleDue(fn){ settleDue = fn || null; }
 /* 料理的**帳**（ver -953）：`loot.cookDish` 由 main 注入 —— story 不 import loot
    （那一層是道具與單子，方向不對）。回傳 { ok, first }。 */
 let cookHandler=null;
