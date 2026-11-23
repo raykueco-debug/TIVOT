@@ -334,8 +334,8 @@ export function drawFx(fx, src, W, H, t, live) {
     }
     x.globalAlpha = 1;
   }
+  if (S.fireSmoke) drawPlumes(B, x, S.fireSmoke, fx.img.plumes, t);   // 火堆冒的煙：畫在地面之上（不是天空那一層）；11-24 Ray「火的煙要在火的圖層後方」⇒ 先畫煙再畫火
   if (B.fireMask) drawFire(B, x, S.fire, t);
-  if (S.fireSmoke) drawPlumes(B, x, S.fireSmoke, fx.img.plumes, t);   // 火堆冒的煙：畫在地面之上（不是天空那一層）
   if (B.haze) drawHaze(B, x, S.haze, t);
   return B.work;
 }
