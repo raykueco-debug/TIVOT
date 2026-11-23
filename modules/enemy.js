@@ -1625,7 +1625,7 @@ function bloodVeil(){
   const dots=$('redDots'), host=dots && dots.parentNode, grid=$('grid'); if(!host) return;
   const hr=host.getBoundingClientRect(); if(!hr.width) return;
   const wrap=document.createElement('div'); wrap.className='blood-veil';
-  wrap.style.cssText='position:absolute;inset:0;z-index:10;pointer-events:none;overflow:hidden;';
+  wrap.style.cssText='position:absolute;inset:0;z-index:10;pointer-events:none;overflow:hidden;opacity:.8;';   /* -2941 Ray：「血要有一點透明度」 */
   host.appendChild(wrap);
   const pick=n=>[...Array(8).keys()].sort(()=>Math.random()-0.5).slice(0,n);
   const sp=pick(5), rn=pick(5);
@@ -1638,7 +1638,8 @@ function bloodVeil(){
     s.style.cssText=`position:absolute;left:${x}px;top:${y0}px;width:${w}px;height:${h}px;`;
     wrap.appendChild(trail); wrap.appendChild(s);
     try{ s.animate([{transform:'scale(.3)',opacity:0},{transform:'scale(1.08)',opacity:1,offset:.6},{transform:'scale(1)',opacity:1}],{duration:160,delay:d,easing:'ease-out',fill:'backwards'});
-      s.animate([{translate:'0 0'},{translate:`0 ${fall}px`}],{duration:T,delay:d+300,easing:'cubic-bezier(.3,0,.6,1)',fill:'forwards'});
+      s.style.transformOrigin='50% 100%';
+      s.animate([{translate:'0 0',scale:'1 1'},{translate:`0 ${fall*0.5}px`,scale:'.86 1.3',offset:.5},{translate:`0 ${fall}px`,scale:'.68 1.65'}],{duration:T,delay:d+300,easing:'cubic-bezier(.3,0,.6,1)',fill:'forwards'});   /* -2941 Ray：「血往下流的時候要變型」→ 越往下越被拉長變窄 */
       trail.animate([{clipPath:'inset(0 0 100% 0)'},{clipPath:'inset(0 0 0% 0)'}],{duration:T,delay:d+300,easing:'cubic-bezier(.3,0,.6,1)',fill:'forwards'}); }catch(_){}
   });
   if(grid){ const mo=new MutationObserver(()=>{ wrap.remove(); mo.disconnect(); }); mo.observe(grid,{childList:true}); }   // 換盤（buildGrid 清空重建）＝清盤解除
