@@ -867,38 +867,6 @@ export const ENEMIES = {
          pickBattleEnemy 每格抽不重覆的一隻（同北泊 np_harm 的作法）。
        ⚠ bg 是**保底**：城鎮戰交棒時 battleBg 會用玩家站的那一格背景蓋掉它。 */
     /* ── 連接格怪池（心魘 ±20%，weaponMod 同心魘）── */
-    sv_wolf_pack: {                       // 野外那格以外的怪之一：狼群（−20%）
-      name:'狼骸群',
-      story:1, counterStagger:1, boss:0,
-      Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
-      weaponMod:{ '重機槍':[0.2,0], '霰彈槍':[0.3,0], '萊福槍':[1,0] },   // ＝心魘（弱點/命中不動）
-      openAssault:[1,2],
-      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
-      assaultEvery:[2,4],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      assault:{ count:1, gap:0 },
-      kind:'harm',
-      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
-      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
-      tier:'D',
-      atype:'S',
-      stageScale:1,
-      stack:0,
-      image:'enemy_sv_wolf_pack',
-      bg:'shinier_north',
-      fit:{ mode:'contain', pos:'center bottom' },
-      hp:120,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      atkInterval:null,
-      delayPenalty:{ seconds:5 },
-      entrance:'se_enemy_beastgrowl2',
-      special:[],
-      boardGrids:[9,9,9,9,9],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      hitFx:{
-        delay:'blood',
-        wrong:'slash',
-        assault:'claw',
-      },
-    },
     sv_beast_organ: {                     // 畸變野獸（器官外露，−5%）
       name:'裂肉獸',
       story:1, counterStagger:1, boss:0,

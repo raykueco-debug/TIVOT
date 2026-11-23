@@ -3413,3 +3413,17 @@ when	from	to	reason
 20261123-225310	resources/enemy/mon_shinierforest_crows.webp	_recycle/resources/enemy/mon_shinierforest_crows.webp	Ray 11-23：食腐鴉群整個回收掉
 20261123-225310	resources/enemy/anim/mon_shinierforest_crows_idle_v2	_recycle/resources/enemy/anim/mon_shinierforest_crows_idle_v2	Ray 11-23：食腐鴉群整個回收掉
 20261123-225310	resources/enemy/_neutral_refs/s4_kf/s4_crows_B_dive_gpt.png	_recycle/resources/enemy/_neutral_refs/s4_kf/s4_crows_B_dive_gpt.png	Ray 11-23：食腐鴉群整個回收掉
+20261123-234651	resources/enemy/_neutral_refs/s4_kf/src/mon_bear_nightmare_A.png	_recycle/resources/enemy/_neutral_refs/s4_kf/src/mon_bear_nightmare_A.png	敵人副理誤建的重複檔
+20261123-235552	resources/background/anim/northport/northport_square_bf_sep_v1.mp4	_recycle/resources/background/anim/northport/northport_square_bf_sep_v1.mp4	11-23 Ray「做北泊 6 格」：北泊戰損城區改遊戲內即時跑（bg_fx 程式雲＋程式煙），舊 Wan 影片退役（西區那支畫面是廣場）
+20261123-235552	resources/background/anim/northport/northport_west_bf_sep_v1.mp4	_recycle/resources/background/anim/northport/northport_west_bf_sep_v1.mp4	11-23 Ray「做北泊 6 格」：北泊戰損城區改遊戲內即時跑（bg_fx 程式雲＋程式煙），舊 Wan 影片退役（西區那支畫面是廣場）
+20261123-235552	resources/background/anim/northport/northport_north_bf_sep_v1.mp4	_recycle/resources/background/anim/northport/northport_north_bf_sep_v1.mp4	11-23 Ray「做北泊 6 格」：北泊戰損城區改遊戲內即時跑（bg_fx 程式雲＋程式煙），舊 Wan 影片退役（西區那支畫面是廣場）
+20261123-235552	resources/background/anim/northport/northport_east_bf_sep_v1.mp4	_recycle/resources/background/anim/northport/northport_east_bf_sep_v1.mp4	11-23 Ray「做北泊 6 格」：北泊戰損城區改遊戲內即時跑（bg_fx 程式雲＋程式煙），舊 Wan 影片退役（西區那支畫面是廣場）
+20261123-235552	resources/background/anim/northport/northport_port_bf_sep_v1.mp4	_recycle/resources/background/anim/northport/northport_port_bf_sep_v1.mp4	11-23 Ray「做北泊 6 格」：北泊戰損城區改遊戲內即時跑（bg_fx 程式雲＋程式煙），舊 Wan 影片退役（西區那支畫面是廣場）
+20261123-235552	resources/background/anim/northport/northport_cemetery_bf_sep_v1.mp4	_recycle/resources/background/anim/northport/northport_cemetery_bf_sep_v1.mp4	11-23 Ray「做北泊 6 格」：北泊戰損城區改遊戲內即時跑（bg_fx 程式雲＋程式煙），舊 Wan 影片退役（西區那支畫面是廣場）
+20261124-001023	resources/enemy/mon_wolf_pack.webp	_recycle/resources/enemy/mon_wolf_pack.webp	Ray 11-24：狼骸群回收
+20261124-001023	resources/enemy/anim/mon_wolf_pack_idle_v2	_recycle/resources/enemy/anim/mon_wolf_pack_idle_v2	Ray 11-24：狼骸群回收
+20261124-001023	resources/enemy/_neutral_refs/s4_kf/s4_wolf_A_gpt.png	_recycle/resources/enemy/_neutral_refs/s4_kf/s4_wolf_A_gpt.png	Ray 11-24：狼骸群回收
+20261124-001023	resources/enemy/_neutral_refs/s4_kf/s4_wolf_B_bite_alpha.png	_recycle/resources/enemy/_neutral_refs/s4_kf/s4_wolf_B_bite_alpha.png	Ray 11-24：狼骸群回收
+20261124-001023	resources/enemy/_neutral_refs/s4_kf/s4_wolf_B_bite_gpt.png	_recycle/resources/enemy/_neutral_refs/s4_kf/s4_wolf_B_bite_gpt.png	Ray 11-24：狼骸群回收
+20261124-001023	resources/enemy/_neutral_refs/s4_kf/s4_wolf_B_claw_gpt.png	_recycle/resources/enemy/_neutral_refs/s4_kf/s4_wolf_B_claw_gpt.png	Ray 11-24：狼骸群回收
+20261124-001023	resources/enemy/_neutral_refs/s4_kf/src/mon_wolf_pack.png	_recycle/resources/enemy/_neutral_refs/s4_kf/src/mon_wolf_pack.png	Ray 11-24：狼骸群回收

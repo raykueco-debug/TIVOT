@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.23-2951';
+export const VERSION = 'ver 2026.11.24-2952';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2694,7 +2694,7 @@ export const GAME_CONFIG = {
          所以這裡**不寫 `partner`**（單一真相在 storyPartnerBy，不在戰鬥卡）。
        ⚠ 祭壇那格（`sv_altar`）是「最硬的一般格」，**不是 sessionEnd**（打不打隨
          玩家，走西側直接到野外可跳過）。 */
-    sv_beast: { enemy:['sv_wolf_pack','sv_beast_organ','sv_stag','sv_beast_shackle'],
+    sv_beast: { enemy:['sv_beast_organ','sv_stag','sv_beast_shackle'],
                 session:'shinier_siege',
                 /* ══ 村民的戰前對白（ver -839（-893 前用詞），Ray：「進入第一場戰鬥以後才發生，
                    有背景，有怪才開始對話」）══ 掛 battleStart（§6.5.2 的 talk）——
@@ -4817,7 +4817,6 @@ export const ASSETS = {
   /* 夏爾村村內戰（ver -802，Ray 交稿）—— 敵人卡見 script/enemies.js 的 sv_*。
      ⚠ bear／stag 目前仍是 **.png**（美術尚未去背轉 webp）：先指 .png 讓它載得出來，
        轉檔後把副檔名改成 .webp（同 §5 的轉檔三步）。其餘四張已是 webp。 */
-  enemy_sv_wolf_pack:     "resources/enemy/mon_wolf_pack.webp?v=f6f41b90",
   enemy_sv_beast_organ:   "resources/enemy/mon_beast_organ.webp?v=2cb2855b",
   enemy_sv_stag:          "resources/enemy/mon_stag_nightmare.webp?v=f0940269",   // ver -845：2.4MB PNG → webp（手機發燙/圖讀不出來的調查）
   enemy_sv_beast_shackle: "resources/enemy/mon_beast_shackle.webp?v=3f7e0727",
@@ -5875,7 +5874,6 @@ export const ENEMY_IDLE = {
   mon_tomb_bear: 'resources/enemy/anim/mon_tomb_bear_idle_v2/',
   mon_twin_skull_hound: 'resources/enemy/anim/mon_twin_skull_hound_idle_v2/',
   mon_vault_bat: 'resources/enemy/anim/mon_vault_bat_idle_v2/',
-  mon_wolf_pack: 'resources/enemy/anim/mon_wolf_pack_idle_v2/',
   /* 新交（ver -2176，動畫 10-12；直接就是一拍二 12 格 4fps）。空中怪 8 隻**還沒有敵人卡** ——
      先登記，卡用到那張立繪就自動吃到（沒人用就不載）。⚠ 飛行怪的 box 有負數／比 canvas 寬（翼展），格式同 v1。 */
   mon_canyon_colossus_dark: 'resources/enemy/anim/mon_canyon_colossus_dark_idle_v1/',   // 卡耶爾谷底 Boss（canyon_colossus）
@@ -7222,7 +7220,6 @@ export const ASSET_VER = {
   'mon_tomb_bear': '532d0a28',
   'mon_twin_skull_hound': '91ccfda0',
   'mon_vault_bat': '34f4b298',
-  'mon_wolf_pack': 'f6f41b90',
   'nemo_si_bore_closed': 'ca06a22e',
   'nemo_si_bore_half': 'a75ee3fe',
   'nemo_si_bye_closed': 'c5cb258f',
