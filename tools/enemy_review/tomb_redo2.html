@@ -17,7 +17,7 @@ h1{font-size:18px;margin:12px 16px}
 #zoom{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;cursor:zoom-out}
 #zoom img{max-width:96vw;max-height:96vh}
 </style></head><body>
-<h1>伊甸古墓：第三輪：待審的 B（11-22）</h1>
+<h1>伊甸古墓：11-23 退件重出的 B（強透視）（11-22）</h1>
 <div class="note">左＝原圖 A（中立）、右＝新 B（GPT 真透明）。點圖放大。點頭才跑 Wan。</div>
 <div class="grid" id="g"></div>
 <h1>骷髏塚：散骨（攻擊時程式讓它們高速飛向鏡頭）</h1>
@@ -26,8 +26,11 @@ h1{font-size:18px;margin:12px 16px}
 <script>
 const R='../../resources/enemy/_neutral_refs/tomb_kf/';
 const L=[
- ['grave_censer','墓香爐','11-22 晚：強透視重出，香爐砸向鏡頭（甩的 B 不夠攻擊性）'],
- ['arch_warden','拱門守衛','11-22 晚：強透視重出（拱門照原圖不動）＋拱門內黑色本機挖空（嘴保留）'],
+ ['ossuary_wheel','納骨輪','11-23 強透視重出：滾向鏡頭撞上'],
+ ['choir_organ','唱詩管風琴','11-23 強透視重出：張大嘴撲向鏡頭'],
+ ['bellfounder','鑄鐘者','11-23 強透視重出：衝撞鏡頭'],
+ ['pallid_stag','蒼白牡鹿','11-23 強透視重出：鹿角刺向鏡頭'],
+ ['vault_bat','穹頂蝙蝠','11-23 強透視重出：俯衝爪撲鏡頭'],
 ];
 const g=document.getElementById('g');
 for(const [n,t,d] of L){
