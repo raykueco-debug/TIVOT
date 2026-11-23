@@ -2253,6 +2253,15 @@ function cgAnimEnded(on){ const v=on.v; return v.ended || (v.duration>0 && v.cur
 function cgAnimGate(byUser){
   const on=cgAnimOn;
   if(!on || on.v.loop || on.keep || on.leaving) return false;
+  /* ══⚠⚠⚠ 不押人的三種情況（ver -2936，Ray：「第一場夢境會卡住無法進行」）══
+     夢境開場的 `005_cecilieintro`：那一拍自己 `fadeOut:1`（全黑），影片要等黑幕掀開才開播，而黑幕是**下一拍**才掀 ——
+     這裡押住「這一拍的 auto」等影片播完、影片又等這一拍走掉才開播 ⇒ 死鎖（-2908 把點擊也擋到播完之後，連點都點不動）。
+     ① **影片還沒開播**（`started`）不押 —— 沒開始的東西不會自己結束
+     ② **只押掛上這張動畫插圖的那一拍**（`beatCur`／`beatIdx`）—— 後面幾拍照自己的節奏走，影片在底下照播
+     ③ 超過保險上限（`CG_BEAT_CAP_MS`）不押 */
+  if(!on.started) return false;
+  if(on.beatCur!==cur || on.beatIdx!==lineIdx) return false;
+  if(Date.now() - cgBeatAt > CG_BEAT_CAP_MS) return false;
   if(!cgAnimEnded(on)){
     if(byUser || fastMode){
       const v=on.v;
@@ -2285,7 +2294,8 @@ function playCgAnim(name){
      `withText:true` ＝**對話框與動畫一起開始**（同版：「從一開始動畫就要開始跑對話框」）：
      那一拍不押「點一下才出框」（-1881 的插圖規矩，renderLine 那一段的明寫例外），
      影片則等打字機真的開始打字才放（黑幕／reveal 都還沒好時先停在第一格）。 */
-  const on={ name:name, v:v, cv:cv, ctx:cv.getContext('2d'), img:img, raf:0, vfc:0, t:0, url:null, shown:false, keep:!!A.hold };
+  const on={ name:name, v:v, cv:cv, ctx:cv.getContext('2d'), img:img, raf:0, vfc:0, t:0, url:null, shown:false, keep:!!A.hold,
+              started:false, beatCur:cur, beatIdx:lineIdx };   // 掛上它的是哪一拍（ver -2936，見 cgAnimGate）
   cgAnimOn=on;
   const loop=()=>{
     if(cgAnimOn!==on) return;
@@ -2308,6 +2318,7 @@ function playCgAnim(name){
       const tx=$('storyText');
       if(pendingReveal || !(tx && tx.textContent)){ on.t=setTimeout(go, 30); return; } }
     const p=v.play(); if(p && p.catch) p.catch(()=>{});
+    on.started=true;     // 真的開播了（cgAnimGate／cgBeatBusy 只在這之後才等它播完，ver -2936）
     loop();
   };
   v.onloadeddata=()=>{ if(cgAnimOn===on){ cgAnimDraw(on); go(); } };
@@ -3633,6 +3644,8 @@ function fireOneShot(line){
      `fadeOut:3000` 那一拍點一下就跳到下一拍 ⇒ 下一拍的 `bg`／`bgBand` 在半黑的時候就換上去，看得到換圖。
      規矩寫在引擎（鐵律 8）：任何帶 `fadeOut` 的拍子，保護期＝黑幕的長度（真相是拍上那個毫秒數，鐵律 7）。 */
   if(line.fadeOut>1) noSkipUntil = Math.max(noSkipUntil, Date.now() + (line.fadeOut|0));
+  /* 淡入也一樣（ver -2936，Ray：「三秒轉場」）：慢黑幕亮回來的那幾秒點不掉，不然一點就把轉場縮成一瞬。 */
+  if(line.fadeIn>1) noSkipUntil = Math.max(noSkipUntil, Date.now() + (line.fadeIn|0));
   if(line.checkpoint && !replaying) lineCheckpoint();   // 腳本上的存檔點（ver -653，見 lineCheckpoint）
   if(line.vibrate) hap.shake();
   /* ══⚠⚠ **持續震動**（ver -638，Ray：「蕾娜的！！之前的畫面震動要持續 10 秒，
@@ -5419,7 +5432,8 @@ function cgBeatBusy(line){
             && !(a.effect && a.effect.getComputedTiming && a.effect.getComputedTiming().endTime===Infinity))) return true; }catch(_){}
   }
   const on=cgAnimOn;
-  if(on && !on.v.loop && !on.keep && !on.leaving && !cgAnimEnded(on)) return true;   // 影片播完才放（載不到的退路在 playCgAnim）
+  if(on && on.started && on.beatCur===cur && on.beatIdx===lineIdx
+     && !on.v.loop && !on.keep && !on.leaving && !cgAnimEnded(on)) return true;   // 影片開播了才等它播完（ver -2936；載不到的退路在 playCgAnim）
   return false;
 }
 /* 這一次推進是不是玩家自己點的（點畫面／空白鍵／管理人的 →）—— 只有過場動畫要分（cgAnimGate）。 */

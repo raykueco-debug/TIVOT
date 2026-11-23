@@ -3246,12 +3246,14 @@ export const TOWNS = {
             /* ⚠ 這一拍**不撤立繪**（ver -1903，Ray：「我不討厭就是了那一拍不用撤立繪」）：賽西莉跟著場景一起淡入黑
                （`#storyFade` 在立繪之上）；下一拍換背景（`bgBand`）時在全黑底下才清場。
                `noHold`：她還站在台上，不寫的話這一拍會停下來等點擊（台上有人的無台詞拍），黑畫面就卡住。 */
-            { speaker:'NARRATION', text:'', label:'cap_dream_end', auto:3300, fadeOut:3000, noHold:true,
+            /* ══ 出夢＝三秒黑幕轉場（ver -2936，Ray：「第一場夢境結束後改用三秒轉場」—— 取代 -2884 出夢那一道讀取頁；入夢那一道照舊）══
+               ① 三秒淡黑，夢的曲子跟著淡掉（`bgm:null`）；推時鐘到 07:00 —— 城鎮不會在段落中依時段換背景（-2904），所以黑幕底下不會先閃旅店
+               ② **全黑底下**換成旅店清晨（`bgBand`＝換背景＝轉場，台上的人一起清掉）、停一下讓圖載好
+               ③ 三秒亮回，帝都的曲子回來 → 段落演完，07:00 閘門接手（蕾娜「好囉，該出發囉」）。 */
+            { speaker:'NARRATION', text:'', label:'cap_dream_end', auto:3300, fadeOut:3000, noHold:true, bgm:null,
               clockToNext:7, healFull:true, flags:['inn_missed'] },
-            { load:true },   // 出夢的讀取頁（ver -2884）：夢的背景與 deepfrost 在門前收掉
-            /* 隔天清晨：旅店（時段候選鏈挑清晨那張）淡回來，接著 07:00 閘門（蕾娜「好囉，該出發囉」）。
-               `bgm:'@town'`＝帝都此刻的曲子（門把 deepfrost 收了，這一拍放回來）。 */
-            { speaker:'NARRATION', text:'', auto:1300, bgBand:'capital_hotel', bgm:'@town', fadeIn:1000 },
+            { speaker:'NARRATION', text:'', auto:900, bgBand:'capital_hotel', hide:'*', noSkip:true },
+            { speaker:'NARRATION', text:'', auto:3300, bgm:'@town', fadeIn:3000 },
           ] },
         ],
         /* 初訪那一幕。⚠ 中間三拍是**演出**不是台詞：
