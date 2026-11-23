@@ -67,3 +67,10 @@ Wan 在 4、5 號船底自己長出了浪花（白藍色）。白天的雲景上
 - 程式（`enemy.startShipAir`）：所有空戰船都有**前景雲霧**（色取戰鬥背景）＋**船尾兩條細煙**（`config.SHIP_TRAIL`，噴口量自各船螺旋槳上下緣）。
 
 - ⛔ **7 號（紅煙囪側明輪）整個拔掉**（11-21 Ray：「7號跳過」→「整個拔掉」）：ASSETS 鍵、SHIP_TRAIL、測試戰都已移除（ver -2876）；立繪檔與 Wan 片子還在磁碟上，回收要問 Ray。
+
+## 11-23 換機交接：現況（空戰副理）
+- ✔ 待機全接上（v6airship「飛空船」版，Ray 剪）：n1 n2 n3 n4 n5 n6 n8 n9 n10 → `anim/mon_pirateship_nN_side_idle_v6airship/`；n2/n3/n6/n9/n10 另有程式船首起伏（`SHIP_TRAIL.pitch`）。
+- ✔ 程式：前景雲霧、船尾兩條細煙＋船首雲線拉到畫面外（`enemy.startShipAir`／`config.SHIP_TRAIL`）；登艦戰甲板時段跟對艦戰、落影 220ms、落地震動。
+- ⛔ n7 拔掉並回收。舊的 `_idle_v1`／`v3enh`／`v4air`／`_fade` 資料夾已沒人引用（回收要問 Ray）。
+- ⚠ 8 艘（+9、10）各開卡還是同卡隨機外觀：Ray 未定；目前只有 test_pirate_nN 測試戰在用。
+- ⚠ 空賊船攻擊動畫：沒做（現行是程式側舷齊射 broadside）。
