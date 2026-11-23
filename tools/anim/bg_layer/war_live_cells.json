@@ -168,7 +168,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_1_2_dusk": {
 "smoke": [
@@ -188,7 +189,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_1_4_dusk": {
 "smoke": [
@@ -208,11 +210,13 @@
 41
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_1_6_dusk": {
 "smoke": [],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_1_8_dusk": {
 "smoke": [
@@ -222,7 +226,8 @@
 104
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_1_10_dusk": {
 "smoke": [
@@ -237,7 +242,8 @@
 32
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_2_1_dusk": {
 "smoke": [
@@ -257,15 +263,18 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_2_2_dusk": {
 "smoke": [],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_2_4_dusk": {
 "smoke": [],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_2_5_dusk": {
 "smoke": [
@@ -290,11 +299,13 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_2_6_dusk": {
 "smoke": [],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_2_7_dusk": {
 "smoke": [
@@ -304,11 +315,13 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_2_8_dusk": {
 "smoke": [],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_2_9_dusk": {
 "smoke": [
@@ -329,7 +342,8 @@
 ]
 ],
 "water": null,
-"sun": false
+"sun": false,
+"haze": true
 },
 "ws_3_0_dusk": {
 "smoke": [
@@ -344,7 +358,8 @@
 60
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_3_2_dusk": {
 "smoke": [
@@ -365,7 +380,8 @@
 ]
 ],
 "water": null,
-"sun": false
+"sun": false,
+"haze": true
 },
 "ws_3_4_dusk": {
 "smoke": [
@@ -375,7 +391,8 @@
 96
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_3_6_dusk": {
 "smoke": [
@@ -390,7 +407,8 @@
 80
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_3_8_dusk": {
 "smoke": [
@@ -410,7 +428,8 @@
 31
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_3_10_dusk": {
 "smoke": [
@@ -430,7 +449,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_4_0_dusk": {
 "smoke": [
@@ -450,7 +470,8 @@
 47
 ]
 ],
-"water": "0,0.44,0.92,0.5"
+"water": "0,0.44,0.92,0.5",
+"haze": true
 },
 "ws_4_1_dusk": {
 "smoke": [
@@ -470,7 +491,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_4_2_dusk": {
 "smoke": [
@@ -485,7 +507,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_4_3_dusk": {
 "smoke": [
@@ -505,7 +528,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_4_4_dusk": {
 "smoke": [
@@ -520,7 +544,8 @@
 48
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_4_5_dusk": {
 "smoke": [
@@ -540,11 +565,13 @@
 34
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_4_6_dusk": {
 "smoke": [],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_4_7_dusk": {
 "smoke": [
@@ -559,7 +586,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_4_8_dusk": {
 "smoke": [],
@@ -588,7 +616,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_4_10_dusk": {
 "smoke": [
@@ -603,7 +632,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_5_0_dusk": {
 "smoke": [
@@ -623,7 +653,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_5_2_dusk": {
 "smoke": [
@@ -643,7 +674,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_5_4_dusk": {
 "smoke": [
@@ -659,7 +691,8 @@
 ]
 ],
 "water": null,
-"sun": false
+"sun": false,
+"haze": true
 },
 "ws_5_6_dusk": {
 "smoke": [
@@ -675,7 +708,8 @@
 ]
 ],
 "water": null,
-"sun": false
+"sun": false,
+"haze": true
 },
 "ws_5_8_dusk": {
 "smoke": [
@@ -685,7 +719,8 @@
 94
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_5_10_dusk": {
 "smoke": [
@@ -695,7 +730,8 @@
 41
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_6_0_dusk": {
 "smoke": [
@@ -705,15 +741,18 @@
 30
 ]
 ],
-"water": "0.5,0.42,1,0.5"
+"water": "0.5,0.42,1,0.5",
+"haze": true
 },
 "ws_6_1_dusk": {
 "smoke": [],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_6_2_dusk": {
 "smoke": [],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_6_3_dusk": {
 "smoke": [
@@ -733,11 +772,13 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_6_4_dusk": {
 "smoke": [],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_6_5_dusk": {
 "smoke": [
@@ -752,11 +793,13 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_6_6_dusk": {
 "smoke": [],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_6_7_dusk": {
 "smoke": [
@@ -776,7 +819,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_6_8_dusk": {
 "smoke": [
@@ -786,7 +830,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_6_9_dusk": {
 "smoke": [
@@ -801,7 +846,8 @@
 32
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_7_0_dusk": {
 "smoke": [
@@ -826,7 +872,8 @@
 30
 ]
 ],
-"water": "0,0.43,0.6,0.48"
+"water": "0,0.43,0.6,0.48",
+"haze": true
 },
 "ws_7_2_dusk": {
 "smoke": [
@@ -842,7 +889,8 @@
 ]
 ],
 "water": null,
-"sun": false
+"sun": false,
+"haze": true
 },
 "ws_7_4_dusk": {
 "smoke": [
@@ -857,7 +905,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_7_6_dusk": {
 "smoke": [
@@ -877,7 +926,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_7_8_dusk": {
 "smoke": [
@@ -892,7 +942,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_8_0_dusk": {
 "smoke": [
@@ -912,7 +963,8 @@
 30
 ]
 ],
-"water": "0.4,0.42,1,0.5"
+"water": "0.4,0.42,1,0.5",
+"haze": true
 },
 "ws_8_1_dusk": {
 "smoke": [
@@ -932,11 +984,13 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_8_2_dusk": {
 "smoke": [],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_8_3_dusk": {
 "smoke": [
@@ -951,7 +1005,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_8_4_dusk": {
 "smoke": [],
@@ -980,11 +1035,13 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_8_6_dusk": {
 "smoke": [],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_8_7_dusk": {
 "smoke": [
@@ -1004,7 +1061,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_9_0_dusk": {
 "smoke": [
@@ -1024,7 +1082,8 @@
 55
 ]
 ],
-"water": "0,0.425,0.45,0.48"
+"water": "0,0.425,0.45,0.48",
+"haze": true
 },
 "ws_9_2_dusk": {
 "smoke": [
@@ -1044,7 +1103,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_9_4_dusk": {
 "smoke": [
@@ -1069,7 +1129,8 @@
 44
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_9_6_dusk": {
 "smoke": [
@@ -1089,7 +1150,8 @@
 53
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_10_0_dusk": {
 "smoke": [
@@ -1110,7 +1172,8 @@
 ]
 ],
 "water": null,
-"sun": false
+"sun": false,
+"haze": true
 },
 "ws_10_1_dusk": {
 "smoke": [
@@ -1125,7 +1188,8 @@
 48
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_10_3_dusk": {
 "smoke": [
@@ -1140,7 +1204,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_10_4_dusk": {
 "smoke": [
@@ -1170,7 +1235,8 @@
 30
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 },
 "ws_10_5_dusk": {
 "smoke": [
@@ -1180,6 +1246,7 @@
 42
 ]
 ],
-"water": null
+"water": null,
+"haze": true
 }
 }

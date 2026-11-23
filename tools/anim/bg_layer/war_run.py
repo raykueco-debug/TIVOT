@@ -12,7 +12,9 @@ import bg_queue as Q
 import sep_run as S
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-LG = os.path.normpath(os.path.join(HERE, '..', '..', '..', 'TIVOT', 'resources', 'background', '_layers_gpt'))
+_r = os.path.normpath(os.path.join(HERE, '..', '..', '..'))   # 11-23：在 repo 的 tools/anim/bg_layer 跑也找得到（原本只認 tivot_wan/bg_layer）
+ROOT = _r if os.path.isfile(os.path.join(_r, 'script', 'bg_fx.js')) else os.path.normpath(os.path.join(HERE, '..', '..', '..', 'TIVOT'))
+LG = os.path.join(ROOT, 'resources', 'background', '_layers_gpt')
 DL = os.path.join(HERE, 'clouds') + '/'   # 11-22：原本寫死另一台的 Downloads；改讀工具自己的 clouds/（兩台都有）
 W, H = 768, 1024                      # 戰地是直式 3:4
 GW, GH = 528, 704                     # Wan 的解析度（16 的倍數、3:4）
@@ -447,7 +449,7 @@ def do(name):
     hsv = cv2.cvtColor(orig.astype(np.uint8), cv2.COLOR_RGB2HSV)
     smk = orig[m & (hsv[..., 1] < 110) & (hsv[..., 2] < 140)]
     scol = np.median(smk, 0) if len(smk) > 200 else np.array([70, 62, 64], np.float32)
-    if not os.environ.get('WAR_SMOKE') and os.environ.get('WAR_EXPORT'):
+    if not os.environ.get('WAR_SMOKE') and os.environ.get('WAR_EXPORT') and not (ns or (from_smoke and srcs)):   # 煙源已由原圖煙柱底部定好（去煙版／原圖暗灰煙柱）就不再自動找
         srcs = smoke_auto(orig, sky_a); log('煙源（自動）', [(round(a), round(b), round(c)) for a, b, c in srcs])
     if os.environ.get('WAR_SMOKE'):   # 手指定煙源（x,y,寬；以 768×1024 計），自動偵測在夕陽天空上不可靠（整片天都又亮又橘又有紋理）
         srcs = [tuple(float(v) * (W / 768 if k != 1 else H / 1024) for k, v in enumerate(s.split(','))) for s in os.environ['WAR_SMOKE'].split(';')]

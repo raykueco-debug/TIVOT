@@ -31,6 +31,7 @@ def emit():
         sm = j['smoke']; o = [f"bottom: {j.get('bottom') or 0.4}"]
         if 'sun' not in j['files']: o.append('sun: false')
         if 'sea' in j['files']: o.append('sea: true')   # war_cloud_sea.py 拆出的不動雲海
+        if cells.get(n, {}).get('haze'): o.append('haze: true')   # 11-24 Ray：「街上加些許程式煙」（live_notes.json）
         if 'water' in j['files']: o.append("water: { amp: 3, persp: 2, glint: 0.25 }")
         if sm['src']:
             o.append("plumes: { wind: %s, src: %s,\n      cells: %s }" % (sm['wind'], json.dumps(sm['src']).replace(',', ', '), json.dumps(sm['cells']).replace(',', ', ')))

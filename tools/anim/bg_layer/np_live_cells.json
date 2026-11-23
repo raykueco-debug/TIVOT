@@ -1,0 +1,9 @@
+{
+ "_說明": "北泊戰損城區即時版的額外設定（11-24 Ray 的審閱意見）；np_live_emit.py 讀它＋各格 _live.json 寫回 script/bg_fx.js 的 ⟨np-live⟩ 段",
+ "northport_square_bf": {},
+ "northport_west_bf": {"haze": {"col": [215, 218, 222], "a": 0.32}},
+ "northport_north_bf": {"haze": {"col": [225, 228, 232], "a": 0.3}},
+ "northport_east_bf": {},
+ "northport_port_bf": {},
+ "northport_cemetery_bf": {}
+}
