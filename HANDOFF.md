@@ -1,123 +1,146 @@
-# HANDOFF — 截至 `ver 2026.11.17-2686`（11-17 晚上，Windows 3060 程式／PM session，**換機前**）
+# HANDOFF — 截至 `ver 2026.11.23-2938`（11-23，3060 機 PM session，**換機前**）
 
 > ⚠⚠ **交接規則（Ray 10-04 定）**：開工讀這一份 → 逐項清點「完成／未完成」給 Ray 確認 → 生成新的一份、回收舊的（`tools/recycle.sh`）。**只留一份現況，不往下疊。**
-> 上一份：`_recycle/HANDOFF.md.20261117-223942`（11-09 起寫、11-13／11-16 補的那一份；git 歷史也有）。
-> ⚠ 這一份是 Ray 11-17「全推上 交接」直接交辦寫的，**舊的未完成項目全部照搬、沒跟 Ray 清點過**（第七段）。新機開工第一件事：跟 Ray 逐條清點，做完的劃掉。
+> 上一份（11-17，ver -2686＋敵人線 11-20 增補）已回收到 `_recycle/`，git 歷史也有。
+> ⚠ 這一份是 Ray 11-23「全推到最新 換機器 交接待辦」直接交辦寫的，**沒跟 Ray 逐條清點過**。新機開工第一件事：跟 Ray 逐條清點，做完的劃掉。
+> 各副理自己的完整交接（共用筆記夾，換機不一定帶得走，重點已抄進本檔）：`HANDOFF_story_1123.md`、`map_handoff_20261123.md`、`anim_handoff_1123.md`、`bg_handoff_1123.md`、`enemy_ADM_status_1123.md`。
 
 ---
 
-## 一、現況
+## 一、現況與分工
 
-- 分支 `main`（另有兩個 stash 轉成的分支：`stash/blink-fringe-lid`、`stash/breathing-wip`，眨眼瀏海／呼吸的半成品實驗，沒合）。**開工先 `git pull`，推之前再 pull 一次**。
-- 測試伺服器：遊戲 `tivot-claude` **8202**、試玩版 dist **8215**、animechk／背景審閱 **8130**、剪輯器 **8140**、bgchk **8133**。**8200 是 Ray 的，不碰**。
-- 版號一律 `py -X utf8 tools/bust.py --bump`；commit 前 `py -X utf8 tools/script_lint.py`（13 個既有錯誤＝`charm_C01`～`C13` 大寫檔名）。
-- 工作分五條線：程式（主 session 兼 PM）／動畫／敵人／背景／地圖，其餘四條各開副理 session。
-- **換機注意：git 帶不走的**（要自己複製）：`resources/_originals/`（1.4 GB）、`_recycle/`（314 MB，只有 `RECYCLE_LOG.tsv` 在版控）、`_ext/`、`ComfyUI-master/tivot_wan/` 的 `in*/`・`out/`（Wan 素材與拆格）、`.venv-matting`／`.venv-face`（照憲法 §5 重建，不必複製）。
+- 分支 `main`，換機前已確認：本機 = origin/main（`fdde39b0`）、工作區乾淨、ComfyUI 無排程。**開工先 `git pull`，推之前再 pull 一次**。
+- **分工（Ray 11-21 定）**：主 session ＝**專案 PM，不寫程式**；各部副理處理各部的程式（含接線）。
+  | 副理 | 管什麼 |
+  |---|---|
+  | 劇情程式（tivot-story） | 劇情播放、讀取頁、城鎮段落、BGM、任務提示、好感、整備頁、戰鬥核心（獄門天鎖）等引擎程式 |
+  | 敵人（tivot-enemy） | 地面怪立繪／KF／Wan／交件＋ENEMY_* 接線 |
+  | 背景（tivot-bg） | 背景圖、時段差分、背景動畫、bg_fx 程式層 |
+  | 地圖（tivot-map） | 飛行頁地圖、地底、城鎮拓樸（鐵律 14：`map_edits.json` 不碰） |
+  | 空戰動畫（tivot-aerial） | 空戰敵（空賊船、蜈蚣、羽蛇…）從動畫到程式全包（鐵律 11 例外） |
+  | 空戰 3D 怪（tivot-sky3d） | `flight/drg3d.js`、Hunyuan 3D 模型 |
+  | 動畫（tivot-anim） | CI、插畫動畫、宣傳片 |
+- 版號 `py -X utf8 tools/bust.py --bump`；lint `py -X utf8 tools/script_lint.py`（13 個既有錯誤＝`charm_C01`～`C13` 大寫檔名）。
+- 測試伺服器：遊戲 `tivot-claude` **8202**（Desktop 的 `.claude/launch.json`）、animechk **8130**、守城戰預覽在 TIVOT 根目錄 `python -m http.server 8135` 開 `tools/war_preview.html`。**8200 是 Ray 的，不碰**。
+- ⚠ **內建瀏覽器窗格隱藏時遊戲跑不動**（rAF 停、讀取頁不動、decode 不回），這幾天好幾件「修好了」都沒實測就是這個原因。驗收前先 `tabs_context`；隱藏就請 Ray 把那個 session 開在畫面上。臨時替代：測試分頁執行 `window.requestAnimationFrame=cb=>setTimeout(()=>cb(performance.now()),16)`。
 
-## 〇、敵人線 11-18～11-20（ver -2805～-2841，敵人副理換機前補；全部推上）
+## 二、目標與試玩版
 
-> 這一段是敵人副理寫的增補，不是 PM 重寫的整份 —— 其餘各段仍是 11-17 的狀態，開工照第 3 行的規則跟 Ray 清點。
+- 主線先做到**索菈娜戰（man_sorana）打贏**為止，再切試玩版（**還沒開始切**；Ray：「先在現有成果上完成進度，完成了再切出來」）。切法已定：打贏那一刻結束、首頁只留「開始故事」、之後內容拿掉。
+- 試玩範圍九場主戰：開場訓練戰／帝都賞金獵人／夢境巨型聖徒（cap_dream）／蜈蚣／北泊城鎮戰（4 雜怪＋教堂背負祭壇者）／黑爪（紫黑之爪）／夢境卡耶爾山谷（frag02 輪戰）／北泊二戰（墓地背負祭壇者＋娜塔莉）／羽蛇／索菈娜。另有帝都、北泊兩場打靶，瓦爾士空賊遭遇。**九場的戰鬥卡、敵人卡、立繪、攻擊動畫都已接上。**
 
-**北泊（Ray：「可以了 北泊還有誰」→ 全過）**
-- 禍魘祭司（`mon_relic_candletower`）：待機 `idle_v3`、攻擊 `atk_v5`（HD 重跑＋逐格 LAB 統一色調）、延時同 A、點錯只扣秒（`noMiss`）。
-- 罪之魔像（`candlepenitent`）、魘魔（`sea_coralman`）：動畫時機照祭司，`idle_v3`／`atk_v2` hit 13，延時同 A、點錯扣秒。娜塔莉 Ray 已過。
+## 三、⚠ 待辦（只列欠的；✔ 已完成的見第五段）
 
-**索菈娜整組定版（ver -2831，Ray：「索菈娜整組定版」）—— 已套到正式卡 `man_sorana`（森住民戰），`test_sorana`＝換名字的複本**
-- 立繪 `resources/si/sorana_si_guard.webp`；待機 `sorana_guard_idle_v1`（`np_sorana_idle_wan7_cut`）；A＝撲斬 `atk_v1`（16fps、打到撲近 1.35，刀痕 `HITFX.sorana_slash` 固定左上往右下）；D／M＝擲飛刀 `throw_v1`（第 2 格出手，程式飛刀平飛 90ms、由小變大，音效同共鬥 `se_soranacounter`／`hit`，受擊 `sorana_knife` 不放刀痕）。
-- 閃避三種＋格擋：`config.ENEMY_DODGE.sorana_si_guard`（`dodgeL_v4`／`dodgeR_v3`／`dodgeD_v3`／`parry_v2`，**無程式位移**）。普攻與反擊有效率 30%（`parryBasic:0.7`：擋下的演閃避＋MISS、有效的演格擋，格擋播完前每發有效）；BR 也演閃避／格擋但**只是演出、照舊打穿**；格擋音＝米夏劈落 `se_bulletguard`。
-- 普攻清延時條 50%（`tapDelayClear:0.5`）。名字仍「森住民」、hp 270／攻 17／40% 以下連發大絕都沒動。
-- 背景 `resources/enemy/sorana_battle_bg_v3.webp`（湖上甲板、四周環山，`bgLock`）＋背景副理的程式層：無雲天空層＋程式雲＋程式水面＋帆微動影片（`script/bg_fx.js` 的 `sorana_battle_bg_v3`，新欄位 `video`）。**戰鬥上半現在也吃 `bg_fx`**（`enemy.startBattleBgFx`，同城鎮那支 `bgfx.drawFx`）。
-- KF／過渡格原圖在 `resources/_originals/enemy/sorana_kf/`；`TO_CODE_attack.md` 已寫定版內容。
+### A. 等 Ray 驗收／實測（程式已推上，沒在真畫面或手機上驗過）
+- ⚠ **iPhone 飛行畫面全無聲**（-2902 保底、-2903 診斷）：Ray 用 iPhone 開管理人模式 → 從帝都出航進飛行 → 點幾下 → 截左下角音訊診斷給劇情副理。根因未定。
+- ⚠ **帝都旅店槍棺插圖不見**：根因未找到（直接演那段有出現；真正走進旅店那條路沒跑過）。下一步：窗格可見時拔 `inn_seen_capital_inn` 走進旅店重現（可能已被 -2908 順帶解掉，未證實）。
+- ⚠ 第一場夢境整段（-2936：卡住修正＋出夢三秒黑幕）：只在隱藏窗格用計時器跑通，要 Ray 真畫面＋手機各玩一次。
+- ⚠ -2884 娜塔莉死後直接接埋葬、北泊送行一開始就是航行曲（副作用：過讀取頁同一首曲也會從頭播）。
+- ⚠ -2886 任務提示：Ray 確認任務 1 結束點＝傍晚被叫回旅店、任務 7 結束點＝遇羽蛇。
+- ⚠ -2888 整備頁伙伴立繪大小。
+- ⚠ -2890 好感改「實際打掉的血 ÷600 × 等第倍率」：實打一局看數字（Ray 定不加防刷上限）。
+- ⚠ -2892/-2893 瓦爾士空賊懸賞（黑船洛爾夫 1500G）畫面驗；瓦爾士遭遇**沒實飛測過**。
+- ⚠ -2905 獄門天鎖：關鎖血實打一場（程式測試 `tools/tests/deathguard_burst.js` 已過）。
+- ⚠ -2908 插圖演完前點擊無效的手感。
+- ⚠ 空中怪 3D 已是**預設**（8e01352c，`?drg3d=0` 關回 2D）：**手機 fps 沒量**（憲法 12 要手機數字）；打贏回飛行沒測。
+- ⚠ 守城戰即時版只在桌機 60fps，手機發熱／幀數沒量。
+- ⚠ 地圖：地面瀑布、大溶谷來回、入口遺跡修正（-2907）沒在手機上看過。
 
-**敵影改程式投影（ver -2841，Ray：「很好 以後敵影都這樣做」）**
-- 全體單隻敵人：畫面上那一格的剪影塗黑、壓扁 0.3、斜 −38° 倒在地上，從腳底接著原圖（`groundShadow.castOnFrame`，`#enemyCast`），跟著每一格動畫／降臨／撲近；每秒最多 30 次。
-- 例外照舊：`noShadow`、飛行與船、群體敵人、卡上 `shadowFollow:0`（不投影）／`1`（腳底橢圓跟格）。卡上 `castShadow:{squash,skew}` 可調。
+### B. 等 Ray 決定
+- ⚠ **試玩版「只能進北泊」降落鎖**：還沒派工（現在帝都／夏爾村／其他城、溶谷／地下古城／大空洞入口都進得去）。歸地圖副理。
+- ⚠ 空賊船 n1~n10 各開敵人卡還是同卡隨機外觀；戰鬥畫面敵船仍是本船 2D 圖、跟飛行抽到的 3D 款對不上，要不要接。
+- ⚠ 空賊船攻擊動畫（現為程式側舷齊射）、信號彈光柱：未交辦。
+- ⚠ `sky3d_tune.json` 其餘數值；天之裂隙膜邊要不要重跑 Hunyuan。
+- ⚠ 背景：ws_0_0／0_1 換不換即時版；城鎮天空程式雲（攝政王廣場樣本，bg_fx 沒開）；背景大區塊（聖王廳本體、聖王廳地宮）排優先序。
+- ⚠ 敵人：納骨鼠群卡要不要刪；覆骨者／撕心者 D 是否同 A；裂肉獸／鹿骸 M 的煙霧／紫炎。
+- ⚠ 地圖：聖王廳地宮 G3／G4 拓樸；西部大溶谷、地下古城入口的開放章節；大溶谷終點去向；守城戰小地圖紅點畫法；草稿拓樸 `map_fallen_draft.py`／`map_undercity_draft.py` 搬不搬進 town.js；小地圖聖索菲亞／sofiaout／薇拉馮德開工。
+- ⚠ 動畫：尼莫 Bullet Rain v2 觸發點；torcam_cut_bite／torsten_dualsit_flip_s7 交不交；6 支插畫放哪一幕（32 米夏行軍、grifonback、canyon_army、torsten_sit v3、gunclose、deck_long）；deck_long 換不換 6.58 秒版；米夏 NI 重做、004_renna_intro silent7、熊骸 husk 三選一。
+- ⚠ 試玩範圍裡 Ray 要給的數值／名字（暫填中）：天空怪數值、卡耶爾數值暫用、北泊禍魘名字、羽蛇攻擊音、蜈蚣教學台詞。
 
-**待 Ray 確認**
-- ⚠ 投影只有索菈娜實際看過畫面；趴著／飄著／身體垂地的怪原點可能抓錯（抓剪影最下緣）。要逐隻看。
-- 用程式直接 `startScriptBattle` 開戰時戰鬥曲不會自己換（劇情正常進場由戰鬥卡放曲）；測試時要先 `stopBgm` 再 `playBgm`。
-- 掛 `bounce_test` 乳搖 LoRA 的待機 `np_sorana_idle_wan8_bounce` 跑完沒用（Ray 用了 wan7），在 `ComfyUI-master/tivot_wan/out/monsters/`。
+### C. 等 Ray 剪片／審 KF（敵人線，詳表 `enemy_ADM_status_1123.md`）
+- ⚠ **古墓 9 隻待剪**（3060 animechk，11-23 已開給 Ray）：石棺、跪罪者、鐵處女、納骨輪、唱詩管風琴、蒼白唱詩者、鑄鐘者、蒼白牡鹿、穹頂蝙蝠。**剪完要按「輸出」**。
+- ⚠ 森林中立待機待剪：水蛇、山豬、腐鹿骸（s3_…_idle）。
+- ⚠ **4070S 那台**：紀錄說 11-10 Wan 已跑完待剪——裂肉獸／鹿骸／熊骸夢魘／聖骨獸 A＋D、枷獸 blur、覆骨者 A＋M、撕心者 A＋M、鹿主 deernightmare2。片子沒推回 3060；Ray 在那台剪完推回來即可交件。（敵人副理 11-22 替這 6 隻重出的 s4_kf 是重工，審時跳過）
+- ⚠ 待審 KF：狼骸群、鴉群、監查者 A（重畫 B）、木雅克 鳴鐘者／王的容器／喪鐘／鎖鍊聖徒／巨型聖徒／節制者、森林遺蹟聖物 10 隻（11-08 KF）。對照圖 `_review_s4_1.jpg`、`_review_s4_2.jpg`。
 
-**規矩新增**：Wan 提示詞**不寫否定、不點名要它別動的部位**（寫「腰不要扭」反而一直扭），身分寫 fighter 不寫 dancer（已記 memory）。
+### D. 等副理做（不卡 Ray）
+- 敵人：抬棺列重出 B；螺旋帷幕特規程式；熊骸 husk 立繪重去背後 IADM 全重出；深喉蟾／石蝰 KF。
+- 背景：ws_2_0 GPT 天空遮罩對不上要重出。
+- 地圖：賽西莉入隊段沒設 `party_cecilie`（地底大空洞入口在正篇進不去）→ 劇情副理在入隊那一拍插旗；守城戰六隊打完接米夏段實測、戰時不能出航、(2,3) 市政廳街2段欠 1 張背景（背景線）。
+- 動畫：尼莫彈幕支援 v2（webm＋iOS mov，`resources/ci/layers/nemo_barrage/TO_CODE.md`）、尼莫 Bullet Rain v2（`nemo_bulletrain/TO_CODE.md`）、處決 CI 換 `torsten_execute/exec_gun_gpt.png` —— 要接程式（動畫線寫了 TO_CODE，誰接待 PM 派）；CI 改「機戰式近→遠」（賽西莉 OBE／即死防禦／生命歸還、索菈娜 ×5、安雅 ×5、托爾斯坦 BR，Ray 11-20 要做，未開工）；`resources/_HANDOFF_ANIM.md` 停在 10-19 要重寫；`offline_list.json`、`tools/challenge_build` 快照還指著已回收的舊影片（程式重產）。
+- 空戰 3D：換機後測打贏回飛行。
 
-## 二、11-16～11-17 做了什麼（全部推上）
+## 四、換機要另外複製（git 帶不走）
 
-### 程式：卡耶爾群戰（11-16，ver -2630～-2655）
-- 群戰編組編輯器 `tools/group_editor.html`（存 `script/group_comps.js`，每一格背景一組 `bg_<背景名>`）；卡耶爾入口／谷底祭場也遇怪（入口要走進來才遇）。
-- 攻擊拉到中間改成每隻各自勾（`focus`），預設原地。
-- **一閃**（骨鴉、聖面鷲：殘影消失→刀斬光線隨機角度一閃＝打到、不放受擊特效→`home:'dive'` 從上方略斜飛回）。憲法 natali rule 13 已寫。
-- 飛行怪上下晃（`config.ENEMY_FLY`：骨鴉、聖面鷲、朝聖者團塊）；團塊影子留著。
-- 誰出手：本職優先、競合隨機、本職全倒由剩下的遞補；攻擊不連抽同一隻；`first:true` 先攻、`last:true` 最後倒。
-- 群戰成員自己的受擊特效（`ENEMY_ATK` 的 `hitFx`／`strikes`）：鐘殼蟲三下單爪痕（新 `ef_claw1.webp`）、朝聖者團塊聲波（`sonicHit`：模糊環＋盤面數字淡出淡回）。
-- `canyon_bgcomp`：延時 3 秒／3 傷、延時一律聲波。
+| 東西 | 路徑 | 大小／備註 |
+|---|---|---|
+| Wan 素材、拆格、待剪片、chk 片庫 | `ComfyUI-master\tivot_wan\out\`（含 `export/`、`ci/`、`enemy_atk/tomb_*`、`s3_*_idle`、`sky_ships*`、`arch_idle/`） | 7.1 GB；**古墓 9 隻待剪片在這裡，必帶** |
+| Wan 輸入 | `tivot_wan\in_bg`（1.9 GB）、`in_pirate`（195 MB）、`in_np`（62 MB）、`in_prop`、`in_clean`、`_old_1120/` | |
+| 背景樣本影片 | `tivot_wan\bg_layer\out\` | 394 MB，可重產 |
+| Hunyuan 3D | `ComfyUI-master\models\checkpoints\hunyuan3d-dit-v2-mv_fp16.safetensors`、`ComfyUI-master\output\mesh\mv_*.glb`（重烘用，空賊 n6 用 `_00002_`） | 新增／重做 3D 怪才需要 |
+| 模型權重 | `ComfyUI-master\models\`（Wan Q4 gguf、lightx2v／bounce_test LoRA） | 新機已有就不用 |
+| 原圖 | `TIVOT\resources\_originals\`（含 `enemy/pirateship_variants` 51 MB、`flight/mon3d/` 四視圖與 sailmask） | gitignore |
+| 回收區 | `TIVOT\_recycle\` | 2.0 GB，只有 `RECYCLE_LOG.tsv` 在版控 |
+| 宣傳片全格 | `TIVOT\tools\promo\editor\out\anim_full\` | gitignore |
+| animechk 剪格紀錄 | 已匯出 `tools/anim/animechk_marks_1123.json`（179 筆，在 git） | 新機在 animechk 分頁 console 用 `localStorage.setItem` 灌回 |
+| Ray 手拉地形 | 只在畫它的那台瀏覽器 localStorage（綁 origin＋port） | **換機前 Ray 在舊機開一次飛行頁地圖編輯，確認已寫回 `map_edits.json`** |
+| ⚠ 路徑寫死 | `tivot_wan\animechk.bat` 寫死 `C:\Users\Ray Ku\...`（4070 那台） | 換機要改 |
+| ⚠ 未同步 | `out/ci/torsten_sit/` 的運鏡腳本（cam_gun_*.py、wan_flf_576.py）沒進 `tools/anim/` | |
 
-### 程式：卡耶爾逐隻音效與打擊格（11-17，ver -2656～-2686，車輪戰邊測邊改）
-- 香爐蠍打擊 32 格＋`se_crash_rocks`；餓獸 `se_enemy_beast02` 起手吼（新欄位 `windupSe`／`windupMs`）、打擊格不另響。
-- 鐘殼蟲 `se_enemy_bug01` 起手、三下揮鉗各一聲揮砍（單隻也吃 `strikes`）。
-- 鎖鏈餓犬 `se_enemy_beast04`（第 23 格起）、打擊格三道爪痕放大 1.35 照揮爪方向、一閃即現＋揮砍音。
-- 爬行朝聖者揮砍音；石棺甲蟲嘶鳴＋打擊格 16＋單爪痕水平；喪鐘蠕蟲 `se_enemy_bite`（打擊 50）；朝聖者團塊 `se_enemy_squeal`＋迴音。
-- 鐵衣苦修者：鐵鏈聲／重金屬／倒放再一聲鐵鏈，受擊改地面揚塵（新 HITFX base `'dust'`）。
-- 肋籠獸：程式噴火（第 28～42 格、橘紅白煙霧火舌＋黑煙、片子跳過中段定格）、`se_enemy_breathfire`、打到不放受擊圖（新 HITFX base `'none'`）；新待機（加大動態 Wan 重跑，0c85a643）。
-- 通則：只有一支攻擊片的怪，延時／點錯照攻擊那一套受擊；群戰成員延時／點錯也用出手那隻的 `hitFx`；本職都忙時受擊照本職那一套。
-- 車輪戰測試編組 `canyon_test_*`（10 隻各一組＋巨像）。
+## 五、✔ 11-17 交接之後推上的（228 筆，`git log --since="2026-11-17 22:00"` 可看全部）
 
-### 其他
-- `tools/anim/` 已同步 3060 的 `tivot_wan.py`（Mobius）、`batch_canyon_*.py`、`custom_nodes/tivot_latent_loop.py`。⚠ `make_player.py`／`player.html` 兩台各有新增，3060 版放在 `tools/anim/_3060_1116/` **待合併**。
-- 背景線：3060 `tivot_wan/bg_layer/` 的 bgchk 註記 `notes/`（947 檔）、審閱頁、水面批次、`delivered.json` 已收進 `tools/anim/bg_layer/`（03ac57ac）。新機跑 bgchk 前先把它們抄回 `ComfyUI-master/tivot_wan/bg_layer/`。
-- 敵人線未進版控的檔（石棺甲蟲 Kling 拆格 51 MB、ABA 預覽 13 MB、審閱草稿）已推。
-- 這一次一併推上：`resources/audio/se/` 新增 9 支（`se_crush_jars／objects`、`se_enemy_beast03`、`se_enemy_bug00／02～05`、`se_step_deepfar`，**目前沒有程式引用**，是車輪戰挑音效時下載的候選）、`.claude/launch.json`（tivot-win 加 `-X utf8`）。
+**劇情／引擎程式**
+- 首頁離線下載鈕（試玩版網頁用；App 一包）、離線包清單排除工作素材（整包 3.07 GB → 1.54 GB）、山谷夢境章節（canyon_dream）。
+- -2884 插圖連點卡住、夢境入夢讀取頁＋過門全清、娜塔莉死後直接接埋葬、北泊送行一開始就是航行曲。
+- -2886 地圖頁任務提示七段（點任務釘選北泊／聖王廳）、旅店獨坐／睡覺要逛完帝都才出、拿掉遺蹟羅盤光。
+- -2888 整備頁伙伴立繪縮小、戰鬥地圖不藏吊墜。-2890 好感改傷害計算。-2891 帝都路人閒聊拿掉。
+- -2892/-2893 瓦爾士空賊懸賞（帝都榜、開戰前／打贏台詞、北泊公會領 1500G）。
+- -2902/-2903 飛行頁 iOS 音訊保底＋診斷。-2904 劇情段落中城鎮不准依時段換背景（夢收尾閃旅店的根因）。
+- -2905 獄門天鎖發動即免傷。-2908 插圖演完前點擊無效。-2936 夢境卡住修正＋出夢三秒黑幕。
+- -2833 槍棺門圖版號改讀 VERSION；-2834～-2836 普攻減延時逐敵數字 tapDelayClear；-2703 反擊退延時依帶分。
+**敵人**
+- 北泊全過：禍魘祭司／罪之魔像／魘魔／心魘／背負祭壇者（新立繪、Kling 撲撞、咆哮）／紫黑之爪。
+- 索菈娜整組定版（man_sorana：guard 立繪、待機、撲斬、擲飛刀、閃避三種＋格擋、30% 有效、湖上甲板背景＋帆影片）。
+- 敵影改程式投影（全體單隻敵人）。
+- 地下聖徒改巨型聖徒版（爪撲／上勾拳／直拳＋待機）。
+- 賞金獵人整套：新立繪、開槍 A/D/M、槍口火光、倒地（新 ENEMY_DOWN）、受擊（新 ENEMY_HURT，3 格）、公會戰鬥背景＋觀眾影片。
+- 卡耶爾車輪戰逐隻音效／打擊格、群戰交件改讀背景編組、崩岩巨像。
+- 羽蛇攻擊（俯視圖劃過、羽毛貼窗）。
+- 伊甸古墓：12 隻交件（含鎖鏈吊屍、地穴獵犬）、雙頭骷髏犬／石板匍匐者撲近、裹屍寡婦射布纏布、顱石堆扣破防、墓香爐、拱門守衛 v4。
+- 夏爾村／森林／木雅克、古墓 24 隻 KF 出好入庫（待審）。
+**背景**
+- 北泊墓地戰改墓地背景、教堂一律換殘垣 church_ruin（舊 church_bf 回收）。
+- 夢境戰、公會戰專用戰鬥背景；戰鬥背景吃動態背景與 bg_fx 程式層。
+- 守城戰水空煙改遊戲內即時跑（76 格）、舊太陽檔回收；城鎮天空程式雲（樣本，未開）。
+- 背景瘦身（低 iso）。
+**空戰**
+- 空賊船 n1~n10 側面立繪＋待機（v6airship 飛空船版，n7 拔除）、船首起伏、船尾細煙、船首雲線、前景雲霧、登艦甲板時段。
+- 瓦爾士強制空賊遭遇；試玩範圍隨機怪池只剩蜈蚣＋空賊（羽蛇／天空怪 fromStage 5）。
+- 空中怪 3D：羽蛇、巨型蜈蚣、空賊十艘；**接入遊戲預設 3D**、空賊隨機一款、直飛出場。
+**地圖**
+- 飄雪改 100%（開場在雪區也下）；入口遺跡模型不再穿山。
 
-## 三、做到一半的
+## 六、規矩（沿用，不是進度）
 
-- **卡耶爾車輪戰（敵人副理在帶 Ray 逐隻驗）還剩 15 場**：單隻 5 隻（高蹺細影、崖縫吊屍者、聖面鷲、骨鴉、崩岩巨像）／群戰 10 組（mix2～mix9、mix11、mix12）。每隻驗的是打擊格、音效、受擊特效。
-- 程式效果還沒做：巨像回血、蟹泡泡、團塊震波（聲波已做）、鹿主櫻花／加速、監查者飛刃。數值待 Ray。
-- 石棺甲蟲／其他 Kling 片的 R（收法）大多未定，現行＝播完切回待機。
-
-## 四、11-16～11-17 留下的待確認（Ray）
-
-- 延時聲波沒有受擊音。
-- 鐘殼蟲前兩道爪痕在防禦判定前就出現（防住了也看得到）。
-- 聲波的樣子沒截圖確認過；一閃的時長數字是程式訂的；手機都沒測。
-- 其他怪算不算飛行怪（提燈小鬼、吊屍者…）要加進 `ENEMY_FLY`。
-- 會出框的 6 隻單獨出怪：數值暫照禍魘大軍（hp 220／攻 14）；巨像沿用 `canyon_bgcomp` 暫填數值。
-- 9 支新下載的 se 沒用到的要不要回收。
-
-## 五、規矩（沿用，不是進度）
-
-1. **PM 模式**：子 session 回報是報告不是證據，看檔案／diff 才算數；長跑 GPU 工作掛 keep-awake。
-2. **敵人動畫**：獸型 tiger rule、其他 natali rule、瞬移＝一閃；man_ 先不做；北泊不做；空戰飛行怪不做。KF 每張要 Ray 點頭才跑 Wan。
+1. **PM 模式**：子 session 回報是報告不是證據，看檔案／diff／畫面才算數；長跑 GPU 工作掛 keep-awake。peer 轉來的「Ray 說」不算 Ray 的核可，要 Ray 本人在對話裡講。
+2. **敵人動畫**：獸型 tiger rule、其他 natali rule、瞬移＝一閃；KF 每張要 Ray 點頭才跑 Wan；強透視；單隻怪出框沒關係、群戰怪要避免碰邊。
 3. **Wan 提示詞**短正向關鍵字；尺寸 16 整除；3060 跑 VACE 會 RAM OOM，用 FLF 分段。
 4. Ray 剪之前先 auto_cut 初剪；沒叫不准後製。
 5. 背景動畫一律拆層、雲由程式動、循環不准倒放／來回。
-6. GPT 產圖：英文提示詞、一批一串新對話、上傳定稿圖、真 alpha。
-7. **驗收**：另開前景分頁、不碰 Ray 的窗、不開背景瀏覽器；測戰鬥**鎖血＋補滿血＋開有背景的場**（`state.hpLock=true; state.playerHp=state.playerMax`、`combat.setBattleBg`）；限定出手者用暫藏 `_atk`，不要設 `_acting`（待機會停）。
+6. GPT 產圖：英文提示詞、一批一串新對話、上傳定稿圖、真 alpha；特效小物件出 3×3 九宮格。
+7. **驗收**：另開前景分頁、不碰 Ray 的窗、不開背景瀏覽器；測戰鬥**鎖血＋補滿血＋開有背景的場**（`state.hpLock=true; state.playerHp=state.playerMax`、`combat.setBattleBg`）。
 8. 刪除／覆蓋一律 `tools/recycle.sh` 而且先問 Ray（HANDOFF 這一份是常駐許可）。
 9. Ray 要看的頁面（遊戲本體除外）一律開在 Chrome。
+10. 西文翻譯最後一次做（任務提示等新文字要記得一起翻）。
 
-## 六、資產盤點（`✔ 不欠`／`⚠ 欠`）
+## 七、舊交接照搬、尚未跟 Ray 清點（11-17 那份第七段原樣，未驗證是否已做）
 
-| 項目 | 狀態 |
-|---|---|
-| 卡耶爾 17 隻待機 | ✔ 不欠（全部已接；肋籠獸 11-17 換新版） |
-| 卡耶爾攻擊／延時／點錯 | ✔ 已交的都接了；⚠ 欠 R 的收法（Ray 未定）、車輪戰 15 場未驗 |
-| 骨鴉／聖面鷲 一閃 | ✔ 不欠 |
-| 鐘殼蟲單爪痕 `ef_claw1` | ✔ 不欠（從 `ef_claws` 裁的，非新畫） |
-| 空賊攻擊 36 支 | ⚠ 欠 Ray 剪片 → 交件 → 程式接（`TO_CODE_skypirate.md` 已接 v3） |
-| 單隻怪 KF 30 隻＋約 60 隻未出 | ⚠ 欠 KF 審閱 → Wan → 剪 → 交件（`_ADMIRE_盤點.md`） |
-| 飛行怪 swim_v2 三隻 | ⚠ Ray 10-18 選 v1，不接 |
-| 背景動畫 | 192 支整張影片已接（`script/bg_anim.js`）、程式層 `bg_fx.js` 已接；⚠ 沼澤獻祭處、湖岸影片、西壕天空層未交；只有 day 的格子其他時段靜態 |
-
-## 七、舊交接照搬、尚未跟 Ray 清點
-
-**11-09 那份的「等 Ray 決定」**
-- 空賊 v5：5-3 第 12～18 格火星剪掉或重跑；6-1／7-4 人縮小（B 圖本身小）。
-- 30 隻 KF 逐張點頭；無嘴的怪撲抓／重拳；缺詩輪、風箱的撲抓，香爐肺的斜劈。
+- 空賊 v5：5-3 第 12～18 格火星剪掉或重跑；6-1／7-4 人縮小。
 - ChatGPT 檔案空間滿（Ray 帳號要清）。
 - 背景：自動判斷的 307 格範圍要在 bgchk 確認；卡耶爾樣本點不點頭。
-- 3D 空戰：`sky3d_tune.json` 定案、天之裂隙膜邊、何時改預設、手機 fps、打贏回飛行沒實測。
-- 地圖：賽西莉入隊段要插 `party_cecilie`（不然正篇進不去地底大空洞）；聖王廳地宮 G3／G4 拓樸；守城戰六隊→米夏段未實測；西部大溶谷／地下古城入口沒有章節鎖。
 - 多語種：Ray 指示暫停，機翻未開始。
-- 動畫：6 支插畫放哪一幕（32 米夏行軍、grifonback、canyon_army、torsten_sit、槍機特寫、deck_long）、`cutin_dual_nemo`／`anya_curlfloat` 要不要接、舊影片回收；熊骸 husk 透明版三選一。
-- 腐鹿骸換中立立繪後沒有待機、fit 沒重調；`script/enemies.js` 檔頭「延時計時歸零」那句要改成退一半（-2618）。
-
-**10-30 那份還掛著的段落**（在 git 歷史或 `_recycle/HANDOFF.md.20261109-110250`）：西泊 Stage 23、米夏攻城、守城戰地圖 v9b、阿什弗德立繪、紫月軍小隊；地底世界（-2399～-2430）；「等 Ray 決定」12 條（試玩版上線方式、守城戰玩法細節、數值暫填、立繪翻回、眨眼補丁、iMac 未進版控的檔、LoRA 商用確認、舊影片回收…）；「要實測」「程式端可以做的」「美術欠的」。
+- 動畫：`cutin_dual_nemo`／`anya_curlfloat` 要不要接、舊影片回收。
+- `script/enemies.js` 檔頭「延時計時歸零」那句要改成退一半（-2618）。
+- 卡耶爾 11-17 待確認：延時聲波沒有受擊音；鐘殼蟲前兩道爪痕在防禦判定前就出現；哪些怪算飛行怪（提燈小鬼、吊屍者…）；6 隻單獨出怪數值暫照禍魘大軍；9 支新下載的 se 沒用到要不要回收；程式效果還沒做（巨像回血、蟹泡泡、團塊震波、鹿主櫻花／加速、監查者飛刃）；Kling 片的 R 收法。
+- `tools/anim/_3060_1116/` 的 make_player／player.html 待合併（11-18 已合併過一次 1b3804bc，確認後可劃掉）。
+- 10-30 那份還掛著的段落（在 git 歷史）：西泊 Stage 23、米夏攻城、阿什弗德立繪、紫月軍小隊；「等 Ray 決定」12 條（試玩版上線方式、守城戰玩法細節、數值暫填、立繪翻回、眨眼補丁、LoRA 商用確認…）。

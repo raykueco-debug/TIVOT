@@ -3383,3 +3383,4 @@ when	from	to	reason
 20261122-215800	resources/background/anim/winsmoor_siege/ws_7_6_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_7_6_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
 20261122-215800	resources/background/anim/winsmoor_siege/ws_8_3_dusk_sun.webp	_recycle/resources/background/anim/winsmoor_siege/ws_8_3_dusk_sun.webp	守城戰即時版：太陽改判後沒用到的舊 sun 輸出（Ray 11-22：回收）
 20261122-222658	resources/enemy/anim/mon_grave_censer_atk_v1	_recycle/resources/enemy/anim/mon_grave_censer_atk_v1	對齊基準錯（剪片起點非中立），重交
+20261123-104509	HANDOFF.md	_recycle/HANDOFF.md.20261123-104509	換機交接：舊 HANDOFF 由 11-23 新版取代（Ray 10-04 常駐許可）
