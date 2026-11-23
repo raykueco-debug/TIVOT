@@ -12,7 +12,7 @@ def check(d, th=32, m=2):
         a = np.asarray(Image.open(f).convert('RGBA'))[..., 3] > th
         e = [k for k, v in (('上', a[:m].any()), ('下', a[-m:].any()), ('左', a[:, :m].any()), ('右', a[:, -m:].any())) if v]
         if e: hits.append((i, e))
-    print(f'{os.path.basename(d.rstrip("/\\"))}：{len(fs)} 格，碰邊 {len(hits)} 格')
+    _nm = os.path.basename(d.rstrip("/\\")); print(f'{_nm}：{len(fs)} 格，碰邊 {len(hits)} 格')
     for i, e in hits: print(f'  第 {i} 格：{"".join(e)}')
     return hits
 
