@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2953';
+export const VERSION = 'ver 2026.11.24-2954';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5977,7 +5977,7 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7, near:1.35, nearIn:130 },   /* nearIn：拉近只花打到前的這幾毫秒（-2530 Ray「拉近的速度快一點」） */   // 訓練用聖徒 新架勢 攻擊（ver -2527，31 格；-2529 Ray「攻擊時要拉近撲前」打到那一格放大到 1.35）
   mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_atk_v1/', hit:7, hitFx:'colossus_smash' },   // ver -2689：打擊＝拳頭落地第 7 格（原 21 是拳停在鏡頭前），地面揚塵＋落石＋重金屬
   /* 卡耶爾群戰成員（ver -2623，Kling、快剪 24fps；片尾 B 停格約 1 秒）。hit＝主體最大那一格（交件單）。 */
-  mon_canyon_coffinbeetle_dark: { dir:'resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v2/', hit:16, hitFx:'beetle_claw', windupSe:'se_enemy_bug01' },   // 一支到底（片尾回中立）；ver -2675：打到＝巨大化的第一格 16（主體面積由 129k 跳到 201k、之後撐到 21 格；Ray：「巨大化的第一幀就要放效果」），水平單爪痕＋揮砍音；嘶鳴起手放（Ray：「se_enemy_bug01 + slash 跟單爪痕」「固定橫痕 slash 在最大時出」）
+  mon_canyon_coffinbeetle_dark: { dir:'resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v3/', hit:5, hitFx:'beetle_claw', windupSe:'se_enemy_bug01' },   // 一支到底（片尾回中立）；ver -2675：打到＝巨大化的第一格 16（主體面積由 129k 跳到 201k、之後撐到 21 格；Ray：「巨大化的第一幀就要放效果」），水平單爪痕＋揮砍音；嘶鳴起手放（Ray：「se_enemy_bug01 + slash 跟單爪痕」「固定橫痕 slash 在最大時出」）
   mon_canyon_bellwyrm_dark: { dir:'resources/enemy/anim/mon_canyon_bellwyrm_dark_atk_v1/', hit:19, hitFx:'wyrm_bite' },   // ver -2709：Ray 剪的 cut（35 格）＋鎖尾部大小位置（tools/anim/lock_region.py）；打到＝原第 50 格＝剪後第 19 格
   mon_canyon_ribcage_dark: { dir:'resources/enemy/anim/mon_canyon_ribcage_dark_atk_v2/', hit:10, hitFx:'rib_fire', flame:{ from:10, to:17, at:[0.687,0.51] }, stepSe:{ se:'se_clickstep', at:[5,8,22,24] } },   /* ver -2953 效能副理：Ray 剪幀 101→28 格（297→82 MB）；照 kept_index 換算：打到 30→10、噴火 原 28～70→10～17、腳步 11/17/87/93→5/8/22/24；skip 拿掉（中段定格已剪掉） */   /* ver -2724（Ray：「配合腳部給他爪在地上走的聲音」）：轉身側移與轉回收回各兩聲（Ray：「腳步兩聲就好」） */   // ver -2683（Ray：「換成從尾部噴射火燄的特效」）：長頸末端的嘴第 28～70 格朝鏡頭噴火（嘴的位置逐格量過，28～74 格穩在 0.687／0.51），打到＝火噴到第 2 格
   /* 卡耶爾 Wan 攻擊（ver -2637，敵人副理 f13d457f／ce7379fe；Ray：「有一些 WAN 的動畫也要接上」）。交件單沒寫打到格 ⇒ 取「與第 0 格差最多」那一格（動作最大的一刻）。
@@ -5990,14 +5990,14 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   mon_canyon_saintvulture_dark: { dir:'resources/enemy/anim/mon_canyon_saintvulture_dark_atk_v1/', issen:true, home:'dive', issenSe:'em_slash' },   // 聖面鷲（ver -2726，Ray：「爪擊音」：刀光閃過那一刻放揮砍音）
   /* 卡耶爾群戰小怪 A（ver -2625，TO_CODE_canyon 11-16：Kling 16:9 ABA 原片 73 格、片尾自帶歸位）。
      `fillFrame:true`＝攻擊時拉到畫面中間之後再放大到片框（box）蓋滿敵人區，裁切的硬邊落到畫面外（Ray：「出框的就讓敵在攻時放大到貼框」）；倍率現算，只有群戰逐人那一條讀（enemy.attackFocusAnim）。 */
-  mon_canyon_censer_dark: { dir:'resources/enemy/anim/mon_canyon_censer_dark_atk_v1/', hit:32, hitFx:'censer_crash', fillFrame:true },   // 香爐蠍（ver -2656：打到＝尾槌砸地那一格、砸地音 se_crash_rocks，Ray）
-  mon_canyon_houndbeast: { dir:'resources/enemy/anim/mon_canyon_houndbeast_atk_v1/', hit:42, hitFx:'hound_maul', windupSe:'se_enemy_beast02', fillFrame:true },   // 餓獸
-  mon_canyon_bellmite_dark: { dir:'resources/enemy/anim/mon_canyon_bellmite_dark_atk_v1/', strikes:[31,37,39], hitFx:'bell_claw', windupSe:'se_enemy_bug01', windupMs:240, fillFrame:true },   // 鐘殼蟲：三下揮鉗（第 31／37／39 格，-2651 照片子量），每下一道單爪痕，最後一下扣血（Ray：「鉗類的受擊用單爪痕 要跟著打擊節奏」）
+  mon_canyon_censer_dark: { dir:'resources/enemy/anim/mon_canyon_censer_dark_atk_v2/', hit:6, hitFx:'censer_crash', fillFrame:true },   // 香爐蠍（ver -2656：打到＝尾槌砸地那一格、砸地音 se_crash_rocks，Ray）
+  mon_canyon_houndbeast: { dir:'resources/enemy/anim/mon_canyon_houndbeast_atk_v2/', hit:20, hitFx:'hound_maul', windupSe:'se_enemy_beast02', fillFrame:true },   // 餓獸
+  mon_canyon_bellmite_dark: { dir:'resources/enemy/anim/mon_canyon_bellmite_dark_atk_v2/', strikes:[9,11,12], hitFx:'bell_claw', windupSe:'se_enemy_bug01', windupMs:40, fillFrame:true },   // ver -2954 效能副理：Ray 剪幀 73→28 格；三下 31/37/39→9/11/12（原 31/35/38）、嘶鳴 240ms→40ms（原第 6 格→新第 1 格）   // 鐘殼蟲：三下揮鉗（第 31／37／39 格，-2651 照片子量），每下一道單爪痕，最後一下扣血（Ray：「鉗類的受擊用單爪痕 要跟著打擊節奏」）
   mon_canyon_chainhound_dark: { dir:'resources/enemy/anim/mon_canyon_chainhound_dark_atk_v1/', hit:45, hitFx:'chain_maul', windupSe:'se_enemy_beast04', windupMs:958, fillFrame:true },   // 吼聲從第 23 格轉正面那一刻放（23/24 秒，ver -2667，Ray：「從轉正開始放」）   // 鎖鏈餓犬
-  mon_canyon_lanternimp_dark: { dir:'resources/enemy/anim/mon_canyon_lanternimp_dark_atk_v1/', hit:24, fillFrame:true },   // 提燈小鬼
+  mon_canyon_lanternimp_dark: { dir:'resources/enemy/anim/mon_canyon_lanternimp_dark_atk_v2/', hit:7, fillFrame:true },   // 提燈小鬼
   /* 朝聖者團塊（ver -2652，Ray：「他是聲波攻擊 聲波用程式跑」「優先讓他先攻」）：A 借牠的點錯片（張手，打到＝第 20 格）演，打到時程式放聲波（`hitFx:'sonic'`：模糊聲波環＋盤面數字快速淡出再慢慢淡回）；`first`＝這一組的第一擊優先由牠；`last`＝這一組最後才倒（-2655，Ray：「那隻怪留到最後死」）。 */
   mon_canyon_pilgrimmass_dark: { dir:'resources/enemy/anim/mon_canyon_pilgrimmass_dark_miss_v2/', hit:5, hitFx:'pilgrim_sonic', first:true, last:true },   // ver -2953 效能副理：Ray 剪幀 101→30 格（318→94 MB），打到 原第 20 格→第 5 格（原 23）
-  mon_canyon_crawler_dark: { dir:'resources/enemy/anim/mon_canyon_crawler_dark_atk_v1/', hit:45, hitFx:'crawler_hit', fillFrame:true },   // 爬行朝聖者   // 噴火交程式（數值待 Ray，還沒做）   // 崩岩巨像 拳砸地（ver -2620，KF 第二輪，36 格）
+  mon_canyon_crawler_dark: { dir:'resources/enemy/anim/mon_canyon_crawler_dark_atk_v2/', hit:6, hitFx:'crawler_hit', fillFrame:true },   // 爬行朝聖者   // 噴火交程式（數值待 Ray，還沒做）   // 崩岩巨像 拳砸地（ver -2620，KF 第二輪，36 格）
   mon_stag_rot_neutral: { dir:'resources/enemy/anim/mon_stag_rot_neutral_atk_v1/', hit:17 },   // 腐鹿骸 角頂（ver -2620，KF 第二輪，30 格）
   mon_shinierforest_deernightmare: { dir:'resources/enemy/anim/mon_shinierforest_deernightmare_atk_v1/', hit:32 },   // 變異樹靈鹿主 仰天咆哮（ver -2620，KF 第二輪，55 格；攻擊＝延時同一支）
   mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_atk_v3/', hit:10, fx:[{ frame:16, type:'dust', n:4 }, { frame:24, type:'dust', n:3 }, { frame:31, type:'dust', n:3 }] },   // ver -2946：裁掉畫面外＋縮到手機 1.0×、Ray 在 animechk 減幀（altar10_atk_v2_cut：55→30 格＋停格＝38 格；811→32 MB）；hit／fx 照 kept_index 換算（20→10、29→16、40→24、48→31）  // ver -2776：新立繪的撲撞（Kling 5s，Ray 剪的 kling_altar_lunge_5s_cut 55 格；第一格對齊立繪大小，第 20 格撲到最近）   // E019 背負祭壇者 撲撞（ver -2517，29 格）
@@ -6933,6 +6933,31 @@ export const ASSET_VER = {
   'forest_valley_day': '0568f4fc',
   'forest_valley_dusk': '5f1c4cf2',
   'forest_valley_night': '56ddc754',
+  'frame_48': 'be9bbc7d',
+  'frame_49': 'adc57182',
+  'frame_50': '4186961e',
+  'frame_51': '2727e80d',
+  'frame_52': '3779105f',
+  'frame_53': '069e71f4',
+  'frame_54': '6db25c57',
+  'frame_55': '43cd41af',
+  'frame_56': 'd7ba28e0',
+  'frame_57': '975ff4c6',
+  'frame_58': 'a394ead6',
+  'frame_59': 'ec3062b7',
+  'frame_60': 'e7102487',
+  'frame_61': 'b948ba0d',
+  'frame_62': 'f0dacf16',
+  'frame_63': '1e816e27',
+  'frame_64': '17abaea2',
+  'frame_65': '0a5bfbeb',
+  'frame_66': 'ed77f3bf',
+  'frame_67': 'd96eae13',
+  'frame_68': '12e91c9e',
+  'frame_69': '720af3a0',
+  'frame_70': '4bb09661',
+  'frame_71': 'a6768c76',
+  'frame_72': 'caf78566',
   'guard_5': '3c00ac54',
   'guildcounterca_si_closed': '80cc27b6',
   'guildcounterca_si_half': 'f341b6bb',

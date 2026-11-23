@@ -3431,3 +3431,14 @@ when	from	to	reason
 20261124-003200	resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_ribcage_dark_atk_v1	ver -2953 效能副理：Ray 剪幀換 _v2（舊 v1 全格）
 20261124-003200	resources/enemy/anim/mon_canyon_hanged_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_hanged_dark_atk_v1	ver -2953 效能副理：Ray 剪幀換 _v2（舊 v1 全格）
 20261124-003200	resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1	_recycle/resources/enemy/anim/mon_canyon_ironpenitent_neutral_delay_v1.20261124-003200	ver -2953 效能副理：Ray 剪幀換 _v2（舊 v1 全格）
+20261124-004831	resources/enemy/anim/mon_canyon_lanternimp_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_lanternimp_dark_atk_v1	ver -2954 效能副理：Ray 剪幀換新版（舊全格）
+20261124-004831	resources/enemy/anim/mon_canyon_houndbeast_atk_v1	_recycle/resources/enemy/anim/mon_canyon_houndbeast_atk_v1	ver -2954 效能副理：Ray 剪幀換新版（舊全格）
+20261124-004831	resources/enemy/anim/mon_canyon_crawler_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_crawler_dark_atk_v1	ver -2954 效能副理：Ray 剪幀換新版（舊全格）
+20261124-004831	resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v2	_recycle/resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v2	ver -2954 效能副理：Ray 剪幀換新版（舊全格）
+20261124-004831	resources/enemy/anim/mon_canyon_censer_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_censer_dark_atk_v1	ver -2954 效能副理：Ray 剪幀換新版（舊全格）
+20261124-004831	resources/enemy/anim/mon_canyon_bellmite_dark_atk_v1	_recycle/resources/enemy/anim/mon_canyon_bellmite_dark_atk_v1	ver -2954 效能副理：Ray 剪幀換新版（舊全格）
+20261124-005019	resources/background/northport/northport_west_bf.webp	_recycle/resources/background/northport/northport_west_bf.webp	11-24 Ray「換新構圖」：北泊西區換成 GPT 去霧版（構圖略放大），舊圖退役
+20261124-005019	resources/background/_layers_gpt/_src/northport_west_bf.png	_recycle/resources/background/_layers_gpt/_src/northport_west_bf.png	11-24 Ray「換新構圖」：北泊西區換成 GPT 去霧版（構圖略放大），舊圖退役
+20261124-005144	resources/background/_layers_gpt/out/northport/northport_west_bf__cut.png	_recycle/resources/background/_layers_gpt/out/northport/northport_west_bf__cut.png	11-24 西區換新構圖：舊天空摳圖與放錯張（廣場）的去煙圖退役
+20261124-005144	resources/background/_layers_gpt/out/northport/northport_west_bf__nosmoke.png	_recycle/resources/background/_layers_gpt/out/northport/northport_west_bf__nosmoke.png	11-24 西區換新構圖：舊天空摳圖與放錯張（廣場）的去煙圖退役
+20261124-005144	resources/background/_layers_gpt/out/northport/northport_west_bf__nssky.png	_recycle/resources/background/_layers_gpt/out/northport/northport_west_bf__nssky.png	11-24 西區換新構圖：舊天空摳圖與放錯張（廣場）的去煙圖退役
