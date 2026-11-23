@@ -2980,6 +2980,10 @@ export function releaseBattleMemory(){
   const g=$('enemyGroup'); if(g){ for(const im of g.querySelectorAll('img')) im.removeAttribute('src'); g.innerHTML=''; }
   groupCard=null; groupMasks={}; lastImpact=null;
 }
+/* 現在握著幾支動畫格（ver -2945，效能副理）：過門／閉棺之後應該是 0。驗鐵律 13 用（量出來，不是讀程式推論）。 */
+export function heldStats(){ let n=0, fr=0, mb=0;
+  for(const k of Object.keys(clipCache)){ const c=clipCache[k]; n++; for(const f of (c.fr||[])){ fr++; mb+=(f.naturalWidth*f.naturalHeight*4)/1048576; } }
+  return { clips:n, frames:fr, mb:Math.round(mb), members:memberClips.size, idle:(idleFr||[]).length }; }
 const MASK_W=192;
 function groupEl(){
   let g=$('enemyGroup');

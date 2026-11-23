@@ -3083,6 +3083,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
         +i18nT('\n節流 x')+(thr?thr.toFixed(2):'—')+i18nT('（')+Math.round(benchLast)+i18nT('ms/基準')+Math.round(benchBest)+i18nT('ms）')
         +'\nheap '+mem+'  dom '+domN+i18nT('（開機+')+ (domN-domBase) +i18nT('）')
         +i18nT('\n圖估 ')+Math.round(imgB/1048576)+'MB/'+imgN+i18nT('張  canvas ')+Math.round(cvB/1048576)+'MB/'+cvN
+        +(()=>{ try{ const h=P.heldImgs && P.heldImgs(); return h ? i18nT('\n快取圖 ')+Math.round(h.mb)+'MB/'+h.n+i18nT('張（含不在畫面上的預載）') : ''; }catch(_){ return ''; } })()
         +'\nrAF '+rafRate+'/s  sto '+stoRate+i18nT('/s  網5s ')+netN+'req '+netKB+'KB'
         /* app 那一格讀 #top（戰鬥 UI）不讀 #app —— #home 長在 #app 裡面，
            整層永遠 visible（-851 的覆蓋規則藏的就是 #top/#bottom）。 */

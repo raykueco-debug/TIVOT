@@ -743,18 +743,26 @@ export const SFX = {
       try{ URL.revokeObjectURL(_bgmBlob[src]); }catch(e){}
       delete _bgmBlob[src]; bgmN++;
     }
+    /* 衍生的 buffer（playFit 時間伸縮／playMod 失真，ver -2945 效能副理實測漏放）：鑰匙開頭是原檔 src，原檔放掉它就跟著放。 */
+    for(const k in _fitCache){ const src=k.split('|')[0];
+      if(K.has(src) || _resident.has(src)) continue;
+      delete _fitCache[k]; sfxN++;
+    }
     return { sfx:sfxN, bgm:bgmN };
   },
   /* 現在留著多少（除錯用；`releaseAudio` 的驗收看這個）。
      ⚠ `sfxMB` 是**解碼後**的量：`長度 × 聲道 × 4 bytes`（Float32）——
        與檔案大小完全脫鉤（96kbps 的 m4a 解開來大約是 32 倍）。
        這一層就是為什麼「音效只有 5 MB」是錯覺（ver -1299 實測）。 */
-  audioHeld(){
-    let bytes = 0;
+  audioHeld(detail){
+    let bytes = 0, fitB = 0; const list=[];
     for(const k in _buffers){ const b=_buffers[k];
-      if(b) bytes += b.length * b.numberOfChannels * 4; }
-    return { sfx:Object.keys(_buffers).length, bgm:Object.keys(_bgmBlob).length,
-             sfxMB:+(bytes/1048576).toFixed(1) };
+      if(b){ const m=b.length * b.numberOfChannels * 4; bytes += m; if(detail) list.push([k.split('/').pop(), +(m/1048576).toFixed(2)]); } }
+    for(const k in _fitCache){ const b=_fitCache[k]; if(b) fitB += b.length * b.numberOfChannels * 4; }
+    const o={ sfx:Object.keys(_buffers).length, bgm:Object.keys(_bgmBlob).length,
+             sfxMB:+(bytes/1048576).toFixed(1), fit:Object.keys(_fitCache).length, fitMB:+(fitB/1048576).toFixed(1) };
+    if(detail) o.list=list.sort((a,b)=>b[1]-a[1]);
+    return o;
   },
 
   // 播放音檔（src＝已解析路徑）。每次 new source → 可自由重疊、不限制、不打斷前一個。

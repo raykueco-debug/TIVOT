@@ -16,9 +16,9 @@
 <link rel="apple-touch-icon" href="resources/background/tivot_emblem.png?v=5da0da58">
 <title>TIVOT</title>
 <!-- 全域鎖直向（真鎖 + 橫向擋板）；classic script，需在版面就緒前掛上 -->
-<script src="orientation.js?v=2944"></script>
+<script src="orientation.js?v=2945"></script>
 <!-- 任務提示（ver -2886）：資料＋判定只有這一份，飛行頁也載它（script/quests.classic.js） -->
-<script src="script/quests.classic.js?v=2944"></script>
+<script src="script/quests.classic.js?v=2945"></script>
 <!-- 離線包（ver -2256）：註冊 sw.js；主畫面 App 裡出現「下載離線包」鈕 -->
 <script src="offline.js"></script>
 <!-- ══ 效能探針・計數層（ver -850，Ray：「沒有辦法寫一個偵測程式進去看是什麼
@@ -49,6 +49,17 @@
       s.addEventListener('ended',fin);
       setTimeout(function(){ try{ if(s.buffer&&isFinite(s.buffer.duration)) setTimeout(fin,(s.buffer.duration+2)*1000); else setTimeout(fin,15000); }catch(_){ setTimeout(fin,15000); } },0);
       return s; }; }
+  /* 不在 DOM 上的圖（ver -2945，效能副理）：預載快取（敵人動畫格…）用 new Image() 抓、解碼後一直握著，
+     HUD「圖估」只數 document.images 看不到它們。這裡只記 WeakRef（不延長壽命），HUD 數「還活著、已解碼」的。
+     ⚠ 放掉之後要等 GC 才會從這個數字消失；要確定的數字看各模組自己的 heldStats。 */
+  if(window.WeakRef){ var OI=window.Image; P.imgRefs=[];
+    var TI=function(w,h){ var im=arguments.length ? new OI(w,h) : new OI(); P.imgRefs.push(new WeakRef(im)); return im; };
+    TI.prototype=OI.prototype; window.Image=TI;
+    P.heldImgs=function(){ var seen={}, n=0, b=0, by={}, live=[];
+      for(var i=0;i<P.imgRefs.length;i++){ var im=P.imgRefs[i].deref(); if(!im) continue; live.push(P.imgRefs[i]);
+        var u=im.currentSrc||im.src; if(!u||seen[u]||!im.naturalWidth) continue; seen[u]=1; n++;
+        var m=im.naturalWidth*im.naturalHeight*4; b+=m; var d=u.split('?')[0].split('/').slice(-2,-1)[0]||'?'; by[d]=(by[d]||0)+m; }
+      P.imgRefs=live; return { n:n, mb:b/1048576, by:by }; }; }
   var orf=window.requestAnimationFrame;
   window.requestAnimationFrame=function(cb){ return orf.call(window,function(t){ P.raf++; return cb(t); }); };
 })();
@@ -67,91 +78,91 @@
 <script type="importmap">
 {
   "imports": {
-    "./audio.js": "./audio.js?v=2944",
-    "./config.js": "./config.js?v=2944",
-    "./i18n.js": "./i18n.js?v=2944",
-    "./main.js": "./main.js?v=2944",
-    "./offline.js": "./offline.js?v=2944",
-    "./orientation.js": "./orientation.js?v=2944",
-    "./state.js": "./state.js?v=2944",
-    "./sw.js": "./sw.js?v=2944",
-    "./telemetry.js": "./telemetry.js?v=2944",
-    "./modules/beatpick.js": "./modules/beatpick.js?v=2944",
-    "./modules/bgfx.js": "./modules/bgfx.js?v=2944",
-    "./modules/blink.js": "./modules/blink.js?v=2944",
-    "./modules/breath.js": "./modules/breath.js?v=2944",
-    "./modules/combat.js": "./modules/combat.js?v=2944",
-    "./modules/defense.js": "./modules/defense.js?v=2944",
-    "./modules/enemy.js": "./modules/enemy.js?v=2944",
-    "./modules/eyefx.js": "./modules/eyefx.js?v=2944",
-    "./modules/gear.js": "./modules/gear.js?v=2944",
-    "./modules/groundShadow.js": "./modules/groundShadow.js?v=2944",
-    "./modules/haptics.js": "./modules/haptics.js?v=2944",
-    "./modules/inn.js": "./modules/inn.js?v=2944",
-    "./modules/inspector.js": "./modules/inspector.js?v=2944",
-    "./modules/loot.js": "./modules/loot.js?v=2944",
-    "./modules/partner.js": "./modules/partner.js?v=2944",
-    "./modules/saint.js": "./modules/saint.js?v=2944",
-    "./modules/sakura.js": "./modules/sakura.js?v=2944",
-    "./modules/save.js": "./modules/save.js?v=2944",
-    "./modules/settings.js": "./modules/settings.js?v=2944",
-    "./modules/story.js": "./modules/story.js?v=2944",
-    "./modules/sway.js": "./modules/sway.js?v=2944",
-    "./modules/tone.js": "./modules/tone.js?v=2944",
-    "./modules/town.js": "./modules/town.js?v=2944",
-    "./modules/transition.js": "./modules/transition.js?v=2944",
-    "./modules/tutorial.js": "./modules/tutorial.js?v=2944",
-    "./modules/weapon.js": "./modules/weapon.js?v=2944",
-    "./script/bg_anim.js": "./script/bg_anim.js?v=2944",
-    "./script/bg_fx.js": "./script/bg_fx.js?v=2944",
-    "./script/bg_index.js": "./script/bg_index.js?v=2944",
-    "./script/blink.js": "./script/blink.js?v=2944",
-    "./script/clock.js": "./script/clock.js?v=2944",
-    "./script/enemies.js": "./script/enemies.js?v=2944",
-    "./script/evaluation.js": "./script/evaluation.js?v=2944",
-    "./script/eyefx.js": "./script/eyefx.js?v=2944",
-    "./script/group_comps.js": "./script/group_comps.js?v=2944",
-    "./script/group_layout.js": "./script/group_layout.js?v=2944",
-    "./script/group_members.js": "./script/group_members.js?v=2944",
-    "./script/inventory.js": "./script/inventory.js?v=2944",
-    "./script/loadout.js": "./script/loadout.js?v=2944",
-    "./script/mainScript.js": "./script/mainScript.js?v=2944",
-    "./script/progress.js": "./script/progress.js?v=2944",
-    "./script/quests.classic.js": "./script/quests.classic.js?v=2944",
-    "./script/shopcards.js": "./script/shopcards.js?v=2944",
-    "./script/shopstock.js": "./script/shopstock.js?v=2944",
-    "./script/speakers.js": "./script/speakers.js?v=2944",
-    "./script/sway.js": "./script/sway.js?v=2944",
-    "./script/town.js": "./script/town.js?v=2944",
-    "./script/weapons.js": "./script/weapons.js?v=2944",
-    "./i18n/en.js": "./i18n/en.js?v=2944",
-    "./i18n/es.js": "./i18n/es.js?v=2944",
-    "./i18n/ja.js": "./i18n/ja.js?v=2944",
-    "./i18n/scriptTr.js": "./i18n/scriptTr.js?v=2944",
-    "./i18n/zh.js": "./i18n/zh.js?v=2944",
-    "./i18n/script/es.classic.js": "./i18n/script/es.classic.js?v=2944",
-    "./i18n/script/es.js": "./i18n/script/es.js?v=2944",
-    "./i18n/ui/en.classic.js": "./i18n/ui/en.classic.js?v=2944",
-    "./i18n/ui/en.js": "./i18n/ui/en.js?v=2944",
-    "./i18n/ui/es.classic.js": "./i18n/ui/es.classic.js?v=2944",
-    "./i18n/ui/es.js": "./i18n/ui/es.js?v=2944",
-    "./i18n/ui/ja.classic.js": "./i18n/ui/ja.classic.js?v=2944",
-    "./i18n/ui/ja.js": "./i18n/ui/ja.js?v=2944",
-    "./i18n/ui/langs.classic.js": "./i18n/ui/langs.classic.js?v=2944",
-    "./i18n/ui/langs.js": "./i18n/ui/langs.js?v=2944",
-    "./i18n/ui/pack.en.js": "./i18n/ui/pack.en.js?v=2944",
-    "./i18n/ui/pack.es.js": "./i18n/ui/pack.es.js?v=2944",
-    "./i18n/ui/pack.ja.js": "./i18n/ui/pack.ja.js?v=2944",
-    "./i18n/ui/packs.js": "./i18n/ui/packs.js?v=2944"
+    "./audio.js": "./audio.js?v=2945",
+    "./config.js": "./config.js?v=2945",
+    "./i18n.js": "./i18n.js?v=2945",
+    "./main.js": "./main.js?v=2945",
+    "./offline.js": "./offline.js?v=2945",
+    "./orientation.js": "./orientation.js?v=2945",
+    "./state.js": "./state.js?v=2945",
+    "./sw.js": "./sw.js?v=2945",
+    "./telemetry.js": "./telemetry.js?v=2945",
+    "./modules/beatpick.js": "./modules/beatpick.js?v=2945",
+    "./modules/bgfx.js": "./modules/bgfx.js?v=2945",
+    "./modules/blink.js": "./modules/blink.js?v=2945",
+    "./modules/breath.js": "./modules/breath.js?v=2945",
+    "./modules/combat.js": "./modules/combat.js?v=2945",
+    "./modules/defense.js": "./modules/defense.js?v=2945",
+    "./modules/enemy.js": "./modules/enemy.js?v=2945",
+    "./modules/eyefx.js": "./modules/eyefx.js?v=2945",
+    "./modules/gear.js": "./modules/gear.js?v=2945",
+    "./modules/groundShadow.js": "./modules/groundShadow.js?v=2945",
+    "./modules/haptics.js": "./modules/haptics.js?v=2945",
+    "./modules/inn.js": "./modules/inn.js?v=2945",
+    "./modules/inspector.js": "./modules/inspector.js?v=2945",
+    "./modules/loot.js": "./modules/loot.js?v=2945",
+    "./modules/partner.js": "./modules/partner.js?v=2945",
+    "./modules/saint.js": "./modules/saint.js?v=2945",
+    "./modules/sakura.js": "./modules/sakura.js?v=2945",
+    "./modules/save.js": "./modules/save.js?v=2945",
+    "./modules/settings.js": "./modules/settings.js?v=2945",
+    "./modules/story.js": "./modules/story.js?v=2945",
+    "./modules/sway.js": "./modules/sway.js?v=2945",
+    "./modules/tone.js": "./modules/tone.js?v=2945",
+    "./modules/town.js": "./modules/town.js?v=2945",
+    "./modules/transition.js": "./modules/transition.js?v=2945",
+    "./modules/tutorial.js": "./modules/tutorial.js?v=2945",
+    "./modules/weapon.js": "./modules/weapon.js?v=2945",
+    "./script/bg_anim.js": "./script/bg_anim.js?v=2945",
+    "./script/bg_fx.js": "./script/bg_fx.js?v=2945",
+    "./script/bg_index.js": "./script/bg_index.js?v=2945",
+    "./script/blink.js": "./script/blink.js?v=2945",
+    "./script/clock.js": "./script/clock.js?v=2945",
+    "./script/enemies.js": "./script/enemies.js?v=2945",
+    "./script/evaluation.js": "./script/evaluation.js?v=2945",
+    "./script/eyefx.js": "./script/eyefx.js?v=2945",
+    "./script/group_comps.js": "./script/group_comps.js?v=2945",
+    "./script/group_layout.js": "./script/group_layout.js?v=2945",
+    "./script/group_members.js": "./script/group_members.js?v=2945",
+    "./script/inventory.js": "./script/inventory.js?v=2945",
+    "./script/loadout.js": "./script/loadout.js?v=2945",
+    "./script/mainScript.js": "./script/mainScript.js?v=2945",
+    "./script/progress.js": "./script/progress.js?v=2945",
+    "./script/quests.classic.js": "./script/quests.classic.js?v=2945",
+    "./script/shopcards.js": "./script/shopcards.js?v=2945",
+    "./script/shopstock.js": "./script/shopstock.js?v=2945",
+    "./script/speakers.js": "./script/speakers.js?v=2945",
+    "./script/sway.js": "./script/sway.js?v=2945",
+    "./script/town.js": "./script/town.js?v=2945",
+    "./script/weapons.js": "./script/weapons.js?v=2945",
+    "./i18n/en.js": "./i18n/en.js?v=2945",
+    "./i18n/es.js": "./i18n/es.js?v=2945",
+    "./i18n/ja.js": "./i18n/ja.js?v=2945",
+    "./i18n/scriptTr.js": "./i18n/scriptTr.js?v=2945",
+    "./i18n/zh.js": "./i18n/zh.js?v=2945",
+    "./i18n/script/es.classic.js": "./i18n/script/es.classic.js?v=2945",
+    "./i18n/script/es.js": "./i18n/script/es.js?v=2945",
+    "./i18n/ui/en.classic.js": "./i18n/ui/en.classic.js?v=2945",
+    "./i18n/ui/en.js": "./i18n/ui/en.js?v=2945",
+    "./i18n/ui/es.classic.js": "./i18n/ui/es.classic.js?v=2945",
+    "./i18n/ui/es.js": "./i18n/ui/es.js?v=2945",
+    "./i18n/ui/ja.classic.js": "./i18n/ui/ja.classic.js?v=2945",
+    "./i18n/ui/ja.js": "./i18n/ui/ja.js?v=2945",
+    "./i18n/ui/langs.classic.js": "./i18n/ui/langs.classic.js?v=2945",
+    "./i18n/ui/langs.js": "./i18n/ui/langs.js?v=2945",
+    "./i18n/ui/pack.en.js": "./i18n/ui/pack.en.js?v=2945",
+    "./i18n/ui/pack.es.js": "./i18n/ui/pack.es.js?v=2945",
+    "./i18n/ui/pack.ja.js": "./i18n/ui/pack.ja.js?v=2945",
+    "./i18n/ui/packs.js": "./i18n/ui/packs.js?v=2945"
   }
 }
 </script>
 <!-- BUST:END -->
-<link rel="stylesheet" href="style.css?v=2944">
+<link rel="stylesheet" href="style.css?v=2945">
   <!-- 拾得道具／道具欄／商店／懸賞榜（ver -380 抽出，飛行頁共用同一份）。
        ⚠ `data-lootsheet` 是給 `modules/loot.js` 認的：它看到已經掛過就不再掛一次。
          飛行頁沒有這一行，由那支模組自己掛上去。 -->
-  <link rel="stylesheet" href="css/lootsheet.css?v=2944" data-lootsheet="1">
+  <link rel="stylesheet" href="css/lootsheet.css?v=2945" data-lootsheet="1">
 <!-- 主畫面 App（standalone）偵測：首繪前在 <html> 蓋 .standalone，
      供 CSS 修 iOS 26 版面視窗少算頂部安全區高度（底部露黑帶）的問題 -->
 <script>
@@ -803,6 +814,6 @@
      ⚠ src 是**按下去才給**的（lazy）：不然每次開機都要多載一整個飛行頁。 -->
 <iframe id="flightFrame" title="飛行"></iframe>
 
-<script type="module" src="main.js?v=2944"></script>
+<script type="module" src="main.js?v=2945"></script>
 </body>
 </html>
