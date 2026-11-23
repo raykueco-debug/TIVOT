@@ -1620,25 +1620,28 @@ function choirChant(o, fx){
 /* 鐵處女的血濺（ver -2939，Ray：「程式血濺敵窗遮住攻擊圈 慢慢滑下 清盤解除」）：一片血濺蓋在敵窗（攻擊圈之上 z10），
    濺上去後整片慢慢往下滑、血滴拉長；**換盤（#grid 重建）才拿掉**。只擋視線，點擊照樣穿過。 */
 function bloodVeil(){
+  /* -2940 Ray：「血也太粗糙了 給 gpt 畫 16 格血跡」「流下來要有痕」→ 素材換 GPT 的血濺（vfx_bsplat_0～7）＋流痕（vfx_brun_0～7）：
+     每團血濺在敵窗上慢慢往下滑，滑過的地方由流痕從上往下「長」出來（clip 跟著血團走），換盤才整片拿掉。 */
   const dots=$('redDots'), host=dots && dots.parentNode, grid=$('grid'); if(!host) return;
-  const NS='http://www.w3.org/2000/svg', svg=document.createElementNS(NS,'svg');
-  svg.setAttribute('viewBox','0 0 100 100'); svg.setAttribute('preserveAspectRatio','none'); svg.classList.add('blood-veil');
-  svg.style.cssText='position:absolute;inset:0;width:100%;height:100%;z-index:10;pointer-events:none;overflow:visible;';
-  const blob=(cx,cy,r,col)=>{ const n=9+Math.floor(Math.random()*5); let d='';
-    for(let i=0;i<=n;i++){ const a=i/n*Math.PI*2, rr=r*(0.65+Math.random()*0.55); d+=(i?'L':'M')+(cx+Math.cos(a)*rr).toFixed(1)+' '+(cy+Math.sin(a)*rr*1.2).toFixed(1); }
-    const p=document.createElementNS(NS,'path'); p.setAttribute('d',d+'Z'); p.setAttribute('fill',col); p.setAttribute('stroke','#3a0000'); p.setAttribute('stroke-width','.4'); p.setAttribute('stroke-linejoin','round'); return p; };
-  const g=document.createElementNS(NS,'g'); svg.appendChild(g);
-  const drips=[];
-  for(let k=0;k<7;k++){ const cx=10+Math.random()*80, cy=12+Math.random()*50, r=5+Math.random()*9;
-    g.appendChild(blob(cx,cy,r,'#8a0a0a')); g.appendChild(blob(cx-r*0.15,cy-r*0.2,r*0.55,'#b51616'));
-    for(let j=0;j<2;j++){ const dx=cx+(Math.random()-.5)*r, w=0.8+Math.random()*1.6, L=6+Math.random()*16;
-      const dr=document.createElementNS(NS,'rect'); dr.setAttribute('x',(dx-w/2).toFixed(1)); dr.setAttribute('y',cy.toFixed(1)); dr.setAttribute('width',w.toFixed(1)); dr.setAttribute('height','0'); dr.setAttribute('rx',(w/2).toFixed(1)); dr.setAttribute('fill','#8a0a0a'); g.appendChild(dr); drips.push([dr,L]); } }
-  for(let k=0;k<26;k++){ const c=document.createElementNS(NS,'circle'); c.setAttribute('cx',(Math.random()*100).toFixed(1)); c.setAttribute('cy',(Math.random()*75).toFixed(1)); c.setAttribute('r',(0.4+Math.random()*1.4).toFixed(1)); c.setAttribute('fill','#9c0f0f'); g.appendChild(c); }
-  host.appendChild(svg);
-  try{ g.animate([{transform:'scale(.6)',opacity:0,transformOrigin:'50% 40%'},{transform:'scale(1)',opacity:1,transformOrigin:'50% 40%'}],{duration:140,easing:'ease-out'});
-       svg.animate([{transform:'translateY(0)'},{transform:'translateY(35%)'}],{duration:14000,easing:'linear',fill:'forwards'}); }catch(_){}
-  const t0=performance.now(); const grow=()=>{ if(!svg.isConnected) return; const u=Math.min(1,(performance.now()-t0)/9000); drips.forEach(([dr,L])=>dr.setAttribute('height',(L*u).toFixed(1))); if(u<1) requestAnimationFrame(grow); }; requestAnimationFrame(grow);
-  if(grid){ const mo=new MutationObserver(()=>{ svg.remove(); mo.disconnect(); }); mo.observe(grid,{childList:true}); }   // 換盤（buildGrid 清空重建）＝清盤解除
+  const hr=host.getBoundingClientRect(); if(!hr.width) return;
+  const wrap=document.createElement('div'); wrap.className='blood-veil';
+  wrap.style.cssText='position:absolute;inset:0;z-index:10;pointer-events:none;overflow:hidden;';
+  host.appendChild(wrap);
+  const pick=n=>[...Array(8).keys()].sort(()=>Math.random()-0.5).slice(0,n);
+  const sp=pick(5), rn=pick(5);
+  sp.forEach((si,k)=>{
+    const w=hr.width*(0.26+Math.random()*0.14), h=w*1.35, x=hr.width*(0.06+Math.random()*0.7), y0=hr.height*(0.04+Math.random()*0.35);
+    const fall=hr.height*(0.22+Math.random()*0.3), T=11000+Math.random()*6000, d=k*60;
+    const tw=w*0.32, trail=document.createElement('img'); trail.src=asset('vfx_brun_'+rn[k]); trail.alt='';
+    trail.style.cssText=`position:absolute;left:${x+w*0.5-tw/2}px;top:${y0+h*0.45}px;width:${tw}px;height:${fall+h*0.2}px;clip-path:inset(0 0 100% 0);`;
+    const s=document.createElement('img'); s.src=asset('vfx_bsplat_'+si); s.alt='';
+    s.style.cssText=`position:absolute;left:${x}px;top:${y0}px;width:${w}px;height:${h}px;`;
+    wrap.appendChild(trail); wrap.appendChild(s);
+    try{ s.animate([{transform:'scale(.3)',opacity:0},{transform:'scale(1.08)',opacity:1,offset:.6},{transform:'scale(1)',opacity:1}],{duration:160,delay:d,easing:'ease-out',fill:'backwards'});
+      s.animate([{translate:'0 0'},{translate:`0 ${fall}px`}],{duration:T,delay:d+300,easing:'cubic-bezier(.3,0,.6,1)',fill:'forwards'});
+      trail.animate([{clipPath:'inset(0 0 100% 0)'},{clipPath:'inset(0 0 0% 0)'}],{duration:T,delay:d+300,easing:'cubic-bezier(.3,0,.6,1)',fill:'forwards'}); }catch(_){}
+  });
+  if(grid){ const mo=new MutationObserver(()=>{ wrap.remove(); mo.disconnect(); }); mo.observe(grid,{childList:true}); }   // 換盤（buildGrid 清空重建）＝清盤解除
 }
 /* 散骨（ver -2917，Ray 骷髏塚：「攻擊時是散骨高速飛向 VIEWER」；素材＝GPT 同畫風 17 個骨頭 vfx_bone_00～16）：
    從身上（`o`）噴出 n 個，邊轉邊由小變大、朝四周散開飛出畫面 —— 讀起來是朝鏡頭砸過來。 */

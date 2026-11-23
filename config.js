@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.23-2939';
+export const VERSION = 'ver 2026.11.23-2940';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4704,6 +4704,22 @@ export const ASSETS = {
      mix-blend-mode:screen（黑自然消失，同星芒那條的理由）。刀尖朝下＝畫的 +90°。 */
   vfx_dagger:         "resources/weapon/dagger.webp",
   vfx_shroud_strip:   "resources/enemy/fx/shroud_strip.webp?v=7ae507bf",   // 裹屍寡婦的裹屍布（ver -2917，GPT 出）
+  vfx_bsplat_0:      "resources/enemy/fx/blood16/splat_00.webp",   // 鐵處女血濺（GPT 16 格，ver -2940）
+  vfx_bsplat_1:      "resources/enemy/fx/blood16/splat_01.webp",
+  vfx_bsplat_2:      "resources/enemy/fx/blood16/splat_02.webp",
+  vfx_bsplat_3:      "resources/enemy/fx/blood16/splat_03.webp",
+  vfx_bsplat_4:      "resources/enemy/fx/blood16/splat_04.webp",
+  vfx_bsplat_5:      "resources/enemy/fx/blood16/splat_05.webp",
+  vfx_bsplat_6:      "resources/enemy/fx/blood16/splat_06.webp",
+  vfx_bsplat_7:      "resources/enemy/fx/blood16/splat_07.webp",
+  vfx_brun_0:        "resources/enemy/fx/blood16/run_08.webp",
+  vfx_brun_1:        "resources/enemy/fx/blood16/run_09.webp",
+  vfx_brun_2:        "resources/enemy/fx/blood16/run_10.webp",
+  vfx_brun_3:        "resources/enemy/fx/blood16/run_11.webp",
+  vfx_brun_4:        "resources/enemy/fx/blood16/run_12.webp",
+  vfx_brun_5:        "resources/enemy/fx/blood16/run_13.webp",
+  vfx_brun_6:        "resources/enemy/fx/blood16/run_14.webp",
+  vfx_brun_7:        "resources/enemy/fx/blood16/run_15.webp",
   vfx_bind_00:        "resources/enemy/fx/shroud_bind/bind_00.webp",   // 纏布（繃緊，GPT 九宮格，ver -2924）
   vfx_bind_01:        "resources/enemy/fx/shroud_bind/bind_01.webp",
   vfx_bind_02:        "resources/enemy/fx/shroud_bind/bind_02.webp",
