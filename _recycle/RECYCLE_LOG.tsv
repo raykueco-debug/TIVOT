@@ -3395,3 +3395,13 @@ when	from	to	reason
 20261123-112540	resources/enemy/_neutral_refs/tomb_kf/tb_bellfounder_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_bellfounder_B.png.20261123-112540	Ray 11-23：腳不要踩最前面、頭要在最前面
 20261123-112612	resources/enemy/_neutral_refs/tomb_kf/tb_pallid_stag_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_pallid_stag_B.png.20261123-112612	Ray 11-23：算了 都用上一版
 20261123-112613	resources/enemy/_neutral_refs/tomb_kf/tb_bellfounder_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_bellfounder_B.png.20261123-112613	Ray 11-23：算了 都用上一版
+20261123-114427	resources/enemy/_neutral_refs/tomb_kf/tb_ossuary_wheel_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/tb_ossuary_wheel_B.png.20261123-114427	Ray 11-23 車輪退件：改轉起朝 viewer 撞來，舊 B 換新
+20261123-114639	resources/enemy/_neutral_refs/tomb_kf/wan/_ossuary_wheel_cm.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/wan/_ossuary_wheel_cm.png	車輪 B 換新，舊的 Wan 前處理檔
+20261123-114639	resources/enemy/_neutral_refs/tomb_kf/wan/ossuary_wheel_A.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/wan/ossuary_wheel_A.png	車輪 B 換新，舊的 Wan 前處理檔
+20261123-114639	resources/enemy/_neutral_refs/tomb_kf/wan/ossuary_wheel_B.png	_recycle/resources/enemy/_neutral_refs/tomb_kf/wan/ossuary_wheel_B.png	車輪 B 換新，舊的 Wan 前處理檔
+20261123-114658	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/enemy_atk/tomb3_ossuary_wheel_A_AB	_recycle/tomb3_ossuary_wheel_A_AB	Ray 11-23 車輪退件（Wan 沒轉起來），換提示詞重跑
+20261123-114658	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/enemy_atk/tomb3_ossuary_wheel_B_BA	_recycle/tomb3_ossuary_wheel_B_BA	Ray 11-23 車輪退件（Wan 沒轉起來），換提示詞重跑
+20261123-114658	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/tomb_kf3/ossuary_wheel_A	_recycle/ossuary_wheel_A	Ray 11-23 車輪退件（Wan 沒轉起來），換提示詞重跑
+20261123-114658	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/tomb_kf3/ossuary_wheel_A_AB	_recycle/ossuary_wheel_A_AB	Ray 11-23 車輪退件（Wan 沒轉起來），換提示詞重跑
+20261123-114658	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/tomb_kf3/ossuary_wheel_B	_recycle/ossuary_wheel_B	Ray 11-23 車輪退件（Wan 沒轉起來），換提示詞重跑
+20261123-114658	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/tomb_kf3/ossuary_wheel_B_BA	_recycle/ossuary_wheel_B_BA	Ray 11-23 車輪退件（Wan 沒轉起來），換提示詞重跑
