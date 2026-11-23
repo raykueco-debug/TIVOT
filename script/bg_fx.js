@@ -27,6 +27,8 @@ const WS = (n, o) => {
       layers: [{ img: p + 'cloud_far.webp', speed: 3, arc: 0.10, yc: 0.85 },
                { img: p + 'cloud_mid.webp', speed: 6, arc: 0.18, yc: 0.55, wob: 1.5, seed: 1 },
                { img: p + 'cloud_near.webp', speed: 11, arc: 0.28, yc: 0.25, wob: 3, def: 0.05, seed: 2 }] } };
+  /* 雲海（11-23 Ray：「橋的下方要一直有雲」「不移動的雲就讓他稍微改變形狀」）：原圖地平線以下那片雲，不捲動，只讓形狀慢慢起伏；疊在最上面，捲過來的雲不會在那裡露出空隙 */
+  if (o.sea) sp.sky.layers.push({ img: p + 'cloud_sea.webp', speed: 0, arc: 0, yc: 1.5, def: 0.025, wob: 1.2, seed: 3 });
   if (o.water) sp.water = Object.assign({ mask: p + 'water.png' }, o.water);
   if (o.plumes) sp.plumes = Object.assign({ atlas: p + 'smoke.webp' }, o.plumes);
   return sp;
@@ -91,6 +93,10 @@ export const BG_FX = {
   /* ── 溫斯摩爾港守城戰（11-22 Ray：「改遊戲內即時跑」）：地面＝靜態圖不動；天空／雲／太陽／煙柱／河面全由程式即時跑，沒有影片、沒有循環縫。
      素材由 tivot_wan/bg_layer/war_run.py 的 WAR_EXPORT 產生（<名>_live.json 是同一份數字的來源）。 */
   /* ⟨ws-live⟩ 以下由 tivot_wan/bg_layer/war_live_batch.py --emit 自動產生，不要手改（改 war_live_cells.json 再重跑）*/
+  ws_0_0_dusk: WS('ws_0_0_dusk', { bottom: 0.391, sun: false, sea: true, plumes: { wind: -0.01881, src: [[0.7891,  0.3662,  0.1185],  [0.9505,  0.3916,  0.0833],  [0.8581,  0.3281,  0.0391]],
+      cells: [[256,  119],  [256,  89],  [256,  112],  [256,  74],  [256,  120],  [256,  83],  [256,  105],  [256,  80]] } }),
+  ws_0_1_dusk: WS('ws_0_1_dusk', { bottom: 0.336, sun: false, sea: true, plumes: { wind: -0.00568, src: [[0.4427,  0.2988,  0.0781],  [0.7318,  0.1953,  0.0651]],
+      cells: [[256,  119],  [256,  89],  [256,  112],  [256,  74],  [256,  120],  [256,  83],  [256,  105],  [256,  80]] } }),
   ws_0_2_dusk: WS('ws_0_2_dusk', { bottom: 0.321, sun: false, plumes: { wind: 0.01169, src: [[0.7917,  0.3027,  0.0547]],
       cells: [[256,  119],  [256,  89],  [256,  112],  [256,  74],  [256,  120],  [256,  83],  [256,  105],  [256,  80]] } }),
   ws_0_3_dusk: WS('ws_0_3_dusk', { bottom: 0.341, sun: false, plumes: { wind: 0.00776, src: [[0.6484,  0.3184,  0.0768],  [0.569,  0.3428,  0.0716],  [0.6979,  0.2773,  0.0391]],

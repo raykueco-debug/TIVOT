@@ -1,7 +1,8 @@
 {
  "files": {
   "sky": "sky.webp",
-  "mask": "skymask.png"
+  "mask": "skymask.png",
+  "sea": "cloud_sea.webp"
  },
  "w": 1536,
  "h": 1024,

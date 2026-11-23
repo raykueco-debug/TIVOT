@@ -191,6 +191,4 @@ export const BG_ANIM = {
   "tomb_urnvault": "resources/background/anim/tomb/tomb_urnvault_sep_v1.mp4",
   "tomb_vaultw": "resources/background/anim/tomb/tomb_vaultw_sep_v1.mp4",
   "tomb_waterstair": "resources/background/anim/tomb/tomb_waterstair_sep_v1.mp4",
-  "ws_0_0_dusk": "resources/background/anim/winsmoor_siege/ws_0_0_dusk_sep_v1.mp4",
-  "ws_0_1_dusk": "resources/background/anim/winsmoor_siege/ws_0_1_dusk_sep_v1.mp4",
 };
