@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.23-2945';
+export const VERSION = 'ver 2026.11.23-2946';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5918,7 +5918,7 @@ export const ENEMY_IDLE = {
   mon_natalia_neutral: 'resources/enemy/anim/mon_natalia_idle_v3/',
   mon_np_anyawings: 'resources/enemy/anim/mon_np_anyawings_idle_v1/',   // 安雅光翼 待機（ver -2524）
   saint_tr_neutral2: 'resources/enemy/anim/saint_tr_neutral2_idle_v1/',   // 訓練用聖徒 新架勢待機（ver -2527，48 格 loop）
-  mon_beast_altar: 'resources/enemy/anim/mon_beast_altar_idle_v2/',   // ver -2760：新立繪的布幡飄動＋呼吸待機（Ray 剪的 np_altar_breath_cut 的格子套在沒出框的 breath2 上）   // E019 背負祭壇者 待機（ver -2517，48 格 loop）
+  mon_beast_altar: 'resources/enemy/anim/mon_beast_altar_idle_v3/',   // ver -2946：效能副理縮到手機 1.0×（133→20 MB，格數不動）  // ver -2760：新立繪的布幡飄動＋呼吸待機（Ray 剪的 np_altar_breath_cut 的格子套在沒出框的 breath2 上）   // E019 背負祭壇者 待機（ver -2517，48 格 loop）
   /* 空戰側面待機（ver -2472，美術陸續交件；空戰剪法：48 格 24fps） */
   mon_sky_mawbat_side: 'resources/enemy/anim/mon_sky_mawbat_side_idle_v1/',
   mon_sky_ribwhale_side: 'resources/enemy/anim/mon_sky_ribwhale_side_idle_v1/',
@@ -6003,7 +6003,7 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   mon_canyon_crawler_dark: { dir:'resources/enemy/anim/mon_canyon_crawler_dark_atk_v1/', hit:45, hitFx:'crawler_hit', fillFrame:true },   // 爬行朝聖者   // 噴火交程式（數值待 Ray，還沒做）   // 崩岩巨像 拳砸地（ver -2620，KF 第二輪，36 格）
   mon_stag_rot_neutral: { dir:'resources/enemy/anim/mon_stag_rot_neutral_atk_v1/', hit:17 },   // 腐鹿骸 角頂（ver -2620，KF 第二輪，30 格）
   mon_shinierforest_deernightmare: { dir:'resources/enemy/anim/mon_shinierforest_deernightmare_atk_v1/', hit:32 },   // 變異樹靈鹿主 仰天咆哮（ver -2620，KF 第二輪，55 格；攻擊＝延時同一支）
-  mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_atk_v2/', hit:20, fx:[{ frame:29, type:'dust', n:4 }, { frame:40, type:'dust', n:3 }, { frame:48, type:'dust', n:3 }] },   // ver -2776：新立繪的撲撞（Kling 5s，Ray 剪的 kling_altar_lunge_5s_cut 55 格；第一格對齊立繪大小，第 20 格撲到最近）   // E019 背負祭壇者 撲撞（ver -2517，29 格）
+  mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_atk_v3/', hit:10, fx:[{ frame:16, type:'dust', n:4 }, { frame:24, type:'dust', n:3 }, { frame:31, type:'dust', n:3 }] },   // ver -2946：裁掉畫面外＋縮到手機 1.0×、Ray 在 animechk 減幀（altar10_atk_v2_cut：55→30 格＋停格＝38 格；811→32 MB）；hit／fx 照 kept_index 換算（20→10、29→16、40→24、48→31）  // ver -2776：新立繪的撲撞（Kling 5s，Ray 剪的 kling_altar_lunge_5s_cut 55 格；第一格對齊立繪大小，第 20 格撲到最近）   // E019 背負祭壇者 撲撞（ver -2517，29 格）
   mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_atk_v2/', hit:13 },   // v2（ver -2804）：864×864 重跑 AB＋BA（補上收回段）、tiger 撲擊 29 格、逐格對齊第 0 格色調； E017 魘魔（ver -2503；只有撲出段，結尾停在撲擊姿勢，切回待機蓋在受擊特效下）
   mon_shinierforest_snake_neutral: { dir:'resources/enemy/anim/mon_shinierforest_snake_atk_v1/', hit:13 },   // E066 水蛇（攻擊＝延時同一支，29 格）
   mon_shinierforest_hog_neutral: { dir:'resources/enemy/anim/mon_shinierforest_hog_atk_v1/', hit:13 },       // E067 山豬（攻擊＝延時同一支，29 格）
@@ -6063,7 +6063,7 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   mon_skull_cairn: { dir:'resources/enemy/anim/mon_skull_cairn_atk_v3/', hit:5 },
   npc_guildhunter_neutral: { dir:'resources/enemy/anim/npc_guildhunter_neutral_atk_v1/', hit:1, fx:[{ frame:1, type:'muzzle', at:[0.35,0.21] }] },   // 賞金獵人點錯＝同一支開槍（ADM 共用）
   saint_ug_giant: { dir:'resources/enemy/anim/saint_ug_giant_miss_v1/', hit:5, near:1.2, nearIn:100, nearOut:120 },   // 地下聖徒 M＝上勾拳（ver -2845，14 格，打到 5）；受擊＝迎面衝擊模糊；揮拳往鏡頭逼近 1.2 倍，前 100ms 衝上、打到後 120ms 退回（-2846，Ray：「揮拳時要帶一點位移 往viewer逼近 但位移不要太多幀」）
-  mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_roar_v1/', hit:9, windupSe:'se_enemy_beast02', fx:[{ frame:9, type:'roar', at:[0.53,0.25], wipe:true }] },   // ver -2777：新立繪的仰頭咆哮（Wan，Ray 剪的 np_altar_roar_cut 31 格 24fps），延時與點錯共用
+  mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_roar_v2/', hit:9, windupSe:'se_enemy_beast02', fx:[{ frame:9, type:'roar', at:[0.53,0.25], wipe:true }] },   // ver -2777：新立繪的仰頭咆哮（Wan，Ray 剪的 np_altar_roar_cut 31 格 24fps），延時與點錯共用
   mon_relic_reassembled: { dir:'resources/enemy/anim/mon_relic_reassembled_atk_v1/', hit:12, hitFx:'reassembled_wave' },   // 心魘 DM（ver -2773）：三手張開放光（偏橘光波＋抽掉一個數字）
   /* 崩岩巨像 M＝仰天咆哮（ver -2692，Ray 剪的 cut＋鎖雙腳：21 格 16fps）：第 12／14／17 格（原片 36／42／43）震畫面，第 12 格敵回血 10%＋盤面全清換下一盤、不傷敵（ver -2694，Ray：「咆效果是把盤面全清 但是不會對他造成傷害」）（Ray：「36 42 43 格播放時畫面震動 怪回血 10%」）；
      吼聲 se_enemy_dragonroar 取有聲的 0.1～3.5 秒、保持音高壓到第 9 格起到片尾（0.75 秒）（Ray：「時間壓縮到吼叫那幾格 pitch 保持低沉」「不要改原音效」）。R＝倒回（Ray：「咆的 r 用倒回」）：第 21 格起把第 16→0 格倒著接回中立（共 38 格），已烘進片裡。 */
@@ -6113,7 +6113,7 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7 },   // 訓練用聖徒 新架勢 攻擊＝延時＝點錯（ver -2527，31 格，最後一格回到架勢）
   mon_saint_inspector: { dir:'resources/enemy/anim/mon_saint_inspector_delay_v1/', hit:23 },   // 監查者 翅膀揮動（ver -2620，KF 第二輪，39 格）
   mon_shinierforest_deernightmare: { dir:'resources/enemy/anim/mon_shinierforest_deernightmare_atk_v1/', hit:32 },   // 變異樹靈鹿主 延時＝攻擊同一支（ver -2620）
-  mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_roar_v1/', hit:9, windupSe:'se_enemy_beast02', fx:[{ frame:9, type:'roar', at:[0.53,0.25], wipe:true }] },   // ver -2777：新立繪的仰頭咆哮（Wan，Ray 剪的 np_altar_roar_cut 31 格 24fps），延時與點錯共用
+  mon_beast_altar: { dir:'resources/enemy/anim/mon_beast_altar_roar_v2/', hit:9, windupSe:'se_enemy_beast02', fx:[{ frame:9, type:'roar', at:[0.53,0.25], wipe:true }] },   // ver -2777：新立繪的仰頭咆哮（Wan，Ray 剪的 np_altar_roar_cut 31 格 24fps），延時與點錯共用
   mon_shinierforest_snake_neutral: { dir:'resources/enemy/anim/mon_shinierforest_snake_atk_v1/', hit:13 },   // E066 水蛇（攻擊＝延時同一支，29 格）
   mon_shinierforest_hog_neutral: { dir:'resources/enemy/anim/mon_shinierforest_hog_atk_v1/', hit:13 },       // E067 山豬（攻擊＝延時同一支，29 格）
   mon_shinierforest_lynx_neutral: { dir:'resources/enemy/anim/mon_shinierforest_lynx_delay_v1/', hit:9 },   // E065 山貓 橫向爪擊（32 格，第 9 格打到）

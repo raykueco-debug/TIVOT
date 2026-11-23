@@ -3405,3 +3405,6 @@ when	from	to	reason
 20261123-114658	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/tomb_kf3/ossuary_wheel_A_AB	_recycle/ossuary_wheel_A_AB	Ray 11-23 車輪退件（Wan 沒轉起來），換提示詞重跑
 20261123-114658	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/tomb_kf3/ossuary_wheel_B	_recycle/ossuary_wheel_B	Ray 11-23 車輪退件（Wan 沒轉起來），換提示詞重跑
 20261123-114658	C:/Users/User/Desktop/ComfyUI-master/tivot_wan/out/tomb_kf3/ossuary_wheel_B_BA	_recycle/ossuary_wheel_B_BA	Ray 11-23 車輪退件（Wan 沒轉起來），換提示詞重跑
+20261123-182551	resources/enemy/anim/mon_beast_altar_atk_v2	_recycle/resources/enemy/anim/mon_beast_altar_atk_v2	效能副理 -2946：祭壇者動畫換成 1.0× 縮圖（atk_v3／idle_v3／roar_v2），舊的 2560×1440 等大格回收
+20261123-182551	resources/enemy/anim/mon_beast_altar_idle_v2	_recycle/resources/enemy/anim/mon_beast_altar_idle_v2	效能副理 -2946：祭壇者動畫換成 1.0× 縮圖（atk_v3／idle_v3／roar_v2），舊的 2560×1440 等大格回收
+20261123-182551	resources/enemy/anim/mon_beast_altar_roar_v1	_recycle/resources/enemy/anim/mon_beast_altar_roar_v1	效能副理 -2946：祭壇者動畫換成 1.0× 縮圖（atk_v3／idle_v3／roar_v2），舊的 2560×1440 等大格回收
