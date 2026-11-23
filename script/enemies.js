@@ -5787,3 +5787,10 @@ for(const n of [1,2,3,4,5,6,8,9,10]) ENEMIES['test_pirate_n'+n] = Object.assign(
    ⚠ 名號／懸賞／台詞由劇情程式副理（tivot-story）定 —— 卡的 key（valse_pirate）與旗標（valse_pirate_sunk）以它定的為準。 */
 ENEMIES.valse_pirate = Object.assign({}, ENEMIES.pirate_ship, { name:'黑船洛爾夫', story:1,   // 名號 ver -2892（Ray 點頭的草稿）
   grapple: Object.assign({}, ENEMIES.pirate_ship.grapple, { to:[1,2,3,4,6,7,8].map(n=>'sky_pirate_'+n) }) });
+/* ══ 戰鬥船款對上飛行的 3D 款（ver -2950，Ray 11-23「戰鬥船款對上 3D」）══
+   飛行頁每一艘空賊船隨機挑一款 3D（flight/drg3d.js 的 `vars`，''＝本船／n1…n10），交棒時帶 `look`；
+   戰鬥端 `combat.startGame`（sbKey 那一行）看到 `<卡>@<款>` 這張衍生卡存在就換用它（數值、名字、勾索全同母卡，只換立繪）。
+   ⚠ 款名的唯一真相是 drg3d.js 的 `DEF.pirate.vars`；這裡只列「有側面立繪的那幾款」——多一款 3D 卻沒立繪＝照母卡（本船），不會壞。
+   ⚠ 砲口／冒煙點（assaultFx／damageSmoke）沿用母卡（本船）座標，同 test_pirate_nN 的作法。 */
+for(const base of ['pirate_ship','valse_pirate'])
+  for(const n of [1,2,3,4,5,6,8,9,10]) ENEMIES[base+'@n'+n] = Object.assign({}, ENEMIES[base], { image:'enemy_pirate_n'+n+'_side' });

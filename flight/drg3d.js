@@ -413,6 +413,7 @@ const HOLDLIST=HOLDARG==='all' ? Object.keys(DEF) : [HOLDARG];   // 南天的霸
 let holdIx=0;
 window.DRG3D={ mode:MODE, hold:HOLD, fight:FIGHT, noFight:(()=>{ try{ return localStorage.getItem('drg3dNoFight')!=='0'; }catch(e){ return true; } })(), fightTimer:1500, engaged, fightTick, get holdKind(){ return HOLDLIST[holdIx]; }, cad:CAD, bench, off, dbg:DBG, def:DEF, models:M, stat, draw,
   has:k=>!!DEF[k],
+  lookOf:(k,ent)=>varOf(k,undefined,ent),   // 這一隻畫的是哪一款（''＝本船）：交棒進戰鬥時帶過去換立繪（ver -2950，空戰副理；index.html 的 battleLook）
   ready:k=>{ k=k||'bldragon'; if(!off.on || !DEF[k]) return false; if(varAll(k)){ load(k); return varList(k).every((_,i)=>M[mkey(k,i)] && M[mkey(k,i)].state===2); }
     const key=mkey(k); if(!M[key]) load(k); return M[key].state===2; },
   next:d=>{ holdIx=(holdIx+(d||1)+HOLDLIST.length)%HOLDLIST.length; load(HOLDLIST[holdIx]); holdUi(); if(FIGHT) fightUi(); }, tune:TUNE, tuneOf,

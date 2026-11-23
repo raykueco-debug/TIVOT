@@ -3169,10 +3169,11 @@ export function warmStoryPartnerCi(){
   try{ const pk=partner.storyPartnerKey(); if(pk) saint.warmPartnerCi(pk); }catch(_){}
 }
 export function releasePartnerCi(){ saint.releasePartnerCi(); }
-export function warmBattleImage(battleId){
+export function warmBattleImage(battleId, look){
   try{
     const B=(GAME_CONFIG.battles||{})[battleId]||{};
-    const en=(GAME_CONFIG.enemies||{})[B.enemy];
+    const E=GAME_CONFIG.enemies||{};
+    const en=(look && E[B.enemy+'@'+look]) || E[B.enemy];   // 外觀款（ver -2950）：暖的是真的會出場的那一張
     const u=en && enemy.enemyImage(en);
     if(u){ const i=new Image(); i.src=u; }
     /* 群體敵人的每一層（ver -2043）：開場就要整組站好，不然會先看到空的背景。 */
@@ -3221,7 +3222,7 @@ function pickBattleEnemy(sb){
         const c = GAME_CONFIG.enemies[k] || {};
         /* ⚠ **也要有 `atype`**：類型留白＝Ray 手動設製的那幾張（數值不在等級系統上，
            像教學的 `trainee` hp500/atk45）—— rush 是試跑台，抽到它量不出東西。 */
-        return c.tier === sb.enemyTier && !!c.atype && c.kind !== 'target' && !c.timeAttack;
+        return c.tier === sb.enemyTier && !!c.atype && c.kind !== 'target' && !c.timeAttack && k.indexOf('@')<0;   // `<卡>@<款>` 是外觀衍生卡（ver -2950），不另算一隻
       })
     : sb.enemy;
   if(!Array.isArray(e)) return e;
@@ -3749,7 +3750,11 @@ export function startGame(){
        原本那個位置記到的是**上一場**的搭檔。
      ⚠ 位置仍在 `stopAll()`／`loadBoard(0)` **之前**：盤面配置（boardGrids）
        要查「目前這隻怪」，換晚了第一盤會用到上一隻的格數。 */
-  const sbKey = (sb && GAME_CONFIG.enemies[pickBattleEnemy(sb)]) ? pickBattleEnemy(sb) : null;
+  const sbKey0 = (sb && GAME_CONFIG.enemies[pickBattleEnemy(sb)]) ? pickBattleEnemy(sb) : null;
+  /* 飛行交棒帶來的外觀款（ver -2950，`startScriptBattle(id,{look})`，空賊船對上 3D 款）：
+     有 `<卡>@<款>` 這張衍生卡（script/enemies.js）才換，沒有就照母卡。用一次就清。 */
+  const sbKey = (sbKey0 && pendingLook && GAME_CONFIG.enemies[sbKey0+'@'+pendingLook]) ? sbKey0+'@'+pendingLook : sbKey0;
+  pendingLook = null;
   enemy.startLineup(sbKey);   // 局：載這一場的怪（沒指定＝挑戰那一串的第一隻），lineupIndex=0
   if(sbKey){
     /* ══⚠⚠ 真的開打了才記「這一段出過牠」，**並且把這一抽用掉**（ver -628）══
@@ -3900,11 +3905,13 @@ let pendingScriptStory = null;
    ⚠ 為什麼不從敵人卡認：那三隻（蜈蚣／羽蛇／空賊船）不是靠 `kind` 分得出來的
      （harm／ship 混著），而「船戰」本來就是**場次**的性質不是怪的性質。 */
 let pendingScriptShip = false;
+let pendingLook = null;   // 飛行交棒的外觀款（ver -2950，見 startGame 的 sbKey）
 export function startScriptBattle(id, opts){
   pendingScript = id;
   /* 只有**明確的布林**才算宣告（ver -495）—— undefined/null 一律交給敵人卡。 */
   pendingScriptStory = (opts && typeof opts.story==='boolean') ? opts.story : null;
   pendingScriptShip  = !!(opts && opts.ship);
+  pendingLook        = (opts && typeof opts.look==='string' && opts.look) ? opts.look : null;
   startGame();
 }
 

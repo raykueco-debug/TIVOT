@@ -352,7 +352,7 @@ function battleAudioSet(battleId){
 /* 進戰鬥：放掉上一個畫面的音訊，只留這一場要的，然後把缺的抓進來。 */
 /* ⚠ ver -1414 由 `enterBattleAudio` 改名成 `enterBattleAssets`：它現在**連圖一起**
    （見下），名字再叫 Audio 就是說謊。順序照 §6.6：**音效 → 圖 →（音樂隨 BGM 自己來）**。 */
-function enterBattleAssets(battleId){
+function enterBattleAssets(battleId, look){
   let set=[]; try{ set = battleAudioSet(battleId); }catch(e){ console.warn('[load] battleAudioSet', e); return; }
   /* ver -1866：常駐那幾支（槍棺／點擊音／普攻槍聲）一併載；放的時候保住**底下那個場景**的
      （城鎮／劇情）—— 打完是直接回那個場景、不經過讀取頁，放掉了就沒人載回來
@@ -364,7 +364,7 @@ function enterBattleAssets(battleId){
   try{ SFX.preload(set).catch(()=>{}); }catch(_){}
   /* 這一場的敵人立繪（ver -1414）：**推棺之前**就暖起來，門一開牠已經在那裡。
      說明在 `combat.warmBattleImage`。 */
-  try{ combat.warmBattleImage(battleId); }catch(_){}
+  try{ combat.warmBattleImage(battleId, look); }catch(_){}
 }
 
 /* 首頁那一批的圖白名單（鐵律 13 第 1 條）。 */
@@ -755,14 +755,14 @@ window.__tivotFlight = {
     combat.setBattleBg(null);
     story.showKerbGate(req.geom);
     closeFlightFrame();
-    enterBattleAssets(id);   // 戰鬥那道門（ver -1354；-1414 起連圖一起）：放掉上一個畫面的，只留這一場要的
+    enterBattleAssets(id, req && req.look);   // 戰鬥那道門（ver -1354；-1414 起連圖一起）：放掉上一個畫面的，只留這一場要的
     story.setBattleCueId(id);   // 撞頂那一拍的曲子照這一場的卡挑（ver -746：不設就退回 bgm_battle，羽蛇的 EpicBattle 放不出來）
     story.playKerberosFromRisen(
       /* `scripted` 由飛行頁宣告（ver -493：隨機遭遇＝false，劇本遭遇＝true）——
          沒帶（舊鑰匙）＝沒宣告，combat 會退回敵人卡的 `story`（ver -495）。 */
       /* `ship:true` ＝這一場是**船戰**（ver -947）：BR 窗口期間敵人多吃
          `tuning.shipDualBonus`。飛行頁交棒的兩條路都要帶（見 bootBattleGate）。 */
-      ()=>{ hideHome('flightBridge/kerb'); combat.startScriptBattle(id, { story: req && req.scripted, ship:true }); },
+      ()=>{ hideHome('flightBridge/kerb'); combat.startScriptBattle(id, { story: req && req.scripted, ship:true, look: req && req.look }); },
       ()=>story.close({ keepBgm:true }));
   },
   /* 降落（ver -416，Ray：「靠近城鎮時加入降落按鈕，點擊進入城鎮預設畫面」）。
@@ -868,13 +868,13 @@ function bootBattleGate(req){
     document.removeEventListener('pointerdown', open);
     const t=$('gateTip'); if(t && t.parentNode) t.parentNode.removeChild(t);
     SFX.unlock();                         // 這一頁唯一的使用者手勢
-    enterBattleAssets(req.battle);        // 戰鬥那道門（ver -1354；-1414 起連圖一起）
+    enterBattleAssets(req.battle, req.look);        // 戰鬥那道門（ver -1354；-1414 起連圖一起）
     story.setBattleCueId(req.battle);     // 同橋接那一條（ver -746）：曲子照這一場的卡挑
     story.playKerberosFromRisen(
       ()=>{ hideHome('bootBattleGate/kerb');
             combat.holdEnemyRise();   // 降臨押到門全開（ver -875）
             combat.setBattleBg(null);   // ver -1455：飛行交棒一律走敵人卡的 bg（見上面那一段）
-            combat.startScriptBattle(req.battle, { story: req.scripted, ship:true }); },   // 明確宣告才算，否則退回敵人卡（ver -495）；ship＝船戰（-947）
+            combat.startScriptBattle(req.battle, { story: req.scripted, ship:true, look: req.look }); },   // 明確宣告才算，否則退回敵人卡（ver -495）；ship＝船戰（-947）
       ()=>{ story.close({ keepBgm:true }); combat.releaseEnemyRise(); });
   };
   document.addEventListener('pointerdown', open);
@@ -1179,7 +1179,7 @@ window.addEventListener('pagehide', refreshBoot);
         const bk = battleBgmOf(req.battle);
         if(bk){ const s=story.bgmSrc(bk); SFX.playBgm(s, { fadeOutMs:600, volume: bgmVol(s) }); }
         setTimeout(()=>{ hideHome('bootDirectBattle/alFlash'); combat.setBattleBg(null);   // ver -1455：同上
-                         combat.startScriptBattle(req.battle, { ship:true }); }, 2500);   // 同上：這條也是飛行交棒（-947）
+                         combat.startScriptBattle(req.battle, { ship:true, look: req.look }); }, 2500);   // 同上：這條也是飛行交棒（-947）
       }
     };
     ov.addEventListener('click', go);
