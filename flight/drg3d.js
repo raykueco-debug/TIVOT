@@ -1,5 +1,6 @@
 /* 空中怪 3D（2026-11-06 起；王座徘徊者試驗 → 11-07 Ray：「3D 方案可行，做下去」「其他空中怪也跟進」）
-   網址加 ?drg3d=1 → 3D 取代 2D；?drg3d=side → 2D 照舊、3D 擺在右邊並排。
+   ⚠⚠ 11-23 Ray：「全部空中怪」接入遊戲 —— **預設就是 3D**（不帶參數＝1）；?drg3d=0 關掉回 2D、?drg3d=side 2D 照舊＋3D 並排。
+   WebGL2 建不起來或模型載不到時 ready() 回 false，飛行頁自動退回 2D 那一套。
    &drg3dhold → 觀察模式：自動叫出一隻（&drg3dkind=<鍵>，預設王座徘徊者）停在原地，不追、撞到不開戰。
    · 產線：GPT 簡化四視圖 → Hunyuan3D-2mv → 減面＋四視圖投影貼圖（tools/sky3d/ 的 prep4.py → run_hy.py → bake.py；紀錄 resources/enemy/_dragon_3d_trial.md）
    · 動態（頂點著色器）：翼／鰭＝三節鉸鏈拍動；尾＝往後傳的波浪
@@ -7,8 +8,8 @@
      —— 不畫進主 GL：地形是「有變化才重畫」，怪每禎都動，畫進去等於逼地形每禎重算。 */
 (function(){
 'use strict';
-const MODE=((location.search.match(/[?&]drg3d=(\w+)/)||[])[1])||'';
-if(!MODE) return;
+const MODE=((location.search.match(/[?&]drg3d=(\w+)/)||[])[1])||'1';   // 預設 3D（11-23）
+if(MODE==='0') return;
 const LO=/[?&]drg3dlo/.test(location.search);
 
 /* ══ 有 3D 模型的怪（鍵＝ENEMY_KINDS 的鍵）══
@@ -201,14 +202,24 @@ function flapOf(kind){
 /* `drg3dvar=all`（檢查用，Ray 11-22：「一次開十艘在同一個遊戲裡」）：數量自動＝款數，第 i 隻用第 i 款（0＝本船） */
 function varList(kind){ const D=DEF[kind]; return (D && D.vars) ? [''].concat(Object.keys(D.vars)) : ['']; }
 const varAll=kind=>DBG.variant==='all' && !!(DEF[kind] && DEF[kind].vars);
-function varOf(kind,slot){ const D=DEF[kind], v=DBG.variant;
-  if(varAll(kind)){ const L=varList(kind); return L[(slot||0)%L.length]; }
-  return (D && D.vars && v && D.vars[v]) ? v : ''; }
-function mkey(kind,slot){ const v=varOf(kind,slot); return v ? kind+'#'+v : kind; }
-function defOf(kind,slot){ const v=varOf(kind,slot); return v ? Object.assign({}, DEF[kind], DEF[kind].vars[v]) : DEF[kind]; }
+/* 正式遊戲（11-23）：沒指定款式時，**每一隻怪各自隨機挑一款**，記在牠身上（o.ent._v3d），之後都用同一款；
+   數量 >1 的隊伍照順序往下排，同一隊不會整排一樣 */
+function varOf(kind,slot,ent){ const D=DEF[kind], v=DBG.variant;
+  if(!D || !D.vars) return '';
+  const L=varList(kind);
+  if(varAll(kind)) return L[(slot||0)%L.length];
+  if(v && D.vars[v]) return v;
+  if(ent){ if(ent._v3d==null) ent._v3d=Math.floor(Math.random()*L.length); return L[(ent._v3d+(slot||0))%L.length]; }
+  return ''; }
+const keyV=(kind,v)=>v ? kind+'#'+v : kind;
+const defV=(kind,v)=>v ? Object.assign({}, DEF[kind], DEF[kind].vars[v]) : DEF[kind];
+function mkey(kind,slot,ent){ return keyV(kind,varOf(kind,slot,ent)); }
 function load(kind,slot){
   if(slot==null && varAll(kind)){ varList(kind).forEach((_,i)=>load(kind,i)); return; }
-  const key=mkey(kind,slot), D=defOf(kind,slot); if(!D || M[key]) return;
+  loadV(kind,varOf(kind,slot));
+}
+function loadV(kind,v){
+  const key=keyV(kind,v), D=defV(kind,v); if(!D || M[key]) return;
   const R=M[key]={ state:1 };
   if(!init()){ R.state=-1; return; }
   const base=D.dir+D.file;
@@ -260,10 +271,13 @@ const CAD={ pat:[1,1,0], n:0, dpx:0, kind:'', slots:[], keepNow:false };
 /* 畫一隻：o＝{ kind, ctx, x, y（螢幕 CSS px 的中心）, lat, h, z（中心在鏡頭座標：橫向／鏡頭高−牠高／進深）,
    l, f（航向在鏡頭座標）, W, VIEWH, now, lit:[r,g,b], pxScale, clip:fn } */
 function draw(o){
-  const kind=o.kind||'bldragon', key=mkey(kind,o.slot), R=M[key];
+  const kind=o.kind||'bldragon';
+  let v=varOf(kind,o.slot,o.ent), key=keyV(kind,v), R=M[key];
+  if(!R){ loadV(kind,v); R=M[key]; }
+  if(R.state!==2){ v=''; key=kind; R=M[key]; }   // 這一款還在載：先畫本款（ready 已保證它好了）
   if(!R || R.state!==2) return false;
   const t0=performance.now();
-  const D=defOf(kind,o.slot), K=ENEMY_KINDS[kind], SP=K.sprite||{};
+  const D=defV(kind,v), K=ENEMY_KINDS[kind], SP=K.sprite||{};
   const spanW=(SP.frontSpanW||SP.spanW||980)*D.spanK*tuneOf('size',o.kind);   // TUNE：遭遇測試的大小滑桿（只在測試時有值）
   const span=R.span, sWorld=spanW/2/(D.fit==='rad' ? R.rad : span);   // 模型單位 → 世界單位（翼展對齊 2D 那張圖；管狀的怪 fit:'rad' 改用外接球）
   const fx=o.W/2, fy=0.62*o.VIEWH;

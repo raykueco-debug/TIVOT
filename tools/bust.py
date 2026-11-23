@@ -71,7 +71,7 @@ def run(check=False):
     #     從 -911 起就沒有人記得動 —— 而它是 Ray 在手機上唯一看得到「跑的是哪一版」
     #     的地方（鐵律 7）。
     p, s0, s = patch('flight/index.html', [
-        (r'src="(\.\./orientation|settlement|talks)\.js(\?v=[^"]*)?"',
+        (r'src="(\.\./orientation|settlement|talks|drg3d)\.js(\?v=[^"]*)?"',
          r'src="\1.js?v=<V>"'),
         (r"const FLIGHT_VER = 'ver [^']*';", "const FLIGHT_VER = 'ver -<V>';"),
         # 譯文表的 classic 版（ver -1909，head 裡 document.write 的那一行）
