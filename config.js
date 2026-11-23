@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.23-2938';
+export const VERSION = 'ver 2026.11.23-2939';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2985,6 +2985,10 @@ export const GAME_CONFIG = {
     tomb_test_grave_censer: { enemy:'grave_censer' },
     tomb_test_chain_hanged: { enemy:'chain_hanged' },
     tomb_test_crypt_hound: { enemy:'crypt_hound' },
+    tomb_test_sarcoph_crawler: { enemy:'sarcoph_crawler' },
+    tomb_test_kneeling_penitent: { enemy:'kneeling_penitent' },
+    tomb_test_choir_pale: { enemy:'choir_pale' },
+    tomb_test_iron_maiden: { enemy:'iron_maiden' },
     canyon_w_mix11: { enemy:'canyon_mix11', session:'canyon_wild' },
     canyon_w_mix12: { enemy:'canyon_mix12', session:'canyon_wild' },
     frag02_w_mix2: { enemy:'canyon_mix2', partner:'cecilie', story:1, noEval:true, dream:true, session:'canyon_wild' },
@@ -5764,7 +5768,7 @@ export const ENEMY_IDLE = {
   mon_pirateship_n10_side: 'resources/enemy/anim/mon_pirateship_n10_side_idle_v6airship/',   // 10 號（ver -2893，Ray 剪的 v6airship_cut，26 格 24fps）
   sorana_si_guard: 'resources/enemy/anim/sorana_guard_idle_v1/',   // 索菈娜待機（ver -2830，Ray 剪的 np_sorana_idle_wan7_cut 22 格 24fps：呼吸上下起伏＋乳搖）
   man_misha: 'resources/enemy/anim/man_misha_idle_v1/',   // ver -2079：人類用「明顯深呼吸」提示詞、不掛 LoRA（Live2D LoRA 兩輪測不出效果）
-  mon_arch_warden: 'resources/enemy/anim/mon_arch_warden_idle_v2/',
+  mon_arch_warden: 'resources/enemy/anim/mon_arch_warden_idle_v3/',   // ver -2939 Ray 剪的 tomb_mon_arch_warden_idle_cut（重畫：舊 v2 出框）
   mon_bear_husk: 'resources/enemy/anim/mon_bear_husk_idle_v2/',
   mon_bear_nightmare: 'resources/enemy/anim/mon_bear_nightmare_idle_v2/',
   mon_beast_bonemaw: 'resources/enemy/anim/mon_beast_bonemaw_idle_v2/',
@@ -5925,6 +5929,10 @@ export const SHIP_TRAIL = {
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
+  mon_sarcoph_crawler: { dir:'resources/enemy/anim/mon_sarcoph_crawler_atk_v1/', hit:6 },   // ver -2939 Ray 剪的 tomb_sarcoph_crawler_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）
+  mon_kneeling_penitent: { dir:'resources/enemy/anim/mon_kneeling_penitent_atk_v1/', hit:12 },   // ver -2939 Ray 剪的 tomb_kneeling_penitent_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）
+  mon_choir_pale: { dir:'resources/enemy/anim/mon_choir_pale_atk_v1/', hit:19, fx:[{ frame:19, type:'choirChant', at:[0.5,0.2] }] },   // ver -2939 Ray 剪的 tomb_choir_pale_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）
+  mon_iron_maiden: { dir:'resources/enemy/anim/mon_iron_maiden_atk_v1/', hit:8, fx:[{ frame:8, type:'bloodVeil' }] },   // ver -2939 Ray 剪的 tomb_iron_maiden_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）
   mon_chain_hanged: { dir:'resources/enemy/anim/mon_chain_hanged_atk_v1/', hit:19 },   // ver -2937 Ray 在 animechk 剪的 tomb2_chain_hanged_A_AB（20 格，沒按輸出、從剪格紀錄取）＋ R 全格倒放抽半
   mon_crypt_hound: { dir:'resources/enemy/anim/mon_crypt_hound_atk_v1/', hit:23 },   // ver -2937 Ray 在 animechk 剪的 tomb3_crypt_hound_A_AB（24 格，同上）＋ R 全格倒放抽半
   mon_grave_censer: { dir:'resources/enemy/anim/mon_grave_censer_atk_v1/', hit:4 },   // ver -2929 Ray 剪的 tomb3_grave_censer_A_AB_cut（5 格，從原片第 27 格起）＋ R 全格倒放抽半（10 格），打到＝AB 最後一格
@@ -6011,6 +6019,10 @@ export const ENEMY_DODGE = {
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_MISS = {
+  mon_sarcoph_crawler: { dir:'resources/enemy/anim/mon_sarcoph_crawler_atk_v1/', hit:6 },   // ver -2939 Ray 剪的 tomb_sarcoph_crawler_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）
+  mon_kneeling_penitent: { dir:'resources/enemy/anim/mon_kneeling_penitent_atk_v1/', hit:12 },   // ver -2939 Ray 剪的 tomb_kneeling_penitent_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）
+  mon_choir_pale: { dir:'resources/enemy/anim/mon_choir_pale_atk_v1/', hit:19, fx:[{ frame:19, type:'choirChant', at:[0.5,0.2] }] },   // ver -2939 Ray 剪的 tomb_choir_pale_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）
+  mon_iron_maiden: { dir:'resources/enemy/anim/mon_iron_maiden_atk_v1/', hit:8, fx:[{ frame:8, type:'bloodVeil' }] },   // ver -2939 Ray 剪的 tomb_iron_maiden_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）
   mon_chain_hanged: { dir:'resources/enemy/anim/mon_chain_hanged_atk_v1/', hit:19 },   // ver -2937 Ray 在 animechk 剪的 tomb2_chain_hanged_A_AB（20 格，沒按輸出、從剪格紀錄取）＋ R 全格倒放抽半
   mon_crypt_hound: { dir:'resources/enemy/anim/mon_crypt_hound_atk_v1/', hit:23 },   // ver -2937 Ray 在 animechk 剪的 tomb3_crypt_hound_A_AB（24 格，同上）＋ R 全格倒放抽半
   mon_grave_censer: { dir:'resources/enemy/anim/mon_grave_censer_atk_v1/', hit:4 },   // ver -2929 Ray 剪的 tomb3_grave_censer_A_AB_cut（5 格，從原片第 27 格起）＋ R 全格倒放抽半（10 格），打到＝AB 最後一格
@@ -6039,6 +6051,10 @@ export const ENEMY_MISS = {
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, windupSe:'se_flame', fx:[{ frame:48, type:'rubble', se:'se_rockimpact' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
+  mon_sarcoph_crawler: { dir:'resources/enemy/anim/mon_sarcoph_crawler_atk_v1/', hit:6 },   // ver -2939 Ray 剪的 tomb_sarcoph_crawler_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）
+  mon_kneeling_penitent: { dir:'resources/enemy/anim/mon_kneeling_penitent_atk_v1/', hit:12 },   // ver -2939 Ray 剪的 tomb_kneeling_penitent_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）
+  mon_choir_pale: { dir:'resources/enemy/anim/mon_choir_pale_atk_v1/', hit:19, fx:[{ frame:19, type:'choirChant', at:[0.5,0.2] }] },   // ver -2939 Ray 剪的 tomb_choir_pale_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）
+  mon_iron_maiden: { dir:'resources/enemy/anim/mon_iron_maiden_atk_v1/', hit:8, fx:[{ frame:8, type:'bloodVeil' }] },   // ver -2939 Ray 剪的 tomb_iron_maiden_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）
   mon_chain_hanged: { dir:'resources/enemy/anim/mon_chain_hanged_atk_v1/', hit:19 },   // ver -2937 Ray 在 animechk 剪的 tomb2_chain_hanged_A_AB（20 格，沒按輸出、從剪格紀錄取）＋ R 全格倒放抽半
   mon_crypt_hound: { dir:'resources/enemy/anim/mon_crypt_hound_atk_v1/', hit:23 },   // ver -2937 Ray 在 animechk 剪的 tomb3_crypt_hound_A_AB（24 格，同上）＋ R 全格倒放抽半
   mon_grave_censer: { dir:'resources/enemy/anim/mon_grave_censer_atk_v1/', hit:4 },   // ver -2929 Ray 剪的 tomb3_grave_censer_A_AB_cut（5 格，從原片第 27 格起）＋ R 全格倒放抽半（10 格），打到＝AB 最後一格

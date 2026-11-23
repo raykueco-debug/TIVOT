@@ -22,6 +22,14 @@ Ray：「交件 並將交件的頭尾去掉倒放成 r」。每一支＝**Ray �
 | 墓香爐（強透視甩香爐砸鏡頭）（11-22 晚補） | `mon_grave_censer` | `mon_grave_censer_atk_v1/` | 15／0.63 | 4 | 5 |
 | 鎖鏈吊屍（11-23 補，Ray 的剪格紀錄） | `mon_chain_hanged` | `mon_chain_hanged_atk_v1/` | 44／1.83 | 19 | 20 |
 | 地穴獵犬（11-23 補，Ray 的剪格紀錄） | `mon_crypt_hound` | `mon_crypt_hound_atk_v1/` | 48／2.00 | 23 | 24 |
+| 石棺爬行者（11-23，R 倒放留 1/3） | `mon_sarcoph_crawler` | `mon_sarcoph_crawler_atk_v1/` | 23／0.96 | 6 | 7 |
+| 跪拜懺悔者（11-23，R 倒放留 1/3） | `mon_kneeling_penitent` | `mon_kneeling_penitent_atk_v1/` | 29／1.21 | 12 | 13 |
+| 蒼白唱詩者（11-23，R 倒放留 1/3；特規 choirChant） | `mon_choir_pale` | `mon_choir_pale_atk_v1/` | 36／1.50 | 19 | 22 |
+| 鐵處女（11-23，R 倒放留 1/3；特規 bloodVeil） | `mon_iron_maiden` | `mon_iron_maiden_atk_v1/` | 25／1.04 | 8 | 9 |
+- ✅ 11-23（ver -2939）Ray：「A 交件 R 抽 2/3 幀倒放」→ 這四支的 R＝原片倒放、去頭尾、**只留 1/3**。
+- ✅ 蒼白唱詩者 `fx choirChant`：打到那一格從嘴放音波，盤面**數字**很快淡出、慢慢淡回（3.6 秒，只動數字）。Ray：「音波攻擊 數字淡出後慢慢淡入」。
+- ✅ 鐵處女 `fx bloodVeil`：程式畫的血濺蓋在敵窗（攻擊圈之上），慢慢往下滑、血滴拉長，**換盤才解除**。Ray：「程式血濺敵窗遮住攻擊圈 慢慢滑下 清盤解除」。
+- ✅ 拱門守衛待機換 `mon_arch_warden_idle_v3/`（Ray 剪的 tomb_mon_arch_warden_idle_cut，33 格 24fps；舊 v2 出框）。
 
 - ✅ 已接（敵人副理 ver -2909～-2914）：ADM 三表都指 `_atk_v3`；雙頭骨犬受擊＝咬擊（卡上 hitFx 三格都 bite）、`near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2`（Ray：「位移少幀」；-2915「看不出來」→ 加大、停久一點）；石板匍匐者同一組撲近（-2916）。
 - 打到＝A→B 最後一格（撲到最近／劈到底），**雙頭骨犬例外**：Ray「r 時第一格才出咬擊判定」⇒ 打到＝第 6 格（R 的第一格）。
