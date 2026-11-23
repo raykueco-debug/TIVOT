@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.23-2943';
+export const VERSION = 'ver 2026.11.23-2944';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2990,6 +2990,7 @@ export const GAME_CONFIG = {
     tomb_test_choir_pale: { enemy:'choir_pale' },
     tomb_test_iron_maiden: { enemy:'iron_maiden' },
     tomb_test_pallid_stag: { enemy:'pallid_stag' },
+    tomb_test_bellfounder: { enemy:'bellfounder' },
     tomb_test_choir_organ: { enemy:'choir_organ' },
     canyon_w_mix11: { enemy:'canyon_mix11', session:'canyon_wild' },
     canyon_w_mix12: { enemy:'canyon_mix12', session:'canyon_wild' },
@@ -5947,6 +5948,7 @@ export const SHIP_TRAIL = {
    ATK：主動攻擊圈沒擋住、攻擊落下那一刻（defense.releaseAssault → enemy.onAssaultLand）；
    DELAY：延時／點錯懲罰那一刻（combat.enemyAttack）。播完切回待機 loop。沒登記的敵人照舊。 */
 export const ENEMY_ATK = {
+mon_bellfounder: { dir:'resources/enemy/anim/mon_bellfounder_atk_v1/', hit:7 },   // ver -2944 Ray 剪的 tomb3_bellfounder_A_AB_cut（8 格）＋ R 原片倒放留 1/3
 mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 },   // ver -2943 Ray 剪的 tomb3_pallid_stag_A_AB_cut（5 格）＋ R 原片倒放留 1/3
   mon_choir_organ: { dir:'resources/enemy/anim/mon_choir_organ_atk_v1/', hit:6, near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2, nearOrigin:'50% 98%' },   // ver -2943 Ray：「位移要貼地不要浮空」→ 以腳底為軸；-2942 Ray：「風琴攻擊要位移拉近」（同雙頭骷髏犬）；-2941 Ray 剪的 tomb3_choir_organ_A_AB_cut（7 格）＋ R 原片倒放留 1/3
   mon_sarcoph_crawler: { dir:'resources/enemy/anim/mon_sarcoph_crawler_atk_v1/', hit:6 },   // ver -2939 Ray 剪的 tomb_sarcoph_crawler_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）
@@ -6039,6 +6041,7 @@ export const ENEMY_DODGE = {
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_MISS = {
+mon_bellfounder: { dir:'resources/enemy/anim/mon_bellfounder_atk_v1/', hit:7 },   // ver -2944 Ray 剪的 tomb3_bellfounder_A_AB_cut（8 格）＋ R 原片倒放留 1/3
 mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 },   // ver -2943 Ray 剪的 tomb3_pallid_stag_A_AB_cut（5 格）＋ R 原片倒放留 1/3
   mon_choir_organ: { dir:'resources/enemy/anim/mon_choir_organ_atk_v1/', hit:6, near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2, nearOrigin:'50% 98%' },   // ver -2943 Ray：「位移要貼地不要浮空」→ 以腳底為軸；-2942 Ray：「風琴攻擊要位移拉近」（同雙頭骷髏犬）；-2941 Ray 剪的 tomb3_choir_organ_A_AB_cut（7 格）＋ R 原片倒放留 1/3
   mon_sarcoph_crawler: { dir:'resources/enemy/anim/mon_sarcoph_crawler_atk_v1/', hit:6 },   // ver -2939 Ray 剪的 tomb_sarcoph_crawler_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）
@@ -6073,6 +6076,7 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', hit:48, windupSe:'se_flame', fx:[{ frame:48, type:'rubble', se:'se_rockimpact' }] },   // M＝大力振翅（81 格），下拍到底噴瓦礫（ver -2525）
 };
 export const ENEMY_DELAY = {
+mon_bellfounder: { dir:'resources/enemy/anim/mon_bellfounder_atk_v1/', hit:7 },   // ver -2944 Ray 剪的 tomb3_bellfounder_A_AB_cut（8 格）＋ R 原片倒放留 1/3
 mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 },   // ver -2943 Ray 剪的 tomb3_pallid_stag_A_AB_cut（5 格）＋ R 原片倒放留 1/3
   mon_choir_organ: { dir:'resources/enemy/anim/mon_choir_organ_atk_v1/', hit:6, near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2, nearOrigin:'50% 98%' },   // ver -2943 Ray：「位移要貼地不要浮空」→ 以腳底為軸；-2942 Ray：「風琴攻擊要位移拉近」（同雙頭骷髏犬）；-2941 Ray 剪的 tomb3_choir_organ_A_AB_cut（7 格）＋ R 原片倒放留 1/3
   mon_sarcoph_crawler: { dir:'resources/enemy/anim/mon_sarcoph_crawler_atk_v1/', hit:6 },   // ver -2939 Ray 剪的 tomb_sarcoph_crawler_A_AB_cut ＋ R 原片倒放抽 2/3（留 1/3）

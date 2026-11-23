@@ -28,6 +28,7 @@ Ray：「交件 並將交件的頭尾去掉倒放成 r」。每一支＝**Ray �
 | 鐵處女（11-23，R 倒放留 1/3；特規 bloodVeil） | `mon_iron_maiden` | `mon_iron_maiden_atk_v1/` | 25／1.04 | 8 | 9 |
 | 唱詩管風琴（11-23，強透視 B；R 倒放留 1/3；near 1.45 以腳底為軸 nearOrigin 50% 98%） | `mon_choir_organ` | `mon_choir_organ_atk_v1/` | （見 anim.json） | 6 | 7 |
 | 蒼白牡鹿（11-23，頭頂撞 B 第二版；R 倒放留 1/3） | `mon_pallid_stag` | `mon_pallid_stag_atk_v1/` | （見 anim.json） | 4 | 5 |
+| 鑄鐘者（11-23，頭頂撞 B 第二版；R 倒放留 1/3） | `mon_bellfounder` | `mon_bellfounder_atk_v1/` | （見 anim.json） | 7 | 8 |
 - ✅ 11-23（ver -2939）Ray：「A 交件 R 抽 2/3 幀倒放」→ 這四支的 R＝原片倒放、去頭尾、**只留 1/3**。
 - ✅ 蒼白唱詩者 `fx choirChant`：打到那一格從嘴放音波，盤面**數字**很快淡出、慢慢淡回（3.6 秒，只動數字）。Ray：「音波攻擊 數字淡出後慢慢淡入」。
 - ✅ 鐵處女 `fx bloodVeil`（-2940 改用 GPT 16 格血跡：血濺＋流痕；-2941 往下流時拉長變形）：血濺蓋在敵窗（攻擊圈之上），慢慢往下滑、血滴拉長，**換盤才解除**。Ray：「程式血濺敵窗遮住攻擊圈 慢慢滑下 清盤解除」。
