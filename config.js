@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.23-2948';
+export const VERSION = 'ver 2026.11.23-2949';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2742,7 +2742,6 @@ export const GAME_CONFIG = {
     sf_snake:          { enemy:'sf_snake',          session:'sf_wild' },
     sf_hog:            { enemy:'sf_hog',            session:'sf_wild' },
     sf_tiger:          { enemy:'sf_tiger',          session:'sf_wild' },
-    sf_crows:          { enemy:'sf_crows',          session:'sf_wild' },
     sf_bear_husk:      { enemy:'sf_bear_husk',      session:'sf_wild' },
     sf_bear_nightmare: { enemy:'sf_bear_nightmare', session:'sf_wild' },
     sf_stag_rot:       { enemy:'sf_stag_rot',       session:'sf_wild', sessionEnd:true },
@@ -4828,7 +4827,6 @@ export const ASSETS = {
   enemy_sf_snake:     "resources/enemy/mon_shinierforest_snake_neutral.webp",   // ver -2498：換中立站姿（中立待機美術在剪）
   enemy_sf_hog:       "resources/enemy/mon_shinierforest_hog_neutral.webp",     // ver -2498：換中立站姿（中立待機美術在剪）
   enemy_sf_tiger:     "resources/enemy/mon_shinierforest_tiger_neutral.webp",   // ver -2493：換中立站姿（攻擊／延時動畫都是從它生成的；舊的撲擊姿勢待機 idle_v2 暫時沒有對應）
-  enemy_sf_crows:     "resources/enemy/mon_shinierforest_crows.webp",
   enemy_sf_deer:      "resources/enemy/mon_shinierforest_deer.webp",
   enemy_sf_bear_husk: "resources/enemy/mon_bear_husk.webp?v=08453d77",
   enemy_sf_stag_rot:  "resources/enemy/mon_stag_rot_neutral.webp",   // ver -2620：換中立站姿（攻擊動畫是用它生成的；TO_CODE_attack 11-10）。⚠ 這張目前沒有待機
@@ -5858,7 +5856,6 @@ export const ENEMY_IDLE = {
   mon_saint_thug: 'resources/enemy/anim/mon_saint_thug_idle_v2/',
   mon_sarcoph_crawler: 'resources/enemy/anim/mon_sarcoph_crawler_idle_v2/',
   mon_sea_coralman: 'resources/enemy/anim/mon_sea_coralman_idle_v3/',   // ver -2804：720×1080 motionfix 重跑（全身飄＋呼吸、頭不抬；48 格 24fps）
-  mon_shinierforest_crows: 'resources/enemy/anim/mon_shinierforest_crows_idle_v2/',
   mon_shinierforest_deernightmare: 'resources/enemy/anim/mon_shinierforest_deernightmare_idle_v2/',
   mon_shinierforest_hog: 'resources/enemy/anim/mon_shinierforest_hog_idle_v2/',
   mon_shinierforest_lynx: 'resources/enemy/anim/mon_shinierforest_lynx_idle_v2/',
@@ -8407,10 +8404,8 @@ export const ASSET_VER = {
   'vo_sorana_pack2': '57c876ef',
   'vo_sorana_roar': '184fbea0',
   'ws_0_0_dusk': '08a6bd53',
-  'ws_0_0_dusk_cloud_sea': 'a4f35733',
   'ws_0_10_dusk': 'e91ecbd2',
   'ws_0_1_dusk': 'ff149bd6',
-  'ws_0_1_dusk_cloud_sea': '1ec251de',
   'ws_0_2_dusk': 'b55fc433',
   'ws_0_3_dusk': '0b6c37d1',
   'ws_0_4_dusk': '7e87405a',

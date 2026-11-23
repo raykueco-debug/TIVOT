@@ -3410,3 +3410,6 @@ when	from	to	reason
 20261123-182551	resources/enemy/anim/mon_beast_altar_roar_v1	_recycle/resources/enemy/anim/mon_beast_altar_roar_v1	效能副理 -2946：祭壇者動畫換成 1.0× 縮圖（atk_v3／idle_v3／roar_v2），舊的 2560×1440 等大格回收
 20261123-224358	resources/background/anim/winsmoor_siege/ws_0_0_dusk_sep_v1.mp4	_recycle/resources/background/anim/winsmoor_siege/ws_0_0_dusk_sep_v1.mp4	11-23 Ray「用西泊吧 煙比較新」：ws_0_0/0_1 改遊戲內即時跑（bg_fx），舊 Wan 循環影片退役
 20261123-224358	resources/background/anim/winsmoor_siege/ws_0_1_dusk_sep_v1.mp4	_recycle/resources/background/anim/winsmoor_siege/ws_0_1_dusk_sep_v1.mp4	11-23 Ray「用西泊吧 煙比較新」：ws_0_0/0_1 改遊戲內即時跑（bg_fx），舊 Wan 循環影片退役
+20261123-225310	resources/enemy/mon_shinierforest_crows.webp	_recycle/resources/enemy/mon_shinierforest_crows.webp	Ray 11-23：食腐鴉群整個回收掉
+20261123-225310	resources/enemy/anim/mon_shinierforest_crows_idle_v2	_recycle/resources/enemy/anim/mon_shinierforest_crows_idle_v2	Ray 11-23：食腐鴉群整個回收掉
+20261123-225310	resources/enemy/_neutral_refs/s4_kf/s4_crows_B_dive_gpt.png	_recycle/resources/enemy/_neutral_refs/s4_kf/s4_crows_B_dive_gpt.png	Ray 11-23：食腐鴉群整個回收掉

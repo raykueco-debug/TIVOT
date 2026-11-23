@@ -5290,7 +5290,7 @@ export const TOWNS = {
         { battle:{ day:'sf_bear_husk', night:'sf_bear_nightmare' } },  // 熊骸（日夜差分）
         { battle:'sf_hog' },
         { battle:'sf_lynx',  where:'connector' },                // 非末端限定
-        { battle:'sf_crows', where:'connector' },
+        /* 食腐鴉群 sf_crows：ver -2949 Ray「食腐鴉群整個回收掉」—— 卡、戰鬥卡、立繪、待機一起回收。 */
       ],
       /* ══ 鹿主的第二次機會（ver -879（-893 前用詞），Ray）══════════════════════════════
          「鹿主戰劇情只會出現一次，如果鹿主未變異日後則會在黃昏夜晚時段在夏爾森林

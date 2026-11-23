@@ -2894,37 +2894,6 @@ export const ENEMIES = {
               assault:'claw' },
       loot:[ { id:'tiger_horn', n:1, p:0.25 } ],   // 虎王的獨角 25%（Ray 表）
     },
-    sf_crows: {
-      name:'食腐鴉群',
-      story:0, counterStagger:1, boss:0,
-      Ganymede:0,   // 主武器（普攻）的增傷／減傷：正=增傷、負=抗性減傷（加法，同副武器那三把）
-      weaponMod:{ '重機槍':[0,0.2], '霰彈槍':[0,-0.3], '萊福槍':[0.3,0] },
-      openAssault:[1,2],
-      ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
-      assaultEvery:[2,4],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      assault:{ count:1, gap:0 },
-      kind:'beast',
-      riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
-      hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
-      tier:'D',
-      atype:'S',
-      stageScale:1,
-      stack:0,
-      image:'enemy_sf_crows',
-      bg:'forest_glade_day',
-      fit:{ mode:'contain', pos:'center bottom' },
-      hp:120,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      attack:12,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      atkInterval:null,
-      delayPenalty:{ seconds:5 },
-      entrance:null,
-      special:[],
-      boardGrids:[9,9,9,9,9],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      hitFx:{ delay:'slash',
-              wrong:'slash',
-              assault:'claw' },
-      loot:[ { id:'crow_beak', n:1 } ],
-    },
     /* ══⚠⚠ 樹靈鹿主（未變異）**沒有敵人卡**（ver -878，Ray：「鹿主不變異是不會
        有戰鬥的」）══ 牠在遺蹟入口是**演出**（中景層 cgBack 的一張去背圖），不是
        可以打的東西 —— 打得到的只有下面那張變異版。
