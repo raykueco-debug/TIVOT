@@ -18,6 +18,9 @@ R crypt_hound    "the crypt hound smoothly lunges forward at the camera and bite
 R chain_hanged   "the hanged corpse swings forward on its chains toward the camera, coming closer, and rakes both claws down at the viewer, $NG" "the hanged corpse swings back on its chains and hangs ready"
 R grave_censer   "the grave censer lunges at the camera and swings a heavy censer on its chain straight into the lens" "the censer swings back on its chain and she straightens up into her stance"
 R reliquary_hand "the giant reliquary hand bends forward and slams down toward the camera, its claws raking into the ground in front" "the giant hand lifts its claws off the ground and rises back upright into its stance"
+R ossuary_wheel   "the bone wheel rolls straight at the camera and slams into the lens" "the bone wheel rolls back and settles in its place"
+R choir_organ     "the organ beast lunges at the camera with its gaping fanged jaws screaming into the lens" "the organ beast pulls back and closes its jaws, settling into its stance"
+R vault_bat       "the vault bat dives straight at the camera, claws and fangs thrust at the lens, $NG" "the vault bat flaps back up and hovers in its stance"
 PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 edge_check.py out/tomb_kf3/* >> $LOG 2>&1
 for d in out/tomb_kf3/*_AB out/tomb_kf3/*_BA; do n=tomb3_$(basename "$d"); [ -d "out/enemy_atk/$n" ] || cp -r "$d" "out/enemy_atk/$n"; done
 PYTHONIOENCODING=utf-8 ../.venv/Scripts/python.exe -X utf8 make_player.py >/dev/null 2>&1
