@@ -1176,13 +1176,24 @@ export function ejectCounterShell(x, y, opts){
    ⚠⚠ **時段 → 槽的對應只有這一處**（鐵律 7）：`clock.band()` 出的是
      `Dawn/Day/Dusk/night/midnight`，這裡把黎明與黃昏併成 `dd`、深夜併進 `night`。
    ⚠ 缺哪一張就往 `day` 退，`day` 也沒有就取物件裡的第一個 —— 不要讓立繪變空白。 */
+/* 這一場的時段（ver -2951）：飛行交棒鎖住的那一個優先（state.battleBand，整場不變），沒有才問時鐘。
+   ⚠ 戰鬥端凡是「依時段挑圖」一律問這一支，不要直接 `clock.band()`（鐵律 7）。 */
+export function battleBand(){ return state.battleBand || clock.band(); }
+/* 天空背景照鎖住的時段換差分（ver -2951）：`sky_<名>` 或 `sky_<名>_<時段>` → `sky_<名>_<這一場的時段>`。
+   只在有鎖（飛行交棒）時換 —— 沒鎖（RUSH 指定的天空、測試戰）照卡上那一張。三族天空四時段都齊（dawn/day/dusk/night）。 */
+const SKY_BAND={ Dawn:'dawn', Day:'day', Dusk:'dusk', night:'night', midnight:'night' };
+function skyForBand(nm){
+  if(!state.battleBand || !nm) return nm;
+  const m=/^(sky_[a-z]+?)(?:_(?:dawn|day|dusk|night))?$/i.exec(nm); if(!m) return nm;
+  return m[1]+'_'+(SKY_BAND[state.battleBand]||'day');
+}
 export function enemyImage(en){
   if(portraitOverride && en && en===curCard() && portraitOverride.key===state.currentEnemyKey)
     return portraitOverride.src;   // NI 換上的立繪（見 swapPortrait）
   const im = en && en.image;
   if(!im) return '';
   if(typeof im === 'string') return asset(im);
-  const b = clock.band();
+  const b = battleBand();
   const slot = (b==='Day') ? 'day' : (b==='night'||b==='midnight') ? 'night' : 'dd';
   const key = im[slot] || im.day || im[Object.keys(im)[0]];
   return asset(key);
@@ -4250,11 +4261,11 @@ export function setEnemy(key, opts){
     /* 卡上 `bgBand`（ver -2576，登艦戰甲板四時段）：基底名＋現在的時段（dawn／day／dusk／night，深夜用 night）。 */
     /* 登艦戰（ver -2868，Ray：「登艦戰的背景天色要跟對艦戰的時候一樣」）：boardingRun 換卡前記下對艦戰那張天空的時段（boardBand），這一次換上的卡吃它、用完即丟。 */
     const bb=boardBand; boardBand=null;
-    const bandBg = en.bgBand ? en.bgBand+'_'+(bb || ({ Dawn:'dawn', Day:'day', Dusk:'dusk', night:'night', midnight:'night' }[clock.band()] || 'day')) : '';
+    const bandBg = en.bgBand ? en.bgBand+'_'+(bb || SKY_BAND[battleBand()] || 'day') : '';
     /* 戰鬥卡的 `bg`（ver -2851，夢境戰 cap_dream 的專用背景）：**這一場**一定用它，蓋過敵人卡與城鎮那一格 ——
        寫在戰鬥卡不寫在敵人卡，因為同一張敵人卡（faceless）也是挑戰模式的第一隻，那邊不該跟著換。 */
     const sbBg = (state.scriptRun && state.scriptBattleId && ((GAME_CONFIG.battles||{})[state.scriptBattleId]||{}).bg) || '';
-    const nm = sbBg || (en.bgLock && en.bg) || state.battleBg || bandBg || en.bg || '';   // 卡上 bgLock：這一場一定用自己的背景（ver -2524，安雅光翼的教堂殘垣）
+    const nm = sbBg || (en.bgLock && en.bg) || state.battleBg || bandBg || skyForBand(en.bg) || '';   // 天空背景鎖交棒時段（ver -2951）   // 卡上 bgLock：這一場一定用自己的背景（ver -2524，安雅光翼的教堂殘垣）
     /* 群體敵人的去人背景（ver -2043）：**它就是這一場的戰鬥背景**，蓋過城鎮那一格的（battleBg）。
        ⚠ 直接寫路徑（四張都叫 plate.webp，走 bgUrl 的資料夾表會撞名）。 */
     const plate = en.group && en.group.plate;

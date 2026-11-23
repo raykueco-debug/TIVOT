@@ -3684,6 +3684,7 @@ export function startGame(){
        而且同一隻怪在地上打就不是船戰 —— 分野在場次，不在怪。 */
   state.shipBattle = pendingScriptShip || !!(sb && sb.ship);
   pendingScriptShip = false;
+  state.battleBand = pendingBand; pendingBand = null;   // 每場明確設一次（ver -2951）：飛行交棒帶來的時段，沒帶＝null（照時鐘）
   state.timeAttack = null; state.timeOver = false;   // 開場先歸零（同 noSaint：不要靠上一場收乾淨）
   state.weaponSound = null;                          // 武器音覆寫也是（ver -423）
   state.counterGapMs = null;                         // 連射間隔覆寫也是（ver -476）
@@ -3905,13 +3906,15 @@ let pendingScriptStory = null;
    ⚠ 為什麼不從敵人卡認：那三隻（蜈蚣／羽蛇／空賊船）不是靠 `kind` 分得出來的
      （harm／ship 混著），而「船戰」本來就是**場次**的性質不是怪的性質。 */
 let pendingScriptShip = false;
-let pendingLook = null;   // 飛行交棒的外觀款（ver -2950，見 startGame 的 sbKey）
+let pendingLook = null;
+let pendingBand = null;   // 飛行交棒那一刻的時段（ver -2951，見 state.battleBand）   // 飛行交棒的外觀款（ver -2950，見 startGame 的 sbKey）
 export function startScriptBattle(id, opts){
   pendingScript = id;
   /* 只有**明確的布林**才算宣告（ver -495）—— undefined/null 一律交給敵人卡。 */
   pendingScriptStory = (opts && typeof opts.story==='boolean') ? opts.story : null;
   pendingScriptShip  = !!(opts && opts.ship);
   pendingLook        = (opts && typeof opts.look==='string' && opts.look) ? opts.look : null;
+  pendingBand        = (opts && typeof opts.band==='string' && opts.band) ? opts.band : null;
   startGame();
 }
 

@@ -287,6 +287,10 @@ export const state = {
      ⚠ 擁有者是 combat（`setBattleBg`，每次交棒明確設一次／設 null），
        `enemy.setEnemy` 只讀 —— 不要讓它殘留到下一場（那會把上一格的背景帶過去）。 */
   battleBg: null,
+  /* 這一場鎖住的時段（ver -2951，Ray：「空戰背景強制跟著進入戰鬥前的時間差分」）：飛行交棒**那一刻**飛行畫面的
+     `clock.band()`（Dawn/Day/Dusk/night/midnight），整場不變。擁有者 combat（startGame 每場明確設一次，沒帶＝null）；
+     enemy 只讀（`enemy.battleBand()`：有鎖讀鎖、沒鎖才問時鐘）。⚠ 時段只在飛行頁算一次（鐵律 7），戰鬥端不准再算。 */
+  battleBand: null,
   /* 連續戰鬥的 EXP／錢記帳（ver -595（-893 前用詞），Ray：「exp 跟錢都用『整場』來結算」）。
      中間幾格不彈結算頁，那幾場的收穫先記在這裡，收段的那一場（Boss）一起入帳。
      ⚠ 擁有者是 inspector（`bankSessionGain`／`clearSessionGain`），

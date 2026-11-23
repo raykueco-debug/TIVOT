@@ -762,7 +762,7 @@ window.__tivotFlight = {
          沒帶（舊鑰匙）＝沒宣告，combat 會退回敵人卡的 `story`（ver -495）。 */
       /* `ship:true` ＝這一場是**船戰**（ver -947）：BR 窗口期間敵人多吃
          `tuning.shipDualBonus`。飛行頁交棒的兩條路都要帶（見 bootBattleGate）。 */
-      ()=>{ hideHome('flightBridge/kerb'); combat.startScriptBattle(id, { story: req && req.scripted, ship:true, look: req && req.look }); },
+      ()=>{ hideHome('flightBridge/kerb'); combat.startScriptBattle(id, { story: req && req.scripted, ship:true, look: req && req.look, band: req && req.band }); },
       ()=>story.close({ keepBgm:true }));
   },
   /* 降落（ver -416，Ray：「靠近城鎮時加入降落按鈕，點擊進入城鎮預設畫面」）。
@@ -874,7 +874,7 @@ function bootBattleGate(req){
       ()=>{ hideHome('bootBattleGate/kerb');
             combat.holdEnemyRise();   // 降臨押到門全開（ver -875）
             combat.setBattleBg(null);   // ver -1455：飛行交棒一律走敵人卡的 bg（見上面那一段）
-            combat.startScriptBattle(req.battle, { story: req.scripted, ship:true, look: req.look }); },   // 明確宣告才算，否則退回敵人卡（ver -495）；ship＝船戰（-947）
+            combat.startScriptBattle(req.battle, { story: req.scripted, ship:true, look: req.look, band: req.band }); },   // 明確宣告才算，否則退回敵人卡（ver -495）；ship＝船戰（-947）
       ()=>{ story.close({ keepBgm:true }); combat.releaseEnemyRise(); });
   };
   document.addEventListener('pointerdown', open);
@@ -1179,7 +1179,7 @@ window.addEventListener('pagehide', refreshBoot);
         const bk = battleBgmOf(req.battle);
         if(bk){ const s=story.bgmSrc(bk); SFX.playBgm(s, { fadeOutMs:600, volume: bgmVol(s) }); }
         setTimeout(()=>{ hideHome('bootDirectBattle/alFlash'); combat.setBattleBg(null);   // ver -1455：同上
-                         combat.startScriptBattle(req.battle, { ship:true, look: req.look }); }, 2500);   // 同上：這條也是飛行交棒（-947）
+                         combat.startScriptBattle(req.battle, { ship:true, look: req.look, band: req.band }); }, 2500);   // 同上：這條也是飛行交棒（-947）
       }
     };
     ov.addEventListener('click', go);
