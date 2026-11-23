@@ -1440,10 +1440,10 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
   const rm=c.retMul||1, pm=c.preMul||1, tAt=f=> f<=hitF ? f*1000/(fps*pm) : (hitF*1000/(fps*pm) + (f-hitF)*1000/(fps*rm));
   const T=tAt(N), tHit=tAt(hitF);
   { const k=farOf(); if(k!==1 || c.near){   // 攻擊時撲近：打到那一格到最大，收回的路上退回遠處（ver -2529：平時不站遠也能撲近）；ver -2846：任何一支寫了 `near` 的動作片都吃（地下聖徒的 D／M 揮拳）
-      el.style.transformOrigin=FAR_ORIGIN;
+      el.style.transformOrigin=c.nearOrigin||FAR_ORIGIN;   /* `nearOrigin`＝拉近時以哪一點為軸（ver -2943，Ray：「管風琴位移要貼地不要浮空」→ 軸放在腳底那一線，放大時腳不離地） */
       const off=t=>Math.max(0,Math.min(1,t/T)), hold=Math.min(T, tHit+(c.nearHold>0?c.nearHold:60)),   /* `nearHold`＝撲到最近停多久（ms，預設 60；ver -2915） */ back=Math.min(T, c.nearOut>0 ? hold+c.nearOut : tHit+Math.max(120,(T-tHit)*0.7));   // `nearOut`＝打到停留之後幾毫秒退回原位（ver -2846，Ray：「位移不要太多幀」）；不寫＝照舊跟著收回段慢慢退
       const n=String(c.near || 1), kf = (kind==='atk' || c.near) ? [{scale:String(k),offset:0}, ...(c.nearIn>0 && tHit>c.nearIn ? [{scale:String(k),offset:off(tHit-c.nearIn)}] : []), {scale:n,offset:off(tHit)},{scale:n,offset:off(hold)},{scale:String(k),offset:off(back)},{scale:String(k),offset:1}] : [{scale:String(k)},{scale:String(k)}];
-      el.animate(kf.map(q=>({...q, easing: c.nearSteps>0 ? `steps(${c.nearSteps},end)` : 'ease-in-out'})),{duration:T}); } }   /* `nearSteps`＝位移每一段只跳這幾格（ver -2913，Ray：「位移少幀」——像手繪抽格，不平滑補間） */   /* ease 逐段套，峰值才準準落在 hit 那一格（-2485） */
+      const na=el.animate(kf.map(q=>({...q, easing: c.nearSteps>0 ? `steps(${c.nearSteps},end)` : 'ease-in-out'})),{duration:T}); if(c.nearOrigin) na.onfinish=()=>{ el.style.transformOrigin=FAR_ORIGIN; }; } }   /* `nearSteps`＝位移每一段只跳這幾格（ver -2913，Ray：「位移少幀」——像手繪抽格，不平滑補間） */   /* ease 逐段套，峰值才準準落在 hit 那一格（-2485） */
   const t0=performance.now();
   windupSe(c.windupSe, c.windupMs, ()=>clipT || i<N, c.windupFit);
   stepSes(c, fps, ()=>!!clipT);
