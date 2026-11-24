@@ -75,6 +75,7 @@ function ringDamage(th){
   if(state.tutorialRun && TUT().enemyAtkDamage!=null) return TUT().enemyAtkDamage;
   const ua=state.enemyUltAct;
   if(th && th.ult && ua && ua.atk>0) return ua.atk;
+  if(th && th.atk>0) return th.atk;   // 分離怪自己的圈（ver -2983）：用分離怪卡上的攻擊力
   return effAssaultDamage();
 }
 
@@ -342,6 +343,10 @@ export function spawnThreat(){
   }
 }
 // 從清單移除單一攻擊點
+/* 額外的一顆圈（ver -2983，Ray 節制者：「分離怪出來以後就會同時多一個攻擊圈，一個是節制的，一個是分離的」）：
+   不走本體的排程（不吃 stack／maxRings），由 combat 的分離怪計時器叫；`atk`＝這一顆打中扣多少。 */
+export function spawnExtraThreat(atk){ if(state.over||state.enemyHp<=0||state.cutinPlaying||state.transitioning) return;
+  const n0=state.threats.length; spawnThreat(); const th=state.threats[state.threats.length-1]; if(state.threats.length>n0 && th){ th.atk=atk; th.el.classList.add('rd-spawn'); } }
 export function removeThreat(th){
   if(th.el && th.el.parentNode) th.el.remove();
   const i=state.threats.indexOf(th);
