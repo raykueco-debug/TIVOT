@@ -3605,7 +3605,7 @@ export const ENEMIES = {
       atype:'P',
       stageScale:1,
       stack:1,
-      missSpawn:{ card:['ruins_temperance_spawn','ruins_temperance_spawn2','ruins_temperance_spawn3'], hp:100, max:2, slots:[{ x:0.461, y:-0.168, size:0.911 }, { x:0.02, y:-0.168, size:0.911 }] },   // 點錯＝分離出蠟化人形（ver -2980，Ray：「增加一個怪在畫面上 變群戰 HP+100 100打完以後先死SPAWN怪」）
+      missSpawn:{ card:['ruins_temperance_spawn','ruins_temperance_spawn2','ruins_temperance_spawn3'], hp:100, max:3, slots:[{ x:0.121, y:-0.375, size:0.876 }, { x:0.573, y:-0.107, size:0.911 }, { x:0.3, y:-0.375, size:0.876 }] },   // 點錯＝分離出蠟化人形（ver -2980，Ray：「增加一個怪在畫面上 變群戰 HP+100 100打完以後先死SPAWN怪」）
       image:'enemy_ruins_saint_temperance',
       bg:'ruins_shinier_deepaltar',
       fit:{ mode:'contain', pos:'center bottom' },

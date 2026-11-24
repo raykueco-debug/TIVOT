@@ -820,10 +820,23 @@ def espawn_patch(req):
         if sp.get(k) is not None:
             parts.append("%s:%s" % (k, fmt(sp[k])))
     lit = 'missSpawn:{ ' + ', '.join(parts) + ' },'
-    m2 = re.search(r'^(      )missSpawn\s*:\s*\{[^\n]*?\},?', blk, re.M)
+    m2 = re.search(r'^      missSpawn\s*:\s*\{', blk, re.M)
     if not m2:
         raise ValueError('那張卡沒有 missSpawn：' + key)
-    nb = blk[:m2.start()] + '      ' + lit + blk[m2.end():]
+    # 括號配對找整段 missSpawn:{…} 的結尾（ver -2991：裡面有 slots:[{…}]，舊的非貪婪 \},? 停在第一個站位，每存一次就留一截殘尾）
+    depth, k = 0, m2.end() - 1
+    while k < len(blk):
+        if blk[k] in '{[':
+            depth += 1
+        elif blk[k] in '}]':
+            depth -= 1
+            if depth == 0:
+                break
+        k += 1
+    end2 = k + 1
+    if end2 < len(blk) and blk[end2] == ',':
+        end2 += 1
+    nb = blk[:m2.start()] + '      ' + lit + blk[end2:]
     _write_text(EFIT_FILE, text[:m.start()] + nb + text[end:])
     return '%s:%s %s' % (EFIT_FILE, key, lit)
 

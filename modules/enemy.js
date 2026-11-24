@@ -2274,12 +2274,12 @@ let spawns=[], spawnSeq=0;
    舊卡只寫 x／y／size ＝第 1 個站位；第 2 個沒寫就放右邊。 */
 export function spawnSlot(ms, i){ const sl=ms && ms.slots; if(sl && sl[i]) return sl[i];
   if(i===0) return { x: ms.x!=null ? ms.x : 0.02, y: ms.y||0, size: ms.size||0.62 };
-  const s0=spawnSlot(ms,0); return { x: 0.58, y: s0.y, size: s0.size }; }
+  const s0=spawnSlot(ms,0); return { x: i===1 ? 0.58 : 0.3, y: s0.y, size: s0.size }; }
 function spawnPlace(el, p){ const top=$('top'); if(!top||!el) return; const H=top.clientHeight, W=top.clientWidth, px=el._px||[1,1.4];
   const h=H*(p.size||0.62), w=h*px[0]/px[1], left=W*(p.x||0), tp=H-h-H*(p.y||0);
   el.style.left=left+'px'; el.style.top=tp+'px'; el.style.width=w+'px'; el.style.height=h+'px'; }
 export function setSpawnPlace(i, p){ const en=curCard(), ms=en && en.missSpawn; if(!ms) return;
-  ms.slots=[0,1].map(k=>Object.assign({}, spawnSlot(ms,k))); Object.assign(ms.slots[i], p);
+  ms.slots=Array.from({length:Math.max(ms.max||2, i+1)},(_,k)=>Object.assign({}, spawnSlot(ms,k))); Object.assign(ms.slots[i], p);
   spawns.forEach(S=>{ if(S.slot===i) spawnPlace(S.el, ms.slots[i]); }); }
 export function spawnAlive(id){ return id==null ? spawns.length>0 : spawns.some(S=>S.id===id && S.hp>0); }
 export function spawnCount(){ return spawns.length; }

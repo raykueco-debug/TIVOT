@@ -1557,9 +1557,10 @@ function openEnemyEdit(opt){
      拖移／滾輪縮放／按鈕微調都直接改那隻分離怪（enemy.setSpawnPlace）；存檔走 `/__espawn` 寫回本體卡那一行 missSpawn。 */
   const ms0 = en.missSpawn ? JSON.parse(JSON.stringify(en.missSpawn)) : null;
   /* 兩個站位（ver -2990，Ray：「每個分離怪有各自站位，場上最多兩隻」）：ssel＝正在調第幾個 */
-  const sv = ms0 ? [0,1].map(k=>Object.assign({}, enemyMod.spawnSlot(ms0,k))) : null;
+  const SN = ms0 ? (ms0.max||2) : 0, SK = Array.from({length:SN},(_,k)=>k);   // 站位數＝場上最多幾隻（ver -2991：三隻）
+  const sv = ms0 ? SK.map(k=>Object.assign({}, enemyMod.spawnSlot(ms0,k))) : null;
   let ssel=0, scap=null;
-  const sApply=()=>{ try{ [0,1].forEach(k=>enemyMod.setSpawnPlace(k, { x:+sv[k].x.toFixed(3), y:+sv[k].y.toFixed(3), size:+sv[k].size.toFixed(3) })); }catch(_){} };
+  const sApply=()=>{ try{ SK.forEach(k=>enemyMod.setSpawnPlace(k, { x:+sv[k].x.toFixed(3), y:+sv[k].y.toFixed(3), size:+sv[k].size.toFixed(3) })); }catch(_){} };
   const sCapture=on=>{
     if(!on){ if(scap){ scap.remove(); scap=null; } return; }
     if(scap || !sv) return; const top=document.getElementById('top'); if(!top) return; const r=top.getBoundingClientRect();
@@ -1604,7 +1605,7 @@ function openEnemyEdit(opt){
     }else if(tab==='spawn'){
       const v=sv[ssel];
       body = i18nT('<div class="ee-hd">分離怪站位　')+[].concat(ms0.card).length+i18nT(' 種隨機</div>')
-        + '<div class="ee-row">'+[0,1].map(k=>'<button data-ssel="'+k+'" class="'+(k===ssel?'on':'')+'">'+i18nT('站位 ')+(k+1)+'</button>').join('')+'</div>'
+        + '<div class="ee-row">'+SK.map(k=>'<button data-ssel="'+k+'" class="'+(k===ssel?'on':'')+'">'+i18nT('站位 ')+(k+1)+'</button>').join('')+'</div>'
         + '<div class="ee-msg">'+i18nT('選一個站位 → 在敵人區拖移；滾輪縮放')+'</div>'
         + row(i18nT('左右'), Math.round(v.x*100)+'%', 'sx', 0.01, 'data-sk')
         + row(i18nT('上下'), Math.round(v.y*100)+'%', 'sy', 0.01, 'data-sk')
@@ -1653,7 +1654,7 @@ function openEnemyEdit(opt){
     if(t.dataset.tab){ tab=t.dataset.tab; msg=''; gCapture(tab==='group'); sCapture(tab==='spawn'); render(); return; }
     if(t.dataset.ssel){ ssel=+t.dataset.ssel; render(); return; }
     if(t.dataset.sk){ const d=+t.dataset.d, k={sx:'x',sy:'y',ss:'size'}[t.dataset.sk], v=sv[ssel]; v[k]=+(v[k]+d).toFixed(3); if(k==='size') v.size=Math.max(0.15,Math.min(1.5,v.size)); sApply(); render(); return; }
-    if(tab==='spawn' && t.dataset.act==='reset'){ [0,1].forEach(k=>Object.assign(sv[k], enemyMod.spawnSlot(ms0,k))); sApply(); msg=i18nT('已還原'); render(); return; }
+    if(tab==='spawn' && t.dataset.act==='reset'){ SK.forEach(k=>Object.assign(sv[k], enemyMod.spawnSlot(ms0,k))); sApply(); msg=i18nT('已還原'); render(); return; }
     if(tab==='spawn' && t.dataset.act==='save'){
       const spawn={ card:ms0.card, hp:ms0.hp, max:ms0.max||2, slots:sv.map(v=>({ x:+v.x.toFixed(3), y:+v.y.toFixed(3), size:+v.size.toFixed(3) })) }; msg=i18nT('寫入中…'); render();
       fetch(new URL('__espawn', location.href).pathname, { method:'POST', body:JSON.stringify({ key, spawn }) })
