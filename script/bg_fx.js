@@ -5,7 +5,9 @@
      base      底圖換成這一張（沒有影片時；光束／煙／水柱那幾格是「拿掉那個東西的底圖」）
      hideStatic 程式層第一格畫上去之前先藏起靜態圖（靜態圖構圖不一樣時用，不然會先閃一張別的構圖）
      water     平靜水面：{mask, amp, wave, speed, persp}（1536 寬計；預設 2.2／26／1.0／1.6）
-     flow      落水亮條：{mask, speed}（768 寬計 px/s，預設 220）；每秒 12 格跳格
+     flow      落水亮條：{mask, speed, sway, extra}（768 寬計 px/s，預設 220）；每秒 12 格跳格；sway＝瀑布本體逐列擺動、extra＝第二層連續水條的透明度
+     splash    落點水花：true 或 {n, h, foam}（白沫＋往上噴的水珠，取落水遮罩每欄最下緣）
+     water.rings 湖面漣漪：true（圓心＝落水最下緣）或 {x, y, n, R, period}
      mist      落點水霧：true＝從落水遮罩每一欄的最下緣取點
      spout     獅口水柱：{img, path, flow}
      beam      光束：{col:[r,g,b], amp}（amp＝最亮處加量 0~255，白天 106）
@@ -58,8 +60,11 @@ export const BG_FX = {
   belisar_draincliff_day: { flow: F('belisar/belisar_draincliff_day_flowmask.png'),
     sky: { img: A + 'belisar/belisar_draincliff_day_sky.png', mask: A + 'belisar/belisar_draincliff_day_skymask.png', clouds: CUMULUS } },
   lake_cave_day: { flow: F('lake/lake_cave_day_flowmask.png', { speed: 420 }), mist: true },
-  lake_fallbase_day: { water: W('lake/lake_fallbase_day_watermask.png'), flow: F('lake/lake_fallbase_day_flowmask.png'),
-    sky: { img: A + 'lake/lake_fallbase_day_sky.png', mask: A + 'lake/lake_fallbase_day_skymask.png', clouds: CUMULUS } },
+  /* 11-24 Ray：「瀑布加一層程式水上去 還有水花跟湖面效果」：瀑布逐列擺動＋第二層連續水條、落點水花＋水霧、湖面漣漪＋反光加強 */
+  lake_fallbase_day: { water: W('lake/lake_fallbase_day_watermask.png', { amp: 2.8, glint: 0.5, rings: true }),
+    flow: F('lake/lake_fallbase_day_flowmask.png', { sway: true, extra: 0.4 }), mist: true, splash: true,
+    /* 11-24 Ray：「底圖給 GPT 重出 天空沒挖好 瀑布要補好」：底圖換成 GPT 補好瀑布的那一張，天空由 GPT 洋紅重摳 → 程式雲三層（同守城戰） */
+    sky: LIVE('lake/live/')('lake_fallbase_day', { bottom: 0.142, sun: false }).sky },
   /* ── 只拆天地 ── */
   dunmor_cairn: { sky: { img: A + 'dunmor/dunmor_cairn_sky.png', mask: A + 'dunmor/dunmor_cairn_skymask.png', clouds: PURPLE } },
   /* ── 平靜水面（＋沖流）── */
@@ -264,3 +269,35 @@ export const BG_FX = {
       cells: [[256,  119],  [256,  89],  [256,  112],  [256,  74],  [256,  120],  [256,  83],  [256,  105],  [256,  80]] } }),
   /* ⟨/ws-live⟩ */
 };
+
+/* 野外／遺蹟的雲改程式跑（11-24 Ray：「其他還在跑影片的雲也改成程式跑」）：地面照舊播原本的影片（樹葉／布／水的動態留著），
+   天空那一塊換成程式天空＋遠中近三層程式雲（同守城戰 LIVE 那一套）。原本這格有別的程式層（水面、落水）照留，只換掉 sky。 */
+const CLOUD_LIVE = {
+  /* ⟨cloud-live⟩ 以下由 tools/anim/bg_layer/cloud_live_batch.py --emit 自動產生，不要手改 */
+  belisar_exterior_day: LIVE('belisar/live/')('belisar_exterior_day', { bottom: 0.347, sun: false }).sky,
+  belisar_greatcourt_day: LIVE('belisar/live/')('belisar_greatcourt_day', { bottom: 0.226, sun: false }).sky,
+  canyon_altar_day: LIVE('canyon/live/')('canyon_altar_day', { bottom: 0.07, sun: false }).sky,
+  canyon_bones_day: LIVE('canyon/live/')('canyon_bones_day', { bottom: 0.107, sun: false }).sky,
+  canyon_corridor_day: LIVE('canyon/live/')('canyon_corridor_day', { bottom: 0.278, sun: false }).sky,
+  canyon_entry_day: LIVE('canyon/live/')('canyon_entry_day', { bottom: 0.289, sun: false }).sky,
+  dunmor_boglane: LIVE('dunmor/live/')('dunmor_boglane', { bottom: 0.271, sun: false }).sky,
+  dunmor_hallcourt: LIVE('dunmor/live/')('dunmor_hallcourt', { bottom: 0.163, sun: false }).sky,
+  dunmor_henge: LIVE('dunmor/live/')('dunmor_henge', { bottom: 0.196, sun: false }).sky,
+  dunmor_kilnyard: LIVE('dunmor/live/')('dunmor_kilnyard', { bottom: 0.275, sun: false }).sky,
+  fallen_altar_day: LIVE('fallen/live/')('fallen_altar_day', { bottom: 0.217, sun: false }).sky,
+  fallen_basin_day: LIVE('fallen/live/')('fallen_basin_day', { bottom: 0.17, sun: false }).sky,
+  fallen_causeway_day: LIVE('fallen/live/')('fallen_causeway_day', { bottom: 0.352, sun: false }).sky,
+  fallen_entry_day: LIVE('fallen/live/')('fallen_entry_day', { bottom: 0.21, sun: false }).sky,
+  fallen_fork_day: LIVE('fallen/live/')('fallen_fork_day', { bottom: 0.225, sun: false }).sky,
+  plains_beacon_day: LIVE('plains/live/')('plains_beacon_day', { bottom: 0.366, sun: false }).sky,
+  plains_cairn_day: LIVE('plains/live/')('plains_cairn_day', { bottom: 0.3, sun: false }).sky,
+  plains_entry_day: LIVE('plains/live/')('plains_entry_day', { bottom: 0.223, sun: false }).sky,
+  plains_scree_day: LIVE('plains/live/')('plains_scree_day', { bottom: 0.131, sun: false }).sky,
+  plains_sea_day: LIVE('plains/live/')('plains_sea_day', { bottom: 0.215, sun: false }).sky,
+  plains_stone_day: LIVE('plains/live/')('plains_stone_day', { bottom: 0.221, sun: false }).sky,
+  plains_well_day: LIVE('plains/live/')('plains_well_day', { bottom: 0.209, sun: false }).sky,
+  plains_windrock_day: LIVE('plains/live/')('plains_windrock_day', { bottom: 0.359, sun: false }).sky,
+  sofiaout_terrace: LIVE('sofia/live/')('sofiaout_terrace', { bottom: 0.293, sun: false }).sky,
+  /* ⟨/cloud-live⟩ */
+};
+for (const k in CLOUD_LIVE) BG_FX[k] = Object.assign({}, BG_FX[k], { sky: CLOUD_LIVE[k] });

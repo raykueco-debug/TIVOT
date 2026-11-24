@@ -3443,7 +3443,110 @@ when	from	to	reason
 20261124-005144	resources/background/_layers_gpt/out/northport/northport_west_bf__nosmoke.png	_recycle/resources/background/_layers_gpt/out/northport/northport_west_bf__nosmoke.png	11-24 西區換新構圖：舊天空摳圖與放錯張（廣場）的去煙圖退役
 20261124-005144	resources/background/_layers_gpt/out/northport/northport_west_bf__nssky.png	_recycle/resources/background/_layers_gpt/out/northport/northport_west_bf__nssky.png	11-24 西區換新構圖：舊天空摳圖與放錯張（廣場）的去煙圖退役
 20261124-011443	resources/background/_layers_gpt/out/northport/northport_west_bf__nofog2.png	_recycle/resources/background/_layers_gpt/out/northport/northport_west_bf__nofog2.png	與 __nofog.png 重複的下載
+20261124-012029	tools/anim/bg_layer/war_fire_spots.py	_recycle/tools/anim/bg_layer/war_fire_spots.py	自動找火點不可行（濕街反光全被當成火），改成審閱頁手動放火
+20261124-012029	tools/anim/bg_layer/fire_spots.json	_recycle/tools/anim/bg_layer/fire_spots.json	自動找火點不可行（濕街反光全被當成火），改成審閱頁手動放火
 20261124-112115	resources/enemy/mon_beast_organ.webp	_recycle/resources/enemy/mon_beast_organ.webp	Ray 11-24：裂肉獸去煙／森林熊骸重去背，換新 A
 20261124-112115	resources/enemy/mon_bear_husk.webp	_recycle/resources/enemy/mon_bear_husk.webp	Ray 11-24：裂肉獸去煙／森林熊骸重去背，換新 A
+20261124-114321	resources/background/anim/lake/lake_causeway_day_cloud_far.webp	_recycle/resources/background/anim/lake/lake_causeway_day_cloud_far.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_causeway_day_cloud_mid.webp	_recycle/resources/background/anim/lake/lake_causeway_day_cloud_mid.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_causeway_day_cloud_near.webp	_recycle/resources/background/anim/lake/lake_causeway_day_cloud_near.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_causeway_day_live.json	_recycle/resources/background/anim/lake/lake_causeway_day_live.json	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_causeway_day_sky.webp	_recycle/resources/background/anim/lake/lake_causeway_day_sky.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_causeway_day_skymask.png	_recycle/resources/background/anim/lake/lake_causeway_day_skymask.png	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_cave_day_cloud_far.webp	_recycle/resources/background/anim/lake/lake_cave_day_cloud_far.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_cave_day_cloud_mid.webp	_recycle/resources/background/anim/lake/lake_cave_day_cloud_mid.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_cave_day_cloud_near.webp	_recycle/resources/background/anim/lake/lake_cave_day_cloud_near.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_cave_day_live.json	_recycle/resources/background/anim/lake/lake_cave_day_live.json	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_cave_day_sky.webp	_recycle/resources/background/anim/lake/lake_cave_day_sky.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_cave_day_skymask.png	_recycle/resources/background/anim/lake/lake_cave_day_skymask.png	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_deadfall_day_cloud_far.webp	_recycle/resources/background/anim/lake/lake_deadfall_day_cloud_far.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_deadfall_day_cloud_mid.webp	_recycle/resources/background/anim/lake/lake_deadfall_day_cloud_mid.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_deadfall_day_cloud_near.webp	_recycle/resources/background/anim/lake/lake_deadfall_day_cloud_near.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_deadfall_day_live.json	_recycle/resources/background/anim/lake/lake_deadfall_day_live.json	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_deadfall_day_sky.webp	_recycle/resources/background/anim/lake/lake_deadfall_day_sky.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_deadfall_day_skymask.png	_recycle/resources/background/anim/lake/lake_deadfall_day_skymask.png	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_eastshore_day_cloud_far.webp	_recycle/resources/background/anim/lake/lake_eastshore_day_cloud_far.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_eastshore_day_cloud_mid.webp	_recycle/resources/background/anim/lake/lake_eastshore_day_cloud_mid.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_eastshore_day_cloud_near.webp	_recycle/resources/background/anim/lake/lake_eastshore_day_cloud_near.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_eastshore_day_live.json	_recycle/resources/background/anim/lake/lake_eastshore_day_live.json	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_eastshore_day_sky.webp	_recycle/resources/background/anim/lake/lake_eastshore_day_sky.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_eastshore_day_skymask.png	_recycle/resources/background/anim/lake/lake_eastshore_day_skymask.png	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_fallbase_day_cloud_far.webp	_recycle/resources/background/anim/lake/lake_fallbase_day_cloud_far.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_fallbase_day_cloud_mid.webp	_recycle/resources/background/anim/lake/lake_fallbase_day_cloud_mid.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_fallbase_day_cloud_near.webp	_recycle/resources/background/anim/lake/lake_fallbase_day_cloud_near.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_fallbase_day_live.json	_recycle/resources/background/anim/lake/lake_fallbase_day_live.json	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_fallbase_day_sky.webp	_recycle/resources/background/anim/lake/lake_fallbase_day_sky.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_fallbase_day_skymask.png	_recycle/resources/background/anim/lake/lake_fallbase_day_skymask.png	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_grove_day_cloud_far.webp	_recycle/resources/background/anim/lake/lake_grove_day_cloud_far.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_grove_day_cloud_mid.webp	_recycle/resources/background/anim/lake/lake_grove_day_cloud_mid.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_grove_day_cloud_near.webp	_recycle/resources/background/anim/lake/lake_grove_day_cloud_near.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_grove_day_live.json	_recycle/resources/background/anim/lake/lake_grove_day_live.json	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_grove_day_sky.webp	_recycle/resources/background/anim/lake/lake_grove_day_sky.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_grove_day_skymask.png	_recycle/resources/background/anim/lake/lake_grove_day_skymask.png	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_inlet_day_cloud_far.webp	_recycle/resources/background/anim/lake/lake_inlet_day_cloud_far.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_inlet_day_cloud_mid.webp	_recycle/resources/background/anim/lake/lake_inlet_day_cloud_mid.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_inlet_day_cloud_near.webp	_recycle/resources/background/anim/lake/lake_inlet_day_cloud_near.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_inlet_day_live.json	_recycle/resources/background/anim/lake/lake_inlet_day_live.json	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_inlet_day_sky.webp	_recycle/resources/background/anim/lake/lake_inlet_day_sky.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_inlet_day_skymask.png	_recycle/resources/background/anim/lake/lake_inlet_day_skymask.png	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_northshore_day_cloud_far.webp	_recycle/resources/background/anim/lake/lake_northshore_day_cloud_far.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_northshore_day_cloud_mid.webp	_recycle/resources/background/anim/lake/lake_northshore_day_cloud_mid.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_northshore_day_cloud_near.webp	_recycle/resources/background/anim/lake/lake_northshore_day_cloud_near.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_northshore_day_live.json	_recycle/resources/background/anim/lake/lake_northshore_day_live.json	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_northshore_day_sky.webp	_recycle/resources/background/anim/lake/lake_northshore_day_sky.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/lake/lake_northshore_day_skymask.png	_recycle/resources/background/anim/lake/lake_northshore_day_skymask.png	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/canyon/canyon_bridge_day_cloud_far.webp	_recycle/resources/background/anim/canyon/canyon_bridge_day_cloud_far.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/canyon/canyon_bridge_day_cloud_mid.webp	_recycle/resources/background/anim/canyon/canyon_bridge_day_cloud_mid.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/canyon/canyon_bridge_day_cloud_near.webp	_recycle/resources/background/anim/canyon/canyon_bridge_day_cloud_near.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/canyon/canyon_bridge_day_live.json	_recycle/resources/background/anim/canyon/canyon_bridge_day_live.json	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/canyon/canyon_bridge_day_sky.webp	_recycle/resources/background/anim/canyon/canyon_bridge_day_sky.webp.20261124-114321	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/canyon/canyon_bridge_day_skymask.png	_recycle/resources/background/anim/canyon/canyon_bridge_day_skymask.png	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/plains/plains_deadwood_day_cloud_far.webp	_recycle/resources/background/anim/plains/plains_deadwood_day_cloud_far.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/plains/plains_deadwood_day_cloud_mid.webp	_recycle/resources/background/anim/plains/plains_deadwood_day_cloud_mid.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/plains/plains_deadwood_day_cloud_near.webp	_recycle/resources/background/anim/plains/plains_deadwood_day_cloud_near.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/plains/plains_deadwood_day_live.json	_recycle/resources/background/anim/plains/plains_deadwood_day_live.json	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/plains/plains_deadwood_day_sky.webp	_recycle/resources/background/anim/plains/plains_deadwood_day_sky.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/plains/plains_deadwood_day_skymask.png	_recycle/resources/background/anim/plains/plains_deadwood_day_skymask.png	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/belisar/belisar_draincliff_day_cloud_far.webp	_recycle/resources/background/anim/belisar/belisar_draincliff_day_cloud_far.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/belisar/belisar_draincliff_day_cloud_mid.webp	_recycle/resources/background/anim/belisar/belisar_draincliff_day_cloud_mid.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/belisar/belisar_draincliff_day_cloud_near.webp	_recycle/resources/background/anim/belisar/belisar_draincliff_day_cloud_near.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/belisar/belisar_draincliff_day_live.json	_recycle/resources/background/anim/belisar/belisar_draincliff_day_live.json	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/belisar/belisar_draincliff_day_sky.webp	_recycle/resources/background/anim/belisar/belisar_draincliff_day_sky.webp	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
+20261124-114321	resources/background/anim/belisar/belisar_draincliff_day_skymask.png	_recycle/resources/background/anim/belisar/belisar_draincliff_day_skymask.png	11-24 程式雲：bgchk 天空遮罩不可靠（把山／瀑布當天空），這幾格先留影片
 20261124-123235	resources/audio/vo/vo_cecilie_miss3.m4a	_recycle/resources/audio/vo/vo_cecilie_miss3.m4a	賽西莉失誤語音重切：3/4 交界的嘆氣原本切在第3句尾，改歸第4句（PM 交辦實聽確認）
 20261124-123235	resources/audio/vo/vo_cecilie_miss4.m4a	_recycle/resources/audio/vo/vo_cecilie_miss4.m4a	賽西莉失誤語音重切：3/4 交界的嘆氣原本切在第3句尾，改歸第4句（PM 交辦實聽確認）
+20261124-165814	resources/background/anim/belisar/belisar_exterior_day_sep_v1.mp4	_recycle/resources/background/anim/belisar/belisar_exterior_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/belisar/belisar_greatcourt_day_sep_v1.mp4	_recycle/resources/background/anim/belisar/belisar_greatcourt_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/canyon/canyon_altar_day_pure_v1.mp4	_recycle/resources/background/anim/canyon/canyon_altar_day_pure_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/canyon/canyon_bones_day_aba_v1.mp4	_recycle/resources/background/anim/canyon/canyon_bones_day_aba_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/canyon/canyon_bones_day_sep_v1.mp4	_recycle/resources/background/anim/canyon/canyon_bones_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/canyon/canyon_corridor_day_aba_v1.mp4	_recycle/resources/background/anim/canyon/canyon_corridor_day_aba_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/canyon/canyon_corridor_day_sep_v1.mp4	_recycle/resources/background/anim/canyon/canyon_corridor_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/canyon/canyon_entry_day_aba_v1.mp4	_recycle/resources/background/anim/canyon/canyon_entry_day_aba_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/canyon/canyon_entry_day_sep_v1.mp4	_recycle/resources/background/anim/canyon/canyon_entry_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/dunmor/dunmor_boglane_sep_v1.mp4	_recycle/resources/background/anim/dunmor/dunmor_boglane_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/dunmor/dunmor_hallcourt_sep_v1.mp4	_recycle/resources/background/anim/dunmor/dunmor_hallcourt_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/dunmor/dunmor_henge_sep_v1.mp4	_recycle/resources/background/anim/dunmor/dunmor_henge_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/dunmor/dunmor_kilnyard_sep_v1.mp4	_recycle/resources/background/anim/dunmor/dunmor_kilnyard_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/fallen/fallen_altar_day_sep_v1.mp4	_recycle/resources/background/anim/fallen/fallen_altar_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/fallen/fallen_basin_day_sep_v1.mp4	_recycle/resources/background/anim/fallen/fallen_basin_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/fallen/fallen_causeway_day_sep_v1.mp4	_recycle/resources/background/anim/fallen/fallen_causeway_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/fallen/fallen_entry_day_sep_v1.mp4	_recycle/resources/background/anim/fallen/fallen_entry_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/fallen/fallen_fork_day_sep_v1.mp4	_recycle/resources/background/anim/fallen/fallen_fork_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/plains/plains_beacon_day_sep_v1.mp4	_recycle/resources/background/anim/plains/plains_beacon_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/plains/plains_cairn_day_sep_v1.mp4	_recycle/resources/background/anim/plains/plains_cairn_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/plains/plains_entry_day_sep_v1.mp4	_recycle/resources/background/anim/plains/plains_entry_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/plains/plains_scree_day_sep_v1.mp4	_recycle/resources/background/anim/plains/plains_scree_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/plains/plains_sea_day_sep_v1.mp4	_recycle/resources/background/anim/plains/plains_sea_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/plains/plains_stone_day_sep_v1.mp4	_recycle/resources/background/anim/plains/plains_stone_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/plains/plains_well_day_sep_v1.mp4	_recycle/resources/background/anim/plains/plains_well_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/plains/plains_windrock_day_sep_v1.mp4	_recycle/resources/background/anim/plains/plains_windrock_day_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-165814	resources/background/anim/sofia/sofiaout_terrace_sep_v1.mp4	_recycle/resources/background/anim/sofia/sofiaout_terrace_sep_v1.mp4	11-24 Ray：雲改程式跑後拿掉影片，地面改靜態圖（瘦身）
+20261124-182337	resources/background/anim/belisar/belisar_draincliff_day_sep_v1.mp4	_recycle/resources/background/anim/belisar/belisar_draincliff_day_sep_v1.mp4	11-24 Ray：閃動——影片本身逐格抖、落水崖只有 8 格循環；改靜態圖＋程式落水／水面／雲
+20261124-182337	resources/background/anim/lake/lake_fallbase_day_sep_v1.mp4	_recycle/resources/background/anim/lake/lake_fallbase_day_sep_v1.mp4	11-24 Ray：閃動——影片本身逐格抖、落水崖只有 8 格循環；改靜態圖＋程式落水／水面／雲
+20261124-184147	resources/background/lake/lake_fallbase_day.webp	_recycle/resources/background/lake/lake_fallbase_day.webp	11-24 Ray：底圖給 GPT 重出（瀑布補完整、天空重摳），舊圖回收
+20261124-184258	resources/background/anim/lake/lake_fallbase_day_sky.png	_recycle/resources/background/anim/lake/lake_fallbase_day_sky.png	11-24：lake_fallbase_day 改程式雲三層，舊天空層不用了
+20261124-184258	resources/background/anim/lake/lake_fallbase_day_skymask.png	_recycle/resources/background/anim/lake/lake_fallbase_day_skymask.png.20261124-184258	11-24：lake_fallbase_day 改程式雲三層，舊天空層不用了
+20261124-190246	resources/background/lake/lake_fallbase_dawn.webp	_recycle/resources/background/lake/lake_fallbase_dawn.webp	11-24 Ray：三個時段也補瀑布（GPT 重出），舊圖回收
+20261124-190246	resources/background/lake/lake_fallbase_dusk.webp	_recycle/resources/background/lake/lake_fallbase_dusk.webp	11-24 Ray：三個時段也補瀑布（GPT 重出），舊圖回收
+20261124-190246	resources/background/lake/lake_fallbase_night.webp	_recycle/resources/background/lake/lake_fallbase_night.webp	11-24 Ray：三個時段也補瀑布（GPT 重出），舊圖回收

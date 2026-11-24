@@ -134,7 +134,10 @@ function build(fx, W, H) {
     B.glint = glintTile(s);
   }
   if (S.flow || S.spout) B.streak = streakTile(W, u);
-  if (S.flow) B.flow = maskOf(fx.img.flow, W, H, !!S.mist);
+  if (S.flow) B.flow = maskOf(fx.img.flow, W, H, !!(S.mist || S.splash || (S.water && S.water.rings)));
+  if (S.flow && S.flow.sway) { B.fl = mk(W, H); B.flx = B.fl.getContext('2d'); }
+  if (S.splash) { B.drop = blob('245,250,255', 16); B.foam = blob('250,252,255', 64); }
+  if (S.water && S.water.rings) B.ringC = mk(W, H);
   if (S.spout) {
     B.spoutFlow = maskOf(fx.img.spoutFlow, W, H, true);
     B.spoutImg = mk(W, H); B.spoutImg.getContext('2d').drawImage(fx.img.spout, 0, 0, W, H);
@@ -157,12 +160,12 @@ function build(fx, W, H) {
 }
 
 /* 落水：亮條往下捲（12fps 跳格），用遮罩裁、lighter 疊上。 */
-function drawFlow(B, x, mask, speed, q) {
-  const t = B.tx, th = B.streak.height, off = ((q * speed * B.u) % th + th) % th;
+function drawFlow(B, x, mask, speed, q, alpha, xs) {
+  const t = B.tx, th = B.streak.height, off = ((q * speed * B.u) % th + th) % th, dx = (xs || 0) * B.W;
   t.globalCompositeOperation = 'source-over'; t.globalAlpha = 1; t.clearRect(0, 0, B.W, B.H);
-  for (let y = off - th; y < B.H; y += th) t.drawImage(B.streak, 0, y);
+  for (let y = off - th; y < B.H; y += th) { t.drawImage(B.streak, dx, y); if (dx) t.drawImage(B.streak, dx - B.W, y); }
   t.globalCompositeOperation = 'destination-in'; t.drawImage(mask.c, 0, 0);
-  x.globalCompositeOperation = 'lighter'; x.globalAlpha = 0.55; x.drawImage(B.tmp, 0, 0);
+  x.globalCompositeOperation = 'lighter'; x.globalAlpha = alpha || 0.55; x.drawImage(B.tmp, 0, 0);
   x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1;
 }
 /* 落點水霧：約 46 團柔邊白霧，各自 6 秒一輪（由時間算出來，不存狀態）。 */
@@ -177,6 +180,63 @@ function drawMist(B, x, pts, q) {
     x.globalAlpha = 0.16 * Math.sin(Math.PI * a);
     x.drawImage(B.mist, cx - r, cy - r, r * 2, r * 2);
   }
+  x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1;
+}
+
+/* 瀑布本體逐列擺動（11-24 Ray：「瀑布加一層程式水」）：瀑布那一塊的原圖逐列左右微晃（越往下晃越大），連續不跳格。flow.sway＝最大擺幅（1536 寬計 px） */
+function drawFallSway(B, x, src, o, t, live) {
+  const { W, H, s } = B, m = B.flow, f = B.flx;
+  if (live || B.flStatic !== src) {
+    f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, W, H); f.drawImage(src, 0, 0, W, H);
+    f.globalCompositeOperation = 'destination-in'; f.drawImage(m.c, 0, 0); B.flStatic = live ? null : src;
+  }
+  const span = Math.max(1, m.y1 - m.y0), amp = (o.sway === true ? 1.6 : o.sway) * s;
+  for (let y = m.y0; y <= m.y1; y += 2) {
+    const k = 0.4 + 0.6 * (y - m.y0) / span;
+    const dx = amp * k * (Math.sin(y * 0.045 / s - t * 9) + 0.5 * Math.sin(y * 0.11 / s - t * 14.3 + 1.1));
+    x.drawImage(B.fl, 0, y, W, 2, dx, y, W, 2);
+  }
+}
+/* 落點水花（11-24 Ray）：①白沫一團團在落點鼓起又消（screen）②水珠從落點往上往外噴、受重力落回。全由編號＋時間算，不存狀態。
+   splash＝true 或 {n:水珠數, h:噴高(1536 寬計 px), foam:白沫團數} */
+function drawSplash(B, x, pts, o, t) {
+  if (!pts.length) return;
+  const s = B.s, O = Object.assign({ n: 90, h: 70, foam: 26 }, o === true ? {} : o);
+  x.globalCompositeOperation = 'screen';
+  for (let i = 0; i < O.foam; i++) {
+    const L = 1.4 + 0.8 * hash(i, 3), tt = t + hash(i, 4) * L, n = Math.floor(tt / L), a = (tt - n * L) / L;
+    const p = pts[Math.floor(hash(i, n) * pts.length)], r = (10 + 24 * Math.sin(Math.PI * a)) * s * (0.7 + 0.6 * hash(i, n + 9));
+    x.globalAlpha = 0.42 * Math.sin(Math.PI * a);
+    x.drawImage(B.foam, p[0] - r, p[1] - r * 0.9, r * 2, r * 1.4);
+  }
+  for (let i = 0; i < O.n; i++) {
+    const L = 0.7 + 0.5 * hash(i, 21), tt = t + hash(i, 22) * L, n = Math.floor(tt / L), a = (tt - n * L) / L;
+    const p = pts[Math.floor(hash(i, n + 31) * pts.length)];
+    const vx = (hash(i, n + 32) - 0.5) * 2 * 60 * s, vy = O.h * (0.5 + 0.7 * hash(i, n + 33)) * s;
+    const px = p[0] + vx * a, py = p[1] - 8 * s - 4 * vy * a * (1 - a), r = (1.6 + 2.2 * hash(i, n + 34)) * s;
+    x.globalAlpha = 0.85 * (1 - a) * Math.min(1, a * 8);
+    x.drawImage(B.drop, px - r, py - r, r * 2, r * 2);
+  }
+  x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1;
+}
+/* 湖面漣漪（11-24 Ray）：從落點往外擴散的扁橢圓波紋，越擴越淡；用水面遮罩裁。rings＝true（圓心＝落水最下緣的中點）或 {x, y}（畫面比例）、n、R（最大半徑，畫面寬比例）、period（秒） */
+function drawRings(B, x, o, t) {
+  const { W, H, s } = B, O = Object.assign({ n: 6, R: 0.42, period: 7 }, o === true ? {} : o);
+  let cx, cy;
+  if (O.x != null) { cx = O.x * W; cy = O.y * H; }
+  else { const P = B.flow.pts; let sx = 0, my = 0; P.forEach(p => { sx += p[0]; my = Math.max(my, p[1]); }); cx = sx / P.length; cy = my; }
+  const g = B.ringC.getContext('2d');
+  g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.clearRect(0, 0, W, H);
+  for (let k = 0; k < O.n; k++) {
+    const a = ((t / O.period + k / O.n) % 1), rx = O.R * W * Math.pow(a, 0.8), ry = rx * 0.2;
+    if (rx < 4) continue;
+    g.globalAlpha = 0.55 * Math.pow(1 - a, 1.6) * Math.min(1, a * 6);
+    g.strokeStyle = 'rgba(235,245,255,1)'; g.lineWidth = Math.max(1, (2.4 - 1.4 * a) * s * 1.5);
+    g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); g.stroke();
+    g.globalAlpha *= 0.5; g.beginPath(); g.ellipse(cx, cy + 5 * s, rx * 0.94, ry * 0.94, 0, 0, Math.PI * 2); g.stroke();
+  }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'destination-in'; g.drawImage(B.water.c, 0, 0);
+  x.globalCompositeOperation = 'lighter'; x.globalAlpha = 0.7; x.drawImage(B.ringC, 0, 0);
   x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1;
 }
 
@@ -262,8 +322,12 @@ export function drawFx(fx, src, W, H, t, live) {
     }
     const span = Math.max(1, m.y1 - m.y0), amp = o.amp * s, wave = o.wave * s;
     for (let y = m.y0; y <= m.y1; y += 2) {
-      const k = 1 + o.persp * (y - m.y0) / span;
-      const off = amp * k * (Math.sin(y / (wave * k) * 6.283 - t * o.speed * 3) + 0.5 * Math.sin(y / (wave * k * 0.37) * 6.283 + t * o.speed * 4.1));
+      const d = (y - m.y0) / span, k = 1 + o.persp * d;
+      /* 11-24 Ray：「遠水波不應該跟近水波晃動頻率一樣」：遠（上）慢、近（下）快。不能逐列給不同速度（時間一久相鄰列相位散掉會變鋸齒），
+         改成一組慢波、一組快波，各自整片連貫，依遠近混合 */
+      const ph = y / (wave * k) * 6.283, ph2 = y / (wave * k * 0.37) * 6.283, ts = t * o.speed;
+      const slow = Math.sin(ph - ts * 1.3) + 0.5 * Math.sin(ph2 + ts * 1.8), fast = Math.sin(ph - ts * 3.9) + 0.5 * Math.sin(ph2 + ts * 5.3);
+      const off = amp * k * (slow + (fast - slow) * d);
       x.drawImage(B.wl, 0, y, W, 2, off, y, W, 2);
     }
     if (o.glint > 0) {
@@ -276,6 +340,7 @@ export function drawFx(fx, src, W, H, t, live) {
       x.drawImage(B.tmp, 0, 0); x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1;
     }
   }
+  if (B.ringC && B.flow) drawRings(B, x, S.water.rings, t);
   /* ── 獅口水柱：①逐列擺動 ②往下滑的亮帶 ③沿中心線彎下去的亮條 ④落點水霧（一律 12fps）── */
   if (B.spoutRows) {
     const R = B.spoutRows.rows, k = W / 768;
@@ -300,8 +365,11 @@ export function drawFx(fx, src, W, H, t, live) {
   }
   /* ── 落水 ＋ 水霧 ── */
   if (B.flow) {
+    if (B.fl) drawFallSway(B, x, src, S.flow, t, live);
     drawFlow(B, x, B.flow, (S.flow.speed || 220), q);
+    if (S.flow.extra) drawFlow(B, x, B.flow, (S.flow.speed || 220) * 0.62, t, S.flow.extra, 0.37);
     if (S.mist) drawMist(B, x, B.flow.pts, t);
+    if (S.splash) drawSplash(B, x, B.flow.pts, S.splash, t);
   }
   /* ── 光束：整條呼吸（±15%、5 秒）＋塵埃往下飄（約 12 px/s）── */
   if (B.beam) {
