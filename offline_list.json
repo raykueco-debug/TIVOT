@@ -1,4 +1,4 @@
-{"version": "ver 2026.11.24-2965",
+{"version": "ver 2026.11.24-2966",
 "bytes": 1604449146,
 "files": [
 "audio.js",
@@ -17334,6 +17334,7 @@
 "resources/si/npc/npc_guildcounter_si_v5.webp",
 "resources/si/npc/npc_guildhunter_si.webp",
 "resources/si/npc/npc_guildhunter_si_attack.webp",
+"resources/si/npc/npc_guildhunter_si_flick.webp",
 "resources/si/npc/npc_guildhunter_si_lost.webp",
 "resources/si/npc/npc_guildhunter_si_shock.webp",
 "resources/si/npc/npc_gunsmith_si_northport.webp",

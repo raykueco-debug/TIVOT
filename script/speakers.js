@@ -1380,10 +1380,9 @@ export const ART = {
                   attack: { src:'resources/si/npc/npc_guildhunter_si_attack.webp',  top:0, bot:1535, fx:0.546 },
                   lost:   { src:'resources/si/npc/npc_guildhunter_si_lost.webp',    top:6, bot:1529, fx:0.487 },
                   /* flick（ver -2965，Ray：「彈硬幣不是插畫，是立繪」）：公會硬幣那一拍彈硬幣的姿勢。
-                     ⚠ 圖還沒交件（動畫副理請 GPT 出，1024×1536 真 alpha）—— 鍵先不登記：
-                       登記了而檔不存在會變成空圖；不登記＝`srcFor` 回退本尊（console 記一筆）。
-                     交件後打開下面這行，並**重量** top／bot／fx（§6.5「新增立繪要量什麼」）。 */
-                  // flick:  { src:'resources/si/npc/npc_guildhunter_si_flick.webp',   top:?, bot:?, fx:? },
+                     ver -2966 交件（GPT 重繪 alpha 版 v2；原 PNG 在 _originals/si/npc/）；
+                     top／bot／fx 由 tools/measure_si.py 量這一張（不沿用別張）。 */
+                  flick:  { src:'resources/si/npc/npc_guildhunter_si_flick.webp',   top:6, bot:1530, fx:0.514 },
                 } },
   /* 東方泊地公會的賞金獵人（ver -1375，Ray 交件 `NPC_ep_SI_bounty`）。
      ⚠ 身高是**估的**（178，沿用帝都那位獵人那一級的體格）；`top`/`bot`/`fx` 是
