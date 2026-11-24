@@ -1,5 +1,5 @@
-{"version": "ver 2026.11.24-2962",
-"bytes": 1602953628,
+{"version": "ver 2026.11.24-2963",
+"bytes": 1604449146,
 "files": [
 "audio.js",
 "config.js",
@@ -14203,6 +14203,7 @@
 "resources/illustration/torsten_sit.webp",
 "resources/illustration/video/003_lunaria_armed_v1.mp4",
 "resources/illustration/video/004_renna_intro_v1.mp4",
+"resources/illustration/video/004_renna_intro_v2.mp4",
 "resources/illustration/video/005_cecilieintro_v2.mp4",
 "resources/illustration/video/008_rennaholdanya_v1.mp4",
 "resources/illustration/video/009_soranadebute_v1.mp4",
