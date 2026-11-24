@@ -78,6 +78,7 @@
 - 地圖：賽西莉入隊段沒設 `party_cecilie`（地底大空洞入口在正篇進不去）→ 劇情副理在入隊那一拍插旗；守城戰六隊打完接米夏段實測、戰時不能出航、(2,3) 市政廳街2段欠 1 張背景（背景線）。
 - 動畫：尼莫彈幕支援 v2（webm＋iOS mov，`resources/ci/layers/nemo_barrage/TO_CODE.md`）、尼莫 Bullet Rain v2（`nemo_bulletrain/TO_CODE.md`）、處決 CI 換 `torsten_execute/exec_gun_gpt.png` —— 要接程式（動畫線寫了 TO_CODE，誰接待 PM 派）；CI 改「機戰式近→遠」（賽西莉 OBE／即死防禦／生命歸還、索菈娜 ×5、安雅 ×5、托爾斯坦 BR，Ray 11-20 要做，未開工）；`resources/_HANDOFF_ANIM.md` 停在 10-19 要重寫；`offline_list.json`、`tools/challenge_build` 快照還指著已回收的舊影片（程式重產）。
 - 空戰 3D：換機後測打贏回飛行。
+- ⚠ **上架前必做**：賽西莉失誤語音 `vo_cecilie_miss1～5`（ver -2961 接上）是 **ElevenLabs 免費帳號生成的草稿（聲音 Ayaka），無商用授權** —— 上架前要用付費帳號重生，重生後重量 `tuning.fileGain` 那五列。原檔 `resources/_originals/audio/vo/cecilie_miss_ayaka_draft_all.mp3`。
 
 ## 四、換機要另外複製（git 帶不走）
 

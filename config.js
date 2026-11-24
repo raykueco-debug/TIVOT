@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2960';
+export const VERSION = 'ver 2026.11.24-2961';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3976,6 +3976,7 @@ export const GAME_CONFIG = {
                    ⚠ -1015 那六支失誤語音當初就漏了。 */
                 'vo_nouvellemiss1','vo_nouvellemiss2','vo_nouvellemiss3',
                 'vo_sorana_miss1','vo_sorana_miss2','vo_sorana_miss3','vo_sorana_miss4',
+                'vo_cecilie_miss1','vo_cecilie_miss2','vo_cecilie_miss3','vo_cecilie_miss4','vo_cecilie_miss5',   // ver -2961：賽西莉失誤語音
                 'vo_nouvelle_lvup','vo_anya_lvup','vo_sorana_lvup'],
 
     /* ══ 逐支增益：鑰匙是**檔名**（去副檔名、轉小寫）══════════════════
@@ -4064,6 +4065,12 @@ export const GAME_CONFIG = {
          ／表值 2.45）→ 2.45×10^((−21.25+16.44)/20)＝1.41；加上增益後峰值 +1.2 dBFS，
          沒頂到 `peakCeilDb`(+2)。⚠ 它比另外三支響 5 dB，所以增益低很多是對的。 */
       vo_sorana_miss4:1.41,
+      /* 賽西莉的失誤語音（ver -2961）—— ffmpeg ebur128 實測，**錨在上面那幾支**（同尺：nouvellemiss1/2、sorana_miss3/4
+         的 增益×10^(LUFS/20) 都落在 0.21～0.22，取 0.214）：
+           miss1 −18.3／peak −4.3   miss2 −19.6／−4.4   miss3 −26.1／−8.9（CAP）
+           miss4 −31.1／−17.2（嘆氣、很輕）   miss5 −18.4／−1.2（CAP）
+         ⚠ ElevenLabs 免費帳號的草稿（見搭檔卡 missVoice 那一列），重生之後要重量。 */
+      vo_cecilie_miss1:1.76, vo_cecilie_miss2:2.04, vo_cecilie_miss3:3.51, vo_cecilie_miss4:7.68, vo_cecilie_miss5:1.44,
       se_windblock:1.31,      // CAP（峰值頂到 +2 dBFS）
       /* ══ 升級的 SE 與三支語音（ver -1033）══ 同上式反推，實測（WebAudio 閘控積分）：
            se_lvup        −21.42／peak −6.43
@@ -5353,6 +5360,11 @@ export const ASSETS = {
   vo_sorana_miss2:   "resources/audio/vo/vo_sorana_miss2.m4a",
   vo_sorana_miss3:   "resources/audio/vo/vo_sorana_miss3.m4a",
   vo_sorana_miss4:   "resources/audio/vo/vo_sorana_miss4.m4a",   // ver -1105（原 wahetta.wav）
+  vo_cecilie_miss1:  "resources/audio/vo/vo_cecilie_miss1.m4a",   // ver -2961：賽西莉失誤語音（ElevenLabs 草稿，見搭檔卡）
+  vo_cecilie_miss2:  "resources/audio/vo/vo_cecilie_miss2.m4a",
+  vo_cecilie_miss3:  "resources/audio/vo/vo_cecilie_miss3.m4a",
+  vo_cecilie_miss4:  "resources/audio/vo/vo_cecilie_miss4.m4a",
+  vo_cecilie_miss5:  "resources/audio/vo/vo_cecilie_miss5.m4a",
   /* ══ 升級語音（ver -1033，Ray 交檔）══ 三位各一支，與 `se_lvup` **同時**播：
      SE 是系統的一聲、語音是她的反應（同失誤那兩層的關係）。
      鑰匙在各自的搭檔卡 `levelUpVoice`（可寫陣列＝輪播）。
@@ -5589,7 +5601,11 @@ export const ASSETS = {
     /* 聖徒化的發動／結局演出改讀這幾格（saint.js，沒寫＝照舊諾薇兒那一套）。 */
     /* ver -1919：她有配音了（SI／OBE／即死防禦／生命歸還）。 */
     saintCutin:'cutin_cecilie_saint', saintVoice:'vo_cec_saint',
-    obeCutin:'cutin_cecilie_obe', obeVoice:'vo_cec_obe', returnCutin:'cutin_cecilie_return' });
+    obeCutin:'cutin_cecilie_obe', obeVoice:'vo_cec_obe', returnCutin:'cutin_cecilie_return',
+    /* 失誤語音（ver -2961，同諾薇兒／索菈娜的 missVoice，五支輪播）：
+       1 ちゃんとやりなさい！／2 どこ狙ってるの？／3 訓練でもサボった？／4 （嘆）見てらんないわね。／5 足引っ張らないでちょうだい。
+       ⚠⚠ **ElevenLabs 免費帳號生成的草稿（聲音 Ayaka），無商用授權，上架前要用付費帳號重生**（重生後重量 fileGain）。 */
+    missVoice:['vo_cecilie_miss1','vo_cecilie_miss2','vo_cecilie_miss3','vo_cecilie_miss4','vo_cecilie_miss5'] });
   if(C.passive) Object.assign(C.passive, { cutin:'cutin_cecilie_guard', voice:'vo_cec_guard' });
   if(C.active)  Object.assign(C.active,  { cutin:'cutin_cecilie_return', voice:'vo_cec_return' });
   P.cecilie = C;

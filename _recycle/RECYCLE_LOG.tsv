@@ -3445,3 +3445,5 @@ when	from	to	reason
 20261124-011443	resources/background/_layers_gpt/out/northport/northport_west_bf__nofog2.png	_recycle/resources/background/_layers_gpt/out/northport/northport_west_bf__nofog2.png	與 __nofog.png 重複的下載
 20261124-112115	resources/enemy/mon_beast_organ.webp	_recycle/resources/enemy/mon_beast_organ.webp	Ray 11-24：裂肉獸去煙／森林熊骸重去背，換新 A
 20261124-112115	resources/enemy/mon_bear_husk.webp	_recycle/resources/enemy/mon_bear_husk.webp	Ray 11-24：裂肉獸去煙／森林熊骸重去背，換新 A
+20261124-123235	resources/audio/vo/vo_cecilie_miss3.m4a	_recycle/resources/audio/vo/vo_cecilie_miss3.m4a	賽西莉失誤語音重切：3/4 交界的嘆氣原本切在第3句尾，改歸第4句（PM 交辦實聽確認）
+20261124-123235	resources/audio/vo/vo_cecilie_miss4.m4a	_recycle/resources/audio/vo/vo_cecilie_miss4.m4a	賽西莉失誤語音重切：3/4 交界的嘆氣原本切在第3句尾，改歸第4句（PM 交辦實聽確認）
