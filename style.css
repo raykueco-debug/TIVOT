@@ -4422,7 +4422,7 @@
      ⚠ 落點：**左上、地名那一行之下**。右邊站著店主（`castSolo` 固定 `side:'R'`），
        下半是槍棺與吊墜 —— 左上是這一頁唯一沒有東西的角落。
      ⚠ `#townNav` 是 `pointer-events:none`，子元素要自己開回來。 */
-  #townShopBtn,#townChallengeBtn,.town-stall{position:absolute;display:none;pointer-events:auto;
+  #townShopBtn,#townChallengeBtn,#townRelicBtn,.town-stall{position:absolute;display:none;pointer-events:auto;
     left:12px;top:calc(env(safe-area-inset-top,0px) + 92px);
     width:min(46%,168px);padding:13px 12px 11px;
     background:rgba(18,15,26,.92);border:1px solid var(--gold-dim);border-radius:10px;
@@ -4432,19 +4432,22 @@
   /* 射擊挑戰（ver -1881）：同一套樣式，排在買賣鈕正下方。 */
   #townChallengeBtn{top:calc(env(safe-area-inset-top,0px) + 166px);}
   #townChallengeBtn.on{display:block;}
+  /* 聖遺物（ver -2964）：公會的第二顆，位置同射擊挑戰（公會沒有射擊挑戰，兩顆不會同時在）。 */
+  #townRelicBtn{top:calc(env(safe-area-inset-top,0px) + 166px);}
+  #townRelicBtn.on{display:block;}
   /* ⚠ 演出中（對白／插圖）店的入口鈕一律讓開（ver -1881，Ray：「索菈娜試槍插圖不該有武器店選項在插圖上」）——
      宣告走演出層的 `story-talking`（§6.5 的 -385），不在各呼叫點各收一次。 */
-  body.story-talking #townShopBtn, body.story-talking #townChallengeBtn,
+  body.story-talking #townShopBtn, body.story-talking #townChallengeBtn, body.story-talking #townRelicBtn,
   body.story-talking .town-stall{display:none !important;}
   /* 臨時攤鈕（ver -732）：只在要顯示時才建（modules/town.js 的 showStallBtns），
      所以存在＝顯示；`right` 落在畫面右緣 ——「左右各設」，同一個 top 左右對稱
      （右上角的選單鈕在 top:10 高 44，這條 top 本來就閃得開它）。 */
   .town-stall{display:block;}
   .town-stall.right{left:auto;right:12px;}
-  #townShopBtn:active,#townChallengeBtn:active,.town-stall:active{background:var(--grid-active);transform:scale(.97);}
-  #townShopBtn b,#townChallengeBtn b,.town-stall b{display:block;font-size:17px;letter-spacing:5px;font-weight:normal;
+  #townShopBtn:active,#townChallengeBtn:active,#townRelicBtn:active,.town-stall:active{background:var(--grid-active);transform:scale(.97);}
+  #townShopBtn b,#townChallengeBtn b,#townRelicBtn b,.town-stall b{display:block;font-size:17px;letter-spacing:5px;font-weight:normal;
     text-indent:5px;}
-  #townShopBtn i,#townChallengeBtn i,.town-stall i{display:block;margin-top:5px;font-size:10px;letter-spacing:2px;
+  #townShopBtn i,#townChallengeBtn i,#townRelicBtn i,.town-stall i{display:block;margin-top:5px;font-size:10px;letter-spacing:2px;
     font-style:normal;color:var(--gold-dim);}
 
   /* ══ 槍棺地圖（ver -867，Ray：「控制介面右下角放地圖選項，點開控制面板變成
@@ -5569,6 +5572,10 @@
   #kerbPend.hint-spot,#storyExit.hint-spot{filter:drop-shadow(0 0 14px rgba(111,179,212,.95));}
   /* ⚠⚠ 地圖鈕**不住在 `#kerb` 裡**（它是舞台的兄弟元素、z-8），卻貼在槍棺上 ——
      提示開著時槍棺被抬到 10，它就整顆被門蓋掉。被指的那顆一定要在最上面（ver -928）。 */
+  /* 店門那一排鈕住在 `#townNav`（z-7）裡，抬自己沒用 —— 整層抬過遮罩（z-9），其餘的子元素先藏起來（ver -2964，聖遺物的教學）。 */
+  #townNav:has(.hint-spot){z-index:10;}
+  #townNav:has(.hint-spot) > :not(.hint-spot){visibility:hidden;}
+  #townRelicBtn.hint-spot{filter:drop-shadow(0 0 14px rgba(111,179,212,.95));}
   #townMapBtn.hint-spot{z-index:11;filter:drop-shadow(0 0 14px rgba(111,179,212,.95));}
 
   /* ⚠⚠⚠ **這一段必須留在檔尾** （ver -1518）：它整段都是**覆寫**，

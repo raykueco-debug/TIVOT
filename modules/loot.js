@@ -950,6 +950,70 @@ export function showExchange(opts){
   return close;
 }
 
+/* ══ 聖遺物販售（ver -2964，Ray 交稿）══ 公會櫃台：拿公會硬幣換一個封印盒，當場開封。
+   規則全在 `config.relicBox`（鐵律 1）；這裡只演那張單子與「扣幣＋抽獎」。
+   ⚠ 價錢只有 `relicPrice()` 一支在算（鐵律 7）：顯示與真的扣幣都問它。
+   ⚠ 抽到的掛飾**不在這裡入袋**：交給 `opts.onOpen(id)`，由城鎮演完開盒再用 `showLoot` 發
+     （`showLoot` 自己會 `inv.addMany`，那是唯一的入袋點 —— 這裡再加一次就是兩個）。 */
+export function relicPrice(){
+  const R=GAME_CONFIG.relicBox||{};
+  return (R.firstFlag && !prog.hasFlag(R.firstFlag)) ? (R.firstPrice|0) : (R.price|0);
+}
+export function relicPool(){
+  const R=GAME_CONFIG.relicBox||{}, defs=(GAME_CONFIG.items||{}).defs||{}, w=R.weight||{};
+  return Object.keys(defs).filter(k=>defs[k] && defs[k].cat==='charm')
+               .map(k=>({ id:k, w:(w[k]!=null ? +w[k] : 1) })).filter(x=>x.w>0);
+}
+function rollRelic(){
+  const pool=relicPool(); if(!pool.length) return null;
+  let r=Math.random()*pool.reduce((a,x)=>a+x.w,0);
+  for(const x of pool){ r-=x.w; if(r<0) return x.id; }
+  return pool[pool.length-1].id;
+}
+export function showRelicShop(opts){
+  ensureCss();
+  const o=opts||{}, R=GAME_CONFIG.relicBox||{};
+  const coin=R.coin||'guild_coin';
+  const ov=document.createElement('div'); ov.id='lootSheet'; ov.classList.add('bag','bounty');
+  document.body.appendChild(ov);
+  const close=(after)=>{ ov.classList.remove('on');
+    setTimeout(()=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 220);
+    if(o.onClose){ const f=o.onClose; o.onClose=null; if(!after) try{ f(); }catch(_){} } };
+  const render=()=>{
+    const have=inv.count(coin), price=relicPrice(), can=have>=price && price>0;
+    const first=R.firstFlag && !prog.hasFlag(R.firstFlag);
+    ov.innerHTML=i18nT('<div class="loot-panel"><div class="loot-title">聖遺物')
+      + (o.info ? '<span class="shop-info">'+o.info+'</span>' : '')+'</div>'
+      + i18nT('<div class="shop-desc">流出的次品，連著封印盒一起賣。開出來是什麼，公會也不知道。</div>')
+      + '<div class="loot-list">'
+      +   '<div class="loot-row"><span class="loot-name">'+inv.nameOf(coin)+'</span>'
+      +     i18nT('<span class="loot-n">持有 ')+have+'</span></div>'
+      +   '<div class="loot-row exch-row"><span class="loot-name">'+i18nT('封印盒')
+      +     (first ? i18nT('（新登錄優惠）') : '')+'</span>'
+      +     '<span class="loot-n">'+inv.nameOf(coin)+' ×'+price+'</span>'
+      +     (can ? i18nT('<button class="exch-do" type="button">開　封</button>')
+                 : i18nT('<span class="mod-mat lack">硬幣不足</span>'))
+      +   '</div>'
+      + '</div>'
+      + i18nT('<button class="loot-ok" type="button">關閉</button></div>');
+    const b=ov.querySelector('.exch-do');
+    if(b) b.addEventListener('click', e=>{ e.stopPropagation();
+      const p=relicPrice(); if(inv.count(coin)<p) return;
+      const id=rollRelic(); if(!id) return;
+      inv.remove(coin, p);
+      if(R.firstFlag) prog.addFlags([R.firstFlag]);       // 誰插：第一次開封；沒有人拔
+      try{ SFX.unlock(); if(asset('se_buy')) SFX.play(asset('se_buy'),sfxGain('se_buy')); else SFX.menuClick(); }catch(_){}
+      const f=o.onOpen; close(true);
+      if(f) f(id);
+    });
+    ov.querySelector('.loot-ok').addEventListener('click', e=>{ e.stopPropagation();
+      try{ SFX.unlock(); SFX.menuClick(); }catch(_){} close(); });
+  };
+  render();
+  requestAnimationFrame(()=>ov.classList.add('on'));
+  return ()=>close();
+}
+
 export function showBounty(city, opts){
   ensureCss();
   const o=opts||{};

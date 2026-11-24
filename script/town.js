@@ -2600,6 +2600,9 @@ export const TOWNS = {
     tips: [
       { need:'got_Shotgun_Dragon', flag:'tip_gear',
         at:'pend', text:'點槍棺左上的吊墜　→　整備（選搭檔、換副武器）' },
+      /* 聖遺物販售（ver -2964）：拿到第一枚公會硬幣之後，在公會裡教一次。`withMenu` ＝指的是店門那一排鈕，入口要先擺出來。 */
+      { need:'relic_shop_open', flag:'tip_relic', withMenu:true, node:'guild',
+        at:'townRelicBtn', text:'點「聖遺物」　→　用公會硬幣開封印盒' },
     ],
     /* ══ Stage 0 的結尾（ver -427，Ray 定案）══════════════════════════════
        「不論用任何方式到達／經過早上七點就進入 stage1，始於船塢。」
@@ -2990,6 +2993,15 @@ export const TOWNS = {
         /* 櫃台接待員（ver -404，站右邊）。⚠ 沒登記過整個店舖畫面都不出現
            （`boardFlag`，旗標由下面那一段對白演完才記）。 */
         keeperWho:'COUNTER',
+        /* ══ 聖遺物販售（ver -2964，Ray 交稿）══ 入口鈕「聖遺物」：這支旗插了才有（旗由下面那一段的硬幣那一拍插，沒有人拔）。
+           規則與獎池在 `config.relicBox`；開封之後的櫃台台詞在 `relicLines`（modules/town.js 的 relicReveal）。 */
+        relicShop:'relic_shop_open',
+        relicLines:{
+          rare:[ cnt(null,'喔？看來運氣不錯。'), cnt(null,'這可是難得一見的貨色，好好收著吧。') ],
+          normal:[ cnt(null,'嗯，還算可以吧。'), cnt(null,'次品就是次品，別抱太大期待。'), cnt(null,'……這個嘛，聊勝於無。') ],
+          /* 只演一次（旗 `relic_howto`，演完才插）。 */
+          howto:[ nou('surprise','要怎麼用？'), cnt(null,'掛在武器上應該能有一些加護吧。') ],
+        },
         lines:[
           nou('surprise','人好多喔。'),
           nou('cringe','『永夜』以後治安變差，好像是真的。'),
@@ -3021,6 +3033,20 @@ export const TOWNS = {
           nou('concern','……也是，情報源多多益善。'),
           cnt(null,'常來啊，委託常常會更新。手腳得快點，盜賊都快被槍之魔女殺完了。'),
           cnt(null,'各個城市的委託也會不同，加油吧，神父弟弟。'),
+          /* ══ 公會硬幣（ver -2964，Ray 交稿）══ 想開溜的獵人被櫃台叫住，彈了一枚硬幣過來。 */
+          cnt(null,'慢著，決鬥輸了就想走嗎？'),
+          hun('lost','呿。'),
+          /* 彈硬幣（無台詞拍）。⚠ 插圖待交件（動畫副理在請 GPT 出）：交件後在這一拍加 `cg:'<鍵>'`，下一拍之後補 `cg:null`。
+             ⚠ 硬幣在這一拍入袋＋插旗 `relic_shop_open`（公會的「聖遺物」入口從此出現；沒有人拔）。 */
+          { speaker:'HUNTER', text:'', auto:1200, se:'se_coins',
+            portrait:{ char:'HUNTER', expr:'lost', show:true },
+            give:{ guild_coin:1 }, flags:['relic_shop_open'] },
+          hun('lost','這樣就可以了吧？'),
+          nou('surprise','這個是？', { hide:['HUNTER'] }),
+          cnt(null,'公會專用的貨幣。可以拿來換遺蹟裡挖出來的聖遺物。'),
+          cnt(null,'不過開出來是什麼，連公會也不知道。頂級的聖遺物都被聖王廳收走了，流到這裡的只剩一些次品，連著封印盒一起賣。'),
+          cnt(null,'一般要兩枚才能換一個。看在你新登錄的份上，一枚就讓你開一個看看。'),
+          nou('happy','聽起來好有趣！你試試看嘛！'),
         ],
       },
 

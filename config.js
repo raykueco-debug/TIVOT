@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2963';
+export const VERSION = 'ver 2026.11.24-2964';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -1681,6 +1681,11 @@ export const GAME_CONFIG = {
               desc:i18nT('神經介面擴張模組。太古文明的遺產，能擴張使用者的認知能力。') },
       verafond_crest: { name:i18nT('薇拉馮德家的紋章'), cat:'item', sellValue:10000, always:true,   /* ver -859：Ray 改 10000 */
                         desc:i18nT('薇拉馮德家的家徽。同樣的東西他身上似乎總還有一個。') },
+      /* ══ 公會硬幣（ver -2964，Ray 交稿：帝都公會賞金獵人戰之後，獵人彈給主角的那一枚）══
+         公會專用的貨幣，只拿去公會的「聖遺物」換封印盒（規則見下面的 `relicBox`）。
+         ⚠ 名字是**暫定**（等 Ray 定）。⚠ 沒有 `price`／`sellValue` ＝不能買也不能賣。 */
+      guild_coin: { name:i18nT('公會硬幣'), cat:'special',
+                    desc:i18nT('賞金獵人公會專用的貨幣。可以在公會換取封印盒裝的聖遺物。') },
       saint_claw_low: { name:i18nT('聖徒之爪（低品質）'), cat:'material', price:24,
                         desc:i18nT('從訓練用聖徒上剝下來的爪。質地脆，勉強能當研磨材。') },
       /* 巨型蜈蚣的掉落（ver -423，Ray 的卡）。⚠ **價格是我填的**（卡上沒寫）——
@@ -3297,6 +3302,18 @@ export const GAME_CONFIG = {
                                       '萊福槍':{ key:'se_weapon_cannon',
                                                  once:'se_weapon_cannonshell' } },
                         counterGapMs:180 },
+  },
+
+  /* ══ 聖遺物販售（ver -2964，Ray 交稿）══ 公會櫃台拿公會硬幣換一個封印盒，當場開封。
+     「頂級的聖遺物都被聖王廳收走了，只有一些流出的次品會連著封印盒一起販賣。」
+     ⚠ 獎池**不列名單**：`items.defs` 裡 `cat:'charm'` 的全部（鐵律 7：掛飾只有那一張表）。
+     ⚠ `weight` 沒寫的＝1（現在全等，等 Ray 定）。`rare` ＝開到時櫃台講「運氣不錯」那一組的名單（現在空，等 Ray 定）。
+     ⚠ `firstFlag`：**誰插**＝第一次開封那一下（loot.showRelicShop）；**沒有人拔**。插了之後回到一般價。
+     ⚠ `openCg`：開盒動畫的插圖動畫鍵（登記在 `illustration.cgAnim`）。null ＝沒片，直接跳到獎品。 */
+  relicBox: {
+    coin:'guild_coin', price:2, firstPrice:1, firstFlag:'relic_first_bought',
+    weight:{}, rare:[],
+    openCg:null,
   },
 
   /* ══ 懸賞（ver -375）══ 賞金獵人公會的委託榜。

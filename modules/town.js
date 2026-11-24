@@ -18,7 +18,7 @@ import * as clock from '../script/clock.js';
 import * as prog from '../script/progress.js';
 import * as story from './story.js';
 import * as inn from './inn.js';                 // 旅店大廳（伙伴門／獨自坐坐／回房睡覺）
-import { showShop, showBounty, showExchange, showKitchen, canCookAny } from './loot.js';   // showKitchen＝瑪麗亞的廚房（ver -953）；canCookAny＝現在有沒有菜煮得出來（ver -1659）
+import { showShop, showBounty, showExchange, showKitchen, canCookAny, showRelicShop, showLoot } from './loot.js';   // showKitchen＝瑪麗亞的廚房（ver -953）；canCookAny＝現在有沒有菜煮得出來（ver -1659）
 import * as gear from './gear.js';               // 戰前強制整備（ver -838，onLeave 的 gear 掛鉤）
 import { SPEAKERS, faceStyle } from '../script/speakers.js';
 import { SFX } from '../audio.js';
@@ -2899,6 +2899,8 @@ function ensureLayer(){
     + i18nT('<button id="townShopBtn" type="button"><b></b><i>點一下開啟</i></button>')
     /* 射擊挑戰（ver -1881，Ray：「武器店的購物跟射擊挑戰分別做成按鈕」）—— 原本藏在買賣窗裡。 */
     + i18nT('<button id="townChallengeBtn" type="button"><b></b><i>點一下開始</i></button>')
+    /* 聖遺物販售（ver -2964，Ray 交稿）：公會的第二個入口，與懸賞榜並列（樣式同射擊挑戰那一顆）。 */
+    + i18nT('<button id="townRelicBtn" type="button"><b>聖遺物</b><i>點一下開啟</i></button>')
     ;
   /* ⚠⚠ **櫃台鈕沒有了**（ver -404，Ray：「不用點擊，直接右店主左選單」）。
      走進店裡就是店舖畫面：右邊店主立繪、左邊選單，兩樣一起出來（見 shopEnter）。
@@ -3632,6 +3634,9 @@ function showShopBtn(on){
                                       : i18nT('懸賞榜');
   }
   b.classList.toggle('on', !!on);
+  /* 聖遺物鈕（ver -2964）：同上，與入口鈕同進同出。節點寫 `relicShop:'<旗>'` ＝那支旗插了才有。 */
+  const rb=layer.querySelector('#townRelicBtn');
+  if(rb) rb.classList.toggle('on', !!(on && relicOpen(n)));
   /* 射擊挑戰鈕：與買賣鈕**同進同出**（同一個入口狀態，鐵律 8）。 */
   const cb=layer.querySelector('#townChallengeBtn');
   if(cb){
@@ -3639,6 +3644,36 @@ function showShopBtn(on){
     if(on && cfg) cb.querySelector('b').textContent = cfg.challengeLabel || i18nT('射擊挑戰');
     cb.classList.toggle('on', !!(on && cfg));
   }
+}
+function relicOpen(n){ return !!(n && n.relicShop && prog.hasFlag(n.relicShop)); }
+/* ══ 聖遺物販售（ver -2964，Ray 交稿）══ 點鈕 → 單子（loot.showRelicShop）→ 開封 →
+   開盒動畫（`config.relicBox.openCg`，沒片就跳過）→ 獎品視窗（`showLoot`，唯一的入袋點）→ 櫃台講幾句 → 回店裡。
+   台詞在節點的 `relicLines:{rare, normal, howto}`（鐵律 1）：rare／normal 隨機一句（名單在 `relicBox.rare`），
+   `howto` 只演一次 —— 旗 `relic_howto`：**誰插**＝那一段演完（playAdhoc 的收尾）；**沒有人拔**。 */
+function openRelic(){
+  const n=node(); if(!relicOpen(n) || sheetClose) return;
+  showShopBtn(false);
+  try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+  sheetClose = showRelicShop({ info:infoText(n),
+    onClose:()=>{ sheetClose=null; openMenu(); },
+    onOpen:(id)=>{ sheetClose=null; relicReveal(n, id); } });
+}
+function relicReveal(n, id){
+  const R=GAME_CONFIG.relicBox||{}, L=n.relicLines||{};
+  setShopOn(false); busy=true; showNav(false);
+  const finish=()=>{ story.clearCast(); busy=false; showNav(true); backToShop(n); };
+  const talk=()=>{
+    const pick=a=>a && a.length ? a[Math.floor(Math.random()*a.length)] : null;
+    const one=pick((R.rare||[]).indexOf(id)>=0 ? L.rare : L.normal);
+    const howto=(!prog.hasFlag('relic_howto') && L.howto && L.howto.length && !linesBlockedByRest(L.howto)) ? L.howto : [];
+    const lines=[].concat(one ? [one] : [], howto);
+    if(!lines.length){ finish(); return; }
+    story.playAdhoc(lines, ()=>{ if(howto.length) prog.addFlags(['relic_howto']); finish(); });
+  };
+  const loot=()=> showLoot([{ id:id, n:1 }], talk, 0, { title:i18nT('封印盒開封') });
+  if(R.openCg) story.playAdhoc([{ speaker:'PLAYER', text:'', auto:400, cg:R.openCg },
+                                { speaker:'PLAYER', text:'', auto:10, cg:null }], loot);
+  else loot();
 }
 /* 這一家店有沒有射擊挑戰（店卡上 `challenge` ＋ 節點上 `challengeLines`）。 */
 function challengeCfg(n){
@@ -4304,6 +4339,8 @@ function bindInput(){
     if(sb) sb.addEventListener('pointerup', e=>{ e.stopPropagation(); openSheet(); });
     const cb=layer.querySelector('#townChallengeBtn');
     if(cb) cb.addEventListener('pointerup', e=>{ e.stopPropagation(); startChallenge(); });
+    const rb=layer.querySelector('#townRelicBtn');
+    if(rb) rb.addEventListener('pointerup', e=>{ e.stopPropagation(); openRelic(); });
   }
 
   /* ══ 鍵盤：WASD ＝走（ver -427，Ray 指定）══════════════════════════════
@@ -5295,6 +5332,7 @@ function tipDue(){
   for(const t of (TOWNS[townId]||{}).tips || []){
     if(t.flag && prog.hasFlag(t.flag)) continue;
     if(t.need && !prog.hasFlag(t.need)) continue;
+    if(t.node && t.node!==nodeId) continue;     // 只在那一格教（ver -2964：要指的鈕只在那一格有）
     return t;
   }
   return null;
@@ -5522,8 +5560,10 @@ function afterArrive2(n, metDone){
      ⚠ 兩條路都要把入口交還（有提示走 `showTip` 的回呼、沒提示走這裡），
        而它的實作只有 `openMenu()` 那一支（鐵律 8）。 */
   const tip=tipDue();       // 一次性的操作提示（ver -429）：對白與店舖都就位了才彈
-  const toShop=()=>{ shopEnter(tip ? { noMenu:true } : null);   // 店舖畫面（ver -404）：進場對白演完才擺
-                     showTip(tip, tip ? openMenu : null); };
+  /* `withMenu`（ver -2964）：要指的就是店門那一排鈕（公會的「聖遺物」）⇒ 入口鈕要先擺出來，不押後。 */
+  const hold = tip && !tip.withMenu;
+  const toShop=()=>{ shopEnter(hold ? { noMenu:true } : null);   // 店舖畫面（ver -404）：進場對白演完才擺
+                     showTip(tip, hold ? openMenu : null); };
   /* 剛巧遇女主、而這一格有店主／駐店的人 ⇒ 等她那一句被點掉、她退場了才擺（見 `meetHold`）。 */
   if(metNow && (shopReady(n) || (n && n.host))){ meetHold=toShop; return; }
   toShop();
