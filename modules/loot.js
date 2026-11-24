@@ -961,7 +961,7 @@ export function relicPrice(){
 }
 export function relicPool(){
   const R=GAME_CONFIG.relicBox||{}, defs=(GAME_CONFIG.items||{}).defs||{}, w=R.weight||{};
-  const innate=new Set(((GAME_CONFIG.mainGun||{}).innateCharms)||[]);   // 槍上原本就掛著的不開（ver -2971）
+  const innate=new Set((((GAME_CONFIG.mainGun||{}).barrels)||[]).map(b=>b.charm).filter(Boolean));   // 槍上原本就掛著的不開（ver -2971；名單＝barrels[].charm，-2974）
   return Object.keys(defs).filter(k=>defs[k] && defs[k].cat==='charm' && !innate.has(k))
                .map(k=>({ id:k, w:(w[k]!=null ? +w[k] : 1) })).filter(x=>x.w>0);
 }

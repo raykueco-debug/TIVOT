@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2973';
+export const VERSION = 'ver 2026.11.24-2974';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -261,15 +261,15 @@ export const GAME_CONFIG = {
     /* Ray 指定的字面（ver -700）：不寫「固定・不可更換」，寫**固有武裝**。 */
     tag:i18nT('固有武裝'),
     barrels:[
-      { id:'alpha', name:i18nT('迦尼米德α「王之運」') },
-      { id:'beta',  name:i18nT('迦尼米德β「運之王」') },
+      /* `charm` ＝開局就掛在這一支上的掛飾（ver -2974，Ray：「開局掛件槽補上紅寶石耳墜」）。
+         哪一支掛哪一個照資料上的線索：α「王之運」＝爆擊傷害（九星 Sadalmelik critDmg 0.20）↔ 右耳墜 critDmg 0.20；
+         β「運之王」＝爆擊機率（Sadalsuud critRate 0.10）↔ 左耳墜 critRate 0.10。
+         ⚠ 這也是「槍上原本就掛著的」那份名單：公會封印盒不開它們（loot.relicPool 由這裡推，鐵律 7）。 */
+      { id:'alpha', name:i18nT('迦尼米德α「王之運」'), charm:'charm_C06' },
+      { id:'beta',  name:i18nT('迦尼米德β「運之王」'), charm:'charm_C05' },
     ],
     /* 掛件槽收哪一類道具（鐵律 1：不在程式裡寫死類別字串）。 */
     charmCat:'charm',
-    /* ══ 槍上原本就掛著的掛飾（ver -2971，Ray：「聖遺物不會開紅寶石耳墜，那是原本就掛在槍上的」）══
-       ⇒ 不進公會封印盒的獎池（loot.relicPool 排除，鐵律 7：名單只在這裡）。
-       ⚠ 開局把它們真的掛上槍（以及哪一支掛哪一個）**還沒實作** —— 現在開局兩個槽都是空的，等 Ray 定。 */
-    innateCharms:['charm_C05','charm_C06'],
   },
 
   /* ══⚠⚠ 主武器的九階強化（ver -707，Ray 交卡）══════════════════════════════
@@ -3311,7 +3311,7 @@ export const GAME_CONFIG = {
   /* ══ 聖遺物販售（ver -2964，Ray 交稿）══ 公會櫃台拿公會硬幣換一個封印盒，當場開封。
      「頂級的聖遺物都被聖王廳收走了，只有一些流出的次品會連著封印盒一起販賣。」
      ⚠ 獎池**不列名單**：`items.defs` 裡 `cat:'charm'` 的全部（鐵律 7：掛飾只有那一張表），
-       扣掉槍上原本就掛著的（`mainGun.innateCharms`，ver -2971）。
+       扣掉槍上原本就掛著的（`mainGun.barrels[].charm`，ver -2971／-2974）。
      ⚠ `weight` 沒寫的＝1（現在全等，等 Ray 定）。`rare` ＝開到時櫃台講「運氣不錯」那一組的名單（現在空，等 Ray 定）。
      ⚠ `firstFlag`：**誰插**＝第一次開封那一下（loot.showRelicShop）；**沒有人拔**。插了之後回到一般價。
      ⚠ `openCg`：開盒動畫的插圖動畫鍵（登記在 `illustration.cgAnim`）。null ＝沒片，直接跳到獎品。 */

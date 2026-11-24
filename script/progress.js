@@ -1817,6 +1817,14 @@ export function newRun(opts){
     if(!k) continue;
     try{ localStorage.removeItem(k); }catch(e){}
   }
+  /* 開局的掛件（ver -2974，Ray：「開局掛件槽補上紅寶石耳墜」）：`config.mainGun.barrels[].charm`。
+     ⚠ 耳墜要**真的在道具袋裡**再掛（setCharm 的「同一張不能兩支同時掛」看的是持有數），
+       所以先清道具袋（上面那一圈）、再入袋、再掛。⚠ 收在 newRun 這一支：開始故事／章節跳關／巡場三條路都經過它（鐵律 8）。
+     ⚠ 舊存檔不補（Ray 指定）—— 只有新的一局才走得到這裡。 */
+  for(const b of ((GAME_CONFIG.mainGun||{}).barrels||[])){
+    if(!b.charm) continue;
+    try{ inv.add(b.charm, 1); setCharm(b.id, b.charm); }catch(e){}
+  }
   return true;
 }
 
