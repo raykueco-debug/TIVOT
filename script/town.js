@@ -3036,10 +3036,11 @@ export const TOWNS = {
           /* ══ 公會硬幣（ver -2964，Ray 交稿）══ 想開溜的獵人被櫃台叫住，彈了一枚硬幣過來。 */
           cnt(null,'慢著，決鬥輸了就想走嗎？'),
           hun('lost','呿。'),
-          /* 彈硬幣（無台詞拍）。⚠ 插圖待交件（動畫副理在請 GPT 出）：交件後在這一拍加 `cg:'<鍵>'`，下一拍之後補 `cg:null`。
+          /* 彈硬幣（無台詞拍）。ver -2965（Ray）：是**立繪差分**不是插圖 —— `hunter` 的 `flick`
+             （speakers.js 已預留；圖到之前回退本尊立繪）。
              ⚠ 硬幣在這一拍入袋＋插旗 `relic_shop_open`（公會的「聖遺物」入口從此出現；沒有人拔）。 */
           { speaker:'HUNTER', text:'', auto:1200, se:'se_coins',
-            portrait:{ char:'HUNTER', expr:'lost', show:true },
+            portrait:{ char:'HUNTER', expr:'flick', show:true },
             give:{ guild_coin:1 }, flags:['relic_shop_open'] },
           hun('lost','這樣就可以了吧？'),
           nou('surprise','這個是？', { hide:['HUNTER'] }),
