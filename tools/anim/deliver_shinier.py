@@ -41,10 +41,15 @@ JOBS = {
   'thug_punch':       ('thug_punch', E('mon_saint_thug.webp'), 'mon_saint_thug_atk_v1', 'ab', None),
   'bear_roar':        ('bear_roar', E('mon_bear_nightmare.webp'), 'mon_bear_nightmare_delay_v1', 'ab', None),   # 黑炎改程式火：無火 B（Ray 11-24）
   'organ_idle':       ('organ_idle', E('mon_beast_organ.webp'), 'mon_beast_organ_idle_v3', 'loop', None),   # 新 A（去煙）重跑的待機
+  'stag_roar':        ('stag_roar', E('mon_stag_nightmare.webp'), 'mon_stag_nightmare_atk_v1', 'ab', None),   # 鹿骸黑炎改程式火（攻擊＝延時同一支）
+  'tspawn_lunge':     ('tspawn_lunge', E('mon_saint_temperance_spawn.webp'), 'mon_saint_temperance_spawn_atk_v1', 'ab', None),   # 節制者分離怪 撲抓
+  'tspawn_idle':      ('tspawn', E('mon_saint_temperance_spawn.webp'), 'mon_saint_temperance_spawn_idle_v1', 'loop', None),
+  'tspawn_enter':     ('tspawn_lunge', E('mon_saint_temperance_spawn.webp'), 'mon_saint_temperance_spawn_enter_v1', 'seg', None),   # 出場＝撲抓的 BA 剪片（Ray：SPAWN 用，程式從畫面底部平移入鏡、結尾回拉）
   'thug_slam':        ('thug_slam', E('mon_saint_thug.webp'), 'mon_saint_thug_delay_v1', 'ab', None),
 }
 
-LOOPSEG = {'organ_idle': 'organ_idle_A_loop3'}   # 待機剪的不是第一版時（Ray 11-24：loop2 嘴會動，用 loop3）
+LOOPSEG = {'organ_idle': 'organ_idle_A_loop3', 'tspawn_enter': 'tspawn_lunge_B_BA'}
+NOBA = {'tspawn_lunge'}   # BA 剪片另有用途（分離怪的 BA 拿去當出場），攻擊的 R 照樣倒放   # 待機剪的不是第一版時（Ray 11-24：loop2 嘴會動，用 loop3）
 
 def cutdir(seg):
     base = os.path.join(OUT, 'export', f'sh_{seg}_cut')
@@ -72,13 +77,15 @@ def build(key):
     hit = None
     if kind == 'loop':
         seq, _ = cutframes(LOOPSEG.get(key, f'{wan}_A_loop')); a = f'{wan}_A.png'
+    elif kind == 'seg':
+        seq, _ = cutframes(LOOPSEG[key]); a = f'{wan}_A.png'
     elif kind == 'split':
         ab, k1 = cutframes(f'{wan}_A_AB'); ba, k2 = cutframes(f'{wan}_B_drain')
         seq = ab + ba; hit = len(ab) - 1; a = f'{wan}_A.png'
     else:
         a = f'{wan}_A.png'
         ab, k1 = cutframes(f'{wan}_A_AB', fix.get('AB'))
-        if cutdir(f'{wan}_B_BA'):
+        if cutdir(f'{wan}_B_BA') and key not in NOBA:
             ba, k2 = cutframes(f'{wan}_B_BA', fix.get('BA'))
             if k1[-1] >= 47 and k2[0] == 0: ba = ba[1:]
             r = 'BA 剪片'

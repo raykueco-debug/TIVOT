@@ -1450,6 +1450,9 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
   /* 前撲加速（`preMul`，-2512 Ray「收回加速 前撲也加速」）：打到那一格之前（含）以 fps×preMul 播 */
   const rm=c.retMul||1, pm=c.preMul||1, tAt=f=> f<=hitF ? f*1000/(fps*pm) : (hitF*1000/(fps*pm) + (f-hitF)*1000/(fps*rm));
   const T=tAt(N), tHit=tAt(hitF);
+  /* `slideIn`（出場片用，ver -2970，Ray：節制者分離怪「從畫面底部平移出鏡，結尾回拉一下」）：從敵人區底緣外往上平移到定位，最後衝過頭一點再拉回。只動 `translate`，不碰撲近用的 `scale`。 */
+  if(c.slideIn){ const host=$('top'), hh=host ? host.getBoundingClientRect().height : 0, D=Math.max(r.height*0.6, hh-r.top), ov=-r.height*(c.slideIn.over!=null?c.slideIn.over:0.04);
+    el.animate([{translate:`0 ${D}px`,easing:'cubic-bezier(.2,.7,.3,1)'},{translate:`0 ${ov}px`,offset:0.8,easing:'ease-in-out'},{translate:'0 0'}],{duration:T}); }
   { const k=farOf(); if(k!==1 || c.near){   // 攻擊時撲近：打到那一格到最大，收回的路上退回遠處（ver -2529：平時不站遠也能撲近）；ver -2846：任何一支寫了 `near` 的動作片都吃（地下聖徒的 D／M 揮拳）
       el.style.transformOrigin=c.nearOrigin||FAR_ORIGIN;   /* `nearOrigin`＝拉近時以哪一點為軸（ver -2943，Ray：「管風琴位移要貼地不要浮空」→ 軸放在腳底那一線，放大時腳不離地） */
       const off=t=>Math.max(0,Math.min(1,t/T)), hold=Math.min(T, tHit+(c.nearHold>0?c.nearHold:60)),   /* `nearHold`＝撲到最近停多久（ms，預設 60；ver -2915） */ back=Math.min(T, c.nearOut>0 ? hold+c.nearOut : tHit+Math.max(120,(T-tHit)*0.7));   // `nearOut`＝打到停留之後幾毫秒退回原位（ver -2846，Ray：「位移不要太多幀」）；不寫＝照舊跟著收回段慢慢退
