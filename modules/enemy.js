@@ -2269,6 +2269,12 @@ function airEnter(en, eImg, play){
    · 打出去的傷害**先算在分離怪身上**（`spawnAbsorb`，掛在 combat 唯一的扣血點）：牠那 hp 扣完就倒（淡出、往下縮），剩下的才是本體。
    · 同時最多一隻；換怪／打完一律收（`clearSpawn`，setEnemy 裡呼叫）。 */
 let spawnFx=null;
+/* 分離怪的位置：`size`＝高度佔敵人區幾成、`x`＝左緣在敵人區的比例、`y`＝離底緣往上幾成（敵圖面板「分離怪」分頁調，ver -2982） */
+function spawnPlace(el, ms){ const top=$('top'); if(!top||!el) return; const H=top.clientHeight, W=top.clientWidth, px=el._px||[1,1.4];
+  const h=H*(ms.size||0.62), w=h*px[0]/px[1], left = ms.x!=null ? W*ms.x : (ms.side==='R' ? W-w-W*0.02 : W*0.02), tp=H-h-H*(ms.y||0);
+  el.style.left=left+'px'; el.style.top=tp+'px'; el.style.width=w+'px'; el.style.height=h+'px'; }
+export function setSpawnPlace(p){ const en=curCard(), ms=en && en.missSpawn; if(!ms) return; Object.assign(ms, p); if(spawnFx) spawnPlace(spawnFx.el, ms); }
+export function spawnEl(){ return spawnFx ? spawnFx.el : null; }
 export function spawnAlive(){ return !!(spawnFx && spawnFx.hp>0); }
 export function clearSpawn(){ if(!spawnFx) return; clearTimeout(spawnFx.t); spawnFx.el.remove(); spawnFx=null; }
 export function preloadSpawn(en){ const ms=en && en.missSpawn, c=ms && GAME_CONFIG.enemies[ms.card]; if(!c) return; const st=imgStem(c);
@@ -2279,9 +2285,8 @@ export function summonSpawn(){
   const st=imgStem(c), E=ENEMY_ENTER[st], I=ENEMY_IDLE[st], Ld=E && clipCache[E.dir], Li=I && clipCache[typeof I==='string'?I:I.dir];
   clearSpawn();
   const el=document.createElement('img'); el.className='en-spawn'; el.alt='';
-  const H=top.clientHeight, W=top.clientWidth, h=H*(ms.size||0.62), px=(Li&&Li.j&&Li.j.px)||(Ld&&Ld.j&&Ld.j.px)||[1,1.4], w=h*px[0]/px[1];
-  const left=(ms.side==='R') ? W-w-W*0.02 : W*0.02;
-  el.style.cssText=`position:absolute;left:${left}px;top:${H-h}px;width:${w}px;height:${h}px;pointer-events:none;z-index:4;object-fit:contain;`;
+  const px=(Li&&Li.j&&Li.j.px)||(Ld&&Ld.j&&Ld.j.px)||[1,1.4];
+  el.style.cssText='position:absolute;pointer-events:none;z-index:4;object-fit:contain;'; el._px=px; spawnPlace(el, ms); const h=parseFloat(el.style.height);
   el.src=asset(c.image)||''; top.appendChild(el);
   const S={ el, hp:ms.hp||100, t:0 }; spawnFx=S;
   const play=(L, loop, fps, after)=>{ if(!L||!L.fr){ if(after) after(); return; } let i=0; const N=L.fr.length, dt=1000/(fps||L.j.fps||24);

@@ -1553,6 +1553,23 @@ function openEnemyEdit(opt){
     (document.getElementById('app')||document.body).appendChild(gcap);
     enemyMod.markMember(gsel);
   };
+  /* ══ 分離怪分頁（ver -2982，Ray：「敵圖怎麼沒法調 SPAWN 怪」）：本體卡上有 `missSpawn` 才出現。
+     拖移／滾輪縮放／按鈕微調都直接改那隻分離怪（enemy.setSpawnPlace）；存檔走 `/__espawn` 寫回本體卡那一行 missSpawn。 */
+  const ms0 = en.missSpawn ? Object.assign({}, en.missSpawn) : null;
+  const sv = ms0 ? { x: ms0.x!=null ? ms0.x : 0.02, y: ms0.y||0, size: ms0.size||0.62 } : null;
+  let scap=null;
+  const sApply=()=>{ try{ enemyMod.setSpawnPlace({ x:+sv.x.toFixed(3), y:+sv.y.toFixed(3), size:+sv.size.toFixed(3) }); }catch(_){} };
+  const sCapture=on=>{
+    if(!on){ if(scap){ scap.remove(); scap=null; } return; }
+    if(scap || !sv) return; const top=document.getElementById('top'); if(!top) return; const r=top.getBoundingClientRect();
+    if(!enemyMod.spawnEl()) enemyMod.summonSpawn(); sApply();
+    scap=document.createElement('div'); scap.style.cssText='position:fixed;left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;z-index:8990;cursor:move;touch-action:none;';
+    let drag=null;
+    scap.addEventListener('pointerdown', e=>{ e.preventDefault(); e.stopPropagation(); drag={ x:e.clientX, y:e.clientY, sx:sv.x, sy:sv.y }; try{ scap.setPointerCapture(e.pointerId); }catch(_){} });
+    scap.addEventListener('pointermove', e=>{ if(!drag) return; sv.x=drag.sx+(e.clientX-drag.x)/r.width; sv.y=drag.sy-(e.clientY-drag.y)/r.height; sApply(); });
+    const up=()=>{ if(drag){ drag=null; render(); } }; scap.addEventListener('pointerup', up); scap.addEventListener('pointercancel', up);
+    scap.addEventListener('wheel', e=>{ e.preventDefault(); sv.size=Math.max(0.15, Math.min(1.5, sv.size*(e.deltaY<0?1.04:1/1.04))); sApply(); render(); }, { passive:false });
+    (document.getElementById('app')||document.body).appendChild(scap); };
   if(opt && opt.tab==='group' && grp) tab='group';
   const box = document.createElement('div'); box.id='enemyEdit';
   let msg='';
@@ -1565,6 +1582,7 @@ function openEnemyEdit(opt){
   const tabs = ()=>{
     const list=[['enemy',i18nT('敵人')]];
     if(grp) list.push(['group',i18nT('群戰')]);
+    if(sv) list.push(['spawn',i18nT('分離怪')]);
     if(talk.left)  list.push(['left',i18nT('對話・左')]);
     if(talk.right) list.push(['right',i18nT('對話・右')]);
     return list.length<2 ? '' : '<div class="ee-row">'+list.map(([k,n])=>'<button data-tab="'+k+'" class="'+(tab===k?'on':'')+'">'+n+'</button>').join('')+'</div>';
@@ -1580,6 +1598,12 @@ function openEnemyEdit(opt){
         + row(i18nT('左右'), Math.round(v[0]), 'gx', 10, 'data-gk')
         + row(i18nT('上下'), Math.round(v[1]), 'gy', 10, 'data-gk')
         + row(i18nT('縮放'), Math.round(v[2]*100)+'%', 'gs', 0.02, 'data-gk');
+    }else if(tab==='spawn'){
+      body = i18nT('<div class="ee-hd">分離怪　')+ms0.card+'</div>'
+        + '<div class="ee-msg">'+i18nT('在敵人區拖移；滾輪縮放')+'</div>'
+        + row(i18nT('左右'), Math.round(sv.x*100)+'%', 'sx', 0.01, 'data-sk')
+        + row(i18nT('上下'), Math.round(sv.y*100)+'%', 'sy', 0.01, 'data-sk')
+        + row(i18nT('大小'), Math.round(sv.size*100)+'%', 'ss', 0.02, 'data-sk');
     }else if(tab==='enemy'){
       body = i18nT('<div class="ee-hd">敵立繪　')+(en.name||key)+i18nT('（')+key+i18nT('）</div>')
         + i18nT('<div class="ee-row"><span>模式</span>')
@@ -1621,7 +1645,16 @@ function openEnemyEdit(opt){
     e.stopPropagation();
     const t=e.target.closest('button'); if(!t) return;
     try{ SFX.menuClick(); }catch(_){}
-    if(t.dataset.tab){ tab=t.dataset.tab; msg=''; gCapture(tab==='group'); render(); return; }
+    if(t.dataset.tab){ tab=t.dataset.tab; msg=''; gCapture(tab==='group'); sCapture(tab==='spawn'); render(); return; }
+    if(t.dataset.sk){ const d=+t.dataset.d, k={sx:'x',sy:'y',ss:'size'}[t.dataset.sk]; sv[k]=+(sv[k]+d).toFixed(3); if(k==='size') sv.size=Math.max(0.15,Math.min(1.5,sv.size)); sApply(); render(); return; }
+    if(tab==='spawn' && t.dataset.act==='reset'){ sv.x=ms0.x!=null?ms0.x:0.02; sv.y=ms0.y||0; sv.size=ms0.size||0.62; sApply(); msg=i18nT('已還原'); render(); return; }
+    if(tab==='spawn' && t.dataset.act==='save'){
+      const spawn=Object.assign({}, ms0, { x:+sv.x.toFixed(3), y:+sv.y.toFixed(3), size:+sv.size.toFixed(3) }); msg=i18nT('寫入中…'); render();
+      fetch(new URL('__espawn', location.href).pathname, { method:'POST', body:JSON.stringify({ key, spawn }) })
+        .then(r=>r.text().then(x=>({ok:r.ok, x}))).then(r=>{ if(r.ok){ Object.assign(ms0, spawn); } msg = r.ok ? i18nT('已存檔（')+r.x+i18nT('）') : i18nT('存檔失敗：')+r.x; render(); })
+        .catch(err=>{ msg=i18nT('存檔失敗：')+err; render(); });
+      return; }
+
     if(t.dataset.gbat){   // 換一組來編（ver -2632）：沒存的放回、關面板、開那一場，載好再打開群戰分頁
       for(const n in gv) enemyMod.setMemberPlace(n, null); gCapture(false); box.remove();
       combat.startScriptBattle(t.dataset.gbat);

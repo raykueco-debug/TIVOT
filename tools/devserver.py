@@ -792,6 +792,35 @@ def efit_patch(req):
 
 
 
+# ══ 點錯生怪的位置（ver -2982，Ray：「敵圖怎麼沒法調 SPAWN 怪」）══
+# `POST /__espawn`，body＝`{"key":本體卡鑰匙, "spawn":{card,hp,side?,x?,y?,size?}}`：把那張卡的 `missSpawn:{…}` 那一行換掉（行尾註解保留）。
+def espawn_patch(req):
+    key, sp = req.get('key') or '', req.get('spawn') or {}
+    if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', key):
+        raise ValueError('敵人卡鑰匙不合法：' + key)
+    path = os.path.join(ROOT, EFIT_FILE)
+    with open(path, 'r', encoding='utf-8', newline='') as f:
+        text = f.read()
+    m = re.search(r'^    ' + re.escape(key) + r': \{.*$', text, re.M)
+    if not m:
+        raise ValueError('找不到敵人卡：' + key)
+    end = text.index('\n    },', m.start())
+    blk = text[m.start():end]
+    parts = ["card:" + _js_str(sp.get('card') or ''), "hp:%d" % int(sp.get('hp') or 100)]
+    if sp.get('side'):
+        parts.append("side:" + _js_str(sp['side']))
+    for k in ('x', 'y', 'size'):
+        if sp.get(k) is not None:
+            parts.append("%s:%s" % (k, ('%.3f' % float(sp[k])).rstrip('0').rstrip('.') or '0'))
+    lit = 'missSpawn:{ ' + ', '.join(parts) + ' },'
+    m2 = re.search(r'^(      )missSpawn\s*:\s*\{[^\n]*?\},?', blk, re.M)
+    if not m2:
+        raise ValueError('那張卡沒有 missSpawn：' + key)
+    nb = blk[:m2.start()] + '      ' + lit + blk[m2.end():]
+    _write_text(EFIT_FILE, text[:m.start()] + nb + text[end:])
+    return '%s:%s %s' % (EFIT_FILE, key, lit)
+
+
 # ══ 群戰成員的位置與大小（ver -2632，Ray：「讓各怪可以被滑鼠點選拖移縮放」）══
 # `POST /__glayout`，body＝`{"dir":群戰卡的 group.dir, "layout":{"<n>":[左右, 上下, 縮放], …}}`
 # 只改 `script/group_layout.js` 裡 `/*GLAYOUT*/ … /*END*/` 那一段 JSON（整段重寫、鑰匙排序），其他字不碰。
@@ -904,6 +933,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 req = json.loads(self.rfile.read(n).decode('utf-8'))
                 sys.stderr.write('[devserver] efit %s\n' % json.dumps(req, ensure_ascii=False))
                 where = efit_patch(req)
+            except ValueError as e:
+                return self._fail(409, str(e))
+            except Exception as e:                        # noqa: BLE001
+                return self._fail(500, '寫檔失敗：%s' % e)
+            return self._fail(200, 'ok ' + where)
+        if self.path.split('?')[0] == '/__espawn':
+            try:
+                n = int(self.headers.get('Content-Length') or 0)
+                req = json.loads(self.rfile.read(n).decode('utf-8'))
+                sys.stderr.write('[devserver] espawn %s\n' % json.dumps(req, ensure_ascii=False))
+                where = espawn_patch(req)
             except ValueError as e:
                 return self._fail(409, str(e))
             except Exception as e:                        # noqa: BLE001
