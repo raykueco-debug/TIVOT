@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2967';
+export const VERSION = 'ver 2026.11.24-2969';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -7049,10 +7049,10 @@ export const ASSET_VER = {
   'lake_eastshore_day': '733f58e3',
   'lake_eastshore_dusk': '1fc807ea',
   'lake_eastshore_night': 'df50844b',
-  'lake_fallbase_dawn': '76fb2b0a',
-  'lake_fallbase_day': 'f00e3fc9',
-  'lake_fallbase_dusk': 'e60b1798',
-  'lake_fallbase_night': '97bfb984',
+  'lake_fallbase_dawn': 'c9c5fb74',
+  'lake_fallbase_day': '917a24d8',
+  'lake_fallbase_dusk': '5065d57b',
+  'lake_fallbase_night': 'ed98c642',
   'lake_grove_dawn': '95456ba0',
   'lake_grove_day': '4a9e4210',
   'lake_grove_dusk': 'de66e0ea',
