@@ -2264,46 +2264,54 @@ function airEnter(en, eImg, play){
     airInAnim=a; a.onfinish=done; a.oncancel=done; }
 }
 /* ══ 點錯生怪（`missSpawn`，ver -2980，Ray 節制者：「點錯是 SPAWN 怪…就是增加一個怪在畫面上，變群戰，HP+100，100 打完以後先死 SPAWN 怪」）══
-   卡上寫 `missSpawn:{ card:'<分離怪的卡>', hp:100, side:'L'|'R' }`。
-   · 點錯的動畫打到那一格（combat 的點錯分支）→ `summonSpawn()`：敵人總血量 +hp、畫面旁邊冒出分離怪（出場片＝從底部平移入鏡），之後放待機。
-   · 打出去的傷害**先算在分離怪身上**（`spawnAbsorb`，掛在 combat 唯一的扣血點）：牠那 hp 扣完就倒（淡出、往下縮），剩下的才是本體。
-   · 同時最多一隻；換怪／打完一律收（`clearSpawn`，setEnemy 裡呼叫）。 */
-let spawnFx=null;
-/* 分離怪的位置：`size`＝高度佔敵人區幾成、`x`＝左緣在敵人區的比例、`y`＝離底緣往上幾成（敵圖面板「分離怪」分頁調，ver -2982） */
-function spawnPlace(el, ms){ const top=$('top'); if(!top||!el) return; const H=top.clientHeight, W=top.clientWidth, px=el._px||[1,1.4];
-  const h=H*(ms.size||0.62), w=h*px[0]/px[1], left = ms.x!=null ? W*ms.x : (ms.side==='R' ? W-w-W*0.02 : W*0.02), tp=H-h-H*(ms.y||0);
+   卡上寫 `missSpawn:{ card:'<卡>'|['<卡>',…], hp:100, max:2, slots:[{x,y,size},{x,y,size}] }`。
+   · 點錯的動畫打到那一格（combat 的點錯分支）→ `summonSpawn()`：敵人總血量 +hp、空著的那個站位冒出分離怪（出場片＝從底部平移入鏡），之後放待機。
+   · `card` 是名單＝每次隨機挑一隻（ver -2989）；場上最多 `max` 隻（ver -2990，Ray：「場上最多兩隻分離怪，每個分離怪有各自站位」）。
+   · 打出去的傷害**先算在分離怪身上**（`spawnAbsorb`，掛在 combat 唯一的扣血點），先出來的先扣；扣完就倒（淡出、往下縮）。
+   · 換怪／打完一律收（`clearSpawn`，setEnemy 裡呼叫）。 */
+let spawns=[], spawnSeq=0;
+/* 站位：`size`＝高度佔敵人區幾成、`x`＝左緣在敵人區的比例、`y`＝離底緣往上幾成（敵圖面板「分離怪」分頁調，ver -2982）。
+   舊卡只寫 x／y／size ＝第 1 個站位；第 2 個沒寫就放右邊。 */
+export function spawnSlot(ms, i){ const sl=ms && ms.slots; if(sl && sl[i]) return sl[i];
+  if(i===0) return { x: ms.x!=null ? ms.x : 0.02, y: ms.y||0, size: ms.size||0.62 };
+  const s0=spawnSlot(ms,0); return { x: 0.58, y: s0.y, size: s0.size }; }
+function spawnPlace(el, p){ const top=$('top'); if(!top||!el) return; const H=top.clientHeight, W=top.clientWidth, px=el._px||[1,1.4];
+  const h=H*(p.size||0.62), w=h*px[0]/px[1], left=W*(p.x||0), tp=H-h-H*(p.y||0);
   el.style.left=left+'px'; el.style.top=tp+'px'; el.style.width=w+'px'; el.style.height=h+'px'; }
-export function setSpawnPlace(p){ const en=curCard(), ms=en && en.missSpawn; if(!ms) return; Object.assign(ms, p); if(spawnFx) spawnPlace(spawnFx.el, ms); }
-export function spawnEl(){ return spawnFx ? spawnFx.el : null; }
-export function spawnAlive(){ return !!(spawnFx && spawnFx.hp>0); }
-export function clearSpawn(){ if(!spawnFx) return; clearTimeout(spawnFx.t); spawnFx.el.remove(); spawnFx=null; }
-/* `card` 可以是一張卡或一份名單（名單＝每次隨機挑一隻，ver -2989，三隻分離怪） */
+export function setSpawnPlace(i, p){ const en=curCard(), ms=en && en.missSpawn; if(!ms) return;
+  ms.slots=[0,1].map(k=>Object.assign({}, spawnSlot(ms,k))); Object.assign(ms.slots[i], p);
+  spawns.forEach(S=>{ if(S.slot===i) spawnPlace(S.el, ms.slots[i]); }); }
+export function spawnAlive(id){ return id==null ? spawns.length>0 : spawns.some(S=>S.id===id && S.hp>0); }
+export function spawnCount(){ return spawns.length; }
+export function spawnInfo(id){ const S=spawns.find(x=>x.id===id); return S ? { card:S.card, slot:S.slot } : null; }
+export function clearSpawn(){ spawns.forEach(S=>{ clearTimeout(S.t); S.el.remove(); }); spawns=[]; }
 const spawnCards=ms=>[].concat(ms && ms.card || []);
-export function spawnCard(){ return spawnFx ? spawnFx.card : null; }
 export function preloadSpawn(en){ const ms=en && en.missSpawn; spawnCards(ms).forEach(k=>{ const c=GAME_CONFIG.enemies[k]; if(!c) return; const st=imgStem(c);
   [ENEMY_ENTER[st], ENEMY_IDLE[st]].forEach(x=>{ const d=x && (x.dir||x); if(typeof d==='string') loadClip(d); }); }); }
+/* 回傳 { id, hp, card }；站位滿了回 null */
 export function summonSpawn(){
-  const en=curCard(), ms=en && en.missSpawn; if(!ms || spawnAlive()) return 0;
-  const cl=spawnCards(ms), ck=cl[(Math.random()*cl.length)|0], c=GAME_CONFIG.enemies[ck], top=$('top'); if(!c || !top) return 0;
+  const en=curCard(), ms=en && en.missSpawn; if(!ms) return null;
+  const max=ms.max||2; if(spawns.length>=max) return null;
+  const slot=[0,1,2,3].find(k=>k<max && !spawns.some(S=>S.slot===k)); if(slot==null) return null;
+  const cl=spawnCards(ms), ck=cl[(Math.random()*cl.length)|0], c=GAME_CONFIG.enemies[ck], top=$('top'); if(!c || !top) return null;
   const st=imgStem(c), E=ENEMY_ENTER[st], I=ENEMY_IDLE[st], Ld=E && clipCache[E.dir], Li=I && clipCache[typeof I==='string'?I:I.dir];
-  clearSpawn();
   const el=document.createElement('img'); el.className='en-spawn'; el.alt='';
   const px=(Li&&Li.j&&Li.j.px)||(Ld&&Ld.j&&Ld.j.px)||[1,1.4];
-  el.style.cssText='position:absolute;pointer-events:none;z-index:4;object-fit:contain;'; el._px=px; spawnPlace(el, ms); const h=parseFloat(el.style.height);
+  el.style.cssText='position:absolute;pointer-events:none;z-index:4;object-fit:contain;'; el._px=px; spawnPlace(el, spawnSlot(ms, slot)); const h=parseFloat(el.style.height);
   el.src=asset(c.image)||''; top.appendChild(el);
-  const S={ el, hp:ms.hp||100, t:0, card:ck }; spawnFx=S;
+  const S={ id:++spawnSeq, el, hp:ms.hp||100, t:0, card:ck, slot }; spawns.push(S);
   const play=(L, loop, fps, after)=>{ if(!L||!L.fr){ if(after) after(); return; } let i=0; const N=L.fr.length, dt=1000/(fps||L.j.fps||24);
-    const step=()=>{ if(spawnFx!==S) return; el.src=L.fr[i].src; i++; if(i>=N){ if(loop) i=0; else { if(after) after(); return; } } S.t=setTimeout(step, dt); }; step(); };
+    const step=()=>{ if(spawns.indexOf(S)<0 || S.hp<=0) return; el.src=L.fr[i].src; i++; if(i>=N){ if(loop) i=0; else { if(after) after(); return; } } S.t=setTimeout(step, dt); }; step(); };
   const idle=()=>play(Li, true);
   if(Ld && Ld.fr){ const T=Ld.fr.length*1000/(Ld.j.fps||24); el.animate([{translate:`0 ${h}px`,easing:'cubic-bezier(.2,.7,.3,1)'},{translate:`0 ${-h*0.04}px`,offset:0.8,easing:'ease-in-out'},{translate:'0 0'}],{duration:T}); play(Ld, false, 0, idle); }
   else idle();
-  return S.hp;
+  return { id:S.id, hp:S.hp, card:ck };
 }
-/* 傷害先吃分離怪的那一份；回傳剩給本體的（本體的血本來就含這一份，所以這裡只記帳、不改 enemyHp） */
-export function spawnAbsorb(d){ const S=spawnFx; if(!S || S.hp<=0 || !(d>0)) return; S.hp-=d; if(S.hp>0) return;
-  clearTimeout(S.t); S.hp=0; const el=S.el; el.style.transformOrigin='50% 100%';
+/* 傷害先吃分離怪的那一份（先出來的先扣）；本體的血本來就含這幾份，所以這裡只記帳、不改 enemyHp */
+export function spawnAbsorb(d){ let rem=d; for(const S of spawns){ if(!(rem>0)) break; if(S.hp<=0) continue; const t=Math.min(S.hp, rem); S.hp-=t; rem-=t;
+  if(S.hp>0) continue; clearTimeout(S.t); const el=S.el; el.style.transformOrigin='50% 100%';
   const a=el.animate([{ transform:'scale(1,1)', opacity:1, filter:'brightness(1)' },{ transform:'scale(1.06,.55)', opacity:.7, filter:'brightness(1.6)', offset:.4 },{ transform:'scale(1.2,.05)', opacity:0, filter:'brightness(2)' }],{ duration:700, easing:'ease-in', fill:'forwards' });
-  a.onfinish=()=>{ if(spawnFx===S) clearSpawn(); }; }
+  a.onfinish=()=>{ el.remove(); spawns=spawns.filter(x=>x!==S); }; } }
 /* ══ 細煙帶（`wisps`，ver -2976，Ray 裂肉獸：「要加程式煙，不要用現成的，參考 GPT 去煙之前的樣子」）══
    原圖的煙＝**一條條有描邊的淡色煙帶**，從管頂冒出、一邊往上飄一邊左右捲（不是一團團的霧）。
    作法：每一縷是一個往上走、左右擺動（振幅越往上越大）的「頭」，煙帶＝頭走過的最近 N 個點；

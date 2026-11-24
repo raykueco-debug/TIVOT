@@ -3551,3 +3551,15 @@ when	from	to	reason
 20261124-190246	resources/background/lake/lake_fallbase_dusk.webp	_recycle/resources/background/lake/lake_fallbase_dusk.webp	11-24 Ray：三個時段也補瀑布（GPT 重出），舊圖回收
 20261124-190246	resources/background/lake/lake_fallbase_night.webp	_recycle/resources/background/lake/lake_fallbase_night.webp	11-24 Ray：三個時段也補瀑布（GPT 重出），舊圖回收
 20261124-191120	resources/background/anim/lake/lake_fallbase_day_watermask.png	_recycle/resources/background/anim/lake/lake_fallbase_day_watermask.png	11-24 Ray：「石頭不要晃」——水面遮罩把湖中石頭挖掉，舊遮罩回收
+20261124-220300	resources/enemy/mon_saint_temperance_spawn.webp	_recycle/resources/enemy/mon_saint_temperance_spawn.webp	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔
+20261124-220300	resources/enemy/anim/mon_saint_temperance_spawn_atk_v1	_recycle/resources/enemy/anim/mon_saint_temperance_spawn_atk_v1	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔
+20261124-220300	resources/enemy/anim/mon_saint_temperance_spawn_idle_v1	_recycle/resources/enemy/anim/mon_saint_temperance_spawn_idle_v1	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔
+20261124-220300	resources/enemy/anim/mon_saint_temperance_spawn_enter_v1	_recycle/resources/enemy/anim/mon_saint_temperance_spawn_enter_v1	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔
+20261124-220307	resources/enemy/mon_saint_temperance_spawn2.webp	_recycle/resources/enemy/mon_saint_temperance_spawn2.webp	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔
+20261124-220307	resources/enemy/anim/mon_saint_temperance_spawn2_atk_v1	_recycle/resources/enemy/anim/mon_saint_temperance_spawn2_atk_v1	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔
+20261124-220307	resources/enemy/anim/mon_saint_temperance_spawn2_idle_v1	_recycle/resources/enemy/anim/mon_saint_temperance_spawn2_idle_v1	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔
+20261124-220307	resources/enemy/anim/mon_saint_temperance_spawn2_enter_v1	_recycle/resources/enemy/anim/mon_saint_temperance_spawn2_enter_v1	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔
+20261124-220312	resources/enemy/mon_saint_temperance_spawn3.webp	_recycle/resources/enemy/mon_saint_temperance_spawn3.webp	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔
+20261124-220312	resources/enemy/anim/mon_saint_temperance_spawn3_atk_v1	_recycle/resources/enemy/anim/mon_saint_temperance_spawn3_atk_v1	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔
+20261124-220312	resources/enemy/anim/mon_saint_temperance_spawn3_idle_v1	_recycle/resources/enemy/anim/mon_saint_temperance_spawn3_idle_v1	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔
+20261124-220312	resources/enemy/anim/mon_saint_temperance_spawn3_enter_v1	_recycle/resources/enemy/anim/mon_saint_temperance_spawn3_enter_v1	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔

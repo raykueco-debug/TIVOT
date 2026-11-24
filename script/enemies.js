@@ -3597,7 +3597,7 @@ export const ENEMIES = {
       openAssault:[1,2],
       ult:{ on:0, hp:40, count:4, atk:20, gap:0.4, cd:4 },
       assaultEvery:[3,5],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      assault:{ count:2, gap:0.35 },
+      assault:{ count:1, gap:0.35 },   // ver -2990 Ray：「節制者的攻擊圈改成一個，每多一隻分離怪多一圈」
       kind:'slay',
       riseFx:0,   // 降臨：0＝照 kind 判定（見檔頭「統一欄位」）
       hitSe:null,   // 受擊音效（ver -1881）：留白＝跟著受擊特效的 type 走
@@ -3605,7 +3605,7 @@ export const ENEMIES = {
       atype:'P',
       stageScale:1,
       stack:1,
-      missSpawn:{ card:['ruins_temperance_spawn','ruins_temperance_spawn2','ruins_temperance_spawn3'], hp:100, side:'L', x:0.02, y:-0.18, size:0.72 },   // 點錯＝分離出蠟化人形（ver -2980，Ray：「增加一個怪在畫面上 變群戰 HP+100 100打完以後先死SPAWN怪」）
+      missSpawn:{ card:['ruins_temperance_spawn','ruins_temperance_spawn2','ruins_temperance_spawn3'], hp:100, max:2, slots:[{ x:0.461, y:-0.168, size:0.911 }, { x:0.02, y:-0.168, size:0.911 }] },   // 點錯＝分離出蠟化人形（ver -2980，Ray：「增加一個怪在畫面上 變群戰 HP+100 100打完以後先死SPAWN怪」）
       image:'enemy_ruins_saint_temperance',
       bg:'ruins_shinier_deepaltar',
       fit:{ mode:'contain', pos:'center bottom' },

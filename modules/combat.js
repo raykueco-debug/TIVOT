@@ -2839,13 +2839,12 @@ function autoClearOverkill(){
    （ver -499（-893 前用詞）：聖徒化 overkill 的 EXSECUTIŌ 不再看這個 —— Ray：「只要清空敵 hp
    就發生」；這一支現在只剩 finishEnemyOrAdvance 在用。） */
 /* 點錯生怪（ver -2980，節制者）：分離怪出場、敵人總血量 +hp（同一條血條，先扣的那一份算分離怪的，見 enemy.spawnAbsorb） */
-function missSpawnNow(){ const add=enemy.summonSpawn(); if(!(add>0)) return; state.enemyHp+=add; state.enemyMax+=add; updateBars(); spawnAssaultLoop(true); }
-/* 分離怪自己的攻擊圈（ver -2983）：分離怪在場就照牠卡上的 assaultEvery 另外出圈，跟本體的圈同時存在；牠倒了／換怪／打完就停。 */
-let spawnAtkT=0;
-function spawnAssaultLoop(first){ clearTimeout(spawnAtkT);
-  const ck=enemy.spawnCard(), c=ck && (GAME_CONFIG.enemies||{})[ck]; if(!c) return;   // 這一次生出來的是哪一隻（ver -2989）
+export function missSpawnNow(){ const r=enemy.summonSpawn(); if(!r) return false; state.enemyHp+=r.hp; state.enemyMax+=r.hp; updateBars(); spawnAssaultLoop(r.id, true); return true; }
+/* 分離怪自己的攻擊圈（ver -2983／-2990）：每一隻在場就照牠卡上的 assaultEvery 另外出圈（一隻一圈），跟本體的圈同時存在；牠倒了／換怪／打完就停。 */
+function spawnAssaultLoop(id, first){
+  const inf=enemy.spawnInfo(id), c=inf && (GAME_CONFIG.enemies||{})[inf.card]; if(!c) return;
   const ev=c.assaultEvery||[3,5], wait=(first?1.2:0)*1000 + (ev[0]+Math.random()*(ev[1]-ev[0]))*1000;
-  spawnAtkT=setTimeout(()=>{ if(state.over || !enemy.spawnAlive()) return; defense.spawnExtraThreat(c.attack||10); spawnAssaultLoop(false); }, wait); }
+  setTimeout(()=>{ if(state.over || !enemy.spawnAlive(id)) return; defense.spawnExtraThreat(c.attack||10); spawnAssaultLoop(id, false); }, wait); }
 function isLastEnemy(){
   return !(enemy.hasNextInLineup() && !state.tutorialRun && !state.scriptRun);
 }

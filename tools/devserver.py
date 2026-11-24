@@ -811,9 +811,14 @@ def espawn_patch(req):
     parts = ["card:" + card_lit, "hp:%d" % int(sp.get('hp') or 100)]
     if sp.get('side'):
         parts.append("side:" + _js_str(sp['side']))
+    if sp.get('max'):
+        parts.append("max:%d" % int(sp['max']))
+    fmt = lambda v: ('%.3f' % float(v)).rstrip('0').rstrip('.') or '0'
+    if isinstance(sp.get('slots'), list):   # 兩個站位（ver -2990）
+        parts.append("slots:[" + ", ".join("{ x:%s, y:%s, size:%s }" % (fmt(t.get('x', 0)), fmt(t.get('y', 0)), fmt(t.get('size', 0.62))) for t in sp['slots']) + "]")
     for k in ('x', 'y', 'size'):
         if sp.get(k) is not None:
-            parts.append("%s:%s" % (k, ('%.3f' % float(sp[k])).rstrip('0').rstrip('.') or '0'))
+            parts.append("%s:%s" % (k, fmt(sp[k])))
     lit = 'missSpawn:{ ' + ', '.join(parts) + ' },'
     m2 = re.search(r'^(      )missSpawn\s*:\s*\{[^\n]*?\},?', blk, re.M)
     if not m2:
