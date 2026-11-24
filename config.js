@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2957';
+export const VERSION = 'ver 2026.11.24-2958';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2988,6 +2988,8 @@ export const GAME_CONFIG = {
     tomb_test_kneeling_penitent: { enemy:'kneeling_penitent' },
     tomb_test_choir_pale: { enemy:'choir_pale' },
     tomb_test_iron_maiden: { enemy:'iron_maiden' },
+    /* 夏爾三區重做車輪戰測試（ver -2957 交件那 12 隻，Ray 11-24：「開目前接上的車輪戰給我測」） */
+    shinier_test_wheel: { enemy:['sf_bear_husk','sv_beast_organ','sv_bear','sv_reliquary','sv_beast_shackle','ruins_halo_ring','ruins_bellreacher','ruins_bellwalker','ruins_heartripper','ruins_saint_temperance','ruins_saint_inspector','ruins_saint_thug'] },
     tomb_test_pallid_stag: { enemy:'pallid_stag' },
     tomb_test_bellfounder: { enemy:'bellfounder' },
     tomb_test_choir_organ: { enemy:'choir_organ' },
@@ -6542,6 +6544,7 @@ export const ASSET_VER = {
   'belisar_dragonrace_base_flowmask': '77d18fac',
   'belisar_draincliff_dawn': '27241df3',
   'belisar_draincliff_day': '5b9adc52',
+  'belisar_draincliff_day_skymask': '39ac2a38',
   'belisar_draincliff_dusk': '568c83e3',
   'belisar_draincliff_night': '7287ef80',
   'belisar_drywell_dawn': 'eb344c5b',
@@ -6618,15 +6621,18 @@ export const ASSET_VER = {
   'canyon_altar_dusk': 'ac766316',
   'canyon_altar_night': '05561a62',
   'canyon_bones_day': 'd6506629',
+  'canyon_bones_day_sky': '0402342a',
   'canyon_bones_dusk': '3fdc34b3',
   'canyon_bones_night': '2be921ed',
   'canyon_bridge_day': '374c009d',
   'canyon_bridge_dusk': '543e652b',
   'canyon_bridge_night': '3391344e',
   'canyon_corridor_day': 'a3476d44',
+  'canyon_corridor_day_sky': '5de8742a',
   'canyon_corridor_dusk': 'b5b421f7',
   'canyon_corridor_night': '5e5fbf0d',
   'canyon_entry_day': '1fc2677a',
+  'canyon_entry_day_sky': 'a4c8a851',
   'canyon_entry_dusk': '9d1ba7de',
   'canyon_entry_night': '184f599c',
   'capital_bistro_dawn': '68b6c0b6',
@@ -7010,6 +7016,7 @@ export const ASSET_VER = {
   'lake_eastshore_night': 'df50844b',
   'lake_fallbase_dawn': '76fb2b0a',
   'lake_fallbase_day': 'f00e3fc9',
+  'lake_fallbase_day_skymask': '1eb4b998',
   'lake_fallbase_dusk': 'e60b1798',
   'lake_fallbase_night': '97bfb984',
   'lake_grove_dawn': '95456ba0',
