@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2956';
+export const VERSION = 'ver 2026.11.24-2957';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4817,7 +4817,7 @@ export const ASSETS = {
   /* 夏爾村村內戰（ver -802，Ray 交稿）—— 敵人卡見 script/enemies.js 的 sv_*。
      ⚠ bear／stag 目前仍是 **.png**（美術尚未去背轉 webp）：先指 .png 讓它載得出來，
        轉檔後把副檔名改成 .webp（同 §5 的轉檔三步）。其餘四張已是 webp。 */
-  enemy_sv_beast_organ:   "resources/enemy/mon_beast_organ.webp?v=2cb2855b",
+  enemy_sv_beast_organ:   "resources/enemy/mon_beast_organ.webp?v=868d4069",
   enemy_sv_stag:          "resources/enemy/mon_stag_nightmare.webp?v=f0940269",   // ver -845：2.4MB PNG → webp（手機發燙/圖讀不出來的調查）
   enemy_sv_beast_shackle: "resources/enemy/mon_beast_shackle.webp?v=3f7e0727",
   enemy_sv_bear:          "resources/enemy/mon_bear_nightmare.webp?v=8b9715dd",   // 同上
@@ -4829,7 +4829,7 @@ export const ASSETS = {
   enemy_sf_hog:       "resources/enemy/mon_shinierforest_hog_neutral.webp",     // ver -2498：換中立站姿（中立待機美術在剪）
   enemy_sf_tiger:     "resources/enemy/mon_shinierforest_tiger_neutral.webp",   // ver -2493：換中立站姿（攻擊／延時動畫都是從它生成的；舊的撲擊姿勢待機 idle_v2 暫時沒有對應）
   enemy_sf_deer:      "resources/enemy/mon_shinierforest_deer.webp",
-  enemy_sf_bear_husk: "resources/enemy/mon_bear_husk.webp?v=08453d77",
+  enemy_sf_bear_husk: "resources/enemy/mon_bear_husk.webp?v=c5b1b887",
   enemy_sf_stag_rot:  "resources/enemy/mon_stag_rot_neutral.webp",   // ver -2620：換中立站姿（攻擊動畫是用它生成的；TO_CODE_attack 11-10）。⚠ 這張目前沒有待機
   enemy_sf_deer_nightmare: "resources/enemy/mon_shinierforest_deernightmare.webp",   // 鹿主變異（ver -870，G 稿）
 
@@ -5787,7 +5787,7 @@ export const ENEMY_IDLE = {
   sorana_si_guard: 'resources/enemy/anim/sorana_guard_idle_v1/',   // 索菈娜待機（ver -2830，Ray 剪的 np_sorana_idle_wan7_cut 22 格 24fps：呼吸上下起伏＋乳搖）
   man_misha: 'resources/enemy/anim/man_misha_idle_v1/',   // ver -2079：人類用「明顯深呼吸」提示詞、不掛 LoRA（Live2D LoRA 兩輪測不出效果）
   mon_arch_warden: 'resources/enemy/anim/mon_arch_warden_idle_v3/',   // ver -2939 Ray 剪的 tomb_mon_arch_warden_idle_cut（重畫：舊 v2 出框）
-  mon_bear_husk: 'resources/enemy/anim/mon_bear_husk_idle_v2/',
+  mon_bear_husk: 'resources/enemy/anim/mon_bear_husk_idle_v3/',   // ver -2957 新 A（重去背）重跑的待機，Ray 剪的 sh_husk_idle_A_loop_cut
   mon_bear_nightmare: 'resources/enemy/anim/mon_bear_nightmare_idle_v2/',
   mon_beast_bonemaw: 'resources/enemy/anim/mon_beast_bonemaw_idle_v2/',
   mon_beast_organ: 'resources/enemy/anim/mon_beast_organ_idle_v2/',
@@ -6007,6 +6007,19 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   mon_shinierforest_lynx_neutral: { dir:'resources/enemy/anim/mon_shinierforest_lynx_atk_v1/', hit:13 },   // E065 山貓 撲擊（29 格，第 13 格打到）
   mon_shinierforest_tiger_neutral: { dir:'resources/enemy/anim/mon_shinierforest_tiger_atk_v4/', hit:13 },   // ver -2519 Ray：tiger rule（pounce）on biteAB＋biteBA2（不是 biteAB2）；兩段生成空間不同，BA 段照 B 姿勢對位換算   // E068 獨角虎 撲咬 v2（ver -2494：撲出 20 格＋收勢，共 41 格；咬到＝第 19 格）
   mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_atk_v8/', hit:13, far:0.82, near:1.4, preMul:1.5, retMul:1.8 },   // -2515：v8＝撲出 biteAB2_cut_3_cut（14）＋收回 biteBA2_cut_4（27，Ray 21:29 剪），由 v5 已處理格子組   // -2514：v7＝撲出 biteAB2_cut_3_cut（14）＋收回 biteBA2_cut_3（29，Ray 21:27 剪，新生成那份來源），由 v5 的已處理格子組   // -2513 Ray：撲出改 biteAB2_cut_3_cut（cut_3 前 14 格）＋收回 biteBA2_cut ＝ v6（45 格，由 v4 的格子直接組，咬到第 13 格）   // -2512 Ray「收回加速 前撲也加速」：前撲 1.5 倍、收回 1.8 倍（收回沿用 -2486 的倍率）   // -2511 Ray 定案：撲出 biteAB2_cut_3＋收回 biteBA2_cut（＝v4，逐格驗過），原速播（不加 retMul）；舊註：retMul：咬完收回段以 1.8 倍速播（-2486 Ray「撲咬收回再快一點」）   // -2509：v5＝撲出 biteAB2_cut_3（17 格）＋收回 biteBA2_cut_2（31 格，Ray 指定的新生成那份），咬到第 16 格   // -2484：v3＝biteAB2_cut（16 格）＋biteBA2_cut（31 格，Ray 指定的收回）；咬到＝第 15 格（撲出段最後一格）。-2482 誤把 hit 量成 28（收回段雙爪張開輪廓最大），放大峰值落在收回段 ⇒ Ray 看成「收回被改了」
+  /* 夏爾三區重做（ver -2957，Ray 11-24 交件）：Ray 在 animechk 剪的 sh_*_cut；兩段都剪＝AB＋BA，只剪 AB＝R 原片倒放留 1/3。hit＝AB 最後一格 */
+  mon_bear_husk: { dir:'resources/enemy/anim/mon_bear_husk_atk_v1/', hit:10 },   // 森林熊骸 撲擊（31 格）
+  mon_halo_ring: { dir:'resources/enemy/anim/mon_halo_ring_atk_v1/', hit:26 },   // 王的容器 內縮（40 格）⚠ 程式待接：吸收能量特效＋偷破防值
+  mon_beast_organ: { dir:'resources/enemy/anim/mon_beast_organ_atk_v1/', hit:8 },   // 裂肉獸 撲咬（28 格，R 眼睛挖黑）
+  mon_bear_nightmare: { dir:'resources/enemy/anim/mon_bear_nightmare_atk_v1/', hit:6 },   // 熊骸 撲擊（22 格）
+  mon_beast_reliquary: { dir:'resources/enemy/anim/mon_beast_reliquary_atk_v1/', hit:20 },   // 聖骨獸 胸口裂開（44 格）
+  mon_relic_bellreacher: { dir:'resources/enemy/anim/mon_relic_bellreacher_atk_v1/', hit:8 },   // 鳴鐘者 鐘砸（26 格）
+  mon_relic_bellwalker: { dir:'resources/enemy/anim/mon_relic_bellwalker_atk_v1/', hit:6 },   // 喪鐘 鐘砸地（24 格）
+  mon_relic_heartripper: { dir:'resources/enemy/anim/mon_relic_heartripper_atk_v1/', hit:4 },   // 撕心者 爪擊（22 格；延時同一支）
+  mon_beast_shackle: { dir:'resources/enemy/anim/mon_beast_shackle_atk_v1/', hit:4 },   // 枷獸 撲咬（23 格，R 第 13／17／20 格眼睛塗白；延時同一支，Ray：單爪擊用不到了）
+  mon_saint_temperance: { dir:'resources/enemy/anim/mon_saint_temperance_atk_v1/', hit:8 },   // 節制者 多手抓（26 格；延時同一支）
+  mon_saint_inspector: { dir:'resources/enemy/anim/mon_saint_inspector_atk_v1/', hit:8 },   // 監查者 鐮刀斬（26 格）
+  mon_saint_thug: { dir:'resources/enemy/anim/mon_saint_thug_atk_v1/', hit:5 },   // 巨型聖徒 直拳（14 格）
 };
 /* ══ 出場（ver -2527，訓練用聖徒新架勢：從半空落地停在架勢）══ 有寫的怪：不走降臨，門開那一刻播一次出場、播完接待機。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
@@ -6117,6 +6130,16 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   mon_shinierforest_tiger_neutral: { dir:'resources/enemy/anim/mon_shinierforest_tiger_delay_v3/', hit:9 },   // ver -2519 Ray：爪擊撲出＝他剪的 hswipeAB_cut（10 格）＋ tiger rule 的 hswipeBA   // E068 獨角虎 橫向爪擊（只有收回段，23 格：開頭就是爪掃到底 ⇒ 第 1 格打到）
   mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_delay_v1/', hit:8, near:1.2 },   // -2476 Ray「DM（delay／miss）都用爪擊」：延時／點錯也演同一支撲擊
   mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_atk_v2/', hit:13, noMiss:true },   // 魘魔 D＝同 A、點錯只扣秒（ver -2802，Ray：「魘魔也是」；原 delay_v1 不用）
+  /* 夏爾三區重做（ver -2957，Ray 11-24 交件，同 ENEMY_ATK 那一段的作法） */
+  mon_bear_husk: { dir:'resources/enemy/anim/mon_bear_husk_delay_v1/', hit:7 },   // 森林熊骸 前爪橫掃（26 格）
+  mon_beast_organ: { dir:'resources/enemy/anim/mon_beast_organ_delay_v1/', hit:19 },   // 裂肉獸 蓄力（38 格）⚠ 程式待接：蓄力後爆煙遮敵人區
+  mon_beast_reliquary: { dir:'resources/enemy/anim/mon_beast_reliquary_delay_v1/', hit:7 },   // 聖骨獸 前爪橫掃（33 格）
+  mon_saint_thug: { dir:'resources/enemy/anim/mon_saint_thug_delay_v1/', hit:11 },   // 巨型聖徒 砸地（27 格）
+  mon_relic_bellreacher: { dir:'resources/enemy/anim/mon_relic_bellreacher_shake_v1/', hit:6 },   // 鳴鐘者 劇烈震動（13 格）⚠ 程式待接：音波攻擊（淡出數字那一套）
+  mon_relic_bellwalker: { dir:'resources/enemy/anim/mon_relic_bellwalker_shake_v1/', hit:6 },   // 喪鐘 劇烈震動（13 格）⚠ 程式待接：音波攻擊（淡出數字那一套）
+  mon_relic_heartripper: { dir:'resources/enemy/anim/mon_relic_heartripper_atk_v1/', hit:4 },   // 撕心者：延時＝攻擊同一支
+  mon_beast_shackle: { dir:'resources/enemy/anim/mon_beast_shackle_atk_v1/', hit:4 },   // 枷獸：延時＝攻擊同一支
+  mon_saint_temperance: { dir:'resources/enemy/anim/mon_saint_temperance_atk_v1/', hit:8 },   // 節制者：延時＝攻擊同一支
 };
 
 export function asset(key){ return (key && ASSETS[key] != null) ? ASSETS[key] : ""; }
@@ -7169,10 +7192,10 @@ export const ASSET_VER = {
   'molly_si_think': '0ceca598',
   'molly_si_whisper': '54e5d7b3',
   'mon_arch_warden': '69358667',
-  'mon_bear_husk': '08453d77',
+  'mon_bear_husk': 'c5b1b887',
   'mon_bear_nightmare': '8b9715dd',
   'mon_beast_altar': '2e3ff58b',
-  'mon_beast_organ': '2cb2855b',
+  'mon_beast_organ': '868d4069',
   'mon_beast_reliquary': '9e728c27',
   'mon_beast_shackle': '3f7e0727',
   'mon_bellfounder': '996b6674',
