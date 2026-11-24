@@ -166,8 +166,13 @@ export const MAIN_SCRIPT = {
          抖動由 story.js 依 fx 自動抖滿整段（Ray：「抖動要連續直到射擊效果停止」）。 */
       /* ⚠ 掃射這一拍**畫面上不要有人**（Ray 指定）：這是「子彈打在牆上」的鏡頭，
          不是誰在講話。兩位都要明寫 hide —— 立繪是持續狀態，不寫會一直站著。 */
-      { speaker:'UNKNOWN', text:'', auto:2200, hide:['NOUVELLE','UNKNOWN'],
-        fx:'gunfire', shake:true, se:'se_lunaMG' },
+      /* ⚠⚠ ver -2967（Ray：「掃射換成這一個，機槍音從135格開始播，原本的掃射效果拿掉」）：
+         這一拍改播插圖動畫 002（聖徒撲來 → 掃射 → 倒滿長廊，5.67 秒），程式畫的槍擊點（fx:'gunfire'）與抖動拿掉。
+         · 背景本來就是 002 的靜態圖，而影片第一格≒它 ⇒ `cgSoft` 疊上去淡入，不走黑幕。
+         · 機槍音不寫在這一拍：對著**影片時間**播（config cgAnim 的 `cue`，3.208 秒）。
+         · 播完停最後一格、點一下才推進（cgAnimGate）；`auto` 只是蓋過片長的保險。 */
+      { speaker:'UNKNOWN', text:'', auto:5800, hide:['NOUVELLE','UNKNOWN'],
+        cg:'002_saintassult', cgSoft:true },
       /* 回地宮。⚠ cg:null 要明寫，否則插圖會一直蓋著。 */
       /* ⚠ 這一句**只留諾薇兒**（Ray 指定）。璐娜莉亞要明寫 hide 請下台 ——
          立繪是持續狀態，不寫的話她會一直站在右邊。 */

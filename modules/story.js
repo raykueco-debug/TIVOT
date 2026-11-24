@@ -2275,6 +2275,16 @@ function cgAnimGate(byUser){
   withdrawCgAnim(on);
   return false;
 }
+/* ══ `cue:[{ at:<秒>, se:<音效> }]`（ver -2967，Ray：「機槍音從 135 格開始播」）══ 登記在 cgAnim 那一筆上：
+   影片**播到那一秒**才響 —— 對的是影片的時間，不是這一拍開始的時間（影片要等載好／黑幕掀開才開播，用 delay 會走鐘）。
+   ⚠ 每一支動畫各記各的（`on.cued`），config 那一份是常數不寫回。
+   ⚠ 被加速一口氣跳過去的（超過 0.5 秒才看到）就不補響：那一刻已經不在畫面上了。 */
+function cgAnimCue(on, A){
+  if(!A.cue || !on.started) return;
+  const t=on.v.currentTime; on.cued=on.cued||{};
+  A.cue.forEach((c,i)=>{ if(on.cued[i] || t < c.at) return; on.cued[i]=true;
+    if(t - c.at < 0.5) [].concat(c.se||[]).forEach(playSe); });
+}
 function playCgAnim(name){
   stopCgAnim();
   const A=cgAnimSpec(name); if(!A || !A.video) return;
@@ -2301,6 +2311,7 @@ function playCgAnim(name){
     if(cgAnimOn!==on) return;
     /* 點掉之後的淡出跑完才收（ver -2620，見 cgAnimGate）。 */
     if(on.leaving && cgAnimFade(on)<=0){ finishCgAnim(on); return; }
+    cgAnimCue(on, A);
     cgAnimDraw(on);
     if(v.requestVideoFrameCallback && !v.paused) on.vfc=v.requestVideoFrameCallback(loop);
     else on.raf=requestAnimationFrame(loop);
@@ -5672,6 +5683,9 @@ function collectLines(lines, imgs, bgms, ses, cgs){
          404 才是「插圖沒出現」的成因，見 `resolveCg`）。改成收基底名，
          預載時解析**一次**，之後顯示只請求解出來的那一張。 */
       if(ln.cg && !cgs.has(ln.cg)) cgs.set(ln.cg, !!ln.cgNoTime);
+      /* 插圖動畫上對著影片時間播的音效（`cue`，ver -2967）也是這一幕要的音效：一起等它載完（§6.6）。 */
+      for(const c of ((cgAnimSpec(ln.cg)||{}).cue||[])) for(const n of [].concat(c.se||[])){ const k=(typeof n==='string')?n:n.n;
+        if(seSrc(k)) ses.add(seSrc(k)); }
       if(ln.ci) imgs.add(SI_DIR+ln.ci+'.webp'+assetVer(ln.ci));
       for(const n of [].concat(ln.se||[])){ const k=(typeof n==='string')?n:n.n;
         if(seSrc(k)) ses.add(seSrc(k)); }
