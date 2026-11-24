@@ -1689,6 +1689,16 @@ function clipFx(f, el){
       if(hr && r.width) o={ x:r.left-hr.left+f.at[0]*r.width, y:r.top-hr.top+f.at[1]*r.height }; }
     return spawnRubble(o, f.n, f.speed); }
   if(f.type==='violetFlash') return spawnVioletFlash();
+  /* 爆煙（ver -2976，Ray 裂肉獸：「蓄力 然後接程式爆煙遮住敵人區」）：`col`＝[r,g,b]，`n`＝幾團，`ms`＝撐多久；從牠身上炸開、整個敵人區被罩住再慢慢散。 */
+  if(f.type==='smokeBurst'){ const top=$('top'); if(!top) return; const W=top.clientWidth, H=top.clientHeight, C=(f.col||[214,222,214]).join(','), N=f.n||34, ms=f.ms||2600;
+    let ox=W/2, oy=H*0.55; if(el){ const hr=top.getBoundingClientRect(), r=el.getBoundingClientRect(); if(r.width){ ox=r.left-hr.left+r.width*(f.at?f.at[0]:0.5); oy=r.top-hr.top+r.height*(f.at?f.at[1]:0.45); } }
+    for(let k=0;k<N;k++){ const d=document.createElement('i'); d.className='fx-smoke'; const sz=W*(0.22+Math.random()*0.22);
+      d.style.cssText=`left:${ox-sz/2}px;top:${oy-sz/2}px;width:${sz}px;height:${sz}px;z-index:8;background:radial-gradient(circle,rgba(${C},.95) 0%,rgba(${C},.7) 45%,rgba(${C},0) 72%);`; top.appendChild(d);
+      const ang=Math.random()*6.283, dist=Math.sqrt(Math.random())*Math.max(W,H)*0.55, tx=Math.cos(ang)*dist, ty=Math.sin(ang)*dist*0.8-H*0.05, life=ms*(0.8+Math.random()*0.4);
+      const a=d.animate([{ transform:'translate(0,0) scale(.3)', opacity:0 },{ transform:`translate(${tx*0.7}px,${ty*0.7}px) scale(1.6)`, opacity:1, offset:.12 },
+                         { transform:`translate(${tx}px,${ty}px) scale(2.3)`, opacity:.95, offset:.55 },{ transform:`translate(${tx*1.1}px,${ty*1.1-40}px) scale(2.8)`, opacity:0 }], { duration:life, easing:'ease-out' });
+      a.onfinish=()=>d.remove(); setTimeout(()=>d.remove(), life+200); }
+    return; }
   /* 槍口火光（ver -2854，賞金獵人：片子沒畫火光，Ray 交代程式補）：`at`＝這一格畫面上槍口的比例座標，`r`＝半徑（框寬的比例）。
      樣子沿用空賊群戰那一顆（`.eg-muzzle`，鐵律 7：火光只有一份配方）。 */
   if(f.type==='muzzle'){ const top=$('top'); if(!top || !el || !f.at) return;
@@ -2253,6 +2263,40 @@ function airEnter(en, eImg, play){
       { transform:'none', offset:1 }], { duration:1900 });
     airInAnim=a; a.onfinish=done; a.oncancel=done; }
 }
+/* ══ 細煙帶（`wisps`，ver -2976，Ray 裂肉獸：「要加程式煙，不要用現成的，參考 GPT 去煙之前的樣子」）══
+   原圖的煙＝**一條條有描邊的淡色煙帶**，從管頂冒出、一邊往上飄一邊左右捲（不是一團團的霧）。
+   作法：每一縷是一個往上走、左右擺動（振幅越往上越大）的「頭」，煙帶＝頭走過的最近 N 個點；
+   兩趟描線（外層灰邊、內層淡色），寬度兩端細中間粗，整縷隨年齡淡出。座標寫在立繪畫布（`canvas`）上，跟著立繪的框走。
+   收：換怪（setEnemy 重叫）／打完（state.over）。 */
+let wispFx=null;
+function stopWisps(){ if(!wispFx) return; cancelAnimationFrame(wispFx.raf); wispFx.cv.remove(); wispFx=null; }
+function startWisps(cfg){
+  stopWisps(); if(!cfg) return;
+  const top=$('top'); if(!top) return;
+  const cv=document.createElement('canvas'); cv.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3';
+  top.appendChild(cv); const cx=cv.getContext('2d'), ws=[], rnd=(a,b)=>a+Math.random()*(b-a), dpr=Math.min(2, window.devicePixelRatio||1);
+  const S={ cv, raf:0, last:performance.now(), acc:0 }; wispFx=S;
+  const tick=now=>{ if(wispFx!==S) return; const dt=Math.min(now-S.last,50); S.last=now;
+    const W=top.clientWidth, H=top.clientHeight; if(cv.width!==Math.round(W*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
+    if(state.over && !ws.length){ stopWisps(); return; }
+    const eImg=$('enemyImg'); const r=eImg && canvasBoxInTop(eImg, { canvas:cfg.canvas, box:[0,0,cfg.canvas[0],cfg.canvas[1]] });
+    if(r && !state.over){ const k=r.width/cfg.canvas[0]; S.acc+=dt*(cfg.rate||1.6)/1000;
+      while(S.acc>=1){ S.acc-=1; const [px,py]=cfg.pts[(Math.random()*cfg.pts.length)|0];
+        ws.push({ x0:r.left+px*k, y0:r.top+py*k, k, t:0, life:rnd(3800,5200), v:rnd(0.010,0.022)*(cfg.rise||1), f:rnd(0.0012,0.0022), ph:rnd(0,6.28), amp:rnd(26,46), sw:Math.random()<0.5?-1:1, pts:[] }); } }
+    cx.setTransform(dpr,0,0,dpr,0,0); cx.clearRect(0,0,W,H); cx.lineCap='round'; cx.lineJoin='round';
+    const len=cfg.len||22, wid=(cfg.width||9);
+    for(let i=ws.length-1;i>=0;i--){ const w=ws[i]; w.t+=dt; if(w.t>w.life){ ws.splice(i,1); continue; }
+      /* 一整條煙帶＝一段往上走的波：尾端在 y0−up，頭在更上面 L；沿長度做正弦擺動（越往上擺越大），波隨時間往上傳 */
+      const K=w.k*3, up=w.v*w.t*K, L=(cfg.lenPx||90)*K*Math.min(1,w.t/900), N=26; w.pts.length=0;
+      for(let m=0;m<N;m++){ const u=m/(N-1), sy=w.y0-up-u*L, A=w.amp*K*(0.15+0.85*u)*Math.min(1,0.4+w.t/1600);
+        w.pts.push([ w.x0 + w.sw*A*Math.sin(w.ph + u*4.2 - w.t*w.f*2.2) + w.sw*up*0.25*u, sy ]); }
+      const q=w.t/w.life, al=(q<0.12?q/0.12:1)*(1-q*q)*(cfg.alpha||0.9), n=w.pts.length; if(n<3) continue;
+      for(const pass of [0,1]){ cx.strokeStyle=pass? (cfg.col||'rgba(226,234,226,1)') : (cfg.edge||'rgba(120,132,126,1)'); cx.globalAlpha=al*(pass?1:0.8);
+        for(let j=1;j<n;j++){ const u=j/(n-1), prof=Math.sin(Math.PI*u)**0.8, lw=Math.max(0.6, wid*w.k*3*prof*(1+q*0.6)) + (pass?0:2.2);
+          cx.lineWidth=lw; cx.beginPath(); cx.moveTo(w.pts[j-1][0],w.pts[j-1][1]); cx.lineTo(w.pts[j][0],w.pts[j][1]); cx.stroke(); } } }
+    cx.globalAlpha=1; S.raf=requestAnimationFrame(tick); };
+  S.raf=requestAnimationFrame(tick);
+}
 let dmgSmoke=null;
 function stopDamageSmoke(){ if(!dmgSmoke) return; cancelAnimationFrame(dmgSmoke.raf); dmgSmoke.cv.remove(); dmgSmoke=null; }
 function startDamageSmoke(cfg){
@@ -2275,11 +2319,12 @@ function startDamageSmoke(cfg){
         const rate=(cfg.rate||14)*(1+1.6*Math.max(0,(cfg.hp||0.5)-ratio)/(cfg.hp||0.5));   // 每秒幾團，血越少越密
         S.acc+=dt*rate/1000;
         while(S.acc>=1){ S.acc-=1; const [px,py]=cfg.pts[(Math.random()*cfg.pts.length)|0];
-          puffs.push({ x:r.left+px*k+dx+rnd(-8,8)*k*3, y:r.top+py*k+dy, vx:rnd(0.04,0.09)*W/390, vy:-rnd(0.05,0.11)*W/390, r0:rnd(12,20)*k*3, life:rnd(1800,2600), a:0, g:rnd(30,55)|0 });   /* -2490b：深灰、大團、慢一點 —— 純黑在夜空與暗色船身上看不見 */ } } }
+          const vm=cfg.rise||1, sm=cfg.size||1;   /* `rise`＝往上飄的倍率、`size`＝煙團大小倍率、`col`＝[r,g,b]（裂肉獸的管頂白煙，ver -2976） */
+          puffs.push({ x:r.left+px*k+dx+rnd(-8,8)*k*3, y:r.top+py*k+dy, vx:(cfg.col?rnd(-0.03,0.03):rnd(0.04,0.09))*W/390, vy:-rnd(0.05,0.11)*vm*W/390, r0:rnd(12,20)*k*3*sm, life:rnd(1800,2600), a:0, g:rnd(30,55)|0, c:cfg.col||null });   /* -2490b：深灰、大團、慢一點 —— 純黑在夜空與暗色船身上看不見 */ } } }
     cx.clearRect(0,0,W,H);
     for(let i=puffs.length-1;i>=0;i--){ const p=puffs[i]; p.a+=dt; if(p.a>p.life){ puffs.splice(i,1); continue; }
       const q=p.a/p.life, x=p.x+p.vx*p.a, y=p.y+p.vy*p.a, rr=p.r0*(1+q*3.5), al=0.92*(q<0.1?q/0.1:1)*(1-q*q);
-      const gr=cx.createRadialGradient(x,y,0,x,y,rr); gr.addColorStop(0,`rgba(${p.g},${p.g},${p.g},${al.toFixed(3)})`); gr.addColorStop(1,`rgba(${p.g},${p.g},${p.g},0)`);
+      const C=p.c ? p.c.join(',') : `${p.g},${p.g},${p.g}`, A=p.c ? al*(cfg.alpha||0.55) : al; const gr=cx.createRadialGradient(x,y,0,x,y,rr); gr.addColorStop(0,`rgba(${C},${A.toFixed(3)})`); gr.addColorStop(1,`rgba(${C},0)`);
       cx.fillStyle=gr; cx.beginPath(); cx.arc(x,y,rr,0,6.283); cx.fill(); }
     S.raf=requestAnimationFrame(tick); };
   S.raf=requestAnimationFrame(tick);
@@ -4091,6 +4136,7 @@ export function setEnemy(key, opts){
   stopHolyBurst();                              // 同上：放光也是全螢幕的層＋一支還在響的音（ver -1351）
   setSkyBattle(en.sky);                         // 空戰的視差背景（ver -2444）：沒有 `sky` 的怪＝收掉上一隻的
   startDamageSmoke(en.damageSmoke);             // 受損冒黑煙（ver -2490）：沒寫的怪＝收掉上一隻的
+  startWisps(en.wisps);                         // 細煙帶（ver -2976，裂肉獸管頂的白煙）：沒寫的怪＝收掉上一隻的
   startShipAir(en);                             // 空戰船的船底雲浪＋前景雲霧（ver -2865）：不是空戰船＝收掉上一隻的
   startFlock(en);                               // 空戰編隊（ver -2516）：沒寫 flock 的怪＝收掉上一隻的
   setEmpowered(0);                              // 換怪：上一隻的蓄力光與提示收掉（ver -2525）

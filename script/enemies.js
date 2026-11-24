@@ -883,6 +883,7 @@ export const ENEMIES = {
       atype:'P',
       stageScale:1,
       stack:0,
+      wisps:{ canvas:[1027,1532], rate:1.5, lenPx:120, width:10, alpha:0.9, pts:[[420,60],[505,110],[620,190],[700,250],[780,340],[380,330],[560,300],[330,520],[640,520],[300,700],[700,700]] },   // 管頂冒白煙帶（ver -2976，Ray：「裂肉獸要加程式煙…參考 GPT 去煙之前的樣子」；原立繪畫上去的煙已拿掉，改程式跑）
       image:'enemy_sv_beast_organ',
       bg:'shinier_north',
       fit:{ mode:'contain', pos:'center bottom' },
