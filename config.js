@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2976';
+export const VERSION = 'ver 2026.11.24-2977';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -6187,7 +6187,7 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   /* 夏爾三區重做（ver -2957，Ray 11-24 交件，同 ENEMY_ATK 那一段的作法） */
   mon_bear_husk: { dir:'resources/enemy/anim/mon_bear_husk_delay_v1/', hit:7 },
   mon_bear_nightmare: { dir:'resources/enemy/anim/mon_bear_nightmare_delay_v1/', hit:20, flame:{ from:12, to:24, at:[0.47,0.73], tone:'purple' } },   // 熊骸 黑炎（Ray 剪的 sh_bear_roar_A_AB_cut＋R 倒放留 1/3，33 格）：片子是無火咆哮，火由程式從嘴噴（第 12~24 格）   // 森林熊骸 前爪橫掃（26 格）
-  mon_beast_organ: { dir:'resources/enemy/anim/mon_beast_organ_delay_v1/', hit:19 },   // 裂肉獸 蓄力（38 格）⚠ 程式待接：蓄力後爆煙遮敵人區
+  mon_beast_organ: { dir:'resources/enemy/anim/mon_beast_organ_delay_v1/', hit:19, fx:[{ frame:19, type:'smokeBurst', at:[0.5,0.3] }] },   // 裂肉獸 蓄力（38 格）：第 19 格程式爆煙遮住敵人區（ver -2976）
   mon_beast_reliquary: { dir:'resources/enemy/anim/mon_beast_reliquary_delay_v1/', hit:7 },   // 聖骨獸 前爪橫掃（33 格）
   mon_saint_thug: { dir:'resources/enemy/anim/mon_saint_thug_delay_v1/', hit:11 },   // 巨型聖徒 砸地（27 格）
   mon_relic_bellreacher: { dir:'resources/enemy/anim/mon_relic_bellreacher_shake_v1/', hit:6 },   // 鳴鐘者 劇烈震動（13 格）⚠ 程式待接：音波攻擊（淡出數字那一套）

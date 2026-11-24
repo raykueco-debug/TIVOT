@@ -122,7 +122,8 @@ export const MAIN_SCRIPT = {
          · 舊的「咆哮空拍」（bg 002＋咆哮＋震動、auto 3500）併進第一拍：咆哮由影片帶，震動留在第一拍。
          ⚠⚠ ver -2976（Ray：「把對不起我已經刪掉」）：「對不起，我已經……」那一拍拿掉，開播（cg／bg／shake）移到「如果……」這一拍；
            時間表重排：如果 0 → 讓開 1.7 → ！！ 2.5 → 掃射 3.208（仍釘在第 77 格）。要調就改這幾個 vidAt。 */
-      { speaker:'NOUVELLE', text:'如果……是賽西莉學姐的話一定可以……', cg:'002_saintassult', bg:'002_saintassult', shake:true,
+      /* ver -2977（Ray：「不要拿原插畫當底圖，不然播完會漏底」）：不再墊 bg 002 —— 影片停在最後一格撐到換 003。 */
+      { speaker:'NOUVELLE', text:'如果……是賽西莉學姐的話一定可以……', cg:'002_saintassult', shake:true,
         portrait:{ expr:'desperate', show:true } },
       /* 暗調。⚠ 說話的是「？？？」不是 LUNARIA —— 這一刻她還沒表明身分（見 speakers.js 的說明）。
          ⚠⚠ 璐娜莉亞走正規立繪（右側滑入），不是全屏 CI。dark:true＝還沒表明身分的剪影感；諾薇兒留在畫面上。 */
@@ -139,8 +140,10 @@ export const MAIN_SCRIPT = {
          立繪是持續狀態，不寫的話她會一直站在右邊。 */
       /* ⚠ `show:true` 不可省：上一拍（掃射）把兩位都 hide 了，而 show 是**沿用**的 ——
          不明寫的話她永遠不會回來（Ray：「那一句要彈 Nouvelle_SI_Surprise 立繪」）。 */
+      /* ver -2977（Ray）：這一拍**不收插圖**（舊版 cg:null）—— 影片停在最後一格（倒滿屍體）當底，一直撐到下一拍換 003。
+         背景照樣換回地宮（被影片蓋著看不到；003 收掉之後露出來的是它）。 */
       { speaker:'NOUVELLE', text:'那就是......聖約第四騎士團的......',
-        cg:null, bg:'holyseedungeonwhole',
+        bg:'holyseedungeonwhole',
         portrait:{ expr:'surprise', show:true } },
       /* 璐娜莉亞的插畫。
          ⚠ 演變：由下往上平移（-337）→ 以臉為中心緩慢推近（-339，cgZoom）→

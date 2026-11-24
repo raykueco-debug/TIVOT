@@ -2194,7 +2194,9 @@ function cgAnimDraw(on){
   /* ⚠⚠ 自我檢查（ver -2181，Ray：「插圖動畫有霸屏不卸的狀況」）：插圖已經不在、或換成別張了 ⇒ 自己收掉。
      收插圖的路不只 clearCg（飛行頁前直接清、resetStage…），漏一條就是一張 canvas 蓋在畫面上不走 ——
      與其逐條補，不如讓它看著自己的那張圖（同「暗罩守望」的思路）。 */
-  if(on.shown && (!img.isConnected || !img.classList.contains('on') || (img.getAttribute('src')||'').indexOf(on.name)<0)){ stopCgAnim(); return; }
+  /* ⚠ 黑幕換圖還沒換完（`cgFinish` 還在等）時不判（ver -2977）：底下那張要等全黑才換成新的，影片若已在快取裡、第一格先畫上去，
+     這裡會看到「圖還是上一張」就把自己收掉 —— 而且收掉時把上一張的靜態圖放了出來（實測 003 接在 002 後面就是這樣）。 */
+  if(on.shown && !cgFinish && (!img.isConnected || !img.classList.contains('on') || (img.getAttribute('src')||'').indexOf(on.name)<0)){ stopCgAnim(); return; }
   const W=img.offsetWidth, H=img.offsetHeight; if(!W||!H) return;
   const dpr=Math.min(2, window.devicePixelRatio||1);
   const cw=Math.round(W*dpr), ch=Math.round(H*dpr);
@@ -2214,7 +2216,8 @@ function cgAnimDraw(on){
   const pos=(cs.objectPosition||'50% 50%').split(/\s+/);
   const fx=cgPosFrac(pos[0], (dw-cw)/dpr), fy=cgPosFrac(pos[1], (dh-ch)/dpr);
   ctx.drawImage(v, (cw-dw)*fx, (ch-dh)*fy, dw, dh);
-  if(!on.shown){ on.shown=true; cv.style.visibility=''; }
+  /* 黑幕換圖還沒換完就先別亮出來（ver -2977）：黑幕淡入那半秒會透出新的第一格。sig 清掉，下一次一定再走到這裡。 */
+  if(!on.shown){ if(cgFinish){ on.sig=null; return; } on.shown=true; cv.style.visibility=''; }
 }
 const CG_ANIM_OUT_MS = 400;   // 點掉之後淡出撤下要多久
 const CG_ANIM_LOAD_MS = 5000; // 影片幾秒畫不出第一格就退回靜態圖（ver -2908）
@@ -2309,8 +2312,23 @@ function cgAnimSchedule(on, t){
   const cl=L[lineIdx];
   if(cgAnimEnded(on) && !on.endDone && (on.endKick || (cl && cl.vidEnd))){ on.endDone=true; on.endKick=false; advance(); }
 }
+/* 換插圖走黑幕的那一刻（ver -2977，Ray：「不要拿原插畫當底圖，不然播完會漏底」）：舊影片**不要立刻拆** ——
+   拆了畫布、靜態圖就露出來（播完的影片停在最後一格，而靜態圖是第一格那張），黑幕淡入那半秒看得到它。
+   作法：影片停掉、畫布留著（它記得最後畫上去的那一格）、靜態圖繼續藏著，黑幕全黑之後才拆。 */
+function retireCgAnim(){
+  const on=cgAnimOn; cgAnimOn=null; if(!on) return;
+  if(on.vfc && on.v.cancelVideoFrameCallback) try{ on.v.cancelVideoFrameCallback(on.vfc); }catch(_){}
+  cancelAnimationFrame(on.raf); clearTimeout(on.t);
+  try{ on.v.pause(); }catch(_){}
+  setTimeout(()=>{
+    on.v.removeAttribute('src'); try{ on.v.load(); }catch(_){}
+    on.v.remove(); on.cv.remove();
+    if(on.img && !(cgAnimOn && cgAnimOn.img===on.img)) on.img.classList.remove('cg-anim-hide');   // 新的一支掛在同一張上就別替它解藏
+    if(on.url) try{ URL.revokeObjectURL(on.url); }catch(_){}
+  }, CG_FADE_MS + 60);
+}
 function playCgAnim(name){
-  stopCgAnim();
+  { const f=$('storyFade'); if(cgAnimOn && f && f.classList.contains('on')) retireCgAnim(); else stopCgAnim(); }
   const A=cgAnimSpec(name); if(!A || !A.video) return;
   const img=$('storyCg'); if(!img || !img.parentNode) return;
   const v=document.createElement('video');
