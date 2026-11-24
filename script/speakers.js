@@ -549,7 +549,7 @@ export const ART = {
                   pray:     { src:'resources/si/nouvelle_si_pray.webp',     top:0,  bot:1533, fx:0.535 },
                   /* 北方泊地教堂那一段（ver -595，Ray 交稿）。`relief` 交件是 PNG，
                      依 §5 轉 WebP 之後才接；`saintinstall` 的圖早就在，只是沒進表。 */
-                  relief:   { src:'resources/si/nouvelle_si_relief.webp',   top:4,  bot:1530, fx:0.540 },
+                  relief:   { fxShift:0, src:'resources/si/nouvelle_si_relief.webp',   top:4,  bot:1530, fx:0.540 },
                   /* 娜塔莉那一幕（ver -636）。 */
                   sad:      { fxShift:0, flip:true, src:'resources/si/nouvelle_si_sad.webp',      top:3,  bot:1534, fx:0.481 },
                   /* ⚠⚠ **法環不算在身高裡**（ver -635，Ray：「戰鬥中諾的 saint install
@@ -1376,13 +1376,16 @@ export const ART = {
        但戰鬥那邊是滿版取景、不吃這組數字 —— 同一張圖、兩套用途。 */
   hunter: { cm:178, eye:32, fx:0.485, top:6, bot:1529,
            side:'R', alt:null, base:'resources/si/npc/npc_guildhunter_si.webp',
-           expr:{ shock:{ src:'resources/si/npc/npc_guildhunter_si_shock.webp', top:0, bot:1535, fx:0.453 },
+           /* `front`（ver -2995，Ray：「獵人怎麼沒有中立立繪」）＝本尊那張，取景同角色層。
+              管理人的逐拍換立繪只列 expr 的鍵，本尊不在裡面就選不到 —— 補一個鍵指回同一張。 */
+           expr:{ front:{ src:'resources/si/npc/npc_guildhunter_si.webp', top:6, bot:1529, fx:0.485 },
+                  shock:{ src:'resources/si/npc/npc_guildhunter_si_shock.webp', top:0, bot:1535, fx:0.453 },
                   attack: { src:'resources/si/npc/npc_guildhunter_si_attack.webp',  top:0, bot:1535, fx:0.546 },
                   lost:   { src:'resources/si/npc/npc_guildhunter_si_lost.webp',    top:6, bot:1529, fx:0.487 },
                   /* flick（ver -2965，Ray：「彈硬幣不是插畫，是立繪」）：公會硬幣那一拍彈硬幣的姿勢。
                      ver -2966 交件（GPT 重繪 alpha 版 v2；原 PNG 在 _originals/si/npc/）；
                      top／bot／fx 由 tools/measure_si.py 量這一張（不沿用別張）。 */
-                  flick:  { src:'resources/si/npc/npc_guildhunter_si_flick.webp',   top:6, bot:1530, fx:0.514 },
+                  flick:  { fxShift:0.055, src:'resources/si/npc/npc_guildhunter_si_flick.webp',   top:6, bot:1530, fx:0.514 },
                 } },
   /* 東方泊地公會的賞金獵人（ver -1375，Ray 交件 `NPC_ep_SI_bounty`）。
      ⚠ 身高是**估的**（178，沿用帝都那位獵人那一級的體格）；`top`/`bot`/`fx` 是

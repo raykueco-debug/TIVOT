@@ -3013,7 +3013,7 @@ export const TOWNS = {
             { speaker:'COUNTER', text:'', auto:900, se:'se_ginclick' },
             cnt(null,'總之，這把信號槍帶著，勦滅盜賊後射出，公會就會派人去收屍了。'),
             cnt(null,'三發要照順序打出去喔，不然對不上你的執照號碼。'),
-            nou('sadsmile','不用自己押回來真是太好了……'),
+            nou('relief','不用自己押回來真是太好了……'),
           ],
         },
         lines:[
@@ -3048,15 +3048,14 @@ export const TOWNS = {
           cnt(null,'常來啊，委託常常會更新。手腳得快點，盜賊都快被槍之魔女殺完了。'),
           cnt(null,'各個城市的委託也會不同，加油吧，神父弟弟。'),
           /* ══ 公會硬幣（ver -2964，Ray 交稿）══ 想開溜的獵人被櫃台叫住，彈了一枚硬幣過來。 */
+          { speaker:'HUNTER', text:'', portrait:{ char:'HUNTER', expr:'lost', show:true } },
           cnt(null,'慢著，決鬥輸了就想走嗎？'),
           hun('lost','呿。'),
-          /* 彈硬幣（無台詞拍）。ver -2965（Ray）：是**立繪差分**不是插圖 —— `hunter` 的 `flick`
-             （speakers.js 已預留；圖到之前回退本尊立繪）。
+          /* 彈硬幣。ver -2965（Ray）：是**立繪差分**不是插圖 —— `hunter` 的 `flick`。
+             ver -2995：Ray 用管理人工具把它併進「這樣就可以了吧？」這一句（原本是一拍無台詞），
+             音效（Ray：「彈硬幣那拍要有音效」）、入袋、插旗一起搬到這一句。
              ⚠ 硬幣在這一拍入袋＋插旗 `relic_shop_open`（公會的「聖遺物」入口從此出現；沒有人拔）。 */
-          { speaker:'HUNTER', text:'', auto:1200, se:'se_coins',
-            portrait:{ char:'HUNTER', expr:'flick', show:true },
-            give:{ guild_coin:1 }, flags:['relic_shop_open'] },
-          hun('lost','這樣就可以了吧？'),
+          hun('flick','這樣就可以了吧？', { se:'se_coins', give:{ guild_coin:1 }, flags:['relic_shop_open'] }),
           nou('surprise','這個是？', { hide:['HUNTER'] }),
           cnt(null,'公會專用的貨幣。可以拿來換遺蹟裡挖出來的聖遺物。'),
           cnt(null,'不過開出來是什麼，連公會也不知道。頂級的聖遺物都被聖王廳收走了，流到這裡的只剩一些次品，連著封印盒一起賣。'),
