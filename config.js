@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2959';
+export const VERSION = 'ver 2026.11.24-2960';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -589,8 +589,10 @@ export const GAME_CONFIG = {
          `partner.js`（鐵律 1）：日後別的搭檔要有自己的回填條件，加一格就好。 */
       installReload:{ flawless:1, name:i18nT('聖徒再臨'), en:'SAINT RELOAD',
                       needStar:'saintReload',         // ver -971：諾薇兒 Lv3（探覓星）
-                      cutin:'cutin_saintreload',      // ver -894：專屬 CI（原本借被動那張）
-                      voice:'vo_nou_saintreload' },
+                      /* ver -2960（Ray：「先把聖徒化reload的cut in跟音效拿掉」）：明寫 null ＝不演 CI、不放語音
+                         （不寫的話 partner.js 會退回借被動那張 CI）。素材沒回收：要恢復就改回
+                         cutin:'cutin_saintreload'／voice:'vo_nou_saintreload'。字（聖徒再臨）照跳。 */
+                      cutin:null, voice:null },
     },
     /* ══ 安雅（ver -671，Ray：「從玩家跟安雅一起出旅店後，夥伴就從諾薇兒
        換成安雅了」）══

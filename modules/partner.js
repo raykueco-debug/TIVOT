@@ -647,11 +647,12 @@ export function onEnemyCleared(){
              ⚠ 英文那一行掛 `.reload`：與明晰之夢的 NIGHTMARE RELOAD 同一條金綠光，
                玩家才認得出「這是賺回一次發動」（樣式見 style.css）。
              ⚠ 已有演出在播就只跳字 —— 兩張 cut-in 疊在一起會互相蓋掉（同 fireBuff）。 */
-          const ci = ir.cutin || (p0.passive && p0.passive.cutin);
+          /* 卡上明寫 `cutin:null` ＝不演（ver -2960）；完全沒寫這一格才退回借被動那張。 */
+          const ci = ('cutin' in ir) ? ir.cutin : (p0.passive && p0.passive.cutin);
           const label = `${ir.name||''}<span class="cutin-en reload">${ir.en||''}</span>`;
           /* 語音（ver -893，Ray 交件 vo_nouvelle_saintreload）：與 CI 同步起播，
              增益讀 tuning.fileGain 的逐支表（鐵律 7，不寫死在這裡）。 */
-          { const vk=SFX.pickRot(ir.voice); const vo=asset(vk);
+          if(ir.voice){ const vk=SFX.pickRot(ir.voice); const vo=asset(vk);
             if(vo) SFX.playVoice(vo, sfxGain(vk)); }
           api.floatDmg(ir.name||'','50%','30%',true);
           if(ci && !state.cutinPlaying && api.playCutin) api.playCutin(()=>{}, label, ci);
