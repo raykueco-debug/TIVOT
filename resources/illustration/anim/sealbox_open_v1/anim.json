@@ -1,0 +1,9 @@
+{
+ "canvas": [720, 480],
+ "frames": 30,
+ "fps": 24,
+ "loop": false,
+ "glow_from_frame": 24,
+ "glow_origin": [366, 232],
+ "glow_box": [225, 205, 504, 260]
+}
