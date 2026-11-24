@@ -10,7 +10,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, '..', '..', '..'))
 BG = os.path.join(ROOT, 'resources', 'background')
 LG = os.path.join(BG, '_layers_gpt')
-SKIP = set('''lake_causeway_day lake_cave_day lake_deadfall_day lake_eastshore_day lake_fallbase_day lake_grove_day lake_inlet_day lake_northshore_day canyon_bridge_day plains_deadwood_day belisar_draincliff_day'''.split())   # 11-24：bgchk 的遮罩把山／瀑布／霧當成天空（鏡湖整區、峽谷吊橋、平原枯木）、落水崖已有舊天空層 —— 這幾格先留影片的雲，要 GPT 重摳天空再做
+SKIP = set('''lake_cave_day lake_fallbase_day'''.split())   # 水蝕洞幾乎沒有天空；瀑布底的天空寫在 bg_fx.js 自己那一列（有水面／水花）。11-25 其餘鏡湖、峽谷吊橋、平原枯木、落水崖改 GPT 重摳（--gpt 那條路）
 
 
 def cells():
@@ -50,14 +50,15 @@ def run(k, c):
 
 
 def emit():
-    C = cells(); rows = []
-    for k in sorted(C):
-        p = os.path.join(BG, 'anim', C[k]['anim'], 'live', k + '_live.json')
-        if not os.path.exists(p): continue
+    """anim/<區>/live/<k>_live.json 全部寫進 ⟨cloud-live⟩ 段（bgchk 精修遮罩那批＋11-25 GPT 重摳那批：鏡湖／峽谷吊橋／平原枯木／落水崖／帝都）"""
+    rows = []
+    for p in sorted(glob.glob(os.path.join(BG, 'anim', '*', 'live', '*_live.json'))):
+        k = os.path.basename(p)[:-len('_live.json')]; area = os.path.basename(os.path.dirname(os.path.dirname(p)))
+        if k in SKIP: continue
         j = json.load(open(p, encoding='utf8'))
         if j.get('sky_frac', 1) < 0.01: continue
         o = [f"bottom: {j.get('bottom') or 0.4}"] + ([] if 'sun' in j['files'] else ['sun: false'])
-        rows.append(f"  {k}: LIVE('{C[k]['anim']}/live/')('{k}', {{ {', '.join(o)} }}).sky,")
+        rows.append(f"  {k}: LIVE('{area}/live/')('{k}', {{ {', '.join(o)} }}).sky,")
     p = os.path.join(ROOT, 'script', 'bg_fx.js'); s = open(p, encoding='utf8').read()
     a, b = s.index('  /* ⟨cloud-live⟩'), s.index('  /* ⟨/cloud-live⟩ */')
     s = s[:a] + '  /* ⟨cloud-live⟩ 以下由 tools/anim/bg_layer/cloud_live_batch.py --emit 自動產生，不要手改 */\n' + '\n'.join(rows) + '\n' + s[b:]

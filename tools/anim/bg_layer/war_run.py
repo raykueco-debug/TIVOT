@@ -259,6 +259,7 @@ def sun_disc(orig, sky=None):
 def sun_layer(orig, sky):
     """原圖的太陽：本體＋光暈貼回程式天空；回傳 (rgb, alpha, 讓雲淡掉的範圍)。"""
     sn = sun_disc(orig, sky)
+    if os.environ.get('WAR_SUNAT'): sn = tuple(float(v) for v in os.environ['WAR_SUNAT'].split(','))   # 11-25：月亮被雲切開偵測不到（帝都中城夜景）⇒ 手指定 cx,cy,r（1536 寬座標）
     if not sn: return None
     cx, cy, rad = sn
     YY, XX = np.mgrid[0:H, 0:W].astype(np.float32); d = np.hypot(XX - cx, YY - cy)

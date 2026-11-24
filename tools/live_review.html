@@ -38,7 +38,7 @@ const dirOf = {};   // 基底名 → 區域資料夾
 for (const m of idx.matchAll(/^\s*([a-z0-9_]+):\s*\[([^\]]*)\]/gm)) for (const k of m[2].matchAll(/'([^']+)'/g)) dirOf[k[1]] = m[1];
 const keys = Object.keys(BG_FX).filter(k => BG_FX[k].sky);   // 遊戲內即時跑＝有程式天空（雲）的格
 const GROUPS = [['ws_', '溫斯摩爾港守城戰'], ['northport_', '北方泊地'], ['plains_', '平原古道'], ['lake_', '鏡湖'], ['canyon_', '卡耶爾山谷'],
-  ['fallen_', '石製遺蹟'], ['dunmor_', '羅賽爾廢城'], ['belisar_', '貝利薩爾古堡'], ['sofiaout_', '里朋莊園']];
+  ['fallen_', '石製遺蹟'], ['dunmor_', '羅賽爾廢城'], ['belisar_', '貝利薩爾古堡'], ['sofiaout_', '里朋莊園'], ['capital_', '帝都']];
 const group = k => (GROUPS.find(([p]) => k.startsWith(p)) || [0, '其他'])[1];
 const firePlace = await fetch('api/fire_place').then(r => r.json()).catch(() => ({}));
 const notes = await fetch('api/live_notes').then(r => r.json()).catch(() => ({}));

@@ -3563,3 +3563,16 @@ when	from	to	reason
 20261124-220312	resources/enemy/anim/mon_saint_temperance_spawn3_atk_v1	_recycle/resources/enemy/anim/mon_saint_temperance_spawn3_atk_v1	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔
 20261124-220312	resources/enemy/anim/mon_saint_temperance_spawn3_idle_v1	_recycle/resources/enemy/anim/mon_saint_temperance_spawn3_idle_v1	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔
 20261124-220312	resources/enemy/anim/mon_saint_temperance_spawn3_enter_v1	_recycle/resources/enemy/anim/mon_saint_temperance_spawn3_enter_v1	Ray 11-24：分離怪色調對齊節制者，這是對色前的原檔
+20261125-004444	resources/background/_layers_gpt/out/cloud/lake_causeway_day__cut.png	_recycle/resources/background/_layers_gpt/out/cloud/lake_causeway_day__cut.png	11-25 天空改 GPT 重摳
+20261125-004445	resources/background/_layers_gpt/out/cloud/lake_deadfall_day__cut.png	_recycle/resources/background/_layers_gpt/out/cloud/lake_deadfall_day__cut.png	11-25 天空改 GPT 重摳
+20261125-004534	resources/background/_layers_gpt/out/cloud/lake_eastshore_day__cut.png	_recycle/resources/background/_layers_gpt/out/cloud/lake_eastshore_day__cut.png	11-25 天空改 GPT 重摳
+20261125-004703	resources/background/_layers_gpt/out/cloud/lake_grove_day__cut.png	_recycle/resources/background/_layers_gpt/out/cloud/lake_grove_day__cut.png	11-25 天空改 GPT 重摳
+20261125-004703	resources/background/_layers_gpt/out/cloud/lake_inlet_day__cut.png	_recycle/resources/background/_layers_gpt/out/cloud/lake_inlet_day__cut.png	11-25 天空改 GPT 重摳
+20261125-004740	resources/background/_layers_gpt/out/cloud/lake_northshore_day__cut.png	_recycle/resources/background/_layers_gpt/out/cloud/lake_northshore_day__cut.png	11-25 天空改 GPT 重摳
+20261125-004801	resources/background/_layers_gpt/out/cloud/canyon_bridge_day__cut.png	_recycle/resources/background/_layers_gpt/out/cloud/canyon_bridge_day__cut.png	11-25 天空改 GPT 重摳
+20261125-004802	resources/background/_layers_gpt/out/cloud/plains_deadwood_day__cut.png	_recycle/resources/background/_layers_gpt/out/cloud/plains_deadwood_day__cut.png	11-25 天空改 GPT 重摳
+20261125-004902	resources/background/_layers_gpt/out/cloud/belisar_draincliff_day__cut.png	_recycle/resources/background/_layers_gpt/out/cloud/belisar_draincliff_day__cut.png	11-25 天空改 GPT 重摳
+20261125-005050	resources/background/_layers_gpt/out/cloud/canyon_bridge_day__cut.png	_recycle/resources/background/_layers_gpt/out/cloud/canyon_bridge_day__cut.png.20261125-005050	11-25 天空改 GPT 重摳
+20261125-011655	resources/background/anim/lake/lake_grove_day_sep_v1.mp4	_recycle/resources/background/anim/lake/lake_grove_day_sep_v1.mp4	11-25 影片霧裡有洋紅殘邊；改靜態底圖＋程式雲
+20261125-011709	resources/background/anim/belisar/belisar_draincliff_day_sky.png	_recycle/resources/background/anim/belisar/belisar_draincliff_day_sky.png	11-25 落水崖天空改 GPT 重摳的程式雲（live/），舊天空層不用了
+20261125-011709	resources/background/anim/belisar/belisar_draincliff_day_skymask.png	_recycle/resources/background/anim/belisar/belisar_draincliff_day_skymask.png.20261125-011709	11-25 落水崖天空改 GPT 重摳的程式雲（live/），舊天空層不用了
