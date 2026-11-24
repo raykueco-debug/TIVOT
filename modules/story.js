@@ -2304,7 +2304,10 @@ function cgAnimSchedule(on, t){
     stopTyping();
     lineIdx=to; renderLine(); return;
   }
-  if(on.endKick && cgAnimEnded(on)){ on.endKick=false; advance(); }
+  /* 停在 `vidEnd` 那一拍、影片播完了 ⇒ 自己往下（玩家不點也推進）。⚠ 不靠那一拍的 `auto`：台上留著人時 auto 不排（-628），
+     那樣就永遠等不到（ver -2976 實測）。每一支影片只補推一次。 */
+  const cl=L[lineIdx];
+  if(cgAnimEnded(on) && !on.endDone && (on.endKick || (cl && cl.vidEnd))){ on.endDone=true; on.endKick=false; advance(); }
 }
 function playCgAnim(name){
   stopCgAnim();

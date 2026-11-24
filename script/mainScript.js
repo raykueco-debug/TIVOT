@@ -114,23 +114,22 @@ export const MAIN_SCRIPT = {
       /* ══⚠⚠⚠ ver -2973（Ray）：聖徒襲來改成**一整段影片打底**══
          「再跑一次聖徒襲來動畫。諾薇兒的對不起跟璐娜的讓開都要以那個為底。如果玩家不點的話也要自動推進
            確保135格開始掃射。動畫要配原本聖徒襲來的音效直到掃射完閉。」
-         · 影片 `002_saintassult`（5.67 秒）從「對不起」這一拍開播，**一路播到片尾不停**；後面幾句疊在影片上。
+         · 影片 `002_saintassult`（5.67 秒）從第一拍開播（-2976 起是「如果……」），**一路播到片尾不停**；後面幾句疊在影片上。
            ⚠ 它登記了 `under:true`（config cgAnim）＝畫在**立繪之下**，所以這幾句的人照樣站得出來（舊版當背景就是為了這個）。
          · 每一句的 `vidAt` ＝「影片播到這一秒，劇情至少要演到這一拍」：玩家不點就照這張時間表自動跳過去；
            點得快可以提早，但影片不停、也不會晚 —— **掃射那一拍釘在 77/24＝3.208 秒**（原片格號 135）。
          · 聲音掛在影片時間上（config cgAnim 的 `cue`）：0 秒聖徒咆哮（原本那一拍的 se_saintroar）、3.208 秒機槍（4.06 秒，蓋到片尾）。
-         · 舊的「咆哮空拍」（bg 002＋咆哮＋震動、auto 3500）併進這一拍：咆哮由影片帶，震動留在這裡。
-         ⚠ 時間表（vidAt）是我排的初版 —— 3.2 秒裡要講四句，「如果……」那句只有約 1 秒，要調就改這幾個數字。 */
-      { speaker:'NOUVELLE', text:'對不起，我已經……', cg:'002_saintassult', bg:'002_saintassult', shake:true,
-        portrait:{ expr:'desperate', show:true } },
-      { speaker:'NOUVELLE', text:'如果……是賽西莉學姐的話一定可以……', vidAt:1.0,
+         · 舊的「咆哮空拍」（bg 002＋咆哮＋震動、auto 3500）併進第一拍：咆哮由影片帶，震動留在第一拍。
+         ⚠⚠ ver -2976（Ray：「把對不起我已經刪掉」）：「對不起，我已經……」那一拍拿掉，開播（cg／bg／shake）移到「如果……」這一拍；
+           時間表重排：如果 0 → 讓開 1.7 → ！！ 2.5 → 掃射 3.208（仍釘在第 77 格）。要調就改這幾個 vidAt。 */
+      { speaker:'NOUVELLE', text:'如果……是賽西莉學姐的話一定可以……', cg:'002_saintassult', bg:'002_saintassult', shake:true,
         portrait:{ expr:'desperate', show:true } },
       /* 暗調。⚠ 說話的是「？？？」不是 LUNARIA —— 這一刻她還沒表明身分（見 speakers.js 的說明）。
          ⚠⚠ 璐娜莉亞走正規立繪（右側滑入），不是全屏 CI。dark:true＝還沒表明身分的剪影感；諾薇兒留在畫面上。 */
-      { speaker:'UNKNOWN', text:'讓開。', dark:true, vidAt:2.0,
+      { speaker:'UNKNOWN', text:'讓開。', dark:true, vidAt:1.7,
         portrait:{ char:'UNKNOWN', show:true } },
       /* ⚠ 璐娜莉亞這一拍退場（Ray 指定）。 */
-      { speaker:'NOUVELLE', text:'！！', hide:'UNKNOWN', vidAt:2.6,
+      { speaker:'NOUVELLE', text:'！！', hide:'UNKNOWN', vidAt:2.5,
         portrait:{ char:'NOUVELLE', expr:'scare' } },
       /* 掃射（影片第 77 格起）：畫面上不要有人（Ray 指定），兩位都明寫 hide。
          `vidEnd:true` ＝影片播完之前不放行（點擊無效）；播完自己往下走（玩家不點也會推進）。 */
