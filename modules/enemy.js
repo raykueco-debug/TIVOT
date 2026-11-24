@@ -2277,18 +2277,21 @@ export function setSpawnPlace(p){ const en=curCard(), ms=en && en.missSpawn; if(
 export function spawnEl(){ return spawnFx ? spawnFx.el : null; }
 export function spawnAlive(){ return !!(spawnFx && spawnFx.hp>0); }
 export function clearSpawn(){ if(!spawnFx) return; clearTimeout(spawnFx.t); spawnFx.el.remove(); spawnFx=null; }
-export function preloadSpawn(en){ const ms=en && en.missSpawn, c=ms && GAME_CONFIG.enemies[ms.card]; if(!c) return; const st=imgStem(c);
-  [ENEMY_ENTER[st], ENEMY_IDLE[st]].forEach(x=>{ const d=x && (x.dir||x); if(typeof d==='string') loadClip(d); }); }
+/* `card` 可以是一張卡或一份名單（名單＝每次隨機挑一隻，ver -2989，三隻分離怪） */
+const spawnCards=ms=>[].concat(ms && ms.card || []);
+export function spawnCard(){ return spawnFx ? spawnFx.card : null; }
+export function preloadSpawn(en){ const ms=en && en.missSpawn; spawnCards(ms).forEach(k=>{ const c=GAME_CONFIG.enemies[k]; if(!c) return; const st=imgStem(c);
+  [ENEMY_ENTER[st], ENEMY_IDLE[st]].forEach(x=>{ const d=x && (x.dir||x); if(typeof d==='string') loadClip(d); }); }); }
 export function summonSpawn(){
   const en=curCard(), ms=en && en.missSpawn; if(!ms || spawnAlive()) return 0;
-  const c=GAME_CONFIG.enemies[ms.card], top=$('top'); if(!c || !top) return 0;
+  const cl=spawnCards(ms), ck=cl[(Math.random()*cl.length)|0], c=GAME_CONFIG.enemies[ck], top=$('top'); if(!c || !top) return 0;
   const st=imgStem(c), E=ENEMY_ENTER[st], I=ENEMY_IDLE[st], Ld=E && clipCache[E.dir], Li=I && clipCache[typeof I==='string'?I:I.dir];
   clearSpawn();
   const el=document.createElement('img'); el.className='en-spawn'; el.alt='';
   const px=(Li&&Li.j&&Li.j.px)||(Ld&&Ld.j&&Ld.j.px)||[1,1.4];
   el.style.cssText='position:absolute;pointer-events:none;z-index:4;object-fit:contain;'; el._px=px; spawnPlace(el, ms); const h=parseFloat(el.style.height);
   el.src=asset(c.image)||''; top.appendChild(el);
-  const S={ el, hp:ms.hp||100, t:0 }; spawnFx=S;
+  const S={ el, hp:ms.hp||100, t:0, card:ck }; spawnFx=S;
   const play=(L, loop, fps, after)=>{ if(!L||!L.fr){ if(after) after(); return; } let i=0; const N=L.fr.length, dt=1000/(fps||L.j.fps||24);
     const step=()=>{ if(spawnFx!==S) return; el.src=L.fr[i].src; i++; if(i>=N){ if(loop) i=0; else { if(after) after(); return; } } S.t=setTimeout(step, dt); }; step(); };
   const idle=()=>play(Li, true);

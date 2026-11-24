@@ -1599,7 +1599,7 @@ function openEnemyEdit(opt){
         + row(i18nT('上下'), Math.round(v[1]), 'gy', 10, 'data-gk')
         + row(i18nT('縮放'), Math.round(v[2]*100)+'%', 'gs', 0.02, 'data-gk');
     }else if(tab==='spawn'){
-      body = i18nT('<div class="ee-hd">分離怪　')+ms0.card+'</div>'
+      body = i18nT('<div class="ee-hd">分離怪　')+[].concat(ms0.card).join(' / ')+'</div>'
         + '<div class="ee-msg">'+i18nT('在敵人區拖移；滾輪縮放')+'</div>'
         + row(i18nT('左右'), Math.round(sv.x*100)+'%', 'sx', 0.01, 'data-sk')
         + row(i18nT('上下'), Math.round(sv.y*100)+'%', 'sy', 0.01, 'data-sk')

@@ -806,7 +806,9 @@ def espawn_patch(req):
         raise ValueError('找不到敵人卡：' + key)
     end = text.index('\n    },', m.start())
     blk = text[m.start():end]
-    parts = ["card:" + _js_str(sp.get('card') or ''), "hp:%d" % int(sp.get('hp') or 100)]
+    card = sp.get('card') or ''
+    card_lit = ('[' + ','.join(_js_str(c) for c in card) + ']') if isinstance(card, list) else _js_str(card)   # 名單＝隨機挑一隻（ver -2989）
+    parts = ["card:" + card_lit, "hp:%d" % int(sp.get('hp') or 100)]
     if sp.get('side'):
         parts.append("side:" + _js_str(sp['side']))
     for k in ('x', 'y', 'size'):

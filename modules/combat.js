@@ -2843,7 +2843,7 @@ function missSpawnNow(){ const add=enemy.summonSpawn(); if(!(add>0)) return; sta
 /* 分離怪自己的攻擊圈（ver -2983）：分離怪在場就照牠卡上的 assaultEvery 另外出圈，跟本體的圈同時存在；牠倒了／換怪／打完就停。 */
 let spawnAtkT=0;
 function spawnAssaultLoop(first){ clearTimeout(spawnAtkT);
-  const ms=((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).missSpawn, c=ms && (GAME_CONFIG.enemies||{})[ms.card]; if(!c) return;
+  const ck=enemy.spawnCard(), c=ck && (GAME_CONFIG.enemies||{})[ck]; if(!c) return;   // 這一次生出來的是哪一隻（ver -2989）
   const ev=c.assaultEvery||[3,5], wait=(first?1.2:0)*1000 + (ev[0]+Math.random()*(ev[1]-ev[0]))*1000;
   spawnAtkT=setTimeout(()=>{ if(state.over || !enemy.spawnAlive()) return; defense.spawnExtraThreat(c.attack||10); spawnAssaultLoop(false); }, wait); }
 function isLastEnemy(){
