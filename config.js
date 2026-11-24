@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2972';
+export const VERSION = 'ver 2026.11.24-2973';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3764,7 +3764,7 @@ export const GAME_CONFIG = {
       /* ver -2258（Ray：「蕾娜 intro 動畫沒接上」「蕾娜抱安雅動畫沒接上」，動畫 10-18 交件）。 */
       /* ver -2967（Ray：「掃射換成這一個，機槍音從135格開始播，原本的掃射效果拿掉」，TO_CODE 第三十一支）：
          135 是 animechk 的原片格號 ＝ 這支片的第 77 格（24fps）＝ 3.208 秒（第一道槍口火光）。
-         ver -2972（Ray：「對不起跟讓開都要以那個為底…動畫要配原本聖徒襲來的音效直到掃射完閉」）：
+         ver -2973（Ray：「對不起跟讓開都要以那個為底…動畫要配原本聖徒襲來的音效直到掃射完閉」）：
          從「對不起」那一拍開播、台詞疊在上面 ⇒ `under`（畫在立繪之下）＋`hold`（跨拍撐到 cg:null）＋`withText`（與台詞一起開始）；
          咆哮（原本那一拍的音）在 0 秒、機槍在 3.208 秒。逐句的時間表在 mainScript 的 `vidAt`。 */
       '002_saintassult': { video:'resources/illustration/video/002_saintassult_v1.mp4', under:true, hold:true, withText:true,

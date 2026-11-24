@@ -2280,10 +2280,31 @@ function cgAnimGate(byUser){
    ⚠ 每一支動畫各記各的（`on.cued`），config 那一份是常數不寫回。
    ⚠ 被加速一口氣跳過去的（超過 0.5 秒才看到）就不補響：那一刻已經不在畫面上了。 */
 function cgAnimCue(on, A){
-  if(!A.cue || !on.started) return;
+  if(!on.started) return;
   const t=on.v.currentTime; on.cued=on.cued||{};
-  A.cue.forEach((c,i)=>{ if(on.cued[i] || t < c.at) return; on.cued[i]=true;
+  (A.cue||[]).forEach((c,i)=>{ if(on.cued[i] || t < c.at) return; on.cued[i]=true;
     if(t - c.at < 0.5) [].concat(c.se||[]).forEach(playSe); });
+  cgAnimSchedule(on, t);
+}
+/* ══ 台詞跟著影片時間走（ver -2973，Ray：「如果玩家不點的話也要自動推進確保135格開始掃射」）══
+   · 拍上的 `vidAt:<秒>` ＝影片播到這一秒，劇情**至少**要演到這一拍：還沒到就直接跳過去（中間沒演的拍略過，
+     那一拍之前的 reveal 先補完，台上的人才不會亂）。點得比時間表快不受影響 —— 只會往前跳，不會往回。
+     範圍只到下一個換插圖的拍（`cg` 有寫）為止，而且只在掛上這支影片的那一段場景裡。
+   · 拍上的 `vidEnd:true` ＝影片播完之前不放行（`advance` 那一關）；被擋過的那一下，播完自己補推一次。 */
+function cgAnimSchedule(on, t){
+  if(!active || !cur || cur!==on.beatCur) return;
+  const L=cur.lines; let to=-1;
+  for(let j=lineIdx+1; j<L.length; j++){
+    const ln=L[j]; if(!ln || ln.cg!==undefined) break;
+    if(ln.vidAt!=null && t>=ln.vidAt) to=j;
+  }
+  if(to>lineIdx){
+    flushReveal();
+    clearTimeout(autoT); autoT=null; clearTimeout(waitT); waitT=null; cgTap=null;
+    stopTyping();
+    lineIdx=to; renderLine(); return;
+  }
+  if(on.endKick && cgAnimEnded(on)){ on.endKick=false; advance(); }
 }
 function playCgAnim(name){
   stopCgAnim();
@@ -2294,7 +2315,8 @@ function playCgAnim(name){
   v.setAttribute('muted',''); v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
   v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1;';
   const cv=document.createElement('canvas');
-  cv.className='cg-anim'; cv.style.cssText='position:absolute;z-index:2;pointer-events:none;visibility:hidden;';
+  /* `under:true`（ver -2973）＝畫在立繪之下（z 0，同背景那一層；DOM 在背景之後所以蓋得住它）—— 台詞疊在影片上、人照樣站得出來。 */
+  cv.className='cg-anim'; cv.style.cssText='position:absolute;z-index:'+(A.under?0:2)+';pointer-events:none;visibility:hidden;';
   img.after(cv); document.body.appendChild(v);
   /* ⚠⚠ ver -2183（Ray：「只要播動畫就不要有底圖，不然撤掉會穿幫」）：靜態圖從開播起就藏（`visibility`，不是 display ——
      它還得留在版面上讓 canvas 照抄框、取景、平移與淡出）。影片載不到才放回來（退回靜態圖）。 */
@@ -2326,8 +2348,9 @@ function playCgAnim(name){
     if(f && f.classList.contains('on')){ cgAnimDraw(on); on.t=setTimeout(go, 60); return; }
     /* 對話框真的開始打字才放（打字機可能還排在立繪／淡入之後）；等不到 3 秒就照放，不卡住。 */
     if(A.withText && (on.wt=(on.wt||performance.now())) && performance.now()-on.wt<3000){
-      const tx=$('storyText');
-      if(pendingReveal || !(tx && tx.textContent)){ on.t=setTimeout(go, 30); return; } }
+      /* ⚠ 要問對話框**看得見**（ver -2973）：框還藏著時 `#storyText` 常常留著上一句的字，只看字會提早放行。 */
+      const tx=$('storyText'), bb=$('storyBubble');
+      if(pendingReveal || !(tx && tx.textContent) || (bb && bb.style.visibility==='hidden')){ on.t=setTimeout(go, 30); return; } }
     const p=v.play(); if(p && p.catch) p.catch(()=>{});
     on.started=true;     // 真的開播了（cgAnimGate／cgBeatBusy 只在這之後才等它播完，ver -2936）
     loop();
@@ -5535,6 +5558,8 @@ function advance(){
   if(typing && line && tx){ typeFinish(tx, lineText(line)); return; }
   /* 過場動畫還在播／停在最後一格等點（ver -2620，見 cgAnimGate）。 */
   if(cgAnimGate(advByUser)) return;
+  /* `vidEnd:true`（ver -2973）：插圖動畫播完之前這一拍不放行；播完由 cgAnimSchedule 補推。 */
+  if(line && line.vidEnd){ const on=cgAnimOn; if(on && on.started && !on.leaving && !cgAnimEnded(on)){ on.endKick=true; return; } }
 
   lineIdx++;
   if(lineIdx < cur.lines.length){ renderLine(); return; }
