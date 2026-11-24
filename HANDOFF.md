@@ -1,9 +1,31 @@
-# HANDOFF — 截至 `ver 2026.11.23-2946`（11-23，3060 機 PM session，**換機前**）
+# HANDOFF — 截至 `ver 2026.11.24-2961`（11-24 PM session 增補；本體為 11-23 換機前那份）
 
 > ⚠⚠ **交接規則（Ray 10-04 定）**：開工讀這一份 → 逐項清點「完成／未完成」給 Ray 確認 → 生成新的一份、回收舊的（`tools/recycle.sh`）。**只留一份現況，不往下疊。**
 > 上一份（11-17，ver -2686＋敵人線 11-20 增補）已回收到 `_recycle/`，git 歷史也有。
 > ⚠ 這一份是 Ray 11-23「全推到最新 換機器 交接待辦」直接交辦寫的，**沒跟 Ray 逐條清點過**。新機開工第一件事：跟 Ray 逐條清點，做完的劃掉。
 > 各副理自己的完整交接（共用筆記夾，換機不一定帶得走，重點已抄進本檔）：`HANDOFF_story_1123.md`、`map_handoff_20261123.md`、`anim_handoff_1123.md`、`bg_handoff_1123.md`、`enemy_ADM_status_1123.md`。
+
+---
+
+## 〇、11-24 增補（PM session，八位副理已開）
+
+**✔ 今天推上的**
+- -2947 古墓強制安雅那場打完多閉一次棺卡死：腳本 `settle` 那一拍先問「還有沒有帳」，沒有就直接往下演（`story.setSettleDue`）。測試分頁比對過；**真畫面／手機沒走過**。
+- -2951 空戰背景時段鎖成交棒進戰鬥前的時段。
+- -2957～-2959 敵人線：夏爾村／夏爾森林／木雅克三區重做交件 20 支＋車輪戰測試編組 `shinier_test_wheel`（12 隻）、熊骸黑炎（程式紫黑火）、裂肉獸待機 v3。
+- -2960 拿掉聖徒化 reload（聖徒再臨）的 cut-in 與語音。
+- -2961 賽西莉失誤語音 `vo_cecilie_miss1～5`（missVoice 輪播）。⚠ 第 4 句增益 7.68 偏高、第 3／4 句切點只看波形 → **Ray 要實聽**；⚠ 免費帳號草稿，上架前重生（見 D 段）。
+- `102edbe6` AL Works 6 號 logo：`resources/brand/al_works_logo6.png`（透明）＋`_cream`；原圖 `resources/_originals/brand/al_works_6up_gemini.png`。
+- `a934f014` 試玩版容量估算：`tools/release/demo_size.md`／`.mjs`（只量不改）。
+
+**⚠ 進行中（工作區有副理未 commit 的檔：`script/bg_fx.js`、`script/enemies.js`、`tools/live_review.html`，不是 PM 的，別動）**
+- 背景副理：雲水煙一律改程式跑（北泊 6 格＋野外 24 格樣本，等 Ray 審）。191 支背景循環 158 支接縫可見。
+- 敵人副理：三區重做續做（KF 審閱、animechk 待剪）。
+- 效能副理：卡耶爾谷 frag02_a 同時握約 760 MB 動畫，低階手機會被殺分頁 → 瘦身待 Ray 排序。
+
+**⚠ 等 Ray 決定**
+- **上架**：三條線 Steam（Electron）／iOS／Android（Capacitor）＋網頁試玩。架構方向：程式放 Cloudflare Pages、素材放 R2（避開 GitHub 流量），試玩層與正式層分開、手機內購解鎖後下載正式層。待定：上架名義（個人或 AL Works）、定價、Steam 頁何時開、試玩是同一支 App 內購還是兩支 App。Ray 有 M2 MacBook（iOS 建置用）。
+- **已 commit 未接上的動畫 11 支，派給誰接**：插畫 6 支（`32_mishamarch_dawn_v1`、`grifonback_v1`、`canyon_army_v1`、`torsten_sit_v3`、`torsten_sit_gunclose_v1`、`deck_long_v1`，要指定放哪一幕）；CI `ci_nemo_barrage_v2`（＋`_hevc`）、`cutin_dual_nemo_v2`；尼莫 Bullet Rain v2、處決 CI 換圖（有 TO_CODE）；敵人 `mon_spiral_veil_atk_v1`（等特規程式）、`mon_beast_altar_delay_v1/_v2`（接或回收）；攝政王廣場天空雲四層（併入雲水煙那題）。
 
 ---
 
