@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2992';
+export const VERSION = 'ver 2026.11.24-2993';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3314,12 +3314,13 @@ export const GAME_CONFIG = {
        扣掉槍上原本就掛著的（`mainGun.barrels[].charm`，ver -2971／-2974）。
      ⚠ `weight` 沒寫的＝1（現在全等，等 Ray 定）。`rare` ＝開到時櫃台講「運氣不錯」那一組的名單（現在空，等 Ray 定）。
      ⚠ `firstFlag`：**誰插**＝第一次開封那一下（loot.showRelicShop）；**沒有人拔**。插了之後回到一般價。
-     ⚠ `openAnim`：開盒動畫的影格資料夾（frame_NN.webp ＋ anim.json，透明；ver -2980，TO_CODE 第三十二支）。
-       金光由程式畫（modules/sealbox.js，Ray：「讓程式從盒內發金光」）。null／載不到 ＝直接跳到獎品。 */
+     ⚠ `openAnim`：開盒動畫的影格資料夾（frame_NNN.webp ＋ anim.json，透明；ver -2993 起 v2，TO_CODE 第三十四支）。
+       光是 **Wan 畫在影格裡的**（Ray：「ci/sealbox_open_ABC 是這一個，然後持續發光直到點掉對話框」）：
+       開盒段 97 格播一次 → 循環段 48 格一直播到 close()（modules/sealbox.js）。null／載不到 ＝直接跳到獎品。 */
   relicBox: {
     coin:'guild_coin', price:2, firstPrice:1, firstFlag:'relic_first_bought',
     weight:{}, rare:[],
-    openAnim:'resources/illustration/anim/sealbox_open_v1/',
+    openAnim:'resources/illustration/anim/sealbox_open_v2/',
   },
 
   /* ══ 懸賞（ver -375）══ 賞金獵人公會的委託榜。
