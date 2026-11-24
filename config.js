@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2971';
+export const VERSION = 'ver 2026.11.24-2972';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3763,8 +3763,12 @@ export const GAME_CONFIG = {
       '044_soranahug': { video:'resources/illustration/video/044_soranahug_v3.mp4' },   // ver -2258：v2 → v3（Ray：「Soranahug 要接新檔」）
       /* ver -2258（Ray：「蕾娜 intro 動畫沒接上」「蕾娜抱安雅動畫沒接上」，動畫 10-18 交件）。 */
       /* ver -2967（Ray：「掃射換成這一個，機槍音從135格開始播，原本的掃射效果拿掉」，TO_CODE 第三十一支）：
-         135 是 animechk 的原片格號 ＝ 這支片的第 77 格（24fps）＝ 3.208 秒（第一道槍口火光）。第一格≒靜態圖 ⇒ 腳本那一拍用 cgSoft 無縫接。 */
-      '002_saintassult': { video:'resources/illustration/video/002_saintassult_v1.mp4', cue:[{ at:77/24, se:'se_lunaMG' }] },
+         135 是 animechk 的原片格號 ＝ 這支片的第 77 格（24fps）＝ 3.208 秒（第一道槍口火光）。
+         ver -2972（Ray：「對不起跟讓開都要以那個為底…動畫要配原本聖徒襲來的音效直到掃射完閉」）：
+         從「對不起」那一拍開播、台詞疊在上面 ⇒ `under`（畫在立繪之下）＋`hold`（跨拍撐到 cg:null）＋`withText`（與台詞一起開始）；
+         咆哮（原本那一拍的音）在 0 秒、機槍在 3.208 秒。逐句的時間表在 mainScript 的 `vidAt`。 */
+      '002_saintassult': { video:'resources/illustration/video/002_saintassult_v1.mp4', under:true, hold:true, withText:true,
+                           cue:[{ at:0, se:'se_saintroar' }, { at:77/24, se:'se_lunaMG' }] },
       '004_renna_intro': { video:'resources/illustration/video/004_renna_intro_v2.mp4', withText:true },   // ver -2962（Ray）：自報名號那句跟動畫一起播；ver -2963（Ray）：v1 → v2（silent7_cut，TO_CODE 第三十支）
       '008_rennaholdanya': { video:'resources/illustration/video/008_rennaholdanya_v1.mp4' },
       /* ver -2184（動畫 10-14 交件）。35／044 首尾構圖可接 ⇒ 循環（044 那一拍之後還有台詞與轉泛黃，插圖要撐到淡出）。 */
@@ -7056,6 +7060,7 @@ export const ASSET_VER = {
   'lake_eastshore_night': 'df50844b',
   'lake_fallbase_dawn': 'c9c5fb74',
   'lake_fallbase_day': '917a24d8',
+  'lake_fallbase_day_watermask': 'fe3bb3c0',
   'lake_fallbase_dusk': '5065d57b',
   'lake_fallbase_night': 'ed98c642',
   'lake_grove_dawn': '95456ba0',
