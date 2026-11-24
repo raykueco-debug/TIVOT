@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2986';
+export const VERSION = 'ver 2026.11.24-2987';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4887,6 +4887,8 @@ export const ASSETS = {
   enemy_ruins_saint_thug:        "resources/enemy/mon_saint_thug.webp",
   enemy_ruins_saint_temperance:  "resources/enemy/mon_saint_temperance.webp",
   enemy_ruins_temperance_spawn:  "resources/enemy/mon_saint_temperance_spawn.webp",   // 節制者分離怪（ver -2970）
+  enemy_ruins_temperance_spawn2: "resources/enemy/mon_saint_temperance_spawn2.webp",   // 節制者分離怪二・爬行型（ver -2985）
+  enemy_ruins_temperance_spawn3: "resources/enemy/mon_saint_temperance_spawn3.webp",   // 節制者分離怪三・頭紗修女型（ver -2985）
 
   /* ══⚠⚠⚠ 王座徘徊者（ver -1343，Ray 交件指派）══════════════════════════════
      貝利薩爾那一段的龍。**三張是同一隻的三個階段**，不是三隻怪 ——
@@ -5906,6 +5908,8 @@ export const ENEMY_IDLE = {
   mon_saint_prison: 'resources/enemy/anim/mon_saint_prison_idle_v2/',
   mon_saint_temperance: 'resources/enemy/anim/mon_saint_temperance_idle_v2/',
   mon_saint_temperance_spawn: 'resources/enemy/anim/mon_saint_temperance_spawn_idle_v1/',   // 節制者分離怪 待機（Ray 剪的 sh_tspawn_A_loop_cut）
+  mon_saint_temperance_spawn2: 'resources/enemy/anim/mon_saint_temperance_spawn2_idle_v1/',   // 分離怪二・爬行型 待機（Ray 剪的 sh_tspawn2_A_loop_cut）
+  mon_saint_temperance_spawn3: 'resources/enemy/anim/mon_saint_temperance_spawn3_idle_v1/',   // 分離怪三・頭紗修女型 待機（Ray 剪的 sh_tspawn3_A_loop_cut）
   mon_saint_thug: 'resources/enemy/anim/mon_saint_thug_idle_v2/',
   mon_sarcoph_crawler: 'resources/enemy/anim/mon_sarcoph_crawler_idle_v2/',
   mon_sea_coralman: 'resources/enemy/anim/mon_sea_coralman_idle_v3/',   // ver -2804：720×1080 motionfix 重跑（全身飄＋呼吸、頭不抬；48 格 24fps）
@@ -6073,6 +6077,8 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   mon_saint_inspector: { dir:'resources/enemy/anim/mon_saint_inspector_atk_v1/', hit:8 },   // 監查者 鐮刀斬（26 格）
   mon_saint_thug: { dir:'resources/enemy/anim/mon_saint_thug_atk_v1/', hit:2 },   // 巨型聖徒 直拳（ver -2980 Ray 重剪 sh_thug_punch_A_AB_cut_2＋R 倒放留 1/3，11 格）
   mon_saint_temperance_spawn: { dir:'resources/enemy/anim/mon_saint_temperance_spawn_atk_v1/', hit:8 },   // 節制者分離怪 撲抓（ver -2970，Ray 剪的 sh_tspawn_lunge_A_AB_cut＋R 倒放留 1/3，22 格）
+  mon_saint_temperance_spawn2: { dir:'resources/enemy/anim/mon_saint_temperance_spawn2_atk_v1/', hit:8 },   // 分離怪二 撲抓（ver -2985，Ray 剪的 sh_tspawn2_lunge_A_AB2_cut＋R 倒放留 1/3，26 格）
+  mon_saint_temperance_spawn3: { dir:'resources/enemy/anim/mon_saint_temperance_spawn3_atk_v1/', hit:9 },   // 分離怪三 撲抓（ver -2985，Ray 剪的 sh_tspawn3_lunge_A_AB2_cut＋R 倒放留 1/3，27 格）
   mon_stag_nightmare: { dir:'resources/enemy/anim/mon_stag_nightmare_atk_v1/', hit:10, flame:{ from:7, to:15, at:[0.45,0.76], tone:'purple' } },   // 鹿骸 黑炎（ver -2970，Ray 剪的 sh_stag_roar_A_AB_cut＋R 倒放留 1/3，28 格）：片子無火，火由程式從嘴噴；延時同一支
 };
 /* ══ 出場（ver -2527，訓練用聖徒新架勢：從半空落地停在架勢）══ 有寫的怪：不走降臨，門開那一刻播一次出場、播完接待機。
@@ -6198,6 +6204,8 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   mon_beast_shackle: { dir:'resources/enemy/anim/mon_beast_shackle_atk_v1/', hit:4 },   // 枷獸：延時＝攻擊同一支
   mon_saint_temperance: { dir:'resources/enemy/anim/mon_saint_temperance_atk_v1/', hit:8 },   // 節制者：延時＝攻擊同一支
   mon_saint_temperance_spawn: { dir:'resources/enemy/anim/mon_saint_temperance_spawn_atk_v1/', hit:8 },   // 節制者分離怪：延時＝攻擊同一支
+  mon_saint_temperance_spawn2: { dir:'resources/enemy/anim/mon_saint_temperance_spawn2_atk_v1/', hit:8 },   // 分離怪二：延時＝攻擊同一支
+  mon_saint_temperance_spawn3: { dir:'resources/enemy/anim/mon_saint_temperance_spawn3_atk_v1/', hit:9 },   // 分離怪三：延時＝攻擊同一支
   mon_stag_nightmare: { dir:'resources/enemy/anim/mon_stag_nightmare_atk_v1/', hit:10, flame:{ from:7, to:15, at:[0.45,0.76], tone:'purple' } },   // 鹿骸：延時＝攻擊同一支（程式紫黑火）
 };
 

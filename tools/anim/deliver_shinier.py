@@ -45,11 +45,16 @@ JOBS = {
   'tspawn_lunge':     ('tspawn_lunge', E('mon_saint_temperance_spawn.webp'), 'mon_saint_temperance_spawn_atk_v1', 'ab', None),   # 節制者分離怪 撲抓
   'tspawn_idle':      ('tspawn', E('mon_saint_temperance_spawn.webp'), 'mon_saint_temperance_spawn_idle_v1', 'loop', None),
   'tspawn_enter':     ('tspawn_lunge', E('mon_saint_temperance_spawn.webp'), 'mon_saint_temperance_spawn_enter_v1', 'seg', None),   # 出場＝撲抓的 BA 剪片（Ray：SPAWN 用，程式從畫面底部平移入鏡、結尾回拉）
+  'tspawn2_lunge':    ('tspawn2_lunge', E('mon_saint_temperance_spawn2.webp'), 'mon_saint_temperance_spawn2_atk_v1', 'ab', None),   # 分離怪二（爬行型）撲抓
+  'tspawn2_idle':     ('tspawn2', E('mon_saint_temperance_spawn2.webp'), 'mon_saint_temperance_spawn2_idle_v1', 'loop', None),
+  'tspawn3_lunge':    ('tspawn3_lunge', E('mon_saint_temperance_spawn3.webp'), 'mon_saint_temperance_spawn3_atk_v1', 'ab', None),   # 分離怪三（頭紗修女型）撲抓
+  'tspawn3_idle':     ('tspawn3', E('mon_saint_temperance_spawn3.webp'), 'mon_saint_temperance_spawn3_idle_v1', 'loop', None),
   'thug_slam':        ('thug_slam', E('mon_saint_thug.webp'), 'mon_saint_thug_delay_v1', 'ab', None),
 }
 
 LOOPSEG = {'organ_idle': 'organ_idle_A_loop3', 'tspawn_enter': 'tspawn_lunge_B_BA'}
-NOBA = {'tspawn_lunge'}   # BA 剪片另有用途（分離怪的 BA 拿去當出場），攻擊的 R 照樣倒放   # 待機剪的不是第一版時（Ray 11-24：loop2 嘴會動，用 loop3）
+NOBA = {'tspawn_lunge', 'tspawn2_lunge', 'tspawn3_lunge'}
+ABSEG = {'tspawn2_lunge': 'tspawn2_lunge_A_AB2', 'tspawn3_lunge': 'tspawn3_lunge_A_AB2'}   # 重跑過的那一版（去背重製後的 B）   # BA 剪片另有用途（分離怪的 BA 拿去當出場），攻擊的 R 照樣倒放   # 待機剪的不是第一版時（Ray 11-24：loop2 嘴會動，用 loop3）
 
 def cutdir(seg):
     base = os.path.join(OUT, 'export', f'sh_{seg}_cut')
@@ -84,7 +89,8 @@ def build(key):
         seq = ab + ba; hit = len(ab) - 1; a = f'{wan}_A.png'
     else:
         a = f'{wan}_A.png'
-        ab, k1 = cutframes(f'{wan}_A_AB', fix.get('AB'))
+        abseg = ABSEG.get(key, f'{wan}_A_AB')
+        ab, k1 = cutframes(abseg, fix.get('AB'))
         if cutdir(f'{wan}_B_BA') and key not in NOBA:
             ba, k2 = cutframes(f'{wan}_B_BA', fix.get('BA'))
             if k1[-1] >= 47 and k2[0] == 0: ba = ba[1:]
@@ -92,7 +98,7 @@ def build(key):
         else:
             idx = list(range(k1[-1] - 1, -1, -3))
             if idx[-1] != 0: idx.append(0)
-            ba = [raw(f'{wan}_A_AB', i) for i in idx]
+            ba = [raw(abseg, i) for i in idx]
             r = f"倒放留 1/3 {len(ba)} 格"
         seq = ab + ba; hit = len(ab) - 1
     fr = [Image.open(p).convert('RGBA') for p in seq]
