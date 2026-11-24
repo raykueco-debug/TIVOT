@@ -39,8 +39,12 @@ JOBS = {
   'temperance_split': ('temperance_split', E('mon_saint_temperance.webp'), 'mon_saint_temperance_split_v1', 'split', None),
   'inspector_scythe': ('inspector_scythe', E('mon_saint_inspector.webp'), 'mon_saint_inspector_atk_v1', 'ab', None),
   'thug_punch':       ('thug_punch', E('mon_saint_thug.webp'), 'mon_saint_thug_atk_v1', 'ab', None),
+  'bear_roar':        ('bear_roar', E('mon_bear_nightmare.webp'), 'mon_bear_nightmare_delay_v1', 'ab', None),   # 黑炎改程式火：無火 B（Ray 11-24）
+  'organ_idle':       ('organ_idle', E('mon_beast_organ.webp'), 'mon_beast_organ_idle_v3', 'loop', None),   # 新 A（去煙）重跑的待機
   'thug_slam':        ('thug_slam', E('mon_saint_thug.webp'), 'mon_saint_thug_delay_v1', 'ab', None),
 }
+
+LOOPSEG = {'organ_idle': 'organ_idle_A_loop3'}   # 待機剪的不是第一版時（Ray 11-24：loop2 嘴會動，用 loop3）
 
 def cutdir(seg):
     base = os.path.join(OUT, 'export', f'sh_{seg}_cut')
@@ -67,7 +71,7 @@ def build(key):
     fix = fix or {}
     hit = None
     if kind == 'loop':
-        seq, _ = cutframes(f'{wan}_A_loop'); a = f'{wan}_A.png'
+        seq, _ = cutframes(LOOPSEG.get(key, f'{wan}_A_loop')); a = f'{wan}_A.png'
     elif kind == 'split':
         ab, k1 = cutframes(f'{wan}_A_AB'); ba, k2 = cutframes(f'{wan}_B_drain')
         seq = ab + ba; hit = len(ab) - 1; a = f'{wan}_A.png'

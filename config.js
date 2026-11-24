@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2958';
+export const VERSION = 'ver 2026.11.24-2959';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5792,7 +5792,7 @@ export const ENEMY_IDLE = {
   mon_bear_husk: 'resources/enemy/anim/mon_bear_husk_idle_v3/',   // ver -2957 新 A（重去背）重跑的待機，Ray 剪的 sh_husk_idle_A_loop_cut
   mon_bear_nightmare: 'resources/enemy/anim/mon_bear_nightmare_idle_v2/',
   mon_beast_bonemaw: 'resources/enemy/anim/mon_beast_bonemaw_idle_v2/',
-  mon_beast_organ: 'resources/enemy/anim/mon_beast_organ_idle_v2/',
+  mon_beast_organ: 'resources/enemy/anim/mon_beast_organ_idle_v3/',   // ver -2959 新 A（去煙）重跑的待機，Ray 剪的 sh_organ_idle_A_loop3_cut
   mon_beast_reliquary: 'resources/enemy/anim/mon_beast_reliquary_idle_v2/',
   mon_beast_shackle: 'resources/enemy/anim/mon_beast_shackle_idle_v2/',
   mon_bellfounder: 'resources/enemy/anim/mon_bellfounder_idle_v2/',
@@ -6133,7 +6133,8 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   mon_natalia_neutral: { dir:'resources/enemy/anim/mon_natalia_delay_v1/', hit:8, near:1.2 },   // -2476 Ray「DM（delay／miss）都用爪擊」：延時／點錯也演同一支撲擊
   mon_sea_coralman: { dir:'resources/enemy/anim/mon_sea_coralman_atk_v2/', hit:13, noMiss:true },   // 魘魔 D＝同 A、點錯只扣秒（ver -2802，Ray：「魘魔也是」；原 delay_v1 不用）
   /* 夏爾三區重做（ver -2957，Ray 11-24 交件，同 ENEMY_ATK 那一段的作法） */
-  mon_bear_husk: { dir:'resources/enemy/anim/mon_bear_husk_delay_v1/', hit:7 },   // 森林熊骸 前爪橫掃（26 格）
+  mon_bear_husk: { dir:'resources/enemy/anim/mon_bear_husk_delay_v1/', hit:7 },
+  mon_bear_nightmare: { dir:'resources/enemy/anim/mon_bear_nightmare_delay_v1/', hit:20, flame:{ from:12, to:24, at:[0.47,0.73], tone:'purple' } },   // 熊骸 黑炎（Ray 剪的 sh_bear_roar_A_AB_cut＋R 倒放留 1/3，33 格）：片子是無火咆哮，火由程式從嘴噴（第 12~24 格）   // 森林熊骸 前爪橫掃（26 格）
   mon_beast_organ: { dir:'resources/enemy/anim/mon_beast_organ_delay_v1/', hit:19 },   // 裂肉獸 蓄力（38 格）⚠ 程式待接：蓄力後爆煙遮敵人區
   mon_beast_reliquary: { dir:'resources/enemy/anim/mon_beast_reliquary_delay_v1/', hit:7 },   // 聖骨獸 前爪橫掃（33 格）
   mon_saint_thug: { dir:'resources/enemy/anim/mon_saint_thug_delay_v1/', hit:11 },   // 巨型聖徒 砸地（27 格）
@@ -6544,7 +6545,6 @@ export const ASSET_VER = {
   'belisar_dragonrace_base_flowmask': '77d18fac',
   'belisar_draincliff_dawn': '27241df3',
   'belisar_draincliff_day': '5b9adc52',
-  'belisar_draincliff_day_skymask': '39ac2a38',
   'belisar_draincliff_dusk': '568c83e3',
   'belisar_draincliff_night': '7287ef80',
   'belisar_drywell_dawn': 'eb344c5b',
@@ -6621,18 +6621,15 @@ export const ASSET_VER = {
   'canyon_altar_dusk': 'ac766316',
   'canyon_altar_night': '05561a62',
   'canyon_bones_day': 'd6506629',
-  'canyon_bones_day_sky': '0402342a',
   'canyon_bones_dusk': '3fdc34b3',
   'canyon_bones_night': '2be921ed',
   'canyon_bridge_day': '374c009d',
   'canyon_bridge_dusk': '543e652b',
   'canyon_bridge_night': '3391344e',
   'canyon_corridor_day': 'a3476d44',
-  'canyon_corridor_day_sky': '5de8742a',
   'canyon_corridor_dusk': 'b5b421f7',
   'canyon_corridor_night': '5e5fbf0d',
   'canyon_entry_day': '1fc2677a',
-  'canyon_entry_day_sky': 'a4c8a851',
   'canyon_entry_dusk': '9d1ba7de',
   'canyon_entry_night': '184f599c',
   'capital_bistro_dawn': '68b6c0b6',
@@ -7016,7 +7013,6 @@ export const ASSET_VER = {
   'lake_eastshore_night': 'df50844b',
   'lake_fallbase_dawn': '76fb2b0a',
   'lake_fallbase_day': 'f00e3fc9',
-  'lake_fallbase_day_skymask': '1eb4b998',
   'lake_fallbase_dusk': 'e60b1798',
   'lake_fallbase_night': '97bfb984',
   'lake_grove_dawn': '95456ba0',

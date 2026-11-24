@@ -164,7 +164,7 @@ function setBattleBgVideo(nm){
 }
 function windupSe(key, ms, alive, fit){ if(!key) return; const go=()=>{ if(!alive || alive()){ if(fit) SFX.playFit(asset(key), sfxGain(key), fit); else SFX.play(asset(key), sfxGain(key)); } };   // fit＝保持音高的時間伸縮 {from,to,dur}（`windupFit`，ver -2692）
  if(ms>0) setTimeout(go, ms); else go(); }   // ms＝起手後幾毫秒才放（`windupMs`，ver -2659）；alive＝那時這一擊還在演嗎
-/* ══ 噴火（ENEMY_ATK 的 `flame:{from,to,at:[u,v]}`，ver -2683，Ray：「換成從尾部噴射火燄的特效」）══
+/* ══ 噴火（ENEMY_ATK／ENEMY_DELAY 的 `flame:{from,to,at:[u,v],tone?}`，ver -2683，Ray：「換成從尾部噴射火燄的特效」）══
    from～to 格之間，從片子上 (u,v)（那一格畫面的比例座標，肋籠獸＝長頸末端的嘴）往鏡頭噴：
    一團團火焰由噴口冒出、邊長大邊往畫面下方（玩家這一側）撲過來、淡掉。掛在 #fxTop 的上層，每一團自己收。 */
 function spawnFlame(srcEl, spec, fps, alive){
@@ -178,7 +178,7 @@ function spawnFlame(srcEl, spec, fps, alive){
        火＝一團團不規則的煙霧狀火舌（白熱／橘／紅三種色，拉長、旋轉、邊走邊翻滾），
        每一團燒完的地方冒一縷黑煙，往上飄、慢慢散。 */
     for(let k=0;k<3;k++){
-      const b=document.createElement('i'); b.className='fx-flame f'+((Math.random()*3)|0);
+      const b=document.createElement('i'); b.className='fx-flame '+(spec.tone==='purple'?'p':'f')+((Math.random()*3)|0);   // tone:'purple'＝紫黑火（熊骸黑炎，ver -2959）
       const sz=46+Math.random()*40; b.style.cssText=`left:${x-sz/2}px;top:${y-sz/2}px;width:${sz}px;height:${sz*(0.7+Math.random()*0.6)}px;`;
       host.appendChild(b);
       const tx=(Math.random()*2-1)*hr.width*0.32, ty=hr.height*(0.28+Math.random()*0.40), life=520+Math.random()*300;
