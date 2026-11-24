@@ -49,10 +49,12 @@ JOBS = {
   'tspawn2_idle':     ('tspawn2', E('mon_saint_temperance_spawn2.webp'), 'mon_saint_temperance_spawn2_idle_v1', 'loop', None),
   'tspawn3_lunge':    ('tspawn3_lunge', E('mon_saint_temperance_spawn3.webp'), 'mon_saint_temperance_spawn3_atk_v1', 'ab', None),   # 分離怪三（頭紗修女型）撲抓
   'tspawn3_idle':     ('tspawn3', E('mon_saint_temperance_spawn3.webp'), 'mon_saint_temperance_spawn3_idle_v1', 'loop', None),
+  'tspawn2_enter':    ('tspawn2_lunge', E('mon_saint_temperance_spawn2.webp'), 'mon_saint_temperance_spawn2_enter_v1', 'seg', None),
+  'tspawn3_enter':    ('tspawn3_lunge', E('mon_saint_temperance_spawn3.webp'), 'mon_saint_temperance_spawn3_enter_v1', 'seg', None),
   'thug_slam':        ('thug_slam', E('mon_saint_thug.webp'), 'mon_saint_thug_delay_v1', 'ab', None),
 }
 
-LOOPSEG = {'organ_idle': 'organ_idle_A_loop3', 'tspawn_enter': 'tspawn_lunge_B_BA'}
+LOOPSEG = {'organ_idle': 'organ_idle_A_loop3', 'tspawn_enter': 'tspawn_lunge_B_BA', 'tspawn2_enter': 'tspawn2_lunge_B_BA2', 'tspawn3_enter': 'tspawn3_lunge_B_BA2'}
 NOBA = {'tspawn_lunge', 'tspawn2_lunge', 'tspawn3_lunge'}
 ABSEG = {'tspawn2_lunge': 'tspawn2_lunge_A_AB2', 'tspawn3_lunge': 'tspawn3_lunge_A_AB2'}   # 重跑過的那一版（去背重製後的 B）   # BA 剪片另有用途（分離怪的 BA 拿去當出場），攻擊的 R 照樣倒放   # 待機剪的不是第一版時（Ray 11-24：loop2 嘴會動，用 loop3）
 
