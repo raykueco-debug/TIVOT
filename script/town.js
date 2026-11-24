@@ -2998,9 +2998,23 @@ export const TOWNS = {
         relicShop:'relic_shop_open',
         relicLines:{
           rare:[ cnt(null,'喔？看來運氣不錯。'), cnt(null,'這可是難得一見的貨色，好好收著吧。') ],
-          normal:[ cnt(null,'嗯，還算可以吧。'), cnt(null,'次品就是次品，別抱太大期待。'), cnt(null,'……這個嘛，聊勝於無。') ],
-          /* 只演一次（旗 `relic_howto`，演完才插）。 */
-          howto:[ nou('surprise','要怎麼用？'), cnt(null,'掛在武器上應該能有一些加護吧。') ],
+          /* ver -2994（Ray 11-25 交稿，取代 -2964 那三句）：每次開完櫃台先講這一句；第一次接著演下面 howto 那一整段。 */
+          normal:[ cnt(null,'還行呢，至少派得上用場。') ],
+          /* 只演一次（旗 `relic_howto`，演完才插）。ver -2994（Ray 11-25）：整段換成這一版（耳環的梗＋交付信號槍）。
+             ⚠ 信號槍目前**只在台詞裡**，沒有入袋（道具要不要做、怎麼用，等 Ray 定）。 */
+          howto:[
+            cnt(null,'運氣好的時候也能開到很不錯的東西喔。'),
+            { speaker:'PLAYER', blank:true },
+            cnt(null,'怎麼用？掛在武器上就好了。'),
+            cnt(null,'唉呀，你已經有了啊？'),
+            cnt(null,'……是說，你這是女用耳環吧？'),
+            nou('awkward','不是啦，那個是……'),
+            cnt(null,'好風流的神父。'),
+            { speaker:'COUNTER', text:'', auto:900, se:'se_ginclick' },
+            cnt(null,'總之，這把信號槍帶著，勦滅盜賊後射出，公會就會派人去收屍了。'),
+            cnt(null,'三發要照順序打出去喔，不然對不上你的執照號碼。'),
+            nou('sadsmile','不用自己押回來真是太好了……'),
+          ],
         },
         lines:[
           nou('surprise','人好多喔。'),
