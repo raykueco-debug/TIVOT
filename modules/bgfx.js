@@ -34,7 +34,7 @@ export function prepFx(spec) {
     if (spec.sky.sun) want('sun', spec.sky.sun);
   }
   if (spec.plumes) want('plumes', spec.plumes.atlas);
-  if (spec.fire) want('fireMask', spec.fire.mask);
+  if (spec.fire && spec.fire.mask) want('fireMask', spec.fire.mask);   // 遮罩可選：沒有前景擋火的格就不給
   Promise.all(jobs).then(() => { fx.ready = true; }, e => { fx.failed = true; console.warn('[bgfx] 載不到', e); });
   return fx;
 }
@@ -144,7 +144,7 @@ function build(fx, W, H) {
   if (S.beam) { B.beam = buildBeam(W, H, S.beam.col, S.beam.amp); B.dust = blob(S.beam.col.map(v => Math.round(v + (255 - v) * 0.5)).join(','), 32); }
   if (S.smoke) B.smoke = blob('150,140,135', 128);
   if (S.haze) B.haze = blob((S.haze.col || [150, 142, 140]).join(','), 128);
-  if (S.fire) { B.fireMask = maskOf(fx.img.fireMask, W, H); B.fireAtlas = fireFrames(); B.ember = emberDot(); B.glow = blob('255,140,50', 128); }
+  if (S.fire) { B.fireMask = fx.img.fireMask ? maskOf(fx.img.fireMask, W, H) : null; B.fireOn = true; B.fireAtlas = fireFrames(); B.ember = emberDot(); B.glow = blob('255,140,50', 128); }
   if (S.sky) { B.skyMask = maskOf(fx.img.skyMask, W, H); B.cut = mk(W, H); B.cx = B.cut.getContext('2d'); }
   /* 原圖自己的雲（town_sky.py 拆的遠／中／近）：每一層鋪成「原圖｜鏡像｜原圖」三寬，往右捲到 2 寬就接回，邊界處左右對稱所以沒有接縫 */
   if (S.sky && S.sky.layers) B.layers = S.sky.layers.map((L, i) => {
@@ -335,7 +335,7 @@ export function drawFx(fx, src, W, H, t, live) {
     x.globalAlpha = 1;
   }
   if (S.fireSmoke) drawPlumes(B, x, S.fireSmoke, fx.img.plumes, t);   // 火堆冒的煙：畫在地面之上（不是天空那一層）；11-24 Ray「火的煙要在火的圖層後方」⇒ 先畫煙再畫火
-  if (B.fireMask) drawFire(B, x, S.fire, t);
+  if (B.fireOn) drawFire(B, x, S.fire, t);
   if (B.haze) drawHaze(B, x, S.haze, t);
   return B.work;
 }
@@ -381,9 +381,9 @@ function emberDot() {
 const flick = (t, k) => 0.55 * Math.sin(t * 7.1 + k) * 0.5 + 0.3 * Math.sin(t * 13.7 + k * 2.3) * 0.5 + 0.25 * (hash(Math.floor(t * 9), k * 17 | 0) - 0.5) - (hash(Math.floor(t * 2.3), k * 31 | 0) < 0.12 ? 0.35 : 0);
 function drawFire(B, x, o, t) {
   const { W, H } = B, g = B.tx, A = B.fireAtlas;
-  g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.clearRect(0, 0, W, H);
-  o.src.forEach(([fx, fy, fw], si) => {
-    const cx = fx * W, by = fy * H, w = fw * W;
+  const free = o.free || [], all = (o.src || []).concat(free);
+  const flames = (list, base) => list.forEach(([fx, fy, fw], i) => {
+    const si = i + base, cx = fx * W, by = fy * H, w = fw * W;
     /* 11-24 Ray「多點變化 加一點透明度」：三層（主＋兩個小的），各自不同幀速、左右漂移、大小慢慢漲縮、整團偶爾被風壓斜；每層半透明 */
     const breath = 1 + 0.14 * Math.sin(t * 0.73 + si * 3.1) + 0.07 * Math.sin(t * 1.9 + si) + 0.06 * flick(t * 0.5, si + 7);
     const lean = 0.10 * Math.sin(t * 0.41 + si * 1.7) + 0.06 * Math.sin(t * 1.13 + si);
@@ -396,8 +396,34 @@ function drawFire(B, x, o, t) {
       g.save(); g.translate(cx + ox, by); g.transform(1, 0, lean, 1, 0, 0); g.drawImage(A, fr * FW, 0, FW, FH, -ww / 2, -hh * 0.97, ww, hh); g.restore();
     }
   });
-  g.globalAlpha = 1; g.globalCompositeOperation = 'destination-in'; g.drawImage(B.fireMask.c, 0, 0);
-  x.globalAlpha = 0.9; x.drawImage(B.tmp, 0, 0); x.globalAlpha = 1;
+  /* 11-24 Ray「火的底部裁線都要剪一段前景遮住」：手放的火沒有 firemask，底部是一條平平的裁線。
+     在火底挖掉一塊高低不平的前景輪廓（destination-out）⇒ 那一塊露出底下的原圖，讀起來是火在瓦礫後面燒。
+     輪廓由火的編號算（hash），每禎一樣 —— 前景不會動。 */
+  const occlude = (list, base) => {
+    g.globalCompositeOperation = 'destination-out'; g.globalAlpha = 1; g.fillStyle = '#000';
+    list.forEach(([fx, fy, fw], i) => {
+      const si = i + base, cx = fx * W, by = fy * H, w = fw * W, hw = w * 1.15, N = 9;
+      g.beginPath(); g.moveTo(cx - hw, by + w * 0.5);
+      for (let j = 0; j <= N; j++) {
+        const u = j / N, edge = Math.min(1, Math.min(u, 1 - u) * 4);          // 兩端壓低，中間高低起伏
+        const hgt = w * (0.12 + 0.30 * hash(si * 13 + j, 71)) * (0.45 + 0.55 * edge);
+        g.lineTo(cx - hw + 2 * hw * u + (hash(si, j + 90) - 0.5) * w * 0.12, by - hgt);
+      }
+      g.lineTo(cx + hw, by + w * 0.5); g.closePath(); g.fill();
+    });
+    g.globalCompositeOperation = 'source-over';
+  };
+  const pass = (list, base, clip) => {
+    if (!list.length) return;
+    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.clearRect(0, 0, W, H);
+    flames(list, base);
+    g.globalAlpha = 1; if (clip && B.fireMask) { g.globalCompositeOperation = 'destination-in'; g.drawImage(B.fireMask.c, 0, 0); }
+    if (!clip) occlude(list, base);
+    x.globalAlpha = 0.9; x.drawImage(B.tmp, 0, 0); x.globalAlpha = 1;
+  };
+  pass(o.src || [], 0, true);
+  pass(free, 40, false);          // 戰地放火（審閱頁手動放的）：沒有前景擋，不裁
+  o = { src: all };
   /* 暖光：照亮四周（不裁），亮度不規則地跳 */
   x.globalCompositeOperation = 'lighter';
   o.src.forEach(([fx, fy, fw], si) => {

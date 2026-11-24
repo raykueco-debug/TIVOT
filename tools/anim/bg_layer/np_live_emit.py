@@ -6,12 +6,14 @@ ROOT = os.path.normpath(os.path.join(HERE, '..', '..', '..'))
 D = os.path.join(ROOT, 'resources', 'background', 'anim', 'northport')
 cells = json.load(open(os.path.join(HERE, 'np_live_cells.json'), encoding='utf8'))
 rows = []
+FP = json.load(open(os.path.join(HERE, 'fire_place.json'), encoding='utf8')) if os.path.exists(os.path.join(HERE, 'fire_place.json')) else {}
 for k, extra in cells.items():
     if k.startswith('_'): continue
     j = json.load(open(os.path.join(D, k + '_live.json'), encoding='utf8')); o = [f"bottom: {j['bottom']}"]
     if 'sun' not in j['files']: o.append('sun: false')
     if 'base' in j['files']: o.append('base: true')
     if j.get('fire'): o.append('fire: ' + json.dumps(j['fire']['src']))
+    if FP.get(k): o.append('fireFree: ' + json.dumps(FP[k]))   # 審閱頁手動放的火（fire_place.json）
     if extra.get('haze'): o.append('haze: ' + json.dumps(extra['haze'], separators=(', ', ': ')).replace('"', ''))
     sm = j['smoke']
     if sm['src']:

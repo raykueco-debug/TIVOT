@@ -19,6 +19,8 @@ for n in ([] if '--emit' in sys.argv else names):
 
 
 def emit():
+    FP = json.load(open(os.path.join(HERE, 'fire_place.json'), encoding='utf8')) if os.path.exists(os.path.join(HERE, 'fire_place.json')) else {}
+
     """把各格的 <名>_live.json 寫成 script/bg_fx.js 裡自動產生的那一段（⟨ws-live⟩ 標記之間）。
     天空太少（<1%）的格子不登記。ws_0_0／ws_0_1 原本播 11-12 交的影片，11-23 Ray「用西泊吧 煙比較新」→ 改即時版（雲水煙一律程式跑的樣本）。"""
     import glob
@@ -31,6 +33,7 @@ def emit():
         sm = j['smoke']; o = [f"bottom: {j.get('bottom') or 0.4}"]
         if 'sun' not in j['files']: o.append('sun: false')
         if 'sea' in j['files']: o.append('sea: true')   # war_cloud_sea.py 拆出的不動雲海
+        if FP.get(n): o.append('fireFree: ' + json.dumps(FP[n]))   # 審閱頁手動放的火（fire_place.json）
         if cells.get(n, {}).get('haze'): o.append('haze: true')   # 11-24 Ray：「街上加些許程式煙」（live_notes.json）
         if 'water' in j['files']: o.append("water: { amp: 3, persp: 2, glint: 0.25 }")
         if sm['src']:

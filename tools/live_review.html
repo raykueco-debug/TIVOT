@@ -18,9 +18,12 @@
   .acts{display:flex;justify-content:flex-end;margin-top:4px}
   select{background:#2b2838;color:#eee;border:1px solid #555;border-radius:6px;padding:4px 10px}
   .note{color:#aaa;font-size:13px}
+  .acts{gap:6px;align-items:center;flex-wrap:wrap}
+  .card.firing canvas{outline:2px solid #ff8a3d;cursor:crosshair}
+  .fst{color:#f0a060;font-size:12px;margin-right:auto}
 </style></head>
 <body><div class="wrap">
-<h3 style="margin:4px 0">即時背景審閱 —— 每一格寫修正意見（打完自動存，也可以按「存檔」；寫完全部按「提交」）</h3>
+<h3 style="margin:4px 0">即時背景審閱 —— 每一格寫修正意見（打完自動存，也可以按「存檔」；寫完全部按「提交」）<br><span class="note">🔥 放火：按「放火」後在畫面上點＝在那裡放一團火（點的位置＝火的底）；右鍵點＝拿掉最近的那團；大小先選再點。</span></h3>
 <div class="bar"><select id="grp"></select><label><input type="checkbox" id="only"> 只看有意見的</label><span class="note" id="sum"></span><button id="submit">提交全部意見</button><span class="note" id="subst"></span></div>
 <div class="grid" id="grid"></div>
 </div>
@@ -35,13 +38,14 @@ const dirOf = {};   // 基底名 → 區域資料夾
 for (const m of idx.matchAll(/^\s*([a-z0-9_]+):\s*\[([^\]]*)\]/gm)) for (const k of m[2].matchAll(/'([^']+)'/g)) dirOf[k[1]] = m[1];
 const keys = Object.keys(BG_FX).filter(k => BG_FX[k].sky);   // 遊戲內即時跑＝有程式天空（雲）的格
 const group = k => k.startsWith('ws_') ? '溫斯摩爾港守城戰' : k.startsWith('northport_') ? '北方泊地' : '其他';
+const firePlace = await fetch('api/fire_place').then(r => r.json()).catch(() => ({}));
 const notes = await fetch('api/live_notes').then(r => r.json()).catch(() => ({}));
 const grp = document.getElementById('grp'), only = document.getElementById('only'), grid = document.getElementById('grid');
 ['全部', ...new Set(keys.map(group))].forEach(g => grp.add(new Option(g, g)));
 const cards = [];
 for (const k of keys) {
   const card = document.createElement('div'); card.className = 'card';
-  card.innerHTML = `<h4><span>${k}</span><span class="st"></span></h4><canvas></canvas><textarea placeholder="這一格要怎麼改…"></textarea><div class="acts"><button class="sv">存檔</button></div>`;
+  card.innerHTML = `<h4><span>${k}</span><span class="st"></span></h4><canvas></canvas><textarea placeholder="這一格要怎麼改…"></textarea><div class="acts"><span class="fst"></span><select class="fsz"><option value="0.03">小火</option><option value="0.05" selected>中火</option><option value="0.08">大火</option></select><button class="fire">🔥 放火</button><button class="sv">存檔</button></div>`;
   const ta = card.querySelector('textarea'), st = card.querySelector('.st');
   if (notes[k]) { ta.value = notes[k].text; card.classList.add('has'); st.textContent = '已存 ' + notes[k].time; }
   let tm = 0;
@@ -53,8 +57,31 @@ for (const k of keys) {
     if (ta.value.trim()) notes[k] = { text: ta.value, time: r.time }; else delete notes[k];
     card.classList.toggle('has', !!ta.value.trim()); st.textContent = ta.value.trim() ? '已存 ' + r.time : ''; sum();
   }
-  cards.push({ k, card, cv: card.querySelector('canvas'), fx: null, img: null, vid: null, on: false });
+  const c = { k, card, cv: card.querySelector('canvas'), fx: null, img: null, vid: null, on: false };
+  /* 戰地放火：點畫面放、右鍵拿掉；存進 fire_place.json，畫面上立刻換成有火的那一版 */
+  const fst = card.querySelector('.fst'), fbtn = card.querySelector('.fire'), fsz = card.querySelector('.fsz');
+  const showN = () => { const n = (firePlace[k] || []).length; fst.textContent = n ? `火 ${n} 團` : ''; };
+  fbtn.onclick = () => { card.classList.toggle('firing'); fbtn.textContent = card.classList.contains('firing') ? '✔ 放好了' : '🔥 放火'; };
+  const pos = e => { const r = c.cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; };
+  async function saveFire() {
+    const r = await fetch('api/fire_place', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: k, spots: firePlace[k] || [] }) }).then(r => r.json()).catch(() => null);
+    fst.textContent = r ? ((firePlace[k] || []).length ? `火 ${(firePlace[k] || []).length} 團（已存 ${r.time}）` : '') : '⚠ 沒存到';
+    c.fx = prepFx(withFire(k));
+  }
+  c.cv.addEventListener('click', e => { if (!card.classList.contains('firing')) return; const [x, y] = pos(e); (firePlace[k] = firePlace[k] || []).push([x, y, +fsz.value]); saveFire(); });
+  c.cv.addEventListener('contextmenu', e => { if (!card.classList.contains('firing')) return; e.preventDefault(); const [x, y] = pos(e), L = firePlace[k] || [];
+    if (!L.length) return; let bi = 0, bd = 9; L.forEach((s, i) => { const d = Math.hypot(s[0] - x, s[1] - y); if (d < bd) { bd = d; bi = i; } }); L.splice(bi, 1); saveFire(); });
+  showN();
+  cards.push(c);
   grid.appendChild(card);
+}
+/* 這一格的程式層 ＋ 審閱頁放的火（與 script/bg_fx.js 的 LIVE 同一個寫法：fire.free 不裁、火堆冒煙） */
+function withFire(k) {
+  const sp = BG_FX[k], L = firePlace[k] || []; if (!L.length && !(sp.fire && sp.fire.free && sp.fire.free.length)) return sp;
+  const o = Object.assign({}, sp), src = sp.fire ? sp.fire.src : [];
+  o.fire = { mask: sp.fire ? sp.fire.mask : null, src, free: L };
+  if (sp.plumes) o.fireSmoke = { wind: sp.plumes.wind, cells: sp.plumes.cells, alpha: 0.55, src: src.concat(L).filter(f => f[2] > 0.02).map(([fx, fy, fw]) => [fx, fy - 0.03, fw * 0.8]) };
+  return o;
 }
 const subst = document.getElementById('subst');
 fetch('api/live_submit').then(r => r.json()).then(j => { if (j.time) subst.textContent = '上次提交 ' + j.time; }).catch(() => {});
@@ -68,8 +95,9 @@ grp.onchange = filt; only.onchange = filt; sum();
 /* 只有畫面上看得到的那幾格在跑 */
 const io = new IntersectionObserver(es => es.forEach(e => {
   const c = cards.find(c => c.card === e.target); c.on = e.isIntersecting;
-  if (c.on && !c.fx) {
-    c.fx = prepFx(BG_FX[c.k]); c.img = new Image();
+  if (c.on && !c.img) {
+    if (!c.fx) c.fx = prepFx(withFire(c.k));
+    c.img = new Image();
     c.img.src = `resources/background/${dirOf[c.k] ? dirOf[c.k] + '/' : ''}${c.k}.webp`;
     if (BG_ANIM[c.k]) { c.vid = document.createElement('video'); Object.assign(c.vid, { muted: true, loop: true, playsInline: true, src: BG_ANIM[c.k] }); }
   }
@@ -79,7 +107,7 @@ cards.forEach(c => io.observe(c.card));
 const t0 = performance.now();
 function loop(now) {
   for (const c of cards) {
-    if (!c.on || !c.fx || !c.fx.ready || !c.img.complete || !c.img.naturalWidth) continue;
+    if (!c.on || !c.fx || !c.fx.ready || !c.img || !c.img.complete || !c.img.naturalWidth) continue;
     const w = 480, h = Math.round(w * c.img.naturalHeight / c.img.naturalWidth);
     if (c.cv.width !== w || c.cv.height !== h) { c.cv.width = w; c.cv.height = h; }
     const live = !!(c.vid && c.vid.readyState >= 2);

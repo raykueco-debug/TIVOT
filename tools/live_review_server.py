@@ -6,6 +6,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 NOTES = os.path.join(ROOT, 'tools', 'anim', 'bg_layer', 'live_notes.json')
+FIRE = os.path.join(ROOT, 'tools', 'anim', 'bg_layer', 'fire_place.json')   # 戰地放火：{格: [[x, y底, 寬]…]}（畫面比例）
 SUBMIT = os.path.join(ROOT, 'tools', 'anim', 'bg_layer', 'live_submit.json')   # 提交紀錄：{time, count}，提交＝這一輪意見寫完了
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8136
 
@@ -27,6 +28,9 @@ class H(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         if self.path.startswith('/api/live_notes'): return self.send_json(load())
+        if self.path.startswith('/api/fire_place'):
+            try: return self.send_json(json.load(open(FIRE, encoding='utf8')))
+            except Exception: return self.send_json({})
         if self.path.startswith('/api/live_submit'):
             try: return self.send_json(json.load(open(SUBMIT, encoding='utf8')))
             except Exception: return self.send_json({})
@@ -34,6 +38,14 @@ class H(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         d = json.loads(self.rfile.read(int(self.headers.get('Content-Length', 0))) or b'{}')
+        if self.path.startswith('/api/fire_place'):
+            try: f = json.load(open(FIRE, encoding='utf8'))
+            except Exception: f = {}
+            k, sp = str(d.get('key', '')), d.get('spots') or []
+            if not k: self.send_error(400); return
+            if sp: f[k] = [[round(float(v), 4) for v in s_[:3]] for s_ in sp]
+            else: f.pop(k, None)
+            json.dump(f, open(FIRE, 'w', encoding='utf8'), indent=0); return self.send_json({'ok': True, 'time': time.strftime('%Y-%m-%d %H:%M'), 'n': len(sp)})
         if self.path.startswith('/api/live_submit'):
             j = {'time': time.strftime('%Y-%m-%d %H:%M'), 'count': len(load())}
             json.dump(j, open(SUBMIT, 'w', encoding='utf8'), ensure_ascii=False); return self.send_json(j)
