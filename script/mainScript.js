@@ -254,15 +254,13 @@ export const MAIN_SCRIPT = {
          ⚠ 台詞在這裡**斷句**：後半「蕾姬娜˙馮˙海森伯格。」要壓在插畫上講（見下一拍）。 */
       { speaker:'OFFICER', text:'初次見面，我是第十三騎士團的監察官，',
         portrait:{ char:'OFFICER', show:true } },
-      /* 插圖：蕾娜撥髮。⚠ 這一拍沒有台詞 → 不出框 → 沒有 ▼，所以要 `auto` 自己走。 */
-      /* ⚠ `cgPan:'up'`（ver -395，Ray：「蕾娜插圖由下往上平移」）—— 由下往上帶上來，
-         停在她的臉。平移是 2.6 秒、這一拍只停 1 秒，**平移會延續到下一拍**
-         （沒寫 `cgPan` 的句子不碰平移，見 renderLine 的說明），那正是要的：
+      /* 插圖：蕾娜撥髮（插圖動畫 004_renna_intro）。
+         ⚠ `cgPan:'up'`（ver -395，Ray：「蕾娜插圖由下往上平移」）—— 由下往上帶上來，停在她的臉；
          她報上名字的時候鏡頭還在走。 */
-      { speaker:'OFFICER', text:'', auto:1000, cg:'004_renna_intro', cgPan:'up' },
-      /* 報上名字：**對話框壓在插畫上**（Ray 指定）。插圖是持續狀態，這一拍不動它，
-         框自然疊在上面（框 z-7 > 插圖 z-2）；點下去才由下一拍收掉插圖切回立繪。 */
-      { speaker:'OFFICER', text:'蕾姬娜˙馮˙海森伯格。' },
+      /* 報上名字：**對話框壓在插畫上**（Ray 指定）；點下去才由下一拍收掉插圖切回立繪。
+         ⚠ ver -2962（Ray：「蕾娜 INTRO 自報名號的那一句對話跟動畫一起播」）：原本是「插圖拍（無台詞、auto 1 秒）
+           → 動畫播完 → 報名字」兩拍，現在併成一拍，插圖動畫在 config 登記 `withText:true` ＝框與動畫同時開始。 */
+      { speaker:'OFFICER', text:'蕾姬娜˙馮˙海森伯格。', cg:'004_renna_intro', cgPan:'up' },
       /* ⚠ 插圖要收掉才看得到立繪（插圖層在立繪之上，ver -319 踩過）。 */
       { speaker:'LUNARIA', text:'海森伯格家的人嗎……哼，髮飾挺招搖的嘛。',
         cg:null, portrait:{ char:'LUNARIA', expr:'seat_smirk', show:true } },
@@ -393,7 +391,6 @@ export const MAIN_SCRIPT = {
         portrait:{ char:'NOUVELLE', show:false } },
       { speaker:'NOUVELLE', text:'哇，好久沒有來了。',
         portrait:{ char:'NOUVELLE', expr:'surprise', show:true } },
-      { speaker:'NOUVELLE', text:'不過倒是沒什麼變化。', portrait:{ expr:null } },
       { speaker:'OFFICER', text:'你們先隨便逛逛吧，我去行政廳辦些許可文件，明天一早應該就能出航了。',
         portrait:{ char:'OFFICER', expr:null, show:true } },
       { speaker:'NOUVELLE', text:'出航？要搭船嗎？',

@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2961';
+export const VERSION = 'ver 2026.11.24-2962';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3740,7 +3740,7 @@ export const GAME_CONFIG = {
       '043_eliointro': { video:'resources/illustration/video/043_eliointro_v1.mp4', loop:true },
       '044_soranahug': { video:'resources/illustration/video/044_soranahug_v3.mp4' },   // ver -2258：v2 → v3（Ray：「Soranahug 要接新檔」）
       /* ver -2258（Ray：「蕾娜 intro 動畫沒接上」「蕾娜抱安雅動畫沒接上」，動畫 10-18 交件）。 */
-      '004_renna_intro': { video:'resources/illustration/video/004_renna_intro_v1.mp4' },
+      '004_renna_intro': { video:'resources/illustration/video/004_renna_intro_v1.mp4', withText:true },   // ver -2962（Ray）：自報名號那句跟動畫一起播
       '008_rennaholdanya': { video:'resources/illustration/video/008_rennaholdanya_v1.mp4' },
       /* ver -2184（動畫 10-14 交件）。35／044 首尾構圖可接 ⇒ 循環（044 那一拍之後還有台詞與轉泛黃，插圖要撐到淡出）。 */
       '003_lunaria_armed': { video:'resources/illustration/video/003_lunaria_armed_v1.mp4' },
