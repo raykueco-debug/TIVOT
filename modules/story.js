@@ -34,6 +34,7 @@ import * as breath from './breath.js';   // 呼吸：分段平移（選項 1）
 import * as eyefx from './eyefx.js';     // 眼部特效：瞳孔顫動（ver -1945）   // 立繪眨眼（劇情頁與戰鬥對白共用；資料在 script/blink.js）
 import * as prog from '../script/progress.js';
 import { decorateLine } from '../i18n.js';
+import * as sealbox from './sealbox.js';   // 封印盒開盒那一層（ver -2980）：clearStageLeftovers 收它
 import { SFX } from '../audio.js';
 import { matchPortraits } from './tone.js';
 import * as groundShadow from './groundShadow.js';   // 中景層的接地陰影（ver -1702，葉節點）
@@ -1950,6 +1951,7 @@ function goldMotes(){
 }
 export function clearStageLeftovers(){
   stopCgAnim();   // 插圖動畫（ver -2181）：換畫面就收
+  sealbox.closeAll();   // 封印盒開盒那一層（ver -2980）：全螢幕暗幕，換畫面時要有人收
   document.querySelectorAll('#storyStage .story-motes').forEach(e=>e.remove());   // 金光（ver -1910）
   stopDust();     // 揚煙（ver -1639）：換畫面就收，不要飄到下一景去
   killCgRush();   // 放射狀疊影（ver -1562）：換畫面時的第二道保險

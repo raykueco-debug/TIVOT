@@ -19,6 +19,7 @@ import * as prog from '../script/progress.js';
 import * as story from './story.js';
 import * as inn from './inn.js';                 // 旅店大廳（伙伴門／獨自坐坐／回房睡覺）
 import { showShop, showBounty, showExchange, showKitchen, canCookAny, showRelicShop, showLoot } from './loot.js';   // showKitchen＝瑪麗亞的廚房（ver -953）；canCookAny＝現在有沒有菜煮得出來（ver -1659）
+import * as sealbox from './sealbox.js';         // 封印盒開盒演出（ver -2980，葉模組）
 import * as gear from './gear.js';               // 戰前強制整備（ver -838，onLeave 的 gear 掛鉤）
 import { SPEAKERS, faceStyle } from '../script/speakers.js';
 import { SFX } from '../audio.js';
@@ -3647,13 +3648,14 @@ function showShopBtn(on){
 }
 function relicOpen(n){ return !!(n && n.relicShop && prog.hasFlag(n.relicShop)); }
 /* ══ 聖遺物販售（ver -2964，Ray 交稿）══ 點鈕 → 單子（loot.showRelicShop）→ 開封 →
-   開盒動畫（`config.relicBox.openCg`，沒片就跳過）→ 獎品視窗（`showLoot`，唯一的入袋點）→ 櫃台講幾句 → 回店裡。
+   開盒動畫（`config.relicBox.openAnim`＋程式金光，modules/sealbox.js；載不到就跳過）→ 獎品視窗（`showLoot`，唯一的入袋點）→ 櫃台講幾句 → 回店裡。
    台詞在節點的 `relicLines:{rare, normal, howto}`（鐵律 1）：rare／normal 隨機一句（名單在 `relicBox.rare`），
    `howto` 只演一次 —— 旗 `relic_howto`：**誰插**＝那一段演完（playAdhoc 的收尾）；**沒有人拔**。 */
 function openRelic(){
   const n=node(); if(!relicOpen(n) || sheetClose) return;
   showShopBtn(false);
   try{ SFX.unlock(); SFX.menuClick(); }catch(_){}
+  sealbox.warm();   // 開盒影格先抓（單子開著的時候就載好，按開封那一刻不必等）
   sheetClose = showRelicShop({ info:infoText(n),
     onClose:()=>{ sheetClose=null; openMenu(); },
     onOpen:(id)=>{ sheetClose=null; relicReveal(n, id); } });
@@ -3670,9 +3672,10 @@ function relicReveal(n, id){
     if(!lines.length){ finish(); return; }
     story.playAdhoc(lines, ()=>{ if(howto.length) prog.addFlags(['relic_howto']); finish(); });
   };
-  const loot=()=> showLoot([{ id:id, n:1 }], talk, 0, { title:i18nT('封印盒開封') });
-  if(R.openCg) story.playAdhoc([{ speaker:'PLAYER', text:'', auto:400, cg:R.openCg },
-                                { speaker:'PLAYER', text:'', auto:10, cg:null }], loot);
+  /* 開好的盒子與金光留在獎品視窗後面當底（sealbox 那一層在 #lootSheet 之下），獎品收掉才一起收。 */
+  let box=null;
+  const loot=()=> showLoot([{ id:id, n:1 }], ()=>{ if(box) box.close(); talk(); }, 0, { title:i18nT('封印盒開封') });
+  if(R.openAnim) box = sealbox.play(loot);
   else loot();
 }
 /* 這一家店有沒有射擊挑戰（店卡上 `challenge` ＋ 節點上 `challengeLines`）。 */
