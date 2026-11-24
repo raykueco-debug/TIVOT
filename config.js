@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.24-2980';
+export const VERSION = 'ver 2026.11.24-2981';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -6071,7 +6071,7 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   mon_beast_shackle: { dir:'resources/enemy/anim/mon_beast_shackle_atk_v1/', hit:4 },   // 枷獸 撲咬（23 格，R 第 13／17／20 格眼睛塗白；延時同一支，Ray：單爪擊用不到了）
   mon_saint_temperance: { dir:'resources/enemy/anim/mon_saint_temperance_atk_v1/', hit:8 },   // 節制者 多手抓（26 格；延時同一支）
   mon_saint_inspector: { dir:'resources/enemy/anim/mon_saint_inspector_atk_v1/', hit:8 },   // 監查者 鐮刀斬（26 格）
-  mon_saint_thug: { dir:'resources/enemy/anim/mon_saint_thug_atk_v1/', hit:5 },   // 巨型聖徒 直拳（14 格）
+  mon_saint_thug: { dir:'resources/enemy/anim/mon_saint_thug_atk_v1/', hit:2 },   // 巨型聖徒 直拳（ver -2980 Ray 重剪 sh_thug_punch_A_AB_cut_2＋R 倒放留 1/3，11 格）
   mon_saint_temperance_spawn: { dir:'resources/enemy/anim/mon_saint_temperance_spawn_atk_v1/', hit:8 },   // 節制者分離怪 撲抓（ver -2970，Ray 剪的 sh_tspawn_lunge_A_AB_cut＋R 倒放留 1/3，22 格）
   mon_stag_nightmare: { dir:'resources/enemy/anim/mon_stag_nightmare_atk_v1/', hit:10, flame:{ from:7, to:15, at:[0.45,0.76], tone:'purple' } },   // 鹿骸 黑炎（ver -2970，Ray 剪的 sh_stag_roar_A_AB_cut＋R 倒放留 1/3，28 格）：片子無火，火由程式從嘴噴；延時同一支
 };
@@ -6106,6 +6106,7 @@ export const ENEMY_DODGE = {
 /* ══ 點錯（M）的動作（ver -2524，Ray 的 IADMR：A 攻擊／D 延時／M 點錯）══ 沒寫的怪點錯照舊播 ENEMY_DELAY 那一支。
    鑰匙同 ENEMY_ATK（立繪檔名）。 */
 export const ENEMY_MISS = {
+  mon_saint_temperance: { dir:'resources/enemy/anim/mon_saint_temperance_split_v1/', hit:12 },   // 節制者 點錯＝分離出蠟化人形（ver -2980，Ray：「節制者的點錯是 SPAWN 怪」；第 12 格分離怪成形＝敵人卡 missSpawn 生怪、HP+100、先吃傷害）
 mon_bellfounder: { dir:'resources/enemy/anim/mon_bellfounder_atk_v1/', hit:7 },   // ver -2944 Ray 剪的 tomb3_bellfounder_A_AB_cut（8 格）＋ R 原片倒放留 1/3
 mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 },   // ver -2943 Ray 剪的 tomb3_pallid_stag_A_AB_cut（5 格）＋ R 原片倒放留 1/3
   mon_choir_organ: { dir:'resources/enemy/anim/mon_choir_organ_atk_v1/', hit:6, near:1.45, nearIn:120, nearHold:220, nearOut:120, nearSteps:2, nearOrigin:'50% 98%' },   // ver -2943 Ray：「位移要貼地不要浮空」→ 以腳底為軸；-2942 Ray：「風琴攻擊要位移拉近」（同雙頭骷髏犬）；-2941 Ray 剪的 tomb3_choir_organ_A_AB_cut（7 格）＋ R 原片倒放留 1/3
@@ -6190,7 +6191,7 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   mon_bear_nightmare: { dir:'resources/enemy/anim/mon_bear_nightmare_delay_v1/', hit:20, flame:{ from:12, to:24, at:[0.47,0.73], tone:'purple' } },   // 熊骸 黑炎（Ray 剪的 sh_bear_roar_A_AB_cut＋R 倒放留 1/3，33 格）：片子是無火咆哮，火由程式從嘴噴（第 12~24 格）   // 森林熊骸 前爪橫掃（26 格）
   mon_beast_organ: { dir:'resources/enemy/anim/mon_beast_organ_delay_v1/', hit:19, fx:[{ frame:19, type:'smokeBurst', at:[0.5,0.3] }] },   // 裂肉獸 蓄力（38 格）：第 19 格程式爆煙遮住敵人區（ver -2976）
   mon_beast_reliquary: { dir:'resources/enemy/anim/mon_beast_reliquary_delay_v1/', hit:7 },   // 聖骨獸 前爪橫掃（33 格）
-  mon_saint_thug: { dir:'resources/enemy/anim/mon_saint_thug_delay_v1/', hit:11 },   // 巨型聖徒 砸地（27 格）
+  mon_saint_thug: { dir:'resources/enemy/anim/mon_saint_thug_delay_v1/', hit:6 },   // 巨型聖徒 砸地（ver -2980 Ray 重剪 sh_thug_slam_A_AB_cut_2＋R 倒放留 1/3，22 格）
   mon_relic_bellreacher: { dir:'resources/enemy/anim/mon_relic_bellreacher_shake_v1/', hit:6 },   // 鳴鐘者 劇烈震動（13 格）⚠ 程式待接：音波攻擊（淡出數字那一套）
   mon_relic_bellwalker: { dir:'resources/enemy/anim/mon_relic_bellwalker_shake_v1/', hit:6 },   // 喪鐘 劇烈震動（13 格）⚠ 程式待接：音波攻擊（淡出數字那一套）
   mon_relic_heartripper: { dir:'resources/enemy/anim/mon_relic_heartripper_atk_v1/', hit:4 },   // 撕心者：延時＝攻擊同一支

@@ -2263,6 +2263,39 @@ function airEnter(en, eImg, play){
       { transform:'none', offset:1 }], { duration:1900 });
     airInAnim=a; a.onfinish=done; a.oncancel=done; }
 }
+/* ══ 點錯生怪（`missSpawn`，ver -2980，Ray 節制者：「點錯是 SPAWN 怪…就是增加一個怪在畫面上，變群戰，HP+100，100 打完以後先死 SPAWN 怪」）══
+   卡上寫 `missSpawn:{ card:'<分離怪的卡>', hp:100, side:'L'|'R' }`。
+   · 點錯的動畫打到那一格（combat 的點錯分支）→ `summonSpawn()`：敵人總血量 +hp、畫面旁邊冒出分離怪（出場片＝從底部平移入鏡），之後放待機。
+   · 打出去的傷害**先算在分離怪身上**（`spawnAbsorb`，掛在 combat 唯一的扣血點）：牠那 hp 扣完就倒（淡出、往下縮），剩下的才是本體。
+   · 同時最多一隻；換怪／打完一律收（`clearSpawn`，setEnemy 裡呼叫）。 */
+let spawnFx=null;
+export function spawnAlive(){ return !!(spawnFx && spawnFx.hp>0); }
+export function clearSpawn(){ if(!spawnFx) return; clearTimeout(spawnFx.t); spawnFx.el.remove(); spawnFx=null; }
+export function preloadSpawn(en){ const ms=en && en.missSpawn, c=ms && GAME_CONFIG.enemies[ms.card]; if(!c) return; const st=imgStem(c);
+  [ENEMY_ENTER[st], ENEMY_IDLE[st]].forEach(x=>{ const d=x && (x.dir||x); if(typeof d==='string') loadClip(d); }); }
+export function summonSpawn(){
+  const en=curCard(), ms=en && en.missSpawn; if(!ms || spawnAlive()) return 0;
+  const c=GAME_CONFIG.enemies[ms.card], top=$('top'); if(!c || !top) return 0;
+  const st=imgStem(c), E=ENEMY_ENTER[st], I=ENEMY_IDLE[st], Ld=E && clipCache[E.dir], Li=I && clipCache[typeof I==='string'?I:I.dir];
+  clearSpawn();
+  const el=document.createElement('img'); el.className='en-spawn'; el.alt='';
+  const H=top.clientHeight, W=top.clientWidth, h=H*(ms.size||0.62), px=(Li&&Li.j&&Li.j.px)||(Ld&&Ld.j&&Ld.j.px)||[1,1.4], w=h*px[0]/px[1];
+  const left=(ms.side==='R') ? W-w-W*0.02 : W*0.02;
+  el.style.cssText=`position:absolute;left:${left}px;top:${H-h}px;width:${w}px;height:${h}px;pointer-events:none;z-index:4;object-fit:contain;`;
+  el.src=asset(c.image)||''; top.appendChild(el);
+  const S={ el, hp:ms.hp||100, t:0 }; spawnFx=S;
+  const play=(L, loop, fps, after)=>{ if(!L||!L.fr){ if(after) after(); return; } let i=0; const N=L.fr.length, dt=1000/(fps||L.j.fps||24);
+    const step=()=>{ if(spawnFx!==S) return; el.src=L.fr[i].src; i++; if(i>=N){ if(loop) i=0; else { if(after) after(); return; } } S.t=setTimeout(step, dt); }; step(); };
+  const idle=()=>play(Li, true);
+  if(Ld && Ld.fr){ const T=Ld.fr.length*1000/(Ld.j.fps||24); el.animate([{translate:`0 ${h}px`,easing:'cubic-bezier(.2,.7,.3,1)'},{translate:`0 ${-h*0.04}px`,offset:0.8,easing:'ease-in-out'},{translate:'0 0'}],{duration:T}); play(Ld, false, 0, idle); }
+  else idle();
+  return S.hp;
+}
+/* 傷害先吃分離怪的那一份；回傳剩給本體的（本體的血本來就含這一份，所以這裡只記帳、不改 enemyHp） */
+export function spawnAbsorb(d){ const S=spawnFx; if(!S || S.hp<=0 || !(d>0)) return; S.hp-=d; if(S.hp>0) return;
+  clearTimeout(S.t); S.hp=0; const el=S.el; el.style.transformOrigin='50% 100%';
+  const a=el.animate([{ transform:'scale(1,1)', opacity:1, filter:'brightness(1)' },{ transform:'scale(1.06,.55)', opacity:.7, filter:'brightness(1.6)', offset:.4 },{ transform:'scale(1.2,.05)', opacity:0, filter:'brightness(2)' }],{ duration:700, easing:'ease-in', fill:'forwards' });
+  a.onfinish=()=>{ if(spawnFx===S) clearSpawn(); }; }
 /* ══ 細煙帶（`wisps`，ver -2976，Ray 裂肉獸：「要加程式煙，不要用現成的，參考 GPT 去煙之前的樣子」）══
    原圖的煙＝**一條條有描邊的淡色煙帶**，從管頂冒出、一邊往上飄一邊左右捲（不是一團團的霧）。
    作法：每一縷是一個往上走、左右擺動（振幅越往上越大）的「頭」，煙帶＝頭走過的最近 N 個點；
@@ -4137,6 +4170,7 @@ export function setEnemy(key, opts){
   setSkyBattle(en.sky);                         // 空戰的視差背景（ver -2444）：沒有 `sky` 的怪＝收掉上一隻的
   startDamageSmoke(en.damageSmoke);             // 受損冒黑煙（ver -2490）：沒寫的怪＝收掉上一隻的
   startWisps(en.wisps);                         // 細煙帶（ver -2976，裂肉獸管頂的白煙）：沒寫的怪＝收掉上一隻的
+  clearSpawn(); preloadSpawn(en);               // 點錯生怪（ver -2980）：換怪收掉上一隻生出來的；有 missSpawn 的先把分離怪的出場／待機抓好
   startShipAir(en);                             // 空戰船的船底雲浪＋前景雲霧（ver -2865）：不是空戰船＝收掉上一隻的
   startFlock(en);                               // 空戰編隊（ver -2516）：沒寫 flock 的怪＝收掉上一隻的
   setEmpowered(0);                              // 換怪：上一隻的蓄力光與提示收掉（ver -2525）

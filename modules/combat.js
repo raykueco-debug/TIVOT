@@ -1441,8 +1441,9 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
     /* -2496 Ray「攻擊播放時延時先到的話就消掉攻擊圈，所以不會兩動畫衝突」：有動作動畫的怪，延時先到 ⇒ 場上的攻擊圈全消 */
     if(kind==='delay' && enemy.hasActionClips()) defense.clearThreat();
     const wait=enemy.playActionClip(kind==='wrong' ? 'miss' : 'delay');   // 點錯播 M（沒有 M 的怪 clipFor 會借延時那一支，ver -2524）
-    if(wait>0){ setTimeout(()=>{ if(state.over) return; enemyAttack(dmg, kind, saintAmt, true); }, wait); return; }
+    if(wait>0){ setTimeout(()=>{ if(state.over) return; if(kind==='wrong') missSpawnNow(); enemyAttack(dmg, kind, saintAmt, true); }, wait); return; }
   }
+  if(kind==='wrong' && !_plain) missSpawnNow();
   saint.resetSaintCombo();   // 受擊／點錯／逾時 → 連擊斷（九階「源泉」，ver -707）
   /* 卡上 `delayEmpowers`（ver -2525，安雅光翼：「爆炎是 D，下一發攻擊會 200% 傷害」）：
      延時落地 → 下一發主動攻擊（含擋一半）傷害 ×N，用掉就歸 1。 */
@@ -1832,6 +1833,7 @@ function enemyDamage(dmg,isCrit,silent,src){
       }
       if(after<0 && !noOverkill()) state.overkill+=(-after);
       addPartnerDamage(state.enemyHp - Math.max(0,after));   // 好感的帳（ver -2890）：實際扣掉的血，overkill 不算
+      enemy.spawnAbsorb(state.enemyHp - Math.max(0,after));   // 點錯生出來的怪先吃傷害（ver -2980）
       state.enemyHp=Math.max(0,after);
       tutorial.onHpChange();          // 血量觸發的 talk 步驟（ver -599）
       updateBars();
@@ -2836,6 +2838,8 @@ function autoClearOverkill(){
    教學戰／劇情插入戰＝單敵一場，永遠是最後一名。
    （ver -499（-893 前用詞）：聖徒化 overkill 的 EXSECUTIŌ 不再看這個 —— Ray：「只要清空敵 hp
    就發生」；這一支現在只剩 finishEnemyOrAdvance 在用。） */
+/* 點錯生怪（ver -2980，節制者）：分離怪出場、敵人總血量 +hp（同一條血條，先扣的那一份算分離怪的，見 enemy.spawnAbsorb） */
+function missSpawnNow(){ const add=enemy.summonSpawn(); if(!(add>0)) return; state.enemyHp+=add; state.enemyMax+=add; updateBars(); }
 function isLastEnemy(){
   return !(enemy.hasNextInLineup() && !state.tutorialRun && !state.scriptRun);
 }
