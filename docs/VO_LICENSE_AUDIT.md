@@ -12,7 +12,7 @@
 | 10-02 | Akira | 遊ぼうぜ／遅い／死なないでくださいよ／っと！見せかけ！／さすがです／これでもくらえ | `vo_nemo_play` `slow1` `slow2` `feint` `win` `bulletrain` | 高（同日 ver -1920 進版控、台詞對得上） |
 | 09-11 | itsuki | よく見えないが／確かその辺に／あった！／見つけた！／みっけ！／どれどれ | `vo_sorana_found1` `found2` `search1` `search2` `search3` | 高（同日 ver -1089／-1090） |
 | 09-10 | Yui | よかった—— | `vo_nouvelle_lvup` | 確定（Ray 11-25 確認） |
-| 09-09 | Yui | よく見てください！ | `vo_nouvellemiss1～3` 其中一支（另兩支是 RVC） | 確定是諾薇兒失誤音（Ray 11-25）；哪一支照台詞找 |
+| 09-09 | Yui | よく見てください！ | **沒用上** | ✔ 不欠：諾薇兒失誤音 `vo_nouvellemiss1～3` 是 Ray 自己配的（11-25 確認），這筆只是試聽 |
 | 09-08 | Saori／Kuon | 出来上がり！ | `vo_maria_dishdone` | 高（同日 ver -954） |
 | 09-07 | Suzu | 行けます！ | `vo_anya_nightmarereload` | 中（同日 ver -894） |
 | 09-07 | Yui | わたしも頑張らなくちゃ | `vo_nouvelle_saintreload` | 中（同日 ver -893） |
@@ -32,7 +32,7 @@
 
 | 順位 | 檔 | 理由 |
 |---|---|---|
-| **1 試玩必用** | 諾薇兒：`vo_nouvelle_saintinstall`／`saintreload`／`lvup`／失誤音那一支 | 試玩全程的搭檔 |
+| **1 試玩必用** | 諾薇兒：`vo_nouvelle_saintinstall`／`saintreload`／`lvup`（`lvup` 已重生 2 個 take，在 `resources/audio/_raw/vo_regen_1125/`） | 試玩全程的搭檔 |
 | **1 試玩必用** | 安雅：`vo_anya_nightmarereload`、`vo_anya_luciddream`／`nightmareinstall`（Suzu 那兩句對到哪支要確認） | 北泊惡夢化與明晰之夢都在試玩範圍 |
 | 2 待確認 | 索菈娜：`vo_sorana_found1/2`／`search1～3`／`roar`／`roar2`／`pack`／`pack2` | 她在試玩終點那一戰才登場；「發現了」若在試玩的飛行畫面會響就升 1 |
 | 3 正式版 | 尼莫 6 支、瑪麗亞 `dishdone`、賽西莉失誤 5 支 | 鏡湖戰、Stage 8 料理、賽西莉都不在試玩九場主戰裡 |
