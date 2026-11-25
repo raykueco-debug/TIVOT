@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.25-2996';
+export const VERSION = 'ver 2026.11.25-2998';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4168,7 +4168,7 @@ export const GAME_CONFIG = {
       se_dart_fail:2.792,
       /* ── 劇情／城鎮（這一批以前完全沒有增益，見上面的說明）── */
       se_lightup:1.34,   // ver -1859：本機量 −16.1 LUFS（耳機−15.2／手機−17.0 平均），以 se_steps 校正 +0.25 dB
-      se_steps:4.92, se_flame:0.66 /* ver -2755 實測 −10.2 LUFS */, se_enemy_snake:1.78 /* ver -2767 實測 −18.8 LUFS */, se_enemy_warpmagig:1.1 /* ver -2765 實測 −16.7 LUFS；播放時加失真會變大聲，比公式值 1.40 收一點 */, se_clickstep:5.9 /* ver -2724 實測 −28.8 LUFS、峰值 −5.2 dBFS（被 peakCeilDb 夾住）CAP */, se_stepsbig:6.96,   /* ver -1915：stepsbig 換新（Ray 交 wav，4.3 秒，原檔進 _originals，?v=4）；audio_scan 建議 7.84 × 校準比 7.198／8.11 */   /* ver -1914（Ray：「se_steps 改了，城鎮、室外都用這個；se_stepsbig 只用在遺跡內、地宮內的跑步聲」）：se_steps 換新（3.8 秒，原 mp3 在 se/_raw/，?v=3）；增益照 audio_scan 建議值 5.54 × 舊檔校準比（7.198／8.11）＝4.92 */   // ver -1871：se_steps 換新（ffmpeg ebur128 耳機−23.9／手機−24.8，以舊檔 7.198 校正 −6.8 dB）；se_stepsbig＝舊的那支原檔
+      se_steps:4.92, se_flame:0.66 /* ver -2755 實測 −10.2 LUFS */, se_enemy_trainee_appear:1.87 /* ver -2992 實測耳機 −14.4／手機 −24.1 LUFS */, se_enemy_trainee_atk:1.38 /* ver -2992 實測耳機 −13.7／手機 −19.5 LUFS */, se_enemy_snake:1.78 /* ver -2767 實測 −18.8 LUFS */, se_enemy_warpmagig:1.1 /* ver -2765 實測 −16.7 LUFS；播放時加失真會變大聲，比公式值 1.40 收一點 */, se_clickstep:5.9 /* ver -2724 實測 −28.8 LUFS、峰值 −5.2 dBFS（被 peakCeilDb 夾住）CAP */, se_stepsbig:6.96,   /* ver -1915：stepsbig 換新（Ray 交 wav，4.3 秒，原檔進 _originals，?v=4）；audio_scan 建議 7.84 × 校準比 7.198／8.11 */   /* ver -1914（Ray：「se_steps 改了，城鎮、室外都用這個；se_stepsbig 只用在遺跡內、地宮內的跑步聲」）：se_steps 換新（3.8 秒，原 mp3 在 se/_raw/，?v=3）；增益照 audio_scan 建議值 5.54 × 舊檔校準比（7.198／8.11）＝4.92 */   // ver -1871：se_steps 換新（ffmpeg ebur128 耳機−23.9／手機−24.8，以舊檔 7.198 校正 −6.8 dB）；se_stepsbig＝舊的那支原檔
       se_walk:4.481, se_fall:3.724, se_punch:1.596,
       se_tummy:8.268, se_sailorshout:2.048, se_sleep:1.708,
       se_kerberos_open:1.558, se_kerberos_pop:1.479, se_kerberos_steam:1.301,
@@ -5230,6 +5230,8 @@ export const ASSETS = {
   se_enemy_snake: "resources/audio/se/enemy_snake.mp3",   // 羽蛇攻擊（ver -2767，Ray）
   se_enemy_warpmagig: "resources/audio/se/se_enemy_warpmagig.mp3?v=e1723b23",   // 心魘的光波（ver -2765，Ray）
   se_flame: "resources/audio/se/se_flame.mp3",   // 紫黑之爪每一個動作的起手（ver -2755，Ray）
+  se_enemy_trainee_appear: "resources/audio/se/se_enemy_trainee_appear.m4a",   // 訓練用聖徒 出場（ver -2992，Ray：monster roar 9 號提 pitch +3）
+  se_enemy_trainee_atk: "resources/audio/se/se_enemy_trainee_atk.m4a",   // 訓練用聖徒 每次主動攻擊之後（ver -2992，Ray：7 號提 pitch +3）
   se_rockimpact: "resources/audio/se/se_rockimpact.mp3?v=d2a1f043",   // 崩岩巨像拳砸地（ver -2689；劇情那邊走 story.SE_FILES，同一支檔）   // 鐵衣苦修者錘砸中（ver -2680）
   se_enemy_breathfire: "resources/audio/se/se_enemy_breathfire.m4a",   // 肋籠獸噴火（ver -2686，取原檔 0.5～2.3 秒）
   se_brickcrush:        "resources/audio/se/se_brickcrush.m4a",   // 黑爪登場（原本只在 story 的 SE_FILES）
@@ -6031,7 +6033,7 @@ mon_pallid_stag: { dir:'resources/enemy/anim/mon_pallid_stag_atk_v1/', hit:4 }, 
   mon_serpent_side_v2: { dir:'resources/enemy/anim/mon_serpent_side_v2_atkprep_v1/', prep:true, slideFrom:2, slide:{ rise:0.07, riseMs:320, dx:0.6, dy:1.1, scale:1.3, tail:260 }, sweepImg:'resources/enemy/mon_serpent_topdown_v3.webp' },   /* -2787/-2788 Ray：先往下潛的反方向上浮一點再轉身下潛；A 本體＝Ray 定稿的俯視圖（頭朝左）帶殘影快速劃過 */   // 羽蛇 A 的準備動作（ver -2786，Ray 剪的 serpent_pA_rollinB_cut，11 格：側身滾轉下降）；第 2 格起往機頭那側斜下平移出畫面、略拉近，再接程式的劃過
   mon_centipi_side: { dir:'resources/enemy/anim/mon_centipi_side_atkprep_v1/', prep:true, slideFrom:16, sweep:'resources/enemy/anim/mon_centipi_side_atk_v1/' },   /* sweep＝A 本體：腹面 loop（Ray 剪的 mon_centipi_belly_even2_wave_cut，48 格），放大從操作盤線下快速斜上衝（-2550） */   // 巨型蜈蚣 A 的準備動作（ver -2546，Ray 剪的 centipi_dive_joined_v2_cut，22 格：側面轉正、下潛）；第 16 格（頭出畫面、只剩身體尾巴）起邊播邊往下滑出畫面（-2547），再接劃過（A 動畫還沒交，先用程式的劃過）
   mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_atk_v1/', hit:48, windupSe:'se_flame', fx:[{ frame:8, type:'rubble', se:'se_rockimpact' }, { frame:44, type:'violetFlash', se:'se_enemy_holyburst' }] },   // ver -2755 Ray：每個動作 se_flame、振石配 rock、放光配 holyburst   // A＝振翅接爆炎（64 格）；第 8 格下拍到底噴瓦礫、爆炎時紫白光芒籠罩畫面（ver -2525）
-  saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7, near:1.35, nearIn:130 },   /* nearIn：拉近只花打到前的這幾毫秒（-2530 Ray「拉近的速度快一點」） */   // 訓練用聖徒 新架勢 攻擊（ver -2527，31 格；-2529 Ray「攻擊時要拉近撲前」打到那一格放大到 1.35）
+  saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_atk_v1/', hit:7, near:1.35, nearIn:130, retractSe:'se_enemy_trainee_atk', retractAt:8 },   /* ver -2992 攻擊後（打到的下一格）吼一聲（Ray：7 號提 pitch）*/   /* nearIn：拉近只花打到前的這幾毫秒（-2530 Ray「拉近的速度快一點」） */   // 訓練用聖徒 新架勢 攻擊（ver -2527，31 格；-2529 Ray「攻擊時要拉近撲前」打到那一格放大到 1.35）
   mon_canyon_colossus_dark: { dir:'resources/enemy/anim/mon_canyon_colossus_dark_atk_v1/', hit:7, hitFx:'colossus_smash' },   // ver -2689：打擊＝拳頭落地第 7 格（原 21 是拳停在鏡頭前），地面揚塵＋落石＋重金屬
   /* 卡耶爾群戰成員（ver -2623，Kling、快剪 24fps；片尾 B 停格約 1 秒）。hit＝主體最大那一格（交件單）。 */
   mon_canyon_coffinbeetle_dark: { dir:'resources/enemy/anim/mon_canyon_coffinbeetle_dark_atk_v3/', hit:5, hitFx:'beetle_claw', windupSe:'se_enemy_bug01' },   // 一支到底（片尾回中立）；ver -2675：打到＝巨大化的第一格 16（主體面積由 129k 跳到 201k、之後撐到 21 格；Ray：「巨大化的第一幀就要放效果」），水平單爪痕＋揮砍音；嘶鳴起手放（Ray：「se_enemy_bug01 + slash 跟單爪痕」「固定橫痕 slash 在最大時出」）
@@ -6095,7 +6097,7 @@ export const ENEMY_HURT = {
   npc_guildhunter_neutral: { dir:'resources/enemy/anim/npc_guildhunter_neutral_hurt_v4/' },   // 賞金獵人：中彈縮一下（倒放 3 格：原剪第 4、2、1 格，24fps；ver -2898 Ray 在 chk 再剪 hunter_hurt_v3_rev_cut）
 };
 export const ENEMY_ENTER = {
-  saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_enter_v1/' },
+  saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_enter_v1/', windupSe:'se_enemy_trainee_appear', windupMs:0 },   // ver -2992 出場一開始就吼（Ray：9 號提 pitch）
   mon_saint_temperance_spawn: { dir:'resources/enemy/anim/mon_saint_temperance_spawn_enter_v1/', slideIn:{ over:0.04 } },   // 節制者分離怪 出場（ver -2970，Ray：撲抓的 BA 剪片＝SPAWN 用，程式從畫面底部平移入鏡、結尾回拉一下）
   mon_saint_temperance_spawn2: { dir:'resources/enemy/anim/mon_saint_temperance_spawn2_enter_v1/', slideIn:{ over:0.04 } },   // 分離怪二 出場（ver -2988，Ray 剪的 sh_tspawn2_lunge_B_BA2_cut）
   mon_saint_temperance_spawn3: { dir:'resources/enemy/anim/mon_saint_temperance_spawn3_enter_v1/', slideIn:{ over:0.04 } },   // 分離怪三 出場（ver -2988，Ray 剪的 sh_tspawn3_lunge_B_BA2_cut）
