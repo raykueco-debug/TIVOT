@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.25-3022';
+export const VERSION = 'ver 2026.11.25-3024';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -2052,7 +2052,8 @@ export const GAME_CONFIG = {
          ⚠ 閘門寫在**共用的步驟**上（劇情版與首頁教學版同一套流程，只有台詞分兩份）
            —— 那正是 tutorial.js 檔頭那條「只換台詞，不換流程」。
          ⚠ 完成＝**點掉那顆光圈**（tutorial.onThreatResolved 收門），不是點畫面。 */
-      { trigger:'threat', gate:{ type:'threat', immediate:true }, lines:[
+      /* `release:true`（ver -3024，Ray：「諾薇兒說完『反擊』就要撤出畫面讓出戰鬥，打完才往下接」）：講完先撤立繪與對話框，箭頭留著等點光圈。 */
+      { trigger:'threat', gate:{ type:'threat', immediate:true, release:true }, lines:[
         { who:'partner',   text:i18nT('光圈會越縮越小——太早出手雖然擋得下來，但反擊的傷害很有限！') },
         { who:'partner',   text:i18nT('等光圈收得夠小、時機正確，反擊才真的打得痛！') },
         { who:'inspector', text:i18nT('防住給我看。') },
