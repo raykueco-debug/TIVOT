@@ -20,6 +20,9 @@ textarea{width:100%;box-sizing:border-box;min-height:56px;margin-top:8px;backgro
 <script type="module">
 const R = '../resources/audio/vo/', N = '../resources/audio/_raw/vo_regen_1125/';
 const ITEMS = [
+  ...[['1', 'ちゃんとやりなさい！'], ['2', 'どこ狙ってるの？'], ['3', '訓練でもサボった？'], ['4', '（嘆）見てらんないわね。'], ['5', '足引っ張らないでちょうだい。']].map(([n, t]) => (
+    { k: 'cecilie_miss' + n, t: `賽西莉｜失誤語音 ${n}「${t}」（試玩會用到：夢境巨型聖徒、卡耶爾夢境的搭檔；Ayaka、Eleven v4、同原設定重生）`, cur: `vo_cecilie_miss${n}.m4a`,
+      news: [['新 A', `cecilie_miss${n}_A`], ['新 B', `cecilie_miss${n}_B`]] })),
   { k: 'nouvelle_lvup', t: '諾薇兒｜升級「よかった——」', cur: 'vo_nouvelle_lvup.m4a',
     news: [['新 A', 'nouvelle_lvup_A'], ['新 B', 'nouvelle_lvup_B']] },
   { k: 'nouvelle_saintinstall', t: '諾薇兒｜聖徒化（第五輪：Kaori - Classy —— 戰鬥＝[fierce][battle cry][majestic][solemn][shouts]／莊嚴＝[solemn][reverent][holy][resolute][shouts]；也有 Aki、Miki、Yui 的戰鬥版。第四輪：「莊重喊出、神聖感」—— 神聖1＝[solemn][reverent][mature][holy][resolute][shouts]／神聖2＝[solemn][sacred][dignified][mature][proclaiming][powerful]。第三輪：Yui「自信喊出、不要太稚嫩」—— 自信1＝[confident][adult][mature][low voice][shouts]／自信2＝[confident][mature][resolute][commanding][powerful][shouts]；下面是前兩輪的）', cur: 'vo_nouvelle_saintinstall.m4a',
