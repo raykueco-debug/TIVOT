@@ -3580,3 +3580,8 @@ when	from	to	reason
 20261125-104555	resources/audio/se/se_enemy_trainee_atk.m4a	_recycle/resources/audio/se/se_enemy_trainee_atk.m4a	Ray 11-25 改選：9 號 +5、7 號原音（換掉 +3 版）
 20261125-173740	resources/audio/_raw/vo_regen_1125/nouvelle_miss_yokumite_A.mp3	_recycle/resources/audio/_raw/vo_regen_1125/nouvelle_miss_yokumite_A.mp3	諾薇兒失誤音是 Ray 自己配的，這兩條重生 take 用不到
 20261125-173740	resources/audio/_raw/vo_regen_1125/nouvelle_miss_yokumite_B.mp3	_recycle/resources/audio/_raw/vo_regen_1125/nouvelle_miss_yokumite_B.mp3	諾薇兒失誤音是 Ray 自己配的，這兩條重生 take 用不到
+20261125-182011	resources/audio/vo/vo_nouvelle_lvup.m4a	_recycle/resources/audio/vo/vo_nouvelle_lvup.m4a	ver -3027：試玩用 ElevenLabs 付費帳號重生，換新檔（docs/VO_LICENSE_AUDIT.md 二之四）
+20261125-182011	resources/audio/vo/vo_nouvelle_saintreload.m4a	_recycle/resources/audio/vo/vo_nouvelle_saintreload.m4a	ver -3027：試玩用 ElevenLabs 付費帳號重生，換新檔（docs/VO_LICENSE_AUDIT.md 二之四）
+20261125-182012	resources/audio/vo/vo_anya_nightmarereload.m4a	_recycle/resources/audio/vo/vo_anya_nightmarereload.m4a	ver -3027：試玩用 ElevenLabs 付費帳號重生，換新檔（docs/VO_LICENSE_AUDIT.md 二之四）
+20261125-182012	resources/audio/vo/vo_nouvelle_lifereturn.m4a	_recycle/resources/audio/vo/vo_nouvelle_lifereturn.m4a	ver -3027：試玩用 ElevenLabs 付費帳號重生，換新檔（docs/VO_LICENSE_AUDIT.md 二之四）
+20261125-182012	resources/audio/vo/vo_nouvelle_deathguard.m4a	_recycle/resources/audio/vo/vo_nouvelle_deathguard.m4a	ver -3027：試玩用 ElevenLabs 付費帳號重生，換新檔（docs/VO_LICENSE_AUDIT.md 二之四）

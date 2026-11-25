@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.25-3026';
+export const VERSION = 'ver 2026.11.25-3027';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4043,7 +4043,7 @@ export const GAME_CONFIG = {
       /* ver -745：OBE 語音更新（Ray 交新檔，1.2 秒 —— 舊 10.6 秒那支的懸案結案）。
          錨換算（vo_nouvelle_saintinstall 2.43 ÷ 本機量 1.724 ＝鏈補償 1.41）。 */
       vo_nouvelle_obe:2.04,
-      vo_nouvelle_deathguard:1.35,   vo_nouvelle_lifereturn:1.63,   // ver -837 新錄音重量
+      vo_nouvelle_deathguard:1.158,  vo_nouvelle_lifereturn:1.366,  // ver -3027：試玩重生（ElevenLabs 付費帳號）重量 —— 以舊檔增益為錨、同一套 K 加權閘控響度換算（播出音量不變）
       /* ver -1919：賽西莉四支。audio_scan 的建議值（原始波形）× 諾薇兒那四支的平均鏈補償 1.33
          （她的四支 config÷scan＝0.99／1.87／1.14／1.33）—— 同是女聲、同一條 voiceChain，近似可用；峰值都留在 −1 dBFS 以下。 */
       /* ver -1920：尼莫六支。audio_scan 建議值 × 主角三支（dualcrush／mb／execute）的平均鏈補償 1.72，
@@ -4065,8 +4065,8 @@ export const GAME_CONFIG = {
          saintreload  耳機 −15.40／手機 −13.28、平均 −14.34、峰值 −1.28
          nightmarereload 耳機 −12.83／手機 −11.54、平均 −12.19、峰值 −0.62
          兩支都沒觸頂。 */
-      vo_nouvelle_saintreload:1.257,
-      vo_anya_nightmarereload:0.981,
+      vo_nouvelle_saintreload:1.267,   // ver -3027 重生重量（同上換算）
+      vo_anya_nightmarereload:1.090,   // ver -3027 重生重量；換算值 1.294 被峰值 +2 dBFS 夾住（比目標小約 1.5 dB）
       /* ver -837 整批新錄音（BS.1770＋voiceChain EQ 實測，耳機/手機平均，峰值夾 +2dB；
          未過壓縮器 —— 同 -818 的方法）。⚠ obe2 是氣音收尾（−28 LUFS），增益 5.22 是對的。 */
       vo_sorana_pack:0.69,  vo_sorana_pack2:0.57,
@@ -4120,7 +4120,8 @@ export const GAME_CONFIG = {
          ⚠ 三支語音的母帶差了 11.6 dB（sorana 對 anya）—— 沒有這一列的話升級語音
            會「有的震耳、有的聽不見」，正是 §6.6 說的「沒補＝以母帶響度播出」。 */
       se_lvup:2.40,
-      vo_nouvelle_lvup:1.07,  vo_anya_lvup:2.67,  vo_sorana_lvup:0.70,
+      vo_nouvelle_lvup:1.230,   // ver -3027 重生重量（同上換算）
+       vo_anya_lvup:2.67,  vo_sorana_lvup:0.70,
       vo_luna_dualwield:1.483, vo_luna_execution:1.013, vo_luna_obe:1.163,
       vo_luna_saintinstall:1.345, vo_malzeno_hcrounds:2.647,
       vo_malzeno_supplyrefill:2.261, vo_renee_deathguard:1.563,
@@ -5325,8 +5326,8 @@ export const ASSETS = {
   vo_torsten_exc:    "resources/audio/vo/vo_torsten_execute.m4a",      // 處決 EXSECUTIŌ
   vo_nou_saint:      "resources/audio/vo/vo_nouvelle_saintinstall.m4a?v=a0d22041",// 聖徒化降臨（?v=2：ver -837 新錄音同名覆蓋）
   vo_nou_obe:        "resources/audio/vo/vo_nouvelle_obe.m4a?v=0c7d6842",         // O.B.E.
-  vo_nou_guard:      "resources/audio/vo/vo_nouvelle_deathguard.m4a?v=81a164d8",  // 即死防禦（?v=2 同上）
-  vo_nou_return:     "resources/audio/vo/vo_nouvelle_lifereturn.m4a?v=b4fc5f3b",  // 生命歸還（?v=2 同上）
+  vo_nou_guard:      "resources/audio/vo/vo_nouvelle_deathguard.m4a?v=d7510213",  // 即死防禦（?v=2 同上）
+  vo_nou_return:     "resources/audio/vo/vo_nouvelle_lifereturn.m4a?v=b7e76fc6",  // 生命歸還（?v=2 同上）
   /* 賽西莉（ver -1919，Ray 交 wav：SI／即死防禦／生命歸還／OBE；原檔在 _originals/audio/vo/）。 */
   vo_cec_saint:      "resources/audio/vo/vo_cecilie_saintinstall.m4a",
   vo_cec_obe:        "resources/audio/vo/vo_cecilie_obe.m4a",
@@ -5370,8 +5371,8 @@ export const ASSETS = {
   vo_anya_lucid:     "resources/audio/vo/vo_anya_luciddream.m4a?v=60bed254",
   /* Reload 三兄弟（ver -894，Ray 交件）——聖徒／夢魘各自的 reload 語音與 CI。
      ⚠ `?v=2`：諾薇兒那支是**同名覆蓋**（-893 那版已被新錄音取代），必掛 buster（§5）。 */
-  vo_nou_saintreload:"resources/audio/vo/vo_nouvelle_saintreload.m4a?v=653a7b27",
-  vo_anya_nireload:  "resources/audio/vo/vo_anya_nightmarereload.m4a",
+  vo_nou_saintreload:"resources/audio/vo/vo_nouvelle_saintreload.m4a?v=ef54cb31",
+  vo_anya_nireload:  "resources/audio/vo/vo_anya_nightmarereload.m4a?v=1943d140",
   cutin_saintreload: "resources/ci/ci_nouvelle_saintreload.webp",
   cutin_nireload:    "resources/ci/ci_anya_nightmarereload.webp",
   /* 索菈娜語音（ver -818，Ray 交件）——共鬥發動 pack/pack2 輪播、共鬥結束 obe、
@@ -5416,7 +5417,7 @@ export const ASSETS = {
      鑰匙在各自的搭檔卡 `levelUpVoice`（可寫陣列＝輪播）。
      ⚠ Ray 只點名了 anya 與 sorana，但 `vo_nouvelle_lvup` 也在交件裡 —— 三位都接上，
        少一位的話諾薇兒升級只有 SE，讀起來像漏了。 */
-  vo_nouvelle_lvup:  "resources/audio/vo/vo_nouvelle_lvup.m4a",
+  vo_nouvelle_lvup:  "resources/audio/vo/vo_nouvelle_lvup.m4a?v=3417114e",
   vo_anya_lvup:      "resources/audio/vo/vo_anya_lvup.m4a",
   vo_sorana_lvup:    "resources/audio/vo/vo_sorana_lvup.m4a",
   vo_sorana_roar:    "resources/audio/vo/vo_sorana_roar.m4a?v=184fbea0",   // ver -859：Ray 更新 5連完美戰吼   // 獵手的戰吼・連5盤那一發（ver -837 新錄音）
@@ -8503,12 +8504,14 @@ export const ASSET_VER = {
   'vela_uptown_dusk': '5d9e2caf',
   'vela_uptown_night': 'fdd3243f',
   'vo_anya_luciddream': '60bed254',
+  'vo_anya_nightmarereload': '1943d140',
   'vo_anya_obe': '615ba712',
-  'vo_nouvelle_deathguard': '81a164d8',
-  'vo_nouvelle_lifereturn': 'b4fc5f3b',
+  'vo_nouvelle_deathguard': 'd7510213',
+  'vo_nouvelle_lifereturn': 'b7e76fc6',
+  'vo_nouvelle_lvup': '3417114e',
   'vo_nouvelle_obe': '0c7d6842',
   'vo_nouvelle_saintinstall': 'a0d22041',
-  'vo_nouvelle_saintreload': '653a7b27',
+  'vo_nouvelle_saintreload': 'ef54cb31',
   'vo_nouvellemiss1': '1e056954',
   'vo_sorana_pack': '417630a9',
   'vo_sorana_pack2': '57c876ef',
