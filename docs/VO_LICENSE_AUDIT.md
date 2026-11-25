@@ -76,6 +76,20 @@
 
 **交接（Ray 挑好版本後 → 劇情副理）**：同名換上（m4a、單聲道 64k，照 ver -1919 的轉法）、需要剪的照原檔長度剪、重量 `tuning.fileGain` 那幾列、`bust.py --bump`；舊檔走 `tools/recycle.sh`。換完把第〇節那幾列改成 `✔ 不欠（11-25 付費期重生）`。
 
+## 二之四、Ray 試聽定案（2026-11-25 18:16 提交）→ 交劇情副理換檔
+
+| 遊戲檔 | 用哪一個新檔 | 怎麼處理 |
+|---|---|---|
+| `vo_nouvelle_lvup` | `nouvelle_lvup_A.mp3` | 直接換 |
+| `vo_nouvelle_lifereturn` | `nouvelle_lifereturn_chain_A.mp3` | 剪出原檔那一段（原檔 1.93 秒） |
+| `vo_nouvelle_deathguard` | `nouvelle_lifereturn_chain_B.mp3` | 剪出「死なないで！」（原檔 1.56 秒）；Ray 確認原檔是 ElevenLabs |
+| `vo_nouvelle_saintreload` | `nouvelle_saintreload_Suzu_A.mp3` | 直接換 |
+| `vo_anya_obe` | `anya_obe_B.mp3` | 剪出原檔那一段（原檔 1.63 秒） |
+| `vo_anya_nightmarereload` | `anya_nightmarereload_A.mp3` | 直接換 |
+| `vo_nouvelle_saintinstall` | **等 Ray 第二輪**（Lime 被退，補了 Yui A／B，或從整串 A 結尾剪） | 定了再換 |
+
+新檔都在 `resources/audio/_raw/vo_regen_1125/`。換法照 ver -1919：m4a 單聲道 64k、重量 `tuning.fileGain` 那幾列、`bust.py --bump`、舊檔走 `tools/recycle.sh`。
+
 ## 三、怎麼重生
 
 1. 用 Starter 帳號，**同一個聲音、同一段台詞**重新生成（History 裡每一筆都能直接重用文字與設定）。
