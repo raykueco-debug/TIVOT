@@ -282,9 +282,9 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     const id=sel.slice(5);
     if(wOwned().indexOf(id)<0) return false;
     if(prog.jeroMod(id)>0) return false;               // 改成的槍不再收
-    /* ⚠ 杰羅放大的是**改造增益**（ver -867，Ray 更正）—— 沒改裝過的槍增益是 0，
-       放大 0 還是 0，收錢等於詐騙 → 他不收（列上標「先去改裝」）。 */
-    if(prog.weaponMod(id)<=0) return false;
+    /* ⚠ ver -3021（Ray：「杰羅的賭博式改造不應該要求槍改過才給改」）：拿掉 -867 的「沒改裝過不收」。
+       加成存在 jeroMod 裡一直有效（subgunPowerMul ＝ 1 ＋ 改造增益 ×（1 ＋ 杰羅加成））——
+       沒改裝過的槍賭成功當下火力不變，之後在槍店改裝時就被放大，所以不是白花錢。 */
     return inv.getMoney() >= jeroCost(id);
   };
   let jeroMsg=null;   // 杰羅這一把的結果台詞（換頁／換槍就清）
@@ -298,13 +298,10 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
       const b=prog.jeroMod(id), cost=jeroCost(id);
       /* 「額外顯示額外增益」（Ray）：成功的那把直接把加成標在列上。
          ⚠ 標的是**改造增益 +N%**（ver -867，Ray 更正：放大的是改造增益不是火力）。 */
-      const noMod = !(prog.weaponMod(id)>0);
       const tag = b>0
         ? i18nT('<span class="mod-mat">改造済　改造增益 +')+Math.round(b*100)+'%</span>'
-        : noMod
-        ? i18nT('<span class="mod-mat lack">先去改裝再來</span>')
         : '<span class="mod-mat'+(inv.getMoney()>=cost?'':' lack')+'">'+cost+' '+inv.moneyName()+'</span>';
-      return '<div class="shop-row mod-row'+((b>0||noMod)?' done':'')+(pick==='jero:'+id?' pick':'')+'"'
+      return '<div class="shop-row mod-row'+(b>0?' done':'')+(pick==='jero:'+id?' pick':'')+'"'
            +   ' data-id="jero:'+id+'">'
            + '<span class="loot-name"><i class="mod-star">'+i18nT(w.cat||'')+'</i>'
            +   (w.shortName||w.name||id)+'</span>'
