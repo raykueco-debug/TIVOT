@@ -80,12 +80,12 @@
 
 | 遊戲檔 | 用哪一個新檔 | 怎麼處理 |
 |---|---|---|
-| `vo_nouvelle_lvup` | `nouvelle_lvup_A.mp3` | 直接換 |
-| `vo_nouvelle_lifereturn` | `nouvelle_lifereturn_chain_A.mp3` | 剪出原檔那一段（原檔 1.93 秒） |
-| `vo_nouvelle_deathguard` | `nouvelle_lifereturn_chain_B.mp3` | 剪出「死なないで！」（原檔 1.56 秒）；Ray 確認原檔是 ElevenLabs |
-| `vo_nouvelle_saintreload` | `nouvelle_saintreload_Suzu_A.mp3` | 直接換 |
-| `vo_anya_obe` | `anya_obe_B.mp3` | 剪出原檔那一段（原檔 1.63 秒） |
-| `vo_anya_nightmarereload` | `anya_nightmarereload_A.mp3` | 直接換 |
+| `vo_nouvelle_lvup` | `nouvelle_lvup_A.mp3` | ✔ 已換（ver -3027） |
+| `vo_nouvelle_lifereturn` | `nouvelle_lifereturn_chain_A.mp3` | ✔ 已換（ver -3027，剪「私の全てを！」） |
+| `vo_nouvelle_deathguard` | `nouvelle_lifereturn_chain_B.mp3` | ✔ 已換（ver -3027，剪「死なないで！」） |
+| `vo_nouvelle_saintreload` | `nouvelle_saintreload_Suzu_A.mp3` | ✔ 已換（ver -3027） |
+| `vo_anya_obe` | `anya_obe_B.mp3` | ⚠ 等 Ray 指定剪哪段（劇情副理切了 cut1～3 三段候選） |
+| `vo_anya_nightmarereload` | `anya_nightmarereload_A.mp3` | ✔ 已換（ver -3027） |
 | `vo_nouvelle_saintinstall` | **等 Ray 第二輪**（Lime 被退，補了 Yui A／B，或從整串 A 結尾剪） | 定了再換 |
 
 新檔都在 `resources/audio/_raw/vo_regen_1125/`。換法照 ver -1919：m4a 單聲道 64k、重量 `tuning.fileGain` 那幾列、`bust.py --bump`、舊檔走 `tools/recycle.sh`。
