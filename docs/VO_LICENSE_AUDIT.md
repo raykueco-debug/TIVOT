@@ -4,6 +4,23 @@
 > 帳號在 **2026-11-25 才升級 Starter**（下次續訂 12-25）⇒ **今天以前生成的全部是免費期，沒有商用授權**。
 > 狀態只有兩種：`✔ 不欠`（寫理由）／`⚠ 欠重生`。「？」＝要 Ray 聽一下確認。
 
+## 〇、聲音比對結果（2026-11-25，取代下面一、二節的推測）
+
+作法：遊戲裡 86 支語音逐支算音量包絡（20ms 一格），和 ElevenLabs History 裡 230 筆 TIVOT 生成逐筆滑動比對。
+真的是從那筆剪出來的會幾乎完全吻合（相關係數 ≥0.97，而且明顯贏過其他每一筆）；RVC 的檔對誰都差不多。
+⚠ 包絡比對是粗的：長的 History 錄音會讓不相干的短檔也拿到 0.9 上下，所以「中」那一欄另外看**台詞內容是否對得上**。
+
+| 結論 | 檔 | 根據 |
+|---|---|---|
+| ⚠ **確定 ElevenLabs**（聲音吻合） | `vo_sorana_found1` `found2` `search1` `search2` `pack` `pack2`、`vo_anya_obe`、`vo_nemo_slow1` `slow2`、`vo_nouvelle_lvup` | 相關 0.97～1.00，且領先第二名 0.09 以上 |
+| ⚠ **幾乎確定**（聲音高度吻合＋台詞對得上） | `vo_nemo_feint` `win` `bulletrain` `play`、`vo_sorana_supply1` `supply2` `obe1` `obe2`、`vo_nouvelle_lifereturn` `saintinstall`、`vo_anya_nightmarereload` | 相關 0.90～0.97 且對到的是同一句台詞 |
+| ⚠ **很可能**（台詞與日期對得上，聲音比對不夠明顯） | `vo_nouvelle_saintreload`、`vo_maria_dishdone`、`vo_sorana_search3`、`vo_sorana_roar` `roar2` `lvup`、`vo_nouvelle_deathguard` | 要 Ray 聽一下 |
+| ⚠ **確定 ElevenLabs**（History 沒有，但原稿在 `_originals`） | `vo_cecilie_miss1～5` | Ayaka 草稿 |
+| ✔ 不欠：Ray 自己配 | `vo_luna_*` `vo_lunamg` `vo_renee_*` `vo_malzeno_*`、`vo_nouvellemiss1～3` | Ray 11-25 確認 |
+| ✔ 不欠：比對不到任何 ElevenLabs | `vo_misha_*`（20）、`vo_torsten_*`、`vo_anya_dreambreaker1/2` `nightmareinstall` `luciddream` `lvup`、`vo_nouvelle_obe`、`vo_sorana_miss1～4`、`vo_cecilie_saintinstall` `obe` `deathguard` `lifereturn` | 每一筆的最佳相關都只是「長錄音的背景值」，沒有明顯贏家 |
+
+⚠ 比對只涵蓋 History 有的（09-05 起）。09-05 以前的只能靠 Ray 確認。
+
 ## 一、History 裡屬於 TIVOT 的生成（全部免費期）
 
 | 生成日 | ElevenLabs 聲音 | 台詞（節錄） | 對到的檔 | 把握 |
@@ -32,8 +49,8 @@
 
 | 順位 | 檔 | 理由 |
 |---|---|---|
-| **1 試玩必用** | 諾薇兒：`vo_nouvelle_saintinstall`／`saintreload`／`lvup`（`lvup` 已重生 2 個 take，在 `resources/audio/_raw/vo_regen_1125/`） | 試玩全程的搭檔 |
-| **1 試玩必用** | 安雅：`vo_anya_nightmarereload`、`vo_anya_luciddream`／`nightmareinstall`（Suzu 那兩句對到哪支要確認） | 北泊惡夢化與明晰之夢都在試玩範圍 |
+| **1 試玩必用** | 諾薇兒：`vo_nouvelle_saintinstall`／`lifereturn`／`saintreload`／`deathguard`？／`lvup`（`lvup` 已重生 2 個 take，在 `resources/audio/_raw/vo_regen_1125/`） | 試玩全程的搭檔 |
+| **1 試玩必用** | 安雅：`vo_anya_nightmarereload`、`vo_anya_obe`（比對確定；`luciddream`／`nightmareinstall` 比對不到，不欠） | 北泊惡夢化與明晰之夢都在試玩範圍 |
 | 2 待確認 | 索菈娜：`vo_sorana_found1/2`／`search1～3`／`roar`／`roar2`／`pack`／`pack2` | 她在試玩終點那一戰才登場；「發現了」若在試玩的飛行畫面會響就升 1 |
 | 3 正式版 | 尼莫 6 支、瑪麗亞 `dishdone`、賽西莉失誤 5 支 | 鏡湖戰、Stage 8 料理、賽西莉都不在試玩九場主戰裡 |
 
