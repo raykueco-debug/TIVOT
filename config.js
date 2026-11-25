@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.25-3027';
+export const VERSION = 'ver 2026.11.25-3028';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4055,7 +4055,7 @@ export const GAME_CONFIG = {
       /* ver -1967：米夏第二批十六支，同一套換算（damage3／attack3／hp20 原檔很小聲，增益偏高是那樣來的）。 */
       vo_misha_attack2:6.18, vo_misha_attack3:9.59, vo_misha_attack4:3.53, vo_misha_attack5:3.39, vo_misha_attack6:3.62, vo_misha_attack7:3.62, vo_misha_damage1:4.30, vo_misha_damage2:3.63, vo_misha_damage3:11.34, vo_misha_damage4:5.38, vo_misha_finish:4.68, vo_misha_guard3:3.84, vo_misha_guard4:4.63, vo_misha_guard5:4.04, vo_misha_hp20:8.98, vo_misha_hp50:6.22,
       vo_cecilie_saintinstall:2.42, vo_cecilie_obe:4.10, vo_cecilie_deathguard:3.30, vo_cecilie_lifereturn:2.39,
-      vo_anya_nightmareinstall:4.14, vo_anya_obe:0.67,   // obe ver -837 新錄音重量
+      vo_anya_nightmareinstall:4.14, vo_anya_obe:0.653,   // obe ver -3028：換成付費期重生版 cut3「これ以上！！」（未過 RVC），同 -3027 換算重量
       vo_anya_dreambreaker1:5.15,    vo_anya_dreambreaker2:2.63,
       /* ver -881：Ray 重錄。瀏覽器內 BS.1770＋voiceChain 實測 —— 耳機 −14.88／
          手機 −12.11、平均 −13.50 LUFS（前一版是 −10.08，新錄音安靜 3.4 dB），
@@ -5365,7 +5365,7 @@ export const ASSETS = {
   vo_anya_ni:        "resources/audio/vo/vo_anya_nightmareinstall.m4a",// 惡夢化降臨
   vo_anya_burst:     "resources/audio/vo/vo_anya_dreambreaker1.m4a",   // 夢境粉碎（預設）
   vo_anya_burst2:    "resources/audio/vo/vo_anya_dreambreaker2.m4a",   // 夢境粉碎（娜塔莉戰，見戰鬥卡）
-  vo_anya_melt:      "resources/audio/vo/vo_anya_obe.m4a?v=615ba712",             // 熔斷 MELTDOWN（?v=2 同上）
+  vo_anya_melt:      "resources/audio/vo/vo_anya_obe.m4a?v=30d84ac4",             // 熔斷 MELTDOWN（?v=2 同上）
   /* 明晰之夢語音（ver -759 ×4 輪播 → ver -837 收成單支新錄音）。 */
   /* ?v=2：Ray 重錄後同名覆蓋（ver -881）——同名換檔一定要掛 cache-buster（§5）。 */
   vo_anya_lucid:     "resources/audio/vo/vo_anya_luciddream.m4a?v=60bed254",
@@ -8505,7 +8505,7 @@ export const ASSET_VER = {
   'vela_uptown_night': 'fdd3243f',
   'vo_anya_luciddream': '60bed254',
   'vo_anya_nightmarereload': '1943d140',
-  'vo_anya_obe': '615ba712',
+  'vo_anya_obe': '30d84ac4',
   'vo_nouvelle_deathguard': 'd7510213',
   'vo_nouvelle_lifereturn': 'b7e76fc6',
   'vo_nouvelle_lvup': '3417114e',
