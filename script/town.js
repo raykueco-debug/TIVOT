@@ -2731,7 +2731,7 @@ export const TOWNS = {
         lines:[
           /* ver -1739 Ray 改稿（stage0）：三拍，表情照稿。 */
           nou('surprise','雖說不及聖王廳，不過帝都的大教堂真是氣派呢。'),
-          nou('sadsmile','上一次來，還是跟學姐一起……'),
+          nou('sadsmile','上一次來，還是跟賽西莉學姐一起……'),
           nou('surprise','啊！對不起……'),
           { bubbleFx:'note', speaker:'PLAYER', blank:true },
           { speaker:'NOUVELLE', text:'......', portrait:{ char:'NOUVELLE', expr:'sad', show:true } },
@@ -2860,7 +2860,6 @@ export const TOWNS = {
           gun(null,'不過，我們槍匠聯盟都會為您這種身手不凡的客人提供特別客製服務。'),
           /* —— 合流 —— */
           Object.assign(gun(null,'一般人我們可不接這種單。'), { label:'range_merge' }),
-          gun(null,'每週都有競賽，優勝者也會有獎勵喔！各大城市的聯盟槍店都可以進行挑戰。'),
           gun(null,'那麼，就由我來看看這一對美人是否還能更上一層樓。'),
           /* （修理音）Ray 指定用 `se_ginclick`（ver -378，原本先借的是 `se_metalclip`）。 */
           { speaker:'GUNSMITH', text:'', auto:1200, se:'se_ginclick',
@@ -3050,7 +3049,7 @@ export const TOWNS = {
           /* ══ 公會硬幣（ver -2964，Ray 交稿）══ 想開溜的獵人被櫃台叫住，彈了一枚硬幣過來。 */
           { speaker:'HUNTER', text:'', portrait:{ char:'HUNTER', expr:'lost', show:true } },
           cnt(null,'慢著，決鬥輸了就想走嗎？'),
-          hun('lost','呿。'),
+          hun('front','呿。'),
           /* 彈硬幣。ver -2965（Ray）：是**立繪差分**不是插圖 —— `hunter` 的 `flick`。
              ver -2995：Ray 用管理人工具把它併進「這樣就可以了吧？」這一句（原本是一拍無台詞），
              音效（Ray：「彈硬幣那拍要有音效」）、入袋、插旗一起搬到這一句。
@@ -3700,7 +3699,7 @@ export const TOWNS = {
               prx(null,'你們是，聖王廳派來的人？'),
               ren('talkwork','是的。您是——本地的司祭嗎。'),
               pri(null,'沒錯。'),
-              ren('talkwork','這裡發生了什麼事？'),
+              ren('talkwork','怎麼會這麼嚴重？'),
               pri(null,'如你所見，昨晚被禍魘襲擊了。'),
               pri(null,'『永夜』以來發生過好幾次，一直以來駐地的軍隊都能擊退。'),
               pri(null,'但昨晚那個，不一樣！'),
@@ -3829,11 +3828,15 @@ export const TOWNS = {
              金額照 config.bounties.rolf（`bounty:'rolf'`）；收尾一併插 `np_guild_seen`（＝公會看過了，「人都跑光了」那一句不再演、
              「該回去看看了」的條件照樣成立）。排在 np_guild_seen 那一段**之前**，由上往下取第一個成立的。 */
           { flag:'valse_pirate_paid', need:['valse_pirate_sunk','np_burial_done'], lines:[
-            { speaker:'COUNTER_NP', text:'黑船洛爾夫？瓦爾士治安廳的通報今早剛到……真的是你們擊沉的？',
+            { speaker:'COUNTER_NP', text:'黑船洛爾夫？瓦爾士治安廳的通報今早剛到……是你們擊沉的？',
               portrait:{ char:'COUNTER_NP', show:true } },
             { speaker:'PLAYER', blank:true },
-            { speaker:'COUNTER_NP', text:'好吧，懸賞金一千五百。殺禍魘沒賞金領，打空賊倒是有。',
+            { speaker:'COUNTER_NP', text:'紅、黃、綠、綠......核對正確，懸賞金一千五百。',
               portrait:{ char:'COUNTER_NP', show:true }, bounty:'rolf', flags:['np_guild_seen'] },   // 諾薇兒那一句拿掉（Ray：「她當時不在」）
+            /* ver -3015（Ray 交稿）：領獎之後再三句；公會幣 4 枚在第一句入袋（帝都聖遺物還沒開放也照給，之後用得到）。 */
+            { speaker:'COUNTER_NP', text:'還有四枚公會幣。', give:{ guild_coin:4 } },
+            { speaker:'COUNTER_NP', text:'唉，這些賞金獵人碰到禍魘就跑光了。' },
+            { speaker:'COUNTER_NP', text:'辛苦你了。' },
           ] },
           { flag:'np_guild_seen', need:'np_burial_done', lines:[
           { speaker:'COUNTER_NP', text:'殺禍魘沒賞金領，人都跑光了。你隨意看看吧。',
