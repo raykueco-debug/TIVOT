@@ -1459,7 +1459,8 @@ export function playActionClip(kind, onDone, opts){   // opts.hold：播完停�
       const n=String(c.near || 1), kf = (kind==='atk' || c.near) ? [{scale:String(k),offset:0}, ...(c.nearIn>0 && tHit>c.nearIn ? [{scale:String(k),offset:off(tHit-c.nearIn)}] : []), {scale:n,offset:off(tHit)},{scale:n,offset:off(hold)},{scale:String(k),offset:off(back)},{scale:String(k),offset:1}] : [{scale:String(k)},{scale:String(k)}];
       const na=el.animate(kf.map(q=>({...q, easing: c.nearSteps>0 ? `steps(${c.nearSteps},end)` : 'ease-in-out'})),{duration:T}); if(c.nearOrigin) na.onfinish=()=>{ el.style.transformOrigin=FAR_ORIGIN; }; } }   /* `nearSteps`＝位移每一段只跳這幾格（ver -2913，Ray：「位移少幀」——像手繪抽格，不平滑補間） */   /* ease 逐段套，峰值才準準落在 hit 那一格（-2485） */
   const t0=performance.now();
-  windupSe(c.windupSe, c.windupMs, ()=>clipT || i<N, c.windupFit);
+  /* 出場片的起手音一隻怪只放一次（ver -3002，Ray 訓練用聖徒：「出場音跑一次就好」）—— 出場片可能被重叫（立繪重載、門開），音不跟著重來 */
+  if(kind!=='enter' || enterSeDone!==enemySeq){ if(kind==='enter') enterSeDone=enemySeq; windupSe(c.windupSe, c.windupMs, ()=>clipT || i<N, c.windupFit); }
   stepSes(c, fps, ()=>!!clipT);
   if(c.retractSe && c.retractAt!=null) windupSe(c.retractSe, c.retractAt*1000/fps, ()=>clipT && i<N);   // 單隻：收回音（ver -2720）
   const fxAt=new Map(); (c.fx||[]).forEach(f=>{ if(!fxAt.has(f.frame)) fxAt.set(f.frame,[]); fxAt.get(f.frame).push(f); });   // 動作段的程式特效（ver -2524：光翼下拍噴瓦礫）；-2922：同一格可掛多個（寡婦 M＝射布＋纏布）
@@ -4174,7 +4175,9 @@ export function randomBodyPoint(){
   return { l: sx/W*100, t: sy/H*100 };
 }
 
+let enemySeq=0, enterSeDone=-1;   // 每換一隻怪 +1；出場音放過的是哪一隻（ver -3002）
 export function setEnemy(key, opts){
+  enemySeq++;
   const en = GAME_CONFIG.enemies[key];
   if(!en) return;
   clearFeathers(true);                          // 羽蛇的封窗羽毛不帶到下一隻（ver -2792）
