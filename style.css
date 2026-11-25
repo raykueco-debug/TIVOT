@@ -5429,6 +5429,9 @@
   #gearSheet .gs-pimg{position:absolute;left:50%;top:var(--gp-top,0%);
     height:calc(100% * var(--gp-zoom,1));transform:translateX(-50%);
     object-fit:contain;object-position:top center;}
+  /* 胸像（ver -3016，Ray：「立繪再短一點，胸像就好」）：橫式框，裁切位置由 gear.js 的 bustStyle 算（inline style）。 */
+  #gearSheet .gs-pcard.bust{aspect-ratio:4/3;max-height:none;min-height:0;}
+  #gearSheet .gs-pcard.bust .gs-pimg{width:auto;max-width:none;}
   #gearSheet .gs-pname{position:absolute;left:0;right:0;bottom:0;padding:6px 10px;
     font-size:12px;letter-spacing:3px;color:var(--gold);
     background:linear-gradient(180deg,rgba(8,6,12,0),rgba(8,6,12,.9) 60%);}
@@ -5533,6 +5536,12 @@
     #gearSheet .gs-hint{font-size:9px;margin-top:4px;}
     #gearSheet .gs-perk{margin-top:6px;font-size:9.5px;line-height:1.55;}
     #gearSheet .gs-pcard{min-height:130px;max-height:27vh;}   /* ver -2888 縮小（原 180px／38vh） */
+    #gearSheet .gs-pcard.bust{min-height:0;max-height:none;}   /* 胸像（ver -3016）：高度由 4:3 決定 */
+  }
+  /* 矮的手機（375×667 那一級，ver -3016 實測左欄多出 11px、最後一行說明被切）：主武器圖收一點、卡下緣少一點。 */
+  @media (max-width:480px) and (max-height:720px){
+    #gearSheet .gs-mimg{max-height:96px;}
+    #gearSheet .gs-main{margin-bottom:10px;}
   }
   /* 道具欄裡的「裝　備」（ver -422）：整備頁點一格進來時才有。 */
   #lootSheet .bag-eq{position:absolute;right:8px;bottom:6px;padding:3px 10px;

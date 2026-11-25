@@ -24,6 +24,26 @@ import { setPickedPartner, state } from '../state.js';
 import { showBag, bagListHtml } from './loot.js';
 import * as partner from './partner.js';   // 本篇現在的搭檔是誰（ver -671，唯一那一支判定）
 import { SFX } from '../audio.js';
+import { ART } from '../script/speakers.js';   // 胸像取景（ver -3016）：立繪的 top/bot/fx 只有 ART 那一份（鐵律 7）
+
+/* ══ 搭檔卡的胸像取景（ver -3016，Ray：「整備畫面的立繪再短一點，胸像就好，讓所有資訊不用捲動一頁就能看完」）══
+   用 `speakers.js` 量好的那一張的取景值裁（不是把整張縮小）：頭頂往上留一點、往下到胸口（身高的 BUST_SPAN），
+   橫向以臉中心（fx）置中。回 inline style 字串；這張圖在 ART 裡查不到（試玩版的蕾妮／馬季諾）回 null ＝照舊整張取景。
+   ⚠ 立繪一律 1024×1536（§5 的規約），所以圖高寫成常數 SI_H。 */
+const SI_H = 1536, BUST_SPAN = 0.40, BUST_HEAD = 0.035;
+function bustStyle(src){
+  const s0=String(src||'').split('?')[0]; if(!s0) return null;
+  for(const a of Object.values(ART)){
+    let f=null;
+    if(String(a.base||'').split('?')[0]===s0) f=a;
+    else for(const e of Object.values(a.expr||{})){ const es=(typeof e==='string')?e:(e&&e.src); if(String(es||'').split('?')[0]===s0){ f=(typeof e==='object')?Object.assign({},a,e):a; break; } }
+    if(!f || f.top==null || f.bot==null) continue;
+    const h=f.bot-f.top, y0=Math.max(0, f.top-h*BUST_HEAD), y1=f.top+h*BUST_SPAN, span=y1-y0;
+    const fx=(f.fx!=null?f.fx:0.5);
+    return 'height:'+(SI_H/span*100).toFixed(2)+'%;top:'+(-y0/span*100).toFixed(2)+'%;left:50%;transform:translateX(-'+(fx*100).toFixed(2)+'%);object-fit:fill;';
+  }
+  return null;
+}
 
 const $ = id => document.getElementById(id);
 const W = () => GAME_CONFIG.weapons||{};
@@ -408,9 +428,10 @@ function render(){
                   ? i18nT('<button class="gs-pconfirm" type="button">確　認</button>')
                   : i18nT('<button class="gs-pconfirm gs-paired" type="button" disabled>已配對</button>'); })())
             : '')
-    +     '<div class="gs-pcard">'
-    +       (p.image ? '<img class="gs-pimg" src="'+(asset(p.image)||'')+'" alt=""'
-                     + ' style="--gp-zoom:'+(fit.zoom||1)+';--gp-top:'+((fit.top||0)*100)+'%">' : '')
+    +     (()=>{ const src=p.image ? (asset(p.image)||'') : ''; const bs=bustStyle(src);
+                 return '<div class="gs-pcard'+(bs?' bust':'')+'">'
+                   + (src ? '<img class="gs-pimg" src="'+src+'" alt=""'
+                          + ' style="'+(bs || ('--gp-zoom:'+(fit.zoom||1)+';--gp-top:'+((fit.top||0)*100)+'%'))+'">' : ''); })()
     +       '<div class="gs-pname">'+(p.name||'—')+'</div>'
     +     '</div>'
     /* ══ 女主的九級（ver -970）══ 只有 `config.girls.who` 裡的那三位有這一條
