@@ -19,6 +19,7 @@
 | ✔ 不欠：Ray 自己配 | `vo_luna_*` `vo_lunamg` `vo_renee_*` `vo_malzeno_*`、`vo_nouvellemiss1～3` | Ray 11-25 確認 |
 | ✔ 不欠：比對不到任何 ElevenLabs | `vo_misha_*`（20）、`vo_torsten_*`、`vo_anya_dreambreaker1/2` `nightmareinstall` `luciddream` `lvup`、`vo_nouvelle_obe`、`vo_sorana_miss1～4`、`vo_cecilie_saintinstall` `obe` `deathguard` `lifereturn` | 每一筆的最佳相關都只是「長錄音的背景值」，沒有明顯贏家 |
 
+⚠ **RVC 不洗授權**：「ElevenLabs 生成 → 自己 RVC 轉聲」的檔，聲音包絡會和原生成幾乎一樣（安雅 OBE 0.997），來源仍是那一筆 ElevenLabs 輸出；免費期生成的照樣要換成付費期生成的再轉。
 ⚠ 比對只涵蓋 History 有的（09-05 起）。09-05 以前的只能靠 Ray 確認。
 
 ## 一、History 裡屬於 TIVOT 的生成（全部免費期）
@@ -84,7 +85,7 @@
 | `vo_nouvelle_lifereturn` | `nouvelle_lifereturn_chain_A.mp3` | ✔ 已換（ver -3027，剪「私の全てを！」） |
 | `vo_nouvelle_deathguard` | `nouvelle_lifereturn_chain_B.mp3` | ✔ 已換（ver -3027，剪「死なないで！」） |
 | `vo_nouvelle_saintreload` | `nouvelle_saintreload_Suzu_A.mp3` | ✔ 已換（ver -3027） |
-| `vo_anya_obe` | `anya_obe_B.mp3` | ⚠ 等 Ray 指定剪哪段（劇情副理切了 cut1～3 三段候選） |
+| `vo_anya_obe` | `anya_obe_B_cut3_koreijou.mp3`（付費期的「これ以上！！」） | ⚠ 等 Ray 過一次 RVC 再換。Ray：「これ以上是我的 rvc」—— 但原檔與 9-05 那筆 Suzu 免費期生成的 3.04～4.6 秒（＝「これ以上！！」）包絡相關 **0.997**，是那一段經 RVC 轉的，來源仍是免費期輸出。作法：拿 cut3 用同一個 RVC 模型轉一次，再交劇情副理換 |
 | `vo_anya_nightmarereload` | `anya_nightmarereload_A.mp3` | ✔ 已換（ver -3027） |
 | `vo_nouvelle_saintinstall` | **等 Ray 第二輪**（Lime 被退，補了 Yui A／B，或從整串 A 結尾剪） | 定了再換 |
 
