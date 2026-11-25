@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.25-3009';
+export const VERSION = 'ver 2026.11.25-3011';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3779,7 +3779,7 @@ export const GAME_CONFIG = {
       '002_saintassult': { video:'resources/illustration/video/002_saintassult_v1.mp4', under:true, hold:true, withText:true,
                            cue:[{ at:0, se:'se_saintroar' }, { at:77/24, se:'se_lunaMG' }] },
       '004_renna_intro': { video:'resources/illustration/video/004_renna_intro_v2.mp4', withText:true },   // ver -2962（Ray）：自報名號那句跟動畫一起播；ver -2963（Ray）：v1 → v2（silent7_cut，TO_CODE 第三十支）
-      '008_rennaholdanya': { video:'resources/illustration/video/008_rennaholdanya_v1.mp4' },
+      '008_rennaholdanya': { video:'resources/illustration/video/008_rennaholdanya_v1.mp4', withText:true },   // ver -3010（Ray）：「交給我們吧。死者的歸途……」跟動畫一起播
       /* ver -2184（動畫 10-14 交件）。35／044 首尾構圖可接 ⇒ 循環（044 那一拍之後還有台詞與轉泛黃，插圖要撐到淡出）。 */
       '003_lunaria_armed': { video:'resources/illustration/video/003_lunaria_armed_v2.mp4', loop:true },   // ver -2976（Ray）：「露娜登場做成 LOOP」；ver -2986：v1 → v2 無縫循環版（TO_CODE 第三十三支）
       '005_cecilieintro': { video:'resources/illustration/video/005_cecilieintro_v2.mp4' },   // ver -2617：v1 → v2（Ray 重剪，24fps）
@@ -6105,6 +6105,7 @@ export const ENEMY_HURT = {
 };
 export const ENEMY_ENTER = {
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_enter_v1/', windupSe:'se_enemy_trainee_appear', windupMs:0 },   // ver -2992 出場一開始就吼（Ray：9 號提 pitch）
+  mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', windupSe:'se_flame', fx:[{ frame:48, type:'rubble', se:'se_rockimpact' }] },   // 紫黑之爪（安雅光翼）出場＝大力振翅噴瓦礫（ver -3007，Ray：「紫黑之翼登場動畫就是飛石動畫，純動畫不給傷」）；出場片只演不打，不扣血、不算受擊
   mon_saint_temperance_spawn: { dir:'resources/enemy/anim/mon_saint_temperance_spawn_enter_v1/', slideIn:{ over:0.04 } },   // 節制者分離怪 出場（ver -2970，Ray：撲抓的 BA 剪片＝SPAWN 用，程式從畫面底部平移入鏡、結尾回拉一下）
   mon_saint_temperance_spawn2: { dir:'resources/enemy/anim/mon_saint_temperance_spawn2_enter_v1/', slideIn:{ over:0.04 } },   // 分離怪二 出場（ver -2988，Ray 剪的 sh_tspawn2_lunge_B_BA2_cut）
   mon_saint_temperance_spawn3: { dir:'resources/enemy/anim/mon_saint_temperance_spawn3_enter_v1/', slideIn:{ over:0.04 } },   // 分離怪三 出場（ver -2988，Ray 剪的 sh_tspawn3_lunge_B_BA2_cut）
