@@ -85,7 +85,7 @@
 | `vo_nouvelle_lifereturn` | `nouvelle_lifereturn_chain_A.mp3` | ✔ 已換（ver -3027，剪「私の全てを！」） |
 | `vo_nouvelle_deathguard` | `nouvelle_lifereturn_chain_B.mp3` | ✔ 已換（ver -3027，剪「死なないで！」） |
 | `vo_nouvelle_saintreload` | `nouvelle_saintreload_Suzu_A.mp3` | ✔ 已換（ver -3027） |
-| `vo_anya_obe` | `anya_obe_B_cut3_koreijou.mp3`（付費期的「これ以上！！」） | ⚠ 等 Ray 過一次 RVC 再換。Ray：「これ以上是我的 rvc」—— 但原檔與 9-05 那筆 Suzu 免費期生成的 3.04～4.6 秒（＝「これ以上！！」）包絡相關 **0.997**，是那一段經 RVC 轉的，來源仍是免費期輸出。作法：拿 cut3 用同一個 RVC 模型轉一次，再交劇情副理換 |
+| `vo_anya_obe` | `anya_obe_B_cut3_koreijou.mp3`（付費期的「これ以上！！」） | ⚠ Ray 11-25：「先用新版的」→ cut3 直接換（不過 RVC），已交劇情副理；日後要 RVC 版再轉 cut3 換一次。Ray：「これ以上是我的 rvc」—— 但原檔與 9-05 那筆 Suzu 免費期生成的 3.04～4.6 秒（＝「これ以上！！」）包絡相關 **0.997**，是那一段經 RVC 轉的，來源仍是免費期輸出。作法：拿 cut3 用同一個 RVC 模型轉一次，再交劇情副理換 |
 | `vo_anya_nightmarereload` | `anya_nightmarereload_A.mp3` | ✔ 已換（ver -3027） |
 | `vo_nouvelle_saintinstall` | **等 Ray 第二輪**（Lime 被退，補了 Yui A／B，或從整串 A 結尾剪） | 定了再換 |
 
