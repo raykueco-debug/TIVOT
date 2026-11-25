@@ -91,6 +91,10 @@
 
 新檔都在 `resources/audio/_raw/vo_regen_1125/`。換法照 ver -1919：m4a 單聲道 64k、重量 `tuning.fileGain` 那幾列、`bust.py --bump`、舊檔走 `tools/recycle.sh`。
 
+## 二之五、賽西莉失誤 5 句（試玩會用到：cap_dream、frag02_* 的搭檔）
+
+11-25 付費期重生（Ayaka、Eleven v4、同原設定），Ray：「都用A」→ `cecilie_miss1_A`～`cecilie_miss5_A` 交劇情副理換。
+
 ## 三、怎麼重生
 
 1. 用 Starter 帳號，**同一個聲音、同一段台詞**重新生成（History 裡每一筆都能直接重用文字與設定）。
