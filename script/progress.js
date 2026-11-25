@@ -187,6 +187,13 @@ export function addFlags(list){
   const out=[...s]; setFlags(out); return out;
 }
 export function hasFlag(f){ return getFlags().indexOf(f)>=0; }
+/* 約會開放了沒（ver -3005，Ray：「把到測試版結束為止的約會鈕都拿掉」）：試玩版終點（config.demo.endFlag）之前一律不開。
+   ⚠ 唯一的判定（鐵律 8）：旅店的伙伴門（inn.refresh）與城鎮的 dateOpen 都問這一支。沒設終點＝一直開。
+   ⚠ 章節 ≥ `demo.chapterStage` 也算過了終點：舊存檔（終點旗是 -3005 才有的）與章節跳關（不經過 lake_deck）都靠這一條。 */
+export function datesUnlocked(){
+  const D=(GAME_CONFIG.demo)||{}; if(!D.endFlag || hasFlag(D.endFlag)) return true;
+  return D.chapterStage!=null && getStage() >= D.chapterStage;
+}
 /* 現在的任務提示（ver -2886）：資料與判定在 `script/quests.classic.js`（經典腳本，飛行頁也載同一份），這裡只是主程式的門面。 */
 export function currentQuest(){
   const Q = (typeof window!=='undefined') && window.TIVOT_QUESTS;

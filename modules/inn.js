@@ -393,6 +393,9 @@ function refresh(){
   { const sb = layer.querySelector('.inn-btn[data-act="sleep"]');
     const qlk = !!(st1 && st1.questLocked && st1.questLocked());
     if(sb) sb.style.display = ((canSleep() || qlk) && !innHeld()) ? '' : 'none'; }
+  /* 伙伴門＝約會入口（敲門邀約）：試玩版終點之前整排不出現（ver -3005，判定在 progress.datesUnlocked）。
+     ⚠ 藏的是整排門：試玩版範圍內的敲門都只是閒聊，沒有劇情要靠敲門推進；一次性的敲門說明量不到門就不演。 */
+  { const dz=layer.querySelector('.inn-doors'); if(dz) dz.style.display = prog.datesUnlocked() ? '' : 'none'; }
   const st = stage();
   layer.querySelectorAll('.inn-door').forEach(b=>{
     const who = DOORS[+b.dataset.i];

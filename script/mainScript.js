@@ -465,6 +465,8 @@ export const MAIN_SCRIPT = {
   lake_deck: {
     sceneId:'lake_deck',
     next:null,
+    /* 試玩版終點（ver -3005）：這一幕演完＝索菈娜戰打贏 ⇒ 插 `demo_cleared`（config.demo.endFlag，兩處互指）。約會從這裡起開放。 */
+    setFlags:['demo_cleared'],
     /* ver -772：演完直接進夏爾村（thenTown，-369 的機制）——
        -744 的 endHome＋待續卡退場，村子的抵達對白接在 plaza 的 act 上。 */
     thenTown:'shinier',

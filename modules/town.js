@@ -5516,7 +5516,7 @@ function afterArrive2(n, metDone){
                                       ⚠ 判定只有 `storyExploreOn()` 一支，這裡只問它。
                                       ⚠ 它排在**人的分支之前**（同宵禁／今天約過了）：
                                         那是世界的狀態，不是某個人的心情。 */
-                                   dateOpen: ()=> !storyExploreOn() && !outOfStoryWindow(),   // ver -1739：窗外約不出來
+                                   dateOpen: ()=> !storyExploreOn() && !outOfStoryWindow() && prog.datesUnlocked(),   // ver -1739：窗外約不出來；ver -3005：試玩版終點前不開
                                    /* 宵禁（ver -576）：敲門一律回 `nightRest`，約不出來。 */
                                    night: isCurfew,
                                    /* 今天已經約過她了（ver -576）：回 `dateDone`，不再出門。

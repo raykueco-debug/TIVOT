@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.25-3004';
+export const VERSION = 'ver 2026.11.25-3006';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3317,6 +3317,13 @@ export const GAME_CONFIG = {
      ⚠ `openAnim`：開盒動畫的影格資料夾（frame_NNN.webp ＋ anim.json，透明；ver -2993 起 v2，TO_CODE 第三十四支）。
        光是 **Wan 畫在影格裡的**（Ray：「ci/sealbox_open_ABC 是這一個，然後持續發光直到點掉對話框」）：
        開盒段 97 格播一次 → 循環段 48 格一直播到 close()（modules/sealbox.js）。null／載不到 ＝直接跳到獎品。 */
+  /* ══ 試玩版的終點（ver -3005，Ray：「把到測試版結束為止的約會鈕都拿掉」）══
+     終點＝索菈娜戰（man_sorana）打贏（HANDOFF「目標與試玩版」）。旗由 script/mainScript.js 的 `lake_deck` 那一幕
+     `setFlags` 插（整幕演完才寫 ⇒ 打輸回捲不會插）；**沒有人拔**。⚠ 旗名兩處互指：改一邊要改另一邊。
+     誰在讀：progress.datesUnlocked()（唯一的判定，鐵律 8）—— 旅店的伙伴門（約會入口）與城鎮的 dateOpen 都問它。 */
+  /* `chapterStage` ＝章節 ≥ 這個數也算過了終點（索菈娜戰在 Stage 4，Stage 5 起是試玩版之後）：舊存檔與章節跳關沒有終點旗，靠這一條。 */
+  demo: { endFlag:'demo_cleared', chapterStage:5 },
+
   relicBox: {
     coin:'guild_coin', price:2, firstPrice:1, firstFlag:'relic_first_bought',
     weight:{}, rare:[],
