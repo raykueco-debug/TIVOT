@@ -77,7 +77,7 @@
 
 **交接（Ray 挑好版本後 → 劇情副理）**：同名換上（m4a、單聲道 64k，照 ver -1919 的轉法）、需要剪的照原檔長度剪、重量 `tuning.fileGain` 那幾列、`bust.py --bump`；舊檔走 `tools/recycle.sh`。換完把第〇節那幾列改成 `✔ 不欠（11-25 付費期重生）`。
 
-## 二之四、Ray 試聽定案（2026-11-25 18:16 提交）→ 交劇情副理換檔
+## 二之四、Ray 試聽定案（2026-11-25）→ ✔ 試玩用 7 支全部換完（ver -3027～-3029）
 
 | 遊戲檔 | 用哪一個新檔 | 怎麼處理 |
 |---|---|---|
@@ -87,7 +87,7 @@
 | `vo_nouvelle_saintreload` | `nouvelle_saintreload_Suzu_A.mp3` | ✔ 已換（ver -3027） |
 | `vo_anya_obe` | `anya_obe_B_cut3_koreijou.mp3`（付費期的「これ以上！！」） | ✔ 已換（ver -3028，cut3 直接用、不過 RVC）。Ray 11-25：「先用新版的」；日後要 RVC 版再轉 cut3 換一次。Ray：「これ以上是我的 rvc」—— 但原檔與 9-05 那筆 Suzu 免費期生成的 3.04～4.6 秒（＝「これ以上！！」）包絡相關 **0.997**，是那一段經 RVC 轉的，來源仍是免費期輸出。作法：拿 cut3 用同一個 RVC 模型轉一次，再交劇情副理換 |
 | `vo_anya_nightmarereload` | `anya_nightmarereload_A.mp3` | ✔ 已換（ver -3027） |
-| `vo_nouvelle_saintinstall` | `nouvelle_si_v_Aki_B.mp3`（聲音改用 **Aki**，戰鬥＋莊嚴語氣；Lime／Yui 都被退） | ⚠ 已交劇情副理（Ray 11-25：「用aki的Ｂ吧」） |
+| `vo_nouvelle_saintinstall` | `nouvelle_si_v_Aki_B.mp3`（聲音改用 **Aki**，戰鬥＋莊嚴語氣；Lime／Yui 都被退） | ✔ 已換（ver -3029）。Ray 11-25：「用aki的Ｂ吧」 |
 
 新檔都在 `resources/audio/_raw/vo_regen_1125/`。換法照 ver -1919：m4a 單聲道 64k、重量 `tuning.fileGain` 那幾列、`bust.py --bump`、舊檔走 `tools/recycle.sh`。
 
