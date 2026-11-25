@@ -1311,11 +1311,16 @@ function healEnemyPct(p){
   floatDmg('+'+add, '50%', '22%', false, 'heal'); updateBars();
   enemy.spawnHealFx();
 }
-function screenShake(){
+/* `level`（ver -3007，Ray：「被敵船砲擊畫面要震動」）：'heavy'＝重砲 —— 幅度大、撐 0.6 秒蓋過整輪側舷齊射；
+   手機震動同一刻一起放長（hap.burst）。由敵人卡的 `hitShake:{<kind>:'heavy'}` 決定（只有 enemyAttack 會傳，見 _shk）。
+   ⚠ 仍是**唯一一支**畫面震動（鐵律 8）：力道是參數，不另開一支。 */
+function screenShake(level){
   const el=$('app'); if(!el) return;
-  el.classList.remove('hitshake'); void el.offsetWidth; el.classList.add('hitshake');
+  const heavy = level==='heavy';
+  el.classList.remove('hitshake','heavy'); void el.offsetWidth; el.classList.add('hitshake'); if(heavy) el.classList.add('heavy');
+  if(heavy) hap.burst(320);
   clearTimeout(screenShake._t);
-  screenShake._t=setTimeout(()=>el.classList.remove('hitshake'), 300);
+  screenShake._t=setTimeout(()=>el.classList.remove('hitshake','heavy'), heavy ? 640 : 300);
 }
 /* ══⚠⚠⚠ **龍吟：迎面衝擊的動態模糊**（ver -1443，Ray：「龍吟的特效不應該是震動，
    應該是動態模糊，像被迎面衝擊那樣」）══ 配方在 CSS 的 `#app.roarblast`。
@@ -1520,6 +1525,8 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
        六十張卡不必為了這一版全部補一格。 */
   const fxKind = (kind==='delay' || kind==='wrong') ? (enemy.singleAttackAnim() ? 'assault' : kind)   // 只有一支攻擊動畫的怪：延時／點錯照攻擊那一套（ver -2678）
                : (state.lastAssaultUlt ? 'ult' : 'assault');
+  /* 這一擊的震動力道（ver -3007）：卡上 `hitShake:{assault|block|delay|wrong:'heavy'}`（空賊船的砲擊），沒寫＝一般。 */
+  const _shk = (((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).hitShake||{})[kind] || null;
   /* ══ 共鬥（Predator's Pack，ver -803）══ 無敵：不扣血、不記失誤、無延時懲罰；
      敵攻擊自動完美反擊（全額）。點錯（kind==='wrong'）只吃「不受擊」，不反擊
      （縮短窗口由 tap 的 coopMode 分支做）。放在計數之前 → 期間一律不算失誤。 */
@@ -1533,7 +1540,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
     }
     const sk0  = enemy.actHitSe(fxKind) || state.curEnemyHitSe || hitFxSe(state.curEnemyHitFx, fxKind);   // 群戰成員自己的受擊音優先（-2651）   // 卡上 hitSe 優先（ver -1881）
     if(sk0 && !_plain) playHitSe(sk0);
-    screenShake();
+    screenShake(_shk);
     if(!_plain) enemy.showHitFx(fxKind);
     if(!_plain){ $('redFlash').style.opacity=.35; setTimeout(()=>$('redFlash').style.opacity=0,120); }
     /* ⚠ 反擊已移到**黃圈生成那一刻**（ver -822，Ray：「敵人出黃圈瞬間就反擊」）——
@@ -1565,7 +1572,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
     //   倒數槽推進交由 saint.saintAdvance（內部走 HP API healPlayer，滿則觸發 OBE）。
     //   推進量：一般受擊＝playerMax/SAINT_ADVANCE_DIVISOR（≈+1s）；格擋由呼叫端傳 saintAmt（≈+0.5s）。
     const amt=(saintAmt!=null)?saintAmt:(state.playerMax/SAINT_ADVANCE_DIVISOR);
-    screenShake();                   // 畫面震一下（ver -593）
+    screenShake(_shk);                   // 畫面震一下（ver -593）
     if(!_plain) enemy.showHitFx(fxKind);
     if(!_plain){ $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120); }
     /* ══ 「終焉星」（諾薇兒 Lv9，ver -971）：**被攻擊不推進倒數槽** ══
@@ -1588,7 +1595,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
     const sec = (saintAmt!=null)
       ? (saintAmt / (state.playerMax/SAINT_PASSIVE_HEAL_SEC))   // 格擋那一半：換算回秒
       : (SAINT_PASSIVE_HEAL_SEC / SAINT_ADVANCE_DIVISOR);
-    screenShake();
+    screenShake(_shk);
     if(!_plain) enemy.showHitFx(fxKind);
     if(!_plain){ $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120); }
     saint.nightmareHit(sec);
@@ -1618,7 +1625,7 @@ function enemyAttack(dmg, kind, saintAmt, _rainLanded){
   tutorial.onHpChange();             // 血量觸發（ver -599）：玩家這一側（`php:N`）
   if(!_plain) enemy.showHitFx(fxKind);           // 依 kind 播放該怪對應受擊特效（'block' 讀成 'ult'）
   if(!_plain){ $('redFlash').style.opacity=.8; setTimeout(()=>$('redFlash').style.opacity=0,120); }
-  screenShake();                     // 畫面震一下（ver -593，取代原本只抖敵人立繪那一版）
+  screenShake(_shk);                     // 畫面震一下（ver -593，取代原本只抖敵人立繪那一版）
   if(state.playerHp<=0){ handlePlayerLethal(kind); }
 }
 /* ============================================================================

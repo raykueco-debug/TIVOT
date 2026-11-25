@@ -1,5 +1,5 @@
-{"version": "ver 2026.11.25-2999",
-"bytes": 1595023388,
+{"version": "ver 2026.11.25-3008",
+"bytes": 1595128927,
 "files": [
 "audio.js",
 "config.js",
@@ -593,6 +593,8 @@
 "resources/audio/se/se_enemy_squeal2.m4a",
 "resources/audio/se/se_enemy_squeal_echo.m4a",
 "resources/audio/se/se_enemy_throneattack.mp3",
+"resources/audio/se/se_enemy_trainee_appear.m4a",
+"resources/audio/se/se_enemy_trainee_atk.m4a",
 "resources/audio/se/se_enemy_warpmagig.mp3",
 "resources/audio/se/se_fall.m4a",
 "resources/audio/se/se_flame.mp3",

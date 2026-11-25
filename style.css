@@ -244,6 +244,18 @@
        整個 `#app` 位移的話四邊會露出底色，所以這一支多一個 `scale(1.02)` 當過掃描。
      ⚠ 時間要短（260ms）：這是一記衝擊，不是持續狀態；長了會妨礙點盤面。 */
   #app.hitshake{animation:appShake .26s;}
+  /* 重砲（ver -3007，Ray：「被敵船砲擊畫面要震動」）：空賊船的側舷齊射九門連發約半秒 —— 一般那一下（7px／0.26s）只蓋到第一發，
+     讀起來像沒震。幅度加倍、拉到 0.6s 由大到小衰減，蓋過整輪。觸發與一般受擊同一支 screenShake（combat，卡上 hitShake）。 */
+  #app.hitshake.heavy{animation:appShakeHeavy .6s;}
+  @keyframes appShakeHeavy{
+    0%,100%{transform:translate(0,0) scale(1.04)}
+    8%{transform:translate(-15px,10px) scale(1.04)}
+    18%{transform:translate(13px,-9px) scale(1.04)}
+    30%{transform:translate(-12px,-10px) scale(1.04)}
+    42%{transform:translate(11px,8px) scale(1.04)}
+    55%{transform:translate(-8px,6px) scale(1.04)}
+    68%{transform:translate(6px,-5px) scale(1.04)}
+    82%{transform:translate(-3px,3px) scale(1.04)}}
   @keyframes appShake{
     0%,100%{transform:translate(0,0) scale(1.02)}
     18%{transform:translate(-7px,5px) scale(1.02)}
