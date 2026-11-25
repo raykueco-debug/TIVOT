@@ -1378,7 +1378,7 @@ export const ART = {
            side:'R', alt:null, base:'resources/si/npc/npc_guildhunter_si.webp',
            /* `front`（ver -2995，Ray：「獵人怎麼沒有中立立繪」）＝本尊那張，取景同角色層。
               管理人的逐拍換立繪只列 expr 的鍵，本尊不在裡面就選不到 —— 補一個鍵指回同一張。 */
-           expr:{ front:{ src:'resources/si/npc/npc_guildhunter_si.webp', top:6, bot:1529, fx:0.485 },
+           expr:{ front:{ yShift:0, src:'resources/si/npc/npc_guildhunter_si.webp', top:6, bot:1529, fx:0.485 },
                   shock:{ src:'resources/si/npc/npc_guildhunter_si_shock.webp', top:0, bot:1535, fx:0.453 },
                   attack: { src:'resources/si/npc/npc_guildhunter_si_attack.webp',  top:0, bot:1535, fx:0.546 },
                   lost:   { src:'resources/si/npc/npc_guildhunter_si_lost.webp',    top:6, bot:1529, fx:0.487 },

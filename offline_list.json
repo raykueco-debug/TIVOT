@@ -1,5 +1,5 @@
-{"version": "ver 2026.11.25-3031",
-"bytes": 1597009667,
+{"version": "ver 2026.11.25-3032",
+"bytes": 1597104054,
 "files": [
 "audio.js",
 "config.js",
@@ -636,6 +636,7 @@
 "resources/audio/se/se_sail.m4a",
 "resources/audio/se/se_sailorshout.mp3",
 "resources/audio/se/se_saint_install.m4a",
+"resources/audio/se/se_sealbox_open.m4a",
 "resources/audio/se/se_shipcrush.m4a",
 "resources/audio/se/se_slash.m4a",
 "resources/audio/se/se_sleep.mp3",
