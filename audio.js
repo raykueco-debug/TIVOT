@@ -278,13 +278,13 @@ function loopRange(buf){
   return [a/sr, (b+1)/sr];
 }
 function playBuffer(c, buf, vol, voice, handle, src){
-  if(_sfxOff) return;   // 發熱排除中（ver -1805）：不排進暫停的引擎，免得恢復那一刻全部一起響
+  if(_sfxOff){ if(handle && handle.onEnd) handle.onEnd(); return; }   // 發熱排除中（ver -1805）：不排進暫停的引擎，免得恢復那一刻全部一起響
   try{
     const s = c.createBufferSource(); s.buffer = buf;
     /* 語音 → BGM 閃避（ver -847）：開播即壓、onended 放（來源一定會 ended，
        stop 也會 —— refcount 不會漏）。掛在真的 start 的那一刻，late-play 放棄的
        不會白壓。 */
-    if(voice){ voDuckStart(); s.onended = ()=>{ try{ voDuckEnd(); }catch(_){} }; }
+    if(voice){ voDuckStart(); s.onended = ()=>{ try{ voDuckEnd(); }catch(_){} if(handle && handle.onEnd) handle.onEnd(); }; }   // onEnd：真的播完才放開（ver -3005，失誤語音一次一句）
     if(voice && _voice){
       const ch = voiceChain(c, vol);
       if(ch){ s.connect(ch.head); ch.tail.connect(busIn(c,'vo')); s.start(); return; }
@@ -318,7 +318,7 @@ function playBuffer(c, buf, vol, voice, handle, src){
         g.gain.setValueAtTime(full*Math.max(0.001, handle.swell.from||0.1), t);
         g.gain.linearRampToValueAtTime(full, t+Math.max(0.05,(handle.swell.ms||3000)/1000)); }catch(_){} }
       if(handle.stopAt!=null) handle.fade(handle.stopAt); }
-  }catch(e){}
+  }catch(e){ if(handle && handle.onEnd) handle.onEnd(); }
 }
 
 // 補播時限：play() 當下未解碼 → 解碼完成若已超過此時限就放棄不播。
@@ -329,8 +329,8 @@ const LATE_PLAY_MS = 1500;
  * 「下一次手勢 resume」才突然冒出（=延到下一幕才響）。改輪詢等 running，
  * LATE_PLAY_MS 內沒等到就放棄（遲到不亂響）。context 若中途重建，改用新 _ctx。 */
 function playWhenRunning(buf, vol, t0, voice, handle, src){
-  if(Date.now()-t0 > LATE_PLAY_MS) return;
-  const c = _ctx; if(!c) return;
+  if(Date.now()-t0 > LATE_PLAY_MS){ if(handle && handle.onEnd) handle.onEnd(); return; }   // 放棄不播：把手也要放開（ver -3005）
+  const c = _ctx; if(!c){ if(handle && handle.onEnd) handle.onEnd(); return; }
   if(c.state === 'running'){ playBuffer(c, buf, vol, voice, handle, src); return; }
   setTimeout(()=>playWhenRunning(buf, vol, t0, voice, handle, src), 60);
 }
@@ -355,7 +355,7 @@ function playSrc(src, vol, voice, handle){
   const t0 = Date.now();
   const buf = _buffers[src];
   if(buf){ playWhenRunning(buf, vol, t0, voice, handle, src); return; }
-  load(src).then(b => { if(b) playWhenRunning(b, vol, t0, voice, handle, src); });
+  load(src).then(b => { if(b) playWhenRunning(b, vol, t0, voice, handle, src); else if(handle && handle.onEnd) handle.onEnd(); });
 }
 
 let _shots = [];    // 普攻槍聲候選（已解析路徑，隨機播一支）
@@ -837,6 +837,12 @@ export const SFX = {
      ⚠ 由呼叫端決定層別，不是由 audio.js 猜檔名 —— 這一層的成員就是
        config 的 tuning.voiceKeys 那一份名單，判斷歸屬是呼叫端的事。 */
   playVoice(src, vol){ playSrc(src, vol, true); },
+  /* 同一類語音一次只放一句（ver -3005，Ray：「連續點錯不要連續放 miss VO，播出中不會播第二個」）：
+     `tag` 那一類還在播就**直接略過**（不打斷、不排隊）；真的播完（BufferSource 的 ended）才放開，
+     沒播成的（載入失敗、逾時放棄、引擎暫停）也會放開 —— 用播放的真實狀態判斷，不用固定秒數冷卻。回傳有沒有開播。 */
+  playVoiceOnce(tag, src, vol){ if(!src) return false; if(!this._voOnce) this._voOnce={}; if(this._voOnce[tag]) return false;
+    this._voOnce[tag]=true; const h={ onEnd:()=>{ this._voOnce[tag]=false; } }; playSrc(src, vol, true, h); return true; },
+  voiceBusy(tag){ return !!(this._voOnce && this._voOnce[tag]); },
 
   /* 語音輪播（ver -837，Ray：「有編 1、2 的都是輪播」）：`voice` 欄位寫成陣列＝
      發動一次換下一支；單支照舊原樣回傳。**唯一的輪播實作**（鐵律 8）——

@@ -369,8 +369,10 @@ function tryMissGuard(){
 export function onMissTap(){
   const p = currentPartner();
   /* ① 失誤語音（走既有的輪播助手，同戰吼／共鬥語音，鐵律 8） */
-  { const vk = SFX.pickRot(p && p.missVoice);
-    if(vk && asset(vk)){ try{ SFX.playVoice(asset(vk), sfxGain(vk)); }catch(_){} } }
+  /* ver -3005（Ray：「連續點錯不要連續放 miss VO，播出中不會播第二個」）：上一句還在播就略過（SFX.playVoiceOnce），
+     輪播游標也只在真的開播時才前進 —— 不然連點會把句子跳掉。點錯的 SE 不在這裡，照舊每次都響。 */
+  if(p && p.missVoice && !SFX.voiceBusy('miss')){ const vk = SFX.pickRot(p.missVoice);
+    if(vk && asset(vk)){ try{ SFX.playVoiceOnce('miss', asset(vk), sfxGain(vk)); }catch(_){} } }
   /* ② 容錯（要在③之前算出來 —— ③要知道這一下有沒有被吃掉） */
   const guarded = tryMissGuard();
   /* ③ 被擋下來的那一聲 */
