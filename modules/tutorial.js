@@ -463,6 +463,7 @@ export function onEnergyFull(){
   defendedDone = true;
   openScript('dualReady', { gate:{
     type:'click', immediate:true,   // 對話彈出即亮箭頭，可直接點計量表（不必先點完台詞）
+    release:true,                   // 講完就撤場讓出計量表（ver -3025，Ray：「彈雨也是」）
     action: ()=>api.activateDual(),
     after:  ()=>afterCutin(()=>openScript('dualGo')),
   }});
@@ -1159,7 +1160,7 @@ function resolveGate(g){
 function openStep(step){
   cur = step; lineIdx = 0; cutinLine = -1;
   /* 這一段自己帶閘門（資料上的 `talk` 用；程式那幾段走 `openScript` 的 opts）。 */
-  if(step && step.gate) pendingGate = resolveGate(step.gate);
+  armStepGate(step);
   stepSides = (step && step.sides) || talkSides || null;   // 段落覆寫 > 整場預設（ver -613／-619）
   stepSolo  = !!(step && step.soloLine);         // 這一段只留現在講話的那一位
   state.tutorialDialog = true;
@@ -1180,9 +1181,12 @@ function openStep(step){
   placeBubble();
   // 即時閘門（immediate）：段落一開就進閘（箭頭同步亮起），台詞照常可點可讀——
   // 玩家隨時完成指定操作（點計量表/滑動）即收段續戰，不必先把台詞點完。
-  if(pendingGate && pendingGate.immediate){ enterGate(pendingGate); pendingGate=null; }
+  enterImmediateGate();
   showLine();
 }
+/* 段落自己帶的閘門：開段落（openStep）與佇列接續（advance）都走這兩支（ver -3025，鐵律 8）。 */
+function armStepGate(step){ if(step && step.gate) pendingGate = resolveGate(step.gate); }
+function enterImmediateGate(){ if(pendingGate && pendingGate.immediate){ enterGate(pendingGate); pendingGate=null; } }
 
 /* 對話框形狀依段落調整：dualReady（點破防計量表引導）縮窄右移讓出計量表（CSS .clasp-clear） */
 function syncBubbleShape(step){
@@ -1391,9 +1395,17 @@ function advance(){
   // 教學陣亡段：收 UI 後「同步」重開整場（不走 480ms 靜默期——期間任何晚到的插話
   // 都會攔掉 finish，restart 就此丟失＝玩家卡 0 HP 鎖血）
   if(cur.key==='tutorialDead'){ closeDialog(false, true); onStepClosed('tutorialDead'); return; }
-  if(gate){ lineIdx = cur.lines.length-1; return; }   // 即時閘門：停在末句，等玩家完成指定操作
+  if(gate){ lineIdx = cur.lines.length-1;   // 即時閘門：停在末句，等玩家完成指定操作
+    /* `release:true`（ver -3025，Ray：「教學反擊時諾薇兒說完『反擊』就要撤出畫面讓出戰鬥，打完才往下接。彈雨也是。」）：
+       講完就把立繪與對話框撤下去（不擋光圈／計量表），閘門、箭頭、暫停照舊 —— 玩家完成那個操作才收段接下一段。 */
+    if(gate.release) castExit(true);
+    return; }
   if(pendingGate){ enterGate(pendingGate); pendingGate=null; return; }   // 講完 → 進引導閘門（維持暫停）
-  if(queue.length){ cur=queue.shift(); lineIdx=0; cutinLine=-1; syncCastFit(cur); syncCast(cur, 0); syncBubbleShape(cur); showLine(); return; }   // 接續段：在場立繪差異更新（逐拍進場，ver -478）
+  if(queue.length){ cur=queue.shift(); lineIdx=0; cutinLine=-1; syncCastFit(cur); syncCast(cur, 0); syncBubbleShape(cur);
+    /* ⚠ 接續段也要開它自己的閘門（ver -3025）：以前只有 openStep 會開 —— 光圈出現時剛好在講罵人插話，
+       `threat` 那一段被排進佇列接上來，閘門就整個沒開（箭頭不亮、release 也不撤場）。 */
+    armStepGate(cur); enterImmediateGate();
+    showLine(); return; }   // 接續段：在場立繪差異更新（逐拍進場，ver -478）
   closeDialog(true);
 }
 
@@ -1403,6 +1415,19 @@ let strikeAfter=null;      // 這一段收掉之後要打的劇情殺（ver -619
 /* 這一段收掉之後要發動的惡夢化（ver -671）。⚠ 與 `strikeAfter` 同一個理由：
    `cur` 在 `closeDialog` 開頭就被清成 null，收尾的 `finish()` 讀不到它。 */
 let niAfter=false;
+/* 立繪滑出＋對話框退場（唯一那一支，鐵律 8）：收對話（closeDialog）與閘門的 `release`（講完先撤場）都走它。
+   `keepDialog`＝對話狀態還留著（閘門還在等玩家）：對話框直接收、立繪滑出，外框不必等「對話結束」才收。 */
+function castExit(keepDialog){
+  const wrap=$('tutCast'), bubble=$('tutBubble');
+  // 對話框與立繪同時序退場（原本隨父層 #tutCast 一起消失，維持手感）
+  if(bubble){ if(keepDialog) bubble.classList.remove('on');
+              else setTimeout(()=>{ if(!state.tutorialDialog) bubble.classList.remove('on'); }, 500); }
+  if(wrap){
+    const L=$('tutCastL'), R=$('tutCastR');
+    for(const el of [L,R]){ if(el){ el.classList.remove('in','speaking','center'); blink.unbind(el); eyefx.unbind(el); breath.unbind(el); sway.unbind(el); } }   // 立繪滑出（眨眼一起收）
+    if(!keepDialog) setTimeout(()=>{ if(!state.tutorialDialog) wrap.classList.remove('on'); }, 500);
+  }
+}
 function closeDialog(resume, silent){
   const id = cur && (cur.key || cur.trigger);
   strikeAfter = (cur && (cur.strike || cur.strikeTo!=null)) ? cur : null;
@@ -1415,15 +1440,9 @@ function closeDialog(resume, silent){
   syncBubbleShape(null);   // 撤形狀調整（.clasp-clear）
   state.tutorialDialog=false;
   if(!document.getElementById('exitConfirm')) document.body.classList.remove('dlg-pause');
-  const wrap=$('tutCast'), touch=$('tutTouch'), bubble=$('tutBubble');
+  const touch=$('tutTouch');
   if(touch) touch.classList.remove('on');
-  // 對話框與立繪同時序退場（原本隨父層 #tutCast 一起消失，維持手感）
-  if(bubble) setTimeout(()=>{ if(!state.tutorialDialog) bubble.classList.remove('on'); }, 500);
-  if(wrap){
-    const L=$('tutCastL'), R=$('tutCastR');
-    for(const el of [L,R]){ if(el){ el.classList.remove('in','speaking','center'); blink.unbind(el); eyefx.unbind(el); breath.unbind(el); sway.unbind(el); } }   // 立繪滑出（眨眼一起收）
-    setTimeout(()=>{ if(!state.tutorialDialog) wrap.classList.remove('on'); }, 500);
-  }
+  castExit(false);
   if(resume){
     const finish=()=>{
       api.resumeFromDialog();
