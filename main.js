@@ -9,7 +9,7 @@
  * ========================================================================== */
 
 import { i18nT } from './i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
-import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain, HOME_IMG, HOME_SFX, HITFX, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER } from './config.js';
+import { GAME_CONFIG, VERSION, asset, ASSETS, bgmVol, sfxGain, HOME_IMG, HOME_SFX, HITFX, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, floorTop } from './config.js';
 import { L, LANG, applyToConfig, applyToDom, decorateLine } from './i18n.js';   // 多語言＋台詞關鍵字裝飾
 import { UI_LANGS } from './i18n/ui/langs.js';   // 語種清單（i18n_ui.xlsx 的譯文欄，ver -2582）
 import { trTree, trDom } from './i18n/scriptTr.js';   // 劇本譯文（戰鬥卡上的對白 talk 那一族，ver -1908）
@@ -1574,6 +1574,28 @@ function openEnemyEdit(opt){
     const up=()=>{ if(drag){ drag=null; render(); } }; scap.addEventListener('pointerup', up); scap.addEventListener('pointercancel', up);
     scap.addEventListener('wheel', e=>{ e.preventDefault(); const t=sv[ssel]; t.size=Math.max(0.15, Math.min(1.5, t.size*(e.deltaY<0?1.04:1/1.04))); sApply(); render(); }, { passive:false });
     (document.getElementById('app')||document.body).appendChild(scap); };
+  /* ══ 地面分頁（ver -3004，Ray：「影子只會打在地上」）：一條橫線＝這張戰鬥背景的地面上緣，拖上下、存檔寫回 config 的 FLOOR_TOP。
+     影子（程式投影）在這條線以上一律裁掉；按「不裁」＝刪掉這一筆（回到原樣）。 */
+  const fbg = enemyMod.battleBgName ? enemyMod.battleBgName() : '';
+  const fkey = fbg ? fbg.split('/').pop().split('?')[0].replace(/\.[^.]+$/,'').toLowerCase() : '';
+  const fr0 = fkey ? floorTop(fbg) : null;
+  let fv = fr0, fcap=null, fline=null;
+  const fToY=r=>{ const y0=enemyMod.floorScreenY(0), y1=enemyMod.floorScreenY(1); return (y0==null||y1==null) ? null : y0+(y1-y0)*r; };
+  const fFromY=y=>{ const y0=enemyMod.floorScreenY(0), y1=enemyMod.floorScreenY(1); return (y0==null||y1==null||y1===y0) ? null : (y-y0)/(y1-y0); };
+  const fApply=()=>{ enemyMod.setFloorPreview(fv); if(fline){ const y=fv==null ? null : fToY(fv); fline.style.display = y==null ? 'none' : ''; if(y!=null) fline.style.top=(y-1)+'px'; } };
+  const fCapture=on=>{
+    if(!on){ if(fcap){ fcap.remove(); fcap=null; fline=null; } return; }
+    if(fcap || !fkey) return; const top=document.getElementById('top'); if(!top) return; const r=top.getBoundingClientRect();
+    if(fv==null) fv=0.6;
+    fcap=document.createElement('div'); fcap.style.cssText='position:fixed;left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;z-index:8990;cursor:ns-resize;touch-action:none;';
+    fline=document.createElement('div'); fline.style.cssText='position:absolute;left:0;right:0;height:2px;background:#ffd257;box-shadow:0 0 0 1px rgba(0,0,0,.6);pointer-events:none;';
+    fcap.appendChild(fline);
+    const setY=e=>{ const rr=fFromY(e.clientY-r.top); if(rr!=null){ fv=+Math.max(0,Math.min(1,rr)).toFixed(4); fApply(); } };
+    let drag=false;
+    fcap.addEventListener('pointerdown', e=>{ e.preventDefault(); e.stopPropagation(); drag=true; try{ fcap.setPointerCapture(e.pointerId); }catch(_){} setY(e); });
+    fcap.addEventListener('pointermove', e=>{ if(drag) setY(e); });
+    const up=()=>{ if(drag){ drag=false; render(); } }; fcap.addEventListener('pointerup', up); fcap.addEventListener('pointercancel', up);
+    (document.getElementById('app')||document.body).appendChild(fcap); fApply(); setTimeout(fApply, 300); };
   if(opt && opt.tab==='group' && grp) tab='group';
   const box = document.createElement('div'); box.id='enemyEdit';
   let msg='';
@@ -1587,6 +1609,7 @@ function openEnemyEdit(opt){
     const list=[['enemy',i18nT('敵人')]];
     if(grp) list.push(['group',i18nT('群戰')]);
     if(sv) list.push(['spawn',i18nT('分離怪')]);
+    if(fkey) list.push(['floor',i18nT('地面')]);
     if(talk.left)  list.push(['left',i18nT('對話・左')]);
     if(talk.right) list.push(['right',i18nT('對話・右')]);
     return list.length<2 ? '' : '<div class="ee-row">'+list.map(([k,n])=>'<button data-tab="'+k+'" class="'+(tab===k?'on':'')+'">'+n+'</button>').join('')+'</div>';
@@ -1602,6 +1625,11 @@ function openEnemyEdit(opt){
         + row(i18nT('左右'), Math.round(v[0]), 'gx', 10, 'data-gk')
         + row(i18nT('上下'), Math.round(v[1]), 'gy', 10, 'data-gk')
         + row(i18nT('縮放'), Math.round(v[2]*100)+'%', 'gs', 0.02, 'data-gk');
+    }else if(tab==='floor'){
+      body = i18nT('<div class="ee-hd">地面上緣　')+fkey+'</div>'
+        + '<div class="ee-msg">'+i18nT('在敵人區上下拖那條黃線＝地板跟牆／天空的交界；影子在線以上不畫')+'</div>'
+        + row(i18nT('高度'), fv==null ? i18nT('不裁') : Math.round(fv*1000)/10+'%', 'fy', 0.005, 'data-fk')
+        + '<div class="ee-row"><button data-fclr="1">'+i18nT('不裁（刪掉這一筆）')+'</button></div>';
     }else if(tab==='spawn'){
       const v=sv[ssel];
       body = i18nT('<div class="ee-hd">分離怪站位　')+[].concat(ms0.card).length+i18nT(' 種隨機</div>')
@@ -1651,7 +1679,15 @@ function openEnemyEdit(opt){
     e.stopPropagation();
     const t=e.target.closest('button'); if(!t) return;
     try{ SFX.menuClick(); }catch(_){}
-    if(t.dataset.tab){ tab=t.dataset.tab; msg=''; gCapture(tab==='group'); sCapture(tab==='spawn'); render(); return; }
+    if(t.dataset.tab){ tab=t.dataset.tab; msg=''; gCapture(tab==='group'); sCapture(tab==='spawn'); fCapture(tab==='floor'); render(); return; }
+    if(t.dataset.fk){ fv=+Math.max(0,Math.min(1,(fv==null?0.6:fv)+(+t.dataset.d))).toFixed(4); fApply(); render(); return; }
+    if(t.dataset.fclr){ fv=null; fApply(); render(); return; }
+    if(tab==='floor' && t.dataset.act==='reset'){ fv=fr0; fApply(); msg=i18nT('已還原'); render(); return; }
+    if(tab==='floor' && t.dataset.act==='save'){ msg=i18nT('寫入中…'); render();
+      fetch(new URL('__floor', location.href).pathname, { method:'POST', body:JSON.stringify({ name:fkey, ratio:fv }) })
+        .then(r=>r.text().then(x=>({ok:r.ok, x}))).then(r=>{ msg = r.ok ? i18nT('已存檔（')+r.x+i18nT('）') : i18nT('存檔失敗：')+r.x; render(); })
+        .catch(err=>{ msg=i18nT('存檔失敗：')+err; render(); });
+      return; }
     if(t.dataset.ssel){ ssel=+t.dataset.ssel; render(); return; }
     if(t.dataset.sk){ const d=+t.dataset.d, k={sx:'x',sy:'y',ss:'size'}[t.dataset.sk], v=sv[ssel]; v[k]=+(v[k]+d).toFixed(3); if(k==='size') v.size=Math.max(0.15,Math.min(1.5,v.size)); sApply(); render(); return; }
     if(tab==='spawn' && t.dataset.act==='reset'){ SK.forEach(k=>Object.assign(sv[k], enemyMod.spawnSlot(ms0,k))); sApply(); msg=i18nT('已還原'); render(); return; }
@@ -1717,6 +1753,7 @@ function openEnemyEdit(opt){
       revertTalk();
       if(grp){ for(const n in gv) enemyMod.setMemberPlace(n, null); gCapture(false); }   // 群戰：沒存的拖移放回去
       sCapture(false);   // 分離怪的拖移層（ver -2990：以前沒收，關了面板還拖得動）
+      if(fcap){ fCapture(false); }   // 地面線（ver -3004）：沒存的預覽照樣留在記憶體裡，重整頁面就回到檔案上的值
       box.remove();
       if(pausedHere && !state.over && !state.tutorialDialog) combat.resumeFromDialog();
       return;

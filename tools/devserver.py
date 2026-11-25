@@ -792,6 +792,28 @@ def efit_patch(req):
 
 
 
+# ══ 戰鬥背景的地面上緣（ver -3004，Ray：「影子只會打在地上」）══
+# `POST /__floor`，body＝`{"name":背景檔名鑰匙, "ratio":0~1 或 null}`：整段重寫 config.js 的 `/*FLOOR*/{…}/*END*/`（鑰匙排序），null＝刪掉那一筆。
+def floor_patch(req):
+    name, ratio = str(req.get('name') or ''), req.get('ratio')
+    if not re.match(r'^[a-z0-9_.\-]+$', name):
+        raise ValueError('背景鑰匙不合法：' + name)
+    path = os.path.join(ROOT, 'config.js')
+    with open(path, 'r', encoding='utf-8', newline='') as f:
+        text = f.read()
+    m = re.search(r'/\*FLOOR\*/(.*?)/\*END\*/', text, re.S)
+    if not m:
+        raise ValueError('config.js 找不到 /*FLOOR*/ 那一段')
+    d = json.loads(m.group(1) or '{}')
+    if ratio is None:
+        d.pop(name, None)
+    else:
+        d[name] = round(max(0.0, min(1.0, float(ratio))), 4)
+    lit = '{' + ', '.join('"%s":%s' % (k, d[k]) for k in sorted(d)) + '}'
+    _write_text('config.js', text[:m.start(1)] + lit + text[m.end(1):])
+    return 'config.js FLOOR_TOP %s=%s' % (name, d.get(name))
+
+
 # ══ 點錯生怪的位置（ver -2982，Ray：「敵圖怎麼沒法調 SPAWN 怪」）══
 # `POST /__espawn`，body＝`{"key":本體卡鑰匙, "spawn":{card,hp,side?,x?,y?,size?}}`：把那張卡的 `missSpawn:{…}` 那一行換掉（行尾註解保留）。
 def espawn_patch(req):
@@ -953,6 +975,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 req = json.loads(self.rfile.read(n).decode('utf-8'))
                 sys.stderr.write('[devserver] efit %s\n' % json.dumps(req, ensure_ascii=False))
                 where = efit_patch(req)
+            except ValueError as e:
+                return self._fail(409, str(e))
+            except Exception as e:                        # noqa: BLE001
+                return self._fail(500, '寫檔失敗：%s' % e)
+            return self._fail(200, 'ok ' + where)
+        if self.path.split('?')[0] == '/__floor':
+            try:
+                n = int(self.headers.get('Content-Length') or 0)
+                req = json.loads(self.rfile.read(n).decode('utf-8'))
+                where = floor_patch(req)
             except ValueError as e:
                 return self._fail(409, str(e))
             except Exception as e:                        # noqa: BLE001

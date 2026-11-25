@@ -16,7 +16,7 @@
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import * as clock from '../script/clock.js';   // 立繪的時段差分（ver -423）
 import * as prog from '../script/progress.js';  // stage 加成要問現在第幾章（ver -1584b）
-import { ENEMY_IDLE, SHIP_TRAIL, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, ENEMY_DOWN, ENEMY_HURT, ENEMY_DODGE, GAME_CONFIG, HITFX, asset, sfxGain, assetVer } from '../config.js';
+import { ENEMY_IDLE, SHIP_TRAIL, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER, ENEMY_DOWN, ENEMY_HURT, ENEMY_DODGE, GAME_CONFIG, HITFX, asset, sfxGain, assetVer, FLOOR_TOP, floorTop } from '../config.js';
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';
@@ -3042,6 +3042,24 @@ function shadowFollowTick(now){
 }
 /* 換格的當下就同步影子（ver -3003，Ray：「敵影閃爍」）：實測訓練用聖徒攻擊 151 幀裡有 31 幀影子還是上一格的剪影 ——
    上面那個每秒 30 次的節流跟 24fps 的換格錯開，影子晚一拍就是抖。動畫格的 src 一換（MutationObserver），在下一次繪製之前就把影子換成同一格。 */
+/* ══ 影子只打在地上（ver -3004，Ray：「影子只會打在地上，其他地方不要有」）══
+   投影放進一個蓋滿敵人區的容器（#enemyCastClip），容器用 clip-path 把「地面上緣」以上裁掉 —— 在畫面座標裁，投影本身的斜倒／壓扁不受影響。
+   地面上緣記在 config 的 FLOOR_TOP（背景圖高度的比例，鑰匙＝背景檔名）；背景是 center/cover 鋪的，換算成敵人區的像素。沒記＝不裁。 */
+function castClipBox(top){ let w=$('enemyCastClip'); if(!w){ w=document.createElement('div'); w.id='enemyCastClip';
+  w.style.cssText='position:absolute;inset:0;pointer-events:none;'; const e0=$('enemyImg'); if(e0 && e0.parentNode===top) top.insertBefore(w, e0); else top.prepend(w); }
+  return w; }
+const bgSize={};
+export function battleBgName(){ const top=$('top'); const m=/url\("?([^")]+)"?\)/.exec((top && top.style.backgroundImage)||''); return m ? m[1] : ''; }
+/* 地面上緣在敵人區的 y（px）；ratio 不給就查表。背景尺寸還沒量到時先量、量好再套一次。 */
+export function floorScreenY(ratio){ const top=$('top'), url=battleBgName(); if(!top || !url) return null;
+  if(ratio==null) ratio=floorTop(url); if(ratio==null) return null;
+  const sz=bgSize[url]; if(!sz){ if(sz===undefined){ bgSize[url]=null; const im=new Image(); im.onload=()=>{ bgSize[url]=[im.naturalWidth, im.naturalHeight]; applyFloorClip(); }; im.src=url; } return null; }
+  const W=top.clientWidth, H=top.clientHeight, k=Math.max(W/sz[0], H/sz[1]), ih=sz[1]*k;
+  return (H-ih)/2 + ratio*ih; }
+export function applyFloorClip(){ const w=$('enemyCastClip'); if(!w) return; const y=floorScreenY(); w.style.clipPath = y==null ? '' : 'inset('+Math.max(0,y).toFixed(1)+'px 0 0 0)'; }
+/* 敵圖面板預覽：先改記憶體裡那一格、重套裁切（存檔才寫回 config.js） */
+export function setFloorPreview(ratio){ const url=battleBgName(); if(!url) return; const n=url.split('/').pop().split('?')[0].replace(/\.[^.]+$/,'').toLowerCase();
+  if(ratio==null) delete FLOOR_TOP[n]; else FLOOR_TOP[n]=ratio; applyFloorClip(); return n; }
 let shadowObs=null;
 function watchShadowFrames(){ const top=$('top'); if(shadowObs || !top || typeof MutationObserver==='undefined') return;
   shadowObs=new MutationObserver(ms=>{ const en=shadowCard; if(!en || !castMode(en) || state.over) return;
@@ -3055,7 +3073,8 @@ function shadowUpdate(en){
   const b0=im.getBoundingClientRect(), key=im.getAttribute('src')+'|'+Math.round(b0.left)+'|'+Math.round(b0.top)+'|'+Math.round(b0.width)+'|'+Math.round(b0.height)+'|'+getComputedStyle(im).opacity;   // 外框（含降臨／撲近的 transform）與透明度變了也要重擺
   if(key===shadowFollowSrc) return;
   if(castMode(en)){   // 程式投影（ver -2840）：塗黑的剪影倒在地上、腳底接著原圖；橢圓影子收起來
-    let ce=$('enemyCast'); if(!ce){ ce=document.createElement('img'); ce.id='enemyCast'; ce.className='enemy-cast'; ce.alt=''; const e0=$('enemyImg'); if(e0) top.insertBefore(ce, e0); else top.prepend(ce); }
+    let ce=$('enemyCast'); if(!ce){ ce=document.createElement('img'); ce.id='enemyCast'; ce.className='enemy-cast'; ce.alt=''; castClipBox(top).appendChild(ce); }
+    applyFloorClip();
     groundShadow.hide(sh);
     if(groundShadow.castOnFrame(im, ce, top, en.castShadow)) shadowFollowSrc=key;
     return;

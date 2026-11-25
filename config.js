@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.25-3003';
+export const VERSION = 'ver 2026.11.25-3004';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -8647,6 +8647,16 @@ export const ASSET_VER = {
   'xanya_si_front_half': '929e8753',
   /* ══ BUST:ASSETVER END ══ */
 };
+/* ══ 戰鬥背景的「地面上緣」（ver -3004，Ray：「影子只會打在地上，其他地方不要有」）══
+   鑰匙＝背景檔名（去路徑、去副檔名、去 ?v=、轉小寫，同 fileGain／ASSET_VER 那一套）；值＝**背景圖高度的比例**（0＝頂、1＝底）：地板跟牆或天空的交界。
+   敵影（程式投影）在這條線以上一律裁掉。沒記的背景＝不裁（維持原樣）。
+   ⚠ 不要手改：在敵圖面板的「地面」分頁拖那條線、按存檔（devserver `/__floor` 整段重寫 FLOOR 那一段）。 */
+export const FLOOR_TOP = /*FLOOR*/{}/*END*/;
+export function floorTop(nameOrPath){
+  const n = String(nameOrPath||'').split('/').pop().split('?')[0].replace(/\.[^.]+$/,'').toLowerCase();
+  return FLOOR_TOP[n] != null ? FLOOR_TOP[n] : null;
+}
+
 export function assetVer(nameOrPath){
   const n = String(nameOrPath||'').split('/').pop().split('?')[0]
               .replace(/\.[^.]+$/,'').toLowerCase();
