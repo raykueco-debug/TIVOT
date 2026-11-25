@@ -3576,3 +3576,5 @@ when	from	to	reason
 20261125-011655	resources/background/anim/lake/lake_grove_day_sep_v1.mp4	_recycle/resources/background/anim/lake/lake_grove_day_sep_v1.mp4	11-25 影片霧裡有洋紅殘邊；改靜態底圖＋程式雲
 20261125-011709	resources/background/anim/belisar/belisar_draincliff_day_sky.png	_recycle/resources/background/anim/belisar/belisar_draincliff_day_sky.png	11-25 落水崖天空改 GPT 重摳的程式雲（live/），舊天空層不用了
 20261125-011709	resources/background/anim/belisar/belisar_draincliff_day_skymask.png	_recycle/resources/background/anim/belisar/belisar_draincliff_day_skymask.png.20261125-011709	11-25 落水崖天空改 GPT 重摳的程式雲（live/），舊天空層不用了
+20261125-104555	resources/audio/se/se_enemy_trainee_appear.m4a	_recycle/resources/audio/se/se_enemy_trainee_appear.m4a	Ray 11-25 改選：9 號 +5、7 號原音（換掉 +3 版）
+20261125-104555	resources/audio/se/se_enemy_trainee_atk.m4a	_recycle/resources/audio/se/se_enemy_trainee_atk.m4a	Ray 11-25 改選：9 號 +5、7 號原音（換掉 +3 版）
