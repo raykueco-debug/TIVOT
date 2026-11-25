@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.25-3028';
+export const VERSION = 'ver 2026.11.25-3029';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4039,7 +4039,7 @@ export const GAME_CONFIG = {
          ⚠ `vo_torsten_dualcrush` 本身不在這一批（它 -479 就有一列，見下）。 */
       vo_torsten_dualcrush2:2.83,
       vo_torsten_mb:3.53,            vo_torsten_execute:2.63,
-      vo_nouvelle_saintinstall:1.08,   // ver -837 新錄音重量
+      vo_nouvelle_saintinstall:0.581,   // ver -3029：換成付費期重生版 Aki_B（Ray：「用aki的Ｂ吧」），同 -3027 換算重量（新檔母帶大聲約 5 dB）
       /* ver -745：OBE 語音更新（Ray 交新檔，1.2 秒 —— 舊 10.6 秒那支的懸案結案）。
          錨換算（vo_nouvelle_saintinstall 2.43 ÷ 本機量 1.724 ＝鏈補償 1.41）。 */
       vo_nouvelle_obe:2.04,
@@ -5324,7 +5324,7 @@ export const ASSETS = {
   vo_dual_torsten2:  "resources/audio/vo/vo_torsten_dualcrush2.m4a",   // 破防第二版（與上面交互）
   vo_torsten_mb:     "resources/audio/vo/vo_torsten_mb.m4a",           // Maximum Burst
   vo_torsten_exc:    "resources/audio/vo/vo_torsten_execute.m4a",      // 處決 EXSECUTIŌ
-  vo_nou_saint:      "resources/audio/vo/vo_nouvelle_saintinstall.m4a?v=a0d22041",// 聖徒化降臨（?v=2：ver -837 新錄音同名覆蓋）
+  vo_nou_saint:      "resources/audio/vo/vo_nouvelle_saintinstall.m4a?v=3dc76ded",// 聖徒化降臨（?v=2：ver -837 新錄音同名覆蓋）
   vo_nou_obe:        "resources/audio/vo/vo_nouvelle_obe.m4a?v=0c7d6842",         // O.B.E.
   vo_nou_guard:      "resources/audio/vo/vo_nouvelle_deathguard.m4a?v=d7510213",  // 即死防禦（?v=2 同上）
   vo_nou_return:     "resources/audio/vo/vo_nouvelle_lifereturn.m4a?v=b7e76fc6",  // 生命歸還（?v=2 同上）
@@ -8510,7 +8510,7 @@ export const ASSET_VER = {
   'vo_nouvelle_lifereturn': 'b7e76fc6',
   'vo_nouvelle_lvup': '3417114e',
   'vo_nouvelle_obe': '0c7d6842',
-  'vo_nouvelle_saintinstall': 'a0d22041',
+  'vo_nouvelle_saintinstall': '3dc76ded',
   'vo_nouvelle_saintreload': 'ef54cb31',
   'vo_nouvellemiss1': '1e056954',
   'vo_sorana_pack': '417630a9',
