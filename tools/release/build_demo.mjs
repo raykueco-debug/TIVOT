@@ -1,0 +1,36 @@
+// 網頁版打包：把要上線的檔「硬連結」到 dist/<名>/，給 wrangler pages deploy 用（不複製，不佔第二份空間）。
+//   node tools/release/build_demo.mjs            → dist/demo/  試玩範圍（tools/release/demo_size.json 的清單＋程式層）
+//   node tools/release/build_demo.mjs --full     → dist/full/  整個離線包（offline_list.json；Pages 免費上限 2 萬檔以內）
+// ⚠ 試玩清單是靜態估算（demo_size.mjs 的字串閉包），可能漏掉程式拼字串組出來的路徑 —— 試玩切版前要實跑一輪校正。
+//   所以給 Ray 先試的 pages.dev 預覽用 --full（不會缺圖），正式公開才用試玩清單。
+// 跑之前先 `node tools/release/demo_size.mjs` 讓清單跟上目前版本。
+import fs from 'fs'; import path from 'path'; import { fileURLToPath } from 'url';
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const FULL = process.argv.includes('--full');
+const OUT = path.join(ROOT, 'dist', FULL ? 'full' : 'demo');
+const MAX_FILES = 20000, MAX_BYTES = 25 * 1024 * 1024;   // Cloudflare Pages 免費方案（2026-11-25 查）
+
+const off = JSON.parse(fs.readFileSync(path.join(ROOT, 'offline_list.json'), 'utf8'));
+let files;
+if (FULL) files = [...off.files];
+else {
+  const d = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools', 'release', 'demo_size.json'), 'utf8'));
+  if (d.version !== off.version) console.warn(`⚠ demo_size.json 是 ${d.version}，離線包是 ${off.version} —— 先跑 node tools/release/demo_size.mjs`);
+  const listed = Array.isArray(d.list) ? d.list.map(x => typeof x === 'string' ? x : x.file || x[0]) : Object.keys(d.list);
+  const CODE = /\.(js|mjs|html|css|json|webmanifest|woff2?|ttf|otf)$/i;   // 程式層一律整包（小，而且漏一支就整頁壞）
+  files = [...new Set([...listed, ...off.files.filter(f => CODE.test(f))])];
+}
+files.push('offline_list.json');
+
+fs.rmSync(OUT, { recursive: true, force: true });
+let bytes = 0, big = [], linked = 0, copied = 0;
+for (const f of files) {
+  const src = path.join(ROOT, f), dst = path.join(OUT, f);
+  if (!fs.existsSync(src)) { console.warn('缺檔', f); continue; }
+  const s = fs.statSync(src).size; bytes += s; if (s > MAX_BYTES) big.push(f);
+  fs.mkdirSync(path.dirname(dst), { recursive: true });
+  try { fs.linkSync(src, dst); linked++; } catch { fs.copyFileSync(src, dst); copied++; }
+}
+console.log(`${FULL ? 'full' : 'demo'}：${files.length} 檔、${(bytes / 1048576).toFixed(0)} MiB → ${path.relative(ROOT, OUT)}（硬連結 ${linked}、複製 ${copied}）`);
+if (files.length > MAX_FILES) console.error(`✘ 超過 Pages 免費方案 ${MAX_FILES} 檔`);
+if (big.length) console.error('✘ 單檔超過 25 MiB：', big);

@@ -57,3 +57,6 @@ tools/challenge_build/package-lock.json
 tools/challenge_build/build/
 tools/challenge_build/dist/
 tools/challenge_build/trace.html
+
+# 網頁版打包輸出（tools/release/build_demo.mjs，硬連結，不入版控）
+dist/
