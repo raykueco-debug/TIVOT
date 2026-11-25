@@ -8,8 +8,10 @@
    ⚠ 版面：開盒時一層暗幕＋暗角（z 9590）＋大盒子置中；開盒段播完、獎品視窗要上來時，盒子縮到畫面上半、升到 z 9610
      （#lootSheet 9600 之上、不吃點擊、暗幕拿掉）—— 盒子不被獎品視窗壓暗，也不擋視窗。
    ⚠ 點一下＝開盒段直接跳到最後一格（之後照樣進循環）。
-   ⚠ 葉模組：只讀 config。呼叫端只有 town.relicReveal；換畫面時 story.clearStageLeftovers → closeAll()。 */
-import { GAME_CONFIG } from '../config.js';
+   ⚠ 開盒音效（ver -3030，Ray：「開公會盒用這個」）：`config.relicBox.openSe`（ASSETS 鍵），盒子一出現就播；warm() 一起預載。
+   ⚠ 葉模組：只讀 config／audio。呼叫端只有 town.relicReveal；換畫面時 story.clearStageLeftovers → closeAll()。 */
+import { GAME_CONFIG, asset, fileGain } from '../config.js';
+import { SFX } from '../audio.js';
 
 let cache = null;            // { dir, meta, imgs:[Image] }
 let live = null;             // 目前開著的那一層（只會有一層）
@@ -17,7 +19,9 @@ let live = null;             // 目前開著的那一層（只會有一層）
 function dirOf(){ const d = (GAME_CONFIG.relicBox||{}).openAnim; return d ? (d.endsWith('/') ? d : d+'/') : null; }
 
 /* 先抓影格（公會的聖遺物單子一打開就叫，鐵律 13：用到它的那個畫面自己載）。 */
+function openSe(){ const k=(GAME_CONFIG.relicBox||{}).openSe; return k ? asset(k) : ''; }
 export function warm(){
+  const se=openSe(); if(se){ try{ SFX.preload([se]); }catch(_){} }
   const dir = dirOf(); if(!dir) return Promise.resolve(null);
   if(cache && cache.dir===dir) return cache.ready;
   const c = { dir, meta:null, imgs:[] };
@@ -66,6 +70,7 @@ export function play(done){
     el.appendChild(vig); el.appendChild(cv); document.body.appendChild(el);
     h.el = el;
     requestAnimationFrame(()=>{ el.style.background='rgba(4,3,8,.62)'; vig.style.opacity='1'; });
+    { const se=openSe(); if(se){ try{ SFX.play(se, fileGain(se)); }catch(_){} } }   // 開盒音：盒子出現那一刻
     const ctx = cv.getContext('2d');
     /* 邊緣羽化遮罩：Wan 的光芒與封條會頂到影格邊（ABC 有 40 格碰邊），不羽化的話畫面中間會出現一條被切直的光。
        上緣淡得最多（光往上衝）、左右次之、下緣一點點。只做一次，之後每格 destination-in 一下。 */

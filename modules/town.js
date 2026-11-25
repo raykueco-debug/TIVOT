@@ -905,6 +905,11 @@ export function entryNode(){ return entryNodeId; }
    ⚠ 只收字串：`se:` 偶爾寫成物件（帶延遲那種）時取它的名字欄。
    ⚠ 深度設上限：資料是人寫的，環狀參照不值得為它冒風險。 */
 const TOWN_SE = ['se_walk', 'se_ui_pageflip', 'se_sleep', 'se_healing', 'se_buy'];
+/* 這座城有聖遺物販售（節點 `relicShop`）就把開盒音效（`config.relicBox.openSe`）一起預載（ver -3030）。 */
+function relicSe(T){
+  const se=(GAME_CONFIG.relicBox||{}).openSe;
+  return (se && T && T.nodes && Object.values(T.nodes).some(n=>n && n.relicShop)) ? [se] : [];
+}
 function collectSe(o, out, depth){
   if(!o || depth > 10) return out;
   if(Array.isArray(o)){ for(const v of o) collectSe(v, out, depth+1); return out; }
@@ -1070,7 +1075,7 @@ export function loadSpec(town, nodeId){
      解完的答案才記得回 `bgResolved`（見 resolveBgOnce 的說明）。 */
   return { dest:'town',   // 讀取頁這道門的目的地（ver -1848，story.showLoader → main.passGate）
 
-    ses : [...collectSe(T, new Set(TOWN_SE), 0)],
+    ses : [...collectSe(T, new Set(TOWN_SE), 0), ...relicSe(T)],
     bgms: T.bgm ? [T.bgm] : [],
     pre : n ? (()=>{ settleArrivalClock(town || 'capital'); return resolveBgOnce(bgCandsOf(n, id), true); }) : null,   // 先定時間再解背景（ver -2244）
     warm,

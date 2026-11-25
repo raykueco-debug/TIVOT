@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.25-3029';
+export const VERSION = 'ver 2026.11.25-3030';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3329,6 +3329,7 @@ export const GAME_CONFIG = {
     coin:'guild_coin', price:2, firstPrice:1, firstFlag:'relic_first_bought',
     weight:{}, rare:[],
     openAnim:'resources/illustration/anim/sealbox_open_v2/',
+    openSe:'se_sealbox_open',   // 開盒音效（ver -3030，ASSETS 鍵）：modules/sealbox.js 開盒那一刻播；town.loadSpec 在有聖遺物販售的城一起預載
   },
 
   /* ══ 懸賞（ver -375）══ 賞金獵人公會的委託榜。
@@ -4169,6 +4170,7 @@ export const GAME_CONFIG = {
          se_monsterroardeep −16.2（大 0.9 dB），所以各自往下折那麼多。 */
       se_metalopen:1.09, se_monsterroardeep:1.03,
       se_buy:1.122, se_healing:1.461,   // ver -499（audio_scan 實測：−14.8／−17.1 LUFS）
+      se_sealbox_open:1.188,            // ver -3030（ffmpeg ebur128：耳機 −14.6／手機模型 −16.0，平均 −15.3 LUFS；峰值 −3.2 dBFS）
       se_enemy_serpent:2.184,           // ver -500（audio_scan 實測：−20.6 LUFS）
       se_bulletpiece:1.49,              // ver -503（audio_scan 實測：−17.2 LUFS）
       se_spiltcannon:0.62,              // ver -505（audio_scan 實測：−9.7 LUFS，母帶很大聲）
@@ -5277,6 +5279,7 @@ export const ASSETS = {
   se_dart_fail:      "resources/audio/se/se_dart_fail.m4a",   // 打靶失手（ver -396）
   se_pageflip:       "resources/audio/se/se_ui_pageflip.m4a",
   se_buy:            "resources/audio/se/se_buy.m4a",       // 商店結帳（ver -499，Ray 交件）
+  se_sealbox_open:   "resources/audio/se/se_sealbox_open.m4a",   // 公會封印盒開盒（ver -3030，Ray：「開公會盒用這個」；來源素材站 dragon-studio-holy-spell-cast-450460.mp3，授權照該站）
   se_bulletpiece:    "resources/audio/se/se_bulletpiece.m4a",   // 船戰散射的彈幕聲（ver -503，兩支素材混剪）
   se_spiltcannon:    "resources/audio/se/se_spiltcannon.m4a",   // 船戰散射的發射音（ver -505，Ray 交件）
   se_weapon_cannon:  "resources/audio/se/se_weapon_cannon.m4a?v=5faf9cfe",   // 船戰高爆(爆發型)發射音（ver -816 Ray 更新素材）
