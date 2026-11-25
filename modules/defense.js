@@ -181,7 +181,32 @@ const ULT_ACTS = {
 };
 // 生成一次大絕。Boss 可一次先後出多個點（ASSAULT_SHOTS），每發間隔 ASSAULT_GAP_MS
 //   —— ＝ spawnWave 的特例（鐵律 8）。
-export function startCharge(){ spawnWave(state.ASSAULT_SHOTS, state.ASSAULT_GAP_MS); }
+export function startCharge(){
+  /* ══ 群戰：一人一圈、錯開出圈（ver -3015，Ray：「群戰有幾個人就會有幾個攻擊圈，但是每個人出圈時間不一樣，要錯開」）══
+     場上還站著幾個成員就出幾顆，圈從那個人身上出（enemy.groupRingSources），一顆隔 `tuning.groupRingGapMs`；
+     倒下的不出、已經亮著的圈主人倒下就當場收掉（updateThreats）。所有群戰卡共用，不逐卡寫（鐵律 8）。
+     ⚠ 取代這一次的 ASSAULT_SHOTS 連發（那是單隻 Boss 的「一隻連開幾發」，與「幾個人各開一發」是兩件事）。 */
+  const src=api.groupRingSources && api.groupRingSources();
+  if(src && src.length){ groupWave(src); return; }
+  spawnWave(state.ASSAULT_SHOTS, state.ASSAULT_GAP_MS);
+}
+function groupWave(src){
+  const gap=Math.max(0, +(GAME_CONFIG.tuning||{}).groupRingGapMs || 0);
+  const order=src.filter(x=>!state.threats.some(t=>t.owner===x.key)).sort(()=>Math.random()-0.5);   // 誰先出手每一波隨機；還有圈亮著的這一波不排
+  if(!order.length) return;
+  const busy=k=>state.threats.some(t=>t.owner===k);   // 一人同時只有一顆：上一波牠那顆還亮著就跳過牠
+  const one=(s)=>{ if(busy(s.key)) return; ringAt=s; spawnThreat(); ringAt=null;
+    $('chargeWarn').classList.add('on'); if(!state.threatTick){ state.threatTick=setInterval(updateThreats,50); } };
+  one(order[0]);
+  for(let i=1;i<order.length;i++){ const s=order[i];
+    waveTimers.push(setTimeout(()=>{
+      if(state.over||state.enemyHp<=0||state.cutinPlaying||state.transitioning) return;
+      if(api.assaultSuppressed && api.assaultSuppressed()) return;
+      if(api.ringOwnerAlive && !api.ringOwnerAlive(s.key)) return;   // 等出圈的期間倒下了 ⇒ 不出
+      one(s);
+    }, i*gap)); }
+}
+let ringAt=null;   // groupWave → spawnThreat：這一顆的主人與落點
 // 更新所有攻擊點的視覺與倒數；到期則釋放
 export function updateThreats(){
   // 演出/對話暫停中一律凍結（教學對話於 spawnThreat 內觸發暫停後，
@@ -194,6 +219,7 @@ export function updateThreats(){
   let hot=false;   // 盤面警戒第二段（ver -462）：任一顆已縮過黃圈帶 → 盤面轉紅光
   for(let i=threats.length-1;i>=0;i--){
     const th=threats[i];
+    if(th.owner && api.ringOwnerAlive && !api.ringOwnerAlive(th.owner)){ removeThreat(th); continue; }   // 群戰：圈主倒下 ⇒ 牠的圈收掉（ver -3015）
     const left=Math.max(0,CHARGE-(Date.now()-th.t0)/1000);
     const ratio=left/CHARGE;
     const size=visDia(ratio);
@@ -251,6 +277,7 @@ export function releaseAssault(th){
   if(state.over||state.cutinPlaying) return;
   /* 收圈＝攻擊落下 ⇒ 空戰怪的攻擊演出（ver -2445／-2446，Ray：「攻擊圈沒點掉就刷一根近樹，近樹掃過龍就消失，然後龍從左下往右上衝出，玩家受擊」）：
      演出回傳「還要幾毫秒才撞到玩家」—— 扣血延到那一刻（沒有演出的怪回 0 ＝當場）。 */
+  if(api.setRingActor) api.setRingActor(th.owner);   // 群戰：落下的是誰的圈就由誰出手（ver -3015）
   const wait = api.onAssaultLand ? (api.onAssaultLand()||0) : 0;
   /* -2496 Ray「攻擊圈先到的話延時倒數歸零」：有攻擊／延時動畫的怪，攻擊落下 ⇒ 延時倒數重算（兩支動畫不會疊在一起） */
   if(api.hasActionClips && api.hasActionClips() && api.resetIntervalDeadline) api.resetIntervalDeadline();
@@ -303,6 +330,8 @@ export function spawnThreat(){
   const rollL=()=> ts ? rnd(ts.leftMin,ts.leftMax) : 20+Math.random()*60;
   const rollT=()=> ts ? rnd(ts.topMin, ts.topMax)  : 25+Math.random()*45;
   let lp=rollL(), tp=rollT();
+  const own=ringAt;   // 群戰的一人一圈：落在那個人身上（落點撞到別顆核心就在身邊小範圍挪）
+  if(own && own.lp!=null){ lp=own.lp; tp=own.tp; }
   // 反擊教學第一顆：固定畫面正中偏上（凍結講解時不壓左右立繪）
   if(ts && ts.first && api.firstThreatPending && api.firstThreatPending()){
     lp=ts.first.left; tp=ts.first.top;
@@ -317,11 +346,12 @@ export function spawnThreat(){
       if(dx*dx+dy*dy < (coreR*2)*(coreR*2)){ ok=false; break; }
     }
     if(ok) break;
-    lp=rollL(); tp=rollT();
+    if(own && own.lp!=null){ lp=Math.max(12,Math.min(88, own.lp+(Math.random()-0.5)*(10+tries*2))); tp=Math.max(15,Math.min(80, own.tp+(Math.random()-0.5)*(8+tries*2))); }
+    else { lp=rollL(); tp=rollT(); }
   }
   dot.style.left=lp+'%';
   dot.style.top=tp+'%';
-  const th={el:dot, vis, t0:Date.now(), lp, tp, ult:waveIsUlt};   // 圈的落點（ver -766）＋是不是門檻波（-932）
+  const th={el:dot, vis, t0:Date.now(), lp, tp, ult:waveIsUlt, owner:own ? own.key : null};   // 圈的落點（ver -766）＋是不是門檻波（-932）
   waveIsUlt=false;                                 // 讀完就歸零：下一顆預設是一般攻擊
   dot.addEventListener('touchstart',e=>{e.preventDefault();resolveThreat(th);},{passive:false});
   dot.addEventListener('click',()=>resolveThreat(th));

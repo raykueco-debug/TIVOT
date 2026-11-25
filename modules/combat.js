@@ -81,6 +81,7 @@ export function setup(){
                     「什麼時候該震」的判斷在 defense —— 經此轉交（defense 不 import enemy）。 */
                  slamEnemy: enemy.slamEnemy,
                  onAssaultLand: enemy.onAssaultLand,
+                 groupRingSources: enemy.groupRingSources, ringOwnerAlive: enemy.ringOwnerAlive, setRingActor: enemy.setRingActor,   // 群戰一人一圈（ver -3015）
                  hasActionClips: enemy.hasActionClips,   // 有攻擊／延時動畫的怪（ver -2496）：攻擊落下就把延時倒數歸零   // 空戰怪主動攻擊的演出（ver -2445：收圈那一刻）：演出歸 enemy，「圈收了」歸 defense
                  /* 拉栓冷卻（ver -1009）：這一發開不開得出來由 weapon 回答
                     （鑰匙是那一把槍卡上的 `mag`／`reloadSec`，ver -1781）—— defense 不 import weapon。 */

@@ -3466,6 +3466,52 @@ function pickGroupActor(g, kind){
     if(able(im) && memberLive(im)) return { im, clip:clipOf(im) }; }
   return null;
 }
+/* ══ 群戰：一人一圈（ver -3015，Ray：「群戰有幾個人就會有幾個攻擊圈，但是每個人出圈時間不一樣，要錯開」）══
+   defense 每一次主動攻擊問這一支：場上**還站著的**成員各給一個出圈點（`#redDots` 的百分比，落在那個人的上半身），
+   倒下的不給。不是群戰（也不是空戰編隊）＝null，defense 照舊走單隻那一套。
+   ⚠ 成員的「人」在哪：分層是整張畫布大小，所以照它的 alpha 外框（縮小取樣一次、快取在 im._abox）＋ layerMap 換到畫面。 */
+function alphaBox(im){
+  if(im._abox!==undefined) return im._abox;
+  let b=null;
+  try{ const W=96, H=Math.max(1, Math.round(W*im.naturalHeight/im.naturalWidth)), c=document.createElement('canvas'); c.width=W; c.height=H;
+    const x=c.getContext('2d', { willReadFrequently:true }); x.drawImage(im, 0, 0, W, H); const d=x.getImageData(0, 0, W, H).data;
+    let x0=W, y0=H, x1=-1, y1=-1;
+    for(let y=0;y<H;y++) for(let q=0;q<W;q++) if(d[(y*W+q)*4+3]>64){ if(q<x0)x0=q; if(q>x1)x1=q; if(y<y0)y0=y; if(y>y1)y1=y; }
+    if(x1>=0) b=[x0/W, y0/H, (x1-x0+1)/W, (y1-y0+1)/H]; }catch(_){ b=null; }
+  im._abox=b; return b;
+}
+function memberClientBox(im){
+  if(!im.naturalWidth) return null;
+  const g=$('enemyGroup'); if(!g) return null;
+  const m=layerMap(im, im.naturalWidth, im.naturalHeight); if(!m) return null;
+  const a=alphaBox(im) || [0.25, 0.1, 0.5, 0.8], gr=g.getBoundingClientRect();
+  return { x:gr.left+m.ox+a[0]*m.dw, y:gr.top+m.oy+a[1]*m.dh, w:a[2]*m.dw, h:a[3]*m.dh };
+}
+export function groupRingSources(){
+  const layer=$('redDots'); if(!layer) return null;
+  let ms=null;
+  if(flock) ms=flockAlive().map(m=>{ const r=m.im.getBoundingClientRect(); return { key:'f'+flock.ms.indexOf(m), box:{ x:r.left, y:r.top, w:r.width, h:r.height } }; });
+  else if(groupCard && groupCard.group){ const g=$('enemyGroup'); if(!g) return null;
+    ms=[...g.querySelectorAll('.eg-guard')].filter(memberStanding).map(im=>({ key:'g'+im.dataset.n, box:memberClientBox(im) })); }
+  if(!ms) return null;
+  const lr=layer.getBoundingClientRect(), cl=(v,a,b)=>Math.max(a, Math.min(b, v));
+  return ms.map(m=>{ const b=m.box; if(!b || !b.w || !lr.width || !lr.height) return { key:m.key, lp:null, tp:null };
+    return { key:m.key, lp:cl((b.x+b.w*0.5-lr.left)/lr.width*100, 14, 86), tp:cl((b.y+b.h*0.38-lr.top)/lr.height*100, 18, 78) }; });
+}
+/* 這一圈的主人還站著嗎（倒下的成員：牠的圈當場收掉，不打人）。 */
+export function ringOwnerAlive(key){
+  if(!key) return true;
+  if(key[0]==='f'){ const m=flock && flock.ms[+key.slice(1)]; return !!(m && !m.down); }
+  const g=$('enemyGroup'); if(!g || !groupCard) return false;
+  const im=g.querySelector('.eg-guard[data-n="'+key.slice(1)+'"]'); return !!(im && memberStanding(im));
+}
+/* 落下的那一圈是誰的 ⇒ 由那個人出手（defense 在 onAssaultLand 之前設、groupAttack 讀完即清）。 */
+let ringActorKey=null;
+export function setRingActor(key){ ringActorKey=key||null; }
+function ringActor(g){
+  const k=ringActorKey; ringActorKey=null; if(!k || k[0]!=='g') return null;
+  const im=g.querySelector('.eg-guard[data-n="'+k.slice(1)+'"]'); return (im && memberLive(im)) ? im : null;
+}
 /* 延時／點錯（playActionClip 從這裡分流給群戰，ver -2623） */
 /* 這一下沒有人能演（本職都在演別的）：受擊照樣用本職那一隻的那一套（ver -2682，Ray：「一體適用啊」）——
    不然就掉回群戰卡的通用受擊（鈍擊／em_smack），聽起來像換了一隻怪。打到＝現在（combat 收到 0 就立刻扣）。 */
@@ -3481,10 +3527,12 @@ function groupAction(kind){
 }
 function groupAttack(){
   const g=$('enemyGroup'), G=groupCard && groupCard.group; if(!g || !G) return 0;
+  const own=ringActor(g);   // 一人一圈：落下的是誰的圈就由誰出手（ver -3015）
+  if(own && memberSubClip(own, 'atk')){ const c=memberClipOf(own, 'atk'); lastAtkIm=own; return memberActOnce(g, own, (c && c.spec) ? c : memberSubClip(own, 'atk')); }
   if([...g.querySelectorAll('.eg-guard')].some(im=>memberSubClip(im, 'atk'))){ const p=pickGroupActor(g, 'atk'); if(!p){ busyOwnerFx(g, 'atk'); return 0; } lastAtkIm=p.im; return memberActOnce(g, p.im, p.clip); }
   const cand=notLast([...g.querySelectorAll('.eg-guard')].filter(im=>im._atk && im._ov && memberLive(im)), 'atk');
   if(!cand.length) return 0;
-  const pick=cand[(Math.random()*cand.length)|0]; lastAtkIm=pick;
+  const pick=(own && own._atk && own._ov && memberLive(own)) ? own : cand[(Math.random()*cand.length)|0]; lastAtkIm=pick;
   /* `group.muzzle:false`（ver -2620，空賊 v3）＝火光已畫在格子裡，程式不畫；打到＝攻擊的最後一格（每支格數不一定一樣）。 */
   const im=pick, A=im._atk, N=A.fr.length, fps=A.j.fps||16,
         ff = G.muzzle===false ? N-1 : Math.min(N-1, G.flashFrame!=null ? G.flashFrame : 5);
