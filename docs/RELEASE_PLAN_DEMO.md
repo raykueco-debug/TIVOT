@@ -8,6 +8,26 @@
 
 ---
 
+## 〇、已拍板（2026-11-25）
+
+- ✔ **網頁版用 Cloudflare**（Ray：「用 Cloudflare」）：程式放 **Pages**、素材放 **R2**。
+
+### ⚠ 修正第四節：素材要走 R2 自訂網域，**不要**用 Pages Functions 代理
+- 第四節原本說「Pages 路由把 `/resources/*` 代理到 R2 最省事」—— **查證後推翻**：Pages Functions 每次呼叫都算進 Workers 免費額度
+  **每天 10 萬次**（UTC 午夜重置），試玩一個玩家一輪約 6,000 個請求 ⇒ **一天約 16 個人就爆**；靜態檔才不計次。
+- 正解：R2 bucket 掛**自訂網域**（例 `assets.<網域>`，有自訂網域才吃得到 Cloudflare 快取），設 CORS 只允許遊戲網域 GET；
+  遊戲程式的素材網址加一個**素材根網址**（開發機＝空字串＝相對路徑照舊，上線＝`https://assets.<網域>/`）。
+  ⇒ 這是程式改動，交 PM 派劇情副理（主頁 `index.html`／`modules/*`）＋地圖副理（`flight/index.html` 的 `fav()`／自組路徑）；
+  單一真相（鐵律 7）：素材根網址只准在 `config.js` 一處，飛行頁照 §6.10 跨頁慣例讀同一份。
+
+### Ray 要做的（照順序）
+1. 申請 Cloudflare 帳號（免費）。
+2. 買遊戲網域（Cloudflare Registrar 可直接買，約 US$10/年；名字由 Ray 定）。
+3. 開 R2（要綁付款方式，免費額度內不扣款）。
+4. 做完跟行銷副專說 —— 之後建 Pages 專案、R2 bucket、自訂網域、CORS 由我照步驟帶（帳號密碼與付款 Ray 自己輸入）。
+
+來源：[Pages Functions pricing](https://developers.cloudflare.com/pages/functions/pricing)、[R2 public buckets](https://developers.cloudflare.com/r2/buckets/public-buckets/)、[R2 CORS](https://developers.cloudflare.com/r2/buckets/cors)、[R2 cache](https://developers.cloudflare.com/cache/interaction-cloudflare-products/r2/)（2026-11-25 查）。
+
 ## 一、一句話結論（建議方案）
 
 | 線 | 放哪 | 費用 | 誰要動手 |
