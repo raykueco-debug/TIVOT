@@ -704,11 +704,13 @@ export function jeroMods(){
 }
 /* ══ 副武器的火力乘數 —— **唯一的計算點**（鐵律 7；ver -866 立在 weapon.js，
    ver -1881 搬到這裡：商店／整備的規格表也要印改裝後的數字，而它們構不到 weapon.js）══
-   ＝ 1 ＋ 改造增益 ×（1 ＋ 杰羅加成）。weapon.subgunPowerMul 是它的別名。 */
+   ＝（1 ＋ 改造增益）×（1 ＋ 杰羅加成）。weapon.subgunPowerMul 是它的別名。
+   ⚠ ver -3022（Ray：「馬上變強」）：杰羅加成**獨立相乘**，槍店改裝 0 階的槍賭中當下就變強
+     （-867 的「1 ＋ 改造增益 ×（1 ＋ 杰羅加成）」只放大改造增益，沒改裝過的槍等於沒效）。 */
 export function subgunPowerMul(id){
   const WM = (GAME_CONFIG.tuning||{}).weaponMod || {};
   const modLv = Math.min(weaponMod(id), WM.statLv || 99);
-  return 1 + (modLv * (WM.perLv || 0)) * (1 + jeroMod(id));
+  return (1 + modLv * (WM.perLv || 0)) * (1 + jeroMod(id));
 }
 export function jeroMod(id){
   const v=jeroMods()[id];
