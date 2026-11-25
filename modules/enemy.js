@@ -3038,6 +3038,16 @@ function shadowFollowTick(now){
   const en=shadowCard; if(!en || !(castMode(en) || en.shadowFollow===1) || state.over) { shadowFollowSrc=''; const s0=$('enemyShadow'); if(s0){ s0.style.transition=''; s0.style.transform=''; } const c0=$('enemyCast'); if(c0) c0.remove(); return; }
   shadowFollowRaf=requestAnimationFrame(shadowFollowTick);
   if(document.hidden || (now||0)-shadowFollowLast<33) return; shadowFollowLast=now||0;   // 上限每秒 30 次（手機發熱，鐵律 12）
+  shadowUpdate(en);
+}
+/* 換格的當下就同步影子（ver -3003，Ray：「敵影閃爍」）：實測訓練用聖徒攻擊 151 幀裡有 31 幀影子還是上一格的剪影 ——
+   上面那個每秒 30 次的節流跟 24fps 的換格錯開，影子晚一拍就是抖。動畫格的 src 一換（MutationObserver），在下一次繪製之前就把影子換成同一格。 */
+let shadowObs=null;
+function watchShadowFrames(){ const top=$('top'); if(shadowObs || !top || typeof MutationObserver==='undefined') return;
+  shadowObs=new MutationObserver(ms=>{ const en=shadowCard; if(!en || !castMode(en) || state.over) return;
+    if(ms.some(m=>m.target.tagName==='IMG' && m.target.classList.contains('en-idle'))) shadowUpdate(en); });
+  shadowObs.observe(top, { subtree:true, attributes:true, attributeFilter:['src'] }); }
+function shadowUpdate(en){
   const top=$('top'), sh=$('enemyShadow'); if(!top || !sh) return;
   let im=[...top.querySelectorAll(':scope > img.en-idle')].reverse().find(x=>x.offsetWidth && x.getAttribute('src') && getComputedStyle(x).visibility!=='hidden' && +getComputedStyle(x).opacity>0.05);
   if(!im && castMode(en)){ const e0=$('enemyImg'); if(e0 && e0.offsetWidth && e0.getAttribute('src') && getComputedStyle(e0).visibility!=='hidden') im=e0; }   // 沒有動畫格（靜態立繪）就投 #enemyImg
@@ -3054,7 +3064,7 @@ function shadowFollowTick(now){
   if(w){ shadowFollowSrc=key; if(!shadowBase) shadowBase={ base:w, vary:0.15 }; }   // 第一格（站姿）的腳掌大小當基準，之後只准 ±15%   // 第一格（站姿）的寬當基準；撲近時外框變大，影子照比例一起變大
   sh.style.transition='left .08s linear, top .08s linear, width .08s linear, height .08s linear, transform .08s linear';
 }
-export function startShadowFollow(){ shadowBase=null; if(!shadowFollowRaf){ shadowFollowSrc=''; shadowFollowRaf=requestAnimationFrame(shadowFollowTick); } }
+export function startShadowFollow(){ shadowBase=null; watchShadowFrames(); if(!shadowFollowRaf){ shadowFollowSrc=''; shadowFollowRaf=requestAnimationFrame(shadowFollowTick); } }
 try{
   const eImg0=document.getElementById('enemyImg');
   if(eImg0) eImg0.addEventListener('load', ()=>placeEnemyShadow());
