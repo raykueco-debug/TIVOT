@@ -28,7 +28,7 @@ const K = {
   vo:   'tivot_vol_vo_v1',
   auto: 'tivot_auto_ms_v1',
   hap:  'tivot_haptics_v1',
-  text: 'tivot_dlgtext_v1',   // 對話框文字大小（ver -821）：'0'＝預設、其餘（含沒存過）＝加大（ver -2997 起預設加大）
+  text: 'tivot_dlgtext_v1',   // 對話框文字大小（ver -821）：'0'＝預設、其餘（含沒存過）＝加大（ver -2999 起預設加大）
   /* 戰鬥提示三開關（ver -748，Ray：「把延時懲罰計時器、被動技能計時器、
      敵人攻擊警告效果做進設定裡，讓玩家可以選擇開閉」）。預設**開**。 */
   fxDelay: 'tivot_fx_delayring_v1',     // 延時懲罰計時器（盤面上緣那條線）
@@ -111,7 +111,7 @@ export function autoDelayMs(){
 export function haptics(){ return rd(K.hap) !== '0'; }
 export function setHaptics(on){ wr(K.hap, on ? '1' : '0'); }
 
-/* 對話框文字大小（ver -821，Ray：「只有加大跟預設兩種」）。ver -2997（Ray：「把放大字體設為預設字體」）起：
+/* 對話框文字大小（ver -821，Ray：「只有加大跟預設兩種」）。ver -2999（Ray：「把放大字體設為預設字體」）起：
    **沒存過偏好＝加大**，只有玩家明選「預設」（存 '0'）才是一般大小（同震動那一支的 `!== '0'` 寫法）。
    ⚠ 只是顯示偏好，跨輪不清（同音量／震動）；套用走 apply() 的 body.dlg-large（鐵律 8）。 */
 /* 管理人介面開關（ver -2210，Ray：「在選單中加入開啟或關閉管理人介面的選單，包括清盤、調整、2 倍船速等鈕都要收掉」）。
