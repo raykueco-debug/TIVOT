@@ -2200,7 +2200,11 @@ export function boardingRun(g, onSwap, onDone){
     const a=im.animate([{ transform:`translate(-50%, ${-h}px) rotate(-4deg)` },{ transform:`translate(-50%, ${AH}px) rotate(3deg)` }], { duration:BOARD_DROP_MS, easing:'linear' });   // 等速：時間的一半＝剪影中心落在畫面正中（換卡藏在它後面）
     setTimeout(()=>{ onSwap&&onSwap(); }, BOARD_DROP_MS*0.5);   // 剪影蓋住畫面正中那一刻換
     let ft=0; if(SH){ const t0=performance.now(); ft=setInterval(()=>{ im.src=SH.fr[Math.floor((performance.now()-t0)*SH.fps/1000)%SH.fr.length].src; }, 1000/SH.fps); }
-    a.onfinish=()=>{ clearInterval(ft); box.remove(); if(api.screenShake) api.screenShake(); onDone&&onDone(); };   // 落地＝震一下（-2868 Ray「落地時畫面震動」；鏡頭震動走 combat 的那一支，鐵律 8）
+    a.onfinish=()=>{ clearInterval(ft); box.remove(); if(api.screenShake) api.screenShake();
+      /* 落地音（ver -3018，Ray：「空賊登艦時畫面震動，並找資源裡有無落地音可用」）：卡上 `grapple.landSe`（空賊船＝se_land，湖上甲板的著岸那支）；
+         路徑走 story.seSrc（劇情那張音效表，鐵律 7），進戰鬥那道門會從卡上的 landSe 預載。 */
+      if(g && g.landSe){ const p=story.seSrc(g.landSe); if(p) try{ SFX.play(p, sfxGain(g.landSe)); }catch(_){} }
+      onDone&&onDone(); };   // 落地＝震一下（-2868 Ray「落地時畫面震動」；鏡頭震動走 combat 的那一支，鐵律 8）
   }, BOARD_FLY_MS);
   return BOARD_FLY_MS+BOARD_DROP_MS;
 }

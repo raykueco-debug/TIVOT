@@ -2649,6 +2649,7 @@ export const ENEMIES = {
                 shadowImg:'resources/fx/grapple/board_shadow.webp',   // 靜態退路
                 /* 會動的落下人影（美術交件，-2565）：每次登艦隨機一支；補交的放同一個資料夾、加進這張表 */
                 shadowAnims:['drop_00','drop_02','drop_03','drop_06','drop_07','drop_09','drop_10','drop_11','drop_13','jumpf_01','jumpf_04','jumpf_07'].map(k=>'resources/fx/skypirate_drop_anim/'+k+'/'),
+                landSe:'se_land',   // 登艦落地音（ver -3018，Ray：「找資源裡有無落地音可用」）：湖上甲板的著岸那支；落地同時畫面震一下（enemy.boardingRun）
                 shadowVer:'2' },   // -2574 美術原地改成純黑剪影（Ray「不要有任何白線」），12 支全用；同名覆蓋 ⇒ 版本號 +1（換一次圖改一次）   // jumpf_01／04／07 不用（-2567 Ray：護目鏡兩團灰白亮點；04、07 同一個人物同一個問題）   // 登艦時全景落下的人影：美術拆層的第一批空賊 pirate_1 壓成剪影（-2560）   // anchor＝繩頭釘在船頭第一門砲口（立繪畫布座標，同 assaultFx.ports[0]）   // 鉤子：美術交件 491ab6e0（扣在盤面上緣）
       image:'enemy_pirate_side',   // 側面飛行圖（ver -2471）；舊的三時段整張圖含背景，側面版只有怪 ⇒ 補 bg（分層天空）
       bg:'sky_towers', fit:{ mode:'contain', pos:'center center' },
@@ -2722,7 +2723,7 @@ export const ENEMIES = {
               idle:'resources/enemy/anim/man_skypirate_'+n+'_idle_v3/', atk:'resources/enemy/anim/man_skypirate_'+n+'_atk_v3/',
               fall:'resources/enemy/anim/man_skypirate_'+n+'_hit_v3/', fallLead:80, fallMs:625, muzzle:false },
       hp:170, attack:12, atkInterval:null, assaultEvery:[2,4], assault:{ count:order.length>=4?3:2, gap:0 },
-      entrance:null, special:[], boardGrids:[9,9,9,16,16],
+      entrance:null, special:[], boardGrids:[9,9,9,9,9],   // 登艦戰一律九宮格（ver -3018，Ray：「登艦戰一律 9 宮格」；這 8 組共用這一份樣板）
       delayPenalty:{ seconds:5, damage:5 }, wrongPenalty:{ damage:5 },
       hitFx:{ delay:'bullet', wrong:'blunt', assault:'bullet_big' },
       loot:[ { id:'brass_casing', n:2, p:0.5 } ],
