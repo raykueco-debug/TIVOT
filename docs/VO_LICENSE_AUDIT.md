@@ -93,7 +93,7 @@
 
 ## 二之五、賽西莉失誤 5 句（試玩會用到：cap_dream、frag02_* 的搭檔）
 
-11-25 付費期重生（Ayaka、Eleven v4、同原設定），Ray：「都用A」→ `cecilie_miss1_A`～`cecilie_miss5_A` 交劇情副理換。
+11-25 付費期重生（Ayaka、Eleven v4、同原設定），Ray：「都用A」→ ✔ 已換（ver -3031）。miss4（嘆氣）被峰值上限夾住，比目標小約 2.8 dB。
 
 ## 三、怎麼重生
 
