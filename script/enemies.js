@@ -5841,5 +5841,5 @@ ENEMIES.valse_pirate = Object.assign({}, ENEMIES.pirate_ship, { name:'黑船洛�
    戰鬥端 `combat.startGame`（sbKey 那一行）看到 `<卡>@<款>` 這張衍生卡存在就換用它（數值、名字、勾索全同母卡，只換立繪）。
    ⚠ 款名的唯一真相是 drg3d.js 的 `DEF.pirate.vars`；這裡只列「有側面立繪的那幾款」——多一款 3D 卻沒立繪＝照母卡（本船），不會壞。
    ⚠ 砲口／冒煙點（assaultFx／damageSmoke）沿用母卡（本船）座標，同 test_pirate_nN 的作法。 */
-for(const base of ['pirate_ship','valse_pirate'])
+for(const base of ['pirate_ship'])   // 瓦爾士的黑船洛爾夫固定黑色船身＝本船（ver -3017，飛行遭遇寫 look:''），不給衍生卡
   for(const n of [1,2,3,4,5,6,8,9,10]) ENEMIES[base+'@n'+n] = Object.assign({}, ENEMIES[base], { image:'enemy_pirate_n'+n+'_side' });

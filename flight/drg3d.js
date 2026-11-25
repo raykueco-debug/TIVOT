@@ -209,6 +209,7 @@ function varOf(kind,slot,ent){ const D=DEF[kind], v=DBG.variant;
   const L=varList(kind);
   if(varAll(kind)) return L[(slot||0)%L.length];
   if(v && D.vars[v]) return v;
+  if(ent && typeof ent.look==='string' && (ent.look==='' || D.vars[ent.look])) return ent.look;   // 劇本遭遇指定款式（ver -3017，空戰副理：瓦爾士黑船＝本船 ''，Ray「第一個空賊黑船應該要選黑色船身」）
   if(ent){ if(ent._v3d==null) ent._v3d=Math.floor(Math.random()*L.length); return L[(ent._v3d+(slot||0))%L.length]; }
   return ''; }
 const keyV=(kind,v)=>v ? kind+'#'+v : kind;
