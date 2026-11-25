@@ -352,15 +352,22 @@ const CLOUD_LIVE = {
 };
 for (const k in CLOUD_LIVE) BG_FX[k] = Object.assign({}, BG_FX[k], { sky: CLOUD_LIVE[k] });
 
-/* 劇情熄火（11-25 Ray：「北泊在戰完紫黑之翼後，背景的火都拿掉」）：那支旗立了，這些格的程式火＋火堆冒的煙一律不畫。
-   紫黑之翼＝北泊教堂那一場的紫黑之爪（battle np_claws），旗＝那一段整段演完才記的 np_claws_done。
+/* 劇情熄火（11-25 Ray：「北泊在戰完紫黑之翼後，背景的火都拿掉」「煙也減少」）：那支旗立了，這些格的程式火＋火堆冒的煙一律不畫，
+   城區的煙（煙柱 plumes、街上的煙 haze）減量留餘煙。紫黑之翼＝北泊教堂那一場的紫黑之爪（battle np_claws），旗＝那一段整段演完才記的 np_claws_done。
+   smoke：keep＝煙柱留幾成（依原本的順序取前面幾柱，至少一柱）、alpha＝煙柱與街煙的濃度乘多少、n＝街煙團數乘多少（Ray 要再調就改這三個數）。
    ⚠ 鐵律 8：任何要拿背景程式層的地方一律問 bgFxOf，不要直接讀 BG_FX[stem]（審閱頁例外：它要看到所有層）。
-   ⚠ 只管程式層：底圖本身畫死的火拿不掉。城區的煙柱（plumes）不是火，照留。 */
-export const FIRE_OUT = [{ prefix: 'northport_', flag: 'np_claws_done' }];
-const _noFire = {};
+   ⚠ 只管程式層：底圖畫死的火與煙拿不掉。 */
+export const FIRE_OUT = [{ prefix: 'northport_', flag: 'np_claws_done', smoke: { keep: 1 / 3, alpha: 1 / 3, n: 1 / 3 } }];
+const _quiet = {};
 export function bgFxOf(stem, hasFlag) {
   const s = BG_FX[stem];
-  if (!s || !(s.fire || s.fireSmoke)) return s || null;
-  if (!FIRE_OUT.some(r => stem.startsWith(r.prefix) && hasFlag(r.flag))) return s;
-  return _noFire[stem] || (_noFire[stem] = Object.assign({}, s, { fire: undefined, fireSmoke: undefined }));   // 快取：同一格每次回同一個物件（story 用物件比對判斷要不要重建）
+  if (!s || !(s.fire || s.fireSmoke || s.plumes || s.haze)) return s || null;
+  const r = FIRE_OUT.find(r => stem.startsWith(r.prefix) && hasFlag(r.flag));
+  if (!r) return s;
+  if (_quiet[stem]) return _quiet[stem];   // 快取：同一格每次回同一個物件（story 用物件比對判斷要不要重建）
+  const o = Object.assign({}, s, { fire: undefined, fireSmoke: undefined }), m = r.smoke;
+  if (m && s.plumes) o.plumes = Object.assign({}, s.plumes, { src: s.plumes.src.slice(0, Math.max(1, Math.round(s.plumes.src.length * m.keep))),
+    alpha: (s.plumes.alpha != null ? s.plumes.alpha : 1) * m.alpha });
+  if (m && s.haze) o.haze = Object.assign({}, s.haze, { a: (s.haze.a != null ? s.haze.a : 0.16) * m.alpha, n: Math.max(3, Math.round((s.haze.n || 22) * m.n)) });
+  return (_quiet[stem] = o);
 }
