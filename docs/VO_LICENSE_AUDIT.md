@@ -61,6 +61,21 @@
 - **TIVOT** 要重生的約 30 句短台詞，含標籤每句約 30～90 字；每句試 3 次也只要約 **3,000～5,000 點**。
 - ⇒ 兩邊一起約 **2.3～2.5 萬點**，這個月的額度夠，**TIVOT 先做不會擠到 TRG**。不夠的話 12-25 會再補 3 萬。
 
+## 二之三、試玩用的已重生（2026-11-25，付費期，每句 2 個版本 A／B）
+
+檔在 `resources/audio/_raw/vo_regen_1125/`（同一個聲音、同一段台詞、同一組設定，照比對到的那一筆 Restore 重生）：
+
+| 新檔 | 要換的遊戲檔 | 備註 |
+|---|---|---|
+| `nouvelle_lvup_A/B` | `vo_nouvelle_lvup` | |
+| `nouvelle_saintinstall_Lime_A/B` | `vo_nouvelle_saintinstall` | 比對結果是 **Lime** 這個聲音，不是 Yui（Ray 聽一下） |
+| `nouvelle_lifereturn_chain_A/B` | `vo_nouvelle_lifereturn`（＋`deathguard` 若確認是 ElevenLabs） | 整串「もう限界！死なないで！私の全てを！セイントインストール！」，**要剪**出對應那一段 |
+| `nouvelle_saintreload_Yui_A/B`、`_Suzu_A/B` | `vo_nouvelle_saintreload` | 比對偏向 Suzu 但不明顯，兩種聲音都生了，Ray 挑 |
+| `anya_obe_A/B` | `vo_anya_obe` | 整句「あなたに……力を！！これ以上！！」，原檔是剪過的，要剪 |
+| `anya_nightmarereload_A/B` | `vo_anya_nightmarereload` | |
+
+**交接（Ray 挑好版本後 → 劇情副理）**：同名換上（m4a、單聲道 64k，照 ver -1919 的轉法）、需要剪的照原檔長度剪、重量 `tuning.fileGain` 那幾列、`bust.py --bump`；舊檔走 `tools/recycle.sh`。換完把第〇節那幾列改成 `✔ 不欠（11-25 付費期重生）`。
+
 ## 三、怎麼重生
 
 1. 用 Starter 帳號，**同一個聲音、同一段台詞**重新生成（History 裡每一筆都能直接重用文字與設定）。
