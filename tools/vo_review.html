@@ -1,0 +1,61 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>語音重生試聽</title>
+<style>
+body{background:#14121a;color:#e8e2d4;font:15px/1.5 system-ui,"Microsoft JhengHei",sans-serif;margin:0;padding:16px}
+h3{margin:0 0 6px}.note{color:#a99f8c;font-size:13px}
+.bar{display:flex;gap:10px;align-items:center;margin:8px 0 14px;flex-wrap:wrap}
+button{background:#2b2635;color:#e8e2d4;border:1px solid #5a4f6a;border-radius:6px;padding:5px 12px;cursor:pointer}
+#submit{background:#7a5a1e;border-color:#d9a441}
+.card{background:#1e1b26;border:1px solid #3a3446;border-radius:10px;padding:12px;margin-bottom:12px;max-width:760px}
+.card h4{margin:0 0 6px;display:flex;justify-content:space-between;gap:10px}.st{color:#7fbf7f;font-size:12px;font-weight:normal;white-space:nowrap}
+.row{display:grid;grid-template-columns:120px 1fr;gap:6px 10px;align-items:center;margin:4px 0}
+.row span{color:#c9bfa8;font-size:13px}.row.cur span{color:#e0b060}audio{width:100%;height:34px}
+textarea{width:100%;box-sizing:border-box;min-height:56px;margin-top:8px;background:#100e15;color:#e8e2d4;border:1px solid #4a4258;border-radius:6px;padding:6px;font:inherit}
+.acts{text-align:right;margin-top:4px}
+</style></head><body>
+<h3>語音重生試聽（ElevenLabs 付費帳號 11-25 重生）</h3>
+<div class="note">每一格：先聽「現在遊戲裡的」，再聽新版。意見寫要哪一版、要剪哪一段、哪裡不好（打完自動存，也可以按「存檔」；全部寫完按「提交」）。</div>
+<div class="bar"><button id="submit">提交全部意見</button><span class="note" id="subst"></span></div>
+<div id="list"></div>
+<script type="module">
+const R = '../resources/audio/vo/', N = '../resources/audio/_raw/vo_regen_1125/';
+const ITEMS = [
+  { k: 'nouvelle_lvup', t: '諾薇兒｜升級「よかった——」', cur: 'vo_nouvelle_lvup.m4a',
+    news: [['新 A', 'nouvelle_lvup_A'], ['新 B', 'nouvelle_lvup_B']] },
+  { k: 'nouvelle_saintinstall', t: '諾薇兒｜聖徒化「セイントインストール!!」（比對到的聲音是 Lime，不是 Yui）', cur: 'vo_nouvelle_saintinstall.m4a',
+    news: [['Lime A', 'nouvelle_saintinstall_Lime_A'], ['Lime B', 'nouvelle_saintinstall_Lime_B']] },
+  { k: 'nouvelle_lifereturn', t: '諾薇兒｜生命歸還（新檔是整串「もう限界！死なないで！私の全てを！セイントインストール！」，要剪）', cur: 'vo_nouvelle_lifereturn.m4a',
+    news: [['整串 A', 'nouvelle_lifereturn_chain_A'], ['整串 B', 'nouvelle_lifereturn_chain_B']] },
+  { k: 'nouvelle_deathguard', t: '諾薇兒｜即死防禦（還沒確認是不是 ElevenLabs，聽原檔判斷；是的話從上面那串剪「死なないで」）', cur: 'vo_nouvelle_deathguard.m4a', news: [] },
+  { k: 'nouvelle_saintreload', t: '諾薇兒｜聖徒再臨「わたしも頑張らなくちゃ」（Yui 與 Suzu 兩種聲音都生了）', cur: 'vo_nouvelle_saintreload.m4a',
+    news: [['Yui A', 'nouvelle_saintreload_Yui_A'], ['Yui B', 'nouvelle_saintreload_Yui_B'], ['Suzu A', 'nouvelle_saintreload_Suzu_A'], ['Suzu B', 'nouvelle_saintreload_Suzu_B']] },
+  { k: 'anya_obe', t: '安雅｜OBE（新檔是整句「あなたに……力を！！これ以上！！」，原檔有剪過）', cur: 'vo_anya_obe.m4a',
+    news: [['整句 A', 'anya_obe_A'], ['整句 B', 'anya_obe_B']] },
+  { k: 'anya_nightmarereload', t: '安雅｜惡夢再臨「行けます！！」', cur: 'vo_anya_nightmarereload.m4a',
+    news: [['新 A', 'anya_nightmarereload_A'], ['新 B', 'anya_nightmarereload_B']] },
+];
+const notes = await fetch('../api/vo_notes').then(r => r.json()).catch(() => ({}));
+const list = document.getElementById('list');
+for (const it of ITEMS) {
+  const c = document.createElement('div'); c.className = 'card';
+  const rows = [`<div class="row cur"><span>現在遊戲裡的</span><audio controls preload="none" src="${R}${it.cur}"></audio></div>`]
+    .concat(it.news.map(([lab, f]) => `<div class="row"><span>${lab}</span><audio controls preload="none" src="${N}${f}.mp3"></audio></div>`));
+  c.innerHTML = `<h4><span>${it.t}</span><span class="st"></span></h4>${rows.join('')}<textarea placeholder="要哪一版／要剪哪段／哪裡不好…"></textarea><div class="acts"><button class="sv">存檔</button></div>`;
+  const ta = c.querySelector('textarea'), st = c.querySelector('.st');
+  if (notes[it.k]) { ta.value = notes[it.k].text; st.textContent = '已存 ' + notes[it.k].time; }
+  const save = async () => {
+    const r = await fetch('../api/vo_notes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: it.k, text: ta.value }) }).then(r => r.json()).catch(() => null);
+    st.textContent = r ? ('已存 ' + (r.time || '')) : '⚠ 沒存到';
+  };
+  let tm; ta.oninput = () => { st.textContent = '…'; clearTimeout(tm); tm = setTimeout(save, 800); };
+  c.querySelector('.sv').onclick = save;
+  list.appendChild(c);
+}
+document.querySelectorAll('audio').forEach(a => a.addEventListener('play', () => document.querySelectorAll('audio').forEach(b => { if (b !== a) b.pause(); })));
+const subst = document.getElementById('subst');
+fetch('../api/vo_submit').then(r => r.json()).then(j => { if (j.time) subst.textContent = '上次提交 ' + j.time; }).catch(() => {});
+document.getElementById('submit').onclick = async () => {
+  const r = await fetch('../api/vo_submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.json()).catch(() => null);
+  subst.textContent = r ? `✔ 已提交（${r.time}，${r.count} 格）` : '⚠ 沒提交到（伺服器沒開？）';
+};
+</script></body></html>
