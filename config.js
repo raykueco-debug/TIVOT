@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.25-3011';
+export const VERSION = 'ver 2026.11.25-3012';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -6105,7 +6105,8 @@ export const ENEMY_HURT = {
 };
 export const ENEMY_ENTER = {
   saint_tr_neutral2: { dir:'resources/enemy/anim/saint_tr_neutral2_enter_v1/', windupSe:'se_enemy_trainee_appear', windupMs:0 },   // ver -2992 出場一開始就吼（Ray：9 號提 pitch）
-  mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_flap_v1/', windupSe:'se_flame', fx:[{ frame:48, type:'rubble', se:'se_rockimpact' }] },   // 紫黑之爪（安雅光翼）出場＝大力振翅噴瓦礫（ver -3007，Ray：「紫黑之翼登場動畫就是飛石動畫，純動畫不給傷」）；出場片只演不打，不扣血、不算受擊
+  mon_np_anyawings: { dir:'resources/enemy/anim/mon_np_anyawings_atk_v1/', windupSe:'se_flame', fx:[{ frame:8, type:'rubble', se:'se_rockimpact' }] },   // 紫黑之爪（安雅光翼）出場＝牠自己攻擊片的那段飛石（ver -3012，Ray：「紫黑之翼的攻擊模式本來就有飛石，用那個」；同攻擊片的 rubble 參數與 se_rockimpact，不放攻擊那道紫白光）；出場片只演不打，不扣血、不算受擊
+
   mon_saint_temperance_spawn: { dir:'resources/enemy/anim/mon_saint_temperance_spawn_enter_v1/', slideIn:{ over:0.04 } },   // 節制者分離怪 出場（ver -2970，Ray：撲抓的 BA 剪片＝SPAWN 用，程式從畫面底部平移入鏡、結尾回拉一下）
   mon_saint_temperance_spawn2: { dir:'resources/enemy/anim/mon_saint_temperance_spawn2_enter_v1/', slideIn:{ over:0.04 } },   // 分離怪二 出場（ver -2988，Ray 剪的 sh_tspawn2_lunge_B_BA2_cut）
   mon_saint_temperance_spawn3: { dir:'resources/enemy/anim/mon_saint_temperance_spawn3_enter_v1/', slideIn:{ over:0.04 } },   // 分離怪三 出場（ver -2988，Ray 剪的 sh_tspawn3_lunge_B_BA2_cut）

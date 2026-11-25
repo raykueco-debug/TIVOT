@@ -20,7 +20,7 @@ import { ENEMY_IDLE, SHIP_TRAIL, ENEMY_FLY, ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, 
 import { state, initEnemyHp, addPartnerFight } from '../state.js';
 import { SFX } from '../audio.js';
 import * as story from './story.js';
-import { BG_FX } from '../script/bg_fx.js';   // 戰鬥背景的程式層（水面／雲，ver -2826）
+import { bgFxOf } from '../script/bg_fx.js';   // 戰鬥背景的程式層（水面／雲，ver -2826）
 import { prepFx, drawFx } from './bgfx.js';
 import { BG_ANIM } from '../script/bg_anim.js';   // 戰鬥背景也用動態背景（ver -2729）   // 背景 URL 只有 story.bgUrl 一支在組（ver -905，鐵律 7）
 import { GROUP_MEMBERS } from '../script/group_members.js';
@@ -108,7 +108,7 @@ let battleFx=null;
 function stopBattleBgFx(){ const o=battleFx; battleFx=null; if(!o) return; cancelAnimationFrame(o.raf); try{ o.cv.remove(); }catch(_){}
   if(o.v){ try{ o.v.pause(); o.v.removeAttribute('src'); o.v.load(); o.v.remove(); }catch(_){} } }
 function startBattleBgFx(stem, url){
-  const spec=BG_FX[stem]; const top=$('top');
+  const spec=bgFxOf(stem, prog.hasFlag); const top=$('top');
   if(!spec || !top){ stopBattleBgFx(); return false; }
   if(battleFx && battleFx.url===url && battleFx.cv.isConnected) return true;
   stopBattleBgFx();
@@ -148,7 +148,7 @@ function startBattleBgFx(stem, url){
 function setBattleBgVideo(nm){
   battleVidName=nm||'';
   const stem=String(nm||'').split('?')[0].replace(/^.*\//,'').replace(/\.\w+$/,'').toLowerCase(), src=stem && BG_ANIM[stem];
-  if(!src){ stopBattleBgVideo(); if(stem && BG_FX[stem]) startBattleBgFx(stem, story.bgUrl(nm)); return; }
+  if(!src){ stopBattleBgVideo(); if(stem && bgFxOf(stem, prog.hasFlag)) startBattleBgFx(stem, story.bgUrl(nm)); return; }
   const top=$('top'); if(!top) return;
   if(battleVid && battleVid.dataset.src===src && battleVid.isConnected) return;
   stopBattleBgVideo();

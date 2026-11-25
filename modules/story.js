@@ -47,7 +47,7 @@ import * as clock from '../script/clock.js';   // 時段（插圖／背景的差
 import * as inv from '../script/inventory.js';  // 選項的挑戰費（ver -655）：葉節點，只依賴 config
 import { bgFolder } from '../script/bg_index.js';  // 背景的區域資料夾（自動產生，ver -1376）：純查表，無相依
 import { BG_ANIM } from '../script/bg_anim.js';     // 背景動畫對照表（自動產生，ver -2620）：純查表，無相依
-import { BG_FX } from '../script/bg_fx.js';         // 背景的程式層（水面／落水／光束／煙／水柱／雲，ver -2621）：純資料
+import { bgFxOf } from '../script/bg_fx.js';         // 背景的程式層（水面／落水／光束／煙／水柱／雲，ver -2621）：純資料
 import { prepFx, drawFx } from './bgfx.js';         // 程式層的畫法（只畫一格，播放與收掉照舊在這支）
 
 const $ = id => document.getElementById(id);
@@ -2504,7 +2504,7 @@ function playBgAnim(img, src, video, fxSpec){
 function bgWant(img){
   const src=img && img.getAttribute('src');
   if(!src || !bgStageLive()) return null;
-  const stem=bgStemOf(src), video=BG_ANIM[stem]||null, fx=BG_FX[stem]||null;
+  const stem=bgStemOf(src), video=BG_ANIM[stem]||null, fx=bgFxOf(stem, prog.hasFlag);
   return (video||fx) ? { src, video, fx } : null;
 }
 function syncBgAnim(){

@@ -351,3 +351,16 @@ const CLOUD_LIVE = {
   /* ⟨/cloud-live⟩ */
 };
 for (const k in CLOUD_LIVE) BG_FX[k] = Object.assign({}, BG_FX[k], { sky: CLOUD_LIVE[k] });
+
+/* 劇情熄火（11-25 Ray：「北泊在戰完紫黑之翼後，背景的火都拿掉」）：那支旗立了，這些格的程式火＋火堆冒的煙一律不畫。
+   紫黑之翼＝北泊教堂那一場的紫黑之爪（battle np_claws），旗＝那一段整段演完才記的 np_claws_done。
+   ⚠ 鐵律 8：任何要拿背景程式層的地方一律問 bgFxOf，不要直接讀 BG_FX[stem]（審閱頁例外：它要看到所有層）。
+   ⚠ 只管程式層：底圖本身畫死的火拿不掉。城區的煙柱（plumes）不是火，照留。 */
+export const FIRE_OUT = [{ prefix: 'northport_', flag: 'np_claws_done' }];
+const _noFire = {};
+export function bgFxOf(stem, hasFlag) {
+  const s = BG_FX[stem];
+  if (!s || !(s.fire || s.fireSmoke)) return s || null;
+  if (!FIRE_OUT.some(r => stem.startsWith(r.prefix) && hasFlag(r.flag))) return s;
+  return _noFire[stem] || (_noFire[stem] = Object.assign({}, s, { fire: undefined, fireSmoke: undefined }));   // 快取：同一格每次回同一個物件（story 用物件比對判斷要不要重建）
+}
