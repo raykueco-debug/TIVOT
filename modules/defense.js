@@ -636,7 +636,7 @@ function resolveOne(th, ratio, w){
        ⚠ 反擊那一支的音由 `weaponCounter` 的武器 SE 出聲，這裡不再疊合成重擊音。 */
     const bp = weaponBand(w, 'perfect');
     if(counterAll) bp.counter = true;
-    api.floatDmg(L.battle.perfect,'50%','40%',true);
+    /* ver -3038（Ray：「橘圈命中不再跳 PERFECT 字樣，只有紅圈＝完美反擊才跳」）：橘圈不浮字（-722：完美反擊只有紅圈）。 */
     let bpFired = false;
     if(bp.counter && canFire()){
       const fa = fireArgs(bp, bp.hit, 1);       // ver -974／-1778：橘圈（階 1）＋升階
