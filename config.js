@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.26-3059';
+export const VERSION = 'ver 2026.11.26-3060';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -434,7 +434,7 @@ export const GAME_CONFIG = {
          ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
       faceSpent:'desperate',
       levelUpVoice:'vo_nouvelle_lvup',
-      cheerVoice:['vo_nouvelle_cheer1','vo_nouvelle_cheer2','vo_nouvelle_cheer3','vo_nouvelle_cheer4','vo_nouvelle_cheer5','vo_nouvelle_cheer6'],   // 讚聲（ver -3055，PERFECT CRITICAL／五連 MB 時輪播；Ray 11-26 審稿）
+      cheerVoice:['vo_nouvelle_cheer1','vo_nouvelle_cheer2','vo_nouvelle_cheer3','vo_nouvelle_cheer4','vo_nouvelle_cheer5','vo_nouvelle_cheer6','vo_nouvelle_cheerB1','vo_nouvelle_cheerB2','vo_nouvelle_cheerB3','vo_nouvelle_cheerB4','vo_nouvelle_cheerB5','vo_nouvelle_cheerB6'],   // 讚聲（ver -3055，PERFECT CRITICAL／五連 MB 時輪播；Ray 11-26 審稿）
       name:i18nT('諾薇兒'),
       image:'partner_nouvelle',
       /* 整備頁伙伴卡的「變身」欄（ver -841，Ray：「伙伴卡也要記載聖徒化 夢魘化
@@ -619,7 +619,7 @@ export const GAME_CONFIG = {
          ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
       faceSpent:'desperate',
       levelUpVoice:'vo_anya_lvup',
-      cheerVoice:['vo_anya_cheer2','vo_anya_cheer2b','vo_anya_cheer3','vo_anya_cheer4','vo_anya_cheer4b','vo_anya_cheer5','vo_anya_cheer6','vo_anya_cheer6b'],   // 讚聲（ver -3055）；第 1 句驚呼 -3058 拿掉（Ray：「像在喘氣」）；原檔連唸兩次的 -3059 切成兩支都進輪播（b＝第二次）
+      cheerVoice:['vo_anya_cheer2','vo_anya_cheer2b','vo_anya_cheer3','vo_anya_cheer4','vo_anya_cheer4b','vo_anya_cheer5','vo_anya_cheer6','vo_anya_cheer6b','vo_anya_cheerB2','vo_anya_cheerB2b','vo_anya_cheerB3','vo_anya_cheerB4','vo_anya_cheerB4b','vo_anya_cheerB5','vo_anya_cheerB6','vo_anya_cheerB6b'],   // 讚聲（ver -3055）；第 1 句驚呼 -3058 拿掉（Ray：「像在喘氣」）；原檔連唸兩次的 -3059 切成兩支都進輪播（b＝第二次）；-3060 起 B 版也進（cheerB<n>，Ray：「ＡＢ版全進輪播」）
       install:{ name:i18nT('夢魘化'), en:'NIGHTMARE INSTALL',
         /* ⚠ ver -967：「體力灌滿後」→「由**當下的體力**」（不再灌滿）。
            ⚠ ver -974：**滿血 13 秒**（長度由血量決定，不再是一律 15 秒）、
@@ -748,7 +748,7 @@ export const GAME_CONFIG = {
          ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
       faceSpent:'panic',
       levelUpVoice:'vo_sorana_lvup',
-      cheerVoice:['vo_sorana_cheer1','vo_sorana_cheer1b','vo_sorana_cheer2','vo_sorana_cheer3','vo_sorana_cheer4','vo_sorana_cheer5','vo_sorana_cheer6'],   // 讚聲（ver -3055）
+      cheerVoice:['vo_sorana_cheer1','vo_sorana_cheer1b','vo_sorana_cheer2','vo_sorana_cheer3','vo_sorana_cheer4','vo_sorana_cheer5','vo_sorana_cheer6','vo_sorana_cheerB1','vo_sorana_cheerB2','vo_sorana_cheerB3','vo_sorana_cheerB4','vo_sorana_cheerB5','vo_sorana_cheerB6'],   // 讚聲（ver -3055）
       name:i18nT('索菈娜'),
       image:'partner_sorana',
       selectVoice:'vo_sorana_pack',   // 選人確認音（ver -839，Ray 指定）
@@ -4053,7 +4053,8 @@ export const GAME_CONFIG = {
                 'vo_sorana_miss1','vo_sorana_miss2','vo_sorana_miss3','vo_sorana_miss4',
                 'vo_cecilie_miss1','vo_cecilie_miss2','vo_cecilie_miss3','vo_cecilie_miss4','vo_cecilie_miss5',   // ver -2961：賽西莉失誤語音
                 'vo_nouvelle_lvup','vo_anya_lvup','vo_sorana_lvup',
-                'vo_cecilie_cheer1','vo_cecilie_cheer2','vo_cecilie_cheer3','vo_cecilie_cheer4','vo_cecilie_cheer5','vo_cecilie_cheer6','vo_nouvelle_cheer1','vo_nouvelle_cheer2','vo_nouvelle_cheer3','vo_nouvelle_cheer4','vo_nouvelle_cheer5','vo_nouvelle_cheer6','vo_sorana_cheer1','vo_sorana_cheer1b','vo_sorana_cheer2','vo_sorana_cheer3','vo_sorana_cheer4','vo_sorana_cheer5','vo_sorana_cheer6','vo_anya_cheer2','vo_anya_cheer2b','vo_anya_cheer3','vo_anya_cheer4','vo_anya_cheer4b','vo_anya_cheer5','vo_anya_cheer6','vo_anya_cheer6b'],   // 讚聲（ver -3055）
+                'vo_cecilie_cheer1','vo_cecilie_cheer2','vo_cecilie_cheer3','vo_cecilie_cheer4','vo_cecilie_cheer5','vo_cecilie_cheer6','vo_nouvelle_cheer1','vo_nouvelle_cheer2','vo_nouvelle_cheer3','vo_nouvelle_cheer4','vo_nouvelle_cheer5','vo_nouvelle_cheer6','vo_sorana_cheer1','vo_sorana_cheer1b','vo_sorana_cheer2','vo_sorana_cheer3','vo_sorana_cheer4','vo_sorana_cheer5','vo_sorana_cheer6','vo_anya_cheer2','vo_anya_cheer2b','vo_anya_cheer3','vo_anya_cheer4','vo_anya_cheer4b','vo_anya_cheer5','vo_anya_cheer6','vo_anya_cheer6b',
+                'vo_anya_cheerB2','vo_anya_cheerB2b','vo_anya_cheerB3','vo_anya_cheerB4','vo_anya_cheerB4b','vo_anya_cheerB5','vo_anya_cheerB6','vo_anya_cheerB6b','vo_cecilie_cheerB1','vo_cecilie_cheerB2','vo_cecilie_cheerB3','vo_cecilie_cheerB4','vo_cecilie_cheerB5','vo_cecilie_cheerB6','vo_nouvelle_cheerB1','vo_nouvelle_cheerB2','vo_nouvelle_cheerB3','vo_nouvelle_cheerB4','vo_nouvelle_cheerB5','vo_nouvelle_cheerB6','vo_sorana_cheerB1','vo_sorana_cheerB2','vo_sorana_cheerB3','vo_sorana_cheerB4','vo_sorana_cheerB5','vo_sorana_cheerB6'],   // 讚聲（ver -3055）
 
     /* ══ 逐支增益：鑰匙是**檔名**（去副檔名、轉小寫）══════════════════
        ⚠⚠ 鑰匙用檔名不用 ASSETS 鍵（ver -441）：**一支音檔只有一個響度**，
@@ -4161,6 +4162,7 @@ export const GAME_CONFIG = {
       vo_nouvelle_cheer1:3.671, vo_nouvelle_cheer2:11.676, vo_nouvelle_cheer3:6.307, vo_nouvelle_cheer4:3.650, vo_nouvelle_cheer5:7.582, vo_nouvelle_cheer6:2.660,
       vo_sorana_cheer1:2.511, vo_sorana_cheer1b:2.468, vo_sorana_cheer2:3.844, vo_sorana_cheer3:2.629, vo_sorana_cheer4:2.264, vo_sorana_cheer5:4.002, vo_sorana_cheer6:2.113,
       vo_anya_cheer2:12.440 /*CAP*/, vo_anya_cheer3:13.640, vo_anya_cheer4:12.156 /*CAP*/, vo_anya_cheer5:9.436, vo_anya_cheer6:12.729, vo_anya_cheer2b:10.467, vo_anya_cheer4b:10.170, vo_anya_cheer6b:9.768,
+      /* B 版（ver -3060；增益表的鑰匙一律小寫，見 fileGain） */ vo_anya_cheerb2:14.448 /*CAP*/, vo_anya_cheerb2b:11.811, vo_anya_cheerb3:13.101, vo_anya_cheerb4:11.476, vo_anya_cheerb4b:11.215 /*CAP*/, vo_anya_cheerb5:9.712, vo_anya_cheerb6:9.824, vo_anya_cheerb6b:10.406, vo_cecilie_cheerb1:5.752, vo_cecilie_cheerb2:6.163, vo_cecilie_cheerb3:3.197, vo_cecilie_cheerb4:23.567, vo_cecilie_cheerb5:6.023, vo_cecilie_cheerb6:27.215, vo_nouvelle_cheerb1:3.466, vo_nouvelle_cheerb2:11.476, vo_nouvelle_cheerb3:7.325, vo_nouvelle_cheerb4:3.526, vo_nouvelle_cheerb5:6.836, vo_nouvelle_cheerb6:2.933, vo_sorana_cheerb1:2.199, vo_sorana_cheerb2:3.466, vo_sorana_cheerb3:2.850, vo_sorana_cheerb4:2.468, vo_sorana_cheerb5:3.800, vo_sorana_cheerb6:2.357,
        vo_anya_lvup:2.67,  vo_sorana_lvup:0.70,
       vo_luna_dualwield:1.483, vo_luna_execution:1.013, vo_luna_obe:1.163,
       vo_luna_saintinstall:1.345, vo_malzeno_hcrounds:2.647,
@@ -5488,6 +5490,33 @@ export const ASSETS = {
   vo_anya_cheer5: "resources/audio/vo/vo_anya_cheer5.m4a?v=df1212f2",
   vo_anya_cheer6: "resources/audio/vo/vo_anya_cheer6.m4a?v=8a5cf46f",
   vo_anya_cheer6b: "resources/audio/vo/vo_anya_cheer6b.m4a",   // ver -3059
+  /* 讚聲 B 版（ver -3060，Ray：「ＡＢ版全進輪播」）—— ⚠ 命名用 cheerB<n> 不用 cheer<n>B：Windows 不分大小寫，cheer2B 會撞到 cheer2b（A 版的第二次）。 */
+  vo_anya_cheerB2: "resources/audio/vo/vo_anya_cheerB2.m4a",
+  vo_anya_cheerB2b: "resources/audio/vo/vo_anya_cheerB2b.m4a",
+  vo_anya_cheerB3: "resources/audio/vo/vo_anya_cheerB3.m4a",
+  vo_anya_cheerB4: "resources/audio/vo/vo_anya_cheerB4.m4a",
+  vo_anya_cheerB4b: "resources/audio/vo/vo_anya_cheerB4b.m4a",
+  vo_anya_cheerB5: "resources/audio/vo/vo_anya_cheerB5.m4a",
+  vo_anya_cheerB6: "resources/audio/vo/vo_anya_cheerB6.m4a",
+  vo_anya_cheerB6b: "resources/audio/vo/vo_anya_cheerB6b.m4a",
+  vo_cecilie_cheerB1: "resources/audio/vo/vo_cecilie_cheerB1.m4a",
+  vo_cecilie_cheerB2: "resources/audio/vo/vo_cecilie_cheerB2.m4a",
+  vo_cecilie_cheerB3: "resources/audio/vo/vo_cecilie_cheerB3.m4a",
+  vo_cecilie_cheerB4: "resources/audio/vo/vo_cecilie_cheerB4.m4a",
+  vo_cecilie_cheerB5: "resources/audio/vo/vo_cecilie_cheerB5.m4a",
+  vo_cecilie_cheerB6: "resources/audio/vo/vo_cecilie_cheerB6.m4a",
+  vo_nouvelle_cheerB1: "resources/audio/vo/vo_nouvelle_cheerB1.m4a",
+  vo_nouvelle_cheerB2: "resources/audio/vo/vo_nouvelle_cheerB2.m4a",
+  vo_nouvelle_cheerB3: "resources/audio/vo/vo_nouvelle_cheerB3.m4a",
+  vo_nouvelle_cheerB4: "resources/audio/vo/vo_nouvelle_cheerB4.m4a",
+  vo_nouvelle_cheerB5: "resources/audio/vo/vo_nouvelle_cheerB5.m4a",
+  vo_nouvelle_cheerB6: "resources/audio/vo/vo_nouvelle_cheerB6.m4a",
+  vo_sorana_cheerB1: "resources/audio/vo/vo_sorana_cheerB1.m4a",
+  vo_sorana_cheerB2: "resources/audio/vo/vo_sorana_cheerB2.m4a",
+  vo_sorana_cheerB3: "resources/audio/vo/vo_sorana_cheerB3.m4a",
+  vo_sorana_cheerB4: "resources/audio/vo/vo_sorana_cheerB4.m4a",
+  vo_sorana_cheerB5: "resources/audio/vo/vo_sorana_cheerB5.m4a",
+  vo_sorana_cheerB6: "resources/audio/vo/vo_sorana_cheerB6.m4a",
   vo_anya_lvup:      "resources/audio/vo/vo_anya_lvup.m4a",
   vo_sorana_lvup:    "resources/audio/vo/vo_sorana_lvup.m4a",
   vo_sorana_roar:    "resources/audio/vo/vo_sorana_roar.m4a?v=184fbea0",   // ver -859：Ray 更新 5連完美戰吼   // 獵手的戰吼・連5盤那一發（ver -837 新錄音）
@@ -5715,7 +5744,7 @@ export const ASSETS = {
   const C = JSON.parse(JSON.stringify(N));
   Object.assign(C, { name:i18nT('賽西莉'), image:'partner_cecilie', cutin:'cutin_cecilie_saint',
     selectVoice:null, levelUpVoice:null, faceSpent:null,
-    cheerVoice:['vo_cecilie_cheer1','vo_cecilie_cheer2','vo_cecilie_cheer3','vo_cecilie_cheer4','vo_cecilie_cheer5','vo_cecilie_cheer6'],   // 讚聲（ver -3055）
+    cheerVoice:['vo_cecilie_cheer1','vo_cecilie_cheer2','vo_cecilie_cheer3','vo_cecilie_cheer4','vo_cecilie_cheer5','vo_cecilie_cheer6','vo_cecilie_cheerB1','vo_cecilie_cheerB2','vo_cecilie_cheerB3','vo_cecilie_cheerB4','vo_cecilie_cheerB5','vo_cecilie_cheerB6'],   // 讚聲（ver -3055）
     /* 聖徒化的發動／結局演出改讀這幾格（saint.js，沒寫＝照舊諾薇兒那一套）。 */
     /* ver -1919：她有配音了（SI／OBE／即死防禦／生命歸還）。 */
     saintCutin:'cutin_cecilie_saint', saintVoice:'vo_cec_saint',
