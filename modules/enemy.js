@@ -1068,17 +1068,13 @@ export function muzzleSmoke(k){
     setTimeout(()=>{ if(el.parentNode) el.remove(); }, 2100);
   }
 }
-/* 曳光的飛行時間（命中特效要對準抵達那一刻，鐵律 7：只在這裡算）。 */
-export function tracerFlightMs(slowMs){ return TRACER_MS + (slowMs||0); }
-export function fireTracer(sx, sy, tx, ty, slowMs){   // slowMs：PERFECT CRITICAL 的慢動作子彈（ver -3045），沒給＝照常
+export function fireTracer(sx, sy, tx, ty, slowMs){   // slowMs：PERFECT CRITICAL 子彈時間的飛行毫秒（ver -3048，外觀照舊、只是飛得慢），沒給＝照常
   const host=$('fxTop'); if(!host) return;
   lastShot = { sx, sy, tx, ty };
   const dx=tx-sx, dy=ty-sy;
   const dist=Math.hypot(dx,dy) || 1;
   const ang=Math.atan2(dy,dx)*180/Math.PI;
-  /* 慢動作（PERFECT CRITICAL）：短彈頭＋等速 —— 一般那條緩動是「前段衝、後段拖」，而彈道前段藏在面板底下，
-     拉長時間只會變成「一閃就到、然後停在目標上」，看起來不慢（ver -3047 實測）。 */
-  const len=Math.min(slowMs ? TRACER_LEN*0.45 : TRACER_LEN, dist);
+  const len=Math.min(TRACER_LEN, dist);
   const ux=dx/dist, uy=dy/dist;
   const el=document.createElement('i');
   el.className='tracer';
@@ -1090,10 +1086,9 @@ export function fireTracer(sx, sy, tx, ty, slowMs){   // slowMs：PERFECT CRITIC
   try{
     el.animate([{ transform:a, opacity:0.35 },
                 { transform:b, opacity:1 }],
-               { duration:TRACER_MS+(slowMs||0), easing:slowMs?'linear':'cubic-bezier(.2,.7,.4,1)', fill:'forwards' });
+               { duration:slowMs||TRACER_MS, easing:slowMs?'linear':'cubic-bezier(.2,.7,.4,1)', fill:'forwards' });
   }catch(_){ el.style.transform=b; }
-  if(slowMs) el.classList.add('slow');
-  setTimeout(()=>{ if(el.parentNode) el.remove(); }, TRACER_MS+(slowMs||0)+60);
+  setTimeout(()=>{ if(el.parentNode) el.remove(); }, (slowMs||TRACER_MS)+60);
   bulletsFlySe();
 }
 /* ══⚠⚠ **朝「視窗上的某一點」射一條火線**（ver -1652，Ray：「機槍反擊按發數射火線，
@@ -1855,8 +1850,10 @@ function spawnRubble(o, n, speed){
   requestAnimationFrame(tick);
 }
 let idleFr=null;
-function runIdle(){ clearInterval(idleT); if(!idleEl || !idleFr) return; let i=0; idleEl.src=idleFr[0].src;
-  idleT=setInterval(()=>{ i=(i+1)%idleFr.length; idleEl.src=idleFr[i].src; }, 1000/((idleJ&&idleJ.fps)||8)); }
+let idleRate=1, idleI=0;   // idleRate：子彈時間放慢待機影格（ver -3048，combat.bulletTime 叫 setIdleRate）
+function runIdle(keep){ clearInterval(idleT); if(!idleEl || !idleFr) return; if(!keep) idleI=0; idleEl.src=idleFr[idleI%idleFr.length].src;
+  idleT=setInterval(()=>{ idleI=(idleI+1)%idleFr.length; idleEl.src=idleFr[idleI].src; }, 1000/(((idleJ&&idleJ.fps)||8)*idleRate)); }
+export function setIdleRate(r){ idleRate=r>0 ? r : 1; if(idleT && !clipT) runIdle(true); }
 function stopIdleLoop(){ downFor=null; clearInterval(idleT); idleT=0; clearTimeout(clipT); clipT=0; if(clipEl){ clipEl.remove(); clipEl=null; } idleFr=null; if(idleEl){ idleEl.remove(); idleEl=null; }
   const e=$('enemyImg'); if(e && e.style.visibility==='hidden' && !document.querySelector('#top .en-fall')) e.style.visibility=''; }
 function startIdleLoop(dir){

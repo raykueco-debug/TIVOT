@@ -1335,7 +1335,10 @@
   /* PERFECT CRITICAL／五連 MB 的測試鈕（管理人，ver -3045）：爆擊＝照機率 → 必爆 → 必MB 循環。 */
   #pcritBtn{top:10px;left:146px;right:auto;width:auto;padding:0 8px;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode #pcritBtn{display:flex;}
-  #fxTop .tracer.slow{height:6px;margin-top:-3px;filter:drop-shadow(0 0 8px #ffe9a8) drop-shadow(0 0 3px #fff);}
+  /* 子彈時間（ver -3048，combat.bulletTime）：略拉近、去飽和偏冷、四周暗角。進場快、出場「啪」一下（transition 只掛在進場）。 */
+  #app.bullet-time #top{transform:scale(var(--bt-zoom,1.04));filter:saturate(.45) hue-rotate(-12deg) brightness(.92);transition:transform .14s ease-out, filter .14s ease-out;}
+  #app.bullet-time::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:40;
+    background:radial-gradient(ellipse 75% 65% at 50% 32%, rgba(0,0,0,0) 45%, rgba(4,8,20,.62) 100%);}
   /* 面板：蓋在下半盤面上（上半的敵人要看得到），點擊不穿透。 */
   #enemyEdit{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
     z-index:9800;padding:10px 12px;border:1px solid var(--gold-dim);border-radius:12px;

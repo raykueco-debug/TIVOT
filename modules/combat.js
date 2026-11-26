@@ -741,7 +741,7 @@ function tap(num,cell,e){
     else if(state.enemyHp>0 && !state.saintMode && !state.niMode && !state.dualWield)
       enemy.enemyEvade((num===state.expect && (critHit || !parryNow())) ? 'parry' : 'dodge');
   }
-  const hitPt = gunHitOnEnemy(cell, critHit, pShot==='crit' ? PC().slowMs : 0);     // 槍擊特效映射到敵人對應位置
+  const hitPt = gunHitOnEnemy(cell, critHit, pShot==='crit' ? btCfg().ms : 0);     // 槍擊特效映射到敵人對應位置（PERFECT CRITICAL：子彈飛滿整段子彈時間）
 
   // 聖徒化：依序點擊 16 格、受擊推進倒數槽（combat 於期間讓出主迴圈，交由 saint 驅動盤面游標）。
   if(state.saintMode){ saint.saintTap(num, cell); updateStatus(); return; }
@@ -807,20 +807,26 @@ function tap(num,cell,e){
     const cc=state.critCombo;
     if(state.expect===state.N) dmg*=charmLastHitMul();   // 掛飾 C01／C02／C13：這一盤的最後一擊（ver -2505）
     const rev=state.charmRevenge; state.charmRevenge=false;   // 掛飾 C09：用掉
-    if(pShot==='crit'){ crit=true; dmg*=(PC().mul||2); perfectCritFx(hitPt); }   // PERFECT CRITICAL（ver -3045）：取代一般爆擊倍率
+    if(pShot==='crit'){ crit=true; dmg*=(PC().mul||2); }   // PERFECT CRITICAL（ver -3045）：取代一般爆擊倍率；演出與扣血在子彈時間結束那一刻（下面）
     else if(pShot!=='mb' && (critRoll < critRateAt(cc) || rev)){   // 骰子是 tap 開頭那一顆（ver -2012：槍火要先知道會不會打穿劈落）；MB 那一盤的收尾不擲
       crit=true; dmg*=(1 + critDmgAt(cc) + (rev ? charmSum('revengeCritDmg') : 0));
     }
     state.critCombo++;
-    enemyDamage(Math.round(dmg),crit,false,'basic');   // 點擊直接扣敵血（crit=true → 敵區跳紅字「暴擊」）
-    { const ex=charmSum('extraShotDmg'); if(ex) charmShot(hitDamage()*ex); }   // 掛飾 C03：每次點擊追加一發
-    if(crit){ const er=charmSum('critEchoRate'); if(er && Math.random()<er) charmShot(hitDamage()*charmSum('critEchoDmg')); }   // 掛飾 C10
-    shotHeal();                          // 回血窗（即死防禦免傷／生命歸還吸血，ver -965 三種射擊都算）
-    state.expect++;
-    tutorial.onBoardProgress(state.expect-1);   // 教學：第四回合清滿 N 格 → 劇情殺（非教學 no-op）
-    advanceExpectPastCleared();   // 被抽掉的號碼（心魘，ver -2763）要跳過，不然游標停在不存在的格子上
-    if(state.expect>state.N) clearBoard(); else markNext();
-    updateStatus();
+    const land = ()=>{
+      enemyDamage(Math.round(dmg),crit,false,'basic');   // 點擊直接扣敵血（crit=true → 敵區跳紅字「暴擊」）
+      { const ex=charmSum('extraShotDmg'); if(ex) charmShot(hitDamage()*ex); }   // 掛飾 C03：每次點擊追加一發
+      if(crit){ const er=charmSum('critEchoRate'); if(er && Math.random()<er) charmShot(hitDamage()*charmSum('critEchoDmg')); }   // 掛飾 C10
+      shotHeal();                          // 回血窗（即死防禦免傷／生命歸還吸血，ver -965 三種射擊都算）
+      state.expect++;
+      tutorial.onBoardProgress(state.expect-1);   // 教學：第四回合清滿 N 格 → 劇情殺（非教學 no-op）
+      advanceExpectPastCleared();   // 被抽掉的號碼（心魘，ver -2763）要跳過，不然游標停在不存在的格子上
+      if(state.expect>state.N) clearBoard(); else markNext();
+      updateStatus();
+    };
+    /* PERFECT CRITICAL（ver -3048，Ray：「開槍那一瞬間有子彈時間那種時間變慢的效果」）：
+       開槍那一刻進子彈時間，子彈慢慢飛過去；打到那一刻時間恢復，同時扣血＋critfx＋字。期間不能點下一格。 */
+    if(pShot==='crit') bulletTime(()=>{ perfectCritFx(hitPt); land(); });
+    else land();
   }else{
     // （overkill 免順序已在上方分支攔截；此處必為敵存活時的按錯）
     /* ══⚠⚠⚠ **容錯：點錯一次不算**（諾薇兒 Lv2「引路星」，ver -1014）══
@@ -1067,11 +1073,44 @@ function perfectShotKind(num){
 function perfectSe(){ const k=PC().se; if(k){ const src=asset(k); if(src){ try{ SFX.play(src, sfxGain(k)); }catch(_){} } } }
 function perfectCheer(){ const k=PC().cheerVoice; if(k){ const src=asset(k); if(src){ try{ SFX.playVoice(src, sfxGain(k)); }catch(_){} } } }   // 搭檔 CHEER（還沒有素材，留接口）
 function perfectCritFx(pt){
-  perfectSe(); perfectCheer();
+  perfectCheer();
+  if(pt) critfx.play(pt.x, pt.y);
+  floatDmg('PERFECT CRITICAL','50%','26%',true);
+}
+/* ══ 子彈時間（ver -3048）══ 全場時間放慢的**唯一**入口（鐵律 8）；參數在 config.tuning.perfectCrit.bulletTime。
+   · 遊戲邏輯（攻擊圈、延時懲罰、碼表）：走既有的 cutinFreeze／clockPause 凍住 —— 倍率 0.18 × 0.7 秒的進度不到 0.13 秒，
+     凍住與放慢在手感上分不出來，而凍住不必改每一個系統的計時。
+   · 畫面：#app 底下所有 CSS／WAAPI 動畫與影片 playbackRate × rate；敵人待機影格走 enemy.setIdleRate。
+   · 視覺提示：#app.bullet-time（拉近、暗角、去飽和偏冷），槍聲＋低沉的放慢音、BGM 壓低。
+   · 結束那一刻全部還原，再叫 done（扣血與命中特效）。期間 state.cutinPlaying＝不能點。 */
+function btCfg(){ return PC().bulletTime || {}; }
+let btLive=false;
+function bulletTime(done){
+  const C=btCfg(), ms=C.ms||700, rate=C.rate||0.18;
+  if(btLive){ done(); return; }
+  btLive=true;
+  state.cutinPlaying=true;
+  const frz=cutinFreeze(); clockPause();
+  const app=$('app');
+  const anims=document.getAnimations().filter(a=>{ const t=a.effect && a.effect.target; return t && app.contains(t) && !(t.classList && t.classList.contains('tracer')); });
+  const rates=anims.map(a=>a.playbackRate); anims.forEach(a=>{ try{ a.playbackRate=a.playbackRate*rate; }catch(_){} });
+  const vids=[...app.querySelectorAll('video')]; const vr=vids.map(v=>v.playbackRate); vids.forEach(v=>{ try{ v.playbackRate=Math.max(0.0625, v.playbackRate*rate); }catch(_){} });
+  enemy.setIdleRate(rate);
+  app.style.setProperty('--bt-zoom', String(C.zoom||1.04));
+  app.classList.add('bullet-time');
+  perfectSe();
+  if(C.se){ const src=asset(C.se); if(src){ try{ C.seMod ? SFX.playMod(src, sfxGain(C.se), C.seMod) : SFX.play(src, sfxGain(C.se)); }catch(_){} } }
+  if(C.duckBgm!==false){ try{ SFX.duckBgm(120); }catch(_){} }
   setTimeout(()=>{
-    if(pt) critfx.play(pt.x, pt.y);
-    floatDmg('PERFECT CRITICAL','50%','26%',true);
-  }, (pt && pt.delay) || 0);
+    anims.forEach((a,i)=>{ try{ a.playbackRate=rates[i]; }catch(_){} });
+    vids.forEach((v,i)=>{ try{ v.playbackRate=vr[i]; }catch(_){} });
+    enemy.setIdleRate(1);
+    app.classList.remove('bullet-time');
+    if(C.duckBgm!==false){ try{ SFX.unduckBgm(300); }catch(_){} }
+    cutinThaw(frz); clockResume();
+    state.cutinPlaying=false; btLive=false;
+    if(!state.over) done();
+  }, ms);
 }
 /* 清盤那一刻記帳；連到第 mbStreak 盤 → 追加傷害＋MB cut-in，回傳 true（`after` 交給 cut-in 播完才叫）。 */
 function perfectBoardCleared(brClear, wasAlive, after){
@@ -1135,10 +1174,10 @@ function gunHitOnEnemy(cell, pierce, slowMs){
        「從面板底下竄出來」（實作與說明在 `enemy.fireTracer`）。
      ⚠⚠ 起點再由 `tracerOrigin` 往外推一截（它本來就在畫面外、被裁掉，
        推它只會讓看得見的那一段更斜）。 */
-  enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, imp.x, imp.y, slowMs||0);   // PERFECT CRITICAL：慢動作子彈
+  enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, imp.x, imp.y, slowMs||0);   // PERFECT CRITICAL：子彈時間裡慢慢飛（外觀照舊）
   /* 普攻的硝煙（ver -1655，Ray：「普攻也加煙」）—— 份量壓小：它每一下都會響。 */
   enemy.muzzleSmoke(0.55);
-  return { x: top.left + imp.x, y: top.top + imp.y, delay: slowMs ? enemy.tracerFlightMs(slowMs) : 0 };   // 命中點＋抵達時刻   // 命中點（視窗座標）：critfx 用
+  return { x: top.left + imp.x, y: top.top + imp.y };   // 命中點（視窗座標）：critfx 用
 }
 /* ══ 槍火（ver -1052，Ray：「射擊時敵人身上槍火炸裂的感覺不夠…現在是個圓點而已，
    帶點不規則的芒跟火星如何？」）══════════════════════════════════════════════
