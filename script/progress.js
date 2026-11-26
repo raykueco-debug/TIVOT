@@ -707,6 +707,20 @@ export function jeroMods(){
    ＝（1 ＋ 改造增益）×（1 ＋ 杰羅加成）。weapon.subgunPowerMul 是它的別名。
    ⚠ ver -3022（Ray：「馬上變強」）：杰羅加成**獨立相乘**，槍店改裝 0 階的槍賭中當下就變強
      （-867 的「1 ＋ 改造增益 ×（1 ＋ 杰羅加成）」只放大改造增益，沒改裝過的槍等於沒效）。 */
+/* ══ 壓制力（ver -3041，config.tuning.suppress）—— **唯一的計算點**（鐵律 7）══
+   每一下把已累積的延時條縮掉的比例（0~1）。戰鬥（combat.tapEaseDelay／defense.staggerOnCounter）與規格表都問這兩支。
+   · 主槍（普攻）：`main` ＋ 九顆星的 `suppress`。怪卡的 `tapDelayClear` 是戰鬥那一邊乘上去的（那是怪的性質）。
+   · 副武器（反擊）：武器卡 `suppress`（沒寫＝`sub`）＋ 槍店改裝階數 × `perModLv`。 */
+export function mainSuppress(){
+  const S=(GAME_CONFIG.tuning||{}).suppress||{};
+  return Math.max(0, Math.min(1, (S.main!=null?S.main:0.3) + bonus('suppress')));
+}
+export function subSuppress(id){
+  const S=(GAME_CONFIG.tuning||{}).suppress||{};
+  const w=(GAME_CONFIG.weapons||{})[id]||{};
+  const base=(w.suppress!=null) ? w.suppress : (S.sub!=null?S.sub:0.3);
+  return Math.max(0, Math.min(1, base + weaponMod(id)*(S.perModLv||0)));
+}
 export function subgunPowerMul(id){
   const WM = (GAME_CONFIG.tuning||{}).weaponMod || {};
   const modLv = Math.min(weaponMod(id), WM.statLv || 99);

@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.26-3040';
+export const VERSION = 'ver 2026.11.26-3041';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -296,7 +296,8 @@ export const GAME_CONFIG = {
     { id:'sadalsuud',  star:'Sadalsuud',  name:i18nT('運之王'),
       desc:i18nT('增加爆擊機率'),                 critRate:0.10 },
     { id:'skat',       star:'Skat',       name:i18nT('疾行星'),
-      desc:i18nT('加速破防值累積'),               energyMul:0.10 },
+      desc:i18nT('加速破防值累積，提升普攻壓制力'), energyMul:0.10,
+      suppress:0.10 },   // ver -3041（Ray：「主槍走星」）：主槍壓制力 +10 個百分點（提案，待 Ray 定）
     { id:'sadaltager', star:'Sadaltager', name:i18nT('銀幣星'),
       desc:i18nT('增加戰鬥金錢掉落數額'),         moneyMul:0.20 },
     { id:'safina',     star:'Safina',     name:i18nT('方舟星'),
@@ -3695,8 +3696,13 @@ export const GAME_CONFIG = {
     dmgWrong:            10,    // 普通按錯受擊
     dmgHeavy:            18,    // 紅字期間按錯的重擊
     dmgDelay:            8,     // v17：延時（太慢）懲罰基礎傷害（一般怪；Boss 以 delayPenalty.dmgScale 縮放）
-    tapDelayClear:       0.8,   // 普攻減延時的預設（ver -2834，Ray：「1 是全清，0.8 是清當前延時條的 80%」）：每點對一格，延時已走掉的那一段退回幾成；敵人卡 tapDelayClear 蓋過它。只有 enemy.setEnemy 讀（寫進 state.enemyTapDelayClear）
-    counterStaggerClear: { block:0.25, perfect:1/3, counter:0.5 },   // ver -2702（Ray：「黃圈反擊只減 1/4 delay，橘圈 1/3，紅圈 1/2」）；舊值一律 0.5 ——   // 反擊硬直：被反擊時延時計時**已經走掉的那一段**清掉幾成（ver -2618，Ray：「反擊不應該全清延時 應該清1/2」；1＝舊的全清）。只有 defense.staggerOnCounter 讀
+    /* ══ 壓制力（ver -3041，Ray：「停止力改成壓制力」）══ 每一下把**目前已累積的延時條**縮掉幾成（退回已走掉那一段的幾成）。
+       · 普攻：`main`（30%）＋九顆星的 `suppress`，再**乘**怪卡的 `tapDelayClear`（較強的敵人自己的比例，沒寫＝×1）。
+       · 副武器反擊：武器卡 `suppress`（沒寫＝`sub`）＋槍店改裝每階 `perModLv`；**整串反擊只算一次**、打不中不減。
+       計算只在 progress 的 mainSuppress／subSuppress（鐵律 7）；用的地方：combat.tapEaseDelay、defense.staggerOnCounter、規格表。
+       ⚠ 取代 -2834 的 `tapDelayClear` 全域預設 0.8 與 -2702 的 `counterStaggerClear`（依圈色 1/4、1/3、1/2）。 */
+    suppress: { main:0.30, sub:0.30, perModLv:0.05 },
+    /* counterStaggerClear（-2702）已由 `suppress` 取代（ver -3041），沒有人讀。 */   // ver -2702（Ray：「黃圈反擊只減 1/4 delay，橘圈 1/3，紅圈 1/2」）；舊值一律 0.5 ——   // 反擊硬直：被反擊時延時計時**已經走掉的那一段**清掉幾成（ver -2618，Ray：「反擊不應該全清延時 應該清1/2」；1＝舊的全清）。只有 defense.staggerOnCounter 讀
 
     // 聖能與大絕蓄力
     energyPerHit:        2,     // 每次正確點擊給的聖能
@@ -5753,7 +5759,7 @@ export function weaponBand(w, grade){
     take: (grade==='counter') ? 0 : ((b.take!=null) ? b.take : 0),
   };
 }
-export function weaponStatRows(key, story, mul){
+export function weaponStatRows(key, story, mul, sup){
   const w=weaponOf(key, story); if(!w) return [];
   /* ⚠ `mul`＝改裝後的火力乘數（ver -1881，Ray：「副武器花錢改裝也沒有看到效果」）——
      由呼叫端問 `progress.subgunPowerMul(id)` 傳進來（config 構不到 progress）。
@@ -5774,6 +5780,9 @@ export function weaponStatRows(key, story, mul){
   const rows=[[i18nT('分類'), i18nT(w.cat)||'—'], [i18nT('黃圈'), line('block')], [i18nT('橘圈'), line('perfect')],
               [i18nT('反擊'), shots(sc(w.dmgPerHit))], [i18nT('暴擊率'), Math.round(crit*100)+'%']];
   if(M>1) rows.push([i18nT('改裝加成'), '+'+Math.round((M-1)*100)+'%']);
+  /* 壓制力（ver -3041）：`sup`＝呼叫端問 progress.subSuppress(id) 傳進來（含改裝階；config 構不到 progress）；沒傳就印卡上的基礎值。只有本篇印。 */
+  { const sp = (sup!=null) ? sup : (story ? (w.suppress!=null ? w.suppress : ((GAME_CONFIG.tuning||{}).suppress||{}).sub) : null);
+    if(sp!=null) rows.push([i18nT('壓制力'), Math.round(sp*100)+'%']); }
   /* 裝填時間（ver -1009，Ray：「每一把步槍都描述加上裝填時間 3 秒」）：
      ⚠ **算出來的不是手寫的**（鐵律 7）—— 數字只有卡上的 `counterCdSec` 一份，
        改秒數不必回頭改文案；沒有這一格的槍不長這一列。 */
@@ -5786,9 +5795,9 @@ export function weaponStatRows(key, story, mul){
   return rows;
 }
 /* 卡片上那一段（與 -376 之前手寫的 `desc` 同樣的排版，只是現在是算出來的）。 */
-export function weaponDescText(key, story, mul){
+export function weaponDescText(key, story, mul, sup){
   const w=weaponOf(key, story); if(!w) return '';
-  const rows=weaponStatRows(key, story, mul).slice(1);   // 第一列一定是「分類」（ver -1909：不拿中文字串比對，切語言才不會壞）
+  const rows=weaponStatRows(key, story, mul, sup).slice(1);   // 第一列一定是「分類」（ver -1909：不拿中文字串比對，切語言才不會壞）
   return i18nT('反擊效果\n') + rows.map(r=>r[0]+i18nT('：')+r[1]).join('\n') + (w.flavor ? '\n'+w.flavor : '');
 }
 

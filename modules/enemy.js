@@ -4369,8 +4369,8 @@ export function setEnemy(key, opts){
   state.enemyCounterStagger = (en.counterStagger!=null) ? en.counterStagger : 1;
   /* 普攻減延時（ver -2834，Ray：「1 是全清，0.8 是清當前延時條的 80%，預設都先用 0.8」）：
      卡上 tapDelayClear 優先，沒寫＝ tuning.tapDelayClear（預設只住在那裡，鐵律 7）。 */
-  { const td = (en.tapDelayClear!=null) ? en.tapDelayClear : (GAME_CONFIG.tuning||{}).tapDelayClear;
-    state.enemyTapDelayClear = (td!=null) ? +td : 1; }
+  /* ver -3041（壓制力）：只留**怪卡自己的**比例（Ray：「那些本來就是比較強的敵人」），乘在主槍壓制力上；沒寫＝1。全域預設已拿掉。 */
+  state.enemyTapDelayClear = (en.tapDelayClear!=null) ? +en.tapDelayClear : 1;
   /* ══ 主動攻擊三分（ver -801，Ray 定案）══
      · `assaultEvery:[min,max]`（秒）＝**頻率**（多久發一次；全卡必填）。
      · `assault:{ count, gap }`＝**一般主動攻擊**的形狀：一波幾顆、每顆間隔秒

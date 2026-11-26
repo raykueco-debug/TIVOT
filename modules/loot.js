@@ -175,7 +175,7 @@ export function showBag(opts){
       const ids=inv.ownedWeapons().filter(k=>WP[k] && WP[k].cat===o.cat);
       groups=[{ name:o.cat, rows:ids.map(id=>({ id, name:inv.nameOf(id), n:1,
                  /* 規格用**本篇**那一組（這一頁只在城鎮／劇情裡開得到，§6.5.3）。 */
-                 desc:weaponDescText(id, true, prog.subgunPowerMul(id)) })) }];
+                 desc:weaponDescText(id, true, prog.subgunPowerMul(id), prog.subSuppress(id)) })) }];
     }else groups=null;   // 一般（非裝備）視圖 → 共用 bagListHtml（見上）
     const body=(groups||[]).map(g=>{
       /* ⚠ 道具欄**只顯示，不交易**（ver -368，Ray：「只有在商店能買賣」）。
@@ -395,14 +395,16 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
     if(!list.length)
       return '<div class="mod-head">'+(cat||i18nT('副武器'))+'</div>'
            + i18nT('<div class="bag-empty">還沒有這一類的武器。</div>');
+    /* 每階加幾個百分點的壓制力（ver -3041，config.tuning.suppress.perModLv；顯示用，計算在 progress.subSuppress）。 */
+    const SUP=()=>Math.round((((GAME_CONFIG.tuning||{}).suppress||{}).perModLv||0)*100);
     const sub=list.map(id=>{
       const w=GAME_CONFIG.weapons[id]||{};
       const lv=prog.weaponMod(id), max=prog.weaponModMax(id), nx=wNext(id), cost=wCost(id);
       const statLv=WM().statLv||max;
       /* ⚠ 第 5 階不加數值 —— 那一列要講清楚，不然玩家付了三倍價會覺得被騙。 */
       const nxt = !nx ? i18nT('<span class="mod-mat">已滿階</span>')
-        : '<span class="mod-mat">→ '+nx+i18nT(' 階')+(nx>statLv?i18nT('（特殊能力）'):i18nT('（攻擊 +')
-          + Math.round((WM().perLv||0)*100)+i18nT('%）'))+'</span>'
+        : '<span class="mod-mat">→ '+nx+i18nT(' 階')+(nx>statLv?i18nT('（特殊能力、壓制力 +')+SUP()+i18nT('%）'):i18nT('（攻擊 +')
+          + Math.round((WM().perLv||0)*100)+i18nT('%、壓制力 +')+SUP()+i18nT('%）'))+'</span>'
           + '<span class="mod-mat'+(inv.getMoney()>=cost?'':' lack')+'">'+cost+' '+inv.moneyName()+'</span>';
       return '<div class="shop-row mod-row'+(!nx?' done':'')+(pick==='wmod:'+id?' pick':'')+'"'
            +   ' data-id="wmod:'+id+'">'
@@ -411,7 +413,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
            + '<span class="mod-need">'+nxt+'</span></div>';
     }).join('');
     return '<div class="mod-head">'+(cat||i18nT('副武器'))+i18nT('　改裝（每階 攻擊 +')
-         + Math.round((WM().perLv||0)*100)+i18nT('%，第 ')+((WM().statLv||4)+1)+i18nT(' 階為特殊能力）</div>')
+         + Math.round((WM().perLv||0)*100)+i18nT('%、壓制力 +')+SUP()+i18nT('%，第 ')+((WM().statLv||4)+1)+i18nT(' 階為特殊能力）</div>')
          + sub;
   }
   const cfg=((SHOP.shops||{})[stockKey])||{};
@@ -468,7 +470,7 @@ export function showShop(stockKey, keeper, onTalk, onChallenge, opts){
   /* ⚠ 商店只存在於城鎮（本篇），所以規格一律顯示**本篇那一組**數值（ver -378）。
      試玩版的出陣整備頁顯示的是另一組 —— 那是刻意的，兩邊本來就是兩套。 */
   const statTable=(id, cls)=>{
-    const rows=weaponStatRows(id, true, prog.subgunPowerMul(id));
+    const rows=weaponStatRows(id, true, prog.subgunPowerMul(id), prog.subSuppress(id));
     if(!rows.length) return '';
     return '<div class="wp-stats '+(cls||'')+'">'
          + rows.map(r=>'<span class="wp-k">'+r[0]+'</span><span class="wp-v">'+r[1]+'</span>').join('')

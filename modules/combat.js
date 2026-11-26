@@ -2582,10 +2582,11 @@ function easeIntervalDeadline(frac){
 /* 普攻減延時（ver -2834，Ray：「1 是全清，0.8 是清當前延時條的 80%」）：點對一格時延時退回
    `state.enemyTapDelayClear` 成（逐隻，由 enemy.setEnemy 寫）。以前這裡是 resetIntervalDeadline 全清。
    計時沒在跑（deadline 0）時照舊整條重開 —— 第一下點擊要把計時立起來。 */
+/* ver -3041（壓制力）：退回的比例＝主槍壓制力（progress.mainSuppress，30%＋星）×怪卡的 tapDelayClear（沒寫＝1）。 */
 function tapEaseDelay(){
-  const f = state.enemyTapDelayClear;
-  if(!state.intervalDeadline || !(f<1)) resetIntervalDeadline();
-  else easeIntervalDeadline(f);
+  if(!state.intervalDeadline){ resetIntervalDeadline(); return; }   // 計時沒在跑：第一下把計時立起來
+  const ef = (state.enemyTapDelayClear!=null) ? state.enemyTapDelayClear : 1;
+  easeIntervalDeadline(prog.mainSuppress() * ef);
 }
 function stopIntervalTimer(){ clearInterval(state.intervalTimer); stopDelayRing(); }
 

@@ -23,6 +23,7 @@ import { SFX } from '../audio.js';
 import { seSrc } from './story.js';   // 空槍音的路徑（ver -1807）
 import { L, fmt } from '../i18n.js';   // 多語言（防禦浮動字）
 import * as settings from './settings.js';  // 敵攻警告開關（fxOn('alert')，ver -748）
+import * as prog from '../script/progress.js';   // 副武器壓制力（ver -3041，progress.subSuppress；葉模組）
 
 const $ = id => document.getElementById(id);
 const T = GAME_CONFIG.tuning;
@@ -431,9 +432,10 @@ function staggerOnCounter(grade){
   if(state.enemyCounterStagger===0) return;
   /* ver -2618（Ray：「反擊不應該全清延時 應該清1/2」）：不再歸零，只把已經走掉的那一段退回一部分。
      ver -2702（Ray：「黃圈反擊只減 1/4 delay，橘圈 1/3，紅圈 1/2」）：依帶分；表在 tuning.counterStaggerClear。 */
-  const t = (GAME_CONFIG.tuning||{}).counterStaggerClear;
-  const k = (t && typeof t==='object') ? t[grade||'counter'] : t;
-  if(api.easeIntervalDeadline) api.easeIntervalDeadline(k==null ? 1 : k);
+  /* ver -3041（壓制力）：退回的比例＝副武器壓制力（progress.subSuppress：卡上 suppress＋改裝階），整串反擊算一次（這一支每次反擊只叫一次）。
+     取代 -2702 依圈色的表（counterStaggerClear）。 */
+  const k = prog.subSuppress(state.equippedWeapon);
+  if(api.easeIntervalDeadline) api.easeIntervalDeadline(k);
   else if(api.resetIntervalDeadline) api.resetIntervalDeadline();
 }
 // 點掉單一攻擊點 → 依剩餘時間判定 Counter / Perfect / Defense

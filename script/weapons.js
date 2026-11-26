@@ -15,12 +15,14 @@
  *    實作只有 `modules/weapon.js` 的 `counterReady`／`weaponCounter` 那一組（鐵律 7）。
  *  ⚠⚠ **`perk` ＝改造滿級（第 5 階）的特殊效果**，一把槍一格；`null`＝還沒定（Ray 的卡還沒到，不要自己發明）。
  *    形狀預定 `{ name:'', desc:'', <效果欄位> }`。取代 -714 的 `tuning.weaponPerks`（那是同一件事的第二份表，已拿掉）。
+ *  ⚠⚠ **`suppress` ＝單發壓制力**（ver -3041，Ray：「副武器卡加上單發壓制力欄位」）：反擊命中時把已累積的延時條縮掉幾成，
+ *    整串反擊只算一次、打不中不減；槍店改裝每階再 +`tuning.suppress.perModLv`。計算在 progress.subSuppress（鐵律 7）。
  *  ⚠ 純資料檔，不 import 任何東西（不會與 config 成環）。
  * ========================================================================== */
 export const WEAPONS = {
     // B1901 陣地機槍「絞肉機」：基準武器（反擊總傷 48），Perfect 帶正常、Defense 吃半傷（0.5）
     MG_Squall:     { name:'B1901陣地機槍「絞肉機」', shortName:'絞肉機', cat:'重機槍',
-                     owned:true, critRate:0.20, maxMod:5, value:4000,
+                     owned:true, critRate:0.20, maxMod:5, suppress:0.30, value:4000,
                      counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     image:'weapon_mg_squall',     sound:'se_mg_squall',
                      bands:{ block:{ counter:true, hit:0.30 }, perfect:{ counter:true, hit:0.70 } },
                      flavor:'攻守均衡的可靠選擇',
@@ -30,7 +32,7 @@ export const WEAPONS = {
     // 雙管霰彈槍「鐵拳」（ver -706 改）：**三帶都反擊、都免傷**，傷害遞增 ——
     //   黃圈每發打 1、橘圈半額、紅圈全額。它是保命槍：完全不會挨打，代價是傷害低。
     Shotgun_Blast: { name:'雙管霰彈槍「鐵拳」', shortName:'鐵拳', cat:'霰彈槍',
-                     owned:true, critRate:0.20, maxMod:5, value:3000,
+                     owned:true, critRate:0.20, maxMod:5, suppress:0.30, value:3000,
                      counterWin:0.20, hits:6, dmgPerHit:4,  vfx:'burst',  image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
                      bands:{ block:{ counter:true, dmgRoll:[0,1] }, perfect:{ counter:true, dmgScale:0.5 } },
                      flavor:'保命的穩健之選',
@@ -42,7 +44,7 @@ export const WEAPONS = {
     //   ver -706：黃圈挨 1/2、橘圈挨 1/4、紅圈才反擊 —— 三把裡唯一「點了還是會挨打」的，
     //   但**越接近完美挨得越少**（賭上一切，回報全在反擊窗）。
     Sniper_Falcon: { name:'85式萊福槍「嗜心者」', shortName:'嗜心者', cat:'萊福槍',
-                     owned:true, critRate:0.20, maxMod:5, value:5000,
+                     owned:true, critRate:0.20, maxMod:5, suppress:0.30, value:5000,
                      counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
                      /* ══⚠⚠ **重擊**（`counterWipe`，ver -1659，Ray：「步槍跟高爆彈在紅圈
                         命中時敵人都要劇烈一震，像遭到重擊，且命中可以清掉所有攻擊圈」）══
@@ -96,7 +98,7 @@ export const WEAPONS = {
        ⚠ 這三把**沒有自己的立繪與音效**：先借同類那一把的（`image`/`sound`）。
          素材到位就只改這兩欄。 */
     Shotgun_Dragon:{ name:'短板霰彈槍「龍息」', shortName:'龍息', cat:'霰彈槍',
-                     critRate:0.20, maxMod:5, price:3000,
+                     critRate:0.20, maxMod:5, suppress:0.30, price:3000,
                      counterWin:0.20, hits:6, dmgPerHit:6,  vfx:'burst',  image:'weapon_shotgun_blast', sound:'se_shotgun_blast',
                      bands:{ block:{ counter:true, dmgRoll:[0,1] }, perfect:{ counter:true, dmgScale:0.5 } },
                      flavor:'短管、近身、火力壓制',
@@ -105,14 +107,14 @@ export const WEAPONS = {
     /* ⚠ 「絞肉機 改」的爆擊率是 **10%**（比原版 20% 低）—— 卡上就是這麼寫的。
        數值面它與原版只差這一項，其餘完全相同。要調就跟 Ray 確認，不要自己改順。 */
     MG_Squall_Kai: { name:'B1901陣地機槍「絞肉機 改」', shortName:'絞肉機改', cat:'重機槍',
-                     critRate:0.10, maxMod:5, price:4000,
+                     critRate:0.10, maxMod:5, suppress:0.30, price:4000,
                      counterWin:0.12, hits:8, dmgPerHit:6,  vfx:null,     image:'weapon_mg_squall',     sound:'se_mg_squall',
                      bands:{ block:{ counter:true, hit:0.30 }, perfect:{ counter:true, hit:0.70 } },
                      flavor:'原廠改良型',
                      story:{ mag:4, reloadSec:2 },
                      perk:null },
     Rifle_Shahin:  { name:'Shahin栓動萊福槍「遊隼」', shortName:'遊隼', cat:'萊福槍',
-                     critRate:0.20, maxMod:5, price:5000,
+                     critRate:0.20, maxMod:5, suppress:0.30, price:5000,
                      counterWin:0.06, hits:1, dmgPerHit:72, vfx:'single', image:'weapon_sniper_falcon', sound:'se_sniper_falcon',
                      counterWipe:true,   // 重擊：同「嗜心者」（ver -1659，說明見那一張卡）
                      // ver -975：同「嗜心者」（黃橘圈也反擊、攻擊力 −50%），見那張卡的說明。
