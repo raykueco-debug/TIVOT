@@ -3740,7 +3740,7 @@ export const TOWNS = {
             /* bgm_flight（ver -745，Ray 指定）：送行就換上航行曲——啟程的語氣。 */
             Object.assign(nou('bigsmile','那麼，大家保重了！'), { bgm:'flight' }),
             crd(null,'諾薇兒小姐！'),
-            crd(null,'啊！我們的天使啊！'),
+            crd(null,'這麼快就要回去了嗎？'),
             ren('surprise','好驚人的人氣……'),
             nou('awkward','我是十二騎士團的嘛，對人輸出術式本來就是看家本領。'),
             any('silent','……'),
@@ -3820,6 +3820,10 @@ export const TOWNS = {
            ⚠ 兩位**顯示名一樣但不是同一個人**（§6.5.6 那一條的反面）：art 不同，
              所以不能共用 id，也不能靠預設值帶過去。 */
         keeperWho:'COUNTER_NP',
+        /* 聖遺物販售（ver -3042，Ray：「每個城市的公會都要有聖遺物可以抽」）：入口旗沿用全域 `relic_shop_open`（帝都那一段插、沒有人拔），
+           規則與獎池同 config.relicBox；開完這座城的櫃台講一句（第一次的使用說明只在帝都演）。 */
+        relicShop:'relic_shop_open',
+        relicLines:{ normal:[ { speaker:'COUNTER_NP', text:'還行呢，至少派得上用場。', portrait:{ char:'COUNTER_NP', show:true } } ] },
         /* ver -858（Ray 交稿）：櫃台小姐上任（COUNTER_NP）——安葬後的自由探索
            就見得到（原本 need np_day3_done 的沉默一句取代掉）。懸賞單照舊走
            `board`（阿拉德那一筆在 config.bounties，賞金 -858 改 2000）。 */
@@ -8219,6 +8223,9 @@ export const TOWNS = {
       guild:      { bg:'east_guild',      name:'東方泊地　賞金獵人公會',
         exits:{ back:'oldtown' },
         board:'eastport', keeperWho:'COUNTER_EP',
+        /* 聖遺物販售（ver -3042，同北泊公會那一段的說明）。 */
+        relicShop:'relic_shop_open',
+        relicLines:{ normal:[ { speaker:'COUNTER_EP', text:'還行呢，至少派得上用場。', portrait:{ char:'COUNTER_EP', show:true } } ] },
         hours:[8,17], closed:'大門上了閂。委託要等明天早上八點。',
         /* ══⚠⚠⚠ 約會・索菈娜（ver -1346，Ray 交稿）══════════════════════════
            ⚠⚠ ver -1375：Ray 交了東泊自己的兩張圖（對話立繪 `NPC_ep_SI_bounty`、

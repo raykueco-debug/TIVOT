@@ -3671,7 +3671,8 @@ function relicReveal(n, id){
   const finish=()=>{ story.clearCast(); busy=false; showNav(true); backToShop(n); };
   const talk=()=>{
     const pick=a=>a && a.length ? a[Math.floor(Math.random()*a.length)] : null;
-    const one=pick((R.rare||[]).indexOf(id)>=0 ? L.rare : L.normal);
+    const isRare=(R.rare||[]).indexOf(id)>=0;
+    const one=pick((isRare && L.rare && L.rare.length) ? L.rare : L.normal);   // 這座城沒寫稀有那一組就講普通那一句（ver -3042：北泊／東泊只寫了 normal）
     const howto=(!prog.hasFlag('relic_howto') && L.howto && L.howto.length && !linesBlockedByRest(L.howto)) ? L.howto : [];
     const lines=[].concat(one ? [one] : [], howto);
     if(!lines.length){ finish(); return; }
