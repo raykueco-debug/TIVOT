@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.26-3057';
+export const VERSION = 'ver 2026.11.26-3058';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -619,7 +619,7 @@ export const GAME_CONFIG = {
          ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
       faceSpent:'desperate',
       levelUpVoice:'vo_anya_lvup',
-      cheerVoice:['vo_anya_cheer1','vo_anya_cheer2','vo_anya_cheer3','vo_anya_cheer4','vo_anya_cheer5','vo_anya_cheer6'],   // 讚聲（ver -3055）
+      cheerVoice:['vo_anya_cheer2','vo_anya_cheer3','vo_anya_cheer4','vo_anya_cheer5','vo_anya_cheer6'],   // 讚聲（ver -3055）；第 1 句驚呼 -3058 拿掉（Ray：「像在喘氣」）
       install:{ name:i18nT('夢魘化'), en:'NIGHTMARE INSTALL',
         /* ⚠ ver -967：「體力灌滿後」→「由**當下的體力**」（不再灌滿）。
            ⚠ ver -974：**滿血 13 秒**（長度由血量決定，不再是一律 15 秒）、
@@ -4053,7 +4053,7 @@ export const GAME_CONFIG = {
                 'vo_sorana_miss1','vo_sorana_miss2','vo_sorana_miss3','vo_sorana_miss4',
                 'vo_cecilie_miss1','vo_cecilie_miss2','vo_cecilie_miss3','vo_cecilie_miss4','vo_cecilie_miss5',   // ver -2961：賽西莉失誤語音
                 'vo_nouvelle_lvup','vo_anya_lvup','vo_sorana_lvup',
-                'vo_cecilie_cheer1','vo_cecilie_cheer2','vo_cecilie_cheer3','vo_cecilie_cheer4','vo_cecilie_cheer5','vo_cecilie_cheer6','vo_nouvelle_cheer1','vo_nouvelle_cheer2','vo_nouvelle_cheer3','vo_nouvelle_cheer4','vo_nouvelle_cheer5','vo_nouvelle_cheer6','vo_sorana_cheer1','vo_sorana_cheer2','vo_sorana_cheer3','vo_sorana_cheer4','vo_sorana_cheer5','vo_sorana_cheer6','vo_anya_cheer1','vo_anya_cheer2','vo_anya_cheer3','vo_anya_cheer4','vo_anya_cheer5','vo_anya_cheer6'],   // 讚聲（ver -3055）
+                'vo_cecilie_cheer1','vo_cecilie_cheer2','vo_cecilie_cheer3','vo_cecilie_cheer4','vo_cecilie_cheer5','vo_cecilie_cheer6','vo_nouvelle_cheer1','vo_nouvelle_cheer2','vo_nouvelle_cheer3','vo_nouvelle_cheer4','vo_nouvelle_cheer5','vo_nouvelle_cheer6','vo_sorana_cheer1','vo_sorana_cheer2','vo_sorana_cheer3','vo_sorana_cheer4','vo_sorana_cheer5','vo_sorana_cheer6','vo_anya_cheer2','vo_anya_cheer3','vo_anya_cheer4','vo_anya_cheer5','vo_anya_cheer6'],   // 讚聲（ver -3055）
 
     /* ══ 逐支增益：鑰匙是**檔名**（去副檔名、轉小寫）══════════════════
        ⚠⚠ 鑰匙用檔名不用 ASSETS 鍵（ver -441）：**一支音檔只有一個響度**，
@@ -4160,7 +4160,7 @@ export const GAME_CONFIG = {
       vo_cecilie_cheer1:6.023, vo_cecilie_cheer2:5.306, vo_cecilie_cheer3:3.800, vo_cecilie_cheer4:21.868, vo_cecilie_cheer5:5.988, vo_cecilie_cheer6:26.903,
       vo_nouvelle_cheer1:3.671, vo_nouvelle_cheer2:11.676, vo_nouvelle_cheer3:6.307, vo_nouvelle_cheer4:3.650, vo_nouvelle_cheer5:7.582, vo_nouvelle_cheer6:2.660,
       vo_sorana_cheer1:2.675, vo_sorana_cheer2:3.844, vo_sorana_cheer3:2.629, vo_sorana_cheer4:2.264, vo_sorana_cheer5:4.002, vo_sorana_cheer6:2.113,
-      vo_anya_cheer1:28.009, vo_anya_cheer2:12.440 /*CAP*/, vo_anya_cheer3:13.640, vo_anya_cheer4:12.156 /*CAP*/, vo_anya_cheer5:9.436, vo_anya_cheer6:11.215,
+      vo_anya_cheer2:12.440 /*CAP*/, vo_anya_cheer3:13.640, vo_anya_cheer4:12.156 /*CAP*/, vo_anya_cheer5:9.436, vo_anya_cheer6:11.215,
        vo_anya_lvup:2.67,  vo_sorana_lvup:0.70,
       vo_luna_dualwield:1.483, vo_luna_execution:1.013, vo_luna_obe:1.163,
       vo_luna_saintinstall:1.345, vo_malzeno_hcrounds:2.647,
@@ -5479,7 +5479,6 @@ export const ASSETS = {
   vo_sorana_cheer4: "resources/audio/vo/vo_sorana_cheer4.m4a",
   vo_sorana_cheer5: "resources/audio/vo/vo_sorana_cheer5.m4a",
   vo_sorana_cheer6: "resources/audio/vo/vo_sorana_cheer6.m4a",
-  vo_anya_cheer1: "resources/audio/vo/vo_anya_cheer1.m4a?v=3a4ca324",
   vo_anya_cheer2: "resources/audio/vo/vo_anya_cheer2.m4a?v=406337c6",
   vo_anya_cheer3: "resources/audio/vo/vo_anya_cheer3.m4a?v=6584712b",
   vo_anya_cheer4: "resources/audio/vo/vo_anya_cheer4.m4a?v=2c1621b9",
@@ -8575,7 +8574,6 @@ export const ASSET_VER = {
   'vela_uptown_day': 'd93db6dd',
   'vela_uptown_dusk': '5d9e2caf',
   'vela_uptown_night': 'fdd3243f',
-  'vo_anya_cheer1': '3a4ca324',
   'vo_anya_cheer2': '406337c6',
   'vo_anya_cheer3': '6584712b',
   'vo_anya_cheer4': '2c1621b9',

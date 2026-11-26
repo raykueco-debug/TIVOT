@@ -1,5 +1,5 @@
-{"version": "ver 2026.11.26-3057",
-"bytes": 1606544105,
+{"version": "ver 2026.11.26-3058",
+"bytes": 1606528358,
 "files": [
 "audio.js",
 "config.js",
@@ -686,7 +686,6 @@
 "resources/audio/se/sturm.m4a",
 "resources/audio/se/vo_saint_maxburst.m4a",
 "resources/audio/vo/tmp7e588viu.wav",
-"resources/audio/vo/vo_anya_cheer1.m4a",
 "resources/audio/vo/vo_anya_cheer2.m4a",
 "resources/audio/vo/vo_anya_cheer3.m4a",
 "resources/audio/vo/vo_anya_cheer4.m4a",
