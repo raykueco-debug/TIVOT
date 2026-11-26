@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.26-3048';
+export const VERSION = 'ver 2026.11.26-3049';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3717,8 +3717,8 @@ export const GAME_CONFIG = {
     perfectCrit: { chance:{ 9:0.30, 16:0.50 }, mul:3, se:'se_sniper_falcon',
                    mbStreak:5, mbPct:0.20, cheerVoice:null,
                    /* 子彈時間（ver -3048，Ray：「開槍那一瞬間有子彈時間那種時間變慢的效果」）：rate＝畫面動畫倍率、ms＝持續（子彈飛滿這段）、
-                      zoom＝拉近、se（＋可選 seMod 變調）＝子彈時間音（Ray 11-26：「用 holybeam」—— 專案裡沒有這個檔名，暫用 se_enemy_holyburst，待確認）、duckBgm＝期間壓低 BGM。 */
-                   bulletTime: { rate:0.18, ms:700, zoom:1.04, se:'se_enemy_holyburst', duckBgm:true } },
+                      ms 700→490（ver -3049，Ray：「子彈時間減30%」）、zoom＝拉近、se（＋可選 seMod 變調）＝子彈時間音（Ray 11-26：「用 holybeam」—— 專案裡沒有這個檔名，暫用 se_enemy_holyburst，待確認）、duckBgm＝期間壓低 BGM。 */
+                   bulletTime: { rate:0.18, ms:490, zoom:1.04, se:'se_enemy_holyburst', duckBgm:true } },
     /* counterStaggerClear（-2702）已由 `suppress` 取代（ver -3041），沒有人讀。 */   // ver -2702（Ray：「黃圈反擊只減 1/4 delay，橘圈 1/3，紅圈 1/2」）；舊值一律 0.5 ——   // 反擊硬直：被反擊時延時計時**已經走掉的那一段**清掉幾成（ver -2618，Ray：「反擊不應該全清延時 應該清1/2」；1＝舊的全清）。只有 defense.staggerOnCounter 讀
 
     // 聖能與大絕蓄力
