@@ -66,7 +66,7 @@ export const STRINGS = {
     hitByAssault:     '被擊中',            // 挨大絕浮字
     overkill:     'OVERKILL！',        // [EN-STYLE]
     overkillAdd:  'OVERKILL +{n}',    // [EN-STYLE]
-    counter:      'COUNTER！',         // [EN-STYLE] 反擊成功
+    counter:      'PERFECT COUNTER',   // [EN-STYLE] 紅圈完美反擊（ver -3046，Ray：紅圈改跳 PERFECT COUNTER）
     perfect:      'PERFECT',          // [EN-STYLE] 完美防禦
     block:        'BLOCK',            // [EN-STYLE] 格擋
     blockDmg:     'BLOCK −{n}',       // [EN-STYLE] 格擋損傷

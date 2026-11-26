@@ -60,7 +60,7 @@ export const STRINGS = {
     hitByAssault: 'Impacto',
     overkill:     'OVERKILL!',
     overkillAdd:  'OVERKILL +{n}',
-    counter:      'COUNTER!',
+    counter:      'PERFECT COUNTER',
     perfect:      'PERFECT',
     block:        'BLOCK',
     blockDmg:     'BLOCK −{n}',

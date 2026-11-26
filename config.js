@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.26-3045';
+export const VERSION = 'ver 2026.11.26-3046';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3709,12 +3709,12 @@ export const GAME_CONFIG = {
               ms:[50,70,90,120], sizeVw:0.6 },
     /* ══ 完美清盤的收尾一擊（ver -3045，Ray 11-26：「先進遊戲試看看清盤爆擊的效果」—— 數字全是暫定值）══
        E＝PERFECT CRITICAL：這一盤完美（`boardClean`）、點下最後一格那一發 → 擲 `chance[格數]`（＋掛飾 `critPerfect`）
-         中了＝那一發傷害 ×`mul`（取代一般爆擊倍率）、子彈慢動作 `slowMs`、槍聲 `se`、命中點播 critfx。
+         中了＝那一發傷害 ×`mul`（ver -3046 Ray 定 ×3）（取代一般爆擊倍率）、子彈慢動作 `slowMs`、槍聲 `se`、命中點播 critfx。
        D＝五連完美清盤：連續 `mbStreak` 盤完美 → 第 `mbStreak` 盤**固定**走 MB cut-in（不擲 E），
          追加「這幾盤造成的總傷害 ×`mbPct`」；觸發後從 0 重數。中間一盤不完美歸零、換怪不歸零、換局歸零。
        `cheerVoice`＝搭檔 CHEER 語音（還沒有，留接口：填 ASSETS 鍵就會在 E／D 發動時播）。
        實作只有 combat 的 perfectShotKind／perfectBoardCleared 兩支（鐵律 7／8）。 */
-    perfectCrit: { chance:{ 9:0.30, 16:0.50 }, mul:2, slowMs:200, se:'se_sniper_falcon',
+    perfectCrit: { chance:{ 9:0.30, 16:0.50 }, mul:3, slowMs:200, se:'se_sniper_falcon',
                    mbStreak:5, mbPct:0.20, cheerVoice:null },
     /* counterStaggerClear（-2702）已由 `suppress` 取代（ver -3041），沒有人讀。 */   // ver -2702（Ray：「黃圈反擊只減 1/4 delay，橘圈 1/3，紅圈 1/2」）；舊值一律 0.5 ——   // 反擊硬直：被反擊時延時計時**已經走掉的那一段**清掉幾成（ver -2618，Ray：「反擊不應該全清延時 應該清1/2」；1＝舊的全清）。只有 defense.staggerOnCounter 讀
 

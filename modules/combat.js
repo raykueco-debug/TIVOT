@@ -124,8 +124,6 @@ export function setup(){
                                              ⚠ ver -974 起判定不再被技能覆蓋（「判定還是分色」），
                                                所以兩個等級恆等 —— 介面留著，語意沒變。 */
                                           partner.onThreatResolved(real || g); },
-                 /* 攻擊圈沒點、直接落下（ver -3045，Ray：「挨打也讓連續紅圈歸零」）：算一次「非紅圈」。 */
-                 onAssaultLanded: ()=>partner.onThreatResolved('hit'),
                  hintCurrentCell,   // 紅點解決了就指一下正確格（ver -718，見 tuning.hintNextCell）
                  /* ⚠ `lucidPerfect` 已於 ver -974 移除：明晰之夢不再把整帶升成紅圈，
                     改由 `counterAtkStep`／`counterHitForced` 兩支分開回答（見上）。 */

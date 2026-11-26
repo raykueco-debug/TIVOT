@@ -299,7 +299,6 @@ function landAssault(th){
        門檻波打中照樣算一次 assault。分開的是**受擊特效**，走 `state.lastAssaultUlt`
        —— 一個量一個計算點（鐵律 7），combat 的 fxKind 只讀不算。 */
   state.lastAssaultUlt = !!th.ult;
-  if(api.onAssaultLanded) api.onAssaultLanded();   // 沒點圈就挨打＝連續紅圈中斷（ver -3045，夢中夢的連段）
   api.enemyAttack(ringDamage(th), 'assault');   // 大絕那一波用 ult.atk（見 ringDamage）
   if(!((GAME_CONFIG.enemies||{})[state.currentEnemyKey]||{}).hitPlain) api.floatDmg(L.battle.hitByAssault,'45%','25%',true);   // hitPlain：只震畫面，不浮字（ver -2446）
 }
