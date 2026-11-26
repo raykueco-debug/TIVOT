@@ -710,7 +710,7 @@ export function onCounter(){
   const pas = p && p.passive;
   if(!(pas && pas.key==='firstCounter')) return;
   state.lucidStreak = (state.lucidStreak||0) + 1;
-  const need = pas.reloadStreak || 3;
+  const need = pas.fireStreak || pas.reloadStreak || 3;
   /* ⚠⚠ **槽是空的才叫 reload**（ver -896，Ray：「如果該場還沒使用過聖夢鬥，就不會出
      reload，要空槍才有 reload」）—— 惡夢化還沒發動過的話那一槍本來就在膛裡，
      跳「夢魘再臨」等於報一件沒發生的事。
@@ -721,15 +721,15 @@ export function onCounter(){
      ⚠ 只擋 **reload**，不擋連段計數與明晰之夢本體 —— 那兩件事本來就與這顆星無關。 */
   const starOk = !pas.reloadNeedStar || prog.girlHas(state.pickedPartner, pas.reloadNeedStar);
   const canReload = !!state.saintUsedThisBattle && starOk;
-  const reload = (state.lucidStreak >= need) && canReload;
-  if(state.lucidStreak >= need){
+  const streakHit = state.lucidStreak >= need;
+  const reload = streakHit && canReload;
+  if(streakHit){
     state.lucidStreak = 0;
     if(canReload && api.deferInstallReload) api.deferInstallReload();   // 惡夢化再一次 —— ver -1775 起**下一場**才生效（Ray）
   }
-  /* 無限制發動（ver -886）：不再問「這隻怪用過了沒」。
-     ⚠ 只擋「這一段還在跑」——理由見 onThreatResolved 上面那一段；
-       但**第三次那一發不擋**（見上）。 */
-  if(state.lowHpBuff && !reload) return;
+  /* ver -3039（Ray：「夢中夢改成連續三次紅圈反擊成功才發動」）：連續到 `fireStreak` 那一發才發動（-886 是每次完美反擊都發動）。
+     ⚠ 計數在上面已經 +1、到 need 時歸零 —— 這裡用「歸零前的值」判：streakHit。 */
+  if(!streakHit) return;
   fireBuff(pas, reload);
 }
 /* ══⚠⚠ 明晰之夢**發動中**？（ver -740，Ray：「明晰夢增加發動期間反擊不論哪一圈

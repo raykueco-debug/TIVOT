@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.26-3038';
+export const VERSION = 'ver 2026.11.26-3039';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -666,6 +666,10 @@ export const GAME_CONFIG = {
         /* ⚠⚠ **ver -994：基礎回到 5 秒**（Ray 定稿）—— -974 是 10 秒。
            現在的階梯是 **5 →（赤足星）10 →（蹄鐵星）15**，兩顆星各 +5。 */
         buffSeconds:5,
+        /* ══ 發動條件（ver -3039，Ray：「夢中夢改成連續三次紅圈反擊成功才發動」）══
+           連續 N 次紅圈（完美反擊）才發動；中間點到非紅圈就歸零。計數＝`state.lucidStreak`（跨場、限局內，§0.5），
+           與下面 `reloadStreak` 共用同一個計數（到 N 那一發同時發動＋回填惡夢化）。實作只有 partner.onCounter。 */
+        fireStreak:3,
         /* ⚠⚠ **發動期間普攻 +25% 基本攻擊**（ver -1700，Ray：「lucid dream 加入效果普攻
            +25% 基本攻擊，這 25% 不疊 combo」）—— 只加在 `DMG_BASE` 那一項上，
            連擊那一段（`combo × DMG_PER_COMBO`）不跟著放大。
@@ -696,7 +700,7 @@ export const GAME_CONFIG = {
         voice:'vo_anya_lucid',   // ver -837：Ray 交新單支，取代 -759 的 ×4 輪播（沒編號＝不輪播）
         /* ver -740（Ray）：發動期間追加「反擊不論哪一圈都算完美反擊（傷害與評價）」
            與「指引每一個應點格」—— 實作見 defense.resolveThreat 與 combat.markNext。 */
-        desc:i18nT('發動方式：觸發完美反擊即進入清醒夢。<br>')
+        desc:i18nT('發動方式：連續三次完美反擊即進入清醒夢。<br>')
             +i18nT('5 秒內普攻傷害加倍、反擊命中率為 100%。'),
       },
       /* ══⚠⚠⚠ **夢境破碎：純顯示的一格**（ver -994，Ray 的定稿給了它自己一段）══
