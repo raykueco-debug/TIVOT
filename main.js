@@ -338,6 +338,8 @@ function battleAudioSet(battleId){
   /* 戰鬥共用的那幾支（UI／升級／回復／碎裂）＋ 這一場的曲子。 */
   names.push('se_general_click','se_lvup','se_healing','se_bulletpiece','se_glasscrack','sfx_saint',
              'se_ginclick');   // 空槍點圈（ver -1807）
+  /* PERFECT CRITICAL／五連 MB 的音（ver -3055）：在 tuning 裡，掃描掃不到 —— 照設定收（槍聲、擊中、子彈時間）。 */
+  { const P=(C.tuning||{}).perfectCrit||{}; names.push(P.se, P.hitSe, (P.bulletTime||{}).se); }
   names.push(B.bgm || 'bgm_battle'); if(B.bgmAfter) names.push(B.bgmAfter);
   names.push('bgm_result','bgm_missionfailed');   // 結算／失敗：打完馬上要用
   const out=[], seen={};

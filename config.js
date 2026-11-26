@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.26-3054';
+export const VERSION = 'ver 2026.11.26-3055';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -434,6 +434,7 @@ export const GAME_CONFIG = {
          ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
       faceSpent:'desperate',
       levelUpVoice:'vo_nouvelle_lvup',
+      cheerVoice:['vo_nouvelle_cheer1','vo_nouvelle_cheer2','vo_nouvelle_cheer3','vo_nouvelle_cheer4','vo_nouvelle_cheer5','vo_nouvelle_cheer6'],   // 讚聲（ver -3055，PERFECT CRITICAL／五連 MB 時輪播；Ray 11-26 審稿）
       name:i18nT('諾薇兒'),
       image:'partner_nouvelle',
       /* 整備頁伙伴卡的「變身」欄（ver -841，Ray：「伙伴卡也要記載聖徒化 夢魘化
@@ -618,6 +619,7 @@ export const GAME_CONFIG = {
          ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
       faceSpent:'desperate',
       levelUpVoice:'vo_anya_lvup',
+      cheerVoice:['vo_anya_cheer1','vo_anya_cheer2','vo_anya_cheer3','vo_anya_cheer4','vo_anya_cheer5','vo_anya_cheer6'],   // 讚聲（ver -3055）
       install:{ name:i18nT('夢魘化'), en:'NIGHTMARE INSTALL',
         /* ⚠ ver -967：「體力灌滿後」→「由**當下的體力**」（不再灌滿）。
            ⚠ ver -974：**滿血 13 秒**（長度由血量決定，不再是一律 15 秒）、
@@ -746,6 +748,7 @@ export const GAME_CONFIG = {
          ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
       faceSpent:'panic',
       levelUpVoice:'vo_sorana_lvup',
+      cheerVoice:['vo_sorana_cheer1','vo_sorana_cheer2','vo_sorana_cheer3','vo_sorana_cheer4','vo_sorana_cheer5','vo_sorana_cheer6'],   // 讚聲（ver -3055）
       name:i18nT('索菈娜'),
       image:'partner_sorana',
       selectVoice:'vo_sorana_pack',   // 選人確認音（ver -839，Ray 指定）
@@ -3712,10 +3715,10 @@ export const GAME_CONFIG = {
          中了＝那一發傷害 ×`mul`（ver -3046 Ray 定 ×3）（取代一般爆擊倍率）、開槍進子彈時間 `bulletTime`、槍聲 `se`、命中那一刻播 critfx。
        D＝五連完美清盤：連續 `mbStreak` 盤完美 → 第 `mbStreak` 盤**固定**走 MB cut-in（不擲 E），
          追加「這幾盤造成的總傷害 ×`mbPct`」；觸發後從 0 重數。中間一盤不完美歸零、換怪不歸零、換局歸零。
-       `cheerVoice`＝搭檔 CHEER 語音（還沒有，留接口：填 ASSETS 鍵就會在 E／D 發動時播）。
+       搭檔讚聲在搭檔卡的 `cheerVoice`（ver -3055 接上，E／D 發動時輪播）。
        實作只有 combat 的 perfectShotKind／perfectBoardCleared 兩支（鐵律 7／8）。 */
     perfectCrit: { chance:{ 9:0.30, 16:0.50 }, mul:3, se:'se_sniper_falcon',
-                   mbStreak:5, mbPct:0.20, cheerVoice:null,
+                   mbStreak:5, mbPct:0.20,
                    /* 子彈時間（ver -3048，Ray：「開槍那一瞬間有子彈時間那種時間變慢的效果」）：rate＝畫面動畫倍率、ms＝持續（子彈飛滿這段）、
                       ms 700→490（ver -3049，Ray：「子彈時間減30%」）→350（ver -3052，Ray：「子彈再飛快一點」）→400（ver -3054，Ray 定）；子彈飛滿這段，所以也就是子彈時間的長度、zoom＝拉近、se（＋可選 seMod 變調）＝子彈時間音（Ray 11-26：「用 holybeam」—— 專案裡沒有這個檔名，暫用 se_enemy_holyburst，待確認）、duckBgm＝期間壓低 BGM。 */
                    bulletTime: { rate:0.18, ms:400, zoom:1.04, se:'se_enemy_holyburst', duckBgm:true },
@@ -4049,7 +4052,8 @@ export const GAME_CONFIG = {
                 'vo_nouvellemiss1','vo_nouvellemiss2','vo_nouvellemiss3',
                 'vo_sorana_miss1','vo_sorana_miss2','vo_sorana_miss3','vo_sorana_miss4',
                 'vo_cecilie_miss1','vo_cecilie_miss2','vo_cecilie_miss3','vo_cecilie_miss4','vo_cecilie_miss5',   // ver -2961：賽西莉失誤語音
-                'vo_nouvelle_lvup','vo_anya_lvup','vo_sorana_lvup'],
+                'vo_nouvelle_lvup','vo_anya_lvup','vo_sorana_lvup',
+                'vo_cecilie_cheer1','vo_cecilie_cheer2','vo_cecilie_cheer3','vo_cecilie_cheer4','vo_cecilie_cheer5','vo_cecilie_cheer6','vo_nouvelle_cheer1','vo_nouvelle_cheer2','vo_nouvelle_cheer3','vo_nouvelle_cheer4','vo_nouvelle_cheer5','vo_nouvelle_cheer6','vo_sorana_cheer1','vo_sorana_cheer2','vo_sorana_cheer3','vo_sorana_cheer4','vo_sorana_cheer5','vo_sorana_cheer6','vo_anya_cheer1','vo_anya_cheer2','vo_anya_cheer3','vo_anya_cheer4','vo_anya_cheer5','vo_anya_cheer6'],   // 讚聲（ver -3055）
 
     /* ══ 逐支增益：鑰匙是**檔名**（去副檔名、轉小寫）══════════════════
        ⚠⚠ 鑰匙用檔名不用 ASSETS 鍵（ver -441）：**一支音檔只有一個響度**，
@@ -4152,6 +4156,11 @@ export const GAME_CONFIG = {
            會「有的震耳、有的聽不見」，正是 §6.6 說的「沒補＝以母帶響度播出」。 */
       se_lvup:2.40,
       vo_nouvelle_lvup:1.230,   // ver -3027 重生重量（同上換算）
+      /* 讚聲（ver -3055）：ffmpeg ebur128 耳機／手機（600Hz 三階高通）平均拉到 −20 LUFS，÷masterVolume；CAP＝被峰值上限夾住。 */
+      vo_cecilie_cheer1:6.023, vo_cecilie_cheer2:5.306, vo_cecilie_cheer3:3.800, vo_cecilie_cheer4:21.868, vo_cecilie_cheer5:5.988, vo_cecilie_cheer6:26.903,
+      vo_nouvelle_cheer1:3.671, vo_nouvelle_cheer2:11.676, vo_nouvelle_cheer3:6.307, vo_nouvelle_cheer4:3.650, vo_nouvelle_cheer5:7.582, vo_nouvelle_cheer6:2.660,
+      vo_sorana_cheer1:2.675, vo_sorana_cheer2:3.844, vo_sorana_cheer3:2.629, vo_sorana_cheer4:2.264, vo_sorana_cheer5:4.002, vo_sorana_cheer6:2.113,
+      vo_anya_cheer1:28.009, vo_anya_cheer2:12.440 /*CAP*/, vo_anya_cheer3:13.640, vo_anya_cheer4:12.156 /*CAP*/, vo_anya_cheer5:9.436, vo_anya_cheer6:11.215,
        vo_anya_lvup:2.67,  vo_sorana_lvup:0.70,
       vo_luna_dualwield:1.483, vo_luna_execution:1.013, vo_luna_obe:1.163,
       vo_luna_saintinstall:1.345, vo_malzeno_hcrounds:2.647,
@@ -5451,6 +5460,31 @@ export const ASSETS = {
      ⚠ Ray 只點名了 anya 與 sorana，但 `vo_nouvelle_lvup` 也在交件裡 —— 三位都接上，
        少一位的話諾薇兒升級只有 SE，讀起來像漏了。 */
   vo_nouvelle_lvup:  "resources/audio/vo/vo_nouvelle_lvup.m4a?v=3417114e",
+  /* 無傷清盤讚聲（ver -3055，11Labs 11-26 生成，A take＋後製版；原檔在 resources/audio/_raw/vo_cheer_1126/）。搭檔卡 `cheerVoice` 輪播。 */
+  vo_cecilie_cheer1: "resources/audio/vo/vo_cecilie_cheer1.m4a",
+  vo_cecilie_cheer2: "resources/audio/vo/vo_cecilie_cheer2.m4a",
+  vo_cecilie_cheer3: "resources/audio/vo/vo_cecilie_cheer3.m4a",
+  vo_cecilie_cheer4: "resources/audio/vo/vo_cecilie_cheer4.m4a",
+  vo_cecilie_cheer5: "resources/audio/vo/vo_cecilie_cheer5.m4a",
+  vo_cecilie_cheer6: "resources/audio/vo/vo_cecilie_cheer6.m4a",
+  vo_nouvelle_cheer1: "resources/audio/vo/vo_nouvelle_cheer1.m4a",
+  vo_nouvelle_cheer2: "resources/audio/vo/vo_nouvelle_cheer2.m4a",
+  vo_nouvelle_cheer3: "resources/audio/vo/vo_nouvelle_cheer3.m4a",
+  vo_nouvelle_cheer4: "resources/audio/vo/vo_nouvelle_cheer4.m4a",
+  vo_nouvelle_cheer5: "resources/audio/vo/vo_nouvelle_cheer5.m4a",
+  vo_nouvelle_cheer6: "resources/audio/vo/vo_nouvelle_cheer6.m4a",
+  vo_sorana_cheer1: "resources/audio/vo/vo_sorana_cheer1.m4a",
+  vo_sorana_cheer2: "resources/audio/vo/vo_sorana_cheer2.m4a",
+  vo_sorana_cheer3: "resources/audio/vo/vo_sorana_cheer3.m4a",
+  vo_sorana_cheer4: "resources/audio/vo/vo_sorana_cheer4.m4a",
+  vo_sorana_cheer5: "resources/audio/vo/vo_sorana_cheer5.m4a",
+  vo_sorana_cheer6: "resources/audio/vo/vo_sorana_cheer6.m4a",
+  vo_anya_cheer1: "resources/audio/vo/vo_anya_cheer1.m4a",
+  vo_anya_cheer2: "resources/audio/vo/vo_anya_cheer2.m4a",
+  vo_anya_cheer3: "resources/audio/vo/vo_anya_cheer3.m4a",
+  vo_anya_cheer4: "resources/audio/vo/vo_anya_cheer4.m4a",
+  vo_anya_cheer5: "resources/audio/vo/vo_anya_cheer5.m4a",
+  vo_anya_cheer6: "resources/audio/vo/vo_anya_cheer6.m4a",
   vo_anya_lvup:      "resources/audio/vo/vo_anya_lvup.m4a",
   vo_sorana_lvup:    "resources/audio/vo/vo_sorana_lvup.m4a",
   vo_sorana_roar:    "resources/audio/vo/vo_sorana_roar.m4a?v=184fbea0",   // ver -859：Ray 更新 5連完美戰吼   // 獵手的戰吼・連5盤那一發（ver -837 新錄音）
@@ -5678,6 +5712,7 @@ export const ASSETS = {
   const C = JSON.parse(JSON.stringify(N));
   Object.assign(C, { name:i18nT('賽西莉'), image:'partner_cecilie', cutin:'cutin_cecilie_saint',
     selectVoice:null, levelUpVoice:null, faceSpent:null,
+    cheerVoice:['vo_cecilie_cheer1','vo_cecilie_cheer2','vo_cecilie_cheer3','vo_cecilie_cheer4','vo_cecilie_cheer5','vo_cecilie_cheer6'],   // 讚聲（ver -3055）
     /* 聖徒化的發動／結局演出改讀這幾格（saint.js，沒寫＝照舊諾薇兒那一套）。 */
     /* ver -1919：她有配音了（SI／OBE／即死防禦／生命歸還）。 */
     saintCutin:'cutin_cecilie_saint', saintVoice:'vo_cec_saint',

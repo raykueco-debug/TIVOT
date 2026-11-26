@@ -1070,7 +1070,11 @@ function perfectShotKind(num){
   return (pcTest==='crit' || Math.random() < ch) ? 'crit' : null;
 }
 function perfectSe(){ const k=PC().se; if(k){ const src=asset(k); if(src){ try{ SFX.play(src, sfxGain(k)); }catch(_){} } } }
-function perfectCheer(){ const k=PC().cheerVoice; if(k){ const src=asset(k); if(src){ try{ SFX.playVoice(src, sfxGain(k)); }catch(_){} } } }   // 搭檔 CHEER（還沒有素材，留接口）
+/* 搭檔讚聲（ver -3055）：搭檔卡 `cheerVoice`（陣列＝輪播，同 levelUpVoice 的 pickRot）；沒有搭檔或卡上沒寫就不出聲。 */
+function perfectCheer(){
+  const pc=((GAME_CONFIG.partners||{})[state.pickedPartner])||{}; if(!pc.cheerVoice || state.noPartner) return;
+  const k=SFX.pickRot(pc.cheerVoice); if(!k) return; const src=asset(k); if(src){ try{ SFX.playVoice(src, sfxGain(k)); }catch(_){} }
+}
 function perfectCritFx(pt){
   perfectCheer();
   { const k=PC().hitSe; if(k){ const src=asset(k); if(src){ try{ SFX.play(src, sfxGain(k)); }catch(_){} } } }   // 擊中音（ver -3053，Ray：「擊中放神樂鈴」）
