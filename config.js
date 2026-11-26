@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.26-3058';
+export const VERSION = 'ver 2026.11.26-3059';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -619,7 +619,7 @@ export const GAME_CONFIG = {
          ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
       faceSpent:'desperate',
       levelUpVoice:'vo_anya_lvup',
-      cheerVoice:['vo_anya_cheer2','vo_anya_cheer3','vo_anya_cheer4','vo_anya_cheer5','vo_anya_cheer6'],   // 讚聲（ver -3055）；第 1 句驚呼 -3058 拿掉（Ray：「像在喘氣」）
+      cheerVoice:['vo_anya_cheer2','vo_anya_cheer2b','vo_anya_cheer3','vo_anya_cheer4','vo_anya_cheer4b','vo_anya_cheer5','vo_anya_cheer6','vo_anya_cheer6b'],   // 讚聲（ver -3055）；第 1 句驚呼 -3058 拿掉（Ray：「像在喘氣」）；原檔連唸兩次的 -3059 切成兩支都進輪播（b＝第二次）
       install:{ name:i18nT('夢魘化'), en:'NIGHTMARE INSTALL',
         /* ⚠ ver -967：「體力灌滿後」→「由**當下的體力**」（不再灌滿）。
            ⚠ ver -974：**滿血 13 秒**（長度由血量決定，不再是一律 15 秒）、
@@ -748,7 +748,7 @@ export const GAME_CONFIG = {
          ⚠ 沒寫＝一直用基本立繪（蕾妮／馬季諾就是這樣）。 */
       faceSpent:'panic',
       levelUpVoice:'vo_sorana_lvup',
-      cheerVoice:['vo_sorana_cheer1','vo_sorana_cheer2','vo_sorana_cheer3','vo_sorana_cheer4','vo_sorana_cheer5','vo_sorana_cheer6'],   // 讚聲（ver -3055）
+      cheerVoice:['vo_sorana_cheer1','vo_sorana_cheer1b','vo_sorana_cheer2','vo_sorana_cheer3','vo_sorana_cheer4','vo_sorana_cheer5','vo_sorana_cheer6'],   // 讚聲（ver -3055）
       name:i18nT('索菈娜'),
       image:'partner_sorana',
       selectVoice:'vo_sorana_pack',   // 選人確認音（ver -839，Ray 指定）
@@ -4053,7 +4053,7 @@ export const GAME_CONFIG = {
                 'vo_sorana_miss1','vo_sorana_miss2','vo_sorana_miss3','vo_sorana_miss4',
                 'vo_cecilie_miss1','vo_cecilie_miss2','vo_cecilie_miss3','vo_cecilie_miss4','vo_cecilie_miss5',   // ver -2961：賽西莉失誤語音
                 'vo_nouvelle_lvup','vo_anya_lvup','vo_sorana_lvup',
-                'vo_cecilie_cheer1','vo_cecilie_cheer2','vo_cecilie_cheer3','vo_cecilie_cheer4','vo_cecilie_cheer5','vo_cecilie_cheer6','vo_nouvelle_cheer1','vo_nouvelle_cheer2','vo_nouvelle_cheer3','vo_nouvelle_cheer4','vo_nouvelle_cheer5','vo_nouvelle_cheer6','vo_sorana_cheer1','vo_sorana_cheer2','vo_sorana_cheer3','vo_sorana_cheer4','vo_sorana_cheer5','vo_sorana_cheer6','vo_anya_cheer2','vo_anya_cheer3','vo_anya_cheer4','vo_anya_cheer5','vo_anya_cheer6'],   // 讚聲（ver -3055）
+                'vo_cecilie_cheer1','vo_cecilie_cheer2','vo_cecilie_cheer3','vo_cecilie_cheer4','vo_cecilie_cheer5','vo_cecilie_cheer6','vo_nouvelle_cheer1','vo_nouvelle_cheer2','vo_nouvelle_cheer3','vo_nouvelle_cheer4','vo_nouvelle_cheer5','vo_nouvelle_cheer6','vo_sorana_cheer1','vo_sorana_cheer1b','vo_sorana_cheer2','vo_sorana_cheer3','vo_sorana_cheer4','vo_sorana_cheer5','vo_sorana_cheer6','vo_anya_cheer2','vo_anya_cheer2b','vo_anya_cheer3','vo_anya_cheer4','vo_anya_cheer4b','vo_anya_cheer5','vo_anya_cheer6','vo_anya_cheer6b'],   // 讚聲（ver -3055）
 
     /* ══ 逐支增益：鑰匙是**檔名**（去副檔名、轉小寫）══════════════════
        ⚠⚠ 鑰匙用檔名不用 ASSETS 鍵（ver -441）：**一支音檔只有一個響度**，
@@ -4159,8 +4159,8 @@ export const GAME_CONFIG = {
       /* 讚聲（ver -3055）：ffmpeg ebur128 耳機／手機（600Hz 三階高通）平均拉到 −20 LUFS，÷masterVolume；CAP＝被峰值上限夾住。 */
       vo_cecilie_cheer1:6.023, vo_cecilie_cheer2:5.306, vo_cecilie_cheer3:3.800, vo_cecilie_cheer4:21.868, vo_cecilie_cheer5:5.988, vo_cecilie_cheer6:26.903,
       vo_nouvelle_cheer1:3.671, vo_nouvelle_cheer2:11.676, vo_nouvelle_cheer3:6.307, vo_nouvelle_cheer4:3.650, vo_nouvelle_cheer5:7.582, vo_nouvelle_cheer6:2.660,
-      vo_sorana_cheer1:2.675, vo_sorana_cheer2:3.844, vo_sorana_cheer3:2.629, vo_sorana_cheer4:2.264, vo_sorana_cheer5:4.002, vo_sorana_cheer6:2.113,
-      vo_anya_cheer2:12.440 /*CAP*/, vo_anya_cheer3:13.640, vo_anya_cheer4:12.156 /*CAP*/, vo_anya_cheer5:9.436, vo_anya_cheer6:11.215,
+      vo_sorana_cheer1:2.511, vo_sorana_cheer1b:2.468, vo_sorana_cheer2:3.844, vo_sorana_cheer3:2.629, vo_sorana_cheer4:2.264, vo_sorana_cheer5:4.002, vo_sorana_cheer6:2.113,
+      vo_anya_cheer2:12.440 /*CAP*/, vo_anya_cheer3:13.640, vo_anya_cheer4:12.156 /*CAP*/, vo_anya_cheer5:9.436, vo_anya_cheer6:12.729, vo_anya_cheer2b:10.467, vo_anya_cheer4b:10.170, vo_anya_cheer6b:9.768,
        vo_anya_lvup:2.67,  vo_sorana_lvup:0.70,
       vo_luna_dualwield:1.483, vo_luna_execution:1.013, vo_luna_obe:1.163,
       vo_luna_saintinstall:1.345, vo_malzeno_hcrounds:2.647,
@@ -5473,17 +5473,21 @@ export const ASSETS = {
   vo_nouvelle_cheer4: "resources/audio/vo/vo_nouvelle_cheer4.m4a",
   vo_nouvelle_cheer5: "resources/audio/vo/vo_nouvelle_cheer5.m4a",
   vo_nouvelle_cheer6: "resources/audio/vo/vo_nouvelle_cheer6.m4a",
-  vo_sorana_cheer1: "resources/audio/vo/vo_sorana_cheer1.m4a",
+  vo_sorana_cheer1: "resources/audio/vo/vo_sorana_cheer1.m4a?v=fc6b6301",
+  vo_sorana_cheer1b: "resources/audio/vo/vo_sorana_cheer1b.m4a",   // ver -3059：原檔連唸兩次，切出第二次
   vo_sorana_cheer2: "resources/audio/vo/vo_sorana_cheer2.m4a",
   vo_sorana_cheer3: "resources/audio/vo/vo_sorana_cheer3.m4a",
   vo_sorana_cheer4: "resources/audio/vo/vo_sorana_cheer4.m4a",
   vo_sorana_cheer5: "resources/audio/vo/vo_sorana_cheer5.m4a",
   vo_sorana_cheer6: "resources/audio/vo/vo_sorana_cheer6.m4a",
   vo_anya_cheer2: "resources/audio/vo/vo_anya_cheer2.m4a?v=406337c6",
+  vo_anya_cheer2b: "resources/audio/vo/vo_anya_cheer2b.m4a",   // ver -3059
   vo_anya_cheer3: "resources/audio/vo/vo_anya_cheer3.m4a?v=6584712b",
   vo_anya_cheer4: "resources/audio/vo/vo_anya_cheer4.m4a?v=2c1621b9",
+  vo_anya_cheer4b: "resources/audio/vo/vo_anya_cheer4b.m4a",   // ver -3059
   vo_anya_cheer5: "resources/audio/vo/vo_anya_cheer5.m4a?v=df1212f2",
-  vo_anya_cheer6: "resources/audio/vo/vo_anya_cheer6.m4a?v=391d0b03",
+  vo_anya_cheer6: "resources/audio/vo/vo_anya_cheer6.m4a?v=8a5cf46f",
+  vo_anya_cheer6b: "resources/audio/vo/vo_anya_cheer6b.m4a",   // ver -3059
   vo_anya_lvup:      "resources/audio/vo/vo_anya_lvup.m4a",
   vo_sorana_lvup:    "resources/audio/vo/vo_sorana_lvup.m4a",
   vo_sorana_roar:    "resources/audio/vo/vo_sorana_roar.m4a?v=184fbea0",   // ver -859：Ray 更新 5連完美戰吼   // 獵手的戰吼・連5盤那一發（ver -837 新錄音）
@@ -8578,7 +8582,7 @@ export const ASSET_VER = {
   'vo_anya_cheer3': '6584712b',
   'vo_anya_cheer4': '2c1621b9',
   'vo_anya_cheer5': 'df1212f2',
-  'vo_anya_cheer6': '391d0b03',
+  'vo_anya_cheer6': '8a5cf46f',
   'vo_anya_luciddream': '60bed254',
   'vo_anya_nightmarereload': '1943d140',
   'vo_anya_obe': '30d84ac4',
@@ -8594,6 +8598,7 @@ export const ASSET_VER = {
   'vo_nouvelle_saintinstall': '3dc76ded',
   'vo_nouvelle_saintreload': 'ef54cb31',
   'vo_nouvellemiss1': '1e056954',
+  'vo_sorana_cheer1': 'fc6b6301',
   'vo_sorana_pack': '417630a9',
   'vo_sorana_pack2': '57c876ef',
   'vo_sorana_roar': '184fbea0',
