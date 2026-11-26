@@ -27,8 +27,7 @@ import * as weapon from './weapon.js';
 import * as saint from './saint.js';
 import * as partner from './partner.js';
 import * as inspector from './inspector.js';
-import * as tutorial from './tutorial.js';
-import * as critfx from './critfx.js';   // PERFECT CRITICAL 命中特效（葉模組，ver -3045）   // 教學關卡（首次出陣穿插對話；暫停走 pauseForDialog）
+import * as tutorial from './tutorial.js';   // 教學關卡（首次出陣穿插對話；暫停走 pauseForDialog）
 import { playTransition, hideHome } from './transition.js';   // 過渡禎（勝利進結算前的「驅逐完成」）＋收首頁（唯一那一支，ver -1372）
 import * as prog from '../script/progress.js';      // 持久 HP／talkOnce 打贏才記（葉節點，無循環）
 import { faceStyle } from '../script/speakers.js';  // 立繪當頭像（月彎中間的搭檔臉，ver -1036；唯一那一支）
@@ -824,7 +823,7 @@ function tap(num,cell,e){
       updateStatus();
     };
     /* PERFECT CRITICAL（ver -3048，Ray：「開槍那一瞬間有子彈時間那種時間變慢的效果」）：
-       開槍那一刻進子彈時間，子彈慢慢飛過去；打到那一刻時間恢復，同時扣血＋critfx＋字。期間不能點下一格。 */
+       開槍那一刻進子彈時間，子彈慢慢飛過去；打到那一刻時間恢復，同時扣血＋放大的槍火與火星飛濺＋字（-3051 起不用 critfx）。期間不能點下一格。 */
     if(pShot==='crit') bulletTime(()=>{ perfectCritFx(hitPt); land(); });
     else land();
   }else{
@@ -1074,7 +1073,8 @@ function perfectSe(){ const k=PC().se; if(k){ const src=asset(k); if(src){ try{ 
 function perfectCheer(){ const k=PC().cheerVoice; if(k){ const src=asset(k); if(src){ try{ SFX.playVoice(src, sfxGain(k)); }catch(_){} } } }   // 搭檔 CHEER（還沒有素材，留接口）
 function perfectCritFx(pt){
   perfectCheer();
-  if(pt) critfx.play(pt.x, pt.y);
+  if(pt){ const C=PC().hitBurst||{}, k=C.k||2.2;   // 原本的槍火放大＋火星飛濺（ver -3051，Ray：「gpt 的槍擊特效拿掉，換成大一點的原特效加上火星飛濺」）
+    const host=$('fxTop'); muzzleBurst(host, pt.lx, pt.ly, k); sparkSpray(host, pt.lx, pt.ly, C.sparks||40, k*(C.sparkReach||1.6)); }
   floatDmg('PERFECT CRITICAL','50%','26%',true);
 }
 /* ══ 子彈時間（ver -3048）══ 全場時間放慢的**唯一**入口（鐵律 8）；參數在 config.tuning.perfectCrit.bulletTime。
@@ -1167,7 +1167,7 @@ function gunHitOnEnemy(cell, pierce, slowMs){
     enemy.spawnHexShield(imp.x, imp.y);
     return;
   }
-  muzzleBurst(fxTop, imp.x, imp.y);
+  if(!slowMs) muzzleBurst(fxTop, imp.x, imp.y);   // PERFECT CRITICAL：按下去那一刻不炸（子彈還在路上，ver -3051 Ray），打到那一刻才炸
   /* ══ 子彈的火線（ver -1622，Ray 指定）══ 從**點到的那一格**射向那個落點。
      ⚠ 座標換算成 `#top` 相對就交出去 —— 格子在 `#top` 之外（它在控制面板上），
        所以那一段會被 `#fxTop` 的 `overflow:hidden` 裁掉，看到的正好是
@@ -1177,7 +1177,7 @@ function gunHitOnEnemy(cell, pierce, slowMs){
   enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, imp.x, imp.y, slowMs||0);   // PERFECT CRITICAL：子彈時間裡慢慢飛（外觀照舊）
   /* 普攻的硝煙（ver -1655，Ray：「普攻也加煙」）—— 份量壓小：它每一下都會響。 */
   enemy.muzzleSmoke(0.55);
-  return { x: top.left + imp.x, y: top.top + imp.y };   // 命中點（視窗座標）：critfx 用
+  return { lx: imp.x, ly: imp.y };   // 命中點（#fxTop 座標）：PERFECT CRITICAL 打到那一刻在這裡炸
 }
 /* ══ 槍火（ver -1052，Ray：「射擊時敵人身上槍火炸裂的感覺不夠…現在是個圓點而已，
    帶點不規則的芒跟火星如何？」）══════════════════════════════════════════════
@@ -1245,7 +1245,13 @@ function muzzleBurst(host, px, py, k){
      消失的特效」）：**細長條**朝飛行方向，飛得越遠越小、末端轉暗紅熄掉。
      ⚠ 圓點看起來是「灰塵」，長條才像**噴出去的火星** —— 所以要跟著方向轉
        （`--a`，長條本身是直的，＋90° 才會頭朝外）。 */
-  const n=Math.min(Math.max(4, Math.round(14*k)), MZ_MAX-mzLive);
+  sparkSpray(host, px, py, Math.round(14*k), k, frag);
+  host.appendChild(frag);
+}
+/* 火星：從 (px,py) 往四周噴 n 條（muzzleBurst 與 PERFECT CRITICAL 的火星飛濺共用，鐵律 8）。 */
+function sparkSpray(host, px, py, n0, k, frag){
+  const own=!frag; frag=frag||document.createDocumentFragment();
+  const n=Math.min(Math.max(4, n0), MZ_MAX-mzLive);
   for(let i=0;i<n;i++){
     const s=mzEl('mz-spark');
     const a=Math.random()*Math.PI*2, d=(34+Math.random()*84)*k;  // 散得更開
@@ -1258,7 +1264,7 @@ function muzzleBurst(host, px, py, k){
     s.style.animationDuration=(0.44+Math.random()*0.34).toFixed(2)+'s';                  // 慢一點才看得到它熄掉
     frag.appendChild(s); mzFree(s,900);
   }
-  host.appendChild(frag);
+  if(own) host.appendChild(frag);
 }
 /* ══ 在敵人身上某個相對位置噴一發槍火（ver -1054，Ray：「副武器也要有」）══
    `rx`／`ry` ＝相對 `#top` 的 0~1；`k` ＝尺寸倍率。
@@ -3722,7 +3728,6 @@ const BATTLE_FX_IMGS=[
   'resources/effects/ef_bite2.webp',   // .fx-bitei i
 ];
 function warmBattleFx(){
-  critfx.warm();   // PERFECT CRITICAL 的四格（ver -3045）
   const run=()=>{ for(const src of BATTLE_FX_IMGS){
     const im=new Image(); im.src=src; if(im.decode) im.decode().catch(()=>{}); } };
   if(window.requestIdleCallback) requestIdleCallback(run, {timeout:800});

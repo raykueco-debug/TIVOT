@@ -1336,7 +1336,7 @@
   #pcritBtn{top:10px;left:146px;right:auto;width:auto;padding:0 8px;font-size:12px;letter-spacing:1px;color:var(--holy);border-color:var(--holy);display:none;}
   body.testmode #pcritBtn{display:flex;}
   /* 子彈時間（ver -3048，combat.bulletTime）：略拉近、去飽和偏冷（暗角 -3050 拿掉）。進場快、出場「啪」一下（transition 只掛在進場）。 */
-  #app.bullet-time #top{transform:scale(var(--bt-zoom,1.04));filter:saturate(.45) hue-rotate(-12deg) brightness(.92);transition:transform .14s ease-out, filter .14s ease-out;}
+  #app.bullet-time #top{transform:scale(var(--bt-zoom,1.04));transition:transform .14s ease-out;}   /* 去飽和偏冷 -3051 拿掉（Ray） */
   /* 暗角遮罩已拿掉（ver -3050，Ray：「遮罩拿掉看看」）。 */
   /* 面板：蓋在下半盤面上（上半的敵人要看得到），點擊不穿透。 */
   #enemyEdit{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
