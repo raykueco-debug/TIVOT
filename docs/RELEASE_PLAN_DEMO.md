@@ -10,6 +10,9 @@
 
 ## 〇、已拍板（2026-11-25）
 
+- ✔ **試玩三種玩法（11-26，Ray：「照這樣做」）**：網頁版（Cloudflare Pages，已上 `tivot-demo.pages.dev`）／Android APK 側載（入口頁＋下載放 **itch.io**）／iOS 先用網頁版「加到主畫面」，TestFlight 待 Ray 決定 Apple 帳號。網頁版要**固定直式比例**（寬螢幕左右留黑邊），已交 PM 派工。
+  · ⚠ APK 不能放 Cloudflare Pages（單檔 25 MiB 上限，試玩 APK 約 0.5 GB）；R2 開了之後也可放 R2，但 itch.io 免費、有現成的下載頁。
+  · ⚠ Google 安卓開發者驗證：2026-09-30 在巴西／印尼／新加坡／泰國生效（未驗證的 App 側載要走 24 小時的進階流程），2027 全球 —— 正式版前要辦。
 - ✔ **網頁版用 Cloudflare**（Ray：「用 Cloudflare」）：程式放 **Pages**、素材放 **R2**。
 
 ### ⚠ 修正第四節：素材要走 R2 自訂網域，**不要**用 Pages Functions 代理
