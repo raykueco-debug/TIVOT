@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.26-3034';
+export const VERSION = 'ver 2026.11.26-3036';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3819,7 +3819,7 @@ export const GAME_CONFIG = {
                 ci_sorana_roar_renna:2000, ci_sorana_roar_anya:2000, ci_sorana_roar_nouvelle:2000,
                 cutin_nireload:2500,   // ver -2168：Ray「播 2.5 秒就要完成淡出」（撤出淡出吃在最後 0.25 秒內）；-2137 v4 是 2000
                 cutin_dual_torsten:1959,   // ver -2167：BR v7 片長（47 格 24fps；v5 是 1000）
-                cutin_cecilie_guard:1000, cutin_cecilie_return:1042,   // ver -2103：賽西莉即死防禦／生命歸還（片長＝CI 長）
+                cutin_cecilie_guard:1000, cutin_cecilie_return:1750,   /* ver -3036：生命歸還 v2＝原片＋尾格循環（42 格 24fps＝1.75 秒）；v1 是 1042 */   // ver -2103：賽西莉即死防禦／生命歸還（片長＝CI 長）
                 ci_misha_ni:4063 },   // ver -2617：米夏 NI v2（65 格 16fps＝片長，照 -2040「撤出時還在播」；同 cutinAnim 那一列）
     /* BR（彈雨傾洩）的進場（ver -2091，Ray：「發動瞬間快速淡入蓋一層 70% 不透明度的黑遮罩當背景，再移入 CI」）：
        `alpha`＝黑遮罩不透明度、`ms`＝淡入多久（淡完才開始滑入 CI）。weapon.activateDual 傳給 playCutin 的 opts.dim。 */
@@ -3876,7 +3876,7 @@ export const GAME_CONFIG = {
                  /* ver -2102（Ray：「cec_return_A3_2bounce_1.3_3s_cut 賽西莉 lifereturn 接上」）：同上，**檔案也還在動畫那台** ——
                     先接鍵，進庫前播靜態圖 `ci_cecilie_lifereturn.webp`；到件後轉成這個檔名＋補 `cutinDur`（檔名寫 3s ⇒ 多半是 3000）。
                     ver -2103：動畫交件到了（25 格 24fps≈1.04 秒，不是 3 秒），cutinDur 補 1042；`returnCutin` 同一張，一起吃到。 */
-                 cutin_cecilie_return:{ video:'resources/ci/video/cutin_cecilie_return_v1.mp4' },
+                 cutin_cecilie_return:{ video:'resources/ci/video/cutin_cecilie_return_v2.mp4' },   // ver -3036（Ray：「cutin_cecilie_return_v1_cut 交件」）：v1 → v2，原片接尾格循環（呼吸／光／乳搖／髮飄），42 格 24fps＝1.75 秒（cutinDur 同步）
                  /* ver -2051（Ray：「sora_obe_A2_cl2_s77_cut 接上索拉娜飛刀用盡」）：26 格 16fps＝1.625 秒＝ cutinDur。 */
                  ci_sorana_obe:{ video:'resources/ci/video/ci_sorana_obe_v1.mp4' },
                  /* ver -2076（動畫 964946af／交接表「待程式接」）：諾薇兒即死防禦（被動，2.0 秒）、索拉娜前線補給（主動，1.5 秒）。
@@ -3892,7 +3892,7 @@ export const GAME_CONFIG = {
                  ci_sorana_roar_nouvelle:{ video:'resources/ci/video/ci_sorana_roar_nouvelle_v1.mp4' },
                  /* ver -2079（Ray：「nr_blue77_cut，安雅被動動畫改這個」）：被動技裡的夢魘再臨（reloadCutin）。
                     Ray 的剪輯（tivot_wan/out/export/nr_blue77_cut，32 格 16fps）由程式端轉成 mp4（H.264 480×720 crf22 faststart）。 */
-                 cutin_nireload:{ video:'resources/ci/video/cutin_nireload_v5.mp4' },   // ver -2168：Ray 剪的 cutin_nireload_v4_burst7_cut（原 95 格 24fps，只壓前 66 格＝2.75 秒，比 cutinDur 多一點、撤出時還在動）；-2137：動畫 665f2c5b（Ray 剪 nr_A_body_5s_cut，48 格 24fps＝2 秒）；v1～v3 還在   // ver -2097：夢中夢換 Ray 剪的 ni_reload_auto24_cut（22 格 24fps＝0.917 秒，程式端轉 mp4）；v1/v2 還在
+                 cutin_nireload:{ video:'resources/ci/video/cutin_nireload_v7.mp4' },   // ver -3036（Ray 交 cutin_nireload_v4_burst7_cut_2_cut）：v5 → v7（49 格 16fps＝3.06 秒，cutinDur 照 Ray 的 2.5 秒不動 ⇒ 撤出時還在播）；同時交的 cutin_nireload_v5_cut ＝ v6（48 格 24fps＝2.0 秒）備用 ／   // ver -2168：Ray 剪的 cutin_nireload_v4_burst7_cut（原 95 格 24fps，只壓前 66 格＝2.75 秒，比 cutinDur 多一點、撤出時還在動）；-2137：動畫 665f2c5b（Ray 剪 nr_A_body_5s_cut，48 格 24fps＝2 秒）；v1～v3 還在   // ver -2097：夢中夢換 Ray 剪的 ni_reload_auto24_cut（22 格 24fps＝0.917 秒，程式端轉 mp4）；v1/v2 還在
                  /* ver -2088（動畫交件，Ray 放行）：本篇破防 CI。VACE 釘關鍵格（Plan A）＋Ray 手剪，16 格 1 秒；靜態圖照舊當底。 */
                  cutin_dual_torsten:{ video:'resources/ci/video/cutin_dual_torsten_v7.mp4' } },   // ver -2167：BR v7（5 秒原片重剪、鎖下半臉、虹膜修正，1.959 秒）；-2098：BR v5（火星改金色線狀火花、往右上飄；人物同 v4）；-2094 v4（v3 眼睛抖已固定；v2 虹膜糊已修；23 格 24fps＝0.96 秒，cutinDur 仍 1000）
 
