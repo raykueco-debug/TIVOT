@@ -1930,6 +1930,7 @@ export const ENEMIES = {
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       noStack:true,
       entrance:'se_enemy_centipi',    // 登場音（ver -790，船戰各自獨立；蜈蚣＝自己的叫聲）
+      assaultSe:[],                   // 發動攻擊不吼（ver -3050，Ray：「蜈攻不要放 dragonroar」—— 沒寫會退回 dragonroar）
       special:[],
       /* 盤面配置 `33344, loop`：3＝九宮格、4＝16 宮格，打完五盤沒死就從頭再來。 */
       boardGrids:[9,9,9,16,16],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
