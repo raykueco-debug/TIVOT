@@ -1337,12 +1337,9 @@
   body.testmode #pcritBtn{display:flex;}
   /* 子彈時間（ver -3048，combat.bulletTime）：略拉近、去飽和偏冷（暗角 -3050 拿掉）。進場快、出場「啪」一下（transition 只掛在進場）。 */
   #app.bullet-time #top{transform:scale(var(--bt-zoom,1.04));transition:transform .14s ease-out;}   /* 去飽和偏冷 -3051 拿掉（Ray） */
-  /* 子彈時間的敵窗全片效果（ver -3070 定案，combat.btFxStart）：速度線＋焦點外放射拖影＋拉近。只在 #top 裡。 */
+  /* 子彈時間的敵窗全片效果（ver -3071 定案，combat.btFxStart）：速度線＋拉近。只在 #top 裡。 */
   #top .btfx{position:absolute;inset:0;pointer-events:none;z-index:7;overflow:hidden;}
   #top .btfx canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
-  #top .btfx-zoomblur{position:absolute;inset:0;
-    -webkit-mask-image:radial-gradient(ellipse at center,transparent 28%,#000 72%);mask-image:radial-gradient(ellipse at center,transparent 28%,#000 72%);}
-  #top .btfx-zoomblur>div{transform-origin:50% 50%;}
   #app.bullet-time #top.btfx-zoom{transform:scale(1.08);transition:transform .1s ease-out;}
   /* 暗角遮罩已拿掉（ver -3050，Ray：「遮罩拿掉看看」）。 */
   /* 面板：蓋在下半盤面上（上半的敵人要看得到），點擊不穿透。 */

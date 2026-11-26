@@ -1090,45 +1090,15 @@ function perfectCritFx(pt){
    · 結束那一刻全部還原，再叫 done（扣血與命中特效）。期間 state.cutinPlaying＝不能點。 */
 function btCfg(){ return PC().bulletTime || {}; }
 let btLive=false;
-/* ══ 子彈時間的敵窗全片效果（ver -3070 定案，Ray：「critical hit 要全畫面都感知得到」「要在敵窗全畫面」→ 選「1+3 速度線＋焦點外的方向性模糊」）══
-   只在敵窗（#top）裡、整片：
+/* ══ 子彈時間的敵窗全片效果（ver -3071 定案，Ray：「critical hit 要全畫面都感知得到」「要在敵窗全畫面」→ 速度線＋拉近；
+   拖影 -3071 拿掉（Ray：「不用拖影，因為只有空戰會動來動去」）══ 只在敵窗（#top）裡：
    ① 放射速度線：整片從四邊往中心收、慢慢流動；打到那一刻往外炸散。
-   ② 焦點外的方向性模糊＝放射（zoom）拖影：開槍那一刻把敵窗當下看得到的圖層（背景、天空捲動層、敵人）抄成靜態快照，
-      疊三層由中心往外放大的半透明分身，中間挖空（焦點清楚）、越往外拖得越長；打到那一刻收掉。
-      ⚠ 快照是靜態的：子彈時間只有 0.4 秒、底下動畫又放慢到 0.18 倍，看不出差。
-   ③ 拉近 1.08（CSS #top.btfx-zoom）；打到那一刻彈回＋screenShake。
+   ② 拉近 1.08（CSS #top.btfx-zoom）；打到那一刻彈回＋screenShake。
    回傳 end()＝打到那一刻收。 */
-function btSnapshot(top){
-  const tr=top.getBoundingClientRect(), k=tr.width/(top.offsetWidth||tr.width)||1;   // #top 本身可能正在縮放：換回自己的座標
-  const snap=document.createElement('div'); snap.style.cssText='position:absolute;inset:0;';
-  const cs=getComputedStyle(top);
-  if(cs.backgroundImage && cs.backgroundImage!=='none'){
-    const b=document.createElement('div');
-    b.style.cssText=`position:absolute;inset:0;background-image:${cs.backgroundImage};background-size:${cs.backgroundSize};background-position:${cs.backgroundPosition};background-repeat:${cs.backgroundRepeat};`;
-    snap.appendChild(b);
-  }
-  for(const el of top.querySelectorAll('img, video')){
-    const r=el.getBoundingClientRect(), es=getComputedStyle(el);
-    if(r.width<40 || r.height<40 || es.visibility==='hidden' || +es.opacity<0.05 || es.display==='none') continue;
-    if(el.closest('#hud, #barsBlock, #redDots, .btfx')) continue;
-    const src=el.tagName==='VIDEO' ? null : el.currentSrc||el.src; if(!src) continue;
-    const c=document.createElement('img'); c.src=src; c.alt='';
-    c.style.cssText=`position:absolute;left:${(r.left-tr.left)/k}px;top:${(r.top-tr.top)/k}px;width:${r.width/k}px;height:${r.height/k}px;object-fit:fill;`
-      +(el.classList.contains('mir') ? 'transform:scaleX(-1);' : '')+`opacity:${es.opacity};`;
-    snap.appendChild(c);
-  }
-  return snap;
-}
 function btFxStart(){
   const top=$('top'); if(!top) return ()=>{};
   const W=top.clientWidth, H=top.clientHeight;
-  const box=document.createElement('div'); box.className='btfx'; 
-  /* ② 放射拖影：三層快照，各自放大一點、越外層越淡，中心挖空 */
-  const snap=btSnapshot(top);
-  const zb=document.createElement('div'); zb.className='btfx-zoomblur';
-  [[1.035,.42],[1.075,.28],[1.12,.16]].forEach(([sc,op])=>{ const L=snap.cloneNode(true); L.style.transform=`scale(${sc})`; L.style.opacity=String(op); zb.appendChild(L); });
-  box.appendChild(zb);
-  /* ① 速度線 */
+  const box=document.createElement('div'); box.className='btfx';
   const cv=document.createElement('canvas'), dpr=Math.min(2, devicePixelRatio||1);
   cv.width=W*dpr; cv.height=H*dpr; box.appendChild(cv); const cx=cv.getContext('2d'); cx.scale(dpr,dpr);
   top.appendChild(box);
@@ -1143,7 +1113,7 @@ function btFxStart(){
       cx.beginPath(); cx.moveTo(W/2+Math.cos(l.a)*r, H/2+Math.sin(l.a)*r); cx.lineTo(W/2+Math.cos(l.a)*(r+l.len*R), H/2+Math.sin(l.a)*(r+l.len*R)); cx.stroke(); }
     requestAnimationFrame(tick); };
   requestAnimationFrame(tick);
-  return ()=>{ hitAt=performance.now(); zb.remove(); top.classList.remove('btfx-zoom'); screenShake(); };
+  return ()=>{ hitAt=performance.now(); top.classList.remove('btfx-zoom'); screenShake(); };
 }
 function bulletTime(done){
   const C=btCfg(), ms=C.ms||700, rate=C.rate||0.18;
@@ -1158,7 +1128,7 @@ function bulletTime(done){
   enemy.setIdleRate(rate);
   app.style.setProperty('--bt-zoom', String(C.zoom||1.04));
   app.classList.add('bullet-time');   // 槍聲用 tap 那一發原本的（ver -3053，Ray：「槍聲用原本的」）
-  const fxEnd=btFxStart();   // 敵窗全片效果（ver -3070：速度線＋焦點外放射拖影＋拉近）
+  const fxEnd=btFxStart();   // 敵窗全片效果（ver -3071：速度線＋拉近）
   if(C.se){ const src=asset(C.se); if(src){ try{ C.seMod ? SFX.playMod(src, sfxGain(C.se), C.seMod) : SFX.play(src, sfxGain(C.se)); }catch(_){} } }
   if(C.duckBgm!==false){ try{ SFX.duckBgm(120); }catch(_){} }
   setTimeout(()=>{
