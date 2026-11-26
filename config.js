@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.25-3032';
+export const VERSION = 'ver 2026.11.26-3033';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3761,7 +3761,7 @@ export const GAME_CONFIG = {
        鑰匙＝腳本裡 `cg:` 的基底名；`video`＝那一支 mp4；`loop`＝循環（只有首尾都鎖原圖的 043）。
        其餘播到尾巴前就把插畫淡出撤下（ver -2182，Ray：「動畫在停止前就要撤下」）。引擎在 story.js 的 `playCgAnim`。 */
     cgAnim: {
-      '009_soranadebute': { video:'resources/illustration/video/009_soranadebute_v3.mp4' },
+      '009_soranadebute': { video:'resources/illustration/video/009_soranadebute_v4.mp4' },   // ver -3033（Ray）：「soranadebute_wind7_cut 交上」v3 → v4（TO_CODE 第三十七支）
       '010_anyaheadrubbing': { video:'resources/illustration/video/010_anyaheadrubbing_v2.mp4' },   // ver -2617：v1 → v2（Ray 重剪，24fps）
       '015-anyadessert': { video:'resources/illustration/video/015-anyadessert_v1.mp4' },
       '016-soranaaim': { video:'resources/illustration/video/016-soranaaim_v1.mp4' },

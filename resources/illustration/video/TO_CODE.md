@@ -310,6 +310,14 @@
 - ✅ 第一格≒原圖（差 2.3）；✅ **可無縫循環**：末格→首格差 3.35，小於片內相鄰格中位 4.98。
 - ✅ **已接**（ver -3026）：`config.js` 的 `'003_lunaria_armed'` 由 v2 改指 v3，`loop:true` 照舊。v2 已被取代，回收等 Ray。
 
+## 第三十七支：009_soranadebute v4（11-26，wind7；取代第二支的 v3）
+- ⭐ **`resources/illustration/video/009_soranadebute_v4.mp4`**：**720×1080、16fps、49 格＝3.06 秒**、約 2.03 MB（2,131,207 bytes）、無音軌。
+  Ray：「soranadebute_wind7_cut 交上」。來源 Wan 片 `out/ci/soranadebute_wind7`（49 格）→ Ray 剪 `out/export/soranadebute_wind7_cut`（49 格全取、全 ×1）。
+  （同時存在的 `_cut_2` 逐格比對與 `_cut` 完全相同。）
+- ✅ 第一格≒原圖 `009_soranadebute.webp`（差 2.2）：可從靜態圖無縫接入。
+- ⚠ 最後一格≠原圖（差 18.1）：播完停在最後一格，不可切回原圖、不可循環（首尾差 17.9）。
+- ✅ **已接**（動畫線，ver -3033）：`config.js` 的 `'009_soranadebute'` 由 v3 改指 v4。v3 已被取代，回收等 Ray。
+
 ## ⚠ 要程式決定／注意的（各支共通）
 1. **插畫目前沒有播影片的路**（`story.js` 的 `cg:` 只吃圖）。CI 那套（ver -2060：開演前 fetch 成 blob、第一格出來前顯示靜態圖、撤下時釋放）可以照搬。
 2. **最後一格≠原圖 017**：生成時沒鎖結尾（鎖了頭髮就飄不起來，Ray 要髮絲飄），最後一格是 Wan 畫的閉眼掩嘴，構圖與 017 接近但不是同一張。
