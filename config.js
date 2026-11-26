@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.26-3043';
+export const VERSION = 'ver 2026.11.26-3044';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3703,6 +3703,10 @@ export const GAME_CONFIG = {
        ⚠ 取代 -2834 的 `tapDelayClear` 全域預設 0.8 與 -2702 的 `counterStaggerClear`（依圈色 1/4、1/3、1/2）。 */
     /* `redMul`（ver -3043，Ray：「紅圈多退」）＝反擊打在紅圈（完美反擊）時，副武器壓制力再乘這個倍率（黃／橘照壓制力本身）。倍率待 Ray 調。 */
     suppress: { main:0.30, sub:0.30, perModLv:0.05, redMul:1.5 },
+    /* 爆擊命中特效（ver -3044，動畫副理交件 ef_crit_1~4；modules/critfx.js 播）：各格毫秒照交件建議，第 4 張邊播邊淡出；
+       `sizeVw`＝特效框邊長佔畫面寬的比例（原尺寸下本體約 180～320 px／512）。PERFECT CRITICAL 定案後接上。 */
+    critFx: { frames:['resources/effects/ef_crit_1.webp','resources/effects/ef_crit_2.webp','resources/effects/ef_crit_3.webp','resources/effects/ef_crit_4.webp'],
+              ms:[50,70,90,120], sizeVw:0.6 },
     /* counterStaggerClear（-2702）已由 `suppress` 取代（ver -3041），沒有人讀。 */   // ver -2702（Ray：「黃圈反擊只減 1/4 delay，橘圈 1/3，紅圈 1/2」）；舊值一律 0.5 ——   // 反擊硬直：被反擊時延時計時**已經走掉的那一段**清掉幾成（ver -2618，Ray：「反擊不應該全清延時 應該清1/2」；1＝舊的全清）。只有 defense.staggerOnCounter 讀
 
     // 聖能與大絕蓄力
