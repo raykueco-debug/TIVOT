@@ -715,11 +715,13 @@ export function mainSuppress(){
   const S=(GAME_CONFIG.tuning||{}).suppress||{};
   return Math.max(0, Math.min(1, (S.main!=null?S.main:0.3) + bonus('suppress')));
 }
-export function subSuppress(id){
+/* `grade`＝反擊落在哪一帶（defense 的 block／perfect／counter）；紅圈（counter）再乘 `redMul`（ver -3043，Ray：「紅圈多退」）。不傳＝不分帶（規格表印的是這個）。 */
+export function subSuppress(id, grade){
   const S=(GAME_CONFIG.tuning||{}).suppress||{};
   const w=(GAME_CONFIG.weapons||{})[id]||{};
   const base=(w.suppress!=null) ? w.suppress : (S.sub!=null?S.sub:0.3);
-  return Math.max(0, Math.min(1, base + weaponMod(id)*(S.perModLv||0)));
+  const red=(grade==='counter' && S.redMul>0) ? S.redMul : 1;
+  return Math.max(0, Math.min(1, (base + weaponMod(id)*(S.perModLv||0)) * red));
 }
 export function subgunPowerMul(id){
   const WM = (GAME_CONFIG.tuning||{}).weaponMod || {};
