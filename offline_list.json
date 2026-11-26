@@ -1,5 +1,5 @@
-{"version": "ver 2026.11.26-3033",
-"bytes": 1597104153,
+{"version": "ver 2026.11.26-3034",
+"bytes": 1599235616,
 "files": [
 "audio.js",
 "config.js",
@@ -15073,6 +15073,7 @@
 "resources/illustration/video/009_soranadebute_v1.mp4",
 "resources/illustration/video/009_soranadebute_v2.mp4",
 "resources/illustration/video/009_soranadebute_v3.mp4",
+"resources/illustration/video/009_soranadebute_v4.mp4",
 "resources/illustration/video/010_anyaheadrubbing_v2.mp4",
 "resources/illustration/video/013_corvin_intro_v1.mp4",
 "resources/illustration/video/014-nouvelleeat_v1.mp4",

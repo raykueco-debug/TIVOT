@@ -318,6 +318,25 @@
 - ⚠ 最後一格≠原圖（差 18.1）：播完停在最後一格，不可切回原圖、不可循環（首尾差 17.9）。
 - ✅ **已接**（動畫線，ver -3033）：`config.js` 的 `'009_soranadebute'` 由 v3 改指 v4。v3 已被取代，回收等 Ray。
 
+## 第三十八支：016-soranaaim v2（11-26，取代 v1）
+- ⭐ **`resources/illustration/video/016-soranaaim_v2.mp4`**：**896×816、16fps、50 格＝3.13 秒**、約 0.90 MB（945,558 bytes）、無音軌。
+  Ray：「soranaaim_vace_s7_cut 交件」→ 用同名最新的剪片 `out/export/soranaaim_vace_s7_cut_2`（11-26 剪；`_cut` 是 10-13 交 v1 的舊剪片）：來源 `vace/soranaaim_vace_s7`，原片第 0～64 格挑 48 格，第 45 格 ×3。
+- ⚠ **第一格≠原圖** `016-soranaaim.webp`（差 17.6）：靜態佔位請用影片第一格，不要從原圖接。
+- ✅ 最後一格≒原圖（差 4.9）：播完停最後一格或切回原圖都可以；首尾差 17.4，不可循環。
+- ✅ **已接**（ver -3034）：`config.js` 的 `'016-soranaaim'` 由 v1 改指 v2。v1 回收等 Ray。
+
+## 第三十九支：005_cecilieintro v3（11-26，取代 v2）
+- ⭐ **`resources/illustration/video/005_cecilieintro_v3.mp4`**：**720×1080、16fps、49 格＝3.06 秒**、約 1.37 MB（1,433,695 bytes）、無音軌。
+  Ray 剪 `out/export/005_cecilieintro_toB7_cut`（來源 `ci/005_cecilieintro_toB7`，原片第 28～64 格挑 49 格，全 ×1）。
+- ⚠ **第一格≠原圖** `005_cecilieintro.webp`（差 25.6）、⚠ **最後一格≠原圖**（差 19.6）：靜態佔位用影片第一格，播完停最後一格，不可循環。
+- ✅ **已接**（ver -3034）：`config.js` 的 `'005_cecilieintro'` 由 v2 改指 v3。v2 回收等 Ray。
+
+## 第四十支：010_anyaheadrubbing v3（11-26，取代 v2）
+- ⭐ **`resources/illustration/video/010_anyaheadrubbing_v3.mp4`**：**720×1080、16fps、42 格＝2.63 秒**、約 1.03 MB（1,078,346 bytes）、無音軌。
+  Ray 剪 `out/export/anyaheadrub_A_gpt_ab7mfix_cut_cut`（從 `anyaheadrub_A_gpt_ab7mfix_cut` 再剪：原片第 0～47 格挑 35 格，其中 7 格停格）。
+- ⚠ 第一格與原圖 `010_anyaheadrubbing.webp` 差 9.5（略有跳動，接入時可能看得出）；✅ 最後一格≒原圖（差 5.2）。不建議循環（首尾差 10.3）。
+- ✅ **已接**（ver -3034）：`config.js` 的 `'010_anyaheadrubbing'` 由 v2 改指 v3。v2 回收等 Ray。
+
 ## ⚠ 要程式決定／注意的（各支共通）
 1. **插畫目前沒有播影片的路**（`story.js` 的 `cg:` 只吃圖）。CI 那套（ver -2060：開演前 fetch 成 blob、第一格出來前顯示靜態圖、撤下時釋放）可以照搬。
 2. **最後一格≠原圖 017**：生成時沒鎖結尾（鎖了頭髮就飄不起來，Ray 要髮絲飄），最後一格是 Wan 畫的閉眼掩嘴，構圖與 017 接近但不是同一張。

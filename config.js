@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.26-3033';
+export const VERSION = 'ver 2026.11.26-3034';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3762,9 +3762,9 @@ export const GAME_CONFIG = {
        其餘播到尾巴前就把插畫淡出撤下（ver -2182，Ray：「動畫在停止前就要撤下」）。引擎在 story.js 的 `playCgAnim`。 */
     cgAnim: {
       '009_soranadebute': { video:'resources/illustration/video/009_soranadebute_v4.mp4' },   // ver -3033（Ray）：「soranadebute_wind7_cut 交上」v3 → v4（TO_CODE 第三十七支）
-      '010_anyaheadrubbing': { video:'resources/illustration/video/010_anyaheadrubbing_v2.mp4' },   // ver -2617：v1 → v2（Ray 重剪，24fps）
+      '010_anyaheadrubbing': { video:'resources/illustration/video/010_anyaheadrubbing_v3.mp4' },   // ver -2617：v1 → v2（Ray 重剪，24fps）；ver -3034：v2 → v3（anyaheadrub_A_gpt_ab7mfix_cut_cut，TO_CODE 第四十支）
       '015-anyadessert': { video:'resources/illustration/video/015-anyadessert_v1.mp4' },
-      '016-soranaaim': { video:'resources/illustration/video/016-soranaaim_v1.mp4' },
+      '016-soranaaim': { video:'resources/illustration/video/016-soranaaim_v2.mp4' },   // ver -3034（Ray）：v1 → v2（soranaaim_vace_s7_cut_2，TO_CODE 第三十八支）
       '017_rennasmile': { video:'resources/illustration/video/017_rennasmile_v1.mp4' },
       '022_soranadrunk': { video:'resources/illustration/video/022_soranadrunk_v1.mp4' },
       '024_nouvellesmile': { video:'resources/illustration/video/024_nouvellesmile_v1.mp4' },
@@ -3786,7 +3786,7 @@ export const GAME_CONFIG = {
       /* ver -2184（動畫 10-14 交件）。35／044 首尾構圖可接 ⇒ 循環（044 那一拍之後還有台詞與轉泛黃，插圖要撐到淡出）。 */
       '001_nouvelle_fell': { video:'resources/illustration/video/001_nouvelle_fell_v1.mp4' },   // ver -3026（Ray）：「001_nouvelle_fell_plopL_cut 換上」；首尾≒原圖（TO_CODE 第三十五支）
       '003_lunaria_armed': { video:'resources/illustration/video/003_lunaria_armed_v3.mp4', loop:true },   // ver -2976（Ray）：「露娜登場做成 LOOP」；ver -2986：v1 → v2 無縫循環版；ver -3026（Ray：「太快」重剪 16fps）：v2 → v3（TO_CODE 第三十六支）
-      '005_cecilieintro': { video:'resources/illustration/video/005_cecilieintro_v2.mp4' },   // ver -2617：v1 → v2（Ray 重剪，24fps）
+      '005_cecilieintro': { video:'resources/illustration/video/005_cecilieintro_v3.mp4' },   // ver -2617：v1 → v2（Ray 重剪，24fps）；ver -3034：v2 → v3（005_cecilieintro_toB7_cut，TO_CODE 第三十九支）
       '35_bellinda': { video:'resources/illustration/video/35_bellinda_v1.mp4', loop:true },
       '044_cecilietorsten': { video:'resources/illustration/video/044_cecilietorsten_v1.mp4', loop:true },
       '041_cecilienemo': { video:'resources/illustration/video/041_cecilienemo_v1.mp4', hold:true, withText:true },   // ver -2271 薇拉馮德夜襲：不循環、由下往上平移；ver -2273（Ray）：不自動消失（停最後一格）、對話框一出來就開播
