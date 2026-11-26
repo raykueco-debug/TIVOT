@@ -1090,54 +1090,60 @@ function perfectCritFx(pt){
    · 結束那一刻全部還原，再叫 done（扣血與命中特效）。期間 state.cutinPlaying＝不能點。 */
 function btCfg(){ return PC().bulletTime || {}; }
 let btLive=false;
-/* ══ 子彈時間的敵窗全片效果（ver -3069，Ray：「critical hit 要全畫面都感知得到」「要在敵窗全畫面」「都做 pgdown 換下一個讓我選」）══
-   四種候選，PgDown 輪換（記在 localStorage `tivot_btfx_v1`，選定後再寫死）：
-     1 放射速度線　2 閃白泛藍凝結　3 拉近＋四周徑向模糊　4 殘影
-   ⚠ 只在敵窗（#top）裡、整片；不蓋盤面。開始＝bulletTime 起，回傳 end()＝打到那一刻收（帶各自的收尾）。 */
-const BTFX_NAMES=['放射速度線','閃白泛藍凝結','拉近＋徑向模糊','殘影'];
-function btFxPick(){ try{ const v=+localStorage.getItem('tivot_btfx_v1'); return (v>=1&&v<=4)?v:1; }catch(_){ return 1; } }
-function btFxCycle(){
-  const v=btFxPick()%4+1; try{ localStorage.setItem('tivot_btfx_v1', String(v)); }catch(_){}
-  let t=document.getElementById('btfxToast');
-  if(!t){ t=document.createElement('div'); t.id='btfxToast'; document.body.appendChild(t); }
-  t.textContent='子彈時間效果 '+v+'/4：'+BTFX_NAMES[v-1]; t.classList.remove('on'); void t.offsetWidth; t.classList.add('on');
-  clearTimeout(btFxCycle._t); btFxCycle._t=setTimeout(()=>t.classList.remove('on'), 1600);
+/* ══ 子彈時間的敵窗全片效果（ver -3070 定案，Ray：「critical hit 要全畫面都感知得到」「要在敵窗全畫面」→ 選「1+3 速度線＋焦點外的方向性模糊」）══
+   只在敵窗（#top）裡、整片：
+   ① 放射速度線：整片從四邊往中心收、慢慢流動；打到那一刻往外炸散。
+   ② 焦點外的方向性模糊＝放射（zoom）拖影：開槍那一刻把敵窗當下看得到的圖層（背景、天空捲動層、敵人）抄成靜態快照，
+      疊三層由中心往外放大的半透明分身，中間挖空（焦點清楚）、越往外拖得越長；打到那一刻收掉。
+      ⚠ 快照是靜態的：子彈時間只有 0.4 秒、底下動畫又放慢到 0.18 倍，看不出差。
+   ③ 拉近 1.08（CSS #top.btfx-zoom）；打到那一刻彈回＋screenShake。
+   回傳 end()＝打到那一刻收。 */
+function btSnapshot(top){
+  const tr=top.getBoundingClientRect(), k=tr.width/(top.offsetWidth||tr.width)||1;   // #top 本身可能正在縮放：換回自己的座標
+  const snap=document.createElement('div'); snap.style.cssText='position:absolute;inset:0;';
+  const cs=getComputedStyle(top);
+  if(cs.backgroundImage && cs.backgroundImage!=='none'){
+    const b=document.createElement('div');
+    b.style.cssText=`position:absolute;inset:0;background-image:${cs.backgroundImage};background-size:${cs.backgroundSize};background-position:${cs.backgroundPosition};background-repeat:${cs.backgroundRepeat};`;
+    snap.appendChild(b);
+  }
+  for(const el of top.querySelectorAll('img, video')){
+    const r=el.getBoundingClientRect(), es=getComputedStyle(el);
+    if(r.width<40 || r.height<40 || es.visibility==='hidden' || +es.opacity<0.05 || es.display==='none') continue;
+    if(el.closest('#hud, #barsBlock, #redDots, .btfx')) continue;
+    const src=el.tagName==='VIDEO' ? null : el.currentSrc||el.src; if(!src) continue;
+    const c=document.createElement('img'); c.src=src; c.alt='';
+    c.style.cssText=`position:absolute;left:${(r.left-tr.left)/k}px;top:${(r.top-tr.top)/k}px;width:${r.width/k}px;height:${r.height/k}px;object-fit:fill;`
+      +(el.classList.contains('mir') ? 'transform:scaleX(-1);' : '')+`opacity:${es.opacity};`;
+    snap.appendChild(c);
+  }
+  return snap;
 }
-addEventListener('keydown', e=>{ if(e.key==='PageDown'){ e.preventDefault(); btFxCycle(); } });
 function btFxStart(){
   const top=$('top'); if(!top) return ()=>{};
-  const v=btFxPick(), W=top.clientWidth, H=top.clientHeight;
-  const box=document.createElement('div'); box.className='btfx btfx'+v; top.appendChild(box);
-  let raf=0, t0=performance.now(), alive=true, hitAt=0;
-  if(v===1){   // 放射速度線：整片從四邊往中心收，打到那一刻往外炸散
-    const cv=document.createElement('canvas'), dpr=Math.min(2, devicePixelRatio||1);
-    cv.width=W*dpr; cv.height=H*dpr; box.appendChild(cv); const cx=cv.getContext('2d'); cx.scale(dpr,dpr);
-    const R=Math.hypot(W,H)/2, L=Array.from({length:90},()=>({ a:Math.random()*6.283, r0:0.42+Math.random()*0.35, len:0.18+Math.random()*0.35, w:0.6+Math.random()*2.2, sp:0.3+Math.random()*0.7 }));
-    const tick=now=>{ if(!alive && !hitAt) return; const t=(now-t0)/1000, h=hitAt ? (now-hitAt)/220 : 0; if(h>=1){ box.remove(); return; }
-      cx.clearRect(0,0,W,H); cx.strokeStyle='rgba(255,255,255,1)'; cx.lineCap='round';
-      for(const l of L){ let r=(l.r0-((t*l.sp*0.25)%0.3))*R; if(hitAt) r=r+h*R*0.9; const a=hitAt?0.85*(1-h):0.85;
-        cx.globalAlpha=a; cx.lineWidth=l.w; const x1=W/2+Math.cos(l.a)*r, y1=H/2+Math.sin(l.a)*r, x2=W/2+Math.cos(l.a)*(r+l.len*R), y2=H/2+Math.sin(l.a)*(r+l.len*R);
-        cx.beginPath(); cx.moveTo(x1,y1); cx.lineTo(x2,y2); cx.stroke(); }
-      raf=requestAnimationFrame(tick); };
-    raf=requestAnimationFrame(tick);
-    return ()=>{ alive=false; hitAt=performance.now(); };
-  }
-  if(v===2){   // 閃白 → 泛藍高對比凝結；打到那一刻啪回原色
-    top.classList.add('btfx-freeze');
-    return ()=>{ top.classList.remove('btfx-freeze'); box.remove(); };
-  }
-  if(v===3){   // 拉近 8%＋四周徑向模糊（中心清楚）；打到彈回＋震一下
-    top.classList.add('btfx-zoom');
-    return ()=>{ top.classList.remove('btfx-zoom'); box.remove(); screenShake(); };
-  }
-  /* v===4 殘影：複製敵人當下那一格（待機層或立繪）成三個半透明分身往後拖開，打到那一刻收回本體 */
-  const src=[...top.querySelectorAll('.en-idle, #enemyImg')].find(e=>{ const cs=getComputedStyle(e); return e.getAttribute('src') && cs.visibility!=='hidden' && +cs.opacity>0.05; });
-  const ghosts=[];
-  if(src){ [[-0.07,.5],[-0.14,.3],[-0.21,.16]].forEach(([dx,op],i)=>{ const g=src.cloneNode(false); g.removeAttribute('id'); g.classList.add('btfx-ghostimg');
-      g.style.opacity=String(op); g.style.zIndex=String(Math.max(0,(+getComputedStyle(src).zIndex||1)-1));
-      const a=g.animate([{ translate:(getComputedStyle(src).translate==='none'?'0px 0px':getComputedStyle(src).translate) },{ translate:`calc(${dx*W}px + ${getComputedStyle(src).translate==='none'?'0px':getComputedStyle(src).translate.split(' ')[0]}) ${getComputedStyle(src).translate==='none'?'0px':(getComputedStyle(src).translate.split(' ')[1]||'0px')}` }], { duration:140+i*40, fill:'forwards', easing:'ease-out' });
-      src.before(g); ghosts.push({ g, a }); }); }
-  return ()=>{ ghosts.forEach(({g,a})=>{ try{ a.reverse(); a.onfinish=()=>g.remove(); }catch(_){ g.remove(); } }); setTimeout(()=>{ ghosts.forEach(({g})=>g.remove()); box.remove(); }, 260); };
+  const W=top.clientWidth, H=top.clientHeight;
+  const box=document.createElement('div'); box.className='btfx'; 
+  /* ② 放射拖影：三層快照，各自放大一點、越外層越淡，中心挖空 */
+  const snap=btSnapshot(top);
+  const zb=document.createElement('div'); zb.className='btfx-zoomblur';
+  [[1.035,.42],[1.075,.28],[1.12,.16]].forEach(([sc,op])=>{ const L=snap.cloneNode(true); L.style.transform=`scale(${sc})`; L.style.opacity=String(op); zb.appendChild(L); });
+  box.appendChild(zb);
+  /* ① 速度線 */
+  const cv=document.createElement('canvas'), dpr=Math.min(2, devicePixelRatio||1);
+  cv.width=W*dpr; cv.height=H*dpr; box.appendChild(cv); const cx=cv.getContext('2d'); cx.scale(dpr,dpr);
+  top.appendChild(box);
+  top.classList.add('btfx-zoom');
+  const R=Math.hypot(W,H)/2, LN=Array.from({length:90},()=>({ a:Math.random()*6.283, r0:0.42+Math.random()*0.35, len:0.18+Math.random()*0.35, w:0.6+Math.random()*2.2, sp:0.3+Math.random()*0.7 }));
+  const t0=performance.now(); let hitAt=0, done=false;
+  const tick=now=>{ if(done) return; const t=(now-t0)/1000, h=hitAt ? (now-hitAt)/220 : 0;
+    if(h>=1){ done=true; box.remove(); return; }
+    cx.clearRect(0,0,W,H); cx.strokeStyle='#fff'; cx.lineCap='round';
+    for(const l of LN){ let r=(l.r0-((t*l.sp*0.25)%0.3))*R; if(hitAt) r+=h*R*0.9;
+      cx.globalAlpha=hitAt ? 0.85*(1-h) : 0.85; cx.lineWidth=l.w;
+      cx.beginPath(); cx.moveTo(W/2+Math.cos(l.a)*r, H/2+Math.sin(l.a)*r); cx.lineTo(W/2+Math.cos(l.a)*(r+l.len*R), H/2+Math.sin(l.a)*(r+l.len*R)); cx.stroke(); }
+    requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+  return ()=>{ hitAt=performance.now(); zb.remove(); top.classList.remove('btfx-zoom'); screenShake(); };
 }
 function bulletTime(done){
   const C=btCfg(), ms=C.ms||700, rate=C.rate||0.18;
@@ -1152,7 +1158,7 @@ function bulletTime(done){
   enemy.setIdleRate(rate);
   app.style.setProperty('--bt-zoom', String(C.zoom||1.04));
   app.classList.add('bullet-time');   // 槍聲用 tap 那一發原本的（ver -3053，Ray：「槍聲用原本的」）
-  const fxEnd=btFxStart();   // 敵窗全片效果（ver -3069，PgDown 輪換四種）
+  const fxEnd=btFxStart();   // 敵窗全片效果（ver -3070：速度線＋焦點外放射拖影＋拉近）
   if(C.se){ const src=asset(C.se); if(src){ try{ C.seMod ? SFX.playMod(src, sfxGain(C.se), C.seMod) : SFX.play(src, sfxGain(C.se)); }catch(_){} } }
   if(C.duckBgm!==false){ try{ SFX.duckBgm(120); }catch(_){} }
   setTimeout(()=>{
