@@ -940,6 +940,13 @@ function drawnRect(el, tr){
 }
 export function enemyImpact(sx, w, h){
   const j=()=> (Math.random()+Math.random()-1);              // −1~1，中心密
+  /* 群戰：子彈只往**還站著的人**身上打（ver -3021，Ray：「子彈都要往有敵人的方向打，不要射向沒有敵人的位置」）——
+     同 BR 瞄準點那一支（groupBodyPoint，鐵律 7）；取幾個候選點挑最接近鏡射方向的那一個，保留「由對側射過去」的手感。
+     ⚠ 點錯（miss）不走這裡：那一發本來就是打空的。 */
+  if(groupCard){ const tx=w*(ENEMY_CX + ENEMY_RX*Math.max(-1, Math.min(1, -(sx - w*ENEMY_CX)/w*MIRROR/ENEMY_RX))*0.75);
+    let best=null, bd=1e18;
+    for(let k=0;k<10 && !(best && k>=4);k++){ const p=groupBodyPoint(); if(!p) continue; const x=p.l/100*w, d=Math.abs(x-tx); if(d<bd){ bd=d; best={ x, y:p.t/100*h }; } }
+    if(best) return best; }
   try{
     const el=visibleEnemyEl(), top=$('top');
     const m=el && maskOf(el);
@@ -2026,7 +2033,7 @@ function stopFlock(){
   const top=$('top'); if(top) top.classList.remove('flock-on');
 }
 function startFlock(en){
-  stopFlock(); if(!en || !en.flock || !isAirBio(en)) return;
+  stopFlock(); lastReleased=false; if(!en || !en.flock || !isAirBio(en)) return;
   const top=$('top'), eImg=$('enemyImg'); if(!top || !eImg) return;
   const lo=en.flock.min||2, hi=Math.max(lo, en.flock.max||lo), n=Math.min(FLOCK_SLOTS.length, lo+Math.floor(Math.random()*(hi-lo+1)));
   const el=document.createElement('div'); el.id='airFlock';
@@ -2075,10 +2082,23 @@ function shootDown(m){
   m.im.animate([{ transform:'none', opacity:1 }, { transform:`translate(${f*W*0.35}px, ${H*0.95}px) rotate(${f*-25}deg)`, opacity:0 }],
     { duration:1800, easing:'cubic-bezier(.45,.05,.55,.95)', fill:'forwards' });
 }
+/* ══ 群戰的 overkill：留最後一隻吃子彈（ver -3021，Ray：「清場時要留最後一隻在畫面上吃子彈」）══
+   血歸零之後（overkill 那一段）最後一隻還站著，overkill 的子彈都打在牠身上；
+   「這一隻怪倒下」的匯流點（combat.finishEnemyOrAdvance）叫 releaseGroupLast 才放牠倒。
+   ⚠ 換一組（群戰重建／換怪）就重新扣住（groupHoldReset）。 */
+let lastReleased=false;
+function holdLast(){ return (state.enemyHp<=0 && !lastReleased) ? 1 : 0; }
+export function groupHoldReset(){ lastReleased=false; }
+export function releaseGroupLast(){
+  if(lastReleased || !(groupCard || flock)) return 0;
+  lastReleased=true;
+  if(flock){ const before=flockAlive().length; syncFlock(); return before ? 900 : 0; }
+  syncGroup(); return fallPendingMs();
+}
 function syncFlock(){
   if(!flock) return;
   const each=Math.max(1, state.enemyMax/flock.n);
-  const stand=Math.max(0, Math.min(flock.n, Math.ceil(Math.max(0,state.enemyHp)/each)));
+  const stand=Math.max(holdLast(), Math.min(flock.n, Math.ceil(Math.max(0,state.enemyHp)/each)));
   let alive=flock.ms.filter(m=>!m.down).length;
   while(alive>stand){ const v=flockVictim(); if(!v) break; shootDown(v); alive--; }
 }
@@ -3177,7 +3197,7 @@ function portraitClip(c, flip){
 function buildGroup(en){
   const g=groupEl(); if(!g) return;
   groupCard = (en && en.group) ? en : null;
-  groupMasks={}; lastImpact=null; g.innerHTML='';
+  groupMasks={}; lastImpact=null; g.innerHTML=''; lastReleased=false;
   if(!groupCard) return;
   const G=en.group;
   /* 整組一起出場（ver -2047）：冷快取時一個一個冒出來很難看 —— 全部載到才掀（保險 4 秒）。 */
@@ -3840,7 +3860,7 @@ export function syncGroup(){
   syncFlock();   // 空戰編隊（ver -2516）
   const g=$('enemyGroup'); if(!g || !groupCard) return;
   const G=groupCard.group, n=groupOrder(G).length, each=groupEach(G);
-  const shouldStand=Math.max(0, Math.min(n, Math.ceil(Math.max(0,state.enemyHp)/each)));
+  const shouldStand=Math.max(holdLast(), Math.min(n, Math.ceil(Math.max(0,state.enemyHp)/each)));
   let alive=[...g.querySelectorAll('.eg-guard')].filter(im=>!im.classList.contains('eg-down') && !im.classList.contains('eg-leaving'));
   while(alive.length>shouldStand){ const v=pickVictim(alive); if(!v) break; fallGuard(v); alive=alive.filter(x=>x!==v); }
 }

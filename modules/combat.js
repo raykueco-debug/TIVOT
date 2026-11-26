@@ -2866,6 +2866,9 @@ function finishEnemyOrAdvance(){
        這段時間任何人問「牠死了嗎」，答案都是**還沒**。
      ⚠ 空窗結束時 `maybeMorph` 的收尾自己會換卡＋`loadBoard(0)`，不必這裡接手。 */
   if(morphSwapping) return;
+  /* 群戰的 overkill 留著最後一隻吃子彈（ver -3021）：到這裡才放牠倒，倒完再往下走（換敵／閉棺）。 */
+  { const ms=enemy.releaseGroupLast(); if(ms>0){ endOverkillFx(); state.transitioning=true;
+      setTimeout(()=>{ if(state.over) return; state.transitioning=false; finishEnemyOrAdvance(); }, ms); return; } }
   endOverkillFx();   // overkill 藍光/限時統一在此清理（所有結束路徑的匯流點，冪等）
   /* ══ 總擊場數 +1（ver -1023，Ray：「統計…總擊場數」）══ 「場」＝一隻怪（§0.5），
      而**這裡是「一隻怪倒下」的唯一匯流點**（自然清盤／按錯／逾時／聖徒化擊殺
