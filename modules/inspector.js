@@ -1344,10 +1344,14 @@ function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
   }
   const sub = fmt(winSubOf(en), { name: displayName(en.name || '') });
   /* ⚠ 有評價者就把版面交給她（`speaker`）；沒有才是原本那一頁「沒有監察官」的結算。 */
+  /* 戰鬥卡 `noResult:true`（ver -3066，Ray：「這場沒有評價畫面，評價照算」，羽蛇）：上面的評價／好感／EXP／金錢照算照入帳，
+     只是不出這一頁 —— 拾得直接入袋，接著走「繼續」那一條（onRematchBtn 的 script-continue）。 */
+  if(!bt.noResult){
   showResultSequence(L.result.winTitle, sub, rows, ev.grade, false,
                      spk ? { speaker:spk } : { noInspector:true });
   const rbtn=$('rematchBtn');
   if(rbtn) rbtn.textContent = i18nT('繼續');
+  }
   state.resultMode = 'script-continue';
   /* 掉落：卡上的 `loot`（在上面就擲好了 —— 金錢與 EXP 要先印上結算頁）。
      ⚠ **有道具才彈視窗**（ver -453，Ray 指定）：金錢與 EXP 已經在結算頁上、
@@ -1363,6 +1367,7 @@ function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
   /* ⚠ 獎品（龍息）**不受 `noReward` 影響**：它是這一場的目的，不是它的報酬。 */
   _lootMoney = 0; _lootExp = 0;         // 金錢與 EXP 不再走這一頁（見上面）
   _lootPending = loot.length ? loot : null;
+  if(bt.noResult){ if(_lootPending) inv.addMany(_lootPending); _lootPending=null; onRematchBtn(); return; }
   if(_lootPending){
     document.addEventListener('pointerup', popLootOnce, { capture:true, once:true });
   }

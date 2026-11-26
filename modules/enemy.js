@@ -2575,11 +2575,14 @@ function airPrepAssault(en, c, L){
    一張靜態俯視圖（頭朝機頭那側＝跟側面立繪同向）從操作盤線底下、機尾那側斜衝到畫面另一側上方出去，圖轉到頭對準行進方向；
    後面拖幾張同路徑、延遲幾十毫秒、越來越淡的分身＝殘影。衝到一半撞到玩家，衝出去之後待機那一隻從畫面外飛回（同腹面上衝）。 */
 const TOP_SWEEP_MS=420, TOP_SIZE=1.25, TOP_GHOSTS=[[40,.5],[80,.32],[120,.2],[165,.11]];   // SIZE＝圖寬佔上半畫面寬的倍數；GHOSTS＝[延遲 ms, 不透明度]
-function airTopSweep(en, src){
-  const top=$('top'), eImg=$('enemyImg'); if(!top || !eImg) return;
+/* `opts.ang`／`opts.final`（ver -3066，羽蛇的擊敗演出 deathFx:'dive'）：指定行進方向（度，90＝由上往下）；
+   final＝最後一擊：劃完就沒了 —— 不飛回、原位那一隻一直藏著，回傳整段毫秒數（給 combat 延後閉棺）。 */
+function airTopSweep(en, src, opts){
+  opts=opts||{};
+  const top=$('top'), eImg=$('enemyImg'); if(!top || !eImg) return 0;
   const W=top.clientWidth, H=top.clientHeight, w=W*TOP_SIZE;
   const idle=idleEl || eImg; idle.style.opacity='0';
-  const ang=Math.random()*360, rad=ang*Math.PI/180, ux=Math.cos(rad), uy=Math.sin(rad);   // -2791 Ray：「劃過的角度隨機」—— 每一次隨機一個行進方向（全 360°）
+  const ang=opts.ang!=null ? opts.ang : Math.random()*360, rad=ang*Math.PI/180, ux=Math.cos(rad), uy=Math.sin(rad);   // -2791 Ray：「劃過的角度隨機」—— 每一次隨機一個行進方向（全 360°）
   const D=Math.hypot(W,H)+w*1.3, sx=W/2-ux*D/2, sy=H/2-uy*D/2+H*0.15, ex=W/2+ux*D/2, ey=H/2+uy*D/2+H*0.15;
   const rot=ang-180, flip=1;   // 原圖頭朝左（＝180°）：轉到頭對準行進方向；俯視圖左右對稱，不必鏡射
   const pos=(x,y)=>`translate(${x-W/2}px, ${y-H/2}px) rotate(${rot}deg) scaleX(${flip})`;
@@ -2592,7 +2595,9 @@ function airTopSweep(en, src){
   const clean=()=>{ ims.forEach(x=>x.remove()); };
   const hold={ cancel(){ clean(); idle.style.opacity=''; as.forEach(x=>{ try{ x.cancel(); }catch(_){} }); } }; airAtk=hold;
   const last=TOP_GHOSTS[TOP_GHOSTS.length-1][0];
+  if(opts.final){ airAtk=null; setTimeout(clean, TOP_SWEEP_MS+last); return TOP_SWEEP_MS+last; }
   setTimeout(()=>{ if(airAtk!==hold) return; clean(); airAtk=null; airReturn(en); }, TOP_SWEEP_MS+last);
+  return 0;
 }
 /* ══ A 本體：腹面上衝（ENEMY_ATK 的 `sweep`，ver -2550，Ray：「A 動畫出了 mon_centipi_belly_even2_wave_cut，
    讓蜈蚣從畫面下方、放大、快速上平移、略斜」）══ 腹面 loop（腳一波一波抽）照 fps 播，同時整張放大從操作盤線底下
@@ -4118,6 +4123,7 @@ function spawnPurgeStars(box){
      優先於淨化判定 —— 卡上寫了它就不會同時淨化。
    ⚠ 聲音走 `story.playSe`（音效表只有那一份，鐵律 7；它自己擋 brickcrush 疊播）。
    ⚠ 冪等：同 `enemy-purge`，overkill 期間重複叫到不會重播。 */
+let diveFor=null;   // deathFx:'dive' 演過的那一隻（冪等；換怪自然對不上）
 export function purgeEnemy(){
   const en = GAME_CONFIG.enemies[state.currentEnemyKey];
   stopAirDrift(false);   // 死亡就停在當下那一格（ver -2499）
@@ -4141,6 +4147,14 @@ export function purgeEnemy(){
     el._fallAnim = el.animate([{ transform:'none' }, { transform:`translate(${W*0.4}px, ${H*0.95}px)` }],
       { duration:2400, easing:'cubic-bezier(.45,.05,.55,.95)', fill:'forwards' });   // 900＝story.js 的 KERB_T.open（兩扇合上；story.js 有別人未提交的改動，先不去動它加 export）
     return;
+  }
+  /* `deathFx:'dive'`（ver -3066，Ray：「擊敗不要跑淨化，要讓它發動最後一次不扣血的劇情攻擊，由上往下然後消失在畫面，閉棺」）：
+     用 A 的同一張俯視圖（ENEMY_ATK 的 sweepImg，鐵律 7）由上往下劃過、劃完就沒了；不扣血、不震。
+     回傳毫秒數 ⇒ combat 等它劃完才 win()（閉棺）。冪等（overkill 期間重複叫到不重播）。 */
+  if(en && en.deathFx==='dive'){
+    if(diveFor===state.currentEnemyKey) return 0;
+    const c=ENEMY_ATK[imgStem(en)], src=c && c.sweepImg;
+    if(src){ diveFor=state.currentEnemyKey; return airTopSweep(en, src, { ang:90, final:true }) || 0; }
   }
   stopIdleLoop();   // 死亡演出在立繪本體上演（ver -2075）
   if(en && en.deathFx==='quake'){
@@ -4284,6 +4298,7 @@ export function setEnemy(key, opts){
   const en = GAME_CONFIG.enemies[key];
   if(!en) return;
   clearFeathers(true);                          // 羽蛇的封窗羽毛不帶到下一隻（ver -2792）
+  diveFor=null;                                 // 擊敗演出 deathFx:'dive' 的冪等鎖：每開一場／換一隻就放（ver -3066；同一隻怪重打要再演）
   if(en && en.featherBlock) loadFeathers(en);    // 羽毛圖在這一場開打時就抓（16 張小圖）
   portraitOverride=null;                        // 換了一隻（或重開一場）→ NI 鎖住的立繪放掉（ver -1965）
   loadSingleFall(en);                           // 單人的倒地動畫（ver -2065）：有寫 `fall` 就先抓

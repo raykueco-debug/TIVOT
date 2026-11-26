@@ -2989,7 +2989,9 @@ function finishEnemyOrAdvance(){
   /* 血歸零 → **淨化**（ver -588，Ray：「怪 hp 歸零後淡出」）。
      ⚠ 掛在這個**匯流點**（鐵律 8）：自然清盤／按錯／逾時／聖徒化擊殺四條路都經過它。
      ⚠ 連戰換敵那一條不掛：那一隻是被「掠過」不是被淨化，它有自己的 `enemy-leave`。 */
-  if(isLastEnemy()) enemy.purgeEnemy();
+  /* 擊敗演出要先演完才閉棺的（ver -3066，羽蛇 deathFx:'dive'）：purgeEnemy 回傳毫秒數 ⇒ 鎖點擊、等它演完再 win()。 */
+  if(isLastEnemy()){ const ms=enemy.purgeEnemy()||0;
+    if(ms>0){ state.transitioning=true; setTimeout(()=>{ state.transitioning=false; if(!state.over) win(); }, ms+150); return; } }
   if(!isLastEnemy()){ advanceEnemy(); }
   else { win(); }
 }

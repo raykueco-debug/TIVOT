@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.27-3064';
+export const VERSION = 'ver 2026.11.27-3067';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3262,7 +3262,7 @@ export const GAME_CONFIG = {
        talk＝卡上的「劇情」：登場特效拍（出場音效＋震動）→ 兩句。
        ⚠ 只有**劇情戰**會播（state.storyBattle）：隨機遭遇共用這張卡不播；
          talkOnce 打贏才記（§6.5.2）。 */
-    flight_serpent:   { enemy:'serpent', ship:true,
+    flight_serpent:   { enemy:'serpent', ship:true, noResult:true,   // noResult（ver -3066，Ray：「這場沒有評價畫面，評價照算」）：評價／好感／EXP／金錢照算，不出結算頁
                         /* ⚠⚠ 船戰的武器音**按類別**固定（ver -504，Ray：「船戰武器的
                            數值都跟著玩家現在裝備的副武器，但是音效固定用船戰的」）——
                            換上哪一把（絞肉機改、龍息、遊隼…）數值都是那把槍的，
