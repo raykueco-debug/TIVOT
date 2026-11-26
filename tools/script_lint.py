@@ -251,12 +251,12 @@ def check_lowercase_assets():
     ⚠ 只掃**字面路徑**；組出來的背景名由下面那一段（bg 基底名）負責。"""
     real = set()
     for r, ds, fs in os.walk(ROOT):
-        ds[:] = [d for d in ds if d not in ('.git', 'node_modules', '_recycle', '_originals', 'reference')]
+        ds[:] = [d for d in ds if d not in ('.git', 'node_modules', '_recycle', '_originals', 'reference', 'dist', '.wrangler')]
         for f in fs:
             real.add(os.path.relpath(os.path.join(r, f), ROOT).replace(os.sep, '/'))
     pat = re.compile(r'(?<![A-Za-z0-9_])((?:resources|flight)/[A-Za-z0-9_./\-]+\.(?:' + AEXT_RE + r'))', re.I)
     for r, ds, fs in os.walk(ROOT):
-        ds[:] = [d for d in ds if d not in ('.git', 'node_modules', '_recycle', '_originals', 'reference')]
+        ds[:] = [d for d in ds if d not in ('.git', 'node_modules', '_recycle', '_originals', 'reference', 'dist', '.wrangler')]
         for f in fs:
             if os.path.splitext(f)[1] not in ('.js', '.html', '.css'):
                 continue
