@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.26-3052';
+export const VERSION = 'ver 2026.11.26-3053';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3720,7 +3720,8 @@ export const GAME_CONFIG = {
                       ms 700→490（ver -3049，Ray：「子彈時間減30%」）→350（ver -3052，Ray：「子彈再飛快一點」；子彈飛滿這段，所以也就是子彈時間的長度）、zoom＝拉近、se（＋可選 seMod 變調）＝子彈時間音（Ray 11-26：「用 holybeam」—— 專案裡沒有這個檔名，暫用 se_enemy_holyburst，待確認）、duckBgm＝期間壓低 BGM。 */
                    bulletTime: { rate:0.18, ms:350, zoom:1.04, se:'se_enemy_holyburst', duckBgm:true },
                    /* 打到那一刻的特效（ver -3051，Ray：GPT 那套 critfx 拿掉，改原本的槍火放大＋火星飛濺）：k＝槍火倍率、sparks＝加噴幾條火星、sparkReach＝飛濺距離倍率 */
-                   hitBurst: { k:2.2, sparks:40, sparkReach:1.6 } },
+                   hitBurst: { k:2.2, sparks:40, sparkReach:1.6 },
+                   hitSe:'sfx_startbt' },   // 擊中那一刻的音（ver -3053，Ray：神樂鈴）；開槍用原本的槍聲，`se`（falcon）只剩五連 MB 在用
     /* counterStaggerClear（-2702）已由 `suppress` 取代（ver -3041），沒有人讀。 */   // ver -2702（Ray：「黃圈反擊只減 1/4 delay，橘圈 1/3，紅圈 1/2」）；舊值一律 0.5 ——   // 反擊硬直：被反擊時延時計時**已經走掉的那一段**清掉幾成（ver -2618，Ray：「反擊不應該全清延時 應該清1/2」；1＝舊的全清）。只有 defense.staggerOnCounter 讀
 
     // 聖能與大絕蓄力

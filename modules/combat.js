@@ -1073,6 +1073,7 @@ function perfectSe(){ const k=PC().se; if(k){ const src=asset(k); if(src){ try{ 
 function perfectCheer(){ const k=PC().cheerVoice; if(k){ const src=asset(k); if(src){ try{ SFX.playVoice(src, sfxGain(k)); }catch(_){} } } }   // 搭檔 CHEER（還沒有素材，留接口）
 function perfectCritFx(pt){
   perfectCheer();
+  { const k=PC().hitSe; if(k){ const src=asset(k); if(src){ try{ SFX.play(src, sfxGain(k)); }catch(_){} } } }   // 擊中音（ver -3053，Ray：「擊中放神樂鈴」）
   if(pt){ const C=PC().hitBurst||{}, k=C.k||2.2;   // 原本的槍火放大＋火星飛濺（ver -3051，Ray：「gpt 的槍擊特效拿掉，換成大一點的原特效加上火星飛濺」）
     const host=$('fxTop'); muzzleBurst(host, pt.lx, pt.ly, k); sparkSpray(host, pt.lx, pt.ly, C.sparks||40, k*(C.sparkReach||1.6)); }
   floatDmg('PERFECT CRITICAL','50%','26%',true);
@@ -1097,8 +1098,7 @@ function bulletTime(done){
   const vids=[...app.querySelectorAll('video')]; const vr=vids.map(v=>v.playbackRate); vids.forEach(v=>{ try{ v.playbackRate=Math.max(0.0625, v.playbackRate*rate); }catch(_){} });
   enemy.setIdleRate(rate);
   app.style.setProperty('--bt-zoom', String(C.zoom||1.04));
-  app.classList.add('bullet-time');
-  perfectSe();
+  app.classList.add('bullet-time');   // 槍聲用 tap 那一發原本的（ver -3053，Ray：「槍聲用原本的」）
   if(C.se){ const src=asset(C.se); if(src){ try{ C.seMod ? SFX.playMod(src, sfxGain(C.se), C.seMod) : SFX.play(src, sfxGain(C.se)); }catch(_){} } }
   if(C.duckBgm!==false){ try{ SFX.duckBgm(120); }catch(_){} }
   setTimeout(()=>{
