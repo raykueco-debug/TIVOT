@@ -1,5 +1,5 @@
-{"version": "ver 2026.11.26-3063",
-"bytes": 1608806443,
+{"version": "ver 2026.11.27-3064",
+"bytes": 1610044009,
 "files": [
 "audio.js",
 "config.js",
@@ -2431,6 +2431,7 @@
 "resources/background/deck/deck_destroied.webp",
 "resources/background/deck/deck_rapidsail.webp",
 "resources/background/deck/deck_rapidsail_dive_v1.mp4",
+"resources/background/deck/deck_rapidsail_dive_v2.mp4",
 "resources/background/dunmor/dunmor_altar.webp",
 "resources/background/dunmor/dunmor_altar_lit.webp",
 "resources/background/dunmor/dunmor_altarcourt.webp",
