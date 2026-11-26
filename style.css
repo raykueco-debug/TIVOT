@@ -5638,7 +5638,11 @@
      ⚠ `--appvh`（main.js 實測視窗高的 1%）**沒有跟著改**：它是 html 上的 inline
        style，而框幾乎總是「高度吃滿視窗」（只有視窗高過 `--app-max-w / 比例`
        ≈1125px 時才會差），首頁的垂直間距差得出來的話再處理。 */
-  @media (pointer:fine){
+  /* ⚠⚠ ver -3061（Ray 定案：「網頁版要固定比例」，平板也要）：條件由「只有滑鼠」放寬成
+       「滑鼠 **或** 視窗比手機寬（寬高比 ≥ 5:8）」—— 平板（觸控、直式 3:4）以前吃不到這個框。
+       手機直式（約 0.45～0.56）照舊滿版；手機橫式由 orientation.js 的擋板處理。
+       ⚠ 5/8 這個門檻只寫在這一行。 */
+  @media (pointer:fine), (min-aspect-ratio: 5/8){
     :root{
       --frame-w:min(100vw, calc(100vh * var(--pc-ar-w) / var(--pc-ar-h)), var(--app-max-w));
       --frame-h:calc(var(--frame-w) * var(--pc-ar-h) / var(--pc-ar-w));
@@ -5650,8 +5654,13 @@
     /* `inset:0` ＋ 固定寬高 ＋ `margin:auto` ＝ 四邊置中（不動 transform，
        那條路上有 `#app.hitshake` 那一族的動畫）。 */
     #assetLoader,#storyStage,#flightFrame,#gearSheet,#gameMenu,#chapterSheet,
-    #choiceSheet,#nameSheet,#storyLog,#saveSheet,#exitConfirm,#tutSkipConfirm{
+    #choiceSheet,#nameSheet,#storyLog,#saveSheet,#exitConfirm,#tutSkipConfirm,
+    #lootSheet,#tuneSheet,#tutTouch,.gold-rise,#innLobby .inn-guide,#gearSheet .gs-tip,
+    #sealboxFx,#beatPick,.vp-frame{   /* ver -3061 補：商店／獎品單、立繪調整、教學觸控層、金幣、旅店說明、整備提示、封印盒、改立繪窗 */
       width:var(--frame-w);height:var(--frame-h);margin:auto;}
+    /* 貼左右兩邊的 fixed 元件：左右各讓出一條黑邊的寬（ver -3061）。 */
+    #gateTip{left:calc((100vw - var(--frame-w)) / 2);right:calc((100vw - var(--frame-w)) / 2);}
+    #muteBtn{margin-left:calc((100vw - var(--frame-w)) / 2);}
   }
 
 /* ══⚠⚠⚠ **全螢幕面板閃頂排**（ver -1812，Ray：「商店中的選單還是被動態島那一排擋住無法點擊，
