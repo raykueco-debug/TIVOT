@@ -1068,13 +1068,17 @@ export function muzzleSmoke(k){
     setTimeout(()=>{ if(el.parentNode) el.remove(); }, 2100);
   }
 }
+/* 曳光的飛行時間（命中特效要對準抵達那一刻，鐵律 7：只在這裡算）。 */
+export function tracerFlightMs(slowMs){ return TRACER_MS + (slowMs||0); }
 export function fireTracer(sx, sy, tx, ty, slowMs){   // slowMs：PERFECT CRITICAL 的慢動作子彈（ver -3045），沒給＝照常
   const host=$('fxTop'); if(!host) return;
   lastShot = { sx, sy, tx, ty };
   const dx=tx-sx, dy=ty-sy;
   const dist=Math.hypot(dx,dy) || 1;
   const ang=Math.atan2(dy,dx)*180/Math.PI;
-  const len=Math.min(TRACER_LEN, dist);
+  /* 慢動作（PERFECT CRITICAL）：短彈頭＋等速 —— 一般那條緩動是「前段衝、後段拖」，而彈道前段藏在面板底下，
+     拉長時間只會變成「一閃就到、然後停在目標上」，看起來不慢（ver -3047 實測）。 */
+  const len=Math.min(slowMs ? TRACER_LEN*0.45 : TRACER_LEN, dist);
   const ux=dx/dist, uy=dy/dist;
   const el=document.createElement('i');
   el.className='tracer';
@@ -1086,7 +1090,7 @@ export function fireTracer(sx, sy, tx, ty, slowMs){   // slowMs：PERFECT CRITIC
   try{
     el.animate([{ transform:a, opacity:0.35 },
                 { transform:b, opacity:1 }],
-               { duration:TRACER_MS+(slowMs||0), easing:slowMs?'cubic-bezier(.1,.9,.3,1)':'cubic-bezier(.2,.7,.4,1)', fill:'forwards' });
+               { duration:TRACER_MS+(slowMs||0), easing:slowMs?'linear':'cubic-bezier(.2,.7,.4,1)', fill:'forwards' });
   }catch(_){ el.style.transform=b; }
   if(slowMs) el.classList.add('slow');
   setTimeout(()=>{ if(el.parentNode) el.remove(); }, TRACER_MS+(slowMs||0)+60);

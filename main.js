@@ -1792,7 +1792,7 @@ function openEnemyEdit(opt){
 }
 bindBtn('enemyEditBtn', ()=>openEnemyEdit());
 bindBtn('pcritBtn', ()=>{ const m=combat.perfectTestCycle(); const b=document.getElementById('pcritBtn');
-  if(b) b.textContent = m==='crit' ? '必爆' : m==='mb' ? '必MB' : '爆擊'; });   // 管理人：PERFECT CRITICAL／五連 MB 測試（ver -3045）
+  if(b) b.textContent = m==='crit' ? '必爆' : m==='mb' ? '必MB' : m==='all' ? '每發爆' : '爆擊'; });   // 管理人：PERFECT CRITICAL／五連 MB 測試（ver -3045）
 try{ window.__groupEdit = b=>{ combat.startScriptBattle(b||'canyon_w_mix2'); const want=(b||'canyon_w_mix2').replace('canyon_w_','canyon_'); let n=0; const w=()=>{ if(state.currentEnemyKey===want && document.querySelector('#enemyGroup .eg-guard')){ setTimeout(()=>openEnemyEdit({ tab:'group' }), 800); return; } if(++n<80) setTimeout(w, 250); }; setTimeout(w, 800); }; }catch(_){}   // 開發用：直接開群戰編輯（ver -2632）
 /* ⚠ 「道具」（bagBtn）與「城鎮」（townBtn）兩顆首頁鈕已於 ver -376 移除（Ray 指定）。
    `loot.showBag` 與 `town.open` 都還在（前者暫時沒有入口、後者由劇情的 `thenTown` 叫起來），

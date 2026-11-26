@@ -1050,12 +1050,13 @@ function clearBoard(opts){
 const PC = () => (GAME_CONFIG.tuning||{}).perfectCrit || {};
 let pcTest = null;   // 管理人測試：null／'crit'（必爆）／'mb'（下一盤完美就 MB）
 export function perfectTestCycle(){
-  pcTest = pcTest===null ? 'crit' : pcTest==='crit' ? 'mb' : null;
+  pcTest = pcTest===null ? 'crit' : pcTest==='crit' ? 'mb' : pcTest==='mb' ? 'all' : null;   // 'all'＝每一發點對的普攻都走 PERFECT CRITICAL（只限測試）
   if(pcTest==='mb') state.perfStreak=Math.max(state.perfStreak|0, (PC().mbStreak||5)-1);
   return pcTest;
 }
 export function perfectTestMode(){ return pcTest; }
 function perfectShotKind(num){
+  if(pcTest==='all' && num===state.expect && state.enemyHp>0 && !state.saintMode && !state.niMode && !state.dualWield) return 'crit';   // 管理人測試：每發都爆
   if(!(num===state.expect && state.expect===state.N && state.boardClean && state.enemyHp>0)) return null;
   if(state.saintMode || state.niMode || state.dualWield || state.tutorialActive) return null;
   const C=PC(); if(!C.mbStreak && !C.chance) return null;
@@ -1137,7 +1138,7 @@ function gunHitOnEnemy(cell, pierce, slowMs){
   enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, imp.x, imp.y, slowMs||0);   // PERFECT CRITICAL：慢動作子彈
   /* 普攻的硝煙（ver -1655，Ray：「普攻也加煙」）—— 份量壓小：它每一下都會響。 */
   enemy.muzzleSmoke(0.55);
-  return { x: top.left + imp.x, y: top.top + imp.y, delay: slowMs||0 };   // 命中點（視窗座標）：critfx 用
+  return { x: top.left + imp.x, y: top.top + imp.y, delay: slowMs ? enemy.tracerFlightMs(slowMs) : 0 };   // 命中點＋抵達時刻   // 命中點（視窗座標）：critfx 用
 }
 /* ══ 槍火（ver -1052，Ray：「射擊時敵人身上槍火炸裂的感覺不夠…現在是個圓點而已，
    帶點不規則的芒跟火星如何？」）══════════════════════════════════════════════
