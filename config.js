@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.26-3055';
+export const VERSION = 'ver 2026.11.26-3056';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5479,12 +5479,12 @@ export const ASSETS = {
   vo_sorana_cheer4: "resources/audio/vo/vo_sorana_cheer4.m4a",
   vo_sorana_cheer5: "resources/audio/vo/vo_sorana_cheer5.m4a",
   vo_sorana_cheer6: "resources/audio/vo/vo_sorana_cheer6.m4a",
-  vo_anya_cheer1: "resources/audio/vo/vo_anya_cheer1.m4a",
-  vo_anya_cheer2: "resources/audio/vo/vo_anya_cheer2.m4a",
-  vo_anya_cheer3: "resources/audio/vo/vo_anya_cheer3.m4a",
-  vo_anya_cheer4: "resources/audio/vo/vo_anya_cheer4.m4a",
-  vo_anya_cheer5: "resources/audio/vo/vo_anya_cheer5.m4a",
-  vo_anya_cheer6: "resources/audio/vo/vo_anya_cheer6.m4a",
+  vo_anya_cheer1: "resources/audio/vo/vo_anya_cheer1.m4a?v=3a4ca324",
+  vo_anya_cheer2: "resources/audio/vo/vo_anya_cheer2.m4a?v=11a094f2",
+  vo_anya_cheer3: "resources/audio/vo/vo_anya_cheer3.m4a?v=6584712b",
+  vo_anya_cheer4: "resources/audio/vo/vo_anya_cheer4.m4a?v=7979f5c6",
+  vo_anya_cheer5: "resources/audio/vo/vo_anya_cheer5.m4a?v=df1212f2",
+  vo_anya_cheer6: "resources/audio/vo/vo_anya_cheer6.m4a?v=391d0b03",
   vo_anya_lvup:      "resources/audio/vo/vo_anya_lvup.m4a",
   vo_sorana_lvup:    "resources/audio/vo/vo_sorana_lvup.m4a",
   vo_sorana_roar:    "resources/audio/vo/vo_sorana_roar.m4a?v=184fbea0",   // ver -859：Ray 更新 5連完美戰吼   // 獵手的戰吼・連5盤那一發（ver -837 新錄音）
@@ -8575,6 +8575,12 @@ export const ASSET_VER = {
   'vela_uptown_day': 'd93db6dd',
   'vela_uptown_dusk': '5d9e2caf',
   'vela_uptown_night': 'fdd3243f',
+  'vo_anya_cheer1': '3a4ca324',
+  'vo_anya_cheer2': '11a094f2',
+  'vo_anya_cheer3': '6584712b',
+  'vo_anya_cheer4': '7979f5c6',
+  'vo_anya_cheer5': 'df1212f2',
+  'vo_anya_cheer6': '391d0b03',
   'vo_anya_luciddream': '60bed254',
   'vo_anya_nightmarereload': '1943d140',
   'vo_anya_obe': '30d84ac4',
