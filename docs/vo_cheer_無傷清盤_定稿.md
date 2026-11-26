@@ -13,7 +13,7 @@
 | 2 | [smug, confident, raised voice over gunfire] ふん、当然よ。 | 哼，當然。 |
 | 3 | [aloof, quick, mid-battle] まあまあね。 | 還算可以吧。 |
 | 4 | [grudgingly impressed, short breath] …悪くないわ。 | …不差嘛。 |
-| 5 | [sharp, teasing, battle-ready] 調子に乗らないで。 | 別得意忘形。 |
+| 5 | [shy, stammering, flustered, mid-battle] ちょ、調子に乗らないでよね… | 別、別得意忘形啦…（Ray：句首口吃、有點害羞） |
 | 6 | [embarrassed, quiet but quick, mid-battle] …ちょっとだけ、ね。 | …只有一點點啦。 |
 
 ## 諾薇兒（溫暖）
@@ -42,11 +42,15 @@
 
 | # | 貼進 11Labs | 中文 |
 |---|---|---|
-| 1 | [soft surprised gasp, mid-battle] …… | （含蓄驚呼） |
-| 2 | [quiet, flat, focused on battle] ……いい。 | ……好。 |
-| 3 | [quiet, faintly impressed, focused] ……すごい。 | ……厲害。 |
-| 4 | [quiet, short nod, mid-battle] ……うん。 | ……嗯。 |
-| 5 | [quiet, calm, focused on battle] ……完璧。 | ……完美。 |
-| 6 | [quiet, low, faintly impressed] ……強い。 | ……強。 |
+| 1 | [soft surprised gasp, quiet, mid-battle] ……っ。 | （含蓄驚呼） |
+| 2 | [calm, flat, clearly voiced, normal volume, mid-battle] ……いい。 | ……好。 |
+| 3 | [calm, faintly impressed, clearly voiced, normal volume, mid-battle] ……すごい。 | ……厲害。 |
+| 4 | [calm, short nod, clearly voiced, normal volume, mid-battle] ……うん。 | ……嗯。 |
+| 5 | [calm, flat, clearly voiced, normal volume, mid-battle] ……完璧。 | ……完美。 |
+| 6 | [calm, faintly impressed, clearly voiced, normal volume, mid-battle] ……強い。 | ……強。 |
 
 ⚠ 索菈娜 5 的原稿是「樂勝」（繁體字形），日文寫成「楽勝」11Labs 才唸得對。
+
+⚠ 安雅（11-26 Ray：「變氣音了」）：tag 裡的 quiet／low 會被唸成氣音。無口要寫成 calm＋flat＋**clearly voiced, normal volume**，只有第 1 句驚呼保留氣音。
+
+音檔：`resources/audio/_raw/vo_cheer_1126/`（`_post/` 是後製版）；試聽頁 `python tools/vo_review_server.py 8138 vo_cheer_1126` → http://localhost:8138/tools/vo_cheer_review.html

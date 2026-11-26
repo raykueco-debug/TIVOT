@@ -1,0 +1,46 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>讚聲試聽</title>
+<style>
+body{background:#14121a;color:#e8e2d4;font:15px/1.5 system-ui,"Microsoft JhengHei",sans-serif;margin:0;padding:16px}
+h3{margin:0 0 6px}.note{color:#a99f8c;font-size:13px}
+.bar{display:flex;gap:10px;align-items:center;margin:8px 0 14px;flex-wrap:wrap}
+button{background:#2b2635;color:#e8e2d4;border:1px solid #5a4f6a;border-radius:6px;padding:5px 12px;cursor:pointer}
+#submit{background:#7a5a1e;border-color:#d9a441}
+.card{background:#1e1b26;border:1px solid #3a3446;border-radius:10px;padding:12px;margin-bottom:12px;max-width:760px}
+.card h4{margin:0 0 6px;display:flex;justify-content:space-between;gap:10px}.st{color:#7fbf7f;font-size:12px;font-weight:normal;white-space:nowrap}
+.row{display:grid;grid-template-columns:120px 1fr;gap:6px 10px;align-items:center;margin:4px 0}
+.row span{color:#c9bfa8;font-size:13px}.row.cur span{color:#e0b060}audio{width:100%;height:34px}
+textarea{width:100%;box-sizing:border-box;min-height:56px;margin-top:8px;background:#100e15;color:#e8e2d4;border:1px solid #4a4258;border-radius:6px;padding:6px;font:inherit}
+.acts{text-align:right;margin-top:4px}
+</style></head><body>
+<h3>無傷清盤讚聲試聽（11-26，Eleven v4，每句 A／B 兩版）</h3>
+<div class="note">「後製」＝壓 4.5k 刺耳段、7k 以上高架下修 5dB、11.5k 低通、輕微飽和、短房間殘響（遮機械感）。寫要哪一版、原檔還是後製（後製太悶／太遠也講）。</div>
+<div class="bar"><button id="submit">提交全部意見</button><span class="note" id="subst"></span></div>
+<div id="list"></div>
+<script type="module">
+const N = '../resources/audio/_raw/vo_cheer_1126/';
+const ITEMS = [{"k": "cecilie_cheer1", "t": "賽西莉（Ayaka）｜1「べ、別に…！」", "news": [["A 原檔", "cecilie_cheer1_A"], ["A 後製", "_post/cecilie_cheer1_A_post"], ["B 原檔", "cecilie_cheer1_B"], ["B 後製", "_post/cecilie_cheer1_B_post"]]}, {"k": "cecilie_cheer2", "t": "賽西莉（Ayaka）｜2「ふん、当然よ。」", "news": [["A 原檔", "cecilie_cheer2_A"], ["A 後製", "_post/cecilie_cheer2_A_post"], ["B 原檔", "cecilie_cheer2_B"], ["B 後製", "_post/cecilie_cheer2_B_post"]]}, {"k": "cecilie_cheer3", "t": "賽西莉（Ayaka）｜3「まあまあね。」", "news": [["A 原檔", "cecilie_cheer3_A"], ["A 後製", "_post/cecilie_cheer3_A_post"], ["B 原檔", "cecilie_cheer3_B"], ["B 後製", "_post/cecilie_cheer3_B_post"]]}, {"k": "cecilie_cheer4", "t": "賽西莉（Ayaka）｜4「…悪くないわ。」", "news": [["A 原檔", "cecilie_cheer4_A"], ["A 後製", "_post/cecilie_cheer4_A_post"], ["B 原檔", "cecilie_cheer4_B"], ["B 後製", "_post/cecilie_cheer4_B_post"]]}, {"k": "cecilie_cheer5", "t": "賽西莉（Ayaka）｜5「ちょ、調子に乗らないでよね…（改稿）」", "news": [["A 原檔", "cecilie_cheer5_A"], ["A 後製", "_post/cecilie_cheer5_A_post"], ["B 原檔", "cecilie_cheer5_B"], ["B 後製", "_post/cecilie_cheer5_B_post"]]}, {"k": "cecilie_cheer6", "t": "賽西莉（Ayaka）｜6「…ちょっとだけ、ね。」", "news": [["A 原檔", "cecilie_cheer6_A"], ["A 後製", "_post/cecilie_cheer6_A_post"], ["B 原檔", "cecilie_cheer6_B"], ["B 後製", "_post/cecilie_cheer6_B_post"]]}, {"k": "nouvelle_cheer1", "t": "諾薇兒（Yui）｜1「すごいです！」", "news": [["A 原檔", "nouvelle_cheer1_A"], ["A 後製", "_post/nouvelle_cheer1_A_post"], ["B 原檔", "nouvelle_cheer1_B"], ["B 後製", "_post/nouvelle_cheer1_B_post"]]}, {"k": "nouvelle_cheer2", "t": "諾薇兒（Yui）｜2「怪我がなくてよかった。」", "news": [["A 原檔", "nouvelle_cheer2_A"], ["A 後製", "_post/nouvelle_cheer2_A_post"], ["B 原檔", "nouvelle_cheer2_B"], ["B 後製", "_post/nouvelle_cheer2_B_post"]]}, {"k": "nouvelle_cheer3", "t": "諾薇兒（Yui）｜3「さすがです。」", "news": [["A 原檔", "nouvelle_cheer3_A"], ["A 後製", "_post/nouvelle_cheer3_A_post"], ["B 原檔", "nouvelle_cheer3_B"], ["B 後製", "_post/nouvelle_cheer3_B_post"]]}, {"k": "nouvelle_cheer4", "t": "諾薇兒（Yui）｜4「お見事です。」", "news": [["A 原檔", "nouvelle_cheer4_A"], ["A 後製", "_post/nouvelle_cheer4_A_post"], ["B 原檔", "nouvelle_cheer4_B"], ["B 後製", "_post/nouvelle_cheer4_B_post"]]}, {"k": "nouvelle_cheer5", "t": "諾薇兒（Yui）｜5「信じてましたよ。」", "news": [["A 原檔", "nouvelle_cheer5_A"], ["A 後製", "_post/nouvelle_cheer5_A_post"], ["B 原檔", "nouvelle_cheer5_B"], ["B 後製", "_post/nouvelle_cheer5_B_post"]]}, {"k": "nouvelle_cheer6", "t": "諾薇兒（Yui）｜6「その調子です！」", "news": [["A 原檔", "nouvelle_cheer6_A"], ["A 後製", "_post/nouvelle_cheer6_A_post"], ["B 原檔", "nouvelle_cheer6_B"], ["B 後製", "_post/nouvelle_cheer6_B_post"]]}, {"k": "sorana_cheer1", "t": "索菈娜（itsuki）｜1「やるじゃん！」", "news": [["A 原檔", "sorana_cheer1_A"], ["A 後製", "_post/sorana_cheer1_A_post"], ["B 原檔", "sorana_cheer1_B"], ["B 後製", "_post/sorana_cheer1_B_post"]]}, {"k": "sorana_cheer2", "t": "索菈娜（itsuki）｜2「いいね！」", "news": [["A 原檔", "sorana_cheer2_A"], ["A 後製", "_post/sorana_cheer2_A_post"], ["B 原檔", "sorana_cheer2_B"], ["B 後製", "_post/sorana_cheer2_B_post"]]}, {"k": "sorana_cheer3", "t": "索菈娜（itsuki）｜3「今の、最高！」", "news": [["A 原檔", "sorana_cheer3_A"], ["A 後製", "_post/sorana_cheer3_A_post"], ["B 原檔", "sorana_cheer3_B"], ["B 後製", "_post/sorana_cheer3_B_post"], ["v3 對照 A", "sorana_cheer3_v3_A"], ["v3 對照 B", "sorana_cheer3_v3_B"]]}, {"k": "sorana_cheer4", "t": "索菈娜（itsuki）｜4「ナイス！」", "news": [["A 原檔", "sorana_cheer4_A"], ["A 後製", "_post/sorana_cheer4_A_post"], ["B 原檔", "sorana_cheer4_B"], ["B 後製", "_post/sorana_cheer4_B_post"]]}, {"k": "sorana_cheer5", "t": "索菈娜（itsuki）｜5「楽勝じゃん。」", "news": [["A 原檔", "sorana_cheer5_A"], ["A 後製", "_post/sorana_cheer5_A_post"], ["B 原檔", "sorana_cheer5_B"], ["B 後製", "_post/sorana_cheer5_B_post"]]}, {"k": "sorana_cheer6", "t": "索菈娜（itsuki）｜6「よっしゃ！」", "news": [["A 原檔", "sorana_cheer6_A"], ["A 後製", "_post/sorana_cheer6_A_post"], ["B 原檔", "sorana_cheer6_B"], ["B 後製", "_post/sorana_cheer6_B_post"]]}, {"k": "anya_cheer1", "t": "安雅（Suzu）｜1「……（含蓄驚呼）」", "news": [["A 原檔", "anya_cheer1_A"], ["A 後製", "_post/anya_cheer1_A_post"], ["B 原檔", "anya_cheer1_B"], ["B 後製", "_post/anya_cheer1_B_post"]]}, {"k": "anya_cheer2", "t": "安雅（Suzu）｜2「……いい。」", "news": [["A 原檔", "anya_cheer2_A"], ["A 後製", "_post/anya_cheer2_A_post"], ["B 原檔", "anya_cheer2_B"], ["B 後製", "_post/anya_cheer2_B_post"]]}, {"k": "anya_cheer3", "t": "安雅（Suzu）｜3「……すごい。」", "news": [["A 原檔", "anya_cheer3_A"], ["A 後製", "_post/anya_cheer3_A_post"], ["B 原檔", "anya_cheer3_B"], ["B 後製", "_post/anya_cheer3_B_post"]]}, {"k": "anya_cheer4", "t": "安雅（Suzu）｜4「……うん。」", "news": [["A 原檔", "anya_cheer4_A"], ["A 後製", "_post/anya_cheer4_A_post"], ["B 原檔", "anya_cheer4_B"], ["B 後製", "_post/anya_cheer4_B_post"]]}, {"k": "anya_cheer5", "t": "安雅（Suzu）｜5「……完璧。」", "news": [["A 原檔", "anya_cheer5_A"], ["A 後製", "_post/anya_cheer5_A_post"], ["B 原檔", "anya_cheer5_B"], ["B 後製", "_post/anya_cheer5_B_post"]]}, {"k": "anya_cheer6", "t": "安雅（Suzu）｜6「……強い。」", "news": [["A 原檔", "anya_cheer6_A"], ["A 後製", "_post/anya_cheer6_A_post"], ["B 原檔", "anya_cheer6_B"], ["B 後製", "_post/anya_cheer6_B_post"]]}];
+const notes = await fetch('../api/vo_notes').then(r => r.json()).catch(() => ({}));
+const list = document.getElementById('list');
+for (const it of ITEMS) {
+  const c = document.createElement('div'); c.className = 'card';
+  const rows = (it.news.map(([lab, f]) => `<div class="row"><span>${lab}</span><audio controls preload="none" src="${N}${f}.mp3"></audio></div>`));
+  c.innerHTML = `<h4><span>${it.t}</span><span class="st"></span></h4>${rows.join('')}<textarea placeholder="要哪一版／要剪哪段／哪裡不好…"></textarea><div class="acts"><button class="sv">存檔</button></div>`;
+  const ta = c.querySelector('textarea'), st = c.querySelector('.st');
+  if (notes[it.k]) { ta.value = notes[it.k].text; st.textContent = '已存 ' + notes[it.k].time; }
+  const save = async () => {
+    const r = await fetch('../api/vo_notes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: it.k, text: ta.value }) }).then(r => r.json()).catch(() => null);
+    st.textContent = r ? ('已存 ' + (r.time || '')) : '⚠ 沒存到';
+  };
+  let tm; ta.oninput = () => { st.textContent = '…'; clearTimeout(tm); tm = setTimeout(save, 800); };
+  c.querySelector('.sv').onclick = save;
+  list.appendChild(c);
+}
+document.querySelectorAll('audio').forEach(a => a.addEventListener('play', () => document.querySelectorAll('audio').forEach(b => { if (b !== a) b.pause(); })));
+const subst = document.getElementById('subst');
+fetch('../api/vo_submit').then(r => r.json()).then(j => { if (j.time) subst.textContent = '上次提交 ' + j.time; }).catch(() => {});
+document.getElementById('submit').onclick = async () => {
+  const r = await fetch('../api/vo_submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.json()).catch(() => null);
+  subst.textContent = r ? `✔ 已提交（${r.time}，${r.count} 格）` : '⚠ 沒提交到（伺服器沒開？）';
+};
+</script></body></html>

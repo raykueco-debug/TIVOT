@@ -1,11 +1,11 @@
 """語音重生試聽頁的伺服器（11-25 Ray：「開頁面給我聽　附 textbox 寫意見」）。
-  python tools/vo_review_server.py [port]   → http://localhost:8137/tools/vo_review.html
+  python tools/vo_review_server.py [port] [資料夾]   → http://localhost:8137/tools/vo_review.html
 靜態檔＝整個 TIVOT 根目錄；意見存在 resources/audio/_raw/vo_regen_1125/notes.json（{項目: {text, time}}），提交存 submit.json。"""
 import json, os, sys, time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DIR = os.path.join(ROOT, 'resources', 'audio', '_raw', 'vo_regen_1125')
+DIR = os.path.join(ROOT, 'resources', 'audio', '_raw', sys.argv[2] if len(sys.argv) > 2 else 'vo_regen_1125')   # 第二個參數＝哪一批（11-26 讚聲：vo_cheer_1126）
 NOTES = os.path.join(DIR, 'notes.json')
 SUBMIT = os.path.join(DIR, 'submit.json')
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8137
