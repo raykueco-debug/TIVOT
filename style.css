@@ -1337,6 +1337,19 @@
   body.testmode #pcritBtn{display:flex;}
   /* 子彈時間（ver -3048，combat.bulletTime）：略拉近、去飽和偏冷（暗角 -3050 拿掉）。進場快、出場「啪」一下（transition 只掛在進場）。 */
   #app.bullet-time #top{transform:scale(var(--bt-zoom,1.04));transition:transform .14s ease-out;}   /* 去飽和偏冷 -3051 拿掉（Ray） */
+  /* 子彈時間的敵窗全片效果（ver -3069，combat.btFxStart；PgDown 輪換四種讓 Ray 選）。只在 #top 裡。 */
+  #top .btfx{position:absolute;inset:0;pointer-events:none;z-index:7;}
+  #top .btfx canvas{width:100%;height:100%;display:block;}
+  #top.btfx-freeze{filter:contrast(1.35) brightness(1.06);}
+  #top .btfx2{background:rgba(60,120,255,.6);mix-blend-mode:color;}   /* 泛藍：只換色相不壓暗 */
+  #top .btfx2::after{content:'';position:absolute;inset:0;background:#fff;opacity:0;animation:btfxFlash .4s ease-out;}   /* 進場閃白一下 */
+  @keyframes btfxFlash{0%{opacity:.95}35%{opacity:.25}100%{opacity:0}}
+  #app.bullet-time #top.btfx-zoom{transform:scale(1.08);transition:transform .1s ease-out;}
+  #top .btfx3{-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
+    -webkit-mask-image:radial-gradient(ellipse at center,transparent 30%,#000 78%);mask-image:radial-gradient(ellipse at center,transparent 30%,#000 78%);}
+  #btfxToast{position:fixed;left:50%;top:12%;transform:translateX(-50%);z-index:99999;padding:8px 14px;border:1px solid #c9a227;border-radius:10px;
+    background:rgba(8,9,14,.92);color:#e8e0cd;font-size:14px;letter-spacing:1px;pointer-events:none;opacity:0;transition:opacity .2s;}
+  #btfxToast.on{opacity:1;}
   /* 暗角遮罩已拿掉（ver -3050，Ray：「遮罩拿掉看看」）。 */
   /* 面板：蓋在下半盤面上（上半的敵人要看得到），點擊不穿透。 */
   #enemyEdit{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
