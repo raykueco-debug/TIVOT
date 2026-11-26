@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.26-3061';
+export const VERSION = 'ver 2026.11.26-3062';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -4281,6 +4281,7 @@ export const GAME_CONFIG = {
       /* stage2 甲板混亂那一段（ver -741，本機 BS.1770 實測，錨：se_earthquake 誤差
          <0.1%、sturm 6%）。飛行頁 FILE_GAIN 有第二份，改一邊要改另一邊。 */
       se_sail:2.056, se_shipcrush:2.358,
+      se_wind_blizzard:1.92,   // 甲板俯衝的風聲（ver -3062；flight/index.html FILE_GAIN 同值，兩邊互指）
 
       /* ── 音樂 ── */
       bgm_mainmenu:1.735, bgm_battle:0.849, bgm_boss:0.665, bgm_result:0.855,
