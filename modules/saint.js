@@ -1445,6 +1445,8 @@ export function playCutin(done, label, imgKey, opts){
    （`exitSaint`／`exitNightmare` 在叫它之前就跑掉了）。
    ⚠ 解槽走 `resetInstallSlot()`（saint 自己的具名 setter，鐵律 9）：
      聖徒化／惡夢化／共鬥共用 `saintUsedThisBattle` 那一個槽。 */
+/* 五連完美清盤的 MB（ver -3045）：借聖徒化 MB 那一張 cut-in（同一套演出，鐵律 8）；不進出聖徒化。 */
+export function playBoardBurst(done){ playSaintCutin('burst', done); }
 function playSaintCutin(kind, done, reload){
   state.cutinPlaying=true;                 // 演出期間鎖定點擊
   const frz = api.cutinFreeze ? api.cutinFreeze() : null;   // ver -1779：cut-in 一律凍結

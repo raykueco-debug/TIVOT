@@ -1068,7 +1068,7 @@ export function muzzleSmoke(k){
     setTimeout(()=>{ if(el.parentNode) el.remove(); }, 2100);
   }
 }
-export function fireTracer(sx, sy, tx, ty){
+export function fireTracer(sx, sy, tx, ty, slowMs){   // slowMs：PERFECT CRITICAL 的慢動作子彈（ver -3045），沒給＝照常
   const host=$('fxTop'); if(!host) return;
   lastShot = { sx, sy, tx, ty };
   const dx=tx-sx, dy=ty-sy;
@@ -1086,9 +1086,10 @@ export function fireTracer(sx, sy, tx, ty){
   try{
     el.animate([{ transform:a, opacity:0.35 },
                 { transform:b, opacity:1 }],
-               { duration:TRACER_MS, easing:'cubic-bezier(.2,.7,.4,1)', fill:'forwards' });
+               { duration:TRACER_MS+(slowMs||0), easing:slowMs?'cubic-bezier(.1,.9,.3,1)':'cubic-bezier(.2,.7,.4,1)', fill:'forwards' });
   }catch(_){ el.style.transform=b; }
-  setTimeout(()=>{ if(el.parentNode) el.remove(); }, TRACER_MS+60);
+  if(slowMs) el.classList.add('slow');
+  setTimeout(()=>{ if(el.parentNode) el.remove(); }, TRACER_MS+(slowMs||0)+60);
   bulletsFlySe();
 }
 /* ══⚠⚠ **朝「視窗上的某一點」射一條火線**（ver -1652，Ray：「機槍反擊按發數射火線，

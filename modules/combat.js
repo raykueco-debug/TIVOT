@@ -27,7 +27,8 @@ import * as weapon from './weapon.js';
 import * as saint from './saint.js';
 import * as partner from './partner.js';
 import * as inspector from './inspector.js';
-import * as tutorial from './tutorial.js';   // 教學關卡（首次出陣穿插對話；暫停走 pauseForDialog）
+import * as tutorial from './tutorial.js';
+import * as critfx from './critfx.js';   // PERFECT CRITICAL 命中特效（葉模組，ver -3045）   // 教學關卡（首次出陣穿插對話；暫停走 pauseForDialog）
 import { playTransition, hideHome } from './transition.js';   // 過渡禎（勝利進結算前的「驅逐完成」）＋收首頁（唯一那一支，ver -1372）
 import * as prog from '../script/progress.js';      // 持久 HP／talkOnce 打贏才記（葉節點，無循環）
 import { faceStyle } from '../script/speakers.js';  // 立繪當頭像（月彎中間的搭檔臉，ver -1036；唯一那一支）
@@ -123,6 +124,8 @@ export function setup(){
                                              ⚠ ver -974 起判定不再被技能覆蓋（「判定還是分色」），
                                                所以兩個等級恆等 —— 介面留著，語意沒變。 */
                                           partner.onThreatResolved(real || g); },
+                 /* 攻擊圈沒點、直接落下（ver -3045，Ray：「挨打也讓連續紅圈歸零」）：算一次「非紅圈」。 */
+                 onAssaultLanded: ()=>partner.onThreatResolved('hit'),
                  hintCurrentCell,   // 紅點解決了就指一下正確格（ver -718，見 tuning.hintNextCell）
                  /* ⚠ `lucidPerfect` 已於 ver -974 移除：明晰之夢不再把整帶升成紅圈，
                     改由 `counterAtkStep`／`counterHitForced` 兩支分開回答（見上）。 */
@@ -377,6 +380,8 @@ export function loadBoard(idx){
     state.intervalLimit=(BOARDS[si]||BOARDS[BOARDS.length-1]).interval; }
   state.boardStartTime=Date.now();
   state.boardClean=true;
+  state.boardDmg=0;               // 這一盤造成的傷害（五連完美清盤的底數，ver -3045）
+  if(pcTest==='mb') state.perfStreak=Math.max(state.perfStreak|0, (PC().mbStreak||5)-1);   // 管理人測試：下一盤完美就 MB
   state.shieldDown=false; state.shieldBank=0;   // 六角護罩（ver -2120）：每一盤重新張開、帳歸零
   state.critCombo=0;              // 暴擊連擊為「盤內連續」：新盤（含清盤後換盤/換敵）歸零＝「清盤中斷」
   buildGrid();
@@ -724,7 +729,10 @@ function tap(num,cell,e){
      以前骰子在傷害分支裡才擲，而槍火在這一行就畫了，兩邊無從一致（鐵律 7）。
      ⚠ 只有「依序點中」那一發會真的用到它；點錯照舊被劈落（`pierce` 為 false）。 */
   const critRoll = Math.random();
-  const critHit  = num===state.expect && (critRoll < critRateAt(state.critCombo) || state.charmRevenge);   // 掛飾 C09：受擊後下一發必爆
+  /* 完美清盤的收尾一擊（ver -3045）：'crit'＝PERFECT CRITICAL、'mb'＝這一盤收尾走 MB（不擲爆擊）、null＝一般。
+     ⚠ 在槍火之前決定：慢動作子彈與打穿劈落都要先知道（同 critRoll 的理由，鐵律 7）。 */
+  const pShot    = perfectShotKind(num);
+  const critHit  = num===state.expect && (pShot==='crit' || critRoll < critRateAt(state.critCombo) || state.charmRevenge);   // 掛飾 C09：受擊後下一發必爆
   rollShotParry();                  // 劈落的骰子也在這裡擲一次（ver -2043，見 parryNow）
   /* ══ 閃避／格擋型的敵人（ver -2810，Ray 索菈娜：「攻擊有效（扣血）率為 30%，有效時就放格擋動畫，
      格擋動畫要播完，期間不觸發其他動畫且攻擊有效」）══ 有效率＝1−卡上 parryBasic（擋下＝閃掉）。
@@ -735,7 +743,7 @@ function tap(num,cell,e){
     else if(state.enemyHp>0 && !state.saintMode && !state.niMode && !state.dualWield)
       enemy.enemyEvade((num===state.expect && (critHit || !parryNow())) ? 'parry' : 'dodge');
   }
-  gunHitOnEnemy(cell, critHit);     // 槍擊特效映射到敵人對應位置
+  const hitPt = gunHitOnEnemy(cell, critHit, pShot==='crit' ? PC().slowMs : 0);     // 槍擊特效映射到敵人對應位置
 
   // 聖徒化：依序點擊 16 格、受擊推進倒數槽（combat 於期間讓出主迴圈，交由 saint 驅動盤面游標）。
   if(state.saintMode){ saint.saintTap(num, cell); updateStatus(); return; }
@@ -801,7 +809,8 @@ function tap(num,cell,e){
     const cc=state.critCombo;
     if(state.expect===state.N) dmg*=charmLastHitMul();   // 掛飾 C01／C02／C13：這一盤的最後一擊（ver -2505）
     const rev=state.charmRevenge; state.charmRevenge=false;   // 掛飾 C09：用掉
-    if(critRoll < critRateAt(cc) || rev){   // 骰子是 tap 開頭那一顆（ver -2012：槍火要先知道會不會打穿劈落）
+    if(pShot==='crit'){ crit=true; dmg*=(PC().mul||2); perfectCritFx(hitPt); }   // PERFECT CRITICAL（ver -3045）：取代一般爆擊倍率
+    else if(pShot!=='mb' && (critRoll < critRateAt(cc) || rev)){   // 骰子是 tap 開頭那一顆（ver -2012：槍火要先知道會不會打穿劈落）；MB 那一盤的收尾不擲
       crit=true; dmg*=(1 + critDmgAt(cc) + (rev ? charmSum('revengeCritDmg') : 0));
     }
     state.critCombo++;
@@ -968,6 +977,7 @@ function clearLucidFlood(burst){
    這一盤是 BR 收窗掃掉的（`brSweepBoard`）—— 那一刻 `dualWield` 已經關了，只有呼叫端知道。 */
 function clearBoard(opts){
   const brClear = !!(opts && opts.br);
+  const wasAlive = state.enemyHp>0;   // overkill 那一盤不算進五連完美清盤（ver -3045）
   SFX.clear();                      // 清盤：神聖鈴響
   enemy.clearFeathers();            // 羽蛇封窗的羽毛：清盤吹走（ver -2792）
   /* 六角護罩（ver -2120～-2122）：清盤那一刻護罩碎掉，把**這一盤擋下的傷害（`shieldBank`）全部**打進去
@@ -1026,10 +1036,58 @@ function clearBoard(opts){
      這一行看到血是 0 就直接收場。
      ⚠ 空窗結束時 `maybeMorph` 的收尾自己會 `loadBoard(0)` 給新型態一副新盤，
        所以這裡**什麼都不做**就對了。 */
-  if(morphSwapping) return;
-  if(state.enemyHp<=0){ finishEnemyOrAdvance(); return; }   // 敵死 → 轉下一敵 or（最後一敵）結算
-  defense.resetEnemyTimers();   // 清盤瞬間即重置敵大絕與延遲懲罰（間隔懲罰由 loadBoard 重置）
-  goNextBoard();
+  const after = ()=>{
+    if(morphSwapping) return;
+    if(state.enemyHp<=0){ finishEnemyOrAdvance(); return; }   // 敵死 → 轉下一敵 or（最後一敵）結算
+    defense.resetEnemyTimers();   // 清盤瞬間即重置敵大絕與延遲懲罰（間隔懲罰由 loadBoard 重置）
+    goNextBoard();
+  };
+  if(perfectBoardCleared(brClear, wasAlive, after)) return;   // 五連完美清盤 → MB cut-in 播完才往下（ver -3045）
+  after();
+}
+/* ══ 完美清盤的收尾一擊（ver -3045，Ray 11-26；數字在 config.tuning.perfectCrit，全是暫定值）══
+   E＝PERFECT CRITICAL、D＝五連完美清盤 MB。計數的擁有者是這裡（`state.perfStreak`／`perfRunDmg`，鐵律 9）：
+     · 插：完美清盤 +1（perfectBoardCleared）　· 拔：不完美的一盤／觸發 MB／換局（startGame）
+     · 換怪不歸零（sessionCarry 帶過場）。 */
+const PC = () => (GAME_CONFIG.tuning||{}).perfectCrit || {};
+let pcTest = null;   // 管理人測試：null／'crit'（必爆）／'mb'（下一盤完美就 MB）
+export function perfectTestCycle(){
+  pcTest = pcTest===null ? 'crit' : pcTest==='crit' ? 'mb' : null;
+  if(pcTest==='mb') state.perfStreak=Math.max(state.perfStreak|0, (PC().mbStreak||5)-1);
+  return pcTest;
+}
+export function perfectTestMode(){ return pcTest; }
+function perfectShotKind(num){
+  if(!(num===state.expect && state.expect===state.N && state.boardClean && state.enemyHp>0)) return null;
+  if(state.saintMode || state.niMode || state.dualWield || state.tutorialActive) return null;
+  const C=PC(); if(!C.mbStreak && !C.chance) return null;
+  if(C.mbStreak && (state.perfStreak|0)+1 >= C.mbStreak) return 'mb';
+  const ch = ((C.chance||{})[state.N] || 0) + charmSum('critPerfect');
+  return (pcTest==='crit' || Math.random() < ch) ? 'crit' : null;
+}
+function perfectSe(){ const k=PC().se; if(k){ const src=asset(k); if(src){ try{ SFX.play(src, sfxGain(k)); }catch(_){} } } }
+function perfectCheer(){ const k=PC().cheerVoice; if(k){ const src=asset(k); if(src){ try{ SFX.playVoice(src, sfxGain(k)); }catch(_){} } } }   // 搭檔 CHEER（還沒有素材，留接口）
+function perfectCritFx(pt){
+  perfectSe(); perfectCheer();
+  setTimeout(()=>{
+    if(pt) critfx.play(pt.x, pt.y);
+    floatDmg('PERFECT CRITICAL','50%','26%',true);
+  }, (pt && pt.delay) || 0);
+}
+/* 清盤那一刻記帳；連到第 mbStreak 盤 → 追加傷害＋MB cut-in，回傳 true（`after` 交給 cut-in 播完才叫）。 */
+function perfectBoardCleared(brClear, wasAlive, after){
+  if(!wasAlive || brClear || state.saintMode || state.niMode || state.tutorialActive) return false;
+  if(!state.boardClean){ state.perfStreak=0; state.perfRunDmg=0; return false; }
+  const C=PC();
+  state.perfStreak=(state.perfStreak|0)+1;
+  state.perfRunDmg=(state.perfRunDmg||0)+(state.boardDmg||0);
+  if(!C.mbStreak || state.perfStreak < C.mbStreak) return false;
+  const bonus=Math.round(state.perfRunDmg*(C.mbPct||0.2));
+  state.perfStreak=0; state.perfRunDmg=0;
+  perfectSe(); perfectCheer();
+  if(bonus>0){ enemyDamage(bonus, true, true, 'perfmb'); floatDmg('MAXIMUM BURST '+bonus,'50%','28%',true); }
+  saint.playBoardBurst(after);
+  return true;
 }
 function recordBoardTime(sec){
   state.boardsCompleted++;
@@ -1040,7 +1098,7 @@ function recordBoardTime(sec){
  *  打擊 / 傷害
  * ========================================================================== */
 // 槍擊命中敵人：從點到的那一格射一條火線過去，**火花就炸在火線的落點**（ver -1627）
-function gunHitOnEnemy(cell, pierce){
+function gunHitOnEnemy(cell, pierce, slowMs){
   const fxTop=$('fxTop');
   const cr=cell.getBoundingClientRect();
   const top=$('top').getBoundingClientRect();
@@ -1078,9 +1136,10 @@ function gunHitOnEnemy(cell, pierce){
        「從面板底下竄出來」（實作與說明在 `enemy.fireTracer`）。
      ⚠⚠ 起點再由 `tracerOrigin` 往外推一截（它本來就在畫面外、被裁掉，
        推它只會讓看得見的那一段更斜）。 */
-  enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, imp.x, imp.y);
+  enemy.fireTracer(enemy.tracerOrigin(sx0, top.width), sy0, imp.x, imp.y, slowMs||0);   // PERFECT CRITICAL：慢動作子彈
   /* 普攻的硝煙（ver -1655，Ray：「普攻也加煙」）—— 份量壓小：它每一下都會響。 */
   enemy.muzzleSmoke(0.55);
+  return { x: top.left + imp.x, y: top.top + imp.y, delay: slowMs||0 };   // 命中點（視窗座標）：critfx 用
 }
 /* ══ 槍火（ver -1052，Ray：「射擊時敵人身上槍火炸裂的感覺不夠…現在是個圓點而已，
    帶點不規則的芒跟火星如何？」）══════════════════════════════════════════════
@@ -1841,6 +1900,7 @@ function enemyDamage(dmg,isCrit,silent,src){
       }
       if(after<0 && !noOverkill()) state.overkill+=(-after);
       addPartnerDamage(state.enemyHp - Math.max(0,after));   // 好感的帳（ver -2890）：實際扣掉的血，overkill 不算
+      if(src!=='perfmb') state.boardDmg=(state.boardDmg||0)+(state.enemyHp - Math.max(0,after));   // 五連完美清盤的底數（ver -3045）
       enemy.spawnAbsorb(state.enemyHp - Math.max(0,after));   // 點錯生出來的怪先吃傷害（ver -2980）
       state.enemyHp=Math.max(0,after);
       tutorial.onHpChange();          // 血量觸發的 talk 步驟（ver -599）
@@ -3312,6 +3372,7 @@ function sessionSave(){
                     同一局之內換一隻怪不歸零，換局才歸零。（ver -893 用詞） */
                  svStreak:state.svPerfectStreak||0,
                  lucidStreak:state.lucidStreak||0,
+                 perfStreak:state.perfStreak||0, perfRunDmg:state.perfRunDmg||0,   // 五連完美清盤（ver -3045）：換怪不歸零
                  counterStreak:state.counterStreak||0,   // 赤爪星（ver -1778）
                  flawlessKills:state.flawlessKills||0 };
 }
@@ -3623,6 +3684,7 @@ const BATTLE_FX_IMGS=[
   'resources/effects/ef_bite2.webp',   // .fx-bitei i
 ];
 function warmBattleFx(){
+  critfx.warm();   // PERFECT CRITICAL 的四格（ver -3045）
   const run=()=>{ for(const src of BATTLE_FX_IMGS){
     const im=new Image(); im.src=src; if(im.decode) im.decode().catch(()=>{}); } };
   if(window.requestIdleCallback) requestIdleCallback(run, {timeout:800});
@@ -3637,7 +3699,7 @@ export function startGame(){
      會被 sessionCarry 搬回來**（ver -891/-892，Ray：「可跨場（怪）累積」）——
      同 saintUsed／energy 的作法：在開頭乾淨歸零，接得上同一局的那一場再放回去
      （鐵律 7：不要在歸零那排挖特例）。**（ver -893 用詞：局＝結算、場＝一隻怪）** */
-  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0; state.installReloadPending=false; state.counterStreak=0;
+  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.perfStreak=0; state.perfRunDmg=0; state.flawlessKills=0; state.energyBoostUntil=0; state.installReloadPending=false; state.counterStreak=0;
   saint.reset();   // 聖徒化狀態全重置（saintMode 經 exitSaint、清計時器、關手勢層、清 saint 旗標；共鬥 coopMode/coopTimer 一併）
   weapon.reset();  // 雙槍破防重置（清 dualWield/dualTimer + #grid dualwield class，防跨場殘留）
   /* 重畫破防計量表（ver -1067 加，-1068 之後它只是重算 path＋重掛頭像）。
@@ -3868,6 +3930,8 @@ export function startGame(){
       state.energy              = sessionCarry.energy;
       state.svPerfectStreak     = sessionCarry.svStreak||0;      // 獵手的戰吼（ver -891）
       state.lucidStreak         = sessionCarry.lucidStreak||0;   // 明晰之夢（ver -891）
+      state.perfStreak          = sessionCarry.perfStreak||0;    // 五連完美清盤（ver -3045）
+      state.perfRunDmg          = sessionCarry.perfRunDmg||0;
       state.counterStreak       = sessionCarry.counterStreak||0; // 赤爪星（ver -1778）
       state.flawlessKills       = sessionCarry.flawlessKills||0; // 連續無傷擊殺（ver -892）
       updateEnergyClasp();          // 破防值搬回來了，扣環要跟著畫（同一支，鐵律 8）
@@ -3952,7 +4016,7 @@ export function startIntruderFight(){
   state.atkBuff=false; state.lowHpBuff=false;
   state.partnerActiveUsed=false; state.activeUsedBy={}; state.enemySlowUntil=0;   // 新場：搭檔主動技每場次數重置（逐位，ver -1844）
   /* 亂入是**新的一局**（不接上一段），三個連段一律歸零（ver -891/-892；ver -893 用詞）。 */
-  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.flawlessKills=0; state.energyBoostUntil=0; state.installReloadPending=false; state.counterStreak=0;
+  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.perfStreak=0; state.perfRunDmg=0; state.flawlessKills=0; state.energyBoostUntil=0; state.installReloadPending=false; state.counterStreak=0;
   saint.reset();
   weapon.reset();
   partner.reset();
