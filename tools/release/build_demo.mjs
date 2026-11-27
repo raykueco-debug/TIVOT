@@ -37,6 +37,9 @@ const DEMO = !FULL || process.argv.includes('--demo');
 { const b = path.join(OUT, 'build.js'); try { fs.unlinkSync(b); } catch {}
   const src = fs.readFileSync(path.join(ROOT, 'build.js'), 'utf8').replace(/demo\s*:\s*false/, 'demo:' + DEMO);
   fs.writeFileSync(b, src); console.log('build.js → demo:' + DEMO); }
+/* 404.html（11-27）：Cloudflare Pages 沒有 404.html 時，**任何不存在的路徑都回 200 ＋ 首頁 index.html**（單頁應用模式）——
+   缺檔會被當成成功：離線下載把 HTML 存成素材、遊戲拿到 HTML 當圖解碼失敗，而且都沒有錯誤訊息。放一支 404.html，缺檔就回真的 404。 */
+fs.writeFileSync(path.join(OUT, '404.html'), '<!doctype html><meta charset="utf-8"><title>404</title><p>找不到這個檔案。</p>');
 console.log(`${FULL ? 'full' : 'demo'}：${files.length} 檔、${(bytes / 1048576).toFixed(0)} MiB → ${path.relative(ROOT, OUT)}（硬連結 ${linked}、複製 ${copied}）`);
 if (files.length > MAX_FILES) console.error(`✘ 超過 Pages 免費方案 ${MAX_FILES} 檔`);
 if (big.length) console.error('✘ 單檔超過 25 MiB：', big);
