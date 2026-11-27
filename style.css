@@ -2640,7 +2640,10 @@
      ⚠ `:not(#id)` 的權重等同一個 id，所以這一條的權重遠高過各鈕自己的規則，
        壓得住 `#continueBtn.on{display:block}`，不必動 `main.js`。
      ⚠ 商店是**管理人模式限定的臨時入口**（ver -368）：正式入口是城鎮的雜貨舖節點。 */
-  body:not(.testmode) #home button:not(#startBtn):not(#tutorialBtn):not(#creditBtn):not(#originalBtn):not(#langBtn):not(#offlineBtn){display:none;}
+  body:not(.testmode):not(.demo) #home button:not(#startBtn):not(#tutorialBtn):not(#creditBtn):not(#originalBtn):not(#langBtn):not(#offlineBtn){display:none;}
+  /* ══ 試玩版的首頁（ver -3073，Ray：「首頁只留開始故事」）══ 白名單：開始故事／繼續（有存檔才出現，照它自己的 .on）／
+     原作／Credit／語言／離線下載。挑戰、教學、章節與管理人那一排都不出現。管理人模式照舊整條不適用。 */
+  body.demo:not(.testmode) #home button:not(#storyStartBtn):not(#continueBtn):not(#creditBtn):not(#originalBtn):not(#langBtn):not(#offlineBtn){display:none;}
   /* 離線下載（ver -2842）：白名單放行，但**預設不出現** —— 只有 offline.js 真的掛上了
      （有 SW、不是 App、不是 localhost）main.js 才加 .on。 */
   #home #offlineBtn{display:none;}

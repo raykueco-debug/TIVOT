@@ -3319,6 +3319,9 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
     else   TEL.clearAdmin();     // 撤銷簽名 → 恢復上報
     SFX.unlock(); SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'));   // SI_01＝開關回饋音
   };
+  /* 試玩版（ver -3073）：首頁入口收窄（style.css 的 body.demo 白名單）＋飛行頁（非 module）讀父頁這個值做降落鎖。
+     判定只有 prog.isDemo() 一支。 */
+  try{ const dm=prog.isDemo(); document.body.classList.toggle('demo', dm); window.__tivotDemo = dm; }catch(_){}
   // 開機還原：簽名還在就直接進管理人模式
   /* ⚠ ver -2210（Ray：「在選單中加入開啟或關閉管理人介面」）：簽名還在、而且選單沒有把介面關掉
      （`tivot_admin_ui_v1` 不是 '0'）才進 testmode。簽名本身不動 —— 關掉介面的管理人照樣不上報遙測。 */

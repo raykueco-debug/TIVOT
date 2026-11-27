@@ -1,7 +1,8 @@
-{"version": "ver 2026.11.27-3071",
-"bytes": 1610037274,
+{"version": "ver 2026.11.27-3074",
+"bytes": 1610046516,
 "files": [
 "audio.js",
+"build.js",
 "config.js",
 "css/lootsheet.css",
 "flight/base.webp",

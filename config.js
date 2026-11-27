@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.27-3071';
+export const VERSION = 'ver 2026.11.27-3074';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3331,7 +3331,9 @@ export const GAME_CONFIG = {
      `setFlags` 插（整幕演完才寫 ⇒ 打輸回捲不會插）；**沒有人拔**。⚠ 旗名兩處互指：改一邊要改另一邊。
      誰在讀：progress.datesUnlocked()（唯一的判定，鐵律 8）—— 旅店的伙伴門（約會入口）與城鎮的 dateOpen 都問它。 */
   /* `chapterStage` ＝章節 ≥ 這個數也算過了終點（索菈娜戰在 Stage 4，Stage 5 起是試玩版之後）：舊存檔與章節跳關沒有終點旗，靠這一條。 */
-  demo: { endFlag:'demo_cleared', chapterStage:5 },
+  /* 試玩建置（ver -3073）：試玩版裡演完插終點旗的那一幕 → 結束卡（endTitle／endSub，文案待 Ray 定）→ 回首頁。
+     「是不是試玩版」不在這裡（建置設定 build.js，判定 progress.isDemo()）。 */
+  demo: { endFlag:'demo_cleared', chapterStage:5, endTitle:'試玩版到此結束', endSub:'感謝遊玩 —— 正式版敬請期待' },
 
   relicBox: {
     coin:'guild_coin', price:2, firstPrice:1, firstFlag:'relic_first_bought',

@@ -31,6 +31,12 @@ for (const f of files) {
   fs.mkdirSync(path.dirname(dst), { recursive: true });
   try { fs.linkSync(src, dst); linked++; } catch { fs.copyFileSync(src, dst); copied++; }
 }
+/* 試玩建置（ver -3073）：dist/demo 一律是試玩版（--full 加 --demo 也是）—— build.js 換成 demo:true 的**獨立複本**
+   （其餘是硬連結，直接改會連開發機那一份一起改）。遊戲端判定在 script/progress.js 的 isDemo()。 */
+const DEMO = !FULL || process.argv.includes('--demo');
+{ const b = path.join(OUT, 'build.js'); try { fs.unlinkSync(b); } catch {}
+  const src = fs.readFileSync(path.join(ROOT, 'build.js'), 'utf8').replace(/demo\s*:\s*false/, 'demo:' + DEMO);
+  fs.writeFileSync(b, src); console.log('build.js → demo:' + DEMO); }
 console.log(`${FULL ? 'full' : 'demo'}：${files.length} 檔、${(bytes / 1048576).toFixed(0)} MiB → ${path.relative(ROOT, OUT)}（硬連結 ${linked}、複製 ${copied}）`);
 if (files.length > MAX_FILES) console.error(`✘ 超過 Pages 免費方案 ${MAX_FILES} 檔`);
 if (big.length) console.error('✘ 單檔超過 25 MiB：', big);

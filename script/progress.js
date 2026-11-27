@@ -14,6 +14,7 @@
 
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG } from '../config.js';   // 只為了拿教學的 storageKey（不要抄第二份字串）
+import { BUILD } from '../build.js';   // 建置設定：試玩版（ver -3073）
 /* ⚠ 「一輪遊戲」包含道具與時鐘，所以存讀檔要一起帶（見 runSnapshot）。
    兩支都是 `script/` 的同層資料模組，沒有循環相依。 */
 import * as inv from './inventory.js';
@@ -187,6 +188,14 @@ export function addFlags(list){
   const out=[...s]; setFlags(out); return out;
 }
 export function hasFlag(f){ return getFlags().indexOf(f)>=0; }
+/* ══ 試玩版（ver -3073）══ 唯一的判定（鐵律 7／8）：建置設定 `build.js` 的 `demo`（dist/demo 打包時是 true），
+   開發機可用網址 `?demo=1` 臨時切成試玩版測試（不寫任何存檔，關掉分頁就回來）。
+   誰在讀：main（首頁入口、`window.__tivotDemo` 給飛行頁）、story（試玩終點的收尾）。 */
+let _demo=null;
+export function isDemo(){
+  if(_demo==null){ let q=false; try{ q=/[?&]demo=1/.test(location.search); }catch(_){} _demo=!!(BUILD && BUILD.demo) || q; }
+  return _demo;
+}
 /* 約會開放了沒（ver -3005，Ray：「把到測試版結束為止的約會鈕都拿掉」）：試玩版終點（config.demo.endFlag）之前一律不開。
    ⚠ 唯一的判定（鐵律 8）：旅店的伙伴門（inn.refresh）與城鎮的 dateOpen 都問這一支。沒設終點＝一直開。
    ⚠ 章節 ≥ `demo.chapterStage` 也算過了終點：舊存檔（終點旗是 -3005 才有的）與章節跳關（不經過 lake_deck）都靠這一條。 */

@@ -7,7 +7,8 @@
 import json, os, re, subprocess, sys
 ROOTS = ('resources/', 'flight/', 'modules/', 'script/', 'i18n/', 'css/')
 ROOT_FILES = {'index.html', 'style.css', 'manifest.webmanifest', 'audio.js', 'config.js', 'i18n.js',
-              'main.js', 'orientation.js', 'state.js', 'telemetry.js', 'offline.js', 'sw.js'}
+              'main.js', 'orientation.js', 'state.js', 'telemetry.js', 'offline.js', 'sw.js',
+              'build.js'}   # 建置設定（ver -3073，試玩版旗標；dist/demo 打包時換成 demo:true）
 # 留在 repo、不進遊戲包的工作素材（ver -2853 之後，Ray：「收掉留著 不要進遊戲包」）：
 #   resources/ci/layers/ ＝做 CI 影片用的 GPT 圖層／修補片／Wan 輸出／對位資料（365 MB），遊戲播的是 resources/ci/video/ 的成品，執行時一張都不讀。
 SKIP_DIRS = ('resources/ci/layers/',)
