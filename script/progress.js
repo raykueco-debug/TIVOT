@@ -193,7 +193,7 @@ export function hasFlag(f){ return getFlags().indexOf(f)>=0; }
    誰在讀：main（首頁入口、`window.__tivotDemo` 給飛行頁）、story（試玩終點的收尾）。 */
 let _demo=null;
 export function isDemo(){
-  if(_demo==null){ let q=false; try{ q=/[?&]demo=1/.test(location.search); }catch(_){} _demo=!!(BUILD && BUILD.demo) || q; }
+  if(_demo==null){ let q=false; try{ q=/[?&]demo=1(?:&|$)/.test(location.search); }catch(_){} _demo=!!(BUILD && BUILD.demo) || q; }
   return _demo;
 }
 /* 約會開放了沒（ver -3005，Ray：「把到測試版結束為止的約會鈕都拿掉」）：試玩版終點（config.demo.endFlag）之前一律不開。

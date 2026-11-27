@@ -5628,7 +5628,7 @@ function endScene(){
      演完不接後面（thenTown／next），蓋一張黑透的結束卡，點掉回首頁。判定只問 prog.isDemo()；開發機不受影響。 */
   { const D=GAME_CONFIG.demo||{};
     if(prog.isDemo() && D.endFlag && (cur.setFlags||[]).indexOf(D.endFlag)>=0){
-      active=false; cur=null;
+      active=false; cur=null; clearCast();   // 清場：上一句的立繪與對話框不要留在結束卡後面
       const ok=showTitleCard({ title:i18nT(D.endTitle||'試玩版到此結束'), sub:i18nT(D.endSub||'感謝遊玩'), opaque:true }, ()=>goHomeNow());
       if(!ok) goHomeNow();
       return;

@@ -40,6 +40,13 @@ const DEMO = !FULL || process.argv.includes('--demo');
 /* 404.html（11-27）：Cloudflare Pages 沒有 404.html 時，**任何不存在的路徑都回 200 ＋ 首頁 index.html**（單頁應用模式）——
    缺檔會被當成成功：離線下載把 HTML 存成素材、遊戲拿到 HTML 當圖解碼失敗，而且都沒有錯誤訊息。放一支 404.html，缺檔就回真的 404。 */
 fs.writeFileSync(path.join(OUT, '404.html'), '<!doctype html><meta charset="utf-8"><title>404</title><p>找不到這個檔案。</p>');
+/* 離線下載清單（11-27）：首頁「離線下載」讀的 offline_list.json 要等於**這一包真的有的檔**——
+   原本是硬連結到整包那份（1.5 GB／1.8 萬檔），試玩包上按下載會去抓不存在的檔。改寫成獨立的一份。 */
+{ const o = path.join(OUT, 'offline_list.json'); try { fs.unlinkSync(o); } catch {}
+  const have = files.filter(f => f !== 'offline_list.json' && fs.existsSync(path.join(OUT, f)));
+  const sum = have.reduce((a, f) => a + fs.statSync(path.join(OUT, f)).size, 0);
+  fs.writeFileSync(o, JSON.stringify({ version: off.version, bytes: sum, files: have }, null, 0).replace(/","/g, '",\n"'));
+  console.log(`offline_list.json → ${have.length} 檔、${(sum / 1048576).toFixed(0)} MiB`); }
 console.log(`${FULL ? 'full' : 'demo'}：${files.length} 檔、${(bytes / 1048576).toFixed(0)} MiB → ${path.relative(ROOT, OUT)}（硬連結 ${linked}、複製 ${copied}）`);
 if (files.length > MAX_FILES) console.error(`✘ 超過 Pages 免費方案 ${MAX_FILES} 檔`);
 if (big.length) console.error('✘ 單檔超過 25 MiB：', big);
