@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.27-3108';
+export const VERSION = 'ver 2026.11.27-3109';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -5472,7 +5472,7 @@ export const ASSETS = {
   vo_nouvelle_lvup:  "resources/audio/vo/vo_nouvelle_lvup.m4a?v=3417114e",
   /* 無傷清盤讚聲（ver -3055，11Labs 11-26 生成，A take＋後製版；原檔在 resources/audio/_raw/vo_cheer_1126/）。搭檔卡 `cheerVoice` 輪播。 */
   vo_cecilie_cheer1: "resources/audio/vo/vo_cecilie_cheer1.m4a",
-  vo_cecilie_cheer2: "resources/audio/vo/vo_cecilie_cheer2.m4a",
+  vo_cecilie_cheer2: "resources/audio/vo/vo_cecilie_cheer2.m4a?v=3e5c8359",
   vo_cecilie_cheer3: "resources/audio/vo/vo_cecilie_cheer3.m4a",
   vo_cecilie_cheer4: "resources/audio/vo/vo_cecilie_cheer4.m4a",
   vo_cecilie_cheer5: "resources/audio/vo/vo_cecilie_cheer5.m4a",
@@ -5508,7 +5508,7 @@ export const ASSETS = {
   vo_anya_cheerB6: "resources/audio/vo/vo_anya_cheerB6.m4a",
   vo_anya_cheerB6b: "resources/audio/vo/vo_anya_cheerB6b.m4a",
   vo_cecilie_cheerB1: "resources/audio/vo/vo_cecilie_cheerB1.m4a",
-  vo_cecilie_cheerB2: "resources/audio/vo/vo_cecilie_cheerB2.m4a",
+  vo_cecilie_cheerB2: "resources/audio/vo/vo_cecilie_cheerB2.m4a?v=acf62c26",
   vo_cecilie_cheerB3: "resources/audio/vo/vo_cecilie_cheerB3.m4a",
   vo_cecilie_cheerB4: "resources/audio/vo/vo_cecilie_cheerB4.m4a",
   vo_cecilie_cheerB5: "resources/audio/vo/vo_cecilie_cheerB5.m4a",
@@ -8623,6 +8623,8 @@ export const ASSET_VER = {
   'vo_anya_luciddream': '60bed254',
   'vo_anya_nightmarereload': '1943d140',
   'vo_anya_obe': '30d84ac4',
+  'vo_cecilie_cheer2': '3e5c8359',
+  'vo_cecilie_cheerb2': 'acf62c26',
   'vo_cecilie_miss1': '87712784',
   'vo_cecilie_miss2': '3a948a99',
   'vo_cecilie_miss3': '1f3d3bc0',
