@@ -20201,7 +20201,7 @@ function drawSerpentRush(now){
   }
   ctx.restore();
 }
-/* serpentIntroBusy（ver -3098，Ray：「羽蛇進入劇情攻擊後飛行畫面上不要再刷羽蛇出來 直接開始跑"好快!"劇情」）：
+/* serpentIntroBusy（ver -3099，Ray：「羽蛇進入劇情攻擊後飛行畫面上不要再刷羽蛇出來 直接開始跑"好快!"劇情」）：
    掠過把 enemy 收掉之後，scriptPending 要打贏才清 —— 不擋的話生怪迴圈下一幀就 spawnScripted 再刷一隻羽蛇
    （而且新那隻撞上還會再演一次登場）。唯一插它的是 runSerpentIntro，唯一拔它的是 waitGearThenBattle 開戰那一刻。 */
 let serpentIntroBusy=false;
@@ -20542,7 +20542,7 @@ function updateEnemy(dt,now){
   }
   const K=enemy?ENEMY_KINDS[enemy.kind]:null;
   if(!enemy){
-    if(serpentIntroBusy) return;   // 羽蛇登場演出中（ver -3098）：劇本與雜怪都不刷，見 runSerpentIntro
+    if(serpentIntroBusy) return;   // 羽蛇登場演出中（ver -3099）：劇本與雜怪都不刷，見 runSerpentIntro
     /* 劇本遭遇**優先於自動刷新**：條件到了就立刻生，不等計時器（Ray：「立刻刷怪」）。 */
     const S=scriptedDue();
     if(S){ spawnScripted(S); return; }
