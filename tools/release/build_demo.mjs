@@ -24,24 +24,29 @@ else {
   const cfgTxt = fs.readFileSync(path.join(ROOT, 'config.js'), 'utf8');
   const refsIn = (txt, re) => [...txt.matchAll(re)].map(m => m[1]);
   // C1 插圖動畫：試玩範圍 7 支，只放 config 現用的那一版
-  const CG_IN = ['001_nouvelle_fell', '002_saintassult', '003_lunaria_armed', '004_renna_intro', '005_cecilieintro', '008_rennaholdanya', '009_soranadebute'];
+  const CG_IN = ['001_nouvelle_fell', '002_saintassult', '003_lunaria_armed', '004_renna_intro', '005_cecilieintro', '008_rennaholdanya', '009_soranadebute', '044_cecilietorsten'];   // 044＝卡耶爾夢境 frag02（404 實測，推翻 C5 那一半）
   const addIllus = refsIn(cfgTxt, /'([^']+)':\s*\{\s*video:'resources\/illustration\/video\/[^']+'/g).filter(k => CG_IN.includes(k))
     .map(k => cfgTxt.match(new RegExp(`'${k}':\\s*\\{\\s*video:'(resources/illustration/video/[^']+)'`))[1]);
   // C2 CI 影片：試玩三位搭檔（賽西莉、諾薇兒、安雅；cutin_nireload＝安雅惡夢再裝填），config 現用版本
-  const addCi = [...new Set(refsIn(cfgTxt, /'(resources\/ci\/video\/[^']+)'/g))].filter(f => /cecilie|nouvelle|anya|nireload/.test(f));
+  const addCi = [...new Set(refsIn(cfgTxt, /'(resources\/ci\/video\/[^']+)'/g))].filter(f => /cecilie|nouvelle|anya|nireload|torsten/.test(f));   // torsten＝主角托爾斯坦（處決／MB／雙槍，404 實測）
   // C3 背景動畫：帝都／帝都城外／北泊／卡耶爾 整個資料夾（雲層、遮罩、影片都是 bg_fx／bg_anim 組名字讀的）
   const BG_ANIM_IN = ['capital', 'capital_outer', 'northport', 'canyon'].map(d => `resources/background/anim/${d}/`);
   // C4 空賊受擊動畫：全部版本都放（Ray 選放）
   const SKYPIRATE_HIT = /^resources\/enemy\/anim\/man_skypirate_\d+_hit_/;
-  const ADD = new Set([...addIllus, ...addCi]);
-  const keepExtra = f => ADD.has(f) || BG_ANIM_IN.some(p => f.startsWith(p)) || SKYPIRATE_HIT.test(f);
+  BG_ANIM_IN.push('resources/enemy/fx/serpent_feathers/' /* 羽蛇羽毛特效（404 實測） */, 'resources/background/anim/holysee/', 'resources/background/anim/enemy/');   // holysee＝序章地宮；enemy＝賞金獵人戰與索菈娜戰的戰鬥背景動畫（兩場都在試玩範圍，404 實測）   // 404 實測：開場聖王廳地宮（序章）會用
+  /* 404 實測補（8143，11-27）：靜態清單漏的、試玩範圍真的會讀的檔。
+     其餘 404（索菈娜／蕾妮／馬季諾語音、托爾斯坦 CI 影片、renee_ci_act）是戰鬥開場的整批預熱在敲門，試玩不會播 —— 照 Ray 的 C6／C16 不放。 */
+  const TESTED = ['resources/background/holysee/holyseedungeonwhole.webp', 'resources/si/luna_si_taunt.webp', 'resources/si/renna_si_front.webp', 'resources/si/anya_si_lookup.webp', 'resources/audio/bgm/peritune_rituale_machina_loop.m4a' /* 卡耶爾夢境 frag02 的鎖定曲 */, 'resources/enemy/saint_tr_bg.webp',
+    'resources/enemy/guild_hunter_battle_bg.webp', 'resources/enemy/cap_dream_battle_bg.webp', 'resources/ci/ci_torsten_dualcrush.webp', 'resources/ci/ci_torsten_execute.png', 'resources/ci/ci_torsten_execute_v2.webp', 'resources/ci/ci_torsten_mb_v2.webp', 'resources/enemy/sorana_battle_bg_v3.webp', 'resources/background/anim/enemy/guild_hunter_battle_bg_crowd_v1.mp4'];   // 帝都賞金獵人戰
+  const ADD = new Set([...addIllus, ...addCi, ...TESTED]);
+  const keepExtra = f => ADD.has(f) || /^resources\/background\/(sky_parallax\/|sky_[^/]*$)/.test(f) /* 共用程式雲天空層（各時段，bg_fx 組名讀，404 實測） */ || f.startsWith('resources/si/sway/') /* 立繪擺動層（蕾娜、安雅，modules/sway.js 組名讀，404 實測） */ || BG_ANIM_IN.some(p => f.startsWith(p)) || SKYPIRATE_HIT.test(f) || /^resources\/si\/(blink\/)?(anya|nouvelle|renna|cecilie|luna)_(ad_)?si_/.test(f) /* 試玩登場五人的立繪表情全收（執行期挑表情，靜態清單漏；Ray C8 今晚先放） */ || /^resources\/enemy\/(anim\/)?mon_canyon_/.test(f) /* 卡耶爾夢境隨機池的怪全收（棺甲蟲 dark 等靜態清單漏收，404 實測） */;
   // 排除：C5 範圍外插圖／C6 索菈娜 CI 與語音／C7 零星背景／C15 非試玩飛行怪／C16＋17 只留試玩會播的語音
-  const VO_KEEP = /^resources\/audio\/vo\/vo_(nouvelle|nouvellemiss|anya|cecilie)/;
+  const VO_KEEP = /^resources\/audio\/vo\/vo_(nouvelle|nouvellemiss|anya|cecilie|luna|torsten)/;   // luna／lunamg＝序章主角璐娜（404 實測）
   const FLIGHT_ENEMY_KEEP = /^flight\/enemy\/(flh_pirate|flm_centipi|flm_serpent|sky3d_tune\.json|_)/;
   const drop = f =>
-    /^resources\/illustration\/(043_eliointro|044_cecilietorsten)/i.test(f) ||
-    /^resources\/ci\/[^/]*sorana/i.test(f) ||
-    /^resources\/background\/(tomb|ravnsdal|forest|holysee)\//.test(f) ||
+    /^resources\/illustration\/043_eliointro/i.test(f) ||
+    /^resources\/ci\/(video\/)?[^/]*sorana/i.test(f) ||   // 含 ci_sorana_roar_anya／_nouvelle 影片（名字帶搭檔名，C2 的篩選會誤收）
+    /^resources\/background\/(tomb|ravnsdal|forest)\//.test(f) ||   // holysee 不排：序章地宮（404 實測）
     (f.startsWith('flight/enemy/') && !FLIGHT_ENEMY_KEEP.test(f)) ||
     (f.startsWith('resources/audio/vo/') && !VO_KEEP.test(f));
   files = [...new Set([...listed, ...off.files.filter(f => (CODE.test(f) && !f.startsWith('resources/')) || keepExtra(f))])].filter(f => !drop(f));
