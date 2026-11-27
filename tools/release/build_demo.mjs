@@ -45,6 +45,7 @@ else {
   const FLIGHT_ENEMY_KEEP = /^flight\/enemy\/(flh_pirate|flm_centipi|flm_serpent|sky3d_tune\.json|_)/;
   const drop = f =>
     /^resources\/illustration\/043_eliointro/i.test(f) ||
+    f.startsWith('resources/inspector/') ||   // 芙蕾雅（挑戰的監察官）：試玩包沒有挑戰、讀取頁也拿掉了（11-27 Ray）
     /^resources\/ci\/(video\/)?[^/]*sorana/i.test(f) ||   // 含 ci_sorana_roar_anya／_nouvelle 影片（名字帶搭檔名，C2 的篩選會誤收）
     /^resources\/background\/(tomb|ravnsdal|forest)\//.test(f) ||   // holysee 不排：序章地宮（404 實測）
     (f.startsWith('flight/enemy/') && !FLIGHT_ENEMY_KEEP.test(f)) ||
