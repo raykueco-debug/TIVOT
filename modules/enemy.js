@@ -2677,6 +2677,7 @@ function airTopSweep(en, src, opts){
   setTimeout(()=>{ if(airAtk!==hold) return; clean(); airAtk=null; airReturn(en); }, TOP_SWEEP_MS+last);
   return 0;
 }
+const AIR_SWEEP_MS=620;   // 程式劃過（airAssault）的劃過段長度；-2789 誤刪定義、-3137 補回原值（唯一一處，airPrepAssault 的撞到時間也讀它）
 /* ══ A 本體：腹面上衝（ENEMY_ATK 的 `sweep`，ver -2550，Ray：「A 動畫出了 mon_centipi_belly_even2_wave_cut，
    讓蜈蚣從畫面下方、放大、快速上平移、略斜」）══ 腹面 loop（腳一波一波抽）照 fps 播，同時整張放大從操作盤線底下
    往上衝出畫面頂端、略往機頭那側斜；衝到 BELLY_HIT 那一刻撞到玩家。衝出去之後待機的那一隻從機尾那側畫面外飛回定位。 */
