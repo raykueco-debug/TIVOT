@@ -5,8 +5,8 @@
      光一直在跑）→ 呼叫端 close() 才收。這支檔由動畫線維護（Ray：「只要是動畫就都是你的活」）。
    影格：`config.relicBox.openAnim` 資料夾；anim.json：
      `frames`＝開盒段格數、`loop_frames`＝循環段格數（接在開盒段後面編號）、`fps`、`pad`（檔名位數，預設 2）、`canvas`。
-   ⚠ 版面：開盒時一層暗幕＋暗角（z 9590）＋大盒子置中；開盒段播完、獎品視窗要上來時，盒子縮到畫面上半、升到 z 9610
-     （#lootSheet 9600 之上、不吃點擊、暗幕拿掉）—— 盒子不被獎品視窗壓暗，也不擋視窗。
+   ⚠ 版面：開盒時一層暗幕＋暗角（z 9590）＋大盒子置中；開盒段播完、獎品視窗要上來時，盒子**留在原位、原大小**
+     （ver -3124 Ray 改定；-2993 的「縮到上半、升到 9610」已撤），暗幕拿掉、不吃點擊，#lootSheet（9600）直接疊在上面。
    ⚠ 點一下＝開盒段直接跳到最後一格（之後照樣進循環）。
    ⚠ 開盒音效（ver -3030，Ray：「開公會盒用這個」）：`config.relicBox.openSe`（ASSETS 鍵），盒子一出現就播；warm() 一起預載。
    ⚠ 葉模組：只讀 config／audio。呼叫端只有 town.relicReveal；換畫面時 story.clearStageLeftovers → closeAll()。 */
@@ -94,13 +94,11 @@ export function play(done){
         idx = skipped ? N-1 : Math.min(N-1, Math.floor(ts*fps));
         if(idx >= N-1){
           ended = true; tLoop = now;
-          /* 獎品視窗要上來了：盒子縮到畫面上半、升到它之上（不被壓暗、不擋視窗），暗幕交給獎品視窗。 */
-          const vh = window.innerHeight, room = Math.max(140, vh/2 - 120);
-          const s = Math.min(1, room / H);
-          const cy = vh/2, ty = (room/2 + 16) - cy;
-          cv.style.transform = 'translateY('+ty+'px) scale('+s+')';
-          el.style.background = 'rgba(4,3,8,0)'; vig.style.opacity = '0';
-          el.style.zIndex = '9610'; el.style.pointerEvents = 'none';
+          /* 獎品視窗要上來了：盒子**留在原地**（ver -3124，Ray：「盒子不要上移 留在原地對話框蓋在上面就好」），
+             z 不動（9590 < #lootSheet 9600）＝獎品視窗直接疊在盒子上。暗幕與暗角**留在這一層**，
+             #lootSheet 自己那片 72% 暗幕＋模糊用 `body.sealbox-under` 拿掉（style.css）—— 不然盒子被壓到看不見。這一層不再吃點擊。 */
+          el.style.pointerEvents = 'none';
+          document.body.classList.add('sealbox-under');
           setTimeout(fin, 420);
         }
       } else {
@@ -122,6 +120,7 @@ export function play(done){
 
 export function closeAll(){
   const h = live; live = null;
+  document.body.classList.remove('sealbox-under');
   if(!h) return;
   cancelAnimationFrame(h.raf);
   if(h.el){ const el=h.el; el.style.pointerEvents='none'; el.style.transition='opacity .3s ease'; el.style.opacity='0';

@@ -47,6 +47,9 @@
     justify-content:center;background:rgba(4,3,7,.72);backdrop-filter:blur(2px);
     opacity:0;transition:opacity .22s ease;pointer-events:none;}
   #lootSheet.on{opacity:1;pointer-events:auto;}
+  /* 封印盒開完（ver -3124，Ray：「盒子不要上移 留在原地對話框蓋在上面就好」）：暗幕由盒子那一層（#sealboxFx，9590）給，
+     這裡的暗幕與模糊拿掉，獎品視窗直接疊在看得見的盒子上。class 由 modules/sealbox.js 開／收。 */
+  body.sealbox-under #lootSheet{background:transparent;backdrop-filter:none;}
   /* ══⚠⚠ 閃頂排（ver -1812，Ray：「商店中的選單還是被動態島那一排擋住無法點擊」）══
      置中的面板比畫面高時，上緣會被推到狀態列底下而且捲不回來。容器上下讓出安全區＋餘裕，
      面板最多到剩下的高度、超過就在面板裡捲。算法同 style.css 的 `--tap-top`（飛行頁沒有那組 :root，
