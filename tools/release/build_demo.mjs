@@ -38,7 +38,10 @@ else {
      其餘 404（索菈娜／蕾妮／馬季諾語音、托爾斯坦 CI 影片、renee_ci_act）是戰鬥開場的整批預熱在敲門，試玩不會播 —— 照 Ray 的 C6／C16 不放。 */
   const TESTED = ['resources/background/holysee/holyseedungeonwhole.webp', 'resources/si/luna_si_taunt.webp', 'resources/si/renna_si_front.webp', 'resources/si/anya_si_lookup.webp', 'resources/audio/bgm/peritune_rituale_machina_loop.m4a' /* 卡耶爾夢境 frag02 的鎖定曲 */, 'resources/enemy/saint_tr_bg.webp',
     'resources/enemy/guild_hunter_battle_bg.webp', 'resources/enemy/cap_dream_battle_bg.webp', 'resources/ci/ci_torsten_dualcrush.webp', 'resources/ci/ci_torsten_execute.png', 'resources/ci/ci_torsten_execute_v2.webp', 'resources/ci/ci_torsten_mb_v2.webp', 'resources/enemy/sorana_battle_bg_v3.webp', 'resources/background/anim/enemy/guild_hunter_battle_bg_crowd_v1.mp4'];   // 帝都賞金獵人戰
-  const ADD = new Set([...addIllus, ...addCi, ...TESTED]);
+  /* 空戰副理查到（11-27 晚）：程式拼字串組檔名、靜態閉包掃不到的兩類 ——
+     黑船登艦戰的甲板時段背景 deck_battle_<時段>、隨機空賊的敵船側面圖與 v6airship 待機（n1～n10，沒有 n7）。 */
+  const PIRATE_SHIP = /^resources\/(background\/deck\/deck_battle_|enemy\/mon_pirateship_n\d+_side\.webp$|enemy\/anim\/mon_pirateship_n\d+_side_idle_v6airship\/)/;
+  const ADD = new Set([...addIllus, ...addCi, ...TESTED, ...off.files.filter(f => PIRATE_SHIP.test(f))]);
   const keepExtra = f => ADD.has(f) || /^resources\/background\/(sky_parallax\/|sky_[^/]*$)/.test(f) /* 共用程式雲天空層（各時段，bg_fx 組名讀，404 實測） */ || f.startsWith('resources/si/sway/') /* 立繪擺動層（蕾娜、安雅，modules/sway.js 組名讀，404 實測） */ || BG_ANIM_IN.some(p => f.startsWith(p)) || SKYPIRATE_HIT.test(f) || /^resources\/si\/(blink\/)?(anya|nouvelle|renna|cecilie|luna)_(ad_)?si_/.test(f) /* 試玩登場五人的立繪表情全收（執行期挑表情，靜態清單漏；Ray C8 今晚先放） */ || /^resources\/enemy\/(anim\/)?mon_canyon_/.test(f) /* 卡耶爾夢境隨機池的怪全收（棺甲蟲 dark 等靜態清單漏收，404 實測） */;
   // 排除：C5 範圍外插圖／C6 索菈娜 CI 與語音／C7 零星背景／C15 非試玩飛行怪／C16＋17 只留試玩會播的語音
   const VO_KEEP = /^resources\/audio\/vo\/vo_(nouvelle|nouvellemiss|anya|cecilie|luna|torsten)/;   // luna／lunamg＝序章主角璐娜（404 實測）
@@ -55,7 +58,9 @@ else {
 }
 files.push('offline_list.json');
 
-fs.rmSync(OUT, { recursive: true, force: true });
+/* 清掉上一包：資料夾本身被別的程式佔著（例如終端機或 Gradle 的工作目錄）時刪不掉，改成只清裡面的東西。 */
+try { fs.rmSync(OUT, { recursive: true, force: true }); }
+catch { for (const e of fs.readdirSync(OUT)) fs.rmSync(path.join(OUT, e), { recursive: true, force: true }); }
 let bytes = 0, big = [], linked = 0, copied = 0;
 for (const f of files) {
   const src = path.join(ROOT, f), dst = path.join(OUT, f);
