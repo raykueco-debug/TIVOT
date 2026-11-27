@@ -165,9 +165,9 @@ export const STRINGS = {
     trainee:       '訓練用聖徒',   // 教學專用敵
   },
 
-  /* ═══ 9. 監察官（芙蕾雅）＝結算台詞 ═══ */
+  /* ═══ 9. 監察官（蕾娜；ver -3110 前是芙蕾雅）＝結算台詞 ═══ */
   inspector: {
-    name:          '芙蕾雅',
+    name:          '蕾娜',   // ver -3110：芙蕾雅→蕾娜
     fallbackName:  '監察官',
     executionLine: '熔斷了？真慘烈呢。',            // 處決勝利（MB 擊殺）專屬
     interceptLine: '慢著！有新的敵人！',            // S 評價點「再度執槍」時
