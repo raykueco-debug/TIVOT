@@ -1612,8 +1612,13 @@ function showGuide(type, tone){
   g.style.top  = y+'px';
   const lb=g.querySelector('.tg-label'); if(lb) lb.textContent = label;
   g.classList.add('on');
+  /* ══ 提示在畫面上 ＝ 台上的立繪撤開（ver -3087，Ray：「有提示時都要撤立繪」）══
+     通則掛在**唯一的顯示／收起那兩支**（鐵律 8）：閘門與逐句的 `guide` 都走這裡。
+     撤法寫在 CSS（`body.tut-guide-on`，用獨立的 `translate` 屬性疊在原本的 transform 上），
+     所以段落中途 `syncCast` 再把人叫上台也會被壓著；提示一收，人照原本的狀態回來。 */
+  document.body.classList.add('tut-guide-on');
 }
-function hideGuide(){ const g=$('tutGuide'); if(g) g.classList.remove('on'); }
+function hideGuide(){ const g=$('tutGuide'); if(g) g.classList.remove('on'); document.body.classList.remove('tut-guide-on'); }
 
 /* ══⚠⚠⚠ 落點在**那顆光圈**上嗎（ver -939，Ray：「用強力的副武器阻止他根本點不了」）══
    對話期間 `#tutTouch` 是蓋在最上層的透明層 —— 底下的紅點**收不到手指**

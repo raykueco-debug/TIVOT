@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.27-3086';
+export const VERSION = 'ver 2026.11.27-3087';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3737,7 +3737,7 @@ export const GAME_CONFIG = {
        ⚠ 2＝**打滿時**是普攻的兩倍（2×2＝4）；沒打滿就按比例縮 —— 機槍黃圈只有
          三成命中率，那一次自然只拿到約三成。實作只有 weapon.counterEnergy 一支。 */
     counterEnergyMul:    2,
-    chargeSeconds:       4,     // 敵人大絕蓄力窗口（秒）
+    chargeSeconds:       3,     // 敵人大絕蓄力窗口（秒）；原 4，ver -3087 Ray「所有怪的縮圈速度減1秒」（卡上寫死的 atkInterval 也各減 1，見 script/enemies.js）
 
     /* ══⚠⚠⚠ **OVK 與 BR 都改成「閒置逾時」**（ver -1434，Ray：「把 ovk 跟 br 的時限
        拿掉，改成**兩秒內不點下一格就結束**」）══

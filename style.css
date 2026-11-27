@@ -2826,6 +2826,23 @@
   #tutGuide.g-red{filter:drop-shadow(0 0 7px rgba(255,80,80,.9));}
   #tutGuide.g-red .tg-chevrons i{border-top-color:var(--danger);border-right-color:var(--danger);}
   #tutGuide.g-red .tg-label{color:#ff9a9a;text-shadow:0 0 9px rgba(255,80,80,.85);}
+  /* ══ 紅色那兩門再放大加亮（ver -3087，Ray：「安雅初戰的夢魘化雪鐵龍提示跟夢境破碎的上拉提示都要明顯一點」）══
+     `tone:'red'` 目前只有惡夢化／夢境粉碎兩門在用。箭羽 16→30px、邊 4→7px、字 13→20px，
+     外光加一層白芯＋整組脈動放大，金色盤面上一眼看得到。 */
+  #tutGuide.g-red{filter:drop-shadow(0 0 4px #fff) drop-shadow(0 0 14px rgba(255,60,60,1)) drop-shadow(0 0 28px rgba(255,40,40,.8));}
+  #tutGuide.g-red .tg-chevrons{gap:10px;animation:tgPulse .9s ease-in-out infinite alternate;}
+  #tutGuide.g-red .tg-chevrons i{width:30px;height:30px;border-top-width:7px;border-right-width:7px;
+    border-top-color:#ff4a4a;border-right-color:#ff4a4a;opacity:.3;}
+  #tutGuide.g-red .tg-label{font-size:20px;letter-spacing:4px;font-weight:700;color:#fff;
+    text-shadow:0 0 6px #ff3030,0 0 14px #ff3030,0 0 26px rgba(255,40,40,.9);}
+  @keyframes tgPulse{from{transform:scale(1);}to{transform:scale(1.18);}}
+  /* ══ 提示在畫面上時立繪撤開（ver -3087，Ray：「有提示時都要撤立繪」）══ 開關只有 tutorial 的 showGuide／hideGuide。
+     ⚠ 用獨立的 `translate` 屬性：它疊在既有的 transform（滑入、翻轉、置中）之外，不必每個狀態各寫一份。
+     ⚠ 不用 opacity 過渡（同上面 -857 那條：iOS 過渡中的合成層會蓋過對話框）—— 置中的那一位往下沉出 #top（overflow:hidden 裁掉）。 */
+  #tutCast .tut-portrait{transition:transform .45s ease, translate .45s ease;}
+  body.tut-guide-on #tutCastL{translate:-115% 0;}
+  body.tut-guide-on #tutCastR{translate:115% 0;}
+  body.tut-guide-on #tutCast .tut-portrait.center{translate:0 110%;}
   #tutGuide .tg-label{margin-top:8px;font-size:13px;letter-spacing:3px;color:var(--gold);
     text-shadow:0 0 8px rgba(212,169,74,.75);animation:tgLabel 1s ease-in-out infinite alternate;}
   /* 點擊閘（指向左緣破防計量表）：標示縮字，置中定位時左緣不出畫面（箭頭保持正對計量表） */

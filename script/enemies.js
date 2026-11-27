@@ -211,7 +211,7 @@ export const ENEMIES = {
       fit:{ pos:'62% 78%' },
       hp:340,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      atkInterval:3.33,              // 大絕蓄力秒數：4×(1/1.2)≈3.33 → 攻擊更密（比第一隻高 20%）
+      atkInterval:2.33,              // 大絕蓄力秒數：4×(1/1.2)≈3.33 → 攻擊更密（比第一隻高 20%）；ver -3087 Ray「所有怪的縮圈速度減1秒」→ 2.33
       assaultEvery:[3,5],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       delayPenalty:{ seconds:5 },    // 5 秒（ver -458，非魔女的預設）
@@ -257,7 +257,7 @@ export const ENEMIES = {
       bg:'../enemy/sorana_battle_bg_v3', bgLock:true,   // 湖上甲板（ver -2822 GPT 重畫＋背景副理程式水面／雲）
       hp:270,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      atkInterval:3.33,
+      atkInterval:2.33,
       assaultEvery:[2,4],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       /* ══ 大絕（ver -760，Ray 的敵攻四態實驗卡：「她 hp30% 以下時會同時出現
@@ -293,7 +293,7 @@ export const ENEMIES = {
       fit:{ pos:'50% 30%' },
       hp:510,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:21,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      atkInterval:3.33,              // 以下全部同巨型聖徒
+      atkInterval:2.33,              // 以下全部同巨型聖徒
       assaultEvery:[3,5],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       delayPenalty:{ seconds:5 },
@@ -326,7 +326,7 @@ export const ENEMIES = {
       fit:{ pos:'50% 30%' },
       hp:510,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:21,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      atkInterval:3.33,              // 以下全部同巨型聖徒
+      atkInterval:2.33,              // 以下全部同巨型聖徒
       assaultEvery:[3,5],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       delayPenalty:{ seconds:5 },
@@ -1987,7 +1987,7 @@ export const ENEMIES = {
       bg:'sky_cumulus_day', fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      atkInterval:4,               // 蓄力窗口 4 秒（固定）
+      atkInterval:3,               // 蓄力窗口 3 秒（固定；原 4，ver -3087 Ray「所有怪的縮圈速度減1秒」）
       assaultEvery:[2,4],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       noStack:true,                // 不疊加：場上同時只有一個紅點
@@ -2041,7 +2041,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2075,7 +2075,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2109,7 +2109,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2153,7 +2153,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:600,   // ver -2455 Ray：「龍的基本 hp 設 600」
       attack:17,
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[3,5],
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2187,7 +2187,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2221,7 +2221,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2255,7 +2255,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2289,7 +2289,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2323,7 +2323,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2358,7 +2358,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2393,7 +2393,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2427,7 +2427,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2461,7 +2461,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2495,7 +2495,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2529,7 +2529,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2563,7 +2563,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2597,7 +2597,7 @@ export const ENEMIES = {
       fit:{ mode:'contain', pos:'center center' },
       hp:270,   // ＝羽蛇（暫填）
       attack:17,   // ＝羽蛇（暫填）
-      atkInterval:4,
+      atkInterval:3,
       assaultEvery:[2,4],   // ＝羽蛇（暫填）
       assault:{ count:1, gap:0 },
       noStack:true,
@@ -2657,7 +2657,7 @@ export const ENEMIES = {
       bg:'sky_towers', fit:{ mode:'contain', pos:'center center' },
       hp:340,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       attack:17,   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
-      atkInterval:4,               // 蓄力窗口 4 秒（固定）
+      atkInterval:3,               // 蓄力窗口 3 秒（固定；原 4，ver -3087 Ray「所有怪的縮圈速度減1秒」）
       assaultEvery:[3,5],   // ver -1878 基準（E＝100/10 往上連乘 × 類型）
       assault:{ count:1, gap:0 },   // 一般主動攻擊：一波幾顆、每顆間隔秒
       noStack:true,                // 不疊加：場上同時只有一個紅點
