@@ -3023,7 +3023,9 @@ function finishEnemyOrAdvance(){
      ⚠ 連戰換敵那一條不掛：那一隻是被「掠過」不是被淨化，它有自己的 `enemy-leave`。 */
   /* 擊敗演出要先演完才閉棺的（ver -3066，羽蛇 deathFx:'dive'）：purgeEnemy 回傳毫秒數 ⇒ 鎖點擊、等它演完再 win()。 */
   if(isLastEnemy()){ const ms=enemy.purgeEnemy()||0;
-    if(ms>0){ state.transitioning=true; setTimeout(()=>{ state.transitioning=false; if(!state.over) win(); }, ms+150); return; } }
+    if(ms>0){ state.transitioning=true;
+      if(directExitCard()) setTimeout(()=>blackOut(260), Math.max(0, ms-260));   // directExit：劃完那一刻已經全黑，不讓戰鬥畫面再露出來（ver -3105）
+      setTimeout(()=>{ state.transitioning=false; if(!state.over) win(); }, ms+150); return; } }
   if(!isLastEnemy()){ advanceEnemy(); }
   else { win(); }
 }
@@ -3585,7 +3587,10 @@ function win(){
   /* ⚠ 劇情版教學：**先演「關門」**（進場那一套的倒放）再上結算（ver -366，Ray 指定）。
      進場是門推上來、打開露出戰場；打完就該把門關回去 —— 沒有這一段，畫面會從戰鬥
      硬切到結算頁。關門的最後一步會上黑透遮罩並把劇情層收掉，才輪到結算。 */
-  if((storyFramed() || state.kerbChallenge) && storyClose) storyClose(()=>{ enemy.releaseBattleMemory(); toResult(); });   // 挑戰也關門（ver -2225）；門關上就清記憶體（-2595）
+  /* `directExit`（ver -3105，Ray：「羽蛇戰完…完了以後直接帶劇情 不要再回到戰鬥畫面」）：不演閉棺 ——
+     擊敗演出劃完就已經 blackOut 全黑，黑著結算（noResult 不出頁）→ 交棒；goHome 的黑幕接著蓋，掀開就是下一段。 */
+  if(directExitCard()){ blackOut(0); enemy.releaseBattleMemory(); toResult(); }
+  else if((storyFramed() || state.kerbChallenge) && storyClose) storyClose(()=>{ enemy.releaseBattleMemory(); toResult(); });   // 挑戰也關門（ver -2225）；門關上就清記憶體（-2595）
   else playTransition('finish', toResult);
 }
 /* ══ 敵人的 NI（ver -1964，米夏；Ray：「米夏 hp 被打到 1 就會發動 15 秒的 NI 開始回血，
@@ -4119,14 +4124,32 @@ export function startIntruderFight(){
 }
 // 全螢幕黑幕過場：淡出（轉黑）→ 全黑時執行 mid() 切畫面 → 淡入（浮現）。約 2×half ms。
 let _fadeOv=null;
-function fadeTransition(mid, half){
-  const ms = half || 1400;
-  let ov=_fadeOv;
-  if(!ov){
-    ov=document.createElement('div'); ov.id='fadeOverlay';
+function fadeOvEl(){
+  if(!_fadeOv){
+    const ov=document.createElement('div'); ov.id='fadeOverlay';
     ov.style.cssText='position:fixed;inset:0;z-index:9000;background:#000;opacity:0;pointer-events:none;';
     document.body.appendChild(ov); _fadeOv=ov;
   }
+  return _fadeOv;
+}
+/* 只轉黑、不掀（ver -3105，戰鬥卡 `directExit`）：同一片黑幕（fadeTransition 那片），之後由 goHome 的
+   fadeTransition 接手 —— 它把 opacity 再設成 1（已經是 1＝不變）、全黑時切畫面、再掀開。 */
+function blackOut(ms){
+  const ov=fadeOvEl();
+  if(ov.style.opacity==='1') return;
+  ov.style.transition='opacity '+(ms|0)+'ms ease';
+  ov.style.pointerEvents='auto';
+  void ov.offsetWidth;
+  ov.style.opacity='1';
+}
+/* `directExit` 只在不出結算頁（noResult）的場次成立：結算頁（banner）在黑幕底下，出頁的話會黑著卡在那一頁。 */
+function directExitCard(){
+  const b = state.scriptBattleId && GAME_CONFIG.battles && GAME_CONFIG.battles[state.scriptBattleId];
+  return !!(b && b.directExit && b.noResult);
+}
+function fadeTransition(mid, half){
+  const ms = half || 1400;
+  const ov=fadeOvEl();
   ov.style.transition='opacity '+ms+'ms ease';
   ov.style.pointerEvents='auto';
   void ov.offsetWidth;

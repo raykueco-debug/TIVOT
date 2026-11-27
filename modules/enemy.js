@@ -4203,7 +4203,12 @@ export function purgeEnemy(){
   if(en && en.deathFx==='dive'){
     if(diveFor===state.currentEnemyKey) return 0;
     const c=ENEMY_ATK[imgStem(en)], src=c && c.sweepImg;
-    if(src){ diveFor=state.currentEnemyKey; return airTopSweep(en, src, { ang:90, final:true }) || 0; }
+    /* ver -3105（Ray：「羽蛇戰完出攻擊動作也要有音效 畫面要劇烈震動」）：劃出那一刻吼（卡上 assaultSe，同主動攻擊那支），
+       衝過鏡頭那一刻重震（screenShake 'heavy'＋手機長震，combat 唯一那一支）。 */
+    if(src){ diveFor=state.currentEnemyKey;
+      [].concat(en.assaultSe || 'se_enemy_dragonroar').forEach(k=>playEntranceSe(k));
+      setTimeout(()=>{ if(api.screenShake) api.screenShake('heavy'); }, TOP_SWEEP_MS*0.45);
+      return airTopSweep(en, src, { ang:90, final:true }) || 0; }
   }
   stopIdleLoop();   // 死亡演出在立繪本體上演（ver -2075）
   if(en && en.deathFx==='quake'){
