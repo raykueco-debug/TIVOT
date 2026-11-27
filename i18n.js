@@ -143,8 +143,6 @@ export function applyToDom(){
   // 首頁
   set(q('#home .title'), L.home.title);
   set($('storyStartBtn'),L.home.storyStart);   // 開始故事（ver -554）
-  set($('startBtn'),     L.home.start);
-  set($('tutorialBtn'),  L.home.tutorialBtn);
   set($('continueBtn'),  L.home.continueBtn);   // 繼續（ver -430）
   set($('creditBtn'),    L.home.creditBtn);
   set($('originalBtn'),  L.home.originalBtn);

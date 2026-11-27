@@ -2324,10 +2324,6 @@
     box-shadow:0 0 22px var(--gold-dim),0 2px 10px rgba(0,0,0,.5);
     animation:pulse 1.2s infinite alternate;}
   #storyStartBtn:active{transform:scale(.94);}
-  #startBtn{padding:16px 46px;background:transparent;border:1px solid var(--gold);
-    color:var(--gold);border-radius:10px;font-family:inherit;font-size:17px;letter-spacing:5px;
-    box-shadow:0 0 18px var(--gold-dim);animation:pulse 1.2s infinite alternate;}
-  #startBtn:active{transform:scale(.94);}
   /* 繼續（ver -430）：接在「出陣」之下的**次要動作** —— 不呼吸、不發光、字暗一階，
      份量差看得出來（同結算那兩顆的原則）。⚠ 預設不出現：沒有存檔時 `main.js`
      不給它 `.on`，按了沒反應比沒有那顆鈕更糟。 */
@@ -2352,7 +2348,6 @@
        一直沒被接住的原因。 */
   @media (max-height:760px){
     #storyStartBtn{padding:12px 40px;font-size:17px;letter-spacing:5px;margin-bottom:10px;}
-    #startBtn{padding:11px 36px;font-size:15px;letter-spacing:4px;}
     #continueBtn{margin-top:7px;padding:8px 28px;font-size:13px;}
     #home .saint-install{margin-bottom:18px;}
   }
@@ -2361,7 +2356,6 @@
        字體寬一點就會再爆一次。**剛好塞下不算塞下。** */
   @media (max-height:700px){
     #storyStartBtn{padding:9px 32px;font-size:16px;letter-spacing:4px;margin-bottom:6px;}
-    #startBtn{padding:8px 30px;font-size:14px;letter-spacing:3px;}
     #continueBtn{margin-top:4px;padding:6px 24px;font-size:12px;letter-spacing:3px;}
     #home .saint-install{margin-bottom:8px;margin-top:6px;}
     /* 中文主標也讓一階 —— 它是字不是團徽（§團徽那條只保護 `#homeEmblem`）。 */
@@ -2381,7 +2375,6 @@
        上一層（它那裡還有餘裕，而且是常見的真機尺寸）。 */
   @media (max-height:660px){
     body.testmode #storyStartBtn{padding:4px 24px;font-size:14px;margin-bottom:5px;}
-    body.testmode #startBtn{padding:4px 22px;font-size:13px;}
     body.testmode #continueBtn{margin-top:3px;padding:3px 18px;font-size:11px;}
     body.testmode #home .saint-install{margin:2px 0 6px;}
     body.testmode #home .title{font-size:clamp(20px,6.6vw,28px);}
@@ -2655,7 +2648,8 @@
      ⚠ `:not(#id)` 的權重等同一個 id，所以這一條的權重遠高過各鈕自己的規則，
        壓得住 `#continueBtn.on{display:block}`，不必動 `main.js`。
      ⚠ 商店是**管理人模式限定的臨時入口**（ver -368）：正式入口是城鎮的雜貨舖節點。 */
-  body:not(.testmode):not(.demo) #home button:not(#startBtn):not(#tutorialBtn):not(#creditBtn):not(#originalBtn):not(#langBtn):not(#offlineBtn){display:none;}
+  /* ver -3131（Ray：「體驗版的修正也要適用到完整版」）：挑戰／教學撤了，完整版首頁的白名單改成同體驗版（開始故事／繼續），多留語言鈕。 */
+  body:not(.testmode):not(.demo) #home button:not(#storyStartBtn):not(#continueBtn):not(#creditBtn):not(#originalBtn):not(#langBtn):not(#offlineBtn){display:none;}
   /* ══ 試玩版的首頁（ver -3073，Ray：「首頁只留開始故事」）══ 白名單：開始故事／繼續（有存檔才出現，照它自己的 .on）／
      原作／Credit／語言／離線下載。挑戰、教學、章節與管理人那一排都不出現。管理人模式照舊整條不適用。 */
   body.demo:not(.testmode) #home button:not(#storyStartBtn):not(#continueBtn):not(#creditBtn):not(#originalBtn):not(#offlineBtn){display:none;}
