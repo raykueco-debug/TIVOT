@@ -139,6 +139,7 @@
       document.addEventListener('visibilitychange', onHide); addEventListener('pagehide', saveHashes);
       stopSave = () => { clearInterval(iv); document.removeEventListener('visibilitychange', onHide); removeEventListener('pagehide', saveHashes); };
       let i = 0, ok = 0, fail = 0, skip = 0, failed = [];
+      let got = 0;   // 這一輪真的新抓了幾支（跨補抓／驗收那幾輪都算；ok 每輪會歸零）—— 統計只在 >0 時報時間（ver -3104）
       const t0 = Date.now();
       tell('start');
       const progress = () => { const n = ok + fail + skip;
@@ -174,7 +175,7 @@
           let have = null; try{ have = await cache.match(k); }catch(_){}
           const same = h ? (stored[f] === h || (legacy && !code)) : !(fresh && code);
           if(have && same){ if(h && stored[f] !== h){ stored[f] = h; dirty = true; } skip++; }
-          else if(await getOne(f, k, h)) ok++;
+          else if(await getOne(f, k, h)){ ok++; got++; }
           else { fail++; failed.push(n0); }
           progress();
         }
@@ -213,8 +214,10 @@
       else{
         await cache.put(READY, new Response(list.version, { headers:{ 'Content-Type':'text/plain' } }));
         setDone(list.version); updAvail = null; tellSW(); want(null);
-        tell('done', Date.now() - t0);
-        say(T('✓ 完成（{n} 秒）· 斷網也能玩').replace('{n}', Math.round((Date.now() - t0) / 1000)));
+        /* ver -3104（Ray：「連0秒一起解決」）：秒數只是「這一輪」的時間 —— 續傳／檢查更新那一輪全部跳過就是 0 秒，
+           讀起來像沒下載。字樣不寫秒數；統計只在這一輪真的有新抓時才報 time_ms（全部跳過＝0 ⇒ TEL.offline 不帶時間）。 */
+        tell('done', got > 0 ? Date.now() - t0 : 0);
+        say(T('✓ 完成 · 斷網也能玩'));
       }
     }catch(e){
       say(T('下載中斷 · 點一下重試')); tell('fail');
