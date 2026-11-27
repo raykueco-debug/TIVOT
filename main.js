@@ -3375,7 +3375,8 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
       document.title='TIVOT '+tag;
       const am=document.querySelector('meta[name="apple-mobile-web-app-title"]');
       if(am) am.setAttribute('content', '聖約第四騎士團 '+tag);
-      const tl=document.querySelector('#home .title');
+      /* 位置：SAINT INSTALL 那一行的正下方（ver -3100，Ray：「先行體驗版的字樣應該在saint install下面」）；找不到才退回中文標題下。 */
+      const tl=document.querySelector('#home .saint-install') || document.querySelector('#home .title');
       if(tl && !document.querySelector('#home .demo-tag')){
         const d=document.createElement('div'); d.className='demo-tag'; d.textContent=tag;
         tl.insertAdjacentElement('afterend', d);

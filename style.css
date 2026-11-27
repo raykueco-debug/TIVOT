@@ -2291,8 +2291,11 @@
   /* 英文長標題：字距收窄（.16em 會逼縮字機制把字縮過小、且撐滿整寬貼邊，觀感差） */
   html[lang="en"] #home .title{letter-spacing:.08em;}
   /* 試玩版的「先行體驗版」（ver -3092；只有 main.js 在 isDemo() 時才插這一格） */
-  #home .demo-tag{margin-top:4px;font-size:clamp(12px,3.4vw,15px);letter-spacing:.42em;color:#f0d9a0;
-    text-shadow:0 0 8px rgba(212,169,74,.6);text-align:center;}
+  /* ver -3100（Ray：「先行體驗版的字樣應該在saint install下面」）：貼在 SAINT INSTALL 那一行正下方，字級比它（12px）小一階；
+     SAINT INSTALL 原本的下緣留白（隔開按鈕的那一段）移到這一行底下，按鈕的位置不變。 */
+  body.demo #home .saint-install{margin-bottom:3px;}
+  #home .demo-tag{margin:0 0 clamp(22px, calc(var(--appvh,1vh)*5.4), 56px);font-size:10.5px;letter-spacing:.5em;
+    padding-left:.5em;color:#f0d9a0;text-shadow:0 0 8px rgba(212,169,74,.6);text-align:center;}
   /* 副標 SAINT INSTALL：中文標下方，金字加左右細線（下緣間距隨視窗高收縮；
      選單移出首頁後空間充裕 → 團徽/標題區與出陣鈕拉開呼吸距離） */
   #home .saint-install{display:flex;align-items:center;justify-content:center;gap:12px;
