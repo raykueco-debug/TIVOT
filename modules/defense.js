@@ -434,7 +434,9 @@ function staggerOnCounter(grade){
      ver -2702（Ray：「黃圈反擊只減 1/4 delay，橘圈 1/3，紅圈 1/2」）：依帶分；表在 tuning.counterStaggerClear。 */
   /* ver -3041（壓制力）：退回的比例＝副武器壓制力（progress.subSuppress：卡上 suppress＋改裝階），整串反擊算一次（這一支每次反擊只叫一次）。
      取代 -2702 依圈色的表（counterStaggerClear）。 */
-  const k = prog.subSuppress(state.equippedWeapon, grade);   // 紅圈多退（ver -3043，tuning.suppress.redMul）
+  /* 依帶的倍率在 tuning.suppress.bandMul：紅圈多退（ver -3043）；黃圈 ×0＝不退（ver -3123，Ray：「黃圈反擊不扣延時」）。
+     只動延時 —— 黃圈的開火、傷害、音效、計數照舊（那些不經過這一支）。 */
+  const k = prog.subSuppress(state.equippedWeapon, grade);
   if(api.easeIntervalDeadline) api.easeIntervalDeadline(k);
   else if(api.resetIntervalDeadline) api.resetIntervalDeadline();
 }

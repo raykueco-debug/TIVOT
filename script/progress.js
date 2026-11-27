@@ -729,13 +729,14 @@ export function mainSuppress(){
   const S=(GAME_CONFIG.tuning||{}).suppress||{};
   return Math.max(0, Math.min(1, (S.main!=null?S.main:0.3) + bonus('suppress')));
 }
-/* `grade`＝反擊落在哪一帶（defense 的 block／perfect／counter）；紅圈（counter）再乘 `redMul`（ver -3043，Ray：「紅圈多退」）。不傳＝不分帶（規格表印的是這個）。 */
+/* `grade`＝反擊落在哪一帶（defense 的 block／perfect／counter）；再乘 `tuning.suppress.bandMul[grade]`（紅圈多退 ver -3043；黃圈 0 ＝不退延時 ver -3123，Ray：「黃圈反擊不扣延時」）。不傳＝不分帶（規格表印的是這個）。 */
 export function subSuppress(id, grade){
   const S=(GAME_CONFIG.tuning||{}).suppress||{};
   const w=(GAME_CONFIG.weapons||{})[id]||{};
   const base=(w.suppress!=null) ? w.suppress : (S.sub!=null?S.sub:0.3);
-  const red=(grade==='counter' && S.redMul>0) ? S.redMul : 1;
-  return Math.max(0, Math.min(1, (base + weaponMod(id)*(S.perModLv||0)) * red));
+  /* 依帶的倍率（tuning.suppress.bandMul：黃 0／橘 1／紅 1.5，ver -3122）；沒寫的帶＝×1。 */
+  const bm=(grade && S.bandMul && S.bandMul[grade]!=null) ? Math.max(0, +S.bandMul[grade]||0) : 1;
+  return Math.max(0, Math.min(1, (base + weaponMod(id)*(S.perModLv||0)) * bm));
 }
 export function subgunPowerMul(id){
   const WM = (GAME_CONFIG.tuning||{}).weaponMod || {};

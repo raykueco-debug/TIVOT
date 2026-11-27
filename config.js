@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.28-3121';
+export const VERSION = 'ver 2026.11.28-3123';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3714,8 +3714,11 @@ export const GAME_CONFIG = {
        · 副武器反擊：武器卡 `suppress`（沒寫＝`sub`）＋槍店改裝每階 `perModLv`；**整串反擊只算一次**、打不中不減。
        計算只在 progress 的 mainSuppress／subSuppress（鐵律 7）；用的地方：combat.tapEaseDelay、defense.staggerOnCounter、規格表。
        ⚠ 取代 -2834 的 `tapDelayClear` 全域預設 0.8 與 -2702 的 `counterStaggerClear`（依圈色 1/4、1/3、1/2）。 */
-    /* `redMul`（ver -3043，Ray：「紅圈多退」）＝反擊打在紅圈（完美反擊）時，副武器壓制力再乘這個倍率（黃／橘照壓制力本身）。倍率待 Ray 調。 */
-    suppress: { main:0.30, sub:0.30, perModLv:0.05, redMul:1.5 },
+    /* `bandMul`＝副武器反擊依落在哪一帶，壓制力再乘的倍率（defense 的 grade：block 黃／perfect 橘／counter 紅）。
+       · 紅 1.5（ver -3043，Ray：「紅圈多退」；原 `redMul`）。倍率待 Ray 調。
+       · 黃 0（ver -3123，Ray：「黃圈反擊不扣延時」—— 新規則：黃圈反擊照樣開火、傷害與計數照舊，只是不退延時）。
+       · 沒寫的帶＝×1。讀的只有 progress.subSuppress 與下方的武器規格表。 */
+    suppress: { main:0.30, sub:0.30, perModLv:0.05, bandMul:{ block:0, perfect:1, counter:1.5 } },
     /* 爆擊命中特效（ver -3044，動畫副理交件 ef_crit_1~4；modules/critfx.js 播）：各格毫秒照交件建議，第 4 張邊播邊淡出；
        `sizeVw`＝特效框邊長佔畫面寬的比例（原尺寸下本體約 180～320 px／512）。PERFECT CRITICAL 定案後接上。 */
     critFx: { frames:['resources/effects/ef_crit_1.webp','resources/effects/ef_crit_2.webp','resources/effects/ef_crit_3.webp','resources/effects/ef_crit_4.webp'],
@@ -5880,7 +5883,7 @@ export function weaponStatRows(key, story, mul, sup){
   if(M>1) rows.push([i18nT('改裝加成'), '+'+Math.round((M-1)*100)+'%']);
   /* 壓制力（ver -3041）：`sup`＝呼叫端問 progress.subSuppress(id) 傳進來（含改裝階；config 構不到 progress）；沒傳就印卡上的基礎值。只有本篇印。 */
   { const sp = (sup!=null) ? sup : (story ? (w.suppress!=null ? w.suppress : ((GAME_CONFIG.tuning||{}).suppress||{}).sub) : null);
-    const rm=((GAME_CONFIG.tuning||{}).suppress||{}).redMul;
+    const rm=(((GAME_CONFIG.tuning||{}).suppress||{}).bandMul||{}).counter;
     if(sp!=null) rows.push([i18nT('壓制力'), Math.round(sp*100)+'%'+((rm>0 && rm!==1) ? i18nT('（紅圈 ')+Math.round(Math.min(1,sp*rm)*100)+'%）' : '')]); }
   /* 裝填時間（ver -1009，Ray：「每一把步槍都描述加上裝填時間 3 秒」）：
      ⚠ **算出來的不是手寫的**（鐵律 7）—— 數字只有卡上的 `counterCdSec` 一份，
