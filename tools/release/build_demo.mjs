@@ -45,7 +45,10 @@ fs.writeFileSync(path.join(OUT, '404.html'), '<!doctype html><meta charset="utf-
 { const o = path.join(OUT, 'offline_list.json'); try { fs.unlinkSync(o); } catch {}
   const have = files.filter(f => f !== 'offline_list.json' && fs.existsSync(path.join(OUT, f)));
   const sum = have.reduce((a, f) => a + fs.statSync(path.join(OUT, f)).size, 0);
-  fs.writeFileSync(o, JSON.stringify({ version: off.version, bytes: sum, files: have }, null, 0).replace(/","/g, '",\n"'));
+  /* 內容雜湊一起帶（ver -3078）：offline.js 靠它判斷「更新時哪些檔要重抓」；整包清單的 hash 與 files 同順序。 */
+  const H = Array.isArray(off.hash) ? new Map(off.files.map((f, i) => [f, off.hash[i]])) : null;
+  const out = { version: off.version, bytes: sum, files: have }; if (H) out.hash = have.map(f => H.get(f) || '');
+  fs.writeFileSync(o, JSON.stringify(out, null, 0).replace(/","/g, '",\n"'));
   console.log(`offline_list.json → ${have.length} 檔、${(sum / 1048576).toFixed(0)} MiB`); }
 console.log(`${FULL ? 'full' : 'demo'}：${files.length} 檔、${(bytes / 1048576).toFixed(0)} MiB → ${path.relative(ROOT, OUT)}（硬連結 ${linked}、複製 ${copied}）`);
 if (files.length > MAX_FILES) console.error(`✘ 超過 Pages 免費方案 ${MAX_FILES} 檔`);

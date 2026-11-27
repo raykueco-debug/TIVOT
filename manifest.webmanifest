@@ -9,7 +9,7 @@
   "theme_color": "#0a080e",
   "icons": [
     {
-      "src": "resources/background/TIVOT_Emblem.png",
+      "src": "resources/background/tivot_emblem.png",
       "sizes": "1254x1254",
       "type": "image/png",
       "purpose": "any"

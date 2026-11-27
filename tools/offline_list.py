@@ -53,13 +53,31 @@ def build(root=ROOT):
         out.append(f); total += os.path.getsize(p)
     s = open(os.path.join(root, 'config.js'), encoding='utf-8').read()
     ver = re.search(r"export const VERSION = '([^']+)'", s).group(1)
-    return {'version': ver, 'bytes': total, 'files': out}
+    return {'version': ver, 'bytes': total, 'files': out, 'hash': _hashes(root, out)}
+
+def _hashes(root, files):
+    """每支檔的內容雜湊（ver -3078，離線版更新「雜湊不同才重抓」）：git 的 blob 雜湊前 10 碼。
+    已提交／已暫存的讀索引（快）；工作區改過還沒 add 的現算（git hash-object），清單永遠對得上磁碟上的內容。"""
+    idx = {}
+    for row in subprocess.run(['git', 'ls-files', '-s', '-z'], cwd=root, capture_output=True).stdout.decode('utf-8').split('\0'):
+        if '\t' in row:
+            meta, path = row.split('\t', 1); idx[path] = meta.split()[1]
+    dirty = set(subprocess.run(['git', 'diff', '--name-only', '-z'], cwd=root, capture_output=True).stdout.decode('utf-8').split('\0'))
+    need = [f for f in files if f in dirty or f not in idx]
+    if need:
+        got = subprocess.run(['git', 'hash-object', '--stdin-paths'], cwd=root, input='\n'.join(need).encode('utf-8'),
+                             capture_output=True).stdout.decode().split()
+        idx.update(dict(zip(need, got)))
+    return [idx.get(f, '')[:10] for f in files]
 
 def dump(path, d):
-    """寫一份清單（主程式與試玩版 dist 共用這一個格式，offline.js 只認這一種）。"""
+    """寫一份清單（主程式與試玩版 dist 共用這一個格式，offline.js 只認這一種）。
+    `hash`＝與 files 同順序的內容雜湊（ver -3078）；沒有這一欄的清單 offline.js 照舊能讀。"""
     body = ',\n'.join(json.dumps(f, ensure_ascii=False) for f in d['files'])
-    txt = ('{"version": %s,\n"bytes": %d,\n"files": [\n%s\n]}\n'
-           % (json.dumps(d['version'], ensure_ascii=False), d['bytes'], body))
+    hs = d.get('hash')
+    hpart = (',\n"hash": [%s]' % ','.join(json.dumps(h) for h in hs)) if hs else ''
+    txt = ('{"version": %s,\n"bytes": %d,\n"files": [\n%s\n]%s}\n'
+           % (json.dumps(d['version'], ensure_ascii=False), d['bytes'], body, hpart))
     open(path, 'w', encoding='utf-8', newline='\n').write(txt)
 
 def write(root=ROOT):
