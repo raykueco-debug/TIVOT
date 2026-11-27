@@ -3284,7 +3284,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
                            stats: buildStatRows });
   })();
   // 觸發一：網址帶 ?debug
-  if(location.search.indexOf('debug')>=0) show();
+  if(prog.adminAllowed() && location.search.indexOf('debug')>=0) show();   // 試玩版不開（ver -3092）
   // 觸發二：首頁團徽快速連點 5 下（主畫面 App 進不了帶參數網址時用）
   //   ⚠ #homeEmblem 有 pointer-events:none（防拖曳），事件會穿透到 #home →
   //     改在 #home 上事件委派計數，點到按鈕（出陣/換裝/Credit/原作）不算。
@@ -3293,7 +3293,8 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   let taps=0, tapTimer=null, touched=false;
   const homeEl=$('home');
   if(homeEl){
-    const count=(e)=>{ if(e.target && e.target.closest && e.target.closest('button')) return;
+    const count=(e)=>{ if(!prog.adminAllowed()) return;   // 試玩版不開（ver -3092）
+      if(e.target && e.target.closest && e.target.closest('button')) return;
       taps++; clearTimeout(tapTimer); tapTimer=setTimeout(()=>{taps=0;},1500);
       if(taps>=5){ taps=0; show(); } };
     homeEl.addEventListener('touchstart', e=>{ touched=true; count(e); }, {passive:true});
@@ -3342,6 +3343,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
      不必每次重做手勢；要退出就再畫一次圓＋橫劃。 */
   const toggleAdmin=()=>{
     circleAt=0;
+    if(!prog.adminAllowed()) return;   // 試玩版沒有管理人手勢（ver -3092）
     const on=!document.body.classList.contains('testmode');
     document.body.classList.toggle('testmode', on);
     if(on){ TEL.markAdmin(); try{ localStorage.setItem('tivot_admin_ui_v1','1'); }catch(_){} }   // 簽名＝管理員：此裝置停止遙測上報；手勢開啟＝介面一起打開（ver -2210）
@@ -3350,11 +3352,25 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
   };
   /* 試玩版（ver -3073）：首頁入口收窄（style.css 的 body.demo 白名單）＋飛行頁（非 module）讀父頁這個值做降落鎖。
      判定只有 prog.isDemo() 一支。 */
-  try{ const dm=prog.isDemo(); document.body.classList.toggle('demo', dm); window.__tivotDemo = dm; }catch(_){}
+  try{ const dm=prog.isDemo(); document.body.classList.toggle('demo', dm); window.__tivotDemo = dm;
+    /* 標題帶「先行體驗版」（ver -3092，Ray：「標題加入先行體驗版」）：首頁標題下一行、分頁 <title>、
+       iOS「加入主畫面」的名稱（apple-mobile-web-app-title，Safari 加入當下讀 DOM）。
+       ⚠ manifest 是靜態檔，由 tools/release/build_demo.mjs 改寫 dist 那一份（開發版不動）。 */
+    if(dm){
+      const tag=i18nT('先行體驗版');
+      document.title='TIVOT '+tag;
+      const am=document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if(am) am.setAttribute('content', '聖約第四騎士團 '+tag);
+      const tl=document.querySelector('#home .title');
+      if(tl && !document.querySelector('#home .demo-tag')){
+        const d=document.createElement('div'); d.className='demo-tag'; d.textContent=tag;
+        tl.insertAdjacentElement('afterend', d);
+      }
+    } }catch(_){}
   // 開機還原：簽名還在就直接進管理人模式
   /* ⚠ ver -2210（Ray：「在選單中加入開啟或關閉管理人介面」）：簽名還在、而且選單沒有把介面關掉
      （`tivot_admin_ui_v1` 不是 '0'）才進 testmode。簽名本身不動 —— 關掉介面的管理人照樣不上報遙測。 */
-  if(TEL.isAdminStored() && (()=>{ try{ return localStorage.getItem('tivot_admin_ui_v1')!=='0'; }catch(_){ return true; } })())
+  if(prog.adminAllowed() && TEL.isAdminStored() && (()=>{ try{ return localStorage.getItem('tivot_admin_ui_v1')!=='0'; }catch(_){ return true; } })())
     document.body.classList.add('testmode');
   /* 測試金（ver -496，Ray：「測試環境先給我10000元花」）：管理人模式下每一輪
      發一次 10000 G。旗標走一輪內 flags —— `newRun()` 會清掉，新一輪自動再發；

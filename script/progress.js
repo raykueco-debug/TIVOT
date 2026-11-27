@@ -196,6 +196,10 @@ export function isDemo(){
   if(_demo==null){ let q=false; try{ q=/[?&]demo=1(?:&|$)/.test(location.search); }catch(_){} _demo=!!(BUILD && BUILD.demo) || q; }
   return _demo;
 }
+/* 管理人／診斷入口准不准開（ver -3092，Ray：「網頁版不要有管理人手勢」）：試玩版一律不准。
+   ⚠ 唯一的判定（鐵律 8）：首頁畫圓＋橫劃（main 的 toggleAdmin）、開機還原簽名、團徽連點 5 下與 ?debug（debugHud）、
+     選單的管理人開關（settings.isAdminDevice）都問這一支；飛行頁（非 module）讀父頁的 `__tivotDemo` 走同一個答案。 */
+export function adminAllowed(){ return !isDemo(); }
 /* 約會開放了沒（ver -3005，Ray：「把到測試版結束為止的約會鈕都拿掉」）：試玩版終點（config.demo.endFlag）之前一律不開。
    ⚠ 唯一的判定（鐵律 8）：旅店的伙伴門（inn.refresh）與城鎮的 dateOpen 都問這一支。沒設終點＝一直開。
    ⚠ 章節 ≥ `demo.chapterStage` 也算過了終點：舊存檔（終點旗是 -3005 才有的）與章節跳關（不經過 lake_deck）都靠這一條。 */

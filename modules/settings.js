@@ -119,7 +119,7 @@ export function setHaptics(on){ wr(K.hap, on ? '1' : '0'); }
    只有簽名在的人看得到這個開關；關掉＝拔 body.testmode（主頁所有管理人鈕跟著收）＋通知飛行頁收它那幾顆。
    ⚠ 飛行頁另讀同一把鑰匙（flight/index.html 的 ADMIN），改一邊要改另一邊。 */
 const ADMIN_UI_KEY = 'tivot_admin_ui_v1';
-export function isAdminDevice(){ return rd('tivot_admin_v1') === '1'; }
+export function isAdminDevice(){ return rd('tivot_admin_v1') === '1' && prog.adminAllowed(); }   // 試玩版一律不是（ver -3092）
 export function adminUiOn(){ return rd(ADMIN_UI_KEY) !== '0'; }
 export function setAdminUi(on){
   wr(ADMIN_UI_KEY, on ? '1' : '0');
