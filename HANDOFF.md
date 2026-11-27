@@ -1,4 +1,4 @@
-# HANDOFF — 截至 `ver 2026.11.26-3063`（11-24 PM session 增補；本體為 11-23 換機前那份）
+# HANDOFF — 截至 `ver 2026.11.27-3083`（11-24 PM session 增補；本體為 11-23 換機前那份）
 
 > ⚠⚠ **交接規則（Ray 10-04 定）**：開工讀這一份 → 逐項清點「完成／未完成」給 Ray 確認 → 生成新的一份、回收舊的（`tools/recycle.sh`）。**只留一份現況，不往下疊。**
 > 上一份（11-17，ver -2686＋敵人線 11-20 增補）已回收到 `_recycle/`，git 歷史也有。
@@ -6,6 +6,17 @@
 > 各副理自己的完整交接（共用筆記夾，換機不一定帶得走，重點已抄進本檔）：`HANDOFF_story_1123.md`、`map_handoff_20261123.md`、`anim_handoff_1123.md`、`bg_handoff_1123.md`、`enemy_ADM_status_1123.md`。
 
 ---
+
+## 〇之三、11-27 增補（PM；換機前，最新 ver -3083）
+
+**✔ 推上的**：羽蛇登場（3D 掠過→A 由下衝出晃船→「好快！」＋crisis，-3064）、羽蛇擊敗不淨化改劃過消失＋不出結算頁（-3067）、子彈時間定案＝速度線＋拉近 1.08（-3071）、試玩切版（BUILD.demo、首頁白名單、索菈娜戰閉棺後直接結束卡，-3074～-3081）、試玩降落鎖只降北泊（-3075）、網頁離線下載改快取優先＋雜湊更新＋iOS 提示（-3079）、試玩六場蕾娜評價定稿（-3082，定稿 json 在 docs/）、戰前預載第一版（-3083，`enemy.preloadBattleCard`，交接在 `docs/PRELOAD_PLAN_BATTLE.md` 第六節）。
+**上架**：網頁試玩 https://tivot-demo.pages.dev/（ver -3082，整包素材＋試玩開關）；APK `dist/apk/TIVOT-demo-v3082.apk`（802 MB，金鑰在 `%USERPROFILE%\.tivot-keys`，repo 外，**換機要帶走**）已傳 itch 草稿 https://alworks.itch.io/saint-install（未公開）；打包與上傳腳本 `release/capacitor/build_apk.ps1`、`release/itch_push.ps1`（要在 Ray 終端機跑）。行銷計畫 `docs/DEMO_LAUNCH_MARKETING.md`（巴哈小屋主發布頁＋Penana）。
+
+**⚠ 欠／等 Ray**
+- 手機整輪實玩、iPhone 離線（飛航模式）驗證、APK 實機側載驗證；新機要重裝 JDK 21＋Android SDK 才能再打 APK。
+- itch 頁文案／分類／封面截圖／AI 聲明／公開與否；行銷素材 9 項缺口；發布日期。
+- 預載：九場慢網前後對照數字未量完；精確試玩素材清單（APK 目前兩類整包暫解）待效能副理。
+- 帝都要不要放行降落（試玩鎖目前只有北泊）；結束卡文案待定。
 
 ## 〇之二、11-26 增補（PM；最新 ver -3063）
 
