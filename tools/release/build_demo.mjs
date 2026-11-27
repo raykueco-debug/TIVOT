@@ -18,7 +18,12 @@ else {
   if (d.version !== off.version) console.warn(`⚠ demo_size.json 是 ${d.version}，離線包是 ${off.version} —— 先跑 node tools/release/demo_size.mjs`);
   const listed = Array.isArray(d.list) ? d.list.map(x => typeof x === 'string' ? x : x.file || x[0]) : Object.keys(d.list);
   const CODE = /\.(js|mjs|html|css|json|webmanifest|woff2?|ttf|otf)$/i;   // 程式層一律整包（小，而且漏一支就整頁壞）
-  files = [...new Set([...listed, ...off.files.filter(f => CODE.test(f))])];
+  /* 整類補進來（11-27，Ray：「素材先兩類整包」）：靜態清單收不到這兩類新系統（插圖動畫、背景動畫），
+     精確清單之後由效能副理做；在那之前預設整類放進去。--with=a,b 可以改名單（resources/ 底下的路徑開頭）。 */
+  const wArg = process.argv.find(a => a.startsWith('--with='));
+  const WITH = (wArg ? wArg.slice(7).split(',') : ['illustration/video', 'background/anim']).filter(Boolean).map(s => 'resources/' + s.replace(/\/?$/, '/'));
+  files = [...new Set([...listed, ...off.files.filter(f => CODE.test(f) || WITH.some(w => f.startsWith(w)))])];
+  console.log('整類補入：' + WITH.join('、'));
 }
 files.push('offline_list.json');
 
