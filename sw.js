@@ -14,8 +14,27 @@
    · 存快取之前看 Content-Type：Cloudflare Pages 缺檔回 200＋首頁 HTML，HTML 不准存成 .webp／.m4a。 */
 const CACHE = 'tivot-offline-v1';
 
+/* ══⚠⚠ 轉址過的回應不准交給頁面（ver -3112，Ray：Safari「response served by service worker has redirections」整頁打不開）══
+   Cloudflare Pages 會把 .html 轉址（/index.html → 308 → /、/flight/index.html → /flight/）；fetch 跟著轉、拿到
+   `redirected === true` 的回應。這種回應**拿去回應導覽請求，Safari 直接拒絕**。-3112 之前 offline.js 下載時把它原樣存進快取，
+   下載完成（快取優先）之後開首頁就中。⇒ 從快取取出／存進快取／斷線退回首頁，一律先過 `clean`：重建一份乾淨的回應。 */
+async function clean(res){
+  if(!res || !res.redirected) return res;
+  return new Response(await res.blob(), { status: res.status, statusText: res.statusText, headers: res.headers });
+}
 self.addEventListener('install', e => { self.skipWaiting(); });
-self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()); });
+/* 啟用時把快取裡已經存壞的 html（轉址過的回應）原地改寫乾淨 —— 已經下載完的玩家不必重下 700 MB。 */
+self.addEventListener('activate', e => { e.waitUntil((async () => {
+  try{
+    const cache = await caches.open(CACHE);
+    for(const req of await cache.keys()){
+      if(!/\.html$/i.test(new URL(req.url).pathname)) continue;
+      const res = await cache.match(req);
+      if(res && res.redirected) await cache.put(req, await clean(res));
+    }
+  }catch(_){}
+  await self.clients.claim();
+})()); });
 
 function keyOf(url){
   const u = new URL(url);
@@ -38,7 +57,7 @@ self.addEventListener('message', e => { if(e.data && e.data.type === 'offline-re
 
 async function fromCache(req){
   const cache = await caches.open(CACHE);
-  const hit = await cache.match(keyOf(req.url));
+  const hit = await clean(await cache.match(keyOf(req.url)));
   if(!hit) return null;
   const range = req.headers.get('range');
   if(!range) return hit;
@@ -70,14 +89,14 @@ async function fromNet(req){
   const res = await fetch(req);
   if(res.ok && res.status === 200 && req.mode === 'navigate'){
     const copy = res.clone();
-    caches.open(CACHE).then(c => c.put(keyOf(req.url), copy)).catch(()=>{});
+    clean(copy).then(c2 => caches.open(CACHE).then(c => c.put(keyOf(req.url), c2))).catch(()=>{});
   }
-  return res;
+  return clean(res);
 }
 
 async function indexFallback(req){
   if(req.mode !== 'navigate') return null;
-  return (await caches.open(CACHE)).match(keyOf(scoped('index.html')));
+  return clean(await (await caches.open(CACHE)).match(keyOf(scoped('index.html'))));
 }
 
 self.addEventListener('fetch', e => {

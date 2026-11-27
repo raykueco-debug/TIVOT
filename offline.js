@@ -162,7 +162,11 @@
             if(!res.ok) throw new Error(res.status);
             const ct = res.headers.get('Content-Type') || '';
             if(/text\/html/i.test(ct) && !/\.html$/i.test(f)) throw new Error('拿到 HTML（缺檔）');
-            await cache.put(k, res);
+            /* ⚠⚠ ver -3112（Ray：Safari「response served by service worker has redirections」頁面打不開）：
+               Cloudflare Pages 會把 .html 轉址（/index.html → 308 → /），fetch 跟著轉、拿到 `redirected` 的回應 ——
+               原樣存進快取，SW 快取優先時拿它回應導覽請求，Safari 直接拒絕。存之前重建成一份乾淨的 200。 */
+            const body = res.redirected ? new Response(await res.blob(), { status: 200, statusText: 'OK', headers: res.headers }) : res;
+            await cache.put(k, body);
             if(h){ stored[f] = h; dirty = true; }
             return true;
           }catch(e){
