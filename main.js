@@ -1336,68 +1336,10 @@ function launchBattle(opts){
       onRevealed: ()=>{ if(!state.tutorialDialog) combat.resumeFromDialog(); } });
   sakuraBurst({ onDone: ()=> tr.proceed() });
 }
-// 出陣 → 出擊整備頁（搭檔卡/武器卡確認）→「執槍」才真正進戰鬥（櫻花＋過渡禎）
-/* 轉場粒子：畫面下方飄起金色光點後飄散（樣式見 style.css .gold-rise；粒子參數行內隨機） */
-function goldSparkRise(){
-  const layer=document.createElement('div');
-  layer.className='gold-rise';
-  document.body.appendChild(layer);
-  for(let i=0;i<26;i++){
-    const p=document.createElement('i');
-    const sz=2+Math.random()*4;
-    p.style.width=sz+'px'; p.style.height=sz+'px';
-    p.style.left=(Math.random()*100)+'%';
-    p.style.setProperty('--dx', ((Math.random()*2-1)*70).toFixed(0)+'px');   // 水平飄散
-    p.style.setProperty('--rise', (40+Math.random()*45).toFixed(0)+'vh');    // 升幅
-    p.style.animationDuration=(1.2+Math.random()*1.4).toFixed(2)+'s';
-    p.style.animationDelay=(Math.random()*0.5).toFixed(2)+'s';
-    layer.appendChild(p);
-  }
-  setTimeout(()=>{ if(layer.parentNode) layer.remove(); }, 3400);
-}
-let prepCloseTimer=null, prepVisTimer=null;
-let prepStoryMode=false;      // 這一次是本篇的整備（點吊墜開的），不是試玩版的出陣
-/* `opts.story` ＝ 本篇的整備頁（ver -421，Ray：「點擊吊飾時進入整備畫面」）。
-   ⚠ 差別只有三件：標題、底部那顆鈕的字與行為（不出陣，按了就關）、
-     以及武器規格顯示**本篇**那一組數值（§6.5.3）。版面共用同一頁，不另做一個。 */
-function openPrep(opts){
-  prepStoryMode = !!(opts && opts.story);
-  weapon.setPrepStory(prepStoryMode);
-  // 出陣 stinger：SI_01（音效在第一段就全部載完 → 即點即響）
-  SFX.play(asset('sfx_saint'), sfxGain('sfx_saint'));
-  weapon.refreshLoadoutLabels();
-  /* ⚠ 開在劇情層上時要把整備頁抬起來（見 style.css 的 `body.prep-over`）。 */
-  document.body.classList.toggle('prep-over', prepStoryMode);
-  const ti=$('prepTitle'), go=$('prepGo');
-  if(ti) ti.textContent = prepStoryMode ? i18nT('整　備') : i18nT('出擊整備');
-  if(go) go.textContent = prepStoryMode ? i18nT('完　成') : i18nT('執　槍');
-  const s=$('prepSheet'); if(!s) return;
-  clearTimeout(prepCloseTimer);
-  s.classList.add('on');
-  // 掛載後下一拍再開透明度 → 淡入（用 setTimeout 非 rAF：隱藏分頁 rAF 不執行）
-  clearTimeout(prepVisTimer);
-  prepVisTimer=setTimeout(()=>{ if(s.classList.contains('on')) s.classList.add('vis'); }, 30);
-  goldSparkRise();   // 轉場：下方飄起金色光點
-}
-function closePrep(){
-  document.body.classList.remove('prep-over');
-  const s=$('prepSheet'); if(!s) return;
-  clearTimeout(prepVisTimer);   // 開後極速關（30ms 內）：取消待掛的 vis，防淡入晚到把頁面蓋回來
-  s.classList.remove('vis');    // 先淡出
-  clearTimeout(prepCloseTimer);
-  prepCloseTimer=setTimeout(()=>{ if(!s.classList.contains('vis')) s.classList.remove('on'); }, 420);
-}
-/* ══ 挑戰出陣（ver -2225，Ray：「把挑戰的出擊整備選擇拿掉，默認蕾妮、機槍，不可遊戲內切換伙伴」）══
-   不再開出擊整備頁（那一頁是挑戰唯一能換搭檔／副武器的地方）：固定裝備直接開戰。
-   ⚠ 挑戰的出陣只走這一支（首頁「挑戰」、教學「跳過」都叫它，鐵律 8）。
-   ⚠ `openPrep` 留著不刪（`opts.story` 那一支是本篇的整備；現在沒有入口叫它，見那支的說明）。 */
+/* 出擊整備頁（openPrep／closePrep／goldSparkRise，挑戰的出陣口）已撤（ver -3132，挑戰回收）；本篇的整備是 gear.js。 */
 /* ══ 挑戰已撤（ver -3131，Ray：「挑戰整個回收掉了 不要留」；完整版同體驗版）══
    `startChallenge`、首頁「挑戰」「教學」兩顆鈕、教學「跳過」→ 出陣那條路一起拿掉。
    ⚠ 劇情版教學（「開始故事」→ `requestReplay({story:true})`）不經過這裡，照舊。 */
-bindBtn('prepBack', closePrep);
-/* ⚠ 本篇的整備頁按下去只是**關掉**（那裡不是出陣口）—— 這一顆是同一個 DOM，
-   所以行為要看 `prepStoryMode`，不要另做一顆鈕（鐵律 8）。 */
-bindBtn('prepGo', ()=>{ const st=prepStoryMode; closePrep(); if(!st) launchBattle(); });
 /* 劇情層（槍棺上的吊墜）開整備頁：story 不 import main，所以用注入。 */
 /* ⚠ 吊墜開的是**本篇的整備頁**（`modules/gear.js`），不是試玩版的出陣整備
    （ver -422，Ray：「整備畫面錯了，開啟全畫面視窗，有三個功能」）。 */
@@ -1855,8 +1797,6 @@ bindBtn('giveupBtn',    inspector.onGiveupBtn); // 戰敗：放棄 → 回主畫
 // 破防值滿 → 點計量表發動「雙槍破防」獎勵射擊窗口
 bindBtn('energyClasp',    weapon.activateDual);
 // 出擊整備頁的換裝入口：副武器（全螢幕卡疊，上下滑）/ 搭檔（全螢幕卡疊，左右滑）——關閉鈕各自於 sheet 內綁定
-bindBtn('prepWeaponCard',  ()=>weapon.openPickSheet('weapon'));
-bindBtn('prepPartnerCard', ()=>weapon.openPickSheet('partner'));
 // Credit：BGM 來源
 bindBtn('creditBtn',  ()=>{ const s=$('creditSheet'); if(s) s.classList.add('on'); });
 bindBtn('creditClose',()=>{ const s=$('creditSheet'); if(s) s.classList.remove('on'); });
@@ -3209,7 +3149,7 @@ window.addEventListener('orientationchange', ()=>setTimeout(combat.fitGridSquare
       const st=!!document.querySelector('#storyStage.on'), hm=$('home').classList.contains('on');
       const ff=$('flightFrame'), fl=ff&&!!ff.getAttribute('src');
       /* 疊層全景：全螢幕層＋常見 overlay 誰活著（鐵律 10 的儀表）。 */
-      const ovl=[['prep','prepSheet'],['gear','gearSheet'],['loot','lootSheet'],['menu','gameMenu']]
+      const ovl=[['gear','gearSheet'],['loot','lootSheet'],['menu','gameMenu']]
         .filter(([,id])=>{ const el=document.getElementById(id); return el && paintable(el); })
         .map(([n])=>n).join(' ');
       const ctxSt=(P.ctx&&P.ctx.state)||'—';

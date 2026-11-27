@@ -147,24 +147,11 @@ export function applyToDom(){
   set($('creditBtn'),    L.home.creditBtn);
   set($('originalBtn'),  L.home.originalBtn);
   set($('statsBtn'),     L.home.statsBtn);
-  // 出擊整備頁
-  set($('prepTitle'),        L.home.prepTitle);
-  set($('prepGo'),           L.home.prepGo);
-  set($('prepPartnerLabel'), L.home.partnerLabel);
-  set($('prepWeaponLabel'),  L.home.weaponLabel);
   // 戰鬥 UI
   set($('tutSkipBtn'),   L.battle.skipBtn);
   set($('testClearBtn'), L.battle.testClear);
   set($('transText'),    L.battle.reloading);
   // 選單標題／說明
-  set(q('#partnerSheet .ps-title'), L.partners.sheetTitle);
-  set(q('#weaponSheet .ps-title'),  L.weapons.sheetTitle);
-  const tags=document.querySelectorAll('#partnerSheet .ps-tag');
-  if(tags[0]) tags[0].textContent=L.partners.tagActive;
-  if(tags[1]) tags[1].textContent=L.partners.tagPassive;
-  const howto=document.querySelectorAll('#partnerSheet .ps-howto div');
-  if(howto[0]) howto[0].textContent=L.partners.howtoActive;
-  if(howto[1]) howto[1].innerHTML=fmt(L.partners.howtoSaint).replace(/\n/g,'<br>');
   // Credit 面板（曲目用途標籤依清單順序）
   set(q('#creditSheet .credit-tip'), L.sheets.creditTip);
   set($('creditClose'), L.sheets.creditClose);

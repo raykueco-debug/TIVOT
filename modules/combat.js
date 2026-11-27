@@ -3598,7 +3598,7 @@ function win(){
   /* `directExit`（ver -3105，Ray：「羽蛇戰完…完了以後直接帶劇情 不要再回到戰鬥畫面」）：不演閉棺 ——
      擊敗演出劃完就已經 blackOut 全黑，黑著結算（noResult 不出頁）→ 交棒；goHome 的黑幕接著蓋，掀開就是下一段。 */
   if(directExitCard()){ blackOut(0); enemy.releaseBattleMemory(); toResult(); }
-  else if((storyFramed() || state.kerbChallenge) && storyClose) storyClose(()=>{ enemy.releaseBattleMemory(); toResult(); });   // 挑戰也關門（ver -2225）；門關上就清記憶體（-2595）
+  else if(storyFramed() && storyClose) storyClose(()=>{ enemy.releaseBattleMemory(); toResult(); });   // 挑戰也關門（ver -2225）；門關上就清記憶體（-2595）
   else playTransition('finish', toResult);
 }
 /* ══ 敵人的 NI（ver -1964，米夏；Ray：「米夏 hp 被打到 1 就會發動 15 秒的 NI 開始回血，
@@ -3735,8 +3735,6 @@ function lose(){
   setTimeout(()=>{
     if(app) app.classList.remove('death-freeze');
     SFX.playBgm(asset('bgm_lose'), { volume: bgmVol('bgm_lose') });   // 驅逐失敗插入瞬間 → 任務失敗 BGM
-    /* 挑戰：打完閉棺（ver -2225，Ray）—— 輸了也先關門再上結算，不走「驅逐失敗」過渡禎 */
-    if(state.kerbChallenge && storyClose){ storyClose(()=>{ enemy.releaseBattleMemory(); inspector.settle(null, null, { isLose:true }); }); return; }   // 門關上就清記憶體（-2595）
     playTransition('fail', ()=> inspector.settle(null, null, { isLose:true }));
   }, 1000);
 }
@@ -4201,7 +4199,6 @@ export function killBattleFrame(){
 export function goHome(onCovered, opts){
   fadeTransition(()=>{                        // 回主選單：淡出淡入約 3 秒
     state.over=true; stopAll();
-    state.kerbChallenge=false;                 // 挑戰的槍棺框到此為止（ver -2225）
     /* ⚠⚠ **返回首頁＝殺光所有頁面**（ver -494，Ray 指定）：黑幕全蓋的這一刻把
        飛行 iframe／城鎮／劇情層／整備頁／選單全部收掉再回去 —— 藏起來不算，
        背景還活著的頁面（音、計時器、模擬）都要死。

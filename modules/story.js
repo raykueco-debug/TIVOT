@@ -4458,24 +4458,7 @@ export function showKerbGate(geom){
   void kb.offsetWidth;
   kb.classList.remove('kerb-instant');
 }
-/* ══ 挑戰（試玩版）的推棺開戰（ver -2225，Ray：「挑戰按下去推棺，打完閉棺」）══
-   首頁沒有槍棺 ⇒ 門擺在**畫面外的底部**（`kerb-low`，連楣一起藏在下緣之外），
-   接著走劇情戰同一套 `playKerberos`（推到頂撞擊 → 解鎖 → 圓盤 → 開門，鐵律 8）。
-   `onGap`＝門縫要露出戰場的那一刻（呼叫端在那裡開戰）；門全開就收掉劇情層並放行降臨
-   （同劇情戰的 `opened`）。⚠ `kerb-gate`：沒有劇情，對話框／離開鈕／跳段鈕都收掉。 */
-export function playKerberosChallenge(onGap){
-  const st=$('storyStage'), kb=$('kerb');
-  if(!st || !kb){ onGap&&onGap(); return; }
-  stopKerberos();
-  st.classList.add('on','kerb-gate');
-  document.body.classList.add('story-on');
-  playKerberos(onGap, ()=>{
-    kb.classList.remove('kerb-lowrise');
-    st.classList.remove('kerb-gate');
-    close({ keepBgm:true });
-    if(gateOpened) try{ gateOpened(); }catch(_){}
-  }, { fromLow:true });
-}
+/* 挑戰的推棺開戰（`playKerberosChallenge`，ver -2225）已撤（ver -3132，挑戰回收）。 */
 export function playKerberosFromRisen(onGap, onDone){
   const st=$('storyStage');
   if(st) st.classList.add('on','kerb-gate');
