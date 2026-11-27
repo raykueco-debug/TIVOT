@@ -1519,9 +1519,19 @@ let stageCgBack=null;   // 中景層（ver -870）：立繪之下的去背圖（
 
 function setImg(el, src){
   if(!el) return;
+  if(el.dataset && el.dataset.anim) delete el.dataset.anim;   // 換成靜態圖／收掉：動畫的標記跟著拿掉（ver -3135）
   if(src){ if(el.getAttribute('src')!==src) el.src=src; el.classList.add('on'); }
   else   { el.classList.remove('on'); }
 }
+/* ══ 會動的不放底圖（ver -3135，Ray：「寧願黑背也不要底圖」「所有會動的都不放底圖」「藏你媽底圖 我叫你不要放」）══
+   有動畫的插圖／背景：元素**不設 src**（不載、不解碼、不畫靜態圖），只掛 `.on` 與 `data-anim`（＝這一格是誰），
+   影片第一格畫上去之前就是黑的。誰要問「這一格現在是哪一張」一律問 shownName，不要直接讀 src（鐵律 7）。 */
+function setAnimImg(el, name){
+  if(!el) return;
+  if(el.getAttribute('src')) el.removeAttribute('src');
+  el.dataset.anim=name; el.classList.add('on');
+}
+export function shownName(el){ return el ? ((el.dataset && el.dataset.anim) || el.getAttribute('src') || '') : ''; }
 
 /* ══ 時段差分的候選鏈（ver -427，鐵律 7／8 的單一真相）══════════════════════
    ⚠⚠ 這條規矩本來只長在 `modules/town.js` 的 `bgFor` 裡（背景用）；Ray ver -427
@@ -1652,6 +1662,19 @@ export function bgUrl(name){ return imgSrc(name); }
 const FADE_MS = 220;
 /* 這個 `<img>` 真的把圖畫上去了嗎 —— 沒載完就等 `onload`（載不到也要放行，
    不能讓等它的人卡住）。⚠ 只有一支（鐵律 8）：凡是「等新圖上去了再做事」都叫它。 */
+/* 這一張背景會動嗎（有影片）——會動就不放底圖（ver -3135）。名字可以是基底名、檔名或網址。 */
+export function bgVideoOf(name){ return name ? (BG_ANIM[bgStemOf(name)] || null) : null; }
+/* 換成會動的背景：不設 src，掛 data-anim（見 setAnimImg）；done＝影片第一格畫上去（最多等 1.5 秒）。 */
+function swapAnimBg(el, name, done){
+  const fin=()=>{ if(done) done(); };
+  if(el.classList.contains('on') && shownName(el)===name){ fin(); return; }
+  const put=()=>{ el.classList.remove('fading'); setAnimImg(el, name); syncBgAnim();
+    const t0=performance.now(); (function wait(){ if((bgAnimOn && bgAnimOn.img===el && bgAnimOn.shown) || performance.now()-t0>1500) fin(); else setTimeout(wait, 40); })(); };
+  if(!el.classList.contains('on') || veilOn()){ put(); return; }
+  el.classList.add('fading'); setTimeout(put, FADE_MS);
+}
+/* 背景的唯一換法（ver -3135）：會動的走 swapAnimBg，其餘照舊 swapImg。 */
+function swapBg(el, name, done, opts){ if(name && bgVideoOf(name)) swapAnimBg(el, name, done); else swapImg(el, name ? imgSrc(name) : '', done, opts); }
 function whenPainted(el, fn){
   if(!el || !el.getAttribute('src')){ fn && fn(); return; }
   if(el.complete && el.naturalWidth){ fn && fn(); return; }
@@ -2199,7 +2222,7 @@ function cgAnimDraw(on){
      與其逐條補，不如讓它看著自己的那張圖（同「暗罩守望」的思路）。 */
   /* ⚠ 黑幕換圖還沒換完（`cgFinish` 還在等）時不判（ver -2977）：底下那張要等全黑才換成新的，影片若已在快取裡、第一格先畫上去，
      這裡會看到「圖還是上一張」就把自己收掉 —— 而且收掉時把上一張的靜態圖放了出來（實測 003 接在 002 後面就是這樣）。 */
-  if(on.shown && !cgFinish && (!img.isConnected || !img.classList.contains('on') || (img.getAttribute('src')||'').indexOf(on.name)<0)){ stopCgAnim(); return; }
+  if(on.shown && !cgFinish && (!img.isConnected || !img.classList.contains('on') || shownName(img).indexOf(on.name)<0)){ stopCgAnim(); return; }
   const W=img.offsetWidth, H=img.offsetHeight; if(!W||!H) return;
   const dpr=Math.min(2, window.devicePixelRatio||1);
   const cw=Math.round(W*dpr), ch=Math.round(H*dpr);
@@ -2240,9 +2263,9 @@ function finishCgAnim(on){
   if(cgAnimOn!==on) return;
   const img=on.img;
   /* ⚠ 那張圖已經被換成別張（下一拍自己換了插圖）就不要清它 —— 清的是別人的插圖。 */
-  if(img && (img.getAttribute('src')||'').indexOf(on.name)>=0){
+  if(img && shownName(img).indexOf(on.name)>=0){
     stageCg = null;                    // 這一張插圖結束了（下一拍寫 cg:null 也是 no-op）
-    img.classList.remove('on','fading'); img.removeAttribute('src');
+    img.classList.remove('on','fading'); img.removeAttribute('src'); delete img.dataset.anim;
   }
   stopCgAnim();
 }
@@ -2383,7 +2406,7 @@ function playCgAnim(name){
   /* 播完停在最後一格（ver -2620）；自動播放中被押住的那一下，播完才放行。 */
   v.onended=()=>{ if(cgAnimOn!==on || v.loop) return; on.sig=null; kickCgAnim(on);
     if(on.afterEnd){ on.afterEnd=false; if(active && (autoPlay||fastMode)) advance(); } };
-  const fallback=()=>{ if(cgAnimOn===on) stopCgAnim(); };   // 影片載不到：收掉動畫層，靜態圖放回來
+  const fallback=()=>{ if(cgAnimOn===on) stopCgAnim(); };   // 影片載不到：收掉動畫層（ver -3135 起元素本來就沒掛靜態圖 ⇒ 留黑，不退回底圖）
   v.onerror=fallback;
   /* 5 秒還沒畫出第一格＝當作載不到（ver -2908）：退回靜態圖，這一拍才放得掉（點擊在影片播完前是被擋的）。 */
   setTimeout(()=>{ if(cgAnimOn===on && !on.shown) fallback(); }, CG_ANIM_LOAD_MS);
@@ -2408,6 +2431,9 @@ function playCgAnim(name){
      上面再疊水面／落水／水霧／光束／煙／獅口水柱／天空雲，畫法在 `modules/bgfx.js`。有程式層時改用 rAF（上限每秒 30 格），
      因為沒有新的影片格時水也要動；只有影片時照舊跟著影片的格。程式層載不到就退回「只播影片」，兩樣都沒有就收掉。 */
 let bgAnimOn=null;
+/* 會動的背景沒有靜態圖可量尺寸（ver -3135）：影片的長寬一到就告訴城鎮（旅店行動鈕照背景比例擺，town.bgPoint）。 */
+let bgSizeHook=null;
+export function setBgSizeHook(fn){ bgSizeHook=fn; }
 const BG_FX_FRAME_MS=33;   // 程式層的格率上限（手機發熱，鐵律 12）
 function bgStemOf(src){
   const p=String(src||'').split('?')[0];
@@ -2473,7 +2499,7 @@ function playBgAnim(img, src, video, fxSpec){
   const loop=(now)=>{
     if(bgAnimOn!==on) return;
     /* 自我檢查：背景換了／舞台收了／被蓋住了 ⇒ 收掉（不靠呼叫端記得叫）。 */
-    if(img.getAttribute('src')!==src || !bgStageLive()){ stopBgAnim(); return; }
+    if(shownName(img)!==src || !bgStageLive()){ stopBgAnim(); return; }
     if(on.fx && on.fx.failed){
       on.fx=null; if(on.hid){ on.hid=false; img.style.visibility=''; }
       if(!on.v){ stopBgAnim(); return; }   // 只有程式層而它載不到：收掉，靜態圖照舊
@@ -2495,6 +2521,7 @@ function playBgAnim(img, src, video, fxSpec){
     v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1;';
     document.body.appendChild(v);
     let started=false;
+    v.onloadedmetadata=()=>{ if(bgAnimOn===on && bgSizeHook && v.videoWidth) try{ bgSizeHook(src, v.videoWidth, v.videoHeight); }catch(_){} };
     v.onloadeddata=()=>{ if(bgAnimOn!==on) return; const p=v.play(); if(p && p.catch) p.catch(()=>{}); if(!started && !on.fx){ started=true; loop(); } };
     v.onerror=()=>{ if(bgAnimOn!==on) return; try{ v.remove(); }catch(_){} on.v=null; if(!on.fx) stopBgAnim(); };   // 載不到：只剩程式層（或收掉）
     v.src=video;
@@ -2503,7 +2530,7 @@ function playBgAnim(img, src, video, fxSpec){
 }
 /* 唯一的判斷點：現在 `#storyBg` 是哪一張、舞台活不活著 → 該不該播、播哪一支、疊哪些程式層。 */
 function bgWant(img){
-  const src=img && img.getAttribute('src');
+  const src=shownName(img);
   if(!src || !bgStageLive()) return null;
   const stem=bgStemOf(src), video=BG_ANIM[stem]||null, fx=bgFxOf(stem, prog.hasFlag);
   return (video||fx) ? { src, video, fx } : null;
@@ -2519,7 +2546,7 @@ function watchBgAnim(){
   let t=0; const kick=()=>{ clearTimeout(t); t=setTimeout(syncBgAnim, 30); };
   try{
     const mo=new MutationObserver(kick);
-    mo.observe(img, { attributes:true, attributeFilter:['src','class'] });
+    mo.observe(img, { attributes:true, attributeFilter:['src','class','data-anim'] });
     mo.observe(st, { attributes:true, attributeFilter:['class','style'] });
   }catch(_){}
   img.addEventListener('load', kick);
@@ -2553,7 +2580,7 @@ function cgFade(el, src){
   /* ⚠ **插圖一出現就要走黑幕**，不是只有「插圖換插圖」才走 —— Ray 抱怨的正是
      「插進來那一下」在跳。第一版只在場上已有插圖時才淡，於是最常見的
      「沒有插圖 → 插入插圖」完全沒吃到，等於沒改。 */
-  if(!el || !fade){ setImg(el, src); return false; }
+  if(!el || !fade){ if(src && src.anim) setAnimImg(el, src.anim); else setImg(el, src); return false; }
   cgFadeT.forEach(clearTimeout); cgFadeT=[];
   const my = ++cgSeq;                      // ver -979：這一次換圖的世代（見 cgSeq）
   /* ⚠⚠ 黑幕本來就由腳本／讀取頁蓋著（`fadeOwner` 是 'beat'／'gate'）時，換圖**不接手**（ver -2144，Ray：「插畫跑完又是先回場景，
@@ -2564,7 +2591,7 @@ function cgFade(el, src){
   cgFinish=()=>{
     cgFinish=null;
     if(my!==cgSeq) return;                 // 已經被下一次換圖／收圖取代
-    const list = Array.isArray(src) ? src : (src ? [src] : []);
+    const list = (src && src.anim) ? [] : Array.isArray(src) ? src : (src ? [src] : []);
     /* 等新圖真的畫上去再收黑幕 —— 沒載完就收，會先看到一格舊圖或空白
        （同 ver -322 立繪、ver -325 背景踩過的那個坑）。 */
     /* ⚠ 有動畫的插圖（ver -2292，Ray：「已經有動畫的插圖就不要再放底圖」）：靜態圖本來就藏著（cg-anim-hide），
@@ -2593,6 +2620,7 @@ function cgFade(el, src){
           console.info('[story] 沒有這個時段的插圖，往下試：', list[0]); }
         tryAt(i+1); };
     };
+    if(src && src.anim){ setAnimImg(el, src.anim); back(); return; }   // 有動畫：不放底圖，黑幕等影片第一格（back 自己等，最多 3 秒）
     if(!list.length){ setImg(el, ''); back(); return; }
     cgFadeT.push(setTimeout(back, 900));    // 保險：候選全都很慢時別把黑幕卡住（動畫插圖那一支自己再等到第一格，最多 3 秒）
     tryAt(0);
@@ -2673,7 +2701,7 @@ function applyPersist(line){
        ⚠ 同 §6.5「取景在 onload 那一刻才換」那一條的同族：凡是「依畫面算」的東西，
          都要等畫面真的換好，不要另外猜一個秒數（鐵律 7）。 */
     /* ⚠ 插圖（`NNN_` 開頭）當背景時淡回來放慢到 CG_FADE_MS×2（ver -1917，Ray：「saintassault 又沒有好好淡入了，淡入太快」）。 */
-    swapImg($('storyBg'), line.bg?imgSrc(line.bg):'',
+    swapBg($('storyBg'), line.bg||'',
             ()=>matchPortraits(toneSrcEl(), $('storyCast')),
             /^\d{3}_/.test(String(line.bg||'')) ? { inMs: CG_FADE_MS*2 } : undefined);
   }
@@ -2713,6 +2741,8 @@ function applyPersist(line){
     (function tryNext(i){
       if(i>=cands.length){ console.warn('[story] bgBand 一張都載不到：', want); return; }
       const nm=cands[i], im=new Image();
+      /* 會動的那一張不探測、不載靜態圖（ver -3135）：影片表本來就是照磁碟上的靜態圖掃出來的，有鑰匙＝這一張存在。 */
+      if(bgVideoOf(nm)){ if(stageBg!==want){ stageBg=want; swapBg($('storyBg'), nm, ()=>matchPortraits(toneSrcEl(), $('storyCast'))); } return; }
       im.onload=()=>{
         if(stageBg===want) return;              // 已經在這一張上了
         stageBg=want;                           // ⚠ 記**基底名**：下一拍寫同一個才不會重換
@@ -2736,9 +2766,10 @@ function applyPersist(line){
        ⚠ 收圖（`cg:null`）不吃這一條 —— 那是「這張插圖結束了」，該走黑幕。 */
     /* 插圖換了 → 色調來源也換了（ver -631）：等它畫上去再量。 */
     fxTimers.push(setTimeout(()=>matchPortraits(toneSrcEl(), $('storyCast')), CG_FADE_MS+80));
-    cgFaded = (line.cgSoft && line.cg)
+    const cgMoves = !!(line.cg && (cgAnimSpec(line.cg)||{}).video);   // 會動的插圖不放底圖（ver -3135）
+    cgFaded = (line.cgSoft && line.cg && !cgMoves)
       ? !cgCross($('storyCg'), cgCandidates(line.cg, line.cgNoTime))
-      : cgFade($('storyCg'), line.cg ? cgCandidates(line.cg, line.cgNoTime) : '');
+      : cgFade($('storyCg'), cgMoves ? { anim:line.cg } : line.cg ? cgCandidates(line.cg, line.cgNoTime) : '');
     playCgAnim(line.cg);   // 有登記動畫的插圖疊影片播（ver -2179）；沒登記／收圖＝停掉上一支
   }
   /* ══⚠⚠⚠ **插圖也算轉場，台上的人先下去**（ver -1422，Ray：「轉場立繪還是在，
@@ -5807,7 +5838,7 @@ function preloadStory(startId, onProgress, pre){
        必然 404 的名字，**顯示的當下還要再試一輪**，那一輪才是「插圖沒出現」的成因。
      ⚠ 算在圖片那一段（第②段）：它就是圖。 */
   for(const base of A.cgs.keys()) warmCgAnim(base);   // 插圖動畫的影片先抓進快取（ver -2179）
-  const cgJobs = ()=> [...A.cgs.keys()].map(base=>
+  const cgJobs = ()=> [...A.cgs.keys()].filter(base=>!(cgAnimSpec(base)||{}).video).map(base=>   // 會動的不載靜態圖（ver -3135）
     resolveCg(base, A.cgs.get(base)).then(src=> src ? new Promise(res=>{
       const im=new Image();
       const fin=()=>res();
@@ -7116,7 +7147,7 @@ export function setSceneBg(name, done, reqAt){
   if(reqAt!=null && lineBgAt>reqAt){ done&&done(); return; }
   if(name===stageBg){ done&&done(); return; }
   stageBg=name;
-  swapImg(el, name ? imgSrc(name) : '', done);
+  swapBg(el, name, done);
   setTimeout(()=>matchPortraits(toneSrcEl(), $('storyCast')), 420);
 }
 /* 播一段臨時台詞（城鎮節點的進場對白）。done 在最後一句被點掉之後呼叫。
@@ -7138,7 +7169,7 @@ export function playAdhoc(lines, done, opts){
        —— 解完之後只請求那一張。最壞情況（第一句就有插圖、又還沒解完）也不會比
        以前差（顯示端那條路自己也會解析並寫回同一份快取）。
      ⚠ 一段之內同一張只解一次（`resolveCg` 自己有快取）。 */
-  for(const ln of lines){ if(ln && ln.cg){ resolveCg(ln.cg, ln.cgNoTime); warmCgAnim(ln.cg); } }
+  for(const ln of lines){ if(ln && ln.cg){ if(!(cgAnimSpec(ln.cg)||{}).video) resolveCg(ln.cg, ln.cgNoTime); warmCgAnim(ln.cg); } }
   /* ⚠ 這一段自己寫的 `bg:` 也先暖起來（ver -1910，Ray：「手機上夢境的背景讀不到」）——
      城鎮段落不經過 `collectAssets`，第一次演到才抓；手機上那一張還沒到，黑幕就已經掀了。 */
   for(const ln of lines){ if(ln && typeof ln.bg==='string' && ln.bg){ const im=new Image(); im.src=imgSrc(ln.bg); } }

@@ -1105,6 +1105,9 @@ function bgFor(list, done){
   const tryAt=(i)=>{
     if(i>=cands.length){ fin(); return; }     // 一個都載不到 → 照樣放行（不能把玩家留在全黑裡）
     const name=cands[i];
+    /* 會動的背景不探測、不載靜態圖（ver -3135，Ray：「所有會動的都不放底圖」）：影片表是照磁碟上的靜態圖掃出來的，有鑰匙＝這一張存在。
+       尺寸等影片的長寬到了再補（story.setBgSizeHook）。 */
+    if(story.bgVideoOf(name)){ bgResolved.set(all[0], name); bgNow=name; bgNat=null; story.setSceneBg(name, fin, reqAt); return; }
     const img=new Image();
     img.onload =()=>{
       if(my!==bgSeq) return;                 // 已經被後面那一次換掉了 → 這一張作廢
@@ -1130,6 +1133,7 @@ function bgFor(list, done){
   tryAt(0);
 }
 
+story.setBgSizeHook((name, w, h)=>{ if(name===bgNow){ bgNat=[w, h]; inn.relayout(); syncBgClock(); } });   // 會動的背景：影片長寬到了才擺得出旅店那兩顆鈕（ver -3135）
 function node(){ return (TOWNS[townId]||{}).nodes[nodeId] || null; }
 
 /* ══ 走到過的地點（ver -392）══════════════════════════════════════════

@@ -455,6 +455,7 @@
   #enemyImg.enemy-quake ~ .en-idle{animation:enemyQuake .9s ease-out both;}
   #enemyImg.enemy-leave ~ .en-idle{animation:enemyLeave .26s ease-in forwards;}
   #enemyImg.enemy-enter ~ .en-idle{animation:enemyEnter .56s cubic-bezier(.2,.7,.25,1);}
+  #enemyImg.en-held ~ .en-idle{opacity:0;}   /* 空中怪的待機層：門開、飛入開始之前藏著（ver -3135，enemy.airEnter 拿掉） */
   #enemyImg.shake + .en-idle{animation:camShake .3s;}
   @keyframes enemyHit{
     0%  {transform:translateX(0)    scale(1);    filter:brightness(1.9) saturate(.6);}
@@ -2414,7 +2415,7 @@
      ⚠ `:not(#id)` 的權重等同一個 id，所以這一條的權重遠高過各鈕自己的規則，
        壓得住 `#continueBtn.on{display:block}`，不必動 `main.js`。
      ⚠ 商店是**管理人模式限定的臨時入口**（ver -368）：正式入口是城鎮的雜貨舖節點。 */
-  /* ver -3131（Ray：「體驗版的修正也要適用到完整版」）：挑戰／教學撤了，完整版首頁的白名單改成同體驗版（開始故事／繼續），多留語言鈕。 */
+  /* ver -3135（Ray：「體驗版的修正也要適用到完整版」）：挑戰／教學撤了，完整版首頁的白名單改成同體驗版（開始故事／繼續），多留語言鈕。 */
   body:not(.testmode):not(.demo) #home button:not(#storyStartBtn):not(#continueBtn):not(#creditBtn):not(#originalBtn):not(#langBtn):not(#offlineBtn){display:none;}
   /* ══ 試玩版的首頁（ver -3073，Ray：「首頁只留開始故事」）══ 白名單：開始故事／繼續（有存檔才出現，照它自己的 .on）／
      原作／Credit／語言／離線下載。挑戰、教學、章節與管理人那一排都不出現。管理人模式照舊整條不適用。 */

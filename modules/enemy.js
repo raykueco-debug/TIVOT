@@ -1413,12 +1413,11 @@ try{ window.addEventListener('resize', ()=>placeIdle()); }catch(_){}
    以前每一隻怪都先掛靜態立繪（`#enemyImg`）：解碼一張 1024×1536、在它上面演降臨，演完才換成待機動畫 —— 那張圖一出場就被蓋掉。
    現在：待機動檔**已經載好**的單隻怪，`#enemyImg` 不掛圖（元素留著當定位框與演出 class 的掛點），降臨／淨化／震碎／換敵的動畫
    由 CSS 的 `#enemyImg.<class> ~ .en-idle` 轉給待機層演。判準只有 baseIdleDir 一支（鐵律 7）。
-   退路：群戰、空中生物／船（airEnter 演在立繪上）、有出場動畫（ENEMY_ENTER）、NI 換圖（portraitOverride）、
-   或動檔還沒載好 —— 一律照舊掛底圖。 */
+   ver -3135 起連「動檔還沒載好」「空中生物／船」「有出場動畫」也不放底圖：空中的飛入改演在待機層上（airEnter），
+   出場動畫本來就演在動檔上。只剩群戰（分層要量命中輪廓）與 NI 換圖（portraitOverride）照舊掛底圖。 */
 function baseIdleDir(en){
-  if(!en || en.group || portraitOverride || isAirBio(en) || isAirShip(en) || clipFor('enter', en)) return null;
-  const d=idleDirFor(en), c=d && clipCache[d];
-  return (c && c.fr && c.j) ? d : null;
+  if(!en || en.group || portraitOverride) return null;
+  return idleDirFor(en) || null;   // ver -3135（Ray：「所有會動的都不放底圖」）：有待機動畫就不放底圖，沒載好也不退回 —— 先黑著，載到就出來
 }
 /* 底圖的像素尺寸：沒掛底圖時讀待機動檔的立繪畫布（同一個座標系）。 */
 function portraitWH(img){ return (img && img.naturalWidth) ? [img.naturalWidth, img.naturalHeight] : (idleJ && idleJ.canvas) ? idleJ.canvas : null; }
@@ -2274,7 +2273,7 @@ const BOARD_FLY_MS=900, BOARD_DROP_MS=220;   // -2868 Ray「落下的人影速�
 /* 對艦戰那張天空是哪個時段（登艦戰的甲板跟著它，-2868）：檔名尾巴 _dawn/_day/_dusk/_night；沒有尾巴的那幾張照表（sky_towers 原圖＝夜，量過與 _night 同色）。 */
 let boardBand=null;
 const PLAIN_SKY_BAND={ sky_towers:'night' };
-function skyBandNow(){ const top=$('top'), m=/\/([^\/"?]+?)\.(?:webp|png|jpe?g)/i.exec((top && top.style.backgroundImage)||''); if(!m) return null;
+function skyBandNow(){ const top=$('top'), m=/\/([^\/"?]+?)\.(?:webp|png|jpe?g)/i.exec(((top && top.style.backgroundImage)||'')+' '+((top && top.dataset.bg)||'')); if(!m) return null;
   const t=/_(dawn|day|dusk|night)$/i.exec(m[1]); return t ? t[1].toLowerCase() : (PLAIN_SKY_BAND[m[1].toLowerCase()] || null); }
 export function boardingRun(g, onSwap, onDone){
   if(!grapple){ onSwap&&onSwap(); onDone&&onDone(); return 0; }
@@ -2342,13 +2341,18 @@ export function restoreAirMotion(){ startAirDrift(curCard()); }
    · 空賊船＝從後方追上來、追過頭一點再停下（ver -2500，Ray） */
 function airEnter(en, eImg, play){
   const done=()=>{ if(airInAnim){ airInAnim=null; } if(curCard()!==en) return;   // 入場途中換了怪：上一隻的收尾不准掛回來
-    eImg.classList.remove('enemy-airin'); eImg.style.opacity=''; startCardIdle(en); if(airDrift) airDrift.t0=performance.now(); };
+    eImg.classList.remove('enemy-airin','en-held'); eImg.style.opacity=''; if(!idleEl) startCardIdle(en); if(airDrift) airDrift.t0=performance.now(); };
   if(!play) return done();
+  /* 沒放底圖（ver -3135）：飛進來的是待機層本身 —— 它還沒建好就等一下（最多 2.5 秒，等不到就直接站好）。 */
+  if(!eImg.getAttribute('src') && !idleEl){ const t0=performance.now();
+    (function wait(){ if(curCard()!==en) return; if(idleEl) airEnter(en, eImg, true); else if(performance.now()-t0>2500) done(); else setTimeout(wait, 50); })(); return; }
+  const body = eImg.getAttribute('src') ? eImg : idleEl;
+  eImg.classList.remove('en-held');
   if(isAirShip(en)){
-    const top=$('top'), W=top.clientWidth, tr=top.getBoundingClientRect(), er=eImg.getBoundingClientRect(), f=fwdOf(en);
+    const top=$('top'), W=top.clientWidth, tr=top.getBoundingClientRect(), er=body.getBoundingClientRect(), f=fwdOf(en);
     const off = f<0 ? (tr.right-er.left)+20 : -(er.right-tr.left)-20;   // 從機尾那一側的畫面外
     eImg.style.opacity='';
-    const a=eImg.animate([
+    const a=body.animate([
       { transform:`translate(${off}px,0px)`, offset:0, easing:'cubic-bezier(.2,.55,.35,1)' },
       { transform:`translate(${f*W*0.06}px,${-W*0.005}px)`, offset:0.72, easing:'cubic-bezier(.45,0,.55,1)' },
       { transform:'translate(0px,0px)', offset:1 }], { duration:2600 });
@@ -2356,7 +2360,7 @@ function airEnter(en, eImg, play){
   }
   /* 生物型（ver -2501，Ray：「牠是從畫面外進來的，不是淡入進去的，由近（大）到遠（小）然後定位開戰」）：
      不淡入 —— 從機尾那側的畫面外、斜下方、放大三倍（貼著鏡頭）飛進來，一路縮回原尺寸，越過一點再定位。 */
-  { const top=$('top'), W=top.clientWidth, H=top.clientHeight, f=fwdOf(en), K=3, mv=flock ? flock.el : eImg;
+  { const top=$('top'), W=top.clientWidth, H=top.clientHeight, f=fwdOf(en), K=3, mv=flock ? flock.el : body;
     eImg.style.opacity=''; mv.style.transformOrigin='50% 50%';
     const a=mv.animate([
       { transform:`translate(${-f*W*1.15}px, ${H*0.9}px) scale(${K})`, offset:0, easing:'cubic-bezier(.22,.6,.35,1)' },
@@ -3154,7 +3158,7 @@ function castClipBox(top){ let w=$('enemyCastClip'); if(!w){ w=document.createEl
   w.style.cssText='position:absolute;inset:0;pointer-events:none;'; const e0=$('enemyImg'); if(e0 && e0.parentNode===top) top.insertBefore(w, e0); else top.prepend(w); }
   return w; }
 const bgSize={};
-export function battleBgName(){ const top=$('top'); const m=/url\("?([^")]+)"?\)/.exec((top && top.style.backgroundImage)||''); return m ? m[1] : ''; }
+export function battleBgName(){ const top=$('top'); const m=/url\("?([^")]+)"?\)/.exec((top && top.style.backgroundImage)||''); return m ? m[1] : ((top && top.dataset.bg) || ''); }   // 會動的背景沒掛底圖：讀 data-bg（ver -3135）
 /* 地面上緣在敵人區的 y（px）；ratio 不給就查表。背景尺寸還沒量到時先量、量好再套一次。 */
 export function floorScreenY(ratio){ const top=$('top'), url=battleBgName(); if(!top || !url) return null;
   if(ratio==null) ratio=floorTop(url); if(ratio==null) return null;
@@ -3258,7 +3262,7 @@ function buildMask(im){
 /* `comp:'@bg'` ＝照**現在這一格的背景**取編組（ver -2639，Ray：「換一個背景應該是空的 直到我把該背景的怪存入」）：
    鑰匙 `bg_<背景基底名>`（去掉時段，例 bg_canyon_corridor）。背景讀 #storyBg（戰鬥中舞台藏著，但那一張還在）。 */
 export function bgCompKey(){
-  const e=$('storyBg'), p=String((e && e.getAttribute('src'))||'').split('?')[0];
+  const e=$('storyBg'), p=String(story.shownName(e)).split('?')[0];   // 會動的背景沒有 src，讀 shownName（ver -3135）
   const f=p.slice(p.lastIndexOf('/')+1).replace(/\.\w+$/,'').toLowerCase().replace(/_(dawn|day|dusk|night|midnight)$/,'');
   return f ? 'bg_'+f : '';
 }
@@ -3384,12 +3388,13 @@ function warmImg(u){ return new Promise(r=>{ if(!u) return r(); const im=new Ima
 export function preloadBattleCard(en){
   if(!en) return Promise.resolve();
   /* 有待機動畫的單隻怪不暖底圖（ver -3129）：開場由待機層演。判準同 baseIdleDir，只差「動檔載好了沒」（這裡正是去載它的地方）。 */
-  const idleOnly = !en.group && en.idle!==false && !!idleDirFor(en) && !isAirBio(en) && !isAirShip(en) && !clipFor('enter', en);
+  const idleOnly = !en.group && en.idle!==false && !!idleDirFor(en);   // ver -3135：空中／出場動畫的也不暖底圖
   const need=[idleOnly ? Promise.resolve() : warmImg(enemyImage(en))];
   /* 戰鬥背景（ver -3088）：開門那一刻就要看到；空戰的分層天空逐層暖（plate 群戰在下面那段）。
      ⚠ 時段／城鎮那一格是「現在」猜的 —— 飛行怪一生出就預載，交棒時才定時段，猜錯只是多抓一張，開門那一刻 setEnemy 照樣掛對的。 */
   if(!(en.group && en.group.plate)){ const nm=battleBgNameOf(en, boardBand);
-    if(nm){ const url=story.bgUrl(nm); need.push(warmImg(url));
+    if(nm && story.bgVideoOf(nm)){ /* 會動的戰鬥背景不暖靜態圖（ver -3135） */ }
+    else if(nm){ const url=story.bgUrl(nm); need.push(warmImg(url));
       if(!en.sky && /^sky_/i.test(nm)) for(const L of skyPanLayers(nm, url)) if(L.src!==url) need.push(warmImg(L.src)); } }
   if(en.group){ const G=en.group;
     if(G.plate) need.push(warmImg(G.plate));
@@ -4022,7 +4027,7 @@ export function loadEnemyPortrait(en){
   clearTimeout(landT); landT=0;
   risePending=null;
   eImg.onload = null;
-  eImg.classList.remove('enemy-rise','enemy-unpurge','enemy-purge','enemy-quake','enemy-airin');
+  eImg.classList.remove('enemy-rise','enemy-unpurge','enemy-purge','enemy-quake','enemy-airin','en-held');
   if(eImg._falling){ eImg._falling=false; if(eImg._fallAnim){ eImg._fallAnim.cancel(); eImg._fallAnim=null; } eImg.style.animation=''; eImg.style.transition=''; }   // 上一隻的斜下墜（deathFx:'skyfall'，ver -2456）
   /* ⚠⚠⚠ **換怪的第一件事是把上一張拔掉**（ver -1467）：`<img>` 在**新圖解碼完成
      之前不會重繪** —— 只設 `src` 的話，慢網下整段空窗畫面上站著的是**上一隻怪**，
@@ -4134,7 +4139,7 @@ export function loadEnemyPortrait(en){
     const enterNow=(play, t0)=>{ if(curCard()!==en) return;
       const L=clipCache[enterC.dir];
       if(play && !(L && L.fr) && performance.now()-(t0||performance.now())<2500){ const s0=t0||performance.now(); setTimeout(()=>enterNow(play, s0), 80); return; }
-      eImg.style.opacity='';
+      eImg.style.opacity=''; eImg.classList.remove('en-held');
       if(play && L && L.fr){ playActionClip('enter', ()=>{ if(curCard()===en) startCardIdle(en); }); if(clipT) return; }
       startCardIdle(en); };
     const arrive=()=>{
@@ -4157,7 +4162,11 @@ export function loadEnemyPortrait(en){
     const fire=()=>{ if(riseSuppressedNow){ if(air) airEnter(en, eImg, false); if(enterC) enterNow(false); return; } if(riseHeld) risePending=arrive; else arrive(); };
     const shown=()=>{ eImg.onload=null; fire(); if(!air && !enterC) startCardIdle(en); };   // 空中生物型／有出場動畫：待機等入場演完
     const bd=baseIdleDir(en);
-    if(bd){ eImg.onload=null; eImg.removeAttribute('src'); fire(); startCardIdle(en, bd); return; }   // 不掛底圖（ver -3129）
+    /* 不掛底圖（ver -3129／-3131）：一般怪待機層直接上；空中的待機層先建好、門開前藏著（en-held），飛入演在它身上；有出場動畫的照舊等出場演完才起待機。 */
+    if(bd){ eImg.onload=null; eImg.removeAttribute('src'); eImg.style.opacity='';
+      if(air) eImg.classList.add('en-held');
+      if(!enterC) startCardIdle(en, bd);
+      fire(); return; }
     if(air || enterC) eImg.style.opacity='0';   // 門開才進場（門開前那一格不能已經站著）   // 門開才由近到遠飛進來（門開前那一格不能已經站著）
     eImg.onload = shown;
     eImg.src = enemyImage(en);
@@ -4612,7 +4621,11 @@ export function setEnemy(key, opts){
     /* 群體敵人的去人背景（ver -2043）：**它就是這一場的戰鬥背景**，蓋過城鎮那一格的（battleBg）。
        ⚠ 直接寫路徑（四張都叫 plate.webp，走 bgUrl 的資料夾表會撞名）。 */
     const plate = en.group && en.group.plate;
-    topEl.style.backgroundImage = plate ? ('url("'+plate+'")') : nm ? ('url("'+story.bgUrl(nm)+'")') : '';
+    /* 會動的戰鬥背景不放底圖（ver -3135，Ray：「所有會動的都不放底圖」）：有影片就不掛靜態圖，影片第一格出來前是黑的。
+       名字記在 data-bg（battleBgName／skyBandNow 讀它）。 */
+    const bgMoves = !plate && !!story.bgVideoOf(nm);
+    topEl.dataset.bg = plate ? '' : nm ? story.bgUrl(nm) : '';
+    topEl.style.backgroundImage = plate ? ('url("'+plate+'")') : (nm && !bgMoves) ? ('url("'+story.bgUrl(nm)+'")') : '';
     setBattleBgVideo(plate ? '' : nm);   // 動態背景（ver -2729，Ray：「戰鬥時要用動態背景」）：有對應影片就疊在靜態圖上播，沒有照舊
     /* plate 與人層是**同一張原圖拆出來的**：背景要照卡上的 `fit.pos` 對位，人才會落回原位（ver -2066，米夏親衛隊 35%）。
        縮放／上下偏移照舊只套在人那一組（applyEnemyFit）。不是 plate 的背景維持 CSS 原本的對位。 */

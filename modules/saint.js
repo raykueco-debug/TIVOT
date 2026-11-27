@@ -1298,6 +1298,7 @@ function freeVideo(v){ try{ v.pause(); v.removeAttribute('src'); v.load(); }catc
 /* CI 撤下：序列停表、影片停播**並釋放**（src 拔掉＋load()，動畫交件的規格），靜態圖放回來。
    blob 留著（同一張圖裡再播不必重抓），切地圖時由 releasePartnerCi 一起放掉。 */
 function stopCiAnim(){
+  ciTok++;
   clearInterval(ciAnimT); ciAnimT=0;
   if(ciVidOn){ const o=ciVidOn; ciVidOn=null;
     try{ if(o.raf) cancelAnimationFrame(o.raf); if(o.vfc && o.v.cancelVideoFrameCallback) o.v.cancelVideoFrameCallback(o.vfc); }catch(_){}
@@ -1308,10 +1309,15 @@ function stopCiAnim(){
 const CI_OUT_MS = 250;
 function ciOutAt(c, dur){ if(!c) return; c.classList.remove('ciout');
   clearTimeout(c.__ciOutT); c.__ciOutT=setTimeout(()=>c.classList.add('ciout'), Math.max(0, dur-CI_OUT_MS)); }
-/* 這一張 CI 的動檔載好了沒（ver -3128，Ray：「跑動畫跟 cut in 之前都先跑一次底圖 白瞎效能 把底圖給撤了」）——
-   載好了就**不碰靜態圖**（不設 src、不等解碼），直接由動檔演；沒載好才退回靜態圖。判準只有這一支（鐵律 7）。 */
-function ciAnimReady(key){ const A=(GAME_CONFIG.tuning.cutinAnim||{})[key], r=ciAnim[key];
-  return !!(A && r && r.ready && (A.video ? r.blob : (r.urls && r.urls.length))); }
+/* 這一張 CI 會不會動（ver -3135，Ray：「所有會動的都不放底圖」）：有登記動檔、而且這個包裡真的有那支影片（試玩包沒放的照舊是靜態圖）。
+   會動的一律不設靜態圖 —— 動檔還沒載好就先黑著，載到立刻接上（waitCi）。判準只有這一支（鐵律 7）。 */
+function ciMoves(key){ const A=(GAME_CONFIG.tuning.cutinAnim||{})[key]; if(!A) return false;
+  if(A.video && prog.isDemo()){ const re=(GAME_CONFIG.demo||{}).ciVideo; if(re && !re.test(A.video)) return false; }
+  return true; }
+let ciTok=0;   // 這一次演出的代號：撤下（stopCiAnim）就作廢，等動檔的輪詢看到就收手
+function waitCi(ci, key, tok){ const t0=performance.now();
+  (function poll(){ if(tok!==ciTok || performance.now()-t0>4000) return; const r=ciAnim[key];
+    if(r && r.ready) playCiAnim(ci, key); else if(r && !r.pending) return; else setTimeout(poll, 50); })(); }
 /* 動檔接手前把元素上的靜態圖拿掉：影片那條由 canvas 畫第一格，序列那條第一格就是 src（playCiAnim 設）。 */
 function dropStill(el){ if(el.getAttribute('src')) el.removeAttribute('src'); }
 function playCiAnim(ci, key){
@@ -1319,7 +1325,7 @@ function playCiAnim(ci, key){
   const A=(GAME_CONFIG.tuning.cutinAnim||{})[key], rec=ciAnim[key];
   if(!A) return;
   if(A.video){
-    if(!rec || !rec.ready || !rec.blob){ warmCutinAnim(key); return; }   // 沒預載好 → 這一次播靜態圖
+    if(!rec || !rec.ready || !rec.blob){ warmCutinAnim(key); waitCi(ci, key, ciTok); return; }   // 沒預載好 → 先黑著，載到就接上（ver -3135；以前退回靜態圖）
     /* ══⚠⚠ 畫面上**不放 `<video>`**，放一張 canvas（ver -2063，Ray：「2062 在手機上 CI 還是被圖層擋住，CI 要在最上層」）══
        iPhone 的 Safari 把 `<video>` 放在獨立的硬體圖層，配上 CI 的濾鏡／位移動畫／外框裁切，疊放順序會亂掉。
        作法：影片藏在畫面外（1×1、幾乎透明）照常播，每一格畫進 canvas；canvas 吃靜態圖同一組 CSS
@@ -1353,7 +1359,7 @@ function playCiAnim(ci, key){
     const p=v.play(); if(p && p.catch) p.catch(()=>{ /* 自動播放被擋 → 留著靜態圖 */ });
     return;
   }
-  if(!rec || !rec.ready){ warmCutinAnim(key); return; }   // 這一次播靜態圖，下一次就有動檔
+  if(!rec || !rec.ready){ warmCutinAnim(key); waitCi(ci, key, ciTok); return; }   // 先黑著，載到就接上（ver -3135；以前退回靜態圖）
   let i=0; ci.src=rec.urls[0];
   ciAnimT=setInterval(()=>{ i++; if(i>=rec.urls.length){ clearInterval(ciAnimT); ciAnimT=0; return; }
     ci.src=rec.urls[i]; }, ciFrameMs(A));   // 速度照完整那一段（ver -2053）；fps：播完停在最後一格（ver -2027）
@@ -1426,7 +1432,7 @@ export function playCutin(done, label, imgKey, opts){
       if(api.hintCurrentCell) api.hintCurrentCell();
     }, ciDur);
   };
-  if(ci && imgKey && ciAnimReady(imgKey)){ dropStill(ci); start(); }   // 動檔載好了：不設底圖、不等解碼（ver -3128）
+  if(ci && imgKey && ciMoves(imgKey)){ dropStill(ci); start(); }   // 會動的不設底圖、不等解碼（ver -3128；-3131 起沒載好也不退靜態圖）
   else if(ci && src){
     if(ci.getAttribute('src')!==src) ci.src=src;
     /* ⚠⚠ 圖未解碼完就起跑＝滑入動畫中途解碼大圖卡死主執行緒（cut-in 卡在一半的
@@ -1511,7 +1517,7 @@ function playSaintCutin(kind, done, reload){
                      burst:   storyMode() ? 'cutin_mb_torsten'  : 'cutin_mb',
                      return:  storyMode() ? (_pc.returnCutin || 'cutin_return_nouvelle') : 'cutin_return' };
   const scImgEl  = { execute:'saintCutinImg', obe:'saintCutinImgObe', burst:'saintCutinImgBurst', return:'saintCutinImgReturn' };
-  if(scImgEl[vis]){ const el=$(scImgEl[vis]); if(el){ if(ciAnimReady(scImgKey[vis])) dropStill(el); else { const src=asset(scImgKey[vis]); if(src) el.src=src; } } }   // 動檔載好了就不設底圖（ver -3128）
+  if(scImgEl[vis]){ const el=$(scImgEl[vis]); if(el){ if(ciMoves(scImgKey[vis])) dropStill(el); else { const src=asset(scImgKey[vis]); if(src) el.src=src; } } }   // 會動的不設底圖（ver -3128／-3131）
   c.classList.remove('burst','obe','execute','return','on','ciout');
   c.classList.add(vis);
   void c.offsetWidth;                      // reflow → 重播動畫
