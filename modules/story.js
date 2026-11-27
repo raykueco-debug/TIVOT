@@ -5627,12 +5627,7 @@ function endScene(){
   /* ══ 試玩版到此結束（ver -3073，Ray：「切試玩版出來」）══ 試玩建置裡，插了終點旗（config.demo.endFlag）的那一幕
      演完不接後面（thenTown／next），蓋一張黑透的結束卡，點掉回首頁。判定只問 prog.isDemo()；開發機不受影響。 */
   { const D=GAME_CONFIG.demo||{};
-    if(prog.isDemo() && D.endFlag && (cur.setFlags||[]).indexOf(D.endFlag)>=0){
-      active=false; cur=null; clearCast();   // 清場：上一句的立繪與對話框不要留在結束卡後面
-      const ok=showTitleCard({ title:i18nT(D.endTitle||'試玩版到此結束'), sub:i18nT(D.endSub||'感謝遊玩'), opaque:true }, ()=>goHomeNow());
-      if(!ok) goHomeNow();
-      return;
-    } }
+    if(prog.isDemo() && D.endFlag && (cur.setFlags||[]).indexOf(D.endFlag)>=0){ active=false; cur=null; demoFinish(); return; } }
   /* 這一段演完直接進城鎮（Ray：黑幕過場之後回到廣場，開始非線性探索）。 */
   if(cur.thenTown && townOpener){
     const t=cur.thenTown;
@@ -7126,8 +7121,22 @@ export function indexOfLabel(lines, label){
   for(let i=0;i<lines.length;i++) if(lines[i] && lines[i].label===label) return i;
   return -1;
 }
+/* ══ 試玩版到此結束（ver -3080）══ 唯一那一支（鐵律 8）：立終點旗 → 黑透結束卡 → 點掉回首頁。
+   入口：終點那一場（config.demo.endBattle）打贏閉棺、結算之後（resumeFrom）；讀到已過終點的存檔（save.loadLatest）；
+   保險：插終點旗那一幕演完（endScene）。 */
+export function demoFinish(){
+  const D=GAME_CONFIG.demo||{};
+  if(D.endFlag) prog.addFlags([D.endFlag]);
+  const st=$('storyStage'); if(st) st.classList.add('on'); document.body.classList.add('story-on');
+  clearCast();   // 清場：上一句的立繪與對話框不要留在結束卡後面
+  const ok=showTitleCard({ title:i18nT(D.endTitle||'試玩版到此結束'), sub:i18nT(D.endSub||'感謝遊玩'), opaque:true }, ()=>goHomeNow());
+  if(!ok) goHomeNow();
+}
 export function resumeFrom(pos, res){
   if(!pos) return;
+  /* 試玩版終點（ver -3080，Ray：「湖上甲板那一段不用演完，戰鬥結束閉棺，然後就可以跳試玩版結束」）。 */
+  { const D=GAME_CONFIG.demo||{};
+    if(prog.isDemo() && D.endBattle && pos.battleId===D.endBattle && !(res && res.lost)){ active=false; cur=null; demoFinish(); return; } }
   /* ══⚠⚠ **打完換一首**（ver -631（-893 前用詞），Ray：「黑爪戰完 bgm 換 Suspense6」）══
      戰鬥卡上寫 `bgmAfter:'<鑰匙>'`；沒寫就照舊接回**戰前那一首**（`pos.bgm`）。
      ⚠ **只有打贏才換**：戰敗要再打一次，這一場還沒結束 —— 換了曲子等於幫劇情

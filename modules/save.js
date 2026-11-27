@@ -23,6 +23,7 @@
 
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import * as prog from '../script/progress.js';
+import { GAME_CONFIG } from '../config.js';   // 試玩終點旗（ver -3080）
 import * as story from './story.js';
 import { MAIN_SCRIPT } from '../script/mainScript.js';
 import { SFX } from '../audio.js';
@@ -189,6 +190,12 @@ export function hasSave(){ return !!latest(); }
 export function loadLatest(opts){
   const rec=latest();
   if(!rec) return false;
+  /* 試玩版（ver -3080）：讀到的存檔已經過了試玩終點（終點旗在裡面）＝不准接著往下演 —— 直接演結束卡回首頁。 */
+  if(prog.isDemo() && !(opts && opts.noJump)){
+    apply(rec, { noJump:true });
+    const D=(GAME_CONFIG.demo)||{};
+    if(D.endFlag && prog.hasFlag(D.endFlag)){ story.demoFinish(); return true; }
+  }
   apply(rec, opts);
   return true;
 }
