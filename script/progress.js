@@ -734,7 +734,7 @@ export function subSuppress(id, grade){
   const S=(GAME_CONFIG.tuning||{}).suppress||{};
   const w=(GAME_CONFIG.weapons||{})[id]||{};
   const base=(w.suppress!=null) ? w.suppress : (S.sub!=null?S.sub:0.3);
-  /* 依帶的倍率（tuning.suppress.bandMul：黃 0／橘 1／紅 1.5，ver -3122）；沒寫的帶＝×1。 */
+  /* 依帶的倍率（tuning.suppress.bandMul：黃 0／橘 1／紅 1.5，ver -3123）；沒寫的帶＝×1。 */
   const bm=(grade && S.bandMul && S.bandMul[grade]!=null) ? Math.max(0, +S.bandMul[grade]||0) : 1;
   return Math.max(0, Math.min(1, (base + weaponMod(id)*(S.perModLv||0)) * bm));
 }
