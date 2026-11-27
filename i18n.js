@@ -13,6 +13,7 @@
  * ========================================================================== */
 
 import { STRINGS as ZH } from './i18n/zh.js';
+import { isDemoBuild } from './script/demo_mode.js';   // 試玩版固定中文（ver -3113）
 /* ver -2582：譯文的語言包改由 i18n_ui.xlsx 產生（tools/i18n_xlsx.py build → i18n/ui/pack.<lang>.js），
    Excel 是唯一來源。舊的手寫 i18n/en.js／ja.js／es.js 已不再引用（Ray：留著不動）。
    中文母本仍是 i18n/zh.js —— 改中文改這裡，再 sync 進 Excel。 */
@@ -26,6 +27,8 @@ const PACKS = Object.assign({ zh: ZH }, GEN);
  *  偵測結果不寫入 localStorage——只有按語言鈕的手動選擇才落地，之後恆以手選為準。 */
 /* ⚠ flight/index.html 開頭有一份照抄的判定（非模組頁，同步載譯文表要先知道語言），改一邊要改另一邊。 */
 export const LANG = (()=>{
+  /* 試玩版固定中文（ver -3113，Ray：「把語種切換鈕也拿掉」）：不看手選、不做地區偵測。 */
+  if(isDemoBuild()) return 'zh';
   let v=null; try{ v=localStorage.getItem('tivot.lang'); }catch(e){}
   if(v && Object.prototype.hasOwnProperty.call(PACKS, v)) return v;
   try{

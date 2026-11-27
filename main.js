@@ -119,7 +119,7 @@ document.addEventListener('dragstart', e=>{
 // 按鈕綁定：touch/click 去重，附選單點擊音
 /* 試玩版首頁只准這幾顆（ver -3093，Ray：試玩包拿掉「挑戰」與原版「教學」，範圍外的入口程式路徑也到不了）。
    ⚠ 與 style.css 的 `body.demo #home button:not(...)` 白名單是同一份清單的兩邊（CSS 藏、這裡擋）—— 改一邊要改另一邊。 */
-const DEMO_HOME_BTNS = new Set(['storyStartBtn','continueBtn','creditBtn','originalBtn','langBtn','offlineBtn']);
+const DEMO_HOME_BTNS = new Set(['storyStartBtn','continueBtn','creditBtn','originalBtn','offlineBtn']);   // langBtn 拿掉（ver -3113）
 function bindBtn(id, fn){
   const el=$(id); if(!el) return;
   const run=()=>{
@@ -1441,6 +1441,8 @@ bindBtn('tutorialBtn', ()=>{ tutorial.requestReplay(); launchBattle(); });
  *  中文介面時顯示 En（給英文使用者認）、英文時顯示 日本語、日文時顯示 中文。
  *  選擇存 localStorage('tivot.lang')，按下重載生效（僅首頁可按，無戰局可失）。 */
 (function bindLangBtn(){
+  /* 試玩版沒有語言切換（ver -3113，Ray：「把語種切換鈕也拿掉」）：首頁鈕與讀取頁鈕都拿掉，語言固定中文（i18n.js 的 LANG）。 */
+  if(prog.isDemo()){ [$('langBtn'), $('alLangBtn')].forEach(b=>{ if(b) b.remove(); }); return; }
   const LANGS=['zh'].concat(UI_LANGS);   // ver -2582：語種＝i18n_ui.xlsx 的譯文欄（tools/i18n_xlsx.py build）
   const FACE={ zh:i18nT('中文'), en:'En', ja:i18nT('日本語'), es:'Es' };   // 各語言的自稱；沒寫的印代碼大寫
   const NEXT_FACE={}; LANGS.forEach((l,i)=>{ const nx=LANGS[(i+1)%LANGS.length]; NEXT_FACE[l]=FACE[nx]||nx.toUpperCase(); });   // 鈕面＝下一個語言的自稱

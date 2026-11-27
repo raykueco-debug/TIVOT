@@ -2649,7 +2649,7 @@
   body:not(.testmode):not(.demo) #home button:not(#startBtn):not(#tutorialBtn):not(#creditBtn):not(#originalBtn):not(#langBtn):not(#offlineBtn){display:none;}
   /* ══ 試玩版的首頁（ver -3073，Ray：「首頁只留開始故事」）══ 白名單：開始故事／繼續（有存檔才出現，照它自己的 .on）／
      原作／Credit／語言／離線下載。挑戰、教學、章節與管理人那一排都不出現。管理人模式照舊整條不適用。 */
-  body.demo:not(.testmode) #home button:not(#storyStartBtn):not(#continueBtn):not(#creditBtn):not(#originalBtn):not(#langBtn):not(#offlineBtn){display:none;}
+  body.demo:not(.testmode) #home button:not(#storyStartBtn):not(#continueBtn):not(#creditBtn):not(#originalBtn):not(#offlineBtn){display:none;}
   /* 離線下載（ver -2842）：白名單放行，但**預設不出現** —— 只有 offline.js 真的掛上了
      （有 SW、不是 App、不是 localhost）main.js 才加 .on。 */
   #home #offlineBtn{display:none;}

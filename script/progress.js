@@ -14,7 +14,8 @@
 
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG } from '../config.js';   // 只為了拿教學的 storageKey（不要抄第二份字串）
-import { BUILD } from '../build.js';   // 建置設定：試玩版（ver -3073）
+import { BUILD } from '../build.js';
+import { isDemoBuild } from './demo_mode.js';   // 試玩判定本體（ver -3113）   // 建置設定：試玩版（ver -3073）
 /* ⚠ 「一輪遊戲」包含道具與時鐘，所以存讀檔要一起帶（見 runSnapshot）。
    兩支都是 `script/` 的同層資料模組，沒有循環相依。 */
 import * as inv from './inventory.js';
@@ -193,7 +194,7 @@ export function hasFlag(f){ return getFlags().indexOf(f)>=0; }
    誰在讀：main（首頁入口、`window.__tivotDemo` 給飛行頁）、story（試玩終點的收尾）。 */
 let _demo=null;
 export function isDemo(){
-  if(_demo==null){ let q=false; try{ q=/[?&]demo=1(?:&|$)/.test(location.search); }catch(_){} _demo=!!(BUILD && BUILD.demo) || q; }
+  if(_demo==null) _demo=isDemoBuild();   // 本體在 demo_mode.js（ver -3113：i18n.js 也要問，它 import 不到這裡）
   return _demo;
 }
 /* 管理人／診斷入口准不准開（ver -3092，Ray：「網頁版不要有管理人手勢」）：試玩版一律不准。
