@@ -697,10 +697,7 @@ function passGate(dest){
   if(dest!=='home') hideHome('gate:'+dest);
   if(dest!=='flight') closeFlightFrame();
   if(dest!=='town'){ try{ if(town.isOpen()) town.suspend(); }catch(_){} }
-  if(dest==='flight' || dest==='battle'){
-    const st=$('storyStage');
-    if(st && st.classList.contains('on')) try{ story.close({ keepBgm:true, noExit:true }); }catch(_){}
-  }
+  if(dest==='flight' || dest==='battle'){ try{ story.killStage(); }catch(_){} }
   /* CI 預熱的旗**只有切地圖才拔**（ver -2053）：往城鎮／飛行／首頁＝換了一張地圖；戰鬥與劇情場景不拔。
      新地圖要不要再插旗由它自己決定（有戰鬥的城鎮暖完背景與怪之後、飛行頁載完之後）。 */
   if(dest==='town' || dest==='flight' || dest==='home') combat.releasePartnerCi();

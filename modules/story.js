@@ -6093,16 +6093,30 @@ function warmUp(list){
    城鎮介面不 suspend）；主線那一種照舊 `'story'`。
    ⚠⚠ 讀取頁**全黑蓋滿那一刻**把門前的舞台全收（`wipeForGate`）：背景／插圖／中景／立繪／對白框／BGM／
      story 自己的循環音效。門後第一拍等素材**全部載完**才演，所以它寫的 `bg:`／`bgm:` 一定換得上。 */
-function wipeForGate(){
+/* 舞台上「畫出來的東西」全收：背景／插圖／中景／立繪／對白框／情境卡／fx。
+   讀取頁（wipeForGate）與 main 的 passGate（killStage）共用這一支（鐵律 8）。 */
+function clearStageVisuals(){
   clearCast();
   clearCg();
-  clearStageLeftovers();                 // ⚠ 會收 #storyFade —— 下面重新蓋回去（讀取頁收掉前它要在）
+  clearStageLeftovers();                 // ⚠ 會收 #storyFade
   stageBg=null; stageCi=null;
   for(const id of ['storyBg','storyCi']){ const el=$(id); if(el){ el.classList.remove('on','fading','pan-up'); el.removeAttribute('src'); } }
   const fx=$('storyFx'); if(fx) fx.innerHTML='';
   const card=$('storyCard'); if(card) card.classList.remove('on');
   const b=$('storyBubble'); if(b) b.style.visibility='hidden';
   stopTyping(); { const tx=$('storyText'); if(tx) tx.textContent=''; }
+}
+/* 門（main 的 passGate）殺舞台：收場＋把畫面上的東西全拿掉。
+   只 `close()` 的話舞台藏起來了，`#storyBg` 的圖還掛著 —— 下一次有人把舞台打開
+   （飛行交棒的槍棺門 `showKerbGate`）它就回來了（ver -3087，羽蛇戰門後的北泊港口）。 */
+export function killStage(){
+  const st=$('storyStage');
+  if(st && st.classList.contains('on')) close({ keepBgm:true, noExit:true });
+  clearStageVisuals();
+  if(st) st.classList.remove('town-on');
+}
+function wipeForGate(){
+  clearStageVisuals();                   // ⚠ 收了 #storyFade —— 下面重新蓋回去（讀取頁收掉前它要在）
   stageBgm=null; try{ SFX.stopBgm(0); }catch(_){}
   try{ stopFx(); }catch(_){}
   const fade=$('storyFade');
