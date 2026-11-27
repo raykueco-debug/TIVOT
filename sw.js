@@ -7,7 +7,7 @@
    ══ ver -3078（Ray：「下載後要變快、要自動變成離線版」，docs/OFFLINE_WEB_FINDINGS.md 第三節）══
    兩種模式，看快取裡有沒有 `__offline_ready__`（offline.js 下載完成時寫，內容＝版本號；鑰匙算法兩邊同一套）：
    · **沒下載**：網路優先、斷線讀快取（舊行為）。
-   · **已下載＝離線版**：**快取優先** —— 快取有就直接回本機、不打網路；沒有才打網路並存起來。
+   · **已下載＝離線版**：**快取優先** —— 快取有就直接回本機、不打網路；沒有才打網路（ver -3101 起不順手存，只有導覽頁存）。
      首頁與程式也一樣（程式與素材同一個版本，才不會對不上）。更新由首頁那顆鈕做（offline.js 比雜湊，只抓變了的）。
    例外（一律網路優先）：`offline_list.json`（要拿得到新版本號）、請求自己帶 `cache:'no-store'/'no-cache'/'reload'` 的
    （offline.js 下載與更新用的就是這個 —— 不然更新時會拿到快取裡的舊檔再存回去）。
@@ -42,9 +42,11 @@ async function fromCache(req){
   if(!hit) return null;
   const range = req.headers.get('range');
   if(!range) return hit;
-  const buf = await hit.arrayBuffer();
+  /* ⚠ ver -3101（Ray：iPhone 燙）：Range 一律用 Blob 切片 —— 以前整支 `arrayBuffer()` 讀進記憶體再 slice，
+     iOS 播影片會一直送 Range，背景動畫／CI 影片每一段都把整支檔複製一次。Blob.slice 不複製資料。 */
+  const buf = await hit.blob();
   const m = /bytes=(\d*)-(\d*)/.exec(range) || [];
-  const size = buf.byteLength;
+  const size = buf.size;
   let start = m[1] ? parseInt(m[1], 10) : 0;
   let end = m[2] ? parseInt(m[2], 10) : size - 1;
   if(!m[1] && m[2]){ start = Math.max(0, size - parseInt(m[2], 10)); end = size - 1; }
@@ -60,16 +62,15 @@ async function fromCache(req){
   });
 }
 
-/* 打網路，完整的 200 才順手存（206 是片段、存了會壞；HTML 只准存成 .html／導覽頁）。 */
+/* 打網路。⚠ ver -3101（Ray：iPhone 燙）：**只有導覽頁（index.html）順手存**，素材一律不在這裡寫快取 ——
+   以前「完整的 200 都 clone 一份存起來」：平常玩每抓一個檔就多寫一次儲存，而 offline.js 下載自己也會 put，
+   它的請求（cache:'no-cache'）又會經過這裡 ⇒ 下載中每個檔寫兩次。寫快取只歸 offline.js 那一條（鐵律 8）。
+   導覽頁照存：斷線時 indexFallback 要有東西可退。 */
 async function fromNet(req){
   const res = await fetch(req);
-  if(res.ok && res.status === 200 && !req.headers.get('range')){
-    const path = new URL(req.url).pathname;
-    const html = /text\/html/i.test(res.headers.get('Content-Type') || '');
-    if(!html || req.mode === 'navigate' || /\.html$/i.test(path) || path.endsWith('/')){
-      const copy = res.clone();
-      caches.open(CACHE).then(c => c.put(keyOf(req.url), copy)).catch(()=>{});
-    }
+  if(res.ok && res.status === 200 && req.mode === 'navigate'){
+    const copy = res.clone();
+    caches.open(CACHE).then(c => c.put(keyOf(req.url), copy)).catch(()=>{});
   }
   return res;
 }

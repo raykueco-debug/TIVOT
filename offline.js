@@ -14,7 +14,14 @@
    · **存之前看 Content-Type**：Cloudflare Pages 缺檔會回 200＋首頁 HTML，不准把 HTML 存成素材。
    · **開啟時自我檢查**：有完成旗標就抽查幾支關鍵檔，缺了就把旗標拔掉（退回網路優先）、按鈕回到「離線下載」；
      有網路就順手查新版本，有就把按鈕改成「有新版本 · 更新」。
-   · **iPhone**：主畫面 App 與 Safari 分頁的儲存是分開的 —— 在 Safari 分頁按下去先提示「加到主畫面」。 */
+   · **iPhone**：主畫面 App 與 Safari 分頁的儲存是分開的 —— 在 Safari 分頁按下去先提示「加到主畫面」。
+
+   ver -3101（Ray：「iPhone 邊下載邊玩燙到可以煎蛋」「下載才是主因 修這個」）：
+   · **讓位**：首頁 4 條、遊戲畫面 1 條、切背景全停（判定只有 `inGame()` 一支）。
+   · **一定載得完**：切背景／斷網時失敗不算數、回來接著抓同一支；其他失敗重試兩次，最後再補一輪。
+     開始時記 `tivot_offline_want_v1`，完成才拔 —— App 被關掉，下次開啟自動續傳（已存且雜湊對得上的跳過）。
+   · **少寫**：雜湊表 30 秒／切背景／關頁才寫；驗收每批 40 支逐支問，不一次 `cache.keys()`。
+   · sw.js 同版：影片 Range 用 Blob 切片；平常取檔不再順手寫快取（下載中每檔寫兩次的原因）。 */
 (function(){
   const CACHE = 'tivot-offline-v1';
   const DONE_KEY = 'tivot_offline_done_v1';
@@ -77,79 +84,140 @@
   }
   /* 統計（ver -3091）：這一支是非 module，import 不到遙測 —— 發事件，main.js 收了轉給 TEL.offline。 */
   function tell(phase, ms){ try{ window.dispatchEvent(new CustomEvent('tivot-offline', { detail:{ phase, ms } })); }catch(_){} }
+  /* ══ 下載讓位（ver -3101，Ray：「iPhone 邊下載邊玩燙到可以煎蛋」「下載才是主因 修這個」）══
+     「現在在不在遊戲畫面」**只有這一支在判**（鐵律 8）：首頁亮著、而且劇情舞台與飛行頁都沒開＝在首頁（選單蓋在首頁上也算）。
+     首頁 4 條（原本 6 條）、遊戲中 1 條；切到背景（iOS 鎖螢幕／切 App）＝全停，回來接著下。 */
+  const CONC_HOME = 4, CONC_GAME = 1;
+  function inGame(){
+    const h = document.getElementById('home');
+    if(!h || !h.classList.contains('on')) return true;
+    const st = document.getElementById('storyStage'); if(st && st.classList.contains('on')) return true;
+    const f = document.getElementById('flightFrame'); if(f && f.classList.contains('on')) return true;
+    return false;
+  }
+  const lanes = () => document.hidden ? 0 : (inGame() ? CONC_GAME : CONC_HOME);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const offline = () => navigator.onLine === false;
+  /* 自動續傳（ver -3101）：開始下載就記下「想要這一版」，完成才拔 —— 中途關掉 App、被 iOS 收掉，下次開啟自己接著下（selfCheck）。 */
+  const WANT_KEY = 'tivot_offline_want_v1';
+  const want = v => { try{ v ? localStorage.setItem(WANT_KEY, v) : localStorage.removeItem(WANT_KEY); }catch(_){} };
+  const wanted = () => { try{ return localStorage.getItem(WANT_KEY); }catch(_){ return null; } };
   async function run(say, list){
     if(busy) return; busy = true;
+    let stopSave = null;
     try{
       if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
       if(!list){ say(T('讀取清單…')); list = await fetchList(); }
+      want(list.version);
       const cache = await caches.open(CACHE);
       const files = list.files.slice(), hs = Array.isArray(list.hash) ? list.hash : null;
       if(files.indexOf('index.html') < 0){ files.unshift('index.html'); if(hs) hs.unshift(''); }
+      const allF = files.slice(), allH = hs ? hs.slice() : null;   // 驗收一律驗整份（補抓那一輪會把 files 換成子集）
       let stored = {}; { const r = await cache.match(HASHES); if(r){ try{ stored = await r.json(); }catch(_){} } }
       /* 舊版下載（-3078 以前）沒有雜湊紀錄：素材已在快取就沿用、記下這一版的雜湊（不要逼 iPhone 重下 1.5 GB）。 */
       const legacy = !Object.keys(stored).length;
       const fresh = doneVer() !== list.version;
-      const saveHashes = () => cache.put(HASHES, new Response(JSON.stringify(stored), { headers:{ 'Content-Type':'application/json' } })).catch(()=>{});
-      let i = 0, ok = 0, fail = 0, skip = 0;
+      /* 雜湊表＝續傳的依據（已存且雜湊對得上就跳過）。⚠ 低頻寫（ver -3101）：以前每 200 檔整份序列化寫回一次；
+         改成 30 秒一次、切背景／關頁時補一次、結束時一次 —— 有改動（dirty）才寫。 */
+      let dirty = false;
+      const saveHashes = () => { if(!dirty) return Promise.resolve(); dirty = false;
+        return cache.put(HASHES, new Response(JSON.stringify(stored), { headers:{ 'Content-Type':'application/json' } })).catch(()=>{ dirty = true; }); };
+      const iv = setInterval(saveHashes, 30000);
+      const onHide = () => { if(document.hidden) saveHashes(); };
+      document.addEventListener('visibilitychange', onHide); addEventListener('pagehide', saveHashes);
+      stopSave = () => { clearInterval(iv); document.removeEventListener('visibilitychange', onHide); removeEventListener('pagehide', saveHashes); };
+      let i = 0, ok = 0, fail = 0, skip = 0, failed = [];
       const t0 = Date.now();
       tell('start');
-      const worker = async () => {
-        while(i < files.length){
-          const n0 = i++, f = files[n0], h = hs ? hs[n0] : '';
-          const k = keyOf(f);
+      const progress = () => { const n = ok + fail + skip;
+        if(n % 10 === 0 || n === files.length)
+          say(T('下載中 {p}%（{n}/{all}{fail}）').replace('{p}', Math.floor(n / files.length * 100)).replace('{n}', n).replace('{all}', files.length).replace('{fail}', fail ? T('，失敗 ') + fail : '')); };
+      /* 一支檔：切背景／斷網時失敗不算數 —— 等回來再抓同一支；其他錯誤重試兩次才算失敗。 */
+      const getOne = async (f, k, h) => {
+        for(let tries = 0; ; ){
           try{
-            const code = /\.(js|html|css|json|webmanifest)$/i.test(f);
-            const have = await cache.match(k);
-            const same = h ? (stored[f] === h || (legacy && !code)) : !(fresh && code);
-            if(have && same){ if(h) stored[f] = h; skip++; continue; }
             const res = await fetch(f, { cache: 'no-cache' });
             if(!res.ok) throw new Error(res.status);
             const ct = res.headers.get('Content-Type') || '';
             if(/text\/html/i.test(ct) && !/\.html$/i.test(f)) throw new Error('拿到 HTML（缺檔）');
             await cache.put(k, res);
-            if(h) stored[f] = h;
-            ok++;
-            if(ok % 200 === 0) saveHashes();
-          }catch(e){ fail++; console.warn('[offline] 失敗', f, e); }
-          const n = ok + fail + skip;
-          if(n % 10 === 0 || n === files.length)
-            say(T('下載中 {p}%（{n}/{all}{fail}）').replace('{p}', Math.floor(n / files.length * 100)).replace('{n}', n).replace('{all}', files.length).replace('{fail}', fail ? T('，失敗 ') + fail : ''));
+            if(h){ stored[f] = h; dirty = true; }
+            return true;
+          }catch(e){
+            if(document.hidden || offline()){ while(document.hidden || offline()) await sleep(1000); continue; }
+            if(++tries > 2){ console.warn('[offline] 失敗', f, e); return false; }
+            await sleep(2000);
+          }
         }
       };
-      await Promise.all(Array.from({ length: 6 }, worker));
-      /* 驗收（ver -3078 實測：一次報完成卻有一整段沒進快取）：照快取實際有的鑰匙比一次，缺的補抓一輪；
-         仍缺就算失敗、不寫完成旗標 —— 「報完成其實缺檔」比「再按一次」糟得多。 */
+      const worker = async (lane) => {
+        while(i < files.length){
+          while(lane >= lanes()) await sleep(800);   // 讓位：遊戲中只留第 0 條、背景全停
+          if(i >= files.length) break;
+          const n0 = i++, f = files[n0], h = hs ? hs[n0] : '';
+          const k = keyOf(f);
+          const code = /\.(js|html|css|json|webmanifest)$/i.test(f);
+          let have = null; try{ have = await cache.match(k); }catch(_){}
+          const same = h ? (stored[f] === h || (legacy && !code)) : !(fresh && code);
+          if(have && same){ if(h && stored[f] !== h){ stored[f] = h; dirty = true; } skip++; }
+          else if(await getOne(f, k, h)) ok++;
+          else { fail++; failed.push(n0); }
+          progress();
+        }
+      };
+      const pass = () => Promise.all(Array.from({ length: CONC_HOME }, (_, lane) => worker(lane)));
+      await pass();
+      /* 失敗的那幾支再補一輪（ver -3101）：不必等人按「重試」。 */
+      if(failed.length){
+        const again = failed.slice(); failed = [];
+        files.splice(0, files.length, ...again.map(n => files[n]));
+        if(hs) hs.splice(0, hs.length, ...again.map(n => hs[n]));
+        i = 0; fail = 0; await sleep(3000); await pass();
+      }
+      /* 驗收（ver -3078 實測：一次報完成卻有一整段沒進快取）：逐支問快取，缺的補抓一輪；仍缺就算失敗、不寫完成旗標。
+         ⚠ ver -3101：不再一次 `cache.keys()` 掃到底（七千多筆一次撈出來是個尖峰）—— 每批 40 支、批與批之間讓一拍，
+         遊戲中照樣讓位。 */
       if(!fail){
-        const have = new Set((await cache.keys()).map(r => r.url));
-        const miss = files.map((f, n) => n).filter(n => !have.has(keyOf(files[n])));
+        const miss = [];
+        for(let s = 0; s < allF.length; s += 40){
+          while(lanes() === 0) await sleep(800);
+          const part = await Promise.all(allF.slice(s, s + 40).map(f => cache.match(keyOf(f)).catch(()=>null)));
+          part.forEach((r, j) => { if(!r) miss.push(s + j); });
+          await sleep(inGame() ? 50 : 0);
+        }
         if(miss.length){
           console.warn('[offline] 驗收缺', miss.length, '支，補抓');
-          files.splice(0, files.length, ...miss.map(n => files[n]));
-          if(hs) hs.splice(0, hs.length, ...miss.map(n => hs[n]));
-          for(const f of files) delete stored[f];
-          i = 0; ok = 0; skip = 0;
-          await Promise.all(Array.from({ length: 6 }, worker));
-          const have2 = new Set((await cache.keys()).map(r => r.url));
-          fail += files.filter(f => !have2.has(keyOf(f))).length;
+          files.splice(0, files.length, ...miss.map(n => allF[n]));
+          if(hs) hs.splice(0, hs.length, ...miss.map(n => allH[n]));
+          for(const f of files){ delete stored[f]; } dirty = true;
+          i = 0; ok = 0; skip = 0; failed = [];
+          await pass();
         }
       }
       await saveHashes();
       if(fail){ say(T('失敗 {n} 個 · 點一下重試').replace('{n}', fail)); tell('fail'); }
       else{
         await cache.put(READY, new Response(list.version, { headers:{ 'Content-Type':'text/plain' } }));
-        setDone(list.version); updAvail = null; tellSW();
+        setDone(list.version); updAvail = null; tellSW(); want(null);
         tell('done', Date.now() - t0);
         say(T('✓ 完成（{n} 秒）· 斷網也能玩').replace('{n}', Math.round((Date.now() - t0) / 1000)));
       }
     }catch(e){
       say(T('下載中斷 · 點一下重試')); tell('fail');
-    }finally{ busy = false; }
+    }finally{ busy = false; if(stopSave) stopSave(); }
   }
   /* 開啟時自我檢查＋背景查更新（ver -3078）。 */
   async function selfCheck(){
     try{
       const cache = await caches.open(CACHE);
       const rv = await readyVer(cache);
+      /* 自動續傳（ver -3101）：上次按了下載、還沒完成就被關掉／收掉 ⇒ 這次開啟自己接著下（已存的跳過）。 */
+      const w = wanted();
+      if(w && w !== rv && !busy && navigator.onLine !== false && !(ios && !standalone)){
+        if(rv === null && doneVer()) setDone(null);
+        const sayBtn = t => { const b = document.getElementById('offlineBtn'); if(b) b.textContent = t; };
+        run(sayBtn, null); return;
+      }
       if(!rv){ if(doneVer()){ setDone(null); relabel(); } return; }
       for(const f of CHECK){
         if(!(await cache.match(keyOf(f)))){
