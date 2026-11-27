@@ -450,7 +450,10 @@ function markNext(){
   if(state.saintMode){   // 聖徒化：只提示第一格（顯示端見 style.css 的 #grid.saint .cell.next，ver -833）
     /* 「端首星」（諾薇兒 Lv2，ver -971）：聖徒化期間**全程**指引 ——
        沒有那顆星就照舊只指第一格。 */
-    if(state.expect!==1 && !prog.girlHas(state.pickedPartner,'saintHint')) return;
+    /* 「第一格」看這一盤的順序（ver -3118，Ray：「夢魘化數字由大到小…為什麼1也是亮著的?」）：
+       聖徒化由小到大＝1；惡夢化由大到小＝N。舊寫法寫死 1 ⇒ 惡夢化建盤那一刻把 1 標亮、之後一直留著。 */
+    const first = state.niMode ? state.N : 1;
+    if(state.expect!==first && !prog.girlHas(state.pickedPartner,'saintHint')) return;
     const c0=state.cells.find(c=>+c.dataset.num===state.expect);
     if(c0) c0.classList.add('next');
     return;
@@ -1859,6 +1862,9 @@ function setBoard(n, cols){ state.N=n; state.cols=cols; }
    指出來完全不誤導。真正該擋的只有 `dualWield`，那一格仍然擋著。 */
 function hintCurrentCell(){
   if(state.over || state.dualWield || state.enemyHp<=0) return;
+  /* 下一格只會有一格（ver -3118）：先把盤上所有舊的 `.next` 清掉再標 —— 以前只加不清，
+     惡夢化建盤時留下的「1」與這裡標的「N」同時亮。 */
+  state.cells.forEach(x=>x.classList.remove('next'));
   const c=state.cells.find(x=>+x.dataset.num===state.expect && !x.classList.contains('done'));
   if(c) c.classList.add('next');
 }
