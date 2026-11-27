@@ -238,7 +238,6 @@ export const state = {
      ⚠ 記**次數**不記布林：現在一局只發動得了一次（槽是局為單位），但「發動時＋5」
        這句話講的是每一次；日後放寬成可多次，這一格不必回頭改。 */
   coopUses: 0,
-  sRankUnlocked: false,
   /* 結算頁那顆（或那兩顆）底鈕現在是什麼意思。`modules/inspector.js` 擁有它，
      `onRematchBtn`／`onGiveupBtn` 依它分流：
        rematch          再度執槍 → 回首頁（出陣，試玩版）
@@ -260,8 +259,6 @@ export const state = {
      表上的保底值。目前只有放光（`holyburst`）在看它。 */
   curEnemyHitFxCd: 0,
   curEnemyEntranceSe: null, // 登場音（ver -948：landSe／entranceVo 併成一格；-949 欄名 entrance）
-  intruderTriggered: false,
-  inIntruderFight: false,
   deathGuardUsed: false,
   /* ⚠⚠ ver -1844（Ray：「主動技跟變身技是否熔斷是無關的」）：主動技的「用過了」**逐位搭檔各記一格**。
      `partnerActiveUsed` 永遠是**現在這一位**的那一格；換人（combat.cyclePartner）時把它存進
@@ -325,8 +322,7 @@ export const state = {
   partnerDamage: null,
   sessionLoot: null,     // 連戰中間場記帳的掉落（ver -869，Ray：「戰利品也到結算時給」）；收段結算一起發
 
-  pickedPartner: GAME_CONFIG.defaultPartner,   // 玩家實選搭檔（擁有者 partner；選人畫面經 setPickedPartner 寫入）
-  lineupIndex: 0,        // 連戰序列游標（局內第幾隻敵，對應 GAME_CONFIG.lineup）
+  pickedPartner: GAME_CONFIG.storyPartner,   // ver -3133：defaultPartner（蕾妮）隨挑戰撤，開機預設＝本篇搭檔   // 玩家實選搭檔（擁有者 partner；選人畫面經 setPickedPartner 寫入）
 
   /* 這一次戰敗罰掉了誰的多少戰鬥紀錄（ver -1135，擁有者 combat／讀者 inspector）。
      `{who, name, lost}`；null＝這一次沒有罰到（無夥伴、或她本來就是 0）。

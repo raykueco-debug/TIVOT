@@ -1902,7 +1902,6 @@
   #saintCutin.obe{background:radial-gradient(circle at 50% 45%,rgba(60,8,40,.9),rgba(6,2,8,.98));}
   #saintCutin.execute{background:radial-gradient(circle at 50% 45%,rgba(80,60,10,.92),rgba(4,2,0,.99));}
   #saintCutin.return{background:radial-gradient(circle at 50% 45%,rgba(70,55,15,.9),rgba(6,4,1,.98));}
-  #saintCutin.boss{background:radial-gradient(circle at 50% 45%,rgba(70,10,20,.9),rgba(8,2,4,.98));}
   /* `.ci-vid`（ver -2057）：CI 影片疊在靜態圖的位置，吃同一組規則（#cutin 那四條與這一條）。 */
   .scimg{position:absolute;inset:0;width:100%;height:100%;
     object-fit:cover;object-position:50% 30%;opacity:0;z-index:0;display:none;}
@@ -1911,7 +1910,6 @@
   #saintCutin.obe .scimg[data-kind="obe"],
   #saintCutin.execute .scimg[data-kind="execute"],
   #saintCutin.return .scimg[data-kind="return"],
-  #saintCutin.boss .scimg[data-kind="boss"]{display:block;}
   #saintCutin.on .scimg{animation:saintCutinImgIn var(--sc-dur,1.6s) ease-out forwards;}
   @keyframes saintCutinImgIn{0%{opacity:0;transform:scale(1.15)}
     18%{opacity:1;transform:scale(1)}82%{opacity:1;transform:scale(1)}
@@ -1923,7 +1921,6 @@
   #saintCutin.obe #saintCutinFlash{background:#ff3b3b;}
   #saintCutin.execute #saintCutinFlash{background:#fff;}
   #saintCutin.return #saintCutinFlash{background:#fff;}
-  #saintCutin.boss #saintCutinFlash{background:#ff3b3b;}
   #saintCutin.on #saintCutinFlash{animation:cutinFlash var(--sc-dur,1.6s) ease-out forwards;}
   #saintCutinStreak{position:absolute;inset:0;pointer-events:none;}
   #saintCutin.burst #saintCutinStreak{
@@ -1934,8 +1931,6 @@
     background:repeating-linear-gradient(-24deg,transparent 0 14px,rgba(255,240,190,.22) 14px 17px);}
   #saintCutin.return #saintCutinStreak{
     background:repeating-linear-gradient(-24deg,transparent 0 16px,rgba(255,223,120,.16) 16px 19px);}
-  #saintCutin.boss #saintCutinStreak{
-    background:repeating-linear-gradient(-24deg,transparent 0 16px,rgba(255,60,90,.18) 16px 19px);}
   #saintCutin.on #saintCutinStreak{animation:cutinStreak .5s linear infinite;}
   #saintCutinTitle{position:absolute;top:42%;left:0;right:0;text-align:center;
     transform:translateY(-50%) skewX(-8deg);font-weight:900;
@@ -1950,8 +1945,6 @@
     text-shadow:0 0 26px var(--gold),0 0 12px #fff,3px 3px 0 #7a5a10;}
   #saintCutin.return #saintCutinTitle{color:#fff;
     text-shadow:0 0 22px var(--holy),0 0 10px #ffe9a8,3px 3px 0 var(--gold);}
-  #saintCutin.boss #saintCutinTitle{color:#fff;
-    text-shadow:0 0 22px #ff3b6b,0 0 10px #ff8a8a,3px 3px 0 #6a1030;}
   #saintCutin.on #saintCutinTitle{animation:saintCutinTitle var(--sc-dur,1.6s) ease-out forwards;}
   @keyframes saintCutinTitle{0%{opacity:0;transform:translateY(-50%) skewX(-8deg) scale(2.2)}
     18%{opacity:1;transform:translateY(-50%) skewX(-8deg) scale(1)}
@@ -1970,7 +1963,6 @@
   #saintCutin.obe #saintCutinSub{color:#ff9db3;text-shadow:0 0 12px #ff3b6b;}
   #saintCutin.execute #saintCutinSub{color:#ffe9a8;text-shadow:0 0 14px var(--gold);}
   #saintCutin.return #saintCutinSub{color:var(--gold);text-shadow:0 0 12px var(--holy);}
-  #saintCutin.boss #saintCutinSub{color:#ff9db3;text-shadow:0 0 12px #ff3b6b;}
   #saintCutin.on #saintCutinSub{animation:cutinTextIn var(--sc-dur,1.6s) ease-out forwards;}
   /* EXSECUTIŌ 停留 3 秒：拉長各元素動畫 */
   #saintCutin.execute.on #saintCutinFlash{animation-duration:3s;}
@@ -2385,61 +2377,7 @@
   }
 
   /* 出擊整備頁（#prepSheet）與 .gold-rise 已撤（ver -3132，挑戰回收）。 */
-  /* ── Boss 戰 S 級獎勵：銭湯インストール ── */
-  /* 毛筆字型：Yuji Boku（OFL）子集，只含「銭湯インストール」8 字（3.6KB，自託管離線可用） */
-  @font-face{ font-family:'YujiBokuSentou';
-    src:url('resources/misc/yujiboku_sentou.woff2?v=3') format('woff2');
-    font-display:block; }
-  #sentouReward{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
-    background:#050308;z-index:80;}
-  #sentouReward.on{display:flex;animation:sentouIn .8s ease;}
-  @keyframes sentouIn{from{opacity:0;}to{opacity:1;}}
-  /* 圖完整顯示（object-fit:contain 等效）：外框鎖 2/3 比例、置中，字樣以框定位（不隨視窗裁切跑位） */
-  #sentouReward .sentou-frame{position:relative;aspect-ratio:2/3;max-width:100%;max-height:100%;}
-  #sentouReward img{width:100%;height:100%;-webkit-user-drag:none;}
-  /* 毛筆招牌額（扁額風）：畫面左上角、和紙底 + 雙線木框，「銭湯」大字＋「インストール」小字兩行置中。
-     額本體先蓋印進場（sentouPlaque），字再逐一寫出。 */
-  #sentouReward .sentou-sign{position:absolute;top:2.8%;left:3%;
-    font-family:'YujiBokuSentou','Noto Serif TC',serif;
-    color:#221a12;font-size:clamp(19px, 7.2vmin, 34px);line-height:1.12;letter-spacing:.1em;
-    text-align:center;padding:.34em .6em .38em;transform:rotate(-1.2deg);pointer-events:none;
-    background:linear-gradient(160deg, rgba(243,235,216,.95), rgba(228,216,190,.93));
-    border:1.5px solid #33261a;border-radius:2px;
-    box-shadow:inset 0 0 0 3px rgba(243,235,216,.95), inset 0 0 0 4.5px #4a3826,
-      inset 0 0 22px rgba(120,90,50,.25), 3px 5px 14px rgba(0,0,0,.45);
-    animation:sentouPlaque .5s cubic-bezier(.2,1.4,.4,1) .25s backwards;}
-  @keyframes sentouPlaque{from{opacity:0;transform:rotate(-1.2deg) scale(1.12);}
-    to{opacity:1;transform:rotate(-1.2deg) scale(1);}}
-  #sentouReward .sentou-col{display:block;}
-  /* 第二行（インストール）：字級加大＋間距收窄——13px 毛筆片假名必糊，提到 15px 上下才立得住 */
-  #sentouReward .sentou-col:nth-child(2){font-size:.54em;letter-spacing:.14em;margin-top:.18em;}
-  /* 逐字「寫」出：由左往右 clip 揭開 + 墨暈收乾（blur→清晰），動畫延遲由 JS 逐字排 */
-  #sentouReward .sentou-sign i{display:inline-block;font-style:normal;opacity:0;
-    animation:sentouChar .34s ease forwards;
-    text-shadow:0 0 1px rgba(34,26,18,.55), .05em .05em .14em rgba(0,0,0,.22);}
-  /* 小字行不吃暈染 shadow：1px 暈在小字級上只會糊成一團 */
-  #sentouReward .sentou-col:nth-child(2) i{text-shadow:none;}
-  @keyframes sentouChar{
-    from{opacity:0;clip-path:inset(0 100% 0 0);transform:scale(1.14);filter:blur(2.2px);}
-    60%{opacity:1;filter:blur(.5px);}
-    to{opacity:1;clip-path:inset(0 -12% 0 0);transform:scale(1);filter:blur(0);}}
-  /* 寫完（.done）後撤掉殘留的 filter/clip-path 合成層：帶旋轉的光柵化層會讓小字發糊，
-     改回純文字渲染求最銳利（此刻所有字動畫皆已跑完，切換無視覺跳動） */
-  #sentouReward.done .sentou-sign i{animation:none;opacity:1;clip-path:none;transform:none;filter:none;}
-  #sentouReward .sentou-hint{position:absolute;left:0;right:0;
-    bottom:calc(14px + env(safe-area-inset-bottom));text-align:center;
-    font-size:11px;letter-spacing:4px;color:var(--gold-dim);
-    opacity:0;transition:opacity .8s;pointer-events:none;}
-  #sentouReward.done .sentou-hint{opacity:.85;}
-  /* Boss S 級：按下「再度執槍」→ 原地變身 SAINT INSTALL...?（字呼吸發光為主、框光為輔） */
-  #rematchBtn.saintinstall{border-color:var(--gold);color:var(--gold);
-    animation:saintBreath 2.2s ease-in-out infinite;}
-  @keyframes saintBreath{
-    0%,100%{box-shadow:0 0 5px rgba(217,198,138,.3);
-      text-shadow:0 0 2px rgba(217,198,138,.35);}
-    50%{box-shadow:0 0 18px rgba(217,198,138,.7);
-      text-shadow:0 0 8px rgba(217,198,138,.95), 0 0 20px rgba(217,198,138,.7), 0 0 34px rgba(217,198,138,.4);}}
-
+  /* Boss 戰 S 級獎勵（#sentouReward、毛筆字型、#rematchBtn.saintinstall）已撤（ver -3133，挑戰回收）。 */
   /* 選人／選槍畫面（#partnerSheet／#weaponSheet）已撤（ver -3132，挑戰回收）。 */
 
   /* 首頁底部：Credit / 原作 小鈕一排，版權宣告獨立一行在其下，整組貼底置中（避開 home indicator 安全區）。

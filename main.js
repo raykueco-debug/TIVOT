@@ -400,10 +400,7 @@ function battleReady(id, look, p){
 }
 
 /* 首頁那一批的圖白名單（鐵律 13 第 1 條）。 */
-/* 試玩包沒有挑戰（ver -3093）：挑戰選人那兩張立繪（`challengePartners`）不在包裡，開機不抓。 */
-const DEMO_SKIP_IMG = new Set((GAME_CONFIG.challengePartners || []).map(k => 'partner_' + k));
 const isHomeImg = k =>
-  !(prog.isDemo() && DEMO_SKIP_IMG.has(k)) &&
   (HOME_IMG.prefixes.some(p => k.indexOf(p) === 0) || HOME_IMG.keys.indexOf(k) >= 0);
 /* 熱啟動旗標（見 preloadAll 內的 WARM_BOOT 說明）。
    ⚠ 冷啟動時是在「點擊繼續」那一刻才記，不是載完就記 —— 讀到一半被中斷重整，
@@ -1124,36 +1121,9 @@ window.addEventListener('pagehide', refreshBoot);
   placeRing();
   fitCap();          // placeRing 還在等紋章載入時，先照 CSS 預設的圈徑量一次
   window.addEventListener('resize', placeRing);
-  // 監察官立繪與名字（沿用結算的資源；讀 config 不寫死）
-  //   立繪＝載入畫面的門面，全站最優先：載完（或 4s 保底）才輪到關鍵音效、再輪到整批。
-  // ⚠ 走 defaultInspector，不要寫死鍵名：這裡原本寫死 `.freya`，而正上方的註解
-  //   說「讀 config 不寫死」—— 註解與程式不符。芙蕾雅是暫代版，正式版監察官是
-  //   蕾娜(Renna)；換人時 config 改一行就好，別再有第二處要記得改。
-  /* 監察官立繪：讀取畫面的門面。⚠ **不再擋在最前面**（ver -384，Ray 指定
-     「先讀音效，音效讀完讀圖，最後讀音樂」）—— 她現在屬於「圖」那一段，
-     只是排在圖的最前面（`fetchPriority=high`）。
-     ⚠ 為什麼要換順序：音效是**要解碼**的，慢網下常常還沒好玩家就點進去了，
-       開場那兩支（跑步聲／跌倒音）因此消失過好幾次；圖片沒載完頂多晚一拍出現。 */
-  let loadPortrait = ()=>Promise.resolve();
-  {
-    /* 說明者：出航之後換成蕾娜（ver -425）。規則在 `config.loadingHost`，
-       這裡只負責問 —— 換人只要改 config 那一行（鐵律 7）。 */
-    const lh=GAME_CONFIG.loadingHost||{};
-    const hostKey=(lh.flag && lh.then && prog.hasFlag(lh.flag)) ? lh.then : GAME_CONFIG.defaultInspector;
-    const insp=(GAME_CONFIG.inspectors||{})[hostKey]||{};
-    const img=$('alPortrait'); const nm=ov.querySelector('.al-name');
-    if(nm) nm.textContent=insp.name||'';
-    const psrc=asset(insp.image);
-    if(img && psrc){
-      loadPortrait = ()=> new Promise(res=>{
-        img.fetchPriority='high';   // 壓過 HTML 預掃到的其他 <img>（徽記/敵人立繪），確保她是圖裡的第一張
-        img.onload=()=>{ img.classList.add('on'); res(); };
-        img.onerror=()=>res();
-        img.src=psrc;
-        setTimeout(res, 4000);   // 保底：立繪卡住也不無限擋住後面
-      });
-    }
-  }
+  /* 讀取頁的說明者立繪（監察官芙蕾雅／出航後的蕾娜，`config.inspectors`＋`loadingHost`）已撤（ver -3133）：
+     -3111 起開機讀取頁不放說明者（bootLoaderHost:false），這裡只剩一支空的 loadPortrait 讓下面的流程照舊。 */
+  const loadPortrait = ()=>Promise.resolve();
   /* Hint 輪播：洗牌後依序循環（＝隨機且整輪不重複），淡入 → 停 hold → 淡出 → 換句。
      文案在 config 的 loadingHints、節奏在 tuning.loadingHint*Ms —— 程式不寫死。
      ⚠ 讀完之後**不停**：玩家還沒點下去之前，輪播要繼續。 */

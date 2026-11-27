@@ -33,9 +33,8 @@ import { sakuraBurst } from './sakura.js';   // 鹿主的櫻花狂亂（ver -899
 const $ = id => document.getElementById(id);
 
 /* combat 於啟動時注入原語（維持依賴方向；enemy 不反向 import combat）。
- *   startIntruderFight — Boss 亂入的戰鬥重啟（combat 擁有）。
  *   updateBars         — 換敵後刷新血條（enemyHp 顯示，combat 擁有）。 */
-let api = { startIntruderFight(){}, updateBars(){} };
+let api = { updateBars(){} };
 export function init(a){ api = { ...api, ...a }; }
 
 /* ══⚠⚠ **重擊：敵人劇烈一震**（ver -1659，Ray：「步槍跟高爆彈在紅圈命中時
@@ -4645,79 +4644,15 @@ export function setEnemy(key, opts){
    （`#enemyImg` 在新圖解碼完成前不會重繪）。見 combat.startGame 那一段的說明。
    ⚠ `lineupIndex` 照舊一律歸零 —— 那是「新的一局」的游標，與載哪一隻無關。 */
 export function startLineup(key){
-  state.lineupIndex = 0;
-  const first = key || (GAME_CONFIG.lineup && GAME_CONFIG.lineup[0]) || GAME_CONFIG.currentEnemy;
-  setEnemy(first);
+  /* 挑戰的 lineup／currentEnemy 退路已撤（ver -3133）：沒指定＝劇情版教學，載教學那一隻（startGame 稍後也會再設一次）。 */
+  const first = key || (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.enemyKey);
+  if(first) setEnemy(first);
 }
-// 局內還有沒有下一隻（Boss 戰不算）
-export function hasNextInLineup(){
-  if(state.inIntruderFight) return false;
-  const lu = GAME_CONFIG.lineup || [];
-  return state.lineupIndex < lu.length - 1;
-}
-// 換上序列的下一隻：敵人區「前進遭遇」進場特效（僅敵人區，非 cut-in、盤面不動）。
-//   ①舊敵淡出/縮出（玩家前進掠過）→ ②換敵 config + 刷血條 → ③新敵自遠處逼近淡入。
-//   done() 於進場動畫結束時回呼（combat 於此載下一敵首盤、恢復計時碼表）。
-export function advanceToNextEnemy(done){
-  state.lineupIndex += 1;
-  const key = (GAME_CONFIG.lineup && GAME_CONFIG.lineup[state.lineupIndex]) || state.currentEnemyKey;
-  const img = $('enemyImg');
-  // ⚠ 先把下一敵立繪解碼完成再開換敵演出：進場動畫當下才改 src，圖未就緒時
-  //   瀏覽器會續顯舊圖（「盤面已換、立繪沒換」）。decode 失敗/逾時 800ms 照樣開演（go 冪等）。
-  const en = GAME_CONFIG.enemies[key] || {};
-  const src = enemyImage(en);
-  const start = ()=>{
-    freezeOrStopIdle();   // 連戰換敵：掠過演出（有底圖演在底圖上；沒底圖演在待機層上，ver -3129）
-    if(img){ img.classList.remove('enemy-enter'); img.classList.add('enemy-leave'); }
-    setTimeout(()=>{
-      setEnemy(key);            // 換立繪/名稱/血量與大絕/懲罰/hitFx config
-      api.updateBars();         // 新敵血條
-      if(img){
-        img.classList.remove('enemy-leave'); void img.offsetWidth; img.classList.add('enemy-enter');
-        setTimeout(()=>img.classList.remove('enemy-enter'), 560);
-      }
-      if(done) done();
-    }, 260);
-  };
-  if(src){
-    let started=false;
-    const go=()=>{ if(!started){ started=true; start(); } };
-    const pre=new Image(); pre.src=src;
-    (pre.decode ? pre.decode() : Promise.resolve()).then(go, go);
-    setTimeout(go, 800);
-  } else start();
-}
-
-/* ---------- 亂入 / Boss 遭遇（New Hustle）----------
- *  由 inspector 迎擊分流（S 解鎖 → 迎擊）注入呼叫。流程：
- *    ① 播 Boss 遭遇 cut-in（saintCutin boss 版，鎖盤面 cutinPlaying）；
- *    ② 演出定長 3 秒 → 自動 enterFight：設 inIntruderFight（§3.7 enemy 擁有）→
- *       呼叫注入的 combat.startIntruderFight()（重開新場、載 witch）。不接受點擊跳過。
- *  bannerHold 為 reference 舊版自動觸發用,手動迎擊流程不使用 → 視為休眠 config,不接。 */
-export function triggerIntruder(){
-  const it = GAME_CONFIG.intruder;
-  // Boss BGM 已於「再度執槍（S 解鎖）」瞬間起播（見 inspector.onRematchBtn），此處不重播。
-  const sc = $('saintCutin');
-  $('saintCutinTitle').textContent = it.cutinText || 'NEW HUSTLE INCOMING';
-  $('saintCutinSub').textContent   = '';
-  $('saintCutinImgBoss').src = asset('cutin_boss');   // Boss 專屬遭遇 cut-in（貝琳妲）
-  sc.classList.remove('obe','execute','burst','return');
-  sc.classList.add('boss','on');
-  state.cutinPlaying = true;              // 鎖盤面點擊（enemy 為當下播演出的模組，允許寫 cutinPlaying）
-  try{ SFX.hit && SFX.hit(); }catch(e){}
-
-  const enterFight=()=>{
-    sc.classList.remove('on','boss','burst','obe','execute','return');
-    $('banner').classList.remove('on','seq','lose');
-    state.inIntruderFight = true;         // 3.7：標記進入 Boss 戰（結算讀此走 boss 存檔/台詞）
-    api.startIntruderFight();             // combat 擁有的戰鬥重置：重開新場、載 witch
-  };
-  setTimeout(enterFight, 3000);           // 演出 3 秒後自動進 Boss 戰
-}
+/* 連戰換下一隻（hasNextInLineup／advanceToNextEnemy）與 Boss 亂入（triggerIntruder）已撤（ver -3133，挑戰回收）。 */
 
 /* ---------- 開場：把 GAME_CONFIG 的圖/名稱套到畫面上 ---------- */
 export function applyConfigToDOM(){
-  const pn = GAME_CONFIG.partners[GAME_CONFIG.defaultPartner];
+  const pn = GAME_CONFIG.partners[GAME_CONFIG.storyPartner];
   /* ══⚠⚠⚠ **開機不要掛任何一隻怪**（ver -1587，Ray：「faceless 是開機就掛在 `#app`
      上的挑戰用怪，別再掛了，把它拿掉」）══════════════════════════════════════
      以前這裡是 `setEnemy(GAME_CONFIG.currentEnemy, {noArt:true})` —— -1321 已經把

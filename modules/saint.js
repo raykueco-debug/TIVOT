@@ -1278,7 +1278,6 @@ export function warmCutinAnim(key){
 }
 export function warmPartnerCi(pk){
   if(pk===undefined) return;
-  if(prog.isDemo() && (GAME_CONFIG.challengePartners||[]).indexOf(pk)>=0) return;   // 試玩包沒有挑戰搭檔（蕾妮／馬季諾）的 CI（ver -3093）
   if(ciWarmFor!==undefined && ciWarmFor!==pk) releasePartnerCi();   // 換人：舊的那一位放掉
   ciWarmFor=pk;
   for(const k of partnerCutinKeys(pk, true)) warmCutinAnim(k);

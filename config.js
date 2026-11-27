@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.28-3132';
+export const VERSION = 'ver 2026.11.28-3133';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -375,46 +375,7 @@ export const GAME_CONFIG = {
    *  新增搭檔：複製一段，改鑰匙名與圖音即可。
    * ------------------------------------------------------------------ */
   partners: {
-    renee: {
-      name:i18nT('蕾妮'),
-      image:'partner_renee',   // 選人畫面大立繪（Renee_SI_01）
-      // 選人畫面取景（基準）：zoom=1 整張以高度貼合取景框；top=0 頭頂對齊框頂。
-      //   蕾妮原圖即膝上構圖、頭約佔畫高 22%，作為所有搭檔「頭部大小」的基準。
-      siFit:{ zoom:1, top:0 },
-      cutin:'cutin_saint',     // 聖徒化演出大圖
-      voice:null,              // 語音（PARTNER_SE_SI）之後填
-      selectVoice:'vo_life_return', // 選人畫面「選擇此搭檔」確認 SE（→ Renee_VC_Act.wav，與生命歸還共用）
-      perk:i18nT('即死防禦（被動）＋生命歸還（主動）'),
-      // ── 被動技：即死防禦 ─────────────────────────────
-      //   整場一次性。受到足以致死的攻擊時，改為保留 1 HP，並插入 cut-in。用掉後失效。
-      /* ⚠⚠ **蕾妮的技能名不跟著諾薇兒改**（ver -985）：ver -984 把「即死防禦／生命歸還」
-         換成「獄門天鎖／魂之歸所」，那是**諾薇兒的**名字。這兩個字原本住在 i18n
-         （兩人共用），改那裡等於連試玩版的蕾妮一起改名（憲法：試玩版不要動）。
-         現在名字一律**讀卡**，所以這裡要把她自己的名字與英文明寫出來。 */
-      passive:{
-        key:'deathGuard',
-        name:i18nT('即死防禦'),
-        en:'Death Guard',
-        oncePerBattle:true,      // true=整場只擋一次；false=每次都擋（不建議）
-        cutin:'cutin_guard',     // 即死防禦專屬大圖（→ Renee_CI_pas.jpg）；程式讀此欄，不硬寫
-        voice:'vo_death_guard',  // cut-in 對應 SE（→ Renee_VC_Pas.wav）
-        /* ⚠ ver -888（Ray：「death guard 改成每一場（每個怪）都會 reload 一次」）：
-           `oncePerBattle` 的語意由「一局一次」收窄成「**一場（怪）一次**」——
-           解鎖點是 partner.onEnemySet（換敵那一刻，鐵律 9）。（ver -893 用詞） */
-        desc:i18nT('受到足以致死的攻擊時，為玩家保留1hp續命。每換一隻敵人可再觸發一次。'),
-      },
-      // ── 主動技：生命歸還 ─────────────────────────────
-      //   聖徒化中，由「下往上滑」發動：強制中止聖徒化，保留當前血量（第四結局）。
-      active:{
-        key:'lifeReturn',
-        name:i18nT('生命歸還'),
-        en:'Life Return',
-        context:'saint',         // 發動情境：'saint'＝聖徒化內 / 'board'＝一般盤面 / 'any'＝兩者皆可
-        cutin:'cutin_return',    // 生命歸還演出大圖（→ Renee_CI_act.jpg）；實際演出由 saint scImgKey.return 讀同一鑰匙
-        voice:'vo_life_return',  // cut-in 對應 SE（→ Renee_VC_Act.wav）
-        desc:i18nT('聖徒化期間發動：強制中止聖徒化，保留當前血量。'),
-      },
-    },
+    /* 蕾妮（renee，挑戰搭檔）的卡已撤（ver -3133，挑戰回收）。 */
     /* ── 諾薇兒（ver -422，Ray：「延用蕾妮的能力，CI 之後再補」）───────────
        ⚠⚠ **能力鑰匙沿用蕾妮的**（`deathGuard` / `lifeReturn`）—— 那兩支的實作在
          `modules/partner.js` 與 `modules/saint.js`，`key` 是程式認的字串。
@@ -889,58 +850,9 @@ export const GAME_CONFIG = {
                     +i18nT('10 秒內破防值累積速度加倍。同戰役內可跨戰鬥累計。') },
     },
     // ── 第二搭檔：馬季諾 Malzeno ──────────────────────────
-    malzeno: {
-      name:i18nT('馬季諾'),
-      image:'partner_malzeno', // 選人畫面大立繪（Malzeno_SI_01）
-      // 選人畫面取景：原圖為全身立繪（頭僅約佔畫高 11%）→ 放大 1.85 倍使頭部與蕾妮基準等大，
-      //   由頭頂往下取景、下緣自然裁在膝上（不露全身）。調整框內構圖改這兩個數即可。
-      siFit:{ zoom:1.85, top:0 },
-      cutin:'cutin_saint',     // 聖徒化演出大圖（沿用共通）
-      voice:null,
-      selectVoice:'vo_hc_rounds',   // 選人畫面「選擇此搭檔」確認 SE（→ Malzeno_VC_Pas.wav，與高裝藥彈共用）
-      perk:i18nT('前線補給（主動）＋高爆彈頭（被動）'),
-      // ── 被動技：高裝藥彈 ─────────────────────────────
-      //   玩家 HP 降至 threshold（50%）以下的瞬間發動：普攻傷害加倍 buffSeconds 秒，
-      //   時間到自然結束、效果可跨盤面延續。邊緣觸發：HP 回到門檻上才重新上膛、
-      //   再跌破可再發動（門檻下不重複觸發）。發動瞬間插 cut-in。
-      passive:{
-        key:'lowHpBuff',
-        name:i18nT('高裝藥彈'),
-        en:'High-Charge Rounds', // cut-in 英文副標
-        threshold:0.50,          // 發動門檻：HP ≤ playerMax × 此值
-        buffSeconds:10,          // 普攻加倍持續秒數（可跨盤）
-        cutin:'cutin_malzeno_pas', // 被動 cut-in 大圖（→ Malzeno_CI_pas.png）
-        voice:'vo_hc_rounds',    // cut-in 對應 SE（→ Malzeno_VC_Pas.wav）
-        desc:i18nT('HP 降至 50% 以下時發動：10 秒普攻傷害加倍，效果可跨盤面延續。'),
-      },
-      // ── 主動技：前線補給 ─────────────────────────────
-      //   一般盤面發動：立即進入雙槍破防射擊窗口（不吃破防值、不另播雙槍 cut-in——
-      //   馬季諾 cut-in 撤下後直接開窗）。每場一次。
-      //   ⚠ 聖徒化期間不可發動（「聖徒化不能開雙槍」原則）：context:'board' 擋掉聖徒化入口。
-      active:{
-        key:'supplyRefill',
-        name:i18nT('前線補給'),
-        en:'Frontline Supply',   // cut-in 英文副標
-        context:'board',         // 一般盤面限定（聖徒化中不可發動）
-        oncePerBattle:true,      // 每場一次（可調：false＝不限次數）
-        cutin:'cutin_malzeno_act', // 前線補給 cut-in 大圖（→ Malzeno_CI_act.png）
-        voice:'vo_supply_refill',  // cut-in 對應 SE（→ Malzeno_VC_Act.wav）
-        desc:i18nT('立即進入雙槍破防。聖徒化期間無法發動。'),
-      },
-    },
+    /* 馬季諾（malzeno，挑戰搭檔）的卡已撤（ver -3133，挑戰回收）。 */
   },
-  /* ⚠⚠ **蕾妮與馬季諾只存在於「挑戰」（試玩版），正篇不會有他們**（ver -694，Ray 指定）。
-     所以他們卡上的數值與觸發條件是**另一套**，不必跟著本篇的調整走 ——
-     例如馬季諾的高裝藥彈照舊是血量觸發，而安雅的明晰之夢 ver -693 改成反擊觸發
-     （§6.5.2 那一段）。**動其中一邊之前先確認那一張卡是誰在用。** */
-  defaultPartner: 'renee',   // 搭檔只有 renee（蕾妮）/ malzeno（馬季諾）；freya＝監察官（inspectors）
-  /* ⚠⚠ **「挑戰」的選人畫面只列這幾位**（ver -694，Ray：「挑戰的伙伴只留馬跟蕾妮
-     可選」）—— `partners` 現在也裝著**本篇**的搭檔（諾薇兒、安雅），
-     而那兩位是劇情給的，不該出現在出陣的選人卡疊上。
-     ⚠ 用**白名單**不是黑名單：日後加一位本篇搭檔，預設不會漏進挑戰（同首頁那條
-       白名單的理由，§6.9）。
-     ⚠ 讀取只有 `weapon.PARTNER_KEYS` 一處（鐵律 7）。 */
-  challengePartners: ['renee', 'malzeno'],
+  /* defaultPartner（蕾妮）與 challengePartners（挑戰選人名單）已撤（ver -3133，挑戰回收）；預設搭檔一律讀 storyPartner。 */
   /* 本篇（story）的搭檔（ver -510）：劇情/城鎮/船戰一進場就切過去 ——
      以前只有開過整備頁才切，出航直接進的船戰帶著試玩版的蕾妮/露娜，
      即死防禦與聖徒化 cut-in 都是舊圖（Ray 連報兩張圖錯）。
@@ -1502,85 +1414,7 @@ export const GAME_CONFIG = {
     i18nT('傷痕太多的話,我給的評價可不會好看。'),
   ],
 
-  inspectors: {
-    /* 蕾娜（ver -425）：**讀取頁的說明者**，出航之後接手。
-       ⚠ 結算畫面的監察官還是 `defaultInspector`（freya）—— 正名是另一件事（§8），
-         這裡只換讀取頁那一張臉。
-       ⚠ 立繪先借對白用的正面圖（`resources/si/renna_si_front.webp`）；
-         日後有專屬的讀取頁立繪就改 `image` 那一行。 */
-    renna: {
-      name:i18nT('蕾娜'),
-      tier:'rookie',
-      image:'inspector_renna',
-      portraits:{}, dialogues:{},
-    },
-    freya: {
-      name:i18nT('芙蕾雅'),
-      tier:'rookie',
-      // 處決勝利（聖徒化 Maximum Burst 擊殺）專屬台詞：優先於 rank 台詞
-      executionLine:i18nT('熔斷了？真慘烈呢。'),
-      // S 評價點「再度執槍」時的隱藏關警告台詞
-      interceptLine:i18nT('慢著！有新的敵人！'),
-      image:'inspector_freya',          // 單張立繪鑰匙（無 portraits 時的 fallback）
-      portraits:{                       // 好感度門檻 → 立繪鑰匙（留空則用 image）
-        // 0:'inspector_freya', 30:'inspector_freya__lv1', 60:'inspector_freya__lv2',
-      },
-      // dialogues[評價等第][好感度門檻] → 台詞陣列（隨機取一句）。目前僅好感 0 檔。
-      dialogues:{
-        S:{ 0:[i18nT('怎麼可能？竟然能夠做到這種程度！')] },
-        A:{ 0:[i18nT('有興趣加入第十三騎士團嗎？我們需要你這樣的人才。')] },
-        B:{ 0:[i18nT('這不是還不錯嗎？')] },
-        C:{ 0:[i18nT('也就比一般人強一點嗎……？')] },
-        D:{ 0:[i18nT('……你們團長有好好訓練你嗎？')] },
-        E:{ 0:['………………'] },
-        lose:{ 0:[i18nT('（監察官失敗台詞待填）')] },
-      },
-      // v17.3：Boss 戰（槍之魔女）專屬台詞組。Boss 結算時優先於上方 dialogues。格式同上（[rank][好感門檻]）。
-      bossDialogues:{
-        S:{ 0:[i18nT('你的實力，說不定能與團長比肩！')] },
-        A:{ 0:[i18nT('HUND中竟然有你這樣的人存在……！')] },
-        B:{ 0:[i18nT('幸虧有你，竟然連那種對手也能戰勝！')] },
-        C:{ 0:[i18nT('我果然沒有看走眼呢。')] },
-        D:{ 0:[i18nT('辛苦了，慘烈的戰鬥呢。')] },
-        E:{ 0:[i18nT('醫療班！千萬別讓他死了！')] },
-        lose:{ 0:[i18nT('......確認HUND {rand3}號機能停止。辛苦了。')] },   // {rand3}＝隨機 3 位數（零補），由 inspector 代入
-      },
-    },
-    /* ══ 璐娜莉亞（ver -471（-893 前用詞），Ray 交稿）：**挑戰的 Boss 戰**的結算評價者 ══
-       「挑戰的boss戰結算畫面原本是監察官，改成璐娜莉亞」—— 那一場是夢裡的對決，
-       醒來評語的是她自己。逐**等第**換立繪差分（portraitsByRank，S/A 共用 smirk）。
-       ver -553（Ray 交稿）：**戰敗也是她**（angry＋「討人厭的夢......」）——
-       -471「戰敗仍是芙蕾雅」那條作廢。 */
-    luna: {
-      name:i18nT('璐娜莉亞'),
-      tier:'rookie',
-      image:'inspector_luna_n',            // 保險 fallback（portraitsByRank 缺該等第時）
-      portraitsByRank:{
-        S:'inspector_luna_smirk', A:'inspector_luna_smirk',
-        B:'inspector_luna_n',     C:'inspector_luna_lookdown',
-        D:'inspector_luna_angry', E:'inspector_luna_hand',
-        lose:'inspector_luna_angry',
-      },
-      portraits:{},
-      dialogues:{
-        S:{ 0:[i18nT('做了場好夢呢。')] },
-        A:{ 0:[i18nT('是夢啊......？ 真想再跟那傢伙打一場啊。')] },
-        B:{ 0:[i18nT('只是夢啊......現在的我可不會輸。')] },
-        C:{ 0:[i18nT('連在夢裡都那麼討人厭。')] },
-        D:{ 0:[i18nT('......只是場夢而已嗎？')] },
-        E:{ 0:[i18nT('手......又開始痛了。')] },
-        lose:{ 0:[i18nT('討人厭的夢......')] },
-      },
-    },
-  },
-  defaultInspector: 'freya',   // 填上面的鑰匙名即啟用；null＝結算畫面不顯示監察官
-  /* Boss 戰**打贏**的結算改由這一位評（ver -471）；戰敗與其他一切照 defaultInspector。 */
-  bossInspector: 'luna',
-  /* ══ 讀取頁的**說明者**（ver -425，Ray：「從這個時點開始讀取頁的說明者變成蕾娜」）══
-     出航那一刻起換人。⚠ 規則寫在資料上（旗標名 ＋ 換成誰），程式只負責問 ——
-     主遊戲的讀取頁與**飛行頁自己的讀取頁**是兩個 document，兩邊都讀這一條
-     （飛行頁那一份是第二份，改一邊要改另一邊，見 flight/index.html 的 BOOT_HOST）。 */
-  loadingHost: { flag:'set_sail', then:'renna' },
+  /* 監察官（inspectors：芙蕾雅／璐娜莉亞／讀取頁的蕾娜）、defaultInspector、bossInspector、loadingHost 已撤（ver -3133，挑戰回收；讀取頁說明者 -3111 已拿掉）。 */
   /* 開機那一頁（第一個預載）要不要放說明者立繪與提示輪播（ver -3111，Ray：「fraya就是開頭第一個預載而已 拿掉就好 提示文字也拿掉」）。
      false＝只剩讀取本身。⚠ 飛行頁自己的讀取頁是第二份（flight/index.html 的 BOOT_HOST.before＝null），兩邊互指。 */
   bootLoaderHost: false,
@@ -1998,8 +1832,7 @@ export const GAME_CONFIG = {
       return F;
     })(),
     cast: {
-      inspector: { name:i18nT('芙蕾雅'), image:'inspector_freya', side:'left',  fit:{ zoom:1,    drop:10 } },
-      partner:   { name:i18nT('蕾妮'),   image:'partner_renee',   side:'right', fit:{ zoom:0.82, drop:0 } },
+      /* 原版教學的芙蕾雅（inspector）／蕾妮（partner）站位已撤（ver -3133，原版教學隨挑戰回收；只剩劇情版教學）。 */
       /* 劇情版教學的唯一說話者。⚠ 站**左**：與地宮那一幕同側，玩家的空間記憶才連得起來
          （CLAUDE.md §6.5：同一個人每次都站同一邊）。 */
       /* ⚠⚠ 「這張畫能不能水平翻」寫在 **`speakers.js` 的 `ART[key].mirror`**（ver -625
@@ -3510,30 +3343,7 @@ export const GAME_CONFIG = {
     },
   },
 
-  currentEnemy: 'faceless',   // 這場開場先打誰（填上面的鑰匙名）
-
-  /* 連戰陣容（局＝同場清一隻接下一隻）。依序取,打完一敵接下一敵,最後一敵清完進結算。
-     同場換敵全延續（playerHp/combo/energy/聖能/計數/計時延續）；只有「場」新戰鬥/Boss 亂入才重置。
-     每隻各跑自己的 boardGrids 盤序（換敵時盤序回 0）。 */
-  lineup: ['faceless','facelessgiant'],
-
-  /* 亂入設定（New Hustle）— 結算畫面後、無傷達標才觸發 */
-  intruder: {
-    enable:true,
-    condition:{ maxTime:45, noDamage:true },  // 45 秒內 + 全程無傷（v15 起觸發已改綁 S 評價，此條件僅備查）
-    cutinText:'NEW HUSTLE INCOMING',           // 亂入 Boss 遭遇 cut-in 字樣（一律用此，不因怪而異）
-    enemy:'witch',                             // v17：S 評價後遭遇的 Boss＝槍之魔女
-    bannerHold:1800,                           // 結算畫面停留多久(ms)後才播 Boss cut-in
-    // ── Boss 戰 S 級獎勵（銭湯インストール）──
-    //   兩段式：按下「再度執槍」→ 原地變身金色呼吸光「SAINT INSTALL...?」→ 再按進獎勵畫面：
-    //   全圖 + 左上角扁額毛筆字（逐字寫出）→ 寫完ツケ板（拍子木）兩聲。
-    reward: {
-      image:'bg_sentou',                       // 獎勵大圖（ASSETS 鑰匙）
-      btnLabel:'SAINT INSTALL...?',            // 變身後按鈕字樣
-      sign:[i18nT('銭湯'),i18nT('インストール')],             // 毛筆招牌：橫排兩行（左上角木框額）
-      charMs:380,                              // 每字書寫間隔(ms)
-    },
-  },
+  /* currentEnemy／lineup（挑戰的連戰）、intruder（New Hustle 亂入與銭湯獎勵）已撤（ver -3133，挑戰回收）。 */
 
   /* ------------------------------------------------------------------ *
    *  五、數值總表（TUNING）— 對應說明書 §16 速查表
@@ -4740,8 +4550,7 @@ export const HOME_IMG = {
        這裡自動跟上）。列死一份的話必然走鐘。 */
   prefixes: ['home_', 'weapon_', 'switch_'],               // logo ＋ 出擊整備的武器卡與切換 vfx
   keys: []                                                 // ver -3111：開機讀取頁不放說明者立繪（bootLoaderHost:false），芙蕾雅不再預載
-          .concat((GAME_CONFIG.challengePartners || Object.keys(GAME_CONFIG.partners || {}))
-                  .map(k => 'partner_' + k)),              // 挑戰**選得到**的那幾位
+                                                           // ver -3133：挑戰搭檔的立繪隨挑戰撤，不再 concat challengePartners
 };
 
 export const HOME_SFX = {

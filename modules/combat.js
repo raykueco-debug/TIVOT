@@ -257,11 +257,11 @@ export function setup(){
     deferInstallReload: saint.deferInstallReload,   // ver -1775：回填下一場才生效
   });
   // 監察官（評價/結算）：combat 擁有計時 → 算好 totalTime/avg 呼叫 inspector.settle。
-  //   inspector 只 import state/config；goHome（combat）與 triggerIntruder（enemy）經此注入。
+  //   inspector 只 import state/config；goHome（combat）經此注入（triggerIntruder 已隨挑戰撤，ver -3133）。
   /* ⚠ `storyReturn` 也注入 inspector（ver -358）：劇情叫起來的教學打完會停在結算頁，
      按鈕按下去要**回劇情**而不是回首頁 —— 交還的實體只有 combat 這裡有
      （main.js 透過 setStoryReturn 給的）。 */
-  inspector.init({ goHome, triggerIntruder: enemy.triggerIntruder,
+  inspector.init({ goHome,
                    /* ⚠ **參數要往下傳**（ver -430 修）：舊寫法 `()=>storyReturn()` 把結算頁
                       帶出來的 `res` 整個吃掉 —— 計時挑戰的「超時＝打輸」（`{lost:true}`）
                       因此接不上 `onLose` 那一支分歧，戰敗那三顆鈕也送不出去。 */
@@ -270,10 +270,10 @@ export function setup(){
                    /* 戰敗那一頁該給哪幾顆鈕（ver -430（-893 前用詞））：只有啟動層知道這一場是飛行頁
                       交棒過來的（船艦戰）、還是劇情插進來的（見 main.js 的 setLoseKind）。 */
                    loseKind: ()=> (loseKind ? loseKind() : 'home') });
-  // 敵人：Boss 亂入的戰鬥重置（startIntruderFight，combat 擁有）+ 換敵刷血條（updateBars）注入。
+  // 敵人：換敵刷血條（updateBars）等注入（Boss 亂入的 startIntruderFight 已隨挑戰撤，ver -3133）。
   /* ⚠ `screenShake` 給「降臨」的著地那一拍用（ver -640）——
      震動的實作只有 combat 這一支（鐵律 8），enemy 不自己加 class。 */
-  enemy.init({ startIntruderFight, updateBars, screenShake, roarBlast, healEnemyPct, wipeBoard, plunderCell, setEnergy,   /* setEnergy：-2925 顱石堆攻擊扣破防值 */
+  enemy.init({ updateBars, screenShake, roarBlast, healEnemyPct, wipeBoard, plunderCell, setEnergy,   /* setEnergy：-2925 顱石堆攻擊扣破防值 */
     /* ══ 放光（光砲）那一段的整套處理（ver -1449 清圈；-1666 補齊）══
        清畫面上的圈 ＋ 取消這一波還沒出的 ＋ 光退了才從頭算下一次攻擊 ——
        **三件事在 defense 那一支裡**（它才擁有 threats 與排程，鐵律 7/8），
@@ -2423,8 +2423,6 @@ function claspFaceExpr(who){
 function claspFaceCss(who){
   const s = faceStyle(String(who||'').toUpperCase(), FACE_ZOOM, claspFaceExpr(who));
   if(s) return s;
-  /* 試玩包沒有挑戰搭檔（ver -3093）：開機時預設的 pickedPartner 是蕾妮（defaultPartner），她的圖不在包裡 —— 不畫。 */
-  if(prog.isDemo() && (GAME_CONFIG.challengePartners||[]).indexOf(who)>=0) return '';
   const p = (GAME_CONFIG.partners||{})[who] || {};
   const src = p.image && asset(p.image);
   return src ? 'background-image:url("'+src+'");background-size:'+FACE_ZOOM+'% auto;background-position:50% 0%;' : '';
@@ -3002,9 +3000,6 @@ function spawnAssaultLoop(id, first){
   const inf=enemy.spawnInfo(id), c=inf && (GAME_CONFIG.enemies||{})[inf.card]; if(!c) return;
   const ev=c.assaultEvery||[3,5], wait=(first?1.2:0)*1000 + (ev[0]+Math.random()*(ev[1]-ev[0]))*1000;
   setTimeout(()=>{ if(state.over || !enemy.spawnAlive(id)) return; defense.spawnExtraThreat(c.attack||10); spawnAssaultLoop(id, false); }, wait); }
-function isLastEnemy(){
-  return !(enemy.hasNextInLineup() && !state.tutorialRun && !state.scriptRun);
-}
 function finishEnemyOrAdvance(){
   /* ══⚠⚠⚠ **不論血是怎麼歸零的，型態切換一定要發生**（ver -1486，Ray 定案：
      「應該要讓它不論怎麼歸零都會開第四型態」）══
@@ -3030,17 +3025,12 @@ function finishEnemyOrAdvance(){
      ⚠ 掛在這個**匯流點**（鐵律 8）：自然清盤／按錯／逾時／聖徒化擊殺四條路都經過它。
      ⚠ 連戰換敵那一條不掛：那一隻是被「掠過」不是被淨化，它有自己的 `enemy-leave`。 */
   /* 擊敗演出要先演完才閉棺的（ver -3066，羽蛇 deathFx:'dive'）：purgeEnemy 回傳毫秒數 ⇒ 鎖點擊、等它演完再 win()。 */
-  if(isLastEnemy()){ const ms=enemy.purgeEnemy()||0;
+  { const ms=enemy.purgeEnemy()||0;   // 連戰換下一隻（挑戰的 lineup）已撤（ver -3133）：每一場都是最後一隻
     if(ms>0){ state.transitioning=true;
       if(directExitCard()) setTimeout(()=>blackOut(260), Math.max(0, ms-260));   // directExit：劃完那一刻已經全黑，不讓戰鬥畫面再露出來（ver -3105）
       setTimeout(()=>{ state.transitioning=false; if(!state.over) win(); }, ms+150); return; } }
-  if(!isLastEnemy()){ advanceEnemy(); }
-  else { win(); }
+  win();
 }
-/* ---- 換敵（局內連戰）：延續全場狀態，只換敵＋盤序回 0，敵人區播「前進遭遇」進場 ----
- *  延續（不動）：playerHp/combo/energy(聖能)/counter/perfect/sawExecution/flawlessRun/boardTimes。
- *  只動：overkill 歸零（各敵獨立）、killTime 重置、換敵 config、盤序回 0（各敵跑自己的 boardGrids）。
- *  計時：轉敵全程碼表暫停（transitioning），新敵首盤 loadBoard → clockResume。 */
 /* ══⚠⚠⚠ **型態切換**（`morph`，ver -1418，Ray：「空中戰敵人有兩型態…敵 hp 50%
    以下放光…放光完換第 4 型態」）══════════════════════════════════════════════
    卡上寫 `morph:{ hp:<百分比>, to:'<下一張卡>', fx:'<受擊特效名>' }`。
@@ -3157,42 +3147,13 @@ function maybeMorph(){
   }, HOLY_SWAP_MS);
   return true;
 }
-function advanceEnemy(){
-  clockPause();                       // 併入前一敵時間（此前已於敵死暫停，冪等）
-  state.runOverkill += state.overkill; // 換敵前把本敵 overkill 併入整場累計（評價/EXP 用）
-  state.overkill=0;                   // 各敵 overkill 獨立
-  state.transitioning=true;           // 鎖點擊＋碼表不 resume（轉場不計）
-  stopIntervalTimer();
-  defense.resetEnemyTimers();         // 清前一敵殘留紅點/大絕排程
-  enemy.advanceToNextEnemy(()=>{      // 敵人區進場動畫 + 換敵 config + 刷血條
-    if(state.over) return;
-    state.transitioning=false;
-    state.killTime=0;                 // combo/energy/playerHp/計數 皆延續（不在此重置）
-    loadBoard(0);                     // 新敵自己的盤序從第 0 盤起（boardGrids[0]=9）；loadBoard 內 clockResume
-    updateBars();
-  });
-}
-// 整場敵人總血量（評價時間預算用）：一般連戰＝lineup 各敵 hp 相加；Boss 亂入＝單敵新場（enemyMax）。
+/* 局內連戰換敵（advanceEnemy）已撤（ver -3133，挑戰回收）。 */
+// 整場敵人總血量（評價時間預算用）。
 //   隨敵人 config 血量自動變動，設計新敵人時評價門檻自動跟著調整（見 config.rating 說明）。
 function runTotalHp(){
-  /* ⚠⚠ **劇情／城鎮的插入戰是單敵**（ver -604（-893 前用詞） 修）：那些場次沒有 lineup，
-     舊寫法會退回 `GAME_CONFIG.lineup`（＝**挑戰模式**那一串怪）去加總 ——
-     實測北方泊地那隻 300 血的雜怪，分母被算成 500。
-     新評價的分母就是這個數，錯了整條等第跟著錯。
-     ⚠ 「數個敵人算一場」指的是**挑戰模式的 lineup**（連戰），
-       那一種才要加總（Ray：「數個敵人算一場的狀況下，以全敵 hp 總和計算」）。 */
-  if(state.inIntruderFight || state.scriptRun) return state.enemyMax;
-  const lu=(GAME_CONFIG.lineup && GAME_CONFIG.lineup.length) ? GAME_CONFIG.lineup : [state.currentEnemyKey];
-  /* ⚠⚠ **只算「真的遭遇到的」**（ver -606，Ray：「血量總和是以遭遇的敵人為總和，
-     地圖上有而未遭遇的不算」）：連戰的序列游標 `lineupIndex` 指到哪，就算到哪 ——
-     整串加總的話，中途收場（跳關、劇情提前結束）會把**沒打過的怪**也算進分母，
-     等第會被灌水。正常打完最後一隻時游標就是最後一格，行為不變。
-     ⚠ 城鎮戰那一種「一張地圖好幾格」不走這裡：那是好幾場獨立的戰鬥，
-       由 `inspector.bankSessionGain` 逐場累加 —— **打過的才會進帳**，
-       沒走到的那幾格自然不算（同一條原則的另一個實作點）。 */
-  const upto = Math.min(lu.length - 1, Math.max(0, state.lineupIndex|0));
-  return lu.slice(0, upto+1)
-           .reduce((sum,key)=>{ const en=GAME_CONFIG.enemies[key]; return sum + (en?en.hp:0); }, 0);
+  /* 挑戰的連戰（lineup）加總已撤（ver -3133）：現在每一場都是單敵（城鎮戰的多格由 bankSessionGain 逐場累加）。
+     ⚠ 劇情版教學以前會落進 lineup 那一支、拿挑戰第一隻的血量當分母 —— 一併修正成這一場自己的。 */
+  return state.enemyMax;
 }
 /* 劇情把戰鬥叫起來的那一場（tutorialStoryRun）：打完要**直接交還劇情**。
    ⚠ 不能走一般收尾 —— 那條路上有「驅逐完成」過渡禎（要點一下）、結算 BGM、
@@ -3514,7 +3475,7 @@ function win(){
   // 評價系統輸入（見 inspector.evaluate）：時間/命中率/連擊/完美反擊/overkill/受擊。
   const stats={
     totalHP: runTotalHp(),
-    isBoss: state.inIntruderFight,
+    isBoss: false,   // 挑戰的 Boss 亂入已撤（ver -3133）；評價本來就不看它（-602）
     clearTime: totalTime,
     accuracy: totalTaps>0 ? state.correctTaps/totalTaps : 1,   // 0~1 比率（非百分比）
     maxCombo: state.maxCombo,
@@ -3544,7 +3505,7 @@ function win(){
      `evaluate` 是純函式（同一份輸入永遠同一個等第），與結算頁顯示的必然一致 ——
      公式仍只有一份（鐵律 7），這裡只是再問一次答案。 */
   TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
-               boss:state.inIntruderFight, result:'win', time_ms:Math.round(totalTime*1000),
+               boss:false, result:'win', time_ms:Math.round(totalTime*1000),
                /* ⚠ 上報的等第也要**整場一起算**（ver -621（-893 前用詞））：`mergeSessionStats`
                   是純函式、不清帳，所以這裡先問一次不影響結算頁再問一次。 */
                grade: inspector.evaluate(inspector.mergeSessionStats(stats)).grade });
@@ -3728,7 +3689,7 @@ function lose(){
   }catch(_){}
   state.over=true; clockPause(); stopAll();
   TEL.runEnd({ partner:state.pickedPartner, weapon:state.equippedWeapon,
-               boss:state.inIntruderFight, result:'lose', time_ms:Math.round(clockElapsedMs()) });
+               boss:false, result:'lose', time_ms:Math.round(clockElapsedMs()) });
   // HP 歸零瞬間 → 畫面黑白定格 1 秒 → 再切「驅逐失敗」過渡禎（BGM 於過渡禎插入時起播）
   const app=$('app');
   if(app) app.classList.add('death-freeze');
@@ -3803,11 +3764,11 @@ export function startGame(){
   state.N=9; state.cols=3;
   state.runStartTime=Date.now(); resetClock();   // 計時碼表歸零（loadBoard 起算）
   state.boardTimes=[]; state.boardsCompleted=0; state.charmStreak=0; state.charmRevenge=false; state.enemyNextAtkMul=1;
-  state.flawlessRun=true; state.intruderTriggered=false; state.inIntruderFight=false;
+  state.flawlessRun=true;
   morphed=false; morphSwapping=false;   // 型態切換一場只做一次（ver -1418）；-1486 加上「換卡中」
   resetGrapple();                        // 勾索一局一次（ver -2545）
   state.overkillClean=false;   // 這一場的 ovk 是否完全清空殘額（ver -1389，追逐讀它）
-  state.deathGuardUsed=false; state.sRankUnlocked=false; state.resultMode='rematch';
+  state.deathGuardUsed=false; state.resultMode='rematch';
   TEL.runStart({ partner:state.pickedPartner, weapon:state.equippedWeapon, boss:false });
   hideHome('startGame');
   $('banner').classList.remove('on'); $('banner').classList.remove('lose');
@@ -3924,7 +3885,7 @@ export function startGame(){
      有 `<卡>@<款>` 這張衍生卡（script/enemies.js）才換，沒有就照母卡。用一次就清。 */
   const sbKey = (sbKey0 && pendingLook && GAME_CONFIG.enemies[sbKey0+'@'+pendingLook]) ? sbKey0+'@'+pendingLook : sbKey0;
   pendingLook = null;
-  enemy.startLineup(sbKey);   // 局：載這一場的怪（沒指定＝挑戰那一串的第一隻），lineupIndex=0
+  enemy.startLineup(sbKey);   // 局：載這一場的怪（沒指定＝教學那一隻；挑戰的 lineup 已撤，ver -3133）
   if(sbKey){
     /* ══⚠⚠ 真的開打了才記「這一段出過牠」，**並且把這一抽用掉**（ver -628）══
        `pendingPick` 是為了讓 `startGame` 裡那兩次呼叫拿到同一隻（立繪與數值要對得起來）
@@ -4086,48 +4047,7 @@ export function startScriptBattle(id, opts){
   startGame();
 }
 
-/* ---- Boss 亂入：重開新「場」戰鬥（由 enemy.triggerIntruder 的 enterFight 注入呼叫）----
- *  依 場/局/敵/盤 模型:Boss 亂入＝重開新場,一切從頭 → 與 startGame 相同的完整重置
- *  (含 playerHp 滿血、deathGuardUsed 歸零)。與 startGame 僅三處差異:
- *    ① 載 witch(GAME_CONFIG.intruder.enemy)而非 currentEnemy;
- *    ② 不寫 inIntruderFight(enemy 於 enterFight 已設 true,§3.7 擁有者);
- *    ③ 不寫 intruderTriggered(inspector 於 S 解鎖已設 true,維持防重入)。
- *  觀察上與 reference 等價(S 解鎖前提為無傷,reference 進場時 HP 本就滿、deathGuard 本就未用),
- *  故不記 DECISIONS;此為「新場」語義的顯式重置。 */
-export function startIntruderFight(){
-  state.over=false; state.defeated=false; state.combo=0; state.energy=0; state.expect=1; state.boardIndex=0;
-  state.atkBuff=false; state.lowHpBuff=false;
-  state.partnerActiveUsed=false; state.activeUsedBy={}; state.enemySlowUntil=0;   // 新場：搭檔主動技每場次數重置（逐位，ver -1844）
-  /* 亂入是**新的一局**（不接上一段），三個連段一律歸零（ver -891/-892；ver -893 用詞）。 */
-  state.coopUntil=0; state.svPerfectStreak=0; state.lucidStreak=0; state.perfStreak=0; state.perfRunDmg=0; state.flawlessKills=0; state.energyBoostUntil=0; state.installReloadPending=false; state.counterStreak=0;
-  saint.reset();
-  weapon.reset();
-  partner.reset();
-  state.overkill=0; state.killTime=0; state.transitioning=false;
-  state.counterFired=0; state.counterDamage=0; state.perfectCount=0; state.sawExecution=false; state.sawMaxBurst=false; state.coopUses=0;
-  state.perfectCounters=0; state.counterSec=0;   // 完美反擊（紅圈）的次數與折秒（ver -721）
-  state.maxCombo=0; state.hitsTaken=0; state.correctTaps=0; state.wrongTaps=0; state.runOverkill=0; state.perfectBoards=0;   // 評價統計歸零
-  state.penAssault=0; state.penBlock=0; state.penDelay=0;   // 失誤計數歸零（ver -600 的新評價）
-  _scriptedHits=0;                                     // 教學劇情殺擊數（結算受擊數扣除用）
-  refreshPlayerMax();
-  state.playerHp=state.playerMax; state.enemyHp=state.enemyMax;
-  state.N=9; state.cols=3;
-  state.runStartTime=Date.now(); resetClock();   // 新場：計時碼表歸零
-  state.boardTimes=[]; state.boardsCompleted=0; state.charmStreak=0; state.charmRevenge=false; state.enemyNextAtkMul=1;
-  state.flawlessRun=true; state.deathGuardUsed=false;
-  morphed=false; morphSwapping=false;   // 型態切換一場只做一次（ver -1418）；-1486 加上「換卡中」
-  resetGrapple();                        // 勾索一局一次（ver -2545）
-  state.sRankUnlocked=false; state.resultMode='rematch';
-  enemy.setEnemy(GAME_CONFIG.intruder.enemy);   // 載槍之魔女（含 Boss 大絕/懲罰/彈痕 config）
-  TEL.runStart({ partner:state.pickedPartner, weapon:state.equippedWeapon, boss:true });
-  hideHome('startBossGame');
-  $('banner').classList.remove('on'); $('banner').classList.remove('seq'); $('banner').classList.remove('lose');
-  $('transition').classList.remove('on');
-  $('grid').classList.remove('saint'); $('grid').classList.remove('buffed'); $('grid').classList.remove('alert','hot');
-  state.cutinPlaying=false;
-  stopAll(); enemy.resumeBattleBgVideo();   // 戰鬥動態背景（ver -2729）
-  loadBoard(0); updateBars();   // loadBoard 內含 scheduleOpeningAssault → 重啟敵大絕排程
-}
+/* Boss 亂入的重開場（startIntruderFight）已撤（ver -3133，挑戰回收）。 */
 // 全螢幕黑幕過場：淡出（轉黑）→ 全黑時執行 mid() 切畫面 → 淡入（浮現）。約 2×half ms。
 let _fadeOv=null;
 function fadeOvEl(){
@@ -4213,7 +4133,6 @@ export function goHome(onCovered, opts){
     state.cutinPlaying=false;                 // 清掉可能的暫停旗標（退出確認用）
     $('banner').classList.remove('on'); $('banner').classList.remove('lose');
     $('transition').classList.remove('on');
-    const sr=$('sentouReward'); if(sr) sr.classList.remove('on','done');   // 銭湯獎勵層：黑幕全蓋後才收（見 inspector）
     $('home').classList.add('on');
     if(!(opts && opts.noBgm)) SFX.playBgm(asset('bgm_home'), { volume: bgmVol('bgm_home') });   // 主選單 BGM
     if(typeof onCovered==='function') onCovered();

@@ -85,16 +85,6 @@ export function applyToConfig(GC){
   }
   // 載入 Hint
   if(Array.isArray(L.loading.hints) && L.loading.hints.length) GC.loadingHints=L.loading.hints.slice();
-  // 監察官（dialogues 結構：{rank:{0:[句]}}）
-  const insp=GC.inspectors && GC.inspectors[GC.defaultInspector];
-  if(insp){
-    insp.name=L.inspector.name;
-    insp.executionLine=L.inspector.executionLine;
-    insp.interceptLine=L.inspector.interceptLine;
-    const wrap=src=>{ const o={}; for(const r of Object.keys(src)) o[r]={0:[src[r]]}; return o; };
-    insp.dialogues=wrap(L.inspector.dialogues);
-    insp.bossDialogues=wrap(L.inspector.bossDialogues);
-  }
   // 過場
   if(GC.transitions){
     GC.transitions.hint=L.transitions.tapHint;
@@ -122,13 +112,7 @@ export function applyToConfig(GC){
     /* 劇情版教學（諾薇兒）整份原樣掛上去 —— 結構與上面那份相同，
        由 tutorial.js 依 isStoryRun() 決定讀哪一份。 */
     tut.story = L.tutorial.story ? JSON.parse(JSON.stringify(L.tutorial.story)) : null;
-    if(tut.cast){                                     // 教學立繪名牌：監察官/搭檔（蕾妮）
-      if(tut.cast.inspector) tut.cast.inspector.name=L.inspector.name;
-      if(tut.cast.partner)   tut.cast.partner.name=L.partners.renee.name;
-    }
   }
-  // 銭湯獎勵鈕
-  if(GC.intruder && GC.intruder.reward) GC.intruder.reward.btnLabel=L.sentou.saintInstallBtn;
 }
 
 /* ============================================================================
@@ -166,7 +150,6 @@ export function applyToDom(){
   const baha=q('#originalSheet .os-link'); if(baha) baha.textContent=L.sheets.originalBaha;
   set($('originalClose'), L.sheets.originalClose);
   // 銭湯獎勵
-  set(q('#sentouReward .sentou-hint'), L.sentou.tapReturn);
 }
 
 /* ── 台詞關鍵字裝飾：「聖徒化」（en: Saint Install / Saint Installation）→ 金色粗字 ──

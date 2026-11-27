@@ -5,12 +5,12 @@
  *    （Boss 走 bossDialogues）、結算面板分階段演出與打字機、最佳成績存讀
  *    （一般/Boss 兩組 localStorage）、S 解鎖與「再度執槍/迎擊」分流。
  *
- *  狀態擁有者：3.6 評價/流程（sRankUnlocked / resultMode / currentFavor）。
+ *  狀態擁有者：3.6 評價/流程（resultMode / currentFavor；sRankUnlocked 已隨挑戰撤，ver -3133）。
  *    跨擁有者累加值只讀不反寫：counterFired/counterDamage（weapon 經 addCounter）、
  *    perfectCount（defense 經 addPerfect）、sawExecution（saint 經 markExecution）、
  *    flawlessRun（combat）。currentFavor 本輪固定 0（養成層未接），只讀。
  *
- *  依賴方向：只 import state/config。combat/enemy 原語（goHome / triggerIntruder）
+ *  依賴方向：只 import state/config。combat 原語（goHome；triggerIntruder 已隨挑戰撤）
  *    一律由 combat 於 setup() 注入，維持「combat 為唯一協調者」的邊界。
  *
  *  評價系統（rating）：百分制計分 → 對照 GAME_CONFIG.rating.tiers 取等級 → 換算 EXP。
@@ -40,9 +40,8 @@ const $ = id => document.getElementById(id);
 /* ---------------------------------------------------------------------------
  *  注入點：combat.setup() 傳入自己與 enemy 的原語（維持依賴方向）。
  *    goHome         — combat 擁有：結算後回首頁。
- *    triggerIntruder— enemy 擁有：迎擊 → 進 Boss 戰（本輪為 no-op，待第 5 步）。
  * ------------------------------------------------------------------------- */
-let api = { goHome(){}, triggerIntruder(){}, loseKind(){ return 'home'; } };
+let api = { goHome(){}, loseKind(){ return 'home'; } };
 /* ══⚠⚠ **現在是不是跟「評價的那個人」在約會**（ver -1380）══
    `inspector` 不 import `town`（依賴方向），由 `main` 注入 `()=>town.dateParty()`
    （同 `combat.setDateParty`，而且**兩邊問的是同一支**，鐵律 7）。
@@ -464,17 +463,7 @@ export function evaluate(stats, cfg = GAME_CONFIG.rating){
 /* ============================================================================
  *  監察官挑選 / 立繪 / 對白
  * ========================================================================== */
-// 取得當前啟用的監察官 config（無則 null）
-/* `bossFight`＝Boss 戰（挑戰）的結算頁（ver -471 打贏；-553 起**敗北也算**，
-   Ray：「boss戰落敗的話 Luna_SI_seat_angry」）→ 改用 config.bossInspector（luna）。
-   迎擊警告（interceptLine）與其他一切照 defaultInspector（芙蕾雅）。 */
-function getInspector(bossFight){
-  const key=(bossFight && GAME_CONFIG.bossInspector) || GAME_CONFIG.defaultInspector;
-  if(!key) return null;
-  return GAME_CONFIG.inspectors[key] || null;
-}
-
-// 依監察官 + 好感度挑立繪鑰匙（無 portraits 則用單張 image）
+/* 監察官（芙蕾雅／挑戰 Boss 戰的璐娜莉亞）的 getInspector 已撤（ver -3133，挑戰回收）。 */
 /* ══ 蕾娜的結算評價（ver -432（-893 前用詞） 開始；**-670 改成預設就有**）══════════════════
    Ray：「之後的每一場戰鬥都要有蕾娜評價，沒有的是特例。」
    ⚠ **這一支是唯一的判定點**（鐵律 7）：要不要出現、出誰、講哪一句，全在這裡；
@@ -630,26 +619,7 @@ function warnNoEval(rank, battleId){
   console.warn('[eval] 這一場沒有評價：'+why+'　battle='+(battleId||'-')+' rank='+rank);
   _evalNote = document.body.classList.contains('testmode') ? why : '';
 }
-function pickInspectorPortrait(insp, rankKey){
-  if(!insp) return null;
-  /* 逐等第差分優先（ver -471，璐娜莉亞）：portraitsByRank[等第]；
-     沒有這一組（芙蕾雅）才走原本的好感門檻表。 */
-  if(insp.portraitsByRank && rankKey && insp.portraitsByRank[rankKey]) return insp.portraitsByRank[rankKey];
-  return pickByThreshold(insp.portraits, state.currentFavor, insp.image||null);
-}
-
-// 依監察官 + 評價等第（或 'lose'）+ 好感度挑一句台詞；挑不到回 null。
-// boss=true 時優先用 bossDialogues（Boss 戰專屬），缺該 rank 才 fallback 回一般 dialogues。
-function pickInspectorDialogue(insp, rankKey, boss){
-  if(!insp) return null;
-  let byRank = null;
-  if(boss && insp.bossDialogues) byRank = insp.bossDialogues[rankKey];
-  if(!byRank && insp.dialogues)  byRank = insp.dialogues[rankKey];
-  if(!byRank) return null;
-  const arr = pickByThreshold(byRank, state.currentFavor, null);
-  if(!arr || !arr.length) return null;
-  return arr[Math.floor(Math.random()*arr.length)];
-}
+/* pickInspectorPortrait／pickInspectorDialogue（監察官立繪與台詞）已撤（ver -3133，挑戰回收）。 */
 
 // 戰敗結算用：Counter（次數+累計傷害）、完美防禦（次數）
 function combatStatsRows(){
@@ -809,77 +779,10 @@ export function settle(totalTime, stats, opts={}){
     return;
   }
   // ── 勝利結算 ──
-  // 最佳總用時 / 破紀錄判定（Boss 戰為獨立戰鬥 → 最佳紀錄分開存）。評價本身不看最佳，只作 NEW RECORD 提示。
-  const bossFight = state.inIntruderFight;
-  const prevBest=loadBestTotal(bossFight);
-  const isRecord = (prevBest==null) || (totalTime<prevBest);
-  if(isRecord) saveBestTotal(totalTime, bossFight);
-
-  let sub=fmt(winSubOf(GAME_CONFIG.enemies[state.currentEnemyKey]),
-              {name:(($('enemyName')&&$('enemyName').textContent)||'')});
-  if(stats.overkill>0) sub += ` · OVERKILL ${Math.round(stats.overkill)}`;
-
-  // ── 評價系統（rating）：大字等級（顯眼）+ 各數值明細 + EXP／金錢 ──
-  /* ⚠ **整場一起評**（ver -601（-893 前用詞）；-621 起併帳搬到本函式開頭，見那裡）：
-     `stats` 進來就已經是整場的總和了。 */
-  const evalResult = evaluate(stats);
-  let rows='';
-  rows += `<div class="grade-wrap"><b class="grade-badge rank-${evalResult.grade}">${evalResult.grade}</b>`
-        + `<span class="grade-meta"><span class="grade-cap">${L.result.gradeCap}</span></span></div>`;
-  /* ══⚠⚠ **畫面上的「戰鬥用時」是實際秒數**（ver -610（-893 前用詞），Ray：「戰鬥用時不要扣秒，
-     要用實際的秒數，扣秒是後台計分算的」）══
-     失誤／獎勵折算的那幾秒**只活在 `evaluate()` 裡**（`breakdown.used`），
-     不進畫面 —— 玩家看到的必須是他真的打了多久，不然那個數字對不上手感。
-     ⚠ 連續戰鬥（城鎮戰）顯示的是**整場的總和**（`merged`，ver -601 那一條）：
-       中間幾格不彈結算頁，收段這一頁本來就是替整段報帳。
-     ⚠ 其餘幾列（連擊／受擊／命中率／反擊）同理一律用 `merged`，
-       不要一半顯示整場、一半只顯示最後一場。 */
-  rows += ratingStatsRows(stats, totalTime);
-  /* ══⚠⚠ EXP 與金錢**直接放在結算頁、當場入帳**（ver -470，Ray：「exp跟金錢
-     不要放在戰利品，直接在結算計算」）══
-     與劇情結算（scriptSettle，ver -453）同一套。-439 曾把兩者搬去戰利品那一頁，
-     -453 只改了劇情場 —— 這裡是最後一條還在彈窗的路。
-     ⚠ 掉錢的機率與範圍照舊在 `config.battleLoot`（鐵律 1），這裡只擲骰；
-       Boss 加成走 `bossMul`。一般戰沒有道具掉落，戰利品視窗因此整個不彈。 */
-  /* ══⚠⚠ **連續戰鬥的 EXP 與錢是「整場」結算**（ver -595，Ray：「exp 跟錢都用
-     『整場』來結算」）══ 城鎮戰那五格對玩家而言是同一場（§6.5.4.3），中間幾格
-     不彈結算頁 —— 那幾格的**戰績**累在 `state.sessionStats`、錢改由 `moneyOf` 在結算時一次算（ver -950），
-     到收段的那一場（Boss）**一起評一次等第**、一起入帳、一起顯示（ver -601：
-     「戰鬥用時也是要用整場的全部戰鬥總和時間」）。
-     ⚠ 錢只有 `moneyOf` 一支在算（鐵律 7）：整局血量總和 × 併帳後的等第，一次算完。
-     ⚠ 錢**在這裡才真的入帳** —— 不然打到一半跑掉，錢已經進口袋了。
-     ⚠ 領完就清（`clearSessionGain`），不然下一場會把上一段的再算一次。 */
-  let gainMoney = moneyOf(stats, evalResult.grade);
-  if(gainMoney) gainMoney = Math.round(gainMoney * (1 + prog.bonus('moneyMul')));
-  /* ⚠⚠ **這一條路不發女主等級的 EXP**（ver -970）：它是**出陣（試玩版）**的結算，
-     搭檔是蕾妮／馬季諾，不在 `config.girls.who` 裡 —— `awardExp` 就算叫了也會
-     全部被 `isGirl` 擋掉。所以這裡照舊只印「這一局換算出來的 EXP」當戰績，
-     不入任何人的帳（本篇走 `scriptSettle`／`restSettle` 那兩條）。
-     ⚠ 日後要讓試玩版也給等級，改的是 `config.girls.who`，不是在這裡加一行。 */
-  const totalExp = evalResult.exp|0;      // EXP 由**整場的總和**算出來（ver -601）
-  if(gainMoney) inv.addMoney(gainMoney);
-  if(totalExp && showExp()) rows += i18nT('<div class="row"><span>EXP</span><b>＋')+totalExp+'</b></div>';
-  if(gainMoney) rows += '<div class="row"><span>'+inv.moneyName()+i18nT('</span><b>＋')+gainMoney+'</b></div>';
-  if(isRecord) rows += `<div class="record">${L.result.newRecord}</div>`;
-  // ── 監察官結算展示（依評價等第挑台詞）──
-  showResultSequence(L.result.winTitle, sub, rows, evalResult.grade, false);
-  _lootMoney = 0; _lootExp = 0;   // 金錢與 EXP 不再走戰利品那一頁
-
-  // ── 隱藏關（New Hustle）解鎖判定：S 評價才解鎖，不自動觸發 ──
-  //   由「再度執槍 → 迎擊」流程手動進入（見 onRematchBtn）。
-  const it = GAME_CONFIG.intruder;
-  state.sRankUnlocked = false;
-  if(it && it.enable && !state.intruderTriggered && !state.inIntruderFight && evalResult.grade==='S'){
-    state.sRankUnlocked = true;
-  }
-
-  // ── Boss 戰 S 級獎勵（銭湯インストール）：兩段式按鈕 ──
-  //   第一按「再度執槍」→ 原地變身金色呼吸光「SAINT INSTALL...?」（resultMode 'sentou-offer'→'sentou'）
-  //   第二按 → 進獎勵畫面（openSentouReward）。分流見 onRematchBtn。
-  if(state.inIntruderFight && evalResult.grade==='S' && it && it.reward){
-    const img=new Image(); img.src=asset(it.reward.image);   // 預載獎勵大圖（2.3MB，結算期間先抓）
-    state.resultMode='sentou-offer';   // 覆蓋 showResultSequence 預設的 'rematch'
-  }
+  /* 出陣（挑戰）的勝利結算、S 評價解鎖亂入、Boss 戰銭湯獎勵已撤（ver -3133，挑戰回收）。
+     本篇只會走到上面四條（安全區／教學／插入戰／戰敗）；萬一多開了一條路，退回插入戰那一頁，不要出空白。 */
+  console.warn('[settle] 走到已撤的出陣結算路徑，退回插入戰結算');
+  scriptSettle(totalTime, stats, sessionLoot, shares, expShares);
 }
 
 /* ══ 戰敗那一頁的去向（ver -430（-893 前用詞），Ray 定案）══════════════════════════════════
@@ -982,9 +885,8 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   // 監察官立繪＋台詞（一般失敗不跑監察官；Boss 戰失敗仍顯示監察官，播 Boss 失敗台詞）
   /* Boss 戰（挑戰）勝敗**都**由璐娜莉亞評（ver -553，Ray：「boss戰落敗的話
      Luna_SI_seat_angry『討人厭的夢......』」）—— -471 的「敗北回芙蕾雅」作廢。 */
-  const insp = spk ? null
-             : (opts && opts.noInspector) ? null
-             : ((isLose && !state.inIntruderFight) ? null : getInspector(state.inIntruderFight));
+  /* 監察官（芙蕾雅／挑戰 Boss 戰的璐娜莉亞）那一套已撤（ver -3133，挑戰回收）：這一頁只剩 `opts.speaker`（蕾娜評價）一種講者。 */
+  const insp = null;
   /* ══⚠⚠ **有人要講話 → 講完之前不放行戰利品**（ver -1128）══
      `_lootHold` 是 ver -961 為索菈娜亂入做的（「亂入那一句演完才彈戰利品」）——
      **第一句（蕾娜自己那一句）有一模一樣的問題**，而且更嚴重：
@@ -1021,11 +923,11 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   stage.classList.toggle('knee', !!spk);
   if(insp || spk){
     stage.style.display='flex';
-    const pKey = spk ? spk.portrait : pickInspectorPortrait(insp, rankKey);
+    const pKey = spk.portrait;
     /* ⚠ 監察官的立繪是 ASSETS 鍵，評價者的是直接路徑 —— 兩者都可能是空字串。 */
     portrait.src = spk ? (pKey||'') : (pKey ? asset(pKey) : '');
     portrait.style.display = portrait.src ? 'block' : 'none';
-    nameEl.textContent = spk ? spk.name : (insp.name || L.inspector.fallbackName);
+    nameEl.textContent = spk.name;
   }else{
     stage.style.display='none';
   }
@@ -1058,10 +960,7 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
   if((insp || spk) && !state.tutorialRun){
     // 處決勝利（聖徒化 Maximum Burst 擊殺）→ 固定處決台詞，不論 rank；否則走 rank 台詞。
     // Boss 戰一律走 bossDialogues 的 rank 台詞（不套用一般處決台詞）。
-    let line = spk ? spk.line
-      : (!state.inIntruderFight && state.sawExecution && insp.executionLine)
-      ? insp.executionLine
-      : (pickInspectorDialogue(insp, rankKey, state.inIntruderFight) || L.result.lineMissing);
+    let line = spk.line || L.result.lineMissing;
     // {rand3}＝隨機 3 位數，不足 3 位以 0 補滿（如 007 / 042）。Boss 落敗台詞用。
     line = line.replace('{rand3}', String(Math.floor(Math.random()*1000)).padStart(3,'0'));
     /* ══⚠⚠ **驗收：評價算出來了，畫面上看得到嗎**（ver -1051，Ray：「手機版才發生」）══
@@ -1177,7 +1076,6 @@ function showResultSequence(title, sub, statsHtml, rankKey, isLose, opts){
      不是「不算分」。等級之後要拿來解隱藏關，教學場不該污染那條線。
    ⚠ 掉落清單在 `config.tutorial.loot`，這裡不寫死。 */
 function tutorialSettle(totalTime, stats){
-  state.sRankUnlocked = false;
   const ev = evaluate(stats);
   const tr = (GAME_CONFIG.tutorial && GAME_CONFIG.tutorial.result) || {};
   let rows = '<div class="grade-wrap grade-noRank">'
@@ -1220,7 +1118,6 @@ function tutorialSettle(totalTime, stats){
 /* ⚠ `title` ＝這一頁的大標（ver -928）：安全區走進去是「安　全　區」（ver -1840 前叫「休　息　處」），
      走出這張地圖時結算是「撤　離」—— 同一頁兩個時機，字面由呼叫端給（鐵律 1）。 */
 function restSettle(totalTime, stats, sessionLoot, shares, title, expShares){
-  state.sRankUnlocked = false;
   const ev = evaluate(stats);
   /* 評價者照舊（`battleId` 傳 null ＝沒有哪一場的專屬台詞，走章節／好感那張通用表）。
      ⚠ 這一局本來就是一場一場打出來的，等第與好感照給 —— 它與打贏結算怪的那一頁
@@ -1267,7 +1164,6 @@ function restSettle(totalTime, stats, sessionLoot, shares, title, expShares){
    ⚠ 沒有監察官、沒有等級：那一場是劇情中間插進來的一場架，不是驅逐任務。
    ⚠ 按鈕是「繼續」→ 回劇情/城鎮（不是回主畫面）。 */
 function scriptSettle(totalTime, stats, sessionLoot, shares, expShares){
-  state.sRankUnlocked = false;
   const ev = evaluate(stats);
   state.lastBattleGrade = ev.grade;   // 這一場的等第（ver -2328：守城戰的「戰後其餘凍 S2／A1／B0」讀它，town 只讀）
   const en = GAME_CONFIG.enemies[state.currentEnemyKey] || {};
@@ -1448,55 +1344,7 @@ function afterLoot(){
  *  「銭湯」＋「INSTALL」，逐字由左往右「寫」出）→ 寫完ツケ板（拍子木）兩聲 → 顯示返回提示，
  *  點畫面任意處回首頁。演出中（done 前）點擊無效，避免誤觸跳過。
  * ========================================================================== */
-let _sentouTimer=null, _sentouBannerTimer=null, _sentouBound=false, _sentouLeaving=false;
-function openSentouReward(){
-  const ov=$('sentouReward');
-  if(!ov) return;
-  const rw=(GAME_CONFIG.intruder && GAME_CONFIG.intruder.reward) || {};
-  SFX.stopBgm(800);   // 靜場：墨與拍子木的留白
-  const img=$('sentouImg');
-  const src=asset(rw.image);
-  if(img && src) img.src=src;
-  // 建字：每行一個 .sentou-col、每字一個 <i>，動畫延遲逐字排 → 毛筆逐字寫出
-  const sign=$('sentouSign');
-  const per=rw.charMs || 380;
-  let idx=0;
-  sign.innerHTML='';
-  (rw.sign || [i18nT('銭湯'),i18nT('インストール')]).forEach(txt=>{
-    const col=document.createElement('span'); col.className='sentou-col';
-    [...txt].forEach(ch=>{
-      const s=document.createElement('i'); s.textContent=ch;
-      s.style.animationDelay=(600 + idx*per)+'ms';   // 進場淡入 0.6s 後起筆
-      idx++;
-      col.appendChild(s);
-    });
-    sign.appendChild(col);
-  });
-  if(!_sentouBound){
-    _sentouBound=true;
-    ov.addEventListener('click', ()=>{
-      if(!ov.classList.contains('done') || _sentouLeaving) return;   // 寫完+響板前不可離開；防連點重入
-      _sentouLeaving=true;
-      api.goHome();   // 獎勵畫面續留原地，待 goHome 黑幕全蓋後（mid）才收——立即收會露出底下戰鬥畫面
-    });
-  }
-  _sentouLeaving=false;
-  ov.classList.remove('done');
-  ov.classList.add('on');
-  // 收結算畫面：待獎勵層淡入（sentouIn .8s）完全遮蓋後才收。
-  // 立即收會在淡入期間透出底下凍結的戰鬥畫面（banner 之下即戰場）。
-  clearTimeout(_sentouBannerTimer);
-  _sentouBannerTimer=setTimeout(()=>{ $('banner').classList.remove('on'); }, 850);
-  clearTimeout(_sentouTimer);
-  _sentouTimer=setTimeout(()=>{
-    SFX.tsuke();                // 寫完 → ツケ板兩聲（チョン、チョン）
-    ov.classList.add('done');   // 響板起 → 顯示「點擊返回」
-  }, 600 + idx*per + 420);
-}
-
-// 逐字打字機：total 毫秒內把整句顯示完
-/* `done`＝**這一句打完了**（ver -1128）。⚠ 用回呼不用「再排一個同樣長度的 setTimeout」：
-   那是同一個量兩個計算點（鐵律 7）—— 字數一改就走鐘。 */
+/* 銭湯インストール獎勵畫面（openSentouReward）已撤（ver -3133，挑戰回收）。 */
 function typeInspectorLine(el, text, total, done){
   clearTimeout(_inspTypeTimer);
   const chars=[...text];
@@ -1516,7 +1364,6 @@ function typeInspectorLine(el, text, total, done){
 /* ============================================================================
  *  結算按鈕：依 resultMode 分流
  *   'rematch'  ：一律回首頁（goHome）。唯一例外＝S 評價解鎖 → 芙蕾雅台詞 → 鈕變「迎擊」。
- *   'intercept'：迎擊 → 呼叫注入的 enemy.triggerIntruder（本輪 no-op，Boss 遭遇待第 5 步）。
  * ========================================================================== */
 export function onRematchBtn(){
   const rbtn=$('rematchBtn');
@@ -1555,50 +1402,7 @@ export function onRematchBtn(){
     setTimeout(()=>{ if(api.storyReturn) api.storyReturn({ lost:over }); else api.goHome(); }, 260);
     return;
   }
-  if(state.resultMode==='sentou-offer'){   // Boss S 級第一按：「再度執槍」原地變身（金色呼吸光）
-    SFX.play(asset('sfx_startbt'), sfxGain('sfx_startbt'));   // 神楽鈴（StartBT_SE，與出陣鈕同）
-    state.resultMode='sentou';
-    const rw=(GAME_CONFIG.intruder && GAME_CONFIG.intruder.reward) || {};
-    rbtn.textContent = rw.btnLabel || 'SAINT INSTALL...?';
-    rbtn.classList.add('saintinstall');
-    return;
-  }
-  if(state.resultMode==='sentou'){   // 第二按：SAINT INSTALL...? → 銭湯インストール獎勵畫面
-    openSentouReward();
-    return;
-  }
-  if(state.resultMode==='intercept'){
-    SFX.gunshot();   // 迎擊：普攻槍聲（setShots 候選，同盤面射擊）
-    api.triggerIntruder();
-    return;
-  }
-  // resultMode==='rematch'（一般的再度執槍）：Start_01
+  /* Boss S 級獎勵（sentou）／迎擊亂入（intercept）／S 評價解鎖那幾支已撤（ver -3133，挑戰回收）。 */
   SFX.play(asset('sfx_start'), sfxGain('sfx_start'));
-  if(!state.sRankUnlocked){
-    api.goHome();               // 一律回首頁（含 Boss 戰勝/敗後）
-    return;
-  }
-  // S 評價：解鎖迎擊流程（唯一例外）
-  SFX.playBgm(asset('bgm_boss'), { volume: bgmVol('bgm_boss') });   // 按下再度執槍瞬間 → Boss BGM 起播（結算 BGM 淡出）
-  state.intruderTriggered=true;  // 標記本場已進入隱藏流程
-  // 用 visibility 而非 display：保留按鈕版位，避免 flex 重排讓立繪（flex:1 舞台）忽大忽小
-  rbtn.style.visibility='hidden';
-  const insp=getInspector();
-  const bubble=$('inspectorBubble');
-  const lineEl=$('inspectorLine');
-  // 芙蕾雅重跳一次對話框：「慢著！有新的敵人！」
-  bubble.classList.remove('show'); void bubble.offsetWidth;
-  clearTimeout(_inspTypeTimer);
-  lineEl.textContent='';
-  bubble.classList.add('show');
-  const warnLine = (insp && insp.interceptLine) || L.inspector.interceptLine;
-  typeInspectorLine(lineEl, warnLine, 1400);
-  // 台詞跳完 → 鈕變「迎擊」、變色發光
-  const dur = 1400 + 300;
-  setTimeout(()=>{
-    state.resultMode='intercept';
-    rbtn.textContent=L.result.intercept;
-    rbtn.classList.add('intercept','ready');
-    rbtn.style.visibility='';   // 復現（版位一直在，無重排 → 立繪不變大小）
-  }, dur);
+  api.goHome();
 }

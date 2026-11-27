@@ -1020,7 +1020,7 @@ export function forceTutorialLoadout(partnerKey){
   if(_tutLoadoutStash) return;   // 教學段內重開（陣亡該段重來）不重複暫存
   _tutLoadoutStash = { w: state.equippedWeapon, p: state.pickedPartner };
   state.equippedWeapon = GAME_CONFIG.defaultWeapon;      // 機槍（MG_Squall）
-  setPickedPartner(partnerKey || GAME_CONFIG.defaultPartner);   // 預設＝蕾妮（renee）
+  setPickedPartner(partnerKey || GAME_CONFIG.storyPartner);   // 預設＝本篇搭檔（蕾妮的 defaultPartner 隨挑戰撤，ver -3133）
   refreshLoadoutLabels();
 }
 export function restoreTutorialLoadout(){

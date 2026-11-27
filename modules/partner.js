@@ -82,7 +82,7 @@ function storyPartnerPoolRaw(){
     if(r && r.key && (!r.need || prog.hasFlag(r.need)) && GAME_CONFIG.partners[r.key]
        && out.indexOf(r.key)<0) out.push(r.key);
   }
-  const d = GAME_CONFIG.storyPartner || GAME_CONFIG.defaultPartner;
+  const d = GAME_CONFIG.storyPartner;   // defaultPartner 隨挑戰撤（ver -3133）
   if(GAME_CONFIG.partners[d] && out.indexOf(d)<0) out.push(d);
   return out;
 }
@@ -133,7 +133,7 @@ export function installCritRate(){
 }
 export function currentPartner(){
   if(state.pickedPartner===null) return null;
-  return GAME_CONFIG.partners[state.pickedPartner] || GAME_CONFIG.partners[GAME_CONFIG.defaultPartner];
+  return GAME_CONFIG.partners[state.pickedPartner] || GAME_CONFIG.partners[GAME_CONFIG.storyPartner];
 }
 
 /* ============================================================================
