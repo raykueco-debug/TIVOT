@@ -289,6 +289,9 @@ export function setup(){
      凡是「每換一隻怪就要做一次」的事都掛這裡，不要各自去找 setEnemy（鐵律 8）。 */
 function onEnemySet(){
   partner.onEnemySet();          // 即死防禦 reload（ver -888）＋明晰之夢重新上膛（ver -693）
+  /* 五連完美清盤 MB 的計數是「場」的資源（ver -3097，Ray：「mb bounus改成不跨場計算」）：
+     換一隻怪就歸零，累計的總傷一起歸零（-3045 原本是跨場、限局內）。 */
+  state.perfStreak=0; state.perfRunDmg=0;
   /* ══⚠⚠⚠ **副武器的輪轉每一「場」歸位一順位**（ver -1292，Ray：「武器切換模式的
        輪換每一場都會回歸玩家設定的順序的第一把槍」）══
      ver -983 只做到**每一局**（`resetWeaponSwitch` 掛在 `startGame`）—— 連戰打完
@@ -1050,8 +1053,8 @@ function clearBoard(opts){
 }
 /* ══ 完美清盤的收尾一擊（ver -3045，Ray 11-26；數字在 config.tuning.perfectCrit，全是暫定值）══
    E＝PERFECT CRITICAL、D＝五連完美清盤 MB。計數的擁有者是這裡（`state.perfStreak`／`perfRunDmg`，鐵律 9）：
-     · 插：完美清盤 +1（perfectBoardCleared）　· 拔：不完美的一盤／觸發 MB／換局（startGame）
-     · 換怪不歸零（sessionCarry 帶過場）。 */
+     · 插：完美清盤 +1（perfectBoardCleared）　· 拔：不完美的一盤／觸發 MB／換局（startGame）／**換怪（onEnemySet）**
+     · ver -3097（Ray：「mb bounus改成不跨場計算」）：單位改成「場」—— 換怪歸零、不再走 sessionCarry 帶過場。 */
 const PC = () => (GAME_CONFIG.tuning||{}).perfectCrit || {};
 let pcTest = null;   // 管理人測試：null／'crit'（必爆）／'mb'（下一盤完美就 MB）
 export function perfectTestCycle(){
@@ -3444,7 +3447,7 @@ function sessionSave(){
                     同一局之內換一隻怪不歸零，換局才歸零。（ver -893 用詞） */
                  svStreak:state.svPerfectStreak||0,
                  lucidStreak:state.lucidStreak||0,
-                 perfStreak:state.perfStreak||0, perfRunDmg:state.perfRunDmg||0,   // 五連完美清盤（ver -3045）：換怪不歸零
+                 /* 五連完美清盤的計數不再帶過場（ver -3097，Ray：「mb bounus改成不跨場計算」）—— 換怪就在 onEnemySet 歸零。 */
                  counterStreak:state.counterStreak||0,   // 赤爪星（ver -1778）
                  flawlessKills:state.flawlessKills||0 };
 }
@@ -4001,8 +4004,6 @@ export function startGame(){
       state.energy              = sessionCarry.energy;
       state.svPerfectStreak     = sessionCarry.svStreak||0;      // 獵手的戰吼（ver -891）
       state.lucidStreak         = sessionCarry.lucidStreak||0;   // 明晰之夢（ver -891）
-      state.perfStreak          = sessionCarry.perfStreak||0;    // 五連完美清盤（ver -3045）
-      state.perfRunDmg          = sessionCarry.perfRunDmg||0;
       state.counterStreak       = sessionCarry.counterStreak||0; // 赤爪星（ver -1778）
       state.flawlessKills       = sessionCarry.flawlessKills||0; // 連續無傷擊殺（ver -892）
       updateEnergyClasp();          // 破防值搬回來了，扣環要跟著畫（同一支，鐵律 8）
