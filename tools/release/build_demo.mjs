@@ -33,6 +33,8 @@ else {
   const BG_ANIM_IN = ['capital', 'capital_outer', 'northport', 'canyon'].map(d => `resources/background/anim/${d}/`);
   // C4 空賊受擊動畫：全部版本都放（Ray 選放）
   const SKYPIRATE_HIT = /^resources\/enemy\/anim\/man_skypirate_\d+_hit_/;
+  // 公會封印盒開盒影格（config 的 openAnim，modules/sealbox.js 拼 frame_NNN 讀；帝都公會在試玩範圍。動畫副理 11-28 查到）
+  BG_ANIM_IN.push(...refsIn(cfgTxt, /openAnim:\s*'(resources\/[^']+\/)'/g));
   BG_ANIM_IN.push('resources/enemy/fx/serpent_feathers/' /* 羽蛇羽毛特效（404 實測） */, 'resources/background/anim/holysee/', 'resources/background/anim/enemy/');   // holysee＝序章地宮；enemy＝賞金獵人戰與索菈娜戰的戰鬥背景動畫（兩場都在試玩範圍，404 實測）   // 404 實測：開場聖王廳地宮（序章）會用
   /* 404 實測補（8143，11-27）：靜態清單漏的、試玩範圍真的會讀的檔。
      其餘 404（索菈娜／蕾妮／馬季諾語音、托爾斯坦 CI 影片、renee_ci_act）是戰鬥開場的整批預熱在敲門，試玩不會播 —— 照 Ray 的 C6／C16 不放。 */
