@@ -1158,7 +1158,7 @@ function resolveGate(g){
   return Object.assign({}, g, { action: fn, name: g.action });   // ⚠ 名字留著：熔斷讓位要問它（ver -705）
 }
 function openStep(step){
-  cur = step; lineIdx = 0; cutinLine = -1;
+  cur = step; lineIdx = 0; cutinLine = -1; lastTyped=false; gateShown=false; clearTimeout(gateRevealT);
   /* 這一段自己帶閘門（資料上的 `talk` 用；程式那幾段走 `openScript` 的 opts）。 */
   armStepGate(step);
   stepSides = (step && step.sides) || talkSides || null;   // 段落覆寫 > 整場預設（ver -613／-619）
@@ -1277,7 +1277,7 @@ function showLine(){
        接不住它 —— 連點兩下就整個看不到。長度問 `blankHold()`（劇情層那一份，
        鐵律 7：兩邊不准各寫一個 0.7）。
        ⚠ 它只擋點擊，這一拍本來就沒有自動計時器 —— 所以不可能卡死。 */
-    blankUntil = Date.now() + blankHold(line);
+    blankUntil = Date.now() + blankHold(line); onLineTyped();
     return;
   }
   const c = castOf(line.who);
@@ -1370,7 +1370,7 @@ function typeLine(line){
     if(lineEl) lineEl.innerHTML = decorateLine(text.slice(0,i));   // 關鍵字（聖徒化）金色粗字
     if(i>=text.length){
       clearInterval(typeTimer); typeTimer=null;
-      if(bubble) bubble.classList.add('done');
+      if(bubble) bubble.classList.add('done'); onLineTyped();
     }
   }, CFG().lineTypeMs||30);
 }
@@ -1387,21 +1387,21 @@ function advance(){
     clearInterval(typeTimer); typeTimer=null;
     const line=cur.lines[lineIdx]||{};
     const lineEl=$('tutLine'); if(lineEl) lineEl.innerHTML = decorateLine(line.text || '');
-    const bubble=$('tutBubble'); if(bubble) bubble.classList.add('done');
+    const bubble=$('tutBubble'); if(bubble) bubble.classList.add('done'); onLineTyped();
     return;
   }
   lineIdx++;
-  if(lineIdx < cur.lines.length){ showLine(); return; }
+  if(lineIdx < cur.lines.length){ lastTyped=false; showLine(); return; }
   // 教學陣亡段：收 UI 後「同步」重開整場（不走 480ms 靜默期——期間任何晚到的插話
   // 都會攔掉 finish，restart 就此丟失＝玩家卡 0 HP 鎖血）
   if(cur.key==='tutorialDead'){ closeDialog(false, true); onStepClosed('tutorialDead'); return; }
   if(gate){ lineIdx = cur.lines.length-1;   // 即時閘門：停在末句，等玩家完成指定操作
     /* `release:true`（ver -3025，Ray：「教學反擊時諾薇兒說完『反擊』就要撤出畫面讓出戰鬥，打完才往下接。彈雨也是。」）：
        講完就把立繪與對話框撤下去（不擋光圈／計量表），閘門、箭頭、暫停照舊 —— 玩家完成那個操作才收段接下一段。 */
-    if(gate.release) castExit(true);
+    revealGate();   // ver -3115：講完＝亮閘門並撤場（取代 -3025 只看 release 的那一條）
     return; }
   if(pendingGate){ enterGate(pendingGate); pendingGate=null; return; }   // 講完 → 進引導閘門（維持暫停）
-  if(queue.length){ cur=queue.shift(); lineIdx=0; cutinLine=-1; syncCastFit(cur); syncCast(cur, 0); syncBubbleShape(cur);
+  if(queue.length){ cur=queue.shift(); lineIdx=0; lastTyped=false; gateShown=false; clearTimeout(gateRevealT); cutinLine=-1; syncCastFit(cur); syncCast(cur, 0); syncBubbleShape(cur);
     /* ⚠ 接續段也要開它自己的閘門（ver -3025）：以前只有 openStep 會開 —— 光圈出現時剛好在講罵人插話，
        `threat` 那一段被排進佇列接上來，閘門就整個沒開（箭頭不亮、release 也不撤場）。 */
     armStepGate(cur); enterImmediateGate();
@@ -1436,7 +1436,7 @@ function closeDialog(resume, silent){
   clearInterval(typeTimer); typeTimer=null;
   clearTimeout(fxTimer); fxTimer=null;
   lineGuideOn=false;
-  pendingGate=null; gate=null; hideGuide();
+  pendingGate=null; gate=null; hideGuide(); clearTimeout(gateRevealT); gateRevealT=0; gateShown=false; lastTyped=false;
   syncBubbleShape(null);   // 撤形狀調整（.clasp-clear）
   state.tutorialDialog=false;
   if(!document.getElementById('exitConfirm')) document.body.classList.remove('dlg-pause');
@@ -1495,9 +1495,37 @@ function closeDialog(resume, silent){
  *  完成 → 續戰（closeDialog）→ 同步執行 gate.action（activateDual/activateSaint/
  *  tryPartnerActive；resume 與 action 同一 tick，凍結中的計時器來不及先動）。
  * ========================================================================== */
+/* ══ 閘門的「亮出來」（ver -3115，Ray：「聖徒化 夢魘化 夢碎的教學還是不夠清楚 要點擊以後立繪撤出 才看得到」）══
+   唯一那一支（鐵律 8）：**亮箭頭的那一刻，立繪與對話框一起撤出**（castExit(true)：對話狀態留著，閘門照等），
+   箭頭與標示字直接完整可見，不用玩家再點一下。
+   時機：這一段的台詞**最後一句打完**（`lastTyped`）才亮 —— 即時閘門（immediate）在段落一開就上膛（手勢照收），
+   但要等台詞講完、停 `GATE_REVEAL_MS` 才亮出來撤場；非即時閘門講完就直接接，不停在「再點一下」。 */
+const GATE_REVEAL_MS = 700;
+let lastTyped=false, gateShown=false, gateRevealT=0;
+function revealGate(){
+  clearTimeout(gateRevealT); gateRevealT=0;
+  if(!gate || gateShown) return;
+  gateShown=true;
+  if(state.tutorialDialog) castExit(true);
+  showGuide(gate.type, gate.tone);
+  const gd=$('tutGuide'); if(gd) gd.classList.add('g-gate');   // 閘門專用的放大加亮（逐句 guide 不吃）
+}
+/* 這一句打完了（打字機自己跑完／玩家點一下補完，兩條路都叫這支）。 */
+function onLineTyped(){
+  if(!cur || lineIdx < cur.lines.length-1) return;
+  lastTyped=true;
+  if(gate || pendingGate){
+    clearTimeout(gateRevealT);
+    gateRevealT=setTimeout(()=>{
+      if(!state.tutorialDialog || !cur) return;
+      if(!gate && pendingGate){ const g=pendingGate; pendingGate=null; enterGate(g); }
+      revealGate();
+    }, GATE_REVEAL_MS);
+  }
+}
 function enterGate(g){
-  gate = g;
-  showGuide(g.type, g.tone);
+  gate = g; gateShown=false;
+  if(lastTyped || !cur || !(cur.lines||[]).length) revealGate();   // 台詞已講完（或沒有台詞）＝立刻亮
 }
 // 對外：閘門是否進行中（main.js 的方向鍵入口據此讓位——閘門由本檔自行收鍵）
 export function gateActive(){ return !!gate; }
@@ -1618,7 +1646,7 @@ function showGuide(type, tone){
      所以段落中途 `syncCast` 再把人叫上台也會被壓著；提示一收，人照原本的狀態回來。 */
   document.body.classList.add('tut-guide-on');
 }
-function hideGuide(){ const g=$('tutGuide'); if(g) g.classList.remove('on'); document.body.classList.remove('tut-guide-on'); }
+function hideGuide(){ const g=$('tutGuide'); if(g) g.classList.remove('on','g-gate'); document.body.classList.remove('tut-guide-on'); }
 
 /* ══⚠⚠⚠ 落點在**那顆光圈**上嗎（ver -939，Ray：「用強力的副武器阻止他根本點不了」）══
    對話期間 `#tutTouch` 是蓋在最上層的透明層 —— 底下的紅點**收不到手指**

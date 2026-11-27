@@ -2842,6 +2842,21 @@
   #tutGuide.g-red .tg-label{font-size:20px;letter-spacing:4px;font-weight:700;color:#fff;
     text-shadow:0 0 6px #ff3030,0 0 14px #ff3030,0 0 26px rgba(255,40,40,.9);}
   @keyframes tgPulse{from{transform:scale(1);}to{transform:scale(1.18);}}
+  /* 閘門亮出來時（`.g-gate`，ver -3115，Ray：「聖徒化 夢魘化 夢碎的教學還是不夠清楚」）：所有閘門一律放大加亮、
+     雪鐵龍動得更明顯（閃得更快＋整組脈動）；逐句的 guide 不吃這一條。紅色那兩門（tone:'red'）疊在上面再更大。 */
+  #tutGuide.g-gate .tg-chevrons{gap:10px;animation:tgPulse .7s ease-in-out infinite alternate;}
+  #tutGuide.g-gate .tg-chevrons i{width:26px;height:26px;border-top-width:6px;border-right-width:6px;animation-duration:.6s;}
+  #tutGuide.g-gate .tg-chevrons i:nth-child(2){animation-delay:.2s;}
+  #tutGuide.g-gate .tg-chevrons i:nth-child(3){animation-delay:.4s;}
+  #tutGuide.g-gate .tg-label{font-size:19px;letter-spacing:4px;font-weight:700;color:#fff3cf;
+    text-shadow:0 0 6px rgba(240,196,105,1),0 0 16px rgba(212,169,74,.9);margin-top:12px;}
+  #tutGuide.g-gate:not(.g-red){filter:drop-shadow(0 0 4px #fff) drop-shadow(0 0 14px rgba(240,196,105,1));}
+  /* 底下墊一層深色的光暈：背景很花（黑爪戰的紫翼＋教堂）時，金箭與字照樣讀得出來。 */
+  #tutGuide.g-gate::before{content:'';position:absolute;left:-34px;right:-34px;top:-22px;bottom:-22px;z-index:-1;
+    background:radial-gradient(ellipse at center, rgba(8,6,14,.72) 0%, rgba(8,6,14,.45) 50%, transparent 75%);pointer-events:none;}
+  #tutGuide.g-gate.g-red .tg-chevrons i{width:32px;height:32px;border-top-width:7px;border-right-width:7px;}
+  #tutGuide.g-gate.g-red .tg-label{font-size:21px;color:#fff;}
+  #tutGuide.g-gate.g-down .tg-label, #tutGuide.g-gate.g-small .tg-label{font-size:13px;letter-spacing:2px;}   /* 指計量表／切槍鈕的那兩種：位置貼邊，字放大一點就好 */
   /* ══ 提示在畫面上時立繪撤開（ver -3087，Ray：「有提示時都要撤立繪」）══ 開關只有 tutorial 的 showGuide／hideGuide。
      ⚠ 用獨立的 `translate` 屬性：它疊在既有的 transform（滑入、翻轉、置中）之外，不必每個狀態各寫一份。
      ⚠ 不用 opacity 過渡（同上面 -857 那條：iOS 過渡中的合成層會蓋過對話框）—— 置中的那一位往下沉出 #top（overflow:hidden 裁掉）。 */
