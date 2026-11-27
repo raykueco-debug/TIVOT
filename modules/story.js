@@ -44,6 +44,7 @@ import * as settings from './settings.js';
 import * as beatPick from './beatpick.js';   // 管理人：右鍵改這一拍的立繪（ver -1826，葉模組）   // 選單（音量／自動播放速度）；葉節點，只依賴 audio
 import * as hap from './haptics.js';        // 震動（ver -398）
 import * as clock from '../script/clock.js';   // 時段（插圖／背景的差分候選鏈，ver -427）
+import { TEL } from '../telemetry.js';   // 試玩結束卡的統計（ver -3091）
 import * as inv from '../script/inventory.js';  // 選項的挑戰費（ver -655）：葉節點，只依賴 config
 import { bgFolder } from '../script/bg_index.js';  // 背景的區域資料夾（自動產生，ver -1376）：純查表，無相依
 import { BG_ANIM } from '../script/bg_anim.js';     // 背景動畫對照表（自動產生，ver -2620）：純查表，無相依
@@ -7182,6 +7183,7 @@ export function indexOfLabel(lines, label){
 export function demoFinish(){
   const D=GAME_CONFIG.demo||{};
   if(D.endFlag) prog.addFlags([D.endFlag]);
+  TEL.demoClear();   // 統計：打到結束卡＋累計遊玩時間（同一台只記第一次，遙測那邊自己擋）
   const st=$('storyStage'); if(st) st.classList.add('on'); document.body.classList.add('story-on');
   clearCast();   // 清場：上一句的立繪與對話框不要留在結束卡後面
   const ok=showTitleCard({ title:i18nT(D.endTitle||'試玩版到此結束'), sub:i18nT(D.endSub||'感謝遊玩'), opaque:true }, ()=>goHomeNow());

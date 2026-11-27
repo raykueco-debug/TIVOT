@@ -15,198 +15,155 @@
   .sub{ font-size:11px; letter-spacing:1px; color:var(--gold-dim); text-align:center; margin-bottom:18px; }
   .grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
   .tile{ background:#0f0c16; border:1px solid var(--gold-dim); border-radius:10px; padding:12px; text-align:center; }
-  .tile .v{ font-size:22px; color:var(--gold); letter-spacing:1px; }
+  .tile .v{ font-size:22px; color:var(--gold); letter-spacing:1px; font-variant-numeric:tabular-nums; }
   .tile .k{ font-size:11px; letter-spacing:2px; color:var(--gold-dim); margin-top:4px; }
   .panel{ background:#0f0c16; border:1px solid var(--gold-dim); border-radius:10px; padding:12px 14px; margin-bottom:14px; }
   .panel h2{ font-size:13px; letter-spacing:3px; color:var(--gold); margin-bottom:8px; }
-  table{ width:100%; border-collapse:collapse; font-size:12px; }
-  td,th{ padding:5px 4px; border-bottom:1px solid rgba(217,198,138,.15); text-align:left; letter-spacing:.5px; }
-  td:last-child,th:last-child{ text-align:right; }
-  th{ color:var(--gold-dim); font-weight:normal; font-size:11px; letter-spacing:2px; }
-  .bar{ height:5px; background:rgba(217,198,138,.18); border-radius:3px; overflow:hidden; margin-top:3px; }
-  .bar i{ display:block; height:100%; background:var(--gold); }
+  .panel p{ font-size:12px; line-height:1.9; }
+  .panel a{ color:var(--gold); }
+  table{ width:100%; border-collapse:collapse; font-size:12px; font-variant-numeric:tabular-nums; }
+  td,th{ padding:5px 4px; border-bottom:1px solid rgba(217,198,138,.15); text-align:right; letter-spacing:.5px; }
+  td:first-child,th:first-child{ text-align:left; }
+  th{ color:var(--gold-dim); font-weight:normal; font-size:11px; letter-spacing:1px; }
   #msg{ text-align:center; font-size:12px; letter-spacing:1px; color:var(--gold-dim); padding:30px 10px; line-height:2; }
-  #msg code{ font-family:monospace; font-size:11px; color:var(--ink); }
-  .toolbar{ display:flex; justify-content:center; gap:12px; margin-bottom:18px; }
-  button#refresh, a#backBtn{ display:block; padding:8px 26px; background:transparent;
+  .toolbar{ display:flex; justify-content:center; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+  .btn{ display:block; padding:8px 22px; background:transparent;
     border:1px solid var(--gold-dim); color:var(--gold); border-radius:8px; font-family:inherit;
     font-size:12px; letter-spacing:3px; cursor:pointer; text-decoration:none; }
-  button#refresh:active, a#backBtn:active{ transform:scale(.96); }
-  a#backBtn{ color:var(--ink); }
+  .btn:active{ transform:scale(.96); }
+  a.btn{ color:var(--ink); }
+  #login{ display:none; flex-direction:column; align-items:center; gap:12px; padding:20px 0 30px; }
+  #login input[type=password]{ width:min(280px,100%); padding:10px 12px; border-radius:8px; border:1px solid var(--gold-dim);
+    background:#0f0c16; color:var(--ink); font-family:inherit; font-size:15px; letter-spacing:2px; text-align:center; }
+  #login label{ font-size:12px; color:var(--gold-dim); letter-spacing:1px; }
 </style>
 </head>
 <body>
   <h1>後 臺 統 計</h1>
   <div class="sub" id="verLine">聖約第四騎士團 · TIVOT</div>
   <div class="toolbar">
-    <a id="backBtn" href="./">返回主頁</a>
-    <button id="refresh">重新整理</button>
+    <a class="btn" href="./">返回主頁</a>
+    <button class="btn" id="refresh">重新整理</button>
+    <button class="btn" id="logout">登出</button>
   </div>
+  <form id="login">
+    <input type="password" id="pass" placeholder="密碼" autocomplete="current-password">
+    <label><input type="checkbox" id="remember" checked> 這台裝置記住密碼</label>
+    <button class="btn" type="submit">進入</button>
+  </form>
   <div id="msg">載入中……</div>
   <div id="content" style="display:none">
     <div class="grid">
+      <div class="tile"><div class="v" id="tVisitors">–</div><div class="k">來訪人數</div></div>
       <div class="tile"><div class="v" id="tVisits">–</div><div class="k">來訪次數</div></div>
-      <div class="tile"><div class="v" id="tPlayers">–</div><div class="k">獨立玩家（估）</div></div>
-      <div class="tile"><div class="v" id="tRuns">–</div><div class="k">挑戰次數</div></div>
-      <div class="tile"><div class="v" id="tBossRuns">–</div><div class="k">Boss 挑戰次數</div></div>
-      <div class="tile"><div class="v" id="tWinRate">–</div><div class="k">一般勝率</div></div>
-      <div class="tile"><div class="v" id="tBossWinRate">–</div><div class="k">Boss 勝率</div></div>
-      <div class="tile"><div class="v" id="tOriginal">–</div><div class="k">原作點擊</div></div>
-      <div class="tile"><div class="v" id="tToday">–</div><div class="k">今日來訪</div></div>
+      <div class="tile"><div class="v" id="tPlayers">–</div><div class="k">玩家人數</div></div>
+      <div class="tile"><div class="v" id="tPlays">–</div><div class="k">開始／繼續</div></div>
+      <div class="tile"><div class="v" id="tPlayH">–</div><div class="k">總遊玩時間</div></div>
+      <div class="tile"><div class="v" id="tPlayAvg">–</div><div class="k">每位玩家平均</div></div>
+      <div class="tile"><div class="v" id="tClears">–</div><div class="k">打完試玩（人）</div></div>
+      <div class="tile"><div class="v" id="tClearMed">–</div><div class="k">通關時間（中位數）</div></div>
+      <div class="tile"><div class="v" id="tDl">–</div><div class="k">網頁離線下載完成</div></div>
+      <div class="tile"><div class="v" id="tDlFail">–</div><div class="k">下載開始／失敗</div></div>
     </div>
-    <div class="panel"><h2>關卡用時（勝利場）</h2><table id="timeTable"></table></div>
-    <div class="panel"><h2>等級分布（勝利場）</h2><table id="gradeTable"></table></div>
-    <div class="panel"><h2>搭檔使用分布（出陣）</h2><table id="partnerTable"></table></div>
-    <div class="panel"><h2>武器使用分布（出陣）</h2><table id="weaponTable"></table></div>
-    <div class="panel"><h2>原作點擊分布</h2><table id="originalTable"></table></div>
+    <div class="panel"><h2>每日（台北時間）</h2><table id="dailyTable"></table></div>
+    <div class="panel"><h2>平台</h2><table id="platTable"></table></div>
+    <div class="panel"><h2>最近打完試玩</h2><table id="clearTable"></table></div>
+    <div class="panel"><h2>版本（近 14 天的玩家）</h2><table id="verTable"></table></div>
+    <div class="panel"><h2>APK 下載（itch.io）</h2>
+      <p>APK 的下載數在 itch.io 後台（只有你的帳號看得到）：
+        <a href="https://itch.io/dashboard" target="_blank" rel="noopener">itch.io 儀表板</a> → saint-install → Analytics。</p></div>
+    <div class="panel"><h2>其他</h2><table id="miscTable"></table></div>
   </div>
 
 <script type="module">
-import { TELEMETRY, GAME_CONFIG, VERSION } from './config.js';
-
+import { TELEMETRY, VERSION } from './config.js';
+/* ══ 密碼鎖的統計頁（ver -3091，Ray：「只有我能看」）══
+   資料表 events 不准匿名讀；這一頁只呼叫資料庫函式 stats_summary(密碼)，密碼對了才回傳彙總。
+   設定在 docs/STATS_SETUP.sql（Supabase SQL Editor 跑一次）。密碼只存在這台裝置（勾「記住」時）。 */
 const $ = id => document.getElementById(id);
+const KEY = 'tivot_stats_pass_v1';
 $('verLine').textContent = '聖約第四騎士團 · ' + VERSION;
 
-/* 歷史鑰匙遷移：ver -58 以前搭檔鍵名誤用 'freya'（實體就是蕾妮，見 commit 839326f
-   「搭檔鍵名 freya→renee」），芙蕾雅本人是監察官、從來不是搭檔。那批舊事件已寫進
-   events 表無法改，若照原鑰匙顯示，後臺就會多出一個不存在的搭檔「freya」。
-   → 讀取端正規化成現行鑰匙，舊場次併入蕾妮（同一角色，資料不失真）。 */
-const PARTNER_KEY_ALIAS = { freya: 'renee' };
-const P_KEY = k => PARTNER_KEY_ALIAS[k] || k;
+const hrs = ms => { const h = (ms||0)/3600000; return h >= 10 ? Math.round(h) + ' 小時' : h.toFixed(1) + ' 小時'; };
+const mins = ms => ms==null ? '—' : (ms >= 3600000 ? (ms/3600000).toFixed(1) + ' 小時' : Math.round(ms/60000) + ' 分');
+const PLAT = { web:'網頁', pwa:'加到主畫面', apk:'APK', '—':'（舊版沒記）' };
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-// 顯示名對照：partner/weapon 鑰匙 → config 名稱
-const P_NAME = k0 => { const k = P_KEY(k0);
-  return (GAME_CONFIG.partners[k] && GAME_CONFIG.partners[k].name) || k || '—'; };
-const W_NAME = k => (GAME_CONFIG.weapons[k]  && GAME_CONFIG.weapons[k].name)  || k || '—';
+function savedPass(){ try{ return localStorage.getItem(KEY) || sessionStorage.getItem(KEY); }catch(_){ return null; } }
+function keepPass(p, remember){ try{ (remember ? localStorage : sessionStorage).setItem(KEY, p); }catch(_){} }
+function forget(){ try{ localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); }catch(_){} }
 
-const fmtSec = ms => (ms/1000).toFixed(1) + ' 秒';
-const pct = (a,b) => b>0 ? Math.round(a/b*100)+'%' : '—';
+function showLogin(note){
+  $('content').style.display='none'; $('login').style.display='flex';
+  $('msg').textContent = note || '輸入密碼';
+  setTimeout(()=>$('pass').focus(), 50);
+}
 
-async function fetchAll(){
-  const base = TELEMETRY.url.replace(/\/+$/,'') + '/rest/v1/events';
-  const headers = { apikey:TELEMETRY.anonKey, Authorization:'Bearer '+TELEMETRY.anonKey };
-  // 一次拉全事件流（早期量小；破萬筆再改伺服端聚合），只取統計欄位
-  const rows = [];
-  const PAGE = 1000;
-  /* ⚠ `grade` 是 ver -456 的新欄：資料庫還沒跑 ALTER（見頁尾註解）時 select 它
-     會整個 400 —— 退回舊欄位照樣把其他統計端出來，等級面板顯示提示。 */
-  let cols = 'ts,type,client_id,partner,weapon,boss,result,time_ms,grade';
-  for(let from=0;;from+=PAGE){
-    let r = await fetch(`${base}?select=${cols}&order=id.asc`,
-      { headers:{ ...headers, Range:`${from}-${from+PAGE-1}` } });
-    if(!r.ok && from===0 && cols.includes(',grade')){
-      cols = cols.replace(',grade','');
-      window.__noGradeCol = true;
-      r = await fetch(`${base}?select=${cols}&order=id.asc`,
-        { headers:{ ...headers, Range:`${from}-${from+PAGE-1}` } });
-    }
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const page = await r.json();
-    rows.push(...page);
-    if(page.length < PAGE) break;
+async function load(pass){
+  const r = await fetch(TELEMETRY.url.replace(/\/+$/,'') + '/rest/v1/rpc/stats_summary', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', apikey:TELEMETRY.anonKey, Authorization:'Bearer '+TELEMETRY.anonKey },
+    body: JSON.stringify({ pass, days:14 }),
+  });
+  if(r.ok) return r.json();
+  const t = await r.text();
+  if(/denied/.test(t)) { const e = new Error('denied'); e.denied = true; throw e; }
+  if(r.status === 404 || /stats_summary/.test(t)) throw new Error('資料庫還沒設定 —— 到 Supabase SQL Editor 跑 docs/STATS_SETUP.sql');
+  throw new Error('HTTP ' + r.status);
+}
+
+function table(el, head, rows){
+  el.innerHTML = '<tr>' + head.map(h=>`<th>${h}</th>`).join('') + '</tr>'
+    + (rows.length ? rows.map(r=>'<tr>' + r.map(c=>`<td>${esc(c)}</td>`).join('') + '</tr>').join('')
+                   : `<tr><td colspan="${head.length}">尚無資料</td></tr>`);
+}
+
+function render(d){
+  const T = d.total || {};
+  $('tVisitors').textContent = T.visitors ?? 0;
+  $('tVisits').textContent   = T.visits ?? 0;
+  $('tPlayers').textContent  = T.players ?? 0;
+  $('tPlays').textContent    = (T.play_new ?? 0) + '／' + (T.play_continue ?? 0);
+  $('tPlayH').textContent    = hrs(T.play_ms);
+  $('tPlayAvg').textContent  = T.players ? mins(T.play_ms / T.players) : '—';
+  $('tClears').textContent   = T.clears ?? 0;
+  $('tClearMed').textContent = mins(T.clear_med_ms);
+  $('tDl').textContent       = T.dl_done ?? 0;
+  $('tDlFail').textContent   = (T.dl_start ?? 0) + '／' + (T.dl_fail ?? 0);
+  table($('dailyTable'), ['日期','來訪人','玩家','遊玩','下載','打完'],
+    (d.daily||[]).map(x=>[x.day, x.visitors, x.players, hrs(x.play_ms), x.dl_done, x.clears]));
+  table($('platTable'), ['平台','來訪人','玩家','遊玩','打完'],
+    (d.platform||[]).map(x=>[PLAT[x.platform]||x.platform, x.visitors, x.players, hrs(x.play_ms), x.clears]));
+  table($('clearTable'), ['時間','平台','累計遊玩'],
+    (d.recent_clears||[]).map(x=>[x.ts, PLAT[x.platform]||x.platform||'—', mins(x.time_ms)]));
+  table($('verTable'), ['版本','玩家'], (d.versions||[]).map(x=>[x.ver, x.players]));
+  table($('miscTable'), ['項目','數量'], [
+    ['通關時間：平均', mins(T.clear_avg_ms)], ['通關時間：最快', mins(T.clear_min_ms)],
+    ['離線下載完成的裝置', T.dl_devices ?? 0], ['挑戰模式出陣', T.challenge_runs ?? 0], ['原作連結點擊', T.original_clicks ?? 0]]);
+  $('login').style.display='none'; $('content').style.display='';
+  $('msg').textContent = '更新於 ' + new Date().toLocaleString('zh-TW', { hour12:false });
+}
+
+async function go(pass){
+  if(!TELEMETRY.url || !TELEMETRY.anonKey){ $('msg').textContent = '後端尚未設定（config.js 的 TELEMETRY）'; return; }
+  if(!pass){ showLogin(); return; }
+  $('msg').textContent = '載入中……';
+  try{ render(await load(pass)); return true; }
+  catch(e){
+    if(e.denied){ forget(); showLogin('密碼不對'); }
+    else{ $('msg').textContent = '讀取失敗：' + e.message; }
+    return false;
   }
-  return rows;
 }
 
-function distTable(el, pairs, total){   // pairs: [name,count][]，附比例長條
-  el.innerHTML = '<tr><th>項目</th><th>次數</th></tr>' + pairs.map(([name,c])=>
-    `<tr><td>${name}<div class="bar"><i style="width:${total>0?Math.round(c/total*100):0}%"></i></div></td><td>${c}</td></tr>`
-  ).join('') || '<tr><td>尚無資料</td><td>—</td></tr>';
-}
-
-function timeRow(label, arr){
-  if(!arr.length) return `<tr><td>${label}</td><td>—</td><td>—</td><td>0</td></tr>`;
-  const avg = arr.reduce((s,x)=>s+x,0)/arr.length, best = Math.min(...arr);
-  return `<tr><td>${label}</td><td>${fmtSec(avg)}</td><td>${fmtSec(best)}</td><td>${arr.length}</td></tr>`;
-}
-
-function count(rows, fn){ return rows.filter(fn).length; }
-
-async function render(){
-  if(!TELEMETRY.url || !TELEMETRY.anonKey){
-    $('msg').innerHTML = '後端尚未設定。<br>到 Supabase 建免費專案 → SQL Editor 跑本頁原始碼底部註解的建表 SQL →<br>把 Project URL 與 anon key 填入 <code>config.js</code> 的 <code>TELEMETRY</code> 即生效。';
-    return;
-  }
-  $('msg').textContent = '載入中……'; $('content').style.display='none';
-  let rows;
-  try{ rows = await fetchAll(); }
-  catch(e){ $('msg').textContent = '讀取失敗：'+e.message; return; }
-
-  const visits = rows.filter(r=>r.type==='visit');
-  const starts = rows.filter(r=>r.type==='run_start');
-  const ends   = rows.filter(r=>r.type==='run_end');
-  const orig   = rows.filter(r=>r.type==='original_click');
-  const today  = new Date(); today.setHours(0,0,0,0);
-
-  $('tVisits').textContent  = visits.length;
-  $('tPlayers').textContent = new Set(visits.map(r=>r.client_id).filter(c=>c&&c!=='anon')).size;
-  $('tRuns').textContent    = count(starts, r=>!r.boss);
-  $('tBossRuns').textContent= count(starts, r=>r.boss);
-  $('tWinRate').textContent     = pct(count(ends,r=>!r.boss&&r.result==='win'), count(ends,r=>!r.boss));
-  $('tBossWinRate').textContent = pct(count(ends,r=>r.boss&&r.result==='win'),  count(ends,r=>r.boss));
-  $('tOriginal').textContent = orig.length;
-  $('tToday').textContent    = count(visits, r=>new Date(r.ts)>=today);
-
-  // 關卡用時（勝利場）：一般 / Boss 分列，平均與最佳
-  const winMs  = ends.filter(r=>!r.boss && r.result==='win' && r.time_ms>0).map(r=>r.time_ms);
-  const bossMs = ends.filter(r=> r.boss && r.result==='win' && r.time_ms>0).map(r=>r.time_ms);
-  $('timeTable').innerHTML = '<tr><th>關卡</th><th>平均</th><th>最佳</th><th>樣本</th></tr>'
-    + timeRow('一般（五盤）', winMs) + timeRow('Boss（亂入）', bossMs);
-
-  /* 等級分布（ver -456，Ray：「後台加入玩家的各別等級次數紀錄，分成一般跟 boss 戰」）
-     ⚠ 只算**勝利場**：輸了沒有等第。舊事件沒有 grade 欄（ver -456 之前上報的）
-       自然不落在任何一格 —— 樣本行印出來，量對不上時看得出是舊資料。 */
-  {
-    const gw = ends.filter(r=>r.result==='win' && r.grade);
-    const G=['S','A','B','C','D','E'];
-    const cnt=(g,boss)=>count(gw, r=>r.grade===g && !!r.boss===boss);
-    const nTot=count(gw,r=>!r.boss), bTot=count(gw,r=>r.boss);
-    $('gradeTable').innerHTML =
-      '<tr><th>等級</th><th>一般</th><th>Boss</th></tr>'
-      + G.map(g=>`<tr><td>${g}</td><td style="text-align:right">${cnt(g,false)}</td><td>${cnt(g,true)}</td></tr>`).join('')
-      + `<tr><td>有等第的樣本</td><td style="text-align:right">${nTot}</td><td>${bTot}</td></tr>`
-      + (window.__noGradeCol
-         ? '<tr><td colspan="3" style="color:#c98">資料庫還沒補 grade 欄 —— 跑頁尾註解的 ALTER 一次即生效</td></tr>'
-         : '');
-  }
-
-  // 配裝分布（以出陣事件計）
-  const tally = (arr, keyFn) => { const m={}; arr.forEach(r=>{ const k=keyFn(r); m[k]=(m[k]||0)+1; }); return Object.entries(m).sort((a,b)=>b[1]-a[1]); };
-  distTable($('partnerTable'),  tally(starts, r=>P_NAME(r.partner)), starts.length);
-  distTable($('weaponTable'),   tally(starts, r=>W_NAME(r.weapon)),  starts.length);
-  distTable($('originalTable'), tally(orig,   r=>r.result||'—'),     orig.length);
-
-  $('msg').textContent=''; $('content').style.display='';
-}
-
-$('refresh').addEventListener('click', render);
-render();
+$('login').addEventListener('submit', async ev=>{
+  ev.preventDefault();
+  const p = $('pass').value; if(!p) return;
+  if(await go(p)){ keepPass(p, $('remember').checked); $('pass').value=''; }
+});
+$('refresh').addEventListener('click', ()=>go(savedPass()));
+$('logout').addEventListener('click', ()=>{ forget(); showLogin('已登出'); });
+go(savedPass());
 </script>
-
-<!-- ============================================================================
-  Supabase 建表 SQL（SQL Editor 一次跑完；零維運、公開匿名寫入/讀取、不做防作弊）：
-
-    create table public.events (
-      id        bigint generated always as identity primary key,
-      ts        timestamptz not null default now(),
-      type      text not null,      -- visit | run_start | run_end | original_click
-      client_id text,               -- 匿名隨機 id（localStorage），估算獨立玩家
-      ver       text,               -- 上報當下的遊戲版本
-      partner   text,               -- 搭檔鑰匙（run_start / run_end）
-      weapon    text,               -- 武器鑰匙（run_start / run_end）
-      boss      boolean,            -- 是否 Boss（亂入）場
-      result    text,               -- run_end：win|lose；original_click：連結名
-      time_ms   integer,            -- run_end：實打用時（毫秒）
-      grade     text                -- run_end（win）：S|A|B|C|D|E（ver -456）
-    );
-    alter table public.events enable row level security;
-    create policy "anon_insert" on public.events for insert to anon with check (true);
-    create policy "anon_select" on public.events for select to anon using (true);
-
-  之後把 Settings → API 的 Project URL 與 anon public key 填入 config.js 的 TELEMETRY。
-
-  ⚠ ver -456 之前就建好表的：補一欄（沒補的話上報會被 Supabase 以 400 拒收）——
-    alter table public.events add column if not exists grade text;
-============================================================================ -->
 </body>
 </html>

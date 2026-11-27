@@ -1844,6 +1844,8 @@ bindBtn('originalClose',()=>{ const s=$('originalSheet'); if(s) s.classList.remo
     ob.classList.add('on');
     bindBtn('offlineBtn', ()=>OL.click(t=>{ ob.textContent=t; }));
   } }
+/* 離線下載的統計（ver -3091）：首頁與選單兩顆鈕都走 offline.js 的 run，由它發事件，這裡只轉給遙測。 */
+addEventListener('tivot-offline', e=>{ const d=e.detail||{}; TEL.offline(d.phase, d.ms); });
 document.querySelectorAll('#originalSheet .os-link').forEach(a=>{
   a.addEventListener('click', ()=>TEL.originalClick(a.textContent.trim()));
 });
@@ -2089,7 +2091,7 @@ refreshContinue();
   }catch(_){}
 })();
 
-bindBtn('continueBtn', ()=>{ try{ killAllPages(); }catch(_){} if(!saveSys.loadLatest()) refreshContinue(); });
+bindBtn('continueBtn', ()=>{ TEL.playStart('continue'); try{ killAllPages(); }catch(_){} if(!saveSys.loadLatest()) refreshContinue(); });
 /* 整備頁收掉了通知城鎮（ver -430）：武器店的整備教學要等玩家真的換完裝備，
    才把商店的單子擺出來（見 `modules/town.js` 的 `showTip`）。 */
 town.setGearWatch(gear.onceClosed);
@@ -2136,7 +2138,7 @@ function startStoryFresh(){
   prog.newRun({ mainline:true });   // -563 起 newRun 自己寫 stage 0（所有從頭開始的路都安全）
   story.open(null);
 }
-bindBtn('storyStartBtn', startStoryFresh);
+bindBtn('storyStartBtn', ()=>{ TEL.playStart('new'); startStoryFresh(); });
 /* ══ 章節（ver -429，Ray 指定）══════════════════════════════════════════
    管理人限定的跳關工具：每一章都先 `newRun()`（＝從頭開始的唯一那一支，§6.9），
    再把「這一章開始時本來就該有的東西」放回去，然後由這裡把入口打開。

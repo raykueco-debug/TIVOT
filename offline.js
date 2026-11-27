@@ -75,6 +75,8 @@
     const upd = doneVer() && doneVer() !== list.version;
     say((upd ? T('有更新 · 約 {n} · 再按一次開始') : T('下載約 {n} · 再按一次開始')).replace('{n}', gb(list.bytes)));
   }
+  /* 統計（ver -3091）：這一支是非 module，import 不到遙測 —— 發事件，main.js 收了轉給 TEL.offline。 */
+  function tell(phase, ms){ try{ window.dispatchEvent(new CustomEvent('tivot-offline', { detail:{ phase, ms } })); }catch(_){} }
   async function run(say, list){
     if(busy) return; busy = true;
     try{
@@ -90,6 +92,7 @@
       const saveHashes = () => cache.put(HASHES, new Response(JSON.stringify(stored), { headers:{ 'Content-Type':'application/json' } })).catch(()=>{});
       let i = 0, ok = 0, fail = 0, skip = 0;
       const t0 = Date.now();
+      tell('start');
       const worker = async () => {
         while(i < files.length){
           const n0 = i++, f = files[n0], h = hs ? hs[n0] : '';
@@ -131,14 +134,15 @@
         }
       }
       await saveHashes();
-      if(fail) say(T('失敗 {n} 個 · 點一下重試').replace('{n}', fail));
+      if(fail){ say(T('失敗 {n} 個 · 點一下重試').replace('{n}', fail)); tell('fail'); }
       else{
         await cache.put(READY, new Response(list.version, { headers:{ 'Content-Type':'text/plain' } }));
         setDone(list.version); updAvail = null; tellSW();
+        tell('done', Date.now() - t0);
         say(T('✓ 完成（{n} 秒）· 斷網也能玩').replace('{n}', Math.round((Date.now() - t0) / 1000)));
       }
     }catch(e){
-      say(T('下載中斷 · 點一下重試'));
+      say(T('下載中斷 · 點一下重試')); tell('fail');
     }finally{ busy = false; }
   }
   /* 開啟時自我檢查＋背景查更新（ver -3078）。 */
