@@ -1156,9 +1156,11 @@ function perfectBoardCleared(brClear, wasAlive, after){
   if(!C.mbStreak || state.perfStreak < C.mbStreak) return false;
   const bonus=Math.round(state.perfRunDmg*(C.mbPct||0.2));
   state.perfStreak=0; state.perfRunDmg=0;
-  perfectSe(); perfectCheer();
+  perfectSe();
   if(bonus>0){ enemyDamage(bonus, true, true, 'perfmb'); floatDmg('MAXIMUM BURST '+bonus,'50%','28%',true); }
-  saint.playBoardBurst(after);
+  /* 讚聲排在 MB 之後（ver -3106，Ray：「MB>cheer 不要跟cheer重疊」）：MB cut-in 與它的語音演完才播讚聲；
+     這一下把敵人打死了（state.over）就不播 —— 接著是擊殺／結算的演出，讚聲會疊上去。 */
+  saint.playBoardBurst(()=>{ if(!state.over) perfectCheer(); after(); });
   return true;
 }
 function recordBoardTime(sec){
