@@ -4,7 +4,7 @@
 // ⚠ 試玩清單是靜態估算（demo_size.mjs 的字串閉包），可能漏掉程式拼字串組出來的路徑 —— 試玩切版前要實跑一輪校正。
 //   所以給 Ray 先試的 pages.dev 預覽用 --full（不會缺圖），正式公開才用試玩清單。
 // 跑之前先 `node tools/release/demo_size.mjs` 讓清單跟上目前版本。
-import fs from 'fs'; import path from 'path'; import { fileURLToPath } from 'url';
+import fs from 'fs'; import path from 'path'; import crypto from 'crypto'; import { fileURLToPath } from 'url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const FULL = process.argv.includes('--full');
 const OUT = path.join(ROOT, 'dist', FULL ? 'full' : 'demo');
@@ -47,7 +47,9 @@ fs.writeFileSync(path.join(OUT, '404.html'), '<!doctype html><meta charset="utf-
   const sum = have.reduce((a, f) => a + fs.statSync(path.join(OUT, f)).size, 0);
   /* 內容雜湊一起帶（ver -3078）：offline.js 靠它判斷「更新時哪些檔要重抓」；整包清單的 hash 與 files 同順序。 */
   const H = Array.isArray(off.hash) ? new Map(off.files.map((f, i) => [f, off.hash[i]])) : null;
-  const out = { version: off.version, bytes: sum, files: have }; if (H) out.hash = have.map(f => H.get(f) || '');
+  /* build.js 在 dist 裡是改寫過的獨立複本（demo:true），雜湊要照 dist 那份重算（同 git hash-object：sha1("blob <長度>\0"+內容)）。 */
+  const gitHash = f => { const b = fs.readFileSync(path.join(OUT, f)); return crypto.createHash('sha1').update(`blob ${b.length}\0`).update(b).digest('hex'); };
+  const out = { version: off.version, bytes: sum, files: have }; if (H) out.hash = have.map(f => f === 'build.js' ? gitHash(f) : (H.get(f) || ''));
   fs.writeFileSync(o, JSON.stringify(out, null, 0).replace(/","/g, '",\n"'));
   console.log(`offline_list.json → ${have.length} 檔、${(sum / 1048576).toFixed(0)} MiB`); }
 console.log(`${FULL ? 'full' : 'demo'}：${files.length} 檔、${(bytes / 1048576).toFixed(0)} MiB → ${path.relative(ROOT, OUT)}（硬連結 ${linked}、複製 ${copied}）`);
