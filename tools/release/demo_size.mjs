@@ -74,7 +74,8 @@ function drain() {
 const scope = [
   ['劇情', MAIN_SCRIPT], ['城鎮', DEMO_TOWNS.map(t => TOWNS[t])], ['城鎮', [DINE, OUTING]],
   ['飛行戰', FLIGHT_BATTLES], ['教學', G.tutorial],
-  ['挑戰', [G.lineup, G.intruder, G.currentEnemy, G.challengePartners, G.inspectors, G.defaultInspector]],
+  /* 挑戰（lineup／intruder／挑戰搭檔／監察官）不收：11-27 Ray 定試玩包拿掉首頁挑戰（素材不進包）。
+     ⚠ 教學（G.tutorial）照收——首頁原版教學鈕拿掉，但劇情開場訓練戰走的就是同一套教學資料。 */
   ['戰鬥共用', [G.weapons, G.mainGun, G.storyPartner, G.storyPartnerBy, G.battleBgm, G.evaluation, G.loadingHints, G.loadingHost, C.HITFX, C.SE_PLAY]],
 ];
 for (const [why, o] of scope) { walk(o, why); drain(); }

@@ -18,12 +18,34 @@ else {
   if (d.version !== off.version) console.warn(`⚠ demo_size.json 是 ${d.version}，離線包是 ${off.version} —— 先跑 node tools/release/demo_size.mjs`);
   const listed = Array.isArray(d.list) ? d.list.map(x => typeof x === 'string' ? x : x.file || x[0]) : Object.keys(d.list);
   const CODE = /\.(js|mjs|html|css|json|webmanifest|woff2?|ttf|otf)$/i;   // 程式層一律整包（小，而且漏一支就整頁壞）
-  /* 整類補進來（11-27，Ray：「素材先兩類整包」）：靜態清單收不到這兩類新系統（插圖動畫、背景動畫），
-     精確清單之後由效能副理做；在那之前預設整類放進去。--with=a,b 可以改名單（resources/ 底下的路徑開頭）。 */
-  const wArg = process.argv.find(a => a.startsWith('--with='));
-  const WITH = (wArg ? wArg.slice(7).split(',') : ['illustration/video', 'background/anim']).filter(Boolean).map(s => 'resources/' + s.replace(/\/?$/, '/'));
-  files = [...new Set([...listed, ...off.files.filter(f => CODE.test(f) || WITH.some(w => f.startsWith(w)))])];
-  console.log('整類補入：' + WITH.join('、'));
+  /* 試玩包內容規則（11-27，Ray 逐題定，題目在 dist/demo_contents.md 的 C 段）。
+     原則（Ray）：「體驗版就是體驗版 不要用完整版上鎖」—— 範圍外的東西在包裡**不存在**。
+     靜態清單收不到「對照表裡寫完整路徑」的三類（插圖動畫、CI 影片、背景動畫），在這裡照範圍點名補；範圍外的在這裡排除。 */
+  const cfgTxt = fs.readFileSync(path.join(ROOT, 'config.js'), 'utf8');
+  const refsIn = (txt, re) => [...txt.matchAll(re)].map(m => m[1]);
+  // C1 插圖動畫：試玩範圍 7 支，只放 config 現用的那一版
+  const CG_IN = ['001_nouvelle_fell', '002_saintassult', '003_lunaria_armed', '004_renna_intro', '005_cecilieintro', '008_rennaholdanya', '009_soranadebute'];
+  const addIllus = refsIn(cfgTxt, /'([^']+)':\s*\{\s*video:'resources\/illustration\/video\/[^']+'/g).filter(k => CG_IN.includes(k))
+    .map(k => cfgTxt.match(new RegExp(`'${k}':\\s*\\{\\s*video:'(resources/illustration/video/[^']+)'`))[1]);
+  // C2 CI 影片：試玩三位搭檔（賽西莉、諾薇兒、安雅；cutin_nireload＝安雅惡夢再裝填），config 現用版本
+  const addCi = [...new Set(refsIn(cfgTxt, /'(resources\/ci\/video\/[^']+)'/g))].filter(f => /cecilie|nouvelle|anya|nireload/.test(f));
+  // C3 背景動畫：帝都／帝都城外／北泊／卡耶爾 整個資料夾（雲層、遮罩、影片都是 bg_fx／bg_anim 組名字讀的）
+  const BG_ANIM_IN = ['capital', 'capital_outer', 'northport', 'canyon'].map(d => `resources/background/anim/${d}/`);
+  // C4 空賊受擊動畫：全部版本都放（Ray 選放）
+  const SKYPIRATE_HIT = /^resources\/enemy\/anim\/man_skypirate_\d+_hit_/;
+  const ADD = new Set([...addIllus, ...addCi]);
+  const keepExtra = f => ADD.has(f) || BG_ANIM_IN.some(p => f.startsWith(p)) || SKYPIRATE_HIT.test(f);
+  // 排除：C5 範圍外插圖／C6 索菈娜 CI 與語音／C7 零星背景／C15 非試玩飛行怪／C16＋17 只留試玩會播的語音
+  const VO_KEEP = /^resources\/audio\/vo\/vo_(nouvelle|nouvellemiss|anya|cecilie)/;
+  const FLIGHT_ENEMY_KEEP = /^flight\/enemy\/(flh_pirate|flm_centipi|flm_serpent|sky3d_tune\.json|_)/;
+  const drop = f =>
+    /^resources\/illustration\/(043_eliointro|044_cecilietorsten)/i.test(f) ||
+    /^resources\/ci\/[^/]*sorana/i.test(f) ||
+    /^resources\/background\/(tomb|ravnsdal|forest|holysee)\//.test(f) ||
+    (f.startsWith('flight/enemy/') && !FLIGHT_ENEMY_KEEP.test(f)) ||
+    (f.startsWith('resources/audio/vo/') && !VO_KEEP.test(f));
+  files = [...new Set([...listed, ...off.files.filter(f => (CODE.test(f) && !f.startsWith('resources/')) || keepExtra(f))])].filter(f => !drop(f));
+  console.log(`補入：插圖動畫 ${addIllus.length}、CI 影片 ${addCi.length}、背景動畫 ${BG_ANIM_IN.length} 夾、空賊受擊全版本`);
 }
 files.push('offline_list.json');
 
