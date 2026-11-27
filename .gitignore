@@ -62,3 +62,4 @@ tools/challenge_build/trace.html
 dist/
 .wrangler/
 release/capacitor/node_modules/
+release/apk_latest.json

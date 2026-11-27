@@ -23,4 +23,9 @@ Write-Host "=== 上傳 $($apk.Name)（$([math]::Round($apk.Length/1MB)) MB）到
 & $exe push $apk.FullName "alworks/saint-install:android" --userversion $ver
 if ($LASTEXITCODE -ne 0) { throw "上傳失敗" }
 & $exe status "alworks/saint-install"
-Write-Host "完成。頁面仍是草稿（Draft），公開前請先看過頁面。" -ForegroundColor Green
+<# Android 版本自檢的公告檔（ver -3135）：只在上傳成功之後才寫 —— 失敗就不會公告一個沒上架的版本。
+   apk_update.js 讀網頁版根目錄的這一支；tools/release/build_demo.mjs 打包網頁時帶上它（網頁部署＝公告生效）。 #>
+$latest = @{ ver = $ver; url = 'https://alworks.itch.io/saint-install'; date = (Get-Date -Format 'yyyy-MM-dd') } | ConvertTo-Json -Compress
+Set-Content -Path "$root\release\apk_latest.json" -Value $latest -Encoding ascii
+Write-Host "已寫入 release\apk_latest.json（v$ver）；下次部署網頁版時生效。" -ForegroundColor Green
+Write-Host "完成。" -ForegroundColor Green

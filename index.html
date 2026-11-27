@@ -21,6 +21,8 @@
 <script src="script/quests.classic.js?v=3134"></script>
 <!-- 離線包（ver -2256）：註冊 sw.js；主畫面 App 裡出現「下載離線包」鈕 -->
 <script src="offline.js"></script>
+<!-- Android 安裝版的版本自檢（ver -3135）：只在 Capacitor 原生環境跑，有新版就提示去 itch 下載 -->
+<script src="apk_update.js"></script>
 <!-- ══ 效能探針・計數層（ver -850，Ray：「沒有辦法寫一個偵測程式進去看是什麼
      東西在吃資源嗎？」）══ 要在**所有程式之前**掛（晚掛就數不到早開的計時器），
      所以住在這裡。只做登記（Set/計數，開銷趨近零）；讀取與呈現在 main.js 的

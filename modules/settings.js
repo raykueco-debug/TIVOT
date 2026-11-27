@@ -263,9 +263,13 @@ export function open(opts){
       /* 離線包（ver -2257，Ray：「下載更新都收進選單」；ver -2842 起首頁也有一顆，兩顆同一支 click）：
          （offline.js 掛 window.__tivotOffline），下載與檢查更新是同一顆鈕。 */
       + (window.__tivotOffline
-          ? i18nT('<div class="gm-sec">離線包</div>')
-            + '<div class="gm-acts"><button class="gm-btn" id="gmOffline" type="button"></button></div>'
-            + i18nT('<div class="gm-note">下載後沒網路也能玩。停在首頁下載最快（遊戲中會放慢、背景時暫停）；中斷了下次開啟會自動接著下。</div>')
+          ? (window.__tivotOffline.kind==='apk'   // Android 安裝版：同一格改成版本自檢（apk_update.js，ver -3135）
+              ? i18nT('<div class="gm-sec">版本更新</div>')
+                + '<div class="gm-acts"><button class="gm-btn" id="gmOffline" type="button"></button></div>'
+                + i18nT('<div class="gm-note">有新版本時會提示，點了到 itch 下載安裝新版。</div>')
+              : i18nT('<div class="gm-sec">離線包</div>')
+                + '<div class="gm-acts"><button class="gm-btn" id="gmOffline" type="button"></button></div>'
+                + i18nT('<div class="gm-note">下載後沒網路也能玩。停在首頁下載最快（遊戲中會放慢、背景時暫停）；中斷了下次開啟會自動接著下。</div>'))
           : '')
       + '<div class="gm-acts">'
       +   (o.onHome ? i18nT('<button class="gm-btn gm-home" type="button">回到主選單</button>') : '')

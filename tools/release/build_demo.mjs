@@ -84,6 +84,12 @@ if (DEMO) { const m = path.join(OUT, 'manifest.webmanifest');
   if (fs.existsSync(m)) { const j = JSON.parse(fs.readFileSync(m, 'utf8')); try { fs.unlinkSync(m); } catch {}
     j.name = '聖約第四騎士團 先行體驗版'; j.short_name = '聖約第四騎士團 先行體驗版';
     fs.writeFileSync(m, JSON.stringify(j, null, 2) + '\n'); REWRITTEN.add('manifest.webmanifest'); console.log('manifest → ' + j.name); } }
+/* Android 版本自檢的公告檔（ver -3135）：release/apk_latest.json 由 itch_push.ps1 在上傳成功後寫，
+   這裡帶進網頁包的根目錄；App（https://localhost）跨網域讀它，所以 _headers 給這一支開 CORS、不快取。 */
+{ const src = path.join(ROOT, 'release', 'apk_latest.json');
+  if (fs.existsSync(src)) { fs.copyFileSync(src, path.join(OUT, 'apk_latest.json')); console.log('apk_latest.json → ' + fs.readFileSync(src, 'utf8').trim()); }
+  else console.warn('⚠ 沒有 release/apk_latest.json（還沒有成功上傳過 itch），App 的版本自檢會查不到');
+  fs.writeFileSync(path.join(OUT, '_headers'), '/apk_latest.json\n  Access-Control-Allow-Origin: *\n  Cache-Control: no-store\n'); }
 /* 404.html（11-27）：Cloudflare Pages 沒有 404.html 時，**任何不存在的路徑都回 200 ＋ 首頁 index.html**（單頁應用模式）——
    缺檔會被當成成功：離線下載把 HTML 存成素材、遊戲拿到 HTML 當圖解碼失敗，而且都沒有錯誤訊息。放一支 404.html，缺檔就回真的 404。 */
 fs.writeFileSync(path.join(OUT, '404.html'), '<!doctype html><meta charset="utf-8"><title>404</title><p>找不到這個檔案。</p>');
