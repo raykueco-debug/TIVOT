@@ -6108,10 +6108,14 @@ function clearStageVisuals(){
 }
 /* 門（main 的 passGate）殺舞台：收場＋把畫面上的東西全拿掉。
    只 `close()` 的話舞台藏起來了，`#storyBg` 的圖還掛著 —— 下一次有人把舞台打開
-   （飛行交棒的槍棺門 `showKerbGate`）它就回來了（ver -3087，羽蛇戰門後的北泊港口）。 */
-export function killStage(){
+   （飛行交棒的槍棺門 `showKerbGate`）它就回來了（ver -3088，羽蛇戰門後的北泊港口）。
+   ⚠ 門＝passGate／回首頁（killAllPages、setHomeReturn）一律走這支；`close()` 只留給
+     「槍棺門開了進戰鬥」那幾處 —— 那是同一張地圖上打一場，打完要回到同一張背景。
+   `opts` 照傳給 `close`（回首頁要接首頁曲與離場回呼）；不給＝門的預設，舞台沒開就不收場。 */
+export function killStage(opts){
   const st=$('storyStage');
-  if(st && st.classList.contains('on')) close({ keepBgm:true, noExit:true });
+  if(opts) close(opts);
+  else if(st && st.classList.contains('on')) close({ keepBgm:true, noExit:true });
   clearStageVisuals();
   if(st) st.classList.remove('town-on');
 }

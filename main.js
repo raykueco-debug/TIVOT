@@ -714,7 +714,7 @@ function killAllPages(){
   closeFlightFrame();   // ⚠ 它自己就會殺（ver -1457）
   try{ town.suspend(); }catch(_){}
   try{ town.close(); }catch(_){}
-  try{ story.close(); }catch(_){}
+  try{ story.killStage({}); }catch(_){}
   try{ gear.close(); }catch(_){}
   ['gameMenu','lootSheet'].forEach(id=>{
     const el=document.getElementById(id);
@@ -2300,7 +2300,7 @@ story.setHomeReturn(()=>{
   storyResume=null;
   const f=$('flightFrame'); if(f) f.classList.remove('on');
   document.body.classList.remove('flight-on');
-  combat.goHome(()=>story.close());
+  combat.goHome(()=>story.killStage({}));
 });
 /* 城鎮的「出航」→ 開飛行頁（注入，town 不 import main；同 setTownOpener 的作法）。 */
 town.setFlightOpener(from=>sailOut(from));   // 城鎮出航＝「進入」，讀取頁要跑（ver -389）；升段與出港位見 sailOut（-562/-565）

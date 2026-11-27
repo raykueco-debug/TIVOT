@@ -237,6 +237,30 @@ def check_heavy_pairs():
             err('%s：`%s()` 的唯一呼叫點不在 `%s()` 裡面（憲法鐵律 10 的自檢）。'
                 % (fn, heavy, owner))
 
+# 門（鐵律 13「過了門，門前的全殺」）收劇情舞台只准走 `story.killStage`：`story.close` 只藏不清，
+# `#storyBg` 的圖會留著，下一次有人打開舞台它就回來（ver -3088，羽蛇戰門後的北泊港口）。
+# ⚠ `story.close` 本身不是錯 —— 槍棺門開了進戰鬥（同一張地圖打一場）要的正是只藏不清；這裡只管「門」。
+GATE_FUNCS = [('main.js', 'passGate'), ('main.js', 'killAllPages')]
+def check_gate_kills():
+    for fn, func in GATE_FUNCS:
+        path = os.path.join(ROOT, fn)
+        if not os.path.exists(path): continue
+        code = open(path, encoding='utf-8').read()
+        code = re.sub(r'/\*.*?\*/', '', code, flags=re.S)
+        code = re.sub(r'//[^\n]*', '', code)
+        o = re.search(r'function\s+' + re.escape(func) + r'\s*\([^)]*\)\s*\{', code)
+        if not o:
+            err('%s：找不到門 `%s()` —— 改名了就同步改 script_lint 的 GATE_FUNCS。' % (fn, func)); continue
+        depth, end = 0, len(code)
+        for i in range(o.end() - 1, len(code)):
+            if code[i] == '{': depth += 1
+            elif code[i] == '}':
+                depth -= 1
+                if depth == 0: end = i; break
+        if re.search(r'story\.close\s*\(', code[o.end():end]):
+            err('%s：門 `%s()` 裡叫了 `story.close()` —— 它只藏不清（#storyBg 會留著），'
+                '門要走 `story.killStage()`（憲法鐵律 13）。' % (fn, func))
+
 AEXT_RE = r'webp|png|jpe?g|m4a|mp3|wav|svg|ogg|woff2|woff|ttf|otf'
 
 def check_lowercase_assets():
@@ -546,6 +570,7 @@ def main():
     D = load_data()
     check_map_enemy_images(D)
     check_heavy_pairs()
+    check_gate_kills()
     boot = check_boot_batch(D)
     ci_rows = check_ci_budget(D)
     check_map_sessions(D)

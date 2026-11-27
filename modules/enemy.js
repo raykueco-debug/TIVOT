@@ -1194,6 +1194,16 @@ function skyForBand(nm){
   const m=/^(sky_[a-z]+?)(?:_(?:dawn|day|dusk|night))?$/i.exec(nm); if(!m) return nm;
   return m[1]+'_'+(SKY_BAND[state.battleBand]||'day');
 }
+/* 這一隻的戰鬥背景（檔名）—— 只有這一支在算（鐵律 7）：setEnemy 掛上去、preloadBattleCard 先暖。
+   `bb`＝登艦戰帶過來的時段（boardBand）。優先序：戰鬥卡 bg → 卡上 bgLock → 城鎮那一格（state.battleBg）→ bgBand＋時段 → 天空鎖交棒時段。 */
+function battleBgNameOf(en, bb){
+  /* 卡上 `bgBand`（ver -2576，登艦戰甲板四時段）：基底名＋現在的時段（dawn／day／dusk／night，深夜用 night）。 */
+  const bandBg = en.bgBand ? en.bgBand+'_'+(bb || SKY_BAND[battleBand()] || 'day') : '';
+  /* 戰鬥卡的 `bg`（ver -2851，夢境戰 cap_dream 的專用背景）：**這一場**一定用它，蓋過敵人卡與城鎮那一格 ——
+     寫在戰鬥卡不寫在敵人卡，因為同一張敵人卡（faceless）也是挑戰模式的第一隻，那邊不該跟著換。 */
+  const sbBg = (state.scriptRun && state.scriptBattleId && ((GAME_CONFIG.battles||{})[state.scriptBattleId]||{}).bg) || '';
+  return sbBg || (en.bgLock && en.bg) || state.battleBg || bandBg || skyForBand(en.bg) || '';   // 天空背景鎖交棒時段（ver -2951）；卡上 bgLock：這一場一定用自己的背景（ver -2524）
+}
 export function enemyImage(en){
   if(portraitOverride && en && en===curCard() && portraitOverride.key===state.currentEnemyKey)
     return portraitOverride.src;   // NI 換上的立繪（見 swapPortrait）
@@ -1891,14 +1901,18 @@ function startIdleLoop(dir){
      分層捲動，**最底一層在敵人後面、`front:true` 的層蓋在敵人前面**。
    · 沒寫（分層圖還沒交）⇒ 退回整張圖「原圖／鏡像」交替、90 秒一輪（-2467）。
    每一層是一條四張的長條往左走一半＝一輪（無縫）。⚠ 每次 setEnemy 都明確設一次（null＝拆掉）。 */
+/* 分層天空有哪幾層（setSkyPan 鋪、preloadBattleCard 先暖，同一支）。 */
+function skyPanLayers(nm, url){
+  const cfg=((GAME_CONFIG.tuning||{}).skyPan||{})[String(nm).toLowerCase()];
+  return cfg ? cfg.layers.map(L=>({ ...L, src:L.src+assetVer(L.src) })) : [{ src:url, sec:45, mirror:true }];
+}
 function setSkyPan(nm, url){
   const top=$('top'); if(!top) return;
   const old=[...top.querySelectorAll(':scope > .sky-pan')], key=nm ? nm+'|'+url : '';
   if(old.length && old[0].dataset.key===key) return;
   old.forEach(e=>e.remove());
   if(!nm) return;
-  const cfg=((GAME_CONFIG.tuning||{}).skyPan||{})[nm.toLowerCase()];
-  const layers=cfg ? cfg.layers.map(L=>({ ...L, src:L.src+assetVer(L.src) })) : [{ src:url, sec:45, mirror:true }];
+  const layers=skyPanLayers(nm, url);
   const eImg=$('enemyImg'), vig=$('topVignette');
   layers.forEach((L,li)=>{
     const el=document.createElement('div'); el.className='sky-pan'+(L.front?' front':'')+(L.fixed?' fixed':''); el.dataset.key=key;
@@ -3303,6 +3317,11 @@ function warmImg(u){ return new Promise(r=>{ if(!u) return r(); const im=new Ima
 export function preloadBattleCard(en){
   if(!en) return Promise.resolve();
   const need=[warmImg(enemyImage(en))];
+  /* 戰鬥背景（ver -3088）：開門那一刻就要看到；空戰的分層天空逐層暖（plate 群戰在下面那段）。
+     ⚠ 時段／城鎮那一格是「現在」猜的 —— 飛行怪一生出就預載，交棒時才定時段，猜錯只是多抓一張，開門那一刻 setEnemy 照樣掛對的。 */
+  if(!(en.group && en.group.plate)){ const nm=battleBgNameOf(en, boardBand);
+    if(nm){ const url=story.bgUrl(nm); need.push(warmImg(url));
+      if(!en.sky && /^sky_/i.test(nm)) for(const L of skyPanLayers(nm, url)) if(L.src!==url) need.push(warmImg(L.src)); } }
   if(en.group){ const G=en.group;
     if(G.plate) need.push(warmImg(G.plate));
     if(G.cover) need.push(warmImg(G.cover));
@@ -4512,11 +4531,7 @@ export function setEnemy(key, opts){
     /* 卡上 `bgBand`（ver -2576，登艦戰甲板四時段）：基底名＋現在的時段（dawn／day／dusk／night，深夜用 night）。 */
     /* 登艦戰（ver -2868，Ray：「登艦戰的背景天色要跟對艦戰的時候一樣」）：boardingRun 換卡前記下對艦戰那張天空的時段（boardBand），這一次換上的卡吃它、用完即丟。 */
     const bb=boardBand; boardBand=null;
-    const bandBg = en.bgBand ? en.bgBand+'_'+(bb || SKY_BAND[battleBand()] || 'day') : '';
-    /* 戰鬥卡的 `bg`（ver -2851，夢境戰 cap_dream 的專用背景）：**這一場**一定用它，蓋過敵人卡與城鎮那一格 ——
-       寫在戰鬥卡不寫在敵人卡，因為同一張敵人卡（faceless）也是挑戰模式的第一隻，那邊不該跟著換。 */
-    const sbBg = (state.scriptRun && state.scriptBattleId && ((GAME_CONFIG.battles||{})[state.scriptBattleId]||{}).bg) || '';
-    const nm = sbBg || (en.bgLock && en.bg) || state.battleBg || bandBg || skyForBand(en.bg) || '';   // 天空背景鎖交棒時段（ver -2951）   // 卡上 bgLock：這一場一定用自己的背景（ver -2524，安雅光翼的教堂殘垣）
+    const nm = battleBgNameOf(en, bb);
     /* 群體敵人的去人背景（ver -2043）：**它就是這一場的戰鬥背景**，蓋過城鎮那一格的（battleBg）。
        ⚠ 直接寫路徑（四張都叫 plate.webp，走 bgUrl 的資料夾表會撞名）。 */
     const plate = en.group && en.group.plate;
