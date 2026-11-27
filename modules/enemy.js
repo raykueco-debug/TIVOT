@@ -26,6 +26,7 @@ import { BG_ANIM } from '../script/bg_anim.js';   // 戰鬥背景也用動態背
 import { GROUP_MEMBERS } from '../script/group_members.js';
 import { GROUP_LAYOUT } from '../script/group_layout.js';
 import { GROUP_COMPS } from '../script/group_comps.js';   // 群戰編組：立繪＋位置（ver -2635，tools/group_editor.html 存檔寫回）   // 群戰成員的位置與大小（ver -2632，編輯器存檔寫回）   // 群戰分層 → 原立繪的對位（自動產生，ver -2623）
+import { lowSpec } from './device.js';   // 低階機判準（ver -3127，唯一一支）
 import * as groundShadow from './groundShadow.js';   // 接地陰影（ver -1702，葉節點）
 import { sakuraBurst } from './sakura.js';   // 鹿主的櫻花狂亂（ver -899）——同一支花瓣引擎，見 spawnSakura
 
@@ -1425,10 +1426,46 @@ const clipCache={};
 function loadClip(dir){
   if(clipCache[dir]) return clipCache[dir].p; const c={}; clipCache[dir]=c;
   c.p = fetch(dir+'anim.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j) return c;
-    const fr=Array.from({length:j.frames||0},(_,i)=>{ const f=new Image(); f.src=dir+'frame_'+String(i).padStart(2,'0')+'.webp'; return f; });
-    return Promise.all(fr.map(f=>f.decode ? f.decode().catch(()=>{}) : 0)).then(()=>{ if(fr.length && fr.every(f=>f.naturalWidth)){ c.j=j; c.fr=fr; } return c; });
+    return loadFrames(dir, j, frameScale(j, soloCssPerPx(j))).then(fr=>{ if(fr){ c.j=j; c.fr=fr; } return c; });
   }).catch(()=>c);
   return c.p;
+}
+/* ══ 動畫格只解到螢幕上看得到的解析度（ver -3127 效能副理；係數 config.tuning.frameRes）══
+   以前每一格一律原圖解碼、整支常駐（卡耶爾群戰一組 240～550 MB 點陣）。現在載入時先算「這一支在螢幕上一格像素佔幾個裝置像素」，
+   比 1 小就把每一格重取樣成那個大小再放（blob 網址換掉 `f.src`）—— 播放端照舊只換 `src`，位置大小全由 anim.json 的 box 決定，一行都不必改。
+   · 倍率只有 frameScale 一支在算（鐵律 7）；低階機（device.lowSpec）再乘 lowSpec 那一格。
+   · 重取樣一格一格做（不先把整支原圖解進記憶體），尖峰只有一兩格原圖。
+   · blob 網址記在 frameBlobs，閉棺 releaseBattleMemory 一併 revoke（鐵律 13）。 */
+const FR = () => (GAME_CONFIG.tuning && GAME_CONFIG.tuning.frameRes) || { headroom:1.15, minGain:0.85, lowSpec:0.6 };
+let frameBlobs=[];
+function areaWH(){ const t=$('top'), r=t && t.getBoundingClientRect(); return (r && r.width>0 && r.height>0) ? [r.width, r.height] : [innerWidth, innerHeight*0.5]; }
+/* 單隻怪：動檔座標＝立繪畫布，整張鋪進 #top（取大的那一邊，寧可估大不要估小） */
+function soloCssPerPx(j){ const cv=j.canvas||[1024,1536], [W,H]=areaWH(); return Math.max(W/cv[0], H/cv[1]); }
+/* 群戰：立繪畫布 →（成員的 k）→ 群戰畫布 1536×1024 → #top */
+function groupCssPerPx(k){ const [W,H]=areaWH(); return k>0 ? k*Math.max(W/1536, H/1024) : 0; }
+export function frameScale(j, cssPerPx){
+  const P=FR(), low=lowSpec() ? P.lowSpec : 1, px=j && j.px, b=j && j.box;
+  let s=1;
+  if(px && px[0] && b && b[2] && cssPerPx>0){ const dpr=Math.min(3, devicePixelRatio||1); s=Math.min(1, (b[2]/px[0])*cssPerPx*dpr*P.headroom); }
+  s*=low;
+  return s>=P.minGain ? 1 : s;
+}
+function shrinkTo(f, s){ return new Promise(res=>{
+  const w=Math.max(1, Math.round(f.naturalWidth*s)), h=Math.max(1, Math.round(f.naturalHeight*s));
+  const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const x=cv.getContext('2d'); x.imageSmoothingQuality='high'; x.drawImage(f, 0, 0, w, h);
+  cv.toBlob(bl=>{ if(!bl) return res(f); const u=URL.createObjectURL(bl); frameBlobs.push(u); const g=new Image(); g.onload=()=>{ (g.decode ? g.decode().catch(()=>{}) : Promise.resolve()).then(()=>res(g)); }; g.onerror=()=>res(f); g.src=u; }, 'image/webp', 0.9);
+}); }
+/* 一支動檔的所有格：s≥1 照舊（並行抓＋decode）；s<1 一次兩格：抓原圖 → 縮 → 換成縮好的那一張（原圖立刻放掉）。回傳格陣列或 null。 */
+function loadFrames(dir, j, s){
+  const n=j.frames||0, url=i=>dir+'frame_'+String(i).padStart(2,'0')+'.webp';
+  if(!n) return Promise.resolve(null);
+  if(s>=1){ const fr=Array.from({length:n},(_,i)=>{ const f=new Image(); f.src=url(i); return f; });
+    return Promise.all(fr.map(f=>f.decode ? f.decode().catch(()=>{}) : 0)).then(()=> fr.every(f=>f.naturalWidth) ? fr : null); }
+  const out=new Array(n); let next=0;
+  /* ⚠ 換上縮好的那一張之後，先拔掉原圖的處理器再放掉它：清 src 會觸發 onerror，把縮好的那一格蓋成 null。 */
+  const one=i=>new Promise(res=>{ const f=new Image(); f.onload=()=>shrinkTo(f, s).then(g=>{ out[i]=g; f.onload=f.onerror=null; if(g!==f) f.removeAttribute('src'); res(); }); f.onerror=()=>{ out[i]=null; res(); }; f.src=url(i); });
+  const lane=()=> next<n ? one(next++).then(lane) : null;
+  return Promise.all([lane(), lane()]).then(()=> out.every(f=>f && f.naturalWidth) ? out : null);
 }
 function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; const s=imgStem(en);
   if(kind==='miss'){ if(ENEMY_MISS[s]) return ENEMY_MISS[s]; const d=ENEMY_DELAY[s]; return (d && !d.noMiss) ? d : null; }   // 延時片寫 noMiss＝點錯不借它（只扣秒，ver -2801）
@@ -3158,7 +3195,8 @@ let groupCard=null, groupMasks={}, lastImpact=null, groupWaitT=0;
    ⚠ 只在門關上之後叫：門還開著時底下的戰鬥畫面還看得到。 */
 export function releaseBattleMemory(){
   for(const k of Object.keys(clipCache)) delete clipCache[k];
-  memberClips.clear();
+  memberClips.clear(); memberHeld.clear();
+  for(const u of frameBlobs) URL.revokeObjectURL(u); frameBlobs=[];   // 縮過的動畫格（frameScale）
   warmImgs=[];   // 戰前預載的參照（ver -3064）
   stopIdleLoop();
   clearInterval(groupAnimT); groupAnimT=0;
@@ -3170,7 +3208,8 @@ export function releaseBattleMemory(){
 /* 現在握著幾支動畫格（ver -2945，效能副理）：過門／閉棺之後應該是 0。驗鐵律 13 用（量出來，不是讀程式推論）。 */
 export function heldStats(){ let n=0, fr=0, mb=0;
   for(const k of Object.keys(clipCache)){ const c=clipCache[k]; n++; for(const f of (c.fr||[])){ fr++; mb+=(f.naturalWidth*f.naturalHeight*4)/1048576; } }
-  return { clips:n, frames:fr, mb:Math.round(mb), members:memberClips.size, idle:(idleFr||[]).length }; }
+  let mmb=0; for(const c of memberHeld.values()) for(const f of c.fr) mmb+=(f.naturalWidth*f.naturalHeight*4)/1048576;
+  return { clips:n, frames:fr, mb:Math.round(mb), members:memberClips.size, memberMb:Math.round(mmb), idle:(idleFr||[]).length, lowSpec:lowSpec() }; }
 const MASK_W=192;
 function groupEl(){
   let g=$('enemyGroup');
@@ -3252,8 +3291,9 @@ function buildGroup(en){
     if(cm){ const u=compSrc(cm); if(cm.flip) mirroredSrc(u).then(v=>{ if(groupCard===en) im.src=v; }); else im.src=u;
       /* 動畫照立繪檔名查 ENEMY_* 表（同單隻怪，鐵律 7），box 本來就是立繪座標 */
       im._mem={ stem:cm.stem };
-      const di=idleDirOf(ENEMY_IDLE[cm.stem]); if(di) loadMemberClip(di).then(c=>{ if(c && groupCard===en){ im._idle=portraitClip(c, cm.flip); showMemberAnim(im); } });
-      for(const [key, tab] of MEMBER_ACTS){ const a=tab[cm.stem]; if(a && a.dir) loadMemberClip(a.dir).then(c=>{ if(c && groupCard===en) im[key]=Object.assign(portraitClip(c, cm.flip), { spec:a }); }); }
+      const kOf=compClipK(comp);
+      const di=idleDirOf(ENEMY_IDLE[cm.stem]); if(di) loadMemberClip(di, kOf(di)).then(c=>{ if(c && groupCard===en){ im._idle=portraitClip(c, cm.flip); showMemberAnim(im); } });
+      for(const [key, tab] of MEMBER_ACTS){ const a=tab[cm.stem]; if(a && a.dir) loadMemberClip(a.dir, kOf(a.dir)).then(c=>{ if(c && groupCard===en) im[key]=Object.assign(portraitClip(c, cm.flip), { spec:a }); }); }
       g.appendChild(im); continue; }
     im.src=G.dir+pre+n+'.webp';
     /* 中槍倒下（ver -2062，動畫交件 56d17af4）：`group.fall` ＝倒地動畫的資料夾，每人一組 `<prefix><n>/frame_00..` ＋ anim.json
@@ -3283,20 +3323,27 @@ function buildGroup(en){
    · 待機：一支 setInterval 推全部人（各自的 fps，每人錯開幾格）。
    · 攻擊（onAssaultLand）：隨機挑一個還站著的人，順放 A（槍口火光由程式畫在 `group.flashFrame` 那一格），
      再倒放回去（R＝A 倒放，Ray），回待機。回傳開槍那一刻（扣血照它延後）。 */
-const memberClips=new Map();   // 資料夾 → Promise（同一組預載過就不再抓第二次）
-function loadMemberClip(dir){
+const memberClips=new Map(), memberHeld=new Map();   // memberHeld：已載好的那幾支（heldStats 量記憶體用）   // 資料夾 → Promise（同一組預載過就不再抓第二次）
+function loadMemberClip(dir, k){   // k：這一支在群戰畫布上的縮放（成員的 k，同一支取最大的；不知道就不給＝只吃低階機那一檔）
   if(memberClips.has(dir)) return memberClips.get(dir);
-  const p=loadMemberClipRaw(dir); memberClips.set(dir, p); p.then(c=>{ if(!c) memberClips.delete(dir); }); return p;
+  const p=loadMemberClipRaw(dir, k); memberClips.set(dir, p); p.then(c=>{ if(!c) memberClips.delete(dir); else memberHeld.set(dir, c); }); return p;
 }
 /* 先把一張群戰卡的逐人 I／A／E 抓下來（ver -2589：空賊船射勾索那一刻就預載要登艦的那一組，10 秒後換卡時多半已經載好） */
 /* 回傳「開場就要看到的那幾樣」（逐人立繪＋待機）的 Promise（ver -3064 預載計畫）；攻擊／倒地照舊背景抓、不等。 */
+/* 同一支動檔可能有好幾個成員用（同種怪、不同大小）：取最大的 k，最大的那一隻才不會糊。待機的多版本陣列全算進去。 */
+function compClipK(comp){ const K={};
+  for(const m of comp.members){ const ds=[].concat(ENEMY_IDLE[m.stem]||[]).map(d=>typeof d==='string'?d:(d&&d.dir));
+    for(const [, tab] of MEMBER_ACTS){ const a=tab[m.stem]; if(a && a.dir) ds.push(a.dir); }
+    for(const d of ds) if(d) K[d]=Math.max(K[d]||0, m.k||0); }
+  return d=>K[d]||0; }
 export function preloadGroupCard(key){
   const en=(GAME_CONFIG.enemies||{})[key], G=en && en.group; if(!G) return Promise.resolve();
   const pre=G.prefix||'guard_';
   const comp=compOf(G);
   const need=[];
-  if(comp){ for(const m of comp.members){ const u=compSrc(m); if(m.flip) mirroredSrc(u); else need.push(warmImg(u));
-      const di=idleDirOf(ENEMY_IDLE[m.stem]); if(di) need.push(loadMemberClip(di)); for(const [, tab] of MEMBER_ACTS){ const a=tab[m.stem]; if(a && a.dir) loadMemberClip(a.dir); } }
+  if(comp){ const kOf=compClipK(comp);
+    for(const m of comp.members){ const u=compSrc(m); if(m.flip) mirroredSrc(u); else need.push(warmImg(u));
+      const di=idleDirOf(ENEMY_IDLE[m.stem]); if(di) need.push(loadMemberClip(di, kOf(di))); for(const [, tab] of MEMBER_ACTS){ const a=tab[m.stem]; if(a && a.dir) loadMemberClip(a.dir, kOf(a.dir)); } }
     return Promise.all(need); }
   for(const n of G.order){
     if(G.idle) need.push(loadMemberClip(G.idle+pre+n+'/'));
@@ -3335,10 +3382,9 @@ export function preloadBattleCard(en){
   const ls=en.lastStand; if(ls) [ls.image, ls.ci].forEach(k=>{ const p=k && asset(k); if(p) warmImg(p); });
   return Promise.all(need);
 }
-function loadMemberClipRaw(dir){
+function loadMemberClipRaw(dir, k){
   return fetch(dir+'anim.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j) return null;
-    const fr=Array.from({length:j.frames||0},(_,i)=>{ const f=new Image(); f.src=dir+'frame_'+String(i).padStart(2,'0')+'.webp'; return f; });
-    return Promise.all(fr.map(f=>f.decode ? f.decode().catch(()=>{}) : 0)).then(()=> (fr.length && fr.every(f=>f.naturalWidth)) ? { j, fr } : null);
+    return loadFrames(dir, j, frameScale(j, groupCssPerPx(k))).then(fr=> fr ? { j, fr } : null);
   }).catch(()=>null);
 }
 /* 飛行怪上下晃（ver -2647）：分層與疊在上面的動畫層（`_ov`）都掛 `.eg-bob`、同一個相位 —— 用 CSS 的獨立 `translate` 屬性晃，
