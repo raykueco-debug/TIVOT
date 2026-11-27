@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.27-3094';
+export const VERSION = 'ver 2026.11.27-3095';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -3334,7 +3334,10 @@ export const GAME_CONFIG = {
   /* 試玩建置（ver -3073）：試玩版裡演完插終點旗的那一幕 → 結束卡（endTitle／endSub，文案待 Ray 定）→ 回首頁。
      「是不是試玩版」不在這裡（建置設定 build.js，判定 progress.isDemo()）。 */
   /* endBattle（ver -3080）：試玩版裡這一場打贏、結算完就收尾（不演湖上甲板後面那段），終點旗在那一刻立（story.demoFinish）。 */
-  demo: { endFlag:'demo_cleared', endBattle:'man_sorana', chapterStage:5, endTitle:'試玩版到此結束', endSub:'感謝遊玩 —— 正式版敬請期待' },
+  demo: { endFlag:'demo_cleared', endBattle:'man_sorana', chapterStage:5, endTitle:'試玩版到此結束', endSub:'感謝遊玩 —— 正式版敬請期待',
+    /* 試玩包裡有的 CI 影片（ver -3093，Ray 定：只放試玩三位搭檔＋安雅惡夢再裝填）。⚠ 與 tools/release/build_demo.mjs 的 C2 那條 regex 是同一份規則的兩邊 —— 改一邊要改另一邊。
+       遊戲端只有 saint.warmCutinAnim 在問（不在包裡＝不預熱、播靜態圖）。 */
+    ciVideo:/cecilie|nouvelle|anya|nireload/ },
 
   relicBox: {
     coin:'guild_coin', price:2, firstPrice:1, firstFlag:'relic_first_bought',

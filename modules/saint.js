@@ -1237,6 +1237,8 @@ export function holdCiWarm(p){
 export function warmCutinAnim(key){
   const A=(GAME_CONFIG.tuning.cutinAnim||{})[key];
   if(!A) return;
+  /* 試玩包（ver -3093）：包裡沒有的 CI 影片（托爾斯坦的雙槍／處決／MB、索菈娜…）不預熱 ⇒ 播的時候走靜態圖。規則在 config.demo.ciVideo。 */
+  if(A.video && prog.isDemo()){ const re=(GAME_CONFIG.demo||{}).ciVideo; if(re && !re.test(A.video)) return; }
   const old=ciAnim[key];
   if(old && (old.ready || old.pending)) return;   // 好了／暖著 → 不重來；上一次失敗 → 重暖
   /* ══ 影片版（ver -2057，動畫交件：「CI 動檔全部改成影片」）══ 一張 CI 一個 `<video>`，排進同一個低優先佇列預載；
@@ -1276,6 +1278,7 @@ export function warmCutinAnim(key){
 }
 export function warmPartnerCi(pk){
   if(pk===undefined) return;
+  if(prog.isDemo() && (GAME_CONFIG.challengePartners||[]).indexOf(pk)>=0) return;   // 試玩包沒有挑戰搭檔（蕾妮／馬季諾）的 CI（ver -3093）
   if(ciWarmFor!==undefined && ciWarmFor!==pk) releasePartnerCi();   // 換人：舊的那一位放掉
   ciWarmFor=pk;
   for(const k of partnerCutinKeys(pk, true)) warmCutinAnim(k);
