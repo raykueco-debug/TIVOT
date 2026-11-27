@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.27-3109';
+export const VERSION = 'ver 2026.11.27-3111';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -1581,6 +1581,9 @@ export const GAME_CONFIG = {
      主遊戲的讀取頁與**飛行頁自己的讀取頁**是兩個 document，兩邊都讀這一條
      （飛行頁那一份是第二份，改一邊要改另一邊，見 flight/index.html 的 BOOT_HOST）。 */
   loadingHost: { flag:'set_sail', then:'renna' },
+  /* 開機那一頁（第一個預載）要不要放說明者立繪與提示輪播（ver -3111，Ray：「fraya就是開頭第一個預載而已 拿掉就好 提示文字也拿掉」）。
+     false＝只剩讀取本身。⚠ 飛行頁自己的讀取頁是第二份（flight/index.html 的 BOOT_HOST.before＝null），兩邊互指。 */
+  bootLoaderHost: false,
 
   /* ------------------------------------------------------------------ *
    *  三之四、教學關卡（tutorial）— 首次出陣時插入的對話教學
@@ -4726,7 +4729,7 @@ export const HOME_IMG = {
      ⇒ 改成**從 `challengePartners` 推**（鐵律 7：名單只有一份，日後改可選搭檔
        這裡自動跟上）。列死一份的話必然走鐘。 */
   prefixes: ['home_', 'weapon_', 'switch_'],               // logo ＋ 出擊整備的武器卡與切換 vfx
-  keys: ['inspector_freya']                                // 讀取頁的立繪
+  keys: []                                                 // ver -3111：開機讀取頁不放說明者立繪（bootLoaderHost:false），芙蕾雅不再預載
           .concat((GAME_CONFIG.challengePartners || Object.keys(GAME_CONFIG.partners || {}))
                   .map(k => 'partner_' + k)),              // 挑戰**選得到**的那幾位
 };

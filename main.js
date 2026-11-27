@@ -1030,9 +1030,12 @@ window.addEventListener('pagehide', refreshBoot);
     +  '<circle id="alRingProg" class="al-prog" cx="50" cy="50" r="48" stroke-dasharray="'+RING_C+'" stroke-dashoffset="'+RING_C+'"/></svg>'
     +  '<div id="alRingTxt"><div id="assetLoaderPct">0%</div><div id="alRingCap">SAINT INSTALL</div></div>'
     +'</div>'
-    +'<div id="alStage"><img id="alPortrait" alt="">'
-    +  '<div id="alBubble"><div class="al-name"></div><div class="al-hint" id="alHint"></div></div>'
-    +'</div>'
+    /* 說明者立繪＋提示框（ver -3111，Ray：「fraya就是開頭第一個預載而已 拿掉就好 提示文字也拿掉」）：
+       `config.bootLoaderHost:false` ＝開機讀取頁只剩讀取本身（不建這兩個元素 ⇒ 下面的立繪載入與提示輪播自然不跑、也不請求立繪）。 */
+    +(GAME_CONFIG.bootLoaderHost===false ? '' :
+      '<div id="alStage"><img id="alPortrait" alt="">'
+     +  '<div id="alBubble"><div class="al-name"></div><div class="al-hint" id="alHint"></div></div>'
+     +'</div>')
     // 語言切換鈕（讀取畫面版）：與首頁 #langBtn 同款同位，載入中即可切換（bindLangBtn 一併綁定）
     +'<button id="alLangBtn" aria-label="Language"></button>';
   document.body.appendChild(ov);
