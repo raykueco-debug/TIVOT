@@ -1531,6 +1531,9 @@ function setAnimImg(el, name){
   if(el.getAttribute('src')) el.removeAttribute('src');
   el.dataset.anim=name; el.classList.add('on');
 }
+/* 直接寫 src 的地方一律走這一支：換成靜態圖的那一刻，動畫標記一定要跟著拿掉 ——
+   不拿的話 shownName 還回動畫的名字，背景影片會疊在新的靜態圖上繼續播（ver -3138 修 -3135 的漏洞）。 */
+function putSrc(el, src){ if(el.dataset && el.dataset.anim) delete el.dataset.anim; el.setAttribute('src', src); }
 export function shownName(el){ return el ? ((el.dataset && el.dataset.anim) || el.getAttribute('src') || '') : ''; }
 
 /* ══ 時段差分的候選鏈（ver -427，鐵律 7／8 的單一真相）══════════════════════
@@ -1700,7 +1703,7 @@ function swapImg(el, src, done, opts){
       if(opts.inMs){ el.style.transitionDuration=opts.inMs+'ms'; setTimeout(()=>{ el.style.transitionDuration=''; }, opts.inMs+60); }
       requestAnimationFrame(()=>requestAnimationFrame(()=>{ el.classList.remove('fading'); fin(); })); };
     el.onload=up;
-    el.setAttribute('src', src);
+    putSrc(el, src);
     el.classList.add('on');
     if(el.complete && el.naturalWidth) up();
     return;
@@ -1713,13 +1716,13 @@ function swapImg(el, src, done, opts){
   if(!on || veilOn()){ setImg(el, src); whenPainted(el, fin); return; }
   el.classList.add('fading');
   setTimeout(()=>{
-    if(!src){ el.classList.remove('on','fading'); fin(); return; }
+    if(!src){ el.classList.remove('on','fading'); if(el.dataset.anim) delete el.dataset.anim; fin(); return; }
     const back=()=>{ el.onload=null;
       /* `opts.inMs`＝淡回來那一段要多久（ver -1917，插圖當背景用，Ray：「saintassault 淡入太快」）。 */
       if(opts && opts.inMs){ el.style.transitionDuration=opts.inMs+'ms'; setTimeout(()=>{ el.style.transitionDuration=''; }, opts.inMs+60); }
       el.classList.remove('fading'); el.classList.add('on'); fin(); };
     el.onload=back;
-    el.setAttribute('src', src);
+    putSrc(el, src);
     if(el.complete && el.naturalWidth) back();
   }, FADE_MS);
 }
@@ -5490,10 +5493,10 @@ function rewindLine(){
   shown = top.shown;
   const bg=$('storyBg'), cg=$('storyCg');
   stageBg = top.stageBg;
-  if(bg){ if(top.bgSrc && bg.getAttribute('src')!==top.bgSrc) bg.setAttribute('src', top.bgSrc);
+  if(bg){ if(top.bgSrc && bg.getAttribute('src')!==top.bgSrc) putSrc(bg, top.bgSrc);
           bg.classList.toggle('on', top.bgOn); }
   stageCg = top.stageCg;
-  if(cg){ if(top.cgSrc && cg.getAttribute('src')!==top.cgSrc) cg.setAttribute('src', top.cgSrc);
+  if(cg){ if(top.cgSrc && cg.getAttribute('src')!==top.cgSrc) putSrc(cg, top.cgSrc);
           cg.classList.toggle('on', top.cgOn); }
   const cg2=$('storyCg2'); if(cg2) cg2.classList.remove('on');
   lineIdx = top.idx;
