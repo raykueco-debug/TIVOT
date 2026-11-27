@@ -610,11 +610,12 @@ export function spawnHolyBurst(fx){
   const bf=card.beamFrom||{ x:0.5, y:0.25 };
   const W=innerWidth, H=innerHeight;
   let cx=W*0.5, cy=H*0.28;
-  if(img && img.naturalWidth){
+  const pwh=portraitWH(img);
+  if(img && pwh){
     const r=img.getBoundingClientRect();
     /* contain 的實際畫面：等比縮到框內，四周留白。 */
-    const k=Math.min(r.width/img.naturalWidth, r.height/img.naturalHeight);
-    const dw=img.naturalWidth*k, dh=img.naturalHeight*k;
+    const k=Math.min(r.width/pwh[0], r.height/pwh[1]);
+    const dw=pwh[0]*k, dh=pwh[1]*k;
     /* `fit.pos` 多半是 `center bottom`／`center NN%` —— 橫向一律置中，
        縱向照 CSS 的 object-position 百分比擺（沒寫就當 50%）。 */
     const pos=(card.fit&&card.fit.pos)||'center bottom';
@@ -1409,6 +1410,26 @@ function placeIdle(){ if(!idleEl || !idleJ) return; const r=canvasBoxInTop($('en
   idleEl.style.left=r.left+'px'; idleEl.style.top=r.top+'px'; idleEl.style.width=r.width+'px'; idleEl.style.height=r.height+'px'; }
 try{ window.addEventListener('resize', ()=>placeIdle()); }catch(_){}
 /* 這張卡的待機動檔資料夾：卡上 `idle` 明寫優先（false＝關），否則照立繪檔名查 config 的 ENEMY_IDLE（ver -2075）。群體敵人不吃。 */
+/* ══ 有待機動畫就不載底圖（ver -3129，Ray：「跑動畫跟 cut in 之前都先跑一次底圖 白瞎效能 把底圖給撤了」「接著撤」）══
+   以前每一隻怪都先掛靜態立繪（`#enemyImg`）：解碼一張 1024×1536、在它上面演降臨，演完才換成待機動畫 —— 那張圖一出場就被蓋掉。
+   現在：待機動檔**已經載好**的單隻怪，`#enemyImg` 不掛圖（元素留著當定位框與演出 class 的掛點），降臨／淨化／震碎／換敵的動畫
+   由 CSS 的 `#enemyImg.<class> ~ .en-idle` 轉給待機層演。判準只有 baseIdleDir 一支（鐵律 7）。
+   退路：群戰、空中生物／船（airEnter 演在立繪上）、有出場動畫（ENEMY_ENTER）、NI 換圖（portraitOverride）、
+   或動檔還沒載好 —— 一律照舊掛底圖。 */
+function baseIdleDir(en){
+  if(!en || en.group || portraitOverride || isAirBio(en) || isAirShip(en) || clipFor('enter', en)) return null;
+  const d=idleDirFor(en), c=d && clipCache[d];
+  return (c && c.fr && c.j) ? d : null;
+}
+/* 底圖的像素尺寸：沒掛底圖時讀待機動檔的立繪畫布（同一個座標系）。 */
+function portraitWH(img){ return (img && img.naturalWidth) ? [img.naturalWidth, img.naturalHeight] : (idleJ && idleJ.canvas) ? idleJ.canvas : null; }
+/* 死亡／換敵的演出要停在最後那一格：有底圖就照舊收掉待機（演在底圖上）；沒底圖就把待機凍住（演在待機層上）。 */
+function freezeOrStopIdle(){
+  const e=$('enemyImg');
+  if(e && e.getAttribute('src')){ stopIdleLoop(); return; }
+  clearInterval(idleT); idleT=0; clearTimeout(clipT); clipT=0;
+  if(clipEl && clipEl!==idleEl){ clipEl.remove(); clipEl=null; }
+}
 function imgStem(en){ const p=String(asset(en && en.image)||'').split('?')[0]; return p.slice(p.lastIndexOf('/')+1).replace(/\.\w+$/,''); }
 function idleDirFor(en){
   if(!en || en.group || en.idle===false) return null;
@@ -1417,7 +1438,7 @@ function idleDirFor(en){
 }
 /* 待機表的值可以是**陣列**（ver -2859，空賊船 4／5 號 Ray：「兩版都要」）＝每次登場隨機抽一版。讀 ENEMY_IDLE 一律過這一支（鐵律 8）。 */
 export function idleDirOf(v){ return Array.isArray(v) ? (v.length ? v[(Math.random()*v.length)|0] : null) : (v || null); }
-function startCardIdle(en){ applyFar(en); if(portraitOverride) return; const d=idleDirFor(en); if(d) startIdleLoop(d); preloadActionClips(en); preloadDodge(en); }
+function startCardIdle(en, dir){ applyFar(en); if(portraitOverride) return; const d=dir||idleDirFor(en); if(d) startIdleLoop(d); preloadActionClips(en); preloadDodge(en); }
 /* ══ 攻擊／延時動畫（ver -2472）══ 一次性的動檔：從待機切進來、播完切回待機（Ray：「所有攻擊都要回到原本的中立動畫」）。
    動檔在換上這隻怪的那一刻預載（戰鬥內，鐵律 13）；還沒載好就不演（照舊只有受擊特效）。 */
 const clipCache={};
@@ -3363,7 +3384,9 @@ function warmImg(u){ return new Promise(r=>{ if(!u) return r(); const im=new Ima
   im.onload=()=>{ (im.decode ? im.decode().catch(()=>{}) : Promise.resolve()).then(r); }; im.onerror=()=>r(); im.src=u; }); }
 export function preloadBattleCard(en){
   if(!en) return Promise.resolve();
-  const need=[warmImg(enemyImage(en))];
+  /* 有待機動畫的單隻怪不暖底圖（ver -3129）：開場由待機層演。判準同 baseIdleDir，只差「動檔載好了沒」（這裡正是去載它的地方）。 */
+  const idleOnly = !en.group && en.idle!==false && !!idleDirFor(en) && !isAirBio(en) && !isAirShip(en) && !clipFor('enter', en);
+  const need=[idleOnly ? Promise.resolve() : warmImg(enemyImage(en))];
   /* 戰鬥背景（ver -3088）：開門那一刻就要看到；空戰的分層天空逐層暖（plate 群戰在下面那段）。
      ⚠ 時段／城鎮那一格是「現在」猜的 —— 飛行怪一生出就預載，交棒時才定時段，猜錯只是多抓一張，開門那一刻 setEnemy 照樣掛對的。 */
   if(!(en.group && en.group.plate)){ const nm=battleBgNameOf(en, boardBand);
@@ -3911,7 +3934,7 @@ function loadSingleFall(en){
 }
 export function playKillFall(){
   const F=singleFall; if(!F || !F.j || !F.frames.length || !F.frames.every(f=>f.complete && f.naturalWidth)) return 0;
-  const eImg=$('enemyImg'), top=$('top'); if(!eImg || !top || !eImg.naturalWidth) return 0;
+  const eImg=$('enemyImg'), top=$('top'); if(!eImg || !top || !eImg.offsetWidth) return 0;   // 沒掛底圖也照演（ver -3129）
   const en=F.card||{}, j=F.j, r=canvasBoxInTop(eImg, j); if(!r) return 0;
   stopIdleLoop();
   const el=document.createElement('img'); el.className='en-fall'; el.alt='';
@@ -4069,7 +4092,7 @@ export function loadEnemyPortrait(en){
       if(e.animationName!=='enemyRise' && e.animationName!=='enemyPurge') return;
       eImg.removeEventListener('animationend', off);
       eImg.classList.remove(riseCls);
-      if(e.animationName==='enemyRise' || riseCls==='enemy-unpurge') startCardIdle(en);   // 降臨演完才換成待機循環（ver -2075）
+      if((e.animationName==='enemyRise' || riseCls==='enemy-unpurge') && !idleEl) startCardIdle(en);   // 降臨演完才換成待機循環（ver -2075）；沒底圖的待機層一開始就在（ver -3129）
     }); };
   /* ══⚠⚠ **登場音只有一格**（ver -948，Ray：「entranceVo 跟 landSe 應該是同一時間
      發生，併為一格」）══ 卡上寫 `entrance`，播的**時機由這隻怪自己決定**：
@@ -4134,6 +4157,8 @@ export function loadEnemyPortrait(en){
     /* ⚠ 被 `suppressRiseOnce` 壓掉的那一場：登場音與衝擊也不發（見 riseSuppressedNow）。 */
     const fire=()=>{ if(riseSuppressedNow){ if(air) airEnter(en, eImg, false); if(enterC) enterNow(false); return; } if(riseHeld) risePending=arrive; else arrive(); };
     const shown=()=>{ eImg.onload=null; fire(); if(!air && !enterC) startCardIdle(en); };   // 空中生物型／有出場動畫：待機等入場演完
+    const bd=baseIdleDir(en);
+    if(bd){ eImg.onload=null; eImg.removeAttribute('src'); fire(); startCardIdle(en, bd); return; }   // 不掛底圖（ver -3129）
     if(air || enterC) eImg.style.opacity='0';   // 門開才進場（門開前那一格不能已經站著）   // 門開才由近到遠飛進來（門開前那一格不能已經站著）
     eImg.onload = shown;
     eImg.src = enemyImage(en);
@@ -4143,6 +4168,8 @@ export function loadEnemyPortrait(en){
   const arm=()=>{ eImg.onload=null; clearTimeout(riseT); riseT=setTimeout(rise, RISE_DELAY_MS);
                   if(playEntranceVo) playEntranceVo(); };
   const mount=()=>{
+    const bd=baseIdleDir(en);
+    if(bd){ eImg.onload=null; eImg.removeAttribute('src'); startCardIdle(en, bd); arm(); return; }   // 不掛底圖，降臨演在待機層上（ver -3129）
     eImg.onload = arm;
     eImg.src = enemyImage(en);
     if(eImg.complete && eImg.naturalWidth) arm();
@@ -4150,7 +4177,7 @@ export function loadEnemyPortrait(en){
   /* 押住＝連圖都先不掛（門開前那一格不能已經站著）；release 那一刻掛圖＋降臨。
      圖先在背景預熱（new Image），release 時大多已解碼完、rise 不會等載入。 */
   if(riseHeld){
-    try{ const warm=new Image(); warm.src=enemyImage(en); }catch(_){}
+    if(!baseIdleDir(en)) try{ const warm=new Image(); warm.src=enemyImage(en); }catch(_){}   // 有待機動畫就不暖底圖（ver -3129）
     risePending=mount;
     return;
   }
@@ -4256,7 +4283,7 @@ export function purgeEnemy(){
       setTimeout(()=>{ if(api.screenShake) api.screenShake('heavy'); }, TOP_SWEEP_MS*0.45);
       return airTopSweep(en, src, { ang:90, final:true }) || 0; }
   }
-  stopIdleLoop();   // 死亡演出在立繪本體上演（ver -2075）
+  freezeOrStopIdle();   // 死亡演出：有底圖演在底圖上（ver -2075）；沒底圖演在凍住的待機層上（ver -3129）
   if(en && en.deathFx==='quake'){
     const eImg = $('enemyImg');
     if(!eImg || eImg.classList.contains('enemy-quake')) return;
@@ -4640,7 +4667,7 @@ export function advanceToNextEnemy(done){
   const en = GAME_CONFIG.enemies[key] || {};
   const src = enemyImage(en);
   const start = ()=>{
-    stopIdleLoop();   // 連戰換敵：掠過演出在立繪本體上演（ver -2075）
+    freezeOrStopIdle();   // 連戰換敵：掠過演出（有底圖演在底圖上；沒底圖演在待機層上，ver -3129）
     if(img){ img.classList.remove('enemy-enter'); img.classList.add('enemy-leave'); }
     setTimeout(()=>{
       setEnemy(key);            // 換立繪/名稱/血量與大絕/懲罰/hitFx config
