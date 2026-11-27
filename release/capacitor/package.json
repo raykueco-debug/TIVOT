@@ -1,0 +1,21 @@
+{
+  "name": "tivot-app",
+  "private": true,
+  "version": "0.1.0",
+  "description": "TIVOT 手機包（Capacitor）。webDir＝../../dist/demo（tools/release/build_demo.mjs 產的試玩包）",
+  "scripts": {
+    "sync": "cap sync android",
+    "open": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.3",
+    "@capacitor/core": "^8.6.3",
+    "@capacitor/screen-orientation": "^8.0.2",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.3"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "appId": "com.tivot.saintinstall",
+  "appName": "聖約第四騎士團",
+  "webDir": "../../dist/demo",
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#0a0812"
+  },
+  "plugins": {
+    "SplashScreen": { "launchShowDuration": 0, "backgroundColor": "#0a0812", "showSpinner": false },
+    "StatusBar": { "overlaysWebView": true, "style": "DARK" }
+  }
+}
