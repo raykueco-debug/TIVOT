@@ -1,0 +1,290 @@
+[
+ {
+  "name": "蜈蚣戰",
+  "id": "flight_centipede",
+  "grade": "S",
+  "text": "竟然……一個人就發揮了一艘船的火力……",
+  "expr": "surprised",
+  "aff": ""
+ },
+ {
+  "name": "蜈蚣戰",
+  "id": "flight_centipede",
+  "grade": "A",
+  "text": "好驚人……這就是HUND的實力？",
+  "expr": "surprised",
+  "aff": ""
+ },
+ {
+  "name": "蜈蚣戰",
+  "id": "flight_centipede",
+  "grade": "B",
+  "text": "璐娜莉亞團長推薦你的理由，我總算明白了。",
+  "expr": "write",
+  "aff": ""
+ },
+ {
+  "name": "蜈蚣戰",
+  "id": "flight_centipede",
+  "grade": "C",
+  "text": "嗯……看來還有不少地方需要觀察呢。",
+  "expr": "write",
+  "aff": ""
+ },
+ {
+  "name": "蜈蚣戰",
+  "id": "flight_centipede",
+  "grade": "D",
+  "text": "好危險……差一點就沒命了。",
+  "expr": "relief",
+  "aff": ""
+ },
+ {
+  "name": "蜈蚣戰",
+  "id": "flight_centipede",
+  "grade": "E",
+  "text": "",
+  "expr": "die",
+  "aff": ""
+ },
+ {
+  "name": "空賊戰（黑船洛爾夫）",
+  "id": "flight_pirate",
+  "grade": "S",
+  "text": "把一整團空賊壓著打……太可靠了。",
+  "expr": "smile",
+  "aff": ""
+ },
+ {
+  "name": "空賊戰（黑船洛爾夫）",
+  "id": "flight_pirate",
+  "grade": "A",
+  "text": "一個人就把空賊船給打下來……你還算是人類嗎？",
+  "expr": "surprised",
+  "aff": ""
+ },
+ {
+  "name": "空賊戰（黑船洛爾夫）",
+  "id": "flight_pirate",
+  "grade": "B",
+  "text": "瓦爾士地方的治安真的很糟糕呢。",
+  "expr": "sigh",
+  "aff": ""
+ },
+ {
+  "name": "空賊戰（黑船洛爾夫）",
+  "id": "flight_pirate",
+  "grade": "C",
+  "text": "你是不是不擅長對人類作戰呀？",
+  "expr": "ask",
+  "aff": ""
+ },
+ {
+  "name": "空賊戰（黑船洛爾夫）",
+  "id": "flight_pirate",
+  "grade": "D",
+  "text": "我還以為會死在這裡……",
+  "expr": "die",
+  "aff": ""
+ },
+ {
+  "name": "空賊戰（黑船洛爾夫）",
+  "id": "flight_pirate",
+  "grade": "E",
+  "text": "",
+  "expr": "die",
+  "aff": ""
+ },
+ {
+  "name": "北泊1・城鎮戰（教堂背負祭壇者收段）",
+  "id": "np_boss",
+  "grade": "S",
+  "text": "在卡耶爾山谷一人擋下禍魘的軍勢的傳說似乎不假呢。",
+  "expr": "shockcalm",
+  "aff": ""
+ },
+ {
+  "name": "北泊1・城鎮戰（教堂背負祭壇者收段）",
+  "id": "np_boss",
+  "grade": "A",
+  "text": "小兒科？這可是禍魘的軍勢啊!",
+  "expr": "argue",
+  "aff": ""
+ },
+ {
+  "name": "北泊1・城鎮戰（教堂背負祭壇者收段）",
+  "id": "np_boss",
+  "grade": "B",
+  "text": "全都是沒見過的種類呢，得好好記錄起來。",
+  "expr": "write",
+  "aff": ""
+ },
+ {
+  "name": "北泊1・城鎮戰（教堂背負祭壇者收段）",
+  "id": "np_boss",
+  "grade": "C",
+  "text": "辛苦了，休息一下吧。",
+  "expr": "smile",
+  "aff": ""
+ },
+ {
+  "name": "北泊1・城鎮戰（教堂背負祭壇者收段）",
+  "id": "np_boss",
+  "grade": "D",
+  "text": "在卡耶爾山谷一人擋下禍魘的軍勢的傳說果然有點誇張了吧。",
+  "expr": "sighsweat",
+  "aff": ""
+ },
+ {
+  "name": "北泊1・城鎮戰（教堂背負祭壇者收段）",
+  "id": "np_boss",
+  "grade": "E",
+  "text": "",
+  "expr": "",
+  "aff": ""
+ },
+ {
+  "name": "紫黑之爪",
+  "id": "np_claws",
+  "grade": "S",
+  "text": "那到底……是什麼東西?",
+  "expr": "shockopen",
+  "aff": ""
+ },
+ {
+  "name": "紫黑之爪",
+  "id": "np_claws",
+  "grade": "A",
+  "text": "那到底……是什麼東西?",
+  "expr": "shockopen",
+  "aff": ""
+ },
+ {
+  "name": "紫黑之爪",
+  "id": "np_claws",
+  "grade": "B",
+  "text": "那到底……是什麼東西?",
+  "expr": "shockopen",
+  "aff": ""
+ },
+ {
+  "name": "紫黑之爪",
+  "id": "np_claws",
+  "grade": "C",
+  "text": "那到底……是什麼東西?",
+  "expr": "shockopen",
+  "aff": ""
+ },
+ {
+  "name": "紫黑之爪",
+  "id": "np_claws",
+  "grade": "D",
+  "text": "那到底……是什麼東西?",
+  "expr": "shockopen",
+  "aff": ""
+ },
+ {
+  "name": "紫黑之爪",
+  "id": "np_claws",
+  "grade": "E",
+  "text": "",
+  "expr": "",
+  "aff": ""
+ },
+ {
+  "name": "北泊2・墓地背負祭壇者",
+  "id": "np_cemetery",
+  "grade": "S",
+  "text": "一瞬間就把那麼大的禍魘......!",
+  "expr": "surprised",
+  "aff": ""
+ },
+ {
+  "name": "北泊2・墓地背負祭壇者",
+  "id": "np_cemetery",
+  "grade": "A",
+  "text": "跟教堂一樣的禍魘……幸好有你在。",
+  "expr": "relief",
+  "aff": ""
+ },
+ {
+  "name": "北泊2・墓地背負祭壇者",
+  "id": "np_cemetery",
+  "grade": "B",
+  "text": "到底是從哪裡冒出來的……這樣下去沒完沒了!",
+  "expr": "shockcalm",
+  "aff": ""
+ },
+ {
+  "name": "北泊2・墓地背負祭壇者",
+  "id": "np_cemetery",
+  "grade": "C",
+  "text": "你是不是……累了?",
+  "expr": "worry",
+  "aff": ""
+ },
+ {
+  "name": "北泊2・墓地背負祭壇者",
+  "id": "np_cemetery",
+  "grade": "D",
+  "text": "前途堪慮…...",
+  "expr": "die",
+  "aff": ""
+ },
+ {
+  "name": "北泊2・墓地背負祭壇者",
+  "id": "np_cemetery",
+  "grade": "E",
+  "text": "我還以為會死在這裡……",
+  "expr": "die",
+  "aff": ""
+ },
+ {
+  "name": "禍魘娜塔莉",
+  "id": "np_nightmare",
+  "grade": "S",
+  "text": "……我決定這輩子都不會離開你身邊……",
+  "expr": "scarecute",
+  "aff": "{\"renna\":10}"
+ },
+ {
+  "name": "禍魘娜塔莉",
+  "id": "np_nightmare",
+  "grade": "A",
+  "text": "說好了，一步都不許離開我！",
+  "expr": "scarecute",
+  "aff": ""
+ },
+ {
+  "name": "禍魘娜塔莉",
+  "id": "np_nightmare",
+  "grade": "B",
+  "text": "對不起，我最怕這種的了……",
+  "expr": "awkward",
+  "aff": ""
+ },
+ {
+  "name": "禍魘娜塔莉",
+  "id": "np_nightmare",
+  "grade": "C",
+  "text": "對、對喔！神父本來就會驅魔嘛！",
+  "expr": "meltdown",
+  "aff": ""
+ },
+ {
+  "name": "禍魘娜塔莉",
+  "id": "np_nightmare",
+  "grade": "D",
+  "text": "我要跟諾薇兒睡一間房……",
+  "expr": "die",
+  "aff": ""
+ },
+ {
+  "name": "禍魘娜塔莉",
+  "id": "np_nightmare",
+  "grade": "E",
+  "text": "",
+  "expr": "",
+  "aff": ""
+ }
+]

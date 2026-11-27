@@ -142,25 +142,54 @@ export const BY_BATTLE = {
       D: { text:'基本全靠人家村民呢……',             expr:'die',       aff:{ sorana:12 } },
     },
   } },
-  /* 聖徒化教學戰（瓦礫中的紫黑之爪）。稿一字未改。 */
-  np_claws: {
-    S: { text:'難以置信……聖徒加護的你恐怕有接近團長級的實力。', expr:'shockcalm' },
-    A: { text:'聖徒化……那就是騎士團的王牌……？',               expr:'think'    },
-    B: { text:'竟能將低階的聖徒之力運用到如此境界……',           expr:'think'    },
-    C: { text:'低階的聖徒之力竟然也有這種威力……',               expr:'write'    },
-    D: { text:'你得好好感謝諾薇兒呢。',                          expr:'write'    },
+
+
+  /* ══ 試玩範圍六場的蕾娜評價（ver -3082，Ray 定稿：docs/蕾娜評價_試玩範圍_定稿.json，一字未改）══
+     空白的等第不寫（那一格不講評價，照本表既有慣例）。np_claws／np_nightmare 取代舊稿；np_nightmare S 保留好感 +10。
+     np_boss＝北泊城鎮戰收段（sessionEnd）那一場，整段在這裡結算。
+     空賊：一般遭遇 flight_pirate 與瓦爾士劇本遭遇 valse_pirate（黑船洛爾夫）共用同一組（檔尾綁定，稿只有一份）。 */
+  flight_centipede: {   // 蜈蚣戰
+    S: { text:'竟然……一個人就發揮了一艘船的火力……', expr:'surprised' },
+    A: { text:'好驚人……這就是HUND的實力？', expr:'surprised' },
+    B: { text:'璐娜莉亞團長推薦你的理由，我總算明白了。', expr:'write' },
+    C: { text:'嗯……看來還有不少地方需要觀察呢。', expr:'write' },
+    D: { text:'好危險……差一點就沒命了。', expr:'relief' },
   },
-  /* 禍魘娜塔莉戰（ver -671（-893 前用詞），Ray 交稿）。稿一字未改。
-     ⚠⚠ S 那一句帶**好感 +5**（`aff`）：這是評價這一層第一次給好感 ——
-       由 `inspector.pickEvaluator` 在挑到那一句時記帳（只有這一處，鐵律 8）。
-     ⚠ 只加一次：`EVAL_AFF_FLAG` 記在 progress（進存檔，§6.9）—— 打贏之後
-       重看結算頁、或這一場再打一次，都不會再加。 */
-  np_nightmare: {
-    S: { text:'……我決定這輩子都不會離開你身邊……', expr:'scarecute', aff:{ renna:10 } },   // ver -724：全面 ×2（原 5）
-    A: { text:'說好了，一步都不許離開我！',         expr:'scarecute' },
-    B: { text:'對不起，我最怕這種的了……',           expr:'awkward'   },
-    C: { text:'對、對喔！神父本來就會驅魔嘛！',      expr:'meltdown'  },
-    D: { text:'我要跟諾薇兒睡一間房……',             expr:'die'     },
+  flight_pirate: {   // 空賊戰（黑船洛爾夫）
+    S: { text:'把一整團空賊壓著打……太可靠了。', expr:'smile' },
+    A: { text:'一個人就把空賊船給打下來……你還算是人類嗎？', expr:'surprised' },
+    B: { text:'瓦爾士地方的治安真的很糟糕呢。', expr:'sigh' },
+    C: { text:'你是不是不擅長對人類作戰呀？', expr:'ask' },
+    D: { text:'我還以為會死在這裡……', expr:'die' },
+  },
+  np_boss: {   // 北泊1・城鎮戰（教堂背負祭壇者收段）
+    S: { text:'在卡耶爾山谷一人擋下禍魘的軍勢的傳說似乎不假呢。', expr:'shockcalm' },
+    A: { text:'小兒科？這可是禍魘的軍勢啊!', expr:'argue' },
+    B: { text:'全都是沒見過的種類呢，得好好記錄起來。', expr:'write' },
+    C: { text:'辛苦了，休息一下吧。', expr:'smile' },
+    D: { text:'在卡耶爾山谷一人擋下禍魘的軍勢的傳說果然有點誇張了吧。', expr:'sighsweat' },
+  },
+  np_claws: {   // 紫黑之爪
+    S: { text:'那到底……是什麼東西?', expr:'shockopen' },
+    A: { text:'那到底……是什麼東西?', expr:'shockopen' },
+    B: { text:'那到底……是什麼東西?', expr:'shockopen' },
+    C: { text:'那到底……是什麼東西?', expr:'shockopen' },
+    D: { text:'那到底……是什麼東西?', expr:'shockopen' },
+  },
+  np_cemetery: {   // 北泊2・墓地背負祭壇者
+    S: { text:'一瞬間就把那麼大的禍魘......!', expr:'surprised' },
+    A: { text:'跟教堂一樣的禍魘……幸好有你在。', expr:'relief' },
+    B: { text:'到底是從哪裡冒出來的……這樣下去沒完沒了!', expr:'shockcalm' },
+    C: { text:'你是不是……累了?', expr:'worry' },
+    D: { text:'前途堪慮…...', expr:'die' },
+    E: { text:'我還以為會死在這裡……', expr:'die' },
+  },
+  np_nightmare: {   // 禍魘娜塔莉
+    S: { text:'……我決定這輩子都不會離開你身邊……', expr:'scarecute', aff:{ renna:10 } },
+    A: { text:'說好了，一步都不許離開我！', expr:'scarecute' },
+    B: { text:'對不起，我最怕這種的了……', expr:'awkward' },
+    C: { text:'對、對喔！神父本來就會驅魔嘛！', expr:'meltdown' },
+    D: { text:'我要跟諾薇兒睡一間房……', expr:'die' },
   },
 };
 
@@ -196,4 +225,5 @@ export const INTRUDE = {
   },
 };
 
+BY_BATTLE.valse_pirate = BY_BATTLE.flight_pirate;   // 瓦爾士劇本遭遇（黑船洛爾夫）＝同一組評價（ver -3082）
 [LINES, BY_BATTLE, INTRUDE].forEach(trTree);   // 劇本譯文：選了別的語言才會換（i18n/scriptTr.js）
