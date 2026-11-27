@@ -236,7 +236,7 @@ export function updateThreats(){
     else if(ratio>=DEF_PERFECT_MIN) col='rgba(240,140,40';   // 橘圈
     else                            col='rgba(240,50,50';    // 紅圈：反擊窗
     if(ratio<DEF_DEFENSE_MIN) hot=true;   // 與圈的分帶同一條門檻；狙擊圈色不同但門檻同一個
-    vis.style.background=`radial-gradient(circle,${col},.75),${col},.3) 60%,transparent 72%)`;
+    vis.style.background=`radial-gradient(circle,${col},.75),${col},.3) 60%,${col},0) 72%)`;   // ⚠ 收尾用同色 alpha 0，不用 transparent：舊 WebKit 會以透明黑內插，圈緣灰一圈（ver -3134，Ray iOS 回報光圈灰塊）
     vis.style.borderColor=col+',.95)';
     vis.style.boxShadow=`0 0 22px ${col},.85),inset 0 0 12px ${col},.6)`;
     if(left<=0){ releaseAssault(th); }

@@ -1286,9 +1286,9 @@
 
   /* 防禦統一閃光：整張敵圖微微一閃（不過亮）。白＝格擋；金＝完美防禦／反擊。 */
   #defFlash{position:absolute;inset:0;pointer-events:none;z-index:6;opacity:0;mix-blend-mode:screen;}
-  #defFlash.block{background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.55),rgba(255,255,255,.12) 55%,transparent 72%);
+  #defFlash.block{background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.55),rgba(255,255,255,.12) 55%,rgba(255,255,255,0) 72%);
     animation:defFlashAnim .32s ease-out;}
-  #defFlash.gold{background:radial-gradient(circle at 50% 45%,rgba(240,205,110,.55),rgba(220,175,70,.14) 55%,transparent 72%);
+  #defFlash.gold{background:radial-gradient(circle at 50% 45%,rgba(240,205,110,.55),rgba(220,175,70,.14) 55%,rgba(220,175,70,0) 72%);
     animation:defFlashAnim .36s ease-out;}
   @keyframes defFlashAnim{0%{opacity:0}30%{opacity:.7}100%{opacity:0}}
 
@@ -1474,7 +1474,7 @@
     transform:translate(-50%,-50%);}
   .reddot .rd-vis{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
     display:block;border-radius:50%;pointer-events:none;
-    background:radial-gradient(circle,rgba(255,70,70,.7),rgba(200,20,20,.3) 60%,transparent 72%);
+    background:radial-gradient(circle,rgba(255,70,70,.7),rgba(200,20,20,.3) 60%,rgba(200,20,20,0) 72%);   /* 收尾同色 alpha 0（-3134：舊 WebKit 的 transparent 會內插出灰邊） */
     border:2px solid rgba(255,100,100,.9);box-shadow:0 0 22px rgba(255,40,40,.85),inset 0 0 12px rgba(255,80,80,.6);}
   /* 盤面警戒兩段（ver -462，Ray：「亮黃圈時數字盤亮橘光，亮橘圈的時候數字盤轉紅光」）
      alert＝黃圈帶（橘光）、alert.hot＝橘圈帶起（紅光，紅圈維持）。.hot 由
@@ -1745,7 +1745,7 @@
     mix-blend-mode:screen;pointer-events:none;z-index:9000;will-change:transform;}
   .dagger-hit{position:fixed;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;
     pointer-events:none;z-index:9001;mix-blend-mode:screen;
-    background:radial-gradient(circle,rgba(255,255,255,.95),rgba(232,197,106,.55) 40%,transparent 70%);
+    background:radial-gradient(circle,rgba(255,255,255,.95),rgba(232,197,106,.55) 40%,rgba(232,197,106,0) 70%);
     animation:daggerHit .3s ease-out forwards;}
   @keyframes daggerHit{from{transform:scale(.3);opacity:1}to{transform:scale(1.3);opacity:0}}
   /* 整備頁的搭檔鎖定（ver -839）：看得到、按不動（§6.5.5 不藏鈕）。 */
@@ -1881,10 +1881,10 @@
   #returnAura{position:absolute;width:0;height:0;pointer-events:none;display:none;z-index:36;}
   #returnAura.on{display:block;}
   #returnAura .core{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;
-    background:radial-gradient(circle,rgba(255,240,190,.95),rgba(255,180,90,.5) 55%,transparent 72%);
+    background:radial-gradient(circle,rgba(255,240,190,.95),rgba(255,180,90,.5) 55%,rgba(255,180,90,0) 72%);   /* -3134：同色 alpha 0 取代 transparent */
     box-shadow:0 0 18px 6px rgba(255,200,110,.6);animation:auraCore .9s ease-in-out infinite;}
   #returnAura .ray{position:absolute;left:0;top:0;width:3px;height:64px;transform-origin:50% 0;
-    background:linear-gradient(to bottom,transparent,rgba(255,210,130,.85));
+    background:linear-gradient(to bottom,rgba(255,210,130,0),rgba(255,210,130,.85));   /* -3134：同色 alpha 0 取代 transparent */
     filter:drop-shadow(0 0 3px rgba(255,190,90,.8));animation:auraRay 1s ease-in infinite;}
   @keyframes auraRay{
     0%{ transform:rotate(var(--a)) translateY(76px) scaleY(1); opacity:0; }
@@ -2631,12 +2631,12 @@
   /* 底下墊一層深色的光暈：背景很花（黑爪戰的紫翼＋教堂）時，金箭與字照樣讀得出來。 */
   #tutGuide.g-gate::before{content:'';position:absolute;left:-34px;right:-34px;top:-22px;bottom:-22px;z-index:-1;
     background:radial-gradient(ellipse closest-side at center, rgba(8,6,14,.72) 0%, rgba(8,6,14,.45) 52%,
-      rgba(8,6,14,.32) 68%, var(--tg-halo) 80%, transparent 100%);pointer-events:none;}
+      rgba(8,6,14,.32) 68%, var(--tg-halo) 80%, var(--tg-halo0) 100%);pointer-events:none;}   /* -3134：收尾＝外圈光同色 alpha 0（舊 WebKit 的 transparent 以透明黑內插，邊緣一圈灰，Ray iOS 回報） */
   /* 外圈的光（-3126）：原本是容器 drop-shadow 順手把這片暗底描出一圈光，現在直接畫進漸層（不靠 filter）。
      ⚠ 框往外撐（-44／-32）是因為 closest-side 在框邊就歸零，要與舊版看得到的暗底同大。 */
   #tutGuide.g-gate::before{left:-44px;right:-44px;top:-32px;bottom:-32px;}
-  #tutGuide.g-gate{--tg-halo:rgba(240,196,105,.22);}
-  #tutGuide.g-gate.g-red{--tg-halo:rgba(255,60,60,.38);}
+  #tutGuide.g-gate{--tg-halo:rgba(240,196,105,.22); --tg-halo0:rgba(240,196,105,0);}
+  #tutGuide.g-gate.g-red{--tg-halo:rgba(255,60,60,.38); --tg-halo0:rgba(255,60,60,0);}
   #tutGuide.g-gate.g-red{--tg-w:7px;}
   #tutGuide.g-gate.g-red .tg-chevrons i{width:32px;height:32px;}
   #tutGuide.g-gate.g-red .tg-label{font-size:21px;color:#fff;}
