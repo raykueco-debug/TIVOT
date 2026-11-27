@@ -2339,7 +2339,7 @@ function carriedToInn(opts){
   const roll = !(opts && opts.rollback===false);
   const inn = prog.getLastInn() || { town:'capital', node:'inn' };
   combat.goHome(()=>{
-    if(roll) try{ saveSys.loadLatest({ noJump:true }); }catch(_){}
+    if(roll) try{ saveSys.loadLatest({ noJump:true, keepSeen:true }); }catch(_){}   // keepSeen：已探查的小地圖陣亡不歸零（-3085）
     enterTown(inn.town, inn.node, { carried:true });   // ver -1297：走同一道讀取頁
   }, { noBgm:true });
 }
@@ -2619,7 +2619,7 @@ combat.setStoryReturn((res)=>{
        而且必須落在玩家還能自由行動的地方 —— 那是寫劇本時的責任。 */
     const isStory = town.isOpen() ? town.storyBattleAct() : true;
     if(isStory){
-      combat.goHome(()=>{ try{ saveSys.loadLatest(); }catch(_){} }, { noBgm:true });
+      combat.goHome(()=>{ try{ saveSys.loadLatest({ keepSeen:true }); }catch(_){} }, { noBgm:true });
       return;
     }
     /* ③ **遭遇戰** → **回到上一個踩過的安全點或結算點**（ver -1135，Ray 定案：
@@ -2637,7 +2637,7 @@ combat.setStoryReturn((res)=>{
     const n = prog.lossStreak()+1;
     if(n>=3){ carriedToInn(); return; }
     prog.setLossStreak(n);
-    combat.goHome(()=>{ try{ saveSys.loadLatest(); }catch(_){} }, { noBgm:true });
+    combat.goHome(()=>{ try{ saveSys.loadLatest({ keepSeen:true }); }catch(_){} }, { noBgm:true });
     return;
   }
   /* ══ 原地閉棺回來的（ver -587）══ 城鎮戰打掉一隻雜怪：門已經在控制盤高度闔上了，

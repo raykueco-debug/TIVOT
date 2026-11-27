@@ -106,8 +106,9 @@ function labelOf(pos, twn){
 function apply(rec, opts){
   if(!rec) return false;
   /* v2＝整輪；v1 的舊存檔只有 progress 這一層，照舊吃下去（不要讓舊存檔讀不開）。 */
-  if(rec.run) prog.runRestore(rec.run);
-  else        prog.restore(rec.progress);
+  /* `keepSeen`（ver -3085）＝小地圖探查紀錄不回捲（陣亡回檔用，見 progress.restore）。 */
+  if(rec.run) prog.runRestore(rec.run, opts);
+  else        prog.restore(rec.progress, opts);
   /* 位置：飛行 > 城鎮 > 劇情。
      · 飛行（ver -558）：帶 flightPos 的檢查點 —— 開飛行頁接回那個座標
        （從城出航時 town 也還開著＝rec.town 同時存在，所以飛行要**先**判）。

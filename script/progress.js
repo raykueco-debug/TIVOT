@@ -1872,9 +1872,9 @@ export function runSnapshot(){
   return { progress:snapshot(), clock:clock.elapsed(), inv:inv.snapshot(),
            shop:shopStock.snapshot() };
 }
-export function runRestore(s){
+export function runRestore(s, opts){
   if(!s) return;
-  if(s.progress)     restore(s.progress);
+  if(s.progress)     restore(s.progress, opts);
   try{ stageFloorFromFlags(); }catch(_){}   // ver -1862：舊存檔的章節號補齊（見 STAGE_BY_FLAG）
   if(s.clock!=null)  clock.setElapsed(s.clock);
   if(s.inv)          inv.restore(s.inv);
@@ -1918,17 +1918,27 @@ export function snapshot(){
            chaseRaw:rawJ(K.chase),          // 追兵狀態（ver -1577，一輪內）
            eventDateRaw:rawJ(K.eventDate) };   // 事件日期（ver -2112，一輪內）
 }
-export function restore(s){
+/* ══⚠⚠ `opts.keepSeen`（ver -3085，Ray：「已探查的小地圖就算陣亡也不歸零」）══
+   小地圖的探查紀錄＝旗標 `seen_<城>_<格>`（唯一寫入點 town.js 的 `markSeen`）。回檔整包覆蓋旗標會把
+   快照之後走過的格抹掉 ⇒ 帶 `keepSeen` 時，現在已插著的 `seen_*` 併回去（插了就不拔，鐵律 9）。
+   ⚠ 只有 main 的三條戰敗回檔路傳它（劇情戰回檔／遭遇戰回檢查點／連敗抬回旅店）；
+     首頁「繼續」、讀檔、模擬存檔照舊整包還原。併入只寫在這一處（鐵律 8）。`newRun()` 照舊清空。 */
+const isSeenFlag = f => typeof f==='string' && f.indexOf('seen_')===0;
+function withSeen(list, opts){
+  if(!(opts && opts.keepSeen)) return list||[];
+  return [...(list||[]), ...getFlags().filter(isSeenFlag)];
+}
+export function restore(s, opts){
   if(!s) return;
   if('stageRaw' in s){                                     // v2：原樣放回（含「沒有」）
     putRaw(K.stage, s.stageRaw);
-    setFlags(s.flags||[]);
+    setFlags(withSeen(s.flags, opts));
     putRaw(K.affection, s.affectionRaw, true);
     putRaw(K.affFloor,  s.affFloorRaw,  true);
     putRaw(K.name, s.nameRaw); putRaw(K.nick, s.nickRaw);
   }else{                                                   // v1（烘過預設的舊存檔）：僅相容
     if(s.stage!=null)     setStage(s.stage);
-    if(s.flags)           setFlags(s.flags);
+    if(s.flags)           setFlags(withSeen(s.flags, opts));
     if(s.affection)       setAffection(s.affection);
     if(s.affFloor)        wr(K.affFloor, JSON.stringify(s.affFloor));
     if(s.player)          setPlayerName(s.player);
