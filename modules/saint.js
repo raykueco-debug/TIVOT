@@ -1309,6 +1309,12 @@ function stopCiAnim(){
 const CI_OUT_MS = 250;
 function ciOutAt(c, dur){ if(!c) return; c.classList.remove('ciout');
   clearTimeout(c.__ciOutT); c.__ciOutT=setTimeout(()=>c.classList.add('ciout'), Math.max(0, dur-CI_OUT_MS)); }
+/* 這一張 CI 的動檔載好了沒（ver -3128，Ray：「跑動畫跟 cut in 之前都先跑一次底圖 白瞎效能 把底圖給撤了」）——
+   載好了就**不碰靜態圖**（不設 src、不等解碼），直接由動檔演；沒載好才退回靜態圖。判準只有這一支（鐵律 7）。 */
+function ciAnimReady(key){ const A=(GAME_CONFIG.tuning.cutinAnim||{})[key], r=ciAnim[key];
+  return !!(A && r && r.ready && (A.video ? r.blob : (r.urls && r.urls.length))); }
+/* 動檔接手前把元素上的靜態圖拿掉：影片那條由 canvas 畫第一格，序列那條第一格就是 src（playCiAnim 設）。 */
+function dropStill(el){ if(el.getAttribute('src')) el.removeAttribute('src'); }
 function playCiAnim(ci, key){
   stopCiAnim();
   const A=(GAME_CONFIG.tuning.cutinAnim||{})[key], rec=ciAnim[key];
@@ -1421,7 +1427,8 @@ export function playCutin(done, label, imgKey, opts){
       if(api.hintCurrentCell) api.hintCurrentCell();
     }, ciDur);
   };
-  if(ci && src){
+  if(ci && imgKey && ciAnimReady(imgKey)){ dropStill(ci); start(); }   // 動檔載好了：不設底圖、不等解碼（ver -3128）
+  else if(ci && src){
     if(ci.getAttribute('src')!==src) ci.src=src;
     /* ⚠⚠ 圖未解碼完就起跑＝滑入動畫中途解碼大圖卡死主執行緒（cut-in 卡在一半的
        主因，手機尤甚）→ 先 decode 再開演；解碼失敗或逾時照樣開演（`go` 冪等）。
@@ -1505,7 +1512,7 @@ function playSaintCutin(kind, done, reload){
                      burst:   storyMode() ? 'cutin_mb_torsten'  : 'cutin_mb',
                      return:  storyMode() ? (_pc.returnCutin || 'cutin_return_nouvelle') : 'cutin_return' };
   const scImgEl  = { execute:'saintCutinImg', obe:'saintCutinImgObe', burst:'saintCutinImgBurst', return:'saintCutinImgReturn' };
-  if(scImgEl[vis]){ const el=$(scImgEl[vis]); if(el){ const src=asset(scImgKey[vis]); if(src) el.src=src; } }
+  if(scImgEl[vis]){ const el=$(scImgEl[vis]); if(el){ if(ciAnimReady(scImgKey[vis])) dropStill(el); else { const src=asset(scImgKey[vis]); if(src) el.src=src; } } }   // 動檔載好了就不設底圖（ver -3128）
   c.classList.remove('burst','obe','execute','return','on','ciout');
   c.classList.add(vis);
   void c.offsetWidth;                      // reflow → 重播動畫
