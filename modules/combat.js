@@ -1158,9 +1158,9 @@ function perfectBoardCleared(brClear, wasAlive, after){
   state.perfStreak=0; state.perfRunDmg=0;
   perfectSe();
   if(bonus>0){ enemyDamage(bonus, true, true, 'perfmb'); floatDmg('MAXIMUM BURST '+bonus,'50%','28%',true); }
-  /* 讚聲排在 MB 之後（ver -3106，Ray：「MB>cheer 不要跟cheer重疊」）：MB cut-in 與它的語音演完才播讚聲；
-     這一下把敵人打死了（state.over）就不播 —— 接著是擊殺／結算的演出，讚聲會疊上去。 */
-  saint.playBoardBurst(()=>{ if(!state.over) perfectCheer(); after(); });
+  /* MB 這一下不放搭檔讚聲（ver -3107，Ray：「有mb就不cheer」；取代 -3106 的「MB 演完才播」）。
+     判定就在這裡 —— MB 唯一的觸發點；讚聲只剩 PERFECT CRITICAL 那一條在叫。 */
+  saint.playBoardBurst(after);
   return true;
 }
 function recordBoardTime(sec){
