@@ -465,6 +465,24 @@ function takeBattleReq(){
      只把 iframe 藏起來是不夠的，rAF 停了它的 `updateBgm` 也停了，
      那幾個 <audio> 會維持當時的音量繼續播。 */
 function flightWin(){ const f=$('flightFrame'); return f ? f.contentWindow : null; }
+/* ══ 降落鈕按下＝在手勢裡先叫醒主頁的音訊引擎（ver -3120，Ray：「降落北泊音樂會不見」）══
+   飛行期間主頁沒有曲子，引擎閒置休眠；降落後城鎮曲是在手勢外起播的（長按計時器＋降落過場＋讀取頁），
+   iPhone 拒絕在那時 resume ⇒ 接在引擎上的 BGM 全啞，要等城裡點一下才出聲。
+   飛行頁是同源 iframe：主頁在它的文件上聽 pointerdown（capture），按在降落鈕上就 `SFX.holdAwake`
+   —— 那一下是真的觸控，WebKit 的手勢涵蓋同源的上層文件。撐 20 秒蓋過長按／過場／讀取頁，城鎮曲接上後引擎自己不睡。
+   ⚠ 只認降落鈕：飛行中每一下觸控都叫醒的話，主頁引擎整段飛行都醒著（發熱，-1817 立休眠的理由）。
+   ⚠ 掛在 iframe 的 load 上：每次出航都整頁重載，舊文件上的監聽跟著死。 */
+const LAND_WAKE_MS = 20000;
+(function bindFlightWake(){
+  const f=$('flightFrame'); if(!f) return;
+  f.addEventListener('load', ()=>{
+    let w=null; try{ w=f.contentWindow; if(!w || !w.document) return; }catch(_){ return; }
+    try{ w.addEventListener('pointerdown', e=>{
+      const t=e.target;
+      if(t && t.closest && t.closest('#landBtn')) try{ SFX.holdAwake(LAND_WAKE_MS); }catch(_){}
+    }, true); }catch(_){}
+  });
+})();
 /* 進飛行畫面有兩條路，差別只有一件事：**進入**時把 iframe 重載（那就是鐵律 13
    第 2／4 條的那一道讀取頁），**戰鬥結束回來**（`{resume:true}`）只是把它顯示回來。
    ⚠ 重載要走 `contentWindow.location.reload()` —— 把 `src` 設成同一個字串**不會**重載。 */

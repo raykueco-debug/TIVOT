@@ -538,6 +538,15 @@ export const SFX = {
   //  三重保險：① 手勢內播 1-frame 無聲 buffer（WebKit 經典解鎖點火）② resume()
   //  ③ 400ms 後仍非 running → 標記下次手勢「整顆重建 context」（手勢內新建即為 running；
   //    已解碼的 AudioBuffer 不綁 context，重建後照播）。
+  /* ══ 手勢內叫醒引擎，並撐住 `ms` 不休眠（ver -3120，Ray：「降落北泊音樂會不見」）══
+     飛行期間主頁沒有曲子，引擎照閒置休眠睡著；降落是長按計時器＋降落過場＋讀取頁才放城鎮曲，
+     那一刻已經不在手勢裡 —— iPhone 拒絕 resume，BGM 接在睡著的引擎上（bgmWire）＝全啞。
+     ⇒ 由**真的手勢**（降落鈕按下，main 的 `bindFlightWake`）叫這一支：當場 unlock，
+       並撐到城鎮曲接上（之後 `idleTry` 看到有想要的曲子就不睡）。 */
+  holdAwake(ms){
+    this.unlock();
+    if(_ctx && !_sfxOff) idleBusy(Math.max(0, ms|0));
+  },
   unlock(){
     if(_sfxOff) return;   // 發熱排除中（ver -1805）：手勢不准把引擎叫回來
     let c = ctx();
