@@ -5740,8 +5740,12 @@ function collectAssets(startId){
 }
 /* 一串拍要用到的素材（`collectAssets` 與城鎮段落的 `load:true` 共用，鐵律 8）。 */
 function collectLines(lines, imgs, bgms, ses, cgs){
+    /* 試玩包（ver -3093）：終點那一場（`config.demo.endBattle`，索菈娜戰）打贏就收尾（demoFinish），
+       同一幕後面那幾拍演不到、素材也不在包裡 —— 收集到那一拍為止。 */
+    const endB = prog.isDemo() ? ((GAME_CONFIG.demo||{}).endBattle || null) : null;
     for(const ln of (lines||[])){
       if(!ln || typeof ln!=='object') continue;
+      if(endB && ln.battle===endB) break;
       if(ln.bg) imgs.add(imgSrc(ln.bg));
       /* `bgBand`：時段候選鏈 → 整串當一筆（預載端依序試、中一張就停）。 */
       if(ln.bgBand) imgs.add(bandNames(ln.bgBand, ln.bgNoTime).map(n=>imgSrc(n)));

@@ -117,9 +117,14 @@ document.addEventListener('dragstart', e=>{
 });
 
 // 按鈕綁定：touch/click 去重，附選單點擊音
+/* 試玩版首頁只准這幾顆（ver -3093，Ray：試玩包拿掉「挑戰」與原版「教學」，範圍外的入口程式路徑也到不了）。
+   ⚠ 與 style.css 的 `body.demo #home button:not(...)` 白名單是同一份清單的兩邊（CSS 藏、這裡擋）—— 改一邊要改另一邊。 */
+const DEMO_HOME_BTNS = new Set(['storyStartBtn','continueBtn','creditBtn','originalBtn','langBtn','offlineBtn']);
 function bindBtn(id, fn){
   const el=$(id); if(!el) return;
-  const run=()=>{ SFX.unlock(); SFX.menuClick(); fn(); };
+  const run=()=>{
+    if(prog.isDemo() && el.closest && el.closest('#home') && !DEMO_HOME_BTNS.has(id)) return;   // 試玩版：首頁白名單外的鈕不作動
+    SFX.unlock(); SFX.menuClick(); fn(); };
   let h=false;
   el.addEventListener('touchstart',e=>{e.preventDefault();h=true;run();},{passive:false});
   el.addEventListener('click',()=>{ if(h){h=false;return;} run(); });
@@ -332,7 +337,12 @@ function battleAudioSet(battleId){
   /* ⚠ 武器整張表掃（十來把，音效欄位就那幾支）：玩家隨時可以在戰鬥中切換順位，
      只載「現在裝著的」會在切槍那一刻沒聲音。 */
   for(const k of Object.keys(C.weapons||{})) scanAudioNames(C.weapons[k], names, 0);
-  for(const k of Object.keys(C.partners||{})) scanAudioNames(C.partners[k], names, 0);
+  /* 試玩包（ver -3093）：只掃這一章身邊會有的搭檔（storyPartnerPool）＋這一場戰鬥卡指定的那一位 ——
+     挑戰搭檔與範圍外搭檔的語音不在包裡。開發版照舊整張表掃。 */
+  const pks = prog.isDemo()
+    ? [...new Set([].concat(partner.storyPartnerPool ? partner.storyPartnerPool() : [], B.partner || []))]
+    : Object.keys(C.partners||{});
+  for(const k of pks) if(C.partners && C.partners[k]) scanAudioNames(C.partners[k], names, 0);
   /* 動作片的起手音（`windupSe`，ver -2657）：群戰成員是哪幾隻要開打才知道，所以整張表的起手音都收（每支只有幾十 KB）。 */
   for(const T of [ENEMY_ATK, ENEMY_DELAY, ENEMY_MISS, ENEMY_ENTER]) for(const k of Object.keys(T||{})) { if(T[k] && T[k].windupSe) names.push(T[k].windupSe); if(T[k] && T[k].retractSe) names.push(T[k].retractSe); }   // ENEMY_ENTER：出場片的起手音（ver -2992，訓練用聖徒出場吼）
   /* 戰鬥共用的那幾支（UI／升級／回復／碎裂）＋ 這一場的曲子。 */
@@ -390,8 +400,11 @@ function battleReady(id, look, p){
 }
 
 /* 首頁那一批的圖白名單（鐵律 13 第 1 條）。 */
+/* 試玩包沒有挑戰（ver -3093）：挑戰選人那兩張立繪（`challengePartners`）不在包裡，開機不抓。 */
+const DEMO_SKIP_IMG = new Set((GAME_CONFIG.challengePartners || []).map(k => 'partner_' + k));
 const isHomeImg = k =>
-  HOME_IMG.prefixes.some(p => k.indexOf(p) === 0) || HOME_IMG.keys.indexOf(k) >= 0;
+  !(prog.isDemo() && DEMO_SKIP_IMG.has(k)) &&
+  (HOME_IMG.prefixes.some(p => k.indexOf(p) === 0) || HOME_IMG.keys.indexOf(k) >= 0);
 /* 熱啟動旗標（見 preloadAll 內的 WARM_BOOT 說明）。
    ⚠ 冷啟動時是在「點擊繼續」那一刻才記，不是載完就記 —— 讀到一半被中斷重整，
      下次仍該完整跑一次。之後每次進背景都刷新時間戳，長時間遊玩後被切走也算數。 */
@@ -1358,6 +1371,7 @@ function closePrep(){
    ⚠ 挑戰的出陣只走這一支（首頁「挑戰」、教學「跳過」都叫它，鐵律 8）。
    ⚠ `openPrep` 留著不刪（`opts.story` 那一支是本篇的整備；現在沒有入口叫它，見那支的說明）。 */
 function startChallenge(){
+  if(prog.isDemo()) return;   // 試玩包沒有「挑戰」（ver -3093）—— 入口在 bindBtn 已擋，這裡是第二道
   weapon.useChallengeLoadout();
   /* 推棺開戰（ver -2225，Ray：「挑戰按下去推棺，打完閉棺」）：門從畫面底部推上來，開門那一刻在門後開戰
      （同劇情戰：`instant` ＝不播櫻花過渡禎）；打完由 combat 看 `kerbChallenge` 關門再結算。

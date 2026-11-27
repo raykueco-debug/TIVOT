@@ -1010,7 +1010,7 @@ export function refreshLoadoutLabels(){
   if(pn) pn.textContent = p ? p.name : '—';
   if(wn) wn.textContent = w ? (w.shortName || w.name) : '—';   // 綽號（全名過長）
   const pi=$('prepPartnerImg'), wi=$('prepWeaponImg');
-  if(pi && p){
+  if(pi && p && !prog.isDemo()){   // 試玩包沒有挑戰的出擊整備頁，搭檔卡圖不在包裡（ver -3093）
     const src=asset(p.image)||''; if(pi.getAttribute('src')!==src) pi.src=src;
     // 取景（config siFit：單眼寬度基準的相對倍率，蕾妮=1）：頭頂對齊卡頂的上身特寫
     const fit=p.siFit||{};

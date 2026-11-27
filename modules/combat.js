@@ -2412,6 +2412,8 @@ function claspFaceExpr(who){
 function claspFaceCss(who){
   const s = faceStyle(String(who||'').toUpperCase(), FACE_ZOOM, claspFaceExpr(who));
   if(s) return s;
+  /* 試玩包沒有挑戰搭檔（ver -3093）：開機時預設的 pickedPartner 是蕾妮（defaultPartner），她的圖不在包裡 —— 不畫。 */
+  if(prog.isDemo() && (GAME_CONFIG.challengePartners||[]).indexOf(who)>=0) return '';
   const p = (GAME_CONFIG.partners||{})[who] || {};
   const src = p.image && asset(p.image);
   return src ? 'background-image:url("'+src+'");background-size:'+FACE_ZOOM+'% auto;background-position:50% 0%;' : '';
