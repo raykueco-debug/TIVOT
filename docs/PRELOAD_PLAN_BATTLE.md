@@ -1,4 +1,4 @@
-# 戰鬥預載計畫（草案，ver -3063，2026-11-26）—— 給 Ray 審，**未實作**
+# 戰鬥預載計畫（ver -3063 草案 → **ver -3083 第一版實作已推上**）
 
 > 起因：行銷副專實測「打完了才出怪」。Ray：「做出一個預載計畫出來，每一次場景切換都有跑預載，
 > 戰鬥開始前的對話的時候就該跑完。應該在戰鬥前的劇情先插好預載的起點終點。」
@@ -55,3 +55,33 @@
 
 - 效能副理：`battleManifest`、`enterBattleAssets` 收斂、開棺等待閘、飛行可視距離起點、實測其餘八場。
 - 劇情副理：在各場前插 `preload:` 拍、`script_lint.py` 加「`{battle}` 之前沒有 preload 起點」提醒。
+
+## 六、實作交接（ver -3083，2026-11-27，換機器前收尾）
+
+**已做、已推（Ray：「照預載計畫做」）**
+
+| 件 | 在哪 |
+|---|---|
+| 收集「這一場要什麼」只剩一支 | `enemy.preloadBattleCard(en)`：立繪／群戰逐人／待機動檔＝要等的；攻擊／延時／點錯／出場／倒地／閃避／NI 換圖／分離怪＝背景抓。`combat.warmBattleImage` 改成只是呼叫它（隨機名單先 `peekBattleEnemy` 抽好），並回傳 Promise |
+| 預載與開打共用快取 | `loadClip` 改回傳 Promise；`startIdleLoop` 改走 `loadClip`（預載過就直接命中）。閉棺 `releaseBattleMemory` 一併放掉（`warmImgs`） |
+| 劇情／城鎮插入戰過戰鬥那道門 | `setBattleHandler` 開頭補 `enterBattleAssets(battleId)` |
+| 起點：劇情 | `story.lookAheadBattle()`：每一拍往後掃到這一段的下一個 `{battle}`（掃不到看下一幕、遇 `load` 停）；拍上 `preload:'<id>'` 可更早起跑 |
+| 起點：城鎮 | `town.preloadNodeBattle(to)`：按住方向往那一格走時起跑（那一格的段落戰鬥／bgComp 群戰／固定怪）；野怪**先抽好下一隻**（`wildNext`），抵達中了就用牠 |
+| 起點：飛行 | `spawnEnemy` 一生出怪就叫父頁 `__tivotFlight.preloadBattle` |
+| 終點：開棺等 | 劇情／城鎮：`{battle}` 那一拍開棺前等 `battleReady`（main），上限 `BATTLE_GATE_MAX_MS` 8 秒、逾時放行記 console；等候中點擊無效、超過半秒亮小讀取圈（`body.battle-loading`，style.css）。飛行交棒：門停在頂上等同一支 |
+
+**驗過的**：五支模組與飛行頁內嵌 script 的 `node --check`（.mjs 模式）、`script_lint.py`（39 個錯誤都是既有的大寫檔名，與本次無關）、
+一般速度實開一場：兩句對白＋`{battle:'np_claws'}` 的臨時段落 —— 對白期間黑爪的 57 個檔已經抓進來，開棺後待機在動，沒有任何錯誤。
+
+**還沒做（下一位接）**
+
+1. ⚠⚠ **九場慢網前後對照數字還沒量完**。目前只有：`np_claws` **改前**（限速 200 KB/s、RTT 300 ms）立繪 3.6 秒、全部素材 33.5 秒、6.5 MB。
+   - 量法踩到的坑：① **同一頁重跑量不到冷啟動**（`releaseBattleMemory` 之後 Blink 的圖片記憶體快取還在）—— 要「一頁跑九場的前、重載一頁跑九場的後」；
+     ② `performance` 的 resource buffer 預設 250 筆，要先 `setResourceTimingBufferSize`；③ 8127 埠會被別的 devserver 搶（量到沒限速的數字），代理換到 8193；
+     ④ javascript_tool 45 秒逾時，跑測試要丟背景、結果存在 `window` 再輪詢。
+   - 限速代理是 scratchpad 的 `slowproxy.py`（素材限速＋no-store、程式檔不限速、並發 6），換機器要重寫一份（四十行）。
+   - 各場可藏讀取的時間（戰前對白估計）：man_sorana 約 24 秒、np_claws 約 23 秒、np_nightmare 約 24 秒、np_cemetery 約 17 秒、cap_dream 約 8 秒；
+     np_harm／np_boss（城鎮戰格）與野怪只有「按住方向 0.5 秒＋切景」—— 這幾場主要靠開棺等待。
+2. 群戰／連戰下一隻（同一張卡換怪）沒有起點。
+3. 城鎮戰格（np_harm 那幾格）起點太短：可考慮抵達一格時預載「相鄰各格中最可能的那一場」，但要先量記憶體（鐵律 12）。
+4. 腳本端 `preload:` 目前**沒有任何一拍用到**（自動起點已涵蓋試玩的劇情戰）。劇情副理那邊不必動；要更早起跑時再插。

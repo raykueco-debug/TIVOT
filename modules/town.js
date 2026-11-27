@@ -2563,7 +2563,10 @@ function wildActDue(n){
     wildStat.hit++;
     const cands = repeat ? pool0.filter(okHere) : fresh;
     if(!cands.length){ wildStat.hit--; return wildSkip(i18nT('中了但池子是空的')); }
-    pick=cands[Math.floor(Math.random()*cands.length)].battle;
+    /* 先抽好的那一隻還在候選裡就用它（ver -3064：走過來的路上已經在載牠了）。 */
+    const pre = wildNext && cands.find(c=>c.battle===wildNext);
+    pick = pre ? pre.battle : cands[Math.floor(Math.random()*cands.length)].battle;
+    wildNext=null;
   }
   /* 取走就記（同一趟不再出同種）：這一場**立刻開打**（沒有可被中途放掉的對白），
      打輸的回程會把城收掉重開 → open() 歸零，所以不會把「輸了的那一隻」鎖死。 */
@@ -4316,6 +4319,7 @@ function bindInput(){
     const r=el.getBoundingClientRect(), sr=st.getBoundingClientRect();
     hintShowAt(r.left-sr.left+r.width/2, r.top-sr.top+r.height/2, nameOfNode(to));
     hold={ el, to, dir:el.dataset.dir, t0:performance.now(), raf:0, timer:0 };
+    preloadNodeBattle(to);   // 戰前預載起點（ver -3064）
     const tick=()=>{ if(!hold) return;
       hintProgress((performance.now()-hold.t0)/HOLD_MS);
       if(performance.now()-hold.t0 < HOLD_MS) hold.raf=requestAnimationFrame(tick); };
@@ -4427,6 +4431,7 @@ function bindInput(){
       e.preventDefault(); e.stopPropagation();
       const to=exitsOf()[b.dataset.dir]; if(!to) return;
       b.classList.add('holding'); t0=performance.now();
+      preloadNodeBattle(to);   // 戰前預載起點（ver -3064）
       const tick=()=>{ const p=Math.min(1,(performance.now()-t0)/HOLD_MS);
         b.style.setProperty('--fill', p.toFixed(3));
         if(p<1) raf=requestAnimationFrame(tick); };
@@ -5381,6 +5386,34 @@ export function setCheckpoint(fn){ checkpoint=fn||null; }
 /* 有戰鬥的地圖暖完背景與怪之後，插旗暖搭檔 CI（ver -2053；注入：城鎮不認識戰鬥層）。 */
 let ciWarm=null;
 export function setCiWarm(fn){ ciWarm=fn||null; }
+/* ══ 戰前預載的起點（ver -3064，docs/PRELOAD_PLAN_BATTLE.md）══════════════════════
+   城鎮的戰鬥多半**一抵達就開打**（城鎮戰那一格、野怪），沒有前置對白可以藏讀取 ——
+   所以起點放在**玩家按住方向往那一格走的那一刻**：那一格「確定會打」的那一場先起跑。
+   野怪是抵達才擲骰的，所以**下一隻先抽好**（`wildNext`），抵達時中了就用它（`wildActDue`）。
+   ⚠ 一次只起跑一場（記憶體，鐵律 12）；載什麼由 main 注入的那一支決定（town 不認得 combat）。 */
+let battlePreload=null, wildNext=null;
+export function setBattlePreload(fn){ battlePreload=fn||null; }
+function preloadNodeBattle(to){
+  if(!battlePreload || !townId || typeof to!=='string') return;
+  const T=TOWNS[townId]||{}, n=(T.nodes||{})[to]; if(!n) return;
+  let id=null;
+  for(const a of (n.acts||[])){ if(a.flag && prog.hasFlag(a.flag)) continue;
+    for(const l of (actLines(a)||[])) if(l && typeof l.battle==='string'){ id=l.battle; break; }
+    if(id) break; }
+  if(!id && !n.noWild && !siegeOn()){
+    const W=T.wildSpawn||{}, force=wildForceOn();
+    const pre=force ? force.bgComp : W.bgComp, base=String(n.bg||'').toLowerCase().replace(/_(dawn|day|dusk|night|midnight)$/,'');
+    if(pre && base && GROUP_COMPS['bg_'+base] && (GAME_CONFIG.battles||{})[pre+to]) id=pre+to;
+    else if(W.fixed && W.fixed[to] && !wildDone.has(wildSpecies(W.fixed[to]))) id=wildVariant(W.fixed[to]);
+    else {
+      if(!wildNext){ const pool=(force ? force.pool : (W.pool||[]).concat(cardSpawnPool(to).map(k=>({ battle:k }))))
+                       .filter(p=>p && !wildDone.has(wildSpecies(p.battle)));
+        if(pool.length) wildNext=pool[(Math.random()*pool.length)|0].battle; }
+      if(wildNext) id=wildVariant(wildNext);
+    }
+  }
+  if(id) try{ battlePreload(id); }catch(_){}
+}
 /* ══ 小地圖裡的「模擬存檔」（ver -936，Ray：「幫我做個存檔鈕在小地圖選單，存的檔跟
    其他進度都錯開，獨立，用來模擬真實玩家推進」）══
    `{save, load, info}` 由 main 注入（城鎮不認識存檔層，同 setCheckpoint）。
@@ -5834,6 +5867,7 @@ export function open(town, node, opts){
      瞎找出來的（`bl_dragon_seen` 之前連紅點都沒有）。 */
   dragonNode=null; dragonFights=0; dragonSeenFights=0; dragonJustPlaced=false; dragonRollHit=false;
   wildDone=new Set();         // 野生刷怪的「這一趟出過誰」也是（ver -862）
+  wildNext=null;              // 先抽好的下一隻（ver -3064）
   wildCleared=new Set();      // 「這一趟哪幾格出過」（ver -924，重刷率用）
   wildVisited=new Set();      // 「這一趟踩過哪幾格」（ver -1618，noWildFirst 用）
   pendingFavor=null;          // 「下一步去哪」也是（ver -440，見 armFavor）

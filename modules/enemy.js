@@ -1410,12 +1410,15 @@ function startCardIdle(en){ applyFar(en); if(portraitOverride) return; const d=i
 /* ══ 攻擊／延時動畫（ver -2472）══ 一次性的動檔：從待機切進來、播完切回待機（Ray：「所有攻擊都要回到原本的中立動畫」）。
    動檔在換上這隻怪的那一刻預載（戰鬥內，鐵律 13）；還沒載好就不演（照舊只有受擊特效）。 */
 const clipCache={};
+/* 回傳 Promise（ver -3064 預載計畫）：載完（或失敗）就 resolve 成那一筆 `{j,fr}`。
+   待機（startIdleLoop）與戰前預載（preloadBattleCard）都走這一支 —— 同一個資料夾只抓一次、只解碼一次（鐵律 8）。 */
 function loadClip(dir){
-  if(clipCache[dir]) return; const c={}; clipCache[dir]=c;
-  fetch(dir+'anim.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j) return;
+  if(clipCache[dir]) return clipCache[dir].p; const c={}; clipCache[dir]=c;
+  c.p = fetch(dir+'anim.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j) return c;
     const fr=Array.from({length:j.frames||0},(_,i)=>{ const f=new Image(); f.src=dir+'frame_'+String(i).padStart(2,'0')+'.webp'; return f; });
-    return Promise.all(fr.map(f=>f.decode ? f.decode().catch(()=>{}) : 0)).then(()=>{ if(fr.every(f=>f.naturalWidth)){ c.j=j; c.fr=fr; } });
-  }).catch(()=>{});
+    return Promise.all(fr.map(f=>f.decode ? f.decode().catch(()=>{}) : 0)).then(()=>{ if(fr.length && fr.every(f=>f.naturalWidth)){ c.j=j; c.fr=fr; } return c; });
+  }).catch(()=>c);
+  return c.p;
 }
 function clipFor(kind, en){ en=en||curCard(); if(!en || en.group) return null; const s=imgStem(en);
   if(kind==='miss'){ if(ENEMY_MISS[s]) return ENEMY_MISS[s]; const d=ENEMY_DELAY[s]; return (d && !d.noMiss) ? d : null; }   // 延時片寫 noMiss＝點錯不借它（只扣秒，ver -2801）
@@ -1859,17 +1862,17 @@ function stopIdleLoop(){ downFor=null; clearInterval(idleT); idleT=0; clearTimeo
 function startIdleLoop(dir){
   stopIdleLoop();
   const key=state.currentEnemyKey;
-  fetch(dir+'anim.json').then(r=>r.ok?r.json():null).then(j=>{
-    if(!j || state.currentEnemyKey!==key) return;
-    const fr=Array.from({length:j.frames||0},(_,i)=>{ const f=new Image(); f.src=dir+'frame_'+String(i).padStart(2,'0')+'.webp'; return f; });
-    return Promise.all(fr.map(f=>f.decode ? f.decode().catch(()=>{}) : Promise.resolve())).then(()=>{
-      if(state.currentEnemyKey!==key || !fr.length || !fr.every(f=>f.naturalWidth)) return;
+  /* 走 loadClip（ver -3064）：戰前預載過的話這裡直接命中，門一開待機就在動。 */
+  loadClip(dir).then(c=>{
+    const j=c && c.j, fr=c && c.fr;
+    if(!j || !fr || state.currentEnemyKey!==key) return;
+    {
       const eImg=$('enemyImg'), r=canvasBoxInTop(eImg, j); if(!r) return;
       const el=document.createElement('img'); el.className='en-idle'; el.alt='';
       el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.width=r.width+'px'; el.style.height=r.height+'px';
       el.src=fr[0].src; eImg.after(el); idleEl=el; idleJ=j; idleFr=fr; eImg.style.visibility='hidden'; applyFar();
       if(!clipT) runIdle();   // 攻擊動畫正在演就等它演完再接（它收尾會叫 runIdle）
-    });
+    }
   }).catch(()=>{});
 }
 /* ══ 浪花雲浪（ver -2859～-2862）已撤（ver -2863，Ray：「浪花太密 造成程式雲一直出」「浪可以有 但是不能有裁切線」）══
@@ -3142,6 +3145,7 @@ let groupCard=null, groupMasks={}, lastImpact=null, groupWaitT=0;
 export function releaseBattleMemory(){
   for(const k of Object.keys(clipCache)) delete clipCache[k];
   memberClips.clear();
+  warmImgs=[];   // 戰前預載的參照（ver -3064）
   stopIdleLoop();
   clearInterval(groupAnimT); groupAnimT=0;
   singleFall=null;
@@ -3271,20 +3275,46 @@ function loadMemberClip(dir){
   const p=loadMemberClipRaw(dir); memberClips.set(dir, p); p.then(c=>{ if(!c) memberClips.delete(dir); }); return p;
 }
 /* 先把一張群戰卡的逐人 I／A／E 抓下來（ver -2589：空賊船射勾索那一刻就預載要登艦的那一組，10 秒後換卡時多半已經載好） */
+/* 回傳「開場就要看到的那幾樣」（逐人立繪＋待機）的 Promise（ver -3064 預載計畫）；攻擊／倒地照舊背景抓、不等。 */
 export function preloadGroupCard(key){
-  const en=(GAME_CONFIG.enemies||{})[key], G=en && en.group; if(!G) return;
+  const en=(GAME_CONFIG.enemies||{})[key], G=en && en.group; if(!G) return Promise.resolve();
   const pre=G.prefix||'guard_';
   const comp=compOf(G);
-  if(comp){ for(const m of comp.members){ const u=compSrc(m); if(m.flip) mirroredSrc(u); else { const im=new Image(); im.src=u; }
-      const di=idleDirOf(ENEMY_IDLE[m.stem]); if(di) loadMemberClip(di); for(const [, tab] of MEMBER_ACTS){ const a=tab[m.stem]; if(a && a.dir) loadMemberClip(a.dir); } }
-    return; }
+  const need=[];
+  if(comp){ for(const m of comp.members){ const u=compSrc(m); if(m.flip) mirroredSrc(u); else need.push(warmImg(u));
+      const di=idleDirOf(ENEMY_IDLE[m.stem]); if(di) need.push(loadMemberClip(di)); for(const [, tab] of MEMBER_ACTS){ const a=tab[m.stem]; if(a && a.dir) loadMemberClip(a.dir); } }
+    return Promise.all(need); }
   for(const n of G.order){
-    if(G.idle) loadMemberClip(G.idle+pre+n+'/');
+    if(G.idle) need.push(loadMemberClip(G.idle+pre+n+'/'));
     if(G.atk)  loadMemberClip(G.atk+pre+n+'/');
     if(G.fall) loadMemberClip(G.fall+pre+n+'/');   // 倒地走 buildGroup 自己的讀法，這裡只是把圖暖進快取
     { const M=memberOf(G, n); if(M){ const di=idleDirOf(ENEMY_IDLE[M.stem]); if(di) loadMemberClip(di); for(const [, tab] of MEMBER_ACTS){ const a=tab[M.stem]; if(a && a.dir) loadMemberClip(a.dir); } } }
-    { const im=new Image(); im.src=G.dir+pre+n+'.webp'; }
+    need.push(warmImg(G.dir+pre+n+'.webp'));
   }
+  return Promise.all(need);
+}
+/* ══ 戰前預載（ver -3064，docs/PRELOAD_PLAN_BATTLE.md）══════════════════════════════
+   「這一隻開打要什麼」**只有這一支在收**（鐵律 7／8）：立繪、群戰逐人、待機動檔 ＝ 開場就要看到的（回傳的 Promise 等它們）；
+   攻擊／延時／點錯／出場／倒地／閃避動檔、NI 換圖、分離怪 ＝ 背景抓、不等。
+   載到的東西都住在既有的快取（clipCache／memberClips／warmImgs），閉棺 `releaseBattleMemory` 一併放掉（鐵律 13）。 */
+let warmImgs=[];
+function warmImg(u){ return new Promise(r=>{ if(!u) return r(); const im=new Image(); warmImgs.push(im);
+  im.onload=()=>{ (im.decode ? im.decode().catch(()=>{}) : Promise.resolve()).then(r); }; im.onerror=()=>r(); im.src=u; }); }
+export function preloadBattleCard(en){
+  if(!en) return Promise.resolve();
+  const need=[warmImg(enemyImage(en))];
+  if(en.group){ const G=en.group;
+    if(G.plate) need.push(warmImg(G.plate));
+    if(G.cover) need.push(warmImg(G.cover));
+    const key=Object.keys(GAME_CONFIG.enemies||{}).find(k=>GAME_CONFIG.enemies[k]===en);
+    if(key) need.push(preloadGroupCard(key));
+  } else if(en.idle!==false){
+    const v = (typeof en.idle==='string') ? en.idle : ENEMY_IDLE[imgStem(en)];
+    for(const d of [].concat(v||[])) if(d) need.push(loadClip(typeof d==='string' ? d : d.dir));   // 陣列（多版本待機）全收：開打那一刻才抽哪一版
+  }
+  try{ preloadActionClips(en); preloadDodge(en); preloadSpawn(en); }catch(_){}
+  const ls=en.lastStand; if(ls) [ls.image, ls.ci].forEach(k=>{ const p=k && asset(k); if(p) warmImg(p); });
+  return Promise.all(need);
 }
 function loadMemberClipRaw(dir){
   return fetch(dir+'anim.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j) return null;

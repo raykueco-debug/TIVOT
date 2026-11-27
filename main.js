@@ -366,7 +366,27 @@ function enterBattleAssets(battleId, look){
   try{ SFX.preload(set).catch(()=>{}); }catch(_){}
   /* 這一場的敵人立繪（ver -1414）：**推棺之前**就暖起來，門一開牠已經在那裡。
      說明在 `combat.warmBattleImage`。 */
-  try{ combat.warmBattleImage(battleId, look); }catch(_){}
+  try{ return combat.warmBattleImage(battleId, look); }catch(_){ return Promise.resolve(); }
+}
+/* ══ 戰前預載（ver -3064，docs/PRELOAD_PLAN_BATTLE.md）══════════════════════════════
+   起點：劇情／城鎮段落往後掃到的下一個 `{battle}`（story）、腳本拍上的 `preload:`、城鎮走向下一格／預抽的野怪（town）、
+   飛行畫面怪一生出來（flight）。**只載、不放**——放音訊是戰鬥那道門（enterBattleAssets）的事，
+   預載時底下的場景還在演，放了會把它的聲音拔掉。同一場重複叫是冪等的（快取命中）。
+   終點：`battleReady` —— 開棺之前等「開場要看到的」到齊，最多 `BATTLE_GATE_MAX_MS`，逾時放行並記一筆。 */
+const BATTLE_GATE_MAX_MS = 8000;
+function preloadBattle(id, look){
+  if(!id || !GAME_CONFIG.battles || !GAME_CONFIG.battles[id]) return Promise.resolve();
+  try{ SFX.preload(battleAudioSet(id)).catch(()=>{}); }catch(_){}
+  try{ return Promise.resolve(combat.warmBattleImage(id, look)); }catch(_){ return Promise.resolve(); }
+}
+function battleReady(id, look, p){
+  const t0=performance.now(); let done=false;
+  const ready=(p || preloadBattle(id, look)).then(()=>{ done=true; });
+  return Promise.race([ready, new Promise(r=>setTimeout(r, BATTLE_GATE_MAX_MS))]).then(()=>{
+    const ms=Math.round(performance.now()-t0);
+    if(!done) console.warn('[preload] 開棺等滿上限仍未到齊，放行：', id, ms+'ms');
+    else if(ms>150) console.log('[preload] 開棺前等了', id, ms+'ms');
+  });
 }
 
 /* 首頁那一批的圖白名單（鐵律 13 第 1 條）。 */
@@ -757,8 +777,10 @@ window.__tivotFlight = {
     combat.setBattleBg(null);
     story.showKerbGate(req.geom);
     closeFlightFrame();
-    enterBattleAssets(id, req && req.look);   // 戰鬥那道門（ver -1354；-1414 起連圖一起）：放掉上一個畫面的，只留這一場要的
-    story.setBattleCueId(id);   // 撞頂那一拍的曲子照這一場的卡挑（ver -746：不設就退回 bgm_battle，羽蛇的 EpicBattle 放不出來）
+    const gateP = enterBattleAssets(id, req && req.look);   // 戰鬥那道門（ver -1354；-1414 起連圖一起）：放掉上一個畫面的，只留這一場要的
+    story.setBattleCueId(id);
+    /* 門停在頂上等這一場的怪到齊（ver -3064 預載終點）—— 怪一生出來就開始載了（飛行頁 spawnEnemy）。 */
+    battleReady(id, req && req.look, gateP).then(()=>{   // 撞頂那一拍的曲子照這一場的卡挑（ver -746：不設就退回 bgm_battle，羽蛇的 EpicBattle 放不出來）
     story.playKerberosFromRisen(
       /* `scripted` 由飛行頁宣告（ver -493：隨機遭遇＝false，劇本遭遇＝true）——
          沒帶（舊鑰匙）＝沒宣告，combat 會退回敵人卡的 `story`（ver -495）。 */
@@ -766,7 +788,10 @@ window.__tivotFlight = {
          `tuning.shipDualBonus`。飛行頁交棒的兩條路都要帶（見 bootBattleGate）。 */
       ()=>{ hideHome('flightBridge/kerb'); combat.startScriptBattle(id, { story: req && req.scripted, ship:true, look: req && req.look, band: req && req.band }); },
       ()=>story.close({ keepBgm:true }));
+    });
   },
+  /* 飛行頁：怪一生出來就開始載牠那一場（ver -3064 預載起點）。 */
+  preloadBattle(req){ try{ preloadBattle(req && req.battle, req && req.look); }catch(_){} },
   /* 降落（ver -416，Ray：「靠近城鎮時加入降落按鈕，點擊進入城鎮預設畫面」）。
      ⚠ 走**同一支** `town.open()`（＝從入口節點開始），不另做一條「降落專用」的進城路徑。
      ⚠ 城鎮的 BGM 由 `town.open` 自己接（`story.ensureBgm`）—— 進飛行頁時主遊戲的
@@ -2720,7 +2745,11 @@ story.setKitchenHandler(cb => town.openKitchenForStory(cb));
 story.setTownBgm(()=> town.isOpen() ? town.bgmKey() : null);
 /* 腳本那一拍 `map:true` ＝攤開小地圖（ver -1397）——「怎麼攤」住在城鎮那邊。 */
 story.setMapView(on => { try{ return town.showMapForStory(on); }catch(_){ return false; } });
-story.setGateOpened(()=>combat.releaseEnemyRise());   // 降臨等門開（ver -875）
+story.setGateOpened(()=>combat.releaseEnemyRise());
+/* 戰前預載的起點與終點（ver -3064）：story／town 不認得 combat，由這裡注入。 */
+story.setBattlePreload(id => { preloadBattle(id); });
+story.setBattleGate(id => battleReady(id));
+town.setBattlePreload(id => { preloadBattle(id); });   // 降臨等門開（ver -875）
 story.setBattleHandler((battleId, resume, gateOpts)=>{
   storyResume = resume;
   flightBack = false;   // 劇情/城鎮的插入戰不是飛行頁交棒過來的（同 launchBattle 的理由）
@@ -2742,6 +2771,7 @@ story.setBattleHandler((battleId, resume, gateOpts)=>{
        -1593／-1597 我在這裡與 `combat.startGame` 各補過一次「就地合成」的退路，
        兩次都只治好自己看到的那一處（九處在查同一張表）。那兩條已經拿掉。 */
   if(GAME_CONFIG.battles && GAME_CONFIG.battles[battleId]){
+    enterBattleAssets(battleId);   // 劇情／城鎮插入戰也過戰鬥那道門（ver -3064：以前只有飛行交棒與 launchBattle 經過）
     { const k=battleBgmOf(battleId);
       if(k){ const s=story.bgmSrc(k); SFX.playBgm(s, { fadeOutMs:600, volume: bgmVol(s) }); } }
     /* ⚠⚠ **城鎮插入戰留在原背景**（ver -592（-893 前用詞），Ray：「打完敵人應該會留在原背景，

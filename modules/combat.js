@@ -3328,22 +3328,15 @@ export function warmStoryPartnerCi(){
 }
 export function releasePartnerCi(){ saint.releasePartnerCi(); }
 export function warmBattleImage(battleId, look){
+  /* ver -3064（預載計畫）：收集改走 `enemy.preloadBattleCard`（唯一那一支，鐵律 7／8），回傳「開場要看到的都到了」的 Promise。
+     ⚠ 隨機名單的場次先 `peekBattleEnemy` 抽好（同一抽會留到 startGame 用掉，暖到的就是真的會出場的那一隻）。 */
   try{
-    const B=(GAME_CONFIG.battles||{})[battleId]||{};
+    const B=(GAME_CONFIG.battles||{})[battleId]; if(!B) return Promise.resolve();
     const E=GAME_CONFIG.enemies||{};
-    const en=(look && E[B.enemy+'@'+look]) || E[B.enemy];   // 外觀款（ver -2950）：暖的是真的會出場的那一張
-    const u=en && enemy.enemyImage(en);
-    if(u){ const i=new Image(); i.src=u; }
-    /* 群體敵人的每一層（ver -2043）：開場就要整組站好，不然會先看到空的背景。 */
-    if(en && en.group && en.group.plate){ const i=new Image(); i.src=en.group.plate; }   // 背景層（#top）
-    if(en && en.group){ const G=en.group; if(G.cover){ const i=new Image(); i.src=G.cover; }
-      for(const u of enemy.groupWarmSrcs(G)){ const i=new Image(); i.src=u; }   // ver -2635：編組的群戰暖立繪
-      /* 逐人的待機／攻擊／倒地動檔也在這道門暖（ver -2620，TO_CODE_skypirate：直接開群戰時沒有預載，開戰十幾秒全組都是靜態） */
-      enemy.preloadGroupCard(B.enemy); }
-    /* NI 那一刻要換的立繪與 cut-in（ver -1964，米夏）—— 先暖著，發動時不閃空白。 */
-    const ls=en && en.lastStand;
-    if(ls) [ls.image, ls.ci].forEach(k=>{ const p=k && asset(k); if(p){ const i=new Image(); i.src=p; } });
-  }catch(_){}
+    const k=peekBattleEnemy(battleId) || (typeof B.enemy==='string' ? B.enemy : null); if(!k) return Promise.resolve();
+    const en=(look && E[k+'@'+look]) || E[k];   // 外觀款（ver -2950）：暖的是真的會出場的那一張
+    return enemy.preloadBattleCard(en);
+  }catch(_){ return Promise.resolve(); }
 }
 export function holdEnemyRise(){ enemy.holdRise(); }
 export function releaseEnemyRise(){ enemy.releaseRise(); }

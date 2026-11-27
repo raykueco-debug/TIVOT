@@ -5836,3 +5836,9 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   border:6px solid rgba(255,236,210,.85);box-shadow:0 0 18px rgba(255,220,180,.7),inset 0 0 14px rgba(255,220,180,.5);
   mix-blend-mode:screen;opacity:0;animation:soundwaveRing .9s cubic-bezier(.2,.7,.3,1) forwards;}
 @keyframes soundwaveRing{0%{transform:scale(.3);opacity:.95;border-width:8px}100%{transform:scale(22);opacity:0;border-width:1px}}
+
+/* 開棺前等這一場的怪載完（ver -3064，docs/PRELOAD_PLAN_BATTLE.md）：超過半秒才亮的小讀取圈（modules/story.js 的 battleGate）。 */
+body.battle-loading::after{ content:''; position:fixed; right:18px; bottom:calc(18px + env(safe-area-inset-bottom));
+  width:22px; height:22px; border-radius:50%; border:2px solid rgba(240,208,138,.25); border-top-color:#f0d08a;
+  animation:battleLoadSpin .8s linear infinite; z-index:99999; pointer-events:none; }
+@keyframes battleLoadSpin{ to{ transform:rotate(360deg); } }

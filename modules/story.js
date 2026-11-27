@@ -4704,6 +4704,7 @@ function renderLine(){
      （鐵律 8）：有台詞的那一拍照樣會被 `typeOut` 重設，這一行對它是冪等的。 */
   stopTyping();
   if(line.cg) cgBeatAt = Date.now();   // 插圖拍的起點（cgBeatBusy 的保險用，ver -2908）
+  lookAheadBattle();   // 戰前預載的起點（ver -3064）
   stopFx();       // 上一拍的演出（掃射／持續抖動）到此為止，別讓它蓋到這一句上
   flushCgFade();  // 上一拍的黑幕若還沒收，**立刻做完**（見 cgFade 的說明），不要取消
   /* ⚠ 上一拍**還沒演的立繪指令**要先補完（ver -430）：`stopFx()` 只是把計時器清掉，
@@ -5001,6 +5002,18 @@ function renderLine(){
       console.info('[story] 沒有註冊戰鬥發動器，跳過：', line.battle);
       return advance();
     }
+    /* 預載終點（ver -3064）：開棺之前等這一場「開場要看到的」到齊 —— 不准門開了才出怪。
+       等的期間點擊無效（advance 擋 battleGateWaiting）；超過半秒才亮讀取小圈，免得每一場都閃一下。 */
+    if(battleGateHook && battleGatePass!==line){
+      battleGateWaiting=true; const ln=line, at=lineIdx, sc=cur;
+      const spin=setTimeout(()=>document.body.classList.add('battle-loading'), 500);
+      Promise.resolve().then(()=>battleGateHook(ln.battle)).catch(()=>{}).then(()=>{
+        clearTimeout(spin); document.body.classList.remove('battle-loading'); battleGateWaiting=false;
+        if(cur!==sc || lineIdx!==at) return;   // 等的期間換了場／離場：這一拍作廢
+        battleGatePass=ln; renderLine(); });
+      return;
+    }
+    battleGatePass=null; preloadedBattle=null;   // 這一場開打了：下一場重新起跑
     /* 續播位置。⚠ **臨時段落（城鎮）不是 scene**（ver -375）：`__town` 在 MAIN_SCRIPT 裡
        查不到，照 `{scene,line}` 交棒回來會從主線開頭重播。臨時段落改帶著**那一份台詞**
        與它的收尾回呼一起交棒，由 `resumeFrom` 分流。 */
@@ -5504,6 +5517,7 @@ function advance(){
      ⚠ 實測時就是這樣跳過去的（單子在 z-9600、真的玩點不到底下，但程式化的點擊
        打得到）。同 `kerbPlaying` 的理由：演出／閘門進行中，點擊無效。 */
   if(kitchenOpen) return;
+  if(battleGateWaiting) return;     // 開棺前在等這一場的怪載完（ver -3064）
   /* ══⚠⚠ **`noSkip:true` ＝這一拍的演出跑完之前，點擊不推進**（ver -1384，Ray：
      「安雅在對話中播感應動畫時不可點擊加速」）══
      那一拍是**演給人看的**（感應動畫 4.4 秒），而它沒有字可讀 —— 點一下就跳過去
@@ -6192,6 +6206,23 @@ export function open(pos, done){
 /* main.js 注入戰鬥發動器：fn(battleId, resumePos)。
    ⚠ 回來時由 main.js 呼叫 `open(resumePos)` 續播 —— story 自己不知道戰鬥何時結束。 */
 export function setBattleHandler(fn){ battleHandler = fn || null; }
+/* ══ 戰前預載的起點與終點（ver -3064，docs/PRELOAD_PLAN_BATTLE.md）══════════════════════
+   起點：每一拍往後掃到**這一段裡下一個 `{battle}`**（掃不到再看下一幕、遇到讀取頁那一拍就停）；
+     拍上寫 `preload:'<battleId>'` 可以更早起跑（戰鬥在更後面的段落時用）。
+   終點：`{battle}` 那一拍，開棺之前等 main 注入的 `battleGate`（它有上限，不會卡死）。
+   ⚠ story 不認得 combat／enemy：兩支都由 main 注入，這裡只傳 id。 */
+let battlePreloadHook=null, battleGateHook=null, preloadedBattle=null, battleGatePass=null, battleGateWaiting=false;
+export function setBattlePreload(fn){ battlePreloadHook = fn || null; }
+export function setBattleGate(fn){ battleGateHook = fn || null; }
+function lookAheadBattle(){
+  if(!battlePreloadHook || !cur || !cur.lines) return;
+  const L=cur.lines, here=L[lineIdx];
+  let id = (here && typeof here.preload==='string') ? here.preload : null;
+  if(!id) for(let i=lineIdx;i<L.length;i++){ const b=L[i] && L[i].battle; if(typeof b==='string'){ id=b; break; } }
+  if(!id && cur.next && MAIN_SCRIPT[cur.next])
+    for(const ln of (MAIN_SCRIPT[cur.next].lines||[])){ if(ln.load) break; if(typeof ln.battle==='string'){ id=ln.battle; break; } }
+  if(id && id!==preloadedBattle){ preloadedBattle=id; try{ battlePreloadHook(id); }catch(_){} }
+}
 /* ══⚠⚠ **「這張圖現在該放哪一首」**（ver -913）══ 給 `bgmAfter:'@town'` 用的。
    ⚠ 為什麼不在戰鬥卡上直接寫曲名：那會變成同一個量兩個計算點（鐵律 7）——
      森林現在的 `misty` 是**暫代**（Ray：「森林曲後換」），換的時候只該改
