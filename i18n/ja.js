@@ -157,7 +157,7 @@ export const STRINGS = {
 
   /* ═══ 9. 監察官（フレイヤ）═══ */
   inspector: {
-    name:          'Renna',   // ver -3110：フレイヤ→蕾娜（日文譯名未定，暫用羅馬字）
+    name:          'フレイヤ',
     fallbackName:  '監察官',
     executionLine: '熔断した？　なんとも凄惨ですね。',
     interceptLine: '待って！　新たな敵よ！',

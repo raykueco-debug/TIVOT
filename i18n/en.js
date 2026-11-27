@@ -141,7 +141,7 @@ export const STRINGS = {
   },
   /* ═══ 9. 監察官（Freya）═══ */
   inspector: {
-    name:          'Renna',   // ver -3110：Freya→Renna
+    name:          'Freya',
     fallbackName:  'Inspector',
     executionLine: 'Melted down? How gruesome.',
     interceptLine: 'Wait! A new enemy!',

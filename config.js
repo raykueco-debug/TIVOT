@@ -115,7 +115,7 @@ export const HITFX = {
  *     以為是快取卡住 —— 版本號不動就等於沒有版本號）。
  *  ⚠ 它同時是**暖開機戳記的鑰匙**（main.js 的 `WARM_BOOT`）：版本一變，
  *    上一版的戳記就失效 → 下一次開機重跑完整讀取。那正是改版後該有的行為。 */
-export const VERSION = 'ver 2026.11.27-3110';
+export const VERSION = 'ver 2026.11.27-3109';
 
 /* ══ 空中怪 16 隻的戰鬥卡（ver -2268）══ 每一隻一張 `flight_<鍵>`（飛行頁 `battleIdFor` 的命名），
    內容同羽蛇那一場：船戰、艦載武器音、連射間隔 180ms。⚠ 這份鍵清單在三處：這裡／
@@ -1503,18 +1503,28 @@ export const GAME_CONFIG = {
   ],
 
   inspectors: {
-    /* 蕾娜：讀取頁的說明者（ver -425）＋**挑戰結算的監察官**（ver -3110，Ray：「fraya回收掉 全部換成renna」）。
-       ⚠ 芙蕾雅（freya）整格拿掉：她的台詞原句搬到這裡、只換說話的人（台詞沒改寫，對不上設定的幾句已回報 Ray）。
-       ⚠ 立繪借對白用的正面圖（`resources/si/renna_si_front.webp`）；日後有專屬的監察官立繪就改 `image` 那一行。 */
+    /* 蕾娜（ver -425）：**讀取頁的說明者**，出航之後接手。
+       ⚠ 結算畫面的監察官還是 `defaultInspector`（freya）—— 正名是另一件事（§8），
+         這裡只換讀取頁那一張臉。
+       ⚠ 立繪先借對白用的正面圖（`resources/si/renna_si_front.webp`）；
+         日後有專屬的讀取頁立繪就改 `image` 那一行。 */
     renna: {
       name:i18nT('蕾娜'),
+      tier:'rookie',
+      image:'inspector_renna',
+      portraits:{}, dialogues:{},
+    },
+    freya: {
+      name:i18nT('芙蕾雅'),
       tier:'rookie',
       // 處決勝利（聖徒化 Maximum Burst 擊殺）專屬台詞：優先於 rank 台詞
       executionLine:i18nT('熔斷了？真慘烈呢。'),
       // S 評價點「再度執槍」時的隱藏關警告台詞
       interceptLine:i18nT('慢著！有新的敵人！'),
-      image:'inspector_renna',          // 單張立繪鑰匙（無 portraits 時的 fallback）
-      portraits:{},                     // 好感度門檻 → 立繪鑰匙（留空則用 image）
+      image:'inspector_freya',          // 單張立繪鑰匙（無 portraits 時的 fallback）
+      portraits:{                       // 好感度門檻 → 立繪鑰匙（留空則用 image）
+        // 0:'inspector_freya', 30:'inspector_freya__lv1', 60:'inspector_freya__lv2',
+      },
       // dialogues[評價等第][好感度門檻] → 台詞陣列（隨機取一句）。目前僅好感 0 檔。
       dialogues:{
         S:{ 0:[i18nT('怎麼可能？竟然能夠做到這種程度！')] },
@@ -1563,7 +1573,7 @@ export const GAME_CONFIG = {
       },
     },
   },
-  defaultInspector: 'renna',   // 填上面的鑰匙名即啟用；null＝結算畫面不顯示監察官（ver -3110 由 freya 改，Ray：「fraya回收掉 全部換成renna」）
+  defaultInspector: 'freya',   // 填上面的鑰匙名即啟用；null＝結算畫面不顯示監察官
   /* Boss 戰**打贏**的結算改由這一位評（ver -471）；戰敗與其他一切照 defaultInspector。 */
   bossInspector: 'luna',
   /* ══ 讀取頁的**說明者**（ver -425，Ray：「從這個時點開始讀取頁的說明者變成蕾娜」）══
@@ -1985,7 +1995,7 @@ export const GAME_CONFIG = {
       return F;
     })(),
     cast: {
-      inspector: { name:i18nT('蕾娜'),   image:'tut_renna',       side:'left',  fit:{ zoom:1,    drop:10 } },   // ver -3110：芙蕾雅→蕾娜（取景走 tut_renna 那一組，量自 speakers.js 的 ART）
+      inspector: { name:i18nT('芙蕾雅'), image:'inspector_freya', side:'left',  fit:{ zoom:1,    drop:10 } },
       partner:   { name:i18nT('蕾妮'),   image:'partner_renee',   side:'right', fit:{ zoom:0.82, drop:0 } },
       /* 劇情版教學的唯一說話者。⚠ 站**左**：與地宮那一幕同側，玩家的空間記憶才連得起來
          （CLAUDE.md §6.5：同一個人每次都站同一邊）。 */
@@ -4716,7 +4726,7 @@ export const HOME_IMG = {
      ⇒ 改成**從 `challengePartners` 推**（鐵律 7：名單只有一份，日後改可選搭檔
        這裡自動跟上）。列死一份的話必然走鐘。 */
   prefixes: ['home_', 'weapon_', 'switch_'],               // logo ＋ 出擊整備的武器卡與切換 vfx
-  keys: ['inspector_renna']                                // 讀取頁的立繪（ver -3110：芙蕾雅→蕾娜）
+  keys: ['inspector_freya']                                // 讀取頁的立繪
           .concat((GAME_CONFIG.challengePartners || Object.keys(GAME_CONFIG.partners || {}))
                   .map(k => 'partner_' + k)),              // 挑戰**選得到**的那幾位
 };
@@ -4742,6 +4752,7 @@ export const ASSETS = {
   home_emblem:    "resources/background/tivot_emblem.webp?v=4cf38d5f",   // 主畫面徽記（含 THE IV ORDER OF TESTAMENT 弧字）
   enemy_faceless: "resources/enemy/saint_ug_giant.webp",   // 地下聖徒（UG=underground）；ver -2845（Ray 改設定成巨型聖徒：掙脫的宗教枷具＋鐵處女鐵面具＋粗頸）換 GPT 真 alpha 立繪。⚠ 亂入者 intruderEnemy 仍指舊的 saint_ug_ci.jpg（要不要跟著換待 Ray）
   cutin_saint:    "resources/partner/luna_ci_saint.jpg",   // 聖徒化 cut-in 暫代圖
+  inspector_freya: "resources/inspector/freya_si_01.webp",
   /* Boss 戰（挑戰的槍之魔女）勝利結算評價者：璐娜莉亞（ver -471，Ray 交稿）——
      坐姿立繪逐**等第**差分（S/A 共用 smirk）。lose 仍是芙蕾雅，這五張只有打贏用。 */
   inspector_luna_smirk:    "resources/si/luna_si_seat_smirk.webp?v=ebd94af4",

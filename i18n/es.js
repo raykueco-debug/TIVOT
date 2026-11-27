@@ -155,7 +155,7 @@ export const STRINGS = {
 
   /* ═══ 9. 監察官（芙蕾雅）＝結算台詞 ═══ */
   inspector: {
-    name:          'Renna',   // ver -3110：Freya→Renna
+    name:          'Freya',
     fallbackName:  'Inspectora',
     executionLine: '¿Fusión? Qué espanto.',
     interceptLine: '¡Alto! ¡Hay un nuevo enemigo!',
