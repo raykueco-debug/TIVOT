@@ -39,19 +39,24 @@
   /* 兩筆中繼資料的鑰匙：sw.js 用同一套算法（scope 底下的同名路徑），改一邊要改另一邊。 */
   const READY = keyOf('__offline_ready__'), HASHES = keyOf('__offline_hashes__');
   const CHECK = ['index.html', 'main.js', 'config.js', 'style.css', 'offline.js'];   // 開啟時抽查的關鍵檔
-  const gb = n => (n / 1e9).toFixed(1) + ' GB';
   const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const standalone = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
   let busy = false;
-  let armed = null;          // 第一下讀到的清單；第二下才真的開始下載
   let updAvail = null;       // 背景查到的新版本號（有＝按鈕顯示「有新版本」）
+  let lastSay = '';          // 下載中最新的一句（ver -3102：選單打開就看得到進度）
 
   function doneVer(){ try{ return localStorage.getItem(DONE_KEY); }catch(_){ return null; } }
   function setDone(v){ try{ v ? localStorage.setItem(DONE_KEY, v) : localStorage.removeItem(DONE_KEY); }catch(_){} }
   function label(){
+    if(busy && lastSay) return lastSay;
     if(updAvail) return T('有新版本 · 更新');
     return doneVer() ? T('✓ 已可離線 · 檢查更新') : T('離線下載');
   }
+  /* 下載狀態同時印在首頁與選單兩顆鈕上（ver -3102，Ray：遊戲內也要看得到下載到哪）——
+     不管是哪一顆按下去的，兩顆都跟著跑；選單是開著才有那一顆。 */
+  const BTN_IDS = ['offlineBtn', 'gmOffline'];
+  function broadcast(t){ lastSay = t; BTN_IDS.forEach(id => { const b = document.getElementById(id); if(b) b.textContent = t; }); }
+  const mb = n => { const m = n / 1048576; return m >= 1024 ? (m / 1024).toFixed(1) + ' GB' : Math.round(m) + ' MB'; };
   function relabel(){ const b = document.getElementById('offlineBtn'); if(b && !busy) b.textContent = label(); }
   function tellSW(){ try{ navigator.serviceWorker.controller && navigator.serviceWorker.controller.postMessage({ type:'offline-ready-changed' }); }catch(_){} }
   async function readyVer(cache){ const r = await cache.match(READY); return r ? await r.text() : null; }
@@ -59,11 +64,16 @@
     return (await fetch('offline_list.json?t=' + Date.now(), { cache: 'no-store' })).json();
   }
   /* 首頁與選單共用的那一支（鐵律 8）：
-     第一下 → 讀清單、報大小與剩餘空間；第二下 → 開始下載。下載中再按不做事。 */
+     ver -3102（Ray）：**按一下就開始** —— 讀當下的清單、看剩餘空間，字樣寫這一次的大小（「開始下載 · 約 695 MB」）就直接下。
+     以前要按兩下（第一下只報大小），按一下就進遊戲的人其實根本沒開始。下載中再按不做事。 */
   async function click(say){
     if(busy) return;
-    if(ios && !standalone){ say(T('請先「加到主畫面」，從主畫面打開再下載')); return; }
-    if(armed){ const list = armed; armed = null; return run(say, list); }
+    if(ios && !standalone){
+      const msg = T('iPhone 要先「加入主畫面」：Safari 下方的分享鈕 → 加入主畫面，再從主畫面的圖示打開，才能下載');
+      say(T('請先「加入主畫面」再下載'));
+      try{ window.alert(msg); }catch(_){}   // Safari 分頁的下載存不進主畫面 App —— 按鈕字太小容易沒看到，跳一次提示框
+      return;
+    }
     say(T('讀取清單…'));
     let list;
     try{ list = await fetchList(); }catch(_){ say(T('讀不到清單 · 需要網路')); return; }
@@ -75,12 +85,13 @@
       }
     }catch(_){}
     if(free !== null && free < list.bytes){
-      say(T('空間不足：需要 {need}，只剩 {free}').replace('{need}', gb(list.bytes)).replace('{free}', gb(free)));
+      say(T('空間不足：需要 {need}，只剩 {free}').replace('{need}', mb(list.bytes)).replace('{free}', mb(free)));
       return;
     }
-    armed = list;
     const upd = doneVer() && doneVer() !== list.version;
-    say((upd ? T('有更新 · 約 {n} · 再按一次開始') : T('下載約 {n} · 再按一次開始')).replace('{n}', gb(list.bytes)));
+    const first = (upd ? T('開始更新 · 約 {n}') : T('開始下載 · 約 {n}')).replace('{n}', mb(list.bytes));
+    say(first); broadcast(first);
+    return run(say, list);
   }
   /* 統計（ver -3091）：這一支是非 module，import 不到遙測 —— 發事件，main.js 收了轉給 TEL.offline。 */
   function tell(phase, ms){ try{ window.dispatchEvent(new CustomEvent('tivot-offline', { detail:{ phase, ms } })); }catch(_){} }
@@ -102,8 +113,9 @@
   const WANT_KEY = 'tivot_offline_want_v1';
   const want = v => { try{ v ? localStorage.setItem(WANT_KEY, v) : localStorage.removeItem(WANT_KEY); }catch(_){} };
   const wanted = () => { try{ return localStorage.getItem(WANT_KEY); }catch(_){ return null; } };
-  async function run(say, list){
+  async function run(say0, list){
     if(busy) return; busy = true;
+    const say = t => { try{ say0(t); }catch(_){} broadcast(t); };   // 按下去的那顆＋另一顆一起更新（ver -3102）
     let stopSave = null;
     try{
       if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
@@ -152,7 +164,9 @@
       };
       const worker = async (lane) => {
         while(i < files.length){
-          while(lane >= lanes()) await sleep(800);   // 讓位：遊戲中只留第 0 條、背景全停
+          while(lane >= lanes() && i < files.length) await sleep(800);   // 讓位：遊戲中只留第 0 條、背景全停
+          /* ⚠ ver -3102：等待時也要看「還有沒有檔」—— -3101 只看條數，遊戲中第 1～3 條會一直等到回首頁，
+             整輪收不了尾（實測停在 100% 不顯示完成）。 */
           if(i >= files.length) break;
           const n0 = i++, f = files[n0], h = hs ? hs[n0] : '';
           const k = keyOf(f);

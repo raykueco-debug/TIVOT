@@ -265,7 +265,7 @@ export function open(opts){
       + (window.__tivotOffline
           ? i18nT('<div class="gm-sec">離線包</div>')
             + '<div class="gm-acts"><button class="gm-btn" id="gmOffline" type="button"></button></div>'
-            + i18nT('<div class="gm-note">下載後沒網路也能玩。下載中螢幕不要鎖；中斷了再按一次會接著下。</div>')
+            + i18nT('<div class="gm-note">下載後沒網路也能玩。停在首頁下載最快（遊戲中會放慢、背景時暫停）；中斷了下次開啟會自動接著下。</div>')
           : '')
       + '<div class="gm-acts">'
       +   (o.onHome ? i18nT('<button class="gm-btn gm-home" type="button">回到主選單</button>') : '')
@@ -284,7 +284,7 @@ export function open(opts){
     bind('gmBgm','bgm'); bind('gmSe','se'); bind('gmVo','vo');
     { const ob=panel.querySelector('#gmOffline'), OL=window.__tivotOffline;
       if(ob && OL){
-        ob.textContent = OL.busy() ? i18nT('下載中…') : OL.label();
+        ob.textContent = OL.label();   // 下載中＝目前進度（ver -3102：offline.js 也會一路更新這一顆）
         ob.addEventListener('click', e=>{ e.stopPropagation();
           try{ SFX.menuClick(); }catch(_){}
           OL.click(t=>{ if(ob.isConnected) ob.textContent=t; });   // 與首頁那顆同一支（ver -2842）
