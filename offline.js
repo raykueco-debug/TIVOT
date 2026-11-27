@@ -56,7 +56,8 @@
      不管是哪一顆按下去的，兩顆都跟著跑；選單是開著才有那一顆。 */
   const BTN_IDS = ['offlineBtn', 'gmOffline'];
   function broadcast(t){ lastSay = t; BTN_IDS.forEach(id => { const b = document.getElementById(id); if(b) b.textContent = t; }); }
-  const mb = n => { const m = n / 1048576; return m >= 1024 ? (m / 1024).toFixed(1) + ' GB' : Math.round(m) + ' MB'; };
+  /* 大小一律用 MB（ver -3106，Ray：「下載不要用0.7gb 用mb表示」）—— 不換算成 GB。 */
+  const mb = n => Math.round(n / 1048576).toLocaleString('en-US') + ' MB';
   function relabel(){ const b = document.getElementById('offlineBtn'); if(b && !busy) b.textContent = label(); }
   function tellSW(){ try{ navigator.serviceWorker.controller && navigator.serviceWorker.controller.postMessage({ type:'offline-ready-changed' }); }catch(_){} }
   async function readyVer(cache){ const r = await cache.match(READY); return r ? await r.text() : null; }
@@ -89,7 +90,14 @@
       return;
     }
     const upd = doneVer() && doneVer() !== list.version;
-    const first = (upd ? T('開始更新 · 約 {n}') : T('開始下載 · 約 {n}')).replace('{n}', mb(list.bytes));
+    /* 更新只報這一次真的要抓的量（ver -3106）：清單沒有逐檔大小，所以報「幾個檔」—— 比雜湊表（run 也照這個跳過）。 */
+    let first;
+    if(upd){
+      let stored = {}; try{ const r = await (await caches.open(CACHE)).match(HASHES); if(r) stored = await r.json(); }catch(_){}
+      const hs = Array.isArray(list.hash) ? list.hash : [];
+      const n = list.files.filter((f, k) => !hs[k] || stored[f] !== hs[k]).length;
+      first = T('開始更新 · {n} 個檔').replace('{n}', n);
+    } else first = T('開始下載 · 約 {n}').replace('{n}', mb(list.bytes));
     say(first); broadcast(first);
     return run(say, list);
   }
@@ -142,8 +150,9 @@
       let got = 0;   // 這一輪真的新抓了幾支（跨補抓／驗收那幾輪都算；ok 每輪會歸零）—— 統計只在 >0 時報時間（ver -3104）
       const t0 = Date.now();
       tell('start');
+      /* 進度：一開始就印 0%、前 10 支每支都印（ver -3106：以前等滿 10 支才第一次更新，手機上好幾秒沒動靜＝「點了沒反應」）。 */
       const progress = () => { const n = ok + fail + skip;
-        if(n % 10 === 0 || n === files.length)
+        if(n <= 10 || n % 10 === 0 || n === files.length)
           say(T('下載中 {p}%（{n}/{all}{fail}）').replace('{p}', Math.floor(n / files.length * 100)).replace('{n}', n).replace('{all}', files.length).replace('{fail}', fail ? T('，失敗 ') + fail : '')); };
       /* 一支檔：切背景／斷網時失敗不算數 —— 等回來再抓同一支；其他錯誤重試兩次才算失敗。 */
       const getOne = async (f, k, h) => {
