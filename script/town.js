@@ -842,6 +842,17 @@ export const OUTING = {
    ⚠ 只寫 `{ node:'tavern' }`（不給 `scenes`）＝那一格只是「可以碰到人的地方」，
      不換分店 —— 北方泊地的四張圖還沒交，現在就是這樣。
    ══════════════════════════════════════════════════════════════════════ */
+/* ══ 全城共用的一次性操作提示（ver -3090，Ray：「城鎮移動 降落等需要長按觸發的點 放一次教學提示」）══
+   與各城的 `TOWNS[].tips` 同一套（`modules/town.js` 的 tipDue／showTip，鐵律 8），差別只在**不分城**：
+   第一次在任何一座城看得到可走的方向箭就教一次。排在各城的 tips 之後（那幾則有劇情條件，先讓它們）。
+   · `at:'@arrow'` ＝指著槍棺上第一支亮著的方向箭（沒有亮著的箭就這一次先不教）。
+   · 旗標：誰插的＝提示**彈出那一刻**（showTip）；存在 progress 的 flags（`tivot_flags_v1`）；`newRun()` 清 ⇒ 新開一輪會再教一次。
+   ⚠ 出航走的是同一支「下」箭（§6.5.4），不另教。飛行頁的降落鈕那一則在 `flight/index.html`（`tip_hold_land`，同一份 flags）。 */
+export const GLOBAL_TIPS = [
+  { flag:'tip_hold_move', at:'@arrow', withMenu:true,
+    text:'按住發光的方向箭　→　蓄滿才會移動（出航也一樣）' },
+];
+
 export const DINE = {
   fallback: 'bar',       // Ray：無女伴、該場景無分配角色 → 酒吧
   /* ⚠ `name` **不會出現在畫面上**（ver -580，Ray：地名一律是「餐飲街」）——

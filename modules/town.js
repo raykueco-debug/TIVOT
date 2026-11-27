@@ -13,7 +13,7 @@
 import { i18nT } from '../i18n/scriptTr.js';   // 介面字譯文（ver -1909；中文時原樣回傳）
 import { GAME_CONFIG, fileGain, asset } from '../config.js';   // asset＝鍵→路徑（warmEnemies 用）
 import { GROUP_COMPS } from '../script/group_comps.js';   // 背景的群戰編組（ver -2639，tools/group_editor.html）
-import { TOWNS, OUTING, DINE, DRAGON_LINES, QUEST_LOCK} from '../script/town.js';
+import { TOWNS, OUTING, DINE, DRAGON_LINES, QUEST_LOCK, GLOBAL_TIPS} from '../script/town.js';
 import * as clock from '../script/clock.js';
 import * as prog from '../script/progress.js';
 import * as story from './story.js';
@@ -5349,6 +5349,18 @@ function tipDue(){
     if(t.node && t.node!==nodeId) continue;     // 只在那一格教（ver -2964：要指的鈕只在那一格有）
     return t;
   }
+  /* 全城共用的那幾則（ver -3090，`GLOBAL_TIPS`）：各城的先，這幾則後。
+     `@arrow` ＝現在亮著的第一支方向箭（`updateCompass` 擺的 `.avail`）；一支都沒亮＝這一次不教。 */
+  for(const t of GLOBAL_TIPS){
+    if(t.flag && prog.hasFlag(t.flag)) continue;
+    if(t.need && !prog.hasFlag(t.need)) continue;
+    if(t.at==='@arrow'){
+      const el=document.querySelector('.kerb-arrow.avail');
+      if(!el) continue;
+      return Object.assign({}, t, { el });
+    }
+    return t;
+  }
   return null;
 }
 /* `done`＝這一則提示**做完**之後要接的下一拍（ver -430，目前是「把店舖的單子擺出來」）。
@@ -5360,7 +5372,7 @@ function tipDue(){
 function showTip(t, done){
   if(!t){ if(done) done(); return; }
   if(t.flag) prog.addFlags([t.flag]);
-  story.showHint({ at:t.at, text:t.text }, ()=>{
+  story.showHint({ at:t.at, el:t.el, text:t.text }, ()=>{
     if(gearWatch) gearWatch(done || (()=>{}));
     else if(done) done();
   });

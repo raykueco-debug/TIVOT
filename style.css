@@ -2843,6 +2843,10 @@
   body.tut-guide-on #tutCastL{translate:-115% 0;}
   body.tut-guide-on #tutCastR{translate:115% 0;}
   body.tut-guide-on #tutCast .tut-portrait.center{translate:0 110%;}
+  /* 劇情／城鎮那一層的一次性提示（`story.openHint`）同一條規矩（ver -3090）：店主之類站在台上的人一起讓開。 */
+  #storyCast .story-portrait{transition:transform .45s cubic-bezier(.16,1,.3,1),filter .25s ease,opacity .18s ease,translate .45s ease;}
+  body.story-hint-on #storyCastL{translate:-160% 0;}
+  body.story-hint-on #storyCastR{translate:160% 0;}
   #tutGuide .tg-label{margin-top:8px;font-size:13px;letter-spacing:3px;color:var(--gold);
     text-shadow:0 0 8px rgba(212,169,74,.75);animation:tgLabel 1s ease-in-out infinite alternate;}
   /* 點擊閘（指向左緣破防計量表）：標示縮字，置中定位時左緣不出畫面（箭頭保持正對計量表） */

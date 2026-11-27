@@ -122,11 +122,11 @@ function introDone(){ return !introFlag || prog.hasFlag(introFlag); }
    ⚠ 被說明的那顆要**抬到遮罩之上**（`.spot`），否則玩家看著一片暗、不知道在指什麼。
    ⚠ 一次只演一個：三個提示（坐、敲門、睡）會在不同時機到齊，排隊比疊在一起清楚。 */
 const TIPS = {
-  sit:   { flag:'inn_tip_sit',   sel:'[data-act="sit"]',   text:i18nT('坐下來消磨時間。一次過兩個小時。') },
+  sit:   { flag:'inn_tip_sit',   sel:'[data-act="sit"]',   text:i18nT('長按一秒：坐下來消磨時間。一次過兩個小時。') },   // 「長按一秒」ver -3090（Ray：長按觸發的點都教一次）
   knock: { flag:'inn_tip_knock', sel:'.inn-door.awake, .inn-door.asleep',
            text:i18nT('敲敲伙伴的門，看看他們在做什麼。') },
   sleep: { flag:'inn_tip_sleep', sel:'[data-act="sleep"]',
-           text:i18nT('推進時間至隔日早上七點，恢復體力並存檔。') },
+           text:i18nT('長按一秒：推進時間至隔日早上七點，恢復體力並存檔。') },
   /* ══⚠⚠ **守夜那一晚，再指一次「獨自坐坐」**（ver -1511，Ray 的 Stage10-B 稿：
      「點擊睡覺提示『今晚好像不太安寧，先守著吧。』提示點擊獨自坐坐」）══
      上面那三則是**一輩子只教一次**的操作說明；這一則不是說明，是**那一夜的指路**

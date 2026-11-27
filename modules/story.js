@@ -6882,6 +6882,7 @@ export function closeHint(){
   if(hintOv && hintOv.parentNode) hintOv.parentNode.removeChild(hintOv);
   if(hintMk && hintMk.parentNode) hintMk.parentNode.removeChild(hintMk);
   hintOv=hintMk=hintTgt=hintOff=null;
+  document.body.classList.remove('story-hint-on');
   /* 保險：萬一有更早的殘留（同一個 id 疊了好幾層），一次掃乾淨。 */
   document.querySelectorAll('#storyHint,#storyHintMark').forEach(n=>n.remove());
   document.querySelectorAll('.hint-spot').forEach(n=>n.classList.remove('hint-spot'));
@@ -6889,7 +6890,8 @@ export function closeHint(){
 function openHint(spec, done){
   closeHint();                     // ⚠ 絕對不准疊（見上）
   const o = (typeof spec==='string') ? { at:spec } : (spec||{});
-  const tgt = document.getElementById(HINT_TARGET[o.at] || o.at);
+  /* `el` ＝直接給元素（ver -3090：槍棺的方向箭沒有 id，城鎮那邊挑好亮著的那一支交過來）。 */
+  const tgt = o.el || document.getElementById(HINT_TARGET[o.at] || o.at);
   const st = $('storyStage');
   if(!tgt || !st){ done && done(); return; }
   const r = tgt.getBoundingClientRect();
@@ -6905,6 +6907,9 @@ function openHint(spec, done){
   a.style.top  = (r.top  - sr.top  - 6)+'px';
   mk.querySelector('.sh-txt').style.top = Math.max(8, r.top - sr.top - 62)+'px';
   tgt.classList.add('hint-spot');
+  /* 提示在畫面上＝台上的立繪撤開（ver -3090，Ray：「有提示時都要撤立繪」；同戰鬥教學的 `tut-guide-on`）。
+     撤法在 CSS（`body.story-hint-on`，獨立的 translate 屬性）；收掉的兩個出口（closeHint／finish）都拿掉這個 class。 */
+  document.body.classList.add('story-hint-on');
   hintOv=ov; hintMk=mk; hintTgt=tgt;
   hintOff=()=>tgt.removeEventListener('click', onTgt, true);
   let fired=false;
@@ -6914,6 +6919,7 @@ function openHint(spec, done){
     if(ov.parentNode) ov.parentNode.removeChild(ov);
     if(mk.parentNode) mk.parentNode.removeChild(mk);
     hintOv=hintMk=hintTgt=hintOff=null;
+    document.body.classList.remove('story-hint-on');
     done && done();
   };
   /* ⚠ 點**目標**才算學會（那是這一拍要教的動作）；點提示本身只是收掉它，
