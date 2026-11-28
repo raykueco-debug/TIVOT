@@ -2424,12 +2424,12 @@ function playCgAnim(name){
     const f=$('storyFade');
     /* ⚠ 等黑幕時也要把第一格擺上去（ver -2620 實測）：黑幕那一邊（cgFade 的 back）正是在等「第一格畫上去了沒」才掀，
        而 onloadeddata 那一次常常畫不上（插圖那時還沒 .on、框是 0）—— 兩邊互等，黑幕要撐到 3 秒保險才放。 */
-    if(f && f.classList.contains('on')){ cgAnimDraw(on); on.t=setTimeout(go, 60); return; }
+    if(f && f.classList.contains('on')){ cgAnimDraw(on); on.t=setTimeout(go, A.withText ? 16 : 60); return; }   // withText：黑幕一掀就要接上（11-28）
     /* 對話框真的開始打字才放（打字機可能還排在立繪／淡入之後）；等不到 3 秒就照放，不卡住。 */
     if(A.withText && (on.wt=(on.wt||performance.now())) && performance.now()-on.wt<3000){
       /* ⚠ 要問對話框**看得見**（ver -2973）：框還藏著時 `#storyText` 常常留著上一句的字，只看字會提早放行。 */
       const tx=$('storyText'), bb=$('storyBubble');
-      if(pendingReveal || !(tx && tx.textContent) || (bb && bb.style.visibility==='hidden')){ on.t=setTimeout(go, 30); return; } }
+      if(pendingReveal || !(tx && tx.textContent) || (bb && bb.style.visibility==='hidden')){ on.t=setTimeout(go, 16); return; } }
     const p=v.play(); if(p && p.catch) p.catch(()=>{});
     on.started=true;     // 真的開播了（cgAnimGate／cgBeatBusy 只在這之後才等它播完，ver -2936）
     loop();
@@ -5483,7 +5483,19 @@ function renderLine(){
     pendingReveal = ()=>{ const c=$('storyCard');
       if(c && line.card) c.classList.add('on');
       reveal(); };
-    fxTimers.push(setTimeout(flushReveal, CG_FADE_MS*2 + 140));
+    /* ══ `withText` 的插圖動畫：黑幕**開始掀的那一刻**就出字（11-28，Ray：「照這樣改」）══
+       平常走黑幕的一拍要等「全亮」才放人出來（CG_FADE_MS×2＋140）；但 withText 的影片是等字出來才開播 ——
+       兩條疊在一起，黑幕掀開後畫面停在影片第一格 0.5～0.65 秒（002／004／008 實測），讀起來就是「先放了底圖」。
+       ⇒ 這種拍子改成盯著黑幕：`#storyFade` 一拿掉 `.on`（cgFade 的 back＝影片第一格已畫上去）就立刻補演，影片那邊同一刻開播。
+       ⚠ 立繪就算這一拍有上台，也在插圖底下（插圖層在立繪之上），提早上台看不出來。
+       ⚠ 黑幕若是腳本／讀取頁的（不由插圖掀），3 秒保險照舊放行，不卡住。 */
+    if(line.cg && (cgAnimSpec(line.cg)||{}).withText){
+      const f=$('storyFade'), mine=pendingReveal;
+      const poll=()=>{ if(pendingReveal!==mine) return;
+        if(!f || !f.classList.contains('on')) flushReveal(); else fxTimers.push(setTimeout(poll, 16)); };
+      poll();
+      fxTimers.push(setTimeout(flushReveal, 3000));
+    }else fxTimers.push(setTimeout(flushReveal, CG_FADE_MS*2 + 140));
   }else reveal();
 }
 /* 黑幕期間還沒跑的 `reveal`（見上）。⚠ 只有一個 —— `renderLine` 一開頭就歸零，
