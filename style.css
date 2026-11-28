@@ -1910,7 +1910,9 @@
   #saintCutin.burst .scimg[data-kind="burst"],
   #saintCutin.obe .scimg[data-kind="obe"],
   #saintCutin.execute .scimg[data-kind="execute"],
-  #saintCutin.return .scimg[data-kind="return"],
+  #saintCutin.return .scimg[data-kind="return"]{display:block;}
+  /* ⚠ 上面那一組的 `{display:block;}` 原本掛在最後一個選擇器（boss）上 —— -3133 拆 Boss 亂入時連那個收尾一起刪掉，
+     四個選擇器就接到下一行的動畫規則上，MB／OBE／處決／生命歸還的圖與影片畫布全部 display:none（11-28，Ray：「處決動畫沒了」）。 */
   #saintCutin.on .scimg{animation:saintCutinImgIn var(--sc-dur,1.6s) ease-out forwards;}
   @keyframes saintCutinImgIn{0%{opacity:0;transform:scale(1.15)}
     18%{opacity:1;transform:scale(1)}82%{opacity:1;transform:scale(1)}
