@@ -2198,6 +2198,9 @@
      storyStage 是 body 直屬，藏 #app 不會誤傷舞台）。動畫暫停那條留著當保險。 */
   body:has(#storyStage.on) #app{ visibility:hidden; }
   body:has(#storyStage.on) #home *, body:has(#storyStage.on) #app *{ animation-play-state:paused !important; }
+  /* ⚠ 偽元素不吃 `*`、animation-play-state 也不繼承（11-28 量到：#grid::after 的 gridGlowPulse 在藏著的 #app 底下照跑）⇒ 另外點名 */
+  body:has(#storyStage.on) #home *::before, body:has(#storyStage.on) #home *::after,
+  body:has(#storyStage.on) #app *::before, body:has(#storyStage.on) #app *::after{ animation-play-state:paused !important; }
   /* ══⚠⚠⚠ **門開著的那幾秒，戰鬥層要露回來**（ver -1008，Ray：「禍魘的淨化特效
      怎麼都沒了」→「淨化跟關門同時就好，因為有些 boss 自帶背景，不同時會露陷」）══
      `kerb-open` 那一段本來就寫著「縫裡要露出**底下的戰鬥畫面**」（見 §槍棺那一節），
@@ -2227,6 +2230,7 @@
      戰鬥層自己回來，不影響開棺演出。 */
   body.flight-on #top, body.flight-on #bottom{ visibility:hidden; }
   body.flight-on #top *, body.flight-on #bottom *{ animation-play-state:paused !important; }
+  body.flight-on #top *::before, body.flight-on #top *::after, body.flight-on #bottom *::before, body.flight-on #bottom *::after{ animation-play-state:paused !important; }   /* 同上：偽元素另外點名（11-28） */
   /* ⚠⚠ ver -1729：**劇情層也要**。出航時 `openFlight` 只 `town.suspend()`＋把 `#storyStage`
      `visibility:hidden`（幾何要留給交棒開棺量，不能 display:none，見 2803 那一條），
      而它上面的無限動畫（槍棺 `kerbCompass` 擺動、齒輪 `kgShine`、面盤呼吸…）沒有任何一條

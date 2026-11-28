@@ -303,14 +303,23 @@ export function drawFx(fx, src, W, H, t, live) {
   x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1;
   /* ── 天空：靜態天空 → 程式雲（往右捲，中景 70 秒、近景 32 秒捲過一整張）→ 來源挖掉天空那一塊 ── */
   if (S.sky) {
-    x.clearRect(0, 0, W, H); x.drawImage(fx.img.sky, 0, 0, W, H);
-    if (fx.img.moon) x.drawImage(fx.img.moon, 0, 0, W, H);   // 銀月固定不動（西邊低空那一輪），雲從它前面過
+    /* ⚠ 效能（11-28，Ray：「iphone15 跑一陣也會發熱」）：天空＋銀月不會動 ⇒ 烘一次成 B.skyBase，每格只貼這一張；
+       「來源挖掉天空」那一張也一樣 —— 來源是靜態圖（!live）且沒換就沿用上一格的 B.cut，不再每格清掉重挖。 */
+    if (!B.skyBase) {
+      B.skyBase = mk(W, H); const g = B.skyBase.getContext('2d');
+      g.drawImage(fx.img.sky, 0, 0, W, H);
+      if (fx.img.moon) g.drawImage(fx.img.moon, 0, 0, W, H);   // 銀月固定不動（西邊低空那一輪），雲從它前面過
+    }
+    x.clearRect(0, 0, W, H); x.drawImage(B.skyBase, 0, 0);
     if (B.layers) drawLayers(B, x, S.sky, t);
     else if (S.sky.clouds) [70, 32].forEach((sec, i) => { const c = fx.img['cloud' + i]; if (!c) return; const off = (t / sec % 1) * W; x.drawImage(c, off - W, 0, W, H); x.drawImage(c, off, 0, W, H); });
     if (fx.img.sun) x.drawImage(fx.img.sun, 0, 0, W, H);   // 太陽畫在雲之上（守城戰，11-22 Ray：「太陽前面那一團是怎麼回事」）
     if (S.plumes) drawPlumes(B, x, S.plumes, fx.img.plumes, t);   // 煙柱在天空這一層：下一步蓋上地面 ⇒ 一律在建築後面
-    const c = B.cx; c.globalCompositeOperation = 'source-over'; c.clearRect(0, 0, W, H); c.drawImage(src, 0, 0, W, H);
-    c.globalCompositeOperation = 'destination-out'; c.drawImage(B.skyMask.c, 0, 0);
+    if (live || B.cutSrc !== src) {
+      const c = B.cx; c.globalCompositeOperation = 'source-over'; c.clearRect(0, 0, W, H); c.drawImage(src, 0, 0, W, H);
+      c.globalCompositeOperation = 'destination-out'; c.drawImage(B.skyMask.c, 0, 0);
+      B.cutSrc = live ? null : src;
+    }
     x.drawImage(B.cut, 0, 0);
   } else x.drawImage(src, 0, 0, W, H);
   /* ── 平靜水面：逐列橫向扭動（越下面越近、波越大）＋飄移的反光 ── */
