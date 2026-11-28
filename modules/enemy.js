@@ -2518,8 +2518,7 @@ function startShipAir(en){
     S.trailPts=[[c[0],c[1]-9],[c[0],c[1]+9],bw];
     S.trailSty=[{ al:0.30, w:0.55, ph:0 },{ al:0.60, w:1, ph:2.1 },{ al:0.42, w:2.4, ph:4.2, sink:0.012 }];
     S.trails=S.trailPts.map(()=>[]); }
-  const bgm=/url\("?([^")]+)"?\)/.exec(top.style.backgroundImage||'');
-  skyTone(bgm && bgm[1]).then(t=>{ if(shipAir!==S || !t) return;
+  skyTone(battleBgName() || null).then(t=>{ if(shipAir!==S || !t) return;
     S.lit=mixc(t.hi,[255,255,255],0.35); S.sh=mixc(t.mid,t.hi,0.45); });
   /* 一團雲：三顆重疊的軟球（亮部在上、暗部壓底），比單一漸層圓像雲 */
   const puff=(x,y,r,al,k)=>{ if(al<=0.004) return;
@@ -4624,7 +4623,9 @@ export function setEnemy(key, opts){
     const plate = en.group && en.group.plate;
     /* 會動的戰鬥背景不放底圖（ver -3135，Ray：「所有會動的都不放底圖」）：有影片就不掛靜態圖，影片第一格出來前是黑的。
        名字記在 data-bg（battleBgName／skyBandNow 讀它）。 */
-    const bgMoves = !plate && !!story.bgVideoOf(nm);
+    /* 11-28：「會動」＝影片**或程式層**（story.bgMoves）—— 程式雲的戰鬥背景以前照樣先貼靜態圖、畫布再淡入 ⇒ 天空跳一下。
+       程式層要的地面圖由 startBattleBgFx 自己載（不上畫面）；開門前的預熱（preloadBattleCard）照舊暖它。 */
+    const bgMoves = !plate && !!nm && story.bgMoves(nm);
     topEl.dataset.bg = plate ? '' : nm ? story.bgUrl(nm) : '';
     topEl.style.backgroundImage = plate ? ('url("'+plate+'")') : (nm && !bgMoves) ? ('url("'+story.bgUrl(nm)+'")') : '';
     setBattleBgVideo(plate ? '' : nm);   // 動態背景（ver -2729，Ray：「戰鬥時要用動態背景」）：有對應影片就疊在靜態圖上播，沒有照舊

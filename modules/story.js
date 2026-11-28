@@ -1667,6 +1667,11 @@ const FADE_MS = 220;
    不能讓等它的人卡住）。⚠ 只有一支（鐵律 8）：凡是「等新圖上去了再做事」都叫它。 */
 /* 這一張背景會動嗎（有影片）——會動就不放底圖（ver -3135）。名字可以是基底名、檔名或網址。 */
 export function bgVideoOf(name){ return name ? (BG_ANIM[bgStemOf(name)] || null) : null; }
+/* ══ 這一張背景會不會動（11-28，Ray：「背景的舊圖還是沒拿掉 導致每次讀背景天空都會跳一下」）══
+   會動＝**有影片或有程式層**（雲／水／煙…）。-3135 只看影片 ⇒ 守城戰、北方泊地那一套「靜態地面＋程式天空」被當成靜態背景，
+   `#storyBg` 先貼上畫著舊天空的原圖、程式層第一格才蓋上去 ⇒ 天空跳一下。
+   ⚠ 誰要決定「貼不貼靜態圖」一律問這一支（城鎮、劇情、戰鬥上半，鐵律 8）；程式層要的地面圖由播放器自己載進記憶體當素材，不上畫面。 */
+export function bgMoves(name){ if(!name) return false; const st=bgStemOf(name); return !!(BG_ANIM[st] || bgFxOf(st, prog.hasFlag)); }
 /* 換成會動的背景：不設 src，掛 data-anim（見 setAnimImg）；done＝影片第一格畫上去（最多等 1.5 秒）。 */
 function swapAnimBg(el, name, done){
   const fin=()=>{ if(done) done(); };
@@ -1677,7 +1682,7 @@ function swapAnimBg(el, name, done){
   el.classList.add('fading'); setTimeout(put, FADE_MS);
 }
 /* 背景的唯一換法（ver -3135）：會動的走 swapAnimBg，其餘照舊 swapImg。 */
-function swapBg(el, name, done, opts){ if(name && bgVideoOf(name)) swapAnimBg(el, name, done); else swapImg(el, name ? imgSrc(name) : '', done, opts); }
+function swapBg(el, name, done, opts){ if(name && bgMoves(name)) swapAnimBg(el, name, done); else swapImg(el, name ? imgSrc(name) : '', done, opts); }
 function whenPainted(el, fn){
   if(!el || !el.getAttribute('src')){ fn && fn(); return; }
   if(el.complete && el.naturalWidth){ fn && fn(); return; }
@@ -1758,9 +1763,33 @@ function isSelfLine(line){
   const s = lineText(line);
   return s!=null && WORDLESS.test(String(s));
 }
+/* ══ 畫面上那一張的原始尺寸／等它真的畫上去（11-28，Ray：「動畫的平移全都不見了 放回去」）══
+   -3135 起會動的插圖／背景**不設 src** ⇒ `naturalWidth` 永遠 0、`load` 永遠不來 —— 平移、推近、放射模糊三種都在等那個 load，
+   於是一次都沒起跑。改問這兩支（鐵律 8）：靜態圖照舊看 naturalWidth／load；會動的看那一層的影片（或程式層地面）的尺寸，
+   等它**第一格真的畫上去**（on.shown）才起跑 —— 平移套在元素上，畫布每格照抄 transform／object-position，動的就是影片本身。 */
+function animLayerOf(el){ return (cgAnimOn && cgAnimOn.img===el) ? cgAnimOn : (bgAnimOn && bgAnimOn.img===el) ? bgAnimOn : null; }
+function natSize(el){
+  if(!el) return null;
+  if(el.naturalWidth) return { w:el.naturalWidth, h:el.naturalHeight };
+  const on=animLayerOf(el), v=on && on.v, b=on && on.base;
+  if(v && v.videoWidth) return { w:v.videoWidth, h:v.videoHeight };
+  if(b && b.naturalWidth) return { w:b.naturalWidth, h:b.naturalHeight };
+  return null;
+}
+function whenShown(el, fn){
+  if(!el) return;
+  if(el.getAttribute('src')){ if(el.complete && el.naturalWidth) fn(); else el.addEventListener('load', fn, { once:true }); return; }
+  const name=shownName(el), t0=performance.now();
+  (function wait(){
+    if(shownName(el)!==name) return;                       // 等的期間換掉了：這一次作廢
+    const on=animLayerOf(el);
+    if(on && on.shown && natSize(el)) fn();
+    else if(performance.now()-t0<6000) setTimeout(wait, 40);
+  })();
+}
 function coverOrigin(el, p){
   const W=el.clientWidth, H=el.clientHeight;
-  const nw=el.naturalWidth||1, nh=el.naturalHeight||1;
+  const ns=natSize(el), nw=(ns && ns.w)||1, nh=(ns && ns.h)||1;
   if(!W||!H) return '50% 50%';
   const s=Math.max(W/nw, H/nh);                    // cover 的縮放
   const dw=nw*s, dh=nh*s;                          // 圖在框裡的實際大小
@@ -2466,20 +2495,27 @@ function stopBgAnim(){
 function bgAnimDraw(on, now){
   const v=on.v, cv=on.cv, img=on.img;
   /* 來源：影片的這一格 → 程式層自己的底圖 → 畫面上那張靜態圖。 */
+  /* 來源（11-28）：影片的這一格 → 程式層自己的底圖（spec.base）→ 播放器自己載的地面圖（on.base，**不上畫面**）。
+     ⚠ `#storyBg` 上已經沒有靜態圖可借（會動的不貼圖，bgMoves）。程式層還沒好之前**不先畫裸地面**——
+       那張的天空是原圖畫死的，先畫它再換成程式雲就是「跳一下」；寧可黑。程式層載不到（fxFailed）才退回只畫地面。 */
   let src=null, sw=0, sh=0, live=false;
+  const base=on.base && on.base.complete && on.base.naturalWidth ? on.base : null;
   if(v && v.videoWidth && v.readyState>=2){ src=v; sw=v.videoWidth; sh=v.videoHeight; live=true; }
   else if(on.fx && on.fx.ready){
-    const b=on.fx.img.base || (img.complete && img.naturalWidth ? img : null);
+    const b=on.fx.img.base || base;
     if(b){ src=b; sw=b.naturalWidth; sh=b.naturalHeight; }
   }
+  else if(on.fxFailed && base){ src=base; sw=base.naturalWidth; sh=base.naturalHeight; }
   if(!src) return;
   if(on.fx && on.fx.ready){ src=drawFx(on.fx, src, sw, sh, ((now||performance.now())-on.t0)/1000, live); sw=src.width; sh=src.height; }
-  else if(!v) return;
+  else if(!v && !on.fxFailed) return;
   const W=img.offsetWidth, H=img.offsetHeight; if(!W||!H) return;
   const dpr=Math.min(2, window.devicePixelRatio||1);
   const cw=Math.round(W*dpr), ch=Math.round(H*dpr);
-  if(cv.width!==cw || cv.height!==ch){ cv.width=cw; cv.height=ch; }
   const cs=getComputedStyle(img);
+  /* 只剩一張不會動的地面（fxFailed）時，取景沒變就不重畫（平移還在跑時照畫）。 */
+  if(!live && !(on.fx && on.fx.ready)){ const sig=[cw,ch,cs.objectPosition,cs.transform,cs.filter,cs.opacity].join('|'); if(sig===on.sig) return; on.sig=sig; }
+  if(cv.width!==cw || cv.height!==ch){ cv.width=cw; cv.height=ch; }
   cv.style.left=img.offsetLeft+'px'; cv.style.top=img.offsetTop+'px';
   cv.style.width=W+'px'; cv.style.height=H+'px';
   cv.style.transform=cs.transform==='none'?'':cs.transform; cv.style.transformOrigin=cs.transformOrigin;
@@ -2495,8 +2531,14 @@ function playBgAnim(img, src, video, fxSpec){
   cv.className='bg-anim'; cv.style.cssText='position:absolute;z-index:0;pointer-events:none;visibility:hidden;';
   img.after(cv);
   const on={ v:null, cv, ctx:cv.getContext('2d'), img, src, video, fxSpec, fx:fxSpec?prepFx(fxSpec):null,
-             raf:0, vfc:0, shown:false, t0:performance.now(), last:0, hid:false };
+             raf:0, vfc:0, shown:false, t0:performance.now(), last:0, hid:false, base:null, fxFailed:false, sig:'' };
   bgAnimOn=on;
+  /* 程式層的地面＝那一張靜態背景（沒有影片、spec 也沒給 base 時）：自己載進記憶體當素材，不貼到 `#storyBg` 上（11-28）。 */
+  if(fxSpec && !video && !fxSpec.base){
+    const b=new Image(); b.decoding='async'; on.base=b;
+    b.onload=()=>{ if(bgAnimOn===on && bgSizeHook && b.naturalWidth) try{ bgSizeHook(src, b.naturalWidth, b.naturalHeight); }catch(_){} };
+    b.src=/[\/]/.test(src) ? src : imgSrc(src);
+  }
   /* 靜態圖與程式層的構圖不一樣（獅口水道）：程式層畫上去之前先藏起來，不然會先閃一張別的構圖。 */
   if(fxSpec && fxSpec.hideStatic){ on.hid=true; img.style.visibility='hidden'; }
   const loop=(now)=>{
@@ -2505,7 +2547,10 @@ function playBgAnim(img, src, video, fxSpec){
     if(shownName(img)!==src || !bgStageLive()){ stopBgAnim(); return; }
     if(on.fx && on.fx.failed){
       on.fx=null; if(on.hid){ on.hid=false; img.style.visibility=''; }
-      if(!on.v){ stopBgAnim(); return; }   // 只有程式層而它載不到：收掉，靜態圖照舊
+      if(!on.v){
+        if(!on.base){ stopBgAnim(); return; }
+        on.fxFailed=true;   // 只有程式層而它載不到：畫布改畫那張地面（取景沒變就不重畫，見 bgAnimDraw）
+      }
     }
     if(on.fx){
       on.raf=requestAnimationFrame(loop);
@@ -2745,7 +2790,7 @@ function applyPersist(line){
       if(i>=cands.length){ console.warn('[story] bgBand 一張都載不到：', want); return; }
       const nm=cands[i], im=new Image();
       /* 會動的那一張不探測、不載靜態圖（ver -3135）：影片表本來就是照磁碟上的靜態圖掃出來的，有鑰匙＝這一張存在。 */
-      if(bgVideoOf(nm)){ if(stageBg!==want){ stageBg=want; swapBg($('storyBg'), nm, ()=>matchPortraits(toneSrcEl(), $('storyCast'))); } return; }
+      if(bgMoves(nm)){ if(stageBg!==want){ stageBg=want; swapBg($('storyBg'), nm, ()=>matchPortraits(toneSrcEl(), $('storyCast'))); } return; }
       im.onload=()=>{
         if(stageBg===want) return;              // 已經在這一張上了
         stageBg=want;                           // ⚠ 記**基底名**：下一拍寫同一個才不會重換
@@ -2988,7 +3033,7 @@ function applyPersist(line){
          ⚠ 起訖與放大倍率由那一拍給（`cgPanA`／`cgPanB`／`cgPanK`）：
            「結尾不要把臉移出畫面」是**那一張圖**的事，引擎不知道臉在哪。 */
       const go=()=>{
-        const iw=cg.naturalWidth||0, ih=cg.naturalHeight||1;
+        const ns=natSize(cg), iw=(ns && ns.w)||0, ih=(ns && ns.h)||1;
         const bw=cg.clientWidth||1, bh=cg.clientHeight||1;
         const noRoom = iw/ih > bw/bh + 0.01;     // 圖更寬扁 ⇒ cover 之下垂直滿版
         if(noRoom){
@@ -3002,7 +3047,7 @@ function applyPersist(line){
           cg.classList.add(line.cgPan==='up'?'pan-up':'pan-down');
         }
       };
-      if(cg.complete && cg.naturalWidth) go(); else cg.addEventListener('load', go, {once:true});
+      whenShown(cg, go);
     }else if(line.cgRush){
       /* ══⚠⚠ **放射狀動態模糊（zoom blur）**（ver -1557 建、**-1562 重做**，Ray：
          「動態模糊不夠，應該以米夏眼睛為消失點進行動態模糊」）══
@@ -3026,12 +3071,16 @@ function applyPersist(line){
                                     ? line.cgRush : { x:0.5, y:0.5 });
         cg.style.transformOrigin = org;
         killCgRush();
+        /* 會動的插圖沒有 src：疊影拿畫布當下那一格（畫布本來就是照框的大小畫的，cover 之後一模一樣）。 */
+        const al=animLayerOf(cg);
+        let rushSrc=cg.getAttribute('src')||'';
+        if(!rushSrc && al && al.cv && al.cv.width){ try{ rushSrc=al.cv.toDataURL('image/webp', 0.85); }catch(_){} }
         const box=document.createElement('div'); box.id='storyCgRush';
         /* 疊影由**外往內**收：層數越多拉得越順，但每一層都是一張滿版圖
            —— 手機上 5 層已經夠（鐵律 12：先問「這在手機上成立嗎」）。 */
         const N=5, K=0.052, A=0.44;
         for(let i=N;i>=1;i--){
-          const g=document.createElement('img'); g.src=cg.getAttribute('src')||'';
+          const g=document.createElement('img'); g.src=rushSrc;
           g.alt=''; g.style.transformOrigin=org;
           g.style.setProperty('--zb-k', (1+K*i).toFixed(3));
           g.style.setProperty('--zb-a', (A/i).toFixed(3));
@@ -3050,7 +3099,7 @@ function applyPersist(line){
         cgRushTimer = setTimeout(killCgRush, 4000);   // 保險絲，不是時長
         void cg.offsetWidth; cg.classList.add('cg-rush');
       };
-      if(cg.complete && cg.naturalWidth) go(); else cg.addEventListener('load', go, {once:true});
+      whenShown(cg, go);
     }else if(line.cgZoom){
       /* 以臉為中心緩慢推近。cgZoom 給的是**臉在圖上**的位置（0~1）——
          要換成**元素座標**的 transform-origin，因為 object-fit:cover 會把圖裁掉一圈，
@@ -3058,7 +3107,7 @@ function applyPersist(line){
       cg.classList.remove('pan-up','pan-down','pan-v','zoom-in','cg-rush');
       const go=()=>{ cg.style.transformOrigin = coverOrigin(cg, line.cgZoom);
                      void cg.offsetWidth; cg.classList.add('zoom-in'); };
-      if(cg.complete && cg.naturalWidth) go(); else cg.addEventListener('load', go, {once:true});
+      whenShown(cg, go);
     }else if(line.cgPan===null || (cgChanged && !line.cgSoft)){
       /* ⚠⚠ `cgSoft` 的那一拍**不重置平移**（ver -631，Ray：「awake 直接疊在平移後的
          passout 上」）：它是同一張圖的差分、疊上去淡入的 —— 平移是上一拍跑完
@@ -6122,7 +6171,10 @@ function clearStageVisuals(){
   clearCg();
   clearStageLeftovers();                 // ⚠ 會收 #storyFade
   stageBg=null; stageCi=null;
-  for(const id of ['storyBg','storyCi']){ const el=$(id); if(el){ el.classList.remove('on','fading','pan-up'); el.removeAttribute('src'); } }
+  /* ⚠ 會動的背景（-3135 起不設 src、掛 `data-anim`）也要一起拿掉並停影片（ver -3142，Ray：「第一場夢境…第二天在旅店的對話背景還是地宮」）——
+     只拿 `src` 的話 `shownName` 還回動畫的名字，地宮的影片會穿過讀取頁一路疊到門後的旅店上。 */
+  for(const id of ['storyBg','storyCi']){ const el=$(id); if(el){ el.classList.remove('on','fading','pan-up'); el.removeAttribute('src'); if(el.dataset && el.dataset.anim) delete el.dataset.anim; } }
+  stopBgAnim();
   const fx=$('storyFx'); if(fx) fx.innerHTML='';
   const card=$('storyCard'); if(card) card.classList.remove('on');
   const b=$('storyBubble'); if(b) b.style.visibility='hidden';

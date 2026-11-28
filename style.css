@@ -4540,7 +4540,8 @@
        狀態。跑完之後 `forwards` 本來就不再耗效能，凍它一點好處都沒有。 */
   body.perf-idle #storyFx *,
   body.perf-idle #storyCgRush img,
-  body.perf-idle #storyCg{ animation-play-state:running !important; }
+  body.perf-idle #storyCg,
+  body.perf-idle #storyBg{ animation-play-state:running !important; }   /* 背景的 pan-up/down 同為 forwards 一次性（11-28，Ray：「動畫的平移全都不見了」：閒置 10 秒後開的背景平移凍在第 0 格） */
   #storyFx .fx-sense-dim{position:absolute;inset:0;z-index:1;pointer-events:none;
     background:rgba(3,3,7,.55);opacity:0;animation:storySenseDim .26s ease forwards;}
   @keyframes storySenseDim{from{opacity:0}to{opacity:1}}
