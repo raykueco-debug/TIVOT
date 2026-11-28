@@ -1853,7 +1853,10 @@ export function newRun(opts){
   for(const k of ['tivot_clock_v1', 'tivot_inventory_v1', 'tivot_money_v1', tutKey,
                   shopStock.KEY,                            // 店鋪存貨（ver -405）
                   /* 飛行頁的交棒（ver -382）：待打的遭遇戰、以及打完要回去的座標。 */
-                  'tivot_battle_req_v1', 'tivot_flight_ret_v1']) {
+                  'tivot_battle_req_v1', 'tivot_flight_ret_v1',
+                  /* 飛行地圖的目標旗（ver -3140，Ray：「要清」）＝拔旗 ③；擁有者註解在 flight/index.html 的 `PIN_KEY`
+                     （字串兩邊各一份，改名一起改）。一支鑰匙涵蓋地表與地底。 */
+                  'tivot_flight_pin_v1']) {
     if(!k) continue;
     try{ localStorage.removeItem(k); }catch(e){}
   }
