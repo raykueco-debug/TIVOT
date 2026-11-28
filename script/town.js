@@ -3296,13 +3296,15 @@ export const TOWNS = {
             /* ⚠ 這一拍**不撤立繪**（ver -1903，Ray：「我不討厭就是了那一拍不用撤立繪」）：賽西莉跟著場景一起淡入黑
                （`#storyFade` 在立繪之上）；下一拍換背景（`bgBand`）時在全黑底下才清場。
                `noHold`：她還站在台上，不寫的話這一拍會停下來等點擊（台上有人的無台詞拍），黑畫面就卡住。 */
-            /* ══ 出夢＝三秒黑幕轉場（ver -2936，Ray：「第一場夢境結束後改用三秒轉場」—— 取代 -2884 出夢那一道讀取頁；入夢那一道照舊）══
-               ① 三秒淡黑，夢的曲子跟著淡掉（`bgm:null`）；推時鐘到 07:00 —— 城鎮不會在段落中依時段換背景（-2904），所以黑幕底下不會先閃旅店
-               ② **全黑底下**換成旅店清晨（`bgBand`＝換背景＝轉場，台上的人一起清掉）、停一下讓圖載好
-               ③ 三秒亮回，帝都的曲子回來 → 段落演完，07:00 閘門接手（蕾娜「好囉，該出發囉」）。 */
+            /* ══ 出夢＝三秒淡黑 ＋ 讀取頁（ver -3145，Ray：「第一場夢境轉景修壞了 第二天在旅店的對話背景還是地宮 我說了夢境前後都要加預載頁切開吧?」）══
+               取代 -2936 的「只有三秒黑幕」：入夢與出夢都過一道讀取頁（`load:true`，門前的地宮背景／影片／立繪／BGM 全殺）。
+               ① 三秒淡黑，夢的曲子跟著淡掉（`bgm:null`）；推時鐘到 07:00
+               ② 讀取頁（門後那幾拍的旅店清晨圖載好才演）
+               ③ 全黑底下換成旅店清晨（`bgBand`）→ 三秒亮回，帝都的曲子回來 → 07:00 閘門接手（蕾娜「好囉，該出發囉」）。 */
             { speaker:'NARRATION', text:'', label:'cap_dream_end', auto:3300, fadeOut:3000, noHold:true, bgm:null,
               clockToNext:7, healFull:true, flags:['inn_missed'] },
-            { speaker:'NARRATION', text:'', auto:900, bgBand:'capital_hotel', hide:'*', noSkip:true },
+            { load:true },
+            { speaker:'NARRATION', text:'', auto:900, fadeOut:1, bgBand:'capital_hotel', hide:'*', noSkip:true },
             { speaker:'NARRATION', text:'', auto:3300, bgm:'@town', fadeIn:3000 },
           ] },
         ],

@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<script src="../orientation.js?v=3144"></script>
-<script src="../script/quests.classic.js?v=3144"></script>   <!-- 任務提示（ver -2886）：與主程式同一份 -->
-<script src="../i18n/ui/langs.classic.js?v=3144"></script>
+<script src="../orientation.js?v=3145"></script>
+<script src="../script/quests.classic.js?v=3145"></script>   <!-- 任務提示（ver -2886）：與主程式同一份 -->
+<script src="../i18n/ui/langs.classic.js?v=3145"></script>
 <script>
 /* 介面字譯文（ver -1909）：這一頁是非模組，程式一開跑就讀字串 —— 所以譯文表要**同步**載
    （document.write，只在選了有譯文的語言時）。
@@ -22,8 +22,8 @@
   }catch(e){} }
   /* 試玩版固定中文（ver -3113，同 i18n.js 的 isDemoBuild 那一行，改一邊要改另一邊）：父頁的 __tivotDemo 或網址 ?demo=1。 */
   try{ if((window.parent && window.parent!==window && window.parent.__tivotDemo===true) || /[?&]demo=1/.test(location.search)) l='zh'; }catch(e){}
-  if(G.script.indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=3144"><\/script>');
-  if(G.ui.indexOf(l)>=0) document.write('<script src="../i18n/ui/'+l+'.classic.js?v=3144"><\/script>');
+  if(G.script.indexOf(l)>=0) document.write('<script src="../i18n/script/'+l+'.classic.js?v=3145"><\/script>');
+  if(G.ui.indexOf(l)>=0) document.write('<script src="../i18n/ui/'+l+'.classic.js?v=3145"><\/script>');
 })();
 function i18nT(s){ var t=window.__TIVOT_TR; return (t && typeof s==='string' && t[s]!=null) ? t[s] : s; }
 document.addEventListener('DOMContentLoaded', function(){
@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ver -2217：門圖含楣（kerberos_gate，＝主遊戲同一張）—— 底圖往上延伸到楣的上緣（--fk-gate-top，負值，layoutFKerb 寫）。
      畫在 ::before：門的子元素（紋章／箭／鉚釘）排在它之後，自然疊在上面。 */
   #fkerbDoor::before{content:'';position:absolute;left:0;right:0;top:var(--fk-gate-top,0px);bottom:0;
-    background-image:url('../resources/vfx/kerberos_gate.webp?v=3144');
+    background-image:url('../resources/vfx/kerberos_gate.webp?v=3145');
     background-repeat:no-repeat;background-size:100% 100%;pointer-events:none;}
   #fkerb.rise #fkerbDoor{transform:translateY(calc(var(--fkerb-rise,0px) * -1));}
   /* 楣與其餘零件：全部是門的子元素＝同一剛體，門上推它們跟著上去
@@ -276,8 +276,8 @@ document.addEventListener('DOMContentLoaded', function(){
       radial-gradient(circle at 50% 22%, rgba(0,0,0,.72) 40%, rgba(0,0,0,0) 78%);
     box-shadow:inset 0 3px 7px rgba(0,0,0,.85);}
   #fkerbGear .fkg-shine{position:absolute;inset:0;mix-blend-mode:screen;opacity:.8;
-    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=3144");
-    mask-image:url("../resources/vfx/kerberos_gear.webp?v=3144");
+    -webkit-mask-image:url("../resources/vfx/kerberos_gear.webp?v=3145");
+    mask-image:url("../resources/vfx/kerberos_gear.webp?v=3145");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -297,8 +297,8 @@ document.addEventListener('DOMContentLoaded', function(){
     filter:drop-shadow(0 3px 7px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.8));}
   #fkerbPend .fkp-shine{position:absolute;inset:0;pointer-events:none;
     mix-blend-mode:screen;opacity:.85;
-    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=3144");
-    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=3144");
+    -webkit-mask-image:url("../resources/vfx/kerberos_pendant.webp?v=3145");
+    mask-image:url("../resources/vfx/kerberos_pendant.webp?v=3145");
     -webkit-mask-size:100% 100%;mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     background:linear-gradient(114deg,
@@ -673,23 +673,23 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
        ⚠ 要有，否則交棒那一格齒輪會憑空冒出來（同吊墜的理由）。
        ⚠ 排在 `.fk-plate` 之前 ＝ 團徽之下、槍棺之上。 -->
   <div id="fkerbGear"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=3144" alt=""><i class="fkg-shine"></i></div>
+    <img src="../resources/vfx/kerberos_gear.webp?v=3145" alt=""><i class="fkg-shine"></i></div>
   <div id="fkerbGearSm"><i class="fkg-well"></i>
-    <img src="../resources/vfx/kerberos_gear.webp?v=3144" alt=""></div>
-  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=3144" alt="">
-  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=3144" alt="">
-  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=3144" alt="">
-  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=3144" alt="">
-  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=3144" alt="">
-  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=3144" alt="">
-  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=3144" alt="">
-  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=3144" alt="">
-  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=3144" alt="">
+    <img src="../resources/vfx/kerberos_gear.webp?v=3145" alt=""></div>
+  <img class="fk-plate" src="../resources/vfx/kerberos_plate.webp?v=3145" alt="">
+  <img class="fk-arrow n" src="../resources/vfx/kerberos_arrow.webp?v=3145" alt="">
+  <img class="fk-arrow e" src="../resources/vfx/kerberos_arrow.webp?v=3145" alt="">
+  <img class="fk-arrow s" src="../resources/vfx/kerberos_arrow.webp?v=3145" alt="">
+  <img class="fk-arrow w" src="../resources/vfx/kerberos_arrow.webp?v=3145" alt="">
+  <img class="fk-rivet r10" src="../resources/vfx/kerberos_rivet.webp?v=3145" alt="">
+  <img class="fk-rivet r2"  src="../resources/vfx/kerberos_rivet.webp?v=3145" alt="">
+  <img class="fk-rivet r4"  src="../resources/vfx/kerberos_rivet.webp?v=3145" alt="">
+  <img class="fk-rivet r8"  src="../resources/vfx/kerberos_rivet.webp?v=3145" alt="">
   <!-- 吊墜（ver -412）：與主遊戲同一套（見 index.html 的 #kerbPend 與 style.css）。
        ⚠ 這一頁**必須也有** —— 遭遇時門是在這裡推上來的，交棒之後主遊戲那一半才接手；
          只有一邊掛吊墜的話，交棒那一格會憑空多出一個東西。 -->
   <div id="fkerbPend"><div class="fkp-swing"><div class="fkp-idle">
-    <img src="../resources/vfx/kerberos_pendant.webp?v=3144" alt=""><i class="fkp-shine"></i>
+    <img src="../resources/vfx/kerberos_pendant.webp?v=3145" alt=""><i class="fkp-shine"></i>
   </div></div></div>
 </div></div>
 <div id="boot">
@@ -711,15 +711,15 @@ img:not([src]), img[src=""], img.img-broken{visibility:hidden !important;}
   <div id="bMsg"><small id="bootMsg"></small></div>
 </div>
 
-<script src="settlement.js?v=3144"></script>
+<script src="settlement.js?v=3145"></script>
 <!-- 閒聊對話的**內容**獨立成一支：方便加台詞、加觸發條件而不必碰引擎。
      ⚠ 一般 <script>（非 module）→ TALKS / talkPeriod / talkPick 是全域，
        而且會在下面這段 inline 之前執行完，所以 inline 內可以直接用。 -->
 <script>if(/[?&]world=undercity/.test(location.search)) document.write('<script src="undercity/world.js?v=29615343"><\/script>');</script>
 <script>if(/[?&]world=sanctum/.test(location.search)) document.write('<script src="sanctum/world.js?v=0b4855bb"><\/script>');</script>   <!-- 卡耶爾山谷 → 聖王廳地宮的地底大空洞（ver -2565，build_sanctum.py 產的） -->
 <script>if(!/[?&]world=/.test(location.search)) document.write('<script src="undercity/crowns.js?v=6a3ae090"><\/script>');</script>   <!-- 地表上地底樹的樹冠（ver -2412，build_uc_crowns.py 產的） -->
-<script src="talks.js?v=3144"></script>
-<script src="drg3d.js?v=3144"></script>   <!-- 空中怪 3D（11-23 Ray：「全部空中怪」接入遊戲）：預設 3D，?drg3d=0 關掉；版號由 bust.py 蓋 -->
+<script src="talks.js?v=3145"></script>
+<script src="drg3d.js?v=3145"></script>   <!-- 空中怪 3D（11-23 Ray：「全部空中怪」接入遊戲）：預設 3D，?drg3d=0 關掉；版號由 bust.py 蓋 -->
 
 <script>
 /* 破圖框一律不畫（ver -1881，同主頁 main.js 那一支，這一頁是另一個 document）。 */
@@ -834,7 +834,7 @@ const COLOR_URL  = 'silvermoon_terrain.png?v=b18827be'  + TERRAIN_V;
    以前是手寫的，於是從 -911 起就沒有人記得動它 —— 而 HUD 上的版本號正是 Ray
    在手機上確認「我現在跑的是哪一版」的唯一依據（鐵律 7：一個量一個計算點；
    ver -626：版本號不動就等於沒有版本號）。**不要手改。** */
-const FLIGHT_VER = 'ver -3144';
+const FLIGHT_VER = 'ver -3145';
 const MAP_SCALE  = /[?&]world=(cave|undercity|sanctum)/.test(location.search) ? 10 : 20;   // 地底的圖加密成 1536²（ver -2369，build_cave.py 的 SUPER）：一格 10 世界單位，世界大小不變
 const INV_SCALE  = 1/MAP_SCALE;
 const PEAK_SCALE = 520;   // 高度圖 255 對應的世界高度（越大山越陡）
@@ -20395,6 +20395,15 @@ function makeSpotlight(rectFn, html, opts){
     let top=r.top-pad-gap-th, below=false;
     if(top<12){ top=r.top+r.height+pad+gap+(opts.belowGap||0); below=true; }
     const cx=Math.max(tw/2+8, Math.min(innerWidth-tw/2-8, r.left+r.width/2));
+    /* `opts.avoid`（ver -3145，Ray：「降落的教學提示…蓋到地名」）＝回一串**要讓開的矩形**（地名、上方 HUD）。
+       擺好之後撞到就換到另一側；兩側都撞就貼到撞到的那一塊的上緣之上。不給＝照舊。 */
+    if(typeof opts.avoid==='function'){
+      const hits=t=>{ const L=cx-tw/2, R=cx+tw/2, B=t+th; return (opts.avoid()||[]).find(q=>q && q.width>0 && q.height>0 && L<q.right && R>q.left && t<q.bottom && B>q.top); };
+      let h=hits(top);
+      if(h){ const alt=below ? r.top-pad-gap-th : r.top+r.height+pad+gap+(opts.belowGap||0);
+             if(alt>=12 && alt+th<=innerHeight-8 && !hits(alt)){ top=alt; below=!below; }
+             else if(!below){ top=Math.max(12, h.top-gap-th); } }
+    }
     tip.style.top=top+'px'; tip.style.left=cx+'px'; tip.style.transform='translateX(-50%)';
     const ax=(r.left+r.width/2)-(cx-tw/2);   // 箭頭對準目標中心（提示框被夾住時也一樣）
     arrow.style.cssText='position:absolute;left:'+ax+'px;width:12px;height:12px;margin-left:-6px;'
@@ -24739,36 +24748,56 @@ function updateLandBtn(){
   if(want!==landOn){
     landOn=want;
     const b=document.getElementById('landBtn'); if(b) b.classList.toggle('on', want);
-    if(want) landTipMaybe(); else landTipOff();
+    if(!want) landTipOff();
   }
+  landTipTick();   // 亮著的期間每一拍問一次（ver -3145）
 }
 /* ══ 降落鈕的一次性教學（ver -3090，Ray：「城鎮移動 降落等需要長按觸發的點 放一次教學提示」）══
    第一次亮起降落鈕就教一次「要按住」。走既有的聚光燈（`makeSpotlight`，鐵律 8）。
-   · 旗標 `tip_hold_land`：誰插的＝提示**彈出那一刻**（這一支）；存在與主遊戲共用的 flags（`tivot_flags_v1`，§6.10）；
+   · 旗標 `tip_hold_land`：誰插的＝**玩家點掉提示或真的降落**那一刻（`landTipOff(true)`，ver -3145 改；以前是彈出那一刻）；存在與主遊戲共用的 flags（`tivot_flags_v1`，§6.10）；
      `newRun()` 清 ⇒ 新開一輪會再教一次。城鎮方向箭那一則在 `script/town.js` 的 `GLOBAL_TIPS`。
    · 收掉：輕點任一處（`onSkip`）、降落鈕熄掉、真的降落（`doLand`）。長按不收 —— 那是「照做」。
    · 對白在跑（`sayQueue`）或其他教學開著（`s9Tutor`）時先不教，下一次亮起再說（台上有立繪時不疊提示）。
    · 提示期間把鈕抬到遮罩之上（`body.land-tip`），不然金圈裡的鈕是暗的。 */
 var landTipSp=null;   // var：landBtn 的更新可能在這一行執行前就被叫到（避開 TDZ）
+/* ══ 何時教（ver -3145，Ray：「降落的教學提示是錯的 蓋到地名且跟劇情的大地圖打在一起 讓蕾娜交待完目標後再顯示」）══
+   以前只在降落鈕**亮起那一瞬間**判一次：那一刻蕾娜正在講（sayQueue）就跳過，講完鈕一直亮著也不會再試；
+   沒在講的那一瞬間又會跟劇情開出來的大地圖（mapOpen）疊在一起。
+   ⇒ 鈕亮著的期間每一拍都問（`landTipTick`）：對白、大地圖、索敵／其他教學都沒有，**而且連續 1.5 秒都沒有**才彈
+   （對白→開地圖→再對白之間那一瞬的空檔不算數）。 */
+let landTipQuietAt=0;
+function landTipTick(){
+  if(!landOn || landTipSp || landTipDone) { landTipQuietAt=0; return; }
+  const busy = sayQueue || s9Tutor || mapOpen || (typeof senseOn!=='undefined' && senseOn) || (typeof introArt!=='undefined' && introArt);
+  const now=performance.now();
+  if(busy){ landTipQuietAt=0; return; }
+  if(!landTipQuietAt){ landTipQuietAt=now; return; }
+  if(now-landTipQuietAt>=1500) landTipMaybe();
+}
+var landTipDone=false;
 function landTipMaybe(){
-  if(landTipSp || flagOn('tip_hold_land')) return;
-  if(sayQueue || s9Tutor) return;
+  if(landTipSp || landTipDone) return;
+  if(flagOn('tip_hold_land')){ landTipDone=true; return; }
+  if(sayQueue || s9Tutor || mapOpen) return;
   const b=document.getElementById('landBtn'); if(!b) return;
-  addFlag('tip_hold_land');
   document.body.classList.add('land-tip');
   landTipSp=makeSpotlight(()=>b.getBoundingClientRect(),
     i18nT('<b style="color:#d4a94a">教學提示</b><br><b style="color:#d4a94a">按住</b>「降落」一秒（或按住往下滑）')
     +i18nT('才會降落；放早了就取消。'),
-    { shape:'rect', pad:8, anchor:'above', belowGap:44, onSkip:()=>landTipOff() });   // 不蓋鈕（ver -3115）
+    { shape:'rect', pad:8, anchor:'above', belowGap:44, onSkip:()=>landTipOff(true),   // 不蓋鈕（ver -3115）
+      /* 不壓地名（ver -3145）：讓開地名（#place）與上方 HUD（#top）。 */
+      avoid:()=>['place','top'].map(id=>{ const e=document.getElementById(id); return (e && +getComputedStyle(e).opacity>0.05) ? e.getBoundingClientRect() : null; }) });
 }
-function landTipOff(){
+/* `done`＝這一次算教過了（玩家點掉／真的降落）—— 才記旗標（ver -3145）。被對白、大地圖打斷而收掉的不算，下次安靜時再彈。 */
+function landTipOff(done){
+  if(done){ landTipDone=true; addFlag('tip_hold_land'); }
   if(!landTipSp) return;
   try{ landTipSp.off(); }catch(_){}
   landTipSp=null;
   document.body.classList.remove('land-tip');
 }
 function doLand(){
-  landTipOff();   // 真的降落了＝教完（ver -3090）
+  landTipOff(true);   // 真的降落了＝教完（ver -3090）
   const S=landTarget;
   if(demoLandNag(S)) return;   // 試玩版：只降北泊，其他地方蕾娜擋回來（ver -3115）
   /* 進西部大溶谷（ver -2393）：地表 → 地底＝換一張地圖，花一小時、清追兵，俯衝過場淡完才交棒（同進城鎮那一套）。 */
