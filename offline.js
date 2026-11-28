@@ -47,10 +47,18 @@
 
   function doneVer(){ try{ return localStorage.getItem(DONE_KEY); }catch(_){ return null; } }
   function setDone(v){ try{ v ? localStorage.setItem(DONE_KEY, v) : localStorage.removeItem(DONE_KEY); }catch(_){} }
+  /* ══ 「已可離線」只看快取裡**此刻真的有沒有那些檔**（11-28，Ray：「不是下載過 是有下載檔案 免得被刪了結果還是有下載記錄」）══
+     `verified`＝這一次開啟逐檔驗出來的結果（verify 那一支，鐵律 8）：null＝還在驗／'ok'＝全在／數字＝缺幾支／'gone'＝整批不見。
+     ⚠ 下載紀錄（localStorage 的 DONE_KEY）**不參與判斷** —— 它只拿來決定「要不要驗」，驗完以結果為準。 */
+  let verified = doneVer() ? 'checking' : null;   // 有下載紀錄＝「要驗」，驗完之前不說已可離線
   function label(){
     if(busy && lastSay) return lastSay;
+    if(typeof verified === 'number') return T('缺 {n} 個檔 · 點一下補齊').replace('{n}', verified);
+    if(verified === 'gone') return T('離線檔案不見了 · 點一下重新下載');
     if(updAvail) return T('有新版本 · 更新');
-    return doneVer() ? T('✓ 已可離線 · 檢查更新') : T('離線下載');
+    if(verified === 'ok') return T('✓ 已可離線 · 檢查更新');
+    if(verified === 'checking') return T('檢查離線檔案…');
+    return T('離線下載');
   }
   /* 下載狀態同時印在首頁與選單兩顆鈕上（ver -3102，Ray：遊戲內也要看得到下載到哪）——
      不管是哪一顆按下去的，兩顆都跟著跑；選單是開著才有那一顆。 */
@@ -92,12 +100,14 @@
     const upd = doneVer() && doneVer() !== list.version;
     /* 更新只報這一次真的要抓的量（ver -3106）：清單沒有逐檔大小，所以報「幾個檔」—— 比雜湊表（run 也照這個跳過）。 */
     let first;
-    if(upd){
+    if(typeof verified === 'number'){
+      first = T('補齊 · {n} 個檔').replace('{n}', verified);   // 只抓缺的那幾支（run 會跳過已在快取的）
+    }else if(upd){
       let stored = {}; try{ const r = await (await caches.open(CACHE)).match(HASHES); if(r) stored = await r.json(); }catch(_){}
       const hs = Array.isArray(list.hash) ? list.hash : [];
       const n = list.files.filter((f, k) => !hs[k] || stored[f] !== hs[k]).length;
       first = T('開始更新 · {n} 個檔').replace('{n}', n);
-    } else first = T('開始下載 · 約 {n}').replace('{n}', mb(list.bytes));
+    }else first = T('開始下載 · 約 {n}').replace('{n}', mb(list.bytes));
     say(first); broadcast(first);
     return run(say, list);
   }
@@ -226,7 +236,7 @@
       if(fail){ say(T('失敗 {n} 個 · 點一下重試').replace('{n}', fail)); tell('fail'); }
       else{
         await cache.put(READY, new Response(list.version, { headers:{ 'Content-Type':'text/plain' } }));
-        setDone(list.version); updAvail = null; tellSW(); want(null);
+        setDone(list.version); updAvail = null; verified = 'ok'; tellSW(); want(null);
         /* ver -3104（Ray：「連0秒一起解決」）：秒數只是「這一輪」的時間 —— 續傳／檢查更新那一輪全部跳過就是 0 秒，
            讀起來像沒下載。字樣不寫秒數；統計只在這一輪真的有新抓時才報 time_ms（全部跳過＝0 ⇒ TEL.offline 不帶時間）。 */
         tell('done', got > 0 ? Date.now() - t0 : 0);
@@ -236,7 +246,19 @@
       say(T('下載中斷 · 點一下重試')); tell('fail');
     }finally{ busy = false; if(stopSave) stopSave(); }
   }
-  /* 開啟時自我檢查＋背景查更新（ver -3078）。 */
+  /* 逐檔驗：雜湊表的鑰匙＝這一版該在快取裡的每一支（run 存一支記一支、跳過的也補記）。
+     每批 200 支、批與批之間讓一拍（遊戲畫面中 50ms）；切背景就等。回傳缺的那幾支的檔名。 */
+  async function missingOf(cache, files){
+    const miss = [];
+    for(let s = 0; s < files.length; s += 200){
+      while(document.hidden) await sleep(800);
+      const part = await Promise.all(files.slice(s, s + 200).map(f => cache.match(keyOf(f)).catch(()=>null)));
+      part.forEach((r, j) => { if(!r) miss.push(files[s + j]); });
+      await sleep(inGame() ? 50 : 0);
+    }
+    return miss;
+  }
+  /* 開啟時自我檢查＋背景查更新（ver -3078；11-28 改成每次開啟逐檔驗，見上面 `verified`）。 */
   async function selfCheck(){
     try{
       const cache = await caches.open(CACHE);
@@ -248,19 +270,45 @@
         const sayBtn = t => { const b = document.getElementById('offlineBtn'); if(b) b.textContent = t; };
         run(sayBtn, null); return;
       }
-      if(!rv){ if(doneVer()){ setDone(null); relabel(); } return; }
-      for(const f of CHECK){
-        if(!(await cache.match(keyOf(f)))){
-          console.warn('[offline] 自我檢查：缺', f, '—— 退回網路優先');
-          await cache.delete(READY); setDone(null); tellSW(); relabel(); return;
+      let stored = {}; { const r = await cache.match(HASHES); if(r){ try{ stored = await r.json(); }catch(_){} } }
+      const expect = Object.keys(stored);
+      if(!rv && !doneVer() && !expect.length){ verified = null; relabel(); return; }   // 從沒下載過
+      verified = 'checking'; relabel();
+      for(const f of CHECK.concat('index.html')) if(expect.indexOf(f) < 0) expect.push(f);
+      const t0 = performance.now();
+      const miss = await missingOf(cache, expect);
+      const ms = Math.round(performance.now() - t0);
+      const gone = !Object.keys(stored).length || miss.length >= expect.length;
+      lastCheck = { files: expect.length, missing: miss.length, ms, sample: miss.slice(0, 5) };
+      if(!miss.length && rv){
+        verified = 'ok';
+        if(doneVer() !== rv) setDone(rv);
+        relabel();
+      }else{
+        if(miss.length) console.warn('[offline] 自我檢查：快取缺', miss.length, '支（例：' + miss.slice(0, 3).join('、') + '）—— 退回網路優先');
+        /* 檔不齊 ⇒ 旗標拔掉（sw.js 退回網路優先）；下載紀錄也拔，免得別處又把它當「已下載」。 */
+        if(rv){ await cache.delete(READY); tellSW(); }
+        setDone(null);
+        verified = gone ? 'gone' : (miss.length || null);   // 0＝檔都在、只是旗標不在 ⇒ 下面那一輪 run 全部跳過、把旗標寫回去
+        relabel();
+        /* 有網路就自己補（已在快取、雜湊對得上的跳過 ⇒ 只抓缺的那幾支）；iPhone 的 Safari 分頁不補（存不進主畫面 App）。
+           新版本已經出了的話不自動整包更新 —— 等玩家按（按下去就是「補齊＋更新」）。 */
+        if(navigator.onLine !== false && !busy && !(ios && !standalone)){
+          const list = await fetchList().catch(()=>null);
+          if(list && list.version && (!rv || list.version === rv) && !gone){
+            const sayBtn = t => { const b = document.getElementById('offlineBtn'); if(b) b.textContent = t; };
+            run(sayBtn, list); return;
+          }
+          if(list && list.version && rv && list.version !== rv){ updAvail = list.version; relabel(); }
         }
+        return;
       }
-      if(doneVer() !== rv){ setDone(rv); relabel(); }
       if(navigator.onLine === false) return;
       const list = await fetchList().catch(()=>null);
       if(list && list.version && list.version !== rv){ updAvail = list.version; relabel(); }
     }catch(e){ console.warn('[offline] 自我檢查失敗', e); }
   }
   setTimeout(selfCheck, 1500);
-  window.__tivotOffline = { label, click, run, busy: () => busy };
+  let lastCheck = null;   // 最近一次逐檔驗的結果（除錯用：__tivotOffline.lastCheck()）
+  window.__tivotOffline = { label, click, run, busy: () => busy, verify: selfCheck, lastCheck: () => lastCheck };
 })();
